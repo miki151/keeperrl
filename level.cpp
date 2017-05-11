@@ -42,8 +42,8 @@ template <class Archive>
 void Level::serialize(Archive& ar, const unsigned int version) {
   ar & SUBCLASS(OwnedObject<Level>);
   ar(squares, oldSquares, landingSquares, tickingSquares, creatures, model, fieldOfView);
-  ar(name, backgroundOffset, sunlight, bucketMap, sectors, lightAmount, unavailable);
-  ar(levelId, noDiagonalPassing, lightCapAmount, creatureIds, background, memoryUpdates);
+  ar(name, sunlight, bucketMap, sectors, lightAmount, unavailable);
+  ar(levelId, noDiagonalPassing, lightCapAmount, creatureIds, memoryUpdates);
   ar(furniture, tickingFurniture, covered);
 }  
 
@@ -304,7 +304,7 @@ void Level::throwItem(vector<PItem> item, const Attack& attack, int maxDist, Vec
       trajectory.pop_back();
       getGame()->addEvent({EventId::ITEMS_THROWN, EventInfo::ItemsThrown{this, getWeakPointers(item), trajectory}});
       if (!item[0]->isDiscarded())
-        modSafeSquare(v - direction)->dropItems(Position(v - direction, this), std::move(item));
+        pos.minus(direction).dropItems(std::move(item));
       return;
     }
     if (++cnt > maxDist || getSafeSquare(v)->itemLands(getWeakPointers(item), attack)) {
@@ -375,7 +375,7 @@ void Level::changeLevel(Position destination, WCreature c) {
 }
 
 void Level::eraseCreature(WCreature c, Vec2 coord) {
-  removeElement(creatures, c);
+  creatures.removeElement(c);
   unplaceCreature(c, coord);
   creatureIds.erase(c);
 }
@@ -466,7 +466,7 @@ vector<Vec2> Level::getVisibleTilesNoDarkness(Vec2 pos, VisionId vision) const {
 }
 
 vector<Vec2> Level::getVisibleTiles(Vec2 pos, VisionId vision) const {
-  return filter(getFieldOfView(vision).getVisibleTiles(pos),
+  return getFieldOfView(vision).getVisibleTiles(pos).filter(
       [&](Vec2 v) { return isWithinVision(pos, v, vision); });
 }
 
@@ -537,10 +537,6 @@ bool Level::isChokePoint(Vec2 pos, const MovementType& movement) const {
 
 void Level::updateSunlightMovement() {
   sectors.clear();
-}
-
-const optional<ViewObject>& Level::getBackgroundObject(Vec2 pos) const {
-  return (*background)[pos];
 }
 
 int Level::getNumGeneratedSquares() const {

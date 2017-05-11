@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "level_builder.h"
-#include "square_factory.h"
 #include "progress_meter.h"
 #include "square.h"
 #include "creature.h"
@@ -15,12 +14,13 @@
 
 LevelBuilder::LevelBuilder(ProgressMeter* meter, RandomGen& r, int width, int height, const string& n, bool allCovered,
     optional<double> defaultLight)
-  : squares(Rectangle(width, height)), background(width, height), unavailable(width, height, false),
+  : squares(Rectangle(width, height)), unavailable(width, height, false),
     heightMap(width, height, 0), covered(width, height, allCovered),
     sunlight(width, height, defaultLight ? *defaultLight : (allCovered ? 0.0 : 1.0)),
-    attrib(width, height),
-    type(width, height, SquareType(SquareId(0))), items(width, height), furniture(Rectangle(width, height)),
+    attrib(width, height), items(width, height), furniture(Rectangle(width, height)),
     name(n), progressMeter(meter), random(r) {
+  for (Vec2 v : squares.getBounds())
+    squares.putElem(v, {});
 }
 
 LevelBuilder::LevelBuilder(RandomGen& r, int width, int height, const string& n, bool covered)
@@ -51,37 +51,13 @@ void LevelBuilder::removeAttrib(Vec2 pos, SquareAttrib attr) {
 WSquare LevelBuilder::modSquare(Vec2 pos) {
   return squares.getWritable(transform(pos));
 }
-   
-const SquareType& LevelBuilder::getType(Vec2 pos) {
-  return type[transform(pos)];
-}
-
-void LevelBuilder::putSquare(Vec2 pos, SquareType t, optional<SquareAttrib> attr) {
-  putSquare(pos, t, attr ? vector<SquareAttrib>({*attr}) : vector<SquareAttrib>());
-}
-
-void LevelBuilder::putSquare(Vec2 posT, SquareType t, vector<SquareAttrib> attr) {
-  if (progressMeter)
-    progressMeter->addProgress();
-  Vec2 pos = transform(posT);
-  for (auto layer : ENUM_ALL(FurnitureLayer))
-    furniture.getBuilt(layer).clearElem(pos);
-  if (WConstSquare square = squares.getReadonly(pos)) {
-    if (auto backgroundObj = square->extractBackground())
-      background[pos] = backgroundObj;
-  }
-  squares.putElem(pos, t);
-  for (SquareAttrib at : attr)
-    attrib[pos].insert(at);
-  type[pos] = t;
-}
 
 Rectangle LevelBuilder::toGlobalCoordinates(Rectangle area) {
   return area.apply([this](Vec2 v) { return transform(v); });
 }
 
 void LevelBuilder::addCollective(CollectiveBuilder* col) {
-  if (!contains(collectives, col))
+  if (!collectives.contains(col))
     collectives.push_back(col);
 }
 
@@ -98,24 +74,36 @@ void LevelBuilder::putCreature(Vec2 pos, PCreature creature) {
 }
 
 void LevelBuilder::putItems(Vec2 posT, vector<PItem> it) {
+  CHECK(canNavigate(posT, {MovementTrait::WALK}));
   Vec2 pos = transform(posT);
-  CHECK(squares.getReadonly(pos)->getMovementSet().canEnter(MovementType(MovementTrait::WALK), covered[pos], none));
   append(items[pos], std::move(it));
 }
 
-void LevelBuilder::putFurniture(Vec2 posT, FurnitureFactory& f) {
-  putFurniture(posT, f.getRandom(getRandom()));
+void LevelBuilder::putFurniture(Vec2 posT, FurnitureFactory& f, optional<SquareAttrib> attrib) {
+  putFurniture(posT, f.getRandom(getRandom()), attrib);
 }
 
-void LevelBuilder::putFurniture(Vec2 posT, FurnitureParams f) {
+void LevelBuilder::resetFurniture(Vec2 posT, FurnitureFactory& f, optional<SquareAttrib> attrib) {
+  removeAllFurniture(posT);
+  putFurniture(posT, f, attrib);
+}
+
+void LevelBuilder::putFurniture(Vec2 posT, FurnitureParams f, optional<SquareAttrib> attrib) {
   auto layer = Furniture::getLayer(f.type);
   if (getFurniture(posT, layer))
     removeFurniture(posT, layer);
   furniture.getBuilt(layer).putElem(transform(posT), f);
+  if (attrib)
+    addAttrib(posT, *attrib);
 }
 
-void LevelBuilder::putFurniture(Vec2 pos, FurnitureType type) {
-  putFurniture(pos, {type, TribeId::getHostile()});
+void LevelBuilder::putFurniture(Vec2 pos, FurnitureType type, optional<SquareAttrib> attrib) {
+  putFurniture(pos, {type, TribeId::getHostile()}, attrib);
+}
+
+void LevelBuilder::resetFurniture(Vec2 posT, FurnitureType type, optional<SquareAttrib> attrib) {
+  removeAllFurniture(posT);
+  putFurniture(posT, type, attrib);
 }
 
 bool LevelBuilder::canPutFurniture(Vec2 posT, FurnitureLayer layer) {
@@ -124,6 +112,11 @@ bool LevelBuilder::canPutFurniture(Vec2 posT, FurnitureLayer layer) {
 
 void LevelBuilder::removeFurniture(Vec2 pos, FurnitureLayer layer) {
   furniture.getBuilt(layer).clearElem(transform(pos));
+}
+
+void LevelBuilder::removeAllFurniture(Vec2 pos) {
+  for (auto layer : ENUM_ALL(FurnitureLayer))
+    removeFurniture(pos, layer);
 }
 
 optional<FurnitureType> LevelBuilder::getFurnitureType(Vec2 posT, FurnitureLayer layer) {
@@ -169,7 +162,6 @@ PLevel LevelBuilder::build(WModel m, LevelMaker* maker, LevelId levelId) {
     if (!items[v].empty())
       squares.getWritable(v)->dropItemsLevelGen(std::move(items[v]));
   auto l = Level::create(std::move(squares), std::move(furniture), m, name, sunlight, levelId, covered);
-  l->background = background;
   l->unavailable = unavailable;
   for (pair<PCreature, Vec2>& c : creatures)
     Position(c.second, l.get()).addCreature(std::move(c.first));
@@ -217,7 +209,7 @@ void LevelBuilder::popMap() {
 }
 
 Vec2 LevelBuilder::transform(Vec2 v) {
-  for (auto m : reverse2(mapStack)) {
+  for (auto m : mapStack.reverse()) {
     v = m(v);
   }
   return v;
@@ -237,9 +229,17 @@ void LevelBuilder::setUnavailable(Vec2 pos) {
 
 bool LevelBuilder::canNavigate(Vec2 posT, const MovementType& movement) {
   Vec2 pos = transform(posT);
-  WConstFurniture f = furniture.getBuilt(FurnitureLayer::MIDDLE).getReadonly(pos);
-  return !unavailable[pos] &&
-      (squares.getReadonly(pos)->getMovementSet().canEnter(movement, covered[pos], none) ||
-          (f && f->overridesMovement() && f->canEnter(movement))) &&
-      (!f || f->canEnter(movement));
+  if (unavailable[pos])
+    return false;
+  bool result = true;
+  for (auto layer : ENUM_ALL(FurnitureLayer))
+    if (auto f = furniture.getBuilt(layer).getReadonly(pos)) {
+      bool canEnter = f->getMovementSet().canEnter(movement, covered[pos], false, none);
+      if (f->overridesMovement())
+        return canEnter;
+      else
+        result &= canEnter;
+    }
+  return result;
+
 }

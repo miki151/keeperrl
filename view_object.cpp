@@ -431,9 +431,9 @@ void ViewObject::setId(ViewId id) {
 
 ViewId ViewObject::id() const {
   if (hallu) {
-    if (auto elem = findElement(creatureIds, resource_id))
+    if (auto elem = creatureIds.findElement(resource_id))
       return shuffledCreatures[*elem];
-    if (auto elem = findElement(itemIds, resource_id))
+    if (auto elem = itemIds.findElement(resource_id))
       return shuffledItems[*elem];
   }
   return resource_id;

@@ -32,7 +32,6 @@
 #include "minion_task_map.h"
 #include "spell_map.h"
 #include "tribe.h"
-#include "square_type.h"
 #include "monster_ai.h"
 #include "sound.h"
 #include "player.h"
@@ -324,7 +323,7 @@ class KrakenController : public Monster {
           ? ViewId::KRAKEN_WATER : ViewId::KRAKEN_LAND;
         auto spawn = makeOwner<Creature>(getCreature()->getTribeId(),
               CreatureFactory::getKrakenAttributes(viewId, "kraken tentacle"));
-        spawn->setController(makeOwner<KrakenController>(c, getThis().dynamicCast<KrakenController>()));
+        spawn->setController(makeOwner<KrakenController>(spawn.get(), getThis().dynamicCast<KrakenController>()));
         spawns.push_back(spawn.get());
         getCreature()->getPosition().plus(move).addCreature(std::move(spawn));
       }
@@ -334,7 +333,7 @@ class KrakenController : public Monster {
   virtual void makeMove() override {
     for (WCreature c : spawns)
       if (c->isDead()) {
-        removeElement(spawns, c);
+        spawns.removeElement(c);
         break;
       }
     if (spawns.empty()) {
@@ -393,11 +392,11 @@ class ShopkeeperController : public Monster, public EventListener<ShopkeeperCont
   }
 
   vector<Position> getAllShopPositions() const {
-    return transform2(shopArea.getAllSquares(), [this](Vec2 v){ return Position(v, myLevel); });
+    return shopArea.getAllSquares().transform([this](Vec2 v){ return Position(v, myLevel); });
   }
 
   bool isShopPosition(const Position& pos) {
-    return pos.isSameLevel(myLevel) && shopArea.contains(pos.getCoord());
+    return pos.isSameLevel(myLevel) && pos.getCoord().inRectangle(shopArea);
   }
 
   virtual void makeMove() override {
@@ -429,7 +428,7 @@ class ShopkeeperController : public Monster, public EventListener<ShopkeeperCont
         }
       }
     for (auto debtorId : copyOf(debtors))
-      if (!contains(creatures, debtorId))
+      if (!creatures.contains(debtorId))
         for (auto pos : getCreature()->getPosition().getRectangle(Rectangle::centered(Vec2(0, 0), 30)))
           if (auto debtor = pos.getCreature())
             if (debtor->getUniqueId() == debtorId) {
@@ -453,7 +452,7 @@ class ShopkeeperController : public Monster, public EventListener<ShopkeeperCont
   }
 
   virtual void onItemsGiven(vector<WItem> items, WCreature from) override {
-    int paid = (int) filter(items, Item::classPredicate(ItemClass::GOLD)).size();
+    int paid = items.filter(Item::classPredicate(ItemClass::GOLD)).size();
     from->getDebt().add(getCreature(), -paid);
     if (from->getDebt().getAmountOwed(getCreature()) <= 0)
       debtors.erase(from);
@@ -668,6 +667,11 @@ CreatureFactory CreatureFactory::humanPeaceful(TribeId tribe) {
   return CreatureFactory(tribe, { CreatureId::PESEANT,
       CreatureId::CHILD, CreatureId::HORSE, CreatureId::DONKEY, CreatureId::COW, CreatureId::PIG, CreatureId::DOG },
       { 2, 1, 1, 1, 1, 1, 1}, {});
+}
+
+CreatureFactory CreatureFactory::tutorialVillage(TribeId tribe) {
+  return CreatureFactory(tribe, {}, {}, {CreatureId::PESEANT, CreatureId::PESEANT, CreatureId::PESEANT,
+      CreatureId::PESEANT, CreatureId::PESEANT, CreatureId::DONKEY, CreatureId::PIG, CreatureId::PIG, CreatureId::DOG});
 }
 
 CreatureFactory CreatureFactory::gnomeVillage(TribeId tribe) {
@@ -1391,7 +1395,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.minionTasks.setValue(MinionTask::CROPS, 4);
           c.minionTasks.setValue(MinionTask::SLEEP, 1);
           c.name = CreatureName("child", "children"););
-    case CreatureId::CLAY_GOLEM: 
+    case CreatureId::CLAY_GOLEM:
       return CATTR(
           c.viewId = ViewId::CLAY_GOLEM;
           c.attr[AttrType::SPEED] = 50;

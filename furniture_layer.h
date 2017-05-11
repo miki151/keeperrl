@@ -2,8 +2,8 @@
 
 #include "util.h"
 
-RICH_ENUM(
-    FurnitureLayer,
+RICH_ENUM(FurnitureLayer,
+    GROUND,
     FLOOR,
     MIDDLE,
     CEILING

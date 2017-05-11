@@ -146,7 +146,7 @@ void WindowView::initialize() {
       options,
       &gui));
   minimapGui.reset(new MinimapGui(renderer, [this]() { inputQueue.push(UserInput(UserInputId::DRAW_LEVEL_MAP)); }));
-  minimapDecoration = gui.stack(gui.rectangle(colors[ColorId::BLACK]), gui.miniWindow(),
+  minimapDecoration = gui.stack(gui.rectangle(Color::BLACK), gui.miniWindow(),
       gui.margins(gui.renderInBounds(SGuiElem(minimapGui)), 6));
   resetMapBounds();
   guiBuilder.setMapGui(mapGui);
@@ -242,7 +242,7 @@ void WindowView::drawMenuBackground(double barState, double mouthState) {
       (mouthPos2 + menuMouth.getSize().y) * scale, Color(60, 76, 48));
   renderer.drawImage((renderer.getSize().x - width) / 2, 0, menuCore, scale);
   renderer.drawImage(mouthX, scale * (mouthPos1 * (1 - mouthState) + mouthPos2 * mouthState), menuMouth, scale);
-  renderer.drawText(colors[ColorId::WHITE], 30, renderer.getSize().y - 40, "Version " BUILD_DATE " " BUILD_VERSION,
+  renderer.drawText(Color::WHITE, 30, renderer.getSize().y - 40, "Version " BUILD_DATE " " BUILD_VERSION,
       Renderer::NONE, 16);
 }
 
@@ -258,8 +258,8 @@ void WindowView::getAutosaveSplash(const ProgressMeter& meter) {
     double progress = meter.getProgress();
     Rectangle bar(progressBar.topLeft(), Vec2(1 + progressBar.left() * (1.0 - progress) +
           progressBar.right() * progress, progressBar.bottom()));
-    renderer.drawFilledRectangle(bar, transparency(colors[ColorId::DARK_GREEN], 50));
-    renderer.drawText(colors[ColorId::WHITE], bounds.middle().x, bounds.top() + 20, "Autosaving", Renderer::HOR);
+    renderer.drawFilledRectangle(bar, Color::DARK_GREEN.transparency(50));
+    renderer.drawText(Color::WHITE, bounds.middle().x, bounds.top() + 20, "Autosaving", Renderer::HOR);
     renderer.drawAndClearBuffer();
     sleep_for(milliseconds(30));
     Event event;
@@ -280,11 +280,11 @@ void WindowView::getSmallSplash(const string& text, function<void()> cancelFun) 
   while (!splashDone) {
     refreshScreen(false);
     window->render(renderer);
-    renderer.drawText(colors[ColorId::WHITE], bounds.middle().x, bounds.top() + 20, text, Renderer::HOR);
+    renderer.drawText(Color::WHITE, bounds.middle().x, bounds.top() + 20, text, Renderer::HOR);
     Rectangle cancelBut(bounds.middle().x - renderer.getTextLength(cancelText) / 2, bounds.top() + 50,
         bounds.middle().x + renderer.getTextLength(cancelText) / 2, bounds.top() + 80);
     if (cancelFun)
-      renderer.drawText(colors[ColorId::LIGHT_BLUE], cancelBut.left(), cancelBut.top(), cancelText);
+      renderer.drawText(Color::LIGHT_BLUE, cancelBut.left(), cancelBut.top(), cancelText);
     renderer.drawAndClearBuffer();
     sleep_for(milliseconds(30));
     Event event;
@@ -314,9 +314,9 @@ void WindowView::getBigSplash(const ProgressMeter& meter, const string& text, fu
     else
       renderer.drawImage((renderer.getSize().x - loadingSplash.getSize().x) / 2,
           (renderer.getSize().y - loadingSplash.getSize().y) / 2, loadingSplash);
-    renderer.drawText(colors[ColorId::WHITE], textPos.x, textPos.y, text, Renderer::HOR);
+    renderer.drawText(Color::WHITE, textPos.x, textPos.y, text, Renderer::HOR);
     if (cancelFun)
-      renderer.drawText(colors[ColorId::LIGHT_BLUE], cancelBut.left(), cancelBut.top(), cancelText);
+      renderer.drawText(Color::LIGHT_BLUE, cancelBut.left(), cancelBut.top(), cancelText);
     renderer.drawAndClearBuffer();
     sleep_for(milliseconds(30));
     Event event;
@@ -388,15 +388,15 @@ void WindowView::rebuildGui() {
         rightBarWidth = 0;
         bottomBarHeight = 0;
         if (getMapGuiBounds().left() > 0) {
-          tempGuiElems.push_back(gui.rectangle(colors[ColorId::BLACK]));
+          tempGuiElems.push_back(gui.rectangle(Color::BLACK));
           tempGuiElems.back()->setBounds(Rectangle(0, 0, getMapGuiBounds().left(), renderer.getSize().y));
-          tempGuiElems.push_back(gui.rectangle(colors[ColorId::BLACK]));
+          tempGuiElems.push_back(gui.rectangle(Color::BLACK));
           tempGuiElems.back()->setBounds(Rectangle(Vec2(getMapGuiBounds().right(), 0), renderer.getSize()));
         }
         if (getMapGuiBounds().top() > 0) {
-          tempGuiElems.push_back(gui.rectangle(colors[ColorId::BLACK]));
+          tempGuiElems.push_back(gui.rectangle(Color::BLACK));
           tempGuiElems.back()->setBounds(Rectangle(0, 0, renderer.getSize().x, getMapGuiBounds().top()));
-          tempGuiElems.push_back(gui.rectangle(colors[ColorId::BLACK]));
+          tempGuiElems.push_back(gui.rectangle(Color::BLACK));
           tempGuiElems.back()->setBounds(Rectangle(Vec2(0, getMapGuiBounds().bottom()), renderer.getSize()));
         }
         break;
@@ -705,7 +705,7 @@ optional<Vec2> WindowView::chooseDirection(const string& message) {
         } else {
           int numArrow = int(dir.getCardinalDir());
           static string arrows[] = { u8"⇑", u8"⇓", u8"⇒", u8"⇐", u8"⇗", u8"⇖", u8"⇘", u8"⇙"};
-          renderer.drawText(Renderer::SYMBOL_FONT, mapLayout->getSquareSize().y, colors[ColorId::WHITE],
+          renderer.drawText(Renderer::SYMBOL_FONT, mapLayout->getSquareSize().y, Color::WHITE,
               wpos.x + mapLayout->getSquareSize().x / 2, wpos.y, arrows[numArrow], Renderer::HOR);
         }
         renderer.drawAndClearBuffer();
@@ -797,7 +797,7 @@ optional<int> WindowView::chooseItem(const vector<ItemInfo>& items, ScrollPositi
             gui.scrollable(gui.verticalList(std::move(lines), guiBuilder.getStandardLineHeight()), scrollPos),
         15), [&retVal] { retVal = optional<int>(none); });
     SGuiElem bg2 = gui.darken();
-    bg2->setBounds(renderer.getSize());
+    bg2->setBounds(Rectangle(renderer.getSize()));
     while (1) {
       refreshScreen(false);
       menu->setBounds(guiBuilder.getEquipmentMenuPosition(menuHeight));
@@ -872,7 +872,7 @@ void WindowView::getBlockingGui(Semaphore& sem, SGuiElem elem, optional<Vec2> or
     origin = (renderer.getSize() - Vec2(*elem->getPreferredWidth(), *elem->getPreferredHeight())) / 2;
   if (blockingElems.empty()) {
     blockingElems.push_back(gui.darken());
-    blockingElems.back()->setBounds(renderer.getSize());
+    blockingElems.back()->setBounds(Rectangle(renderer.getSize()));
   }
   Vec2 size(*elem->getPreferredWidth(), min(renderer.getSize().y - origin->y, *elem->getPreferredHeight()));
   elem->setBounds(Rectangle(*origin, *origin + size));
@@ -939,7 +939,7 @@ SGuiElem WindowView::drawGameChoices(optional<PlayerRoleChoice>& choice, optiona
           gui.mouseOverAction([&] { index = PlayerRoleChoice(elem.type);}),
           gui.sprite(elem.texId, GuiFactory::Alignment::CENTER_STRETCHED),
           gui.marginFit(gui.empty(), gui.centerHoriz(gui.mainMenuLabel(elem.name, -0.08,
-              colors[ColorId::MAIN_MENU_OFF])), 0.94, gui.TOP),
+              Color::MAIN_MENU_OFF)), 0.94, gui.TOP),
           gui.mouseHighlightGameChoice(gui.stack(
             gui.sprite(elem.highlightId, GuiFactory::Alignment::CENTER_STRETCHED),
           gui.marginFit(gui.empty(), gui.centerHoriz(gui.mainMenuLabel(elem.name, -0.08)),
@@ -1221,7 +1221,7 @@ void WindowView::presentList(const string& title, const vector<ListElem>& option
 void WindowView::zoom(int dir) {
   refreshInput = true;
   auto& layouts = currentTileLayout.layouts;
-  int index = *findAddress(layouts, mapLayout);
+  int index = *layouts.findAddress(mapLayout);
   if (dir != 0 )
     index += dir;
   else {
@@ -1233,7 +1233,7 @@ void WindowView::zoom(int dir) {
 }
 
 void WindowView::switchTiles() {
-  int index = *findAddress(currentTileLayout.layouts, mapLayout);
+  int index = *currentTileLayout.layouts.findAddress(mapLayout);
   if (options->getBoolValue(OptionId::ASCII) || !useTiles)
     currentTileLayout = asciiLayouts;
   else

@@ -215,7 +215,7 @@ class WindowView: public View {
     TempClockPause pause(clock);
     if (blockingElems.empty()) {
       blockingElems.push_back(gui.darken());
-      blockingElems.back()->setBounds(renderer.getSize());
+      blockingElems.back()->setBounds(Rectangle(renderer.getSize()));
     }
     if (!origin)
       origin = (renderer.getSize() - Vec2(*elem->getPreferredWidth(), *elem->getPreferredHeight())) / 2;

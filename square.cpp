@@ -16,7 +16,6 @@
 #include "stdafx.h"
 
 #include "square.h"
-#include "square_factory.h"
 #include "level.h"
 #include "creature.h"
 #include "item.h"
@@ -24,27 +23,19 @@
 #include "progress_meter.h"
 #include "game.h"
 #include "vision.h"
-#include "player_message.h"
-#include "square_type.h"
 #include "view_index.h"
 #include "inventory.h"
 #include "poison_gas.h"
 #include "tribe.h"
-#include "creature_name.h"
-#include "movement_type.h"
-#include "movement_set.h"
 #include "view.h"
-#include "sound.h"
-#include "creature_attributes.h"
 #include "event_listener.h"
-#include "fire.h"
 
 template <class Archive> 
 void Square::serialize(Archive& ar, const unsigned int version) { 
-  ar & SUBCLASS(OwnedObject<Square>) & SUBCLASS(Renderable);
-  ar(inventory);
-  ar(name, creature, vision, landingLink, poisonGas);
-  ar(movementSet, lastViewer, viewIndex);
+  ar & SUBCLASS(OwnedObject<Square>);
+  ar(inventory, onFire);
+  ar(creature, landingLink, poisonGas);
+  ar(lastViewer, viewIndex);
   ar(forbiddenTribe);
   if (progressMeter)
     progressMeter->addProgress();
@@ -54,11 +45,7 @@ ProgressMeter* Square::progressMeter = nullptr;
 
 SERIALIZABLE(Square);
 
-SERIALIZATION_CONSTRUCTOR_IMPL(Square);
-
-Square::Square(const ViewObject& obj, Params p)
-  : Renderable(obj), name(p.name), vision(p.vision), movementSet(p.movementSet),
-    viewIndex(new ViewIndex()) {
+Square::Square() : viewIndex(new ViewIndex()) {
 }
 
 Square::~Square() {
@@ -70,15 +57,6 @@ void Square::putCreature(WCreature c) {
   onEnter(c);
   if (WGame game = c->getGame())
     game->addEvent({EventId::MOVED, c});
-}
-
-string Square::getName() const {
-  return name;
-}
-
-void Square::setName(Position pos, const string& s) {
-  setDirty(pos);
-  name = s;
 }
 
 void Square::setLandingLink(StairKey key) {
@@ -138,12 +116,12 @@ void Square::onItemLands(Position pos, vector<PItem> item, const Attack& attack,
   }
   item[0]->onHitSquareMessage(pos, item.size());
   if (!item[0]->isDiscarded())
-    dropItems(pos, std::move(item));
+    pos.dropItems(std::move(item));
 }
 
 void Square::addPoisonGas(Position pos, double amount) {
   setDirty(pos);
-  if (canSeeThru()) {
+  if (pos.canSeeThru(VisionId::NORMAL)) {
     poisonGas->addAmount(amount);
     pos.getLevel()->addTickingSquare(pos.getCoord());
   }
@@ -151,14 +129,6 @@ void Square::addPoisonGas(Position pos, double amount) {
 
 double Square::getPoisonGasAmount() const {
   return poisonGas->getAmount();
-}
-
-optional<ViewObject> Square::extractBackground() const {
-  const ViewObject& obj = getViewObject();
-  if (obj.layer() == ViewLayer::FLOOR_BACKGROUND)
-    return obj;
-  else
-    return none;
 }
 
 void Square::getViewIndex(ViewIndex& ret, WConstCreature viewer) const {
@@ -172,7 +142,6 @@ void Square::getViewIndex(ViewIndex& ret, WConstCreature viewer) const {
   if (!inventory->isEmpty())
     for (WItem it : getInventory().getItems())
       fireSize = max(fireSize, it->getFireSize());
-  ret.insert(getViewObject());
   if (WItem it = getTopItem())
     ret.insert(copyOf(it->getViewObject()).setAttribute(ViewObject::Attribute::BURNING, fireSize));
   if (poisonGas->getAmount() > 0)
@@ -182,7 +151,6 @@ void Square::getViewIndex(ViewIndex& ret, WConstCreature viewer) const {
 
 void Square::onEnter(WCreature c) {
   setDirty(c->getPosition());
-  onEnterSpecial(c);
 }
 
 void Square::dropItem(Position pos, PItem item) {
@@ -203,24 +171,19 @@ WCreature Square::getCreature() const {
   return creature;
 }
 
+bool Square::isOnFire() const {
+  return onFire;
+}
+
+void Square::setOnFire(bool state) {
+  onFire = state;
+}
+
 void Square::removeCreature(Position pos) {
   setDirty(pos);
   CHECK(creature);
   WCreature tmp = creature;
   creature = nullptr;
-}
-
-bool Square::canSeeThru(VisionId v) const {
-  return vision && (v == *vision || Vision::get(v)->getInheritedFov() == Vision::get(*vision));
-}
-
-bool Square::canSeeThru() const {
-  return canSeeThru(VisionId::NORMAL);
-}
-
-void Square::setVision(Position pos, VisionId v) {
-  vision = v;
-  pos.getLevel()->updateVisibility(pos.getCoord());
 }
 
 WItem Square::getTopItem() const {
@@ -256,14 +219,6 @@ void Square::setDirty(Position pos) {
   pos.getLevel()->setNeedsMemoryUpdate(pos.getCoord(), true);
   pos.getLevel()->setNeedsRenderUpdate(pos.getCoord(), true);
   lastViewer.reset();
-}
-
-MovementSet& Square::getMovementSet() {
-  return *movementSet;
-}
-
-const MovementSet& Square::getMovementSet() const {
-  return *movementSet;
 }
 
 void Square::forbidMovementForTribe(Position pos, TribeId tribe) {

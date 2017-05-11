@@ -1,7 +1,6 @@
 #pragma once
 
 #include "util.h"
-#include "square_type.h"
 #include "level.h"
 #include "square_array.h"
 #include "furniture_array.h"
@@ -16,7 +15,6 @@ class CollectiveBuilder;
 
 RICH_ENUM(SquareAttrib,
   NO_DIG,
-  GLACIER,
   MOUNTAIN,
   HILL,
   LOWLAND,
@@ -69,28 +67,20 @@ class LevelBuilder {
       \paramname{surface} tells if this level is on the Earth surface.*/
   PLevel build(WModel, LevelMaker*, LevelId);
 
-  //@{
-  /** Puts a square on given position. Sets optional attributes of the square. The attributes remain if the square is changed.*/
-  void putSquare(Vec2, SquareType, optional<SquareAttrib> = none);
-  void putSquare(Vec2, SquareType, vector<SquareAttrib> attribs);
-  void putSquare(Vec2, PSquare, SquareType, optional<SquareAttrib> = none);
-  void putSquare(Vec2, PSquare, SquareType, vector<SquareAttrib> attribs);
-  //@}
-
-  /** Returns the square type.*/
-  const SquareType& getType(Vec2);
-
   /** Checks if the given square has an attribute.*/
   bool hasAttrib(Vec2 pos, SquareAttrib attr);
 
   /** Adds attribute to given square. The attribute will remain if the square is changed.*/
   void addAttrib(Vec2 pos, SquareAttrib attr);
 
-  void putFurniture(Vec2 pos, FurnitureFactory&);
-  void putFurniture(Vec2 pos, FurnitureParams);
-  void putFurniture(Vec2 pos, FurnitureType);
+  void putFurniture(Vec2 pos, FurnitureFactory&, optional<SquareAttrib> = none);
+  void resetFurniture(Vec2 pos, FurnitureFactory&, optional<SquareAttrib> = none);
+  void putFurniture(Vec2 pos, FurnitureParams, optional<SquareAttrib> = none);
+  void putFurniture(Vec2 pos, FurnitureType, optional<SquareAttrib> = none);
+  void resetFurniture(Vec2 pos, FurnitureType, optional<SquareAttrib> = none);
   bool canPutFurniture(Vec2 pos, FurnitureLayer);
   void removeFurniture(Vec2 pos, FurnitureLayer);
+  void removeAllFurniture(Vec2 pos);
   optional<FurnitureType> getFurnitureType(Vec2 pos, FurnitureLayer);
   bool isFurnitureType(Vec2 pos, FurnitureType);
   WConstFurniture getFurniture(Vec2 pos, FurnitureLayer);
@@ -131,7 +121,6 @@ class LevelBuilder {
   private:
   Vec2 transform(Vec2);
   SquareArray squares;
-  Table<optional<ViewObject>> background;
   Table<bool> unavailable;
   Table<double> heightMap;
   Table<double> dark;
@@ -139,7 +128,6 @@ class LevelBuilder {
   Table<bool> covered;
   Table<double> sunlight;
   Table<EnumSet<SquareAttrib>> attrib;
-  Table<SquareType> type;
   vector<pair<PCreature, Vec2>> creatures;
   Table<vector<PItem>> items;
   FurnitureArray furniture;

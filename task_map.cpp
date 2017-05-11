@@ -34,7 +34,7 @@ WTask TaskMap::getClosestTask(WCreature c, MinionTrait trait) {
 }
 
 vector<WConstTask> TaskMap::getAllTasks() const {
-  return transform2(tasks, [] (const PTask& t) -> WConstTask { return t.get(); });
+  return tasks.transform([] (const PTask& t) -> WConstTask { return t.get(); });
 }
 
 void TaskMap::setPriorityTasks(Position pos) {
@@ -67,7 +67,7 @@ CostInfo TaskMap::removeTask(WTask task) {
   }
   CHECK(taskByCreature.getSize() == creatureByTask.getSize());
   if (auto pos = positionMap.getMaybe(task)) {
-    removeElement(reversePositions.getOrFail(*pos), task);
+    reversePositions.getOrFail(*pos).removeElement(task);
     positionMap.erase(task);
   }
   if (requiredTraits.getMaybe(task))
@@ -75,7 +75,7 @@ CostInfo TaskMap::removeTask(WTask task) {
   for (int i : All(tasks))
     if (tasks[i].get() == task) {
       taskById.erase(task);
-      removeIndex(tasks, i);
+      tasks.removeIndex(i);
       break;
     }
   return cost;

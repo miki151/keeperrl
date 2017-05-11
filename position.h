@@ -8,7 +8,6 @@ class Level;
 class PlayerMessage;
 class Tribe;
 class ViewIndex;
-class SquareType;
 class MovementType;
 struct CoverInfo;
 class Attack;
@@ -59,8 +58,7 @@ class Position {
   bool canEnter(WConstCreature) const;
   bool canEnter(const MovementType&) const;
   bool canEnterEmpty(WConstCreature) const;
-  bool canEnterEmpty(const MovementType&) const;
-  bool canEnterSquare(const MovementType&) const;
+  bool canEnterEmpty(const MovementType&, optional<FurnitureLayer> ignore = none) const;
   void onEnter(WCreature);
   optional<FurnitureClickType> getClickType() const;
   void addSound(const Sound&) const;
@@ -90,7 +88,6 @@ class Position {
   bool needsMemoryUpdate() const;
   void setNeedsMemoryUpdate(bool) const;
   const ViewObject& getViewObject() const;
-  ViewObject& modViewObject();
   void forbidMovementForTribe(TribeId);
   void allowMovementForTribe(TribeId);
   bool isTribeForbidden(TribeId) const;

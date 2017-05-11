@@ -170,11 +170,11 @@ void MainLoop::getSaveOptions(const vector<pair<GameSaveType, string>>& games, v
     vector<SaveFileInfo>& allFiles) {
   for (auto elem : games) {
     vector<SaveFileInfo> files = getSaveFiles(userPath, getSaveSuffix(elem.first));
-    files = ::filter(files, [this] (const SaveFileInfo& info) { return isCompatible(getSaveVersion(info));});
+    files = files.filter([this] (const SaveFileInfo& info) { return isCompatible(getSaveVersion(info));});
     append(allFiles, files);
     if (!files.empty()) {
       options.emplace_back(elem.second, ListElem::TITLE);
-      append(options, transform2(files,
+      append(options, files.transform(
           [this] (const SaveFileInfo& info) {
               auto nameAndVersion = getNameAndVersion(userPath.file(info.filename));
               return ListElem(nameAndVersion->first, getDateString(info.date));}));
@@ -473,16 +473,6 @@ void MainLoop::doWithSplash(SplashType type, const string& text, function<void()
   }
 }
 
-PModel MainLoop::quickGame(RandomGen& random) {
-  PModel model;
-  NameGenerator::init(dataFreePath.subdirectory("names"));
-  doWithSplash(SplashType::BIG, "Generating map...", 166000,
-      [&] (ProgressMeter& meter) {
-        model = ModelBuilder(&meter, random, options, sokobanInput).quickModel();
-      });
-  return model;
-}
-
 void MainLoop::modelGenTest(int numTries, RandomGen& random, Options* options) {
   NameGenerator::init(dataFreePath.subdirectory("names"));
   ProgressMeter meter(1);
@@ -490,16 +480,18 @@ void MainLoop::modelGenTest(int numTries, RandomGen& random, Options* options) {
 }
 
 PModel MainLoop::getBaseModel(ModelBuilder& modelBuilder, CampaignSetup& setup) {
-  switch (setup.campaign.getType()) {
-    case CampaignType::SINGLE_KEEPER:
-      return modelBuilder.singleMapModel(setup.campaign.getWorldName(), std::move(setup.player));
-    default: {
-      auto ret = modelBuilder.campaignBaseModel("Campaign base site",
-          setup.campaign.getType() == CampaignType::ENDLESS);
-      modelBuilder.spawnKeeper(ret.get(), std::move(setup.player));
-      return ret;
+  auto ret = [&] {
+    switch (setup.campaign.getType()) {
+      case CampaignType::SINGLE_KEEPER:
+        return modelBuilder.singleMapModel(setup.campaign.getWorldName());
+      case CampaignType::QUICK_MAP:
+        return modelBuilder.tutorialModel("Campaign base site");
+      default:
+        return modelBuilder.campaignBaseModel("Campaign base site", setup.campaign.getType() == CampaignType::ENDLESS);
     }
-  }
+  }();
+  modelBuilder.spawnKeeper(ret.get(), std::move(setup.player));
+  return ret;
 }
 
 Table<PModel> MainLoop::prepareCampaignModels(CampaignSetup& setup, RandomGen& random) {
@@ -536,18 +528,6 @@ Table<PModel> MainLoop::prepareCampaignModels(CampaignSetup& setup, RandomGen& r
   if (failedToLoad)
     view->presentText("Sorry", "Error reading " + *failedToLoad + ". Leaving blank site.");
   return models;
-}
-
-PModel MainLoop::keeperSingleMap(RandomGen& random) {
-  PModel model;
-  NameGenerator::init(dataFreePath.subdirectory("names"));
-  doWithSplash(SplashType::BIG, "Generating map...", 300000,
-      [&] (ProgressMeter& meter) {
-        ModelBuilder modelBuilder(&meter, random, options, sokobanInput);
-        PCreature player = CreatureFactory::fromId(CreatureId::KEEPER, TribeId::getKeeper());
-        model = modelBuilder.singleMapModel(NameGenerator::get(NameGeneratorId::WORLD)->getNext(), std::move(player));
-      });
-  return model;
 }
 
 PGame MainLoop::loadGame(const FilePath& file) {

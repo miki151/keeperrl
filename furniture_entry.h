@@ -20,7 +20,12 @@ class FurnitureEntry {
     SERIALIZE_ALL(effect, alwaysVisible)
   };
 
-  using EntryData = variant<Sokoban, Trap>;
+  struct Water {};
+  struct Magma {};
+
+  using EntryData = variant<Sokoban, Trap, Water, Magma>;
+  template <typename T>
+  FurnitureEntry(const T& t) : FurnitureEntry(EntryData(t)) {}
   FurnitureEntry(EntryData);
   void handle(WFurniture, WCreature);
   bool isVisibleTo(WConstFurniture, WConstCreature) const;

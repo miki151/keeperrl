@@ -23,7 +23,9 @@
 #include "item_index.h"
 #include "minion_task.h"
 #include "creature.h"
+#include "body.h"
 #include "equipment.h"
+#include "collective_teams.h"
 
 SERIALIZE_DEF(Tutorial, state)
 
@@ -48,12 +50,36 @@ enum class Tutorial::State {
   ORDER_CRAFTING,
   EQUIP_WEAPON,
   ACCEPT_MORE_IMMIGRANTS,
+  EQUIP_ALL_FIGHTERS,
+  CREATE_TEAM,
+  CONTROL_TEAM,
+  CONTROL_MODE_MOVEMENT,
+  DISCOVER_VILLAGE,
+  KILL_VILLAGE,
+  LOOT_VILLAGE,
+  LEAVE_CONTROL,
+  SUMMARY1,
+  SUMMARY2,
   FINISHED,
 };
 
+static bool isTeam(WConstCollective collective) {
+  auto teams = collective->getTeams().getAll();
+  if (teams.empty())
+    return false;
+  CHECK(teams.size() == 1);
+  return collective->getTeams().getMembers(teams[0]).size() >= 4;
+}
 
 bool Tutorial::canContinue(WConstGame game) const {
   auto collective = game->getPlayerCollective();
+  WCollective villain;
+  for (auto c : game->getCollectives())
+    if (c != collective) {
+      CHECK(!villain) << "Only one villain allowed in tutorial.";
+      villain = c;
+    }
+  CHECK(villain) << "Villain not found in tutorial.";
   switch (state) {
     case State::WELCOME:
     case State::INTRO:
@@ -106,12 +132,35 @@ bool Tutorial::canContinue(WConstGame game) const {
           return true;
       return false;
     case State::ACCEPT_MORE_IMMIGRANTS:
-      if (collective->getCreatures(MinionTrait::FIGHTER).size() < 4)
-        return false;
+      return collective->getCreatures(MinionTrait::FIGHTER).size() >= 4;
+    case State::EQUIP_ALL_FIGHTERS:
       for (auto c : collective->getCreatures(MinionTrait::FIGHTER))
         if (!collective->hasTrait(c, MinionTrait::NO_EQUIPMENT) &&
             c->getEquipment().getSlotItems(EquipmentSlot::WEAPON).empty())
           return false;
+      return true;
+    case State::CREATE_TEAM:
+      return isTeam(collective);
+    case State::CONTROL_TEAM:
+      return isTeam(collective) && !!game->getPlayerControl()->getControlled();
+    case State::CONTROL_MODE_MOVEMENT:
+      return true;
+    case State::DISCOVER_VILLAGE:
+      return collective->isKnownVillain(villain);
+    case State::KILL_VILLAGE:
+      for (auto c : villain->getCreatures())
+        if (c->getBody().isHumanoid())
+          return false;
+      return true;
+    case State::LOOT_VILLAGE:
+      for (auto pos : villain->getTerritory().getAll())
+        if (!pos.getItems(ItemIndex::GOLD).empty())
+          return false;
+      return true;
+    case State::LEAVE_CONTROL:
+      return !game->getPlayerControl()->getControlled();
+    case State::SUMMARY1:
+    case State::SUMMARY2:
       return true;
     case State::FINISHED:
       return false;
@@ -123,14 +172,15 @@ string Tutorial::getMessage() const {
     case State::WELCOME:
       return "Welcome to the KeeperRL tutorial!\n \n"
           "Together we will work to build a small dungeon, and assemble a military force. Nearby us lies "
-          "a small village inhabited mostly by innocents, whom we will all murder.\n \n"
+          "a small village inhabited mostly by innocents, which we shall conquer.\n \n"
           "This should get you up to speed with the game!";
     case State::INTRO:
-      return "Let's check out some things that you see on the map. The little wizard in the red robe is you. "
-          "If he dies, then it's game over, so be careful!\n \n"
-          "Remember that KeeperRL features perma-death, which means that you can't reload the game after a failure.";
+      return "Let's check out some things that you see on the map. The little wizard wearing a red robe is you, "
+          "the Keeper.\n \n"
+          "Remember that KeeperRL features perma-death, which means that you can't reload the game after a failure. "
+          "If your Keeper dies, then the game is over, so be careful!";
     case State::INTRO2:
-      return "The four little creatures are your imps and they are here to perform your orders. Try hovering the mouse "
+      return "The four little creatures are your imps. They are here to perform your orders. Try hovering the mouse "
           "over other things on the map, and notice the hints in the lower right corner.";
     case State::CUT_TREES:
       return "Great things come from small beginnings. Your first task is to gather some wood! "
@@ -152,12 +202,12 @@ string Tutorial::getMessage() const {
     case State::DIG_ROOM:
       return "Time to strike the mountain! Start by digging out a one tile-wide tunnel and finish it with at least "
           "a 5x5 room.\n \n"
-          "Hold shift to select a rectangular area.";
+          "Hold down shift to select a rectangular area.";
     case State::BUILD_DOOR:
-      return "Build a door at the entrance to your dungeon. This will slow down any enemies, "
+      return "Build a door at the entrance to your dungeon. This will slow down potential intruders, "
           "as they will need to destroy it before they can enter. "
           "Your minions can pass through doors freely, unless you lock a door by left clicking on it.\n \n"
-          "Try locking and unlocking the door.";
+          "Try locking and unlocking your new door.";
     case State::BUILD_LIBRARY:
       return "The first room that you need to build is a library. This is where the Keeper and other minions "
           "will learn spells, and research new technology. It is also a source of mana. Place at least 5 book shelves "
@@ -178,11 +228,11 @@ string Tutorial::getMessage() const {
           "torches in your rooms to light them up. Hover your mouse over the book shelves and training dummies "
           "and look in the lower right corner to make sure that their efficiency is at least 100.";
     case State::FLOORS:
-      return "Minions are more efficient if there is a nice floor wherever they are working. For now you can only "
+      return "Minions are also more efficient if there is a nice floor where they are working. For now you can only "
           "afford wooden floor, but it should do.\n \n"
           "Make sure you have enough wood!";
     case State::RESEARCH_CRAFTING:
-      return "Your minions will need equipment, such as weapons, armor, and consumables, to be more efficient in "
+      return "Your minions will need equipment, such as weapons, armor, and consumables, to be more deadly in "
           "combat.\n \n"
           "Before you can produce anything, click on your library, bring up the research menu and unlock crafting.";
     case State::BUILD_WORKSHOP:
@@ -198,15 +248,50 @@ string Tutorial::getMessage() const {
           "Pausing the game will make it a bit easier. Also, make sure you have enough wood!\n \n"
           "You can check the progress of production when you click on the workshop.";
     case State::EQUIP_WEAPON:
-      return "Your minions will automatically pick up weapons and other equipment that's in storage, "
-          "but you can also control it manually. Click on your orc and on the weapon slot to assign him the club that "
-          "he has just produced. He will go and pick it up.\n \n";
+      return "Your minions will automatically pick up weapons and other equipment from the storage, "
+          "but you can also control it manually. Click on your orc, and on his weapon slot to assign him the "
+          "club that he has just produced.\n \n"
+          "This way you will order him to go and pick it up.\n \n";
     case State::ACCEPT_MORE_IMMIGRANTS:
-      return "You are ready to grow your military force. Accept 3 more orc immigrants, and equip them with "
-          "weapons. Equip your Keeper as well!\n \n"
-          "You can also accept goblins, which don't fight, but are excellent craftsmen.";
+      return "You are ready to grow your military force. Three more orc immigrants should do.\n \n"
+          "You can also invite goblins, which don't fight, but are excellent craftsmen.";
+    case State::EQUIP_ALL_FIGHTERS:
+      return "Craft clubs for all of your orcs, and the Keeper, and have them equipped. They will be needed soon.\n \n"
+          "In the meantime, order your Keeper to train by dragging him to the training room.";
+    case State::CREATE_TEAM:
+      return "Your tiny army is ready! Assemble a team by dragging your orcs onto the [new team] button. You can "
+          "drag them straight from the map or from the minion menu.\n \n"
+          "Create a team of 4 orcs.";
+    case State::CONTROL_TEAM:
+      return "Time to take control over your team. Select the team, and one of the team members as the leader, "
+          "and click [Control].";
+    case State::CONTROL_MODE_MOVEMENT:
+      return "You are now in control of your minion, and the game has become turn-based. Try to moving around using "
+          "the arrow keys or by left-clicking on the map. You can scroll the map by dragging it with the right "
+          "mouse button.\n \n"
+          "Notice the rest of your team following you.";
+    case State::DISCOVER_VILLAGE:
+      return "It's time to discover the whereabouts of the nearby human village. Click on the minimap in the upper "
+          "right corner. The approximate location of the village is marked by a '?'. Take your team there.";
+    case State::KILL_VILLAGE:
+      return "Your team has arrived at the village. The only right thing to do in this situation is to find and "
+          "exterminate all inhabitants!\n \n"
+          "Remember to break into every house by destroying the door.";
+    case State::LOOT_VILLAGE:
+      return "There is a nice treasure in one of the houses. Pick it all up by entering the tiles containing gold, "
+          "and clicking in the menu in the upper left corner.";
+    case State::LEAVE_CONTROL:
+      return "To relinquish control of your team, choose the appropriate action in the upper left corner.";
+    case State::SUMMARY1:
+      return "You are back in the real-time mode. Your minions will now return to base and resume their normal routine. "
+          "Once they are back, they will drop all the loot for the imps to take care of.";
+    case State::SUMMARY2:
+      return "Thank you for completing the tutorial! We hope that we have made it a bit easier for you to get into "
+          "KeeperRL. We would love to hear your comments, so please drop by on the forums on Steam or at keeperrl.com "
+          "some time!";
     case State::FINISHED:
-      return "Congratulations, you have completed the tutorial! Go play the game now :)";
+      return "You should go and start a new game now, as this one exists only for the purpose of the tutorial.\n \n"
+          "Press Escape and abandon this game. ";
   }
 }
 
@@ -241,6 +326,12 @@ EnumSet<TutorialHighlight> Tutorial::getHighlights(WConstGame game) const {
       return {TutorialHighlight::SCHEDULE_CLUB};
     case State::EQUIP_WEAPON:
       return {TutorialHighlight::EQUIPMENT_SLOT_WEAPON};
+    case State::CREATE_TEAM:
+      return {TutorialHighlight::NEW_TEAM};
+    case State::CONTROL_TEAM:
+      return {TutorialHighlight::CONTROL_TEAM};
+    case State::LEAVE_CONTROL:
+      return {TutorialHighlight::LEAVE_CONTROL};
     default:
       return {};
   }
@@ -262,7 +353,7 @@ static void clearDugOutSquares(WConstGame game, vector<Vec2>& highlights) {
 
 vector<Vec2> Tutorial::getHighlightedSquaresHigh(WConstGame game) const {
   auto collective = game->getPlayerCollective();
-  const Vec2 entry(86, 86);
+  const Vec2 entry(87, 130);
   const int corridor = 6;
   int roomWidth = 5;
   const Vec2 firstRoom(entry - Vec2(0, corridor + roomWidth / 2));
@@ -298,15 +389,15 @@ vector<Vec2> Tutorial::getHighlightedSquaresLow(WConstGame game) const {
       for (auto furniture : {FurnitureType::BOOK_SHELF, FurnitureType::TRAINING_WOOD})
         for (auto pos : collective->getConstructions().getBuiltPositions(furniture))
           for (auto floorPos : concat({pos}, pos.neighbors8()))
-            if (floorPos.canConstruct(FurnitureType::FLOOR_WOOD1) && !contains(ret, floorPos.getCoord()))
+            if (floorPos.canConstruct(FurnitureType::FLOOR_WOOD1) && !ret.contains(floorPos.getCoord()))
               ret.push_back(floorPos.getCoord());
       return ret;
     }
     case State::RESEARCH_CRAFTING:
-      return transform2(collective->getConstructions().getBuiltPositions(FurnitureType::BOOK_SHELF),
+      return collective->getConstructions().getBuiltPositions(FurnitureType::BOOK_SHELF).transform(
           [](const Position& pos) { return pos.getCoord(); });
     case State::SCHEDULE_WORKSHOP_ITEMS:
-      return transform2(collective->getConstructions().getBuiltPositions(FurnitureType::WORKSHOP),
+      return collective->getConstructions().getBuiltPositions(FurnitureType::WORKSHOP).transform(
           [](const Position& pos) { return pos.getCoord(); });
     default:
       return {};
@@ -380,11 +471,11 @@ void Tutorial::createTutorial(Game& game) {
           .setFrequency(0.5)
           .addRequirement(0.0, TutorialRequirement {tutorial})
           .addRequirement(0.1, AttractionInfo{1, FurnitureType::TRAINING_WOOD}),
-      ImmigrantInfo(CreatureId::GOBLIN, {MinionTrait::FIGHTER, MinionTrait::NO_EQUIPMENT})
+      ImmigrantInfo(CreatureId::GOBLIN, {MinionTrait::NO_EQUIPMENT})
           .setLimit(1)
           .setFrequency(0.5)
           .addRequirement(0.0, TutorialRequirement {tutorial})
-          .addRequirement(0.1, AttractionInfo{1, FurnitureType::TRAINING_WOOD})
+          .addRequirement(0.1, AttractionInfo{1, FurnitureType::WORKSHOP})
   }),
       Immigration(collective));
 }

@@ -418,7 +418,7 @@ SGuiElem GuiFactory::sprite(Texture& tex, Alignment align, bool vFlip, bool hFli
               stretchSize = size * (double(bounds.height()) / size.y);
               pos = (bounds.topRight() + bounds.topLeft()) / 2 - Vec2(stretchSize->x / 2, 0) + offset;
           }
-          r.drawSprite(pos, origin, size, tex, stretchSize, !!col ? *col : colors[ColorId::WHITE], vFlip, hFlip);
+          r.drawSprite(pos, origin, size, tex, stretchSize, !!col ? *col : Color::WHITE, vFlip, hFlip);
         }));
 }
 
@@ -426,7 +426,7 @@ SGuiElem GuiFactory::label(const string& s, Color c, char hotkey) {
   auto width = [=] { return renderer.getTextLength(s); };
   return SGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
-          r.drawTextWithHotkey(transparency(colors[ColorId::BLACK], 100),
+          r.drawTextWithHotkey(Color::BLACK.transparency(100),
             bounds.topLeft().x + 1, bounds.topLeft().y + 2, s, 0);
           r.drawTextWithHotkey(c, bounds.topLeft().x, bounds.topLeft().y, s, hotkey);
         }, width));
@@ -497,7 +497,7 @@ SGuiElem GuiFactory::labelMultiLine(const string& s, int lineHeight, int size, C
 
 static void lighten(Color& c) {
   if (3 * 255 - c.r - c.g - c.b < 75)
-    c = colors[ColorId::YELLOW];
+    c = Color::YELLOW;
   int a = 160;
   int b = 200;
   auto fun = [=] (int x) { return x * (255 - a) / b + a;};
@@ -510,7 +510,7 @@ SGuiElem GuiFactory::labelHighlight(const string& s, Color c, char hotkey) {
   auto width = [=] { return renderer.getTextLength(s); };
   return SGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
-          r.drawTextWithHotkey(transparency(colors[ColorId::BLACK], 100),
+          r.drawTextWithHotkey(Color::BLACK.transparency(100),
             bounds.topLeft().x + 1, bounds.topLeft().y + 2, s, 0);
           Color c1(c);
           if (r.getMousePos().inRectangle(bounds))
@@ -537,7 +537,7 @@ SGuiElem GuiFactory::labelHighlightBlink(const string& s, Color c1, Color c2, ch
   return SGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
           Color c = blinkingColor(c1, c2, clock->getRealMillis());
-          r.drawTextWithHotkey(transparency(colors[ColorId::BLACK], 100),
+          r.drawTextWithHotkey(Color::BLACK.transparency(100),
             bounds.topLeft().x + 1, bounds.topLeft().y + 2, s, hotkey);
           Color c1(c);
           if (r.getMousePos().inRectangle(bounds))
@@ -550,7 +550,7 @@ SGuiElem GuiFactory::label(const string& s, function<Color()> colorFun, char hot
   auto width = [=] { return renderer.getTextLength(s); };
   return SGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
-          r.drawText(transparency(colors[ColorId::BLACK], 100),
+          r.drawText(Color::BLACK.transparency(100),
             bounds.topLeft().x + 1, bounds.topLeft().y + 2, s);
           r.drawTextWithHotkey(colorFun(), bounds.topLeft().x, bounds.topLeft().y, s, hotkey);
         }, width));
@@ -560,7 +560,7 @@ SGuiElem GuiFactory::labelFun(function<string()> textFun, function<Color()> colo
   function<int()> width = [this, textFun] { return renderer.getTextLength(textFun()); };
   return SGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
-          r.drawText(transparency(colors[ColorId::BLACK], 100),
+          r.drawText(Color::BLACK.transparency(100),
             bounds.topLeft().x + 1, bounds.topLeft().y + 2, textFun());
           r.drawText(colorFun(), bounds.topLeft().x, bounds.topLeft().y, textFun());
         }, width));
@@ -570,7 +570,7 @@ SGuiElem GuiFactory::labelFun(function<string()> textFun, Color color) {
   auto width = [=] { return renderer.getTextLength(textFun()); };
   return SGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
-          r.drawText(transparency(colors[ColorId::BLACK], 100),
+          r.drawText(Color::BLACK.transparency(100),
             bounds.topLeft().x + 1, bounds.topLeft().y + 2, textFun());
           r.drawText(color, bounds.topLeft().x, bounds.topLeft().y, textFun());
         }, width));
@@ -580,7 +580,7 @@ SGuiElem GuiFactory::label(const string& s, int size, Color c) {
   auto width = [=] { return renderer.getTextLength(s, size); };
   return SGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
-          r.drawText(transparency(colors[ColorId::BLACK], 100),
+          r.drawText(Color::BLACK.transparency(100),
             bounds.topLeft().x + 1, bounds.topLeft().y + 2, s, Renderer::NONE, size);
           r.drawText(c, bounds.topLeft().x, bounds.topLeft().y, s, Renderer::NONE, size);
         }, width));
@@ -603,7 +603,7 @@ SGuiElem GuiFactory::centeredLabel(Renderer::CenterType center, const string& s,
   return SGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
           Vec2 pos = getTextPos(bounds, center);
-          r.drawText(transparency(colors[ColorId::BLACK], 100), pos.x + 1, pos.y + 2, s, center, size);
+          r.drawText(Color::BLACK.transparency(100), pos.x + 1, pos.y + 2, s, center, size);
           r.drawText(c, pos.x, pos.y, s, center, size);
         }));
 }
@@ -1757,20 +1757,21 @@ SGuiElem GuiFactory::dragListener(function<void(DragContent)> fun) {
 
 class TranslateGui : public GuiLayout {
   public:
-  TranslateGui(SGuiElem e, Vec2 p, Vec2 s)
+  TranslateGui(SGuiElem e, Vec2 p, optional<Vec2> s)
       : GuiLayout(makeVec(std::move(e))), pos(p), size(s) {
   }
 
   virtual Rectangle getElemBounds(int num) override {
-    return Rectangle(getBounds().topLeft() + pos, getBounds().topLeft() + pos + size);
+    Vec2 sz = size ? *size : getBounds().getSize();
+    return Rectangle(getBounds().topLeft() + pos, getBounds().topLeft() + pos + sz);
   }
 
   private:
   Vec2 pos;
-  Vec2 size;
+  optional<Vec2> size;
 };
 
-SGuiElem GuiFactory::translate(SGuiElem e, Vec2 pos, Vec2 size) {
+SGuiElem GuiFactory::translate(SGuiElem e, Vec2 pos, optional<Vec2> size) {
   return SGuiElem(new TranslateGui(std::move(e), pos, size));
 }
 
@@ -2058,7 +2059,7 @@ class Tooltip : public GuiElem {
         background->setBounds(Rectangle(pos, pos + size));
         background->render(r);
         for (int i : All(text))
-          r.drawText(colors[ColorId::WHITE], pos.x + tooltipHMargin, pos.y + tooltipVMargin + i * tooltipLineHeight,
+          r.drawText(Color::WHITE, pos.x + tooltipHMargin, pos.y + tooltipVMargin + i * tooltipLineHeight,
               text[i]);
         r.popLayer();
       }
@@ -2264,9 +2265,9 @@ void GuiFactory::loadFreeImages(const DirectoryPath& path) {
   textures.emplace(TexId::SCROLLBAR, path.file("ui/scrollbar.png"));
   textures.emplace(TexId::SCROLL_BUTTON, path.file("ui/scrollmark.png"));
   textures.emplace(TexId::BACKGROUND_PATTERN, path.file("window_bg.png"));
-  text = colors[ColorId::WHITE];
-  titleText = colors[ColorId::YELLOW];
-  inactiveText = colors[ColorId::LIGHT_GRAY];
+  text = Color::WHITE;
+  titleText = Color::YELLOW;
+  inactiveText = Color::LIGHT_GRAY;
   textures.emplace(TexId::HORI_CORNER1, path.file("ui/horicorner1.png"));
   textures.emplace(TexId::HORI_CORNER2, path.file("ui/horicorner2.png"));
   textures.emplace(TexId::HORI_LINE, path.file("ui/horiline.png"));
@@ -2290,6 +2291,7 @@ void GuiFactory::loadFreeImages(const DirectoryPath& path) {
   textures.emplace(TexId::SCROLL_DOWN, path.file("ui/down.png"));
   textures.emplace(TexId::WINDOW_CORNER, path.file("ui/corner1.png"));
   textures.emplace(TexId::WINDOW_CORNER_EXIT, path.file("ui/corner2X.png"));
+  textures.emplace(TexId::WINDOW_CORNER_EXIT_HIGHLIGHT, path.file("ui/corner2X_highlight.png"));
   textures.emplace(TexId::WINDOW_VERT_BAR, path.file("ui/vertibarmsg1.png"));
   textures.emplace(TexId::MAIN_MENU_HIGHLIGHT, path.file("ui/menu_highlight.png"));
   textures.emplace(TexId::SPLASH1, path.file("splash2f.png"));
@@ -2476,7 +2478,7 @@ SGuiElem GuiFactory::miniWindow2(SGuiElem content, function<void()> onExitButton
 SGuiElem GuiFactory::miniWindow(SGuiElem content, function<void()> onExitButton, bool captureExitClick) {
   auto ret = makeVec(
         stopMouseMovement(),
-        rectangle(colors[ColorId::BLACK]),
+        rectangle(Color::BLACK),
         background(background1),
         miniBorder(),
         std::move(content));
@@ -2488,7 +2490,7 @@ SGuiElem GuiFactory::miniWindow(SGuiElem content, function<void()> onExitButton,
 SGuiElem GuiFactory::miniWindow() {
   return stack(makeVec(
         stopMouseMovement(),
-        rectangle(colors[ColorId::BLACK]),
+        rectangle(Color::BLACK),
         background(background1),
         miniBorder()));
 }
@@ -2497,7 +2499,7 @@ SGuiElem GuiFactory::window(SGuiElem content, function<void()> onExitButton) {
   return stack(makeVec(
         stopMouseMovement(),
         alignment(Alignment::TOP_RIGHT, button(onExitButton, getKey(SDL::SDLK_ESCAPE), true), Vec2(38, 38)),
-        rectangle(colors[ColorId::BLACK]),
+        rectangle(Color::BLACK),
         background(background1),
         margins(std::move(content), 20, 35, 30, 30),
         sprite(get(TexId::HORI_BAR), Alignment::BOTTOM, true, false),
@@ -2507,6 +2509,7 @@ SGuiElem GuiFactory::window(SGuiElem content, function<void()> onExitButton) {
         sprite(get(TexId::WINDOW_CORNER), Alignment::BOTTOM_RIGHT, true, true, Vec2(6, 2)),
         sprite(get(TexId::WINDOW_CORNER), Alignment::BOTTOM_LEFT, true, false, Vec2(-6, 2)),
         sprite(get(TexId::WINDOW_CORNER_EXIT), Alignment::TOP_RIGHT, false, false, Vec2(6, -2)),
+        alignment(Alignment::TOP_RIGHT, mouseHighlight2(sprite(get(TexId::WINDOW_CORNER_EXIT_HIGHLIGHT), Alignment::TOP_RIGHT, false, false, Vec2(6, -2))), Vec2(47, 41)),
         sprite(get(TexId::WINDOW_CORNER), Alignment::TOP_LEFT, false, false, Vec2(-6, -2))
         ));
 }
@@ -2559,12 +2562,16 @@ SGuiElem GuiFactory::spellIcon(SpellId id) {
   return sprite(spellTextures[int(id)], Alignment::CENTER);
 }
 
+static int trans1 = 1094;
+static int trans2 = 1693;
+
 SGuiElem GuiFactory::uiHighlightMouseOver(Color c) {
   return mouseHighlight2(uiHighlight(c));
 }
 
 SGuiElem GuiFactory::uiHighlight(Color c) {
-  return leftMargin(-8, topMargin(-4, sprite(TexId::UI_HIGHLIGHT, Alignment::LEFT_STRETCHED, c)));
+  return margins(rectangle(c.transparency(trans1), c.transparency(trans2)), -8, -3, -3, 3);
+  //return leftMargin(-8, topMargin(-4, sprite(TexId::UI_HIGHLIGHT, Alignment::LEFT_STRETCHED, c)));
 }
 
 SGuiElem GuiFactory::blink(SGuiElem elem) {
@@ -2572,7 +2579,7 @@ SGuiElem GuiFactory::blink(SGuiElem elem) {
 }
 
 SGuiElem GuiFactory::tutorialHighlight() {
-  return blink(uiHighlight(colors[ColorId::YELLOW]));
+  return blink(uiHighlight(Color::YELLOW));
 }
 
 SGuiElem GuiFactory::uiHighlightConditional(function<bool()> cond, Color c) {
@@ -2580,7 +2587,7 @@ SGuiElem GuiFactory::uiHighlightConditional(function<bool()> cond, Color c) {
 }
 
 SGuiElem GuiFactory::rectangleBorder(Color col) {
-  return rectangle(colors[ColorId::TRANSPARENT], col);
+  return rectangle(Color::TRANSPARENT, col);
 }
 
 SGuiElem GuiFactory::sprite(TexId id, Alignment a, optional<Color> c) {

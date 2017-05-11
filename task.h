@@ -21,7 +21,6 @@
 #include "position.h"
 #include "destroy_action.h"
 
-class SquareType;
 class TaskCallback;
 class CreatureFactory;
 
@@ -69,7 +68,6 @@ class Task : public UniqueEntity<Task>, public OwnedObject<Task> {
       Range attackSize, int numAttacks);
   static PTask killFighters(WCollective, int numFighters);
   static PTask stealFrom(WCollective, WTaskCallback);
-  static PTask createBed(WTaskCallback, Position, const SquareType& fromType, const SquareType& toType);
   static PTask consumeItem(WTaskCallback, vector<WItem> items);
   static PTask copulate(WTaskCallback, WCreature target, int numTurns);
   static PTask consume(WTaskCallback, WCreature target);

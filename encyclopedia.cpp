@@ -27,6 +27,18 @@
 void bestiary(View* view, int lastInd) {
 }
 
+template<class T>
+string combine(const vector<T*>& v) {
+  return combine(
+      v.transform([](const T* e) -> string { return e->getName(); }));
+}
+
+template<class T>
+string combine(const vector<T>& v) {
+  return combine(
+      v.transform([](const T& e) -> string { return e.name; }));
+}
+
 void advance(View* view, const Technology* tech) {
   string text;
   const vector<Technology*>& prerequisites = tech->getPrerequisites();
@@ -38,7 +50,7 @@ void advance(View* view, const Technology* tech) {
   vector<Spell*> spells = Technology::getSpellLearning(tech->getId());
   if (!spells.empty())
     text += "Teaches spells: " + combine(spells) + "\n";
-  const vector<PlayerControl::RoomInfo>& rooms = filter(PlayerControl::getRoomInfo(), 
+  const vector<PlayerControl::RoomInfo>& rooms = PlayerControl::getRoomInfo().filter(
       [tech] (const PlayerControl::RoomInfo& info) {
           for (auto& req : info.requirements)
             if (req.getId() == PlayerControl::RequirementId::TECHNOLOGY && req.get<TechId>() == tech->getId())

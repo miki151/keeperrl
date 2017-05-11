@@ -8,17 +8,15 @@ class Tribe;
 
 class MovementSet {
   public:
-  /** Returns if the argument can enter square defined by this.*/
-  bool canEnter(const MovementType&, bool covered, const optional<TribeId>& forbidden) const;
+  bool canEnter(const MovementType&, bool covered, bool onFire, const optional<TribeId>& forbidden) const;
+  bool canEnter(const MovementType&) const;
 
-  MovementSet& setOnFire(bool);
-  bool isOnFire() const;
-  
+  bool hasTrait(MovementTrait) const;
+
   MovementSet& addTrait(MovementTrait);
   MovementSet& removeTrait(MovementTrait);
-  MovementSet& addTraitForTribe(TribeId, MovementTrait);
-  MovementSet& removeTraitForTribe(TribeId, MovementTrait);
   MovementSet& addForcibleTrait(MovementTrait);
+  MovementSet& setOnlyAllowed(TribeId);
 
   void clear();
 
@@ -26,7 +24,7 @@ class MovementSet {
   void serialize(Archive& ar, const unsigned int version);
   
   private:
-  bool SERIAL(onFire) = false;
   EnumSet<MovementTrait> SERIAL(traits);
   EnumSet<MovementTrait> SERIAL(forcibleTraits);
+  optional<TribeId> SERIAL(onlyAllowed);
 };

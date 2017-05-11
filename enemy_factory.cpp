@@ -271,7 +271,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.ransom = make_pair(0.8, random.get(240, 320));));
     case EnemyId::ELVES:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
-            c.type = SettlementType::VILLAGE2;
+            c.type = SettlementType::FORREST_VILLAGE;
             c.creatures = CreatureFactory::elvenVillage(TribeId::getElf());
             c.numCreatures = random.get(11, 18);
             c.locationName = getVillageName();
@@ -563,6 +563,17 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.buildingId = BuildingId::WOOD;
             c.furniture = FurnitureFactory::roomFurniture(c.tribe);),
           CollectiveConfig::noImmigrants().setGuardian({CreatureId::WITCHMAN, 0.001, 1, 2}));
+    case EnemyId::TUTORIAL_VILLAGE:
+      return EnemyInfo(CONSTRUCT(SettlementInfo,
+            c.type = SettlementType::SMALL_VILLAGE;
+            c.tribe = TribeId::getHuman();
+            c.creatures = CreatureFactory::tutorialVillage(c.tribe);
+            c.numCreatures = 9;
+            c.race = "humans"_s;
+            c.buildingId = BuildingId::WOOD;
+            c.stockpiles = LIST({StockpileInfo::GOLD, 50});
+            c.furniture = FurnitureFactory::roomFurniture(c.tribe);),
+          CollectiveConfig::noImmigrants());
     case EnemyId::ELVEN_COTTAGE:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::FORREST_COTTAGE;

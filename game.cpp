@@ -25,7 +25,6 @@
 #include "save_file_info.h"
 #include "file_sharing.h"
 #include "villain_type.h"
-#include "square_type.h"
 #include "attack_trigger.h"
 #include "view_object.h"
 #include "campaign.h"
@@ -167,7 +166,7 @@ void Game::prepareSiteRetirement() {
     locationPos = playerCollective->getTerritory().getAll();
   if (!locationPos.empty())
     playerCollective->getTerritory().setCentralPoint(
-        Position(Rectangle::boundingBox(transform2(locationPos, [](Position p){ return p.getCoord();})).middle(),
+        Position(Rectangle::boundingBox(locationPos.transform([](Position p){ return p.getCoord();})).middle(),
             playerCollective->getLevel()));
   for (auto c : playerCollective->getCreatures())
     c->retire();
@@ -381,7 +380,7 @@ void Game::transferAction(vector<WCreature> creatures) {
     for (WCreature c : copyOf(creatures))
       if (!canTransferCreature(c, to)) {
         cant.push_back(CreatureInfo(c));
-        removeElement(creatures, c);
+        creatures.removeElement(c);
       }
     if (!cant.empty() && !view->creaturePrompt("These minions will be left behind due to sunlight.", cant))
       return;

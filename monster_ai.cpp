@@ -930,14 +930,14 @@ class SplashItems {
         if (it[0] != it2 && it2->getClass() == it[0]->getClass() && Random.roll(10))
           it.push_back(it2);
     for (WItem it2 : it)
-      removeElement(items[pos], it2);
+      items[pos].removeElement(it2);
     if (items[pos].empty())
       items.erase(pos);
     vector<Vec2>& targets = it[0]->getClass() == ItemClass::GOLD ? targetsGold : targetsCorpse;
     if (targets.empty())
       return nullptr;
     Vec2 target = Random.choose(targets);
-    removeElement(targets, target);
+    targets.removeElement(target);
     return Task::bringItem(callbackDummy.get(), Position(pos, level), it, {Position(target, level)}, 100);
   }
 

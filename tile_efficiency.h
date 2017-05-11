@@ -5,7 +5,6 @@
 #include "furniture_layer.h"
 
 class Position;
-class SquareType;
 
 class TileEfficiency {
   public:

@@ -37,25 +37,25 @@ void MinimapGui::renderMap(Renderer& renderer, Rectangle target) {
     Vec2 rrad(1, 1);
     Vec2 pos = topLeft + (v - info.bounds.topLeft()) * scale;
     if (pos.inRectangle(target.minusMargin(rrad.x)))
-      renderer.drawFilledRectangle(Rectangle(pos - rrad, pos + rrad), colors[ColorId::BROWN]);
+      renderer.drawFilledRectangle(Rectangle(pos - rrad, pos + rrad), Color::BROWN);
   }
   Vec2 rad(3, 3);
   Vec2 player = topLeft + (info.player - info.bounds.topLeft()) * scale;
   if (player.inRectangle(target.minusMargin(rad.x)))
-    renderer.drawFilledRectangle(Rectangle(player - rad, player + rad), colors[ColorId::BLUE]);
+    renderer.drawFilledRectangle(Rectangle(player - rad, player + rad), Color::BLUE);
   for (Vec2 pos : info.enemies) {
     Vec2 v = (pos - info.bounds.topLeft()) * scale;
-    renderer.drawFilledRectangle(Rectangle(topLeft + v - rad, topLeft + v + rad), colors[ColorId::RED]);
+    renderer.drawFilledRectangle(Rectangle(topLeft + v - rad, topLeft + v + rad), Color::RED);
   }
   for (auto loc : info.locations) {
     Vec2 v = (loc - info.bounds.topLeft()) * scale;
 //    if (loc.text.empty())
-      renderer.drawText(colors[ColorId::LIGHT_GREEN], topLeft.x + v.x + 5, topLeft.y + v.y, "?");
+      renderer.drawText(Color::LIGHT_GREEN, topLeft.x + v.x + 5, topLeft.y + v.y, "?");
 /*    else {
       renderer.drawFilledRectangle(topLeft.x + v.x, topLeft.y + v.y,
           topLeft.x + v.x + renderer.getTextLength(loc.text) + 10, topLeft.y + v.y + 25,
-          transparency(colors[ColorId::BLACK], 130));
-      renderer.drawText(colors[ColorId::WHITE], topLeft.x + v.x + 5, topLeft.y + v.y, loc.text);
+          transparency(Color::BLACK, 130));
+      renderer.drawText(Color::WHITE, topLeft.x + v.x + 5, topLeft.y + v.y, loc.text);
     }*/
   }
 }
@@ -111,7 +111,7 @@ void MinimapGui::update(WConstLevel level, Rectangle bounds, const CreatureView*
     currentLevel = level;
   }
   for (Position v : memory.getUpdated(level)) {
-    CHECK(v.getCoord().inRectangle(Vec2(mapBuffer->w, mapBuffer->h))) << v.getCoord();
+    CHECK(v.getCoord().x < mapBuffer->w && v.getCoord().y < mapBuffer->h) << v.getCoord();
     Renderer::putPixel(mapBuffer, v.getCoord(), Tile::getColor(v.getViewObject()));
     if (v.getViewObject().hasModifier(ViewObject::Modifier::ROAD))
       info.roads.insert(v.getCoord());

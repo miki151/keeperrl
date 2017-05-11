@@ -151,11 +151,6 @@ vector<string> split(const string& s, const set<char>& delim) {
   return ret;
 }
 
-vector<string> removeEmpty(const vector<string>& v) {
-  return filter(v, [] (const string& s) { return !s.empty(); });
-}
-
-template<>
 bool contains(const string& s, const string& p) {
   return s.find(p) != string::npos;
 }
@@ -192,11 +187,6 @@ Vec2 Vec2::div(const Vec2& v) const {
 
 int Vec2::dotProduct(Vec2 a, Vec2 b) {
   return a.x * b.x + a.y * b.y;
-}
-
-vector<Vec2> Vec2::circle(double radius, bool shuffle) {
-  return filter(Rectangle(*this - Vec2(radius, radius), *this + Vec2(radius, radius)).getAllSquares(),
-      [&](const Vec2& pos) { return distD(pos) <= radius; });
 }
 
 vector<Vec2> Vec2::directions8() {
@@ -302,6 +292,10 @@ Rectangle Rectangle::boundingBox(const vector<Vec2>& verts) {
 
 Rectangle Rectangle::centered(Vec2 center, int radius) {
   return Rectangle(center - Vec2(radius, radius), center + Vec2(radius + 1, radius + 1));
+}
+
+Rectangle Rectangle::centered(int radius) {
+  return Rectangle(-Vec2(radius, radius), Vec2(radius + 1, radius + 1));
 }
 
 vector<Vec2> Rectangle::getAllSquares() const {

@@ -4,6 +4,15 @@
 
 RICH_ENUM(
     FurnitureType,
+    WATER,
+    SHALLOW_WATER1,
+    SHALLOW_WATER2,
+    MAGMA,
+    SAND,
+    FLOOR,
+    MUD,
+    GRASS,
+    HILL,
     TRAINING_WOOD,
     TRAINING_IRON,
     TRAINING_STEEL,

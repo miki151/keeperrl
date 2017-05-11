@@ -36,6 +36,8 @@ class FurnitureFactory {
   static FurnitureFactory villageOutside(TribeId);
   static FurnitureFactory cryptCoffins(TribeId);
 
+  static FurnitureType getWaterType(double depth);
+
   private:
   HeapAllocated<TribeId> tribe;
   EnumMap<FurnitureType, double> distribution;

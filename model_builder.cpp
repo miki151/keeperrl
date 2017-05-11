@@ -170,33 +170,6 @@ static EnumSet<MinionTrait> getImpTraits() {
   return {MinionTrait::WORKER, MinionTrait::NO_LIMIT, MinionTrait::NO_EQUIPMENT};
 }
 
-PModel ModelBuilder::tryQuickModel(int width) {
-  auto m = Model::create();
-  WLevel top = m->buildTopLevel(
-      LevelBuilder(meter, random, width, width, "Quick", false),
-      LevelMaker::quickLevel(random));
-  m->calculateStairNavigation();
-  m->collectives.push_back(CollectiveBuilder(
-        getKeeperConfig(random, options->getBoolValue(OptionId::FAST_IMMIGRATION)), TribeId::getKeeper())
-      .setLevel(top)
-      .build());
-  vector<CreatureId> ids {
-    CreatureId::DONKEY,
-  };
-  for (auto elem : ids) {
-    PCreature c = CreatureFactory::fromId(elem, TribeId::getKeeper(),
-        MonsterAIFactory::monster());
-    top->landCreature(StairKey::keeperSpawn(), c.get());
-//    m->playerCollective->addCreature(c.get(), {MinionTrait::FIGHTER});
-    m->addCreature(std::move(c));
-  }
-  return m;
-}
-
-PModel ModelBuilder::quickModel() {
-  return tryBuilding(5000, [=] { return tryQuickModel(40); });
-}
-
 SettlementInfo& ModelBuilder::makeExtraLevel(WModel model, EnemyInfo& enemy) {
   const int towerHeight = random.get(7, 12);
   const int gnomeHeight = random.get(3, 5);
@@ -272,18 +245,11 @@ SettlementInfo& ModelBuilder::makeExtraLevel(WModel model, EnemyInfo& enemy) {
       StairKey key = StairKey::getNew();
       extraSettlement.upStairs = {key};
       mainSettlement.downStairs = {key};
-      for (int i : Range(5000)) {
-        try {
-          Table<char> sokoLevel = sokobanInput->getNext();
-          model->buildLevel(
-              LevelBuilder(meter, random, sokoLevel.getBounds().width(), sokoLevel.getBounds().height(), "Sokoban"),
-              LevelMaker::sokobanFromFile(random, mainSettlement, sokoLevel));
-          return extraSettlement;
-        } catch (LevelGenException) {
-          INFO << "Retrying";
-        }
-      }
-      throw LevelGenException();
+      Table<char> sokoLevel = sokobanInput->getNext();
+      model->buildLevel(
+          LevelBuilder(meter, random, sokoLevel.getBounds().width(), sokoLevel.getBounds().height(), "Sokoban"),
+          LevelMaker::sokobanFromFile(random, mainSettlement, sokoLevel));
+      return extraSettlement;
   }
 }
 
@@ -291,10 +257,8 @@ static string getBoardText(const string& keeperName, const string& dukeName) {
   return dukeName + " will reward a daring hero 150 florens for slaying " + keeperName + " the Keeper.";
 }
 
-PModel ModelBuilder::singleMapModel(const string& worldName, PCreature keeper) {
-  auto ret = tryBuilding(10, [&] { return trySingleMapModel(worldName);});
-  spawnKeeper(ret.get(), std::move(keeper));
-  return ret;
+PModel ModelBuilder::singleMapModel(const string& worldName) {
+  return tryBuilding(10, [&] { return trySingleMapModel(worldName);});
 }
 
 PModel ModelBuilder::trySingleMapModel(const string& worldName) {
@@ -358,15 +322,22 @@ void ModelBuilder::addMapVillains(vector<EnemyInfo>& enemyInfo, BiomeId biomeId)
 PModel ModelBuilder::tryCampaignBaseModel(const string& siteName, bool addExternalEnemies) {
   vector<EnemyInfo> enemyInfo;
   BiomeId biome = BiomeId::MOUNTAIN;
-  enemyInfo.push_back(enemyFactory->get(EnemyId::DWARF_CAVE));
-  enemyInfo.push_back(enemyFactory->get(EnemyId::KOBOLD_CAVE));
+  enemyInfo.push_back(random.choose(enemyFactory->get(EnemyId::DWARF_CAVE), enemyFactory->get(EnemyId::KOBOLD_CAVE)));
   enemyInfo.push_back(enemyFactory->get(EnemyId::BANDITS));
+  enemyInfo.push_back(enemyFactory->get(EnemyId::TUTORIAL_VILLAGE));
   if (random.chance(0.3))
     enemyInfo.push_back(enemyFactory->get(EnemyId::KRAKEN));
   vector<ExternalEnemy> externalEnemies;
   if (addExternalEnemies)
     externalEnemies = enemyFactory->getExternalEnemies();
-  return tryModel(210, siteName, enemyInfo, true, biome, externalEnemies);
+  return tryModel(230, siteName, enemyInfo, true, biome, externalEnemies);
+}
+
+PModel ModelBuilder::tryTutorialModel(const string& siteName) {
+  vector<EnemyInfo> enemyInfo;
+  BiomeId biome = BiomeId::MOUNTAIN;
+  enemyInfo.push_back(enemyFactory->get(EnemyId::TUTORIAL_VILLAGE));
+  return tryModel(230, siteName, enemyInfo, true, biome, {});
 }
 
 static optional<BiomeId> getBiome(EnemyId enemyId, RandomGen& random) {
@@ -422,8 +393,11 @@ PModel ModelBuilder::tryBuilding(int numTries, function<PModel()> buildFun) {
 }
 
 PModel ModelBuilder::campaignBaseModel(const string& siteName, bool externalEnemies) {
-  auto ret = tryBuilding(20, [=] { return tryCampaignBaseModel(siteName, externalEnemies); });
-  return ret;
+  return tryBuilding(20, [=] { return tryCampaignBaseModel(siteName, externalEnemies); });
+}
+
+PModel ModelBuilder::tutorialModel(const string& siteName) {
+  return tryBuilding(20, [=] { return tryTutorialModel(siteName); });
 }
 
 PModel ModelBuilder::campaignSiteModel(const string& siteName, EnemyId enemyId, VillainType type) {
@@ -432,10 +406,10 @@ PModel ModelBuilder::campaignSiteModel(const string& siteName, EnemyId enemyId, 
 
 void ModelBuilder::measureSiteGen(int numTries) {
   std::cout << "Measuring single map" << std::endl;
-//  measureModelGen(numTries, [this] { trySingleMapModel("pok"); });
-  //measureModelGen(numTries, [this] { tryCampaignBaseModel("pok", false); });
-  //measureModelGen(numTries, [this] { tryCampaignBaseModel("pok"); });
-//  for (EnemyId id : {EnemyId::SOKOBAN})
+  measureModelGen(numTries, [this] { trySingleMapModel("pok"); });
+  std::cout << "Measuring campaign base" << std::endl;
+  measureModelGen(numTries, [this] { tryCampaignBaseModel("pok", false); });
+  //for (EnemyId id : {EnemyId::KNIGHTS})
   for (EnemyId id : ENUM_ALL(EnemyId))
     if (!!getBiome(id, random)) {
       std::cout << "Measuring " << EnumInfo<EnemyId>::getString(id) << std::endl;

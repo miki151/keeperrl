@@ -15,22 +15,23 @@ class ItemFactory;
 class GameEvent;
 class Position;
 class FurnitureEntry;
+class FurnitureDroppedItems;
 class ViewObject;
+class MovementSet;
 
 class Furniture : public OwnedObject<Furniture> {
   public:
-  enum BlockType { BLOCKING, NON_BLOCKING, BLOCKING_ENEMIES };
-
   static const string& getName(FurnitureType, int count = 1);
   static FurnitureLayer getLayer(FurnitureType);
 
-  Furniture(const string& name, const optional<ViewObject>&, FurnitureType, BlockType, TribeId);
+  Furniture(const string& name, const optional<ViewObject>&, FurnitureType, TribeId);
   Furniture(const Furniture&);
   const optional<ViewObject>& getViewObject() const;
+  optional<ViewObject>& getViewObject();
   const string& getName(int count = 1) const;
   FurnitureType getType() const;
   bool isVisibleTo(WConstCreature) const;
-  bool canEnter(const MovementType&) const;
+  const MovementSet& getMovementSet() const;
   void onEnter(WCreature) const;
   bool canDestroy(const MovementType&, const DestroyAction&) const;
   bool canDestroy(const DestroyAction&) const;
@@ -59,12 +60,21 @@ class Furniture : public OwnedObject<Furniture> {
   double getLightEmission() const;
   bool canHide() const;
   bool emitsWarning(WConstCreature) const;
-  void addPlacementMessage(WConstCreature) const;
   WCreature getCreator() const;
   optional<double> getCreatedTime() const;
+  optional<CreatureId> getSummonedElement() const;
+  /**
+   * @brief Calls special functionality to handle dropped items, if any.
+   * @return possibly empty subset of the items that weren't consumned and can be dropped normally.
+   */
+  vector<PItem> dropItems(Position, vector<PItem>) const;
+  bool canBuildBridgeOver() const;
 
   enum ConstructMessage { /*default*/BUILD, FILL_UP, REINFORCE, SET_UP };
 
+  Furniture& setBlocking();
+  Furniture& setBlockingEnemies();
+  Furniture& setMovementSet(const MovementSet&);
   Furniture& setConstructMessage(optional<ConstructMessage>);
   Furniture& setDestroyable(double);
   Furniture& setDestroyable(double, DestroyAction::Type);
@@ -78,6 +88,7 @@ class Furniture : public OwnedObject<Furniture> {
   Furniture& setClickType(FurnitureClickType);
   Furniture& setTickType(FurnitureTickType);
   Furniture& setEntryType(FurnitureEntry);
+  Furniture& setDroppedItems(FurnitureDroppedItems);
   Furniture& setFireInfo(const Fire&);
   Furniture& setIsWall();
   Furniture& setOverrideMovement();
@@ -86,6 +97,8 @@ class Furniture : public OwnedObject<Furniture> {
   Furniture& setCanHide();
   Furniture& setEmitsWarning();
   Furniture& setPlacementMessage(MsgType);
+  Furniture& setSummonedElement(CreatureId);
+  Furniture& setCanBuildBridgeOver();
 
   SERIALIZATION_DECL(Furniture)
 
@@ -97,7 +110,7 @@ class Furniture : public OwnedObject<Furniture> {
   string SERIAL(pluralName);
   FurnitureType SERIAL(type);
   FurnitureLayer SERIAL(layer) = FurnitureLayer::MIDDLE;
-  BlockType SERIAL(blockType);
+  HeapAllocated<MovementSet> SERIAL(movementSet);
   HeapAllocated<TribeId> SERIAL(tribe);
   HeapAllocated<optional<Fire>> SERIAL(fire);
   optional<FurnitureType> SERIAL(burntRemains);
@@ -109,6 +122,7 @@ class Furniture : public OwnedObject<Furniture> {
   optional<FurnitureClickType> SERIAL(clickType);
   optional<FurnitureTickType> SERIAL(tickType);
   HeapAllocated<optional<FurnitureEntry>> SERIAL(entryType);
+  HeapAllocated<optional<FurnitureDroppedItems>> SERIAL(droppedItems);
   int SERIAL(usageTime) = 1;
   bool SERIAL(overrideMovement) = false;
   bool SERIAL(wall) = false;
@@ -118,4 +132,6 @@ class Furniture : public OwnedObject<Furniture> {
   bool SERIAL(warning) = false;
   WCreature SERIAL(creator);
   optional<double> SERIAL(createdTime);
+  optional<CreatureId> SERIAL(summonedElement);
+  bool SERIAL(canBuildBridge) = false;
 };

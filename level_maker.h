@@ -18,7 +18,6 @@
 #include "util.h"
 #include "creature_factory.h"
 #include "item_factory.h"
-#include "square_factory.h"
 #include "furniture_factory.h"
 #include "item_type.h"
 
@@ -34,7 +33,8 @@ class LevelGenException {
 
 enum class SettlementType {
   VILLAGE,
-  VILLAGE2,
+  SMALL_VILLAGE,
+  FORREST_VILLAGE,
   FOREST,
   CASTLE,
   CASTLE2,
@@ -104,7 +104,6 @@ class LevelMaker {
   static PLevelMaker roomLevel(RandomGen&, CreatureFactory roomFactory, CreatureFactory waterFactory,
     CreatureFactory lavaFactory, vector<StairKey> up, vector<StairKey> down, FurnitureFactory furniture);
   static PLevelMaker mazeLevel(RandomGen&, SettlementInfo);
-  static PLevelMaker quickLevel(RandomGen&);
   static PLevelMaker emptyLevel(RandomGen&);
   static PLevelMaker sokobanFromFile(RandomGen&, SettlementInfo, Table<char>);
 };

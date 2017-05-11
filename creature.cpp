@@ -28,7 +28,6 @@
 #include "player_message.h"
 #include "attack.h"
 #include "vision.h"
-#include "square_type.h"
 #include "equipment.h"
 #include "shortest_path.h"
 #include "spell_map.h"
@@ -167,15 +166,13 @@ void Creature::addCreatureVision(WCreatureVision creatureVision) {
 }
 
 void Creature::removeCreatureVision(WCreatureVision vision) {
-  removeElement(creatureVisions, vision);
+  creatureVisions.removeElement(vision);
 }
 
 void Creature::pushController(PController ctrl) {
-  if (ctrl->isPlayer()) {
-    modViewObject().setModifier(ViewObject::Modifier::PLAYER);
+  if (ctrl->isPlayer())
     if (WGame g = getGame())
       g->setPlayer(this);
-  }
   controllerStack.push_back(std::move(ctrl));
 }
 
@@ -186,10 +183,8 @@ void Creature::setController(PController ctrl) {
 
 void Creature::popController() {
   if (auto controller = getController())
-    if (controller->isPlayer()) {
-      modViewObject().removeModifier(ViewObject::Modifier::PLAYER);
+    if (controller->isPlayer())
       getGame()->clearPlayer();
-    }
   if (!controllerStack.empty()) {
     controllerStack.pop_back();
   }
@@ -545,7 +540,7 @@ CreatureAction Creature::equip(WItem item) const {
   string reason;
   if (!canEquipIfEmptySlot(item, &reason))
     return CreatureAction(reason);
-  if (contains(equipment->getSlotItems(item->getEquipmentSlot()), item))
+  if (equipment->getSlotItems(item->getEquipmentSlot()).contains(item))
     return CreatureAction();
   return CreatureAction(this, [=](WCreature self) {
     INFO << getName().the() << " equip " << item->getName();
@@ -557,8 +552,8 @@ CreatureAction Creature::equip(WItem item) const {
     self->equipment->equip(item, slot, self);
     playerMessage("You equip " + item->getTheName(false, self));
     monsterMessage(getName().the() + " equips " + item->getAName());
-/*    if (WGame game = getGame())
-      game->addEvent({EventId::EQUIPED, EventInfo::ItemsHandled{self, {item}}});*/
+    if (WGame game = getGame())
+      game->addEvent({EventId::EQUIPED, EventInfo::ItemsHandled{self, {item}}});
     self->spendTime(1);
   });
 }
@@ -1061,7 +1056,7 @@ bool Creature::takeDamage(const Attack& attack) {
 }
 
 static vector<string> extractNames(const vector<AdjectiveInfo>& adjectives) {
-  return transform2(adjectives, [] (const AdjectiveInfo& e) -> string { return e.name; });
+  return adjectives.transform([] (const AdjectiveInfo& e) -> string { return e.name; });
 }
 
 void Creature::updateViewObject() {
@@ -1288,7 +1283,7 @@ CreatureAction Creature::fire(Vec2 direction) const {
     return CreatureAction("Out of ammunition");
   return CreatureAction(this, [=](WCreature self) {
     PItem ammo = self->equipment->removeItem(NOTNULL(getAmmo()), self);
-    auto weapon = getOnlyElement(self->getEquipment().getSlotItems(EquipmentSlot::RANGED_WEAPON))
+    auto weapon = self->getEquipment().getSlotItems(EquipmentSlot::RANGED_WEAPON).getOnlyElement()
         .dynamicCast<RangedWeapon>();
     CHECK(!!weapon);
     weapon->fire(self, std::move(ammo), direction);
@@ -1336,10 +1331,6 @@ CreatureAction Creature::construct(Vec2 direction, FurnitureType type) const {
         self->spendTime(1);
       });
   return CreatureAction();
-}
-
-bool Creature::canConstruct(const SquareType& type) const {
-  return attributes->getSkills().hasDiscrete(SkillId::CONSTRUCTION);
 }
 
 bool Creature::canConstruct(FurnitureType type) const {
@@ -1416,7 +1407,7 @@ WItem Creature::getWeapon() const {
   if (it.empty())
     return nullptr;
   else
-    return getOnlyElement(it);
+    return it.getOnlyElement();
 }
 
 CreatureAction Creature::applyItem(WItem item) const {
@@ -1543,10 +1534,10 @@ CreatureAction Creature::continueMoving() {
 }
 
 CreatureAction Creature::stayIn(WLevel level, Rectangle area) {
-  if (level != getLevel() || !area.contains(getPosition().getCoord())) {
+  if (level != getLevel() || !getPosition().getCoord().inRectangle(area)) {
     if (level == getLevel())
       for (Position v : getPosition().neighbors8(Random))
-        if (area.contains(v.getCoord()))
+        if (v.getCoord().inRectangle(area))
           if (auto action = move(v))
             return action;
     return moveTowards(Position(area.middle(), getLevel()));

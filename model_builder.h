@@ -19,14 +19,13 @@ class FilePath;
 class ModelBuilder {
   public:
   ModelBuilder(ProgressMeter*, RandomGen&, Options*, SokobanInput*);
-  PModel singleMapModel(const string& worldName, PCreature keeper);
+  PModel singleMapModel(const string& worldName);
   PModel campaignBaseModel(const string& siteName, bool externalEnemies);
   PModel campaignSiteModel(const string& siteName, EnemyId, VillainType);
+  PModel tutorialModel(const string& siteName);
 
   void measureModelGen(int numTries, function<void()> genFun);
   void measureSiteGen(int numTries);
-
-  PModel quickModel();
 
   PModel splashModel(const FilePath& splashPath);
 
@@ -41,10 +40,10 @@ class ModelBuilder {
   private:
   PModel trySingleMapModel(const string& worldName);
   PModel tryCampaignBaseModel(const string& siteName, bool externalEnemies);
+  PModel tryTutorialModel(const string& siteName);
   PModel tryCampaignSiteModel(const string& siteName, EnemyId, VillainType);
   PModel tryModel(int width, const string& levelName, vector<EnemyInfo>,
       bool keeperSpawn, BiomeId, vector<ExternalEnemy>);
-  PModel tryQuickModel(int width);
   SettlementInfo& makeExtraLevel(WModel, EnemyInfo&);
   PModel tryBuilding(int numTries, function<PModel()> buildFun);
   void addMapVillains(vector<EnemyInfo>&, BiomeId);

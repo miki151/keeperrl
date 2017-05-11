@@ -18,7 +18,6 @@
 #include "creature_attributes.h"
 #include "fire.h"
 #include "movement_set.h"
-#include "square_type.h"
 #include "furniture_array.h"
 #include "inventory.h"
 
@@ -270,25 +269,22 @@ void Position::addSound(const Sound& sound1) const {
 }
 
 string Position::getName() const {
-  if (auto furniture = getFurniture(FurnitureLayer::MIDDLE))
-    return furniture->getName();
-  else if (isValid())
-    return getSquare()->getName();
-  else
-    return "";
+  for (auto layer : ENUM_ALL_REVERSE(FurnitureLayer))
+    if (auto furniture = getFurniture(layer))
+      return furniture->getName();
+  return "";
 }
 
 void Position::getViewIndex(ViewIndex& index, WConstCreature viewer) const {
   if (isValid()) {
     getSquare()->getViewIndex(index, viewer);
-    if (!index.hasObject(ViewLayer::FLOOR_BACKGROUND))
-      if (auto& obj = level->getBackgroundObject(coord))
-        index.insert(*obj);
-    if (isValid() && isUnavailable())
+    if (isUnavailable())
       index.setHighlight(HighlightType::UNAVAILABLE);
     for (auto furniture : getFurniture())
       if (furniture->isVisibleTo(viewer) && furniture->getViewObject())
         index.insert(*furniture->getViewObject());
+    if (index.noObjects())
+      index.insert(ViewObject(ViewId::EMPTY, ViewLayer::FLOOR_BACKGROUND));
   }
 }
 
@@ -359,29 +355,49 @@ bool Position::canEnterEmpty(WConstCreature c) const {
   return canEnterEmpty(c->getMovementType());
 } 
 
-bool Position::canEnterEmpty(const MovementType& t) const {
-  auto furniture = getFurniture(FurnitureLayer::MIDDLE);
-  return !isUnavailable() && (!furniture || furniture->canEnter(t)) &&
-      (canEnterSquare(t) || (furniture && furniture->overridesMovement() && furniture->canEnter(t)));
-}
-
-bool Position::canEnterSquare(const MovementType& t) const {
-  return getSquare()->getMovementSet().canEnter(t, level->covered[coord], getSquare()->getForbiddenTribe());
+bool Position::canEnterEmpty(const MovementType& t, optional<FurnitureLayer> ignore) const {
+  if (isUnavailable())
+    return false;
+  auto square = getSquare();
+  bool result = true;
+  for (auto furniture : getFurniture()) {
+    if (ignore == furniture->getLayer())
+      continue;
+    bool canEnter =
+        furniture->getMovementSet().canEnter(t, level->covered[coord], square->isOnFire(), square->getForbiddenTribe());
+    if (furniture->overridesMovement())
+      return canEnter;
+    else
+      result &= canEnter;
+  }
+  return result;
 }
 
 void Position::onEnter(WCreature c) {
-  for (auto f : getFurniture())
-    f->onEnter(c);
+  for (auto layer : ENUM_ALL_REVERSE(FurnitureLayer))
+    if (auto f = getFurniture(layer)) {
+      f->onEnter(c);
+      if (f->overridesMovement())
+        break;
+    }
 }
 
 void Position::dropItem(PItem item) {
-  if (isValid())
-    modSquare()->dropItem(*this, std::move(item));
+  dropItems(makeVec(std::move(item)));
 }
 
 void Position::dropItems(vector<PItem> v) {
-  if (isValid())
+  if (isValid()) {
+    for (auto layer : ENUM_ALL_REVERSE(FurnitureLayer))
+      if (auto f = getFurniture(layer)) {
+        v = f->dropItems(*this, std::move(v));
+        if (v.empty())
+          return;
+        if (f->overridesMovement())
+          break;
+      }
     modSquare()->dropItems(*this, std::move(v));
+  }
 }
 
 void Position::removeFurniture(WConstFurniture f) const {
@@ -462,13 +478,13 @@ bool Position::isBurning() const {
 void Position::updateMovement() {
   if (isValid()) {
     if (isBurning()) {
-      if (!getSquare()->getMovementSet().isOnFire()) {
-        modSquare()->getMovementSet().setOnFire(true);
+      if (!getSquare()->isOnFire()) {
+        modSquare()->setOnFire(true);
         updateConnectivity();
       }
     } else
-      if (getSquare()->getMovementSet().isOnFire()) {
-        modSquare()->getMovementSet().setOnFire(false);
+      if (getSquare()->isOnFire()) {
+        modSquare()->setOnFire(false);
         updateConnectivity();
       }
   }
@@ -501,22 +517,12 @@ void Position::setNeedsRenderUpdate(bool s) const {
     level->setNeedsRenderUpdate(getCoord(), s);
 }
 
-ViewObject& Position::modViewObject() {
-  CHECK(isValid());
-  modSquare()->setDirty(*this);
-  return modSquare()->modViewObject();
-}
-
 const ViewObject& Position::getViewObject() const {
-  if (auto furniture = getFurniture(FurnitureLayer::MIDDLE))
-    if (auto& obj = furniture->getViewObject())
-      return *obj;
-  if (isValid())
-    return getSquare()->getViewObject();
-  else {
-    static ViewObject v(ViewId::EMPTY, ViewLayer::FLOOR, "");
-    return v;
-  }
+  for (auto layer : ENUM_ALL_REVERSE(FurnitureLayer))
+    if (auto furniture = getFurniture(layer))
+      if (auto& obj = furniture->getViewObject())
+        return *obj;
+  return ViewObject::empty();
 }
 
 void Position::forbidMovementForTribe(TribeId t) {
@@ -542,7 +548,7 @@ optional<TribeId> Position::getForbiddenTribe() const {
 
 vector<Position> Position::getVisibleTiles(VisionId vision) {
   if (isValid())
-    return transform2(getLevel()->getVisibleTiles(coord, vision), [this] (Vec2 v) { return Position(v, getLevel()); });
+    return getLevel()->getVisibleTiles(coord, vision).transform([this] (Vec2 v) { return Position(v, getLevel()); });
   else
     return {};
 }
@@ -612,21 +618,18 @@ void Position::updateSupport() const {
 }
 
 bool Position::canNavigate(const MovementType& type) const {
-  MovementType typeForced(type);
-  typeForced.setForced();
-  WCreature creature = getCreature();
-  auto furniture = getFurniture(FurnitureLayer::MIDDLE);
-  return canEnterEmpty(type) || 
-    // for destroying doors, etc, but not entering forbidden zone
-    (furniture && furniture->canDestroy(type, DestroyAction::Type::BASH) && !canEnterEmpty(typeForced));
+  optional<FurnitureLayer> ignore;
+  if (auto furniture = getFurniture(FurnitureLayer::MIDDLE))
+    if (furniture->canDestroy(type, DestroyAction::Type::BASH))
+      ignore = FurnitureLayer::MIDDLE;
+  return canEnterEmpty(type, ignore);
 }
 
 bool Position::canSeeThru(VisionId id) const {
-  auto furniture = getFurniture(FurnitureLayer::MIDDLE);
-  if (isValid())
-    return getSquare()->canSeeThru(id) && (!furniture || furniture->canSeeThru(id));
+  if (auto furniture = getFurniture(FurnitureLayer::MIDDLE))
+    return furniture->canSeeThru(id);
   else
-    return false;
+    return true;
 }
 
 bool Position::isVisibleBy(WConstCreature c) {

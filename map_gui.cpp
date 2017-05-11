@@ -141,18 +141,18 @@ optional<Vec2> MapGui::getHighlightedTile(Renderer& renderer) {
 Color MapGui::getHighlightColor(const ViewIndex& index, HighlightType type) {
   double amount = index.getHighlight(type);
   switch (type) {
-    case HighlightType::RECT_DESELECTION: return transparency(colors[ColorId::RED], 90);
-    case HighlightType::DIG: return transparency(colors[ColorId::YELLOW], 120);
-    case HighlightType::CUT_TREE: return transparency(colors[ColorId::YELLOW], 170);
-    case HighlightType::FETCH_ITEMS: return transparency(colors[ColorId::YELLOW], 50);
-    case HighlightType::PERMANENT_FETCH_ITEMS: return transparency(colors[ColorId::ORANGE], 50);
-    case HighlightType::STORAGE_EQUIPMENT: return transparency(colors[ColorId::GREEN], buttonViewId ? 120 : 50);
-    case HighlightType::STORAGE_RESOURCES: return transparency(colors[ColorId::BLUE], buttonViewId ? 120 : 50);
-    case HighlightType::RECT_SELECTION: return transparency(colors[ColorId::YELLOW], 90);
-    case HighlightType::FOG: return transparency(colors[ColorId::WHITE], 120 * amount);
+    case HighlightType::RECT_DESELECTION: return Color::RED.transparency(90);
+    case HighlightType::DIG: return Color::YELLOW.transparency(120);
+    case HighlightType::FETCH_ITEMS: //return Color(Color::YELLOW).transparency(50);
+    case HighlightType::CUT_TREE: return Color::YELLOW.transparency(100);
+    case HighlightType::PERMANENT_FETCH_ITEMS: return Color::ORANGE.transparency(50);
+    case HighlightType::STORAGE_EQUIPMENT: return Color::BLUE.transparency(buttonViewId ? 120 : 50);
+    case HighlightType::STORAGE_RESOURCES: return Color::GREEN.transparency(buttonViewId ? 120 : 50);
+    case HighlightType::RECT_SELECTION: return Color::YELLOW.transparency(90);
+    case HighlightType::FOG: return Color::WHITE.transparency(120 * amount);
     case HighlightType::POISON_GAS: return Color(0, min<Uint8>(255., amount * 500), 0, (Uint8)(amount * 140));
-    case HighlightType::MEMORY: return transparency(colors[ColorId::BLACK], 80);
-    case HighlightType::NIGHT: return transparency(colors[ColorId::NIGHT_BLUE], amount * 160);
+    case HighlightType::MEMORY: return Color::BLACK.transparency(80);
+    case HighlightType::NIGHT: return Color::NIGHT_BLUE.transparency(amount * 160);
     case HighlightType::EFFICIENCY: return Color(255, 0, 0, 120 * (1 - amount));
     case HighlightType::PRIORITY_TASK: return Color(0, 255, 0, 120);
     case HighlightType::CREATURE_DROP:
@@ -445,21 +445,19 @@ Vec2 MapGui::getMovementOffset(const ViewObject& object, Vec2 size, double time,
 
 void MapGui::drawCreatureHighlights(Renderer& renderer, const ViewObject& object, Vec2 pos, Vec2 sz,
     milliseconds curTime) {
-  if (object.hasModifier(ViewObject::Modifier::PLAYER))
-    drawCreatureHighlight(renderer, pos, sz, colors[ColorId::ALMOST_WHITE]);
+  auto getHighlight = [](Color id) { return Color(id).transparency(200); };
   if (object.hasModifier(ViewObject::Modifier::HOSTILE) && enemies)
-    drawCreatureHighlight(renderer, pos, sz, colors[ColorId::PURPLE]);
+    drawCreatureHighlight(renderer, pos, sz, getHighlight(Color::PURPLE));
   if (object.hasModifier(ViewObject::Modifier::DRAW_MORALE) && morale)
     if (auto morale = object.getAttribute(ViewObject::Attribute::MORALE))
       drawCreatureHighlight(renderer, pos, sz, getMoraleColor(*morale));
-  if (object.hasModifier(ViewObject::Modifier::TEAM_LEADER_HIGHLIGHT) && (curTime.count() / 1000) % 2) {
-    drawCreatureHighlight(renderer, pos, sz, colors[ColorId::YELLOW]);
-  } else
+  if (object.hasModifier(ViewObject::Modifier::PLAYER))
+    drawCreatureHighlight(renderer, pos, sz, getHighlight(Color::WHITE));
   if (object.hasModifier(ViewObject::Modifier::TEAM_HIGHLIGHT))
-    drawCreatureHighlight(renderer, pos, sz, colors[ColorId::YELLOW]);
+    drawCreatureHighlight(renderer, pos, sz, getHighlight(Color::YELLOW));
   if (auto id = object.getCreatureId())
     if (isCreatureHighlighted(*id))
-      drawCreatureHighlight(renderer, pos, sz, colors[ColorId::YELLOW]);
+      drawCreatureHighlight(renderer, pos, sz, getHighlight(Color::YELLOW));
 }
 
 bool MapGui::isCreatureHighlighted(UniqueEntity<Creature>::Id creature) {
@@ -481,14 +479,14 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
   const Tile& tile = Tile::getTile(object.id(), spriteMode);
   Color color = Renderer::getBleedingColor(object);
   if (object.hasModifier(ViewObject::Modifier::INVISIBLE) || object.hasModifier(ViewObject::Modifier::HIDDEN))
-    color = transparency(color, 70);
+    color = color.transparency(70);
   else
     if (tile.translucent > 0)
-      color = transparency(color, 255 * (1 - tile.translucent));
+      color = color.transparency(255 * (1 - tile.translucent));
     else if (object.hasModifier(ViewObject::Modifier::ILLUSION))
-      color = transparency(color, 150);
+      color = color.transparency(150);
   if (object.hasModifier(ViewObject::Modifier::PLANNED))
-    color = transparency(color, 100);
+    color = color.transparency(100);
   if (auto waterDepth = object.getAttribute(ViewObject::Attribute::WATER_DEPTH))
     if (*waterDepth > 0) {
       Uint8 val = max(0.0, 255.0 - min(2.0f, *waterDepth) * 60);
@@ -522,9 +520,9 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
           tilePos.getHash() % 2, tilePos.getHash() % 4 > 1);
     else
       renderer.drawTile(pos + move, tile.getSpriteCoord(dirs), size, color);
-    if (object.layer() == ViewLayer::FLOOR && highlightMap[HighlightType::CUT_TREE] > 0)
+    /*if (object.layer() == ViewLayer::FLOOR && highlightMap[HighlightType::CUT_TREE] > 0)
       if (auto coord = tile.getHighlightCoord())
-        renderer.drawTile(pos + move, *coord, size, color);
+        renderer.drawTile(pos + move, *coord, size, color);*/
     if (tile.hasCorners()) {
       for (auto coord : tile.getCornerCoords(dirs))
         renderer.drawTile(pos + move, coord, size, color);
@@ -716,6 +714,7 @@ bool MapGui::isRenderedHighlightLow(const ViewIndex& index, HighlightType type) 
     case HighlightType::STORAGE_EQUIPMENT:
     case HighlightType::STORAGE_RESOURCES:
     case HighlightType::CLICKED_FURNITURE:
+    case HighlightType::CUT_TREE:
       return true;
     default: return false;
   }
@@ -736,10 +735,10 @@ void MapGui::renderHighlight(Renderer& renderer, Vec2 pos, Vec2 size, const View
     case HighlightType::NIGHT:
       renderer.addQuad(Rectangle(pos, pos + size), color);
       break;
-    case HighlightType::CUT_TREE:
+/*    case HighlightType::CUT_TREE:
       if (spriteMode && index.hasObject(ViewLayer::FLOOR))
         break;
-      FALLTHROUGH;
+      FALLTHROUGH;*/
     default:
       renderTexturedHighlight(renderer, pos, size, color);
       break;
@@ -766,7 +765,7 @@ void MapGui::renderHighlights(Renderer& renderer, Vec2 size, milliseconds curren
 }
 
 void MapGui::renderAnimations(Renderer& renderer, milliseconds currentTimeReal) {
-  animations = filter(std::move(animations), [=](const AnimationInfo& elem)
+  animations = std::move(animations).filter([=](const AnimationInfo& elem)
       { return !elem.animation->isDone(currentTimeReal);});
   for (auto& elem : animations)
     elem.animation->render(
@@ -807,10 +806,10 @@ void MapGui::renderMapObjects(Renderer& renderer, Vec2 size, HighlightedInfo& hi
     milliseconds currentTimeReal) {
   Rectangle allTiles = layout->getAllTiles(getBounds(), levelBounds, getScreenPos());
   Vec2 topLeftCorner = projectOnScreen(allTiles.topLeft(), currentTimeReal);
-  renderer.drawFilledRectangle(getBounds(), colors[ColorId::BLACK]);
+  renderer.drawFilledRectangle(getBounds(), Color::BLACK);
   renderer.drawFilledRectangle(Rectangle(
         projectOnScreen(levelBounds.topLeft(), currentTimeReal),
-        projectOnScreen(levelBounds.bottomRight(), currentTimeReal)), colors[ColorId::BLACK]);
+        projectOnScreen(levelBounds.bottomRight(), currentTimeReal)), Color::BLACK);
   fogOfWar.clear();
   for (ViewLayer layer : layout->getLayers()) {
     for (Vec2 wpos : allTiles) {
@@ -818,7 +817,7 @@ void MapGui::renderMapObjects(Renderer& renderer, Vec2 size, HighlightedInfo& hi
       if (!objects[wpos] || objects[wpos]->noObjects()) {
         if (layer == layout->getLayers().back()) {
           if (wpos.inRectangle(levelBounds))
-            renderer.addQuad(Rectangle(pos, pos + size), colors[ColorId::BLACK]);
+            renderer.addQuad(Rectangle(pos, pos + size), Color::BLACK);
         }
         fogOfWar.setValue(wpos, true);
         continue;
@@ -849,7 +848,7 @@ void MapGui::renderMapObjects(Renderer& renderer, Vec2 size, HighlightedInfo& hi
     }
     if (layer == ViewLayer::FLOOR || !spriteMode) {
       if (!buttonViewId && highlightedInfo.creaturePos)
-        drawCreatureHighlight(renderer, *highlightedInfo.creaturePos, size, colors[ColorId::ALMOST_WHITE]);
+        drawCreatureHighlight(renderer, *highlightedInfo.creaturePos, size, Color::ALMOST_WHITE);
       if (highlightedInfo.tilePos && (!getHighlightedFurniture() || !!buttonViewId))
         drawSquareHighlight(renderer, topLeftCorner + (*highlightedInfo.tilePos - allTiles.topLeft()).mult(size),
             size);
@@ -868,15 +867,14 @@ void MapGui::drawCreatureHighlight(Renderer& renderer, Vec2 pos, Vec2 size, Colo
   if (spriteMode)
     renderer.drawViewObject(pos + Vec2(0, size.y / 5), ViewId::CREATURE_HIGHLIGHT, true, size, color);
   else
-    renderer.drawFilledRectangle(Rectangle(pos, pos + size), colors[ColorId::TRANSPARENT], color);
+    renderer.drawFilledRectangle(Rectangle(pos, pos + size), Color::TRANSPARENT, color);
 }
 
 void MapGui::drawSquareHighlight(Renderer& renderer, Vec2 pos, Vec2 size) {
   if (spriteMode)
-    renderer.drawViewObject(pos, ViewId::SQUARE_HIGHLIGHT, true, size, colors[ColorId::ALMOST_WHITE]);
+    renderer.drawViewObject(pos, ViewId::SQUARE_HIGHLIGHT, true, size, Color::ALMOST_WHITE);
   else
-    renderer.drawFilledRectangle(Rectangle(pos, pos + size), colors[ColorId::TRANSPARENT],
-        colors[ColorId::LIGHT_GRAY]);
+    renderer.drawFilledRectangle(Rectangle(pos, pos + size), Color::TRANSPARENT, Color::LIGHT_GRAY);
 }
 
 void MapGui::considerRedrawingSquareHighlight(Renderer& renderer, milliseconds currentTimeReal, Vec2 pos, Vec2 size) {
@@ -933,13 +931,13 @@ void MapGui::render(Renderer& renderer) {
   if (highlightedInfo.tilePos)
     considerRedrawingSquareHighlight(renderer, currentTimeReal, *highlightedInfo.tilePos, size);
   if (!hint.empty())
-    drawHint(renderer, colors[ColorId::WHITE], hint);
+    drawHint(renderer, Color::WHITE, hint);
   else {
     vector<string> legend;
-    Color col = colors[ColorId::WHITE];
+    Color col = Color::WHITE;
     if (highlightedInfo.object) {
       if (highlightedInfo.isEnemy)
-        col = colors[ColorId::RED];
+        col = Color::RED;
       legend = highlightedInfo.object->getLegend();
     }
     if (auto pos = highlightedInfo.tilePos)

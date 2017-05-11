@@ -49,7 +49,6 @@ enum class FurnitureType;
 enum class FurnitureLayer;
 enum class ItemAction;
 enum class WorshipType;
-enum class SquareInteraction;
 
 enum class FurnitureUsageType;
 enum class FurnitureClickType;

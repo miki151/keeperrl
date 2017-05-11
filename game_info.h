@@ -111,7 +111,8 @@ class PlayerInfo {
     optional<char> HASH(keybinding);
     string HASH(description);
     bool HASH(active);
-    HASH_ALL(name, keybinding, description, active);
+    bool HASH(tutorialHighlight) = false;
+    HASH_ALL(name, keybinding, description, active, tutorialHighlight);
   };
   vector<CommandInfo> HASH(commands);
   struct MinionTaskInfo {

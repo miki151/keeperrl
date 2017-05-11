@@ -15,8 +15,10 @@
 #include "level.h"
 #include "furniture_usage.h"
 #include "furniture_entry.h"
+#include "furniture_dropped_items.h"
 #include "furniture_click.h"
 #include "furniture_tick.h"
+#include "movement_set.h"
 
 static string makePlural(const string& s) {
   if (s.empty())
@@ -32,8 +34,10 @@ static string makePlural(const string& s) {
   return s + "s";
 }
 
-Furniture::Furniture(const string& n, const optional<ViewObject>& o, FurnitureType t, BlockType b, TribeId id)
-  : viewObject(o), name(n), pluralName(makePlural(name)), type(t), blockType(b), tribe(id) {}
+Furniture::Furniture(const string& n, const optional<ViewObject>& o, FurnitureType t, TribeId id)
+    : viewObject(o), name(n), pluralName(makePlural(name)), type(t), tribe(id) {
+  movementSet->addTrait(MovementTrait::WALK);
+}
 
 Furniture::Furniture(const Furniture&) = default;
 
@@ -44,14 +48,19 @@ Furniture::~Furniture() {}
 template<typename Archive>
 void Furniture::serialize(Archive& ar, const unsigned) {
   ar(SUBCLASS(OwnedObject<Furniture>), viewObject);
-  ar(name, pluralName, type, blockType, tribe, fire, burntRemains, destroyedRemains, destroyActions, itemDrop);
+  ar(name, pluralName, type, movementSet, tribe, fire, burntRemains, destroyedRemains, destroyActions, itemDrop);
   ar(blockVision, usageType, clickType, tickType, usageTime, overrideMovement, wall, creator, createdTime);
-  ar(constructMessage, layer, entryType, lightEmission, canHideHere, warning);
+  ar(constructMessage, layer, entryType, lightEmission, canHideHere, warning, summonedElement, droppedItems);
+  ar(canBuildBridge);
 }
 
 SERIALIZABLE(Furniture);
 
 const optional<ViewObject>& Furniture::getViewObject() const {
+  return *viewObject;
+}
+
+optional<ViewObject>& Furniture::getViewObject() {
   return *viewObject;
 }
 
@@ -90,8 +99,8 @@ bool Furniture::isVisibleTo(WConstCreature c) const {
     return true;
 }
 
-bool Furniture::canEnter(const MovementType& movement) const {
-  return blockType == NON_BLOCKING || (blockType == BLOCKING_ENEMIES && movement.isCompatible(getTribe()));
+const MovementSet& Furniture::getMovementSet() const {
+  return *movementSet;
 }
 
 void Furniture::onEnter(WCreature c) const {
@@ -255,6 +264,36 @@ optional<double> Furniture::getCreatedTime() const {
   return createdTime;
 }
 
+optional<CreatureId> Furniture::getSummonedElement() const {
+  return summonedElement;
+}
+
+vector<PItem> Furniture::dropItems(Position pos, vector<PItem> v) const {
+  if (*droppedItems) {
+    return (*droppedItems)->handle(pos, this, std::move(v));
+  } else
+    return v;
+}
+
+bool Furniture::canBuildBridgeOver() const {
+  return canBuildBridge;
+}
+
+Furniture& Furniture::setBlocking() {
+  movementSet->clear();
+  return *this;
+}
+
+Furniture& Furniture::setBlockingEnemies() {
+  movementSet->setOnlyAllowed(*tribe);
+  return *this;
+}
+
+Furniture& Furniture::setMovementSet(const MovementSet& s) {
+  movementSet = s;
+  return *this;
+}
+
 Furniture& Furniture::setConstructMessage(optional<ConstructMessage> msg) {
   constructMessage = msg;
   return *this;
@@ -350,6 +389,11 @@ Furniture& Furniture::setEntryType(FurnitureEntry type) {
   return *this;
 }
 
+Furniture& Furniture::setDroppedItems(FurnitureDroppedItems t) {
+  droppedItems = t;
+  return *this;
+}
+
 Furniture& Furniture::setFireInfo(const Fire& f) {
   *fire = f;
   return *this;
@@ -382,6 +426,16 @@ Furniture& Furniture::setCanHide() {
 
 Furniture& Furniture::setEmitsWarning() {
   warning = true;
+  return *this;
+}
+
+Furniture& Furniture::setSummonedElement(CreatureId id) {
+  summonedElement = id;
+  return *this;
+}
+
+Furniture& Furniture::setCanBuildBridgeOver() {
+  canBuildBridge = true;
   return *this;
 }
 

@@ -58,7 +58,7 @@ WCollective VillageControl::getEnemyCollective() const {
 
 bool VillageControl::isEnemy(WConstCreature c) {
   if (WCollective col = getEnemyCollective())
-    return contains(col->getCreatures(), c);
+    return col->getCreatures().contains(c);
   else
     return false;
 }
@@ -80,7 +80,7 @@ void VillageControl::onEvent(const GameEvent& event) {
       auto info = event.get<EventInfo::ItemsHandled>();
       if (getCollective()->getTerritory().contains(info.creature->getPosition()))
         if (isEnemy(info.creature) && villain)
-          if (contains(villain->triggers, AttackTriggerId::STOLEN_ITEMS)) {
+          if (villain->triggers.contains(AttackTriggerId::STOLEN_ITEMS)) {
             bool wasTheft = false;
             for (const WItem it : info.items)
               if (myItems.contains(it)) {

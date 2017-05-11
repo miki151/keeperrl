@@ -122,7 +122,7 @@ void FurnitureUsage::handle(FurnitureUsageType type, Position pos, WConstFurnitu
       break;
     case FurnitureUsageType::FOUNTAIN: {
       c->playerMessage("You drink from the fountain.");
-      PItem potion = getOnlyElement(ItemFactory::potions().random());
+      PItem potion = ItemFactory::potions().random().getOnlyElement();
       potion->apply(c);
       break;
     }

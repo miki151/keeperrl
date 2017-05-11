@@ -171,7 +171,7 @@ ImmigrantInfo& ImmigrantInfo::setHiddenInHelp() {
 vector<WCreature> RecruitmentInfo::getAllRecruits(WGame game, CreatureId id) const {
   vector<WCreature> ret;
   if (WCollective col = findEnemy(game))
-    ret = filter(col->getCreatures(), [&](WConstCreature c) { return c->getAttributes().getCreatureId() == id; });
+    ret = col->getCreatures().filter([&](WConstCreature c) { return c->getAttributes().getCreatureId() == id; });
   return ret;
 }
 

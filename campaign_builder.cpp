@@ -264,7 +264,7 @@ static Table<Campaign::SiteInfo> getTerrain(RandomGen& random, Vec2 size, int nu
   vector<Vec2> freePos = ret.getBounds().getAllSquares();
   for (int i : Range(numBlocked)) {
     Vec2 pos = random.choose(freePos);
-    removeElement(freePos, pos);
+    freePos.removeElement(pos);
     ret[pos].setBlocked();
   }
   return ret;
@@ -369,7 +369,7 @@ using Dweller = Campaign::SiteInfo::Dweller;
 template <typename T>
 vector<Dweller> shuffle(RandomGen& random, vector<T> v) {
   random.shuffle(v.begin(), v.end());
-  return transform2(v, [](const T& t) { return Dweller(t); });
+  return v.transform([](const T& t) { return Dweller(t); });
 }
 
 void CampaignBuilder::placeVillains(Campaign& campaign, const VillainCounts& counts,
@@ -382,7 +382,7 @@ void CampaignBuilder::placeVillains(Campaign& campaign, const VillainCounts& cou
   placeVillains(campaign, shuffle(random, getAllies()), getVillainPlacement(campaign, VillainType::ALLY),
       counts.numAllies);
   if (retired) {
-    placeVillains(campaign, transform2(retired->getActiveGames(),
+    placeVillains(campaign, retired->getActiveGames().transform(
         [](const RetiredGames::RetiredGame& game) -> Dweller {
           return Campaign::RetiredInfo{game.gameInfo, game.fileInfo};
         }), getVillainPlacement(campaign, VillainType::MAIN), numRetired);
@@ -440,7 +440,7 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(function<optional<Retir
               getSecondaryOptions(type),
               getSiteChoiceTitle(type),
               getIntroText(),
-              transform2(getAvailableTypes(), [](CampaignType t) -> View::CampaignOptions::CampaignTypeInfo {
+              getAvailableTypes().transform([](CampaignType t) -> View::CampaignOptions::CampaignTypeInfo {
                   return {t, getCampaignTypeDescription(t)};}),
               getMenuWarning(type)
               }, options, menuState);

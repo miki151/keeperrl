@@ -18,8 +18,8 @@
 #include "field_of_view.h"
 #include "square.h"
 #include "square_array.h"
-#include "square_type.h"
 #include "level.h"
+#include "position.h"
 
 template <class Archive> 
 void FieldOfView::serialize(Archive& ar, const unsigned int) {

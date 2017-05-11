@@ -16,6 +16,7 @@
 #pragma once
 
 #include "stdafx.h"
+#include "my_containers.h"
 #include "debug.h"
 #include "enums.h"
 #include "hashing.h"
@@ -105,7 +106,6 @@ string toLower(const string& s);
 bool endsWith(const string&, const string& suffix);
 
 vector<string> split(const string& s, const set<char>& delim);
-vector<string> removeEmpty(const vector<string>&);
 string combineWithOr(const vector<string>&);
 
 
@@ -152,7 +152,6 @@ class Vec2 {
   static Vec2 getCenterOfWeight(vector<Vec2>);
 
   vector<Vec2> box(int radius, bool shuffle = false);
-  vector<Vec2> circle(double radius, bool shuffle = false);
   static vector<Vec2> directions8();
   vector<Vec2> neighbors8() const;
   static vector<Vec2> directions4();
@@ -223,12 +222,13 @@ class Rectangle {
   template<typename T>
   friend class Table;
   Rectangle(int width, int height);
-  Rectangle(Vec2 dim);
+  explicit Rectangle(Vec2 dim);
   Rectangle(int px, int py, int kx, int ky);
   Rectangle(Vec2 p, Vec2 k);
   Rectangle(Range xRange, Range yRange);
   static Rectangle boundingBox(const vector<Vec2>& v);
   static Rectangle centered(Vec2 center, int radius);
+  static Rectangle centered(int radius);
 
   int left() const;
   int top() const;
@@ -312,7 +312,7 @@ template<> \
 class EnumInfo<Name> { \
   public:\
   static string getString(Name e) {\
-    static vector<string> names = removeEmpty(split(#__VA_ARGS__, {' ', ','}));\
+    static vector<string> names = split(#__VA_ARGS__, {' ', ','}).filter([](const string& s){ return !s.empty(); });\
     return names[int(e)];\
   }\
   enum Tmp { __VA_ARGS__, size};\
@@ -333,9 +333,13 @@ class EnumInfo<Name> { \
 template <class T>
 class EnumAll {
   public:
+  EnumAll() : b(0, 1), e(EnumInfo<T>::size, 1) {}
+  struct Reverse {};
+  EnumAll(Reverse) : b(EnumInfo<T>::size - 1, -1), e(-1, -1) {}
+
   class Iter {
     public:
-    Iter(int num) : ind(num) {
+    Iter(int num, int d) : ind(num), dir(d) {
     }
 
     T operator* () const {
@@ -347,24 +351,30 @@ class EnumAll {
     }
 
     const Iter& operator++ () {
-      ++ind;
+      ind += dir;
       return *this;
     }
 
     private:
     int ind;
+    int dir;
   };
 
   Iter begin() {
-    return Iter(0);
+    return b;
   }
 
   Iter end() {
-    return Iter(EnumInfo<T>::size);
+    return e;
   }
+
+  private:
+  Iter b;
+  Iter e;
 };
 
 #define ENUM_ALL(X) EnumAll<X>()
+#define ENUM_ALL_REVERSE(X) EnumAll<X>(EnumAll<X>::Reverse{})
 
 template<class T, class U>
 class EnumMap {
@@ -605,10 +615,16 @@ class Table {
   Table(int w, int h) : Table(0, 0, w, h) {
   }
 
+  Table(Vec2 size) : Table(size.x, size.y) {
+  }
+
   Table(int x, int y, int width, int height, const T& value) : Table(Rectangle(x, y, x + width, y + height), value) {
   }
 
   Table(int width, int height, const T& value) : Table(0, 0, width, height, value) {
+  }
+
+  Table(Vec2 size, const T& value) : Table(size.x, size.y, value) {
   }
 
   const Rectangle& getBounds() const {
@@ -813,15 +829,6 @@ string transform2(const string& u, Fun fun) {
   return ret;
 }
 
-template <typename Container, typename Fun>
-auto transform2(const Container& u, Fun fun) -> vector<decltype(fun(*u.begin()))> {
-  vector<decltype(fun(*u.begin()))> ret;
-  ret.reserve(u.size());
-  for (const auto& elem : u)
-    ret.push_back(fun(elem));
-  return ret;
-}
-
 template <typename U, typename Fun>
 auto transform2(const optional<U>& u, Fun fun) -> optional<decltype(fun(*u))> {
   if (u)
@@ -838,30 +845,6 @@ optional<T> ifTrue(bool cond, const T& t) {
     return none;
 }
 
-template <typename T>
-vector<T> reverse2(vector<T> v) {
-  reverse(v.begin(), v.end());
-  return v;
-}
-
-template <typename T, typename Predicate>
-vector<T> filter(const vector<T>& v, Predicate predicate) {
-  vector<T> ret;
-  for (const T& t : v)
-    if (predicate(t))
-      ret.push_back(t);
-  return ret;
-}
-
-template <typename T, typename Predicate>
-vector<T> filter(vector<T>&& v, Predicate predicate) {
-  vector<T> ret;
-  for (T& t : v)
-    if (predicate(t))
-      ret.push_back(std::move(t));
-  return ret;
-}
-
 template <typename Container, typename Elem>
 vector<Elem> asVector(const Container& c) {
   vector<Elem> ret;
@@ -870,12 +853,6 @@ vector<Elem> asVector(const Container& c) {
   return ret;
 }
 
-template <typename T, typename V>
-bool contains(const T& v, const V& elem) {
-  return std::find(v.begin(), v.end(), elem) != v.end();
-}
-
-template<>
 bool contains(const string& s, const string& pattern);
 
 template <typename T, typename V>
@@ -948,13 +925,13 @@ class OnExit {
 };
 
 template <typename T, typename V>
-bool contains(const vector<T>& v, const optional<V>& elem) {
-  return elem && contains(v, *elem);
+bool contains(const initializer_list<T>& v, const optional<V>& elem) {
+  return std::find(v.begin(), v.end(), elem) != v.end();
 }
 
 template <typename T, typename V>
-bool contains(const initializer_list<T>& v, const optional<V>& elem) {
-  return contains(vector<T>(v), elem);
+bool contains(const deque<T>& v, const V& elem) {
+  return std::find(v.begin(), v.end(), elem) != v.end();
 }
 
 template <class T>
@@ -1064,18 +1041,6 @@ string getPlural(const string& singular, const string& plural, int num);
 string getPlural(const string&, int num);
 string getPluralText(const string&, int num);
 
-template<class T>
-string combine(const vector<T*>& v) {
-  return combine(
-      transform2(v, [](const T* e) -> string { return e->getName(); }));
-}
-
-template<class T>
-string combine(const vector<T>& v) {
-  return combine(
-      transform2(v, [](const T& e) -> string { return e.name; }));
-}
-
 template<class T, class U>
 vector<T> asVector(const U& u) {
   return vector<T>(u.begin(), u.end());
@@ -1153,6 +1118,10 @@ class EnumSet {
 
   bool contains(T elem) const {
     return elems.test(size_t(elem));
+  }
+
+  bool isEmpty() const {
+    return elems.none();
   }
 
   void insert(T elem) {

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "stdafx.h"
+#include "my_containers.h"
 
 class FilePath;
 

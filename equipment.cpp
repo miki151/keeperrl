@@ -46,7 +46,7 @@ const vector<WItem>& Equipment::getAllEquipped() const {
 }
 
 bool Equipment::isEquipped(const WItem item) const {
-  return item->canEquip() && contains(items[item->getEquipmentSlot()], item);
+  return item->canEquip() && items[item->getEquipmentSlot()].contains(item);
 }
 
 int Equipment::getMaxItems(EquipmentSlot slot) const {
@@ -71,8 +71,8 @@ void Equipment::equip(WItem item, EquipmentSlot slot, WCreature c) {
 }
 
 void Equipment::unequip(WItem item, WCreature c) {
-  removeElement(items[item->getEquipmentSlot()], item);
-  removeElement(equipped, item);
+  items[item->getEquipmentSlot()].removeElement(item);
+  equipped.removeElement(item);
   item->onUnequip(c);
 }
 

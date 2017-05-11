@@ -19,7 +19,7 @@ void Territory::insert(Position pos) {
 }
 
 void Territory::remove(Position pos) {
-  removeElement(allSquaresVec, pos);
+  allSquaresVec.removeElement(pos);
   allSquares.erase(pos);
   clearCache();
 }
@@ -56,7 +56,7 @@ vector<Position> Territory::calculateExtended(int minRadius, int maxRadius) cons
       }
   }
   if (minRadius > 0)
-    return filter(extendedQueue, [&] (const Position& v) { return extendedTiles.at(v) >= minRadius; });
+    return extendedQueue.filter([&] (const Position& v) { return extendedTiles.at(v) >= minRadius; });
   return extendedQueue;
 }
 
