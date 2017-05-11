@@ -1862,7 +1862,7 @@ SGuiElem GuiBuilder::drawVillages(VillageInfo& info) {
           [] (const VillageInfo::Village::TriggerInfo& t1, const VillageInfo::Village::TriggerInfo& t2) {
               return t1.value > t2.value;});
   #ifdef RELEASE
-      triggers = filter(triggers, [](const VillageInfo::Village::TriggerInfo& t) { return t.value > 0;});
+      triggers = triggers.filter([](const VillageInfo::Village::TriggerInfo& t) { return t.value > 0;});
   #endif
       if (!triggers.empty())
         line.addElemAuto(gui.stack(
