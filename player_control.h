@@ -61,6 +61,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   bool swapTeam();
   void onControlledKilled();
   void setTutorial(STutorial);
+  STutorial getTutorial() const;
 
   enum class RequirementId {
     TECHNOLOGY,

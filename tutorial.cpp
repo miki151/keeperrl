@@ -57,6 +57,9 @@ enum class Tutorial::State {
   DISCOVER_VILLAGE,
   KILL_VILLAGE,
   LOOT_VILLAGE,
+  LEAVE_CONTROL,
+  SUMMARY1,
+  SUMMARY2,
   FINISHED,
 };
 
@@ -154,6 +157,11 @@ bool Tutorial::canContinue(WConstGame game) const {
         if (!pos.getItems(ItemIndex::GOLD).empty())
           return false;
       return true;
+    case State::LEAVE_CONTROL:
+      return !game->getPlayerControl()->getControlled();
+    case State::SUMMARY1:
+    case State::SUMMARY2:
+      return true;
     case State::FINISHED:
       return false;
   }
@@ -164,7 +172,7 @@ string Tutorial::getMessage() const {
     case State::WELCOME:
       return "Welcome to the KeeperRL tutorial!\n \n"
           "Together we will work to build a small dungeon, and assemble a military force. Nearby us lies "
-          "a small village inhabited mostly by innocents, whom we will all murder.\n \n"
+          "a small village inhabited mostly by innocents, which we shall conquer.\n \n"
           "This should get you up to speed with the game!";
     case State::INTRO:
       return "Let's check out some things that you see on the map. The little wizard wearing a red robe is you, "
@@ -240,7 +248,7 @@ string Tutorial::getMessage() const {
           "Pausing the game will make it a bit easier. Also, make sure you have enough wood!\n \n"
           "You can check the progress of production when you click on the workshop.";
     case State::EQUIP_WEAPON:
-      return "Your minions will automatically pick up weapons and other equipment that's in storage, "
+      return "Your minions will automatically pick up weapons and other equipment from the storage, "
           "but you can also control it manually. Click on your orc, and on his weapon slot to assign him the "
           "club that he has just produced.\n \n"
           "This way you will order him to go and pick it up.\n \n";
@@ -270,10 +278,20 @@ string Tutorial::getMessage() const {
           "exterminate all inhabitants!\n \n"
           "Remember to break into every house by destroying the door.";
     case State::LOOT_VILLAGE:
-      return "There is a nice treasure in one of the houses. Pick it all up by moving your orc over the gold "
-          "and using the menu in the upper left corner.";
+      return "There is a nice treasure in one of the houses. Pick it all up by entering the tiles containing gold, "
+          "and clicking in the menu in the upper left corner.";
+    case State::LEAVE_CONTROL:
+      return "To relinquish control of your team, choose the appropriate action in the upper left corner.";
+    case State::SUMMARY1:
+      return "You are back in the real-time mode. Your minions will now return to base and resume their normal routine. "
+          "Once they are back, they will drop all the loot for the imps to take care of.";
+    case State::SUMMARY2:
+      return "Thank you for completing the tutorial! We hope that we have made it a bit easier for you to get into "
+          "KeeperRL. We would love to hear your comments, so please drop by on the forums on Steam or at keeperrl.com "
+          "some time!";
     case State::FINISHED:
-      return "Congratulations, you have completed the tutorial! Go play the game now :)";
+      return "You should go and start a new game now, as this one exists only for the purpose of the tutorial.\n \n"
+          "Press Escape and abandon this game. ";
   }
 }
 
@@ -312,6 +330,8 @@ EnumSet<TutorialHighlight> Tutorial::getHighlights(WConstGame game) const {
       return {TutorialHighlight::NEW_TEAM};
     case State::CONTROL_TEAM:
       return {TutorialHighlight::CONTROL_TEAM};
+    case State::LEAVE_CONTROL:
+      return {TutorialHighlight::LEAVE_CONTROL};
     default:
       return {};
   }
@@ -333,7 +353,7 @@ static void clearDugOutSquares(WConstGame game, vector<Vec2>& highlights) {
 
 vector<Vec2> Tutorial::getHighlightedSquaresHigh(WConstGame game) const {
   auto collective = game->getPlayerCollective();
-  const Vec2 entry(108, 96);
+  const Vec2 entry(87, 130);
   const int corridor = 6;
   int roomWidth = 5;
   const Vec2 firstRoom(entry - Vec2(0, corridor + roomWidth / 2));
@@ -384,7 +404,7 @@ vector<Vec2> Tutorial::getHighlightedSquaresLow(WConstGame game) const {
   }
 }
 
-Tutorial::Tutorial() : state(State::KILL_VILLAGE) {
+Tutorial::Tutorial() : state(State::WELCOME) {
 
 }
 

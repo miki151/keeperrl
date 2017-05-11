@@ -60,11 +60,11 @@ class GuiBuilder {
   int getStandardLineHeight() const;
   int getImmigrationBarWidth() const;
 
-  SGuiElem getSunlightInfoGui(GameSunlightInfo& sunlightInfo);
-  SGuiElem getTurnInfoGui(int& turn);
-  SGuiElem drawBottomPlayerInfo(GameInfo&);
-  SGuiElem drawRightPlayerInfo(PlayerInfo&);
-  SGuiElem drawPlayerInventory(PlayerInfo&);
+  SGuiElem getSunlightInfoGui(const GameSunlightInfo& sunlightInfo);
+  SGuiElem getTurnInfoGui(const int& turn);
+  SGuiElem drawBottomPlayerInfo(const GameInfo&);
+  SGuiElem drawRightPlayerInfo(const PlayerInfo&);
+  SGuiElem drawPlayerInventory(const PlayerInfo&);
   SGuiElem drawRightBandInfo(GameInfo&);
   SGuiElem drawTechnology(CollectiveInfo&);
   SGuiElem drawMinions(CollectiveInfo&, const optional<TutorialInfo>&);

@@ -379,6 +379,10 @@ void PlayerControl::setTutorial(STutorial t) {
   tutorial = t;
 }
 
+STutorial PlayerControl::getTutorial() const {
+  return tutorial;
+}
+
 bool PlayerControl::swapTeam() {
   if (auto teamId = getCurrentTeam())
     if (getTeams().getMembers(*teamId).size() > 1) {
@@ -1662,8 +1666,10 @@ class MinionController : public Player {
       : Player(c, false, memory, tutorial), control(ctrl) {}
 
   virtual vector<CommandInfo> getCommands() const override {
+    auto tutorial = control->getTutorial();
     return concat(Player::getCommands(), {
-      {PlayerInfo::CommandInfo{"Leave minion", 'u', "Leave minion and order team back to base.", true},
+      {PlayerInfo::CommandInfo{"Leave creature", 'u', "Leave creature and order team back to base.", true,
+            tutorial && tutorial->getHighlights(getGame()).contains(TutorialHighlight::LEAVE_CONTROL)},
        [] (Player* player) { dynamic_cast<MinionController*>(player)->unpossess(); }, true},
       {PlayerInfo::CommandInfo{"Switch control", 's', "Switch control to a different team member.", true},
        [] (Player* player) { dynamic_cast<MinionController*>(player)->swapTeam(); }, getTeam().size() > 1},

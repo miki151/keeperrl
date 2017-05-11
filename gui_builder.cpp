@@ -713,7 +713,7 @@ SGuiElem GuiBuilder::drawImmigrationHelp(const CollectiveInfo& info) {
         lines.buildVerticalList()), 15), [this] { immigrantHelpOpen = false; }, true);
 }
 
-SGuiElem GuiBuilder::getSunlightInfoGui(GameSunlightInfo& sunlightInfo) {
+SGuiElem GuiBuilder::getSunlightInfoGui(const GameSunlightInfo& sunlightInfo) {
   return gui.stack(
       gui.conditional(
           getHintCallback({"Time remaining till nightfall."}),
@@ -723,7 +723,7 @@ SGuiElem GuiBuilder::getSunlightInfoGui(GameSunlightInfo& sunlightInfo) {
           [&] { return sunlightInfo.description == "day" ? Color::WHITE : Color::LIGHT_BLUE;}));
 }
 
-SGuiElem GuiBuilder::getTurnInfoGui(int& turn) {
+SGuiElem GuiBuilder::getTurnInfoGui(const int& turn) {
   return gui.stack(getHintCallback({"Current turn."}),
       gui.labelFun([&turn] { return "T: " + toString(turn); }, Color::WHITE));
 }
@@ -759,7 +759,7 @@ vector<SGuiElem> GuiBuilder::drawPlayerAttributes(const vector<PlayerInfo::Attri
   return ret;
 }
 
-SGuiElem GuiBuilder::drawBottomPlayerInfo(GameInfo& gameInfo) {
+SGuiElem GuiBuilder::drawBottomPlayerInfo(const GameInfo& gameInfo) {
   return gui.getListBuilder(28)
       .addElem(gui.centerHoriz(gui.horizontalList(
               drawPlayerAttributes(gameInfo.playerInfo.attributes), resourceSpace)))
@@ -1103,23 +1103,27 @@ SGuiElem GuiBuilder::drawPlayerLevelButton(const PlayerInfo& info) {
       }));
 }
 
-SGuiElem GuiBuilder::drawPlayerInventory(PlayerInfo& info) {
+SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info) {
   GuiFactory::ListBuilder list(gui, legendLineHeight);
   list.addElem(gui.label(info.getTitle(), Color::WHITE));
   list.addElem(drawPlayerLevelButton(info));
   auto line = gui.getListBuilder();
   vector<SGuiElem> keyElems;
-  for (int i : All(info.commands))
+  bool isTutorial = false;
+  for (int i : All(info.commands)) {
+    if (info.commands[i].tutorialHighlight)
+      isTutorial = true;
     if (info.commands[i].active)
       if (auto key = info.commands[i].keybinding)
         keyElems.push_back(gui.keyHandlerChar(getButtonCallback({UserInputId::PLAYER_COMMAND, i}), *key));
+  }
   line.addElemAuto(gui.stack(
       gui.stack(std::move(keyElems)),
       gui.labelHighlight("[Commands]", Color::LIGHT_BLUE),
+      gui.conditional(gui.tutorialHighlight(), [=]{ return isTutorial;}),
       gui.buttonRect([=] (Rectangle bounds) {
           auto lines = gui.getListBuilder(legendLineHeight);
           bool exit = false;
-          optional<ItemAction> ret;
           for (auto& elem : help)
             lines.addElem(gui.label(elem, Color::LIGHT_BLUE));
           for (int i : All(info.commands)) {
@@ -1132,6 +1136,8 @@ SGuiElem GuiBuilder::drawPlayerInventory(PlayerInfo& info) {
               };
             auto labelColor = command.active ? Color::WHITE : Color::GRAY;
             auto button = command.keybinding ? gui.buttonChar(buttonFun, *command.keybinding) : gui.button(buttonFun);
+            if (command.tutorialHighlight)
+              button = gui.stack(gui.tutorialHighlight(), std::move(button));
             lines.addElem(gui.stack(
                 button,
                 command.active ? gui.uiHighlightMouseOver(Color::GREEN) : gui.empty(),
@@ -1193,7 +1199,7 @@ SGuiElem GuiBuilder::drawPlayerInventory(PlayerInfo& info) {
       gui.scrollable(list.buildVerticalList(), &inventoryScroll, &scrollbarsHeld), -5, 0, 0, 0);
 }
 
-SGuiElem GuiBuilder::drawRightPlayerInfo(PlayerInfo& info) {
+SGuiElem GuiBuilder::drawRightPlayerInfo(const PlayerInfo& info) {
   SGuiElem main = drawPlayerInventory(info);
   return gui.margins(std::move(main), 15, 24, 15, 5);
 }
