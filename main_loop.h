@@ -26,8 +26,7 @@ class MainLoop {
     CampaignType type;
   };
   MainLoop(View*, Highscores*, FileSharing*, const DirectoryPath& dataFreePath, const DirectoryPath& userPath,
-      Options*, Jukebox*, SokobanInput*, std::atomic<bool>& finished, bool useSingleThread,
-      optional<ForceGameInfo>);
+      Options*, Jukebox*, SokobanInput*, bool useSingleThread, optional<ForceGameInfo>);
 
   void start(bool tilesPresent);
   void modelGenTest(int numTries, RandomGen&, Options*);
@@ -75,7 +74,6 @@ class MainLoop {
   Jukebox* jukebox;
   Highscores* highscores;
   FileSharing* fileSharing;
-  std::atomic<bool>& finished;
   bool useSingleThread;
   optional<ForceGameInfo> forceGame;
   SokobanInput* sokobanInput;

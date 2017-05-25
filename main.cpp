@@ -244,7 +244,7 @@ static long long getInstallId(const FilePath& path, RandomGen& random) {
   return ret;
 }
 
-const static string serverVersion = "21";
+const static string serverVersion = "22";
 
 static int keeperMain(po::parser& commandLineFlags) {
   if (commandLineFlags["help"].was_set()) {
@@ -338,10 +338,7 @@ static int keeperMain(po::parser& commandLineFlags) {
 #ifndef RELEASE
   InfoLog.addOutput(DebugOutput::toString([&view](const string& s) { view->logMessage(s);}));
 #endif
-  std::atomic<bool> gameFinished(false);
-  std::atomic<bool> viewInitialized(false);
   view->initialize();
-  viewInitialized = true;
   Tile::initialize(renderer, tilesPresent);
   Jukebox jukebox(
       &options,
@@ -356,7 +353,7 @@ static int keeperMain(po::parser& commandLineFlags) {
     forceGame = MainLoop::ForceGameInfo {PlayerRole::KEEPER, CampaignType::QUICK_MAP};
   SokobanInput sokobanInput(freeDataPath.file("sokoban_input.txt"), userPath.file("sokoban_state.txt"));
   MainLoop loop(view.get(), &highscores, &fileSharing, freeDataPath, userPath, &options, &jukebox, &sokobanInput,
-      gameFinished, useSingleThread, forceGame);
+      useSingleThread, forceGame);
   if (commandLineFlags["worldgen_test"].was_set()) {
     loop.modelGenTest(commandLineFlags["worldgen_test"].get().i32, Random, &options);
     return 0;
@@ -364,7 +361,6 @@ static int keeperMain(po::parser& commandLineFlags) {
   try {
     if (audioError)
       view->presentText("Failed to initialize audio. The game will be started without sound.", *audioError);
-    while (!viewInitialized) {}
     ofstream systemInfo(userPath.file("system_info.txt").getPath());
     systemInfo << "KeeperRL version " << BUILD_VERSION << " " << BUILD_DATE << std::endl;
     renderer.printSystemInfo(systemInfo);
