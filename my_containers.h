@@ -77,7 +77,7 @@ class vector : public std::vector<T> {
   }
 
   vector<T> reverse() const {
-    return vector<T>(base::begin(), base::end());
+    return vector<T>(base::rbegin(), base::rend());
   }
 
   template <typename Predicate>
