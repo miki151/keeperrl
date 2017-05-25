@@ -2621,10 +2621,11 @@ void PlayerControl::onConstructed(Position pos, FurnitureType type) {
 }
 
 void PlayerControl::onClaimedSquare(Position position) {
-  position.modFurniture(FurnitureLayer::GROUND)->getViewObject()->setId(ViewId::KEEPER_FLOOR);
+  auto ground = position.modFurniture(FurnitureLayer::GROUND);
+  CHECK(ground) << "No ground found at " << position.getCoord();
+  ground->getViewObject()->setId(ViewId::KEEPER_FLOOR);
   position.setNeedsRenderUpdate(true);
-  updateSquareMemory(position);
-}
+  updateSquareMemory(position);}
 
 void PlayerControl::onDestructed(Position pos, const DestroyAction& action) {
   if (action.getType() == DestroyAction::Type::DIG) {
