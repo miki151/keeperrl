@@ -376,8 +376,10 @@ bool Position::canEnterEmpty(const MovementType& t, optional<FurnitureLayer> ign
 void Position::onEnter(WCreature c) {
   for (auto layer : ENUM_ALL_REVERSE(FurnitureLayer))
     if (auto f = getFurniture(layer)) {
+      bool overrides = f->overridesMovement();
+      // f can be removed in onEnter so don't use it after
       f->onEnter(c);
-      if (f->overridesMovement())
+      if (overrides)
         break;
     }
 }
