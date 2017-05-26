@@ -30,6 +30,8 @@
 #include "body.h"
 #include "call_cache.h"
 #include "container_range.h"
+#include "serialization.h"
+#include "text_serialization.h"
 
 class Test {
   public:
@@ -484,28 +486,28 @@ class Test {
     PCreature human = CreatureFactory::fromId(CreatureId::BANDIT, TribeId::getBandit());
     MinionEquipment equipment;
     CHECK(equipment.needsItem(human.get(), bow1.get(), false));
-    equipment.own(human.get(), bow1.get());
+    CHECK(equipment.tryToOwn(human.get(), bow1.get()));
     CHECK(equipment.needsItem(human.get(), bow1.get(), false));
     CHECK(equipment.isOwner(bow1.get(), human.get()));
     CHECK(equipment.getItemsOwnedBy(human.get()).contains(bow1.get()));
     equipment.discard(bow1.get());
     CHECK(!equipment.isOwner(bow1.get(), human.get()));
     CHECK(!equipment.getItemsOwnedBy(human.get()).contains(bow1.get()));
-    equipment.own(human.get(), bow1.get());
+    CHECK(equipment.tryToOwn(human.get(), bow1.get()));
     bow2->addModifier(ModifierType::FIRED_ACCURACY, -10);
     CHECK(!equipment.needsItem(human.get(), bow2.get(), false));
     CHECK(equipment.needsItem(human.get(), bow2.get(), true));
     bow2->addModifier(ModifierType::FIRED_ACCURACY, 30);
     bow3->addModifier(ModifierType::FIRED_DAMAGE, 30);
-    equipment.own(human.get(), bow2.get());
+    CHECK(equipment.tryToOwn(human.get(), bow2.get()));
     CHECK(equipment.getOwner(bow1.get()) == none);
     CHECK(equipment.isOwner(bow2.get(), human.get()));
-    equipment.own(human.get(), bow1.get());
+    CHECK(equipment.tryToOwn(human.get(), bow1.get()));
     CHECK(equipment.isOwner(bow1.get(), human.get()));
     CHECK(equipment.getItemsOwnedBy(human.get()).contains(bow1.get()));
     CHECK(equipment.getOwner(bow2.get()) == none);
     equipment.setLocked(human.get(), bow1->getUniqueId(), true);
-    equipment.own(human.get(), bow3.get());
+    CHECK(!equipment.tryToOwn(human.get(), bow3.get()));
     CHECK(equipment.isOwner(bow1.get(), human.get()));
     CHECK(equipment.getItemsOwnedBy(human.get()).contains(bow1.get()));
   }
@@ -517,11 +519,11 @@ class Test {
     MinionEquipment equipment;
     CHECK(!equipment.needsItem(human.get(), arrows[0].get(), true));
     CHECK(equipment.needsItem(human.get(), bow.get(), true));
-    equipment.own(human.get(), bow.get());
+    CHECK(equipment.tryToOwn(human.get(), bow.get()));
     CHECK(equipment.isOwner(bow.get(), human.get()));
     CHECK(equipment.needsItem(human.get(), arrows[0].get(), false));
     for (int i : Range(60))
-      equipment.own(human.get(), arrows[i].get());
+      CHECK(equipment.tryToOwn(human.get(), arrows[i].get()));
     CHECK(!equipment.needsItem(human.get(), arrows.back().get(), false));
     CHECK(equipment.needsItem(human.get(), arrows.back().get(), true));
     CHECK(equipment.needsItem(human.get(), arrows.back().get(), true));
@@ -533,7 +535,7 @@ class Test {
     sword2->addModifier(ModifierType::DAMAGE, -5);
     PCreature human = CreatureFactory::fromId(CreatureId::BANDIT, TribeId::getBandit());
     MinionEquipment equipment;
-    equipment.own(human.get(), sword.get());
+    CHECK(equipment.tryToOwn(human.get(), sword.get()));
     CHECK(equipment.getItemsOwnedBy(human.get()).size() == 1);
     CHECK(!equipment.needsItem(human.get(), sword2.get()));
     sword.clear();
@@ -548,8 +550,8 @@ class Test {
     PCreature human = CreatureFactory::fromId(CreatureId::BANDIT, TribeId::getBandit());
     PCreature human2 = CreatureFactory::fromId(CreatureId::BANDIT, TribeId::getBandit());
     MinionEquipment equipment;
-    equipment.own(human.get(), sword.get());
-    equipment.own(human2.get(), sword2.get());
+    CHECK(equipment.tryToOwn(human.get(), sword.get()));
+    CHECK(equipment.tryToOwn(human2.get(), sword2.get()));
     CHECK(equipment.getItemsOwnedBy(human.get()).size() == 1);
     CHECK(!equipment.needsItem(human.get(), sword2.get()));
     equipment.updateItems({sword2.get()});
@@ -564,13 +566,13 @@ class Test {
     PCreature human1 = CreatureFactory::fromId(CreatureId::BANDIT, TribeId::getBandit());
     PCreature human2 = CreatureFactory::fromId(CreatureId::BANDIT, TribeId::getBandit());
     MinionEquipment equipment;
-    equipment.own(human1.get(), sword1.get());
+    CHECK(equipment.tryToOwn(human1.get(), sword1.get()));
     CHECK(equipment.isOwner(sword1.get(), human1.get()));
     CHECK(equipment.getItemsOwnedBy(human1.get()).size() == 1);
-    equipment.own(human2.get(), sword1.get());
+    CHECK(equipment.tryToOwn(human2.get(), sword1.get()));
     CHECK(!equipment.isOwner(sword1.get(), human1.get()));
     CHECK(equipment.getItemsOwnedBy(human1.get()).size() == 0);
-    equipment.own(human1.get(), sword2.get());
+    CHECK(equipment.tryToOwn(human1.get(), sword2.get()));
     CHECK(equipment.getOwner(sword1.get()) == human2->getUniqueId());
     CHECK(equipment.getItemsOwnedBy(human2.get()).size() == 1);
     equipment.updateOwners({human1.get()});
@@ -787,6 +789,50 @@ class Test {
     CHECKEQ(cache.getSize(), 3);
   }
 
+  struct Tmp123 {
+    int SERIAL(a);
+    char SERIAL(a1);
+    double SERIAL(b);
+    string SERIAL(c);
+    float SERIAL(d);
+
+    bool operator == (const Tmp123& o) const {
+      return a == o.a && a1 == o.a1 && b == o.b && c == o.c && d == o.d;
+    }
+    bool operator != (const Tmp123& o) const {
+      return !(*this == o);
+    }
+    SERIALIZE_ALL(a, a1, b, c, d)
+  };
+
+  struct Tmp456 {
+    char SERIAL(a);
+    Tmp123 SERIAL(b);
+    char SERIAL(c);
+    char SERIAL(d);
+    char SERIAL(e);
+
+    bool operator == (const Tmp456& o) const {
+      return a == o.a && b == o.b && c == o.c && d == o.d && e == o.e;
+    }
+    bool operator != (const Tmp456& o) const {
+      return !(*this == o);
+    }
+    SERIALIZE_ALL(a, b, c, d, e)
+  };
+
+  void testTextSerialization() {
+    Tmp123 a1 {323, 'o', 43.1, "pok\" \\pak", 3.1415};
+    Tmp456 a {'z', a1, 'n', '"', ' '};
+    TextOutput output;
+    output.getArchive() << a;
+    std::cout << "Serialized to " << output.getStream().str() << std::endl;
+    TextInput input(output.getStream().str());
+    Tmp456 b;
+    input.getArchive() >> b;
+    CHECK(a == b);
+  }
+
 };
 
 void testAll() {
@@ -837,5 +883,6 @@ void testAll() {
   Test().testContainerRangeMapConst();
   Test().testCacheTemplate();
   Test().testCacheTemplate2();
+  Test().testTextSerialization();
   INFO << "-----===== OK =====-----";
 }

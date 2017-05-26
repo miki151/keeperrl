@@ -688,7 +688,9 @@ class Lake : public Blob {
 
 class RemoveFurniture : public LevelMaker {
   public:
-  RemoveFurniture(FurnitureLayer l) : layer(l) {}
+  RemoveFurniture(FurnitureLayer l) : layer(l) {
+    CHECK(layer != FurnitureLayer::GROUND);
+  }
 
   virtual void make(LevelBuilder* builder, Rectangle area) override {
     for (Vec2 v : area)
@@ -1275,10 +1277,8 @@ class Roads : public LevelMaker {
         if (!path.isReachable(v))
           failGen();
         auto roadType = getRoadType(builder, v);
-        if (v != p2 && v != p1 && !builder->isFurnitureType(v, roadType)) {
-          builder->removeFurniture(v, Furniture::getLayer(roadType));
-          builder->putFurniture(v, FurnitureParams{roadType, TribeId::getMonster()});
-        }
+        if (v != p2 && v != p1 && !builder->isFurnitureType(v, roadType))
+          builder->putFurniture(v, roadType);
       }
     }
   }
@@ -1642,7 +1642,7 @@ static MakerQueue* stockpileMaker(StockpileInfo info) {
       break;
   }
   MakerQueue* queue = new MakerQueue();
-  queue->addMaker(new Empty(SquareChange::reset(floor)));
+  queue->addMaker(new Empty(floor));
   if (furniture)
     queue->addMaker(new Empty(SquareChange(*furniture)));
   queue->addMaker(new Items(items, info.number, info.number + 1, !!furniture));
@@ -1665,7 +1665,7 @@ PLevelMaker LevelMaker::cryptLevel(RandomGen& random, SettlementInfo info) {
   if (info.creatures)
     queue->addMaker(new Creatures(*info.creatures, info.numCreatures, info.collective));
   queue->addMaker(new Items(ItemFactory::dungeon(), 5, 10));
-  return PLevelMaker(new BorderGuard(queue, FurnitureType::MOUNTAIN));
+  return PLevelMaker(new BorderGuard(queue, SquareChange(FurnitureType::FLOOR, FurnitureType::MOUNTAIN)));
 }
 
 PLevelMaker LevelMaker::mazeLevel(RandomGen& random, SettlementInfo info) {
@@ -1683,7 +1683,7 @@ PLevelMaker LevelMaker::mazeLevel(RandomGen& random, SettlementInfo info) {
   if (info.creatures)
     queue->addMaker(new Creatures(*info.creatures, info.numCreatures));
   queue->addMaker(new Items(ItemFactory::dungeon(), 5, 10));
-  return PLevelMaker(new BorderGuard(queue, FurnitureType::MOUNTAIN));
+  return PLevelMaker(new BorderGuard(queue, SquareChange(FurnitureType::FLOOR, FurnitureType::MOUNTAIN)));
 }
 
 LevelMaker* hatchery(CreatureFactory factory, int numCreatures) {
@@ -2371,6 +2371,7 @@ class SpecificArea : public LevelMaker {
 PLevelMaker LevelMaker::splashLevel(CreatureFactory heroLeader, CreatureFactory heroes, CreatureFactory monsters,
     CreatureFactory imps, const FilePath& splashPath) {
   MakerQueue* queue = new MakerQueue();
+  queue->addMaker(new Empty(FurnitureType::BLACK_FLOOR));
   Rectangle leaderSpawn(
           Level::getSplashVisibleBounds().right() + 1, Level::getSplashVisibleBounds().middle().y,
           Level::getSplashVisibleBounds().right() + 2, Level::getSplashVisibleBounds().middle().y + 1);
@@ -2455,7 +2456,7 @@ PLevelMaker LevelMaker::roomLevel(RandomGen& random, CreatureFactory roomFactory
     queue->addMaker(new Stairs(StairDirection::UP, key, Predicate::type(FurnitureType::FLOOR)));
   queue->addMaker(new Creatures(roomFactory, random.get(10, 15), MonsterAIFactory::monster()));
   queue->addMaker(new Items(ItemFactory::dungeon(), 5, 10));
-  return PLevelMaker(new BorderGuard(queue, FurnitureType::MOUNTAIN));
+  return PLevelMaker(new BorderGuard(queue, SquareChange(FurnitureType::FLOOR, FurnitureType::MOUNTAIN)));
 }
 
 namespace {

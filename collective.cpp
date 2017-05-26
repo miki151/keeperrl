@@ -161,7 +161,7 @@ void Collective::addCreature(WCreature c, EnumSet<MinionTrait> traits) {
   if (auto spawnType = c->getAttributes().getSpawnType())
     bySpawnType[*spawnType].push_back(c);
   for (WItem item : c->getEquipment().getItems())
-    minionEquipment->own(c, item);
+    CHECK(minionEquipment->tryToOwn(c, item));
   if (traits.contains(MinionTrait::FIGHTER)) {
     c->setMoraleOverride(Creature::PMoraleOverride(new LeaderControlOverride(this)));
   }
@@ -775,12 +775,6 @@ void Collective::onEvent(const GameEvent& event) {
       auto info = event.get<EventInfo::FurnitureEvent>();
       constructions->onFurnitureDestroyed(info.position, info.layer);
       tileEfficiency->update(info.position);
-      break;
-    }
-    case EventId::EQUIPED: {
-      auto info = event.get<EventInfo::ItemsHandled>();
-      if (info.creature->isPlayer())
-        minionEquipment->own(info.creature, info.items.getOnlyElement());
       break;
     }
     case EventId::CONQUERED_ENEMY: {

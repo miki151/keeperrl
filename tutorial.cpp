@@ -64,11 +64,10 @@ enum class Tutorial::State {
 };
 
 static bool isTeam(WConstCollective collective) {
-  auto teams = collective->getTeams().getAll();
-  if (teams.empty())
-    return false;
-  CHECK(teams.size() == 1);
-  return collective->getTeams().getMembers(teams[0]).size() >= 4;
+  for (auto team : collective->getTeams().getAll())
+    if (collective->getTeams().getMembers(team).size() >= 4)
+      return true;
+  return false;
 }
 
 bool Tutorial::canContinue(WConstGame game) const {
