@@ -29,7 +29,7 @@ class MinionEquipment {
   bool needsItem(WConstCreature c, const WItem it, bool noLimit = false) const;
   optional<UniqueEntity<Creature>::Id> getOwner(const WItem) const;
   bool isOwner(const WItem, WConstCreature) const;
-  void own(WConstCreature, WItem);
+  bool tryToOwn(WConstCreature, WItem);
   void discard(const WItem);
   void discard(UniqueEntity<Item>::Id);
   void updateOwners(const vector<WCreature>&);

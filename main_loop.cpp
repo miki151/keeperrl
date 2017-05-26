@@ -29,10 +29,10 @@
 #include "tutorial.h"
 
 MainLoop::MainLoop(View* v, Highscores* h, FileSharing* fSharing, const DirectoryPath& freePath,
-    const DirectoryPath& uPath, Options* o, Jukebox* j, SokobanInput* soko, std::atomic<bool>& fin, bool singleThread,
+    const DirectoryPath& uPath, Options* o, Jukebox* j, SokobanInput* soko, bool singleThread,
     optional<ForceGameInfo> force)
       : view(v), dataFreePath(freePath), userPath(uPath), options(o), jukebox(j),
-        highscores(h), fileSharing(fSharing), finished(fin), useSingleThread(singleThread), forceGame(force),
+        highscores(h), fileSharing(fSharing), useSingleThread(singleThread), forceGame(force),
         sokobanInput(soko) {
 }
 
@@ -54,7 +54,7 @@ static string getDateString(time_t t) {
   return buf;
 }
 
-static const int saveVersion = 1400;
+static const int saveVersion = 1500;
 
 static bool isCompatible(int loadedVersion) {
   return loadedVersion > 2 && loadedVersion <= saveVersion && loadedVersion / 100 == saveVersion / 100;
@@ -89,7 +89,7 @@ static T loadFromFile(const FilePath& filename, bool failSilently) {
   return obj;
 }
 
-bool isNotFilename(char c) {
+static bool isNotFilename(char c) {
   return !(tolower(c) >= 'a' && tolower(c) <= 'z') && !isdigit(c) && c != '_';
 }
 
@@ -412,10 +412,8 @@ void MainLoop::start(bool tilesPresent) {
       case 1: options->handle(view, OptionSet::GENERAL); break;
       case 2: highscores->present(view); break;
       case 3: showCredits(dataFreePath.file("credits.txt"), view); break;
-      case 4: finished = true; break;
+      case 4: return;
     }
-    if (finished)
-      break;
   }
 }
 

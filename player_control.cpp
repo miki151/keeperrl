@@ -476,15 +476,16 @@ void PlayerControl::addConsumableItem(WCreature creature) {
         return !getCollective()->getMinionEquipment().isOwner(it, creature)
             && !it->canEquip()
             && getCollective()->getMinionEquipment().needsItem(creature, it, true); }, &scrollPos);
-    if (chosenItem)
-      getCollective()->getMinionEquipment().own(creature, chosenItem);
-    else
+    if (chosenItem) {
+      CHECK(getCollective()->getMinionEquipment().tryToOwn(creature, chosenItem));
+    } else
       break;
   }
 }
 
 void PlayerControl::addEquipment(WCreature creature, EquipmentSlot slot) {
   vector<WItem> currentItems = creature->getEquipment().getSlotItems(slot);
+  CHECK(currentItems.size() < creature->getEquipment().getMaxItems(slot));
   WItem chosenItem = chooseEquipmentItem(creature, currentItems, [&](const WItem it) {
       return !getCollective()->getMinionEquipment().isOwner(it, creature)
       && creature->canEquipIfEmptySlot(it, nullptr) && it->getEquipmentSlot() == slot; });
@@ -496,7 +497,7 @@ void PlayerControl::addEquipment(WCreature creature, EquipmentSlot slot) {
         || creature->isEquipmentAppropriate(chosenItem)
         || getView()->yesOrNoPrompt(chosenItem->getTheName() + " is too heavy for " +
           creature->getName().the() + ", and will incur an accuracy penalty.\n Do you want to continue?"))
-      getCollective()->getMinionEquipment().own(creature, chosenItem);
+      CHECK(getCollective()->getMinionEquipment().tryToOwn(creature, chosenItem));
   }
 }
 
@@ -1485,6 +1486,13 @@ void PlayerControl::onEvent(const GameEvent& event) {
       WCreature c = event.get<WCreature>();
       if (getCreatures().contains(c))
         updateMinionVisibility(c);
+      break;
+    }
+    case EventId::EQUIPED: {
+      auto info = event.get<EventInfo::ItemsHandled>();
+      if (info.creature->isPlayer() &&
+          !getCollective()->getMinionEquipment().tryToOwn(info.creature, info.items.getOnlyElement()))
+        getView()->presentText("", "Item won't be permanently assigned to creature because the equipment slot is locked.");
       break;
     }
     case EventId::WON_GAME:
@@ -2613,10 +2621,11 @@ void PlayerControl::onConstructed(Position pos, FurnitureType type) {
 }
 
 void PlayerControl::onClaimedSquare(Position position) {
-  position.modFurniture(FurnitureLayer::GROUND)->getViewObject()->setId(ViewId::KEEPER_FLOOR);
+  auto ground = position.modFurniture(FurnitureLayer::GROUND);
+  CHECK(ground) << "No ground found at " << position.getCoord();
+  ground->getViewObject()->setId(ViewId::KEEPER_FLOOR);
   position.setNeedsRenderUpdate(true);
-  updateSquareMemory(position);
-}
+  updateSquareMemory(position);}
 
 void PlayerControl::onDestructed(Position pos, const DestroyAction& action) {
   if (action.getType() == DestroyAction::Type::DIG) {

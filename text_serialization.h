@@ -27,7 +27,7 @@ class TextInputArchive : public cereal::InputArchive<TextInputArchive, cereal::A
 template<class T> inline
 typename std::enable_if<std::is_arithmetic<T>::value, void>::type
 CEREAL_SAVE_FUNCTION_NAME(TextOutputArchive& ar, T const& t) {
-  ar.os << t;
+  ar.os << t << " ";
 }
 
 //! Loading for POD types from binary
@@ -38,11 +38,22 @@ CEREAL_LOAD_FUNCTION_NAME(TextInputArchive& ar, T& t) {
 }
 
 inline void CEREAL_SAVE_FUNCTION_NAME(TextOutputArchive& ar, std::string const& t) {
-  ar.os << t;
+  ar.os << std::quoted(t) << " ";
 }
 
 inline void CEREAL_LOAD_FUNCTION_NAME(TextInputArchive& ar, std::string& t) {
-  ar.is >> t;
+  ar.is >> std::quoted(t);
+}
+
+inline void CEREAL_LOAD_FUNCTION_NAME(TextInputArchive& ar, char& c) {
+  string s;
+  ar.is >> std::quoted(s);
+  c = s.at(0);
+}
+
+inline void CEREAL_SAVE_FUNCTION_NAME(TextOutputArchive& ar, char c) {
+  string s {c};
+  ar.os << std::quoted(s);
 }
 
 //! Serializing NVP types to binary
