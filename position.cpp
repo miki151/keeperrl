@@ -405,6 +405,7 @@ void Position::dropItems(vector<PItem> v) {
 void Position::removeFurniture(WConstFurniture f) const {
   level->removeLightSource(coord, f->getLightEmission());
   auto layer = f->getLayer();
+  CHECK(layer != FurnitureLayer::GROUND);
   CHECK(getFurniture(layer) == f);
   level->furniture->getBuilt(layer).clearElem(coord);
   level->furniture->getConstruction(coord, layer).reset();

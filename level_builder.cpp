@@ -83,11 +83,6 @@ void LevelBuilder::putFurniture(Vec2 posT, FurnitureFactory& f, optional<SquareA
   putFurniture(posT, f.getRandom(getRandom()), attrib);
 }
 
-void LevelBuilder::resetFurniture(Vec2 posT, FurnitureFactory& f, optional<SquareAttrib> attrib) {
-  removeAllFurniture(posT);
-  putFurniture(posT, f, attrib);
-}
-
 void LevelBuilder::putFurniture(Vec2 posT, FurnitureParams f, optional<SquareAttrib> attrib) {
   auto layer = Furniture::getLayer(f.type);
   if (getFurniture(posT, layer))
@@ -102,6 +97,7 @@ void LevelBuilder::putFurniture(Vec2 pos, FurnitureType type, optional<SquareAtt
 }
 
 void LevelBuilder::resetFurniture(Vec2 posT, FurnitureType type, optional<SquareAttrib> attrib) {
+  CHECK(Furniture::getLayer(type) == FurnitureLayer::GROUND);
   removeAllFurniture(posT);
   putFurniture(posT, type, attrib);
 }

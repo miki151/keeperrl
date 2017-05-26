@@ -74,7 +74,6 @@ class LevelBuilder {
   void addAttrib(Vec2 pos, SquareAttrib attr);
 
   void putFurniture(Vec2 pos, FurnitureFactory&, optional<SquareAttrib> = none);
-  void resetFurniture(Vec2 pos, FurnitureFactory&, optional<SquareAttrib> = none);
   void putFurniture(Vec2 pos, FurnitureParams, optional<SquareAttrib> = none);
   void putFurniture(Vec2 pos, FurnitureType, optional<SquareAttrib> = none);
   void resetFurniture(Vec2 pos, FurnitureType, optional<SquareAttrib> = none);

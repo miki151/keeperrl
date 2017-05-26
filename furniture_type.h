@@ -10,6 +10,7 @@ RICH_ENUM(
     MAGMA,
     SAND,
     FLOOR,
+    BLACK_FLOOR,
     MUD,
     GRASS,
     HILL,
