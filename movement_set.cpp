@@ -10,7 +10,8 @@ void MovementSet::serialize(Archive& ar, const unsigned int version) {
 
 SERIALIZABLE(MovementSet);
 
-bool MovementSet::canEnter(const MovementType& movementType, bool covered, bool onFire, const optional<TribeId>& forbidden) const {
+bool MovementSet::canEnter(const MovementType& movementType, bool covered, bool onFire,
+    const optional<TribeId>& forbidden) const {
   if (onlyAllowed && !movementType.isCompatible(*onlyAllowed))
     return false;
   if (!movementType.isForced()) {

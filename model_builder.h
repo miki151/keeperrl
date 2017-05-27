@@ -24,8 +24,8 @@ class ModelBuilder {
   PModel campaignSiteModel(const string& siteName, EnemyId, VillainType);
   PModel tutorialModel(const string& siteName);
 
-  void measureModelGen(int numTries, function<void()> genFun);
-  void measureSiteGen(int numTries);
+  void measureModelGen(const std::string& name, int numTries, function<void()> genFun);
+  void measureSiteGen(int numTries, vector<std::string> types);
 
   PModel splashModel(const FilePath& splashPath);
 

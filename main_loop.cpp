@@ -471,10 +471,10 @@ void MainLoop::doWithSplash(SplashType type, const string& text, function<void()
   }
 }
 
-void MainLoop::modelGenTest(int numTries, RandomGen& random, Options* options) {
+void MainLoop::modelGenTest(int numTries, const vector<string>& types, RandomGen& random, Options* options) {
   NameGenerator::init(dataFreePath.subdirectory("names"));
   ProgressMeter meter(1);
-  ModelBuilder(&meter, random, options, sokobanInput).measureSiteGen(numTries);
+  ModelBuilder(&meter, random, options, sokobanInput).measureSiteGen(numTries, types);
 }
 
 PModel MainLoop::getBaseModel(ModelBuilder& modelBuilder, CampaignSetup& setup) {

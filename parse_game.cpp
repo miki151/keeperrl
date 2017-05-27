@@ -43,9 +43,10 @@ int main(int argc, char* argv[]) {
     std::cout << flags << endl;
     return 0;
   }
-  FilePath inputPath = DirectoryPath(".").file(flags["input"].get().string);
+  FilePath inputPath = FilePath::fromFullPath(flags["input"].get().string);
   if (flags["highscores"].was_set()) {
     vector<Highscores::Score> scores;
+    std::cerr << "Loading highscores from " << inputPath << std::endl;
     CompressedInput in(inputPath.getPath());
     in.getArchive() >> scores;
     for (auto& score : scores)

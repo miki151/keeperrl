@@ -404,24 +404,37 @@ PModel ModelBuilder::campaignSiteModel(const string& siteName, EnemyId enemyId, 
   return tryBuilding(20, [&] { return tryCampaignSiteModel(siteName, enemyId, type); });
 }
 
-void ModelBuilder::measureSiteGen(int numTries) {
-  std::cout << "Measuring single map" << std::endl;
-  measureModelGen(numTries, [this] { trySingleMapModel("pok"); });
-  std::cout << "Measuring campaign base" << std::endl;
-  measureModelGen(numTries, [this] { tryCampaignBaseModel("pok", false); });
-  //for (EnemyId id : {EnemyId::KNIGHTS})
-  for (EnemyId id : ENUM_ALL(EnemyId))
-    if (!!getBiome(id, random)) {
-      std::cout << "Measuring " << EnumInfo<EnemyId>::getString(id) << std::endl;
-      measureModelGen(numTries, [&] { tryCampaignSiteModel("", id, VillainType::LESSER); });
+void ModelBuilder::measureSiteGen(int numTries, vector<string> types) {
+  if (types.empty()) {
+    types = {"single_map", "campaign_base"};
+    for (auto enemy : ENUM_ALL(EnemyId))
+      if (!!getBiome(enemy, random))
+        types.push_back(EnumInfo<EnemyId>::getString(enemy));
+  }
+  vector<function<void()>> tasks;
+  for (auto& type : types) {
+    if (type == "single_map")
+      tasks.push_back([=] { measureModelGen(type, numTries, [this] { trySingleMapModel("pok"); }); });
+    else if (type == "campaign_base")
+      tasks.push_back([=] { measureModelGen(type, numTries, [this] { tryCampaignBaseModel("pok", false); }); });
+    else if (auto id = EnumInfo<EnemyId>::fromStringSafe(type)) {
+      if (!!getBiome(*id, random))
+        tasks.push_back([=] { measureModelGen(type, numTries, [&] { tryCampaignSiteModel("", *id, VillainType::LESSER); }); });
+    } else {
+      std::cout << "Bad map type: " << type << std::endl;
+      return;
     }
+  }
+  for (auto& t : tasks)
+    t();
 }
 
-void ModelBuilder::measureModelGen(int numTries, function<void()> genFun) {
+void ModelBuilder::measureModelGen(const string& name, int numTries, function<void()> genFun) {
   int numSuccess = 0;
   int maxT = 0;
   int minT = 1000000;
   double sumT = 0;
+  std::cout << name;
   for (int i : Range(numTries)) {
 #ifndef OSX // this triggers some compiler errors OSX, I don't need it there anyway.
     auto time = steady_clock::now();
@@ -442,8 +455,8 @@ void ModelBuilder::measureModelGen(int numTries, function<void()> genFun) {
     minT = min(minT, millis);
 #endif
   }
-  std::cout << std::endl << numSuccess << " / " << numTries << " gens successful.\nMinT: " <<
-    minT << "\nMaxT: " << maxT << "\nAvgT: " << sumT / numSuccess << std::endl;
+  std::cout << std::endl << numSuccess << " / " << numTries << ". MinT: " <<
+    minT << ". MaxT: " << maxT << ". AvgT: " << sumT / numSuccess << std::endl;
 }
 
 WCollective ModelBuilder::spawnKeeper(WModel m, PCreature keeper) {
