@@ -1967,10 +1967,10 @@ RandomLocations::LocationPredicate getSettlementPredicate(SettlementType type) {
     case SettlementType::ISLAND_VAULT:
       return Predicate::attrib(SquareAttrib::MOUNTAIN);
     case SettlementType::ISLAND_VAULT_DOOR:
-      /*return RandomLocations::LocationPredicate(
+      return RandomLocations::LocationPredicate(
           Predicate::andPred(
             Predicate::attrib(SquareAttrib::MOUNTAIN),
-            Predicate::negate(Predicate::attrib(SquareAttrib::RIVER))), Predicate::attrib(SquareAttrib::RIVER), 10, 30);*/
+            Predicate::negate(Predicate::attrib(SquareAttrib::RIVER))), Predicate::attrib(SquareAttrib::RIVER), 10, 30);
     default:
       return Predicate::andPred(Predicate::attrib(SquareAttrib::LOWLAND),
           Predicate::negate(Predicate::attrib(SquareAttrib::RIVER)));
@@ -2088,7 +2088,7 @@ static LevelMaker* islandVaultMaker(RandomGen& random, SettlementInfo info, bool
   if (door)
     buildingMaker->addMaker(new LevelExit(FurnitureFactory(TribeId::getMonster(), FurnitureType::DOOR)));
   return new MakerQueue({
-        new Empty(FurnitureType::WATER),
+        new Empty(SquareChange::reset(FurnitureType::WATER)),
         new Margin(1, buildingMaker)});
 }
 
@@ -2509,7 +2509,7 @@ PLevelMaker LevelMaker::sokobanFromFile(RandomGen& random, SettlementInfo info, 
   queue->addMaker(new SokobanFromFile(file, info.neutralCreatures->first, info.downStairs.getOnlyElement()));
   queue->addMaker(new Stairs(StairDirection::DOWN, info.downStairs.getOnlyElement(),
         Predicate::attrib(SquareAttrib::SOKOBAN_ENTRY)));
-  queue->addMaker(new PlaceCollective(info.collective));
+  //queue->addMaker(new PlaceCollective(info.collective));
   queue->addMaker(new Creatures(*info.creatures, info.numCreatures, info.collective,
         Predicate::attrib(SquareAttrib::SOKOBAN_PRIZE)));
   return PLevelMaker(queue);

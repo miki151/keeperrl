@@ -74,7 +74,6 @@ class Furniture : public OwnedObject<Furniture> {
 
   Furniture& setBlocking();
   Furniture& setBlockingEnemies();
-  Furniture& setMovementSet(const MovementSet&);
   Furniture& setConstructMessage(optional<ConstructMessage>);
   Furniture& setDestroyable(double);
   Furniture& setDestroyable(double, DestroyAction::Type);
@@ -99,6 +98,7 @@ class Furniture : public OwnedObject<Furniture> {
   Furniture& setPlacementMessage(MsgType);
   Furniture& setSummonedElement(CreatureId);
   Furniture& setCanBuildBridgeOver();
+  MovementSet& modMovementSet();
 
   SERIALIZATION_DECL(Furniture)
 
@@ -111,7 +111,6 @@ class Furniture : public OwnedObject<Furniture> {
   FurnitureType SERIAL(type);
   FurnitureLayer SERIAL(layer) = FurnitureLayer::MIDDLE;
   HeapAllocated<MovementSet> SERIAL(movementSet);
-  HeapAllocated<TribeId> SERIAL(tribe);
   HeapAllocated<optional<Fire>> SERIAL(fire);
   optional<FurnitureType> SERIAL(burntRemains);
   optional<FurnitureType> SERIAL(destroyedRemains);

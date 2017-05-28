@@ -535,7 +535,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::ISLAND_VAULT;
             c.neutralCreatures = make_pair(
-              CreatureFactory::singleType(TribeId::getHostile(), CreatureId::SOKOBAN_BOULDER), 0);
+              CreatureFactory::singleType(TribeId::getPeaceful(), CreatureId::SOKOBAN_BOULDER), 0);
             c.creatures = CreatureFactory::singleType(TribeId::getKeeper(), random.choose(
                 CreatureId::SPECIAL_HLBN, CreatureId::SPECIAL_HLBW, CreatureId::SPECIAL_HLGN, CreatureId::SPECIAL_HLGW));
             c.numCreatures = 1;

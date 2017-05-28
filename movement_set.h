@@ -8,6 +8,7 @@ class Tribe;
 
 class MovementSet {
   public:
+  MovementSet(TribeId);
   bool canEnter(const MovementType&, bool covered, bool onFire, const optional<TribeId>& forbidden) const;
   bool canEnter(const MovementType&) const;
 
@@ -16,15 +17,17 @@ class MovementSet {
   MovementSet& addTrait(MovementTrait);
   MovementSet& removeTrait(MovementTrait);
   MovementSet& addForcibleTrait(MovementTrait);
-  MovementSet& setOnlyAllowed(TribeId);
+  MovementSet& setBlockingEnemies();
+  TribeId getTribe() const;
+  void setTribe(TribeId);
 
-  void clear();
+  MovementSet& clearTraits();
 
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version);
+  SERIALIZATION_DECL(MovementSet)
   
   private:
   EnumSet<MovementTrait> SERIAL(traits);
   EnumSet<MovementTrait> SERIAL(forcibleTraits);
-  optional<TribeId> SERIAL(onlyAllowed);
+  bool SERIAL(blockingEnemies) = false;
+  TribeId SERIAL(tribe);
 };
