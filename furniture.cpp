@@ -35,7 +35,7 @@ static string makePlural(const string& s) {
 }
 
 Furniture::Furniture(const string& n, const optional<ViewObject>& o, FurnitureType t, TribeId id)
-    : viewObject(o), name(n), pluralName(makePlural(name)), type(t), tribe(id) {
+    : viewObject(o), name(n), pluralName(makePlural(name)), type(t), movementSet(id) {
   movementSet->addTrait(MovementTrait::WALK);
 }
 
@@ -48,7 +48,7 @@ Furniture::~Furniture() {}
 template<typename Archive>
 void Furniture::serialize(Archive& ar, const unsigned) {
   ar(SUBCLASS(OwnedObject<Furniture>), viewObject);
-  ar(name, pluralName, type, movementSet, tribe, fire, burntRemains, destroyedRemains, destroyActions, itemDrop);
+  ar(name, pluralName, type, movementSet, fire, burntRemains, destroyedRemains, destroyActions, itemDrop);
   ar(blockVision, usageType, clickType, tickType, usageTime, overrideMovement, wall, creator, createdTime);
   ar(constructMessage, layer, entryType, lightEmission, canHideHere, warning, summonedElement, droppedItems);
   ar(canBuildBridge);
@@ -132,11 +132,11 @@ void Furniture::tryToDestroyBy(Position pos, WCreature c, const DestroyAction& a
 }
 
 TribeId Furniture::getTribe() const {
-  return *tribe;
+  return movementSet->getTribe();
 }
 
 void Furniture::setTribe(TribeId id) {
-  tribe = id;
+  movementSet->setTribe(id);
 }
 
 void Furniture::tick(Position pos) {
@@ -154,7 +154,7 @@ void Furniture::tick(Position pos) {
         pos.getGame()->addEvent({EventId::FURNITURE_DESTROYED, EventInfo::FurnitureEvent{pos, getLayer()}});
         pos.updateMovement();
         if (burntRemains)
-          pos.replaceFurniture(this, FurnitureFactory::get(*burntRemains, *tribe));
+          pos.replaceFurniture(this, FurnitureFactory::get(*burntRemains, getTribe()));
         else
           pos.removeFurniture(this);
         return;
@@ -280,18 +280,17 @@ bool Furniture::canBuildBridgeOver() const {
 }
 
 Furniture& Furniture::setBlocking() {
-  movementSet->clear();
+  movementSet->clearTraits();
   return *this;
 }
 
 Furniture& Furniture::setBlockingEnemies() {
-  movementSet->setOnlyAllowed(*tribe);
+  movementSet->setBlockingEnemies();
   return *this;
 }
 
-Furniture& Furniture::setMovementSet(const MovementSet& s) {
-  movementSet = s;
-  return *this;
+MovementSet& Furniture::modMovementSet() {
+  return *movementSet;
 }
 
 Furniture& Furniture::setConstructMessage(optional<ConstructMessage> msg) {

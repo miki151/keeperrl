@@ -205,6 +205,7 @@ static po::parser getCommandLineFlags() {
   flags["restore_settings"].description("Restore settings to default values.");
   flags["run_tests"].description("Run all unit tests and exit");
   flags["worldgen_test"].type(po::i32).description("Test how often world generation fails");
+  flags["worldgen_maps"].type(po::string).description("List of maps or enemy types in world generation test. Skip to test all.");
   flags["stderr"].description("Log to stderr");
   flags["nolog"].description("No logging");
   flags["free_mode"].description("Run in free ascii mode");
@@ -311,35 +312,11 @@ static int keeperMain(po::parser& commandLineFlags) {
   int seed = commandLineFlags["seed"].was_set() ? commandLineFlags["seed"].get().i32 : int(time(0));
   Random.init(seed);
   long long installId = getInstallId(userPath.file("installId.txt"), Random);
-  Renderer renderer(
-      "KeeperRL",
-      Vec2(24, 24),
-      contribDataPath,
-      freeDataPath.file("images/mouse_cursor.png"),
-      freeDataPath.file("images/mouse_cursor2.png"));
-  FatalLog.addOutput(DebugOutput::toString([&renderer](const string& s) { renderer.showError(s);}));
   SoundLibrary* soundLibrary = nullptr;
   AudioDevice audioDevice;
   optional<string> audioError = audioDevice.initialize();
   Clock clock;
   KeybindingMap keybindingMap(userPath.file("keybindings.txt"));
-  GuiFactory guiFactory(renderer, &clock, &options, &keybindingMap);
-  guiFactory.loadFreeImages(freeDataPath.subdirectory("images"));
-  if (tilesPresent) {
-    guiFactory.loadNonFreeImages(paidDataPath.subdirectory("images"));
-    if (!audioError)
-      soundLibrary = new SoundLibrary(&options, audioDevice, paidDataPath.subdirectory("sound"));
-  }
-  if (tilesPresent)
-    initializeRendererTiles(renderer, paidDataPath.subdirectory("images"));
-  unique_ptr<View> view;
-  view.reset(WindowView::createDefaultView(
-      {renderer, guiFactory, tilesPresent, &options, &clock, soundLibrary}));
-#ifndef RELEASE
-  InfoLog.addOutput(DebugOutput::toString([&view](const string& s) { view->logMessage(s);}));
-#endif
-  view->initialize();
-  Tile::initialize(renderer, tilesPresent);
   Jukebox jukebox(
       &options,
       audioDevice,
@@ -352,12 +329,41 @@ static int keeperMain(po::parser& commandLineFlags) {
   if (commandLineFlags["force_keeper"].was_set())
     forceGame = MainLoop::ForceGameInfo {PlayerRole::KEEPER, CampaignType::QUICK_MAP};
   SokobanInput sokobanInput(freeDataPath.file("sokoban_input.txt"), userPath.file("sokoban_state.txt"));
-  MainLoop loop(view.get(), &highscores, &fileSharing, freeDataPath, userPath, &options, &jukebox, &sokobanInput,
-      useSingleThread, forceGame);
   if (commandLineFlags["worldgen_test"].was_set()) {
-    loop.modelGenTest(commandLineFlags["worldgen_test"].get().i32, Random, &options);
+    MainLoop loop(nullptr, &highscores, &fileSharing, freeDataPath, userPath, &options, &jukebox, &sokobanInput,
+        useSingleThread, forceGame);
+    vector<string> types;
+    if (commandLineFlags["worldgen_maps"].was_set())
+      types = split(commandLineFlags["worldgen_maps"].get().string, {','});
+    loop.modelGenTest(commandLineFlags["worldgen_test"].get().i32, types, Random, &options);
     return 0;
   }
+  Renderer renderer(
+      "KeeperRL",
+      Vec2(24, 24),
+      contribDataPath,
+      freeDataPath.file("images/mouse_cursor.png"),
+      freeDataPath.file("images/mouse_cursor2.png"));
+  FatalLog.addOutput(DebugOutput::toString([&renderer](const string& s) { renderer.showError(s);}));
+  GuiFactory guiFactory(renderer, &clock, &options, &keybindingMap);
+  guiFactory.loadFreeImages(freeDataPath.subdirectory("images"));
+  if (tilesPresent) {
+    guiFactory.loadNonFreeImages(paidDataPath.subdirectory("images"));
+    if (!audioError)
+      soundLibrary = new SoundLibrary(&options, audioDevice, paidDataPath.subdirectory("sound"));
+  }
+  if (tilesPresent)
+    initializeRendererTiles(renderer, paidDataPath.subdirectory("images"));
+  Tile::initialize(renderer, tilesPresent);
+  unique_ptr<View> view;
+  view.reset(WindowView::createDefaultView(
+      {renderer, guiFactory, tilesPresent, &options, &clock, soundLibrary}));
+#ifndef RELEASE
+  InfoLog.addOutput(DebugOutput::toString([&view](const string& s) { view->logMessage(s);}));
+#endif
+  view->initialize();
+  MainLoop loop(view.get(), &highscores, &fileSharing, freeDataPath, userPath, &options, &jukebox, &sokobanInput,
+      useSingleThread, forceGame);
   try {
     if (audioError)
       view->presentText("Failed to initialize audio. The game will be started without sound.", *audioError);

@@ -29,7 +29,7 @@ class MainLoop {
       Options*, Jukebox*, SokobanInput*, bool useSingleThread, optional<ForceGameInfo>);
 
   void start(bool tilesPresent);
-  void modelGenTest(int numTries, RandomGen&, Options*);
+  void modelGenTest(int numTries, const vector<std::string>& types, RandomGen&, Options*);
 
   static int getAutosaveFreq();
 

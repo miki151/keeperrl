@@ -5,6 +5,10 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+FilePath FilePath::fromFullPath(const std::string& path) {
+  return FilePath(split(path, {'/'}).back(), path);
+}
+
 const char* FilePath::getPath() const {
   return fullPath.c_str();
 }
@@ -25,10 +29,14 @@ bool FilePath::hasSuffix(const string& suf) const {
 
 FilePath FilePath::changeSuffix(const string& current, const string& newSuf) const {
   CHECK(hasSuffix(current));
-  return FilePath(dir, filename.substr(0, filename.size() - current.size()) + newSuf);
+  return FilePath(filename.substr(0, filename.size() - current.size()) + newSuf, fullPath);
 }
 
-FilePath::FilePath(const DirectoryPath& d, const string& f) : dir(d), filename(f), fullPath(dir.get() + "/"_s + f) {
+FilePath::FilePath(const DirectoryPath& dir, const string& f) : filename(f), fullPath(dir.get() + "/"_s + f) {
+}
+
+FilePath::FilePath(const std::string& name, const std::string& path) : filename(name), fullPath(path) {
+
 }
 
 std::ostream&operator <<(std::ostream& d, const FilePath& path) {

@@ -413,53 +413,65 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setLayer(FurnitureLayer::CEILING)
           .setConstructMessage(none)
           .setTickType(FurnitureTickType::METEOR_SHOWER);
-    case FurnitureType::WATER:
-      return Furniture("water", ViewObject(ViewId::WATER, ViewLayer::FLOOR_BACKGROUND)
+    case FurnitureType::WATER: {
+      auto ret = Furniture("water", ViewObject(ViewId::WATER, ViewLayer::FLOOR_BACKGROUND)
               .setAttribute(ViewObject::Attribute::WATER_DEPTH, 100.0), type, tribe)
           .setLayer(FurnitureLayer::GROUND)
           .setEntryType(FurnitureEntry::Water{})
           .setDroppedItems(FurnitureDroppedItems::Water{"sinks", "sink", "You hear a splash."_s})
           .setCanBuildBridgeOver()
-          .setSummonedElement(CreatureId::WATER_ELEMENTAL)
-          .setMovementSet(MovementSet()
-              .addTrait(MovementTrait::FLY)
-              .addTrait(MovementTrait::SWIM)
-              .addForcibleTrait(MovementTrait::WALK));
-    case FurnitureType::SHALLOW_WATER1:
-      return Furniture("shallow water", ViewObject(ViewId::WATER, ViewLayer::FLOOR_BACKGROUND)
+          .setSummonedElement(CreatureId::WATER_ELEMENTAL);
+      ret.modMovementSet()
+          .clearTraits()
+          .addTrait(MovementTrait::FLY)
+          .addTrait(MovementTrait::SWIM)
+          .addForcibleTrait(MovementTrait::WALK);
+      return ret;
+    }
+    case FurnitureType::SHALLOW_WATER1: {
+      auto ret = Furniture("shallow water", ViewObject(ViewId::WATER, ViewLayer::FLOOR_BACKGROUND)
               .setAttribute(ViewObject::Attribute::WATER_DEPTH, 1.5), type, tribe)
           .setLayer(FurnitureLayer::GROUND)
           .setEntryType(FurnitureEntry::Water{})
           .setCanBuildBridgeOver()
-          .setSummonedElement(CreatureId::WATER_ELEMENTAL)
-          .setMovementSet(MovementSet()
-              .addForcibleTrait(MovementTrait::WALK)
-              .addTrait(MovementTrait::FLY)
-              .addTrait(MovementTrait::SWIM)
-              .addTrait(MovementTrait::WADE));
-    case FurnitureType::SHALLOW_WATER2:
-      return Furniture("shallow water", ViewObject(ViewId::WATER, ViewLayer::FLOOR_BACKGROUND)
+          .setSummonedElement(CreatureId::WATER_ELEMENTAL);
+      ret.modMovementSet()
+          .clearTraits()
+          .addForcibleTrait(MovementTrait::WALK)
+          .addTrait(MovementTrait::FLY)
+          .addTrait(MovementTrait::SWIM)
+          .addTrait(MovementTrait::WADE);
+      return ret;
+    }
+    case FurnitureType::SHALLOW_WATER2: {
+      auto ret = Furniture("shallow water", ViewObject(ViewId::WATER, ViewLayer::FLOOR_BACKGROUND)
               .setAttribute(ViewObject::Attribute::WATER_DEPTH, 0.5), type, tribe)
           .setLayer(FurnitureLayer::GROUND)
           .setEntryType(FurnitureEntry::Water{})
           .setCanBuildBridgeOver()
-          .setSummonedElement(CreatureId::WATER_ELEMENTAL)
-          .setMovementSet(MovementSet()
-              .addForcibleTrait(MovementTrait::WALK)
-              .addTrait(MovementTrait::FLY)
-              .addTrait(MovementTrait::SWIM)
-              .addTrait(MovementTrait::WADE));
-    case FurnitureType::MAGMA:
-      return Furniture("magma", ViewObject(ViewId::MAGMA, ViewLayer::FLOOR_BACKGROUND), type, tribe)
+          .setSummonedElement(CreatureId::WATER_ELEMENTAL);
+      ret.modMovementSet()
+          .clearTraits()
+          .addForcibleTrait(MovementTrait::WALK)
+          .addTrait(MovementTrait::FLY)
+          .addTrait(MovementTrait::SWIM)
+          .addTrait(MovementTrait::WADE);
+      return ret;
+    }
+    case FurnitureType::MAGMA: {
+      auto ret = Furniture("magma", ViewObject(ViewId::MAGMA, ViewLayer::FLOOR_BACKGROUND), type, tribe)
           .setLayer(FurnitureLayer::GROUND)
           .setEntryType(FurnitureEntry::Magma{})
           .setDroppedItems(FurnitureDroppedItems::Water{"burns", "burn", none})
           .setLightEmission(8.2)
           .setCanBuildBridgeOver()
-          .setSummonedElement(CreatureId::FIRE_ELEMENTAL)
-          .setMovementSet(MovementSet()
-              .addTrait(MovementTrait::FLY)
-              .addForcibleTrait(MovementTrait::WALK));
+          .setSummonedElement(CreatureId::FIRE_ELEMENTAL);
+      ret.modMovementSet()
+          .clearTraits()
+          .addTrait(MovementTrait::FLY)
+          .addForcibleTrait(MovementTrait::WALK);
+      return ret;
+    }
     case FurnitureType::SAND:
       return Furniture("sand", ViewObject(ViewId::SAND, ViewLayer::FLOOR_BACKGROUND), type, tribe)
           .setLayer(FurnitureLayer::GROUND);

@@ -93,10 +93,9 @@ static optional<string> curlUpload(const char* path, const char* url, void* prog
       curl_easy_setopt(curl, CURLOPT_TIMEOUT, timeout);
     // Internal CURL progressmeter must be disabled if we provide our own callback
     curl_easy_setopt(curl, CURLOPT_NOPROGRESS, false);
-    if (progressCallback) {
+    if (progressCallback)
       curl_easy_setopt(curl, CURLOPT_PROGRESSDATA, progressCallback);
-      curl_easy_setopt(curl, CURLOPT_PROGRESSFUNCTION, progressFunction);
-    }
+    curl_easy_setopt(curl, CURLOPT_PROGRESSFUNCTION, progressFunction);
     CURLcode res = curl_easy_perform(curl);
     if (res != CURLE_OK)
       ret = string("Upload failed: ") + curl_easy_strerror(res);

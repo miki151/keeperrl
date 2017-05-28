@@ -4,6 +4,7 @@
 
 class FilePath {
   public:
+  static FilePath fromFullPath(const string& path);
   const char* getPath() const;
   const char* getFileName() const;
   time_t getModificationTime() const;
@@ -13,8 +14,8 @@ class FilePath {
   private:
   friend class DirectoryPath;
   FilePath(const DirectoryPath& d, const string& f);
+  FilePath(const string& filename, const string& fullPath);
 
-  DirectoryPath dir;
   string filename;
   string fullPath;
 };
