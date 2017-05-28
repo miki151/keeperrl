@@ -485,7 +485,6 @@ void PlayerControl::addConsumableItem(WCreature creature) {
 
 void PlayerControl::addEquipment(WCreature creature, EquipmentSlot slot) {
   vector<WItem> currentItems = creature->getEquipment().getSlotItems(slot);
-  CHECK(currentItems.size() < creature->getEquipment().getMaxItems(slot));
   WItem chosenItem = chooseEquipmentItem(creature, currentItems, [&](const WItem it) {
       return !getCollective()->getMinionEquipment().isOwner(it, creature)
       && creature->canEquipIfEmptySlot(it, nullptr) && it->getEquipmentSlot() == slot; });
@@ -2016,25 +2015,27 @@ void PlayerControl::processInput(View* view, UserInput input) {
         auto& info = input.get<WorkshopQueuedActionInfo>();
         if (chosenWorkshop) {
           auto& workshop = getCollective()->getWorkshops().get(*chosenWorkshop);
-          switch (info.action) {
-            case ItemAction::REMOVE:
-              workshop.unqueue(info.itemIndex);
-              break;
-            case ItemAction::CHANGE_NUMBER: {
-              int batchSize = workshop.getQueued().at(info.itemIndex).batchSize;
-              if (auto number = getView()->getNumber("Change the number of items:", 0, 50 * batchSize, batchSize)) {
-                if (*number > 0)
-                  workshop.changeNumber(info.itemIndex, *number / batchSize);
-                else
-                  workshop.unqueue(info.itemIndex);
+          if (info.itemIndex < workshop.getQueued().size()) {
+            switch (info.action) {
+              case ItemAction::REMOVE:
+                workshop.unqueue(info.itemIndex);
+                break;
+              case ItemAction::CHANGE_NUMBER: {
+                int batchSize = workshop.getQueued().at(info.itemIndex).batchSize;
+                if (auto number = getView()->getNumber("Change the number of items:", 0, 50 * batchSize, batchSize)) {
+                  if (*number > 0)
+                    workshop.changeNumber(info.itemIndex, *number / batchSize);
+                  else
+                    workshop.unqueue(info.itemIndex);
+                }
+                break;
               }
-              break;
+              default:
+                break;
             }
-            default:
-              break;
+            getCollective()->getWorkshops().scheduleItems(getCollective());
+            getCollective()->updateResourceProduction();
           }
-          getCollective()->getWorkshops().scheduleItems(getCollective());
-          getCollective()->updateResourceProduction();
         }
       }
       break;
