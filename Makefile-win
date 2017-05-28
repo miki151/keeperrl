@@ -79,8 +79,9 @@ DEPS = $(addprefix $(OBJDIR)/,$(SRCS:.cpp=.d))
 ##############################################################################
 
 all:
-	@$(MAKE) --no-print-directory info
-	@$(MAKE) --no-print-directory compile
+	@$(MAKE) -f Makefile-win --no-print-directory info
+	bash ./gen_version.sh
+	@$(MAKE) -f Makefile-win --no-print-directory compile
 
 compile: gen_version $(NAME)
 
