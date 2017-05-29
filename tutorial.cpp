@@ -36,6 +36,7 @@ enum class Tutorial::State {
   CUT_TREES,
   BUILD_STORAGE,
   CONTROLS1,
+  CONTROLS2,
   GET_200_WOOD,
   DIG_ROOM,
   BUILD_DOOR,
@@ -89,6 +90,7 @@ bool Tutorial::canContinue(WConstGame game) const {
     case State::BUILD_STORAGE:
       return collective->getZones().getPositions(ZoneId::STORAGE_RESOURCES).size() >= 9;
     case State::CONTROLS1:
+    case State::CONTROLS2:
       return true;
     case State::GET_200_WOOD:
       return collective->numResource(CollectiveResourceId::WOOD) >= 200;
@@ -195,6 +197,8 @@ string Tutorial::getMessage() const {
           "and dragging it.\n \n"
           "Press SPACE to pause and continue the game. You can still give orders and use all controls while the game "
           "is paused.";
+    case State::CONTROLS2:
+      return "Try zooming in and out of the map using the 'z' key or mouse wheel.";
     case State::GET_200_WOOD:
       return "Cut some more trees until how have gathered at least 200 wood.\n \n";
           //"You can mark things in bulk by dragging the mouse or by holding SHIFT and selecting a rectangle. Try it!";
