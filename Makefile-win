@@ -50,12 +50,18 @@ CFLAGS += $(IPATH)
 
 SRCS = $(shell ls -t *.cpp)
 
-LIBS = -mwindows keeper.res -lvorbisfile -lvorbis -logg -lSDL2_image -lkernel32 -luser32 -lgdi32 -lcomdlg32 -lole32 -ldinput -lddraw -ldxguid -lwinmm -ldsound -lpsapi -lgdiplus -lshlwapi -luuid -lfreetype
+ifdef AMD64
+RES_FILE=keeper.res
+else
+RES_FILE=keeper32.res
+endif
+
+LIBS = -mwindows ${RES_FILE} -lvorbisfile -lvorbis -logg -lSDL2_image -lkernel32 -luser32 -lgdi32 -lcomdlg32 -lole32 -ldinput -lddraw -ldxguid -lwinmm -ldsound -lpsapi -lgdiplus -lshlwapi -luuid
 
 ifdef AMD64
 LIBS += -lmingw32 -lSDL2main -lSDL2 -lfreeglut -lglu32 -lz -lglew32 -ljpeg -lopenal -lopengl32 -lcurl -limagehlp -lpthread
 else
-LIBS += -lSDL2 -lSDL2main  -lglut -lglu32 -lz -lglew -ljpeg -lopenal -lopengl32 -lcurl -limagehlp -l pthread
+LIBS += -lSDL2 -lSDL2main  -lglut -lglu32 -lz -ljpeg -lopenal -lopengl32 -lcurl -limagehlp -l pthread
 endif
 
 ifdef debug
@@ -73,8 +79,9 @@ DEPS = $(addprefix $(OBJDIR)/,$(SRCS:.cpp=.d))
 ##############################################################################
 
 all:
-	@$(MAKE) --no-print-directory info
-	@$(MAKE) --no-print-directory compile
+	@$(MAKE) -f Makefile-win --no-print-directory info
+	bash ./gen_version.sh
+	@$(MAKE) -f Makefile-win --no-print-directory compile
 
 compile: gen_version $(NAME)
 
