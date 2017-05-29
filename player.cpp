@@ -160,6 +160,7 @@ void Player::getItemNames(vector<WItem> items, vector<ListElem>& names, vector<v
 }
 
 void Player::pickUpItemAction(int numStack, bool multi) {
+  CHECK(numStack >= 0);
   auto stacks = getCreature()->stackItems(getCreature()->getPickUpOptions());
   if (getUsableUsageType()) {
     --numStack;
