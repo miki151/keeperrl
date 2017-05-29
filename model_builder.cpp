@@ -297,7 +297,7 @@ PModel ModelBuilder::trySingleMapModel(const string& worldName) {
         EnemyId::WITCH,
         EnemyId::CEMETERY}))
     enemies.push_back(enemyFactory->get(enemy));
-  return tryModel(360, worldName, enemies, true, BiomeId::GRASSLAND, {});
+  return tryModel(360, worldName, enemies, true, BiomeId::GRASSLAND, {}, true);
 }
 
 void ModelBuilder::addMapVillains(vector<EnemyInfo>& enemyInfo, BiomeId biomeId) {
@@ -330,14 +330,14 @@ PModel ModelBuilder::tryCampaignBaseModel(const string& siteName, bool addExtern
   vector<ExternalEnemy> externalEnemies;
   if (addExternalEnemies)
     externalEnemies = enemyFactory->getExternalEnemies();
-  return tryModel(230, siteName, enemyInfo, true, biome, externalEnemies);
+  return tryModel(230, siteName, enemyInfo, true, biome, externalEnemies, true);
 }
 
 PModel ModelBuilder::tryTutorialModel(const string& siteName) {
   vector<EnemyInfo> enemyInfo;
   BiomeId biome = BiomeId::MOUNTAIN;
   enemyInfo.push_back(enemyFactory->get(EnemyId::TUTORIAL_VILLAGE));
-  return tryModel(230, siteName, enemyInfo, true, biome, {});
+  return tryModel(230, siteName, enemyInfo, true, biome, {}, false);
 }
 
 static optional<BiomeId> getBiome(EnemyId enemyId, RandomGen& random) {
@@ -374,7 +374,7 @@ PModel ModelBuilder::tryCampaignSiteModel(const string& siteName, EnemyId enemyI
   auto biomeId = getBiome(enemyId, random);
   CHECK(biomeId) << "Unimplemented enemy in campaign " << EnumInfo<EnemyId>::getString(enemyId);
   addMapVillains(enemyInfo, *biomeId);
-  return tryModel(170, siteName, enemyInfo, false, *biomeId, {});
+  return tryModel(170, siteName, enemyInfo, false, *biomeId, {}, true);
 }
 
 PModel ModelBuilder::tryBuilding(int numTries, function<PModel()> buildFun) {
@@ -476,7 +476,7 @@ WCollective ModelBuilder::spawnKeeper(WModel m, PCreature keeper) {
 }
 
 PModel ModelBuilder::tryModel(int width, const string& levelName, vector<EnemyInfo> enemyInfo, bool keeperSpawn,
-    BiomeId biomeId, vector<ExternalEnemy> externalEnemies) {
+    BiomeId biomeId, vector<ExternalEnemy> externalEnemies, bool hasWildlife) {
   auto model = Model::create();
   vector<SettlementInfo> topLevelSettlements;
   vector<EnemyInfo> extraEnemies;
@@ -492,9 +492,12 @@ PModel ModelBuilder::tryModel(int width, const string& levelName, vector<EnemyIn
       topLevelSettlements.push_back(elem.settlement);
   }
   append(enemyInfo, extraEnemies);
-  WLevel top = model->buildTopLevel(
+  optional<CreatureFactory> wildlife;
+  if (hasWildlife)
+    wildlife = CreatureFactory::forrest(TribeId::getWildlife());
+  WLevel top =  model->buildTopLevel(
       LevelBuilder(meter, random, width, width, levelName, false),
-      LevelMaker::topLevel(random, CreatureFactory::forrest(TribeId::getWildlife()), topLevelSettlements, width,
+      LevelMaker::topLevel(random, wildlife, topLevelSettlements, width,
         keeperSpawn, biomeId));
   model->calculateStairNavigation();
   for (auto& enemy : enemyInfo) {
