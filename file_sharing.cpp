@@ -135,11 +135,15 @@ void FileSharing::uploadingLoop() {
     uploadLoop.setDone();
 }
 
-void FileSharing::uploadGameEvent(const GameEvent& data1) {
+bool FileSharing::uploadGameEvent(const GameEvent& data1, bool requireGameEventsPermission) {
   GameEvent data(data1);
   data.emplace("installId", toString(installId));
-  if (options.getBoolValue(OptionId::ONLINE) && options.getBoolValue(OptionId::GAME_EVENTS))
+  if (options.getBoolValue(OptionId::ONLINE) &&
+      (!requireGameEventsPermission || options.getBoolValue(OptionId::GAME_EVENTS))) {
     uploadGameEventImpl(data, 5);
+    return true;
+  } else
+    return false;
 }
 
 void FileSharing::uploadGameEventImpl(const GameEvent& data, int tries) {
@@ -260,14 +264,14 @@ optional<vector<FileSharing::BoardMessage>> FileSharing::getBoardMessages(int bo
   return none;
 }
 
-void FileSharing::uploadBoardMessage(const string& gameId, int hash, const string& author, const string& text) {
-  uploadGameEvent({
+bool FileSharing::uploadBoardMessage(const string& gameId, int hash, const string& author, const string& text) {
+  return uploadGameEvent({
       { "gameId", gameId },
       { "eventType", "boardMessage"},
       { "boardId", toString(hash) },
       { "author", author },
       { "text", text }
-  });
+  }, false);
 }
 
 void FileSharing::cancel() {

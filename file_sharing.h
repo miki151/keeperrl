@@ -23,7 +23,7 @@ class FileSharing {
   optional<string> download(const string& filename, const DirectoryPath& dir, ProgressMeter&);
 
   typedef map<string, string> GameEvent;
-  void uploadGameEvent(const GameEvent&);
+  bool uploadGameEvent(const GameEvent&, bool requireGameEventsPermission = true);
   void uploadHighscores(const FilePath&);
 
   struct BoardMessage {
@@ -31,7 +31,7 @@ class FileSharing {
     string author;
   };
   optional<vector<BoardMessage>> getBoardMessages(int boardId);
-  void uploadBoardMessage(const string& gameId, int hash, const string& author, const string& text);
+  bool uploadBoardMessage(const string& gameId, int hash, const string& author, const string& text);
 
   string downloadHighscores(int version);
 

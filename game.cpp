@@ -593,7 +593,8 @@ void Game::handleMessageBoard(Position pos, WCreature c) {
   view->refreshView();
   t.join();
   if (!messages || cancelled) {
-    view->presentText("", "Couldn't download board contents. Please check your internet connection.");
+    view->presentText("", "Couldn't download board contents. Please check your internet connection and "
+        "enable online features in the settings.");
     return;
   }
   for (auto message : *messages) {
@@ -606,9 +607,10 @@ void Game::handleMessageBoard(Position pos, WCreature c) {
   options.emplace_back("[Write something]");
   if (auto index = view->chooseFromList("", options))
     if (auto text = view->getText("Enter message", "", 80)) {
-      if (text->size() >= 2)
-        fileSharing->uploadBoardMessage(getGameIdentifier(), pos.getHash(), c->getName().title(), *text);
-      else
+      if (text->size() >= 2) {
+        if (!fileSharing->uploadBoardMessage(getGameIdentifier(), pos.getHash(), c->getName().title(), *text))
+          view->presentText("", "Please enable online features in the settings.");
+      } else
         view->presentText("", "The message was too short.");
     }
 }
