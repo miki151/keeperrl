@@ -160,7 +160,7 @@ void Game::prepareSiteRetirement() {
   playerCollective->setVillainType(VillainType::MAIN);
   playerCollective->retire();
   set<Position> locationPosTmp =
-      playerCollective->getConstructions().getBuiltPositions(FurnitureType::BOOK_SHELF);
+      playerCollective->getConstructions().getBuiltPositions(FurnitureType::BOOKCASE);
   vector<Position> locationPos(locationPosTmp.begin(), locationPosTmp.end());
   if (locationPos.empty())
     locationPos = playerCollective->getTerritory().getAll();

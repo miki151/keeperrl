@@ -187,7 +187,7 @@ const vector<PlayerControl::BuildInfo>& PlayerControl::getBuildInfo() {
       BuildInfo(ZoneId::STORAGE_EQUIPMENT, ViewId::STORAGE_EQUIPMENT, "Equipment",
           "All equipment for your minions can be stored here.", 0, "Storage")
              .setTutorialHighlight(TutorialHighlight::EQUIPMENT_STORAGE),
-      BuildInfo({FurnitureType::BOOK_SHELF, {ResourceId::WOOD, 15}}, "Library", {},
+      BuildInfo({FurnitureType::BOOKCASE, {ResourceId::WOOD, 15}}, "Library", {},
           "Mana is regenerated here.", 'y').setTutorialHighlight(TutorialHighlight::BUILD_LIBRARY),
       BuildInfo({FurnitureType::THRONE, {ResourceId::GOLD, 160}, false, 1}, "Throne",
           {{RequirementId::VILLAGE_CONQUERED}},
@@ -1160,7 +1160,7 @@ void PlayerControl::fillLibraryInfo(CollectiveInfo& collectiveInfo) const {
   if (chosenLibrary) {
     collectiveInfo.libraryInfo.emplace();
     auto& info = *collectiveInfo.libraryInfo;
-    int libraryCount = getCollective()->getConstructions().getBuiltCount(FurnitureType::BOOK_SHELF);
+    int libraryCount = getCollective()->getConstructions().getBuiltCount(FurnitureType::BOOKCASE);
     if (libraryCount == 0)
       info.warning = "You need to build a library to start research."_s;
     else if (libraryCount <= getMinLibrarySize())
@@ -1588,7 +1588,7 @@ void PlayerControl::getSquareViewIndex(Position pos, bool canSee, ViewIndex& ind
 
 static bool showEfficiency(FurnitureType type) {
   switch (type) {
-    case FurnitureType::BOOK_SHELF:
+    case FurnitureType::BOOKCASE:
     case FurnitureType::DEMON_SHRINE:
     case FurnitureType::WORKSHOP:
     case FurnitureType::TRAINING_WOOD:
@@ -1614,10 +1614,10 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
       index.mergeFromMemory(*memIndex);
   if (getCollective()->getTerritory().contains(position))
     if (auto furniture = position.getFurniture(FurnitureLayer::MIDDLE)) {
-      if (furniture->getType() == FurnitureType::BOOK_SHELF || CollectiveConfig::getWorkshopType(furniture->getType()))
+      if (furniture->getType() == FurnitureType::BOOKCASE || CollectiveConfig::getWorkshopType(furniture->getType()))
         index.setHighlight(HighlightType::CLICKABLE_FURNITURE);
       if ((chosenWorkshop && chosenWorkshop == CollectiveConfig::getWorkshopType(furniture->getType())) ||
-          (chosenLibrary && furniture->getType() == FurnitureType::BOOK_SHELF))
+          (chosenLibrary && furniture->getType() == FurnitureType::BOOKCASE))
         index.setHighlight(HighlightType::CLICKED_FURNITURE);
       if (draggedCreature)
         if (WCreature c = getCreature(*draggedCreature))
@@ -1826,7 +1826,7 @@ void PlayerControl::clearChosenInfo() {
 }
 
 void PlayerControl::setChosenLibrary(bool state) {
-  for (auto pos : getCollective()->getConstructions().getBuiltPositions(FurnitureType::BOOK_SHELF))
+  for (auto pos : getCollective()->getConstructions().getBuiltPositions(FurnitureType::BOOKCASE))
     pos.setNeedsRenderUpdate(true);
   if (state)
     clearChosenInfo();
@@ -2396,7 +2396,7 @@ void PlayerControl::onSquareClick(Position pos) {
       } else {
         if (auto workshopType = CollectiveConfig::getWorkshopType(furniture->getType()))
           setChosenWorkshop(*workshopType);
-        if (furniture->getType() == FurnitureType::BOOK_SHELF)
+        if (furniture->getType() == FurnitureType::BOOKCASE)
           setChosenLibrary(!chosenLibrary);
       }
     }

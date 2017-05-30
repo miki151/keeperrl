@@ -100,13 +100,13 @@ bool Tutorial::canContinue(WConstGame game) const {
       return collective->getConstructions().getBuiltCount(FurnitureType::DOOR)
           + collective->getConstructions().getBuiltCount(FurnitureType::LOCKED_DOOR) >= 1;
     case State::BUILD_LIBRARY:
-      return collective->getConstructions().getBuiltCount(FurnitureType::BOOK_SHELF) >= 5;
+      return collective->getConstructions().getBuiltCount(FurnitureType::BOOKCASE) >= 5;
     case State::DIG_2_ROOMS:
       return getHighlightedSquaresHigh(game).empty();
     case State::ACCEPT_IMMIGRANT:
       return collective->getCreatures(MinionTrait::FIGHTER).size() >= 1;
     case State::TORCHES:
-      for (auto furniture : {FurnitureType::BOOK_SHELF, FurnitureType::TRAINING_WOOD})
+      for (auto furniture : {FurnitureType::BOOKCASE, FurnitureType::TRAINING_WOOD})
         for (auto pos : collective->getConstructions().getBuiltPositions(furniture))
           if (collective->getTileEfficiency().getEfficiency(pos) < 0.99)
             return false;
@@ -213,8 +213,8 @@ string Tutorial::getMessage() const {
           "Try locking and unlocking your new door.";
     case State::BUILD_LIBRARY:
       return "The first room that you need to build is a library. This is where the Keeper and other minions "
-          "will learn spells, and research new technology. It is also a source of mana. Place at least 5 book shelves "
-          "in the new room. Remember that book shelves and other furniture blocks your minions' movement.";
+          "will learn spells, and research new technology. It is also a source of mana. Place 6 bookcases "
+          "in the new room as highlighted. Remember that book shelves and other furniture blocks your minions' movement.";
     case State::DIG_2_ROOMS:
       return "Dig out some more rooms. "
           "If the library is blocking your tunnels, use the 'remove construction' order to get it out of the way.\n \n"
@@ -354,15 +354,16 @@ static void clearDugOutSquares(WConstGame game, vector<Vec2>& highlights) {
   }
 }
 
+static const int corridorLength = 6;
+static const int roomWidth = 5;
+
 vector<Vec2> Tutorial::getHighlightedSquaresHigh(WConstGame game) const {
   auto collective = game->getPlayerCollective();
-  const int corridor = 6;
-  int roomWidth = 5;
-  const Vec2 firstRoom(entrance - Vec2(0, corridor + roomWidth / 2));
+  const Vec2 firstRoom(entrance - Vec2(0, corridorLength + roomWidth / 2));
   switch (state) {
     case State::DIG_ROOM: {
       vector<Vec2> ret;
-      for (int i : Range(0, corridor))
+      for (int i : Range(0, corridorLength))
         ret.push_back(entrance - Vec2(0, 1) * i);
       for (Vec2 v : Rectangle::centered(firstRoom, roomWidth / 2))
         ret.push_back(v);
@@ -386,9 +387,18 @@ vector<Vec2> Tutorial::getHighlightedSquaresHigh(WConstGame game) const {
 vector<Vec2> Tutorial::getHighlightedSquaresLow(WConstGame game) const {
   auto collective = game->getPlayerCollective();
   switch (state) {
+    case State::BUILD_LIBRARY: {
+      const Vec2 roomCenter(entrance - Vec2(0, corridorLength + roomWidth / 2));
+      vector<Vec2> ret;
+      for (Vec2 v : roomCenter.neighbors8())
+        if (v.y != roomCenter.y && !collective->getConstructions().containsFurniture(
+              Position(v, collective->getLevel()), FurnitureLayer::MIDDLE))
+          ret.push_back(v);
+      return ret;
+    }
     case State::FLOORS: {
       vector<Vec2> ret;
-      for (auto furniture : {FurnitureType::BOOK_SHELF, FurnitureType::TRAINING_WOOD})
+      for (auto furniture : {FurnitureType::BOOKCASE, FurnitureType::TRAINING_WOOD})
         for (auto pos : collective->getConstructions().getBuiltPositions(furniture))
           for (auto floorPos : concat({pos}, pos.neighbors8()))
             if (floorPos.canConstruct(FurnitureType::FLOOR_WOOD1) && !ret.contains(floorPos.getCoord()))
@@ -396,7 +406,7 @@ vector<Vec2> Tutorial::getHighlightedSquaresLow(WConstGame game) const {
       return ret;
     }
     case State::RESEARCH_CRAFTING:
-      return collective->getConstructions().getBuiltPositions(FurnitureType::BOOK_SHELF).transform(
+      return collective->getConstructions().getBuiltPositions(FurnitureType::BOOKCASE).transform(
           [](const Position& pos) { return pos.getCoord(); });
     case State::SCHEDULE_WORKSHOP_ITEMS:
       return collective->getConstructions().getBuiltPositions(FurnitureType::WORKSHOP).transform(

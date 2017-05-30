@@ -214,7 +214,7 @@ const vector<FurnitureType>& CollectiveConfig::getRoomsNeedingLight() const {
     FurnitureType::TRAINING_WOOD,
     FurnitureType::TRAINING_IRON,
     FurnitureType::TRAINING_STEEL,
-    FurnitureType::BOOK_SHELF};
+    FurnitureType::BOOKCASE};
   return ret;
 };
 
@@ -401,7 +401,7 @@ const MinionTaskInfo& CollectiveConfig::getTaskInfo(MinionTask task) {
       case MinionTask::GRAVE: return {FurnitureType::GRAVE, "sleeping"};
       case MinionTask::LAIR: return {FurnitureType::BEAST_CAGE, "sleeping"};
       case MinionTask::THRONE: return {FurnitureType::THRONE, "throne"};
-      case MinionTask::STUDY: return {FurnitureType::BOOK_SHELF, "studying"};
+      case MinionTask::STUDY: return {FurnitureType::BOOKCASE, "studying"};
       case MinionTask::PRISON: return {FurnitureType::PRISON, "prison"};
       case MinionTask::CROPS: return {FurnitureType::CROPS, "crops"};
       case MinionTask::RITUAL: return {FurnitureType::DEMON_SHRINE, "rituals"};

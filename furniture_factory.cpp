@@ -70,8 +70,8 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setUsageTime(5)
           .setCanHide()
           .setDestroyable(100);
-    case FurnitureType::BOOK_SHELF:
-      return Furniture("book shelf", ViewObject(ViewId::LIBRARY, ViewLayer::FLOOR), type, tribe)
+    case FurnitureType::BOOKCASE:
+      return Furniture("bookcase", ViewObject(ViewId::LIBRARY, ViewLayer::FLOOR), type, tribe)
           .setBlocking()
           .setUsageTime(5)
           .setCanHide()

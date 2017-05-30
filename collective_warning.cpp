@@ -23,7 +23,7 @@ void CollectiveWarnings::considerWarnings(WCollective col) {
   setWarning(Warning::MANA, col->numResource(CollectiveResourceId::MANA) < 100);
   setWarning(Warning::DIGGING, col->getTerritory().isEmpty());
   setWarning(Warning::LIBRARY, !col->getTerritory().isEmpty() &&
-      col->getConstructions().getTotalCount(FurnitureType::BOOK_SHELF) == 0);
+      col->getConstructions().getTotalCount(FurnitureType::BOOKCASE) == 0);
   for (SpawnType spawnType : ENUM_ALL(SpawnType)) {
     DormInfo info = col->getConfig().getDormInfo()[spawnType];
     if (info.warning)

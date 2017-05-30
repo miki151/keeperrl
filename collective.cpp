@@ -1382,7 +1382,7 @@ void Collective::onAppliedSquare(WCreature c, Position pos) {
     // Furniture have variable apply time, so just multiply by it to be independent of changes.
     double efficiency = tileEfficiency->getEfficiency(pos) * furniture->getUsageTime() * getEfficiency(c);
     switch (furniture->getType()) {
-      case FurnitureType::BOOK_SHELF: {
+      case FurnitureType::BOOKCASE: {
         addMana(0.1 * efficiency * c->getAttributes().getSkills().getValue(SkillId::MANA));
         auto availableSpells = Technology::getAvailableSpells(this);
         if (Random.chance(efficiency / 60) && !availableSpells.empty()) {
