@@ -340,7 +340,7 @@ void MapGui::onMouseRelease(Vec2 v) {
   }
   auto draggedCreature = getDraggedCreature();
   if (auto& draggedElem = guiFactory->getDragContainer().getElement())
-    if (guiFactory->getDragContainer().getOrigin().distD(v) > 10) {
+    if (v.inRectangle(getBounds()) && guiFactory->getDragContainer().getOrigin().distD(v) > 10) {
       switch (draggedElem->getId()) {
         case DragContentId::CREATURE:
           callbacks.creatureDroppedFun(draggedElem->get<UniqueEntity<Creature>::Id>(),
