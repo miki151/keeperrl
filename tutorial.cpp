@@ -27,7 +27,7 @@
 #include "equipment.h"
 #include "collective_teams.h"
 
-SERIALIZE_DEF(Tutorial, state)
+SERIALIZE_DEF(Tutorial, state, entrance)
 
 enum class Tutorial::State {
   WELCOME,
@@ -356,15 +356,14 @@ static void clearDugOutSquares(WConstGame game, vector<Vec2>& highlights) {
 
 vector<Vec2> Tutorial::getHighlightedSquaresHigh(WConstGame game) const {
   auto collective = game->getPlayerCollective();
-  const Vec2 entry(119, 130);
   const int corridor = 6;
   int roomWidth = 5;
-  const Vec2 firstRoom(entry - Vec2(0, corridor + roomWidth / 2));
+  const Vec2 firstRoom(entrance - Vec2(0, corridor + roomWidth / 2));
   switch (state) {
     case State::DIG_ROOM: {
       vector<Vec2> ret;
       for (int i : Range(0, corridor))
-        ret.push_back(entry - Vec2(0, 1) * i);
+        ret.push_back(entrance - Vec2(0, 1) * i);
       for (Vec2 v : Rectangle::centered(firstRoom, roomWidth / 2))
         ret.push_back(v);
       clearDugOutSquares(game, ret);
@@ -455,6 +454,15 @@ void Tutorial::createTutorial(Game& game) {
   auto tutorial = make_shared<Tutorial>();
   game.getPlayerControl()->setTutorial(tutorial);
   auto collective = game.getPlayerCollective();
+  bool foundEntrance = false;
+  for (auto pos : collective->getLevel()->getAllPositions())
+    if (auto f = pos.getFurniture(FurnitureLayer::CEILING))
+      if (f->getType() == FurnitureType::TUTORIAL_ENTRANCE) {
+        tutorial->entrance = pos.getCoord() - Vec2(0, 1);
+        CHECK(!foundEntrance);
+        foundEntrance = true;
+      }
+  CHECK(foundEntrance);
   collective->setTrait(collective->getLeader(), MinionTrait::NO_AUTO_EQUIPMENT);
   collective->init(CollectiveConfig::keeper(50, 10, {}, {
       ImmigrantInfo(CreatureId::IMP, {MinionTrait::WORKER, MinionTrait::NO_LIMIT, MinionTrait::NO_EQUIPMENT})

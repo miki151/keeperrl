@@ -271,6 +271,9 @@ const vector<PlayerControl::BuildInfo>& PlayerControl::getBuildInfo() {
           "A place to whip your minions if they need a morale boost.", 0, "Installations"),
       BuildInfo({FurnitureType::IMPALED_HEAD, {ResourceId::PRISONER_HEAD, 1}, true}, "Prisoner head", {},
           "Impaled head of an executed prisoner. Aggravates enemies.", 0, "Installations"),
+#ifndef RELEASE
+      BuildInfo({FurnitureType::TUTORIAL_ENTRANCE, {}}, "Tutorial entrance", {}, "", 0, "Installations"),
+#endif
       BuildInfo({TrapType::TERROR, ViewId::TERROR_TRAP}, "Panic trap", {{RequirementId::TECHNOLOGY, TechId::TRAPS}},
           "Causes the trespasser to panic.", 0, "Traps"),
       BuildInfo({TrapType::POISON_GAS, ViewId::GAS_TRAP}, "Gas trap", {{RequirementId::TECHNOLOGY, TechId::TRAPS}},

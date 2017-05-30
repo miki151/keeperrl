@@ -490,6 +490,9 @@ static Furniture get(FurnitureType type, TribeId tribe) {
     case FurnitureType::BLACK_FLOOR:
       return Furniture("floor", ViewObject(ViewId::EMPTY, ViewLayer::FLOOR_BACKGROUND), type, tribe)
           .setLayer(FurnitureLayer::GROUND);
+    case FurnitureType::TUTORIAL_ENTRANCE:
+      return Furniture("tutorial entrance", ViewObject(ViewId::TUTORIAL_ENTRANCE, ViewLayer::TORCH2), type, tribe)
+          .setLayer(FurnitureLayer::CEILING);
   }
 }
 

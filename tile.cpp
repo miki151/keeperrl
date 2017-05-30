@@ -604,6 +604,12 @@ class TileCoordLookup {
     Tile::addTile(ViewId::SPECIAL_HMBW, sprite("special_hmbw"));
     Tile::addTile(ViewId::SPECIAL_HMGN, sprite("special_hmgn"));
     Tile::addTile(ViewId::SPECIAL_HMGW, sprite("special_hmgw"));
+#ifndef RELEASE
+    Tile::addTile(ViewId::TUTORIAL_ENTRANCE, symbol(u8"?", Color::YELLOW));
+#else
+    Tile::addTile(ViewId::TUTORIAL_ENTRANCE, sprite("empty"));
+#endif
+
   }
 
   Tile symbol(const string& s, Color id, bool symbol = false) {
@@ -908,6 +914,7 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::SPECIAL_HMBW, symbol(u8"H", Color::ORANGE));
     Tile::addSymbol(ViewId::SPECIAL_HMGN, symbol(u8"H", Color::GREEN));
     Tile::addSymbol(ViewId::SPECIAL_HMGW, symbol(u8"H", Color::LIGHT_GREEN));
+    Tile::addSymbol(ViewId::TUTORIAL_ENTRANCE, symbol(u8" ", Color::LIGHT_GREEN));
   }
  
   private:
