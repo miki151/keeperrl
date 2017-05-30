@@ -298,7 +298,7 @@ static int keeperMain(po::parser& commandLineFlags) {
   if (commandLineFlags["upload_url"].was_set())
     uploadUrl = commandLineFlags["upload_url"].get().string;
   else
-#ifndef RELEASE
+#ifdef RELEASE
     uploadUrl = "http://keeperrl.com/~retired/" + serverVersion;
 #else
     uploadUrl = "http://localhost/~michal/" + serverVersion;

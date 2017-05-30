@@ -9,7 +9,7 @@
 #include <curl/curl.h>
 
 FileSharing::FileSharing(const string& url, Options& o, long long id) : uploadUrl(url), options(o),
-    uploadLoop(bindMethod(&FileSharing::uploadingLoop, this)), installId(id) {
+    uploadLoop(bindMethod(&FileSharing::uploadingLoop, this)), installId(id), wasCancelled(false) {
   curl_global_init(CURL_GLOBAL_ALL);
 }
 
@@ -18,21 +18,20 @@ FileSharing::~FileSharing() {
   uploadQueue.push(nullptr);
 }
 
-static atomic<bool> cancel(false);
-typedef function<void(double)> ProgressCallback;
+struct CallbackData {
+  function<void(double)> progressCallback;
+  FileSharing* fileSharing;
+};
 
 int progressFunction(void* ptr, double totalDown, double nowDown, double totalUp, double nowUp) {
-  if (ptr) {
-    ProgressCallback& progressCallback = *((ProgressCallback*)ptr);
-    if (totalUp > 0)
-      progressCallback(nowUp / totalUp);
-    if (totalDown > 0)
-      progressCallback(nowDown / totalDown);
-  }
-  if (cancel) {
-    cancel = false;
+  auto callbackData = static_cast<CallbackData*>(ptr);
+  if (totalUp > 0)
+    callbackData->progressCallback(nowUp / totalUp);
+  if (totalDown > 0)
+    callbackData->progressCallback(nowDown / totalDown);
+  if (callbackData->fileSharing->consumeCancelled())
     return 1;
-  } else
+  else
     return 0;
 }
 
@@ -66,7 +65,7 @@ static string unescapeEverything(const string& s) {
   return ret;
 }
 
-static optional<string> curlUpload(const char* path, const char* url, void* progressCallback, int timeout) {
+static optional<string> curlUpload(const char* path, const char* url, const CallbackData& callback, int timeout) {
   struct curl_httppost *formpost=NULL;
   struct curl_httppost *lastptr=NULL;
 
@@ -91,10 +90,8 @@ static optional<string> curlUpload(const char* path, const char* url, void* prog
     curl_easy_setopt(curl, CURLOPT_HTTPPOST, formpost);
     if (timeout > 0)
       curl_easy_setopt(curl, CURLOPT_TIMEOUT, timeout);
-    // Internal CURL progressmeter must be disabled if we provide our own callback
     curl_easy_setopt(curl, CURLOPT_NOPROGRESS, false);
-    if (progressCallback)
-      curl_easy_setopt(curl, CURLOPT_PROGRESSDATA, progressCallback);
+    curl_easy_setopt(curl, CURLOPT_PROGRESSDATA, &callback);
     curl_easy_setopt(curl, CURLOPT_PROGRESSFUNCTION, progressFunction);
     CURLcode res = curl_easy_perform(curl);
     if (res != CURLE_OK)
@@ -109,17 +106,24 @@ static optional<string> curlUpload(const char* path, const char* url, void* prog
     return string("Failed to initialize libcurl");
 }
 
+static CallbackData getCallbackData(FileSharing* f) {
+  return { [] (double) {}, f };
+}
+
+static CallbackData getCallbackData(FileSharing* f, ProgressMeter& meter) {
+  return { [&meter] (double p) { meter.setProgress((float) p); }, f };
+}
+
 optional<string> FileSharing::uploadSite(const FilePath& path, ProgressMeter& meter) {
   if (!options.getBoolValue(OptionId::ONLINE))
     return none;
-  static ProgressCallback callback = [&] (double p) { meter.setProgress(p);};
-  return curlUpload(path.getPath(), (uploadUrl + "/upload_site.php").c_str(), &callback, 0);
+  return curlUpload(path.getPath(), (uploadUrl + "/upload_site.php").c_str(), getCallbackData(this, meter), 0);
 }
 
 void FileSharing::uploadHighscores(const FilePath& path) {
   if (options.getBoolValue(OptionId::ONLINE))
     uploadQueue.push([this, path] {
-      curlUpload(path.getPath(), (uploadUrl + "/upload_scores.php").c_str(), nullptr, 5);
+      curlUpload(path.getPath(), (uploadUrl + "/upload_scores.php").c_str(), getCallbackData(this), 5);
     });
 }
 
@@ -192,14 +196,14 @@ static vector<Elem> parseLines(const string& s, function<optional<Elem>(const ve
 
 }
 
-static optional<string> downloadContent(const string& url) {
+optional<string> FileSharing::downloadContent(const string& url) {
   if (CURL* curl = curl_easy_init()) {
     curl_easy_setopt(curl, CURLOPT_URL, escapeSpaces(url).c_str());
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, dataFun);
     curl_easy_setopt(curl, CURLOPT_TIMEOUT, 10);
-    // Internal CURL progressmeter must be disabled if we provide our own callback
     curl_easy_setopt(curl, CURLOPT_NOPROGRESS, false);
-    // Install the callback function
+    auto callback = getCallbackData(this);
+    curl_easy_setopt(curl, CURLOPT_PROGRESSDATA, &callback);
     curl_easy_setopt(curl, CURLOPT_PROGRESSFUNCTION, progressFunction);
     string ret;
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &ret);
@@ -267,7 +271,11 @@ void FileSharing::uploadBoardMessage(const string& gameId, int hash, const strin
 }
 
 void FileSharing::cancel() {
-  ::cancel = true;
+  wasCancelled = true;
+}
+
+bool FileSharing::consumeCancelled() {
+  return wasCancelled.exchange(false);
 }
 
 static size_t writeToFile(void *ptr, size_t size, size_t nmemb, FILE *stream) {
@@ -288,6 +296,8 @@ optional<string> FileSharing::download(const string& filename, const DirectoryPa
       // Internal CURL progressmeter must be disabled if we provide our own callback
       curl_easy_setopt(curl, CURLOPT_NOPROGRESS, false);
       // Install the callback function
+      auto callback = getCallbackData(this, meter);
+      curl_easy_setopt(curl, CURLOPT_PROGRESSDATA, &callback);
       curl_easy_setopt(curl, CURLOPT_PROGRESSFUNCTION, progressFunction);
       curl_easy_setopt(curl, CURLOPT_FAILONERROR, true);
       CURLcode res = curl_easy_perform(curl);

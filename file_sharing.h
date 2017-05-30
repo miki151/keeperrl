@@ -36,6 +36,7 @@ class FileSharing {
   string downloadHighscores(int version);
 
   void cancel();
+  bool consumeCancelled();
   ~FileSharing();
 
   private:
@@ -45,6 +46,8 @@ class FileSharing {
   AsyncLoop uploadLoop;
   void uploadingLoop();
   void uploadGameEventImpl(const GameEvent&, int tries);
+  optional<string> downloadContent(const string& url);
   long long installId;
+  atomic<bool> wasCancelled;
 };
 
