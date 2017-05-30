@@ -1362,7 +1362,11 @@ CreatureAction Creature::destroy(Vec2 direction, const DestroyAction& action) co
     if (direction.length8() <= 1 && furniture->canDestroy(getMovementType(), action))
       return CreatureAction(this, [=](WCreature self) {
         self->destroyImpl(direction, action);
+        double oldTime = getLocalTime();
         self->spendTime(1);
+        if (direction.length8() == 1)
+          self->addMovementInfo({getPosition().getDir(pos), oldTime, min(oldTime + 1, getLocalTime()),
+              MovementInfo::ATTACK});
       });
   return CreatureAction();
 }
