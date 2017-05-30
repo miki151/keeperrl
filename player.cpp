@@ -334,7 +334,6 @@ bool Player::interruptedByEnemy() {
   if (enemies.size() > 0) {
     for (WCreature c : enemies)
       if (!ignoreCreatures.contains(c->getName().a())) {
-        getView()->updateView(this, false);
         privateMessage("You notice " + c->getName().a());
         return true;
       }
