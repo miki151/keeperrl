@@ -125,7 +125,7 @@ class GuiBuilder {
   Rectangle getEquipmentMenuPosition(int height);
   Rectangle getTextInputPosition();
   SGuiElem drawListGui(const string& title, const vector<ListElem>& options,
-      MenuType, int* highlight, int* choice, vector<int>* positions);
+      MenuType, optional<int>* highlight, int* choice, vector<int>* positions);
   int getScrollPos(int index, int count);
   void setMapGui(shared_ptr<MapGui>);
   ~GuiBuilder();
@@ -203,7 +203,7 @@ class GuiBuilder {
   ScrollPosition workshopsScroll2;
   ScrollPosition libraryScroll;
   ScrollPosition minionPageScroll;
-  int itemIndex = -1;
+  optional<int> itemIndex;
   int numSeenVillains = -1;
   bool playerOverlayFocused = false;
   optional<int> lastPlayerPositionHash;
@@ -241,7 +241,7 @@ class GuiBuilder {
   optional<ItemAction> getItemChoice(const ItemInfo& itemInfo, Vec2 menuPos, bool autoDefault);
   vector<SGuiElem> getMultiLine(const string& text, Color, MenuType, int maxWidth);
   SGuiElem menuElemMargins(SGuiElem);
-  SGuiElem getHighlight(SGuiElem line, MenuType, const string& label, int numActive, int* highlight);
+  SGuiElem getHighlight(SGuiElem line, MenuType, const string& label, int numActive, optional<int>* highlight);
   string getPlayerTitle(PlayerInfo&);
   SDL::SDL_KeyboardEvent getHotkeyEvent(char);
   shared_ptr<MapGui> mapGui = nullptr;

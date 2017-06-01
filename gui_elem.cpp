@@ -1880,7 +1880,7 @@ SGuiElem GuiFactory::onMouseRightButtonHeld(SGuiElem elem) {
 
 class MouseHighlightBase : public GuiStack {
   public:
-  MouseHighlightBase(SGuiElem h, int ind, int* highlight)
+  MouseHighlightBase(SGuiElem h, int ind, optional<int>* highlight)
     : GuiStack(makeVec(std::move(h))), myIndex(ind), highlighted(highlight) {}
 
   virtual void render(Renderer& r) override {
@@ -1890,7 +1890,7 @@ class MouseHighlightBase : public GuiStack {
 
   protected:
   int myIndex;
-  int* highlighted;
+  optional<int>* highlighted;
   bool canTurnOff = false;
 };
 
@@ -1900,7 +1900,7 @@ class MouseHighlight : public MouseHighlightBase {
 
   virtual void onMouseGone() override {
     if (*highlighted == myIndex && canTurnOff) {
-      *highlighted = -1;
+      *highlighted = none;
       canTurnOff = false;
     }
   }
@@ -1910,23 +1910,7 @@ class MouseHighlight : public MouseHighlightBase {
       *highlighted = myIndex;
       canTurnOff = true;
     } else if (*highlighted == myIndex && canTurnOff) {
-      *highlighted = -1;
-      canTurnOff = false;
-    }
-    return false;
-  }
-};
-
-class MouseHighlightClick : public MouseHighlightBase {
-  public:
-  using MouseHighlightBase::MouseHighlightBase;
-
-  virtual bool onLeftClick(Vec2 pos) override {
-    if (pos.inRectangle(getBounds())) {
-      *highlighted = myIndex;
-      canTurnOff = true;
-    } else if (*highlighted == myIndex && canTurnOff) {
-      *highlighted = -1;
+      *highlighted = none;
       canTurnOff = false;
     }
     return false;
@@ -1943,12 +1927,8 @@ class MouseHighlight2 : public GuiStack {
   }
 };
 
-SGuiElem GuiFactory::mouseHighlight(SGuiElem elem, int myIndex, int* highlighted) {
+SGuiElem GuiFactory::mouseHighlight(SGuiElem elem, int myIndex, optional<int>* highlighted) {
   return SGuiElem(new MouseHighlight(std::move(elem), myIndex, highlighted));
-}
-
-SGuiElem GuiFactory::mouseHighlightClick(SGuiElem elem, int myIndex, int* highlighted) {
-  return SGuiElem(new MouseHighlightClick(std::move(elem), myIndex, highlighted));
 }
 
 class MouseHighlightGameChoice : public GuiStack {

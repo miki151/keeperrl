@@ -269,7 +269,7 @@ string Tutorial::getMessage() const {
       return "Time to take control over your team. Select the team, and one of the team members as the leader, "
           "and click [Control].";
     case State::CONTROL_MODE_MOVEMENT:
-      return "You are now in control of your minion, and the game has become turn-based. Try to moving around using "
+      return "You are now in control of a minion, and the game has become turn-based. Try moving around using "
           "the arrow keys or by left-clicking on the map. You can scroll the map by dragging it with the right "
           "mouse button.\n \n"
           "Notice the rest of your team following you.";
@@ -281,8 +281,8 @@ string Tutorial::getMessage() const {
           "exterminate all inhabitants!\n \n"
           "Remember to break into every house by destroying the door.";
     case State::LOOT_VILLAGE:
-      return "There is a nice treasure in one of the houses. Pick it all up by entering the tiles containing gold, "
-          "and clicking in the menu in the upper left corner.";
+      return "There is a nice pile of treasure in one of the houses. Pick it all up by entering the tiles containing "
+          "the loot, and clicking in the menu in the upper left corner.";
     case State::LEAVE_CONTROL:
       return "To relinquish control of your team, choose the appropriate action in the upper left corner.";
     case State::SUMMARY1:

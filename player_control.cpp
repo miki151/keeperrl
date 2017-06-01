@@ -166,7 +166,7 @@ const vector<PlayerControl::BuildInfo>& PlayerControl::getBuildInfo() {
           "Fill up one tile at a time. Cutting off an area is not allowed.", 0, "Structure"),
       BuildInfo({FurnitureType::DUNGEON_WALL, {ResourceId::STONE, 2}}, "Reinforce wall", {},
           "Reinforce wall. +" + toString<int>(100 * CollectiveConfig::getEfficiencyBonus(FurnitureType::DUNGEON_WALL)) +
-          " efficiency to to surrounding tiles.", 0, "Structure")
+          " efficiency to surrounding tiles.", 0, "Structure")
     });
     for (int i : All(CollectiveConfig::getFloors())) {
       auto& floor = CollectiveConfig::getFloors()[i];

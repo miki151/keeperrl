@@ -172,8 +172,7 @@ class GuiFactory {
   SGuiElem mouseOverAction(function<void()> callback, function<void()> onLeaveCallback = nullptr);
   SGuiElem onMouseLeftButtonHeld(SGuiElem);
   SGuiElem onMouseRightButtonHeld(SGuiElem);
-  SGuiElem mouseHighlight(SGuiElem highlight, int myIndex, int* highlighted);
-  SGuiElem mouseHighlightClick(SGuiElem highlight, int myIndex, int* highlighted);
+  SGuiElem mouseHighlight(SGuiElem highlight, int myIndex, optional<int>* highlighted);
   SGuiElem mouseHighlight2(SGuiElem highlight);
   SGuiElem mouseHighlightGameChoice(SGuiElem, optional<PlayerRoleChoice> my, optional<PlayerRoleChoice>& highlight);
   static int getHeldInitValue();

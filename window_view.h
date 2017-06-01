@@ -109,8 +109,8 @@ class WindowView: public View {
   void mapCreatureDragFun(UniqueEntity<Creature>::Id, ViewId, Vec2 origin);
   void mapRightClickFun(Vec2);
   Rectangle getTextInputPosition();
-  optional<int> chooseFromListInternal(const string& title, const vector<ListElem>& options, int index, MenuType,
-      ScrollPosition* scrollPos);
+  optional<int> chooseFromListInternal(const string& title, const vector<ListElem>& options, optional<int> index,
+      MenuType, ScrollPosition*);
   void refreshViewInt(const CreatureView*, bool flipBuffer = true);
   SGuiElem drawGameChoices(optional<PlayerRoleChoice>& choice, optional<PlayerRoleChoice>& index);
   SGuiElem getTextContent(const string& title, const string& value, const string& hint);

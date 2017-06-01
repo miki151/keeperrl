@@ -196,7 +196,7 @@ static optional<int> getNextActive(const vector<CollectiveInfo::Button>& buttons
     optional<int> current) {
   if (!current)
     return getFirstActive(buttons, begin);
-  CHECK(current >= begin);
+  CHECK(*current >= begin);
   int i = *current;
   do {
     ++i;
@@ -851,12 +851,12 @@ vector<SDL_Keysym> GuiBuilder::getConfirmationKeys() {
 SGuiElem GuiBuilder::drawPlayerOverlay(const PlayerInfo& info) {
   if (info.lyingItems.empty()) {
     playerOverlayFocused = false;
-    itemIndex = -1;
+    itemIndex = none;
     return gui.empty();
   }
   if (lastPlayerPositionHash && lastPlayerPositionHash != info.positionHash) {
     playerOverlayFocused = false;
-    itemIndex = -1;
+    itemIndex = none;
   }
   lastPlayerPositionHash = info.positionHash;
   vector<SGuiElem> lines;
@@ -886,18 +886,26 @@ SGuiElem GuiBuilder::drawPlayerOverlay(const PlayerInfo& info) {
           legendLineHeight, GuiFactory::TOP),
         gui.keyHandler([=] { callbacks.input({UserInputId::PICK_UP_ITEM, 0});}, getConfirmationKeys(), true));
   else {
-    auto updateScrolling = [=] { lyingItemsScroll.set(itemIndex * legendLineHeight + legendLineHeight / 2, clock->getRealMillis()); };
+    auto updateScrolling = [this, totalElems] (int dir) {
+        if (itemIndex)
+          itemIndex = (*itemIndex + dir + totalElems) % totalElems;
+        else
+          itemIndex = 0;
+        lyingItemsScroll.set(*itemIndex * legendLineHeight + legendLineHeight / 2, clock->getRealMillis());
+    };
     content = gui.stack(makeVec(
-          gui.focusable(gui.stack(
-              gui.keyHandler([=] { callbacks.input({UserInputId::PICK_UP_ITEM, itemIndex});},
-                getConfirmationKeys(), true),
-              gui.keyHandler([=] { itemIndex = (itemIndex + 1) % totalElems; updateScrolling();},
-                {gui.getKey(SDL::SDLK_DOWN), gui.getKey(SDL::SDLK_KP_2)}, true),
-              gui.keyHandler([=] { itemIndex = (itemIndex + totalElems - 1) % totalElems; updateScrolling(); },
-                {gui.getKey(SDL::SDLK_UP), gui.getKey(SDL::SDLK_KP_8)}, true)),
-            getConfirmationKeys(), {gui.getKey(SDL::SDLK_ESCAPE)}, playerOverlayFocused),
-          gui.keyHandler([=] { if (!playerOverlayFocused) { itemIndex = 0; lyingItemsScroll.reset();} }, getConfirmationKeys()),
-          gui.keyHandler([=] { itemIndex = -1; }, {gui.getKey(SDL::SDLK_ESCAPE)}),
+          gui.focusable(
+              gui.stack(
+                  gui.keyHandler([=] { if (itemIndex) { callbacks.input({UserInputId::PICK_UP_ITEM, *itemIndex});}},
+                    getConfirmationKeys(), true),
+                  gui.keyHandler([=] { updateScrolling(1); },
+                    {gui.getKey(SDL::SDLK_DOWN), gui.getKey(SDL::SDLK_KP_2)}, true),
+                  gui.keyHandler([=] { updateScrolling(-1); },
+                    {gui.getKey(SDL::SDLK_UP), gui.getKey(SDL::SDLK_KP_8)}, true)),
+              getConfirmationKeys(), {gui.getKey(SDL::SDLK_ESCAPE)}, playerOverlayFocused),
+          gui.keyHandler([=] { if (!playerOverlayFocused) { itemIndex = 0; lyingItemsScroll.reset();} },
+              getConfirmationKeys()),
+          gui.keyHandler([=] { itemIndex = none; }, {gui.getKey(SDL::SDLK_ESCAPE)}),
           gui.margin(
             gui.leftMargin(3, gui.label(title, Color::YELLOW)),
             gui.scrollable(gui.verticalList(std::move(lines), legendLineHeight), &lyingItemsScroll),
@@ -960,7 +968,7 @@ optional<ItemAction> GuiBuilder::getItemChoice(const ItemInfo& itemInfo, Vec2 me
     return itemInfo.actions[0];
   renderer.flushEvents(SDL::SDL_KEYDOWN);
   int choice = -1;
-  int index = 0;
+  optional<int> index = 0;
   disableTooltip = true;
   DestructorFunction dFun([this] { disableTooltip = false; });
   vector<string> options = itemInfo.actions.transform(bindFunction(getActionText));
@@ -980,9 +988,9 @@ optional<ItemAction> GuiBuilder::getItemChoice(const ItemInfo& itemInfo, Vec2 me
     Event event;
     while (renderer.pollEvent(event)) {
       gui.propagateEvent(event, {stuff});
-      if (choice > -1 && index > -1) {
+      if (choice > -1 && index) {
         if (index < itemInfo.actions.size())
-          return itemInfo.actions[index];
+          return itemInfo.actions[*index];
         else
           return none;
       }
@@ -991,19 +999,27 @@ optional<ItemAction> GuiBuilder::getItemChoice(const ItemInfo& itemInfo, Vec2 me
       if (event.type == SDL::SDL_MOUSEBUTTONDOWN &&
           !Vec2(event.button.x, event.button.x).inRectangle(stuff->getBounds()))
         return none;
+      auto scrollIndex = [&](int dir) {
+        if (index)
+          index = (*index + dir + count) % count;
+        else
+          index = 0;
+      };
       if (event.type == SDL::SDL_KEYDOWN)
         switch (event.key.keysym.sym) {
           case SDL::SDLK_KP_8:
-          case SDL::SDLK_UP: index = (index - 1 + count) % count; break;
+          case SDL::SDLK_UP:
+            scrollIndex(-1);
+            break;
           case SDL::SDLK_KP_2:
-          case SDL::SDLK_DOWN: index = (index + 1 + count) % count; break;
+          case SDL::SDLK_DOWN:
+            scrollIndex(1);
+            break;
           case SDL::SDLK_KP_5:
           case SDL::SDLK_KP_ENTER:
           case SDL::SDLK_RETURN:
-            if (index > -1) {
-              if (index < itemInfo.actions.size())
-                return itemInfo.actions[index];
-            }
+            if (index && index < itemInfo.actions.size())
+              return itemInfo.actions[*index];
             break;
           case SDL::SDLK_ESCAPE: return none;
           default: break;
@@ -1945,7 +1961,7 @@ SGuiElem GuiBuilder::menuElemMargins(SGuiElem elem) {
   return gui.margins(std::move(elem), 10, 3, 10, 0);
 }
 
-SGuiElem GuiBuilder::getHighlight(SGuiElem line, MenuType type, const string& label, int numActive, int* highlight) {
+SGuiElem GuiBuilder::getHighlight(SGuiElem line, MenuType type, const string& label, int numActive, optional<int>* highlight) {
   switch (type) {
     case MenuType::MAIN:
       return gui.stack(std::move(line),
@@ -1958,7 +1974,7 @@ SGuiElem GuiBuilder::getHighlight(SGuiElem line, MenuType type, const string& la
 }
 
 SGuiElem GuiBuilder::drawListGui(const string& title, const vector<ListElem>& options,
-    MenuType menuType, int* highlight, int* choice, vector<int>* positions) {
+    MenuType menuType, optional<int>* highlight, int* choice, vector<int>* positions) {
   auto lines = gui.getListBuilder(listLineHeight);
   int leftMargin = 30;
   if (!title.empty()) {

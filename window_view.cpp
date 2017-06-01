@@ -1080,8 +1080,9 @@ PlayerRoleChoice WindowView::getPlayerRoleChoice(optional<PlayerRoleChoice> inde
   return returnQueue.pop();
 }
 
-optional<int> WindowView::chooseFromListInternal(const string& title, const vector<ListElem>& options, int index1,
-    MenuType menuType, ScrollPosition* scrollPos1) {
+optional<int> WindowView::chooseFromListInternal(const string& title, const vector<ListElem>& options,
+    optional<int> index1, MenuType menuType, ScrollPosition* scrollPos1) {
+  CHECK(!index1 || *index1 >= 0);
   if (!useTiles && menuType == MenuType::MAIN)
     menuType = MenuType::MAIN_NO_TILES;
   if (options.size() == 0)
@@ -1096,7 +1097,7 @@ optional<int> WindowView::chooseFromListInternal(const string& title, const vect
   int choice = -1;
   int count = 0;
   ScrollPosition* scrollPos = scrollPos1;
-  int index = index1;
+  optional<int> index = index1;
   vector<int> indexes(options.size());
   vector<int> optionIndexes;
   int elemCount = 0;
@@ -1121,7 +1122,7 @@ optional<int> WindowView::chooseFromListInternal(const string& title, const vect
     else
       return 0;
   };
-  ScrollPosition localScrollPos(index >= 0 ? getScrollPos(optionIndexes[index]) : 0);
+  ScrollPosition localScrollPos(index ? getScrollPos(optionIndexes[*index]) : 0);
   if (scrollPos == nullptr)
     scrollPos = &localScrollPos;
   SGuiElem dismissBut = gui.margins(gui.stack(makeVec(
@@ -1141,33 +1142,35 @@ optional<int> WindowView::chooseFromListInternal(const string& title, const vect
       break;
   }
   optional<optional<int>> callbackRet;
+  auto scrollIndex = [&](int dir) {
+    if (count > 0) {
+      if (index)
+        index = (*index + dir + count) % count;
+      else
+        index = 0;
+      scrollPos->set(getScrollPos(optionIndexes[*index]), clock->getRealMillis());
+    } else
+      scrollPos->add(dir * 100, clock->getRealMillis());
+  };
   stuff = gui.stack(
       std::move(stuff),
       gui.keyHandler([&] (SDL_Keysym key) {
         switch (key.sym) {
           case SDL::SDLK_KP_8:
           case SDL::SDLK_UP:
-            if (count > 0) {
-              index = (index - 1 + count) % count;
-              scrollPos->set(getScrollPos(optionIndexes[index]), clock->getRealMillis());
-            } else
-              scrollPos->add(-100, clock->getRealMillis());
+            scrollIndex(-1);
             break;
           case SDL::SDLK_KP_2:
           case SDL::SDLK_DOWN:
-            if (count > 0) {
-              index = (index + 1 + count) % count;
-              scrollPos->set(getScrollPos(optionIndexes[index]), clock->getRealMillis());
-            } else
-              scrollPos->add(100, clock->getRealMillis());
+            scrollIndex(1);
             break;
           case SDL::SDLK_KP_5:
           case SDL::SDLK_KP_ENTER:
           case SDL::SDLK_RETURN:
-            if (count > 0 && index > -1) {
-              CHECK(index < indexes.size()) <<
-                  index << " " << indexes.size() << " " << count << " " << options.size();
-              callbackRet = optional<int>(indexes[index]);
+            if (count > 0 && index) {
+              CHECK(*index < indexes.size()) <<
+                  *index << " " << indexes.size() << " " << count << " " << options.size();
+              callbackRet = optional<int>(indexes[*index]);
               break;
             }
             break;
@@ -1215,7 +1218,7 @@ void WindowView::presentList(const string& title, const vector<ListElem>& option
     if (e.getMod() == ListElem::NORMAL)
       e.setMod(ListElem::TEXT);
   ScrollPosition scrollPos(scrollDown ? options.size() - 1 : 0);
-  chooseFromListInternal(title, conv, -1, menu, &scrollPos);
+  chooseFromListInternal(title, conv, none, menu, &scrollPos);
 }
 
 void WindowView::zoom(int dir) {
