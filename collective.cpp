@@ -422,14 +422,19 @@ PTask Collective::getEquipmentTask(WCreature c) {
   return nullptr;
 }
 
+const static EnumSet<MinionTask> healingTasks {MinionTask::SLEEP, MinionTask::GRAVE, MinionTask::LAIR};
+
 void Collective::considerHealingTask(WCreature c) {
   if (c->getBody().canHeal() && !c->isAffected(LastingEffect::POISON))
-    for (MinionTask t : {MinionTask::SLEEP, MinionTask::GRAVE, MinionTask::LAIR})
-      if (c->getAttributes().getMinionTasks().getValue(t) > 0) {
+    for (MinionTask t : healingTasks) {
+      auto currentTask = getMinionTask(c);
+      if (c->getAttributes().getMinionTasks().getValue(t) > 0 &&
+          (!currentTask || !healingTasks.contains(*currentTask))) {
         cancelTask(c);
         setMinionTask(c, t);
         return;
       }
+    }
 }
 
 void Collective::clearLeader() {
