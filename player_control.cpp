@@ -74,6 +74,7 @@
 #include "tutorial_highlight.h"
 #include "container_range.h"
 #include "trap_type.h"
+#include "collective_warning.h"
 
 template <class Archive>
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {

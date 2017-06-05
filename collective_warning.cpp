@@ -19,6 +19,10 @@ void CollectiveWarnings::setWarning(Warning w, bool state) {
   warnings.set(w, state);
 }
 
+void CollectiveWarnings::disable() {
+  lastWarningTime = 1000000000;
+}
+
 void CollectiveWarnings::considerWarnings(WCollective col) {
   setWarning(Warning::MANA, col->numResource(CollectiveResourceId::MANA) < 100);
   setWarning(Warning::DIGGING, col->getTerritory().isEmpty());

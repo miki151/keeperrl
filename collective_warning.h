@@ -31,6 +31,7 @@ class CollectiveWarnings {
 
   typedef CollectiveWarning Warning;
 
+  void disable();
   void considerWarnings(WCollective);
   bool isWarning(Warning) const;
   void setWarning(Warning, bool state = true);
@@ -47,6 +48,6 @@ class CollectiveWarnings {
   const char*getText(Warning w);
   EnumSet<Warning> SERIAL(warnings);
   EnumMap<CollectiveWarning, optional<double>> SERIAL(warningTimes);
-  double SERIAL(lastWarningTime) = -10000;
+  double SERIAL(lastWarningTime) = 100;
 };
 

@@ -21,7 +21,6 @@
 #include "game_info.h"
 #include "map_memory.h"
 #include "position.h"
-#include "collective_warning.h"
 #include "event_listener.h"
 
 class Model;
