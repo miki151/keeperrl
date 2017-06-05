@@ -315,12 +315,13 @@ class GameSunlightInfo {
 class TutorialInfo {
   public:
   string HASH(message);
+  optional<string> HASH(warning);
   bool HASH(canContinue);
   bool HASH(canGoBack);
   EnumSet<TutorialHighlight> HASH(highlights);
   vector<Vec2> HASH(highlightedSquaresHigh);
   vector<Vec2> HASH(highlightedSquaresLow);
-  HASH_ALL(message, canContinue, canGoBack, highlights, highlightedSquaresHigh, highlightedSquaresLow)
+  HASH_ALL(message, warning, canContinue, canGoBack, highlights, highlightedSquaresHigh, highlightedSquaresLow)
 };
 
 /** Represents all the game information displayed around the map window.*/

@@ -420,9 +420,27 @@ Tutorial::Tutorial() : state(State::WELCOME) {
 
 }
 
+optional<string> Tutorial::getWarning(WConstGame game) const {
+  switch (state) {
+    case State::CONTROL_TEAM:
+    case State::CONTROL_MODE_MOVEMENT:
+    case State::DISCOVER_VILLAGE:
+    case State::KILL_VILLAGE:
+    case State::LOOT_VILLAGE:
+    case State::LEAVE_CONTROL:
+      return none;
+    default:
+      if (game->getPlayer())
+        return "Press [U] to leave control mode."_s;
+      else
+        return none;
+  }
+}
+
 void Tutorial::refreshInfo(WConstGame game, optional<TutorialInfo>& info) const {
   info = TutorialInfo {
       getMessage(),
+      getWarning(game),
       canContinue(game),
       (int) state > 0,
       getHighlights(game),

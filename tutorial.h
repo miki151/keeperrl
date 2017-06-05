@@ -31,4 +31,5 @@ class Tutorial {
   vector<Vec2> getHighlightedSquaresLow(WConstGame) const;
   void onNewState(WConstGame);
   Vec2 SERIAL(entrance);
+  optional<string> getWarning(WConstGame) const;
 };

@@ -599,13 +599,17 @@ SGuiElem GuiBuilder::drawTutorialOverlay(const TutorialInfo& info) {
   auto backButton = gui.stack(
       gui.button(getButtonCallback(UserInputId::TUTORIAL_GO_BACK)),
       gui.setHeight(20, gui.labelHighlight("[Go back]", Color::LIGHT_BLUE)));
-  auto pauseWarning = gui.setHeight(20,
-        gui.label("Press [Space] to unpause the game.", Color::RED));
+  SGuiElem warning;
+  if (info.warning)
+    warning = gui.label(*info.warning, Color::RED);
+  else
+    warning =
+        gui.label("Press [Space] to unpause the game.", [this]{ if (clock->isPaused()) return Color::RED; else
+        return Color::TRANSPARENT;});
   return gui.preferredSize(520, 250, gui.stack(gui.darken(), gui.rectangleBorder(Color::GRAY),
       gui.margins(gui.stack(
         gui.labelMultiLine(info.message, legendLineHeight),
-        gui.conditional(gui.alignment(GuiFactory::Alignment::BOTTOM_CENTER, pauseWarning),
-            [this]{return clock->isPaused();}),
+        gui.alignment(GuiFactory::Alignment::BOTTOM_CENTER, gui.setHeight(20, warning)),
         gui.alignment(GuiFactory::Alignment::BOTTOM_RIGHT, info.canContinue ? continueButton : gui.empty()),
         gui.alignment(GuiFactory::Alignment::BOTTOM_LEFT, info.canGoBack ? backButton : gui.empty())
       ), 20)));
