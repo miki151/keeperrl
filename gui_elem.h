@@ -294,6 +294,7 @@ class GuiFactory {
   SGuiElem spellIcon(SpellId);
   SGuiElem uiHighlightMouseOver(Color = Color::GREEN);
   SGuiElem uiHighlightConditional(function<bool()>, Color = Color::GREEN);
+  SGuiElem uiHighlightLine(Color = Color::GREEN);
   SGuiElem uiHighlight(Color = Color::GREEN);
   SGuiElem blink(SGuiElem);
   SGuiElem tutorialHighlight();

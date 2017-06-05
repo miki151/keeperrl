@@ -2546,11 +2546,15 @@ static int trans1 = 1094;
 static int trans2 = 1693;
 
 SGuiElem GuiFactory::uiHighlightMouseOver(Color c) {
-  return mouseHighlight2(uiHighlight(c));
+  return mouseHighlight2(uiHighlightLine(c));
 }
 
 SGuiElem GuiFactory::uiHighlight(Color c) {
-  return margins(rectangle(c.transparency(trans1), c.transparency(trans2)), -8, -3, -3, 3);
+  return rectangle(c.transparency(trans1), c.transparency(trans2));
+}
+
+SGuiElem GuiFactory::uiHighlightLine(Color c) {
+  return margins(uiHighlight(c), -8, -3, -3, 3);
   //return leftMargin(-8, topMargin(-4, sprite(TexId::UI_HIGHLIGHT, Alignment::LEFT_STRETCHED, c)));
 }
 
@@ -2559,11 +2563,11 @@ SGuiElem GuiFactory::blink(SGuiElem elem) {
 }
 
 SGuiElem GuiFactory::tutorialHighlight() {
-  return blink(uiHighlight(Color::YELLOW));
+  return blink(uiHighlightLine(Color::YELLOW));
 }
 
 SGuiElem GuiFactory::uiHighlightConditional(function<bool()> cond, Color c) {
-  return conditional(uiHighlight(c), cond);
+  return conditional(uiHighlightLine(c), cond);
 }
 
 SGuiElem GuiFactory::rectangleBorder(Color col) {

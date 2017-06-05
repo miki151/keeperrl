@@ -295,7 +295,7 @@ SGuiElem GuiBuilder::drawTechnology(CollectiveInfo& info) {
       SGuiElem elem = line.buildHorizontalList();
       if (button.active)
         elem = gui.stack(
-            gui.uiHighlight(Color::GREEN),
+            gui.uiHighlightLine(Color::GREEN),
             std::move(elem));
       if (!button.unavailable)
         elem = gui.stack(
@@ -398,6 +398,7 @@ const char* GuiBuilder::getCurrentGameSpeedName() const {
 }
 
 SGuiElem GuiBuilder::drawRightBandInfo(GameInfo& info) {
+  auto getIconHighlight = [&] (Color c) { return gui.topMargin(-1, gui.uiHighlight(c)); };
   int hash = combineHash(info.collectiveInfo, info.villageInfo, info.modifiedSquares, info.totalSquares, info.tutorial);
   if (hash != rightBandInfoHash) {
     rightBandInfoHash = hash;
@@ -407,15 +408,14 @@ SGuiElem GuiBuilder::drawRightBandInfo(GameInfo& info) {
         gui.icon(gui.BUILDING),
         gui.icon(gui.MINION),
         gui.icon(gui.LIBRARY),
-        gui.stack(gui.conditional(gui.icon(gui.HIGHLIGHT, GuiFactory::Alignment::CENTER, Color::YELLOW),
+        gui.stack(gui.conditional(getIconHighlight(Color::YELLOW),
                       [=] { return numSeenVillains < villageInfo.villages.size();}),
                   gui.icon(gui.DIPLOMACY)),
         gui.icon(gui.HELP)
     );
     for (int i : All(buttons)) {
       buttons[i] = gui.stack(
-          gui.conditional(gui.icon(gui.HIGHLIGHT, GuiFactory::Alignment::CENTER, Color::GREEN),
-            [this, i] { return int(collectiveTab) == i;}),
+          gui.conditional(getIconHighlight(Color::GREEN), [this, i] { return int(collectiveTab) == i;}),
           std::move(buttons[i]),
           gui.button([this, i]() { setCollectiveTab(CollectiveTab(i)); }));
     }
@@ -425,7 +425,7 @@ SGuiElem GuiBuilder::drawRightBandInfo(GameInfo& info) {
           if (info.tutorial->highlights.contains(*highlight)) {
             buttons[0] = gui.stack(
                 gui.conditional(
-                    gui.blink(gui.icon(gui.HIGHLIGHT, GuiFactory::Alignment::CENTER, Color::YELLOW)),
+                    gui.blink(getIconHighlight(Color::YELLOW)),
                     [this] { return collectiveTab != CollectiveTab::BUILDINGS;}),
                 buttons[0]);
             break;
@@ -1963,7 +1963,7 @@ SGuiElem GuiBuilder::getHighlight(SGuiElem line, MenuType type, const string& la
           gui.mouseHighlight(menuElemMargins(gui.mainMenuLabel(label, menuLabelVPadding)), numActive, highlight));
     default:
       return gui.stack(gui.mouseHighlight(
-          gui.leftMargin(-12, gui.translate(gui.uiHighlight(), Vec2(0, 4))),
+          gui.leftMargin(-12, gui.translate(gui.uiHighlightLine(), Vec2(0, 4))),
           numActive, highlight), std::move(line));
   }
 }

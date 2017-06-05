@@ -203,7 +203,7 @@ class GuiBuilder {
   ScrollPosition libraryScroll;
   ScrollPosition minionPageScroll;
   optional<int> itemIndex;
-  int numSeenVillains = -1;
+  int numSeenVillains = 0;
   bool playerOverlayFocused = false;
   optional<int> lastPlayerPositionHash;
   int scrollbarsHeld = GuiFactory::getHeldInitValue();
