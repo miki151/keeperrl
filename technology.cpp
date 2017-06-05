@@ -208,7 +208,7 @@ static vector<SpellLearningInfo> spellLearning {
     { SpellId::BLAST, TechId::SPELLS_MAS},
     { SpellId::WORD_OF_POWER, TechId::SPELLS_MAS},
     { SpellId::METEOR_SHOWER, TechId::SPELLS_MAS},
-    { SpellId::SUMMON_ELEMENT, TechId::SPELLS},
+//    { SpellId::SUMMON_ELEMENT, TechId::SPELLS},
 };
 
 void Technology::onAcquired(TechId id, WCollective col) {
