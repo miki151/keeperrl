@@ -2498,11 +2498,11 @@ class ItemList {
 vector<ItemType> getInventory(CreatureId id) {
   switch (id) {
     case CreatureId::CYCLOPS: 
-      return ItemList().add(ItemId::HEAVY_CLUB).add(ItemId::GOLD_PIECE, Random.get(200, 400));
+      return ItemList().add(ItemId::HEAVY_CLUB).add(ItemId::GOLD_PIECE, Random.get(40, 80));
     case CreatureId::GREEN_DRAGON:
-      return ItemList().add(ItemId::GOLD_PIECE, Random.get(300, 500));
+      return ItemList().add(ItemId::GOLD_PIECE, Random.get(60, 100));
     case CreatureId::RED_DRAGON:
-      return ItemList().add(ItemId::GOLD_PIECE, Random.get(600, 1000));
+      return ItemList().add(ItemId::GOLD_PIECE, Random.get(120, 200));
     case CreatureId::ANGEL:
       return ItemList().add(ItemId::SPECIAL_SWORD);
     case CreatureId::KEEPER_F:
@@ -2518,7 +2518,7 @@ vector<ItemType> getInventory(CreatureId id) {
         .add(ItemId::LEATHER_GLOVES)
         .add(ItemId::LEATHER_ARMOR)
         .add(ItemId::LEATHER_HELM)
-        .add(ItemId::GOLD_PIECE, Random.get(80, 130));
+        .add(ItemId::GOLD_PIECE, Random.get(16, 26));
     case CreatureId::DEATH:
       return ItemList()
         .add(ItemId::SCYTHE);
@@ -2533,7 +2533,7 @@ vector<ItemType> getInventory(CreatureId id) {
       return ItemList()
         .add(ItemId::LEATHER_ARMOR)
         .add(ItemId::CLUB)
-        .add(ItemId::GOLD_PIECE, Random.get(10, 20));
+        .add(ItemId::GOLD_PIECE, Random.get(2, 5));
     case CreatureId::SHAMAN: 
       return ItemList()
         .add(ItemId::LEATHER_ARMOR)
@@ -2541,7 +2541,7 @@ vector<ItemType> getInventory(CreatureId id) {
     case CreatureId::LIZARDLORD: 
     case CreatureId::LIZARDMAN: 
       return ItemList().add(ItemId::LEATHER_ARMOR)
-        .add(ItemId::GOLD_PIECE, Random.get(10, 20));
+        .add(ItemId::GOLD_PIECE, Random.get(2, 4));
     case CreatureId::HARPY: 
       return ItemList()
         .add(ItemId::BOW).add(ItemId::ARROW, Random.get(20, 36));
@@ -2552,7 +2552,7 @@ vector<ItemType> getInventory(CreatureId id) {
         .add(ItemId::LEATHER_ARMOR)
         .add(ItemId::LEATHER_BOOTS)
         .add(randomHealing())
-        .add(ItemId::GOLD_PIECE, Random.get(20, 50));
+        .add(ItemId::GOLD_PIECE, Random.get(4, 10));
     case CreatureId::CASTLE_GUARD:
     case CreatureId::WITCHMAN:
       return ItemList()
@@ -2561,14 +2561,14 @@ vector<ItemType> getInventory(CreatureId id) {
         .add(ItemId::LEATHER_BOOTS)
         .add(randomHealing())
         .add({ItemId::POTION, EffectType{EffectId::LASTING, LastingEffect::SPEED}}, 4)
-        .add(ItemId::GOLD_PIECE, Random.get(350, 500));
+        .add(ItemId::GOLD_PIECE, Random.get(70, 100));
     case CreatureId::KNIGHT: 
       return ItemList()
         .add(ItemId::SWORD)
         .add(ItemId::CHAIN_ARMOR)
         .add(ItemId::LEATHER_BOOTS)
         .add(randomHealing())
-        .add(ItemId::GOLD_PIECE, Random.get(30, 80));
+        .add(ItemId::GOLD_PIECE, Random.get(6, 16));
     case CreatureId::MINOTAUR: 
       return ItemList()
         .add(ItemId::BATTLE_AXE);
@@ -2579,7 +2579,7 @@ vector<ItemType> getInventory(CreatureId id) {
         .add(ItemId::IRON_HELM)
         .add(ItemId::IRON_BOOTS)
         .add({ItemId::POTION, EffectId::HEAL}, Random.get(1, 4))
-        .add(ItemId::GOLD_PIECE, Random.get(200, 300));
+        .add(ItemId::GOLD_PIECE, Random.get(40, 60));
     case CreatureId::OGRE: 
       return ItemList().add(ItemId::HEAVY_CLUB);
     case CreatureId::BANDIT:
@@ -2595,7 +2595,7 @@ vector<ItemType> getInventory(CreatureId id) {
         .add(ItemId::CHAIN_ARMOR)
         .maybe(0.5, ItemId::IRON_HELM)
         .maybe(0.3, ItemId::IRON_BOOTS)
-        .add(ItemId::GOLD_PIECE, Random.get(10, 30));
+        .add(ItemId::GOLD_PIECE, Random.get(2, 6));
     case CreatureId::DWARF_BARON: 
       return ItemList()
         .add(Random.choose({ItemId::SPECIAL_BATTLE_AXE, ItemId::SPECIAL_WAR_HAMMER}, {1, 1}))
@@ -2603,7 +2603,7 @@ vector<ItemType> getInventory(CreatureId id) {
         .add(ItemId::CHAIN_ARMOR)
         .add(ItemId::IRON_BOOTS)
         .add(ItemId::IRON_HELM)
-        .add(ItemId::GOLD_PIECE, Random.get(200, 400));
+        .add(ItemId::GOLD_PIECE, Random.get(40, 80));
     case CreatureId::GNOME_CHIEF:
       return ItemList()
         .add(ItemId::SWORD)
@@ -2615,7 +2615,7 @@ vector<ItemType> getInventory(CreatureId id) {
         .add(ItemId::LEATHER_ARMOR)
         .add(ItemId::BOW)
         .add(ItemId::ARROW, Random.get(20, 36))
-        .add(ItemId::GOLD_PIECE, Random.get(100, 300))
+        .add(ItemId::GOLD_PIECE, Random.get(10, 30))
         .add(randomBackup());
     case CreatureId::DRIAD: 
       return ItemList()
@@ -2625,7 +2625,7 @@ vector<ItemType> getInventory(CreatureId id) {
       return ItemList()
         .add(ItemId::ELVEN_SWORD)
         .add(ItemId::LEATHER_ARMOR)
-        .add(ItemId::GOLD_PIECE, Random.get(10, 30))
+        .add(ItemId::GOLD_PIECE, Random.get(2, 6))
         .add(randomBackup());
     case CreatureId::ELF_ARCHER: 
       return ItemList()
@@ -2633,7 +2633,7 @@ vector<ItemType> getInventory(CreatureId id) {
         .add(ItemId::LEATHER_ARMOR)
         .add(ItemId::BOW)
         .add(ItemId::ARROW, Random.get(20, 36))
-        .add(ItemId::GOLD_PIECE, Random.get(10, 30))
+        .add(ItemId::GOLD_PIECE, Random.get(2, 6))
         .add(randomBackup());
     case CreatureId::WITCH: 
       return ItemList()
