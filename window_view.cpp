@@ -416,9 +416,6 @@ void WindowView::rebuildGui() {
   }
   guiBuilder.drawOverlays(overlays, gameInfo);
   resetMapBounds();
-  int bottomOffset = 35;
-  int sideOffset = 10;
-  int rightWindowHeight = 80;
   if (rightBarWidth > 0) {
     tempGuiElems.push_back(gui.mainDecoration(rightBarWidth, bottomBarHeight, topBarHeight));
     tempGuiElems.back()->setBounds(Rectangle(renderer.getSize()));
@@ -434,39 +431,7 @@ void WindowView::rebuildGui() {
       Vec2 pos;
       if (auto width = overlay.elem->getPreferredWidth())
         if (auto height = overlay.elem->getPreferredHeight()) {
-          switch (overlay.alignment) {
-            case GuiBuilder::OverlayInfo::MINIONS:
-              pos = Vec2(rightBarWidth - 20, rightWindowHeight - 6);
-              break;
-            case GuiBuilder::OverlayInfo::TOP_LEFT:
-              pos = Vec2(rightBarWidth + sideOffset, rightWindowHeight);
-              break;
-            case GuiBuilder::OverlayInfo::IMMIGRATION:
-              pos = Vec2(rightBarWidth, renderer.getSize().y - bottomBarHeight - 21 - *height);
-              break;
-            case GuiBuilder::OverlayInfo::BOTTOM_LEFT:
-              pos = Vec2(rightBarWidth + guiBuilder.getImmigrationBarWidth(),
-                         renderer.getSize().y - bottomBarHeight - 21 - *height);
-              break;
-            case GuiBuilder::OverlayInfo::LEFT:
-              pos = Vec2(sideOffset,
-                  renderer.getSize().y - bottomBarHeight - bottomOffset - *height);
-              break;
-            case GuiBuilder::OverlayInfo::MESSAGES:
-              pos = Vec2(rightBarWidth, 0);
-              break;
-            case GuiBuilder::OverlayInfo::GAME_SPEED:
-              pos = Vec2(26, renderer.getSize().y - *height - 50);
-              break;
-            case GuiBuilder::OverlayInfo::INVISIBLE:
-              pos = Vec2(renderer.getSize().x, 0);
-              overlay.elem = gui.invisible(std::move(overlay.elem));
-              break;
-            case GuiBuilder::OverlayInfo::TUTORIAL:
-              pos = Vec2(rightBarWidth + guiBuilder.getImmigrationBarWidth(),
-                  renderer.getSize().y - bottomBarHeight - *height);
-              break;
-          }
+          pos = getOverlayPosition(overlay.alignment, *height, rightBarWidth, bottomBarHeight);
           tempGuiElems.push_back(std::move(overlay.elem));
           *height = min(*height, renderer.getSize().y - pos.y);
           tempGuiElems.back()->setBounds(Rectangle(pos, pos + Vec2(*width, *height)));
@@ -474,6 +439,42 @@ void WindowView::rebuildGui() {
     }
   }
   propagateMousePosition(getClickableGuiElems());
+}
+
+Vec2 WindowView::getOverlayPosition(GuiBuilder::OverlayInfo::Alignment alignment, int height, int rightBarWidth,
+    int bottomBarHeight) {
+  int bottomOffset = 35;
+  int sideOffset = 0;
+  int rightWindowHeight = 80;
+  switch (alignment) {
+    case GuiBuilder::OverlayInfo::MINIONS:
+      return Vec2(rightBarWidth - 20, rightWindowHeight - 6);
+      break;
+    case GuiBuilder::OverlayInfo::TOP_LEFT:
+      return Vec2(rightBarWidth + sideOffset, rightWindowHeight);
+      break;
+    case GuiBuilder::OverlayInfo::IMMIGRATION:
+      return Vec2(rightBarWidth, renderer.getSize().y - bottomBarHeight - 21 - height);
+      break;
+    case GuiBuilder::OverlayInfo::BOTTOM_LEFT:
+      return Vec2(rightBarWidth + guiBuilder.getImmigrationBarWidth(),
+                 renderer.getSize().y - bottomBarHeight - 21 - height);
+      break;
+    case GuiBuilder::OverlayInfo::LEFT:
+      return Vec2(sideOffset,
+          renderer.getSize().y - bottomBarHeight - bottomOffset - height);
+      break;
+    case GuiBuilder::OverlayInfo::MESSAGES:
+      return Vec2(rightBarWidth, 0);
+      break;
+    case GuiBuilder::OverlayInfo::GAME_SPEED:
+      return Vec2(26, renderer.getSize().y - height - 50);
+      break;
+    case GuiBuilder::OverlayInfo::TUTORIAL:
+      return Vec2(rightBarWidth + guiBuilder.getImmigrationBarWidth(),
+          renderer.getSize().y - bottomBarHeight - height);
+      break;
+  }
 }
 
 void WindowView::propagateMousePosition(const vector<SGuiElem>& elems) {
@@ -779,6 +780,13 @@ optional<string> WindowView::getText(const string& title, const string& value, i
   return returnQueue.pop();
 }
 
+Rectangle WindowView::getEquipmentMenuPosition(int height) {
+  int width = 340;
+  Vec2 origin = Vec2(rightBarWidthCollective, 200);
+  origin.x = min(origin.x, renderer.getSize().x - width);
+  return Rectangle(origin, origin + Vec2(width, height)).intersection(Rectangle(Vec2(0, 0), renderer.getSize()));
+}
+
 optional<int> WindowView::chooseItem(const vector<ItemInfo>& items, ScrollPosition* scrollPos1) {
   RecursiveLock lock(renderMutex);
   uiLock = true;
@@ -790,8 +798,12 @@ optional<int> WindowView::chooseItem(const vector<ItemInfo>& items, ScrollPositi
     if (!scrollPos)
       scrollPos = &localScrollPos;
     optional<optional<int>> retVal;
-    vector<SGuiElem> lines = guiBuilder.drawItemMenu(items,
-      [&retVal] (Rectangle butBounds, optional<int> a) { retVal = a;}, true);
+    vector<SGuiElem> lines;
+    lines.push_back(gui.getListBuilder()
+        .addElemAuto(gui.label("Available items:"))
+        .addBackElem(gui.label("Owners:"), guiBuilder.getItemLineOwnerMargin()).buildHorizontalList());
+    lines.append(guiBuilder.drawItemMenu(items,
+      [&retVal] (Rectangle butBounds, optional<int> a) { retVal = a;}, true));
     int menuHeight = lines.size() * guiBuilder.getStandardLineHeight() + 30;
     SGuiElem menu = gui.miniWindow(gui.margins(
             gui.scrollable(gui.verticalList(std::move(lines), guiBuilder.getStandardLineHeight()), scrollPos),
@@ -800,7 +812,7 @@ optional<int> WindowView::chooseItem(const vector<ItemInfo>& items, ScrollPositi
     bg2->setBounds(Rectangle(renderer.getSize()));
     while (1) {
       refreshScreen(false);
-      menu->setBounds(guiBuilder.getEquipmentMenuPosition(menuHeight));
+      menu->setBounds(getEquipmentMenuPosition(menuHeight));
       bg2->render(renderer);
       menu->render(renderer);
       renderer.drawAndClearBuffer();

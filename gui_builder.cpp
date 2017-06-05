@@ -775,6 +775,11 @@ SGuiElem GuiBuilder::drawBottomPlayerInfo(const GameInfo& gameInfo) {
 }
 
 static int viewObjectWidth = 27;
+
+int GuiBuilder::getItemLineOwnerMargin() {
+  return viewObjectWidth + 60;
+}
+
 vector<string> GuiBuilder::getItemHint(const ItemInfo& item) {
   vector<string> out { capitalFirst(item.fullName)};
   if (!item.description.empty())
@@ -816,7 +821,7 @@ SGuiElem GuiBuilder::getItemLine(const ItemInfo& item, function<void(Rectangle)>
   line.addElemAuto(std::move(mainLine));
   if (item.owner) {
     line.addBackElem(gui.viewObject(item.owner->viewId), viewObjectWidth);
-    line.addBackElem(gui.label("L:" + toString(item.owner->expLevel)), 60);
+    line.addBackElem(gui.label("L:" + toString(item.owner->expLevel)), getItemLineOwnerMargin() - viewObjectWidth);
   }
   if (item.price)
     line.addBackElemAuto(drawCost(*item.price));
@@ -1907,20 +1912,6 @@ SGuiElem GuiBuilder::drawVillages(VillageInfo& info) {
 }
 
 const double menuLabelVPadding = 0.15;
-
-Rectangle GuiBuilder::getMinionMenuPosition() {
-  Vec2 center = renderer.getSize() / 2;
-  Vec2 dim(800, 600);
-  return Rectangle(center - dim / 2, center + dim / 2);
-}
-
-Rectangle GuiBuilder::getEquipmentMenuPosition(int height) {
-  Rectangle minionMenu = getMinionMenuPosition();
-  int width = 340;
-  Vec2 origin = minionMenu.topRight() + Vec2(-100, 200);
-  origin.x = min(origin.x, renderer.getSize().x - width);
-  return Rectangle(origin, origin + Vec2(width, height)).intersection(Rectangle(Vec2(0, 0), renderer.getSize()));
-}
 
 Rectangle GuiBuilder::getMenuPosition(MenuType type, int numElems) {
   int windowWidth = 800;

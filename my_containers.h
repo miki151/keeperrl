@@ -155,6 +155,13 @@ class vector {
     ++modCounter;
   }
 
+  void append(vector<T>&& elems) {
+    impl.reserve(size() + elems.size());
+    for (auto&& elem : elems)
+      impl.push_back(std::move(elem));
+    ++modCounter;
+  }
+
   optional<int> findAddress(const T* ptr) const {
     for (int i = 0; i < size(); ++i)
       if (&impl.at(i) == ptr)

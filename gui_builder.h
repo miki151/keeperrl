@@ -59,6 +59,7 @@ class GuiBuilder {
   void reset();
   int getStandardLineHeight() const;
   int getImmigrationBarWidth() const;
+  int getItemLineOwnerMargin();
 
   SGuiElem getSunlightInfoGui(const GameSunlightInfo& sunlightInfo);
   SGuiElem getTurnInfoGui(const int& turn);
@@ -74,7 +75,7 @@ class GuiBuilder {
 
   struct OverlayInfo {
     SGuiElem elem;
-    enum { LEFT, TOP_LEFT, BOTTOM_LEFT, MESSAGES, GAME_SPEED, INVISIBLE, MINIONS, IMMIGRATION, TUTORIAL } alignment;
+    enum Alignment { LEFT, TOP_LEFT, BOTTOM_LEFT, MESSAGES, GAME_SPEED, MINIONS, IMMIGRATION, TUTORIAL } alignment;
   };
   SGuiElem drawPlayerOverlay(const PlayerInfo&);
   void drawOverlays(vector<OverlayInfo>&, GameInfo&);
@@ -121,8 +122,6 @@ class GuiBuilder {
   void setGameSpeed(GameSpeed);
   bool showMorale() const;
   Rectangle getMenuPosition(MenuType, int numElems);
-  Rectangle getMinionMenuPosition();
-  Rectangle getEquipmentMenuPosition(int height);
   Rectangle getTextInputPosition();
   SGuiElem drawListGui(const string& title, const vector<ListElem>& options,
       MenuType, optional<int>* highlight, int* choice, vector<int>* positions);

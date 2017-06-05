@@ -215,7 +215,7 @@ string Tutorial::getMessage() const {
     case State::BUILD_LIBRARY:
       return "The first room that you need to build is a library. This is where the Keeper and other minions "
           "will learn spells, and research new technology. It is also a source of mana. Place 6 bookcases "
-          "in the new room as highlighted. Remember that book shelves and other furniture blocks your minions' movement.";
+          "in the new room as highlighted. Remember that bookcases and other furniture block your minions' movement.";
     case State::DIG_2_ROOMS:
       return "Dig out some more rooms. "
           "If the library is blocking your tunnels, use the 'remove construction' order to get it out of the way.\n \n"
