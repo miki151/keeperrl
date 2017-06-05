@@ -165,9 +165,10 @@ class Heal : public Behaviour {
     for (Position pos : creature->getPosition().neighbors8())
       if (WCreature c = pos.getCreature())
         if (creature->isFriend(c) && c->getBody().canHeal())
-          for (WItem item : creature->getEquipment().getItems(Item::effectPredicate(EffectId::HEAL)))
-            if (auto action = creature->give(c, {item}))
-              return MoveInfo(0.5, action);
+          if (c->getEquipment().getItems(ItemIndex::HEALING_ITEM).empty())
+            for (WItem item : creature->getEquipment().getItems(ItemIndex::HEALING_ITEM))
+              if (auto action = creature->give(c, {item}))
+                return MoveInfo(0.5, action);
     return NoMove;
   }
 

@@ -1020,7 +1020,7 @@ int Collective::getNumItems(ItemIndex index, bool includeMinions) const {
 
 optional<set<Position>> Collective::getStorageFor(const WItem item) const {
   for (auto& info : config->getFetchInfo())
-    if (Inventory::getIndexPredicate(info.index)(item))
+    if (getIndexPredicate(info.index)(item))
       return info.destinationFun(this);
   return none;
 }

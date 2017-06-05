@@ -29,7 +29,6 @@ class Inventory {
   public:
   void addItem(PItem);
   void addItems(vector<PItem>);
-  static function<bool(const WItem)> getIndexPredicate(ItemIndex);
   PItem removeItem(WItem item);
   vector<PItem> removeItems(vector<WItem> items);
   vector<PItem> removeAllItems();

@@ -17,10 +17,6 @@
 
 #include "inventory.h"
 #include "item.h"
-#include "minion_equipment.h"
-#include "resource_id.h"
-#include "item_class.h"
-#include "corpse_info.h"
 
 template <class Archive> 
 void Inventory::serialize(Archive& ar, const unsigned int version) {
@@ -92,36 +88,10 @@ WItem Inventory::getItemById(UniqueEntity<Item>::Id id) const {
     return nullptr;
 }
 
-function<bool(const WItem)> Inventory::getIndexPredicate(ItemIndex index) {
-  switch (index) {
-    case ItemIndex::GOLD: return Item::classPredicate(ItemClass::GOLD);
-    case ItemIndex::WOOD: return [](const WItem it) {
-        return it->getResourceId() == CollectiveResourceId::WOOD; };
-    case ItemIndex::IRON: return [](const WItem it) {
-        return it->getResourceId() == CollectiveResourceId::IRON; };
-    case ItemIndex::STEEL: return [](const WItem it) {
-        return it->getResourceId() == CollectiveResourceId::STEEL; };
-    case ItemIndex::STONE: return [](const WItem it) {
-        return it->getResourceId() == CollectiveResourceId::STONE; };
-    case ItemIndex::REVIVABLE_CORPSE: return [](const WItem it) {
-        return it->getClass() == ItemClass::CORPSE && it->getCorpseInfo()->canBeRevived; };
-    case ItemIndex::WEAPON: return [](const WItem it) {
-        return it->getClass() == ItemClass::WEAPON; };
-    case ItemIndex::TRAP: return [](const WItem it) { return !!it->getTrapType(); };
-    case ItemIndex::CORPSE: return [](const WItem it) {
-        return it->getClass() == ItemClass::CORPSE; };
-    case ItemIndex::MINION_EQUIPMENT: return [](const WItem it) {
-        return MinionEquipment::isItemUseful(it);};
-    case ItemIndex::RANGED_WEAPON: return [](const WItem it) {
-        return it->getClass() == ItemClass::RANGED_WEAPON;};
-    case ItemIndex::CAN_EQUIP: return [](const WItem it) {return it->canEquip();};
-    case ItemIndex::FOR_SALE: return [](const WItem it) {return it->isOrWasForSale();};
-  }
-}
+static vector<WItem> empty;
 
 const vector<WItem>& Inventory::getItems(ItemIndex index) const {
   if (isEmpty()) {
-    static vector<WItem> empty;
     return empty;
   }
   auto& elems = indexes[index];
