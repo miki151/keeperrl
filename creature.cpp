@@ -643,11 +643,14 @@ CreatureAction Creature::hide() const {
 
 CreatureAction Creature::chatTo(WCreature other) const {
   CHECK(other);
-  return CreatureAction(this, [=](WCreature self) {
-      playerMessage("You chat with " + other->getName().the());
-      other->getAttributes().chatReaction(other, self);
-      self->spendTime(1);
-  });
+  if (other->getPosition().dist8(getPosition()) == 1)
+    return CreatureAction(this, [=](WCreature self) {
+        playerMessage("You chat with " + other->getName().the());
+        other->getAttributes().chatReaction(other, self);
+        self->spendTime(1);
+    });
+  else
+    return CreatureAction("Move closer to chat to " + other->getName().the());
 }
 
 CreatureAction Creature::stealFrom(Vec2 direction, const vector<WItem>& items) const {

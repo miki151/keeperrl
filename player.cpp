@@ -491,16 +491,13 @@ void Player::sleeping() {
 static bool displayTravelInfo = true;
 
 void Player::creatureAction(Creature::Id id) {
-  for (Position pos : getCreature()->getPosition().neighbors8())
-    if (WCreature c = pos.getCreature())
+  if (getCreature()->getUniqueId() == id)
+    tryToPerform(getCreature()->wait());
+  else
+    for (WCreature c : getCreature()->getVisibleCreatures())
       if (c->getUniqueId() == id) {
-        if (getCreature()->isEnemy(c))
-          tryToPerform(getCreature()->attack(c));
-        else if (auto move = getCreature()->move(c->getPosition()))
-          move.perform(getCreature());
-        else
-          tryToPerform(getCreature()->chatTo(c));
-        break;
+        if (!getCreature()->isEnemy(c) || !tryToPerform(getCreature()->attack(c)))
+          tryToPerform(getCreature()->moveTowards(c->getPosition()));
       }
 }
 
