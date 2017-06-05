@@ -1118,7 +1118,7 @@ optional<int> WindowView::chooseFromListInternal(const string& title, const vect
     stuff = gui.topMargin(guiBuilder.getStandardLineHeight() / 2, std::move(stuff));
   auto getScrollPos = [&](int index) {
     if (index >= 0 && index < positions.size())
-      return positions.at(index);
+      return positions[index];
     else
       return 0;
   };

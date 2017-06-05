@@ -88,7 +88,7 @@ static vector<char> readSoundData(OggVorbis_File& file, optional<int> length = n
     int result = ov_read(&file, tmp, lengthNow, 0, 2, 1, &bit_stream);
     if (result <= 0)
       break;
-    ret.insert(end(ret), tmp, tmp + result);
+    ret.append(tmp, tmp + result);
   }
   return ret;
 }

@@ -178,7 +178,7 @@ void ShortestPath::constructPath(Vec2 pos, bool reversed) {
   }
   if (!reversed)
     ret.push_back(target);
-  path = vector<Vec2>(ret.rbegin(), ret.rend());
+  path = ret.reverse();
 }
 
 bool ShortestPath::isReversed() const {

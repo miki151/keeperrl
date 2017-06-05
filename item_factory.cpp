@@ -582,7 +582,7 @@ ItemFactory ItemFactory::dungeon() {
 }
 
 ItemFactory ItemFactory::chest() {
-  return dungeon().addItem({ItemId::GOLD_PIECE, 300, Range(20, 41)});
+  return dungeon().addItem({ItemId::GOLD_PIECE, 300, Range(4, 9)});
 }
 
 ItemFactory ItemFactory::singleType(ItemType id, Range count) {

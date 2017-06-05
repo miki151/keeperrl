@@ -783,11 +783,11 @@ void Player::you(const string& param) {
 void Player::you(MsgType type, const vector<string>& param) {
   string msg;
   switch (type) {
-    case MsgType::SWING_WEAPON: msg = "You swing your " + param.at(0); break;
-    case MsgType::THRUST_WEAPON: msg = "You thrust your " + param.at(0); break;
-    case MsgType::KICK: msg = "You kick " + param.at(0); break;
-    case MsgType::PUNCH: msg = "You punch " + param.at(0); break;
-    default: you(type, param.at(0)); break;
+    case MsgType::SWING_WEAPON: msg = "You swing your " + param[0]; break;
+    case MsgType::THRUST_WEAPON: msg = "You thrust your " + param[0]; break;
+    case MsgType::KICK: msg = "You kick " + param[0]; break;
+    case MsgType::PUNCH: msg = "You punch " + param[0]; break;
+    default: you(type, param[0]); break;
   }
   if (param.size() > 1)
     msg += " " + param[1];

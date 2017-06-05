@@ -62,7 +62,7 @@ void Workshops::Type::unqueue(int index) {
       addDebt(-queued[index].cost * queued[index].number);
     else
       addDebt(-queued[index].cost * (queued[index].number - 1));
-    queued.erase(queued.begin() + index);
+    queued.removeIndexPreserveOrder(index);
   }
   stackQueue();
 }
@@ -109,7 +109,7 @@ vector<PItem> Workshops::Type::addWork(double amount) {
       vector<PItem> ret = ItemFactory::fromId(product.type, product.batchSize);
       product.state = none;
       if (!--product.number)
-        queued.erase(queued.begin());
+        queued.removeIndexPreserveOrder(0);
       return ret;
     }
   }

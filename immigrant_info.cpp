@@ -36,7 +36,7 @@ CreatureId ImmigrantInfo::getId(int numCreated) const {
   if (!consumeIds)
     return Random.choose(ids);
   else
-    return ids.at(numCreated);
+    return ids[numCreated];
 }
 
 bool ImmigrantInfo::isAvailable(int numCreated) const {

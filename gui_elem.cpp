@@ -2320,7 +2320,7 @@ void GuiFactory::loadNonFreeImages(const DirectoryPath& path) {
 }
 
 Texture& GuiFactory::getIconTex(IconId id) {
-  return iconTextures.at(id);
+  return iconTextures[id];
 }
 
 SGuiElem GuiFactory::getScrollbar() {

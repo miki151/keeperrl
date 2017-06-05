@@ -78,12 +78,16 @@ void Square::onAddedToLevel(Position pos) const {
 
 void Square::tick(Position pos) {
   setDirty(pos);
-  if (!inventory->isEmpty())
-    for (WItem item : getInventory().getItems()) {
+  if (!inventory->isEmpty()) {
+    vector<WItem> discarded;
+    for (auto item : inventory->getItems()) {
       item->tick(pos);
       if (item->isDiscarded())
-        getInventory().removeItem(item);
+        discarded.push_back(item);
     }
+    for (auto item : discarded)
+      inventory->removeItem(item);
+  }
   poisonGas->tick(pos);
   if (creature && poisonGas->getAmount() > 0.2) {
     creature->poisonWithGas(min(1.0, poisonGas->getAmount()));

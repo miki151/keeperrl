@@ -237,7 +237,7 @@ static Vec2 projectOnBorders(Rectangle area, Vec2 d) {
 Position Level::getLandingSquare(StairKey key, Vec2 travelDir) const {
   vector<Position> landing = landingSquares.at(key);
   Vec2 entryPos = projectOnBorders(getBounds(), travelDir);
-  Position target = landing.at(0);
+  Position target = landing[0];
   for (Position p : landing)
     if (p.getCoord().distD(entryPos) < target.getCoord().distD(entryPos))
       target = p;

@@ -607,7 +607,7 @@ void Renderer::drawTile(Vec2 pos, TileCoord coord, double scale, Color color) {
   Vec2 off = getOffset(Renderer::nominalSize - sz, scale);
   if (sz.y > nominalSize.y)
     off.y *= 2;
-  drawSprite(pos + off, coord.pos.mult(sz), sz, tiles.at(coord.texNum), sz * scale, color);
+  drawSprite(pos + off, coord.pos.mult(sz), sz, tiles[coord.texNum], sz * scale, color);
 }
 
 void Renderer::drawViewObject(Vec2 pos, ViewId id, Color color) {

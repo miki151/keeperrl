@@ -639,7 +639,7 @@ void PlayerControl::fillEquipment(WCreature creature, PlayerInfo& info) const {
       [&](const WItem it) { if (!creature->getEquipment().hasItem(it)) return " (pending)"; else return ""; } );
   for (auto elem : consumables)
     info.inventory.push_back(getItemInfo(elem.second, false,
-          !creature->getEquipment().hasItem(elem.second.at(0)), false, ItemInfo::CONSUMABLE));
+          !creature->getEquipment().hasItem(elem.second[0]), false, ItemInfo::CONSUMABLE));
   for (WItem item : creature->getEquipment().getItems())
     if (!getCollective()->getMinionEquipment().isItemUseful(item))
       info.inventory.push_back(getItemInfo({item}, false, false, false, ItemInfo::OTHER));
@@ -672,7 +672,7 @@ WItem PlayerControl::chooseEquipmentItem(WCreature creature, vector<WItem> curre
     options.push_back(getItemInfo({it}, true, false, false));
   for (auto elem : concat(Item::stackItems(availableItems), usedStacks)) {
     options.emplace_back(getItemInfo(elem.second, false, false, false));
-    if (auto creatureId = getCollective()->getMinionEquipment().getOwner(elem.second.at(0)))
+    if (auto creatureId = getCollective()->getMinionEquipment().getOwner(elem.second[0]))
       if (WConstCreature c = getCreature(*creatureId))
         options.back().owner = CreatureInfo(c);
     allStacked.push_back(elem.second.front());
@@ -1902,7 +1902,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
     case UserInputId::GO_TO_VILLAGE:
         if (WCollective col = getVillain(input.get<int>())) {
           if (col->getLevel() != getLevel())
-            setScrollPos(col->getTerritory().getAll().at(0));
+            setScrollPos(col->getTerritory().getAll()[0]);
           else
             scrollToMiddle(col->getTerritory().getAll());
         }
@@ -2024,7 +2024,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
                 workshop.unqueue(info.itemIndex);
                 break;
               case ItemAction::CHANGE_NUMBER: {
-                int batchSize = workshop.getQueued().at(info.itemIndex).batchSize;
+                int batchSize = workshop.getQueued()[info.itemIndex].batchSize;
                 if (auto number = getView()->getNumber("Change the number of items:", 0, 50 * batchSize, batchSize)) {
                   if (*number > 0)
                     workshop.changeNumber(info.itemIndex, *number / batchSize);

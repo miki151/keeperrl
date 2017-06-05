@@ -27,7 +27,7 @@ const string& SavedGameInfo::getName() const {
 }
 
 ViewId SavedGameInfo::getViewId() const {
-  return minions.at(0).viewId;
+  return minions[0].viewId;
 }
 
 int SavedGameInfo::getProgressCount() const {

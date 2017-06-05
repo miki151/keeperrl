@@ -10,10 +10,8 @@ void eraseIterators(vector<T>& container, vector<typename vector<T>::iterator> i
        [&](const typename vector<T>::iterator& t1, const typename vector<T>::iterator& t2) {
     return t1 - container.begin() > t2 - container.begin();
   });
-  for (auto& iterator : iterators) {
-    *iterator = std::move(container.back());
-    container.pop_back();
-  }
+  for (auto& iterator : iterators)
+    container.removeIndex(iterator - container.begin());
 }
 
 template <typename T, typename U>

@@ -198,7 +198,7 @@ int Options::getIntValue(OptionId id) {
 }
 
 CreatureId Options::getCreatureId(OptionId id) {
-  return choicesCreatureId[id].at(*getValue(id).getValueMaybe<int>() % choicesCreatureId[id].size());
+  return choicesCreatureId[id][*getValue(id).getValueMaybe<int>() % choicesCreatureId[id].size()];
 }
 
 void Options::setNextCreatureId(OptionId id) {

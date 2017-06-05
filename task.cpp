@@ -699,7 +699,7 @@ class Chain : public Task {
   }
 
   virtual bool canTransfer() override {
-    return tasks.at(current)->canTransfer();
+    return tasks[current]->canTransfer();
   }
 
   virtual void cancel() override {
@@ -709,7 +709,7 @@ class Chain : public Task {
   }
 
   virtual MoveInfo getMove(WCreature c) override {
-    while (tasks.at(current)->isDone())
+    while (tasks[current]->isDone())
       if (++current >= tasks.size()) {
         setDone();
         return NoMove;

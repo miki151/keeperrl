@@ -784,7 +784,7 @@ class ChooseRandom : public Behaviour {
       : Behaviour(c), behaviours(std::move(beh)), weights(w) {}
 
   virtual MoveInfo getMove() override {
-    return behaviours.at(Random.get(weights))->getMove();
+    return behaviours[Random.get(weights)]->getMove();
   }
 
   SERIALIZATION_CONSTRUCTOR(ChooseRandom);

@@ -63,12 +63,12 @@ void Monster::you(MsgType type, const vector<string>& param) {
   string msg;
   switch (type) {
     case MsgType::SWING_WEAPON:
-      msg = getCreature()->getName().the() + " swings " + getCreature()->getAttributes().getGender().his() + " " + param.at(0); break;
+      msg = getCreature()->getName().the() + " swings " + getCreature()->getAttributes().getGender().his() + " " + param[0]; break;
     case MsgType::THRUST_WEAPON:
-      msg = getCreature()->getName().the() + " thrusts " + getCreature()->getAttributes().getGender().his() + " " + param.at(0); break;
-    case MsgType::KICK: msg = getCreature()->getName().the() + addName(" kicks", param.at(0)); break;
-    case MsgType::PUNCH: msg = getCreature()->getName().the() + addName(" punches", param.at(0)); break;
-    default: you(type, param.at(0)); return;
+      msg = getCreature()->getName().the() + " thrusts " + getCreature()->getAttributes().getGender().his() + " " + param[0]; break;
+    case MsgType::KICK: msg = getCreature()->getName().the() + addName(" kicks", param[0]); break;
+    case MsgType::PUNCH: msg = getCreature()->getName().the() + addName(" punches", param[0]); break;
+    default: you(type, param[0]); return;
   }
   if (param.size() > 1)
     msg += " " + param[1];

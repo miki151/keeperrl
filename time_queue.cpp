@@ -54,7 +54,7 @@ PCreature TimeQueue::removeCreature(WCreature cRef) {
     if (creatures[i].get() == cRef) {
       queue.erase(cRef);
       PCreature ret = std::move(creatures[i]);
-      creatures.erase(creatures.begin() + i);
+      creatures.removeIndexPreserveOrder(i);
       return ret;
     }
   FATAL << "Creature not found";
