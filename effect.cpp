@@ -395,17 +395,19 @@ void Effect::applyDirected(WCreature c, Vec2 direction, const DirEffectType& typ
 }
 
 static string getCreaturePluralName(CreatureId id) {
-  static map<CreatureId, string> names;
-  return CreatureFactory::fromId(id, TribeId::getHuman())->getName().plural();
+  static EnumMap<CreatureId, optional<string>> names;
+  if (!names[id])
+   names[id] = CreatureFactory::fromId(id, TribeId::getHuman())->getName().plural();
+  return *names[id];
 }
 
 static string getCreatureName(CreatureId id) {
   if (getSummonNumber(id).getEnd() > 2)
     return getCreaturePluralName(id);
-  static map<CreatureId, string> names;
-  if (!names.count(id))
+  static EnumMap<CreatureId, optional<string>> names;
+  if (!names[id])
     names[id] = CreatureFactory::fromId(id, TribeId::getHuman())->getName().bare();
-  return names.at(id);
+  return *names[id];
 }
 
 static string getCreatureAName(CreatureId id) {
