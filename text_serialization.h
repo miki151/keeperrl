@@ -1,5 +1,6 @@
 #pragma once
 
+#include "extern/iomanip.h"
 #include "parse_game.h"
 #include "cereal/cereal.hpp"
 

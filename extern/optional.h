@@ -503,7 +503,7 @@ public:
   }
 
   template <typename Fun>
-  auto map(const Fun& f) const -> optional<decltype(f(contained_val()))> {
+  auto map(const Fun& f) const -> optional<decltype(f(declval<T>()))> {
     if (initialized())
       return f(contained_val());
     else

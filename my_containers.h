@@ -364,8 +364,8 @@ class set : public std::set<T, Compare> {
   }
 
   template <typename Fun>
-  auto transform(Fun fun) const -> vector<decltype(fun(*base::begin()))> {
-    vector<decltype(fun(*base::begin()))> ret;
+  auto transform(Fun fun) const {
+    vector<decltype(fun(std::declval<T>()))> ret;
     ret.reserve(size());
     for (const auto& elem : *this)
       ret.push_back(fun(elem));
