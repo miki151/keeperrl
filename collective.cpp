@@ -51,7 +51,7 @@
 
 template <class Archive>
 void Collective::serialize(Archive& ar, const unsigned int version) {
-  ar& SUBCLASS(TaskCallback) & SUBCLASS(EventListener);
+  ar(SUBCLASS(TaskCallback), SUBCLASS(UniqueEntity<Collective>), SUBCLASS(EventListener));
   ar(creatures, leader, taskMap, tribe, control, byTrait, bySpawnType);
   ar(territory, alarmInfo, markedItems, constructions, minionEquipment);
   ar(surrendering, delayedPos, knownTiles, technologies, kills, points, currentTasks);
