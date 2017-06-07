@@ -1152,9 +1152,14 @@ static const ViewObject& getConstructionObject(FurnitureType type) {
 void PlayerControl::acquireTech(int index) {
   auto techs = Technology::getNextTechs(getCollective()->getTechnologies()).filter(
       [](const Technology* tech) { return tech->canResearch(); });
-  Technology* tech = techs[index];
-  getCollective()->takeResource({ResourceId::MANA, int(getCollective()->getTechCost(tech))});
-  getCollective()->acquireTech(tech);
+  if (index < techs.size()) {
+    Technology* tech = techs[index];
+    auto cost = CostInfo(ResourceId::MANA, getCollective()->getTechCost(tech));
+    if (getCollective()->hasResource(cost)) {
+      getCollective()->takeResource(cost);
+      getCollective()->acquireTech(tech);
+    }
+  }
 }
 
 void PlayerControl::fillLibraryInfo(CollectiveInfo& collectiveInfo) const {

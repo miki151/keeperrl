@@ -65,7 +65,12 @@ SGuiElem GuiBuilder::getHintCallback(const vector<string>& s) {
 }
 
 function<void()> GuiBuilder::getButtonCallback(UserInput input) {
-  return [this, input]() { callbacks.input(input); };
+  return [this, input]() {
+    callbacks.input(input);
+/*#ifndef RELEASE // adding the input twice uncovers bugs sometimes
+    callbacks.input(input);
+#endif*/
+  };
 }
 
 void GuiBuilder::setCollectiveTab(CollectiveTab t) {

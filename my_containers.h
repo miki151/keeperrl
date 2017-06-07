@@ -64,12 +64,12 @@ class vector {
   }
 
   T& operator[] (int i) {
-    CHECK(i >= 0 && i < size());
+    CHECK(i >= 0 && i < size()) << "Bad index: " << i << " (vector size " << size() << ")";
     return impl[i];
   }
 
   const T& operator[] (int i) const {
-    CHECK(i >= 0 && i < size());
+    CHECK(i >= 0 && i < size()) << "Bad index: " << i << " (vector size " << size() << ")";
     return impl[i];
   }
 
@@ -189,17 +189,17 @@ class vector {
   }
 
   const T& getOnlyElement() const& {
-    CHECK(size() == 1);
+    CHECK(size() == 1) << "Size " << size();
     return impl[0];
   }
 
   T& getOnlyElement() & {
-    CHECK(size() == 1);
+    CHECK(size() == 1) << "Size " << size();
     return impl[0];
   }
 
   T getOnlyElement() && {
-    CHECK(size() == 1);
+    CHECK(size() == 1) << "Size " << size();
     return std::move(impl[0]);
   }
 
