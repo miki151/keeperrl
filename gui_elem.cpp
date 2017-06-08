@@ -550,7 +550,8 @@ SGuiElem GuiFactory::label(const string& s, function<Color()> colorFun, char hot
   auto width = [=] { return renderer.getTextLength(s); };
   return SGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
-          r.drawText(Color::BLACK.transparency(100),
+          auto color = colorFun();
+          r.drawText(Color::BLACK.transparency(min<Uint8>(100, color.a)),
             bounds.topLeft().x + 1, bounds.topLeft().y + 2, s);
           r.drawTextWithHotkey(colorFun(), bounds.topLeft().x, bounds.topLeft().y, s, hotkey);
         }, width));
@@ -1085,20 +1086,12 @@ class ElemList : public GuiLayout {
     return 0;
   }
 
-  int getElemsHeight(int numElems) {
-    int ret = 0;
-    CHECK(numElems <= getSize());
-    for (int i : Range(numElems))
-      ret += heights[i];
-    return ret;
-  }
-
   int getSize() {
     return heights.size();
   }
 
   int getTotalHeight() {
-    return getElemsHeight(getSize());
+    return accuHeights.back();
   }
 
 
@@ -1202,23 +1195,24 @@ GuiFactory::ListBuilder& GuiFactory::ListBuilder::addSpace(int size) {
 GuiFactory::ListBuilder& GuiFactory::ListBuilder::addElemAuto(SGuiElem elem) {
   CHECK(!backElems);
   CHECK(!middleElem);
-  int size = -1;
   elems.push_back(std::move(elem));
-  sizes.push_back(size);
+  sizes.push_back(-1);
   return *this;
 }
 
 GuiFactory::ListBuilder& GuiFactory::ListBuilder::addMiddleElem(SGuiElem elem) {
-  addElem(std::move(elem), 1234);
+  CHECK(!backElems);
+  CHECK(!middleElem);
+  elems.push_back(std::move(elem));
+  sizes.push_back(-1);
   middleElem = true;
   return *this;
 }
 
 GuiFactory::ListBuilder& GuiFactory::ListBuilder::addBackElemAuto(SGuiElem elem) {
   ++backElems;
-  int size = -1;
   elems.push_back(std::move(elem));
-  sizes.push_back(size);
+  sizes.push_back(-1);
   return *this;
 }
 
@@ -1249,6 +1243,7 @@ void GuiFactory::ListBuilder::clear() {
   elems.clear();
   sizes.clear();
   backElems = 0;
+  middleElem = false;
 }
 
 SGuiElem GuiFactory::ListBuilder::buildVerticalList() {

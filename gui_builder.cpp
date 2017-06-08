@@ -608,9 +608,8 @@ SGuiElem GuiBuilder::drawTutorialOverlay(const TutorialInfo& info) {
   if (info.warning)
     warning = gui.label(*info.warning, Color::RED);
   else
-    warning =
-        gui.label("Press [Space] to unpause the game.", [this]{ if (clock->isPaused()) return Color::RED; else
-        return Color::TRANSPARENT;});
+    warning = gui.label("Press [Space] to unpause the game.",
+        [this]{ return clock->isPaused() ? Color::RED : Color::TRANSPARENT;});
   return gui.preferredSize(520, 250, gui.stack(gui.darken(), gui.rectangleBorder(Color::GRAY),
       gui.margins(gui.stack(
         gui.labelMultiLine(info.message, legendLineHeight),
@@ -813,17 +812,14 @@ SGuiElem GuiBuilder::getItemLine(const ItemInfo& item, function<void(Rectangle)>
       Color::GRAY : Color::WHITE;
   if (item.number > 1)
     line.addElemAuto(gui.rightMargin(8, gui.label(toString(item.number), color)));
-  if (!item.name.empty())
-    line.addElemAuto(gui.label(item.name, color));
-  else
-    line.addSpace(130);
-
+  line.addMiddleElem(gui.label(item.name, color));
   auto mainLine = gui.stack(
       gui.buttonRect(onClick),
+      gui.uiHighlight(),
       line.buildHorizontalList(),
       getTooltip(getItemHint(item), (int) item.ids.getHash()));
   line.clear();
-  line.addElemAuto(std::move(mainLine));
+  line.addMiddleElem(std::move(mainLine));
   if (item.owner) {
     line.addBackElem(gui.viewObject(item.owner->viewId), viewObjectWidth);
     line.addBackElem(gui.label("L:" + toString(item.owner->expLevel)), getItemLineOwnerMargin() - viewObjectWidth);
