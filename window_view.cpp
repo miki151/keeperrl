@@ -502,7 +502,7 @@ vector<SGuiElem> WindowView::getClickableGuiElems() {
   if (gameInfo.infoType == GameInfo::InfoType::SPECTATOR)
     return {mapGui};
   vector<SGuiElem> ret = concat(tempGuiElems, blockingElems);
-  reverse(ret.begin(), ret.end());
+  std::reverse(ret.begin(), ret.end());
   if (gameReady) {
     ret.push_back(minimapGui);
     ret.push_back(mapGui);

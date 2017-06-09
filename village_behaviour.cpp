@@ -177,8 +177,9 @@ double VillageBehaviour::getAttackProbability(const VillageControl* self) const 
     double val = getTriggerValue(elem, self);
     CHECK(val >= 0 && val <= 1);
     ret = max(ret, val);
-    INFO << "trigger " << EnumInfo<AttackTriggerId>::getString(elem.getId()) << " village "
-        << self->getCollective()->getName().getFull() << " under attack probability " << val;
+    if (auto& name = self->getCollective()->getName())
+      INFO << "trigger " << EnumInfo<AttackTriggerId>::getString(elem.getId()) << " village "
+          << name->full << " under attack probability " << val;
   }
   return ret;
 }

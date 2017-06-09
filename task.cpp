@@ -932,7 +932,7 @@ class KillFighters : public Task {
   }
 
   virtual string getDescription() const override {
-    return "Kill " + toString(numCreatures) + " minions of " + collective->getName().getFull();
+    return "Kill " + toString(numCreatures) + " minions of " + collective->getName()->full;
   }
 
   SERIALIZE_ALL(SUBCLASS(Task), collective, numCreatures, targets); 

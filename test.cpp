@@ -710,7 +710,7 @@ class Test {
     for (auto elem : Iter(v))
       if (*elem % 3 == 1)
         elem.markToErase();
-    sort(v.begin(), v.end());
+    std::sort(v.begin(), v.end());
     CHECKEQ(v, makeVec(2, 3, 5, 6, 8, 9, 11, 12));
   }
 

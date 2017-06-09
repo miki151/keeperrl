@@ -1185,7 +1185,7 @@ vector<double> sortedValues(const Table<double>& t) {
   for (Vec2 v : t.getBounds()) {
     values.push_back(t[v]);
   }
-  sort(values.begin(), values.end());
+  std::sort(values.begin(), values.end());
   return values;
 }
 
@@ -1353,6 +1353,7 @@ class PlaceCollective : public LevelMaker {
 
   virtual void make(LevelBuilder* builder, Rectangle area) override {
     collective->addArea(builder->toGlobalCoordinates(area));
+    builder->addCollective(collective);
   }
 
   private:

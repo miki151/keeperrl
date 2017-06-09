@@ -30,6 +30,11 @@ CollectiveBuilder& CollectiveBuilder::setRaceName(const string& n) {
   return *this;
 }
 
+CollectiveBuilder&CollectiveBuilder::setAnonymous() {
+  anonymous = true;
+  return *this;
+}
+
 CollectiveBuilder& CollectiveBuilder::addCreature(WCreature c) {
   if (!c->getAttributes().isInnocent() && (!creatures.empty() || config->isLeaderFighter()))
     creatures.push_back({c, {MinionTrait::FIGHTER}});
@@ -45,10 +50,34 @@ CollectiveBuilder& CollectiveBuilder::addArea(Rectangle v) {
   return *this;
 }
 
+optional<CollectiveName> CollectiveBuilder::generateName() {
+  if (!creatures.empty() && !anonymous) {
+    CollectiveName ret;
+    auto leader = creatures[0].creature;
+    if (locationName && raceName)
+      ret.full = capitalFirst(*raceName) + " of " + *locationName;
+    else if (auto first = leader->getName().first())
+      ret.full = leader->getName().title();
+    else if (raceName)
+      ret.full = capitalFirst(*raceName);
+    else
+      ret.full = leader->getName().title();
+    if (locationName)
+      ret.shortened = *locationName;
+    else
+      ret.shortened = leader->getName().first().value_or(leader->getName().bare());
+    if (raceName)
+      ret.race = *raceName;
+    else
+      ret.race = leader->getName().stack();
+    return ret;
+  } else
+    return none;
+}
+
 PCollective CollectiveBuilder::build() {
-  CHECK(!creatures.empty());
   CHECK(level);
-  auto c = Collective::create(level, *tribe, CollectiveName(raceName, locationName, creatures[0].creature));
+  auto c = Collective::create(level, *tribe, generateName());
   Immigration im(c.get());
   c->init(std::move(*config), std::move(im));
   c->setControl(CollectiveControl::idle(c.get()));
