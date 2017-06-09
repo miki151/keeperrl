@@ -907,41 +907,6 @@ VillageInfo::Village PlayerControl::getVillageInfo(WConstCollective col) const {
   return info;
 }
 
-/*void PlayerControl::handleRecruiting(WCollective ally) {
-  ScrollPosition scrollPos;
-  vector<WCreature> recruited;
-  vector<WCreature> transfers;
-  while (1) {
-    vector<WCreature> recruits = ally->getRecruits();
-    if (recruits.empty())
-      break;
-    vector<CreatureInfo> creatures = transform2<CreatureInfo>(recruits,
-        [] (WConstCreature c) { return CreatureInfo(c);});
-    string warning;
-    if (getCollective()->getPopulationSize() >= getCollective()->getMaxPopulation())
-      warning = "You have reached minion limit.";
-    auto index = getView()->chooseRecruit("Recruit from " + ally->getName().getShort(), warning,
-        {ViewId::GOLD, getCollective()->numResource(ResourceId::GOLD)}, creatures, &scrollPos);
-    if (!index)
-      break;
-    for (WCreature c : recruits)
-      if (c->getUniqueId() == *index) {
-        ally->recruit(c, getCollective());
-        recruited.push_back(c);
-        if (c->getLevel()->getModel() != getModel())
-          transfers.push_back(c);
-        getCollective()->takeResource({ResourceId::GOLD, c->getAttributes().getRecruitmentCost()});
-        break;
-      }
-  }
-  for (auto& stack : Creature::stack(recruited))
-    getCollective()->addNewCreatureMessage(stack);
-  if (!transfers.empty())
-    for (WCreature c : transfers)
-//      if (getGame()->canTransferCreature(c, getCollective()->getLevel()->getModel()))
-        getGame()->transferCreature(c, getModel());
-}*/
-
 void PlayerControl::handleTrading(WCollective ally) {
   ScrollPosition scrollPos;
   const set<Position>& storage = getCollective()->getZones().getPositions(ZoneId::STORAGE_EQUIPMENT);

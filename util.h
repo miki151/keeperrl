@@ -25,6 +25,7 @@
 #include "owner_pointer.h"
 #include "hashing.h"
 #include "extern/variant.h"
+#include "extern/optional.h"
 
 template <class T>
 string toString(const T& t) {

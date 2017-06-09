@@ -13,7 +13,7 @@
 # include <utility>
 # include <type_traits>
 # include <initializer_list>
-# include <cassert>
+#include "debug.h"
 # include <functional>
 # include <string>
 # include <stdexcept>
@@ -199,7 +199,7 @@ template <class T> inline constexpr typename std::remove_reference<T>::type&& co
 #if defined NDEBUG
 # define TR2_OPTIONAL_ASSERTED_EXPRESSION(CHECK, EXPR) (EXPR)
 #else
-# define TR2_OPTIONAL_ASSERTED_EXPRESSION(CHECK, EXPR) ((CHECK) ? (EXPR) : ([]{assert(!#CHECK);}(), (EXPR)))
+# define TR2_OPTIONAL_ASSERTED_EXPRESSION(COND, EXPR) ((COND) ? (EXPR) : ([]{CHECK(!#COND);}(), (EXPR)))
 #endif
 
 
@@ -380,7 +380,7 @@ class optional : private OptionalBase<T>
   template <class... Args>
   void initialize(Args&&... args) noexcept(noexcept(T(std::forward<Args>(args)...)))
   {
-    assert(!OptionalBase<T>::init_);
+    CHECK(!OptionalBase<T>::init_);
     ::new (static_cast<void*>(dataptr())) T(std::forward<Args>(args)...);
     OptionalBase<T>::init_ = true;
   }
@@ -388,7 +388,7 @@ class optional : private OptionalBase<T>
   template <class U, class... Args>
   void initialize(std::initializer_list<U> il, Args&&... args) noexcept(noexcept(T(il, std::forward<Args>(args)...)))
   {
-    assert(!OptionalBase<T>::init_);
+    CHECK(!OptionalBase<T>::init_);
     ::new (static_cast<void*>(dataptr())) T(il, std::forward<Args>(args)...);
     OptionalBase<T>::init_ = true;
   }
@@ -513,7 +513,7 @@ public:
 # if OPTIONAL_HAS_MOVE_ACCESSORS == 1
 
   OPTIONAL_MUTABLE_CONSTEXPR T* operator ->() {
-    assert (initialized());
+    CHECK(initialized());
     return dataptr();
   }
 
@@ -522,12 +522,12 @@ public:
   }
 
   OPTIONAL_MUTABLE_CONSTEXPR T& operator *() & {
-    assert (initialized());
+    CHECK(initialized());
     return contained_val();
   }
 
   OPTIONAL_MUTABLE_CONSTEXPR T&& operator *() && {
-    assert (initialized());
+    CHECK(initialized());
     return constexpr_move(contained_val());
   }
 
@@ -547,7 +547,7 @@ public:
 # else
 
   T* operator ->() {
-    assert (initialized());
+    CHECK(initialized());
     return dataptr();
   }
 
@@ -556,7 +556,7 @@ public:
   }
 
   T& operator *() {
-    assert (initialized());
+    CHECK(initialized());
     return contained_val();
   }
 
@@ -1064,5 +1064,9 @@ namespace std
 
 # undef TR2_OPTIONAL_REQUIRES
 # undef TR2_OPTIONAL_ASSERTED_EXPRESSION
+
+using std::experimental::optional;
+using none_t = std::experimental::nullopt_t;
+using std::experimental::none;
 
 # endif //___OPTIONAL_HPP___

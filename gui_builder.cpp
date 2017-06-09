@@ -815,7 +815,6 @@ SGuiElem GuiBuilder::getItemLine(const ItemInfo& item, function<void(Rectangle)>
   line.addMiddleElem(gui.label(item.name, color));
   auto mainLine = gui.stack(
       gui.buttonRect(onClick),
-      gui.uiHighlight(),
       line.buildHorizontalList(),
       getTooltip(getItemHint(item), (int) item.ids.getHash()));
   line.clear();
