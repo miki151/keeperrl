@@ -599,7 +599,11 @@ int GuiBuilder::getImmigrationBarWidth() const {
 
 SGuiElem GuiBuilder::drawTutorialOverlay(const TutorialInfo& info) {
   auto continueButton = gui.stack(
-      gui.button([this]() { callbacks.input(UserInputId::TUTORIAL_CONTINUE); tutorialClicks.clear(); }),
+      gui.button([this] {
+          callbacks.input(UserInputId::TUTORIAL_CONTINUE);
+          tutorialClicks.clear();
+          closeOverlayWindowsAndClearButton();
+      }),
       gui.setHeight(20, gui.labelHighlightBlink("[Continue]", Color::LIGHT_BLUE, Color::WHITE)));
   auto backButton = gui.stack(
       gui.button(getButtonCallback(UserInputId::TUTORIAL_GO_BACK)),

@@ -1682,7 +1682,7 @@ PLevelMaker LevelMaker::mazeLevel(RandomGen& random, SettlementInfo info) {
   for (StairKey key : info.upStairs)
     queue->addMaker(new Stairs(StairDirection::UP, key, Predicate::type(FurnitureType::FLOOR)));
   if (info.creatures)
-    queue->addMaker(new Creatures(*info.creatures, info.numCreatures));
+    queue->addMaker(new Creatures(*info.creatures, info.numCreatures, info.collective));
   queue->addMaker(new Items(ItemFactory::dungeon(), 5, 10));
   return PLevelMaker(new BorderGuard(queue, SquareChange(FurnitureType::FLOOR, FurnitureType::MOUNTAIN)));
 }
