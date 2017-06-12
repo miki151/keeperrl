@@ -294,6 +294,16 @@ class vector {
       return *this;
     }
 
+    Iterator& operator+= (difference_type n) {
+      it += n;
+      return *this;
+    }
+
+    Iterator& operator-= (difference_type n) {
+      it -= n;
+      return *this;
+    }
+
     Iterator operator++(int) const {
       checkParent();
       return Iterator(it++, parent);
