@@ -29,7 +29,9 @@ bool FilePath::hasSuffix(const string& suf) const {
 
 FilePath FilePath::changeSuffix(const string& current, const string& newSuf) const {
   CHECK(hasSuffix(current));
-  return FilePath(filename.substr(0, filename.size() - current.size()) + newSuf, fullPath);
+  return FilePath(
+      filename.substr(0, filename.size() - current.size()) + newSuf,
+      fullPath.substr(0, fullPath.size() - current.size()) + newSuf);
 }
 
 FilePath::FilePath(const DirectoryPath& dir, const string& f) : filename(f), fullPath(dir.get() + "/"_s + f) {
