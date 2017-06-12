@@ -538,7 +538,7 @@ PCreature CreatureFactory::getShopkeeper(Rectangle shopArea, TribeId tribe) {
         c.name = "shopkeeper";
         c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_MALE)->getNext());));
   ret->setController(makeOwner<ShopkeeperController>(ret.get(), shopArea));
-  vector<ItemType> inventory(Random.get(100, 300), ItemId::GOLD_PIECE);
+  vector<ItemType> inventory(Random.get(20, 60), ItemId::GOLD_PIECE);
   inventory.push_back(ItemId::SWORD);
   inventory.push_back(ItemId::LEATHER_ARMOR);
   inventory.push_back(ItemId::LEATHER_BOOTS);
@@ -2561,7 +2561,7 @@ vector<ItemType> getInventory(CreatureId id) {
         .add(ItemId::LEATHER_BOOTS)
         .add(randomHealing())
         .add({ItemId::POTION, EffectType{EffectId::LASTING, LastingEffect::SPEED}}, 4)
-        .add(ItemId::GOLD_PIECE, Random.get(70, 100));
+        .add(ItemId::GOLD_PIECE, Random.get(10, 20));
     case CreatureId::KNIGHT: 
       return ItemList()
         .add(ItemId::SWORD)

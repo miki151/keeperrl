@@ -7,8 +7,15 @@
 SERIALIZE_DEF(CollectiveAttack, attacker, ransom, creatures, attackerName)
 SERIALIZATION_CONSTRUCTOR_IMPL(CollectiveAttack);
 
+static string generateAttackerName(WConstCollective attacker) {
+  if (auto& name = attacker->getName())
+    return name->full;
+  else
+    return "an unnamed attacker";
+}
+
 CollectiveAttack::CollectiveAttack(WCollective att, const vector<WCreature>& c, optional<int> r)
-  : ransom(r), creatures(c), attacker(att), attackerName(attacker->getName().getFull()) {}
+  : ransom(r), creatures(c), attacker(att), attackerName(generateAttackerName(att)) {}
 
 CollectiveAttack::CollectiveAttack(const string& name, const vector<WCreature>& c) : creatures(c), attackerName(name) {
 

@@ -109,7 +109,7 @@ void Player::onEvent(const GameEvent& event) {
       if (adventurer) {
         WCollective col = event.get<WCollective>();
         if (col->getVillainType() == VillainType::MAIN || col->getVillainType() == VillainType::LESSER)
-          privateMessage(PlayerMessage("The tribe of " + col->getName().getFull() + " is destroyed.",
+          privateMessage(PlayerMessage("The tribe of " + col->getName()->full + " is destroyed.",
                 MessagePriority::CRITICAL));
       }
       break;

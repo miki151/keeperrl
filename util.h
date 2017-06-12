@@ -25,6 +25,7 @@
 #include "owner_pointer.h"
 #include "hashing.h"
 #include "extern/variant.h"
+#include "extern/optional.h"
 
 template <class T>
 string toString(const T& t) {
@@ -544,7 +545,7 @@ class RandomGen {
   template <typename T>
   vector<T> permutation(initializer_list<T> vi) {
     vector<T> v(vi);
-    random_shuffle(v.begin(), v.end(), [this](int a) { return get(a);});
+    std::random_shuffle(v.begin(), v.end(), [this](int a) { return get(a);});
     return v;
   }
 
@@ -552,14 +553,14 @@ class RandomGen {
     vector<int> v;
     for (int i : r)
       v.push_back(i);
-    random_shuffle(v.begin(), v.end(), [this](int a) { return get(a);});
+    std::random_shuffle(v.begin(), v.end(), [this](int a) { return get(a);});
     return v;
   }
 
   template <typename T>
   vector<T> chooseN(int n, vector<T> v) {
     CHECK(n <= v.size());
-    random_shuffle(v.begin(), v.end(), [this](int a) { return get(a);});
+    std::random_shuffle(v.begin(), v.end(), [this](int a) { return get(a);});
     return getPrefix(v, n);
   }
 

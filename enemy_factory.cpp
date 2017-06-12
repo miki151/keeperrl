@@ -24,8 +24,13 @@ EnemyInfo& EnemyInfo::setId(EnemyId i) {
   return *this;
 }
 
+EnemyInfo& EnemyInfo::setAnonymous() {
+  anonymous = true;
+  return *this;
+}
+
 static EnemyInfo getVault(SettlementType type, CreatureFactory factory, TribeId tribe, int num,
-    optional<ItemFactory> itemFactory = none, optional<VillageBehaviour> villain = none) {
+    optional<ItemFactory> itemFactory = none) {
   return EnemyInfo(CONSTRUCT(SettlementInfo,
       c.type = type;
       c.creatures = factory;
@@ -33,12 +38,13 @@ static EnemyInfo getVault(SettlementType type, CreatureFactory factory, TribeId 
       c.tribe = tribe;
       c.buildingId = BuildingId::DUNGEON;
       c.shopFactory = itemFactory;
-    ), CollectiveConfig::noImmigrants(), villain);
+    ), CollectiveConfig::noImmigrants())
+    .setAnonymous();
 }
 
 static EnemyInfo getVault(SettlementType type, CreatureId id, TribeId tribe, int num,
-    optional<ItemFactory> itemFactory = none, optional<VillageBehaviour> villain = none) {
-  return getVault(type, CreatureFactory::singleType(tribe, id), tribe, num, itemFactory, villain);
+    optional<ItemFactory> itemFactory = none) {
+  return getVault(type, CreatureFactory::singleType(tribe, id), tribe, num, itemFactory);
 }
 
 struct FriendlyVault {
@@ -294,7 +300,8 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.type = SettlementType::TOWER;
             c.tribe = TribeId::getHuman();
             c.buildingId = BuildingId::BRICK;),
-          CollectiveConfig::noImmigrants());
+          CollectiveConfig::noImmigrants())
+          .setAnonymous();
     case EnemyId::ELEMENTALIST:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::TOWER;
@@ -327,17 +334,25 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.buildingId = BuildingId::DUNGEON;),
           CollectiveConfig::withImmigrants(1000, 10, {
               ImmigrantInfo(CreatureId::BANDIT, {MinionTrait::FIGHTER}).setFrequency(1),
-            }));
-    case EnemyId::BANDITS: {
-      auto ret = getById(EnemyId::NO_AGGRO_BANDITS);
-      ret.villain = CONSTRUCT(VillageBehaviour,
+            }))
+          .setAnonymous();
+    case EnemyId::BANDITS:
+      return EnemyInfo(CONSTRUCT(SettlementInfo,
+            c.type = SettlementType::CAVE;
+            c.creatures = CreatureFactory::singleType(TribeId::getBandit(), CreatureId::BANDIT);
+            c.numCreatures = random.get(4, 9);
+            c.tribe = TribeId::getBandit();
+            c.race = "bandits"_s;
+            c.buildingId = BuildingId::DUNGEON;),
+          CollectiveConfig::withImmigrants(1000, 10, {
+              ImmigrantInfo(CreatureId::BANDIT, {MinionTrait::FIGHTER}).setFrequency(1),
+            }),
+          CONSTRUCT(VillageBehaviour,
               c.minPopulation = 0;
               c.minTeamSize = 3;
               c.triggers = LIST({AttackTriggerId::GOLD, 100});
               c.attackBehaviour = AttackBehaviour(AttackBehaviourId::STEAL_GOLD);
-              c.ransom = make_pair(0.5, random.get(40, 80)););
-      return ret;
-    }
+              c.ransom = make_pair(0.5, random.get(40, 80));));
     case EnemyId::LIZARDMEN:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::VILLAGE;
@@ -391,7 +406,8 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.buildingId = BuildingId::DUNGEON;
             c.outsideFeatures = FurnitureFactory::dungeonOutside(c.tribe);
             c.furniture = FurnitureFactory::roomFurniture(c.tribe);),
-          CollectiveConfig::noImmigrants(), {});
+          CollectiveConfig::noImmigrants(), {})
+          .setAnonymous();
     case EnemyId::GNOMES:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::MINETOWN;
@@ -416,7 +432,8 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.buildingId = BuildingId::DUNGEON;
             c.outsideFeatures = FurnitureFactory::dungeonOutside(c.tribe);
             c.furniture = FurnitureFactory::roomFurniture(c.tribe);),
-          CollectiveConfig::noImmigrants());
+          CollectiveConfig::noImmigrants())
+          .setAnonymous();
     case EnemyId::ENTS:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::FOREST;
@@ -478,7 +495,8 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.creatures = CreatureFactory::singleType(TribeId::getMonster(), CreatureId::KRAKEN);
             c.numCreatures = 1;
             c.race = "kraken"_s;
-            c.tribe = TribeId::getMonster();), CollectiveConfig::noImmigrants().setLeaderAsFighter());
+            c.tribe = TribeId::getMonster();), CollectiveConfig::noImmigrants().setLeaderAsFighter())
+          .setAnonymous();
     case EnemyId::CEMETERY:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::CEMETERY;
@@ -498,7 +516,8 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.locationName = "cemetery"_s;
             c.race = "undead"_s;
             c.tribe = TribeId::getMonster();
-            c.buildingId = BuildingId::BRICK;), CollectiveConfig::noImmigrants());
+            c.buildingId = BuildingId::BRICK;), CollectiveConfig::noImmigrants())
+          .setAnonymous();
     case EnemyId::OGRE_CAVE:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::CAVE;
@@ -542,7 +561,8 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.tribe = TribeId::getKeeper();
             c.buildingId = BuildingId::DUNGEON;
             ), CollectiveConfig::noImmigrants(), none,
-          LevelConnection{LevelConnection::SOKOBAN, get(EnemyId::SOKOBAN_ENTRY)});
+          LevelConnection{LevelConnection::SOKOBAN, get(EnemyId::SOKOBAN_ENTRY)})
+          .setAnonymous();
     case EnemyId::WITCH:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::WITCH_HOUSE;
@@ -552,7 +572,8 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.race = "witch"_s;
             c.buildingId = BuildingId::WOOD;
             c.elderLoot = ItemType(ItemId::TECH_BOOK, TechId::ALCHEMY_ADV);
-            c.furniture = FurnitureFactory(c.tribe, FurnitureType::LABORATORY);), CollectiveConfig::noImmigrants());
+            c.furniture = FurnitureFactory(c.tribe, FurnitureType::LABORATORY);), CollectiveConfig::noImmigrants())
+          .setAnonymous();
     case EnemyId::HUMAN_COTTAGE:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::COTTAGE;
@@ -562,7 +583,8 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.race = "humans"_s;
             c.buildingId = BuildingId::WOOD;
             c.furniture = FurnitureFactory::roomFurniture(c.tribe);),
-          CollectiveConfig::noImmigrants().setGuardian({CreatureId::WITCHMAN, 0.001, 1, 2}));
+          CollectiveConfig::noImmigrants().setGuardian({CreatureId::WITCHMAN, 0.001, 1, 2}))
+          .setAnonymous();
     case EnemyId::TUTORIAL_VILLAGE:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::SMALL_VILLAGE;
@@ -583,7 +605,8 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.race = "elves"_s;
             c.buildingId = BuildingId::WOOD;
             c.furniture = FurnitureFactory::roomFurniture(c.tribe);),
-          CollectiveConfig::noImmigrants());
+          CollectiveConfig::noImmigrants())
+          .setAnonymous();
     case EnemyId::KOBOLD_CAVE:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::SMALL_MINETOWN;
@@ -593,7 +616,8 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.race = "kobolds"_s;
             c.buildingId = BuildingId::DUNGEON;
             c.stockpiles = LIST({StockpileInfo::MINERALS, 60});),
-          CollectiveConfig::noImmigrants());
+          CollectiveConfig::noImmigrants())
+          .setAnonymous();
     case EnemyId::DWARF_CAVE:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::SMALL_MINETOWN;

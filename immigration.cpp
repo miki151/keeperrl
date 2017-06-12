@@ -145,7 +145,7 @@ vector<string> Immigration::getMissingRequirements(const Group& group) const {
         if (!collective->isKnownVillainLocation(col))
           ret.push_back("Ally hasn't been discovered.");
         else if (info.getAvailableRecruits(collective->getGame(), immigrantInfo.getId(0)).empty())
-          ret.push_back(col->getName().getFull() + " don't have recruits available at this moment.");
+          ret.push_back("Ally doesn't have recruits available at this moment.");
       },
       [&](const TutorialRequirement& t) {
         if (!t.tutorial->showImmigrant(immigrantInfo))

@@ -26,6 +26,7 @@
 #include <stdexcept>
 #include <type_traits>
 #include <utility>
+#include "extern/optional.h"
 
 template <typename... Lambdas>
 struct LambdaVisitor;

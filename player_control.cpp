@@ -868,8 +868,8 @@ static string getTriggerLabel(const AttackTrigger& trigger) {
 
 VillageInfo::Village PlayerControl::getVillageInfo(WConstCollective col) const {
   VillageInfo::Village info;
-  info.name = col->getName().getShort();
-  info.tribeName = col->getName().getRace();
+  info.name = col->getName()->shortened;
+  info.tribeName = col->getName()->race;
   info.triggers.clear();
   if (col->getModel() == getModel()) {
     if (!getCollective()->isKnownVillainLocation(col))
@@ -907,41 +907,6 @@ VillageInfo::Village PlayerControl::getVillageInfo(WConstCollective col) const {
   return info;
 }
 
-/*void PlayerControl::handleRecruiting(WCollective ally) {
-  ScrollPosition scrollPos;
-  vector<WCreature> recruited;
-  vector<WCreature> transfers;
-  while (1) {
-    vector<WCreature> recruits = ally->getRecruits();
-    if (recruits.empty())
-      break;
-    vector<CreatureInfo> creatures = transform2<CreatureInfo>(recruits,
-        [] (WConstCreature c) { return CreatureInfo(c);});
-    string warning;
-    if (getCollective()->getPopulationSize() >= getCollective()->getMaxPopulation())
-      warning = "You have reached minion limit.";
-    auto index = getView()->chooseRecruit("Recruit from " + ally->getName().getShort(), warning,
-        {ViewId::GOLD, getCollective()->numResource(ResourceId::GOLD)}, creatures, &scrollPos);
-    if (!index)
-      break;
-    for (WCreature c : recruits)
-      if (c->getUniqueId() == *index) {
-        ally->recruit(c, getCollective());
-        recruited.push_back(c);
-        if (c->getLevel()->getModel() != getModel())
-          transfers.push_back(c);
-        getCollective()->takeResource({ResourceId::GOLD, c->getAttributes().getRecruitmentCost()});
-        break;
-      }
-  }
-  for (auto& stack : Creature::stack(recruited))
-    getCollective()->addNewCreatureMessage(stack);
-  if (!transfers.empty())
-    for (WCreature c : transfers)
-//      if (getGame()->canTransferCreature(c, getCollective()->getLevel()->getModel()))
-        getGame()->transferCreature(c, getModel());
-}*/
-
 void PlayerControl::handleTrading(WCollective ally) {
   ScrollPosition scrollPos;
   const set<Position>& storage = getCollective()->getZones().getPositions(ZoneId::STORAGE_EQUIPMENT);
@@ -958,7 +923,7 @@ void PlayerControl::handleTrading(WCollective ally) {
     vector<ItemInfo> itemInfo = items.transform(
         [budget] (const pair<string, vector<WItem>> it) {
             return getTradeItemInfo(it.second, budget);});
-    auto index = getView()->chooseTradeItem("Trade with " + ally->getName().getShort(),
+    auto index = getView()->chooseTradeItem("Trade with " + ally->getName()->shortened,
         {ViewId::GOLD, getCollective()->numResource(ResourceId::GOLD)}, itemInfo, &scrollPos);
     if (!index)
       break;
@@ -1013,7 +978,7 @@ void PlayerControl::handlePillage(WCollective col) {
       return;
     vector<ItemInfo> itemInfo = options.transform([] (const PillageOption& it) {
             return getPillageItemInfo(it.items, it.storage.empty());});
-    auto index = getView()->choosePillageItem("Pillage " + col->getName().getShort(), itemInfo, &scrollPos);
+    auto index = getView()->choosePillageItem("Pillage " + col->getName()->shortened, itemInfo, &scrollPos);
     if (!index)
       break;
     CHECK(!options[*index].storage.empty());
@@ -1048,7 +1013,7 @@ vector<WCreature> PlayerControl::getMinionsLike(WCreature like) const {
 }
 
 void PlayerControl::sortMinionsForUI(vector<WCreature>& minions) const {
-  sort(minions.begin(), minions.end(), [] (WConstCreature c1, WConstCreature c2) {
+  std::sort(minions.begin(), minions.end(), [] (WConstCreature c1, WConstCreature c2) {
       int l1 = (int) c1->getAttributes().getExpLevel();
       int l2 = (int) c2->getAttributes().getExpLevel();
       return l1 > l2 || (l1 == l2 && c1->getUniqueId() > c2->getUniqueId());
@@ -1089,7 +1054,7 @@ vector<PlayerInfo> PlayerControl::getPlayerInfos(vector<WCreature> creatures, Un
 }
 
 vector<CollectiveInfo::CreatureGroup> PlayerControl::getCreatureGroups(vector<WCreature> v) const {
-  sort(v.begin(), v.end(), [](WConstCreature c1, WConstCreature c2) {
+  std::sort(v.begin(), v.end(), [](WConstCreature c1, WConstCreature c2) {
         return c1->getAttributes().getExpLevel() > c2->getAttributes().getExpLevel();});
   map<string, CollectiveInfo::CreatureGroup> groups;
   for (WCreature c : v) {
@@ -1152,9 +1117,14 @@ static const ViewObject& getConstructionObject(FurnitureType type) {
 void PlayerControl::acquireTech(int index) {
   auto techs = Technology::getNextTechs(getCollective()->getTechnologies()).filter(
       [](const Technology* tech) { return tech->canResearch(); });
-  Technology* tech = techs[index];
-  getCollective()->takeResource({ResourceId::MANA, int(getCollective()->getTechCost(tech))});
-  getCollective()->acquireTech(tech);
+  if (index < techs.size()) {
+    Technology* tech = techs[index];
+    auto cost = CostInfo(ResourceId::MANA, getCollective()->getTechCost(tech));
+    if (getCollective()->hasResource(cost)) {
+      getCollective()->takeResource(cost);
+      getCollective()->acquireTech(tech);
+    }
+  }
 }
 
 void PlayerControl::fillLibraryInfo(CollectiveInfo& collectiveInfo) const {
@@ -1369,17 +1339,20 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
       ++gameInfo.villageInfo.numConquered;
   }
   gameInfo.villageInfo.numMainVillains = 0;
-  for (WConstCollective col : getKnownVillains(VillainType::MAIN)) {
-    gameInfo.villageInfo.villages.push_back(getVillageInfo(col));
-    ++gameInfo.villageInfo.numMainVillains;
-  }
+  for (WConstCollective col : getKnownVillains(VillainType::MAIN))
+    if (col->getName()) {
+      gameInfo.villageInfo.villages.push_back(getVillageInfo(col));
+      ++gameInfo.villageInfo.numMainVillains;
+    }
   gameInfo.villageInfo.numLesserVillains = 0;
-  for (WConstCollective col : getKnownVillains(VillainType::LESSER)) {
-    gameInfo.villageInfo.villages.push_back(getVillageInfo(col));
-    ++gameInfo.villageInfo.numLesserVillains;
-  }
+  for (WConstCollective col : getKnownVillains(VillainType::LESSER))
+    if (col->getName()) {
+      gameInfo.villageInfo.villages.push_back(getVillageInfo(col));
+      ++gameInfo.villageInfo.numLesserVillains;
+    }
   for (WConstCollective col : getKnownVillains(VillainType::ALLY))
-    gameInfo.villageInfo.villages.push_back(getVillageInfo(col));
+    if (col->getName())
+      gameInfo.villageInfo.villages.push_back(getVillageInfo(col));
   SunlightInfo sunlightInfo = getGame()->getSunlightInfo();
   gameInfo.sunlightInfo = { sunlightInfo.getText(), (int)sunlightInfo.getTimeRemaining() };
   gameInfo.infoType = GameInfo::InfoType::BAND;
@@ -1550,8 +1523,9 @@ void PlayerControl::updateKnownLocations(const Position& pos) {
       getCollective()->addKnownVillain(col);
       if (!getCollective()->isKnownVillainLocation(col)) {
         getCollective()->addKnownVillainLocation(col);
-        addMessage(PlayerMessage("Your minions discover the location of " + col->getName().getFull(),
-            MessagePriority::HIGH).setPosition(pos));
+        if (auto& name = col->getName())
+          addMessage(PlayerMessage("Your minions discover the location of " + name->full,
+              MessagePriority::HIGH).setPosition(pos));
       }
     }
 }
@@ -1941,6 +1915,8 @@ void PlayerControl::processInput(View* view, UserInput input) {
         Position pos = Position(info.pos, getLevel());
         if (getTeams().exists(info.teamId))
           for (WCreature c : getTeams().getMembers(info.teamId)) {
+            c->removeEffect(LastingEffect::TIED_UP);
+            c->removeEffect(LastingEffect::SLEEP);
             PTask task = Task::goToAndWait(pos, 15);
             task->setViewId(ViewId::GUARD_POST);
             getCollective()->setTask(c, std::move(task));

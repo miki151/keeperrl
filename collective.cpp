@@ -64,10 +64,10 @@ SERIALIZABLE(Collective);
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Collective);
 
-Collective::Collective(Private, WLevel l, TribeId t, const CollectiveName& n) : tribe(t), level(NOTNULL(l)), name(n) {
+Collective::Collective(Private, WLevel l, TribeId t, const optional<CollectiveName>& n) : tribe(t), level(NOTNULL(l)), name(n) {
 }
 
-PCollective Collective::create(WLevel level, TribeId tribe, const CollectiveName& name) {
+PCollective Collective::create(WLevel level, TribeId tribe, const optional<CollectiveName>& name) {
   auto ret = makeOwner<Collective>(Private {}, level, tribe, name);
   ret->subscribeTo(level->getModel());
   return ret;
@@ -80,7 +80,7 @@ void Collective::init(CollectiveConfig&& cfg, Immigration&& im) {
   workshops = config->getWorkshops();
 }
 
-const CollectiveName& Collective::getName() const {
+const optional<CollectiveName>& Collective::getName() const {
   return *name;
 }
 
@@ -785,8 +785,11 @@ void Collective::onEvent(const GameEvent& event) {
     case EventId::CONQUERED_ENEMY: {
       WCollective col = event.get<WCollective>();
       if (col->getVillainType() == VillainType::MAIN || col->getVillainType() == VillainType::LESSER) {
-        control->addMessage(PlayerMessage("The tribe of " + col->getName().getFull() + " is destroyed.",
-            MessagePriority::CRITICAL));
+        if (auto& name = col->getName())
+          control->addMessage(PlayerMessage("The tribe of " + name->full + " is destroyed.",
+              MessagePriority::CRITICAL));
+        //else
+        //  control->addMessage(PlayerMessage("An unnamed tribe is destroyed.", MessagePriority::CRITICAL));
         auto mana = config->getManaForConquering(*col->getVillainType());
         addMana(mana);
         control->addMessage(PlayerMessage("You feel a surge of power (+" + toString(mana) + " mana)",

@@ -40,7 +40,7 @@ class CollectiveConfig;
 class CostInfo;
 struct TriggerInfo;
 class Territory;
-class CollectiveName;
+struct CollectiveName;
 class Workshops;
 class TileEfficiency;
 class Zones;
@@ -50,7 +50,7 @@ class Immigration;
 
 class Collective : public TaskCallback, public UniqueEntity<Collective>, public EventListener<Collective> {
   public:
-  static PCollective create(WLevel, TribeId, const CollectiveName&);
+  static PCollective create(WLevel, TribeId, const optional<CollectiveName>&);
   void init(CollectiveConfig&&, Immigration&&);
   void addCreature(WCreature, EnumSet<MinionTrait>);
   void addCreature(PCreature, Position, EnumSet<MinionTrait>);
@@ -190,7 +190,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   const CollectiveTeams& getTeams() const;
   void freeTeamMembers(TeamId);
 
-  const CollectiveName& getName() const;
+  const optional<CollectiveName>& getName() const;
   const TaskMap& getTaskMap() const;
   void updateResourceProduction();
   bool isItemMarked(const WItem) const;
@@ -208,7 +208,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   struct Private {};
 
   public:
-  Collective(Private, WLevel, TribeId, const CollectiveName&);
+  Collective(Private, WLevel, TribeId, const optional<CollectiveName>&);
 
   protected:
   // From Task::Callback
@@ -302,7 +302,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   EntitySet<Creature> SERIAL(kills);
   int SERIAL(points) = 0;
   HeapAllocated<CollectiveTeams> SERIAL(teams);
-  HeapAllocated<CollectiveName> SERIAL(name);
+  HeapAllocated<optional<CollectiveName>> SERIAL(name);
   HeapAllocated<CollectiveConfig> SERIAL(config);
   EntitySet<Creature> SERIAL(banished);
   optional<VillainType> SERIAL(villainType);

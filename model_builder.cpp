@@ -501,12 +501,12 @@ PModel ModelBuilder::tryModel(int width, const string& levelName, vector<EnemyIn
         keeperSpawn, biomeId));
   model->calculateStairNavigation();
   for (auto& enemy : enemyInfo) {
-    if (!enemy.settlement.collective->hasCreatures())
-      continue;
     if (enemy.settlement.locationName)
       enemy.settlement.collective->setLocationName(*enemy.settlement.locationName);
     if (auto race = enemy.settlement.race)
       enemy.settlement.collective->setRaceName(*race);
+    if (enemy.anonymous)
+      enemy.settlement.collective->setAnonymous();
     PCollective collective = enemy.settlement.collective->build();
     auto control = VillageControl::create(collective.get(), enemy.villain);
     if (enemy.villainType)

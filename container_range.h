@@ -6,7 +6,7 @@
 
 template <typename T>
 void eraseIterators(vector<T>& container, vector<typename vector<T>::iterator> iterators) {
-  sort(iterators.begin(), iterators.end(),
+  std::sort(iterators.begin(), iterators.end(),
        [&](const typename vector<T>::iterator& t1, const typename vector<T>::iterator& t2) {
     return t1 - container.begin() > t2 - container.begin();
   });

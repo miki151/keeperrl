@@ -11,6 +11,7 @@ class Creature;
 class ImmigrantInfo;
 class Position;
 class CollectiveConfig;
+struct CollectiveName;
 
 class CollectiveBuilder {
   public:
@@ -20,10 +21,13 @@ class CollectiveBuilder {
   CollectiveBuilder& addArea(Rectangle);
   CollectiveBuilder& setLocationName(const string&);
   CollectiveBuilder& setRaceName(const string&);
+  CollectiveBuilder& setAnonymous();
+
   PCollective build();
   bool hasCreatures() const;
 
   private:
+  optional<CollectiveName> getCollectiveName();
   WLevel level = nullptr;
   struct CreatureInfo {
     WCreature creature;
@@ -36,4 +40,6 @@ class CollectiveBuilder {
   optional<Vec2> centralPoint;
   optional<string> locationName;
   optional<string> raceName;
+  bool anonymous = false;
+  optional<CollectiveName> generateName();
 };

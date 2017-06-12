@@ -1185,7 +1185,7 @@ vector<double> sortedValues(const Table<double>& t) {
   for (Vec2 v : t.getBounds()) {
     values.push_back(t[v]);
   }
-  sort(values.begin(), values.end());
+  std::sort(values.begin(), values.end());
   return values;
 }
 
@@ -1353,6 +1353,7 @@ class PlaceCollective : public LevelMaker {
 
   virtual void make(LevelBuilder* builder, Rectangle area) override {
     collective->addArea(builder->toGlobalCoordinates(area));
+    builder->addCollective(collective);
   }
 
   private:
@@ -1681,7 +1682,7 @@ PLevelMaker LevelMaker::mazeLevel(RandomGen& random, SettlementInfo info) {
   for (StairKey key : info.upStairs)
     queue->addMaker(new Stairs(StairDirection::UP, key, Predicate::type(FurnitureType::FLOOR)));
   if (info.creatures)
-    queue->addMaker(new Creatures(*info.creatures, info.numCreatures));
+    queue->addMaker(new Creatures(*info.creatures, info.numCreatures, info.collective));
   queue->addMaker(new Items(ItemFactory::dungeon(), 5, 10));
   return PLevelMaker(new BorderGuard(queue, SquareChange(FurnitureType::FLOOR, FurnitureType::MOUNTAIN)));
 }

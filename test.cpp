@@ -350,6 +350,14 @@ class Test {
     CHECKEQ(res, s);
   }
 
+  void testSetTransform() {
+    set<int> v { 5, 4, 3, 2, 1};
+    vector<string> s { "s5", "s4", "s3", "s2", "s1" };
+    function<string(const int&)> func = [](const int& a) { return "s" + toString(a); };
+    vector<string> res = v.transform(func);
+    CHECKEQ(res, s);
+  }
+
   void testSectors1() {
     Sectors sectors(Rectangle(7, 7));
     sectors.add(Vec2(0, 0));
@@ -702,7 +710,7 @@ class Test {
     for (auto elem : Iter(v))
       if (*elem % 3 == 1)
         elem.markToErase();
-    sort(v.begin(), v.end());
+    std::sort(v.begin(), v.end());
     CHECKEQ(v, makeVec(2, 3, 5, 6, 8, 9, 11, 12));
   }
 

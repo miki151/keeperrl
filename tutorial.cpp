@@ -204,8 +204,7 @@ string Tutorial::getMessage() const {
       return "Cut some more trees until how have gathered at least 200 wood.\n \n";
           //"You can mark things in bulk by dragging the mouse or by holding SHIFT and selecting a rectangle. Try it!";
     case State::DIG_ROOM:
-      return "Time to strike the mountain! Start by digging out a one tile-wide tunnel and finish it with at least "
-          "a 5x5 room.\n \n"
+      return "Time to strike the earth! Dig out a tunnel and a room, as shown by the yellow highlight.\n \n"
           "Hold down shift to select a rectangular area.";
     case State::BUILD_DOOR:
       return "Build a door at the entrance to your dungeon. This will slow down potential intruders, "
