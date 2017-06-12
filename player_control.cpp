@@ -1915,6 +1915,8 @@ void PlayerControl::processInput(View* view, UserInput input) {
         Position pos = Position(info.pos, getLevel());
         if (getTeams().exists(info.teamId))
           for (WCreature c : getTeams().getMembers(info.teamId)) {
+            c->removeEffect(LastingEffect::TIED_UP);
+            c->removeEffect(LastingEffect::SLEEP);
             PTask task = Task::goToAndWait(pos, 15);
             task->setViewId(ViewId::GUARD_POST);
             getCollective()->setTask(c, std::move(task));
