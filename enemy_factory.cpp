@@ -336,16 +336,23 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
               ImmigrantInfo(CreatureId::BANDIT, {MinionTrait::FIGHTER}).setFrequency(1),
             }))
           .setAnonymous();
-    case EnemyId::BANDITS: {
-      auto ret = getById(EnemyId::NO_AGGRO_BANDITS);
-      ret.villain = CONSTRUCT(VillageBehaviour,
+    case EnemyId::BANDITS:
+      return EnemyInfo(CONSTRUCT(SettlementInfo,
+            c.type = SettlementType::CAVE;
+            c.creatures = CreatureFactory::singleType(TribeId::getBandit(), CreatureId::BANDIT);
+            c.numCreatures = random.get(4, 9);
+            c.tribe = TribeId::getBandit();
+            c.race = "bandits"_s;
+            c.buildingId = BuildingId::DUNGEON;),
+          CollectiveConfig::withImmigrants(1000, 10, {
+              ImmigrantInfo(CreatureId::BANDIT, {MinionTrait::FIGHTER}).setFrequency(1),
+            }),
+          CONSTRUCT(VillageBehaviour,
               c.minPopulation = 0;
               c.minTeamSize = 3;
               c.triggers = LIST({AttackTriggerId::GOLD, 100});
               c.attackBehaviour = AttackBehaviour(AttackBehaviourId::STEAL_GOLD);
-              c.ransom = make_pair(0.5, random.get(40, 80)););
-      return ret;
-    }
+              c.ransom = make_pair(0.5, random.get(40, 80));));
     case EnemyId::LIZARDMEN:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::VILLAGE;
