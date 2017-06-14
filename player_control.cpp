@@ -531,11 +531,12 @@ void PlayerControl::minionEquipmentAction(const EquipmentActionInfo& action) {
 }
 
 void PlayerControl::minionTaskAction(const TaskActionInfo& action) {
-  WCreature c = getCreature(action.creature);
-  if (action.switchTo)
-    getCollective()->setMinionTask(c, *action.switchTo);
-  for (MinionTask task : action.lock)
-    c->getAttributes().getMinionTasks().toggleLock(task);
+  if (auto c = getCreature(action.creature)) {
+    if (action.switchTo)
+      getCollective()->setMinionTask(c, *action.switchTo);
+    for (MinionTask task : action.lock)
+      c->getAttributes().getMinionTasks().toggleLock(task);
+  }
 }
 
 static ItemInfo getItemInfo(const vector<WItem>& stack, bool equiped, bool pending, bool locked,
