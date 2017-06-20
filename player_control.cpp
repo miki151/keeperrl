@@ -217,8 +217,7 @@ const vector<PlayerControl::BuildInfo>& PlayerControl::getBuildInfo() {
           "Train your minions here. Adds up to " +
           toString(*CollectiveConfig::getTrainingMaxLevelIncrease(FurnitureType::TRAINING_STEEL)) + " experience levels.",
           0, "Training room"),
-      BuildInfo({FurnitureType::WORKSHOP, {ResourceId::WOOD, 15}}, "Workshop",
-          {{RequirementId::TECHNOLOGY, TechId::CRAFTING}},
+      BuildInfo({FurnitureType::WORKSHOP, {ResourceId::WOOD, 15}}, "Workshop", {},
           "Produces leather equipment, traps, first-aid kits and other.", 'm', workshop, true)
              .setTutorialHighlight(TutorialHighlight::BUILD_WORKSHOP),
       BuildInfo({FurnitureType::FORGE, {ResourceId::IRON, 20}}, "Forge",
@@ -229,7 +228,7 @@ const vector<PlayerControl::BuildInfo>& PlayerControl::getBuildInfo() {
           {{RequirementId::TECHNOLOGY, TechId::JEWELLERY}}, "Produces magical rings and amulets.", 0, workshop),
       BuildInfo({FurnitureType::STEEL_FURNACE, {ResourceId::STONE, 100}}, "Steel furnace",
           {{RequirementId::TECHNOLOGY, TechId::STEEL_MAKING}}, "Turns iron ore into steel.", 0, workshop),
-      BuildInfo({FurnitureType::DEMON_SHRINE, {ResourceId::MANA, 60}}, "Demon shrine", {},
+      BuildInfo({FurnitureType::DEMON_SHRINE, {ResourceId::MANA, 10}}, "Demon shrine", {},
           "Summons various demons to your dungeon."),
       BuildInfo({FurnitureType::BEAST_CAGE, {ResourceId::WOOD, 8}}, "Beast cage", {}, "Beasts sleep here."),
       BuildInfo({FurnitureType::GRAVE, {ResourceId::STONE, 15}}, "Graveyard", {},
@@ -253,17 +252,16 @@ const vector<PlayerControl::BuildInfo>& PlayerControl::getBuildInfo() {
              .setTutorialHighlight(TutorialHighlight::BUILD_DOOR),
       BuildInfo({FurnitureType::BRIDGE, {ResourceId::WOOD, 5}}, "Bridge", {},
         "Build it to pass over water or lava.", 0, "Installations"),
-      BuildInfo({FurnitureType::BARRICADE, {ResourceId::WOOD, 5}}, "Barricade",
-        {{RequirementId::TECHNOLOGY, TechId::CRAFTING}}, "", 0, "Installations"),
+      BuildInfo({FurnitureType::BARRICADE, {ResourceId::WOOD, 5}}, "Barricade", {}, "", 0, "Installations"),
       BuildInfo(BuildInfo::FurnitureInfo(
              {FurnitureType::TORCH_N, FurnitureType::TORCH_E, FurnitureType::TORCH_S, FurnitureType::TORCH_W}),
              "Torch", {}, "Place it on tiles next to a wall.", 'c', "Installations")
           .setTutorialHighlight(TutorialHighlight::BUILD_TORCH),
       BuildInfo({FurnitureType::KEEPER_BOARD, {ResourceId::WOOD, 15}}, "Message board", {},
           "A board where you can leave a message for other players.", 0, "Installations"),
-      BuildInfo({FurnitureType::EYEBALL, {ResourceId::MANA, 10}}, "Eyeball", {},
+      BuildInfo({FurnitureType::EYEBALL, {ResourceId::MANA, 5}}, "Eyeball", {},
         "Makes the area around it visible.", 0, "Installations"),
-      BuildInfo({FurnitureType::PORTAL, {ResourceId::MANA, 300}}, "Portal", {},
+      BuildInfo({FurnitureType::PORTAL, {ResourceId::MANA, 50}}, "Portal", {},
         "Opens a connection if another portal is present.", 0, "Installations"),
       BuildInfo({FurnitureType::MINION_STATUE, {ResourceId::GOLD, 60}}, "Statue", {},
         "Increases minion population limit by " +

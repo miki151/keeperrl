@@ -40,13 +40,10 @@ void Technology::init() {
         "humanoid mutation", "Breed new, very powerful humanoid species.", 400, {TechId::ALCHEMY}));
   Technology::set(TechId::BEAST_MUT, new Technology(
         "beast mutation", "Breed new, very powerful beast species.", 400, {TechId::ALCHEMY}));
-  Technology::set(TechId::CRAFTING, (new Technology(
-        "crafting", "Build a workshop and produce basic equipment.", 40, {}))
-                  ->setTutorialHighlight(TutorialHighlight::RESEARCH_CRAFTING));
   Technology::set(TechId::PIGSTY, new Technology(
         "pig breeding", "Build a pigsty to feed your minions.", 120, {}));
   Technology::set(TechId::IRON_WORKING, new Technology(
-        "iron working", "Build a forge and produce metal weapons and armor.", 180, {TechId::CRAFTING}));
+        "iron working", "Build a forge and produce metal weapons and armor.", 180));
   Technology::set(TechId::STEEL_MAKING, new Technology(
         "steelmaking", "Build a steel furnace and produce steel goods.", 400, {TechId::IRON_WORKING}));
   Technology::set(TechId::JEWELLERY, new Technology(
@@ -54,9 +51,9 @@ void Technology::init() {
   Technology::set(TechId::TWO_H_WEAP, new Technology(
         "two-handed weapons", "Produce war hammers and battle axes.", 100, {TechId::IRON_WORKING}));
   Technology::set(TechId::TRAPS, new Technology(
-        "traps", "Produce traps in the workshop.", 100, {TechId::CRAFTING}));
+        "traps", "Produce traps in the workshop.", 100));
   Technology::set(TechId::ARCHERY, new Technology(
-        "archery", "Produce bows and arrows.", 100, {TechId::CRAFTING}));
+        "archery", "Produce bows and arrows.", 100));
   Technology::set(TechId::SPELLS, new Technology(
         "sorcery", "Learn basic spells.", 60, {}));
   Technology::set(TechId::SPELLS_ADV, new Technology(
@@ -95,7 +92,7 @@ vector<Technology*> Technology::getNextTechs(const vector<Technology*>& current)
 }
 
 Technology::Technology(const string& n, const string& d, int c, const vector<TechId>& pre, bool canR)
-    : name(n), description(d), cost(c), research(canR) {
+    : name(n), description(d), cost(100), research(canR) {
   for (TechId id : pre)
     prerequisites.push_back(Technology::get(id));
 }

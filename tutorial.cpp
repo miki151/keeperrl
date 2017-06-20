@@ -46,7 +46,6 @@ enum class Tutorial::State {
   ACCEPT_IMMIGRANT,
   TORCHES,
   FLOORS,
-  RESEARCH_CRAFTING,
   BUILD_WORKSHOP,
   SCHEDULE_WORKSHOP_ITEMS,
   ORDER_CRAFTING,
@@ -114,8 +113,6 @@ bool Tutorial::canContinue(WConstGame game) const {
       return true;
     case State::FLOORS:
       return getHighlightedSquaresLow(game).empty();
-    case State::RESEARCH_CRAFTING:
-      return collective->hasTech(TechId::CRAFTING);
     case State::BUILD_WORKSHOP:
       return collective->getConstructions().getBuiltCount(FurnitureType::WORKSHOP) >= 2 &&
           collective->getZones().getPositions(ZoneId::STORAGE_EQUIPMENT).size() >= 1;
@@ -234,12 +231,10 @@ string Tutorial::getMessage() const {
       return "Minions are also more efficient if there is a nice floor where they are working. For now you can only "
           "afford wooden floor, but it should do.\n \n"
           "Make sure you have enough wood!";
-    case State::RESEARCH_CRAFTING:
+    case State::BUILD_WORKSHOP:
       return "Your minions will need equipment, such as weapons, armor, and consumables, to be more deadly in "
           "combat.\n \n"
-          "Before you can produce anything, click on your library, bring up the research menu and unlock crafting.";
-    case State::BUILD_WORKSHOP:
-      return "Build at least 2 workshop stands in your dungeon. It's best to dig out a dedicated room for them. "
+          "Build at least 2 workshop stands in your dungeon. It's best to dig out a dedicated room for them. "
           "You will also need a storage area for equipment. Place it somewhere near your workshop.";
     case State::SCHEDULE_WORKSHOP_ITEMS:
       return "Weapons are the most important piece of equipment, because unarmed, your minions have little chance "
@@ -321,8 +316,6 @@ EnumSet<TutorialHighlight> Tutorial::getHighlights(WConstGame game) const {
       return {TutorialHighlight::BUILD_TORCH};
     case State::FLOORS:
       return {TutorialHighlight::BUILD_FLOOR};
-    case State::RESEARCH_CRAFTING:
-      return {TutorialHighlight::RESEARCH_CRAFTING};
     case State::BUILD_WORKSHOP:
       return {TutorialHighlight::EQUIPMENT_STORAGE, TutorialHighlight::BUILD_WORKSHOP};
     case State::SCHEDULE_WORKSHOP_ITEMS:
@@ -405,9 +398,6 @@ vector<Vec2> Tutorial::getHighlightedSquaresLow(WConstGame game) const {
               ret.push_back(floorPos.getCoord());
       return ret;
     }
-    case State::RESEARCH_CRAFTING:
-      return collective->getConstructions().getBuiltPositions(FurnitureType::BOOKCASE).transform(
-          [](const Position& pos) { return pos.getCoord(); });
     case State::SCHEDULE_WORKSHOP_ITEMS:
       return collective->getConstructions().getBuiltPositions(FurnitureType::WORKSHOP).transform(
           [](const Position& pos) { return pos.getCoord(); });

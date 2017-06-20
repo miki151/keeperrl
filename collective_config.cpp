@@ -355,10 +355,7 @@ optional<WorkshopType> CollectiveConfig::getWorkshopType(FurnitureType furniture
 }
 
 map<CollectiveResourceId, int> CollectiveConfig::getStartingResource() const {
-  if (type == KEEPER)
-    return {{CollectiveResourceId::MANA, 200}};
-  else
-    return map<CollectiveResourceId, int>{};
+  return map<CollectiveResourceId, int>{};
 }
 
 optional<int> CollectiveConfig::getTrainingMaxLevelIncrease(FurnitureType type) {
@@ -376,8 +373,8 @@ optional<int> CollectiveConfig::getTrainingMaxLevelIncrease(FurnitureType type) 
 
 int CollectiveConfig::getManaForConquering(VillainType type) {
   switch (type) {
-    case VillainType::MAIN: return 400;
-    case VillainType::LESSER: return 200;
+    case VillainType::MAIN: return 200;
+    case VillainType::LESSER: return 100;
     default: return 0;
   }
 }
@@ -481,25 +478,25 @@ unique_ptr<Workshops> CollectiveConfig::getWorkshops() const {
       }},
       {WorkshopType::LABORATORY, {
           Workshops::Item::fromType({ItemId::POTION, EffectType{EffectId::LASTING, LastingEffect::SLOWED}}, 2,
-              {CollectiveResourceId::MANA, 10}),
+              {CollectiveResourceId::MANA, 1}),
           Workshops::Item::fromType({ItemId::POTION, EffectType{EffectId::LASTING, LastingEffect::SLEEP}}, 2,
-              {CollectiveResourceId::MANA, 10}),
-          Workshops::Item::fromType({ItemId::POTION, EffectId::HEAL}, 4, {CollectiveResourceId::MANA, 30}),
+              {CollectiveResourceId::MANA, 1}),
+          Workshops::Item::fromType({ItemId::POTION, EffectId::HEAL}, 4, {CollectiveResourceId::MANA, 3}),
           Workshops::Item::fromType({ItemId::POTION,
-              EffectType{EffectId::LASTING, LastingEffect::POISON_RESISTANT}}, 3, {CollectiveResourceId::MANA, 30}),
+              EffectType{EffectId::LASTING, LastingEffect::POISON_RESISTANT}}, 3, {CollectiveResourceId::MANA, 3}),
           Workshops::Item::fromType({ItemId::POTION,
-              EffectType{EffectId::LASTING, LastingEffect::POISON}}, 2, {CollectiveResourceId::MANA, 30}),
+              EffectType{EffectId::LASTING, LastingEffect::POISON}}, 2, {CollectiveResourceId::MANA, 3}),
           Workshops::Item::fromType({ItemId::POTION,
-              EffectType{EffectId::LASTING, LastingEffect::SPEED}}, 4, {CollectiveResourceId::MANA, 30})
+              EffectType{EffectId::LASTING, LastingEffect::SPEED}}, 4, {CollectiveResourceId::MANA, 3})
                   .setTechId(TechId::ALCHEMY_ADV),
           Workshops::Item::fromType({ItemId::POTION,
-              EffectType{EffectId::LASTING, LastingEffect::BLIND}}, 4, {CollectiveResourceId::MANA, 50})
+              EffectType{EffectId::LASTING, LastingEffect::BLIND}}, 4, {CollectiveResourceId::MANA, 5})
                   .setTechId(TechId::ALCHEMY_ADV),
           Workshops::Item::fromType({ItemId::POTION,
-              EffectType{EffectId::LASTING, LastingEffect::FLYING}}, 6, {CollectiveResourceId::MANA, 80})
+              EffectType{EffectId::LASTING, LastingEffect::FLYING}}, 6, {CollectiveResourceId::MANA, 8})
                   .setTechId(TechId::ALCHEMY_ADV),
           Workshops::Item::fromType({ItemId::POTION,
-              EffectType{EffectId::LASTING, LastingEffect::INVISIBLE}}, 6, {CollectiveResourceId::MANA, 200})
+              EffectType{EffectId::LASTING, LastingEffect::INVISIBLE}}, 6, {CollectiveResourceId::MANA, 20})
                   .setTechId(TechId::ALCHEMY_ADV),
       }},
       {WorkshopType::JEWELER, {

@@ -77,7 +77,7 @@ static CollectiveConfig getKeeperConfig(RandomGen& random, bool fastImmigration)
           .setSound(Sound(SoundId::CREATE_IMP).setPitch(2))
           .setNoAuto()
           .setInitialRecruitment(4)
-          .addRequirement(ExponentialCost{ CostInfo(CollectiveResourceId::MANA, 20), 5, 4 }),
+          .addRequirement(ExponentialCost{ CostInfo(CollectiveResourceId::MANA, 6), 5, 4 }),
       ImmigrantInfo(CreatureId::GOBLIN, {MinionTrait::FIGHTER, MinionTrait::NO_EQUIPMENT})
           .setFrequency(0.7)
           .addRequirement(0.1, AttractionInfo{1, vector<AttractionType>(
@@ -155,13 +155,13 @@ static CollectiveConfig getKeeperConfig(RandomGen& random, bool fastImmigration)
               CreatureId::SPECIAL_HMGN, CreatureId::SPECIAL_HMGW}), {MinionTrait::FIGHTER})
           .addRequirement(0.0, TechId::HUMANOID_MUT)
           .addRequirement(0.0, Pregnancy {})
-          .addRequirement(CostInfo(CollectiveResourceId::MANA, 250))
+          .addRequirement(CostInfo(CollectiveResourceId::MANA, 100))
           .setSpawnLocation(Pregnancy {}),
       ImmigrantInfo(random.permutation({CreatureId::SPECIAL_BMBN, CreatureId::SPECIAL_BMBW,
               CreatureId::SPECIAL_BMGN, CreatureId::SPECIAL_BMGW}), {MinionTrait::FIGHTER})
           .addRequirement(0.0, TechId::BEAST_MUT)
           .addRequirement(0.0, Pregnancy {})
-          .addRequirement(CostInfo(CollectiveResourceId::MANA, 250))
+          .addRequirement(CostInfo(CollectiveResourceId::MANA, 100))
           .setSpawnLocation(Pregnancy {})
   });
 }
