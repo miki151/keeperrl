@@ -18,7 +18,7 @@
 #include "skill.h"
 #include "enums.h"
 #include "creature.h"
-#include "modifier_type.h"
+#include "attr_type.h"
 #include "creature_attributes.h"
 
 string Skill::getName() const {
@@ -39,54 +39,30 @@ bool Skill::isDiscrete() const {
   return discrete;
 }
 
-static int archeryBonus(WConstCreature c, ModifierType t) {
-  switch (t) {
-    case ModifierType::FIRED_ACCURACY: return c->getAttributes().getSkills().getValue(SkillId::ARCHERY) * 10;
-    case ModifierType::FIRED_DAMAGE: return c->getAttributes().getSkills().getValue(SkillId::ARCHERY) * 10;
-    default: break;
-  }
-  return 0;
-}
-
-static int weaponBonus(WConstCreature c, ModifierType t) {
+static int weaponBonus(WConstCreature c, AttrType t) {
   if (!c->getWeapon())
     return 0;
   switch (t) {
-    case ModifierType::ACCURACY: return c->getAttributes().getSkills().getValue(SkillId::WEAPON_MELEE) * 10;
-    case ModifierType::DAMAGE: return c->getAttributes().getSkills().getValue(SkillId::WEAPON_MELEE) * 10;
+    case AttrType::DAMAGE: return (int) (c->getAttributes().getSkills().getValue(SkillId::WEAPON_MELEE) * 10.0);
     default: break;
   }
   return 0;
 }
 
-static int unarmedBonus(WConstCreature c, ModifierType t) {
+static int unarmedBonus(WConstCreature c, AttrType t) {
   if (c->getWeapon())
     return 0;
   switch (t) {
-    case ModifierType::ACCURACY: return c->getAttributes().getSkills().getValue(SkillId::UNARMED_MELEE) * 10;
-    case ModifierType::DAMAGE: return c->getAttributes().getSkills().getValue(SkillId::UNARMED_MELEE) * 10;
+    case AttrType::DAMAGE: return (int) (c->getAttributes().getSkills().getValue(SkillId::UNARMED_MELEE) * 10);
     default: break;
   }
   return 0;
 }
 
-static int knifeBonus(WConstCreature c, ModifierType t) {
-  switch (t) {
-    case ModifierType::THROWN_ACCURACY:
-      return c->getAttributes().getSkills().getValue(SkillId::KNIFE_THROWING) * 10;
-    case ModifierType::THROWN_DAMAGE:
-      return c->getAttributes().getSkills().getValue(SkillId::KNIFE_THROWING) * 10;
-    default: break;
-  }
-  return 0;
-}
-
-int Skill::getModifier(WConstCreature c, ModifierType t) const {
+int Skill::getModifier(WConstCreature c, AttrType t) const {
   switch (getId()) {
-    case SkillId::ARCHERY: return archeryBonus(c, t);
     case SkillId::WEAPON_MELEE: return weaponBonus(c, t);
     case SkillId::UNARMED_MELEE: return unarmedBonus(c, t);
-    case SkillId::KNIFE_THROWING: return knifeBonus(c, t);
     default: break;
   }
   return 0;
@@ -95,7 +71,6 @@ int Skill::getModifier(WConstCreature c, ModifierType t) const {
 void Skill::init() {
   Skill::set(SkillId::AMBUSH, new Skill("ambush",
         "Hide and ambush unsuspecting enemies. Press 'h' to hide on a tile that allows it.", true));
-  Skill::set(SkillId::KNIFE_THROWING, new Skill("knife throwing", "Throw knives with deadly precision.", false));
   Skill::set(SkillId::STEALING,
       new Skill("stealing", "Steal from other monsters. Not available for player ATM.", true));
   Skill::set(SkillId::SWIMMING, new Skill("swimming", "Cross water without drowning.", true));

@@ -8,8 +8,8 @@ RICH_ENUM(LastingEffect,
     RAGE,
     SLOWED,
     SPEED,
-    STR_BONUS,
-    DEX_BONUS,
+    DAM_BONUS,
+    DEF_BONUS,
     HALLU,
     BLIND,
     INVISIBLE,
@@ -37,8 +37,7 @@ class LastingEffects {
   static bool affects(WConstCreature, LastingEffect);
   static void onRemoved(WCreature, LastingEffect, bool msg);
   static void onTimedOut(WCreature, LastingEffect, bool msg);
-  static void modifyAttr(WConstCreature, AttrType, int&);
-  static void modifyMod(WConstCreature, ModifierType, int&);
+  static void modifyAttr(WConstCreature, AttrType, double&);
   static void onCreatureDamage(WCreature, LastingEffect);
   static const char* getGoodAdjective(LastingEffect);
   static const char* getBadAdjective(LastingEffect);

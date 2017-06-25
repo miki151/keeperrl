@@ -25,7 +25,7 @@ void LastingEffects::onAffected(WCreature c, LastingEffect effect, bool msg) {
       c->removeEffect(LastingEffect::PANIC, false);
       if (msg) c->you(MsgType::RAGE, "");
       break;
-    case LastingEffect::HALLU: 
+    case LastingEffect::HALLU:
       if (!c->isBlind() && msg)
         c->playerMessage("The world explodes into colors!");
       break;
@@ -42,13 +42,13 @@ void LastingEffects::onAffected(WCreature c, LastingEffect effect, bool msg) {
       if (msg) c->you(MsgType::ARE, "poisoned");
       c->modViewObject().setModifier(ViewObject::Modifier::POISONED);
       break;
-    case LastingEffect::STR_BONUS: if (msg) c->you(MsgType::FEEL, "stronger"); break;
-    case LastingEffect::DEX_BONUS: if (msg) c->you(MsgType::FEEL, "more agile"); break;
-    case LastingEffect::SPEED: 
+    case LastingEffect::DAM_BONUS: if (msg) c->you(MsgType::FEEL, "more dangerous"); break;
+    case LastingEffect::DEF_BONUS: if (msg) c->you(MsgType::FEEL, "more protected"); break;
+    case LastingEffect::SPEED:
       if (msg) c->you(MsgType::ARE, "moving faster");
       c->removeEffect(LastingEffect::SLOWED, false);
       break;
-    case LastingEffect::SLOWED: 
+    case LastingEffect::SLOWED:
       if (msg) c->you(MsgType::ARE, "moving more slowly");
       c->removeEffect(LastingEffect::SPEED, false);
       break;
@@ -97,15 +97,15 @@ void LastingEffects::onTimedOut(WCreature c, LastingEffect effect, bool msg) {
     case LastingEffect::SLOWED: if (msg) c->you(MsgType::ARE, "moving faster again"); break;
     case LastingEffect::SLEEP: if (msg) c->you(MsgType::WAKE_UP, ""); break;
     case LastingEffect::SPEED: if (msg) c->you(MsgType::ARE, "moving more slowly again"); break;
-    case LastingEffect::STR_BONUS: if (msg) c->you(MsgType::ARE, "weaker again"); break;
-    case LastingEffect::DEX_BONUS: if (msg) c->you(MsgType::ARE, "less agile again"); break;
+    case LastingEffect::DAM_BONUS: if (msg) c->you(MsgType::ARE, "less dangerous again"); break;
+    case LastingEffect::DEF_BONUS: if (msg) c->you(MsgType::ARE, "less protected again"); break;
     case LastingEffect::PANIC:
     case LastingEffect::RAGE:
     case LastingEffect::HALLU: if (msg) c->playerMessage("Your mind is clear again"); break;
     case LastingEffect::ENTANGLED: if (msg) c->you(MsgType::BREAK_FREE, "the web"); break;
     case LastingEffect::TIED_UP: if (msg) c->you(MsgType::BREAK_FREE, ""); break;
     case LastingEffect::BLIND:
-      if (msg) 
+      if (msg)
         c->you("can see again");
       c->modViewObject().removeModifier(ViewObject::Modifier::BLIND);
       break;
@@ -129,20 +129,32 @@ void LastingEffects::onTimedOut(WCreature c, LastingEffect effect, bool msg) {
     case LastingEffect::MAGIC_SHIELD: if (msg) c->you(MsgType::FEEL, "less protected"); break;
     case LastingEffect::PREGNANT: break;
     case LastingEffect::DARKNESS_SOURCE: break;
-  } 
+  }
 }
 
-int attrBonus = 3;
+static const int attrBonus = 3;
 
-void LastingEffects::modifyAttr(WConstCreature c, AttrType attr, int& value) {
-  switch (attr) {
-    case AttrType::STRENGTH:
-      if (c->isAffected(LastingEffect::STR_BONUS))
-        value += attrBonus;
+void LastingEffects::modifyAttr(WConstCreature c, AttrType type, double& value) {
+  switch (type) {
+    case AttrType::DAMAGE:
+        if (c->isAffected(LastingEffect::PANIC))
+          value -= attrBonus;
+        if (c->isAffected(LastingEffect::RAGE))
+          value += attrBonus;
+        if (c->isAffected(LastingEffect::DAM_BONUS))
+          value += attrBonus;
       break;
-    case AttrType::DEXTERITY:
-      if (c->isAffected(LastingEffect::DEX_BONUS))
-        value += attrBonus;
+    case AttrType::DEFENSE:
+        if (c->isAffected(LastingEffect::PANIC))
+          value += attrBonus;
+        if (c->isAffected(LastingEffect::RAGE))
+          value -= attrBonus;
+        if (c->isAffected(LastingEffect::SLEEP))
+          value *= 0.66;
+        if (c->isAffected(LastingEffect::MAGIC_SHIELD))
+          value += 20;
+        if (c->isAffected(LastingEffect::DEF_BONUS))
+          value += attrBonus;
       break;
     case AttrType::SPEED:
       if (c->isAffected(LastingEffect::SLOWED))
@@ -154,47 +166,14 @@ void LastingEffects::modifyAttr(WConstCreature c, AttrType attr, int& value) {
   }
 }
 
-void LastingEffects::modifyMod(WConstCreature c, ModifierType type, int& value) {
-  switch (type) {
-    case ModifierType::FIRED_DAMAGE: 
-    case ModifierType::THROWN_DAMAGE: 
-        if (c->isAffected(LastingEffect::PANIC))
-          value -= attrBonus;
-        if (c->isAffected(LastingEffect::RAGE))
-          value += attrBonus;
-        break;
-    case ModifierType::DAMAGE: 
-        if (c->isAffected(LastingEffect::PANIC))
-          value -= attrBonus;
-        if (c->isAffected(LastingEffect::RAGE))
-          value += attrBonus;
-        break;
-    case ModifierType::DEFENSE: 
-        if (c->isAffected(LastingEffect::PANIC))
-          value += attrBonus;
-        if (c->isAffected(LastingEffect::RAGE))
-          value -= attrBonus;
-        if (c->isAffected(LastingEffect::SLEEP))
-          value *= 0.66;
-        if (c->isAffected(LastingEffect::MAGIC_SHIELD))
-          value += 20;
-        break;
-    case ModifierType::ACCURACY: 
-        if (c->isAffected(LastingEffect::SLEEP))
-          value = 0;
-        break;
-    default: break;
-  }
-}
-
 const char* LastingEffects::getGoodAdjective(LastingEffect effect) {
   switch (effect) {
     case LastingEffect::INVISIBLE: return "Invisible";
     case LastingEffect::PANIC: return "Panic";
     case LastingEffect::RAGE: return "Enraged";
     case LastingEffect::HALLU: return "Hallucinating";
-    case LastingEffect::STR_BONUS: return "Strength bonus";
-    case LastingEffect::DEX_BONUS: return "Dexterity bonus";
+    case LastingEffect::DAM_BONUS: return "Damage bonus";
+    case LastingEffect::DEF_BONUS: return "Defense bonus";
     case LastingEffect::SPEED: return "Speed bonus";
     case LastingEffect::POISON_RESISTANT: return "Poison resistant";
     case LastingEffect::FIRE_RESISTANT: return "Fire resistant";

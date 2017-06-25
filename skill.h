@@ -22,7 +22,6 @@
 
 RICH_ENUM(SkillId,
   AMBUSH,
-  KNIFE_THROWING,
   STEALING,
   SWIMMING,
   ARCHERY,
@@ -53,7 +52,7 @@ class Skill : public Singleton<Skill, SkillId> {
   bool transferOnConsumption() const;
   bool isDiscrete() const;
 
-  int getModifier(WConstCreature, ModifierType) const;
+  int getModifier(WConstCreature, AttrType) const;
 
   static void init();
 

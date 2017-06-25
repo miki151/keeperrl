@@ -20,10 +20,11 @@
 #include "util.h"
 #include "unique_entity.h"
 #include "view_layer.h"
+#include "attr_type.h"
 
 RICH_ENUM(ViewObjectModifier, BLIND, PLAYER, HIDDEN, INVISIBLE, ILLUSION, POISONED, PLANNED,
     TEAM_LEADER_HIGHLIGHT, TEAM_HIGHLIGHT, DRAW_MORALE, ROAD, NO_UP_MOVEMENT, REMEMBER, SPIRIT_DAMAGE, HOSTILE);
-RICH_ENUM(ViewObjectAttribute, WOUNDED, BURNING, ATTACK, DEFENSE, LEVEL, WATER_DEPTH, EFFICIENCY, MORALE);
+RICH_ENUM(ViewObjectAttribute, WOUNDED, BURNING, WATER_DEPTH, EFFICIENCY, MORALE);
 
 struct MovementInfo {
   enum Type { MOVE, ATTACK };
@@ -53,6 +54,10 @@ class ViewObject {
 
   ViewObject& setAttribute(Attribute, double);
   optional<float> getAttribute(Attribute) const;
+
+  using CreatureAttributes = EnumMap<AttrType, double>;
+  void setCreatureAttributes(CreatureAttributes);
+  const optional<CreatureAttributes>& getCreatureAttributes() const;
 
   vector<string> getLegend() const;
   const char* getDescription() const;
@@ -94,6 +99,7 @@ class ViewObject {
   optional<UniqueEntity<Creature>::Id> SERIAL(creatureId);
   vector<string> SERIAL(adjectives);
   optional<bool> indoors;
+  optional<CreatureAttributes> SERIAL(creatureAttributes);
 
   class MovementQueue {
     public:

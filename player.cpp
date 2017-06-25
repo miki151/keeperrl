@@ -80,7 +80,7 @@ void Player::onEvent(const GameEvent& event) {
         if (getCreature()->getPosition().isSameLevel(info.level))
           for (Vec2 v : info.trajectory)
             if (getCreature()->canSee(v)) {
-              getView()->animateObject(info.trajectory, info.items[0]->getViewObject());
+              getView()->animateObject(info.trajectory, info.items[0]->getViewObject().id());
               return;
             }
       }
@@ -192,7 +192,6 @@ bool Player::tryToPerform(CreatureAction action) {
 ItemClass typeDisplayOrder[] {
   ItemClass::WEAPON,
     ItemClass::RANGED_WEAPON,
-    ItemClass::AMMO,
     ItemClass::ARMOR,
     ItemClass::POTION,
     ItemClass::SCROLL,
@@ -210,7 +209,6 @@ static string getText(ItemClass type) {
   switch (type) {
     case ItemClass::WEAPON: return "Weapons";
     case ItemClass::RANGED_WEAPON: return "Ranged weapons";
-    case ItemClass::AMMO: return "Projectiles";
     case ItemClass::AMULET: return "Amulets";
     case ItemClass::RING: return "Rings";
     case ItemClass::ARMOR: return "Armor";
@@ -263,8 +261,6 @@ void Player::applyItem(vector<WItem> items) {
 }
 
 void Player::throwItem(vector<WItem> items, optional<Vec2> dir) {
-  if (items[0]->getClass() == ItemClass::AMMO && getGame()->getOptions()->getBoolValue(OptionId::HINTS))
-    privateMessage(PlayerMessage("To fire arrows equip a bow and use alt + direction key", MessagePriority::CRITICAL));
   if (!dir) {
     auto cDir = getView()->chooseDirection("Which direction do you want to throw?");
     if (!cDir)
@@ -316,10 +312,7 @@ void Player::handleItems(const EntitySet<Item>& itemIds, ItemAction action) {
     case ItemAction::UNEQUIP: tryToPerform(getCreature()->unequip(items[0])); break;
     case ItemAction::GIVE: giveAction(items); break;
     case ItemAction::PAY: payForItemAction(items); break;
-    case ItemAction::EQUIP:
-      if (getCreature()->isEquipmentAppropriate(items[0]) || getView()->yesOrNoPrompt(
-          items[0]->getTheName() + " is too heavy and will incur an accuracy penalty. Do you want to continue?"))
-        tryToPerform(getCreature()->equip(items[0])); break;
+    case ItemAction::EQUIP: tryToPerform(getCreature()->equip(items[0])); break;
     default: FATAL << "Unhandled item action " << int(action);
   }
 }
@@ -681,8 +674,11 @@ void Player::makeMove() {
         break;
 #ifndef RELEASE
     case UserInputId::CHEAT_ATTRIBUTES:
-      getCreature()->getAttributes().setBaseAttr(AttrType::STRENGTH, 80);
-      getCreature()->getAttributes().setBaseAttr(AttrType::DEXTERITY, 80);
+      getCreature()->getAttributes().setBaseAttr(AttrType::DAMAGE, 80);
+      getCreature()->getAttributes().setBaseAttr(AttrType::DEFENSE, 80);
+      getCreature()->getAttributes().setBaseAttr(AttrType::SPELL_DAMAGE, 80);
+      getCreature()->getAttributes().setBaseAttr(AttrType::SPELL_DEFENSE, 80);
+      getCreature()->getAttributes().setBaseAttr(AttrType::SPEED, 200);
       getCreature()->addPermanentEffect(LastingEffect::FLYING, true);
       break;
 #endif
@@ -947,8 +943,8 @@ void Player::refreshGameInfo(GameInfo& gameInfo) const {
   gameInfo.sunlightInfo.description = sunlightInfo.getText();
   gameInfo.sunlightInfo.timeRemaining = sunlightInfo.getTimeRemaining();
   gameInfo.time = getCreature()->getGame()->getGlobalTime();
-  PlayerInfo& info = gameInfo.playerInfo;
-  info.readFrom(getCreature());
+  gameInfo.playerInfo = PlayerInfo(getCreature());
+  auto& info = *gameInfo.playerInfo.getReferenceMaybe<PlayerInfo>();
   info.team.clear();
   for (WConstCreature c : getTeam())
     info.team.push_back(c);

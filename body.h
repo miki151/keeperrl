@@ -59,11 +59,11 @@ class Body {
   Body& setBirdBodyParts();
   Body& setMinionFood();
   Body& setDeathSound(optional<SoundId>);
+  Body& setNoCarryLimit();
 
   void affectPosition(Position);
 
   bool takeDamage(const Attack&, WCreature, double damage);
-
 
   bool tick(WConstCreature);
   bool heal(WCreature, double amount, bool replaceLimbs);
@@ -109,6 +109,7 @@ class Body {
   bool isHumanoid() const;
   string getDescription() const;
   void updateViewObject(ViewObject&) const;
+  const optional<double>& getCarryLimit() const;
 
   bool isUndead() const;
   double getBoulderDamage() const;
@@ -117,7 +118,6 @@ class Body {
 
   private:
   friend class Test;
-  Size getSize() const;
   void injureBodyPart(WCreature, BodyPart, bool drop);
   BodyPart getBodyPart(AttackLevel attack, bool flying, bool collapsed) const;
   BodyPart armOrWing() const;
@@ -144,5 +144,6 @@ class Body {
   double SERIAL(health) = 1;
   bool SERIAL(minionFood) = false;
   optional<SoundId> SERIAL(deathSound);
+  optional<double> SERIAL(carryLimit);
 };
 

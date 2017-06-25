@@ -21,8 +21,9 @@
 #include "util.h"
 #include "enums.h"
 #include "effect_type.h"
-#include "modifier_type.h"
 #include "attack_type.h"
+#include "attr_type.h"
+#include "ranged_weapon.h"
 
 #define ITATTR(X) ItemAttributes([&](ItemAttributes& i) { X })
 
@@ -51,8 +52,7 @@ class ItemAttributes {
   double SERIAL(flamability) = 0;
   int SERIAL(price) = 0;
   bool SERIAL(noArticle) = false;
-  EnumMap<ModifierType, int> SERIAL(modifiers);
-  EnumMap<AttrType, int> SERIAL(attrs);
+  EnumMap<AttrType, int> SERIAL(modifiers);
   bool SERIAL(twoHanded) = false;
   AttackType SERIAL(attackType) = AttackType::HIT;
   double SERIAL(attackTime) = 1;
@@ -68,5 +68,6 @@ class ItemAttributes {
   optional<string> SERIAL(applyMsgFirstPerson);
   optional<string> SERIAL(applyMsgThirdPerson);
   optional<SoundId> SERIAL(applySound);
+  optional<RangedWeapon> SERIAL(rangedWeapon);
 };
 

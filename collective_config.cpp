@@ -371,6 +371,15 @@ optional<int> CollectiveConfig::getTrainingMaxLevelIncrease(FurnitureType type) 
   }
 }
 
+optional<int> CollectiveConfig::getStudyingMaxLevelIncrease(FurnitureType type) {
+  switch (type) {
+    case FurnitureType::BOOKCASE:
+      return 3;
+    default:
+      return none;
+  }
+}
+
 int CollectiveConfig::getManaForConquering(VillainType type) {
   switch (type) {
     case VillainType::MAIN: return 200;
@@ -398,7 +407,12 @@ const MinionTaskInfo& CollectiveConfig::getTaskInfo(MinionTask task) {
       case MinionTask::GRAVE: return {FurnitureType::GRAVE, "sleeping"};
       case MinionTask::LAIR: return {FurnitureType::BEAST_CAGE, "sleeping"};
       case MinionTask::THRONE: return {FurnitureType::THRONE, "throne"};
-      case MinionTask::STUDY: return {FurnitureType::BOOKCASE, "studying"};
+      case MinionTask::STUDY: return {[](WConstCreature c, FurnitureType t) {
+            if (auto maxIncrease = CollectiveConfig::getStudyingMaxLevelIncrease(t))
+              return !c || c->getAttributes().getExpIncrease(ExperienceType::STUDY) < *maxIncrease;
+            else
+              return false;
+          }, "studying"};
       case MinionTask::PRISON: return {FurnitureType::PRISON, "prison"};
       case MinionTask::CROPS: return {FurnitureType::CROPS, "crops"};
       case MinionTask::RITUAL: return {FurnitureType::DEMON_SHRINE, "rituals"};
@@ -445,8 +459,6 @@ unique_ptr<Workshops> CollectiveConfig::getWorkshops() const {
           Workshops::Item::fromType(ItemId::HEAVY_CLUB, 5, {CollectiveResourceId::WOOD, 20})
                   .setTechId(TechId::TWO_H_WEAP),
           Workshops::Item::fromType(ItemId::BOW, 13, {CollectiveResourceId::WOOD, 20}).setTechId(TechId::ARCHERY),
-          Workshops::Item::fromType(ItemId::ARROW, 5, {CollectiveResourceId::WOOD, 10})
-                  .setBatchSize(20).setTechId(TechId::ARCHERY),
           Workshops::Item::fromType({ItemId::TRAP_ITEM, TrapType::BOULDER}, 20, {CollectiveResourceId::STONE, 50})
                   .setTechId(TechId::TRAPS),
           Workshops::Item::fromType({ItemId::TRAP_ITEM, TrapType::POISON_GAS}, 10, {CollectiveResourceId::WOOD, 20})

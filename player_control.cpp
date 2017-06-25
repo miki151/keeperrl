@@ -494,11 +494,7 @@ void PlayerControl::addEquipment(WCreature creature, EquipmentSlot slot) {
     if (auto creatureId = getCollective()->getMinionEquipment().getOwner(chosenItem))
       if (WCreature c = getCreature(*creatureId))
         c->removeEffect(LastingEffect::SLEEP);
-    if (chosenItem->getEquipmentSlot() != EquipmentSlot::WEAPON
-        || creature->isEquipmentAppropriate(chosenItem)
-        || getView()->yesOrNoPrompt(chosenItem->getTheName() + " is too heavy for " +
-          creature->getName().the() + ", and will incur an accuracy penalty.\n Do you want to continue?"))
-      CHECK(getCollective()->getMinionEquipment().tryToOwn(creature, chosenItem));
+    CHECK(getCollective()->getMinionEquipment().tryToOwn(creature, chosenItem));
   }
 }
 
@@ -664,8 +660,7 @@ WItem PlayerControl::chooseEquipmentItem(WCreature creature, vector<WItem> curre
   vector<pair<string, vector<WItem>>> usedStacks = Item::stackItems(usedItems,
       [&](const WItem it) {
         WConstCreature c = getCreature(*getCollective()->getMinionEquipment().getOwner(it));
-        return " owned by " + c->getName().a() +
-            " (level " + toString<int>(c->getAttributes().getVisibleExpLevel()) + ")";});
+        return toString<int>(c->getBestAttack().value);});
   vector<WItem> allStacked;
   vector<ItemInfo> options;
   for (WItem it : currentItems)
@@ -1013,8 +1008,8 @@ vector<WCreature> PlayerControl::getMinionsLike(WCreature like) const {
 
 void PlayerControl::sortMinionsForUI(vector<WCreature>& minions) const {
   std::sort(minions.begin(), minions.end(), [] (WConstCreature c1, WConstCreature c2) {
-      int l1 = (int) c1->getAttributes().getExpLevel();
-      int l2 = (int) c2->getAttributes().getExpLevel();
+      auto l1 = (int) max(c1->getAttr(AttrType::DAMAGE), c1->getAttr(AttrType::SPELL_DAMAGE));
+      auto l2 = (int) max(c2->getAttr(AttrType::DAMAGE), c2->getAttr(AttrType::SPELL_DAMAGE));
       return l1 > l2 || (l1 == l2 && c1->getUniqueId() > c2->getUniqueId());
       });
 }
@@ -1023,8 +1018,7 @@ vector<PlayerInfo> PlayerControl::getPlayerInfos(vector<WCreature> creatures, Un
   sortMinionsForUI(creatures);
   vector<PlayerInfo> minions;
   for (WCreature c : creatures) {
-    minions.emplace_back();
-    minions.back().readFrom(c);
+    minions.emplace_back(c);
     // only fill equipment for the chosen minion to avoid lag
     if (c->getUniqueId() == chosenId) {
       if (auto requiredDummy = getCollective()->getMissingTrainingDummy(c))
@@ -1053,8 +1047,7 @@ vector<PlayerInfo> PlayerControl::getPlayerInfos(vector<WCreature> creatures, Un
 }
 
 vector<CollectiveInfo::CreatureGroup> PlayerControl::getCreatureGroups(vector<WCreature> v) const {
-  std::sort(v.begin(), v.end(), [](WConstCreature c1, WConstCreature c2) {
-        return c1->getAttributes().getExpLevel() > c2->getAttributes().getExpLevel();});
+  sortMinionsForUI(v);
   map<string, CollectiveInfo::CreatureGroup> groups;
   for (WCreature c : v) {
     if (!groups.count(c->getName().stack()))
@@ -1221,7 +1214,7 @@ void PlayerControl::fillImmigration(CollectiveInfo& info) const {
         getCostObj(candidate.getCost()),
         name,
         c->getViewObject().id(),
-        Range::singleElem((int) c->getAttributes().getVisibleExpLevel()),
+        AttributeInfo::fromCreature(c),
         count,
         timeRemaining,
         elem.first,
@@ -1241,23 +1234,12 @@ void PlayerControl::fillImmigration(CollectiveInfo& info) const {
 void PlayerControl::fillImmigrationHelp(CollectiveInfo& info) const {
   info.allImmigration.clear();
   struct CreatureStats {
-    Range level;
     PCreature creature;
   };
   static EnumMap<CreatureId, optional<CreatureStats>> creatureStats;
   auto getStats = [&](CreatureId id) -> CreatureStats& {
     if (!creatureStats[id]) {
-      int minL = 10000;
-      int maxL = -10000;
-      PCreature c;
-      for (int i : Range(100)) {
-        auto creature = CreatureFactory::fromId(id, TribeId::getKeeper());
-        minL = min(minL, (int)creature->getAttributes().getVisibleExpLevel());
-        maxL = max(maxL, (int)creature->getAttributes().getVisibleExpLevel());
-        if (!c)
-          c = std::move(creature);
-      }
-      creatureStats[id] = CreatureStats{Range(minL, maxL + 1), std::move(c)};
+      creatureStats[id] = CreatureStats{CreatureFactory::fromId(id, TribeId::getKeeper())};
     }
     return *creatureStats[id];
   };
@@ -1316,7 +1298,7 @@ void PlayerControl::fillImmigrationHelp(CollectiveInfo& info) const {
         costObj,
         c->getName().stack(),
         c->getViewObject().id(),
-        getStats(creatureId).level,
+        AttributeInfo::fromCreature(c),
         0,
         none,
         elem.index(),
@@ -1355,7 +1337,8 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   SunlightInfo sunlightInfo = getGame()->getSunlightInfo();
   gameInfo.sunlightInfo = { sunlightInfo.getText(), (int)sunlightInfo.getTimeRemaining() };
   gameInfo.infoType = GameInfo::InfoType::BAND;
-  CollectiveInfo& info = gameInfo.collectiveInfo;
+  gameInfo.playerInfo = CollectiveInfo();
+  auto& info = *gameInfo.playerInfo.getReferenceMaybe<CollectiveInfo>();
   info.buildings = fillButtons(getBuildInfo());
   fillMinions(info);
   fillImmigration(info);

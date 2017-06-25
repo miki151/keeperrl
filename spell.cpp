@@ -74,9 +74,9 @@ void Spell::init() {
   set(SpellId::DECEPTION, new Spell("deception", EffectId::DECEPTION, 60, SoundId::SPELL_DECEPTION));
   set(SpellId::SPEED_SELF, new Spell("haste self", {EffectId::LASTING, LastingEffect::SPEED}, 60,
         SoundId::SPELL_SPEED_SELF));
-  set(SpellId::STR_BONUS, new Spell("strength", {EffectId::LASTING, LastingEffect::STR_BONUS}, 90,
+  set(SpellId::DAM_BONUS, new Spell("damage", {EffectId::LASTING, LastingEffect::DAM_BONUS}, 90,
         SoundId::SPELL_STR_BONUS));
-  set(SpellId::DEX_BONUS, new Spell("dexterity", {EffectId::LASTING, LastingEffect::DEX_BONUS}, 90,
+  set(SpellId::DEF_BONUS, new Spell("defense", {EffectId::LASTING, LastingEffect::DEF_BONUS}, 90,
         SoundId::SPELL_DEX_BONUS));
   set(SpellId::BLAST, new Spell("force bolt", DirEffectId::BLAST, 100, SoundId::SPELL_BLAST));
   set(SpellId::STUN_RAY, new Spell("stun ray",  DirEffectType(DirEffectId::CREATURE_EFFECT,

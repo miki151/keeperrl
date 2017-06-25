@@ -30,6 +30,7 @@
 #include "creature_name.h"
 #include "campaign_type.h"
 #include "villain_type.h"
+#include "attr_type.h"
 
 using SDL::SDL_Keysym;
 using SDL::SDL_Keycode;
@@ -354,7 +355,7 @@ void GuiBuilder::addUpsCounterTick() {
 const int resourceSpace = 110;
 
 SGuiElem GuiBuilder::drawBottomBandInfo(GameInfo& gameInfo) {
-  CollectiveInfo& info = gameInfo.collectiveInfo;
+  auto& info = *gameInfo.playerInfo.getReferenceMaybe<CollectiveInfo>();
   GameSunlightInfo& sunlightInfo = gameInfo.sunlightInfo;
   if (!bottomBandCache) {
     auto topLine = gui.getListBuilder(resourceSpace);
@@ -375,9 +376,9 @@ SGuiElem GuiBuilder::drawBottomBandInfo(GameInfo& gameInfo) {
     auto bottomLine = gui.getListBuilder(140);
     bottomLine.addElem(getTurnInfoGui(gameInfo.time));
     bottomLine.addElem(getSunlightInfoGui(sunlightInfo));
-    bottomLine.addElem(gui.labelFun([&gameInfo] {
-          return "population: " + toString(gameInfo.collectiveInfo.minionCount) + " / " +
-          toString(gameInfo.collectiveInfo.minionLimit); }));
+    bottomLine.addElem(gui.labelFun([&info] {
+          return "population: " + toString(info.minionCount) + " / " +
+          toString(info.minionLimit); }));
     bottomBandCache = gui.getListBuilder(28)
           .addElem(gui.centerHoriz(topLine.buildHorizontalList()))
           .addElem(gui.centerHoriz(bottomLine.buildHorizontalList()))
@@ -404,10 +405,10 @@ const char* GuiBuilder::getCurrentGameSpeedName() const {
 
 SGuiElem GuiBuilder::drawRightBandInfo(GameInfo& info) {
   auto getIconHighlight = [&] (Color c) { return gui.topMargin(-1, gui.uiHighlight(c)); };
-  int hash = combineHash(info.collectiveInfo, info.villageInfo, info.modifiedSquares, info.totalSquares, info.tutorial);
+  auto& collectiveInfo = *info.playerInfo.getReferenceMaybe<CollectiveInfo>();
+  int hash = combineHash(collectiveInfo, info.villageInfo, info.modifiedSquares, info.totalSquares, info.tutorial);
   if (hash != rightBandInfoHash) {
     rightBandInfoHash = hash;
-    CollectiveInfo& collectiveInfo = info.collectiveInfo;
     VillageInfo& villageInfo = info.villageInfo;
     vector<SGuiElem> buttons = makeVec(
         gui.icon(gui.BUILDING),
@@ -425,7 +426,7 @@ SGuiElem GuiBuilder::drawRightBandInfo(GameInfo& info) {
           gui.button([this, i]() { setCollectiveTab(CollectiveTab(i)); }));
     }
     if (info.tutorial) {
-      for (auto& building : info.collectiveInfo.buildings)
+      for (auto& building : collectiveInfo.buildings)
         if (auto& highlight = building.tutorialHighlight)
           if (info.tutorial->highlights.contains(*highlight)) {
             buttons[0] = gui.stack(
@@ -452,7 +453,7 @@ SGuiElem GuiBuilder::drawRightBandInfo(GameInfo& info) {
     vector<pair<CollectiveTab, SGuiElem>> elems = makeVec(
         make_pair(CollectiveTab::MINIONS, drawMinions(collectiveInfo, info.tutorial)),
         make_pair(CollectiveTab::BUILDINGS, cache->get(bindMethod(
-            &GuiBuilder::drawBuildings, this), THIS_LINE, info.collectiveInfo, info.tutorial)),
+            &GuiBuilder::drawBuildings, this), THIS_LINE, collectiveInfo, info.tutorial)),
         make_pair(CollectiveTab::KEY_MAPPING, drawKeeperHelp()),
         make_pair(CollectiveTab::TECHNOLOGY, drawTechnology(collectiveInfo)),
         make_pair(CollectiveTab::VILLAGES, drawVillages(villageInfo)));
@@ -570,10 +571,8 @@ SGuiElem GuiBuilder::drawImmigrantInfo(const ImmigrantDataInfo& info) {
           .addSpace(100)
           .addBackElemAuto(info.cost ? drawCost(*info.cost) : gui.empty())
           .buildHorizontalList());
-  if (info.expLevel.getLength() == 1)
-    lines.addElem(gui.label("Level: " + toString(info.expLevel.getStart())));
-  else
-    lines.addElem(gui.label("Level: " + toString(info.expLevel.getStart()) + "-" + toString(info.expLevel.getEnd())));
+  for (auto& elem : drawAttributesOnPage(drawPlayerAttributes(info.attributes)))
+    lines.addElem(std::move(elem));
   if (info.timeLeft)
     lines.addElem(gui.label("Turns left: " + toString((int)*info.timeLeft)));
   for (auto& req : info.info)
@@ -748,25 +747,23 @@ static Color getBonusColor(int bonus) {
   return Color::WHITE;
 }
 
-typedef PlayerInfo::AttributeInfo::Id AttrId;
-
-static GuiFactory::IconId getAttrIcon(AttrId id) {
+static GuiFactory::IconId getAttrIcon(AttrType id) {
   switch (id) {
-    case AttrId::ATT: return GuiFactory::STAT_ATT;
-    case AttrId::DEF: return GuiFactory::STAT_DEF;
-    case AttrId::STR: return GuiFactory::STAT_STR;
-    case AttrId::DEX: return GuiFactory::STAT_DEX;
-    case AttrId::ACC: return GuiFactory::STAT_ACC;
-    case AttrId::SPD: return GuiFactory::STAT_SPD;
+    case AttrType::DAMAGE: return GuiFactory::STAT_ATT;
+    case AttrType::DEFENSE: return GuiFactory::STAT_DEF;
+    case AttrType::SPELL_DAMAGE: return GuiFactory::STAT_STR;
+    case AttrType::SPELL_DEFENSE: return GuiFactory::STAT_DEX;
+    case AttrType::RANGED_DAMAGE: return GuiFactory::STAT_ACC;
+    case AttrType::SPEED: return GuiFactory::STAT_SPD;
   }
 }
 
-vector<SGuiElem> GuiBuilder::drawPlayerAttributes(const vector<PlayerInfo::AttributeInfo>& attr) {
+vector<SGuiElem> GuiBuilder::drawPlayerAttributes(const vector<AttributeInfo>& attr) {
   vector<SGuiElem> ret;
   for (auto& elem : attr)
     ret.push_back(gui.stack(getTooltip({elem.name, elem.help}, THIS_LINE),
         gui.horizontalList(makeVec(
-          gui.icon(getAttrIcon(elem.id)),
+          gui.icon(getAttrIcon(elem.attr)),
           gui.margins(gui.label(toString(elem.value), getBonusColor(elem.bonus)), 0, 2, 0, 0)), 30)));
   return ret;
 }
@@ -774,7 +771,7 @@ vector<SGuiElem> GuiBuilder::drawPlayerAttributes(const vector<PlayerInfo::Attri
 SGuiElem GuiBuilder::drawBottomPlayerInfo(const GameInfo& gameInfo) {
   return gui.getListBuilder(28)
       .addElem(gui.centerHoriz(gui.horizontalList(
-              drawPlayerAttributes(gameInfo.playerInfo.attributes), resourceSpace)))
+              drawPlayerAttributes(gameInfo.playerInfo.getReferenceMaybe<PlayerInfo>()->attributes), resourceSpace)))
       .addElem(gui.centerHoriz(gui.getListBuilder(140)
             .addElem(getTurnInfoGui(gameInfo.time))
             .addElem(getSunlightInfoGui(gameInfo.sunlightInfo))
@@ -803,6 +800,13 @@ vector<string> GuiBuilder::getItemHint(const ItemInfo& item) {
   return out;
 }
 
+SGuiElem GuiBuilder::drawBestAttack(const BestAttack& info) {
+  return gui.getListBuilder(30)
+      .addElem(gui.icon(getAttrIcon(info.attr)))
+      .addElem(gui.topMargin(2, gui.label(toString((int) info.value))))
+      .buildHorizontalList();
+}
+
 SGuiElem GuiBuilder::getItemLine(const ItemInfo& item, function<void(Rectangle)> onClick,
     function<void()> onMultiClick) {
   GuiFactory::ListBuilder line(gui);
@@ -825,7 +829,7 @@ SGuiElem GuiBuilder::getItemLine(const ItemInfo& item, function<void(Rectangle)>
   line.addMiddleElem(std::move(mainLine));
   if (item.owner) {
     line.addBackElem(gui.viewObject(item.owner->viewId), viewObjectWidth);
-    line.addBackElem(gui.label("L:" + toString(item.owner->expLevel)), getItemLineOwnerMargin() - viewObjectWidth);
+    line.addBackElem(drawBestAttack(item.owner->bestAttack), getItemLineOwnerMargin() - viewObjectWidth);
   }
   if (item.price)
     line.addBackElemAuto(drawCost(*item.price));
@@ -1107,29 +1111,32 @@ static vector<string> help = {
     "Fire arrows: alt + arrow.",
 };
 
-SGuiElem GuiBuilder::getExpIncreaseLine(const PlayerInfo::LevelInfo& info, ExperienceType type) {
+/*SGuiElem GuiBuilder::getExpIncreaseLine(const PlayerInfo::LevelInfo& info, ExperienceType type) {
   auto line = gui.getListBuilder();
   line.addElemAuto(gui.label(capitalFirst(toLower(EnumInfo<ExperienceType>::getString(type))) + ": "));
   line.addElemAuto(gui.label(toString(info.increases[type])));
   if (auto limit = info.limits[type])
     line.addElemAuto(gui.label("  (limit " + toString(*limit) + ")"));
   return line.buildHorizontalList();
-}
+}*/
 
 SGuiElem GuiBuilder::drawPlayerLevelButton(const PlayerInfo& info) {
+  return gui.empty();
+  /*auto levelInfo = getMaxLevelInfo(info.levelInfo.level);
   return gui.stack(
-      gui.labelHighlight("[Level " + toString(info.levelInfo.level) + "]", Color::LIGHT_BLUE),
+      gui.labelHighlight("["_s + levelInfo.name + ": " + toString(levelInfo.value) + "]", Color::LIGHT_BLUE),
       gui.buttonRect([=] (Rectangle bounds) {
           auto lines = gui.getListBuilder(legendLineHeight);
           bool exit = false;
-          lines.addElem(gui.label("Level " + toString(info.levelInfo.level)));
+          for (auto type : ENUM_ALL(ExperienceType))
+            lines.addElem(gui.label(getName(type) + " "_s + toString(info.levelInfo.level[type])));
           lines.addElem(gui.label("Increases:", Color::YELLOW));
           for (auto expType : ENUM_ALL(ExperienceType))
             lines.addElem(gui.leftMargin(30, getExpIncreaseLine(info.levelInfo, expType)));
           if (auto& warning = info.levelInfo.warning)
             lines.addElem(gui.label(*warning, Color::RED));
           drawMiniMenu(std::move(lines), exit, bounds.bottomLeft(), 300);
-      }));
+      }));*/
 }
 
 SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info) {
@@ -1189,7 +1196,7 @@ SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info) {
     for (auto& elem : info.team) {
       currentLine.addElem(gui.stack(
             gui.viewObject(elem.viewId),
-            gui.label(toString(elem.expLevel), 12)), 30);
+            gui.label(toString((int) elem.bestAttack.value), 12)), 30);
       if (currentLine.getLength() >= numPerLine) {
         list.addElem(currentLine.buildHorizontalList());
         currentLine.clear();
@@ -1269,7 +1276,7 @@ SGuiElem GuiBuilder::drawTeams(CollectiveInfo& info, const optional<TutorialInfo
     vector<SGuiElem> currentLine;
     for (auto member : team.members) {
       auto& memberInfo = *info.getMinion(member);
-      currentLine.push_back(drawMinionAndLevel(memberInfo.viewId, memberInfo.expLevel, 1));
+      currentLine.push_back(drawMinionAndLevel(memberInfo.viewId, (int) memberInfo.bestAttack.value, 1));
       if (currentLine.size() >= numPerLine)
         teamLine.addElem(gui.horizontalList(std::move(currentLine), elemWidth));
     }
@@ -1659,31 +1666,35 @@ void GuiBuilder::drawOverlays(vector<OverlayInfo>& ret, GameInfo& info) {
     ret.push_back({cache->get(bindMethod(&GuiBuilder::drawTutorialOverlay, this), THIS_LINE,
          *info.tutorial), OverlayInfo::TUTORIAL});
   switch (info.infoType) {
-    case GameInfo::InfoType::BAND:
+    case GameInfo::InfoType::BAND: {
+      auto& collectiveInfo = *info.playerInfo.getReferenceMaybe<CollectiveInfo>();
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawImmigrationOverlay, this), THIS_LINE,
-           info.collectiveInfo, info.tutorial), OverlayInfo::IMMIGRATION});
+           collectiveInfo, info.tutorial), OverlayInfo::IMMIGRATION});
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawRansomOverlay, this), THIS_LINE,
-           info.collectiveInfo.ransom), OverlayInfo::TOP_LEFT});
+           collectiveInfo.ransom), OverlayInfo::TOP_LEFT});
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawMinionsOverlay, this), THIS_LINE,
-           info.collectiveInfo, info.tutorial), OverlayInfo::TOP_LEFT});
+           collectiveInfo, info.tutorial), OverlayInfo::TOP_LEFT});
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawWorkshopsOverlay, this), THIS_LINE,
-           info.collectiveInfo, info.tutorial), OverlayInfo::TOP_LEFT});
+           collectiveInfo, info.tutorial), OverlayInfo::TOP_LEFT});
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawLibraryOverlay, this), THIS_LINE,
-           info.collectiveInfo, info.tutorial), OverlayInfo::TOP_LEFT});
+           collectiveInfo, info.tutorial), OverlayInfo::TOP_LEFT});
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawTasksOverlay, this), THIS_LINE,
-           info.collectiveInfo), OverlayInfo::TOP_LEFT});
+           collectiveInfo), OverlayInfo::TOP_LEFT});
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawBuildingsOverlay, this), THIS_LINE,
-           info.collectiveInfo, info.tutorial), OverlayInfo::TOP_LEFT});
+           collectiveInfo, info.tutorial), OverlayInfo::TOP_LEFT});
       if (immigrantHelpOpen)
         ret.push_back({cache->get(bindMethod(&GuiBuilder::drawImmigrationHelp, this), THIS_LINE,
-            info.collectiveInfo), OverlayInfo::BOTTOM_LEFT});
+            collectiveInfo), OverlayInfo::BOTTOM_LEFT});
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawGameSpeedDialog, this), THIS_LINE),
            OverlayInfo::GAME_SPEED});
       break;
-    case GameInfo::InfoType::PLAYER:
+    }
+    case GameInfo::InfoType::PLAYER: {
+      auto& playerInfo = *info.playerInfo.getReferenceMaybe<PlayerInfo>();
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawPlayerOverlay, this), THIS_LINE,
-           info.playerInfo), OverlayInfo::TOP_LEFT});
+           playerInfo), OverlayInfo::TOP_LEFT});
       break;
+    }
     default:
       break;
   }
@@ -2080,7 +2091,7 @@ SGuiElem GuiBuilder::drawMinionButtons(const vector<PlayerInfo>& minions, Unique
       line.addElemAuto(gui.rightMargin(5, gui.label(minion.getFirstName())));
       if (auto icon = getMoraleIcon(minion.morale))
         line.addElem(gui.topMargin(-2, gui.icon(*icon)), 20);
-      line.addBackElem(gui.label("L:" + toString<int>(minion.levelInfo.level)), 42);
+      line.addBackElem(drawBestAttack(minion.bestAttack), 52);
       list.addElem(gui.stack(makeVec(
             cache->get(selectButton, THIS_LINE, minionId),
             gui.leftMargin(teamId ? -10 : 0, gui.stack(
@@ -2699,7 +2710,7 @@ SGuiElem GuiBuilder::drawCreaturePrompt(SyncQueue<bool>& queue, const string& ti
   for (auto& elem : creatures) {
     line.addElem(gui.stack(
           gui.viewObject(elem.viewId, 2),
-          gui.label(toString(elem.expLevel), 20)));
+          gui.label(toString((int) elem.bestAttack.value), 20)));
     if (line.getSize() >= windowWidth - 50) {
       lines.addElem(gui.centerHoriz(line.buildHorizontalList()), 70);
       line.clear();
@@ -2732,7 +2743,7 @@ SGuiElem GuiBuilder::drawTeamLeaderMenu(SyncQueue<optional<UniqueEntity<Creature
                 gui.icon(gui.HIGHLIGHT, GuiFactory::Alignment::CENTER_STRETCHED, Color::GREEN)))),
           gui.button([&queue, elem] { queue.push(elem.uniqueId); }),
           gui.viewObject(elem.viewId, 2),
-          gui.label(toString(elem.expLevel), 20)));
+          gui.label(toString((int) elem.bestAttack.value), 20)));
     if (line.getSize() >= windowWidth - 50) {
       lines.addElem(gui.centerHoriz(line.buildHorizontalList()), 70);
       line.clear();

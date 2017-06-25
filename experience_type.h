@@ -4,5 +4,9 @@
 
 RICH_ENUM(ExperienceType,
   TRAINING,
-  COMBAT
+  STUDY
 );
+
+extern const char* getName(ExperienceType);
+extern const char* getNameLowerCase(ExperienceType);
+extern char getSymbol(ExperienceType);

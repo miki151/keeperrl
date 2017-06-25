@@ -103,7 +103,6 @@ RICH_ENUM(CreatureId,
 
     KNIGHT,
     AVATAR,
-    CASTLE_GUARD,
     ARCHER,
     PESEANT,
     CHILD,
@@ -129,8 +128,6 @@ RICH_ENUM(CreatureId,
     PIG,
     GOAT,
     DONKEY,
-    
-    LEPRECHAUN,
     
     JACKAL,
     DEER,

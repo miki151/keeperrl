@@ -172,7 +172,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.race = "humans"_s;
             c.stockpiles = LIST({StockpileInfo::GOLD, 140});
             c.buildingId = BuildingId::BRICK;
-            c.guardId = CreatureId::CASTLE_GUARD;
+            c.guardId = CreatureId::KNIGHT;
             c.shopFactory = ItemFactory::villageShop();
             c.furniture = FurnitureFactory::castleFurniture(c.tribe);
             c.outsideFeatures = FurnitureFactory::castleOutside(c.tribe);),

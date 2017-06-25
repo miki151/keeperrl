@@ -26,7 +26,7 @@
 #include "item_type.h"
 #include "creature.h"
 #include "item.h"
-#include "modifier_type.h"
+#include "attr_type.h"
 #include "body.h"
 #include "call_cache.h"
 #include "container_range.h"
@@ -502,11 +502,9 @@ class Test {
     CHECK(!equipment.isOwner(bow1.get(), human.get()));
     CHECK(!equipment.getItemsOwnedBy(human.get()).contains(bow1.get()));
     CHECK(equipment.tryToOwn(human.get(), bow1.get()));
-    bow2->addModifier(ModifierType::FIRED_ACCURACY, -10);
+    bow2->addModifier(AttrType::DAMAGE, -10);
     CHECK(!equipment.needsItem(human.get(), bow2.get(), false));
     CHECK(equipment.needsItem(human.get(), bow2.get(), true));
-    bow2->addModifier(ModifierType::FIRED_ACCURACY, 30);
-    bow3->addModifier(ModifierType::FIRED_DAMAGE, 30);
     CHECK(equipment.tryToOwn(human.get(), bow2.get()));
     CHECK(equipment.getOwner(bow1.get()) == none);
     CHECK(equipment.isOwner(bow2.get(), human.get()));
@@ -520,27 +518,10 @@ class Test {
     CHECK(equipment.getItemsOwnedBy(human.get()).contains(bow1.get()));
   }
 
-  void testMinionEquipmentAmmo() {
-    vector<PItem> arrows = ItemFactory::fromId(ItemId::ARROW, 100);
-    PItem bow = ItemFactory::fromId(ItemId::BOW);
-    PCreature human = CreatureFactory::fromId(CreatureId::BANDIT, TribeId::getBandit());
-    MinionEquipment equipment;
-    CHECK(!equipment.needsItem(human.get(), arrows[0].get(), true));
-    CHECK(equipment.needsItem(human.get(), bow.get(), true));
-    CHECK(equipment.tryToOwn(human.get(), bow.get()));
-    CHECK(equipment.isOwner(bow.get(), human.get()));
-    CHECK(equipment.needsItem(human.get(), arrows[0].get(), false));
-    for (int i : Range(60))
-      CHECK(equipment.tryToOwn(human.get(), arrows[i].get()));
-    CHECK(!equipment.needsItem(human.get(), arrows.back().get(), false));
-    CHECK(equipment.needsItem(human.get(), arrows.back().get(), true));
-    CHECK(equipment.needsItem(human.get(), arrows.back().get(), true));
-  }
-
   void testMinionEquipmentItemDestroyed() {
     PItem sword = ItemFactory::fromId(ItemId::SWORD);
     PItem sword2 = ItemFactory::fromId(ItemId::SWORD);
-    sword2->addModifier(ModifierType::DAMAGE, -5);
+    sword2->addModifier(AttrType::DAMAGE, -5);
     PCreature human = CreatureFactory::fromId(CreatureId::BANDIT, TribeId::getBandit());
     MinionEquipment equipment;
     CHECK(equipment.tryToOwn(human.get(), sword.get()));
@@ -554,7 +535,7 @@ class Test {
   void testMinionEquipmentUpdateItems() {
     PItem sword = ItemFactory::fromId(ItemId::SWORD);
     PItem sword2 = ItemFactory::fromId(ItemId::SWORD);
-    sword2->addModifier(ModifierType::DAMAGE, -5);
+    sword2->addModifier(AttrType::DAMAGE, -5);
     PCreature human = CreatureFactory::fromId(CreatureId::BANDIT, TribeId::getBandit());
     PCreature human2 = CreatureFactory::fromId(CreatureId::BANDIT, TribeId::getBandit());
     MinionEquipment equipment;
@@ -594,7 +575,7 @@ class Test {
     PItem sword1 = ItemFactory::fromId(ItemId::SWORD);
     PItem sword2 = ItemFactory::fromId(ItemId::SWORD);
     PItem sword3 = ItemFactory::fromId(ItemId::SWORD);
-    sword1->addModifier(ModifierType::DAMAGE, 12);
+    sword1->addModifier(AttrType::DAMAGE, 12);
     PCreature human1 = CreatureFactory::fromId(CreatureId::BANDIT, TribeId::getBandit());
     PCreature human2 = CreatureFactory::fromId(CreatureId::BANDIT, TribeId::getBandit());
     PCreature human3 = CreatureFactory::fromId(CreatureId::BANDIT, TribeId::getBandit());
@@ -612,22 +593,19 @@ class Test {
     CHECK(equipment.isOwner(sword1.get(), human2.get()));
     CHECKEQ(equipment.getItemsOwnedBy(human2.get()), makeVec(sword1.get()));
     CHECK(!equipment.getOwner(sword2.get()));
-    vector<PItem> arrows = ItemFactory::fromId(ItemId::ARROW, 100);
     PItem bow = ItemFactory::fromId(ItemId::BOW);
     PItem bow2 = ItemFactory::fromId(ItemId::BOW);
-    bow2->addModifier(ModifierType::FIRED_ACCURACY, 30);
-    equipment.autoAssign(human1.get(), getWeakPointers(arrows));
+    bow2->addModifier(AttrType::DAMAGE, 30);
     CHECK(equipment.getItemsOwnedBy(human1.get()).size() == 0);
     equipment.autoAssign(human1.get(), {bow.get()});
     CHECKEQ(equipment.getItemsOwnedBy(human1.get()), makeVec(bow.get()));
-    equipment.autoAssign(human1.get(), getWeakPointers(arrows));
     equipment.updateOwners({human1.get()});
-    CHECK(equipment.getItemsOwnedBy(human1.get()).size() == 41);
+    CHECK(equipment.getItemsOwnedBy(human1.get()).size() == 1);
     equipment.autoAssign(human1.get(), {bow2.get()});
-    CHECK(equipment.getItemsOwnedBy(human1.get()).size() == 41);
+    CHECK(equipment.getItemsOwnedBy(human1.get()).size() == 1);
     CHECK(equipment.getItemsOwnedBy(human1.get()).contains(bow2.get()));
     equipment.updateOwners({human1.get()});
-    CHECK(equipment.getItemsOwnedBy(human1.get()).size() == 41);
+    CHECK(equipment.getItemsOwnedBy(human1.get()).size() == 1);
     human1->getBody().looseBodyPart(BodyPart::ARM);
     for (int i : Range(5))
       equipment.updateOwners({human1.get()});
@@ -638,7 +616,7 @@ class Test {
   void testMinionEquipmentLocking() {
     PItem sword1 = ItemFactory::fromId(ItemId::SWORD);
     PItem sword2 = ItemFactory::fromId(ItemId::SWORD);
-    sword1->addModifier(ModifierType::DAMAGE, 12);
+    sword1->addModifier(AttrType::DAMAGE, 12);
     PCreature human1 = CreatureFactory::fromId(CreatureId::BANDIT, TribeId::getBandit());
     MinionEquipment equipment;
     equipment.autoAssign(human1.get(), {sword2.get(), sword1.get()});
@@ -875,7 +853,6 @@ void testAll() {
   Test().testReverse3();
   Test().testOwnerPointer();
   Test().testMinionEquipment1();
-  Test().testMinionEquipmentAmmo();
   Test().testMinionEquipmentItemDestroyed();
   Test().testMinionEquipmentUpdateItems();
   Test().testMinionEquipmentUpdateOwners();

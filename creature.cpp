@@ -389,13 +389,6 @@ vector<PItem> Creature::steal(const vector<WItem> items) {
   return equipment->removeItems(items, this);
 }
 
-WItem Creature::getAmmo() const {
-  for (WItem item : equipment->getItems())
-    if (item->getClass() == ItemClass::AMMO)
-      return item;
-  return nullptr;
-}
-
 WLevel Creature::getLevel() const {
   return getPosition().getLevel();
 }
@@ -454,10 +447,13 @@ string Creature::getPluralAName(WItem item, int num) const {
 }
 
 bool Creature::canCarry(const vector<WItem>& items) const {
-  double weight = equipment->getTotalWeight();
-  for (WItem it : items)
-    weight += it->getWeight();
-  return weight <= 2 * getModifier(ModifierType::INV_LIMIT);
+  if (auto& limit = getBody().getCarryLimit()) {
+    double weight = equipment->getTotalWeight();
+    for (WItem it : items)
+      weight += it->getWeight();
+    return weight <= *limit;
+  } else
+    return true;
 }
 
 CreatureAction Creature::pickUp(const vector<WItem>& items) const {
@@ -472,8 +468,9 @@ CreatureAction Creature::pickUp(const vector<WItem>& items) const {
       playerMessage("You pick up " + getPluralTheName(stack[0], stack.size()));
     }
     self->equipment->addItems(self->getPosition().removeItems(items));
-    if (equipment->getTotalWeight() > getModifier(ModifierType::INV_LIMIT))
-      playerMessage("You are overloaded.");
+    if (auto& limit = getBody().getCarryLimit())
+      if (equipment->getTotalWeight() > *limit / 2)
+        playerMessage("You are overloaded.");
     getGame()->addEvent({EventId::PICKED_UP, EventInfo::ItemsHandled{self, items}});
     self->spendTime(1);
   });
@@ -530,10 +527,6 @@ bool Creature::canEquipIfEmptySlot(const WItem item, string* reason) const {
 
 bool Creature::canEquip(const WItem item) const {
   return canEquipIfEmptySlot(item, nullptr) && equipment->canEquip(item);
-}
-
-bool Creature::isEquipmentAppropriate(const WItem item) const {
-  return item->getClass() != ItemClass::WEAPON || item->getMinStrength() <= getAttr(AttrType::STRENGTH);
 }
 
 CreatureAction Creature::equip(WItem item) const {
@@ -723,66 +716,28 @@ int simulAttackPen(int attackers) {
 }
 
 int Creature::getAttr(AttrType type) const {
-  int def = getBody().modifyAttr(type, attributes->getRawAttr(type));
+  double def = getBody().modifyAttr(type, attributes->getRawAttr(type));
   for (WItem item : equipment->getAllEquipped())
-    def += item->getAttr(type);
-  switch (type) {
-    case AttrType::DEXTERITY:
-    case AttrType::STRENGTH:
-        def -= simulAttackPen(numAttacksThisTurn);
-        break;
-    case AttrType::SPEED: {
-        double totWeight = equipment->getTotalWeight();
-        if (!attributes->canCarryAnything() && totWeight > getAttr(AttrType::STRENGTH))
-          def -= 20.0 * totWeight / def;
-        CHECK(def > 0);
-        break;}
-  }
-  LastingEffects::modifyAttr(this, type, def);
-  return max(0, def);
-}
-
-int Creature::accuracyBonus() const {
-  if (WItem weapon = getWeapon())
-    return -max(0, weapon->getMinStrength() - getAttr(AttrType::STRENGTH));
-  else
-    return 0;
-}
-
-int Creature::getModifier(ModifierType type) const {
-  int def = 0;
-  for (WItem item : equipment->getAllEquipped())
-      def += item->getModifier(type);
+    def += item->getModifier(type);
   for (SkillId skill : ENUM_ALL(SkillId))
     def += Skill::get(skill)->getModifier(this, type);
   switch (type) {
-    case ModifierType::FIRED_DAMAGE: 
-    case ModifierType::THROWN_DAMAGE: 
-        def += getAttr(AttrType::DEXTERITY);
-        break;
-    case ModifierType::DAMAGE: 
-        def += getAttr(AttrType::STRENGTH);
-        if (!getWeapon())
-          def += attributes->getBarehandedDamage();
-        break;
-    case ModifierType::DEFENSE: 
-        def += getAttr(AttrType::STRENGTH);
-        break;
-    case ModifierType::FIRED_ACCURACY: 
-    case ModifierType::THROWN_ACCURACY: 
-        def += getAttr(AttrType::DEXTERITY);
-        break;
-    case ModifierType::ACCURACY: 
-        def += accuracyBonus();
-        def += getAttr(AttrType::DEXTERITY);
-        break;
-    case ModifierType::INV_LIMIT:
-        if (attributes->canCarryAnything())
-          return 1000000;
-        return getAttr(AttrType::STRENGTH) * 2;
+    case AttrType::DEFENSE:
+      def -= simulAttackPen(numAttacksThisTurn);
+      break;
+    case AttrType::SPEED: {
+      double totWeight = equipment->getTotalWeight();
+      // penalty is 0 till limit/2, then grows linearly to 0.3 at limit, then stays constant
+      if (auto& limit = getBody().getCarryLimit())
+        def -= 0.3 * min(1.0, max(0.0, -1.0 + 2.0 * totWeight / *limit));
+      CHECK(def > 0);
+      break;
+    }
+    default:
+      break;
   }
-  LastingEffects::modifyMod(this, type, def);
-  return max(0, def);
+  LastingEffects::modifyAttr(this, type, def);
+  return max(0, (int) def);
 }
 
 int Creature::getPoints() const {
@@ -792,9 +747,7 @@ int Creature::getPoints() const {
 void Creature::onKilled(WCreature victim) {
   int difficulty = victim->getDifficultyPoints();
   CHECK(difficulty >=0 && difficulty < 100000) << difficulty << " " << victim->getName().bare();
-  points += difficulty;
-  increaseExpLevel(ExperienceType::COMBAT, getAttributes().getExpFromKill(victim));
-  kills.insert(victim);
+  getAttributes().onKilled(victim);
 }
 
 Tribe* Creature::getTribe() {
@@ -899,27 +852,6 @@ static string getAttackParam(AttackType type) {
   }
 }
 
-string Creature::getAttrName(AttrType attr) {
-  switch (attr) {
-    case AttrType::STRENGTH: return "strength";
-    case AttrType::DEXTERITY: return "dexterity";
-    case AttrType::SPEED: return "speed";
-  }
-}
-
-string Creature::getModifierName(ModifierType attr) {
-  switch (attr) {
-    case ModifierType::DAMAGE: return "damage";
-    case ModifierType::ACCURACY: return "accuracy";
-    case ModifierType::THROWN_DAMAGE: return "thrown damage";
-    case ModifierType::THROWN_ACCURACY: return "thrown accuracy";
-    case ModifierType::FIRED_DAMAGE: return "projectile damage";
-    case ModifierType::FIRED_ACCURACY: return "projectile accuracy";
-    case ModifierType::DEFENSE: return "defense";
-    case ModifierType::INV_LIMIT: return "carry capacity";
-  }
-}
-
 static MsgType getAttackMsg(AttackType type, bool weapon, AttackLevel level) {
   if (weapon)
     return type == AttackType::STAB ? MsgType::THRUST_WEAPON : MsgType::SWING_WEAPON;
@@ -950,60 +882,44 @@ CreatureAction Creature::attack(WCreature other, optional<AttackParams> attackPa
     return CreatureAction();
   return CreatureAction(this, [=] (WCreature c) {
   INFO << getName().the() << " attacking " << other->getName().the();
-  int accuracy = getModifier(ModifierType::ACCURACY);
-  int damage = getModifier(ModifierType::DAMAGE);
-  int accuracyVariance = 1 + accuracy / 3;
+  int damage = getAttr(AttrType::DAMAGE);
   int damageVariance = 1 + damage / 3;
-  auto rAccuracy = [=] () { return Random.get(-accuracyVariance, accuracyVariance); };
   auto rDamage = [=] () { return Random.get(-damageVariance, damageVariance); };
   double timeSpent = 1;
-  accuracy += rAccuracy() + rAccuracy();
   damage += rDamage() + rDamage();
   vector<string> attackAdjective;
   if (attackParams && attackParams->mod)
     switch (*attackParams->mod) {
       case AttackParams::WILD: 
         damage *= 1.2;
-        accuracy *= 0.8;
+        ++c->numAttacksThisTurn;
         timeSpent *= 1.5;
         attackAdjective.push_back("wildly");
         break;
       case AttackParams::SWIFT: 
         damage *= 0.8;
-        accuracy *= 1.2;
+        --c->numAttacksThisTurn;
         timeSpent *= 0.7;
         attackAdjective.push_back("swiftly");
         break;
     }
-  bool backstab = false;
   string enemyName = getLevel()->playerCanSee(other) ? other->getName().the() : "something";
   if (other->isPlayer())
     enemyName = "";
-  if (!other->canSee(this) && canSee(other)) {
- //   if (getWeapon() && getWeapon()->getAttackType() == AttackType::STAB) {
-      damage += 10;
-      backstab = true;
- //   }
+  if (!other->canSee(this) && canSee(other))
     you(MsgType::ATTACK_SURPRISE, enemyName);
-  }
   AttackLevel attackLevel = Random.choose(getBody().getAttackLevels());
   if (attackParams && attackParams->level)
     attackLevel = *attackParams->level;
-  Attack attack(c, attackLevel, attributes->getAttackType(getWeapon()), accuracy, damage, backstab,
+  Attack attack(c, attackLevel, attributes->getAttackType(getWeapon()), damage, AttrType::DAMAGE,
       getWeapon() ? getWeapon()->getAttackEffect() : attributes->getAttackEffect());
-  if (!other->dodgeAttack(attack)) {
-    if (getWeapon()) {
-      you(getAttackMsg(attack.getType(), true, attack.getLevel()),
-          concat({getWeapon()->getName()}, attackAdjective));
-      if (!canSee(other))
-        playerMessage("You hit something.");
-    } else
-      you(getAttackMsg(attack.getType(), false, attack.getLevel()), concat({enemyName}, attackAdjective));
-    other->takeDamage(attack);
-  } else {
-    you(MsgType::MISS_ATTACK, enemyName);
-    addSound(SoundId::MISSED_ATTACK);
-  }
+  if (getWeapon()) {
+    you(getAttackMsg(attack.type, true, attack.level), concat({getWeapon()->getName()}, attackAdjective));
+    if (!canSee(other))
+      playerMessage("You hit something.");
+  } else
+    you(getAttackMsg(attack.type, false, attack.level), concat({enemyName}, attackAdjective));
+  other->takeDamage(attack);
   double oldTime = getLocalTime();
   if (spend)
     c->spendTime(timeSpent);
@@ -1011,20 +927,13 @@ CreatureAction Creature::attack(WCreature other, optional<AttackParams> attackPa
   });
 }
 
-bool Creature::dodgeAttack(const Attack& attack) {
+bool Creature::takeDamage(const Attack& attack) {
   ++numAttacksThisTurn;
-  WCreature attacker = attack.getAttacker();
-  if (attacker) {
+  AttackType attackType = attack.type;
+  int defense = getAttr(getCorrespondingDefense(attack.damageType));
+  if (WCreature attacker = attack.attacker) {
     if (!canSee(attacker))
       unknownAttackers.insert(attacker);
-  }
-  return (!attacker || canSee(attacker)) && attack.getAccuracy() <= getModifier(ModifierType::ACCURACY);
-}
-
-bool Creature::takeDamage(const Attack& attack) {
-  AttackType attackType = attack.getType();
-  int defense = getModifier(ModifierType::DEFENSE);
-  if (WCreature attacker = attack.getAttacker()) {
     if (attacker->tribe != tribe || Random.roll(3))
       privateEnemies.insert(attacker);
     if (!attacker->getAttributes().getSkills().hasDiscrete(SkillId::STEALTH))
@@ -1038,19 +947,19 @@ bool Creature::takeDamage(const Attack& attack) {
       return false;
     }
     INFO << getName().the() << " attacked by " << attacker->getName().the()
-      << " damage " << attack.getStrength() << " defense " << defense;
-    lastAttacker = attack.getAttacker();
+      << " damage " << attack.strength << " defense " << defense;
+    lastAttacker = attack.attacker;
   }
-  if (auto sound = attributes->getAttackSound(attack.getType(), attack.getStrength() > defense))
+  if (auto sound = attributes->getAttackSound(attack.type, attack.strength > defense))
     addSound(*sound);
-  if (attack.getStrength() > defense) {
-    double dam = (defense == 0) ? 1 : double(attack.getStrength() - defense) / defense;
+  if (attack.strength > defense) {
+    double dam = (defense == 0) ? 1 : double(attack.strength - defense) / defense;
     if (attributes->getBody().takeDamage(attack, this, dam))
       return true;
   } else {
     you(MsgType::GET_HIT_NODAMAGE, getAttackParam(attackType));
-    if (attack.getEffect())
-      Effect::applyToCreature(this, *attack.getEffect(), EffectStrength::NORMAL);
+    if (attack.effect)
+      Effect::applyToCreature(this, *attack.effect, EffectStrength::NORMAL);
   }
   for (LastingEffect effect : ENUM_ALL(LastingEffect))
     if (isAffected(effect))
@@ -1063,9 +972,10 @@ static vector<string> extractNames(const vector<AdjectiveInfo>& adjectives) {
 }
 
 void Creature::updateViewObject() {
-  modViewObject().setAttribute(ViewObject::Attribute::DEFENSE, getModifier(ModifierType::DEFENSE));
-  modViewObject().setAttribute(ViewObject::Attribute::ATTACK, getModifier(ModifierType::DAMAGE));
-  modViewObject().setAttribute(ViewObject::Attribute::LEVEL, attributes->getVisibleExpLevel());
+  /*modViewObject().setAttribute(ViewObject::Attribute::DEFENSE, getAttr(AttrType::DEFENSE));
+  modViewObject().setAttribute(ViewObject::Attribute::DAMAGE, getAttr(AttrType::DAMAGE));
+  modViewObject().setAttribute(ViewObject::Attribute::WILLPOWER, getAttr(AttrType::SPELL_DAMAGE));
+  modViewObject().setAttribute(ViewObject::Attribute::RESISTANCE, getAttr(AttrType::SPELL_DEFENSE));*/
   modViewObject().setAttribute(ViewObject::Attribute::MORALE, getMorale());
   modViewObject().setModifier(ViewObject::Modifier::DRAW_MORALE);
   modViewObject().setAdjectives(extractNames(concat(
@@ -1241,13 +1151,17 @@ void Creature::retire() {
 }
 
 void Creature::increaseExpLevel(ExperienceType type, double increase) {
-  int curLevel = (int)getAttributes().getVisibleExpLevel();
+  int curLevel = (int)getAttributes().getExpLevel(type);
   getAttributes().increaseExpLevel(type, increase);
-  int newLevel = (int)getAttributes().getVisibleExpLevel();
+  int newLevel = (int)getAttributes().getExpLevel(type);
   if (curLevel != newLevel) {
     you(MsgType::ARE, "more experienced");
-    addPersonalEvent(getName().a() + " reaches experience level " + toString(newLevel));
+    addPersonalEvent(getName().a() + " reaches " + ::getNameLowerCase(type) + " " + toString(newLevel));
   }
+}
+
+BestAttack Creature::getBestAttack() const {
+  return BestAttack(this);
 }
 
 CreatureAction Creature::give(WCreature whom, vector<WItem> items) const {
@@ -1282,14 +1196,10 @@ CreatureAction Creature::fire(Vec2 direction) const {
     return CreatureAction("You need to equip your ranged weapon.");
   if (getBody().numGood(BodyPart::ARM) < 2)
     return CreatureAction("You need two hands to shoot a bow.");
-  if (!getAmmo())
-    return CreatureAction("Out of ammunition");
   return CreatureAction(this, [=](WCreature self) {
-    PItem ammo = self->equipment->removeItem(NOTNULL(getAmmo()), self);
-    auto weapon = self->getEquipment().getSlotItems(EquipmentSlot::RANGED_WEAPON).getOnlyElement()
-        .dynamicCast<RangedWeapon>();
-    CHECK(!!weapon);
-    weapon->fire(self, std::move(ammo), direction);
+    auto& weapon = *self->getEquipment().getSlotItems(EquipmentSlot::RANGED_WEAPON).getOnlyElement()
+        ->getRangedWeapon();
+    weapon.fire(self, direction);
     self->spendTime(1);
   });
 }
@@ -1336,7 +1246,7 @@ CreatureAction Creature::construct(Vec2 direction, FurnitureType type) const {
   return CreatureAction();
 }
 
-bool Creature::canConstruct(FurnitureType type) const {
+bool Creature::canConstruct(FurnitureType) const {
   return attributes->getSkills().hasDiscrete(SkillId::CONSTRUCTION);
 }
 
@@ -1441,9 +1351,8 @@ CreatureAction Creature::throwItem(WItem item, Vec2 direction) const {
   else if (item->getWeight() > 20)
     return CreatureAction(item->getTheName() + " is too heavy!");
   int dist = 0;
-  int accuracyVariance = 10;
   int attackVariance = 10;
-  int str = getAttr(AttrType::STRENGTH);
+  int str = 20;
   if (item->getWeight() <= 0.5)
     dist = 10 * str / 15;
   else if (item->getWeight() <= 5)
@@ -1452,17 +1361,10 @@ CreatureAction Creature::throwItem(WItem item, Vec2 direction) const {
     dist = 2 * str / 15;
   else 
     FATAL << "Item too heavy.";
-  int accuracy = Random.get(-accuracyVariance, accuracyVariance) +
-      getModifier(ModifierType::THROWN_ACCURACY) + item->getModifier(ModifierType::THROWN_ACCURACY);
-  int damage = Random.get(-attackVariance, attackVariance) +
-      getModifier(ModifierType::THROWN_DAMAGE) + item->getModifier(ModifierType::THROWN_DAMAGE);
-  if (item->getAttackType() == AttackType::STAB) {
-    damage += Skill::get(SkillId::KNIFE_THROWING)->getModifier(this, ModifierType::THROWN_DAMAGE);
-    accuracy += Skill::get(SkillId::KNIFE_THROWING)->getModifier(this, ModifierType::THROWN_ACCURACY);
-  }
+  int damage = Random.get(-attackVariance, attackVariance) + getAttr(AttrType::DAMAGE) +
+      item->getModifier(AttrType::DAMAGE);
   return CreatureAction(this, [=](WCreature self) {
-    Attack attack(self, Random.choose(getBody().getAttackLevels()), item->getAttackType(), accuracy, damage, false,
-        none);
+    Attack attack(self, Random.choose(getBody().getAttackLevels()), item->getAttackType(), damage, AttrType::DAMAGE);
     playerMessage("You throw " + item->getAName(false, this));
     monsterMessage(getName().the() + " throws " + item->getAName());
     self->getPosition().throwItem(self->equipment->removeItem(item, self), attack, dist, direction, getVision());
@@ -1524,12 +1426,9 @@ MovementType Creature:: getMovementType() const {
 }
 
 int Creature::getDifficultyPoints() const {
-  difficultyPoints = max<double>(difficultyPoints,
-      getModifier(ModifierType::DEFENSE) + getModifier(ModifierType::ACCURACY) + getModifier(ModifierType::DAMAGE)
-      + getAttr(AttrType::SPEED) / 10);
-  CHECK(difficultyPoints >=0 && difficultyPoints < 100000) << getModifier(ModifierType::DEFENSE) << " "
-     << getModifier(ModifierType::ACCURACY) << " " << getModifier(ModifierType::DAMAGE) << " "
-     << getAttr(AttrType::SPEED) << " " << getName().bare();
+  difficultyPoints = max(difficultyPoints,
+      getAttr(AttrType::SPELL_DEFENSE) + getAttr(AttrType::SPELL_DAMAGE) +
+      getAttr(AttrType::DEFENSE) + getAttr(AttrType::DAMAGE) + getAttr(AttrType::SPEED) / 10);
   return difficultyPoints;
 }
 
@@ -1829,9 +1728,6 @@ vector<AdjectiveInfo> Creature::getWeaponAdjective() const {
 
 vector<AdjectiveInfo> Creature::getGoodAdjectives() const {
   vector<AdjectiveInfo> ret;
-  if (!getWeapon() && !getBody().isHumanoid()) {
-    ret.push_back({"+" + toString(attributes->getBarehandedDamage()) + " unarmed attack", ""});
-  }
   for (LastingEffect effect : ENUM_ALL(LastingEffect))
     if (isAffected(effect))
       if (const char* name = LastingEffects::getGoodAdjective(effect)) {
@@ -1851,9 +1747,6 @@ vector<AdjectiveInfo> Creature::getGoodAdjectives() const {
 
 vector<AdjectiveInfo> Creature::getBadAdjectives() const {
   vector<AdjectiveInfo> ret;
-  if (!getWeapon() && getBody().isHumanoid()) {
-    ret.push_back({"+" + toString(attributes->getBarehandedDamage()) + " unarmed attack", ""});
-  }
   getBody().getBadAdjectives(ret);
   for (LastingEffect effect : ENUM_ALL(LastingEffect))
     if (isAffected(effect))

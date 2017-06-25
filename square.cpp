@@ -96,15 +96,10 @@ void Square::tick(Position pos) {
 
 bool Square::itemLands(vector<WItem> item, const Attack& attack) const {
   if (creature) {
-    if (!creature->dodgeAttack(attack))
-      return true;
-    else {
-      if (item.size() > 1)
-        creature->you(MsgType::MISS_THROWN_ITEM_PLURAL, item[0]->getPluralTheName(item.size()));
-      else
-        creature->you(MsgType::MISS_THROWN_ITEM, item[0]->getTheName());
-      return false;
-    }
+    if (item.size() > 1)
+      creature->you(MsgType::MISS_THROWN_ITEM_PLURAL, item[0]->getPluralTheName(item.size()));
+    else
+      creature->you(MsgType::MISS_THROWN_ITEM, item[0]->getTheName());
   }
   return false;
 }

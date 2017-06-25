@@ -17,8 +17,9 @@
 
 #include "view_object.h"
 #include "view_id.h"
+#include "experience_type.h"
 
-SERIALIZE_DEF(ViewObject, resource_id, viewLayer, description, modifiers, attributes, attachmentDir, creatureId, adjectives)
+SERIALIZE_DEF(ViewObject, resource_id, viewLayer, description, modifiers, attributes, attachmentDir, creatureId, adjectives, creatureAttributes)
 
 SERIALIZATION_CONSTRUCTOR_IMPL(ViewObject);
 
@@ -250,13 +251,15 @@ void ViewObject::setAdjectives(const vector<string>& adj) {
 
 vector<string> ViewObject::getLegend() const {
   vector<string> ret { string(getDescription()) };
-  if (!!attributes[Attribute::LEVEL])
-    ret[0] = ret[0] + ", level " + getAttributeString(Attribute::LEVEL);
+  /*if (!!attributes[Attribute::MAGE_LEVEL])
+    ret.push_back(getName(ExperienceType::STUDY) + " "_s + getAttributeString(Attribute::MAGE_LEVEL));
+  if (!!attributes[Attribute::FIGHTER_LEVEL])
+    ret.push_back(getName(ExperienceType::TRAINING) + " "_s + getAttributeString(Attribute::FIGHTER_LEVEL));
   if (!!attributes[Attribute::EFFICIENCY])
     ret[0] = ret[0] + ", efficiency " + getAttributeString(Attribute::EFFICIENCY);
-  if (!!attributes[Attribute::ATTACK])
-    ret.push_back("Attack " + getAttributeString(Attribute::ATTACK) +
-          " defense " + getAttributeString(Attribute::DEFENSE));
+  if (!!attributes[Attribute::DAMAGE])
+    ret.push_back("Attack " + getAttributeString(Attribute::DAMAGE) +
+          " defense " + getAttributeString(Attribute::DEFENSE));*/
   if (hasModifier(Modifier::PLANNED))
     ret.push_back("Planned");
   if (indoors)
@@ -295,7 +298,6 @@ static vector<ViewId> creatureIds {
   ViewId::GHOST,
   ViewId::SPIRIT,
   ViewId::KNIGHT,
-  ViewId::CASTLE_GUARD,
   ViewId::DUKE,
   ViewId::ARCHER,
   ViewId::PESEANT,
@@ -331,7 +333,6 @@ static vector<ViewId> creatureIds {
   ViewId::VULTURE,
   ViewId::RAVEN,
   ViewId::GOBLIN,
-  ViewId::LEPRECHAUN,
   ViewId::KRAKEN_HEAD,
   ViewId::KRAKEN_LAND,
   ViewId::KRAKEN_WATER,
@@ -370,7 +371,6 @@ static vector<ViewId> itemIds {
   ViewId::BATTLE_AXE,
   ViewId::SPECIAL_BATTLE_AXE,
   ViewId::BOW,
-  ViewId::ARROW,
   ViewId::SCROLL,
   ViewId::AMULET1,
   ViewId::AMULET2,

@@ -125,7 +125,7 @@ void Furniture::destroy(Position pos, const DestroyAction& action) {
 void Furniture::tryToDestroyBy(Position pos, WCreature c, const DestroyAction& action) {
   if (auto& strength = destroyActions[action.getType()]) {
     c->addSound(action.getSound());
-    *strength -= c->getAttr(AttrType::STRENGTH);
+    *strength -= c->getAttr(AttrType::DAMAGE);
     if (*strength <= 0)
       destroy(pos, action);
   }

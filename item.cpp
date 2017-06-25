@@ -30,6 +30,7 @@
 #include "item_class.h"
 #include "corpse_info.h"
 #include "equipment.h"
+#include "attr_type.h"
 
 template <class Archive> 
 void Item::serialize(Archive& ar, const unsigned int version) {
@@ -333,33 +334,27 @@ string Item::getModifiers(bool shorten) const {
     if (!shorten)
       artStr = " named " + artStr;
   }
-  EnumSet<ModifierType> printMod;
-  switch (getClass()) {
-    case ItemClass::WEAPON:
-      printMod.insert(ModifierType::ACCURACY);
-      printMod.insert(ModifierType::DAMAGE);
-      break;
-    case ItemClass::ARMOR:
-      printMod.insert(ModifierType::DEFENSE);
-      break;
-    case ItemClass::RANGED_WEAPON:
-    case ItemClass::AMMO:
-      printMod.insert(ModifierType::FIRED_ACCURACY);
-      break;
-    default: break;
-  }
-  if (!shorten)
-    for (auto mod : ENUM_ALL(ModifierType))
-      if (attributes->modifiers[mod] != 0)
-        printMod.insert(mod);
-  vector<string> attrStrings;
-  for (auto mod : printMod)
-    attrStrings.push_back(withSign(attributes->modifiers[mod]) +
-        (shorten ? "" : " " + Creature::getModifierName(mod)));
-  if (!shorten)
+  EnumSet<AttrType> printAttr;
+  if (!shorten) {
     for (auto attr : ENUM_ALL(AttrType))
-      if (attributes->attrs[attr] != 0)
-        attrStrings.push_back(withSign(attributes->attrs[attr]) + " " + Creature::getAttrName(attr));
+      if (attributes->modifiers[attr] != 0)
+        printAttr.insert(attr);
+  } else
+    switch (getClass()) {
+      case ItemClass::RANGED_WEAPON:
+        printAttr.insert(getRangedWeapon()->getDamageAttr());
+        break;
+      case ItemClass::WEAPON:
+        printAttr.insert(AttrType::DAMAGE);
+        break;
+      case ItemClass::ARMOR:
+        printAttr.insert(AttrType::DEFENSE);
+        break;
+      default: break;
+    }
+  vector<string> attrStrings;
+  for (auto attr : printAttr)
+    attrStrings.push_back(withSign(attributes->modifiers[attr]) + (shorten ? "" : " " + ::getName(attr)));
   string attrString = combine(attrStrings, true);
   if (!attrString.empty())
     attrString = " (" + attrString + ")";
@@ -411,18 +406,18 @@ EquipmentSlot Item::getEquipmentSlot() const {
   return *attributes->equipmentSlot;
 }
 
-void Item::addModifier(ModifierType type, int value) {
+void Item::addModifier(AttrType type, int value) {
   attributes->modifiers[type] += value;
 }
 
-int Item::getModifier(ModifierType type) const {
-  CHECK(abs(attributes->modifiers[type]) < 10000) << EnumInfo<ModifierType>::getString(type) << " "
+int Item::getModifier(AttrType type) const {
+  CHECK(abs(attributes->modifiers[type]) < 10000) << EnumInfo<AttrType>::getString(type) << " "
       << attributes->modifiers[type] << " " << getName();
   return attributes->modifiers[type];
 }
 
-int Item::getAttr(AttrType type) const {
-  return attributes->attrs[type];
+const optional<RangedWeapon>& Item::getRangedWeapon() const {
+  return attributes->rangedWeapon;
 }
  
 AttackType Item::getAttackType() const {

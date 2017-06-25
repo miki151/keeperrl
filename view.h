@@ -220,7 +220,7 @@ class View {
   virtual void presentWorldmap(const Campaign&) = 0;
 
   /** Draws an animation of an object between two locations on a map.*/
-  virtual void animateObject(vector<Vec2> trajectory, ViewObject object) = 0;
+  virtual void animateObject(vector<Vec2> trajectory, ViewId object) = 0;
 
   /** Draws an special animation on the map.*/
   virtual void animation(Vec2 pos, AnimationId) = 0;

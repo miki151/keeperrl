@@ -85,7 +85,7 @@ static void meteorShower(Position position, WFurniture furniture) {
         continue;
     targetPoint.plus(direction * range).throwItem(
         ItemFactory::fromId(ItemId::ROCK),
-        Attack(furniture->getCreator(), AttackLevel::MIDDLE, AttackType::HIT, 25, 40, false),
+        Attack(furniture->getCreator(), AttackLevel::MIDDLE, AttackType::HIT, 25, AttrType::DAMAGE),
         10,
         -direction,
         VisionId::NORMAL);

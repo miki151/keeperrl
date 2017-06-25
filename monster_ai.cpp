@@ -26,7 +26,6 @@
 #include "spell.h"
 #include "creature_name.h"
 #include "skill.h"
-#include "modifier_type.h"
 #include "task.h"
 #include "game.h"
 #include "creature_attributes.h"
@@ -96,8 +95,8 @@ WItem Behaviour::getBestWeapon() {
   WItem best = nullptr;
   int damage = -1;
   for (WItem item : creature->getEquipment().getItems(Item::classPredicate(ItemClass::WEAPON))) 
-    if (item->getModifier(ModifierType::DAMAGE) > damage) {
-      damage = item->getModifier(ModifierType::DAMAGE);
+    if (item->getModifier(AttrType::DAMAGE) > damage) {
+      damage = item->getModifier(AttrType::DAMAGE);
       best = item;
     }
   return best;
@@ -337,12 +336,12 @@ class Fighter : public Behaviour {
 
   virtual MoveInfo getMove() override {
     if (WCreature other = getClosestEnemy()) {
-      double myDamage = creature->getModifier(ModifierType::DAMAGE);
+      double myDamage = creature->getAttr(AttrType::DAMAGE);
       WItem weapon = getBestWeapon();
       if (!creature->getWeapon() && weapon)
-        myDamage += weapon->getModifier(ModifierType::DAMAGE);
-      double powerRatio = getMoraleBonus() * myDamage / other->getModifier(ModifierType::DAMAGE);
-      bool significantEnemy = myDamage < 5 * other->getModifier(ModifierType::DAMAGE);
+        myDamage += weapon->getModifier(AttrType::DAMAGE);
+      double powerRatio = getMoraleBonus() * myDamage / other->getAttr(AttrType::DAMAGE);
+      bool significantEnemy = myDamage < 5 * other->getAttr(AttrType::DAMAGE);
       double panicWeight = 0.1;
       if (creature->getBody().isWounded())
         panicWeight += 0.4;
@@ -399,19 +398,13 @@ class Fighter : public Behaviour {
           EffectType(EffectId::LASTING, LastingEffect::POISON_RESISTANT),
           EffectId::CURE_POISON,
           EffectId::TELEPORT,
-          EffectType(EffectId::LASTING, LastingEffect::STR_BONUS),
-          EffectType(EffectId::LASTING, LastingEffect::DEX_BONUS)},
+          EffectType(EffectId::LASTING, LastingEffect::DAM_BONUS),
+          EffectType(EffectId::LASTING, LastingEffect::DEF_BONUS)},
           item->getEffectType()))
       return 1;
-    if (item->getClass() == ItemClass::AMMO && creature->getAttributes().getSkills().getValue(SkillId::ARCHERY) > 0)
-      return 0.1;
-    if (!creature->isEquipmentAppropriate(item))
-      return 0;
-    if (item->getModifier(ModifierType::THROWN_DAMAGE) > 0)
-      return (double)item->getModifier(ModifierType::THROWN_DAMAGE) / 50;
-    int damage = item->getModifier(ModifierType::DAMAGE);
+    int damage = item->getModifier(AttrType::DAMAGE);
     WItem best = getBestWeapon();
-    if (best && best != item && best->getModifier(ModifierType::DAMAGE) >= damage)
+    if (best && best != item && best->getModifier(AttrType::DAMAGE) >= damage)
         return 0;
     return (double)damage / 50;
   }
@@ -434,7 +427,8 @@ class Fighter : public Behaviour {
           EffectType(EffectId::LASTING, LastingEffect::SLEEP)},
           it->getEffectType()))
       return 100;
-    return it->getModifier(ModifierType::THROWN_DAMAGE);
+    else
+      return 0;
   }
 
   MoveInfo getThrowMove(Vec2 enemyDir) {
@@ -528,8 +522,8 @@ class Fighter : public Behaviour {
     if (distance <= 5)
       for (EffectType effect : {
           EffectType(EffectId::LASTING, LastingEffect::INVISIBLE),
-          EffectType(EffectId::LASTING, LastingEffect::STR_BONUS),
-          EffectType(EffectId::LASTING, LastingEffect::DEX_BONUS),
+          EffectType(EffectId::LASTING, LastingEffect::DAM_BONUS),
+          EffectType(EffectId::LASTING, LastingEffect::DEF_BONUS),
           EffectType(EffectId::LASTING, LastingEffect::SPEED),
           EffectType(EffectId::DECEPTION),
           EffectType(EffectId::SUMMON, CreatureId::SPIRIT)})
@@ -565,7 +559,7 @@ class Fighter : public Behaviour {
   }
 
   Creature::AttackParams getAttackParams(WConstCreature enemy) {
-    int damDiff = enemy->getModifier(ModifierType::DAMAGE) - creature->getModifier(ModifierType::DAMAGE);
+    int damDiff = enemy->getAttr(AttrType::DEFENSE) - creature->getAttr(AttrType::DAMAGE);
     if (damDiff > 10)
       return CONSTRUCT(Creature::AttackParams, c.mod = Creature::AttackParams::WILD;);
     else if (damDiff < -10)
@@ -926,7 +920,7 @@ class SplashItems {
       return nullptr;
     Vec2 pos = chooseClosest(position);
     vector<WItem> it = {Random.choose(items[pos])};
-    if (it[0]->getClass() == ItemClass::GOLD || it[0]->getClass() == ItemClass::AMMO)
+    if (it[0]->getClass() == ItemClass::GOLD)
       for (WItem it2 : copyOf(items[pos]))
         if (it[0] != it2 && it2->getClass() == it[0]->getClass() && Random.roll(10))
           it.push_back(it2);

@@ -10,6 +10,8 @@
 #include "immigrant_auto_state.h"
 #include "tutorial_highlight.h"
 #include "hashing.h"
+#include "experience_type.h"
+#include "best_attack.h"
 
 enum class SpellId;
 
@@ -21,9 +23,9 @@ struct CreatureInfo {
   UniqueEntity<Creature>::Id HASH(uniqueId);
   string HASH(name);
   string HASH(stackName);
-  int HASH(expLevel);
-  double HASH(morale); 
-  HASH_ALL(viewId, uniqueId, name, stackName, expLevel, morale);
+  BestAttack HASH(bestAttack);
+  double HASH(morale);
+  HASH_ALL(viewId, uniqueId, name, stackName, bestAttack, morale);
 };
 
 
@@ -50,22 +52,23 @@ struct ItemInfo {
   HASH_ALL(name, fullName, description, number, viewId, ids, actions, equiped, locked, pending, unavailable, slot, owner, type, price, productionState, unavailableReason, weight, tutorialHighlight)
 };
 
+struct AttributeInfo {
+  static vector<AttributeInfo> fromCreature(WConstCreature);
+  string HASH(name);
+  AttrType HASH(attr);
+  int HASH(value);
+  int HASH(bonus);
+  const char* HASH(help);
+  HASH_ALL(name, attr, value, bonus, help);
+};
 
 class PlayerInfo {
   public:
-  void readFrom(WConstCreature);
+  PlayerInfo(WConstCreature);
   string getFirstName() const;
   string getTitle() const;
-  struct AttributeInfo {
-    string HASH(name);
-    enum Id { ATT, DEF, STR, DEX, ACC, SPD };
-    Id HASH(id);
-    int HASH(value);
-    int HASH(bonus);
-    string HASH(help);
-    HASH_ALL(name, id, value, bonus, help);
-  };
   vector<AttributeInfo> HASH(attributes);
+  BestAttack HASH(bestAttack);
   struct SkillInfo {
     string HASH(name);
     string HASH(help);
@@ -76,7 +79,7 @@ class PlayerInfo {
   string HASH(name);
   string HASH(title);
   struct LevelInfo {
-    double HASH(level);
+    EnumMap<ExperienceType, double> HASH(level);
     EnumMap<ExperienceType, double> HASH(increases);
     EnumMap<ExperienceType, optional<double>> HASH(limits);
     optional<string> HASH(warning);
@@ -134,7 +137,7 @@ class PlayerInfo {
     CONSUME
   };
   vector<Action> HASH(actions);
-  HASH_ALL(attributes, skills, firstName, name, title, levelInfo, levelName, positionHash, weaponName, effects, spells, lyingItems, inventory, team, minionTasks, creatureId, morale, viewId, actions, commands, debt);
+  HASH_ALL(attributes, skills, firstName, name, title, levelInfo, levelName, positionHash, weaponName, effects, spells, lyingItems, inventory, team, minionTasks, creatureId, morale, viewId, actions, commands, debt, bestAttack);
 };
 
 struct ImmigrantDataInfo {
@@ -143,7 +146,7 @@ struct ImmigrantDataInfo {
   optional<pair<ViewId, int>> HASH(cost);
   string HASH(name);
   ViewId HASH(viewId);
-  Range HASH(expLevel);
+  vector<AttributeInfo> HASH(attributes);
   int HASH(count);
   optional<double> HASH(timeLeft);
   int HASH(id);
@@ -152,7 +155,7 @@ struct ImmigrantDataInfo {
   optional<milliseconds> HASH(generatedTime);
   optional<Keybinding> HASH(keybinding);
   optional<TutorialHighlight> HASH(tutorialHighlight);
-  HASH_ALL(requirements, info, name, viewId, expLevel, count, timeLeft, id, autoState, cost, generatedTime, keybinding, tutorialHighlight)
+  HASH_ALL(requirements, info, name, viewId, attributes, count, timeLeft, id, autoState, cost, generatedTime, keybinding, tutorialHighlight)
 };
 
 class CollectiveInfo {
@@ -263,7 +266,7 @@ class CollectiveInfo {
     HASH_ALL(name, creature, priority);
   };
   vector<Task> HASH(taskMap);
-  
+
   struct Ransom {
     pair<ViewId, int> HASH(amount);
     string HASH(attacker);
@@ -334,12 +337,11 @@ class GameInfo {
 
   bool HASH(singleModel);
 
-  CollectiveInfo HASH(collectiveInfo);
-  PlayerInfo HASH(playerInfo);
+  variant<CollectiveInfo, PlayerInfo> HASH(playerInfo);
   VillageInfo HASH(villageInfo);
   GameSunlightInfo HASH(sunlightInfo);
   optional<TutorialInfo> HASH(tutorial);
 
   vector<PlayerMessage> HASH(messageBuffer);
-  HASH_ALL(infoType, time, collectiveInfo, playerInfo, villageInfo, sunlightInfo, messageBuffer, singleModel, modifiedSquares, totalSquares, tutorial);
+  HASH_ALL(infoType, time, playerInfo, villageInfo, sunlightInfo, messageBuffer, singleModel, modifiedSquares, totalSquares, tutorial);
 };

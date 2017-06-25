@@ -25,7 +25,6 @@
 #include "tribe.h"
 #include "collective_config.h"
 #include "creature_name.h"
-#include "modifier_type.h"
 #include "cost_info.h"
 #include "monster_ai.h"
 #include "task.h"
@@ -1391,6 +1390,7 @@ void Collective::onAppliedSquare(WCreature c, Position pos) {
     double efficiency = tileEfficiency->getEfficiency(pos) * furniture->getUsageTime() * getEfficiency(c);
     switch (furniture->getType()) {
       case FurnitureType::BOOKCASE: {
+        c->increaseExpLevel(ExperienceType::STUDY, 0.005 * efficiency);
         auto availableSpells = Technology::getAvailableSpells(this);
         if (Random.chance(efficiency / 60) && !availableSpells.empty()) {
           for (int i : Range(30)) {

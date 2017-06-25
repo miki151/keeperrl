@@ -24,6 +24,7 @@
 #include "event_generator.h"
 #include "entity_set.h"
 #include "destroy_action.h"
+#include "best_attack.h"
 
 class Skill;
 class Level;
@@ -100,10 +101,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   const CreatureName& getName() const;
   CreatureName& getName();
   const char* identify() const;
-  int getModifier(ModifierType) const;
   int getAttr(AttrType) const;
-  static string getAttrName(AttrType);
-  static string getModifierName(ModifierType);
 
   int getPoints() const;
   VisionId getVision() const;
@@ -164,7 +162,6 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   CreatureAction bumpInto(Vec2 direction) const;
   CreatureAction applyItem(WItem item) const;
   CreatureAction equip(WItem item) const;
-  bool isEquipmentAppropriate(const WItem item) const;
   CreatureAction unequip(WItem item) const;
   bool canEquipIfEmptySlot(const WItem item, string* reason = nullptr) const;
   bool canEquip(const WItem item) const;
@@ -198,6 +195,8 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   void retire();
   
   void increaseExpLevel(ExperienceType, double increase);
+
+  BestAttack getBestAttack() const;
 
   WItem getWeapon() const;
   void dropWeapon();
@@ -254,7 +253,6 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   bool isDarknessSource() const;
 
   bool isUnknownAttacker(WConstCreature) const;
-  int accuracyBonus() const;
   vector<string> getMainAdjectives() const;
   vector<AdjectiveInfo> getGoodAdjectives() const;
   vector<AdjectiveInfo> getWeaponAdjective() const;
@@ -273,7 +271,6 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   private:
 
   CreatureAction moveTowards(Position, bool away, bool stepOnTile);
-  WItem getAmmo() const;
   void spendTime(double time);
   bool canCarry(const vector<WItem>&) const;
   TribeSet getFriendlyTribes() const;
@@ -289,7 +286,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   double SERIAL(morale) = 0;
   optional<double> SERIAL(deathTime);
   bool SERIAL(hidden) = false;
-  WCreature lastAttacker = nullptr;
+  WCreature lastAttacker;
   optional<string> SERIAL(deathReason);
   int SERIAL(swapPositionCooldown) = 0;
   EntitySet<Creature> SERIAL(unknownAttackers);
@@ -298,7 +295,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   vector<PController> SERIAL(controllerStack);
   vector<WCreatureVision> SERIAL(creatureVisions);
   EntitySet<Creature> SERIAL(kills);
-  mutable double SERIAL(difficultyPoints) = 0;
+  mutable int SERIAL(difficultyPoints) = 0;
   int SERIAL(points) = 0;
   int SERIAL(numAttacksThisTurn) = 0;
   PMoraleOverride SERIAL(moraleOverride);

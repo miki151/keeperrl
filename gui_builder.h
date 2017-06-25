@@ -140,9 +140,10 @@ class GuiBuilder {
   Callbacks callbacks;
   SGuiElem getHintCallback(const vector<string>&);
   SGuiElem getTooltip(const vector<string>&, int id);
-  vector<SGuiElem> drawPlayerAttributes(const vector<PlayerInfo::AttributeInfo>&);
+  vector<SGuiElem> drawPlayerAttributes(const vector<AttributeInfo>&);
+  SGuiElem drawBestAttack(const BestAttack&);
   SGuiElem drawPlayerLevelButton(const PlayerInfo&);
-  SGuiElem getExpIncreaseLine(const PlayerInfo::LevelInfo&, ExperienceType);
+  //SGuiElem getExpIncreaseLine(const PlayerInfo::LevelInfo&, ExperienceType);
   SGuiElem drawBuildings(const CollectiveInfo&, const optional<TutorialInfo>&);
   SGuiElem bottomBandCache;
   SGuiElem drawMinionButtons(const vector<PlayerInfo>&, UniqueEntity<Creature>::Id current, optional<TeamId> teamId);
@@ -243,7 +244,7 @@ class GuiBuilder {
   SGuiElem getHighlight(SGuiElem line, MenuType, const string& label, int numActive, optional<int>* highlight);
   string getPlayerTitle(PlayerInfo&);
   SDL::SDL_KeyboardEvent getHotkeyEvent(char);
-  shared_ptr<MapGui> mapGui = nullptr;
+  shared_ptr<MapGui> mapGui;
   vector<SGuiElem> getSettingsButtons();
   int getImmigrantAnimationOffset(milliseconds initTime);
   HeapAllocated<CallCache<SGuiElem>> cache;

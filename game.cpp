@@ -542,7 +542,7 @@ void Game::clearPlayer() {
 
 static SavedGameInfo::MinionInfo getMinionInfo(WConstCreature c) {
   SavedGameInfo::MinionInfo ret;
-  ret.level = (int)c->getAttributes().getVisibleExpLevel();
+  ret.level = (int)c->getBestAttack().value;
   ret.viewId = c->getViewObject().id();
   return ret;
 }
@@ -561,8 +561,7 @@ SavedGameInfo Game::getSavedGameInfo() const {
     WCreature leader = col->getLeader();
     //  CHECK(!leader->isDead());
     sort(creatures.begin(), creatures.end(), [leader] (WConstCreature c1, WConstCreature c2) {
-        return c1 == leader
-        || (c2 != leader && c1->getAttributes().getExpLevel() > c2->getAttributes().getExpLevel());});
+        return c1 == leader || (c2 != leader && c1->getBestAttack().value > c2->getBestAttack().value);});
     CHECK(creatures[0] == leader);
     creatures.resize(min<int>(creatures.size(), 4));
     vector<SavedGameInfo::MinionInfo> minions;

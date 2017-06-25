@@ -5,7 +5,6 @@
 RICH_ENUM(ItemClass,
   WEAPON,
   RANGED_WEAPON,
-  AMMO,
   ARMOR,
   SCROLL,
   POTION,

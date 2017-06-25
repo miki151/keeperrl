@@ -142,6 +142,7 @@ class CollectiveConfig {
   static const ResourceInfo& getResourceInfo(CollectiveResourceId);
   static const vector<ItemFetchInfo>& getFetchInfo();
   static optional<int> getTrainingMaxLevelIncrease(FurnitureType);
+  static optional<int> getStudyingMaxLevelIncrease(FurnitureType);
   static const MinionTaskInfo& getTaskInfo(MinionTask);
   static const vector<FloorInfo>& getFloors();
   static double getEfficiencyBonus(FurnitureType);

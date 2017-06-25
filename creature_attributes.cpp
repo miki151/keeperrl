@@ -43,10 +43,10 @@ CreatureAttributes::~CreatureAttributes() {}
 template <class Archive> 
 void CreatureAttributes::serialize(Archive& ar, const unsigned int version) {
   ar(viewId, retiredViewId, illusionViewObject, spawnType, name, attr, chatReactionFriendly);
-  ar(chatReactionHostile, barehandedDamage, barehandedAttack, attackEffect, passiveAttack, gender);
+  ar(chatReactionHostile, barehandedAttack, attackEffect, passiveAttack, gender);
   ar(body, innocent);
   ar(animal, cantEquip, courage);
-  ar(carryAnything, boulder, noChase, isSpecial, skills, spells);
+  ar(boulder, noChase, isSpecial, skills, spells);
   ar(permanentEffects, lastingEffects, minionTasks, attrIncrease);
   ar(noAttackSound, maxExpFromCombat, creatureId);
 }
@@ -102,36 +102,42 @@ struct AttrLevelInfo {
   double increasePerLevel;
 };
 
-static const vector<AttrLevelInfo> attrLevelInfo {
-  {AttrType::STRENGTH, 1},
-  {AttrType::DEXTERITY, 1}};
+static const EnumMap<ExperienceType, vector<AttrLevelInfo>> attrLevelInfo {
+  {ExperienceType::TRAINING, {
+      {AttrType::DAMAGE, 1},
+      {AttrType::DEFENSE, 1}}},
+  {ExperienceType::STUDY, {
+      {AttrType::SPELL_DAMAGE, 1},
+      {AttrType::SPELL_DEFENSE, 1}}},
+};
 
-static double calculateExpLevel(function<double(AttrType)> attrFun) {
+template <typename AttrFun>
+static double calculateExpLevel(ExperienceType type, AttrFun attrFun) {
   double sum = 0;
-  for (auto& elem : attrLevelInfo)
-    sum += attrFun(elem.type) / (elem.increasePerLevel * attrLevelInfo.size());
+  for (auto& elem : attrLevelInfo[type])
+    sum += attrFun(elem.type) / (elem.increasePerLevel * attrLevelInfo[type].size());
   return sum;
 }
 
-double CreatureAttributes::getExpLevel() const {
-  return calculateExpLevel([this] (AttrType t) { return getRawAttr(t);});
+double CreatureAttributes::getExpLevel(ExperienceType type) const {
+  return calculateExpLevel(type, [this] (AttrType t) { return getRawAttr(t);});
+}
+
+EnumMap<ExperienceType, double> CreatureAttributes::getExpLevel() const {
+  return EnumMap<ExperienceType, double>([this](ExperienceType t) { return getExpLevel(t); });
 }
 
 double CreatureAttributes::getExpIncrease(ExperienceType type) const {
-  return calculateExpLevel([=] (AttrType t) { return attrIncrease[type][t];});
-}
-
-double CreatureAttributes::getVisibleExpLevel() const {
-  return max(1., getExpLevel() - 10);
+  return calculateExpLevel(type, [=] (AttrType t) { return attrIncrease[type][t];});
 }
 
 void CreatureAttributes::increaseExpLevel(ExperienceType type, double increase) {
-  for (auto& elem : attrLevelInfo)
+  for (auto& elem : attrLevelInfo[type])
     attrIncrease[type][elem.type] += increase * elem.increasePerLevel;
 }
 
-void CreatureAttributes::increaseBaseExpLevel(double increase) {
-  for (auto& elem : attrLevelInfo)
+void CreatureAttributes::increaseBaseExpLevel(ExperienceType type, double increase) {
+  for (auto& elem : attrLevelInfo[type])
     attr[elem.type] += increase * elem.increasePerLevel;
 }
 
@@ -140,20 +146,12 @@ static const double minLevelGain = 0.02;
 static const double equalLevelGain = 0.2;
 static const double maxLevelDiff = 5;
 
-double CreatureAttributes::getExpFromKill(WConstCreature victim) const {
-  double levelDiff = victim->getAttributes().getExpLevel() - getExpLevel();
-  double maxIncrease = max(0.0, maxExpFromCombat - getExpIncrease(ExperienceType::COMBAT));
-  return min(maxIncrease, max(minLevelGain, min(maxLevelGain,
+void CreatureAttributes::onKilled(WCreature victim) {
+  /*double levelDiff = victim->getBestAttack().value - getBestAttack().value;
+  double expIncrease = min(maxExpFromCombat, max(minLevelGain, min(maxLevelGain,
       (maxLevelGain - equalLevelGain) * levelDiff / maxLevelDiff + equalLevelGain)));
-}
-
-optional<double> CreatureAttributes::getMaxExpIncrease(ExperienceType type) const {
-  switch (type) {
-    case ExperienceType::COMBAT:
-      return maxExpFromCombat;
-    default:
-      return none;
-  }
+  increaseExpLevel(Random.choose(ExperienceType::STUDY, ExperienceType::TRAINING), expIncrease);
+  maxExpFromCombat -= expIncrease;*/
 }
 
 SpellMap& CreatureAttributes::getSpellMap() {
@@ -242,8 +240,11 @@ static bool consumeProb() {
 
 static string getAttrNameMore(AttrType attr) {
   switch (attr) {
-    case AttrType::STRENGTH: return "stronger";
-    case AttrType::DEXTERITY: return "more agile";
+    case AttrType::DAMAGE: return "more dangerous";
+    case AttrType::DEFENSE: return "more protected";
+    case AttrType::SPELL_DAMAGE: return "more powerful";
+    case AttrType::SPELL_DEFENSE: return "more resistant";
+    case AttrType::RANGED_DAMAGE: return "more accurate";
     case AttrType::SPEED: return "faster";
   }
 }
@@ -306,7 +307,6 @@ void CreatureAttributes::consume(WCreature self, const CreatureAttributes& other
   body->consumeBodyParts(self, other.getBody(), adjectives);
   for (auto t : ENUM_ALL(AttrType))
     consumeAttr(attr[t], other.attr[t], adjectives, getAttrNameMore(t));
-  consumeAttr(barehandedDamage, other.barehandedDamage, adjectives, "more dangerous");
   consumeAttr(barehandedAttack, other.barehandedAttack, adjectives, "");
   consumeAttr(*attackEffect, *other.attackEffect, adjectives, "");
   consumeAttr(*passiveAttack, *other.passiveAttack, adjectives, "");
@@ -375,14 +375,6 @@ void CreatureAttributes::addPermanentEffect(LastingEffect effect) {
 
 void CreatureAttributes::removePermanentEffect(LastingEffect effect) {
   CHECK(--permanentEffects[effect] >= 0);
-}
-
-bool CreatureAttributes::canCarryAnything() const {
-  return carryAnything;
-}
-
-int CreatureAttributes::getBarehandedDamage() const {
-  return barehandedDamage;
 }
 
 optional<EffectType> CreatureAttributes::getAttackEffect() const {

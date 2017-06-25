@@ -20,7 +20,6 @@
 #include "creature.h"
 #include "effect.h"
 #include "equipment.h"
-#include "modifier_type.h"
 #include "creature_attributes.h"
 #include "effect_type.h"
 #include "body.h"
@@ -37,8 +36,8 @@ static bool isCombatConsumable(EffectType type) {
     case LastingEffect::POISON:
     case LastingEffect::BLIND:
     case LastingEffect::INVISIBLE:
-    case LastingEffect::STR_BONUS:
-    case LastingEffect::DEX_BONUS:
+    case LastingEffect::DAM_BONUS:
+    case LastingEffect::DEF_BONUS:
     case LastingEffect::POISON_RESISTANT:
       return true;
     default:
@@ -47,7 +46,7 @@ static bool isCombatConsumable(EffectType type) {
 }
 
 template <class Archive>
-void MinionEquipment::serialize(Archive& ar, const unsigned int version) {
+void MinionEquipment::serialize(Archive& ar, const unsigned int) {
   ar(owners, locked, myItems);
 }
 
@@ -58,8 +57,6 @@ optional<int> MinionEquipment::getEquipmentLimit(EquipmentType type) const {
     case MinionEquipment::COMBAT_ITEM:
     case MinionEquipment::HEALING:
       return 6;
-    case MinionEquipment::ARCHERY:
-      return 40;
     default:
       return none;
   }
@@ -68,8 +65,6 @@ optional<int> MinionEquipment::getEquipmentLimit(EquipmentType type) const {
 optional<MinionEquipment::EquipmentType> MinionEquipment::getEquipmentType(const WItem it) {
   if (it->canEquip())
     return MinionEquipment::ARMOR;
-  if (it->getClass() == ItemClass::AMMO)
-    return MinionEquipment::ARCHERY;
   if (auto& effect = it->getEffectType()) {
     if (effect->getId() == EffectId::HEAL)
       return MinionEquipment::HEALING;
@@ -111,8 +106,7 @@ bool MinionEquipment::needsItem(WConstCreature c, const WItem it, bool noLimit) 
           return false;
       }
     }
-    return (c->canEquipIfEmptySlot(it) && (isItemAppropriate(c, it) || noLimit))
-      || (type == ARCHERY && !getItemsOwnedBy(c, Item::isRangedWeaponPredicate()).empty())
+    return (c->canEquipIfEmptySlot(it))
       || (type == HEALING && c->getBody().hasHealth()) 
       || type == COMBAT_ITEM;
   } else
@@ -242,10 +236,7 @@ void MinionEquipment::autoAssign(WConstCreature creature, vector<WItem> possible
     if (!getOwner(it) && needsItem(creature, it)) {
       if (!it->canEquip()) {
         CHECK(tryToOwn(creature, it));
-        if (it->getClass() != ItemClass::AMMO)
-          break;
-        else
-          continue;
+        continue;
       }
       WItem replacedItem = getWorstItem(creature, slots[it->getEquipmentSlot()]);
       int slotSize = creature->getEquipment().getMaxItems(it->getEquipmentSlot());
@@ -263,14 +254,19 @@ void MinionEquipment::autoAssign(WConstCreature creature, vector<WItem> possible
   }
 }
 
-bool MinionEquipment::isItemAppropriate(WConstCreature c, const WItem it) const {
-  return c->isEquipmentAppropriate(it);
-}
-
 int MinionEquipment::getItemValue(const WItem it) const {
-  return it->getModifier(ModifierType::ACCURACY) + it->getModifier(ModifierType::DAMAGE)
-    + it->getModifier(ModifierType::DEFENSE) + it->getModifier(ModifierType::FIRED_ACCURACY)
-    + it->getModifier(ModifierType::FIRED_DAMAGE);
+  int sum = 0;
+  auto multiplier = [](AttrType type) {
+    switch (type) {
+      case AttrType::SPEED:
+        return 10;
+      default:
+        return 1;
+    }
+  };
+  for (auto attr : ENUM_ALL(AttrType))
+    sum += multiplier(attr) * it->getModifier(attr);
+  return sum;
 }
 
 void MinionEquipment::setLocked(WConstCreature c, UniqueEntity<Item>::Id it, bool lock) {

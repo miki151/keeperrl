@@ -25,13 +25,22 @@ static double getDefaultWeight(Body::Size size) {
   }
 }
 
-SERIALIZE_DEF(Body, xhumanoid, size, weight, bodyParts, injuredBodyParts, lostBodyParts, material, health, minionFood, deathSound);
+SERIALIZE_DEF(Body, xhumanoid, size, weight, bodyParts, injuredBodyParts, lostBodyParts, material, health, minionFood, deathSound, carryLimit);
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Body);
 
+static double getDefaultCarryLimit(Body::Size size) {
+  switch (size) {
+    case Body::Size::HUGE: return 200;
+    case Body::Size::LARGE: return 60;
+    case Body::Size::MEDIUM: return 20;
+    case Body::Size::SMALL: return 4;
+  }
+}
+
 Body::Body(bool humanoid, Material m, Size s) : xhumanoid(humanoid), size(s),
     weight(getDefaultWeight(size)), material(m),
-    deathSound(humanoid ? SoundId::HUMANOID_DEATH : SoundId::BEAST_DEATH) {
+    deathSound(humanoid ? SoundId::HUMANOID_DEATH : SoundId::BEAST_DEATH), carryLimit(getDefaultCarryLimit(size)) {
   if (humanoid)
     setHumanoidBodyParts();
 }
@@ -100,6 +109,11 @@ Body& Body::setMinionFood() {
 
 Body& Body::setDeathSound(optional<SoundId> s) {
   deathSound = s;
+  return *this;
+}
+
+Body& Body::setNoCarryLimit() {
+  carryLimit = none;
   return *this;
 }
 
@@ -427,15 +441,14 @@ void Body::affectPosition(Position position) {
 
 bool Body::takeDamage(const Attack& attack, WCreature creature, double damage) {
   bleed(creature, damage);
-  AttackType attackType = attack.getType();
-  BodyPart part = attack.inTheBack() && Random.roll(3) ? BodyPart::BACK :
-    getBodyPart(attack.getLevel(), creature->isAffected(LastingEffect::FLYING), isCollapsed(creature));
+  BodyPart part =
+      getBodyPart(attack.level, creature->isAffected(LastingEffect::FLYING), isCollapsed(creature));
   if (damage >= getMinDamage(part) && numGood(part) > 0) {
-    creature->youHit(part, attackType); 
-    injureBodyPart(creature, part, contains({AttackType::CUT, AttackType::BITE}, attackType));
+    creature->youHit(part, attack.type);
+    injureBodyPart(creature, part, contains({AttackType::CUT, AttackType::BITE}, attack.type));
     if (isCritical(part)) {
       creature->you(MsgType::DIE, "");
-      creature->dieWithAttacker(attack.getAttacker());
+      creature->dieWithAttacker(attack.attacker);
       return true;
     }
     if (health <= 0)
@@ -445,7 +458,7 @@ bool Body::takeDamage(const Attack& attack, WCreature creature, double damage) {
   if (health <= 0) {
     creature->you(MsgType::ARE, "critically wounded");
     creature->you(MsgType::DIE, "");
-    creature->dieWithAttacker(attack.getAttacker());
+    creature->dieWithAttacker(attack.attacker);
     return true;
   } else
     if (health < 0.5)
@@ -453,10 +466,10 @@ bool Body::takeDamage(const Attack& attack, WCreature creature, double damage) {
     else {
       if (hasHealth())
         creature->you(MsgType::ARE, "wounded");
-      else if (!attack.getEffect())
+      else if (!attack.effect)
         creature->you(MsgType::ARE, "not hurt");
     }
-  if (auto effect = attack.getEffect())
+  if (auto effect = attack.effect)
     Effect::applyToCreature(creature, *effect, EffectStrength::WEAK);
   return false;
 }
@@ -498,13 +511,13 @@ void Body::healLimbs(WCreature creature, bool regrow) {
       }
 }
 
-map<BodyPart, int> dexPenalty {
+const static map<BodyPart, int> defensePenalty {
   {BodyPart::ARM, 2},
   {BodyPart::LEG, 10},
   {BodyPart::WING, 3},
   {BodyPart::HEAD, 3}};
 
-map<BodyPart, int> strPenalty {
+const static map<BodyPart, int> damagePenalty {
   {BodyPart::ARM, 2},
   {BodyPart::LEG, 5},
   {BodyPart::WING, 2},
@@ -512,16 +525,16 @@ map<BodyPart, int> strPenalty {
 
 double Body::modifyAttr(AttrType type, double def) const {
   switch (type) {
-    case AttrType::STRENGTH:
+    case AttrType::DAMAGE:
         if (health < 1)
           def *= 0.666 + health / 3;
-        for (auto elem : strPenalty)
+        for (auto elem : damagePenalty)
           def -= elem.second * (numInjured(elem.first) + numLost(elem.first));
         break;
-    case AttrType::DEXTERITY:
+    case AttrType::DEFENSE:
         if (health < 1)
           def *= 0.666 + health / 3;
-        for (auto elem : dexPenalty)
+        for (auto elem : defensePenalty)
           def -= elem.second * (numInjured(elem.first) + numLost(elem.first));
         break;
     default: break;
@@ -603,7 +616,7 @@ bool Body::isIntrinsicallyAffected(LastingEffect effect) const {
 
 void Body::fireDamage(WCreature c, double amount) {
   c->you(MsgType::ARE, "burnt by the fire");
-  bleed(c, 6. * amount / double(1 + c->getAttr(AttrType::STRENGTH)));
+  bleed(c, 6. * amount / double(1 + c->getAttr(AttrType::DEFENSE)));
 }
 
 bool Body::affectByPoison(WCreature c, double amount) {
@@ -782,12 +795,14 @@ optional<Sound> Body::getDeathSound() const {
 }
 
 double Body::getBoulderDamage() const {
-    switch (size) {
-      case Body::Size::HUGE: return 1;
-      case Body::Size::LARGE: return 0.3;
-      case Body::Size::MEDIUM: return 0.15;
-      case Body::Size::SMALL: return 0;
-    }
+  switch (size) {
+    case Body::Size::HUGE: return 1;
+    case Body::Size::LARGE: return 0.3;
+    case Body::Size::MEDIUM: return 0.15;
+    case Body::Size::SMALL: return 0;
   }
+}
 
-
+const optional<double>& Body::getCarryLimit() const {
+  return carryLimit;
+}

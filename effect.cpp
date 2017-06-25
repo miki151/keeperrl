@@ -106,13 +106,13 @@ static void blast(WCreature who, Position position, Vec2 direction, int maxDista
       c->you(MsgType::ARE, "thrown back");
     }
     if (damage)
-      c->takeDamage(Attack(who, AttackLevel::MIDDLE, AttackType::SPELL, 1000, 32, false));
+      c->takeDamage(Attack(who, AttackLevel::MIDDLE, AttackType::SPELL, 1000, AttrType::SPELL_DAMAGE));
   }
   for (auto elem : Item::stackItems(position.getItems())) {
     position.throwItem(
         position.removeItems(elem.second),
         Attack(who, Random.choose(AttackLevel::LOW, AttackLevel::MIDDLE, AttackLevel::HIGH),
-          elem.second[0]->getAttackType(), 15, 15, false), maxDistance, direction, VisionId::NORMAL);
+          elem.second[0]->getAttackType(), 15, AttrType::DAMAGE), maxDistance, direction, VisionId::NORMAL);
   }
   if (damage)
     for (auto furniture : position.modFurniture())
@@ -163,8 +163,8 @@ static void enhanceArmor(WCreature c, int mod = 1, const string msg = "is improv
     for (WItem item : c->getEquipment().getSlotItems(slot))
       if (item->getClass() == ItemClass::ARMOR) {
         c->you(MsgType::YOUR, item->getName() + " " + msg);
-        if (item->getModifier(ModifierType::DEFENSE) > 0 || mod > 0)
-          item->addModifier(ModifierType::DEFENSE, mod);
+        if (item->getModifier(AttrType::DEFENSE) > 0 || mod > 0)
+          item->addModifier(AttrType::DEFENSE, mod);
         return;
       }
 }
@@ -172,7 +172,7 @@ static void enhanceArmor(WCreature c, int mod = 1, const string msg = "is improv
 static void enhanceWeapon(WCreature c, int mod = 1, const string msg = "is improved") {
   if (WItem item = c->getWeapon()) {
     c->you(MsgType::YOUR, item->getName() + " " + msg);
-    item->addModifier(Random.choose(ModifierType::ACCURACY, ModifierType::DAMAGE), mod);
+    item->addModifier(AttrType::DAMAGE, mod);
   }
 }
 
@@ -256,7 +256,7 @@ double getDuration(WConstCreature c, LastingEffect e, int strength) {
   switch (e) {
     case LastingEffect::PREGNANT: return 900;
     case LastingEffect::TIED_UP:
-    case LastingEffect::ENTANGLED: return entangledTime(entangledTime(c->getAttr(AttrType::STRENGTH)));
+    case LastingEffect::ENTANGLED: return entangledTime(entangledTime(c->getAttr(AttrType::DAMAGE)));
     case LastingEffect::HALLU:
     case LastingEffect::SLOWED:
     case LastingEffect::SPEED:
@@ -264,8 +264,8 @@ double getDuration(WConstCreature c, LastingEffect e, int strength) {
     case LastingEffect::DARKNESS_SOURCE:
     case LastingEffect::PANIC: return panicTime[strength];
     case LastingEffect::POISON: return poisonTime[strength];
-    case LastingEffect::DEX_BONUS:
-    case LastingEffect::STR_BONUS: return attrBonusTime[strength];
+    case LastingEffect::DEF_BONUS:
+    case LastingEffect::DAM_BONUS: return attrBonusTime[strength];
     case LastingEffect::BLIND: return blindTime[strength];
     case LastingEffect::INVISIBLE: return invisibleTime[strength];
     case LastingEffect::STUNNED: return stunTime[strength];
@@ -496,8 +496,8 @@ string Effect::getName(LastingEffect type) {
     case LastingEffect::PANIC: return "panic";
     case LastingEffect::RAGE: return "rage";
     case LastingEffect::HALLU: return "magic";
-    case LastingEffect::STR_BONUS: return "strength";
-    case LastingEffect::DEX_BONUS: return "dexterity";
+    case LastingEffect::DAM_BONUS: return "damage";
+    case LastingEffect::DEF_BONUS: return "defense";
     case LastingEffect::SLEEP: return "sleep";
     case LastingEffect::TIED_UP:
     case LastingEffect::ENTANGLED: return "web";
@@ -522,8 +522,8 @@ string Effect::getDescription(LastingEffect type) {
     case LastingEffect::PANIC: return "Increases defense and lowers damage.";
     case LastingEffect::RAGE: return "Increases damage and lowers defense.";
     case LastingEffect::HALLU: return "Causes hallucinations.";
-    case LastingEffect::STR_BONUS: return "Gives a strength bonus.";
-    case LastingEffect::DEX_BONUS: return "Gives a dexterity bonus.";
+    case LastingEffect::DAM_BONUS: return "Gives a damage bonus.";
+    case LastingEffect::DEF_BONUS: return "Gives a defense bonus.";
     case LastingEffect::SLEEP: return "Puts to sleep.";
     case LastingEffect::TIED_UP:
       FALLTHROUGH;

@@ -19,38 +19,47 @@
 #include "creature.h"
 #include "level.h"
 #include "attack.h"
-#include "modifier_type.h"
 #include "view.h"
 #include "game.h"
 #include "sound.h"
 #include "attack_level.h"
 #include "attack_type.h"
+#include "skill.h"
+#include "creature_attributes.h"
+#include "player_message.h"
+#include "view_id.h"
 
-template <class Archive> 
-void RangedWeapon::serialize(Archive& ar, const unsigned int version) {
-  ar & SUBCLASS(Item);
-}
-
-SERIALIZABLE(RangedWeapon);
-
+SERIALIZE_DEF(RangedWeapon, damageAttr, projectileName, projectileViewId)
 SERIALIZATION_CONSTRUCTOR_IMPL(RangedWeapon);
 
-RangedWeapon::RangedWeapon(const ItemAttributes& attr) : Item(attr) {}
+RangedWeapon::RangedWeapon(AttrType attr, const string& name, EnumMap<Dir, ViewId> id)
+    : damageAttr(attr), projectileName(name), projectileViewId(id) {}
 
-void RangedWeapon::fire(WCreature c, PItem ammo, Vec2 dir) {
+void RangedWeapon::fire(WCreature c, Vec2 dir) const {
+  CHECK(dir.length8() == 1);
   c->getGame()->getView()->addSound(SoundId::SHOOT_BOW);
-  int toHitVariance = 10;
-  int attackVariance = 15;
-  int toHit = Random.get(-toHitVariance, toHitVariance) + 
-    c->getModifier(ModifierType::FIRED_ACCURACY) +
-    ammo->getModifier(ModifierType::FIRED_ACCURACY) +
-    getModifier(ModifierType::FIRED_ACCURACY);
-  int damage = Random.get(-attackVariance, attackVariance) + 
-    c->getModifier(ModifierType::FIRED_DAMAGE) +
-    ammo->getModifier(ModifierType::FIRED_DAMAGE) +
-    getModifier(ModifierType::FIRED_DAMAGE);
+  int attackVariance = 3;
+  int damage = c->getAttr(damageAttr) + Random.get(-attackVariance, attackVariance);
   Attack attack(c, Random.choose(AttackLevel::LOW, AttackLevel::MIDDLE, AttackLevel::HIGH),
-      AttackType::SHOOT, toHit, damage, false, none);
-  c->getPosition().throwItem(std::move(ammo), attack, 20, dir, c->getVision());
+      AttackType::SHOOT, damage, damageAttr, none);
+  auto position = c->getPosition();
+  auto vision = c->getVision();
+  vector<Vec2> trajectory;
+  for (Position pos = position.plus(dir);; pos = pos.plus(dir)) {
+    trajectory.push_back(pos.getCoord());
+    if (auto c = pos.getCreature()) {
+      c->you(MsgType::HIT_THROWN_ITEM, "the " + projectileName);
+      c->takeDamage(attack);
+      break;
+    }
+    if (!pos.canSeeThru(vision)) {
+      pos.globalMessage("the " + projectileName + " hits the " + pos.getName());
+      break;
+    }
+  }
+  c->getGame()->getView()->animateObject(trajectory, projectileViewId[dir.getCardinalDir()]);
 }
 
+AttrType RangedWeapon::getDamageAttr() const {
+  return damageAttr;
+}

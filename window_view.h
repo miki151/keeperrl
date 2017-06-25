@@ -65,7 +65,7 @@ class WindowView: public View {
   virtual PlayerRoleChoice getPlayerRoleChoice(optional<PlayerRoleChoice> initial) override;
   virtual optional<Vec2> chooseDirection(const string& message) override;
   virtual bool yesOrNoPrompt(const string& message, bool defaultNo) override;
-  virtual void animateObject(vector<Vec2> trajectory, ViewObject object) override;
+  virtual void animateObject(vector<Vec2> trajectory, ViewId object) override;
   virtual void animation(Vec2 pos, AnimationId) override;
   virtual double getGameSpeed() override;
 

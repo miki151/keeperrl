@@ -24,7 +24,7 @@
 #include "creature_name.h"
 #include "minion_task_map.h"
 #include "skill.h"
-#include "modifier_type.h"
+#include "attr_type.h"
 #include "lasting_effect.h"
 #include "experience_type.h"
 
@@ -61,13 +61,11 @@ class CreatureAttributes {
   double getCourage() const;
   void setCourage(double);
   const Gender& getGender() const;
-  double getExpLevel() const;
+  double getExpLevel(ExperienceType type) const;
+  EnumMap<ExperienceType, double> getExpLevel() const;
   double getExpIncrease(ExperienceType) const;
-  double getVisibleExpLevel() const;
   void increaseExpLevel(ExperienceType, double increase);
-  void increaseBaseExpLevel(double increase);
-  double getExpFromKill(WConstCreature victim) const;
-  optional<double> getMaxExpIncrease(ExperienceType) const;
+  void increaseBaseExpLevel(ExperienceType type, double increase);
   string bodyDescription() const;
   SpellMap& getSpellMap();
   const SpellMap& getSpellMap() const;
@@ -90,8 +88,6 @@ class CreatureAttributes {
   void removePermanentEffect(LastingEffect);
   bool considerTimeout(LastingEffect, double globalTime);
   bool considerAffecting(LastingEffect, double globalTime, double timeout);
-  bool canCarryAnything() const;
-  int getBarehandedDamage() const;
   AttackType getAttackType(const WItem weapon) const;
   optional<EffectType> getAttackEffect() const;
   bool canSleep() const;
@@ -102,6 +98,7 @@ class CreatureAttributes {
   MinionTaskMap& getMinionTasks();
   bool dontChase() const;
   optional<ViewId> getRetiredViewId();
+  void onKilled(WCreature victim);
 
   friend class CreatureFactory;
 
@@ -115,7 +112,6 @@ class CreatureAttributes {
   HeapAllocated<Body> SERIAL(body);
   optional<string> SERIAL(chatReactionFriendly);
   optional<string> SERIAL(chatReactionHostile);
-  int SERIAL(barehandedDamage) = 0;
   optional<AttackType> SERIAL(barehandedAttack);
   HeapAllocated<optional<EffectType>> SERIAL(attackEffect);
   HeapAllocated<optional<EffectType>> SERIAL(passiveAttack);
@@ -125,7 +121,6 @@ class CreatureAttributes {
   bool SERIAL(animal) = false;
   bool SERIAL(cantEquip) = false;
   double SERIAL(courage) = 1;
-  bool SERIAL(carryAnything) = false;
   bool SERIAL(boulder) = false;
   bool SERIAL(noChase) = false;
   bool SERIAL(isSpecial) = false;

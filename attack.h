@@ -23,24 +23,14 @@ class Creature;
 
 class Attack {
   public:
-  Attack(WCreature attacker, AttackLevel level, AttackType type, int toHit, int strength,
-      bool back, optional<EffectType> effect = none);
+  Attack(WCreature a, AttackLevel l, AttackType t, int s, AttrType d, optional<EffectType> e = none)
+      : attacker(a), level(l), type(t), strength(s), damageType(d), effect(e) {}
 
-  WCreature getAttacker() const;
-  int getStrength() const;
-  int getAccuracy() const;
-  AttackType getType() const;
-  AttackLevel getLevel() const;
-  bool inTheBack() const;
-  optional<EffectType> getEffect() const;
-
-  private:
   WCreature attacker;
   AttackLevel level;
   AttackType type;
-  int accuracy;
   int strength;
-  bool back;
+  AttrType damageType;
   optional<EffectType> effect;
 };
 

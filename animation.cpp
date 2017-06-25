@@ -22,7 +22,7 @@ void Animation::render(Renderer& r, Rectangle bounds, Vec2 origin, milliseconds 
 
 class ThrownObject : public Animation {
   public:
-  ThrownObject(Vec2 dir, ViewObject obj, bool sprite, Vec2 sz)
+  ThrownObject(Vec2 dir, ViewId obj, bool sprite, Vec2 sz)
     : Animation(milliseconds{dir.length8()}), direction(dir), viewObject(obj), useSprite(sprite),
       squareSize(sz) {}
 
@@ -34,12 +34,12 @@ class ThrownObject : public Animation {
 
   private:
   Vec2 direction;
-  ViewObject viewObject;
+  ViewId viewObject;
   bool useSprite;
   Vec2 squareSize;
 };
 
-PAnimation Animation::thrownObject(Vec2 direction, ViewObject obj, bool useSprite, Vec2 squareSize) {
+PAnimation Animation::thrownObject(Vec2 direction, ViewId obj, bool useSprite, Vec2 squareSize) {
   return PAnimation(new ThrownObject(direction, obj, useSprite, squareSize));
 }
 

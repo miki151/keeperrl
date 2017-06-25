@@ -401,7 +401,7 @@ void WindowView::rebuildGui() {
         }
         break;
     case GameInfo::InfoType::PLAYER:
-        right = guiBuilder.drawRightPlayerInfo(gameInfo.playerInfo);
+        right = guiBuilder.drawRightPlayerInfo(*gameInfo.playerInfo.getReferenceMaybe<PlayerInfo>());
         bottom = guiBuilder.drawBottomPlayerInfo(gameInfo);
         rightBarWidth = rightBarWidthPlayer;
         bottomBarHeight = bottomBarHeightPlayer;
@@ -586,7 +586,7 @@ void WindowView::playSounds(const CreatureView* view) {
   soundQueue.clear();
 }
 
-void WindowView::animateObject(vector<Vec2> trajectory, ViewObject object) {
+void WindowView::animateObject(vector<Vec2> trajectory, ViewId object) {
   RecursiveLock lock(renderMutex);
   if (trajectory.size() >= 2)
     mapGui->addAnimation(
