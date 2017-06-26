@@ -19,7 +19,7 @@
 #include "view_id.h"
 #include "experience_type.h"
 
-SERIALIZE_DEF(ViewObject, resource_id, viewLayer, description, modifiers, attributes, attachmentDir, creatureId, adjectives, creatureAttributes)
+SERIALIZE_DEF(ViewObject, resource_id, viewLayer, description, modifiers, attributes, attachmentDir, creatureId, goodAdjectives, badAdjectives, creatureAttributes)
 
 SERIALIZATION_CONSTRUCTOR_IMPL(ViewObject);
 
@@ -137,8 +137,12 @@ optional<float> ViewObject::getAttribute(Attribute attr) const {
   return attributes[attr];
 }
 
-void ViewObject::setIndoors(bool state) {
-  indoors = state;
+void ViewObject::setCreatureAttributes(ViewObject::CreatureAttributes attribs) {
+  creatureAttributes = attribs;
+}
+
+const optional<ViewObject::CreatureAttributes>& ViewObject::getCreatureAttributes() const {
+  return creatureAttributes;
 }
 
 void ViewObject::setDescription(const string& s) {
@@ -153,6 +157,7 @@ const char* ViewObject::getDefaultDescription() const {
     case ViewId::DOWN_STAIRCASE: return "Stairs";
     case ViewId::BRIDGE: return "Bridge";
     case ViewId::GRASS: return "Grass";
+    case ViewId::CROPS2:
     case ViewId::CROPS: return "Wheat";
     case ViewId::MUD: return "Mud";
     case ViewId::ROAD: return "Road";
@@ -243,31 +248,6 @@ string ViewObject::getAttributeString(Attribute attr) const {
     return toString<int>(*getAttribute(attr) * 100);
   else
     return toString(*getAttribute(attr));
-}
-
-void ViewObject::setAdjectives(const vector<string>& adj) {
-  adjectives = adj;
-}
-
-vector<string> ViewObject::getLegend() const {
-  vector<string> ret { string(getDescription()) };
-  /*if (!!attributes[Attribute::MAGE_LEVEL])
-    ret.push_back(getName(ExperienceType::STUDY) + " "_s + getAttributeString(Attribute::MAGE_LEVEL));
-  if (!!attributes[Attribute::FIGHTER_LEVEL])
-    ret.push_back(getName(ExperienceType::TRAINING) + " "_s + getAttributeString(Attribute::FIGHTER_LEVEL));
-  if (!!attributes[Attribute::EFFICIENCY])
-    ret[0] = ret[0] + ", efficiency " + getAttributeString(Attribute::EFFICIENCY);
-  if (!!attributes[Attribute::DAMAGE])
-    ret.push_back("Attack " + getAttributeString(Attribute::DAMAGE) +
-          " defense " + getAttributeString(Attribute::DEFENSE));*/
-  if (hasModifier(Modifier::PLANNED))
-    ret.push_back("Planned");
-  if (indoors)
-    ret.push_back(*indoors ? "Indoors" : "Outdoors");
-  if (!!attributes[Attribute::MORALE])
-    ret.push_back("Morale " + getAttributeString(Attribute::MORALE));
-  append(ret, adjectives);
-  return ret;
 }
 
 ViewLayer ViewObject::layer() const {
@@ -427,6 +407,22 @@ void ViewObject::setHallu(bool b) {
 
 void ViewObject::setId(ViewId id) {
   resource_id = id;
+}
+
+void ViewObject::setGoodAdjectives(const string& v) {
+  goodAdjectives = v;
+}
+
+void ViewObject::setBadAdjectives(const string& v) {
+  badAdjectives = v;
+}
+
+const string& ViewObject::getGoodAdjectives() const {
+  return goodAdjectives;
+}
+
+const string& ViewObject::getBadAdjectives() const {
+  return badAdjectives;
 }
 
 ViewId ViewObject::id() const {

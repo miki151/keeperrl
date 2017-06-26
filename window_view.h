@@ -249,5 +249,5 @@ class WindowView: public View {
   deque<string> messageLog;
   void propagateMousePosition(const vector<SGuiElem>&);
   Rectangle getEquipmentMenuPosition(int height);
-  Vec2 getOverlayPosition(GuiBuilder::OverlayInfo::Alignment, int height, int rightBarWidth, int bottomBarHeight);
+  Vec2 getOverlayPosition(GuiBuilder::OverlayInfo::Alignment, int height, int width, int rightBarWidth, int bottomBarHeight);
 };

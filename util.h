@@ -387,7 +387,8 @@ class EnumMap {
   EnumMap(const EnumMap& o) : elems(o.elems) {}
   EnumMap(EnumMap&& o) : elems(std::move(o.elems)) {}
 
-  EnumMap(function<U(T)> f) {
+  template <typename Fun>
+  explicit EnumMap(Fun f) {
     for (T t : EnumAll<T>())
       (*this)[t] = f(t);
   }

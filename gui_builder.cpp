@@ -52,6 +52,10 @@ void GuiBuilder::setMapGui(shared_ptr<MapGui> g) {
   mapGui = g;
 }
 
+void GuiBuilder::clearHint() {
+  hint.clear();
+}
+
 GuiBuilder::~GuiBuilder() {}
 
 const int legendLineHeight = 30;
@@ -62,7 +66,7 @@ int GuiBuilder::getStandardLineHeight() const {
 }
 
 SGuiElem GuiBuilder::getHintCallback(const vector<string>& s) {
-  return gui.mouseOverAction([this, s]() { callbacks.hint({s}); });
+  return gui.mouseOverAction([this, s]() { hint = s; });
 }
 
 function<void()> GuiBuilder::getButtonCallback(UserInput input) {
@@ -765,6 +769,16 @@ vector<SGuiElem> GuiBuilder::drawPlayerAttributes(const vector<AttributeInfo>& a
         gui.horizontalList(makeVec(
           gui.icon(getAttrIcon(elem.attr)),
           gui.margins(gui.label(toString(elem.value), getBonusColor(elem.bonus)), 0, 2, 0, 0)), 30)));
+  return ret;
+}
+
+vector<SGuiElem> GuiBuilder::drawPlayerAttributes(const ViewObject::CreatureAttributes& attributes) {
+  vector<SGuiElem> ret;
+  for (auto attr : ENUM_ALL(AttrType))
+    ret.push_back(
+        gui.horizontalList(makeVec(
+          gui.icon(getAttrIcon(attr)),
+          gui.margins(gui.label(toString((int) attributes[attr])), 0, 2, 0, 0)), 30));
   return ret;
 }
 
@@ -1661,10 +1675,59 @@ SGuiElem GuiBuilder::drawBuildingsOverlay(const CollectiveInfo& info, const opti
   return gui.stack(std::move(elems));
 }
 
+SGuiElem GuiBuilder::drawMapHintOverlay() {
+  auto lines = gui.getListBuilder(legendLineHeight);
+  if (!hint.empty()) {
+    for (auto& line : hint)
+      if (!line.empty())
+        lines.addElem(gui.label(line));
+  } else {
+    auto& highlighted = mapGui->getLastHighlighted();
+    if (auto& viewObject = highlighted.object) {
+      lines.addElem(gui.getListBuilder()
+            .addElem(gui.viewObject(viewObject->id()), 30)
+            .addElemAuto(gui.label(viewObject->getDescription()))
+            .buildHorizontalList());
+      if (viewObject->hasModifier(ViewObject::Modifier::HOSTILE))
+        lines.addElem(gui.label("Enemy", Color::RED));
+      if (!viewObject->getBadAdjectives().empty()) {
+        lines.addElemAuto(gui.labelMultiLineWidth(viewObject->getBadAdjectives(), legendLineHeight * 2 / 3, 300,
+            Renderer::textSize, Color::RED, ','));
+        lines.addSpace(legendLineHeight / 3);
+      }
+      if (!viewObject->getGoodAdjectives().empty()) {
+        lines.addElemAuto(gui.labelMultiLineWidth(viewObject->getGoodAdjectives(), legendLineHeight * 2 / 3, 300,
+            Renderer::textSize, Color::WHITE, ','));
+        lines.addSpace(legendLineHeight / 3);
+      }
+      if (auto& attributes = viewObject->getCreatureAttributes())
+        for (auto elem : drawAttributesOnPage(drawPlayerAttributes(*attributes)))
+          lines.addElem(elem);
+      if (auto efficiency = viewObject->getAttribute(ViewObjectAttribute::EFFICIENCY))
+        lines.addElem(gui.label("Efficiency: " + toString((int) (100.0f * *efficiency))));
+      if (viewObject->hasModifier(ViewObjectModifier::PLANNED))
+        lines.addElem(gui.label("Planned"));
+      //if (indoors)
+      //  ret.push_back(*indoors ? "Indoors" : "Outdoors");
+      if (auto morale = viewObject->getAttribute(ViewObjectAttribute::MORALE))
+        lines.addElem(gui.label("Morale: " + toString(*morale)));
+    }
+    if (highlighted.tilePos)
+      lines.addElem(gui.label("Position: " + toString(*highlighted.tilePos)));
+  }
+  if (!lines.isEmpty())
+    return gui.margins(gui.translucentBackground(gui.stack(
+        gui.rectangleBorder(Color::GRAY),
+        gui.margins(lines.buildVerticalList(), 10, 10, 10, 22))), 0, 0, -2, -2);
+  else
+    return gui.empty();
+}
+
 void GuiBuilder::drawOverlays(vector<OverlayInfo>& ret, GameInfo& info) {
   if (info.tutorial)
     ret.push_back({cache->get(bindMethod(&GuiBuilder::drawTutorialOverlay, this), THIS_LINE,
          *info.tutorial), OverlayInfo::TUTORIAL});
+  ret.push_back({drawMapHintOverlay(), OverlayInfo::MAP_HINT});
   switch (info.infoType) {
     case GameInfo::InfoType::BAND: {
       auto& collectiveInfo = *info.playerInfo.getReferenceMaybe<CollectiveInfo>();

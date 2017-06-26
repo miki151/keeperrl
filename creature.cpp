@@ -625,7 +625,7 @@ CreatureAction Creature::hide() const {
         for (WCreature other : getLevel()->getAllCreatures())
           if (other->canSee(this) && other->isEnemy(this)) {
             self->knownHiding.insert(other);
-            if (!isBlind())
+            if (!isAffected(LastingEffect::BLIND))
               you(MsgType::CAN_SEE_HIDING, other->getName().the());
           }
         self->spendTime(1);
@@ -699,11 +699,6 @@ optional<double> Creature::getTimeRemaining(LastingEffect effect) const {
     return t - global;
   else
     return none;
-}
-
-bool Creature::isBlind() const {
-  return isAffected(LastingEffect::BLIND) ||
-    (getBody().numLost(BodyPart::HEAD) > 0 && getBody().numBodyParts(BodyPart::HEAD) == 0);
 }
 
 bool Creature::isDarknessSource() const {
@@ -972,14 +967,11 @@ static vector<string> extractNames(const vector<AdjectiveInfo>& adjectives) {
 }
 
 void Creature::updateViewObject() {
-  /*modViewObject().setAttribute(ViewObject::Attribute::DEFENSE, getAttr(AttrType::DEFENSE));
-  modViewObject().setAttribute(ViewObject::Attribute::DAMAGE, getAttr(AttrType::DAMAGE));
-  modViewObject().setAttribute(ViewObject::Attribute::WILLPOWER, getAttr(AttrType::SPELL_DAMAGE));
-  modViewObject().setAttribute(ViewObject::Attribute::RESISTANCE, getAttr(AttrType::SPELL_DEFENSE));*/
+  modViewObject().setCreatureAttributes(EnumMap<AttrType, std::uint8_t>([this](AttrType t) { return getAttr(t);}));
   modViewObject().setAttribute(ViewObject::Attribute::MORALE, getMorale());
   modViewObject().setModifier(ViewObject::Modifier::DRAW_MORALE);
-  modViewObject().setAdjectives(extractNames(concat(
-          getWeaponAdjective(), getBadAdjectives(), getGoodAdjectives())));
+  modViewObject().setGoodAdjectives(combine(extractNames(getGoodAdjectives()), true));
+  modViewObject().setBadAdjectives(combine(extractNames(getBadAdjectives()), true));
   getBody().updateViewObject(modViewObject());
   modViewObject().setDescription(getName().bare());
   getPosition().setNeedsRenderUpdate(true);
@@ -1378,16 +1370,16 @@ bool Creature::canSee(WConstCreature c) const {
   for (auto vision : creatureVisions)
     if (vision->canSee(this, c))
       return true;
-  return !isBlind() && (!c->isAffected(LastingEffect::INVISIBLE) || isFriend(c)) &&
+  return !isAffected(LastingEffect::BLIND) && (!c->isAffected(LastingEffect::INVISIBLE) || isFriend(c)) &&
          (!c->isHidden() || c->knowsHiding(this)) && c->getPosition().isVisibleBy(this);
 }
 
 bool Creature::canSee(Position pos) const {
-  return !isBlind() && pos.isVisibleBy(this);
+  return !isAffected(LastingEffect::BLIND) && pos.isVisibleBy(this);
 }
 
 bool Creature::canSee(Vec2 pos) const {
-  return !isBlind() && position.withCoord(pos).isVisibleBy(this);
+  return !isAffected(LastingEffect::BLIND) && position.withCoord(pos).isVisibleBy(this);
 }
   
 bool Creature::isPlayer() const {
@@ -1419,7 +1411,7 @@ MovementType Creature:: getMovementType() const {
       isAffected(LastingEffect::FLYING),
       attributes->getSkills().hasDiscrete(SkillId::SWIMMING),
       getBody().canWade()})
-    .setForced(isBlind() || getHoldingCreature() || forceMovement)
+    .setForced(isAffected(LastingEffect::BLIND) || getHoldingCreature() || forceMovement)
     .setFireResistant(isAffected(LastingEffect::FIRE_RESISTANT))
     .setSunlightVulnerable(getBody().isSunlightVulnerable() && !isAffected(LastingEffect::DARKNESS_SOURCE)
         && (!getGame() || getGame()->getSunlightInfo().getState() == SunlightState::DAY));
@@ -1680,7 +1672,7 @@ vector<WCreature> Creature::getVisibleCreatures() const {
 }
 
 vector<Position> Creature::getVisibleTiles() const {
-  if (isBlind())
+  if (isAffected(LastingEffect::BLIND))
     return {};
   else
     return getPosition().getVisibleTiles(getVision());
@@ -1698,27 +1690,6 @@ const char* getMoraleText(double morale) {
   return nullptr;
 }
 
-vector<string> Creature::getMainAdjectives() const {
-  vector<string> ret;
-  if (isBlind())
-    ret.push_back("blind");
-  if (isAffected(LastingEffect::INVISIBLE))
-    ret.push_back("invisible");
-  if (getBody().numBodyParts(BodyPart::ARM) == 1)
-    ret.push_back("one-armed");
-  if (getBody().numBodyParts(BodyPart::ARM) == 0)
-    ret.push_back("armless");
-  if (getBody().numBodyParts(BodyPart::LEG) == 1)
-    ret.push_back("one-legged");
-  if (getBody().numBodyParts(BodyPart::LEG) == 0)
-    ret.push_back("legless");
-  if (isAffected(LastingEffect::HALLU))
-    ret.push_back("tripped");
-  if (auto text = getMoraleText(getMorale()))
-    ret.push_back(text);
-  return ret;
-}
-
 vector<AdjectiveInfo> Creature::getWeaponAdjective() const {
   if (const WItem weapon = getWeapon())
     return {{"Wielding " + weapon->getAName(), ""}};
@@ -1733,7 +1704,7 @@ vector<AdjectiveInfo> Creature::getGoodAdjectives() const {
       if (const char* name = LastingEffects::getGoodAdjective(effect)) {
         ret.push_back({ name, Effect::getDescription(effect) });
         if (!attributes->isAffectedPermanently(effect))
-          ret.back().name += "  " + attributes->getRemainingString(effect, getGlobalTime());
+          ret.back().name += attributes->getRemainingString(effect, getGlobalTime());
       }
   if (getBody().isUndead())
     ret.push_back({"Undead",
@@ -1753,11 +1724,8 @@ vector<AdjectiveInfo> Creature::getBadAdjectives() const {
       if (const char* name = LastingEffects::getBadAdjective(effect)) {
         ret.push_back({ name, Effect::getDescription(effect) });
         if (!attributes->isAffectedPermanently(effect))
-          ret.back().name += "  " + attributes->getRemainingString(effect, getGlobalTime());
+          ret.back().name += attributes->getRemainingString(effect, getGlobalTime());
       }
-  if (isBlind())
-    ret.push_back({"Blind" + (isAffected(LastingEffect::BLIND) ?
-          (" " + attributes->getRemainingString(LastingEffect::BLIND, getGlobalTime())) : ""), ""});
   if (morale < 0)
     if (auto text = getMoraleText(getMorale()))
       ret.push_back({capitalFirst(text),

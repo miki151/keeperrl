@@ -57,7 +57,6 @@ class MapGui : public GuiElem {
   void updateObjects(CreatureView*, MapLayout*, bool smoothMovement, bool mouseUI, const optional<TutorialInfo>&);
   void setSpriteMode(bool);
   optional<Vec2> getHighlightedTile(Renderer& renderer);
-  void setHint(const vector<string>&);
   void addAnimation(PAnimation animation, Vec2 position);
   void setCenter(double x, double y);
   void setCenter(Vec2 pos);
@@ -68,13 +67,19 @@ class MapGui : public GuiElem {
   optional<Vec2> projectOnMap(Vec2 screenCoord);
   void highlightTeam(const vector<UniqueEntity<Creature>::Id>&);
   void unhighlightTeam(const vector<UniqueEntity<Creature>::Id>&);
-  bool isCreatureHighlighted(UniqueEntity<Creature>::Id);
   void setButtonViewId(ViewId);
   void clearButtonViewId();
   bool highlightMorale();
   bool highlightEnemies();
   void setHighlightMorale(bool);
   void setHighlightEnemies(bool);
+  struct HighlightedInfo {
+    optional<Vec2> creaturePos;
+    optional<Vec2> tilePos;
+    optional<ViewObject> object;
+  };
+  const HighlightedInfo& getLastHighlighted();
+  bool isCreatureHighlighted(UniqueEntity<Creature>::Id);
 
   private:
   void updateObject(Vec2, CreatureView*, milliseconds currentTime);
@@ -85,19 +90,12 @@ class MapGui : public GuiElem {
   void drawSquareHighlight(Renderer&, Vec2 pos, Vec2 size);
   void considerRedrawingSquareHighlight(Renderer&, milliseconds currentTimeReal, Vec2 pos, Vec2 size);
  // void drawFloorBorders(Renderer& r, DirSet borders, int x, int y);
-  enum class HintPosition;
-  void drawHint(Renderer& renderer, Color color, const vector<string>& text);
   void drawFoWSprite(Renderer&, Vec2 pos, Vec2 size, DirSet dirs);
   void renderExtraBorders(Renderer&, milliseconds currentTimeReal);
   void renderHighlights(Renderer&, Vec2 size, milliseconds currentTimeReal, bool lowHighlights);
   optional<Vec2> getMousePos();
   void softScroll(double x, double y);
-  struct HighlightedInfo {
-    optional<Vec2> creaturePos;
-    optional<Vec2> tilePos;
-    optional<ViewObject> object;
-    bool isEnemy;
-  };
+  HighlightedInfo lastHighlighted;
   void renderMapObjects(Renderer&, Vec2 size, HighlightedInfo&, milliseconds currentTimeReal);
   HighlightedInfo getHighlightedInfo(Vec2 size, milliseconds currentTimeReal);
   void renderAnimations(Renderer&, milliseconds currentTimeReal);
@@ -121,7 +119,6 @@ class MapGui : public GuiElem {
   optional<Vec2> mouseHeldPos;
   optional<CreatureInfo> draggedCandidate;
   optional<Vec2> lastMapLeftClick;
-  vector<string> hint;
   struct AnimationInfo {
     PAnimation animation;
     Vec2 position;
@@ -169,11 +166,8 @@ class MapGui : public GuiElem {
   bool mouseUI = false;
   bool morale = true;
   bool enemies = true;
-  DirtyTable<bool> enemyPositions;
-  void updateEnemyPositions(const vector<Vec2>&);
   bool lockedView = true;
   optional<milliseconds> lastRightClick;
-  bool displayScrollHint = false;
   EntityMap<Creature, int> teamHighlight;
   optional<ViewId> buttonViewId;
   set<Vec2> shadowed;

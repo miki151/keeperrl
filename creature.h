@@ -130,7 +130,6 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   const Body& getBody() const;
   Body& getBody();
   bool isDead() const;
-  bool isBlind() const;
   void clearLastAttacker();
   optional<string> getDeathReason() const;
   double getDeathTime() const;
@@ -253,7 +252,6 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   bool isDarknessSource() const;
 
   bool isUnknownAttacker(WConstCreature) const;
-  vector<string> getMainAdjectives() const;
   vector<AdjectiveInfo> getGoodAdjectives() const;
   vector<AdjectiveInfo> getWeaponAdjective() const;
   vector<AdjectiveInfo> getBadAdjectives() const;

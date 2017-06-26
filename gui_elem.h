@@ -151,6 +151,8 @@ class GuiFactory {
   SGuiElem labelFun(function<string()>, Color = Color::WHITE);
   SGuiElem labelMultiLine(const string&, int lineHeight, int size = Renderer::textSize,
       Color = Color::WHITE);
+  SGuiElem labelMultiLineWidth(const string&, int lineHeight, int width, int size = Renderer::textSize,
+      Color = Color::WHITE, char delim = ' ');
   SGuiElem centeredLabel(Renderer::CenterType, const string&, int size, Color = Color::WHITE);
   SGuiElem centeredLabel(Renderer::CenterType, const string&, Color = Color::WHITE);
   SGuiElem variableLabel(function<string()>, int lineHeight, int size = Renderer::textSize,

@@ -269,7 +269,7 @@ string Item::getName(bool plural, WConstCreature owner) const {
     suff.append(" (burning)");
   if (owner && getShopkeeper(owner))
     suff += " (" + toString(getPrice()) + (plural ? " gold each)" : " gold)");
-  if (owner && owner->isBlind())
+  if (owner && owner->isAffected(LastingEffect::BLIND))
     return getBlindName(plural);
   return getVisibleName(plural) + suff;
 }
@@ -364,7 +364,7 @@ string Item::getModifiers(bool shorten) const {
 }
 
 string Item::getShortName(WConstCreature owner, bool noSuffix) const {
-  if (owner && owner->isBlind() && attributes->blindName)
+  if (owner && owner->isAffected(LastingEffect::BLIND) && attributes->blindName)
     return getBlindName(false);
   string name = getModifiers(true);
   if (attributes->shortName)

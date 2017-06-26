@@ -24,6 +24,7 @@
 #include "view.h"
 #include "scroll_position.h"
 #include "fps_counter.h"
+#include "view_object.h"
 
 class Clock;
 class MinionAction;
@@ -50,7 +51,6 @@ class GuiBuilder {
   enum class GameSpeed;
   struct Callbacks {
     function<void(UserInput)> input;
-    function<void(const vector<string>&)> hint;
     function<void(SDL::SDL_Keysym)> keyboard;
     function<void()> refreshScreen;
     function<void(const string&)> info;
@@ -75,7 +75,7 @@ class GuiBuilder {
 
   struct OverlayInfo {
     SGuiElem elem;
-    enum Alignment { LEFT, TOP_LEFT, BOTTOM_LEFT, MESSAGES, GAME_SPEED, MINIONS, IMMIGRATION, TUTORIAL } alignment;
+    enum Alignment { LEFT, TOP_LEFT, BOTTOM_LEFT, MESSAGES, GAME_SPEED, MINIONS, IMMIGRATION, TUTORIAL, MAP_HINT } alignment;
   };
   SGuiElem drawPlayerOverlay(const PlayerInfo&);
   void drawOverlays(vector<OverlayInfo>&, GameInfo&);
@@ -127,6 +127,7 @@ class GuiBuilder {
       MenuType, optional<int>* highlight, int* choice, vector<int>* positions);
   int getScrollPos(int index, int count);
   void setMapGui(shared_ptr<MapGui>);
+  void clearHint();
   ~GuiBuilder();
 
   private:
@@ -141,6 +142,7 @@ class GuiBuilder {
   SGuiElem getHintCallback(const vector<string>&);
   SGuiElem getTooltip(const vector<string>&, int id);
   vector<SGuiElem> drawPlayerAttributes(const vector<AttributeInfo>&);
+  vector<SGuiElem> drawPlayerAttributes(const ViewObject::CreatureAttributes&);
   SGuiElem drawBestAttack(const BestAttack&);
   SGuiElem drawPlayerLevelButton(const PlayerInfo&);
   //SGuiElem getExpIncreaseLine(const PlayerInfo::LevelInfo&, ExperienceType);
@@ -254,6 +256,8 @@ class GuiBuilder {
   bool wasTutorialClicked(size_t hash, TutorialHighlight);
   void onTutorialClicked(size_t hash, TutorialHighlight);
   SGuiElem drawLibraryOverlay(const CollectiveInfo&, const optional<TutorialInfo>&);
+  SGuiElem drawMapHintOverlay();
+  vector<string> hint;
 };
 
 RICH_ENUM(GuiBuilder::GameSpeed,

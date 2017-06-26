@@ -85,7 +85,6 @@ void WindowView::resetMapBounds() {
 WindowView::WindowView(ViewParams params) : renderer(params.renderer), gui(params.gui), useTiles(params.useTiles),
     options(params.options), clock(params.clock), guiBuilder(renderer, gui, clock, params.options, {
         [this](UserInput input) { inputQueue.push(input);},
-        [this](const vector<string>& s) { mapGui->setHint(s);},
         [this](SDL_Keysym ev) { keyboardAction(ev);},
         [this]() { refreshScreen(false);},
         [this](const string& s) { presentText("", s); },
@@ -417,6 +416,18 @@ void WindowView::rebuildGui() {
   guiBuilder.drawOverlays(overlays, gameInfo);
   resetMapBounds();
   if (rightBarWidth > 0) {
+    overlays.push_back({guiBuilder.drawMessages(gameInfo.messageBuffer, renderer.getSize().x - rightBarWidth),
+                       GuiBuilder::OverlayInfo::MESSAGES});
+    for (auto& overlay : overlays) {
+      Vec2 pos;
+      if (auto width = overlay.elem->getPreferredWidth())
+        if (auto height = overlay.elem->getPreferredHeight()) {
+          pos = getOverlayPosition(overlay.alignment, *height, *width, rightBarWidth, bottomBarHeight);
+          tempGuiElems.push_back(std::move(overlay.elem));
+          *height = min(*height, renderer.getSize().y - pos.y);
+          tempGuiElems.back()->setBounds(Rectangle(pos, pos + Vec2(*width, *height)));
+        }
+    }
     tempGuiElems.push_back(gui.mainDecoration(rightBarWidth, bottomBarHeight, topBarHeight));
     tempGuiElems.back()->setBounds(Rectangle(renderer.getSize()));
     tempGuiElems.push_back(gui.margins(std::move(right), 20, 20, 10, 0));
@@ -425,24 +436,12 @@ void WindowView::rebuildGui() {
     tempGuiElems.push_back(gui.margins(std::move(bottom), 105, 10, 105, 0));
     tempGuiElems.back()->setBounds(Rectangle(
           Vec2(rightBarWidth, renderer.getSize().y - bottomBarHeight), renderer.getSize()));
-    overlays.push_back({guiBuilder.drawMessages(gameInfo.messageBuffer, renderer.getSize().x - rightBarWidth),
-                       GuiBuilder::OverlayInfo::MESSAGES});
-    for (auto& overlay : overlays) {
-      Vec2 pos;
-      if (auto width = overlay.elem->getPreferredWidth())
-        if (auto height = overlay.elem->getPreferredHeight()) {
-          pos = getOverlayPosition(overlay.alignment, *height, rightBarWidth, bottomBarHeight);
-          tempGuiElems.push_back(std::move(overlay.elem));
-          *height = min(*height, renderer.getSize().y - pos.y);
-          tempGuiElems.back()->setBounds(Rectangle(pos, pos + Vec2(*width, *height)));
-        }
-    }
   }
   propagateMousePosition(getClickableGuiElems());
 }
 
-Vec2 WindowView::getOverlayPosition(GuiBuilder::OverlayInfo::Alignment alignment, int height, int rightBarWidth,
-    int bottomBarHeight) {
+Vec2 WindowView::getOverlayPosition(GuiBuilder::OverlayInfo::Alignment alignment, int height, int width,
+    int rightBarWidth, int bottomBarHeight) {
   int bottomOffset = 35;
   int sideOffset = 0;
   int rightWindowHeight = 80;
@@ -474,6 +473,8 @@ Vec2 WindowView::getOverlayPosition(GuiBuilder::OverlayInfo::Alignment alignment
       return Vec2(rightBarWidth + guiBuilder.getImmigrationBarWidth(),
           renderer.getSize().y - bottomBarHeight - height);
       break;
+    case GuiBuilder::OverlayInfo::MAP_HINT:
+      return Vec2(renderer.getSize().x - width, renderer.getSize().y - bottomBarHeight - height);
   }
 }
 
@@ -1348,7 +1349,7 @@ void WindowView::processEvents() {
 void WindowView::propagateEvent(const Event& event, vector<SGuiElem> guiElems) {
   CHECK(currentThreadId() == renderThreadId);
   if (gameReady)
-    mapGui->setHint({});
+    guiBuilder.clearHint();
   switch (event.type) {
     case SDL::SDL_MOUSEBUTTONUP:
       // MapGui needs this event otherwise it will sometimes lock the mouse button

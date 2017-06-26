@@ -609,6 +609,8 @@ bool Body::isIntrinsicallyAffected(LastingEffect effect) const {
       return material != Material::FLESH;
     case LastingEffect::FLYING:
       return numGood(BodyPart::WING) >= 2;
+    case LastingEffect::BLIND:
+      return numLost(BodyPart::HEAD) > 0 && numBodyParts(BodyPart::HEAD) == 0;
     default:
       return false;
   }

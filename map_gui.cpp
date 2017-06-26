@@ -35,8 +35,7 @@ using SDL::SDL_Keycode;
 
 MapGui::MapGui(Callbacks call, Clock* c, Options* o, GuiFactory* f) : objects(Level::getMaxBounds()), callbacks(call),
     clock(c), options(o), fogOfWar(Level::getMaxBounds(), false), extraBorderPos(Level::getMaxBounds(), {}),
-    lastSquareUpdate(Level::getMaxBounds()), connectionMap(Level::getMaxBounds()),
-    enemyPositions(Level::getMaxBounds(), false), guiFactory(f) {
+    lastSquareUpdate(Level::getMaxBounds()), connectionMap(Level::getMaxBounds()), guiFactory(f) {
   clearCenter();
 }
 
@@ -90,6 +89,10 @@ void MapGui::setHighlightMorale(bool s) {
 
 void MapGui::setHighlightEnemies(bool s) {
   enemies = s;
+}
+
+const MapGui::HighlightedInfo& MapGui::getLastHighlighted() {
+  return lastHighlighted;
 }
 
 void MapGui::highlightTeam(const vector<UniqueEntity<Creature>::Id>& ids) {
@@ -581,22 +584,6 @@ void MapGui::setCenter(Vec2 v) {
   setCenter(v.x, v.y);
 }
 
-enum class MapGui::HintPosition {
-  LEFT, RIGHT
-};
-
-void MapGui::drawHint(Renderer& renderer, Color color, const vector<string>& text) {
-  int lineHeight = 30;
-  int height = lineHeight * text.size();
-  int width = 0;
-  for (auto& s : text)
-    width = max(width, renderer.getTextLength(s) + 110);
-  Vec2 pos(getBounds().right() - width, getBounds().bottom() - height);
-  renderer.drawFilledRectangle(pos.x, pos.y, pos.x + width, pos.y + height, Color(0, 0, 0, 150));
-  for (int i : All(text))
-    renderer.drawText(color, pos.x + 10, pos.y + 1 + i * lineHeight, text[i]);
-}
-
 void MapGui::drawFoWSprite(Renderer& renderer, Vec2 pos, Vec2 size, DirSet dirs) {
   const Tile& tile = Tile::getTile(ViewId::FOG_OF_WAR, true);
   const Tile& tile2 = Tile::getTile(ViewId::FOG_OF_WAR_CORNER, true);
@@ -793,7 +780,6 @@ MapGui::HighlightedInfo MapGui::getHighlightedInfo(Vec2 size, milliseconds curre
               ret.tilePos = none;
               ret.object = object;
               ret.creaturePos = pos + movement;
-              ret.isEnemy = enemyPositions.getValue(wpos);
               break;
             }
           }
@@ -924,40 +910,15 @@ void MapGui::setDraggedCreature(UniqueEntity<Creature>::Id id, ViewId viewId, Ve
 void MapGui::render(Renderer& renderer) {
   Vec2 size = layout->getSquareSize();
   auto currentTimeReal = clock->getRealMillis();
-  HighlightedInfo highlightedInfo = getHighlightedInfo(size, currentTimeReal);
-  renderMapObjects(renderer, size, highlightedInfo, currentTimeReal);
+  lastHighlighted = getHighlightedInfo(size, currentTimeReal);
+  renderMapObjects(renderer, size, lastHighlighted, currentTimeReal);
   renderHighlights(renderer, size, currentTimeReal, false);
   renderAnimations(renderer, currentTimeReal);
-  if (highlightedInfo.tilePos)
-    considerRedrawingSquareHighlight(renderer, currentTimeReal, *highlightedInfo.tilePos, size);
-  if (!hint.empty())
-    drawHint(renderer, Color::WHITE, hint);
-  else {
-    vector<string> legend;
-    Color col = Color::WHITE;
-    if (highlightedInfo.object) {
-      if (highlightedInfo.isEnemy)
-        col = Color::RED;
-      legend = highlightedInfo.object->getLegend();
-    }
-    if (auto pos = highlightedInfo.tilePos)
-      legend.push_back(toString(*pos));
-    if (!legend.empty())
-      drawHint(renderer, col, legend);
-  }
+  if (lastHighlighted.tilePos)
+    considerRedrawingSquareHighlight(renderer, currentTimeReal, *lastHighlighted.tilePos, size);
   if (spriteMode && buttonViewId && renderer.getMousePos().inRectangle(getBounds()))
     renderer.drawViewObject(renderer.getMousePos() + Vec2(15, 15), *buttonViewId, spriteMode, size);
   processScrolling(currentTimeReal);
-}
-
-void MapGui::setHint(const vector<string>& h) {
-  hint = h;
-}
-
-void MapGui::updateEnemyPositions(const vector<Vec2>& positions) {
-  enemyPositions.clear();
-  for (Vec2 v : positions)
-    enemyPositions.setValue(v, true);
 }
 
 void MapGui::updateObject(Vec2 pos, CreatureView* view, milliseconds currentTime) {
@@ -1000,10 +961,8 @@ void MapGui::updateObjects(CreatureView* view, MapLayout* mapLayout, bool smooth
   }
   WLevel level = view->getLevel();
   levelBounds = view->getLevel()->getBounds();
-  updateEnemyPositions(view->getVisibleEnemies());
   mouseUI = ui;
   layout = mapLayout;
-  displayScrollHint = view->isPlayerView() && !lockedView;
   auto currentTimeReal = clock->getRealMillis();
   if (view != previousView || level != previousLevel)
     for (Vec2 pos : level->getBounds())

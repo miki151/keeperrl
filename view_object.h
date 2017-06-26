@@ -55,20 +55,21 @@ class ViewObject {
   ViewObject& setAttribute(Attribute, double);
   optional<float> getAttribute(Attribute) const;
 
-  using CreatureAttributes = EnumMap<AttrType, double>;
+  using CreatureAttributes = EnumMap<AttrType, std::uint8_t>;
   void setCreatureAttributes(CreatureAttributes);
   const optional<CreatureAttributes>& getCreatureAttributes() const;
 
-  vector<string> getLegend() const;
   const char* getDescription() const;
-
-  void setIndoors(bool);
 
   ViewLayer layer() const;
   ViewId id() const;
   void setId(ViewId);
 
-  void setAdjectives(const vector<string>&);
+  void setGoodAdjectives(const string&);
+  void setBadAdjectives(const string&);
+  const string& getGoodAdjectives() const;
+  const string& getBadAdjectives() const;
+
   void setDescription(const string&);
 
   void addMovementInfo(MovementInfo);
@@ -89,7 +90,6 @@ class ViewObject {
   private:
   string getAttributeString(Attribute) const;
   const char* getDefaultDescription() const;
-  enum EnemyStatus { HOSTILE, FRIENDLY, UNKNOWN };
   EnumSet<Modifier> SERIAL(modifiers);
   EnumMap<Attribute, optional<float>> SERIAL(attributes);
   ViewId SERIAL(resource_id);
@@ -97,8 +97,8 @@ class ViewObject {
   optional<string> SERIAL(description);
   optional<Dir> SERIAL(attachmentDir);
   optional<UniqueEntity<Creature>::Id> SERIAL(creatureId);
-  vector<string> SERIAL(adjectives);
-  optional<bool> indoors;
+  string SERIAL(goodAdjectives);
+  string SERIAL(badAdjectives);
   optional<CreatureAttributes> SERIAL(creatureAttributes);
 
   class MovementQueue {

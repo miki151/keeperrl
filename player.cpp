@@ -243,7 +243,8 @@ vector<WItem> Player::chooseItem(const string& text, ItemPredicate predicate, op
 }
 
 void Player::applyItem(vector<WItem> items) {
-  if (getCreature()->isBlind() && contains({ItemClass::SCROLL, ItemClass::BOOK}, items[0]->getClass())) {
+  if (getCreature()->isAffected(LastingEffect::BLIND) &&
+      contains({ItemClass::SCROLL, ItemClass::BOOK}, items[0]->getClass())) {
     privateMessage("You can't read while blind!");
     return;
   }
@@ -981,7 +982,7 @@ ItemInfo Player::getItemInfo(const vector<WItem>& stack) const {
   return CONSTRUCT(ItemInfo,
     c.name = stack[0]->getShortName(getCreature());
     c.fullName = stack[0]->getNameAndModifiers(false, getCreature());
-    c.description = getCreature()->isBlind() ? "" : stack[0]->getDescription();
+    c.description = getCreature()->isAffected(LastingEffect::BLIND) ? "" : stack[0]->getDescription();
     c.number = stack.size();
     c.viewId = stack[0]->getViewObject().id();
     for (auto it : stack)

@@ -423,7 +423,7 @@ SGuiElem GuiFactory::sprite(Texture& tex, Alignment align, bool vFlip, bool hFli
 }
 
 SGuiElem GuiFactory::label(const string& s, Color c, char hotkey) {
-  auto width = [=] { return renderer.getTextLength(s); };
+  auto width = [=] { return renderer.getTextLength(s) + 1; };
   return SGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
           r.drawTextWithHotkey(Color::BLACK.transparency(100),
@@ -446,18 +446,23 @@ static vector<string> breakWord(Renderer& renderer, string word, int maxWidth, i
   return ret;
 }
 
-static vector<string> breakText(Renderer& renderer, const string& text, int maxWidth, int size = Renderer::textSize) {
+static vector<string> breakText(Renderer& renderer, const string& text, int maxWidth, int size = Renderer::textSize,
+    char delim = ' ') {
   if (text.empty())
     return {""};
   vector<string> rows;
   for (string line : split(text, {'\n'})) {
     rows.push_back("");
-    for (string word : split(line, {' '}))
+    for (string word : split(line, {delim})) {
+      if (!rows.back().empty())
+        rows.back() += delim;
       for (string subword : breakWord(renderer, word, maxWidth, size))
         if (renderer.getTextLength(rows.back() + ' ' + subword, size) <= maxWidth)
           rows.back().append((rows.back().size() > 0 ? " " : "") + subword);
         else
           rows.push_back(subword);
+      trim(rows.back());
+    }
   }
   return rows;
 }
@@ -493,6 +498,13 @@ class VariableLabel : public GuiElem {
 
 SGuiElem GuiFactory::labelMultiLine(const string& s, int lineHeight, int size, Color c) {
   return SGuiElem(new VariableLabel([=]{ return s;}, lineHeight, size, c));
+}
+
+SGuiElem GuiFactory::labelMultiLineWidth(const string& s, int lineHeight, int width, int size, Color c, char delim) {
+  auto lines = getListBuilder(lineHeight);
+  for (auto& line : ::breakText(renderer, s, width, size, delim))
+    lines.addElem(label(line, size, c));
+  return lines.buildVerticalList();
 }
 
 static void lighten(Color& c) {
@@ -547,7 +559,7 @@ SGuiElem GuiFactory::labelHighlightBlink(const string& s, Color c1, Color c2, ch
 }
 
 SGuiElem GuiFactory::label(const string& s, function<Color()> colorFun, char hotkey) {
-  auto width = [=] { return renderer.getTextLength(s); };
+  auto width = [=] { return renderer.getTextLength(s) + 1; };
   return SGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
           auto color = colorFun();
@@ -578,7 +590,7 @@ SGuiElem GuiFactory::labelFun(function<string()> textFun, Color color) {
 }
 
 SGuiElem GuiFactory::label(const string& s, int size, Color c) {
-  auto width = [=] { return renderer.getTextLength(s, size); };
+  auto width = [=] { return renderer.getTextLength(s, size) + 1; };
   return SGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
           r.drawText(Color::BLACK.transparency(100),
@@ -1043,7 +1055,6 @@ class ElemList : public GuiLayout {
   public:
   ElemList(vector<SGuiElem> e, vector<int> h, int alignBack, bool middleEl)
     : GuiLayout(std::move(e)), heights(h), numAlignBack(alignBack), middleElem(middleEl) {
-    //CHECK(heights.size() > 0);
     CHECK(heights.size() == elems.size());
     int sum = 0;
     for (int h : heights) {

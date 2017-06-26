@@ -26,7 +26,7 @@ void LastingEffects::onAffected(WCreature c, LastingEffect effect, bool msg) {
       if (msg) c->you(MsgType::RAGE, "");
       break;
     case LastingEffect::HALLU:
-      if (!c->isBlind() && msg)
+      if (!c->isAffected(LastingEffect::BLIND) && msg)
         c->playerMessage("The world explodes into colors!");
       break;
     case LastingEffect::BLIND:
@@ -34,7 +34,7 @@ void LastingEffects::onAffected(WCreature c, LastingEffect effect, bool msg) {
       c->modViewObject().setModifier(ViewObject::Modifier::BLIND);
       break;
     case LastingEffect::INVISIBLE:
-      if (!c->isBlind() && msg)
+      if (!c->isAffected(LastingEffect::BLIND) && msg)
         c->you(MsgType::TURN_INVISIBLE, "");
       c->modViewObject().setModifier(ViewObject::Modifier::INVISIBLE);
       break;
@@ -193,6 +193,7 @@ const char* LastingEffects::getBadAdjective(LastingEffect effect) {
     case LastingEffect::TIED_UP: return "Tied up";
     case LastingEffect::SLOWED: return "Slowed";
     case LastingEffect::INSANITY: return "Insane";
+    case LastingEffect::BLIND: return "Blind";
     default: return nullptr;
   }
 }
