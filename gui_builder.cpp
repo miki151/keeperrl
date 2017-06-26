@@ -1697,7 +1697,7 @@ SGuiElem GuiBuilder::drawMapHintOverlay() {
       }
       if (!viewObject->getGoodAdjectives().empty()) {
         lines.addElemAuto(gui.labelMultiLineWidth(viewObject->getGoodAdjectives(), legendLineHeight * 2 / 3, 300,
-            Renderer::textSize, Color::WHITE, ','));
+            Renderer::textSize, Color::GREEN, ','));
         lines.addSpace(legendLineHeight / 3);
       }
       if (auto& attributes = viewObject->getCreatureAttributes())

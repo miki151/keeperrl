@@ -114,10 +114,9 @@ optional<T> fromStringSafe(const string& s){
 }
 
 void trim(string& s) {
-  CHECK(s.size() > 0);
-  while (isspace(s[0])) 
+  while (!s.empty() && isspace(s[0]))
     s.erase(s.begin());
-  while (isspace(*s.rbegin()))
+  while (!s.empty() && isspace(*s.rbegin()))
     s.erase(s.size() - 1);
 }
 

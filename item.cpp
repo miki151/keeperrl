@@ -41,7 +41,7 @@ void Item::serialize(Archive& ar, const unsigned int version) {
 SERIALIZABLE(Item);
 SERIALIZATION_CONSTRUCTOR_IMPL(Item);
 
-Item::Item(const ItemAttributes& attr) : Renderable(ViewObject(*attr.viewId, ViewLayer::ITEM, *attr.name)),
+Item::Item(const ItemAttributes& attr) : Renderable(ViewObject(*attr.viewId, ViewLayer::ITEM, capitalFirst(*attr.name))),
     attributes(attr), fire(*attr.weight, attr.flamability), canEquipCache(!!attributes->equipmentSlot),
     classCache(*attributes->itemClass) {
 }

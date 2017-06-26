@@ -458,7 +458,7 @@ static vector<string> breakText(Renderer& renderer, const string& text, int maxW
         rows.back() += delim;
       for (string subword : breakWord(renderer, word, maxWidth, size))
         if (renderer.getTextLength(rows.back() + ' ' + subword, size) <= maxWidth)
-          rows.back().append((rows.back().size() > 0 ? " " : "") + subword);
+          rows.back() += subword;
         else
           rows.push_back(subword);
       trim(rows.back());

@@ -973,7 +973,7 @@ void Creature::updateViewObject() {
   modViewObject().setGoodAdjectives(combine(extractNames(getGoodAdjectives()), true));
   modViewObject().setBadAdjectives(combine(extractNames(getBadAdjectives()), true));
   getBody().updateViewObject(modViewObject());
-  modViewObject().setDescription(getName().bare());
+  modViewObject().setDescription(getName().title());
   getPosition().setNeedsRenderUpdate(true);
 }
 
