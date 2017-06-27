@@ -1125,32 +1125,43 @@ static vector<string> help = {
     "Fire arrows: alt + arrow.",
 };
 
-/*SGuiElem GuiBuilder::getExpIncreaseLine(const PlayerInfo::LevelInfo& info, ExperienceType type) {
+SGuiElem GuiBuilder::getExpIncreaseLine(const PlayerInfo::LevelInfo& info, ExperienceType type) {
   auto line = gui.getListBuilder();
-  line.addElemAuto(gui.label(capitalFirst(toLower(EnumInfo<ExperienceType>::getString(type))) + ": "));
-  line.addElemAuto(gui.label(toString(info.increases[type])));
-  if (auto limit = info.limits[type])
-    line.addElemAuto(gui.label("  (limit " + toString(*limit) + ")"));
+  line.addElem(gui.stack(
+      gui.tooltip({"Training type"}),
+      gui.label(getName(type))), 95);
+  for (auto attr : getAttrIncreases()[type])
+    line.addElem(gui.stack(
+        gui.tooltip({"Attributes increased by this type of training"}),
+        gui.topMargin(-3, gui.icon(getAttrIcon(attr)))), 25);
+  line.addBackElem(gui.stack(
+      gui.tooltip({"Training level, and the increase of each of the given attributes"}),
+      gui.label("+" + toString(0.1 * round(10 * info.level[type])))), 60);
+  if (auto limit = info.limit[type]) {
+    if (*limit == 0)
+      return nullptr;
+    line.addBackElem(gui.stack(
+        gui.tooltip({"Upper limit of the training level"}),
+        gui.label("  (limit " + toString(*limit) + ")")), 70);
+  } else
+    line.addBackSpace(70);
   return line.buildHorizontalList();
-}*/
+}
 
 SGuiElem GuiBuilder::drawPlayerLevelButton(const PlayerInfo& info) {
-  return gui.empty();
-  /*auto levelInfo = getMaxLevelInfo(info.levelInfo.level);
   return gui.stack(
-      gui.labelHighlight("["_s + levelInfo.name + ": " + toString(levelInfo.value) + "]", Color::LIGHT_BLUE),
+      gui.labelHighlight("[Training]", Color::LIGHT_BLUE),
       gui.buttonRect([=] (Rectangle bounds) {
           auto lines = gui.getListBuilder(legendLineHeight);
           bool exit = false;
-          for (auto type : ENUM_ALL(ExperienceType))
-            lines.addElem(gui.label(getName(type) + " "_s + toString(info.levelInfo.level[type])));
-          lines.addElem(gui.label("Increases:", Color::YELLOW));
-          for (auto expType : ENUM_ALL(ExperienceType))
-            lines.addElem(gui.leftMargin(30, getExpIncreaseLine(info.levelInfo, expType)));
-          if (auto& warning = info.levelInfo.warning)
-            lines.addElem(gui.label(*warning, Color::RED));
+          for (auto expType : ENUM_ALL(ExperienceType)) {
+            if (auto elem = getExpIncreaseLine(info.levelInfo, expType))
+              lines.addElem(std::move(elem));
+            if (auto& warning = info.levelInfo.warning[expType])
+              lines.addElem(gui.label(*warning, Color::RED));
+          }
           drawMiniMenu(std::move(lines), exit, bounds.bottomLeft(), 300);
-      }));*/
+      }));
 }
 
 SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info) {

@@ -3,10 +3,12 @@
 #include "util.h"
 
 RICH_ENUM(ExperienceType,
-  TRAINING,
-  STUDY
+  MELEE,
+  SPELL,
+  ARCHERY
 );
 
 extern const char* getName(ExperienceType);
 extern const char* getNameLowerCase(ExperienceType);
-extern char getSymbol(ExperienceType);
+extern const EnumMap<ExperienceType, EnumSet<AttrType>>& getAttrIncreases();
+extern const vector<ExperienceType>& getExperienceTypes(AttrType);

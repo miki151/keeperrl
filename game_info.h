@@ -11,6 +11,7 @@
 #include "tutorial_highlight.h"
 #include "hashing.h"
 #include "experience_type.h"
+#include "attr_type.h"
 #include "best_attack.h"
 
 enum class SpellId;
@@ -80,10 +81,9 @@ class PlayerInfo {
   string HASH(title);
   struct LevelInfo {
     EnumMap<ExperienceType, double> HASH(level);
-    EnumMap<ExperienceType, double> HASH(increases);
-    EnumMap<ExperienceType, optional<double>> HASH(limits);
-    optional<string> HASH(warning);
-    HASH_ALL(level, increases, limits, warning);
+    EnumMap<ExperienceType, optional<int>> HASH(limit);
+    EnumMap<ExperienceType, optional<string>> HASH(warning);
+    HASH_ALL(level, limit, warning);
   };
   LevelInfo HASH(levelInfo);
   string description;

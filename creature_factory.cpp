@@ -624,7 +624,7 @@ PCreature CreatureFactory::random(const MonsterAIFactory& actorFactory) {
   } else
     id = Random.choose(creatures, weights);
   PCreature ret = fromId(id, getTribeFor(id), actorFactory);
-  ret->getAttributes().increaseBaseExpLevel(ExperienceType::TRAINING, levelIncrease);
+  ret->getAttributes().increaseBaseExpLevel(ExperienceType::MELEE, levelIncrease);
   return ret;
 }
 
@@ -1031,6 +1031,9 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.skills.setValue(SkillId::SORCERY, 0.2);
           c.skills.setValue(SkillId::LABORATORY, 0.2);
           c.skills.setValue(SkillId::MANA, 1);
+          c.maxLevelIncrease[ExperienceType::MELEE] = 4;
+          c.maxLevelIncrease[ExperienceType::SPELL] = 2;
+          c.maxLevelIncrease[ExperienceType::ARCHERY] = 1;
       );
     case CreatureId::KEEPER_F:
       return CATTR(
@@ -1056,7 +1059,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.viewId = ViewId::PLAYER;
           c.attr = LIST(15_dam, 20_def, 10_spell_def, 100_spd );
           c.body = Body::humanoid(Body::Size::LARGE);
-          c.maxExpFromCombat = 15;
+          c.maxLevelIncrease[ExperienceType::MELEE] = 15;
           c.name = "Adventurer";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_MALE)->getNext());
           c.name->useFullTitle();
@@ -1068,7 +1071,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.gender = Gender::female;
           c.attr = LIST(15_dam, 20_def, 10_spell_def, 100_spd );
           c.body = Body::humanoid(Body::Size::LARGE);
-          c.maxExpFromCombat = 15;
+          c.maxLevelIncrease[ExperienceType::MELEE] = 15;
           c.name = "Adventurer";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_FEMALE)->getNext());
           c.name->useFullTitle();
@@ -1434,6 +1437,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.skills.setValue(SkillId::WEAPON_MELEE, 0.3);
           c.skills.setValue(SkillId::WORKSHOP, 0.3);
           c.skills.setValue(SkillId::FORGE, 0.3);
+          c.maxLevelIncrease[ExperienceType::ARCHERY] = 2;
+          c.maxLevelIncrease[ExperienceType::SPELL] = 0;
           c.name = "orc";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::ORC)->getNext());
           );

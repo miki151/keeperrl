@@ -260,7 +260,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   void addPersonalEvent(const string&);
   void setInCombat();
   bool wasInCombat(double numLastTurns) const;
-  void onKilled(WCreature victim);
+  void onKilled(WCreature victim, optional<ExperienceType> lastDamage);
 
   void addSound(const Sound&) const;
   void updateViewObject();
@@ -285,6 +285,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   optional<double> SERIAL(deathTime);
   bool SERIAL(hidden) = false;
   WCreature lastAttacker;
+  optional<ExperienceType> SERIAL(lastDamageType);
   optional<string> SERIAL(deathReason);
   int SERIAL(swapPositionCooldown) = 0;
   EntitySet<Creature> SERIAL(unknownAttackers);

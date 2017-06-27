@@ -258,6 +258,7 @@ class GuiBuilder {
   SGuiElem drawLibraryOverlay(const CollectiveInfo&, const optional<TutorialInfo>&);
   SGuiElem drawMapHintOverlay();
   vector<string> hint;
+  SGuiElem getExpIncreaseLine(const PlayerInfo::LevelInfo&, ExperienceType);
 };
 
 RICH_ENUM(GuiBuilder::GameSpeed,

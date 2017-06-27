@@ -34,6 +34,4 @@ class MinionTasks {
   static vector<Position> getAllPositions(WConstCollective, WConstCreature, MinionTask, bool onlyActive = false);
   static const vector<FurnitureType>& getAllFurniture(MinionTask);
   static optional<MinionTask> getTaskFor(WConstCreature, FurnitureType);
-
-
 };

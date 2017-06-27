@@ -170,7 +170,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
 
   MinionEquipment& getMinionEquipment();
   const MinionEquipment& getMinionEquipment() const;
-  optional<FurnitureType> getMissingTrainingDummy(WConstCreature) const;
+  optional<FurnitureType> getMissingTrainingFurniture(WConstCreature, ExperienceType) const;
 
   Workshops& getWorkshops();
   const Workshops& getWorkshops() const;

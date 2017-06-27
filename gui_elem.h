@@ -100,6 +100,7 @@ class GuiFactory {
     ListBuilder& addElemAuto(SGuiElem);
     ListBuilder& addBackElemAuto(SGuiElem);
     ListBuilder& addBackElem(SGuiElem, int size = 0);
+    ListBuilder& addBackSpace(int size = 0);
     ListBuilder& addMiddleElem(SGuiElem);
     SGuiElem buildVerticalList();
     SGuiElem buildVerticalListFit();

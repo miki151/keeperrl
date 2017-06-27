@@ -55,10 +55,8 @@ PlayerInfo::PlayerInfo(WConstCreature c) : bestAttack(c) {
   positionHash = c->getPosition().getHash();
   creatureId = c->getUniqueId();
   attributes = AttributeInfo::fromCreature(c);
-  /*for (auto expType : ENUM_ALL(ExperienceType)) {
-    levelInfo.increases[expType] = c->getAttributes().getExpIncrease(expType);
-    //levelInfo.limits[expType] = c->getAttributes().getMaxExpIncrease(expType);
-  }*/
+  levelInfo.level = c->getAttributes().getExpLevel();
+  levelInfo.limit = c->getAttributes().getMaxExpLevel();
   skills = getSkillNames(c);
   effects.clear();
   for (auto& adj : c->getBadAdjectives())

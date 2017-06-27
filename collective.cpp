@@ -1386,11 +1386,11 @@ void Collective::addProducesMessage(WConstCreature c, const vector<PItem>& items
 
 void Collective::onAppliedSquare(WCreature c, Position pos) {
   if (auto furniture = pos.getFurniture(FurnitureLayer::MIDDLE)) {
-    // Furniture have variable apply time, so just multiply by it to be independent of changes.
+    // Furniture have variable usage time, so just multiply by it to be independent of changes.
     double efficiency = tileEfficiency->getEfficiency(pos) * furniture->getUsageTime() * getEfficiency(c);
     switch (furniture->getType()) {
       case FurnitureType::BOOKCASE: {
-        c->increaseExpLevel(ExperienceType::STUDY, 0.005 * efficiency);
+        c->increaseExpLevel(ExperienceType::SPELL, 0.005 * efficiency);
         auto availableSpells = Technology::getAvailableSpells(this);
         if (Random.chance(efficiency / 60) && !availableSpells.empty()) {
           for (int i : Range(30)) {
@@ -1418,7 +1418,7 @@ void Collective::onAppliedSquare(WCreature c, Position pos) {
     if (auto usage = furniture->getUsageType())
       switch (*usage) {
         case FurnitureUsageType::TRAIN:
-          c->increaseExpLevel(ExperienceType::TRAINING, 0.005 * efficiency);
+          c->increaseExpLevel(ExperienceType::MELEE, 0.005 * efficiency);
           break;
         default:
           break;
@@ -1441,13 +1441,13 @@ void Collective::onAppliedSquare(WCreature c, Position pos) {
   }
 }
 
-optional<FurnitureType> Collective::getMissingTrainingDummy(WConstCreature c) const {
-  if (c->getAttributes().getMinionTasks().getValue(MinionTask::TRAIN) == 0)
+optional<FurnitureType> Collective::getMissingTrainingFurniture(WConstCreature c, ExperienceType expType) const {
+  if (c->getAttributes().isTrainingMaxedOut(expType))
     return none;
   optional<FurnitureType> requiredDummy;
-  for (auto dummyType : MinionTasks::getAllFurniture(MinionTask::TRAIN)) {
-    bool canTrain = *config->getTrainingMaxLevelIncrease(dummyType) >
-        c->getAttributes().getExpIncrease(ExperienceType::TRAINING);
+  for (auto dummyType : CollectiveConfig::getTrainingFurniture(expType)) {
+    bool canTrain = *config->getTrainingMaxLevelIncrease(expType, dummyType) >
+        c->getAttributes().getExpLevel(expType);
     bool hasDummy = getConstructions().getBuiltCount(dummyType) > 0;
     if (canTrain && hasDummy)
       return none;

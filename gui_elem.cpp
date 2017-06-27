@@ -1192,15 +1192,7 @@ GuiFactory::ListBuilder& GuiFactory::ListBuilder::addElem(SGuiElem elem, int siz
 }
 
 GuiFactory::ListBuilder& GuiFactory::ListBuilder::addSpace(int size) {
-  CHECK(!backElems);
-  CHECK(!middleElem);
-  if (size == 0) {
-    CHECK(defaultSize > 0);
-    size = defaultSize;
-  }
-  elems.push_back(gui.empty());
-  sizes.push_back(size);
-  return *this;
+  return addElem(gui.empty(), size);
 }
 
 GuiFactory::ListBuilder& GuiFactory::ListBuilder::addElemAuto(SGuiElem elem) {
@@ -1236,6 +1228,10 @@ GuiFactory::ListBuilder& GuiFactory::ListBuilder::addBackElem(SGuiElem elem, int
   elems.push_back(std::move(elem));
   sizes.push_back(size);
   return *this;
+}
+
+GuiFactory::ListBuilder& GuiFactory::ListBuilder::addBackSpace(int size) {
+  return addBackElem(gui.empty(), size);
 }
 
 int GuiFactory::ListBuilder::getSize() const {

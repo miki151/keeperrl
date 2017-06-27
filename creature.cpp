@@ -63,7 +63,7 @@ void Creature::serialize(Archive& ar, const unsigned int version) {
   ar(unknownAttackers, privateEnemies, holding);
   ar(controllerStack, creatureVisions, kills);
   ar(difficultyPoints, points, numAttacksThisTurn, moraleOverride);
-  ar(vision, lastCombatTime, debt);
+  ar(vision, lastCombatTime, debt, lastDamageType);
 }
 
 SERIALIZABLE(Creature);
@@ -739,10 +739,17 @@ int Creature::getPoints() const {
   return points;
 }
 
-void Creature::onKilled(WCreature victim) {
+void Creature::onKilled(WCreature victim, optional<ExperienceType> lastDamage) {
   int difficulty = victim->getDifficultyPoints();
   CHECK(difficulty >=0 && difficulty < 100000) << difficulty << " " << victim->getName().bare();
-  getAttributes().onKilled(victim);
+  double attackDiff = victim->getBestAttack().value - getBestAttack().value;
+  constexpr double maxLevelGain = 1.0;
+  constexpr double minLevelGain = 0.02;
+  constexpr double equalLevelGain = 0.2;
+  constexpr double maxLevelDiff = 5;
+  double expIncrease = max(minLevelGain, min(maxLevelGain,
+      (maxLevelGain - equalLevelGain) * attackDiff / maxLevelDiff + equalLevelGain));
+  increaseExpLevel(lastDamage.value_or(ExperienceType::MELEE), expIncrease);
 }
 
 Tribe* Creature::getTribe() {
@@ -944,6 +951,9 @@ bool Creature::takeDamage(const Attack& attack) {
     INFO << getName().the() << " attacked by " << attacker->getName().the()
       << " damage " << attack.strength << " defense " << defense;
     lastAttacker = attack.attacker;
+    lastDamageType = none;
+    for (auto expType : getExperienceTypes(attack.damageType))
+      lastDamageType = expType;
   }
   if (auto sound = attributes->getAttackSound(attack.type, attack.strength > defense))
     addSound(*sound);
@@ -1089,7 +1099,7 @@ void Creature::dieWithAttacker(WCreature attacker, DropType drops) {
     getGame()->getStatistics().add(StatId::INNOCENT_KILLED);
   getGame()->getStatistics().add(StatId::DEATH);
   if (attacker)
-    attacker->onKilled(this);
+    attacker->onKilled(this, lastDamageType);
   getGame()->addEvent({EventId::KILLED, EventInfo::Attacked{this, attacker}});
   getTribe()->onMemberKilled(this, attacker);
   getLevel()->killCreature(this);
@@ -1148,7 +1158,7 @@ void Creature::increaseExpLevel(ExperienceType type, double increase) {
   int newLevel = (int)getAttributes().getExpLevel(type);
   if (curLevel != newLevel) {
     you(MsgType::ARE, "more experienced");
-    addPersonalEvent(getName().a() + " reaches " + ::getNameLowerCase(type) + " " + toString(newLevel));
+    addPersonalEvent(getName().a() + " reaches " + ::getNameLowerCase(type) + " training level " + toString(newLevel));
   }
 }
 

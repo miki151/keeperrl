@@ -62,9 +62,10 @@ class CreatureAttributes {
   void setCourage(double);
   const Gender& getGender() const;
   double getExpLevel(ExperienceType type) const;
-  EnumMap<ExperienceType, double> getExpLevel() const;
-  double getExpIncrease(ExperienceType) const;
+  const EnumMap<ExperienceType, double>& getExpLevel() const;
+  const EnumMap<ExperienceType, optional<int>>& getMaxExpLevel() const;
   void increaseExpLevel(ExperienceType, double increase);
+  bool isTrainingMaxedOut(ExperienceType) const;
   void increaseBaseExpLevel(ExperienceType type, double increase);
   string bodyDescription() const;
   SpellMap& getSpellMap();
@@ -98,7 +99,7 @@ class CreatureAttributes {
   MinionTaskMap& getMinionTasks();
   bool dontChase() const;
   optional<ViewId> getRetiredViewId();
-  void onKilled(WCreature victim);
+  void increaseExpFromCombat(double attackDiff);
 
   friend class CreatureFactory;
 
@@ -129,8 +130,8 @@ class CreatureAttributes {
   EnumMap<LastingEffect, int> SERIAL(permanentEffects);
   EnumMap<LastingEffect, double> SERIAL(lastingEffects);
   MinionTaskMap SERIAL(minionTasks);
-  EnumMap<ExperienceType, EnumMap<AttrType, double>> SERIAL(attrIncrease);
+  EnumMap<ExperienceType, double> SERIAL(expLevel);
+  EnumMap<ExperienceType, optional<int>> SERIAL(maxLevelIncrease);
   bool SERIAL(noAttackSound) = false;
-  double SERIAL(maxExpFromCombat) = 4;
   optional<CreatureId> SERIAL(creatureId);
 };

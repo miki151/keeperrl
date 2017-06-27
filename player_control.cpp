@@ -204,18 +204,18 @@ const vector<PlayerControl::BuildInfo>& PlayerControl::getBuildInfo() {
              .setTutorialHighlight(TutorialHighlight::BUILD_BED),
       BuildInfo({FurnitureType::TRAINING_WOOD, {ResourceId::WOOD, 12}}, "Wooden dummy", {},
           "Train your minions here. Adds up to " +
-          toString(*CollectiveConfig::getTrainingMaxLevelIncrease(FurnitureType::TRAINING_WOOD)) + " experience levels.",
+          toString(*CollectiveConfig::getTrainingMaxLevelIncrease(ExperienceType::MELEE, FurnitureType::TRAINING_WOOD)) + " experience levels.",
           't', "Training room", true)
              .setTutorialHighlight(TutorialHighlight::TRAINING_ROOM),
       BuildInfo({FurnitureType::TRAINING_IRON, {ResourceId::IRON, 12}}, "Iron dummy",
           {{RequirementId::TECHNOLOGY, TechId::IRON_WORKING}},
           "Train your minions here. Adds up to " +
-          toString(*CollectiveConfig::getTrainingMaxLevelIncrease(FurnitureType::TRAINING_IRON)) + " experience levels.",
+          toString(*CollectiveConfig::getTrainingMaxLevelIncrease(ExperienceType::MELEE, FurnitureType::TRAINING_IRON)) + " experience levels.",
           0, "Training room"),
       BuildInfo({FurnitureType::TRAINING_STEEL, {ResourceId::STEEL, 12}}, "Steel dummy",
           {{RequirementId::TECHNOLOGY, TechId::STEEL_MAKING}},
           "Train your minions here. Adds up to " +
-          toString(*CollectiveConfig::getTrainingMaxLevelIncrease(FurnitureType::TRAINING_STEEL)) + " experience levels.",
+          toString(*CollectiveConfig::getTrainingMaxLevelIncrease(ExperienceType::MELEE, FurnitureType::TRAINING_STEEL)) + " experience levels.",
           0, "Training room"),
       BuildInfo({FurnitureType::WORKSHOP, {ResourceId::WOOD, 15}}, "Workshop", {},
           "Produces leather equipment, traps, first-aid kits and other.", 'm', workshop, true)
@@ -1021,8 +1021,9 @@ vector<PlayerInfo> PlayerControl::getPlayerInfos(vector<WCreature> creatures, Un
     minions.emplace_back(c);
     // only fill equipment for the chosen minion to avoid lag
     if (c->getUniqueId() == chosenId) {
-      if (auto requiredDummy = getCollective()->getMissingTrainingDummy(c))
-        minions.back().levelInfo.warning = "Requires " + Furniture::getName(*requiredDummy) + ".";
+      for (auto expType : ENUM_ALL(ExperienceType))
+        if (auto requiredDummy = getCollective()->getMissingTrainingFurniture(c, expType))
+          minions.back().levelInfo.warning[expType] = "Requires " + Furniture::getName(*requiredDummy) + ".";
       for (MinionTask t : ENUM_ALL(MinionTask))
         if (c->getAttributes().getMinionTasks().getValue(t, true) > 0) {
           minions.back().minionTasks.push_back({t,

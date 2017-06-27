@@ -358,23 +358,40 @@ map<CollectiveResourceId, int> CollectiveConfig::getStartingResource() const {
   return map<CollectiveResourceId, int>{};
 }
 
-optional<int> CollectiveConfig::getTrainingMaxLevelIncrease(FurnitureType type) {
-  switch (type) {
-    case FurnitureType::TRAINING_WOOD:
-      return 3;
-    case FurnitureType::TRAINING_IRON:
-      return 7;
-    case FurnitureType::TRAINING_STEEL:
-      return 12;
-    default:
-      return none;
-  }
+const vector<FurnitureType>& CollectiveConfig::getTrainingFurniture(ExperienceType type) {
+  static EnumMap<ExperienceType, vector<FurnitureType>> ret(
+      [](ExperienceType expType) {
+        vector<FurnitureType> furniture;
+        for (auto type : ENUM_ALL(FurnitureType))
+          if (!!getTrainingMaxLevelIncrease(expType, type))
+            furniture.push_back(type);
+        return furniture;
+      });
+  return ret[type];
 }
 
-optional<int> CollectiveConfig::getStudyingMaxLevelIncrease(FurnitureType type) {
-  switch (type) {
-    case FurnitureType::BOOKCASE:
-      return 3;
+optional<int> CollectiveConfig::getTrainingMaxLevelIncrease(ExperienceType experienceType, FurnitureType type) {
+  switch (experienceType) {
+    case ExperienceType::MELEE:
+      switch (type) {
+        case FurnitureType::TRAINING_WOOD:
+          return 3;
+        case FurnitureType::TRAINING_IRON:
+          return 7;
+        case FurnitureType::TRAINING_STEEL:
+          return 12;
+        default:
+          return none;
+      }
+      break;
+    case ExperienceType::SPELL:
+      switch (type) {
+        case FurnitureType::BOOKCASE:
+          return 3;
+        default:
+          return none;
+      }
+      break;
     default:
       return none;
   }
@@ -393,26 +410,26 @@ CollectiveConfig::CollectiveConfig(const CollectiveConfig&) = default;
 CollectiveConfig::~CollectiveConfig() {
 }
 
+static auto getTrainingPredicate(ExperienceType experienceType) {
+  return [experienceType] (WConstCreature c, FurnitureType t) {
+      if (auto maxIncrease = CollectiveConfig::getTrainingMaxLevelIncrease(experienceType, t))
+        return !c || (c->getAttributes().getExpLevel(experienceType) < *maxIncrease &&
+            !c->getAttributes().isTrainingMaxedOut(experienceType));
+      else
+        return false;
+    };
+}
+
 const MinionTaskInfo& CollectiveConfig::getTaskInfo(MinionTask task) {
   static EnumMap<MinionTask, MinionTaskInfo> map([](MinionTask task) -> MinionTaskInfo {
     switch (task) {
-      case MinionTask::TRAIN: return {[](WConstCreature c, FurnitureType t) {
-            if (auto maxIncrease = CollectiveConfig::getTrainingMaxLevelIncrease(t))
-              return !c || c->getAttributes().getExpIncrease(ExperienceType::TRAINING) < *maxIncrease;
-            else
-              return false;
-          }, "training"};
+      case MinionTask::TRAIN: return {getTrainingPredicate(ExperienceType::MELEE), "training"};
       case MinionTask::SLEEP: return {FurnitureType::BED, "sleeping"};
       case MinionTask::EAT: return {MinionTaskInfo::EAT, "eating"};
       case MinionTask::GRAVE: return {FurnitureType::GRAVE, "sleeping"};
       case MinionTask::LAIR: return {FurnitureType::BEAST_CAGE, "sleeping"};
       case MinionTask::THRONE: return {FurnitureType::THRONE, "throne"};
-      case MinionTask::STUDY: return {[](WConstCreature c, FurnitureType t) {
-            if (auto maxIncrease = CollectiveConfig::getStudyingMaxLevelIncrease(t))
-              return !c || c->getAttributes().getExpIncrease(ExperienceType::STUDY) < *maxIncrease;
-            else
-              return false;
-          }, "studying"};
+      case MinionTask::STUDY: return {getTrainingPredicate(ExperienceType::SPELL), "studying"};
       case MinionTask::PRISON: return {FurnitureType::PRISON, "prison"};
       case MinionTask::CROPS: return {FurnitureType::CROPS, "crops"};
       case MinionTask::RITUAL: return {FurnitureType::DEMON_SHRINE, "rituals"};

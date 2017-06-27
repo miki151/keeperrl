@@ -166,6 +166,7 @@ SERIALIZABLE_TMPL(EntityMap, Creature, vector<Position>);
 SERIALIZABLE_TMPL(EntityMap, Creature, vector<WItem>);
 SERIALIZABLE_TMPL(EntityMap, Creature, WCreature);
 SERIALIZABLE_TMPL(EntityMap, Creature, pair<double, double>);
+SERIALIZABLE_TMPL(EntityMap, Creature, ExperienceType);
 SERIALIZABLE_TMPL(EntityMap, Task, double);
 SERIALIZABLE_TMPL(EntityMap, Task, WTask);
 SERIALIZABLE_TMPL(EntityMap, Task, MinionTrait);
@@ -173,3 +174,4 @@ SERIALIZABLE_TMPL(EntityMap, Task, Position);
 SERIALIZABLE_TMPL(EntityMap, Task, CostInfo);
 SERIALIZABLE_TMPL(EntityMap, Task, WCreature);
 SERIALIZABLE_TMPL(EntityMap, Item, Creature::Id);
+
