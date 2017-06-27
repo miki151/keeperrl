@@ -714,8 +714,6 @@ int Creature::getAttr(AttrType type) const {
   double def = getBody().modifyAttr(type, attributes->getRawAttr(type));
   for (WItem item : equipment->getAllEquipped())
     def += item->getModifier(type);
-  for (SkillId skill : ENUM_ALL(SkillId))
-    def += Skill::get(skill)->getModifier(this, type);
   switch (type) {
     case AttrType::DEFENSE:
       def -= simulAttackPen(numAttacksThisTurn);

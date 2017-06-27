@@ -952,11 +952,7 @@ PCreature CreatureFactory::getSpecial(TribeId tribe, bool humanoid, bool large, 
         }
         c.spawnType = humanoid ? SpawnType::HUMANOID : SpawnType::BEAST;
         if (humanoid) {
-          c.skills.setValue(SkillId::WEAPON_MELEE, Random.getDouble(0, 1));
-          c.skills.setValue(SkillId::UNARMED_MELEE, Random.getDouble(0, 1));
-          c.skills.setValue(SkillId::ARCHERY, Random.getDouble(0, 1));
           c.skills.setValue(SkillId::SORCERY, Random.getDouble(0, 1));
-          c.skills.setValue(SkillId::MANA, Random.getDouble(0, 1));
           c.skills.setValue(SkillId::WORKSHOP, Random.getDouble(0, 1));
           c.skills.setValue(SkillId::FORGE, Random.getDouble(0, 1));
           c.skills.setValue(SkillId::LABORATORY, Random.getDouble(0, 1));
@@ -1008,6 +1004,7 @@ CREATE_LITERAL(DAMAGE, dam)
 CREATE_LITERAL(DEFENSE, def)
 CREATE_LITERAL(SPELL_DEFENSE, spell_def)
 CREATE_LITERAL(SPELL_DAMAGE, spell_dam)
+CREATE_LITERAL(RANGED_DAMAGE, ranged_dam)
 CREATE_LITERAL(SPEED, spd)
 
 #undef CREATE_LITERAL
@@ -1030,10 +1027,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.minionTasks.setValue(MinionTask::THRONE, 0.0001); 
           c.skills.setValue(SkillId::SORCERY, 0.2);
           c.skills.setValue(SkillId::LABORATORY, 0.2);
-          c.skills.setValue(SkillId::MANA, 1);
-          c.maxLevelIncrease[ExperienceType::MELEE] = 4;
-          c.maxLevelIncrease[ExperienceType::SPELL] = 2;
-          c.maxLevelIncrease[ExperienceType::ARCHERY] = 1;
+          c.maxLevelIncrease[ExperienceType::MELEE] = 7;
+          c.maxLevelIncrease[ExperienceType::SPELL] = 12;
       );
     case CreatureId::KEEPER_F:
       return CATTR(
@@ -1052,7 +1047,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.minionTasks.setValue(MinionTask::THRONE, 0.0001);
           c.skills.setValue(SkillId::SORCERY, 0.2);
           c.skills.setValue(SkillId::LABORATORY, 0.2);
-          c.skills.setValue(SkillId::MANA, 1);
+          c.maxLevelIncrease[ExperienceType::MELEE] = 7;
+          c.maxLevelIncrease[ExperienceType::SPELL] = 12;
       );
     case CreatureId::ADVENTURER:
       return CATTR(
@@ -1064,6 +1060,9 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_MALE)->getNext());
           c.name->useFullTitle();
           c.skills.insert(SkillId::AMBUSH);
+          c.maxLevelIncrease[ExperienceType::MELEE] = 16;
+          c.maxLevelIncrease[ExperienceType::SPELL] = 8;
+          c.maxLevelIncrease[ExperienceType::ARCHERY] = 8;
       );
     case CreatureId::ADVENTURER_F:
       return CATTR(
@@ -1075,6 +1074,9 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.name = "Adventurer";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_FEMALE)->getNext());
           c.name->useFullTitle();
+          c.maxLevelIncrease[ExperienceType::MELEE] = 16;
+          c.maxLevelIncrease[ExperienceType::SPELL] = 8;
+          c.maxLevelIncrease[ExperienceType::ARCHERY] = 8;
       );
     case CreatureId::BANDIT:
       return CATTR(
@@ -1241,7 +1243,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body = Body::humanoid(Body::Size::LARGE);
           c.chatReactionFriendly = "curses all dungeons"_s;
           c.chatReactionHostile = "\"Die!\""_s;
-          c.skills.setValue(SkillId::WEAPON_MELEE, 0.3);
           c.minionTasks.setValue(MinionTask::SLEEP, 1);
           c.name = "knight";);
     case CreatureId::AVATAR: 
@@ -1251,18 +1252,16 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body = Body::humanoid(Body::Size::LARGE);
           c.chatReactionFriendly = "curses all dungeons"_s;
           c.chatReactionHostile = "\"Die!\""_s;
-          c.skills.setValue(SkillId::WEAPON_MELEE, 0.3);
           c.minionTasks.setValue(MinionTask::SLEEP, 1);
           c.courage = 3;
           c.name = "Duke of " + NameGenerator::get(NameGeneratorId::WORLD)->getNext(););
     case CreatureId::ARCHER:
       return CATTR(
           c.viewId = ViewId::ARCHER;
-          c.attr = LIST(17_dam, 22_def, 15_spell_def, 120_spd );
+          c.attr = LIST(17_dam, 22_def, 15_spell_def, 30_ranged_dam, 120_spd );
           c.body = Body::humanoid(Body::Size::LARGE);
           c.chatReactionFriendly = "curses all dungeons"_s;
           c.chatReactionHostile = "\"Die!\""_s;
-          c.skills.setValue(SkillId::ARCHERY, 1);
           c.minionTasks.setValue(MinionTask::SLEEP, 1);
           c.name = "archer";);
     case CreatureId::WARRIOR:
@@ -1272,7 +1271,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body = Body::humanoid(Body::Size::LARGE);
           c.chatReactionFriendly = "curses all dungeons"_s;
           c.chatReactionHostile = "\"Die!\""_s;
-          c.skills.setValue(SkillId::WEAPON_MELEE, 0.3);
           c.minionTasks.setValue(MinionTask::SLEEP, 1);
           c.name = "warrior";);
     case CreatureId::SHAMAN:
@@ -1282,7 +1280,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body = Body::humanoid(Body::Size::LARGE);
           c.chatReactionFriendly = "curses all dungeons"_s;
           c.chatReactionHostile = "\"Die!\""_s;
-          c.skills.setValue(SkillId::WEAPON_MELEE, 0.3);
           c.minionTasks.setValue(MinionTask::SLEEP, 1);
           c.courage = 3;
           c.spells->add(SpellId::HEALING);
@@ -1361,12 +1358,15 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.minionTasks.setValue(MinionTask::TRAIN, 4); 
           c.minionTasks.setValue(MinionTask::GRAVE, 1);
           c.minionTasks.setValue(MinionTask::EAT, 3);
+          c.maxLevelIncrease[ExperienceType::MELEE] = 3;
           c.name = "zombie";);
     case CreatureId::SKELETON: 
       return CATTR(
           c.viewId = ViewId::SKELETON;
           c.attr = LIST(19_dam, 13_def, 50_spell_def, 80_spd );
           c.body = Body::humanoid(Body::Material::BONE, Body::Size::LARGE);
+          c.maxLevelIncrease[ExperienceType::MELEE] = 3;
+          c.maxLevelIncrease[ExperienceType::ARCHERY] = 4;
           c.name = "skeleton";);
     case CreatureId::VAMPIRE: 
       return CATTR(
@@ -1382,7 +1382,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.minionTasks.setValue(MinionTask::GRAVE, 1);
           c.minionTasks.setValue(MinionTask::EAT, 3);
           c.skills.setValue(SkillId::SORCERY, 0.1);
-          c.skills.setValue(SkillId::MANA, 0.4);
+          c.maxLevelIncrease[ExperienceType::MELEE] = 7;
+          c.maxLevelIncrease[ExperienceType::SPELL] = 7;
           c.name = "vampire";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::VAMPIRE)->getNext());
           );
@@ -1394,13 +1395,14 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.spawnType = SpawnType::UNDEAD;
           c.skills.insert(SkillId::NIGHT_VISION);
           c.skills.setValue(SkillId::SORCERY, 0.5);
-          c.skills.setValue(SkillId::MANA, 0.7);
           c.minionTasks.setValue(MinionTask::TRAIN, 4); 
           c.minionTasks.setValue(MinionTask::STUDY, 1);
           c.minionTasks.setValue(MinionTask::GRAVE, 1);
           c.minionTasks.setValue(MinionTask::EAT, 3);
           c.name = "vampire lord";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::VAMPIRE)->getNext());
+          c.maxLevelIncrease[ExperienceType::MELEE] = 12;
+          c.maxLevelIncrease[ExperienceType::SPELL] = 12;
           c.permanentEffects[LastingEffect::FLYING] = 1;
           c.permanentEffects[LastingEffect::FIRE_RESISTANT] = 1;
           c.permanentEffects[LastingEffect::DARKNESS_SOURCE] = 1;
@@ -1414,12 +1416,14 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::MUMMY: 
       return CATTR(
           c.viewId = ViewId::MUMMY;
-          c.attr = LIST(15_dam, 14_def, 60_spd );
+          c.attr = LIST(15_dam, 14_def, 10_spell_dam, 14_spell_def, 60_spd );
           c.body = Body::humanoid(Body::Material::UNDEAD_FLESH, Body::Size::LARGE);
           c.spawnType = SpawnType::UNDEAD;
           c.minionTasks.setValue(MinionTask::TRAIN, 4); 
           c.minionTasks.setValue(MinionTask::GRAVE, 1);
           c.minionTasks.setValue(MinionTask::EAT, 3);
+          c.maxLevelIncrease[ExperienceType::MELEE] = 3;
+          c.maxLevelIncrease[ExperienceType::SPELL] = 3;
           c.name = CreatureName("mummy", "mummies"););
     case CreatureId::ORC:
       return CATTR(
@@ -1434,11 +1438,9 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.minionTasks.setValue(MinionTask::CRAFT, 1);
           c.minionTasks.setValue(MinionTask::SLEEP, 1);
           c.minionTasks.setValue(MinionTask::EAT, 3);
-          c.skills.setValue(SkillId::WEAPON_MELEE, 0.3);
           c.skills.setValue(SkillId::WORKSHOP, 0.3);
           c.skills.setValue(SkillId::FORGE, 0.3);
-          c.maxLevelIncrease[ExperienceType::ARCHERY] = 2;
-          c.maxLevelIncrease[ExperienceType::SPELL] = 0;
+          c.maxLevelIncrease[ExperienceType::MELEE] = 7;
           c.name = "orc";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::ORC)->getNext());
           );
@@ -1453,18 +1455,19 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.minionTasks.setValue(MinionTask::SLEEP, 1);
           c.minionTasks.setValue(MinionTask::EAT, 3);
           c.skills.setValue(SkillId::SORCERY, 0.7);
-          c.skills.setValue(SkillId::MANA, 0.4);
           c.skills.setValue(SkillId::LABORATORY, 0.7);
           c.skills.insert(SkillId::HEALING);
           c.chatReactionFriendly = "curses all elves"_s;
           c.chatReactionHostile = "\"Die!\""_s;
+          c.maxLevelIncrease[ExperienceType::MELEE] = 4;
+          c.maxLevelIncrease[ExperienceType::SPELL] = 7;
           c.name = "orc shaman";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::ORC)->getNext());
           );
     case CreatureId::HARPY:
       return CATTR(
           c.viewId = ViewId::HARPY;
-          c.attr = LIST(13_dam, 16_def, 10_spell_def, 120_spd );
+          c.attr = LIST(13_dam, 16_def, 10_spell_def, 15_ranged_dam, 120_spd );
           c.body = Body::humanoid(Body::Size::LARGE).addWings();
           c.spawnType = SpawnType::HUMANOID;
           c.minionTasks.setValue(MinionTask::TRAIN, 4);
@@ -1473,7 +1476,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.minionTasks.setValue(MinionTask::EAT, 3);
           c.skills.setValue(SkillId::LABORATORY, 0.3);
           c.gender = Gender::female;
-          c.skills.setValue(SkillId::ARCHERY, 1);
+          c.maxLevelIncrease[ExperienceType::MELEE] = 4;
+          c.maxLevelIncrease[ExperienceType::ARCHERY] = 7;
           c.name = CreatureName("harpy", "harpies");
           c.name->setFirst(NameGenerator::get(NameGeneratorId::ORC)->getNext());
           );
@@ -1563,10 +1567,10 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.minionTasks.setValue(MinionTask::TRAIN, 4); 
           c.minionTasks.setValue(MinionTask::SLEEP, 1);
           c.minionTasks.setValue(MinionTask::EAT, 5);
-          c.skills.setValue(SkillId::WEAPON_MELEE, 0.3);
           c.skills.setValue(SkillId::WORKSHOP, 0.5);
           c.skills.setValue(SkillId::FORGE, 0.5);
           c.skills.setValue(SkillId::FURNACE, 0.9);
+          c.maxLevelIncrease[ExperienceType::MELEE] = 12;
           );
     case CreatureId::CHICKEN: 
       return CATTR(
@@ -1646,12 +1650,11 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::ELF_ARCHER: 
       return CATTR(
           c.viewId = ViewId::ELF_ARCHER;
-          c.attr = LIST(18_dam, 12_def, 35_spell_def, 120_spd );
+          c.attr = LIST(18_dam, 12_def, 35_spell_def, 25_ranged_dam, 120_spd );
           c.body = Body::humanoid(Body::Size::MEDIUM);
           c.chatReactionFriendly = "curses all dwarves"_s;
           c.chatReactionHostile = "\"Die!\""_s;
           c.spells->add(SpellId::HEALING);
-          c.skills.setValue(SkillId::ARCHERY, 1);
           c.skills.insert(SkillId::ELF_VISION);
           c.minionTasks.setValue(MinionTask::SLEEP, 1);
           c.name = "elven archer";);
@@ -1670,13 +1673,11 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::ELF_LORD: 
       return CATTR(
           c.viewId = ViewId::ELF_LORD;
-          c.attr = LIST(22_dam, 14_def, 16_spell_dam, 35_spell_def, 140_spd );
+          c.attr = LIST(22_dam, 14_def, 16_spell_dam, 35_spell_def, 30_ranged_dam, 140_spd );
           c.body = Body::humanoid(Body::Size::MEDIUM);
           c.chatReactionFriendly = "curses all dwarves"_s;
           c.chatReactionHostile = "\"Die!\""_s;
           c.spells->add(SpellId::HEALING);
-          c.skills.setValue(SkillId::ARCHERY, 1);
-          c.skills.setValue(SkillId::WEAPON_MELEE, 1);
           c.skills.setValue(SkillId::SORCERY, 1);
           c.skills.insert(SkillId::HEALING);
           c.skills.insert(SkillId::ELF_VISION);
@@ -1708,15 +1709,14 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.chatReactionFriendly = "curses all dwarves"_s;
           c.chatReactionHostile = "\"Die!\""_s;
           c.spells->add(SpellId::HEALING);
-          c.skills.setValue(SkillId::ARCHERY, 0.5);
           c.skills.insert(SkillId::NIGHT_VISION);
-          c.skills.setValue(SkillId::WEAPON_MELEE, 1);
-          c.skills.setValue(SkillId::MANA, 0.3);
           c.skills.setValue(SkillId::SORCERY, 0.3);
           c.minionTasks.setValue(MinionTask::TRAIN, 4); 
           c.minionTasks.setValue(MinionTask::SLEEP, 1);
           c.minionTasks.setValue(MinionTask::STUDY, 1);
           c.minionTasks.setValue(MinionTask::EAT, 3);
+          c.maxLevelIncrease[ExperienceType::MELEE] = 5;
+          c.maxLevelIncrease[ExperienceType::SPELL] = 5;
           c.name = CreatureName("dark elf", "dark elves"););
     case CreatureId::DARK_ELF_CHILD:
       return CATTR(
@@ -1738,8 +1738,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.chatReactionFriendly = "curses all dwarves"_s;
           c.chatReactionHostile = "\"Die!\""_s;
           c.spells->add(SpellId::HEALING);
-          c.skills.setValue(SkillId::ARCHERY, 1);
-          c.skills.setValue(SkillId::WEAPON_MELEE, 1);
           c.skills.setValue(SkillId::SORCERY, 1);
           c.skills.insert(SkillId::HEALING);
           c.skills.insert(SkillId::NIGHT_VISION);
@@ -1754,13 +1752,12 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::DRIAD: 
       return CATTR(
           c.viewId = ViewId::DRIAD;
-          c.attr = LIST(6_dam, 14_def, 80_spd );
+          c.attr = LIST(6_dam, 14_def, 25_ranged_dam, 80_spd );
           c.body = Body::humanoid(Body::Size::MEDIUM);
           c.chatReactionFriendly = "curses all humans"_s;
           c.chatReactionHostile = "\"Die!\""_s;
           c.spells->add(SpellId::HEALING);
           c.skills.insert(SkillId::ELF_VISION);
-          c.skills.setValue(SkillId::ARCHERY, 1);
           c.name = "driad";);
     case CreatureId::HORSE: 
       return CATTR(
@@ -2068,7 +2065,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body = Body::nonHumanoid(Body::Material::SPIRIT, Body::Size::LARGE);
           c.chatReactionFriendly = "curses all dungeons"_s;
           c.chatReactionHostile = "\"Die!\""_s;
-          c.skills.setValue(SkillId::WEAPON_MELEE, 0.3);
           c.name = "angel";);
     case CreatureId::KRAKEN:
       return getKrakenAttributes(ViewId::KRAKEN_HEAD, "kraken");

@@ -39,44 +39,12 @@ bool Skill::isDiscrete() const {
   return discrete;
 }
 
-static int weaponBonus(WConstCreature c, AttrType t) {
-  if (!c->getWeapon())
-    return 0;
-  switch (t) {
-    case AttrType::DAMAGE: return (int) (c->getAttributes().getSkills().getValue(SkillId::WEAPON_MELEE) * 10.0);
-    default: break;
-  }
-  return 0;
-}
-
-static int unarmedBonus(WConstCreature c, AttrType t) {
-  if (c->getWeapon())
-    return 0;
-  switch (t) {
-    case AttrType::DAMAGE: return (int) (c->getAttributes().getSkills().getValue(SkillId::UNARMED_MELEE) * 10);
-    default: break;
-  }
-  return 0;
-}
-
-int Skill::getModifier(WConstCreature c, AttrType t) const {
-  switch (getId()) {
-    case SkillId::WEAPON_MELEE: return weaponBonus(c, t);
-    case SkillId::UNARMED_MELEE: return unarmedBonus(c, t);
-    default: break;
-  }
-  return 0;
-}
-
 void Skill::init() {
   Skill::set(SkillId::AMBUSH, new Skill("ambush",
         "Hide and ambush unsuspecting enemies. Press 'h' to hide on a tile that allows it.", true));
   Skill::set(SkillId::STEALING,
       new Skill("stealing", "Steal from other monsters. Not available for player ATM.", true));
   Skill::set(SkillId::SWIMMING, new Skill("swimming", "Cross water without drowning.", true));
-  Skill::set(SkillId::ARCHERY, new Skill("archery", "Shoot bows.", false));
-  Skill::set(SkillId::WEAPON_MELEE, new Skill("weapon melee", "Fight with weapons.", false));
-  Skill::set(SkillId::UNARMED_MELEE, new Skill("unarmed melee", "Fight unarmed.", false));
   Skill::set(SkillId::CONSTRUCTION, new Skill("construction", "Mine and construct rooms.", true, false));
   Skill::set(SkillId::ELF_VISION, new Skill("elf vision", "See and shoot arrows through trees.", true));
   Skill::set(SkillId::NIGHT_VISION, new Skill("night vision", "See in the dark.", true));
@@ -91,7 +59,6 @@ void Skill::init() {
   Skill::set(SkillId::LABORATORY, new Skill("laboratory", "Craft items in the laboratory.", false));
   Skill::set(SkillId::JEWELER, new Skill("jeweler", "Craft items at the jeweler's shop.", false));
   Skill::set(SkillId::FURNACE, new Skill("furnace", "Craft items at the furnace.", false));
-  Skill::set(SkillId::MANA, new Skill("mana production", "Affects mana production efficiency.", false));
 }
 
 bool Skill::transferOnConsumption() const {
