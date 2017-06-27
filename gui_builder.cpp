@@ -1126,6 +1126,8 @@ static vector<string> help = {
 };
 
 SGuiElem GuiBuilder::getExpIncreaseLine(const PlayerInfo::LevelInfo& info, ExperienceType type) {
+  if (info.limit[type] == 0)
+    return nullptr;
   auto line = gui.getListBuilder();
   line.addElem(gui.stack(
       gui.tooltip({"Training type"}),
@@ -1137,14 +1139,9 @@ SGuiElem GuiBuilder::getExpIncreaseLine(const PlayerInfo::LevelInfo& info, Exper
   line.addBackElem(gui.stack(
       gui.tooltip({"Training level, and the increase of each of the given attributes"}),
       gui.label("+" + toString(0.1 * round(10 * info.level[type])))), 60);
-  if (auto limit = info.limit[type]) {
-    if (*limit == 0)
-      return nullptr;
-    line.addBackElem(gui.stack(
-        gui.tooltip({"Upper limit of the training level"}),
-        gui.label("  (limit " + toString(*limit) + ")")), 70);
-  } else
-    line.addBackSpace(70);
+  line.addBackElem(gui.stack(
+      gui.tooltip({"Upper limit of the training level"}),
+      gui.label("  (limit " + toString(info.limit[type]) + ")")), 70);
   return line.buildHorizontalList();
 }
 

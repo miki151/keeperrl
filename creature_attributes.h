@@ -63,7 +63,7 @@ class CreatureAttributes {
   const Gender& getGender() const;
   double getExpLevel(ExperienceType type) const;
   const EnumMap<ExperienceType, double>& getExpLevel() const;
-  const EnumMap<ExperienceType, optional<int>>& getMaxExpLevel() const;
+  const EnumMap<ExperienceType, int>& getMaxExpLevel() const;
   void increaseExpLevel(ExperienceType, double increase);
   bool isTrainingMaxedOut(ExperienceType) const;
   void increaseBaseExpLevel(ExperienceType type, double increase);
@@ -131,7 +131,7 @@ class CreatureAttributes {
   EnumMap<LastingEffect, double> SERIAL(lastingEffects);
   MinionTaskMap SERIAL(minionTasks);
   EnumMap<ExperienceType, double> SERIAL(expLevel);
-  EnumMap<ExperienceType, optional<int>> SERIAL(maxLevelIncrease);
+  EnumMap<ExperienceType, int> SERIAL(maxLevelIncrease);
   bool SERIAL(noAttackSound) = false;
   optional<CreatureId> SERIAL(creatureId);
 };

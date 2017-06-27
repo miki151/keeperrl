@@ -105,21 +105,17 @@ const EnumMap<ExperienceType, double>& CreatureAttributes::getExpLevel() const {
   return expLevel;
 }
 
-const EnumMap<ExperienceType, optional<int>>& CreatureAttributes::getMaxExpLevel() const {
+const EnumMap<ExperienceType, int>& CreatureAttributes::getMaxExpLevel() const {
   return maxLevelIncrease;
 }
 
 void CreatureAttributes::increaseExpLevel(ExperienceType type, double increase) {
-  if (auto maxIncrease = maxLevelIncrease[type])
-    increase = min(increase, (double) *maxIncrease - expLevel[type]);
+  increase = max(0.0, min(increase, (double) maxLevelIncrease[type] - expLevel[type]));
   expLevel[type] += increase;
 }
 
 bool CreatureAttributes::isTrainingMaxedOut(ExperienceType type) const {
-  if (auto maxIncrease = maxLevelIncrease[type])
-    return getExpLevel(type) >= *maxIncrease;
-  else
-    return false;
+  return getExpLevel(type) >= maxLevelIncrease[type];
 }
 
 void CreatureAttributes::increaseBaseExpLevel(ExperienceType type, double increase) {

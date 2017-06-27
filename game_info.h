@@ -81,7 +81,7 @@ class PlayerInfo {
   string HASH(title);
   struct LevelInfo {
     EnumMap<ExperienceType, double> HASH(level);
-    EnumMap<ExperienceType, optional<int>> HASH(limit);
+    EnumMap<ExperienceType, int> HASH(limit);
     EnumMap<ExperienceType, optional<string>> HASH(warning);
     HASH_ALL(level, limit, warning);
   };
