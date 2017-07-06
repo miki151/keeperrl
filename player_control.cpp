@@ -1025,7 +1025,7 @@ vector<PlayerInfo> PlayerControl::getPlayerInfos(vector<WCreature> creatures, Un
         if (auto requiredDummy = getCollective()->getMissingTrainingFurniture(c, expType))
           minions.back().levelInfo.warning[expType] = "Requires " + Furniture::getName(*requiredDummy) + ".";
       for (MinionTask t : ENUM_ALL(MinionTask))
-        if (c->getAttributes().getMinionTasks().getValue(t, true) > 0) {
+        if (c->getAttributes().getMinionTasks().getValue(getCollective(), c, t, true) > 0) {
           minions.back().minionTasks.push_back({t,
               !getCollective()->isMinionTaskPossible(c, t),
               getCollective()->getMinionTask(c) == t,
@@ -1580,7 +1580,7 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
       if (draggedCreature)
         if (WCreature c = getCreature(*draggedCreature))
           if (auto task = MinionTasks::getTaskFor(c, furniture->getType()))
-            if (c->getAttributes().getMinionTasks().getValue(*task) > 0)
+            if (c->getAttributes().getMinionTasks().getValue(getCollective(), c, *task) > 0)
               index.setHighlight(HighlightType::CREATURE_DROP);
       if (showEfficiency(furniture->getType()) && index.hasObject(ViewLayer::FLOOR))
         index.getObject(ViewLayer::FLOOR).setAttribute(ViewObject::Attribute::EFFICIENCY,

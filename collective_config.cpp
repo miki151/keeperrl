@@ -135,7 +135,7 @@ bool CollectiveConfig::getWorkerFollowLeader() const {
   return type == KEEPER;
 }
 
-bool CollectiveConfig::sleepOnlyAtNight() const {
+bool CollectiveConfig::hasVillainSleepingTask() const {
   return type != KEEPER;
 }
 

@@ -1285,8 +1285,10 @@ CreatureAction Creature::destroy(Vec2 direction, const DestroyAction& action) co
 }
 
 bool Creature::canCopulateWith(WConstCreature c) const {
-  return c->getBody().canCopulateWith() && c->attributes->getGender() != attributes->getGender() &&
-    c->isAffected(LastingEffect::SLEEP);
+  return attributes->getSkills().hasDiscrete(SkillId::COPULATION) &&
+      c->getBody().canCopulateWith() &&
+      c->attributes->getGender() != attributes->getGender() &&
+      c->isAffected(LastingEffect::SLEEP);
 }
 
 bool Creature::canConsume(WConstCreature c) const {

@@ -85,6 +85,7 @@ class Body {
   bool canEntangle() const;
   double getHealth() const;
   bool hasBrain() const;
+  bool needsToEat() const;
   vector<PItem> getCorpseItem(const string& name, UniqueEntity<Creature>::Id);
 
   vector<AttackLevel> getAttackLevels() const;

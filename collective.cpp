@@ -144,8 +144,6 @@ void Collective::addCreature(PCreature creature, Position pos, EnumSet<MinionTra
 void Collective::addCreature(WCreature c, EnumSet<MinionTrait> traits) {
   if (!traits.contains(MinionTrait::FARM_ANIMAL) && !c->getController()->isCustomController())
     c->setController(makeOwner<Monster>(c, MonsterAIFactory::collective(this)));
-  if (traits.contains(MinionTrait::WORKER))
-    c->getAttributes().getMinionTasks().clear();
   if (!leader)
     leader = c;
   if (c->getTribeId() != *tribe)
@@ -328,14 +326,14 @@ optional<MinionTask> Collective::getMinionTask(WConstCreature c) const {
 }
 
 bool Collective::isTaskGood(WConstCreature c, MinionTask task, bool ignoreTaskLock) const {
-  if (c->getAttributes().getMinionTasks().getValue(task, ignoreTaskLock) == 0)
+  if (c->getAttributes().getMinionTasks().getValue(this, c, task, ignoreTaskLock) == 0)
     return false;
   switch (task) {
     case MinionTask::CROPS:
     case MinionTask::EXPLORE:
         return getGame()->getSunlightInfo().getState() == SunlightState::DAY;
     case MinionTask::SLEEP:
-        if (!config->sleepOnlyAtNight())
+        if (!config->hasVillainSleepingTask())
           return true;
       FALLTHROUGH;
     case MinionTask::EXPLORE_NOCTURNAL:
@@ -347,8 +345,11 @@ bool Collective::isTaskGood(WConstCreature c, MinionTask task, bool ignoreTaskLo
 void Collective::setRandomTask(WConstCreature c) {
   vector<pair<MinionTask, double>> goodTasks;
   for (MinionTask t : ENUM_ALL(MinionTask))
-    if (isTaskGood(c, t))
-      goodTasks.push_back({t, c->getAttributes().getMinionTasks().getValue(t)});
+    if (isTaskGood(c, t)) {
+      double value = c->getAttributes().getMinionTasks().getValue(this, c, t);
+      if (value > 0)
+        goodTasks.push_back({t, value});
+    }
   if (!goodTasks.empty())
     setMinionTask(c, Random.choose(goodTasks));
 }
@@ -358,8 +359,6 @@ bool Collective::isMinionTaskPossible(WCreature c, MinionTask task) {
 }
 
 PTask Collective::getStandardTask(WCreature c) {
-  if (!c->getAttributes().getMinionTasks().hasAnyTask())
-    return nullptr;
   auto current = currentTasks.getMaybe(c);
   if (!current || (current->finishTime && *current->finishTime < c->getLocalTime()) || !isTaskGood(c, current->task)) {
     currentTasks.erase(c);
@@ -427,7 +426,7 @@ void Collective::considerHealingTask(WCreature c) {
   if (c->getBody().canHeal() && !c->isAffected(LastingEffect::POISON))
     for (MinionTask t : healingTasks) {
       auto currentTask = getMinionTask(c);
-      if (c->getAttributes().getMinionTasks().getValue(t) > 0 &&
+      if (c->getAttributes().getMinionTasks().getValue(this, c, t) > 0 &&
           (!currentTask || !healingTasks.contains(*currentTask))) {
         cancelTask(c);
         setMinionTask(c, t);

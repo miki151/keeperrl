@@ -749,6 +749,17 @@ bool Body::hasBrain() const {
   return material == Material::FLESH;
 }
 
+bool Body::needsToEat() const {
+  switch (material) {
+    case Material::FLESH:
+    case Material::BONE:
+    case Material::UNDEAD_FLESH:
+      return true;
+    default:
+      return false;
+  }
+}
+
 bool Body::fallsApartFromDamage() const {
   switch (material) {
     case Material::FLESH:

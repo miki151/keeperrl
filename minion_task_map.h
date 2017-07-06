@@ -19,20 +19,15 @@
 
 class MinionTaskMap {
   public:
-  void setValue(MinionTask, double);
-  void clear();
-
   void toggleLock(MinionTask);
   bool isLocked(MinionTask) const;
   
-  double getValue(MinionTask, bool ignoreTaskLock = false) const;
-  bool hasAnyTask() const;
-  
+  double getValue(WConstCollective, WConstCreature, MinionTask, bool ignoreTaskLock = false) const;
+
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);
   
   private:
-  EnumMap<MinionTask, double> SERIAL(tasks);
   EnumSet<MinionTask> SERIAL(locked);
 };
 

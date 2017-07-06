@@ -126,7 +126,7 @@ class CollectiveConfig {
   int getNumGhostSpawns() const;
   int getImmigrantTimeout() const;
   double getGhostProb() const;
-  bool sleepOnlyAtNight() const;
+  bool hasVillainSleepingTask() const;
   const vector<ImmigrantInfo>& getImmigrantInfo() const;
   const vector<PopulationIncrease>& getPopulationIncreases() const;
   const optional<GuardianInfo>& getGuardianInfo() const;
