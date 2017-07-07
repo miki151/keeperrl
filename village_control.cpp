@@ -82,7 +82,7 @@ void VillageControl::onEvent(const GameEvent& event) {
         if (isEnemy(info.creature) && villain)
           if (villain->triggers.contains(AttackTriggerId::STOLEN_ITEMS)) {
             bool wasTheft = false;
-            for (const WItem it : info.items)
+            for (WConstItem it : info.items)
               if (myItems.contains(it)) {
                 wasTheft = true;
                 ++stolenItemCount;

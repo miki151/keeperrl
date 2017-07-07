@@ -135,7 +135,7 @@ void Player::onBump(WCreature) {
   FATAL << "Shouldn't call onBump on a player";
 }
 
-string Player::getInventoryItemName(const WItem item, bool plural) const {
+string Player::getInventoryItemName(WConstItem item, bool plural) const {
   if (getCreature()->getEquipment().isEquipped(item))
     return item->getNameAndModifiers(plural, getCreature()) + " "
       + getSlotSuffix(item->getEquipmentSlot());
@@ -298,7 +298,7 @@ vector<ItemAction> Player::getItemActions(const vector<WItem>& item) const {
 
 void Player::handleItems(const EntitySet<Item>& itemIds, ItemAction action) {
   vector<WItem> items = getCreature()->getEquipment().getItems(
-      [&](const WItem it) { return itemIds.contains(it);});
+      [&](WConstItem it) { return itemIds.contains(it);});
   //CHECK(items.size() == itemIds.size()) << int(items.size()) << " " << int(itemIds.size());
   // the above assertion fails for unknown reason, so just fail this softly.
   if (items.empty() || (items.size() == 1 && action == ItemAction::DROP_MULTI))

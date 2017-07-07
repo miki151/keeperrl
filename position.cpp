@@ -290,23 +290,23 @@ void Position::getViewIndex(ViewIndex& index, WConstCreature viewer) const {
 
 const vector<WItem>& Position::getItems() const {
   if (isValid())
-    return getSquare()->getItems();
+    return getSquare()->getInventory().getItems();
   else {
     static vector<WItem> empty;
     return empty;
   }
 }
 
-vector<WItem> Position::getItems(function<bool (WItem)> predicate) const {
+vector<WItem> Position::getItems(function<bool (WConstItem)> predicate) const {
   if (isValid())
-    return getSquare()->getItems(predicate);
+    return getSquare()->getInventory().getItems(predicate);
   else
     return {};
 }
 
 const vector<WItem>& Position::getItems(ItemIndex index) const {
   if (isValid())
-    return getSquare()->getItems(index);
+    return getSquare()->getInventory().getItems(index);
   else {
     static vector<WItem> empty;
     return empty;

@@ -10,6 +10,7 @@
 #include "territory.h"
 #include "furniture_factory.h"
 #include "furniture.h"
+#include "task_map.h"
 
 static bool betterPos(Position from, Position current, Position candidate) {
   double maxDiff = 0.3;
@@ -102,6 +103,18 @@ vector<Position> MinionTasks::getAllPositions(WConstCollective collective, WCons
   return ret;
 }
 
+
+
+WTask MinionTasks::getExisting(WCollective collective, WCreature c, MinionTask task) {
+  auto& info = CollectiveConfig::getTaskInfo(task);
+  switch (info.type) {
+    case MinionTaskInfo::WORKER:
+      return collective->getTaskMap().getClosestTask(c, MinionTrait::WORKER);
+    default:
+      return nullptr;
+  }
+}
+
 PTask MinionTasks::generate(WCollective collective, WCreature c, MinionTask task) {
   auto& info = CollectiveConfig::getTaskInfo(task);
   switch (info.type) {
@@ -134,6 +147,8 @@ PTask MinionTasks::generate(WCollective collective, WCreature c, MinionTask task
       auto& territory = collective->getTerritory();
       return Task::spider(territory.getAll().front(), territory.getExtended(3), territory.getExtended(6));
     }
+    default:
+      return nullptr;
   }
   return nullptr;
 }

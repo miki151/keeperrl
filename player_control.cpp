@@ -474,7 +474,7 @@ static vector<ItemType> marketItems {
 void PlayerControl::addConsumableItem(WCreature creature) {
   ScrollPosition scrollPos;
   while (1) {
-    WItem chosenItem = chooseEquipmentItem(creature, {}, [&](const WItem it) {
+    WItem chosenItem = chooseEquipmentItem(creature, {}, [&](WConstItem it) {
         return !getCollective()->getMinionEquipment().isOwner(it, creature)
             && !it->canEquip()
             && getCollective()->getMinionEquipment().needsItem(creature, it, true); }, &scrollPos);
@@ -487,7 +487,7 @@ void PlayerControl::addConsumableItem(WCreature creature) {
 
 void PlayerControl::addEquipment(WCreature creature, EquipmentSlot slot) {
   vector<WItem> currentItems = creature->getEquipment().getSlotItems(slot);
-  WItem chosenItem = chooseEquipmentItem(creature, currentItems, [&](const WItem it) {
+  WItem chosenItem = chooseEquipmentItem(creature, currentItems, [&](WConstItem it) {
       return !getCollective()->getMinionEquipment().isOwner(it, creature)
       && creature->canEquipIfEmptySlot(it, nullptr) && it->getEquipmentSlot() == slot; });
   if (chosenItem) {
@@ -632,7 +632,7 @@ void PlayerControl::fillEquipment(WCreature creature, PlayerInfo& info) const {
       info.inventory.back().tutorialHighlight = true;
   }
   vector<pair<string, vector<WItem>>> consumables = Item::stackItems(ownedItems,
-      [&](const WItem it) { if (!creature->getEquipment().hasItem(it)) return " (pending)"; else return ""; } );
+      [&](WConstItem it) { if (!creature->getEquipment().hasItem(it)) return " (pending)"; else return ""; } );
   for (auto elem : consumables)
     info.inventory.push_back(getItemInfo(elem.second, false,
           !creature->getEquipment().hasItem(elem.second[0]), false, ItemInfo::CONSUMABLE));
@@ -658,7 +658,7 @@ WItem PlayerControl::chooseEquipmentItem(WCreature creature, vector<WItem> curre
   if (currentItems.empty() && availableItems.empty() && usedItems.empty())
     return nullptr;
   vector<pair<string, vector<WItem>>> usedStacks = Item::stackItems(usedItems,
-      [&](const WItem it) {
+      [&](WConstItem it) {
         WConstCreature c = getCreature(*getCollective()->getMinionEquipment().getOwner(it));
         return toString<int>(c->getBestAttack().value);});
   vector<WItem> allStacked;

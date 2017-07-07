@@ -162,8 +162,8 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   CreatureAction applyItem(WItem item) const;
   CreatureAction equip(WItem item) const;
   CreatureAction unequip(WItem item) const;
-  bool canEquipIfEmptySlot(const WItem item, string* reason = nullptr) const;
-  bool canEquip(const WItem item) const;
+  bool canEquipIfEmptySlot(WConstItem item, string* reason = nullptr) const;
+  bool canEquip(WConstItem item) const;
   CreatureAction throwItem(WItem, Vec2 direction) const;
   CreatureAction heal(Vec2 direction) const;
   CreatureAction applySquare(Position) const;

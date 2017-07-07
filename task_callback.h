@@ -12,9 +12,7 @@ class TaskCallback : public OwnedObject<TaskCallback> {
   virtual void onAppliedItem(Position, WItem item) {}
   virtual void onAppliedSquare(WCreature, Position) {}
   virtual void onAppliedItemCancel(Position) {}
-  virtual void onTaskPickedUp(Position, EntitySet<Item>) {}
   virtual void onBrought(Position, EntitySet<Item>) {}
-  virtual void onCantPickItem(EntitySet<Item> items) {}
   virtual void onKillCancelled(WCreature) {}
   virtual void onCopulated(WCreature who, WCreature with) {}
 

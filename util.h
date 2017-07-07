@@ -71,7 +71,7 @@ T lambdaConstruct(function<void(T&)> fun) {
 
 #define LIST(...) {__VA_ARGS__}
 
-typedef function<bool(const WItem)> ItemPredicate;
+typedef function<bool(WConstItem)> ItemPredicate;
 
 template<class T>
 vector<T*> extractRefs(vector<unique_ptr<T>>& v) {

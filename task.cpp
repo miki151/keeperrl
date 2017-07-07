@@ -231,14 +231,9 @@ class PickItem : public Task {
     return "Pick item " + toString(position);
   }
 
-  virtual void cancel() override {
-    callback->onCantPickItem(items);
-  }
-
   virtual MoveInfo getMove(WCreature c) override {
     CHECK(!pickedUp);
     if (!itemsExist(position)) {
-      callback->onCantPickItem(items);
       setDone();
       return NoMove;
     }
@@ -249,7 +244,6 @@ class PickItem : public Task {
           hereItems.push_back(it);
           items.erase(it);
         }
-      callback->onCantPickItem(items);
       if (hereItems.empty()) {
         setDone();
         return NoMove;
@@ -259,20 +253,16 @@ class PickItem : public Task {
         return {1.0, action.append([=](WCreature c) {
           pickedUp = true;
           onPickedUp();
-          callback->onTaskPickedUp(position, hereItems);
         })}; 
       else {
-        callback->onCantPickItem(items);
         setDone();
         return NoMove;
       }
     }
     if (auto action = c->moveTowards(position, true))
       return action;
-    else if (--tries == 0) {
-      callback->onCantPickItem(items);
+    else if (--tries == 0)
       setDone();
-    }
     return NoMove;
   }
 
@@ -430,8 +420,6 @@ class BringItem : public PickItem {
     if (!target)
       return c->drop(c->getEquipment().getItems(items.containsPredicate())).append(
           [this] (WCreature) {
-            callback->onCantPickItem(items);
-            cancel();
             setDone();
           });
     if (c->getPosition() == target) {

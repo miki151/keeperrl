@@ -64,7 +64,7 @@ class Position {
   void addSound(const Sound&) const;
   void getViewIndex(ViewIndex&, WConstCreature viewer) const;
   const vector<WItem>& getItems() const;
-  vector<WItem> getItems(function<bool (WItem)> predicate) const;
+  vector<WItem> getItems(function<bool(WConstItem)> predicate) const;
   const vector<WItem>& getItems(ItemIndex) const;
   PItem removeItem(WItem);
   Inventory& modInventory() const;

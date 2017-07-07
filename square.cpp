@@ -192,18 +192,6 @@ WItem Square::getTopItem() const {
     return inventory->getItems().back();
 }
 
-vector<WItem> Square::getItems(function<bool (WItem)> predicate) const {
- return inventory->getItems(predicate);
-}
-
-const vector<WItem>& Square::getItems() const {
-  return inventory->getItems();
-}
-
-const vector<WItem>& Square::getItems(ItemIndex index) const {
-  return inventory->getItems(index);
-}
-
 PItem Square::removeItem(Position pos, WItem it) {
   setDirty(pos);
   return getInventory().removeItem(it);

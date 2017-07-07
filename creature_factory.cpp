@@ -1476,7 +1476,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
       return CATTR(
           c.viewId = ViewId::IMP;
           c.attr = LIST(5_dam, 15_def, 200_spd );
-          c.body = Body::humanoid(Body::Size::SMALL).setNoCarryLimit();
+          c.body = Body::humanoid(Body::Material::SPIRIT, Body::Size::SMALL).setNoCarryLimit();
           c.courage = 0.1;
           c.noChase = true;
           c.cantEquip = true;

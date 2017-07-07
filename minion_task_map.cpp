@@ -66,6 +66,8 @@ double MinionTaskMap::getValue(WConstCollective col, WConstCreature c, MinionTas
         return c->getAttributes().getSkills().hasDiscrete(SkillId::EXPLORE);
       case MinionTask::EXPLORE_NOCTURNAL:
         return c->getAttributes().getSkills().hasDiscrete(SkillId::EXPLORE_NOCTURNAL);
+      case MinionTask::WORKER:
+        return c->getAttributes().getSkills().hasDiscrete(SkillId::CONSTRUCTION);
     }
   }();
   double probability = [&] {

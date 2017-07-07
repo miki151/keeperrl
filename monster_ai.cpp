@@ -43,7 +43,7 @@ class Behaviour {
   Behaviour(WCreature);
   virtual MoveInfo getMove() { return NoMove; }
   virtual void onAttacked(WConstCreature attacker) {}
-  virtual double itemValue(const WItem) { return 0; }
+  virtual double itemValue(WConstItem) { return 0; }
   WItem getBestWeapon();
   WCreature getClosestEnemy();
   WCreature getClosestCreature();
@@ -129,7 +129,7 @@ class Heal : public Behaviour {
   public:
   Heal(WCreature c) : Behaviour(c) {}
 
-  virtual double itemValue(const WItem item) {
+  virtual double itemValue(WConstItem item) {
     if (item->getEffectType() == EffectType(EffectId::HEAL)) {
       return 0.5;
     }
@@ -291,7 +291,7 @@ class GoldLust : public Behaviour {
   public:
   GoldLust(WCreature c) : Behaviour(c) {}
 
-  virtual double itemValue(const WItem item) {
+  virtual double itemValue(WConstItem item) {
     if (item->getClass() == ItemClass::GOLD)
       return 1;
     else
@@ -388,7 +388,7 @@ class Fighter : public Behaviour {
       return NoMove;
   }
 
-  virtual double itemValue(const WItem item) override {
+  virtual double itemValue(WConstItem item) override {
     if (contains<EffectType>({
           EffectType(EffectId::LASTING, LastingEffect::INVISIBLE),
           EffectType(EffectId::LASTING, LastingEffect::SLOWED),
@@ -439,7 +439,7 @@ class Fighter : public Behaviour {
     Vec2 dir = enemyDir.shorten();
     WItem best = nullptr;
     int damage = 0;
-    auto items = creature->getEquipment().getItems([this](WItem item) {
+    auto items = creature->getEquipment().getItems([this](WConstItem item) {
         return !creature->getEquipment().isEquipped(item);});
     for (WItem item : items)
       if (getThrowValue(item) > damage) {
@@ -974,7 +974,7 @@ class SplashImps : public Behaviour {
   void initializeSplashItems() {
     for (Vec2 v : Level::getSplashVisibleBounds()) {
       vector<WItem> inv = Position(v, creature->getLevel()).getItems(
-          [](const WItem it) { return it->getClass() == ItemClass::GOLD || it->getClass() == ItemClass::CORPSE;});
+          [](WConstItem it) { return it->getClass() == ItemClass::GOLD || it->getClass() == ItemClass::CORPSE;});
       if (!inv.empty())
         splashItems.addItems(v, inv);
     }

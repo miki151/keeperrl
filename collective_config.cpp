@@ -131,7 +131,7 @@ bool CollectiveConfig::getManageEquipment() const {
   return type == KEEPER;
 }
 
-bool CollectiveConfig::getWorkerFollowLeader() const {
+bool CollectiveConfig::getFollowLeaderIfNoTerritory() const {
   return type == KEEPER;
 }
 
@@ -291,7 +291,7 @@ const ResourceInfo& CollectiveConfig::getResourceInfo(CollectiveResourceId id) {
 }
 
 static CollectiveItemPredicate unMarkedItems() {
-  return [](WConstCollective col, const WItem it) { return !col->isItemMarked(it); };
+  return [](WConstCollective col, WConstItem it) { return !col->isItemMarked(it); };
 }
 
 
@@ -300,7 +300,7 @@ const vector<ItemFetchInfo>& CollectiveConfig::getFetchInfo() {
       {ItemIndex::CORPSE, unMarkedItems(), getFurnitureStorage(FurnitureType::GRAVE), true, CollectiveWarning::GRAVES},
       {ItemIndex::GOLD, unMarkedItems(), getFurnitureStorage(FurnitureType::TREASURE_CHEST), false,
           CollectiveWarning::CHESTS},
-      {ItemIndex::MINION_EQUIPMENT, [](WConstCollective col, const WItem it)
+      {ItemIndex::MINION_EQUIPMENT, [](WConstCollective col, WConstItem it)
           { return it->getClass() != ItemClass::GOLD && !col->isItemMarked(it);},
           getZoneStorage(ZoneId::STORAGE_EQUIPMENT), false, CollectiveWarning::EQUIPMENT_STORAGE},
       {ItemIndex::WOOD, unMarkedItems(), getZoneStorage(ZoneId::STORAGE_RESOURCES), false,
@@ -423,6 +423,7 @@ static auto getTrainingPredicate(ExperienceType experienceType) {
 const MinionTaskInfo& CollectiveConfig::getTaskInfo(MinionTask task) {
   static EnumMap<MinionTask, MinionTaskInfo> map([](MinionTask task) -> MinionTaskInfo {
     switch (task) {
+      case MinionTask::WORKER: return {MinionTaskInfo::WORKER, "working"};
       case MinionTask::TRAIN: return {getTrainingPredicate(ExperienceType::MELEE), "training"};
       case MinionTask::SLEEP: return {FurnitureType::BED, "sleeping"};
       case MinionTask::EAT: return {MinionTaskInfo::EAT, "eating"};

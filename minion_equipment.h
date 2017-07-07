@@ -25,12 +25,12 @@ class Item;
 class MinionEquipment {
   public:
 
-  static bool isItemUseful(const WItem);
-  bool needsItem(WConstCreature c, const WItem it, bool noLimit = false) const;
-  optional<UniqueEntity<Creature>::Id> getOwner(const WItem) const;
-  bool isOwner(const WItem, WConstCreature) const;
+  static bool isItemUseful(WConstItem);
+  bool needsItem(WConstCreature c, WConstItem it, bool noLimit = false) const;
+  optional<UniqueEntity<Creature>::Id> getOwner(WConstItem) const;
+  bool isOwner(WConstItem, WConstCreature) const;
   bool tryToOwn(WConstCreature, WItem);
-  void discard(const WItem);
+  void discard(WConstItem);
   void discard(UniqueEntity<Item>::Id);
   void updateOwners(const vector<WCreature>&);
   vector<WItem> getItemsOwnedBy(WConstCreature, ItemPredicate = nullptr) const;
@@ -47,10 +47,10 @@ class MinionEquipment {
   private:
   enum EquipmentType { ARMOR, HEALING, COMBAT_ITEM };
 
-  static optional<EquipmentType> getEquipmentType(const WItem it);
+  static optional<EquipmentType> getEquipmentType(WConstItem it);
   optional<int> getEquipmentLimit(EquipmentType type) const;
   WItem getWorstItem(WConstCreature, vector<WItem>) const;
-  int getItemValue(const WItem) const;
+  int getItemValue(WConstItem) const;
 
   EntityMap<Item, UniqueEntity<Creature>::Id> SERIAL(owners);
   EntityMap<Creature, vector<WItem>> SERIAL(myItems);

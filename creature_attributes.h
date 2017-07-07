@@ -89,7 +89,7 @@ class CreatureAttributes {
   void removePermanentEffect(LastingEffect);
   bool considerTimeout(LastingEffect, double globalTime);
   bool considerAffecting(LastingEffect, double globalTime, double timeout);
-  AttackType getAttackType(const WItem weapon) const;
+  AttackType getAttackType(WConstItem weapon) const;
   optional<EffectType> getAttackEffect() const;
   bool canSleep() const;
   bool isInnocent() const;

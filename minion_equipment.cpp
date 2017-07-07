@@ -62,7 +62,7 @@ optional<int> MinionEquipment::getEquipmentLimit(EquipmentType type) const {
   }
 }
 
-optional<MinionEquipment::EquipmentType> MinionEquipment::getEquipmentType(const WItem it) {
+optional<MinionEquipment::EquipmentType> MinionEquipment::getEquipmentType(WConstItem it) {
   if (it->canEquip())
     return MinionEquipment::ARMOR;
   if (auto& effect = it->getEffectType()) {
@@ -74,18 +74,18 @@ optional<MinionEquipment::EquipmentType> MinionEquipment::getEquipmentType(const
   return none;
 }
 
-bool MinionEquipment::isItemUseful(const WItem it) {
+bool MinionEquipment::isItemUseful(WConstItem it) {
   static EnumSet<ItemClass> usefulItems {ItemClass::GOLD, ItemClass::POTION, ItemClass::SCROLL};
   return getEquipmentType(it) || usefulItems.contains(it->getClass())
       || (it->getClass() == ItemClass::FOOD && !it->getCorpseInfo());
 }
 
-bool MinionEquipment::needsItem(WConstCreature c, const WItem it, bool noLimit) const {
+bool MinionEquipment::needsItem(WConstCreature c, WConstItem it, bool noLimit) const {
   if (optional<EquipmentType> type = getEquipmentType(it)) {
     if (!noLimit) {
       auto itemValue = getItemValue(it);
       if (auto limit = getEquipmentLimit(*type)) {
-        auto pred = [=](const WItem ownedItem) {
+        auto pred = [=](WConstItem ownedItem) {
           return getEquipmentType(ownedItem) == *type &&
               (getItemValue(ownedItem) >= itemValue || isLocked(c, ownedItem->getUniqueId())) &&
               ownedItem != it;
@@ -96,7 +96,7 @@ bool MinionEquipment::needsItem(WConstCreature c, const WItem it, bool noLimit) 
       if (it->canEquip()) {
         auto slot = it->getEquipmentSlot();
         int limit = c->getEquipment().getMaxItems(slot);
-        auto pred = [=](const WItem ownedItem) {
+        auto pred = [=](WConstItem ownedItem) {
           return ownedItem->canEquip() &&
               ownedItem->getEquipmentSlot() == slot &&
               (getItemValue(ownedItem) >= itemValue || isLocked(c, ownedItem->getUniqueId())) &&
@@ -113,14 +113,14 @@ bool MinionEquipment::needsItem(WConstCreature c, const WItem it, bool noLimit) 
     return false;
 }
 
-optional<Creature::Id> MinionEquipment::getOwner(const WItem it) const {
+optional<Creature::Id> MinionEquipment::getOwner(WConstItem it) const {
   if (auto creature = owners.getMaybe(it))
     return *creature;
   else
     return none;
 }
 
-bool MinionEquipment::isOwner(const WItem it, WConstCreature c) const {
+bool MinionEquipment::isOwner(WConstItem it, WConstCreature c) const {
   return getOwner(it) == c->getUniqueId();
 }
 
@@ -162,7 +162,7 @@ vector<WItem> MinionEquipment::getItemsOwnedBy(WConstCreature c, ItemPredicate p
   return ret;
 }
 
-void MinionEquipment::discard(const WItem it) {
+void MinionEquipment::discard(WConstItem it) {
   discard(it->getUniqueId());
 }
 
@@ -181,7 +181,7 @@ void MinionEquipment::discard(UniqueEntity<Item>::Id id) {
 }
 
 void MinionEquipment::sortByEquipmentValue(vector<WItem>& items) const {
-  sort(items.begin(), items.end(), [this](const WItem it1, const WItem it2) {
+  sort(items.begin(), items.end(), [this](WConstItem it1, WConstItem it2) {
       int diff = getItemValue(it1) - getItemValue(it2);
       if (diff == 0)
         return it1->getUniqueId() < it2->getUniqueId();
@@ -254,7 +254,7 @@ void MinionEquipment::autoAssign(WConstCreature creature, vector<WItem> possible
   }
 }
 
-int MinionEquipment::getItemValue(const WItem it) const {
+int MinionEquipment::getItemValue(WConstItem it) const {
   int sum = 0;
   auto multiplier = [](AttrType type) {
     switch (type) {

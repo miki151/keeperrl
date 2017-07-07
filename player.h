@@ -117,8 +117,8 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   void fireAction(Vec2 dir);
   vector<WItem> chooseItem(const string& text, ItemPredicate, optional<UserInputId> exitAction = none);
   void getItemNames(vector<WItem> it, vector<ListElem>& names, vector<vector<WItem> >& groups,
-      ItemPredicate = alwaysTrue<const WItem>());
-  string getInventoryItemName(const WItem, bool plural) const;
+      ItemPredicate = alwaysTrue<WConstItem>());
+  string getInventoryItemName(WConstItem, bool plural) const;
   string getPluralName(WItem item, int num);
   bool SERIAL(travelling) = false;
   Vec2 SERIAL(travelDir);

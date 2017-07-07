@@ -501,7 +501,7 @@ void Creature::drop(vector<PItem> items) {
   getPosition().dropItems(std::move(items));
 }
 
-bool Creature::canEquipIfEmptySlot(const WItem item, string* reason) const {
+bool Creature::canEquipIfEmptySlot(WConstItem item, string* reason) const {
   if (!getBody().isHumanoid()) {
     if (reason)
       *reason = "Only humanoids can equip items!";
@@ -525,7 +525,7 @@ bool Creature::canEquipIfEmptySlot(const WItem item, string* reason) const {
   return item->canEquip();
 }
 
-bool Creature::canEquip(const WItem item) const {
+bool Creature::canEquip(WConstItem item) const {
   return canEquipIfEmptySlot(item, nullptr) && equipment->canEquip(item);
 }
 
@@ -781,7 +781,7 @@ bool Creature::isEnemy(WConstCreature c) const {
 
 vector<WItem> Creature::getGold(int num) const {
   vector<WItem> ret;
-  for (WItem item : equipment->getItems([](WItem it) { return it->getClass() == ItemClass::GOLD; })) {
+  for (WItem item : equipment->getItems([](WConstItem it) { return it->getClass() == ItemClass::GOLD; })) {
     ret.push_back(item);
     if (ret.size() == num)
       return ret;
@@ -1183,7 +1183,7 @@ CreatureAction Creature::give(WCreature whom, vector<WItem> items) const {
 
 CreatureAction Creature::payFor(const vector<WItem>& items) const {
   int totalPrice = std::accumulate(items.begin(), items.end(), 0,
-      [](int sum, const WItem it) { return sum + it->getPrice(); });
+      [](int sum, WConstItem it) { return sum + it->getPrice(); });
   return give(items[0]->getShopkeeper(this), getGold(totalPrice))
       .append([=](WCreature) { for (auto it : items) it->setShopkeeper(nullptr); });
 }
@@ -1701,7 +1701,7 @@ const char* getMoraleText(double morale) {
 }
 
 vector<AdjectiveInfo> Creature::getWeaponAdjective() const {
-  if (const WItem weapon = getWeapon())
+  if (WConstItem weapon = getWeapon())
     return {{"Wielding " + weapon->getAName(), ""}};
   else
     return {};

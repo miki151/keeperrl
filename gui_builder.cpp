@@ -2181,6 +2181,7 @@ static string getTaskText(MinionTask option) {
     case MinionTask::GRAVE:
     case MinionTask::LAIR:
     case MinionTask::SLEEP: return "Sleeping";
+    case MinionTask::WORKER: return "Working";
     case MinionTask::EAT: return "Eating";
     case MinionTask::EXPLORE_NOCTURNAL: return "Exploring (night)";
     case MinionTask::EXPLORE_CAVES: return "Exploring caves";

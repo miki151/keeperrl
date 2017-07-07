@@ -83,9 +83,6 @@ class Square : public OwnedObject<Square> {
 
   bool itemLands(vector<WItem> item, const Attack& attack) const;
   void onItemLands(Position, vector<PItem>, const Attack&, int remainingDist, Vec2 dir, VisionId);
-  const vector<WItem>& getItems() const;
-  vector<WItem> getItems(function<bool (WItem)> predicate) const;
-  const vector<WItem>& getItems(ItemIndex) const;
   PItem removeItem(Position, WItem);
   vector<PItem> removeItems(Position, vector<WItem>);
 

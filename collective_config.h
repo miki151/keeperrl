@@ -63,7 +63,7 @@ struct ResourceInfo {
   optional<TutorialHighlight> tutorialHighlight;
 };
 
-typedef function<bool(WConstCollective, const WItem)> CollectiveItemPredicate;
+typedef function<bool(WConstCollective, WConstItem)> CollectiveItemPredicate;
 
 struct ItemFetchInfo {
   ItemIndex index;
@@ -74,7 +74,7 @@ struct ItemFetchInfo {
 };
 
 struct MinionTaskInfo {
-  enum Type { FURNITURE, EXPLORE, COPULATE, EAT, SPIDER } type;
+  enum Type { FURNITURE, EXPLORE, COPULATE, EAT, SPIDER, WORKER } type;
   MinionTaskInfo();
   MinionTaskInfo(FurnitureType, const string& description);
   typedef function<bool(WConstCreature, FurnitureType)> UsagePredicate;
@@ -114,7 +114,7 @@ class CollectiveConfig {
 
   bool isLeaderFighter() const;
   bool getManageEquipment() const;
-  bool getWorkerFollowLeader() const;
+  bool getFollowLeaderIfNoTerritory() const;
   int getImmigrantInterval() const;
   bool getStripSpawns() const;
   bool getFetchItems() const;
