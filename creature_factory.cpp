@@ -1476,7 +1476,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
       return CATTR(
           c.viewId = ViewId::IMP;
           c.attr = LIST(5_dam, 15_def, 200_spd );
-          c.body = Body::humanoid(Body::Material::SPIRIT, Body::Size::SMALL).setNoCarryLimit();
+          c.body = Body::humanoid(Body::Size::SMALL).setNoCarryLimit().setDoesntEat();
           c.courage = 0.1;
           c.noChase = true;
           c.cantEquip = true;
@@ -1484,6 +1484,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.chatReactionFriendly = "talks about digging"_s;
           c.chatReactionHostile = "\"Die!\""_s;
           c.permanentEffects[LastingEffect::POISON_RESISTANT] = 1;
+          c.moraleSpeedIncrease = 1.3;
           c.name = "imp";);
     case CreatureId::PRISONER:
       return CATTR(

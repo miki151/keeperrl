@@ -483,7 +483,7 @@ string Effect::getDescription(const EffectType& type) {
   }
 }
 
-string Effect::getName(LastingEffect type) {
+const char* Effect::getName(LastingEffect type) {
   switch (type) {
     case LastingEffect::PREGNANT: return "pregnant";
     case LastingEffect::SLOWED: return "slowness";
@@ -509,7 +509,7 @@ string Effect::getName(LastingEffect type) {
   }
 }
 
-string Effect::getDescription(LastingEffect type) {
+const char* Effect::getDescription(LastingEffect type) {
   switch (type) {
     case LastingEffect::PREGNANT: return "This is no dream! This is really happening!";
     case LastingEffect::SLOWED: return "Causes unnaturally slow movement.";

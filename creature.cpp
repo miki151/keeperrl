@@ -711,7 +711,7 @@ int simulAttackPen(int attackers) {
 }
 
 int Creature::getAttr(AttrType type) const {
-  double def = getBody().modifyAttr(type, attributes->getRawAttr(type));
+  double def = getBody().modifyAttr(type, attributes->getRawAttr(this, type));
   for (WItem item : equipment->getAllEquipped())
     def += item->getModifier(type);
   switch (type) {
@@ -975,7 +975,7 @@ static vector<string> extractNames(const vector<AdjectiveInfo>& adjectives) {
 }
 
 void Creature::updateViewObject() {
-  modViewObject().setCreatureAttributes(EnumMap<AttrType, std::uint8_t>([this](AttrType t) { return getAttr(t);}));
+  modViewObject().setCreatureAttributes(ViewObject::CreatureAttributes([this](AttrType t) { return getAttr(t);}));
   modViewObject().setAttribute(ViewObject::Attribute::MORALE, getMorale());
   modViewObject().setModifier(ViewObject::Modifier::DRAW_MORALE);
   modViewObject().setGoodAdjectives(combine(extractNames(getGoodAdjectives()), true));
@@ -1690,25 +1690,19 @@ vector<Position> Creature::getVisibleTiles() const {
 
 const char* getMoraleText(double morale) {
   if (morale >= 0.7)
-    return "ecstatic";
+    return "Ecstatic";
   if (morale >= 0.2)
-    return "merry";
+    return "Merry";
   if (morale < -0.7)
-    return "depressed";
+    return "Depressed";
   if (morale < -0.2)
-    return "unhappy";
+    return "Unhappy";
   return nullptr;
-}
-
-vector<AdjectiveInfo> Creature::getWeaponAdjective() const {
-  if (WConstItem weapon = getWeapon())
-    return {{"Wielding " + weapon->getAName(), ""}};
-  else
-    return {};
 }
 
 vector<AdjectiveInfo> Creature::getGoodAdjectives() const {
   vector<AdjectiveInfo> ret;
+  attributes->getGoodAdjectives(ret);
   for (LastingEffect effect : ENUM_ALL(LastingEffect))
     if (isAffected(effect))
       if (const char* name = LastingEffects::getGoodAdjective(effect)) {
@@ -1721,8 +1715,7 @@ vector<AdjectiveInfo> Creature::getGoodAdjectives() const {
         "Undead creatures don't take regular damage and need to be killed by chopping up or using fire."});
   if (morale > 0)
     if (auto text = getMoraleText(getMorale()))
-      ret.push_back({capitalFirst(text),
-          "Morale affects minion's productivity and chances of fleeing from battle."});
+      ret.push_back({text, "Morale affects minion's productivity and chances of fleeing from battle."});
   return ret;
 }
 
@@ -1738,8 +1731,7 @@ vector<AdjectiveInfo> Creature::getBadAdjectives() const {
       }
   if (morale < 0)
     if (auto text = getMoraleText(getMorale()))
-      ret.push_back({capitalFirst(text),
-          "Morale affects minion's productivity and chances of fleeing from battle."});
+      ret.push_back({text, "Morale affects minion's productivity and chances of fleeing from battle."});
   return ret;
 }
 

@@ -60,6 +60,7 @@ class Body {
   Body& setMinionFood();
   Body& setDeathSound(optional<SoundId>);
   Body& setNoCarryLimit();
+  Body& setDoesntEat();
 
   void affectPosition(Position);
 
@@ -146,5 +147,6 @@ class Body {
   bool SERIAL(minionFood) = false;
   optional<SoundId> SERIAL(deathSound);
   optional<double> SERIAL(carryLimit);
+  bool SERIAL(doesntEat);
 };
 

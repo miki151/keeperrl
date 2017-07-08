@@ -42,6 +42,7 @@ class SpellMap;
 class Body;
 class SpellMap;
 class EffectType;
+struct AdjectiveInfo;
 
 class CreatureAttributes {
   public:
@@ -56,7 +57,7 @@ class CreatureAttributes {
   const Body& getBody() const;
   const CreatureName& getName() const;
   CreatureName& getName();
-  double getRawAttr(AttrType) const;
+  double getRawAttr(WConstCreature c, AttrType) const;
   void setBaseAttr(AttrType, int);
   double getCourage() const;
   void setCourage(double);
@@ -100,6 +101,7 @@ class CreatureAttributes {
   bool dontChase() const;
   optional<ViewId> getRetiredViewId();
   void increaseExpFromCombat(double attackDiff);
+  void getGoodAdjectives(vector<AdjectiveInfo>&) const;
 
   friend class CreatureFactory;
 
@@ -134,4 +136,5 @@ class CreatureAttributes {
   EnumMap<ExperienceType, int> SERIAL(maxLevelIncrease);
   bool SERIAL(noAttackSound) = false;
   optional<CreatureId> SERIAL(creatureId);
+  optional<double> SERIAL(moraleSpeedIncrease);
 };

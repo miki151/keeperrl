@@ -1045,7 +1045,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.modifiers[AttrType::DEFENSE] = 1 + maybePlusMinusOne(4););
     case ItemId::RING: return ITATTR(
             i.viewId = getRingViewId(item.get<LastingEffect>());
-            i.shortName = Effect::getName(item.get<LastingEffect>());
+            i.shortName = string(Effect::getName(item.get<LastingEffect>()));
             i.equipedEffect = item.get<LastingEffect>();
             i.name = "ring of " + *i.shortName;
             i.plural = "rings of " + *i.shortName;

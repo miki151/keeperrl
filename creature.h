@@ -253,7 +253,6 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
 
   bool isUnknownAttacker(WConstCreature) const;
   vector<AdjectiveInfo> getGoodAdjectives() const;
-  vector<AdjectiveInfo> getWeaponAdjective() const;
   vector<AdjectiveInfo> getBadAdjectives() const;
 
   vector<string> popPersonalEvents();
@@ -310,7 +309,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
 
 struct AdjectiveInfo {
   string name;
-  string help;
+  const char* help;
 };
 
 enum class MsgType {

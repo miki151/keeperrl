@@ -42,7 +42,7 @@ template <class Archive>
 void CreatureAttributes::serialize(Archive& ar, const unsigned int version) {
   ar(viewId, retiredViewId, illusionViewObject, spawnType, name, attr, chatReactionFriendly);
   ar(chatReactionHostile, barehandedAttack, attackEffect, passiveAttack, gender);
-  ar(body, innocent);
+  ar(body, innocent, moraleSpeedIncrease);
   ar(animal, cantEquip, courage);
   ar(boulder, noChase, isSpecial, skills, spells);
   ar(permanentEffects, lastingEffects, minionTasks, expLevel);
@@ -88,10 +88,18 @@ const Gender& CreatureAttributes::getGender() const {
   return gender;
 }
 
-double CreatureAttributes::getRawAttr(AttrType type) const {
+double CreatureAttributes::getRawAttr(WConstCreature c, AttrType type) const {
   double ret = attr[type];
   for (auto expType : getExperienceTypes(type))
     ret += expLevel[expType];
+  switch (type) {
+    case AttrType::SPEED:
+      if (moraleSpeedIncrease)
+        ret *= pow(*moraleSpeedIncrease, c->getMorale());
+      break;
+    default:
+      break;
+  }
   return ret;
 }
 
@@ -370,5 +378,10 @@ bool CreatureAttributes::dontChase() const {
 
 optional<ViewId> CreatureAttributes::getRetiredViewId() {
   return retiredViewId;
+}
+
+void CreatureAttributes::getGoodAdjectives(vector<AdjectiveInfo>& adjectives) const {
+  if (!!moraleSpeedIncrease)
+    adjectives.push_back({"Morale affects speed", ""});
 }
 
