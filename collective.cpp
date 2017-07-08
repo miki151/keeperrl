@@ -54,7 +54,7 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
   ar(creatures, leader, taskMap, tribe, control, byTrait, bySpawnType);
   ar(territory, alarmInfo, markedItems, constructions, minionEquipment);
   ar(surrendering, delayedPos, knownTiles, technologies, kills, points, currentTasks);
-  ar(credit, level, immigration, teams, name);
+  ar(credit, level, immigration, teams, name, conqueredVillains);
   ar(config, warnings, knownVillains, knownVillainLocations, banished);
   ar(villainType, enemyId, workshops, zones, tileEfficiency);
 }
@@ -829,16 +829,21 @@ void Collective::onEvent(const GameEvent& event) {
     }
     case EventId::CONQUERED_ENEMY: {
       WCollective col = event.get<WCollective>();
-      if (col->getVillainType() == VillainType::MAIN || col->getVillainType() == VillainType::LESSER) {
+      if (auto enemyId = col->getEnemyId()) {
         if (auto& name = col->getName())
           control->addMessage(PlayerMessage("The tribe of " + name->full + " is destroyed.",
               MessagePriority::CRITICAL));
-        //else
-        //  control->addMessage(PlayerMessage("An unnamed tribe is destroyed.", MessagePriority::CRITICAL));
-        auto mana = config->getManaForConquering(*col->getVillainType());
-        addMana(mana);
-        control->addMessage(PlayerMessage("You feel a surge of power (+" + toString(mana) + " mana)",
-            MessagePriority::HIGH));
+        else
+          control->addMessage(PlayerMessage("An unnamed tribe is destroyed.", MessagePriority::CRITICAL));
+        if (!conqueredVillains.count(*enemyId)) {
+          auto mana = config->getManaForConquering(col->getVillainType());
+          addMana(mana);
+          control->addMessage(PlayerMessage("You feel a surge of power (+" + toString(mana) + " mana)",
+              MessagePriority::HIGH));
+          conqueredVillains.insert(*enemyId);
+        } else
+          control->addMessage(PlayerMessage("Note: mana is only rewarded once per each kind of enemy.",
+              MessagePriority::HIGH));
       }
       break;
     }
