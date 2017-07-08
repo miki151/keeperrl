@@ -37,6 +37,7 @@ class Campaign;
 class RetiredGames;
 template<typename Value>
 class CallCache;
+class MinimapGui;
 
 RICH_ENUM(CollectiveTab,
   BUILDINGS,
@@ -94,7 +95,8 @@ class GuiBuilder {
       View::CampaignMenuState&);
   SGuiElem drawChooseSiteMenu(SyncQueue<optional<Vec2>>&, const string& message, const Campaign&,
       optional<Vec2>& sitePos);
-  SGuiElem drawWorldmap(Semaphore& sem, const Campaign&);
+  SGuiElem drawWorldmap(Semaphore&, const Campaign&);
+  SGuiElem drawLevelMap(Semaphore&, const CreatureView*);
   SGuiElem drawTeamLeaderMenu(SyncQueue<optional<UniqueEntity<Creature>::Id>>&, const string& title,
       const vector<CreatureInfo>&, const string& cancelText);
   SGuiElem drawCreaturePrompt(SyncQueue<bool>&, const string& title, const vector<CreatureInfo>& creatures);

@@ -73,6 +73,7 @@ class GuiFactory {
   SGuiElem button(function<void()>, SDL::SDL_Keysym, bool capture = false);
   SGuiElem buttonChar(function<void()>, char, bool capture = false, bool useAltIfWasdScrolling = false);
   SGuiElem button(function<void()>);
+  SGuiElem buttonPos(function<void(Rectangle, Vec2)>);
   SGuiElem buttonRightClick(function<void()>);
   SGuiElem reverseButton(function<void()>, vector<SDL::SDL_Keysym> = {}, bool capture = false);
   SGuiElem buttonRect(function<void(Rectangle buttonBounds)>, SDL::SDL_Keysym, bool capture = false);
@@ -203,6 +204,8 @@ class GuiFactory {
   SGuiElem dragSource(DragContent, function<SGuiElem()>);
   SGuiElem dragListener(function<void(DragContent)>);
   SGuiElem renderInBounds(SGuiElem);
+  using CustomDrawFun = function<void(Renderer&, Rectangle)>;
+  SGuiElem drawCustom(CustomDrawFun);
 
   enum class TexId {
     SCROLLBAR,

@@ -52,18 +52,19 @@ GuiElem::~GuiElem() {
 
 class Button : public GuiElem {
   public:
-  Button(function<void(Rectangle)> f) : fun(f) {}
+  Button(function<void(Rectangle, Vec2)> f) : fun(f) {}
 
   virtual bool onLeftClick(Vec2 pos) override {
-    if (pos.inRectangle(getBounds())) {
-      fun(getBounds());
+    auto bounds = getBounds();
+    if (pos.inRectangle(bounds)) {
+      fun(bounds, pos - bounds.topLeft());
       return true;
     }
      return false;
   }
 
   protected:
-  function<void(Rectangle)> fun;
+  function<void(Rectangle, Vec2)> fun;
 };
 
 class ReleaseButton : public GuiElem {
@@ -132,11 +133,12 @@ SDL_Keysym GuiFactory::getKey(SDL_Keycode code) {
 
 class ButtonKey : public Button {
   public:
-  ButtonKey(function<void(Rectangle)> f, SDL_Keysym key, bool cap) : Button(f), hotkey(key), capture(cap) {}
+  ButtonKey(function<void(Rectangle)> f, SDL_Keysym key, bool cap) : Button([f](Rectangle b, Vec2) { f(b);}),
+      hotkey(key), capture(cap) {}
 
   virtual bool onKeyPressed2(SDL_Keysym key) override {
     if (GuiFactory::keyEventEqual(hotkey, key)) {
-      fun(getBounds());
+      fun(getBounds(), Vec2(0, 0));
       return capture;
     }
     return false;
@@ -198,11 +200,15 @@ SGuiElem GuiFactory::button(function<void()> fun, SDL_Keysym hotkey, bool captur
 }
 
 SGuiElem GuiFactory::buttonRect(function<void(Rectangle)> fun) {
-  return SGuiElem(new Button(fun));
+  return SGuiElem(new Button([=](Rectangle b, Vec2) {fun(b);}));
 }
 
 SGuiElem GuiFactory::button(function<void()> fun) {
-  return SGuiElem(new Button([=](Rectangle) { fun(); }));
+  return SGuiElem(new Button([=](Rectangle, Vec2) { fun(); }));
+}
+
+SGuiElem GuiFactory::buttonPos(function<void (Rectangle, Vec2)> fun) {
+  return make_shared<Button>(fun);
 }
 
 namespace {
@@ -307,8 +313,7 @@ SGuiElem GuiFactory::stopMouseMovement() {
 
 class DrawCustom : public GuiElem {
   public:
-  typedef function<void(Renderer&, Rectangle)> DrawFun;
-  DrawCustom(DrawFun draw, function<int()> width = nullptr) : drawFun(draw), preferredWidth(width) {}
+  DrawCustom(GuiFactory::CustomDrawFun draw, function<int()> width = nullptr) : drawFun(draw), preferredWidth(width) {}
 
   virtual void render(Renderer& renderer) override {
     drawFun(renderer, getBounds());
@@ -322,9 +327,13 @@ class DrawCustom : public GuiElem {
   }
 
   private:
-  DrawFun drawFun;
+  GuiFactory::CustomDrawFun drawFun;
   function<int()> preferredWidth;
 };
+
+SGuiElem GuiFactory::drawCustom(CustomDrawFun fun) {
+  return make_shared<DrawCustom>(fun);
+}
 
 SGuiElem GuiFactory::rectangle(Color color, optional<Color> borderColor) {
   return SGuiElem(new DrawCustom(
@@ -1047,7 +1056,7 @@ SGuiElem GuiFactory::keyHandlerChar(function<void ()> fun, char hotkey, bool cap
 
 SGuiElem GuiFactory::buttonChar(function<void()> fun, char hotkey, bool capture, bool useAltIfWasdOn) {
   return stack(
-      SGuiElem(new Button([=](Rectangle) { fun(); })),
+      SGuiElem(new Button([=](Rectangle, Vec2) { fun(); })),
       SGuiElem(keyHandlerChar(fun, hotkey, capture, useAltIfWasdOn)));
 }
 

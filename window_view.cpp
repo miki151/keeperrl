@@ -51,10 +51,10 @@ View* WindowView::createReplayView(InputArchive& ifs, ViewParams params) {
   //return new ReplayView(ifs, new WindowView(params));
 }
 
-int rightBarWidthCollective = 344;
-int rightBarWidthPlayer = 344;
-int bottomBarHeightCollective = 62;
-int bottomBarHeightPlayer = 62;
+constexpr int rightBarWidthCollective = 344;
+constexpr int rightBarWidthPlayer = 344;
+constexpr int bottomBarHeightCollective = 62;
+constexpr int bottomBarHeightPlayer = 62;
 
 Rectangle WindowView::getMapGuiBounds() const {
   switch (gameInfo.infoType) {
@@ -73,13 +73,13 @@ Rectangle WindowView::getMapGuiBounds() const {
 
 Rectangle WindowView::getMinimapBounds() const {
   Vec2 offset(-20, 70);
-  Vec2 size(Vec2(renderer.getSize().x, renderer.getSize().x) / 12);
+  Vec2 size(Vec2(renderer.getSize().x, renderer.getSize().x) / 11);
   return Rectangle(Vec2(renderer.getSize().x - size.x, 0), Vec2(renderer.getSize().x, size.y)).translate(offset);
 }
 
 void WindowView::resetMapBounds() {
   mapGui->setBounds(getMapGuiBounds());
-  minimapDecoration->setBounds(getMinimapBounds().minusMargin(-6));
+  minimapDecoration->setBounds(getMinimapBounds());
 }
 
 WindowView::WindowView(ViewParams params) : renderer(params.renderer), gui(params.gui), useTiles(params.useTiles),
@@ -144,7 +144,7 @@ void WindowView::initialize() {
       clock,
       options,
       &gui));
-  minimapGui.reset(new MinimapGui(renderer, [this]() { inputQueue.push(UserInput(UserInputId::DRAW_LEVEL_MAP)); }));
+  minimapGui.reset(new MinimapGui([this]() { inputQueue.push(UserInput(UserInputId::DRAW_LEVEL_MAP)); }));
   minimapDecoration = gui.stack(gui.rectangle(Color::BLACK), gui.miniWindow(),
       gui.margins(gui.renderInBounds(SGuiElem(minimapGui)), 6));
   resetMapBounds();
@@ -534,10 +534,10 @@ void WindowView::addVoidDialog(function<void()> fun) {
 }
 
 void WindowView::drawLevelMap(const CreatureView* creature) {
-  TempClockPause pause(clock);
-  addVoidDialog([=] {
-    minimapGui->presentMap(creature, Rectangle(renderer.getSize()), renderer,
-        [this](double x, double y) { mapGui->setCenter(x, y);}); });
+  Semaphore sem;
+  auto gui = guiBuilder.drawLevelMap(sem, creature);
+  Vec2 origin(getMinimapBounds().right() - *gui->getPreferredWidth(), getMinimapBounds().top());
+  return getBlockingGui(sem, std::move(gui), origin);
 }
 
 void WindowView::updateMinimap(const CreatureView* creature) {
@@ -545,7 +545,7 @@ void WindowView::updateMinimap(const CreatureView* creature) {
   Vec2 rad(40, 40);
   Vec2 playerPos = mapGui->getScreenPos().div(mapLayout->getSquareSize());
   Rectangle bounds(playerPos - rad, playerPos + rad);
-  minimapGui->update(level, bounds, creature);
+  minimapGui->update(bounds, creature);
 }
 
 void WindowView::updateView(CreatureView* view, bool noRefresh) {

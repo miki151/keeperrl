@@ -31,6 +31,9 @@
 #include "campaign_type.h"
 #include "villain_type.h"
 #include "attr_type.h"
+#include "minimap_gui.h"
+#include "creature_view.h"
+#include "level.h"
 
 using SDL::SDL_Keysym;
 using SDL::SDL_Keycode;
@@ -2940,4 +2943,20 @@ optional<string> GuiBuilder::getTextInput(const string& title, const string& val
         }
     }
   }
+}
+
+SGuiElem GuiBuilder::drawLevelMap(Semaphore& sem, const CreatureView* view) {
+  auto miniMap = make_shared<MinimapGui>([]{});
+  auto levelBounds = view->getLevel()->getBounds();
+  miniMap->update(levelBounds, view);
+  return gui.preferredSize(630, 630,
+      gui.miniWindow(gui.stack(
+          gui.buttonPos([=, &sem](Rectangle bounds, Vec2 pos) {
+              mapGui->setCenter(levelBounds.width() * pos.x / bounds.width(),
+                  levelBounds.height() * pos.y / bounds.height());
+              sem.v(); }),
+          gui.drawCustom([=](Renderer& r, Rectangle bounds) {
+              miniMap->renderMap(r, bounds);
+          })
+      ), [&sem] { sem.v(); }));
 }

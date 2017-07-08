@@ -74,7 +74,7 @@ static Vec2 getMapBufferSize() {
   return Vec2(w, h);
 }
 
-MinimapGui::MinimapGui(Renderer& r, function<void()> f) : clickFun(f), renderer(r) {
+MinimapGui::MinimapGui(function<void()> f) : clickFun(f) {
   auto size = getMapBufferSize();
   mapBuffer = Renderer::createSurface(size.x, size.y);
 }
@@ -92,7 +92,8 @@ bool MinimapGui::onLeftClick(Vec2 v) {
   return false;
 }
 
-void MinimapGui::update(WConstLevel level, Rectangle bounds, const CreatureView* creature) {
+void MinimapGui::update(Rectangle bounds, const CreatureView* creature) {
+  auto level = creature->getLevel();
   info.bounds = bounds;
   info.enemies.clear();
   info.locations.clear();
@@ -136,31 +137,3 @@ void MinimapGui::update(WConstLevel level, Rectangle bounds, const CreatureView*
     }
   }*/
 }
-
-static Vec2 embed(Vec2 levelSize, Vec2 screenSize) {
-  double s = min(double(screenSize.x) / levelSize.x, double(screenSize.y) / levelSize.y);
-  return levelSize * s;
-}
-
-void MinimapGui::presentMap(const CreatureView* creature, Rectangle bounds, Renderer& r,
-    function<void(double, double)> clickFun) {
-  WConstLevel level = creature->getLevel();
-  double scale = min(double(bounds.width()) / level->getBounds().width(),
-      double(bounds.height()) / level->getBounds().height());
-  while (1) {
-    update(level, level->getBounds(), creature);
-    renderMap(r, Rectangle(Vec2(0, 0), embed(level->getBounds().bottomRight(), bounds.bottomRight())));
-    r.drawAndClearBuffer();
-    Event event;
-    while (r.pollEvent(event)) {
-      if (event.type == SDL::SDL_KEYDOWN)
-        return;
-      if (event.type == SDL::SDL_MOUSEBUTTONDOWN) {
-        clickFun(double(event.button.x) / scale, double(event.button.y) / scale);
-        return;
-      }
-    }
-  }
-}
-
-
