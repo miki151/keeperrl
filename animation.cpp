@@ -29,7 +29,8 @@ class ThrownObject : public Animation {
   virtual void renderSpec(Renderer& renderer, Rectangle bounds, Vec2 origin, double state) {
     int x = origin.x + state * direction.x;
     int y = origin.y + state * direction.y;
-    renderer.drawViewObject(Vec2(x, y), viewObject, useSprite, squareSize);
+    renderer.drawViewObject(Vec2(x, y), viewObject, useSprite, squareSize, Color::WHITE,
+        Renderer::SpriteOrientation(direction, false));
   }
 
   private:

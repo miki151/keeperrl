@@ -32,7 +32,7 @@
 SERIALIZE_DEF(RangedWeapon, damageAttr, projectileName, projectileViewId)
 SERIALIZATION_CONSTRUCTOR_IMPL(RangedWeapon);
 
-RangedWeapon::RangedWeapon(AttrType attr, const string& name, EnumMap<Dir, ViewId> id)
+RangedWeapon::RangedWeapon(AttrType attr, const string& name, ViewId id)
     : damageAttr(attr), projectileName(name), projectileViewId(id) {}
 
 void RangedWeapon::fire(WCreature c, Vec2 dir) const {
@@ -57,7 +57,7 @@ void RangedWeapon::fire(WCreature c, Vec2 dir) const {
       break;
     }
   }
-  c->getGame()->getView()->animateObject(trajectory, projectileViewId[dir.getCardinalDir()]);
+  c->getGame()->getView()->animateObject(trajectory, projectileViewId);
 }
 
 AttrType RangedWeapon::getDamageAttr() const {

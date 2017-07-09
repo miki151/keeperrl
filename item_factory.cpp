@@ -741,28 +741,6 @@ PItem ItemFactory::fromId(ItemType item) {
   }
 }
 
-const static EnumMap<Dir, ViewId> arrowsViewIds {
-  {Dir::N, ViewId::ARROW_N},
-  {Dir::NE, ViewId::ARROW_NE},
-  {Dir::E, ViewId::ARROW_E},
-  {Dir::SE, ViewId::ARROW_SE},
-  {Dir::S, ViewId::ARROW_S},
-  {Dir::SW, ViewId::ARROW_SW},
-  {Dir::W, ViewId::ARROW_W},
-  {Dir::NW, ViewId::ARROW_NW}
-};
-
-const static EnumMap<Dir, ViewId> forceBoltViewIds {
-  {Dir::N, ViewId::FORCE_BOLT_N},
-  {Dir::NE, ViewId::FORCE_BOLT_NE},
-  {Dir::E, ViewId::FORCE_BOLT_E},
-  {Dir::SE, ViewId::FORCE_BOLT_SE},
-  {Dir::S, ViewId::FORCE_BOLT_S},
-  {Dir::SW, ViewId::FORCE_BOLT_SW},
-  {Dir::W, ViewId::FORCE_BOLT_W},
-  {Dir::NW, ViewId::FORCE_BOLT_NW}
-};
-
 ItemAttributes ItemFactory::getAttributes(ItemType item) {
   switch (item.getId()) {
     case ItemId::KNIFE: return ITATTR(
@@ -903,7 +881,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.name = "short bow";
             i.itemClass = ItemClass::RANGED_WEAPON;
             i.equipmentSlot = EquipmentSlot::RANGED_WEAPON;
-            i.rangedWeapon = RangedWeapon(AttrType::RANGED_DAMAGE, "arrow", arrowsViewIds);
+            i.rangedWeapon = RangedWeapon(AttrType::RANGED_DAMAGE, "arrow", ViewId::ARROW);
             i.twoHanded = true;
             i.weight = 1;
             i.modifiers[AttrType::RANGED_DAMAGE] = 10 + maybePlusMinusOne(4);
@@ -913,7 +891,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.name = "wooden wand";
             i.itemClass = ItemClass::RANGED_WEAPON;
             i.equipmentSlot = EquipmentSlot::RANGED_WEAPON;
-            i.rangedWeapon = RangedWeapon(AttrType::SPELL_DAMAGE, "force bolt", forceBoltViewIds);
+            i.rangedWeapon = RangedWeapon(AttrType::SPELL_DAMAGE, "force bolt", ViewId::FORCE_BOLT);
             i.weight = 1;
             i.modifiers[AttrType::SPELL_DAMAGE] = 10 + maybePlusMinusOne(4);
             i.price = 12;);

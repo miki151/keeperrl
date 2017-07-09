@@ -632,7 +632,7 @@ bool Position::canSeeThru(VisionId id) const {
   if (auto furniture = getFurniture(FurnitureLayer::MIDDLE))
     return furniture->canSeeThru(id);
   else
-    return true;
+    return isValid();
 }
 
 bool Position::isVisibleBy(WConstCreature c) {

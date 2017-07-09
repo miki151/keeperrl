@@ -520,7 +520,7 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
     move += movement;
     if (mirrorSprite(object.id()))
       renderer.drawTile(pos + move, tile.getSpriteCoord(dirs), size, color,
-          tilePos.getHash() % 2, tilePos.getHash() % 4 > 1);
+          Renderer::SpriteOrientation((bool) (tilePos.getHash() % 2), (bool) (tilePos.getHash() % 4 > 1)));
     else
       renderer.drawTile(pos + move, tile.getSpriteCoord(dirs), size, color);
     /*if (object.layer() == ViewLayer::FLOOR && highlightMap[HighlightType::CUT_TREE] > 0)

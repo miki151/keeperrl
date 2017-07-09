@@ -427,7 +427,8 @@ SGuiElem GuiFactory::sprite(Texture& tex, Alignment align, bool vFlip, bool hFli
               stretchSize = size * (double(bounds.height()) / size.y);
               pos = (bounds.topRight() + bounds.topLeft()) / 2 - Vec2(stretchSize->x / 2, 0) + offset;
           }
-          r.drawSprite(pos, origin, size, tex, stretchSize, !!col ? *col : Color::WHITE, vFlip, hFlip);
+          r.drawSprite(pos, origin, size, tex, stretchSize, !!col ? *col : Color::WHITE,
+              Renderer::SpriteOrientation(vFlip, hFlip));
         }));
 }
 

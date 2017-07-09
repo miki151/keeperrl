@@ -20,7 +20,7 @@
 
 class RangedWeapon {
   public:
-  RangedWeapon(AttrType damageAttr, const string& projectileName, EnumMap<Dir, ViewId> projectileViewId);
+  RangedWeapon(AttrType damageAttr, const string& projectileName, ViewId projectileViewId);
 
   void fire(WCreature c, Vec2 dir) const;
   AttrType getDamageAttr() const;
@@ -30,5 +30,5 @@ class RangedWeapon {
   private:
   AttrType SERIAL(damageAttr);
   string SERIAL(projectileName);
-  EnumMap<Dir, ViewId> SERIAL(projectileViewId);
+  ViewId SERIAL(projectileViewId);
 };
