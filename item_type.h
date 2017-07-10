@@ -21,7 +21,6 @@ enum class ItemId {
   HEAVY_CLUB,
   SCYTHE,
   BOW,
-  WOODEN_WAND,
 
   LEATHER_ARMOR,
   LEATHER_HELM,

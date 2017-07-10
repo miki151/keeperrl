@@ -896,15 +896,6 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.weight = 1;
             i.modifiers[AttrType::RANGED_DAMAGE] = 10 + maybePlusMinusOne(4);
             i.price = 12;);
-    case ItemId::WOODEN_WAND: return ITATTR(
-            i.viewId = ViewId::WOODEN_WAND;
-            i.name = "wooden wand";
-            i.itemClass = ItemClass::RANGED_WEAPON;
-            i.equipmentSlot = EquipmentSlot::RANGED_WEAPON;
-            i.rangedWeapon = RangedWeapon(AttrType::SPELL_DAMAGE, "force bolt", ViewId::FORCE_BOLT);
-            i.weight = 1;
-            i.modifiers[AttrType::SPELL_DAMAGE] = 10 + maybePlusMinusOne(4);
-            i.price = 12;);
     case ItemId::ROBE: return ITATTR(
             i.viewId = ViewId::ROBE;
             i.name = "robe";
