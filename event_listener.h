@@ -16,7 +16,7 @@ enum class EventId {
   PICKED_UP,
   DROPPED,
   ITEMS_APPEARED,
-  ITEMS_THROWN,
+  PROJECTILE,
   EXPLOSION,
   CONQUERED_ENEMY,
   WON_GAME,
@@ -49,10 +49,10 @@ struct ItemsAppeared {
   vector<WItem> items;
 };
 
-struct ItemsThrown {
-  WLevel level;
-  vector<WItem> items;
-  vector<Vec2> trajectory;
+struct Projectile {
+  ViewId viewId;
+  Position begin;
+  Position end;
 };
 
 struct TrapDisarmed {
@@ -74,7 +74,7 @@ struct FurnitureEvent {
 
 class GameEvent : public EnumVariant<EventId, TYPES(WCreature, Position, Technology*, WCollective,
     EventInfo::CreatureEvent, EventInfo::Attacked, EventInfo::ItemsHandled, EventInfo::ItemsAppeared,
-    EventInfo::ItemsThrown, EventInfo::TrapDisarmed, EventInfo::FurnitureEvent),
+    EventInfo::Projectile, EventInfo::TrapDisarmed, EventInfo::FurnitureEvent),
     ASSIGN(WCreature, EventId::MOVED),
     ASSIGN(Position, EventId::EXPLOSION, EventId::ALARM, EventId::TRAP_TRIGGERED,
         EventId::POSITION_DISCOVERED),
@@ -84,7 +84,7 @@ class GameEvent : public EnumVariant<EventId, TYPES(WCreature, Position, Technol
     ASSIGN(EventInfo::Attacked, EventId::KILLED, EventId::TORTURED, EventId::SURRENDERED),
     ASSIGN(EventInfo::ItemsHandled, EventId::PICKED_UP, EventId::DROPPED, EventId::EQUIPED),
     ASSIGN(EventInfo::ItemsAppeared, EventId::ITEMS_APPEARED),
-    ASSIGN(EventInfo::ItemsThrown, EventId::ITEMS_THROWN),
+    ASSIGN(EventInfo::Projectile, EventId::PROJECTILE),
     ASSIGN(EventInfo::TrapDisarmed, EventId::TRAP_DISARMED),
     ASSIGN(EventInfo::FurnitureEvent, EventId::FURNITURE_DESTROYED) > {
   using EnumVariant::EnumVariant;

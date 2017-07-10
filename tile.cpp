@@ -485,7 +485,9 @@ class TileCoordLookup {
     Tile::addTile(ViewId::BOW, sprite("bow"));
     Tile::addTile(ViewId::ARROW, sprite("arrow_e"));
     Tile::addTile(ViewId::WOODEN_WAND, sprite("wand_wooden"));
-    Tile::addTile(ViewId::FORCE_BOLT, sprite("force_bolt_e"));
+    Tile::addTile(ViewId::FORCE_BOLT, sprite("force_bolt"));
+    Tile::addTile(ViewId::AIR_BLAST, sprite("air_blast"));
+    Tile::addTile(ViewId::STUN_RAY, sprite("stun_ray"));
     Tile::addTile(ViewId::CLUB, sprite("club"));
     Tile::addTile(ViewId::HEAVY_CLUB, sprite("heavy club"));
     Tile::addTile(ViewId::SCROLL, sprite("scroll"));
@@ -798,6 +800,8 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::HEAVY_CLUB, symbol(u8")", Color::BROWN));
     Tile::addSymbol(ViewId::ARROW, symbol(u8"/", Color::BROWN));
     Tile::addSymbol(ViewId::FORCE_BOLT, symbol(u8"*", Color::LIGHT_BLUE));
+    Tile::addSymbol(ViewId::AIR_BLAST, symbol(u8"*", Color::WHITE));
+    Tile::addSymbol(ViewId::STUN_RAY, symbol(u8"*", Color::LIGHT_GREEN));
     Tile::addSymbol(ViewId::SCROLL, symbol(u8"?", Color::WHITE));
     Tile::addSymbol(ViewId::AMULET1, symbol(u8"\"", Color::YELLOW));
     Tile::addSymbol(ViewId::AMULET2, symbol(u8"\"", Color::YELLOW));

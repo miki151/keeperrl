@@ -1435,6 +1435,12 @@ void PlayerControl::onEvent(const GameEvent& event) {
       addToMemory(pos);
       break;
     }
+    case EventId::PROJECTILE: {
+      auto info = event.get<EventInfo::Projectile>();
+      if (canSee(info.begin) || canSee(info.end))
+        getView()->animateObject(info.begin.getCoord(), info.end.getCoord(), info.viewId);
+      break;
+    }
     case EventId::CREATURE_EVENT: {
       auto& info = event.get<EventInfo::CreatureEvent>();
       if (getCollective()->getCreatures().contains(info.creature))

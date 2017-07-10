@@ -28,6 +28,7 @@
 #include "creature_attributes.h"
 #include "player_message.h"
 #include "view_id.h"
+#include "event_listener.h"
 
 SERIALIZE_DEF(RangedWeapon, damageAttr, projectileName, projectileViewId)
 SERIALIZATION_CONSTRUCTOR_IMPL(RangedWeapon);
@@ -42,11 +43,11 @@ void RangedWeapon::fire(WCreature c, Vec2 dir) const {
   int damage = c->getAttr(damageAttr) + Random.get(-attackVariance, attackVariance);
   Attack attack(c, Random.choose(AttackLevel::LOW, AttackLevel::MIDDLE, AttackLevel::HIGH),
       AttackType::SHOOT, damage, damageAttr, none);
-  auto position = c->getPosition();
+  const auto position = c->getPosition();
   auto vision = c->getVision();
-  vector<Vec2> trajectory;
+  Position lastPos;
   for (Position pos = position.plus(dir);; pos = pos.plus(dir)) {
-    trajectory.push_back(pos.getCoord());
+    lastPos = pos;
     if (auto c = pos.getCreature()) {
       c->you(MsgType::HIT_THROWN_ITEM, "the " + projectileName);
       c->takeDamage(attack);
@@ -57,7 +58,7 @@ void RangedWeapon::fire(WCreature c, Vec2 dir) const {
       break;
     }
   }
-  c->getGame()->getView()->animateObject(trajectory, projectileViewId);
+  c->getGame()->addEvent({EventId::PROJECTILE, EventInfo::Projectile{projectileViewId, position, lastPos}});
 }
 
 AttrType RangedWeapon::getDamageAttr() const {

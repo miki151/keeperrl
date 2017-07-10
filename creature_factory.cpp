@@ -1016,6 +1016,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_MALE)->getNext());
           c.name->useFullTitle();
           c.spells->add(SpellId::HEALING);
+          c.spells->add(SpellId::STUN_RAY);
           c.skills.setValue(SkillId::SORCERY, 0.2);
           c.skills.setValue(SkillId::LABORATORY, 0.2);
           c.maxLevelIncrease[ExperienceType::MELEE] = 7;
@@ -1372,7 +1373,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.permanentEffects[LastingEffect::FLYING] = 1;
           c.permanentEffects[LastingEffect::FIRE_RESISTANT] = 1;
           c.permanentEffects[LastingEffect::DARKNESS_SOURCE] = 1;
-          for (SpellId id : Random.chooseN(Random.get(3, 6), {SpellId::WORD_OF_POWER, SpellId::DEF_BONUS,
+          for (SpellId id : Random.chooseN(Random.get(3, 6), {SpellId::CIRCULAR_BLAST, SpellId::DEF_BONUS,
               SpellId::DAM_BONUS, SpellId::MAGIC_SHIELD, SpellId::STUN_RAY, SpellId::DECEPTION, SpellId::DECEPTION,
               SpellId::TELEPORT}))
             c.spells->add(id);
@@ -1945,7 +1946,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.attr = LIST(25_dam, 35_def, 5_spell_def, 160_spd );
           c.barehandedAttack = AttackType::HIT;
           c.permanentEffects[LastingEffect::FLYING] = 1;
-          c.spells->add(SpellId::AIR_BLAST);
+          c.spells->add(SpellId::CIRCULAR_BLAST);
           c.name = "air elemental";);
     case CreatureId::EARTH_ELEMENTAL:
       return CATTR(
@@ -2134,8 +2135,6 @@ vector<ItemType> getInventory(CreatureId id) {
     case CreatureId::KEEPER_F:
     case CreatureId::KEEPER:
       return ItemList()
-          .add(ItemId::WOODEN_WAND)
-          .add(ItemId::BOW)
           .add(ItemId::ROBE);
     case CreatureId::ADVENTURER_F:
     case CreatureId::ADVENTURER:

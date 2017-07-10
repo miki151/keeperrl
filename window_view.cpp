@@ -587,16 +587,16 @@ void WindowView::playSounds(const CreatureView* view) {
   soundQueue.clear();
 }
 
-void WindowView::animateObject(vector<Vec2> trajectory, ViewId object) {
+void WindowView::animateObject(Vec2 begin, Vec2 end, ViewId object) {
   RecursiveLock lock(renderMutex);
-  if (trajectory.size() >= 2)
+  if (begin != end)
     mapGui->addAnimation(
         Animation::thrownObject(
-          (trajectory.back() - trajectory.front()).mult(mapLayout->getSquareSize()),
+          (end - begin).mult(mapLayout->getSquareSize()),
           object,
           currentTileLayout.sprites,
           mapLayout->getSquareSize()),
-        trajectory.front());
+        begin);
 }
 
 void WindowView::animation(Vec2 pos, AnimationId id) {

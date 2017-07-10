@@ -58,10 +58,8 @@ static vector<int> resistantTime { 20, 60, 200};
 static vector<int> levitateTime { 20, 60, 200};
 static vector<int> magicShieldTime { 5, 20, 60};
 static vector<double> gasAmount { 0.3, 0.8, 3};
-static vector<double> wordOfPowerDist { 1, 3, 10};
-static vector<int> blastRange { 2, 5, 10};
-static vector<int> creatureEffectRange { 2, 5, 10};
-
+static vector<int> wordOfPowerDist { 1, 3, 10};
+static vector<int> directedEffectRange { 2, 5, 10};
 
 vector<WCreature> Effect::summonCreatures(Position pos, int radius, vector<PCreature> creatures, double delay) {
   vector<Position> area = pos.getRectangle(Rectangle(-Vec2(radius, radius), Vec2(radius + 1, radius + 1)));
@@ -87,13 +85,7 @@ static void deception(WCreature creature) {
   Effect::summonCreatures(creature, 2, std::move(creatures));
 }
 
-static void creatureEffect(WCreature who, EffectType type, EffectStrength str, Vec2 direction, int range) {
-  for (Vec2 v = direction * (range - 1); v.length4() >= 1; v -= direction)
-    if (WCreature c = who->getPosition().plus(v).getCreature())
-      Effect::applyToCreature(c, type, str);
-}
-
-static void blast(WCreature who, Position position, Vec2 direction, int maxDistance, bool damage) {
+static void airBlast(WCreature who, Position position, Vec2 direction, int maxDistance) {
   if (WCreature c = position.getCreature()) {
     int dist = 0;
     for (int i : Range(1, maxDistance))
@@ -105,8 +97,6 @@ static void blast(WCreature who, Position position, Vec2 direction, int maxDista
       c->displace(who->getLocalTime(), direction * dist);
       c->you(MsgType::ARE, "thrown back");
     }
-    if (damage)
-      c->takeDamage(Attack(who, AttackLevel::MIDDLE, AttackType::SPELL, 1000, AttrType::SPELL_DAMAGE));
   }
   for (auto elem : Item::stackItems(position.getItems())) {
     position.throwItem(
@@ -114,26 +104,9 @@ static void blast(WCreature who, Position position, Vec2 direction, int maxDista
         Attack(who, Random.choose(AttackLevel::LOW, AttackLevel::MIDDLE, AttackLevel::HIGH),
           elem.second[0]->getAttackType(), 15, AttrType::DAMAGE), maxDistance, direction, VisionId::NORMAL);
   }
-  if (damage)
-    for (auto furniture : position.modFurniture())
-      if (furniture->canDestroy(DestroyAction::Type::BASH))
-        furniture->destroy(position, DestroyAction::Type::BASH);
-}
-
-static void blast(WCreature c, Vec2 direction, int range) {
-  for (Vec2 v = direction * (range - 1); v.length4() >= 1; v -= direction)
-    blast(c, c->getPosition().plus(v), direction, range, true);
-}
-
-static void wordOfPower(WCreature c, int strength) {
-  c->getGame()->addEvent({EventId::EXPLOSION, c->getPosition()});
-  for (Vec2 v : Vec2::directions8(Random))
-    blast(c, c->getPosition().plus(v), v, wordOfPowerDist[strength], true);
-}
-
-static void airBlast(WCreature c, int strength) {
-  for (Vec2 v : Vec2::directions8(Random))
-    blast(c, c->getPosition().plus(v), v, wordOfPowerDist[strength], false);
+  for (auto furniture : position.modFurniture())
+    if (furniture->canDestroy(DestroyAction::Type::BASH))
+      furniture->destroy(position, DestroyAction::Type::BASH);
 }
 
 static void emitPoisonGas(Position pos, int strength, bool msg) {
@@ -353,7 +326,6 @@ static CreatureId getSummonedElement(Position position) {
 void Effect::applyToCreature(WCreature c, const EffectType& type, EffectStrength strengthEnum) {
   int strength = int(strengthEnum);
   switch (type.getId()) {
-    case EffectId::LEAVE_BODY: FATAL << "Implement"; break;
     case EffectId::LASTING:
         c->addEffect(type.get<LastingEffect>(), getDuration(c, type.get<LastingEffect>(), strength)); break;
     case EffectId::TELE_ENEMIES: teleEnemies(c); break;
@@ -362,8 +334,10 @@ void Effect::applyToCreature(WCreature c, const EffectType& type, EffectStrength
     case EffectId::SUMMON: ::summon(c, type.get<CreatureId>()); break;
     case EffectId::SUMMON_ELEMENT: ::summon(c, getSummonedElement(c->getPosition())); break;
     case EffectId::DECEPTION: deception(c); break;
-    case EffectId::WORD_OF_POWER: wordOfPower(c, strength); break;
-    case EffectId::AIR_BLAST: airBlast(c, strength); break;
+    case EffectId::CIRCULAR_BLAST:
+      for (Vec2 v : Vec2::directions8(Random))
+        applyDirected(c, v, DirEffectId::BLAST, strengthEnum);
+      break;
     case EffectId::ENHANCE_ARMOR: enhanceArmor(c); break;
     case EffectId::ENHANCE_WEAPON: enhanceWeapon(c); break;
     case EffectId::DESTROY_EQUIPMENT: destroyEquipment(c); break;
@@ -385,12 +359,49 @@ void Effect::applyToPosition(Position pos, const EffectType& type, EffectStrengt
   }
 }
 
-void Effect::applyDirected(WCreature c, Vec2 direction, const DirEffectType& type, EffectStrength strength) {
-  switch (type.getId()) {
-    case DirEffectId::BLAST: blast(c, direction, blastRange[int(strength)]); break;
+static optional<ViewId> getProjectile(LastingEffect effect) {
+  switch (effect) {
+    case LastingEffect::STUNNED:
+      return ViewId::STUN_RAY;
+    default:
+      return none;
+  }
+}
+
+static optional<ViewId> getProjectile(const EffectType& effect) {
+  switch (effect.getId()) {
+    case EffectId::LASTING:
+      return getProjectile(effect.get<LastingEffect>());
+    default:
+      return none;
+  }
+}
+
+static optional<ViewId> getProjectile(const DirEffectType& effect) {
+  switch (effect.getId()) {
+    case DirEffectId::BLAST:
+      return ViewId::AIR_BLAST;
     case DirEffectId::CREATURE_EFFECT:
-        creatureEffect(c, type.get<EffectType>(), strength, direction, creatureEffectRange[int(strength)]);
-        break;
+      return getProjectile(effect.get<EffectType>());
+  }
+}
+
+void Effect::applyDirected(WCreature c, Vec2 direction, const DirEffectType& type, EffectStrength strength) {
+  auto begin = c->getPosition();
+  int range = directedEffectRange[int(strength)];
+  if (auto projectile = getProjectile(type))
+    c->getGame()->addEvent({EventId::PROJECTILE,
+        EventInfo::Projectile{*projectile, begin, begin.plus(direction * range)}});
+  switch (type.getId()) {
+    case DirEffectId::BLAST:
+      for (Vec2 v = direction * (range - 1); v.length4() >= 1; v -= direction)
+        airBlast(c, c->getPosition().plus(v), direction, range);
+      break;
+    case DirEffectId::CREATURE_EFFECT:
+      for (Vec2 v = direction * (range - 1); v.length4() >= 1; v -= direction)
+        if (WCreature victim = c->getPosition().plus(v).getCreature())
+          Effect::applyToCreature(victim, type.get<EffectType>(), strength);
+      break;
   }
 }
 
@@ -428,10 +439,8 @@ string Effect::getName(const EffectType& type) {
     case EffectId::ENHANCE_ARMOR: return "armor enchantment";
     case EffectId::SUMMON: return getCreatureName(type.get<CreatureId>());
     case EffectId::SUMMON_ELEMENT: return "summon element";
-    case EffectId::WORD_OF_POWER: return "power";
-    case EffectId::AIR_BLAST: return "air blast";
+    case EffectId::CIRCULAR_BLAST: return "air blast";
     case EffectId::DECEPTION: return "deception";
-    case EffectId::LEAVE_BODY: return "possesion";
     case EffectId::FIRE: return "fire";
     case EffectId::ACID: return "acid";
     case EffectId::ALARM: return "alarm";
@@ -468,10 +477,8 @@ string Effect::getDescription(const EffectType& type) {
     case EffectId::ENHANCE_ARMOR: return "Increases armor defense.";
     case EffectId::SUMMON: return getSummoningDescription(type.get<CreatureId>());
     case EffectId::SUMMON_ELEMENT: return "Summons an element or spirit from the surroundings.";
-    case EffectId::WORD_OF_POWER: return "Causes an explosion around the spellcaster.";
-    case EffectId::AIR_BLAST: return "Causes an explosion of air around the spellcaster.";
+    case EffectId::CIRCULAR_BLAST: return "Creates a circular blast of air that throws back creatures and items.";
     case EffectId::DECEPTION: return "Creates multiple illusions of the spellcaster to confuse the enemy.";
-    case EffectId::LEAVE_BODY: return "Lets the spellcaster leave his body and possess another one.";
     case EffectId::FIRE: return "fire";
     case EffectId::ACID: return "acid";
     case EffectId::ALARM: return "alarm";
@@ -538,7 +545,7 @@ const char* Effect::getDescription(LastingEffect type) {
 
 string Effect::getDescription(const DirEffectType& type) {
   switch (type.getId()) {
-    case DirEffectId::BLAST: return "Creates a directed blast that throws back creatures and items.";
+    case DirEffectId::BLAST: return "Creates a directed blast of air that throws back creatures and items.";
     case DirEffectId::CREATURE_EFFECT:
         return "Creates a directed wave that " + noCapitalFirst(getDescription(type.get<EffectType>()));
         break;

@@ -61,8 +61,8 @@ void Spell::addMessage(WCreature c) {
       c->monsterMessage(c->getName().the() + " casts a spell");
       break;
     case CastMessageType::AIR_BLAST:
-      c->playerMessage("You cause an air blast!");
-      c->monsterMessage(c->getName().the() + " causes an air blast!");
+      c->playerMessage("You create an air blast!");
+      c->monsterMessage(c->getName().the() + " creates an air blast!");
       break;
   }
 }
@@ -78,7 +78,6 @@ void Spell::init() {
         SoundId::SPELL_STR_BONUS));
   set(SpellId::DEF_BONUS, new Spell("defense", {EffectId::LASTING, LastingEffect::DEF_BONUS}, 90,
         SoundId::SPELL_DEX_BONUS));
-  set(SpellId::BLAST, new Spell("force bolt", DirEffectId::BLAST, 100, SoundId::SPELL_BLAST));
   set(SpellId::STUN_RAY, new Spell("stun ray",  DirEffectType(DirEffectId::CREATURE_EFFECT,
         EffectType(EffectId::LASTING, LastingEffect::STUNNED)) , 60, SoundId::SPELL_STUN_RAY));
   set(SpellId::MAGIC_SHIELD, new Spell("magic shield", {EffectId::LASTING, LastingEffect::MAGIC_SHIELD}, 100,
@@ -88,9 +87,8 @@ void Spell::init() {
   set(SpellId::TELEPORT, new Spell("escape", EffectId::TELEPORT, 80, SoundId::SPELL_TELEPORT));
   set(SpellId::INVISIBILITY, new Spell("invisibility", {EffectId::LASTING, LastingEffect::INVISIBLE}, 150,
         SoundId::SPELL_INVISIBILITY));
-  set(SpellId::WORD_OF_POWER, new Spell("word of power", EffectId::WORD_OF_POWER, 150,
-        SoundId::SPELL_WORD_OF_POWER));
-  set(SpellId::AIR_BLAST, new Spell("air blast", EffectId::AIR_BLAST, 150, SoundId::SPELL_AIR_BLAST,
+  set(SpellId::BLAST, new Spell("blast", DirEffectId::BLAST, 100, SoundId::SPELL_BLAST));
+  set(SpellId::CIRCULAR_BLAST, new Spell("circular blast", EffectId::CIRCULAR_BLAST, 150, SoundId::SPELL_AIR_BLAST,
         CastMessageType::AIR_BLAST));
   set(SpellId::SUMMON_SPIRIT, new Spell("summon spirits", EffectType(EffectId::SUMMON, CreatureId::SPIRIT), 150,
         SoundId::SPELL_SUMMON_SPIRIT));

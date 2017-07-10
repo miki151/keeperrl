@@ -373,7 +373,7 @@ ItemFactory ItemFactory::villageShop() {
       {{ItemId::SCROLL, EffectId::ENHANCE_WEAPON}, 5 },
       {ItemId::FIRE_SCROLL, 5 },
       {{ItemId::SCROLL, EffectType(EffectId::SUMMON, CreatureId::FIRE_SPHERE)}, 5 },
-      {{ItemId::SCROLL, EffectId::WORD_OF_POWER}, 1 },
+      {{ItemId::SCROLL, EffectId::CIRCULAR_BLAST}, 1 },
       {{ItemId::SCROLL, EffectId::DECEPTION}, 2 },
       {{ItemId::SCROLL, EffectType(EffectId::SUMMON, CreatureId::FLY)}, 5 },
       {{ItemId::POTION, EffectId::HEAL}, 7 },
@@ -495,7 +495,7 @@ ItemFactory ItemFactory::scrolls() {
       {{ItemId::SCROLL, EffectId::ENHANCE_WEAPON}, 1 },
       {ItemId::FIRE_SCROLL, 1 },
       {{ItemId::SCROLL, EffectType(EffectId::SUMMON, CreatureId::FIRE_SPHERE)}, 1 },
-      {{ItemId::SCROLL, EffectId::WORD_OF_POWER}, 1 },
+      {{ItemId::SCROLL, EffectId::CIRCULAR_BLAST}, 1 },
       {{ItemId::SCROLL, EffectId::DECEPTION}, 1 },
       {{ItemId::SCROLL, EffectType(EffectId::SUMMON, CreatureId::FLY)}, 1 }});
 }
@@ -555,7 +555,7 @@ ItemFactory ItemFactory::dungeon() {
       {{ItemId::SCROLL, EffectId::ENHANCE_WEAPON}, 30 },
       {ItemId::FIRE_SCROLL, 30 },
       {{ItemId::SCROLL, EffectType(EffectId::SUMMON, CreatureId::FIRE_SPHERE)}, 30 },
-      {{ItemId::SCROLL, EffectId::WORD_OF_POWER}, 5 },
+      {{ItemId::SCROLL, EffectId::CIRCULAR_BLAST}, 5 },
       {{ItemId::SCROLL, EffectId::DECEPTION}, 10 },
       {{ItemId::SCROLL, EffectType(EffectId::SUMMON, CreatureId::FLY)}, 30 },
       {{ItemId::POTION, EffectId::HEAL}, 50 },
@@ -588,7 +588,8 @@ int getEffectPrice(EffectType type) {
     case EffectId::LASTING:
         switch (type.get<LastingEffect>()) {
           case LastingEffect::INSANITY:
-          case LastingEffect::HALLU: return 2;
+          case LastingEffect::HALLU:
+            return 2;
           case LastingEffect::SPEED:
           case LastingEffect::PANIC:
           case LastingEffect::SLEEP:
@@ -596,21 +597,28 @@ int getEffectPrice(EffectType type) {
           case LastingEffect::TIED_UP:
           case LastingEffect::STUNNED:
           case LastingEffect::MAGIC_SHIELD:
-          case LastingEffect::RAGE: return 12;
-          case LastingEffect::BLIND: return 16;
+          case LastingEffect::RAGE:
+            return 12;
+          case LastingEffect::BLIND:
+            return 16;
           case LastingEffect::DAM_BONUS:
-          case LastingEffect::DEF_BONUS: return 20;
+          case LastingEffect::DEF_BONUS:
+            return 20;
           case LastingEffect::SLOWED:
           case LastingEffect::POISON_RESISTANT:
           case LastingEffect::FIRE_RESISTANT:
-          case LastingEffect::POISON: return 20;
-          case LastingEffect::INVISIBLE: return 24;
+          case LastingEffect::POISON:
+            return 20;
+          case LastingEffect::INVISIBLE:
+            return 24;
           case LastingEffect::DARKNESS_SOURCE:
           case LastingEffect::PREGNANT:
-          case LastingEffect::FLYING: return 24;
+          case LastingEffect::FLYING:
+            return 24;
         }
     case EffectId::ACID:
-    case EffectId::HEAL: return 8;
+    case EffectId::HEAL:
+      return 8;
     case EffectId::TELEPORT:
     case EffectId::FIRE:
     case EffectId::ALARM:
@@ -621,14 +629,15 @@ int getEffectPrice(EffectType type) {
     case EffectId::ENHANCE_ARMOR:
     case EffectId::TELE_ENEMIES:
     case EffectId::CURE_POISON:
-    case EffectId::SUMMON: return 12;
-    case EffectId::EMIT_POISON_GAS:  return 20;
+    case EffectId::SUMMON:
+      return 12;
+    case EffectId::EMIT_POISON_GAS:
+      return 20;
     case EffectId::DECEPTION: 
-    case EffectId::LEAVE_BODY: 
-    case EffectId::AIR_BLAST: 
+    case EffectId::CIRCULAR_BLAST:
     case EffectId::PLACE_FURNITURE:
     case EffectId::SUMMON_ELEMENT:
-    case EffectId::WORD_OF_POWER: return 30;
+      return 30;
   }
   return -1;
 }

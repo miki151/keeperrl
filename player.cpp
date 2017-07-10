@@ -75,14 +75,10 @@ void Player::onEvent(const GameEvent& event) {
       if (event.get<WCreature>() == getCreature())
         visibilityMap->update(getCreature(), getCreature()->getVisibleTiles());
       break;
-    case EventId::ITEMS_THROWN: {
-        auto info = event.get<EventInfo::ItemsThrown>();
-        if (getCreature()->getPosition().isSameLevel(info.level))
-          for (Vec2 v : info.trajectory)
-            if (getCreature()->canSee(v)) {
-              getView()->animateObject(info.trajectory, info.items[0]->getViewObject().id());
-              return;
-            }
+    case EventId::PROJECTILE: {
+        auto info = event.get<EventInfo::Projectile>();
+        if (getCreature()->canSee(info.begin) || getCreature()->canSee(info.end))
+          getView()->animateObject(info.begin.getCoord(), info.end.getCoord(), info.viewId);
       }
       break;
     case EventId::EXPLOSION: {

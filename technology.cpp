@@ -203,7 +203,7 @@ static vector<SpellLearningInfo> spellLearning {
     { SpellId::CURE_POISON, TechId::SPELLS_ADV},
     { SpellId::INVISIBILITY, TechId::SPELLS_MAS},
     { SpellId::BLAST, TechId::SPELLS_MAS},
-    { SpellId::WORD_OF_POWER, TechId::SPELLS_MAS},
+    { SpellId::CIRCULAR_BLAST, TechId::SPELLS_MAS},
     { SpellId::METEOR_SHOWER, TechId::SPELLS_MAS},
 //    { SpellId::SUMMON_ELEMENT, TechId::SPELLS},
 };
