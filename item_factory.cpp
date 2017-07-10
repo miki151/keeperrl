@@ -637,6 +637,7 @@ int getEffectPrice(EffectType type) {
     case EffectId::CIRCULAR_BLAST:
     case EffectId::PLACE_FURNITURE:
     case EffectId::SUMMON_ELEMENT:
+    case EffectId::DAMAGE:
       return 30;
   }
   return -1;

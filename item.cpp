@@ -31,6 +31,7 @@
 #include "corpse_info.h"
 #include "equipment.h"
 #include "attr_type.h"
+#include "attack.h"
 
 template <class Archive> 
 void Item::serialize(Archive& ar, const unsigned int version) {
@@ -146,7 +147,7 @@ void Item::onHitCreature(WCreature c, const Attack& attack, int numItems) {
   if (c->takeDamage(attack))
     return;
   if (attributes->effect && getClass() == ItemClass::POTION) {
-    Effect::applyToCreature(c, *attributes->effect, EffectStrength::NORMAL);
+    Effect::applyToCreature(c, *attributes->effect, EffectStrength::NORMAL, attack.attacker);
   }
 }
 

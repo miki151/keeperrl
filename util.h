@@ -1498,3 +1498,12 @@ optional<typename Map::mapped_type> getValueMaybe(const Map& m, const Key& key) 
 
 extern int getSize(const string&);
 extern const char* getString(const string&);
+
+#define COMPARE_ALL(...) \
+auto getElems() const { \
+  return std::forward_as_tuple(__VA_ARGS__); \
+} \
+template <typename T> \
+bool operator == (const T& o) const { \
+  return o.getElems() == getElems(); \
+}

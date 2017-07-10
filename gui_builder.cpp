@@ -1078,8 +1078,7 @@ const int spellsPerRow = 5;
 const Vec2 spellIconSize = Vec2(47, 47);
 
 SGuiElem GuiBuilder::getSpellIcon(const PlayerInfo::Spell& spell, bool active) {
-  vector<SGuiElem> ret = makeVec(
-      gui.spellIcon(spell.id));
+  vector<SGuiElem> ret = makeVec(gui.spellIcon(spell.id));
   if (spell.timeout) {
     ret.push_back(gui.darken());
     ret.push_back(gui.centeredLabel(Renderer::HOR_VER, toString(*spell.timeout)));

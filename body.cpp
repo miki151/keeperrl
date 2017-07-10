@@ -466,16 +466,14 @@ bool Body::takeDamage(const Attack& attack, WCreature creature, double damage) {
     creature->dieWithAttacker(attack.attacker);
     return true;
   } else
-    if (health < 0.5)
-      creature->you(MsgType::ARE, "critically wounded");
-    else {
-      if (hasHealth())
-        creature->you(MsgType::ARE, "wounded");
-      else if (!attack.effect)
-        creature->you(MsgType::ARE, "not hurt");
-    }
-  if (auto effect = attack.effect)
-    Effect::applyToCreature(creature, *effect, EffectStrength::WEAK);
+  if (health < 0.5)
+    creature->you(MsgType::ARE, "critically wounded");
+  else {
+    if (hasHealth())
+      creature->you(MsgType::ARE, "wounded");
+    else if (!attack.effect)
+      creature->you(MsgType::ARE, "not hurt");
+  }
   return false;
 }
 

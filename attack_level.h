@@ -1,4 +1,6 @@
 #pragma once
 
-enum class AttackLevel { LOW, MIDDLE, HIGH };
+#include "util.h"
+
+RICH_ENUM(AttackLevel, LOW, MIDDLE, HIGH );
 

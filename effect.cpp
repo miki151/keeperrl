@@ -101,7 +101,7 @@ static void airBlast(WCreature who, Position position, Vec2 direction, int maxDi
   for (auto elem : Item::stackItems(position.getItems())) {
     position.throwItem(
         position.removeItems(elem.second),
-        Attack(who, Random.choose(AttackLevel::LOW, AttackLevel::MIDDLE, AttackLevel::HIGH),
+        Attack(who, Random.choose<AttackLevel>(),
           elem.second[0]->getAttackType(), 15, AttrType::DAMAGE), maxDistance, direction, VisionId::NORMAL);
   }
   for (auto furniture : position.modFurniture())
@@ -323,15 +323,54 @@ static CreatureId getSummonedElement(Position position) {
   return CreatureId::AIR_ELEMENTAL;
 }
 
-void Effect::applyToCreature(WCreature c, const EffectType& type, EffectStrength strengthEnum) {
-  int strength = int(strengthEnum);
-  switch (type.getId()) {
+static void damage(WCreature victim, const DamageInfo& info, WCreature attacker) {
+  CHECK(attacker) << "Unknown attacker";
+  victim->takeDamage(Attack(attacker, Random.choose<AttackLevel>(), info.attackType, attacker->getAttr(info.attr),
+      info.attr));
+}
+
+static bool isConsideredHostile(LastingEffect effect) {
+  switch (effect) {
+    case LastingEffect::BLIND:
+    case LastingEffect::ENTANGLED:
+    case LastingEffect::HALLU:
+    case LastingEffect::INSANITY:
+    case LastingEffect::PANIC:
+    case LastingEffect::POISON:
+    case LastingEffect::SLOWED:
+    case LastingEffect::STUNNED:
+      return true;
+    default:
+      return false;
+  }
+}
+
+static bool isConsideredHostile(const EffectType& effect) {
+  switch (effect.getId()) {
     case EffectId::LASTING:
-        c->addEffect(type.get<LastingEffect>(), getDuration(c, type.get<LastingEffect>(), strength)); break;
+      return isConsideredHostile(effect.get<LastingEffect>());
+    case EffectId::ACID:
+    case EffectId::DESTROY_EQUIPMENT:
+    case EffectId::SILVER_DAMAGE:
+    case EffectId::FIRE:
+    case EffectId::DAMAGE:
+      return true;
+    default:
+      return false;
+  }
+
+}
+
+void Effect::applyToCreature(WCreature c, const EffectType& effect, EffectStrength strengthEnum, WCreature attacker) {
+  int strength = int(strengthEnum);
+  switch (effect.getId()) {
+    case EffectId::LASTING:
+      c->addEffect(effect.get<LastingEffect>(), getDuration(c, effect.get<LastingEffect>(), strength));
+      break;
     case EffectId::TELE_ENEMIES: teleEnemies(c); break;
     case EffectId::ALARM: alarm(c); break;
     case EffectId::ACID: acid(c); break;
-    case EffectId::SUMMON: ::summon(c, type.get<CreatureId>()); break;
+    case EffectId::SUMMON: ::summon(c, effect.get<CreatureId>()); break;
     case EffectId::SUMMON_ELEMENT: ::summon(c, getSummonedElement(c->getPosition())); break;
     case EffectId::DECEPTION: deception(c); break;
     case EffectId::CIRCULAR_BLAST:
@@ -348,8 +387,11 @@ void Effect::applyToCreature(WCreature c, const EffectType& type, EffectStrength
     case EffectId::EMIT_POISON_GAS: emitPoisonGas(c->getPosition(), strength, true); break;
     case EffectId::SILVER_DAMAGE: c->affectBySilver(); break;
     case EffectId::CURE_POISON: c->removeEffect(LastingEffect::POISON); break;
-    case EffectId::PLACE_FURNITURE: placeFurniture(c, type.get<FurnitureType>()); break;
+    case EffectId::PLACE_FURNITURE: placeFurniture(c, effect.get<FurnitureType>()); break;
+    case EffectId::DAMAGE: damage(c, effect.get<DamageInfo>(), attacker);
   }
+  if (isConsideredHostile(effect) && attacker)
+    c->onAttackedBy(attacker);
 }
 
 void Effect::applyToPosition(Position pos, const EffectType& type, EffectStrength strength) {
@@ -372,6 +414,8 @@ static optional<ViewId> getProjectile(const EffectType& effect) {
   switch (effect.getId()) {
     case EffectId::LASTING:
       return getProjectile(effect.get<LastingEffect>());
+    case EffectId::DAMAGE:
+      return ViewId::FORCE_BOLT;
     default:
       return none;
   }
@@ -400,7 +444,7 @@ void Effect::applyDirected(WCreature c, Vec2 direction, const DirEffectType& typ
     case DirEffectId::CREATURE_EFFECT:
       for (Vec2 v = direction * (range - 1); v.length4() >= 1; v -= direction)
         if (WCreature victim = c->getPosition().plus(v).getCreature())
-          Effect::applyToCreature(victim, type.get<EffectType>(), strength);
+          Effect::applyToCreature(victim, type.get<EffectType>(), strength, c);
       break;
   }
 }
@@ -444,6 +488,7 @@ string Effect::getName(const EffectType& type) {
     case EffectId::FIRE: return "fire";
     case EffectId::ACID: return "acid";
     case EffectId::ALARM: return "alarm";
+    case EffectId::DAMAGE: return "damage";
     case EffectId::TELE_ENEMIES: return "surprise";
     case EffectId::SILVER_DAMAGE: return "silver";
     case EffectId::CURE_POISON: return "cure poisoning";
@@ -482,6 +527,7 @@ string Effect::getDescription(const EffectType& type) {
     case EffectId::FIRE: return "fire";
     case EffectId::ACID: return "acid";
     case EffectId::ALARM: return "alarm";
+    case EffectId::DAMAGE: return "damage";
     case EffectId::TELE_ENEMIES: return "surprise";
     case EffectId::SILVER_DAMAGE: return "silver";
     case EffectId::CURE_POISON: return "Cures poisoning.";

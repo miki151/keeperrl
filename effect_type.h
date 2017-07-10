@@ -23,12 +23,21 @@ enum class EffectId {
     CURE_POISON,
     LASTING,
     PLACE_FURNITURE,
+    DAMAGE,
 };
 
-class EffectType : public EnumVariant<EffectId, TYPES(LastingEffect, CreatureId, FurnitureType),
+struct DamageInfo {
+  AttrType SERIAL(attr);
+  AttackType SERIAL(attackType);
+  COMPARE_ALL(attr, attackType)
+  SERIALIZE_ALL(attr, attackType)
+};
+
+class EffectType : public EnumVariant<EffectId, TYPES(LastingEffect, CreatureId, FurnitureType, DamageInfo),
         ASSIGN(LastingEffect, EffectId::LASTING),
         ASSIGN(CreatureId, EffectId::SUMMON),
-        ASSIGN(FurnitureType, EffectId::PLACE_FURNITURE)
+        ASSIGN(FurnitureType, EffectId::PLACE_FURNITURE),
+        ASSIGN(DamageInfo, EffectId::DAMAGE)
       > {
   using EnumVariant::EnumVariant;
 };

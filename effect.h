@@ -29,7 +29,7 @@ class DirEffectType;
 
 class Effect {
   public:
-  static void applyToCreature(WCreature, const EffectType&, EffectStrength);
+  static void applyToCreature(WCreature, const EffectType&, EffectStrength, WCreature attacker = nullptr);
   static void applyToPosition(Position, const EffectType&, EffectStrength);
   static void applyDirected(WCreature, Vec2 direction, const DirEffectType&, EffectStrength);
 

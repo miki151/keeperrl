@@ -9,6 +9,8 @@
 #include "lasting_effect.h"
 #include "effect_type.h"
 #include "furniture_type.h"
+#include "attr_type.h"
+#include "attack_type.h"
 
 const string& Spell::getName() const {
   return name;
@@ -88,6 +90,8 @@ void Spell::init() {
   set(SpellId::INVISIBILITY, new Spell("invisibility", {EffectId::LASTING, LastingEffect::INVISIBLE}, 150,
         SoundId::SPELL_INVISIBILITY));
   set(SpellId::BLAST, new Spell("blast", DirEffectId::BLAST, 100, SoundId::SPELL_BLAST));
+  set(SpellId::MAGIC_MISSILE, new Spell("magic missile", {DirEffectId::CREATURE_EFFECT,
+      EffectType {EffectId::DAMAGE, DamageInfo{AttrType::SPELL_DAMAGE, AttackType::SPELL}}}, 3, SoundId::SPELL_BLAST));
   set(SpellId::CIRCULAR_BLAST, new Spell("circular blast", EffectId::CIRCULAR_BLAST, 150, SoundId::SPELL_AIR_BLAST,
         CastMessageType::AIR_BLAST));
   set(SpellId::SUMMON_SPIRIT, new Spell("summon spirits", EffectType(EffectId::SUMMON, CreatureId::SPIRIT), 150,

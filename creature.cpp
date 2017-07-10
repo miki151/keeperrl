@@ -927,20 +927,24 @@ CreatureAction Creature::attack(WCreature other, optional<AttackParams> attackPa
   });
 }
 
+void Creature::onAttackedBy(WCreature attacker) {
+  if (!canSee(attacker))
+    unknownAttackers.insert(attacker);
+  if (attacker->tribe != tribe)
+    privateEnemies.insert(attacker);
+  lastAttacker = attacker;
+}
+
 bool Creature::takeDamage(const Attack& attack) {
   ++numAttacksThisTurn;
-  AttackType attackType = attack.type;
   int defense = getAttr(getCorrespondingDefense(attack.damageType));
   if (WCreature attacker = attack.attacker) {
-    if (!canSee(attacker))
-      unknownAttackers.insert(attacker);
-    if (attacker->tribe != tribe || Random.roll(3))
-      privateEnemies.insert(attacker);
+    onAttackedBy(attacker);
     if (!attacker->getAttributes().getSkills().hasDiscrete(SkillId::STEALTH))
       for (Position p : visibleCreatures)
         if (p.dist8(position) < 10 && p.getCreature() && !p.getCreature()->isDead())
           p.getCreature()->removeEffect(LastingEffect::SLEEP);
-    if (attackType == AttackType::POSSESS) {
+    if (attack.type == AttackType::POSSESS) {
       you(MsgType::ARE, "possessed by " + attacker->getName().the());
       attacker->dieNoReason(Creature::DropType::NOTHING);
       addEffect(LastingEffect::INSANITY, 10);
@@ -948,7 +952,6 @@ bool Creature::takeDamage(const Attack& attack) {
     }
     INFO << getName().the() << " attacked by " << attacker->getName().the()
       << " damage " << attack.strength << " defense " << defense;
-    lastAttacker = attack.attacker;
     lastDamageType = none;
     for (auto expType : getExperienceTypes(attack.damageType))
       lastDamageType = expType;
@@ -959,11 +962,10 @@ bool Creature::takeDamage(const Attack& attack) {
     double dam = (defense == 0) ? 1 : double(attack.strength - defense) / defense;
     if (attributes->getBody().takeDamage(attack, this, dam))
       return true;
-  } else {
-    you(MsgType::GET_HIT_NODAMAGE, getAttackParam(attackType));
-    if (attack.effect)
-      Effect::applyToCreature(this, *attack.effect, EffectStrength::NORMAL);
-  }
+  } else
+    you(MsgType::GET_HIT_NODAMAGE, getAttackParam(attack.type));
+  if (attack.effect)
+    Effect::applyToCreature(this, *attack.effect, EffectStrength::NORMAL, this);
   for (LastingEffect effect : ENUM_ALL(LastingEffect))
     if (isAffected(effect))
       LastingEffects::onCreatureDamage(this, effect);
