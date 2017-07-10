@@ -930,7 +930,7 @@ CreatureAction Creature::attack(WCreature other, optional<AttackParams> attackPa
 void Creature::onAttackedBy(WCreature attacker) {
   if (!canSee(attacker))
     unknownAttackers.insert(attacker);
-  if (attacker->tribe != tribe)
+  //if (attacker->tribe != tribe)
     privateEnemies.insert(attacker);
   lastAttacker = attacker;
 }

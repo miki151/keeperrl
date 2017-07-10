@@ -1140,7 +1140,7 @@ SGuiElem GuiBuilder::getExpIncreaseLine(const PlayerInfo::LevelInfo& info, Exper
         gui.topMargin(-3, gui.icon(getAttrIcon(attr)))), 25);
   line.addBackElem(gui.stack(
       gui.tooltip({"Training level, and the increase of each of the given attributes"}),
-      gui.label("+" + toString(0.1 * round(10 * info.level[type])))), 60);
+      gui.label("+" + toString(0.01 * round(100 * info.level[type])))), 60);
   line.addBackElem(gui.stack(
       gui.tooltip({"Upper limit of the training level"}),
       gui.label("  (limit " + toString(info.limit[type]) + ")")), 70);

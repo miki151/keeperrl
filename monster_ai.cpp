@@ -455,10 +455,13 @@ class Fighter : public Behaviour {
   }
 
   vector<DirEffectType> getOffensiveEffects() {
-    return makeVec<DirEffectType>(
-        DirEffectId::BLAST,
-        DirEffectType(DirEffectId::CREATURE_EFFECT, EffectType(EffectId::LASTING, LastingEffect::STUNNED))
-    );
+    static vector<DirEffectType> effects = [] {
+      vector<DirEffectType> ret;
+      for (auto id : {SpellId::BLAST, SpellId::MAGIC_MISSILE, SpellId::STUN_RAY})
+        ret.push_back(Spell::get(id)->getDirEffectType());
+      return ret;
+    }();
+    return effects;
   }
 
   MoveInfo getFireMove(Vec2 dir) {
