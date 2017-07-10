@@ -1419,21 +1419,6 @@ void Collective::onAppliedSquare(WCreature c, Position pos) {
     // Furniture have variable usage time, so just multiply by it to be independent of changes.
     double efficiency = tileEfficiency->getEfficiency(pos) * furniture->getUsageTime() * getEfficiency(c);
     switch (furniture->getType()) {
-      case FurnitureType::BOOKCASE: {
-        c->increaseExpLevel(ExperienceType::SPELL, 0.005 * efficiency);
-        auto availableSpells = Technology::getAvailableSpells(this);
-        if (Random.chance(efficiency / 60) && !availableSpells.empty()) {
-          for (int i : Range(30)) {
-            Spell* spell = Random.choose(Technology::getAvailableSpells(this));
-            if (!c->getAttributes().getSpellMap().contains(spell)) {
-              c->getAttributes().getSpellMap().add(spell);
-              control->addMessage(c->getName().a() + " learns the spell of " + spell->getName());
-              break;
-            }
-          }
-        }
-        break;
-      }
       case FurnitureType::THRONE:
         break;
       case FurnitureType::WHIPPING_POST:
@@ -1450,6 +1435,21 @@ void Collective::onAppliedSquare(WCreature c, Position pos) {
         case FurnitureUsageType::TRAIN:
           c->increaseExpLevel(ExperienceType::MELEE, 0.005 * efficiency);
           break;
+        case FurnitureUsageType::STUDY: {
+          c->increaseExpLevel(ExperienceType::SPELL, 0.005 * efficiency);
+          auto availableSpells = Technology::getAvailableSpells(this);
+          if (Random.chance(efficiency / 60) && !availableSpells.empty()) {
+            for (int i : Range(30)) {
+              Spell* spell = Random.choose(Technology::getAvailableSpells(this));
+              if (!c->getAttributes().getSpellMap().contains(spell)) {
+                c->getAttributes().getSpellMap().add(spell);
+                control->addMessage(c->getName().a() + " learns the spell of " + spell->getName());
+                break;
+              }
+            }
+          }
+          break;
+        }
         default:
           break;
       }
@@ -1476,7 +1476,7 @@ optional<FurnitureType> Collective::getMissingTrainingFurniture(WConstCreature c
     return none;
   optional<FurnitureType> requiredDummy;
   for (auto dummyType : CollectiveConfig::getTrainingFurniture(expType)) {
-    bool canTrain = *config->getTrainingMaxLevelIncrease(expType, dummyType) >
+    bool canTrain = *config->getTrainingMaxLevel(expType, dummyType) >
         c->getAttributes().getExpLevel(expType);
     bool hasDummy = getConstructions().getBuiltCount(dummyType) > 0;
     if (canTrain && hasDummy)

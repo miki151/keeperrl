@@ -70,12 +70,29 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setUsageTime(5)
           .setCanHide()
           .setDestroyable(100);
-    case FurnitureType::BOOKCASE:
-      return Furniture("bookcase", ViewObject(ViewId::LIBRARY, ViewLayer::FLOOR), type, tribe)
+    case FurnitureType::BOOKCASE_WOOD:
+      return Furniture("wooden bookcase", ViewObject(ViewId::BOOKCASE_WOOD, ViewLayer::FLOOR), type, tribe)
           .setBlocking()
+          .setUsageType(FurnitureUsageType::STUDY)
           .setUsageTime(5)
           .setCanHide()
           .setFireInfo(Fire(700, 1.0))
+          .setDestroyable(50);
+    case FurnitureType::BOOKCASE_IRON:
+      return Furniture("iron bookcase", ViewObject(ViewId::BOOKCASE_IRON, ViewLayer::FLOOR), type, tribe)
+          .setBlocking()
+          .setUsageType(FurnitureUsageType::STUDY)
+          .setUsageTime(5)
+          .setCanHide()
+          .setFireInfo(Fire(700, 0.5))
+          .setDestroyable(50);
+    case FurnitureType::BOOKCASE_GOLD:
+      return Furniture("golden bookcase", ViewObject(ViewId::BOOKCASE_GOLD, ViewLayer::FLOOR), type, tribe)
+          .setBlocking()
+          .setUsageType(FurnitureUsageType::STUDY)
+          .setUsageTime(5)
+          .setCanHide()
+          .setFireInfo(Fire(700, 0.5))
           .setDestroyable(50);
     case FurnitureType::THRONE:
       return Furniture("throne", ViewObject(ViewId::THRONE, ViewLayer::FLOOR), type, tribe)
@@ -541,6 +558,10 @@ bool FurnitureFactory::isUpgrade(FurnitureType base, FurnitureType upgraded) {
       return upgraded == FurnitureType::TRAINING_IRON || upgraded == FurnitureType::TRAINING_STEEL;
     case FurnitureType::TRAINING_IRON:
       return upgraded == FurnitureType::TRAINING_STEEL;
+    case FurnitureType::BOOKCASE_WOOD:
+      return upgraded == FurnitureType::BOOKCASE_IRON || upgraded == FurnitureType::BOOKCASE_GOLD;
+    case FurnitureType::BOOKCASE_IRON:
+      return upgraded == FurnitureType::BOOKCASE_GOLD;
     default:
       return false;
   }

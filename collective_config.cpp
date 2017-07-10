@@ -214,7 +214,10 @@ const vector<FurnitureType>& CollectiveConfig::getRoomsNeedingLight() const {
     FurnitureType::TRAINING_WOOD,
     FurnitureType::TRAINING_IRON,
     FurnitureType::TRAINING_STEEL,
-    FurnitureType::BOOKCASE};
+    FurnitureType::BOOKCASE_WOOD,
+    FurnitureType::BOOKCASE_IRON,
+    FurnitureType::BOOKCASE_GOLD,
+  };
   return ret;
 };
 
@@ -363,14 +366,14 @@ const vector<FurnitureType>& CollectiveConfig::getTrainingFurniture(ExperienceTy
       [](ExperienceType expType) {
         vector<FurnitureType> furniture;
         for (auto type : ENUM_ALL(FurnitureType))
-          if (!!getTrainingMaxLevelIncrease(expType, type))
+          if (!!getTrainingMaxLevel(expType, type))
             furniture.push_back(type);
         return furniture;
       });
   return ret[type];
 }
 
-optional<int> CollectiveConfig::getTrainingMaxLevelIncrease(ExperienceType experienceType, FurnitureType type) {
+optional<int> CollectiveConfig::getTrainingMaxLevel(ExperienceType experienceType, FurnitureType type) {
   switch (experienceType) {
     case ExperienceType::MELEE:
       switch (type) {
@@ -386,8 +389,12 @@ optional<int> CollectiveConfig::getTrainingMaxLevelIncrease(ExperienceType exper
       break;
     case ExperienceType::SPELL:
       switch (type) {
-        case FurnitureType::BOOKCASE:
+        case FurnitureType::BOOKCASE_WOOD:
           return 3;
+        case FurnitureType::BOOKCASE_IRON:
+          return 7;
+        case FurnitureType::BOOKCASE_GOLD:
+          return 12;
         default:
           return none;
       }
@@ -417,7 +424,7 @@ CollectiveConfig::~CollectiveConfig() {
 
 static auto getTrainingPredicate(ExperienceType experienceType) {
   return [experienceType] (WConstCreature c, FurnitureType t) {
-      if (auto maxIncrease = CollectiveConfig::getTrainingMaxLevelIncrease(experienceType, t))
+      if (auto maxIncrease = CollectiveConfig::getTrainingMaxLevel(experienceType, t))
         return !c || (c->getAttributes().getExpLevel(experienceType) < *maxIncrease &&
             !c->getAttributes().isTrainingMaxedOut(experienceType));
       else

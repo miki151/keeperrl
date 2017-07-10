@@ -75,6 +75,7 @@
 #include "container_range.h"
 #include "trap_type.h"
 #include "collective_warning.h"
+#include "furniture_usage.h"
 
 template <class Archive>
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
@@ -188,8 +189,18 @@ const vector<PlayerControl::BuildInfo>& PlayerControl::getBuildInfo() {
       BuildInfo(ZoneId::STORAGE_EQUIPMENT, ViewId::STORAGE_EQUIPMENT, "Equipment",
           "All equipment for your minions can be stored here.", 0, "Storage")
              .setTutorialHighlight(TutorialHighlight::EQUIPMENT_STORAGE),
-      BuildInfo({FurnitureType::BOOKCASE, {ResourceId::WOOD, 15}}, "Library", {},
-          "Mana is regenerated here.", 'y').setTutorialHighlight(TutorialHighlight::BUILD_LIBRARY),
+      BuildInfo({FurnitureType::BOOKCASE_WOOD, {ResourceId::WOOD, 15}}, "Wooden bookcase", {},
+          "Train your minions here. Adds up to " +
+          toString(*CollectiveConfig::getTrainingMaxLevel(ExperienceType::SPELL, FurnitureType::BOOKCASE_WOOD)) + " spell levels.",
+          'y', "Library", true).setTutorialHighlight(TutorialHighlight::BUILD_LIBRARY),
+      BuildInfo({FurnitureType::BOOKCASE_IRON, {ResourceId::IRON, 15}}, "Iron bookcase", {},
+          "Train your minions here. Adds up to " +
+          toString(*CollectiveConfig::getTrainingMaxLevel(ExperienceType::SPELL, FurnitureType::BOOKCASE_IRON)) + " spell levels.",
+          0, "Library").setTutorialHighlight(TutorialHighlight::BUILD_LIBRARY),
+      BuildInfo({FurnitureType::BOOKCASE_GOLD, {ResourceId::GOLD, 15}}, "Golden bookcase", {},
+          "Train your minions here. Adds up to " +
+          toString(*CollectiveConfig::getTrainingMaxLevel(ExperienceType::SPELL, FurnitureType::BOOKCASE_GOLD)) + " spell levels.",
+          0, "Library").setTutorialHighlight(TutorialHighlight::BUILD_LIBRARY),
       BuildInfo({FurnitureType::THRONE, {ResourceId::GOLD, 160}, false, 1}, "Throne",
           {{RequirementId::VILLAGE_CONQUERED}},
           "Increases population limit by " + toString(ModelBuilder::getThronePopulationIncrease())),
@@ -204,18 +215,18 @@ const vector<PlayerControl::BuildInfo>& PlayerControl::getBuildInfo() {
              .setTutorialHighlight(TutorialHighlight::BUILD_BED),
       BuildInfo({FurnitureType::TRAINING_WOOD, {ResourceId::WOOD, 12}}, "Wooden dummy", {},
           "Train your minions here. Adds up to " +
-          toString(*CollectiveConfig::getTrainingMaxLevelIncrease(ExperienceType::MELEE, FurnitureType::TRAINING_WOOD)) + " experience levels.",
+          toString(*CollectiveConfig::getTrainingMaxLevel(ExperienceType::MELEE, FurnitureType::TRAINING_WOOD)) + " melee levels.",
           't', "Training room", true)
              .setTutorialHighlight(TutorialHighlight::TRAINING_ROOM),
       BuildInfo({FurnitureType::TRAINING_IRON, {ResourceId::IRON, 12}}, "Iron dummy",
           {{RequirementId::TECHNOLOGY, TechId::IRON_WORKING}},
           "Train your minions here. Adds up to " +
-          toString(*CollectiveConfig::getTrainingMaxLevelIncrease(ExperienceType::MELEE, FurnitureType::TRAINING_IRON)) + " experience levels.",
+          toString(*CollectiveConfig::getTrainingMaxLevel(ExperienceType::MELEE, FurnitureType::TRAINING_IRON)) + " melee levels.",
           0, "Training room"),
       BuildInfo({FurnitureType::TRAINING_STEEL, {ResourceId::STEEL, 12}}, "Steel dummy",
           {{RequirementId::TECHNOLOGY, TechId::STEEL_MAKING}},
           "Train your minions here. Adds up to " +
-          toString(*CollectiveConfig::getTrainingMaxLevelIncrease(ExperienceType::MELEE, FurnitureType::TRAINING_STEEL)) + " experience levels.",
+          toString(*CollectiveConfig::getTrainingMaxLevel(ExperienceType::MELEE, FurnitureType::TRAINING_STEEL)) + " melee levels.",
           0, "Training room"),
       BuildInfo({FurnitureType::WORKSHOP, {ResourceId::WOOD, 15}}, "Workshop", {},
           "Produces leather equipment, traps, first-aid kits and other.", 'm', workshop, true)
@@ -832,7 +843,7 @@ vector<Button> PlayerControl::fillButtons(const vector<BuildInfo>& buildInfo) co
 vector<PlayerControl::TechInfo> PlayerControl::getTechInfo() const {
   vector<TechInfo> ret;
   ret.push_back({{ViewId::MANA, "Sorcery"}, [](PlayerControl* c, View* view) {c->handlePersonalSpells(view);}});
-  ret.push_back({{ViewId::LIBRARY, "Library", 'l'},
+  ret.push_back({{ViewId::BOOKCASE_GOLD, "Library", 'l'},
       [](PlayerControl* c, View* view) { c->setChosenLibrary(!c->chosenLibrary); }});
   ret.push_back({{ViewId::BOOK, "Keeperopedia"},
       [](PlayerControl* c, View* view) { Encyclopedia().present(view); }});
@@ -1124,7 +1135,9 @@ void PlayerControl::fillLibraryInfo(CollectiveInfo& collectiveInfo) const {
   if (chosenLibrary) {
     collectiveInfo.libraryInfo.emplace();
     auto& info = *collectiveInfo.libraryInfo;
-    int libraryCount = getCollective()->getConstructions().getBuiltCount(FurnitureType::BOOKCASE);
+    int libraryCount = 0;
+    for (auto f : CollectiveConfig::getTrainingFurniture(ExperienceType::SPELL))
+      libraryCount += getCollective()->getConstructions().getBuiltPositions(f).size();
     if (libraryCount == 0)
       info.warning = "You need to build a library to start research."_s;
     else if (libraryCount <= getMinLibrarySize())
@@ -1552,7 +1565,9 @@ void PlayerControl::getSquareViewIndex(Position pos, bool canSee, ViewIndex& ind
 
 static bool showEfficiency(FurnitureType type) {
   switch (type) {
-    case FurnitureType::BOOKCASE:
+    case FurnitureType::BOOKCASE_WOOD:
+    case FurnitureType::BOOKCASE_IRON:
+    case FurnitureType::BOOKCASE_GOLD:
     case FurnitureType::DEMON_SHRINE:
     case FurnitureType::WORKSHOP:
     case FurnitureType::TRAINING_WOOD:
@@ -1578,10 +1593,10 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
       index.mergeFromMemory(*memIndex);
   if (getCollective()->getTerritory().contains(position))
     if (auto furniture = position.getFurniture(FurnitureLayer::MIDDLE)) {
-      if (furniture->getType() == FurnitureType::BOOKCASE || CollectiveConfig::getWorkshopType(furniture->getType()))
+      if (furniture->getUsageType() == FurnitureUsageType::STUDY || CollectiveConfig::getWorkshopType(furniture->getType()))
         index.setHighlight(HighlightType::CLICKABLE_FURNITURE);
       if ((chosenWorkshop && chosenWorkshop == CollectiveConfig::getWorkshopType(furniture->getType())) ||
-          (chosenLibrary && furniture->getType() == FurnitureType::BOOKCASE))
+          (chosenLibrary && furniture->getUsageType() == FurnitureUsageType::STUDY))
         index.setHighlight(HighlightType::CLICKED_FURNITURE);
       if (draggedCreature)
         if (WCreature c = getCreature(*draggedCreature))
@@ -1790,8 +1805,9 @@ void PlayerControl::clearChosenInfo() {
 }
 
 void PlayerControl::setChosenLibrary(bool state) {
-  for (auto pos : getCollective()->getConstructions().getBuiltPositions(FurnitureType::BOOKCASE))
-    pos.setNeedsRenderUpdate(true);
+  for (auto f : CollectiveConfig::getTrainingFurniture(ExperienceType::SPELL))
+    for (auto pos : getCollective()->getConstructions().getBuiltPositions(f))
+      pos.setNeedsRenderUpdate(true);
   if (state)
     clearChosenInfo();
   chosenLibrary = state;
@@ -2362,7 +2378,7 @@ void PlayerControl::onSquareClick(Position pos) {
       } else {
         if (auto workshopType = CollectiveConfig::getWorkshopType(furniture->getType()))
           setChosenWorkshop(*workshopType);
-        if (furniture->getType() == FurnitureType::BOOKCASE)
+        if (furniture->getUsageType() == FurnitureUsageType::STUDY)
           setChosenLibrary(!chosenLibrary);
       }
     }

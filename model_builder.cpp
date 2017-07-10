@@ -87,7 +87,7 @@ static CollectiveConfig getKeeperConfig(RandomGen& random, bool fastImmigration)
           .addRequirement(0.1, AttractionInfo{1, FurnitureType::TRAINING_WOOD}),
       ImmigrantInfo(CreatureId::ORC_SHAMAN, {MinionTrait::FIGHTER})
           .setFrequency(0.6)
-          .addRequirement(0.1, AttractionInfo{1, {FurnitureType::BOOKCASE, FurnitureType::LABORATORY}}),
+          .addRequirement(0.1, AttractionInfo{1, {FurnitureType::BOOKCASE_WOOD, FurnitureType::LABORATORY}}),
       ImmigrantInfo(CreatureId::OGRE, {MinionTrait::FIGHTER})
           .setFrequency(0.3)
           .addRequirement(0.1, AttractionInfo{1, FurnitureType::TRAINING_IRON}),

@@ -33,6 +33,7 @@
 #include "campaign_type.h"
 #include "game_save_type.h"
 #include "player_role.h"
+#include "collective_config.h"
 
 template <class Archive> 
 void Game::serialize(Archive& ar, const unsigned int version) {
@@ -159,9 +160,10 @@ void Game::prepareSiteRetirement() {
     }
   playerCollective->setVillainType(VillainType::MAIN);
   playerCollective->retire();
-  set<Position> locationPosTmp =
-      playerCollective->getConstructions().getBuiltPositions(FurnitureType::BOOKCASE);
-  vector<Position> locationPos(locationPosTmp.begin(), locationPosTmp.end());
+  vector<Position> locationPos;
+  for (auto f : CollectiveConfig::getTrainingFurniture(ExperienceType::SPELL))
+    for (auto pos : playerCollective->getConstructions().getBuiltPositions(f))
+      locationPos.push_back(pos);
   if (locationPos.empty())
     locationPos = playerCollective->getTerritory().getAll();
   if (!locationPos.empty())

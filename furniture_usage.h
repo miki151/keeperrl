@@ -17,6 +17,7 @@ enum class FurnitureUsageType {
   STAIRS,
   TIE_UP,
   TRAIN,
+  STUDY,
   PORTAL
 };
 

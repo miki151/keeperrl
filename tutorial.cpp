@@ -100,13 +100,13 @@ bool Tutorial::canContinue(WConstGame game) const {
       return collective->getConstructions().getBuiltCount(FurnitureType::DOOR)
           + collective->getConstructions().getBuiltCount(FurnitureType::LOCKED_DOOR) >= 1;
     case State::BUILD_LIBRARY:
-      return collective->getConstructions().getBuiltCount(FurnitureType::BOOKCASE) >= 5;
+      return collective->getConstructions().getBuiltCount(FurnitureType::BOOKCASE_WOOD) >= 5;
     case State::DIG_2_ROOMS:
       return getHighlightedSquaresHigh(game).empty();
     case State::ACCEPT_IMMIGRANT:
       return collective->getCreatures(MinionTrait::FIGHTER).size() >= 1;
     case State::TORCHES:
-      for (auto furniture : {FurnitureType::BOOKCASE, FurnitureType::TRAINING_WOOD})
+      for (auto furniture : {FurnitureType::BOOKCASE_WOOD, FurnitureType::TRAINING_WOOD})
         for (auto pos : collective->getConstructions().getBuiltPositions(furniture))
           if (collective->getTileEfficiency().getEfficiency(pos) < 0.99)
             return false;
@@ -391,7 +391,7 @@ vector<Vec2> Tutorial::getHighlightedSquaresLow(WConstGame game) const {
     }
     case State::FLOORS: {
       vector<Vec2> ret;
-      for (auto furniture : {FurnitureType::BOOKCASE, FurnitureType::TRAINING_WOOD})
+      for (auto furniture : {FurnitureType::BOOKCASE_WOOD, FurnitureType::TRAINING_WOOD})
         for (auto pos : collective->getConstructions().getBuiltPositions(furniture))
           for (auto floorPos : concat({pos}, pos.neighbors8()))
             if (floorPos.canConstruct(FurnitureType::FLOOR_WOOD1) && !ret.contains(floorPos.getCoord()))

@@ -195,7 +195,9 @@ const char* ViewObject::getDefaultDescription() const {
     case ViewId::RITUAL_ROOM: return "Demon shrine";
     case ViewId::IMPALED_HEAD: return "Impaled head";
     case ViewId::EYEBALL: return "Eyeball";
-    case ViewId::LIBRARY: return "Library";
+    case ViewId::BOOKCASE_WOOD: return "Wooden bookcase";
+    case ViewId::BOOKCASE_IRON: return "Iron bookcase";
+    case ViewId::BOOKCASE_GOLD: return "Golden bookcase";
     case ViewId::CAULDRON: return "Cauldron";
     case ViewId::LABORATORY: return "Laboratory";
     case ViewId::FORGE: return "Forge";

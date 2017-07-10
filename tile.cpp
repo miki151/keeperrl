@@ -549,7 +549,9 @@ class TileCoordLookup {
     Tile::addTile(ViewId::TRAINING_IRON, sprite("train_iron").setRoundShadow());
     Tile::addTile(ViewId::TRAINING_STEEL, sprite("train_steel").setRoundShadow());
     Tile::addTile(ViewId::RITUAL_ROOM, sprite("ritualroomdeco").setRoundShadow());
-    Tile::addTile(ViewId::LIBRARY, sprite("libdeco").setRoundShadow());
+    Tile::addTile(ViewId::BOOKCASE_WOOD, sprite("library_wood").setRoundShadow());
+    Tile::addTile(ViewId::BOOKCASE_IRON, sprite("library_iron").setRoundShadow());
+    Tile::addTile(ViewId::BOOKCASE_GOLD, sprite("library_gold").setRoundShadow());
     Tile::addTile(ViewId::LABORATORY, sprite("labdeco").setRoundShadow());
     Tile::addTile(ViewId::CAULDRON, sprite("labdeco"));
     Tile::addTile(ViewId::BEAST_LAIR, sprite("lair").setFloorBorders());
@@ -861,7 +863,9 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::TRAINING_IRON, symbol(u8"‡", Color::LIGHT_GRAY, true));
     Tile::addSymbol(ViewId::TRAINING_STEEL, symbol(u8"‡", Color::LIGHT_BLUE, true));
     Tile::addSymbol(ViewId::RITUAL_ROOM, symbol(u8"Ω", Color::PURPLE, true));
-    Tile::addSymbol(ViewId::LIBRARY, symbol(u8"▤", Color::BROWN, true));
+    Tile::addSymbol(ViewId::BOOKCASE_WOOD, symbol(u8"▤", Color::BROWN, true));
+    Tile::addSymbol(ViewId::BOOKCASE_IRON, symbol(u8"▤", Color::LIGHT_GRAY, true));
+    Tile::addSymbol(ViewId::BOOKCASE_GOLD, symbol(u8"▤", Color::YELLOW, true));
     Tile::addSymbol(ViewId::LABORATORY, symbol(u8"ω", Color::PURPLE, true));
     Tile::addSymbol(ViewId::CAULDRON, symbol(u8"ω", Color::PURPLE, true));
     Tile::addSymbol(ViewId::BEAST_LAIR, symbol(u8".", Color::YELLOW));

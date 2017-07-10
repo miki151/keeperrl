@@ -30,6 +30,7 @@
 #include "furniture_factory.h"
 #include "game.h"
 #include "tutorial_highlight.h"
+#include "collective_config.h"
 
 void Technology::init() {
   Technology::set(TechId::ALCHEMY, new Technology(
@@ -159,7 +160,15 @@ static vector<Vec2> cutShape(Rectangle rect) {
 
 
 static void addResource(WCollective col, FurnitureType type, int maxDist) {
-  Position init = Random.choose(col->getConstructions().getBuiltPositions(FurnitureType::BOOKCASE));
+  Position init = [&]{
+      for (auto f : CollectiveConfig::getTrainingFurniture(ExperienceType::SPELL)) {
+        auto& pos = col->getConstructions().getBuiltPositions(f);
+        if (!pos.empty())
+          return Random.choose(pos);
+      }
+      FATAL << "Couldn't find library to spawn resources.";
+      return Position();
+  }();
   Rectangle resourceArea(Random.get(4, 7), Random.get(4, 7));
   resourceArea.translate(-resourceArea.middle());
   for (int t = 0; t < 200; ++t) {
