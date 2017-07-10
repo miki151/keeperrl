@@ -303,12 +303,12 @@ void Level::throwItem(vector<PItem> item, const Attack& attack, int maxDist, Vec
       item[0]->onHitSquareMessage(Position(v, this), item.size());
       trajectory.pop_back();
       getGame()->addEvent({EventId::PROJECTILE,
-          EventInfo::Projectile{item[0]->getViewObject().id(), Position(position, this), pos}});
+          EventInfo::Projectile{item[0]->getViewObject().id(), Position(position, this), pos.minus(direction)}});
       if (!item[0]->isDiscarded())
         pos.minus(direction).dropItems(std::move(item));
       return;
     }
-    if (++cnt > maxDist) {
+    if (++cnt > maxDist || getSafeSquare(v)->getCreature()) {
       getGame()->addEvent({EventId::PROJECTILE,
           EventInfo::Projectile{item[0]->getViewObject().id(), Position(position, this), pos}});
       modSafeSquare(v)->onItemLands(Position(v, this), std::move(item), attack, maxDist - cnt - 1, direction,
