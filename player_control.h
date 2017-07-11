@@ -184,7 +184,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void addConsumableItem(WCreature);
   void handleEquipment(View* view, WCreature creature);
   void fillEquipment(WCreature, PlayerInfo&) const;
-  void handlePersonalSpells(View*);
   void handleTrading(WCollective ally);
   void handlePillage(WCollective enemy);
   void handleRansom(bool pay);

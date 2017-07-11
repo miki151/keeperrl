@@ -1160,6 +1160,8 @@ void Creature::increaseExpLevel(ExperienceType type, double increase) {
     you(MsgType::ARE, "more experienced");
     addPersonalEvent(getName().a() + " reaches " + ::getNameLowerCase(type) + " training level " + toString(newLevel));
   }
+  if (type == ExperienceType::SPELL)
+    getAttributes().getSpellMap().onExpLevelReached(this, getAttributes().getExpLevel(type));
 }
 
 BestAttack Creature::getBestAttack() const {

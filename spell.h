@@ -41,7 +41,7 @@ class Spell : public Singleton<Spell, SpellId> {
   string getDescription() const;
   void addMessage(WCreature);
   SoundId getSound() const;
-  optional<ViewId> getProjectileId();
+  optional<int> getLearningExpLevel() const;
 
   static void init();
 

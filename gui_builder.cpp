@@ -2101,7 +2101,7 @@ SGuiElem GuiBuilder::drawListGui(const string& title, const vector<ListElem>& op
           gui.tooltip({options[i].getTip()}));
     if (!options[i].getSecondColumn().empty())
       line = gui.horizontalList(makeVec(std::move(line),
-            gui.label(options[i].getSecondColumn())), columnWidth + 80);
+            gui.label(options[i].getSecondColumn(), color)), columnWidth + 80);
     line = menuElemMargins(std::move(line));
     if (highlight && options[i].getMod() == ListElem::NORMAL) {
       line = gui.stack(

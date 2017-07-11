@@ -52,9 +52,11 @@ class Technology : public Singleton<Technology, TechId> {
   Technology* setTutorialHighlight(TutorialHighlight);
   const string& getDescription() const;
   const optional<TutorialHighlight> getTutorialHighlight() const;
-  static vector<Technology*> getSorted();
+  bool isFree() const;
   const vector<Technology*> getPrerequisites() const;
   const vector<Technology*> getAllowed() const;
+
+  static vector<Technology*> getSorted();
   static vector<Technology*> getNextTechs(const vector<Technology*>& current);
   static vector<Spell*> getSpellLearning(TechId tech);
   static vector<Spell*> getAvailableSpells(WConstCollective);

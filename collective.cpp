@@ -77,6 +77,11 @@ void Collective::init(CollectiveConfig&& cfg, Immigration&& im) {
   immigration = makeOwner<Immigration>(std::move(im));
   credit = cfg.getStartingResource();
   workshops = config->getWorkshops();
+  for (auto id : ENUM_ALL(TechId)) {
+    auto tech = Technology::get(id);
+    if (tech->isFree())
+      acquireTech(tech);
+  }
 }
 
 const optional<CollectiveName>& Collective::getName() const {
@@ -1435,21 +1440,9 @@ void Collective::onAppliedSquare(WCreature c, Position pos) {
         case FurnitureUsageType::TRAIN:
           c->increaseExpLevel(ExperienceType::MELEE, 0.005 * efficiency);
           break;
-        case FurnitureUsageType::STUDY: {
+        case FurnitureUsageType::STUDY:
           c->increaseExpLevel(ExperienceType::SPELL, 0.005 * efficiency);
-          auto availableSpells = Technology::getAvailableSpells(this);
-          if (Random.chance(efficiency / 60) && !availableSpells.empty()) {
-            for (int i : Range(30)) {
-              Spell* spell = Random.choose(Technology::getAvailableSpells(this));
-              if (!c->getAttributes().getSpellMap().contains(spell)) {
-                c->getAttributes().getSpellMap().add(spell);
-                control->addMessage(c->getName().a() + " learns the spell of " + spell->getName());
-                break;
-              }
-            }
-          }
           break;
-        }
         default:
           break;
       }

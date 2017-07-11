@@ -28,6 +28,7 @@ class SpellMap {
   vector<Spell*> getAll() const;
   bool contains(Spell*) const;
   void clear();
+  void onExpLevelReached(WCreature, double level);
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);

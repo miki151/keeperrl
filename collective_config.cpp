@@ -27,6 +27,8 @@
 #include "immigrant_info.h"
 #include "tutorial_highlight.h"
 #include "trap_type.h"
+#include "spell_id.h"
+#include "spell.h"
 
 template <class Archive>
 void CollectiveConfig::serialize(Archive& ar, const unsigned int version) {

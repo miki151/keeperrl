@@ -189,16 +189,16 @@ const vector<PlayerControl::BuildInfo>& PlayerControl::getBuildInfo() {
       BuildInfo(ZoneId::STORAGE_EQUIPMENT, ViewId::STORAGE_EQUIPMENT, "Equipment",
           "All equipment for your minions can be stored here.", 0, "Storage")
              .setTutorialHighlight(TutorialHighlight::EQUIPMENT_STORAGE),
-      BuildInfo({FurnitureType::BOOKCASE_WOOD, {ResourceId::WOOD, 15}}, "Wooden bookcase", {},
-          "Train your minions here. Adds up to " +
+      BuildInfo({FurnitureType::BOOKCASE_WOOD, {ResourceId::WOOD, 15}}, "Wooden bookcase",
+          {{RequirementId::TECHNOLOGY, TechId::SPELLS}}, "Train your minions here. Adds up to " +
           toString(*CollectiveConfig::getTrainingMaxLevel(ExperienceType::SPELL, FurnitureType::BOOKCASE_WOOD)) + " spell levels.",
           'y', "Library", true).setTutorialHighlight(TutorialHighlight::BUILD_LIBRARY),
-      BuildInfo({FurnitureType::BOOKCASE_IRON, {ResourceId::IRON, 15}}, "Iron bookcase", {},
-          "Train your minions here. Adds up to " +
+      BuildInfo({FurnitureType::BOOKCASE_IRON, {ResourceId::IRON, 15}}, "Iron bookcase",
+          {{RequirementId::TECHNOLOGY, TechId::SPELLS_ADV}}, "Train your minions here. Adds up to " +
           toString(*CollectiveConfig::getTrainingMaxLevel(ExperienceType::SPELL, FurnitureType::BOOKCASE_IRON)) + " spell levels.",
           0, "Library").setTutorialHighlight(TutorialHighlight::BUILD_LIBRARY),
-      BuildInfo({FurnitureType::BOOKCASE_GOLD, {ResourceId::GOLD, 15}}, "Golden bookcase", {},
-          "Train your minions here. Adds up to " +
+      BuildInfo({FurnitureType::BOOKCASE_GOLD, {ResourceId::GOLD, 15}}, "Golden bookcase",
+          {{RequirementId::TECHNOLOGY, TechId::SPELLS_MAS}}, "Train your minions here. Adds up to " +
           toString(*CollectiveConfig::getTrainingMaxLevel(ExperienceType::SPELL, FurnitureType::BOOKCASE_GOLD)) + " spell levels.",
           0, "Library").setTutorialHighlight(TutorialHighlight::BUILD_LIBRARY),
       BuildInfo({FurnitureType::THRONE, {ResourceId::GOLD, 160}, false, 1}, "Throne",
@@ -694,23 +694,6 @@ static string requires(TechId id) {
   return " (requires: " + Technology::get(id)->getName() + ")";
 }
 
-void PlayerControl::handlePersonalSpells(View* view) {
-  vector<ListElem> options {
-      ListElem("The Keeper can learn spells for use in combat and other situations. ", ListElem::TITLE),
-      ListElem("You can cast them with 's' when you are in control of the Keeper.", ListElem::TITLE)};
-  vector<Spell*> knownSpells = Technology::getAvailableSpells(getCollective());
-  for (Spell* spell : Technology::getAllKeeperSpells()) {
-    ListElem::ElemMod mod = ListElem::NORMAL;
-    string suff;
-    if (!knownSpells.contains(spell)) {
-      mod = ListElem::INACTIVE;
-      suff = requires(Technology::getNeededTech(spell));
-    }
-    options.push_back(ListElem(spell->getName() + suff, mod).setTip(spell->getDescription()));
-  }
-  view->presentList("Sorcery", options);
-}
-
 int PlayerControl::getNumMinions() const {
   return (int) getCollective()->getCreatures(MinionTrait::FIGHTER).size();
 }
@@ -842,7 +825,6 @@ vector<Button> PlayerControl::fillButtons(const vector<BuildInfo>& buildInfo) co
 
 vector<PlayerControl::TechInfo> PlayerControl::getTechInfo() const {
   vector<TechInfo> ret;
-  ret.push_back({{ViewId::MANA, "Sorcery"}, [](PlayerControl* c, View* view) {c->handlePersonalSpells(view);}});
   ret.push_back({{ViewId::BOOKCASE_GOLD, "Library", 'l'},
       [](PlayerControl* c, View* view) { c->setChosenLibrary(!c->chosenLibrary); }});
   ret.push_back({{ViewId::BOOK, "Keeperopedia"},

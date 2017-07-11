@@ -117,6 +117,15 @@ const optional<TutorialHighlight> Technology::getTutorialHighlight() const {
   return tutorial;
 }
 
+bool Technology::isFree() const {
+  switch (getId()) {
+    case TechId::SPELLS:
+      return true;
+    default:
+      return false;
+  }
+}
+
 vector<Technology*> Technology::getSorted() {
   vector<Technology*> ret;
   while (ret.size() < getAll().size()) {
@@ -193,30 +202,6 @@ static void addResources(WCollective col, int numGold, int numIron, int numStone
     addResource(col, FurnitureType::STONE, maxDist);
 }
 
-struct SpellLearningInfo {
-  SpellId id;
-  TechId techId;
-};
-
-static vector<SpellLearningInfo> spellLearning {
-    { SpellId::HEALING, TechId::SPELLS },
-    { SpellId::SUMMON_INSECTS, TechId::SPELLS},
-    { SpellId::DECEPTION, TechId::SPELLS},
-    { SpellId::SPEED_SELF, TechId::SPELLS},
-    { SpellId::STUN_RAY, TechId::SPELLS},
-    { SpellId::MAGIC_SHIELD, TechId::SPELLS_ADV},
-    { SpellId::DAM_BONUS, TechId::SPELLS_ADV},
-    { SpellId::DEF_BONUS, TechId::SPELLS_ADV},
-    { SpellId::FIRE_SPHERE_PET, TechId::SPELLS_ADV},
-    { SpellId::TELEPORT, TechId::SPELLS_ADV},
-    { SpellId::CURE_POISON, TechId::SPELLS_ADV},
-    { SpellId::INVISIBILITY, TechId::SPELLS_MAS},
-    { SpellId::BLAST, TechId::SPELLS_MAS},
-    { SpellId::CIRCULAR_BLAST, TechId::SPELLS_MAS},
-    { SpellId::METEOR_SHOWER, TechId::SPELLS_MAS},
-//    { SpellId::SUMMON_ELEMENT, TechId::SPELLS},
-};
-
 void Technology::onAcquired(TechId id, WCollective col) {
   switch (id) {
     case TechId::GEOLOGY1: addResources(col, 0, 2, 1, 25); break;
@@ -225,40 +210,4 @@ void Technology::onAcquired(TechId id, WCollective col) {
     case TechId::GEOLOGY4: addResources(col, 3, 8, 4, 70); break;
     default: break;
   } 
-  if (col->hasLeader())
-    for (auto elem : spellLearning)
-      if (elem.techId == id)
-        col->getLeader()->getAttributes().getSpellMap().add(Spell::get(elem.id));
 }
-
-vector<Spell*> Technology::getSpellLearning(TechId tech) {
-  vector<Spell*> ret;
-  for (auto elem : spellLearning)
-    if (elem.techId == tech)
-      ret.push_back(Spell::get(elem.id));
-  return ret;
-}
-
-vector<Spell*> Technology::getAllKeeperSpells() {
-  vector<Spell*> ret;
-  for (auto elem : spellLearning)
-    ret.push_back(Spell::get(elem.id));
-  return ret;
-}
-
-vector<Spell*> Technology::getAvailableSpells(WConstCollective col) {
-  vector<Spell*> ret;
-  for (auto elem : spellLearning)
-    if (col->hasTech(elem.techId))
-      ret.push_back(Spell::get(elem.id));
-  return ret;
-}
-
-TechId Technology::getNeededTech(Spell* spell) {
-  for (auto elem : spellLearning)
-    if (elem.id == spell->getId())
-      return elem.techId;
-  FATAL << "Spell not found";
-  return TechId(0);
-}
-

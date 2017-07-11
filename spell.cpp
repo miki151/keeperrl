@@ -102,3 +102,28 @@ void Spell::init() {
   set(SpellId::PORTAL, new Spell("portal", {EffectId::PLACE_FURNITURE, FurnitureType::PORTAL}, 150, SoundId::SPELL_PORTAL));
   set(SpellId::SUMMON_ELEMENT, new Spell("summon element", EffectId::SUMMON_ELEMENT, 5, SoundId::SPELL_SUMMON_SPIRIT));
 }
+
+optional<int> Spell::getLearningExpLevel() const {
+  switch (getId()) {
+    case SpellId::HEALING: return 1;
+    case SpellId::SUMMON_INSECTS: return 2;
+    case SpellId::MAGIC_MISSILE: return 3;
+    case SpellId::DECEPTION: return 4;
+    case SpellId::TELEPORT: return 4;
+    case SpellId::SPEED_SELF: return 5;
+    case SpellId::STUN_RAY: return 6;
+    case SpellId::CURE_POISON: return 6;
+    case SpellId::MAGIC_SHIELD: return 7;
+    case SpellId::BLAST: return 7;
+    case SpellId::CIRCULAR_BLAST: return 7;
+    case SpellId::DEF_BONUS: return 8;
+    case SpellId::SUMMON_ELEMENT: return 8;
+    case SpellId::DAM_BONUS: return 9;
+    case SpellId::FIRE_SPHERE_PET: return 10;
+    case SpellId::METEOR_SHOWER: return 11;
+    case SpellId::INVISIBILITY: return 12;
+    default:
+      return none;
+  }
+};
+
