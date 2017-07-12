@@ -138,13 +138,11 @@ class Heal : public Behaviour {
   }
 
   virtual MoveInfo getMove() {
-    if (creature->getAttributes().getSkills().hasDiscrete(SkillId::HEALING)) {
-      int healingRadius = 2;
-      for (Position pos : creature->getPosition().getRectangle(
-            Rectangle(-healingRadius, -healingRadius, healingRadius + 1, healingRadius + 1)))
-        if (WConstCreature other = pos.getCreature())
+    if (creature->getAttributes().getSpellMap().contains(SpellId::HEAL_OTHER)) {
+      for (Vec2 v : Vec2::directions8(Random))
+        if (WConstCreature other = creature->getPosition().plus(v).getCreature())
           if (creature->isFriend(other))
-            if (auto action = creature->heal(creature->getPosition().getDir(other->getPosition())))
+            if (auto action = creature->castSpell(Spell::get(SpellId::HEAL_OTHER), v))
               return MoveInfo(0.5, action);
     }
     if (!creature->getBody().isHumanoid())

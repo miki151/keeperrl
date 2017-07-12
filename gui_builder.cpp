@@ -1085,7 +1085,7 @@ SGuiElem GuiBuilder::getSpellIcon(const PlayerInfo::Spell& spell, bool active) {
   } else
   if (active)
     ret.push_back(gui.button(getButtonCallback({UserInputId::CAST_SPELL, spell.id})));
-  ret.push_back(getTooltip({spell.name, spell.help}, THIS_LINE));
+  ret.push_back(getTooltip({capitalFirst(spell.name), spell.help}, THIS_LINE));
   return gui.stack(std::move(ret));
 }
 

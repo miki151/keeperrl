@@ -1259,14 +1259,14 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.chatReactionFriendly = "curses all dungeons"_s;
           c.chatReactionHostile = "\"Die!\""_s;
           c.courage = 3;
-          c.spells->add(SpellId::HEALING);
+          c.spells->add(SpellId::HEAL_SELF);
           c.spells->add(SpellId::SPEED_SELF);
           c.spells->add(SpellId::DEF_BONUS);
           c.spells->add(SpellId::SUMMON_SPIRIT);
           c.spells->add(SpellId::STUN_RAY);
           c.spells->add(SpellId::BLAST);
+          c.spells->add(SpellId::HEAL_OTHER);
           c.skills.setValue(SkillId::SORCERY, 1);
-          c.skills.insert(SkillId::HEALING);
           c.name = "shaman";);
     case CreatureId::PESEANT: 
       return CATTR(
@@ -1408,7 +1408,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.spawnType = SpawnType::HUMANOID;
           c.skills.setValue(SkillId::SORCERY, 0.7);
           c.skills.setValue(SkillId::LABORATORY, 0.7);
-          c.skills.insert(SkillId::HEALING);
           c.chatReactionFriendly = "curses all elves"_s;
           c.chatReactionHostile = "\"Die!\""_s;
           c.maxLevelIncrease[ExperienceType::MELEE] = 4;
@@ -1577,7 +1576,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.innocent = true;
           c.chatReactionFriendly = "curses all dwarves"_s;
           c.chatReactionHostile = "\"Die!\""_s;
-          c.spells->add(SpellId::HEALING);
+          c.spells->add(SpellId::HEAL_SELF);
           c.skills.insert(SkillId::ELF_VISION);
           c.name = CreatureName("elf", "elves"););
     case CreatureId::ELF_ARCHER: 
@@ -1587,7 +1586,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body = Body::humanoid(Body::Size::MEDIUM);
           c.chatReactionFriendly = "curses all dwarves"_s;
           c.chatReactionHostile = "\"Die!\""_s;
-          c.spells->add(SpellId::HEALING);
+          c.spells->add(SpellId::HEAL_SELF);
           c.skills.insert(SkillId::ELF_VISION);
           c.name = "elven archer";);
     case CreatureId::ELF_CHILD: 
@@ -1598,7 +1597,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.innocent = true;
           c.chatReactionFriendly = "curses all dwarves"_s;
           c.chatReactionHostile = "\"Die!\""_s;
-          c.spells->add(SpellId::HEALING);
+          c.spells->add(SpellId::HEAL_SELF);
           c.skills.insert(SkillId::ELF_VISION);
           c.name = CreatureName("elf child", "elf children"););
     case CreatureId::ELF_LORD: 
@@ -1608,11 +1607,11 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body = Body::humanoid(Body::Size::MEDIUM);
           c.chatReactionFriendly = "curses all dwarves"_s;
           c.chatReactionHostile = "\"Die!\""_s;
-          c.spells->add(SpellId::HEALING);
+          c.spells->add(SpellId::HEAL_SELF);
           c.skills.setValue(SkillId::SORCERY, 1);
-          c.skills.insert(SkillId::HEALING);
+          c.spells->add(SpellId::HEAL_OTHER);
           c.skills.insert(SkillId::ELF_VISION);
-          c.spells->add(SpellId::HEALING);
+          c.spells->add(SpellId::HEAL_SELF);
           c.spells->add(SpellId::SPEED_SELF);
           c.spells->add(SpellId::DAM_BONUS);
           c.spells->add(SpellId::DEF_BONUS);
@@ -1627,7 +1626,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.innocent = true;
           c.chatReactionFriendly = "curses all dwarves"_s;
           c.chatReactionHostile = "\"Die!\""_s;
-          c.spells->add(SpellId::HEALING);
+          c.spells->add(SpellId::HEAL_SELF);
           c.skills.insert(SkillId::NIGHT_VISION);
           c.name = CreatureName("dark elf", "dark elves"););
     case CreatureId::DARK_ELF_WARRIOR:
@@ -1637,7 +1636,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body = Body::humanoid(Body::Size::MEDIUM);
           c.chatReactionFriendly = "curses all dwarves"_s;
           c.chatReactionHostile = "\"Die!\""_s;
-          c.spells->add(SpellId::HEALING);
+          c.spells->add(SpellId::HEAL_SELF);
           c.skills.insert(SkillId::NIGHT_VISION);
           c.skills.setValue(SkillId::SORCERY, 0.3);
           c.maxLevelIncrease[ExperienceType::MELEE] = 5;
@@ -1651,7 +1650,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.innocent = true;
           c.chatReactionFriendly = "curses all dwarves"_s;
           c.chatReactionHostile = "\"Die!\""_s;
-          c.spells->add(SpellId::HEALING);
+          c.spells->add(SpellId::HEAL_SELF);
           c.skills.insert(SkillId::NIGHT_VISION);
           c.name = CreatureName("dark elf child", "dark elf children"););
     case CreatureId::DARK_ELF_LORD:
@@ -1661,11 +1660,11 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body = Body::humanoid(Body::Size::MEDIUM);
           c.chatReactionFriendly = "curses all dwarves"_s;
           c.chatReactionHostile = "\"Die!\""_s;
-          c.spells->add(SpellId::HEALING);
+          c.spells->add(SpellId::HEAL_SELF);
           c.skills.setValue(SkillId::SORCERY, 1);
-          c.skills.insert(SkillId::HEALING);
+          c.spells->add(SpellId::HEAL_OTHER);
           c.skills.insert(SkillId::NIGHT_VISION);
-          c.spells->add(SpellId::HEALING);
+          c.spells->add(SpellId::HEAL_SELF);
           c.spells->add(SpellId::SPEED_SELF);
           c.spells->add(SpellId::DEF_BONUS);
           c.spells->add(SpellId::DAM_BONUS);
@@ -1679,7 +1678,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body = Body::humanoid(Body::Size::MEDIUM);
           c.chatReactionFriendly = "curses all humans"_s;
           c.chatReactionHostile = "\"Die!\""_s;
-          c.spells->add(SpellId::HEALING);
+          c.spells->add(SpellId::HEAL_SELF);
           c.skills.insert(SkillId::ELF_VISION);
           c.name = "driad";);
     case CreatureId::HORSE: 

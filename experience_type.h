@@ -11,4 +11,4 @@ RICH_ENUM(ExperienceType,
 extern const char* getName(ExperienceType);
 extern const char* getNameLowerCase(ExperienceType);
 extern const EnumMap<ExperienceType, EnumSet<AttrType>>& getAttrIncreases();
-extern const vector<ExperienceType>& getExperienceTypes(AttrType);
+extern optional<ExperienceType> getExperienceType(AttrType);

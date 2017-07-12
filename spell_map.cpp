@@ -33,7 +33,11 @@ vector<Spell*> SpellMap::getAll() const {
 bool SpellMap::contains(Spell* spell) const {
   return !!elems[spell->getId()];
 }
- 
+
+bool SpellMap::contains(SpellId spell) const {
+  return !!elems[spell];
+}
+
 void SpellMap::clear() {
   elems.clear();
 }

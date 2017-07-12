@@ -375,7 +375,7 @@ void Effect::applyToCreature(WCreature c, const EffectType& effect, EffectStreng
     case EffectId::DECEPTION: deception(c); break;
     case EffectId::CIRCULAR_BLAST:
       for (Vec2 v : Vec2::directions8(Random))
-        applyDirected(c, v, DirEffectId::BLAST, strengthEnum);
+        applyDirected(c, v, DirEffectType(1, DirEffectId::BLAST), strengthEnum);
       break;
     case EffectId::ENHANCE_ARMOR: enhanceArmor(c); break;
     case EffectId::ENHANCE_WEAPON: enhanceWeapon(c); break;
@@ -432,17 +432,17 @@ static optional<ViewId> getProjectile(const DirEffectType& effect) {
 
 void Effect::applyDirected(WCreature c, Vec2 direction, const DirEffectType& type, EffectStrength strength) {
   auto begin = c->getPosition();
-  int range = directedEffectRange[int(strength)];
+  int range = type.getRange();
   if (auto projectile = getProjectile(type))
     c->getGame()->addEvent({EventId::PROJECTILE,
         EventInfo::Projectile{*projectile, begin, begin.plus(direction * range)}});
   switch (type.getId()) {
     case DirEffectId::BLAST:
-      for (Vec2 v = direction * (range - 1); v.length4() >= 1; v -= direction)
+      for (Vec2 v = direction * range; v.length4() >= 1; v -= direction)
         airBlast(c, c->getPosition().plus(v), direction, range);
       break;
     case DirEffectId::CREATURE_EFFECT:
-      for (Vec2 v = direction * (range - 1); v.length4() >= 1; v -= direction)
+      for (Vec2 v = direction * range; v.length4() >= 1; v -= direction)
         if (WCreature victim = c->getPosition().plus(v).getCreature())
           Effect::applyToCreature(victim, type.get<EffectType>(), strength, c);
       break;
@@ -513,7 +513,7 @@ static string getSummoningDescription(CreatureId id) {
 
 string Effect::getDescription(const EffectType& type) {
   switch (type.getId()) {
-    case EffectId::HEAL: return "Heals your wounds.";
+    case EffectId::HEAL: return "Fully restores health.";
     case EffectId::TELEPORT: return "Teleports to a safer location close by.";
     case EffectId::ROLLING_BOULDER: return "rolling boulder";
     case EffectId::EMIT_POISON_GAS: return "poison gas";
@@ -527,7 +527,8 @@ string Effect::getDescription(const EffectType& type) {
     case EffectId::FIRE: return "fire";
     case EffectId::ACID: return "acid";
     case EffectId::ALARM: return "alarm";
-    case EffectId::DAMAGE: return "damage";
+    case EffectId::DAMAGE: return "Causes "_s + getNameLowerCase(*getExperienceType(type.get<DamageInfo>().attr)) +
+        " damage based on the \"" + ::getName(type.get<DamageInfo>().attr) + "\" attribute of the caster.";
     case EffectId::TELE_ENEMIES: return "surprise";
     case EffectId::SILVER_DAMAGE: return "silver";
     case EffectId::CURE_POISON: return "Cures poisoning.";
@@ -593,7 +594,8 @@ string Effect::getDescription(const DirEffectType& type) {
   switch (type.getId()) {
     case DirEffectId::BLAST: return "Creates a directed blast of air that throws back creatures and items.";
     case DirEffectId::CREATURE_EFFECT:
-        return "Creates a directed wave that " + noCapitalFirst(getDescription(type.get<EffectType>()));
+        return "Creates a directed ray of range " + toString(type.getRange()) + " that " +
+            noCapitalFirst(getDescription(type.get<EffectType>()));
         break;
   }
 }

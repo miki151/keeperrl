@@ -90,8 +90,8 @@ const Gender& CreatureAttributes::getGender() const {
 
 double CreatureAttributes::getRawAttr(WConstCreature c, AttrType type) const {
   double ret = attr[type];
-  for (auto expType : getExperienceTypes(type))
-    ret += expLevel[expType];
+  if (auto expType = getExperienceType(type))
+    ret += expLevel[*expType];
   switch (type) {
     case AttrType::SPEED:
       if (moraleSpeedIncrease)

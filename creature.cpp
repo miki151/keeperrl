@@ -571,20 +571,6 @@ CreatureAction Creature::unequip(WItem item) const {
   });
 }
 
-CreatureAction Creature::heal(Vec2 direction) const {
-  WConstCreature other = getPosition().plus(direction).getCreature();
-  if (!attributes->getSkills().hasDiscrete(SkillId::HEALING) || !other || !other->getBody().canHeal() ||
-      other == this)
-    return CreatureAction();
-  return CreatureAction(this, [=](WCreature self) {
-    WCreature other = getPosition().plus(direction).getCreature();
-    other->playerMessage("\"Let me help you my friend.\"");
-    other->you(MsgType::ARE, "healed by " + getName().the());
-    other->heal();
-    self->spendTime(1);
-  });
-}
-
 CreatureAction Creature::bumpInto(Vec2 direction) const {
   if (WConstCreature other = getPosition().plus(direction).getCreature())
     return CreatureAction(this, [=](WCreature self) {
@@ -952,9 +938,7 @@ bool Creature::takeDamage(const Attack& attack) {
     }
     INFO << getName().the() << " attacked by " << attacker->getName().the()
       << " damage " << attack.strength << " defense " << defense;
-    lastDamageType = none;
-    for (auto expType : getExperienceTypes(attack.damageType))
-      lastDamageType = expType;
+    lastDamageType = getExperienceType(attack.damageType);
   }
   if (auto sound = attributes->getAttackSound(attack.type, attack.strength > defense))
     addSound(*sound);

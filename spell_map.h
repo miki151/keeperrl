@@ -27,6 +27,7 @@ class SpellMap {
   void setReadyTime(Spell*, double);
   vector<Spell*> getAll() const;
   bool contains(Spell*) const;
+  bool contains(SpellId) const;
   void clear();
   void onExpLevelReached(WCreature, double level);
 

@@ -49,6 +49,15 @@ enum class DirEffectId {
 
 class DirEffectType : public EnumVariant<DirEffectId, TYPES(EffectType),
         ASSIGN(EffectType, DirEffectId::CREATURE_EFFECT)> {
-  using EnumVariant::EnumVariant;
+  public:
+  template <typename ...Args>
+  DirEffectType(int r, Args&&...args) : EnumVariant(std::forward<Args>(args)...), range(r) {}
+
+  int getRange() const {
+    return range;
+  }
+
+  private:
+  int range;
 };
 

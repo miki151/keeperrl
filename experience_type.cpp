@@ -37,14 +37,13 @@ const EnumMap<ExperienceType, EnumSet<AttrType>>& getAttrIncreases() {
   return attrIncreases;
 }
 
-const vector<ExperienceType>& getExperienceTypes(AttrType attr) {
-  static EnumMap<AttrType, vector<ExperienceType>> ret(
-      [](AttrType attr) {
-        vector<ExperienceType> types;
+optional<ExperienceType> getExperienceType(AttrType attr) {
+  static EnumMap<AttrType, optional<ExperienceType>> ret(
+      [](AttrType attr) -> optional<ExperienceType> {
         for (auto expType : ENUM_ALL(ExperienceType))
           if (attrIncreases[expType].contains(attr))
-            types.push_back(expType);
-        return types;
+            return expType;
+        return none;
       });
   return ret[attr];
 }

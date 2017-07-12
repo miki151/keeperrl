@@ -59,7 +59,6 @@ void Skill::init() {
   Skill::set(SkillId::EXPLORE, new Skill("exploring", "Explore all surroundings.", true));
   Skill::set(SkillId::EXPLORE_CAVES, new Skill("exploring caves", "Explore caves.", true));
   Skill::set(SkillId::EXPLORE_NOCTURNAL, new Skill("exploring at night", "Explore at night.", true));
-  Skill::set(SkillId::HEALING, new Skill("healing", "Heal friendly creatures.", true));
   Skill::set(SkillId::STEALTH, new Skill("stealth", "Fight without waking up creatures sleeping nearby.", true));
   Skill::set(SkillId::WORKSHOP, new Skill("workshop", "Craft items in the workshop.", false));
   Skill::set(SkillId::FORGE, new Skill("forge", "Craft items in the forge.", false));

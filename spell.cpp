@@ -70,7 +70,7 @@ void Spell::addMessage(WCreature c) {
 }
 
 void Spell::init() {
-  set(SpellId::HEALING, new Spell("healing", EffectId::HEAL, 30, SoundId::SPELL_HEALING));
+  set(SpellId::HEAL_SELF, new Spell("heal self", EffectId::HEAL, 30, SoundId::SPELL_HEALING));
   set(SpellId::SUMMON_INSECTS, new Spell("summon insects", EffectType(EffectId::SUMMON, CreatureId::FLY), 30,
         SoundId::SPELL_SUMMON_INSECTS));
   set(SpellId::DECEPTION, new Spell("deception", EffectId::DECEPTION, 60, SoundId::SPELL_DECEPTION));
@@ -80,8 +80,10 @@ void Spell::init() {
         SoundId::SPELL_STR_BONUS));
   set(SpellId::DEF_BONUS, new Spell("defense", {EffectId::LASTING, LastingEffect::DEF_BONUS}, 90,
         SoundId::SPELL_DEX_BONUS));
-  set(SpellId::STUN_RAY, new Spell("stun ray",  DirEffectType(DirEffectId::CREATURE_EFFECT,
-        EffectType(EffectId::LASTING, LastingEffect::STUNNED)) , 60, SoundId::SPELL_STUN_RAY));
+  set(SpellId::STUN_RAY, new Spell("stun ray",  DirEffectType(4, DirEffectId::CREATURE_EFFECT,
+      EffectType(EffectId::LASTING, LastingEffect::STUNNED)) , 60, SoundId::SPELL_STUN_RAY));
+  set(SpellId::HEAL_OTHER, new Spell("heal other",  DirEffectType(1, DirEffectId::CREATURE_EFFECT,
+      EffectId::HEAL) , 6, SoundId::SPELL_HEALING));
   set(SpellId::MAGIC_SHIELD, new Spell("magic shield", {EffectId::LASTING, LastingEffect::MAGIC_SHIELD}, 100,
         SoundId::SPELL_MAGIC_SHIELD));
   set(SpellId::FIRE_SPHERE_PET, new Spell("fire sphere", EffectType(EffectId::SUMMON, CreatureId::FIRE_SPHERE), 20,
@@ -89,9 +91,9 @@ void Spell::init() {
   set(SpellId::TELEPORT, new Spell("escape", EffectId::TELEPORT, 80, SoundId::SPELL_TELEPORT));
   set(SpellId::INVISIBILITY, new Spell("invisibility", {EffectId::LASTING, LastingEffect::INVISIBLE}, 150,
         SoundId::SPELL_INVISIBILITY));
-  set(SpellId::BLAST, new Spell("blast", DirEffectId::BLAST, 100, SoundId::SPELL_BLAST));
-  set(SpellId::MAGIC_MISSILE, new Spell("magic missile", {DirEffectId::CREATURE_EFFECT,
-      EffectType {EffectId::DAMAGE, DamageInfo{AttrType::SPELL_DAMAGE, AttackType::SPELL}}}, 3, SoundId::SPELL_BLAST));
+  set(SpellId::BLAST, new Spell("blast", DirEffectType(4, DirEffectId::BLAST), 100, SoundId::SPELL_BLAST));
+  set(SpellId::MAGIC_MISSILE, new Spell("magic missile", DirEffectType(4, DirEffectId::CREATURE_EFFECT,
+      EffectType {EffectId::DAMAGE, DamageInfo{AttrType::SPELL_DAMAGE, AttackType::SPELL}}), 3, SoundId::SPELL_BLAST));
   set(SpellId::CIRCULAR_BLAST, new Spell("circular blast", EffectId::CIRCULAR_BLAST, 150, SoundId::SPELL_AIR_BLAST,
         CastMessageType::AIR_BLAST));
   set(SpellId::SUMMON_SPIRIT, new Spell("summon spirits", EffectType(EffectId::SUMMON, CreatureId::SPIRIT), 150,
@@ -105,7 +107,8 @@ void Spell::init() {
 
 optional<int> Spell::getLearningExpLevel() const {
   switch (getId()) {
-    case SpellId::HEALING: return 1;
+    case SpellId::HEAL_SELF: return 1;
+    case SpellId::HEAL_OTHER: return 1;
     case SpellId::SUMMON_INSECTS: return 2;
     case SpellId::MAGIC_MISSILE: return 3;
     case SpellId::DECEPTION: return 4;
