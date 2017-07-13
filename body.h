@@ -16,6 +16,8 @@ RICH_ENUM(BodyPart,
   BACK
 );
 
+extern const char* getName(BodyPart);
+
 class Attack;
 struct AdjectiveInfo;
 
@@ -98,13 +100,12 @@ class Body {
   int numBodyParts(BodyPart) const;
   void getBadAdjectives(vector<AdjectiveInfo>&) const;
   optional<Sound> getDeathSound() const;
+  void injureBodyPart(WCreature, BodyPart, bool drop);
 
-  void healLimbs(WCreature, bool regrow);
+  void healBodyParts(WCreature, bool regrow);
   int lostOrInjuredBodyParts() const;
   bool canHeal() const;
   bool hasHealth() const;
-
-  static const char* getBodyPartName(BodyPart);
 
   void consumeBodyParts(WCreature, const Body& other, vector<string>& adjectives);
 
@@ -120,7 +121,6 @@ class Body {
 
   private:
   friend class Test;
-  void injureBodyPart(WCreature, BodyPart, bool drop);
   BodyPart getBodyPart(AttackLevel attack, bool flying, bool collapsed) const;
   BodyPart armOrWing() const;
   int numInjured(BodyPart) const;

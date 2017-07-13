@@ -20,6 +20,7 @@ RICH_ENUM(LastingEffect,
     POISON_RESISTANT,
     FIRE_RESISTANT,
     FLYING,
+    COLLAPSED,
     INSANITY,
     MAGIC_SHIELD,
     DARKNESS_SOURCE,
@@ -35,6 +36,7 @@ class LastingEffects {
   public:
   static void onAffected(WCreature, LastingEffect, bool msg);
   static bool affects(WConstCreature, LastingEffect);
+  static optional<LastingEffect> getSuppressor(LastingEffect);
   static void onRemoved(WCreature, LastingEffect, bool msg);
   static void onTimedOut(WCreature, LastingEffect, bool msg);
   static void modifyAttr(WConstCreature, AttrType, double&);

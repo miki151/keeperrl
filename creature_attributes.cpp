@@ -34,6 +34,9 @@ CreatureAttributes::CreatureAttributes(function<void(CreatureAttributes&)> fun) 
   fun(*this);
   for (LastingEffect effect : ENUM_ALL(LastingEffect))
     lastingEffects[effect] = -500;
+  for (auto effect : ENUM_ALL(LastingEffect))
+    if (body->isIntrinsicallyAffected(effect))
+      ++permanentEffects[effect];
 }
 
 CreatureAttributes::~CreatureAttributes() {}
@@ -184,6 +187,9 @@ void CreatureAttributes::chatReaction(WCreature me, WCreature other) {
 }
 
 bool CreatureAttributes::isAffected(LastingEffect effect, double time) const {
+  if (auto suppressor = LastingEffects::getSuppressor(effect))
+    if (isAffected(*suppressor, time))
+      return false;
   return lastingEffects[effect] >= time || isAffectedPermanently(effect);
 }
 
@@ -200,13 +206,9 @@ bool CreatureAttributes::considerTimeout(LastingEffect effect, double globalTime
   return false;
 }
   
-bool CreatureAttributes::considerAffecting(LastingEffect effect, double globalTime, double timeout) {
-  bool ret = false;
-  if (lastingEffects[effect] < globalTime + timeout) {
-    ret = !isAffected(effect, globalTime);
-    lastingEffects[effect] = globalTime + timeout;
-  }
-  return ret;
+void CreatureAttributes::addLastingEffect(LastingEffect effect, double endTime) {
+  if (lastingEffects[effect] < endTime)
+    lastingEffects[effect] = endTime;
 }
 
 static bool consumeProb() {
@@ -267,10 +269,10 @@ void consumeAttr(Skillset& mine, const Skillset& his, vector<string>& adjectives
     adjectives.push_back("more skillfull");
 }
 
-void CreatureAttributes::consumeEffects(const EnumMap<LastingEffect, int>& effects) {
+void CreatureAttributes::consumeEffects(const EnumMap<LastingEffect, int>& permanentEffects) {
   for (LastingEffect effect : ENUM_ALL(LastingEffect))
-    if (effects[effect] > 0 && !isAffectedPermanently(effect) && consumeProb()) {
-      addPermanentEffect(effect);
+    if (permanentEffects[effect] > 0 && !isAffectedPermanently(effect) && consumeProb()) {
+      addPermanentEffect(effect, 1);
     }
 }
 
@@ -332,7 +334,7 @@ bool CreatureAttributes::canEquip() const {
 }
 
 bool CreatureAttributes::isAffectedPermanently(LastingEffect effect) const {
-  return permanentEffects[effect] > 0 || body->isIntrinsicallyAffected(effect);
+  return permanentEffects[effect] > 0;
 }
 
 void CreatureAttributes::shortenEffect(LastingEffect effect, double time) {
@@ -344,12 +346,12 @@ void CreatureAttributes::clearLastingEffect(LastingEffect effect) {
   lastingEffects[effect] = 0;
 }
 
-void CreatureAttributes::addPermanentEffect(LastingEffect effect) {
-  ++permanentEffects[effect];
+void CreatureAttributes::addPermanentEffect(LastingEffect effect, int count) {
+  permanentEffects[effect] += count;
 }
 
-void CreatureAttributes::removePermanentEffect(LastingEffect effect) {
-  CHECK(--permanentEffects[effect] >= 0);
+void CreatureAttributes::removePermanentEffect(LastingEffect effect, int count) {
+  permanentEffects[effect] -= count;
 }
 
 optional<EffectType> CreatureAttributes::getAttackEffect() const {

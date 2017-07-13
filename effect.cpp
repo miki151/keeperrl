@@ -245,6 +245,7 @@ double getDuration(WConstCreature c, LastingEffect e, int strength) {
     case LastingEffect::FIRE_RESISTANT:
     case LastingEffect::POISON_RESISTANT: return resistantTime[strength];
     case LastingEffect::FLYING: return levitateTime[strength];
+    case LastingEffect::COLLAPSED: return 2;
     case LastingEffect::SLEEP: return sleepTime[strength];
     case LastingEffect::INSANITY: return insanityTime[strength];
     case LastingEffect::MAGIC_SHIELD: return magicShieldTime[strength];
@@ -388,7 +389,10 @@ void Effect::applyToCreature(WCreature c, const EffectType& effect, EffectStreng
     case EffectId::SILVER_DAMAGE: c->affectBySilver(); break;
     case EffectId::CURE_POISON: c->removeEffect(LastingEffect::POISON); break;
     case EffectId::PLACE_FURNITURE: placeFurniture(c, effect.get<FurnitureType>()); break;
-    case EffectId::DAMAGE: damage(c, effect.get<DamageInfo>(), attacker);
+    case EffectId::DAMAGE: damage(c, effect.get<DamageInfo>(), attacker); break;
+    case EffectId::INJURE_BODY_PART: c->getBody().injureBodyPart(c, effect.get<BodyPart>(), false); break;
+    case EffectId::LOOSE_BODY_PART: c->getBody().injureBodyPart(c, effect.get<BodyPart>(), true); break;
+    case EffectId::REGROW_BODY_PART: c->getBody().healBodyParts(c, true); break;
   }
   if (isConsideredHostile(effect) && attacker)
     c->onAttackedBy(attacker);
@@ -494,6 +498,9 @@ string Effect::getName(const EffectType& type) {
     case EffectId::CURE_POISON: return "cure poisoning";
     case EffectId::LASTING: return getName(type.get<LastingEffect>());
     case EffectId::PLACE_FURNITURE: return Furniture::getName(type.get<FurnitureType>());
+    case EffectId::INJURE_BODY_PART: return "injure "_s + ::getName(type.get<BodyPart>());
+    case EffectId::LOOSE_BODY_PART: return "amputate "_s + ::getName(type.get<BodyPart>());
+    case EffectId::REGROW_BODY_PART: return "regrow lost body parts"_s;
   }
 }
 
@@ -534,6 +541,9 @@ string Effect::getDescription(const EffectType& type) {
     case EffectId::CURE_POISON: return "Cures poisoning.";
     case EffectId::LASTING: return getLastingDescription(getDescription(type.get<LastingEffect>()));
     case EffectId::PLACE_FURNITURE: return "Creates a " + Furniture::getName(type.get<FurnitureType>());
+    case EffectId::INJURE_BODY_PART: return "Injures "_s + ::getName(type.get<BodyPart>());
+    case EffectId::LOOSE_BODY_PART: return "Amputates "_s + ::getName(type.get<BodyPart>());
+    case EffectId::REGROW_BODY_PART: return "Regrows lost body parts"_s;
   }
 }
 
@@ -547,6 +557,7 @@ const char* Effect::getName(LastingEffect type) {
     case LastingEffect::POISON: return "poison";
     case LastingEffect::POISON_RESISTANT: return "poison resistance";
     case LastingEffect::FLYING: return "levitation";
+    case LastingEffect::COLLAPSED: return "collapse";
     case LastingEffect::PANIC: return "panic";
     case LastingEffect::RAGE: return "rage";
     case LastingEffect::HALLU: return "magic";
@@ -573,6 +584,7 @@ const char* Effect::getDescription(LastingEffect type) {
     case LastingEffect::POISON: return "Poisons.";
     case LastingEffect::POISON_RESISTANT: return "Gives poison resistance.";
     case LastingEffect::FLYING: return "Causes levitation.";
+    case LastingEffect::COLLAPSED: return "Causes collapse.";
     case LastingEffect::PANIC: return "Increases defense and lowers damage.";
     case LastingEffect::RAGE: return "Increases damage and lowers defense.";
     case LastingEffect::HALLU: return "Causes hallucinations.";

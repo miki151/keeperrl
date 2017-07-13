@@ -458,6 +458,7 @@ class EnumMap {
 };
 
 std::string operator "" _s(const char* str, size_t);
+
 class RandomGen {
   public:
   RandomGen() {}

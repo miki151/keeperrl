@@ -86,10 +86,10 @@ class CreatureAttributes {
   string getRemainingString(LastingEffect, double time) const;
   void shortenEffect(LastingEffect, double time);
   void clearLastingEffect(LastingEffect);
-  void addPermanentEffect(LastingEffect);
-  void removePermanentEffect(LastingEffect);
+  void addPermanentEffect(LastingEffect, int count);
+  void removePermanentEffect(LastingEffect, int count);
   bool considerTimeout(LastingEffect, double globalTime);
-  bool considerAffecting(LastingEffect, double globalTime, double timeout);
+  void addLastingEffect(LastingEffect, double endtime);
   AttackType getAttackType(WConstItem weapon) const;
   optional<EffectType> getAttackEffect() const;
   bool canSleep() const;

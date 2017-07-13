@@ -11,6 +11,9 @@ void LastingEffects::onAffected(WCreature c, LastingEffect effect, bool msg) {
     case LastingEffect::FLYING:
       if (msg) c->you(MsgType::ARE, "flying!");
       break;
+    case LastingEffect::COLLAPSED:
+      if (msg) c->you(MsgType::COLLAPSE);
+      break;
     case LastingEffect::PREGNANT:
       if (msg) c->you(MsgType::ARE, "pregnant!");
       break;
@@ -31,7 +34,6 @@ void LastingEffects::onAffected(WCreature c, LastingEffect effect, bool msg) {
       break;
     case LastingEffect::BLIND:
       if (msg) c->you(MsgType::ARE, "blind!");
-      c->modViewObject().setModifier(ViewObject::Modifier::BLIND);
       break;
     case LastingEffect::INVISIBLE:
       if (!c->isAffected(LastingEffect::BLIND) && msg)
@@ -40,7 +42,6 @@ void LastingEffects::onAffected(WCreature c, LastingEffect effect, bool msg) {
       break;
     case LastingEffect::POISON:
       if (msg) c->you(MsgType::ARE, "poisoned");
-      c->modViewObject().setModifier(ViewObject::Modifier::POISONED);
       break;
     case LastingEffect::DAM_BONUS: if (msg) c->you(MsgType::FEEL, "more dangerous"); break;
     case LastingEffect::DEF_BONUS: if (msg) c->you(MsgType::FEEL, "more protected"); break;
@@ -80,12 +81,20 @@ bool LastingEffects::affects(WConstCreature c, LastingEffect effect) {
   }
 }
 
+optional<LastingEffect> LastingEffects::getSuppressor(LastingEffect effect) {
+  switch (effect) {
+    case LastingEffect::COLLAPSED:
+      return LastingEffect::FLYING;
+    default:
+      return none;
+  }
+}
+
 void LastingEffects::onRemoved(WCreature c, LastingEffect effect, bool msg) {
   switch (effect) {
     case LastingEffect::POISON:
       if (msg)
         c->you(MsgType::ARE, "cured from poisoning");
-      c->modViewObject().removeModifier(ViewObject::Modifier::POISONED);
       break;
     default: onTimedOut(c, effect, msg); break;
   }
@@ -107,7 +116,6 @@ void LastingEffects::onTimedOut(WCreature c, LastingEffect effect, bool msg) {
     case LastingEffect::BLIND:
       if (msg)
         c->you("can see again");
-      c->modViewObject().removeModifier(ViewObject::Modifier::BLIND);
       break;
     case LastingEffect::INVISIBLE:
       if (msg)
@@ -117,13 +125,15 @@ void LastingEffects::onTimedOut(WCreature c, LastingEffect effect, bool msg) {
     case LastingEffect::POISON:
       if (msg)
         c->you(MsgType::ARE, "no longer poisoned");
-      c->modViewObject().removeModifier(ViewObject::Modifier::POISONED);
       break;
     case LastingEffect::POISON_RESISTANT: if (msg) c->you(MsgType::ARE, "no longer poison resistant"); break;
     case LastingEffect::FIRE_RESISTANT: if (msg) c->you(MsgType::ARE, "no longer fire resistant"); break;
     case LastingEffect::FLYING:
       if (msg)
         c->you(MsgType::FALL, "on the " + c->getPosition().getName());
+      break;
+    case LastingEffect::COLLAPSED:
+      c->you(MsgType::STAND_UP);
       break;
     case LastingEffect::INSANITY: if (msg) c->you(MsgType::BECOME, "sane again"); break;
     case LastingEffect::MAGIC_SHIELD: if (msg) c->you(MsgType::FEEL, "less protected"); break;
@@ -166,36 +176,63 @@ void LastingEffects::modifyAttr(WConstCreature c, AttrType type, double& value) 
   }
 }
 
-const char* LastingEffects::getGoodAdjective(LastingEffect effect) {
-  switch (effect) {
-    case LastingEffect::INVISIBLE: return "Invisible";
-    case LastingEffect::PANIC: return "Panic";
-    case LastingEffect::RAGE: return "Enraged";
-    case LastingEffect::HALLU: return "Hallucinating";
-    case LastingEffect::DAM_BONUS: return "Damage bonus";
-    case LastingEffect::DEF_BONUS: return "Defense bonus";
-    case LastingEffect::SPEED: return "Speed bonus";
-    case LastingEffect::POISON_RESISTANT: return "Poison resistant";
-    case LastingEffect::FIRE_RESISTANT: return "Fire resistant";
-    case LastingEffect::FLYING: return "Flying";
-    case LastingEffect::MAGIC_SHIELD: return "Magic shield";
-    case LastingEffect::DARKNESS_SOURCE: return "Source of darkness";
-    case LastingEffect::PREGNANT: return "Pregnant";
-    default: return nullptr;
+namespace {
+  struct Adjective {
+    const char* name;
+    bool bad;
+  };
+  Adjective operator "" _bad(const char* n, size_t) {\
+    return {n, true};
+  }
+
+  Adjective operator "" _good(const char* n, size_t) {\
+    return {n, false};
   }
 }
 
-const char* LastingEffects::getBadAdjective(LastingEffect effect) {
+
+static Adjective getAdjective(LastingEffect effect) {
   switch (effect) {
-    case LastingEffect::POISON: return "Poisoned";
-    case LastingEffect::SLEEP: return "Sleeping";
-    case LastingEffect::ENTANGLED: return "Entangled";
-    case LastingEffect::TIED_UP: return "Tied up";
-    case LastingEffect::SLOWED: return "Slowed";
-    case LastingEffect::INSANITY: return "Insane";
-    case LastingEffect::BLIND: return "Blind";
-    default: return nullptr;
+    case LastingEffect::INVISIBLE: return "Invisible"_good;
+    case LastingEffect::PANIC: return "Panic"_good;
+    case LastingEffect::RAGE: return "Enraged"_good;
+    case LastingEffect::HALLU: return "Hallucinating"_good;
+    case LastingEffect::DAM_BONUS: return "Damage bonus"_good;
+    case LastingEffect::DEF_BONUS: return "Defense bonus"_good;
+    case LastingEffect::SPEED: return "Speed bonus"_good;
+    case LastingEffect::POISON_RESISTANT: return "Poison resistant"_good;
+    case LastingEffect::FIRE_RESISTANT: return "Fire resistant"_good;
+    case LastingEffect::FLYING: return "Flying"_good;
+    case LastingEffect::MAGIC_SHIELD: return "Magic shield"_good;
+    case LastingEffect::DARKNESS_SOURCE: return "Source of darkness"_good;
+    case LastingEffect::PREGNANT: return "Pregnant"_good;
+
+    case LastingEffect::POISON: return "Poisoned"_bad;
+    case LastingEffect::SLEEP: return "Sleeping"_bad;
+    case LastingEffect::ENTANGLED: return "Entangled"_bad;
+    case LastingEffect::TIED_UP: return "Tied up"_bad;
+    case LastingEffect::SLOWED: return "Slowed"_bad;
+    case LastingEffect::INSANITY: return "Insane"_bad;
+    case LastingEffect::BLIND: return "Blind"_bad;
+    case LastingEffect::STUNNED: return "Stunned"_bad;
+    case LastingEffect::COLLAPSED: return "Collapsed"_bad;
   }
+}
+
+const char* LastingEffects::getGoodAdjective(LastingEffect effect) {
+  auto adjective = getAdjective(effect);
+  if (!adjective.bad)
+    return adjective.name;
+  else
+    return nullptr;
+}
+
+const char* LastingEffects::getBadAdjective(LastingEffect effect) {
+  auto adjective = getAdjective(effect);
+  if (adjective.bad)
+    return adjective.name;
+  else
+    return nullptr;
 }
 
 const vector<LastingEffect>& LastingEffects::getCausingCondition(CreatureCondition condition) {

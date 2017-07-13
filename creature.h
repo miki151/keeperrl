@@ -244,8 +244,8 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
 
   void addEffect(LastingEffect, double time, bool msg = true);
   void removeEffect(LastingEffect, bool msg = true);
-  void addPermanentEffect(LastingEffect, bool msg = true);
-  void removePermanentEffect(LastingEffect, bool msg = true);
+  void addPermanentEffect(LastingEffect, int count = 1);
+  void removePermanentEffect(LastingEffect, int count = 1);
   bool isAffected(LastingEffect) const;
   optional<double> getTimeRemaining(LastingEffect) const;
   bool hasCondition(CreatureCondition) const;
@@ -295,7 +295,6 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   EntitySet<Creature> SERIAL(kills);
   mutable int SERIAL(difficultyPoints) = 0;
   int SERIAL(points) = 0;
-  int SERIAL(numAttacksThisTurn) = 0;
   PMoraleOverride SERIAL(moraleOverride);
   void updateVisibleCreatures();
   vector<Position> visibleEnemies;

@@ -598,6 +598,7 @@ int getEffectPrice(EffectType type) {
           case LastingEffect::STUNNED:
           case LastingEffect::MAGIC_SHIELD:
           case LastingEffect::RAGE:
+          case LastingEffect::COLLAPSED:
             return 12;
           case LastingEffect::BLIND:
             return 16;
@@ -638,6 +639,9 @@ int getEffectPrice(EffectType type) {
     case EffectId::PLACE_FURNITURE:
     case EffectId::SUMMON_ELEMENT:
     case EffectId::DAMAGE:
+    case EffectId::INJURE_BODY_PART:
+    case EffectId::LOOSE_BODY_PART:
+    case EffectId::REGROW_BODY_PART:
       return 30;
   }
   return -1;

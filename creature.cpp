@@ -62,7 +62,7 @@ void Creature::serialize(Archive& ar, const unsigned int version) {
   ar(deathReason, swapPositionCooldown);
   ar(unknownAttackers, privateEnemies, holding);
   ar(controllerStack, creatureVisions, kills);
-  ar(difficultyPoints, points, numAttacksThisTurn, moraleOverride);
+  ar(difficultyPoints, points, moraleOverride);
   ar(vision, lastCombatTime, debt, lastDamageType);
 }
 
@@ -267,7 +267,7 @@ CreatureAction Creature::move(Position pos) const {
       return;
     }
     double oldTime = getLocalTime();
-    if (getBody().isCollapsed(self)) {
+    if (isAffected(LastingEffect::COLLAPSED)) {
       you(MsgType::CRAWL, getPosition().getName());
       self->spendTime(3);
     } else
@@ -343,7 +343,6 @@ void Creature::swapPosition(Vec2 direction) {
 }
 
 void Creature::makeMove() {
-  numAttacksThisTurn = 0;
   CHECK(!isDead());
   if (hasCondition(CreatureCondition::SLEEPING)) {
     getController()->sleeping();
@@ -650,28 +649,33 @@ bool Creature::knowsHiding(WConstCreature c) const {
 }
 
 void Creature::addEffect(LastingEffect effect, double time, bool msg) {
-  if (LastingEffects::affects(this, effect) && attributes->considerAffecting(effect, getGlobalTime(), time))
-    LastingEffects::onAffected(this, effect, msg);
+  if (LastingEffects::affects(this, effect)) {
+    bool was = isAffected(effect);
+    attributes->addLastingEffect(effect, getGlobalTime() + time);
+    if (!was && isAffected(effect))
+      LastingEffects::onAffected(this, effect, msg);
+  }
 }
 
 void Creature::removeEffect(LastingEffect effect, bool msg) {
-  if (!isAffected(effect))
-    return;
+  bool was = isAffected(effect);
   attributes->clearLastingEffect(effect);
-  if (!isAffected(effect))
+  if (was && !isAffected(effect))
     LastingEffects::onRemoved(this, effect, msg);
 }
 
-void Creature::addPermanentEffect(LastingEffect effect, bool msg) {
-  if (!isAffected(effect))
-    LastingEffects::onAffected(this, effect, msg);
-  attributes->addPermanentEffect(effect);
+void Creature::addPermanentEffect(LastingEffect effect, int count) {
+  bool was = isAffected(effect);
+  attributes->addPermanentEffect(effect, count);
+  if (!was && isAffected(effect))
+    LastingEffects::onAffected(this, effect, true);
 }
 
-void Creature::removePermanentEffect(LastingEffect effect, bool msg) {
-  attributes->removePermanentEffect(effect);
-  if (!isAffected(effect))
-    LastingEffects::onRemoved(this, effect, msg);
+void Creature::removePermanentEffect(LastingEffect effect, int count) {
+  bool was = isAffected(effect);
+  attributes->removePermanentEffect(effect, count);
+  if (was && !isAffected(effect))
+    LastingEffects::onRemoved(this, effect, true);
 }
 
 bool Creature::isAffected(LastingEffect effect) const {
@@ -701,9 +705,6 @@ int Creature::getAttr(AttrType type) const {
   for (WItem item : equipment->getAllEquipped())
     def += item->getModifier(type);
   switch (type) {
-    case AttrType::DEFENSE:
-      def -= simulAttackPen(numAttacksThisTurn);
-      break;
     case AttrType::SPEED: {
       double totWeight = equipment->getTotalWeight();
       // penalty is 0 till limit/2, then grows linearly to 0.3 at limit, then stays constant
@@ -878,13 +879,11 @@ CreatureAction Creature::attack(WCreature other, optional<AttackParams> attackPa
     switch (*attackParams->mod) {
       case AttackParams::WILD: 
         damage *= 1.2;
-        ++c->numAttacksThisTurn;
         timeSpent *= 1.5;
         attackAdjective.push_back("wildly");
         break;
       case AttackParams::SWIFT: 
         damage *= 0.8;
-        --c->numAttacksThisTurn;
         timeSpent *= 0.7;
         attackAdjective.push_back("swiftly");
         break;
@@ -922,7 +921,6 @@ void Creature::onAttackedBy(WCreature attacker) {
 }
 
 bool Creature::takeDamage(const Attack& attack) {
-  ++numAttacksThisTurn;
   int defense = getAttr(getCorrespondingDefense(attack.damageType));
   if (WCreature attacker = attack.attacker) {
     onAttackedBy(attacker);
