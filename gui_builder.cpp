@@ -1373,16 +1373,21 @@ SGuiElem GuiBuilder::drawTeams(CollectiveInfo& info, const optional<TutorialInfo
 }
 
 vector<SGuiElem> GuiBuilder::getSettingsButtons() {
+  auto makeSetting = [&](bool& setting, const char* name, const char* hint) {
+    return gui.stack(makeVec(
+          getHintCallback({hint}),
+          gui.label(name, [&setting]{ return setting ? Color::GREEN : Color::WHITE;}),
+          gui.button([&setting] { setting = !setting; })));
+  };
+
   return makeVec(
-      gui.stack(makeVec(
-            getHintCallback({"Morale affects minion's productivity and chances of fleeing from battle."}),
-            gui.label("Highlight morale",
-                [=]{ return mapGui->highlightMorale() ? Color::GREEN : Color::WHITE;}),
-            gui.button([this] { mapGui->setHighlightMorale(!mapGui->highlightMorale()); }))),
-      gui.stack(makeVec(
-            gui.label("Highlight enemies",
-                [=]{ return mapGui->highlightEnemies() ? Color::GREEN : Color::WHITE;}),
-            gui.button([this] { mapGui->setHighlightEnemies(!mapGui->highlightEnemies()); }))));
+      makeSetting(mapGui->highlightMorale, "Highlight morale",
+          "Morale affects minion's productivity and chances of fleeing from battle."),
+      makeSetting(mapGui->highlightEnemies, "Highlight enemies", ""),
+      makeSetting(mapGui->displayAllHealthBars, "Display health bars", ""),
+      makeSetting(mapGui->hideFullHealthBars, "Hide full health bars", ""),
+      makeSetting(mapGui->colorWoundedRed, "Color wounded creatures", "")
+    );
 }
 
 SGuiElem GuiBuilder::drawMinions(CollectiveInfo& info, const optional<TutorialInfo>& tutorial) {

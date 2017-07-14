@@ -69,10 +69,11 @@ class MapGui : public GuiElem {
   void unhighlightTeam(const vector<UniqueEntity<Creature>::Id>&);
   void setButtonViewId(ViewId);
   void clearButtonViewId();
-  bool highlightMorale();
-  bool highlightEnemies();
-  void setHighlightMorale(bool);
-  void setHighlightEnemies(bool);
+  bool highlightMorale = true;
+  bool highlightEnemies = true;
+  bool displayAllHealthBars = true;
+  bool hideFullHealthBars = true;
+  bool colorWoundedRed = false;
   struct HighlightedInfo {
     optional<Vec2> creaturePos;
     optional<Vec2> tilePos;
@@ -83,8 +84,7 @@ class MapGui : public GuiElem {
 
   private:
   void updateObject(Vec2, CreatureView*, milliseconds currentTime);
-  void drawObjectAbs(Renderer&, Vec2 pos, const ViewObject&, Vec2 size, Vec2 tilePos, milliseconds currentTimeReal,
-      const EnumMap<HighlightType, double>&);
+  void drawObjectAbs(Renderer&, Vec2 pos, const ViewObject&, Vec2 size, Vec2 tilePos, milliseconds currentTimeReal);
   void drawCreatureHighlights(Renderer&, const ViewObject&, Vec2 pos, Vec2 sz, milliseconds currentTimeReal);
   void drawCreatureHighlight(Renderer&, Vec2 pos, Vec2 size, Color);
   void drawSquareHighlight(Renderer&, Vec2 pos, Vec2 size);
@@ -96,7 +96,7 @@ class MapGui : public GuiElem {
   optional<Vec2> getMousePos();
   void softScroll(double x, double y);
   HighlightedInfo lastHighlighted;
-  void renderMapObjects(Renderer&, Vec2 size, HighlightedInfo&, milliseconds currentTimeReal);
+  void renderMapObjects(Renderer&, Vec2 size, milliseconds currentTimeReal);
   HighlightedInfo getHighlightedInfo(Vec2 size, milliseconds currentTimeReal);
   void renderAnimations(Renderer&, milliseconds currentTimeReal);
 
@@ -164,8 +164,6 @@ class MapGui : public GuiElem {
   bool keyScrolling = false;
   ViewIdMap connectionMap;
   bool mouseUI = false;
-  bool morale = true;
-  bool enemies = true;
   bool lockedView = true;
   optional<milliseconds> lastRightClick;
   EntityMap<Creature, int> teamHighlight;
@@ -183,4 +181,5 @@ class MapGui : public GuiElem {
   void setDraggedCreature(UniqueEntity<Creature>::Id, ViewId, Vec2 origin);
   vector<Vec2> tutorialHighlightLow;
   vector<Vec2> tutorialHighlightHigh;
+  void drawHealthBar(Renderer&, Vec2 pos, Vec2 size, double health);
 };

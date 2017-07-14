@@ -75,22 +75,6 @@ void MapGui::clearButtonViewId() {
   buttonViewId = none;
 }
 
-bool MapGui::highlightMorale() {
-  return morale;
-}
-
-bool MapGui::highlightEnemies() {
-  return enemies;
-}
-
-void MapGui::setHighlightMorale(bool s) {
-  morale = s;
-}
-
-void MapGui::setHighlightEnemies(bool s) {
-  enemies = s;
-}
-
 const MapGui::HighlightedInfo& MapGui::getLastHighlighted() {
   return lastHighlighted;
 }
@@ -449,9 +433,9 @@ Vec2 MapGui::getMovementOffset(const ViewObject& object, Vec2 size, double time,
 void MapGui::drawCreatureHighlights(Renderer& renderer, const ViewObject& object, Vec2 pos, Vec2 sz,
     milliseconds curTime) {
   auto getHighlight = [](Color id) { return Color(id).transparency(200); };
-  if (object.hasModifier(ViewObject::Modifier::HOSTILE) && enemies)
+  if (object.hasModifier(ViewObject::Modifier::HOSTILE) && highlightEnemies)
     drawCreatureHighlight(renderer, pos, sz, getHighlight(Color::PURPLE));
-  if (object.hasModifier(ViewObject::Modifier::DRAW_MORALE) && morale)
+  if (object.hasModifier(ViewObject::Modifier::DRAW_MORALE) && highlightMorale)
     if (auto morale = object.getAttribute(ViewObject::Attribute::MORALE))
       drawCreatureHighlight(renderer, pos, sz, getMoraleColor(*morale));
   if (object.hasModifier(ViewObject::Modifier::PLAYER))
@@ -477,10 +461,27 @@ static bool mirrorSprite(ViewId id) {
   }
 }
 
+void MapGui::drawHealthBar(Renderer& renderer, Vec2 pos, Vec2 size, double health) {
+  if (hideFullHealthBars && health == 1)
+    return;
+  pos.y -= size.y * 0.2;
+  double barWidth = 0.12;
+  double barLength = 0.8;
+  auto getBar = [&](double state) {
+    return Rectangle(pos.x + size.x * (1 - barLength) / 2, pos.y,
+        pos.x + size.x * state * (1 + barLength) / 2, pos.y + size.y * barWidth);
+  };
+
+  renderer.drawFilledRectangle(getBar(1), Color::BLACK.transparency(100));
+  if (health > 0)
+    renderer.drawFilledRectangle(getBar(health),
+        Color::f(min(1.0, 2 - health * 2), min(1.0, 2 * health), 0).transparency(150));
+}
+
 void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& object, Vec2 size,
-    Vec2 tilePos, milliseconds curTimeReal, const EnumMap<HighlightType, double>& highlightMap) {
+    Vec2 tilePos, milliseconds curTimeReal) {
   const Tile& tile = Tile::getTile(object.id(), spriteMode);
-  Color color = Renderer::getBleedingColor(object);
+  Color color = colorWoundedRed ? Renderer::getBleedingColor(object) : Color::WHITE;
   if (object.hasModifier(ViewObject::Modifier::INVISIBLE) || object.hasModifier(ViewObject::Modifier::HIDDEN))
     color = color.transparency(70);
   else
@@ -523,9 +524,6 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
           Renderer::SpriteOrientation((bool) (tilePos.getHash() % 2), (bool) (tilePos.getHash() % 4 > 1)));
     else
       renderer.drawTile(pos + move, tile.getSpriteCoord(dirs), size, color);
-    /*if (object.layer() == ViewLayer::FLOOR && highlightMap[HighlightType::CUT_TREE] > 0)
-      if (auto coord = tile.getHighlightCoord())
-        renderer.drawTile(pos + move, *coord, size, color);*/
     if (tile.hasCorners()) {
       for (auto coord : tile.getCornerCoords(dirs))
         renderer.drawTile(pos + move, coord, size, color);
@@ -542,6 +540,9 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
         static auto fire2 = renderer.getTileCoord("fire2");
         renderer.drawTile(pos, Random.choose(fire1, fire2), size);
       }
+    if (displayAllHealthBars || lastHighlighted.creaturePos == pos + movement)
+      if (auto wounded = object.getAttribute(ViewObject::Attribute::WOUNDED))
+        drawHealthBar(renderer, pos + move, size, 1 - *wounded);
   } else {
     Vec2 movement = getMovementOffset(object, size, currentTimeGame, curTimeReal);
     Vec2 tilePos = pos + movement + Vec2(size.x / 2, -3);
@@ -788,8 +789,7 @@ MapGui::HighlightedInfo MapGui::getHighlightedInfo(Vec2 size, milliseconds curre
   return ret;
 }
 
-void MapGui::renderMapObjects(Renderer& renderer, Vec2 size, HighlightedInfo& highlightedInfo,
-    milliseconds currentTimeReal) {
+void MapGui::renderMapObjects(Renderer& renderer, Vec2 size, milliseconds currentTimeReal) {
   Rectangle allTiles = layout->getAllTiles(getBounds(), levelBounds, getScreenPos());
   Vec2 topLeftCorner = projectOnScreen(allTiles.topLeft(), currentTimeReal);
   renderer.drawFilledRectangle(getBounds(), Color::BLACK);
@@ -816,9 +816,9 @@ void MapGui::renderMapObjects(Renderer& renderer, Vec2 size, HighlightedInfo& hi
       } else
         object = index.getTopObject(layout->getLayers());
       if (object) {
-        drawObjectAbs(renderer, pos, *object, size, wpos, currentTimeReal, index.getHighlightMap());
-        if (highlightedInfo.tilePos == wpos && object->layer() != ViewLayer::CREATURE)
-          highlightedInfo.object = *object;
+        drawObjectAbs(renderer, pos, *object, size, wpos, currentTimeReal);
+        if (lastHighlighted.tilePos == wpos && object->layer() != ViewLayer::CREATURE)
+          lastHighlighted.object = *object;
       }
       if (spriteMode && layer == layout->getLayers().back())
         if (!isFoW(wpos))
@@ -833,10 +833,10 @@ void MapGui::renderMapObjects(Renderer& renderer, Vec2 size, HighlightedInfo& hi
               isFoW(wpos + Vec2(Dir::SW))));
     }
     if (layer == ViewLayer::FLOOR || !spriteMode) {
-      if (!buttonViewId && highlightedInfo.creaturePos)
-        drawCreatureHighlight(renderer, *highlightedInfo.creaturePos, size, Color::ALMOST_WHITE);
-      if (highlightedInfo.tilePos && (!getHighlightedFurniture() || !!buttonViewId))
-        drawSquareHighlight(renderer, topLeftCorner + (*highlightedInfo.tilePos - allTiles.topLeft()).mult(size),
+      if (!buttonViewId && lastHighlighted.creaturePos)
+        drawCreatureHighlight(renderer, *lastHighlighted.creaturePos, size, Color::ALMOST_WHITE);
+      if (lastHighlighted.tilePos && (!getHighlightedFurniture() || !!buttonViewId))
+        drawSquareHighlight(renderer, topLeftCorner + (*lastHighlighted.tilePos - allTiles.topLeft()).mult(size),
             size);
     }
     if (layer == ViewLayer::FLOOR_BACKGROUND)
@@ -911,7 +911,7 @@ void MapGui::render(Renderer& renderer) {
   Vec2 size = layout->getSquareSize();
   auto currentTimeReal = clock->getRealMillis();
   lastHighlighted = getHighlightedInfo(size, currentTimeReal);
-  renderMapObjects(renderer, size, lastHighlighted, currentTimeReal);
+  renderMapObjects(renderer, size, currentTimeReal);
   renderHighlights(renderer, size, currentTimeReal, false);
   renderAnimations(renderer, currentTimeReal);
   if (lastHighlighted.tilePos)
