@@ -132,7 +132,6 @@ class Body {
   double getMinDamage(BodyPart) const;
   bool isCritical(BodyPart) const;
   PItem getBodyPartItem(const string& creatureName, BodyPart);
-  bool isBleeding() const;
   void bleed(WCreature, double amount);
   string getMaterialAndSizeAdjectives() const;
   bool fallsApartFromDamage() const;

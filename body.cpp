@@ -508,13 +508,9 @@ bool Body::takeDamage(const Attack& attack, WCreature creature, double damage) {
   return false;
 }
 
-bool Body::isBleeding() const {
-  return health < 0.5;
-}
-
 void Body::getBadAdjectives(vector<AdjectiveInfo>& ret) const {
   if (health < 1)
-    ret.push_back({isBleeding() ? "Bleeding" : "Wounded", ""});
+    ret.push_back({"Wounded", ""});
   for (BodyPart part : ENUM_ALL(BodyPart))
     if (int num = numInjured(part))
       ret.push_back({getPlural(string("Injured ") + getName(part), num), ""});
@@ -558,10 +554,6 @@ bool Body::tick(WConstCreature c) {
   if (fallsApartFromDamage() && lostOrInjuredBodyParts() >= 4) {
     c->you(MsgType::FALL, "apart");
     return true;
-  }
-  if (isBleeding()) {
-    health -= 1.0 / 40;
-    c->playerMessage(PlayerMessage("You are bleeding.", MessagePriority::HIGH));
   }
   if (health <= 0) {
     c->you(MsgType::DIE_OF, c->isAffected(LastingEffect::POISON) ? "poisoning" : "bleeding");
