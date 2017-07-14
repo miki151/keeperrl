@@ -459,21 +459,25 @@ Vec2 Vec2::getCenterOfWeight(vector<Vec2> vs) {
 }
 
 Rectangle::Rectangle(int _w, int _h) : px(0), py(0), kx(_w), ky(_h), w(_w), h(_h) {
-  CHECK(w > 0 && h > 0);
+  if (w <= 0 || h <= 0) {
+    kx = ky = 0;
+    w = h = 0;
+  }
 }
 
-Rectangle::Rectangle(Vec2 d) : px(0), py(0), kx(d.x), ky(d.y), w(d.x), h(d.y) {
-  CHECK(d.x > 0 && d.y > 0);
+Rectangle::Rectangle(Vec2 d) : Rectangle(d.x, d.y) {
 }
 
 Rectangle::Rectangle(int px1, int py1, int kx1, int ky1) : px(px1), py(py1), kx(kx1), ky(ky1), w(kx1 - px1),
     h(ky1 - py1) {
-  CHECK(kx > px && ky > py) << "(" << px << " " << py << ") (" << kx << " " << ky << ") ";
+  if (kx <= px || ky <= py) {
+    kx = px;
+    ky = py;
+    w = h = 0;
+  }
 }
 
-Rectangle::Rectangle(Vec2 p, Vec2 k) : px(p.x), py(p.y), kx(k.x), ky(k.y), w(k.x - p.x), h(k.y - p.y) {
-  CHECK(k.x > p.x) << p << " " << k;
-  CHECK(k.y > p.y) << p << " " << k;
+Rectangle::Rectangle(Vec2 p, Vec2 k) : Rectangle(p.x, p.y, k.x, k.y) {
 }
 
 Rectangle::Rectangle(Range xRange, Range yRange)
@@ -563,7 +567,6 @@ Rectangle Rectangle::translate(Vec2 v) const {
 }
 
 Rectangle Rectangle::minusMargin(int margin) const {
-  CHECK(px + margin < kx - margin && py + margin < ky - margin) << "Margin too big";
   return Rectangle(px + margin, py + margin, kx - margin, ky - margin);
 }
 
