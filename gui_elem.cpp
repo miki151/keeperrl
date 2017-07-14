@@ -1299,6 +1299,15 @@ class VerticalListFit : public GuiLayout {
         getBounds().topRight() + Vec2(0, num * (elemHeight * (1.0 + spacing)) + elemHeight));
   }
 
+  optional<int> getPreferredWidth() override {
+    optional<int> ret;
+    for (auto& elem : elems)
+      if (auto width = elem->getPreferredWidth())
+        if (ret.value_or(-1) < *width)
+          ret = width;
+    return ret;
+  }
+
   protected:
   double spacing;
 };
@@ -1318,6 +1327,15 @@ class HorizontalListFit : public GuiLayout {
     int elemHeight = double(getBounds().width()) / (double(elems.size()) * (1.0 + spacing) - spacing);
     return Rectangle(getBounds().topLeft() + Vec2(num * (elemHeight * (1.0 + spacing)), 0), 
         getBounds().bottomLeft() + Vec2(num * (elemHeight * (1.0 + spacing)) + elemHeight, 0));
+  }
+
+  optional<int> getPreferredHeight() override {
+    optional<int> ret;
+    for (auto& elem : elems)
+      if (auto height = elem->getPreferredHeight())
+        if (ret.value_or(-1) < *height)
+          ret = height;
+    return ret;
   }
 
   protected:

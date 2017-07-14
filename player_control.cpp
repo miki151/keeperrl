@@ -1016,7 +1016,8 @@ vector<PlayerInfo> PlayerControl::getPlayerInfos(vector<WCreature> creatures, Un
     if (c->getUniqueId() == chosenId) {
       for (auto expType : ENUM_ALL(ExperienceType))
         if (auto requiredDummy = getCollective()->getMissingTrainingFurniture(c, expType))
-          minions.back().levelInfo.warning[expType] = "Requires " + Furniture::getName(*requiredDummy) + ".";
+          minions.back().levelInfo.warning[expType] =
+              "Requires " + Furniture::getName(*requiredDummy) + " to train further.";
       for (MinionTask t : ENUM_ALL(MinionTask))
         if (c->getAttributes().getMinionTasks().getValue(getCollective(), c, t, true) > 0) {
           minions.back().minionTasks.push_back({t,

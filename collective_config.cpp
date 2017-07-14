@@ -416,7 +416,7 @@ int CollectiveConfig::getManaForConquering(const optional<VillainType>& type) {
       default:
         break;;
     }
-  return 40;
+  return 50;
 }
 
 CollectiveConfig::CollectiveConfig(const CollectiveConfig&) = default;

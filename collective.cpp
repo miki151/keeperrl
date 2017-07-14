@@ -1435,17 +1435,25 @@ void Collective::onAppliedSquare(WCreature c, Position pos) {
       default:
         break;
     }
-    if (auto usage = furniture->getUsageType())
+    if (auto usage = furniture->getUsageType()) {
+      auto increaseLevel = [&] (ExperienceType exp) {
+        double increase = 0.005 * efficiency;
+        if (auto maxLevel = config->getTrainingMaxLevel(exp, furniture->getType()))
+          increase = min(increase, *maxLevel - c->getAttributes().getExpLevel(exp));
+        if (increase > 0)
+          c->increaseExpLevel(exp, increase);
+      };
       switch (*usage) {
         case FurnitureUsageType::TRAIN:
-          c->increaseExpLevel(ExperienceType::MELEE, 0.005 * efficiency);
+          increaseLevel(ExperienceType::MELEE);
           break;
         case FurnitureUsageType::STUDY:
-          c->increaseExpLevel(ExperienceType::SPELL, 0.005 * efficiency);
+          increaseLevel(ExperienceType::SPELL);
           break;
         default:
           break;
       }
+    }
     if (auto workshopType = config->getWorkshopType(furniture->getType())) {
       auto& info = config->getWorkshopInfo(*workshopType);
       vector<PItem> items =

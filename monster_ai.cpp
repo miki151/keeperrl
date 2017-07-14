@@ -141,7 +141,7 @@ class Heal : public Behaviour {
     if (creature->getAttributes().getSpellMap().contains(SpellId::HEAL_OTHER)) {
       for (Vec2 v : Vec2::directions8(Random))
         if (WConstCreature other = creature->getPosition().plus(v).getCreature())
-          if (creature->isFriend(other))
+          if (creature->isFriend(other) && other->getBody().canHeal())
             if (auto action = creature->castSpell(Spell::get(SpellId::HEAL_OTHER), v))
               return MoveInfo(0.5, action);
     }

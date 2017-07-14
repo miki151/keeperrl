@@ -1011,7 +1011,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.viewId = ViewId::KEEPER;
           c.retiredViewId = ViewId::RETIRED_KEEPER;
           c.attr = LIST(12_dam, 12_def, 12_spell_def, 12_spell_dam, 100_spd );
-          c.body = Body::humanoid(Body::Size::LARGE).addWings();
+          c.body = Body::humanoid(Body::Size::LARGE);
           c.name = "Keeper";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_MALE)->getNext());
           c.name->useFullTitle();
@@ -2131,14 +2131,7 @@ vector<ItemType> getInventory(CreatureId id) {
     case CreatureId::KEEPER_F:
     case CreatureId::KEEPER:
       return ItemList()
-          .add(ItemId::ROBE)
-          .add({ItemId::SCROLL, EffectType{EffectId::INJURE_BODY_PART, BodyPart::LEG}}, 10)
-          .add({ItemId::SCROLL, EffectType{EffectId::LOOSE_BODY_PART, BodyPart::LEG}}, 10)
-      .add({ItemId::SCROLL, EffectType{EffectId::INJURE_BODY_PART, BodyPart::WING}}, 10)
-      .add({ItemId::SCROLL, EffectType{EffectId::LOOSE_BODY_PART, BodyPart::WING}}, 10)
-      .add({ItemId::SCROLL, EffectType{EffectId::INJURE_BODY_PART, BodyPart::HEAD}}, 10)
-      .add({ItemId::SCROLL, EffectType{EffectId::LOOSE_BODY_PART, BodyPart::HEAD}}, 10)
-      .add({ItemId::POTION, EffectType{EffectId::REGROW_BODY_PART}}, 30);
+          .add(ItemId::ROBE);
     case CreatureId::ADVENTURER_F:
     case CreatureId::ADVENTURER:
       return ItemList()

@@ -146,7 +146,7 @@ class GuiBuilder {
   vector<SGuiElem> drawPlayerAttributes(const vector<AttributeInfo>&);
   vector<SGuiElem> drawPlayerAttributes(const ViewObject::CreatureAttributes&);
   SGuiElem drawBestAttack(const BestAttack&);
-  SGuiElem drawPlayerLevelButton(const PlayerInfo&);
+  SGuiElem drawTrainingInfo(const PlayerInfo&);
   //SGuiElem getExpIncreaseLine(const PlayerInfo::LevelInfo&, ExperienceType);
   SGuiElem drawBuildings(const CollectiveInfo&, const optional<TutorialInfo>&);
   SGuiElem bottomBandCache;
@@ -158,14 +158,13 @@ class GuiBuilder {
   SGuiElem drawVillages(VillageInfo&);
   SGuiElem villagesCache;
   int villagesHash = 0;
-  vector<SGuiElem> drawAttributesOnPage(vector<SGuiElem>&&);
-  vector<SGuiElem> drawEquipmentAndConsumables(const PlayerInfo&);
+  SGuiElem drawAttributesOnPage(vector<SGuiElem>&&);
+  SGuiElem drawEquipmentAndConsumables(const PlayerInfo&);
   vector<SGuiElem> drawSkillsList(const PlayerInfo&);
-  vector<SGuiElem> drawSpellsList(const PlayerInfo&, bool active);
+  SGuiElem drawSpellsList(const PlayerInfo&, bool active);
   SGuiElem getSpellIcon(const PlayerInfo::Spell&, bool active);
   vector<SGuiElem> drawEffectsList(const PlayerInfo&);
   vector<SGuiElem> drawMinionActions(const PlayerInfo&, const optional<TutorialInfo>&);
-  vector<SGuiElem> joinLists(vector<SGuiElem>&&, vector<SGuiElem>&&);
   function<void()> getButtonCallback(UserInput);
   void drawMiniMenu(GuiFactory::ListBuilder elems, bool& exit, Vec2 menuPos, int width);
   void showAttackTriggers(const vector<VillageInfo::Village::TriggerInfo>&, Vec2 pos);
