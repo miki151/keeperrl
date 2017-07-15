@@ -138,8 +138,6 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
 
   vector<pair<WItem, Position>> getTrapItems(TrapType, const vector<Position>&) const;
 
-  void orderExecution(WCreature);
-
   void addTrap(Position, TrapType);
   void removeTrap(Position);
   bool canAddFurniture(Position, FurnitureType) const;

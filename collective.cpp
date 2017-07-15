@@ -299,7 +299,7 @@ optional<MinionTask> Collective::getMinionTask(WConstCreature c) const {
 }
 
 bool Collective::isTaskGood(WConstCreature c, MinionTask task, bool ignoreTaskLock) const {
-  if (c->getAttributes().getMinionTasks().getValue(this, c, task, ignoreTaskLock) == 0)
+  if (!c->getAttributes().getMinionTasks().isAvailable(this, c, task, ignoreTaskLock))
     return false;
   switch (task) {
     case MinionTask::BE_WHIPPED:
@@ -318,13 +318,10 @@ bool Collective::isTaskGood(WConstCreature c, MinionTask task, bool ignoreTaskLo
 }
 
 void Collective::setRandomTask(WConstCreature c) {
-  vector<pair<MinionTask, double>> goodTasks;
+  vector<MinionTask> goodTasks;
   for (MinionTask t : ENUM_ALL(MinionTask))
-    if (isTaskGood(c, t)) {
-      double value = c->getAttributes().getMinionTasks().getValue(this, c, t);
-      if (value > 0)
-        goodTasks.push_back({t, value});
-    }
+    if (isTaskGood(c, t) && !c->getAttributes().getMinionTasks().isPlayerOnly(t))
+      goodTasks.push_back(t);
   if (!goodTasks.empty())
     setMinionTask(c, Random.choose(goodTasks));
 }
@@ -410,7 +407,7 @@ void Collective::considerHealingTask(WCreature c) {
   if (c->getBody().canHeal() && !c->isAffected(LastingEffect::POISON))
     for (MinionTask t : healingTasks) {
       auto currentTask = getMinionTask(c);
-      if (c->getAttributes().getMinionTasks().getValue(this, c, t) > 0 &&
+      if (c->getAttributes().getMinionTasks().isAvailable(this, c, t) &&
           (!currentTask || !healingTasks.contains(*currentTask))) {
         cancelTask(c);
         setMinionTask(c, t);
@@ -1089,11 +1086,6 @@ bool Collective::isKnownVillainLocation(WConstCollective col) const {
   return knownVillainLocations.contains(col);
 }
 
-void Collective::orderExecution(WCreature c) {
-  taskMap->addTask(Task::kill(this, c), c->getPosition(), MinionTrait::FIGHTER);
-  setTask(c, Task::goToAndWait(c->getPosition(), 100));
-}
-
 bool Collective::isItemMarked(WConstItem it) const {
   return !!markedItems.getOrElse(it, nullptr);
 }
@@ -1425,6 +1417,9 @@ void Collective::onAppliedSquare(WCreature c, Position pos) {
         break;
       case FurnitureType::WHIPPING_POST:
         taskMap->addTask(Task::whipping(pos, c), pos);
+        break;
+      case FurnitureType::GALLOWS:
+        taskMap->addTask(Task::kill(this, c), pos);
         break;
       case FurnitureType::TORTURE_TABLE:
         taskMap->addTask(Task::torture(this, c), pos);

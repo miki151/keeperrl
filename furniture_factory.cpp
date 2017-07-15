@@ -145,6 +145,11 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setUsageType(FurnitureUsageType::TIE_UP)
           .setFireInfo(Fire(300, 0.5))
           .setDestroyable(30);
+    case FurnitureType::GALLOWS:
+      return Furniture("gallows", ViewObject(ViewId::GALLOWS, ViewLayer::FLOOR), type, tribe)
+          .setUsageType(FurnitureUsageType::TIE_UP)
+          .setFireInfo(Fire(300, 0.5))
+          .setDestroyable(30);
     case FurnitureType::MINION_STATUE:
       return Furniture("statue", ViewObject(ViewId::MINION_STATUE, ViewLayer::FLOOR), type, tribe)
           .setBlocking()

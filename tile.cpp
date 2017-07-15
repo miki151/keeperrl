@@ -543,6 +543,7 @@ class TileCoordLookup {
     Tile::addTile(ViewId::TORTURE_TABLE, sprite("torturedeco").setRoundShadow());
     Tile::addTile(ViewId::IMPALED_HEAD, sprite("impaledhead").setRoundShadow());
     Tile::addTile(ViewId::WHIPPING_POST, sprite("whipping_post").setRoundShadow());
+    Tile::addTile(ViewId::GALLOWS, sprite("gallows").setRoundShadow());
     Tile::addTile(ViewId::NOTICE_BOARD, sprite("board").setRoundShadow());
     Tile::addTile(ViewId::SOKOBAN_HOLE, sprite("hole"));
     Tile::addTile(ViewId::TRAINING_WOOD, sprite("train_wood").setRoundShadow());
@@ -857,6 +858,7 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::TORTURE_TABLE, symbol(u8"=", Color::GRAY));
     Tile::addSymbol(ViewId::IMPALED_HEAD, symbol(u8"⚲", Color::BROWN, true));
     Tile::addSymbol(ViewId::WHIPPING_POST, symbol(u8"}", Color::BROWN, true));
+    Tile::addSymbol(ViewId::GALLOWS, symbol(u8"}", Color::ORANGE, true));
     Tile::addSymbol(ViewId::NOTICE_BOARD, symbol(u8"|", Color::BROWN));
     Tile::addSymbol(ViewId::SOKOBAN_HOLE, symbol(u8"0", Color::DARK_BLUE));
     Tile::addSymbol(ViewId::TRAINING_WOOD, symbol(u8"‡", Color::BROWN, true));

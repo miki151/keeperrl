@@ -2207,10 +2207,11 @@ static string getTaskText(MinionTask option) {
     case MinionTask::CRAFT: return "Crafting";
     case MinionTask::STUDY: return "Studying";
     case MinionTask::COPULATE: return "Copulating";
-    case MinionTask::SPIDER: return "Spider";
+    case MinionTask::SPIDER: return "Spinning webs";
     case MinionTask::THRONE: return "Throne";
     case MinionTask::BE_WHIPPED: return "Being whipped";
     case MinionTask::BE_TORTURED: return "Being tortured";
+    case MinionTask::BE_EXECUTED: return "Being executed";
   }
 }
 
@@ -2343,11 +2344,6 @@ vector<SGuiElem> GuiBuilder::drawMinionActions(const PlayerInfo& minion, const o
         line.push_back(gui.stack(
             gui.labelHighlight("[Banish]", Color::LIGHT_BLUE),
             gui.button(getButtonCallback({UserInputId::CREATURE_BANISH, minion.creatureId}))));
-        break;
-      case PlayerInfo::EXECUTE:
-        line.push_back(gui.stack(
-            gui.labelHighlight("[Execute]", Color::LIGHT_BLUE),
-            gui.button(getButtonCallback({UserInputId::CREATURE_EXECUTE, minion.creatureId}))));
         break;
       case PlayerInfo::CONSUME:
         line.push_back(gui.stack(

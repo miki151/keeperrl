@@ -13,7 +13,7 @@ class Creature;
 class TaskMap {
   public:
   WTask addTaskFor(PTask, WCreature);
-  WTask addTask(PTask, Position, MinionTrait required = MinionTrait::WORKER);
+  WTask addTask(PTask, Position);
   WTask getTask(WConstCreature);
   bool hasTask(WConstCreature) const;
   const vector<WTask>& getTasks(Position) const;
@@ -34,7 +34,7 @@ class TaskMap {
   bool isPriorityTask(WConstTask) const;
   bool hasPriorityTasks(Position) const;
   void setPriorityTasks(Position);
-  WTask getClosestTask(WCreature c, MinionTrait);
+  WTask getClosestTask(WCreature);
   const EntityMap<Task, CostInfo>& getCompletionCosts() const;
   WTask getTask(UniqueEntity<Task>::Id) const;
 
@@ -52,6 +52,5 @@ class TaskMap {
   EntityMap<Task, CostInfo> SERIAL(completionCost);
   EntityMap<Task, double> SERIAL(delayedTasks);
   EntitySet<Task> SERIAL(priorityTasks);
-  EntityMap<Task, MinionTrait> SERIAL(requiredTraits);
 };
 

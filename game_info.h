@@ -133,7 +133,6 @@ class PlayerInfo {
     CONTROL,
     RENAME,
     BANISH,
-    EXECUTE,
     CONSUME
   };
   vector<Action> HASH(actions);

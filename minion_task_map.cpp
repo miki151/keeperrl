@@ -21,70 +21,68 @@
 #include "body.h"
 #include "collective.h"
 
-double MinionTaskMap::getValue(WConstCollective col, WConstCreature c, MinionTask t, bool ignoreTaskLock) const {
+bool MinionTaskMap::isPlayerOnly(MinionTask t) const {
+  switch (t) {
+    case MinionTask::BE_EXECUTED:
+    case MinionTask::BE_WHIPPED:
+    case MinionTask::BE_TORTURED:
+      return true;
+    default:
+      return false;
+  }
+}
+
+bool MinionTaskMap::isAvailable(WConstCollective col, WConstCreature c, MinionTask t, bool ignoreTaskLock) const {
   if (locked.contains(t) && !ignoreTaskLock)
-    return 0;
-  bool hasTask = [&] {
-    switch (t) {
-      case MinionTask::TRAIN:
-        return !c->getAttributes().isTrainingMaxedOut(ExperienceType::MELEE);
-      case MinionTask::STUDY:
-        return !c->getAttributes().isTrainingMaxedOut(ExperienceType::SPELL);
-      case MinionTask::BE_WHIPPED:
-        return c->getBody().canEntangle() &&
-            !c->getBody().isMinionFood() &&
-            c->getBody().isHumanoid();
-      case MinionTask::THRONE:
-        return col->getLeader() == c;
-      case MinionTask::PRISON:
-      case MinionTask::BE_TORTURED:
-        return col->hasTrait(c, MinionTrait::PRISONER);
-      case MinionTask::CRAFT:
-        return c->getAttributes().getSkills().getValue(SkillId::FORGE) > 0 ||
-            c->getAttributes().getSkills().getValue(SkillId::WORKSHOP) > 0 ||
-            c->getAttributes().getSkills().getValue(SkillId::FURNACE) > 0 ||
-            c->getAttributes().getSkills().getValue(SkillId::JEWELER) > 0 ||
-            c->getAttributes().getSkills().getValue(SkillId::LABORATORY) > 0;
-      case MinionTask::SLEEP:
-        return c->getAttributes().getSpawnType() == SpawnType::HUMANOID ||
-            (c->getBody().isHumanoid() && col->getConfig().hasVillainSleepingTask());
-      case MinionTask::GRAVE:
-        return c->getAttributes().getSpawnType() == SpawnType::UNDEAD;
-      case MinionTask::LAIR:
-        return c->getAttributes().getSpawnType() == SpawnType::BEAST;
-      case MinionTask::EAT:
-        return c->getBody().needsToEat();
-      case MinionTask::COPULATE:
-        return c->getAttributes().getSkills().hasDiscrete(SkillId::COPULATION);
-      case MinionTask::RITUAL:
-        return c->getAttributes().getSpawnType() == SpawnType::DEMON;
-      case MinionTask::CROPS:
-        return c->getAttributes().getSkills().hasDiscrete(SkillId::CROPS);
-      case MinionTask::SPIDER:
-        return c->getAttributes().getSkills().hasDiscrete(SkillId::SPIDER);
-      case MinionTask::EXPLORE_CAVES:
-        return c->getAttributes().getSkills().hasDiscrete(SkillId::EXPLORE_CAVES);
-      case MinionTask::EXPLORE:
-        return c->getAttributes().getSkills().hasDiscrete(SkillId::EXPLORE);
-      case MinionTask::EXPLORE_NOCTURNAL:
-        return c->getAttributes().getSkills().hasDiscrete(SkillId::EXPLORE_NOCTURNAL);
-      case MinionTask::WORKER:
-        return c->getAttributes().getSkills().hasDiscrete(SkillId::CONSTRUCTION);
-    }
-  }();
-  double probability = [&] {
-    switch (t) {
-      case MinionTask::BE_TORTURED:
-      case MinionTask::BE_WHIPPED:
-        return 0.001;
-      default:
-        return 1.0;
-    }
-  }();
-  if (hasTask)
-    return probability;
-  else
-    return 0;
+    return false;
+  switch (t) {
+    case MinionTask::TRAIN:
+      return !c->getAttributes().isTrainingMaxedOut(ExperienceType::MELEE);
+    case MinionTask::STUDY:
+      return !c->getAttributes().isTrainingMaxedOut(ExperienceType::SPELL);
+    case MinionTask::BE_EXECUTED:
+      return true;
+    case MinionTask::BE_WHIPPED:
+      return c->getBody().canEntangle() &&
+          !c->getBody().isMinionFood() &&
+          c->getBody().isHumanoid();
+    case MinionTask::THRONE:
+      return col->getLeader() == c;
+    case MinionTask::PRISON:
+    case MinionTask::BE_TORTURED:
+      return col->hasTrait(c, MinionTrait::PRISONER);
+    case MinionTask::CRAFT:
+      return c->getAttributes().getSkills().getValue(SkillId::FORGE) > 0 ||
+          c->getAttributes().getSkills().getValue(SkillId::WORKSHOP) > 0 ||
+          c->getAttributes().getSkills().getValue(SkillId::FURNACE) > 0 ||
+          c->getAttributes().getSkills().getValue(SkillId::JEWELER) > 0 ||
+          c->getAttributes().getSkills().getValue(SkillId::LABORATORY) > 0;
+    case MinionTask::SLEEP:
+      return c->getAttributes().getSpawnType() == SpawnType::HUMANOID ||
+          (c->getBody().isHumanoid() && col->getConfig().hasVillainSleepingTask());
+    case MinionTask::GRAVE:
+      return c->getAttributes().getSpawnType() == SpawnType::UNDEAD;
+    case MinionTask::LAIR:
+      return c->getAttributes().getSpawnType() == SpawnType::BEAST;
+    case MinionTask::EAT:
+      return c->getBody().needsToEat();
+    case MinionTask::COPULATE:
+      return c->getAttributes().getSkills().hasDiscrete(SkillId::COPULATION);
+    case MinionTask::RITUAL:
+      return c->getAttributes().getSpawnType() == SpawnType::DEMON;
+    case MinionTask::CROPS:
+      return c->getAttributes().getSkills().hasDiscrete(SkillId::CROPS);
+    case MinionTask::SPIDER:
+      return c->getAttributes().getSkills().hasDiscrete(SkillId::SPIDER);
+    case MinionTask::EXPLORE_CAVES:
+      return c->getAttributes().getSkills().hasDiscrete(SkillId::EXPLORE_CAVES);
+    case MinionTask::EXPLORE:
+      return c->getAttributes().getSkills().hasDiscrete(SkillId::EXPLORE);
+    case MinionTask::EXPLORE_NOCTURNAL:
+      return c->getAttributes().getSkills().hasDiscrete(SkillId::EXPLORE_NOCTURNAL);
+    case MinionTask::WORKER:
+      return c->getAttributes().getSkills().hasDiscrete(SkillId::CONSTRUCTION);
+  }
 }
 
 void MinionTaskMap::toggleLock(MinionTask task) {

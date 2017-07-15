@@ -109,7 +109,7 @@ WTask MinionTasks::getExisting(WCollective collective, WCreature c, MinionTask t
   auto& info = CollectiveConfig::getTaskInfo(task);
   switch (info.type) {
     case MinionTaskInfo::WORKER:
-      return collective->getTaskMap().getClosestTask(c, MinionTrait::WORKER);
+      return collective->getTaskMap().getClosestTask(c);
     default:
       return nullptr;
   }

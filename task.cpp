@@ -604,7 +604,7 @@ class Kill : public Task {
 
   CreatureAction getAction(WCreature c) {
     switch (type) {
-      case ATTACK: return c->attack(creature);
+      case ATTACK: return c->execute(creature);
       case TORTURE: return c->torture(creature);
     }
   }

@@ -55,7 +55,6 @@ enum class UserInputId {
     CREATURE_CONTROL,
     CREATURE_RENAME,
     CREATURE_BANISH,
-    CREATURE_EXECUTE,
     CREATURE_CONSUME,
     CREATURE_DRAG_DROP,
     CREATURE_DRAG,
@@ -173,7 +172,6 @@ class UserInput : public EnumVariant<UserInputId, TYPES(BuildingInfo, int, Uniqu
             UserInputId::CREATURE_GROUP_BUTTON,
             UserInputId::CREATURE_CONTROL,
             UserInputId::CREATURE_BANISH,
-            UserInputId::CREATURE_EXECUTE,
             UserInputId::CREATURE_CONSUME,
             UserInputId::CREATURE_DRAG,
             UserInputId::GO_TO_ENEMY

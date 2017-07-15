@@ -279,6 +279,8 @@ const vector<PlayerControl::BuildInfo>& PlayerControl::getBuildInfo() {
               toString(ModelBuilder::getStatuePopulationIncrease()) + ".", 0, "Installations"),
       BuildInfo({FurnitureType::WHIPPING_POST, {ResourceId::WOOD, 20}}, "Whipping post", {},
           "A place to whip your minions if they need a morale boost.", 0, "Installations"),
+      BuildInfo({FurnitureType::GALLOWS, {ResourceId::WOOD, 20}}, "Gallows", {},
+          "For hanging prisoners.", 0, "Installations"),
       BuildInfo({FurnitureType::IMPALED_HEAD, {ResourceId::PRISONER_HEAD, 1}, true}, "Prisoner head", {},
           "Impaled head of an executed prisoner. Aggravates enemies.", 0, "Installations"),
 #ifndef RELEASE
@@ -1018,7 +1020,7 @@ vector<PlayerInfo> PlayerControl::getPlayerInfos(vector<WCreature> creatures, Un
           minions.back().levelInfo.warning[expType] =
               "Requires " + Furniture::getName(*requiredDummy) + " to train further.";
       for (MinionTask t : ENUM_ALL(MinionTask))
-        if (c->getAttributes().getMinionTasks().getValue(getCollective(), c, t, true) > 0) {
+        if (c->getAttributes().getMinionTasks().isAvailable(getCollective(), c, t, true)) {
           minions.back().minionTasks.push_back({t,
               !getCollective()->isMinionTaskPossible(c, t),
               getCollective()->getMinionTask(c) == t,
@@ -1026,9 +1028,7 @@ vector<PlayerInfo> PlayerControl::getPlayerInfos(vector<WCreature> creatures, Un
         }
       if (getCollective()->usesEquipment(c))
         fillEquipment(c, minions.back());
-      if (getCollective()->hasTrait(c, MinionTrait::PRISONER))
-        minions.back().actions = { PlayerInfo::EXECUTE };
-      else {
+      if (!getCollective()->hasTrait(c, MinionTrait::PRISONER)) {
         minions.back().actions = { PlayerInfo::CONTROL, PlayerInfo::RENAME };
         if (c != getCollective()->getLeader())
           minions.back().actions.push_back(PlayerInfo::BANISH);
@@ -1577,7 +1577,7 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
       if (draggedCreature)
         if (WCreature c = getCreature(*draggedCreature))
           if (auto task = MinionTasks::getTaskFor(c, furniture->getType()))
-            if (c->getAttributes().getMinionTasks().getValue(getCollective(), c, *task) > 0)
+            if (c->getAttributes().getMinionTasks().isAvailable(getCollective(), c, *task))
               index.setHighlight(HighlightType::CREATURE_DROP);
       if (showEfficiency(furniture->getType()) && index.hasObject(ViewLayer::FLOOR))
         index.getObject(ViewLayer::FLOOR).setAttribute(ViewObject::Attribute::EFFICIENCY,
@@ -2070,12 +2070,6 @@ void PlayerControl::processInput(View* view, UserInput input) {
                 }
             getCollective()->banishCreature(c);
           }
-        break;
-    case UserInputId::CREATURE_EXECUTE:
-        if (WCreature c = getCreature(input.get<Creature::Id>())) {
-          getCollective()->orderExecution(c);
-          chosenCreature = none;
-        }
         break;
     case UserInputId::GO_TO_ENEMY:
         for (Vec2 v : getVisibleEnemies())

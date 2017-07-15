@@ -21,6 +21,7 @@ RICH_ENUM(MinionTask,
   THRONE,
   BE_WHIPPED,
   BE_TORTURED,
+  BE_EXECUTED,
   WORKER
 );
 
