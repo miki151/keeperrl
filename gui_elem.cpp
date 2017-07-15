@@ -2242,8 +2242,11 @@ class Scrollable : public GuiElem {
   }
 
   virtual bool onMouseMove(Vec2 v) override {
-//    if (v.inRectangle(getBounds()))
-    return content->onMouseMove(v);
+    if (v.inRectangle(getBounds()))
+      return content->onMouseMove(v);
+    else
+      content->onMouseGone();
+    return false;
   }
 
   virtual void onMouseRelease(Vec2 pos) override {
