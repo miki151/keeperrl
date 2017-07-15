@@ -31,7 +31,9 @@ double MinionTaskMap::getValue(WConstCollective col, WConstCreature c, MinionTas
       case MinionTask::STUDY:
         return !c->getAttributes().isTrainingMaxedOut(ExperienceType::SPELL);
       case MinionTask::BE_WHIPPED:
-        return c->getBody().canEntangle() && !c->getBody().isMinionFood() && c->getBody().isHumanoid();
+        return c->getBody().canEntangle() &&
+            !c->getBody().isMinionFood() &&
+            c->getBody().isHumanoid();
       case MinionTask::THRONE:
         return col->getLeader() == c;
       case MinionTask::PRISON:

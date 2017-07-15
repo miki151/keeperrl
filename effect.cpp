@@ -85,7 +85,8 @@ static void deception(WCreature creature) {
   Effect::summonCreatures(creature, 2, std::move(creatures));
 }
 
-static void airBlast(WCreature who, Position position, Vec2 direction, int maxDistance) {
+static void airBlast(WCreature who, Position position, Vec2 direction) {
+  constexpr int maxDistance = 4;
   if (WCreature c = position.getCreature()) {
     int dist = 0;
     for (int i : Range(1, maxDistance))
@@ -98,11 +99,11 @@ static void airBlast(WCreature who, Position position, Vec2 direction, int maxDi
       c->you(MsgType::ARE, "thrown back");
     }
   }
-  for (auto elem : Item::stackItems(position.getItems())) {
+  for (auto& stack : Item::stackItems(position.getItems())) {
     position.throwItem(
-        position.removeItems(elem.second),
+        position.removeItems(stack),
         Attack(who, Random.choose<AttackLevel>(),
-          elem.second[0]->getAttackType(), 15, AttrType::DAMAGE), maxDistance, direction, VisionId::NORMAL);
+          stack[0]->getAttackType(), 15, AttrType::DAMAGE), maxDistance, direction, VisionId::NORMAL);
   }
   for (auto furniture : position.modFurniture())
     if (furniture->canDestroy(DestroyAction::Type::BASH))
@@ -443,7 +444,7 @@ void Effect::applyDirected(WCreature c, Vec2 direction, const DirEffectType& typ
   switch (type.getId()) {
     case DirEffectId::BLAST:
       for (Vec2 v = direction * range; v.length4() >= 1; v -= direction)
-        airBlast(c, c->getPosition().plus(v), direction, range);
+        airBlast(c, c->getPosition().plus(v), direction);
       break;
     case DirEffectId::CREATURE_EFFECT:
       for (Vec2 v = direction * range; v.length4() >= 1; v -= direction)

@@ -99,7 +99,7 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
   static ItemPredicate namePredicate(const string& name);
   static ItemPredicate isRangedWeaponPredicate();
 
-  static vector<pair<string, vector<WItem>>> stackItems(vector<WItem>,
+  static vector<vector<WItem>> stackItems(vector<WItem>,
       function<string(WConstItem)> addSuffix = [](WConstItem) { return ""; });
 
   virtual optional<CorpseInfo> getCorpseInfo() const;

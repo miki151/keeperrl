@@ -74,18 +74,13 @@ ItemPredicate Item::isRangedWeaponPredicate() {
  return [](WConstItem it) { return it->canEquip() && it->getEquipmentSlot() == EquipmentSlot::RANGED_WEAPON;};
 }
 
-vector<pair<string, vector<WItem>>> Item::stackItems(vector<WItem> items, function<string(WConstItem)> suffix) {
+vector<vector<WItem>> Item::stackItems(vector<WItem> items, function<string(WConstItem)> suffix) {
   map<string, vector<WItem>> stacks = groupBy<WItem, string>(items, [suffix](WConstItem item) {
         return item->getNameAndModifiers() + suffix(item);
       });
-  vector<pair<string, vector<WItem>>> ret;
-  for (auto elem : stacks)
-    if (elem.second.size() > 1)
-      ret.emplace_back(
-          toString<int>(elem.second.size()) + " " 
-          + elem.second[0]->getNameAndModifiers(true) + suffix(elem.second[0]), elem.second);
-    else
-      ret.push_back(elem);
+  vector<vector<WItem>> ret;
+  for (auto& elem : stacks)
+    ret.push_back(elem.second);
   return ret;
 }
 

@@ -15,8 +15,8 @@ FurnitureDroppedItems::FurnitureDroppedItems(FurnitureDroppedItems::DropData d) 
 vector<PItem> FurnitureDroppedItems::handle(Position pos, WConstFurniture f, vector<PItem> items) const {
   return dropData.visit(
       [&](const Water& info) {
-        for (auto& elem : Item::stackItems(getWeakPointers(items))) {
-          PlayerMessage message(elem.second[0]->getPluralTheNameAndVerb(elem.second.size(),
+        for (auto& stack : Item::stackItems(getWeakPointers(items))) {
+          PlayerMessage message(stack[0]->getPluralTheNameAndVerb(stack.size(),
               info.verbSingle, info.verbPlural) + " in the " + f->getName());
           if (info.unseenMessage)
             pos.globalMessage(message, *info.unseenMessage);

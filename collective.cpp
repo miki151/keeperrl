@@ -302,15 +302,17 @@ bool Collective::isTaskGood(WConstCreature c, MinionTask task, bool ignoreTaskLo
   if (c->getAttributes().getMinionTasks().getValue(this, c, task, ignoreTaskLock) == 0)
     return false;
   switch (task) {
+    case MinionTask::BE_WHIPPED:
+      return c->getMorale() < 0.95;
     case MinionTask::CROPS:
     case MinionTask::EXPLORE:
-        return getGame()->getSunlightInfo().getState() == SunlightState::DAY;
+      return getGame()->getSunlightInfo().getState() == SunlightState::DAY;
     case MinionTask::SLEEP:
-        if (!config->hasVillainSleepingTask())
-          return true;
+      if (!config->hasVillainSleepingTask())
+        return true;
       FALLTHROUGH;
     case MinionTask::EXPLORE_NOCTURNAL:
-        return getGame()->getSunlightInfo().getState() == SunlightState::NIGHT;
+      return getGame()->getSunlightInfo().getState() == SunlightState::NIGHT;
     default: return true;
   }
 }
@@ -505,14 +507,6 @@ MoveInfo Collective::getMove(WCreature c) {
     return NoMove;
   };
 
-  auto assignExistingFighterTask = [&] {
-    if (WTask closest = taskMap->getClosestTask(c, MinionTrait::FIGHTER)) {
-      taskMap->takeTask(c, closest);
-      return waitIfNoMove(closest->getMove(c));
-    } else
-      return NoMove;
-  };
-
   auto newEquipmentTask = [&] {
     if (PTask t = getEquipmentTask(c))
       if (auto move = t->getMove(c)) {
@@ -558,7 +552,6 @@ MoveInfo Collective::getMove(WCreature c) {
       dropLoot,
       goToAlarm,
       normalTask,
-      assignExistingFighterTask,
       newEquipmentTask,
       newStandardTask,
       followLeader,
@@ -1431,10 +1424,10 @@ void Collective::onAppliedSquare(WCreature c, Position pos) {
       case FurnitureType::THRONE:
         break;
       case FurnitureType::WHIPPING_POST:
-        taskMap->addTask(Task::whipping(pos, c), pos, MinionTrait::FIGHTER);
+        taskMap->addTask(Task::whipping(pos, c), pos);
         break;
       case FurnitureType::TORTURE_TABLE:
-        taskMap->addTask(Task::torture(this, c), pos, MinionTrait::FIGHTER);
+        taskMap->addTask(Task::torture(this, c), pos);
         break;
       default:
         break;

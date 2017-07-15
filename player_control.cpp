@@ -642,11 +642,11 @@ void PlayerControl::fillEquipment(WCreature creature, PlayerInfo& info) const {
         tutorial->getHighlights(getGame()).contains(TutorialHighlight::EQUIPMENT_SLOT_WEAPON))
       info.inventory.back().tutorialHighlight = true;
   }
-  vector<pair<string, vector<WItem>>> consumables = Item::stackItems(ownedItems,
+  vector<vector<WItem>> consumables = Item::stackItems(ownedItems,
       [&](WConstItem it) { if (!creature->getEquipment().hasItem(it)) return " (pending)"; else return ""; } );
-  for (auto elem : consumables)
-    info.inventory.push_back(getItemInfo(elem.second, false,
-          !creature->getEquipment().hasItem(elem.second[0]), false, ItemInfo::CONSUMABLE));
+  for (auto& stack : consumables)
+    info.inventory.push_back(getItemInfo(stack, false,
+          !creature->getEquipment().hasItem(stack[0]), false, ItemInfo::CONSUMABLE));
   for (WItem item : creature->getEquipment().getItems())
     if (!getCollective()->getMinionEquipment().isItemUseful(item))
       info.inventory.push_back(getItemInfo({item}, false, false, false, ItemInfo::OTHER));
@@ -668,20 +668,20 @@ WItem PlayerControl::chooseEquipmentItem(WCreature creature, vector<WItem> curre
     }
   if (currentItems.empty() && availableItems.empty() && usedItems.empty())
     return nullptr;
-  vector<pair<string, vector<WItem>>> usedStacks = Item::stackItems(usedItems,
+  vector<vector<WItem>> usedStacks = Item::stackItems(usedItems,
       [&](WConstItem it) {
         WConstCreature c = getCreature(*getCollective()->getMinionEquipment().getOwner(it));
-        return toString<int>(c->getBestAttack().value);});
+        return c->getName().bare() + toString<int>(c->getBestAttack().value);});
   vector<WItem> allStacked;
   vector<ItemInfo> options;
   for (WItem it : currentItems)
     options.push_back(getItemInfo({it}, true, false, false));
-  for (auto elem : concat(Item::stackItems(availableItems), usedStacks)) {
-    options.emplace_back(getItemInfo(elem.second, false, false, false));
-    if (auto creatureId = getCollective()->getMinionEquipment().getOwner(elem.second[0]))
+  for (auto& stack : concat(Item::stackItems(availableItems), usedStacks)) {
+    options.emplace_back(getItemInfo(stack, false, false, false));
+    if (auto creatureId = getCollective()->getMinionEquipment().getOwner(stack[0]))
       if (WConstCreature c = getCreature(*creatureId))
         options.back().owner = CreatureInfo(c);
-    allStacked.push_back(elem.second.front());
+    allStacked.push_back(stack.front());
   }
   auto creatureId = creature->getUniqueId();
   auto index = getView()->chooseItem(options, scrollPos);
@@ -903,13 +903,12 @@ void PlayerControl::handleTrading(WCollective ally) {
   }
   while (1) {
     vector<WItem> available = ally->getTradeItems();
-    vector<pair<string, vector<WItem>>> items = Item::stackItems(available);
+    vector<vector<WItem>> items = Item::stackItems(available);
     if (items.empty())
       break;
     int budget = getCollective()->numResource(ResourceId::GOLD);
     vector<ItemInfo> itemInfo = items.transform(
-        [budget] (const pair<string, vector<WItem>> it) {
-            return getTradeItemInfo(it.second, budget);});
+        [budget] (const vector<WItem>& it) { return getTradeItemInfo(it, budget); });
     auto index = getView()->chooseTradeItem("Trade with " + ally->getName()->shortened,
         {ViewId::GOLD, getCollective()->numResource(ResourceId::GOLD)}, itemInfo, &scrollPos);
     if (!index)
@@ -957,10 +956,10 @@ void PlayerControl::handlePillage(WCollective col) {
     };
     vector<PillageOption> options;
     for (auto& elem : Item::stackItems(col->getAllItems(false)))
-      if (auto storage = getCollective()->getStorageFor(elem.second.front()))
-        options.push_back({elem.second, *storage});
+      if (auto storage = getCollective()->getStorageFor(elem.front()))
+        options.push_back({elem, *storage});
       else
-        options.push_back({elem.second, getCollective()->getZones().getPositions(ZoneId::STORAGE_EQUIPMENT)});
+        options.push_back({elem, getCollective()->getZones().getPositions(ZoneId::STORAGE_EQUIPMENT)});
     if (options.empty())
       return;
     vector<ItemInfo> itemInfo = options.transform([] (const PillageOption& it) {
