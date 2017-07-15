@@ -867,7 +867,7 @@ CreatureAction Creature::attack(WCreature other, optional<AttackParams> attackPa
   Vec2 dir = getPosition().getDir(other->getPosition());
   if (dir.length8() != 1)
     return CreatureAction();
-  return CreatureAction(this, [=] (WCreature c) {
+  return CreatureAction(this, [=] (WCreature self) {
   INFO << getName().the() << " attacking " << other->getName().the();
   int damage = getAttr(AttrType::DAMAGE);
   int damageVariance = 1 + damage / 3;
@@ -896,7 +896,7 @@ CreatureAction Creature::attack(WCreature other, optional<AttackParams> attackPa
   AttackLevel attackLevel = Random.choose(getBody().getAttackLevels());
   if (attackParams && attackParams->level)
     attackLevel = *attackParams->level;
-  Attack attack(c, attackLevel, attributes->getAttackType(getWeapon()), damage, AttrType::DAMAGE,
+  Attack attack(self, attackLevel, attributes->getAttackType(getWeapon()), damage, AttrType::DAMAGE,
       getWeapon() ? getWeapon()->getAttackEffect() : attributes->getAttackEffect());
   if (getWeapon()) {
     you(getAttackMsg(attack.type, true, attack.level), concat({getWeapon()->getName()}, attackAdjective));
@@ -907,8 +907,18 @@ CreatureAction Creature::attack(WCreature other, optional<AttackParams> attackPa
   other->takeDamage(attack);
   double oldTime = getLocalTime();
   if (spend)
-    c->spendTime(timeSpent);
-  c->addMovementInfo({dir, oldTime, getLocalTime(), MovementInfo::ATTACK});
+    self->spendTime(timeSpent);
+  self->addMovementInfo({dir, oldTime, getLocalTime(), MovementInfo::ATTACK});
+  });
+}
+
+CreatureAction Creature::execute(WCreature c) const {
+  if (c->getPosition().dist8(getPosition()) > 1)
+    return CreatureAction();
+  return CreatureAction(this, [=] (WCreature self) {
+    self->playerMessage("You execute " + c->getName().the());
+    self->globalMessage(self->getName().the() + " executes " + c->getName().the());
+    c->dieWithAttacker(self);
   });
 }
 
@@ -916,7 +926,7 @@ void Creature::onAttackedBy(WCreature attacker) {
   if (!canSee(attacker))
     unknownAttackers.insert(attacker);
   //if (attacker->tribe != tribe)
-    privateEnemies.insert(attacker);
+    //privateEnemies.insert(attacker);
   lastAttacker = attacker;
 }
 

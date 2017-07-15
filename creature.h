@@ -159,6 +159,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
     optional<Mod> mod;
   };
   CreatureAction attack(WCreature, optional<AttackParams> = none, bool spendTime = true) const;
+  CreatureAction execute(WCreature) const;
   CreatureAction bumpInto(Vec2 direction) const;
   CreatureAction applyItem(WItem item) const;
   CreatureAction equip(WItem item) const;
