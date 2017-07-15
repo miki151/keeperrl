@@ -114,6 +114,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   virtual void onClaimedSquare(Position) override;
   virtual void onDestructed(Position, const DestroyAction&) override;
   virtual void onNoEnemies() override;
+  virtual void onPositionDiscovered(Position) override;
   virtual void tick() override;
   virtual void update(bool currentlyActive) override;
 

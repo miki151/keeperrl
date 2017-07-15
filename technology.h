@@ -52,7 +52,6 @@ class Technology : public Singleton<Technology, TechId> {
   Technology* setTutorialHighlight(TutorialHighlight);
   const string& getDescription() const;
   const optional<TutorialHighlight> getTutorialHighlight() const;
-  bool isFree() const;
   const vector<Technology*> getPrerequisites() const;
   const vector<Technology*> getAllowed() const;
 

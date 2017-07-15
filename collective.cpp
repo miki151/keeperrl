@@ -77,11 +77,11 @@ void Collective::init(CollectiveConfig&& cfg, Immigration&& im) {
   immigration = makeOwner<Immigration>(std::move(im));
   credit = cfg.getStartingResource();
   workshops = config->getWorkshops();
-  for (auto id : ENUM_ALL(TechId)) {
-    auto tech = Technology::get(id);
-    if (tech->isFree())
-      acquireTech(tech);
-  }
+}
+
+void Collective::acquireInitialTech() {
+  for (auto tech : config->getInitialTech())
+    acquireTech(tech);
 }
 
 const optional<CollectiveName>& Collective::getName() const {
@@ -855,6 +855,10 @@ void Collective::onEvent(const GameEvent& event) {
     default:
       break;
   }
+}
+
+void Collective::onPositionDiscovered(Position pos) {
+  control->onPositionDiscovered(pos);
 }
 
 void Collective::onMinionKilled(WCreature victim, WCreature killer) {

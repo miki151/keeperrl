@@ -24,6 +24,7 @@ class CollectiveControl : public OwnedObject<CollectiveControl> {
   virtual void onDestructed(Position, const DestroyAction&) {}
   virtual void onNoEnemies() {}
   virtual void onRansomPaid() {}
+  virtual void onPositionDiscovered(Position) {}
   virtual vector<TriggerInfo> getTriggers(WConstCollective against) const;
 
   WCollective getCollective() const;

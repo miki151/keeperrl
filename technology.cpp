@@ -31,6 +31,7 @@
 #include "game.h"
 #include "tutorial_highlight.h"
 #include "collective_config.h"
+#include "creature.h"
 
 void Technology::init() {
   Technology::set(TechId::ALCHEMY, new Technology(
@@ -117,15 +118,6 @@ const optional<TutorialHighlight> Technology::getTutorialHighlight() const {
   return tutorial;
 }
 
-bool Technology::isFree() const {
-  switch (getId()) {
-    case TechId::SPELLS:
-      return true;
-    default:
-      return false;
-  }
-}
-
 vector<Technology*> Technology::getSorted() {
   vector<Technology*> ret;
   while (ret.size() < getAll().size()) {
@@ -175,6 +167,8 @@ static void addResource(WCollective col, FurnitureType type, int maxDist) {
         if (!pos.empty())
           return Random.choose(pos);
       }
+      if (col->hasLeader())
+        return col->getLeader()->getPosition();
       FATAL << "Couldn't find library to spawn resources.";
       return Position();
   }();
@@ -186,7 +180,7 @@ static void addResource(WCollective col, FurnitureType type, int maxDist) {
     if (areaOk(all)) {
       for (Vec2 pos : cutShape(resourceArea)) {
         center.plus(pos).addFurniture(FurnitureFactory::get(type, TribeId::getHostile()));
-        center.getGame()->addEvent({EventId::POSITION_DISCOVERED, center.plus(pos)});
+        col->onPositionDiscovered(center.plus(pos));
       }
       return;
     }

@@ -472,6 +472,7 @@ WCollective ModelBuilder::spawnKeeper(WModel m, PCreature keeper) {
   WCollective playerCollective = m->collectives.back().get();
   playerCollective->setControl(PlayerControl::create(playerCollective));
   playerCollective->setVillainType(VillainType::PLAYER);
+  playerCollective->acquireInitialTech();
   return playerCollective;
 }
 

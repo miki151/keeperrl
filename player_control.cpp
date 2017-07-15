@@ -1424,13 +1424,6 @@ void PlayerControl::updateMinionVisibility(WConstCreature c) {
 
 void PlayerControl::onEvent(const GameEvent& event) {
   switch (event.getId()) {
-    case EventId::POSITION_DISCOVERED: {
-      Position pos = event.get<Position>();
-      if (getCollective()->addKnownTile(pos))
-        updateKnownLocations(pos);
-      addToMemory(pos);
-      break;
-    }
     case EventId::PROJECTILE: {
       auto info = event.get<EventInfo::Projectile>();
       if (canSee(info.begin) || canSee(info.end))
@@ -1503,16 +1496,17 @@ void PlayerControl::updateKnownLocations(const Position& pos) {
         else if (loc->isMarkedAsSurprise())
           addMessage(PlayerMessage("Your minions discover a new location.").setLocation(loc));
       }*/
-  for (WConstCollective col : getGame()->getCollectives())
-    if (col != getCollective() && col->getTerritory().contains(pos)) {
-      getCollective()->addKnownVillain(col);
-      if (!getCollective()->isKnownVillainLocation(col)) {
-        getCollective()->addKnownVillainLocation(col);
-        if (auto& name = col->getName())
-          addMessage(PlayerMessage("Your minions discover the location of " + name->full,
-              MessagePriority::HIGH).setPosition(pos));
+  if (getGame()) // check in case this method is called before Game is constructed
+    for (WConstCollective col : getGame()->getCollectives())
+      if (col != getCollective() && col->getTerritory().contains(pos)) {
+        getCollective()->addKnownVillain(col);
+        if (!getCollective()->isKnownVillainLocation(col)) {
+          getCollective()->addKnownVillainLocation(col);
+          if (auto& name = col->getName())
+            addMessage(PlayerMessage("Your minions discover the location of " + name->full,
+                MessagePriority::HIGH).setPosition(pos));
+        }
       }
-    }
 }
 
 
@@ -2430,6 +2424,12 @@ void PlayerControl::checkKeeperDanger() {
 
 void PlayerControl::onNoEnemies() {
   getGame()->setCurrentMusic(MusicType::PEACEFUL, false);
+}
+
+void PlayerControl::onPositionDiscovered(Position pos) {
+  if (getCollective()->addKnownTile(pos))
+    updateKnownLocations(pos);
+  addToMemory(pos);
 }
 
 void PlayerControl::considerNightfallMessage() {

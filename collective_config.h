@@ -26,6 +26,7 @@ enum class ItemClass;
 class Game;
 class Workshops;
 class ImmigrantInfo;
+class Technology;
 
 struct PopulationIncrease {
   FurnitureType SERIAL(type);
@@ -131,6 +132,8 @@ class CollectiveConfig {
   const vector<PopulationIncrease>& getPopulationIncreases() const;
   const optional<GuardianInfo>& getGuardianInfo() const;
   unique_ptr<Workshops> getWorkshops() const;
+  vector<Technology*> getInitialTech() const;
+
   static const WorkshopInfo& getWorkshopInfo(WorkshopType);
   static optional<WorkshopType> getWorkshopType(FurnitureType);
 

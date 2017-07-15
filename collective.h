@@ -52,6 +52,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   public:
   static PCollective create(WLevel, TribeId, const optional<CollectiveName>&);
   void init(CollectiveConfig&&, Immigration&&);
+  void acquireInitialTech();
   void addCreature(WCreature, EnumSet<MinionTrait>);
   void addCreature(PCreature, Position, EnumSet<MinionTrait>);
   MoveInfo getMove(WCreature);
@@ -204,6 +205,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   bool isKnownVillainLocation(WConstCollective) const;
 
   void onEvent(const GameEvent&);
+  void onPositionDiscovered(Position);
 
   private:
   struct Private {};
