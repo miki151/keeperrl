@@ -941,7 +941,7 @@ bool Creature::takeDamage(const Attack& attack) {
   if (auto sound = attributes->getAttackSound(attack.type, attack.strength > defense))
     addSound(*sound);
   if (attack.strength > defense) {
-    double dam = (defense == 0) ? 1 : double(attack.strength - defense) / defense;
+    double dam = (defense == 0) ? 1 : 0.5 * double(attack.strength - defense) / defense;
     if (attributes->getBody().takeDamage(attack, this, dam))
       return true;
   } else

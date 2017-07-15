@@ -108,9 +108,9 @@ void Spell::init() {
 optional<int> Spell::getLearningExpLevel() const {
   switch (getId()) {
     case SpellId::HEAL_SELF: return 1;
-    case SpellId::HEAL_OTHER: return 1;
     case SpellId::SUMMON_INSECTS: return 2;
-    case SpellId::MAGIC_MISSILE: return 3;
+    case SpellId::HEAL_OTHER: return 3;
+    case SpellId::MAGIC_MISSILE: return 4;
     case SpellId::DECEPTION: return 4;
     case SpellId::TELEPORT: return 4;
     case SpellId::SPEED_SELF: return 5;
