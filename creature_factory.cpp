@@ -2131,7 +2131,9 @@ vector<ItemType> getInventory(CreatureId id) {
     case CreatureId::KEEPER_F:
     case CreatureId::KEEPER:
       return ItemList()
-          .add(ItemId::ROBE);
+          .add(ItemId::ROBE)
+          .add({ItemId::SCROLL, EffectType{EffectId::LASTING, LastingEffect::BLEEDING}}, 10)
+          .add({ItemId::SCROLL, EffectType{EffectId::LASTING, LastingEffect::POISON}}, 10);
     case CreatureId::ADVENTURER_F:
     case CreatureId::ADVENTURER:
       return ItemList()

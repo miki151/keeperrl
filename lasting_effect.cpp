@@ -11,6 +11,12 @@ void LastingEffects::onAffected(WCreature c, LastingEffect effect, bool msg) {
     case LastingEffect::FLYING:
       if (msg) c->you(MsgType::ARE, "flying!");
       break;
+    case LastingEffect::BLEEDING:
+      if (msg) {
+        c->playerMessage("You start bleeding");
+        c->monsterMessage(c->getName().the() + " starts bleeding");
+      }
+      break;
     case LastingEffect::COLLAPSED:
       if (msg) c->you(MsgType::COLLAPSE);
       break;
@@ -74,10 +80,8 @@ bool LastingEffects::affects(WConstCreature c, LastingEffect effect) {
       return !c->isAffected(LastingEffect::SLEEP);
     case LastingEffect::POISON:
       return !c->isAffected(LastingEffect::POISON_RESISTANT);
-    case LastingEffect::TIED_UP:
-    case LastingEffect::ENTANGLED:
-      return c->getBody().canEntangle();
-    default: return true;
+    default:
+      return true;
   }
 }
 
@@ -96,7 +100,8 @@ void LastingEffects::onRemoved(WCreature c, LastingEffect effect, bool msg) {
       if (msg)
         c->you(MsgType::ARE, "cured from poisoning");
       break;
-    default: onTimedOut(c, effect, msg); break;
+    default:
+      onTimedOut(c, effect, msg); break;
   }
 }
 
@@ -113,6 +118,7 @@ void LastingEffects::onTimedOut(WCreature c, LastingEffect effect, bool msg) {
     case LastingEffect::HALLU: if (msg) c->playerMessage("Your mind is clear again"); break;
     case LastingEffect::ENTANGLED: if (msg) c->you(MsgType::BREAK_FREE, "the web"); break;
     case LastingEffect::TIED_UP: if (msg) c->you(MsgType::BREAK_FREE, ""); break;
+    case LastingEffect::BLEEDING: if (msg) c->you(MsgType::YOUR, "bleeding stops"); break;
     case LastingEffect::BLIND:
       if (msg)
         c->you("can see again");
@@ -208,6 +214,7 @@ static Adjective getAdjective(LastingEffect effect) {
     case LastingEffect::PREGNANT: return "Pregnant"_good;
 
     case LastingEffect::POISON: return "Poisoned"_bad;
+    case LastingEffect::BLEEDING: return "Bleeding"_bad;
     case LastingEffect::SLEEP: return "Sleeping"_bad;
     case LastingEffect::ENTANGLED: return "Entangled"_bad;
     case LastingEffect::TIED_UP: return "Tied up"_bad;
@@ -260,6 +267,32 @@ void LastingEffects::onCreatureDamage(WCreature c, LastingEffect e) {
       break;
     default: break;
   }
+}
+
+bool LastingEffects::tick(WCreature c, LastingEffect effect) {
+  switch (effect) {
+    case LastingEffect::BLEEDING:
+      c->getBody().bleed(c, 0.01);
+      c->playerMessage(PlayerMessage("You are bleeding.", MessagePriority::HIGH));
+      if (c->getBody().getHealth() <= 0) {
+        c->you(MsgType::DIE_OF, "bleeding");
+        c->dieWithLastAttacker();
+        return true;
+      }
+      break;
+    case LastingEffect::POISON:
+      c->getBody().bleed(c, 0.01);
+      c->playerMessage("You feel poison flowing in your veins.");
+      if (c->getBody().getHealth() <= 0) {
+        c->you(MsgType::DIE_OF, "poisoning");
+        c->dieWithLastAttacker();
+        return true;
+      }
+      break;
+    default:
+      break;
+  }
+  return false;
 }
 
 

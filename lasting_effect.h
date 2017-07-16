@@ -10,6 +10,7 @@ RICH_ENUM(LastingEffect,
     SPEED,
     DAM_BONUS,
     DEF_BONUS,
+    BLEEDING,
     HALLU,
     BLIND,
     INVISIBLE,
@@ -41,6 +42,7 @@ class LastingEffects {
   static void onTimedOut(WCreature, LastingEffect, bool msg);
   static void modifyAttr(WConstCreature, AttrType, double&);
   static void onCreatureDamage(WCreature, LastingEffect);
+  static bool tick(WCreature, LastingEffect);
   static const char* getGoodAdjective(LastingEffect);
   static const char* getBadAdjective(LastingEffect);
   static const vector<LastingEffect>& getCausingCondition(CreatureCondition);

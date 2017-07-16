@@ -50,7 +50,7 @@ bool MinionTaskMap::isAvailable(WConstCollective col, WConstCreature c, MinionTa
     case MinionTask::BE_EXECUTED:
       return true;
     case MinionTask::BE_WHIPPED:
-      return c->getBody().canEntangle() &&
+      return !c->getBody().isImmuneTo(LastingEffect::ENTANGLED) &&
           !c->getBody().isMinionFood() &&
           c->getBody().isHumanoid();
     case MinionTask::THRONE:

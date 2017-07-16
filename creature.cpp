@@ -649,7 +649,7 @@ bool Creature::knowsHiding(WConstCreature c) const {
 }
 
 void Creature::addEffect(LastingEffect effect, double time, bool msg) {
-  if (LastingEffects::affects(this, effect)) {
+  if (LastingEffects::affects(this, effect) && !getBody().isImmuneTo(effect)) {
     bool was = isAffected(effect);
     attributes->addLastingEffect(effect, getGlobalTime() + time);
     if (!was && isAffected(effect))
@@ -813,14 +813,12 @@ void Creature::tick() {
       equipment->removeItem(item, this);
   }
   double globalTime = getGlobalTime();
-  for (LastingEffect effect : ENUM_ALL(LastingEffect))
+  for (LastingEffect effect : ENUM_ALL(LastingEffect)) {
     if (attributes->considerTimeout(effect, globalTime))
       LastingEffects::onTimedOut(this, effect, true);
-  if (isAffected(LastingEffect::POISON))
-    if (getBody().affectByPoison(this, 0.015)) {
-      dieWithAttacker(lastAttacker);
+    if (isAffected(effect) && LastingEffects::tick(this, effect))
       return;
-    }
+  }
   updateViewObject();
   if (getBody().tick(this)) {
     dieWithAttacker(lastAttacker);
@@ -1021,8 +1019,8 @@ string attrStr(bool strong, bool agile, bool fast) {
   return p1;
 }
 
-void Creature::heal(double amount, bool replaceLimbs) {
-  if (getBody().heal(this, amount, replaceLimbs))
+void Creature::heal(double amount) {
+  if (getBody().heal(this, amount))
     clearLastAttacker();
   updateViewObject();
 }
@@ -1075,6 +1073,10 @@ void Creature::take(PItem item) {
 void Creature::dieWithReason(const string& reason, DropType drops) {
   deathReason = reason;
   dieNoReason(drops);
+}
+
+void Creature::dieWithLastAttacker(DropType drops) {
+  dieWithAttacker(lastAttacker, drops);
 }
 
 void Creature::dieWithAttacker(WCreature attacker, DropType drops) {

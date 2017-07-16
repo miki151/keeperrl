@@ -157,10 +157,11 @@ static void destroyEquipment(WCreature c) {
   return;
 }
 
-static void heal(WCreature c, int strength) {
-  if (c->getBody().canHeal() || (strength == int(EffectStrength::STRONG) && c->getBody().lostOrInjuredBodyParts()))
-    c->heal(1, strength == int(EffectStrength::STRONG));
-  else
+static void heal(WCreature c) {
+  if (c->getBody().canHeal()) {
+    c->heal(1);
+    c->removeEffect(LastingEffect::BLEEDING);
+  } else
     c->playerMessage("You feel refreshed.");
 }
 
@@ -222,14 +223,15 @@ static void alarm(WCreature c) {
 static void teleEnemies(WCreature c) { // handled by Collective
 }
 
-double entangledTime(int strength) {
+static double entangledTime(int strength) {
   return max(5, 30 - strength / 2);
 }
 
-double getDuration(WConstCreature c, LastingEffect e, int strength) {
+static double getDuration(WConstCreature c, LastingEffect e, int strength) {
   switch (e) {
     case LastingEffect::PREGNANT: return 900;
     case LastingEffect::TIED_UP:
+    case LastingEffect::BLEEDING: return 50;
     case LastingEffect::ENTANGLED: return entangledTime(entangledTime(c->getAttr(AttrType::DAMAGE)));
     case LastingEffect::HALLU:
     case LastingEffect::SLOWED:
@@ -382,7 +384,7 @@ void Effect::applyToCreature(WCreature c, const EffectType& effect, EffectStreng
     case EffectId::ENHANCE_ARMOR: enhanceArmor(c); break;
     case EffectId::ENHANCE_WEAPON: enhanceWeapon(c); break;
     case EffectId::DESTROY_EQUIPMENT: destroyEquipment(c); break;
-    case EffectId::HEAL: heal(c, strength); break;
+    case EffectId::HEAL: heal(c); break;
     case EffectId::FIRE: c->getPosition().fireDamage(fireAmount[strength]); break;
     case EffectId::TELEPORT: teleport(c); break;
     case EffectId::ROLLING_BOULDER: FATAL << "Not implemented"; break;
@@ -551,6 +553,7 @@ string Effect::getDescription(const EffectType& type) {
 const char* Effect::getName(LastingEffect type) {
   switch (type) {
     case LastingEffect::PREGNANT: return "pregnant";
+    case LastingEffect::BLEEDING: return "bleeding";
     case LastingEffect::SLOWED: return "slowness";
     case LastingEffect::SPEED: return "speed";
     case LastingEffect::BLIND: return "blindness";
@@ -579,6 +582,7 @@ const char* Effect::getDescription(LastingEffect type) {
   switch (type) {
     case LastingEffect::PREGNANT: return "This is no dream! This is really happening!";
     case LastingEffect::SLOWED: return "Causes unnaturally slow movement.";
+    case LastingEffect::BLEEDING: return "Causes loss of health points over time.";
     case LastingEffect::SPEED: return "Causes unnaturally quick movement.";
     case LastingEffect::BLIND: return "Causes blindness";
     case LastingEffect::INVISIBLE: return "Causes invisibility.";

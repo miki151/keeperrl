@@ -74,7 +74,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   bool dodgeAttack(const Attack&);
   bool takeDamage(const Attack&);
   void onAttackedBy(WCreature);
-  void heal(double amount = 1, bool replaceLimbs = false);
+  void heal(double amount = 1);
   /** Morale is in the range [-1:1] **/
   double getMorale() const;
   void addMorale(double);
@@ -213,6 +213,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
 
   enum class DropType { NOTHING, ONLY_INVENTORY, EVERYTHING };
   void dieWithAttacker(WCreature attacker, DropType = DropType::EVERYTHING);
+  void dieWithLastAttacker(DropType = DropType::EVERYTHING);
   void dieNoReason(DropType = DropType::EVERYTHING);
   void dieWithReason(const string& reason, DropType = DropType::EVERYTHING);
 

@@ -130,7 +130,8 @@ bool Body::hasHealth() const {
   switch (material) {
     case Material::FLESH:
     case Material::SPIRIT:
-    case Material::FIRE: return true;
+    case Material::FIRE:
+      return true;
     default: return false;
   }
 }
@@ -487,6 +488,7 @@ bool Body::takeDamage(const Attack& attack, WCreature creature, double damage) {
       creature->dieWithAttacker(attack.attacker);
       return true;
     }
+    creature->addEffect(LastingEffect::BLEEDING, 50);
     if (health <= 0)
       health = 0.1;
     return false;
@@ -555,10 +557,6 @@ bool Body::tick(WConstCreature c) {
     c->you(MsgType::FALL, "apart");
     return true;
   }
-  if (health <= 0) {
-    c->you(MsgType::DIE_OF, c->isAffected(LastingEffect::POISON) ? "poisoning" : "bleeding");
-    return true;
-  }
   if (c->getPosition().sunlightBurns() && isUndead()) {
     c->you(MsgType::ARE, "burnt by the sun");
     if (Random.roll(10)) {
@@ -581,16 +579,12 @@ void Body::updateViewObject(ViewObject& obj) const {
   }
 }
 
-bool Body::heal(WCreature c, double amount, bool replaceLimbs) {
+bool Body::heal(WCreature c, double amount) {
   INFO << c->getName().the() << " heal";
-  if (replaceLimbs)
-    healBodyParts(c, true);
   if (health < 1) {
     health = min(1., health + amount);
-    if (health >= 0.5)
-      healBodyParts(c, replaceLimbs);
-    if (health == 1) {
-      c->you(MsgType::BLEEDING_STOPS, "");
+    if (health >= 1) {
+      c->you(MsgType::ARE, "fully healed");
       health = 1;
       c->updateViewObject();
       return true;
@@ -618,21 +612,32 @@ bool Body::isIntrinsicallyAffected(LastingEffect effect) const {
   }
 }
 
+bool Body::isImmuneTo(LastingEffect effect) const {
+  switch (effect) {
+    case LastingEffect::BLEEDING:
+    case LastingEffect::POISON:
+    case LastingEffect::SLEEP:
+      return material != Material::FLESH;
+    case LastingEffect::TIED_UP:
+    case LastingEffect::ENTANGLED:
+      switch (material) {
+        case Material::WATER:
+        case Material::FIRE:
+        case Material::SPIRIT:
+          return true;
+        default:
+          break;
+      }
+      break;
+    default:
+      break;
+  }
+  return false;
+}
+
 void Body::fireDamage(WCreature c, double amount) {
   c->you(MsgType::ARE, "burnt by the fire");
   bleed(c, 6. * amount / double(1 + c->getAttr(AttrType::DEFENSE)));
-}
-
-bool Body::affectByPoison(WCreature c, double amount) {
-  if (material == Material::FLESH) {
-    bleed(c, amount);
-    c->playerMessage("You feel poison flowing in your veins.");
-    if (health <= 0) {
-      c->you(MsgType::DIE_OF, "poisoning");
-      return true;
-    }
-  }
-  return false;
 }
 
 bool Body::affectByPoisonGas(WCreature c, double amount) {
@@ -732,15 +737,6 @@ bool Body::isWounded() const {
 
 bool Body::isSeriouslyWounded() const {
   return health < 0.5;
-}
-
-bool Body::canEntangle() const {
-  switch (material) {
-    case Material::WATER:
-    case Material::FIRE:
-    case Material::SPIRIT: return false;
-    default: return true;
-  }
 }
 
 double Body::getHealth() const {

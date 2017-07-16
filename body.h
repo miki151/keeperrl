@@ -69,10 +69,9 @@ class Body {
   bool takeDamage(const Attack&, WCreature, double damage);
 
   bool tick(WConstCreature);
-  bool heal(WCreature, double amount, bool replaceLimbs);
+  bool heal(WCreature, double amount);
   void fireDamage(WCreature, double amount);
   bool isIntrinsicallyAffected(LastingEffect) const;
-  bool affectByPoison(WCreature, double amount);
   bool affectByPoisonGas(WCreature, double amount);
   void affectByTorture(WCreature);
   bool affectBySilver(WCreature);
@@ -85,7 +84,6 @@ class Body {
   bool isSunlightVulnerable() const;
   bool isWounded() const;
   bool isSeriouslyWounded() const;
-  bool canEntangle() const;
   double getHealth() const;
   bool hasBrain() const;
   bool needsToEat() const;
@@ -105,6 +103,7 @@ class Body {
   void healBodyParts(WCreature, bool regrow);
   int lostOrInjuredBodyParts() const;
   bool canHeal() const;
+  bool isImmuneTo(LastingEffect effect) const;
   bool hasHealth() const;
 
   void consumeBodyParts(WCreature, const Body& other, vector<string>& adjectives);
@@ -113,6 +112,7 @@ class Body {
   string getDescription() const;
   void updateViewObject(ViewObject&) const;
   const optional<double>& getCarryLimit() const;
+  void bleed(WCreature, double amount);
 
   bool isUndead() const;
   double getBoulderDamage() const;
@@ -132,7 +132,6 @@ class Body {
   double getMinDamage(BodyPart) const;
   bool isCritical(BodyPart) const;
   PItem getBodyPartItem(const string& creatureName, BodyPart);
-  void bleed(WCreature, double amount);
   string getMaterialAndSizeAdjectives() const;
   bool fallsApartFromDamage() const;
   bool SERIAL(xhumanoid);
