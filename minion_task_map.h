@@ -23,7 +23,7 @@ class MinionTaskMap {
   bool isLocked(MinionTask) const;
   
   bool isAvailable(WConstCollective, WConstCreature, MinionTask, bool ignoreTaskLock = false) const;
-  bool isPlayerOnly(MinionTask) const;
+  bool canChooseRandomly(WConstCreature c, MinionTask) const;
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);

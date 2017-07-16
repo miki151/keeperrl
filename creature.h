@@ -249,6 +249,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   void removePermanentEffect(LastingEffect, int count = 1);
   bool isAffected(LastingEffect) const;
   optional<double> getTimeRemaining(LastingEffect) const;
+  optional<double> getLastAffected(LastingEffect) const;
   bool hasCondition(CreatureCondition) const;
   bool isDarknessSource() const;
 

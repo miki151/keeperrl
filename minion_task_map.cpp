@@ -21,14 +21,21 @@
 #include "body.h"
 #include "collective.h"
 
-bool MinionTaskMap::isPlayerOnly(MinionTask t) const {
+bool MinionTaskMap::canChooseRandomly(WConstCreature c, MinionTask t) const {
   switch (t) {
     case MinionTask::BE_EXECUTED:
     case MinionTask::BE_WHIPPED:
     case MinionTask::BE_TORTURED:
-      return true;
-    default:
       return false;
+    case MinionTask::SLEEP: {
+      constexpr int sleepNeededAfterTurns = 1000;
+      if (auto lastTime = c->getLastAffected(LastingEffect::SLEEP))
+        return *lastTime < c->getGlobalTime() - sleepNeededAfterTurns;
+      else
+        return true;
+    }
+    default:
+      return true;
   }
 }
 

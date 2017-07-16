@@ -85,11 +85,12 @@ class CreatureAttributes {
   double getTimeOut(LastingEffect) const;
   string getRemainingString(LastingEffect, double time) const;
   void shortenEffect(LastingEffect, double time);
-  void clearLastingEffect(LastingEffect);
+  void clearLastingEffect(LastingEffect, double globalTime);
   void addPermanentEffect(LastingEffect, int count);
   void removePermanentEffect(LastingEffect, int count);
   bool considerTimeout(LastingEffect, double globalTime);
   void addLastingEffect(LastingEffect, double endtime);
+  optional<double> getLastAffected(LastingEffect, double currentGlobalTime) const;
   AttackType getAttackType(WConstItem weapon) const;
   optional<EffectType> getAttackEffect() const;
   bool canSleep() const;
@@ -131,6 +132,7 @@ class CreatureAttributes {
   HeapAllocated<SpellMap> SERIAL(spells);
   EnumMap<LastingEffect, int> SERIAL(permanentEffects);
   EnumMap<LastingEffect, double> SERIAL(lastingEffects);
+  EnumMap<LastingEffect, optional<double>> SERIAL(lastAffected);
   MinionTaskMap SERIAL(minionTasks);
   EnumMap<ExperienceType, double> SERIAL(expLevel);
   EnumMap<ExperienceType, int> SERIAL(maxLevelIncrease);

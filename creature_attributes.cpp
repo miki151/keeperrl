@@ -48,7 +48,7 @@ void CreatureAttributes::serialize(Archive& ar, const unsigned int version) {
   ar(body, innocent, moraleSpeedIncrease);
   ar(animal, cantEquip, courage);
   ar(boulder, noChase, isSpecial, skills, spells);
-  ar(permanentEffects, lastingEffects, minionTasks, expLevel);
+  ar(permanentEffects, lastingEffects, lastAffected, minionTasks, expLevel);
   ar(noAttackSound, maxLevelIncrease, creatureId);
 }
 
@@ -199,7 +199,7 @@ double CreatureAttributes::getTimeOut(LastingEffect effect) const {
 
 bool CreatureAttributes::considerTimeout(LastingEffect effect, double globalTime) {
   if (lastingEffects[effect] > 0 && lastingEffects[effect] < globalTime) {
-    clearLastingEffect(effect);
+    clearLastingEffect(effect, globalTime);
     if (!isAffected(effect, globalTime))
       return true;
   }
@@ -209,6 +209,13 @@ bool CreatureAttributes::considerTimeout(LastingEffect effect, double globalTime
 void CreatureAttributes::addLastingEffect(LastingEffect effect, double endTime) {
   if (lastingEffects[effect] < endTime)
     lastingEffects[effect] = endTime;
+}
+
+optional<double> CreatureAttributes::getLastAffected(LastingEffect effect, double currentGlobalTime) const {
+  if (isAffected(effect, currentGlobalTime))
+    return currentGlobalTime;
+  else
+    return lastAffected[effect];
 }
 
 static bool consumeProb() {
@@ -342,8 +349,9 @@ void CreatureAttributes::shortenEffect(LastingEffect effect, double time) {
   lastingEffects[effect] -= time;
 }
 
-void CreatureAttributes::clearLastingEffect(LastingEffect effect) {
+void CreatureAttributes::clearLastingEffect(LastingEffect effect, double globalTime) {
   lastingEffects[effect] = 0;
+  lastAffected[effect] = globalTime;
 }
 
 void CreatureAttributes::addPermanentEffect(LastingEffect effect, int count) {

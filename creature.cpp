@@ -659,7 +659,7 @@ void Creature::addEffect(LastingEffect effect, double time, bool msg) {
 
 void Creature::removeEffect(LastingEffect effect, bool msg) {
   bool was = isAffected(effect);
-  attributes->clearLastingEffect(effect);
+  attributes->clearLastingEffect(effect, getGlobalTime());
   if (was && !isAffected(effect))
     LastingEffects::onRemoved(this, effect, msg);
 }
@@ -680,6 +680,10 @@ void Creature::removePermanentEffect(LastingEffect effect, int count) {
 
 bool Creature::isAffected(LastingEffect effect) const {
   return attributes->isAffected(effect, getGlobalTime());
+}
+
+optional<double> Creature::getLastAffected(LastingEffect effect) const {
+  return attributes->getLastAffected(effect, getGlobalTime());
 }
 
 optional<double> Creature::getTimeRemaining(LastingEffect effect) const {

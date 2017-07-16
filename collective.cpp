@@ -320,7 +320,7 @@ bool Collective::isTaskGood(WConstCreature c, MinionTask task, bool ignoreTaskLo
 void Collective::setRandomTask(WConstCreature c) {
   vector<MinionTask> goodTasks;
   for (MinionTask t : ENUM_ALL(MinionTask))
-    if (isTaskGood(c, t) && !c->getAttributes().getMinionTasks().isPlayerOnly(t))
+    if (isTaskGood(c, t) && c->getAttributes().getMinionTasks().canChooseRandomly(c, t))
       goodTasks.push_back(t);
   if (!goodTasks.empty())
     setMinionTask(c, Random.choose(goodTasks));
