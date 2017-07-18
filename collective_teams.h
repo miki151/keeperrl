@@ -33,7 +33,6 @@ class CollectiveTeams {
   TeamId createPersistent(vector<WCreature>);
   WCreature getLeader(TeamId) const;
   const vector<WCreature>& getMembers(TeamId) const;
-  vector<WCreature> getMembers(TeamId);
   vector<TeamId> getContaining(WConstCreature) const;
   vector<TeamId> getAll() const;
   vector<TeamId> getActive(WConstCreature) const;

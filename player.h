@@ -54,11 +54,10 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   virtual const MapMemory& getMemory() const override;
   virtual void refreshGameInfo(GameInfo&) const override;
   virtual Vec2 getPosition() const override;
-  virtual optional<MovementInfo> getMovementInfo() const override;
   virtual WLevel getLevel() const override;
   virtual vector<Vec2> getVisibleEnemies() const override;
   virtual double getLocalTime() const override;
-  virtual bool isPlayerView() const override;
+  virtual CenterType getCenterType() const override;
   virtual vector<Vec2> getUnknownLocations(WConstLevel) const override;
 
   // from Controller
@@ -82,6 +81,9 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   virtual vector<CommandInfo> getCommands() const;
   virtual void onFellAsleep();
   virtual vector<WCreature> getTeam() const;
+  virtual bool isTravelEnabled() const;
+
+  optional<Vec2> chooseDirection(const string& question);
 
   SMapMemory SERIAL(levelMemory);
   void showHistory();
@@ -134,12 +136,6 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   ItemInfo getItemInfo(const vector<WItem>&) const;
   ItemInfo getFurnitureUsageInfo(const string& question, ViewId viewId) const;
   optional<FurnitureUsageType> getUsableUsageType() const;
-  struct TimePosInfo {
-    Position pos;
-    double time;
-  };
-  optional<TimePosInfo> currentTimePos;
-  optional<TimePosInfo> previousTimePos;
   HeapAllocated<VisibilityMap> SERIAL(visibilityMap);
   STutorial SERIAL(tutorial);
 };

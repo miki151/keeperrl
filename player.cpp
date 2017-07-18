@@ -64,9 +64,12 @@ SERIALIZATION_CONSTRUCTOR_IMPL(Player);
 Player::Player(WCreature c, bool adv, SMapMemory memory, STutorial t) :
     Controller(c), levelMemory(memory), adventurer(adv), displayGreeting(adventurer), tutorial(t) {
   visibilityMap->update(c, c->getVisibleTiles());
+  getGame()->addPlayer(c);
 }
 
 Player::~Player() {
+  if (auto game = getGame()) // if the whole Game is being destructed then we get null here
+    game->removePlayer(getCreature());
 }
 
 void Player::onEvent(const GameEvent& event) {
@@ -257,9 +260,13 @@ void Player::applyItem(vector<WItem> items) {
   tryToPerform(getCreature()->applyItem(items[0]));
 }
 
+optional<Vec2> Player::chooseDirection(const string& s) {
+  return getView()->chooseDirection(getCreature()->getPosition().getCoord(), s);
+}
+
 void Player::throwItem(vector<WItem> items, optional<Vec2> dir) {
   if (!dir) {
-    auto cDir = getView()->chooseDirection("Which direction do you want to throw?");
+    auto cDir = chooseDirection("Which direction do you want to throw?");
     if (!cDir)
       return;
     dir = *cDir;
@@ -370,7 +377,7 @@ void Player::targetAction() {
     action.perform(getCreature());
   else
     target = none;
-  if (interruptedByEnemy())
+  if (interruptedByEnemy() || !isTravelEnabled())
     target = none;
 }
 
@@ -421,7 +428,7 @@ void Player::giveAction(vector<WItem> items) {
   if (creatures.size() == 1 && getView()->yesOrNoPrompt("Give " + items[0]->getTheName(items.size() > 1) +
         " to " + creatures[0]->getName().the() + "?"))
     tryToPerform(getCreature()->give(creatures[0], items));
-  else if (auto dir = getView()->chooseDirection("Give whom?"))
+  else if (auto dir = chooseDirection("Give whom?"))
     if (WCreature whom = getCreature()->getPosition().plus(*dir).getCreature())
       tryToPerform(getCreature()->give(whom, items));
 }
@@ -436,7 +443,7 @@ void Player::chatAction(optional<Vec2> dir) {
   } else
   if (creatures.size() > 1 || dir) {
     if (!dir)
-      dir = getView()->chooseDirection("Which direction?");
+      dir = chooseDirection("Which direction?");
     if (!dir)
       return;
     if (WCreature c = getCreature()->getPosition().plus(*dir).getCreature())
@@ -446,7 +453,7 @@ void Player::chatAction(optional<Vec2> dir) {
 
 void Player::fireAction() {
   if (auto testAction = getCreature()->fire(Vec2(1, 0))) {
-    if (auto dir = getView()->chooseDirection("Fire which direction?"))
+    if (auto dir = chooseDirection("Fire which direction?"))
       fireAction(*dir);
   } else
     privateMessage(testAction.getFailedReason());
@@ -460,7 +467,7 @@ void Player::spellAction(SpellId id) {
   Spell* spell = Spell::get(id);
   if (!spell->isDirected())
     tryToPerform(getCreature()->castSpell(spell));
-  else if (auto dir = getView()->chooseDirection("Which direction?"))
+  else if (auto dir = chooseDirection("Which direction?"))
     tryToPerform(getCreature()->castSpell(spell, *dir));
 }
 
@@ -557,9 +564,6 @@ void Player::makeMove() {
     subscribeTo(getCreature()->getPosition().getModel());
   if (adventurer)
     considerAdventurerMusic();
-  if (currentTimePos && currentTimePos->pos.getLevel() != getCreature()->getLevel()) {
-    previousTimePos = currentTimePos = none;
-  }
   if (getCreature()->isAffected(LastingEffect::HALLU))
     ViewObject::setHallu(true);
   else
@@ -629,16 +633,10 @@ void Player::makeMove() {
         }
         direction.push_back(dir);
       } else
-      if (newPos != getCreature()->getPosition()) {
-        if (!wasJustTravelling) {
-          target = newPos;
-/*          Vec2 t = action.get<Vec2>();
-          t = Vec2(min(getCreature()->getLevel()->getBounds().right() - 1, max(0, t.x)),
-              min(getCreature()->getLevel()->getBounds().bottom() - 1, max(0, t.y)));*/
-        }
-      }
+      if (newPos != getCreature()->getPosition() && !wasJustTravelling)
+        target = newPos;
       break;
-      }
+    }
     case UserInputId::INVENTORY_ITEM:
       handleItems(action.get<InventoryItemInfo>().items, action.get<InventoryItemInfo>().action); break;
     case UserInputId::PICK_UP_ITEM: pickUpItemAction(action.get<int>()); break;
@@ -702,13 +700,6 @@ void Player::makeMove() {
       moveAction(dir);
       break;
     }
-  }
-  if (!getCreature()->isDead() && (!currentTimePos || getCreature()->getLocalTime() > currentTimePos->time)) {
-    if (currentTimePos /*&& (!previousTimePos || currentTimePos->pos.isSameLevel(previousTimePos->pos))*/)
-      previousTimePos = currentTimePos;
-    else
-      previousTimePos = none;
-    currentTimePos = TimePosInfo { getCreature()->getPosition(), getCreature()->getLocalTime()};
   }
 }
 
@@ -850,7 +841,10 @@ WLevel Player::getLevel() const {
 }
 
 WGame Player::getGame() const {
-  return getCreature()->getGame();
+  if (auto creature = getCreature())
+    return creature->getGame();
+  else
+    return nullptr;
 }
 
 View* Player::getView() const {
@@ -864,18 +858,7 @@ Vec2 Player::getPosition() const {
   return getCreature()->getPosition().getCoord();
 }
 
-optional<CreatureView::MovementInfo> Player::getMovementInfo() const {
-  if (previousTimePos && currentTimePos)
-    return MovementInfo({previousTimePos->pos.getCoord(), currentTimePos->pos.getCoord(), previousTimePos->time,
-        getCreature()->getUniqueId()});
-  else
-    return none;
-}
-
 void Player::onDisplaced() {
-  if (!currentTimePos)
-    currentTimePos = TimePosInfo { getCreature()->getPosition(), getCreature()->getLocalTime()};
-  currentTimePos->pos = getCreature()->getPosition();
 }
 
 void Player::getViewIndex(Vec2 pos, ViewIndex& index) const {
@@ -895,7 +878,7 @@ void Player::getViewIndex(Vec2 pos, ViewIndex& index) const {
       index.insert(c->getViewObjectFor(getCreature()->getTribe()));
       if (c == getCreature())
         index.getObject(ViewLayer::CREATURE).setModifier(ViewObject::Modifier::PLAYER);
-      else if (getTeam().contains(c))
+      if (getTeam().contains(c))
         index.getObject(ViewLayer::CREATURE).setModifier(ViewObject::Modifier::TEAM_HIGHLIGHT);
       if (getCreature()->isEnemy(c))
         index.getObject(ViewLayer::CREATURE).setModifier(ViewObject::Modifier::HOSTILE);
@@ -921,6 +904,10 @@ void Player::onFellAsleep() {
 
 vector<WCreature> Player::getTeam() const {
   return {getCreature()};
+}
+
+bool Player::isTravelEnabled() const {
+  return true;
 }
 
 optional<FurnitureUsageType> Player::getUsableUsageType() const {
@@ -1009,8 +996,8 @@ double Player::getLocalTime() const {
   return getCreature()->getLocalTime();
 }
 
-bool Player::isPlayerView() const {
-  return true;
+Player::CenterType Player::getCenterType() const {
+  return CenterType::FOLLOW;
 }
 
 vector<Vec2> Player::getUnknownLocations(WConstLevel level) const {

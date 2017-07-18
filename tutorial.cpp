@@ -141,7 +141,7 @@ bool Tutorial::canContinue(WConstGame game) const {
     case State::CREATE_TEAM:
       return isTeam(collective);
     case State::CONTROL_TEAM:
-      return isTeam(collective) && !!game->getPlayerControl()->getControlled();
+      return isTeam(collective) && !game->getPlayerControl()->getControlled().empty();
     case State::CONTROL_MODE_MOVEMENT:
       return true;
     case State::DISCOVER_VILLAGE:
@@ -157,7 +157,7 @@ bool Tutorial::canContinue(WConstGame game) const {
           return false;
       return true;
     case State::LEAVE_CONTROL:
-      return !game->getPlayerControl()->getControlled();
+      return game->getPlayerControl()->getControlled().empty();
     case State::SUMMARY1:
     case State::SUMMARY2:
       return true;
@@ -420,7 +420,7 @@ optional<string> Tutorial::getWarning(WConstGame game) const {
     case State::LEAVE_CONTROL:
       return none;
     default:
-      if (game->getPlayer())
+      if (!game->getPlayer().empty())
         return "Press [U] to leave control mode."_s;
       else
         return none;

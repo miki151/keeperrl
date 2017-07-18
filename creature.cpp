@@ -170,9 +170,6 @@ void Creature::removeCreatureVision(WCreatureVision vision) {
 }
 
 void Creature::pushController(PController ctrl) {
-  if (ctrl->isPlayer())
-    if (WGame g = getGame())
-      g->setPlayer(this);
   controllerStack.push_back(std::move(ctrl));
 }
 
@@ -182,9 +179,6 @@ void Creature::setController(PController ctrl) {
 }
 
 void Creature::popController() {
-  if (auto controller = getController())
-    if (controller->isPlayer())
-      getGame()->clearPlayer();
   if (!controllerStack.empty()) {
     controllerStack.pop_back();
   }
@@ -324,7 +318,7 @@ bool Creature::canSwapPositionInMovement(WCreature other) const {
   return !other->hasCondition(CreatureCondition::RESTRICTED_MOVEMENT)
       && (swapPositionCooldown == 0 || isPlayer())
       && !other->getAttributes().isBoulder()
-      && !other->isPlayer()
+      && (!other->isPlayer() || isPlayer())
       && !other->isEnemy(this)
       && other->getPosition().canEnterEmpty(this)
       && getPosition().canEnterEmpty(other);
@@ -890,7 +884,7 @@ CreatureAction Creature::attack(WCreature other, optional<AttackParams> attackPa
         attackAdjective.push_back("swiftly");
         break;
     }
-  string enemyName = getLevel()->playerCanSee(other) ? other->getName().the() : "something";
+  string enemyName = other->getName().the();
   if (other->isPlayer())
     enemyName = "";
   if (!other->canSee(this) && canSee(other))

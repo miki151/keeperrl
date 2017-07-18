@@ -39,7 +39,7 @@ template <class Archive>
 void Game::serialize(Archive& ar, const unsigned int version) {
   ar & SUBCLASS(OwnedObject<Game>);
   ar(villainsByType, collectives, lastTick, playerControl, playerCollective, currentTime);
-  ar(musicType, statistics, spectator, tribes, gameIdentifier, player);
+  ar(musicType, statistics, spectator, tribes, gameIdentifier, players);
   ar(gameDisplayName, finishCurrentMusic, models, visited, baseModel, campaign, localTime, turnEvents);
   if (Archive::is_loading::value)
     sunlightInfo.update(currentTime);
@@ -116,8 +116,8 @@ const vector<WCollective>& Game::getVillains(VillainType type) const {
 }
 
 WModel Game::getCurrentModel() const {
-  if (WCreature c = getPlayer())
-    return c->getPosition().getModel();
+  if (!players.empty())
+    return players[0]->getPosition().getModel();
   else
     return models[baseModel].get();
 }
@@ -311,7 +311,7 @@ void Game::exitAction() {
 #ifdef RELEASE
   bool canRetire = playerControl && gameWon() && !getPlayer() && campaign->getType() != CampaignType::SINGLE_KEEPER;
 #else
-  bool canRetire = playerControl && !getPlayer();
+  bool canRetire = playerControl && players.empty();
 #endif
   vector<ListElem> elems { "Save the game",
     {"Retire", canRetire ? ListElem::NORMAL : ListElem::INACTIVE} , "Change options", "Abandon the game" };
@@ -384,8 +384,10 @@ void Game::transferAction(vector<WCreature> creatures) {
         cant.push_back(CreatureInfo(c));
         creatures.removeElement(c);
       }
-    if (!cant.empty() && !view->creaturePrompt("These minions will be left behind due to sunlight.", cant))
+    if (!cant.empty()) {
+      view->creatureInfo("These minions will be left behind due to sunlight.", false, cant);
       return;
+    }
     if (!creatures.empty()) {
       for (WCreature c : creatures)
         transferCreature(c, models[*dest].get());
@@ -527,19 +529,17 @@ const vector<WCollective>& Game::getCollectives() const {
   return collectives;
 }
 
-void Game::setPlayer(WCreature c) {
-  player = c;
+void Game::addPlayer(WCreature c) {
+  if (!players.contains(c))
+    players.push_back(c);
 }
 
-WCreature Game::getPlayer() const {
-  if (player && !player->isDead())
-    return player;
-  else
-    return nullptr;
+void Game::removePlayer(WCreature c) {
+  players.removeElement(c);
 }
 
-void Game::clearPlayer() {
-  player = nullptr;
+const vector<WCreature>& Game::getPlayer() const {
+  return players;
 }
 
 static SavedGameInfo::MinionInfo getMinionInfo(WConstCreature c) {
@@ -552,8 +552,8 @@ static SavedGameInfo::MinionInfo getMinionInfo(WConstCreature c) {
 string Game::getPlayerName() const {
   if (playerCollective)
     return *playerCollective->getLeader()->getName().first();
-  else
-    return *getPlayer()->getName().first();
+  else // adventurer mode
+    return *players.getOnlyElement()->getName().first();
 }
 
 SavedGameInfo Game::getSavedGameInfo() const {
@@ -570,8 +570,10 @@ SavedGameInfo Game::getSavedGameInfo() const {
     for (WCreature c : creatures)
       minions.push_back(getMinionInfo(c));
     return SavedGameInfo(minions, col->getDangerLevel(), getPlayerName(), getSaveProgressCount());
-  } else
-    return SavedGameInfo({getMinionInfo(getPlayer())}, 0, getPlayer()->getName().bare(), getSaveProgressCount());
+  } else {
+    auto player = players.getOnlyElement(); // adventurer mode
+    return SavedGameInfo({getMinionInfo(player)}, 0, player->getName().bare(), getSaveProgressCount());
+  }
 }
 
 void Game::uploadEvent(const string& name, const map<string, string>& m) {

@@ -148,8 +148,6 @@ void Model::addCreature(PCreature c) {
 }
 
 void Model::addCreature(PCreature c, double delay) {
-  if (c->isPlayer())
-    game->setPlayer(c.get());
   timeQueue->addCreature(std::move(c), getLocalTime() + delay);
 }
 
@@ -283,15 +281,13 @@ vector<WCreature> Model::getAllCreatures() const {
 }
 
 void Model::landHeroPlayer(PCreature player) {
-  player->setController(makeOwner<Player>(player.get(), true, make_shared<MapMemory>()));
+  WCreature ref = player.get();
   WLevel target = getTopLevel();
   vector<Position> landing = target->getLandingSquares(StairKey::heroSpawn());
-  for (Position pos : landing)
-    if (pos.canEnter(player.get())) {
-      CHECK(target->landCreature(landing, std::move(player))) << "No place to spawn player";
-      return;
-    }
-  CHECK(target->landCreature(target->getAllPositions(), std::move(player))) << "No place to spawn player";
+  if (!target->landCreature(landing, std::move(player))) {
+    CHECK(target->landCreature(target->getAllPositions(), std::move(player))) << "No place to spawn player";
+  }
+  ref->setController(makeOwner<Player>(ref, true, make_shared<MapMemory>()));
 }
 
 void Model::addExternalEnemies(ExternalEnemies&& e) {

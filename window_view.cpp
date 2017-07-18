@@ -677,7 +677,7 @@ optional<int> reverseIndexHeight(const vector<ListElem>& options, int height) {
   return height - sub;
 }
 
-optional<Vec2> WindowView::chooseDirection(const string& message) {
+optional<Vec2> WindowView::chooseDirection(Vec2 playerPos, const string& message) {
   RecursiveLock lock(renderMutex);
   TempClockPause pause(clock);
   gameInfo.messageBuffer = { PlayerMessage(message) };
@@ -692,12 +692,11 @@ optional<Vec2> WindowView::chooseDirection(const string& message) {
     if (event.type == SDL::SDL_MOUSEMOTION || event.type == SDL::SDL_MOUSEBUTTONDOWN) {
       if (auto pos = mapGui->projectOnMap(renderer.getMousePos())) {
         refreshScreen(false);
-        Vec2 middle = mapGui->getScreenPos().div(mapLayout->getSquareSize());
-        if (pos == middle)
+        if (pos == playerPos)
           continue;
-        Vec2 dir = (*pos - middle).getBearing();
+        Vec2 dir = (*pos - playerPos).getBearing();
         Vec2 wpos = mapLayout->projectOnScreen(getMapGuiBounds(), mapGui->getScreenPos(),
-            middle.x + dir.x, middle.y + dir.y);
+            playerPos.x + dir.x, playerPos.y + dir.y);
         if (currentTileLayout.sprites) {
           static vector<Renderer::TileCoord> coords;
           if (coords.empty())
@@ -860,15 +859,21 @@ CampaignAction WindowView::prepareCampaign(CampaignOptions campaign, Options* op
   return getBlockingGui(returnQueue, guiBuilder.drawCampaignMenu(returnQueue, campaign, options, state));
 }
 
-optional<UniqueEntity<Creature>::Id> WindowView::chooseTeamLeader(const string& title,
+optional<UniqueEntity<Creature>::Id> WindowView::chooseCreature(const string& title,
     const vector<CreatureInfo>& creatures, const string& cancelText) {
   SyncQueue<optional<UniqueEntity<Creature>::Id>> returnQueue;
-  return getBlockingGui(returnQueue, guiBuilder.drawTeamLeaderMenu(returnQueue, title, creatures, cancelText));
+  return getBlockingGui(returnQueue, guiBuilder.drawChooseCreatureMenu(returnQueue, title, creatures, cancelText));
 }
 
-bool WindowView::creaturePrompt(const string& title, const vector<CreatureInfo>& creatures) {
+/*vector<UniqueEntity<Creature>::Id> WindowView::chooseTeamLeader(const string& title,
+    const vector<CreatureInfo>& creatures) {
+  SyncQueue<vector<UniqueEntity<Creature>::Id>> returnQueue;
+  return getBlockingGui(returnQueue, guiBuilder.drawTeamLeaderMenu(returnQueue, title, creatures));
+}*/
+
+bool WindowView::creatureInfo(const string& title, bool prompt, const vector<CreatureInfo>& creatures) {
   SyncQueue<bool> returnQueue;
-  return getBlockingGui(returnQueue, guiBuilder.drawCreaturePrompt(returnQueue, title, creatures));
+  return getBlockingGui(returnQueue, guiBuilder.drawCreatureInfo(returnQueue, title, prompt, creatures));
 }
 
 void WindowView::logMessage(const std::string& message) {

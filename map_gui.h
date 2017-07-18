@@ -95,13 +95,15 @@ class MapGui : public GuiElem {
   void renderHighlights(Renderer&, Vec2 size, milliseconds currentTimeReal, bool lowHighlights);
   optional<Vec2> getMousePos();
   void softScroll(double x, double y);
+  void setSoftCenter(Vec2);
+  void setSoftCenter(double x, double y);
   HighlightedInfo lastHighlighted;
   void renderMapObjects(Renderer&, Vec2 size, milliseconds currentTimeReal);
   HighlightedInfo getHighlightedInfo(Vec2 size, milliseconds currentTimeReal);
   void renderAnimations(Renderer&, milliseconds currentTimeReal);
 
-  Vec2 getMovementOffset(const ViewObject&, Vec2 size, double time, milliseconds curTimeReal);
-  Vec2 projectOnScreen(Vec2 wpos, milliseconds currentTimeReal);
+  Vec2 getMovementOffset(const ViewObject&, Vec2 size, double time, milliseconds curTimeReal, bool verticalMovement);
+  Vec2 projectOnScreen(Vec2 wpos);
   bool considerCreatureClick(Vec2 mousePos);
   struct CreatureInfo {
     UniqueEntity<Creature>::Id id;
@@ -114,7 +116,7 @@ class MapGui : public GuiElem {
   bool spriteMode;
   Rectangle levelBounds = Rectangle(1, 1);
   Callbacks callbacks;
-  optional<milliseconds> lastRenderTime;
+  optional<milliseconds> lastScrollUpdate;
   Clock* clock;
   optional<Vec2> mouseHeldPos;
   optional<CreatureInfo> draggedCandidate;
@@ -131,6 +133,7 @@ class MapGui : public GuiElem {
   struct Coords {
     double x;
     double y;
+    COMPARE_ALL(x, y)
   } mouseOffset, center;
   WConstLevel previousLevel = nullptr;
   const CreatureView* previousView = nullptr;
@@ -141,13 +144,9 @@ class MapGui : public GuiElem {
   bool isScrollingNow = false;
   double currentTimeGame = 0;
   struct ScreenMovement {
-    Vec2 from;
-    Vec2 to;
     milliseconds startTimeReal;
     milliseconds endTimeReal;
     double startTimeGame;
-    double endTimeGame;
-    UniqueEntity<Creature>::Id creatureId;
   };
   optional<ScreenMovement> screenMovement;
   class ViewIdMap {
@@ -176,10 +175,18 @@ class MapGui : public GuiElem {
   void renderHighlight(Renderer& renderer, Vec2 pos, Vec2 size, const ViewIndex& index, HighlightType highlight);
   void renderTexturedHighlight(Renderer&, Vec2 pos, Vec2 size, Color);
   void processScrolling(milliseconds);
+  void considerScrollingToCreature();
   GuiFactory* guiFactory;
   optional<UniqueEntity<Creature>::Id> getDraggedCreature() const;
   void setDraggedCreature(UniqueEntity<Creature>::Id, ViewId, Vec2 origin);
   vector<Vec2> tutorialHighlightLow;
   vector<Vec2> tutorialHighlightHigh;
   void drawHealthBar(Renderer&, Vec2 pos, Vec2 size, double health);
+  double lastEndTimeGame = -1000;
+  double getDistanceToEdgeRatio(Vec2);
+  struct CenteredCreatureInfo {
+    Vec2 pos;
+    bool softScroll;
+  };
+  optional<CenteredCreatureInfo> centeredCreaturePosition;
 };

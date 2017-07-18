@@ -63,7 +63,7 @@ class WindowView: public View {
       MenuType = MenuType::NORMAL, ScrollPosition* scrollPos = nullptr,
       optional<UserInputId> exitAction = none) override;
   virtual PlayerRoleChoice getPlayerRoleChoice(optional<PlayerRoleChoice> initial) override;
-  virtual optional<Vec2> chooseDirection(const string& message) override;
+  virtual optional<Vec2> chooseDirection(Vec2 playerPos, const string& message) override;
   virtual bool yesOrNoPrompt(const string& message, bool defaultNo) override;
   virtual void animateObject(Vec2 begin, Vec2 end, ViewId object) override;
   virtual void animation(Vec2 pos, AnimationId) override;
@@ -91,9 +91,10 @@ class WindowView: public View {
   virtual optional<Vec2> chooseSite(const string& message, const Campaign&, optional<Vec2> current) override;
   virtual void presentWorldmap(const Campaign&) override;
   virtual CampaignAction prepareCampaign(CampaignOptions, Options*, CampaignMenuState&) override;
-  virtual optional<UniqueEntity<Creature>::Id> chooseTeamLeader(const string& title, const vector<CreatureInfo>&,
+  virtual optional<UniqueEntity<Creature>::Id> chooseCreature(const string& title, const vector<CreatureInfo>&,
       const string& cancelText) override;
-  virtual bool creaturePrompt(const string& title, const vector<CreatureInfo>&) override;
+  //virtual vector<UniqueEntity<Creature>::Id> chooseTeamLeader(const string& title, const vector<CreatureInfo>&) override;
+  virtual bool creatureInfo(const string& title, bool prompt, const vector<CreatureInfo>&) override;
   virtual void logMessage(const string&) override;
 
   private:

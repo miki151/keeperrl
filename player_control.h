@@ -58,7 +58,8 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   bool isTurnBased();
   void leaveControl();
   bool swapTeam();
-  void onControlledKilled();
+  void toggleControlAllTeamMembers();
+  void onControlledKilled(WConstCreature victim);
   void setTutorial(STutorial);
   STutorial getTutorial() const;
 
@@ -84,7 +85,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   optional<FurnitureType> getMissingTrainingDummy(WConstCreature);
 
   void onEvent(const GameEvent&);
-  WCreature getControlled() const;
+  vector<WCreature> getControlled() const;
 
   private:
   struct Private {};
@@ -99,10 +100,9 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   virtual void getViewIndex(Vec2 pos, ViewIndex&) const override;
   virtual void refreshGameInfo(GameInfo&) const override;
   virtual Vec2 getPosition() const override;
-  virtual optional<MovementInfo> getMovementInfo() const override;
   virtual vector<Vec2> getVisibleEnemies() const override;
   virtual double getLocalTime() const override;
-  virtual bool isPlayerView() const override;
+  virtual CenterType getCenterType() const override;
   virtual vector<Vec2> getUnknownLocations(WConstLevel) const override;
 
   // from CollectiveControl

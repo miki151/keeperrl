@@ -46,9 +46,9 @@ class Game : public OwnedObject<Game> {
   double getGlobalTime() const;
   WCollective getPlayerCollective() const;
   WPlayerControl getPlayerControl() const;
-  void setPlayer(WCreature);
-  WCreature getPlayer() const;
-  void clearPlayer();
+  void addPlayer(WCreature);
+  void removePlayer(WCreature);
+  const vector<WCreature>& getPlayer() const;
 
   int getModelDistance(WConstCollective c1, WConstCollective c2) const;
 
@@ -120,10 +120,10 @@ class Game : public OwnedObject<Game> {
   Highscores* highscores;
   optional<milliseconds> lastUpdate;
   WeakPointer<PlayerControl> SERIAL(playerControl);
-  WCollective SERIAL(playerCollective) = nullptr;
+  WCollective SERIAL(playerCollective);
   HeapAllocated<Campaign> SERIAL(campaign);
   bool wasTransfered = false;
-  WCreature SERIAL(player) = nullptr;
+  vector<WCreature> SERIAL(players);
   FileSharing* fileSharing;
   set<int> SERIAL(turnEvents);
   friend class GameListener;

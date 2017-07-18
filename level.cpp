@@ -160,12 +160,10 @@ void Level::updateVisibility(Vec2 changedSquare) {
   }
 }
 
-WCreature Level::getPlayer() const {
+vector<WCreature> Level::getPlayers() const {
   if (auto game = model->getGame())
-    if (auto player = game->getPlayer())
-      if (player->getLevel() == this)
-        return player;
-  return nullptr;
+    return game->getPlayer().filter([this](const WCreature& c) { return c->getLevel() == this; });
+  return {};
 }
 
 const WModel Level::getModel() const {
@@ -330,8 +328,8 @@ void Level::removeCreature(WCreature creature) {
 const static int hearingRange = 30;
 
 void Level::globalMessage(Vec2 position, const PlayerMessage& ifPlayerCanSee, const PlayerMessage& cannot) const {
-  if (WCreature player = getPlayer()) {
-    if (playerCanSee(position))
+  for (auto player : getPlayers()) {
+    if (player->canSee(position))
       player->playerMessage(ifPlayerCanSee);
     else if (player->getPosition().getCoord().dist8(position) < hearingRange)
       player->playerMessage(cannot);
@@ -343,7 +341,7 @@ void Level::globalMessage(Vec2 position, const PlayerMessage& playerCanSee) cons
 }
 
 void Level::globalMessage(WConstCreature c, const PlayerMessage& ifPlayerCanSee, const PlayerMessage& cant) const {
-  if (WCreature player = getPlayer()) {
+  for (auto player : getPlayers()) {
     if (player->canSee(c))
       player->playerMessage(ifPlayerCanSee);
     else if (player->getPosition().dist8(c->getPosition()) < hearingRange)
@@ -414,20 +412,6 @@ bool Level::canSee(Vec2 from, Vec2 to, VisionId vision) const {
 
 bool Level::canSee(WConstCreature c, Vec2 pos) const {
   return canSee(c->getPosition().getCoord(), pos, c->getVision());
-}
-
-bool Level::playerCanSee(Vec2 pos) const {
-  if (WCreature player = getPlayer())
-    return player->canSee(pos);
-  else
-    return false;
-}
-
-bool Level::playerCanSee(WConstCreature c) const {
-  if (WCreature player = getPlayer())
-    return player->canSee(c);
-  else
-    return false;
 }
 
 void Level::moveCreature(WCreature creature, Vec2 direction) {

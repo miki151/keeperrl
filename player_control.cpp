@@ -351,11 +351,13 @@ PPlayerControl PlayerControl::create(WCollective col) {
 PlayerControl::~PlayerControl() {
 }
 
-WCreature PlayerControl::getControlled() const {
+vector<WCreature> PlayerControl::getControlled() const {
+  vector<WCreature> ret;
   if (auto team = getCurrentTeam())
-    return getTeams().getLeader(*team);
-  else
-    return nullptr;
+    for (auto c : getTeams().getMembers(*team))
+      if (c->isPlayer())
+        ret.push_back(c);
+  return ret;
 }
 
 optional<TeamId> PlayerControl::getCurrentTeam() const {
@@ -365,13 +367,11 @@ optional<TeamId> PlayerControl::getCurrentTeam() const {
   return none;
 }
 
-void PlayerControl::onControlledKilled() {
-  if (getKeeper()->isPlayer())
-    return;
+void PlayerControl::onControlledKilled(WConstCreature victim) {
   vector<CreatureInfo> team;
   TeamId currentTeam = *getCurrentTeam();
   for (auto c : getTeams().getMembers(currentTeam))
-    if (!c->isPlayer())
+    if (c != victim)
       team.push_back(CreatureInfo(c));
   if (team.empty())
     return;
@@ -379,11 +379,12 @@ void PlayerControl::onControlledKilled() {
   if (team.size() == 1)
     newLeader = team[0].uniqueId;
   else
-    newLeader = getView()->chooseTeamLeader("Choose new team leader:", team, "Order team back to base");
+    newLeader = getView()->chooseCreature("Choose new team leader:", team, "Order team back to base");
   if (newLeader) {
     if (WCreature c = getCreature(*newLeader)) {
       getTeams().setLeader(currentTeam, c);
-      commandTeam(currentTeam);
+      if (!c->isPlayer())
+        commandTeam(currentTeam);
       return;
     }
   }
@@ -401,34 +402,39 @@ STutorial PlayerControl::getTutorial() const {
 bool PlayerControl::swapTeam() {
   if (auto teamId = getCurrentTeam())
     if (getTeams().getMembers(*teamId).size() > 1) {
-      vector<CreatureInfo> team;
-      TeamId currentTeam = *getCurrentTeam();
-      for (auto c : getTeams().getMembers(currentTeam))
-        if (!c->isPlayer())
-          team.push_back(CreatureInfo(c));
-      if (team.empty())
-        return false;
-      if (auto newLeader = getView()->chooseTeamLeader("Choose new team leader:", team, "Cancel"))
-        if (WCreature c = getCreature(*newLeader)) {
-          getControlled()->popController();
-          getTeams().setLeader(*teamId, c);
-          commandTeam(*teamId);
-        }
-      return true;
+      auto controlled = getControlled();
+      if (controlled.size() == 1) {
+        vector<CreatureInfo> team;
+        TeamId currentTeam = *getCurrentTeam();
+        for (auto c : getTeams().getMembers(currentTeam))
+          if (!c->isPlayer())
+            team.push_back(CreatureInfo(c));
+        if (team.empty())
+          return false;
+        if (auto newLeader = getView()->chooseCreature("Choose new team leader:", team, "Cancel"))
+          if (WCreature c = getCreature(*newLeader)) {
+            controlled[0]->popController();
+            getTeams().setLeader(*teamId, c);
+            commandTeam(*teamId);
+          }
+        return true;
+      }
     }
   return false;
 }
 
 void PlayerControl::leaveControl() {
-  WCreature controlled = getControlled();
-  if (controlled == getKeeper())
-    lastControlKeeperQuestion = getCollective()->getGlobalTime();
-  CHECK(controlled);
-  if (!controlled->getPosition().isSameLevel(getLevel()))
-    getView()->setScrollPos(getPosition());
-  if (controlled->isPlayer())
+  set<TeamId> allTeams;
+  for (auto controlled : getControlled()) {
+    if (controlled == getKeeper())
+      lastControlKeeperQuestion = getCollective()->getGlobalTime();
+    if (!controlled->getPosition().isSameLevel(getLevel()))
+      getView()->setScrollPos(getPosition());
     controlled->popController();
-  for (TeamId team : getTeams().getActive(controlled)) {
+    for (TeamId team : getTeams().getActive(controlled))
+      allTeams.insert(team);
+  }
+  for (auto team : allTeams) {
     for (WCreature c : getTeams().getMembers(team))
 //      if (getGame()->canTransferCreature(c, getCollective()->getLevel()->getModel()))
         getGame()->transferCreature(c, getModel());
@@ -448,7 +454,7 @@ void PlayerControl::render(View* view) {
     firstRender = false;
     initialize();
   }
-  if (!getControlled()) {
+  if (getControlled().empty()) {
     ViewObject::setHallu(false);
     view->updateView(this, false);
   }
@@ -464,7 +470,7 @@ void PlayerControl::render(View* view) {
 }
 
 bool PlayerControl::isTurnBased() {
-  return !!getControlled();
+  return !getControlled().empty();
 }
 
 static vector<ItemType> marketItems {
@@ -1401,7 +1407,7 @@ void PlayerControl::addMessage(const PlayerMessage& msg) {
   messageHistory.push_back(msg);
   if (msg.getPriority() == MessagePriority::CRITICAL) {
     getView()->stopClock();
-    if (WCreature c = getControlled())
+    for (auto c : getControlled())
       c->playerMessage(msg);
   }
 }
@@ -1619,15 +1625,11 @@ Vec2 PlayerControl::getPosition() const {
   return Vec2(0, 0);
 }
 
-optional<CreatureView::MovementInfo> PlayerControl::getMovementInfo() const {
-  return none;
-}
-
 static enum Selection { SELECT, DESELECT, NONE } selection = NONE;
 
 class MinionController : public Player {
   public:
-  MinionController(WCreature c, WModel m, SMapMemory memory, WPlayerControl ctrl, STutorial tutorial)
+  MinionController(WCreature c, SMapMemory memory, WPlayerControl ctrl, STutorial tutorial)
       : Player(c, false, memory, tutorial), control(ctrl) {}
 
   virtual vector<CommandInfo> getCommands() const override {
@@ -1636,6 +1638,8 @@ class MinionController : public Player {
       {PlayerInfo::CommandInfo{"Leave creature", 'u', "Leave creature and order team back to base.", true,
             tutorial && tutorial->getHighlights(getGame()).contains(TutorialHighlight::LEAVE_CONTROL)},
        [] (Player* player) { dynamic_cast<MinionController*>(player)->unpossess(); }, true},
+      {PlayerInfo::CommandInfo{"Toggle control all", none, "Control all team members.", true},
+       [] (Player* player) { dynamic_cast<MinionController*>(player)->control->toggleControlAllTeamMembers(); }, getTeam().size() > 1},
       {PlayerInfo::CommandInfo{"Switch control", 's', "Switch control to a different team member.", true},
        [] (Player* player) { dynamic_cast<MinionController*>(player)->swapTeam(); }, getTeam().size() > 1},
       {PlayerInfo::CommandInfo{"Absorb", 'a',
@@ -1655,7 +1659,7 @@ class MinionController : public Player {
       tryToPerform(getCreature()->consume(actions[0]));
     } else
     if (actions.size() > 1) {
-      auto dir = getView()->chooseDirection("Which direction?");
+      auto dir = chooseDirection("Which direction?");
       if (!dir)
         return;
       if (WCreature c = getCreature()->getPosition().plus(*dir).getCreature())
@@ -1670,6 +1674,17 @@ class MinionController : public Player {
 
   bool swapTeam() {
     return control->swapTeam();
+  }
+
+  virtual bool isTravelEnabled() const override {
+    return control->getControlled().size() == 1;
+  }
+
+  virtual CenterType getCenterType() const override {
+    if (control->getControlled().size() == 1)
+      return CenterType::FOLLOW;
+    else
+      return CenterType::STAY_ON_SCREEN;
   }
 
   virtual void onFellAsleep() override {
@@ -1709,13 +1724,29 @@ vector<WCreature> PlayerControl::getTeam(WConstCreature c) {
 }
 
 void PlayerControl::commandTeam(TeamId team) {
-  if (getControlled())
+  if (!getControlled().empty())
     leaveControl();
-  WCreature c = getTeams().getLeader(team);
-  c->pushController(makeOwner<MinionController>(c, getModel(), memory, this, tutorial));
+  auto c = getTeams().getLeader(team);
+  c->pushController(makeOwner<MinionController>(c, memory, this, tutorial));
   getTeams().activate(team);
   getCollective()->freeTeamMembers(team);
   getView()->resetCenter();
+}
+
+void PlayerControl::toggleControlAllTeamMembers() {
+  if (auto teamId = getCurrentTeam()) {
+    auto members = getTeams().getMembers(*teamId);
+    if (members.size() > 1) {
+      if (getControlled().size() == 1) {
+        for (auto c : members)
+          if (!c->isPlayer())
+            c->pushController(makeOwner<MinionController>(c, memory, this, tutorial));
+      } else
+        for (auto c : members)
+          if (c->isPlayer() && c != getTeams().getLeader(*teamId))
+            c->popController();
+    }
+  }
 }
 
 optional<PlayerMessage> PlayerControl::findMessage(PlayerMessage::Id id){
@@ -2046,7 +2077,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
         break;
     case UserInputId::CREATURE_CONSUME:
         if (WCreature c = getCreature(input.get<Creature::Id>())) {
-          if (auto creatureId = getView()->chooseTeamLeader("Choose minion to absorb",
+          if (auto creatureId = getView()->chooseCreature("Choose minion to absorb",
               getCollective()->getConsumptionTargets(c).transform(
                   [] (WConstCreature c) { return CreatureInfo(c);}), "cancel"))
             if (WCreature consumed = getCreature(*creatureId))
@@ -2358,8 +2389,8 @@ double PlayerControl::getLocalTime() const {
   return getModel()->getLocalTime();
 }
 
-bool PlayerControl::isPlayerView() const {
-  return false;
+PlayerControl::CenterType PlayerControl::getCenterType() const {
+  return CenterType::NONE;
 }
 
 vector<Vec2> PlayerControl::getUnknownLocations(WConstLevel) const {
@@ -2389,13 +2420,13 @@ void PlayerControl::addToMemory(Position pos) {
 }
 
 void PlayerControl::checkKeeperDanger() {
-  WCreature controlled = getControlled();
+  auto controlled = getControlled();
   WCreature keeper = getKeeper();
   auto prompt = [&] {
       return getView()->yesOrNoPrompt("The keeper is in trouble. Do you want to control " +
           keeper->getAttributes().getGender().him() + "?");
   };
-  if (!getKeeper()->isDead() && controlled != getKeeper()) {
+  if (!getKeeper()->isDead() && !controlled.contains(getKeeper())) {
     if ((getKeeper()->wasInCombat(5) || getKeeper()->getBody().isWounded())
         && lastControlKeeperQuestion < getCollective()->getGlobalTime() - 50) {
       lastControlKeeperQuestion = getCollective()->getGlobalTime();
@@ -2440,7 +2471,7 @@ void PlayerControl::update(bool currentlyActive) {
   updateVisibleCreatures();
   vector<WCreature> addedCreatures;
   vector<WLevel> currentLevels {getLevel()};
-  if (WCreature c = getControlled())
+  for (auto c : getControlled())
     if (!currentLevels.contains(c->getLevel()))
       currentLevels.push_back(c->getLevel());
   for (WLevel l : currentLevels)
@@ -2449,7 +2480,7 @@ void PlayerControl::update(bool currentlyActive) {
         if (c->getAttributes().getSpawnType() && !getCreatures().contains(c) && !getCollective()->wasBanished(c)) {
           addedCreatures.push_back(c);
           getCollective()->addCreature(c, {MinionTrait::FIGHTER});
-          if (WCreature controlled = getControlled())
+          for (auto controlled : getControlled())
             if ((getCollective()->hasTrait(controlled, MinionTrait::FIGHTER)
                   || controlled == getCollective()->getLeader())
                 && c->getPosition().isSameLevel(controlled->getPosition()))
@@ -2539,8 +2570,8 @@ bool PlayerControl::isEnemy(WConstCreature c) const {
 }
 
 void PlayerControl::onMemberKilled(WConstCreature victim, WConstCreature killer) {
-  if (victim->isPlayer())
-    onControlledKilled();
+  if (victim->isPlayer() && victim != getKeeper())
+    onControlledKilled(victim);
   visibilityMap->remove(victim);
   if (victim == getKeeper() && !getGame()->isGameOver()) {
     getGame()->gameOver(victim, getCollective()->getKills().getSize(), "enemies",

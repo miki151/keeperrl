@@ -1507,4 +1507,8 @@ auto getElems() const { \
 template <typename T> \
 bool operator == (const T& o) const { \
   return o.getElems() == getElems(); \
+} \
+template <typename T> \
+bool operator != (const T& o) const { \
+  return o.getElems() != getElems(); \
 }
