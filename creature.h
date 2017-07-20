@@ -94,6 +94,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   const Equipment& getEquipment() const;
   Equipment& getEquipment();
   vector<PItem> steal(const vector<WItem> items);
+  bool canSeeDisregardingPosition(WConstCreature) const;
   bool canSee(WConstCreature) const;
   bool canSee(Position) const;
   bool canSee(Vec2) const;

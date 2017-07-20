@@ -227,7 +227,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   optional<PlayerMessage> findMessage(PlayerMessage::Id);
   void updateVisibleCreatures();
   vector<Vec2> SERIAL(visibleEnemies);
-  HeapAllocated<VisibilityMap> SERIAL(visibilityMap);
+  SVisibilityMap SERIAL(visibilityMap);
   bool firstRender = true;
   bool isNight = true;
   optional<UniqueEntity<Creature>::Id> draggedCreature;

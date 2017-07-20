@@ -1371,14 +1371,18 @@ CreatureAction Creature::throwItem(WItem item, Vec2 direction) const {
   });
 }
 
-bool Creature::canSee(WConstCreature c) const {
+bool Creature::canSeeDisregardingPosition(WConstCreature c) const {
   if (!c->getPosition().isSameLevel(position))
     return false;
   for (auto vision : creatureVisions)
     if (vision->canSee(this, c))
       return true;
   return !isAffected(LastingEffect::BLIND) && (!c->isAffected(LastingEffect::INVISIBLE) || isFriend(c)) &&
-         (!c->isHidden() || c->knowsHiding(this)) && c->getPosition().isVisibleBy(this);
+      (!c->isHidden() || c->knowsHiding(this));
+}
+
+bool Creature::canSee(WConstCreature c) const {
+  return canSeeDisregardingPosition(c) && c->getPosition().isVisibleBy(this);
 }
 
 bool Creature::canSee(Position pos) const {

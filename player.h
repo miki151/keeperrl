@@ -39,7 +39,7 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   public:
   virtual ~Player() override;
 
-  Player(WCreature, bool adventurer, SMapMemory, SMessageBuffer, STutorial = nullptr);
+  Player(WCreature, bool adventurer, SMapMemory, SMessageBuffer, SVisibilityMap, STutorial = nullptr);
 
   void onEvent(const GameEvent&);
 
@@ -132,7 +132,7 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   ItemInfo getItemInfo(const vector<WItem>&) const;
   ItemInfo getFurnitureUsageInfo(const string& question, ViewId viewId) const;
   optional<FurnitureUsageType> getUsableUsageType() const;
-  HeapAllocated<VisibilityMap> SERIAL(visibilityMap);
+  SVisibilityMap SERIAL(visibilityMap);
   STutorial SERIAL(tutorial);
 };
 

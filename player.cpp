@@ -63,8 +63,9 @@ SERIALIZABLE(Player);
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Player);
 
-Player::Player(WCreature c, bool adv, SMapMemory memory, SMessageBuffer buf, STutorial t) :
-    Controller(c), levelMemory(memory), adventurer(adv), displayGreeting(adventurer), messageBuffer(buf), tutorial(t) {
+Player::Player(WCreature c, bool adv, SMapMemory memory, SMessageBuffer buf, SVisibilityMap v, STutorial t) :
+    Controller(c), levelMemory(memory), adventurer(adv), displayGreeting(adventurer), messageBuffer(buf),
+    visibilityMap(v), tutorial(t) {
   visibilityMap->update(c, c->getVisibleTiles());
   getGame()->addPlayer(c);
 }
@@ -787,7 +788,8 @@ MessageGenerator& Player::getMessageGenerator() const {
 }
 
 void Player::getViewIndex(Vec2 pos, ViewIndex& index) const {
-  bool canSee = getCreature()->canSee(pos) || getGame()->getOptions()->getBoolValue(OptionId::SHOW_MAP);
+  bool canSee = visibilityMap->isVisible(Position(pos, getLevel())) ||
+      getGame()->getOptions()->getBoolValue(OptionId::SHOW_MAP);
   Position position = getCreature()->getPosition().withCoord(pos);
   if (canSee)
     position.getViewIndex(index, getCreature());
@@ -799,7 +801,7 @@ void Player::getViewIndex(Vec2 pos, ViewIndex& index) const {
   if (position.isTribeForbidden(getCreature()->getTribeId()))
     index.setHighlight(HighlightType::FORBIDDEN_ZONE);
   if (WConstCreature c = position.getCreature()) {
-    if (getCreature()->canSee(c) || c == getCreature()) {
+    if ((canSee && getCreature()->canSeeDisregardingPosition(c)) || c == getCreature()) {
       index.insert(c->getViewObjectFor(getCreature()->getTribe()));
       if (c == getCreature())
         index.getObject(ViewLayer::CREATURE).setModifier(ViewObject::Modifier::PLAYER);

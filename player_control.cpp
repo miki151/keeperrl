@@ -329,6 +329,7 @@ static vector<string> getHints() {
 
 PlayerControl::PlayerControl(Private, WCollective col) : CollectiveControl(col), hints(getHints()) {
   controlModeMessages = make_shared<MessageBuffer>();
+  visibilityMap = make_shared<VisibilityMap>();
   bool hotkeys[128] = {0};
   for (auto& info : getBuildInfo()) {
     if (info.hotkey) {
@@ -1629,8 +1630,9 @@ static enum Selection { SELECT, DESELECT, NONE } selection = NONE;
 
 class MinionController : public Player {
   public:
-  MinionController(WCreature c, SMapMemory memory, WPlayerControl ctrl, SMessageBuffer messages, STutorial tutorial)
-      : Player(c, false, memory, messages, tutorial), control(ctrl) {}
+  MinionController(WCreature c, SMapMemory memory, WPlayerControl ctrl, SMessageBuffer messages,
+                   SVisibilityMap visibilityMap, STutorial tutorial)
+      : Player(c, false, memory, messages, visibilityMap, tutorial), control(ctrl) {}
 
   virtual vector<CommandInfo> getCommands() const override {
     auto tutorial = control->getTutorial();
@@ -1737,7 +1739,7 @@ void PlayerControl::commandTeam(TeamId team) {
   if (!getControlled().empty())
     leaveControl();
   auto c = getTeams().getLeader(team);
-  c->pushController(makeOwner<MinionController>(c, memory, this, controlModeMessages, tutorial));
+  c->pushController(makeOwner<MinionController>(c, memory, this, controlModeMessages, visibilityMap, tutorial));
   getTeams().activate(team);
   getCollective()->freeTeamMembers(team);
   getView()->resetCenter();
@@ -1750,7 +1752,7 @@ void PlayerControl::toggleControlAllTeamMembers() {
       if (getControlled().size() == 1) {
         for (auto c : members)
           if (!c->isPlayer())
-            c->pushController(makeOwner<MinionController>(c, memory, this, controlModeMessages, tutorial));
+            c->pushController(makeOwner<MinionController>(c, memory, this, controlModeMessages, visibilityMap, tutorial));
       } else
         for (auto c : members)
           if (c->isPlayer() && c != getTeams().getLeader(*teamId))

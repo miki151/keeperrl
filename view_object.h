@@ -28,7 +28,7 @@ RICH_ENUM(ViewObjectAttribute, WOUNDED, BURNING, WATER_DEPTH, EFFICIENCY, MORALE
 
 struct MovementInfo {
   enum Type { MOVE, ATTACK };
-  MovementInfo(Vec2, double, double, Type);
+  MovementInfo(Vec2 direction, double tBegin, double tEnd, Type);
   MovementInfo();
   Vec2 direction;
   double tBegin;
