@@ -530,7 +530,7 @@ class IllusionController : public DoNothingController {
   }
 
   virtual void onBump(WCreature c) override {
-    c->attack(getCreature(), none, false).perform(c);
+    c->attack(getCreature(), none).perform(c);
     kill();
   }
 

@@ -569,7 +569,6 @@ CreatureAction Creature::bumpInto(Vec2 direction) const {
   if (WConstCreature other = getPosition().plus(direction).getCreature())
     return CreatureAction(this, [=](WCreature self) {
       other->getController()->onBump(self);
-      self->spendTime(1);
     });
   else
     return CreatureAction();
@@ -859,7 +858,7 @@ void Creature::dropWeapon() {
   }
 }
 
-CreatureAction Creature::attack(WCreature other, optional<AttackParams> attackParams, bool spend) const {
+CreatureAction Creature::attack(WCreature other, optional<AttackParams> attackParams) const {
   CHECK(!other->isDead());
   if (!position.isSameLevel(other->getPosition()))
     return CreatureAction();
@@ -902,8 +901,6 @@ CreatureAction Creature::attack(WCreature other, optional<AttackParams> attackPa
   }
   other->takeDamage(attack);
   double oldTime = getLocalTime();
-  if (spend)
-    self->spendTime(timeSpent);
   self->addMovementInfo({dir, oldTime, getLocalTime(), MovementInfo::ATTACK});
   });
 }
