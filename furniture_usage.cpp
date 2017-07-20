@@ -36,7 +36,8 @@ struct ChestInfo {
 };
 
 static void useChest(Position pos, WConstFurniture furniture, WCreature c, const ChestInfo& chestInfo) {
-  c->playerMessage("You open the " + furniture->getName());
+  c->secondPerson("You open the " + furniture->getName());
+  c->thirdPerson(c->getName().the() + " opens the " + furniture->getName());
   pos.replaceFurniture(furniture, FurnitureFactory::get(chestInfo.openedType, furniture->getTribe()));
   if (auto creatureInfo = chestInfo.creatureInfo)
     if (creatureInfo->creatureChance > 0 && Random.roll(creatureInfo->creatureChance)) {
@@ -51,11 +52,11 @@ static void useChest(Position pos, WConstFurniture furniture, WCreature c, const
       }
     }
     if (numR < creatureInfo->numCreatures)
-      c->playerMessage(creatureInfo->msgCreature);
+      c->message(creatureInfo->msgCreature);
     return;
   }
   if (auto itemInfo = chestInfo.itemInfo) {
-    c->playerMessage(itemInfo->msgItem);
+    c->message(itemInfo->msgItem);
     ItemFactory itemFactory(itemInfo->items);
     vector<PItem> items = itemFactory.random();
     c->getGame()->addEvent({EventId::ITEMS_APPEARED, EventInfo::ItemsAppeared{c->getPosition(),
@@ -79,7 +80,7 @@ static void usePortal(Position pos, WCreature c) {
             return;
           }
       }
-  c->playerMessage("The portal is inactive. Create another one to open a connection.");
+  c->privateMessage("The portal is inactive. Create another one to open a connection.");
 }
 
 void FurnitureUsage::handle(FurnitureUsageType type, Position pos, WConstFurniture furniture, WCreature c) {
@@ -121,7 +122,8 @@ void FurnitureUsage::handle(FurnitureUsageType type, Position pos, WConstFurnitu
                });
       break;
     case FurnitureUsageType::FOUNTAIN: {
-      c->playerMessage("You drink from the fountain.");
+      c->secondPerson("You drink from the fountain.");
+      c->thirdPerson(c->getName().the() + " drinks from the fountain.");
       PItem potion = ItemFactory::potions().random().getOnlyElement();
       potion->apply(c);
       break;
@@ -133,8 +135,10 @@ void FurnitureUsage::handle(FurnitureUsageType type, Position pos, WConstFurnitu
       c->getGame()->handleMessageBoard(pos, c);
       break;
     case FurnitureUsageType::CROPS:
-      if (Random.roll(3))
-        c->globalMessage(c->getName().the() + " scythes the field.");
+      if (Random.roll(3)) {
+        c->thirdPerson(c->getName().the() + " scythes the field.");
+        c->secondPerson("You scythe the field.");
+      }
       break;
     case FurnitureUsageType::STAIRS:
       c->getLevel()->changeLevel(*pos.getLandingLink(), c);

@@ -126,8 +126,8 @@ void Item::tick(Position position) {
 
 void Item::onHitSquareMessage(Position pos, int numItems) {
   if (attributes->fragile) {
-    pos.globalMessage(
-        getPluralTheNameAndVerb(numItems, "crashes", "crash") + " on the " + pos.getName(), "You hear a crash");
+    pos.globalMessage(getPluralTheNameAndVerb(numItems, "crashes", "crash") + " on the " + pos.getName());
+    pos.unseenMessage("You hear a crash");
     discarded = true;
   } else
     pos.globalMessage(getPluralTheNameAndVerb(numItems, "hits", "hit") + " the " + pos.getName());
@@ -203,7 +203,7 @@ void Item::applySpecial(WCreature c) {
   if (attributes->uses > -1 && --attributes->uses == 0) {
     discarded = true;
     if (attributes->usedUpMsg)
-      c->playerMessage(getTheName() + " is used up.");
+      c->privateMessage(getTheName() + " is used up.");
   }
 }
 

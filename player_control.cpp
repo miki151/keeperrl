@@ -76,6 +76,8 @@
 #include "trap_type.h"
 #include "collective_warning.h"
 #include "furniture_usage.h"
+#include "message_generator.h"
+#include "message_buffer.h"
 
 template <class Archive>
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
@@ -83,7 +85,7 @@ void PlayerControl::serialize(Archive& ar, const unsigned int version) {
   ar(memory, showWelcomeMsg, lastControlKeeperQuestion);
   ar(newAttacks, ransomAttacks, messages, hints, visibleEnemies);
   ar(visibilityMap);
-  ar(messageHistory, tutorial);
+  ar(messageHistory, tutorial, controlModeMessages);
 }
 
 SERIALIZABLE(PlayerControl);
@@ -326,6 +328,7 @@ static vector<string> getHints() {
 }
 
 PlayerControl::PlayerControl(Private, WCollective col) : CollectiveControl(col), hints(getHints()) {
+  controlModeMessages = make_shared<MessageBuffer>();
   bool hotkeys[128] = {0};
   for (auto& info : getBuildInfo()) {
     if (info.hotkey) {
@@ -351,13 +354,8 @@ PPlayerControl PlayerControl::create(WCollective col) {
 PlayerControl::~PlayerControl() {
 }
 
-vector<WCreature> PlayerControl::getControlled() const {
-  vector<WCreature> ret;
-  if (auto team = getCurrentTeam())
-    for (auto c : getTeams().getMembers(*team))
-      if (c->isPlayer())
-        ret.push_back(c);
-  return ret;
+const vector<WCreature>& PlayerControl::getControlled() const {
+  return getGame()->getPlayerCreatures();
 }
 
 optional<TeamId> PlayerControl::getCurrentTeam() const {
@@ -425,7 +423,7 @@ bool PlayerControl::swapTeam() {
 
 void PlayerControl::leaveControl() {
   set<TeamId> allTeams;
-  for (auto controlled : getControlled()) {
+  for (auto controlled : copyOf(getControlled())) {
     if (controlled == getKeeper())
       lastControlKeeperQuestion = getCollective()->getGlobalTime();
     if (!controlled->getPosition().isSameLevel(getLevel()))
@@ -1407,8 +1405,10 @@ void PlayerControl::addMessage(const PlayerMessage& msg) {
   messageHistory.push_back(msg);
   if (msg.getPriority() == MessagePriority::CRITICAL) {
     getView()->stopClock();
-    for (auto c : getControlled())
-      c->playerMessage(msg);
+    for (auto c : getControlled()) {
+      c->privateMessage(msg);
+      break;
+    }
   }
 }
 
@@ -1629,8 +1629,8 @@ static enum Selection { SELECT, DESELECT, NONE } selection = NONE;
 
 class MinionController : public Player {
   public:
-  MinionController(WCreature c, SMapMemory memory, WPlayerControl ctrl, STutorial tutorial)
-      : Player(c, false, memory, tutorial), control(ctrl) {}
+  MinionController(WCreature c, SMapMemory memory, WPlayerControl ctrl, SMessageBuffer messages, STutorial tutorial)
+      : Player(c, false, memory, messages, tutorial), control(ctrl) {}
 
   virtual vector<CommandInfo> getCommands() const override {
     auto tutorial = control->getTutorial();
@@ -1696,6 +1696,16 @@ class MinionController : public Player {
     return control->getTeam(getCreature());
   }
 
+  virtual MessageGenerator& getMessageGenerator() const override {
+    static MessageGenerator messageGeneratorSecond(MessageGenerator::SECOND_PERSON);
+    static MessageGenerator messageGeneratorThird(MessageGenerator::THIRD_PERSON);
+
+    if (control->getControlled().size() == 1)
+      return messageGeneratorSecond;
+    else
+      return messageGeneratorThird;
+  }
+
   SERIALIZE_ALL(SUBCLASS(Player), control)
   SERIALIZATION_CONSTRUCTOR(MinionController);
 
@@ -1727,7 +1737,7 @@ void PlayerControl::commandTeam(TeamId team) {
   if (!getControlled().empty())
     leaveControl();
   auto c = getTeams().getLeader(team);
-  c->pushController(makeOwner<MinionController>(c, memory, this, tutorial));
+  c->pushController(makeOwner<MinionController>(c, memory, this, controlModeMessages, tutorial));
   getTeams().activate(team);
   getCollective()->freeTeamMembers(team);
   getView()->resetCenter();
@@ -1740,7 +1750,7 @@ void PlayerControl::toggleControlAllTeamMembers() {
       if (getControlled().size() == 1) {
         for (auto c : members)
           if (!c->isPlayer())
-            c->pushController(makeOwner<MinionController>(c, memory, this, tutorial));
+            c->pushController(makeOwner<MinionController>(c, memory, this, controlModeMessages, tutorial));
       } else
         for (auto c : members)
           if (c->isPlayer() && c != getTeams().getLeader(*teamId))
@@ -2483,13 +2493,15 @@ void PlayerControl::update(bool currentlyActive) {
           for (auto controlled : getControlled())
             if ((getCollective()->hasTrait(controlled, MinionTrait::FIGHTER)
                   || controlled == getCollective()->getLeader())
-                && c->getPosition().isSameLevel(controlled->getPosition()))
+                && c->getPosition().isSameLevel(controlled->getPosition())) {
               for (auto team : getTeams().getActive(controlled)) {
                 getTeams().add(team, c);
-                controlled->playerMessage(PlayerMessage(c->getName().a() + " joins your team.",
+                controlled->privateMessage(PlayerMessage(c->getName().a() + " joins your team.",
                       MessagePriority::HIGH));
                 break;
               }
+              break;
+            }
         } else
           if (c->getBody().isMinionFood() && !getCreatures().contains(c))
             getCollective()->addCreature(c, {MinionTrait::FARM_ANIMAL, MinionTrait::NO_LIMIT});

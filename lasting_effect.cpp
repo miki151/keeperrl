@@ -13,8 +13,8 @@ void LastingEffects::onAffected(WCreature c, LastingEffect effect, bool msg) {
       break;
     case LastingEffect::BLEEDING:
       if (msg) {
-        c->playerMessage("You start bleeding");
-        c->monsterMessage(c->getName().the() + " starts bleeding");
+        c->secondPerson("You start bleeding");
+        c->thirdPerson(c->getName().the() + " starts bleeding");
       }
       break;
     case LastingEffect::COLLAPSED:
@@ -36,7 +36,7 @@ void LastingEffects::onAffected(WCreature c, LastingEffect effect, bool msg) {
       break;
     case LastingEffect::HALLU:
       if (!c->isAffected(LastingEffect::BLIND) && msg)
-        c->playerMessage("The world explodes into colors!");
+        c->privateMessage("The world explodes into colors!");
       break;
     case LastingEffect::BLIND:
       if (msg) c->you(MsgType::ARE, "blind!");
@@ -115,7 +115,7 @@ void LastingEffects::onTimedOut(WCreature c, LastingEffect effect, bool msg) {
     case LastingEffect::DEF_BONUS: if (msg) c->you(MsgType::ARE, "less protected again"); break;
     case LastingEffect::PANIC:
     case LastingEffect::RAGE:
-    case LastingEffect::HALLU: if (msg) c->playerMessage("Your mind is clear again"); break;
+    case LastingEffect::HALLU: if (msg) c->you(MsgType::YOUR, "mind is clear again"); break;
     case LastingEffect::ENTANGLED: if (msg) c->you(MsgType::BREAK_FREE, "the web"); break;
     case LastingEffect::TIED_UP: if (msg) c->you(MsgType::BREAK_FREE, ""); break;
     case LastingEffect::BLEEDING: if (msg) c->you(MsgType::YOUR, "bleeding stops"); break;
@@ -263,7 +263,7 @@ void LastingEffects::onCreatureDamage(WCreature c, LastingEffect e) {
       break;
     case LastingEffect::MAGIC_SHIELD:
       c->getAttributes().shortenEffect(LastingEffect::MAGIC_SHIELD, 5);
-      c->globalMessage("The magic shield absorbs the attack", "");
+      c->message("The magic shield absorbs the attack");
       break;
     default: break;
   }
@@ -273,7 +273,8 @@ bool LastingEffects::tick(WCreature c, LastingEffect effect) {
   switch (effect) {
     case LastingEffect::BLEEDING:
       c->getBody().bleed(c, 0.01);
-      c->playerMessage(PlayerMessage("You are bleeding.", MessagePriority::HIGH));
+      c->secondPerson(PlayerMessage("You are bleeding.", MessagePriority::HIGH));
+      c->thirdPerson(PlayerMessage(c->getName().the() + " is bleeding.", MessagePriority::HIGH));
       if (c->getBody().getHealth() <= 0) {
         c->you(MsgType::DIE_OF, "bleeding");
         c->dieWithLastAttacker();
@@ -282,7 +283,8 @@ bool LastingEffects::tick(WCreature c, LastingEffect effect) {
       break;
     case LastingEffect::POISON:
       c->getBody().bleed(c, 0.01);
-      c->playerMessage("You feel poison flowing in your veins.");
+      c->secondPerson(PlayerMessage("You suffer from poisoning.", MessagePriority::HIGH));
+      c->thirdPerson(PlayerMessage(c->getName().the() + " suffers from poisoning.", MessagePriority::HIGH));
       if (c->getBody().getHealth() <= 0) {
         c->you(MsgType::DIE_OF, "poisoning");
         c->dieWithLastAttacker();

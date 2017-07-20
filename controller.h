@@ -23,6 +23,7 @@ class MapMemory;
 class Item;
 class Level;
 class PlayerMessage;
+class MessageGenerator;
 
 class Controller : public OwnedObject<Controller> {
   public:
@@ -32,9 +33,8 @@ class Controller : public OwnedObject<Controller> {
 
   virtual bool isPlayer() const = 0;
 
-  virtual void you(MsgType type, const string& param) = 0;
-  virtual void you(MsgType type, const vector<string>& param) = 0;
-  virtual void you(const string& param) = 0;
+  virtual MessageGenerator& getMessageGenerator() const = 0;
+
   virtual void privateMessage(const PlayerMessage& message) {}
 
   virtual void onKilled(WConstCreature attacker) {}
@@ -63,11 +63,9 @@ class DoNothingController : public Controller {
   DoNothingController(WCreature);
 
   virtual bool isPlayer() const override;
-  virtual void you(MsgType type, const string& param) override;
-  virtual void you(MsgType type, const vector<string>& param) override;
-  virtual void you(const string& param) override;
   virtual void makeMove() override;
   virtual void onBump(WCreature) override;
+  virtual MessageGenerator& getMessageGenerator() const override;
 
   protected:
   SERIALIZATION_DECL(DoNothingController);

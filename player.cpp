@@ -49,20 +49,22 @@
 #include "furniture.h"
 #include "creature_debt.h"
 #include "tutorial.h"
+#include "message_generator.h"
+#include "message_buffer.h"
 
 template <class Archive>
-void Player::serialize(Archive& ar, const unsigned int version) {
+void Player::serialize(Archive& ar, const unsigned int) {
   ar& SUBCLASS(Controller) & SUBCLASS(EventListener);
-  ar(travelling, travelDir, target, displayGreeting, levelMemory, messages);
-  ar(messageHistory, adventurer, visibilityMap, tutorial);
+  ar(travelling, travelDir, target, displayGreeting, levelMemory, messageBuffer);
+  ar(adventurer, visibilityMap, tutorial);
 }
 
 SERIALIZABLE(Player);
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Player);
 
-Player::Player(WCreature c, bool adv, SMapMemory memory, STutorial t) :
-    Controller(c), levelMemory(memory), adventurer(adv), displayGreeting(adventurer), tutorial(t) {
+Player::Player(WCreature c, bool adv, SMapMemory memory, SMessageBuffer buf, STutorial t) :
+    Controller(c), levelMemory(memory), adventurer(adv), displayGreeting(adventurer), messageBuffer(buf), tutorial(t) {
   visibilityMap->update(c, c->getVisibleTiles());
   getGame()->addPlayer(c);
 }
@@ -120,10 +122,6 @@ void Player::onEvent(const GameEvent& event) {
     default:
       break;
   }
-}
-
-ControllerFactory Player::getFactory(SMapMemory levelMemory) {
-  return ControllerFactory([=](WCreature c) { return makeOwner<Player>(c, true, levelMemory);});
 }
 
 static string getSlotSuffix(EquipmentSlot slot) {
@@ -527,6 +525,7 @@ void Player::extendedAttackAction(WCreature other) {
 }
 
 void Player::retireMessages() {
+  auto& messages = messageBuffer->current;
   if (!messages.empty()) {
     messages = {messages.back()};
     messages[0].setFreshness(0);
@@ -609,7 +608,8 @@ void Player::makeMove() {
   bool travel = false;
   bool wasJustTravelling = travelling || !!target;
   if (action.getId() != UserInputId::IDLE) {
-    retireMessages();
+    if (action.getId() != UserInputId::REFRESH)
+      retireMessages();
     if (action.getId() == UserInputId::TILE_CLICK) {
       travelling = false;
       if (target)
@@ -704,7 +704,7 @@ void Player::makeMove() {
 }
 
 void Player::showHistory() {
-  PlayerMessage::presentMessages(getView(), messageHistory);
+  PlayerMessage::presentMessages(getView(), messageBuffer->history);
 }
 
 static string getForceMovementQuestion(Position pos, WConstCreature creature) {
@@ -747,7 +747,8 @@ void Player::privateMessage(const PlayerMessage& message) {
     if (auto title = message.getAnnouncementTitle())
       view->presentText(*title, message.getText());
     else {
-      messageHistory.push_back(message);
+      messageBuffer->history.push_back(message);
+      auto& messages = messageBuffer->current;
       if (!messages.empty() && messages.back().getFreshness() < 1)
         messages.clear();
       messages.emplace_back(message);
@@ -755,85 +756,6 @@ void Player::privateMessage(const PlayerMessage& message) {
         view->presentText("Important!", message.getText());
     }
   }
-}
-
-void Player::you(const string& param) {
-  privateMessage("You " + param);
-}
-
-void Player::you(MsgType type, const vector<string>& param) {
-  string msg;
-  switch (type) {
-    case MsgType::SWING_WEAPON: msg = "You swing your " + param[0]; break;
-    case MsgType::THRUST_WEAPON: msg = "You thrust your " + param[0]; break;
-    case MsgType::KICK: msg = "You kick " + param[0]; break;
-    case MsgType::PUNCH: msg = "You punch " + param[0]; break;
-    default: you(type, param[0]); break;
-  }
-  if (param.size() > 1)
-    msg += " " + param[1];
-  privateMessage(msg);
-}
-
-void Player::you(MsgType type, const string& param) {
-  string msg;
-  switch (type) {
-    case MsgType::ARE: msg = "You are " + param; break;
-    case MsgType::YOUR: msg = "Your " + param; break;
-    case MsgType::FEEL: msg = "You feel " + param; break;
-    case MsgType::WAKE_UP: msg = "You wake up."; break;
-    case MsgType::FALL: msg = "You fall " + param; break;
-    case MsgType::FALL_ASLEEP: msg = "You fall asleep" + (param.size() > 0 ? " on the " + param : "."); break;
-    case MsgType::DIE: privateMessage("You die!!"); break;
-    case MsgType::TELE_DISAPPEAR: msg = "You are standing somewhere else!"; break;
-    case MsgType::BLEEDING_STOPS: msg = "Your bleeding stops."; break;
-    case MsgType::DIE_OF: msg = "You die" + (param.empty() ? string(".") : " of " + param); break;
-    case MsgType::MISS_ATTACK: msg = "You miss " + param; break;
-    case MsgType::MISS_THROWN_ITEM: msg = param + " misses you"; break;
-    case MsgType::MISS_THROWN_ITEM_PLURAL: msg = param + " miss you"; break;
-    case MsgType::HIT_THROWN_ITEM: msg = param + " hits you"; break;
-    case MsgType::HIT_THROWN_ITEM_PLURAL: msg = param + " hit you"; break;
-    case MsgType::ITEM_CRASHES: msg = param + " crashes on you."; break;
-    case MsgType::ITEM_CRASHES_PLURAL: msg = param + " crash on you."; break;
-    case MsgType::GET_HIT_NODAMAGE: msg = "The " + param + " is harmless."; break;
-    case MsgType::COLLAPSE: msg = "You collapse."; break;
-    case MsgType::TRIGGER_TRAP: msg = "You trigger something."; break;
-    case MsgType::DISARM_TRAP: msg = "You disarm the " + param; break;
-    case MsgType::ATTACK_SURPRISE: msg = "You sneak attack " + param; break;
-    case MsgType::BITE: msg = "You bite " + param; break;
-    case MsgType::PANIC:
-          msg = !getCreature()->isAffected(LastingEffect::HALLU) ? "You are suddenly very afraid" : "You freak out completely"; break;
-    case MsgType::RAGE:
-          msg = !getCreature()->isAffected(LastingEffect::HALLU) ?"You are suddenly very angry" : "This will be a very long trip."; break;
-    case MsgType::CRAWL: msg = "You are crawling"; break;
-    case MsgType::STAND_UP: msg = "You are back on your feet"; break;
-    case MsgType::CAN_SEE_HIDING: msg = param + " can see you hiding"; break;
-    case MsgType::TURN_INVISIBLE: msg = "You can see through yourself!"; break;
-    case MsgType::TURN_VISIBLE: msg = "You are no longer invisible"; break;
-    case MsgType::DROP_WEAPON: msg = "You drop your " + param; break;
-    case MsgType::ENTER_PORTAL: msg = "You enter the portal"; break;
-    case MsgType::HAPPENS_TO: msg = param + " you."; break;
-    case MsgType::BURN: msg = "You burn in the " + param; break;
-    case MsgType::DROWN: msg = "You drown in the " + param; break;
-    case MsgType::SET_UP_TRAP: msg = "You set up the trap"; break;
-    case MsgType::KILLED_BY: msg = "You are killed by " + param; break;
-    case MsgType::TURN: msg = "You turn " + param; break;
-    case MsgType::BECOME: msg = "You become " + param; break;
-    case MsgType::BREAK_FREE:
-        if (param.empty())
-          msg = "You break free";
-        else
-          msg = "You break free from " + param;
-        break;
-    case MsgType::PRAY: msg = "You pray to " + param; break;
-    case MsgType::COPULATE: msg = "You copulate " + param; break;
-    case MsgType::CONSUME: msg = "You absorb " + param; break;
-    case MsgType::GROW: msg = "You grow " + param; break;
-    case MsgType::SACRIFICE: msg = "You make a sacrifice to " + param; break;
-    case MsgType::HIT: msg = "You hit " + param; break;
-    default: break;
-  }
-  privateMessage(PlayerMessage(msg, MessagePriority::HIGH));
 }
 
 WLevel Player::getLevel() const {
@@ -859,6 +781,12 @@ Vec2 Player::getPosition() const {
 }
 
 void Player::onDisplaced() {
+}
+
+static MessageGenerator messageGenerator(MessageGenerator::SECOND_PERSON);
+
+MessageGenerator& Player::getMessageGenerator() const {
+  return messageGenerator;
 }
 
 void Player::getViewIndex(Vec2 pos, ViewIndex& index) const {
@@ -920,7 +848,7 @@ optional<FurnitureUsageType> Player::getUsableUsageType() const {
 }
 
 void Player::refreshGameInfo(GameInfo& gameInfo) const {
-  gameInfo.messageBuffer = messages;
+  gameInfo.messageBuffer = messageBuffer->current;
   gameInfo.singleModel = getGame()->isSingleModel();
   gameInfo.infoType = GameInfo::InfoType::PLAYER;
   SunlightInfo sunlightInfo = getGame()->getSunlightInfo();

@@ -44,9 +44,8 @@ static void handleBoulder(Position pos, WFurniture furniture) {
         if (!other->getTribe()->getFriendlyTribes().contains(furniture->getTribe())) {
           if (!other->getAttributes().getSkills().hasDiscrete(SkillId::DISARM_TRAPS)) {
             pos.getGame()->addEvent({EventId::TRAP_TRIGGERED, pos});
-            pos.globalMessage(
-                PlayerMessage("The boulder starts rolling.", MessagePriority::CRITICAL),
-                PlayerMessage("You hear a heavy boulder rolling.", MessagePriority::CRITICAL));
+            pos.globalMessage(PlayerMessage("The boulder starts rolling.", MessagePriority::CRITICAL));
+            pos.unseenMessage(PlayerMessage("You hear a heavy boulder rolling.", MessagePriority::CRITICAL));
             CHECK(!pos.getCreature());
             pos.addCreature(CreatureFactory::getRollingBoulder(furniture->getTribe(), direction), 0);
           } else {

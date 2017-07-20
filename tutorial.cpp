@@ -420,7 +420,7 @@ optional<string> Tutorial::getWarning(WConstGame game) const {
     case State::LEAVE_CONTROL:
       return none;
     default:
-      if (!game->getPlayer().empty())
+      if (!game->getPlayerCreatures().empty())
         return "Press [U] to leave control mode."_s;
       else
         return none;

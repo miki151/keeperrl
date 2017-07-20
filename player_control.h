@@ -85,7 +85,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   optional<FurnitureType> getMissingTrainingDummy(WConstCreature);
 
   void onEvent(const GameEvent&);
-  vector<WCreature> getControlled() const;
+  const vector<WCreature>& getControlled() const;
 
   private:
   struct Private {};
@@ -235,5 +235,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   STutorial SERIAL(tutorial);
   void setChosenLibrary(bool);
   void acquireTech(int index);
+  SMessageBuffer SERIAL(controlModeMessages);
 };
 

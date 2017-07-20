@@ -162,7 +162,7 @@ void Level::updateVisibility(Vec2 changedSquare) {
 
 vector<WCreature> Level::getPlayers() const {
   if (auto game = model->getGame())
-    return game->getPlayer().filter([this](const WCreature& c) { return c->getLevel() == this; });
+    return game->getPlayerCreatures().filter([this](const WCreature& c) { return c->getLevel() == this; });
   return {};
 }
 
@@ -325,30 +325,6 @@ void Level::removeCreature(WCreature creature) {
   eraseCreature(creature, creature->getPosition().getCoord());
 }
 
-const static int hearingRange = 30;
-
-void Level::globalMessage(Vec2 position, const PlayerMessage& ifPlayerCanSee, const PlayerMessage& cannot) const {
-  for (auto player : getPlayers()) {
-    if (player->canSee(position))
-      player->playerMessage(ifPlayerCanSee);
-    else if (player->getPosition().getCoord().dist8(position) < hearingRange)
-      player->playerMessage(cannot);
-  }
-}
-
-void Level::globalMessage(Vec2 position, const PlayerMessage& playerCanSee) const {
-  globalMessage(position, playerCanSee, "");
-}
-
-void Level::globalMessage(WConstCreature c, const PlayerMessage& ifPlayerCanSee, const PlayerMessage& cant) const {
-  for (auto player : getPlayers()) {
-    if (player->canSee(c))
-      player->playerMessage(ifPlayerCanSee);
-    else if (player->getPosition().dist8(c->getPosition()) < hearingRange)
-      player->playerMessage(cant);
-  }
-}
-
 void Level::changeLevel(StairKey key, WCreature c) {
   Vec2 oldPos = c->getPosition().getCoord();
   WLevel otherLevel = model->getLinkedLevel(this, key);
@@ -362,7 +338,7 @@ void Level::changeLevel(StairKey key, WCreature c) {
         eraseCreature(c, oldPos);
         putCreature(oldPos, other);
         otherLevel->putCreature(otherPos.getCoord(), c);
-        c->playerMessage("You switch levels with " + other->getName().a());
+        c->secondPerson("You switch levels with " + other->getName().a());
       }
     }
   }

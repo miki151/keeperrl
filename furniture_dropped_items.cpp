@@ -18,10 +18,9 @@ vector<PItem> FurnitureDroppedItems::handle(Position pos, WConstFurniture f, vec
         for (auto& stack : Item::stackItems(getWeakPointers(items))) {
           PlayerMessage message(stack[0]->getPluralTheNameAndVerb(stack.size(),
               info.verbSingle, info.verbPlural) + " in the " + f->getName());
+          pos.globalMessage(message);
           if (info.unseenMessage)
-            pos.globalMessage(message, *info.unseenMessage);
-          else
-            pos.globalMessage(message);
+            pos.unseenMessage(*info.unseenMessage);
         }
         return vector<PItem>();
       }

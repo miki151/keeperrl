@@ -174,15 +174,15 @@ string CreatureAttributes::getDescription() const {
 void CreatureAttributes::chatReaction(WCreature me, WCreature other) {
   if (me->isEnemy(other) && chatReactionHostile) {
     if (chatReactionHostile->front() == '\"')
-      other->playerMessage(*chatReactionHostile);
+      other->privateMessage(*chatReactionHostile);
     else
-      other->playerMessage(me->getName().the() + " " + *chatReactionHostile);
+      other->privateMessage(me->getName().the() + " " + *chatReactionHostile);
   }
   if (!me->isEnemy(other) && chatReactionFriendly) {
     if (chatReactionFriendly->front() == '\"')
-      other->playerMessage(*chatReactionFriendly);
+      other->privateMessage(*chatReactionFriendly);
     else
-      other->playerMessage(me->getName().the() + " " + *chatReactionFriendly);
+      other->privateMessage(me->getName().the() + " " + *chatReactionFriendly);
   }
 }
 

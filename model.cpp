@@ -51,6 +51,7 @@
 #include "villain_type.h"
 #include "player_control.h"
 #include "tutorial.h"
+#include "message_buffer.h"
 
 template <class Archive> 
 void Model::serialize(Archive& ar, const unsigned int version) {
@@ -287,7 +288,7 @@ void Model::landHeroPlayer(PCreature player) {
   if (!target->landCreature(landing, std::move(player))) {
     CHECK(target->landCreature(target->getAllPositions(), std::move(player))) << "No place to spawn player";
   }
-  ref->setController(makeOwner<Player>(ref, true, make_shared<MapMemory>()));
+  ref->setController(makeOwner<Player>(ref, true, make_shared<MapMemory>(), make_shared<MessageBuffer>()));
 }
 
 void Model::addExternalEnemies(ExternalEnemies&& e) {

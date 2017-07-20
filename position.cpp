@@ -180,20 +180,28 @@ bool Position::operator < (const Position& p) const {
     return level->getUniqueId() < p.level->getUniqueId();
 }
 
-void Position::globalMessage(const PlayerMessage& playerCanSee, const PlayerMessage& cannot) const {
-  if (isValid())
-    level->globalMessage(coord, playerCanSee, cannot);
+const static int hearingRange = 30;
+
+void Position::unseenMessage(const PlayerMessage& msg) const {
+  if (isValid()) {
+    for (auto player : level->getPlayers())
+      if (player->canSee(*this))
+        return;
+    for (auto player : level->getPlayers())
+      if (dist8(player->getPosition()) < hearingRange) {
+        player->privateMessage(msg);
+        return;
+      }
+  }
 }
 
-void Position::globalMessage(const PlayerMessage& playerCanSee) const {
+void Position::globalMessage(const PlayerMessage& msg) const {
   if (isValid())
-    level->globalMessage(coord, playerCanSee);
-}
-
-void Position::globalMessage(WConstCreature c, const PlayerMessage& playerCanSee,
-    const PlayerMessage& cannot) const {
-  if (isValid())
-    level->globalMessage(c, playerCanSee, cannot);
+    for (auto player : level->getPlayers())
+      if (player->canSee(*this)) {
+        player->privateMessage(msg);
+        break;
+      }
 }
 
 vector<Position> Position::neighbors8() const {

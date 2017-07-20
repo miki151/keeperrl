@@ -89,7 +89,7 @@ void VillageControl::onEvent(const GameEvent& event) {
                 myItems.erase(it);
               }
             if (getCollective()->hasLeader() && wasTheft) {
-              info.creature->playerMessage(PlayerMessage("You are going to regret this", MessagePriority::HIGH));
+              info.creature->privateMessage(PlayerMessage("You are going to regret this", MessagePriority::HIGH));
             }
           }
     }
@@ -159,7 +159,7 @@ void VillageControl::considerWelcomeMessage() {
             if (WCreature c = pos.getCreature())
               if (c->isAffected(LastingEffect::INVISIBLE) && isEnemy(c) && c->isPlayer()
                   && getCollective()->getLeader()->canSee(c->getPosition())) {
-                c->playerMessage(PlayerMessage("\"Well thief! I smell you and I feel your air. "
+                c->privateMessage(PlayerMessage("\"Well thief! I smell you and I feel your air. "
                       "I hear your breath. Come along!\"", MessagePriority::CRITICAL));
                 villain->welcomeMessage.reset();
               }

@@ -141,15 +141,6 @@ class Level : public OwnedObject<Level> {
   /** Returns all tiles visible by a creature.*/
   vector<Vec2> getVisibleTiles(Vec2 pos, VisionId) const;
 
-  /** Displays \paramname{playerCanSee} message if the player can see position \paramname{pos},
-    and \paramname{cannot} otherwise.*/
-  void globalMessage(Vec2 position, const PlayerMessage& playerCanSee, const PlayerMessage& cannot) const;
-  void globalMessage(Vec2 position, const PlayerMessage& playerCanSee) const;
-
-  /** Displays \paramname{playerCanSee} message if the player can see the creature, 
-    and \paramname{cannot} otherwise.*/
-  void globalMessage(WConstCreature, const PlayerMessage& ifPlayerCanSee, const PlayerMessage& cannot) const;
-
   /** Returns the player creature.*/
   vector<WCreature> getPlayers() const;
 

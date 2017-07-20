@@ -33,13 +33,13 @@ struct ItemInfo;
 class Game;
 class VisibilityMap;
 class Tutorial;
+class MessageBuffer;
 
 class Player : public Controller, public CreatureView, public EventListener<Player> {
   public:
-  virtual ~Player();
+  virtual ~Player() override;
 
-  static ControllerFactory getFactory(SMapMemory levelMemory);
-  Player(WCreature, bool adventurer, SMapMemory, STutorial = nullptr);
+  Player(WCreature, bool adventurer, SMapMemory, SMessageBuffer, STutorial = nullptr);
 
   void onEvent(const GameEvent&);
 
@@ -65,12 +65,10 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   virtual void makeMove() override;
   virtual void sleeping() override;
   virtual bool isPlayer() const override;
-  virtual void you(MsgType type, const string& param) override;
-  virtual void you(MsgType type, const vector<string>& param) override;
-  virtual void you(const string& param) override;
   virtual void privateMessage(const PlayerMessage& message) override;
   virtual void onBump(WCreature) override;
   virtual void onDisplaced() override;
+  virtual MessageGenerator& getMessageGenerator() const override;
 
   // overridden by subclasses
   struct CommandInfo {
@@ -129,8 +127,7 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   bool SERIAL(displayGreeting);
   bool updateView = true;
   void retireMessages();
-  vector<PlayerMessage> SERIAL(messages);
-  vector<PlayerMessage> SERIAL(messageHistory);
+  SMessageBuffer SERIAL(messageBuffer);
   string getRemainingString(LastingEffect) const;
   vector<ItemInfo> getItemInfos(const vector<WItem>&) const;
   ItemInfo getItemInfo(const vector<WItem>&) const;

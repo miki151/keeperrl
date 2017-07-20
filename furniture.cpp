@@ -222,20 +222,20 @@ void Furniture::onConstructedBy(WCreature c) {
   if (constructMessage)
     switch (*constructMessage) {
       case BUILD:
-        c->monsterMessage(c->getName().the() + " builds " + addAParticle(getName()));
-        c->playerMessage("You build " + addAParticle(getName()));
+        c->thirdPerson(c->getName().the() + " builds " + addAParticle(getName()));
+        c->secondPerson("You build " + addAParticle(getName()));
         break;
       case FILL_UP:
-        c->monsterMessage(c->getName().the() + " fills up the tunnel");
-        c->playerMessage("You fill up the tunnel");
+        c->thirdPerson(c->getName().the() + " fills up the tunnel");
+        c->secondPerson("You fill up the tunnel");
         break;
       case REINFORCE:
-        c->monsterMessage(c->getName().the() + " reinforces the wall");
-        c->playerMessage("You reinforce the wall");
+        c->thirdPerson(c->getName().the() + " reinforces the wall");
+        c->secondPerson("You reinforce the wall");
         break;
       case SET_UP:
-        c->monsterMessage(c->getName().the() + " sets up " + addAParticle(getName()));
-        c->playerMessage("You set up " + addAParticle(getName()));
+        c->thirdPerson(c->getName().the() + " sets up " + addAParticle(getName()));
+        c->secondPerson("You set up " + addAParticle(getName()));
         break;
     }
 }

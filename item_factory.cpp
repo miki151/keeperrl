@@ -114,10 +114,10 @@ class AmuletOfWarning : public Item {
         }
       }
       if (isBigDanger)
-        owner->playerMessage(getTheName() + " vibrates vigorously");
+        owner->privateMessage(getTheName() + " vibrates vigorously");
       else
       if (isDanger)
-        owner->playerMessage(getTheName() + " vibrates");
+        owner->privateMessage(getTheName() + " vibrates");
     }
   }
 
@@ -187,7 +187,7 @@ class Corpse : public Item {
       c->you(MsgType::DECAPITATE, getTheName());
       setName("decapitated " + getName());
     } else {
-      c->playerMessage("You need something sharp to decapitate the corpse.");
+      c->privateMessage("You need something sharp to decapitate the corpse.");
     }
   }
 

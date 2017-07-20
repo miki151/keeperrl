@@ -72,8 +72,8 @@ class BoulderController : public Monster {
       } else {
         health -= c->getBody().getBoulderDamage();
         if (health <= 0) {
-          nextPos.globalMessage(getCreature()->getName().the() + " crashes on " + c->getName().the(),
-                "You hear a crash");
+          nextPos.globalMessage(getCreature()->getName().the() + " crashes on " + c->getName().the());
+          nextPos.unseenMessage("You hear a crash");
           getCreature()->dieNoReason();
           c->takeDamage(Attack(getCreature(), AttackLevel::MIDDLE, AttackType::HIT, 1000, AttrType::DAMAGE));
           return;
@@ -94,8 +94,8 @@ class BoulderController : public Monster {
     if (auto action = getCreature()->move(direction))
       action.perform(getCreature());
     else {
-      nextPos.globalMessage(getCreature()->getName().the() + " crashes on the " + nextPos.getName(),
-          "You hear a crash");
+      nextPos.globalMessage(getCreature()->getName().the() + " crashes on the " + nextPos.getName());
+      nextPos.unseenMessage("You hear a crash");
       getCreature()->dieNoReason();
       return;
     }
@@ -109,18 +109,9 @@ class BoulderController : public Monster {
     getCreature()->getAttributes().setBaseAttr(AttrType::SPEED, speed);
   }
 
-  virtual void you(MsgType type, const string& param) override {
-    string msg, msgNoSee;
-    switch (type) {
-      case MsgType::BURN: msg = getCreature()->getName().the() + " burns in the " + param; break;
-      case MsgType::DROWN: msg = getCreature()->getName().the() + " falls into the " + param;
-                           msgNoSee = "You hear a loud splash"; break;
-      case MsgType::KILLED_BY: msg = getCreature()->getName().the() + " is destroyed by " + param; break;
-      case MsgType::ENTER_PORTAL: msg = getCreature()->getName().the() + " disappears in the portal."; break;
-      default: break;
-    }
-    if (!msg.empty())
-      getCreature()->monsterMessage(msg, msgNoSee);
+  virtual MessageGenerator& getMessageGenerator() const override {
+    static MessageGenerator g(MessageGenerator::BOULDER);
+    return g;
   }
 
   SERIALIZE_ALL(SUBCLASS(Monster), direction)
@@ -161,18 +152,9 @@ class SokobanController : public Monster {
     }
   }
 
-  virtual void you(MsgType type, const string& param) override {
-    string msg, msgNoSee;
-    switch (type) {
-      case MsgType::BURN: msg = getCreature()->getName().the() + " burns in the " + param; break;
-      case MsgType::DROWN: msg = getCreature()->getName().the() + " falls into the " + param;
-                           msgNoSee = "You hear a loud splash"; break;
-      case MsgType::KILLED_BY: msg = getCreature()->getName().the() + " is destroyed by " + param; break;
-      case MsgType::ENTER_PORTAL: msg = getCreature()->getName().the() + " disappears in the portal."; break;
-      default: break;
-    }
-    if (!msg.empty())
-      getCreature()->monsterMessage(msg, msgNoSee);
+  virtual MessageGenerator& getMessageGenerator() const override {
+    static MessageGenerator g(MessageGenerator::BOULDER);
+    return g;
   }
 
   SERIALIZE_ALL(SUBCLASS(Monster));
@@ -240,30 +222,22 @@ class KrakenController : public Monster {
   virtual void onKilled(WConstCreature attacker) override {
     if (attacker) {
       if (father)
-        attacker->playerMessage("You cut the kraken's tentacle");
+        attacker->secondPerson("You cut the kraken's tentacle");
       else
-        attacker->playerMessage("You kill the kraken!");
+        attacker->secondPerson("You kill the kraken!");
     }
     for (WCreature c : spawns)
       if (!c->isDead())
         c->dieNoReason();
   }
 
-  virtual void you(MsgType type, const string& param) override {
-    string msg, msgNoSee;
-    switch (type) {
-      case MsgType::KILLED_BY:
-        if (father)
-          msg = param + "cuts the kraken's tentacle";
-        else
-          msg = param + "kills the kraken!";
-        break;
-      case MsgType::DIE:
-      case MsgType::DIE_OF: return;
-      default: Monster::you(type, param); break;
-    }
-    if (!msg.empty())
-      getCreature()->monsterMessage(msg, msgNoSee);
+  virtual MessageGenerator& getMessageGenerator() const override {
+    static MessageGenerator kraken(MessageGenerator::KRAKEN);
+    static MessageGenerator third(MessageGenerator::THIRD_PERSON);
+    if (father)
+      return kraken;
+    else
+      return third;
   }
 
   void pullEnemy(WCreature held) {
@@ -366,7 +340,7 @@ class KamikazeController : public Monster {
     for (Position pos : getCreature()->getPosition().neighbors8())
       if (WCreature c = pos.getCreature())
         if (getCreature()->isEnemy(c) && getCreature()->canSee(c)) {
-          getCreature()->monsterMessage(getCreature()->getName().the() + " explodes!");
+          getCreature()->thirdPerson(getCreature()->getName().the() + " explodes!");
           for (Position v : c->getPosition().neighbors8())
             v.fireDamage(1);
           c->getPosition().fireDamage(1);
@@ -419,9 +393,9 @@ class ShopkeeperController : public Monster, public EventListener<ShopkeeperCont
         creatures.push_back(c->getUniqueId());
         if (!prevCreatures.contains(c) && !thieves.contains(c) && !getCreature()->isEnemy(c)) {
           if (!debtors.contains(c))
-            c->playerMessage("\"Welcome to " + *getCreature()->getName().first() + "'s shop!\"");
+            c->secondPerson("\"Welcome to " + *getCreature()->getName().first() + "'s shop!\"");
           else {
-            c->playerMessage("\"Pay your debt or... !\"");
+            c->secondPerson("\"Pay your debt or... !\"");
             thiefCount.erase(c);
           }
         }
@@ -431,10 +405,10 @@ class ShopkeeperController : public Monster, public EventListener<ShopkeeperCont
         for (auto pos : getCreature()->getPosition().getRectangle(Rectangle::centered(Vec2(0, 0), 30)))
           if (auto debtor = pos.getCreature())
             if (debtor->getUniqueId() == debtorId) {
-              debtor->playerMessage("\"Come back, you owe me " + toString(debtor->getDebt().getAmountOwed(getCreature())) +
+              debtor->privateMessage("\"Come back, you owe me " + toString(debtor->getDebt().getAmountOwed(getCreature())) +
                   " gold!\"");
               if (++thiefCount.getOrInit(debtor) == 4) {
-                debtor->playerMessage("\"Thief! Thief!\"");
+                debtor->privateMessage("\"Thief! Thief!\"");
                 getCreature()->getTribe()->onItemsStolen(debtor);
                 thiefCount.erase(debtor);
                 debtors.erase(debtor);
@@ -550,7 +524,7 @@ class IllusionController : public DoNothingController {
   IllusionController(WCreature c, double deathT) : DoNothingController(c), deathTime(deathT) {}
 
   void kill() {
-    getCreature()->monsterMessage("The illusion disappears.");
+    getCreature()->thirdPerson("The illusion disappears.");
     if (!getCreature()->isDead())
       getCreature()->dieNoReason();
   }

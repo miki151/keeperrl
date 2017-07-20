@@ -59,12 +59,12 @@ string Spell::getDescription() const {
 void Spell::addMessage(WCreature c) {
   switch (castMessageType) {
     case CastMessageType::STANDARD:
-      c->playerMessage("You cast " + getName());
-      c->monsterMessage(c->getName().the() + " casts a spell");
+      c->secondPerson("You cast " + getName());
+      c->thirdPerson(c->getName().the() + " casts a spell");
       break;
     case CastMessageType::AIR_BLAST:
-      c->playerMessage("You create an air blast!");
-      c->monsterMessage(c->getName().the() + " creates an air blast!");
+      c->secondPerson("You create an air blast!");
+      c->thirdPerson(c->getName().the() + " creates an air blast!");
       break;
   }
 }

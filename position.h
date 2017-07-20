@@ -45,9 +45,8 @@ class Position {
   Position plus(Vec2) const;
   Position minus(Vec2) const;
   bool operator < (const Position&) const;
-  void globalMessage(const PlayerMessage& playerCanSee, const PlayerMessage& cannot) const;
-  void globalMessage(const PlayerMessage& playerCanSee) const;
-  void globalMessage(WConstCreature, const PlayerMessage& playerCanSee, const PlayerMessage& cannot) const;
+  void unseenMessage(const PlayerMessage&) const;
+  void globalMessage(const PlayerMessage&) const;
   vector<Position> neighbors8() const;
   vector<Position> neighbors4() const;
   vector<Position> neighbors8(RandomGen&) const;

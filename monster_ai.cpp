@@ -744,7 +744,7 @@ class Thief : public Behaviour {
         if (allGold.size() > 0)
           if (auto action = creature->stealFrom(creature->getPosition().getDir(other->getPosition()), allGold))
           return {1.0, action.append([=](WCreature creature) {
-            other->playerMessage(creature->getName().the() + " steals all your gold!");
+            other->secondPerson(creature->getName().the() + " steals all your gold!");
             robbed.insert(other);
           })};
       }

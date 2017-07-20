@@ -25,6 +25,7 @@
 #include "entity_set.h"
 #include "destroy_action.h"
 #include "best_attack.h"
+#include "msg_type.h"
 
 class Skill;
 class Level;
@@ -118,13 +119,6 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
 
   void takeItems(vector<PItem> items, WCreature from);
   bool canTakeItems(const vector<WItem>& items) const;
-
-  void youHit(BodyPart part, AttackType type) const;
-
-  void monsterMessage(const PlayerMessage& playerCanSee, const PlayerMessage& cant) const;
-  void monsterMessage(const PlayerMessage& playerCanSee) const;
-  void globalMessage(const PlayerMessage& playerCanSee, const PlayerMessage& cant) const;
-  void globalMessage(const PlayerMessage& playerCanSee) const;
 
   const CreatureAttributes& getAttributes() const;
   CreatureAttributes& getAttributes();
@@ -224,11 +218,17 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   void setHeld(WCreature holding);
   WCreature getHoldingCreature() const;
 
+  bool isPlayer() const;
+
   void you(MsgType type, const vector<string>& param) const;
   void you(MsgType type, const string& param = "") const;
   void you(const string& param) const;
-  void playerMessage(const PlayerMessage&) const;
-  bool isPlayer() const;
+  void youHit(BodyPart part, AttackType type) const;
+  void secondPerson(const PlayerMessage&) const;
+  void thirdPerson(const PlayerMessage& playerCanSee, const PlayerMessage& cant) const;
+  void thirdPerson(const PlayerMessage& playerCanSee) const;
+  void message(const PlayerMessage&) const;
+  void privateMessage(const PlayerMessage&) const;
 
   WController getController() const;
   void pushController(PController);
@@ -313,60 +313,3 @@ struct AdjectiveInfo {
   string name;
   const char* help;
 };
-
-enum class MsgType {
-    FEEL, // better
-    BLEEDING_STOPS,
-    COLLAPSE,
-    FALL,
-    FALL_ASLEEP,
-    PANIC,
-    RAGE,
-    DIE_OF,
-    ARE, // bleeding
-    YOUR, // your head is cut off
-    WAKE_UP,
-    DIE, //
-    TELE_APPEAR,
-    TELE_DISAPPEAR,
-    ATTACK_SURPRISE,
-    CAN_SEE_HIDING,
-    SWING_WEAPON,
-    THRUST_WEAPON,
-    KICK,
-    PUNCH,
-    BITE,
-    HIT,
-    TOUCH,
-    CRAWL,
-    TRIGGER_TRAP,
-    DISARM_TRAP,
-    DROP_WEAPON,
-    GET_HIT_NODAMAGE, // body part
-    HIT_THROWN_ITEM,
-    HIT_THROWN_ITEM_PLURAL,
-    MISS_THROWN_ITEM,
-    MISS_THROWN_ITEM_PLURAL,
-    ITEM_CRASHES,
-    ITEM_CRASHES_PLURAL,
-    STAND_UP,
-    TURN_INVISIBLE,
-    TURN_VISIBLE,
-    ENTER_PORTAL,
-    HAPPENS_TO,
-    BURN,
-    DROWN,
-    SET_UP_TRAP,
-    DECAPITATE,
-    TURN,
-    BECOME,
-    KILLED_BY,
-    BREAK_FREE,
-    MISS_ATTACK,
-    PRAY,
-    SACRIFICE,
-    COPULATE,
-    CONSUME,
-    GROW,
-};
-

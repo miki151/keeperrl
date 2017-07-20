@@ -48,7 +48,7 @@ class Game : public OwnedObject<Game> {
   WPlayerControl getPlayerControl() const;
   void addPlayer(WCreature);
   void removePlayer(WCreature);
-  const vector<WCreature>& getPlayer() const;
+  const vector<WCreature>& getPlayerCreatures() const;
 
   int getModelDistance(WConstCollective c1, WConstCollective c2) const;
 

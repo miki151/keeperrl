@@ -114,8 +114,10 @@ static void emitPoisonGas(Position pos, int strength, bool msg) {
   for (Position v : pos.neighbors8())
     pos.addPoisonGas(gasAmount[strength] / 2);
   pos.addPoisonGas(gasAmount[strength]);
-  if (msg)
-    pos.globalMessage("A cloud of gas is released", "You hear a hissing sound");
+  if (msg) {
+    pos.globalMessage("A cloud of gas is released");
+    pos.unseenMessage("You hear a hissing sound");
+  }
 }
 
 vector<WCreature> Effect::summon(WCreature c, CreatureId id, int num, int ttl, double delay) {
@@ -162,7 +164,7 @@ static void heal(WCreature c) {
     c->heal(1);
     c->removeEffect(LastingEffect::BLEEDING);
   } else
-    c->playerMessage("You feel refreshed.");
+    c->message("Nothing happens.");
 }
 
 static void teleport(WCreature c) {
@@ -199,7 +201,7 @@ static void teleport(WCreature c) {
     }
   }
   if (maxW < 2) {
-    c->playerMessage("The spell didn't work.");
+    c->message("The spell didn't work.");
     return;
   }
   CHECK(!good.empty());

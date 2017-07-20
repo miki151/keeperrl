@@ -1348,7 +1348,6 @@ void Collective::fetchItems(Position pos, const ItemFetchInfo& elem) {
 
 void Collective::handleSurprise(Position pos) {
   Vec2 rad(8, 8);
-  bool wasMsg = false;
   WCreature c = pos.getCreature();
   for (Position v : Random.permutation(pos.getRectangle(Rectangle(-rad, rad + Vec2(1, 1)))))
     if (WCreature other = v.getCreature())
@@ -1356,14 +1355,10 @@ void Collective::handleSurprise(Position pos) {
         for (Position dest : pos.neighbors8(Random))
           if (other->getPosition().canMoveCreature(dest)) {
             other->getPosition().moveCreature(dest);
-            other->playerMessage("Surprise!");
-            if (!wasMsg) {
-              c->playerMessage("Surprise!");
-              wasMsg = true;
-            }
             break;
           }
       }
+  pos.globalMessage("Surprise!");
 }
 
 void Collective::retire() {

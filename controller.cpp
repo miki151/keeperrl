@@ -19,6 +19,7 @@
 #include "map_memory.h"
 #include "creature.h"
 #include "player_message.h"
+#include "message_generator.h"
 
 SERIALIZE_DEF(DoNothingController, SUBCLASS(Controller))
 SERIALIZATION_CONSTRUCTOR_IMPL(DoNothingController);
@@ -41,20 +42,17 @@ bool DoNothingController::isPlayer() const {
   return false;
 }
 
-void DoNothingController::you(MsgType type, const vector<string>& param) {
-}
-
-void DoNothingController::you(MsgType type, const string& param) {
-}
-
-void DoNothingController::you(const string& param) {
-}
-
 void DoNothingController::makeMove() {
   getCreature()->wait().perform(getCreature());
 }
 
 void DoNothingController::onBump(WCreature c) {
+}
+
+static MessageGenerator messageGenerator(MessageGenerator::NONE);
+
+MessageGenerator& DoNothingController::getMessageGenerator() const {
+  return messageGenerator;
 }
 
 WCreature Controller::getCreature() const {

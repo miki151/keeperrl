@@ -538,7 +538,7 @@ void Game::removePlayer(WCreature c) {
   players.removeElement(c);
 }
 
-const vector<WCreature>& Game::getPlayer() const {
+const vector<WCreature>& Game::getPlayerCreatures() const {
   return players;
 }
 

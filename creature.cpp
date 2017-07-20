@@ -47,6 +47,7 @@
 #include "field_of_view.h"
 #include "furniture.h"
 #include "creature_debt.h"
+#include "message_generator.h"
 
 template <class Archive> 
 void Creature::MoraleOverride::serialize(Archive& ar, const unsigned int version) {
@@ -151,8 +152,8 @@ CreatureAction Creature::castSpell(Spell* spell, Vec2 dir) const {
     return CreatureAction("You can't cast this spell yet.");
   return CreatureAction(this, [=] (WCreature c) {
     c->addSound(spell->getSound());
-    monsterMessage(getName().the() + " casts a spell");
-    playerMessage("You cast " + spell->getName());
+    thirdPerson(getName().the() + " casts a spell");
+    secondPerson("You cast " + spell->getName());
     Effect::applyDirected(c, dir, spell->getDirEffectType(), EffectStrength::NORMAL);
     getGame()->getStatistics().add(StatId::SPELL_CAST);
     c->attributes->getSpellMap().setReadyTime(spell, getGlobalTime() + spell->getDifficulty()
@@ -250,7 +251,8 @@ CreatureAction Creature::move(Position pos) const {
   return CreatureAction(this, [=](WCreature self) {
     INFO << getName().the() << " moving " << direction;
     if (isAffected(LastingEffect::ENTANGLED) || isAffected(LastingEffect::TIED_UP)) {
-      playerMessage("You can't break free!");
+      secondPerson("You can't break free!");
+      thirdPerson(getName().the() + " can't break free!");
       self->spendTime(1);
       return;
     }
@@ -287,19 +289,19 @@ void Creature::takeItems(vector<PItem> items, WCreature from) {
 }
 
 void Creature::you(MsgType type, const vector<string>& param) const {
-  getController()->you(type, param);
+  getController()->getMessageGenerator().add(this, type, param);
 }
 
 void Creature::you(MsgType type, const string& param) const {
-  getController()->you(type, param);
+  getController()->getMessageGenerator().add(this, type, param);
 }
 
 void Creature::you(const string& param) const {
-  getController()->you(param);
+  getController()->getMessageGenerator().add(this, param);
 }
 
-void Creature::playerMessage(const PlayerMessage& message) const {
-  getController()->privateMessage(message);
+void Creature::secondPerson(const PlayerMessage& message) const {
+  getController()->getMessageGenerator().addSecondPerson(this, message);
 }
 
 WController Creature::getController() const {
@@ -328,7 +330,8 @@ void Creature::swapPosition(Vec2 direction) {
   CHECK(direction.length8() == 1);
   WCreature other = NOTNULL(getPosition().plus(direction).getCreature());
   swapPositionCooldown = 4;
-  playerMessage("Excuse me!");
+  privateMessage("Excuse me!");
+  other->privateMessage("Excuse me!");
   position.swapCreatures(other);
   double oldTime = getLocalTime();
   spendTime(1);
@@ -394,27 +397,25 @@ Position Creature::getPosition() const {
   return position;
 }
 
-void Creature::globalMessage(const PlayerMessage& playerCanSee) const {
-  globalMessage(playerCanSee, "");
+void Creature::message(const PlayerMessage& msg) const {
+  if (isPlayer())
+    getController()->privateMessage(msg);
+  else
+    getPosition().globalMessage(msg);
 }
 
-void Creature::globalMessage(const PlayerMessage& playerCanSee, const PlayerMessage& cant) const {
-  position.globalMessage(this, playerCanSee, cant);
+void Creature::privateMessage(const PlayerMessage& msg) const {
+  getController()->privateMessage(msg);
 }
 
-void Creature::monsterMessage(const PlayerMessage& playerCanSee, const PlayerMessage& cant) const {
-  if (!isPlayer())
-    position.globalMessage(this, playerCanSee, cant);
-}
-
-void Creature::monsterMessage(const PlayerMessage& playerCanSee) const {
-  monsterMessage(playerCanSee, "");
+void Creature::thirdPerson(const PlayerMessage& playerCanSee) const {
+  getController()->getMessageGenerator().addThirdPerson(this, playerCanSee);
 }
 
 void Creature::addSkill(Skill* skill) {
   if (!attributes->getSkills().hasDiscrete(skill->getId())) {
     attributes->getSkills().insert(skill->getId());
-    playerMessage(skill->getHelpText());
+    privateMessage(skill->getHelpText());
   }
 }
 
@@ -457,13 +458,13 @@ CreatureAction Creature::pickUp(const vector<WItem>& items) const {
   return CreatureAction(this, [=](WCreature self) {
     INFO << getName().the() << " pickup ";
     for (auto stack : stackItems(items)) {
-      monsterMessage(getName().the() + " picks up " + getPluralAName(stack[0], stack.size()));
-      playerMessage("You pick up " + getPluralTheName(stack[0], stack.size()));
+      thirdPerson(getName().the() + " picks up " + getPluralAName(stack[0], stack.size()));
+      secondPerson("You pick up " + getPluralTheName(stack[0], stack.size()));
     }
     self->equipment->addItems(self->getPosition().removeItems(items));
     if (auto& limit = getBody().getCarryLimit())
       if (equipment->getTotalWeight() > *limit / 2)
-        playerMessage("You are overloaded.");
+        you(MsgType::ARE, "overloaded");
     getGame()->addEvent({EventId::PICKED_UP, EventInfo::ItemsHandled{self, items}});
     self->spendTime(1);
   });
@@ -481,8 +482,8 @@ CreatureAction Creature::drop(const vector<WItem>& items) const {
   return CreatureAction(this, [=](WCreature self) {
     INFO << getName().the() << " drop";
     for (auto stack : stackItems(items)) {
-      monsterMessage(getName().the() + " drops " + getPluralAName(stack[0], stack.size()));
-      playerMessage("You drop " + getPluralTheName(stack[0], stack.size()));
+      thirdPerson(getName().the() + " drops " + getPluralAName(stack[0], stack.size()));
+      secondPerson("You drop " + getPluralTheName(stack[0], stack.size()));
     }
     getGame()->addEvent({EventId::DROPPED, EventInfo::ItemsHandled{self, items}});
     self->getPosition().dropItems(self->equipment->removeItems(items, self));
@@ -536,8 +537,8 @@ CreatureAction Creature::equip(WItem item) const {
       self->equipment->unequip(previousItem, self);
     }
     self->equipment->equip(item, slot, self);
-    playerMessage("You equip " + item->getTheName(false, self));
-    monsterMessage(getName().the() + " equips " + item->getAName());
+    secondPerson("You equip " + item->getTheName(false, self));
+    thirdPerson(getName().the() + " equips " + item->getAName());
     if (WGame game = getGame())
       game->addEvent({EventId::EQUIPED, EventInfo::ItemsHandled{self, {item}}});
     self->spendTime(1);
@@ -556,9 +557,9 @@ CreatureAction Creature::unequip(WItem item) const {
     CHECK(equipment->isEquipped(item)) << "Item not equipped.";
     EquipmentSlot slot = item->getEquipmentSlot();
     self->equipment->unequip(item, self);
-    playerMessage("You " + string(slot == EquipmentSlot::WEAPON ? " sheathe " : " remove ") +
+    secondPerson("You " + string(slot == EquipmentSlot::WEAPON ? " sheathe " : " remove ") +
         item->getTheName(false, this));
-    monsterMessage(getName().the() + (slot == EquipmentSlot::WEAPON ? " sheathes " : " removes ") +
+    thirdPerson(getName().the() + (slot == EquipmentSlot::WEAPON ? " sheathes " : " removes ") +
         item->getAName());
     self->spendTime(1);
   });
@@ -598,7 +599,8 @@ CreatureAction Creature::hide() const {
   if (auto furniture = getPosition().getFurniture(FurnitureLayer::MIDDLE))
     if (furniture->canHide())
       return CreatureAction(this, [=](WCreature self) {
-        playerMessage("You hide behind the " + furniture->getName());
+        secondPerson("You hide behind the " + furniture->getName());
+        thirdPerson(getName().the() + " hides behind the " + furniture->getName());
         self->knownHiding.clear();
         self->modViewObject().setModifier(ViewObject::Modifier::HIDDEN);
         for (WCreature other : getLevel()->getAllCreatures())
@@ -617,7 +619,8 @@ CreatureAction Creature::chatTo(WCreature other) const {
   CHECK(other);
   if (other->getPosition().dist8(getPosition()) == 1)
     return CreatureAction(this, [=](WCreature self) {
-        playerMessage("You chat with " + other->getName().the());
+        secondPerson("You chat with " + other->getName().the());
+        thirdPerson(getName().the() + " chats with " + other->getName().the());
         other->getAttributes().chatReaction(other, self);
         self->spendTime(1);
     });
@@ -884,11 +887,6 @@ CreatureAction Creature::attack(WCreature other, optional<AttackParams> attackPa
         attackAdjective.push_back("swiftly");
         break;
     }
-  string enemyName = other->getName().the();
-  if (other->isPlayer())
-    enemyName = "";
-  if (!other->canSee(this) && canSee(other))
-    you(MsgType::ATTACK_SURPRISE, enemyName);
   AttackLevel attackLevel = Random.choose(getBody().getAttackLevels());
   if (attackParams && attackParams->level)
     attackLevel = *attackParams->level;
@@ -897,9 +895,11 @@ CreatureAction Creature::attack(WCreature other, optional<AttackParams> attackPa
   if (getWeapon()) {
     you(getAttackMsg(attack.type, true, attack.level), concat({getWeapon()->getName()}, attackAdjective));
     if (!canSee(other))
-      playerMessage("You hit something.");
-  } else
+      you(MsgType::HIT, "something");
+  } else {
+    string enemyName = other->getController()->getMessageGenerator().getEnemyName(other);
     you(getAttackMsg(attack.type, false, attack.level), concat({enemyName}, attackAdjective));
+  }
   other->takeDamage(attack);
   double oldTime = getLocalTime();
   if (spend)
@@ -912,8 +912,8 @@ CreatureAction Creature::execute(WCreature c) const {
   if (c->getPosition().dist8(getPosition()) > 1)
     return CreatureAction();
   return CreatureAction(this, [=] (WCreature self) {
-    self->playerMessage("You execute " + c->getName().the());
-    self->globalMessage(self->getName().the() + " executes " + c->getName().the());
+    self->secondPerson("You execute " + c->getName().the());
+    self->thirdPerson(self->getName().the() + " executes " + c->getName().the());
     c->dieWithAttacker(self);
   });
 }
@@ -1107,7 +1107,7 @@ CreatureAction Creature::flyAway() const {
     return CreatureAction();
   return CreatureAction(this, [=](WCreature self) {
     INFO << getName().the() << " fly away";
-    monsterMessage(getName().the() + " flies away.");
+    thirdPerson(getName().the() + " flies away.");
     self->dieNoReason(Creature::DropType::NOTHING);
   });
 }
@@ -1115,7 +1115,7 @@ CreatureAction Creature::flyAway() const {
 CreatureAction Creature::disappear() const {
   return CreatureAction(this, [=](WCreature self) {
     INFO << getName().the() << " disappears";
-    monsterMessage(getName().the() + " disappears.");
+    thirdPerson(getName().the() + " disappears.");
     self->dieNoReason(Creature::DropType::NOTHING);
   });
 }
@@ -1124,10 +1124,12 @@ CreatureAction Creature::torture(WCreature other) const {
   if (!other->hasCondition(CreatureCondition::RESTRICTED_MOVEMENT) || other->getPosition().dist8(getPosition()) != 1)
     return CreatureAction();
   return CreatureAction(this, [=](WCreature self) {
-    monsterMessage(getName().the() + " tortures " + other->getName().the());
-    playerMessage("You torture " + other->getName().the());
-    if (Random.roll(4))
-      other->monsterMessage(other->getName().the() + " screams!", "You hear a horrible scream");
+    thirdPerson(getName().the() + " tortures " + other->getName().the());
+    secondPerson("You torture " + other->getName().the());
+    if (Random.roll(4)) {
+      other->thirdPerson(other->getName().the() + " screams!");
+      other->getPosition().unseenMessage("You hear a horrible scream");
+    }
     other->addEffect(LastingEffect::STUNNED, 3, false);
     other->getBody().affectByTorture(other);
     getGame()->addEvent({EventId::TORTURED, EventInfo::Attacked{other, self}});
@@ -1166,14 +1168,13 @@ CreatureAction Creature::give(WCreature whom, vector<WItem> items) const {
         : " can't take these items."));
   return CreatureAction(this, [=](WCreature self) {
     for (auto stack : stackItems(items)) {
-      if (!whom->isPlayer())
-        monsterMessage(getName().the() + " gives " + getPluralAName(stack[0], (int) stack.size()) + " to " +
-            whom->getName().the());
-      whom->playerMessage(getName().the() + " gives you " + getPluralAName(stack[0], (int) stack.size()));
-      playerMessage("You give " + getPluralTheName(stack[0], (int) stack.size()) + " to " +
-        whom->getName().the());
+      thirdPerson(getName().the() + " gives " + whom->getController()->getMessageGenerator().getEnemyName(whom) + " "
+          + getPluralAName(stack[0], (int) stack.size()));
+      secondPerson("You give " + getPluralTheName(stack[0], (int) stack.size()) + " to " +
+          whom->getName().the());
     }
     whom->takeItems(self->equipment->removeItems(items, self), self);
+    self->spendTime(1);
   });
 }
 
@@ -1210,15 +1211,17 @@ CreatureAction Creature::whip(const Position& pos) const {
   if (pos.dist8(position) > 1 || !whipped)
     return CreatureAction();
   return CreatureAction(this, [=](WCreature self) {
-    monsterMessage(PlayerMessage(getName().the() + " whips " + whipped->getName().the()));
+    thirdPerson(PlayerMessage(getName().the() + " whips " + whipped->getName().the()));
     double oldTime = getLocalTime();
     self->spendTime(1);
     if (Random.roll(3)) {
       addSound(SoundId::WHIP);
       self->addMovementInfo({position.getDir(pos), oldTime, getLocalTime(), MovementInfo::ATTACK});
     }
-    if (Random.roll(5))
-      whipped->monsterMessage(whipped->getName().the() + " screams!", "You hear a horrible scream!");
+    if (Random.roll(5)) {
+      whipped->thirdPerson(whipped->getName().the() + " screams!");
+      whipped->getPosition().unseenMessage("You hear a horrible scream!");
+    }
     if (Random.roll(10)) {
       whipped->addMorale(0.05);
       whipped->you(MsgType::FEEL, "happier");
@@ -1248,8 +1251,8 @@ bool Creature::canConstruct(FurnitureType) const {
 
 CreatureAction Creature::eat(WItem item) const {
   return CreatureAction(this, [=](WCreature self) {
-    monsterMessage(getName().the() + " eats " + item->getAName());
-    playerMessage("You eat " + item->getAName());
+    thirdPerson(getName().the() + " eats " + item->getAName());
+    secondPerson("You eat " + item->getAName());
     self->getPosition().removeItem(item);
     self->spendTime(3);
   });
@@ -1259,8 +1262,9 @@ void Creature::destroyImpl(Vec2 direction, const DestroyAction& action) {
   auto pos = getPosition().plus(direction);
   if (auto furniture = pos.modFurniture(FurnitureLayer::MIDDLE)) {
     string name = furniture->getName();
-    playerMessage("You "_s + action.getVerbSecondPerson() + " the " + name);
-    monsterMessage(getName().the() + " " + action.getVerbThirdPerson() + " the " + name, action.getSoundText());
+    secondPerson("You "_s + action.getVerbSecondPerson() + " the " + name);
+    thirdPerson(getName().the() + " " + action.getVerbThirdPerson() + " the " + name);
+    pos.unseenMessage(action.getSoundText());
     furniture->tryToDestroyBy(pos, this, action);
   }
 }
@@ -1333,8 +1337,9 @@ CreatureAction Creature::applyItem(WItem item) const {
     return CreatureAction("You have no healthy arms!");
   return CreatureAction(this, [=] (WCreature self) {
       double time = item->getApplyTime();
-      playerMessage("You " + item->getApplyMsgFirstPerson(self));
-      monsterMessage(getName().the() + " " + item->getApplyMsgThirdPerson(self), item->getNoSeeApplyMsg());
+      secondPerson("You " + item->getApplyMsgFirstPerson(self));
+      thirdPerson(getName().the() + " " + item->getApplyMsgThirdPerson(self));
+      position.unseenMessage(item->getNoSeeApplyMsg());
       item->apply(self);
       if (item->isDiscarded()) {
         self->equipment->removeItem(item, self);
@@ -1363,8 +1368,8 @@ CreatureAction Creature::throwItem(WItem item, Vec2 direction) const {
       item->getModifier(AttrType::DAMAGE);
   return CreatureAction(this, [=](WCreature self) {
     Attack attack(self, Random.choose(getBody().getAttackLevels()), item->getAttackType(), damage, AttrType::DAMAGE);
-    playerMessage("You throw " + item->getAName(false, this));
-    monsterMessage(getName().the() + " throws " + item->getAName());
+    secondPerson("You throw " + item->getAName(false, this));
+    thirdPerson(getName().the() + " throws " + item->getAName());
     self->getPosition().throwItem(self->equipment->removeItem(item, self), attack, dist, direction, getVision());
     self->spendTime(1);
   });
