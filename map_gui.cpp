@@ -438,9 +438,13 @@ Vec2 MapGui::getMovementOffset(const ViewObject& object, Vec2 size, double time,
     return Vec2(0, 0);
   double vertical = verticalMovement ? getJumpOffset(object, state) : 0;
   if (object.getLastMovementInfo().type == MovementInfo::ATTACK)
-    if (dir.length8() == 1)
-      return Vec2(0.8 * (state < 0.5 ? state : 1 - state) * dir.x * size.x,
-          (0.8 * (state < 0.5 ? state : 1 - state)* dir.y - vertical) * size.y);
+    if (dir.length8() == 1) {
+      if (verticalMovement)
+        return Vec2(0.8 * (state < 0.5 ? state : 1 - state) * dir.x * size.x,
+            (0.8 * (state < 0.5 ? state : 1 - state)* dir.y - vertical) * size.y);
+      else
+        return Vec2(0, 0);
+    }
   return Vec2((state - 1) * dir.x * size.x, ((state - 1)* dir.y - vertical) * size.y);
 }
 

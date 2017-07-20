@@ -780,9 +780,6 @@ Vec2 Player::getPosition() const {
   return getCreature()->getPosition().getCoord();
 }
 
-void Player::onDisplaced() {
-}
-
 static MessageGenerator messageGenerator(MessageGenerator::SECOND_PERSON);
 
 MessageGenerator& Player::getMessageGenerator() const {

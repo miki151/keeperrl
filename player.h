@@ -67,7 +67,6 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   virtual bool isPlayer() const override;
   virtual void privateMessage(const PlayerMessage& message) override;
   virtual void onBump(WCreature) override;
-  virtual void onDisplaced() override;
   virtual MessageGenerator& getMessageGenerator() const override;
 
   // overridden by subclasses

@@ -274,7 +274,6 @@ CreatureAction Creature::move(Position pos) const {
 
 void Creature::displace(double time, Vec2 dir) {
   position.moveCreature(dir);
-  getController()->onDisplaced();
   addMovementInfo({dir, time, time + 1, MovementInfo::MOVE});
 }
 
