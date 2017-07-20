@@ -917,8 +917,8 @@ CreatureAction Creature::execute(WCreature c) const {
 void Creature::onAttackedBy(WCreature attacker) {
   if (!canSee(attacker))
     unknownAttackers.insert(attacker);
-  //if (attacker->tribe != tribe)
-    //privateEnemies.insert(attacker);
+  if (attacker->tribe != tribe)
+    privateEnemies.insert(attacker);
   lastAttacker = attacker;
 }
 
