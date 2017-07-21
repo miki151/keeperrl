@@ -340,9 +340,9 @@ class Fighter : public Behaviour {
         myDamage += weapon->getModifier(AttrType::DAMAGE);
       double powerRatio = getMoraleBonus() * myDamage / other->getAttr(AttrType::DAMAGE);
       bool significantEnemy = myDamage < 5 * other->getAttr(AttrType::DAMAGE);
-      double panicWeight = 0.1;
+      double panicWeight = 0;
       if (creature->getBody().isWounded())
-        panicWeight += 0.4;
+        panicWeight += 0.1;
       if (creature->getBody().isSeriouslyWounded())
         panicWeight += 0.5;
       if (powerRatio < maxPowerRatio)
