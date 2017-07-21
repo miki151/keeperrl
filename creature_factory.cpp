@@ -1128,7 +1128,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::CYCLOPS: 
       return CATTR(
           c.viewId = ViewId::CYCLOPS;
-          c.attr = LIST(23_dam, 33_def, 10_spell_def, 85_spd );
+          c.attr = LIST(29_dam, 36_def, 10_spell_def, 85_spd );
           c.body = Body::humanoid(Body::Size::LARGE).setWeight(400);
           c.barehandedAttack = AttackType::BITE;
           c.name = CreatureName("cyclops", "cyclopes");
@@ -1471,7 +1471,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::OGRE: 
       return CATTR(
           c.viewId = ViewId::OGRE;
-          c.attr = LIST(18_dam, 25_def, 5_spell_def, 80_spd );
+          c.attr = LIST(18_dam, 18_def, 5_spell_def, 80_spd );
           c.body = Body::humanoid(Body::Size::LARGE).setWeight(140);
           c.name = "ogre";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::ORC)->getNext());
@@ -1790,7 +1790,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::ANT_SOLDIER:
       return CATTR(
           c.viewId = ViewId::ANT_SOLDIER;
-          c.attr = LIST(24_dam, 24_def, 17_spell_def, 130_spd );
+          c.attr = LIST(32_dam, 16_def, 17_spell_def, 130_spd );
           c.attackEffect = EffectType(EffectId::LASTING, LastingEffect::POISON);
           c.body = Body::nonHumanoid(Body::Size::MEDIUM)
               .setWeight(10)
@@ -1801,7 +1801,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::ANT_QUEEN:      
       return CATTR(
           c.viewId = ViewId::ANT_QUEEN;
-          c.attr = LIST(28_dam, 28_def, 20_spell_def, 130_spd );
+          c.attr = LIST(42_dam, 18_def, 20_spell_def, 130_spd );
           c.attackEffect = EffectType(EffectId::LASTING, LastingEffect::POISON);
           c.body = Body::nonHumanoid(Body::Size::MEDIUM)
               .setWeight(10)
