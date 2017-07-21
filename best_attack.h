@@ -8,5 +8,5 @@ struct BestAttack {
   BestAttack(WConstCreature);
   AttrType HASH(attr);
   double HASH(value);
-  HASH_ALL(attr, value);
+  HASH_ALL(attr, value)
 };

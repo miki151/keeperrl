@@ -308,6 +308,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   bool forceMovement = false;
   optional<double> SERIAL(lastCombatTime);
   HeapAllocated<CreatureDebt> SERIAL(debt);
+  double SERIAL(highestAttackValueEver) = 0;
 };
 
 struct AdjectiveInfo {

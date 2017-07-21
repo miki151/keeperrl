@@ -64,7 +64,7 @@ void Creature::serialize(Archive& ar, const unsigned int version) {
   ar(unknownAttackers, privateEnemies, holding);
   ar(controllerStack, creatureVisions, kills);
   ar(difficultyPoints, points, moraleOverride);
-  ar(vision, lastCombatTime, debt, lastDamageType);
+  ar(vision, lastCombatTime, debt, lastDamageType, highestAttackValueEver);
 }
 
 SERIALIZABLE(Creature)
@@ -372,6 +372,7 @@ void Creature::makeMove() {
     modViewObject().removeModifier(ViewObject::Modifier::HIDDEN);
   unknownAttackers.clear();
   getBody().affectPosition(position);
+  highestAttackValueEver = max(highestAttackValueEver, getBestAttack().value);
 }
 
 CreatureAction Creature::wait() const {
@@ -737,10 +738,10 @@ int Creature::getPoints() const {
 void Creature::onKilled(WCreature victim, optional<ExperienceType> lastDamage) {
   int difficulty = victim->getDifficultyPoints();
   CHECK(difficulty >=0 && difficulty < 100000) << difficulty << " " << victim->getName().bare();
-  double attackDiff = victim->getBestAttack().value - getBestAttack().value;
+  double attackDiff = victim->highestAttackValueEver - highestAttackValueEver;
   constexpr double maxLevelGain = 1.0;
   constexpr double minLevelGain = 0.02;
-  constexpr double equalLevelGain = 0.2;
+  constexpr double equalLevelGain = 0.4;
   constexpr double maxLevelDiff = 5;
   double expIncrease = max(minLevelGain, min(maxLevelGain,
       (maxLevelGain - equalLevelGain) * attackDiff / maxLevelDiff + equalLevelGain));
