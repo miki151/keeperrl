@@ -68,6 +68,8 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   virtual void privateMessage(const PlayerMessage& message) override;
   virtual void onBump(WCreature) override;
   virtual MessageGenerator& getMessageGenerator() const override;
+  virtual void onStartedControl() override;
+  virtual void onEndedControl() override;
 
   // overridden by subclasses
   struct CommandInfo {

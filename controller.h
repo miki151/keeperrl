@@ -44,6 +44,9 @@ class Controller : public OwnedObject<Controller> {
   virtual void sleeping() {}
   virtual bool isCustomController() { return false; }
 
+  virtual void onStartedControl() {}
+  virtual void onEndedControl() {}
+
   virtual void onBump(WCreature) = 0;
 
   virtual ~Controller() {}

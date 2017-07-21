@@ -412,7 +412,7 @@ bool PlayerControl::swapTeam() {
           return false;
         if (auto newLeader = getView()->chooseCreature("Choose new team leader:", team, "Cancel"))
           if (WCreature c = getCreature(*newLeader)) {
-            controlled[0]->popController();
+            getTeams().getLeader(*teamId)->popController();
             getTeams().setLeader(*teamId, c);
             commandTeam(*teamId);
           }
@@ -1709,7 +1709,7 @@ class MinionController : public Player {
   }
 
   SERIALIZE_ALL(SUBCLASS(Player), control)
-  SERIALIZATION_CONSTRUCTOR(MinionController);
+  SERIALIZATION_CONSTRUCTOR(MinionController)
 
   private:
   WPlayerControl SERIAL(control);

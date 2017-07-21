@@ -67,12 +67,9 @@ Player::Player(WCreature c, bool adv, SMapMemory memory, SMessageBuffer buf, SVi
     Controller(c), levelMemory(memory), adventurer(adv), displayGreeting(adventurer), messageBuffer(buf),
     visibilityMap(v), tutorial(t) {
   visibilityMap->update(c, c->getVisibleTiles());
-  getGame()->addPlayer(c);
 }
 
 Player::~Player() {
-  if (auto game = getGame()) // if the whole Game is being destructed then we get null here
-    game->removePlayer(getCreature());
 }
 
 void Player::onEvent(const GameEvent& event) {
@@ -785,6 +782,15 @@ static MessageGenerator messageGenerator(MessageGenerator::SECOND_PERSON);
 
 MessageGenerator& Player::getMessageGenerator() const {
   return messageGenerator;
+}
+
+void Player::onStartedControl() {
+  getGame()->addPlayer(getCreature());
+}
+
+void Player::onEndedControl() {
+  if (auto game = getGame()) // if the whole Game is being destructed then we get null here
+    game->removePlayer(getCreature());
 }
 
 void Player::getViewIndex(Vec2 pos, ViewIndex& index) const {

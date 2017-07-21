@@ -53,7 +53,7 @@ template <class Archive>
 void Creature::MoraleOverride::serialize(Archive& ar, const unsigned int version) {
 }
 
-SERIALIZABLE(Creature::MoraleOverride);
+SERIALIZABLE(Creature::MoraleOverride)
 
 template <class Archive> 
 void Creature::serialize(Archive& ar, const unsigned int version) { 
@@ -67,9 +67,9 @@ void Creature::serialize(Archive& ar, const unsigned int version) {
   ar(vision, lastCombatTime, debt, lastDamageType);
 }
 
-SERIALIZABLE(Creature);
+SERIALIZABLE(Creature)
 
-SERIALIZATION_CONSTRUCTOR_IMPL(Creature);
+SERIALIZATION_CONSTRUCTOR_IMPL(Creature)
 
 Creature::Creature(const ViewObject& object, TribeId t, const CreatureAttributes& attr)
     : Renderable(object), attributes(attr), tribe(t) {
@@ -171,17 +171,26 @@ void Creature::removeCreatureVision(WCreatureVision vision) {
 }
 
 void Creature::pushController(PController ctrl) {
+  if (auto controller = getController())
+    controller->onEndedControl();
   controllerStack.push_back(std::move(ctrl));
+  getController()->onStartedControl();
 }
 
 void Creature::setController(PController ctrl) {
+  if (auto controller = getController())
+    controller->onEndedControl();
   controllerStack.clear();
   pushController(std::move(ctrl));
+  getController()->onStartedControl();
 }
 
 void Creature::popController() {
   if (!controllerStack.empty()) {
+    getController()->onEndedControl();
     controllerStack.pop_back();
+    if (auto controller = getController())
+      controller->onStartedControl();
   }
 }
 
@@ -304,8 +313,10 @@ void Creature::secondPerson(const PlayerMessage& message) const {
 }
 
 WController Creature::getController() const {
-  CHECK(!controllerStack.empty());
-  return controllerStack.back().get();
+  if (!controllerStack.empty())
+    return controllerStack.back().get();
+  else
+    return nullptr;
 }
 
 bool Creature::hasCondition(CreatureCondition condition) const {
@@ -890,16 +901,20 @@ CreatureAction Creature::attack(WCreature other, optional<AttackParams> attackPa
     attackLevel = *attackParams->level;
   Attack attack(self, attackLevel, attributes->getAttackType(getWeapon()), damage, AttrType::DAMAGE,
       getWeapon() ? getWeapon()->getAttackEffect() : attributes->getAttackEffect());
+  const string enemyName = other->getController()->getMessageGenerator().getEnemyName(other);
   if (getWeapon()) {
-    you(getAttackMsg(attack.type, true, attack.level), concat({getWeapon()->getName()}, attackAdjective));
+    attackAdjective.push_front(getWeapon()->getName());
+    attackAdjective.push_back("at " + enemyName);
+    you(getAttackMsg(attack.type, true, attack.level), attackAdjective);
     if (!canSee(other))
       you(MsgType::HIT, "something");
   } else {
-    string enemyName = other->getController()->getMessageGenerator().getEnemyName(other);
-    you(getAttackMsg(attack.type, false, attack.level), concat({enemyName}, attackAdjective));
+    attackAdjective.push_front(enemyName);
+    you(getAttackMsg(attack.type, false, attack.level), attackAdjective);
   }
   other->takeDamage(attack);
   double oldTime = getLocalTime();
+  self->spendTime(timeSpent);
   self->addMovementInfo({dir, oldTime, getLocalTime(), MovementInfo::ATTACK});
   });
 }

@@ -96,8 +96,8 @@ static void addThird(WConstCreature c, MsgType type, const vector<string>& param
     case MsgType::PUNCH: msg = c->getName().the() + addName(" punches", param[0]); break;
     default: addThird(c, type, param[0]); return;
   }
-  if (param.size() > 1)
-    msg += " " + param[1];
+  for (int i : Range(1, param.size()))
+    msg += " " + param[i];
   if (!msg.empty())
     c->message(msg);
 }
@@ -180,8 +180,8 @@ static void addSecond(WConstCreature c, MsgType type, const vector<string>& para
     case MsgType::PUNCH: msg = "You punch " + param[0]; break;
     default: addSecond(c, type, param[0]); break;
   }
-  if (param.size() > 1)
-    msg += " " + param[1];
+  for (int i : Range(1, param.size()))
+    msg += " " + param[i];
   c->message(msg);
 }
 
