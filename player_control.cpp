@@ -2291,6 +2291,9 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
           if (getCollective()->getKnownTiles().isKnown(position) && !position.isBurning()) {
             selection = SELECT;
             getCollective()->destroySquare(position, layer);
+            if (auto f = position.getFurniture(layer))
+              if (f->getType() == FurnitureType::TREE_TRUNK)
+                position.removeFurniture(f);
             getView()->addSound(SoundId::REMOVE_CONSTRUCTION);
             updateSquareMemory(position);
           }
