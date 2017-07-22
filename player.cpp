@@ -670,7 +670,6 @@ void Player::makeMove() {
       getCreature()->getAttributes().setBaseAttr(AttrType::DAMAGE, 80);
       getCreature()->getAttributes().setBaseAttr(AttrType::DEFENSE, 80);
       getCreature()->getAttributes().setBaseAttr(AttrType::SPELL_DAMAGE, 80);
-      getCreature()->getAttributes().setBaseAttr(AttrType::SPELL_DEFENSE, 80);
       getCreature()->getAttributes().setBaseAttr(AttrType::SPEED, 200);
       getCreature()->addPermanentEffect(LastingEffect::FLYING, true);
       break;

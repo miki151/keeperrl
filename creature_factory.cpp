@@ -971,7 +971,6 @@ static pair<AttrType, int> operator "" _##SHORT(unsigned long long value) {\
 
 CREATE_LITERAL(DAMAGE, dam)
 CREATE_LITERAL(DEFENSE, def)
-CREATE_LITERAL(SPELL_DEFENSE, spell_def)
 CREATE_LITERAL(SPELL_DAMAGE, spell_dam)
 CREATE_LITERAL(RANGED_DAMAGE, ranged_dam)
 CREATE_LITERAL(SPEED, spd)
@@ -984,7 +983,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
       return CATTR(
           c.viewId = ViewId::KEEPER;
           c.retiredViewId = ViewId::RETIRED_KEEPER;
-          c.attr = LIST(12_dam, 12_def, 12_spell_def, 12_spell_dam, 100_spd );
+          c.attr = LIST(12_dam, 12_def, 12_spell_dam, 100_spd );
           c.body = Body::humanoid(Body::Size::LARGE);
           c.name = "Keeper";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_MALE)->getNext());
@@ -998,7 +997,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
       return CATTR(
           c.viewId = ViewId::KEEPER_F;
           c.retiredViewId = ViewId::RETIRED_KEEPER_F;
-          c.attr = LIST(12_dam, 12_def, 12_spell_def, 12_spell_dam, 100_spd );
+          c.attr = LIST(12_dam, 12_def, 12_spell_dam, 100_spd );
           c.gender = Gender::female;
           c.body = Body::humanoid(Body::Size::LARGE);
           c.name = "Keeper";
@@ -1012,7 +1011,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::ADVENTURER:
       return CATTR(
           c.viewId = ViewId::PLAYER;
-          c.attr = LIST(15_dam, 20_def, 10_spell_def, 100_spd );
+          c.attr = LIST(15_dam, 20_def, 100_spd );
           c.body = Body::humanoid(Body::Size::LARGE);
           c.maxLevelIncrease[ExperienceType::MELEE] = 15;
           c.name = "Adventurer";
@@ -1027,7 +1026,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
       return CATTR(
           c.viewId = ViewId::PLAYER_F;
           c.gender = Gender::female;
-          c.attr = LIST(15_dam, 20_def, 10_spell_def, 100_spd );
+          c.attr = LIST(15_dam, 20_def, 100_spd );
           c.body = Body::humanoid(Body::Size::LARGE);
           c.maxLevelIncrease[ExperienceType::MELEE] = 15;
           c.name = "Adventurer";
@@ -1040,7 +1039,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::BANDIT:
       return CATTR(
           c.viewId = ViewId::BANDIT;
-          c.attr = LIST(20_dam, 13_def, 10_spell_def, 100_spd );
+          c.attr = LIST(20_dam, 13_def, 100_spd );
           c.attr[AttrType::SPEED] = 100;
           c.body = Body::humanoid(Body::Size::LARGE);
           c.attr[AttrType::DAMAGE] = 20;
@@ -1052,7 +1051,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::GHOST: 
       return CATTR(
           c.viewId = ViewId::GHOST;
-          c.attr = LIST(35_def, 30_spell_dam, 5_spell_def, 80_spd );
+          c.attr = LIST(35_def, 30_spell_dam, 80_spd );
           c.body = Body::nonHumanoidSpirit(Body::Size::LARGE);
           c.barehandedAttack = AttackType::HIT;
           c.permanentEffects[LastingEffect::FLYING] = 1;
@@ -1062,7 +1061,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::SPIRIT:
       return CATTR(
           c.viewId = ViewId::SPIRIT;
-          c.attr = LIST(35_def, 40_spell_dam, 5_spell_def, 100_spd );
+          c.attr = LIST(35_def, 40_spell_dam, 100_spd );
           c.body = Body::nonHumanoidSpirit(Body::Size::LARGE);
           c.barehandedAttack = AttackType::HIT;
           c.permanentEffects[LastingEffect::FLYING] = 1;
@@ -1072,7 +1071,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::LOST_SOUL:
       return CATTR(
           c.viewId = ViewId::GHOST;
-          c.attr = LIST(25_def, 5_spell_dam, 5_spell_def, 120_spd );
+          c.attr = LIST(25_def, 5_spell_dam, 120_spd );
           c.courage = 10;
           c.spawnType = SpawnType::DEMON;
           c.barehandedAttack = AttackType::POSSESS;
@@ -1083,7 +1082,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.name = "ghost";);
     case CreatureId::SUCCUBUS:
       return CATTR(
-          c.attr = LIST(25_def, 5_spell_dam, 5_spell_def, 80_spd );
+          c.attr = LIST(25_def, 5_spell_dam, 80_spd );
           c.barehandedAttack = AttackType::HIT;
           c.viewId = ViewId::SUCCUBUS;
           c.spawnType = SpawnType::DEMON;
@@ -1096,7 +1095,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::DOPPLEGANGER:
       return CATTR(
           c.viewId = ViewId::DOPPLEGANGER;
-          c.attr = LIST(25_def, 5_spell_dam, 5_spell_def, 80_spd );
+          c.attr = LIST(25_def, 5_spell_dam, 80_spd );
           c.barehandedAttack = AttackType::HIT;
           c.body = Body::nonHumanoidSpirit(Body::Size::LARGE);
           c.spawnType = SpawnType::DEMON;
@@ -1106,7 +1105,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::WITCH: 
       return CATTR(
           c.viewId = ViewId::WITCH;
-          c.attr = LIST(14_dam, 14_def, 20_spell_dam, 15_spell_def, 60_spd );
+          c.attr = LIST(14_dam, 14_def, 20_spell_dam, 60_spd );
           c.body = Body::humanoid(Body::Size::MEDIUM);
           c.name = CreatureName("witch", "witches");
           c.name->setFirst("Cornelia");
@@ -1117,7 +1116,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::WITCHMAN: 
       return CATTR(
           c.viewId = ViewId::WITCHMAN;
-          c.attr = LIST(20_dam, 20_def, 20_spell_dam, 20_spell_def, 140_spd );
+          c.attr = LIST(20_dam, 20_def, 20_spell_dam, 140_spd );
           c.body = Body::humanoid(Body::Size::LARGE);
           c.name = CreatureName("witchman", "witchmen");
           c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_MALE)->getNext());
@@ -1128,7 +1127,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::CYCLOPS: 
       return CATTR(
           c.viewId = ViewId::CYCLOPS;
-          c.attr = LIST(29_dam, 36_def, 10_spell_def, 85_spd );
+          c.attr = LIST(29_dam, 36_def, 85_spd );
           c.body = Body::humanoid(Body::Size::LARGE).setWeight(400);
           c.barehandedAttack = AttackType::BITE;
           c.name = CreatureName("cyclops", "cyclopes");
@@ -1137,21 +1136,21 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::MINOTAUR: 
       return CATTR(
           c.viewId = ViewId::MINOTAUR;
-          c.attr = LIST(35_dam, 45_def, 20_spell_def, 90_spd );
+          c.attr = LIST(35_dam, 45_def, 90_spd );
           c.body = Body::humanoid(Body::Size::LARGE).setWeight(400);
           c.barehandedAttack = AttackType::BITE;
           c.name = "minotaur";);
     case CreatureId::SOFT_MONSTER:
       return CATTR(
           c.viewId = ViewId::SOFT_MONSTER;
-          c.attr = LIST(45_dam, 25_def, 20_spell_def, 100_spd );
+          c.attr = LIST(45_dam, 25_def, 100_spd );
           c.body = Body::humanoid(Body::Size::LARGE).setWeight(400);
           c.courage = 0.1;
           c.name = "soft monster";);
     case CreatureId::HYDRA:
       return CATTR(
           c.viewId = ViewId::HYDRA;
-          c.attr = LIST(35_dam, 45_def, 20_spell_def, 110_spd );
+          c.attr = LIST(35_dam, 45_def, 110_spd );
           c.body = Body::nonHumanoid(Body::Size::LARGE).setWeight(400);
           c.attackEffect = EffectType(EffectId::LASTING, LastingEffect::POISON);
           c.permanentEffects[LastingEffect::POISON_RESISTANT] = 1;
@@ -1161,7 +1160,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::SHELOB:
       return CATTR(
           c.viewId = ViewId::SHELOB;
-          c.attr = LIST(48_dam, 20_def, 20_spell_def, 130_spd );
+          c.attr = LIST(48_dam, 20_def, 130_spd );
           c.body = Body::nonHumanoid(Body::Size::LARGE).setWeight(400)
               .setBodyParts({{BodyPart::LEG, 8}, {BodyPart::TORSO, 1}})
               .setDeathSound(none);
@@ -1174,7 +1173,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::GREEN_DRAGON: 
       return CATTR(
           c.viewId = ViewId::GREEN_DRAGON;
-          c.attr = LIST(38_dam, 28_def, 38_spell_def, 90_spd );
+          c.attr = LIST(38_dam, 28_def, 90_spd );
           c.body = Body::nonHumanoid(Body::Size::HUGE).setHorseBodyParts().addWings();
           c.barehandedAttack = AttackType::BITE;
           c.permanentEffects[LastingEffect::POISON_RESISTANT] = 1;
@@ -1185,7 +1184,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::RED_DRAGON:
       return CATTR(
           c.viewId = ViewId::RED_DRAGON;
-          c.attr = LIST(48_dam, 28_def, 38_spell_def, 100_spd );
+          c.attr = LIST(48_dam, 28_def, 100_spd );
           c.body = Body::nonHumanoid(Body::Size::HUGE).setHorseBodyParts().addWings();
           c.barehandedAttack = AttackType::BITE;
           c.name = "red dragon";
@@ -1195,7 +1194,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::KNIGHT: 
       return CATTR(
           c.viewId = ViewId::KNIGHT;
-          c.attr = LIST(30_dam, 22_def, 15_spell_def, 100_spd );
+          c.attr = LIST(30_dam, 22_def, 100_spd );
           c.body = Body::humanoid(Body::Size::LARGE);
           c.chatReactionFriendly = "curses all dungeons"_s;
           c.chatReactionHostile = "\"Die!\""_s;
@@ -1203,7 +1202,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::AVATAR: 
       return CATTR(
           c.viewId = ViewId::DUKE;
-          c.attr = LIST(40_dam, 29_def, 25_spell_def, 100_spd );
+          c.attr = LIST(40_dam, 29_def, 100_spd );
           c.body = Body::humanoid(Body::Size::LARGE);
           c.chatReactionFriendly = "curses all dungeons"_s;
           c.chatReactionHostile = "\"Die!\""_s;
@@ -1212,7 +1211,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::ARCHER:
       return CATTR(
           c.viewId = ViewId::ARCHER;
-          c.attr = LIST(17_dam, 22_def, 15_spell_def, 30_ranged_dam, 120_spd );
+          c.attr = LIST(17_dam, 22_def, 30_ranged_dam, 120_spd );
           c.body = Body::humanoid(Body::Size::LARGE);
           c.chatReactionFriendly = "curses all dungeons"_s;
           c.chatReactionHostile = "\"Die!\""_s;
@@ -1220,7 +1219,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::WARRIOR:
       return CATTR(
           c.viewId = ViewId::WARRIOR;
-          c.attr = LIST(27_dam, 19_def, 25_spell_def, 100_spd );
+          c.attr = LIST(27_dam, 19_def, 100_spd );
           c.body = Body::humanoid(Body::Size::LARGE);
           c.chatReactionFriendly = "curses all dungeons"_s;
           c.chatReactionHostile = "\"Die!\""_s;
@@ -1228,7 +1227,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::SHAMAN:
       return CATTR(
           c.viewId = ViewId::SHAMAN;
-          c.attr = LIST(27_dam, 19_def, 30_spell_dam, 35_spell_def, 100_spd );
+          c.attr = LIST(27_dam, 19_def, 30_spell_dam, 100_spd );
           c.body = Body::humanoid(Body::Size::LARGE);
           c.chatReactionFriendly = "curses all dungeons"_s;
           c.chatReactionHostile = "\"Die!\""_s;
@@ -1245,7 +1244,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::PESEANT: 
       return CATTR(
           c.viewId = Random.choose(ViewId::PESEANT, ViewId::PESEANT_WOMAN);
-          c.attr = LIST(14_dam, 12_def, 10_spell_def, 80_spd );
+          c.attr = LIST(14_dam, 12_def, 80_spd );
           c.body = Body::humanoid(Body::Size::LARGE);
           c.innocent = true;
           c.chatReactionFriendly = "curses all dungeons"_s;
@@ -1255,7 +1254,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::CHILD: 
       return CATTR(
           c.viewId = ViewId::CHILD;
-          c.attr = LIST(8_dam, 8_def, 8_spell_def, 140_spd );
+          c.attr = LIST(8_dam, 8_def, 140_spd );
           c.body = Body::humanoid(Body::Size::MEDIUM);
           c.innocent = true;
           c.chatReactionFriendly = "\"plaaaaay!\""_s;
@@ -1265,28 +1264,28 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::CLAY_GOLEM:
       return CATTR(
           c.viewId = ViewId::CLAY_GOLEM;
-          c.attr = LIST(14_dam, 12_def, 50_spell_def, 50_spd );
+          c.attr = LIST(14_dam, 12_def, 50_spd );
           c.body = Body::nonHumanoid(Body::Material::CLAY, Body::Size::LARGE).setHumanoidBodyParts();
           c.barehandedAttack = AttackType::PUNCH;
           c.name = "clay golem";);
     case CreatureId::STONE_GOLEM: 
       return CATTR(
           c.viewId = ViewId::STONE_GOLEM;
-          c.attr = LIST(16_dam, 14_def, 50_spell_def, 60_spd );
+          c.attr = LIST(16_dam, 14_def, 60_spd );
           c.body = Body::nonHumanoid(Body::Material::ROCK, Body::Size::LARGE).setHumanoidBodyParts();
           c.barehandedAttack = AttackType::PUNCH;
           c.name = "stone golem";);
     case CreatureId::IRON_GOLEM: 
       return CATTR(
           c.viewId = ViewId::IRON_GOLEM;
-          c.attr = LIST(18_dam, 16_def, 50_spell_def, 70_spd );
+          c.attr = LIST(18_dam, 16_def, 70_spd );
           c.body = Body::nonHumanoid(Body::Material::IRON, Body::Size::LARGE).setHumanoidBodyParts();
           c.barehandedAttack = AttackType::PUNCH;
           c.name = "iron golem";);
     case CreatureId::LAVA_GOLEM: 
       return CATTR(
           c.viewId = ViewId::LAVA_GOLEM;
-          c.attr = LIST(20_dam, 18_def, 50_spell_def, 80_spd );
+          c.attr = LIST(20_dam, 18_def, 80_spd );
           c.body = Body::nonHumanoid(Body::Material::LAVA, Body::Size::LARGE).setHumanoidBodyParts();
           c.barehandedAttack = AttackType::PUNCH;
           c.attackEffect = EffectId::FIRE;
@@ -1294,14 +1293,14 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::AUTOMATON: 
       return CATTR(
           c.viewId = ViewId::AUTOMATON;
-          c.attr = LIST(45_dam, 45_def, 50_spell_def, 100_spd );
+          c.attr = LIST(45_dam, 45_def, 100_spd );
           c.body = Body::nonHumanoid(Body::Material::IRON, Body::Size::LARGE).setHumanoidBodyParts();
           c.barehandedAttack = AttackType::PUNCH;
           c.name = "automaton";);
     case CreatureId::ZOMBIE: 
       return CATTR(
           c.viewId = ViewId::ZOMBIE;
-          c.attr = LIST(14_dam, 13_def, 50_spell_def, 60_spd );
+          c.attr = LIST(14_dam, 13_def, 60_spd );
           c.body = Body::humanoid(Body::Material::UNDEAD_FLESH, Body::Size::LARGE);
           c.spawnType = SpawnType::UNDEAD;
           c.maxLevelIncrease[ExperienceType::MELEE] = 3;
@@ -1309,7 +1308,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::SKELETON: 
       return CATTR(
           c.viewId = ViewId::SKELETON;
-          c.attr = LIST(19_dam, 13_def, 50_spell_def, 80_spd );
+          c.attr = LIST(19_dam, 13_def, 80_spd );
           c.body = Body::humanoid(Body::Material::BONE, Body::Size::LARGE);
           c.maxLevelIncrease[ExperienceType::MELEE] = 3;
           c.maxLevelIncrease[ExperienceType::ARCHERY] = 4;
@@ -1354,7 +1353,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::MUMMY: 
       return CATTR(
           c.viewId = ViewId::MUMMY;
-          c.attr = LIST(15_dam, 14_def, 10_spell_dam, 14_spell_def, 60_spd );
+          c.attr = LIST(15_dam, 14_def, 10_spell_dam, 60_spd );
           c.body = Body::humanoid(Body::Material::UNDEAD_FLESH, Body::Size::LARGE);
           c.spawnType = SpawnType::UNDEAD;
           c.maxLevelIncrease[ExperienceType::MELEE] = 3;
@@ -1363,7 +1362,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::ORC:
       return CATTR(
           c.viewId = ViewId::ORC;
-          c.attr = LIST(16_dam, 14_def, 10_spell_def, 100_spd );
+          c.attr = LIST(16_dam, 14_def, 100_spd );
           c.body = Body::humanoid(Body::Size::LARGE);
           c.spawnType = SpawnType::HUMANOID;
           c.chatReactionFriendly = "curses all elves"_s;
@@ -1377,7 +1376,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::ORC_SHAMAN:
       return CATTR(
           c.viewId = ViewId::ORC_SHAMAN;
-          c.attr = LIST(12_dam, 8_def, 10_spell_dam, 10_spell_def, 100_spd );
+          c.attr = LIST(12_dam, 8_def, 10_spell_dam, 100_spd );
           c.body = Body::humanoid(Body::Size::LARGE);
           c.spawnType = SpawnType::HUMANOID;
           c.skills.setValue(SkillId::SORCERY, 0.7);
@@ -1392,7 +1391,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::HARPY:
       return CATTR(
           c.viewId = ViewId::HARPY;
-          c.attr = LIST(13_dam, 16_def, 10_spell_def, 15_ranged_dam, 120_spd );
+          c.attr = LIST(13_dam, 16_def, 15_ranged_dam, 120_spd );
           c.body = Body::humanoid(Body::Size::LARGE).addWings();
           c.spawnType = SpawnType::HUMANOID;
           c.skills.setValue(SkillId::LABORATORY, 0.3);
@@ -1405,7 +1404,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::KOBOLD: 
       return CATTR(
           c.viewId = ViewId::KOBOLD;
-          c.attr = LIST(12_dam, 13_def, 17_spell_def, 80_spd );
+          c.attr = LIST(12_dam, 13_def, 80_spd );
           c.body = Body::humanoid(Body::Size::MEDIUM);
           c.chatReactionFriendly = "talks about digging"_s;
           c.chatReactionHostile = "\"Die!\""_s;
@@ -1413,7 +1412,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::GNOME: 
       return CATTR(
           c.viewId = ViewId::GNOME;
-          c.attr = LIST(12_dam, 13_def, 8_spell_def, 80_spd );
+          c.attr = LIST(12_dam, 13_def, 80_spd );
           c.body = Body::humanoid(Body::Size::MEDIUM);
           c.chatReactionFriendly = "talks about digging"_s;
           c.chatReactionHostile = "\"Die!\""_s;
@@ -1421,7 +1420,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::GNOME_CHIEF:
       return CATTR(
           c.viewId = ViewId::GNOME_BOSS;
-          c.attr = LIST(15_dam, 16_def, 8_spell_def, 80_spd );
+          c.attr = LIST(15_dam, 16_def, 80_spd );
           c.body = Body::humanoid(Body::Size::MEDIUM);
           c.chatReactionFriendly = "talks about digging"_s;
           c.chatReactionHostile = "\"Die!\""_s;
@@ -1429,7 +1428,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::GOBLIN: 
       return CATTR(
           c.viewId = ViewId::GOBLIN;
-          c.attr = LIST(12_dam, 13_def, 10_spell_def, 80_spd );
+          c.attr = LIST(12_dam, 13_def, 80_spd );
           c.body = Body::humanoid(Body::Size::MEDIUM);
           c.spawnType = SpawnType::HUMANOID;
           c.chatReactionFriendly = "talks about crafting"_s;
@@ -1460,7 +1459,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::PRISONER:
       return CATTR(
           c.viewId = ViewId::PRISONER;
-          c.attr = LIST(8_dam, 15_def, 10_spell_def, 100_spd );
+          c.attr = LIST(8_dam, 15_def, 100_spd );
           c.body = Body::humanoid(Body::Size::LARGE).setWeight(60).setNoCarryLimit();
           c.courage = 0.1;
           c.noChase = true;
@@ -1471,7 +1470,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::OGRE: 
       return CATTR(
           c.viewId = ViewId::OGRE;
-          c.attr = LIST(18_dam, 18_def, 5_spell_def, 80_spd );
+          c.attr = LIST(18_dam, 18_def, 80_spd );
           c.body = Body::humanoid(Body::Size::LARGE).setWeight(140);
           c.name = "ogre";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::ORC)->getNext());
@@ -1490,7 +1489,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::DWARF: 
       return CATTR(
           c.viewId = ViewId::DWARF;
-          c.attr = LIST(23_dam, 27_def, 10_spell_def, 80_spd );
+          c.attr = LIST(23_dam, 27_def, 80_spd );
           c.body = Body::humanoid(Body::Size::MEDIUM).setWeight(90);
           c.name = CreatureName("dwarf", "dwarves");
           c.name->setFirst(NameGenerator::get(NameGeneratorId::DWARF)->getNext());
@@ -1501,7 +1500,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
       return CATTR(
           c.viewId = ViewId::DWARF_FEMALE;
           c.innocent = true;
-          c.attr = LIST(23_dam, 27_def, 10_spell_def, 80_spd );
+          c.attr = LIST(23_dam, 27_def, 80_spd );
           c.body = Body::humanoid(Body::Size::MEDIUM).setWeight(90);
           c.name = CreatureName("dwarf", "dwarves");
           c.name->setFirst(NameGenerator::get(NameGeneratorId::DWARF)->getNext());
@@ -1511,7 +1510,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::DWARF_BARON: 
       return CATTR(
           c.viewId = ViewId::DWARF_BARON;
-          c.attr = LIST(23_dam, 32_def, 15_spell_def, 90_spd );
+          c.attr = LIST(23_dam, 32_def, 90_spd );
           c.body = Body::humanoid(Body::Size::MEDIUM).setWeight(120);
           c.chatReactionFriendly = "curses all orcs"_s;
           c.chatReactionHostile = "\"Die!\""_s;
@@ -1522,7 +1521,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::LIZARDMAN: 
       return CATTR(
           c.viewId = ViewId::LIZARDMAN;
-          c.attr = LIST(25_dam, 14_def, 25_spell_def, 120_spd );
+          c.attr = LIST(25_dam, 14_def, 120_spd );
           c.body = Body::humanoid(Body::Size::MEDIUM);
           c.barehandedAttack = AttackType::BITE;
           c.attackEffect = EffectType(EffectId::LASTING, LastingEffect::POISON);
@@ -1533,7 +1532,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::LIZARDLORD: 
       return CATTR(
           c.viewId = ViewId::LIZARDLORD;
-          c.attr = LIST(38_dam, 16_def, 35_spell_def, 140_spd );
+          c.attr = LIST(38_dam, 16_def, 140_spd );
           c.body = Body::humanoid(Body::Size::MEDIUM);
           c.barehandedAttack = AttackType::BITE;
           c.attackEffect = EffectType(EffectId::LASTING, LastingEffect::POISON);
@@ -1545,7 +1544,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::ELF: 
       return CATTR(
           c.viewId = Random.choose(ViewId::ELF, ViewId::ELF_WOMAN);
-          c.attr = LIST(14_dam, 6_def, 35_spell_def, 100_spd );
+          c.attr = LIST(14_dam, 6_def, 100_spd );
           c.body = Body::humanoid(Body::Size::MEDIUM);
           c.innocent = true;
           c.chatReactionFriendly = "curses all dwarves"_s;
@@ -1556,7 +1555,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::ELF_ARCHER: 
       return CATTR(
           c.viewId = ViewId::ELF_ARCHER;
-          c.attr = LIST(18_dam, 12_def, 35_spell_def, 25_ranged_dam, 120_spd );
+          c.attr = LIST(18_dam, 12_def, 25_ranged_dam, 120_spd );
           c.body = Body::humanoid(Body::Size::MEDIUM);
           c.chatReactionFriendly = "curses all dwarves"_s;
           c.chatReactionHostile = "\"Die!\""_s;
@@ -1566,7 +1565,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::ELF_CHILD: 
       return CATTR(
           c.viewId = ViewId::ELF_CHILD;
-          c.attr = LIST(6_dam, 6_def, 25_spell_def, 120_spd );
+          c.attr = LIST(6_dam, 6_def, 120_spd );
           c.body = Body::humanoid(Body::Size::SMALL);
           c.innocent = true;
           c.chatReactionFriendly = "curses all dwarves"_s;
@@ -1577,7 +1576,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::ELF_LORD: 
       return CATTR(
           c.viewId = ViewId::ELF_LORD;
-          c.attr = LIST(22_dam, 14_def, 16_spell_dam, 35_spell_def, 30_ranged_dam, 140_spd );
+          c.attr = LIST(22_dam, 14_def, 16_spell_dam, 30_ranged_dam, 140_spd );
           c.body = Body::humanoid(Body::Size::MEDIUM);
           c.chatReactionFriendly = "curses all dwarves"_s;
           c.chatReactionHostile = "\"Die!\""_s;
@@ -1595,7 +1594,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::DARK_ELF:
       return CATTR(
           c.viewId = Random.choose(ViewId::DARK_ELF, ViewId::DARK_ELF_WOMAN);
-          c.attr = LIST(14_dam, 6_def, 35_spell_def, 100_spd );
+          c.attr = LIST(14_dam, 6_def, 100_spd );
           c.body = Body::humanoid(Body::Size::MEDIUM);
           c.innocent = true;
           c.chatReactionFriendly = "curses all dwarves"_s;
@@ -1606,7 +1605,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::DARK_ELF_WARRIOR:
       return CATTR(
           c.viewId = ViewId::DARK_ELF_WARRIOR;
-          c.attr = LIST(18_dam, 12_def, 6_spell_dam, 35_spell_def, 120_spd );
+          c.attr = LIST(18_dam, 12_def, 6_spell_dam, 120_spd );
           c.body = Body::humanoid(Body::Size::MEDIUM);
           c.chatReactionFriendly = "curses all dwarves"_s;
           c.chatReactionHostile = "\"Die!\""_s;
@@ -1619,7 +1618,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::DARK_ELF_CHILD:
       return CATTR(
           c.viewId = ViewId::DARK_ELF_CHILD;
-          c.attr = LIST(6_dam, 6_def, 25_spell_def, 120_spd );
+          c.attr = LIST(6_dam, 6_def, 120_spd );
           c.body = Body::humanoid(Body::Size::SMALL);
           c.innocent = true;
           c.chatReactionFriendly = "curses all dwarves"_s;
@@ -1630,7 +1629,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::DARK_ELF_LORD:
       return CATTR(
           c.viewId = ViewId::DARK_ELF_LORD;
-          c.attr = LIST(22_dam, 14_def, 16_spell_dam, 35_spell_def, 140_spd );
+          c.attr = LIST(22_dam, 14_def, 16_spell_dam, 140_spd );
           c.body = Body::humanoid(Body::Size::MEDIUM);
           c.chatReactionFriendly = "curses all dwarves"_s;
           c.chatReactionHostile = "\"Die!\""_s;
@@ -1757,7 +1756,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::SPIDER: 
       return CATTR(
           c.viewId = ViewId::SPIDER;
-          c.attr = LIST(9_dam, 13_def, 13_spell_def, 180_spd );
+          c.attr = LIST(9_dam, 13_def, 180_spd );
           c.body = Body::nonHumanoid(Body::Size::SMALL)
               .setWeight(0.3)
               .setBodyParts({{BodyPart::LEG, 8}, {BodyPart::TORSO, 1}})
@@ -1780,7 +1779,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::ANT_WORKER:
       return CATTR(
           c.viewId = ViewId::ANT_WORKER;
-          c.attr = LIST(16_dam, 16_def, 13_spell_def, 100_spd );
+          c.attr = LIST(16_dam, 16_def, 100_spd );
           c.body = Body::nonHumanoid(Body::Size::MEDIUM)
               .setWeight(10)
               .setBodyParts({{BodyPart::LEG, 6}, {BodyPart::HEAD, 1}, {BodyPart::TORSO, 1}})
@@ -1790,7 +1789,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::ANT_SOLDIER:
       return CATTR(
           c.viewId = ViewId::ANT_SOLDIER;
-          c.attr = LIST(32_dam, 16_def, 17_spell_def, 130_spd );
+          c.attr = LIST(32_dam, 16_def, 130_spd );
           c.attackEffect = EffectType(EffectId::LASTING, LastingEffect::POISON);
           c.body = Body::nonHumanoid(Body::Size::MEDIUM)
               .setWeight(10)
@@ -1801,7 +1800,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::ANT_QUEEN:      
       return CATTR(
           c.viewId = ViewId::ANT_QUEEN;
-          c.attr = LIST(42_dam, 18_def, 20_spell_def, 130_spd );
+          c.attr = LIST(42_dam, 18_def, 130_spd );
           c.attackEffect = EffectType(EffectId::LASTING, LastingEffect::POISON);
           c.body = Body::nonHumanoid(Body::Size::MEDIUM)
               .setWeight(10)
@@ -1860,7 +1859,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::WEREWOLF:
       return CATTR(
           c.viewId = ViewId::WEREWOLF;
-          c.attr = LIST(20_dam, 9_def, 15_spell_def, 100_spd );
+          c.attr = LIST(20_dam, 9_def, 100_spd );
           c.body = Body::humanoid(Body::Size::LARGE);
           c.animal = true;
           c.spawnType = SpawnType::BEAST;
@@ -1891,7 +1890,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::ELEMENTALIST: 
       return CATTR(
           c.viewId = ViewId::ELEMENTALIST;
-          c.attr = LIST(5_dam, 25_def, 15_spell_dam, 15_spell_def, 120_spd );
+          c.attr = LIST(5_dam, 25_def, 15_spell_dam, 120_spd );
           c.body = Body::humanoid(Body::Size::LARGE);
           c.gender = Gender::female;
           c.permanentEffects[LastingEffect::FIRE_RESISTANT] = 1;
@@ -1904,7 +1903,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
       return CATTR(
           c.viewId = ViewId::FIRE_ELEMENTAL;
           c.body = Body::nonHumanoid(Body::Material::FIRE, Body::Size::LARGE).setDeathSound(none);
-          c.attr = LIST(25_dam, 30_def, 15_spell_def, 120_spd );
+          c.attr = LIST(25_dam, 30_def, 120_spd );
           c.barehandedAttack = AttackType::HIT;
           c.attackEffect = EffectId::FIRE;
           c.permanentEffects[LastingEffect::FLYING] = 1;
@@ -1913,7 +1912,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
       return CATTR(
           c.viewId = ViewId::AIR_ELEMENTAL;
           c.body = Body::nonHumanoid(Body::Material::SPIRIT, Body::Size::LARGE).setDeathSound(none);
-          c.attr = LIST(25_dam, 35_def, 5_spell_def, 160_spd );
+          c.attr = LIST(25_dam, 35_def, 160_spd );
           c.barehandedAttack = AttackType::HIT;
           c.permanentEffects[LastingEffect::FLYING] = 1;
           c.spells->add(SpellId::CIRCULAR_BLAST);
@@ -1923,7 +1922,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.viewId = ViewId::EARTH_ELEMENTAL;
           c.body = Body::nonHumanoid(Body::Material::ROCK, Body::Size::LARGE).setWeight(500)
               .setHumanoidBodyParts().setDeathSound(none);
-          c.attr = LIST(25_dam, 45_def, 5_spell_def, 80_spd );
+          c.attr = LIST(25_dam, 45_def, 80_spd );
           c.barehandedAttack = AttackType::HIT;
           c.name = "earth elemental";);
     case CreatureId::WATER_ELEMENTAL:
@@ -1931,7 +1930,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.viewId = ViewId::WATER_ELEMENTAL;
           c.body = Body::nonHumanoid(Body::Material::WATER, Body::Size::LARGE).setWeight(300).setHumanoidBodyParts()
               .setDeathSound(none);
-          c.attr = LIST(45_dam, 15_def, 5_spell_def, 80_spd );
+          c.attr = LIST(45_dam, 15_def, 80_spd );
           c.barehandedAttack = AttackType::HIT;
           c.skills.insert(SkillId::SWIMMING);
           c.name = "water elemental";);
@@ -1939,7 +1938,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
       return CATTR(
           c.viewId = ViewId::ENT;
           c.body = Body::nonHumanoid(Body::Material::WOOD, Body::Size::HUGE).setHumanoidBodyParts();
-          c.attr = LIST(45_dam, 25_def, 45_spell_def, 30_spd );
+          c.attr = LIST(45_dam, 25_def, 30_spd );
           c.skills.insert(SkillId::ELF_VISION);
           c.chatReactionFriendly = "curses all dungeons"_s;
           c.chatReactionHostile = "\"Die!\""_s;
@@ -1947,7 +1946,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::ANGEL:
       return CATTR(
           c.viewId = ViewId::ANGEL;
-          c.attr = LIST(22_def, 20_spell_dam, 45_spell_def, 100_spd );
+          c.attr = LIST(22_def, 20_spell_dam, 100_spd );
           c.body = Body::nonHumanoid(Body::Material::SPIRIT, Body::Size::LARGE);
           c.chatReactionFriendly = "curses all dungeons"_s;
           c.chatReactionHostile = "\"Die!\""_s;
@@ -1970,7 +1969,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::DEATH: 
       return CATTR(
           c.viewId = ViewId::DEATH;
-          c.attr = LIST(100_spell_dam, 35_spell_def, 35_def, 95_spd );
+          c.attr = LIST(100_spell_dam, 35_def, 95_spd );
           c.body = Body::humanoidSpirit(Body::Size::LARGE);
           c.chatReactionFriendly = c.chatReactionHostile = "\"IN ORDER TO HAVE A CHANGE OF FORTUNE AT THE LAST MINUTE "
               "YOU HAVE TO TAKE YOUR FORTUNE TO THE LAST MINUTE.\""_s;

@@ -1446,7 +1446,7 @@ MovementType Creature:: getMovementType() const {
 
 int Creature::getDifficultyPoints() const {
   difficultyPoints = max(difficultyPoints,
-      getAttr(AttrType::SPELL_DEFENSE) + getAttr(AttrType::SPELL_DAMAGE) +
+      getAttr(AttrType::SPELL_DAMAGE) +
       getAttr(AttrType::DEFENSE) + getAttr(AttrType::DAMAGE) + getAttr(AttrType::SPEED) / 10);
   return difficultyPoints;
 }

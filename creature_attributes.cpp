@@ -227,7 +227,6 @@ static string getAttrNameMore(AttrType attr) {
     case AttrType::DAMAGE: return "more dangerous";
     case AttrType::DEFENSE: return "more protected";
     case AttrType::SPELL_DAMAGE: return "more powerful";
-    case AttrType::SPELL_DEFENSE: return "more resistant";
     case AttrType::RANGED_DAMAGE: return "more accurate";
     case AttrType::SPEED: return "faster";
   }

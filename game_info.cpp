@@ -110,11 +110,6 @@ vector<AttributeInfo> AttributeInfo::fromCreature(WConstCreature c) {
           "Base value of magic attacks."
       ),
       genInfo(
-          AttrType::SPELL_DEFENSE,
-          0,
-          "Base value of magic defense."
-      ),
-      genInfo(
           AttrType::RANGED_DAMAGE,
           0,
           "Affects if and how much damage is dealt when shooting a ranged weapon."

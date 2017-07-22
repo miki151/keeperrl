@@ -758,7 +758,6 @@ static GuiFactory::IconId getAttrIcon(AttrType id) {
     case AttrType::DAMAGE: return GuiFactory::STAT_ATT;
     case AttrType::DEFENSE: return GuiFactory::STAT_DEF;
     case AttrType::SPELL_DAMAGE: return GuiFactory::STAT_STR;
-    case AttrType::SPELL_DEFENSE: return GuiFactory::STAT_DEX;
     case AttrType::RANGED_DAMAGE: return GuiFactory::STAT_ACC;
     case AttrType::SPEED: return GuiFactory::STAT_SPD;
   }
@@ -1136,11 +1135,12 @@ SGuiElem GuiBuilder::getExpIncreaseLine(const PlayerInfo::LevelInfo& info, Exper
   auto line = gui.getListBuilder();
   int i = 0;
   vector<string> attrNames;
+  auto attrIcons = gui.getListBuilder();
   for (auto attr : getAttrIncreases()[type]) {
-    line.addElem(gui.topMargin(-3, gui.icon(getAttrIcon(attr))), 25);
+    attrIcons.addElem(gui.topMargin(-3, gui.icon(getAttrIcon(attr))), 22);
     attrNames.push_back(getName(attr));
   }
-  line.addSpace(30);
+  line.addElem(attrIcons.buildHorizontalList(), 80);
   line.addElem(gui.label("+" + toString(0.01 * round(100 * info.level[type])),
       info.warning[type] ? Color::RED : Color::WHITE), 60);
   string limit = toString(info.limit[type]);

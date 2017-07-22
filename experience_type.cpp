@@ -26,7 +26,6 @@ static const EnumMap<ExperienceType, EnumSet<AttrType>> attrIncreases {
   }},
   {ExperienceType::SPELL, {
       AttrType::SPELL_DAMAGE,
-      AttrType::SPELL_DEFENSE
   }},
   {ExperienceType::ARCHERY, {
       AttrType::RANGED_DAMAGE
