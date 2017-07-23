@@ -869,6 +869,16 @@ void Creature::dropWeapon() {
   }
 }
 
+CreatureAction Creature::execute(WCreature c) const {
+  if (c->getPosition().dist8(getPosition()) > 1)
+    return CreatureAction();
+  return CreatureAction(this, [=] (WCreature self) {
+    self->secondPerson("You execute " + c->getName().the());
+    self->thirdPerson(self->getName().the() + " executes " + c->getName().the());
+    c->dieWithAttacker(self);
+  });
+}
+
 CreatureAction Creature::attack(WCreature other, optional<AttackParams> attackParams) const {
   CHECK(!other->isDead());
   if (!position.isSameLevel(other->getPosition()))
@@ -879,10 +889,7 @@ CreatureAction Creature::attack(WCreature other, optional<AttackParams> attackPa
   return CreatureAction(this, [=] (WCreature self) {
   INFO << getName().the() << " attacking " << other->getName().the();
   int damage = getAttr(AttrType::DAMAGE);
-  int damageVariance = 1 + damage / 3;
-  auto rDamage = [=] () { return Random.get(-damageVariance, damageVariance); };
   double timeSpent = 1;
-  damage += rDamage() + rDamage();
   vector<string> attackAdjective;
   if (attackParams && attackParams->mod)
     switch (*attackParams->mod) {
@@ -920,22 +927,26 @@ CreatureAction Creature::attack(WCreature other, optional<AttackParams> attackPa
   });
 }
 
-CreatureAction Creature::execute(WCreature c) const {
-  if (c->getPosition().dist8(getPosition()) > 1)
-    return CreatureAction();
-  return CreatureAction(this, [=] (WCreature self) {
-    self->secondPerson("You execute " + c->getName().the());
-    self->thirdPerson(self->getName().the() + " executes " + c->getName().the());
-    c->dieWithAttacker(self);
-  });
-}
-
 void Creature::onAttackedBy(WCreature attacker) {
   if (!canSee(attacker))
     unknownAttackers.insert(attacker);
   if (attacker->tribe != tribe)
     privateEnemies.insert(attacker);
   lastAttacker = attacker;
+}
+
+constexpr double getDamage(double damageRatio) {
+  constexpr double minRatio = 0.66;  // the ratio at which the damage drops to 0
+  constexpr double maxRatio = 2;     // the ratio at which the damage reaches 1
+  constexpr double damageAtOne = 0.2;// damage dealt at a ratio of 1
+  if (damageRatio <= minRatio)
+    return 0;
+  else if (damageRatio <= 1)
+    return damageAtOne * (damageRatio - minRatio) / (1.0 - minRatio);
+  else if (damageRatio <= maxRatio)
+    return damageAtOne + (1.0 - damageAtOne) * (damageRatio - 1.0) / (maxRatio - 1.0);
+  else
+    return 1.0;
 }
 
 bool Creature::takeDamage(const Attack& attack) {
@@ -956,11 +967,11 @@ bool Creature::takeDamage(const Attack& attack) {
       << " damage " << attack.strength << " defense " << defense;
     lastDamageType = getExperienceType(attack.damageType);
   }
-  if (auto sound = attributes->getAttackSound(attack.type, attack.strength > defense))
+  double damage = getDamage((double) attack.strength / defense);
+  if (auto sound = attributes->getAttackSound(attack.type, damage > 0))
     addSound(*sound);
-  if (attack.strength > defense) {
-    double dam = (defense == 0) ? 1 : 0.5 * double(attack.strength - defense) / defense;
-    if (attributes->getBody().takeDamage(attack, this, dam))
+  if (damage > 0) {
+    if (attributes->getBody().takeDamage(attack, this, damage))
       return true;
   } else
     you(MsgType::GET_HIT_NODAMAGE, getAttackParam(attack.type));
