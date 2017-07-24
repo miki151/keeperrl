@@ -618,9 +618,9 @@ const char* Effect::getDescription(LastingEffect type) {
     case LastingEffect::MAGIC_RESISTANCE: return "Increases defense against magical attacks by 30%.";
     case LastingEffect::MELEE_RESISTANCE: return "Increases defense against melee attacks by 30%.";
     case LastingEffect::RANGED_RESISTANCE: return "Increases defense against ranged attacks by 30%.";
-    case LastingEffect::MAGIC_VULNERABILITY: return "Decreases defense against magical attacks by 30%.";
-    case LastingEffect::MELEE_VULNERABILITY: return "Decreases defense against melee attacks by 30%.";
-    case LastingEffect::RANGED_VULNERABILITY: return "Decreases defense against ranged attacks by 30%.";
+    case LastingEffect::MAGIC_VULNERABILITY: return "Decreases defense against magical attacks by 23%.";
+    case LastingEffect::MELEE_VULNERABILITY: return "Decreases defense against melee attacks by 23%.";
+    case LastingEffect::RANGED_VULNERABILITY: return "Decreases defense against ranged attacks by 23%.";
     case LastingEffect::DARKNESS_SOURCE: return "Causes the closest vicinity to become dark. Protects undead from sunlight.";
   }
 }

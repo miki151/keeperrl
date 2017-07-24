@@ -331,19 +331,20 @@ double LastingEffects::modifyCreatureDefense(LastingEffect e, double defense, At
     else
       return defense;
   };
+  double baseMultiplier = 1.3;
   switch (e) {
     case LastingEffect::MAGIC_RESISTANCE:
-      return multiplyFor(AttrType::SPELL_DAMAGE, 1.3);
+      return multiplyFor(AttrType::SPELL_DAMAGE, baseMultiplier);
     case LastingEffect::MELEE_RESISTANCE:
-      return multiplyFor(AttrType::DAMAGE, 1.3);
+      return multiplyFor(AttrType::DAMAGE, baseMultiplier);
     case LastingEffect::RANGED_RESISTANCE:
-      return multiplyFor(AttrType::RANGED_DAMAGE, 1.3);
+      return multiplyFor(AttrType::RANGED_DAMAGE, baseMultiplier);
     case LastingEffect::MAGIC_VULNERABILITY:
-      return multiplyFor(AttrType::SPELL_DAMAGE, 0.7);
+      return multiplyFor(AttrType::SPELL_DAMAGE, 1.0 / baseMultiplier);
     case LastingEffect::MELEE_VULNERABILITY:
-      return multiplyFor(AttrType::DAMAGE, 0.7);
+      return multiplyFor(AttrType::DAMAGE, 1.0 / baseMultiplier);
     case LastingEffect::RANGED_VULNERABILITY:
-      return multiplyFor(AttrType::RANGED_DAMAGE, 0.7);
+      return multiplyFor(AttrType::RANGED_DAMAGE, 1.0 / baseMultiplier);
     default:
       return defense;
   }
