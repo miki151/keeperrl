@@ -107,9 +107,11 @@ void Player::onEvent(const GameEvent& event) {
     case EventId::CONQUERED_ENEMY:
       if (adventurer) {
         WCollective col = event.get<WCollective>();
-        if (col->getVillainType() == VillainType::MAIN || col->getVillainType() == VillainType::LESSER)
-          privateMessage(PlayerMessage("The tribe of " + col->getName()->full + " is destroyed.",
+        if (auto& name = col->getName())
+          privateMessage(PlayerMessage("The tribe of " + name->full + " is destroyed.",
                 MessagePriority::CRITICAL));
+        else
+          privateMessage(PlayerMessage("An unnamed tribe is destroyed.", MessagePriority::CRITICAL));
       }
       break;
     case EventId::WON_GAME:

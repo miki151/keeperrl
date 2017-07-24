@@ -1154,7 +1154,6 @@ CreatureAction Creature::torture(WCreature other) const {
       other->thirdPerson(other->getName().the() + " screams!");
       other->getPosition().unseenMessage("You hear a horrible scream");
     }
-    other->addEffect(LastingEffect::STUNNED, 3, false);
     other->getBody().affectByTorture(other);
     getGame()->addEvent({EventId::TORTURED, EventInfo::Attacked{other, self}});
     self->spendTime(1);

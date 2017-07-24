@@ -21,7 +21,7 @@ class CollectiveBuilder {
   CollectiveBuilder& addArea(Rectangle);
   CollectiveBuilder& setLocationName(const string&);
   CollectiveBuilder& setRaceName(const string&);
-  CollectiveBuilder& setAnonymous();
+  CollectiveBuilder& setDiscoverable();
 
   PCollective build();
   bool hasCreatures() const;
@@ -40,6 +40,6 @@ class CollectiveBuilder {
   optional<Vec2> centralPoint;
   optional<string> locationName;
   optional<string> raceName;
-  bool anonymous = false;
+  bool discoverable = false;
   optional<CollectiveName> generateName();
 };

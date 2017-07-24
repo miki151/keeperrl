@@ -314,8 +314,6 @@ vector<PlayerControl::RoomInfo> PlayerControl::getRoomInfo() {
   return ret;
 }
 
-static bool seeEverything = false;
-
 const int hintFrequency = 700;
 static vector<string> getHints() {
   return {
@@ -863,6 +861,7 @@ static string getTriggerLabel(const AttackTrigger& trigger) {
 VillageInfo::Village PlayerControl::getVillageInfo(WConstCollective col) const {
   VillageInfo::Village info;
   info.name = col->getName()->shortened;
+  info.id = col->getUniqueId();
   info.tribeName = col->getName()->race;
   info.triggers.clear();
   if (col->getModel() == getModel()) {
@@ -992,9 +991,10 @@ void PlayerControl::handleRansom(bool pay) {
   ransomAttacks.removeIndex(0);
 }
 
-vector<WCollective> PlayerControl::getKnownVillains(VillainType type) const {
-  return getGame()->getVillains(type).filter([this](WCollective c) {
-      return seeEverything || getCollective()->isKnownVillain(c);});
+vector<WCollective> PlayerControl::getKnownVillains() const {
+  auto showAll = getGame()->getOptions()->getBoolValue(OptionId::SHOW_MAP);
+  return getGame()->getCollectives().filter([&](WCollective c) {
+      return showAll || getCollective()->isKnownVillain(c);});
 }
 
 vector<WCreature> PlayerControl::getMinionsLike(WCreature like) const {
@@ -1313,28 +1313,9 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
     tutorial->refreshInfo(getGame(), gameInfo.tutorial);
   gameInfo.singleModel = getGame()->isSingleModel();
   gameInfo.villageInfo.villages.clear();
-  gameInfo.villageInfo.totalMain = 0;
-  gameInfo.villageInfo.numConquered = 0;
-  for (WConstCollective col : getGame()->getVillains(VillainType::MAIN)) {
-    ++gameInfo.villageInfo.totalMain;
-    if (col->isConquered())
-      ++gameInfo.villageInfo.numConquered;
-  }
-  gameInfo.villageInfo.numMainVillains = 0;
-  for (WConstCollective col : getKnownVillains(VillainType::MAIN))
-    if (col->getName()) {
-      gameInfo.villageInfo.villages.push_back(getVillageInfo(col));
-      ++gameInfo.villageInfo.numMainVillains;
-    }
-  gameInfo.villageInfo.numLesserVillains = 0;
-  for (WConstCollective col : getKnownVillains(VillainType::LESSER))
-    if (col->getName()) {
-      gameInfo.villageInfo.villages.push_back(getVillageInfo(col));
-      ++gameInfo.villageInfo.numLesserVillains;
-    }
-  for (WConstCollective col : getKnownVillains(VillainType::ALLY))
-    if (col->getName())
-      gameInfo.villageInfo.villages.push_back(getVillageInfo(col));
+  for (WConstCollective col : getKnownVillains())
+    if (col->getName() && col->isDiscoverable())
+      gameInfo.villageInfo.villages[col->getVillainType()].push_back(getVillageInfo(col));
   SunlightInfo sunlightInfo = getGame()->getSunlightInfo();
   gameInfo.sunlightInfo = { sunlightInfo.getText(), (int)sunlightInfo.getTimeRemaining() };
   gameInfo.infoType = GameInfo::InfoType::BAND;
@@ -1508,9 +1489,10 @@ void PlayerControl::updateKnownLocations(const Position& pos) {
         getCollective()->addKnownVillain(col);
         if (!getCollective()->isKnownVillainLocation(col)) {
           getCollective()->addKnownVillainLocation(col);
-          if (auto& name = col->getName())
-            addMessage(PlayerMessage("Your minions discover the location of " + name->full,
-                MessagePriority::HIGH).setPosition(pos));
+          if (col->isDiscoverable())
+            if (auto& name = col->getName())
+              addMessage(PlayerMessage("Your minions discover the location of " + name->full,
+                  MessagePriority::HIGH).setPosition(pos));
         }
       }
 }
@@ -1792,10 +1774,11 @@ void PlayerControl::scrollToMiddle(const vector<Position>& pos) {
   getView()->setScrollPos(Rectangle::boundingBox(visible).middle());
 }
 
-WCollective PlayerControl::getVillain(int num) {
-  return concat(getKnownVillains(VillainType::MAIN),
-                getKnownVillains(VillainType::LESSER),
-                getKnownVillains(VillainType::ALLY))[num];
+WCollective PlayerControl::getVillain(UniqueEntity<Collective>::Id id) {
+  for (auto col : getGame()->getCollectives())
+    if (col->getUniqueId() == id)
+      return col;
+  return nullptr;
 }
 
 optional<TeamId> PlayerControl::getChosenTeam() const {
@@ -1899,7 +1882,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
         }
         break;
     case UserInputId::GO_TO_VILLAGE:
-        if (WCollective col = getVillain(input.get<int>())) {
+        if (WCollective col = getVillain(input.get<Collective::Id>())) {
           if (col->getLevel() != getLevel())
             setScrollPos(col->getTerritory().getAll()[0]);
           else
@@ -2198,9 +2181,10 @@ void PlayerControl::processInput(View* view, UserInput input) {
         auto& info = input.get<BuildingInfo>();
         handleSelection(info.pos, getBuildInfo()[info.building], false);
         break; }
-    case UserInputId::VILLAGE_ACTION:
-        if (WCollective village = getVillain(input.get<VillageActionInfo>().villageIndex))
-          switch (input.get<VillageActionInfo>().action) {
+    case UserInputId::VILLAGE_ACTION: {
+        auto& info = input.get<VillageActionInfo>();
+        if (WCollective village = getVillain(info.id))
+          switch (info.action) {
             case VillageAction::TRADE:
               handleTrading(village);
               break;
@@ -2209,6 +2193,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
               break;
           }
         break;
+    }
     case UserInputId::PAY_RANSOM:
         handleRansom(true);
         break;

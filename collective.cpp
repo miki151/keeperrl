@@ -56,19 +56,22 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
   ar(surrendering, delayedPos, knownTiles, technologies, kills, points, currentTasks);
   ar(credit, level, immigration, teams, name, conqueredVillains);
   ar(config, warnings, knownVillains, knownVillainLocations, banished);
-  ar(villainType, enemyId, workshops, zones, tileEfficiency);
+  ar(villainType, enemyId, workshops, zones, tileEfficiency, discoverable);
 }
 
-SERIALIZABLE(Collective);
+SERIALIZABLE(Collective)
 
-SERIALIZATION_CONSTRUCTOR_IMPL(Collective);
+SERIALIZATION_CONSTRUCTOR_IMPL(Collective)
 
-Collective::Collective(Private, WLevel l, TribeId t, const optional<CollectiveName>& n) : tribe(t), level(NOTNULL(l)), name(n) {
+Collective::Collective(Private, WLevel l, TribeId t, const optional<CollectiveName>& n)
+    : tribe(t), level(NOTNULL(l)), name(n), villainType(VillainType::NONE) {
 }
 
-PCollective Collective::create(WLevel level, TribeId tribe, const optional<CollectiveName>& name) {
+PCollective Collective::create(WLevel level, TribeId tribe, const optional<CollectiveName>& name, bool discoverable) {
   auto ret = makeOwner<Collective>(Private {}, level, tribe, name);
   ret->subscribeTo(level->getModel());
+  if (discoverable)
+    ret->setDiscoverable();
   return ret;
 }
 
@@ -92,11 +95,19 @@ void Collective::setVillainType(VillainType t) {
   villainType = t;
 }
 
+bool Collective::isDiscoverable() const {
+  return discoverable;
+}
+
+void Collective::setDiscoverable() {
+  discoverable = true;
+}
+
 void Collective::setEnemyId(EnemyId id) {
   enemyId = id;
 }
 
-optional<VillainType> Collective::getVillainType() const {
+VillainType Collective::getVillainType() const {
   return villainType;
 }
 
@@ -1075,7 +1086,7 @@ void Collective::addKnownVillain(WConstCollective col) {
 }
 
 bool Collective::isKnownVillain(WConstCollective col) const {
-  return getModel() != col->getModel() || knownVillains.contains(col);
+  return (getModel() != col->getModel() && col->getVillainType() != VillainType::NONE) || knownVillains.contains(col);
 }
 
 void Collective::addKnownVillainLocation(WConstCollective col) {

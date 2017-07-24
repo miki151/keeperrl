@@ -134,8 +134,8 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void updateSquareMemory(Position);
   void updateKnownLocations(const Position&);
   bool isEnemy(WConstCreature) const;
-  vector<WCollective> getKnownVillains(VillainType) const;
-  WCollective getVillain(int num);
+  vector<WCollective> getKnownVillains() const;
+  WCollective getVillain(UniqueEntity<Collective>::Id num);
   void scrollToMiddle(const vector<Position>&);
 
   WCreature getConsumptionTarget(View*, WCreature consumer);

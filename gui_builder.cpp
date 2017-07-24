@@ -422,7 +422,7 @@ SGuiElem GuiBuilder::drawRightBandInfo(GameInfo& info) {
         gui.icon(gui.MINION),
         gui.icon(gui.LIBRARY),
         gui.stack(gui.conditional(getIconHighlight(Color::YELLOW),
-                      [=] { return numSeenVillains < villageInfo.villages.size();}),
+                      [=] { return numSeenVillains < villageInfo.numTotalVillains;}),
                   gui.icon(gui.DIPLOMACY)),
         gui.icon(gui.HELP)
     );
@@ -1907,7 +1907,7 @@ static const char* getVillageActionText(VillageAction action) {
   }
 }
 
-SGuiElem GuiBuilder::getVillageActionButton(int villageIndex, VillageInfo::Village::ActionInfo action) {
+SGuiElem GuiBuilder::getVillageActionButton(UniqueEntity<Collective>::Id id, VillageInfo::Village::ActionInfo action) {
   if (action.disabledReason)
     return gui.stack(
         gui.label(getVillageActionText(action.action), Color::GRAY),
@@ -1916,7 +1916,7 @@ SGuiElem GuiBuilder::getVillageActionButton(int villageIndex, VillageInfo::Villa
     return gui.stack(
         gui.labelHighlight(getVillageActionText(action.action), Color::GREEN),
         gui.button(getButtonCallback({UserInputId::VILLAGE_ACTION,
-            VillageActionInfo{villageIndex, action.action}})));
+            VillageActionInfo{id, action.action}})));
 }
 
 static Color getTriggerColor(double value) {
@@ -1944,64 +1944,73 @@ void GuiBuilder::showAttackTriggers(const vector<VillageInfo::Village::TriggerIn
   }
 }
 
+static const char* getHeader(VillainType type) {
+  switch (type) {
+    case VillainType::MAIN: return "Main villains:";
+    case VillainType::LESSER: return "Lesser villains:";
+    case VillainType::ALLY: return "Allies:";
+    case VillainType::NONE: return "Other:";
+    case VillainType::PLAYER: return "Player:";
+  }
+}
+
 SGuiElem GuiBuilder::drawVillages(VillageInfo& info) {
   int currentHash = combineHash(info);
   if (currentHash != villagesHash) {
     villagesHash = currentHash;
     auto lines = gui.getListBuilder(legendLineHeight);
     int titleMargin = -11;
-    lines.addElem(gui.leftMargin(titleMargin, gui.label(toString(info.numConquered) + "/" +
-            toString(info.totalMain) + " main villains conquered.")), titleLineHeight);
-    if (info.numMainVillains > 0)
-      lines.addElem(gui.leftMargin(titleMargin, gui.label("Main villains:")), titleLineHeight);
-    for (int i : All(info.villages)) {
-      if (i == info.numMainVillains && info.numLesserVillains > 0) {
+    int numConquered = 0;
+    for (auto& villain : info.villages[VillainType::MAIN])
+      if (villain.state == villain.CONQUERED)
+        ++numConquered;
+    lines.addElem(gui.leftMargin(titleMargin, gui.label(toString(numConquered) + "/" +
+            toString(info.villages[VillainType::MAIN].size()) + " main villains conquered.")), titleLineHeight);
+    for (auto villainType : {VillainType::MAIN, VillainType::LESSER, VillainType::ALLY, VillainType::NONE}) {
+      if (info.villages[villainType].size() > 0) {
         lines.addSpace();
-        lines.addElem(gui.leftMargin(titleMargin, gui.label("Lesser villains:")), titleLineHeight);
+        lines.addElem(gui.leftMargin(titleMargin, gui.label(getHeader(villainType))), titleLineHeight);
       }
-      if (i == info.numMainVillains + info.numLesserVillains) {
-        lines.addSpace();
-        lines.addElem(gui.leftMargin(titleMargin, gui.label("Allies:")), titleLineHeight);
-      }
-      auto& elem = info.villages[i];
-      string title = capitalFirst(elem.name) + (elem.tribeName.empty() ?
-            string() : " (" + elem.tribeName + ")");
-      SGuiElem header;
-      if (info.villages[i].access == VillageInfo::Village::LOCATION)
-        header = gui.stack(gui.button(getButtonCallback({UserInputId::GO_TO_VILLAGE, i})),
-          gui.getListBuilder()
-              .addElemAuto(gui.labelHighlight(title))
-              .addSpace(7)
-              .addElemAuto(gui.labelUnicode(u8"➚")).buildHorizontalList());
-      else
-        header = gui.label(title);
-      lines.addElem(std::move(header));
-      if (info.villages[i].access == VillageInfo::Village::NO_LOCATION)
-        lines.addElem(gui.leftMargin(40, gui.label("Location unknown", Color::LIGHT_BLUE)));
-      else if (info.villages[i].access == VillageInfo::Village::INACTIVE)
-        lines.addElem(gui.leftMargin(40, gui.label("Outside influence zone", Color::GRAY)));
-      GuiFactory::ListBuilder line(gui);
-      line.addElemAuto(gui.margins(getVillageStateLabel(elem.state), 40, 0, 40, 0));
-      vector<VillageInfo::Village::TriggerInfo> triggers = elem.triggers;
-      sort(triggers.begin(), triggers.end(),
-          [] (const VillageInfo::Village::TriggerInfo& t1, const VillageInfo::Village::TriggerInfo& t2) {
-              return t1.value > t2.value;});
-  #ifdef RELEASE
-      triggers = triggers.filter([](const VillageInfo::Village::TriggerInfo& t) { return t.value > 0;});
-  #endif
-      if (!triggers.empty())
-        line.addElemAuto(gui.stack(
-            gui.labelHighlight("Triggers", Color::RED),
-            gui.buttonRect([this, triggers](Rectangle bounds) {
-                showAttackTriggers(triggers, bounds.topRight() + Vec2(20, 0));})));
-      lines.addElem(line.buildHorizontalList());
-      for (auto action : elem.actions)
-        lines.addElem(gui.margins(getVillageActionButton(i, action), 40, 0, 0, 0));
+      for (auto& elem : info.villages[villainType]) {
+        string title = capitalFirst(elem.name) + (elem.tribeName.empty() ?
+              string() : " (" + elem.tribeName + ")");
+        SGuiElem header;
+        if (elem.access == VillageInfo::Village::LOCATION)
+          header = gui.stack(gui.button(getButtonCallback({UserInputId::GO_TO_VILLAGE, elem.id})),
+            gui.getListBuilder()
+                .addElemAuto(gui.labelHighlight(title))
+                .addSpace(7)
+                .addElemAuto(gui.labelUnicode(u8"➚")).buildHorizontalList());
+        else
+          header = gui.label(title);
+        lines.addElem(std::move(header));
+        if (elem.access == VillageInfo::Village::NO_LOCATION)
+          lines.addElem(gui.leftMargin(40, gui.label("Location unknown", Color::LIGHT_BLUE)));
+        else if (elem.access == VillageInfo::Village::INACTIVE)
+          lines.addElem(gui.leftMargin(40, gui.label("Outside influence zone", Color::GRAY)));
+        GuiFactory::ListBuilder line(gui);
+        line.addElemAuto(gui.margins(getVillageStateLabel(elem.state), 40, 0, 40, 0));
+        vector<VillageInfo::Village::TriggerInfo> triggers = elem.triggers;
+        sort(triggers.begin(), triggers.end(),
+            [] (const VillageInfo::Village::TriggerInfo& t1, const VillageInfo::Village::TriggerInfo& t2) {
+                return t1.value > t2.value;});
+    #ifdef RELEASE
+        triggers = triggers.filter([](const VillageInfo::Village::TriggerInfo& t) { return t.value > 0;});
+    #endif
+        if (!triggers.empty())
+          line.addElemAuto(gui.stack(
+              gui.labelHighlight("Triggers", Color::RED),
+              gui.buttonRect([this, triggers](Rectangle bounds) {
+                  showAttackTriggers(triggers, bounds.topRight() + Vec2(20, 0));})));
+        lines.addElem(line.buildHorizontalList());
+        for (auto action : elem.actions)
+          lines.addElem(gui.margins(getVillageActionButton(elem.id, action), 40, 0, 0, 0));
 
+      }
     }
     if (lines.isEmpty())
       return gui.label("No foreign tribes discovered.");
-    int numVillains = info.villages.size();
+    int numVillains = info.numTotalVillains;
     if (numSeenVillains == -1)
       numSeenVillains = numVillains;
     villagesCache = gui.stack(
@@ -2424,6 +2433,9 @@ static Color getHighlightColor(VillainType type) {
     case VillainType::ALLY:
       return Color::GREEN;
     case VillainType::PLAYER:
+      return Color::WHITE;
+    case VillainType::NONE:
+      FATAL << "Tried to render villain of type NONE";
       return Color::WHITE;
   }
 }

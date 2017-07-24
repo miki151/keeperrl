@@ -71,14 +71,14 @@ struct EnemyInfo {
       optional<LevelConnection> = none);
   EnemyInfo& setVillainType(VillainType type);
   EnemyInfo& setId(EnemyId);
-  EnemyInfo& setAnonymous();
+  EnemyInfo& setNonDiscoverable();
   SettlementInfo settlement;
   CollectiveConfig config;
   optional<VillageBehaviour> villain;
   optional<VillainType> villainType;
   optional<LevelConnection> levelConnection;
   optional<EnemyId> id;
-  bool anonymous = false;
+  bool discoverable = true;
 };
 
 struct ExternalEnemy;

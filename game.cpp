@@ -62,12 +62,11 @@ Game::Game(Table<PModel>&& m, Vec2 basePos, const CampaignSetup& c)
     if (WModel m = models[v].get()) {
       for (WCollective c : m->getCollectives()) {
         collectives.push_back(c);
-        if (auto type = c->getVillainType()) {
-          villainsByType[*type].push_back(c);
-          if (*type == VillainType::PLAYER) {
-            playerControl = c->getControl().dynamicCast<PlayerControl>();
-            playerCollective = c;
-          }
+        auto type = c->getVillainType();
+        villainsByType[type].push_back(c);
+        if (type == VillainType::PLAYER) {
+          playerControl = c->getControl().dynamicCast<PlayerControl>();
+          playerCollective = c;
         }
       }
       m->updateSunlightMovement();
@@ -632,7 +631,7 @@ void Game::addEvent(const GameEvent& event) {
   switch (event.getId()) {
     case EventId::CONQUERED_ENEMY: {
         WCollective col = event.get<WCollective>();
-        if (col->getVillainType()) {
+        if (col->getVillainType() != VillainType::NONE) {
           Vec2 coords = getModelCoords(col->getModel());
           if (!campaign->isDefeated(coords)) {
             if (auto retired = campaign->getSites()[coords].getRetired())

@@ -506,8 +506,8 @@ PModel ModelBuilder::tryModel(int width, const string& levelName, vector<EnemyIn
       enemy.settlement.collective->setLocationName(*enemy.settlement.locationName);
     if (auto race = enemy.settlement.race)
       enemy.settlement.collective->setRaceName(*race);
-    if (enemy.anonymous)
-      enemy.settlement.collective->setAnonymous();
+    if (enemy.discoverable)
+      enemy.settlement.collective->setDiscoverable();
     PCollective collective = enemy.settlement.collective->build();
     auto control = VillageControl::create(collective.get(), enemy.villain);
     if (enemy.villainType)

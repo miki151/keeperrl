@@ -50,7 +50,7 @@ class Immigration;
 
 class Collective : public TaskCallback, public UniqueEntity<Collective>, public EventListener<Collective> {
   public:
-  static PCollective create(WLevel, TribeId, const optional<CollectiveName>&);
+  static PCollective create(WLevel, TribeId, const optional<CollectiveName>&, bool discoverable);
   void init(CollectiveConfig&&, Immigration&&);
   void acquireInitialTech();
   void addCreature(WCreature, EnumSet<MinionTrait>);
@@ -71,8 +71,9 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   void banishCreature(WCreature);
   bool wasBanished(WConstCreature) const;
   void setVillainType(VillainType);
+  bool isDiscoverable() const;
   void setEnemyId(EnemyId);
-  optional<VillainType> getVillainType() const;
+  VillainType getVillainType() const;
   optional<EnemyId> getEnemyId() const;
   WCollectiveControl getControl() const;
   double getLocalTime() const;
@@ -300,7 +301,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   HeapAllocated<optional<CollectiveName>> SERIAL(name);
   HeapAllocated<CollectiveConfig> SERIAL(config);
   EntitySet<Creature> SERIAL(banished);
-  optional<VillainType> SERIAL(villainType);
+  VillainType SERIAL(villainType);
   optional<EnemyId> SERIAL(enemyId);
   unique_ptr<Workshops> SERIAL(workshops);
   HeapAllocated<Zones> SERIAL(zones);
@@ -311,4 +312,6 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   EntitySet<Collective> SERIAL(knownVillains);
   EntitySet<Collective> SERIAL(knownVillainLocations);
   set<EnemyId> SERIAL(conqueredVillains);
+  void setDiscoverable();
+  bool SERIAL(discoverable) = false;
 };

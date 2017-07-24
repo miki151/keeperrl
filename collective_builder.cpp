@@ -30,8 +30,8 @@ CollectiveBuilder& CollectiveBuilder::setRaceName(const string& n) {
   return *this;
 }
 
-CollectiveBuilder&CollectiveBuilder::setAnonymous() {
-  anonymous = true;
+CollectiveBuilder& CollectiveBuilder::setDiscoverable() {
+  discoverable = true;
   return *this;
 }
 
@@ -51,7 +51,7 @@ CollectiveBuilder& CollectiveBuilder::addArea(Rectangle v) {
 }
 
 optional<CollectiveName> CollectiveBuilder::generateName() {
-  if (!creatures.empty() && !anonymous) {
+  if (!creatures.empty()) {
     CollectiveName ret;
     auto leader = creatures[0].creature;
     if (locationName && raceName)
@@ -77,7 +77,7 @@ optional<CollectiveName> CollectiveBuilder::generateName() {
 
 PCollective CollectiveBuilder::build() {
   CHECK(level);
-  auto c = Collective::create(level, *tribe, generateName());
+  auto c = Collective::create(level, *tribe, generateName(), discoverable);
   Immigration im(c.get());
   c->init(std::move(*config), std::move(im));
   c->setControl(CollectiveControl::idle(c.get()));

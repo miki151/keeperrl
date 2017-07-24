@@ -598,7 +598,7 @@ const char* Effect::getDescription(LastingEffect type) {
     case LastingEffect::BLEEDING: return "Causes loss of health points over time.";
     case LastingEffect::SPEED: return "Causes unnaturally quick movement.";
     case LastingEffect::BLIND: return "Causes blindness";
-    case LastingEffect::INVISIBLE: return "Causes invisibility.";
+    case LastingEffect::INVISIBLE: return "Makes you invisible to enemies.";
     case LastingEffect::POISON: return "Decreases health every turn by a little bit.";
     case LastingEffect::POISON_RESISTANT: return "Gives poison resistance.";
     case LastingEffect::FLYING: return "Causes levitation.";
