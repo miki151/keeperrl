@@ -599,10 +599,10 @@ const char* Effect::getDescription(LastingEffect type) {
     case LastingEffect::SPEED: return "Causes unnaturally quick movement.";
     case LastingEffect::BLIND: return "Causes blindness";
     case LastingEffect::INVISIBLE: return "Causes invisibility.";
-    case LastingEffect::POISON: return "Poisons.";
+    case LastingEffect::POISON: return "Decreases health every turn by a little bit.";
     case LastingEffect::POISON_RESISTANT: return "Gives poison resistance.";
     case LastingEffect::FLYING: return "Causes levitation.";
-    case LastingEffect::COLLAPSED: return "Causes collapse.";
+    case LastingEffect::COLLAPSED: return "Moving across tiles takes three times longer.";
     case LastingEffect::PANIC: return "Increases defense and lowers damage.";
     case LastingEffect::RAGE: return "Increases damage and lowers defense.";
     case LastingEffect::HALLU: return "Causes hallucinations.";
@@ -612,7 +612,7 @@ const char* Effect::getDescription(LastingEffect type) {
     case LastingEffect::TIED_UP:
       FALLTHROUGH;
     case LastingEffect::ENTANGLED: return "web";
-    case LastingEffect::STUNNED: return "Causes stunning.";
+    case LastingEffect::STUNNED: return "Causes inability to make any action.";
     case LastingEffect::FIRE_RESISTANT: return "Gives fire resistance.";
     case LastingEffect::INSANITY: return "Confuses the target about who is friend and who is foe.";
     case LastingEffect::MAGIC_RESISTANCE: return "Increases defense against magical attacks by 30%.";

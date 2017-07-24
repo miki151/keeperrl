@@ -1275,7 +1275,11 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.name = "shaman";);
     case CreatureId::PESEANT: 
       return CATTR(
-          c.viewId = Random.choose(ViewId::PESEANT, ViewId::PESEANT_WOMAN);
+          if (Random.roll(2)) {
+            c.viewId = ViewId::PESEANT_WOMAN;
+            c.gender = Gender::female;
+          } else
+            c.viewId = ViewId::PESEANT;
           c.attr = LIST(14_dam, 12_def, 80_spd );
           c.body = Body::humanoid(Body::Size::LARGE);
           c.innocent = true;
@@ -2164,13 +2168,7 @@ vector<ItemType> getInventory(CreatureId id) {
     case CreatureId::KEEPER_F:
     case CreatureId::KEEPER:
       return ItemList()
-          .add(ItemId::ROBE)
-          .add({ItemId::SCROLL, EffectType{EffectId::LASTING, LastingEffect::MAGIC_RESISTANCE}}, 10)
-          .add({ItemId::SCROLL, EffectType{EffectId::LASTING, LastingEffect::MELEE_RESISTANCE}}, 10)
-          .add({ItemId::SCROLL, EffectType{EffectId::LASTING, LastingEffect::RANGED_RESISTANCE}}, 10)
-          .add({ItemId::SCROLL, EffectType{EffectId::LASTING, LastingEffect::MAGIC_VULNERABILITY}}, 10)
-          .add({ItemId::SCROLL, EffectType{EffectId::LASTING, LastingEffect::MELEE_VULNERABILITY}}, 10)
-          .add({ItemId::SCROLL, EffectType{EffectId::LASTING, LastingEffect::RANGED_VULNERABILITY}}, 10);
+          .add(ItemId::ROBE);
     case CreatureId::ADVENTURER_F:
     case CreatureId::ADVENTURER:
       return ItemList()

@@ -50,7 +50,7 @@ static void addThird(WConstCreature c, MsgType type, const string& param) {
     case MsgType::BITE: msg = c->getName().the() + addName(" bites", param); break;
     case MsgType::CRAWL: msg = c->getName().the() + " is crawling"; break;
     case MsgType::STAND_UP: msg = c->getName().the() + " is back on " +
-                            c->getAttributes().getGender().his() + " feet ";
+                            c->getAttributes().getGender().his() + " feet";
                             break;
     case MsgType::TURN_INVISIBLE: msg = c->getName().the() + " disappears!"; break;
     case MsgType::TURN_VISIBLE: msg = c->getName().the() + " appears out of nowhere!"; break;

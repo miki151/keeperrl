@@ -729,13 +729,13 @@ void addPrefix(ItemAttributes& i, WeaponPrefix prefix) {
       i.name = "great " + *i.name;
       if (i.plural)
         i.plural = "great " + *i.plural;
-      i.attackEffect = EffectType {EffectId::LASTING, LastingEffect::STUNNED};
+      i.attackEffect = EffectType {EffectId::LASTING, LastingEffect::BLEEDING};
       break;
     case WeaponPrefix::LEAD_FILLED:
       i.name = "lead-filled " + *i.name;
       if (i.plural)
         i.plural = "lead-filled " + *i.plural;
-      i.attackEffect = EffectType {EffectId::LASTING, LastingEffect::STUNNED};
+      i.attackEffect = EffectType {EffectId::LASTING, LastingEffect::COLLAPSED};
       break;
   }
 }
