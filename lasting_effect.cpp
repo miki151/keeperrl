@@ -6,71 +6,122 @@
 #include "creature_attributes.h"
 #include "body.h"
 
-void LastingEffects::onAffected(WCreature c, LastingEffect effect, bool msg) {
+static optional<LastingEffect> getCancelled(LastingEffect effect) {
+  auto getCancelledOneWay = [] (LastingEffect effect) -> optional<LastingEffect> {
+    switch (effect) {
+      case LastingEffect::POISON_RESISTANT:
+        return LastingEffect::POISON;
+      default:
+        return none;
+    }
+  };
+  auto getCancelledBothWays = [] (LastingEffect effect) -> optional<LastingEffect> {
+    switch (effect) {
+      case LastingEffect::PANIC:
+        return LastingEffect::RAGE;
+      case LastingEffect::SPEED:
+        return LastingEffect::SLOWED;
+      default:
+        return none;
+    }
+  };
+  static EnumMap<LastingEffect, optional<LastingEffect>> ret(
+    [&](LastingEffect e) -> optional<LastingEffect> {
+      if (auto other = getCancelledOneWay(e))
+        return *other;
+      if (auto other = getCancelledBothWays(e))
+        return *other;
+      for (auto other : ENUM_ALL(LastingEffect))
+        if (getCancelledBothWays(other) == e)
+          return other;
+      return none;
+    }
+  );
+  return ret[effect];
+}
+
+static optional<ViewObject::Modifier> getViewObjectModifier(LastingEffect effect) {
   switch (effect) {
-    case LastingEffect::FLYING:
-      if (msg) c->you(MsgType::ARE, "flying!");
-      break;
-    case LastingEffect::BLEEDING:
-      if (msg) {
+    case LastingEffect::INVISIBLE:
+      return ViewObjectModifier::INVISIBLE;
+    default:
+      return none;
+  }
+}
+
+void LastingEffects::onAffected(WCreature c, LastingEffect effect, bool msg) {
+  if (auto e = getCancelled(effect))
+    c->removeEffect(*e, false);
+  if (auto mod = getViewObjectModifier(effect))
+    c->modViewObject().setModifier(*mod);
+  if (msg)
+    switch (effect) {
+      case LastingEffect::FLYING:
+        c->you(MsgType::ARE, "flying!"); break;
+      case LastingEffect::BLEEDING:
         c->secondPerson("You start bleeding");
         c->thirdPerson(c->getName().the() + " starts bleeding");
-      }
-      break;
-    case LastingEffect::COLLAPSED:
-      if (msg) c->you(MsgType::COLLAPSE);
-      break;
-    case LastingEffect::PREGNANT:
-      if (msg) c->you(MsgType::ARE, "pregnant!");
-      break;
-    case LastingEffect::STUNNED:
-      if (msg) c->you(MsgType::ARE, "stunned");
-      break;
-    case LastingEffect::PANIC:
-      c->removeEffect(LastingEffect::RAGE, false);
-      if (msg) c->you(MsgType::PANIC, "");
-      break;
-    case LastingEffect::RAGE:
-      c->removeEffect(LastingEffect::PANIC, false);
-      if (msg) c->you(MsgType::RAGE, "");
-      break;
-    case LastingEffect::HALLU:
-      if (!c->isAffected(LastingEffect::BLIND) && msg)
-        c->privateMessage("The world explodes into colors!");
-      break;
-    case LastingEffect::BLIND:
-      if (msg) c->you(MsgType::ARE, "blind!");
-      break;
-    case LastingEffect::INVISIBLE:
-      if (!c->isAffected(LastingEffect::BLIND) && msg)
-        c->you(MsgType::TURN_INVISIBLE, "");
-      c->modViewObject().setModifier(ViewObject::Modifier::INVISIBLE);
-      break;
-    case LastingEffect::POISON:
-      if (msg) c->you(MsgType::ARE, "poisoned");
-      break;
-    case LastingEffect::DAM_BONUS: if (msg) c->you(MsgType::FEEL, "more dangerous"); break;
-    case LastingEffect::DEF_BONUS: if (msg) c->you(MsgType::FEEL, "more protected"); break;
-    case LastingEffect::SPEED:
-      if (msg) c->you(MsgType::ARE, "moving faster");
-      c->removeEffect(LastingEffect::SLOWED, false);
-      break;
-    case LastingEffect::SLOWED:
-      if (msg) c->you(MsgType::ARE, "moving more slowly");
-      c->removeEffect(LastingEffect::SPEED, false);
-      break;
-    case LastingEffect::TIED_UP: if (msg) c->you(MsgType::ARE, "tied up"); break;
-    case LastingEffect::ENTANGLED: if (msg) c->you(MsgType::ARE, "entangled in a web"); break;
-    case LastingEffect::SLEEP: if (msg) c->you(MsgType::FALL_ASLEEP, ""); break;
-    case LastingEffect::POISON_RESISTANT:
-      if (msg) c->you(MsgType::ARE, "now poison resistant");
-      c->removeEffect(LastingEffect::POISON, true);
-      break;
-    case LastingEffect::FIRE_RESISTANT: if (msg) c->you(MsgType::ARE, "now fire resistant"); break;
-    case LastingEffect::INSANITY: if (msg) c->you(MsgType::BECOME, "insane"); break;
-    case LastingEffect::MAGIC_SHIELD: if (msg) c->you(MsgType::FEEL, "protected"); break;
-    case LastingEffect::DARKNESS_SOURCE: break;
-  }
+        break;
+      case LastingEffect::COLLAPSED:
+        c->you(MsgType::COLLAPSE); break;
+      case LastingEffect::PREGNANT:
+        c->you(MsgType::ARE, "pregnant!"); break;
+      case LastingEffect::STUNNED:
+        c->you(MsgType::ARE, "stunned"); break;
+      case LastingEffect::PANIC:
+        c->you(MsgType::PANIC, ""); break;
+      case LastingEffect::RAGE:
+        c->you(MsgType::RAGE, ""); break;
+      case LastingEffect::HALLU:
+        if (!c->isAffected(LastingEffect::BLIND))
+          c->privateMessage("The world explodes into colors!");
+        else
+          c->privateMessage("You feel as if a party had started without you.");
+        break;
+      case LastingEffect::BLIND:
+        c->you(MsgType::ARE, "blind!"); break;
+      case LastingEffect::INVISIBLE:
+        if (!c->isAffected(LastingEffect::BLIND))
+          c->you(MsgType::TURN_INVISIBLE, "");
+        else
+          c->privateMessage("You feel like a child again.");
+        break;
+      case LastingEffect::POISON:
+        c->you(MsgType::ARE, "poisoned"); break;
+      case LastingEffect::DAM_BONUS:
+        c->you(MsgType::FEEL, "more dangerous"); break;
+      case LastingEffect::DEF_BONUS:
+        c->you(MsgType::FEEL, "more protected"); break;
+      case LastingEffect::SPEED:
+        c->you(MsgType::ARE, "moving faster"); break;
+      case LastingEffect::SLOWED:
+        c->you(MsgType::ARE, "moving more slowly"); break;
+      case LastingEffect::TIED_UP:
+        c->you(MsgType::ARE, "tied up"); break;
+      case LastingEffect::ENTANGLED:
+        c->you(MsgType::ARE, "entangled in a web"); break;
+      case LastingEffect::SLEEP:
+        c->you(MsgType::FALL_ASLEEP, ""); break;
+      case LastingEffect::POISON_RESISTANT:
+        c->you(MsgType::ARE, "now poison resistant"); break;
+      case LastingEffect::FIRE_RESISTANT:
+        c->you(MsgType::ARE, "now fire resistant"); break;
+      case LastingEffect::INSANITY:
+        c->you(MsgType::BECOME, "insane"); break;
+      case LastingEffect::DARKNESS_SOURCE: break;
+      case LastingEffect::MAGIC_RESISTANCE:
+        c->you(MsgType::ARE, "now resistant to magical attacks"); break;
+      case LastingEffect::MELEE_RESISTANCE:
+        c->you(MsgType::ARE, "now resistant to melee attacks"); break;
+      case LastingEffect::RANGED_RESISTANCE:
+        c->you(MsgType::ARE, "now resistant to ranged attacks"); break;
+      case LastingEffect::MAGIC_VULNERABILITY:
+        c->you(MsgType::ARE, "now vulnerable to magical attacks"); break;
+      case LastingEffect::MELEE_VULNERABILITY:
+        c->you(MsgType::ARE, "now vulnerable to melee attacks"); break;
+      case LastingEffect::RANGED_VULNERABILITY:
+        c->you(MsgType::ARE, "now vulnerable to ranged attacks"); break;
+    }
 }
 
 bool LastingEffects::affects(WConstCreature c, LastingEffect effect) {
@@ -106,46 +157,60 @@ void LastingEffects::onRemoved(WCreature c, LastingEffect effect, bool msg) {
 }
 
 void LastingEffects::onTimedOut(WCreature c, LastingEffect effect, bool msg) {
-  switch (effect) {
-    case LastingEffect::STUNNED: break;
-    case LastingEffect::SLOWED: if (msg) c->you(MsgType::ARE, "moving faster again"); break;
-    case LastingEffect::SLEEP: if (msg) c->you(MsgType::WAKE_UP, ""); break;
-    case LastingEffect::SPEED: if (msg) c->you(MsgType::ARE, "moving more slowly again"); break;
-    case LastingEffect::DAM_BONUS: if (msg) c->you(MsgType::ARE, "less dangerous again"); break;
-    case LastingEffect::DEF_BONUS: if (msg) c->you(MsgType::ARE, "less protected again"); break;
-    case LastingEffect::PANIC:
-    case LastingEffect::RAGE:
-    case LastingEffect::HALLU: if (msg) c->you(MsgType::YOUR, "mind is clear again"); break;
-    case LastingEffect::ENTANGLED: if (msg) c->you(MsgType::BREAK_FREE, "the web"); break;
-    case LastingEffect::TIED_UP: if (msg) c->you(MsgType::BREAK_FREE, ""); break;
-    case LastingEffect::BLEEDING: if (msg) c->you(MsgType::YOUR, "bleeding stops"); break;
-    case LastingEffect::BLIND:
-      if (msg)
-        c->you("can see again");
-      break;
-    case LastingEffect::INVISIBLE:
-      if (msg)
-        c->you(MsgType::TURN_VISIBLE, "");
-      c->modViewObject().removeModifier(ViewObject::Modifier::INVISIBLE);
-      break;
-    case LastingEffect::POISON:
-      if (msg)
-        c->you(MsgType::ARE, "no longer poisoned");
-      break;
-    case LastingEffect::POISON_RESISTANT: if (msg) c->you(MsgType::ARE, "no longer poison resistant"); break;
-    case LastingEffect::FIRE_RESISTANT: if (msg) c->you(MsgType::ARE, "no longer fire resistant"); break;
-    case LastingEffect::FLYING:
-      if (msg)
-        c->you(MsgType::FALL, "on the " + c->getPosition().getName());
-      break;
-    case LastingEffect::COLLAPSED:
-      c->you(MsgType::STAND_UP);
-      break;
-    case LastingEffect::INSANITY: if (msg) c->you(MsgType::BECOME, "sane again"); break;
-    case LastingEffect::MAGIC_SHIELD: if (msg) c->you(MsgType::FEEL, "less protected"); break;
-    case LastingEffect::PREGNANT: break;
-    case LastingEffect::DARKNESS_SOURCE: break;
-  }
+  if (auto mod = getViewObjectModifier(effect))
+    c->modViewObject().removeModifier(*mod);
+  if (msg)
+    switch (effect) {
+      case LastingEffect::SLOWED:
+        c->you(MsgType::ARE, "moving faster again"); break;
+      case LastingEffect::SLEEP:
+        c->you(MsgType::WAKE_UP, ""); break;
+      case LastingEffect::SPEED:
+        c->you(MsgType::ARE, "moving more slowly again"); break;
+      case LastingEffect::DAM_BONUS:
+        c->you(MsgType::ARE, "less dangerous again"); break;
+      case LastingEffect::DEF_BONUS:
+        c->you(MsgType::ARE, "less protected again"); break;
+      case LastingEffect::PANIC:
+      case LastingEffect::RAGE:
+      case LastingEffect::HALLU:
+        c->you(MsgType::YOUR, "mind is clear again"); break;
+      case LastingEffect::ENTANGLED:
+        c->you(MsgType::BREAK_FREE, "the web"); break;
+      case LastingEffect::TIED_UP:
+        c->you(MsgType::BREAK_FREE, ""); break;
+      case LastingEffect::BLEEDING:
+        c->you(MsgType::YOUR, "bleeding stops"); break;
+      case LastingEffect::BLIND:
+        c->you("can see again"); break;
+      case LastingEffect::INVISIBLE:
+        c->you(MsgType::TURN_VISIBLE, ""); break;
+      case LastingEffect::POISON:
+        c->you(MsgType::ARE, "no longer poisoned"); break;
+      case LastingEffect::POISON_RESISTANT:
+        c->you(MsgType::ARE, "no longer poison resistant"); break;
+      case LastingEffect::FIRE_RESISTANT:
+        c->you(MsgType::ARE, "no longer fire resistant"); break;
+      case LastingEffect::FLYING:
+        c->you(MsgType::FALL, "on the " + c->getPosition().getName()); break;
+      case LastingEffect::COLLAPSED:
+        c->you(MsgType::STAND_UP); break;
+      case LastingEffect::INSANITY:
+        c->you(MsgType::BECOME, "sane again"); break;
+      case LastingEffect::MAGIC_RESISTANCE:
+        c->you(MsgType::FEEL, "less resistant to magical attacks"); break;
+      case LastingEffect::MELEE_RESISTANCE:
+        c->you(MsgType::FEEL, "less resistant to melee attacks"); break;
+      case LastingEffect::RANGED_RESISTANCE:
+        c->you(MsgType::FEEL, "less resistant to ranged attacks"); break;
+      case LastingEffect::MAGIC_VULNERABILITY:
+        c->you(MsgType::FEEL, "less vulnerable to magical attacks"); break;
+      case LastingEffect::MELEE_VULNERABILITY:
+        c->you(MsgType::FEEL, "less vulnerable to melee attacks"); break;
+      case LastingEffect::RANGED_VULNERABILITY:
+        c->you(MsgType::FEEL, "less vulnerable to ranged attacks"); break;
+      default: break;
+    }
 }
 
 static const int attrBonus = 3;
@@ -167,8 +232,6 @@ void LastingEffects::modifyAttr(WConstCreature c, AttrType type, double& value) 
           value -= attrBonus;
         if (c->isAffected(LastingEffect::SLEEP))
           value *= 0.66;
-        if (c->isAffected(LastingEffect::MAGIC_SHIELD))
-          value += 20;
         if (c->isAffected(LastingEffect::DEF_BONUS))
           value += attrBonus;
       break;
@@ -209,9 +272,11 @@ static Adjective getAdjective(LastingEffect effect) {
     case LastingEffect::POISON_RESISTANT: return "Poison resistant"_good;
     case LastingEffect::FIRE_RESISTANT: return "Fire resistant"_good;
     case LastingEffect::FLYING: return "Flying"_good;
-    case LastingEffect::MAGIC_SHIELD: return "Magic shield"_good;
     case LastingEffect::DARKNESS_SOURCE: return "Source of darkness"_good;
     case LastingEffect::PREGNANT: return "Pregnant"_good;
+    case LastingEffect::MAGIC_RESISTANCE: return "Resistant to magical attacks"_good;
+    case LastingEffect::MELEE_RESISTANCE: return "Resistant to melee attacks"_good;
+    case LastingEffect::RANGED_RESISTANCE: return "Resistant to ranged attacks"_good;
 
     case LastingEffect::POISON: return "Poisoned"_bad;
     case LastingEffect::BLEEDING: return "Bleeding"_bad;
@@ -223,6 +288,9 @@ static Adjective getAdjective(LastingEffect effect) {
     case LastingEffect::BLIND: return "Blind"_bad;
     case LastingEffect::STUNNED: return "Stunned"_bad;
     case LastingEffect::COLLAPSED: return "Collapsed"_bad;
+    case LastingEffect::MAGIC_VULNERABILITY: return "Vulnerable to magical attacks"_bad;
+    case LastingEffect::MELEE_VULNERABILITY: return "Vulnerable to melee attacks"_bad;
+    case LastingEffect::RANGED_VULNERABILITY: return "Vulnerable to ranged attacks"_bad;
   }
 }
 
@@ -256,14 +324,35 @@ const vector<LastingEffect>& LastingEffects::getCausingCondition(CreatureConditi
   }
 }
 
-void LastingEffects::onCreatureDamage(WCreature c, LastingEffect e) {
+double LastingEffects::modifyCreatureDefense(LastingEffect e, double defense, AttrType damageAttr) {
+  auto multiplyFor = [&](AttrType attr, double m) {
+    if (damageAttr == attr)
+      return defense * m;
+    else
+      return defense;
+  };
+  switch (e) {
+    case LastingEffect::MAGIC_RESISTANCE:
+      return multiplyFor(AttrType::SPELL_DAMAGE, 1.3);
+    case LastingEffect::MELEE_RESISTANCE:
+      return multiplyFor(AttrType::DAMAGE, 1.3);
+    case LastingEffect::RANGED_RESISTANCE:
+      return multiplyFor(AttrType::RANGED_DAMAGE, 1.3);
+    case LastingEffect::MAGIC_VULNERABILITY:
+      return multiplyFor(AttrType::SPELL_DAMAGE, 0.7);
+    case LastingEffect::MELEE_VULNERABILITY:
+      return multiplyFor(AttrType::DAMAGE, 0.7);
+    case LastingEffect::RANGED_VULNERABILITY:
+      return multiplyFor(AttrType::RANGED_DAMAGE, 0.7);
+    default:
+      return defense;
+  }
+}
+
+void LastingEffects::afterCreatureDamage(WCreature c, LastingEffect e) {
   switch (e) {
     case LastingEffect::SLEEP:
       c->removeEffect(e);
-      break;
-    case LastingEffect::MAGIC_SHIELD:
-      c->getAttributes().shortenEffect(LastingEffect::MAGIC_SHIELD, 5);
-      c->message("The magic shield absorbs the attack");
       break;
     default: break;
   }

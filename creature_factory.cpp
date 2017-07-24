@@ -904,6 +904,24 @@ static EnumMap<BodyPart, int> getSpecialBeastBody(bool large, bool living, bool 
   return parts[(!large) * 4 + (!living) * 2 + wings];
 }
 
+static vector<LastingEffect> getResistanceAndVulnerability(RandomGen& random) {
+  vector<LastingEffect> resistances {
+      LastingEffect::MAGIC_RESISTANCE,
+      LastingEffect::MELEE_RESISTANCE,
+      LastingEffect::RANGED_RESISTANCE
+  };
+  vector<LastingEffect> vulnerabilities {
+      LastingEffect::MAGIC_VULNERABILITY,
+      LastingEffect::MELEE_VULNERABILITY,
+      LastingEffect::RANGED_VULNERABILITY
+  };
+  vector<LastingEffect> ret;
+  ret.push_back(Random.choose(resistances));
+  vulnerabilities.removeIndex(*resistances.findElement(ret[0]));
+  ret.push_back(Random.choose(vulnerabilities));
+  return ret;
+}
+
 PCreature CreatureFactory::getSpecial(TribeId tribe, bool humanoid, bool large, bool living, bool wings,
     const ControllerFactory& factory) {
   Body body = Body(humanoid, living ? Body::Material::FLESH : Body::Material::SPIRIT,
@@ -920,6 +938,8 @@ PCreature CreatureFactory::getSpecial(TribeId tribe, bool humanoid, bool large, 
           c.attr[AttrType::SPEED] += 20;
         c.attr[AttrType::DAMAGE] = Random.get(18, 24);
         c.attr[AttrType::DEFENSE] = Random.get(18, 24);
+        for (auto effect : getResistanceAndVulnerability(Random))
+          c.permanentEffects[effect] = 1;
         if (large) {
           c.attr[AttrType::DAMAGE] += 6;
           c.attr[AttrType::DEFENSE] += 2;
@@ -1055,6 +1075,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body = Body::nonHumanoidSpirit(Body::Size::LARGE);
           c.barehandedAttack = AttackType::HIT;
           c.permanentEffects[LastingEffect::FLYING] = 1;
+          c.permanentEffects[LastingEffect::MAGIC_VULNERABILITY] = 1;
           c.chatReactionFriendly = "\"Wouuuouuu!!!\""_s;
           c.chatReactionHostile = "\"Wouuuouuu!!!\""_s;
           c.name = "ghost";);
@@ -1065,6 +1086,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body = Body::nonHumanoidSpirit(Body::Size::LARGE);
           c.barehandedAttack = AttackType::HIT;
           c.permanentEffects[LastingEffect::FLYING] = 1;
+          c.permanentEffects[LastingEffect::MAGIC_VULNERABILITY] = 1;
           c.chatReactionFriendly = "\"Wouuuouuu!!!\""_s;
           c.chatReactionHostile = "\"Wouuuouuu!!!\""_s;
           c.name = "ancient spirit";);
@@ -1120,6 +1142,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body = Body::humanoid(Body::Size::LARGE);
           c.name = CreatureName("witchman", "witchmen");
           c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_MALE)->getNext());
+          c.permanentEffects[LastingEffect::MAGIC_RESISTANCE] = 1;
           c.gender = Gender::male;
           c.chatReactionFriendly = "curses all monsters"_s;
           c.chatReactionHostile = "\"Die!\""_s;
@@ -1129,6 +1152,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.viewId = ViewId::CYCLOPS;
           c.attr = LIST(29_dam, 36_def, 85_spd );
           c.body = Body::humanoid(Body::Size::LARGE).setWeight(400);
+          c.permanentEffects[LastingEffect::RANGED_RESISTANCE] = 1;
           c.barehandedAttack = AttackType::BITE;
           c.name = CreatureName("cyclops", "cyclopes");
           c.name->setFirst(NameGenerator::get(NameGeneratorId::CYCLOPS)->getNext());
@@ -1137,6 +1161,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
       return CATTR(
           c.viewId = ViewId::MINOTAUR;
           c.attr = LIST(35_dam, 45_def, 90_spd );
+          c.permanentEffects[LastingEffect::RANGED_RESISTANCE] = 1;
           c.body = Body::humanoid(Body::Size::LARGE).setWeight(400);
           c.barehandedAttack = AttackType::BITE;
           c.name = "minotaur";);
@@ -1154,6 +1179,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body = Body::nonHumanoid(Body::Size::LARGE).setWeight(400);
           c.attackEffect = EffectType(EffectId::LASTING, LastingEffect::POISON);
           c.permanentEffects[LastingEffect::POISON_RESISTANT] = 1;
+          c.permanentEffects[LastingEffect::RANGED_RESISTANCE] = 1;
           c.barehandedAttack = AttackType::BITE;
           c.skills.insert(SkillId::SWIMMING);
           c.name = "hydra";);
@@ -1166,6 +1192,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
               .setDeathSound(none);
           c.attackEffect = EffectType(EffectId::LASTING, LastingEffect::POISON);
           c.permanentEffects[LastingEffect::POISON_RESISTANT] = 1;
+          c.permanentEffects[LastingEffect::RANGED_RESISTANCE] = 1;
           c.barehandedAttack = AttackType::BITE;
           c.skills.insert(SkillId::SPIDER);
           c.name = "giant spider";
@@ -1177,6 +1204,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body = Body::nonHumanoid(Body::Size::HUGE).setHorseBodyParts().addWings();
           c.barehandedAttack = AttackType::BITE;
           c.permanentEffects[LastingEffect::POISON_RESISTANT] = 1;
+          c.permanentEffects[LastingEffect::RANGED_VULNERABILITY] = 1;
           c.name = "green dragon";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::DRAGON)->getNext());
           c.name->setStack("dragon");
@@ -1189,6 +1217,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.barehandedAttack = AttackType::BITE;
           c.name = "red dragon";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::DRAGON)->getNext());
+          c.permanentEffects[LastingEffect::RANGED_VULNERABILITY] = 1;
           c.name->setStack("dragon");
           );
     case CreatureId::KNIGHT: 
@@ -1196,6 +1225,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.viewId = ViewId::KNIGHT;
           c.attr = LIST(30_dam, 22_def, 100_spd );
           c.body = Body::humanoid(Body::Size::LARGE);
+          c.permanentEffects[LastingEffect::MELEE_RESISTANCE] = 1;
           c.chatReactionFriendly = "curses all dungeons"_s;
           c.chatReactionHostile = "\"Die!\""_s;
           c.name = "knight";);
@@ -1204,6 +1234,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.viewId = ViewId::DUKE;
           c.attr = LIST(40_dam, 29_def, 100_spd );
           c.body = Body::humanoid(Body::Size::LARGE);
+          c.permanentEffects[LastingEffect::MELEE_RESISTANCE] = 1;
           c.chatReactionFriendly = "curses all dungeons"_s;
           c.chatReactionHostile = "\"Die!\""_s;
           c.courage = 3;
@@ -1229,6 +1260,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.viewId = ViewId::SHAMAN;
           c.attr = LIST(27_dam, 19_def, 30_spell_dam, 100_spd );
           c.body = Body::humanoid(Body::Size::LARGE);
+          c.permanentEffects[LastingEffect::MAGIC_RESISTANCE] = 1;
           c.chatReactionFriendly = "curses all dungeons"_s;
           c.chatReactionHostile = "\"Die!\""_s;
           c.courage = 3;
@@ -1266,6 +1298,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.viewId = ViewId::CLAY_GOLEM;
           c.attr = LIST(14_dam, 12_def, 50_spd );
           c.body = Body::nonHumanoid(Body::Material::CLAY, Body::Size::LARGE).setHumanoidBodyParts();
+          c.permanentEffects[LastingEffect::MELEE_RESISTANCE] = 1;
           c.barehandedAttack = AttackType::PUNCH;
           c.name = "clay golem";);
     case CreatureId::STONE_GOLEM: 
@@ -1273,12 +1306,14 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.viewId = ViewId::STONE_GOLEM;
           c.attr = LIST(16_dam, 14_def, 60_spd );
           c.body = Body::nonHumanoid(Body::Material::ROCK, Body::Size::LARGE).setHumanoidBodyParts();
+          c.permanentEffects[LastingEffect::MELEE_RESISTANCE] = 1;
           c.barehandedAttack = AttackType::PUNCH;
           c.name = "stone golem";);
     case CreatureId::IRON_GOLEM: 
       return CATTR(
           c.viewId = ViewId::IRON_GOLEM;
           c.attr = LIST(18_dam, 16_def, 70_spd );
+          c.permanentEffects[LastingEffect::MELEE_RESISTANCE] = 1;
           c.body = Body::nonHumanoid(Body::Material::IRON, Body::Size::LARGE).setHumanoidBodyParts();
           c.barehandedAttack = AttackType::PUNCH;
           c.name = "iron golem";);
@@ -1286,6 +1321,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
       return CATTR(
           c.viewId = ViewId::LAVA_GOLEM;
           c.attr = LIST(20_dam, 18_def, 80_spd );
+          c.permanentEffects[LastingEffect::MELEE_RESISTANCE] = 1;
           c.body = Body::nonHumanoid(Body::Material::LAVA, Body::Size::LARGE).setHumanoidBodyParts();
           c.barehandedAttack = AttackType::PUNCH;
           c.attackEffect = EffectId::FIRE;
@@ -1294,6 +1330,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
       return CATTR(
           c.viewId = ViewId::AUTOMATON;
           c.attr = LIST(45_dam, 45_def, 100_spd );
+          c.permanentEffects[LastingEffect::MELEE_RESISTANCE] = 1;
           c.body = Body::nonHumanoid(Body::Material::IRON, Body::Size::LARGE).setHumanoidBodyParts();
           c.barehandedAttack = AttackType::PUNCH;
           c.name = "automaton";);
@@ -1303,6 +1340,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.attr = LIST(14_dam, 13_def, 60_spd );
           c.body = Body::humanoid(Body::Material::UNDEAD_FLESH, Body::Size::LARGE);
           c.spawnType = SpawnType::UNDEAD;
+          c.permanentEffects[LastingEffect::RANGED_RESISTANCE] = 1;
           c.maxLevelIncrease[ExperienceType::MELEE] = 3;
           c.name = "zombie";);
     case CreatureId::SKELETON: 
@@ -1310,6 +1348,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.viewId = ViewId::SKELETON;
           c.attr = LIST(19_dam, 13_def, 80_spd );
           c.body = Body::humanoid(Body::Material::BONE, Body::Size::LARGE);
+          c.permanentEffects[LastingEffect::RANGED_RESISTANCE] = 1;
           c.maxLevelIncrease[ExperienceType::MELEE] = 3;
           c.maxLevelIncrease[ExperienceType::ARCHERY] = 4;
           c.name = "skeleton";);
@@ -1323,6 +1362,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.spawnType = SpawnType::UNDEAD;
           c.skills.insert(SkillId::NIGHT_VISION);
           c.skills.setValue(SkillId::SORCERY, 0.1);
+          c.permanentEffects[LastingEffect::RANGED_RESISTANCE] = 1;
           c.maxLevelIncrease[ExperienceType::MELEE] = 7;
           c.maxLevelIncrease[ExperienceType::SPELL] = 7;
           c.name = "vampire";
@@ -1341,10 +1381,11 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.maxLevelIncrease[ExperienceType::MELEE] = 12;
           c.maxLevelIncrease[ExperienceType::SPELL] = 12;
           c.permanentEffects[LastingEffect::FLYING] = 1;
+          c.permanentEffects[LastingEffect::RANGED_RESISTANCE] = 1;
           c.permanentEffects[LastingEffect::FIRE_RESISTANT] = 1;
           c.permanentEffects[LastingEffect::DARKNESS_SOURCE] = 1;
           for (SpellId id : Random.chooseN(Random.get(3, 6), {SpellId::CIRCULAR_BLAST, SpellId::DEF_BONUS,
-              SpellId::DAM_BONUS, SpellId::MAGIC_SHIELD, SpellId::STUN_RAY, SpellId::DECEPTION, SpellId::DECEPTION,
+              SpellId::DAM_BONUS, SpellId::STUN_RAY, SpellId::DECEPTION, SpellId::DECEPTION,
               SpellId::TELEPORT}))
             c.spells->add(id);
           c.chatReactionFriendly = c.chatReactionHostile =
@@ -1356,6 +1397,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.attr = LIST(15_dam, 14_def, 10_spell_dam, 60_spd );
           c.body = Body::humanoid(Body::Material::UNDEAD_FLESH, Body::Size::LARGE);
           c.spawnType = SpawnType::UNDEAD;
+          c.permanentEffects[LastingEffect::RANGED_RESISTANCE] = 1;
           c.maxLevelIncrease[ExperienceType::MELEE] = 3;
           c.maxLevelIncrease[ExperienceType::SPELL] = 3;
           c.name = CreatureName("mummy", "mummies"););
@@ -1473,6 +1515,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.attr = LIST(18_dam, 18_def, 80_spd );
           c.body = Body::humanoid(Body::Size::LARGE).setWeight(140);
           c.name = "ogre";
+          c.permanentEffects[LastingEffect::MAGIC_VULNERABILITY] = 1;
           c.name->setFirst(NameGenerator::get(NameGeneratorId::ORC)->getNext());
           c.spawnType = SpawnType::HUMANOID;
           c.skills.setValue(SkillId::WORKSHOP, 0.5);
@@ -1492,6 +1535,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.attr = LIST(23_dam, 27_def, 80_spd );
           c.body = Body::humanoid(Body::Size::MEDIUM).setWeight(90);
           c.name = CreatureName("dwarf", "dwarves");
+          c.permanentEffects[LastingEffect::MAGIC_VULNERABILITY] = 1;
           c.name->setFirst(NameGenerator::get(NameGeneratorId::DWARF)->getNext());
           c.chatReactionFriendly = "curses all orcs"_s;
           c.chatReactionHostile = "\"Die!\""_s;
@@ -1503,6 +1547,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.attr = LIST(23_dam, 27_def, 80_spd );
           c.body = Body::humanoid(Body::Size::MEDIUM).setWeight(90);
           c.name = CreatureName("dwarf", "dwarves");
+          c.permanentEffects[LastingEffect::MAGIC_VULNERABILITY] = 1;
           c.name->setFirst(NameGenerator::get(NameGeneratorId::DWARF)->getNext());
           c.chatReactionFriendly = "curses all orcs"_s;
           c.chatReactionHostile = "\"Die!\""_s;
@@ -1514,6 +1559,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body = Body::humanoid(Body::Size::MEDIUM).setWeight(120);
           c.chatReactionFriendly = "curses all orcs"_s;
           c.chatReactionHostile = "\"Die!\""_s;
+          c.permanentEffects[LastingEffect::MAGIC_VULNERABILITY] = 1;
           c.courage = 3;
           c.name = "dwarf baron";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::DWARF)->getNext());
@@ -1559,6 +1605,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body = Body::humanoid(Body::Size::MEDIUM);
           c.chatReactionFriendly = "curses all dwarves"_s;
           c.chatReactionHostile = "\"Die!\""_s;
+          c.permanentEffects[LastingEffect::MAGIC_RESISTANCE] = 1;
           c.spells->add(SpellId::HEAL_SELF);
           c.skills.insert(SkillId::ELF_VISION);
           c.name = "elven archer";);
@@ -1570,6 +1617,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.innocent = true;
           c.chatReactionFriendly = "curses all dwarves"_s;
           c.chatReactionHostile = "\"Die!\""_s;
+          c.permanentEffects[LastingEffect::MAGIC_RESISTANCE] = 1;
           c.spells->add(SpellId::HEAL_SELF);
           c.skills.insert(SkillId::ELF_VISION);
           c.name = CreatureName("elf child", "elf children"););
@@ -1580,6 +1628,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body = Body::humanoid(Body::Size::MEDIUM);
           c.chatReactionFriendly = "curses all dwarves"_s;
           c.chatReactionHostile = "\"Die!\""_s;
+          c.permanentEffects[LastingEffect::MAGIC_RESISTANCE] = 1;
           c.spells->add(SpellId::HEAL_SELF);
           c.skills.setValue(SkillId::SORCERY, 1);
           c.spells->add(SpellId::HEAL_OTHER);
@@ -1599,6 +1648,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.innocent = true;
           c.chatReactionFriendly = "curses all dwarves"_s;
           c.chatReactionHostile = "\"Die!\""_s;
+          c.permanentEffects[LastingEffect::MAGIC_RESISTANCE] = 1;
           c.spells->add(SpellId::HEAL_SELF);
           c.skills.insert(SkillId::NIGHT_VISION);
           c.name = CreatureName("dark elf", "dark elves"););
@@ -1609,6 +1659,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body = Body::humanoid(Body::Size::MEDIUM);
           c.chatReactionFriendly = "curses all dwarves"_s;
           c.chatReactionHostile = "\"Die!\""_s;
+          c.permanentEffects[LastingEffect::MAGIC_RESISTANCE] = 1;
           c.spells->add(SpellId::HEAL_SELF);
           c.skills.insert(SkillId::NIGHT_VISION);
           c.skills.setValue(SkillId::SORCERY, 0.3);
@@ -1621,6 +1672,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.attr = LIST(6_dam, 6_def, 120_spd );
           c.body = Body::humanoid(Body::Size::SMALL);
           c.innocent = true;
+          c.permanentEffects[LastingEffect::MAGIC_RESISTANCE] = 1;
           c.chatReactionFriendly = "curses all dwarves"_s;
           c.chatReactionHostile = "\"Die!\""_s;
           c.spells->add(SpellId::HEAL_SELF);
@@ -1633,6 +1685,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body = Body::humanoid(Body::Size::MEDIUM);
           c.chatReactionFriendly = "curses all dwarves"_s;
           c.chatReactionHostile = "\"Die!\""_s;
+          c.permanentEffects[LastingEffect::MAGIC_RESISTANCE] = 1;
           c.spells->add(SpellId::HEAL_SELF);
           c.skills.setValue(SkillId::SORCERY, 1);
           c.spells->add(SpellId::HEAL_OTHER);
@@ -1649,6 +1702,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.viewId = ViewId::DRIAD;
           c.attr = LIST(6_dam, 14_def, 25_ranged_dam, 80_spd );
           c.body = Body::humanoid(Body::Size::MEDIUM);
+          c.permanentEffects[LastingEffect::MAGIC_RESISTANCE] = 1;
           c.chatReactionFriendly = "curses all humans"_s;
           c.chatReactionHostile = "\"Die!\""_s;
           c.spells->add(SpellId::HEAL_SELF);
@@ -1866,6 +1920,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.skills.insert(SkillId::NIGHT_VISION);
           c.skills.insert(SkillId::STEALTH);
           c.skills.insert(SkillId::EXPLORE_NOCTURNAL);
+          c.permanentEffects[LastingEffect::MAGIC_RESISTANCE] = 1;
           c.name = CreatureName("werewolf", "werewolves");
           c.name->setFirst(NameGenerator::get(NameGeneratorId::DOG)->getNext());
           );
@@ -1894,6 +1949,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body = Body::humanoid(Body::Size::LARGE);
           c.gender = Gender::female;
           c.permanentEffects[LastingEffect::FIRE_RESISTANT] = 1;
+          c.permanentEffects[LastingEffect::MAGIC_RESISTANCE] = 1;
           c.chatReactionFriendly = "curses all dungeons"_s;
           c.chatReactionHostile = "\"Die!\""_s;
           c.name = "elementalist";
@@ -1915,6 +1971,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.attr = LIST(25_dam, 35_def, 160_spd );
           c.barehandedAttack = AttackType::HIT;
           c.permanentEffects[LastingEffect::FLYING] = 1;
+          c.permanentEffects[LastingEffect::RANGED_RESISTANCE] = 1;
           c.spells->add(SpellId::CIRCULAR_BLAST);
           c.name = "air elemental";);
     case CreatureId::EARTH_ELEMENTAL:
@@ -1923,6 +1980,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body = Body::nonHumanoid(Body::Material::ROCK, Body::Size::LARGE).setWeight(500)
               .setHumanoidBodyParts().setDeathSound(none);
           c.attr = LIST(25_dam, 45_def, 80_spd );
+          c.permanentEffects[LastingEffect::RANGED_RESISTANCE] = 1;
           c.barehandedAttack = AttackType::HIT;
           c.name = "earth elemental";);
     case CreatureId::WATER_ELEMENTAL:
@@ -1932,6 +1990,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
               .setDeathSound(none);
           c.attr = LIST(45_dam, 15_def, 80_spd );
           c.barehandedAttack = AttackType::HIT;
+          c.permanentEffects[LastingEffect::RANGED_RESISTANCE] = 1;
           c.skills.insert(SkillId::SWIMMING);
           c.name = "water elemental";);
     case CreatureId::ENT:
@@ -1940,6 +1999,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body = Body::nonHumanoid(Body::Material::WOOD, Body::Size::HUGE).setHumanoidBodyParts();
           c.attr = LIST(45_dam, 25_def, 30_spd );
           c.skills.insert(SkillId::ELF_VISION);
+          c.permanentEffects[LastingEffect::RANGED_RESISTANCE] = 1;
           c.chatReactionFriendly = "curses all dungeons"_s;
           c.chatReactionHostile = "\"Die!\""_s;
           c.name = "tree spirit";);
@@ -2105,8 +2165,12 @@ vector<ItemType> getInventory(CreatureId id) {
     case CreatureId::KEEPER:
       return ItemList()
           .add(ItemId::ROBE)
-          .add({ItemId::SCROLL, EffectType{EffectId::LASTING, LastingEffect::BLEEDING}}, 10)
-          .add({ItemId::SCROLL, EffectType{EffectId::LASTING, LastingEffect::POISON}}, 10);
+          .add({ItemId::SCROLL, EffectType{EffectId::LASTING, LastingEffect::MAGIC_RESISTANCE}}, 10)
+          .add({ItemId::SCROLL, EffectType{EffectId::LASTING, LastingEffect::MELEE_RESISTANCE}}, 10)
+          .add({ItemId::SCROLL, EffectType{EffectId::LASTING, LastingEffect::RANGED_RESISTANCE}}, 10)
+          .add({ItemId::SCROLL, EffectType{EffectId::LASTING, LastingEffect::MAGIC_VULNERABILITY}}, 10)
+          .add({ItemId::SCROLL, EffectType{EffectId::LASTING, LastingEffect::MELEE_VULNERABILITY}}, 10)
+          .add({ItemId::SCROLL, EffectType{EffectId::LASTING, LastingEffect::RANGED_VULNERABILITY}}, 10);
     case CreatureId::ADVENTURER_F:
     case CreatureId::ADVENTURER:
       return ItemList()

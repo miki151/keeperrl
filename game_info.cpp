@@ -100,8 +100,7 @@ vector<AttributeInfo> AttributeInfo::fromCreature(WConstCreature c) {
       ),
       genInfo(
           AttrType::DEFENSE,
-          c->isAffected(LastingEffect::RAGE) ? -1 : (c->isAffected(LastingEffect::PANIC) ||
-              c->isAffected(LastingEffect::MAGIC_SHIELD)) ? 1 : 0,
+          c->isAffected(LastingEffect::RAGE) ? -1 : (c->isAffected(LastingEffect::PANIC)) ? 1 : 0,
           "Affects if and how much damage is taken in combat."
       ),
       genInfo(

@@ -11,4 +11,3 @@ RICH_ENUM(AttrType,
 );
 
 extern string getName(AttrType);
-extern AttrType getCorrespondingDefense(AttrType);

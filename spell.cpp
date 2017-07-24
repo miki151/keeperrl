@@ -84,8 +84,6 @@ void Spell::init() {
       EffectType(EffectId::LASTING, LastingEffect::STUNNED)) , 60, SoundId::SPELL_STUN_RAY));
   set(SpellId::HEAL_OTHER, new Spell("heal other",  DirEffectType(1, DirEffectId::CREATURE_EFFECT,
       EffectId::HEAL) , 6, SoundId::SPELL_HEALING));
-  set(SpellId::MAGIC_SHIELD, new Spell("magic shield", {EffectId::LASTING, LastingEffect::MAGIC_SHIELD}, 100,
-        SoundId::SPELL_MAGIC_SHIELD));
   set(SpellId::FIRE_SPHERE_PET, new Spell("fire sphere", EffectType(EffectId::SUMMON, CreatureId::FIRE_SPHERE), 20,
         SoundId::SPELL_FIRE_SPHERE_PET));
   set(SpellId::TELEPORT, new Spell("escape", EffectId::TELEPORT, 80, SoundId::SPELL_TELEPORT));
@@ -116,7 +114,6 @@ optional<int> Spell::getLearningExpLevel() const {
     case SpellId::SPEED_SELF: return 5;
     case SpellId::STUN_RAY: return 6;
     case SpellId::CURE_POISON: return 6;
-    case SpellId::MAGIC_SHIELD: return 7;
     case SpellId::BLAST: return 7;
     case SpellId::CIRCULAR_BLAST: return 7;
     case SpellId::DEF_BONUS: return 8;

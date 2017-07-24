@@ -253,7 +253,13 @@ static double getDuration(WConstCreature c, LastingEffect e, int strength) {
     case LastingEffect::COLLAPSED: return 2;
     case LastingEffect::SLEEP: return sleepTime[strength];
     case LastingEffect::INSANITY: return insanityTime[strength];
-    case LastingEffect::MAGIC_SHIELD: return magicShieldTime[strength];
+    case LastingEffect::MAGIC_VULNERABILITY:
+    case LastingEffect::MELEE_VULNERABILITY:
+    case LastingEffect::RANGED_VULNERABILITY:
+    case LastingEffect::MAGIC_RESISTANCE:
+    case LastingEffect::MELEE_RESISTANCE:
+    case LastingEffect::RANGED_RESISTANCE:
+      return 30;
   }
   return 0;
 }
@@ -575,7 +581,12 @@ const char* Effect::getName(LastingEffect type) {
     case LastingEffect::STUNNED: return "stunning";
     case LastingEffect::FIRE_RESISTANT: return "fire resistance";
     case LastingEffect::INSANITY: return "insanity";
-    case LastingEffect::MAGIC_SHIELD: return "magic shield";
+    case LastingEffect::MAGIC_RESISTANCE: return "magic resistance";
+    case LastingEffect::MELEE_RESISTANCE: return "melee resistance";
+    case LastingEffect::RANGED_RESISTANCE: return "ranged resistance";
+    case LastingEffect::MAGIC_VULNERABILITY: return "magic vulnerability";
+    case LastingEffect::MELEE_VULNERABILITY: return "melee vulnerability";
+    case LastingEffect::RANGED_VULNERABILITY: return "ranged vulnerability";
     case LastingEffect::DARKNESS_SOURCE: return "source of darkness";
   }
 }
@@ -604,7 +615,12 @@ const char* Effect::getDescription(LastingEffect type) {
     case LastingEffect::STUNNED: return "Causes stunning.";
     case LastingEffect::FIRE_RESISTANT: return "Gives fire resistance.";
     case LastingEffect::INSANITY: return "Confuses the target about who is friend and who is foe.";
-    case LastingEffect::MAGIC_SHIELD: return "Gives protection from physical attacks.";
+    case LastingEffect::MAGIC_RESISTANCE: return "Increases defense against magical attacks by 30%.";
+    case LastingEffect::MELEE_RESISTANCE: return "Increases defense against melee attacks by 30%.";
+    case LastingEffect::RANGED_RESISTANCE: return "Increases defense against ranged attacks by 30%.";
+    case LastingEffect::MAGIC_VULNERABILITY: return "Decreases defense against magical attacks by 30%.";
+    case LastingEffect::MELEE_VULNERABILITY: return "Decreases defense against melee attacks by 30%.";
+    case LastingEffect::RANGED_VULNERABILITY: return "Decreases defense against ranged attacks by 30%.";
     case LastingEffect::DARKNESS_SOURCE: return "Causes the closest vicinity to become dark. Protects undead from sunlight.";
   }
 }

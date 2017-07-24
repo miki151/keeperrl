@@ -950,7 +950,6 @@ constexpr double getDamage(double damageRatio) {
 }
 
 bool Creature::takeDamage(const Attack& attack) {
-  int defense = getAttr(getCorrespondingDefense(attack.damageType));
   if (WCreature attacker = attack.attacker) {
     onAttackedBy(attacker);
     if (!attacker->getAttributes().getSkills().hasDiscrete(SkillId::STEALTH))
@@ -963,10 +962,12 @@ bool Creature::takeDamage(const Attack& attack) {
       addEffect(LastingEffect::INSANITY, 10);
       return false;
     }
-    INFO << getName().the() << " attacked by " << attacker->getName().the()
-      << " damage " << attack.strength << " defense " << defense;
     lastDamageType = getExperienceType(attack.damageType);
   }
+  double defense = getAttr(AttrType::DEFENSE);
+  for (LastingEffect effect : ENUM_ALL(LastingEffect))
+    if (isAffected(effect))
+      defense = LastingEffects::modifyCreatureDefense(effect, defense, attack.damageType);
   double damage = getDamage((double) attack.strength / defense);
   if (auto sound = attributes->getAttackSound(attack.type, damage > 0))
     addSound(*sound);
@@ -979,7 +980,7 @@ bool Creature::takeDamage(const Attack& attack) {
     Effect::applyToCreature(this, *attack.effect, EffectStrength::NORMAL, this);
   for (LastingEffect effect : ENUM_ALL(LastingEffect))
     if (isAffected(effect))
-      LastingEffects::onCreatureDamage(this, effect);
+      LastingEffects::afterCreatureDamage(this, effect);
   return false;
 }
 

@@ -23,9 +23,14 @@ RICH_ENUM(LastingEffect,
     FLYING,
     COLLAPSED,
     INSANITY,
-    MAGIC_SHIELD,
     DARKNESS_SOURCE,
-    PREGNANT
+    PREGNANT,
+    MAGIC_RESISTANCE,
+    MELEE_RESISTANCE,
+    RANGED_RESISTANCE,
+    MAGIC_VULNERABILITY,
+    MELEE_VULNERABILITY,
+    RANGED_VULNERABILITY
 );
 
 RICH_ENUM(CreatureCondition,
@@ -41,11 +46,12 @@ class LastingEffects {
   static void onRemoved(WCreature, LastingEffect, bool msg);
   static void onTimedOut(WCreature, LastingEffect, bool msg);
   static void modifyAttr(WConstCreature, AttrType, double&);
-  static void onCreatureDamage(WCreature, LastingEffect);
+  static void afterCreatureDamage(WCreature, LastingEffect);
   static bool tick(WCreature, LastingEffect);
   static const char* getGoodAdjective(LastingEffect);
   static const char* getBadAdjective(LastingEffect);
   static const vector<LastingEffect>& getCausingCondition(CreatureCondition);
+  static double modifyCreatureDefense(LastingEffect, double damage, AttrType damageAttr);
 };
 
 
