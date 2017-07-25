@@ -27,6 +27,8 @@ bool MinionTaskMap::canChooseRandomly(WConstCreature c, MinionTask t) const {
     case MinionTask::BE_WHIPPED:
     case MinionTask::BE_TORTURED:
       return false;
+    case MinionTask::LAIR:
+    case MinionTask::GRAVE:
     case MinionTask::SLEEP: {
       constexpr int sleepNeededAfterTurns = 1000;
       if (auto lastTime = c->getLastAffected(LastingEffect::SLEEP))
