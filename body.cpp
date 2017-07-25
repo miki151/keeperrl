@@ -536,14 +536,14 @@ const static map<BodyPart, int> damagePenalty {
 double Body::modifyAttr(AttrType type, double def) const {
   switch (type) {
     case AttrType::DAMAGE:
-        if (health < 1)
-          def *= 0.666 + health / 3;
+        //if (health < 1)
+        //  def *= 0.666 + health / 3;
         for (auto elem : damagePenalty)
           def -= elem.second * (numInjured(elem.first) + numLost(elem.first));
         break;
     case AttrType::DEFENSE:
-        if (health < 1)
-          def *= 0.666 + health / 3;
+        //if (health < 1)
+        //  def *= 0.666 + health / 3;
         for (auto elem : defensePenalty)
           def -= elem.second * (numInjured(elem.first) + numLost(elem.first));
         break;
