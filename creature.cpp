@@ -741,8 +741,8 @@ void Creature::onKilled(WCreature victim, optional<ExperienceType> lastDamage) {
   double attackDiff = victim->highestAttackValueEver - highestAttackValueEver;
   constexpr double maxLevelGain = 1.0;
   constexpr double minLevelGain = 0.02;
-  constexpr double equalLevelGain = 0.4;
-  constexpr double maxLevelDiff = 5;
+  constexpr double equalLevelGain = 0.2;
+  constexpr double maxLevelDiff = 10;
   double expIncrease = max(minLevelGain, min(maxLevelGain,
       (maxLevelGain - equalLevelGain) * attackDiff / maxLevelDiff + equalLevelGain));
   increaseExpLevel(lastDamage.value_or(ExperienceType::MELEE), expIncrease);
