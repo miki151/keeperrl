@@ -709,6 +709,14 @@ int PlayerControl::getMinLibrarySize() const {
 
 typedef CollectiveInfo::Button Button;
 
+static optional<pair<ViewId, int>> getCostObjWithZero(CostInfo cost) {
+  auto& resourceInfo = CollectiveConfig::getResourceInfo(cost.id);
+  if (!resourceInfo.dontDisplay)
+    return make_pair(resourceInfo.viewId, cost.value);
+  else
+    return none;
+}
+
 static optional<pair<ViewId, int>> getCostObj(CostInfo cost) {
   auto& resourceInfo = CollectiveConfig::getResourceInfo(cost.id);
   if (cost.value > 0 && !resourceInfo.dontDisplay)
@@ -1110,7 +1118,7 @@ void PlayerControl::acquireTech(int index) {
       [](const Technology* tech) { return tech->canResearch(); });
   if (index < techs.size()) {
     Technology* tech = techs[index];
-    auto cost = CostInfo(ResourceId::MANA, getCollective()->getTechCost(tech));
+    auto cost = tech->getCost();
     if (getCollective()->hasResource(cost)) {
       getCollective()->takeResource(cost);
       getCollective()->acquireTech(tech);
@@ -1129,24 +1137,24 @@ void PlayerControl::fillLibraryInfo(CollectiveInfo& collectiveInfo) const {
       info.warning = "You need to build a library to start research."_s;
     else if (libraryCount <= getMinLibrarySize())
       info.warning = "You need a larger library to continue research."_s;
-    info.resource = make_pair(ViewId::MANA, getCollective()->numResource(ResourceId::MANA));
+    info.resource = *getCostObjWithZero(Technology::getAvailableResource(getCollective()));
     auto techs = Technology::getNextTechs(getCollective()->getTechnologies()).filter(
         [](const Technology* tech) { return tech->canResearch(); });
     for (Technology* tech : techs) {
       info.available.emplace_back();
       auto& techInfo = info.available.back();
       techInfo.name = tech->getName();
-      int cost = getCollective()->getTechCost(tech);
-      techInfo.cost = make_pair(ViewId::MANA, cost);
+      auto cost = tech->getCost();
+      techInfo.cost = *getCostObj(cost);
       techInfo.tutorialHighlight = tech->getTutorialHighlight();
-      techInfo.active = !info.warning && cost <= getCollective()->numResource(ResourceId::MANA);
+      techInfo.active = !info.warning && getCollective()->hasResource(cost);
       techInfo.description = tech->getDescription();
     }
     for (Technology* tech : getCollective()->getTechnologies()) {
       info.researched.emplace_back();
       auto& techInfo = info.researched.back();
       techInfo.name = tech->getName();
-      techInfo.cost = make_pair(ViewId::MANA, getCollective()->getTechCost(tech));
+      techInfo.cost = *getCostObj(tech->getCost());
       techInfo.description = tech->getDescription();
     }
   }

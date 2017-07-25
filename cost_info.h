@@ -11,7 +11,7 @@ class CostInfo {
   CostInfo operator - () const;
   CostInfo operator * (int) const;
 
-  SERIALIZATION_DECL(CostInfo);
+  SERIALIZATION_DECL(CostInfo)
 
   CollectiveResourceId SERIAL(id) = CollectiveResourceId(0);
   int SERIAL(value) = 0;

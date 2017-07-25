@@ -41,19 +41,22 @@ RICH_ENUM(TechId,
 
 class Spell;
 class Collective;
+class CostInfo;
 
 class Technology : public Singleton<Technology, TechId> {
   public:
   Technology(const string& name, const string& description, int cost, const vector<TechId>& prerequisites = {},
       bool canResearch = true);
   const string& getName() const;
-  int getCost() const;
+  CostInfo getCost() const;
   bool canResearch() const;
   Technology* setTutorialHighlight(TutorialHighlight);
   const string& getDescription() const;
   const optional<TutorialHighlight> getTutorialHighlight() const;
   const vector<Technology*> getPrerequisites() const;
   const vector<Technology*> getAllowed() const;
+
+  static CostInfo getAvailableResource(WConstCollective);
 
   static vector<Technology*> getSorted();
   static vector<Technology*> getNextTechs(const vector<Technology*>& current);

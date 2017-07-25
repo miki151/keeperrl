@@ -81,8 +81,14 @@ Technology* Technology::setTutorialHighlight(TutorialHighlight h) {
   return this;
 }
 
-int Technology::getCost() const {
-  return cost;
+constexpr auto resource = CollectiveResourceId::MANA;
+
+CostInfo Technology::getAvailableResource(WConstCollective col) {
+  return CostInfo(resource, col->numResource(resource));
+}
+
+CostInfo Technology::getCost() const {
+  return CostInfo(resource, cost);
 }
 
 vector<Technology*> Technology::getNextTechs(const vector<Technology*>& current) {
