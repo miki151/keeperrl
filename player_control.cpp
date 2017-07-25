@@ -276,7 +276,7 @@ const vector<PlayerControl::BuildInfo>& PlayerControl::getBuildInfo() {
         "Makes the area around it visible.", 0, "Installations"),
       BuildInfo({FurnitureType::PORTAL, {ResourceId::MANA, 50}}, "Portal", {},
         "Opens a connection if another portal is present.", 0, "Installations"),
-      BuildInfo({FurnitureType::MINION_STATUE, {ResourceId::GOLD, 60}}, "Statue", {},
+      BuildInfo({FurnitureType::MINION_STATUE, {ResourceId::MANA, 50}}, "Statue", {},
         "Increases minion population limit by " +
               toString(ModelBuilder::getStatuePopulationIncrease()) + ".", 0, "Installations"),
       BuildInfo({FurnitureType::WHIPPING_POST, {ResourceId::WOOD, 20}}, "Whipping post", {},
