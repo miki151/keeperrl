@@ -846,11 +846,11 @@ void Collective::onEvent(const GameEvent& event) {
             auto mana = config->getManaForConquering(col->getVillainType());
             addMana(mana);
             control->addMessage(PlayerMessage("You feel a surge of power (+" + toString(mana) + " mana)",
-                MessagePriority::HIGH));
+                MessagePriority::CRITICAL));
             conqueredVillains.insert(*enemyId);
           } else
             control->addMessage(PlayerMessage("Note: mana is only rewarded once per each kind of enemy.",
-                MessagePriority::HIGH));
+                MessagePriority::CRITICAL));
         }
       break;
     }
