@@ -482,7 +482,6 @@ const WorkshopInfo& CollectiveConfig::getWorkshopInfo(WorkshopType type) {
 unique_ptr<Workshops> CollectiveConfig::getWorkshops() const {
   return unique_ptr<Workshops>(new Workshops({
       {WorkshopType::WORKSHOP, {
-          Workshops::Item::fromType(ItemId::FIRST_AID_KIT, 1, {CollectiveResourceId::WOOD, 4}),
           Workshops::Item::fromType(ItemId::LEATHER_ARMOR, 6, {CollectiveResourceId::WOOD, 20}),
           Workshops::Item::fromType(ItemId::LEATHER_HELM, 1, {CollectiveResourceId::WOOD, 6}),
           Workshops::Item::fromType(ItemId::LEATHER_BOOTS, 2, {CollectiveResourceId::WOOD, 10}),
@@ -523,25 +522,24 @@ unique_ptr<Workshops> CollectiveConfig::getWorkshops() const {
       }},
       {WorkshopType::LABORATORY, {
           Workshops::Item::fromType({ItemId::POTION, EffectType{EffectId::LASTING, LastingEffect::SLOWED}}, 2,
-              {CollectiveResourceId::MANA, 1}),
+              {CollectiveResourceId::GOLD, 2}),
           Workshops::Item::fromType({ItemId::POTION, EffectType{EffectId::LASTING, LastingEffect::SLEEP}}, 2,
-              {CollectiveResourceId::MANA, 1}),
-          Workshops::Item::fromType({ItemId::POTION, EffectId::HEAL}, 4, {CollectiveResourceId::MANA, 3}),
+              {CollectiveResourceId::GOLD, 2}),
           Workshops::Item::fromType({ItemId::POTION,
-              EffectType{EffectId::LASTING, LastingEffect::POISON_RESISTANT}}, 3, {CollectiveResourceId::MANA, 3}),
+              EffectType{EffectId::LASTING, LastingEffect::POISON_RESISTANT}}, 4, {CollectiveResourceId::GOLD, 6}),
           Workshops::Item::fromType({ItemId::POTION,
-              EffectType{EffectId::LASTING, LastingEffect::POISON}}, 2, {CollectiveResourceId::MANA, 3}),
+              EffectType{EffectId::LASTING, LastingEffect::SPEED}}, 4, {CollectiveResourceId::GOLD, 6}),
           Workshops::Item::fromType({ItemId::POTION,
-              EffectType{EffectId::LASTING, LastingEffect::SPEED}}, 4, {CollectiveResourceId::MANA, 3})
+              EffectType{EffectId::LASTING, LastingEffect::POISON}}, 4, {CollectiveResourceId::GOLD, 8}),
+          Workshops::Item::fromType({ItemId::POTION,
+              EffectType{EffectId::LASTING, LastingEffect::FLYING}}, 4, {CollectiveResourceId::GOLD, 8}),
+          Workshops::Item::fromType({ItemId::POTION, EffectId::HEAL}, 4, {CollectiveResourceId::GOLD, 10})
+             .setTechId(TechId::ALCHEMY_ADV),
+          Workshops::Item::fromType({ItemId::POTION,
+              EffectType{EffectId::LASTING, LastingEffect::BLIND}}, 4, {CollectiveResourceId::GOLD, 15})
                   .setTechId(TechId::ALCHEMY_ADV),
           Workshops::Item::fromType({ItemId::POTION,
-              EffectType{EffectId::LASTING, LastingEffect::BLIND}}, 4, {CollectiveResourceId::MANA, 5})
-                  .setTechId(TechId::ALCHEMY_ADV),
-          Workshops::Item::fromType({ItemId::POTION,
-              EffectType{EffectId::LASTING, LastingEffect::FLYING}}, 6, {CollectiveResourceId::MANA, 8})
-                  .setTechId(TechId::ALCHEMY_ADV),
-          Workshops::Item::fromType({ItemId::POTION,
-              EffectType{EffectId::LASTING, LastingEffect::INVISIBLE}}, 6, {CollectiveResourceId::MANA, 20})
+              EffectType{EffectId::LASTING, LastingEffect::INVISIBLE}}, 6, {CollectiveResourceId::GOLD, 20})
                   .setTechId(TechId::ALCHEMY_ADV),
       }},
       {WorkshopType::JEWELER, {
