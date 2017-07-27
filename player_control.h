@@ -41,6 +41,7 @@ class CostInfo;
 struct WorkshopItem;
 class ScrollPosition;
 class Tutorial;
+struct BuildInfo;
 
 class PlayerControl : public CreatureView, public CollectiveControl, public EventListener<PlayerControl> {
   public:
@@ -63,23 +64,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void setTutorial(STutorial);
   STutorial getTutorial() const;
 
-  enum class RequirementId {
-    TECHNOLOGY,
-    VILLAGE_CONQUERED,
-  };
-  typedef EnumVariant<RequirementId, TYPES(TechId),
-      ASSIGN(TechId, RequirementId::TECHNOLOGY)> Requirement;
-
-  static string getRequirementText(Requirement);
-
-  struct RoomInfo {
-    string name;
-    string description;
-    vector<Requirement> requirements;
-  };
-  static vector<RoomInfo> getRoomInfo();
-
-  SERIALIZATION_DECL(PlayerControl);
+  SERIALIZATION_DECL(PlayerControl)
 
   vector<WCreature> getTeam(WConstCreature);
   optional<FurnitureType> getMissingTrainingDummy(WConstCreature);
@@ -144,8 +129,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void commandTeam(TeamId);
   void setScrollPos(Position);
 
-  struct BuildInfo;
-  bool meetsRequirement(Requirement) const;
   bool canSelectRectangle(const BuildInfo&);
   void handleSelection(Vec2 pos, const BuildInfo&, bool rectangle, bool deselectOnly = false);
   vector<CollectiveInfo::Button> fillButtons(const vector<BuildInfo>& buildInfo) const;

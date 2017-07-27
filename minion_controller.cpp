@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "minion_controller.h"
 #include "player.h"
 #include "player_control.h"
