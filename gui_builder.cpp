@@ -1567,7 +1567,7 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo& info, const opti
         gui.bottomMargin(5,
             gui.progressBar(Color::DARK_GREEN.transparency(128), elem.productionState)),
         gui.rightMargin(rightElemMargin, gui.stack(
-            getTooltip({elem.description}, THIS_LINE),
+            //getTooltip({elem.description}, THIS_LINE), // this interferes with the mini menu
             gui.uiHighlightMouseOver(Color::GREEN),
             line.buildHorizontalList()
     ))));
