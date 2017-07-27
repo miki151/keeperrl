@@ -198,6 +198,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   WModel getModel() const;
   WGame getGame() const;
   View* getView() const;
+  PController createMinionController(WCreature);
 
   mutable SMapMemory SERIAL(memory);
   bool SERIAL(showWelcomeMsg) = true;

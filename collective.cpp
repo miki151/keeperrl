@@ -580,33 +580,6 @@ vector<Position> Collective::getEnemyPositions() const {
   return enemyPos;
 }
 
-static int countNeighbor(Position pos, const set<Position>& squares) {
-  int num = 0;
-  for (Position v : pos.neighbors8())
-    num += squares.count(v);
-  return num;
-}
-
-static optional<Position> chooseBedPos(const set<Position>& lair, const set<Position>& beds) {
-  vector<Position> res;
-  for (Position v : lair) {
-    if (countNeighbor(v, beds) > 2)
-      continue;
-    bool bad = false;
-    for (Position n : v.neighbors8())
-      if (beds.count(n) && countNeighbor(n, beds) >= 2) {
-        bad = true;
-        break;
-      }
-    if (!bad)
-      res.push_back(v);
-  }
-  if (!res.empty())
-    return Random.choose(res);
-  else
-    return none;
-}
-
 void Collective::addNewCreatureMessage(const vector<WCreature>& immigrants) {
   if (immigrants.size() == 1)
     control->addMessage(PlayerMessage(immigrants[0]->getName().a() + " joins your forces.")

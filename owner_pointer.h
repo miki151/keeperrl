@@ -3,6 +3,7 @@
 #include "stdafx.h"
 #include "serialization.h"
 #include "debug.h"
+#include "my_containers.h"
 
 template <typename T>
 class WeakPointer;

@@ -2109,7 +2109,7 @@ PCreature CreatureFactory::getGhost(WCreature creature) {
 }
 
 ItemType randomHealing() {
-  return Random.choose(ItemType(ItemId::POTION, EffectId::HEAL));
+  return ItemType(ItemId::POTION, EffectId::HEAL);
 }
 
 ItemType randomBackup() {

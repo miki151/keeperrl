@@ -18,7 +18,6 @@
 #include "player_control.h"
 #include "level.h"
 #include "task.h"
-#include "player.h"
 #include "model.h"
 #include "statistics.h"
 #include "options.h"
@@ -78,6 +77,7 @@
 #include "furniture_usage.h"
 #include "message_generator.h"
 #include "message_buffer.h"
+#include "minion_controller.h"
 
 template <class Archive>
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
@@ -88,9 +88,9 @@ void PlayerControl::serialize(Archive& ar, const unsigned int version) {
   ar(messageHistory, tutorial, controlModeMessages);
 }
 
-SERIALIZABLE(PlayerControl);
+SERIALIZABLE(PlayerControl)
 
-SERIALIZATION_CONSTRUCTOR_IMPL(PlayerControl);
+SERIALIZATION_CONSTRUCTOR_IMPL(PlayerControl)
 
 typedef Collective::ResourceId ResourceId;
 
@@ -469,23 +469,6 @@ void PlayerControl::render(View* view) {
 bool PlayerControl::isTurnBased() {
   return !getControlled().empty();
 }
-
-static vector<ItemType> marketItems {
-  {ItemId::POTION, EffectId::HEAL},
-  {ItemId::POTION, EffectType(EffectId::LASTING, LastingEffect::SLEEP)},
-  {ItemId::POTION, EffectType(EffectId::LASTING, LastingEffect::BLIND)},
-  {ItemId::POTION, EffectType(EffectId::LASTING, LastingEffect::INVISIBLE)},
-  {ItemId::POTION, EffectType(EffectId::LASTING, LastingEffect::POISON)},
-  {ItemId::POTION, EffectType(EffectId::LASTING, LastingEffect::POISON_RESISTANT)},
-  {ItemId::POTION, EffectType(EffectId::LASTING, LastingEffect::FLYING)},
-  {ItemId::POTION, EffectType(EffectId::LASTING, LastingEffect::SLOWED)},
-  {ItemId::POTION, EffectType(EffectId::LASTING, LastingEffect::SPEED)},
-  ItemId::WARNING_AMULET,
-  ItemId::HEALING_AMULET,
-  ItemId::DEFENSE_AMULET,
-  {ItemId::RING, LastingEffect::FIRE_RESISTANT},
-  {ItemId::RING, LastingEffect::POISON_RESISTANT},
-};
 
 void PlayerControl::addConsumableItem(WCreature creature) {
   ScrollPosition scrollPos;
@@ -1618,93 +1601,6 @@ Vec2 PlayerControl::getPosition() const {
 
 static enum Selection { SELECT, DESELECT, NONE } selection = NONE;
 
-class MinionController : public Player {
-  public:
-  MinionController(WCreature c, SMapMemory memory, WPlayerControl ctrl, SMessageBuffer messages,
-                   SVisibilityMap visibilityMap, STutorial tutorial)
-      : Player(c, false, memory, messages, visibilityMap, tutorial), control(ctrl) {}
-
-  virtual vector<CommandInfo> getCommands() const override {
-    auto tutorial = control->getTutorial();
-    return concat(Player::getCommands(), {
-      {PlayerInfo::CommandInfo{"Leave creature", 'u', "Leave creature and order team back to base.", true,
-            tutorial && tutorial->getHighlights(getGame()).contains(TutorialHighlight::LEAVE_CONTROL)},
-       [] (Player* player) { dynamic_cast<MinionController*>(player)->unpossess(); }, true},
-      {PlayerInfo::CommandInfo{"Toggle control all", none, "Control all team members.", true},
-       [] (Player* player) { dynamic_cast<MinionController*>(player)->control->toggleControlAllTeamMembers(); }, getTeam().size() > 1},
-      {PlayerInfo::CommandInfo{"Switch control", 's', "Switch control to a different team member.", true},
-       [] (Player* player) { dynamic_cast<MinionController*>(player)->swapTeam(); }, getTeam().size() > 1},
-      {PlayerInfo::CommandInfo{"Absorb", 'a',
-          "Absorb a friendly creature and inherit its attributes. Requires the absorbtion skill.",
-          getCreature()->getAttributes().getSkills().hasDiscrete(SkillId::CONSUMPTION)},
-       [] (Player* player) { dynamic_cast<MinionController*>(player)->consumeAction();}, false},
-    });
-  }
-
-  void consumeAction() {
-    vector<WCreature> targets = control->getCollective()->getConsumptionTargets(getCreature());
-    vector<WCreature> actions;
-    for (auto target : targets)
-      if (auto action = getCreature()->consume(target))
-        actions.push_back(target);
-    if (actions.size() == 1 && getView()->yesOrNoPrompt("Really absorb " + actions[0]->getName().the() + "?")) {
-      tryToPerform(getCreature()->consume(actions[0]));
-    } else
-    if (actions.size() > 1) {
-      auto dir = chooseDirection("Which direction?");
-      if (!dir)
-        return;
-      if (WCreature c = getCreature()->getPosition().plus(*dir).getCreature())
-        if (targets.contains(c) && getView()->yesOrNoPrompt("Really absorb " + c->getName().the() + "?"))
-          tryToPerform(getCreature()->consume(c));
-    }
-  }
-
-  void unpossess() {
-    control->leaveControl();
-  }
-
-  bool swapTeam() {
-    return control->swapTeam();
-  }
-
-  virtual bool isTravelEnabled() const override {
-    return control->getControlled().size() == 1;
-  }
-
-  virtual CenterType getCenterType() const override {
-    if (control->getControlled().size() == 1)
-      return CenterType::FOLLOW;
-    else
-      return CenterType::STAY_ON_SCREEN;
-  }
-
-  virtual void onFellAsleep() override {
-    getGame()->getView()->presentText("Important!", "You fall asleep. You loose control of your minion.");
-    unpossess();
-  }
-
-  virtual vector<WCreature> getTeam() const override {
-    return control->getTeam(getCreature());
-  }
-
-  virtual MessageGenerator& getMessageGenerator() const override {
-    static MessageGenerator messageGeneratorSecond(MessageGenerator::SECOND_PERSON);
-    static MessageGenerator messageGeneratorThird(MessageGenerator::THIRD_PERSON);
-
-    if (control->getControlled().size() == 1)
-      return messageGeneratorSecond;
-    else
-      return messageGeneratorThird;
-  }
-
-  SERIALIZE_ALL(SUBCLASS(Player), control)
-  SERIALIZATION_CONSTRUCTOR(MinionController)
-
-  private:
-  WPlayerControl SERIAL(control);
-};
-
 void PlayerControl::controlSingle(WCreature c) {
   CHECK(getCreatures().contains(c));
   CHECK(!c->isDead());
@@ -1729,7 +1625,7 @@ void PlayerControl::commandTeam(TeamId team) {
   if (!getControlled().empty())
     leaveControl();
   auto c = getTeams().getLeader(team);
-  c->pushController(makeOwner<MinionController>(c, memory, this, controlModeMessages, visibilityMap, tutorial));
+  c->pushController(createMinionController(c));
   getTeams().activate(team);
   getCollective()->freeTeamMembers(team);
   getView()->resetCenter();
@@ -1742,7 +1638,7 @@ void PlayerControl::toggleControlAllTeamMembers() {
       if (getControlled().size() == 1) {
         for (auto c : members)
           if (!c->isPlayer())
-            c->pushController(makeOwner<MinionController>(c, memory, this, controlModeMessages, visibilityMap, tutorial));
+            c->pushController(createMinionController(c));
       } else
         for (auto c : members)
           if (c->isPlayer() && c != getTeams().getLeader(*teamId))
@@ -2623,6 +2519,10 @@ void PlayerControl::onConstructed(Position pos, FurnitureType type) {
   //updateSquareMemory(pos);
 }
 
+PController PlayerControl::createMinionController(WCreature c) {
+  return ::getMinionController(c, memory, this, controlModeMessages, visibilityMap, tutorial);
+}
+
 void PlayerControl::onClaimedSquare(Position position) {
   auto ground = position.modFurniture(FurnitureLayer::GROUND);
   CHECK(ground) << "No ground found at " << position.getCoord();
@@ -2653,5 +2553,4 @@ vector<Vec2> PlayerControl::getVisibleEnemies() const {
   return visibleEnemies;
 }
 
-REGISTER_TYPE(MinionController);
 REGISTER_TYPE(ListenerTemplate<PlayerControl>)
