@@ -314,12 +314,12 @@ class vector {
       return *this;
     }
 
-    Iterator operator++(int) const {
+    Iterator operator++(int) {
       checkParent();
       return Iterator(it++, parent);
     }
 
-    Iterator operator--(int) const {
+    Iterator operator--(int) {
       checkParent();
       return Iterator(it--, parent);
     }

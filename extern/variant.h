@@ -402,7 +402,7 @@ public:
 
     bool operator == (const Self& other) const {
       return tag == other.tag && visit([&](const auto& o1) {
-          return other.getReferenceMaybe<
+          return other.template getReferenceMaybe<
               typename std::remove_const<typename std::remove_reference<decltype(o1)>::type>::type>() == o1; } );
     }
 
