@@ -40,6 +40,7 @@
 #include <iostream>
 #include <fstream>
 #include <algorithm>
+#include <functional>
 #include <sstream>
 #include <string>
 #include <cstdlib>
