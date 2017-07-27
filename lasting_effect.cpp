@@ -362,7 +362,7 @@ void LastingEffects::afterCreatureDamage(WCreature c, LastingEffect e) {
 bool LastingEffects::tick(WCreature c, LastingEffect effect) {
   switch (effect) {
     case LastingEffect::BLEEDING:
-      c->getBody().bleed(c, 0.01);
+      c->getBody().bleed(c, 0.03);
       c->secondPerson(PlayerMessage("You are bleeding.", MessagePriority::HIGH));
       c->thirdPerson(PlayerMessage(c->getName().the() + " is bleeding.", MessagePriority::HIGH));
       if (c->getBody().getHealth() <= 0) {
@@ -372,7 +372,7 @@ bool LastingEffects::tick(WCreature c, LastingEffect effect) {
       }
       break;
     case LastingEffect::POISON:
-      c->getBody().bleed(c, 0.01);
+      c->getBody().bleed(c, 0.03);
       c->secondPerson(PlayerMessage("You suffer from poisoning.", MessagePriority::HIGH));
       c->thirdPerson(PlayerMessage(c->getName().the() + " suffers from poisoning.", MessagePriority::HIGH));
       if (c->getBody().getHealth() <= 0) {
