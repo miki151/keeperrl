@@ -387,7 +387,6 @@ ItemFactory ItemFactory::villageShop() {
       {ItemId::DEFENSE_AMULET, 0.5 },
       {{ItemId::RING, LastingEffect::POISON_RESISTANT}, 0.5},
       {{ItemId::RING, LastingEffect::FIRE_RESISTANT}, 0.5},
-      {ItemId::FIRST_AID_KIT, 5},
       {ItemId::SPEED_BOOTS, 2},
       {ItemId::LEVITATION_BOOTS, 2},
       {ItemId::TELEPATHY_HELM, 2}});
@@ -571,8 +570,7 @@ ItemFactory ItemFactory::dungeon() {
       {ItemId::HEALING_AMULET, 3 },
       {ItemId::DEFENSE_AMULET, 3 },
       {{ItemId::RING, LastingEffect::POISON_RESISTANT}, 3},
-      {{ItemId::RING, LastingEffect::FIRE_RESISTANT}, 3},
-      {ItemId::FIRST_AID_KIT, 30 }});
+      {{ItemId::RING, LastingEffect::FIRE_RESISTANT}, 3}});
 }
 
 ItemFactory ItemFactory::chest() {

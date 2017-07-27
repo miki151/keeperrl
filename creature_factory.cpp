@@ -1003,7 +1003,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
       return CATTR(
           c.viewId = ViewId::KEEPER;
           c.retiredViewId = ViewId::RETIRED_KEEPER;
-          c.attr = LIST(12_dam, 12_def, 12_spell_dam, 100_spd );
+          c.attr = LIST(12_dam, 12_def, 20_spell_dam, 100_spd );
           c.body = Body::humanoid(Body::Size::LARGE);
           c.name = "Keeper";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_MALE)->getNext());
@@ -1186,7 +1186,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::SHELOB:
       return CATTR(
           c.viewId = ViewId::SHELOB;
-          c.attr = LIST(48_dam, 20_def, 130_spd );
+          c.attr = LIST(48_dam, 30_def, 130_spd );
           c.body = Body::nonHumanoid(Body::Size::LARGE).setWeight(400)
               .setBodyParts({{BodyPart::LEG, 8}, {BodyPart::TORSO, 1}})
               .setDeathSound(none);
@@ -1200,7 +1200,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::GREEN_DRAGON: 
       return CATTR(
           c.viewId = ViewId::GREEN_DRAGON;
-          c.attr = LIST(38_dam, 28_def, 90_spd );
+          c.attr = LIST(52_dam, 40_def, 110_spd );
           c.body = Body::nonHumanoid(Body::Size::HUGE).setHorseBodyParts().addWings();
           c.barehandedAttack = AttackType::BITE;
           c.permanentEffects[LastingEffect::POISON_RESISTANT] = 1;
@@ -1212,7 +1212,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::RED_DRAGON:
       return CATTR(
           c.viewId = ViewId::RED_DRAGON;
-          c.attr = LIST(48_dam, 28_def, 100_spd );
+          c.attr = LIST(55_dam, 42_def, 120_spd );
           c.body = Body::nonHumanoid(Body::Size::HUGE).setHorseBodyParts().addWings();
           c.barehandedAttack = AttackType::BITE;
           c.name = "red dragon";
@@ -1223,7 +1223,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::KNIGHT: 
       return CATTR(
           c.viewId = ViewId::KNIGHT;
-          c.attr = LIST(30_dam, 22_def, 100_spd );
+          c.attr = LIST(36_dam, 28_def, 100_spd );
           c.body = Body::humanoid(Body::Size::LARGE);
           c.permanentEffects[LastingEffect::MELEE_RESISTANCE] = 1;
           c.chatReactionFriendly = "curses all dungeons"_s;
@@ -1232,7 +1232,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::AVATAR: 
       return CATTR(
           c.viewId = ViewId::DUKE;
-          c.attr = LIST(40_dam, 29_def, 100_spd );
+          c.attr = LIST(45_dam, 29_def, 100_spd );
           c.body = Body::humanoid(Body::Size::LARGE);
           c.permanentEffects[LastingEffect::MELEE_RESISTANCE] = 1;
           c.chatReactionFriendly = "curses all dungeons"_s;
@@ -1422,7 +1422,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::ORC_SHAMAN:
       return CATTR(
           c.viewId = ViewId::ORC_SHAMAN;
-          c.attr = LIST(12_dam, 8_def, 10_spell_dam, 100_spd );
+          c.attr = LIST(12_dam, 8_def, 16_spell_dam, 100_spd );
           c.body = Body::humanoid(Body::Size::LARGE);
           c.spawnType = SpawnType::HUMANOID;
           c.skills.setValue(SkillId::SORCERY, 0.7);
@@ -2109,12 +2109,12 @@ PCreature CreatureFactory::getGhost(WCreature creature) {
 }
 
 ItemType randomHealing() {
-  return Random.choose(ItemType(ItemId::POTION, EffectId::HEAL), ItemType(ItemId::FIRST_AID_KIT));
+  return Random.choose(ItemType(ItemId::POTION, EffectId::HEAL));
 }
 
 ItemType randomBackup() {
-  return Random.choose({ ItemType(ItemId::SCROLL, EffectId::DECEPTION), ItemType(ItemId::SCROLL, EffectId::TELEPORT),
-      randomHealing()}, {1, 1, 8});
+  return Random.choose(ItemType(ItemId::SCROLL, EffectId::DECEPTION), ItemType(ItemId::SCROLL, EffectId::TELEPORT),
+      randomHealing());
 }
 
 ItemType randomArmor() {
@@ -2175,7 +2175,7 @@ vector<ItemType> getInventory(CreatureId id) {
     case CreatureId::ADVENTURER_F:
     case CreatureId::ADVENTURER:
       return ItemList()
-        .add(ItemId::FIRST_AID_KIT)
+        .add(ItemId::FIRST_AID_KIT, 3)
         .add(ItemId::KNIFE)
         .add(ItemId::SWORD)
         .add(ItemId::LEATHER_GLOVES)
@@ -2240,7 +2240,7 @@ vector<ItemType> getInventory(CreatureId id) {
         .add(ItemId::CHAIN_ARMOR)
         .add(ItemId::IRON_HELM)
         .add(ItemId::IRON_BOOTS)
-        .add({ItemId::POTION, EffectId::HEAL}, Random.get(1, 4))
+        .add(randomHealing(), 3)
         .add(ItemId::GOLD_PIECE, Random.get(140, 200));
     case CreatureId::OGRE: 
       return ItemList().add(ItemId::HEAVY_CLUB);
@@ -2261,6 +2261,7 @@ vector<ItemType> getInventory(CreatureId id) {
       return ItemList()
         .add(Random.choose({ItemId::SPECIAL_BATTLE_AXE, ItemId::SPECIAL_WAR_HAMMER}, {1, 1}))
         .add(randomBackup())
+        .add(randomHealing())
         .add(ItemId::CHAIN_ARMOR)
         .add(ItemId::IRON_BOOTS)
         .add(ItemId::IRON_HELM)
