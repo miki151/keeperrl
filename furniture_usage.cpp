@@ -41,16 +41,16 @@ static void useChest(Position pos, WConstFurniture furniture, WCreature c, const
   pos.replaceFurniture(furniture, FurnitureFactory::get(chestInfo.openedType, furniture->getTribe()));
   if (auto creatureInfo = chestInfo.creatureInfo)
     if (creatureInfo->creatureChance > 0 && Random.roll(creatureInfo->creatureChance)) {
-    int numR = creatureInfo->numCreatures;
-    CreatureFactory factory(*creatureInfo->creature);
-    for (Position v : c->getPosition().neighbors8(Random)) {
-      PCreature rat = factory.random();
-      if (v.canEnter(rat.get())) {
-        v.addCreature(std::move(rat));
-        if (--numR == 0)
-          break;
+      int numR = creatureInfo->numCreatures;
+      CreatureFactory factory(*creatureInfo->creature);
+      for (Position v : c->getPosition().neighbors8(Random)) {
+        PCreature rat = factory.random();
+        if (v.canEnter(rat.get())) {
+          v.addCreature(std::move(rat));
+          if (--numR == 0)
+            break;
+        }
       }
-    }
     if (numR < creatureInfo->numCreatures)
       c->message(creatureInfo->msgCreature);
     return;
@@ -113,9 +113,9 @@ void FurnitureUsage::handle(FurnitureUsageType type, Position pos, WConstFurnitu
       break;
     case FurnitureUsageType::VAMPIRE_COFFIN:
       useChest(pos, furniture, c, ChestInfo{
-                 FurnitureType::OPENED_CHEST,
+                 FurnitureType::OPENED_COFFIN,
                  ChestInfo::CreatureInfo {
-                   CreatureFactory::singleCreature(TribeId::getKeeper(), CreatureId::VAMPIRE_LORD), 1, 1,
+                   CreatureFactory::singleCreature(TribeId::getMonster(), CreatureId::VAMPIRE_LORD), 1, 1,
                    "There is a rotting corpse inside. The corpse is alive!"
                  },
                  none
