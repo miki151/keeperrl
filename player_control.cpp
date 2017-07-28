@@ -44,7 +44,6 @@
 #include "tribe.h"
 #include "visibility_map.h"
 #include "creature_name.h"
-#include "monster_ai.h"
 #include "view.h"
 #include "view_index.h"
 #include "collective_attack.h"

@@ -32,18 +32,19 @@ void FurnitureEntry::handle(WFurniture f, WCreature c) {
       },
       [&](Trap type) {
         auto position = c->getPosition();
-        if (c->getGame()->getTribe(f->getTribe())->isEnemy(c)) {
-          if (!c->getAttributes().getSkills().hasDiscrete(SkillId::DISARM_TRAPS)) {
-            if (!type.alwaysVisible)
-              c->you(MsgType::TRIGGER_TRAP, "");
-            Effect::applyToCreature(c, type.effect, EffectStrength::NORMAL);
-            position.getGame()->addEvent({EventId::TRAP_TRIGGERED, c->getPosition()});
-          } else {
-            c->you(MsgType::DISARM_TRAP, Effect::getName(type.effect) + " trap");
-            position.getGame()->addEvent({EventId::TRAP_DISARMED, EventInfo::TrapDisarmed{c->getPosition(), c}});
+        if (auto game = c->getGame()) // check in case the creature is placed here during level generation
+          if (game->getTribe(f->getTribe())->isEnemy(c)) {
+            if (type.spiderWeb || !c->getAttributes().getSkills().hasDiscrete(SkillId::DISARM_TRAPS)) {
+              if (!type.spiderWeb)
+                c->you(MsgType::TRIGGER_TRAP, "");
+              Effect::applyToCreature(c, type.effect, EffectStrength::NORMAL);
+              position.getGame()->addEvent({EventId::TRAP_TRIGGERED, c->getPosition()});
+            } else {
+              c->you(MsgType::DISARM_TRAP, Effect::getName(type.effect) + " trap");
+              position.getGame()->addEvent({EventId::TRAP_DISARMED, EventInfo::TrapDisarmed{c->getPosition(), c}});
+            }
+            position.removeFurniture(f);
           }
-          position.removeFurniture(f);
-        }
       },
       [&](Water) {
         MovementType realMovement = c->getMovementType();
@@ -72,8 +73,8 @@ void FurnitureEntry::handle(WFurniture f, WCreature c) {
 bool FurnitureEntry::isVisibleTo(WConstFurniture f, WConstCreature c) const {
   return entryData.visit(
       [&](const Trap& type) {
-        return type.alwaysVisible || !c->getGame()->getTribe(f->getTribe())->isEnemy(c)
-            || c->getAttributes().getSkills().hasDiscrete(SkillId::DISARM_TRAPS);
+        return !c->getGame()->getTribe(f->getTribe())->isEnemy(c)
+            || (!type.spiderWeb && c->getAttributes().getSkills().hasDiscrete(SkillId::DISARM_TRAPS));
       },
       [&](const auto&) {
         return true;

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "move_info.h"
 #include "player_message.h"
 
 class Creature;

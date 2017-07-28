@@ -92,30 +92,35 @@ bool MinimapGui::onLeftClick(Vec2 v) {
   return false;
 }
 
+constexpr auto visibleLayers = { ViewLayer::FLOOR, ViewLayer::FLOOR_BACKGROUND };
+
 void MinimapGui::update(Rectangle bounds, const CreatureView* creature) {
   auto level = creature->getLevel();
   info.bounds = bounds;
   info.enemies.clear();
   info.locations.clear();
   const MapMemory& memory = creature->getMemory();
+  auto updatePos = [&] (Position pos) {
+    if (auto index = memory.getViewIndex(pos))
+      for (auto layer : visibleLayers)
+        if (index->hasObject(layer)) {
+          auto& object = index->getObject(layer);
+          Renderer::putPixel(mapBuffer, pos.getCoord(), Tile::getColor(object));
+          if (object.hasModifier(ViewObject::Modifier::ROAD))
+            info.roads.insert(pos.getCoord());
+        }
+  };
   if (currentLevel != level) {
     int col = SDL_MapRGBA(mapBuffer->format, 0, 0, 0, 1);
     SDL_FillRect(mapBuffer, nullptr, col);
     info.roads.clear();
-    for (Position v : level->getAllPositions()) {
-      if (memory.getViewIndex(v)) {
-        Renderer::putPixel(mapBuffer, v.getCoord(), Tile::getColor(v.getViewObject()));
-        if (v.getViewObject().hasModifier(ViewObject::Modifier::ROAD))
-          info.roads.insert(v.getCoord());
-      }
-    }
+    for (Position v : level->getAllPositions())
+      updatePos(v);
     currentLevel = level;
   }
   for (Position v : memory.getUpdated(level)) {
     CHECK(v.getCoord().x < mapBuffer->w && v.getCoord().y < mapBuffer->h) << v.getCoord();
-    Renderer::putPixel(mapBuffer, v.getCoord(), Tile::getColor(v.getViewObject()));
-    if (v.getViewObject().hasModifier(ViewObject::Modifier::ROAD))
-      info.roads.insert(v.getCoord());
+    updatePos(v);
   }
   memory.clearUpdated(level);
   info.player = creature->getPosition();

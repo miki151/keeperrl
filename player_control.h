@@ -42,6 +42,7 @@ struct WorkshopItem;
 class ScrollPosition;
 class Tutorial;
 struct BuildInfo;
+class MoveInfo;
 
 class PlayerControl : public CreatureView, public CollectiveControl, public EventListener<PlayerControl> {
   public:

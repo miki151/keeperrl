@@ -412,8 +412,9 @@ class Creatures : public LevelMaker {
 
 class Items : public LevelMaker {
   public:
-  Items(ItemFactory _factory, int minc, int maxc, bool _placeOnFurniture = false) :
-      factory(_factory), minItem(minc), maxItem(maxc), placeOnFurniture(_placeOnFurniture) {}
+  Items(ItemFactory _factory, int minc, int maxc, Predicate pred = Predicate::alwaysTrue(),
+      bool _placeOnFurniture = false) :
+      factory(_factory), minItem(minc), maxItem(maxc), predicate(pred), placeOnFurniture(_placeOnFurniture) {}
 
   virtual void make(LevelBuilder* builder, Rectangle area) override {
     int numItem = builder->getRandom().get(minItem, maxItem);
@@ -422,7 +423,8 @@ class Items : public LevelMaker {
       do {
         pos = Vec2(builder->getRandom().get(area.left(), area.right()), builder->getRandom().get(area.top(),
               area.bottom()));
-      } while (!builder->canNavigate(pos, MovementTrait::WALK) ||
+      } while (!predicate.apply(builder, pos) ||
+           !builder->canNavigate(pos, MovementTrait::WALK) ||
            (!placeOnFurniture && builder->getFurniture(pos, FurnitureLayer::MIDDLE)));
       builder->putItems(pos, factory.random());
     }
@@ -432,6 +434,7 @@ class Items : public LevelMaker {
   ItemFactory factory;
   int minItem;
   int maxItem;
+  Predicate predicate;
   bool placeOnFurniture;
 };
 
@@ -1349,15 +1352,20 @@ class Forrest : public LevelMaker {
 
 class PlaceCollective : public LevelMaker {
   public:
-  PlaceCollective(CollectiveBuilder* c) : collective(NOTNULL(c)) {}
+  PlaceCollective(CollectiveBuilder* c, Predicate pred = Predicate::alwaysTrue())
+      : collective(NOTNULL(c)), predicate(pred) {}
 
   virtual void make(LevelBuilder* builder, Rectangle area) override {
-    collective->addArea(builder->toGlobalCoordinates(area));
+    if (!collective->hasCentralPoint())
+      collective->setCentralPoint(builder->toGlobalCoordinates(area).middle());
+    collective->addArea(builder->toGlobalCoordinates(area.getAllSquares()
+        .filter([&](Vec2 pos) { return predicate.apply(builder, pos); })));
     builder->addCollective(collective);
   }
 
   private:
   CollectiveBuilder* collective;
+  Predicate predicate;
 };
 
 class ForEachSquare : public LevelMaker {
@@ -1646,7 +1654,7 @@ static MakerQueue* stockpileMaker(StockpileInfo info) {
   queue->addMaker(new Empty(floor));
   if (furniture)
     queue->addMaker(new Empty(SquareChange(*furniture)));
-  queue->addMaker(new Items(items, info.number, info.number + 1, !!furniture));
+  queue->addMaker(new Items(items, info.number, info.number + 1, Predicate::alwaysTrue(), !!furniture));
   return queue;
 }
 
@@ -2040,15 +2048,17 @@ static MakerQueue* vaultMaker(SettlementInfo info, bool connection) {
     queue->addMaker(new UniformBlob(building.floorOutside, none, SquareAttrib::CONNECT_CORRIDOR));
   else
     queue->addMaker(new UniformBlob(building.floorOutside));
+  auto insidePredicate = Predicate::andPred(Predicate::type(building.floorOutside),
+      Predicate::canEnter(MovementTrait::WALK));
   if (info.creatures)
-    queue->addMaker(new Creatures(*info.creatures, info.numCreatures, info.collective));
+    queue->addMaker(new Creatures(*info.creatures, info.numCreatures, info.collective, insidePredicate));
   if (info.shopFactory)
-    queue->addMaker(new Items(*info.shopFactory, 16, 20));
+    queue->addMaker(new Items(*info.shopFactory, 16, 20, insidePredicate));
   if (info.neutralCreatures)
     queue->addMaker(
         new Creatures(info.neutralCreatures->first, info.neutralCreatures->second, 
           Predicate::type(building.floorOutside)));
-  queue->addMaker(new Margin(1, new PlaceCollective(info.collective)));
+  queue->addMaker(new PlaceCollective(info.collective, insidePredicate));
   return queue;
 }
 

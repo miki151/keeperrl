@@ -1315,43 +1315,37 @@ class Spider : public Task {
       : origin(orig), positionsClose(pos), positionsFurther(pos2) {}
 
   virtual MoveInfo getMove(WCreature c) override {
-    if (Random.roll(10))
-      for (auto& pos : Random.permutation(positionsFurther))
-        if (pos.getCreature() && pos.getCreature()->isAffected(LastingEffect::ENTANGLED)) {
-          makeWeb = pos;
-          break;
-        }
-    if (!makeWeb && Random.roll(10)) {
-      vector<Position>& positions = Random.roll(10) ? positionsFurther : positionsClose;
-      for (auto& pos : Random.permutation(positions))
-        if (pos.canConstruct(FurnitureType::SPIDER_WEB) && !!c->moveTowards(pos, true)) {
-          makeWeb = pos;
-          break;
-        }
-    }
-    if (!makeWeb)
+    auto layer = Furniture::getLayer(FurnitureType::SPIDER_WEB);
+    for (auto pos : positionsFurther)
+      if (!pos.getFurniture(layer))
+        pos.addFurniture(FurnitureFactory::get(FurnitureType::SPIDER_WEB, c->getTribeId()));
+    for (auto& pos : Random.permutation(positionsFurther))
+      if (pos.getCreature() && pos.getCreature()->isAffected(LastingEffect::ENTANGLED)) {
+        attackPosition = pos;
+        break;
+      }
+    if (!attackPosition)
       return c->moveTowards(origin);
-    if (c->getPosition() == *makeWeb)
-      return c->wait().append([this](WCreature c) {
-          c->getPosition().addFurniture(FurnitureFactory::get(FurnitureType::SPIDER_WEB, c->getTribeId()));
-          setDone();
+    if (c->getPosition() == *attackPosition)
+      return c->wait().append([this](WCreature) {
+        attackPosition = none;
       });
     else
-      return c->moveTowards(*makeWeb, true);
+      return c->moveTowards(*attackPosition, true);
   }
 
   virtual string getDescription() const override {
     return "Spider";
   }
 
-  SERIALIZE_ALL(SUBCLASS(Task), origin, positionsClose, positionsFurther, makeWeb); 
-  SERIALIZATION_CONSTRUCTOR(Spider);
+  SERIALIZE_ALL(SUBCLASS(Task), origin, positionsClose, positionsFurther, attackPosition)
+  SERIALIZATION_CONSTRUCTOR(Spider)
 
   protected:
   Position SERIAL(origin);
   vector<Position> SERIAL(positionsClose);
   vector<Position> SERIAL(positionsFurther);
-  optional<Position> SERIAL(makeWeb);
+  optional<Position> SERIAL(attackPosition);
 };
 }
 

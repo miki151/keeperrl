@@ -43,10 +43,16 @@ CollectiveBuilder& CollectiveBuilder::addCreature(WCreature c) {
   return *this;
 }
 
-CollectiveBuilder& CollectiveBuilder::addArea(Rectangle v) {
-  append(squares, v.getAllSquares());
-  if (!centralPoint) // If it's already set, just leave it as the center of the first added area.
-    centralPoint = v.middle();
+bool CollectiveBuilder::hasCentralPoint() {
+  return !!centralPoint;
+}
+
+void CollectiveBuilder::setCentralPoint(Vec2 pos) {
+  centralPoint = pos;
+}
+
+CollectiveBuilder& CollectiveBuilder::addArea(const vector<Vec2>& v) {
+  append(squares, v);
   return *this;
 }
 

@@ -13,11 +13,11 @@ class FurnitureEntry {
   struct Sokoban {};
 
   struct Trap {
-    Trap(EffectType e, bool vis = false) : effect(e), alwaysVisible(vis) {}
+    Trap(EffectType e, bool s = false) : effect(e), spiderWeb(s) {}
     SERIALIZATION_CONSTRUCTOR(Trap)
     EffectType SERIAL(effect);
-    bool SERIAL(alwaysVisible);
-    SERIALIZE_ALL(effect, alwaysVisible)
+    bool SERIAL(spiderWeb);
+    SERIALIZE_ALL(effect, spiderWeb)
   };
 
   struct Water {};

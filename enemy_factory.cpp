@@ -458,11 +458,12 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
     case EnemyId::SHELOB:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::CAVE;
-            c.creatures = CreatureFactory::singleType(TribeId::getShelob(), CreatureId::SHELOB);
+            c.tribe = TribeId::getShelob();
+            c.creatures = CreatureFactory::singleType(c.tribe, CreatureId::SHELOB);
             c.numCreatures = 1;
             c.race = "giant spider"_s;
             c.buildingId = BuildingId::DUNGEON;
-            c.tribe = TribeId::getShelob();), CollectiveConfig::noImmigrants().setLeaderAsFighter());
+            ), CollectiveConfig::noImmigrants().setLeaderAsFighter());
     case EnemyId::CYCLOPS:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::CAVE;
