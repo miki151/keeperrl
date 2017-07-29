@@ -827,7 +827,7 @@ void Player::getViewIndex(Vec2 pos, ViewIndex& index) const {
 void Player::onKilled(WConstCreature attacker) {
   unsubscribe();
   getView()->updateView(this, false);
-  if (getView()->yesOrNoPrompt("Display message history?"))
+  if (getGame()->getPlayerCreatures().size() == 1 && getView()->yesOrNoPrompt("Display message history?"))
     showHistory();
   if (adventurer)
     getGame()->gameOver(getCreature(), getCreature()->getKills().getSize(), "monsters", getCreature()->getPoints());
