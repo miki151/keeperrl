@@ -160,7 +160,7 @@ void PlayerControl::onControlledKilled(WConstCreature victim) {
     if (WCreature c = getCreature(*newLeader)) {
       getTeams().setLeader(currentTeam, c);
       if (!c->isPlayer())
-        commandTeam(currentTeam);
+        c->pushController(createMinionController(c));
       return;
     }
   }
@@ -191,7 +191,7 @@ bool PlayerControl::swapTeam() {
           if (WCreature c = getCreature(*newLeader)) {
             getTeams().getLeader(*teamId)->popController();
             getTeams().setLeader(*teamId, c);
-            commandTeam(*teamId);
+            c->pushController(createMinionController(c));
           }
         return true;
       }

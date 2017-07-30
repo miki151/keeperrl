@@ -547,7 +547,8 @@ class ApplySquare : public Task {
       }
     } else {
       MoveInfo move(c->moveTowards(*position));
-      if (!move || (position->dist8(c->getPosition()) == 1 && position->getCreature())) {
+      if (!move || (position->dist8(c->getPosition()) == 1 && position->getCreature() &&
+          position->getCreature()->hasCondition(CreatureCondition::RESTRICTED_MOVEMENT))) {
         rejectedPosition.insert(*position);
         position = none;
         if (--invalidCount == 0) {
