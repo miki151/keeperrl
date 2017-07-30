@@ -128,10 +128,6 @@ static string getSlotSuffix(EquipmentSlot slot) {
   return "(equipped)";
 }
 
-void Player::onBump(WCreature) {
-  FATAL << "Shouldn't call onBump on a player";
-}
-
 string Player::getInventoryItemName(WConstItem item, bool plural) const {
   if (getCreature()->getEquipment().isEquipped(item))
     return item->getNameAndModifiers(plural, getCreature()) + " "
