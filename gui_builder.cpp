@@ -533,7 +533,7 @@ SGuiElem GuiBuilder::drawGameSpeedDialog() {
       clock->cont();
     else
       clock->pause();
-      gameSpeedDialogOpen = false;
+    gameSpeedDialogOpen = false;
   };
   vector<SGuiElem> lines;
   vector<SGuiElem> hotkeys;
@@ -1279,18 +1279,6 @@ struct CreatureMapElem {
   int count;
   CreatureInfo any;
 };
-
-static map<string, CreatureMapElem> getCreatureMap(const vector<CreatureInfo>& creatures) {
-  map<string, CreatureMapElem> creatureMap;
-  for (int i : All(creatures)) {
-    auto elem = creatures[i];
-    if (!creatureMap.count(elem.stackName)) {
-      creatureMap.insert(make_pair(elem.stackName, CreatureMapElem({elem.viewId, 1, elem})));
-    } else
-      ++creatureMap.at(elem.stackName).count;
-  }
-  return creatureMap;
-}
 
 SGuiElem GuiBuilder::drawMinionAndLevel(ViewId viewId, int level, int iconMult) {
   return gui.stack(makeVec(

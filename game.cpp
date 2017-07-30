@@ -308,7 +308,7 @@ void Game::tick(double time) {
 void Game::exitAction() {
   enum Action { SAVE, RETIRE, OPTIONS, ABANDON};
 #ifdef RELEASE
-  bool canRetire = playerControl && gameWon() && !getPlayer() && campaign->getType() != CampaignType::SINGLE_KEEPER;
+  bool canRetire = playerControl && gameWon() && players.empty() && campaign->getType() != CampaignType::SINGLE_KEEPER;
 #else
   bool canRetire = playerControl && players.empty();
 #endif
