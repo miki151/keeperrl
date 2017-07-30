@@ -92,7 +92,7 @@ bool MinimapGui::onLeftClick(Vec2 v) {
   return false;
 }
 
-constexpr auto visibleLayers = { ViewLayer::FLOOR, ViewLayer::FLOOR_BACKGROUND };
+constexpr auto visibleLayers = { ViewLayer::FLOOR_BACKGROUND, ViewLayer::FLOOR };
 
 void MinimapGui::update(Rectangle bounds, const CreatureView* creature) {
   auto level = creature->getLevel();
