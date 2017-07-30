@@ -1377,7 +1377,6 @@ CreatureAction Creature::throwItem(WItem item, Vec2 direction) const {
   else if (item->getWeight() > 20)
     return CreatureAction(item->getTheName() + " is too heavy!");
   int dist = 0;
-  int attackVariance = 10;
   int str = 20;
   if (item->getWeight() <= 0.5)
     dist = 10 * str / 15;
@@ -1387,8 +1386,7 @@ CreatureAction Creature::throwItem(WItem item, Vec2 direction) const {
     dist = 2 * str / 15;
   else 
     FATAL << "Item too heavy.";
-  int damage = Random.get(-attackVariance, attackVariance) + getAttr(AttrType::DAMAGE) +
-      item->getModifier(AttrType::DAMAGE);
+  int damage = getAttr(AttrType::RANGED_DAMAGE) + item->getModifier(AttrType::RANGED_DAMAGE);
   return CreatureAction(this, [=](WCreature self) {
     Attack attack(self, Random.choose(getBody().getAttackLevels()), item->getAttackType(), damage, AttrType::DAMAGE);
     secondPerson("You throw " + item->getAName(false, this));
