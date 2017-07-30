@@ -1186,7 +1186,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::SHELOB:
       return CATTR(
           c.viewId = ViewId::SHELOB;
-          c.attr = LIST(48_dam, 30_def, 130_spd );
+          c.attr = LIST(48_dam, 38_def, 130_spd );
           c.body = Body::nonHumanoid(Body::Size::LARGE).setWeight(400)
               .setBodyParts({{BodyPart::LEG, 8}, {BodyPart::TORSO, 1}})
               .setDeathSound(none);
@@ -1207,6 +1207,10 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.permanentEffects[LastingEffect::RANGED_VULNERABILITY] = 1;
           c.name = "green dragon";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::DRAGON)->getNext());
+          c.spells->add(SpellId::HEAL_SELF);
+          c.spells->add(SpellId::CURE_POISON);
+          c.spells->add(SpellId::DECEPTION);
+          c.spells->add(SpellId::SPEED_SELF);
           c.name->setStack("dragon");
           );
     case CreatureId::RED_DRAGON:
@@ -1218,6 +1222,10 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.name = "red dragon";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::DRAGON)->getNext());
           c.permanentEffects[LastingEffect::RANGED_VULNERABILITY] = 1;
+          c.spells->add(SpellId::HEAL_SELF);
+          c.spells->add(SpellId::CURE_POISON);
+          c.spells->add(SpellId::DECEPTION);
+          c.spells->add(SpellId::SPEED_SELF);
           c.name->setStack("dragon");
           );
     case CreatureId::KNIGHT: 
