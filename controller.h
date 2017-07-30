@@ -47,7 +47,7 @@ class Controller : public OwnedObject<Controller> {
   virtual void onStartedControl() {}
   virtual void onEndedControl() {}
 
-  virtual void onBump(WCreature) = 0;
+  virtual void onBump(WCreature) {}
 
   virtual ~Controller() {}
 

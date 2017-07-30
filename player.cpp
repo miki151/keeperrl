@@ -304,7 +304,8 @@ void Player::handleItems(const EntitySet<Item>& itemIds, ItemAction action) {
     case ItemAction::DROP: tryToPerform(getCreature()->drop(items)); break;
     case ItemAction::DROP_MULTI:
       if (auto num = getView()->getNumber("Drop how many " + items[0]->getName(true) + "?", 1, items.size()))
-        tryToPerform(getCreature()->drop(getPrefix(items, *num))); break;
+        tryToPerform(getCreature()->drop(getPrefix(items, *num)));
+      break;
     case ItemAction::THROW: throwItem(items); break;
     case ItemAction::APPLY: applyItem(items); break;
     case ItemAction::UNEQUIP: tryToPerform(getCreature()->unequip(items[0])); break;

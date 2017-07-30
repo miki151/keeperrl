@@ -166,10 +166,6 @@ static CollectiveConfig getKeeperConfig(RandomGen& random, bool fastImmigration)
   });
 }
 
-static EnumSet<MinionTrait> getImpTraits() {
-  return {MinionTrait::WORKER, MinionTrait::NO_LIMIT, MinionTrait::NO_EQUIPMENT};
-}
-
 SettlementInfo& ModelBuilder::makeExtraLevel(WModel model, EnemyInfo& enemy) {
   const int towerHeight = random.get(7, 12);
   const int gnomeHeight = random.get(3, 5);
@@ -251,10 +247,6 @@ SettlementInfo& ModelBuilder::makeExtraLevel(WModel model, EnemyInfo& enemy) {
           LevelMaker::sokobanFromFile(random, mainSettlement, sokoLevel));
       return extraSettlement;
   }
-}
-
-static string getBoardText(const string& keeperName, const string& dukeName) {
-  return dukeName + " will reward a daring hero 150 florens for slaying " + keeperName + " the Keeper.";
 }
 
 PModel ModelBuilder::singleMapModel(const string& worldName) {

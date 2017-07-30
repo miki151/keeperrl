@@ -450,15 +450,10 @@ WItem PlayerControl::chooseEquipmentItem(WCreature creature, vector<WItem> curre
         options.back().owner = CreatureInfo(c);
     allStacked.push_back(stack.front());
   }
-  auto creatureId = creature->getUniqueId();
   auto index = getView()->chooseItem(options, scrollPos);
   if (!index)
     return nullptr;
   return concat(currentItems, allStacked)[*index];
-}
-
-static string requires(TechId id) {
-  return " (requires: " + Technology::get(id)->getName() + ")";
 }
 
 int PlayerControl::getNumMinions() const {
