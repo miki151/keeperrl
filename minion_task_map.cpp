@@ -49,14 +49,13 @@ bool MinionTaskMap::isAvailable(WConstCollective col, WConstCreature c, MinionTa
       return !c->getAttributes().isTrainingMaxedOut(ExperienceType::MELEE);
     case MinionTask::STUDY:
       return !c->getAttributes().isTrainingMaxedOut(ExperienceType::SPELL);
-    case MinionTask::BE_EXECUTED:
-      return true;
     case MinionTask::BE_WHIPPED:
       return !c->getBody().isImmuneTo(LastingEffect::ENTANGLED) &&
           !c->getBody().isMinionFood() &&
           c->getBody().isHumanoid();
     case MinionTask::THRONE:
       return col->getLeader() == c;
+    case MinionTask::BE_EXECUTED:
     case MinionTask::PRISON:
     case MinionTask::BE_TORTURED:
       return col->hasTrait(c, MinionTrait::PRISONER);
