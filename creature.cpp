@@ -814,11 +814,14 @@ void Creature::tick() {
   updateVision();
   if (Random.roll(5))
     getDifficultyPoints();
-  for (WItem item : equipment->getItems()) {
+  vector<WItem> discarded;
+  for (auto item : equipment->getItems()) {
     item->tick(position);
     if (item->isDiscarded())
-      equipment->removeItem(item, this);
+      discarded.push_back(item);
   }
+  for (auto item : discarded)
+    equipment->removeItem(item, this);
   double globalTime = getGlobalTime();
   for (LastingEffect effect : ENUM_ALL(LastingEffect)) {
     if (attributes->considerTimeout(effect, globalTime))
