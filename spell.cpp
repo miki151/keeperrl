@@ -100,7 +100,7 @@ void Spell::init() {
   set(SpellId::METEOR_SHOWER, new Spell("meteor shower", {EffectId::PLACE_FURNITURE, FurnitureType::METEOR_SHOWER}, 150,
         SoundId::SPELL_METEOR_SHOWER));
   set(SpellId::PORTAL, new Spell("portal", {EffectId::PLACE_FURNITURE, FurnitureType::PORTAL}, 150, SoundId::SPELL_PORTAL));
-  set(SpellId::SUMMON_ELEMENT, new Spell("summon element", EffectId::SUMMON_ELEMENT, 5, SoundId::SPELL_SUMMON_SPIRIT));
+  set(SpellId::SUMMON_ELEMENT, new Spell("summon element", EffectId::SUMMON_ELEMENT, 150, SoundId::SPELL_SUMMON_SPIRIT));
 }
 
 optional<int> Spell::getLearningExpLevel() const {
