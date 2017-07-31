@@ -81,13 +81,13 @@ struct EnemyInfo {
   bool discoverable = true;
 };
 
-struct ExternalEnemy;
+struct EnemyEvent;
 
 class EnemyFactory {
   public:
   EnemyFactory(RandomGen&);
   EnemyInfo get(EnemyId);
-  vector<ExternalEnemy> getExternalEnemies();
+  vector<EnemyEvent> getExternalEnemies();
   vector<EnemyInfo> getVaults();
 
   private:

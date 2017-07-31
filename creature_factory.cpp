@@ -49,7 +49,7 @@
 #include "creature_debt.h"
 
 SERIALIZE_DEF(CreatureFactory, tribe, creatures, weights, unique, tribeOverrides, levelIncrease)
-SERIALIZATION_CONSTRUCTOR_IMPL(CreatureFactory);
+SERIALIZATION_CONSTRUCTOR_IMPL(CreatureFactory)
 
 CreatureFactory CreatureFactory::singleCreature(TribeId tribe, CreatureId id) {
   return CreatureFactory(tribe, {id}, {1}, {});
@@ -547,7 +547,7 @@ class IllusionController : public DoNothingController {
     ar(deathTime);
   }
 
-  SERIALIZATION_CONSTRUCTOR(IllusionController);
+  SERIALIZATION_CONSTRUCTOR(IllusionController)
 
   private:
   double SERIAL(deathTime);
@@ -571,12 +571,12 @@ PCreature CreatureFactory::getIllusion(WCreature creature) {
   return ret;
 }
 
-REGISTER_TYPE(BoulderController);
-REGISTER_TYPE(SokobanController);
-REGISTER_TYPE(KrakenController);
-REGISTER_TYPE(KamikazeController);
-REGISTER_TYPE(ShopkeeperController);
-REGISTER_TYPE(IllusionController);
+REGISTER_TYPE(BoulderController)
+REGISTER_TYPE(SokobanController)
+REGISTER_TYPE(KrakenController)
+REGISTER_TYPE(KamikazeController)
+REGISTER_TYPE(ShopkeeperController)
+REGISTER_TYPE(IllusionController)
 REGISTER_TYPE(ListenerTemplate<ShopkeeperController>)
 
 TribeId CreatureFactory::getTribeFor(CreatureId id) {

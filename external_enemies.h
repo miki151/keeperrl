@@ -7,22 +7,31 @@
 struct ExternalEnemy {
   CreatureFactory SERIAL(factory);
   Range SERIAL(groupSize);
-  Range SERIAL(attackTime);
   AttackBehaviour SERIAL(behaviour);
   string SERIAL(name);
-  SERIALIZE_ALL(factory, groupSize, attackTime, behaviour, name)
+  SERIALIZE_ALL(factory, groupSize, behaviour, name)
+};
+
+struct EnemyEvent {
+  EnemyEvent(ExternalEnemy, Range attackTime, double levelIncrease = 0);
+  EnemyEvent(vector<ExternalEnemy>, Range attackTime, double levelIncrease = 0);
+  vector<ExternalEnemy> SERIAL(enemies);
+  Range SERIAL(attackTime);
+  double SERIAL(levelIncrease);
+  SERIALIZATION_CONSTRUCTOR(EnemyEvent)
+  SERIALIZE_ALL(enemies, attackTime, levelIncrease)
 };
 
 class ExternalEnemies {
   public:
-  ExternalEnemies(RandomGen&, vector<ExternalEnemy>);
+  ExternalEnemies(RandomGen&, vector<EnemyEvent>);
   void update(WLevel, double localTime);
 
   SERIALIZATION_DECL(ExternalEnemies)
 
   private:
   OwnerPointer<TaskCallback> callbackDummy = makeOwner<TaskCallback>();
-  vector<ExternalEnemy> SERIAL(enemies);
+  vector<EnemyEvent> SERIAL(events);
   vector<optional<int>> SERIAL(attackTime);
   PTask getAttackTask(WCollective target, AttackBehaviour);
 };
