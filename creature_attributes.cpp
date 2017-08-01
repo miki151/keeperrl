@@ -79,7 +79,7 @@ void CreatureAttributes::setBaseAttr(AttrType type, int v) {
 
 double CreatureAttributes::getCourage() const {
   if (!body->hasBrain())
-    return 1000;
+    return 1;
   return courage;
 }
 

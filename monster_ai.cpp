@@ -328,25 +328,19 @@ class Fighter : public Behaviour {
   virtual ~Fighter() {
   }
 
-  double getMoraleBonus() {
-    return creature->getAttributes().getCourage() * pow(2.0, creature->getMorale());
-  }
-
   virtual MoveInfo getMove() override {
     if (WCreature other = getClosestEnemy()) {
       double myDamage = creature->getAttr(AttrType::DAMAGE);
       WItem weapon = getBestWeapon();
       if (!creature->getWeapon() && weapon)
         myDamage += weapon->getModifier(AttrType::DAMAGE);
-      double powerRatio = getMoraleBonus() * myDamage / other->getAttr(AttrType::DAMAGE);
+      double powerRatio = myDamage / other->getAttr(AttrType::DAMAGE);
       bool significantEnemy = myDamage < 5 * other->getAttr(AttrType::DAMAGE);
       double panicWeight = 0;
-      if (creature->getBody().isWounded())
-        panicWeight += 0.1;
-      if (creature->getBody().isSeriouslyWounded())
-        panicWeight += 0.5;
       if (powerRatio < maxPowerRatio)
         panicWeight += 2 - powerRatio * 2;
+      panicWeight -= creature->getAttributes().getCourage();
+      panicWeight -= creature->getMorale() * 0.3;
       panicWeight = min(1.0, max(0.0, panicWeight));
       if (creature->isAffected(LastingEffect::PANIC))
         panicWeight = 1;
@@ -815,7 +809,7 @@ class SplashHeroes : public Behaviour {
   SplashHeroes(WCreature c) : Behaviour(c) {}
 
   virtual MoveInfo getMove() override {
-    creature->getAttributes().setCourage(100);
+    creature->getAttributes().setCourage(1);
     if (!started && creature->getPosition().withCoord(splashLeaderPos).getCreature())
       started = true;
     if (!started)
@@ -840,7 +834,7 @@ class SplashHeroLeader : public Behaviour {
   SplashHeroLeader(WCreature c) : Behaviour(c) {}
 
   virtual MoveInfo getMove() override {
-    creature->getAttributes().setCourage(100);
+    creature->getAttributes().setCourage(1);
     Vec2 pos = creature->getPosition().getCoord();
     if (started)
       return creature->moveTowards(creature->getPosition().withCoord(splashTarget));
@@ -870,7 +864,7 @@ class SplashMonsters : public Behaviour {
   SplashMonsters(WCreature c) : Behaviour(c) {}
 
   virtual MoveInfo getMove() override {
-    creature->getAttributes().setCourage(100);
+    creature->getAttributes().setCourage(1);
     if (!initialPos)
       initialPos = creature->getPosition().getCoord();
     vector<WCreature> heroes;

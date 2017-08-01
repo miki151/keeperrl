@@ -523,21 +523,17 @@ class IllusionController : public DoNothingController {
   public:
   IllusionController(WCreature c, double deathT) : DoNothingController(c), deathTime(deathT) {}
 
-  void kill() {
-    getCreature()->thirdPerson("The illusion disappears.");
-    if (!getCreature()->isDead())
-      getCreature()->dieNoReason();
-  }
-
   virtual void onBump(WCreature c) override {
     c->attack(getCreature(), none).perform(c);
-    kill();
+    getCreature()->globalMessage("It was just an illusion!");
+    getCreature()->dieNoReason();
   }
 
   virtual void makeMove() override {
-    if (getCreature()->getGlobalTime() >= deathTime)
-      kill();
-    else
+    if (getCreature()->getGlobalTime() >= deathTime) {
+      getCreature()->globalMessage("The illusion disappears.");
+      getCreature()->dieNoReason();
+    } else
       getCreature()->wait().perform(getCreature());
   }
 
@@ -566,7 +562,7 @@ PCreature CreatureFactory::getIllusion(WCreature creature) {
           c.attr[AttrType::DEFENSE] = 1;
           c.permanentEffects[LastingEffect::FLYING] = 1;
           c.noAttackSound = true;
-          c.name = "illusion";));
+          c.name = creature->getName();));
   ret->setController(makeOwner<IllusionController>(ret.get(), creature->getGlobalTime() + Random.get(5, 10)));
   return ret;
 }
@@ -1094,7 +1090,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
       return CATTR(
           c.viewId = ViewId::GHOST;
           c.attr = LIST(25_def, 5_spell_dam, 120_spd );
-          c.courage = 10;
+          c.courage = 1;
           c.spawnType = SpawnType::DEMON;
           c.barehandedAttack = AttackType::POSSESS;
           c.body = Body::nonHumanoidSpirit(Body::Size::LARGE);
@@ -1111,7 +1107,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body = Body::humanoidSpirit(Body::Size::LARGE).addWings();
           c.skills.insert(SkillId::COPULATION);
           c.gender = Gender::female;
-          c.courage = 0.0;
+          c.courage = -1;
           c.name = CreatureName("succubus", "succubi");
           );
     case CreatureId::DOPPLEGANGER:
@@ -1170,7 +1166,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.viewId = ViewId::SOFT_MONSTER;
           c.attr = LIST(45_dam, 25_def, 100_spd );
           c.body = Body::humanoid(Body::Size::LARGE).setWeight(400);
-          c.courage = 0.1;
+          c.courage = -1;
           c.name = "soft monster";);
     case CreatureId::HYDRA:
       return CATTR(
@@ -1245,7 +1241,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.permanentEffects[LastingEffect::MELEE_RESISTANCE] = 1;
           c.chatReactionFriendly = "curses all dungeons"_s;
           c.chatReactionHostile = "\"Die!\""_s;
-          c.courage = 3;
+          c.courage = 1;
           c.name = "Duke of " + NameGenerator::get(NameGeneratorId::WORLD)->getNext(););
     case CreatureId::ARCHER:
       return CATTR(
@@ -1271,7 +1267,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.permanentEffects[LastingEffect::MAGIC_RESISTANCE] = 1;
           c.chatReactionFriendly = "curses all dungeons"_s;
           c.chatReactionHostile = "\"Die!\""_s;
-          c.courage = 3;
+          c.courage = 1;
           c.spells->add(SpellId::HEAL_SELF);
           c.spells->add(SpellId::SPEED_SELF);
           c.spells->add(SpellId::DEF_BONUS);
@@ -1501,7 +1497,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.viewId = ViewId::IMP;
           c.attr = LIST(5_dam, 15_def, 200_spd );
           c.body = Body::humanoid(Body::Size::SMALL).setNoCarryLimit().setDoesntEat();
-          c.courage = 0.1;
+          c.courage = -1;
           c.noChase = true;
           c.cantEquip = true;
           c.skills.insert(SkillId::CONSTRUCTION);
@@ -1515,7 +1511,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.viewId = ViewId::PRISONER;
           c.attr = LIST(8_dam, 15_def, 100_spd );
           c.body = Body::humanoid(Body::Size::LARGE).setWeight(60).setNoCarryLimit();
-          c.courage = 0.1;
+          c.courage = -1;
           c.noChase = true;
           c.cantEquip = true;
           c.skills.insert(SkillId::CONSTRUCTION);
@@ -1572,7 +1568,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.chatReactionFriendly = "curses all orcs"_s;
           c.chatReactionHostile = "\"Die!\""_s;
           c.permanentEffects[LastingEffect::MAGIC_VULNERABILITY] = 1;
-          c.courage = 3;
+          c.courage = 1;
           c.name = "dwarf baron";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::DWARF)->getNext());
           );
@@ -1597,7 +1593,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.permanentEffects[LastingEffect::POISON_RESISTANT] = 1;
           c.chatReactionFriendly = "curses all humans"_s;
           c.chatReactionHostile = "\"Die!\""_s;
-          c.courage = 3;
+          c.courage = 1;
           c.name = "lizardman chief";);
     case CreatureId::ELF: 
       return CATTR(
@@ -1838,7 +1834,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
               .setWeight(0.1)
               .setBodyParts({{BodyPart::LEG, 6}, {BodyPart::WING, 2}, {BodyPart::TORSO, 1}})
               .setDeathSound(none);
-          c.courage = 100;
+          c.courage = 1;
           c.noChase = true;
           c.animal = true;
           c.name = CreatureName("fly", "flies"););
@@ -1893,7 +1889,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body = Body::nonHumanoid(Body::Size::SMALL).setWeight(0.5).setBirdBodyParts().setDeathSound(none);
           c.animal = true;
           c.noChase = true;
-          c.courage = 100;
+          c.courage = 1;
           c.spawnType = SpawnType::BEAST;
           c.skills.insert(SkillId::EXPLORE);
           c.name = "raven";
@@ -1906,7 +1902,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body = Body::nonHumanoid(Body::Size::SMALL).setWeight(5).setBirdBodyParts().setDeathSound(none);
           c.animal = true;
           c.noChase = true;
-          c.courage = 100;
+          c.courage = 1;
           c.spawnType = SpawnType::BEAST;
           c.name = "vulture";);
     case CreatureId::WOLF: 
@@ -2033,7 +2029,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.attr = LIST(3_dam, 16_def, 150_spd );
           c.animal = true;
           c.noChase = true;
-          c.courage = 100;
+          c.courage = 1;
           c.spawnType = SpawnType::BEAST;
           c.skills.insert(SkillId::NIGHT_VISION);
           c.skills.insert(SkillId::EXPLORE_NOCTURNAL);
