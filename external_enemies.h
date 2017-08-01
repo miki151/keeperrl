@@ -30,8 +30,15 @@ class ExternalEnemies {
   SERIALIZATION_DECL(ExternalEnemies)
 
   private:
+  void updateWaves(WCollective target);
   OwnerPointer<TaskCallback> callbackDummy = makeOwner<TaskCallback>();
   vector<EnemyEvent> SERIAL(events);
   vector<optional<int>> SERIAL(attackTime);
+  struct Wave {
+    string SERIAL(name);
+    vector<WCreature> SERIAL(attackers);
+    SERIALIZE_ALL(name, attackers)
+  };
+  vector<Wave> SERIAL(waves);
   PTask getAttackTask(WCollective target, AttackBehaviour);
 };

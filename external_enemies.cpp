@@ -9,8 +9,11 @@
 #include "attack_behaviour.h"
 #include "model.h"
 #include "game.h"
+#include "creature_attributes.h"
+#include "creature.h"
+#include "container_range.h"
 
-SERIALIZE_DEF(ExternalEnemies, events, attackTime)
+SERIALIZE_DEF(ExternalEnemies, events, attackTime, waves)
 SERIALIZATION_CONSTRUCTOR_IMPL(ExternalEnemies)
 
 ExternalEnemies::ExternalEnemies(RandomGen& random, vector<EnemyEvent> e) : events(e) {
@@ -32,9 +35,24 @@ PTask ExternalEnemies::getAttackTask(WCollective enemy, AttackBehaviour behaviou
   }
 }
 
+void ExternalEnemies::updateWaves(WCollective target) {
+  auto areAllDead = [](const vector<WCreature>& wave) {
+    for (auto c : wave)
+      if (!c->isDead())
+        return false;
+    return true;
+  };
+  for (auto wave : Iter(waves))
+    if (areAllDead(wave->attackers)) {
+      target->onExternalEnemyKilled(wave->name);
+      wave.markToErase();
+    }
+}
+
 void ExternalEnemies::update(WLevel level, double localTime) {
   WCollective target = level->getModel()->getGame()->getPlayerCollective();
   CHECK(!!target);
+  updateWaves(target);
   for (int i : All(events))
     if (attackTime[i] && *attackTime[i] <= localTime) {
       auto enemy = Random.choose(events[i].enemies);
@@ -46,8 +64,10 @@ void ExternalEnemies::update(WLevel level, double localTime) {
         WCreature ref = c.get();
         if (level->landCreature(StairKey::transferLanding(), std::move(c)))
           attackers.push_back(ref);
+        ref->getAttributes().setCourage(1);
       }
       target->addAttack(CollectiveAttack(enemy.name, attackers));
+      waves.push_back(Wave{enemy.name, attackers});
       attackTime[i] = none;
     }
 }

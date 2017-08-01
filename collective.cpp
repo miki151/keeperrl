@@ -1496,6 +1496,15 @@ void Collective::onRansomPaid() {
   control->onRansomPaid();
 }
 
+void Collective::onExternalEnemyKilled(const std::string& name) {
+  control->addMessage(PlayerMessage("You resisted the attack of " + name + ".",
+      MessagePriority::CRITICAL));
+  int mana = 50;
+  addMana(mana);
+  control->addMessage(PlayerMessage("You feel a surge of power (+" + toString(mana) + " mana)",
+      MessagePriority::CRITICAL));
+}
+
 void Collective::onCopulated(WCreature who, WCreature with) {
   if (with->getName().bare() == "vampire")
     control->addMessage(who->getName().a() + " makes love to " + with->getName().a()

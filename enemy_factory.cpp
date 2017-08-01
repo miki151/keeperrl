@@ -663,9 +663,8 @@ vector<EnemyEvent> EnemyFactory::getExternalEnemies() {
         "an elementalist"
     }
   };
-  return {
-    EnemyEvent { enemies[0], Range::singleElem(200)},
-    EnemyEvent { enemies[1], Range::singleElem(400)},
-    EnemyEvent { enemies[0], Range::singleElem(600), 10},
-  };
+  vector<EnemyEvent> ret;
+  for (int i : Range(100))
+    ret.push_back(EnemyEvent ( enemies[0], Range::singleElem(400 * (i + 2)), i * 2 ));
+  return ret;
 }
