@@ -495,6 +495,19 @@ class Fighter : public Behaviour {
     return NoMove;
   }
 
+  MoveInfo considerCircularBlast() {
+    int numEnemies = 0;
+    auto pos = creature->getPosition();
+    for (Vec2 v : Vec2::directions8())
+      if (auto c = pos.plus(v).getCreature())
+        if (c->isEnemy(creature))
+          ++numEnemies;
+    if (numEnemies >= 3)
+      if (MoveInfo move = tryEffect(EffectId::CIRCULAR_BLAST, 1))
+        return move;
+    return NoMove;
+  }
+
   MoveInfo getAttackMove(WCreature other, bool chase) {
     int distance = 10000;
     CHECK(other);
@@ -512,7 +525,7 @@ class Fighter : public Behaviour {
         })};
     }
     if (distance == 1)
-      if (MoveInfo move = tryEffect(EffectId::CIRCULAR_BLAST, 1))
+      if (auto move = considerCircularBlast())
         return move;
     if (distance <= 5)
       for (EffectType effect : {
