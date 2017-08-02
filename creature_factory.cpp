@@ -1092,7 +1092,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.attr = LIST(25_def, 5_spell_dam, 120_spd );
           c.courage = 1;
           c.spawnType = SpawnType::DEMON;
-    	  c.spells->add(SpellId::INVISIBILITY);
+          c.spells->add(SpellId::INVISIBILITY);
           c.barehandedAttack = AttackType::POSSESS;
           c.body = Body::nonHumanoidSpirit(Body::Size::LARGE);
           c.permanentEffects[LastingEffect::FLYING] = 1;
