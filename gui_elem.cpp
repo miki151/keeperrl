@@ -1998,6 +1998,21 @@ SGuiElem GuiFactory::mouseHighlight2(SGuiElem elem) {
   return SGuiElem(new MouseHighlight2(std::move(elem)));
 }
 
+class RenderLayer : public GuiStack {
+  public:
+  RenderLayer(SGuiElem content) : GuiStack(std::move(content)) {}
+
+  virtual void render(Renderer& r) override {
+    r.setTopLayer();
+    elems[0]->render(r);
+    r.popLayer();
+  }
+};
+
+SGuiElem GuiFactory::renderTopLayer(SGuiElem content) {
+  return make_shared<RenderLayer>(std::move(content));
+}
+
 class Tooltip2 : public GuiElem {
   public:
   Tooltip2(SGuiElem e, GuiFactory::PositionFun pos)

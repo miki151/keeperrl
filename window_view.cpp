@@ -424,6 +424,13 @@ void WindowView::rebuildGui() {
         if (auto height = overlay.elem->getPreferredHeight()) {
           pos = getOverlayPosition(overlay.alignment, *height, *width, rightBarWidth, bottomBarHeight);
           tempGuiElems.push_back(std::move(overlay.elem));
+          switch (overlay.alignment) {
+            case GuiBuilder::OverlayInfo::GAME_SPEED:
+              tempGuiElems.back() = gui.renderTopLayer(std::move(tempGuiElems.back()));
+              break;
+            default:
+              break;
+          }
           *height = min(*height, renderer.getSize().y - pos.y);
           tempGuiElems.back()->setBounds(Rectangle(pos, pos + Vec2(*width, *height)));
         }

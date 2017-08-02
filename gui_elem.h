@@ -305,6 +305,7 @@ class GuiFactory {
   SGuiElem blink(SGuiElem);
   SGuiElem tutorialHighlight();
   SGuiElem rectangleBorder(Color);
+  SGuiElem renderTopLayer(SGuiElem content);
 
   private:
 
