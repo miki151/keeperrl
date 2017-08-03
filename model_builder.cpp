@@ -99,6 +99,11 @@ static CollectiveConfig getKeeperConfig(RandomGen& random, bool fastImmigration)
           .setFrequency(0.5)
           .setSpawnLocation(FurnitureType::GRAVE)
           .addRequirement(0.0, CostInfo(CollectiveResourceId::CORPSE, 1)),
+      ImmigrantInfo(CreatureId::SKELETON, {MinionTrait::FIGHTER})
+          .setFrequency(0.5)
+          .setSpawnLocation(FurnitureType::GRAVE)
+          .addRequirement(0.1, AttractionInfo{1, FurnitureType::TRAINING_IRON})
+          .addRequirement(0.0, CostInfo(CollectiveResourceId::CORPSE, 1)),
       ImmigrantInfo(CreatureId::VAMPIRE, {MinionTrait::FIGHTER})
           .setFrequency(0.2)
           .setSpawnLocation(FurnitureType::GRAVE)

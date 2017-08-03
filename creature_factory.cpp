@@ -525,13 +525,13 @@ class IllusionController : public DoNothingController {
 
   virtual void onBump(WCreature c) override {
     c->attack(getCreature(), none).perform(c);
-    getCreature()->globalMessage("It was just an illusion!");
+    getCreature()->message("It was just an illusion!");
     getCreature()->dieNoReason();
   }
 
   virtual void makeMove() override {
     if (getCreature()->getGlobalTime() >= deathTime) {
-      getCreature()->globalMessage("The illusion disappears.");
+      getCreature()->message("The illusion disappears.");
       getCreature()->dieNoReason();
     } else
       getCreature()->wait().perform(getCreature());
@@ -948,6 +948,8 @@ PCreature CreatureFactory::getSpecial(TribeId tribe, bool humanoid, bool large, 
           c.skills.setValue(SkillId::LABORATORY, Random.getDouble(0, 1));
           c.skills.setValue(SkillId::JEWELER, Random.getDouble(0, 1));
           c.skills.setValue(SkillId::FURNACE, Random.getDouble(0, 1));
+          c.maxLevelIncrease[ExperienceType::MELEE] = 10;
+          c.maxLevelIncrease[ExperienceType::SPELL] = 10;
         }
         if (humanoid) {
           c.chatReactionFriendly = "\"I am the mighty " + name + "\"";
@@ -1348,7 +1350,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::ZOMBIE: 
       return CATTR(
           c.viewId = ViewId::ZOMBIE;
-          c.attr = LIST(14_dam, 13_def, 60_spd );
+          c.attr = LIST(14_dam, 17_def, 60_spd );
           c.body = Body::humanoid(Body::Material::UNDEAD_FLESH, Body::Size::LARGE);
           c.spawnType = SpawnType::UNDEAD;
           c.permanentEffects[LastingEffect::RANGED_RESISTANCE] = 1;
@@ -1357,8 +1359,9 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::SKELETON: 
       return CATTR(
           c.viewId = ViewId::SKELETON;
-          c.attr = LIST(19_dam, 13_def, 80_spd );
+          c.attr = LIST(17_dam, 13_def, 100_spd, 5_ranged_dam);
           c.body = Body::humanoid(Body::Material::BONE, Body::Size::LARGE);
+          c.spawnType = SpawnType::UNDEAD;
           c.permanentEffects[LastingEffect::RANGED_RESISTANCE] = 1;
           c.maxLevelIncrease[ExperienceType::MELEE] = 3;
           c.maxLevelIncrease[ExperienceType::ARCHERY] = 4;
@@ -1371,8 +1374,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.chatReactionFriendly = "\"All men be cursed!\""_s;
           c.chatReactionHostile = "\"Die!\""_s;
           c.spawnType = SpawnType::UNDEAD;
-          c.skills.insert(SkillId::NIGHT_VISION);
           c.skills.setValue(SkillId::SORCERY, 0.1);
+          c.permanentEffects[LastingEffect::NIGHT_VISION] = 1;
           c.permanentEffects[LastingEffect::RANGED_RESISTANCE] = 1;
           c.maxLevelIncrease[ExperienceType::MELEE] = 7;
           c.maxLevelIncrease[ExperienceType::SPELL] = 7;
@@ -1385,7 +1388,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.attr = LIST(17_dam, 17_def, 27_spell_dam, 120_spd );
           c.body = Body::humanoid(Body::Material::UNDEAD_FLESH, Body::Size::LARGE);
           c.spawnType = SpawnType::UNDEAD;
-          c.skills.insert(SkillId::NIGHT_VISION);
+          c.permanentEffects[LastingEffect::NIGHT_VISION] = 1;
           c.skills.setValue(SkillId::SORCERY, 0.5);
           c.name = "vampire lord";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::VAMPIRE)->getNext());
@@ -1607,7 +1610,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.chatReactionFriendly = "curses all dwarves"_s;
           c.chatReactionHostile = "\"Die!\""_s;
           c.spells->add(SpellId::HEAL_SELF);
-          c.skills.insert(SkillId::ELF_VISION);
+          c.permanentEffects[LastingEffect::ELF_VISION] = 1;
           c.name = CreatureName("elf", "elves"););
     case CreatureId::ELF_ARCHER: 
       return CATTR(
@@ -1618,7 +1621,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.chatReactionHostile = "\"Die!\""_s;
           c.permanentEffects[LastingEffect::MAGIC_RESISTANCE] = 1;
           c.spells->add(SpellId::HEAL_SELF);
-          c.skills.insert(SkillId::ELF_VISION);
+          c.permanentEffects[LastingEffect::ELF_VISION] = 1;
           c.name = "elven archer";);
     case CreatureId::ELF_CHILD: 
       return CATTR(
@@ -1630,7 +1633,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.chatReactionHostile = "\"Die!\""_s;
           c.permanentEffects[LastingEffect::MAGIC_RESISTANCE] = 1;
           c.spells->add(SpellId::HEAL_SELF);
-          c.skills.insert(SkillId::ELF_VISION);
+          c.permanentEffects[LastingEffect::ELF_VISION] = 1;
           c.name = CreatureName("elf child", "elf children"););
     case CreatureId::ELF_LORD: 
       return CATTR(
@@ -1643,7 +1646,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.spells->add(SpellId::HEAL_SELF);
           c.skills.setValue(SkillId::SORCERY, 1);
           c.spells->add(SpellId::HEAL_OTHER);
-          c.skills.insert(SkillId::ELF_VISION);
+          c.permanentEffects[LastingEffect::ELF_VISION] = 1;
           c.spells->add(SpellId::HEAL_SELF);
           c.spells->add(SpellId::SPEED_SELF);
           c.spells->add(SpellId::DAM_BONUS);
@@ -1661,7 +1664,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.chatReactionHostile = "\"Die!\""_s;
           c.permanentEffects[LastingEffect::MAGIC_RESISTANCE] = 1;
           c.spells->add(SpellId::HEAL_SELF);
-          c.skills.insert(SkillId::NIGHT_VISION);
+          c.permanentEffects[LastingEffect::NIGHT_VISION] = 1;
           c.name = CreatureName("dark elf", "dark elves"););
     case CreatureId::DARK_ELF_WARRIOR:
       return CATTR(
@@ -1672,7 +1675,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.chatReactionHostile = "\"Die!\""_s;
           c.permanentEffects[LastingEffect::MAGIC_RESISTANCE] = 1;
           c.spells->add(SpellId::HEAL_SELF);
-          c.skills.insert(SkillId::NIGHT_VISION);
+          c.permanentEffects[LastingEffect::NIGHT_VISION] = 1;
           c.skills.setValue(SkillId::SORCERY, 0.3);
           c.maxLevelIncrease[ExperienceType::MELEE] = 5;
           c.maxLevelIncrease[ExperienceType::SPELL] = 5;
@@ -1687,7 +1690,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.chatReactionFriendly = "curses all dwarves"_s;
           c.chatReactionHostile = "\"Die!\""_s;
           c.spells->add(SpellId::HEAL_SELF);
-          c.skills.insert(SkillId::NIGHT_VISION);
+          c.permanentEffects[LastingEffect::NIGHT_VISION] = 1;
           c.name = CreatureName("dark elf child", "dark elf children"););
     case CreatureId::DARK_ELF_LORD:
       return CATTR(
@@ -1700,7 +1703,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.spells->add(SpellId::HEAL_SELF);
           c.skills.setValue(SkillId::SORCERY, 1);
           c.spells->add(SpellId::HEAL_OTHER);
-          c.skills.insert(SkillId::NIGHT_VISION);
+          c.permanentEffects[LastingEffect::NIGHT_VISION] = 1;
           c.spells->add(SpellId::HEAL_SELF);
           c.spells->add(SpellId::SPEED_SELF);
           c.spells->add(SpellId::DEF_BONUS);
@@ -1717,7 +1720,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.chatReactionFriendly = "curses all humans"_s;
           c.chatReactionHostile = "\"Die!\""_s;
           c.spells->add(SpellId::HEAL_SELF);
-          c.skills.insert(SkillId::ELF_VISION);
+          c.permanentEffects[LastingEffect::ELF_VISION] = 1;
           c.name = "driad";);
     case CreatureId::HORSE: 
       return CATTR(
@@ -1914,7 +1917,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.attr = LIST(20_dam, 9_def, 160_spd );
           c.body = Body::nonHumanoid(Body::Size::MEDIUM).setWeight(35).setHorseBodyParts();
           c.animal = true;
-          c.skills.insert(SkillId::NIGHT_VISION);
+          c.permanentEffects[LastingEffect::NIGHT_VISION] = 1;
           c.spawnType = SpawnType::BEAST;
           c.name = CreatureName("wolf", "wolves");
           c.name->setGroup("pack");
@@ -1928,7 +1931,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body = Body::humanoid(Body::Size::LARGE);
           c.animal = true;
           c.spawnType = SpawnType::BEAST;
-          c.skills.insert(SkillId::NIGHT_VISION);
+          c.permanentEffects[LastingEffect::NIGHT_VISION] = 1;
           c.skills.insert(SkillId::STEALTH);
           c.skills.insert(SkillId::EXPLORE_NOCTURNAL);
           c.permanentEffects[LastingEffect::MAGIC_RESISTANCE] = 1;
@@ -2012,7 +2015,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.viewId = ViewId::ENT;
           c.body = Body::nonHumanoid(Body::Material::WOOD, Body::Size::HUGE).setHumanoidBodyParts();
           c.attr = LIST(45_dam, 25_def, 30_spd );
-          c.skills.insert(SkillId::ELF_VISION);
+          c.permanentEffects[LastingEffect::ELF_VISION] = 1;
           c.permanentEffects[LastingEffect::RANGED_RESISTANCE] = 1;
           c.chatReactionFriendly = "curses all dungeons"_s;
           c.chatReactionHostile = "\"Die!\""_s;
@@ -2036,7 +2039,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.noChase = true;
           c.courage = 1;
           c.spawnType = SpawnType::BEAST;
-          c.skills.insert(SkillId::NIGHT_VISION);
+          c.permanentEffects[LastingEffect::NIGHT_VISION] = 1;
           c.skills.insert(SkillId::EXPLORE_NOCTURNAL);
           c.skills.insert(SkillId::EXPLORE_CAVES);
           c.name = "bat";);

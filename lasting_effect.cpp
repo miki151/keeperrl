@@ -121,6 +121,10 @@ void LastingEffects::onAffected(WCreature c, LastingEffect effect, bool msg) {
         c->you(MsgType::ARE, "now vulnerable to melee attacks"); break;
       case LastingEffect::RANGED_VULNERABILITY:
         c->you(MsgType::ARE, "now vulnerable to ranged attacks"); break;
+      case LastingEffect::ELF_VISION:
+        c->you("can see through trees"); break;
+      case LastingEffect::NIGHT_VISION:
+        c->you("can see in the dark"); break;
     }
 }
 
@@ -209,6 +213,10 @@ void LastingEffects::onTimedOut(WCreature c, LastingEffect effect, bool msg) {
         c->you(MsgType::FEEL, "less vulnerable to melee attacks"); break;
       case LastingEffect::RANGED_VULNERABILITY:
         c->you(MsgType::FEEL, "less vulnerable to ranged attacks"); break;
+      case LastingEffect::ELF_VISION:
+        c->you("can't see through trees anymore"); break;
+      case LastingEffect::NIGHT_VISION:
+        c->you("can't see in the dark anymore"); break;
       default: break;
     }
 }
@@ -277,6 +285,8 @@ static Adjective getAdjective(LastingEffect effect) {
     case LastingEffect::MAGIC_RESISTANCE: return "Resistant to magical attacks"_good;
     case LastingEffect::MELEE_RESISTANCE: return "Resistant to melee attacks"_good;
     case LastingEffect::RANGED_RESISTANCE: return "Resistant to ranged attacks"_good;
+    case LastingEffect::ELF_VISION: return "Can see through trees"_good;
+    case LastingEffect::NIGHT_VISION: return "Can see in the dark"_good;
 
     case LastingEffect::POISON: return "Poisoned"_bad;
     case LastingEffect::BLEEDING: return "Bleeding"_bad;

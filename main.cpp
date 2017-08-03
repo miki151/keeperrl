@@ -263,7 +263,6 @@ static int keeperMain(po::parser& commandLineFlags) {
   Skill::init();
   Technology::init();
   Spell::init();
-  Vision::init();
   if (commandLineFlags["run_tests"].was_set()) {
     testAll();
     return 0;

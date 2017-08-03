@@ -17,6 +17,7 @@ class Sound;
 class Fire;
 class DestroyAction;
 class Inventory;
+class Vision;
 
 class Position {
   public:
@@ -99,7 +100,7 @@ class Position {
   void throwItem(PItem item, const Attack& attack, int maxDist, Vec2 direction, VisionId);
   void throwItem(vector<PItem> item, const Attack& attack, int maxDist, Vec2 direction, VisionId);
   bool canNavigate(const MovementType&) const;
-  vector<Position> getVisibleTiles(VisionId);
+  vector<Position> getVisibleTiles(const Vision&);
   void updateConnectivity() const;
   void updateVisibility() const;
   bool canSeeThru(VisionId) const;

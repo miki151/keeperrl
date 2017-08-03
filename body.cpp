@@ -25,9 +25,9 @@ static double getDefaultWeight(Body::Size size) {
   }
 }
 
-SERIALIZE_DEF(Body, xhumanoid, size, weight, bodyParts, injuredBodyParts, lostBodyParts, material, health, minionFood, deathSound, carryLimit, doesntEat);
+SERIALIZE_DEF(Body, xhumanoid, size, weight, bodyParts, injuredBodyParts, lostBodyParts, material, health, minionFood, deathSound, carryLimit, doesntEat)
 
-SERIALIZATION_CONSTRUCTOR_IMPL(Body);
+SERIALIZATION_CONSTRUCTOR_IMPL(Body)
 
 static double getDefaultCarryLimit(Body::Size size) {
   switch (size) {

@@ -232,6 +232,8 @@ static double entangledTime(int strength) {
 static double getDuration(WConstCreature c, LastingEffect e, int strength) {
   switch (e) {
     case LastingEffect::PREGNANT: return 900;
+    case LastingEffect::NIGHT_VISION:
+    case LastingEffect::ELF_VISION: return 60;
     case LastingEffect::TIED_UP:
     case LastingEffect::BLEEDING: return 50;
     case LastingEffect::ENTANGLED: return entangledTime(entangledTime(c->getAttr(AttrType::DAMAGE)));
@@ -588,6 +590,8 @@ const char* Effect::getName(LastingEffect type) {
     case LastingEffect::MELEE_VULNERABILITY: return "melee vulnerability";
     case LastingEffect::RANGED_VULNERABILITY: return "ranged vulnerability";
     case LastingEffect::DARKNESS_SOURCE: return "source of darkness";
+    case LastingEffect::NIGHT_VISION: return "night vision";
+    case LastingEffect::ELF_VISION: return "elf vision";
   }
 }
 
@@ -622,6 +626,8 @@ const char* Effect::getDescription(LastingEffect type) {
     case LastingEffect::MELEE_VULNERABILITY: return "Decreases defense against melee attacks by 23%.";
     case LastingEffect::RANGED_VULNERABILITY: return "Decreases defense against ranged attacks by 23%.";
     case LastingEffect::DARKNESS_SOURCE: return "Causes the closest vicinity to become dark. Protects undead from sunlight.";
+    case LastingEffect::NIGHT_VISION: return "Gives vision in the dark at full distance.";
+    case LastingEffect::ELF_VISION: return "Allows to see and shoot through trees.";
   }
 }
 

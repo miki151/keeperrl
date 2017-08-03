@@ -77,6 +77,7 @@
 #include "message_buffer.h"
 #include "minion_controller.h"
 #include "build_info.h"
+#include "vision.h"
 
 template <class Archive>
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
@@ -2214,8 +2215,9 @@ bool PlayerControl::canSee(Position pos) const {
     return true;
   if (visibilityMap->isVisible(pos))
     return true;
+  static Vision eyeballVision;
   for (Position v : getCollective()->getConstructions().getBuiltPositions(FurnitureType::EYEBALL))
-    if (pos.isSameLevel(v) && getLevel()->canSee(v.getCoord(), pos.getCoord(), VisionId::NORMAL))
+    if (pos.isSameLevel(v) && getLevel()->canSee(v.getCoord(), pos.getCoord(), eyeballVision))
       return true;
   return false;
 }
