@@ -29,6 +29,7 @@
 #include "player_message.h"
 #include "view_id.h"
 #include "event_listener.h"
+#include "vision.h"
 
 SERIALIZE_DEF(RangedWeapon, damageAttr, projectileName, projectileViewId)
 SERIALIZATION_CONSTRUCTOR_IMPL(RangedWeapon);
@@ -39,12 +40,11 @@ RangedWeapon::RangedWeapon(AttrType attr, const string& name, ViewId id)
 void RangedWeapon::fire(WCreature c, Vec2 dir) const {
   CHECK(dir.length8() == 1);
   c->getGame()->getView()->addSound(SoundId::SHOOT_BOW);
-  int attackVariance = 3;
-  int damage = c->getAttr(damageAttr) + Random.get(-attackVariance, attackVariance);
+  int damage = c->getAttr(damageAttr);
   Attack attack(c, Random.choose(AttackLevel::LOW, AttackLevel::MIDDLE, AttackLevel::HIGH),
       AttackType::SHOOT, damage, damageAttr, none);
   const auto position = c->getPosition();
-  auto vision = c->getVision();
+  auto vision = c->getVision().getId();
   Position lastPos;
   for (Position pos = position.plus(dir);; pos = pos.plus(dir)) {
     lastPos = pos;

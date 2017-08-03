@@ -28,16 +28,16 @@ void FieldOfView::serialize(Archive& ar, const unsigned int) {
   ar(level, visibility, vision);
 }
 
-SERIALIZABLE(FieldOfView);
+SERIALIZABLE(FieldOfView)
 
 template <class Archive> 
 void FieldOfView::Visibility::serialize(Archive& ar, const unsigned int) {
   ar(visible, visibleTiles, px, py);
 }
 
-SERIALIZABLE(FieldOfView::Visibility);
-SERIALIZATION_CONSTRUCTOR_IMPL(FieldOfView);
-SERIALIZATION_CONSTRUCTOR_IMPL2(FieldOfView::Visibility, Visibility);
+SERIALIZABLE(FieldOfView::Visibility)
+SERIALIZATION_CONSTRUCTOR_IMPL(FieldOfView)
+SERIALIZATION_CONSTRUCTOR_IMPL2(FieldOfView::Visibility, Visibility)
 
 FieldOfView::FieldOfView(WLevel l, VisionId v)
   : level(l), visibility(l->getBounds()), vision(v) {

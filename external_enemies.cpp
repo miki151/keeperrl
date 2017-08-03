@@ -9,13 +9,16 @@
 #include "attack_behaviour.h"
 #include "model.h"
 #include "game.h"
+#include "creature_attributes.h"
+#include "creature.h"
+#include "container_range.h"
 
-SERIALIZE_DEF(ExternalEnemies, enemies, attackTime)
+SERIALIZE_DEF(ExternalEnemies, events, attackTime, waves)
 SERIALIZATION_CONSTRUCTOR_IMPL(ExternalEnemies)
 
-ExternalEnemies::ExternalEnemies(RandomGen& random, vector<ExternalEnemy> e) : enemies(e) {
-  for (int i : All(enemies))
-    attackTime.push_back(random.get(enemies[i].attackTime));
+ExternalEnemies::ExternalEnemies(RandomGen& random, vector<EnemyEvent> e) : events(e) {
+  for (int i : All(events))
+    attackTime.push_back(random.get(events[i].attackTime));
 }
 
 PTask ExternalEnemies::getAttackTask(WCollective enemy, AttackBehaviour behaviour) {
@@ -32,21 +35,46 @@ PTask ExternalEnemies::getAttackTask(WCollective enemy, AttackBehaviour behaviou
   }
 }
 
+void ExternalEnemies::updateWaves(WCollective target) {
+  auto areAllDead = [](const vector<WCreature>& wave) {
+    for (auto c : wave)
+      if (!c->isDead())
+        return false;
+    return true;
+  };
+  for (auto wave : Iter(waves))
+    if (areAllDead(wave->attackers)) {
+      target->onExternalEnemyKilled(wave->name);
+      wave.markToErase();
+    }
+}
+
 void ExternalEnemies::update(WLevel level, double localTime) {
   WCollective target = level->getModel()->getGame()->getPlayerCollective();
   CHECK(!!target);
-  for (int i : All(enemies))
+  updateWaves(target);
+  for (int i : All(events))
     if (attackTime[i] && *attackTime[i] <= localTime) {
+      auto enemy = Random.choose(events[i].enemies);
+      enemy.factory.increaseLevel(events[i].levelIncrease);
       vector<WCreature> attackers;
-      for (int j : Range(Random.get(enemies[i].groupSize))) {
-        PCreature c = enemies[i].factory.random(
-            MonsterAIFactory::singleTask(getAttackTask(target, enemies[i].behaviour)));
+      for (int j : Range(Random.get(enemy.groupSize))) {
+        PCreature c = enemy.factory.random(
+            MonsterAIFactory::singleTask(getAttackTask(target, enemy.behaviour)));
         WCreature ref = c.get();
         if (level->landCreature(StairKey::transferLanding(), std::move(c)))
           attackers.push_back(ref);
+        ref->getAttributes().setCourage(1);
       }
-      target->addAttack(CollectiveAttack(enemies[i].name, attackers));
+      target->addAttack(CollectiveAttack(enemy.name, attackers));
+      waves.push_back(Wave{enemy.name, attackers});
       attackTime[i] = none;
     }
 }
 
+
+EnemyEvent::EnemyEvent(ExternalEnemy enemy, Range attackTime, double levelIncrease)
+  : EnemyEvent(vector<ExternalEnemy>{enemy}, attackTime, levelIncrease) {}
+
+EnemyEvent::EnemyEvent(vector<ExternalEnemy> e, Range attackT, double increase)
+    : enemies(e), attackTime(attackT), levelIncrease(increase) {}

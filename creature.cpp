@@ -74,7 +74,6 @@ SERIALIZATION_CONSTRUCTOR_IMPL(Creature)
 Creature::Creature(const ViewObject& object, TribeId t, const CreatureAttributes& attr)
     : Renderable(object), attributes(attr), tribe(t) {
   modViewObject().setCreatureId(getUniqueId());
-  updateVision();
 }
 
 Creature::Creature(TribeId t, const CreatureAttributes& attr)
@@ -350,6 +349,7 @@ void Creature::swapPosition(Vec2 direction) {
 }
 
 void Creature::makeMove() {
+  vision->update(this);
   CHECK(!isDead());
   if (hasCondition(CreatureCondition::SLEEPING)) {
     getController()->sleeping();
@@ -373,6 +373,7 @@ void Creature::makeMove() {
   unknownAttackers.clear();
   getBody().affectPosition(position);
   highestAttackValueEver = max(highestAttackValueEver, getBestAttack().value);
+  vision->update(this);
 }
 
 CreatureAction Creature::wait() const {
@@ -811,7 +812,7 @@ double Creature::getGlobalTime() const {
 }
 
 void Creature::tick() {
-  updateVision();
+  vision->update(this);
   if (Random.roll(5))
     getDifficultyPoints();
   vector<WItem> discarded;
@@ -1394,7 +1395,7 @@ CreatureAction Creature::throwItem(WItem item, Vec2 direction) const {
     Attack attack(self, Random.choose(getBody().getAttackLevels()), item->getAttackType(), damage, AttrType::DAMAGE);
     secondPerson("You throw " + item->getAName(false, this));
     thirdPerson(getName().the() + " throws " + item->getAName());
-    self->getPosition().throwItem(self->equipment->removeItem(item, self), attack, dist, direction, getVision());
+    self->getPosition().throwItem(self->equipment->removeItem(item, self), attack, dist, direction, getVision().getId());
     self->spendTime(1);
   });
 }
@@ -1512,7 +1513,6 @@ CreatureAction Creature::moveTowards(Position pos, bool away, bool stepOnTile) {
   if (!away && !canNavigateTo(pos))
     return CreatureAction();
   , "Creature Sector checking " + getName().bare() + " from " + toString(position) + " to " + toString(pos));
-  //INFO << "" << getPosition().getCoord() << (away ? "Moving away from" : " Moving toward ") << pos.getCoord();
   bool newPath = false;
   bool targetChanged = shortestPath && shortestPath->getTarget().dist8(pos) > getPosition().dist8(pos) / 10;
   if (!shortestPath || targetChanged || shortestPath->isReversed() != away) {
@@ -1659,17 +1659,8 @@ bool Creature::isUnknownAttacker(WConstCreature c) const {
   return unknownAttackers.contains(c);
 }
 
-void Creature::updateVision() {
-  if (attributes->getSkills().hasDiscrete(SkillId::NIGHT_VISION))
-    vision = VisionId::NIGHT;
-  else if (attributes->getSkills().hasDiscrete(SkillId::ELF_VISION) || isAffected(LastingEffect::FLYING))
-    vision = VisionId::ELF;
-  else
-    vision = VisionId::NORMAL; 
-}
-
-VisionId Creature::getVision() const {
-  return vision;
+const Vision& Creature::getVision() const {
+  return *vision;
 }
 
 const CreatureDebt& Creature::getDebt() const {

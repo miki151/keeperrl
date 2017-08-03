@@ -99,6 +99,11 @@ static CollectiveConfig getKeeperConfig(RandomGen& random, bool fastImmigration)
           .setFrequency(0.5)
           .setSpawnLocation(FurnitureType::GRAVE)
           .addRequirement(0.0, CostInfo(CollectiveResourceId::CORPSE, 1)),
+      ImmigrantInfo(CreatureId::SKELETON, {MinionTrait::FIGHTER})
+          .setFrequency(0.5)
+          .setSpawnLocation(FurnitureType::GRAVE)
+          .addRequirement(0.1, AttractionInfo{1, FurnitureType::TRAINING_IRON})
+          .addRequirement(0.0, CostInfo(CollectiveResourceId::CORPSE, 1)),
       ImmigrantInfo(CreatureId::VAMPIRE, {MinionTrait::FIGHTER})
           .setFrequency(0.2)
           .setSpawnLocation(FurnitureType::GRAVE)
@@ -319,7 +324,7 @@ PModel ModelBuilder::tryCampaignBaseModel(const string& siteName, bool addExtern
   enemyInfo.push_back(enemyFactory->get(EnemyId::TUTORIAL_VILLAGE));
   if (random.chance(0.3))
     enemyInfo.push_back(enemyFactory->get(EnemyId::KRAKEN));
-  vector<ExternalEnemy> externalEnemies;
+  vector<EnemyEvent> externalEnemies;
   if (addExternalEnemies)
     externalEnemies = enemyFactory->getExternalEnemies();
   return tryModel(230, siteName, enemyInfo, true, biome, externalEnemies, true);
@@ -469,7 +474,7 @@ WCollective ModelBuilder::spawnKeeper(WModel m, PCreature keeper) {
 }
 
 PModel ModelBuilder::tryModel(int width, const string& levelName, vector<EnemyInfo> enemyInfo, bool keeperSpawn,
-    BiomeId biomeId, vector<ExternalEnemy> externalEnemies, bool hasWildlife) {
+    BiomeId biomeId, vector<EnemyEvent> externalEnemies, bool hasWildlife) {
   auto model = Model::create();
   vector<SettlementInfo> topLevelSettlements;
   vector<EnemyInfo> extraEnemies;

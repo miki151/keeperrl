@@ -209,9 +209,9 @@ ShortestPath LevelShortestPath::makeShortestPath(WConstCreature creature, Positi
       if (pos.canEnter(creature) || creature->getPosition() == pos) 
         return 1.0;
       if (pos.canNavigate(creature->getMovementType())) {
-        if (WConstCreature other = pos.getCreature())
+        /*if (WConstCreature other = pos.getCreature())
           if (other->isFriend(creature) && !other->hasCondition(CreatureCondition::RESTRICTED_MOVEMENT))
-            return 2.1;
+            return 2.1;*/
         return 5.0;
       }
       return ShortestPath::infinity;};

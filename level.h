@@ -40,6 +40,7 @@ class Position;
 class Game;
 class SquareArray;
 class FurnitureArray;
+class Vision;
 class FieldOfView;
 
 /** A class representing a single level of the dungeon or the overworld. All events occuring on the level are performed by this class.*/
@@ -136,10 +137,10 @@ class Level : public OwnedObject<Level> {
   bool canSee(WConstCreature c, Vec2 to) const;
 
   /** Returns if it's possible to see the given square.*/
-  bool canSee(Vec2 from, Vec2 to, VisionId) const;
+  bool canSee(Vec2 from, Vec2 to, const Vision&) const;
 
   /** Returns all tiles visible by a creature.*/
-  vector<Vec2> getVisibleTiles(Vec2 pos, VisionId) const;
+  vector<Vec2> getVisibleTiles(Vec2 pos, const Vision&) const;
 
   /** Returns the player creature.*/
   vector<WCreature> getPlayers() const;
@@ -220,7 +221,7 @@ class Level : public OwnedObject<Level> {
   void addDarknessSource(Vec2 pos, double radius, int numLight);
   FieldOfView& getFieldOfView(VisionId vision) const;
   vector<Vec2> getVisibleTilesNoDarkness(Vec2 pos, VisionId vision) const;
-  bool isWithinVision(Vec2 from, Vec2 to, VisionId) const;
+  bool isWithinVision(Vec2 from, Vec2 to, const Vision&) const;
   LevelId SERIAL(levelId) = 0;
   bool SERIAL(noDiagonalPassing) = false;
 };

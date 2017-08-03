@@ -184,6 +184,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   vector<WCreature> getConsumptionTargets(WCreature consumer) const;
   void addAttack(const CollectiveAttack&);
   void onRansomPaid();
+  void onExternalEnemyKilled(const string& name);
 
   CollectiveTeams& getTeams();
   const CollectiveTeams& getTeams() const;

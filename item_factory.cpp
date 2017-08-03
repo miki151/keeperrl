@@ -597,6 +597,8 @@ int getEffectPrice(EffectType type) {
           case LastingEffect::STUNNED:
           case LastingEffect::RAGE:
           case LastingEffect::COLLAPSED:
+          case LastingEffect::NIGHT_VISION:
+          case LastingEffect::ELF_VISION:
             return 12;
           case LastingEffect::BLIND:
             return 16;
@@ -609,7 +611,6 @@ int getEffectPrice(EffectType type) {
           case LastingEffect::POISON:
             return 20;
           case LastingEffect::INVISIBLE:
-            return 24;
           case LastingEffect::MAGIC_RESISTANCE:
           case LastingEffect::MELEE_RESISTANCE:
           case LastingEffect::RANGED_RESISTANCE:

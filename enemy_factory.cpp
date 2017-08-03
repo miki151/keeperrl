@@ -636,28 +636,35 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
   }
 }
 
-vector<ExternalEnemy> EnemyFactory::getExternalEnemies() {
-  return {
+vector<EnemyEvent> EnemyFactory::getExternalEnemies() {
+  vector<ExternalEnemy> enemies {
     ExternalEnemy{
         CreatureFactory::singleCreature(TribeId::getBandit(), CreatureId::BANDIT),
         Range(3, 7),
-        Range(200, 201),
         AttackBehaviourId::KILL_LEADER,
         "bandits"
     },
     ExternalEnemy{
+        CreatureFactory::singleCreature(TribeId::getBandit(), CreatureId::ANT_SOLDIER),
+        Range(15, 20),
+        AttackBehaviourId::KILL_LEADER,
+        "ants"
+    },
+    ExternalEnemy{
         CreatureFactory::singleCreature(TribeId::getBandit(), CreatureId::ZOMBIE),
         Range(3, 7),
-        Range(400, 401),
         AttackBehaviourId::KILL_LEADER,
         "zombies"
     },
     ExternalEnemy{
         CreatureFactory::singleCreature(TribeId::getHuman(), CreatureId::ELEMENTALIST),
         Range(1, 2),
-        Range(600, 601),
         {AttackBehaviourId::CAMP_AND_SPAWN, CreatureFactory::elementals(TribeId::getHuman())},
         "an elementalist"
     }
   };
+  vector<EnemyEvent> ret;
+  for (int i : Range(100))
+    ret.push_back(EnemyEvent ( enemies[0], Range::singleElem(400 * (i + 2)), i * 2 ));
+  return ret;
 }

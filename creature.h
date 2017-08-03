@@ -50,6 +50,7 @@ class Sound;
 class Game;
 class CreatureListener;
 class CreatureDebt;
+class Vision;
 struct AdjectiveInfo;
 struct MovementInfo;
 
@@ -107,7 +108,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   int getAttr(AttrType) const;
 
   int getPoints() const;
-  VisionId getVision() const;
+  const Vision& getVision() const;
   const CreatureDebt& getDebt() const;
   CreatureDebt& getDebt();
 
@@ -303,8 +304,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   void updateVisibleCreatures();
   vector<Position> visibleEnemies;
   vector<Position> visibleCreatures;
-  VisionId SERIAL(vision);
-  void updateVision();
+  HeapAllocated<Vision> SERIAL(vision);
   bool forceMovement = false;
   optional<double> SERIAL(lastCombatTime);
   HeapAllocated<CreatureDebt> SERIAL(debt);

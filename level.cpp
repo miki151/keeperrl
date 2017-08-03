@@ -372,18 +372,16 @@ bool Level::containsCreature(UniqueEntity<Creature>::Id id) const {
   return creatureIds.contains(id);
 }
 
-const int darkViewRadius = 5;
-
-bool Level::isWithinVision(Vec2 from, Vec2 to, VisionId v) const {
-  return Vision::get(v)->isNightVision() || from.distD(to) <= darkViewRadius || getLight(to) > 0.3;
+bool Level::isWithinVision(Vec2 from, Vec2 to, const Vision& v) const {
+  return v.canSeeAt(getLight(to), from.distD(to));
 }
 
 FieldOfView& Level::getFieldOfView(VisionId vision) const {
   return (*fieldOfView)[vision];
 }
 
-bool Level::canSee(Vec2 from, Vec2 to, VisionId vision) const {
-  return isWithinVision(from, to, vision) && getFieldOfView(vision).canSee(from, to);
+bool Level::canSee(Vec2 from, Vec2 to, const Vision& vision) const {
+  return isWithinVision(from, to, vision) && getFieldOfView(vision.getId()).canSee(from, to);
 }
 
 bool Level::canSee(WConstCreature c, Vec2 pos) const {
@@ -427,8 +425,8 @@ vector<Vec2> Level::getVisibleTilesNoDarkness(Vec2 pos, VisionId vision) const {
   return getFieldOfView(vision).getVisibleTiles(pos);
 }
 
-vector<Vec2> Level::getVisibleTiles(Vec2 pos, VisionId vision) const {
-  return getFieldOfView(vision).getVisibleTiles(pos).filter(
+vector<Vec2> Level::getVisibleTiles(Vec2 pos, const Vision& vision) const {
+  return getFieldOfView(vision.getId()).getVisibleTiles(pos).filter(
       [&](Vec2 v) { return isWithinVision(pos, v, vision); });
 }
 
