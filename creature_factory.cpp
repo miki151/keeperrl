@@ -1214,6 +1214,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.viewId = ViewId::RED_DRAGON;
           c.attr = LIST(55_dam, 42_def, 120_spd );
           c.body = Body::nonHumanoid(Body::Size::HUGE).setHorseBodyParts().addWings();
+          c.permanentEffects[LastingEffect::FIRE_RESISTANT] = 1;
           c.barehandedAttack = AttackType::BITE;
           c.name = "red dragon";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::DRAGON)->getNext());
@@ -1333,6 +1334,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body = Body::nonHumanoid(Body::Material::LAVA, Body::Size::LARGE).setHumanoidBodyParts();
           c.barehandedAttack = AttackType::PUNCH;
           c.attackEffect = EffectId::FIRE;
+          c.permanentEffects[LastingEffect::FIRE_RESISTANT] = 1;
           c.name = "lava golem";);
     case CreatureId::AUTOMATON: 
       return CATTR(
@@ -1949,6 +1951,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.viewId = ViewId::FIRE_SPHERE;
           c.attr = LIST(5_dam, 15_def, 100_spd );
           c.body = Body::nonHumanoid(Body::Material::FIRE, Body::Size::SMALL).setDeathSound(none);
+          c.permanentEffects[LastingEffect::FIRE_RESISTANT] = 1;
           c.permanentEffects[LastingEffect::FLYING] = 1;
           c.name = "fire sphere";);
     case CreatureId::ELEMENTALIST: 
@@ -1971,6 +1974,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.attr = LIST(25_dam, 30_def, 120_spd );
           c.barehandedAttack = AttackType::HIT;
           c.attackEffect = EffectId::FIRE;
+          c.permanentEffects[LastingEffect::FIRE_RESISTANT] = 1;
           c.permanentEffects[LastingEffect::FLYING] = 1;
           c.name = "fire elemental";);
     case CreatureId::AIR_ELEMENTAL:

@@ -1,7 +1,14 @@
 keeperrl
 ========
 
-Source code of KeeperRL
+Source code of KeeperRL.
+
+http://keeperrl.com,
+
+http://store.steampowered.com/app/329970,
+
+https://miki151.itch.io/keeperrl
+
 
 Compiling
 =========
