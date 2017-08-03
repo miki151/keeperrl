@@ -1251,13 +1251,13 @@ ViewObject PlayerControl::getTrapObject(TrapType type, bool armed) {
   for (auto& info : BuildInfo::get())
     if (info.buildType == BuildInfo::TRAP && info.trapInfo.type == type) {
       if (!armed)
-        return ViewObject(info.trapInfo.viewId, ViewLayer::LARGE_ITEM, "Unarmed " + getTrapName(type) + " trap")
+        return ViewObject(info.trapInfo.viewId, ViewLayer::FLOOR, "Unarmed " + getTrapName(type) + " trap")
           .setModifier(ViewObject::Modifier::PLANNED);
       else
-        return ViewObject(info.trapInfo.viewId, ViewLayer::LARGE_ITEM, getTrapName(type) + " trap");
+        return ViewObject(info.trapInfo.viewId, ViewLayer::FLOOR, getTrapName(type) + " trap");
     }
   FATAL << "trap not found" << int(type);
-  return ViewObject(ViewId::EMPTY, ViewLayer::LARGE_ITEM);
+  return ViewObject(ViewId::EMPTY, ViewLayer::FLOOR);
 }
 
 void PlayerControl::getSquareViewIndex(Position pos, bool canSee, ViewIndex& index) const {
@@ -1321,9 +1321,10 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
     index.setHighlight(getCollective()->getMarkHighlight(position));
   if (getCollective()->hasPriorityTasks(position))
     index.setHighlight(HighlightType::PRIORITY_TASK);
-  for (auto task : getCollective()->getTaskMap().getTasks(position))
-    if (auto viewId = task->getViewId())
-        index.insert(ViewObject(*viewId, ViewLayer::LARGE_ITEM));
+  if (!index.hasObject(ViewLayer::CREATURE))
+    for (auto task : getCollective()->getTaskMap().getTasks(position))
+      if (auto viewId = task->getViewId())
+          index.insert(ViewObject(*viewId, ViewLayer::CREATURE));
   if (position.isTribeForbidden(getTribeId()))
     index.setHighlight(HighlightType::FORBIDDEN_ZONE);
   getCollective()->getZones().setHighlights(position, index);
@@ -1331,7 +1332,7 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
       && pos.inRectangle(Rectangle::boundingBox({rectSelection->corner1, rectSelection->corner2})))
     index.setHighlight(rectSelection->deselect ? HighlightType::RECT_DESELECTION : HighlightType::RECT_SELECTION);
   const ConstructionMap& constructions = getCollective()->getConstructions();
-  if (!index.hasObject(ViewLayer::LARGE_ITEM)) {
+  if (!index.hasObject(ViewLayer::FLOOR)) {
     if (constructions.containsTrap(position))
       index.insert(getTrapObject(constructions.getTrap(position).getType(),
             constructions.getTrap(position).isArmed()));
