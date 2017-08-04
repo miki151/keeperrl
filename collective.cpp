@@ -1499,7 +1499,7 @@ void Collective::onRansomPaid() {
 void Collective::onExternalEnemyKilled(const std::string& name) {
   control->addMessage(PlayerMessage("You resisted the attack of " + name + ".",
       MessagePriority::CRITICAL));
-  int mana = 50;
+  int mana = 100;
   addMana(mana);
   control->addMessage(PlayerMessage("You feel a surge of power (+" + toString(mana) + " mana)",
       MessagePriority::CRITICAL));

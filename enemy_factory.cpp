@@ -665,6 +665,6 @@ vector<EnemyEvent> EnemyFactory::getExternalEnemies() {
   };
   vector<EnemyEvent> ret;
   for (int i : Range(100))
-    ret.push_back(EnemyEvent ( enemies[0], Range::singleElem(400 * (i + 2)), i * 2 ));
+    ret.push_back(EnemyEvent ( enemies[i % 2], Range::singleElem(1000 * (i + 1)), i * 4 ));
   return ret;
 }
