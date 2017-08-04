@@ -526,7 +526,8 @@ class IllusionController : public DoNothingController {
   virtual void onBump(WCreature c) override {
     c->attack(getCreature(), none).perform(c);
     getCreature()->message("It was just an illusion!");
-    getCreature()->dieNoReason();
+    if (!getCreature()->isDead()) // so check necessary, as most likely was killed in attack 2 lines above
+      getCreature()->dieNoReason();
   }
 
   virtual void makeMove() override {
