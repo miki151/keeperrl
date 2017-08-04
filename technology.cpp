@@ -32,6 +32,7 @@
 #include "tutorial_highlight.h"
 #include "collective_config.h"
 #include "creature.h"
+#include "attr_type.h"
 
 void Technology::init() {
   Technology::set(TechId::ALCHEMY, new Technology(
@@ -60,6 +61,8 @@ void Technology::init() {
         "sorcery", "Learn basic spells.", 60, {}));
   Technology::set(TechId::SPELLS_ADV, new Technology(
         "advanced sorcery", "Learn more advanced spells.", 120, {TechId::SPELLS}));
+  Technology::set(TechId::MAGICAL_WEAPONS, new Technology(
+        "magical weapons", "Produce melee weapons that deal "_s + ::getName(AttrType::SPELL_DAMAGE), 120, {TechId::SPELLS_ADV}));
   Technology::set(TechId::SPELLS_MAS, new Technology(
         "master sorcery", "Learn the most powerful spells.", 350, {TechId::SPELLS_ADV}));
   Technology::set(TechId::GEOLOGY1, new Technology(

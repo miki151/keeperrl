@@ -341,7 +341,7 @@ string Item::getModifiers(bool shorten) const {
         printAttr.insert(getRangedWeapon()->getDamageAttr());
         break;
       case ItemClass::WEAPON:
-        printAttr.insert(AttrType::DAMAGE);
+        printAttr.insert(attributes->meleeAttackAttr);
         break;
       case ItemClass::ARMOR:
         printAttr.insert(AttrType::DEFENSE);
@@ -414,6 +414,10 @@ int Item::getModifier(AttrType type) const {
 
 const optional<RangedWeapon>& Item::getRangedWeapon() const {
   return attributes->rangedWeapon;
+}
+
+AttrType Item::getMeleeAttackAttr() const {
+  return attributes->meleeAttackAttr;
 }
  
 AttackType Item::getAttackType() const {

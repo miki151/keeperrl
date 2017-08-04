@@ -484,7 +484,8 @@ class TileCoordLookup {
     Tile::addTile(ViewId::SPECIAL_BATTLE_AXE, sprite("special_battle_axe"));
     Tile::addTile(ViewId::BOW, sprite("bow"));
     Tile::addTile(ViewId::ARROW, sprite("arrow_e"));
-    Tile::addTile(ViewId::WOODEN_WAND, sprite("wand_wooden"));
+    Tile::addTile(ViewId::WOODEN_STAFF, sprite("staff_wooden"));
+    Tile::addTile(ViewId::IRON_STAFF, sprite("staff_iron"));
     Tile::addTile(ViewId::FORCE_BOLT, sprite("force_bolt"));
     Tile::addTile(ViewId::AIR_BLAST, sprite("air_blast"));
     Tile::addTile(ViewId::STUN_RAY, sprite("stun_ray"));
@@ -798,7 +799,8 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::STEEL_BATTLE_AXE, symbol(u8")", Color::LIGHT_BLUE));
     Tile::addSymbol(ViewId::SPECIAL_BATTLE_AXE, symbol(u8")", Color::LIGHT_GREEN));
     Tile::addSymbol(ViewId::BOW, symbol(u8")", Color::BROWN));
-    Tile::addSymbol(ViewId::WOODEN_WAND, symbol(u8")", Color::YELLOW));
+    Tile::addSymbol(ViewId::WOODEN_STAFF, symbol(u8")", Color::YELLOW));
+    Tile::addSymbol(ViewId::IRON_STAFF, symbol(u8")", Color::ORANGE));
     Tile::addSymbol(ViewId::CLUB, symbol(u8")", Color::BROWN));
     Tile::addSymbol(ViewId::HEAVY_CLUB, symbol(u8")", Color::BROWN));
     Tile::addSymbol(ViewId::ARROW, symbol(u8"/", Color::BROWN));

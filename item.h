@@ -68,6 +68,7 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
   void addModifier(AttrType, int value);
   int getModifier(AttrType) const;
   const optional<RangedWeapon>& getRangedWeapon() const;
+  AttrType getMeleeAttackAttr() const;
   void tick(Position);
   
   string getApplyMsgThirdPerson(WConstCreature owner) const;

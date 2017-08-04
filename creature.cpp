@@ -892,7 +892,9 @@ CreatureAction Creature::attack(WCreature other, optional<AttackParams> attackPa
     return CreatureAction();
   return CreatureAction(this, [=] (WCreature self) {
   INFO << getName().the() << " attacking " << other->getName().the();
-  int damage = getAttr(AttrType::DAMAGE);
+  auto weapon = getWeapon();
+  auto damageAttr = weapon ? weapon->getMeleeAttackAttr() : AttrType::DAMAGE;
+  int damage = getAttr(damageAttr);
   double timeSpent = 1;
   vector<string> attackAdjective;
   if (attackParams && attackParams->mod)
@@ -911,7 +913,7 @@ CreatureAction Creature::attack(WCreature other, optional<AttackParams> attackPa
   AttackLevel attackLevel = Random.choose(getBody().getAttackLevels());
   if (attackParams && attackParams->level)
     attackLevel = *attackParams->level;
-  Attack attack(self, attackLevel, attributes->getAttackType(getWeapon()), damage, AttrType::DAMAGE,
+  Attack attack(self, attackLevel, attributes->getAttackType(getWeapon()), damage, damageAttr,
       getWeapon() ? getWeapon()->getAttackEffect() : attributes->getAttackEffect());
   const string enemyName = other->getController()->getMessageGenerator().getEnemyName(other);
   if (getWeapon()) {
@@ -1733,8 +1735,9 @@ vector<AdjectiveInfo> Creature::getGoodAdjectives() const {
   if (getBody().isUndead())
     ret.push_back({"Undead",
         "Undead creatures don't take regular damage and need to be killed by chopping up or using fire."});
+  auto morale = getMorale();
   if (morale > 0)
-    if (auto text = getMoraleText(getMorale()))
+    if (auto text = getMoraleText(morale))
       ret.push_back({text, "Morale affects minion's productivity and chances of fleeing from battle."});
   return ret;
 }
@@ -1749,8 +1752,9 @@ vector<AdjectiveInfo> Creature::getBadAdjectives() const {
         if (!attributes->isAffectedPermanently(effect))
           ret.back().name += attributes->getRemainingString(effect, getGlobalTime());
       }
+  auto morale = getMorale();
   if (morale < 0)
-    if (auto text = getMoraleText(getMorale()))
+    if (auto text = getMoraleText(morale))
       ret.push_back({text, "Morale affects minion's productivity and chances of fleeing from battle."});
   return ret;
 }
