@@ -40,7 +40,7 @@ class MinionEquipment {
 
   void setLocked(WConstCreature, UniqueEntity<Item>::Id, bool locked);
   bool isLocked(WConstCreature, UniqueEntity<Item>::Id) const;
-  void sortByEquipmentValue(vector<WItem>& items) const;
+  void sortByEquipmentValue(WConstCreature, vector<WItem>& items) const;
   void autoAssign(WConstCreature, vector<WItem> possibleItems);
   void updateItems(const vector<WItem>& items);
 
@@ -50,7 +50,7 @@ class MinionEquipment {
   static optional<EquipmentType> getEquipmentType(WConstItem it);
   optional<int> getEquipmentLimit(EquipmentType type) const;
   WItem getWorstItem(WConstCreature, vector<WItem>) const;
-  int getItemValue(WConstItem) const;
+  int getItemValue(WConstCreature, WConstItem) const;
 
   EntityMap<Item, UniqueEntity<Creature>::Id> SERIAL(owners);
   EntityMap<Creature, vector<WItem>> SERIAL(myItems);

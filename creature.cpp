@@ -713,11 +713,13 @@ int simulAttackPen(int attackers) {
 }
 
 int Creature::getAttr(AttrType type) const {
-  double def = getBody().modifyAttr(type, attributes->getRawAttr(this, type));
+  double def = getBody().modifyAttr(type, attributes->getRawAttr(type));
   for (WItem item : equipment->getAllEquipped())
     def += item->getModifier(type);
   switch (type) {
     case AttrType::SPEED: {
+      if (auto inc = getAttributes().getMoraleSpeedIncrease())
+        def *= pow(*inc, getMorale());
       double totWeight = equipment->getTotalWeight();
       // penalty is 0 till limit/2, then grows linearly to 0.3 at limit, then stays constant
       if (auto& limit = getBody().getCarryLimit())
@@ -1723,8 +1725,9 @@ const char* getMoraleText(double morale) {
 }
 
 vector<AdjectiveInfo> Creature::getGoodAdjectives() const {
-  vector<AdjectiveInfo> ret;
-  attributes->getGoodAdjectives(ret);
+  vector<AdjectiveInfo> ret; 
+  if (!!attributes->getMoraleSpeedIncrease())
+    ret.push_back({"Morale affects speed", ""});
   for (LastingEffect effect : ENUM_ALL(LastingEffect))
     if (isAffected(effect))
       if (const char* name = LastingEffects::getGoodAdjective(effect)) {

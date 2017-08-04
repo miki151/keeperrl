@@ -83,11 +83,11 @@ bool MinionEquipment::isItemUseful(WConstItem it) {
 bool MinionEquipment::needsItem(WConstCreature c, WConstItem it, bool noLimit) const {
   if (optional<EquipmentType> type = getEquipmentType(it)) {
     if (!noLimit) {
-      auto itemValue = getItemValue(it);
+      auto itemValue = getItemValue(c, it);
       if (auto limit = getEquipmentLimit(*type)) {
         auto pred = [=](WConstItem ownedItem) {
           return getEquipmentType(ownedItem) == *type &&
-              (getItemValue(ownedItem) >= itemValue || isLocked(c, ownedItem->getUniqueId())) &&
+              (getItemValue(c, ownedItem) >= itemValue || isLocked(c, ownedItem->getUniqueId())) &&
               ownedItem != it;
         };
         if (getItemsOwnedBy(c, pred).size() >= *limit)
@@ -99,7 +99,7 @@ bool MinionEquipment::needsItem(WConstCreature c, WConstItem it, bool noLimit) c
         auto pred = [=](WConstItem ownedItem) {
           return ownedItem->canEquip() &&
               ownedItem->getEquipmentSlot() == slot &&
-              (getItemValue(ownedItem) >= itemValue || isLocked(c, ownedItem->getUniqueId())) &&
+              (getItemValue(c, ownedItem) >= itemValue || isLocked(c, ownedItem->getUniqueId())) &&
               ownedItem != it;
         };
         if (getItemsOwnedBy(c, pred).size() >= limit)
@@ -180,9 +180,9 @@ void MinionEquipment::discard(UniqueEntity<Item>::Id id) {
   }
 }
 
-void MinionEquipment::sortByEquipmentValue(vector<WItem>& items) const {
-  sort(items.begin(), items.end(), [this](WConstItem it1, WConstItem it2) {
-      int diff = getItemValue(it1) - getItemValue(it2);
+void MinionEquipment::sortByEquipmentValue(WConstCreature c, vector<WItem>& items) const {
+  sort(items.begin(), items.end(), [this, c](WConstItem it1, WConstItem it2) {
+      int diff = getItemValue(c, it1) - getItemValue(c, it2);
       if (diff == 0)
         return it1->getUniqueId() < it2->getUniqueId();
       else
@@ -204,7 +204,7 @@ bool MinionEquipment::tryToOwn(WConstCreature c, WItem it) {
             return false;
         }
     if (contesting.size() >= slotSize) {
-      sortByEquipmentValue(contesting);
+      sortByEquipmentValue(c, contesting);
       for (int i = slotSize - 1; i < contesting.size(); ++i)
         discard(contesting[i]);
     }
@@ -219,7 +219,7 @@ WItem MinionEquipment::getWorstItem(WConstCreature c, vector<WItem> items) const
   WItem ret = nullptr;
   for (WItem it : items)
     if (!isLocked(c, it->getUniqueId()) &&
-        (!ret || getItemValue(it) < getItemValue(ret)))
+        (!ret || getItemValue(c, it) < getItemValue(c, ret)))
       ret = it;
   return ret;
 }
@@ -231,7 +231,7 @@ void MinionEquipment::autoAssign(WConstCreature creature, vector<WItem> possible
       EquipmentSlot slot = it->getEquipmentSlot();
       slots[slot].push_back(it);
     }
-  sortByEquipmentValue(possibleItems);
+  sortByEquipmentValue(creature, possibleItems);
   for (WItem it : possibleItems)
     if (!getOwner(it) && needsItem(creature, it)) {
       if (!it->canEquip()) {
@@ -242,7 +242,7 @@ void MinionEquipment::autoAssign(WConstCreature creature, vector<WItem> possible
       int slotSize = creature->getEquipment().getMaxItems(it->getEquipmentSlot());
       int numInSlot = slots[it->getEquipmentSlot()].size();
       if (numInSlot < slotSize ||
-          (replacedItem && getItemValue(replacedItem) < getItemValue(it))) {
+          (replacedItem && getItemValue(creature, replacedItem) < getItemValue(creature, it))) {
         if (numInSlot == slotSize) {
           discard(replacedItem);
           slots[it->getEquipmentSlot()].removeElement(replacedItem);
@@ -254,18 +254,22 @@ void MinionEquipment::autoAssign(WConstCreature creature, vector<WItem> possible
   }
 }
 
-int MinionEquipment::getItemValue(WConstItem it) const {
+int MinionEquipment::getItemValue(WConstCreature c, WConstItem it) const {
   int sum = 0;
-  auto multiplier = [](AttrType type) {
-    switch (type) {
-      case AttrType::SPEED:
-        return 10;
-      default:
-        return 1;
-    }
-  };
   for (auto attr : ENUM_ALL(AttrType))
-    sum += multiplier(attr) * it->getModifier(attr);
+    switch (attr) {
+      case AttrType::SPEED:
+        sum += 10 * it->getModifier(attr);
+        break;
+      case AttrType::DAMAGE:
+      case AttrType::SPELL_DAMAGE:
+        if (it->getClass() != ItemClass::WEAPON || attr == it->getMeleeAttackAttr())
+          sum += c->getAttributes().getRawAttr(attr) + it->getModifier(attr);
+        break;
+      default:
+        sum += it->getModifier(attr);
+        break;
+    }
   return sum;
 }
 

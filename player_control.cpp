@@ -425,7 +425,7 @@ WItem PlayerControl::chooseEquipmentItem(WCreature creature, vector<WItem> curre
   vector<WItem> availableItems;
   vector<WItem> usedItems;
   vector<WItem> allItems = getCollective()->getAllItems(predicate);
-  getCollective()->getMinionEquipment().sortByEquipmentValue(allItems);
+  getCollective()->getMinionEquipment().sortByEquipmentValue(creature, allItems);
   for (WItem item : allItems)
     if (!currentItems.contains(item)) {
       auto owner = getCollective()->getMinionEquipment().getOwner(item);
