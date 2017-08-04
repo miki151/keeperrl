@@ -1332,15 +1332,13 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
       && pos.inRectangle(Rectangle::boundingBox({rectSelection->corner1, rectSelection->corner2})))
     index.setHighlight(rectSelection->deselect ? HighlightType::RECT_DESELECTION : HighlightType::RECT_SELECTION);
   const ConstructionMap& constructions = getCollective()->getConstructions();
-  if (!index.hasObject(ViewLayer::FLOOR)) {
-    if (constructions.containsTrap(position))
-      index.insert(getTrapObject(constructions.getTrap(position).getType(),
-            constructions.getTrap(position).isArmed()));
-    for (auto layer : ENUM_ALL(FurnitureLayer))
-      if (auto f = constructions.getFurniture(position, layer))
-        if (!f->isBuilt())
-          index.insert(getConstructionObject(f->getFurnitureType()));
-  }
+  if (constructions.containsTrap(position))
+    index.insert(getTrapObject(constructions.getTrap(position).getType(),
+          constructions.getTrap(position).isArmed()));
+  for (auto layer : ENUM_ALL(FurnitureLayer))
+    if (auto f = constructions.getFurniture(position, layer))
+      if (!f->isBuilt())
+        index.insert(getConstructionObject(f->getFurnitureType()));
   /*if (surprises.count(position) && !getCollective()->getKnownTiles().isKnown(position))
     index.insert(ViewObject(ViewId::UNKNOWN_MONSTER, ViewLayer::CREATURE, "Surprise"));*/
 }
