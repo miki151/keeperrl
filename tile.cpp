@@ -623,7 +623,7 @@ class TileCoordLookup {
   }
 
   void genSymbols() {
-	Tile::addSymbol(ViewId::DEMON_DWELLER, symbol(u8"U", Color::PURPLE));
+    Tile::addSymbol(ViewId::DEMON_DWELLER, symbol(u8"U", Color::PURPLE));
     Tile::addSymbol(ViewId::EMPTY, symbol(u8" ", Color::BLACK));
     Tile::addSymbol(ViewId::DIG_MARK, symbol(u8" ", Color::BLACK));
     Tile::addSymbol(ViewId::PLAYER, symbol(u8"@", Color::WHITE));

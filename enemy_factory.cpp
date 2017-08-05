@@ -130,7 +130,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.race = "ghosts"_s;
             c.furniture = FurnitureFactory::dungeonOutside(c.tribe);
             c.outsideFeatures = FurnitureFactory::dungeonOutside(c.tribe);),
- 		    CollectiveConfig::noImmigrants());
+            CollectiveConfig::noImmigrants());
     case EnemyId::DEMON_DEN:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.tribe = TribeId::getMonster();
@@ -143,7 +143,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
           CollectiveConfig::withImmigrants(300, 16, {
               ImmigrantInfo(CreatureId::DEMON_DWELLER, {MinionTrait::FIGHTER}).setFrequency(1),
           }), none,
-		  LevelConnection{LevelConnection::CRYPT, get(EnemyId::DEMON_DEN_ABOVE)});
+          LevelConnection{LevelConnection::CRYPT, get(EnemyId::DEMON_DEN_ABOVE)});
     case EnemyId::VILLAGE:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::VILLAGE;

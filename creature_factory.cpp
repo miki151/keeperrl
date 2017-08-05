@@ -1165,40 +1165,40 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.name = CreatureName("cyclops", "cyclopes");
           c.name->setFirst(NameGenerator::get(NameGeneratorId::CYCLOPS)->getNext());
           );
-	case CreatureId::DEMON_DWELLER:
+    case CreatureId::DEMON_DWELLER:
       return CATTR(
-		c.viewId = ViewId::DEMON_DWELLER;
-		c.attr = LIST(25_dam, 30_def, 35_spell_dam, 120_spd );
-		c.body = Body::humanoidSpirit(Body::Size::LARGE).addWings();
-		c.permanentEffects[LastingEffect::FLYING] = 1;
-		c.permanentEffects[LastingEffect::MAGIC_RESISTANCE] = 1;
-		c.barehandedAttack = AttackType::HIT;
-		c.courage = 100;
-		c.gender = Gender::male;
-		c.spells->add(SpellId::BLAST);
-		c.chatReactionFriendly = "\"Kneel before us!\""_s;
-		c.chatReactionHostile = "\"Face your death!\""_s;
-		c.name = "Demon dweller";
-		c.name->setFirst(NameGenerator::get(NameGeneratorId::DEMON)->getNext());
-		c.name->setGroup("pack");
-		);
-	case CreatureId::DEMON_LORD:
+        c.viewId = ViewId::DEMON_DWELLER;
+        c.attr = LIST(25_dam, 30_def, 35_spell_dam, 120_spd );
+        c.body = Body::humanoidSpirit(Body::Size::LARGE).addWings();
+        c.permanentEffects[LastingEffect::FLYING] = 1;
+        c.permanentEffects[LastingEffect::MAGIC_RESISTANCE] = 1;
+        c.barehandedAttack = AttackType::HIT;
+        c.courage = 100;
+        c.gender = Gender::male;
+        c.spells->add(SpellId::BLAST);
+        c.chatReactionFriendly = "\"Kneel before us!\""_s;
+        c.chatReactionHostile = "\"Face your death!\""_s;
+        c.name = "Demon dweller";
+        c.name->setFirst(NameGenerator::get(NameGeneratorId::DEMON)->getNext());
+        c.name->setGroup("pack");
+        );
+    case CreatureId::DEMON_LORD:
       return CATTR(
-		c.viewId = ViewId::SPECIAL_HMGN;
-		c.attr = LIST(40_dam, 45_def, 50_spell_dam, 130_spd );
-		c.body = Body::humanoidSpirit(Body::Size::LARGE).addWings();
-		c.permanentEffects[LastingEffect::FLYING] = 1;
-		c.permanentEffects[LastingEffect::MAGIC_RESISTANCE] = 1;
-		c.barehandedAttack = AttackType::HIT;
-		c.courage = 100;
-		c.gender = Gender::male;
-		c.spells->add(SpellId::BLAST);
-		c.chatReactionFriendly = "\"Kneel before us!\""_s;
-		c.chatReactionHostile = "\"Face your death!\""_s;
-		c.name = "Demon Lord";
-		c.name->setFirst(NameGenerator::get(NameGeneratorId::DEMON)->getNext());
-		c.name->setGroup("pack");
-		);
+        c.viewId = ViewId::SPECIAL_HMGN;
+        c.attr = LIST(40_dam, 45_def, 50_spell_dam, 130_spd );
+        c.body = Body::humanoidSpirit(Body::Size::LARGE).addWings();
+        c.permanentEffects[LastingEffect::FLYING] = 1;
+        c.permanentEffects[LastingEffect::MAGIC_RESISTANCE] = 1;
+        c.barehandedAttack = AttackType::HIT;
+        c.courage = 100;
+        c.gender = Gender::male;
+        c.spells->add(SpellId::BLAST);
+        c.chatReactionFriendly = "\"Kneel before us!\""_s;
+        c.chatReactionHostile = "\"Face your death!\""_s;
+        c.name = "Demon Lord";
+        c.name->setFirst(NameGenerator::get(NameGeneratorId::DEMON)->getNext());
+        c.name->setGroup("pack");
+        );
     case CreatureId::MINOTAUR: 
       return CATTR(
           c.viewId = ViewId::MINOTAUR;
@@ -2223,7 +2223,7 @@ vector<ItemType> getInventory(CreatureId id) {
       return ItemList().add(ItemId::GOLD_PIECE, Random.get(50, 100));
     case CreatureId::RED_DRAGON:
       return ItemList().add(ItemId::GOLD_PIECE, Random.get(120, 200));
-	case CreatureId::DEMON_LORD:
+    case CreatureId::DEMON_LORD:
     case CreatureId::ANGEL:
       return ItemList().add(ItemId::SPECIAL_SWORD);
     case CreatureId::KEEPER_F:
