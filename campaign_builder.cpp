@@ -158,7 +158,7 @@ vector<Campaign::VillainInfo> CampaignBuilder::getMainVillains() {
         {ViewId::ANT_QUEEN, EnemyId::ANTS_OPEN, "Ants", VillainType::MAIN},
         {ViewId::DARK_ELF_LORD, EnemyId::DARK_ELVES, "Dark elves", VillainType::MAIN},
         {ViewId::ORC_CAPTAIN, EnemyId::ORC_VILLAGE, "Greenskin village", VillainType::MAIN},
-        {ViewId::DEMON_DWELLER, EnemyId::DEMON_DEN, "Demon den", VillainType::MAIN},
+        {ViewId::DEMON_LORD, EnemyId::DEMON_DEN, "Demon den", VillainType::MAIN},
       };
   }
 }

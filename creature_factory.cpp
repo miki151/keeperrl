@@ -1184,7 +1184,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
         );
     case CreatureId::DEMON_LORD:
       return CATTR(
-        c.viewId = ViewId::SPECIAL_HMGN;
+        c.viewId = ViewId::DEMON_LORD;
         c.attr = LIST(40_dam, 45_def, 50_spell_dam, 130_spd );
         c.body = Body::humanoidSpirit(Body::Size::LARGE).addWings();
         c.permanentEffects[LastingEffect::FLYING] = 1;
