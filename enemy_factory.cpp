@@ -142,7 +142,14 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.outsideFeatures = FurnitureFactory::dungeonOutside(c.tribe);),
           CollectiveConfig::withImmigrants(300, 16, {
               ImmigrantInfo(CreatureId::DEMON_DWELLER, {MinionTrait::FIGHTER}).setFrequency(1),
-          }), none,
+          }),
+          CONSTRUCT(VillageBehaviour,
+              c.minPopulation = 0;
+              c.minTeamSize = 3;
+              c.triggers = LIST(
+                  {AttackTriggerId::ROOM_BUILT, FurnitureType::DEMON_SHRINE});
+              c.attackBehaviour = AttackBehaviour(AttackBehaviourId::KILL_LEADER);
+              c.ransom = make_pair(0.5, random.get(50, 100));),
           LevelConnection{LevelConnection::CRYPT, get(EnemyId::DEMON_DEN_ABOVE)});
     case EnemyId::VILLAGE:
       return EnemyInfo(CONSTRUCT(SettlementInfo,

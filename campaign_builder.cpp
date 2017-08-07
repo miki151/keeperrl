@@ -149,6 +149,7 @@ vector<Campaign::VillainInfo> CampaignBuilder::getMainVillains() {
         {ViewId::GREEN_DRAGON, EnemyId::GREEN_DRAGON, "Green dragon", VillainType::MAIN},
         {ViewId::LIZARDLORD, EnemyId::LIZARDMEN, "Lizardmen", VillainType::MAIN},
         {ViewId::SHAMAN, EnemyId::WARRIORS, "Warriors", VillainType::MAIN},
+        {ViewId::DEMON_LORD, EnemyId::DEMON_DEN, "Demon den", VillainType::MAIN},
       };
     case PlayerRole::ADVENTURER:
       return {
