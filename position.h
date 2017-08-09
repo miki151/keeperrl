@@ -100,6 +100,8 @@ class Position {
   void throwItem(PItem item, const Attack& attack, int maxDist, Vec2 direction, VisionId);
   void throwItem(vector<PItem> item, const Attack& attack, int maxDist, Vec2 direction, VisionId);
   bool canNavigate(const MovementType&) const;
+  optional<double> getNavigationCost(const MovementType&) const;
+  optional<DestroyAction> getBestDestroyAction(const MovementType&) const;
   vector<Position> getVisibleTiles(const Vision&);
   void updateConnectivity() const;
   void updateVisibility() const;
@@ -124,7 +126,7 @@ class Position {
   WFurniture modFurniture(FurnitureType) const;
   vector<WFurniture> modFurniture() const;
 
-  SERIALIZATION_DECL(Position);
+  SERIALIZATION_DECL(Position)
   int getHash() const;
 
   private:

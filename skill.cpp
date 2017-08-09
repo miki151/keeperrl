@@ -46,6 +46,7 @@ void Skill::init() {
       new Skill("stealing", "Steal from other monsters. Not available for player ATM.", true));
   Skill::set(SkillId::SWIMMING, new Skill("swimming", "Cross water without drowning.", true));
   Skill::set(SkillId::CONSTRUCTION, new Skill("construction", "Mine and construct rooms.", true, false));
+  Skill::set(SkillId::DIGGING, new Skill("digging", "Dig.", true, false));
   Skill::set(SkillId::DISARM_TRAPS, new Skill("disarm traps", "Evade traps and disarm them.", true));
   Skill::set(SkillId::SORCERY, new Skill("sorcery", "Affects the length of spell cooldowns.", false));
   Skill::set(SkillId::CONSUMPTION, new Skill("absorbtion",

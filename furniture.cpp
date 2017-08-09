@@ -41,7 +41,7 @@ Furniture::Furniture(const string& n, const optional<ViewObject>& o, FurnitureTy
 
 Furniture::Furniture(const Furniture&) = default;
 
-SERIALIZATION_CONSTRUCTOR_IMPL(Furniture);
+SERIALIZATION_CONSTRUCTOR_IMPL(Furniture)
 
 Furniture::~Furniture() {}
 
@@ -54,7 +54,7 @@ void Furniture::serialize(Archive& ar, const unsigned) {
   ar(canBuildBridge);
 }
 
-SERIALIZABLE(Furniture);
+SERIALIZABLE(Furniture)
 
 const optional<ViewObject>& Furniture::getViewObject() const {
   return *viewObject;

@@ -23,7 +23,6 @@
 #include "gender.h"
 #include "creature_name.h"
 #include "minion_task_map.h"
-#include "skill.h"
 #include "attr_type.h"
 #include "lasting_effect.h"
 #include "experience_type.h"

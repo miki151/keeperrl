@@ -1449,12 +1449,13 @@ TribeSet Creature::getFriendlyTribes() const {
     return TribeSet().insert(tribe);
 }
 
-MovementType Creature:: getMovementType() const {
+MovementType Creature::getMovementType() const {
   return MovementType(getFriendlyTribes(), {
       true,
       isAffected(LastingEffect::FLYING),
       attributes->getSkills().hasDiscrete(SkillId::SWIMMING),
       getBody().canWade()})
+    .setDestroyActions(EnumSet<DestroyAction::Type>([this](auto t) { return DestroyAction(t).canNavigate(this); }))
     .setForced(isAffected(LastingEffect::BLIND) || getHoldingCreature() || forceMovement)
     .setFireResistant(isAffected(LastingEffect::FIRE_RESISTANT))
     .setSunlightVulnerable(getBody().isSunlightVulnerable() && !isAffected(LastingEffect::DARKNESS_SOURCE)
@@ -1543,8 +1544,9 @@ CreatureAction Creature::moveTowards(Position pos, bool away, bool stepOnTile) {
       return action;
     else {
       if (!pos2.canEnterEmpty(this))
-        if (auto action = destroy(getPosition().getDir(pos2), DestroyAction::Type::BASH))
-          return action;
+        if (auto destroyAction = pos2.getBestDestroyAction(getMovementType()))
+            if (auto action = destroy(getPosition().getDir(pos2), *destroyAction))
+            return action;
       return CreatureAction();
     }
   } else {
