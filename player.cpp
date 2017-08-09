@@ -719,17 +719,27 @@ static string getForceMovementQuestion(Position pos, WConstCreature creature) {
 }
 
 void Player::moveAction(Vec2 dir) {
+  auto targetPos = getCreature()->getPosition().plus(dir);
   if (tryToPerform(getCreature()->move(dir)))
     return;
   if (auto action = getCreature()->forceMove(dir)) {
-    string nextQuestion = getForceMovementQuestion(getCreature()->getPosition().plus(dir), getCreature());
+    string nextQuestion = getForceMovementQuestion(targetPos, getCreature());
     string hereQuestion = getForceMovementQuestion(getCreature()->getPosition(), getCreature());
     if (hereQuestion == nextQuestion || getView()->yesOrNoPrompt(nextQuestion, true))
       action.perform(getCreature());
   } else if (auto action = getCreature()->bumpInto(dir))
     action.perform(getCreature());
-  else if (!getCreature()->getPosition().plus(dir).canEnterEmpty(getCreature()))
-    tryToPerform(getCreature()->destroy(dir, DestroyAction::Type::BASH));
+  else if (!targetPos.canEnterEmpty(getCreature()) &&
+      targetPos.canEnterEmpty(getCreature()->getMovementType(), FurnitureLayer::MIDDLE)) {
+    auto furniture = targetPos.getFurniture(FurnitureLayer::MIDDLE);
+    optional<DestroyAction> bestAction;
+    for (DestroyAction action : ENUM_ALL(DestroyAction::Type))
+      if (furniture->canDestroy(getCreature()->getMovementType(), action) &&
+          (!bestAction || *furniture->getStrength(*bestAction) > *furniture->getStrength(action)))
+        bestAction = action;
+    if (bestAction)
+      tryToPerform(getCreature()->destroy(dir, *bestAction));
+  }
 }
 
 bool Player::isPlayer() const {
