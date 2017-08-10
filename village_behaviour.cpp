@@ -101,7 +101,7 @@ static double stolenItemsFun(int numStolen) {
 static double getRoomProb(FurnitureType id) {
   switch (id) {
     case FurnitureType::THRONE: return 0.001;
-	case FurnitureType::DEMON_SHRINE: return 0.001;
+    case FurnitureType::DEMON_SHRINE: return 0.001;
     case FurnitureType::IMPALED_HEAD: return 0.000125;
     default: FATAL << "Unsupported ROOM_BUILT type"; return 0;
   }
@@ -142,13 +142,13 @@ double VillageBehaviour::getTriggerValue(const Trigger& trigger, const VillageCo
       case AttackTriggerId::TIMER: 
         return collective->getGlobalTime() >= trigger.get<int>() ? timerProb : 0;
       case AttackTriggerId::ROOM_BUILT:
-		if (trigger.get<FurnitureType>() ==FurnitureType::DEMON_SHRINE)
-			{//Demon shrines actually decrease probability of demon attacks, not increase it
-		      double numShrines = collective->getConstructions().getBuiltCount(trigger.get<FurnitureType>());
-			  if (numShrines>4) return 0;
-			  return getRoomProb(trigger.get<FurnitureType>()) / (numShrines+1);}	
+        if (trigger.get<FurnitureType>() ==FurnitureType::DEMON_SHRINE)
+          {//Demon shrines actually decrease probability of demon attacks, not increase it
+            double numShrines = collective->getConstructions().getBuiltCount(trigger.get<FurnitureType>());
+            if (numShrines>4) return 0;
+            return getRoomProb(trigger.get<FurnitureType>()) / (numShrines+1);}   
         //Not a demon shrine. These items increase attack chance.
-		return collective->getConstructions().getBuiltCount(trigger.get<FurnitureType>()) *
+        return collective->getConstructions().getBuiltCount(trigger.get<FurnitureType>()) *
           getRoomProb(trigger.get<FurnitureType>());
       case AttackTriggerId::POWER: 
         return powerMaxProb *
