@@ -124,7 +124,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::FOREST;
             c.creatures = CreatureFactory::singleType(TribeId::getMonster(), CreatureId::UNICORN);
-			c.stockpiles = LIST({StockpileInfo::GOLD, 100});
+            c.stockpiles = LIST({StockpileInfo::GOLD, 100});
             c.numCreatures = random.get(10, 15);
             c.tribe = TribeId::getMonster();
             c.race = "unicorns"_s;
