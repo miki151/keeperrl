@@ -120,6 +120,23 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
               ImmigrantInfo(CreatureId::ORC, {MinionTrait::FIGHTER}).setFrequency(3),
               ImmigrantInfo(CreatureId::OGRE, {MinionTrait::FIGHTER}).setFrequency(1)
             }));
+    case EnemyId::COVEN:
+		  return EnemyInfo(CONSTRUCT(SettlementInfo,
+            c.type = SettlementType::LARGE_CAVE;
+            c.creatures = CreatureFactory::coven(c.tribe);
+            c.numCreatures = 8;
+            c.tribe = TribeId::getMonster();
+            c.locationName = getVillageName();
+			c.furniture = FurnitureFactory::coven(c.tribe);
+            c.shopFactory = ItemFactory::potions();
+            c.race = "witches"_s;),
+            CollectiveConfig::noImmigrants().setGhostSpawns(0.1, 4),
+            CONSTRUCT(VillageBehaviour,
+              c.minPopulation = 0;
+              c.minTeamSize = 1;
+              c.triggers = LIST(AttackTriggerId::ENTRY,
+			    AttackTriggerId::STOLEN_ITEMS);
+              c.attackBehaviour = AttackBehaviour(AttackBehaviourId::KILL_MEMBERS, 12);));
     case EnemyId::VILLAGE:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::VILLAGE;
