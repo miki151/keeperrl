@@ -762,6 +762,10 @@ CreatureFactory CreatureFactory::orcTown(TribeId tribe) {
   return CreatureFactory(tribe, { CreatureId::ORC, CreatureId::OGRE }, {1, 1});
 }
 
+CreatureFactory CreatureFactory::coven(TribeId tribe) {
+  return CreatureFactory(tribe, { CreatureId::IMP, CreatureId::WITCH }, {3, 5});
+}
+
 CreatureFactory CreatureFactory::insects(TribeId tribe) {
   return CreatureFactory(tribe, { CreatureId::SPIDER}, {1});
 }
@@ -1129,7 +1133,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.attr = LIST(14_dam, 14_def, 20_spell_dam, 60_spd );
           c.body = Body::humanoid(Body::Size::MEDIUM);
           c.name = CreatureName("witch", "witches");
-          c.name->setFirst("Cornelia");
+          c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_FEMALE)->getNext());
           c.gender = Gender::female;
           c.chatReactionFriendly = "curses all humans"_s;
           c.chatReactionHostile = "\"Die!\""_s;

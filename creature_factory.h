@@ -186,6 +186,7 @@ class CreatureFactory {
   static CreatureFactory vikingTown(TribeId);
   static CreatureFactory lizardTown(TribeId);
   static CreatureFactory orcTown(TribeId);
+  static CreatureFactory coven(TribeId tribe);
   static CreatureFactory singleType(TribeId, CreatureId);
   static CreatureFactory insects(TribeId tribe);
   static CreatureFactory lavaCreatures(TribeId tribe);
