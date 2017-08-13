@@ -640,6 +640,15 @@ FurnitureFactory FurnitureFactory::cryptCoffins(TribeId tribe) {
   });
 }
 
+FurnitureFactory FurnitureFactory::coven(TribeId tribe) {
+  return FurnitureFactory(tribe, {
+      {FurnitureType::THRONE, 1},
+      {FurnitureType::LABORATORY, 3},
+      {FurnitureType::BOOKCASE_GOLD, 3},
+	  {FurnitureType::IMPALED_HEAD,3}
+  });
+}
+
 FurnitureType FurnitureFactory::getWaterType(double depth) {
   if (depth >= 2.0)
     return FurnitureType::WATER;

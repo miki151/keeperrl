@@ -35,6 +35,7 @@ class FurnitureFactory {
   static FurnitureFactory castleOutside(TribeId);
   static FurnitureFactory villageOutside(TribeId);
   static FurnitureFactory cryptCoffins(TribeId);
+  static FurnitureFactory coven(TribeId);
 
   static FurnitureType getWaterType(double depth);
 
