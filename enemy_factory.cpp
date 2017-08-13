@@ -121,22 +121,22 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
               ImmigrantInfo(CreatureId::OGRE, {MinionTrait::FIGHTER}).setFrequency(1)
             }));
     case EnemyId::FORTY_THIEVES:
-		  return EnemyInfo(CONSTRUCT(SettlementInfo,
+          return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::HUGE_CAVERN;
             c.creatures = CreatureFactory::fortyThieves(c.tribe);
             c.numCreatures = 40;
             c.tribe = TribeId::getBandit();
             c.locationName = getVillageName();
-			c.furniture = FurnitureFactory::roomFurniture(c.tribe);
-			c.shopFactory = ItemFactory::armory();
+            c.furniture = FurnitureFactory::roomFurniture(c.tribe);
+            c.shopFactory = ItemFactory::armory();
             c.race = "The Forty Thieves"_s;),
             CollectiveConfig::noImmigrants().setGhostSpawns(0.1, 4),
             CONSTRUCT(VillageBehaviour,
               c.minPopulation = 0;
               c.minTeamSize = 20;
               c.triggers = LIST({AttackTriggerId::GOLD, 50},
-			    AttackTriggerId::ENTRY,
-			    AttackTriggerId::STOLEN_ITEMS);
+                AttackTriggerId::ENTRY,
+                AttackTriggerId::STOLEN_ITEMS);
               c.attackBehaviour = AttackBehaviour(AttackBehaviourId::KILL_MEMBERS, 12);));
     case EnemyId::VILLAGE:
       return EnemyInfo(CONSTRUCT(SettlementInfo,

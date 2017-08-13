@@ -1256,8 +1256,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.viewId = ViewId::DARK_KNIGHT;
           c.attr = LIST(40_dam, 40_def, 110_spd );
           c.body = Body::humanoid(Body::Size::LARGE);
-		  //You really need to defeat this guy with magic.
-		  //He is an expert at conventional fighting.
+          //You really need to defeat this guy with magic.
+          //He is an expert at conventional fighting.
           c.permanentEffects[LastingEffect::MELEE_RESISTANCE] = 1;
           c.permanentEffects[LastingEffect::RANGED_RESISTANCE] = 1;
           c.chatReactionFriendly = "curses all castles"_s;
@@ -2273,7 +2273,7 @@ vector<ItemType> getInventory(CreatureId id) {
       return ItemList()
         .add(ItemId::BATTLE_AXE);
     case CreatureId::AVATAR:
-    case CreatureId::DARK_KNIGHT: 	
+    case CreatureId::DARK_KNIGHT:   
       return ItemList()
         .add(ItemId::SPECIAL_BATTLE_AXE)
         .add(ItemId::CHAIN_ARMOR)
