@@ -1156,6 +1156,30 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.name = CreatureName("cyclops", "cyclopes");
           c.name->setFirst(NameGenerator::get(NameGeneratorId::CYCLOPS)->getNext());
           );
+    case CreatureId::UNICORN:
+      return CATTR(
+        c.viewId = ViewId::UNICORN;
+        c.attr = LIST(20_dam, 20_def, 20_spell_dam, 200_spd );
+        c.body = Body::nonHumanoid(Body::Size::LARGE).setWeight(500).setHorseBodyParts();
+        //Ideally, you should club them to death or chop them up with a sword.
+        c.permanentEffects[LastingEffect::RANGED_RESISTANCE] = 1;
+        c.permanentEffects[LastingEffect::MAGIC_RESISTANCE] = 1;
+        c.barehandedAttack = AttackType::HIT;
+        c.courage = 100;
+        //They heal up and summon friends.
+        c.spells->add(SpellId::HEAL_SELF);
+        c.spells->add(SpellId::HEAL_OTHER);
+        c.spells->add(SpellId::SUMMON_SPIRIT);
+        c.chatReactionFriendly = "\"mhhhhhrrrr!\""_s;
+        c.chatReactionHostile = "\"mhhhhhrrrr!\""_s;
+        c.name = "unicorn";
+        //Pet names like dogs would have.
+        c.name->setFirst(NameGenerator::get(NameGeneratorId::DOG)->getNext());
+        c.name->setGroup("herd");
+        c.innocent = true;
+        c.animal = true;
+        c.noChase = true;
+        );
     case CreatureId::MINOTAUR: 
       return CATTR(
           c.viewId = ViewId::MINOTAUR;
