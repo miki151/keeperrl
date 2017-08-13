@@ -120,6 +120,18 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
               ImmigrantInfo(CreatureId::ORC, {MinionTrait::FIGHTER}).setFrequency(3),
               ImmigrantInfo(CreatureId::OGRE, {MinionTrait::FIGHTER}).setFrequency(1)
             }));
+    case EnemyId::UNICORN_HERD:
+      return EnemyInfo(CONSTRUCT(SettlementInfo,
+            c.type = SettlementType::FOREST;
+            c.creatures = CreatureFactory::singleType(TribeId::getMonster(), CreatureId::UNICORN);
+			c.stockpiles = LIST({StockpileInfo::GOLD, 100});
+            c.numCreatures = random.get(10, 15);
+            c.tribe = TribeId::getMonster();
+            c.race = "unicorns"_s;
+            c.buildingId = BuildingId::WOOD;),
+          CollectiveConfig::withImmigrants(200, 15, {
+              ImmigrantInfo(CreatureId::UNICORN, {MinionTrait::FIGHTER}).setFrequency(1),
+          }));
     case EnemyId::VILLAGE:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::VILLAGE;
