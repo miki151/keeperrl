@@ -1944,6 +1944,7 @@ Vec2 getSize(RandomGen& random, SettlementType type) {
     case SettlementType::MINETOWN: return {30, 20};
     case SettlementType::SMALL_MINETOWN: return {15, 15};
     case SettlementType::CAVE: return {12, 12};
+    case SettlementType::HUGE_CAVERN: return {35, 35};
     case SettlementType::SPIDER_CAVE: return {12, 12};
     case SettlementType::VAULT: return {10, 10};
     case SettlementType::TOWER: return {5, 5};
@@ -1961,6 +1962,7 @@ RandomLocations::LocationPredicate getSettlementPredicate(SettlementType type) {
           Predicate::negate(Predicate::attrib(SquareAttrib::RIVER)),
           Predicate::attrib(SquareAttrib::FORREST));
     case SettlementType::CAVE:
+    case SettlementType::HUGE_CAVERN:
       return RandomLocations::LocationPredicate(
           Predicate::type(FurnitureType::MOUNTAIN), Predicate::attrib(SquareAttrib::HILL), 5, 15);
     case SettlementType::VAULT:
@@ -2107,6 +2109,14 @@ static MakerQueue* dragonCaveMaker(SettlementInfo info) {
   MakerQueue* queue = vaultMaker(info, true);
 /*  queue->addMaker(new RandomLocations({new CreatureAltarMaker(info.collective)}, {{1, 1}},
       {Predicate::type(FurnitureType::HILL)}));*/
+  return queue;
+}
+
+//Huge cavern with a stone floor.
+static MakerQueue* hugeCavernMaker(SettlementInfo info) {
+  MakerQueue* queue = vaultMaker(info, true);
+  queue->addMaker(new Furnitures(Predicate::type(FurnitureType::GRASS), 0.1, *info.furniture));
+  queue->addMaker(new Empty(SquareChange(FurnitureType::GRASS, FurnitureType::FLOOR_STONE2)));
   return queue;
 }
 
@@ -2279,6 +2289,9 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, optional<CreatureFactory> fo
         break;
       case SettlementType::CAVE:
         queue = dragonCaveMaker(settlement);
+        break;
+      case SettlementType::HUGE_CAVERN:
+        queue = hugeCavernMaker(settlement);
         break;
       case SettlementType::SPIDER_CAVE:
         queue = spiderCaveMaker(settlement);
