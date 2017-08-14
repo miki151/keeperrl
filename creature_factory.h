@@ -183,12 +183,12 @@ class CreatureFactory {
   static CreatureFactory forrest(TribeId);
   static CreatureFactory crypt(TribeId);
   static CreatureFactory dwarfTown(TribeId);
+  static CreatureFactory fortyThieves(TribeId tribe);
   static CreatureFactory dwarfCave(TribeId);
   static CreatureFactory antNest(TribeId);
   static CreatureFactory vikingTown(TribeId);
   static CreatureFactory lizardTown(TribeId);
   static CreatureFactory orcTown(TribeId);
-  static CreatureFactory fortyThieves(TribeId tribe);
   static CreatureFactory singleType(TribeId, CreatureId);
   static CreatureFactory insects(TribeId tribe);
   static CreatureFactory lavaCreatures(TribeId tribe);

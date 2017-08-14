@@ -146,10 +146,10 @@ vector<Campaign::VillainInfo> CampaignBuilder::getMainVillains() {
         {ViewId::DWARF_BARON, EnemyId::DWARVES, "Dwarves", VillainType::MAIN},
         {ViewId::RED_DRAGON, EnemyId::RED_DRAGON, "Red dragon", VillainType::MAIN},
         {ViewId::ELEMENTALIST, EnemyId::ELEMENTALIST, "Elementalist", VillainType::MAIN},
+        {ViewId::MASTER_THIEF, EnemyId::FORTY_THIEVES, "The Forty Thieves", VillainType::MAIN},
         {ViewId::GREEN_DRAGON, EnemyId::GREEN_DRAGON, "Green dragon", VillainType::MAIN},
         {ViewId::LIZARDLORD, EnemyId::LIZARDMEN, "Lizardmen", VillainType::MAIN},
         {ViewId::SHAMAN, EnemyId::WARRIORS, "Warriors", VillainType::MAIN},
-        {ViewId::MASTER_THIEF, EnemyId::FORTY_THIEVES, "The Forty Thieves", VillainType::MAIN},
       };
     case PlayerRole::ADVENTURER:
       return {
@@ -158,8 +158,8 @@ vector<Campaign::VillainInfo> CampaignBuilder::getMainVillains() {
         {ViewId::SHELOB, EnemyId::SHELOB, "Giant spider", VillainType::MAIN},
         {ViewId::ANT_QUEEN, EnemyId::ANTS_OPEN, "Ants", VillainType::MAIN},
         {ViewId::DARK_ELF_LORD, EnemyId::DARK_ELVES, "Dark elves", VillainType::MAIN},
-        {ViewId::ORC_CAPTAIN, EnemyId::ORC_VILLAGE, "Greenskin village", VillainType::MAIN},
         {ViewId::MASTER_THIEF, EnemyId::FORTY_THIEVES, "The Forty Thieves", VillainType::MAIN},
+        {ViewId::ORC_CAPTAIN, EnemyId::ORC_VILLAGE, "Greenskin village", VillainType::MAIN},
       };
   }
 }

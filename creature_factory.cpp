@@ -749,6 +749,10 @@ CreatureFactory CreatureFactory::dwarfTown(TribeId tribe) {
   return CreatureFactory(tribe, { CreatureId::DWARF, CreatureId::DWARF_FEMALE}, { 2, 1},{ CreatureId::DWARF_BARON});
 }
 
+CreatureFactory CreatureFactory::fortyThieves(TribeId tribe) {
+  return CreatureFactory(tribe, {CreatureId::BANDIT, CreatureId::MASTER_THIEF}, {1,1}, {CreatureId::DARK_KNIGHT});
+}
+
 CreatureFactory CreatureFactory::dwarfCave(TribeId tribe) {
   return CreatureFactory(tribe, { CreatureId::DWARF, CreatureId::DWARF_FEMALE}, { 2, 1});
 }
@@ -760,10 +764,6 @@ CreatureFactory CreatureFactory::antNest(TribeId tribe) {
 
 CreatureFactory CreatureFactory::orcTown(TribeId tribe) {
   return CreatureFactory(tribe, { CreatureId::ORC, CreatureId::OGRE }, {1, 1});
-}
-
-CreatureFactory CreatureFactory::fortyThieves(TribeId tribe) {
-  return CreatureFactory(tribe, {CreatureId::BANDIT, CreatureId::MASTER_THIEF}, {1,1}, {CreatureId::DARK_KNIGHT});
 }
 
 CreatureFactory CreatureFactory::insects(TribeId tribe) {
