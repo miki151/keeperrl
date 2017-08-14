@@ -281,12 +281,6 @@ class GuiFactory {
     BUILDING,
     DEITIES,
     HIGHLIGHT,
-    STAT_ATT,
-    STAT_DEF,
-    STAT_ACC,
-    STAT_SPD,
-    STAT_STR,
-    STAT_DEX,
     MORALE_1,
     MORALE_2,
     MORALE_3,
@@ -296,6 +290,7 @@ class GuiFactory {
   };
 
   SGuiElem icon(IconId, Alignment = Alignment::CENTER, Color = Color::WHITE);
+  SGuiElem icon(AttrType);
   Texture& get(TexId);
   SGuiElem spellIcon(SpellId);
   SGuiElem uiHighlightMouseOver(Color = Color::GREEN);
@@ -311,11 +306,11 @@ class GuiFactory {
 
   SGuiElem getScrollbar();
   Vec2 getScrollButtonSize();
-  Texture& getIconTex(IconId);
   SDL::SDL_Keysym getHotkeyEvent(char) ;
 
   map<TexId, Texture> textures;
   vector<Texture> iconTextures;
+  map<AttrType, Texture> attrTextures;
   vector<Texture> spellTextures;
   Clock* clock;
   Renderer& renderer;

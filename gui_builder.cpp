@@ -753,22 +753,12 @@ static Color getBonusColor(int bonus) {
   return Color::WHITE;
 }
 
-static GuiFactory::IconId getAttrIcon(AttrType id) {
-  switch (id) {
-    case AttrType::DAMAGE: return GuiFactory::STAT_ATT;
-    case AttrType::DEFENSE: return GuiFactory::STAT_DEF;
-    case AttrType::SPELL_DAMAGE: return GuiFactory::STAT_STR;
-    case AttrType::RANGED_DAMAGE: return GuiFactory::STAT_ACC;
-    case AttrType::SPEED: return GuiFactory::STAT_SPD;
-  }
-}
-
 vector<SGuiElem> GuiBuilder::drawPlayerAttributes(const vector<AttributeInfo>& attr) {
   vector<SGuiElem> ret;
   for (auto& elem : attr)
     ret.push_back(gui.stack(getTooltip({elem.name, elem.help}, THIS_LINE),
         gui.horizontalList(makeVec(
-          gui.icon(getAttrIcon(elem.attr)),
+          gui.icon(elem.attr),
           gui.margins(gui.label(toString(elem.value), getBonusColor(elem.bonus)), 0, 2, 0, 0)), 30)));
   return ret;
 }
@@ -778,7 +768,7 @@ vector<SGuiElem> GuiBuilder::drawPlayerAttributes(const ViewObject::CreatureAttr
   for (auto attr : ENUM_ALL(AttrType))
     ret.push_back(
         gui.horizontalList(makeVec(
-          gui.icon(getAttrIcon(attr)),
+          gui.icon(attr),
           gui.margins(gui.label(toString((int) attributes[attr])), 0, 2, 0, 0)), 30));
   return ret;
 }
@@ -817,7 +807,7 @@ vector<string> GuiBuilder::getItemHint(const ItemInfo& item) {
 
 SGuiElem GuiBuilder::drawBestAttack(const BestAttack& info) {
   return gui.getListBuilder(30)
-      .addElem(gui.icon(getAttrIcon(info.attr)))
+      .addElem(gui.icon(info.attr))
       .addElem(gui.topMargin(2, gui.label(toString((int) info.value))))
       .buildHorizontalList();
 }
@@ -1137,7 +1127,7 @@ SGuiElem GuiBuilder::getExpIncreaseLine(const PlayerInfo::LevelInfo& info, Exper
   vector<string> attrNames;
   auto attrIcons = gui.getListBuilder();
   for (auto attr : getAttrIncreases()[type]) {
-    attrIcons.addElem(gui.topMargin(-3, gui.icon(getAttrIcon(attr))), 22);
+    attrIcons.addElem(gui.topMargin(-3, gui.icon(attr)), 22);
     attrNames.push_back(getName(attr));
   }
   line.addElem(attrIcons.buildHorizontalList(), 80);

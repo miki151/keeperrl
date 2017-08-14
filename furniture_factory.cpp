@@ -122,7 +122,7 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setTickType(FurnitureTickType::BED)
           .setDestroyable(40);
     case FurnitureType::DEMON_SHRINE:
-      return Furniture("demon shrine", ViewObject(ViewId::RITUAL_ROOM, ViewLayer::FLOOR), type, tribe)
+      return Furniture("demon shrine", ViewObject(ViewId::DEMON_SHRINE, ViewLayer::FLOOR), type, tribe)
           .setBlocking()
           .setCanHide()
           .setUsageTime(5)

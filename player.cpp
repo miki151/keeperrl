@@ -59,9 +59,9 @@ void Player::serialize(Archive& ar, const unsigned int) {
   ar(adventurer, visibilityMap, tutorial);
 }
 
-SERIALIZABLE(Player);
+SERIALIZABLE(Player)
 
-SERIALIZATION_CONSTRUCTOR_IMPL(Player);
+SERIALIZATION_CONSTRUCTOR_IMPL(Player)
 
 Player::Player(WCreature c, bool adv, SMapMemory memory, SMessageBuffer buf, SVisibilityMap v, STutorial t) :
     Controller(c), levelMemory(memory), adventurer(adv), displayGreeting(adventurer), messageBuffer(buf),

@@ -24,6 +24,7 @@
 #include "scroll_position.h"
 #include "keybinding_map.h"
 #include "player_role_choice.h"
+#include "attr_type.h"
 
 #include "sdl.h"
 
@@ -2334,9 +2335,15 @@ void GuiFactory::loadFreeImages(const DirectoryPath& path) {
   for (int i = 0; i < 8; ++i)
     iconTextures.push_back(Texture(path.file("icons.png"), 0, i * tabIconWidth, tabIconWidth, tabIconWidth));
   const int statIconWidth = 18;
-  for (int i = 0; i < 6; ++i)
-    iconTextures.push_back(Texture(path.file("stat_icons.png"),
-          i * statIconWidth, 0, statIconWidth, statIconWidth));
+  auto addAttr = [&](AttrType attr, int x, int y) {
+    attrTextures.emplace(make_pair(attr, Texture(path.file("stat_icons.png"),
+        x * statIconWidth, y * statIconWidth, statIconWidth, statIconWidth)));
+  };
+  addAttr(AttrType::DAMAGE, 0, 0);
+  addAttr(AttrType::DEFENSE, 1, 0);
+  addAttr(AttrType::SPELL_DAMAGE, 0, 1);
+  addAttr(AttrType::RANGED_DAMAGE, 1, 1);
+  addAttr(AttrType::SPEED, 2, 1);
   const int moraleIconWidth = 16;
   for (int i = 0; i < 4; ++i)
     iconTextures.push_back(Texture(path.file("morale_icons.png"),
@@ -2365,10 +2372,6 @@ void GuiFactory::loadNonFreeImages(const DirectoryPath& path) {
     textures.emplace(TexId::MENU_CORE, path.file("menu_core_sm.png"));
     textures.emplace(TexId::MENU_MOUTH, path.file("menu_mouth_sm.png"));
   }
-}
-
-Texture& GuiFactory::getIconTex(IconId id) {
-  return iconTextures[id];
 }
 
 SGuiElem GuiFactory::getScrollbar() {
@@ -2583,7 +2586,11 @@ SGuiElem GuiFactory::background(SGuiElem content, Color color) {
 }
 
 SGuiElem GuiFactory::icon(IconId id, Alignment alignment, Color color) {
-  return sprite(getIconTex(id), alignment, color);
+  return sprite(iconTextures[(int) id], alignment, color);
+}
+
+SGuiElem GuiFactory::icon(AttrType attr) {
+  return sprite(attrTextures.at(attr), Alignment::CENTER, Color::WHITE);
 }
 
 SGuiElem GuiFactory::spellIcon(SpellId id) {
