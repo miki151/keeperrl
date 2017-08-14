@@ -177,6 +177,7 @@ class CreatureFactory {
   static CreatureFactory elvenVillage(TribeId);
   static CreatureFactory elvenCottage(TribeId);
   static CreatureFactory darkElfVillage(TribeId);
+  static CreatureFactory coven(TribeId tribe);
   static CreatureFactory darkElfEntrance(TribeId);
   static CreatureFactory forrest(TribeId);
   static CreatureFactory crypt(TribeId);
@@ -186,7 +187,6 @@ class CreatureFactory {
   static CreatureFactory vikingTown(TribeId);
   static CreatureFactory lizardTown(TribeId);
   static CreatureFactory orcTown(TribeId);
-  static CreatureFactory coven(TribeId tribe);
   static CreatureFactory singleType(TribeId, CreatureId);
   static CreatureFactory insects(TribeId tribe);
   static CreatureFactory lavaCreatures(TribeId tribe);

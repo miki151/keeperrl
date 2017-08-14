@@ -348,6 +348,7 @@ static optional<BiomeId> getBiome(EnemyId enemyId, RandomGen& random) {
     case EnemyId::ORC_VILLAGE: return BiomeId::GRASSLAND;
     case EnemyId::RED_DRAGON:
     case EnemyId::GREEN_DRAGON:
+	case EnemyId::COVEN:
     case EnemyId::DWARVES:
     case EnemyId::DARK_ELVES:
     case EnemyId::OGRE_CAVE:
@@ -356,7 +357,6 @@ static optional<BiomeId> getBiome(EnemyId enemyId, RandomGen& random) {
     case EnemyId::GNOMES:
     case EnemyId::CYCLOPS:
     case EnemyId::SHELOB:
-	case EnemyId::COVEN:
     case EnemyId::ANTS_OPEN: return BiomeId::MOUNTAIN;
     case EnemyId::ELVES:
     case EnemyId::DRIADS:

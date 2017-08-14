@@ -618,6 +618,15 @@ FurnitureFactory FurnitureFactory::dungeonOutside(TribeId tribe) {
   });
 }
 
+FurnitureFactory FurnitureFactory::coven(TribeId tribe) {
+  return FurnitureFactory(tribe, {
+      {FurnitureType::THRONE, 1},
+      {FurnitureType::LABORATORY, 3},
+      {FurnitureType::BOOKCASE_GOLD, 3},
+	  {FurnitureType::IMPALED_HEAD,3}
+  });
+}
+
 FurnitureFactory FurnitureFactory::castleOutside(TribeId tribe) {
   return FurnitureFactory(tribe, {
       {FurnitureType::GROUND_TORCH, 1},
@@ -637,15 +646,6 @@ FurnitureFactory FurnitureFactory::cryptCoffins(TribeId tribe) {
       {FurnitureType::COFFIN, 1},
   }, {
       FurnitureType::VAMPIRE_COFFIN
-  });
-}
-
-FurnitureFactory FurnitureFactory::coven(TribeId tribe) {
-  return FurnitureFactory(tribe, {
-      {FurnitureType::THRONE, 1},
-      {FurnitureType::LABORATORY, 3},
-      {FurnitureType::BOOKCASE_GOLD, 3},
-	  {FurnitureType::IMPALED_HEAD,3}
   });
 }
 

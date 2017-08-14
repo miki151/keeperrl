@@ -30,12 +30,12 @@ class FurnitureFactory {
   FurnitureParams getRandom(RandomGen&);
 
   static FurnitureFactory roomFurniture(TribeId);
+  static FurnitureFactory coven(TribeId);
   static FurnitureFactory castleFurniture(TribeId);
   static FurnitureFactory dungeonOutside(TribeId);
   static FurnitureFactory castleOutside(TribeId);
   static FurnitureFactory villageOutside(TribeId);
   static FurnitureFactory cryptCoffins(TribeId);
-  static FurnitureFactory coven(TribeId);
 
   static FurnitureType getWaterType(double depth);
 
