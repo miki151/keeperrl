@@ -284,6 +284,8 @@ static vector<ViewId> creatureIds {
   ViewId::SHAMAN,
   ViewId::WARRIOR,
   ViewId::ORC,
+  ViewId::DEMON_DWELLER,
+  ViewId::DEMON_LORD,
   ViewId::BANDIT,
   ViewId::CLAY_GOLEM,
   ViewId::STONE_GOLEM,

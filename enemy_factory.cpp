@@ -120,6 +120,37 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
               ImmigrantInfo(CreatureId::ORC, {MinionTrait::FIGHTER}).setFrequency(3),
               ImmigrantInfo(CreatureId::OGRE, {MinionTrait::FIGHTER}).setFrequency(1)
             }));
+    case EnemyId::DEMON_DEN_ABOVE:
+      return EnemyInfo(CONSTRUCT(SettlementInfo,
+            c.tribe = TribeId::getWildlife();
+            c.creatures = CreatureFactory::demonDenAbove(c.tribe);
+            c.buildingId = BuildingId::DUNGEON;
+            c.numCreatures = random.get(2, 3);
+            c.locationName = "Darkshrine Town"_s;
+            c.race = "ghosts"_s;
+            c.furniture = FurnitureFactory::dungeonOutside(c.tribe);
+            c.outsideFeatures = FurnitureFactory::dungeonOutside(c.tribe);),
+            CollectiveConfig::noImmigrants());
+    case EnemyId::DEMON_DEN:
+      return EnemyInfo(CONSTRUCT(SettlementInfo,
+            c.tribe = TribeId::getMonster();
+            c.creatures = CreatureFactory::demonDen(c.tribe);
+            c.numCreatures = random.get(5, 10);
+            c.locationName = "Darkshrine"_s;
+            c.race = "demons"_s;
+            c.furniture = FurnitureFactory::dungeonOutside(c.tribe);
+            c.outsideFeatures = FurnitureFactory::dungeonOutside(c.tribe);),
+          CollectiveConfig::withImmigrants(300, 16, {
+              ImmigrantInfo(CreatureId::DEMON_DWELLER, {MinionTrait::FIGHTER}).setFrequency(1),
+          }),
+          CONSTRUCT(VillageBehaviour,
+              c.minPopulation = 0;
+              c.minTeamSize = 3;
+              c.triggers = LIST(
+                  {AttackTriggerId::ROOM_BUILT, FurnitureType::DEMON_SHRINE});
+              c.attackBehaviour = AttackBehaviour(AttackBehaviourId::KILL_LEADER);
+              c.ransom = make_pair(0.5, random.get(50, 100));),
+          LevelConnection{LevelConnection::CRYPT, get(EnemyId::DEMON_DEN_ABOVE)});
     case EnemyId::VILLAGE:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::VILLAGE;
