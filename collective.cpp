@@ -1101,13 +1101,14 @@ void Collective::removeFurniture(Position pos, FurnitureLayer layer) {
 }
 
 void Collective::destroySquare(Position pos, FurnitureLayer layer) {
-  if (auto furniture = pos.modFurniture(layer))
-    if (furniture->getTribe() == getTribeId()) {
-      furniture->destroy(pos, DestroyAction::Type::BASH);
-      tileEfficiency->update(pos);
-    }
-  if (constructions->containsFurniture(pos, layer))
+  if (constructions->containsFurniture(pos, layer)) {
+    if (auto furniture = pos.modFurniture(layer))
+      if (furniture->getTribe() == getTribeId()) {
+        furniture->destroy(pos, DestroyAction::Type::BASH);
+        tileEfficiency->update(pos);
+      }
     removeFurniture(pos, layer);
+  }
   if (layer != FurnitureLayer::FLOOR) {
     zones->eraseZones(pos);
     if (constructions->containsTrap(pos))
@@ -1116,9 +1117,9 @@ void Collective::destroySquare(Position pos, FurnitureLayer layer) {
 }
 
 void Collective::addFurniture(Position pos, FurnitureType type, const CostInfo& cost, bool noCredit) {
-  if (type == FurnitureType::MOUNTAIN && (pos.isChokePoint({MovementTrait::WALK}) ||
+  /*if (type == FurnitureType::MOUNTAIN && (pos.isChokePoint({MovementTrait::WALK}) ||
         constructions->getTotalCount(type) - constructions->getBuiltCount(type) > 0))
-    return;
+    return;*/
   if (!noCredit || hasResource(cost)) {
     constructions->addFurniture(pos, ConstructionMap::FurnitureInfo(type, cost));
     updateConstructions();
@@ -1422,6 +1423,9 @@ void Collective::onAppliedSquare(WCreature c, Position pos) {
         case FurnitureUsageType::STUDY:
           increaseLevel(ExperienceType::SPELL);
           break;
+        case FurnitureUsageType::ARCHERY_RANGE:
+          increaseLevel(ExperienceType::ARCHERY);
+          break;
         default:
           break;
       }
@@ -1499,7 +1503,7 @@ void Collective::onRansomPaid() {
 void Collective::onExternalEnemyKilled(const std::string& name) {
   control->addMessage(PlayerMessage("You resisted the attack of " + name + ".",
       MessagePriority::CRITICAL));
-  int mana = 50;
+  int mana = 100;
   addMana(mana);
   control->addMessage(PlayerMessage("You feel a surge of power (+" + toString(mana) + " mana)",
       MessagePriority::CRITICAL));

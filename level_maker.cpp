@@ -746,6 +746,13 @@ static BuildingInfo getBuildingInfo(SettlementInfo info) {
           c.floorOutside = FurnitureType::FLOOR;
           c.door = FurnitureFactory(info.tribe, FurnitureType::DOOR);
       );
+    case BuildingId::DUNGEON_SURFACE:
+      return CONSTRUCT(BuildingInfo,
+          c.wall = FurnitureType::MOUNTAIN;
+          c.floorInside = FurnitureType::FLOOR;
+          c.floorOutside = FurnitureType::HILL;
+          c.door = FurnitureFactory(info.tribe, FurnitureType::DOOR);
+      );
   }
 }
 
@@ -1211,7 +1218,7 @@ class Mountains : public LevelMaker {
       builder->setHeightMap(v, wys[v]);
       if (wys[v] >= cutOffHill) {
         builder->putFurniture(v, FurnitureType::FLOOR);
-        builder->putFurniture(v, FurnitureType::MOUNTAIN, SquareAttrib::MOUNTAIN);
+        builder->putFurniture(v, {FurnitureType::MOUNTAIN, TribeId::getKeeper()}, SquareAttrib::MOUNTAIN);
         builder->setSunlight(v, max(0.0, 1. - (wys[v] - cutOffHill) / (cutOffDarkness - cutOffHill)));
         builder->setCovered(v, true);
         ++mCnt;
@@ -1754,9 +1761,9 @@ MakerQueue* village(RandomGen& random, SettlementInfo info, int minRooms, int ma
         Predicate::type(building.floorOutside),
         Predicate::attrib(SquareAttrib::BUILDINGS_CENTER)), 0.2, *info.outsideFeatures, SquareAttrib::NO_ROAD));
   for (StairKey key : info.downStairs)
-    queue->addMaker(new Stairs(StairDirection::DOWN, key, Predicate::type(FurnitureType::FLOOR)));
+    queue->addMaker(new Stairs(StairDirection::DOWN, key, Predicate::attrib(SquareAttrib::EMPTY_ROOM)));
   for (StairKey key : info.upStairs)
-    queue->addMaker(new Stairs(StairDirection::UP, key, Predicate::type(FurnitureType::FLOOR)));
+    queue->addMaker(new Stairs(StairDirection::UP, key, Predicate::attrib(SquareAttrib::EMPTY_ROOM)));
   if (info.creatures)
     queue->addMaker(new Creatures(*info.creatures, info.numCreatures, info.collective, 
           Predicate::type(building.floorOutside)));

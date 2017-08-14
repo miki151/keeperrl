@@ -41,7 +41,7 @@ Furniture::Furniture(const string& n, const optional<ViewObject>& o, FurnitureTy
 
 Furniture::Furniture(const Furniture&) = default;
 
-SERIALIZATION_CONSTRUCTOR_IMPL(Furniture);
+SERIALIZATION_CONSTRUCTOR_IMPL(Furniture)
 
 Furniture::~Furniture() {}
 
@@ -51,10 +51,10 @@ void Furniture::serialize(Archive& ar, const unsigned) {
   ar(name, pluralName, type, movementSet, fire, burntRemains, destroyedRemains, destroyActions, itemDrop);
   ar(blockVision, usageType, clickType, tickType, usageTime, overrideMovement, wall, creator, createdTime);
   ar(constructMessage, layer, entryType, lightEmission, canHideHere, warning, summonedElement, droppedItems);
-  ar(canBuildBridge);
+  ar(canBuildBridge, noProjectiles);
 }
 
-SERIALIZABLE(Furniture);
+SERIALIZABLE(Furniture)
 
 const optional<ViewObject>& Furniture::getViewObject() const {
   return *viewObject;
@@ -167,6 +167,10 @@ void Furniture::tick(Position pos) {
 
 bool Furniture::canSeeThru(VisionId id) const {
   return !blockVision.contains(id);
+}
+
+bool Furniture::stopsProjectiles(VisionId id) const {
+  return !canSeeThru(id) || noProjectiles;
 }
 
 bool Furniture::isClickable() const {
@@ -435,6 +439,11 @@ Furniture& Furniture::setSummonedElement(CreatureId id) {
 
 Furniture& Furniture::setCanBuildBridgeOver() {
   canBuildBridge = true;
+  return *this;
+}
+
+Furniture&Furniture::setStopProjectiles() {
+  noProjectiles = true;
   return *this;
 }
 

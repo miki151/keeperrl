@@ -64,6 +64,8 @@ RICH_ENUM(CreatureId,
     GREEN_DRAGON,
     RED_DRAGON,
     CYCLOPS,
+    DEMON_DWELLER,  
+    DEMON_LORD, 
     MINOTAUR,
     HYDRA,
     SHELOB,
@@ -187,6 +189,8 @@ class CreatureFactory {
   static CreatureFactory vikingTown(TribeId);
   static CreatureFactory lizardTown(TribeId);
   static CreatureFactory orcTown(TribeId);
+  static CreatureFactory demonDenAbove(TribeId);
+  static CreatureFactory demonDen(TribeId);
   static CreatureFactory singleType(TribeId, CreatureId);
   static CreatureFactory insects(TribeId tribe);
   static CreatureFactory lavaCreatures(TribeId tribe);

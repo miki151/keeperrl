@@ -80,7 +80,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   /** Morale is in the range [-1:1] **/
   double getMorale() const;
   void addMorale(double);
-  DEF_UNIQUE_PTR(MoraleOverride);
+  DEF_UNIQUE_PTR(MoraleOverride)
   class MoraleOverride {
     public:
     virtual optional<double> getMorale(WConstCreature) = 0;

@@ -21,7 +21,7 @@
 #include "furniture_factory.h"
 #include "item_type.h"
 
-enum class BuildingId { WOOD, MUD, BRICK, WOOD_CASTLE, DUNGEON};
+enum class BuildingId { WOOD, MUD, BRICK, WOOD_CASTLE, DUNGEON, DUNGEON_SURFACE};
 
 class ItemFactory;
 class CollectiveBuilder;

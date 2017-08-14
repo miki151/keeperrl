@@ -81,7 +81,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
 
   typedef CollectiveResourceId ResourceId;
 
-  SERIALIZATION_DECL(Collective);
+  SERIALIZATION_DECL(Collective)
 
   const vector<WCreature>& getCreatures() const;
   bool isConquered() const;

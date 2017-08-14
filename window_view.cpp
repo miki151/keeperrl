@@ -115,7 +115,7 @@ void WindowView::initialize() {
   asciiLayouts = {
     {MapLayout(Vec2(16, 20), allLayers),
     MapLayout(Vec2(8, 10),
-        {ViewLayer::FLOOR_BACKGROUND, ViewLayer::FLOOR, ViewLayer::LARGE_ITEM, ViewLayer::CREATURE})}, false};
+        {ViewLayer::FLOOR_BACKGROUND, ViewLayer::FLOOR, ViewLayer::CREATURE})}, false};
   spriteLayouts = {{
     MapLayout(Vec2(48, 48), allLayers),
 //    MapLayout(Vec2(36, 36), allLayers),

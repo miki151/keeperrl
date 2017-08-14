@@ -526,7 +526,8 @@ class IllusionController : public DoNothingController {
   virtual void onBump(WCreature c) override {
     c->attack(getCreature(), none).perform(c);
     getCreature()->message("It was just an illusion!");
-    getCreature()->dieNoReason();
+    if (!getCreature()->isDead()) // so check necessary, as most likely was killed in attack 2 lines above
+      getCreature()->dieNoReason();
   }
 
   virtual void makeMove() override {
@@ -760,6 +761,15 @@ CreatureFactory CreatureFactory::antNest(TribeId tribe) {
 
 CreatureFactory CreatureFactory::orcTown(TribeId tribe) {
   return CreatureFactory(tribe, { CreatureId::ORC, CreatureId::OGRE }, {1, 1});
+}
+
+CreatureFactory CreatureFactory::demonDen(TribeId tribe) {
+  return CreatureFactory(tribe, { CreatureId::DEMON_DWELLER}, {1},
+      { CreatureId::DEMON_LORD});
+}
+
+CreatureFactory CreatureFactory::demonDenAbove(TribeId tribe) {
+  return CreatureFactory(tribe, { CreatureId::GHOST}, {1});
 }
 
 CreatureFactory CreatureFactory::insects(TribeId tribe) {
@@ -1180,6 +1190,40 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.name = CreatureName("cyclops", "cyclopes");
           c.name->setFirst(NameGenerator::get(NameGeneratorId::CYCLOPS)->getNext());
           );
+    case CreatureId::DEMON_DWELLER:
+      return CATTR(
+        c.viewId = ViewId::DEMON_DWELLER;
+        c.attr = LIST(25_dam, 30_def, 35_spell_dam, 120_spd );
+        c.body = Body::humanoidSpirit(Body::Size::LARGE).addWings();
+        c.permanentEffects[LastingEffect::FLYING] = 1;
+        c.permanentEffects[LastingEffect::MAGIC_RESISTANCE] = 1;
+        c.barehandedAttack = AttackType::HIT;
+        c.courage = 100;
+        c.gender = Gender::male;
+        c.spells->add(SpellId::BLAST);
+        c.chatReactionFriendly = "\"Kneel before us!\""_s;
+        c.chatReactionHostile = "\"Face your death!\""_s;
+        c.name = "Demon dweller";
+        c.name->setFirst(NameGenerator::get(NameGeneratorId::DEMON)->getNext());
+        c.name->setGroup("pack");
+        );
+    case CreatureId::DEMON_LORD:
+      return CATTR(
+        c.viewId = ViewId::DEMON_LORD;
+        c.attr = LIST(40_dam, 45_def, 50_spell_dam, 130_spd );
+        c.body = Body::humanoidSpirit(Body::Size::LARGE).addWings();
+        c.permanentEffects[LastingEffect::FLYING] = 1;
+        c.permanentEffects[LastingEffect::MAGIC_RESISTANCE] = 1;
+        c.barehandedAttack = AttackType::HIT;
+        c.courage = 100;
+        c.gender = Gender::male;
+        c.spells->add(SpellId::BLAST);
+        c.chatReactionFriendly = "\"Kneel before us!\""_s;
+        c.chatReactionHostile = "\"Face your death!\""_s;
+        c.name = "Demon Lord";
+        c.name->setFirst(NameGenerator::get(NameGeneratorId::DEMON)->getNext());
+        c.name->setGroup("pack");
+        );
     case CreatureId::MINOTAUR: 
       return CATTR(
           c.viewId = ViewId::MINOTAUR;
@@ -1232,7 +1276,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.name->setFirst(NameGenerator::get(NameGeneratorId::DRAGON)->getNext());
           c.spells->add(SpellId::HEAL_SELF);
           c.spells->add(SpellId::CURE_POISON);
-          //c.spells->add(SpellId::DECEPTION);  Dragon hostile to its own illusions
+          c.spells->add(SpellId::DECEPTION);
           c.spells->add(SpellId::SPEED_SELF);
           c.name->setStack("dragon");
           );
@@ -1248,7 +1292,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.permanentEffects[LastingEffect::RANGED_VULNERABILITY] = 1;
           c.spells->add(SpellId::HEAL_SELF);
           c.spells->add(SpellId::CURE_POISON);
-          //c.spells->add(SpellId::DECEPTION);  Dragon hostile to its own illusions
+          c.spells->add(SpellId::DECEPTION);
           c.spells->add(SpellId::SPEED_SELF);
           c.name->setStack("dragon");
           );
@@ -1883,6 +1927,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.viewId = ViewId::ANT_SOLDIER;
           c.attr = LIST(36_dam, 20_def, 130_spd );
           c.attackEffect = EffectType(EffectId::LASTING, LastingEffect::POISON);
+          c.skills.insert(SkillId::DIGGING);
           c.body = Body::nonHumanoid(Body::Size::MEDIUM)
               .setWeight(10)
               .setBodyParts({{BodyPart::LEG, 6}, {BodyPart::HEAD, 1}, {BodyPart::TORSO, 1}})
@@ -2200,13 +2245,17 @@ vector<ItemType> getInventory(CreatureId id) {
         .add(ItemId::GOLD_PIECE, Random.get(40, 80));
     case CreatureId::GREEN_DRAGON:
       return ItemList().add(ItemId::GOLD_PIECE, Random.get(60, 100));
+    case CreatureId::DEMON_DWELLER:
+      return ItemList().add(ItemId::GOLD_PIECE, Random.get(50, 100));
     case CreatureId::RED_DRAGON:
       return ItemList().add(ItemId::GOLD_PIECE, Random.get(120, 200));
+    case CreatureId::DEMON_LORD:
     case CreatureId::ANGEL:
       return ItemList().add(ItemId::SPECIAL_SWORD);
     case CreatureId::KEEPER_F:
     case CreatureId::KEEPER:
       return ItemList()
+          .add(ItemId::BOW)
           .add(ItemId::ROBE);
     case CreatureId::ADVENTURER_F:
     case CreatureId::ADVENTURER:

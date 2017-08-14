@@ -85,6 +85,9 @@ const vector<BuildInfo>& BuildInfo::get() {
           "Train your minions here. Adds up to " +
           toString(*CollectiveConfig::getTrainingMaxLevel(ExperienceType::MELEE, FurnitureType::TRAINING_STEEL)) + " melee levels.",
           0, "Training room"),
+      BuildInfo({FurnitureType::ARCHERY_RANGE, {ResourceId::WOOD, 12}}, "Archery target",
+          {{RequirementId::TECHNOLOGY, TechId::ARCHERY}},
+          "Train your minions here.", 0, "Training room"),
       BuildInfo({FurnitureType::WORKSHOP, {ResourceId::WOOD, 15}}, "Workshop", {},
           "Produces leather equipment, traps, first-aid kits and other.", 'm', workshop, true)
              .setTutorialHighlight(TutorialHighlight::BUILD_WORKSHOP),

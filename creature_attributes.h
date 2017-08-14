@@ -23,7 +23,6 @@
 #include "gender.h"
 #include "creature_name.h"
 #include "minion_task_map.h"
-#include "skill.h"
 #include "attr_type.h"
 #include "lasting_effect.h"
 #include "experience_type.h"
@@ -49,7 +48,7 @@ class CreatureAttributes {
   CreatureAttributes(function<void(CreatureAttributes&)>);
   CreatureAttributes(const CreatureAttributes& other) = default;
   ~CreatureAttributes();
-  SERIALIZATION_DECL(CreatureAttributes);
+  SERIALIZATION_DECL(CreatureAttributes)
 
   CreatureAttributes& setCreatureId(CreatureId);
   const optional<CreatureId>& getCreatureId() const;
@@ -57,7 +56,7 @@ class CreatureAttributes {
   const Body& getBody() const;
   const CreatureName& getName() const;
   CreatureName& getName();
-  double getRawAttr(WConstCreature c, AttrType) const;
+  double getRawAttr(AttrType) const;
   void setBaseAttr(AttrType, int);
   double getCourage() const;
   void setCourage(double);
@@ -102,7 +101,7 @@ class CreatureAttributes {
   bool dontChase() const;
   optional<ViewId> getRetiredViewId();
   void increaseExpFromCombat(double attackDiff);
-  void getGoodAdjectives(vector<AdjectiveInfo>&) const;
+  optional<double> getMoraleSpeedIncrease() const;
 
   friend class CreatureFactory;
 
