@@ -150,6 +150,7 @@ vector<Campaign::VillainInfo> CampaignBuilder::getMainVillains() {
         {ViewId::GREEN_DRAGON, EnemyId::GREEN_DRAGON, "Green dragon", VillainType::MAIN},
         {ViewId::LIZARDLORD, EnemyId::LIZARDMEN, "Lizardmen", VillainType::MAIN},
         {ViewId::SHAMAN, EnemyId::WARRIORS, "Warriors", VillainType::MAIN},
+        {ViewId::DEMON_LORD, EnemyId::DEMON_DEN, "Demon den", VillainType::MAIN},
       };
     case PlayerRole::ADVENTURER:
       return {
@@ -160,6 +161,7 @@ vector<Campaign::VillainInfo> CampaignBuilder::getMainVillains() {
         {ViewId::DARK_ELF_LORD, EnemyId::DARK_ELVES, "Dark elves", VillainType::MAIN},
         {ViewId::MASTER_THIEF, EnemyId::FORTY_THIEVES, "The Forty Thieves", VillainType::MAIN},
         {ViewId::ORC_CAPTAIN, EnemyId::ORC_VILLAGE, "Greenskin village", VillainType::MAIN},
+        {ViewId::DEMON_LORD, EnemyId::DEMON_DEN, "Demon den", VillainType::MAIN},
       };
   }
 }

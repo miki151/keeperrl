@@ -425,7 +425,7 @@ WItem PlayerControl::chooseEquipmentItem(WCreature creature, vector<WItem> curre
   vector<WItem> availableItems;
   vector<WItem> usedItems;
   vector<WItem> allItems = getCollective()->getAllItems(predicate);
-  getCollective()->getMinionEquipment().sortByEquipmentValue(allItems);
+  getCollective()->getMinionEquipment().sortByEquipmentValue(creature, allItems);
   for (WItem item : allItems)
     if (!currentItems.contains(item)) {
       auto owner = getCollective()->getMinionEquipment().getOwner(item);
@@ -590,6 +590,7 @@ static string getTriggerLabel(const AttackTrigger& trigger) {
     case AttackTriggerId::ROOM_BUILT:
       switch (trigger.get<FurnitureType>()) {
         case FurnitureType::THRONE: return "Your throne";
+        case FurnitureType::DEMON_SHRINE: return "Your lack of demon shrines";
         case FurnitureType::IMPALED_HEAD: return "Impaled heads";
         default: FATAL << "Unsupported ROOM_BUILT type"; return "";
       }
@@ -1251,13 +1252,13 @@ ViewObject PlayerControl::getTrapObject(TrapType type, bool armed) {
   for (auto& info : BuildInfo::get())
     if (info.buildType == BuildInfo::TRAP && info.trapInfo.type == type) {
       if (!armed)
-        return ViewObject(info.trapInfo.viewId, ViewLayer::LARGE_ITEM, "Unarmed " + getTrapName(type) + " trap")
+        return ViewObject(info.trapInfo.viewId, ViewLayer::FLOOR, "Unarmed " + getTrapName(type) + " trap")
           .setModifier(ViewObject::Modifier::PLANNED);
       else
-        return ViewObject(info.trapInfo.viewId, ViewLayer::LARGE_ITEM, getTrapName(type) + " trap");
+        return ViewObject(info.trapInfo.viewId, ViewLayer::FLOOR, getTrapName(type) + " trap");
     }
   FATAL << "trap not found" << int(type);
-  return ViewObject(ViewId::EMPTY, ViewLayer::LARGE_ITEM);
+  return ViewObject(ViewId::EMPTY, ViewLayer::FLOOR);
 }
 
 void PlayerControl::getSquareViewIndex(Position pos, bool canSee, ViewIndex& index) const {
@@ -1287,6 +1288,7 @@ static bool showEfficiency(FurnitureType type) {
     case FurnitureType::JEWELER:
     case FurnitureType::THRONE:
     case FurnitureType::FORGE:
+    case FurnitureType::ARCHERY_RANGE:
     case FurnitureType::STEEL_FURNACE:
       return true;
     default:
@@ -1321,9 +1323,10 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
     index.setHighlight(getCollective()->getMarkHighlight(position));
   if (getCollective()->hasPriorityTasks(position))
     index.setHighlight(HighlightType::PRIORITY_TASK);
-  for (auto task : getCollective()->getTaskMap().getTasks(position))
-    if (auto viewId = task->getViewId())
-        index.insert(ViewObject(*viewId, ViewLayer::LARGE_ITEM));
+  if (!index.hasObject(ViewLayer::CREATURE))
+    for (auto task : getCollective()->getTaskMap().getTasks(position))
+      if (auto viewId = task->getViewId())
+          index.insert(ViewObject(*viewId, ViewLayer::CREATURE));
   if (position.isTribeForbidden(getTribeId()))
     index.setHighlight(HighlightType::FORBIDDEN_ZONE);
   getCollective()->getZones().setHighlights(position, index);
@@ -1331,15 +1334,13 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
       && pos.inRectangle(Rectangle::boundingBox({rectSelection->corner1, rectSelection->corner2})))
     index.setHighlight(rectSelection->deselect ? HighlightType::RECT_DESELECTION : HighlightType::RECT_SELECTION);
   const ConstructionMap& constructions = getCollective()->getConstructions();
-  if (!index.hasObject(ViewLayer::LARGE_ITEM)) {
-    if (constructions.containsTrap(position))
-      index.insert(getTrapObject(constructions.getTrap(position).getType(),
-            constructions.getTrap(position).isArmed()));
-    for (auto layer : ENUM_ALL(FurnitureLayer))
-      if (auto f = constructions.getFurniture(position, layer))
-        if (!f->isBuilt())
-          index.insert(getConstructionObject(f->getFurnitureType()));
-  }
+  if (constructions.containsTrap(position))
+    index.insert(getTrapObject(constructions.getTrap(position).getType(),
+          constructions.getTrap(position).isArmed()));
+  for (auto layer : ENUM_ALL(FurnitureLayer))
+    if (auto f = constructions.getFurniture(position, layer))
+      if (!f->isBuilt())
+        index.insert(getConstructionObject(f->getFurnitureType()));
   /*if (surprises.count(position) && !getCollective()->getKnownTiles().isKnown(position))
     index.insert(ViewObject(ViewId::UNKNOWN_MONSTER, ViewLayer::CREATURE, "Surprise"));*/
 }

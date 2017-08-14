@@ -153,6 +153,7 @@ void FurnitureUsage::handle(FurnitureUsageType type, Position pos, WConstFurnitu
       usePortal(pos, c);
       break;
     case FurnitureUsageType::STUDY:
+    case FurnitureUsageType::ARCHERY_RANGE:
       break;
   }
 }

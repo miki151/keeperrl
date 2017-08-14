@@ -288,10 +288,10 @@ static int keeperMain(po::parser& commandLineFlags) {
     else if (const char* localPath = std::getenv("XDG_DATA_HOME"))
       return localPath + string("/KeeperRL");
 #endif
-#ifdef __linux__ // Some environments don't define XDG_DATA_HOME
+#ifdef ENABLE_LOCAL_USER_DIR // Some environments don't define XDG_DATA_HOME
     else if (const char* homePath = std::getenv("HOME"))
       return homePath + string("/.local/share/KeeperRL");
-#endif // __linux__
+#endif // ENABLE_LOCAL_USER_DIR
     else
       return ".";
   }());

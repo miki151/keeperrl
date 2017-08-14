@@ -205,16 +205,14 @@ ShortestPath LevelShortestPath::makeShortestPath(WConstCreature creature, Positi
   Rectangle bounds = level->getBounds();
   CHECK(to.isSameLevel(from));
   auto entryFun = [=](Vec2 v) { 
-      Position pos(v, level);
-      if (pos.canEnter(creature) || creature->getPosition() == pos) 
-        return 1.0;
-      if (pos.canNavigate(creature->getMovementType())) {
-        /*if (WConstCreature other = pos.getCreature())
-          if (other->isFriend(creature) && !other->hasCondition(CreatureCondition::RESTRICTED_MOVEMENT))
-            return 2.1;*/
-        return 5.0;
-      }
-      return ShortestPath::infinity;};
+    Position pos(v, level);
+    if (creature->getPosition() == pos)
+      return 1.0;
+    else if (auto cost = pos.getNavigationCost(creature->getMovementType()))
+      return *cost;
+    else
+      return ShortestPath::infinity;
+  };
   CHECK(to.getCoord().inRectangle(level->getBounds()));
   CHECK(from.getCoord().inRectangle(level->getBounds()));
   if (mult == 0)

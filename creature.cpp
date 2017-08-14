@@ -713,11 +713,13 @@ int simulAttackPen(int attackers) {
 }
 
 int Creature::getAttr(AttrType type) const {
-  double def = getBody().modifyAttr(type, attributes->getRawAttr(this, type));
+  double def = getBody().modifyAttr(type, attributes->getRawAttr(type));
   for (WItem item : equipment->getAllEquipped())
     def += item->getModifier(type);
   switch (type) {
     case AttrType::SPEED: {
+      if (auto inc = getAttributes().getMoraleSpeedIncrease())
+        def *= pow(*inc, getMorale());
       double totWeight = equipment->getTotalWeight();
       // penalty is 0 till limit/2, then grows linearly to 0.3 at limit, then stays constant
       if (auto& limit = getBody().getCarryLimit())
@@ -892,7 +894,9 @@ CreatureAction Creature::attack(WCreature other, optional<AttackParams> attackPa
     return CreatureAction();
   return CreatureAction(this, [=] (WCreature self) {
   INFO << getName().the() << " attacking " << other->getName().the();
-  int damage = getAttr(AttrType::DAMAGE);
+  auto weapon = getWeapon();
+  auto damageAttr = weapon ? weapon->getMeleeAttackAttr() : AttrType::DAMAGE;
+  int damage = getAttr(damageAttr);
   double timeSpent = 1;
   vector<string> attackAdjective;
   if (attackParams && attackParams->mod)
@@ -911,7 +915,7 @@ CreatureAction Creature::attack(WCreature other, optional<AttackParams> attackPa
   AttackLevel attackLevel = Random.choose(getBody().getAttackLevels());
   if (attackParams && attackParams->level)
     attackLevel = *attackParams->level;
-  Attack attack(self, attackLevel, attributes->getAttackType(getWeapon()), damage, AttrType::DAMAGE,
+  Attack attack(self, attackLevel, attributes->getAttackType(getWeapon()), damage, damageAttr,
       getWeapon() ? getWeapon()->getAttackEffect() : attributes->getAttackEffect());
   const string enemyName = other->getController()->getMessageGenerator().getEnemyName(other);
   if (getWeapon()) {
@@ -1445,12 +1449,13 @@ TribeSet Creature::getFriendlyTribes() const {
     return TribeSet().insert(tribe);
 }
 
-MovementType Creature:: getMovementType() const {
+MovementType Creature::getMovementType() const {
   return MovementType(getFriendlyTribes(), {
       true,
       isAffected(LastingEffect::FLYING),
       attributes->getSkills().hasDiscrete(SkillId::SWIMMING),
       getBody().canWade()})
+    .setDestroyActions(EnumSet<DestroyAction::Type>([this](auto t) { return DestroyAction(t).canNavigate(this); }))
     .setForced(isAffected(LastingEffect::BLIND) || getHoldingCreature() || forceMovement)
     .setFireResistant(isAffected(LastingEffect::FIRE_RESISTANT))
     .setSunlightVulnerable(getBody().isSunlightVulnerable() && !isAffected(LastingEffect::DARKNESS_SOURCE)
@@ -1539,8 +1544,9 @@ CreatureAction Creature::moveTowards(Position pos, bool away, bool stepOnTile) {
       return action;
     else {
       if (!pos2.canEnterEmpty(this))
-        if (auto action = destroy(getPosition().getDir(pos2), DestroyAction::Type::BASH))
-          return action;
+        if (auto destroyAction = pos2.getBestDestroyAction(getMovementType()))
+            if (auto action = destroy(getPosition().getDir(pos2), *destroyAction))
+            return action;
       return CreatureAction();
     }
   } else {
@@ -1721,8 +1727,9 @@ const char* getMoraleText(double morale) {
 }
 
 vector<AdjectiveInfo> Creature::getGoodAdjectives() const {
-  vector<AdjectiveInfo> ret;
-  attributes->getGoodAdjectives(ret);
+  vector<AdjectiveInfo> ret; 
+  if (!!attributes->getMoraleSpeedIncrease())
+    ret.push_back({"Morale affects speed", ""});
   for (LastingEffect effect : ENUM_ALL(LastingEffect))
     if (isAffected(effect))
       if (const char* name = LastingEffects::getGoodAdjective(effect)) {
@@ -1733,8 +1740,9 @@ vector<AdjectiveInfo> Creature::getGoodAdjectives() const {
   if (getBody().isUndead())
     ret.push_back({"Undead",
         "Undead creatures don't take regular damage and need to be killed by chopping up or using fire."});
+  auto morale = getMorale();
   if (morale > 0)
-    if (auto text = getMoraleText(getMorale()))
+    if (auto text = getMoraleText(morale))
       ret.push_back({text, "Morale affects minion's productivity and chances of fleeing from battle."});
   return ret;
 }
@@ -1749,8 +1757,9 @@ vector<AdjectiveInfo> Creature::getBadAdjectives() const {
         if (!attributes->isAffectedPermanently(effect))
           ret.back().name += attributes->getRemainingString(effect, getGlobalTime());
       }
+  auto morale = getMorale();
   if (morale < 0)
-    if (auto text = getMoraleText(getMorale()))
+    if (auto text = getMoraleText(morale))
       ret.push_back({text, "Morale affects minion's productivity and chances of fleeing from battle."});
   return ret;
 }

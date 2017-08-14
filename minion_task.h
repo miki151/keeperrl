@@ -2,27 +2,29 @@
 
 #include "util.h"
 
-RICH_ENUM(MinionTask,
-  SLEEP,
-  GRAVE,
-  TRAIN,
-  EAT,
-  CRAFT,
-  STUDY,
-  PRISON,
-  LAIR,
-  EXPLORE,
-  EXPLORE_NOCTURNAL,
-  EXPLORE_CAVES,
-  COPULATE,
-  RITUAL,
-  CROPS,
-  SPIDER,
-  THRONE,
-  BE_WHIPPED,
-  BE_TORTURED,
-  BE_EXECUTED,
-  WORKER
+RICH_ENUM(
+    MinionTask,
+    SLEEP,
+    GRAVE,
+    TRAIN,
+    ARCHERY,
+    EAT,
+    CRAFT,
+    STUDY,
+    PRISON,
+    LAIR,
+    EXPLORE,
+    EXPLORE_NOCTURNAL,
+    EXPLORE_CAVES,
+    COPULATE,
+    RITUAL,
+    CROPS,
+    SPIDER,
+    THRONE,
+    BE_WHIPPED,
+    BE_TORTURED,
+    BE_EXECUTED,
+    WORKER
 );
 
 class Position;

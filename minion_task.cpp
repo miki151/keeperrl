@@ -63,6 +63,9 @@ const vector<FurnitureType>& MinionTasks::getAllFurniture(MinionTask task) {
     for (auto minionTask : ENUM_ALL(MinionTask)) {
       auto& taskInfo = CollectiveConfig::getTaskInfo(minionTask);
       switch (taskInfo.type) {
+        case MinionTaskInfo::ARCHERY:
+          cache[minionTask].push_back(FurnitureType::ARCHERY_RANGE);
+          break;
         case MinionTaskInfo::FURNITURE:
           for (auto furnitureType : ENUM_ALL(FurnitureType))
             if (taskInfo.furniturePredicate(nullptr, furnitureType))
@@ -128,6 +131,13 @@ PTask MinionTasks::generate(WCollective collective, WCreature c, MinionTask task
           return Task::applySquare(collective, squares, Task::LAZY, Task::NONE);
       }
       break;
+    }
+    case MinionTaskInfo::ARCHERY: {
+      auto pos = collective->getConstructions().getBuiltPositions(FurnitureType::ARCHERY_RANGE);
+      if (!pos.empty())
+        return Task::archeryRange(collective, vector<Position>(pos.begin(), pos.end()));
+      else
+        return nullptr;
     }
     case MinionTaskInfo::EXPLORE:
       if (auto pos = getTileToExplore(collective, c, task))

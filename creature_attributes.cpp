@@ -91,18 +91,10 @@ const Gender& CreatureAttributes::getGender() const {
   return gender;
 }
 
-double CreatureAttributes::getRawAttr(WConstCreature c, AttrType type) const {
+double CreatureAttributes::getRawAttr(AttrType type) const {
   double ret = attr[type];
   if (auto expType = getExperienceType(type))
     ret += expLevel[*expType];
-  switch (type) {
-    case AttrType::SPEED:
-      if (moraleSpeedIncrease)
-        ret *= pow(*moraleSpeedIncrease, c->getMorale());
-      break;
-    default:
-      break;
-  }
   return ret;
 }
 
@@ -389,8 +381,6 @@ optional<ViewId> CreatureAttributes::getRetiredViewId() {
   return retiredViewId;
 }
 
-void CreatureAttributes::getGoodAdjectives(vector<AdjectiveInfo>& adjectives) const {
-  if (!!moraleSpeedIncrease)
-    adjectives.push_back({"Morale affects speed", ""});
+optional<double> CreatureAttributes::getMoraleSpeedIncrease() const {
+  return moraleSpeedIncrease;
 }
-

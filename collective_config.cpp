@@ -448,6 +448,7 @@ const MinionTaskInfo& CollectiveConfig::getTaskInfo(MinionTask task) {
       case MinionTask::PRISON: return {FurnitureType::PRISON, "prison"};
       case MinionTask::CROPS: return {FurnitureType::CROPS, "crops"};
       case MinionTask::RITUAL: return {FurnitureType::DEMON_SHRINE, "rituals"};
+      case MinionTask::ARCHERY: return {MinionTaskInfo::ARCHERY, "archery range"};
       case MinionTask::COPULATE: return {MinionTaskInfo::COPULATE, "copulation"};
       case MinionTask::EXPLORE: return {MinionTaskInfo::EXPLORE, "spying"};
       case MinionTask::SPIDER: return {MinionTaskInfo::SPIDER, "spider"};
@@ -491,6 +492,8 @@ unique_ptr<Workshops> CollectiveConfig::getWorkshops() const {
           Workshops::Item::fromType(ItemId::HEAVY_CLUB, 5, {CollectiveResourceId::WOOD, 20})
                   .setTechId(TechId::TWO_H_WEAP),
           Workshops::Item::fromType(ItemId::BOW, 13, {CollectiveResourceId::WOOD, 20}).setTechId(TechId::ARCHERY),
+          Workshops::Item::fromType(ItemId::WOODEN_STAFF, 13, {CollectiveResourceId::WOOD, 20})
+                  .setTechId(TechId::MAGICAL_WEAPONS),
           Workshops::Item::fromType({ItemId::TRAP_ITEM, TrapType::BOULDER}, 20, {CollectiveResourceId::STONE, 50})
                   .setTechId(TechId::TRAPS),
           Workshops::Item::fromType({ItemId::TRAP_ITEM, TrapType::POISON_GAS}, 10, {CollectiveResourceId::WOOD, 20})
@@ -519,6 +522,8 @@ unique_ptr<Workshops> CollectiveConfig::getWorkshops() const {
                   .setTechId(TechId::TWO_H_WEAP),
           Workshops::Item::fromType(ItemId::STEEL_BATTLE_AXE, 44, {CollectiveResourceId::STEEL, 50})
                   .setTechId(TechId::STEEL_MAKING),
+         Workshops::Item::fromType(ItemId::IRON_STAFF, 20, {CollectiveResourceId::IRON, 40})
+                 .setTechId(TechId::MAGICAL_WEAPONS),
       }},
       {WorkshopType::LABORATORY, {
           Workshops::Item::fromType({ItemId::POTION, EffectType{EffectId::LASTING, LastingEffect::SLOWED}}, 2,

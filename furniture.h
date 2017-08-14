@@ -45,6 +45,7 @@ class Furniture : public OwnedObject<Furniture> {
   void fireDamage(Position, double amount);
   void tick(Position);
   bool canSeeThru(VisionId) const;
+  bool stopsProjectiles(VisionId) const;
   void click(Position) const;
   bool isClickable() const;
   bool overridesMovement() const;
@@ -98,6 +99,7 @@ class Furniture : public OwnedObject<Furniture> {
   Furniture& setPlacementMessage(MsgType);
   Furniture& setSummonedElement(CreatureId);
   Furniture& setCanBuildBridgeOver();
+  Furniture& setStopProjectiles();
   MovementSet& modMovementSet();
 
   SERIALIZATION_DECL(Furniture)
@@ -133,4 +135,5 @@ class Furniture : public OwnedObject<Furniture> {
   optional<double> SERIAL(createdTime);
   optional<CreatureId> SERIAL(summonedElement);
   bool SERIAL(canBuildBridge) = false;
+  bool SERIAL(noProjectiles) = false;
 };

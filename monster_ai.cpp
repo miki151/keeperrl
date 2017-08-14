@@ -278,8 +278,8 @@ class BirdFlyAway : public Behaviour {
     return NoMove;
   }
 
-  SERIALIZATION_CONSTRUCTOR(BirdFlyAway);
-  SERIALIZE_ALL(SUBCLASS(Behaviour), maxDist);
+  SERIALIZATION_CONSTRUCTOR(BirdFlyAway)
+  SERIALIZE_ALL(SUBCLASS(Behaviour), maxDist)
 
   private:
   double SERIAL(maxDist);
@@ -296,8 +296,8 @@ class GoldLust : public Behaviour {
       return 0;
   }
 
-  SERIALIZATION_CONSTRUCTOR(GoldLust);
-  SERIALIZE_ALL(SUBCLASS(Behaviour));
+  SERIALIZATION_CONSTRUCTOR(GoldLust)
+  SERIALIZE_ALL(SUBCLASS(Behaviour))
 };
 
 class Wildlife : public Behaviour {
@@ -316,8 +316,8 @@ class Wildlife : public Behaviour {
     return NoMove;
   }
 
-  SERIALIZATION_CONSTRUCTOR(Wildlife);
-  SERIALIZE_ALL(SUBCLASS(Behaviour));
+  SERIALIZATION_CONSTRUCTOR(Wildlife)
+  SERIALIZE_ALL(SUBCLASS(Behaviour))
 };
 
 class Fighter : public Behaviour {
@@ -508,14 +508,7 @@ class Fighter : public Behaviour {
     return NoMove;
   }
 
-  MoveInfo getAttackMove(WCreature other, bool chase) {
-    int distance = 10000;
-    CHECK(other);
-    if (other->getAttributes().isBoulder())
-      return NoMove;
-    INFO << creature->getName().bare() << " enemy " << other->getName().bare();
-    Vec2 enemyDir = creature->getPosition().getDir(other->getPosition());
-    distance = enemyDir.length8();
+  MoveInfo considerEquippingWeapon(WCreature other, int distance) {
     if (creature->getBody().isHumanoid() && !creature->getWeapon()) {
       if (WItem weapon = getBestWeapon())
         if (auto action = creature->equip(weapon))
@@ -524,19 +517,63 @@ class Fighter : public Behaviour {
             other->setInCombat();
         })};
     }
+    return NoMove;
+  }
+
+  MoveInfo considerBuffs() {
+    for (EffectType effect : {
+        EffectType(EffectId::LASTING, LastingEffect::INVISIBLE),
+        EffectType(EffectId::LASTING, LastingEffect::DAM_BONUS),
+        EffectType(EffectId::LASTING, LastingEffect::DEF_BONUS),
+        EffectType(EffectId::LASTING, LastingEffect::SPEED),
+        EffectType(EffectId::DECEPTION),
+        EffectType(EffectId::SUMMON, CreatureId::SPIRIT)})
+      if (MoveInfo move = tryEffect(effect, 1))
+        return move;
+    return NoMove;
+  }
+
+  MoveInfo considerBreakingChokePoint(WCreature other) {
+    unordered_set<Position, CustomHash<Position>> myNeighbors;
+    for (auto pos : creature->getPosition().neighbors8(Random))
+      myNeighbors.insert(pos);
+    MoveInfo destroyMove = NoMove;
+    bool isFriendBetween = false;
+    for (auto pos : other->getPosition().neighbors8())
+      if (myNeighbors.count(pos)) {
+        if (auto c = pos.getCreature())
+          if (c->isFriend(creature)) {
+            isFriendBetween = true;
+            continue;
+          }
+        if (auto move = creature->move(pos))
+          return move;
+        if (!destroyMove)
+          if (auto destroyAction = pos.getBestDestroyAction(creature->getMovementType()))
+            if (auto move = creature->destroy(creature->getPosition().getDir(pos), *destroyAction))
+              destroyMove = move;
+      }
+    if (isFriendBetween)
+      return destroyMove;
+    else
+      return NoMove;
+  }
+
+  MoveInfo getAttackMove(WCreature other, bool chase) {
+    CHECK(other);
+    if (other->getAttributes().isBoulder())
+      return NoMove;
+    INFO << creature->getName().bare() << " enemy " << other->getName().bare();
+    Vec2 enemyDir = creature->getPosition().getDir(other->getPosition());
+    auto distance = enemyDir.length8();
+    if (auto move = considerEquippingWeapon(other, distance))
+      return move;
     if (distance == 1)
       if (auto move = considerCircularBlast())
         return move;
     if (distance <= 5)
-      for (EffectType effect : {
-          EffectType(EffectId::LASTING, LastingEffect::INVISIBLE),
-          EffectType(EffectId::LASTING, LastingEffect::DAM_BONUS),
-          EffectType(EffectId::LASTING, LastingEffect::DEF_BONUS),
-          EffectType(EffectId::LASTING, LastingEffect::SPEED),
-          EffectType(EffectId::DECEPTION),
-          EffectType(EffectId::SUMMON, CreatureId::SPIRIT)})
-        if (MoveInfo move = tryEffect(effect, 1))
-          return move;
+      if (auto move = considerBuffs())
+        return move;
     if (distance > 1) {
       if (distance < 10) {
         if (MoveInfo move = getFireMove(enemyDir))
@@ -556,6 +593,9 @@ class Fighter : public Behaviour {
               chaseFreeze.set(other, make_pair(other->getGlobalTime() + 20, other->getGlobalTime() + 70));
           })};
       }
+      if (distance == 2)
+        if (auto move = considerBreakingChokePoint(other))
+          return move;
     }
     if (distance == 1)
       if (auto action = creature->attack(other, getAttackParams(other)))
@@ -576,8 +616,8 @@ class Fighter : public Behaviour {
       return Creature::AttackParams {};
   }
 
-  SERIALIZATION_CONSTRUCTOR(Fighter);
-  SERIALIZE_ALL(SUBCLASS(Behaviour), maxPowerRatio, chase, lastSeen);
+  SERIALIZATION_CONSTRUCTOR(Fighter)
+  SERIALIZE_ALL(SUBCLASS(Behaviour), maxPowerRatio, chase, lastSeen)
 
   private:
   double SERIAL(maxPowerRatio);
@@ -587,7 +627,7 @@ class Fighter : public Behaviour {
     double SERIAL(time);
     enum { ATTACK, PANIC} SERIAL(type);
     Creature::Id SERIAL(creature);
-    SERIALIZE_ALL(pos, time, type, creature);
+    SERIALIZE_ALL(pos, time, type, creature)
   };
   optional<LastSeen> SERIAL(lastSeen);
   optional<LastSeen>& getLastSeen() {
@@ -607,8 +647,8 @@ class GuardTarget : public Behaviour {
   public:
   GuardTarget(WCreature c, double minD, double maxD) : Behaviour(c), minDist(minD), maxDist(maxD) {}
 
-  SERIALIZATION_CONSTRUCTOR(GuardTarget);
-  SERIALIZE_ALL(SUBCLASS(Behaviour), minDist, maxDist);
+  SERIALIZATION_CONSTRUCTOR(GuardTarget)
+  SERIALIZE_ALL(SUBCLASS(Behaviour), minDist, maxDist)
 
   protected:
   MoveInfo getMoveTowards(Position target) {

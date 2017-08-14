@@ -22,7 +22,7 @@ void ItemAttributes::serialize(Archive& ar, const unsigned int version) {
   ar(name, viewId, description, weight, itemClass, plural, blindName, firingWeapon, artifactName, trapType);
   ar(resourceId, flamability, price, noArticle, twoHanded, attackType, attackTime, equipmentSlot, applyTime);
   ar(fragile, effect, attackEffect, uses, usedUpMsg, displayUses, modifiers, shortName, equipedEffect);
-  ar(applyMsgFirstPerson, applyMsgThirdPerson, applySound, rangedWeapon);
+  ar(applyMsgFirstPerson, applyMsgThirdPerson, applySound, rangedWeapon, meleeAttackAttr);
 }
 
 SERIALIZABLE(ItemAttributes);

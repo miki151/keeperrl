@@ -55,6 +55,7 @@ class ItemAttributes {
   EnumMap<AttrType, int> SERIAL(modifiers);
   bool SERIAL(twoHanded) = false;
   AttackType SERIAL(attackType) = AttackType::HIT;
+  AttrType SERIAL(meleeAttackAttr) = AttrType::DAMAGE;
   double SERIAL(attackTime) = 1;
   optional<EquipmentSlot> SERIAL(equipmentSlot);
   double SERIAL(applyTime) = 1;
