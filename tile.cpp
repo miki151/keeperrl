@@ -291,7 +291,6 @@ class TileCoordLookup {
     Tile::addTile(ViewId::DESTROY_BUTTON, sprite("remove"));
     Tile::addTile(ViewId::EMPTY, empty());
     Tile::addTile(ViewId::BORDER_GUARD, empty());
-    Tile::addTile(ViewId::UNICORN, sprite("horse"));
     Tile::addTile(ViewId::VAMPIRE, sprite("vampire"));
     Tile::addTile(ViewId::FALLEN_TREE, sprite("treecut"));
     Tile::addTile(ViewId::DECID_TREE, sprite("tree2").addHighlight(byName("tree2_mark"))
@@ -299,6 +298,7 @@ class TileCoordLookup {
     Tile::addTile(ViewId::CANIF_TREE, sprite("tree1").addHighlight(byName("tree1_mark"))
         .setRoundShadow());
     Tile::addTile(ViewId::TREE_TRUNK, sprite("treecut"));
+    Tile::addTile(ViewId::UNICORN, sprite("horse"));
     Tile::addTile(ViewId::BURNT_TREE, sprite("treeburnt")
         .setRoundShadow());
     Tile::addTile(ViewId::PLAYER, sprite("adventurer"));
@@ -623,7 +623,6 @@ class TileCoordLookup {
   }
 
   void genSymbols() {
-    Tile::addSymbol(ViewId::UNICORN, symbol(u8"h", Color::WHITE));
     Tile::addSymbol(ViewId::EMPTY, symbol(u8" ", Color::BLACK));
     Tile::addSymbol(ViewId::DIG_MARK, symbol(u8" ", Color::BLACK));
     Tile::addSymbol(ViewId::PLAYER, symbol(u8"@", Color::WHITE));
@@ -644,6 +643,7 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::DARK_ELF_CHILD, symbol(u8"@", Color::ALMOST_GRAY));
     Tile::addSymbol(ViewId::DARK_ELF_LORD, symbol(u8"@", Color::LIGHT_GRAY));
     Tile::addSymbol(ViewId::DRIAD, symbol(u8"@", Color::LIGHT_BROWN));
+    Tile::addSymbol(ViewId::UNICORN, symbol(u8"h", Color::WHITE));
     Tile::addSymbol(ViewId::KOBOLD, symbol(u8"k", Color::LIGHT_BROWN));
     Tile::addSymbol(ViewId::SHOPKEEPER, symbol(u8"@", Color::LIGHT_BLUE));
     Tile::addSymbol(ViewId::LIZARDMAN, symbol(u8"@", Color::LIGHT_BROWN));

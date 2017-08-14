@@ -354,12 +354,12 @@ static optional<BiomeId> getBiome(EnemyId enemyId, RandomGen& random) {
     case EnemyId::HARPY_CAVE:
     case EnemyId::SOKOBAN:
     case EnemyId::GNOMES:
+    case EnemyId::UNICORN_HERD:
     case EnemyId::CYCLOPS:
     case EnemyId::SHELOB:
     case EnemyId::ANTS_OPEN: return BiomeId::MOUNTAIN;
     case EnemyId::ELVES:
     case EnemyId::DRIADS:
-    case EnemyId::UNICORN_HERD:
     case EnemyId::ENTS: return BiomeId::FORREST;
     case EnemyId::BANDITS: return random.choose<BiomeId>();
     case EnemyId::CEMETERY: return random.choose(BiomeId::GRASSLAND, BiomeId::FORREST);

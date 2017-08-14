@@ -171,9 +171,9 @@ vector<Campaign::VillainInfo> CampaignBuilder::getLesserVillains() {
         {ViewId::CYCLOPS, EnemyId::CYCLOPS, "Cyclops", VillainType::LESSER},
         {ViewId::SHELOB, EnemyId::SHELOB, "Giant spider", VillainType::LESSER},
         {ViewId::HYDRA, EnemyId::HYDRA, "Hydra", VillainType::LESSER},
+        {ViewId::UNICORN, EnemyId::UNICORN_HERD, "Unicorn herd", VillainType::LESSER},
         {ViewId::ANT_QUEEN, EnemyId::ANTS_OPEN, "Ants", VillainType::LESSER},
         {ViewId::ZOMBIE, EnemyId::CEMETERY, "Zombies", VillainType::LESSER},
-        {ViewId::UNICORN, EnemyId::UNICORN_HERD, "Unicorn herd", VillainType::LESSER},
       };
     case PlayerRole::ADVENTURER:
       return {
