@@ -291,6 +291,8 @@ class TileCoordLookup {
     Tile::addTile(ViewId::DESTROY_BUTTON, sprite("remove"));
     Tile::addTile(ViewId::EMPTY, empty());
     Tile::addTile(ViewId::BORDER_GUARD, empty());
+    Tile::addTile(ViewId::DEMON_DWELLER, sprite("special_hmgw"));
+    Tile::addTile(ViewId::DEMON_LORD, sprite("special_hmgn"));    
     Tile::addTile(ViewId::VAMPIRE, sprite("vampire"));
     Tile::addTile(ViewId::FALLEN_TREE, sprite("treecut"));
     Tile::addTile(ViewId::DECID_TREE, sprite("tree2").addHighlight(byName("tree2_mark"))
@@ -623,6 +625,8 @@ class TileCoordLookup {
   }
 
   void genSymbols() {
+    Tile::addSymbol(ViewId::DEMON_DWELLER, symbol(u8"U", Color::PURPLE));
+    Tile::addSymbol(ViewId::DEMON_LORD, symbol(u8"U", Color::YELLOW));
     Tile::addSymbol(ViewId::EMPTY, symbol(u8" ", Color::BLACK));
     Tile::addSymbol(ViewId::DIG_MARK, symbol(u8" ", Color::BLACK));
     Tile::addSymbol(ViewId::PLAYER, symbol(u8"@", Color::WHITE));

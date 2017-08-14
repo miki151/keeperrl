@@ -590,6 +590,7 @@ static string getTriggerLabel(const AttackTrigger& trigger) {
     case AttackTriggerId::ROOM_BUILT:
       switch (trigger.get<FurnitureType>()) {
         case FurnitureType::THRONE: return "Your throne";
+        case FurnitureType::DEMON_SHRINE: return "Your lack of demon shrines";
         case FurnitureType::IMPALED_HEAD: return "Impaled heads";
         default: FATAL << "Unsupported ROOM_BUILT type"; return "";
       }
