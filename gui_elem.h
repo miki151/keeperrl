@@ -311,7 +311,7 @@ class GuiFactory {
   map<TexId, Texture> textures;
   vector<Texture> iconTextures;
   map<AttrType, Texture> attrTextures;
-  vector<Texture> spellTextures;
+  map<SpellId, Texture> spellTextures;
   Clock* clock;
   Renderer& renderer;
   Options* options;
