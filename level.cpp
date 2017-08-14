@@ -70,6 +70,10 @@ PLevel Level::create(SquareArray s, FurnitureArray f, WModel m, const string& n,
     square->onAddedToLevel(Position(pos, ret.get()));
     if (optional<StairKey> link = square->getLandingLink())
       ret->landingSquares[*link].push_back(Position(pos, ret.get()));
+    for (auto layer : ENUM_ALL(FurnitureLayer))
+      if (auto f = ret->furniture->getBuilt(layer).getReadonly(pos))
+        if (f->isTicking())
+          ret->addTickingFurniture(pos);
   }
   for (VisionId vision : ENUM_ALL(VisionId))
     (*ret->fieldOfView)[vision] = FieldOfView(ret.get(), vision);
