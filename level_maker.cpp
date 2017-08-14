@@ -746,6 +746,13 @@ static BuildingInfo getBuildingInfo(SettlementInfo info) {
           c.floorOutside = FurnitureType::FLOOR;
           c.door = FurnitureFactory(info.tribe, FurnitureType::DOOR);
       );
+    case BuildingId::DUNGEON_SURFACE:
+      return CONSTRUCT(BuildingInfo,
+          c.wall = FurnitureType::MOUNTAIN;
+          c.floorInside = FurnitureType::FLOOR;
+          c.floorOutside = FurnitureType::HILL;
+          c.door = FurnitureFactory(info.tribe, FurnitureType::DOOR);
+      );
   }
 }
 

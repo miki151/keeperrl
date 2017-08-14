@@ -125,7 +125,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.type = SettlementType::VILLAGE;
             c.tribe = TribeId::getWildlife();
             c.creatures = CreatureFactory::demonDenAbove(c.tribe);
-            c.buildingId = BuildingId::DUNGEON;
+            c.buildingId = BuildingId::DUNGEON_SURFACE;
             c.numCreatures = random.get(2, 3);
             c.locationName = "Darkshrine Town"_s;
             c.race = "ghosts"_s;
