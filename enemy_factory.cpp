@@ -122,6 +122,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             }));
     case EnemyId::DEMON_DEN_ABOVE:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
+            c.type = SettlementType::VILLAGE;
             c.tribe = TribeId::getWildlife();
             c.creatures = CreatureFactory::demonDenAbove(c.tribe);
             c.buildingId = BuildingId::DUNGEON;
@@ -129,8 +130,8 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.locationName = "Darkshrine Town"_s;
             c.race = "ghosts"_s;
             c.furniture = FurnitureFactory::dungeonOutside(c.tribe);
-            c.outsideFeatures = FurnitureFactory::dungeonOutside(c.tribe);),
-            CollectiveConfig::noImmigrants());
+            ),
+            CollectiveConfig::noImmigrants()).setNonDiscoverable();
     case EnemyId::DEMON_DEN:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.tribe = TribeId::getMonster();
