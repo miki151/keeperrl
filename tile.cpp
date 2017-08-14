@@ -552,6 +552,7 @@ class TileCoordLookup {
     Tile::addTile(ViewId::TRAINING_WOOD, sprite("train_wood").setRoundShadow());
     Tile::addTile(ViewId::TRAINING_IRON, sprite("train_iron").setRoundShadow());
     Tile::addTile(ViewId::TRAINING_STEEL, sprite("train_steel").setRoundShadow());
+    Tile::addTile(ViewId::ARCHERY_RANGE, sprite("archery_range").setRoundShadow());
     Tile::addTile(ViewId::DEMON_SHRINE, sprite("demon_shrine").setRoundShadow());
     Tile::addTile(ViewId::BOOKCASE_WOOD, sprite("library_wood").setRoundShadow());
     Tile::addTile(ViewId::BOOKCASE_IRON, sprite("library_iron").setRoundShadow());
@@ -870,6 +871,7 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::TRAINING_WOOD, symbol(u8"‡", Color::BROWN, true));
     Tile::addSymbol(ViewId::TRAINING_IRON, symbol(u8"‡", Color::LIGHT_GRAY, true));
     Tile::addSymbol(ViewId::TRAINING_STEEL, symbol(u8"‡", Color::LIGHT_BLUE, true));
+    Tile::addSymbol(ViewId::ARCHERY_RANGE, symbol(u8"⌾", Color::LIGHT_BLUE, true));
     Tile::addSymbol(ViewId::DEMON_SHRINE, symbol(u8"Ω", Color::PURPLE, true));
     Tile::addSymbol(ViewId::BOOKCASE_WOOD, symbol(u8"▤", Color::BROWN, true));
     Tile::addSymbol(ViewId::BOOKCASE_IRON, symbol(u8"▤", Color::LIGHT_GRAY, true));

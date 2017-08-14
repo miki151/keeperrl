@@ -188,7 +188,7 @@ static void addResource(WCollective col, FurnitureType type, int maxDist) {
     vector<Position> all = center.getRectangle(resourceArea.minusMargin(-1));
     if (areaOk(all)) {
       for (Vec2 pos : cutShape(resourceArea)) {
-        center.plus(pos).addFurniture(FurnitureFactory::get(type, TribeId::getHostile()));
+        center.plus(pos).addFurniture(FurnitureFactory::get(type, TribeId::getKeeper()));
         col->onPositionDiscovered(center.plus(pos));
       }
       return;

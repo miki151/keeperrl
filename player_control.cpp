@@ -1288,6 +1288,7 @@ static bool showEfficiency(FurnitureType type) {
     case FurnitureType::JEWELER:
     case FurnitureType::THRONE:
     case FurnitureType::FORGE:
+    case FurnitureType::ARCHERY_RANGE:
     case FurnitureType::STEEL_FURNACE:
       return true;
     default:

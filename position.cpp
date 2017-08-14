@@ -676,6 +676,13 @@ bool Position::canSeeThru(VisionId id) const {
     return isValid();
 }
 
+bool Position::stopsProjectiles(VisionId id) const {
+  if (auto furniture = getFurniture(FurnitureLayer::MIDDLE))
+    return furniture->stopsProjectiles(id);
+  else
+    return !isValid();
+}
+
 bool Position::isVisibleBy(WConstCreature c) {
   return isValid() && level->canSee(c, coord);
 }

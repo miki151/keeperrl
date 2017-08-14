@@ -53,7 +53,7 @@ void RangedWeapon::fire(WCreature c, Vec2 dir) const {
       c->takeDamage(attack);
       break;
     }
-    if (!pos.canSeeThru(vision)) {
+    if (pos.stopsProjectiles(vision)) {
       pos.globalMessage("the " + projectileName + " hits the " + pos.getName());
       break;
     }

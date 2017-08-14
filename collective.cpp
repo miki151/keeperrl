@@ -1423,6 +1423,9 @@ void Collective::onAppliedSquare(WCreature c, Position pos) {
         case FurnitureUsageType::STUDY:
           increaseLevel(ExperienceType::SPELL);
           break;
+        case FurnitureUsageType::ARCHERY_RANGE:
+          increaseLevel(ExperienceType::ARCHERY);
+          break;
         default:
           break;
       }

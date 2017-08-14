@@ -106,6 +106,7 @@ class Position {
   void updateConnectivity() const;
   void updateVisibility() const;
   bool canSeeThru(VisionId) const;
+  bool stopsProjectiles(VisionId) const;
   bool isVisibleBy(WConstCreature);
   void clearItemIndex(ItemIndex);
   bool isChokePoint(const MovementType&) const;

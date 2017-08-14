@@ -38,6 +38,13 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setUsageType(FurnitureUsageType::TRAIN)
           .setCanHide()
           .setDestroyable(80);
+    case FurnitureType::ARCHERY_RANGE:
+      return Furniture("archery target", ViewObject(ViewId::ARCHERY_RANGE, ViewLayer::FLOOR), type, tribe)
+          .setBlocking()
+          .setStopProjectiles()
+          .setUsageType(FurnitureUsageType::ARCHERY_RANGE)
+          .setCanHide()
+          .setDestroyable(80);
     case FurnitureType::WORKSHOP:
       return Furniture("workshop", ViewObject(ViewId::WORKSHOP, ViewLayer::FLOOR), type, tribe)
           .setBlocking()
