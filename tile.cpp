@@ -300,7 +300,7 @@ class TileCoordLookup {
     Tile::addTile(ViewId::CANIF_TREE, sprite("tree1").addHighlight(byName("tree1_mark"))
         .setRoundShadow());
     Tile::addTile(ViewId::TREE_TRUNK, sprite("treecut"));
-    Tile::addTile(ViewId::UNICORN, sprite("horse"));
+    Tile::addTile(ViewId::UNICORN, sprite("unicorn"));
     Tile::addTile(ViewId::BURNT_TREE, sprite("treeburnt")
         .setRoundShadow());
     Tile::addTile(ViewId::PLAYER, sprite("adventurer"));
