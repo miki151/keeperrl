@@ -1084,9 +1084,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
         //Pet names like dogs would have.
         c.name->setFirst(NameGenerator::get(NameGeneratorId::DOG)->getNext());
         c.name->setGroup("herd");
-        c.innocent = true;
         c.animal = true;
-        c.noChase = true;
         );
     case CreatureId::BANDIT:
       return CATTR(
