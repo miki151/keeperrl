@@ -1212,7 +1212,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.name->setFirst(NameGenerator::get(NameGeneratorId::DRAGON)->getNext());
           c.spells->add(SpellId::HEAL_SELF);
           c.spells->add(SpellId::CURE_POISON);
-          //c.spells->add(SpellId::DECEPTION);  Dragon hostile to its own illusions
+          c.spells->add(SpellId::DECEPTION);
           c.spells->add(SpellId::SPEED_SELF);
           c.name->setStack("dragon");
           );
@@ -1228,7 +1228,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.permanentEffects[LastingEffect::RANGED_VULNERABILITY] = 1;
           c.spells->add(SpellId::HEAL_SELF);
           c.spells->add(SpellId::CURE_POISON);
-          //c.spells->add(SpellId::DECEPTION);  Dragon hostile to its own illusions
+          c.spells->add(SpellId::DECEPTION);
           c.spells->add(SpellId::SPEED_SELF);
           c.name->setStack("dragon");
           );
