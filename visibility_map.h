@@ -10,8 +10,11 @@ class Level;
 
 class VisibilityMap {
   public:
-  void update(WConstCreature, vector<Position> visibleTiles);
+  void update(WConstCreature, const vector<Position>& visibleTiles);
   void remove(WConstCreature);
+  void updateEyeball(Position);
+  void removeEyeball(Position);
+  void onVisibilityChanged(Position);
   bool isVisible(Position) const;
 
   template <class Archive> 
@@ -19,7 +22,10 @@ class VisibilityMap {
 
   private:
   EntityMap<Creature, vector<Position>> SERIAL(lastUpdates);
+  PositionMap<optional<vector<Position>>> SERIAL(eyeballs);
   PositionMap<int> SERIAL(visibilityCount);
+  void addPositions(const vector<Position>&);
+  void removePositions(const vector<Position>&);
 };
 
 

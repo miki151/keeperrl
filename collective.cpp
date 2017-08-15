@@ -1216,7 +1216,7 @@ void Collective::onDestructed(Position pos, FurnitureType type, const DestroyAct
     default:
       break;
   }
-  control->onDestructed(pos, action);
+  control->onDestructed(pos, type, action);
 }
 
 void Collective::handleTrapPlacementAndProduction() {

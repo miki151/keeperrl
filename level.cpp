@@ -162,6 +162,8 @@ void Level::updateVisibility(Vec2 changedSquare) {
       if (c->isDarknessSource())
         addDarknessSource(pos, darknessRadius, 1);
   }
+  for (Vec2 pos : getVisibleTilesNoDarkness(changedSquare, VisionId::NORMAL))
+    getModel()->addEvent({EventId::VISIBILITY_CHANGED, Position(pos, this)});
 }
 
 vector<WCreature> Level::getPlayers() const {
@@ -425,7 +427,7 @@ void Level::swapCreatures(WCreature c1, WCreature c2) {
   placeCreature(c2, pos1);
 }
 
-vector<Vec2> Level::getVisibleTilesNoDarkness(Vec2 pos, VisionId vision) const {
+const vector<Vec2>& Level::getVisibleTilesNoDarkness(Vec2 pos, VisionId vision) const {
   return getFieldOfView(vision).getVisibleTiles(pos);
 }
 

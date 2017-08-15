@@ -2253,7 +2253,6 @@ vector<ItemType> getInventory(CreatureId id) {
     case CreatureId::KEEPER_F:
     case CreatureId::KEEPER:
       return ItemList()
-          .add(ItemId::BOW)
           .add(ItemId::ROBE);
     case CreatureId::ADVENTURER_F:
     case CreatureId::ADVENTURER:

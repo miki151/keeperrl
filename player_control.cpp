@@ -1146,7 +1146,7 @@ void PlayerControl::initialize() {
 }
 
 void PlayerControl::updateMinionVisibility(WConstCreature c) {
-  vector<Position> visibleTiles = c->getVisibleTiles();
+  auto visibleTiles = c->getVisibleTiles();
   visibilityMap->update(c, visibleTiles);
   for (Position pos : visibleTiles) {
     if (getCollective()->addKnownTile(pos))
@@ -1169,6 +1169,9 @@ void PlayerControl::onEvent(const GameEvent& event) {
         addMessage(PlayerMessage(info.message).setCreature(info.creature->getUniqueId()));
       break;
     }
+    case EventId::VISIBILITY_CHANGED:
+      visibilityMap->onVisibilityChanged(event.get<Position>());
+      break;
     case EventId::MOVED: {
       WCreature c = event.get<WCreature>();
       if (getCreatures().contains(c))
@@ -1190,29 +1193,34 @@ void PlayerControl::onEvent(const GameEvent& event) {
         "Other players will be able to invade it as adventurers. To do this, press Escape and choose \'retire\'.");
       break;
     case EventId::TECHBOOK_READ: {
-        Technology* tech = event.get<Technology*>();
-        vector<Technology*> nextTechs = Technology::getNextTechs(getCollective()->getTechnologies());
-        if (tech == nullptr) {
-          if (!nextTechs.empty())
-            tech = Random.choose(nextTechs);
-          else
-            tech = Random.choose(Technology::getAll());
-        }
-        if (!getCollective()->getTechnologies().contains(tech)) {
-          if (!nextTechs.contains(tech))
-            getView()->presentText("Information", "The tome describes the knowledge of " + tech->getName()
-                + ", but you do not comprehend it.");
-          else {
-            getView()->presentText("Information", "You have acquired the knowledge of " + tech->getName());
-            getCollective()->acquireTech(tech);
-          }
-        } else {
+      Technology* tech = event.get<Technology*>();
+      vector<Technology*> nextTechs = Technology::getNextTechs(getCollective()->getTechnologies());
+      if (tech == nullptr) {
+        if (!nextTechs.empty())
+          tech = Random.choose(nextTechs);
+        else
+          tech = Random.choose(Technology::getAll());
+      }
+      if (!getCollective()->getTechnologies().contains(tech)) {
+        if (!nextTechs.contains(tech))
           getView()->presentText("Information", "The tome describes the knowledge of " + tech->getName()
-              + ", which you already possess.");
+              + ", but you do not comprehend it.");
+        else {
+          getView()->presentText("Information", "You have acquired the knowledge of " + tech->getName());
+          getCollective()->acquireTech(tech);
         }
-
+      } else {
+        getView()->presentText("Information", "The tome describes the knowledge of " + tech->getName()
+            + ", which you already possess.");
       }
       break;
+    }
+    case EventId::FURNITURE_DESTROYED: {
+      auto info = event.get<EventInfo::FurnitureEvent>();
+      if (info.type == FurnitureType::EYEBALL)
+        visibilityMap->removeEyeball(info.position);
+      break;
+    }
     default:
       break;
   }
@@ -2212,15 +2220,7 @@ bool PlayerControl::canSee(WConstCreature c) const {
 }
 
 bool PlayerControl::canSee(Position pos) const {
-  if (getGame()->getOptions()->getBoolValue(OptionId::SHOW_MAP))
-    return true;
-  if (visibilityMap->isVisible(pos))
-    return true;
-  static Vision eyeballVision;
-  for (Position v : getCollective()->getConstructions().getBuiltPositions(FurnitureType::EYEBALL))
-    if (pos.isSameLevel(v) && getLevel()->canSee(v.getCoord(), pos.getCoord(), eyeballVision))
-      return true;
-  return false;
+  return getGame()->getOptions()->getBoolValue(OptionId::SHOW_MAP) || visibilityMap->isVisible(pos);
 }
 
 TribeId PlayerControl::getTribeId() const {
@@ -2272,7 +2272,8 @@ void PlayerControl::updateSquareMemory(Position pos) {
 }
 
 void PlayerControl::onConstructed(Position pos, FurnitureType type) {
-  //updateSquareMemory(pos);
+  if (type == FurnitureType::EYEBALL)
+    visibilityMap->updateEyeball(pos);
 }
 
 PController PlayerControl::createMinionController(WCreature c) {
@@ -2284,9 +2285,10 @@ void PlayerControl::onClaimedSquare(Position position) {
   CHECK(ground) << "No ground found at " << position.getCoord();
   ground->getViewObject()->setId(ViewId::KEEPER_FLOOR);
   position.setNeedsRenderUpdate(true);
-  updateSquareMemory(position);}
+  updateSquareMemory(position);
+}
 
-void PlayerControl::onDestructed(Position pos, const DestroyAction& action) {
+void PlayerControl::onDestructed(Position pos, FurnitureType type, const DestroyAction& action) {
   if (action.getType() == DestroyAction::Type::DIG) {
     Vec2 visRadius(3, 3);
     for (Position v : pos.getRectangle(Rectangle(-visRadius, visRadius + Vec2(1, 1)))) {
@@ -2302,7 +2304,7 @@ void PlayerControl::updateVisibleCreatures() {
   visibleEnemies.clear();
   for (WConstCreature c : getLevel()->getAllCreatures())
     if (canSee(c) && isEnemy(c))
-        visibleEnemies.push_back(c->getPosition().getCoord());
+      visibleEnemies.push_back(c->getPosition().getCoord());
 }
 
 vector<Vec2> PlayerControl::getVisibleEnemies() const {
