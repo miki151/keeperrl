@@ -1380,7 +1380,6 @@ SGuiElem GuiBuilder::drawMinions(CollectiveInfo& info, const optional<TutorialIn
     for (int i : All(info.minionGroups)) {
       auto& elem = info.minionGroups[i];
       auto line = gui.getListBuilder();
-      vector<int> widths;
       line.addElem(gui.viewObject(elem.viewId), 40);
       SGuiElem tmp = gui.label(toString(elem.count) + "   " + elem.name, Color::WHITE);
       line.addElem(std::move(tmp), 200);
