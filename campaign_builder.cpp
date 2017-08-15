@@ -145,7 +145,6 @@ vector<Campaign::VillainInfo> CampaignBuilder::getMainVillains() {
         {ViewId::ELF_LORD, EnemyId::ELVES, "Elves", VillainType::MAIN},
         {ViewId::DWARF_BARON, EnemyId::DWARVES, "Dwarves", VillainType::MAIN},
         {ViewId::RED_DRAGON, EnemyId::RED_DRAGON, "Red dragon", VillainType::MAIN},
-        {ViewId::WITCH, EnemyId::COVEN, "Rival coven", VillainType::MAIN},
         {ViewId::ELEMENTALIST, EnemyId::ELEMENTALIST, "Elementalist", VillainType::MAIN},
         {ViewId::GREEN_DRAGON, EnemyId::GREEN_DRAGON, "Green dragon", VillainType::MAIN},
         {ViewId::LIZARDLORD, EnemyId::LIZARDMEN, "Lizardmen", VillainType::MAIN},
@@ -156,7 +155,6 @@ vector<Campaign::VillainInfo> CampaignBuilder::getMainVillains() {
         {ViewId::RED_DRAGON, EnemyId::RED_DRAGON, "Red dragon", VillainType::MAIN},
         {ViewId::GREEN_DRAGON, EnemyId::GREEN_DRAGON, "Green dragon", VillainType::MAIN},
         {ViewId::SHELOB, EnemyId::SHELOB, "Giant spider", VillainType::MAIN},
-        {ViewId::WITCH, EnemyId::COVEN, "Local coven", VillainType::MAIN},
         {ViewId::ANT_QUEEN, EnemyId::ANTS_OPEN, "Ants", VillainType::MAIN},
         {ViewId::DARK_ELF_LORD, EnemyId::DARK_ELVES, "Dark elves", VillainType::MAIN},
         {ViewId::ORC_CAPTAIN, EnemyId::ORC_VILLAGE, "Greenskin village", VillainType::MAIN},
@@ -168,6 +166,7 @@ vector<Campaign::VillainInfo> CampaignBuilder::getLesserVillains() {
   switch (playerRole) {
     case PlayerRole::KEEPER:
       return {
+        {ViewId::WITCH, EnemyId::COVEN, "Rival coven", VillainType::LESSER},
         {ViewId::ENT, EnemyId::ENTS, "Tree spirits", VillainType::LESSER},
         {ViewId::DRIAD, EnemyId::DRIADS, "Driads", VillainType::LESSER},
         {ViewId::CYCLOPS, EnemyId::CYCLOPS, "Cyclops", VillainType::LESSER},
@@ -178,6 +177,7 @@ vector<Campaign::VillainInfo> CampaignBuilder::getLesserVillains() {
       };
     case PlayerRole::ADVENTURER:
       return {
+        {ViewId::WITCH, EnemyId::COVEN, "Local coven", VillainType::LESSER},
         {ViewId::BANDIT, EnemyId::BANDITS, "Bandits", VillainType::LESSER},
         {ViewId::CYCLOPS, EnemyId::CYCLOPS, "Cyclops", VillainType::LESSER},
         {ViewId::HYDRA, EnemyId::HYDRA, "Hydra", VillainType::LESSER},

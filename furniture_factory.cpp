@@ -623,7 +623,7 @@ FurnitureFactory FurnitureFactory::coven(TribeId tribe) {
       {FurnitureType::THRONE, 1},
       {FurnitureType::LABORATORY, 3},
       {FurnitureType::BOOKCASE_GOLD, 3},
-	  {FurnitureType::IMPALED_HEAD,3}
+      {FurnitureType::IMPALED_HEAD,3}
   });
 }
 

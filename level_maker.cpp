@@ -2294,7 +2294,7 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, optional<CreatureFactory> fo
         break;
       case SettlementType::LARGE_CAVE:
         queue = largeCaveMaker(settlement);
-		break;
+        break;
       case SettlementType::CEMETERY:
         queue = cemetery(settlement);
         break;
