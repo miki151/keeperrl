@@ -58,6 +58,7 @@ RICH_ENUM(CreatureId,
     SPECIAL_HMGW,
 
     GHOST,
+    UNICORN,    
     SPIRIT,
     LOST_SOUL,
     GREEN_DRAGON,

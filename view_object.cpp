@@ -279,6 +279,7 @@ static vector<ViewId> creatureIds {
   ViewId::KNIGHT,
   ViewId::DUKE,
   ViewId::ARCHER,
+  ViewId::UNICORN,
   ViewId::PESEANT,
   ViewId::CHILD,
   ViewId::SHAMAN,
