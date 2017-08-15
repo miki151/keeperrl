@@ -36,6 +36,7 @@ RICH_ENUM(
     IMP,
     PRISONER,
     OGRE,
+    UNICORN,
     CHICKEN,
     GREEN_DRAGON,
     RED_DRAGON,

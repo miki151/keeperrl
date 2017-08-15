@@ -300,6 +300,7 @@ class TileCoordLookup {
     Tile::addTile(ViewId::CANIF_TREE, sprite("tree1").addHighlight(byName("tree1_mark"))
         .setRoundShadow());
     Tile::addTile(ViewId::TREE_TRUNK, sprite("treecut"));
+    Tile::addTile(ViewId::UNICORN, sprite("horse"));
     Tile::addTile(ViewId::BURNT_TREE, sprite("treeburnt")
         .setRoundShadow());
     Tile::addTile(ViewId::PLAYER, sprite("adventurer"));
@@ -648,6 +649,7 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::DARK_ELF_CHILD, symbol(u8"@", Color::ALMOST_GRAY));
     Tile::addSymbol(ViewId::DARK_ELF_LORD, symbol(u8"@", Color::LIGHT_GRAY));
     Tile::addSymbol(ViewId::DRIAD, symbol(u8"@", Color::LIGHT_BROWN));
+    Tile::addSymbol(ViewId::UNICORN, symbol(u8"h", Color::WHITE));
     Tile::addSymbol(ViewId::KOBOLD, symbol(u8"k", Color::LIGHT_BROWN));
     Tile::addSymbol(ViewId::SHOPKEEPER, symbol(u8"@", Color::LIGHT_BLUE));
     Tile::addSymbol(ViewId::LIZARDMAN, symbol(u8"@", Color::LIGHT_BROWN));
