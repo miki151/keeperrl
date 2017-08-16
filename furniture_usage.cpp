@@ -59,8 +59,7 @@ static void useChest(Position pos, WConstFurniture furniture, WCreature c, const
     c->message(itemInfo->msgItem);
     ItemFactory itemFactory(itemInfo->items);
     vector<PItem> items = itemFactory.random();
-    c->getGame()->addEvent({EventId::ITEMS_APPEARED, EventInfo::ItemsAppeared{c->getPosition(),
-        getWeakPointers(items)}});
+    c->getGame()->addEvent(EventInfo::ItemsAppeared{c->getPosition(), getWeakPointers(items)});
     c->getPosition().dropItems(std::move(items));
   }
 }

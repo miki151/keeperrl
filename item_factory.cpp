@@ -296,7 +296,7 @@ class TechBook : public Item {
 
   virtual void applySpecial(WCreature c) override {
     if (!read || !!tech) {
-      c->getGame()->addEvent({EventId::TECHBOOK_READ, tech ? Technology::get(*tech) : nullptr});
+      c->getGame()->addEvent(EventInfo::TechbookRead{tech ? Technology::get(*tech) : nullptr});
       read = true;
     }
   }

@@ -477,7 +477,7 @@ CreatureAction Creature::pickUp(const vector<WItem>& items) const {
     if (auto& limit = getBody().getCarryLimit())
       if (equipment->getTotalWeight() > *limit / 2)
         you(MsgType::ARE, "overloaded");
-    getGame()->addEvent({EventId::PICKED_UP, EventInfo::ItemsHandled{self, items}});
+    getGame()->addEvent(EventInfo::ItemsPickedUp{self, items});
     self->spendTime(1);
   });
 }
@@ -497,7 +497,7 @@ CreatureAction Creature::drop(const vector<WItem>& items) const {
       thirdPerson(getName().the() + " drops " + getPluralAName(stack[0], stack.size()));
       secondPerson("You drop " + getPluralTheName(stack[0], stack.size()));
     }
-    getGame()->addEvent({EventId::DROPPED, EventInfo::ItemsHandled{self, items}});
+    getGame()->addEvent(EventInfo::ItemsDropped{self, items});
     self->getPosition().dropItems(self->equipment->removeItems(items, self));
     self->spendTime(1);
   });
@@ -552,7 +552,7 @@ CreatureAction Creature::equip(WItem item) const {
     secondPerson("You equip " + item->getTheName(false, self));
     thirdPerson(getName().the() + " equips " + item->getAName());
     if (WGame game = getGame())
-      game->addEvent({EventId::EQUIPED, EventInfo::ItemsHandled{self, {item}}});
+      game->addEvent(EventInfo::ItemsEquipped{self, {item}});
     self->spendTime(1);
   });
 }
@@ -1124,7 +1124,7 @@ void Creature::dieWithAttacker(WCreature attacker, DropType drops) {
   getGame()->getStatistics().add(StatId::DEATH);
   if (attacker)
     attacker->onKilled(this, lastDamageType);
-  getGame()->addEvent({EventId::KILLED, EventInfo::Attacked{this, attacker}});
+  getGame()->addEvent(EventInfo::CreatureKilled{this, attacker});
   getTribe()->onMemberKilled(this, attacker);
   getLevel()->killCreature(this);
   setController(makeOwner<DoNothingController>(this));
@@ -1163,13 +1163,13 @@ CreatureAction Creature::torture(WCreature other) const {
       other->getPosition().unseenMessage("You hear a horrible scream");
     }
     other->getBody().affectByTorture(other);
-    getGame()->addEvent({EventId::TORTURED, EventInfo::Attacked{other, self}});
+    getGame()->addEvent(EventInfo::CreatureTortured{other, self});
     self->spendTime(1);
   });
 }
 
 void Creature::surrender(WCreature to) {
-  getGame()->addEvent({EventId::SURRENDERED, EventInfo::Attacked{this, to}});
+  getGame()->addEvent(EventInfo::CreatureSurrendered{this, to});
 }
 
 void Creature::retire() {
@@ -1339,7 +1339,7 @@ CreatureAction Creature::copulate(Vec2 direction) const {
 
 void Creature::addPersonalEvent(const string& s) {
   if (WModel m = position.getModel())
-    m->addEvent({EventId::CREATURE_EVENT, EventInfo::CreatureEvent{this, s}});
+    m->addEvent(EventInfo::CreatureEvent{this, s});
 }
 
 CreatureAction Creature::consume(WCreature other) const {

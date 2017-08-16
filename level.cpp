@@ -163,7 +163,7 @@ void Level::updateVisibility(Vec2 changedSquare) {
         addDarknessSource(pos, darknessRadius, 1);
   }
   for (Vec2 pos : getVisibleTilesNoDarkness(changedSquare, VisionId::NORMAL))
-    getModel()->addEvent({EventId::VISIBILITY_CHANGED, Position(pos, this)});
+    getModel()->addEvent(EventInfo::VisibilityChanged{Position(pos, this)});
 }
 
 vector<WCreature> Level::getPlayers() const {
@@ -306,15 +306,15 @@ void Level::throwItem(vector<PItem> item, const Attack& attack, int maxDist, Vec
     if (pos.stopsProjectiles(vision)) {
       item[0]->onHitSquareMessage(Position(v, this), item.size());
       trajectory.pop_back();
-      getGame()->addEvent({EventId::PROJECTILE,
-          EventInfo::Projectile{item[0]->getViewObject().id(), Position(position, this), pos.minus(direction)}});
+      getGame()->addEvent(
+          EventInfo::Projectile{item[0]->getViewObject().id(), Position(position, this), pos.minus(direction)});
       if (!item[0]->isDiscarded())
         pos.minus(direction).dropItems(std::move(item));
       return;
     }
     if (++cnt > maxDist || getSafeSquare(v)->getCreature()) {
-      getGame()->addEvent({EventId::PROJECTILE,
-          EventInfo::Projectile{item[0]->getViewObject().id(), Position(position, this), pos}});
+      getGame()->addEvent(
+          EventInfo::Projectile{item[0]->getViewObject().id(), Position(position, this), pos});
       modSafeSquare(v)->onItemLands(Position(v, this), std::move(item), attack, maxDist - cnt - 1, direction,
           vision);
       return;

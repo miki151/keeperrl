@@ -1156,74 +1156,63 @@ void PlayerControl::updateMinionVisibility(WConstCreature c) {
 }
 
 void PlayerControl::onEvent(const GameEvent& event) {
-  switch (event.getId()) {
-    case EventId::PROJECTILE: {
-      auto info = event.get<EventInfo::Projectile>();
-      if (canSee(info.begin) || canSee(info.end))
-        getView()->animateObject(info.begin.getCoord(), info.end.getCoord(), info.viewId);
-      break;
-    }
-    case EventId::CREATURE_EVENT: {
-      auto& info = event.get<EventInfo::CreatureEvent>();
-      if (getCollective()->getCreatures().contains(info.creature))
-        addMessage(PlayerMessage(info.message).setCreature(info.creature->getUniqueId()));
-      break;
-    }
-    case EventId::VISIBILITY_CHANGED:
-      visibilityMap->onVisibilityChanged(event.get<Position>());
-      break;
-    case EventId::MOVED: {
-      WCreature c = event.get<WCreature>();
-      if (getCreatures().contains(c))
-        updateMinionVisibility(c);
-      break;
-    }
-    case EventId::EQUIPED: {
-      auto info = event.get<EventInfo::ItemsHandled>();
-      if (info.creature->isPlayer() &&
-          !getCollective()->getMinionEquipment().tryToOwn(info.creature, info.items.getOnlyElement()))
-        getView()->presentText("", "Item won't be permanently assigned to creature because the equipment slot is locked.");
-      break;
-    }
-    case EventId::WON_GAME:
-      CHECK(!getKeeper()->isDead());
-      getGame()->conquered(*getKeeper()->getName().first(), getCollective()->getKills().getSize(),
-          getCollective()->getDangerLevel() + getCollective()->getPoints());
-      getView()->presentText("", "When you are ready, retire your dungeon and share it online. "
-        "Other players will be able to invade it as adventurers. To do this, press Escape and choose \'retire\'.");
-      break;
-    case EventId::TECHBOOK_READ: {
-      Technology* tech = event.get<Technology*>();
-      vector<Technology*> nextTechs = Technology::getNextTechs(getCollective()->getTechnologies());
-      if (tech == nullptr) {
-        if (!nextTechs.empty())
-          tech = Random.choose(nextTechs);
-        else
-          tech = Random.choose(Technology::getAll());
-      }
-      if (!getCollective()->getTechnologies().contains(tech)) {
-        if (!nextTechs.contains(tech))
-          getView()->presentText("Information", "The tome describes the knowledge of " + tech->getName()
-              + ", but you do not comprehend it.");
-        else {
-          getView()->presentText("Information", "You have acquired the knowledge of " + tech->getName());
-          getCollective()->acquireTech(tech);
+  using namespace EventInfo;
+  event.visit(
+      [&](const Projectile& info) {
+        if (canSee(info.begin) || canSee(info.end))
+          getView()->animateObject(info.begin.getCoord(), info.end.getCoord(), info.viewId);
+      },
+      [&](const CreatureEvent& info) {
+        if (getCollective()->getCreatures().contains(info.creature))
+          addMessage(PlayerMessage(info.message).setCreature(info.creature->getUniqueId()));
+      },
+      [&](const VisibilityChanged& info) {
+        visibilityMap->onVisibilityChanged(info.pos);
+      },
+      [&](const CreatureMoved& info) {
+        if (getCreatures().contains(info.creature))
+          updateMinionVisibility(info.creature);
+      },
+      [&](const ItemsEquipped& info) {
+        if (info.creature->isPlayer() &&
+            !getCollective()->getMinionEquipment().tryToOwn(info.creature, info.items.getOnlyElement()))
+          getView()->presentText("", "Item won't be permanently assigned to creature because the equipment slot is locked.");
+      },
+      [&](const WonGame&) {
+        CHECK(!getKeeper()->isDead());
+        getGame()->conquered(*getKeeper()->getName().first(), getCollective()->getKills().getSize(),
+            getCollective()->getDangerLevel() + getCollective()->getPoints());
+        getView()->presentText("", "When you are ready, retire your dungeon and share it online. "
+          "Other players will be able to invade it as adventurers. To do this, press Escape and choose \'retire\'.");
+      },
+      [&](const TechbookRead& info) {
+        Technology* tech = info.technology;
+        vector<Technology*> nextTechs = Technology::getNextTechs(getCollective()->getTechnologies());
+        if (tech == nullptr) {
+          if (!nextTechs.empty())
+            tech = Random.choose(nextTechs);
+          else
+            tech = Random.choose(Technology::getAll());
         }
-      } else {
-        getView()->presentText("Information", "The tome describes the knowledge of " + tech->getName()
-            + ", which you already possess.");
-      }
-      break;
-    }
-    case EventId::FURNITURE_DESTROYED: {
-      auto info = event.get<EventInfo::FurnitureEvent>();
-      if (info.type == FurnitureType::EYEBALL)
-        visibilityMap->removeEyeball(info.position);
-      break;
-    }
-    default:
-      break;
-  }
+        if (!getCollective()->getTechnologies().contains(tech)) {
+          if (!nextTechs.contains(tech))
+            getView()->presentText("Information", "The tome describes the knowledge of " + tech->getName()
+                + ", but you do not comprehend it.");
+          else {
+            getView()->presentText("Information", "You have acquired the knowledge of " + tech->getName());
+            getCollective()->acquireTech(tech);
+          }
+        } else {
+          getView()->presentText("Information", "The tome describes the knowledge of " + tech->getName()
+              + ", which you already possess.");
+        }
+      },
+      [&](const FurnitureDestroyed& info) {
+        if (info.type == FurnitureType::EYEBALL)
+          visibilityMap->removeEyeball(info.position);
+      },
+      [&](const auto&) {}
+  );
 }
 
 void PlayerControl::updateKnownLocations(const Position& pos) {

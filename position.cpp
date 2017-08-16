@@ -683,11 +683,11 @@ bool Position::stopsProjectiles(VisionId id) const {
     return !isValid();
 }
 
-bool Position::isVisibleBy(WConstCreature c) {
+bool Position::isVisibleBy(WConstCreature c) const {
   return isValid() && level->canSee(c, coord);
 }
 
-void Position::clearItemIndex(ItemIndex index) {
+void Position::clearItemIndex(ItemIndex index) const {
   if (isValid())
     modSquare()->clearItemIndex(index);
 }

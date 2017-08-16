@@ -112,7 +112,7 @@ void Furniture::onEnter(WCreature c) const {
 
 void Furniture::destroy(Position pos, const DestroyAction& action) {
   pos.globalMessage("The " + name + " " + action.getIsDestroyed());
-  auto layer = getLayer();
+  auto myLayer = layer;
   auto myType = type;
   if (*itemDrop)
     pos.dropItems((*itemDrop)->random());
@@ -120,7 +120,7 @@ void Furniture::destroy(Position pos, const DestroyAction& action) {
     pos.replaceFurniture(this, FurnitureFactory::get(*destroyedRemains, getTribe()));
   else
     pos.removeFurniture(this);
-  pos.getGame()->addEvent({EventId::FURNITURE_DESTROYED, EventInfo::FurnitureEvent{pos, myType, layer}});
+  pos.getGame()->addEvent(EventInfo::FurnitureDestroyed{pos, myType, myLayer});
 }
 
 void Furniture::tryToDestroyBy(Position pos, WCreature c, const DestroyAction& action) {
@@ -152,12 +152,14 @@ void Furniture::tick(Position pos) {
       fire->tick();
       if (fire->isBurntOut()) {
         pos.globalMessage("The " + getName() + " burns down");
-        pos.getGame()->addEvent({EventId::FURNITURE_DESTROYED, EventInfo::FurnitureEvent{pos, type, getLayer()}});
         pos.updateMovement();
+        auto myLayer = layer;
+        auto myType = type;
         if (burntRemains)
           pos.replaceFurniture(this, FurnitureFactory::get(*burntRemains, getTribe()));
         else
           pos.removeFurniture(this);
+        pos.getGame()->addEvent(EventInfo::FurnitureDestroyed{pos, myType, myLayer});
         return;
       }
       pos.fireDamage(fire->getSize());

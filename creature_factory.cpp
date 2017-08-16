@@ -432,19 +432,17 @@ class ShopkeeperController : public Monster, public EventListener<ShopkeeperCont
   }
   
   void onEvent(const GameEvent& event) {
-    switch (event.getId()) {
-      case EventId::ITEMS_APPEARED: {
-          auto info = event.get<EventInfo::ItemsAppeared>();
+    using namespace EventInfo;
+    event.visit(
+        [&](const ItemsAppeared& info) {
           if (isShopPosition(info.position)) {
-           for (auto& it : info.items) {
-             it->setShopkeeper(getCreature());
-             info.position.clearItemIndex(ItemIndex::FOR_SALE);
-           }
-         }
-        }
-        break;
-      case EventId::PICKED_UP: {
-          auto info = event.get<EventInfo::ItemsHandled>();
+            for (auto& it : info.items) {
+              it->setShopkeeper(getCreature());
+              info.position.clearItemIndex(ItemIndex::FOR_SALE);
+            }
+          }
+        },
+        [&](const ItemsPickedUp& info) {
           if (isShopPosition(info.creature->getPosition())) {
             for (auto& item : info.items)
               if (item->isShopkeeper(getCreature())) {
@@ -452,10 +450,8 @@ class ShopkeeperController : public Monster, public EventListener<ShopkeeperCont
                 debtors.insert(info.creature);
               }
           }
-        }
-        break;
-      case EventId::DROPPED: {
-          auto info = event.get<EventInfo::ItemsHandled>();
+        },
+        [&](const ItemsDropped& info) {
           if (isShopPosition(info.creature->getPosition())) {
             for (auto& item : info.items)
               if (item->isShopkeeper(getCreature())) {
@@ -464,11 +460,9 @@ class ShopkeeperController : public Monster, public EventListener<ShopkeeperCont
                   debtors.erase(info.creature);
               }
           }
-        }
-        break;
-      default:
-        break;
-    }
+        },
+        [&](const auto&) {}
+    );
   }
 
   template <class Archive>

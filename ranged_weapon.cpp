@@ -32,7 +32,7 @@
 #include "vision.h"
 
 SERIALIZE_DEF(RangedWeapon, damageAttr, projectileName, projectileViewId)
-SERIALIZATION_CONSTRUCTOR_IMPL(RangedWeapon);
+SERIALIZATION_CONSTRUCTOR_IMPL(RangedWeapon)
 
 RangedWeapon::RangedWeapon(AttrType attr, const string& name, ViewId id)
     : damageAttr(attr), projectileName(name), projectileViewId(id) {}
@@ -58,7 +58,7 @@ void RangedWeapon::fire(WCreature c, Vec2 dir) const {
       break;
     }
   }
-  c->getGame()->addEvent({EventId::PROJECTILE, EventInfo::Projectile{projectileViewId, position, lastPos}});
+  c->getGame()->addEvent(EventInfo::Projectile{projectileViewId, position, lastPos});
 }
 
 AttrType RangedWeapon::getDamageAttr() const {

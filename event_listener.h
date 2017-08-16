@@ -11,35 +11,26 @@ class Technology;
 class Collective;
 
 enum class EventId {
-  MOVED,
-  KILLED,
-  PICKED_UP,
-  DROPPED,
-  ITEMS_APPEARED,
-  PROJECTILE,
-  EXPLOSION,
-  CONQUERED_ENEMY,
-  WON_GAME,
-  TECHBOOK_READ,
-  ALARM,
-  TORTURED,
-  SURRENDERED,
-  TRAP_TRIGGERED,
-  TRAP_DISARMED,
-  FURNITURE_DESTROYED,
-  EQUIPED,
-  CREATURE_EVENT,
   VISIBILITY_CHANGED
 };
 
 namespace EventInfo {
 
-struct Attacked {
+struct CreatureMoved {
+  WCreature creature;
+};
+
+struct CreatureKilled {
   WCreature victim;
   WCreature attacker;
 };
 
-struct ItemsHandled {
+struct ItemsPickedUp {
+  WCreature creature;
+  vector<WItem> items;
+};
+
+struct ItemsDropped {
   WCreature creature;
   vector<WItem> items;
 };
@@ -55,9 +46,52 @@ struct Projectile {
   Position end;
 };
 
+struct Explosion {
+  Position pos;
+};
+
+struct ConqueredEnemy {
+  WCollective collective;
+};
+
+struct WonGame {};
+
+struct TechbookRead {
+  Technology* technology;
+};
+
+struct Alarm {
+  Position pos;
+};
+
+struct CreatureTortured {
+  WCreature victim;
+  WCreature torturer;
+};
+
+struct CreatureSurrendered {
+  WCreature victim;
+  WCreature attacker;
+};
+
+struct TrapTriggered {
+  Position pos;
+};
+
 struct TrapDisarmed {
-  Position position;
+  Position pos;
   WCreature creature;
+};
+
+struct FurnitureDestroyed {
+  Position position;
+  FurnitureType type;
+  FurnitureLayer layer;
+};
+
+struct ItemsEquipped {
+  WCreature creature;
+  vector<WItem> items;
 };
 
 struct CreatureEvent {
@@ -65,29 +99,20 @@ struct CreatureEvent {
   string message;
 };
 
-struct FurnitureEvent {
-  Position position;
-  FurnitureType type;
-  FurnitureLayer layer;
+struct VisibilityChanged {
+  Position pos;
+};
+
+class GameEvent : public variant<CreatureMoved, CreatureKilled, ItemsPickedUp, ItemsDropped, ItemsAppeared, Projectile,
+    Explosion, ConqueredEnemy, WonGame, TechbookRead, Alarm, CreatureTortured, CreatureSurrendered, TrapTriggered,
+    TrapDisarmed, FurnitureDestroyed, ItemsEquipped, CreatureEvent, VisibilityChanged> {
+  using variant::variant;
 };
 
 }
 
-class GameEvent : public EnumVariant<EventId, TYPES(WCreature, Position, Technology*, WCollective,
-    EventInfo::CreatureEvent, EventInfo::Attacked, EventInfo::ItemsHandled, EventInfo::ItemsAppeared,
-    EventInfo::Projectile, EventInfo::TrapDisarmed, EventInfo::FurnitureEvent),
-    ASSIGN(WCreature, EventId::MOVED),
-    ASSIGN(Position, EventId::EXPLOSION, EventId::ALARM, EventId::TRAP_TRIGGERED, EventId::VISIBILITY_CHANGED),
-    ASSIGN(Technology*, EventId::TECHBOOK_READ),
-    ASSIGN(WCollective, EventId::CONQUERED_ENEMY),
-    ASSIGN(EventInfo::CreatureEvent, EventId::CREATURE_EVENT),
-    ASSIGN(EventInfo::Attacked, EventId::KILLED, EventId::TORTURED, EventId::SURRENDERED),
-    ASSIGN(EventInfo::ItemsHandled, EventId::PICKED_UP, EventId::DROPPED, EventId::EQUIPED),
-    ASSIGN(EventInfo::ItemsAppeared, EventId::ITEMS_APPEARED),
-    ASSIGN(EventInfo::Projectile, EventId::PROJECTILE),
-    ASSIGN(EventInfo::TrapDisarmed, EventId::TRAP_DISARMED),
-    ASSIGN(EventInfo::FurnitureEvent, EventId::FURNITURE_DESTROYED) > {
-  using EnumVariant::EnumVariant;
+class GameEvent : public EventInfo::GameEvent {
+  using EventInfo::GameEvent::GameEvent;
 };
 
 template <typename T>
@@ -115,7 +140,7 @@ class EventListener {
     return !!generator;
   }
 
-  SERIALIZE_ALL(generator, id);
+  SERIALIZE_ALL(generator, id)
 
   ~EventListener() {
     unsubscribe();

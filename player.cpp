@@ -73,55 +73,49 @@ Player::~Player() {
 }
 
 void Player::onEvent(const GameEvent& event) {
-  switch (event.getId()) {
-    case EventId::MOVED:
-      if (event.get<WCreature>() == getCreature())
-        visibilityMap->update(getCreature(), getCreature()->getVisibleTiles());
-      break;
-    case EventId::PROJECTILE: {
-        auto info = event.get<EventInfo::Projectile>();
+  using namespace EventInfo;
+  event.visit(
+      [&](const CreatureMoved& info) {
+        if (info.creature == getCreature())
+          visibilityMap->update(getCreature(), getCreature()->getVisibleTiles());
+      },
+      [&](const Projectile& info) {
         if (getCreature()->canSee(info.begin) || getCreature()->canSee(info.end))
           getView()->animateObject(info.begin.getCoord(), info.end.getCoord(), info.viewId);
-      }
-      break;
-    case EventId::EXPLOSION: {
-        Position pos = event.get<Position>();
-        if (getCreature()->getPosition().isSameLevel(pos)) {
-          if (getCreature()->canSee(pos))
-            getView()->animation(pos.getCoord(), AnimationId::EXPLOSION);
+      },
+      [&](const Explosion& info) {
+        if (getCreature()->getPosition().isSameLevel(info.pos)) {
+          if (getCreature()->canSee(info.pos))
+            getView()->animation(info.pos.getCoord(), AnimationId::EXPLOSION);
           else
             privateMessage("BOOM!");
         }
-      }
-      break;
-    case EventId::ALARM: {
-        Position pos = event.get<Position>();
+      },
+      [&](const Alarm& info) {
+        Position pos = info.pos;
         Position myPos = getCreature()->getPosition();
         if (pos == myPos)
           privateMessage("An alarm sounds near you.");
         else if (pos.isSameLevel(myPos))
           privateMessage("An alarm sounds in the " +
               getCardinalName(myPos.getDir(pos).getBearing().getCardinalDir()));
-      }
-      break;
-    case EventId::CONQUERED_ENEMY:
-      if (adventurer) {
-        WCollective col = event.get<WCollective>();
-        if (auto& name = col->getName())
-          privateMessage(PlayerMessage("The tribe of " + name->full + " is destroyed.",
-                MessagePriority::CRITICAL));
-        else
-          privateMessage(PlayerMessage("An unnamed tribe is destroyed.", MessagePriority::CRITICAL));
-      }
-      break;
-    case EventId::WON_GAME:
+      },
+      [&](const ConqueredEnemy& info) {
+        if (adventurer) {
+          if (auto& name = info.collective->getName())
+            privateMessage(PlayerMessage("The tribe of " + name->full + " is destroyed.",
+                  MessagePriority::CRITICAL));
+          else
+            privateMessage(PlayerMessage("An unnamed tribe is destroyed.", MessagePriority::CRITICAL));
+        }
+      },
+      [&](const WonGame&) {
         if (adventurer)
           getGame()->conquered(*getCreature()->getName().first(), getCreature()->getKills().getSize(),
               getCreature()->getPoints());
-        break;
-    default:
-      break;
-  }
+      },
+      [&](const auto&) {}
+  );
 }
 
 static string getSlotSuffix(EquipmentSlot slot) {
