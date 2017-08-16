@@ -321,7 +321,7 @@ void Options::changeValue(OptionId id, const Options::Value& value, View* view) 
           setValue(id, *index);
         break;
     default:
-        setValue(id, !*value.getValueMaybe<int>());
+        setValue(id, (int) !*value.getValueMaybe<int>());
   }
 }
 

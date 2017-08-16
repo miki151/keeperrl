@@ -18,7 +18,7 @@ namespace cereal {
       if (N == target) {
         H value;
         ar( CEREAL_NVP_("data", value) );
-        variant = value;
+        variant = Variant(value);
       } else
         load_variant<N+1, Variant, T...>(ar, target, variant);
     }

@@ -195,17 +195,17 @@ using variant_alternative_t=typename variant_alternative<_Index, _Type>::type;
 
 template <size_t _Index, typename _Type>
 struct variant_alternative<_Index, const _Type> {
-    using type=std::add_const_t<variant_alternative_t<_Index, _Type>>;
+    using type=typename std::add_const<variant_alternative_t<_Index, _Type>>::value;
 };
 
 template <size_t _Index, typename _Type>
 struct variant_alternative<_Index, volatile _Type> {
-    using type=std::add_volatile_t<variant_alternative_t<_Index, _Type>>;
+    using type=typename std::add_volatile<variant_alternative_t<_Index, _Type>>::value;
 };
 
 template <size_t _Index, typename _Type>
 struct variant_alternative<_Index, volatile const _Type> {
-    using type=std::add_volatile_t<std::add_const_t<variant_alternative_t<_Index, _Type>>>;
+    using type=typename std::add_volatile<typename std::add_const<variant_alternative_t<_Index, _Type>>::value>::value;
 };
 
 template <size_t _Index, typename ... _Types>
@@ -244,17 +244,17 @@ constexpr const typename __indexed_type<_Index, _Types...>::__type&&
 get(variant<_Types...> const&&);
 
 template <typename _Type, typename ... _Types>
-constexpr std::add_pointer_t<_Type> get_if(variant<_Types...>&);
+constexpr typename std::add_pointer<_Type>::value get_if(variant<_Types...>&);
 
 template <typename _Type, typename ... _Types>
-constexpr std::add_pointer_t<_Type const> get_if(variant<_Types...> const&);
+constexpr typename std::add_pointer<_Type const>::value get_if(variant<_Types...> const&);
 
 template <ptrdiff_t _Index, typename ... _Types>
-constexpr std::add_pointer_t<typename __indexed_type<_Index, _Types...>::__type>
+constexpr typename std::add_pointer<typename __indexed_type<_Index, _Types...>::__type>::value
 get_if(variant<_Types...>&);
 
 template <ptrdiff_t _Index, typename ... _Types>
-constexpr std::add_pointer_t<typename __indexed_type<_Index, _Types...>::__type const>
+constexpr typename std::add_pointer<typename __indexed_type<_Index, _Types...>::__type const>::value
 get_if(
         variant<_Types...> const&);
 
@@ -597,7 +597,7 @@ union __variant_data<_Type> {
     template <typename _FirstArg>
     constexpr __variant_data(
             typename std::conditional<
-                    !std::is_same<std::remove_cv_t<std::remove_reference_t<_FirstArg>>,
+                    !std::is_same<typename std::remove_cv<typename std::remove_reference<_FirstArg>::type>::type,
                             std::allocator_arg_t>::value,
                     in_place_index_t<0>, __dummy_type>::type,
             _FirstArg&& __firstArg)
@@ -607,7 +607,7 @@ union __variant_data<_Type> {
     template <typename _FirstArg, typename ... _Rest>
     constexpr __variant_data(
             typename std::conditional<
-                    !std::is_same<std::remove_cv_t<std::remove_reference_t<_FirstArg>>,
+                    !std::is_same<typename std::remove_cv<typename std::remove_reference<_FirstArg>::type>::type,
                             std::allocator_arg_t>::value,
                     in_place_index_t<0>, __dummy_type>::type,
             _FirstArg&& __firstArg, _Rest&& ... __rest)
@@ -2227,7 +2227,7 @@ get(variant<_Types...> const&& __v)
 }
 
 template <typename _Type, typename ... _Types>
-constexpr std::add_pointer_t<_Type> get_if(variant<_Types...>& __v)
+constexpr typename std::add_pointer<_Type>::type get_if(variant<_Types...>& __v)
 {
     return (__type_index<_Type, _Types...>::__value != __v.index()) ? nullptr
                                                                     : &get<_Type>(
@@ -2235,7 +2235,7 @@ constexpr std::add_pointer_t<_Type> get_if(variant<_Types...>& __v)
 }
 
 template <typename _Type, typename ... _Types>
-constexpr std::add_pointer_t<_Type const> get_if(variant<_Types...> const& __v)
+constexpr typename std::add_pointer<_Type const>::type get_if(variant<_Types...> const& __v)
 {
     return (__type_index<_Type, _Types...>::__value != __v.index()) ? nullptr
                                                                     : &get<_Type>(
@@ -2243,7 +2243,7 @@ constexpr std::add_pointer_t<_Type const> get_if(variant<_Types...> const& __v)
 }
 
 template <ptrdiff_t _Index, typename ... _Types>
-constexpr std::add_pointer_t<typename __indexed_type<_Index, _Types...>::__type>
+constexpr typename std::add_pointer<typename __indexed_type<_Index, _Types...>::__type>::type
 get_if(variant<_Types...>& __v)
 {
     return ((_Index != __v.index()) ? nullptr :
@@ -2251,7 +2251,7 @@ get_if(variant<_Types...>& __v)
 }
 
 template <ptrdiff_t _Index, typename ... _Types>
-constexpr std::add_pointer_t<typename __indexed_type<_Index, _Types...>::__type const>
+constexpr typename std::add_pointer<typename __indexed_type<_Index, _Types...>::__type const>::type
 get_if(
         variant<_Types...> const& __v)
 {
