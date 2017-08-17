@@ -30,6 +30,9 @@
 #include "furniture_factory.h"
 #include "game.h"
 #include "tutorial_highlight.h"
+#include "collective_config.h"
+#include "creature.h"
+#include "attr_type.h"
 
 void Technology::init() {
   Technology::set(TechId::ALCHEMY, new Technology(
@@ -40,13 +43,10 @@ void Technology::init() {
         "humanoid mutation", "Breed new, very powerful humanoid species.", 400, {TechId::ALCHEMY}));
   Technology::set(TechId::BEAST_MUT, new Technology(
         "beast mutation", "Breed new, very powerful beast species.", 400, {TechId::ALCHEMY}));
-  Technology::set(TechId::CRAFTING, (new Technology(
-        "crafting", "Build a workshop and produce basic equipment.", 40, {}))
-                  ->setTutorialHighlight(TutorialHighlight::RESEARCH_CRAFTING));
   Technology::set(TechId::PIGSTY, new Technology(
         "pig breeding", "Build a pigsty to feed your minions.", 120, {}));
   Technology::set(TechId::IRON_WORKING, new Technology(
-        "iron working", "Build a forge and produce metal weapons and armor.", 180, {TechId::CRAFTING}));
+        "iron working", "Build a forge and produce metal weapons and armor.", 180));
   Technology::set(TechId::STEEL_MAKING, new Technology(
         "steelmaking", "Build a steel furnace and produce steel goods.", 400, {TechId::IRON_WORKING}));
   Technology::set(TechId::JEWELLERY, new Technology(
@@ -54,13 +54,15 @@ void Technology::init() {
   Technology::set(TechId::TWO_H_WEAP, new Technology(
         "two-handed weapons", "Produce war hammers and battle axes.", 100, {TechId::IRON_WORKING}));
   Technology::set(TechId::TRAPS, new Technology(
-        "traps", "Produce traps in the workshop.", 100, {TechId::CRAFTING}));
+        "traps", "Produce traps in the workshop.", 100));
   Technology::set(TechId::ARCHERY, new Technology(
-        "archery", "Produce bows and arrows.", 100, {TechId::CRAFTING}));
+        "archery", "Produce bows and arrows.", 100));
   Technology::set(TechId::SPELLS, new Technology(
         "sorcery", "Learn basic spells.", 60, {}));
   Technology::set(TechId::SPELLS_ADV, new Technology(
         "advanced sorcery", "Learn more advanced spells.", 120, {TechId::SPELLS}));
+  Technology::set(TechId::MAGICAL_WEAPONS, new Technology(
+        "magical weapons", "Produce melee weapons that deal "_s + ::getName(AttrType::SPELL_DAMAGE), 120, {TechId::SPELLS_ADV}));
   Technology::set(TechId::SPELLS_MAS, new Technology(
         "master sorcery", "Learn the most powerful spells.", 350, {TechId::SPELLS_ADV}));
   Technology::set(TechId::GEOLOGY1, new Technology(
@@ -82,8 +84,14 @@ Technology* Technology::setTutorialHighlight(TutorialHighlight h) {
   return this;
 }
 
-int Technology::getCost() const {
-  return cost;
+constexpr auto resource = CollectiveResourceId::MANA;
+
+CostInfo Technology::getAvailableResource(WConstCollective col) {
+  return CostInfo(resource, col->numResource(resource));
+}
+
+CostInfo Technology::getCost() const {
+  return CostInfo(resource, cost);
 }
 
 vector<Technology*> Technology::getNextTechs(const vector<Technology*>& current) {
@@ -95,7 +103,7 @@ vector<Technology*> Technology::getNextTechs(const vector<Technology*>& current)
 }
 
 Technology::Technology(const string& n, const string& d, int c, const vector<TechId>& pre, bool canR)
-    : name(n), description(d), cost(c), research(canR) {
+    : name(n), description(d), cost(100), research(canR) {
   for (TechId id : pre)
     prerequisites.push_back(Technology::get(id));
 }
@@ -162,7 +170,17 @@ static vector<Vec2> cutShape(Rectangle rect) {
 
 
 static void addResource(WCollective col, FurnitureType type, int maxDist) {
-  Position init = Random.choose(col->getConstructions().getBuiltPositions(FurnitureType::BOOKCASE));
+  Position init = [&]{
+      for (auto f : CollectiveConfig::getTrainingFurniture(ExperienceType::SPELL)) {
+        auto& pos = col->getConstructions().getBuiltPositions(f);
+        if (!pos.empty())
+          return Random.choose(pos);
+      }
+      if (col->hasLeader())
+        return col->getLeader()->getPosition();
+      FATAL << "Couldn't find library to spawn resources.";
+      return Position();
+  }();
   Rectangle resourceArea(Random.get(4, 7), Random.get(4, 7));
   resourceArea.translate(-resourceArea.middle());
   for (int t = 0; t < 200; ++t) {
@@ -170,8 +188,8 @@ static void addResource(WCollective col, FurnitureType type, int maxDist) {
     vector<Position> all = center.getRectangle(resourceArea.minusMargin(-1));
     if (areaOk(all)) {
       for (Vec2 pos : cutShape(resourceArea)) {
-        center.plus(pos).addFurniture(FurnitureFactory::get(type, TribeId::getHostile()));
-        center.getGame()->addEvent({EventId::POSITION_DISCOVERED, center.plus(pos)});
+        center.plus(pos).addFurniture(FurnitureFactory::get(type, TribeId::getKeeper()));
+        col->onPositionDiscovered(center.plus(pos));
       }
       return;
     }
@@ -187,30 +205,6 @@ static void addResources(WCollective col, int numGold, int numIron, int numStone
     addResource(col, FurnitureType::STONE, maxDist);
 }
 
-struct SpellLearningInfo {
-  SpellId id;
-  TechId techId;
-};
-
-static vector<SpellLearningInfo> spellLearning {
-    { SpellId::HEALING, TechId::SPELLS },
-    { SpellId::SUMMON_INSECTS, TechId::SPELLS},
-    { SpellId::DECEPTION, TechId::SPELLS},
-    { SpellId::SPEED_SELF, TechId::SPELLS},
-    { SpellId::STUN_RAY, TechId::SPELLS},
-    { SpellId::MAGIC_SHIELD, TechId::SPELLS_ADV},
-    { SpellId::STR_BONUS, TechId::SPELLS_ADV},
-    { SpellId::DEX_BONUS, TechId::SPELLS_ADV},
-    { SpellId::FIRE_SPHERE_PET, TechId::SPELLS_ADV},
-    { SpellId::TELEPORT, TechId::SPELLS_ADV},
-    { SpellId::CURE_POISON, TechId::SPELLS_ADV},
-    { SpellId::INVISIBILITY, TechId::SPELLS_MAS},
-    { SpellId::BLAST, TechId::SPELLS_MAS},
-    { SpellId::WORD_OF_POWER, TechId::SPELLS_MAS},
-    { SpellId::METEOR_SHOWER, TechId::SPELLS_MAS},
-//    { SpellId::SUMMON_ELEMENT, TechId::SPELLS},
-};
-
 void Technology::onAcquired(TechId id, WCollective col) {
   switch (id) {
     case TechId::GEOLOGY1: addResources(col, 0, 2, 1, 25); break;
@@ -219,40 +213,4 @@ void Technology::onAcquired(TechId id, WCollective col) {
     case TechId::GEOLOGY4: addResources(col, 3, 8, 4, 70); break;
     default: break;
   } 
-  if (col->hasLeader())
-    for (auto elem : spellLearning)
-      if (elem.techId == id)
-        col->getLeader()->getAttributes().getSpellMap().add(Spell::get(elem.id));
 }
-
-vector<Spell*> Technology::getSpellLearning(TechId tech) {
-  vector<Spell*> ret;
-  for (auto elem : spellLearning)
-    if (elem.techId == tech)
-      ret.push_back(Spell::get(elem.id));
-  return ret;
-}
-
-vector<Spell*> Technology::getAllKeeperSpells() {
-  vector<Spell*> ret;
-  for (auto elem : spellLearning)
-    ret.push_back(Spell::get(elem.id));
-  return ret;
-}
-
-vector<Spell*> Technology::getAvailableSpells(WConstCollective col) {
-  vector<Spell*> ret;
-  for (auto elem : spellLearning)
-    if (col->hasTech(elem.techId))
-      ret.push_back(Spell::get(elem.id));
-  return ret;
-}
-
-TechId Technology::getNeededTech(Spell* spell) {
-  for (auto elem : spellLearning)
-    if (elem.id == spell->getId())
-      return elem.techId;
-  FATAL << "Spell not found";
-  return TechId(0);
-}
-

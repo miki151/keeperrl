@@ -15,6 +15,7 @@
 
 #pragma once
 
+#include "stdafx.h"
 #include "sdl.h"
 #include "util.h"
 #include "file_path.h"
@@ -92,8 +93,8 @@ class Texture {
   private:
   Texture();
   friend class Renderer;
-  void render(Vec2 screenP, Vec2 screenK, Vec2 srcP, Vec2 srck, optional<Color> = none,
-      bool vFlip = false, bool hFlip = false) const;
+  void render(Vec2 screenTopLeft, Vec2 screenBottomRight, Vec2 srcP, Vec2 srck, optional<Color> = none) const;
+  void render(Vec2 screen1, Vec2 screen2, Vec2 screen3, Vec2 screen4, Vec2 srcP, Vec2 srck, optional<Color> = none) const;
   void addTexCoord(int x, int y) const;
   optional<SDL::GLuint> texId;
   Vec2 size;
@@ -142,8 +143,16 @@ class Renderer {
   void drawImage(int px, int py, const Texture&, double scale = 1, optional<Color> = none);
   void drawImage(int px, int py, int kx, int ky, const Texture&, double scale = 1);
   void drawImage(Rectangle target, Rectangle source, const Texture&);
+  struct SpriteOrientation {
+    SpriteOrientation() : x(1), y(0), horizontalFlip(false) {}
+    SpriteOrientation(Vec2 d, bool f) : horizontalFlip(f) { double l = d.lengthD(); x = d.x / l; y = d.y / l; }
+    SpriteOrientation(bool vFlip, bool hFlip) : x(vFlip ? -1 : 1), y(0), horizontalFlip(hFlip ^ vFlip) {}
+    double x;
+    double y;
+    bool horizontalFlip;
+  };
   void drawSprite(Vec2 pos, Vec2 source, Vec2 size, const Texture&, optional<Vec2> targetSize = none,
-      optional<Color> color = none, bool vFlip = false, bool hFLip = false);
+      optional<Color> color = none,SpriteOrientation = {});
   void drawSprite(int x, int y, SpriteId, optional<Color> color = none);
   void drawSprite(Vec2 pos, Vec2 stretchSize, const Texture&);
   void drawFilledRectangle(const Rectangle&, Color, optional<Color> outline = none);
@@ -152,12 +161,11 @@ class Renderer {
   void drawViewObject(Vec2 pos, const ViewObject&, bool useSprite, double scale = 1, Color = Color::WHITE);
   void drawViewObject(Vec2 pos, const ViewObject&);
   void drawViewObject(Vec2 pos, ViewId, bool useSprite, double scale = 1, Color = Color::WHITE);
-  void drawViewObject(Vec2 pos, ViewId, bool useSprite, Vec2 size, Color = Color::WHITE);
+  void drawViewObject(Vec2 pos, ViewId, bool useSprite, Vec2 size, Color = Color::WHITE, SpriteOrientation = {});
   void drawViewObject(Vec2 pos, ViewId, Color = Color::WHITE);
   void drawAsciiBackground(ViewId, Rectangle bounds);
   void drawTile(Vec2 pos, TileCoord coord, double scale = 1, Color = Color::WHITE);
-  void drawTile(Vec2 pos, TileCoord coord, Vec2 size, Color = Color::WHITE, bool hFlip = false,
-      bool vFlip = false);
+  void drawTile(Vec2 pos, TileCoord coord, Vec2 size, Color = Color::WHITE, SpriteOrientation orientation = {});
   void setScissor(optional<Rectangle>);
   void addQuad(const Rectangle&, Color);
   void drawQuads();

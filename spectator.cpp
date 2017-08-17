@@ -30,10 +30,6 @@ Vec2 Spectator::getPosition() const {
   return level->getBounds().middle();
 }
 
-optional<CreatureView::MovementInfo> Spectator::getMovementInfo() const {
-  return none;
-}
-
 WLevel Spectator::getLevel() const {
   return level;
 }
@@ -46,8 +42,8 @@ vector<Vec2> Spectator::getVisibleEnemies() const {
   return {};
 }
 
-bool Spectator::isPlayerView() const {
-  return false;
+Spectator::CenterType Spectator::getCenterType() const {
+  return CenterType::FOLLOW;
 }
 
 vector<Vec2> Spectator::getUnknownLocations(WConstLevel) const {

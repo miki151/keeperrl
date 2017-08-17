@@ -33,12 +33,13 @@
 #include "campaign_type.h"
 #include "game_save_type.h"
 #include "player_role.h"
+#include "collective_config.h"
 
 template <class Archive> 
 void Game::serialize(Archive& ar, const unsigned int version) {
   ar & SUBCLASS(OwnedObject<Game>);
   ar(villainsByType, collectives, lastTick, playerControl, playerCollective, currentTime);
-  ar(musicType, statistics, spectator, tribes, gameIdentifier, player);
+  ar(musicType, statistics, spectator, tribes, gameIdentifier, players);
   ar(gameDisplayName, finishCurrentMusic, models, visited, baseModel, campaign, localTime, turnEvents);
   if (Archive::is_loading::value)
     sunlightInfo.update(currentTime);
@@ -61,12 +62,11 @@ Game::Game(Table<PModel>&& m, Vec2 basePos, const CampaignSetup& c)
     if (WModel m = models[v].get()) {
       for (WCollective c : m->getCollectives()) {
         collectives.push_back(c);
-        if (auto type = c->getVillainType()) {
-          villainsByType[*type].push_back(c);
-          if (*type == VillainType::PLAYER) {
-            playerControl = c->getControl().dynamicCast<PlayerControl>();
-            playerCollective = c;
-          }
+        auto type = c->getVillainType();
+        villainsByType[type].push_back(c);
+        if (type == VillainType::PLAYER) {
+          playerControl = c->getControl().dynamicCast<PlayerControl>();
+          playerCollective = c;
         }
       }
       m->updateSunlightMovement();
@@ -115,8 +115,8 @@ const vector<WCollective>& Game::getVillains(VillainType type) const {
 }
 
 WModel Game::getCurrentModel() const {
-  if (WCreature c = getPlayer())
-    return c->getPosition().getModel();
+  if (!players.empty())
+    return players[0]->getPosition().getModel();
   else
     return models[baseModel].get();
 }
@@ -159,9 +159,10 @@ void Game::prepareSiteRetirement() {
     }
   playerCollective->setVillainType(VillainType::MAIN);
   playerCollective->retire();
-  set<Position> locationPosTmp =
-      playerCollective->getConstructions().getBuiltPositions(FurnitureType::BOOKCASE);
-  vector<Position> locationPos(locationPosTmp.begin(), locationPosTmp.end());
+  vector<Position> locationPos;
+  for (auto f : CollectiveConfig::getTrainingFurniture(ExperienceType::SPELL))
+    for (auto pos : playerCollective->getConstructions().getBuiltPositions(f))
+      locationPos.push_back(pos);
   if (locationPos.empty())
     locationPos = playerCollective->getTerritory().getAll();
   if (!locationPos.empty())
@@ -307,9 +308,9 @@ void Game::tick(double time) {
 void Game::exitAction() {
   enum Action { SAVE, RETIRE, OPTIONS, ABANDON};
 #ifdef RELEASE
-  bool canRetire = playerControl && gameWon() && !getPlayer() && campaign->getType() != CampaignType::SINGLE_KEEPER;
+  bool canRetire = playerControl && gameWon() && players.empty() && campaign->getType() != CampaignType::SINGLE_KEEPER;
 #else
-  bool canRetire = playerControl && !getPlayer();
+  bool canRetire = playerControl && players.empty();
 #endif
   vector<ListElem> elems { "Save the game",
     {"Retire", canRetire ? ListElem::NORMAL : ListElem::INACTIVE} , "Change options", "Abandon the game" };
@@ -382,8 +383,10 @@ void Game::transferAction(vector<WCreature> creatures) {
         cant.push_back(CreatureInfo(c));
         creatures.removeElement(c);
       }
-    if (!cant.empty() && !view->creaturePrompt("These minions will be left behind due to sunlight.", cant))
+    if (!cant.empty()) {
+      view->creatureInfo("These minions will be left behind due to sunlight.", false, cant);
       return;
+    }
     if (!creatures.empty()) {
       for (WCreature c : creatures)
         transferCreature(c, models[*dest].get());
@@ -525,24 +528,22 @@ const vector<WCollective>& Game::getCollectives() const {
   return collectives;
 }
 
-void Game::setPlayer(WCreature c) {
-  player = c;
+void Game::addPlayer(WCreature c) {
+  if (!players.contains(c))
+    players.push_back(c);
 }
 
-WCreature Game::getPlayer() const {
-  if (player && !player->isDead())
-    return player;
-  else
-    return nullptr;
+void Game::removePlayer(WCreature c) {
+  players.removeElement(c);
 }
 
-void Game::clearPlayer() {
-  player = nullptr;
+const vector<WCreature>& Game::getPlayerCreatures() const {
+  return players;
 }
 
 static SavedGameInfo::MinionInfo getMinionInfo(WConstCreature c) {
   SavedGameInfo::MinionInfo ret;
-  ret.level = (int)c->getAttributes().getVisibleExpLevel();
+  ret.level = (int)c->getBestAttack().value;
   ret.viewId = c->getViewObject().id();
   return ret;
 }
@@ -550,8 +551,8 @@ static SavedGameInfo::MinionInfo getMinionInfo(WConstCreature c) {
 string Game::getPlayerName() const {
   if (playerCollective)
     return *playerCollective->getLeader()->getName().first();
-  else
-    return *getPlayer()->getName().first();
+  else // adventurer mode
+    return *players.getOnlyElement()->getName().first();
 }
 
 SavedGameInfo Game::getSavedGameInfo() const {
@@ -561,16 +562,17 @@ SavedGameInfo Game::getSavedGameInfo() const {
     WCreature leader = col->getLeader();
     //  CHECK(!leader->isDead());
     sort(creatures.begin(), creatures.end(), [leader] (WConstCreature c1, WConstCreature c2) {
-        return c1 == leader
-        || (c2 != leader && c1->getAttributes().getExpLevel() > c2->getAttributes().getExpLevel());});
+        return c1 == leader || (c2 != leader && c1->getBestAttack().value > c2->getBestAttack().value);});
     CHECK(creatures[0] == leader);
     creatures.resize(min<int>(creatures.size(), 4));
     vector<SavedGameInfo::MinionInfo> minions;
     for (WCreature c : creatures)
       minions.push_back(getMinionInfo(c));
     return SavedGameInfo(minions, col->getDangerLevel(), getPlayerName(), getSaveProgressCount());
-  } else
-    return SavedGameInfo({getMinionInfo(getPlayer())}, 0, getPlayer()->getName().bare(), getSaveProgressCount());
+  } else {
+    auto player = players.getOnlyElement(); // adventurer mode
+    return SavedGameInfo({getMinionInfo(player)}, 0, player->getName().bare(), getSaveProgressCount());
+  }
 }
 
 void Game::uploadEvent(const string& name, const map<string, string>& m) {
@@ -626,10 +628,11 @@ void Game::addEvent(const GameEvent& event) {
   for (Vec2 v : models.getBounds())
     if (models[v])
       models[v]->addEvent(event);
-  switch (event.getId()) {
-    case EventId::CONQUERED_ENEMY: {
-        WCollective col = event.get<WCollective>();
-        if (col->getVillainType()) {
+  using namespace EventInfo;
+  event.visit(
+      [&](const ConqueredEnemy& info) {
+        WCollective col = info.collective;
+        if (col->getVillainType() != VillainType::NONE) {
           Vec2 coords = getModelCoords(col->getModel());
           if (!campaign->isDefeated(coords)) {
             if (auto retired = campaign->getSites()[coords].getRetired())
@@ -640,11 +643,10 @@ void Game::addEvent(const GameEvent& event) {
           }
         }
         if (col->getVillainType() == VillainType::MAIN && gameWon()) {
-          addEvent(EventId::WON_GAME);
+          addEvent(WonGame{});
         }
-      }
-      break;
-    default:break;
-  }
+      },
+      [&](const auto&) {}
+  );
 }
 

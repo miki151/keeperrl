@@ -149,6 +149,7 @@ vector<Campaign::VillainInfo> CampaignBuilder::getMainVillains() {
         {ViewId::GREEN_DRAGON, EnemyId::GREEN_DRAGON, "Green dragon", VillainType::MAIN},
         {ViewId::LIZARDLORD, EnemyId::LIZARDMEN, "Lizardmen", VillainType::MAIN},
         {ViewId::SHAMAN, EnemyId::WARRIORS, "Warriors", VillainType::MAIN},
+        {ViewId::DEMON_LORD, EnemyId::DEMON_DEN, "Demon den", VillainType::MAIN},
       };
     case PlayerRole::ADVENTURER:
       return {
@@ -158,6 +159,7 @@ vector<Campaign::VillainInfo> CampaignBuilder::getMainVillains() {
         {ViewId::ANT_QUEEN, EnemyId::ANTS_OPEN, "Ants", VillainType::MAIN},
         {ViewId::DARK_ELF_LORD, EnemyId::DARK_ELVES, "Dark elves", VillainType::MAIN},
         {ViewId::ORC_CAPTAIN, EnemyId::ORC_VILLAGE, "Greenskin village", VillainType::MAIN},
+        {ViewId::DEMON_LORD, EnemyId::DEMON_DEN, "Demon den", VillainType::MAIN},
       };
   }
 }
@@ -171,6 +173,7 @@ vector<Campaign::VillainInfo> CampaignBuilder::getLesserVillains() {
         {ViewId::CYCLOPS, EnemyId::CYCLOPS, "Cyclops", VillainType::LESSER},
         {ViewId::SHELOB, EnemyId::SHELOB, "Giant spider", VillainType::LESSER},
         {ViewId::HYDRA, EnemyId::HYDRA, "Hydra", VillainType::LESSER},
+        {ViewId::UNICORN, EnemyId::UNICORN_HERD, "Unicorn herd", VillainType::LESSER},
         {ViewId::ANT_QUEEN, EnemyId::ANTS_OPEN, "Ants", VillainType::LESSER},
         {ViewId::ZOMBIE, EnemyId::CEMETERY, "Zombies", VillainType::LESSER},
       };

@@ -41,6 +41,8 @@ RICH_ENUM(EnemyId,
   GNOMES_ENTRY,
   OGRE_CAVE,
   HARPY_CAVE,
+  DEMON_DEN_ABOVE,
+  DEMON_DEN,
   ORC_VILLAGE,
   SOKOBAN,
   SOKOBAN_ENTRY,
@@ -48,6 +50,7 @@ RICH_ENUM(EnemyId,
   DWARF_CAVE,
   KOBOLD_CAVE,
   HUMAN_COTTAGE,
+  UNICORN_HERD,
   ELVEN_COTTAGE,
 
   TUTORIAL_VILLAGE
@@ -71,23 +74,23 @@ struct EnemyInfo {
       optional<LevelConnection> = none);
   EnemyInfo& setVillainType(VillainType type);
   EnemyInfo& setId(EnemyId);
-  EnemyInfo& setAnonymous();
+  EnemyInfo& setNonDiscoverable();
   SettlementInfo settlement;
   CollectiveConfig config;
   optional<VillageBehaviour> villain;
   optional<VillainType> villainType;
   optional<LevelConnection> levelConnection;
   optional<EnemyId> id;
-  bool anonymous = false;
+  bool discoverable = true;
 };
 
-struct ExternalEnemy;
+struct EnemyEvent;
 
 class EnemyFactory {
   public:
   EnemyFactory(RandomGen&);
   EnemyInfo get(EnemyId);
-  vector<ExternalEnemy> getExternalEnemies();
+  vector<EnemyEvent> getExternalEnemies();
   vector<EnemyInfo> getVaults();
 
   private:

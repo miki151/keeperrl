@@ -4,18 +4,18 @@
 #include "task.h"
 #include "creature_name.h"
 
-SERIALIZE_DEF(TaskMap, tasks, positionMap, reversePositions, taskByCreature, creatureByTask, marked, completionCost, priorityTasks, delayedTasks, highlight, requiredTraits, taskById);
+SERIALIZE_DEF(TaskMap, tasks, positionMap, reversePositions, taskByCreature, creatureByTask, marked, completionCost, priorityTasks, delayedTasks, highlight, taskById);
 
 SERIALIZATION_CONSTRUCTOR_IMPL(TaskMap);
 
-WTask TaskMap::getClosestTask(WCreature c, MinionTrait trait) {
+WTask TaskMap::getClosestTask(WCreature c) {
   if (Random.roll(20))
     for (WTask t : getWeakPointers(tasks))
       if (t->isDone())
         removeTask(t);
   WTask closest = nullptr;
   for (PTask& task : tasks)
-    if (requiredTraits.getMaybe(task.get()) == trait && task->canPerform(c))
+    if (task->canPerform(c))
       if (auto pos = getPosition(task.get())) {
         double dist = pos->dist8(c->getPosition());
         WConstCreature owner = getOwner(task.get());
@@ -45,7 +45,7 @@ void TaskMap::setPriorityTasks(Position pos) {
 
 WTask TaskMap::addTaskCost(PTask task, Position position, CostInfo cost) {
   completionCost.set(task.get(), cost);
-  return addTask(std::move(task), position, MinionTrait::WORKER);
+  return addTask(std::move(task), position);
 }
 
 CostInfo TaskMap::removeTask(WTask task) {
@@ -70,8 +70,6 @@ CostInfo TaskMap::removeTask(WTask task) {
     reversePositions.getOrFail(*pos).removeElement(task);
     positionMap.erase(task);
   }
-  if (requiredTraits.getMaybe(task))
-    requiredTraits.erase(task);
   for (int i : All(tasks))
     if (tasks[i].get() == task) {
       taskById.erase(task);
@@ -151,9 +149,8 @@ WTask TaskMap::addTaskFor(PTask task, WCreature c) {
   return tasks.back().get();
 }
 
-WTask TaskMap::addTask(PTask task, Position position, MinionTrait required) {
+WTask TaskMap::addTask(PTask task, Position position) {
   setPosition(task.get(), position);
-  requiredTraits.set(task.get(), required);
   taskById.set(task->getUniqueId(), task.get());
   tasks.push_back(std::move(task));
   return tasks.back().get();

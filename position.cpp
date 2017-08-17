@@ -180,20 +180,28 @@ bool Position::operator < (const Position& p) const {
     return level->getUniqueId() < p.level->getUniqueId();
 }
 
-void Position::globalMessage(const PlayerMessage& playerCanSee, const PlayerMessage& cannot) const {
-  if (isValid())
-    level->globalMessage(coord, playerCanSee, cannot);
+const static int hearingRange = 30;
+
+void Position::unseenMessage(const PlayerMessage& msg) const {
+  if (isValid()) {
+    for (auto player : level->getPlayers())
+      if (player->canSee(*this))
+        return;
+    for (auto player : level->getPlayers())
+      if (dist8(player->getPosition()) < hearingRange) {
+        player->privateMessage(msg);
+        return;
+      }
+  }
 }
 
-void Position::globalMessage(const PlayerMessage& playerCanSee) const {
+void Position::globalMessage(const PlayerMessage& msg) const {
   if (isValid())
-    level->globalMessage(coord, playerCanSee);
-}
-
-void Position::globalMessage(WConstCreature c, const PlayerMessage& playerCanSee,
-    const PlayerMessage& cannot) const {
-  if (isValid())
-    level->globalMessage(c, playerCanSee, cannot);
+    for (auto player : level->getPlayers())
+      if (player->canSee(*this)) {
+        player->privateMessage(msg);
+        break;
+      }
 }
 
 vector<Position> Position::neighbors8() const {
@@ -290,23 +298,23 @@ void Position::getViewIndex(ViewIndex& index, WConstCreature viewer) const {
 
 const vector<WItem>& Position::getItems() const {
   if (isValid())
-    return getSquare()->getItems();
+    return getSquare()->getInventory().getItems();
   else {
     static vector<WItem> empty;
     return empty;
   }
 }
 
-vector<WItem> Position::getItems(function<bool (WItem)> predicate) const {
+vector<WItem> Position::getItems(function<bool (WConstItem)> predicate) const {
   if (isValid())
-    return getSquare()->getItems(predicate);
+    return getSquare()->getInventory().getItems(predicate);
   else
     return {};
 }
 
 const vector<WItem>& Position::getItems(ItemIndex index) const {
   if (isValid())
-    return getSquare()->getItems(index);
+    return getSquare()->getInventory().getItems(index);
   else {
     static vector<WItem> empty;
     return empty;
@@ -549,7 +557,7 @@ optional<TribeId> Position::getForbiddenTribe() const {
     return none;
 }
 
-vector<Position> Position::getVisibleTiles(VisionId vision) {
+vector<Position> Position::getVisibleTiles(const Vision& vision) {
   if (isValid())
     return getLevel()->getVisibleTiles(coord, vision).transform([this] (Vec2 v) { return Position(v, getLevel()); });
   else
@@ -623,23 +631,63 @@ void Position::updateSupport() const {
 bool Position::canNavigate(const MovementType& type) const {
   optional<FurnitureLayer> ignore;
   if (auto furniture = getFurniture(FurnitureLayer::MIDDLE))
-    if (furniture->canDestroy(type, DestroyAction::Type::BASH))
-      ignore = FurnitureLayer::MIDDLE;
+    for (DestroyAction action : type.getDestroyActions())
+      if (furniture->canDestroy(type, action))
+        ignore = FurnitureLayer::MIDDLE;
   return canEnterEmpty(type, ignore);
+}
+
+optional<DestroyAction> Position::getBestDestroyAction(const MovementType& movement) const {
+  if (canEnterEmpty(movement, FurnitureLayer::MIDDLE)) {
+    auto furniture = getFurniture(FurnitureLayer::MIDDLE);
+    optional<double> strength;
+    optional<DestroyAction> bestAction;
+    for (DestroyAction action : movement.getDestroyActions()) {
+      if (furniture->canDestroy(movement, action)) {
+        double thisStrength = *furniture->getStrength(action);
+        if (!strength || thisStrength < *strength) {
+          strength = thisStrength;
+          bestAction = action;
+        }
+      }
+    }
+    return bestAction;
+  }
+  return none;
+}
+
+optional<double> Position::getNavigationCost(const MovementType& movement) const {
+  if (canEnterEmpty(movement)) {
+    if (getCreature())
+      return 5.0;
+    else
+      return 1.0;
+  }
+  if (auto furniture = getFurniture(FurnitureLayer::MIDDLE))
+    if (auto destroyAction = getBestDestroyAction(movement))
+      return *furniture->getStrength(*destroyAction) / 10;
+  return none;
 }
 
 bool Position::canSeeThru(VisionId id) const {
   if (auto furniture = getFurniture(FurnitureLayer::MIDDLE))
     return furniture->canSeeThru(id);
   else
-    return true;
+    return isValid();
 }
 
-bool Position::isVisibleBy(WConstCreature c) {
+bool Position::stopsProjectiles(VisionId id) const {
+  if (auto furniture = getFurniture(FurnitureLayer::MIDDLE))
+    return furniture->stopsProjectiles(id);
+  else
+    return !isValid();
+}
+
+bool Position::isVisibleBy(WConstCreature c) const {
   return isValid() && level->canSee(c, coord);
 }
 
-void Position::clearItemIndex(ItemIndex index) {
+void Position::clearItemIndex(ItemIndex index) const {
   if (isValid())
     modSquare()->clearItemIndex(index);
 }

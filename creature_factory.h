@@ -58,11 +58,14 @@ RICH_ENUM(CreatureId,
     SPECIAL_HMGW,
 
     GHOST,
+    UNICORN,    
     SPIRIT,
     LOST_SOUL,
     GREEN_DRAGON,
     RED_DRAGON,
     CYCLOPS,
+    DEMON_DWELLER,  
+    DEMON_LORD, 
     MINOTAUR,
     HYDRA,
     SHELOB,
@@ -103,7 +106,6 @@ RICH_ENUM(CreatureId,
 
     KNIGHT,
     AVATAR,
-    CASTLE_GUARD,
     ARCHER,
     PESEANT,
     CHILD,
@@ -129,8 +131,6 @@ RICH_ENUM(CreatureId,
     PIG,
     GOAT,
     DONKEY,
-    
-    LEPRECHAUN,
     
     JACKAL,
     DEER,
@@ -189,6 +189,8 @@ class CreatureFactory {
   static CreatureFactory vikingTown(TribeId);
   static CreatureFactory lizardTown(TribeId);
   static CreatureFactory orcTown(TribeId);
+  static CreatureFactory demonDenAbove(TribeId);
+  static CreatureFactory demonDen(TribeId);
   static CreatureFactory singleType(TribeId, CreatureId);
   static CreatureFactory insects(TribeId tribe);
   static CreatureFactory lavaCreatures(TribeId tribe);

@@ -20,14 +20,15 @@
 #include "util.h"
 #include "unique_entity.h"
 #include "view_layer.h"
+#include "attr_type.h"
 
-RICH_ENUM(ViewObjectModifier, BLIND, PLAYER, HIDDEN, INVISIBLE, ILLUSION, POISONED, PLANNED,
+RICH_ENUM(ViewObjectModifier, PLAYER, HIDDEN, INVISIBLE, ILLUSION, PLANNED,
     TEAM_LEADER_HIGHLIGHT, TEAM_HIGHLIGHT, DRAW_MORALE, ROAD, NO_UP_MOVEMENT, REMEMBER, SPIRIT_DAMAGE, HOSTILE);
-RICH_ENUM(ViewObjectAttribute, WOUNDED, BURNING, ATTACK, DEFENSE, LEVEL, WATER_DEPTH, EFFICIENCY, MORALE);
+RICH_ENUM(ViewObjectAttribute, WOUNDED, BURNING, WATER_DEPTH, EFFICIENCY, MORALE);
 
 struct MovementInfo {
   enum Type { MOVE, ATTACK };
-  MovementInfo(Vec2, double, double, Type);
+  MovementInfo(Vec2 direction, double tBegin, double tEnd, Type);
   MovementInfo();
   Vec2 direction;
   double tBegin;
@@ -54,23 +55,28 @@ class ViewObject {
   ViewObject& setAttribute(Attribute, double);
   optional<float> getAttribute(Attribute) const;
 
-  vector<string> getLegend() const;
-  const char* getDescription() const;
+  using CreatureAttributes = EnumMap<AttrType, std::uint16_t>;
+  void setCreatureAttributes(CreatureAttributes);
+  const optional<CreatureAttributes>& getCreatureAttributes() const;
 
-  void setIndoors(bool);
+  const char* getDescription() const;
 
   ViewLayer layer() const;
   ViewId id() const;
   void setId(ViewId);
 
-  void setAdjectives(const vector<string>&);
+  void setGoodAdjectives(const string&);
+  void setBadAdjectives(const string&);
+  const string& getGoodAdjectives() const;
+  const string& getBadAdjectives() const;
+
   void setDescription(const string&);
 
   void addMovementInfo(MovementInfo);
   void clearMovementInfo();
   bool hasAnyMovementInfo() const;
   MovementInfo getLastMovementInfo() const;
-  Vec2 getMovementInfo(double tBegin, double tEnd, UniqueEntity<Creature>::Id controlledId) const;
+  Vec2 getMovementInfo(double tBegin) const;
 
   void setCreatureId(UniqueEntity<Creature>::Id);
   optional<UniqueEntity<Creature>::Id> getCreatureId() const;
@@ -84,7 +90,6 @@ class ViewObject {
   private:
   string getAttributeString(Attribute) const;
   const char* getDefaultDescription() const;
-  enum EnemyStatus { HOSTILE, FRIENDLY, UNKNOWN };
   EnumSet<Modifier> SERIAL(modifiers);
   EnumMap<Attribute, optional<float>> SERIAL(attributes);
   ViewId SERIAL(resource_id);
@@ -92,14 +97,15 @@ class ViewObject {
   optional<string> SERIAL(description);
   optional<Dir> SERIAL(attachmentDir);
   optional<UniqueEntity<Creature>::Id> SERIAL(creatureId);
-  vector<string> SERIAL(adjectives);
-  optional<bool> indoors;
+  string SERIAL(goodAdjectives);
+  string SERIAL(badAdjectives);
+  optional<CreatureAttributes> SERIAL(creatureAttributes);
 
   class MovementQueue {
     public:
     void add(MovementInfo);
     const MovementInfo& getLast() const;
-    Vec2 getTotalMovement(double tBegin, double tEnd) const;
+    Vec2 getTotalMovement(double tBegin) const;
     bool hasAny() const;
     void clear();
 

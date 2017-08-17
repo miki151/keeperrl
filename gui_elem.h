@@ -73,6 +73,7 @@ class GuiFactory {
   SGuiElem button(function<void()>, SDL::SDL_Keysym, bool capture = false);
   SGuiElem buttonChar(function<void()>, char, bool capture = false, bool useAltIfWasdScrolling = false);
   SGuiElem button(function<void()>);
+  SGuiElem buttonPos(function<void(Rectangle, Vec2)>);
   SGuiElem buttonRightClick(function<void()>);
   SGuiElem reverseButton(function<void()>, vector<SDL::SDL_Keysym> = {}, bool capture = false);
   SGuiElem buttonRect(function<void(Rectangle buttonBounds)>, SDL::SDL_Keysym, bool capture = false);
@@ -100,6 +101,7 @@ class GuiFactory {
     ListBuilder& addElemAuto(SGuiElem);
     ListBuilder& addBackElemAuto(SGuiElem);
     ListBuilder& addBackElem(SGuiElem, int size = 0);
+    ListBuilder& addBackSpace(int size = 0);
     ListBuilder& addMiddleElem(SGuiElem);
     SGuiElem buildVerticalList();
     SGuiElem buildVerticalListFit();
@@ -151,6 +153,8 @@ class GuiFactory {
   SGuiElem labelFun(function<string()>, Color = Color::WHITE);
   SGuiElem labelMultiLine(const string&, int lineHeight, int size = Renderer::textSize,
       Color = Color::WHITE);
+  SGuiElem labelMultiLineWidth(const string&, int lineHeight, int width, int size = Renderer::textSize,
+      Color = Color::WHITE, char delim = ' ');
   SGuiElem centeredLabel(Renderer::CenterType, const string&, int size, Color = Color::WHITE);
   SGuiElem centeredLabel(Renderer::CenterType, const string&, Color = Color::WHITE);
   SGuiElem variableLabel(function<string()>, int lineHeight, int size = Renderer::textSize,
@@ -200,6 +204,8 @@ class GuiFactory {
   SGuiElem dragSource(DragContent, function<SGuiElem()>);
   SGuiElem dragListener(function<void(DragContent)>);
   SGuiElem renderInBounds(SGuiElem);
+  using CustomDrawFun = function<void(Renderer&, Rectangle)>;
+  SGuiElem drawCustom(CustomDrawFun);
 
   enum class TexId {
     SCROLLBAR,
@@ -275,12 +281,6 @@ class GuiFactory {
     BUILDING,
     DEITIES,
     HIGHLIGHT,
-    STAT_ATT,
-    STAT_DEF,
-    STAT_ACC,
-    STAT_SPD,
-    STAT_STR,
-    STAT_DEX,
     MORALE_1,
     MORALE_2,
     MORALE_3,
@@ -290,6 +290,7 @@ class GuiFactory {
   };
 
   SGuiElem icon(IconId, Alignment = Alignment::CENTER, Color = Color::WHITE);
+  SGuiElem icon(AttrType);
   Texture& get(TexId);
   SGuiElem spellIcon(SpellId);
   SGuiElem uiHighlightMouseOver(Color = Color::GREEN);
@@ -299,17 +300,18 @@ class GuiFactory {
   SGuiElem blink(SGuiElem);
   SGuiElem tutorialHighlight();
   SGuiElem rectangleBorder(Color);
+  SGuiElem renderTopLayer(SGuiElem content);
 
   private:
 
   SGuiElem getScrollbar();
   Vec2 getScrollButtonSize();
-  Texture& getIconTex(IconId);
   SDL::SDL_Keysym getHotkeyEvent(char) ;
 
   map<TexId, Texture> textures;
   vector<Texture> iconTextures;
-  vector<Texture> spellTextures;
+  map<AttrType, Texture> attrTextures;
+  map<SpellId, Texture> spellTextures;
   Clock* clock;
   Renderer& renderer;
   Options* options;

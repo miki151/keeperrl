@@ -95,14 +95,15 @@ void PositionMap<T>::serialize(Archive& ar, const unsigned int version) {
   ar(tables, outliers, defaultVal);
 }
 
-SERIALIZABLE_TMPL(PositionMap, int);
-SERIALIZABLE_TMPL(PositionMap, bool);
-SERIALIZABLE_TMPL(PositionMap, double);
+SERIALIZABLE_TMPL(PositionMap, int)
+SERIALIZABLE_TMPL(PositionMap, bool)
+SERIALIZABLE_TMPL(PositionMap, double)
 
 class Task;
 
-SERIALIZABLE_TMPL(PositionMap, WTask);
-SERIALIZABLE_TMPL(PositionMap, HighlightType);
-SERIALIZABLE_TMPL(PositionMap, vector<WTask>);
-SERIALIZABLE_TMPL(PositionMap, optional<ViewIndex>);
-SERIALIZABLE_TMPL(PositionMap, EnumMap<FurnitureLayer, optional<FurnitureType>>);
+SERIALIZABLE_TMPL(PositionMap, WTask)
+SERIALIZABLE_TMPL(PositionMap, HighlightType)
+SERIALIZABLE_TMPL(PositionMap, vector<WTask>)
+SERIALIZABLE_TMPL(PositionMap, optional<ViewIndex>)
+SERIALIZABLE_TMPL(PositionMap, optional<vector<Position>>)
+SERIALIZABLE_TMPL(PositionMap, EnumMap<FurnitureLayer, optional<FurnitureType>>)

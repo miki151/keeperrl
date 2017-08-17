@@ -37,7 +37,6 @@
 
 REGISTER_TYPE(Player);
 REGISTER_TYPE(Monster);
-REGISTER_TYPE(RangedWeapon);
 REGISTER_TYPE(PlayerControl);
 REGISTER_TYPE(VillageControl);
 REGISTER_TYPE(DoNothingController);

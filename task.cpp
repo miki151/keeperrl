@@ -42,6 +42,7 @@
 #include "construction_map.h"
 #include "furniture.h"
 #include "monster_ai.h"
+#include "vision.h"
 
 template <class Archive> 
 void Task::serialize(Archive& ar, const unsigned int version) {
@@ -231,14 +232,9 @@ class PickItem : public Task {
     return "Pick item " + toString(position);
   }
 
-  virtual void cancel() override {
-    callback->onCantPickItem(items);
-  }
-
   virtual MoveInfo getMove(WCreature c) override {
     CHECK(!pickedUp);
     if (!itemsExist(position)) {
-      callback->onCantPickItem(items);
       setDone();
       return NoMove;
     }
@@ -249,7 +245,6 @@ class PickItem : public Task {
           hereItems.push_back(it);
           items.erase(it);
         }
-      callback->onCantPickItem(items);
       if (hereItems.empty()) {
         setDone();
         return NoMove;
@@ -259,20 +254,16 @@ class PickItem : public Task {
         return {1.0, action.append([=](WCreature c) {
           pickedUp = true;
           onPickedUp();
-          callback->onTaskPickedUp(position, hereItems);
         })}; 
       else {
-        callback->onCantPickItem(items);
         setDone();
         return NoMove;
       }
     }
     if (auto action = c->moveTowards(position, true))
       return action;
-    else if (--tries == 0) {
-      callback->onCantPickItem(items);
+    else if (--tries == 0)
       setDone();
-    }
     return NoMove;
   }
 
@@ -430,8 +421,6 @@ class BringItem : public PickItem {
     if (!target)
       return c->drop(c->getEquipment().getItems(items.containsPredicate())).append(
           [this] (WCreature) {
-            callback->onCantPickItem(items);
-            cancel();
             setDone();
           });
     if (c->getPosition() == target) {
@@ -559,7 +548,8 @@ class ApplySquare : public Task {
       }
     } else {
       MoveInfo move(c->moveTowards(*position));
-      if (!move || (position->dist8(c->getPosition()) == 1 && position->getCreature())) {
+      if (!move || (position->dist8(c->getPosition()) == 1 && position->getCreature() &&
+          position->getCreature()->hasCondition(CreatureCondition::RESTRICTED_MOVEMENT))) {
         rejectedPosition.insert(*position);
         position = none;
         if (--invalidCount == 0) {
@@ -609,6 +599,83 @@ PTask Task::applySquare(WTaskCallback c, vector<Position> position, SearchType s
 
 namespace {
 
+class ArcheryRange : public Task {
+  public:
+  ArcheryRange(WTaskCallback c, vector<Position> pos) : callback(c), targets(pos) {}
+
+  virtual MoveInfo getMove(WCreature c) override {
+    if (Random.roll(50))
+      shootInfo = none;
+    if (!shootInfo)
+      shootInfo = getShootInfo(c);
+    if (!shootInfo)
+      return NoMove;
+    if (c->getPosition() != shootInfo->pos)
+      return c->moveTowards(shootInfo->pos, true);
+    if (Random.roll(3))
+      return c->wait();
+    for (auto pos = shootInfo->pos; pos != shootInfo->target; pos = pos.plus(shootInfo->dir)) {
+      if (auto other = pos.plus(shootInfo->dir).getCreature())
+        if (other->isFriend(c))
+          return c->wait();
+    }
+    if (auto move = c->fire(shootInfo->dir))
+      return move.append(
+          [this, target = shootInfo->target](WCreature c) {
+            callback->onAppliedSquare(c, target);
+            setDone();
+          });
+    return NoMove;
+  }
+
+  virtual string getDescription() const override {
+    return "Shoot at ..";
+  }
+
+  SERIALIZE_ALL(SUBCLASS(Task), callback, targets, shootInfo)
+  SERIALIZATION_CONSTRUCTOR(ArcheryRange)
+
+  private:
+  WTaskCallback SERIAL(callback);
+  vector<Position> SERIAL(targets);
+  struct ShootInfo {
+    Position SERIAL(pos);
+    Position SERIAL(target);
+    Vec2 SERIAL(dir);
+    SERIALIZE_ALL(pos, target, dir)
+  };
+  optional<ShootInfo> SERIAL(shootInfo);
+
+  optional<ShootInfo> getShootInfo(WCreature c) {
+    const int distance = 5;
+    auto getDir = [&](Position pos) -> optional<Vec2> {
+      for (Vec2 dir : Vec2::directions4(Random)) {
+        bool ok = true;
+        for (int i : Range(distance))
+          if (pos.minus(dir * (i + 1)).stopsProjectiles(c->getVision().getId())) {
+            ok = false;
+            break;
+          }
+        if (ok)
+          return dir;
+      }
+      return none;
+    };
+    for (auto pos : Random.permutation(targets))
+      if (auto dir = getDir(pos))
+        return ShootInfo{ pos.minus(*dir * distance), pos, *dir };
+    return none;
+  }
+};
+
+}
+
+PTask Task::archeryRange(WTaskCallback c, vector<Position> positions) {
+  return makeOwner<ArcheryRange>(c, positions);
+}
+
+namespace {
+
 class Kill : public Task {
   public:
   enum Type { ATTACK, TORTURE };
@@ -616,7 +683,7 @@ class Kill : public Task {
 
   CreatureAction getAction(WCreature c) {
     switch (type) {
-      case ATTACK: return c->attack(creature);
+      case ATTACK: return c->execute(creature);
       case TORTURE: return c->torture(creature);
     }
   }
@@ -1327,43 +1394,37 @@ class Spider : public Task {
       : origin(orig), positionsClose(pos), positionsFurther(pos2) {}
 
   virtual MoveInfo getMove(WCreature c) override {
-    if (Random.roll(10))
-      for (auto& pos : Random.permutation(positionsFurther))
-        if (pos.getCreature() && pos.getCreature()->isAffected(LastingEffect::ENTANGLED)) {
-          makeWeb = pos;
-          break;
-        }
-    if (!makeWeb && Random.roll(10)) {
-      vector<Position>& positions = Random.roll(10) ? positionsFurther : positionsClose;
-      for (auto& pos : Random.permutation(positions))
-        if (pos.canConstruct(FurnitureType::SPIDER_WEB) && !!c->moveTowards(pos, true)) {
-          makeWeb = pos;
-          break;
-        }
-    }
-    if (!makeWeb)
+    auto layer = Furniture::getLayer(FurnitureType::SPIDER_WEB);
+    for (auto pos : positionsFurther)
+      if (!pos.getFurniture(layer))
+        pos.addFurniture(FurnitureFactory::get(FurnitureType::SPIDER_WEB, c->getTribeId()));
+    for (auto& pos : Random.permutation(positionsFurther))
+      if (pos.getCreature() && pos.getCreature()->isAffected(LastingEffect::ENTANGLED)) {
+        attackPosition = pos;
+        break;
+      }
+    if (!attackPosition)
       return c->moveTowards(origin);
-    if (c->getPosition() == *makeWeb)
-      return c->wait().append([this](WCreature c) {
-          c->getPosition().addFurniture(FurnitureFactory::get(FurnitureType::SPIDER_WEB, c->getTribeId()));
-          setDone();
+    if (c->getPosition() == *attackPosition)
+      return c->wait().append([this](WCreature) {
+        attackPosition = none;
       });
     else
-      return c->moveTowards(*makeWeb, true);
+      return c->moveTowards(*attackPosition, true);
   }
 
   virtual string getDescription() const override {
     return "Spider";
   }
 
-  SERIALIZE_ALL(SUBCLASS(Task), origin, positionsClose, positionsFurther, makeWeb); 
-  SERIALIZATION_CONSTRUCTOR(Spider);
+  SERIALIZE_ALL(SUBCLASS(Task), origin, positionsClose, positionsFurther, attackPosition)
+  SERIALIZATION_CONSTRUCTOR(Spider)
 
   protected:
   Position SERIAL(origin);
   vector<Position> SERIAL(positionsClose);
   vector<Position> SERIAL(positionsFurther);
-  optional<Position> SERIAL(makeWeb);
+  optional<Position> SERIAL(attackPosition);
 };
 }
 
@@ -1371,28 +1432,29 @@ PTask Task::spider(Position origin, const vector<Position>& posClose, const vect
   return makeOwner<Spider>(origin, posClose, posFurther);
 }
 
-REGISTER_TYPE(Construction);
-REGISTER_TYPE(Destruction);
-REGISTER_TYPE(PickItem);
-REGISTER_TYPE(PickAndEquipItem);
-REGISTER_TYPE(EquipItem);
-REGISTER_TYPE(BringItem);
-REGISTER_TYPE(ApplyItem);
-REGISTER_TYPE(ApplySquare);
-REGISTER_TYPE(Kill);
-REGISTER_TYPE(Disappear);
-REGISTER_TYPE(Chain);
-REGISTER_TYPE(Explore);
-REGISTER_TYPE(AttackLeader);
-REGISTER_TYPE(KillFighters);
-REGISTER_TYPE(ConsumeItem);
-REGISTER_TYPE(Copulate);
-REGISTER_TYPE(Consume);
-REGISTER_TYPE(Eat);
-REGISTER_TYPE(GoTo);
-REGISTER_TYPE(TransferTo);
-REGISTER_TYPE(Whipping);
-REGISTER_TYPE(GoToAndWait);
-REGISTER_TYPE(DropItems);
-REGISTER_TYPE(CampAndSpawn);
-REGISTER_TYPE(Spider);
+REGISTER_TYPE(Construction)
+REGISTER_TYPE(Destruction)
+REGISTER_TYPE(PickItem)
+REGISTER_TYPE(PickAndEquipItem)
+REGISTER_TYPE(EquipItem)
+REGISTER_TYPE(BringItem)
+REGISTER_TYPE(ApplyItem)
+REGISTER_TYPE(ApplySquare)
+REGISTER_TYPE(Kill)
+REGISTER_TYPE(Disappear)
+REGISTER_TYPE(Chain)
+REGISTER_TYPE(Explore)
+REGISTER_TYPE(AttackLeader)
+REGISTER_TYPE(KillFighters)
+REGISTER_TYPE(ConsumeItem)
+REGISTER_TYPE(Copulate)
+REGISTER_TYPE(Consume)
+REGISTER_TYPE(Eat)
+REGISTER_TYPE(GoTo)
+REGISTER_TYPE(TransferTo)
+REGISTER_TYPE(Whipping)
+REGISTER_TYPE(GoToAndWait)
+REGISTER_TYPE(DropItems)
+REGISTER_TYPE(CampAndSpawn)
+REGISTER_TYPE(Spider)
+REGISTER_TYPE(ArcheryRange)

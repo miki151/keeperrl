@@ -23,7 +23,6 @@ RICH_ENUM(TechId,
   ALCHEMY_ADV,
   HUMANOID_MUT,
   BEAST_MUT,
-  CRAFTING,
   PIGSTY,
   IRON_WORKING,
   STEEL_MAKING,
@@ -34,6 +33,7 @@ RICH_ENUM(TechId,
   SPELLS,
   SPELLS_ADV,
   SPELLS_MAS,
+  MAGICAL_WEAPONS,
   GEOLOGY1,
   GEOLOGY2,
   GEOLOGY3,
@@ -42,20 +42,24 @@ RICH_ENUM(TechId,
 
 class Spell;
 class Collective;
+class CostInfo;
 
 class Technology : public Singleton<Technology, TechId> {
   public:
   Technology(const string& name, const string& description, int cost, const vector<TechId>& prerequisites = {},
       bool canResearch = true);
   const string& getName() const;
-  int getCost() const;
+  CostInfo getCost() const;
   bool canResearch() const;
   Technology* setTutorialHighlight(TutorialHighlight);
   const string& getDescription() const;
   const optional<TutorialHighlight> getTutorialHighlight() const;
-  static vector<Technology*> getSorted();
   const vector<Technology*> getPrerequisites() const;
   const vector<Technology*> getAllowed() const;
+
+  static CostInfo getAvailableResource(WConstCollective);
+
+  static vector<Technology*> getSorted();
   static vector<Technology*> getNextTechs(const vector<Technology*>& current);
   static vector<Spell*> getSpellLearning(TechId tech);
   static vector<Spell*> getAvailableSpells(WConstCollective);

@@ -73,7 +73,7 @@ vector<PItem> Inventory::removeAllItems() {
   return items.removeAll();
 }
 
-vector<WItem> Inventory::getItems(function<bool (WItem)> predicate) const {
+vector<WItem> Inventory::getItems(function<bool(WConstItem)> predicate) const {
   vector<WItem> ret;
   for (const PItem& item : items.getElems())
     if (predicate(item.get()))
@@ -104,7 +104,7 @@ const vector<WItem>& Inventory::getItems() const {
   return itemsCache.getElems();
 }
 
-bool Inventory::hasItem(const WItem itemRef) const {
+bool Inventory::hasItem(WConstItem itemRef) const {
   return !!itemsCache.fetch(itemRef->getUniqueId());
 }
 

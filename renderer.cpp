@@ -226,12 +226,12 @@ void Texture::addTexCoord(int x, int y) const {
 
 Texture::Texture() {
 }
-  
-void Texture::render(Vec2 a, Vec2 b, Vec2 p, Vec2 k, optional<Color> color, bool vFlip, bool hFlip) const {
-  if (vFlip)
-    swap(p.y, k.y);
-  if (hFlip)
-    swap(p.x, k.x);
+
+void Texture::render(Vec2 topLeft, Vec2 bottomRight, Vec2 p, Vec2 k, optional<Color> color) const {
+  render(topLeft, Vec2(bottomRight.x, topLeft.y), bottomRight, Vec2(topLeft.x, bottomRight.y), p, k, color);
+}
+
+void Texture::render(Vec2 a, Vec2 b, Vec2 c, Vec2 d, Vec2 p, Vec2 k, optional<Color> color) const {
   SDL::glBindTexture(GL_TEXTURE_2D, (*texId));
   checkOpenglError();
   SDL::glEnable(GL_TEXTURE_2D);
@@ -243,11 +243,11 @@ void Texture::render(Vec2 a, Vec2 b, Vec2 p, Vec2 k, optional<Color> color, bool
   addTexCoord(p.x, p.y);
   SDL::glVertex2f(a.x, a.y);
   addTexCoord(k.x, p.y);
-  SDL::glVertex2f(b.x, a.y);
-  addTexCoord(k.x, k.y);
   SDL::glVertex2f(b.x, b.y);
+  addTexCoord(k.x, k.y);
+  SDL::glVertex2f(c.x, c.y);
   addTexCoord(p.x, k.y);
-  SDL::glVertex2f(a.x, b.y);
+  SDL::glVertex2f(d.x, d.y);
   SDL::glEnd();
   SDL::glDisable(GL_TEXTURE_2D);
   checkOpenglError();
@@ -343,13 +343,30 @@ void Renderer::drawSprite(Vec2 pos, Vec2 stretchSize, const Texture& t) {
   drawSprite(pos, Vec2(0, 0), t.getSize(), t, stretchSize);
 }
 
-void Renderer::drawSprite(Vec2 pos, Vec2 source, Vec2 size, const Texture& t, optional<Vec2> targetSize,
-    optional<Color> color, bool vFlip, bool hFlip) {
-  addRenderElem([&t, pos, source, size, targetSize, color, vFlip, hFlip] {
-      if (targetSize)
-        t.render(pos, pos + *targetSize, source, source + size, color, vFlip, hFlip);
-      else
-        t.render(pos, pos + size, source, source + size, color, vFlip, hFlip);
+static Vec2 rotate(Vec2 pos, Vec2 origin, double x, double y) {
+  Vec2 v = pos - origin;
+  return origin + Vec2(v.x * x - v.y * y, v.x * y + v.y * x);
+}
+
+void Renderer::drawSprite(Vec2 pos, Vec2 source, Vec2 size, const Texture& t,
+    optional<Vec2> targetSize, optional<Color> color, SpriteOrientation orientation) {
+  addRenderElem([&t, pos, source, size, targetSize, color, orientation] {
+      Vec2 a = pos;
+      Vec2 c = targetSize ? (a + *targetSize) : (a + size);
+      Vec2 b(c.x, a.y);
+      Vec2 d(a.x, c.y);
+      if (orientation.horizontalFlip) {
+        swap(a, b);
+        swap(c, d);
+      }
+      if (orientation.x != 1 || orientation.y != 0) {
+        Vec2 mid = (a + c) / 2;
+        a = rotate(a, mid, orientation.x, orientation.y);
+        b = rotate(b, mid, orientation.x, orientation.y);
+        c = rotate(c, mid, orientation.x, orientation.y);
+        d = rotate(d, mid, orientation.x, orientation.y);
+      }
+      t.render(a, b, c, d, source, source + size, color);
   });
 }
 
@@ -585,7 +602,7 @@ Color Renderer::getBleedingColor(const ViewObject& object) {
     return Color::f(1, max(0., 1 - bleeding), max(0., 1 - bleeding));
 }
 
-void Renderer::drawTile(Vec2 pos, TileCoord coord, Vec2 size, Color color, bool hFlip, bool vFlip) {
+void Renderer::drawTile(Vec2 pos, TileCoord coord, Vec2 size, Color color, SpriteOrientation orientation) {
   CHECK(coord.texNum >= 0 && coord.texNum < Renderer::tiles.size());
   Texture* tex = &tiles[coord.texNum];
   Vec2 sz = tileSize[coord.texNum];
@@ -598,7 +615,7 @@ void Renderer::drawTile(Vec2 pos, TileCoord coord, Vec2 size, Color color, bool 
     tex = &altTiles[coord.texNum];
   }
   Vec2 coordPos = coord.pos.mult(sz);
-  drawSprite(pos + off, coordPos, sz, *tex, tileSize, color, vFlip, hFlip);
+  drawSprite(pos + off, coordPos, sz, *tex, tileSize, color, orientation);
 }
 
 void Renderer::drawTile(Vec2 pos, TileCoord coord, double scale, Color color) {
@@ -628,10 +645,10 @@ void Renderer::drawViewObject(Vec2 pos, ViewId id, bool useSprite, double scale,
         pos.x + scale * nominalSize.x / 2, pos.y, tile.text, HOR);
 }
 
-void Renderer::drawViewObject(Vec2 pos, ViewId id, bool useSprite, Vec2 size, Color color) {
+void Renderer::drawViewObject(Vec2 pos, ViewId id, bool useSprite, Vec2 size, Color color, SpriteOrientation orient) {
   const Tile& tile = Tile::getTile(id, useSprite);
   if (tile.hasSpriteCoord())
-    drawTile(pos, tile.getSpriteCoord(DirSet::fullSet()), size, color * tile.color);
+    drawTile(pos, tile.getSpriteCoord(DirSet::fullSet()), size, color * tile.color, orient);
   else
     drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TEXT_FONT, size.y, color * tile.color, pos.x, pos.y,
         tile.text);

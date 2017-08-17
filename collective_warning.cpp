@@ -12,6 +12,7 @@
 #include "territory.h"
 #include "item.h"
 #include "minion_task.h"
+#include "experience_type.h"
 
 SERIALIZE_DEF(CollectiveWarnings, warnings, warningTimes, lastWarningTime)
 
@@ -26,8 +27,8 @@ void CollectiveWarnings::disable() {
 void CollectiveWarnings::considerWarnings(WCollective col) {
   setWarning(Warning::MANA, col->numResource(CollectiveResourceId::MANA) < 100);
   setWarning(Warning::DIGGING, col->getTerritory().isEmpty());
-  setWarning(Warning::LIBRARY, !col->getTerritory().isEmpty() &&
-      col->getConstructions().getTotalCount(FurnitureType::BOOKCASE) == 0);
+  /*setWarning(Warning::LIBRARY, !col->getTerritory().isEmpty() &&
+      col->getConstructions().getTotalCount(FurnitureType::BOOKCASE) == 0);*/
   for (SpawnType spawnType : ENUM_ALL(SpawnType)) {
     DormInfo info = col->getConfig().getDormInfo()[spawnType];
     if (info.warning)
@@ -78,21 +79,21 @@ void CollectiveWarnings::considerTorchesWarning(WCollective col) {
 }
 
 void CollectiveWarnings::considerTrainingRoomWarning(WCollective col) {
-  optional<FurnitureType> firstDummy;
+  /*optional<FurnitureType> firstDummy;
   for (auto dummyType : MinionTasks::getAllFurniture(MinionTask::TRAIN))
     if (!firstDummy ||
-        *col->getConfig().getTrainingMaxLevelIncrease(dummyType) <
-            *col->getConfig().getTrainingMaxLevelIncrease(*firstDummy))
+        *col->getConfig().getTrainingMaxLevelIncrease(ExperienceType::MELEE, dummyType) <
+            *col->getConfig().getTrainingMaxLevelIncrease(ExperienceType::MELEE, *firstDummy))
       firstDummy = dummyType;
   setWarning(Warning::TRAINING, false);
   setWarning(Warning::TRAINING_UPGRADE, false);
   for (auto creature : col->getCreatures())
-    if (auto type = col->getMissingTrainingDummy(creature)) {
+    if (auto type = col->getMissingTrainingFurniture(creature)) {
       if (type == firstDummy)
         setWarning(Warning::TRAINING, true);
       else
         setWarning(Warning::TRAINING_UPGRADE, true);
-    }
+    }*/
 }
 
 const char* CollectiveWarnings::getText(Warning w) {

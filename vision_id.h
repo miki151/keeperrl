@@ -4,6 +4,5 @@
 
 RICH_ENUM(VisionId,
   ELF,
-  NIGHT,
   NORMAL
 );

@@ -18,11 +18,17 @@
 #include "util.h"
 #include "item.h"
 
-class RangedWeapon : public Item {
+class RangedWeapon {
   public:
-  RangedWeapon(const ItemAttributes&);
+  RangedWeapon(AttrType damageAttr, const string& projectileName, ViewId projectileViewId);
 
-  virtual void fire(WCreature, PItem ammo, Vec2 dir);
+  void fire(WCreature c, Vec2 dir) const;
+  AttrType getDamageAttr() const;
 
   SERIALIZATION_DECL(RangedWeapon);
+
+  private:
+  AttrType SERIAL(damageAttr);
+  string SERIAL(projectileName);
+  ViewId SERIAL(projectileViewId);
 };

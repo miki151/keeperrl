@@ -7,8 +7,8 @@ bool CollectiveTeams::contains(TeamId team, WConstCreature c) const {
 }
 
 void CollectiveTeams::add(TeamId team, WCreature c) {
-  CHECK(!teamInfo[team].creatures.contains(c));
-  teamInfo[team].creatures.push_back(c);
+  if(!teamInfo[team].creatures.contains(c))
+    teamInfo[team].creatures.push_back(c);
 }
 
 void CollectiveTeams::remove(TeamId team, WCreature c) {
@@ -47,10 +47,6 @@ WCreature CollectiveTeams::getLeader(TeamId team) const {
 }
 
 const vector<WCreature>& CollectiveTeams::getMembers(TeamId team) const {
-  return teamInfo.at(team).creatures;
-}
-
-vector<WCreature> CollectiveTeams::getMembers(TeamId team) {
   return teamInfo.at(team).creatures;
 }
 

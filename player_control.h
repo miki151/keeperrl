@@ -41,6 +41,8 @@ class CostInfo;
 struct WorkshopItem;
 class ScrollPosition;
 class Tutorial;
+struct BuildInfo;
+class MoveInfo;
 
 class PlayerControl : public CreatureView, public CollectiveControl, public EventListener<PlayerControl> {
   public:
@@ -58,33 +60,18 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   bool isTurnBased();
   void leaveControl();
   bool swapTeam();
-  void onControlledKilled();
+  void toggleControlAllTeamMembers();
+  void onControlledKilled(WConstCreature victim);
   void setTutorial(STutorial);
   STutorial getTutorial() const;
 
-  enum class RequirementId {
-    TECHNOLOGY,
-    VILLAGE_CONQUERED,
-  };
-  typedef EnumVariant<RequirementId, TYPES(TechId),
-      ASSIGN(TechId, RequirementId::TECHNOLOGY)> Requirement;
-
-  static string getRequirementText(Requirement);
-
-  struct RoomInfo {
-    string name;
-    string description;
-    vector<Requirement> requirements;
-  };
-  static vector<RoomInfo> getRoomInfo();
-
-  SERIALIZATION_DECL(PlayerControl);
+  SERIALIZATION_DECL(PlayerControl)
 
   vector<WCreature> getTeam(WConstCreature);
   optional<FurnitureType> getMissingTrainingDummy(WConstCreature);
 
   void onEvent(const GameEvent&);
-  WCreature getControlled() const;
+  const vector<WCreature>& getControlled() const;
 
   private:
   struct Private {};
@@ -99,10 +86,9 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   virtual void getViewIndex(Vec2 pos, ViewIndex&) const override;
   virtual void refreshGameInfo(GameInfo&) const override;
   virtual Vec2 getPosition() const override;
-  virtual optional<MovementInfo> getMovementInfo() const override;
   virtual vector<Vec2> getVisibleEnemies() const override;
   virtual double getLocalTime() const override;
-  virtual bool isPlayerView() const override;
+  virtual CenterType getCenterType() const override;
   virtual vector<Vec2> getUnknownLocations(WConstLevel) const override;
 
   // from CollectiveControl
@@ -112,8 +98,9 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   virtual void onMemberAdded(WConstCreature) override;
   virtual void onConstructed(Position, FurnitureType) override;
   virtual void onClaimedSquare(Position) override;
-  virtual void onDestructed(Position, const DestroyAction&) override;
+  virtual void onDestructed(Position, FurnitureType, const DestroyAction&) override;
   virtual void onNoEnemies() override;
+  virtual void onPositionDiscovered(Position) override;
   virtual void tick() override;
   virtual void update(bool currentlyActive) override;
 
@@ -133,8 +120,8 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void updateSquareMemory(Position);
   void updateKnownLocations(const Position&);
   bool isEnemy(WConstCreature) const;
-  vector<WCollective> getKnownVillains(VillainType) const;
-  WCollective getVillain(int num);
+  vector<WCollective> getKnownVillains() const;
+  WCollective getVillain(UniqueEntity<Collective>::Id num);
   void scrollToMiddle(const vector<Position>&);
 
   WCreature getConsumptionTarget(View*, WCreature consumer);
@@ -143,8 +130,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void commandTeam(TeamId);
   void setScrollPos(Position);
 
-  struct BuildInfo;
-  bool meetsRequirement(Requirement) const;
   bool canSelectRectangle(const BuildInfo&);
   void handleSelection(Vec2 pos, const BuildInfo&, bool rectangle, bool deselectOnly = false);
   vector<CollectiveInfo::Button> fillButtons(const vector<BuildInfo>& buildInfo) const;
@@ -184,7 +169,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void addConsumableItem(WCreature);
   void handleEquipment(View* view, WCreature creature);
   void fillEquipment(WCreature, PlayerInfo&) const;
-  void handlePersonalSpells(View*);
   void handleTrading(WCollective ally);
   void handlePillage(WCollective enemy);
   void handleRansom(bool pay);
@@ -198,6 +182,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   WModel getModel() const;
   WGame getGame() const;
   View* getView() const;
+  PController createMinionController(WCreature);
 
   mutable SMapMemory SERIAL(memory);
   bool SERIAL(showWelcomeMsg) = true;
@@ -227,7 +212,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   optional<PlayerMessage> findMessage(PlayerMessage::Id);
   void updateVisibleCreatures();
   vector<Vec2> SERIAL(visibleEnemies);
-  HeapAllocated<VisibilityMap> SERIAL(visibilityMap);
+  SVisibilityMap SERIAL(visibilityMap);
   bool firstRender = true;
   bool isNight = true;
   optional<UniqueEntity<Creature>::Id> draggedCreature;
@@ -235,5 +220,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   STutorial SERIAL(tutorial);
   void setChosenLibrary(bool);
   void acquireTech(int index);
+  SMessageBuffer SERIAL(controlModeMessages);
 };
 

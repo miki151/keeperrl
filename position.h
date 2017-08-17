@@ -17,6 +17,7 @@ class Sound;
 class Fire;
 class DestroyAction;
 class Inventory;
+class Vision;
 
 class Position {
   public:
@@ -45,9 +46,8 @@ class Position {
   Position plus(Vec2) const;
   Position minus(Vec2) const;
   bool operator < (const Position&) const;
-  void globalMessage(const PlayerMessage& playerCanSee, const PlayerMessage& cannot) const;
-  void globalMessage(const PlayerMessage& playerCanSee) const;
-  void globalMessage(WConstCreature, const PlayerMessage& playerCanSee, const PlayerMessage& cannot) const;
+  void unseenMessage(const PlayerMessage&) const;
+  void globalMessage(const PlayerMessage&) const;
   vector<Position> neighbors8() const;
   vector<Position> neighbors4() const;
   vector<Position> neighbors8(RandomGen&) const;
@@ -64,7 +64,7 @@ class Position {
   void addSound(const Sound&) const;
   void getViewIndex(ViewIndex&, WConstCreature viewer) const;
   const vector<WItem>& getItems() const;
-  vector<WItem> getItems(function<bool (WItem)> predicate) const;
+  vector<WItem> getItems(function<bool(WConstItem)> predicate) const;
   const vector<WItem>& getItems(ItemIndex) const;
   PItem removeItem(WItem);
   Inventory& modInventory() const;
@@ -100,12 +100,15 @@ class Position {
   void throwItem(PItem item, const Attack& attack, int maxDist, Vec2 direction, VisionId);
   void throwItem(vector<PItem> item, const Attack& attack, int maxDist, Vec2 direction, VisionId);
   bool canNavigate(const MovementType&) const;
-  vector<Position> getVisibleTiles(VisionId);
+  optional<double> getNavigationCost(const MovementType&) const;
+  optional<DestroyAction> getBestDestroyAction(const MovementType&) const;
+  vector<Position> getVisibleTiles(const Vision&);
   void updateConnectivity() const;
   void updateVisibility() const;
   bool canSeeThru(VisionId) const;
-  bool isVisibleBy(WConstCreature);
-  void clearItemIndex(ItemIndex);
+  bool stopsProjectiles(VisionId) const;
+  bool isVisibleBy(WConstCreature) const;
+  void clearItemIndex(ItemIndex) const;
   bool isChokePoint(const MovementType&) const;
   bool isConnectedTo(Position, const MovementType&) const;
   void updateMovement();
@@ -124,7 +127,7 @@ class Position {
   WFurniture modFurniture(FurnitureType) const;
   vector<WFurniture> modFurniture() const;
 
-  SERIALIZATION_DECL(Position);
+  SERIALIZATION_DECL(Position)
   int getHash() const;
 
   private:

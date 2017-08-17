@@ -18,7 +18,7 @@
 #include "skill.h"
 #include "enums.h"
 #include "creature.h"
-#include "modifier_type.h"
+#include "attr_type.h"
 #include "creature_attributes.h"
 
 string Skill::getName() const {
@@ -39,84 +39,31 @@ bool Skill::isDiscrete() const {
   return discrete;
 }
 
-static int archeryBonus(WConstCreature c, ModifierType t) {
-  switch (t) {
-    case ModifierType::FIRED_ACCURACY: return c->getAttributes().getSkills().getValue(SkillId::ARCHERY) * 10;
-    case ModifierType::FIRED_DAMAGE: return c->getAttributes().getSkills().getValue(SkillId::ARCHERY) * 10;
-    default: break;
-  }
-  return 0;
-}
-
-static int weaponBonus(WConstCreature c, ModifierType t) {
-  if (!c->getWeapon())
-    return 0;
-  switch (t) {
-    case ModifierType::ACCURACY: return c->getAttributes().getSkills().getValue(SkillId::WEAPON_MELEE) * 10;
-    case ModifierType::DAMAGE: return c->getAttributes().getSkills().getValue(SkillId::WEAPON_MELEE) * 10;
-    default: break;
-  }
-  return 0;
-}
-
-static int unarmedBonus(WConstCreature c, ModifierType t) {
-  if (c->getWeapon())
-    return 0;
-  switch (t) {
-    case ModifierType::ACCURACY: return c->getAttributes().getSkills().getValue(SkillId::UNARMED_MELEE) * 10;
-    case ModifierType::DAMAGE: return c->getAttributes().getSkills().getValue(SkillId::UNARMED_MELEE) * 10;
-    default: break;
-  }
-  return 0;
-}
-
-static int knifeBonus(WConstCreature c, ModifierType t) {
-  switch (t) {
-    case ModifierType::THROWN_ACCURACY:
-      return c->getAttributes().getSkills().getValue(SkillId::KNIFE_THROWING) * 10;
-    case ModifierType::THROWN_DAMAGE:
-      return c->getAttributes().getSkills().getValue(SkillId::KNIFE_THROWING) * 10;
-    default: break;
-  }
-  return 0;
-}
-
-int Skill::getModifier(WConstCreature c, ModifierType t) const {
-  switch (getId()) {
-    case SkillId::ARCHERY: return archeryBonus(c, t);
-    case SkillId::WEAPON_MELEE: return weaponBonus(c, t);
-    case SkillId::UNARMED_MELEE: return unarmedBonus(c, t);
-    case SkillId::KNIFE_THROWING: return knifeBonus(c, t);
-    default: break;
-  }
-  return 0;
-}
-
 void Skill::init() {
   Skill::set(SkillId::AMBUSH, new Skill("ambush",
         "Hide and ambush unsuspecting enemies. Press 'h' to hide on a tile that allows it.", true));
-  Skill::set(SkillId::KNIFE_THROWING, new Skill("knife throwing", "Throw knives with deadly precision.", false));
   Skill::set(SkillId::STEALING,
       new Skill("stealing", "Steal from other monsters. Not available for player ATM.", true));
   Skill::set(SkillId::SWIMMING, new Skill("swimming", "Cross water without drowning.", true));
-  Skill::set(SkillId::ARCHERY, new Skill("archery", "Shoot bows.", false));
-  Skill::set(SkillId::WEAPON_MELEE, new Skill("weapon melee", "Fight with weapons.", false));
-  Skill::set(SkillId::UNARMED_MELEE, new Skill("unarmed melee", "Fight unarmed.", false));
   Skill::set(SkillId::CONSTRUCTION, new Skill("construction", "Mine and construct rooms.", true, false));
-  Skill::set(SkillId::ELF_VISION, new Skill("elf vision", "See and shoot arrows through trees.", true));
-  Skill::set(SkillId::NIGHT_VISION, new Skill("night vision", "See in the dark.", true));
+  Skill::set(SkillId::DIGGING, new Skill("digging", "Dig.", true, false));
   Skill::set(SkillId::DISARM_TRAPS, new Skill("disarm traps", "Evade traps and disarm them.", true));
   Skill::set(SkillId::SORCERY, new Skill("sorcery", "Affects the length of spell cooldowns.", false));
   Skill::set(SkillId::CONSUMPTION, new Skill("absorbtion",
         "Absorb other creatures and retain their attributes.", true, false));
-  Skill::set(SkillId::HEALING, new Skill("healing", "Heal friendly creatures.", true));
+  Skill::set(SkillId::COPULATION, new Skill("copulation",
+        "Copulate with other creatures and give birth to hideus spawns.", true));
+  Skill::set(SkillId::SPIDER, new Skill("spin spider webs", "Spin spider webs.", true));
+  Skill::set(SkillId::CROPS, new Skill("tend crops", "Tend crops.", true));
+  Skill::set(SkillId::EXPLORE, new Skill("exploring", "Explore all surroundings.", true));
+  Skill::set(SkillId::EXPLORE_CAVES, new Skill("exploring caves", "Explore caves.", true));
+  Skill::set(SkillId::EXPLORE_NOCTURNAL, new Skill("exploring at night", "Explore at night.", true));
   Skill::set(SkillId::STEALTH, new Skill("stealth", "Fight without waking up creatures sleeping nearby.", true));
   Skill::set(SkillId::WORKSHOP, new Skill("workshop", "Craft items in the workshop.", false));
   Skill::set(SkillId::FORGE, new Skill("forge", "Craft items in the forge.", false));
   Skill::set(SkillId::LABORATORY, new Skill("laboratory", "Craft items in the laboratory.", false));
   Skill::set(SkillId::JEWELER, new Skill("jeweler", "Craft items at the jeweler's shop.", false));
   Skill::set(SkillId::FURNACE, new Skill("furnace", "Craft items at the furnace.", false));
-  Skill::set(SkillId::MANA, new Skill("mana production", "Affects mana production efficiency.", false));
 }
 
 bool Skill::transferOnConsumption() const {

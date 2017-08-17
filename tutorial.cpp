@@ -46,7 +46,6 @@ enum class Tutorial::State {
   ACCEPT_IMMIGRANT,
   TORCHES,
   FLOORS,
-  RESEARCH_CRAFTING,
   BUILD_WORKSHOP,
   SCHEDULE_WORKSHOP_ITEMS,
   ORDER_CRAFTING,
@@ -101,21 +100,19 @@ bool Tutorial::canContinue(WConstGame game) const {
       return collective->getConstructions().getBuiltCount(FurnitureType::DOOR)
           + collective->getConstructions().getBuiltCount(FurnitureType::LOCKED_DOOR) >= 1;
     case State::BUILD_LIBRARY:
-      return collective->getConstructions().getBuiltCount(FurnitureType::BOOKCASE) >= 5;
+      return collective->getConstructions().getBuiltCount(FurnitureType::BOOKCASE_WOOD) >= 5;
     case State::DIG_2_ROOMS:
       return getHighlightedSquaresHigh(game).empty();
     case State::ACCEPT_IMMIGRANT:
       return collective->getCreatures(MinionTrait::FIGHTER).size() >= 1;
     case State::TORCHES:
-      for (auto furniture : {FurnitureType::BOOKCASE, FurnitureType::TRAINING_WOOD})
+      for (auto furniture : {FurnitureType::BOOKCASE_WOOD, FurnitureType::TRAINING_WOOD})
         for (auto pos : collective->getConstructions().getBuiltPositions(furniture))
           if (collective->getTileEfficiency().getEfficiency(pos) < 0.99)
             return false;
       return true;
     case State::FLOORS:
       return getHighlightedSquaresLow(game).empty();
-    case State::RESEARCH_CRAFTING:
-      return collective->hasTech(TechId::CRAFTING);
     case State::BUILD_WORKSHOP:
       return collective->getConstructions().getBuiltCount(FurnitureType::WORKSHOP) >= 2 &&
           collective->getZones().getPositions(ZoneId::STORAGE_EQUIPMENT).size() >= 1;
@@ -144,7 +141,7 @@ bool Tutorial::canContinue(WConstGame game) const {
     case State::CREATE_TEAM:
       return isTeam(collective);
     case State::CONTROL_TEAM:
-      return isTeam(collective) && !!game->getPlayerControl()->getControlled();
+      return isTeam(collective) && !game->getPlayerControl()->getControlled().empty();
     case State::CONTROL_MODE_MOVEMENT:
       return true;
     case State::DISCOVER_VILLAGE:
@@ -160,7 +157,7 @@ bool Tutorial::canContinue(WConstGame game) const {
           return false;
       return true;
     case State::LEAVE_CONTROL:
-      return !game->getPlayerControl()->getControlled();
+      return game->getPlayerControl()->getControlled().empty();
     case State::SUMMARY1:
     case State::SUMMARY2:
       return true;
@@ -234,12 +231,10 @@ string Tutorial::getMessage() const {
       return "Minions are also more efficient if there is a nice floor where they are working. For now you can only "
           "afford wooden floor, but it should do.\n \n"
           "Make sure you have enough wood!";
-    case State::RESEARCH_CRAFTING:
+    case State::BUILD_WORKSHOP:
       return "Your minions will need equipment, such as weapons, armor, and consumables, to be more deadly in "
           "combat.\n \n"
-          "Before you can produce anything, click on your library, bring up the research menu and unlock crafting.";
-    case State::BUILD_WORKSHOP:
-      return "Build at least 2 workshop stands in your dungeon. It's best to dig out a dedicated room for them. "
+          "Build at least 2 workshop stands in your dungeon. It's best to dig out a dedicated room for them. "
           "You will also need a storage area for equipment. Place it somewhere near your workshop.";
     case State::SCHEDULE_WORKSHOP_ITEMS:
       return "Weapons are the most important piece of equipment, because unarmed, your minions have little chance "
@@ -321,8 +316,6 @@ EnumSet<TutorialHighlight> Tutorial::getHighlights(WConstGame game) const {
       return {TutorialHighlight::BUILD_TORCH};
     case State::FLOORS:
       return {TutorialHighlight::BUILD_FLOOR};
-    case State::RESEARCH_CRAFTING:
-      return {TutorialHighlight::RESEARCH_CRAFTING};
     case State::BUILD_WORKSHOP:
       return {TutorialHighlight::EQUIPMENT_STORAGE, TutorialHighlight::BUILD_WORKSHOP};
     case State::SCHEDULE_WORKSHOP_ITEMS:
@@ -398,16 +391,13 @@ vector<Vec2> Tutorial::getHighlightedSquaresLow(WConstGame game) const {
     }
     case State::FLOORS: {
       vector<Vec2> ret;
-      for (auto furniture : {FurnitureType::BOOKCASE, FurnitureType::TRAINING_WOOD})
+      for (auto furniture : {FurnitureType::BOOKCASE_WOOD, FurnitureType::TRAINING_WOOD})
         for (auto pos : collective->getConstructions().getBuiltPositions(furniture))
           for (auto floorPos : concat({pos}, pos.neighbors8()))
             if (floorPos.canConstruct(FurnitureType::FLOOR_WOOD1) && !ret.contains(floorPos.getCoord()))
               ret.push_back(floorPos.getCoord());
       return ret;
     }
-    case State::RESEARCH_CRAFTING:
-      return collective->getConstructions().getBuiltPositions(FurnitureType::BOOKCASE).transform(
-          [](const Position& pos) { return pos.getCoord(); });
     case State::SCHEDULE_WORKSHOP_ITEMS:
       return collective->getConstructions().getBuiltPositions(FurnitureType::WORKSHOP).transform(
           [](const Position& pos) { return pos.getCoord(); });
@@ -430,7 +420,7 @@ optional<string> Tutorial::getWarning(WConstGame game) const {
     case State::LEAVE_CONTROL:
       return none;
     default:
-      if (game->getPlayer())
+      if (!game->getPlayerCreatures().empty())
         return "Press [U] to leave control mode."_s;
       else
         return none;

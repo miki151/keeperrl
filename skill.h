@@ -22,26 +22,25 @@
 
 RICH_ENUM(SkillId,
   AMBUSH,
-  KNIFE_THROWING,
   STEALING,
   SWIMMING,
-  ARCHERY,
-  WEAPON_MELEE,
-  UNARMED_MELEE,
   CONSTRUCTION,
-  ELF_VISION,
-  NIGHT_VISION,
+  DIGGING,
   DISARM_TRAPS,
   SORCERY,
   CONSUMPTION,
-  HEALING,
+  COPULATION,
+  CROPS,
+  SPIDER,
   STEALTH,
   WORKSHOP,
   FORGE,
   LABORATORY,
   JEWELER,
   FURNACE,
-  MANA
+  EXPLORE,
+  EXPLORE_NOCTURNAL,
+  EXPLORE_CAVES
 );
 
 class Creature;
@@ -53,7 +52,7 @@ class Skill : public Singleton<Skill, SkillId> {
   bool transferOnConsumption() const;
   bool isDiscrete() const;
 
-  int getModifier(WConstCreature, ModifierType) const;
+  int getModifier(WConstCreature, AttrType) const;
 
   static void init();
 

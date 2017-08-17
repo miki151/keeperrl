@@ -58,10 +58,8 @@ static vector<int> resistantTime { 20, 60, 200};
 static vector<int> levitateTime { 20, 60, 200};
 static vector<int> magicShieldTime { 5, 20, 60};
 static vector<double> gasAmount { 0.3, 0.8, 3};
-static vector<double> wordOfPowerDist { 1, 3, 10};
-static vector<int> blastRange { 2, 5, 10};
-static vector<int> creatureEffectRange { 2, 5, 10};
-
+static vector<int> wordOfPowerDist { 1, 3, 10};
+static vector<int> directedEffectRange { 2, 5, 10};
 
 vector<WCreature> Effect::summonCreatures(Position pos, int radius, vector<PCreature> creatures, double delay) {
   vector<Position> area = pos.getRectangle(Rectangle(-Vec2(radius, radius), Vec2(radius + 1, radius + 1)));
@@ -87,13 +85,8 @@ static void deception(WCreature creature) {
   Effect::summonCreatures(creature, 2, std::move(creatures));
 }
 
-static void creatureEffect(WCreature who, EffectType type, EffectStrength str, Vec2 direction, int range) {
-  for (Vec2 v = direction * (range - 1); v.length4() >= 1; v -= direction)
-    if (WCreature c = who->getPosition().plus(v).getCreature())
-      Effect::applyToCreature(c, type, str);
-}
-
-static void blast(WCreature who, Position position, Vec2 direction, int maxDistance, bool damage) {
+static void airBlast(WCreature who, Position position, Vec2 direction) {
+  constexpr int maxDistance = 4;
   if (WCreature c = position.getCreature()) {
     int dist = 0;
     for (int i : Range(1, maxDistance))
@@ -105,43 +98,26 @@ static void blast(WCreature who, Position position, Vec2 direction, int maxDista
       c->displace(who->getLocalTime(), direction * dist);
       c->you(MsgType::ARE, "thrown back");
     }
-    if (damage)
-      c->takeDamage(Attack(who, AttackLevel::MIDDLE, AttackType::SPELL, 1000, 32, false));
   }
-  for (auto elem : Item::stackItems(position.getItems())) {
+  for (auto& stack : Item::stackItems(position.getItems())) {
     position.throwItem(
-        position.removeItems(elem.second),
-        Attack(who, Random.choose(AttackLevel::LOW, AttackLevel::MIDDLE, AttackLevel::HIGH),
-          elem.second[0]->getAttackType(), 15, 15, false), maxDistance, direction, VisionId::NORMAL);
+        position.removeItems(stack),
+        Attack(who, Random.choose<AttackLevel>(),
+          stack[0]->getAttackType(), 15, AttrType::DAMAGE), maxDistance, direction, VisionId::NORMAL);
   }
-  if (damage)
-    for (auto furniture : position.modFurniture())
-      if (furniture->canDestroy(DestroyAction::Type::BASH))
-        furniture->destroy(position, DestroyAction::Type::BASH);
-}
-
-static void blast(WCreature c, Vec2 direction, int range) {
-  for (Vec2 v = direction * (range - 1); v.length4() >= 1; v -= direction)
-    blast(c, c->getPosition().plus(v), direction, range, true);
-}
-
-static void wordOfPower(WCreature c, int strength) {
-  c->getGame()->addEvent({EventId::EXPLOSION, c->getPosition()});
-  for (Vec2 v : Vec2::directions8(Random))
-    blast(c, c->getPosition().plus(v), v, wordOfPowerDist[strength], true);
-}
-
-static void airBlast(WCreature c, int strength) {
-  for (Vec2 v : Vec2::directions8(Random))
-    blast(c, c->getPosition().plus(v), v, wordOfPowerDist[strength], false);
+  for (auto furniture : position.modFurniture())
+    if (furniture->canDestroy(DestroyAction::Type::BASH))
+      furniture->destroy(position, DestroyAction::Type::BASH);
 }
 
 static void emitPoisonGas(Position pos, int strength, bool msg) {
   for (Position v : pos.neighbors8())
     pos.addPoisonGas(gasAmount[strength] / 2);
   pos.addPoisonGas(gasAmount[strength]);
-  if (msg)
-    pos.globalMessage("A cloud of gas is released", "You hear a hissing sound");
+  if (msg) {
+    pos.globalMessage("A cloud of gas is released");
+    pos.unseenMessage("You hear a hissing sound");
+  }
 }
 
 vector<WCreature> Effect::summon(WCreature c, CreatureId id, int num, int ttl, double delay) {
@@ -163,8 +139,8 @@ static void enhanceArmor(WCreature c, int mod = 1, const string msg = "is improv
     for (WItem item : c->getEquipment().getSlotItems(slot))
       if (item->getClass() == ItemClass::ARMOR) {
         c->you(MsgType::YOUR, item->getName() + " " + msg);
-        if (item->getModifier(ModifierType::DEFENSE) > 0 || mod > 0)
-          item->addModifier(ModifierType::DEFENSE, mod);
+        if (item->getModifier(AttrType::DEFENSE) > 0 || mod > 0)
+          item->addModifier(AttrType::DEFENSE, mod);
         return;
       }
 }
@@ -172,7 +148,7 @@ static void enhanceArmor(WCreature c, int mod = 1, const string msg = "is improv
 static void enhanceWeapon(WCreature c, int mod = 1, const string msg = "is improved") {
   if (WItem item = c->getWeapon()) {
     c->you(MsgType::YOUR, item->getName() + " " + msg);
-    item->addModifier(Random.choose(ModifierType::ACCURACY, ModifierType::DAMAGE), mod);
+    item->addModifier(AttrType::DAMAGE, mod);
   }
 }
 
@@ -183,11 +159,12 @@ static void destroyEquipment(WCreature c) {
   return;
 }
 
-static void heal(WCreature c, int strength) {
-  if (c->getBody().canHeal() || (strength == int(EffectStrength::STRONG) && c->getBody().lostOrInjuredBodyParts()))
-    c->heal(1, strength == int(EffectStrength::STRONG));
-  else
-    c->playerMessage("You feel refreshed.");
+static void heal(WCreature c) {
+  if (c->getBody().canHeal()) {
+    c->heal(1);
+    c->removeEffect(LastingEffect::BLEEDING);
+  } else
+    c->message("Nothing happens.");
 }
 
 static void teleport(WCreature c) {
@@ -224,7 +201,7 @@ static void teleport(WCreature c) {
     }
   }
   if (maxW < 2) {
-    c->playerMessage("The spell didn't work.");
+    c->message("The spell didn't work.");
     return;
   }
   CHECK(!good.empty());
@@ -242,21 +219,24 @@ static void acid(WCreature c) {
 }
 
 static void alarm(WCreature c) {
-  c->getGame()->addEvent({EventId::ALARM, c->getPosition()});
+  c->getGame()->addEvent(EventInfo::Alarm{c->getPosition()});
 }
 
 static void teleEnemies(WCreature c) { // handled by Collective
 }
 
-double entangledTime(int strength) {
+static double entangledTime(int strength) {
   return max(5, 30 - strength / 2);
 }
 
-double getDuration(WConstCreature c, LastingEffect e, int strength) {
+static double getDuration(WConstCreature c, LastingEffect e, int strength) {
   switch (e) {
     case LastingEffect::PREGNANT: return 900;
+    case LastingEffect::NIGHT_VISION:
+    case LastingEffect::ELF_VISION: return 60;
     case LastingEffect::TIED_UP:
-    case LastingEffect::ENTANGLED: return entangledTime(entangledTime(c->getAttr(AttrType::STRENGTH)));
+    case LastingEffect::BLEEDING: return 50;
+    case LastingEffect::ENTANGLED: return entangledTime(entangledTime(c->getAttr(AttrType::DAMAGE)));
     case LastingEffect::HALLU:
     case LastingEffect::SLOWED:
     case LastingEffect::SPEED:
@@ -264,17 +244,24 @@ double getDuration(WConstCreature c, LastingEffect e, int strength) {
     case LastingEffect::DARKNESS_SOURCE:
     case LastingEffect::PANIC: return panicTime[strength];
     case LastingEffect::POISON: return poisonTime[strength];
-    case LastingEffect::DEX_BONUS:
-    case LastingEffect::STR_BONUS: return attrBonusTime[strength];
+    case LastingEffect::DEF_BONUS:
+    case LastingEffect::DAM_BONUS: return attrBonusTime[strength];
     case LastingEffect::BLIND: return blindTime[strength];
     case LastingEffect::INVISIBLE: return invisibleTime[strength];
     case LastingEffect::STUNNED: return stunTime[strength];
     case LastingEffect::FIRE_RESISTANT:
     case LastingEffect::POISON_RESISTANT: return resistantTime[strength];
     case LastingEffect::FLYING: return levitateTime[strength];
+    case LastingEffect::COLLAPSED: return 2;
     case LastingEffect::SLEEP: return sleepTime[strength];
     case LastingEffect::INSANITY: return insanityTime[strength];
-    case LastingEffect::MAGIC_SHIELD: return magicShieldTime[strength];
+    case LastingEffect::MAGIC_VULNERABILITY:
+    case LastingEffect::MELEE_VULNERABILITY:
+    case LastingEffect::RANGED_VULNERABILITY:
+    case LastingEffect::MAGIC_RESISTANCE:
+    case LastingEffect::MELEE_RESISTANCE:
+    case LastingEffect::RANGED_RESISTANCE:
+      return 30;
   }
   return 0;
 }
@@ -350,32 +337,78 @@ static CreatureId getSummonedElement(Position position) {
   return CreatureId::AIR_ELEMENTAL;
 }
 
-void Effect::applyToCreature(WCreature c, const EffectType& type, EffectStrength strengthEnum) {
-  int strength = int(strengthEnum);
-  switch (type.getId()) {
-    case EffectId::LEAVE_BODY: FATAL << "Implement"; break;
+static void damage(WCreature victim, const DamageInfo& info, WCreature attacker) {
+  CHECK(attacker) << "Unknown attacker";
+  victim->takeDamage(Attack(attacker, Random.choose<AttackLevel>(), info.attackType, attacker->getAttr(info.attr),
+      info.attr));
+}
+
+static bool isConsideredHostile(LastingEffect effect) {
+  switch (effect) {
+    case LastingEffect::BLIND:
+    case LastingEffect::ENTANGLED:
+    case LastingEffect::HALLU:
+    case LastingEffect::INSANITY:
+    case LastingEffect::PANIC:
+    case LastingEffect::POISON:
+    case LastingEffect::SLOWED:
+    case LastingEffect::STUNNED:
+      return true;
+    default:
+      return false;
+  }
+}
+
+static bool isConsideredHostile(const EffectType& effect) {
+  switch (effect.getId()) {
     case EffectId::LASTING:
-        c->addEffect(type.get<LastingEffect>(), getDuration(c, type.get<LastingEffect>(), strength)); break;
+      return isConsideredHostile(effect.get<LastingEffect>());
+    case EffectId::ACID:
+    case EffectId::DESTROY_EQUIPMENT:
+    case EffectId::SILVER_DAMAGE:
+    case EffectId::FIRE:
+    case EffectId::DAMAGE:
+      return true;
+    default:
+      return false;
+  }
+
+}
+
+void Effect::applyToCreature(WCreature c, const EffectType& effect, EffectStrength strengthEnum, WCreature attacker) {
+  int strength = int(strengthEnum);
+  switch (effect.getId()) {
+    case EffectId::LASTING:
+      c->addEffect(effect.get<LastingEffect>(), getDuration(c, effect.get<LastingEffect>(), strength));
+      break;
     case EffectId::TELE_ENEMIES: teleEnemies(c); break;
     case EffectId::ALARM: alarm(c); break;
     case EffectId::ACID: acid(c); break;
-    case EffectId::SUMMON: ::summon(c, type.get<CreatureId>()); break;
+    case EffectId::SUMMON: ::summon(c, effect.get<CreatureId>()); break;
     case EffectId::SUMMON_ELEMENT: ::summon(c, getSummonedElement(c->getPosition())); break;
     case EffectId::DECEPTION: deception(c); break;
-    case EffectId::WORD_OF_POWER: wordOfPower(c, strength); break;
-    case EffectId::AIR_BLAST: airBlast(c, strength); break;
+    case EffectId::CIRCULAR_BLAST:
+      for (Vec2 v : Vec2::directions8(Random))
+        applyDirected(c, v, DirEffectType(1, DirEffectId::BLAST), strengthEnum);
+      break;
     case EffectId::ENHANCE_ARMOR: enhanceArmor(c); break;
     case EffectId::ENHANCE_WEAPON: enhanceWeapon(c); break;
     case EffectId::DESTROY_EQUIPMENT: destroyEquipment(c); break;
-    case EffectId::HEAL: heal(c, strength); break;
+    case EffectId::HEAL: heal(c); break;
     case EffectId::FIRE: c->getPosition().fireDamage(fireAmount[strength]); break;
     case EffectId::TELEPORT: teleport(c); break;
     case EffectId::ROLLING_BOULDER: FATAL << "Not implemented"; break;
     case EffectId::EMIT_POISON_GAS: emitPoisonGas(c->getPosition(), strength, true); break;
     case EffectId::SILVER_DAMAGE: c->affectBySilver(); break;
     case EffectId::CURE_POISON: c->removeEffect(LastingEffect::POISON); break;
-    case EffectId::PLACE_FURNITURE: placeFurniture(c, type.get<FurnitureType>()); break;
+    case EffectId::PLACE_FURNITURE: placeFurniture(c, effect.get<FurnitureType>()); break;
+    case EffectId::DAMAGE: damage(c, effect.get<DamageInfo>(), attacker); break;
+    case EffectId::INJURE_BODY_PART: c->getBody().injureBodyPart(c, effect.get<BodyPart>(), false); break;
+    case EffectId::LOOSE_BODY_PART: c->getBody().injureBodyPart(c, effect.get<BodyPart>(), true); break;
+    case EffectId::REGROW_BODY_PART: c->getBody().healBodyParts(c, true); break;
   }
+  if (isConsideredHostile(effect) && attacker)
+    c->onAttackedBy(attacker);
 }
 
 void Effect::applyToPosition(Position pos, const EffectType& type, EffectStrength strength) {
@@ -385,12 +418,50 @@ void Effect::applyToPosition(Position pos, const EffectType& type, EffectStrengt
   }
 }
 
-void Effect::applyDirected(WCreature c, Vec2 direction, const DirEffectType& type, EffectStrength strength) {
-  switch (type.getId()) {
-    case DirEffectId::BLAST: blast(c, direction, blastRange[int(strength)]); break;
+static optional<ViewId> getProjectile(LastingEffect effect) {
+  switch (effect) {
+    case LastingEffect::STUNNED:
+      return ViewId::STUN_RAY;
+    default:
+      return none;
+  }
+}
+
+static optional<ViewId> getProjectile(const EffectType& effect) {
+  switch (effect.getId()) {
+    case EffectId::LASTING:
+      return getProjectile(effect.get<LastingEffect>());
+    case EffectId::DAMAGE:
+      return ViewId::FORCE_BOLT;
+    default:
+      return none;
+  }
+}
+
+static optional<ViewId> getProjectile(const DirEffectType& effect) {
+  switch (effect.getId()) {
+    case DirEffectId::BLAST:
+      return ViewId::AIR_BLAST;
     case DirEffectId::CREATURE_EFFECT:
-        creatureEffect(c, type.get<EffectType>(), strength, direction, creatureEffectRange[int(strength)]);
-        break;
+      return getProjectile(effect.get<EffectType>());
+  }
+}
+
+void Effect::applyDirected(WCreature c, Vec2 direction, const DirEffectType& type, EffectStrength strength) {
+  auto begin = c->getPosition();
+  int range = type.getRange();
+  if (auto projectile = getProjectile(type))
+    c->getGame()->addEvent(EventInfo::Projectile{*projectile, begin, begin.plus(direction * range)});
+  switch (type.getId()) {
+    case DirEffectId::BLAST:
+      for (Vec2 v = direction * range; v.length4() >= 1; v -= direction)
+        airBlast(c, c->getPosition().plus(v), direction);
+      break;
+    case DirEffectId::CREATURE_EFFECT:
+      for (Vec2 v = direction * range; v.length4() >= 1; v -= direction)
+        if (WCreature victim = c->getPosition().plus(v).getCreature())
+          Effect::applyToCreature(victim, type.get<EffectType>(), strength, c);
+      break;
   }
 }
 
@@ -428,18 +499,20 @@ string Effect::getName(const EffectType& type) {
     case EffectId::ENHANCE_ARMOR: return "armor enchantment";
     case EffectId::SUMMON: return getCreatureName(type.get<CreatureId>());
     case EffectId::SUMMON_ELEMENT: return "summon element";
-    case EffectId::WORD_OF_POWER: return "power";
-    case EffectId::AIR_BLAST: return "air blast";
+    case EffectId::CIRCULAR_BLAST: return "air blast";
     case EffectId::DECEPTION: return "deception";
-    case EffectId::LEAVE_BODY: return "possesion";
     case EffectId::FIRE: return "fire";
     case EffectId::ACID: return "acid";
     case EffectId::ALARM: return "alarm";
+    case EffectId::DAMAGE: return "damage";
     case EffectId::TELE_ENEMIES: return "surprise";
     case EffectId::SILVER_DAMAGE: return "silver";
     case EffectId::CURE_POISON: return "cure poisoning";
     case EffectId::LASTING: return getName(type.get<LastingEffect>());
     case EffectId::PLACE_FURNITURE: return Furniture::getName(type.get<FurnitureType>());
+    case EffectId::INJURE_BODY_PART: return "injure "_s + ::getName(type.get<BodyPart>());
+    case EffectId::LOOSE_BODY_PART: return "amputate "_s + ::getName(type.get<BodyPart>());
+    case EffectId::REGROW_BODY_PART: return "regrow lost body parts"_s;
   }
 }
 
@@ -459,7 +532,7 @@ static string getSummoningDescription(CreatureId id) {
 
 string Effect::getDescription(const EffectType& type) {
   switch (type.getId()) {
-    case EffectId::HEAL: return "Heals your wounds.";
+    case EffectId::HEAL: return "Fully restores health.";
     case EffectId::TELEPORT: return "Teleports to a safer location close by.";
     case EffectId::ROLLING_BOULDER: return "rolling boulder";
     case EffectId::EMIT_POISON_GAS: return "poison gas";
@@ -468,24 +541,28 @@ string Effect::getDescription(const EffectType& type) {
     case EffectId::ENHANCE_ARMOR: return "Increases armor defense.";
     case EffectId::SUMMON: return getSummoningDescription(type.get<CreatureId>());
     case EffectId::SUMMON_ELEMENT: return "Summons an element or spirit from the surroundings.";
-    case EffectId::WORD_OF_POWER: return "Causes an explosion around the spellcaster.";
-    case EffectId::AIR_BLAST: return "Causes an explosion of air around the spellcaster.";
+    case EffectId::CIRCULAR_BLAST: return "Creates a circular blast of air that throws back creatures and items.";
     case EffectId::DECEPTION: return "Creates multiple illusions of the spellcaster to confuse the enemy.";
-    case EffectId::LEAVE_BODY: return "Lets the spellcaster leave his body and possess another one.";
     case EffectId::FIRE: return "fire";
     case EffectId::ACID: return "acid";
     case EffectId::ALARM: return "alarm";
+    case EffectId::DAMAGE: return "Causes "_s + getNameLowerCase(*getExperienceType(type.get<DamageInfo>().attr)) +
+        " damage based on the \"" + ::getName(type.get<DamageInfo>().attr) + "\" attribute of the caster.";
     case EffectId::TELE_ENEMIES: return "surprise";
     case EffectId::SILVER_DAMAGE: return "silver";
     case EffectId::CURE_POISON: return "Cures poisoning.";
     case EffectId::LASTING: return getLastingDescription(getDescription(type.get<LastingEffect>()));
     case EffectId::PLACE_FURNITURE: return "Creates a " + Furniture::getName(type.get<FurnitureType>());
+    case EffectId::INJURE_BODY_PART: return "Injures "_s + ::getName(type.get<BodyPart>());
+    case EffectId::LOOSE_BODY_PART: return "Amputates "_s + ::getName(type.get<BodyPart>());
+    case EffectId::REGROW_BODY_PART: return "Regrows lost body parts"_s;
   }
 }
 
-string Effect::getName(LastingEffect type) {
+const char* Effect::getName(LastingEffect type) {
   switch (type) {
     case LastingEffect::PREGNANT: return "pregnant";
+    case LastingEffect::BLEEDING: return "bleeding";
     case LastingEffect::SLOWED: return "slowness";
     case LastingEffect::SPEED: return "speed";
     case LastingEffect::BLIND: return "blindness";
@@ -493,54 +570,72 @@ string Effect::getName(LastingEffect type) {
     case LastingEffect::POISON: return "poison";
     case LastingEffect::POISON_RESISTANT: return "poison resistance";
     case LastingEffect::FLYING: return "levitation";
+    case LastingEffect::COLLAPSED: return "collapse";
     case LastingEffect::PANIC: return "panic";
     case LastingEffect::RAGE: return "rage";
     case LastingEffect::HALLU: return "magic";
-    case LastingEffect::STR_BONUS: return "strength";
-    case LastingEffect::DEX_BONUS: return "dexterity";
+    case LastingEffect::DAM_BONUS: return "damage";
+    case LastingEffect::DEF_BONUS: return "defense";
     case LastingEffect::SLEEP: return "sleep";
     case LastingEffect::TIED_UP:
     case LastingEffect::ENTANGLED: return "web";
     case LastingEffect::STUNNED: return "stunning";
     case LastingEffect::FIRE_RESISTANT: return "fire resistance";
     case LastingEffect::INSANITY: return "insanity";
-    case LastingEffect::MAGIC_SHIELD: return "magic shield";
+    case LastingEffect::MAGIC_RESISTANCE: return "magic resistance";
+    case LastingEffect::MELEE_RESISTANCE: return "melee resistance";
+    case LastingEffect::RANGED_RESISTANCE: return "ranged resistance";
+    case LastingEffect::MAGIC_VULNERABILITY: return "magic vulnerability";
+    case LastingEffect::MELEE_VULNERABILITY: return "melee vulnerability";
+    case LastingEffect::RANGED_VULNERABILITY: return "ranged vulnerability";
     case LastingEffect::DARKNESS_SOURCE: return "source of darkness";
+    case LastingEffect::NIGHT_VISION: return "night vision";
+    case LastingEffect::ELF_VISION: return "elf vision";
   }
 }
 
-string Effect::getDescription(LastingEffect type) {
+const char* Effect::getDescription(LastingEffect type) {
   switch (type) {
     case LastingEffect::PREGNANT: return "This is no dream! This is really happening!";
     case LastingEffect::SLOWED: return "Causes unnaturally slow movement.";
+    case LastingEffect::BLEEDING: return "Causes loss of health points over time.";
     case LastingEffect::SPEED: return "Causes unnaturally quick movement.";
     case LastingEffect::BLIND: return "Causes blindness";
-    case LastingEffect::INVISIBLE: return "Causes invisibility.";
-    case LastingEffect::POISON: return "Poisons.";
+    case LastingEffect::INVISIBLE: return "Makes you invisible to enemies.";
+    case LastingEffect::POISON: return "Decreases health every turn by a little bit.";
     case LastingEffect::POISON_RESISTANT: return "Gives poison resistance.";
     case LastingEffect::FLYING: return "Causes levitation.";
+    case LastingEffect::COLLAPSED: return "Moving across tiles takes three times longer.";
     case LastingEffect::PANIC: return "Increases defense and lowers damage.";
     case LastingEffect::RAGE: return "Increases damage and lowers defense.";
     case LastingEffect::HALLU: return "Causes hallucinations.";
-    case LastingEffect::STR_BONUS: return "Gives a strength bonus.";
-    case LastingEffect::DEX_BONUS: return "Gives a dexterity bonus.";
+    case LastingEffect::DAM_BONUS: return "Gives a damage bonus.";
+    case LastingEffect::DEF_BONUS: return "Gives a defense bonus.";
     case LastingEffect::SLEEP: return "Puts to sleep.";
     case LastingEffect::TIED_UP:
       FALLTHROUGH;
     case LastingEffect::ENTANGLED: return "web";
-    case LastingEffect::STUNNED: return "Causes stunning.";
+    case LastingEffect::STUNNED: return "Causes inability to make any action.";
     case LastingEffect::FIRE_RESISTANT: return "Gives fire resistance.";
     case LastingEffect::INSANITY: return "Confuses the target about who is friend and who is foe.";
-    case LastingEffect::MAGIC_SHIELD: return "Gives protection from physical attacks.";
+    case LastingEffect::MAGIC_RESISTANCE: return "Increases defense against magical attacks by 30%.";
+    case LastingEffect::MELEE_RESISTANCE: return "Increases defense against melee attacks by 30%.";
+    case LastingEffect::RANGED_RESISTANCE: return "Increases defense against ranged attacks by 30%.";
+    case LastingEffect::MAGIC_VULNERABILITY: return "Decreases defense against magical attacks by 23%.";
+    case LastingEffect::MELEE_VULNERABILITY: return "Decreases defense against melee attacks by 23%.";
+    case LastingEffect::RANGED_VULNERABILITY: return "Decreases defense against ranged attacks by 23%.";
     case LastingEffect::DARKNESS_SOURCE: return "Causes the closest vicinity to become dark. Protects undead from sunlight.";
+    case LastingEffect::NIGHT_VISION: return "Gives vision in the dark at full distance.";
+    case LastingEffect::ELF_VISION: return "Allows to see and shoot through trees.";
   }
 }
 
 string Effect::getDescription(const DirEffectType& type) {
   switch (type.getId()) {
-    case DirEffectId::BLAST: return "Creates a directed blast that throws back creatures and items.";
+    case DirEffectId::BLAST: return "Creates a directed blast of air that throws back creatures and items.";
     case DirEffectId::CREATURE_EFFECT:
-        return "Creates a directed wave that " + noCapitalFirst(getDescription(type.get<EffectType>()));
+        return "Creates a directed ray of range " + toString(type.getRange()) + " that " +
+            noCapitalFirst(getDescription(type.get<EffectType>()));
         break;
   }
 }

@@ -51,10 +51,10 @@ View* WindowView::createReplayView(InputArchive& ifs, ViewParams params) {
   //return new ReplayView(ifs, new WindowView(params));
 }
 
-int rightBarWidthCollective = 344;
-int rightBarWidthPlayer = 344;
-int bottomBarHeightCollective = 62;
-int bottomBarHeightPlayer = 62;
+constexpr int rightBarWidthCollective = 344;
+constexpr int rightBarWidthPlayer = 344;
+constexpr int bottomBarHeightCollective = 62;
+constexpr int bottomBarHeightPlayer = 62;
 
 Rectangle WindowView::getMapGuiBounds() const {
   switch (gameInfo.infoType) {
@@ -73,19 +73,18 @@ Rectangle WindowView::getMapGuiBounds() const {
 
 Rectangle WindowView::getMinimapBounds() const {
   Vec2 offset(-20, 70);
-  Vec2 size(Vec2(renderer.getSize().x, renderer.getSize().x) / 12);
+  Vec2 size(Vec2(renderer.getSize().x, renderer.getSize().x) / 11);
   return Rectangle(Vec2(renderer.getSize().x - size.x, 0), Vec2(renderer.getSize().x, size.y)).translate(offset);
 }
 
 void WindowView::resetMapBounds() {
   mapGui->setBounds(getMapGuiBounds());
-  minimapDecoration->setBounds(getMinimapBounds().minusMargin(-6));
+  minimapDecoration->setBounds(getMinimapBounds());
 }
 
 WindowView::WindowView(ViewParams params) : renderer(params.renderer), gui(params.gui), useTiles(params.useTiles),
     options(params.options), clock(params.clock), guiBuilder(renderer, gui, clock, params.options, {
         [this](UserInput input) { inputQueue.push(input);},
-        [this](const vector<string>& s) { mapGui->setHint(s);},
         [this](SDL_Keysym ev) { keyboardAction(ev);},
         [this]() { refreshScreen(false);},
         [this](const string& s) { presentText("", s); },
@@ -116,7 +115,7 @@ void WindowView::initialize() {
   asciiLayouts = {
     {MapLayout(Vec2(16, 20), allLayers),
     MapLayout(Vec2(8, 10),
-        {ViewLayer::FLOOR_BACKGROUND, ViewLayer::FLOOR, ViewLayer::LARGE_ITEM, ViewLayer::CREATURE})}, false};
+        {ViewLayer::FLOOR_BACKGROUND, ViewLayer::FLOOR, ViewLayer::CREATURE})}, false};
   spriteLayouts = {{
     MapLayout(Vec2(48, 48), allLayers),
 //    MapLayout(Vec2(36, 36), allLayers),
@@ -145,7 +144,7 @@ void WindowView::initialize() {
       clock,
       options,
       &gui));
-  minimapGui.reset(new MinimapGui(renderer, [this]() { inputQueue.push(UserInput(UserInputId::DRAW_LEVEL_MAP)); }));
+  minimapGui.reset(new MinimapGui([this]() { inputQueue.push(UserInput(UserInputId::DRAW_LEVEL_MAP)); }));
   minimapDecoration = gui.stack(gui.rectangle(Color::BLACK), gui.miniWindow(),
       gui.margins(gui.renderInBounds(SGuiElem(minimapGui)), 6));
   resetMapBounds();
@@ -401,7 +400,7 @@ void WindowView::rebuildGui() {
         }
         break;
     case GameInfo::InfoType::PLAYER:
-        right = guiBuilder.drawRightPlayerInfo(gameInfo.playerInfo);
+        right = guiBuilder.drawRightPlayerInfo(*gameInfo.playerInfo.getReferenceMaybe<PlayerInfo>());
         bottom = guiBuilder.drawBottomPlayerInfo(gameInfo);
         rightBarWidth = rightBarWidthPlayer;
         bottomBarHeight = bottomBarHeightPlayer;
@@ -417,6 +416,25 @@ void WindowView::rebuildGui() {
   guiBuilder.drawOverlays(overlays, gameInfo);
   resetMapBounds();
   if (rightBarWidth > 0) {
+    overlays.push_back({guiBuilder.drawMessages(gameInfo.messageBuffer, renderer.getSize().x - rightBarWidth),
+                       GuiBuilder::OverlayInfo::MESSAGES});
+    for (auto& overlay : overlays) {
+      Vec2 pos;
+      if (auto width = overlay.elem->getPreferredWidth())
+        if (auto height = overlay.elem->getPreferredHeight()) {
+          pos = getOverlayPosition(overlay.alignment, *height, *width, rightBarWidth, bottomBarHeight);
+          tempGuiElems.push_back(std::move(overlay.elem));
+          switch (overlay.alignment) {
+            case GuiBuilder::OverlayInfo::GAME_SPEED:
+              tempGuiElems.back() = gui.renderTopLayer(std::move(tempGuiElems.back()));
+              break;
+            default:
+              break;
+          }
+          *height = min(*height, renderer.getSize().y - pos.y);
+          tempGuiElems.back()->setBounds(Rectangle(pos, pos + Vec2(*width, *height)));
+        }
+    }
     tempGuiElems.push_back(gui.mainDecoration(rightBarWidth, bottomBarHeight, topBarHeight));
     tempGuiElems.back()->setBounds(Rectangle(renderer.getSize()));
     tempGuiElems.push_back(gui.margins(std::move(right), 20, 20, 10, 0));
@@ -425,24 +443,12 @@ void WindowView::rebuildGui() {
     tempGuiElems.push_back(gui.margins(std::move(bottom), 105, 10, 105, 0));
     tempGuiElems.back()->setBounds(Rectangle(
           Vec2(rightBarWidth, renderer.getSize().y - bottomBarHeight), renderer.getSize()));
-    overlays.push_back({guiBuilder.drawMessages(gameInfo.messageBuffer, renderer.getSize().x - rightBarWidth),
-                       GuiBuilder::OverlayInfo::MESSAGES});
-    for (auto& overlay : overlays) {
-      Vec2 pos;
-      if (auto width = overlay.elem->getPreferredWidth())
-        if (auto height = overlay.elem->getPreferredHeight()) {
-          pos = getOverlayPosition(overlay.alignment, *height, rightBarWidth, bottomBarHeight);
-          tempGuiElems.push_back(std::move(overlay.elem));
-          *height = min(*height, renderer.getSize().y - pos.y);
-          tempGuiElems.back()->setBounds(Rectangle(pos, pos + Vec2(*width, *height)));
-        }
-    }
   }
   propagateMousePosition(getClickableGuiElems());
 }
 
-Vec2 WindowView::getOverlayPosition(GuiBuilder::OverlayInfo::Alignment alignment, int height, int rightBarWidth,
-    int bottomBarHeight) {
+Vec2 WindowView::getOverlayPosition(GuiBuilder::OverlayInfo::Alignment alignment, int height, int width,
+    int rightBarWidth, int bottomBarHeight) {
   int bottomOffset = 35;
   int sideOffset = 0;
   int rightWindowHeight = 80;
@@ -474,6 +480,8 @@ Vec2 WindowView::getOverlayPosition(GuiBuilder::OverlayInfo::Alignment alignment
       return Vec2(rightBarWidth + guiBuilder.getImmigrationBarWidth(),
           renderer.getSize().y - bottomBarHeight - height);
       break;
+    case GuiBuilder::OverlayInfo::MAP_HINT:
+      return Vec2(renderer.getSize().x - width, renderer.getSize().y - bottomBarHeight - height);
   }
 }
 
@@ -533,10 +541,10 @@ void WindowView::addVoidDialog(function<void()> fun) {
 }
 
 void WindowView::drawLevelMap(const CreatureView* creature) {
-  TempClockPause pause(clock);
-  addVoidDialog([=] {
-    minimapGui->presentMap(creature, Rectangle(renderer.getSize()), renderer,
-        [this](double x, double y) { mapGui->setCenter(x, y);}); });
+  Semaphore sem;
+  auto gui = guiBuilder.drawLevelMap(sem, creature);
+  Vec2 origin(getMinimapBounds().right() - *gui->getPreferredWidth(), getMinimapBounds().top());
+  return getBlockingGui(sem, std::move(gui), origin);
 }
 
 void WindowView::updateMinimap(const CreatureView* creature) {
@@ -544,7 +552,7 @@ void WindowView::updateMinimap(const CreatureView* creature) {
   Vec2 rad(40, 40);
   Vec2 playerPos = mapGui->getScreenPos().div(mapLayout->getSquareSize());
   Rectangle bounds(playerPos - rad, playerPos + rad);
-  minimapGui->update(level, bounds, creature);
+  minimapGui->update(bounds, creature);
 }
 
 void WindowView::updateView(CreatureView* view, bool noRefresh) {
@@ -586,16 +594,16 @@ void WindowView::playSounds(const CreatureView* view) {
   soundQueue.clear();
 }
 
-void WindowView::animateObject(vector<Vec2> trajectory, ViewObject object) {
+void WindowView::animateObject(Vec2 begin, Vec2 end, ViewId object) {
   RecursiveLock lock(renderMutex);
-  if (trajectory.size() >= 2)
+  if (begin != end)
     mapGui->addAnimation(
         Animation::thrownObject(
-          (trajectory.back() - trajectory.front()).mult(mapLayout->getSquareSize()),
+          (end - begin).mult(mapLayout->getSquareSize()),
           object,
           currentTileLayout.sprites,
           mapLayout->getSquareSize()),
-        trajectory.front());
+        begin);
 }
 
 void WindowView::animation(Vec2 pos, AnimationId id) {
@@ -676,7 +684,7 @@ optional<int> reverseIndexHeight(const vector<ListElem>& options, int height) {
   return height - sub;
 }
 
-optional<Vec2> WindowView::chooseDirection(const string& message) {
+optional<Vec2> WindowView::chooseDirection(Vec2 playerPos, const string& message) {
   RecursiveLock lock(renderMutex);
   TempClockPause pause(clock);
   gameInfo.messageBuffer = { PlayerMessage(message) };
@@ -691,12 +699,11 @@ optional<Vec2> WindowView::chooseDirection(const string& message) {
     if (event.type == SDL::SDL_MOUSEMOTION || event.type == SDL::SDL_MOUSEBUTTONDOWN) {
       if (auto pos = mapGui->projectOnMap(renderer.getMousePos())) {
         refreshScreen(false);
-        Vec2 middle = mapGui->getScreenPos().div(mapLayout->getSquareSize());
-        if (pos == middle)
+        if (pos == playerPos)
           continue;
-        Vec2 dir = (*pos - middle).getBearing();
+        Vec2 dir = (*pos - playerPos).getBearing();
         Vec2 wpos = mapLayout->projectOnScreen(getMapGuiBounds(), mapGui->getScreenPos(),
-            middle.x + dir.x, middle.y + dir.y);
+            playerPos.x + dir.x, playerPos.y + dir.y);
         if (currentTileLayout.sprites) {
           static vector<Renderer::TileCoord> coords;
           if (coords.empty())
@@ -859,15 +866,21 @@ CampaignAction WindowView::prepareCampaign(CampaignOptions campaign, Options* op
   return getBlockingGui(returnQueue, guiBuilder.drawCampaignMenu(returnQueue, campaign, options, state));
 }
 
-optional<UniqueEntity<Creature>::Id> WindowView::chooseTeamLeader(const string& title,
+optional<UniqueEntity<Creature>::Id> WindowView::chooseCreature(const string& title,
     const vector<CreatureInfo>& creatures, const string& cancelText) {
   SyncQueue<optional<UniqueEntity<Creature>::Id>> returnQueue;
-  return getBlockingGui(returnQueue, guiBuilder.drawTeamLeaderMenu(returnQueue, title, creatures, cancelText));
+  return getBlockingGui(returnQueue, guiBuilder.drawChooseCreatureMenu(returnQueue, title, creatures, cancelText));
 }
 
-bool WindowView::creaturePrompt(const string& title, const vector<CreatureInfo>& creatures) {
+/*vector<UniqueEntity<Creature>::Id> WindowView::chooseTeamLeader(const string& title,
+    const vector<CreatureInfo>& creatures) {
+  SyncQueue<vector<UniqueEntity<Creature>::Id>> returnQueue;
+  return getBlockingGui(returnQueue, guiBuilder.drawTeamLeaderMenu(returnQueue, title, creatures));
+}*/
+
+bool WindowView::creatureInfo(const string& title, bool prompt, const vector<CreatureInfo>& creatures) {
   SyncQueue<bool> returnQueue;
-  return getBlockingGui(returnQueue, guiBuilder.drawCreaturePrompt(returnQueue, title, creatures));
+  return getBlockingGui(returnQueue, guiBuilder.drawCreatureInfo(returnQueue, title, prompt, creatures));
 }
 
 void WindowView::logMessage(const std::string& message) {
@@ -1348,7 +1361,7 @@ void WindowView::processEvents() {
 void WindowView::propagateEvent(const Event& event, vector<SGuiElem> guiElems) {
   CHECK(currentThreadId() == renderThreadId);
   if (gameReady)
-    mapGui->setHint({});
+    guiBuilder.clearHint();
   switch (event.type) {
     case SDL::SDL_MOUSEBUTTONUP:
       // MapGui needs this event otherwise it will sometimes lock the mouse button

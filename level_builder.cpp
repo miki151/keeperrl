@@ -56,6 +56,10 @@ Rectangle LevelBuilder::toGlobalCoordinates(Rectangle area) {
   return area.apply([this](Vec2 v) { return transform(v); });
 }
 
+vector<Vec2> LevelBuilder::toGlobalCoordinates(vector<Vec2> v) {
+  return v.transform([this](Vec2 v) { return transform(v); });
+}
+
 void LevelBuilder::addCollective(CollectiveBuilder* col) {
   if (!collectives.contains(col))
     collectives.push_back(col);

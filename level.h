@@ -40,6 +40,7 @@ class Position;
 class Game;
 class SquareArray;
 class FurnitureArray;
+class Vision;
 class FieldOfView;
 
 /** A class representing a single level of the dungeon or the overworld. All events occuring on the level are performed by this class.*/
@@ -136,28 +137,13 @@ class Level : public OwnedObject<Level> {
   bool canSee(WConstCreature c, Vec2 to) const;
 
   /** Returns if it's possible to see the given square.*/
-  bool canSee(Vec2 from, Vec2 to, VisionId) const;
+  bool canSee(Vec2 from, Vec2 to, const Vision&) const;
 
   /** Returns all tiles visible by a creature.*/
-  vector<Vec2> getVisibleTiles(Vec2 pos, VisionId) const;
-
-  /** Checks if the player can see a given square.*/
-  bool playerCanSee(Vec2 pos) const;
-
-  /** Checks if the player can see a given creature.*/
-  bool playerCanSee(WConstCreature) const;
-
-  /** Displays \paramname{playerCanSee} message if the player can see position \paramname{pos},
-    and \paramname{cannot} otherwise.*/
-  void globalMessage(Vec2 position, const PlayerMessage& playerCanSee, const PlayerMessage& cannot) const;
-  void globalMessage(Vec2 position, const PlayerMessage& playerCanSee) const;
-
-  /** Displays \paramname{playerCanSee} message if the player can see the creature, 
-    and \paramname{cannot} otherwise.*/
-  void globalMessage(WConstCreature, const PlayerMessage& ifPlayerCanSee, const PlayerMessage& cannot) const;
+  vector<Vec2> getVisibleTiles(Vec2 pos, const Vision&) const;
 
   /** Returns the player creature.*/
-  WCreature getPlayer() const;
+  vector<WCreature> getPlayers() const;
 
   const WModel getModel() const;
   WModel getModel();
@@ -191,7 +177,7 @@ class Level : public OwnedObject<Level> {
   LevelId getUniqueId() const;
   void setFurniture(Vec2, PFurniture);
 
-  SERIALIZATION_DECL(Level);
+  SERIALIZATION_DECL(Level)
 
   private:
   friend class Position;
@@ -234,8 +220,8 @@ class Level : public OwnedObject<Level> {
   void addLightSource(Vec2 pos, double radius, int numLight);
   void addDarknessSource(Vec2 pos, double radius, int numLight);
   FieldOfView& getFieldOfView(VisionId vision) const;
-  vector<Vec2> getVisibleTilesNoDarkness(Vec2 pos, VisionId vision) const;
-  bool isWithinVision(Vec2 from, Vec2 to, VisionId) const;
+  const vector<Vec2>& getVisibleTilesNoDarkness(Vec2 pos, VisionId vision) const;
+  bool isWithinVision(Vec2 from, Vec2 to, const Vision&) const;
   LevelId SERIAL(levelId) = 0;
   bool SERIAL(noDiagonalPassing) = false;
 };

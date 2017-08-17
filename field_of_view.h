@@ -27,7 +27,7 @@ class FieldOfView {
   const vector<Vec2>& getVisibleTiles(Vec2 from);
   void squareChanged(Vec2 pos);
 
-  SERIALIZATION_DECL(FieldOfView);
+  SERIALIZATION_DECL(FieldOfView)
 
   const static int sightRange = 30;
 
@@ -44,7 +44,7 @@ class FieldOfView {
     Visibility(Visibility&&) = default;
     Visibility& operator = (Visibility&&) = default;
 
-    SERIALIZATION_DECL(Visibility);
+    SERIALIZATION_DECL(Visibility)
 
     private:
     char SERIAL(visible)[sightRange * 2 + 1][sightRange * 2 + 1];

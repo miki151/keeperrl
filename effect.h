@@ -29,7 +29,7 @@ class DirEffectType;
 
 class Effect {
   public:
-  static void applyToCreature(WCreature, const EffectType&, EffectStrength);
+  static void applyToCreature(WCreature, const EffectType&, EffectStrength, WCreature attacker = nullptr);
   static void applyToPosition(Position, const EffectType&, EffectStrength);
   static void applyDirected(WCreature, Vec2 direction, const DirEffectType&, EffectStrength);
 
@@ -38,10 +38,10 @@ class Effect {
   static vector<WCreature> summonCreatures(Position, int radius, vector<PCreature>, double delay = 0);
   static vector<WCreature> summonCreatures(WCreature, int radius, vector<PCreature>, double delay = 0);
   static string getName(const EffectType&);
-  static string getName(LastingEffect);
+  static const char* getName(LastingEffect);
   static string getDescription(const EffectType&);
   static string getDescription(const DirEffectType&);
-  static string getDescription(LastingEffect);
+  static const char* getDescription(LastingEffect);
 
   template <class Archive>
   static void registerTypes(Archive& ar, int version);

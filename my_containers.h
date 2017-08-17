@@ -52,6 +52,16 @@ class vector {
     ++modCounter;
   }
 
+  void push_front(const T& t) {
+    impl.insert(impl.begin(), t);
+    ++modCounter;
+  }
+
+  void push_front(T&& t) {
+    impl.insert(impl.begin(), std::move(t));
+    ++modCounter;
+  }
+
   template <typename... Args>
   void emplace_back(Args&&... a) {
     impl.emplace_back(std::forward<Args>(a)...);
@@ -304,12 +314,12 @@ class vector {
       return *this;
     }
 
-    Iterator operator++(int) const {
+    Iterator operator++(int) {
       checkParent();
       return Iterator(it++, parent);
     }
 
-    Iterator operator--(int) const {
+    Iterator operator--(int) {
       checkParent();
       return Iterator(it--, parent);
     }

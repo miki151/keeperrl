@@ -17,8 +17,9 @@
 
 #include "view_object.h"
 #include "view_id.h"
+#include "experience_type.h"
 
-SERIALIZE_DEF(ViewObject, resource_id, viewLayer, description, modifiers, attributes, attachmentDir, creatureId, adjectives)
+SERIALIZE_DEF(ViewObject, resource_id, viewLayer, description, modifiers, attributes, attachmentDir, creatureId, goodAdjectives, badAdjectives, creatureAttributes)
 
 SERIALIZATION_CONSTRUCTOR_IMPL(ViewObject);
 
@@ -57,14 +58,11 @@ MovementInfo ViewObject::getLastMovementInfo() const {
   return movementQueue.getLast();
 }
 
-Vec2 ViewObject::getMovementInfo(double tBegin, double tEnd, UniqueEntity<Creature>::Id controlledId) const {
+Vec2 ViewObject::getMovementInfo(double tBegin) const {
   if (!movementQueue.hasAny())
     return Vec2(0, 0);
   CHECK(creatureId);
-  if (controlledId > *creatureId)
-    return movementQueue.getTotalMovement(tBegin, tEnd);
-  else
-    return movementQueue.getTotalMovement(tBegin - 0.001, tEnd);
+  return movementQueue.getTotalMovement(tBegin);
 }
 
 void ViewObject::clearMovementInfo() {
@@ -86,11 +84,11 @@ const MovementInfo& ViewObject::MovementQueue::getLast() const {
   return elems[makeGoodIndex(index - 1)];
 }
 
-Vec2 ViewObject::MovementQueue::getTotalMovement(double tBegin, double tEnd) const {
+Vec2 ViewObject::MovementQueue::getTotalMovement(double tBegin) const {
   Vec2 ret;
   bool attack = false;
   for (int i : Range(min<int>(totalMoves, elems.size())))
-    if (elems[i].tBegin > tBegin) {
+    if (elems[i].tBegin >= tBegin) {
       if (elems[i].type == MovementInfo::ATTACK/* && ret.length8() == 0*/) {
         attack = true;
         ret = elems[i].direction;
@@ -136,8 +134,12 @@ optional<float> ViewObject::getAttribute(Attribute attr) const {
   return attributes[attr];
 }
 
-void ViewObject::setIndoors(bool state) {
-  indoors = state;
+void ViewObject::setCreatureAttributes(ViewObject::CreatureAttributes attribs) {
+  creatureAttributes = attribs;
+}
+
+const optional<ViewObject::CreatureAttributes>& ViewObject::getCreatureAttributes() const {
+  return creatureAttributes;
 }
 
 void ViewObject::setDescription(const string& s) {
@@ -152,6 +154,7 @@ const char* ViewObject::getDefaultDescription() const {
     case ViewId::DOWN_STAIRCASE: return "Stairs";
     case ViewId::BRIDGE: return "Bridge";
     case ViewId::GRASS: return "Grass";
+    case ViewId::CROPS2:
     case ViewId::CROPS: return "Wheat";
     case ViewId::MUD: return "Mud";
     case ViewId::ROAD: return "Road";
@@ -186,10 +189,12 @@ const char* ViewObject::getDefaultDescription() const {
     case ViewId::WHIPPING_POST: return "Whipping post";
     case ViewId::NOTICE_BOARD: return "Message board";
     case ViewId::SOKOBAN_HOLE: return "Hole";
-    case ViewId::RITUAL_ROOM: return "Demon shrine";
+    case ViewId::DEMON_SHRINE: return "Demon shrine";
     case ViewId::IMPALED_HEAD: return "Impaled head";
     case ViewId::EYEBALL: return "Eyeball";
-    case ViewId::LIBRARY: return "Library";
+    case ViewId::BOOKCASE_WOOD: return "Wooden bookcase";
+    case ViewId::BOOKCASE_IRON: return "Iron bookcase";
+    case ViewId::BOOKCASE_GOLD: return "Golden bookcase";
     case ViewId::CAULDRON: return "Cauldron";
     case ViewId::LABORATORY: return "Laboratory";
     case ViewId::FORGE: return "Forge";
@@ -244,29 +249,6 @@ string ViewObject::getAttributeString(Attribute attr) const {
     return toString(*getAttribute(attr));
 }
 
-void ViewObject::setAdjectives(const vector<string>& adj) {
-  adjectives = adj;
-}
-
-vector<string> ViewObject::getLegend() const {
-  vector<string> ret { string(getDescription()) };
-  if (!!attributes[Attribute::LEVEL])
-    ret[0] = ret[0] + ", level " + getAttributeString(Attribute::LEVEL);
-  if (!!attributes[Attribute::EFFICIENCY])
-    ret[0] = ret[0] + ", efficiency " + getAttributeString(Attribute::EFFICIENCY);
-  if (!!attributes[Attribute::ATTACK])
-    ret.push_back("Attack " + getAttributeString(Attribute::ATTACK) +
-          " defense " + getAttributeString(Attribute::DEFENSE));
-  if (hasModifier(Modifier::PLANNED))
-    ret.push_back("Planned");
-  if (indoors)
-    ret.push_back(*indoors ? "Indoors" : "Outdoors");
-  if (!!attributes[Attribute::MORALE])
-    ret.push_back("Morale " + getAttributeString(Attribute::MORALE));
-  append(ret, adjectives);
-  return ret;
-}
-
 ViewLayer ViewObject::layer() const {
   return viewLayer;
 }
@@ -295,14 +277,16 @@ static vector<ViewId> creatureIds {
   ViewId::GHOST,
   ViewId::SPIRIT,
   ViewId::KNIGHT,
-  ViewId::CASTLE_GUARD,
   ViewId::DUKE,
   ViewId::ARCHER,
+  ViewId::UNICORN,
   ViewId::PESEANT,
   ViewId::CHILD,
   ViewId::SHAMAN,
   ViewId::WARRIOR,
   ViewId::ORC,
+  ViewId::DEMON_DWELLER,
+  ViewId::DEMON_LORD,
   ViewId::BANDIT,
   ViewId::CLAY_GOLEM,
   ViewId::STONE_GOLEM,
@@ -331,7 +315,6 @@ static vector<ViewId> creatureIds {
   ViewId::VULTURE,
   ViewId::RAVEN,
   ViewId::GOBLIN,
-  ViewId::LEPRECHAUN,
   ViewId::KRAKEN_HEAD,
   ViewId::KRAKEN_LAND,
   ViewId::KRAKEN_WATER,
@@ -370,7 +353,6 @@ static vector<ViewId> itemIds {
   ViewId::BATTLE_AXE,
   ViewId::SPECIAL_BATTLE_AXE,
   ViewId::BOW,
-  ViewId::ARROW,
   ViewId::SCROLL,
   ViewId::AMULET1,
   ViewId::AMULET2,
@@ -427,6 +409,22 @@ void ViewObject::setHallu(bool b) {
 
 void ViewObject::setId(ViewId id) {
   resource_id = id;
+}
+
+void ViewObject::setGoodAdjectives(const string& v) {
+  goodAdjectives = v;
+}
+
+void ViewObject::setBadAdjectives(const string& v) {
+  badAdjectives = v;
+}
+
+const string& ViewObject::getGoodAdjectives() const {
+  return goodAdjectives;
+}
+
+const string& ViewObject::getBadAdjectives() const {
+  return badAdjectives;
 }
 
 ViewId ViewObject::id() const {

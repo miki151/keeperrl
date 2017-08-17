@@ -56,7 +56,7 @@ void Square::putCreature(WCreature c) {
   setCreature(c);
   onEnter(c);
   if (WGame game = c->getGame())
-    game->addEvent({EventId::MOVED, c});
+    game->addEvent(EventInfo::CreatureMoved{c});
 }
 
 void Square::setLandingLink(StairKey key) {
@@ -96,15 +96,10 @@ void Square::tick(Position pos) {
 
 bool Square::itemLands(vector<WItem> item, const Attack& attack) const {
   if (creature) {
-    if (!creature->dodgeAttack(attack))
-      return true;
-    else {
-      if (item.size() > 1)
-        creature->you(MsgType::MISS_THROWN_ITEM_PLURAL, item[0]->getPluralTheName(item.size()));
-      else
-        creature->you(MsgType::MISS_THROWN_ITEM, item[0]->getTheName());
-      return false;
-    }
+    if (item.size() > 1)
+      creature->you(MsgType::MISS_THROWN_ITEM_PLURAL, item[0]->getPluralTheName(item.size()));
+    else
+      creature->you(MsgType::MISS_THROWN_ITEM, item[0]->getTheName());
   }
   return false;
 }
@@ -195,18 +190,6 @@ WItem Square::getTopItem() const {
     return nullptr;
   else
     return inventory->getItems().back();
-}
-
-vector<WItem> Square::getItems(function<bool (WItem)> predicate) const {
- return inventory->getItems(predicate);
-}
-
-const vector<WItem>& Square::getItems() const {
-  return inventory->getItems();
-}
-
-const vector<WItem>& Square::getItems(ItemIndex index) const {
-  return inventory->getItems(index);
 }
 
 PItem Square::removeItem(Position pos, WItem it) {

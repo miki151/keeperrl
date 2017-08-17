@@ -35,10 +35,10 @@ class Inventory {
   void clearIndex(ItemIndex);
 
   const vector<WItem>& getItems() const;
-  vector<WItem> getItems(function<bool (WItem)> predicate) const;
+  vector<WItem> getItems(function<bool (WConstItem)> predicate) const;
   const vector<WItem>& getItems(ItemIndex) const;
 
-  bool hasItem(const WItem) const;
+  bool hasItem(WConstItem) const;
   WItem getItemById(UniqueEntity<Item>::Id) const;
   int size() const;
   double getTotalWeight() const;

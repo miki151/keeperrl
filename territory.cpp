@@ -48,8 +48,7 @@ vector<Position> Territory::calculateExtended(int minRadius, int maxRadius) cons
   for (int i = 0; i < extendedQueue.size(); ++i) {
     Position pos = extendedQueue[i];
     for (Position v : pos.neighbors8())
-      if (!contains(v) && !extendedTiles.count(v) 
-          && v.canEnterEmpty({MovementTrait::WALK})) {
+      if (!contains(v) && !extendedTiles.count(v) && v.canEnterEmpty({MovementTrait::WALK})) {
         int a = extendedTiles[v] = extendedTiles[pos] + 1;
         if (a < maxRadius)
           extendedQueue.push_back(v);

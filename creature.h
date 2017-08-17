@@ -24,6 +24,8 @@
 #include "event_generator.h"
 #include "entity_set.h"
 #include "destroy_action.h"
+#include "best_attack.h"
+#include "msg_type.h"
 
 class Skill;
 class Level;
@@ -48,6 +50,7 @@ class Sound;
 class Game;
 class CreatureListener;
 class CreatureDebt;
+class Vision;
 struct AdjectiveInfo;
 struct MovementInfo;
 
@@ -72,11 +75,12 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   Position getPosition() const;
   bool dodgeAttack(const Attack&);
   bool takeDamage(const Attack&);
-  void heal(double amount = 1, bool replaceLimbs = false);
+  void onAttackedBy(WCreature);
+  void heal(double amount = 1);
   /** Morale is in the range [-1:1] **/
   double getMorale() const;
   void addMorale(double);
-  DEF_UNIQUE_PTR(MoraleOverride);
+  DEF_UNIQUE_PTR(MoraleOverride)
   class MoraleOverride {
     public:
     virtual optional<double> getMorale(WConstCreature) = 0;
@@ -91,6 +95,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   const Equipment& getEquipment() const;
   Equipment& getEquipment();
   vector<PItem> steal(const vector<WItem> items);
+  bool canSeeDisregardingPosition(WConstCreature) const;
   bool canSee(WConstCreature) const;
   bool canSee(Position) const;
   bool canSee(Vec2) const;
@@ -100,13 +105,10 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   const CreatureName& getName() const;
   CreatureName& getName();
   const char* identify() const;
-  int getModifier(ModifierType) const;
   int getAttr(AttrType) const;
-  static string getAttrName(AttrType);
-  static string getModifierName(ModifierType);
 
   int getPoints() const;
-  VisionId getVision() const;
+  const Vision& getVision() const;
   const CreatureDebt& getDebt() const;
   CreatureDebt& getDebt();
 
@@ -120,19 +122,11 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   void takeItems(vector<PItem> items, WCreature from);
   bool canTakeItems(const vector<WItem>& items) const;
 
-  void youHit(BodyPart part, AttackType type) const;
-
-  void monsterMessage(const PlayerMessage& playerCanSee, const PlayerMessage& cant) const;
-  void monsterMessage(const PlayerMessage& playerCanSee) const;
-  void globalMessage(const PlayerMessage& playerCanSee, const PlayerMessage& cant) const;
-  void globalMessage(const PlayerMessage& playerCanSee) const;
-
   const CreatureAttributes& getAttributes() const;
   CreatureAttributes& getAttributes();
   const Body& getBody() const;
   Body& getBody();
   bool isDead() const;
-  bool isBlind() const;
   void clearLastAttacker();
   optional<string> getDeathReason() const;
   double getDeathTime() const;
@@ -160,16 +154,15 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
     enum Mod { WILD, SWIFT};
     optional<Mod> mod;
   };
-  CreatureAction attack(WCreature, optional<AttackParams> = none, bool spendTime = true) const;
+  CreatureAction attack(WCreature, optional<AttackParams> = none) const;
+  CreatureAction execute(WCreature) const;
   CreatureAction bumpInto(Vec2 direction) const;
   CreatureAction applyItem(WItem item) const;
   CreatureAction equip(WItem item) const;
-  bool isEquipmentAppropriate(const WItem item) const;
   CreatureAction unequip(WItem item) const;
-  bool canEquipIfEmptySlot(const WItem item, string* reason = nullptr) const;
-  bool canEquip(const WItem item) const;
+  bool canEquipIfEmptySlot(WConstItem item, string* reason = nullptr) const;
+  bool canEquip(WConstItem item) const;
   CreatureAction throwItem(WItem, Vec2 direction) const;
-  CreatureAction heal(Vec2 direction) const;
   CreatureAction applySquare(Position) const;
   CreatureAction hide() const;
   bool isHidden() const;
@@ -199,6 +192,8 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   
   void increaseExpLevel(ExperienceType, double increase);
 
+  BestAttack getBestAttack() const;
+
   WItem getWeapon() const;
   void dropWeapon();
   vector<vector<WItem>> stackItems(vector<WItem>) const;
@@ -214,6 +209,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
 
   enum class DropType { NOTHING, ONLY_INVENTORY, EVERYTHING };
   void dieWithAttacker(WCreature attacker, DropType = DropType::EVERYTHING);
+  void dieWithLastAttacker(DropType = DropType::EVERYTHING);
   void dieNoReason(DropType = DropType::EVERYTHING);
   void dieWithReason(const string& reason, DropType = DropType::EVERYTHING);
 
@@ -224,11 +220,17 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   void setHeld(WCreature holding);
   WCreature getHoldingCreature() const;
 
+  bool isPlayer() const;
+
   void you(MsgType type, const vector<string>& param) const;
   void you(MsgType type, const string& param = "") const;
   void you(const string& param) const;
-  void playerMessage(const PlayerMessage&) const;
-  bool isPlayer() const;
+  void youHit(BodyPart part, AttackType type) const;
+  void secondPerson(const PlayerMessage&) const;
+  void thirdPerson(const PlayerMessage& playerCanSee, const PlayerMessage& cant) const;
+  void thirdPerson(const PlayerMessage& playerCanSee) const;
+  void message(const PlayerMessage&) const;
+  void privateMessage(const PlayerMessage&) const;
 
   WController getController() const;
   void pushController(PController);
@@ -246,25 +248,23 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
 
   void addEffect(LastingEffect, double time, bool msg = true);
   void removeEffect(LastingEffect, bool msg = true);
-  void addPermanentEffect(LastingEffect, bool msg = true);
-  void removePermanentEffect(LastingEffect, bool msg = true);
+  void addPermanentEffect(LastingEffect, int count = 1);
+  void removePermanentEffect(LastingEffect, int count = 1);
   bool isAffected(LastingEffect) const;
   optional<double> getTimeRemaining(LastingEffect) const;
+  optional<double> getLastAffected(LastingEffect) const;
   bool hasCondition(CreatureCondition) const;
   bool isDarknessSource() const;
 
   bool isUnknownAttacker(WConstCreature) const;
-  int accuracyBonus() const;
-  vector<string> getMainAdjectives() const;
   vector<AdjectiveInfo> getGoodAdjectives() const;
-  vector<AdjectiveInfo> getWeaponAdjective() const;
   vector<AdjectiveInfo> getBadAdjectives() const;
 
   vector<string> popPersonalEvents();
   void addPersonalEvent(const string&);
   void setInCombat();
   bool wasInCombat(double numLastTurns) const;
-  void onKilled(WCreature victim);
+  void onKilled(WCreature victim, optional<ExperienceType> lastDamage);
 
   void addSound(const Sound&) const;
   void updateViewObject();
@@ -273,7 +273,6 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   private:
 
   CreatureAction moveTowards(Position, bool away, bool stepOnTile);
-  WItem getAmmo() const;
   void spendTime(double time);
   bool canCarry(const vector<WItem>&) const;
   TribeSet getFriendlyTribes() const;
@@ -289,7 +288,8 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   double SERIAL(morale) = 0;
   optional<double> SERIAL(deathTime);
   bool SERIAL(hidden) = false;
-  WCreature lastAttacker = nullptr;
+  WCreature lastAttacker;
+  optional<ExperienceType> SERIAL(lastDamageType);
   optional<string> SERIAL(deathReason);
   int SERIAL(swapPositionCooldown) = 0;
   EntitySet<Creature> SERIAL(unknownAttackers);
@@ -298,78 +298,20 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   vector<PController> SERIAL(controllerStack);
   vector<WCreatureVision> SERIAL(creatureVisions);
   EntitySet<Creature> SERIAL(kills);
-  mutable double SERIAL(difficultyPoints) = 0;
+  mutable int SERIAL(difficultyPoints) = 0;
   int SERIAL(points) = 0;
-  int SERIAL(numAttacksThisTurn) = 0;
   PMoraleOverride SERIAL(moraleOverride);
   void updateVisibleCreatures();
   vector<Position> visibleEnemies;
   vector<Position> visibleCreatures;
-  VisionId SERIAL(vision);
-  void updateVision();
+  HeapAllocated<Vision> SERIAL(vision);
   bool forceMovement = false;
   optional<double> SERIAL(lastCombatTime);
   HeapAllocated<CreatureDebt> SERIAL(debt);
+  double SERIAL(highestAttackValueEver) = 0;
 };
 
 struct AdjectiveInfo {
   string name;
-  string help;
+  const char* help;
 };
-
-enum class MsgType {
-    FEEL, // better
-    BLEEDING_STOPS,
-    COLLAPSE,
-    FALL,
-    FALL_ASLEEP,
-    PANIC,
-    RAGE,
-    DIE_OF,
-    ARE, // bleeding
-    YOUR, // your head is cut off
-    WAKE_UP,
-    DIE, //
-    TELE_APPEAR,
-    TELE_DISAPPEAR,
-    ATTACK_SURPRISE,
-    CAN_SEE_HIDING,
-    SWING_WEAPON,
-    THRUST_WEAPON,
-    KICK,
-    PUNCH,
-    BITE,
-    HIT,
-    TOUCH,
-    CRAWL,
-    TRIGGER_TRAP,
-    DISARM_TRAP,
-    DROP_WEAPON,
-    GET_HIT_NODAMAGE, // body part
-    HIT_THROWN_ITEM,
-    HIT_THROWN_ITEM_PLURAL,
-    MISS_THROWN_ITEM,
-    MISS_THROWN_ITEM_PLURAL,
-    ITEM_CRASHES,
-    ITEM_CRASHES_PLURAL,
-    STAND_UP,
-    TURN_INVISIBLE,
-    TURN_VISIBLE,
-    ENTER_PORTAL,
-    HAPPENS_TO,
-    BURN,
-    DROWN,
-    SET_UP_TRAP,
-    DECAPITATE,
-    TURN,
-    BECOME,
-    KILLED_BY,
-    BREAK_FREE,
-    MISS_ATTACK,
-    PRAY,
-    SACRIFICE,
-    COPULATE,
-    CONSUME,
-    GROW,
-};
-

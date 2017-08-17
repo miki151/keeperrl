@@ -18,10 +18,12 @@ class CollectiveBuilder {
   CollectiveBuilder(const CollectiveConfig&, TribeId);
   CollectiveBuilder& setLevel(WLevel);
   CollectiveBuilder& addCreature(WCreature);
-  CollectiveBuilder& addArea(Rectangle);
+  CollectiveBuilder& addArea(const vector<Vec2>&);
   CollectiveBuilder& setLocationName(const string&);
   CollectiveBuilder& setRaceName(const string&);
-  CollectiveBuilder& setAnonymous();
+  CollectiveBuilder& setDiscoverable();
+  void setCentralPoint(Vec2);
+  bool hasCentralPoint();
 
   PCollective build();
   bool hasCreatures() const;
@@ -40,6 +42,6 @@ class CollectiveBuilder {
   optional<Vec2> centralPoint;
   optional<string> locationName;
   optional<string> raceName;
-  bool anonymous = false;
+  bool discoverable = false;
   optional<CollectiveName> generateName();
 };

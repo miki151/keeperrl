@@ -159,7 +159,7 @@ class View {
   virtual PlayerRoleChoice getPlayerRoleChoice(optional<PlayerRoleChoice> initial) = 0;
 
   /** Lets the player choose a direction from the main 8. Returns none if the player cancelled the choice.*/
-  virtual optional<Vec2> chooseDirection(const string& message) = 0;
+  virtual optional<Vec2> chooseDirection(Vec2 playerPos, const string& message) = 0;
 
   /** Asks the player a yer-or-no question.*/
   virtual bool yesOrNoPrompt(const string& message, bool defaultNo = false) = 0;
@@ -210,17 +210,19 @@ class View {
 
   virtual CampaignAction prepareCampaign(CampaignOptions, Options*, CampaignMenuState&) = 0;
 
-  virtual optional<UniqueEntity<Creature>::Id> chooseTeamLeader(const string& title, const vector<CreatureInfo>&,
+  virtual optional<UniqueEntity<Creature>::Id> chooseCreature(const string& title, const vector<CreatureInfo>&,
       const string& cancelText) = 0;
 
-  virtual bool creaturePrompt(const string& title, const vector<CreatureInfo>&) = 0;
+  //virtual vector<UniqueEntity<Creature>::Id> chooseTeamLeader(const string& title, const vector<CreatureInfo>&) = 0;
+
+  virtual bool creatureInfo(const string& title, bool prompt, const vector<CreatureInfo>&) = 0;
 
   virtual optional<Vec2> chooseSite(const string& message, const Campaign&, optional<Vec2> current = none) = 0;
 
   virtual void presentWorldmap(const Campaign&) = 0;
 
   /** Draws an animation of an object between two locations on a map.*/
-  virtual void animateObject(vector<Vec2> trajectory, ViewObject object) = 0;
+  virtual void animateObject(Vec2 begin, Vec2 end, ViewId object) = 0;
 
   /** Draws an special animation on the map.*/
   virtual void animation(Vec2 pos, AnimationId) = 0;

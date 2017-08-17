@@ -63,10 +63,6 @@
 #define DATA_DIR "."
 #endif
 
-#ifndef USER_DIR
-#define USER_DIR "."
-#endif
-
 static void initializeRendererTiles(Renderer& r, const DirectoryPath& path) {
   r.loadTilesFromDir(path.subdirectory("orig16"), Vec2(16, 16));
 //  r.loadAltTilesFromDir(path + "/orig16_scaled", Vec2(24, 24));
@@ -267,7 +263,6 @@ static int keeperMain(po::parser& commandLineFlags) {
   Skill::init();
   Technology::init();
   Spell::init();
-  Vision::init();
   if (commandLineFlags["run_tests"].was_set()) {
     testAll();
     return 0;
@@ -285,12 +280,20 @@ static int keeperMain(po::parser& commandLineFlags) {
   DirectoryPath userPath([&] () -> string {
     if (commandLineFlags["user_dir"].was_set())
       return commandLineFlags["user_dir"].get().string;
+#ifdef USER_DIR
+    else if (const char* userDir = USER_DIR)
+      return userDir;
+#endif // USER_DIR
 #ifndef WINDOWS
     else if (const char* localPath = std::getenv("XDG_DATA_HOME"))
       return localPath + string("/KeeperRL");
 #endif
+#ifdef ENABLE_LOCAL_USER_DIR // Some environments don't define XDG_DATA_HOME
+    else if (const char* homePath = std::getenv("HOME"))
+      return homePath + string("/.local/share/KeeperRL");
+#endif // ENABLE_LOCAL_USER_DIR
     else
-      return USER_DIR;
+      return ".";
   }());
   INFO << "Data path: " << dataPath;
   INFO << "User path: " << userPath;

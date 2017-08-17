@@ -34,8 +34,9 @@ CreatureAttributes::CreatureAttributes(function<void(CreatureAttributes&)> fun) 
   fun(*this);
   for (LastingEffect effect : ENUM_ALL(LastingEffect))
     lastingEffects[effect] = -500;
-  if (body->canEntangle() && !body->isMinionFood() && body->isHumanoid())
-    minionTasks.setValue(MinionTask::BE_WHIPPED, 0.01);
+  for (auto effect : ENUM_ALL(LastingEffect))
+    if (body->isIntrinsicallyAffected(effect))
+      ++permanentEffects[effect];
 }
 
 CreatureAttributes::~CreatureAttributes() {}
@@ -43,12 +44,12 @@ CreatureAttributes::~CreatureAttributes() {}
 template <class Archive> 
 void CreatureAttributes::serialize(Archive& ar, const unsigned int version) {
   ar(viewId, retiredViewId, illusionViewObject, spawnType, name, attr, chatReactionFriendly);
-  ar(chatReactionHostile, barehandedDamage, barehandedAttack, attackEffect, passiveAttack, gender);
-  ar(body, innocent);
+  ar(chatReactionHostile, barehandedAttack, attackEffect, passiveAttack, gender);
+  ar(body, innocent, moraleSpeedIncrease);
   ar(animal, cantEquip, courage);
-  ar(carryAnything, boulder, noChase, isSpecial, skills, spells);
-  ar(permanentEffects, lastingEffects, minionTasks, attrIncrease);
-  ar(noAttackSound, maxExpFromCombat, creatureId);
+  ar(boulder, noChase, isSpecial, skills, spells);
+  ar(permanentEffects, lastingEffects, lastAffected, minionTasks, expLevel);
+  ar(noAttackSound, maxLevelIncrease, creatureId);
 }
 
 SERIALIZABLE(CreatureAttributes);
@@ -72,20 +73,13 @@ const CreatureName& CreatureAttributes::getName() const {
   return *name;
 }
 
-double CreatureAttributes::getRawAttr(AttrType type) const {
-  double ret = attr[type];
-  for (auto expType : ENUM_ALL(ExperienceType))
-    ret += attrIncrease[expType][type];
-  return ret;
-}
-
 void CreatureAttributes::setBaseAttr(AttrType type, int v) {
   attr[type] = v;
 }
 
 double CreatureAttributes::getCourage() const {
   if (!body->hasBrain())
-    return 1000;
+    return 1;
   return courage;
 }
 
@@ -97,63 +91,37 @@ const Gender& CreatureAttributes::getGender() const {
   return gender;
 }
 
-struct AttrLevelInfo {
-  AttrType type;
-  double increasePerLevel;
-};
-
-static const vector<AttrLevelInfo> attrLevelInfo {
-  {AttrType::STRENGTH, 1},
-  {AttrType::DEXTERITY, 1}};
-
-static double calculateExpLevel(function<double(AttrType)> attrFun) {
-  double sum = 0;
-  for (auto& elem : attrLevelInfo)
-    sum += attrFun(elem.type) / (elem.increasePerLevel * attrLevelInfo.size());
-  return sum;
+double CreatureAttributes::getRawAttr(AttrType type) const {
+  double ret = attr[type];
+  if (auto expType = getExperienceType(type))
+    ret += expLevel[*expType];
+  return ret;
 }
 
-double CreatureAttributes::getExpLevel() const {
-  return calculateExpLevel([this] (AttrType t) { return getRawAttr(t);});
+double CreatureAttributes::getExpLevel(ExperienceType type) const {
+  return expLevel[type];
 }
 
-double CreatureAttributes::getExpIncrease(ExperienceType type) const {
-  return calculateExpLevel([=] (AttrType t) { return attrIncrease[type][t];});
+const EnumMap<ExperienceType, double>& CreatureAttributes::getExpLevel() const {
+  return expLevel;
 }
 
-double CreatureAttributes::getVisibleExpLevel() const {
-  return max(1., getExpLevel() - 10);
+const EnumMap<ExperienceType, int>& CreatureAttributes::getMaxExpLevel() const {
+  return maxLevelIncrease;
 }
 
 void CreatureAttributes::increaseExpLevel(ExperienceType type, double increase) {
-  for (auto& elem : attrLevelInfo)
-    attrIncrease[type][elem.type] += increase * elem.increasePerLevel;
+  increase = max(0.0, min(increase, (double) maxLevelIncrease[type] - expLevel[type]));
+  expLevel[type] += increase;
 }
 
-void CreatureAttributes::increaseBaseExpLevel(double increase) {
-  for (auto& elem : attrLevelInfo)
-    attr[elem.type] += increase * elem.increasePerLevel;
+bool CreatureAttributes::isTrainingMaxedOut(ExperienceType type) const {
+  return getExpLevel(type) >= maxLevelIncrease[type];
 }
 
-static const double maxLevelGain = 1.0;
-static const double minLevelGain = 0.02;
-static const double equalLevelGain = 0.2;
-static const double maxLevelDiff = 5;
-
-double CreatureAttributes::getExpFromKill(WConstCreature victim) const {
-  double levelDiff = victim->getAttributes().getExpLevel() - getExpLevel();
-  double maxIncrease = max(0.0, maxExpFromCombat - getExpIncrease(ExperienceType::COMBAT));
-  return min(maxIncrease, max(minLevelGain, min(maxLevelGain,
-      (maxLevelGain - equalLevelGain) * levelDiff / maxLevelDiff + equalLevelGain)));
-}
-
-optional<double> CreatureAttributes::getMaxExpIncrease(ExperienceType type) const {
-  switch (type) {
-    case ExperienceType::COMBAT:
-      return maxExpFromCombat;
-    default:
-      return none;
-  }
+void CreatureAttributes::increaseBaseExpLevel(ExperienceType type, double increase) {
+  for (auto attrType : getAttrIncreases()[type])
+    attr[attrType] += increase;
 }
 
 SpellMap& CreatureAttributes::getSpellMap() {
@@ -198,19 +166,22 @@ string CreatureAttributes::getDescription() const {
 void CreatureAttributes::chatReaction(WCreature me, WCreature other) {
   if (me->isEnemy(other) && chatReactionHostile) {
     if (chatReactionHostile->front() == '\"')
-      other->playerMessage(*chatReactionHostile);
+      other->privateMessage(*chatReactionHostile);
     else
-      other->playerMessage(me->getName().the() + " " + *chatReactionHostile);
+      other->privateMessage(me->getName().the() + " " + *chatReactionHostile);
   }
   if (!me->isEnemy(other) && chatReactionFriendly) {
     if (chatReactionFriendly->front() == '\"')
-      other->playerMessage(*chatReactionFriendly);
+      other->privateMessage(*chatReactionFriendly);
     else
-      other->playerMessage(me->getName().the() + " " + *chatReactionFriendly);
+      other->privateMessage(me->getName().the() + " " + *chatReactionFriendly);
   }
 }
 
 bool CreatureAttributes::isAffected(LastingEffect effect, double time) const {
+  if (auto suppressor = LastingEffects::getSuppressor(effect))
+    if (isAffected(*suppressor, time))
+      return false;
   return lastingEffects[effect] >= time || isAffectedPermanently(effect);
 }
 
@@ -220,20 +191,23 @@ double CreatureAttributes::getTimeOut(LastingEffect effect) const {
 
 bool CreatureAttributes::considerTimeout(LastingEffect effect, double globalTime) {
   if (lastingEffects[effect] > 0 && lastingEffects[effect] < globalTime) {
-    clearLastingEffect(effect);
+    clearLastingEffect(effect, globalTime);
     if (!isAffected(effect, globalTime))
       return true;
   }
   return false;
 }
   
-bool CreatureAttributes::considerAffecting(LastingEffect effect, double globalTime, double timeout) {
-  bool ret = false;
-  if (lastingEffects[effect] < globalTime + timeout) {
-    ret = !isAffected(effect, globalTime);
-    lastingEffects[effect] = globalTime + timeout;
-  }
-  return ret;
+void CreatureAttributes::addLastingEffect(LastingEffect effect, double endTime) {
+  if (lastingEffects[effect] < endTime)
+    lastingEffects[effect] = endTime;
+}
+
+optional<double> CreatureAttributes::getLastAffected(LastingEffect effect, double currentGlobalTime) const {
+  if (isAffected(effect, currentGlobalTime))
+    return currentGlobalTime;
+  else
+    return lastAffected[effect];
 }
 
 static bool consumeProb() {
@@ -242,8 +216,10 @@ static bool consumeProb() {
 
 static string getAttrNameMore(AttrType attr) {
   switch (attr) {
-    case AttrType::STRENGTH: return "stronger";
-    case AttrType::DEXTERITY: return "more agile";
+    case AttrType::DAMAGE: return "more dangerous";
+    case AttrType::DEFENSE: return "more protected";
+    case AttrType::SPELL_DAMAGE: return "more powerful";
+    case AttrType::RANGED_DAMAGE: return "more accurate";
     case AttrType::SPEED: return "faster";
   }
 }
@@ -291,10 +267,10 @@ void consumeAttr(Skillset& mine, const Skillset& his, vector<string>& adjectives
     adjectives.push_back("more skillfull");
 }
 
-void CreatureAttributes::consumeEffects(const EnumMap<LastingEffect, int>& effects) {
+void CreatureAttributes::consumeEffects(const EnumMap<LastingEffect, int>& permanentEffects) {
   for (LastingEffect effect : ENUM_ALL(LastingEffect))
-    if (effects[effect] > 0 && !isAffectedPermanently(effect) && consumeProb()) {
-      addPermanentEffect(effect);
+    if (permanentEffects[effect] > 0 && !isAffectedPermanently(effect) && consumeProb()) {
+      addPermanentEffect(effect, 1);
     }
 }
 
@@ -306,7 +282,6 @@ void CreatureAttributes::consume(WCreature self, const CreatureAttributes& other
   body->consumeBodyParts(self, other.getBody(), adjectives);
   for (auto t : ENUM_ALL(AttrType))
     consumeAttr(attr[t], other.attr[t], adjectives, getAttrNameMore(t));
-  consumeAttr(barehandedDamage, other.barehandedDamage, adjectives, "more dangerous");
   consumeAttr(barehandedAttack, other.barehandedAttack, adjectives, "");
   consumeAttr(*attackEffect, *other.attackEffect, adjectives, "");
   consumeAttr(*passiveAttack, *other.passiveAttack, adjectives, "");
@@ -319,7 +294,7 @@ void CreatureAttributes::consume(WCreature self, const CreatureAttributes& other
   consumeEffects(other.permanentEffects);
 }
 
-AttackType CreatureAttributes::getAttackType(const WItem weapon) const {
+AttackType CreatureAttributes::getAttackType(WConstItem weapon) const {
   if (weapon)
     return weapon->getAttackType();
   else if (barehandedAttack)
@@ -357,7 +332,7 @@ bool CreatureAttributes::canEquip() const {
 }
 
 bool CreatureAttributes::isAffectedPermanently(LastingEffect effect) const {
-  return permanentEffects[effect] > 0 || body->isIntrinsicallyAffected(effect);
+  return permanentEffects[effect] > 0;
 }
 
 void CreatureAttributes::shortenEffect(LastingEffect effect, double time) {
@@ -365,24 +340,17 @@ void CreatureAttributes::shortenEffect(LastingEffect effect, double time) {
   lastingEffects[effect] -= time;
 }
 
-void CreatureAttributes::clearLastingEffect(LastingEffect effect) {
+void CreatureAttributes::clearLastingEffect(LastingEffect effect, double globalTime) {
   lastingEffects[effect] = 0;
+  lastAffected[effect] = globalTime;
 }
 
-void CreatureAttributes::addPermanentEffect(LastingEffect effect) {
-  ++permanentEffects[effect];
+void CreatureAttributes::addPermanentEffect(LastingEffect effect, int count) {
+  permanentEffects[effect] += count;
 }
 
-void CreatureAttributes::removePermanentEffect(LastingEffect effect) {
-  CHECK(--permanentEffects[effect] >= 0);
-}
-
-bool CreatureAttributes::canCarryAnything() const {
-  return carryAnything;
-}
-
-int CreatureAttributes::getBarehandedDamage() const {
-  return barehandedDamage;
+void CreatureAttributes::removePermanentEffect(LastingEffect effect, int count) {
+  permanentEffects[effect] -= count;
 }
 
 optional<EffectType> CreatureAttributes::getAttackEffect() const {
@@ -413,3 +381,6 @@ optional<ViewId> CreatureAttributes::getRetiredViewId() {
   return retiredViewId;
 }
 
+optional<double> CreatureAttributes::getMoraleSpeedIncrease() const {
+  return moraleSpeedIncrease;
+}

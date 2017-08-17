@@ -1,6 +1,5 @@
 #pragma once
 
-#include "move_info.h"
 #include "player_message.h"
 
 class Creature;
@@ -21,9 +20,10 @@ class CollectiveControl : public OwnedObject<CollectiveControl> {
   virtual void addAttack(const CollectiveAttack&) {}
   virtual void onConstructed(Position, FurnitureType) {}
   virtual void onClaimedSquare(Position) {}
-  virtual void onDestructed(Position, const DestroyAction&) {}
+  virtual void onDestructed(Position, FurnitureType, const DestroyAction&) {}
   virtual void onNoEnemies() {}
   virtual void onRansomPaid() {}
+  virtual void onPositionDiscovered(Position) {}
   virtual vector<TriggerInfo> getTriggers(WConstCollective against) const;
 
   WCollective getCollective() const;

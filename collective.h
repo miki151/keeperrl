@@ -50,8 +50,9 @@ class Immigration;
 
 class Collective : public TaskCallback, public UniqueEntity<Collective>, public EventListener<Collective> {
   public:
-  static PCollective create(WLevel, TribeId, const optional<CollectiveName>&);
+  static PCollective create(WLevel, TribeId, const optional<CollectiveName>&, bool discoverable);
   void init(CollectiveConfig&&, Immigration&&);
+  void acquireInitialTech();
   void addCreature(WCreature, EnumSet<MinionTrait>);
   void addCreature(PCreature, Position, EnumSet<MinionTrait>);
   MoveInfo getMove(WCreature);
@@ -70,8 +71,9 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   void banishCreature(WCreature);
   bool wasBanished(WConstCreature) const;
   void setVillainType(VillainType);
+  bool isDiscoverable() const;
   void setEnemyId(EnemyId);
-  optional<VillainType> getVillainType() const;
+  VillainType getVillainType() const;
   optional<EnemyId> getEnemyId() const;
   WCollectiveControl getControl() const;
   double getLocalTime() const;
@@ -79,7 +81,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
 
   typedef CollectiveResourceId ResourceId;
 
-  SERIALIZATION_DECL(Collective);
+  SERIALIZATION_DECL(Collective)
 
   const vector<WCreature>& getCreatures() const;
   bool isConquered() const;
@@ -137,8 +139,6 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
 
   vector<pair<WItem, Position>> getTrapItems(TrapType, const vector<Position>&) const;
 
-  void orderExecution(WCreature);
-
   void addTrap(Position, TrapType);
   void removeTrap(Position);
   bool canAddFurniture(Position, FurnitureType) const;
@@ -162,7 +162,6 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   bool hasTech(TechId id) const;
   void acquireTech(Technology*);
   vector<Technology*> getTechnologies() const;
-  int getTechCost(Technology*);
   bool addKnownTile(Position);
 
   const EntitySet<Creature>& getKills() const;
@@ -170,7 +169,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
 
   MinionEquipment& getMinionEquipment();
   const MinionEquipment& getMinionEquipment() const;
-  optional<FurnitureType> getMissingTrainingDummy(WConstCreature) const;
+  optional<FurnitureType> getMissingTrainingFurniture(WConstCreature, ExperienceType) const;
 
   Workshops& getWorkshops();
   const Workshops& getWorkshops() const;
@@ -185,6 +184,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   vector<WCreature> getConsumptionTargets(WCreature consumer) const;
   void addAttack(const CollectiveAttack&);
   void onRansomPaid();
+  void onExternalEnemyKilled(const string& name);
 
   CollectiveTeams& getTeams();
   const CollectiveTeams& getTeams() const;
@@ -192,10 +192,11 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
 
   const optional<CollectiveName>& getName() const;
   const TaskMap& getTaskMap() const;
+  TaskMap& getTaskMap();
   void updateResourceProduction();
-  bool isItemMarked(const WItem) const;
+  bool isItemMarked(WConstItem) const;
   int getNumItems(ItemIndex, bool includeMinions = true) const;
-  optional<set<Position>> getStorageFor(const WItem) const;
+  optional<set<Position>> getStorageFor(WConstItem) const;
 
   void addKnownVillain(WConstCollective);
   bool isKnownVillain(WConstCollective) const;
@@ -203,6 +204,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   bool isKnownVillainLocation(WConstCollective) const;
 
   void onEvent(const GameEvent&);
+  void onPositionDiscovered(Position);
 
   private:
   struct Private {};
@@ -214,8 +216,6 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   // From Task::Callback
   virtual void onAppliedItem(Position, WItem item) override;
   virtual void onAppliedItemCancel(Position) override;
-  virtual void onTaskPickedUp(Position, EntitySet<Item>) override;
-  virtual void onCantPickItem(EntitySet<Item> items) override;
   virtual void onConstructed(Position, FurnitureType) override;
   virtual void onDestructed(Position, FurnitureType, const DestroyAction&) override;
   virtual void onAppliedSquare(WCreature, Position) override;
@@ -235,7 +235,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   void decreaseMoraleForKill(WConstCreature killer, WConstCreature victim);
   void decreaseMoraleForBanishing(WConstCreature);
 
-  bool isItemNeeded(const WItem) const;
+  bool isItemNeeded(WConstItem) const;
   void addProducesMessage(WConstCreature, const vector<PItem>&);
   int getDebt(ResourceId id) const;
 
@@ -243,7 +243,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   EnumMap<ResourceId, int> SERIAL(credit);
   HeapAllocated<TaskMap> SERIAL(taskMap);
   vector<TechId> SERIAL(technologies);
-  void markItem(const WItem);
+  void markItem(WConstItem, WConstTask);
   void unmarkItem(UniqueEntity<Item>::Id);
 
   HeapAllocated<KnownTiles> SERIAL(knownTiles);
@@ -259,16 +259,13 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
 
   EntityMap<Creature, CurrentTaskInfo> SERIAL(currentTasks);
   optional<Position> getTileToExplore(WConstCreature, MinionTask) const;
-  PTask getStandardTask(WCreature c);
+  WTask getStandardTask(WCreature c);
   PTask getEquipmentTask(WCreature c);
   void considerHealingTask(WCreature c);
   bool isTaskGood(WConstCreature, MinionTask, bool ignoreTaskLock = false) const;
   void setRandomTask(WConstCreature);
 
   void handleSurprise(Position);
-  MoveInfo getDropItems(WCreature);
-  MoveInfo getWorkerMove(WCreature);
-  MoveInfo getTeamMemberMove(WCreature);
   int getTaskDuration(WConstCreature, MinionTask) const;
   void decayMorale();
   vector<WCreature> SERIAL(creatures);
@@ -285,13 +282,12 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
     SERIALIZE_ALL(finishTime, position)
   };
   optional<AlarmInfo> SERIAL(alarmInfo);
-  MoveInfo getAlarmMove(WCreature c);
   HeapAllocated<ConstructionMap> SERIAL(constructions);
-  EntitySet<Item> SERIAL(markedItems);
+  EntityMap<Item, WConstTask> SERIAL(markedItems);
   EntitySet<Creature> SERIAL(surrendering);
   void updateConstructions();
   void handleTrapPlacementAndProduction();
-  void scheduleAutoProduction(function<bool (const WItem)> itemPredicate, int count);
+  void scheduleAutoProduction(function<bool (WConstItem)> itemPredicate, int count);
   void delayDangerousTasks(const vector<Position>& enemyPos, double delayTime);
   bool isDelayed(Position);
   unordered_map<Position, double, CustomHash<Position>> SERIAL(delayedPos);
@@ -305,7 +301,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   HeapAllocated<optional<CollectiveName>> SERIAL(name);
   HeapAllocated<CollectiveConfig> SERIAL(config);
   EntitySet<Creature> SERIAL(banished);
-  optional<VillainType> SERIAL(villainType);
+  VillainType SERIAL(villainType);
   optional<EnemyId> SERIAL(enemyId);
   unique_ptr<Workshops> SERIAL(workshops);
   HeapAllocated<Zones> SERIAL(zones);
@@ -315,4 +311,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   mutable optional<double> dangerLevelCache;
   EntitySet<Collective> SERIAL(knownVillains);
   EntitySet<Collective> SERIAL(knownVillainLocations);
+  set<EnemyId> SERIAL(conqueredVillains);
+  void setDiscoverable();
+  bool SERIAL(discoverable) = false;
 };

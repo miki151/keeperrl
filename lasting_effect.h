@@ -8,8 +8,9 @@ RICH_ENUM(LastingEffect,
     RAGE,
     SLOWED,
     SPEED,
-    STR_BONUS,
-    DEX_BONUS,
+    DAM_BONUS,
+    DEF_BONUS,
+    BLEEDING,
     HALLU,
     BLIND,
     INVISIBLE,
@@ -20,10 +21,18 @@ RICH_ENUM(LastingEffect,
     POISON_RESISTANT,
     FIRE_RESISTANT,
     FLYING,
+    COLLAPSED,
     INSANITY,
-    MAGIC_SHIELD,
     DARKNESS_SOURCE,
-    PREGNANT
+    PREGNANT,
+    MAGIC_RESISTANCE,
+    MELEE_RESISTANCE,
+    RANGED_RESISTANCE,
+    MAGIC_VULNERABILITY,
+    MELEE_VULNERABILITY,
+    RANGED_VULNERABILITY,
+    ELF_VISION,
+    NIGHT_VISION
 );
 
 RICH_ENUM(CreatureCondition,
@@ -35,14 +44,16 @@ class LastingEffects {
   public:
   static void onAffected(WCreature, LastingEffect, bool msg);
   static bool affects(WConstCreature, LastingEffect);
+  static optional<LastingEffect> getSuppressor(LastingEffect);
   static void onRemoved(WCreature, LastingEffect, bool msg);
   static void onTimedOut(WCreature, LastingEffect, bool msg);
-  static void modifyAttr(WConstCreature, AttrType, int&);
-  static void modifyMod(WConstCreature, ModifierType, int&);
-  static void onCreatureDamage(WCreature, LastingEffect);
+  static void modifyAttr(WConstCreature, AttrType, double&);
+  static void afterCreatureDamage(WCreature, LastingEffect);
+  static bool tick(WCreature, LastingEffect);
   static const char* getGoodAdjective(LastingEffect);
   static const char* getBadAdjective(LastingEffect);
   static const vector<LastingEffect>& getCausingCondition(CreatureCondition);
+  static double modifyCreatureDefense(LastingEffect, double damage, AttrType damageAttr);
 };
 
 

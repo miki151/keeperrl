@@ -71,7 +71,7 @@ T lambdaConstruct(function<void(T&)> fun) {
 
 #define LIST(...) {__VA_ARGS__}
 
-typedef function<bool(const WItem)> ItemPredicate;
+typedef function<bool(WConstItem)> ItemPredicate;
 
 template<class T>
 vector<T*> extractRefs(vector<unique_ptr<T>>& v) {
@@ -387,7 +387,8 @@ class EnumMap {
   EnumMap(const EnumMap& o) : elems(o.elems) {}
   EnumMap(EnumMap&& o) : elems(std::move(o.elems)) {}
 
-  EnumMap(function<U(T)> f) {
+  template <typename Fun>
+  explicit EnumMap(Fun f) {
     for (T t : EnumAll<T>())
       (*this)[t] = f(t);
   }
@@ -457,6 +458,7 @@ class EnumMap {
 };
 
 std::string operator "" _s(const char* str, size_t);
+
 class RandomGen {
   public:
   RandomGen() {}
@@ -1102,6 +1104,13 @@ class EnumSet {
   public:
   EnumSet() {}
 
+  template <typename Fun>
+  explicit EnumSet(Fun f) {
+    for (T t : EnumAll<T>())
+      if (f(t))
+        insert(t);
+  }
+
   EnumSet(initializer_list<T> il) {
     for (auto elem : il)
       insert(elem);
@@ -1497,3 +1506,16 @@ optional<typename Map::mapped_type> getValueMaybe(const Map& m, const Key& key) 
 
 extern int getSize(const string&);
 extern const char* getString(const string&);
+
+#define COMPARE_ALL(...) \
+auto getElems() const { \
+  return std::forward_as_tuple(__VA_ARGS__); \
+} \
+template <typename T> \
+bool operator == (const T& o) const { \
+  return o.getElems() == getElems(); \
+} \
+template <typename T> \
+bool operator != (const T& o) const { \
+  return o.getElems() != getElems(); \
+}

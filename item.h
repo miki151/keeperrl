@@ -28,6 +28,7 @@ class Fire;
 class ItemAttributes;
 class EffectType;
 struct CorpseInfo;
+class RangedWeapon;
 
 class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<Item> {
   public:
@@ -64,10 +65,10 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
 
   bool canEquip() const;
   EquipmentSlot getEquipmentSlot() const;
-  void addModifier(ModifierType, int value);
-  int getModifier(ModifierType) const;
-  int getAttr(AttrType) const;
-
+  void addModifier(AttrType, int value);
+  int getModifier(AttrType) const;
+  const optional<RangedWeapon>& getRangedWeapon() const;
+  AttrType getMeleeAttackAttr() const;
   void tick(Position);
   
   string getApplyMsgThirdPerson(WConstCreature owner) const;
@@ -99,8 +100,8 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
   static ItemPredicate namePredicate(const string& name);
   static ItemPredicate isRangedWeaponPredicate();
 
-  static vector<pair<string, vector<WItem>>> stackItems(vector<WItem>,
-      function<string(const WItem)> addSuffix = [](const WItem) { return ""; });
+  static vector<vector<WItem>> stackItems(vector<WItem>,
+      function<string(WConstItem)> addSuffix = [](WConstItem) { return ""; });
 
   virtual optional<CorpseInfo> getCorpseInfo() const;
 

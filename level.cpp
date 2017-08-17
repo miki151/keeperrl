@@ -70,6 +70,10 @@ PLevel Level::create(SquareArray s, FurnitureArray f, WModel m, const string& n,
     square->onAddedToLevel(Position(pos, ret.get()));
     if (optional<StairKey> link = square->getLandingLink())
       ret->landingSquares[*link].push_back(Position(pos, ret.get()));
+    for (auto layer : ENUM_ALL(FurnitureLayer))
+      if (auto f = ret->furniture->getBuilt(layer).getReadonly(pos))
+        if (f->isTicking())
+          ret->addTickingFurniture(pos);
   }
   for (VisionId vision : ENUM_ALL(VisionId))
     (*ret->fieldOfView)[vision] = FieldOfView(ret.get(), vision);
@@ -158,14 +162,14 @@ void Level::updateVisibility(Vec2 changedSquare) {
       if (c->isDarknessSource())
         addDarknessSource(pos, darknessRadius, 1);
   }
+  for (Vec2 pos : getVisibleTilesNoDarkness(changedSquare, VisionId::NORMAL))
+    getModel()->addEvent(EventInfo::VisibilityChanged{Position(pos, this)});
 }
 
-WCreature Level::getPlayer() const {
+vector<WCreature> Level::getPlayers() const {
   if (auto game = model->getGame())
-    if (auto player = game->getPlayer())
-      if (player->getLevel() == this)
-        return player;
-  return nullptr;
+    return game->getPlayerCreatures().filter([this](const WCreature& c) { return c->getLevel() == this; });
+  return {};
 }
 
 const WModel Level::getModel() const {
@@ -299,16 +303,18 @@ void Level::throwItem(vector<PItem> item, const Attack& attack, int maxDist, Vec
   for (Vec2 v = position + direction; inBounds(v); v += direction) {
     trajectory.push_back(v);
     Position pos(v, this);
-    if (!pos.canSeeThru(vision)) {
+    if (pos.stopsProjectiles(vision)) {
       item[0]->onHitSquareMessage(Position(v, this), item.size());
       trajectory.pop_back();
-      getGame()->addEvent({EventId::ITEMS_THROWN, EventInfo::ItemsThrown{this, getWeakPointers(item), trajectory}});
+      getGame()->addEvent(
+          EventInfo::Projectile{item[0]->getViewObject().id(), Position(position, this), pos.minus(direction)});
       if (!item[0]->isDiscarded())
         pos.minus(direction).dropItems(std::move(item));
       return;
     }
-    if (++cnt > maxDist || getSafeSquare(v)->itemLands(getWeakPointers(item), attack)) {
-      getGame()->addEvent({EventId::ITEMS_THROWN, EventInfo::ItemsThrown{this, getWeakPointers(item), trajectory}});
+    if (++cnt > maxDist || getSafeSquare(v)->getCreature()) {
+      getGame()->addEvent(
+          EventInfo::Projectile{item[0]->getViewObject().id(), Position(position, this), pos});
       modSafeSquare(v)->onItemLands(Position(v, this), std::move(item), attack, maxDist - cnt - 1, direction,
           vision);
       return;
@@ -325,30 +331,6 @@ void Level::removeCreature(WCreature creature) {
   eraseCreature(creature, creature->getPosition().getCoord());
 }
 
-const static int hearingRange = 30;
-
-void Level::globalMessage(Vec2 position, const PlayerMessage& ifPlayerCanSee, const PlayerMessage& cannot) const {
-  if (WCreature player = getPlayer()) {
-    if (playerCanSee(position))
-      player->playerMessage(ifPlayerCanSee);
-    else if (player->getPosition().getCoord().dist8(position) < hearingRange)
-      player->playerMessage(cannot);
-  }
-}
-
-void Level::globalMessage(Vec2 position, const PlayerMessage& playerCanSee) const {
-  globalMessage(position, playerCanSee, "");
-}
-
-void Level::globalMessage(WConstCreature c, const PlayerMessage& ifPlayerCanSee, const PlayerMessage& cant) const {
-  if (WCreature player = getPlayer()) {
-    if (player->canSee(c))
-      player->playerMessage(ifPlayerCanSee);
-    else if (player->getPosition().dist8(c->getPosition()) < hearingRange)
-      player->playerMessage(cant);
-  }
-}
-
 void Level::changeLevel(StairKey key, WCreature c) {
   Vec2 oldPos = c->getPosition().getCoord();
   WLevel otherLevel = model->getLinkedLevel(this, key);
@@ -362,7 +344,7 @@ void Level::changeLevel(StairKey key, WCreature c) {
         eraseCreature(c, oldPos);
         putCreature(oldPos, other);
         otherLevel->putCreature(otherPos.getCoord(), c);
-        c->playerMessage("You switch levels with " + other->getName().a());
+        c->secondPerson("You switch levels with " + other->getName().a());
       }
     }
   }
@@ -396,36 +378,20 @@ bool Level::containsCreature(UniqueEntity<Creature>::Id id) const {
   return creatureIds.contains(id);
 }
 
-const int darkViewRadius = 5;
-
-bool Level::isWithinVision(Vec2 from, Vec2 to, VisionId v) const {
-  return Vision::get(v)->isNightVision() || from.distD(to) <= darkViewRadius || getLight(to) > 0.3;
+bool Level::isWithinVision(Vec2 from, Vec2 to, const Vision& v) const {
+  return v.canSeeAt(getLight(to), from.distD(to));
 }
 
 FieldOfView& Level::getFieldOfView(VisionId vision) const {
   return (*fieldOfView)[vision];
 }
 
-bool Level::canSee(Vec2 from, Vec2 to, VisionId vision) const {
-  return isWithinVision(from, to, vision) && getFieldOfView(vision).canSee(from, to);
+bool Level::canSee(Vec2 from, Vec2 to, const Vision& vision) const {
+  return isWithinVision(from, to, vision) && getFieldOfView(vision.getId()).canSee(from, to);
 }
 
 bool Level::canSee(WConstCreature c, Vec2 pos) const {
   return canSee(c->getPosition().getCoord(), pos, c->getVision());
-}
-
-bool Level::playerCanSee(Vec2 pos) const {
-  if (WCreature player = getPlayer())
-    return player->canSee(pos);
-  else
-    return false;
-}
-
-bool Level::playerCanSee(WConstCreature c) const {
-  if (WCreature player = getPlayer())
-    return player->canSee(c);
-  else
-    return false;
 }
 
 void Level::moveCreature(WCreature creature, Vec2 direction) {
@@ -461,12 +427,12 @@ void Level::swapCreatures(WCreature c1, WCreature c2) {
   placeCreature(c2, pos1);
 }
 
-vector<Vec2> Level::getVisibleTilesNoDarkness(Vec2 pos, VisionId vision) const {
+const vector<Vec2>& Level::getVisibleTilesNoDarkness(Vec2 pos, VisionId vision) const {
   return getFieldOfView(vision).getVisibleTiles(pos);
 }
 
-vector<Vec2> Level::getVisibleTiles(Vec2 pos, VisionId vision) const {
-  return getFieldOfView(vision).getVisibleTiles(pos).filter(
+vector<Vec2> Level::getVisibleTiles(Vec2 pos, const Vision& vision) const {
+  return getFieldOfView(vision.getId()).getVisibleTiles(pos).filter(
       [&](Vec2 v) { return isWithinVision(pos, v, vision); });
 }
 

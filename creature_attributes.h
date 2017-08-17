@@ -23,8 +23,7 @@
 #include "gender.h"
 #include "creature_name.h"
 #include "minion_task_map.h"
-#include "skill.h"
-#include "modifier_type.h"
+#include "attr_type.h"
 #include "lasting_effect.h"
 #include "experience_type.h"
 
@@ -42,13 +41,14 @@ class SpellMap;
 class Body;
 class SpellMap;
 class EffectType;
+struct AdjectiveInfo;
 
 class CreatureAttributes {
   public:
   CreatureAttributes(function<void(CreatureAttributes&)>);
   CreatureAttributes(const CreatureAttributes& other) = default;
   ~CreatureAttributes();
-  SERIALIZATION_DECL(CreatureAttributes);
+  SERIALIZATION_DECL(CreatureAttributes)
 
   CreatureAttributes& setCreatureId(CreatureId);
   const optional<CreatureId>& getCreatureId() const;
@@ -61,13 +61,12 @@ class CreatureAttributes {
   double getCourage() const;
   void setCourage(double);
   const Gender& getGender() const;
-  double getExpLevel() const;
-  double getExpIncrease(ExperienceType) const;
-  double getVisibleExpLevel() const;
+  double getExpLevel(ExperienceType type) const;
+  const EnumMap<ExperienceType, double>& getExpLevel() const;
+  const EnumMap<ExperienceType, int>& getMaxExpLevel() const;
   void increaseExpLevel(ExperienceType, double increase);
-  void increaseBaseExpLevel(double increase);
-  double getExpFromKill(WConstCreature victim) const;
-  optional<double> getMaxExpIncrease(ExperienceType) const;
+  bool isTrainingMaxedOut(ExperienceType) const;
+  void increaseBaseExpLevel(ExperienceType type, double increase);
   string bodyDescription() const;
   SpellMap& getSpellMap();
   const SpellMap& getSpellMap() const;
@@ -85,14 +84,13 @@ class CreatureAttributes {
   double getTimeOut(LastingEffect) const;
   string getRemainingString(LastingEffect, double time) const;
   void shortenEffect(LastingEffect, double time);
-  void clearLastingEffect(LastingEffect);
-  void addPermanentEffect(LastingEffect);
-  void removePermanentEffect(LastingEffect);
+  void clearLastingEffect(LastingEffect, double globalTime);
+  void addPermanentEffect(LastingEffect, int count);
+  void removePermanentEffect(LastingEffect, int count);
   bool considerTimeout(LastingEffect, double globalTime);
-  bool considerAffecting(LastingEffect, double globalTime, double timeout);
-  bool canCarryAnything() const;
-  int getBarehandedDamage() const;
-  AttackType getAttackType(const WItem weapon) const;
+  void addLastingEffect(LastingEffect, double endtime);
+  optional<double> getLastAffected(LastingEffect, double currentGlobalTime) const;
+  AttackType getAttackType(WConstItem weapon) const;
   optional<EffectType> getAttackEffect() const;
   bool canSleep() const;
   bool isInnocent() const;
@@ -102,6 +100,8 @@ class CreatureAttributes {
   MinionTaskMap& getMinionTasks();
   bool dontChase() const;
   optional<ViewId> getRetiredViewId();
+  void increaseExpFromCombat(double attackDiff);
+  optional<double> getMoraleSpeedIncrease() const;
 
   friend class CreatureFactory;
 
@@ -115,7 +115,6 @@ class CreatureAttributes {
   HeapAllocated<Body> SERIAL(body);
   optional<string> SERIAL(chatReactionFriendly);
   optional<string> SERIAL(chatReactionHostile);
-  int SERIAL(barehandedDamage) = 0;
   optional<AttackType> SERIAL(barehandedAttack);
   HeapAllocated<optional<EffectType>> SERIAL(attackEffect);
   HeapAllocated<optional<EffectType>> SERIAL(passiveAttack);
@@ -125,7 +124,6 @@ class CreatureAttributes {
   bool SERIAL(animal) = false;
   bool SERIAL(cantEquip) = false;
   double SERIAL(courage) = 1;
-  bool SERIAL(carryAnything) = false;
   bool SERIAL(boulder) = false;
   bool SERIAL(noChase) = false;
   bool SERIAL(isSpecial) = false;
@@ -133,9 +131,11 @@ class CreatureAttributes {
   HeapAllocated<SpellMap> SERIAL(spells);
   EnumMap<LastingEffect, int> SERIAL(permanentEffects);
   EnumMap<LastingEffect, double> SERIAL(lastingEffects);
+  EnumMap<LastingEffect, optional<double>> SERIAL(lastAffected);
   MinionTaskMap SERIAL(minionTasks);
-  EnumMap<ExperienceType, EnumMap<AttrType, double>> SERIAL(attrIncrease);
+  EnumMap<ExperienceType, double> SERIAL(expLevel);
+  EnumMap<ExperienceType, int> SERIAL(maxLevelIncrease);
   bool SERIAL(noAttackSound) = false;
-  double SERIAL(maxExpFromCombat) = 4;
   optional<CreatureId> SERIAL(creatureId);
+  optional<double> SERIAL(moraleSpeedIncrease);
 };

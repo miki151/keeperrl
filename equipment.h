@@ -32,8 +32,8 @@ RICH_ENUM(EquipmentSlot,
 class Equipment : public Inventory {
   public:
   vector<WItem> getSlotItems(EquipmentSlot slot) const;
-  bool isEquipped(const WItem) const;
-  bool canEquip(const WItem) const;
+  bool isEquipped(WConstItem) const;
+  bool canEquip(WConstItem) const;
   void equip(WItem, EquipmentSlot, WCreature);
   void unequip(WItem, WCreature);
   PItem removeItem(WItem, WCreature);

@@ -1,26 +1,26 @@
 #include "stdafx.h"
 #include "vision.h"
+#include "creature_attributes.h"
+#include "creature.h"
 
-template <class Archive> 
-void CreatureVision::serialize(Archive& ar, const unsigned int version) {
- ar & SUBCLASS(OwnedObject<CreatureVision>);
+SERIALIZE_DEF(CreatureVision, SUBCLASS(OwnedObject<CreatureVision>))
+
+SERIALIZE_DEF(Vision, id, nightVision)
+
+VisionId Vision::getId() const {
+  return id;
 }
 
-SERIALIZABLE(CreatureVision);
+constexpr int darkViewRadius = 5;
 
-Vision::Vision(Vision* inherited, bool night) : inheritedFov(inherited), nightVision(night) {}
-
-Vision* Vision::getInheritedFov() const {
-  return inheritedFov;
+bool Vision::canSeeAt(double light, double distance) const {
+  return nightVision || light > 0.3 || distance <= darkViewRadius;
 }
 
-bool Vision::isNightVision() const {
-  return nightVision;
+void Vision::update(WConstCreature c) {
+  nightVision = c->isAffected(LastingEffect::NIGHT_VISION);
+  if (c->isAffected(LastingEffect::ELF_VISION) || c->isAffected(LastingEffect::FLYING))
+    id = VisionId::ELF;
+  else
+    id = VisionId::NORMAL;
 }
-
-void Vision::init() {
-  Vision::set(VisionId::NORMAL, new Vision(nullptr, false));
-  Vision::set(VisionId::ELF, new Vision(Vision::get(VisionId::NORMAL), false));
-  Vision::set(VisionId::NIGHT, new Vision(Vision::get(VisionId::NORMAL), true));
-}
-

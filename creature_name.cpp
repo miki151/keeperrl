@@ -50,7 +50,7 @@ string CreatureName::title() const {
   if (firstName)
     return *firstName + " the " + name;
   else
-    return capitalFirst(the());
+    return capitalFirst(bare());
 }
 
 void CreatureName::setFirst(const string& s) {

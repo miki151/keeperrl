@@ -36,30 +36,30 @@ struct ChestInfo {
 };
 
 static void useChest(Position pos, WConstFurniture furniture, WCreature c, const ChestInfo& chestInfo) {
-  c->playerMessage("You open the " + furniture->getName());
+  c->secondPerson("You open the " + furniture->getName());
+  c->thirdPerson(c->getName().the() + " opens the " + furniture->getName());
   pos.replaceFurniture(furniture, FurnitureFactory::get(chestInfo.openedType, furniture->getTribe()));
   if (auto creatureInfo = chestInfo.creatureInfo)
     if (creatureInfo->creatureChance > 0 && Random.roll(creatureInfo->creatureChance)) {
-    int numR = creatureInfo->numCreatures;
-    CreatureFactory factory(*creatureInfo->creature);
-    for (Position v : c->getPosition().neighbors8(Random)) {
-      PCreature rat = factory.random();
-      if (v.canEnter(rat.get())) {
-        v.addCreature(std::move(rat));
-        if (--numR == 0)
-          break;
+      int numR = creatureInfo->numCreatures;
+      CreatureFactory factory(*creatureInfo->creature);
+      for (Position v : c->getPosition().neighbors8(Random)) {
+        PCreature rat = factory.random();
+        if (v.canEnter(rat.get())) {
+          v.addCreature(std::move(rat));
+          if (--numR == 0)
+            break;
+        }
       }
-    }
     if (numR < creatureInfo->numCreatures)
-      c->playerMessage(creatureInfo->msgCreature);
+      c->message(creatureInfo->msgCreature);
     return;
   }
   if (auto itemInfo = chestInfo.itemInfo) {
-    c->playerMessage(itemInfo->msgItem);
+    c->message(itemInfo->msgItem);
     ItemFactory itemFactory(itemInfo->items);
     vector<PItem> items = itemFactory.random();
-    c->getGame()->addEvent({EventId::ITEMS_APPEARED, EventInfo::ItemsAppeared{c->getPosition(),
-        getWeakPointers(items)}});
+    c->getGame()->addEvent(EventInfo::ItemsAppeared{c->getPosition(), getWeakPointers(items)});
     c->getPosition().dropItems(std::move(items));
   }
 }
@@ -79,7 +79,7 @@ static void usePortal(Position pos, WCreature c) {
             return;
           }
       }
-  c->playerMessage("The portal is inactive. Create another one to open a connection.");
+  c->privateMessage("The portal is inactive. Create another one to open a connection.");
 }
 
 void FurnitureUsage::handle(FurnitureUsageType type, Position pos, WConstFurniture furniture, WCreature c) {
@@ -112,16 +112,17 @@ void FurnitureUsage::handle(FurnitureUsageType type, Position pos, WConstFurnitu
       break;
     case FurnitureUsageType::VAMPIRE_COFFIN:
       useChest(pos, furniture, c, ChestInfo{
-                 FurnitureType::OPENED_CHEST,
+                 FurnitureType::OPENED_COFFIN,
                  ChestInfo::CreatureInfo {
-                   CreatureFactory::singleCreature(TribeId::getKeeper(), CreatureId::VAMPIRE_LORD), 1, 1,
+                   CreatureFactory::singleCreature(TribeId::getMonster(), CreatureId::VAMPIRE_LORD), 1, 1,
                    "There is a rotting corpse inside. The corpse is alive!"
                  },
                  none
                });
       break;
     case FurnitureUsageType::FOUNTAIN: {
-      c->playerMessage("You drink from the fountain.");
+      c->secondPerson("You drink from the fountain.");
+      c->thirdPerson(c->getName().the() + " drinks from the fountain.");
       PItem potion = ItemFactory::potions().random().getOnlyElement();
       potion->apply(c);
       break;
@@ -133,8 +134,10 @@ void FurnitureUsage::handle(FurnitureUsageType type, Position pos, WConstFurnitu
       c->getGame()->handleMessageBoard(pos, c);
       break;
     case FurnitureUsageType::CROPS:
-      if (Random.roll(3))
-        c->globalMessage(c->getName().the() + " scythes the field.");
+      if (Random.roll(3)) {
+        c->thirdPerson(c->getName().the() + " scythes the field.");
+        c->secondPerson("You scythe the field.");
+      }
       break;
     case FurnitureUsageType::STAIRS:
       c->getLevel()->changeLevel(*pos.getLandingLink(), c);
@@ -147,6 +150,9 @@ void FurnitureUsage::handle(FurnitureUsageType type, Position pos, WConstFurnitu
       break;
     case FurnitureUsageType::PORTAL:
       usePortal(pos, c);
+      break;
+    case FurnitureUsageType::STUDY:
+    case FurnitureUsageType::ARCHERY_RANGE:
       break;
   }
 }

@@ -77,7 +77,7 @@ static CollectiveConfig getKeeperConfig(RandomGen& random, bool fastImmigration)
           .setSound(Sound(SoundId::CREATE_IMP).setPitch(2))
           .setNoAuto()
           .setInitialRecruitment(4)
-          .addRequirement(ExponentialCost{ CostInfo(CollectiveResourceId::MANA, 20), 5, 4 }),
+          .addRequirement(ExponentialCost{ CostInfo(CollectiveResourceId::GOLD, 6), 5, 4 }),
       ImmigrantInfo(CreatureId::GOBLIN, {MinionTrait::FIGHTER, MinionTrait::NO_EQUIPMENT})
           .setFrequency(0.7)
           .addRequirement(0.1, AttractionInfo{1, vector<AttractionType>(
@@ -87,7 +87,7 @@ static CollectiveConfig getKeeperConfig(RandomGen& random, bool fastImmigration)
           .addRequirement(0.1, AttractionInfo{1, FurnitureType::TRAINING_WOOD}),
       ImmigrantInfo(CreatureId::ORC_SHAMAN, {MinionTrait::FIGHTER})
           .setFrequency(0.6)
-          .addRequirement(0.1, AttractionInfo{1, {FurnitureType::BOOKCASE, FurnitureType::LABORATORY}}),
+          .addRequirement(0.1, AttractionInfo{1, {FurnitureType::BOOKCASE_WOOD, FurnitureType::LABORATORY}}),
       ImmigrantInfo(CreatureId::OGRE, {MinionTrait::FIGHTER})
           .setFrequency(0.3)
           .addRequirement(0.1, AttractionInfo{1, FurnitureType::TRAINING_IRON}),
@@ -98,6 +98,11 @@ static CollectiveConfig getKeeperConfig(RandomGen& random, bool fastImmigration)
       ImmigrantInfo(CreatureId::ZOMBIE, {MinionTrait::FIGHTER})
           .setFrequency(0.5)
           .setSpawnLocation(FurnitureType::GRAVE)
+          .addRequirement(0.0, CostInfo(CollectiveResourceId::CORPSE, 1)),
+      ImmigrantInfo(CreatureId::SKELETON, {MinionTrait::FIGHTER})
+          .setFrequency(0.5)
+          .setSpawnLocation(FurnitureType::GRAVE)
+          .addRequirement(0.1, AttractionInfo{1, FurnitureType::TRAINING_IRON})
           .addRequirement(0.0, CostInfo(CollectiveResourceId::CORPSE, 1)),
       ImmigrantInfo(CreatureId::VAMPIRE, {MinionTrait::FIGHTER})
           .setFrequency(0.2)
@@ -155,19 +160,15 @@ static CollectiveConfig getKeeperConfig(RandomGen& random, bool fastImmigration)
               CreatureId::SPECIAL_HMGN, CreatureId::SPECIAL_HMGW}), {MinionTrait::FIGHTER})
           .addRequirement(0.0, TechId::HUMANOID_MUT)
           .addRequirement(0.0, Pregnancy {})
-          .addRequirement(CostInfo(CollectiveResourceId::MANA, 250))
+          .addRequirement(CostInfo(CollectiveResourceId::GOLD, 100))
           .setSpawnLocation(Pregnancy {}),
       ImmigrantInfo(random.permutation({CreatureId::SPECIAL_BMBN, CreatureId::SPECIAL_BMBW,
               CreatureId::SPECIAL_BMGN, CreatureId::SPECIAL_BMGW}), {MinionTrait::FIGHTER})
           .addRequirement(0.0, TechId::BEAST_MUT)
           .addRequirement(0.0, Pregnancy {})
-          .addRequirement(CostInfo(CollectiveResourceId::MANA, 250))
+          .addRequirement(CostInfo(CollectiveResourceId::GOLD, 100))
           .setSpawnLocation(Pregnancy {})
   });
-}
-
-static EnumSet<MinionTrait> getImpTraits() {
-  return {MinionTrait::WORKER, MinionTrait::NO_LIMIT, MinionTrait::NO_EQUIPMENT};
 }
 
 SettlementInfo& ModelBuilder::makeExtraLevel(WModel model, EnemyInfo& enemy) {
@@ -253,10 +254,6 @@ SettlementInfo& ModelBuilder::makeExtraLevel(WModel model, EnemyInfo& enemy) {
   }
 }
 
-static string getBoardText(const string& keeperName, const string& dukeName) {
-  return dukeName + " will reward a daring hero 150 florens for slaying " + keeperName + " the Keeper.";
-}
-
 PModel ModelBuilder::singleMapModel(const string& worldName) {
   return tryBuilding(10, [&] { return trySingleMapModel(worldName);});
 }
@@ -327,7 +324,7 @@ PModel ModelBuilder::tryCampaignBaseModel(const string& siteName, bool addExtern
   enemyInfo.push_back(enemyFactory->get(EnemyId::TUTORIAL_VILLAGE));
   if (random.chance(0.3))
     enemyInfo.push_back(enemyFactory->get(EnemyId::KRAKEN));
-  vector<ExternalEnemy> externalEnemies;
+  vector<EnemyEvent> externalEnemies;
   if (addExternalEnemies)
     externalEnemies = enemyFactory->getExternalEnemies();
   return tryModel(230, siteName, enemyInfo, true, biome, externalEnemies, true);
@@ -357,8 +354,10 @@ static optional<BiomeId> getBiome(EnemyId enemyId, RandomGen& random) {
     case EnemyId::HARPY_CAVE:
     case EnemyId::SOKOBAN:
     case EnemyId::GNOMES:
+    case EnemyId::UNICORN_HERD:
     case EnemyId::CYCLOPS:
     case EnemyId::SHELOB:
+    case EnemyId::DEMON_DEN:
     case EnemyId::ANTS_OPEN: return BiomeId::MOUNTAIN;
     case EnemyId::ELVES:
     case EnemyId::DRIADS:
@@ -472,11 +471,12 @@ WCollective ModelBuilder::spawnKeeper(WModel m, PCreature keeper) {
   WCollective playerCollective = m->collectives.back().get();
   playerCollective->setControl(PlayerControl::create(playerCollective));
   playerCollective->setVillainType(VillainType::PLAYER);
+  playerCollective->acquireInitialTech();
   return playerCollective;
 }
 
 PModel ModelBuilder::tryModel(int width, const string& levelName, vector<EnemyInfo> enemyInfo, bool keeperSpawn,
-    BiomeId biomeId, vector<ExternalEnemy> externalEnemies, bool hasWildlife) {
+    BiomeId biomeId, vector<EnemyEvent> externalEnemies, bool hasWildlife) {
   auto model = Model::create();
   vector<SettlementInfo> topLevelSettlements;
   vector<EnemyInfo> extraEnemies;
@@ -505,8 +505,8 @@ PModel ModelBuilder::tryModel(int width, const string& levelName, vector<EnemyIn
       enemy.settlement.collective->setLocationName(*enemy.settlement.locationName);
     if (auto race = enemy.settlement.race)
       enemy.settlement.collective->setRaceName(*race);
-    if (enemy.anonymous)
-      enemy.settlement.collective->setAnonymous();
+    if (enemy.discoverable)
+      enemy.settlement.collective->setDiscoverable();
     PCollective collective = enemy.settlement.collective->build();
     auto control = VillageControl::create(collective.get(), enemy.villain);
     if (enemy.villainType)

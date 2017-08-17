@@ -33,13 +33,13 @@ struct ItemInfo;
 class Game;
 class VisibilityMap;
 class Tutorial;
+class MessageBuffer;
 
 class Player : public Controller, public CreatureView, public EventListener<Player> {
   public:
-  virtual ~Player();
+  virtual ~Player() override;
 
-  static ControllerFactory getFactory(SMapMemory levelMemory);
-  Player(WCreature, bool adventurer, SMapMemory, STutorial = nullptr);
+  Player(WCreature, bool adventurer, SMapMemory, SMessageBuffer, SVisibilityMap, STutorial = nullptr);
 
   void onEvent(const GameEvent&);
 
@@ -54,11 +54,10 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   virtual const MapMemory& getMemory() const override;
   virtual void refreshGameInfo(GameInfo&) const override;
   virtual Vec2 getPosition() const override;
-  virtual optional<MovementInfo> getMovementInfo() const override;
   virtual WLevel getLevel() const override;
   virtual vector<Vec2> getVisibleEnemies() const override;
   virtual double getLocalTime() const override;
-  virtual bool isPlayerView() const override;
+  virtual CenterType getCenterType() const override;
   virtual vector<Vec2> getUnknownLocations(WConstLevel) const override;
 
   // from Controller
@@ -66,12 +65,10 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   virtual void makeMove() override;
   virtual void sleeping() override;
   virtual bool isPlayer() const override;
-  virtual void you(MsgType type, const string& param) override;
-  virtual void you(MsgType type, const vector<string>& param) override;
-  virtual void you(const string& param) override;
   virtual void privateMessage(const PlayerMessage& message) override;
-  virtual void onBump(WCreature) override;
-  virtual void onDisplaced() override;
+  virtual MessageGenerator& getMessageGenerator() const override;
+  virtual void onStartedControl() override;
+  virtual void onEndedControl() override;
 
   // overridden by subclasses
   struct CommandInfo {
@@ -82,6 +79,9 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   virtual vector<CommandInfo> getCommands() const;
   virtual void onFellAsleep();
   virtual vector<WCreature> getTeam() const;
+  virtual bool isTravelEnabled() const;
+
+  optional<Vec2> chooseDirection(const string& question);
 
   SMapMemory SERIAL(levelMemory);
   void showHistory();
@@ -117,8 +117,8 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   void fireAction(Vec2 dir);
   vector<WItem> chooseItem(const string& text, ItemPredicate, optional<UserInputId> exitAction = none);
   void getItemNames(vector<WItem> it, vector<ListElem>& names, vector<vector<WItem> >& groups,
-      ItemPredicate = alwaysTrue<const WItem>());
-  string getInventoryItemName(const WItem, bool plural) const;
+      ItemPredicate = alwaysTrue<WConstItem>());
+  string getInventoryItemName(WConstItem, bool plural) const;
   string getPluralName(WItem item, int num);
   bool SERIAL(travelling) = false;
   Vec2 SERIAL(travelDir);
@@ -127,20 +127,13 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   bool SERIAL(displayGreeting);
   bool updateView = true;
   void retireMessages();
-  vector<PlayerMessage> SERIAL(messages);
-  vector<PlayerMessage> SERIAL(messageHistory);
+  SMessageBuffer SERIAL(messageBuffer);
   string getRemainingString(LastingEffect) const;
   vector<ItemInfo> getItemInfos(const vector<WItem>&) const;
   ItemInfo getItemInfo(const vector<WItem>&) const;
   ItemInfo getFurnitureUsageInfo(const string& question, ViewId viewId) const;
   optional<FurnitureUsageType> getUsableUsageType() const;
-  struct TimePosInfo {
-    Position pos;
-    double time;
-  };
-  optional<TimePosInfo> currentTimePos;
-  optional<TimePosInfo> previousTimePos;
-  HeapAllocated<VisibilityMap> SERIAL(visibilityMap);
+  SVisibilityMap SERIAL(visibilityMap);
   STutorial SERIAL(tutorial);
 };
 

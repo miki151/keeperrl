@@ -3,6 +3,7 @@
 #include "stdafx.h"
 #include "serialization.h"
 #include "debug.h"
+#include "my_containers.h"
 
 template <typename T>
 class WeakPointer;
@@ -273,4 +274,6 @@ DEF_SHARED_PTR(Tutorial);
 DEF_OWNER_PTR(CreatureVision);
 DEF_OWNER_PTR(Game);
 DEF_SHARED_PTR(MapMemory);
+DEF_SHARED_PTR(MessageBuffer);
+DEF_SHARED_PTR(VisibilityMap);
 DEF_OWNER_PTR(Immigration);

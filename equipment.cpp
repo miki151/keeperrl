@@ -45,7 +45,7 @@ const vector<WItem>& Equipment::getAllEquipped() const {
   return equipped;
 }
 
-bool Equipment::isEquipped(const WItem item) const {
+bool Equipment::isEquipped(WConstItem item) const {
   return item->canEquip() && items[item->getEquipmentSlot()].contains(item);
 }
 
@@ -56,7 +56,7 @@ int Equipment::getMaxItems(EquipmentSlot slot) const {
   }
 }
 
-bool Equipment::canEquip(const WItem item) const {
+bool Equipment::canEquip(WConstItem item) const {
   if (!item->canEquip() || isEquipped(item))
     return false;
   EquipmentSlot slot = item->getEquipmentSlot();

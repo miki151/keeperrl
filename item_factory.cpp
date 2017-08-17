@@ -104,7 +104,7 @@ class AmuletOfWarning : public Item {
           }
         if (WCreature c = v.getCreature()) {
           if (!owner->canSee(c) && c->isEnemy(owner)) {
-            int diff = c->getModifier(ModifierType::DAMAGE) - owner->getModifier(ModifierType::DAMAGE);
+            int diff = c->getAttr(AttrType::DAMAGE) - owner->getAttr(AttrType::DEFENSE);
             if (diff > 5)
               isBigDanger = true;
             else
@@ -114,10 +114,10 @@ class AmuletOfWarning : public Item {
         }
       }
       if (isBigDanger)
-        owner->playerMessage(getTheName() + " vibrates vigorously");
+        owner->privateMessage(getTheName() + " vibrates vigorously");
       else
       if (isDanger)
-        owner->playerMessage(getTheName() + " vibrates");
+        owner->privateMessage(getTheName() + " vibrates");
     }
   }
 
@@ -187,7 +187,7 @@ class Corpse : public Item {
       c->you(MsgType::DECAPITATE, getTheName());
       setName("decapitated " + getName());
     } else {
-      c->playerMessage("You need something sharp to decapitate the corpse.");
+      c->privateMessage("You need something sharp to decapitate the corpse.");
     }
   }
 
@@ -204,7 +204,7 @@ class Corpse : public Item {
       if (!rotten && getWeight() > 10 && Random.roll(20 + (rottenTime - time) / 10))
         Effect::applyToPosition(position, EffectId::EMIT_POISON_GAS, EffectStrength::WEAK);
       if (getWeight() > 10 && !corpseInfo.isSkeleton && 
-          !position.isCovered() && Random.roll(35)) {
+          !position.isCovered() && Random.roll(350)) {
         for (Position v : position.neighbors8(Random)) {
           PCreature vulture = CreatureFactory::fromId(CreatureId::VULTURE, TribeId::getPest(),
                     MonsterAIFactory::scavengerBird(v));
@@ -296,7 +296,7 @@ class TechBook : public Item {
 
   virtual void applySpecial(WCreature c) override {
     if (!read || !!tech) {
-      c->getGame()->addEvent({EventId::TECHBOOK_READ, tech ? Technology::get(*tech) : nullptr});
+      c->getGame()->addEvent(EventInfo::TechbookRead{tech ? Technology::get(*tech) : nullptr});
       read = true;
     }
   }
@@ -373,7 +373,7 @@ ItemFactory ItemFactory::villageShop() {
       {{ItemId::SCROLL, EffectId::ENHANCE_WEAPON}, 5 },
       {ItemId::FIRE_SCROLL, 5 },
       {{ItemId::SCROLL, EffectType(EffectId::SUMMON, CreatureId::FIRE_SPHERE)}, 5 },
-      {{ItemId::SCROLL, EffectId::WORD_OF_POWER}, 1 },
+      {{ItemId::SCROLL, EffectId::CIRCULAR_BLAST}, 1 },
       {{ItemId::SCROLL, EffectId::DECEPTION}, 2 },
       {{ItemId::SCROLL, EffectType(EffectId::SUMMON, CreatureId::FLY)}, 5 },
       {{ItemId::POTION, EffectId::HEAL}, 7 },
@@ -387,7 +387,6 @@ ItemFactory ItemFactory::villageShop() {
       {ItemId::DEFENSE_AMULET, 0.5 },
       {{ItemId::RING, LastingEffect::POISON_RESISTANT}, 0.5},
       {{ItemId::RING, LastingEffect::FIRE_RESISTANT}, 0.5},
-      {ItemId::FIRST_AID_KIT, 5},
       {ItemId::SPEED_BOOTS, 2},
       {ItemId::LEVITATION_BOOTS, 2},
       {ItemId::TELEPATHY_HELM, 2}});
@@ -404,7 +403,6 @@ ItemFactory ItemFactory::armory() {
       {ItemId::BATTLE_AXE, 2 },
       {ItemId::WAR_HAMMER, 2 },
       {ItemId::BOW, 4 },
-      {ItemId::ARROW, 8, Range(20, 30) },
       {ItemId::LEATHER_ARMOR, 2 },
       {ItemId::CHAIN_ARMOR, 1 },
       {ItemId::LEATHER_HELM, 2 },
@@ -415,10 +413,8 @@ ItemFactory ItemFactory::armory() {
       {ItemId::LEVITATION_BOOTS, 0.5 },
       {ItemId::LEATHER_GLOVES, 2 },
       {ItemId::STRENGTH_GLOVES, 0.5 },
-      {ItemId::DEXTERITY_GLOVES, 0.5 },
       {ItemId::IRON_BOOTS, 1} })
-      .addUniqueItem(ItemId::BOW)
-      .addUniqueItem(ItemId::ARROW, Range(20, 30));
+      .addUniqueItem(ItemId::BOW);
 }
 
 ItemFactory ItemFactory::orcShop() {
@@ -438,11 +434,10 @@ ItemFactory ItemFactory::orcShop() {
       {ItemId::LEVITATION_BOOTS, 0.3 },
       {ItemId::LEATHER_GLOVES, 2 },
       {ItemId::STRENGTH_GLOVES, 0.5 },
-      {ItemId::DEXTERITY_GLOVES, 0.5 },
       {{ItemId::MUSHROOM, EffectType(EffectId::LASTING, LastingEffect::PANIC)}, 1 },
       {{ItemId::MUSHROOM, EffectType(EffectId::LASTING, LastingEffect::RAGE)}, 1 },
-      {{ItemId::MUSHROOM, EffectType(EffectId::LASTING, LastingEffect::STR_BONUS)}, 1 },
-      {{ItemId::MUSHROOM, EffectType(EffectId::LASTING, LastingEffect::DEX_BONUS)}, 1} });
+      {{ItemId::MUSHROOM, EffectType(EffectId::LASTING, LastingEffect::DAM_BONUS)}, 1 },
+      {{ItemId::MUSHROOM, EffectType(EffectId::LASTING, LastingEffect::DEF_BONUS)}, 1} });
 }
 
 ItemFactory ItemFactory::gnomeShop() {
@@ -461,8 +456,7 @@ ItemFactory ItemFactory::gnomeShop() {
       {ItemId::SPEED_BOOTS, 0.3 },
       {ItemId::LEVITATION_BOOTS, 0.3 },
       {ItemId::LEATHER_GLOVES, 2 },
-      {ItemId::STRENGTH_GLOVES, 0.5 },
-      {ItemId::DEXTERITY_GLOVES, 0.5 } })
+      {ItemId::STRENGTH_GLOVES, 0.5 } })
       .addUniqueItem({ItemId::AUTOMATON_ITEM});
 }
 
@@ -500,7 +494,7 @@ ItemFactory ItemFactory::scrolls() {
       {{ItemId::SCROLL, EffectId::ENHANCE_WEAPON}, 1 },
       {ItemId::FIRE_SCROLL, 1 },
       {{ItemId::SCROLL, EffectType(EffectId::SUMMON, CreatureId::FIRE_SPHERE)}, 1 },
-      {{ItemId::SCROLL, EffectId::WORD_OF_POWER}, 1 },
+      {{ItemId::SCROLL, EffectId::CIRCULAR_BLAST}, 1 },
       {{ItemId::SCROLL, EffectId::DECEPTION}, 1 },
       {{ItemId::SCROLL, EffectType(EffectId::SUMMON, CreatureId::FLY)}, 1 }});
 }
@@ -508,8 +502,8 @@ ItemFactory ItemFactory::scrolls() {
 static ViewId getMushroomViewId(EffectType e) {
   if (e.getId() == EffectId::LASTING)
     switch (e.get<LastingEffect>()) {
-      case LastingEffect::STR_BONUS: return ViewId::MUSHROOM1;
-      case LastingEffect::DEX_BONUS: return ViewId::MUSHROOM2;
+      case LastingEffect::DAM_BONUS: return ViewId::MUSHROOM1;
+      case LastingEffect::DEF_BONUS: return ViewId::MUSHROOM2;
       case LastingEffect::PANIC: return ViewId::MUSHROOM3;
       case LastingEffect::HALLU: return ViewId::MUSHROOM4;
       case LastingEffect::RAGE: return ViewId::MUSHROOM5;
@@ -520,8 +514,8 @@ static ViewId getMushroomViewId(EffectType e) {
 
 ItemFactory ItemFactory::mushrooms(bool onlyGood) {
   return ItemFactory({
-      {{ItemId::MUSHROOM, EffectType(EffectId::LASTING, LastingEffect::STR_BONUS)}, 1 },
-      {{ItemId::MUSHROOM, EffectType(EffectId::LASTING, LastingEffect::DEX_BONUS)}, 1 },
+      {{ItemId::MUSHROOM, EffectType(EffectId::LASTING, LastingEffect::DAM_BONUS)}, 1 },
+      {{ItemId::MUSHROOM, EffectType(EffectId::LASTING, LastingEffect::DEF_BONUS)}, 1 },
       {{ItemId::MUSHROOM, EffectType(EffectId::LASTING, LastingEffect::PANIC)}, 1 },
       {{ItemId::MUSHROOM, EffectType(EffectId::LASTING, LastingEffect::HALLU)}, onlyGood ? 0.1 : 8. },
       {{ItemId::MUSHROOM, EffectType(EffectId::LASTING, LastingEffect::RAGE)}, 1 }});
@@ -554,14 +548,13 @@ ItemFactory ItemFactory::dungeon() {
       {ItemId::SPEED_BOOTS, 3 },
       {ItemId::LEVITATION_BOOTS, 3 },
       {ItemId::LEATHER_GLOVES, 30 },
-      {ItemId::DEXTERITY_GLOVES, 3 },
       {ItemId::STRENGTH_GLOVES, 3 },
       {{ItemId::SCROLL, EffectId::TELEPORT}, 30 },
       {{ItemId::SCROLL, EffectId::ENHANCE_ARMOR}, 30 },
       {{ItemId::SCROLL, EffectId::ENHANCE_WEAPON}, 30 },
       {ItemId::FIRE_SCROLL, 30 },
       {{ItemId::SCROLL, EffectType(EffectId::SUMMON, CreatureId::FIRE_SPHERE)}, 30 },
-      {{ItemId::SCROLL, EffectId::WORD_OF_POWER}, 5 },
+      {{ItemId::SCROLL, EffectId::CIRCULAR_BLAST}, 5 },
       {{ItemId::SCROLL, EffectId::DECEPTION}, 10 },
       {{ItemId::SCROLL, EffectType(EffectId::SUMMON, CreatureId::FLY)}, 30 },
       {{ItemId::POTION, EffectId::HEAL}, 50 },
@@ -577,8 +570,7 @@ ItemFactory ItemFactory::dungeon() {
       {ItemId::HEALING_AMULET, 3 },
       {ItemId::DEFENSE_AMULET, 3 },
       {{ItemId::RING, LastingEffect::POISON_RESISTANT}, 3},
-      {{ItemId::RING, LastingEffect::FIRE_RESISTANT}, 3},
-      {ItemId::FIRST_AID_KIT, 30 }});
+      {{ItemId::RING, LastingEffect::FIRE_RESISTANT}, 3}});
 }
 
 ItemFactory ItemFactory::chest() {
@@ -594,29 +586,45 @@ int getEffectPrice(EffectType type) {
     case EffectId::LASTING:
         switch (type.get<LastingEffect>()) {
           case LastingEffect::INSANITY:
-          case LastingEffect::HALLU: return 2;
+          case LastingEffect::HALLU:
+          case LastingEffect::BLEEDING:
+            return 2;
           case LastingEffect::SPEED:
           case LastingEffect::PANIC:
           case LastingEffect::SLEEP:
           case LastingEffect::ENTANGLED:
           case LastingEffect::TIED_UP:
           case LastingEffect::STUNNED:
-          case LastingEffect::MAGIC_SHIELD:
-          case LastingEffect::RAGE: return 12;
-          case LastingEffect::BLIND: return 16;
-          case LastingEffect::STR_BONUS:
-          case LastingEffect::DEX_BONUS: return 20;
+          case LastingEffect::RAGE:
+          case LastingEffect::COLLAPSED:
+          case LastingEffect::NIGHT_VISION:
+          case LastingEffect::ELF_VISION:
+            return 12;
+          case LastingEffect::BLIND:
+            return 16;
+          case LastingEffect::DAM_BONUS:
+          case LastingEffect::DEF_BONUS:
+            return 20;
           case LastingEffect::SLOWED:
           case LastingEffect::POISON_RESISTANT:
           case LastingEffect::FIRE_RESISTANT:
-          case LastingEffect::POISON: return 20;
-          case LastingEffect::INVISIBLE: return 24;
+          case LastingEffect::POISON:
+            return 20;
+          case LastingEffect::INVISIBLE:
+          case LastingEffect::MAGIC_RESISTANCE:
+          case LastingEffect::MELEE_RESISTANCE:
+          case LastingEffect::RANGED_RESISTANCE:
+          case LastingEffect::MAGIC_VULNERABILITY:
+          case LastingEffect::MELEE_VULNERABILITY:
+          case LastingEffect::RANGED_VULNERABILITY:
           case LastingEffect::DARKNESS_SOURCE:
           case LastingEffect::PREGNANT:
-          case LastingEffect::FLYING: return 24;
+          case LastingEffect::FLYING:
+            return 24;
         }
     case EffectId::ACID:
-    case EffectId::HEAL: return 8;
+    case EffectId::HEAL:
+      return 8;
     case EffectId::TELEPORT:
     case EffectId::FIRE:
     case EffectId::ALARM:
@@ -627,14 +635,19 @@ int getEffectPrice(EffectType type) {
     case EffectId::ENHANCE_ARMOR:
     case EffectId::TELE_ENEMIES:
     case EffectId::CURE_POISON:
-    case EffectId::SUMMON: return 12;
-    case EffectId::EMIT_POISON_GAS:  return 20;
+    case EffectId::SUMMON:
+      return 12;
+    case EffectId::EMIT_POISON_GAS:
+      return 20;
     case EffectId::DECEPTION: 
-    case EffectId::LEAVE_BODY: 
-    case EffectId::AIR_BLAST: 
+    case EffectId::CIRCULAR_BLAST:
     case EffectId::PLACE_FURNITURE:
     case EffectId::SUMMON_ELEMENT:
-    case EffectId::WORD_OF_POWER: return 30;
+    case EffectId::DAMAGE:
+    case EffectId::INJURE_BODY_PART:
+    case EffectId::LOOSE_BODY_PART:
+    case EffectId::REGROW_BODY_PART:
+      return 30;
   }
   return -1;
 }
@@ -684,8 +697,7 @@ void makeArtifact(ItemAttributes& i) {
         }
   } while (!good);
   INFO << "Making artifact " << *i.name << " " << *i.artifactName;
-  i.modifiers[ModifierType::DAMAGE] += Random.get(1, 4);
-  i.modifiers[ModifierType::ACCURACY] += Random.get(1, 4);
+  i.modifiers[AttrType::DAMAGE] += Random.get(1, 4);
   i.price *= 15;
 }
 
@@ -716,13 +728,13 @@ void addPrefix(ItemAttributes& i, WeaponPrefix prefix) {
       i.name = "great " + *i.name;
       if (i.plural)
         i.plural = "great " + *i.plural;
-      i.attackEffect = EffectType {EffectId::LASTING, LastingEffect::STUNNED};
+      i.attackEffect = EffectType {EffectId::LASTING, LastingEffect::BLEEDING};
       break;
     case WeaponPrefix::LEAD_FILLED:
       i.name = "lead-filled " + *i.name;
       if (i.plural)
         i.plural = "lead-filled " + *i.plural;
-      i.attackEffect = EffectType {EffectId::LASTING, LastingEffect::STUNNED};
+      i.attackEffect = EffectType {EffectId::LASTING, LastingEffect::COLLAPSED};
       break;
   }
 }
@@ -738,7 +750,6 @@ ItemFactory::~ItemFactory() {}
 PItem ItemFactory::fromId(ItemType item) {
   switch (item.getId()) {
     case ItemId::WARNING_AMULET: return makeOwner<AmuletOfWarning>(getAttributes(item), 5);
-    case ItemId::BOW: return makeOwner<RangedWeapon>(getAttributes(item));
     case ItemId::TELEPATHY_HELM: return makeOwner<ItemOfCreatureVision>(getAttributes(item), makeOwner<Telepathy>());
     case ItemId::HEALING_AMULET: return makeOwner<AmuletOfHealing>(getAttributes(item));
     case ItemId::FIRE_SCROLL: return makeOwner<FireScroll>(getAttributes(item));
@@ -758,11 +769,8 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.itemClass = ItemClass::WEAPON;
             i.equipmentSlot = EquipmentSlot::WEAPON;
             i.weight = 0.3;
-            i.modifiers[ModifierType::DAMAGE] = 5 + maybePlusMinusOne(4);
-            i.modifiers[ModifierType::ACCURACY] = maybePlusMinusOne(4);
+            i.modifiers[AttrType::DAMAGE] = 5 + maybePlusMinusOne(4);
             i.attackTime = 0.7;
-            i.modifiers[ModifierType::THROWN_DAMAGE] = 3 + maybePlusMinusOne(4);
-            i.modifiers[ModifierType::THROWN_ACCURACY] = 3 + maybePlusMinusOne(4);
             i.price = 1;
             i.attackType = AttackType::STAB;);
     case ItemId::SPECIAL_KNIFE: return INHERIT(KNIFE,
@@ -775,8 +783,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.itemClass = ItemClass::WEAPON;
             i.equipmentSlot = EquipmentSlot::WEAPON;
             i.weight = 1.5;
-            i.modifiers[ModifierType::DAMAGE] = 10 + maybePlusMinusOne(4);
-            i.modifiers[ModifierType::ACCURACY] = 2 + maybePlusMinusOne(4);
+            i.modifiers[AttrType::DAMAGE] = 10 + maybePlusMinusOne(4);
             i.price = 4;
             i.attackType = AttackType::STAB;);
     case ItemId::SPECIAL_SWORD: return INHERIT(SWORD,
@@ -790,8 +797,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.itemClass = ItemClass::WEAPON;
             i.equipmentSlot = EquipmentSlot::WEAPON;
             i.weight = 1.5;
-            i.modifiers[ModifierType::DAMAGE] = 8 + maybePlusMinusOne(4);
-            i.modifiers[ModifierType::ACCURACY] = 3 + maybePlusMinusOne(4);
+            i.modifiers[AttrType::DAMAGE] = 8 + maybePlusMinusOne(4);
             i.price = 4;
             i.attackType = AttackType::CUT;);
     case ItemId::STEEL_SWORD: return ITATTR(
@@ -800,8 +806,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.itemClass = ItemClass::WEAPON;
             i.equipmentSlot = EquipmentSlot::WEAPON;
             i.weight = 1.2;
-            i.modifiers[ModifierType::DAMAGE] = 11 + maybePlusMinusOne(4);
-            i.modifiers[ModifierType::ACCURACY] = 4 + maybePlusMinusOne(4);
+            i.modifiers[AttrType::DAMAGE] = 11 + maybePlusMinusOne(4);
             i.price = 20;
             i.attackType = AttackType::CUT;);
     case ItemId::SPECIAL_ELVEN_SWORD: return INHERIT(ELVEN_SWORD,
@@ -815,8 +820,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.itemClass = ItemClass::WEAPON;
             i.equipmentSlot = EquipmentSlot::WEAPON;
             i.weight = 1;
-            i.modifiers[ModifierType::DAMAGE] = 9 + maybePlusMinusOne(4);
-            i.modifiers[ModifierType::ACCURACY] = 5 + maybePlusMinusOne(4);
+            i.modifiers[AttrType::DAMAGE] = 9 + maybePlusMinusOne(4);
             i.price = 8;
             i.attackType = AttackType::CUT;);
     case ItemId::SPECIAL_BATTLE_AXE: return INHERIT(BATTLE_AXE,
@@ -830,8 +834,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.itemClass = ItemClass::WEAPON;
             i.equipmentSlot = EquipmentSlot::WEAPON;
             i.weight = 8;
-            i.modifiers[ModifierType::DAMAGE] = 14 + maybePlusMinusOne(4);
-            i.modifiers[ModifierType::ACCURACY] = 2 + maybePlusMinusOne(4);
+            i.modifiers[AttrType::DAMAGE] = 14 + maybePlusMinusOne(4);
             i.attackTime = 1.2;
             i.twoHanded = true;
             i.price = 30;
@@ -842,8 +845,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.itemClass = ItemClass::WEAPON;
             i.equipmentSlot = EquipmentSlot::WEAPON;
             i.weight = 7;
-            i.modifiers[ModifierType::DAMAGE] = 18 + maybePlusMinusOne(4);
-            i.modifiers[ModifierType::ACCURACY] = 5 + maybePlusMinusOne(4);
+            i.modifiers[AttrType::DAMAGE] = 18 + maybePlusMinusOne(4);
             i.attackTime = 1.2;
             i.twoHanded = true;
             i.price = 150;
@@ -859,8 +861,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.itemClass = ItemClass::WEAPON;
             i.equipmentSlot = EquipmentSlot::WEAPON;
             i.weight = 8;
-            i.modifiers[ModifierType::DAMAGE] = 12 + maybePlusMinusOne(4);
-            i.modifiers[ModifierType::ACCURACY] = 2 + maybePlusMinusOne(4);
+            i.modifiers[AttrType::DAMAGE] = 12 + maybePlusMinusOne(4);
             i.attackTime = 1.2;
             i.twoHanded = true;
             i.price = 20;
@@ -871,8 +872,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.itemClass = ItemClass::WEAPON;
             i.equipmentSlot = EquipmentSlot::WEAPON;
             i.weight = 2;
-            i.modifiers[ModifierType::DAMAGE] = 4 + maybePlusMinusOne(4);
-            i.modifiers[ModifierType::ACCURACY] = 4 + maybePlusMinusOne(4);
+            i.modifiers[AttrType::DAMAGE] = 4 + maybePlusMinusOne(4);
             i.price = 2;
             i.attackType = AttackType::CRUSH;);
     case ItemId::HEAVY_CLUB: return ITATTR(
@@ -881,19 +881,37 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.itemClass = ItemClass::WEAPON;
             i.equipmentSlot = EquipmentSlot::WEAPON;
             i.weight = 8;
-            i.modifiers[ModifierType::DAMAGE] = 10 + maybePlusMinusOne(4);
-            i.modifiers[ModifierType::ACCURACY] = 2 + maybePlusMinusOne(4);
+            i.modifiers[AttrType::DAMAGE] = 10 + maybePlusMinusOne(4);
             i.twoHanded = true;
             i.price = 4;
             i.attackType = AttackType::CRUSH;);
+    case ItemId::WOODEN_STAFF: return ITATTR(
+            i.viewId = ViewId::WOODEN_STAFF;
+            i.name = "wooden staff";
+            i.itemClass = ItemClass::WEAPON;
+            i.equipmentSlot = EquipmentSlot::WEAPON;
+            i.weight = 1.5;
+            i.modifiers[AttrType::SPELL_DAMAGE] = 4 + maybePlusMinusOne(4);
+            i.meleeAttackAttr = AttrType::SPELL_DAMAGE;
+            i.price = 30;
+            i.attackType = AttackType::SPELL;);
+    case ItemId::IRON_STAFF: return ITATTR(
+            i.viewId = ViewId::IRON_STAFF;
+            i.name = "iron staff";
+            i.itemClass = ItemClass::WEAPON;
+            i.equipmentSlot = EquipmentSlot::WEAPON;
+            i.weight = 1.5;
+            i.modifiers[AttrType::SPELL_DAMAGE] = 8 + maybePlusMinusOne(4);
+            i.meleeAttackAttr = AttrType::SPELL_DAMAGE;
+            i.price = 60;
+            i.attackType = AttackType::SPELL;);
     case ItemId::SCYTHE: return ITATTR(
             i.viewId = ViewId::SWORD;
             i.name = "scythe";
             i.itemClass = ItemClass::WEAPON;
             i.equipmentSlot = EquipmentSlot::WEAPON;
             i.weight = 5;
-            i.modifiers[ModifierType::DAMAGE] = 12 + maybePlusMinusOne(4);
-            i.modifiers[ModifierType::ACCURACY] = 0 + maybePlusMinusOne(4);
+            i.modifiers[AttrType::DAMAGE] = 12 + maybePlusMinusOne(4);
             i.twoHanded = true;
             i.price = 20;
             i.attackType = AttackType::CUT;);
@@ -902,18 +920,11 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.name = "short bow";
             i.itemClass = ItemClass::RANGED_WEAPON;
             i.equipmentSlot = EquipmentSlot::RANGED_WEAPON;
+            i.rangedWeapon = RangedWeapon(AttrType::RANGED_DAMAGE, "arrow", ViewId::ARROW);
             i.twoHanded = true;
             i.weight = 1;
-            i.modifiers[ModifierType::FIRED_ACCURACY] = 10 + maybePlusMinusOne(4);
+            i.modifiers[AttrType::RANGED_DAMAGE] = 10 + maybePlusMinusOne(4);
             i.price = 12;);
-    case ItemId::ARROW: return ITATTR(
-            i.viewId = ViewId::ARROW;
-            i.name = "arrow";
-            i.itemClass = ItemClass::AMMO;
-            i.weight = 0.1;
-            i.modifiers[ModifierType::FIRED_DAMAGE] = 5;
-            i.modifiers[ModifierType::FIRED_ACCURACY] = -5;
-            i.price = 1;);
     case ItemId::ROBE: return ITATTR(
             i.viewId = ViewId::ROBE;
             i.name = "robe";
@@ -922,7 +933,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.equipmentSlot = EquipmentSlot::BODY_ARMOR;
             i.weight = 2;
             i.price = 10;
-            i.modifiers[ModifierType::DEFENSE] = 1 + maybePlusMinusOne(4););
+            i.modifiers[AttrType::DEFENSE] = 1 + maybePlusMinusOne(4););
     case ItemId::LEATHER_GLOVES: return ITATTR(
             i.viewId = ViewId::LEATHER_GLOVES;
             i.shortName = "leather"_s;
@@ -931,18 +942,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.equipmentSlot = EquipmentSlot::GLOVES;
             i.weight = 0.3;
             i.price = 2;
-            i.modifiers[ModifierType::DEFENSE] = 1 + maybePlusMinusOne(4););
-    case ItemId::DEXTERITY_GLOVES: return ITATTR(
-            i.viewId = ViewId::DEXTERITY_GLOVES;
-            i.shortName = "dexterity"_s;
-            i.name = "gloves of " + *i.shortName;
-            i.plural = "pairs of " + *i.name;
-            i.itemClass = ItemClass::ARMOR;
-            i.equipmentSlot = EquipmentSlot::GLOVES;
-            i.weight = 0.3;
-            i.price = 25;
-            i.attrs[AttrType::DEXTERITY] = 2 + maybePlusMinusOne(4);;
-            i.modifiers[ModifierType::DEFENSE] = 1 + maybePlusMinusOne(4););
+            i.modifiers[AttrType::DEFENSE] = 1 + maybePlusMinusOne(4););
     case ItemId::STRENGTH_GLOVES: return ITATTR(
             i.viewId = ViewId::STRENGTH_GLOVES;
             i.shortName = "strength"_s;
@@ -952,8 +952,8 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.equipmentSlot = EquipmentSlot::GLOVES;
             i.weight = 0.3;
             i.price = 25;
-            i.attrs[AttrType::STRENGTH] = 2 + maybePlusMinusOne(4);;
-            i.modifiers[ModifierType::DEFENSE] = 1 + maybePlusMinusOne(4););
+            i.modifiers[AttrType::DAMAGE] = 2 + maybePlusMinusOne(4);;
+            i.modifiers[AttrType::DEFENSE] = 1 + maybePlusMinusOne(4););
     case ItemId::LEATHER_ARMOR: return ITATTR(
             i.viewId = ViewId::LEATHER_ARMOR;
             i.shortName = "leather"_s;
@@ -962,7 +962,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.equipmentSlot = EquipmentSlot::BODY_ARMOR;
             i.weight = 7;
             i.price = 4;
-            i.modifiers[ModifierType::DEFENSE] = 3 + maybePlusMinusOne(4););
+            i.modifiers[AttrType::DEFENSE] = 3 + maybePlusMinusOne(4););
     case ItemId::LEATHER_HELM: return ITATTR(
             i.viewId = ViewId::LEATHER_HELM;
             i.shortName = "leather"_s;
@@ -971,7 +971,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.equipmentSlot = EquipmentSlot::HELMET;
             i.weight = 1.5;
             i.price = 1;
-            i.modifiers[ModifierType::DEFENSE] = 1 + maybePlusMinusOne(4););
+            i.modifiers[AttrType::DEFENSE] = 1 + maybePlusMinusOne(4););
     case ItemId::CHAIN_ARMOR: return ITATTR(
             i.viewId = ViewId::CHAIN_ARMOR;
             i.shortName = "chain"_s;
@@ -980,7 +980,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.equipmentSlot = EquipmentSlot::BODY_ARMOR;
             i.weight = 15;
             i.price = 25;
-            i.modifiers[ModifierType::DEFENSE] = 5 + maybePlusMinusOne(4););
+            i.modifiers[AttrType::DEFENSE] = 5 + maybePlusMinusOne(4););
     case ItemId::STEEL_ARMOR: return ITATTR(
             i.viewId = ViewId::STEEL_ARMOR;
             i.shortName = "steel"_s;
@@ -989,7 +989,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.equipmentSlot = EquipmentSlot::BODY_ARMOR;
             i.weight = 13;
             i.price = 160;
-            i.modifiers[ModifierType::DEFENSE] = 8 + maybePlusMinusOne(4););
+            i.modifiers[AttrType::DEFENSE] = 8 + maybePlusMinusOne(4););
     case ItemId::IRON_HELM: return ITATTR(
             i.viewId = ViewId::IRON_HELM;
             i.shortName = "iron"_s;
@@ -998,7 +998,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.equipmentSlot = EquipmentSlot::HELMET;
             i.weight = 4;
             i.price = 8;
-            i.modifiers[ModifierType::DEFENSE]= 2 + maybePlusMinusOne(4););
+            i.modifiers[AttrType::DEFENSE]= 2 + maybePlusMinusOne(4););
     case ItemId::TELEPATHY_HELM: return ITATTR(
             i.viewId = ViewId::TELEPATHY_HELM;
             i.shortName = "telepathy"_s;
@@ -1008,7 +1008,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.equipmentSlot = EquipmentSlot::HELMET;
             i.weight = 1.5;
             i.price = 70;
-            i.modifiers[ModifierType::DEFENSE]= 1 + maybePlusMinusOne(4););
+            i.modifiers[AttrType::DEFENSE]= 1 + maybePlusMinusOne(4););
     case ItemId::LEATHER_BOOTS: return ITATTR(
             i.viewId = ViewId::LEATHER_BOOTS;
             i.shortName = "leather"_s;
@@ -1018,7 +1018,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.equipmentSlot = EquipmentSlot::BOOTS;
             i.weight = 2;
             i.price = 2;
-            i.modifiers[ModifierType::DEFENSE] = 1 + maybePlusMinusOne(4););
+            i.modifiers[AttrType::DEFENSE] = 1 + maybePlusMinusOne(4););
     case ItemId::IRON_BOOTS: return ITATTR(
             i.viewId = ViewId::IRON_BOOTS;
             i.shortName = "iron"_s;
@@ -1028,7 +1028,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.equipmentSlot = EquipmentSlot::BOOTS;
             i.weight = 4;
             i.price = 8;
-            i.modifiers[ModifierType::DEFENSE] = 2 + maybePlusMinusOne(4););
+            i.modifiers[AttrType::DEFENSE] = 2 + maybePlusMinusOne(4););
     case ItemId::SPEED_BOOTS: return ITATTR(
             i.viewId = ViewId::SPEED_BOOTS;
             i.shortName = "speed"_s;
@@ -1038,8 +1038,8 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.equipmentSlot = EquipmentSlot::BOOTS;
             i.weight = 2;
             i.price = 70;
-            i.attrs[AttrType::SPEED] = 30;
-            i.modifiers[ModifierType::DEFENSE] = 1 + maybePlusMinusOne(4););
+            i.modifiers[AttrType::SPEED] = 30;
+            i.modifiers[AttrType::DEFENSE] = 1 + maybePlusMinusOne(4););
     case ItemId::LEVITATION_BOOTS: return ITATTR(
             i.viewId = ViewId::LEVITATION_BOOTS;
             i.shortName = "levitation"_s;
@@ -1050,10 +1050,10 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.equipmentSlot = EquipmentSlot::BOOTS;
             i.weight = 2;
             i.price = 70;
-            i.modifiers[ModifierType::DEFENSE] = 1 + maybePlusMinusOne(4););
+            i.modifiers[AttrType::DEFENSE] = 1 + maybePlusMinusOne(4););
     case ItemId::RING: return ITATTR(
             i.viewId = getRingViewId(item.get<LastingEffect>());
-            i.shortName = Effect::getName(item.get<LastingEffect>());
+            i.shortName = string(Effect::getName(item.get<LastingEffect>()));
             i.equipedEffect = item.get<LastingEffect>();
             i.name = "ring of " + *i.shortName;
             i.plural = "rings of " + *i.shortName;
@@ -1090,7 +1090,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.itemClass = ItemClass::AMULET;
             i.equipmentSlot = EquipmentSlot::AMULET;
             i.price = 60;
-            i.modifiers[ModifierType::DEFENSE] = 3 + maybePlusMinusOne(4); 
+            i.modifiers[AttrType::DEFENSE] = 3 + maybePlusMinusOne(4);
             i.weight = 0.3;);
     case ItemId::FIRST_AID_KIT: return ITATTR(
             i.viewId = ViewId::FIRST_AID;
@@ -1142,7 +1142,6 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.blindName = "potion"_s;
             i.itemClass = ItemClass::POTION;
             i.fragile = true;
-            i.modifiers[ModifierType::THROWN_ACCURACY] = 6;
             i.weight = 0.3;
             i.effect = effect;
             i.price = getEffectPrice(effect);
@@ -1157,7 +1156,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.description = Effect::getDescription(effect);
             i.itemClass= ItemClass::FOOD;
             i.weight = 0.1;
-            i.modifiers[ModifierType::THROWN_DAMAGE] = -15;
+            i.modifiers[AttrType::DAMAGE] = -15;
             i.effect = effect;
             i.price = getEffectPrice(effect);
             i.uses = 1;);
@@ -1172,7 +1171,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.blindName = "scroll"_s;
             i.itemClass = ItemClass::SCROLL;
             i.weight = 0.1;
-            i.modifiers[ModifierType::THROWN_DAMAGE] = -10;
+            i.modifiers[AttrType::DAMAGE] = -10;
             i.effect = effect;
             i.price = getEffectPrice(effect);
             i.flamability = 1;
@@ -1186,7 +1185,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.blindName = "scroll"_s;
             i.itemClass= ItemClass::SCROLL;
             i.weight = 0.1;
-            i.modifiers[ModifierType::THROWN_DAMAGE] = -10;
+            i.modifiers[AttrType::DAMAGE] = -10;
             i.price = 15;
             i.flamability = 1;
             i.uses = 1;);

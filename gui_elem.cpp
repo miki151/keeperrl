@@ -24,6 +24,7 @@
 #include "scroll_position.h"
 #include "keybinding_map.h"
 #include "player_role_choice.h"
+#include "attr_type.h"
 
 #include "sdl.h"
 
@@ -52,18 +53,19 @@ GuiElem::~GuiElem() {
 
 class Button : public GuiElem {
   public:
-  Button(function<void(Rectangle)> f) : fun(f) {}
+  Button(function<void(Rectangle, Vec2)> f) : fun(f) {}
 
   virtual bool onLeftClick(Vec2 pos) override {
-    if (pos.inRectangle(getBounds())) {
-      fun(getBounds());
+    auto bounds = getBounds();
+    if (pos.inRectangle(bounds)) {
+      fun(bounds, pos - bounds.topLeft());
       return true;
     }
      return false;
   }
 
   protected:
-  function<void(Rectangle)> fun;
+  function<void(Rectangle, Vec2)> fun;
 };
 
 class ReleaseButton : public GuiElem {
@@ -132,11 +134,12 @@ SDL_Keysym GuiFactory::getKey(SDL_Keycode code) {
 
 class ButtonKey : public Button {
   public:
-  ButtonKey(function<void(Rectangle)> f, SDL_Keysym key, bool cap) : Button(f), hotkey(key), capture(cap) {}
+  ButtonKey(function<void(Rectangle)> f, SDL_Keysym key, bool cap) : Button([f](Rectangle b, Vec2) { f(b);}),
+      hotkey(key), capture(cap) {}
 
   virtual bool onKeyPressed2(SDL_Keysym key) override {
     if (GuiFactory::keyEventEqual(hotkey, key)) {
-      fun(getBounds());
+      fun(getBounds(), Vec2(0, 0));
       return capture;
     }
     return false;
@@ -198,11 +201,15 @@ SGuiElem GuiFactory::button(function<void()> fun, SDL_Keysym hotkey, bool captur
 }
 
 SGuiElem GuiFactory::buttonRect(function<void(Rectangle)> fun) {
-  return SGuiElem(new Button(fun));
+  return SGuiElem(new Button([=](Rectangle b, Vec2) {fun(b);}));
 }
 
 SGuiElem GuiFactory::button(function<void()> fun) {
-  return SGuiElem(new Button([=](Rectangle) { fun(); }));
+  return SGuiElem(new Button([=](Rectangle, Vec2) { fun(); }));
+}
+
+SGuiElem GuiFactory::buttonPos(function<void (Rectangle, Vec2)> fun) {
+  return make_shared<Button>(fun);
 }
 
 namespace {
@@ -307,8 +314,7 @@ SGuiElem GuiFactory::stopMouseMovement() {
 
 class DrawCustom : public GuiElem {
   public:
-  typedef function<void(Renderer&, Rectangle)> DrawFun;
-  DrawCustom(DrawFun draw, function<int()> width = nullptr) : drawFun(draw), preferredWidth(width) {}
+  DrawCustom(GuiFactory::CustomDrawFun draw, function<int()> width = nullptr) : drawFun(draw), preferredWidth(width) {}
 
   virtual void render(Renderer& renderer) override {
     drawFun(renderer, getBounds());
@@ -322,9 +328,13 @@ class DrawCustom : public GuiElem {
   }
 
   private:
-  DrawFun drawFun;
+  GuiFactory::CustomDrawFun drawFun;
   function<int()> preferredWidth;
 };
+
+SGuiElem GuiFactory::drawCustom(CustomDrawFun fun) {
+  return make_shared<DrawCustom>(fun);
+}
 
 SGuiElem GuiFactory::rectangle(Color color, optional<Color> borderColor) {
   return SGuiElem(new DrawCustom(
@@ -418,12 +428,13 @@ SGuiElem GuiFactory::sprite(Texture& tex, Alignment align, bool vFlip, bool hFli
               stretchSize = size * (double(bounds.height()) / size.y);
               pos = (bounds.topRight() + bounds.topLeft()) / 2 - Vec2(stretchSize->x / 2, 0) + offset;
           }
-          r.drawSprite(pos, origin, size, tex, stretchSize, !!col ? *col : Color::WHITE, vFlip, hFlip);
+          r.drawSprite(pos, origin, size, tex, stretchSize, !!col ? *col : Color::WHITE,
+              Renderer::SpriteOrientation(vFlip, hFlip));
         }));
 }
 
 SGuiElem GuiFactory::label(const string& s, Color c, char hotkey) {
-  auto width = [=] { return renderer.getTextLength(s); };
+  auto width = [=] { return renderer.getTextLength(s) + 1; };
   return SGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
           r.drawTextWithHotkey(Color::BLACK.transparency(100),
@@ -446,18 +457,23 @@ static vector<string> breakWord(Renderer& renderer, string word, int maxWidth, i
   return ret;
 }
 
-static vector<string> breakText(Renderer& renderer, const string& text, int maxWidth, int size = Renderer::textSize) {
+static vector<string> breakText(Renderer& renderer, const string& text, int maxWidth, int size = Renderer::textSize,
+    char delim = ' ') {
   if (text.empty())
     return {""};
   vector<string> rows;
   for (string line : split(text, {'\n'})) {
     rows.push_back("");
-    for (string word : split(line, {' '}))
+    for (string word : split(line, {delim})) {
+      if (!rows.back().empty())
+        rows.back() += delim;
       for (string subword : breakWord(renderer, word, maxWidth, size))
         if (renderer.getTextLength(rows.back() + ' ' + subword, size) <= maxWidth)
-          rows.back().append((rows.back().size() > 0 ? " " : "") + subword);
+          rows.back() += subword;
         else
           rows.push_back(subword);
+      trim(rows.back());
+    }
   }
   return rows;
 }
@@ -493,6 +509,13 @@ class VariableLabel : public GuiElem {
 
 SGuiElem GuiFactory::labelMultiLine(const string& s, int lineHeight, int size, Color c) {
   return SGuiElem(new VariableLabel([=]{ return s;}, lineHeight, size, c));
+}
+
+SGuiElem GuiFactory::labelMultiLineWidth(const string& s, int lineHeight, int width, int size, Color c, char delim) {
+  auto lines = getListBuilder(lineHeight);
+  for (auto& line : ::breakText(renderer, s, width, size, delim))
+    lines.addElem(label(line, size, c));
+  return lines.buildVerticalList();
 }
 
 static void lighten(Color& c) {
@@ -547,7 +570,7 @@ SGuiElem GuiFactory::labelHighlightBlink(const string& s, Color c1, Color c2, ch
 }
 
 SGuiElem GuiFactory::label(const string& s, function<Color()> colorFun, char hotkey) {
-  auto width = [=] { return renderer.getTextLength(s); };
+  auto width = [=] { return renderer.getTextLength(s) + 1; };
   return SGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
           auto color = colorFun();
@@ -578,7 +601,7 @@ SGuiElem GuiFactory::labelFun(function<string()> textFun, Color color) {
 }
 
 SGuiElem GuiFactory::label(const string& s, int size, Color c) {
-  auto width = [=] { return renderer.getTextLength(s, size); };
+  auto width = [=] { return renderer.getTextLength(s, size) + 1; };
   return SGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
           r.drawText(Color::BLACK.transparency(100),
@@ -1035,7 +1058,7 @@ SGuiElem GuiFactory::keyHandlerChar(function<void ()> fun, char hotkey, bool cap
 
 SGuiElem GuiFactory::buttonChar(function<void()> fun, char hotkey, bool capture, bool useAltIfWasdOn) {
   return stack(
-      SGuiElem(new Button([=](Rectangle) { fun(); })),
+      SGuiElem(new Button([=](Rectangle, Vec2) { fun(); })),
       SGuiElem(keyHandlerChar(fun, hotkey, capture, useAltIfWasdOn)));
 }
 
@@ -1043,7 +1066,6 @@ class ElemList : public GuiLayout {
   public:
   ElemList(vector<SGuiElem> e, vector<int> h, int alignBack, bool middleEl)
     : GuiLayout(std::move(e)), heights(h), numAlignBack(alignBack), middleElem(middleEl) {
-    //CHECK(heights.size() > 0);
     CHECK(heights.size() == elems.size());
     int sum = 0;
     for (int h : heights) {
@@ -1181,15 +1203,7 @@ GuiFactory::ListBuilder& GuiFactory::ListBuilder::addElem(SGuiElem elem, int siz
 }
 
 GuiFactory::ListBuilder& GuiFactory::ListBuilder::addSpace(int size) {
-  CHECK(!backElems);
-  CHECK(!middleElem);
-  if (size == 0) {
-    CHECK(defaultSize > 0);
-    size = defaultSize;
-  }
-  elems.push_back(gui.empty());
-  sizes.push_back(size);
-  return *this;
+  return addElem(gui.empty(), size);
 }
 
 GuiFactory::ListBuilder& GuiFactory::ListBuilder::addElemAuto(SGuiElem elem) {
@@ -1225,6 +1239,10 @@ GuiFactory::ListBuilder& GuiFactory::ListBuilder::addBackElem(SGuiElem elem, int
   elems.push_back(std::move(elem));
   sizes.push_back(size);
   return *this;
+}
+
+GuiFactory::ListBuilder& GuiFactory::ListBuilder::addBackSpace(int size) {
+  return addBackElem(gui.empty(), size);
 }
 
 int GuiFactory::ListBuilder::getSize() const {
@@ -1282,6 +1300,15 @@ class VerticalListFit : public GuiLayout {
         getBounds().topRight() + Vec2(0, num * (elemHeight * (1.0 + spacing)) + elemHeight));
   }
 
+  optional<int> getPreferredWidth() override {
+    optional<int> ret;
+    for (auto& elem : elems)
+      if (auto width = elem->getPreferredWidth())
+        if (ret.value_or(-1) < *width)
+          ret = width;
+    return ret;
+  }
+
   protected:
   double spacing;
 };
@@ -1301,6 +1328,15 @@ class HorizontalListFit : public GuiLayout {
     int elemHeight = double(getBounds().width()) / (double(elems.size()) * (1.0 + spacing) - spacing);
     return Rectangle(getBounds().topLeft() + Vec2(num * (elemHeight * (1.0 + spacing)), 0), 
         getBounds().bottomLeft() + Vec2(num * (elemHeight * (1.0 + spacing)) + elemHeight, 0));
+  }
+
+  optional<int> getPreferredHeight() override {
+    optional<int> ret;
+    for (auto& elem : elems)
+      if (auto height = elem->getPreferredHeight())
+        if (ret.value_or(-1) < *height)
+          ret = height;
+    return ret;
   }
 
   protected:
@@ -1963,6 +1999,21 @@ SGuiElem GuiFactory::mouseHighlight2(SGuiElem elem) {
   return SGuiElem(new MouseHighlight2(std::move(elem)));
 }
 
+class RenderLayer : public GuiStack {
+  public:
+  RenderLayer(SGuiElem content) : GuiStack(std::move(content)) {}
+
+  virtual void render(Renderer& r) override {
+    r.setTopLayer();
+    elems[0]->render(r);
+    r.popLayer();
+  }
+};
+
+SGuiElem GuiFactory::renderTopLayer(SGuiElem content) {
+  return make_shared<RenderLayer>(std::move(content));
+}
+
 class Tooltip2 : public GuiElem {
   public:
   Tooltip2(SGuiElem e, GuiFactory::PositionFun pos)
@@ -2207,8 +2258,11 @@ class Scrollable : public GuiElem {
   }
 
   virtual bool onMouseMove(Vec2 v) override {
-//    if (v.inRectangle(getBounds()))
-    return content->onMouseMove(v);
+    if (v.inRectangle(getBounds()))
+      return content->onMouseMove(v);
+    else
+      content->onMouseGone();
+    return false;
   }
 
   virtual void onMouseRelease(Vec2 pos) override {
@@ -2280,10 +2334,27 @@ void GuiFactory::loadFreeImages(const DirectoryPath& path) {
   const int tabIconWidth = 42;
   for (int i = 0; i < 8; ++i)
     iconTextures.push_back(Texture(path.file("icons.png"), 0, i * tabIconWidth, tabIconWidth, tabIconWidth));
-  const int statIconWidth = 18;
-  for (int i = 0; i < 6; ++i)
-    iconTextures.push_back(Texture(path.file("stat_icons.png"),
-          i * statIconWidth, 0, statIconWidth, statIconWidth));
+  auto addAttr = [&](AttrType attr, Vec2 pos) {
+    const int width = 18;
+    attrTextures.emplace(make_pair(attr,
+        Texture(path.file("stat_icons.png"), pos.x * width, pos.y * width, width, width)));
+  };
+  auto getAttrCoord = [&] (AttrType attr) {
+    switch (attr) {
+      case AttrType::DAMAGE:
+        return Vec2(0, 0);
+      case AttrType::DEFENSE:
+        return Vec2(1, 0);
+      case AttrType::SPELL_DAMAGE:
+        return Vec2(0, 1);
+      case AttrType::RANGED_DAMAGE:
+        return Vec2(1, 1);
+      case AttrType::SPEED:
+        return Vec2(2, 1);
+    }
+  };
+  for (auto attr : ENUM_ALL(AttrType))
+    addAttr(attr, getAttrCoord(attr));
   const int moraleIconWidth = 16;
   for (int i = 0; i < 4; ++i)
     iconTextures.push_back(Texture(path.file("morale_icons.png"),
@@ -2292,10 +2363,55 @@ void GuiFactory::loadFreeImages(const DirectoryPath& path) {
   for (int i = 0; i < 2; ++i)
     iconTextures.push_back(Texture(path.file("team_icons.png"),
           0, i * teamIconWidth, teamIconWidth, teamIconWidth));
-  const int spellIconWidth = 40;
+  auto addSpell = [&](SpellId id, Vec2 pos) {
+    const int width = 40;
+    spellTextures.emplace(make_pair(id,
+        Texture(path.file("spells.png"), pos.x * width, pos.y * width, width, width)));
+  };
+  auto getSpellCoord = [&] (SpellId id) {
+    switch (id) {
+      case SpellId::HEAL_SELF:
+        return Vec2(1, 3);
+      case SpellId::SUMMON_INSECTS:
+        return Vec2(0, 1);
+      case SpellId::DECEPTION:
+        return Vec2(0, 2);
+      case SpellId::SPEED_SELF:
+        return Vec2(0, 3);
+      case SpellId::DAM_BONUS:
+        return Vec2(1, 5);
+      case SpellId::DEF_BONUS:
+        return Vec2(1, 6);
+      case SpellId::FIRE_SPHERE_PET:
+        return Vec2(0, 6);
+      case SpellId::TELEPORT:
+        return Vec2(0, 7);
+      case SpellId::INVISIBILITY:
+        return Vec2(0, 8);
+      case SpellId::CIRCULAR_BLAST:
+        return Vec2(1, 2);
+      case SpellId::BLAST:
+        return Vec2(0, 15);
+      case SpellId::PORTAL:
+        return Vec2(0, 10);
+      case SpellId::SUMMON_SPIRIT:
+        return Vec2(0, 11);
+      case SpellId::CURE_POISON:
+        return Vec2(0, 12);
+      case SpellId::METEOR_SHOWER:
+        return Vec2(0, 13);
+      case SpellId::MAGIC_MISSILE:
+        return Vec2(1, 1);
+      case SpellId::STUN_RAY:
+        return Vec2(0, 16);
+      case SpellId::SUMMON_ELEMENT:
+        return Vec2(1, 0);
+      case SpellId::HEAL_OTHER:
+        return Vec2(1, 4);
+    }
+  };
   for (SpellId id : ENUM_ALL(SpellId))
-    spellTextures.push_back(Texture(path.file("spells.png"),
-          0, int(id) * spellIconWidth, spellIconWidth, spellIconWidth));
+    addSpell(id, getSpellCoord(id));
 }
 
 void GuiFactory::loadNonFreeImages(const DirectoryPath& path) {
@@ -2312,10 +2428,6 @@ void GuiFactory::loadNonFreeImages(const DirectoryPath& path) {
     textures.emplace(TexId::MENU_CORE, path.file("menu_core_sm.png"));
     textures.emplace(TexId::MENU_MOUTH, path.file("menu_mouth_sm.png"));
   }
-}
-
-Texture& GuiFactory::getIconTex(IconId id) {
-  return iconTextures[id];
 }
 
 SGuiElem GuiFactory::getScrollbar() {
@@ -2530,11 +2642,15 @@ SGuiElem GuiFactory::background(SGuiElem content, Color color) {
 }
 
 SGuiElem GuiFactory::icon(IconId id, Alignment alignment, Color color) {
-  return sprite(getIconTex(id), alignment, color);
+  return sprite(iconTextures[(int) id], alignment, color);
+}
+
+SGuiElem GuiFactory::icon(AttrType attr) {
+  return sprite(attrTextures.at(attr), Alignment::CENTER, Color::WHITE);
 }
 
 SGuiElem GuiFactory::spellIcon(SpellId id) {
-  return sprite(spellTextures[int(id)], Alignment::CENTER);
+  return sprite(spellTextures.at(id), Alignment::CENTER);
 }
 
 static int trans1 = 1094;

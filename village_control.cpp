@@ -75,28 +75,26 @@ void VillageControl::onMemberKilled(WConstCreature victim, WConstCreature killer
 }
 
 void VillageControl::onEvent(const GameEvent& event) {
-  switch (event.getId()) {
-    case EventId::PICKED_UP: {
-      auto info = event.get<EventInfo::ItemsHandled>();
-      if (getCollective()->getTerritory().contains(info.creature->getPosition()))
-        if (isEnemy(info.creature) && villain)
-          if (villain->triggers.contains(AttackTriggerId::STOLEN_ITEMS)) {
-            bool wasTheft = false;
-            for (const WItem it : info.items)
-              if (myItems.contains(it)) {
-                wasTheft = true;
-                ++stolenItemCount;
-                myItems.erase(it);
+  using namespace EventInfo;
+  event.visit(
+      [&](const ItemsPickedUp& info) {
+        if (getCollective()->getTerritory().contains(info.creature->getPosition()))
+          if (isEnemy(info.creature) && villain)
+            if (villain->triggers.contains(AttackTriggerId::STOLEN_ITEMS)) {
+              bool wasTheft = false;
+              for (WConstItem it : info.items)
+                if (myItems.contains(it)) {
+                  wasTheft = true;
+                  ++stolenItemCount;
+                  myItems.erase(it);
+                }
+              if (getCollective()->hasLeader() && wasTheft) {
+                info.creature->privateMessage(PlayerMessage("You are going to regret this", MessagePriority::HIGH));
               }
-            if (getCollective()->hasLeader() && wasTheft) {
-              info.creature->playerMessage(PlayerMessage("You are going to regret this", MessagePriority::HIGH));
             }
-          }
-    }
-    break;
-    default:
-    break;
-  }
+      },
+      [&](const auto&) {}
+  );
 }
 
 void VillageControl::launchAttack(vector<WCreature> attackers) {
@@ -159,7 +157,7 @@ void VillageControl::considerWelcomeMessage() {
             if (WCreature c = pos.getCreature())
               if (c->isAffected(LastingEffect::INVISIBLE) && isEnemy(c) && c->isPlayer()
                   && getCollective()->getLeader()->canSee(c->getPosition())) {
-                c->playerMessage(PlayerMessage("\"Well thief! I smell you and I feel your air. "
+                c->privateMessage(PlayerMessage("\"Well thief! I smell you and I feel your air. "
                       "I hear your breath. Come along!\"", MessagePriority::CRITICAL));
                 villain->welcomeMessage.reset();
               }

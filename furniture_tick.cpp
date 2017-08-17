@@ -43,15 +43,14 @@ static void handleBoulder(Position pos, WFurniture furniture) {
       if (WCreature other = curPos.getCreature()) {
         if (!other->getTribe()->getFriendlyTribes().contains(furniture->getTribe())) {
           if (!other->getAttributes().getSkills().hasDiscrete(SkillId::DISARM_TRAPS)) {
-            pos.getGame()->addEvent({EventId::TRAP_TRIGGERED, pos});
-            pos.globalMessage(
-                PlayerMessage("The boulder starts rolling.", MessagePriority::CRITICAL),
-                PlayerMessage("You hear a heavy boulder rolling.", MessagePriority::CRITICAL));
+            pos.getGame()->addEvent(EventInfo::TrapTriggered{pos});
+            pos.globalMessage(PlayerMessage("The boulder starts rolling.", MessagePriority::CRITICAL));
+            pos.unseenMessage(PlayerMessage("You hear a heavy boulder rolling.", MessagePriority::CRITICAL));
             CHECK(!pos.getCreature());
             pos.addCreature(CreatureFactory::getRollingBoulder(furniture->getTribe(), direction), 0);
           } else {
             other->you(MsgType::DISARM_TRAP, "boulder trap");
-            pos.getGame()->addEvent({EventId::TRAP_DISARMED, EventInfo::TrapDisarmed{pos, other}});
+            pos.getGame()->addEvent(EventInfo::TrapDisarmed{pos, other});
           }
           pos.removeFurniture(furniture);
           return;
@@ -85,7 +84,7 @@ static void meteorShower(Position position, WFurniture furniture) {
         continue;
     targetPoint.plus(direction * range).throwItem(
         ItemFactory::fromId(ItemId::ROCK),
-        Attack(furniture->getCreator(), AttackLevel::MIDDLE, AttackType::HIT, 25, 40, false),
+        Attack(furniture->getCreator(), AttackLevel::MIDDLE, AttackType::HIT, 25, AttrType::DAMAGE),
         10,
         -direction,
         VisionId::NORMAL);

@@ -26,6 +26,7 @@ enum class ItemClass;
 class Game;
 class Workshops;
 class ImmigrantInfo;
+class Technology;
 
 struct PopulationIncrease {
   FurnitureType SERIAL(type);
@@ -63,7 +64,7 @@ struct ResourceInfo {
   optional<TutorialHighlight> tutorialHighlight;
 };
 
-typedef function<bool(WConstCollective, const WItem)> CollectiveItemPredicate;
+typedef function<bool(WConstCollective, WConstItem)> CollectiveItemPredicate;
 
 struct ItemFetchInfo {
   ItemIndex index;
@@ -74,7 +75,7 @@ struct ItemFetchInfo {
 };
 
 struct MinionTaskInfo {
-  enum Type { FURNITURE, EXPLORE, COPULATE, EAT, SPIDER } type;
+  enum Type { FURNITURE, EXPLORE, COPULATE, EAT, SPIDER, WORKER, ARCHERY } type;
   MinionTaskInfo();
   MinionTaskInfo(FurnitureType, const string& description);
   typedef function<bool(WConstCreature, FurnitureType)> UsagePredicate;
@@ -82,7 +83,7 @@ struct MinionTaskInfo {
   MinionTaskInfo(UsagePredicate, const string& description);
   MinionTaskInfo(UsagePredicate, ActivePredicate, const string& description);
   MinionTaskInfo(Type, const string& description, optional<CollectiveWarning> = none);
-  UsagePredicate furniturePredicate;
+  UsagePredicate furniturePredicate = [](WConstCreature, FurnitureType) { return true; };
   ActivePredicate activePredicate = [](WConstCollective, FurnitureType) { return true; };
   string description;
   optional<CollectiveWarning> warning;
@@ -114,7 +115,7 @@ class CollectiveConfig {
 
   bool isLeaderFighter() const;
   bool getManageEquipment() const;
-  bool getWorkerFollowLeader() const;
+  bool getFollowLeaderIfNoTerritory() const;
   int getImmigrantInterval() const;
   bool getStripSpawns() const;
   bool getFetchItems() const;
@@ -126,11 +127,13 @@ class CollectiveConfig {
   int getNumGhostSpawns() const;
   int getImmigrantTimeout() const;
   double getGhostProb() const;
-  bool sleepOnlyAtNight() const;
+  bool hasVillainSleepingTask() const;
   const vector<ImmigrantInfo>& getImmigrantInfo() const;
   const vector<PopulationIncrease>& getPopulationIncreases() const;
   const optional<GuardianInfo>& getGuardianInfo() const;
   unique_ptr<Workshops> getWorkshops() const;
+  vector<Technology*> getInitialTech() const;
+
   static const WorkshopInfo& getWorkshopInfo(WorkshopType);
   static optional<WorkshopType> getWorkshopType(FurnitureType);
 
@@ -141,12 +144,13 @@ class CollectiveConfig {
   const vector<FurnitureType>& getRoomsNeedingLight() const;
   static const ResourceInfo& getResourceInfo(CollectiveResourceId);
   static const vector<ItemFetchInfo>& getFetchInfo();
-  static optional<int> getTrainingMaxLevelIncrease(FurnitureType);
+  static optional<int> getTrainingMaxLevel(ExperienceType, FurnitureType);
+  static const vector<FurnitureType>& getTrainingFurniture(ExperienceType);
   static const MinionTaskInfo& getTaskInfo(MinionTask);
   static const vector<FloorInfo>& getFloors();
   static double getEfficiencyBonus(FurnitureType);
   static bool canBuildOutsideTerritory(FurnitureType);
-  static int getManaForConquering(VillainType);
+  static int getManaForConquering(const optional<VillainType>&);
 
   SERIALIZATION_DECL(CollectiveConfig)
   CollectiveConfig(const CollectiveConfig&);

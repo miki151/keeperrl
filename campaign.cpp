@@ -68,6 +68,9 @@ string Campaign::VillainInfo::getDescription() const {
     case VillainType::MAIN: return "main villain";
     case VillainType::LESSER: return "lesser villain";
     case VillainType::PLAYER: return "player";
+    case VillainType::NONE:
+      FATAL << "Tried to present villain of type NONE in campaign";
+      return "player";
   }
 }
 
@@ -175,7 +178,7 @@ map<string, string> Campaign::getParameters() const {
         case VillainType::ALLY: ++numAlly; break;
         case VillainType::MAIN: ++numMain; break;
         case VillainType::LESSER: ++numLesser; break;
-        case VillainType::PLAYER: break;
+        default: break;
       }
   return {
     {"main", toString(numMain)},

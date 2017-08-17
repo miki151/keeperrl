@@ -30,6 +30,10 @@
 #include "creature_name.h"
 #include "campaign_type.h"
 #include "villain_type.h"
+#include "attr_type.h"
+#include "minimap_gui.h"
+#include "creature_view.h"
+#include "level.h"
 
 using SDL::SDL_Keysym;
 using SDL::SDL_Keycode;
@@ -51,6 +55,10 @@ void GuiBuilder::setMapGui(shared_ptr<MapGui> g) {
   mapGui = g;
 }
 
+void GuiBuilder::clearHint() {
+  hint.clear();
+}
+
 GuiBuilder::~GuiBuilder() {}
 
 const int legendLineHeight = 30;
@@ -61,7 +69,7 @@ int GuiBuilder::getStandardLineHeight() const {
 }
 
 SGuiElem GuiBuilder::getHintCallback(const vector<string>& s) {
-  return gui.mouseOverAction([this, s]() { callbacks.hint({s}); });
+  return gui.mouseOverAction([this, s]() { hint = s; });
 }
 
 function<void()> GuiBuilder::getButtonCallback(UserInput input) {
@@ -354,7 +362,7 @@ void GuiBuilder::addUpsCounterTick() {
 const int resourceSpace = 110;
 
 SGuiElem GuiBuilder::drawBottomBandInfo(GameInfo& gameInfo) {
-  CollectiveInfo& info = gameInfo.collectiveInfo;
+  auto& info = *gameInfo.playerInfo.getReferenceMaybe<CollectiveInfo>();
   GameSunlightInfo& sunlightInfo = gameInfo.sunlightInfo;
   if (!bottomBandCache) {
     auto topLine = gui.getListBuilder(resourceSpace);
@@ -375,9 +383,9 @@ SGuiElem GuiBuilder::drawBottomBandInfo(GameInfo& gameInfo) {
     auto bottomLine = gui.getListBuilder(140);
     bottomLine.addElem(getTurnInfoGui(gameInfo.time));
     bottomLine.addElem(getSunlightInfoGui(sunlightInfo));
-    bottomLine.addElem(gui.labelFun([&gameInfo] {
-          return "population: " + toString(gameInfo.collectiveInfo.minionCount) + " / " +
-          toString(gameInfo.collectiveInfo.minionLimit); }));
+    bottomLine.addElem(gui.labelFun([&info] {
+          return "population: " + toString(info.minionCount) + " / " +
+          toString(info.minionLimit); }));
     bottomBandCache = gui.getListBuilder(28)
           .addElem(gui.centerHoriz(topLine.buildHorizontalList()))
           .addElem(gui.centerHoriz(bottomLine.buildHorizontalList()))
@@ -404,17 +412,17 @@ const char* GuiBuilder::getCurrentGameSpeedName() const {
 
 SGuiElem GuiBuilder::drawRightBandInfo(GameInfo& info) {
   auto getIconHighlight = [&] (Color c) { return gui.topMargin(-1, gui.uiHighlight(c)); };
-  int hash = combineHash(info.collectiveInfo, info.villageInfo, info.modifiedSquares, info.totalSquares, info.tutorial);
+  auto& collectiveInfo = *info.playerInfo.getReferenceMaybe<CollectiveInfo>();
+  int hash = combineHash(collectiveInfo, info.villageInfo, info.modifiedSquares, info.totalSquares, info.tutorial);
   if (hash != rightBandInfoHash) {
     rightBandInfoHash = hash;
-    CollectiveInfo& collectiveInfo = info.collectiveInfo;
     VillageInfo& villageInfo = info.villageInfo;
     vector<SGuiElem> buttons = makeVec(
         gui.icon(gui.BUILDING),
         gui.icon(gui.MINION),
         gui.icon(gui.LIBRARY),
         gui.stack(gui.conditional(getIconHighlight(Color::YELLOW),
-                      [=] { return numSeenVillains < villageInfo.villages.size();}),
+                      [=] { return numSeenVillains < villageInfo.numTotalVillains;}),
                   gui.icon(gui.DIPLOMACY)),
         gui.icon(gui.HELP)
     );
@@ -425,7 +433,7 @@ SGuiElem GuiBuilder::drawRightBandInfo(GameInfo& info) {
           gui.button([this, i]() { setCollectiveTab(CollectiveTab(i)); }));
     }
     if (info.tutorial) {
-      for (auto& building : info.collectiveInfo.buildings)
+      for (auto& building : collectiveInfo.buildings)
         if (auto& highlight = building.tutorialHighlight)
           if (info.tutorial->highlights.contains(*highlight)) {
             buttons[0] = gui.stack(
@@ -452,7 +460,7 @@ SGuiElem GuiBuilder::drawRightBandInfo(GameInfo& info) {
     vector<pair<CollectiveTab, SGuiElem>> elems = makeVec(
         make_pair(CollectiveTab::MINIONS, drawMinions(collectiveInfo, info.tutorial)),
         make_pair(CollectiveTab::BUILDINGS, cache->get(bindMethod(
-            &GuiBuilder::drawBuildings, this), THIS_LINE, info.collectiveInfo, info.tutorial)),
+            &GuiBuilder::drawBuildings, this), THIS_LINE, collectiveInfo, info.tutorial)),
         make_pair(CollectiveTab::KEY_MAPPING, drawKeeperHelp()),
         make_pair(CollectiveTab::TECHNOLOGY, drawTechnology(collectiveInfo)),
         make_pair(CollectiveTab::VILLAGES, drawVillages(villageInfo)));
@@ -525,7 +533,7 @@ SGuiElem GuiBuilder::drawGameSpeedDialog() {
       clock->cont();
     else
       clock->pause();
-      gameSpeedDialogOpen = false;
+    gameSpeedDialogOpen = false;
   };
   vector<SGuiElem> lines;
   vector<SGuiElem> hotkeys;
@@ -570,10 +578,7 @@ SGuiElem GuiBuilder::drawImmigrantInfo(const ImmigrantDataInfo& info) {
           .addSpace(100)
           .addBackElemAuto(info.cost ? drawCost(*info.cost) : gui.empty())
           .buildHorizontalList());
-  if (info.expLevel.getLength() == 1)
-    lines.addElem(gui.label("Level: " + toString(info.expLevel.getStart())));
-  else
-    lines.addElem(gui.label("Level: " + toString(info.expLevel.getStart()) + "-" + toString(info.expLevel.getEnd())));
+  lines.addElemAuto(drawAttributesOnPage(drawPlayerAttributes(info.attributes)));
   if (info.timeLeft)
     lines.addElem(gui.label("Turns left: " + toString((int)*info.timeLeft)));
   for (auto& req : info.info)
@@ -748,33 +753,30 @@ static Color getBonusColor(int bonus) {
   return Color::WHITE;
 }
 
-typedef PlayerInfo::AttributeInfo::Id AttrId;
-
-static GuiFactory::IconId getAttrIcon(AttrId id) {
-  switch (id) {
-    case AttrId::ATT: return GuiFactory::STAT_ATT;
-    case AttrId::DEF: return GuiFactory::STAT_DEF;
-    case AttrId::STR: return GuiFactory::STAT_STR;
-    case AttrId::DEX: return GuiFactory::STAT_DEX;
-    case AttrId::ACC: return GuiFactory::STAT_ACC;
-    case AttrId::SPD: return GuiFactory::STAT_SPD;
-  }
-}
-
-vector<SGuiElem> GuiBuilder::drawPlayerAttributes(const vector<PlayerInfo::AttributeInfo>& attr) {
+vector<SGuiElem> GuiBuilder::drawPlayerAttributes(const vector<AttributeInfo>& attr) {
   vector<SGuiElem> ret;
   for (auto& elem : attr)
     ret.push_back(gui.stack(getTooltip({elem.name, elem.help}, THIS_LINE),
         gui.horizontalList(makeVec(
-          gui.icon(getAttrIcon(elem.id)),
+          gui.icon(elem.attr),
           gui.margins(gui.label(toString(elem.value), getBonusColor(elem.bonus)), 0, 2, 0, 0)), 30)));
+  return ret;
+}
+
+vector<SGuiElem> GuiBuilder::drawPlayerAttributes(const ViewObject::CreatureAttributes& attributes) {
+  vector<SGuiElem> ret;
+  for (auto attr : ENUM_ALL(AttrType))
+    ret.push_back(
+        gui.horizontalList(makeVec(
+          gui.icon(attr),
+          gui.margins(gui.label(toString((int) attributes[attr])), 0, 2, 0, 0)), 30));
   return ret;
 }
 
 SGuiElem GuiBuilder::drawBottomPlayerInfo(const GameInfo& gameInfo) {
   return gui.getListBuilder(28)
       .addElem(gui.centerHoriz(gui.horizontalList(
-              drawPlayerAttributes(gameInfo.playerInfo.attributes), resourceSpace)))
+              drawPlayerAttributes(gameInfo.playerInfo.getReferenceMaybe<PlayerInfo>()->attributes), resourceSpace)))
       .addElem(gui.centerHoriz(gui.getListBuilder(140)
             .addElem(getTurnInfoGui(gameInfo.time))
             .addElem(getSunlightInfoGui(gameInfo.sunlightInfo))
@@ -803,6 +805,13 @@ vector<string> GuiBuilder::getItemHint(const ItemInfo& item) {
   return out;
 }
 
+SGuiElem GuiBuilder::drawBestAttack(const BestAttack& info) {
+  return gui.getListBuilder(30)
+      .addElem(gui.icon(info.attr))
+      .addElem(gui.topMargin(2, gui.label(toString((int) info.value))))
+      .buildHorizontalList();
+}
+
 SGuiElem GuiBuilder::getItemLine(const ItemInfo& item, function<void(Rectangle)> onClick,
     function<void()> onMultiClick) {
   GuiFactory::ListBuilder line(gui);
@@ -825,7 +834,7 @@ SGuiElem GuiBuilder::getItemLine(const ItemInfo& item, function<void(Rectangle)>
   line.addMiddleElem(std::move(mainLine));
   if (item.owner) {
     line.addBackElem(gui.viewObject(item.owner->viewId), viewObjectWidth);
-    line.addBackElem(gui.label("L:" + toString(item.owner->expLevel)), getItemLineOwnerMargin() - viewObjectWidth);
+    line.addBackElem(drawBestAttack(item.owner->bestAttack), getItemLineOwnerMargin() - viewObjectWidth);
   }
   if (item.price)
     line.addBackElemAuto(drawCost(*item.price));
@@ -1053,35 +1062,38 @@ vector<SGuiElem> GuiBuilder::drawSkillsList(const PlayerInfo& info) {
   return lines;
 }
 
-const int spellsPerRow = 5;
-const Vec2 spellIconSize = Vec2(47, 47);
-
 SGuiElem GuiBuilder::getSpellIcon(const PlayerInfo::Spell& spell, bool active) {
-  vector<SGuiElem> ret = makeVec(
-      gui.spellIcon(spell.id));
+  vector<SGuiElem> ret = makeVec(gui.spellIcon(spell.id));
   if (spell.timeout) {
     ret.push_back(gui.darken());
     ret.push_back(gui.centeredLabel(Renderer::HOR_VER, toString(*spell.timeout)));
   } else
   if (active)
     ret.push_back(gui.button(getButtonCallback({UserInputId::CAST_SPELL, spell.id})));
-  ret.push_back(getTooltip({spell.name, spell.help}, THIS_LINE));
+  ret.push_back(getTooltip({capitalFirst(spell.name), spell.help}, THIS_LINE));
   return gui.stack(std::move(ret));
 }
 
-vector<SGuiElem> GuiBuilder::drawSpellsList(const PlayerInfo& info, bool active) {
-  vector<SGuiElem> list;
+const Vec2 spellIconSize = Vec2(47, 47);
+
+SGuiElem GuiBuilder::drawSpellsList(const PlayerInfo& info, bool active) {
+  constexpr int spellsPerRow = 5;
   if (!info.spells.empty()) {
-    vector<SGuiElem> line;
+    auto list = gui.getListBuilder(spellIconSize.y);
+    list.addElem(gui.label("Spells", Color::YELLOW), legendLineHeight);
+    auto line = gui.getListBuilder(spellIconSize.x);
     for (auto& elem : info.spells) {
-      line.push_back(getSpellIcon(elem, active));
-      if (line.size() >= spellsPerRow)
-        list.push_back(gui.horizontalList(std::move(line), spellIconSize.x));
+      line.addElem(getSpellIcon(elem, active));
+      if (line.getLength() >= spellsPerRow) {
+        list.addElem(line.buildHorizontalList());
+        line.clear();
+      }
     }
-    if (!line.empty())
-      list.push_back(gui.horizontalList(std::move(line), spellIconSize.x));
-  }
-  return list;
+    if (!line.isEmpty())
+      list.addElem(line.buildHorizontalList());
+    return list.buildVerticalList();
+  } else
+    return nullptr;
 }
 
 vector<SGuiElem> GuiBuilder::drawEffectsList(const PlayerInfo& info) {
@@ -1108,34 +1120,51 @@ static vector<string> help = {
 };
 
 SGuiElem GuiBuilder::getExpIncreaseLine(const PlayerInfo::LevelInfo& info, ExperienceType type) {
+  if (info.limit[type] == 0)
+    return nullptr;
   auto line = gui.getListBuilder();
-  line.addElemAuto(gui.label(capitalFirst(toLower(EnumInfo<ExperienceType>::getString(type))) + ": "));
-  line.addElemAuto(gui.label(toString(info.increases[type])));
-  if (auto limit = info.limits[type])
-    line.addElemAuto(gui.label("  (limit " + toString(*limit) + ")"));
-  return line.buildHorizontalList();
+  int i = 0;
+  vector<string> attrNames;
+  auto attrIcons = gui.getListBuilder();
+  for (auto attr : getAttrIncreases()[type]) {
+    attrIcons.addElem(gui.topMargin(-3, gui.icon(attr)), 22);
+    attrNames.push_back(getName(attr));
+  }
+  line.addElem(attrIcons.buildHorizontalList(), 80);
+  line.addElem(gui.label("+" + toString(0.01 * round(100 * info.level[type])),
+      info.warning[type] ? Color::RED : Color::WHITE), 60);
+  string limit = toString(info.limit[type]);
+  line.addElemAuto(gui.label("  (limit " + limit + ")"));
+  vector<string> tooltip {
+      getName(type) + " training."_s,
+      "Increases " + combine(attrNames) + ".",
+      "The creature's limit for this type of training is " + limit + "."};
+  if (info.warning[type])
+    tooltip.push_back(*info.warning[type]);
+  return gui.stack(
+             getTooltip(tooltip, THIS_LINE),
+             line.buildHorizontalList());
 }
 
-SGuiElem GuiBuilder::drawPlayerLevelButton(const PlayerInfo& info) {
-  return gui.stack(
-      gui.labelHighlight("[Level " + toString(info.levelInfo.level) + "]", Color::LIGHT_BLUE),
-      gui.buttonRect([=] (Rectangle bounds) {
-          auto lines = gui.getListBuilder(legendLineHeight);
-          bool exit = false;
-          lines.addElem(gui.label("Level " + toString(info.levelInfo.level)));
-          lines.addElem(gui.label("Increases:", Color::YELLOW));
-          for (auto expType : ENUM_ALL(ExperienceType))
-            lines.addElem(gui.leftMargin(30, getExpIncreaseLine(info.levelInfo, expType)));
-          if (auto& warning = info.levelInfo.warning)
-            lines.addElem(gui.label(*warning, Color::RED));
-          drawMiniMenu(std::move(lines), exit, bounds.bottomLeft(), 300);
-      }));
+SGuiElem GuiBuilder::drawTrainingInfo(const PlayerInfo& info) {
+  auto lines = gui.getListBuilder(legendLineHeight);
+  lines.addElem(gui.label("Training", Color::YELLOW));
+  bool empty = true;
+  for (auto expType : ENUM_ALL(ExperienceType)) {
+    if (auto elem = getExpIncreaseLine(info.levelInfo, expType)) {
+      lines.addElem(std::move(elem));
+      empty = false;
+    }
+  }
+  if (!empty)
+    return lines.buildVerticalList();
+  else
+    return nullptr;
 }
 
 SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info) {
   GuiFactory::ListBuilder list(gui, legendLineHeight);
   list.addElem(gui.label(info.getTitle(), Color::WHITE));
-  list.addElem(drawPlayerLevelButton(info));
   auto line = gui.getListBuilder();
   vector<SGuiElem> keyElems;
   bool isTutorial = false;
@@ -1189,7 +1218,7 @@ SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info) {
     for (auto& elem : info.team) {
       currentLine.addElem(gui.stack(
             gui.viewObject(elem.viewId),
-            gui.label(toString(elem.expLevel), 12)), 30);
+            gui.label(toString((int) elem.bestAttack.value), 12)), 30);
       if (currentLine.getLength() >= numPerLine) {
         list.addElem(currentLine.buildHorizontalList());
         currentLine.clear();
@@ -1201,11 +1230,8 @@ SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info) {
   }
   for (auto& elem : drawSkillsList(info))
     list.addElem(std::move(elem));
-  vector<SGuiElem> spells = drawSpellsList(info, true);
-  if (!spells.empty()) {
-    list.addElem(gui.label("Spells", Color::YELLOW));
-    for (auto& elem : spells)
-      list.addElem(std::move(elem), spellIconSize.y);
+  if (auto spells = drawSpellsList(info, true)) {
+    list.addElemAuto(std::move(spells));
     list.addSpace();
   }
   if (info.debt > 0) {
@@ -1224,6 +1250,9 @@ SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info) {
             if (auto choice = getItemChoice(item, butBounds.bottomLeft() + Vec2(50, 0), false))
               callbacks.input({UserInputId::INVENTORY_ITEM, InventoryItemInfo{item.ids, *choice}});}));
   }
+  list.addSpace();
+  if (auto elem = drawTrainingInfo(info))
+    list.addElemAuto(std::move(elem));
   return gui.margins(
       gui.scrollable(list.buildVerticalList(), &inventoryScroll, &scrollbarsHeld), -5, 0, 0, 0);
 }
@@ -1241,18 +1270,6 @@ struct CreatureMapElem {
   CreatureInfo any;
 };
 
-static map<string, CreatureMapElem> getCreatureMap(const vector<CreatureInfo>& creatures) {
-  map<string, CreatureMapElem> creatureMap;
-  for (int i : All(creatures)) {
-    auto elem = creatures[i];
-    if (!creatureMap.count(elem.stackName)) {
-      creatureMap.insert(make_pair(elem.stackName, CreatureMapElem({elem.viewId, 1, elem})));
-    } else
-      ++creatureMap.at(elem.stackName).count;
-  }
-  return creatureMap;
-}
-
 SGuiElem GuiBuilder::drawMinionAndLevel(ViewId viewId, int level, int iconMult) {
   return gui.stack(makeVec(
         gui.viewObject(viewId, iconMult),
@@ -1269,7 +1286,7 @@ SGuiElem GuiBuilder::drawTeams(CollectiveInfo& info, const optional<TutorialInfo
     vector<SGuiElem> currentLine;
     for (auto member : team.members) {
       auto& memberInfo = *info.getMinion(member);
-      currentLine.push_back(drawMinionAndLevel(memberInfo.viewId, memberInfo.expLevel, 1));
+      currentLine.push_back(drawMinionAndLevel(memberInfo.viewId, (int) memberInfo.bestAttack.value, 1));
       if (currentLine.size() >= numPerLine)
         teamLine.addElem(gui.horizontalList(std::move(currentLine), elemWidth));
     }
@@ -1334,16 +1351,21 @@ SGuiElem GuiBuilder::drawTeams(CollectiveInfo& info, const optional<TutorialInfo
 }
 
 vector<SGuiElem> GuiBuilder::getSettingsButtons() {
+  auto makeSetting = [&](bool& setting, const char* name, const char* hint) {
+    return gui.stack(makeVec(
+          getHintCallback({hint}),
+          gui.label(name, [&setting]{ return setting ? Color::GREEN : Color::WHITE;}),
+          gui.button([&setting] { setting = !setting; })));
+  };
+
   return makeVec(
-      gui.stack(makeVec(
-            getHintCallback({"Morale affects minion's productivity and chances of fleeing from battle."}),
-            gui.label("Highlight morale",
-                [=]{ return mapGui->highlightMorale() ? Color::GREEN : Color::WHITE;}),
-            gui.button([this] { mapGui->setHighlightMorale(!mapGui->highlightMorale()); }))),
-      gui.stack(makeVec(
-            gui.label("Highlight enemies",
-                [=]{ return mapGui->highlightEnemies() ? Color::GREEN : Color::WHITE;}),
-            gui.button([this] { mapGui->setHighlightEnemies(!mapGui->highlightEnemies()); }))));
+      makeSetting(mapGui->highlightMorale, "Highlight morale",
+          "Morale affects minion's productivity and chances of fleeing from battle."),
+      makeSetting(mapGui->highlightEnemies, "Highlight enemies", ""),
+      makeSetting(mapGui->displayAllHealthBars, "Display health bars", ""),
+      makeSetting(mapGui->hideFullHealthBars, "Hide full health bars", ""),
+      makeSetting(mapGui->colorWoundedRed, "Color wounded creatures", "")
+    );
 }
 
 SGuiElem GuiBuilder::drawMinions(CollectiveInfo& info, const optional<TutorialInfo>& tutorial) {
@@ -1358,7 +1380,6 @@ SGuiElem GuiBuilder::drawMinions(CollectiveInfo& info, const optional<TutorialIn
     for (int i : All(info.minionGroups)) {
       auto& elem = info.minionGroups[i];
       auto line = gui.getListBuilder();
-      vector<int> widths;
       line.addElem(gui.viewObject(elem.viewId), 40);
       SGuiElem tmp = gui.label(toString(elem.count) + "   " + elem.name, Color::WHITE);
       line.addElem(std::move(tmp), 200);
@@ -1523,7 +1544,7 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo& info, const opti
         gui.bottomMargin(5,
             gui.progressBar(Color::DARK_GREEN.transparency(128), elem.productionState)),
         gui.rightMargin(rightElemMargin, gui.stack(
-            getTooltip({elem.description}, THIS_LINE),
+            //getTooltip({elem.description}, THIS_LINE), // this interferes with the mini menu
             gui.uiHighlightMouseOver(Color::GREEN),
             line.buildHorizontalList()
     ))));
@@ -1654,36 +1675,88 @@ SGuiElem GuiBuilder::drawBuildingsOverlay(const CollectiveInfo& info, const opti
   return gui.stack(std::move(elems));
 }
 
+SGuiElem GuiBuilder::drawMapHintOverlay() {
+  auto lines = gui.getListBuilder(legendLineHeight);
+  if (!hint.empty()) {
+    for (auto& line : hint)
+      if (!line.empty())
+        lines.addElem(gui.label(line));
+  } else {
+    auto& highlighted = mapGui->getLastHighlighted();
+    if (auto& viewObject = highlighted.object) {
+      lines.addElem(gui.getListBuilder()
+            .addElem(gui.viewObject(viewObject->id()), 30)
+            .addElemAuto(gui.label(viewObject->getDescription()))
+            .buildHorizontalList());
+      if (viewObject->hasModifier(ViewObject::Modifier::HOSTILE))
+        lines.addElem(gui.label("Enemy", Color::RED));
+      if (!viewObject->getBadAdjectives().empty()) {
+        lines.addElemAuto(gui.labelMultiLineWidth(viewObject->getBadAdjectives(), legendLineHeight * 2 / 3, 300,
+            Renderer::textSize, Color::RED, ','));
+        lines.addSpace(legendLineHeight / 3);
+      }
+      if (!viewObject->getGoodAdjectives().empty()) {
+        lines.addElemAuto(gui.labelMultiLineWidth(viewObject->getGoodAdjectives(), legendLineHeight * 2 / 3, 300,
+            Renderer::textSize, Color::GREEN, ','));
+        lines.addSpace(legendLineHeight / 3);
+      }
+      if (auto& attributes = viewObject->getCreatureAttributes())
+        lines.addElemAuto(drawAttributesOnPage(drawPlayerAttributes(*attributes)));
+      if (auto efficiency = viewObject->getAttribute(ViewObjectAttribute::EFFICIENCY))
+        lines.addElem(gui.label("Efficiency: " + toString((int) (100.0f * *efficiency))));
+      if (viewObject->hasModifier(ViewObjectModifier::PLANNED))
+        lines.addElem(gui.label("Planned"));
+      //if (indoors)
+      //  ret.push_back(*indoors ? "Indoors" : "Outdoors");
+      if (auto morale = viewObject->getAttribute(ViewObjectAttribute::MORALE))
+        lines.addElem(gui.label("Morale: " + toString(*morale)));
+    }
+    if (highlighted.tilePos)
+      lines.addElem(gui.label("Position: " + toString(*highlighted.tilePos)));
+  }
+  if (!lines.isEmpty())
+    return gui.margins(gui.translucentBackground(gui.stack(
+        gui.rectangleBorder(Color::GRAY),
+        gui.margins(lines.buildVerticalList(), 10, 10, 10, 22))), 0, 0, -2, -2);
+  else
+    return gui.empty();
+}
+
 void GuiBuilder::drawOverlays(vector<OverlayInfo>& ret, GameInfo& info) {
   if (info.tutorial)
     ret.push_back({cache->get(bindMethod(&GuiBuilder::drawTutorialOverlay, this), THIS_LINE,
          *info.tutorial), OverlayInfo::TUTORIAL});
+  ret.push_back({drawMapHintOverlay(), OverlayInfo::MAP_HINT});
   switch (info.infoType) {
-    case GameInfo::InfoType::BAND:
+    case GameInfo::InfoType::BAND: {
+      auto& collectiveInfo = *info.playerInfo.getReferenceMaybe<CollectiveInfo>();
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawImmigrationOverlay, this), THIS_LINE,
-           info.collectiveInfo, info.tutorial), OverlayInfo::IMMIGRATION});
+           collectiveInfo, info.tutorial), OverlayInfo::IMMIGRATION});
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawRansomOverlay, this), THIS_LINE,
-           info.collectiveInfo.ransom), OverlayInfo::TOP_LEFT});
+           collectiveInfo.ransom), OverlayInfo::TOP_LEFT});
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawMinionsOverlay, this), THIS_LINE,
-           info.collectiveInfo, info.tutorial), OverlayInfo::TOP_LEFT});
+           collectiveInfo, info.tutorial), OverlayInfo::TOP_LEFT});
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawWorkshopsOverlay, this), THIS_LINE,
-           info.collectiveInfo, info.tutorial), OverlayInfo::TOP_LEFT});
+           collectiveInfo, info.tutorial), OverlayInfo::TOP_LEFT});
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawLibraryOverlay, this), THIS_LINE,
-           info.collectiveInfo, info.tutorial), OverlayInfo::TOP_LEFT});
+           collectiveInfo, info.tutorial), OverlayInfo::TOP_LEFT});
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawTasksOverlay, this), THIS_LINE,
-           info.collectiveInfo), OverlayInfo::TOP_LEFT});
+           collectiveInfo), OverlayInfo::TOP_LEFT});
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawBuildingsOverlay, this), THIS_LINE,
-           info.collectiveInfo, info.tutorial), OverlayInfo::TOP_LEFT});
+           collectiveInfo, info.tutorial), OverlayInfo::TOP_LEFT});
       if (immigrantHelpOpen)
         ret.push_back({cache->get(bindMethod(&GuiBuilder::drawImmigrationHelp, this), THIS_LINE,
-            info.collectiveInfo), OverlayInfo::BOTTOM_LEFT});
+            collectiveInfo), OverlayInfo::BOTTOM_LEFT});
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawGameSpeedDialog, this), THIS_LINE),
            OverlayInfo::GAME_SPEED});
       break;
-    case GameInfo::InfoType::PLAYER:
+    }
+    case GameInfo::InfoType::PLAYER: {
+      auto& playerInfo = *info.playerInfo.getReferenceMaybe<PlayerInfo>();
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawPlayerOverlay, this), THIS_LINE,
-           info.playerInfo), OverlayInfo::TOP_LEFT});
+           playerInfo), OverlayInfo::TOP_LEFT});
       break;
+    }
     default:
       break;
   }
@@ -1811,7 +1884,7 @@ static const char* getVillageActionText(VillageAction action) {
   }
 }
 
-SGuiElem GuiBuilder::getVillageActionButton(int villageIndex, VillageInfo::Village::ActionInfo action) {
+SGuiElem GuiBuilder::getVillageActionButton(UniqueEntity<Collective>::Id id, VillageInfo::Village::ActionInfo action) {
   if (action.disabledReason)
     return gui.stack(
         gui.label(getVillageActionText(action.action), Color::GRAY),
@@ -1820,7 +1893,7 @@ SGuiElem GuiBuilder::getVillageActionButton(int villageIndex, VillageInfo::Villa
     return gui.stack(
         gui.labelHighlight(getVillageActionText(action.action), Color::GREEN),
         gui.button(getButtonCallback({UserInputId::VILLAGE_ACTION,
-            VillageActionInfo{villageIndex, action.action}})));
+            VillageActionInfo{id, action.action}})));
 }
 
 static Color getTriggerColor(double value) {
@@ -1848,64 +1921,73 @@ void GuiBuilder::showAttackTriggers(const vector<VillageInfo::Village::TriggerIn
   }
 }
 
+static const char* getHeader(VillainType type) {
+  switch (type) {
+    case VillainType::MAIN: return "Main villains:";
+    case VillainType::LESSER: return "Lesser villains:";
+    case VillainType::ALLY: return "Allies:";
+    case VillainType::NONE: return "Other:";
+    case VillainType::PLAYER: return "Player:";
+  }
+}
+
 SGuiElem GuiBuilder::drawVillages(VillageInfo& info) {
   int currentHash = combineHash(info);
   if (currentHash != villagesHash) {
     villagesHash = currentHash;
     auto lines = gui.getListBuilder(legendLineHeight);
     int titleMargin = -11;
-    lines.addElem(gui.leftMargin(titleMargin, gui.label(toString(info.numConquered) + "/" +
-            toString(info.totalMain) + " main villains conquered.")), titleLineHeight);
-    if (info.numMainVillains > 0)
-      lines.addElem(gui.leftMargin(titleMargin, gui.label("Main villains:")), titleLineHeight);
-    for (int i : All(info.villages)) {
-      if (i == info.numMainVillains && info.numLesserVillains > 0) {
+    int numConquered = 0;
+    for (auto& villain : info.villages[VillainType::MAIN])
+      if (villain.state == villain.CONQUERED)
+        ++numConquered;
+    lines.addElem(gui.leftMargin(titleMargin, gui.label(toString(numConquered) + "/" +
+            toString(info.villages[VillainType::MAIN].size()) + " main villains conquered.")), titleLineHeight);
+    for (auto villainType : {VillainType::MAIN, VillainType::LESSER, VillainType::ALLY, VillainType::NONE}) {
+      if (info.villages[villainType].size() > 0) {
         lines.addSpace();
-        lines.addElem(gui.leftMargin(titleMargin, gui.label("Lesser villains:")), titleLineHeight);
+        lines.addElem(gui.leftMargin(titleMargin, gui.label(getHeader(villainType))), titleLineHeight);
       }
-      if (i == info.numMainVillains + info.numLesserVillains) {
-        lines.addSpace();
-        lines.addElem(gui.leftMargin(titleMargin, gui.label("Allies:")), titleLineHeight);
-      }
-      auto& elem = info.villages[i];
-      string title = capitalFirst(elem.name) + (elem.tribeName.empty() ?
-            string() : " (" + elem.tribeName + ")");
-      SGuiElem header;
-      if (info.villages[i].access == VillageInfo::Village::LOCATION)
-        header = gui.stack(gui.button(getButtonCallback({UserInputId::GO_TO_VILLAGE, i})),
-          gui.getListBuilder()
-              .addElemAuto(gui.labelHighlight(title))
-              .addSpace(7)
-              .addElemAuto(gui.labelUnicode(u8"➚")).buildHorizontalList());
-      else
-        header = gui.label(title);
-      lines.addElem(std::move(header));
-      if (info.villages[i].access == VillageInfo::Village::NO_LOCATION)
-        lines.addElem(gui.leftMargin(40, gui.label("Location unknown", Color::LIGHT_BLUE)));
-      else if (info.villages[i].access == VillageInfo::Village::INACTIVE)
-        lines.addElem(gui.leftMargin(40, gui.label("Outside influence zone", Color::GRAY)));
-      GuiFactory::ListBuilder line(gui);
-      line.addElemAuto(gui.margins(getVillageStateLabel(elem.state), 40, 0, 40, 0));
-      vector<VillageInfo::Village::TriggerInfo> triggers = elem.triggers;
-      sort(triggers.begin(), triggers.end(),
-          [] (const VillageInfo::Village::TriggerInfo& t1, const VillageInfo::Village::TriggerInfo& t2) {
-              return t1.value > t2.value;});
-  #ifdef RELEASE
-      triggers = triggers.filter([](const VillageInfo::Village::TriggerInfo& t) { return t.value > 0;});
-  #endif
-      if (!triggers.empty())
-        line.addElemAuto(gui.stack(
-            gui.labelHighlight("Triggers", Color::RED),
-            gui.buttonRect([this, triggers](Rectangle bounds) {
-                showAttackTriggers(triggers, bounds.topRight() + Vec2(20, 0));})));
-      lines.addElem(line.buildHorizontalList());
-      for (auto action : elem.actions)
-        lines.addElem(gui.margins(getVillageActionButton(i, action), 40, 0, 0, 0));
+      for (auto& elem : info.villages[villainType]) {
+        string title = capitalFirst(elem.name) + (elem.tribeName.empty() ?
+              string() : " (" + elem.tribeName + ")");
+        SGuiElem header;
+        if (elem.access == VillageInfo::Village::LOCATION)
+          header = gui.stack(gui.button(getButtonCallback({UserInputId::GO_TO_VILLAGE, elem.id})),
+            gui.getListBuilder()
+                .addElemAuto(gui.labelHighlight(title))
+                .addSpace(7)
+                .addElemAuto(gui.labelUnicode(u8"➚")).buildHorizontalList());
+        else
+          header = gui.label(title);
+        lines.addElem(std::move(header));
+        if (elem.access == VillageInfo::Village::NO_LOCATION)
+          lines.addElem(gui.leftMargin(40, gui.label("Location unknown", Color::LIGHT_BLUE)));
+        else if (elem.access == VillageInfo::Village::INACTIVE)
+          lines.addElem(gui.leftMargin(40, gui.label("Outside influence zone", Color::GRAY)));
+        GuiFactory::ListBuilder line(gui);
+        line.addElemAuto(gui.margins(getVillageStateLabel(elem.state), 40, 0, 40, 0));
+        vector<VillageInfo::Village::TriggerInfo> triggers = elem.triggers;
+        sort(triggers.begin(), triggers.end(),
+            [] (const VillageInfo::Village::TriggerInfo& t1, const VillageInfo::Village::TriggerInfo& t2) {
+                return t1.value > t2.value;});
+    #ifdef RELEASE
+        triggers = triggers.filter([](const VillageInfo::Village::TriggerInfo& t) { return t.value > 0;});
+    #endif
+        if (!triggers.empty())
+          line.addElemAuto(gui.stack(
+              gui.labelHighlight("Triggers", Color::RED),
+              gui.buttonRect([this, triggers](Rectangle bounds) {
+                  showAttackTriggers(triggers, bounds.topRight() + Vec2(20, 0));})));
+        lines.addElem(line.buildHorizontalList());
+        for (auto action : elem.actions)
+          lines.addElem(gui.margins(getVillageActionButton(elem.id, action), 40, 0, 0, 0));
 
+      }
     }
     if (lines.isEmpty())
       return gui.label("No foreign tribes discovered.");
-    int numVillains = info.villages.size();
+    int numVillains = info.numTotalVillains;
     if (numSeenVillains == -1)
       numSeenVillains = numVillains;
     villagesCache = gui.stack(
@@ -2017,7 +2099,7 @@ SGuiElem GuiBuilder::drawListGui(const string& title, const vector<ListElem>& op
           gui.tooltip({options[i].getTip()}));
     if (!options[i].getSecondColumn().empty())
       line = gui.horizontalList(makeVec(std::move(line),
-            gui.label(options[i].getSecondColumn())), columnWidth + 80);
+            gui.label(options[i].getSecondColumn(), color)), columnWidth + 80);
     line = menuElemMargins(std::move(line));
     if (highlight && options[i].getMod() == ListElem::NORMAL) {
       line = gui.stack(
@@ -2080,7 +2162,7 @@ SGuiElem GuiBuilder::drawMinionButtons(const vector<PlayerInfo>& minions, Unique
       line.addElemAuto(gui.rightMargin(5, gui.label(minion.getFirstName())));
       if (auto icon = getMoraleIcon(minion.morale))
         line.addElem(gui.topMargin(-2, gui.icon(*icon)), 20);
-      line.addBackElem(gui.label("L:" + toString<int>(minion.levelInfo.level)), 42);
+      line.addBackElem(drawBestAttack(minion.bestAttack), 52);
       list.addElem(gui.stack(makeVec(
             cache->get(selectButton, THIS_LINE, minionId),
             gui.leftMargin(teamId ? -10 : 0, gui.stack(
@@ -2099,6 +2181,7 @@ static string getTaskText(MinionTask option) {
     case MinionTask::GRAVE:
     case MinionTask::LAIR:
     case MinionTask::SLEEP: return "Sleeping";
+    case MinionTask::WORKER: return "Working";
     case MinionTask::EAT: return "Eating";
     case MinionTask::EXPLORE_NOCTURNAL: return "Exploring (night)";
     case MinionTask::EXPLORE_CAVES: return "Exploring caves";
@@ -2107,13 +2190,15 @@ static string getTaskText(MinionTask option) {
     case MinionTask::CROPS: return "Crops";
     case MinionTask::PRISON: return "Prison";
     case MinionTask::TRAIN: return "Training";
+    case MinionTask::ARCHERY: return "Archery range";
     case MinionTask::CRAFT: return "Crafting";
     case MinionTask::STUDY: return "Studying";
     case MinionTask::COPULATE: return "Copulating";
-    case MinionTask::SPIDER: return "Spider";
+    case MinionTask::SPIDER: return "Spinning webs";
     case MinionTask::THRONE: return "Throne";
     case MinionTask::BE_WHIPPED: return "Being whipped";
     case MinionTask::BE_TORTURED: return "Being tortured";
+    case MinionTask::BE_EXECUTED: return "Being executed";
   }
 }
 
@@ -2177,21 +2262,21 @@ SGuiElem GuiBuilder::drawActivityButton(const PlayerInfo& minion) {
         }));
 }
 
-vector<SGuiElem> GuiBuilder::drawAttributesOnPage(vector<SGuiElem>&& attrs) {
+SGuiElem GuiBuilder::drawAttributesOnPage(vector<SGuiElem>&& attrs) {
   vector<SGuiElem> lines[2];
   for (int i : All(attrs))
     lines[i % 2].push_back(std::move(attrs[i]));
   int elemWidth = 80;
-  return makeVec(
-        gui.horizontalList(std::move(lines[0]), elemWidth),
-        gui.horizontalList(std::move(lines[1]), elemWidth));
+  return gui.verticalList(makeVec(
+      gui.horizontalList(std::move(lines[0]), elemWidth),
+      gui.horizontalList(std::move(lines[1]), elemWidth)), legendLineHeight);
 }
 
-vector<SGuiElem> GuiBuilder::drawEquipmentAndConsumables(const PlayerInfo& minion) {
+SGuiElem GuiBuilder::drawEquipmentAndConsumables(const PlayerInfo& minion) {
   const vector<ItemInfo>& items = minion.inventory;
   if (items.empty())
-    return {};
-  vector<SGuiElem> lines;
+    return gui.empty();
+  auto lines = gui.getListBuilder(legendLineHeight);
   vector<SGuiElem> itemElems = drawItemMenu(items,
       [=](Rectangle butBounds, optional<int> index) {
         const ItemInfo& item = items[*index];
@@ -2199,27 +2284,27 @@ vector<SGuiElem> GuiBuilder::drawEquipmentAndConsumables(const PlayerInfo& minio
           callbacks.input({UserInputId::CREATURE_EQUIPMENT_ACTION,
               EquipmentActionInfo{minion.creatureId, item.ids, item.slot, *choice}});
       });
-  lines.push_back(gui.label("Equipment", Color::YELLOW));
+  lines.addElem(gui.label("Equipment", Color::YELLOW));
   for (int i : All(itemElems))
     if (items[i].type == items[i].EQUIPMENT)
-      lines.push_back(gui.leftMargin(3, std::move(itemElems[i])));
-  lines.push_back(gui.label("Consumables", Color::YELLOW));
+      lines.addElem(gui.leftMargin(3, std::move(itemElems[i])));
+  lines.addElem(gui.label("Consumables", Color::YELLOW));
   for (int i : All(itemElems))
     if (items[i].type == items[i].CONSUMABLE)
-      lines.push_back(gui.leftMargin(3, std::move(itemElems[i])));
-  lines.push_back(gui.stack(
+      lines.addElem(gui.leftMargin(3, std::move(itemElems[i])));
+  lines.addElem(gui.stack(
       gui.labelHighlight("[Add consumable]", Color::LIGHT_BLUE),
       gui.button(getButtonCallback({UserInputId::CREATURE_EQUIPMENT_ACTION,
               EquipmentActionInfo{minion.creatureId, {}, none, ItemAction::REPLACE}}))));
   for (int i : All(itemElems))
     if (items[i].type == items[i].OTHER) {
-      lines.push_back(gui.label("Other", Color::YELLOW));
+      lines.addElem(gui.label("Other", Color::YELLOW));
       break;
     }
   for (int i : All(itemElems))
     if (items[i].type == items[i].OTHER)
-      lines.push_back(gui.leftMargin(3, std::move(itemElems[i])));
-  return lines;
+      lines.addElem(gui.leftMargin(3, std::move(itemElems[i])));
+  return lines.buildVerticalList();
 }
 
 vector<SGuiElem> GuiBuilder::drawMinionActions(const PlayerInfo& minion, const optional<TutorialInfo>& tutorial) {
@@ -2247,11 +2332,6 @@ vector<SGuiElem> GuiBuilder::drawMinionActions(const PlayerInfo& minion, const o
             gui.labelHighlight("[Banish]", Color::LIGHT_BLUE),
             gui.button(getButtonCallback({UserInputId::CREATURE_BANISH, minion.creatureId}))));
         break;
-      case PlayerInfo::EXECUTE:
-        line.push_back(gui.stack(
-            gui.labelHighlight("[Execute]", Color::LIGHT_BLUE),
-            gui.button(getButtonCallback({UserInputId::CREATURE_EXECUTE, minion.creatureId}))));
-        break;
       case PlayerInfo::CONSUME:
         line.push_back(gui.stack(
             gui.labelHighlight("[Absorb]", Color::LIGHT_BLUE),
@@ -2261,47 +2341,34 @@ vector<SGuiElem> GuiBuilder::drawMinionActions(const PlayerInfo& minion, const o
   return line;
 }
 
-vector<SGuiElem> GuiBuilder::joinLists(vector<SGuiElem>&& v1, vector<SGuiElem>&& v2) {
-  vector<SGuiElem> ret;
-  for (int i : Range(max(v1.size(), v2.size())))
-    ret.push_back(gui.horizontalListFit(makeVec(
-            i < v1.size() ? std::move(v1[i]) : gui.empty(),
-            i < v2.size() ? gui.leftMargin(10, std::move(v2[i])) : gui.empty())));
-  return ret;
-}
-
 SGuiElem GuiBuilder::drawMinionPage(const PlayerInfo& minion, const optional<TutorialInfo>& tutorial) {
-  GuiFactory::ListBuilder list(gui, legendLineHeight);
+  auto list = gui.getListBuilder(legendLineHeight);
   list.addElem(gui.label(minion.getTitle()));
   if (!minion.description.empty())
     list.addElem(gui.label(minion.description, Renderer::smallTextSize, Color::LIGHT_GRAY));
   list.addElem(gui.horizontalList(drawMinionActions(minion, tutorial), 140));
-  vector<SGuiElem> leftLines;
-  leftLines.push_back(gui.label("Attributes", Color::YELLOW));
-  leftLines.push_back(drawPlayerLevelButton(minion));
-  for (auto& elem : drawAttributesOnPage(drawPlayerAttributes(minion.attributes)))
-    leftLines.push_back(std::move(elem));
+  auto leftLines = gui.getListBuilder(legendLineHeight);
+  leftLines.addElem(gui.label("Attributes", Color::YELLOW));
+  leftLines.addElemAuto(drawAttributesOnPage(drawPlayerAttributes(minion.attributes)));
   for (auto& elem : drawEffectsList(minion))
-    leftLines.push_back(std::move(elem));
-  leftLines.push_back(gui.empty());
-  leftLines.push_back(gui.label("Activity", Color::YELLOW));
-  leftLines.push_back(drawActivityButton(minion));
-  leftLines.push_back(gui.empty());
-  for (auto& elem : drawSkillsList(minion))
-    leftLines.push_back(std::move(elem));
-  vector<SGuiElem> spells = drawSpellsList(minion, false);
-  if (!spells.empty()) {
-    leftLines.push_back(gui.label("Spells", Color::YELLOW));
-    for (auto& elem : spells) {
-      leftLines.push_back(std::move(elem));
-      leftLines.push_back(gui.empty());
-    }
+    leftLines.addElem(std::move(elem));
+  leftLines.addSpace();
+  if (auto elem = drawTrainingInfo(minion)) {
+    leftLines.addElemAuto(std::move(elem));
+    leftLines.addSpace();
   }
+  leftLines.addElem(gui.label("Activity", Color::YELLOW));
+  leftLines.addElem(drawActivityButton(minion));
+  leftLines.addSpace();
+  for (auto& elem : drawSkillsList(minion))
+    leftLines.addElem(std::move(elem));
+  if (auto spells = drawSpellsList(minion, false))
+    leftLines.addElemAuto(std::move(spells));
   int topMargin = list.getSize() + 20;
   return gui.margin(list.buildVerticalList(),
-      gui.scrollable(gui.verticalList(joinLists(
-          std::move(leftLines),
-          drawEquipmentAndConsumables(minion)), legendLineHeight), &minionPageScroll, &scrollbarsHeld),
+      gui.scrollable(gui.horizontalListFit(makeVec(
+          leftLines.buildVerticalList(),
+          drawEquipmentAndConsumables(minion))), &minionPageScroll, &scrollbarsHeld),
       topMargin, GuiFactory::TOP);
 }
 
@@ -2344,6 +2411,9 @@ static Color getHighlightColor(VillainType type) {
     case VillainType::ALLY:
       return Color::GREEN;
     case VillainType::PLAYER:
+      return Color::WHITE;
+    case VillainType::NONE:
+      FATAL << "Tried to render villain of type NONE";
       return Color::WHITE;
   }
 }
@@ -2690,7 +2760,7 @@ SGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, View::Ca
       gui.window(gui.margins(gui.stack(std::move(interior)), 5), [&queue] { queue.push(CampaignActionId::CANCEL); }));
 }
 
-SGuiElem GuiBuilder::drawCreaturePrompt(SyncQueue<bool>& queue, const string& title,
+SGuiElem GuiBuilder::drawCreatureInfo(SyncQueue<bool>& queue, const string& title, bool prompt,
     const vector<CreatureInfo>& creatures) {
   auto lines = gui.getListBuilder(getStandardLineHeight() + 10);
   lines.addElem(gui.centerHoriz(gui.label(title)));
@@ -2699,7 +2769,7 @@ SGuiElem GuiBuilder::drawCreaturePrompt(SyncQueue<bool>& queue, const string& ti
   for (auto& elem : creatures) {
     line.addElem(gui.stack(
           gui.viewObject(elem.viewId, 2),
-          gui.label(toString(elem.expLevel), 20)));
+          gui.label(toString((int) elem.bestAttack.value), 20)));
     if (line.getSize() >= windowWidth - 50) {
       lines.addElem(gui.centerHoriz(line.buildHorizontalList()), 70);
       line.clear();
@@ -2707,20 +2777,22 @@ SGuiElem GuiBuilder::drawCreaturePrompt(SyncQueue<bool>& queue, const string& ti
   }
   if (!line.isEmpty())
       lines.addElem(gui.centerHoriz(line.buildHorizontalList()), 70);
-  lines.addElem(gui.centerHoriz(gui.getListBuilder()
-        .addElemAuto(gui.stack(
+  auto bottomLine = gui.getListBuilder()
+      .addElemAuto(gui.stack(
           gui.labelHighlight("[Ok]", Color::LIGHT_BLUE),
-          gui.button([&queue] { queue.push(true);})))
-        .addElemAuto(gui.stack(
-          gui.labelHighlight("[Cancel]", Color::LIGHT_BLUE),
-          gui.button([&queue] { queue.push(false);}))).buildHorizontalList()));
+          gui.button([&queue] { queue.push(true);})));
+  if (prompt)
+    bottomLine.addElemAuto(gui.stack(
+        gui.labelHighlight("[Cancel]", Color::LIGHT_BLUE),
+        gui.button([&queue] { queue.push(false);})));
+  lines.addElem(gui.centerHoriz(bottomLine.buildHorizontalList()));
   int margin = 25;
   return gui.setWidth(2 * margin + windowWidth,
       gui.window(gui.margins(lines.buildVerticalList(), margin), [&queue] { queue.push(false); }));
 
 }
 
-SGuiElem GuiBuilder::drawTeamLeaderMenu(SyncQueue<optional<UniqueEntity<Creature>::Id>>& queue, const string& title,
+SGuiElem GuiBuilder::drawChooseCreatureMenu(SyncQueue<optional<UniqueEntity<Creature>::Id>>& queue, const string& title,
       const vector<CreatureInfo>& team, const string& cancelText) {
   auto lines = gui.getListBuilder(getStandardLineHeight() + 10);
   lines.addElem(gui.centerHoriz(gui.label(title)));
@@ -2732,7 +2804,7 @@ SGuiElem GuiBuilder::drawTeamLeaderMenu(SyncQueue<optional<UniqueEntity<Creature
                 gui.icon(gui.HIGHLIGHT, GuiFactory::Alignment::CENTER_STRETCHED, Color::GREEN)))),
           gui.button([&queue, elem] { queue.push(elem.uniqueId); }),
           gui.viewObject(elem.viewId, 2),
-          gui.label(toString(elem.expLevel), 20)));
+          gui.label(toString((int) elem.bestAttack.value), 20)));
     if (line.getSize() >= windowWidth - 50) {
       lines.addElem(gui.centerHoriz(line.buildHorizontalList()), 70);
       line.clear();
@@ -2748,6 +2820,47 @@ SGuiElem GuiBuilder::drawTeamLeaderMenu(SyncQueue<optional<UniqueEntity<Creature
   return gui.setWidth(2 * margin + windowWidth,
       gui.window(gui.margins(lines.buildVerticalList(), margin), [&queue] { queue.push(none); }));
 }
+
+/*SGuiElem GuiBuilder::drawTeamLeaderMenu(SyncQueue<vector<UniqueEntity<Creature>::Id>>& queue, const string& title,
+      const vector<CreatureInfo>& team) {
+  auto lines = gui.getListBuilder(getStandardLineHeight() + 10);
+  lines.addElem(gui.centerHoriz(gui.label(title)));
+  const int windowWidth = 450;
+  auto line = gui.getListBuilder(60);
+  auto result = make_shared<vector<UniqueEntity<Creature>::Id>>();
+  auto toggle = [result] (UniqueEntity<Creature>::Id id) {
+    if (result->contains(id))
+      result->removeElement(id);
+    else
+      result->push_back(id);
+  };
+  for (auto& elem : team) {
+    line.addElem(gui.stack(
+          gui.conditional(gui.bottomMargin(22, gui.rightMargin(6,
+                gui.icon(gui.HIGHLIGHT, GuiFactory::Alignment::CENTER_STRETCHED, Color::GREEN))),
+                [id = elem.uniqueId, result] { return result->contains(id); } ),
+          gui.button([id = elem.uniqueId, toggle] { toggle(id); }),
+          gui.viewObject(elem.viewId, 2),
+          gui.label(toString((int) elem.bestAttack.value), 20)));
+    if (line.getSize() >= windowWidth - 50) {
+      lines.addElem(gui.centerHoriz(line.buildHorizontalList()), 70);
+      line.clear();
+    }
+  }
+  if (!line.isEmpty())
+      lines.addElem(gui.centerHoriz(line.buildHorizontalList()), 70);
+  lines.addElem(gui.centerHoriz(gui.getListBuilder()
+        .addElemAuto(gui.stack(
+            gui.labelHighlight("[Confirm]", Color::LIGHT_BLUE),
+            gui.button([&queue, result] { queue.push(*result);})))
+        .addElemAuto(gui.stack(
+            gui.labelHighlight("[Cancel]", Color::LIGHT_BLUE),
+            gui.button([&queue] { queue.push({});})))
+        .buildHorizontalList()));
+  int margin = 25;
+  return gui.setWidth(2 * margin + windowWidth,
+      gui.window(gui.margins(lines.buildVerticalList(), margin), [&queue] { queue.push({}); }));
+}*/
 
 SGuiElem GuiBuilder::drawHighscorePage(const HighscoreList& page, ScrollPosition *scrollPos) {
   GuiFactory::ListBuilder lines(gui, legendLineHeight);
@@ -2857,4 +2970,20 @@ optional<string> GuiBuilder::getTextInput(const string& title, const string& val
         }
     }
   }
+}
+
+SGuiElem GuiBuilder::drawLevelMap(Semaphore& sem, const CreatureView* view) {
+  auto miniMap = make_shared<MinimapGui>([]{});
+  auto levelBounds = view->getLevel()->getBounds();
+  miniMap->update(levelBounds, view);
+  return gui.preferredSize(630, 630,
+      gui.miniWindow(gui.stack(
+          gui.buttonPos([=, &sem](Rectangle bounds, Vec2 pos) {
+              mapGui->setCenter(levelBounds.width() * pos.x / bounds.width(),
+                  levelBounds.height() * pos.y / bounds.height());
+              sem.v(); }),
+          gui.drawCustom([=](Renderer& r, Rectangle bounds) {
+              miniMap->renderMap(r, bounds);
+          })
+      ), [&sem] { sem.v(); }));
 }

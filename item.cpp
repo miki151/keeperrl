@@ -30,6 +30,8 @@
 #include "item_class.h"
 #include "corpse_info.h"
 #include "equipment.h"
+#include "attr_type.h"
+#include "attack.h"
 
 template <class Archive> 
 void Item::serialize(Archive& ar, const unsigned int version) {
@@ -40,7 +42,7 @@ void Item::serialize(Archive& ar, const unsigned int version) {
 SERIALIZABLE(Item);
 SERIALIZATION_CONSTRUCTOR_IMPL(Item);
 
-Item::Item(const ItemAttributes& attr) : Renderable(ViewObject(*attr.viewId, ViewLayer::ITEM, *attr.name)),
+Item::Item(const ItemAttributes& attr) : Renderable(ViewObject(*attr.viewId, ViewLayer::ITEM, capitalFirst(*attr.name))),
     attributes(attr), fire(*attr.weight, attr.flamability), canEquipCache(!!attributes->equipmentSlot),
     classCache(*attributes->itemClass) {
 }
@@ -49,41 +51,36 @@ Item::~Item() {
 }
 
 ItemPredicate Item::effectPredicate(EffectType type) {
-  return [type](const WItem item) { return item->getEffectType() == type; };
+  return [type](WConstItem item) { return item->getEffectType() == type; };
 }
 
 ItemPredicate Item::classPredicate(ItemClass cl) {
-  return [cl](const WItem item) { return item->getClass() == cl; };
+  return [cl](WConstItem item) { return item->getClass() == cl; };
 }
 
 ItemPredicate Item::equipmentSlotPredicate(EquipmentSlot slot) {
-  return [slot](const WItem item) { return item->canEquip() && item->getEquipmentSlot() == slot; };
+  return [slot](WConstItem item) { return item->canEquip() && item->getEquipmentSlot() == slot; };
 }
 
 ItemPredicate Item::classPredicate(vector<ItemClass> cl) {
-  return [cl](const WItem item) { return cl.contains(item->getClass()); };
+  return [cl](WConstItem item) { return cl.contains(item->getClass()); };
 }
 
 ItemPredicate Item::namePredicate(const string& name) {
-  return [name](const WItem item) { return item->getName() == name; };
+  return [name](WConstItem item) { return item->getName() == name; };
 }
 
 ItemPredicate Item::isRangedWeaponPredicate() {
- return [](const WItem it) { return it->canEquip() && it->getEquipmentSlot() == EquipmentSlot::RANGED_WEAPON;};
+ return [](WConstItem it) { return it->canEquip() && it->getEquipmentSlot() == EquipmentSlot::RANGED_WEAPON;};
 }
 
-vector<pair<string, vector<WItem>>> Item::stackItems(vector<WItem> items, function<string(const WItem)> suffix) {
-  map<string, vector<WItem>> stacks = groupBy<WItem, string>(items, [suffix](const WItem item) {
+vector<vector<WItem>> Item::stackItems(vector<WItem> items, function<string(WConstItem)> suffix) {
+  map<string, vector<WItem>> stacks = groupBy<WItem, string>(items, [suffix](WConstItem item) {
         return item->getNameAndModifiers() + suffix(item);
       });
-  vector<pair<string, vector<WItem>>> ret;
-  for (auto elem : stacks)
-    if (elem.second.size() > 1)
-      ret.emplace_back(
-          toString<int>(elem.second.size()) + " " 
-          + elem.second[0]->getNameAndModifiers(true) + suffix(elem.second[0]), elem.second);
-    else
-      ret.push_back(elem);
+  vector<vector<WItem>> ret;
+  for (auto& elem : stacks)
+    ret.push_back(elem.second);
   return ret;
 }
 
@@ -129,8 +126,8 @@ void Item::tick(Position position) {
 
 void Item::onHitSquareMessage(Position pos, int numItems) {
   if (attributes->fragile) {
-    pos.globalMessage(
-        getPluralTheNameAndVerb(numItems, "crashes", "crash") + " on the " + pos.getName(), "You hear a crash");
+    pos.globalMessage(getPluralTheNameAndVerb(numItems, "crashes", "crash") + " on the " + pos.getName());
+    pos.unseenMessage("You hear a crash");
     discarded = true;
   } else
     pos.globalMessage(getPluralTheNameAndVerb(numItems, "hits", "hit") + " the " + pos.getName());
@@ -145,7 +142,7 @@ void Item::onHitCreature(WCreature c, const Attack& attack, int numItems) {
   if (c->takeDamage(attack))
     return;
   if (attributes->effect && getClass() == ItemClass::POTION) {
-    Effect::applyToCreature(c, *attributes->effect, EffectStrength::NORMAL);
+    Effect::applyToCreature(c, *attributes->effect, EffectStrength::NORMAL, attack.attacker);
   }
 }
 
@@ -206,7 +203,7 @@ void Item::applySpecial(WCreature c) {
   if (attributes->uses > -1 && --attributes->uses == 0) {
     discarded = true;
     if (attributes->usedUpMsg)
-      c->playerMessage(getTheName() + " is used up.");
+      c->privateMessage(getTheName() + " is used up.");
   }
 }
 
@@ -268,7 +265,7 @@ string Item::getName(bool plural, WConstCreature owner) const {
     suff.append(" (burning)");
   if (owner && getShopkeeper(owner))
     suff += " (" + toString(getPrice()) + (plural ? " gold each)" : " gold)");
-  if (owner && owner->isBlind())
+  if (owner && owner->isAffected(LastingEffect::BLIND))
     return getBlindName(plural);
   return getVisibleName(plural) + suff;
 }
@@ -333,33 +330,27 @@ string Item::getModifiers(bool shorten) const {
     if (!shorten)
       artStr = " named " + artStr;
   }
-  EnumSet<ModifierType> printMod;
-  switch (getClass()) {
-    case ItemClass::WEAPON:
-      printMod.insert(ModifierType::ACCURACY);
-      printMod.insert(ModifierType::DAMAGE);
-      break;
-    case ItemClass::ARMOR:
-      printMod.insert(ModifierType::DEFENSE);
-      break;
-    case ItemClass::RANGED_WEAPON:
-    case ItemClass::AMMO:
-      printMod.insert(ModifierType::FIRED_ACCURACY);
-      break;
-    default: break;
-  }
-  if (!shorten)
-    for (auto mod : ENUM_ALL(ModifierType))
-      if (attributes->modifiers[mod] != 0)
-        printMod.insert(mod);
-  vector<string> attrStrings;
-  for (auto mod : printMod)
-    attrStrings.push_back(withSign(attributes->modifiers[mod]) +
-        (shorten ? "" : " " + Creature::getModifierName(mod)));
-  if (!shorten)
+  EnumSet<AttrType> printAttr;
+  if (!shorten) {
     for (auto attr : ENUM_ALL(AttrType))
-      if (attributes->attrs[attr] != 0)
-        attrStrings.push_back(withSign(attributes->attrs[attr]) + " " + Creature::getAttrName(attr));
+      if (attributes->modifiers[attr] != 0)
+        printAttr.insert(attr);
+  } else
+    switch (getClass()) {
+      case ItemClass::RANGED_WEAPON:
+        printAttr.insert(getRangedWeapon()->getDamageAttr());
+        break;
+      case ItemClass::WEAPON:
+        printAttr.insert(attributes->meleeAttackAttr);
+        break;
+      case ItemClass::ARMOR:
+        printAttr.insert(AttrType::DEFENSE);
+        break;
+      default: break;
+    }
+  vector<string> attrStrings;
+  for (auto attr : printAttr)
+    attrStrings.push_back(withSign(attributes->modifiers[attr]) + (shorten ? "" : " " + ::getName(attr)));
   string attrString = combine(attrStrings, true);
   if (!attrString.empty())
     attrString = " (" + attrString + ")";
@@ -369,7 +360,7 @@ string Item::getModifiers(bool shorten) const {
 }
 
 string Item::getShortName(WConstCreature owner, bool noSuffix) const {
-  if (owner && owner->isBlind() && attributes->blindName)
+  if (owner && owner->isAffected(LastingEffect::BLIND) && attributes->blindName)
     return getBlindName(false);
   string name = getModifiers(true);
   if (attributes->shortName)
@@ -411,18 +402,22 @@ EquipmentSlot Item::getEquipmentSlot() const {
   return *attributes->equipmentSlot;
 }
 
-void Item::addModifier(ModifierType type, int value) {
+void Item::addModifier(AttrType type, int value) {
   attributes->modifiers[type] += value;
 }
 
-int Item::getModifier(ModifierType type) const {
-  CHECK(abs(attributes->modifiers[type]) < 10000) << EnumInfo<ModifierType>::getString(type) << " "
+int Item::getModifier(AttrType type) const {
+  CHECK(abs(attributes->modifiers[type]) < 10000) << EnumInfo<AttrType>::getString(type) << " "
       << attributes->modifiers[type] << " " << getName();
   return attributes->modifiers[type];
 }
 
-int Item::getAttr(AttrType type) const {
-  return attributes->attrs[type];
+const optional<RangedWeapon>& Item::getRangedWeapon() const {
+  return attributes->rangedWeapon;
+}
+
+AttrType Item::getMeleeAttackAttr() const {
+  return attributes->meleeAttackAttr;
 }
  
 AttackType Item::getAttackType() const {
