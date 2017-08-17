@@ -6,8 +6,10 @@ endif
 
 CFLAGS = -Wall -std=c++1y -Wno-sign-compare -Wno-unused-variable -Wno-unused-function -Wfatal-errors -Wno-shift-count-overflow -Wno-tautological-constant-out-of-range-compare -Wno-mismatched-tags -ftemplate-depth=512
 
+ifndef CC
 CC = g++
-LD = g++
+endif
+LD = $(CC)
 
 ifndef RELEASE
 CFLAGS += -Werror -Wimplicit-fallthrough
