@@ -2119,14 +2119,6 @@ static MakerQueue* dragonCaveMaker(SettlementInfo info) {
   return queue;
 }
 
-//Huge cavern with a stone floor.
-static MakerQueue* hugeCavernMaker(SettlementInfo info) {
-  MakerQueue* queue = vaultMaker(info, true);
-  queue->addMaker(new Furnitures(Predicate::type(FurnitureType::GRASS), 0.1, *info.furniture));
-  queue->addMaker(new Empty(SquareChange(FurnitureType::GRASS, FurnitureType::FLOOR_STONE2)));
-  return queue;
-}
-
 PLevelMaker LevelMaker::mineTownLevel(RandomGen& random, SettlementInfo info) {
   MakerQueue* queue = new MakerQueue();
   queue->addMaker(new Empty(SquareChange(FurnitureType::FLOOR, FurnitureType::MOUNTAIN)));
@@ -2295,10 +2287,8 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, optional<CreatureFactory> fo
         queue = islandVaultMaker(random, settlement, true);
         break;
       case SettlementType::CAVE:
-        queue = dragonCaveMaker(settlement);
-        break;
       case SettlementType::HUGE_CAVERN:
-        queue = hugeCavernMaker(settlement);
+        queue = dragonCaveMaker(settlement);
         break;
       case SettlementType::SPIDER_CAVE:
         queue = spiderCaveMaker(settlement);
