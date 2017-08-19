@@ -628,9 +628,10 @@ void Game::addEvent(const GameEvent& event) {
   for (Vec2 v : models.getBounds())
     if (models[v])
       models[v]->addEvent(event);
-  switch (event.getId()) {
-    case EventId::CONQUERED_ENEMY: {
-        WCollective col = event.get<WCollective>();
+  using namespace EventInfo;
+  event.visit(
+      [&](const ConqueredEnemy& info) {
+        WCollective col = info.collective;
         if (col->getVillainType() != VillainType::NONE) {
           Vec2 coords = getModelCoords(col->getModel());
           if (!campaign->isDefeated(coords)) {
@@ -642,11 +643,10 @@ void Game::addEvent(const GameEvent& event) {
           }
         }
         if (col->getVillainType() == VillainType::MAIN && gameWon()) {
-          addEvent(EventId::WON_GAME);
+          addEvent(WonGame{});
         }
-      }
-      break;
-    default:break;
-  }
+      },
+      [&](const auto&) {}
+  );
 }
 

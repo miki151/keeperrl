@@ -70,6 +70,10 @@ PLevel Level::create(SquareArray s, FurnitureArray f, WModel m, const string& n,
     square->onAddedToLevel(Position(pos, ret.get()));
     if (optional<StairKey> link = square->getLandingLink())
       ret->landingSquares[*link].push_back(Position(pos, ret.get()));
+    for (auto layer : ENUM_ALL(FurnitureLayer))
+      if (auto f = ret->furniture->getBuilt(layer).getReadonly(pos))
+        if (f->isTicking())
+          ret->addTickingFurniture(pos);
   }
   for (VisionId vision : ENUM_ALL(VisionId))
     (*ret->fieldOfView)[vision] = FieldOfView(ret.get(), vision);
@@ -158,6 +162,8 @@ void Level::updateVisibility(Vec2 changedSquare) {
       if (c->isDarknessSource())
         addDarknessSource(pos, darknessRadius, 1);
   }
+  for (Vec2 pos : getVisibleTilesNoDarkness(changedSquare, VisionId::NORMAL))
+    getModel()->addEvent(EventInfo::VisibilityChanged{Position(pos, this)});
 }
 
 vector<WCreature> Level::getPlayers() const {
@@ -297,18 +303,18 @@ void Level::throwItem(vector<PItem> item, const Attack& attack, int maxDist, Vec
   for (Vec2 v = position + direction; inBounds(v); v += direction) {
     trajectory.push_back(v);
     Position pos(v, this);
-    if (!pos.canSeeThru(vision)) {
+    if (pos.stopsProjectiles(vision)) {
       item[0]->onHitSquareMessage(Position(v, this), item.size());
       trajectory.pop_back();
-      getGame()->addEvent({EventId::PROJECTILE,
-          EventInfo::Projectile{item[0]->getViewObject().id(), Position(position, this), pos.minus(direction)}});
+      getGame()->addEvent(
+          EventInfo::Projectile{item[0]->getViewObject().id(), Position(position, this), pos.minus(direction)});
       if (!item[0]->isDiscarded())
         pos.minus(direction).dropItems(std::move(item));
       return;
     }
     if (++cnt > maxDist || getSafeSquare(v)->getCreature()) {
-      getGame()->addEvent({EventId::PROJECTILE,
-          EventInfo::Projectile{item[0]->getViewObject().id(), Position(position, this), pos}});
+      getGame()->addEvent(
+          EventInfo::Projectile{item[0]->getViewObject().id(), Position(position, this), pos});
       modSafeSquare(v)->onItemLands(Position(v, this), std::move(item), attack, maxDist - cnt - 1, direction,
           vision);
       return;
@@ -421,7 +427,7 @@ void Level::swapCreatures(WCreature c1, WCreature c2) {
   placeCreature(c2, pos1);
 }
 
-vector<Vec2> Level::getVisibleTilesNoDarkness(Vec2 pos, VisionId vision) const {
+const vector<Vec2>& Level::getVisibleTilesNoDarkness(Vec2 pos, VisionId vision) const {
   return getFieldOfView(vision).getVisibleTiles(pos);
 }
 

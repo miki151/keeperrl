@@ -746,90 +746,74 @@ void Collective::onKillCancelled(WCreature c) {
 }
 
 void Collective::onEvent(const GameEvent& event) {
-  switch (event.getId()) {
-    case EventId::ALARM: {
-      Position pos = event.get<Position>();
-      static const int alarmTime = 100;
-      if (getTerritory().contains(pos)) {
-        control->addMessage(PlayerMessage("An alarm goes off.", MessagePriority::HIGH).setPosition(pos));
-        alarmInfo = AlarmInfo {getGlobalTime() + alarmTime, pos };
-        for (WCreature c : byTrait[MinionTrait::FIGHTER])
-          if (c->isAffected(LastingEffect::SLEEP))
-            c->removeEffect(LastingEffect::SLEEP);
-      }
-      break;
-    }
-    case EventId::KILLED: {
-      WCreature victim = event.get<EventInfo::Attacked>().victim;
-      WCreature killer = event.get<EventInfo::Attacked>().attacker;
-      if (creatures.contains(victim))
-        onMinionKilled(victim, killer);
-      if (creatures.contains(killer))
-        onKilledSomeone(killer, victim);
-      break;
-    }
-    case EventId::TORTURED:
-      if (creatures.contains(event.get<EventInfo::Attacked>().attacker))
-        returnResource({ResourceId::MANA, 1});
-      break;
-    case EventId::SURRENDERED: {
-      WCreature victim = event.get<EventInfo::Attacked>().victim;
-      WCreature attacker = event.get<EventInfo::Attacked>().attacker;
-      if (getCreatures().contains(attacker) && !getCreatures().contains(victim) &&
-          victim->getBody().isHumanoid())
-        surrendering.insert(victim);
-      break;
-    }
-    case EventId::TRAP_TRIGGERED: {
-      Position pos = event.get<Position>();
-      if (constructions->containsTrap(pos)) {
-        constructions->getTrap(pos).reset();
-        if (constructions->getTrap(pos).getType() == TrapType::SURPRISE)
-          handleSurprise(pos);
-      }
-      break;
-    }
-    case EventId::TRAP_DISARMED: {
-      Position pos = event.get<EventInfo::TrapDisarmed>().position;
-      WCreature who = event.get<EventInfo::TrapDisarmed>().creature;
-      if (constructions->containsTrap(pos)) {
-        control->addMessage(PlayerMessage(who->getName().a() + " disarms a "
-              + getTrapName(constructions->getTrap(pos).getType()) + " trap.",
-              MessagePriority::HIGH).setPosition(pos));
-        constructions->getTrap(pos).reset();
-      }
-      break;
-    }
-    case EventId::FURNITURE_DESTROYED: {
-      auto info = event.get<EventInfo::FurnitureEvent>();
-      constructions->onFurnitureDestroyed(info.position, info.layer);
-      tileEfficiency->update(info.position);
-      break;
-    }
-    case EventId::CONQUERED_ENEMY: {
-      WCollective col = event.get<WCollective>();
-      if (col->isDiscoverable())
-        if (auto enemyId = col->getEnemyId()) {
-          if (auto& name = col->getName())
-            control->addMessage(PlayerMessage("The tribe of " + name->full + " is destroyed.",
-                MessagePriority::CRITICAL));
-          else
-            control->addMessage(PlayerMessage("An unnamed tribe is destroyed.", MessagePriority::CRITICAL));
-          if (!conqueredVillains.count(*enemyId)) {
-            auto mana = config->getManaForConquering(col->getVillainType());
-            addMana(mana);
-            control->addMessage(PlayerMessage("You feel a surge of power (+" + toString(mana) + " mana)",
-                MessagePriority::CRITICAL));
-            conqueredVillains.insert(*enemyId);
-          } else
-            control->addMessage(PlayerMessage("Note: mana is only rewarded once per each kind of enemy.",
-                MessagePriority::CRITICAL));
+  using namespace EventInfo;
+  event.visit(
+      [&](const Alarm& info) {
+        static const int alarmTime = 100;
+        if (getTerritory().contains(info.pos)) {
+          control->addMessage(PlayerMessage("An alarm goes off.", MessagePriority::HIGH).setPosition(info.pos));
+          alarmInfo = AlarmInfo {getGlobalTime() + alarmTime, info.pos };
+          for (WCreature c : byTrait[MinionTrait::FIGHTER])
+            if (c->isAffected(LastingEffect::SLEEP))
+              c->removeEffect(LastingEffect::SLEEP);
         }
-      break;
-    }
-    default:
-      break;
-  }
+      },
+      [&](const CreatureKilled& info) {
+        if (creatures.contains(info.victim))
+          onMinionKilled(info.victim, info.attacker);
+        if (creatures.contains(info.attacker))
+          onKilledSomeone(info.attacker, info.victim);
+      },
+      [&](const CreatureTortured& info) {
+        if (creatures.contains(info.torturer))
+          returnResource({ResourceId::MANA, 1});
+      },
+      [&](const CreatureSurrendered& info) {
+        if (getCreatures().contains(info.attacker) && !getCreatures().contains(info.victim) &&
+            info.victim->getBody().isHumanoid())
+          surrendering.insert(info.victim);
+      },
+      [&](const TrapTriggered& info) {
+        if (constructions->containsTrap(info.pos)) {
+          constructions->getTrap(info.pos).reset();
+          if (constructions->getTrap(info.pos).getType() == TrapType::SURPRISE)
+            handleSurprise(info.pos);
+        }
+      },
+      [&](const TrapDisarmed& info) {
+        if (constructions->containsTrap(info.pos)) {
+          control->addMessage(PlayerMessage(info.creature->getName().a() + " disarms a "
+                + getTrapName(constructions->getTrap(info.pos).getType()) + " trap.",
+                MessagePriority::HIGH).setPosition(info.pos));
+          constructions->getTrap(info.pos).reset();
+        }
+      },
+      [&](const FurnitureDestroyed& info) {
+        constructions->onFurnitureDestroyed(info.position, info.layer);
+        tileEfficiency->update(info.position);
+      },
+      [&](const ConqueredEnemy& info) {
+        auto col = info.collective;
+        if (col->isDiscoverable())
+          if (auto enemyId = col->getEnemyId()) {
+            if (auto& name = col->getName())
+              control->addMessage(PlayerMessage("The tribe of " + name->full + " is destroyed.",
+                  MessagePriority::CRITICAL));
+            else
+              control->addMessage(PlayerMessage("An unnamed tribe is destroyed.", MessagePriority::CRITICAL));
+            if (!conqueredVillains.count(*enemyId)) {
+              auto mana = config->getManaForConquering(col->getVillainType());
+              addMana(mana);
+              control->addMessage(PlayerMessage("You feel a surge of power (+" + toString(mana) + " mana)",
+                  MessagePriority::CRITICAL));
+              conqueredVillains.insert(*enemyId);
+            } else
+              control->addMessage(PlayerMessage("Note: mana is only rewarded once per each kind of enemy.",
+                  MessagePriority::CRITICAL));
+          }
+      },
+      [&](const auto&) {}
+  );
 }
 
 void Collective::onPositionDiscovered(Position pos) {
@@ -855,7 +839,7 @@ void Collective::onMinionKilled(WCreature victim, WCreature killer) {
   bool fighterKilled = hasTrait(victim, MinionTrait::FIGHTER) || victim == getLeader();
   removeCreature(victim);
   if (isConquered() && fighterKilled)
-    getGame()->addEvent({EventId::CONQUERED_ENEMY, this});
+    getGame()->addEvent(EventInfo::ConqueredEnemy{this});
 }
 
 void Collective::onKilledSomeone(WCreature killer, WCreature victim) {
@@ -1101,13 +1085,14 @@ void Collective::removeFurniture(Position pos, FurnitureLayer layer) {
 }
 
 void Collective::destroySquare(Position pos, FurnitureLayer layer) {
-  if (auto furniture = pos.modFurniture(layer))
-    if (furniture->getTribe() == getTribeId()) {
-      furniture->destroy(pos, DestroyAction::Type::BASH);
-      tileEfficiency->update(pos);
-    }
-  if (constructions->containsFurniture(pos, layer))
+  if (constructions->containsFurniture(pos, layer)) {
+    if (auto furniture = pos.modFurniture(layer))
+      if (furniture->getTribe() == getTribeId()) {
+        furniture->destroy(pos, DestroyAction::Type::BASH);
+        tileEfficiency->update(pos);
+      }
     removeFurniture(pos, layer);
+  }
   if (layer != FurnitureLayer::FLOOR) {
     zones->eraseZones(pos);
     if (constructions->containsTrap(pos))
@@ -1116,9 +1101,9 @@ void Collective::destroySquare(Position pos, FurnitureLayer layer) {
 }
 
 void Collective::addFurniture(Position pos, FurnitureType type, const CostInfo& cost, bool noCredit) {
-  if (type == FurnitureType::MOUNTAIN && (pos.isChokePoint({MovementTrait::WALK}) ||
+  /*if (type == FurnitureType::MOUNTAIN && (pos.isChokePoint({MovementTrait::WALK}) ||
         constructions->getTotalCount(type) - constructions->getBuiltCount(type) > 0))
-    return;
+    return;*/
   if (!noCredit || hasResource(cost)) {
     constructions->addFurniture(pos, ConstructionMap::FurnitureInfo(type, cost));
     updateConstructions();
@@ -1215,7 +1200,7 @@ void Collective::onDestructed(Position pos, FurnitureType type, const DestroyAct
     default:
       break;
   }
-  control->onDestructed(pos, action);
+  control->onDestructed(pos, type, action);
 }
 
 void Collective::handleTrapPlacementAndProduction() {
@@ -1422,6 +1407,9 @@ void Collective::onAppliedSquare(WCreature c, Position pos) {
         case FurnitureUsageType::STUDY:
           increaseLevel(ExperienceType::SPELL);
           break;
+        case FurnitureUsageType::ARCHERY_RANGE:
+          increaseLevel(ExperienceType::ARCHERY);
+          break;
         default:
           break;
       }
@@ -1499,7 +1487,7 @@ void Collective::onRansomPaid() {
 void Collective::onExternalEnemyKilled(const std::string& name) {
   control->addMessage(PlayerMessage("You resisted the attack of " + name + ".",
       MessagePriority::CRITICAL));
-  int mana = 50;
+  int mana = 100;
   addMana(mana);
   control->addMessage(PlayerMessage("You feel a surge of power (+" + toString(mana) + " mana)",
       MessagePriority::CRITICAL));

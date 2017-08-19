@@ -20,6 +20,7 @@
 #include "creature_attributes.h"
 #include "body.h"
 #include "collective.h"
+#include "equipment.h"
 
 bool MinionTaskMap::canChooseRandomly(WConstCreature c, MinionTask t) const {
   switch (t) {
@@ -49,6 +50,9 @@ bool MinionTaskMap::isAvailable(WConstCollective col, WConstCreature c, MinionTa
       return !c->getAttributes().isTrainingMaxedOut(ExperienceType::MELEE);
     case MinionTask::STUDY:
       return !c->getAttributes().isTrainingMaxedOut(ExperienceType::SPELL);
+    case MinionTask::ARCHERY:
+      return !c->getAttributes().isTrainingMaxedOut(ExperienceType::ARCHERY) &&
+          !c->getEquipment().getItems(ItemIndex::RANGED_WEAPON).empty();
     case MinionTask::BE_WHIPPED:
       return !c->getBody().isImmuneTo(LastingEffect::ENTANGLED) &&
           !c->getBody().isMinionFood() &&

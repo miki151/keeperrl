@@ -56,7 +56,7 @@ void Square::putCreature(WCreature c) {
   setCreature(c);
   onEnter(c);
   if (WGame game = c->getGame())
-    game->addEvent({EventId::MOVED, c});
+    game->addEvent(EventInfo::CreatureMoved{c});
 }
 
 void Square::setLandingLink(StairKey key) {

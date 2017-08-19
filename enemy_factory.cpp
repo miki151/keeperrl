@@ -84,6 +84,18 @@ EnemyInfo EnemyFactory::get(EnemyId id){
 
 EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
   switch (enemyId) {
+     case EnemyId::UNICORN_HERD:
+      return EnemyInfo(CONSTRUCT(SettlementInfo,
+            c.type = SettlementType::FOREST;
+            c.creatures = CreatureFactory::singleType(TribeId::getMonster(), CreatureId::UNICORN);
+            c.stockpiles = LIST({StockpileInfo::GOLD, 100});
+            c.numCreatures = random.get(10, 15);
+            c.tribe = TribeId::getMonster();
+            c.race = "unicorns"_s;
+            c.buildingId = BuildingId::WOOD;),
+          CollectiveConfig::withImmigrants(200, 15, {
+              ImmigrantInfo(CreatureId::UNICORN, {MinionTrait::FIGHTER}).setFrequency(1),
+          })); 
     case EnemyId::ANTS_CLOSED:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::ANT_NEST;
@@ -122,15 +134,16 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             }));
     case EnemyId::DEMON_DEN_ABOVE:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
+            c.type = SettlementType::VILLAGE;
             c.tribe = TribeId::getWildlife();
             c.creatures = CreatureFactory::demonDenAbove(c.tribe);
-            c.buildingId = BuildingId::DUNGEON;
+            c.buildingId = BuildingId::DUNGEON_SURFACE;
             c.numCreatures = random.get(2, 3);
             c.locationName = "Darkshrine Town"_s;
             c.race = "ghosts"_s;
             c.furniture = FurnitureFactory::dungeonOutside(c.tribe);
-            c.outsideFeatures = FurnitureFactory::dungeonOutside(c.tribe);),
-            CollectiveConfig::noImmigrants());
+            ),
+            CollectiveConfig::noImmigrants()).setNonDiscoverable();
     case EnemyId::DEMON_DEN:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.tribe = TribeId::getMonster();
@@ -695,7 +708,7 @@ vector<EnemyEvent> EnemyFactory::getExternalEnemies() {
     }
   };
   vector<EnemyEvent> ret;
-  for (int i : Range(100))
-    ret.push_back(EnemyEvent ( enemies[0], Range::singleElem(400 * (i + 2)), i * 2 ));
+  for (int i : Range(500))
+    ret.push_back(EnemyEvent ( enemies[0], Range::singleElem(600 * (i + 2)), i * 4 ));
   return ret;
 }

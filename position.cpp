@@ -631,9 +631,42 @@ void Position::updateSupport() const {
 bool Position::canNavigate(const MovementType& type) const {
   optional<FurnitureLayer> ignore;
   if (auto furniture = getFurniture(FurnitureLayer::MIDDLE))
-    if (furniture->canDestroy(type, DestroyAction::Type::BASH))
-      ignore = FurnitureLayer::MIDDLE;
+    for (DestroyAction action : type.getDestroyActions())
+      if (furniture->canDestroy(type, action))
+        ignore = FurnitureLayer::MIDDLE;
   return canEnterEmpty(type, ignore);
+}
+
+optional<DestroyAction> Position::getBestDestroyAction(const MovementType& movement) const {
+  if (canEnterEmpty(movement, FurnitureLayer::MIDDLE)) {
+    auto furniture = getFurniture(FurnitureLayer::MIDDLE);
+    optional<double> strength;
+    optional<DestroyAction> bestAction;
+    for (DestroyAction action : movement.getDestroyActions()) {
+      if (furniture->canDestroy(movement, action)) {
+        double thisStrength = *furniture->getStrength(action);
+        if (!strength || thisStrength < *strength) {
+          strength = thisStrength;
+          bestAction = action;
+        }
+      }
+    }
+    return bestAction;
+  }
+  return none;
+}
+
+optional<double> Position::getNavigationCost(const MovementType& movement) const {
+  if (canEnterEmpty(movement)) {
+    if (getCreature())
+      return 5.0;
+    else
+      return 1.0;
+  }
+  if (auto furniture = getFurniture(FurnitureLayer::MIDDLE))
+    if (auto destroyAction = getBestDestroyAction(movement))
+      return *furniture->getStrength(*destroyAction) / 10;
+  return none;
 }
 
 bool Position::canSeeThru(VisionId id) const {
@@ -643,11 +676,18 @@ bool Position::canSeeThru(VisionId id) const {
     return isValid();
 }
 
-bool Position::isVisibleBy(WConstCreature c) {
+bool Position::stopsProjectiles(VisionId id) const {
+  if (auto furniture = getFurniture(FurnitureLayer::MIDDLE))
+    return furniture->stopsProjectiles(id);
+  else
+    return !isValid();
+}
+
+bool Position::isVisibleBy(WConstCreature c) const {
   return isValid() && level->canSee(c, coord);
 }
 
-void Position::clearItemIndex(ItemIndex index) {
+void Position::clearItemIndex(ItemIndex index) const {
   if (isValid())
     modSquare()->clearItemIndex(index);
 }

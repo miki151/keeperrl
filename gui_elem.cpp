@@ -24,6 +24,7 @@
 #include "scroll_position.h"
 #include "keybinding_map.h"
 #include "player_role_choice.h"
+#include "attr_type.h"
 
 #include "sdl.h"
 
@@ -2333,10 +2334,27 @@ void GuiFactory::loadFreeImages(const DirectoryPath& path) {
   const int tabIconWidth = 42;
   for (int i = 0; i < 8; ++i)
     iconTextures.push_back(Texture(path.file("icons.png"), 0, i * tabIconWidth, tabIconWidth, tabIconWidth));
-  const int statIconWidth = 18;
-  for (int i = 0; i < 6; ++i)
-    iconTextures.push_back(Texture(path.file("stat_icons.png"),
-          i * statIconWidth, 0, statIconWidth, statIconWidth));
+  auto addAttr = [&](AttrType attr, Vec2 pos) {
+    const int width = 18;
+    attrTextures.emplace(make_pair(attr,
+        Texture(path.file("stat_icons.png"), pos.x * width, pos.y * width, width, width)));
+  };
+  auto getAttrCoord = [&] (AttrType attr) {
+    switch (attr) {
+      case AttrType::DAMAGE:
+        return Vec2(0, 0);
+      case AttrType::DEFENSE:
+        return Vec2(1, 0);
+      case AttrType::SPELL_DAMAGE:
+        return Vec2(0, 1);
+      case AttrType::RANGED_DAMAGE:
+        return Vec2(1, 1);
+      case AttrType::SPEED:
+        return Vec2(2, 1);
+    }
+  };
+  for (auto attr : ENUM_ALL(AttrType))
+    addAttr(attr, getAttrCoord(attr));
   const int moraleIconWidth = 16;
   for (int i = 0; i < 4; ++i)
     iconTextures.push_back(Texture(path.file("morale_icons.png"),
@@ -2345,10 +2363,55 @@ void GuiFactory::loadFreeImages(const DirectoryPath& path) {
   for (int i = 0; i < 2; ++i)
     iconTextures.push_back(Texture(path.file("team_icons.png"),
           0, i * teamIconWidth, teamIconWidth, teamIconWidth));
-  const int spellIconWidth = 40;
+  auto addSpell = [&](SpellId id, Vec2 pos) {
+    const int width = 40;
+    spellTextures.emplace(make_pair(id,
+        Texture(path.file("spells.png"), pos.x * width, pos.y * width, width, width)));
+  };
+  auto getSpellCoord = [&] (SpellId id) {
+    switch (id) {
+      case SpellId::HEAL_SELF:
+        return Vec2(1, 3);
+      case SpellId::SUMMON_INSECTS:
+        return Vec2(0, 1);
+      case SpellId::DECEPTION:
+        return Vec2(0, 2);
+      case SpellId::SPEED_SELF:
+        return Vec2(0, 3);
+      case SpellId::DAM_BONUS:
+        return Vec2(1, 5);
+      case SpellId::DEF_BONUS:
+        return Vec2(1, 6);
+      case SpellId::FIRE_SPHERE_PET:
+        return Vec2(0, 6);
+      case SpellId::TELEPORT:
+        return Vec2(0, 7);
+      case SpellId::INVISIBILITY:
+        return Vec2(0, 8);
+      case SpellId::CIRCULAR_BLAST:
+        return Vec2(1, 2);
+      case SpellId::BLAST:
+        return Vec2(0, 15);
+      case SpellId::PORTAL:
+        return Vec2(0, 10);
+      case SpellId::SUMMON_SPIRIT:
+        return Vec2(0, 11);
+      case SpellId::CURE_POISON:
+        return Vec2(0, 12);
+      case SpellId::METEOR_SHOWER:
+        return Vec2(0, 13);
+      case SpellId::MAGIC_MISSILE:
+        return Vec2(1, 1);
+      case SpellId::STUN_RAY:
+        return Vec2(0, 16);
+      case SpellId::SUMMON_ELEMENT:
+        return Vec2(1, 0);
+      case SpellId::HEAL_OTHER:
+        return Vec2(1, 4);
+    }
+  };
   for (SpellId id : ENUM_ALL(SpellId))
-    spellTextures.push_back(Texture(path.file("spells.png"),
-          0, int(id) * spellIconWidth, spellIconWidth, spellIconWidth));
+    addSpell(id, getSpellCoord(id));
 }
 
 void GuiFactory::loadNonFreeImages(const DirectoryPath& path) {
@@ -2365,10 +2428,6 @@ void GuiFactory::loadNonFreeImages(const DirectoryPath& path) {
     textures.emplace(TexId::MENU_CORE, path.file("menu_core_sm.png"));
     textures.emplace(TexId::MENU_MOUTH, path.file("menu_mouth_sm.png"));
   }
-}
-
-Texture& GuiFactory::getIconTex(IconId id) {
-  return iconTextures[id];
 }
 
 SGuiElem GuiFactory::getScrollbar() {
@@ -2583,11 +2642,15 @@ SGuiElem GuiFactory::background(SGuiElem content, Color color) {
 }
 
 SGuiElem GuiFactory::icon(IconId id, Alignment alignment, Color color) {
-  return sprite(getIconTex(id), alignment, color);
+  return sprite(iconTextures[(int) id], alignment, color);
+}
+
+SGuiElem GuiFactory::icon(AttrType attr) {
+  return sprite(attrTextures.at(attr), Alignment::CENTER, Color::WHITE);
 }
 
 SGuiElem GuiFactory::spellIcon(SpellId id) {
-  return sprite(spellTextures[int(id)], Alignment::CENTER);
+  return sprite(spellTextures.at(id), Alignment::CENTER);
 }
 
 static int trans1 = 1094;

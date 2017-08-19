@@ -38,10 +38,10 @@ void FurnitureEntry::handle(WFurniture f, WCreature c) {
               if (!type.spiderWeb)
                 c->you(MsgType::TRIGGER_TRAP, "");
               Effect::applyToCreature(c, type.effect, EffectStrength::NORMAL);
-              position.getGame()->addEvent({EventId::TRAP_TRIGGERED, c->getPosition()});
+              position.getGame()->addEvent(EventInfo::TrapTriggered{c->getPosition()});
             } else {
               c->you(MsgType::DISARM_TRAP, Effect::getName(type.effect) + " trap");
-              position.getGame()->addEvent({EventId::TRAP_DISARMED, EventInfo::TrapDisarmed{c->getPosition(), c}});
+              position.getGame()->addEvent(EventInfo::TrapDisarmed{c->getPosition(), c});
             }
             position.removeFurniture(f);
           }

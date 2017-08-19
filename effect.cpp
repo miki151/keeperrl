@@ -219,7 +219,7 @@ static void acid(WCreature c) {
 }
 
 static void alarm(WCreature c) {
-  c->getGame()->addEvent({EventId::ALARM, c->getPosition()});
+  c->getGame()->addEvent(EventInfo::Alarm{c->getPosition()});
 }
 
 static void teleEnemies(WCreature c) { // handled by Collective
@@ -451,8 +451,7 @@ void Effect::applyDirected(WCreature c, Vec2 direction, const DirEffectType& typ
   auto begin = c->getPosition();
   int range = type.getRange();
   if (auto projectile = getProjectile(type))
-    c->getGame()->addEvent({EventId::PROJECTILE,
-        EventInfo::Projectile{*projectile, begin, begin.plus(direction * range)}});
+    c->getGame()->addEvent(EventInfo::Projectile{*projectile, begin, begin.plus(direction * range)});
   switch (type.getId()) {
     case DirEffectId::BLAST:
       for (Vec2 v = direction * range; v.length4() >= 1; v -= direction)

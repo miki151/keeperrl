@@ -1104,6 +1104,13 @@ class EnumSet {
   public:
   EnumSet() {}
 
+  template <typename Fun>
+  explicit EnumSet(Fun f) {
+    for (T t : EnumAll<T>())
+      if (f(t))
+        insert(t);
+  }
+
   EnumSet(initializer_list<T> il) {
     for (auto elem : il)
       insert(elem);

@@ -432,19 +432,17 @@ class ShopkeeperController : public Monster, public EventListener<ShopkeeperCont
   }
   
   void onEvent(const GameEvent& event) {
-    switch (event.getId()) {
-      case EventId::ITEMS_APPEARED: {
-          auto info = event.get<EventInfo::ItemsAppeared>();
+    using namespace EventInfo;
+    event.visit(
+        [&](const ItemsAppeared& info) {
           if (isShopPosition(info.position)) {
-           for (auto& it : info.items) {
-             it->setShopkeeper(getCreature());
-             info.position.clearItemIndex(ItemIndex::FOR_SALE);
-           }
-         }
-        }
-        break;
-      case EventId::PICKED_UP: {
-          auto info = event.get<EventInfo::ItemsHandled>();
+            for (auto& it : info.items) {
+              it->setShopkeeper(getCreature());
+              info.position.clearItemIndex(ItemIndex::FOR_SALE);
+            }
+          }
+        },
+        [&](const ItemsPickedUp& info) {
           if (isShopPosition(info.creature->getPosition())) {
             for (auto& item : info.items)
               if (item->isShopkeeper(getCreature())) {
@@ -452,10 +450,8 @@ class ShopkeeperController : public Monster, public EventListener<ShopkeeperCont
                 debtors.insert(info.creature);
               }
           }
-        }
-        break;
-      case EventId::DROPPED: {
-          auto info = event.get<EventInfo::ItemsHandled>();
+        },
+        [&](const ItemsDropped& info) {
           if (isShopPosition(info.creature->getPosition())) {
             for (auto& item : info.items)
               if (item->isShopkeeper(getCreature())) {
@@ -464,11 +460,9 @@ class ShopkeeperController : public Monster, public EventListener<ShopkeeperCont
                   debtors.erase(info.creature);
               }
           }
-        }
-        break;
-      default:
-        break;
-    }
+        },
+        [&](const auto&) {}
+    );
   }
 
   template <class Archive>
@@ -526,7 +520,8 @@ class IllusionController : public DoNothingController {
   virtual void onBump(WCreature c) override {
     c->attack(getCreature(), none).perform(c);
     getCreature()->message("It was just an illusion!");
-    getCreature()->dieNoReason();
+    if (!getCreature()->isDead()) // so check necessary, as most likely was killed in attack 2 lines above
+      getCreature()->dieNoReason();
   }
 
   virtual void makeMove() override {
@@ -1063,6 +1058,28 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.maxLevelIncrease[ExperienceType::SPELL] = 8;
           c.maxLevelIncrease[ExperienceType::ARCHERY] = 8;
       );
+    case CreatureId::UNICORN:
+      return CATTR(
+        c.viewId = ViewId::UNICORN;
+        c.attr = LIST(20_dam, 20_def, 20_spell_dam, 200_spd );
+        c.body = Body::nonHumanoid(Body::Size::LARGE).setWeight(500).setHorseBodyParts();
+        //Ideally, you should club them to death or chop them up with a sword.
+        c.permanentEffects[LastingEffect::RANGED_RESISTANCE] = 1;
+        c.permanentEffects[LastingEffect::MAGIC_RESISTANCE] = 1;
+        c.barehandedAttack = AttackType::HIT;
+        c.courage = 100;
+        //They heal up and summon friends.
+        c.spells->add(SpellId::HEAL_SELF);
+        c.spells->add(SpellId::HEAL_OTHER);
+        c.spells->add(SpellId::SUMMON_SPIRIT);
+        c.chatReactionFriendly = "\"mhhhhhrrrr!\""_s;
+        c.chatReactionHostile = "\"mhhhhhrrrr!\""_s;
+        c.name = "unicorn";
+        //Pet names like dogs would have.
+        c.name->setFirst(NameGenerator::get(NameGeneratorId::DOG)->getNext());
+        c.name->setGroup("herd");
+        c.animal = true;
+        );
     case CreatureId::BANDIT:
       return CATTR(
           c.viewId = ViewId::BANDIT;
@@ -1902,6 +1919,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.viewId = ViewId::ANT_SOLDIER;
           c.attr = LIST(36_dam, 20_def, 130_spd );
           c.attackEffect = EffectType(EffectId::LASTING, LastingEffect::POISON);
+          c.skills.insert(SkillId::DIGGING);
           c.body = Body::nonHumanoid(Body::Size::MEDIUM)
               .setWeight(10)
               .setBodyParts({{BodyPart::LEG, 6}, {BodyPart::HEAD, 1}, {BodyPart::TORSO, 1}})

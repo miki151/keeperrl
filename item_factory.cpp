@@ -296,7 +296,7 @@ class TechBook : public Item {
 
   virtual void applySpecial(WCreature c) override {
     if (!read || !!tech) {
-      c->getGame()->addEvent({EventId::TECHBOOK_READ, tech ? Technology::get(*tech) : nullptr});
+      c->getGame()->addEvent(EventInfo::TechbookRead{tech ? Technology::get(*tech) : nullptr});
       read = true;
     }
   }
@@ -885,6 +885,26 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.twoHanded = true;
             i.price = 4;
             i.attackType = AttackType::CRUSH;);
+    case ItemId::WOODEN_STAFF: return ITATTR(
+            i.viewId = ViewId::WOODEN_STAFF;
+            i.name = "wooden staff";
+            i.itemClass = ItemClass::WEAPON;
+            i.equipmentSlot = EquipmentSlot::WEAPON;
+            i.weight = 1.5;
+            i.modifiers[AttrType::SPELL_DAMAGE] = 4 + maybePlusMinusOne(4);
+            i.meleeAttackAttr = AttrType::SPELL_DAMAGE;
+            i.price = 30;
+            i.attackType = AttackType::SPELL;);
+    case ItemId::IRON_STAFF: return ITATTR(
+            i.viewId = ViewId::IRON_STAFF;
+            i.name = "iron staff";
+            i.itemClass = ItemClass::WEAPON;
+            i.equipmentSlot = EquipmentSlot::WEAPON;
+            i.weight = 1.5;
+            i.modifiers[AttrType::SPELL_DAMAGE] = 8 + maybePlusMinusOne(4);
+            i.meleeAttackAttr = AttrType::SPELL_DAMAGE;
+            i.price = 60;
+            i.attackType = AttackType::SPELL;);
     case ItemId::SCYTHE: return ITATTR(
             i.viewId = ViewId::SWORD;
             i.name = "scythe";

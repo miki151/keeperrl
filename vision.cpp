@@ -18,7 +18,6 @@ bool Vision::canSeeAt(double light, double distance) const {
 }
 
 void Vision::update(WConstCreature c) {
-  auto& skills = c->getAttributes().getSkills();
   nightVision = c->isAffected(LastingEffect::NIGHT_VISION);
   if (c->isAffected(LastingEffect::ELF_VISION) || c->isAffected(LastingEffect::FLYING))
     id = VisionId::ELF;

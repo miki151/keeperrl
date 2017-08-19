@@ -189,7 +189,7 @@ const char* ViewObject::getDefaultDescription() const {
     case ViewId::WHIPPING_POST: return "Whipping post";
     case ViewId::NOTICE_BOARD: return "Message board";
     case ViewId::SOKOBAN_HOLE: return "Hole";
-    case ViewId::RITUAL_ROOM: return "Demon shrine";
+    case ViewId::DEMON_SHRINE: return "Demon shrine";
     case ViewId::IMPALED_HEAD: return "Impaled head";
     case ViewId::EYEBALL: return "Eyeball";
     case ViewId::BOOKCASE_WOOD: return "Wooden bookcase";
@@ -279,6 +279,7 @@ static vector<ViewId> creatureIds {
   ViewId::KNIGHT,
   ViewId::DUKE,
   ViewId::ARCHER,
+  ViewId::UNICORN,
   ViewId::PESEANT,
   ViewId::CHILD,
   ViewId::SHAMAN,

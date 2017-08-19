@@ -177,7 +177,7 @@ class Level : public OwnedObject<Level> {
   LevelId getUniqueId() const;
   void setFurniture(Vec2, PFurniture);
 
-  SERIALIZATION_DECL(Level);
+  SERIALIZATION_DECL(Level)
 
   private:
   friend class Position;
@@ -220,7 +220,7 @@ class Level : public OwnedObject<Level> {
   void addLightSource(Vec2 pos, double radius, int numLight);
   void addDarknessSource(Vec2 pos, double radius, int numLight);
   FieldOfView& getFieldOfView(VisionId vision) const;
-  vector<Vec2> getVisibleTilesNoDarkness(Vec2 pos, VisionId vision) const;
+  const vector<Vec2>& getVisibleTilesNoDarkness(Vec2 pos, VisionId vision) const;
   bool isWithinVision(Vec2 from, Vec2 to, const Vision&) const;
   LevelId SERIAL(levelId) = 0;
   bool SERIAL(noDiagonalPassing) = false;
