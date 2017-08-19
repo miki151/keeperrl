@@ -2325,6 +2325,9 @@ vector<ItemType> getInventory(CreatureId id) {
         .add(ItemId::SWORD)
         .maybe(0.3, randomBackup())
         .maybe(0.05, ItemList().add(ItemId::BOW));
+    case CreatureId::VAMPIRE_LORD:
+      return ItemList()
+        .add({ItemId::RING, LastingEffect::DARKNESS_SOURCE});
     case CreatureId::DWARF:
       return ItemList()
         .add(Random.choose({ItemId::BATTLE_AXE, ItemId::WAR_HAMMER}, {1, 1}))
