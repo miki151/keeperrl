@@ -388,6 +388,7 @@ ItemFactory ItemFactory::villageShop() {
       {{ItemId::RING, LastingEffect::POISON_RESISTANT}, 0.5},
       {{ItemId::RING, LastingEffect::FIRE_RESISTANT}, 0.5},
       {ItemId::SPEED_BOOTS, 2},
+      {{ItemId::RING, LastingEffect::DARKNESS_SOURCE}, 0.5},
       {ItemId::LEVITATION_BOOTS, 2},
       {ItemId::TELEPATHY_HELM, 2}});
 }
@@ -568,6 +569,7 @@ ItemFactory ItemFactory::dungeon() {
       {{ItemId::POTION, EffectType(EffectId::LASTING, LastingEffect::SPEED)}, 50 },
       {ItemId::WARNING_AMULET, 3 },
       {ItemId::HEALING_AMULET, 3 },
+      {{ItemId::RING, LastingEffect::DARKNESS_SOURCE}, 3},
       {ItemId::DEFENSE_AMULET, 3 },
       {{ItemId::RING, LastingEffect::POISON_RESISTANT}, 3},
       {{ItemId::RING, LastingEffect::FIRE_RESISTANT}, 3}});
@@ -667,6 +669,7 @@ const static vector<EffectType> potionEffects {
 ViewId getRingViewId(LastingEffect e) {
   switch (e) {
     case LastingEffect::FIRE_RESISTANT: return ViewId::FIRE_RESIST_RING;
+    case LastingEffect::DARKNESS_SOURCE: return ViewId::DARKNESS_RING; 
     case LastingEffect::POISON_RESISTANT: return ViewId::POISON_RESIST_RING;
     default: FATAL << "Unhandled lasting effect " << int(e);
   }
