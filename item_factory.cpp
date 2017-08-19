@@ -386,6 +386,7 @@ ItemFactory ItemFactory::villageShop() {
       {ItemId::HEALING_AMULET, 0.5 },
       {ItemId::DEFENSE_AMULET, 0.5 },
       {{ItemId::RING, LastingEffect::POISON_RESISTANT}, 0.5},
+      {{ItemId::RING, LastingEffect::STUN_RESISTANT}, 0.5},
       {{ItemId::RING, LastingEffect::FIRE_RESISTANT}, 0.5},
       {ItemId::SPEED_BOOTS, 2},
       {ItemId::LEVITATION_BOOTS, 2},
@@ -570,6 +571,7 @@ ItemFactory ItemFactory::dungeon() {
       {ItemId::HEALING_AMULET, 3 },
       {ItemId::DEFENSE_AMULET, 3 },
       {{ItemId::RING, LastingEffect::POISON_RESISTANT}, 3},
+      {{ItemId::RING, LastingEffect::STUN_RESISTANT}, 3},
       {{ItemId::RING, LastingEffect::FIRE_RESISTANT}, 3}});
 }
 
@@ -607,6 +609,7 @@ int getEffectPrice(EffectType type) {
             return 20;
           case LastingEffect::SLOWED:
           case LastingEffect::POISON_RESISTANT:
+          case LastingEffect::STUN_RESISTANT:
           case LastingEffect::FIRE_RESISTANT:
           case LastingEffect::POISON:
             return 20;
@@ -667,6 +670,8 @@ const static vector<EffectType> potionEffects {
 ViewId getRingViewId(LastingEffect e) {
   switch (e) {
     case LastingEffect::FIRE_RESISTANT: return ViewId::FIRE_RESIST_RING;
+	//for now
+    case LastingEffect::STUN_RESISTANT: return ViewId::STUN_RESIST_RING; 
     case LastingEffect::POISON_RESISTANT: return ViewId::POISON_RESIST_RING;
     default: FATAL << "Unhandled lasting effect " << int(e);
   }
