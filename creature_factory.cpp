@@ -2341,6 +2341,7 @@ vector<ItemType> getInventory(CreatureId id) {
         .add(ItemId::CHAIN_ARMOR)
         .add(ItemId::IRON_BOOTS)
         .add(ItemId::IRON_HELM)
+		.add({ItemId::RING, LastingEffect::STUN_RESISTANT})
         .add(ItemId::GOLD_PIECE, Random.get(80, 120));
     case CreatureId::GNOME_CHIEF:
       return ItemList()
