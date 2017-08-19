@@ -104,6 +104,8 @@ void LastingEffects::onAffected(WCreature c, LastingEffect effect, bool msg) {
         c->you(MsgType::FALL_ASLEEP, ""); break;
       case LastingEffect::POISON_RESISTANT:
         c->you(MsgType::ARE, "now poison resistant"); break;
+      case LastingEffect::STUN_RESISTANT:
+        c->you(MsgType::ARE, "now stun resistant"); break;
       case LastingEffect::FIRE_RESISTANT:
         c->you(MsgType::ARE, "now fire resistant"); break;
       case LastingEffect::INSANITY:
@@ -135,6 +137,8 @@ bool LastingEffects::affects(WConstCreature c, LastingEffect effect) {
       return !c->isAffected(LastingEffect::SLEEP);
     case LastingEffect::POISON:
       return !c->isAffected(LastingEffect::POISON_RESISTANT);
+    case LastingEffect::STUNNED:
+      return !c->isAffected(LastingEffect::STUN_RESISTANT);
     default:
       return true;
   }
@@ -193,6 +197,8 @@ void LastingEffects::onTimedOut(WCreature c, LastingEffect effect, bool msg) {
         c->you(MsgType::ARE, "no longer poisoned"); break;
       case LastingEffect::POISON_RESISTANT:
         c->you(MsgType::ARE, "no longer poison resistant"); break;
+      case LastingEffect::STUN_RESISTANT:
+        c->you(MsgType::ARE, "no longer stun resistant"); break;
       case LastingEffect::FIRE_RESISTANT:
         c->you(MsgType::ARE, "no longer fire resistant"); break;
       case LastingEffect::FLYING:
@@ -278,6 +284,7 @@ static Adjective getAdjective(LastingEffect effect) {
     case LastingEffect::DEF_BONUS: return "Defense bonus"_good;
     case LastingEffect::SPEED: return "Speed bonus"_good;
     case LastingEffect::POISON_RESISTANT: return "Poison resistant"_good;
+    case LastingEffect::STUN_RESISTANT: return "Stun resistant"_good;
     case LastingEffect::FIRE_RESISTANT: return "Fire resistant"_good;
     case LastingEffect::FLYING: return "Flying"_good;
     case LastingEffect::DARKNESS_SOURCE: return "Source of darkness"_good;

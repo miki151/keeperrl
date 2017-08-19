@@ -250,6 +250,7 @@ static double getDuration(WConstCreature c, LastingEffect e, int strength) {
     case LastingEffect::INVISIBLE: return invisibleTime[strength];
     case LastingEffect::STUNNED: return stunTime[strength];
     case LastingEffect::FIRE_RESISTANT:
+    case LastingEffect::STUN_RESISTANT:
     case LastingEffect::POISON_RESISTANT: return resistantTime[strength];
     case LastingEffect::FLYING: return levitateTime[strength];
     case LastingEffect::COLLAPSED: return 2;
@@ -581,6 +582,7 @@ const char* Effect::getName(LastingEffect type) {
     case LastingEffect::ENTANGLED: return "web";
     case LastingEffect::STUNNED: return "stunning";
     case LastingEffect::FIRE_RESISTANT: return "fire resistance";
+    case LastingEffect::STUN_RESISTANT: return "stun resistance";
     case LastingEffect::INSANITY: return "insanity";
     case LastingEffect::MAGIC_RESISTANCE: return "magic resistance";
     case LastingEffect::MELEE_RESISTANCE: return "melee resistance";
@@ -616,6 +618,7 @@ const char* Effect::getDescription(LastingEffect type) {
       FALLTHROUGH;
     case LastingEffect::ENTANGLED: return "web";
     case LastingEffect::STUNNED: return "Causes inability to make any action.";
+    case LastingEffect::STUN_RESISTANT: return "Provides resistance to being stunned.";
     case LastingEffect::FIRE_RESISTANT: return "Gives fire resistance.";
     case LastingEffect::INSANITY: return "Confuses the target about who is friend and who is foe.";
     case LastingEffect::MAGIC_RESISTANCE: return "Increases defense against magical attacks by 30%.";
