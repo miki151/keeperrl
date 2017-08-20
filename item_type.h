@@ -23,6 +23,7 @@ enum class ItemId {
   IRON_STAFF,
   SCYTHE,
   BOW,
+  ELVEN_BOW,
 
   LEATHER_ARMOR,
   LEATHER_HELM,
