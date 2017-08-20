@@ -2351,7 +2351,7 @@ vector<ItemType> getInventory(CreatureId id) {
       return ItemList()
         .add(ItemId::SPECIAL_ELVEN_SWORD)
         .add(ItemId::LEATHER_ARMOR)
-        .add(ItemId::BOW)
+        .add(ItemId::ELVEN_BOW)
         .add(ItemId::GOLD_PIECE, Random.get(80, 120))
         .add(randomBackup());
     case CreatureId::DRIAD: 
