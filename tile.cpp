@@ -486,6 +486,7 @@ class TileCoordLookup {
     Tile::addTile(ViewId::STEEL_BATTLE_AXE, sprite("steel_battle_axe"));
     Tile::addTile(ViewId::SPECIAL_BATTLE_AXE, sprite("special_battle_axe"));
     Tile::addTile(ViewId::BOW, sprite("bow"));
+    Tile::addTile(ViewId::ELVEN_BOW, sprite("bow")); //For now
     Tile::addTile(ViewId::ARROW, sprite("arrow_e"));
     Tile::addTile(ViewId::WOODEN_STAFF, sprite("staff_wooden"));
     Tile::addTile(ViewId::IRON_STAFF, sprite("staff_iron"));
@@ -805,6 +806,7 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::BATTLE_AXE, symbol(u8")", Color::GREEN));
     Tile::addSymbol(ViewId::STEEL_BATTLE_AXE, symbol(u8")", Color::LIGHT_BLUE));
     Tile::addSymbol(ViewId::SPECIAL_BATTLE_AXE, symbol(u8")", Color::LIGHT_GREEN));
+    Tile::addSymbol(ViewId::ELVEN_BOW, symbol(u8")", Color::YELLOW));
     Tile::addSymbol(ViewId::BOW, symbol(u8")", Color::BROWN));
     Tile::addSymbol(ViewId::WOODEN_STAFF, symbol(u8")", Color::YELLOW));
     Tile::addSymbol(ViewId::IRON_STAFF, symbol(u8")", Color::ORANGE));
