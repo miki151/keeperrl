@@ -2277,6 +2277,7 @@ vector<ItemType> getInventory(CreatureId id) {
         .add(ItemId::GOLD_PIECE, Random.get(80, 120));
     case CreatureId::LIZARDLORD:
       return ItemList().add(ItemId::LEATHER_ARMOR)
+        .add({ItemId::POTION, EffectType(EffectId::REGROW_BODY_PART)})
         .add(ItemId::GOLD_PIECE, Random.get(50, 90));
     case CreatureId::LIZARDMAN:
       return ItemList().add(ItemId::LEATHER_ARMOR)
