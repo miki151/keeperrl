@@ -1232,7 +1232,7 @@ void Collective::scheduleAutoProduction(function<bool(WConstItem)> itemPredicate
   if (count > 0)
     for (auto workshopType : ENUM_ALL(WorkshopType)) {
       //Don't use alchemy to get resources automatically as it is expensive
-	  if (workshopType==WorkshopType::LABORATORY) continue;
+      if (workshopType==WorkshopType::LABORATORY) continue;
       auto& options = workshops->get(workshopType).getOptions();
       for (int index : All(options))
         if (itemPredicate(ItemFactory::fromId(options[index].type).get())) {
