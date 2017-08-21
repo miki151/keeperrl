@@ -605,6 +605,19 @@ bool Body::isIntrinsicallyAffected(LastingEffect effect) const {
       }
     case LastingEffect::POISON_RESISTANT:
       return material != Material::FLESH;
+    case LastingEffect::SLEEP_RESISTANT:
+      switch (material) {
+        case Material::WATER:
+        case Material::FIRE:
+        case Material::SPIRIT:
+        case Material::CLAY:
+        case Material::ROCK:
+        case Material::IRON:
+        case Material::LAVA:
+          return true;
+        default:
+          break;
+      }
     case LastingEffect::FLYING:
       return numGood(BodyPart::WING) >= 2;
     default:
