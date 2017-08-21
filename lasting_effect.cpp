@@ -96,6 +96,8 @@ void LastingEffects::onAffected(WCreature c, LastingEffect effect, bool msg) {
         c->you(MsgType::ARE, "moving faster"); break;
       case LastingEffect::SLOWED:
         c->you(MsgType::ARE, "moving more slowly"); break;
+      case LastingEffect::SLEEP_RESISTANT:
+        c->you(MsgType::ARE, "now sleep resistant"); break;
       case LastingEffect::TIED_UP:
         c->you(MsgType::ARE, "tied up"); break;
       case LastingEffect::ENTANGLED:
@@ -133,6 +135,8 @@ bool LastingEffects::affects(WConstCreature c, LastingEffect effect) {
     case LastingEffect::RAGE:
     case LastingEffect::PANIC:
       return !c->isAffected(LastingEffect::SLEEP);
+    case LastingEffect::SLEEP:
+      return !c->isAffected(LastingEffect::SLEEP_RESISTANT);
     case LastingEffect::POISON:
       return !c->isAffected(LastingEffect::POISON_RESISTANT);
     default:
@@ -189,6 +193,8 @@ void LastingEffects::onTimedOut(WCreature c, LastingEffect effect, bool msg) {
         c->you("can see again"); break;
       case LastingEffect::INVISIBLE:
         c->you(MsgType::TURN_VISIBLE, ""); break;
+      case LastingEffect::SLEEP_RESISTANT:
+        c->you(MsgType::ARE, "no longer sleep resistant"); break;
       case LastingEffect::POISON:
         c->you(MsgType::ARE, "no longer poisoned"); break;
       case LastingEffect::POISON_RESISTANT:
@@ -276,6 +282,7 @@ static Adjective getAdjective(LastingEffect effect) {
     case LastingEffect::HALLU: return "Hallucinating"_good;
     case LastingEffect::DAM_BONUS: return "Damage bonus"_good;
     case LastingEffect::DEF_BONUS: return "Defense bonus"_good;
+    case LastingEffect::SLEEP_RESISTANT: return "Sleep resistant"_good;
     case LastingEffect::SPEED: return "Speed bonus"_good;
     case LastingEffect::POISON_RESISTANT: return "Poison resistant"_good;
     case LastingEffect::FIRE_RESISTANT: return "Fire resistant"_good;
