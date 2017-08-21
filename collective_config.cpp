@@ -546,6 +546,11 @@ unique_ptr<Workshops> CollectiveConfig::getWorkshops() const {
           Workshops::Item::fromType({ItemId::POTION,
               EffectType{EffectId::LASTING, LastingEffect::INVISIBLE}}, 6, {CollectiveResourceId::GOLD, 20})
                   .setTechId(TechId::ALCHEMY_ADV),
+          //Alchemical conversion to and from gold
+          Workshops::Item::fromType(ItemId::GOLD_PIECE, 5, {CollectiveResourceId::IRON, 30}).setTechId(TechId::ALCHEMY_CONV).setBatchSize(10),
+          Workshops::Item::fromType(ItemId::GOLD_PIECE, 5, {CollectiveResourceId::WOOD, 100}).setTechId(TechId::ALCHEMY_CONV).setBatchSize(10),
+          Workshops::Item::fromType(ItemId::WOOD_PLANK, 5, {CollectiveResourceId::GOLD, 10}).setTechId(TechId::ALCHEMY_CONV).setBatchSize(10),
+          Workshops::Item::fromType(ItemId::IRON_ORE, 5, {CollectiveResourceId::GOLD, 10}).setTechId(TechId::ALCHEMY_CONV).setBatchSize(10),
       }},
       {WorkshopType::JEWELER, {
           Workshops::Item::fromType({ItemId::RING, LastingEffect::POISON_RESISTANT}, 10,
