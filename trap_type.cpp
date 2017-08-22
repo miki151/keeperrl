@@ -18,5 +18,7 @@ string getTrapName(TrapType type) {
       return "panic";
     case TrapType::WEB:
       return "web";
+    case TrapType::FIRE_MINE:
+      return "fire mine";
   }
 }
