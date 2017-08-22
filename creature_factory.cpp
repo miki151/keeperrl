@@ -1085,9 +1085,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
       return CATTR(
           c.viewId = ViewId::MASTER_THIEF;
           c.attr = LIST(30_dam, 20_def, 100_spd );
-          c.attr[AttrType::SPEED] = 100;
           c.body = Body::humanoid(Body::Size::LARGE);
-          c.chatReactionFriendly = "Money, money, money..."_s;
+          c.chatReactionFriendly = "\"Money, money, money...\""_s;
           c.chatReactionHostile = "\"Giss your money!\""_s;
           c.name = "master thief";);
     case CreatureId::GHOST: 
@@ -1306,7 +1305,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.permanentEffects[LastingEffect::RANGED_RESISTANCE] = 1;
           c.chatReactionFriendly = "curses all castles"_s;
           c.chatReactionHostile = "\"Face death!\""_s;
-          c.name = "The Dark Knight";);
+          c.name = "dark knight";);
     case CreatureId::AVATAR: 
       return CATTR(
           c.viewId = ViewId::DUKE;
