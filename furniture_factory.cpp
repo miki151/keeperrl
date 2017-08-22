@@ -434,6 +434,11 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setEntryType(FurnitureEntry(FurnitureEntry::Trap(EffectType(EffectId::LASTING, LastingEffect::PANIC))))
           .setEmitsWarning()
           .setConstructMessage(Furniture::SET_UP);
+    case FurnitureType::FIRE_TRAP:
+      return Furniture("fire mine", ViewObject(ViewId::FIRE_TRAP, ViewLayer::FLOOR), type, tribe)
+          .setEntryType(FurnitureEntry(FurnitureEntry::Trap(EffectId::FIRE)))
+          .setEmitsWarning()
+          .setConstructMessage(Furniture::SET_UP);
     case FurnitureType::BOULDER_TRAP:
       return Furniture("boulder trap", ViewObject(ViewId::BOULDER, ViewLayer::CREATURE), type, tribe)
           .setBlocking()
