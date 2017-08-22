@@ -244,6 +244,7 @@ RICH_ENUM(
     CLUB,
     HEAVY_CLUB,
     BOW,
+    ELVEN_BOW,
     ARROW,
     WOODEN_STAFF,
     IRON_STAFF,

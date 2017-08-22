@@ -353,6 +353,7 @@ static vector<ViewId> itemIds {
   ViewId::BATTLE_AXE,
   ViewId::SPECIAL_BATTLE_AXE,
   ViewId::BOW,
+  ViewId::ELVEN_BOW,
   ViewId::SCROLL,
   ViewId::AMULET1,
   ViewId::AMULET2,
