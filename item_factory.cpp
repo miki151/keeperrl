@@ -915,26 +915,25 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.twoHanded = true;
             i.price = 20;
             i.attackType = AttackType::CUT;);
-    case ItemId::ELVEN_BOW:
-    case ItemId::BOW: return ITATTR(
-            i.viewId = ViewId::BOW;
+    case ItemId::ELVEN_BOW: return ITATTR(
+            i.viewId = ViewId::ELVEN_BOW;
             i.itemClass = ItemClass::RANGED_WEAPON;
             i.equipmentSlot = EquipmentSlot::RANGED_WEAPON;
             i.rangedWeapon = RangedWeapon(AttrType::RANGED_DAMAGE, "arrow", ViewId::ARROW);
             i.twoHanded = true;
             i.weight = 1;
-            if (item.getId()==ItemId::ELVEN_BOW)
-            {
-              //Artifact elven bow
-              i.modifiers[AttrType::RANGED_DAMAGE] = 16;
-              i.name = "silver elven bow";
-            }
-            else
-            {
-              //Normal bow
-              i.modifiers[AttrType::RANGED_DAMAGE] = 10 + maybePlusMinusOne(4);
-              i.name = "short bow";
-            }
+            i.modifiers[AttrType::RANGED_DAMAGE] = 16;
+            i.name = "silver elven bow";
+            i.price = 100;);
+    case ItemId::BOW: return ITATTR(
+            i.viewId = ViewId::BOW;
+            i.name = "short bow";
+            i.itemClass = ItemClass::RANGED_WEAPON;
+            i.equipmentSlot = EquipmentSlot::RANGED_WEAPON;
+            i.rangedWeapon = RangedWeapon(AttrType::RANGED_DAMAGE, "arrow", ViewId::ARROW);
+            i.twoHanded = true;
+            i.weight = 1;
+            i.modifiers[AttrType::RANGED_DAMAGE] = 10 + maybePlusMinusOne(4);
             i.price = 12;);
     case ItemId::ROBE: return ITATTR(
             i.viewId = ViewId::ROBE;
