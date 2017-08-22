@@ -383,6 +383,7 @@ static vector<ViewId> itemIds {
   ViewId::WEB_TRAP,
   ViewId::SURPRISE_TRAP,
   ViewId::TERROR_TRAP,
+  ViewId::FIRE_TRAP,
   ViewId::ROCK,
   ViewId::IRON_ROCK,
   ViewId::WOOD_PLANK,
