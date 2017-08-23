@@ -362,7 +362,7 @@ void Player::targetAction() {
     target = none;
     return;
   }
-  if (auto action = getCreature()->moveTowards(*target))
+  if (auto action = getCreature()->moveTowards(*target, Creature::NavigationFlags().noDestroying()))
     action.perform(getCreature());
   else
     target = none;

@@ -248,7 +248,7 @@ class StayOnFurniture : public Behaviour {
             break;
           }
       if (nextPigsty)
-        if (auto move = creature->moveTowards(*nextPigsty, true))
+        if (auto move = creature->moveTowards(*nextPigsty, Creature::NavigationFlags().requireStepOnTile()))
           return move;
     }
     if (Random.roll(10))

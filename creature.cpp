@@ -1488,16 +1488,16 @@ CreatureAction Creature::stayIn(WLevel level, Rectangle area) {
   return CreatureAction();
 }
 
-CreatureAction Creature::moveTowards(Position pos, bool stepOnTile) {
+CreatureAction Creature::moveTowards(Position pos, NavigationFlags flags) {
   if (!pos.isValid())
     return CreatureAction();
   if (pos.isSameLevel(position))
-    return moveTowards(pos, false, stepOnTile);
+    return moveTowards(pos, false, flags);
   else if (auto stairs = position.getStairsTo(pos)) {
     if (stairs == position)
       return applySquare(position);
     else
-      return moveTowards(*stairs, false, true);
+      return moveTowards(*stairs, false, flags.requireStepOnTile());
   } else
     return CreatureAction();
 }
@@ -1510,9 +1510,9 @@ bool Creature::canNavigateTo(Position pos) const {
   return false;
 }
 
-CreatureAction Creature::moveTowards(Position pos, bool away, bool stepOnTile) {
+CreatureAction Creature::moveTowards(Position pos, bool away, NavigationFlags flags) {
   CHECK(pos.isSameLevel(position));
-  if (stepOnTile && !pos.canEnterEmpty(this))
+  if (flags.stepOnTile && !pos.canEnterEmpty(this))
     return CreatureAction();
   MEASURE(
   if (!away && !canNavigateTo(pos))
@@ -1543,7 +1543,7 @@ CreatureAction Creature::moveTowards(Position pos, bool away, bool stepOnTile) {
     if (auto action = move(pos2))
       return action;
     else {
-      if (!pos2.canEnterEmpty(this))
+      if (!pos2.canEnterEmpty(this) && flags.destroy)
         if (auto destroyAction = pos2.getBestDestroyAction(getMovementType()))
             if (auto action = destroy(getPosition().getDir(pos2), *destroyAction))
             return action;
@@ -1558,7 +1558,7 @@ CreatureAction Creature::moveTowards(Position pos, bool away, bool stepOnTile) {
 CreatureAction Creature::moveAway(Position pos, bool pathfinding) {
   CHECK(pos.isSameLevel(position));
   if (pos.dist8(getPosition()) <= 5 && pathfinding)
-    if (auto action = moveTowards(pos, true, false))
+    if (auto action = moveTowards(pos, true, NavigationFlags().noDestroying()))
       return action;
   pair<Vec2, Vec2> dirs = pos.getDir(getPosition()).approxL1();
   vector<CreatureAction> moves;

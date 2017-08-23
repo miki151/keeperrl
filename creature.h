@@ -197,8 +197,21 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   WItem getWeapon() const;
   void dropWeapon();
   vector<vector<WItem>> stackItems(vector<WItem>) const;
-
-  CreatureAction moveTowards(Position, bool stepOnTile = false);
+  struct NavigationFlags {
+    NavigationFlags() : stepOnTile(false), destroy(true) {}
+    NavigationFlags& requireStepOnTile() {
+      stepOnTile = true;
+      return *this;
+    }
+    // This makes the creature stop at the obstacle, and not navigate around it
+    NavigationFlags& noDestroying() {
+      destroy = false;
+      return *this;
+    }
+    bool stepOnTile;
+    bool destroy;
+  };
+  CreatureAction moveTowards(Position, NavigationFlags = {});
   CreatureAction moveAway(Position, bool pathfinding = true);
   CreatureAction continueMoving();
   CreatureAction stayIn(WLevel, Rectangle);
@@ -244,7 +257,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   double getSpellDelay(Spell*) const;
   bool isReady(Spell*) const;
 
-  SERIALIZATION_DECL(Creature);
+  SERIALIZATION_DECL(Creature)
 
   void addEffect(LastingEffect, double time, bool msg = true);
   void removeEffect(LastingEffect, bool msg = true);
@@ -272,7 +285,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
 
   private:
 
-  CreatureAction moveTowards(Position, bool away, bool stepOnTile);
+  CreatureAction moveTowards(Position, bool away, NavigationFlags);
   void spendTime(double time);
   bool canCarry(const vector<WItem>&) const;
   TribeSet getFriendlyTribes() const;

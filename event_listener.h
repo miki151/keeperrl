@@ -10,104 +10,100 @@ class Model;
 class Technology;
 class Collective;
 
-enum class EventId {
-  VISIBILITY_CHANGED
-};
-
 namespace EventInfo {
 
-struct CreatureMoved {
-  WCreature creature;
-};
+  struct CreatureMoved {
+    WCreature creature;
+  };
 
-struct CreatureKilled {
-  WCreature victim;
-  WCreature attacker;
-};
+  struct CreatureKilled {
+    WCreature victim;
+    WCreature attacker;
+  };
 
-struct ItemsPickedUp {
-  WCreature creature;
-  vector<WItem> items;
-};
+  struct ItemsPickedUp {
+    WCreature creature;
+    vector<WItem> items;
+  };
 
-struct ItemsDropped {
-  WCreature creature;
-  vector<WItem> items;
-};
+  struct ItemsDropped {
+    WCreature creature;
+    vector<WItem> items;
+  };
 
-struct ItemsAppeared {
-  Position position;
-  vector<WItem> items;
-};
+  struct ItemsAppeared {
+    Position position;
+    vector<WItem> items;
+  };
 
-struct Projectile {
-  ViewId viewId;
-  Position begin;
-  Position end;
-};
+  struct Projectile {
+    ViewId viewId;
+    Position begin;
+    Position end;
+  };
 
-struct Explosion {
-  Position pos;
-};
+  struct Explosion {
+    Position pos;
+  };
 
-struct ConqueredEnemy {
-  WCollective collective;
-};
+  struct ConqueredEnemy {
+    WCollective collective;
+  };
 
-struct WonGame {};
+  struct WonGame {};
 
-struct TechbookRead {
-  Technology* technology;
-};
+  struct TechbookRead {
+    Technology* technology;
+  };
 
-struct Alarm {
-  Position pos;
-};
+  struct Alarm {
+    Position pos;
+  };
 
-struct CreatureTortured {
-  WCreature victim;
-  WCreature torturer;
-};
+  struct CreatureTortured {
+    WCreature victim;
+    WCreature torturer;
+  };
 
-struct CreatureSurrendered {
-  WCreature victim;
-  WCreature attacker;
-};
+  struct CreatureSurrendered {
+    WCreature victim;
+    WCreature attacker;
+  };
 
-struct TrapTriggered {
-  Position pos;
-};
+  struct TrapTriggered {
+    Position pos;
+  };
 
-struct TrapDisarmed {
-  Position pos;
-  WCreature creature;
-};
+  struct TrapDisarmed {
+    Position pos;
+    WCreature creature;
+  };
 
-struct FurnitureDestroyed {
-  Position position;
-  FurnitureType type;
-  FurnitureLayer layer;
-};
+  struct FurnitureDestroyed {
+    Position position;
+    FurnitureType type;
+    FurnitureLayer layer;
+  };
 
-struct ItemsEquipped {
-  WCreature creature;
-  vector<WItem> items;
-};
+  struct ItemsEquipped {
+    WCreature creature;
+    vector<WItem> items;
+  };
 
-struct CreatureEvent {
-  WCreature creature;
-  string message;
-};
+  struct CreatureEvent {
+    WCreature creature;
+    string message;
+  };
 
-struct VisibilityChanged {
-  Position pos;
-};
+  struct VisibilityChanged {
+    Position pos;
+  };
 
-class GameEvent : public variant<CreatureMoved, CreatureKilled, ItemsPickedUp, ItemsDropped, ItemsAppeared, Projectile,
-    Explosion, ConqueredEnemy, WonGame, TechbookRead, Alarm, CreatureTortured, CreatureSurrendered, TrapTriggered,
-    TrapDisarmed, FurnitureDestroyed, ItemsEquipped, CreatureEvent, VisibilityChanged> {
-  using variant::variant;
-};
+  class GameEvent : public variant<CreatureMoved, CreatureKilled, ItemsPickedUp, ItemsDropped, ItemsAppeared, Projectile,
+      Explosion, ConqueredEnemy, WonGame, TechbookRead, Alarm, CreatureTortured, CreatureSurrendered, TrapTriggered,
+      TrapDisarmed, FurnitureDestroyed, ItemsEquipped, CreatureEvent, VisibilityChanged> {
+    using variant::variant;
+  };
 
 }
 
