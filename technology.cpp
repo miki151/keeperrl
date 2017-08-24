@@ -39,6 +39,8 @@ void Technology::init() {
         "alchemy", "Build a laboratory and produce basic potions.", 80));
   Technology::set(TechId::ALCHEMY_ADV, new Technology(
         "advanced alchemy", "Produce more powerful potions.", 200, {TechId::ALCHEMY}));
+  Technology::set(TechId::ALCHEMY_CONV, new Technology(
+        "alchemical conversion", "Convert resources to and from gold.", 100, {TechId::ALCHEMY}));
   Technology::set(TechId::HUMANOID_MUT, new Technology(
         "humanoid mutation", "Breed new, very powerful humanoid species.", 400, {TechId::ALCHEMY}));
   Technology::set(TechId::BEAST_MUT, new Technology(
