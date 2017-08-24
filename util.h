@@ -317,11 +317,18 @@ class EnumInfo<Name> { \
     return names[int(e)];\
   }\
   enum Tmp { __VA_ARGS__, size};\
-  static Name fromString(const string& s) {\
+  static Name fromStringWithException(const string& s) {\
     for (int i : Range(size)) \
       if (getString(Name(i)) == s) \
         return Name(i); \
     throw ParsingException();\
+  } \
+  static Name fromString(const string& s) { \
+    for (int i : Range(size)) \
+      if (getString(Name(i)) == s) \
+        return Name(i); \
+    FATAL << "Error parsing " << #Name << " from " << s; \
+    return Name(0);\
   }\
   static optional<Name> fromStringSafe(const string& s) {\
     for (int i : Range(size)) \

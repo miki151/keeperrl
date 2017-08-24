@@ -48,7 +48,7 @@
 #include "experience_type.h"
 #include "creature_debt.h"
 
-SERIALIZE_DEF(CreatureFactory, tribe, creatures, weights, unique, tribeOverrides, levelIncrease)
+SERIALIZE_DEF(CreatureFactory, tribe, creatures, weights, unique, tribeOverrides, levelIncrease, baseLevelIncrease, inventory)
 SERIALIZATION_CONSTRUCTOR_IMPL(CreatureFactory)
 
 CreatureFactory CreatureFactory::singleCreature(TribeId tribe, CreatureId id) {
@@ -483,12 +483,9 @@ class ShopkeeperController : public Monster, public EventListener<ShopkeeperCont
   bool SERIAL(firstMove) = true;
 };
 
-PCreature CreatureFactory::addInventory(PCreature c, const vector<ItemType>& items) {
-  for (ItemType item : items) {
-    PItem it = ItemFactory::fromId(item);
-    c->take(std::move(it));
-  }
-  return c;
+void CreatureFactory::addInventory(WCreature c, const vector<ItemType>& items) {
+  for (ItemType item : items)
+    c->take(ItemFactory::fromId(item));
 }
 
 PCreature CreatureFactory::getShopkeeper(Rectangle shopArea, TribeId tribe) {
@@ -510,7 +507,8 @@ PCreature CreatureFactory::getShopkeeper(Rectangle shopArea, TribeId tribe) {
   inventory.push_back(ItemId::LEATHER_BOOTS);
   inventory.push_back({ItemId::POTION, EffectId::HEAL});
   inventory.push_back({ItemId::POTION, EffectId::HEAL});
-  return addInventory(std::move(ret), inventory);
+  addInventory(ret.get(), inventory);
+  return ret;
 }
 
 class IllusionController : public DoNothingController {
@@ -588,8 +586,11 @@ PCreature CreatureFactory::random(const MonsterAIFactory& actorFactory) {
     unique.pop_back();
   } else
     id = Random.choose(creatures, weights);
-  PCreature ret = fromId(id, getTribeFor(id), actorFactory);
-  ret->getAttributes().increaseBaseExpLevel(ExperienceType::MELEE, levelIncrease);
+  PCreature ret = fromId(id, getTribeFor(id), actorFactory, inventory);
+  for (auto exp : ENUM_ALL(ExperienceType)) {
+    ret->getAttributes().increaseBaseExpLevel(exp, baseLevelIncrease[exp]);
+    ret->increaseExpLevel(exp, levelIncrease[exp]);
+  }
   return ret;
 }
 
@@ -599,8 +600,23 @@ PCreature CreatureFactory::get(const CreatureAttributes& attr, TribeId tribe, co
   return ret;
 }
 
-CreatureFactory& CreatureFactory::increaseLevel(double l) {
-  levelIncrease += l;
+CreatureFactory& CreatureFactory::increaseLevel(EnumMap<ExperienceType, int> l) {
+  levelIncrease = l;
+  return *this;
+}
+
+CreatureFactory& CreatureFactory::increaseLevel(ExperienceType t, int l) {
+  levelIncrease[t] = l;
+  return *this;
+}
+
+CreatureFactory& CreatureFactory::increaseBaseLevel(ExperienceType t, int l) {
+  baseLevelIncrease[t] = l;
+  return *this;
+}
+
+CreatureFactory& CreatureFactory::addInventory(vector<ItemType> items) {
+  inventory = items;
   return *this;
 }
 
@@ -617,6 +633,14 @@ CreatureFactory::CreatureFactory(const vector<tuple<CreatureId, double, TribeId>
     tribeOverrides[std::get<0>(elem)] = std::get<2>(elem);
   }
 }
+
+// These have to be defined here to be able to forward declare some ItemType and other classes
+CreatureFactory::~CreatureFactory() {
+}
+
+CreatureFactory::CreatureFactory(const CreatureFactory&) = default;
+
+CreatureFactory& CreatureFactory::operator =(const CreatureFactory&) = default;
 
 CreatureFactory CreatureFactory::humanVillage(TribeId tribe) {
   return CreatureFactory(tribe, { CreatureId::KNIGHT, CreatureId::ARCHER,
@@ -699,7 +723,7 @@ CreatureFactory CreatureFactory::splashMonsters(TribeId tribe) {
       CreatureId::SPECIAL_HLBN, CreatureId::SPECIAL_BLBW, CreatureId::WOLF, CreatureId::CAVE_BEAR,
       CreatureId::BAT, CreatureId::WEREWOLF, CreatureId::ZOMBIE, CreatureId::VAMPIRE, CreatureId::DOPPLEGANGER,
       CreatureId::SUCCUBUS},
-      { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}, {}, {}).increaseLevel(25);
+      { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}, {}, {}).increaseBaseLevel(ExperienceType::MELEE, 25);
 }
 
 CreatureFactory CreatureFactory::elvenVillage(TribeId tribe) {
@@ -1863,7 +1887,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.animal = true;
           c.noChase = true;
           c.name = CreatureName("fox", "foxes"););
-    case CreatureId::CAVE_BEAR: 
+    case CreatureId::CAVE_BEAR:
       return CATTR(
           c.viewId = ViewId::BEAR;
           c.attr = LIST(26_dam, 10_def, 120_spd );
@@ -2229,7 +2253,7 @@ class ItemList {
   vector<ItemType> ret;
 };
 
-vector<ItemType> getInventory(CreatureId id) {
+vector<ItemType> getDefaultInventory(CreatureId id) {
   switch (id) {
     case CreatureId::CYCLOPS:
       return ItemList()
@@ -2390,7 +2414,15 @@ PCreature CreatureFactory::fromId(CreatureId id, TribeId t) {
   return fromId(id, t, MonsterAIFactory::monster());
 }
 
-PCreature CreatureFactory::fromId(CreatureId id, TribeId t, const MonsterAIFactory& factory) {
-  return addInventory(get(id, t, factory), getInventory(id));
+
+PCreature CreatureFactory::fromId(CreatureId id, TribeId t, const MonsterAIFactory& f) {
+  return fromId(id, t, f, {});
+}
+
+PCreature CreatureFactory::fromId(CreatureId id, TribeId t, const MonsterAIFactory& factory, const vector<ItemType>& inventory) {
+  auto ret = get(id, t, factory);
+  addInventory(ret.get(), inventory);
+  addInventory(ret.get(), getDefaultInventory(id));
+  return ret;
 }
 

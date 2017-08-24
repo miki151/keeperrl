@@ -73,8 +73,8 @@ void ExternalEnemies::update(WLevel level, double localTime) {
 }
 
 
-EnemyEvent::EnemyEvent(ExternalEnemy enemy, Range attackTime, double levelIncrease)
+EnemyEvent::EnemyEvent(ExternalEnemy enemy, Range attackTime, EnumMap<ExperienceType, int> levelIncrease)
   : EnemyEvent(vector<ExternalEnemy>{enemy}, attackTime, levelIncrease) {}
 
-EnemyEvent::EnemyEvent(vector<ExternalEnemy> e, Range attackT, double increase)
+EnemyEvent::EnemyEvent(vector<ExternalEnemy> e, Range attackT, EnumMap<ExperienceType, int> increase)
     : enemies(e), attackTime(attackT), levelIncrease(increase) {}

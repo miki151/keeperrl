@@ -56,13 +56,13 @@ class MonsterAIFactory {
   static MonsterAIFactory monster();
   static MonsterAIFactory singleTask(PTask&&);
   static MonsterAIFactory stayInLocation(Rectangle, bool moveRandomly = true);
-  static MonsterAIFactory guardSquare(Position);
   static MonsterAIFactory wildlifeNonPredator();
   static MonsterAIFactory scavengerBird(Position corpsePos);
   static MonsterAIFactory summoned(WCreature, int ttl);
   static MonsterAIFactory dieTime(double time);
   static MonsterAIFactory moveRandomly();
   static MonsterAIFactory stayOnFurniture(FurnitureType);
+  static MonsterAIFactory guard();
   static MonsterAIFactory idle();
   static MonsterAIFactory splashHeroes(bool leader);
   static MonsterAIFactory splashMonsters();

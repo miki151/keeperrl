@@ -709,6 +709,6 @@ vector<EnemyEvent> EnemyFactory::getExternalEnemies() {
   };
   vector<EnemyEvent> ret;
   for (int i : Range(500))
-    ret.push_back(EnemyEvent ( enemies[0], Range::singleElem(600 * (i + 2)), i * 4 ));
+    ret.push_back(EnemyEvent ( enemies[0], Range::singleElem(600 * (i + 2)), {{ExperienceType::MELEE, i * 4}} ));
   return ret;
 }

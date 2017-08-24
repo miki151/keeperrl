@@ -17,6 +17,7 @@
 
 #include "util.h"
 #include "tribe.h"
+#include "experience_type.h"
 
 class Creature;
 class MonsterAIFactory;
@@ -165,6 +166,7 @@ class CreatureFactory {
   static CreatureFactory singleCreature(TribeId, CreatureId);
 
   static PCreature fromId(CreatureId, TribeId, const MonsterAIFactory&);
+  static PCreature fromId(CreatureId, TribeId, const MonsterAIFactory&, const vector<ItemType>& inventory);
   static PCreature fromId(CreatureId, TribeId);
   static vector<PCreature> getFlock(int size, CreatureId, WCreature leader);
   static CreatureFactory humanVillage(TribeId);
@@ -201,19 +203,25 @@ class CreatureFactory {
   PCreature random(const MonsterAIFactory&);
   PCreature random();
 
-  CreatureFactory& increaseLevel(double);
+  CreatureFactory& increaseBaseLevel(ExperienceType, int);
+  CreatureFactory& increaseLevel(ExperienceType, int);
+  CreatureFactory& increaseLevel(EnumMap<ExperienceType, int>);
+  CreatureFactory& addInventory(vector<ItemType>);
 
   static PCreature getShopkeeper(Rectangle shopArea, TribeId);
   static PCreature getRollingBoulder(TribeId, Vec2 direction);
   static PCreature getGhost(WCreature);
   static PCreature getIllusion(WCreature);
 
-  static PCreature addInventory(PCreature c, const vector<ItemType>& items);
+  static void addInventory(WCreature, const vector<ItemType>& items);
   static CreatureAttributes getKrakenAttributes(ViewId, const char* name);
   static ViewId getViewId(CreatureId);
   static const Gender& getGender(CreatureId);
 
   static void init();
+  ~CreatureFactory();
+  CreatureFactory& operator = (const CreatureFactory&);
+  CreatureFactory(const CreatureFactory&);
 
   SERIALIZATION_DECL(CreatureFactory)
 
@@ -235,5 +243,7 @@ class CreatureFactory {
   vector<double> SERIAL(weights);
   vector<CreatureId> SERIAL(unique);
   EnumMap<CreatureId, optional<TribeId>> SERIAL(tribeOverrides);
-  double SERIAL(levelIncrease) = 0;
+  EnumMap<ExperienceType, int> SERIAL(baseLevelIncrease);
+  EnumMap<ExperienceType, int> SERIAL(levelIncrease);
+  vector<ItemType> SERIAL(inventory);
 };

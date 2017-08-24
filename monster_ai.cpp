@@ -584,7 +584,7 @@ class Fighter : public Behaviour {
       if (chase && !other->getAttributes().dontChase() && !isChaseFrozen(other)) {
         lastSeen = none;
         if (auto action = creature->moveTowards(other->getPosition()))
-          return {max(0., 1.0 - double(distance) / 10), action.prepend([=](WCreature creature) {
+          return {max(0., 1.0 - double(distance) / 20), action.prepend([=](WCreature creature) {
             creature->setInCombat();
             other->setInCombat();
             lastSeen = LastSeen{other->getPosition(), creature->getGlobalTime(), LastSeen::ATTACK, other->getUniqueId()};
@@ -593,7 +593,7 @@ class Fighter : public Behaviour {
               chaseFreeze.set(other, make_pair(other->getGlobalTime() + 20, other->getGlobalTime() + 70));
           })};
       }
-      if (distance == 2)
+      if (distance == 2 && chase)
         if (auto move = considerBreakingChokePoint(other))
           return move;
     }
@@ -1159,6 +1159,19 @@ PMonsterAI MonsterAIFactory::getMonsterAI(WCreature c) const {
 MonsterAIFactory::MonsterAIFactory(MakerFun _maker) : maker(_maker) {
 }
 
+MonsterAIFactory MonsterAIFactory::guard() {
+  return MonsterAIFactory([=](WCreature c) {
+      vector<Behaviour*> actors {
+          new AvoidFire(c),
+          new Heal(c),
+          new Fighter(c, 0.6, false),
+          new Wait(c)
+      };
+      vector<int> weights { 10, 5, 4, 1 };
+      return new MonsterAI(c, actors, weights);
+  });
+}
+
 MonsterAIFactory MonsterAIFactory::monster() {
   return stayInLocation(Level::getMaxBounds());
 }
@@ -1256,15 +1269,6 @@ MonsterAIFactory MonsterAIFactory::scavengerBird(Position corpsePos) {
           new MoveRandomly(c),
           new GuardSquare(c, corpsePos, 1, 2)},
           {1, 1, 2});
-      });
-}
-
-MonsterAIFactory MonsterAIFactory::guardSquare(Position pos) {
-  return MonsterAIFactory([=](WCreature c) {
-      return new MonsterAI(c, {
-          new Wait(c),
-          new GuardSquare(c, pos, 0, 1)},
-          {1, 2});
       });
 }
 

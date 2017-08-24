@@ -7,7 +7,7 @@ SokobanInput::SokobanInput(const FilePath& l, const FilePath& s) : levelsPath(l)
   CHECK(input) << "Failed to load sokoban data from " << levelsPath;
 }
 
-static optional<Table<char>> readTable(ifstream& input) {
+optional<Table<char>> SokobanInput::readTable(ifstream& input) {
   Vec2 size;
   input >> size.x >> size.y;
   if (!input)
