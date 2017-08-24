@@ -249,6 +249,7 @@ static double getDuration(WConstCreature c, LastingEffect e, int strength) {
     case LastingEffect::BLIND: return blindTime[strength];
     case LastingEffect::INVISIBLE: return invisibleTime[strength];
     case LastingEffect::STUNNED: return stunTime[strength];
+    case LastingEffect::SLEEP_RESISTANT:
     case LastingEffect::FIRE_RESISTANT:
     case LastingEffect::POISON_RESISTANT: return resistantTime[strength];
     case LastingEffect::FLYING: return levitateTime[strength];
@@ -574,6 +575,7 @@ const char* Effect::getName(LastingEffect type) {
     case LastingEffect::PANIC: return "panic";
     case LastingEffect::RAGE: return "rage";
     case LastingEffect::HALLU: return "magic";
+    case LastingEffect::SLEEP_RESISTANT: return "sleep resistance";
     case LastingEffect::DAM_BONUS: return "damage";
     case LastingEffect::DEF_BONUS: return "defense";
     case LastingEffect::SLEEP: return "sleep";
@@ -611,6 +613,7 @@ const char* Effect::getDescription(LastingEffect type) {
     case LastingEffect::HALLU: return "Causes hallucinations.";
     case LastingEffect::DAM_BONUS: return "Gives a damage bonus.";
     case LastingEffect::DEF_BONUS: return "Gives a defense bonus.";
+    case LastingEffect::SLEEP_RESISTANT: return "Prevents being put to sleep.";
     case LastingEffect::SLEEP: return "Puts to sleep.";
     case LastingEffect::TIED_UP:
       FALLTHROUGH;
