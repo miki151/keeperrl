@@ -616,7 +616,7 @@ bool Body::isIntrinsicallyAffected(LastingEffect effect) const {
         case Material::LAVA:
           return true;
         default:
-          break;
+          return false;
       }
     case LastingEffect::FLYING:
       return numGood(BodyPart::WING) >= 2;
@@ -628,10 +628,7 @@ bool Body::isIntrinsicallyAffected(LastingEffect effect) const {
 bool Body::isImmuneTo(LastingEffect effect) const {
   switch (effect) {
     case LastingEffect::BLEEDING:
-    case LastingEffect::POISON:
       return material != Material::FLESH;
-    case LastingEffect::SLEEP:
-      return material != Material::FLESH && material != Material::UNDEAD_FLESH;
     case LastingEffect::TIED_UP:
     case LastingEffect::ENTANGLED:
       switch (material) {

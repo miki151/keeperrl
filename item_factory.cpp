@@ -607,6 +607,7 @@ int getEffectPrice(EffectType type) {
             return 20;
           case LastingEffect::SLOWED:
           case LastingEffect::POISON_RESISTANT:
+          case LastingEffect::SLEEP_RESISTANT:
           case LastingEffect::FIRE_RESISTANT:
           case LastingEffect::POISON:
             return 20;

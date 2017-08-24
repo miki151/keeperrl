@@ -6,25 +6,29 @@
 #include "creature_attributes.h"
 #include "body.h"
 
+static optional<LastingEffect> getCancelledOneWay(LastingEffect effect) {
+  switch (effect) {
+    case LastingEffect::POISON_RESISTANT:
+      return LastingEffect::POISON;
+    case LastingEffect::SLEEP_RESISTANT:
+      return LastingEffect::SLEEP;
+    default:
+      return none;
+  }
+}
+
+static optional<LastingEffect> getCancelledBothWays(LastingEffect effect) {
+  switch (effect) {
+    case LastingEffect::PANIC:
+      return LastingEffect::RAGE;
+    case LastingEffect::SPEED:
+      return LastingEffect::SLOWED;
+    default:
+      return none;
+  }
+}
+
 static optional<LastingEffect> getCancelled(LastingEffect effect) {
-  auto getCancelledOneWay = [] (LastingEffect effect) -> optional<LastingEffect> {
-    switch (effect) {
-      case LastingEffect::POISON_RESISTANT:
-        return LastingEffect::POISON;
-      default:
-        return none;
-    }
-  };
-  auto getCancelledBothWays = [] (LastingEffect effect) -> optional<LastingEffect> {
-    switch (effect) {
-      case LastingEffect::PANIC:
-        return LastingEffect::RAGE;
-      case LastingEffect::SPEED:
-        return LastingEffect::SLOWED;
-      default:
-        return none;
-    }
-  };
   static EnumMap<LastingEffect, optional<LastingEffect>> ret(
     [&](LastingEffect e) -> optional<LastingEffect> {
       if (auto other = getCancelledOneWay(e))
@@ -33,6 +37,18 @@ static optional<LastingEffect> getCancelled(LastingEffect effect) {
         return *other;
       for (auto other : ENUM_ALL(LastingEffect))
         if (getCancelledBothWays(other) == e)
+          return other;
+      return none;
+    }
+  );
+  return ret[effect];
+}
+
+static optional<LastingEffect> getCancelling(LastingEffect effect) {
+  static EnumMap<LastingEffect, optional<LastingEffect>> ret(
+    [&](LastingEffect e) -> optional<LastingEffect> {
+      for (auto other : ENUM_ALL(LastingEffect))
+        if (getCancelled(other) == e)
           return other;
       return none;
     }
@@ -131,17 +147,10 @@ void LastingEffects::onAffected(WCreature c, LastingEffect effect, bool msg) {
 }
 
 bool LastingEffects::affects(WConstCreature c, LastingEffect effect) {
-  switch (effect) {
-    case LastingEffect::RAGE:
-    case LastingEffect::PANIC:
-      return !c->isAffected(LastingEffect::SLEEP);
-    case LastingEffect::SLEEP:
-      return !c->isAffected(LastingEffect::SLEEP_RESISTANT);
-    case LastingEffect::POISON:
-      return !c->isAffected(LastingEffect::POISON_RESISTANT);
-    default:
-      return true;
-  }
+  if (auto cancelling = getCancelling(effect))
+    if (c->isAffected(*cancelling))
+      return false;
+  return true;
 }
 
 optional<LastingEffect> LastingEffects::getSuppressor(LastingEffect effect) {
