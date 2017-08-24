@@ -148,6 +148,8 @@ const vector<BuildInfo>& BuildInfo::get() {
 #endif
       BuildInfo({TrapType::TERROR, ViewId::TERROR_TRAP}, "Panic trap", {{RequirementId::TECHNOLOGY, TechId::TRAPS}},
           "Causes the trespasser to panic.", 0, "Traps"),
+      BuildInfo({TrapType::FIRE_MINE, ViewId::FIRE_TRAP}, "Fire mine", {{RequirementId::TECHNOLOGY, TechId::TRAPS}},
+           "Burns unwanted guests.", 0, "Traps"),
       BuildInfo({TrapType::POISON_GAS, ViewId::GAS_TRAP}, "Gas trap", {{RequirementId::TECHNOLOGY, TechId::TRAPS}},
           "Releases a cloud of poisonous gas.", 0, "Traps"),
       BuildInfo({TrapType::ALARM, ViewId::ALARM_TRAP}, "Alarm trap", {{RequirementId::TECHNOLOGY, TechId::TRAPS}},

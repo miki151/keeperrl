@@ -8,7 +8,8 @@ RICH_ENUM(TrapType,
   ALARM,
   WEB,
   SURPRISE,
-  TERROR
+  TERROR,
+  FIRE_MINE
 );
 
 class EffectType;

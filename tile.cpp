@@ -533,6 +533,7 @@ class TileCoordLookup {
     Tile::addTile(ViewId::WEB_TRAP, sprite("web_trap"));
     Tile::addTile(ViewId::SURPRISE_TRAP, sprite("surprisetrap"));
     Tile::addTile(ViewId::TERROR_TRAP, sprite("terror_trap"));
+    Tile::addTile(ViewId::FIRE_TRAP, sprite("fire_sphere")); //For now
     Tile::addTile(ViewId::ROCK, sprite("stonepile"));
     Tile::addTile(ViewId::IRON_ROCK, sprite("ironpile"));
     Tile::addTile(ViewId::STEEL_INGOT, sprite("steelpile"));
@@ -854,6 +855,7 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::WEB_TRAP, symbol(u8"#", Color::WHITE, true));
     Tile::addSymbol(ViewId::SURPRISE_TRAP, symbol(u8"^", Color::BLUE, true));
     Tile::addSymbol(ViewId::TERROR_TRAP, symbol(u8"^", Color::WHITE, true));
+    Tile::addSymbol(ViewId::FIRE_TRAP, symbol(u8"^", Color::RED, true));
     Tile::addSymbol(ViewId::ROCK, symbol(u8"✱", Color::LIGHT_GRAY, true));
     Tile::addSymbol(ViewId::IRON_ROCK, symbol(u8"✱", Color::ORANGE, true));
     Tile::addSymbol(ViewId::STEEL_INGOT, symbol(u8"✱", Color::LIGHT_BLUE, true));

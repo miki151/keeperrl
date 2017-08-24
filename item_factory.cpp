@@ -322,6 +322,8 @@ static FurnitureType getTrapFurniture(TrapType type) {
       return FurnitureType::SURPRISE_TRAP;
     case TrapType::TERROR:
       return FurnitureType::TERROR_TRAP;
+    case TrapType::FIRE_MINE:
+      return FurnitureType::FIRE_TRAP;
     case TrapType::WEB:
       return FurnitureType::WEB_TRAP;
   }

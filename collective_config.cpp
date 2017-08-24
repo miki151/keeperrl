@@ -506,6 +506,8 @@ unique_ptr<Workshops> CollectiveConfig::getWorkshops() const {
                   .setTechId(TechId::TRAPS),
           Workshops::Item::fromType({ItemId::TRAP_ITEM, TrapType::TERROR}, 8, {CollectiveResourceId::WOOD, 20})
                   .setTechId(TechId::TRAPS),
+          Workshops::Item::fromType({ItemId::TRAP_ITEM, TrapType::FIRE_MINE}, 8, {CollectiveResourceId::GOLD, 3})
+                  .setTechId(TechId::TRAPS),
       }},
       {WorkshopType::FORGE, {
           Workshops::Item::fromType(ItemId::SWORD, 10, {CollectiveResourceId::IRON, 20}),
