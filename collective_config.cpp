@@ -563,6 +563,8 @@ unique_ptr<Workshops> CollectiveConfig::getWorkshops() const {
               {CollectiveResourceId::GOLD, 30}),
           Workshops::Item::fromType(ItemId::WARNING_AMULET, 10, {CollectiveResourceId::GOLD, 30}),
           Workshops::Item::fromType(ItemId::DEFENSE_AMULET, 10, {CollectiveResourceId::GOLD, 40}),
+          Workshops::Item::fromType({ItemId::RING, LastingEffect::DARKNESS_SOURCE}, 100,
+              {CollectiveResourceId::GOLD, 80}),
           Workshops::Item::fromType(ItemId::HEALING_AMULET, 10, {CollectiveResourceId::GOLD, 60}),
       }},
       {WorkshopType::STEEL_FURNACE, {
