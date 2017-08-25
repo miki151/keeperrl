@@ -768,6 +768,10 @@ CreatureFactory CreatureFactory::dwarfTown(TribeId tribe) {
   return CreatureFactory(tribe, { CreatureId::DWARF, CreatureId::DWARF_FEMALE}, { 2, 1},{ CreatureId::DWARF_BARON});
 }
 
+CreatureFactory CreatureFactory::fortyThieves(TribeId tribe) {
+  return CreatureFactory(tribe, {CreatureId::BANDIT, CreatureId::MASTER_THIEF}, {1,1}, {CreatureId::DARK_KNIGHT});
+}
+
 CreatureFactory CreatureFactory::dwarfCave(TribeId tribe) {
   return CreatureFactory(tribe, { CreatureId::DWARF, CreatureId::DWARF_FEMALE}, { 2, 1});
 }
@@ -1116,6 +1120,15 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.chatReactionHostile = "\"Die!\""_s;
  //         c.skills.insert(SkillId::DISARM_TRAPS);
           c.name = "bandit";);
+    case CreatureId::MASTER_THIEF:
+      //Bigger and badder than bandits.
+      return CATTR(
+          c.viewId = ViewId::MASTER_THIEF;
+          c.attr = LIST(30_dam, 20_def, 100_spd );
+          c.body = Body::humanoid(Body::Size::LARGE);
+          c.chatReactionFriendly = "\"Money, money, money...\""_s;
+          c.chatReactionHostile = "\"Giss your money!\""_s;
+          c.name = "master thief";);
     case CreatureId::GHOST: 
       return CATTR(
           c.viewId = ViewId::GHOST;
@@ -1321,6 +1334,18 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.chatReactionFriendly = "curses all dungeons"_s;
           c.chatReactionHostile = "\"Die!\""_s;
           c.name = "knight";);
+    case CreatureId::DARK_KNIGHT: 
+      return CATTR(
+          c.viewId = ViewId::DARK_KNIGHT;
+          c.attr = LIST(40_dam, 40_def, 110_spd );
+          c.body = Body::humanoid(Body::Size::LARGE);
+          //You really need to defeat this guy with magic.
+          //He is an expert at conventional fighting.
+          c.permanentEffects[LastingEffect::MELEE_RESISTANCE] = 1;
+          c.permanentEffects[LastingEffect::RANGED_RESISTANCE] = 1;
+          c.chatReactionFriendly = "curses all castles"_s;
+          c.chatReactionHostile = "\"Face death!\""_s;
+          c.name = "dark knight";);
     case CreatureId::AVATAR: 
       return CATTR(
           c.viewId = ViewId::DUKE;
@@ -2336,7 +2361,8 @@ vector<ItemType> getDefaultInventory(CreatureId id) {
     case CreatureId::MINOTAUR: 
       return ItemList()
         .add(ItemId::BATTLE_AXE);
-    case CreatureId::AVATAR: 
+    case CreatureId::AVATAR:
+    case CreatureId::DARK_KNIGHT:   
       return ItemList()
         .add(ItemId::SPECIAL_BATTLE_AXE)
         .add(ItemId::CHAIN_ARMOR)
@@ -2347,6 +2373,7 @@ vector<ItemType> getDefaultInventory(CreatureId id) {
     case CreatureId::OGRE: 
       return ItemList().add(ItemId::HEAVY_CLUB);
     case CreatureId::BANDIT:
+    case CreatureId::MASTER_THIEF:
       return ItemList()
         .add(ItemId::SWORD)
         .maybe(0.3, randomBackup())

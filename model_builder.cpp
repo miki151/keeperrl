@@ -346,6 +346,7 @@ static optional<BiomeId> getBiome(EnemyId enemyId, RandomGen& random) {
     case EnemyId::HYDRA:
     case EnemyId::VILLAGE:
     case EnemyId::ORC_VILLAGE: return BiomeId::GRASSLAND;
+    case EnemyId::FORTY_THIEVES:
     case EnemyId::RED_DRAGON:
     case EnemyId::GREEN_DRAGON:
     case EnemyId::DWARVES:

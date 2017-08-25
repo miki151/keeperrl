@@ -47,6 +47,7 @@ enum class SettlementType {
   SMALL_MINETOWN,
   VAULT,
   CAVE,
+  HUGE_CAVERN,
   SPIDER_CAVE,
   ISLAND_VAULT,
   ISLAND_VAULT_DOOR,

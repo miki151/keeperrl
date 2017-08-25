@@ -106,6 +106,8 @@ RICH_ENUM(CreatureId,
     CHICKEN,
 
     KNIGHT,
+    DARK_KNIGHT,
+    MASTER_THIEF,
     AVATAR,
     ARCHER,
     PESEANT,
@@ -186,6 +188,7 @@ class CreatureFactory {
   static CreatureFactory forrest(TribeId);
   static CreatureFactory crypt(TribeId);
   static CreatureFactory dwarfTown(TribeId);
+  static CreatureFactory fortyThieves(TribeId tribe);
   static CreatureFactory dwarfCave(TribeId);
   static CreatureFactory antNest(TribeId);
   static CreatureFactory vikingTown(TribeId);
