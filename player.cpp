@@ -51,6 +51,7 @@
 #include "tutorial.h"
 #include "message_generator.h"
 #include "message_buffer.h"
+#include "pretty_printing.h"
 
 template <class Archive>
 void Player::serialize(Archive& ar, const unsigned int) {
@@ -637,6 +638,12 @@ void Player::makeMove() {
     case UserInputId::CREATURE_BUTTON: creatureAction(action.get<Creature::Id>()); break;
     case UserInputId::CREATURE_BUTTON2: extendedAttackAction(action.get<Creature::Id>()); break;
     case UserInputId::EXIT: getGame()->exitAction(); return;
+    case UserInputId::APPLY_EFFECT:
+      if (auto effect = PrettyPrinting::getEffect(action.get<string>()))
+        Effect::applyToCreature(getCreature(), *effect, nullptr);
+      else
+        getView()->presentText("Sorry", "Couldn't parse \"" + action.get<string>() + "\"");
+      break;
     case UserInputId::PLAYER_COMMAND: {
         int index = action.get<int>();
         auto commands = getCommands();

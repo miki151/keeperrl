@@ -1387,6 +1387,10 @@ UserInputId getDirActionId(const SDL_Keysym& key) {
 void WindowView::keyboardAction(const SDL_Keysym& key) {
   switch (key.sym) {
 #ifndef RELEASE
+    case SDL::SDLK_F10:
+      if (auto input = getText("Enter effect", "", 100, ""))
+        inputQueue.push({UserInputId::APPLY_EFFECT, *input});
+      break;
     case SDL::SDLK_F9:
       inputQueue.push(UserInputId::CHEAT_ATTRIBUTES);
       break;

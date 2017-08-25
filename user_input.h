@@ -90,6 +90,7 @@ enum class UserInputId {
     CAST_SPELL,
     INVENTORY_ITEM,
     PAY_DEBT,
+    APPLY_EFFECT
 };
 
 struct CreatureDropInfo {
@@ -160,7 +161,7 @@ enum class SpellId;
 class UserInput : public EnumVariant<UserInputId, TYPES(BuildingInfo, int, UniqueEntity<Creature>::Id,
     UniqueEntity<PlayerMessage>::Id, InventoryItemInfo, Vec2, TeamCreatureInfo, SpellId, VillageActionInfo,
     TaskActionInfo, EquipmentActionInfo, RenameActionInfo, WorkshopQueuedActionInfo, CreatureDropInfo, TeamDropInfo,
-    UniqueEntity<Collective>::Id),
+    UniqueEntity<Collective>::Id, string),
         ASSIGN(BuildingInfo,
             UserInputId::BUILD,
             UserInputId::RECT_SELECTION,
@@ -226,7 +227,9 @@ class UserInput : public EnumVariant<UserInputId, TYPES(BuildingInfo, int, Uniqu
         ASSIGN(CreatureDropInfo,
             UserInputId::CREATURE_DRAG_DROP),
         ASSIGN(TeamDropInfo,
-            UserInputId::TEAM_DRAG_DROP)
+            UserInputId::TEAM_DRAG_DROP),
+        ASSIGN(string,
+            UserInputId::APPLY_EFFECT)
         > {
   using EnumVariant::EnumVariant;
 };
