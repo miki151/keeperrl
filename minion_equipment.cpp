@@ -21,28 +21,30 @@
 #include "effect.h"
 #include "equipment.h"
 #include "creature_attributes.h"
-#include "effect_type.h"
+#include "effect.h"
 #include "body.h"
 #include "item_class.h"
 #include "corpse_info.h"
 
 static bool isCombatConsumable(EffectType type) {
-  if (type.getId() != EffectId::LASTING)
-    return false;
-  switch (type.get<LastingEffect>()) {
-    case LastingEffect::SPEED:
-    case LastingEffect::SLOWED:
-    case LastingEffect::SLEEP:
-    case LastingEffect::POISON:
-    case LastingEffect::BLIND:
-    case LastingEffect::INVISIBLE:
-    case LastingEffect::DAM_BONUS:
-    case LastingEffect::DEF_BONUS:
-    case LastingEffect::POISON_RESISTANT:
-      return true;
-    default:
-      return false;
-  }
+  return type.visit(
+      [&](const auto&) { return false; },
+      [&](const EffectTypes::Lasting& e) {
+        switch (e.lastingEffect) {
+          case LastingEffect::SPEED:
+          case LastingEffect::SLOWED:
+          case LastingEffect::SLEEP:
+          case LastingEffect::POISON:
+          case LastingEffect::BLIND:
+          case LastingEffect::INVISIBLE:
+          case LastingEffect::DAM_BONUS:
+          case LastingEffect::DEF_BONUS:
+          case LastingEffect::POISON_RESISTANT:
+            return true;
+          default:
+            return false;
+        }
+      });
 }
 
 template <class Archive>
@@ -66,7 +68,7 @@ optional<MinionEquipment::EquipmentType> MinionEquipment::getEquipmentType(WCons
   if (it->canEquip())
     return MinionEquipment::ARMOR;
   if (auto& effect = it->getEffectType()) {
-    if (effect->getId() == EffectId::HEAL)
+    if (effect->contains<EffectTypes::Heal>())
       return MinionEquipment::HEALING;
     if (isCombatConsumable(*effect))
       return MinionEquipment::COMBAT_ITEM;

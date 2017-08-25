@@ -26,7 +26,6 @@
 #include "attack_type.h"
 #include "view_object.h"
 #include "spell_map.h"
-#include "effect_type.h"
 #include "effect.h"
 #include "minion_trait.h"
 

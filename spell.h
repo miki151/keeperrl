@@ -27,7 +27,6 @@ enum class CastMessageType {
 
 class EffectType;
 class DirEffectType;
-class EffectType;
 
 class Spell : public Singleton<Spell, SpellId> {
   public:

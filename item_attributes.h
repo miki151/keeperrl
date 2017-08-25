@@ -20,7 +20,7 @@
 
 #include "util.h"
 #include "enums.h"
-#include "effect_type.h"
+#include "effect.h"
 #include "attack_type.h"
 #include "attr_type.h"
 #include "ranged_weapon.h"

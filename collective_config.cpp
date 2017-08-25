@@ -526,25 +526,25 @@ unique_ptr<Workshops> CollectiveConfig::getWorkshops() const {
                  .setTechId(TechId::MAGICAL_WEAPONS),
       }},
       {WorkshopType::LABORATORY, {
-          Workshops::Item::fromType({ItemId::POTION, EffectType{EffectId::LASTING, LastingEffect::SLOWED}}, 2,
+          Workshops::Item::fromType({ItemId::POTION, EffectTypes::Lasting{LastingEffect::SLOWED}}, 2,
               {CollectiveResourceId::GOLD, 2}),
-          Workshops::Item::fromType({ItemId::POTION, EffectType{EffectId::LASTING, LastingEffect::SLEEP}}, 2,
+          Workshops::Item::fromType({ItemId::POTION, EffectTypes::Lasting{LastingEffect::SLEEP}}, 2,
               {CollectiveResourceId::GOLD, 2}),
           Workshops::Item::fromType({ItemId::POTION,
-              EffectType{EffectId::LASTING, LastingEffect::POISON_RESISTANT}}, 4, {CollectiveResourceId::GOLD, 6}),
+              EffectTypes::Lasting{LastingEffect::POISON_RESISTANT}}, 4, {CollectiveResourceId::GOLD, 6}),
           Workshops::Item::fromType({ItemId::POTION,
-              EffectType{EffectId::LASTING, LastingEffect::SPEED}}, 4, {CollectiveResourceId::GOLD, 6}),
+              EffectTypes::Lasting{LastingEffect::SPEED}}, 4, {CollectiveResourceId::GOLD, 6}),
           Workshops::Item::fromType({ItemId::POTION,
-              EffectType{EffectId::LASTING, LastingEffect::POISON}}, 4, {CollectiveResourceId::GOLD, 8}),
+              EffectTypes::Lasting{LastingEffect::POISON}}, 4, {CollectiveResourceId::GOLD, 8}),
           Workshops::Item::fromType({ItemId::POTION,
-              EffectType{EffectId::LASTING, LastingEffect::FLYING}}, 4, {CollectiveResourceId::GOLD, 8}),
-          Workshops::Item::fromType({ItemId::POTION, EffectId::HEAL}, 4, {CollectiveResourceId::GOLD, 10})
+              EffectTypes::Lasting{LastingEffect::FLYING}}, 4, {CollectiveResourceId::GOLD, 8}),
+          Workshops::Item::fromType({ItemId::POTION, EffectTypes::Heal{}}, 4, {CollectiveResourceId::GOLD, 10})
              .setTechId(TechId::ALCHEMY_ADV),
           Workshops::Item::fromType({ItemId::POTION,
-              EffectType{EffectId::LASTING, LastingEffect::BLIND}}, 4, {CollectiveResourceId::GOLD, 15})
+              EffectTypes::Lasting{LastingEffect::BLIND}}, 4, {CollectiveResourceId::GOLD, 15})
                   .setTechId(TechId::ALCHEMY_ADV),
           Workshops::Item::fromType({ItemId::POTION,
-              EffectType{EffectId::LASTING, LastingEffect::INVISIBLE}}, 6, {CollectiveResourceId::GOLD, 20})
+              EffectTypes::Lasting{LastingEffect::INVISIBLE}}, 6, {CollectiveResourceId::GOLD, 20})
                   .setTechId(TechId::ALCHEMY_ADV),
           //Alchemical conversion to and from gold
           Workshops::Item::fromType(ItemId::GOLD_PIECE, 5, {CollectiveResourceId::IRON, 30})

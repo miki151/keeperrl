@@ -74,9 +74,6 @@ enum class BiomeId;
 
 enum class ViewId;
 
-enum class EffectStrength;
-enum class EffectId;
-
 enum class AnimationId;
 
 enum class SpellId;

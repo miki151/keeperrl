@@ -1,7 +1,7 @@
 #pragma once
 
 #include "enum_variant.h"
-#include "effect_type.h"
+#include "effect.h"
 #include "util.h"
 
 RICH_ENUM(
