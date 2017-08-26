@@ -12,6 +12,8 @@ static optional<LastingEffect> getCancelledOneWay(LastingEffect effect) {
       return LastingEffect::POISON;
     case LastingEffect::SLEEP_RESISTANT:
       return LastingEffect::SLEEP;
+    case LastingEffect::REGENERATION:
+      return LastingEffect::BLEEDING;
     default:
       return none;
   }
@@ -67,7 +69,7 @@ static optional<ViewObject::Modifier> getViewObjectModifier(LastingEffect effect
 
 void LastingEffects::onAffected(WCreature c, LastingEffect effect, bool msg) {
   if (auto e = getCancelled(effect))
-    c->removeEffect(*e, false);
+    c->removeEffect(*e, true);
   if (auto mod = getViewObjectModifier(effect))
     c->modViewObject().setModifier(*mod);
   if (msg)
@@ -143,6 +145,8 @@ void LastingEffects::onAffected(WCreature c, LastingEffect effect, bool msg) {
         c->you("can see through trees"); break;
       case LastingEffect::NIGHT_VISION:
         c->you("can see in the dark"); break;
+      case LastingEffect::REGENERATION:
+        c->you(MsgType::ARE, "regenerating"); break;
     }
 }
 
@@ -232,6 +236,8 @@ void LastingEffects::onTimedOut(WCreature c, LastingEffect effect, bool msg) {
         c->you("can't see through trees anymore"); break;
       case LastingEffect::NIGHT_VISION:
         c->you("can't see in the dark anymore"); break;
+      case LastingEffect::REGENERATION:
+        c->you(MsgType::ARE, "no longer regenerating"); break;
       default: break;
     }
 }
@@ -303,6 +309,7 @@ static Adjective getAdjective(LastingEffect effect) {
     case LastingEffect::RANGED_RESISTANCE: return "Resistant to ranged attacks"_good;
     case LastingEffect::ELF_VISION: return "Can see through trees"_good;
     case LastingEffect::NIGHT_VISION: return "Can see in the dark"_good;
+    case LastingEffect::REGENERATION: return "Regenerating"_good;
 
     case LastingEffect::POISON: return "Poisoned"_bad;
     case LastingEffect::BLEEDING: return "Bleeding"_bad;
@@ -397,6 +404,9 @@ bool LastingEffects::tick(WCreature c, LastingEffect effect) {
         return true;
       }
       break;
+    case LastingEffect::REGENERATION:
+      c->getBody().heal(c, 0.03);
+      break;
     case LastingEffect::POISON:
       c->getBody().bleed(c, 0.03);
       c->secondPerson(PlayerMessage("You suffer from poisoning.", MessagePriority::HIGH));
@@ -446,6 +456,7 @@ const char* LastingEffects::getName(LastingEffect type) {
     case LastingEffect::DARKNESS_SOURCE: return "source of darkness";
     case LastingEffect::NIGHT_VISION: return "night vision";
     case LastingEffect::ELF_VISION: return "elf vision";
+    case LastingEffect::REGENERATION: return "regeneration";
   }
 }
 
@@ -483,5 +494,6 @@ const char* LastingEffects::getDescription(LastingEffect type) {
     case LastingEffect::DARKNESS_SOURCE: return "Causes the closest vicinity to become dark. Protects undead from sunlight.";
     case LastingEffect::NIGHT_VISION: return "Gives vision in the dark at full distance.";
     case LastingEffect::ELF_VISION: return "Allows to see and shoot through trees.";
+    case LastingEffect::REGENERATION: return "Recovers a little bit of health every turn.";
   }
 }

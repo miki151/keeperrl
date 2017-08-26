@@ -88,20 +88,6 @@ class AmuletOfWarning : public Item {
   int SERIAL(radius);
 };
 
-class AmuletOfHealing : public Item {
-  public:
-  AmuletOfHealing(const ItemAttributes& attr) : Item(attr) {}
-
-  virtual void specialTick(Position position) override {
-    WCreature owner = position.getCreature();
-    if (owner && owner->getEquipment().isEquipped(this))
-        owner->heal(1.0 / 20);
-  }
-
-  SERIALIZE_ALL(SUBCLASS(Item));
-  SERIALIZATION_CONSTRUCTOR(AmuletOfHealing);
-};
-
 class Telepathy : public CreatureVision {
   public:
   virtual bool canSee(WConstCreature c1, WConstCreature c2) override {
@@ -269,15 +255,14 @@ class TechBookItem : public Item {
   bool SERIAL(read) = false;
 };
 
-REGISTER_TYPE(SkillBook);
-REGISTER_TYPE(TechBookItem);
-REGISTER_TYPE(PotionItem);
-REGISTER_TYPE(FireScrollItem);
-REGISTER_TYPE(AmuletOfWarning);
-REGISTER_TYPE(AmuletOfHealing);
-REGISTER_TYPE(Telepathy);
-REGISTER_TYPE(ItemOfCreatureVision);
-REGISTER_TYPE(Corpse);
+REGISTER_TYPE(SkillBook)
+REGISTER_TYPE(TechBookItem)
+REGISTER_TYPE(PotionItem)
+REGISTER_TYPE(FireScrollItem)
+REGISTER_TYPE(AmuletOfWarning)
+REGISTER_TYPE(Telepathy)
+REGISTER_TYPE(ItemOfCreatureVision)
+REGISTER_TYPE(Corpse)
 
 
 ItemAttributes ItemType::getAttributes() const {
@@ -291,9 +276,6 @@ PItem ItemType::get() const {
       },
       [&](const TelepathyHelm&) {
         return makeOwner<ItemOfCreatureVision>(getAttributes(), makeOwner<Telepathy>());
-      },
-      [&](const HealingAmulet&) {
-        return makeOwner<AmuletOfHealing>(getAttributes());
       },
       [&](const FireScroll&) {
         return makeOwner<FireScrollItem>(getAttributes());
@@ -332,6 +314,7 @@ static int getEffectPrice(Effect type) {
             case LastingEffect::COLLAPSED:
             case LastingEffect::NIGHT_VISION:
             case LastingEffect::ELF_VISION:
+            case LastingEffect::REGENERATION:
               return 12;
             case LastingEffect::BLIND:
               return 16;
@@ -1040,6 +1023,7 @@ ItemAttributes ItemType::HealingAmulet::getAttributes() const {
       i.description = "Slowly heals all wounds.";
       i.itemClass = ItemClass::AMULET;
       i.equipmentSlot = EquipmentSlot::AMULET;
+      i.equipedEffect = LastingEffect::REGENERATION;
       i.price = 60;
       i.weight = 0.3;
   );
