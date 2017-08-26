@@ -130,11 +130,10 @@ class Heal : public Behaviour {
   Heal(WCreature c) : Behaviour(c) {}
 
   virtual double itemValue(WConstItem item) {
-    if (item->getEffect()->isType<Effect::Heal>()) {
-      return 0.5;
-    }
-    else
-      return 0;
+    if (auto& effect = item->getEffect())
+      if (effect->isType<Effect::Heal>())
+        return 0.5;
+    return 0;
   }
 
   virtual MoveInfo getMove() {
