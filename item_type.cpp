@@ -439,7 +439,7 @@ ViewId getRingViewId(LastingEffect e) {
   switch (e) {
     case LastingEffect::FIRE_RESISTANT: return ViewId::FIRE_RESIST_RING;
     case LastingEffect::POISON_RESISTANT: return ViewId::POISON_RESIST_RING;
-    default: FATAL << "Unhandled lasting effect " << int(e);
+    default: return ViewId::FIRE_RESIST_RING;
   }
   return ViewId(0);
 }
