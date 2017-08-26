@@ -2220,7 +2220,7 @@ ItemType randomBackup() {
 }
 
 ItemType randomArmor() {
-  return Random.choose<ItemType>({ItemType::LeatherArmor{}, ItemType::ChainArmor{}}, {4, 1});
+  return Random.choose({ItemType(ItemType::LeatherArmor{}), ItemType(ItemType::ChainArmor{})}, {4, 1});
 }
 
 class ItemList {
@@ -2357,7 +2357,7 @@ vector<ItemType> getDefaultInventory(CreatureId id) {
         .maybe(0.05, ItemType::Bow{});
     case CreatureId::DWARF:
       return ItemList()
-        .add(Random.choose<ItemType>({ItemType::BattleAxe{}, ItemType::WarHammer{}}, {1, 1}))
+        .add(Random.choose({ItemType(ItemType::BattleAxe{}), ItemType(ItemType::WarHammer{})}, {1, 1}))
         .maybe(0.6, randomBackup())
         .add(ItemType::ChainArmor{})
         .maybe(0.5, ItemType::IronHelm{})
@@ -2365,7 +2365,7 @@ vector<ItemType> getDefaultInventory(CreatureId id) {
         .add(ItemType::GoldPiece{}, Random.get(2, 6));
     case CreatureId::DWARF_BARON: 
       return ItemList()
-        .add(Random.choose<ItemType>({ItemType::SpecialBattleAxe{}, ItemType::SpecialWarHammer{}}, {1, 1}))
+        .add(Random.choose({ItemType(ItemType::SpecialBattleAxe{}), ItemType(ItemType::SpecialWarHammer{})}, {1, 1}))
         .add(randomBackup())
         .add(randomHealing())
         .add(ItemType::ChainArmor{})

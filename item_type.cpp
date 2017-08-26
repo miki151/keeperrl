@@ -308,7 +308,7 @@ PItem ItemType::get() const {
         return makeOwner<PotionItem>(getAttributes());
       },
       [&](const auto&) {
-        return makeOwner<Item>(getAttributes());
+        return makeOwner<Item>(this->getAttributes());
       }
   );
 }
