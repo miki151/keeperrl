@@ -3,9 +3,11 @@
 #include "stdafx.h"
 #include "util.h"
 
-class EffectType;
+class Effect;
+class ItemType;
 
 class PrettyPrinting {
   public:
-  static optional<EffectType> getEffect(const string&);
+  template<typename T>
+  static optional<T> parseObject(const string& s);
 };

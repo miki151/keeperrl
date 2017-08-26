@@ -488,9 +488,9 @@ class Test {
   }
 
   void testMinionEquipment1() {
-    PItem bow1 = ItemFactory::fromId(ItemId::BOW);
-    PItem bow2 = ItemFactory::fromId(ItemId::BOW);
-    PItem bow3 = ItemFactory::fromId(ItemId::BOW);
+    PItem bow1 = ItemType(ItemType::Bow{}).get();
+    PItem bow2 = ItemType(ItemType::Bow{}).get();
+    PItem bow3 = ItemType(ItemType::Bow{}).get();
     PCreature human = CreatureFactory::fromId(CreatureId::BANDIT, TribeId::getBandit());
     MinionEquipment equipment;
     CHECK(equipment.needsItem(human.get(), bow1.get(), false));
@@ -519,8 +519,8 @@ class Test {
   }
 
   void testMinionEquipmentItemDestroyed() {
-    PItem sword = ItemFactory::fromId(ItemId::SWORD);
-    PItem sword2 = ItemFactory::fromId(ItemId::SWORD);
+    PItem sword = ItemType(ItemType::Sword{}).get();
+    PItem sword2 = ItemType(ItemType::Sword{}).get();
     sword2->addModifier(AttrType::DAMAGE, -5);
     PCreature human = CreatureFactory::fromId(CreatureId::BANDIT, TribeId::getBandit());
     MinionEquipment equipment;
@@ -533,8 +533,8 @@ class Test {
   }
 
   void testMinionEquipmentUpdateItems() {
-    PItem sword = ItemFactory::fromId(ItemId::SWORD);
-    PItem sword2 = ItemFactory::fromId(ItemId::SWORD);
+    PItem sword = ItemType(ItemType::Sword{}).get();
+    PItem sword2 = ItemType(ItemType::Sword{}).get();
     sword2->addModifier(AttrType::DAMAGE, -5);
     PCreature human = CreatureFactory::fromId(CreatureId::BANDIT, TribeId::getBandit());
     PCreature human2 = CreatureFactory::fromId(CreatureId::BANDIT, TribeId::getBandit());
@@ -550,8 +550,8 @@ class Test {
   }
 
   void testMinionEquipmentUpdateOwners() {
-    PItem sword1 = ItemFactory::fromId(ItemId::SWORD);
-    PItem sword2 = ItemFactory::fromId(ItemId::SWORD);
+    PItem sword1 = ItemType(ItemType::Sword{}).get();
+    PItem sword2 = ItemType(ItemType::Sword{}).get();
     PCreature human1 = CreatureFactory::fromId(CreatureId::BANDIT, TribeId::getBandit());
     PCreature human2 = CreatureFactory::fromId(CreatureId::BANDIT, TribeId::getBandit());
     MinionEquipment equipment;
@@ -572,9 +572,9 @@ class Test {
   }
 
   void testMinionEquipmentAutoAssign() {
-    PItem sword1 = ItemFactory::fromId(ItemId::SWORD);
-    PItem sword2 = ItemFactory::fromId(ItemId::SWORD);
-    PItem sword3 = ItemFactory::fromId(ItemId::SWORD);
+    PItem sword1 = ItemType(ItemType::Sword{}).get();
+    PItem sword2 = ItemType(ItemType::Sword{}).get();
+    PItem sword3 = ItemType(ItemType::Sword{}).get();
     sword1->addModifier(AttrType::DAMAGE, 12);
     PCreature human1 = CreatureFactory::fromId(CreatureId::BANDIT, TribeId::getBandit());
     PCreature human2 = CreatureFactory::fromId(CreatureId::BANDIT, TribeId::getBandit());
@@ -593,8 +593,8 @@ class Test {
     CHECK(equipment.isOwner(sword1.get(), human2.get()));
     CHECKEQ(equipment.getItemsOwnedBy(human2.get()), makeVec(sword1.get()));
     CHECK(!equipment.getOwner(sword2.get()));
-    PItem bow = ItemFactory::fromId(ItemId::BOW);
-    PItem bow2 = ItemFactory::fromId(ItemId::BOW);
+    PItem bow = ItemType(ItemType::Bow{}).get();
+    PItem bow2 = ItemType(ItemType::Bow{}).get();
     bow2->addModifier(AttrType::DAMAGE, 30);
     CHECK(equipment.getItemsOwnedBy(human1.get()).size() == 0);
     equipment.autoAssign(human1.get(), {bow.get()});
@@ -614,8 +614,8 @@ class Test {
   }
 
   void testMinionEquipmentLocking() {
-    PItem sword1 = ItemFactory::fromId(ItemId::SWORD);
-    PItem sword2 = ItemFactory::fromId(ItemId::SWORD);
+    PItem sword1 = ItemType(ItemType::Sword{}).get();
+    PItem sword2 = ItemType(ItemType::Sword{}).get();
     sword1->addModifier(AttrType::DAMAGE, 12);
     PCreature human1 = CreatureFactory::fromId(CreatureId::BANDIT, TribeId::getBandit());
     MinionEquipment equipment;
@@ -639,10 +639,10 @@ class Test {
   }
 
   void testMinionEquipment123() {
-    PItem sword = ItemFactory::fromId(ItemId::SWORD);
-    PItem boots = ItemFactory::fromId(ItemId::LEATHER_BOOTS);
-    PItem gloves = ItemFactory::fromId(ItemId::LEATHER_GLOVES);
-    PItem helmet = ItemFactory::fromId(ItemId::LEATHER_HELM);
+    PItem sword = ItemType(ItemType::Sword{}).get();
+    PItem boots = ItemType(ItemType::LeatherBoots{}).get();
+    PItem gloves = ItemType(ItemType::LeatherGloves{}).get();
+    PItem helmet = ItemType(ItemType::LeatherHelm{}).get();
     vector<WItem> items = {sword.get(), boots.get(), gloves.get(), helmet.get()};
     PCreature human = CreatureFactory::fromId(CreatureId::BANDIT, TribeId::getBandit());
     MinionEquipment equipment;

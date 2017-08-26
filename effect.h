@@ -25,12 +25,11 @@ class Creature;
 class Item;
 class Tribe;
 class CreatureFactory;
-class EffectType;
 class DirEffectType;
 
 
 #define EFFECT_TYPE_INTERFACE\
-  void applyToCreature(WCreature, WCreature attacker) const;\
+  void applyToCreature(WCreature, WCreature attacker = nullptr) const;\
   string getName() const;\
   string getDescription() const
 
@@ -41,7 +40,8 @@ class DirEffectType;
     COMPARE_ALL()\
   }
 
-namespace EffectTypes {
+class Effect {
+  public:
   SIMPLE_EFFECT(Teleport);
   SIMPLE_EFFECT(Heal);
   SIMPLE_EFFECT(Fire);
@@ -97,20 +97,55 @@ namespace EffectTypes {
   MAKE_VARIANT(EffectType, Teleport, Heal, Fire, DestroyEquipment, EnhanceArmor, EnhanceWeapon,
       EmitPoisonGas, CircularBlast, Deception, Summon, SummonElement, Acid, Alarm, TeleEnemies, SilverDamage,
       CurePoison, Lasting, PlaceFurniture, Damage, InjureBodyPart, LooseBodyPart, RegrowBodyPart);
-}
 
-class EffectType : public EffectTypes::EffectType {
-  public:
-  using EffectTypes::EffectType::EffectType;
+  template <typename T>
+  Effect(T&& t) : effect(std::forward<T>(t)) {}
+  Effect(const Effect&) = default;
+  Effect(Effect&) = default;
+  Effect(Effect&&) = default;
+  Effect() {}
+  Effect& operator = (const Effect&) = default;
+  Effect& operator = (Effect&&) = default;
+
+  COMPARE_ALL(effect)
+
+  void applyToCreature(WCreature, WCreature attacker = nullptr) const;
+  string getName() const;
+  string getDescription() const;
+
+  template <typename... Args>
+  auto visit(Args&&...args) {
+    return effect.visit(std::forward<Args>(args)...);
+  }
+
+  template <typename... Args>
+  auto visit(Args&&...args) const {
+    return effect.visit(std::forward<Args>(args)...);
+  }
+
+  template <typename T>
+  bool isType() const {
+    return effect.contains<T>();
+  }
+
+  static vector<WCreature> summon(WCreature, CreatureId, int num, int ttl, double delay = 0);
+  static vector<WCreature> summon(Position, CreatureFactory&, int num, int ttl, double delay = 0);
+  static vector<WCreature> summonCreatures(Position, int radius, vector<PCreature>, double delay = 0);
+  static vector<WCreature> summonCreatures(WCreature, int radius, vector<PCreature>, double delay = 0);
+  static void emitPoisonGas(Position, double amount, bool msg);
+
+  private:
+  EffectType effect;
 };
+
 
 enum class DirEffectId {
   BLAST,
   CREATURE_EFFECT,
 };
 
-class DirEffectType : public EnumVariant<DirEffectId, TYPES(EffectType),
-        ASSIGN(EffectType, DirEffectId::CREATURE_EFFECT)> {
+class DirEffectType : public EnumVariant<DirEffectId, TYPES(Effect),
+        ASSIGN(Effect, DirEffectId::CREATURE_EFFECT)> {
   public:
   template <typename ...Args>
   DirEffectType(int r, Args&&...args) : EnumVariant(std::forward<Args>(args)...), range(r) {}
@@ -123,26 +158,5 @@ class DirEffectType : public EnumVariant<DirEffectId, TYPES(EffectType),
   int range;
 };
 
-
-
-class Effect {
-  public:
-  static void applyToCreature(WCreature, const EffectType&, WCreature attacker = nullptr);
-  static void applyDirected(WCreature, Vec2 direction, const DirEffectType&);
-
-  static vector<WCreature> summon(WCreature, CreatureId, int num, int ttl, double delay = 0);
-  static vector<WCreature> summon(Position, CreatureFactory&, int num, int ttl, double delay = 0);
-  static vector<WCreature> summonCreatures(Position, int radius, vector<PCreature>, double delay = 0);
-  static vector<WCreature> summonCreatures(WCreature, int radius, vector<PCreature>, double delay = 0);
-  static void emitPoisonGas(Position, double amount, bool msg);
-  static string getName(const EffectType&);
-  static const char* getName(LastingEffect);
-  static string getDescription(const EffectType&);
-  static string getDescription(const DirEffectType&);
-  static const char* getDescription(LastingEffect);
-
-  template <class Archive>
-  static void registerTypes(Archive& ar, int version);
-};
-
-
+extern string getDescription(const DirEffectType&);
+extern void applyDirected(WCreature, Vec2 direction, const DirEffectType&);

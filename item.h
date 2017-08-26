@@ -26,7 +26,7 @@ class Level;
 class Attack;
 class Fire;
 class ItemAttributes;
-class EffectType;
+class Effect;
 struct CorpseInfo;
 class RangedWeapon;
 
@@ -49,8 +49,8 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
   string getPluralTheName(int count) const;
   string getPluralTheNameAndVerb(int count, const string& verbSingle, const string& verbPlural) const;
 
-  const optional<EffectType>& getEffectType() const;
-  optional<EffectType> getAttackEffect() const;
+  const optional<Effect>& getEffect() const;
+  optional<Effect> getAttackEffect() const;
   ItemClass getClass() const;
   
   int getPrice() const;
@@ -93,7 +93,7 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
   bool isWieldedTwoHanded() const;
   int getMinStrength() const;
 
-  static ItemPredicate effectPredicate(EffectType);
+  static ItemPredicate effectPredicate(Effect);
   static ItemPredicate classPredicate(ItemClass);
   static ItemPredicate equipmentSlotPredicate(EquipmentSlot);
   static ItemPredicate classPredicate(vector<ItemClass>);

@@ -39,6 +39,6 @@ function<bool(WConstItem)> getIndexPredicate(ItemIndex index) {
         return it->getClass() == ItemClass::RANGED_WEAPON;};
     case ItemIndex::CAN_EQUIP: return [](WConstItem it) {return it->canEquip();};
     case ItemIndex::FOR_SALE: return [](WConstItem it) {return it->isOrWasForSale();};
-    case ItemIndex::HEALING_ITEM: return [](WConstItem it) {return it->getEffectType() == EffectType(EffectTypes::Heal{});};
+    case ItemIndex::HEALING_ITEM: return [](WConstItem it) {return it->getEffect() == Effect(Effect::Heal{});};
   }
 }

@@ -66,7 +66,7 @@ namespace cereal {
   }
 
   //! Saving for boost::variant
-  template <typename VariantType1, const char* Str, typename... VariantTypes> inline
+  template <typename VariantType1, const char* Str(), typename... VariantTypes> inline
   void CEREAL_SAVE_FUNCTION_NAME(PrettyOutputArchive& ar1, NamedVariant<Str, VariantType1, VariantTypes...> const & v ) {
     v.visit([&](const auto& elem) {
         using ThisType = typename variant_helpers::bare_type<decltype(elem)>::type;
@@ -81,7 +81,7 @@ namespace cereal {
   }
 
   //! Loading for boost::variant
-  template <typename VariantType1, const char* Str, typename... VariantTypes> inline
+  template <typename VariantType1, const char* Str(), typename... VariantTypes> inline
   void CEREAL_LOAD_FUNCTION_NAME( PrettyInputArchive & ar, NamedVariant<Str, VariantType1, VariantTypes...> & v )
   {
     string name;

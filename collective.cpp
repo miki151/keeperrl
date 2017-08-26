@@ -962,8 +962,7 @@ void Collective::returnResource(const CostInfo& amount) {
   if (auto storageType = config->getResourceInfo(amount.id).storageDestination) {
     const set<Position>& destination = storageType(this);
     if (!destination.empty()) {
-      Random.choose(destination).dropItems(ItemFactory::fromId(
-            config->getResourceInfo(amount.id).itemId, amount.value));
+      Random.choose(destination).dropItems(config->getResourceInfo(amount.id).itemId.get(amount.value));
       return;
     }
   }
@@ -1227,7 +1226,7 @@ void Collective::scheduleAutoProduction(function<bool(WConstItem)> itemPredicate
   if (count > 0)
     for (auto workshopType : ENUM_ALL(WorkshopType))
       for (auto& item : workshops->get(workshopType).getQueued())
-        if (itemPredicate(ItemFactory::fromId(item.type).get()))
+        if (itemPredicate(item.type.get().get()))
           count -= item.number * item.batchSize;
   if (count > 0)
     for (auto workshopType : ENUM_ALL(WorkshopType)) {
@@ -1236,7 +1235,7 @@ void Collective::scheduleAutoProduction(function<bool(WConstItem)> itemPredicate
         continue;
       auto& options = workshops->get(workshopType).getOptions();
       for (int index : All(options))
-        if (itemPredicate(ItemFactory::fromId(options[index].type).get())) {
+        if (itemPredicate(options[index].type.get().get())) {
           workshops->get(workshopType).queue(index, (count + options[index].batchSize - 1) / options[index].batchSize);
           return;
         }

@@ -106,7 +106,7 @@ vector<PItem> Workshops::Type::addWork(double amount) {
     auto& product = queued[0];
     *product.state += amount * prodMult / product.workNeeded;
     if (*product.state >= 1) {
-      vector<PItem> ret = ItemFactory::fromId(product.type, product.batchSize);
+      vector<PItem> ret = product.type.get(product.batchSize);
       product.state = none;
       if (!--product.number)
         queued.removeIndexPreserveOrder(0);

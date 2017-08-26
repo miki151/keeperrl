@@ -4,74 +4,127 @@
 #include "effect.h"
 #include "util.h"
 
-RICH_ENUM(
-    ItemId,
-    SPECIAL_KNIFE,
-    KNIFE,
-    SPEAR,
-    SWORD,
-    STEEL_SWORD,
-    SPECIAL_SWORD,
-    ELVEN_SWORD,
-    SPECIAL_ELVEN_SWORD,
-    BATTLE_AXE,
-    STEEL_BATTLE_AXE,
-    SPECIAL_BATTLE_AXE,
-    WAR_HAMMER,
-    SPECIAL_WAR_HAMMER,
-    CLUB,
-    HEAVY_CLUB,
-    WOODEN_STAFF,
-    IRON_STAFF,
-    SCYTHE,
-    BOW,
-    ELVEN_BOW,
+class ItemAttributes;
 
-    LEATHER_ARMOR,
-    LEATHER_HELM,
-    TELEPATHY_HELM,
-    CHAIN_ARMOR,
-    STEEL_ARMOR,
-    IRON_HELM,
-    LEATHER_BOOTS,
-    IRON_BOOTS,
-    SPEED_BOOTS,
-    LEVITATION_BOOTS,
-    LEATHER_GLOVES,
-    STRENGTH_GLOVES,
-    ROBE,
 
-    SCROLL,
-    FIRE_SCROLL,
-    POTION,
-    MUSHROOM,
+#define ITEM_TYPE_INTERFACE\
+  ItemAttributes getAttributes() const
 
-    WARNING_AMULET,
-    HEALING_AMULET,
-    DEFENSE_AMULET,
+#define SIMPLE_ITEM(Name) \
+  struct Name { \
+    COMPARE_ALL()\
+    ITEM_TYPE_INTERFACE;\
+  }
 
-    RING,
+class ItemType {
+  public:
+  SIMPLE_ITEM(SpecialKnife);
+  SIMPLE_ITEM(Knife);
+  SIMPLE_ITEM(Spear);
+  SIMPLE_ITEM(Sword);
+  SIMPLE_ITEM(SteelSword);
+  SIMPLE_ITEM(SpecialSword);
+  SIMPLE_ITEM(ElvenSword);
+  SIMPLE_ITEM(SpecialElvenSword);
+  SIMPLE_ITEM(BattleAxe);
+  SIMPLE_ITEM(SteelBattleAxe);
+  SIMPLE_ITEM(SpecialBattleAxe);
+  SIMPLE_ITEM(WarHammer);
+  SIMPLE_ITEM(SpecialWarHammer);
+  SIMPLE_ITEM(Club);
+  SIMPLE_ITEM(HeavyClub);
+  SIMPLE_ITEM(WoodenStaff);
+  SIMPLE_ITEM(IronStaff);
+  SIMPLE_ITEM(Scythe);
+  SIMPLE_ITEM(Bow);
+  SIMPLE_ITEM(ElvenBow);
 
-    FIRST_AID_KIT,
-    ROCK,
-    IRON_ORE,
-    STEEL_INGOT,
-    GOLD_PIECE,
-    WOOD_PLANK,
-    BONE,
+  SIMPLE_ITEM(LeatherArmor);
+  SIMPLE_ITEM(LeatherHelm);
+  SIMPLE_ITEM(TelepathyHelm);
+  SIMPLE_ITEM(ChainArmor);
+  SIMPLE_ITEM(SteelArmor);
+  SIMPLE_ITEM(IronHelm);
+  SIMPLE_ITEM(LeatherBoots);
+  SIMPLE_ITEM(IronBoots);
+  SIMPLE_ITEM(SpeedBoots);
+  SIMPLE_ITEM(LevitationBoots);
+  SIMPLE_ITEM(LeatherGloves);
+  SIMPLE_ITEM(StrengthGloves);
+  SIMPLE_ITEM(Robe);
 
-    RANDOM_TECH_BOOK,
-    TECH_BOOK,
+  struct Scroll {
+    Effect effect;
+    COMPARE_ALL(effect)
+    ITEM_TYPE_INTERFACE;
+  };
+  SIMPLE_ITEM(FireScroll);
+  struct Potion {
+    Effect effect;
+    COMPARE_ALL(effect)
+    ITEM_TYPE_INTERFACE;
+  };
+  struct Mushroom {
+    Effect effect;
+    COMPARE_ALL(effect)
+    ITEM_TYPE_INTERFACE;
+  };
+  SIMPLE_ITEM(WarningAmulet);
+  SIMPLE_ITEM(HealingAmulet);
+  SIMPLE_ITEM(DefenseAmulet);
+  struct Ring {
+    LastingEffect lastingEffect;
+    COMPARE_ALL(lastingEffect)
+    ITEM_TYPE_INTERFACE;
+  };
 
-    TRAP_ITEM,
-    AUTOMATON_ITEM
-);
+  SIMPLE_ITEM(FirstAidKit);
+  SIMPLE_ITEM(Rock);
+  SIMPLE_ITEM(IronOre);
+  SIMPLE_ITEM(SteelIngot);
+  SIMPLE_ITEM(GoldPiece);
+  SIMPLE_ITEM(WoodPlank);
+  SIMPLE_ITEM(Bone);
+  SIMPLE_ITEM(RandomTechBook);
+  struct TechBook {
+    TechId techId;
+    COMPARE_ALL(techId)
+    ITEM_TYPE_INTERFACE;
+  };
+  struct TrapItem {
+    TrapType trapType;
+    COMPARE_ALL(trapType)
+    ITEM_TYPE_INTERFACE;
+  };
+  SIMPLE_ITEM(AutomatonItem);
 
-class ItemType : public EnumVariant<ItemId, TYPES(EffectType, TrapType, LastingEffect, TechId),
-        ASSIGN(EffectType, ItemId::SCROLL, ItemId::POTION, ItemId::MUSHROOM),
-        ASSIGN(TrapType, ItemId::TRAP_ITEM),
-        ASSIGN(LastingEffect, ItemId::RING),
-        ASSIGN(TechId, ItemId::TECH_BOOK)> {
-  using EnumVariant::EnumVariant;
+  MAKE_VARIANT(Type, SpecialKnife, Knife, Spear, Sword, SteelSword, SpecialSword, ElvenSword, SpecialElvenSword,
+      BattleAxe, SteelBattleAxe, SpecialBattleAxe, WarHammer, SpecialWarHammer, Club, HeavyClub, WoodenStaff, IronStaff,
+      Scythe, Bow, ElvenBow, LeatherArmor, LeatherHelm, TelepathyHelm, ChainArmor, SteelArmor, IronHelm, LeatherBoots,
+      IronBoots, SpeedBoots, LevitationBoots, LeatherGloves, StrengthGloves, Robe, Scroll, FireScroll, Potion,
+      Mushroom, WarningAmulet, HealingAmulet, DefenseAmulet, Ring, FirstAidKit, Rock, IronOre, SteelIngot, GoldPiece,
+      WoodPlank, Bone, RandomTechBook, TechBook, TrapItem, AutomatonItem);
+
+  template <typename T>
+  ItemType(T&& t) : type(std::forward<T>(t)) {}
+  ItemType(const ItemType&) = default;
+  ItemType(ItemType&) = default;
+  ItemType(ItemType&&) = default;
+  ItemType() {}
+  ItemType& operator = (const ItemType&) = default;
+  ItemType& operator = (ItemType&&) = default;
+
+  template <typename T>
+  bool isType() const {
+    return type.contains<T>();
+  }
+
+  COMPARE_ALL(type)
+
+  PItem get() const;
+  vector<PItem> get(int) const;
+
+  private:
+  Type type;
+  ItemAttributes getAttributes() const;
 };
-

@@ -158,7 +158,7 @@ string CreatureAttributes::getDescription() const {
     return "";
   string attack;
   if (*attackEffect)
-    attack = " It has a " + Effect::getName(**attackEffect) + " attack.";
+    attack = " It has a " + (*attackEffect)->getName() + " attack.";
   return body->getDescription() + ". " + attack;
 }
 
@@ -352,7 +352,7 @@ void CreatureAttributes::removePermanentEffect(LastingEffect effect, int count) 
   permanentEffects[effect] -= count;
 }
 
-optional<EffectType> CreatureAttributes::getAttackEffect() const {
+optional<Effect> CreatureAttributes::getAttackEffect() const {
   return *attackEffect;
 }
 

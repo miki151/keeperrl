@@ -20,16 +20,16 @@ bool Spell::isDirected() const {
   return effect->contains<DirEffectType>();
 }
 
-bool Spell::hasEffect(EffectType t) const {
-  return effect->getReferenceMaybe<EffectType>() == t;
+bool Spell::hasEffect(Effect t) const {
+  return effect->getReferenceMaybe<Effect>() == t;
 }
 
 bool Spell::hasEffect(DirEffectType t) const {
   return effect->getReferenceMaybe<DirEffectType>() == t;
 }
 
-EffectType Spell::getEffectType() const {
-  return *effect->getReferenceMaybe<EffectType>();
+Effect Spell::getEffect() const {
+  return *effect->getReferenceMaybe<Effect>();
 }
 
 DirEffectType Spell::getDirEffectType() const{
@@ -40,7 +40,7 @@ int Spell::getDifficulty() const {
   return difficulty;
 }
 
-Spell::Spell(const string& n, EffectType e, int diff, SoundId s, CastMessageType msg)
+Spell::Spell(const string& n, Effect e, int diff, SoundId s, CastMessageType msg)
     : name(n), effect(e), difficulty(diff), castMessageType(msg), sound(s) {
 }
 
@@ -53,7 +53,10 @@ SoundId Spell::getSound() const {
 }
 
 string Spell::getDescription() const {
-  return effect->visit([](const auto& e) { return Effect::getDescription(e); });
+  return effect->visit(
+      [](const Effect& e) { return e.getDescription(); },
+      [](const DirEffectType& e) { return ::getDescription(e); }
+  );
 }
 
 void Spell::addMessage(WCreature c) {
@@ -70,37 +73,37 @@ void Spell::addMessage(WCreature c) {
 }
 
 void Spell::init() {
-  set(SpellId::HEAL_SELF, new Spell("heal self", EffectTypes::Heal{}, 30, SoundId::SPELL_HEALING));
-  set(SpellId::SUMMON_INSECTS, new Spell("summon insects", EffectTypes::Summon{CreatureId::FLY}, 30,
+  set(SpellId::HEAL_SELF, new Spell("heal self", Effect::Heal{}, 30, SoundId::SPELL_HEALING));
+  set(SpellId::SUMMON_INSECTS, new Spell("summon insects", Effect::Summon{CreatureId::FLY}, 30,
         SoundId::SPELL_SUMMON_INSECTS));
-  set(SpellId::DECEPTION, new Spell("deception", EffectTypes::Deception{}, 60, SoundId::SPELL_DECEPTION));
-  set(SpellId::SPEED_SELF, new Spell("haste self", EffectTypes::Lasting{LastingEffect::SPEED}, 60,
+  set(SpellId::DECEPTION, new Spell("deception", Effect::Deception{}, 60, SoundId::SPELL_DECEPTION));
+  set(SpellId::SPEED_SELF, new Spell("haste self", Effect::Lasting{LastingEffect::SPEED}, 60,
         SoundId::SPELL_SPEED_SELF));
-  set(SpellId::DAM_BONUS, new Spell("damage", EffectTypes::Lasting{LastingEffect::DAM_BONUS}, 90,
+  set(SpellId::DAM_BONUS, new Spell("damage", Effect::Lasting{LastingEffect::DAM_BONUS}, 90,
         SoundId::SPELL_STR_BONUS));
-  set(SpellId::DEF_BONUS, new Spell("defense", EffectTypes::Lasting{LastingEffect::DEF_BONUS}, 90,
+  set(SpellId::DEF_BONUS, new Spell("defense", Effect::Lasting{LastingEffect::DEF_BONUS}, 90,
         SoundId::SPELL_DEX_BONUS));
   set(SpellId::STUN_RAY, new Spell("stun ray",  DirEffectType(4, DirEffectId::CREATURE_EFFECT,
-      EffectTypes::Lasting{LastingEffect::STUNNED}) , 60, SoundId::SPELL_STUN_RAY));
+      Effect::Lasting{LastingEffect::STUNNED}) , 60, SoundId::SPELL_STUN_RAY));
   set(SpellId::HEAL_OTHER, new Spell("heal other",  DirEffectType(1, DirEffectId::CREATURE_EFFECT,
-      EffectTypes::Heal{}) , 6, SoundId::SPELL_HEALING));
-  set(SpellId::FIRE_SPHERE_PET, new Spell("fire sphere", EffectTypes::Summon{CreatureId::FIRE_SPHERE}, 20,
+      Effect::Heal{}) , 6, SoundId::SPELL_HEALING));
+  set(SpellId::FIRE_SPHERE_PET, new Spell("fire sphere", Effect::Summon{CreatureId::FIRE_SPHERE}, 20,
         SoundId::SPELL_FIRE_SPHERE_PET));
-  set(SpellId::TELEPORT, new Spell("escape", EffectTypes::Teleport{}, 80, SoundId::SPELL_TELEPORT));
-  set(SpellId::INVISIBILITY, new Spell("invisibility", EffectTypes::Lasting{LastingEffect::INVISIBLE}, 150,
+  set(SpellId::TELEPORT, new Spell("escape", Effect::Teleport{}, 80, SoundId::SPELL_TELEPORT));
+  set(SpellId::INVISIBILITY, new Spell("invisibility", Effect::Lasting{LastingEffect::INVISIBLE}, 150,
         SoundId::SPELL_INVISIBILITY));
   set(SpellId::BLAST, new Spell("blast", DirEffectType(4, DirEffectId::BLAST), 100, SoundId::SPELL_BLAST));
   set(SpellId::MAGIC_MISSILE, new Spell("magic missile", DirEffectType(4, DirEffectId::CREATURE_EFFECT,
-      EffectTypes::Damage{AttrType::SPELL_DAMAGE, AttackType::SPELL}), 3, SoundId::SPELL_BLAST));
-  set(SpellId::CIRCULAR_BLAST, new Spell("circular blast", EffectTypes::CircularBlast{}, 150, SoundId::SPELL_AIR_BLAST,
+      Effect::Damage{AttrType::SPELL_DAMAGE, AttackType::SPELL}), 3, SoundId::SPELL_BLAST));
+  set(SpellId::CIRCULAR_BLAST, new Spell("circular blast", Effect::CircularBlast{}, 150, SoundId::SPELL_AIR_BLAST,
         CastMessageType::AIR_BLAST));
-  set(SpellId::SUMMON_SPIRIT, new Spell("summon spirits", EffectTypes::Summon{CreatureId::SPIRIT}, 150,
+  set(SpellId::SUMMON_SPIRIT, new Spell("summon spirits", Effect::Summon{CreatureId::SPIRIT}, 150,
         SoundId::SPELL_SUMMON_SPIRIT));
-  set(SpellId::CURE_POISON, new Spell("cure poisoning", EffectTypes::CurePoison{}, 150, SoundId::SPELL_CURE_POISON));
-  set(SpellId::METEOR_SHOWER, new Spell("meteor shower", EffectTypes::PlaceFurniture{FurnitureType::METEOR_SHOWER}, 150,
+  set(SpellId::CURE_POISON, new Spell("cure poisoning", Effect::CurePoison{}, 150, SoundId::SPELL_CURE_POISON));
+  set(SpellId::METEOR_SHOWER, new Spell("meteor shower", Effect::PlaceFurniture{FurnitureType::METEOR_SHOWER}, 150,
         SoundId::SPELL_METEOR_SHOWER));
-  set(SpellId::PORTAL, new Spell("portal", EffectTypes::PlaceFurniture{FurnitureType::PORTAL}, 150, SoundId::SPELL_PORTAL));
-  set(SpellId::SUMMON_ELEMENT, new Spell("summon element", EffectTypes::SummonElement{}, 150, SoundId::SPELL_SUMMON_SPIRIT));
+  set(SpellId::PORTAL, new Spell("portal", Effect::PlaceFurniture{FurnitureType::PORTAL}, 150, SoundId::SPELL_PORTAL));
+  set(SpellId::SUMMON_ELEMENT, new Spell("summon element", Effect::SummonElement{}, 150, SoundId::SPELL_SUMMON_SPIRIT));
 }
 
 optional<int> Spell::getLearningExpLevel() const {

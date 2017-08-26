@@ -8,13 +8,24 @@
 #include "lasting_effect.h"
 #include "attr_type.h"
 #include "body.h"
+#include "item_type.h"
+#include "technology.h"
+#include "trap_type.h"
 
-optional<EffectType> PrettyPrinting::getEffect(const string& s) {
+template <typename T>
+optional<T> PrettyPrinting::parseObject(const string& s) {
   try {
     PrettyInput input(s);
-    EffectType type;
-    input.getArchive() >> type;
-    return type;
+    T object;
+    input.getArchive() >> object;
+    return object;
   } catch (...) {}
   return none;
 }
+
+
+template
+optional<Effect> PrettyPrinting::parseObject<Effect>(const string&);
+
+template
+optional<ItemType> PrettyPrinting::parseObject<ItemType>(const string&);

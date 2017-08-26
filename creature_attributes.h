@@ -40,7 +40,7 @@ class MinionTaskMap;
 class SpellMap;
 class Body;
 class SpellMap;
-class EffectType;
+class Effect;
 struct AdjectiveInfo;
 
 class CreatureAttributes {
@@ -91,7 +91,7 @@ class CreatureAttributes {
   void addLastingEffect(LastingEffect, double endtime);
   optional<double> getLastAffected(LastingEffect, double currentGlobalTime) const;
   AttackType getAttackType(WConstItem weapon) const;
-  optional<EffectType> getAttackEffect() const;
+  optional<Effect> getAttackEffect() const;
   bool canSleep() const;
   bool isInnocent() const;
   void consume(WCreature self, const CreatureAttributes& other);
@@ -116,8 +116,8 @@ class CreatureAttributes {
   optional<string> SERIAL(chatReactionFriendly);
   optional<string> SERIAL(chatReactionHostile);
   optional<AttackType> SERIAL(barehandedAttack);
-  HeapAllocated<optional<EffectType>> SERIAL(attackEffect);
-  HeapAllocated<optional<EffectType>> SERIAL(passiveAttack);
+  HeapAllocated<optional<Effect>> SERIAL(attackEffect);
+  HeapAllocated<optional<Effect>> SERIAL(passiveAttack);
   Gender SERIAL(gender) = Gender::male;
   optional<SpawnType> SERIAL(spawnType);
   bool SERIAL(innocent) = false;

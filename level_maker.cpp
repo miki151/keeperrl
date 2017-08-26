@@ -1651,7 +1651,7 @@ static MakerQueue* stockpileMaker(StockpileInfo info) {
   switch (info.type) {
     case StockpileInfo::GOLD:
       furniture = FurnitureType::TREASURE_CHEST;
-      items = ItemFactory::singleType(ItemId::GOLD_PIECE);
+      items = ItemFactory::singleType(ItemType::GoldPiece{});
       break;
     case StockpileInfo::MINERALS:
       items = ItemFactory::minerals();

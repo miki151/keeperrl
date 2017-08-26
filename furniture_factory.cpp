@@ -178,7 +178,7 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setDestroyable(100, DestroyAction::Type::BOULDER)
           .setDestroyable(70, DestroyAction::Type::CUT)
           .setFireInfo(Fire(1000, 0.7))
-          .setItemDrop(ItemFactory::singleType(ItemId::WOOD_PLANK, Range(8, 14)))
+          .setItemDrop(ItemFactory::singleType(ItemType::WoodPlank{}, Range(8, 14)))
           .setSummonedElement(CreatureId::ENT);
     case FurnitureType::DECID_TREE:
       return Furniture("tree", ViewObject(ViewId::DECID_TREE, ViewLayer::FLOOR), type, tribe)
@@ -190,7 +190,7 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setFireInfo(Fire(1000, 0.7))
           .setDestroyable(100, DestroyAction::Type::BOULDER)
           .setDestroyable(70, DestroyAction::Type::CUT)
-          .setItemDrop(ItemFactory::singleType(ItemId::WOOD_PLANK, Range(8, 14)))
+          .setItemDrop(ItemFactory::singleType(ItemType::WoodPlank{}, Range(8, 14)))
           .setSummonedElement(CreatureId::ENT);
     case FurnitureType::TREE_TRUNK:
       return Furniture("tree trunk", ViewObject(ViewId::TREE_TRUNK, ViewLayer::FLOOR), type, tribe);
@@ -204,7 +204,7 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setDestroyable(10, DestroyAction::Type::CUT)
           .setCanHide()
           .setFireInfo(Fire(100, 0.8))
-          .setItemDrop(ItemFactory::singleType(ItemId::WOOD_PLANK, Range(2, 4)));
+          .setItemDrop(ItemFactory::singleType(ItemType::WoodPlank{}, Range(2, 4)));
     case FurnitureType::CROPS:
       return Furniture("wheat", ViewObject(Random.choose(ViewId::CROPS, ViewId::CROPS2), ViewLayer::FLOOR), type, tribe)
           .setUsageType(FurnitureUsageType::CROPS)
@@ -331,7 +331,7 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setBlocking()
           .setBlockVision()
           .setIsWall()
-          .setItemDrop(ItemFactory::singleType(ItemId::IRON_ORE, Range(8, 14)))
+          .setItemDrop(ItemFactory::singleType(ItemType::IronOre{}, Range(8, 14)))
           .setDestroyable(200, DestroyAction::Type::BOULDER)
           .setDestroyable(220, DestroyAction::Type::DIG)
           .setDestroyable(200, DestroyAction::Type::HOSTILE_DIG)
@@ -341,7 +341,7 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setBlocking()
           .setBlockVision()
           .setIsWall()
-          .setItemDrop(ItemFactory::singleType(ItemId::ROCK, Range(8, 14)))
+          .setItemDrop(ItemFactory::singleType(ItemType::Rock{}, Range(8, 14)))
           .setDestroyable(200, DestroyAction::Type::BOULDER)
           .setDestroyable(250, DestroyAction::Type::DIG)
           .setDestroyable(200, DestroyAction::Type::HOSTILE_DIG)
@@ -351,7 +351,7 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setBlocking()
           .setBlockVision()
           .setIsWall()
-          .setItemDrop(ItemFactory::singleType(ItemId::GOLD_PIECE, Range(8, 14)))
+          .setItemDrop(ItemFactory::singleType(ItemType::GoldPiece{}, Range(8, 14)))
           .setDestroyable(200, DestroyAction::Type::BOULDER)
           .setDestroyable(220, DestroyAction::Type::DIG)
           .setDestroyable(200, DestroyAction::Type::HOSTILE_DIG)
@@ -408,31 +408,31 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setLayer(FurnitureLayer::FLOOR);
     case FurnitureType::ALARM_TRAP:
       return Furniture("alarm trap", ViewObject(ViewId::ALARM_TRAP, ViewLayer::FLOOR), type, tribe)
-          .setEntryType(FurnitureEntry(FurnitureEntry::Trap(EffectTypes::Alarm{})))
+          .setEntryType(FurnitureEntry(FurnitureEntry::Trap(Effect::Alarm{})))
           .setEmitsWarning()
           .setConstructMessage(Furniture::SET_UP);
     case FurnitureType::POISON_GAS_TRAP:
       return Furniture("poison gas trap", ViewObject(ViewId::GAS_TRAP, ViewLayer::FLOOR), type, tribe)
-          .setEntryType(FurnitureEntry(FurnitureEntry::Trap(EffectTypes::EmitPoisonGas{})))
+          .setEntryType(FurnitureEntry(FurnitureEntry::Trap(Effect::EmitPoisonGas{})))
           .setEmitsWarning()
           .setConstructMessage(Furniture::SET_UP);
     case FurnitureType::WEB_TRAP:
       return Furniture("web trap", ViewObject(ViewId::WEB_TRAP, ViewLayer::FLOOR), type, tribe)
-          .setEntryType(FurnitureEntry(FurnitureEntry::Trap(EffectTypes::Lasting{LastingEffect::ENTANGLED})))
+          .setEntryType(FurnitureEntry(FurnitureEntry::Trap(Effect::Lasting{LastingEffect::ENTANGLED})))
           .setEmitsWarning()
           .setConstructMessage(Furniture::SET_UP);
     case FurnitureType::SPIDER_WEB:
       return Furniture("spider web", ViewObject(ViewId::WEB_TRAP, ViewLayer::FLOOR), type, tribe)
-          .setEntryType(FurnitureEntry(FurnitureEntry::Trap(EffectTypes::Lasting{LastingEffect::ENTANGLED},
+          .setEntryType(FurnitureEntry(FurnitureEntry::Trap(Effect::Lasting{LastingEffect::ENTANGLED},
               true)));
     case FurnitureType::SURPRISE_TRAP:
       return Furniture("surprise trap", ViewObject(ViewId::SURPRISE_TRAP, ViewLayer::FLOOR), type, tribe)
-          .setEntryType(FurnitureEntry(FurnitureEntry::Trap(EffectTypes::TeleEnemies{})))
+          .setEntryType(FurnitureEntry(FurnitureEntry::Trap(Effect::TeleEnemies{})))
           .setEmitsWarning()
           .setConstructMessage(Furniture::SET_UP);
     case FurnitureType::TERROR_TRAP:
       return Furniture("panic trap", ViewObject(ViewId::TERROR_TRAP, ViewLayer::FLOOR), type, tribe)
-          .setEntryType(FurnitureEntry(FurnitureEntry::Trap(EffectTypes::Lasting{LastingEffect::PANIC})))
+          .setEntryType(FurnitureEntry(FurnitureEntry::Trap(Effect::Lasting{LastingEffect::PANIC})))
           .setEmitsWarning()
           .setConstructMessage(Furniture::SET_UP);
     case FurnitureType::BOULDER_TRAP:

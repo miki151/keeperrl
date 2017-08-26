@@ -20,6 +20,7 @@
 #include "workshop_type.h"
 #include "cost_info.h"
 #include "position.h"
+#include "item_type.h"
 
 enum class ItemClass;
 
@@ -57,7 +58,7 @@ typedef function<const set<Position>&(WConstCollective)> StorageDestinationFun;
 struct ResourceInfo {
   StorageDestinationFun storageDestination;
   optional<ItemIndex> itemIndex;
-  ItemId itemId;
+  ItemType itemId;
   string name;
   ViewId viewId;
   bool dontDisplay;

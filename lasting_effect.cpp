@@ -413,4 +413,75 @@ bool LastingEffects::tick(WCreature c, LastingEffect effect) {
   return false;
 }
 
+const char* LastingEffects::getName(LastingEffect type) {
+  switch (type) {
+    case LastingEffect::PREGNANT: return "pregnant";
+    case LastingEffect::BLEEDING: return "bleeding";
+    case LastingEffect::SLOWED: return "slowness";
+    case LastingEffect::SPEED: return "speed";
+    case LastingEffect::BLIND: return "blindness";
+    case LastingEffect::INVISIBLE: return "invisibility";
+    case LastingEffect::POISON: return "poison";
+    case LastingEffect::POISON_RESISTANT: return "poison resistance";
+    case LastingEffect::FLYING: return "levitation";
+    case LastingEffect::COLLAPSED: return "collapse";
+    case LastingEffect::PANIC: return "panic";
+    case LastingEffect::RAGE: return "rage";
+    case LastingEffect::HALLU: return "magic";
+    case LastingEffect::SLEEP_RESISTANT: return "sleep resistance";
+    case LastingEffect::DAM_BONUS: return "damage";
+    case LastingEffect::DEF_BONUS: return "defense";
+    case LastingEffect::SLEEP: return "sleep";
+    case LastingEffect::TIED_UP:
+    case LastingEffect::ENTANGLED: return "web";
+    case LastingEffect::STUNNED: return "stunning";
+    case LastingEffect::FIRE_RESISTANT: return "fire resistance";
+    case LastingEffect::INSANITY: return "insanity";
+    case LastingEffect::MAGIC_RESISTANCE: return "magic resistance";
+    case LastingEffect::MELEE_RESISTANCE: return "melee resistance";
+    case LastingEffect::RANGED_RESISTANCE: return "ranged resistance";
+    case LastingEffect::MAGIC_VULNERABILITY: return "magic vulnerability";
+    case LastingEffect::MELEE_VULNERABILITY: return "melee vulnerability";
+    case LastingEffect::RANGED_VULNERABILITY: return "ranged vulnerability";
+    case LastingEffect::DARKNESS_SOURCE: return "source of darkness";
+    case LastingEffect::NIGHT_VISION: return "night vision";
+    case LastingEffect::ELF_VISION: return "elf vision";
+  }
+}
 
+const char* LastingEffects::getDescription(LastingEffect type) {
+  switch (type) {
+    case LastingEffect::PREGNANT: return "This is no dream! This is really happening!";
+    case LastingEffect::SLOWED: return "Causes unnaturally slow movement.";
+    case LastingEffect::BLEEDING: return "Causes loss of health points over time.";
+    case LastingEffect::SPEED: return "Causes unnaturally quick movement.";
+    case LastingEffect::BLIND: return "Causes blindness";
+    case LastingEffect::INVISIBLE: return "Makes you invisible to enemies.";
+    case LastingEffect::POISON: return "Decreases health every turn by a little bit.";
+    case LastingEffect::POISON_RESISTANT: return "Gives poison resistance.";
+    case LastingEffect::FLYING: return "Causes levitation.";
+    case LastingEffect::COLLAPSED: return "Moving across tiles takes three times longer.";
+    case LastingEffect::PANIC: return "Increases defense and lowers damage.";
+    case LastingEffect::RAGE: return "Increases damage and lowers defense.";
+    case LastingEffect::HALLU: return "Causes hallucinations.";
+    case LastingEffect::DAM_BONUS: return "Gives a damage bonus.";
+    case LastingEffect::DEF_BONUS: return "Gives a defense bonus.";
+    case LastingEffect::SLEEP_RESISTANT: return "Prevents being put to sleep.";
+    case LastingEffect::SLEEP: return "Puts to sleep.";
+    case LastingEffect::TIED_UP:
+      FALLTHROUGH;
+    case LastingEffect::ENTANGLED: return "web";
+    case LastingEffect::STUNNED: return "Causes inability to make any action.";
+    case LastingEffect::FIRE_RESISTANT: return "Gives fire resistance.";
+    case LastingEffect::INSANITY: return "Confuses the target about who is friend and who is foe.";
+    case LastingEffect::MAGIC_RESISTANCE: return "Increases defense against magical attacks by 30%.";
+    case LastingEffect::MELEE_RESISTANCE: return "Increases defense against melee attacks by 30%.";
+    case LastingEffect::RANGED_RESISTANCE: return "Increases defense against ranged attacks by 30%.";
+    case LastingEffect::MAGIC_VULNERABILITY: return "Decreases defense against magical attacks by 23%.";
+    case LastingEffect::MELEE_VULNERABILITY: return "Decreases defense against melee attacks by 23%.";
+    case LastingEffect::RANGED_VULNERABILITY: return "Decreases defense against ranged attacks by 23%.";
+    case LastingEffect::DARKNESS_SOURCE: return "Causes the closest vicinity to become dark. Protects undead from sunlight.";
+    case LastingEffect::NIGHT_VISION: return "Gives vision in the dark at full distance.";
+    case LastingEffect::ELF_VISION: return "Allows to see and shoot through trees.";
+  }
+}

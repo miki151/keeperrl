@@ -51,8 +51,8 @@ Item::Item(const ItemAttributes& attr) : Renderable(ViewObject(*attr.viewId, Vie
 Item::~Item() {
 }
 
-ItemPredicate Item::effectPredicate(EffectType type) {
-  return [type](WConstItem item) { return item->getEffectType() == type; };
+ItemPredicate Item::effectPredicate(Effect type) {
+  return [type](WConstItem item) { return item->getEffect() == type; };
 }
 
 ItemPredicate Item::classPredicate(ItemClass cl) {
@@ -143,7 +143,7 @@ void Item::onHitCreature(WCreature c, const Attack& attack, int numItems) {
   if (c->takeDamage(attack))
     return;
   if (attributes->effect && getClass() == ItemClass::POTION) {
-    Effect::applyToCreature(c, *attributes->effect, attack.attacker);
+    attributes->effect->applyToCreature(c, attack.attacker);
   }
 }
 
@@ -200,7 +200,7 @@ void Item::applySpecial(WCreature c) {
   if (attributes->itemClass == ItemClass::SCROLL)
     c->getGame()->getStatistics().add(StatId::SCROLL_READ);
   if (attributes->effect)
-    Effect::applyToCreature(c, *attributes->effect);
+    attributes->effect->applyToCreature(c);
   if (attributes->uses > -1 && --attributes->uses == 0) {
     discarded = true;
     if (attributes->usedUpMsg)
@@ -386,11 +386,11 @@ bool Item::isDiscarded() {
   return discarded;
 }
 
-const optional<EffectType>& Item::getEffectType() const {
+const optional<Effect>& Item::getEffect() const {
   return attributes->effect;
 }
 
-optional<EffectType> Item::getAttackEffect() const {
+optional<Effect> Item::getAttackEffect() const {
   return attributes->attackEffect;
 }
 
