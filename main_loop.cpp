@@ -29,6 +29,7 @@
 #include "tutorial.h"
 #include "model.h"
 #include "item_type.h"
+#include "pretty_printing.h"
 
 MainLoop::MainLoop(View* v, Highscores* h, FileSharing* fSharing, const DirectoryPath& freePath,
     const DirectoryPath& uPath, Options* o, Jukebox* j, SokobanInput* soko, bool singleThread,
@@ -525,7 +526,10 @@ void MainLoop::battleTest(int numTries, const FilePath& levelPath, const FilePat
     string equipment;
     input >> equipment;
     for (auto id : split(equipment, {','}))
-      info.allyEquipment.push_back(EnumInfo<ItemId>::fromString(id));
+      if (auto type = PrettyPrinting::parseObject<ItemType>(id))
+        info.allyEquipment.push_back(*type);
+      else
+        FATAL << "Can't parse item type: " << id;
     std::cout << EnumInfo<CreatureId>::getString(info.ally) << " " << levelIncreases << ": ";
     battleTest(numTries, levelPath, info, enemyId, maxEnemies, random);
   }

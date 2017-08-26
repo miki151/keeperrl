@@ -485,7 +485,7 @@ class ShopkeeperController : public Monster, public EventListener<ShopkeeperCont
 
 void CreatureFactory::addInventory(WCreature c, const vector<ItemType>& items) {
   for (ItemType item : items)
-    c->take(ItemFactory::fromId(item));
+    c->take(item.get());
 }
 
 PCreature CreatureFactory::getShopkeeper(Rectangle shopArea, TribeId tribe) {
@@ -501,12 +501,12 @@ PCreature CreatureFactory::getShopkeeper(Rectangle shopArea, TribeId tribe) {
         c.name = "shopkeeper";
         c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_MALE)->getNext());));
   ret->setController(makeOwner<ShopkeeperController>(ret.get(), shopArea));
-  vector<ItemType> inventory(Random.get(20, 60), ItemId::GOLD_PIECE);
-  inventory.push_back(ItemId::SWORD);
-  inventory.push_back(ItemId::LEATHER_ARMOR);
-  inventory.push_back(ItemId::LEATHER_BOOTS);
-  inventory.push_back({ItemId::POTION, Effect::Heal{}});
-  inventory.push_back({ItemId::POTION, Effect::Heal{}});
+  vector<ItemType> inventory(Random.get(20, 60), ItemType::GoldPiece{});
+  inventory.push_back(ItemType::Sword{});
+  inventory.push_back(ItemType::LeatherArmor{});
+  inventory.push_back(ItemType::LeatherBoots{});
+  inventory.push_back(ItemType::Potion{Effect::Heal{}});
+  inventory.push_back(ItemType::Potion{Effect::Heal{}});
   addInventory(ret.get(), inventory);
   return ret;
 }
@@ -999,9 +999,12 @@ PCreature CreatureFactory::getSpecial(TribeId tribe, bool humanoid, bool large, 
         ), tribe, factory);
   if (body.isHumanoid()) {
     if (Random.roll(4))
-      c->take(ItemFactory::fromId(ItemId::BOW));
-    c->take(ItemFactory::fromId(Random.choose(
-            ItemId::SPECIAL_SWORD, ItemId::SPECIAL_BATTLE_AXE, ItemId::SPECIAL_WAR_HAMMER)));
+      c->take(ItemType(ItemType::Bow{}).get());
+    c->take(Random.choose(
+          ItemType(ItemType::SpecialSword{}),
+          ItemType(ItemType::SpecialBattleAxe{}),
+          ItemType(ItemType::SpecialWarHammer{}))
+        .get());
   }
   return c;
 }
@@ -2206,16 +2209,18 @@ PCreature CreatureFactory::getGhost(WCreature creature) {
 }
 
 ItemType randomHealing() {
-  return ItemType(ItemId::POTION, Effect::Heal{});
+  return ItemType::Potion{Effect::Heal{}};
 }
 
 ItemType randomBackup() {
-  return Random.choose(ItemType(ItemId::SCROLL, Effect::Deception{}), ItemType(ItemId::SCROLL, Effect::Teleport{}),
+  return Random.choose(
+      ItemType(ItemType::Scroll{Effect::Deception{}}),
+      ItemType(ItemType::Scroll{Effect::Teleport{}}),
       randomHealing());
 }
 
 ItemType randomArmor() {
-  return Random.choose({ItemId::LEATHER_ARMOR, ItemId::CHAIN_ARMOR}, {4, 1});
+  return Random.choose<ItemType>({ItemType::LeatherArmor{}, ItemType::ChainArmor{}}, {4, 1});
 }
 
 class ItemList {
@@ -2257,156 +2262,155 @@ vector<ItemType> getDefaultInventory(CreatureId id) {
   switch (id) {
     case CreatureId::CYCLOPS:
       return ItemList()
-        .add(ItemId::HEAVY_CLUB)
-        .add(ItemId::GOLD_PIECE, Random.get(40, 80));
+        .add(ItemType::HeavyClub{})
+        .add(ItemType::GoldPiece{}, Random.get(40, 80));
     case CreatureId::GREEN_DRAGON:
-      return ItemList().add(ItemId::GOLD_PIECE, Random.get(60, 100));
+      return ItemList().add(ItemType::GoldPiece{}, Random.get(60, 100));
     case CreatureId::DEMON_DWELLER:
-      return ItemList().add(ItemId::GOLD_PIECE, Random.get(50, 100));
+      return ItemList().add(ItemType::GoldPiece{}, Random.get(50, 100));
     case CreatureId::RED_DRAGON:
-      return ItemList().add(ItemId::GOLD_PIECE, Random.get(120, 200));
+      return ItemList().add(ItemType::GoldPiece{}, Random.get(120, 200));
     case CreatureId::DEMON_LORD:
     case CreatureId::ANGEL:
-      return ItemList().add(ItemId::SPECIAL_SWORD);
+      return ItemList().add(ItemType::SpecialSword{});
     case CreatureId::KEEPER_F:
     case CreatureId::KEEPER:
       return ItemList()
-          .add({ItemId::POTION, Effect::Acid{}})
-          .add(ItemId::ROBE);
+        .add(ItemType::Robe{});
     case CreatureId::ADVENTURER_F:
     case CreatureId::ADVENTURER:
       return ItemList()
-        .add(ItemId::FIRST_AID_KIT, 3)
-        .add(ItemId::KNIFE)
-        .add(ItemId::SWORD)
-        .add(ItemId::LEATHER_GLOVES)
-        .add(ItemId::LEATHER_ARMOR)
-        .add(ItemId::LEATHER_HELM)
-        .add(ItemId::GOLD_PIECE, Random.get(16, 26));
+        .add(ItemType::FirstAidKit{}, 3)
+        .add(ItemType::Knife{})
+        .add(ItemType::Sword{})
+        .add(ItemType::LeatherGloves{})
+        .add(ItemType::LeatherArmor{})
+        .add(ItemType::LeatherHelm{})
+        .add(ItemType::GoldPiece{}, Random.get(16, 26));
     case CreatureId::DEATH:
       return ItemList()
-        .add(ItemId::SCYTHE);
+        .add(ItemType::Scythe{});
     case CreatureId::GOBLIN: 
       return ItemList()
-        .add(ItemId::CLUB)
-        .maybe(0.3, ItemId::LEATHER_BOOTS);
+        .add(ItemType::Club{})
+        .maybe(0.3, ItemType::LeatherBoots{});
     case CreatureId::WARRIOR: 
       return ItemList()
-        .add(ItemId::LEATHER_ARMOR)
-        .add(ItemId::CLUB)
-        .add(ItemId::GOLD_PIECE, Random.get(2, 5));
+        .add(ItemType::LeatherArmor{})
+        .add(ItemType::Club{})
+        .add(ItemType::GoldPiece{}, Random.get(2, 5));
     case CreatureId::SHAMAN: 
       return ItemList()
-        .add(ItemId::LEATHER_ARMOR)
-        .add(ItemId::CLUB)
-        .add(ItemId::GOLD_PIECE, Random.get(80, 120));
+        .add(ItemType::LeatherArmor{})
+        .add(ItemType::Club{})
+        .add(ItemType::GoldPiece{}, Random.get(80, 120));
     case CreatureId::LIZARDLORD:
-      return ItemList().add(ItemId::LEATHER_ARMOR)
-        .add({ItemId::POTION, Effect::RegrowBodyPart{}})
-        .add(ItemId::GOLD_PIECE, Random.get(50, 90));
+      return ItemList().add(ItemType::LeatherArmor{})
+        .add(ItemType::Potion{Effect::RegrowBodyPart{}})
+        .add(ItemType::GoldPiece{}, Random.get(50, 90));
     case CreatureId::LIZARDMAN:
-      return ItemList().add(ItemId::LEATHER_ARMOR)
-        .add(ItemId::GOLD_PIECE, Random.get(2, 4));
+      return ItemList().add(ItemType::LeatherArmor{})
+        .add(ItemType::GoldPiece{}, Random.get(2, 4));
     case CreatureId::HARPY: 
       return ItemList()
-        .add(ItemId::BOW);
+        .add(ItemType::Bow{});
     case CreatureId::ARCHER: 
       return ItemList()
-        .add(ItemId::BOW)
-        .add(ItemId::KNIFE)
-        .add(ItemId::LEATHER_ARMOR)
-        .add(ItemId::LEATHER_BOOTS)
+        .add(ItemType::Bow{})
+        .add(ItemType::Knife{})
+        .add(ItemType::LeatherArmor{})
+        .add(ItemType::LeatherBoots{})
         .add(randomHealing())
-        .add(ItemId::GOLD_PIECE, Random.get(4, 10));
+        .add(ItemType::GoldPiece{}, Random.get(4, 10));
     case CreatureId::WITCHMAN:
       return ItemList()
-        .add(ItemId::SWORD)
-        .add(ItemId::LEATHER_ARMOR)
-        .add(ItemId::LEATHER_BOOTS)
+        .add(ItemType::Sword{})
+        .add(ItemType::LeatherArmor{})
+        .add(ItemType::LeatherBoots{})
         .add(randomHealing())
-        .add({ItemId::POTION, Effect::Lasting{LastingEffect::SPEED}}, 4)
-        .add(ItemId::GOLD_PIECE, Random.get(60, 80));
+        .add(ItemType::Potion{Effect::Lasting{LastingEffect::SPEED}}, 4)
+        .add(ItemType::GoldPiece{}, Random.get(60, 80));
     case CreatureId::KNIGHT: 
       return ItemList()
-        .add(ItemId::SWORD)
-        .add(ItemId::CHAIN_ARMOR)
-        .add(ItemId::LEATHER_BOOTS)
+        .add(ItemType::Sword{})
+        .add(ItemType::ChainArmor{})
+        .add(ItemType::LeatherBoots{})
         .add(randomHealing())
-        .add(ItemId::GOLD_PIECE, Random.get(6, 16));
+        .add(ItemType::GoldPiece{}, Random.get(6, 16));
     case CreatureId::MINOTAUR: 
       return ItemList()
-        .add(ItemId::BATTLE_AXE);
+        .add(ItemType::BattleAxe{});
     case CreatureId::AVATAR: 
       return ItemList()
-        .add(ItemId::SPECIAL_BATTLE_AXE)
-        .add(ItemId::CHAIN_ARMOR)
-        .add(ItemId::IRON_HELM)
-        .add(ItemId::IRON_BOOTS)
+        .add(ItemType::SpecialBattleAxe{})
+        .add(ItemType::ChainArmor{})
+        .add(ItemType::IronHelm{})
+        .add(ItemType::IronBoots{})
         .add(randomHealing(), 3)
-        .add(ItemId::GOLD_PIECE, Random.get(140, 200));
+        .add(ItemType::GoldPiece{}, Random.get(140, 200));
     case CreatureId::OGRE: 
-      return ItemList().add(ItemId::HEAVY_CLUB);
+      return ItemList().add(ItemType::HeavyClub{});
     case CreatureId::BANDIT:
       return ItemList()
-        .add(ItemId::SWORD)
+        .add(ItemType::Sword{})
         .maybe(0.3, randomBackup())
-        .maybe(0.05, ItemList().add(ItemId::BOW));
+        .maybe(0.05, ItemType::Bow{});
     case CreatureId::DWARF:
       return ItemList()
-        .add(Random.choose({ItemId::BATTLE_AXE, ItemId::WAR_HAMMER}, {1, 1}))
+        .add(Random.choose<ItemType>({ItemType::BattleAxe{}, ItemType::WarHammer{}}, {1, 1}))
         .maybe(0.6, randomBackup())
-        .add(ItemId::CHAIN_ARMOR)
-        .maybe(0.5, ItemId::IRON_HELM)
-        .maybe(0.3, ItemId::IRON_BOOTS)
-        .add(ItemId::GOLD_PIECE, Random.get(2, 6));
+        .add(ItemType::ChainArmor{})
+        .maybe(0.5, ItemType::IronHelm{})
+        .maybe(0.3, ItemType::IronBoots{})
+        .add(ItemType::GoldPiece{}, Random.get(2, 6));
     case CreatureId::DWARF_BARON: 
       return ItemList()
-        .add(Random.choose({ItemId::SPECIAL_BATTLE_AXE, ItemId::SPECIAL_WAR_HAMMER}, {1, 1}))
+        .add(Random.choose<ItemType>({ItemType::SpecialBattleAxe{}, ItemType::SpecialWarHammer{}}, {1, 1}))
         .add(randomBackup())
         .add(randomHealing())
-        .add(ItemId::CHAIN_ARMOR)
-        .add(ItemId::IRON_BOOTS)
-        .add(ItemId::IRON_HELM)
-        .add(ItemId::GOLD_PIECE, Random.get(80, 120));
+        .add(ItemType::ChainArmor{})
+        .add(ItemType::IronBoots{})
+        .add(ItemType::IronHelm{})
+        .add(ItemType::GoldPiece{}, Random.get(80, 120));
     case CreatureId::GNOME_CHIEF:
       return ItemList()
-        .add(ItemId::SWORD)
+        .add(ItemType::Sword{})
         .add(randomBackup());
     case CreatureId::DARK_ELF_LORD: 
     case CreatureId::ELF_LORD: 
       return ItemList()
-        .add(ItemId::SPECIAL_ELVEN_SWORD)
-        .add(ItemId::LEATHER_ARMOR)
-        .add(ItemId::ELVEN_BOW)
-        .add(ItemId::GOLD_PIECE, Random.get(80, 120))
+        .add(ItemType::SpecialElvenSword{})
+        .add(ItemType::LeatherArmor{})
+        .add(ItemType::ElvenBow{})
+        .add(ItemType::GoldPiece{}, Random.get(80, 120))
         .add(randomBackup());
     case CreatureId::DRIAD: 
       return ItemList()
-        .add(ItemId::BOW);
+        .add(ItemType::Bow{});
     case CreatureId::DARK_ELF_WARRIOR: 
       return ItemList()
-        .add(ItemId::ELVEN_SWORD)
-        .add(ItemId::LEATHER_ARMOR)
-        .add(ItemId::GOLD_PIECE, Random.get(2, 6))
+        .add(ItemType::ElvenSword{})
+        .add(ItemType::LeatherArmor{})
+        .add(ItemType::GoldPiece{}, Random.get(2, 6))
         .add(randomBackup());
     case CreatureId::ELF_ARCHER: 
       return ItemList()
-        .add(ItemId::ELVEN_SWORD)
-        .add(ItemId::LEATHER_ARMOR)
-        .add(ItemId::BOW)
-        .add(ItemId::GOLD_PIECE, Random.get(2, 6))
+        .add(ItemType::ElvenSword{})
+        .add(ItemType::LeatherArmor{})
+        .add(ItemType::Bow{})
+        .add(ItemType::GoldPiece{}, Random.get(2, 6))
         .add(randomBackup());
     case CreatureId::WITCH:
       return ItemList()
-        .add(ItemId::KNIFE)
+        .add(ItemType::Knife{})
         .add({
-            {ItemId::POTION, Effect::Heal{}},
-            {ItemId::POTION, Effect::Lasting{LastingEffect::SLEEP}},
-            {ItemId::POTION, Effect::Lasting{LastingEffect::SLOWED}},
-            {ItemId::POTION, Effect::Lasting{LastingEffect::BLIND}},
-            {ItemId::POTION, Effect::Lasting{LastingEffect::INVISIBLE}},
-            {ItemId::POTION, Effect::Lasting{LastingEffect::POISON}},
-            {ItemId::POTION, Effect::Lasting{LastingEffect::SPEED}}});
+            ItemType::Potion{Effect::Heal{}},
+            ItemType::Potion{Effect::Lasting{LastingEffect::SLEEP}},
+            ItemType::Potion{Effect::Lasting{LastingEffect::SLOWED}},
+            ItemType::Potion{Effect::Lasting{LastingEffect::BLIND}},
+            ItemType::Potion{Effect::Lasting{LastingEffect::INVISIBLE}},
+            ItemType::Potion{Effect::Lasting{LastingEffect::POISON}},
+            ItemType::Potion{Effect::Lasting{LastingEffect::SPEED}}});
     default: return {};
   }
 }

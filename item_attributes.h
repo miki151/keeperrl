@@ -24,6 +24,7 @@
 #include "attack_type.h"
 #include "attr_type.h"
 #include "ranged_weapon.h"
+#include "item_type.h"
 
 #define ITATTR(X) ItemAttributes([&](ItemAttributes& i) { X })
 
@@ -45,7 +46,7 @@ class ItemAttributes {
   MustInitialize<ItemClass> SERIAL(itemClass);
   optional<string> SERIAL(plural);
   optional<string> SERIAL(blindName);
-  optional<ItemId> SERIAL(firingWeapon);
+  optional<ItemType> SERIAL(firingWeapon);
   optional<string> SERIAL(artifactName);
   optional<TrapType> SERIAL(trapType);
   optional<CollectiveResourceId> SERIAL(resourceId);

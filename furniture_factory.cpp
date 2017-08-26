@@ -178,7 +178,7 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setDestroyable(100, DestroyAction::Type::BOULDER)
           .setDestroyable(70, DestroyAction::Type::CUT)
           .setFireInfo(Fire(1000, 0.7))
-          .setItemDrop(ItemFactory::singleType(ItemId::WOOD_PLANK, Range(8, 14)))
+          .setItemDrop(ItemFactory::singleType(ItemType::WoodPlank{}, Range(8, 14)))
           .setSummonedElement(CreatureId::ENT);
     case FurnitureType::DECID_TREE:
       return Furniture("tree", ViewObject(ViewId::DECID_TREE, ViewLayer::FLOOR), type, tribe)
@@ -190,7 +190,7 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setFireInfo(Fire(1000, 0.7))
           .setDestroyable(100, DestroyAction::Type::BOULDER)
           .setDestroyable(70, DestroyAction::Type::CUT)
-          .setItemDrop(ItemFactory::singleType(ItemId::WOOD_PLANK, Range(8, 14)))
+          .setItemDrop(ItemFactory::singleType(ItemType::WoodPlank{}, Range(8, 14)))
           .setSummonedElement(CreatureId::ENT);
     case FurnitureType::TREE_TRUNK:
       return Furniture("tree trunk", ViewObject(ViewId::TREE_TRUNK, ViewLayer::FLOOR), type, tribe);
@@ -204,7 +204,7 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setDestroyable(10, DestroyAction::Type::CUT)
           .setCanHide()
           .setFireInfo(Fire(100, 0.8))
-          .setItemDrop(ItemFactory::singleType(ItemId::WOOD_PLANK, Range(2, 4)));
+          .setItemDrop(ItemFactory::singleType(ItemType::WoodPlank{}, Range(2, 4)));
     case FurnitureType::CROPS:
       return Furniture("wheat", ViewObject(Random.choose(ViewId::CROPS, ViewId::CROPS2), ViewLayer::FLOOR), type, tribe)
           .setUsageType(FurnitureUsageType::CROPS)
@@ -331,7 +331,7 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setBlocking()
           .setBlockVision()
           .setIsWall()
-          .setItemDrop(ItemFactory::singleType(ItemId::IRON_ORE, Range(8, 14)))
+          .setItemDrop(ItemFactory::singleType(ItemType::IronOre{}, Range(8, 14)))
           .setDestroyable(200, DestroyAction::Type::BOULDER)
           .setDestroyable(220, DestroyAction::Type::DIG)
           .setDestroyable(200, DestroyAction::Type::HOSTILE_DIG)
@@ -341,7 +341,7 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setBlocking()
           .setBlockVision()
           .setIsWall()
-          .setItemDrop(ItemFactory::singleType(ItemId::ROCK, Range(8, 14)))
+          .setItemDrop(ItemFactory::singleType(ItemType::Rock{}, Range(8, 14)))
           .setDestroyable(200, DestroyAction::Type::BOULDER)
           .setDestroyable(250, DestroyAction::Type::DIG)
           .setDestroyable(200, DestroyAction::Type::HOSTILE_DIG)
@@ -351,7 +351,7 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setBlocking()
           .setBlockVision()
           .setIsWall()
-          .setItemDrop(ItemFactory::singleType(ItemId::GOLD_PIECE, Range(8, 14)))
+          .setItemDrop(ItemFactory::singleType(ItemType::GoldPiece{}, Range(8, 14)))
           .setDestroyable(200, DestroyAction::Type::BOULDER)
           .setDestroyable(220, DestroyAction::Type::DIG)
           .setDestroyable(200, DestroyAction::Type::HOSTILE_DIG)

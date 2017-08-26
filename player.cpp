@@ -639,8 +639,14 @@ void Player::makeMove() {
     case UserInputId::CREATURE_BUTTON2: extendedAttackAction(action.get<Creature::Id>()); break;
     case UserInputId::EXIT: getGame()->exitAction(); return;
     case UserInputId::APPLY_EFFECT:
-      if (auto effect = PrettyPrinting::getEffect(action.get<string>()))
+      if (auto effect = PrettyPrinting::parseObject<Effect>(action.get<string>()))
         effect->applyToCreature(getCreature(), nullptr);
+      else
+        getView()->presentText("Sorry", "Couldn't parse \"" + action.get<string>() + "\"");
+      break;
+    case UserInputId::CREATE_ITEM:
+      if (auto itemType = PrettyPrinting::parseObject<ItemType>(action.get<string>()))
+        getCreature()->take(itemType->get());
       else
         getView()->presentText("Sorry", "Couldn't parse \"" + action.get<string>() + "\"");
       break;

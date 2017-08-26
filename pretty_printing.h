@@ -4,8 +4,10 @@
 #include "util.h"
 
 class Effect;
+class ItemType;
 
 class PrettyPrinting {
   public:
-  static optional<Effect> getEffect(const string&);
+  template<typename T>
+  static optional<T> parseObject(const string& s);
 };

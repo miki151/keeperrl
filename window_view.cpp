@@ -1391,6 +1391,10 @@ void WindowView::keyboardAction(const SDL_Keysym& key) {
       if (auto input = getText("Enter effect", "", 100, ""))
         inputQueue.push({UserInputId::APPLY_EFFECT, *input});
       break;
+    case SDL::SDLK_F11:
+      if (auto input = getText("Enter item type", "", 100, ""))
+        inputQueue.push({UserInputId::CREATE_ITEM, *input});
+      break;
     case SDL::SDLK_F9:
       inputQueue.push(UserInputId::CHEAT_ATTRIBUTES);
       break;

@@ -439,13 +439,13 @@ PItem Body::getBodyPartItem(const string& name, BodyPart part) {
         weight / 8, isMinionFood() ? ItemClass::FOOD : ItemClass::CORPSE);
     case Material::CLAY:
     case Material::ROCK:
-      return ItemFactory::fromId(ItemId::ROCK);
+      return ItemType(ItemType::Rock{}).get();
     case Material::BONE:
-      return ItemFactory::fromId(ItemId::BONE);
+      return ItemType(ItemType::Bone{}).get();
     case Material::IRON:
-      return ItemFactory::fromId(ItemId::IRON_ORE);
+      return ItemType(ItemType::IronOre{}).get();
     case Material::WOOD:
-      return ItemFactory::fromId(ItemId::WOOD_PLANK);
+      return ItemType(ItemType::WoodPlank{}).get();
     default: return nullptr;
   }
 }
@@ -460,13 +460,13 @@ vector<PItem> Body::getCorpseItem(const string& name, Creature::Id id) {
             {id, true, numBodyParts(BodyPart::HEAD) > 0, false}));
     case Material::CLAY:
     case Material::ROCK:
-      return ItemFactory::fromId(ItemId::ROCK, numCorpseItems(size));
+      return ItemType(ItemType::Rock{}).get(numCorpseItems(size));
     case Material::BONE:
-      return ItemFactory::fromId(ItemId::BONE, numCorpseItems(size));
+      return ItemType(ItemType::Bone{}).get(numCorpseItems(size));
     case Material::IRON:
-      return ItemFactory::fromId(ItemId::IRON_ORE, numCorpseItems(size));
+      return ItemType(ItemType::IronOre{}).get(numCorpseItems(size));
     case Material::WOOD:
-      return ItemFactory::fromId(ItemId::WOOD_PLANK, numCorpseItems(size));
+      return ItemType(ItemType::WoodPlank{}).get(numCorpseItems(size));
     default: return {};
   }
 }
