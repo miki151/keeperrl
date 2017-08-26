@@ -13,11 +13,11 @@ struct ExternalEnemy {
 };
 
 struct EnemyEvent {
-  EnemyEvent(ExternalEnemy, Range attackTime, double levelIncrease = 0);
-  EnemyEvent(vector<ExternalEnemy>, Range attackTime, double levelIncrease = 0);
+  EnemyEvent(ExternalEnemy, Range attackTime, EnumMap<ExperienceType, int> = {});
+  EnemyEvent(vector<ExternalEnemy>, Range attackTime, EnumMap<ExperienceType, int> = {});
   vector<ExternalEnemy> SERIAL(enemies);
   Range SERIAL(attackTime);
-  double SERIAL(levelIncrease);
+  EnumMap<ExperienceType, int> SERIAL(levelIncrease);
   SERIALIZATION_CONSTRUCTOR(EnemyEvent)
   SERIALIZE_ALL(enemies, attackTime, levelIncrease)
 };

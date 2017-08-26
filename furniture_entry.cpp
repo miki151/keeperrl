@@ -37,7 +37,7 @@ void FurnitureEntry::handle(WFurniture f, WCreature c) {
             if (type.spiderWeb || !c->getAttributes().getSkills().hasDiscrete(SkillId::DISARM_TRAPS)) {
               if (!type.spiderWeb)
                 c->you(MsgType::TRIGGER_TRAP, "");
-              Effect::applyToCreature(c, type.effect, EffectStrength::NORMAL);
+              Effect::applyToCreature(c, type.effect);
               position.getGame()->addEvent(EventInfo::TrapTriggered{c->getPosition()});
             } else {
               c->you(MsgType::DISARM_TRAP, Effect::getName(type.effect) + " trap");

@@ -10,6 +10,7 @@ class FilePath {
   time_t getModificationTime() const;
   bool hasSuffix(const string&) const;
   FilePath changeSuffix(const string& current, const string& newSuf) const;
+  ifstream createInputStream() const;
 
   private:
   friend class DirectoryPath;

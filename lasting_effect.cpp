@@ -6,25 +6,29 @@
 #include "creature_attributes.h"
 #include "body.h"
 
+static optional<LastingEffect> getCancelledOneWay(LastingEffect effect) {
+  switch (effect) {
+    case LastingEffect::POISON_RESISTANT:
+      return LastingEffect::POISON;
+    case LastingEffect::SLEEP_RESISTANT:
+      return LastingEffect::SLEEP;
+    default:
+      return none;
+  }
+}
+
+static optional<LastingEffect> getCancelledBothWays(LastingEffect effect) {
+  switch (effect) {
+    case LastingEffect::PANIC:
+      return LastingEffect::RAGE;
+    case LastingEffect::SPEED:
+      return LastingEffect::SLOWED;
+    default:
+      return none;
+  }
+}
+
 static optional<LastingEffect> getCancelled(LastingEffect effect) {
-  auto getCancelledOneWay = [] (LastingEffect effect) -> optional<LastingEffect> {
-    switch (effect) {
-      case LastingEffect::POISON_RESISTANT:
-        return LastingEffect::POISON;
-      default:
-        return none;
-    }
-  };
-  auto getCancelledBothWays = [] (LastingEffect effect) -> optional<LastingEffect> {
-    switch (effect) {
-      case LastingEffect::PANIC:
-        return LastingEffect::RAGE;
-      case LastingEffect::SPEED:
-        return LastingEffect::SLOWED;
-      default:
-        return none;
-    }
-  };
   static EnumMap<LastingEffect, optional<LastingEffect>> ret(
     [&](LastingEffect e) -> optional<LastingEffect> {
       if (auto other = getCancelledOneWay(e))
@@ -33,6 +37,18 @@ static optional<LastingEffect> getCancelled(LastingEffect effect) {
         return *other;
       for (auto other : ENUM_ALL(LastingEffect))
         if (getCancelledBothWays(other) == e)
+          return other;
+      return none;
+    }
+  );
+  return ret[effect];
+}
+
+static optional<LastingEffect> getCancelling(LastingEffect effect) {
+  static EnumMap<LastingEffect, optional<LastingEffect>> ret(
+    [&](LastingEffect e) -> optional<LastingEffect> {
+      for (auto other : ENUM_ALL(LastingEffect))
+        if (getCancelled(other) == e)
           return other;
       return none;
     }
@@ -96,6 +112,8 @@ void LastingEffects::onAffected(WCreature c, LastingEffect effect, bool msg) {
         c->you(MsgType::ARE, "moving faster"); break;
       case LastingEffect::SLOWED:
         c->you(MsgType::ARE, "moving more slowly"); break;
+      case LastingEffect::SLEEP_RESISTANT:
+        c->you(MsgType::ARE, "now sleep resistant"); break;
       case LastingEffect::TIED_UP:
         c->you(MsgType::ARE, "tied up"); break;
       case LastingEffect::ENTANGLED:
@@ -104,8 +122,6 @@ void LastingEffects::onAffected(WCreature c, LastingEffect effect, bool msg) {
         c->you(MsgType::FALL_ASLEEP, ""); break;
       case LastingEffect::POISON_RESISTANT:
         c->you(MsgType::ARE, "now poison resistant"); break;
-      case LastingEffect::STUN_RESISTANT:
-        c->you(MsgType::ARE, "now stun resistant"); break;
       case LastingEffect::FIRE_RESISTANT:
         c->you(MsgType::ARE, "now fire resistant"); break;
       case LastingEffect::INSANITY:
@@ -131,17 +147,10 @@ void LastingEffects::onAffected(WCreature c, LastingEffect effect, bool msg) {
 }
 
 bool LastingEffects::affects(WConstCreature c, LastingEffect effect) {
-  switch (effect) {
-    case LastingEffect::RAGE:
-    case LastingEffect::PANIC:
-      return !c->isAffected(LastingEffect::SLEEP);
-    case LastingEffect::POISON:
-      return !c->isAffected(LastingEffect::POISON_RESISTANT);
-    case LastingEffect::STUNNED:
-      return !c->isAffected(LastingEffect::STUN_RESISTANT);
-    default:
-      return true;
-  }
+  if (auto cancelling = getCancelling(effect))
+    if (c->isAffected(*cancelling))
+      return false;
+  return true;
 }
 
 optional<LastingEffect> LastingEffects::getSuppressor(LastingEffect effect) {
@@ -193,12 +202,12 @@ void LastingEffects::onTimedOut(WCreature c, LastingEffect effect, bool msg) {
         c->you("can see again"); break;
       case LastingEffect::INVISIBLE:
         c->you(MsgType::TURN_VISIBLE, ""); break;
+      case LastingEffect::SLEEP_RESISTANT:
+        c->you(MsgType::ARE, "no longer sleep resistant"); break;
       case LastingEffect::POISON:
         c->you(MsgType::ARE, "no longer poisoned"); break;
       case LastingEffect::POISON_RESISTANT:
         c->you(MsgType::ARE, "no longer poison resistant"); break;
-      case LastingEffect::STUN_RESISTANT:
-        c->you(MsgType::ARE, "no longer stun resistant"); break;
       case LastingEffect::FIRE_RESISTANT:
         c->you(MsgType::ARE, "no longer fire resistant"); break;
       case LastingEffect::FLYING:
@@ -282,9 +291,9 @@ static Adjective getAdjective(LastingEffect effect) {
     case LastingEffect::HALLU: return "Hallucinating"_good;
     case LastingEffect::DAM_BONUS: return "Damage bonus"_good;
     case LastingEffect::DEF_BONUS: return "Defense bonus"_good;
+    case LastingEffect::SLEEP_RESISTANT: return "Sleep resistant"_good;
     case LastingEffect::SPEED: return "Speed bonus"_good;
     case LastingEffect::POISON_RESISTANT: return "Poison resistant"_good;
-    case LastingEffect::STUN_RESISTANT: return "Stun resistant"_good;
     case LastingEffect::FIRE_RESISTANT: return "Fire resistant"_good;
     case LastingEffect::FLYING: return "Flying"_good;
     case LastingEffect::DARKNESS_SOURCE: return "Source of darkness"_good;

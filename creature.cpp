@@ -135,7 +135,7 @@ CreatureAction Creature::castSpell(Spell* spell) const {
   return CreatureAction(this, [=] (WCreature c) {
     c->addSound(spell->getSound());
     spell->addMessage(c);
-    Effect::applyToCreature(c, spell->getEffectType(), EffectStrength::NORMAL);
+    Effect::applyToCreature(c, spell->getEffectType());
     getGame()->getStatistics().add(StatId::SPELL_CAST);
     c->attributes->getSpellMap().setReadyTime(spell, getGlobalTime() + spell->getDifficulty()
         * getWillpowerMult(attributes->getSkills().getValue(SkillId::SORCERY)));
@@ -153,7 +153,7 @@ CreatureAction Creature::castSpell(Spell* spell, Vec2 dir) const {
     c->addSound(spell->getSound());
     thirdPerson(getName().the() + " casts a spell");
     secondPerson("You cast " + spell->getName());
-    Effect::applyDirected(c, dir, spell->getDirEffectType(), EffectStrength::NORMAL);
+    Effect::applyDirected(c, dir, spell->getDirEffectType());
     getGame()->getStatistics().add(StatId::SPELL_CAST);
     c->attributes->getSpellMap().setReadyTime(spell, getGlobalTime() + spell->getDifficulty()
         * getWillpowerMult(attributes->getSkills().getValue(SkillId::SORCERY)));
@@ -985,7 +985,7 @@ bool Creature::takeDamage(const Attack& attack) {
   } else
     you(MsgType::GET_HIT_NODAMAGE, getAttackParam(attack.type));
   if (attack.effect)
-    Effect::applyToCreature(this, *attack.effect, EffectStrength::NORMAL, this);
+    Effect::applyToCreature(this, *attack.effect, this);
   for (LastingEffect effect : ENUM_ALL(LastingEffect))
     if (isAffected(effect))
       LastingEffects::afterCreatureDamage(this, effect);
@@ -1488,16 +1488,16 @@ CreatureAction Creature::stayIn(WLevel level, Rectangle area) {
   return CreatureAction();
 }
 
-CreatureAction Creature::moveTowards(Position pos, bool stepOnTile) {
+CreatureAction Creature::moveTowards(Position pos, NavigationFlags flags) {
   if (!pos.isValid())
     return CreatureAction();
   if (pos.isSameLevel(position))
-    return moveTowards(pos, false, stepOnTile);
+    return moveTowards(pos, false, flags);
   else if (auto stairs = position.getStairsTo(pos)) {
     if (stairs == position)
       return applySquare(position);
     else
-      return moveTowards(*stairs, false, true);
+      return moveTowards(*stairs, false, flags.requireStepOnTile());
   } else
     return CreatureAction();
 }
@@ -1510,9 +1510,9 @@ bool Creature::canNavigateTo(Position pos) const {
   return false;
 }
 
-CreatureAction Creature::moveTowards(Position pos, bool away, bool stepOnTile) {
+CreatureAction Creature::moveTowards(Position pos, bool away, NavigationFlags flags) {
   CHECK(pos.isSameLevel(position));
-  if (stepOnTile && !pos.canEnterEmpty(this))
+  if (flags.stepOnTile && !pos.canEnterEmpty(this))
     return CreatureAction();
   MEASURE(
   if (!away && !canNavigateTo(pos))
@@ -1543,7 +1543,7 @@ CreatureAction Creature::moveTowards(Position pos, bool away, bool stepOnTile) {
     if (auto action = move(pos2))
       return action;
     else {
-      if (!pos2.canEnterEmpty(this))
+      if (!pos2.canEnterEmpty(this) && flags.destroy)
         if (auto destroyAction = pos2.getBestDestroyAction(getMovementType()))
             if (auto action = destroy(getPosition().getDir(pos2), *destroyAction))
             return action;
@@ -1558,7 +1558,7 @@ CreatureAction Creature::moveTowards(Position pos, bool away, bool stepOnTile) {
 CreatureAction Creature::moveAway(Position pos, bool pathfinding) {
   CHECK(pos.isSameLevel(position));
   if (pos.dist8(getPosition()) <= 5 && pathfinding)
-    if (auto action = moveTowards(pos, true, false))
+    if (auto action = moveTowards(pos, true, NavigationFlags().noDestroying()))
       return action;
   pair<Vec2, Vec2> dirs = pos.getDir(getPosition()).approxL1();
   vector<CreatureAction> moves;

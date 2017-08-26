@@ -32,6 +32,7 @@
 #include "equipment.h"
 #include "attr_type.h"
 #include "attack.h"
+#include "lasting_effect.h"
 
 template <class Archive> 
 void Item::serialize(Archive& ar, const unsigned int version) {
@@ -39,8 +40,8 @@ void Item::serialize(Archive& ar, const unsigned int version) {
   ar(attributes, discarded, shopkeeper, fire, classCache, canEquipCache);
 }
 
-SERIALIZABLE(Item);
-SERIALIZATION_CONSTRUCTOR_IMPL(Item);
+SERIALIZABLE(Item)
+SERIALIZATION_CONSTRUCTOR_IMPL(Item)
 
 Item::Item(const ItemAttributes& attr) : Renderable(ViewObject(*attr.viewId, ViewLayer::ITEM, capitalFirst(*attr.name))),
     attributes(attr), fire(*attr.weight, attr.flamability), canEquipCache(!!attributes->equipmentSlot),
@@ -142,7 +143,7 @@ void Item::onHitCreature(WCreature c, const Attack& attack, int numItems) {
   if (c->takeDamage(attack))
     return;
   if (attributes->effect && getClass() == ItemClass::POTION) {
-    Effect::applyToCreature(c, *attributes->effect, EffectStrength::NORMAL, attack.attacker);
+    Effect::applyToCreature(c, *attributes->effect, attack.attacker);
   }
 }
 
@@ -199,7 +200,7 @@ void Item::applySpecial(WCreature c) {
   if (attributes->itemClass == ItemClass::SCROLL)
     c->getGame()->getStatistics().add(StatId::SCROLL_READ);
   if (attributes->effect)
-    Effect::applyToCreature(c, *attributes->effect, EffectStrength::NORMAL);
+    Effect::applyToCreature(c, *attributes->effect);
   if (attributes->uses > -1 && --attributes->uses == 0) {
     discarded = true;
     if (attributes->usedUpMsg)

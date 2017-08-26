@@ -48,7 +48,7 @@
 #include "experience_type.h"
 #include "creature_debt.h"
 
-SERIALIZE_DEF(CreatureFactory, tribe, creatures, weights, unique, tribeOverrides, levelIncrease)
+SERIALIZE_DEF(CreatureFactory, tribe, creatures, weights, unique, tribeOverrides, levelIncrease, baseLevelIncrease, inventory)
 SERIALIZATION_CONSTRUCTOR_IMPL(CreatureFactory)
 
 CreatureFactory CreatureFactory::singleCreature(TribeId tribe, CreatureId id) {
@@ -483,12 +483,9 @@ class ShopkeeperController : public Monster, public EventListener<ShopkeeperCont
   bool SERIAL(firstMove) = true;
 };
 
-PCreature CreatureFactory::addInventory(PCreature c, const vector<ItemType>& items) {
-  for (ItemType item : items) {
-    PItem it = ItemFactory::fromId(item);
-    c->take(std::move(it));
-  }
-  return c;
+void CreatureFactory::addInventory(WCreature c, const vector<ItemType>& items) {
+  for (ItemType item : items)
+    c->take(ItemFactory::fromId(item));
 }
 
 PCreature CreatureFactory::getShopkeeper(Rectangle shopArea, TribeId tribe) {
@@ -508,9 +505,10 @@ PCreature CreatureFactory::getShopkeeper(Rectangle shopArea, TribeId tribe) {
   inventory.push_back(ItemId::SWORD);
   inventory.push_back(ItemId::LEATHER_ARMOR);
   inventory.push_back(ItemId::LEATHER_BOOTS);
-  inventory.push_back({ItemId::POTION, EffectId::HEAL});
-  inventory.push_back({ItemId::POTION, EffectId::HEAL});
-  return addInventory(std::move(ret), inventory);
+  inventory.push_back({ItemId::POTION, EffectTypes::Heal{}});
+  inventory.push_back({ItemId::POTION, EffectTypes::Heal{}});
+  addInventory(ret.get(), inventory);
+  return ret;
 }
 
 class IllusionController : public DoNothingController {
@@ -588,8 +586,11 @@ PCreature CreatureFactory::random(const MonsterAIFactory& actorFactory) {
     unique.pop_back();
   } else
     id = Random.choose(creatures, weights);
-  PCreature ret = fromId(id, getTribeFor(id), actorFactory);
-  ret->getAttributes().increaseBaseExpLevel(ExperienceType::MELEE, levelIncrease);
+  PCreature ret = fromId(id, getTribeFor(id), actorFactory, inventory);
+  for (auto exp : ENUM_ALL(ExperienceType)) {
+    ret->getAttributes().increaseBaseExpLevel(exp, baseLevelIncrease[exp]);
+    ret->increaseExpLevel(exp, levelIncrease[exp]);
+  }
   return ret;
 }
 
@@ -599,8 +600,23 @@ PCreature CreatureFactory::get(const CreatureAttributes& attr, TribeId tribe, co
   return ret;
 }
 
-CreatureFactory& CreatureFactory::increaseLevel(double l) {
-  levelIncrease += l;
+CreatureFactory& CreatureFactory::increaseLevel(EnumMap<ExperienceType, int> l) {
+  levelIncrease = l;
+  return *this;
+}
+
+CreatureFactory& CreatureFactory::increaseLevel(ExperienceType t, int l) {
+  levelIncrease[t] = l;
+  return *this;
+}
+
+CreatureFactory& CreatureFactory::increaseBaseLevel(ExperienceType t, int l) {
+  baseLevelIncrease[t] = l;
+  return *this;
+}
+
+CreatureFactory& CreatureFactory::addInventory(vector<ItemType> items) {
+  inventory = items;
   return *this;
 }
 
@@ -617,6 +633,14 @@ CreatureFactory::CreatureFactory(const vector<tuple<CreatureId, double, TribeId>
     tribeOverrides[std::get<0>(elem)] = std::get<2>(elem);
   }
 }
+
+// These have to be defined here to be able to forward declare some ItemType and other classes
+CreatureFactory::~CreatureFactory() {
+}
+
+CreatureFactory::CreatureFactory(const CreatureFactory&) = default;
+
+CreatureFactory& CreatureFactory::operator =(const CreatureFactory&) = default;
 
 CreatureFactory CreatureFactory::humanVillage(TribeId tribe) {
   return CreatureFactory(tribe, { CreatureId::KNIGHT, CreatureId::ARCHER,
@@ -699,7 +723,7 @@ CreatureFactory CreatureFactory::splashMonsters(TribeId tribe) {
       CreatureId::SPECIAL_HLBN, CreatureId::SPECIAL_BLBW, CreatureId::WOLF, CreatureId::CAVE_BEAR,
       CreatureId::BAT, CreatureId::WEREWOLF, CreatureId::ZOMBIE, CreatureId::VAMPIRE, CreatureId::DOPPLEGANGER,
       CreatureId::SUCCUBUS},
-      { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}, {}, {}).increaseLevel(25);
+      { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}, {}, {}).increaseBaseLevel(ExperienceType::MELEE, 25);
 }
 
 CreatureFactory CreatureFactory::elvenVillage(TribeId tribe) {
@@ -862,12 +886,12 @@ static string getSpeciesName(bool humanoid, bool large, bool body, bool wings) {
 static optional<EffectType> getSpecialBeastAttack(bool large, bool body, bool wings) {
   static vector<optional<EffectType>> attacks {
     none,
-    EffectType(EffectId::FIRE),
-    EffectType(EffectId::FIRE),
+    EffectType(EffectTypes::Fire{}),
+    EffectType(EffectTypes::Fire{}),
     none,
-    EffectType(EffectId::LASTING, LastingEffect::POISON),
+    EffectType(EffectTypes::Lasting{LastingEffect::POISON}),
     none,
-    EffectType(EffectId::LASTING, LastingEffect::POISON),
+    EffectType(EffectTypes::Lasting{LastingEffect::POISON}),
     none,
   };
   return attacks[(!large) * 4 + (!body) * 2 + wings];
@@ -1236,7 +1260,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.viewId = ViewId::HYDRA;
           c.attr = LIST(35_dam, 45_def, 110_spd );
           c.body = Body::nonHumanoid(Body::Size::LARGE).setWeight(400);
-          c.attackEffect = EffectType(EffectId::LASTING, LastingEffect::POISON);
+          c.attackEffect = EffectType(EffectTypes::Lasting{LastingEffect::POISON});
           c.permanentEffects[LastingEffect::POISON_RESISTANT] = 1;
           c.permanentEffects[LastingEffect::RANGED_RESISTANCE] = 1;
           c.barehandedAttack = AttackType::BITE;
@@ -1249,7 +1273,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body = Body::nonHumanoid(Body::Size::LARGE).setWeight(400)
               .setBodyParts({{BodyPart::LEG, 8}, {BodyPart::TORSO, 1}})
               .setDeathSound(none);
-          c.attackEffect = EffectType(EffectId::LASTING, LastingEffect::POISON);
+          c.attackEffect = EffectType(EffectTypes::Lasting{LastingEffect::POISON});
           c.permanentEffects[LastingEffect::POISON_RESISTANT] = 1;
           c.permanentEffects[LastingEffect::RANGED_RESISTANCE] = 1;
           c.barehandedAttack = AttackType::BITE;
@@ -1396,7 +1420,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.permanentEffects[LastingEffect::MELEE_RESISTANCE] = 1;
           c.body = Body::nonHumanoid(Body::Material::LAVA, Body::Size::LARGE).setHumanoidBodyParts();
           c.barehandedAttack = AttackType::PUNCH;
-          c.attackEffect = EffectId::FIRE;
+          c.attackEffect = EffectTypes::Fire{};
           c.permanentEffects[LastingEffect::FIRE_RESISTANT] = 1;
           c.name = "lava golem";);
     case CreatureId::AUTOMATON: 
@@ -1644,7 +1668,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.attr = LIST(25_dam, 14_def, 120_spd );
           c.body = Body::humanoid(Body::Size::MEDIUM);
           c.barehandedAttack = AttackType::BITE;
-          c.attackEffect = EffectType(EffectId::LASTING, LastingEffect::POISON);
+          c.attackEffect = EffectType(EffectTypes::Lasting{LastingEffect::POISON});
           c.permanentEffects[LastingEffect::POISON_RESISTANT] = 1;
           c.chatReactionFriendly = "curses all humans"_s;
           c.chatReactionHostile = "\"Die!\""_s;
@@ -1655,8 +1679,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.attr = LIST(38_dam, 16_def, 140_spd );
           c.body = Body::humanoid(Body::Size::MEDIUM);
           c.barehandedAttack = AttackType::BITE;
-          c.attackEffect = EffectType(EffectId::LASTING, LastingEffect::POISON);
           c.permanentEffects[LastingEffect::POISON_RESISTANT] = 1;
+          c.attackEffect = EffectType(EffectTypes::Lasting{LastingEffect::POISON});
           c.chatReactionFriendly = "curses all humans"_s;
           c.chatReactionHostile = "\"Die!\""_s;
           c.courage = 1;
@@ -1863,7 +1887,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.animal = true;
           c.noChase = true;
           c.name = CreatureName("fox", "foxes"););
-    case CreatureId::CAVE_BEAR: 
+    case CreatureId::CAVE_BEAR:
       return CATTR(
           c.viewId = ViewId::BEAR;
           c.attr = LIST(26_dam, 10_def, 120_spd );
@@ -1889,7 +1913,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
               .setWeight(0.3)
               .setBodyParts({{BodyPart::LEG, 8}, {BodyPart::TORSO, 1}})
               .setDeathSound(none);
-          c.attackEffect = EffectType(EffectId::LASTING, LastingEffect::POISON);
+          c.attackEffect = EffectType(EffectTypes::Lasting{LastingEffect::POISON});
           c.animal = true;
           c.name = "spider";);
     case CreatureId::FLY: 
@@ -1918,7 +1942,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
       return CATTR(
           c.viewId = ViewId::ANT_SOLDIER;
           c.attr = LIST(36_dam, 20_def, 130_spd );
-          c.attackEffect = EffectType(EffectId::LASTING, LastingEffect::POISON);
+          c.attackEffect = EffectType(EffectTypes::Lasting{LastingEffect::POISON});
           c.skills.insert(SkillId::DIGGING);
           c.body = Body::nonHumanoid(Body::Size::MEDIUM)
               .setWeight(10)
@@ -1930,7 +1954,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
       return CATTR(
           c.viewId = ViewId::ANT_QUEEN;
           c.attr = LIST(42_dam, 26_def, 130_spd );
-          c.attackEffect = EffectType(EffectId::LASTING, LastingEffect::POISON);
+          c.attackEffect = EffectType(EffectTypes::Lasting{LastingEffect::POISON});
           c.body = Body::nonHumanoid(Body::Size::MEDIUM)
               .setWeight(10)
               .setBodyParts({{BodyPart::LEG, 6}, {BodyPart::HEAD, 1}, {BodyPart::TORSO, 1}})
@@ -1946,7 +1970,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
               .setBodyParts({{BodyPart::HEAD, 1}, {BodyPart::TORSO, 1}})
               .setDeathSound(none);
           c.animal = true;
-          c.attackEffect = EffectType(EffectId::LASTING, LastingEffect::POISON);
+          c.attackEffect = EffectType(EffectTypes::Lasting{LastingEffect::POISON});
           c.skills.insert(SkillId::SWIMMING);
           c.name = "snake";);
     case CreatureId::RAVEN: 
@@ -2038,7 +2062,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body = Body::nonHumanoid(Body::Material::FIRE, Body::Size::LARGE).setDeathSound(none);
           c.attr = LIST(25_dam, 30_def, 120_spd );
           c.barehandedAttack = AttackType::HIT;
-          c.attackEffect = EffectId::FIRE;
+          c.attackEffect = EffectTypes::Fire{};
           c.permanentEffects[LastingEffect::FIRE_RESISTANT] = 1;
           c.permanentEffects[LastingEffect::FLYING] = 1;
           c.name = "fire elemental";);
@@ -2182,11 +2206,11 @@ PCreature CreatureFactory::getGhost(WCreature creature) {
 }
 
 ItemType randomHealing() {
-  return ItemType(ItemId::POTION, EffectId::HEAL);
+  return ItemType(ItemId::POTION, EffectTypes::Heal{});
 }
 
 ItemType randomBackup() {
-  return Random.choose(ItemType(ItemId::SCROLL, EffectId::DECEPTION), ItemType(ItemId::SCROLL, EffectId::TELEPORT),
+  return Random.choose(ItemType(ItemId::SCROLL, EffectTypes::Deception{}), ItemType(ItemId::SCROLL, EffectTypes::Teleport{}),
       randomHealing());
 }
 
@@ -2229,7 +2253,7 @@ class ItemList {
   vector<ItemType> ret;
 };
 
-vector<ItemType> getInventory(CreatureId id) {
+vector<ItemType> getDefaultInventory(CreatureId id) {
   switch (id) {
     case CreatureId::CYCLOPS:
       return ItemList()
@@ -2247,6 +2271,7 @@ vector<ItemType> getInventory(CreatureId id) {
     case CreatureId::KEEPER_F:
     case CreatureId::KEEPER:
       return ItemList()
+          .add({ItemId::POTION, EffectTypes::Acid{}})
           .add(ItemId::ROBE);
     case CreatureId::ADVENTURER_F:
     case CreatureId::ADVENTURER:
@@ -2277,6 +2302,7 @@ vector<ItemType> getInventory(CreatureId id) {
         .add(ItemId::GOLD_PIECE, Random.get(80, 120));
     case CreatureId::LIZARDLORD:
       return ItemList().add(ItemId::LEATHER_ARMOR)
+        .add({ItemId::POTION, EffectTypes::RegrowBodyPart{}})
         .add(ItemId::GOLD_PIECE, Random.get(50, 90));
     case CreatureId::LIZARDMAN:
       return ItemList().add(ItemId::LEATHER_ARMOR)
@@ -2298,7 +2324,7 @@ vector<ItemType> getInventory(CreatureId id) {
         .add(ItemId::LEATHER_ARMOR)
         .add(ItemId::LEATHER_BOOTS)
         .add(randomHealing())
-        .add({ItemId::POTION, EffectType{EffectId::LASTING, LastingEffect::SPEED}}, 4)
+        .add({ItemId::POTION, EffectTypes::Lasting{LastingEffect::SPEED}}, 4)
         .add(ItemId::GOLD_PIECE, Random.get(60, 80));
     case CreatureId::KNIGHT: 
       return ItemList()
@@ -2341,7 +2367,6 @@ vector<ItemType> getInventory(CreatureId id) {
         .add(ItemId::CHAIN_ARMOR)
         .add(ItemId::IRON_BOOTS)
         .add(ItemId::IRON_HELM)
-		.add({ItemId::RING, LastingEffect::STUN_RESISTANT})
         .add(ItemId::GOLD_PIECE, Random.get(80, 120));
     case CreatureId::GNOME_CHIEF:
       return ItemList()
@@ -2352,7 +2377,7 @@ vector<ItemType> getInventory(CreatureId id) {
       return ItemList()
         .add(ItemId::SPECIAL_ELVEN_SWORD)
         .add(ItemId::LEATHER_ARMOR)
-        .add(ItemId::BOW)
+        .add(ItemId::ELVEN_BOW)
         .add(ItemId::GOLD_PIECE, Random.get(80, 120))
         .add(randomBackup());
     case CreatureId::DRIAD: 
@@ -2375,13 +2400,13 @@ vector<ItemType> getInventory(CreatureId id) {
       return ItemList()
         .add(ItemId::KNIFE)
         .add({
-            {ItemId::POTION, EffectType(EffectId::HEAL)},
-            {ItemId::POTION, EffectType(EffectId::LASTING, LastingEffect::SLEEP)},
-            {ItemId::POTION, EffectType(EffectId::LASTING, LastingEffect::SLOWED)},
-            {ItemId::POTION, EffectType(EffectId::LASTING, LastingEffect::BLIND)},
-            {ItemId::POTION, EffectType(EffectId::LASTING, LastingEffect::INVISIBLE)},
-            {ItemId::POTION, EffectType(EffectId::LASTING, LastingEffect::POISON)},
-            {ItemId::POTION, EffectType(EffectId::LASTING, LastingEffect::SPEED)}});
+            {ItemId::POTION, EffectTypes::Heal{}},
+            {ItemId::POTION, EffectTypes::Lasting{LastingEffect::SLEEP}},
+            {ItemId::POTION, EffectTypes::Lasting{LastingEffect::SLOWED}},
+            {ItemId::POTION, EffectTypes::Lasting{LastingEffect::BLIND}},
+            {ItemId::POTION, EffectTypes::Lasting{LastingEffect::INVISIBLE}},
+            {ItemId::POTION, EffectTypes::Lasting{LastingEffect::POISON}},
+            {ItemId::POTION, EffectTypes::Lasting{LastingEffect::SPEED}}});
     default: return {};
   }
 }
@@ -2390,7 +2415,15 @@ PCreature CreatureFactory::fromId(CreatureId id, TribeId t) {
   return fromId(id, t, MonsterAIFactory::monster());
 }
 
-PCreature CreatureFactory::fromId(CreatureId id, TribeId t, const MonsterAIFactory& factory) {
-  return addInventory(get(id, t, factory), getInventory(id));
+
+PCreature CreatureFactory::fromId(CreatureId id, TribeId t, const MonsterAIFactory& f) {
+  return fromId(id, t, f, {});
+}
+
+PCreature CreatureFactory::fromId(CreatureId id, TribeId t, const MonsterAIFactory& factory, const vector<ItemType>& inventory) {
+  auto ret = get(id, t, factory);
+  addInventory(ret.get(), inventory);
+  addInventory(ret.get(), getDefaultInventory(id));
+  return ret;
 }
 

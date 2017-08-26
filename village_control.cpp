@@ -21,7 +21,7 @@
 #include "level.h"
 #include "collective_teams.h"
 #include "tribe.h"
-#include "effect_type.h"
+#include "effect.h"
 #include "task.h"
 #include "collective_attack.h"
 #include "territory.h"

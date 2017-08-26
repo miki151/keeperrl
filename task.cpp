@@ -260,7 +260,7 @@ class PickItem : public Task {
         return NoMove;
       }
     }
-    if (auto action = c->moveTowards(position, true))
+    if (auto action = c->moveTowards(position, Creature::NavigationFlags().requireStepOnTile()))
       return action;
     else if (--tries == 0)
       setDone();
@@ -611,7 +611,7 @@ class ArcheryRange : public Task {
     if (!shootInfo)
       return NoMove;
     if (c->getPosition() != shootInfo->pos)
-      return c->moveTowards(shootInfo->pos, true);
+      return c->moveTowards(shootInfo->pos, Creature::NavigationFlags().requireStepOnTile());
     if (Random.roll(3))
       return c->wait();
     for (auto pos = shootInfo->pos; pos != shootInfo->target; pos = pos.plus(shootInfo->dir)) {
@@ -1410,7 +1410,7 @@ class Spider : public Task {
         attackPosition = none;
       });
     else
-      return c->moveTowards(*attackPosition, true);
+      return c->moveTowards(*attackPosition, Creature::NavigationFlags().requireStepOnTile());
   }
 
   virtual string getDescription() const override {

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "util.h"
-#include "effect_type.h"
+#include "effect.h"
 #include "tribe.h"
 
 class Position;

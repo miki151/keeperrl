@@ -28,6 +28,7 @@ class ModelBuilder {
   void measureSiteGen(int numTries, vector<std::string> types);
 
   PModel splashModel(const FilePath& splashPath);
+  PModel battleModel(const FilePath& levelPath, CreatureFactory allies, CreatureFactory enemies, int maxEnemies);
 
   WCollective spawnKeeper(WModel, PCreature);
 

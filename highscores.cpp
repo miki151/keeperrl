@@ -74,8 +74,8 @@ optional<Highscores::Score> Highscores::Score::parse(const string& buf) {
           c.gameWon = ::fromString<int>(p[4]);
           c.points = ::fromString<int>(p[5]);
           c.turns = ::fromString<int>(p[6]);
-          c.campaignType = EnumInfo<CampaignType>::fromString(p[7]);
-          c.playerRole = EnumInfo<PlayerRole>::fromString(p[8]);
+          c.campaignType = EnumInfo<CampaignType>::fromStringWithException(p[7]);
+          c.playerRole = EnumInfo<PlayerRole>::fromStringWithException(p[8]);
           c.version = ::fromString<int>(p[9]);
       );
     } catch (ParsingException&) {}

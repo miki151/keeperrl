@@ -46,6 +46,7 @@
 #include "keybinding_map.h"
 #include "player_role.h"
 #include "campaign_type.h"
+#include "dummy_view.h"
 
 #ifndef VSTUDIO
 #include "stack_printer.h"
@@ -202,6 +203,11 @@ static po::parser getCommandLineFlags() {
   flags["run_tests"].description("Run all unit tests and exit");
   flags["worldgen_test"].type(po::i32).description("Test how often world generation fails");
   flags["worldgen_maps"].type(po::string).description("List of maps or enemy types in world generation test. Skip to test all.");
+  flags["battle_level"].type(po::string).description("Path to battle test level");
+  flags["battle_info"].type(po::string).description("Path to battle info file");
+  flags["battle_enemy"].type(po::string).description("Battle enemy id");
+  flags["battle_view"].description("Open game window and display battle");
+  flags["battle_rounds"].type(po::i32).description("Number of battle rounds");
   flags["stderr"].description("Log to stderr");
   flags["nolog"].description("No logging");
   flags["free_mode"].description("Run in free ascii mode");
@@ -341,6 +347,21 @@ static int keeperMain(po::parser& commandLineFlags) {
     loop.modelGenTest(commandLineFlags["worldgen_test"].get().i32, types, Random, &options);
     return 0;
   }
+  auto battleTest = [&] (View* view) {
+    MainLoop loop(view, &highscores, &fileSharing, freeDataPath, userPath, &options, &jukebox, &sokobanInput,
+        useSingleThread, forceGame);
+    auto level = commandLineFlags["battle_level"].get().string;
+    auto info = commandLineFlags["battle_info"].get().string;
+    auto numRounds = commandLineFlags["battle_rounds"].get().i32;
+    auto enemyId = commandLineFlags["battle_enemy"].get().string;
+    try {
+      loop.battleTest(numRounds, FilePath::fromFullPath(level), FilePath::fromFullPath(info), enemyId, Random);
+    } catch (GameExitException) {}
+  };
+  if (commandLineFlags["battle_level"].was_set() && !commandLineFlags["battle_view"].was_set()) {
+    battleTest(new DummyView(&clock));
+    return 0;
+  }
   Renderer renderer(
       "KeeperRL",
       Vec2(24, 24),
@@ -365,6 +386,10 @@ static int keeperMain(po::parser& commandLineFlags) {
   InfoLog.addOutput(DebugOutput::toString([&view](const string& s) { view->logMessage(s);}));
 #endif
   view->initialize();
+  if (commandLineFlags["battle_level"].was_set() && commandLineFlags["battle_view"].was_set()) {
+    battleTest(view.get());
+    return 0;
+  }
   MainLoop loop(view.get(), &highscores, &fileSharing, freeDataPath, userPath, &options, &jukebox, &sokobanInput,
       useSingleThread, forceGame);
   try {

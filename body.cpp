@@ -603,14 +603,21 @@ bool Body::isIntrinsicallyAffected(LastingEffect effect) const {
         case Material::WOOD: return false;
         default: return true;
       }
-    //Spirits are intrinsically stun resistant.
-    case LastingEffect::STUN_RESISTANT:
-      switch (material) {
-        case Material::SPIRIT: return true;
-        default: return false;
-      }
     case LastingEffect::POISON_RESISTANT:
       return material != Material::FLESH;
+    case LastingEffect::SLEEP_RESISTANT:
+      switch (material) {
+        case Material::WATER:
+        case Material::FIRE:
+        case Material::SPIRIT:
+        case Material::CLAY:
+        case Material::ROCK:
+        case Material::IRON:
+        case Material::LAVA:
+          return true;
+        default:
+          return false;
+      }
     case LastingEffect::FLYING:
       return numGood(BodyPart::WING) >= 2;
     default:
@@ -621,13 +628,7 @@ bool Body::isIntrinsicallyAffected(LastingEffect effect) const {
 bool Body::isImmuneTo(LastingEffect effect) const {
   switch (effect) {
     case LastingEffect::BLEEDING:
-    case LastingEffect::POISON:
       return material != Material::FLESH;
-    //Spirits immune to being stunned.
-    case LastingEffect::STUNNED:
-      return material == Material::SPIRIT;
-    case LastingEffect::SLEEP:
-      return material != Material::FLESH && material != Material::UNDEAD_FLESH;
     case LastingEffect::TIED_UP:
     case LastingEffect::ENTANGLED:
       switch (material) {

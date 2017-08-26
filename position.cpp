@@ -638,21 +638,21 @@ bool Position::canNavigate(const MovementType& type) const {
 }
 
 optional<DestroyAction> Position::getBestDestroyAction(const MovementType& movement) const {
-  if (canEnterEmpty(movement, FurnitureLayer::MIDDLE)) {
-    auto furniture = getFurniture(FurnitureLayer::MIDDLE);
-    optional<double> strength;
-    optional<DestroyAction> bestAction;
-    for (DestroyAction action : movement.getDestroyActions()) {
-      if (furniture->canDestroy(movement, action)) {
-        double thisStrength = *furniture->getStrength(action);
-        if (!strength || thisStrength < *strength) {
-          strength = thisStrength;
-          bestAction = action;
+  if (auto furniture = getFurniture(FurnitureLayer::MIDDLE))
+    if (canEnterEmpty(movement, FurnitureLayer::MIDDLE)) {
+      optional<double> strength;
+      optional<DestroyAction> bestAction;
+      for (DestroyAction action : movement.getDestroyActions()) {
+        if (furniture->canDestroy(movement, action)) {
+          double thisStrength = *furniture->getStrength(action);
+          if (!strength || thisStrength < *strength) {
+            strength = thisStrength;
+            bestAction = action;
+          }
         }
       }
+      return bestAction;
     }
-    return bestAction;
-  }
   return none;
 }
 

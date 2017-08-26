@@ -2534,6 +2534,47 @@ PLevelMaker LevelMaker::sokobanFromFile(RandomGen& random, SettlementInfo info, 
   return PLevelMaker(queue);
 }
 
+namespace {
+
+class BattleFromFile : public LevelMaker {
+  public:
+  BattleFromFile(Table<char> f, CreatureFactory a, CreatureFactory e, int maxE)
+      : level(f), allies(a), enemies(e), maxEnemies(maxE) {}
+
+  virtual void make(LevelBuilder* builder, Rectangle area) override {
+    CHECK(area == level.getBounds()) << "Bad size of battle level input.";
+    for (Vec2 v : area) {
+      builder->resetFurniture(v, FurnitureType::FLOOR);
+      switch (level[v]) {
+        case '.':
+          break;
+        case '#':
+          builder->putFurniture(v, FurnitureType::MOUNTAIN);
+          break;
+        case 'a':
+          builder->putCreature(v, allies.random(MonsterAIFactory::guard()));
+          break;
+        case 'e':
+          if (maxEnemies-- > 0)
+            builder->putCreature(v, enemies.random());
+          break;
+        default: FATAL << "Unknown symbol in battle test data: " << level[v];
+      }
+    }
+  }
+
+  Table<char> level;
+  CreatureFactory allies;
+  CreatureFactory enemies;
+  int maxEnemies;
+};
+
+}
+
+PLevelMaker LevelMaker::battleLevel(Table<char> level, CreatureFactory allies, CreatureFactory enemies, int maxEnemies) {
+  return PLevelMaker(new BattleFromFile(level, allies, enemies, maxEnemies));
+}
+
 PLevelMaker LevelMaker::emptyLevel(RandomGen&) {
   MakerQueue* queue = new MakerQueue();
   queue->addMaker(new Empty(FurnitureType::GRASS));

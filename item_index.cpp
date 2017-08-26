@@ -5,7 +5,7 @@
 #include "minion_equipment.h"
 #include "resource_id.h"
 #include "corpse_info.h"
-#include "effect_type.h"
+#include "effect.h"
 
 const char* getName(ItemIndex index, int count) {
   switch (index) {
@@ -39,6 +39,6 @@ function<bool(WConstItem)> getIndexPredicate(ItemIndex index) {
         return it->getClass() == ItemClass::RANGED_WEAPON;};
     case ItemIndex::CAN_EQUIP: return [](WConstItem it) {return it->canEquip();};
     case ItemIndex::FOR_SALE: return [](WConstItem it) {return it->isOrWasForSale();};
-    case ItemIndex::HEALING_ITEM: return [](WConstItem it) {return it->getEffectType() == EffectType(EffectId::HEAL);};
+    case ItemIndex::HEALING_ITEM: return [](WConstItem it) {return it->getEffectType() == EffectType(EffectTypes::Heal{});};
   }
 }

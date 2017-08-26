@@ -303,8 +303,6 @@ Range AllReverse(const T& container) {
 
 template<typename T>
 class EnumInfo {
-  public:
-  static string getString(T);
 };
 
 #define RICH_ENUM(Name, ...) \
@@ -317,11 +315,18 @@ class EnumInfo<Name> { \
     return names[int(e)];\
   }\
   enum Tmp { __VA_ARGS__, size};\
-  static Name fromString(const string& s) {\
+  static Name fromStringWithException(const string& s) {\
     for (int i : Range(size)) \
       if (getString(Name(i)) == s) \
         return Name(i); \
     throw ParsingException();\
+  } \
+  static Name fromString(const string& s) { \
+    for (int i : Range(size)) \
+      if (getString(Name(i)) == s) \
+        return Name(i); \
+    FATAL << "Error parsing " << #Name << " from " << s; \
+    return Name(0);\
   }\
   static optional<Name> fromStringSafe(const string& s) {\
     for (int i : Range(size)) \
@@ -1507,8 +1512,30 @@ optional<typename Map::mapped_type> getValueMaybe(const Map& m, const Key& key) 
 extern int getSize(const string&);
 extern const char* getString(const string&);
 
+
+template <const char* Names, typename... Types>
+class NamedVariant : public variant<Types...> {
+  public:
+  using variant<Types...>::variant;
+  const char* getName() {
+    return getName(this->index());
+  }
+  static const char* getName(int num) {
+    static auto names = split(Names, {' ', ','}).filter([](const string& s){ return !s.empty(); });
+    return names[num].c_str();
+  }
+};
+
+#define MAKE_VARIANT(NAME, ...)\
+constexpr static const char NAME##Names[] = #__VA_ARGS__; \
+using NAME = NamedVariant<NAME##Names, __VA_ARGS__>
+
+
 #define COMPARE_ALL(...) \
 auto getElems() const { \
+  return std::forward_as_tuple(__VA_ARGS__); \
+} \
+auto getElems() { \
   return std::forward_as_tuple(__VA_ARGS__); \
 } \
 template <typename T> \
@@ -1518,4 +1545,18 @@ bool operator == (const T& o) const { \
 template <typename T> \
 bool operator != (const T& o) const { \
   return o.getElems() != getElems(); \
+} \
+template <class Archive> \
+void serialize(Archive& ar1, const unsigned int) { \
+  auto elems = getElems();\
+  ar1(elems); \
 }
+
+template <typename Phantom>
+struct EmptyStruct {
+  COMPARE_ALL()
+};
+
+#define EMPTY_STRUCT(Name) \
+struct _Tag123##Name {};\
+using Name = EmptyStruct<_Tag123##Name>

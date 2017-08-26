@@ -486,6 +486,7 @@ class TileCoordLookup {
     Tile::addTile(ViewId::STEEL_BATTLE_AXE, sprite("steel_battle_axe"));
     Tile::addTile(ViewId::SPECIAL_BATTLE_AXE, sprite("special_battle_axe"));
     Tile::addTile(ViewId::BOW, sprite("bow"));
+    Tile::addTile(ViewId::ELVEN_BOW, sprite("bow")); //For now
     Tile::addTile(ViewId::ARROW, sprite("arrow_e"));
     Tile::addTile(ViewId::WOODEN_STAFF, sprite("staff_wooden"));
     Tile::addTile(ViewId::IRON_STAFF, sprite("staff_iron"));
@@ -501,7 +502,6 @@ class TileCoordLookup {
     Tile::addTile(ViewId::AMULET4, sprite("amulet4"));
     Tile::addTile(ViewId::AMULET5, sprite("amulet5"));
     Tile::addTile(ViewId::FIRE_RESIST_RING, sprite("ring_red"));
-    Tile::addTile(ViewId::STUN_RESIST_RING, sprite("ring_red")); //for now
     Tile::addTile(ViewId::POISON_RESIST_RING, sprite("ring_green"));
     Tile::addTile(ViewId::BOOK, sprite("book"));
     Tile::addTile(ViewId::FIRST_AID, sprite("medkit"));
@@ -806,6 +806,7 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::BATTLE_AXE, symbol(u8")", Color::GREEN));
     Tile::addSymbol(ViewId::STEEL_BATTLE_AXE, symbol(u8")", Color::LIGHT_BLUE));
     Tile::addSymbol(ViewId::SPECIAL_BATTLE_AXE, symbol(u8")", Color::LIGHT_GREEN));
+    Tile::addSymbol(ViewId::ELVEN_BOW, symbol(u8")", Color::YELLOW));
     Tile::addSymbol(ViewId::BOW, symbol(u8")", Color::BROWN));
     Tile::addSymbol(ViewId::WOODEN_STAFF, symbol(u8")", Color::YELLOW));
     Tile::addSymbol(ViewId::IRON_STAFF, symbol(u8")", Color::ORANGE));
@@ -822,7 +823,6 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::AMULET4, symbol(u8"\"", Color::YELLOW));
     Tile::addSymbol(ViewId::AMULET5, symbol(u8"\"", Color::YELLOW));
     Tile::addSymbol(ViewId::FIRE_RESIST_RING, symbol(u8"=", Color::RED));
-    Tile::addSymbol(ViewId::STUN_RESIST_RING, symbol(u8"=", Color::PURPLE));
     Tile::addSymbol(ViewId::POISON_RESIST_RING, symbol(u8"=", Color::GREEN));
     Tile::addSymbol(ViewId::BOOK, symbol(u8"+", Color::YELLOW));
     Tile::addSymbol(ViewId::FIRST_AID, symbol(u8"+", Color::RED));

@@ -16,6 +16,7 @@
 #include "creature.h"
 #include "creature_factory.h"
 #include "movement_set.h"
+#include "lasting_effect.h"
 
 static Furniture get(FurnitureType type, TribeId tribe) {
   switch (type) {
@@ -407,31 +408,31 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setLayer(FurnitureLayer::FLOOR);
     case FurnitureType::ALARM_TRAP:
       return Furniture("alarm trap", ViewObject(ViewId::ALARM_TRAP, ViewLayer::FLOOR), type, tribe)
-          .setEntryType(FurnitureEntry(FurnitureEntry::Trap(EffectId::ALARM)))
+          .setEntryType(FurnitureEntry(FurnitureEntry::Trap(EffectTypes::Alarm{})))
           .setEmitsWarning()
           .setConstructMessage(Furniture::SET_UP);
     case FurnitureType::POISON_GAS_TRAP:
       return Furniture("poison gas trap", ViewObject(ViewId::GAS_TRAP, ViewLayer::FLOOR), type, tribe)
-          .setEntryType(FurnitureEntry(FurnitureEntry::Trap(EffectId::EMIT_POISON_GAS)))
+          .setEntryType(FurnitureEntry(FurnitureEntry::Trap(EffectTypes::EmitPoisonGas{})))
           .setEmitsWarning()
           .setConstructMessage(Furniture::SET_UP);
     case FurnitureType::WEB_TRAP:
       return Furniture("web trap", ViewObject(ViewId::WEB_TRAP, ViewLayer::FLOOR), type, tribe)
-          .setEntryType(FurnitureEntry(FurnitureEntry::Trap(EffectType(EffectId::LASTING, LastingEffect::ENTANGLED))))
+          .setEntryType(FurnitureEntry(FurnitureEntry::Trap(EffectTypes::Lasting{LastingEffect::ENTANGLED})))
           .setEmitsWarning()
           .setConstructMessage(Furniture::SET_UP);
     case FurnitureType::SPIDER_WEB:
       return Furniture("spider web", ViewObject(ViewId::WEB_TRAP, ViewLayer::FLOOR), type, tribe)
-          .setEntryType(FurnitureEntry(FurnitureEntry::Trap(EffectType(EffectId::LASTING, LastingEffect::ENTANGLED),
+          .setEntryType(FurnitureEntry(FurnitureEntry::Trap(EffectTypes::Lasting{LastingEffect::ENTANGLED},
               true)));
     case FurnitureType::SURPRISE_TRAP:
       return Furniture("surprise trap", ViewObject(ViewId::SURPRISE_TRAP, ViewLayer::FLOOR), type, tribe)
-          .setEntryType(FurnitureEntry(FurnitureEntry::Trap(EffectId::TELE_ENEMIES)))
+          .setEntryType(FurnitureEntry(FurnitureEntry::Trap(EffectTypes::TeleEnemies{})))
           .setEmitsWarning()
           .setConstructMessage(Furniture::SET_UP);
     case FurnitureType::TERROR_TRAP:
       return Furniture("panic trap", ViewObject(ViewId::TERROR_TRAP, ViewLayer::FLOOR), type, tribe)
-          .setEntryType(FurnitureEntry(FurnitureEntry::Trap(EffectType(EffectId::LASTING, LastingEffect::PANIC))))
+          .setEntryType(FurnitureEntry(FurnitureEntry::Trap(EffectTypes::Lasting{LastingEffect::PANIC})))
           .setEmitsWarning()
           .setConstructMessage(Furniture::SET_UP);
     case FurnitureType::BOULDER_TRAP:

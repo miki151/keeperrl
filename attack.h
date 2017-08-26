@@ -17,7 +17,7 @@
 
 #include "enums.h"
 #include "util.h"
-#include "effect_type.h"
+#include "effect.h"
 
 class Creature;
 
