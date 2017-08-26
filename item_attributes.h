@@ -60,8 +60,8 @@ class ItemAttributes {
   optional<EquipmentSlot> SERIAL(equipmentSlot);
   double SERIAL(applyTime) = 1;
   bool SERIAL(fragile) = false;
-  optional<EffectType> SERIAL(effect);
-  optional<EffectType> SERIAL(attackEffect);
+  optional<Effect> SERIAL(effect);
+  optional<Effect> SERIAL(attackEffect);
   int SERIAL(uses) = -1;
   bool SERIAL(usedUpMsg) = false;
   bool SERIAL(displayUses) = false;

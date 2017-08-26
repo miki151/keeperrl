@@ -55,6 +55,8 @@ class LastingEffects {
   static const char* getBadAdjective(LastingEffect);
   static const vector<LastingEffect>& getCausingCondition(CreatureCondition);
   static double modifyCreatureDefense(LastingEffect, double damage, AttrType damageAttr);
+  static const char* getName(LastingEffect);
+  static const char* getDescription(LastingEffect);
 };
 
 

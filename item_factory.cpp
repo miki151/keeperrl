@@ -368,20 +368,20 @@ vector<PItem> ItemFactory::random() {
 
 ItemFactory ItemFactory::villageShop() {
   return ItemFactory({
-      {{ItemId::SCROLL, EffectTypes::Teleport{}}, 5 },
-      {{ItemId::SCROLL, EffectTypes::EnhanceArmor{}}, 5 },
-      {{ItemId::SCROLL, EffectTypes::EnhanceWeapon{}}, 5 },
+      {{ItemId::SCROLL, Effect::Teleport{}}, 5 },
+      {{ItemId::SCROLL, Effect::EnhanceArmor{}}, 5 },
+      {{ItemId::SCROLL, Effect::EnhanceWeapon{}}, 5 },
       {ItemId::FIRE_SCROLL, 5 },
-      {{ItemId::SCROLL, EffectTypes::Summon{CreatureId::FIRE_SPHERE}}, 5 },
-      {{ItemId::SCROLL, EffectTypes::CircularBlast{}}, 1 },
-      {{ItemId::SCROLL, EffectTypes::Deception{}}, 2 },
-      {{ItemId::SCROLL, EffectTypes::Summon{CreatureId::FLY}}, 5 },
-      {{ItemId::POTION, EffectTypes::Heal{}}, 7 },
-      {{ItemId::POTION, EffectTypes::Lasting{LastingEffect::SLEEP}}, 5 },
-      {{ItemId::POTION, EffectTypes::Lasting{LastingEffect::SLOWED}}, 5 },
-      {{ItemId::POTION, EffectTypes::Lasting{LastingEffect::SPEED}},5 },
-      {{ItemId::POTION, EffectTypes::Lasting{LastingEffect::BLIND}}, 5 },
-      {{ItemId::POTION, EffectTypes::Lasting{LastingEffect::INVISIBLE}}, 2 },
+      {{ItemId::SCROLL, Effect::Summon{CreatureId::FIRE_SPHERE}}, 5 },
+      {{ItemId::SCROLL, Effect::CircularBlast{}}, 1 },
+      {{ItemId::SCROLL, Effect::Deception{}}, 2 },
+      {{ItemId::SCROLL, Effect::Summon{CreatureId::FLY}}, 5 },
+      {{ItemId::POTION, Effect::Heal{}}, 7 },
+      {{ItemId::POTION, Effect::Lasting{LastingEffect::SLEEP}}, 5 },
+      {{ItemId::POTION, Effect::Lasting{LastingEffect::SLOWED}}, 5 },
+      {{ItemId::POTION, Effect::Lasting{LastingEffect::SPEED}},5 },
+      {{ItemId::POTION, Effect::Lasting{LastingEffect::BLIND}}, 5 },
+      {{ItemId::POTION, Effect::Lasting{LastingEffect::INVISIBLE}}, 2 },
       {ItemId::WARNING_AMULET, 0.5 },
       {ItemId::HEALING_AMULET, 0.5 },
       {ItemId::DEFENSE_AMULET, 0.5 },
@@ -434,10 +434,10 @@ ItemFactory ItemFactory::orcShop() {
       {ItemId::LEVITATION_BOOTS, 0.3 },
       {ItemId::LEATHER_GLOVES, 2 },
       {ItemId::STRENGTH_GLOVES, 0.5 },
-      {{ItemId::MUSHROOM, EffectTypes::Lasting{LastingEffect::PANIC}}, 1 },
-      {{ItemId::MUSHROOM, EffectTypes::Lasting{LastingEffect::RAGE}}, 1 },
-      {{ItemId::MUSHROOM, EffectTypes::Lasting{LastingEffect::DAM_BONUS}}, 1 },
-      {{ItemId::MUSHROOM, EffectTypes::Lasting{LastingEffect::DEF_BONUS}}, 1} });
+      {{ItemId::MUSHROOM, Effect::Lasting{LastingEffect::PANIC}}, 1 },
+      {{ItemId::MUSHROOM, Effect::Lasting{LastingEffect::RAGE}}, 1 },
+      {{ItemId::MUSHROOM, Effect::Lasting{LastingEffect::DAM_BONUS}}, 1 },
+      {{ItemId::MUSHROOM, Effect::Lasting{LastingEffect::DEF_BONUS}}, 1} });
 }
 
 ItemFactory ItemFactory::gnomeShop() {
@@ -476,32 +476,32 @@ ItemFactory ItemFactory::minerals() {
 
 ItemFactory ItemFactory::potions() {
   return ItemFactory({
-      {{ItemId::POTION, EffectTypes::Heal{}}, 1 },
-      {{ItemId::POTION, EffectTypes::Lasting{LastingEffect::SLEEP}}, 1 },
-      {{ItemId::POTION, EffectTypes::Lasting{LastingEffect::SLOWED}}, 1 },
-      {{ItemId::POTION, EffectTypes::Lasting{LastingEffect::BLIND}}, 1 },
-      {{ItemId::POTION, EffectTypes::Lasting{LastingEffect::INVISIBLE}}, 1 },
-      {{ItemId::POTION, EffectTypes::Lasting{LastingEffect::POISON}}, 1 },
-      {{ItemId::POTION, EffectTypes::Lasting{LastingEffect::POISON_RESISTANT}}, 1 },
-      {{ItemId::POTION, EffectTypes::Lasting{LastingEffect::FLYING}}, 1 },
-      {{ItemId::POTION, EffectTypes::Lasting{LastingEffect::SPEED}}, 1 }});
+      {{ItemId::POTION, Effect::Heal{}}, 1 },
+      {{ItemId::POTION, Effect::Lasting{LastingEffect::SLEEP}}, 1 },
+      {{ItemId::POTION, Effect::Lasting{LastingEffect::SLOWED}}, 1 },
+      {{ItemId::POTION, Effect::Lasting{LastingEffect::BLIND}}, 1 },
+      {{ItemId::POTION, Effect::Lasting{LastingEffect::INVISIBLE}}, 1 },
+      {{ItemId::POTION, Effect::Lasting{LastingEffect::POISON}}, 1 },
+      {{ItemId::POTION, Effect::Lasting{LastingEffect::POISON_RESISTANT}}, 1 },
+      {{ItemId::POTION, Effect::Lasting{LastingEffect::FLYING}}, 1 },
+      {{ItemId::POTION, Effect::Lasting{LastingEffect::SPEED}}, 1 }});
 }
 
 ItemFactory ItemFactory::scrolls() {
   return ItemFactory({
-      {{ItemId::SCROLL, EffectTypes::Teleport{}}, 1 },
-      {{ItemId::SCROLL, EffectTypes::EnhanceArmor{}}, 1 },
-      {{ItemId::SCROLL, EffectTypes::EnhanceWeapon{}}, 1 },
+      {{ItemId::SCROLL, Effect::Teleport{}}, 1 },
+      {{ItemId::SCROLL, Effect::EnhanceArmor{}}, 1 },
+      {{ItemId::SCROLL, Effect::EnhanceWeapon{}}, 1 },
       {ItemId::FIRE_SCROLL, 1 },
-      {{ItemId::SCROLL, EffectTypes::Summon{CreatureId::FIRE_SPHERE}}, 1 },
-      {{ItemId::SCROLL, EffectTypes::CircularBlast{}}, 1 },
-      {{ItemId::SCROLL, EffectTypes::Deception{}}, 1 },
-      {{ItemId::SCROLL, EffectTypes::Summon{CreatureId::FLY}}, 1 }});
+      {{ItemId::SCROLL, Effect::Summon{CreatureId::FIRE_SPHERE}}, 1 },
+      {{ItemId::SCROLL, Effect::CircularBlast{}}, 1 },
+      {{ItemId::SCROLL, Effect::Deception{}}, 1 },
+      {{ItemId::SCROLL, Effect::Summon{CreatureId::FLY}}, 1 }});
 }
 
-static ViewId getMushroomViewId(EffectType e) {
+static ViewId getMushroomViewId(Effect e) {
   return e.visit(
-      [&](const EffectTypes::Lasting& e) {
+      [&](const Effect::Lasting& e) {
         switch (e.lastingEffect) {
           case LastingEffect::DAM_BONUS: return ViewId::MUSHROOM1;
           case LastingEffect::DEF_BONUS: return ViewId::MUSHROOM2;
@@ -519,11 +519,11 @@ static ViewId getMushroomViewId(EffectType e) {
 
 ItemFactory ItemFactory::mushrooms(bool onlyGood) {
   return ItemFactory({
-      {{ItemId::MUSHROOM, EffectTypes::Lasting{LastingEffect::DAM_BONUS}}, 1 },
-      {{ItemId::MUSHROOM, EffectTypes::Lasting{LastingEffect::DEF_BONUS}}, 1 },
-      {{ItemId::MUSHROOM, EffectTypes::Lasting{LastingEffect::PANIC}}, 1 },
-      {{ItemId::MUSHROOM, EffectTypes::Lasting{LastingEffect::HALLU}}, onlyGood ? 0.1 : 8. },
-      {{ItemId::MUSHROOM, EffectTypes::Lasting{LastingEffect::RAGE}}, 1 }});
+      {{ItemId::MUSHROOM, Effect::Lasting{LastingEffect::DAM_BONUS}}, 1 },
+      {{ItemId::MUSHROOM, Effect::Lasting{LastingEffect::DEF_BONUS}}, 1 },
+      {{ItemId::MUSHROOM, Effect::Lasting{LastingEffect::PANIC}}, 1 },
+      {{ItemId::MUSHROOM, Effect::Lasting{LastingEffect::HALLU}}, onlyGood ? 0.1 : 8. },
+      {{ItemId::MUSHROOM, Effect::Lasting{LastingEffect::RAGE}}, 1 }});
 }
 
 ItemFactory ItemFactory::amulets() {
@@ -554,23 +554,23 @@ ItemFactory ItemFactory::dungeon() {
       {ItemId::LEVITATION_BOOTS, 3 },
       {ItemId::LEATHER_GLOVES, 30 },
       {ItemId::STRENGTH_GLOVES, 3 },
-      {{ItemId::SCROLL, EffectTypes::Teleport{}}, 30 },
-      {{ItemId::SCROLL, EffectTypes::EnhanceArmor{}}, 30 },
-      {{ItemId::SCROLL, EffectTypes::EnhanceWeapon{}}, 30 },
+      {{ItemId::SCROLL, Effect::Teleport{}}, 30 },
+      {{ItemId::SCROLL, Effect::EnhanceArmor{}}, 30 },
+      {{ItemId::SCROLL, Effect::EnhanceWeapon{}}, 30 },
       {ItemId::FIRE_SCROLL, 30 },
-      {{ItemId::SCROLL, EffectTypes::Summon{CreatureId::FIRE_SPHERE}}, 30 },
-      {{ItemId::SCROLL, EffectTypes::CircularBlast{}}, 5 },
-      {{ItemId::SCROLL, EffectTypes::Deception{}}, 10 },
-      {{ItemId::SCROLL, EffectTypes::Summon{CreatureId::FLY}}, 30 },
-      {{ItemId::POTION, EffectTypes::Heal{}}, 50 },
-      {{ItemId::POTION, EffectTypes::Lasting{LastingEffect::SLEEP}}, 50 },
-      {{ItemId::POTION, EffectTypes::Lasting{LastingEffect::SLOWED}}, 50 },
-      {{ItemId::POTION, EffectTypes::Lasting{LastingEffect::BLIND}}, 30 },
-      {{ItemId::POTION, EffectTypes::Lasting{LastingEffect::INVISIBLE}}, 10 },
-      {{ItemId::POTION, EffectTypes::Lasting{LastingEffect::POISON}}, 20 },
-      {{ItemId::POTION, EffectTypes::Lasting{LastingEffect::POISON_RESISTANT}}, 20 },
-      {{ItemId::POTION, EffectTypes::Lasting{LastingEffect::FLYING}}, 20 },
-      {{ItemId::POTION, EffectTypes::Lasting{LastingEffect::SPEED}}, 50 },
+      {{ItemId::SCROLL, Effect::Summon{CreatureId::FIRE_SPHERE}}, 30 },
+      {{ItemId::SCROLL, Effect::CircularBlast{}}, 5 },
+      {{ItemId::SCROLL, Effect::Deception{}}, 10 },
+      {{ItemId::SCROLL, Effect::Summon{CreatureId::FLY}}, 30 },
+      {{ItemId::POTION, Effect::Heal{}}, 50 },
+      {{ItemId::POTION, Effect::Lasting{LastingEffect::SLEEP}}, 50 },
+      {{ItemId::POTION, Effect::Lasting{LastingEffect::SLOWED}}, 50 },
+      {{ItemId::POTION, Effect::Lasting{LastingEffect::BLIND}}, 30 },
+      {{ItemId::POTION, Effect::Lasting{LastingEffect::INVISIBLE}}, 10 },
+      {{ItemId::POTION, Effect::Lasting{LastingEffect::POISON}}, 20 },
+      {{ItemId::POTION, Effect::Lasting{LastingEffect::POISON_RESISTANT}}, 20 },
+      {{ItemId::POTION, Effect::Lasting{LastingEffect::FLYING}}, 20 },
+      {{ItemId::POTION, Effect::Lasting{LastingEffect::SPEED}}, 50 },
       {ItemId::WARNING_AMULET, 3 },
       {ItemId::HEALING_AMULET, 3 },
       {ItemId::DEFENSE_AMULET, 3 },
@@ -586,9 +586,9 @@ ItemFactory ItemFactory::singleType(ItemType id, Range count) {
   return ItemFactory({ItemInfo{id, 1, count}});
 }
 
-static int getEffectPrice(EffectType type) {
+static int getEffectPrice(Effect type) {
   return type.visit(
-      [&](const EffectTypes::Lasting& e) {
+      [&](const Effect::Lasting& e) {
           switch (e.lastingEffect) {
             case LastingEffect::INSANITY:
             case LastingEffect::HALLU:
@@ -629,82 +629,82 @@ static int getEffectPrice(EffectType type) {
               return 24;
           }
       },
-      [&](const EffectTypes::Acid&) {
+      [&](const Effect::Acid&) {
         return 8;
       },
-      [&](const EffectTypes::Heal&) {
+      [&](const Effect::Heal&) {
         return 8;
       },
-      [&](const EffectTypes::Teleport&) {
+      [&](const Effect::Teleport&) {
         return 12;
       },
-      [&](const EffectTypes::Fire&) {
+      [&](const Effect::Fire&) {
         return 12;
       },
-      [&](const EffectTypes::Alarm&) {
+      [&](const Effect::Alarm&) {
         return 12;
       },
-      [&](const EffectTypes::SilverDamage&) {
+      [&](const Effect::SilverDamage&) {
         return 12;
       },
-      [&](const EffectTypes::DestroyEquipment&) {
+      [&](const Effect::DestroyEquipment&) {
         return 12;
       },
-      [&](const EffectTypes::EnhanceWeapon&) {
+      [&](const Effect::EnhanceWeapon&) {
         return 12;
       },
-      [&](const EffectTypes::EnhanceArmor&) {
+      [&](const Effect::EnhanceArmor&) {
         return 12;
       },
-      [&](const EffectTypes::TeleEnemies&) {
+      [&](const Effect::TeleEnemies&) {
         return 12;
       },
-      [&](const EffectTypes::CurePoison&) {
+      [&](const Effect::CurePoison&) {
         return 12;
       },
-      [&](const EffectTypes::Summon&) {
+      [&](const Effect::Summon&) {
         return 12;
       },
-      [&](const EffectTypes::EmitPoisonGas&) {
+      [&](const Effect::EmitPoisonGas&) {
         return 20;
       },
-      [&](const EffectTypes::Deception&) {
+      [&](const Effect::Deception&) {
         return 30;
       },
-      [&](const EffectTypes::CircularBlast&) {
+      [&](const Effect::CircularBlast&) {
         return 30;
       },
-      [&](const EffectTypes::PlaceFurniture&) {
+      [&](const Effect::PlaceFurniture&) {
         return 30;
       },
-      [&](const EffectTypes::SummonElement&) {
+      [&](const Effect::SummonElement&) {
         return 30;
       },
-      [&](const EffectTypes::Damage&) {
+      [&](const Effect::Damage&) {
         return 30;
       },
-      [&](const EffectTypes::InjureBodyPart&) {
+      [&](const Effect::InjureBodyPart&) {
         return 30;
       },
-      [&](const EffectTypes::LooseBodyPart&) {
+      [&](const Effect::LooseBodyPart&) {
         return 30;
       },
-      [&](const EffectTypes::RegrowBodyPart&) {
+      [&](const Effect::RegrowBodyPart&) {
         return 30;
       }
   );
 }
 
-const static vector<EffectType> potionEffects {
-   EffectTypes::Lasting{LastingEffect::SLEEP},
-   EffectTypes::Lasting{LastingEffect::SLOWED},
-   EffectTypes::Heal{},
-   EffectTypes::Lasting{LastingEffect::SPEED},
-   EffectTypes::Lasting{LastingEffect::BLIND},
-   EffectTypes::Lasting{LastingEffect::POISON_RESISTANT},
-   EffectTypes::Lasting{LastingEffect::POISON},
-   EffectTypes::Lasting{LastingEffect::INVISIBLE},
-   EffectTypes::Lasting{LastingEffect::FLYING},
+const static vector<Effect> potionEffects {
+   Effect::Lasting{LastingEffect::SLEEP},
+   Effect::Lasting{LastingEffect::SLOWED},
+   Effect::Heal{},
+   Effect::Lasting{LastingEffect::SPEED},
+   Effect::Lasting{LastingEffect::BLIND},
+   Effect::Lasting{LastingEffect::POISON_RESISTANT},
+   Effect::Lasting{LastingEffect::POISON},
+   Effect::Lasting{LastingEffect::INVISIBLE},
+   Effect::Lasting{LastingEffect::FLYING},
 };
 
 ViewId getRingViewId(LastingEffect e) {
@@ -753,31 +753,31 @@ void addPrefix(ItemAttributes& i, WeaponPrefix prefix) {
       i.name = "silver " + *i.name;
       if (i.plural)
         i.plural = "silver " + *i.plural;
-      i.attackEffect = EffectType(EffectTypes::SilverDamage{});
+      i.attackEffect = Effect(Effect::SilverDamage{});
       break;
     case WeaponPrefix::FLAMING:
       i.name = "flaming " + *i.name;
       if (i.plural)
         i.plural = "flaming " + *i.plural;
-      i.attackEffect = EffectType(EffectTypes::Fire{});
+      i.attackEffect = Effect(Effect::Fire{});
       break;
     case WeaponPrefix::POISONOUS:
       i.name = "poisonous " + *i.name;
       if (i.plural)
         i.plural = "poisonous " + *i.plural;
-      i.attackEffect = EffectType(EffectTypes::Lasting{LastingEffect::POISON});
+      i.attackEffect = Effect(Effect::Lasting{LastingEffect::POISON});
       break;
     case WeaponPrefix::GREAT:
       i.name = "great " + *i.name;
       if (i.plural)
         i.plural = "great " + *i.plural;
-      i.attackEffect = EffectType(EffectTypes::Lasting{LastingEffect::BLEEDING});
+      i.attackEffect = Effect(Effect::Lasting{LastingEffect::BLEEDING});
       break;
     case WeaponPrefix::LEAD_FILLED:
       i.name = "lead-filled " + *i.name;
       if (i.plural)
         i.plural = "lead-filled " + *i.plural;
-      i.attackEffect = EffectType(EffectTypes::Lasting{LastingEffect::COLLAPSED});
+      i.attackEffect = Effect(Effect::Lasting{LastingEffect::COLLAPSED});
       break;
   }
 }
@@ -1106,7 +1106,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.modifiers[AttrType::DEFENSE] = 1 + maybePlusMinusOne(4););
     case ItemId::RING: return ITATTR(
             i.viewId = getRingViewId(item.get<LastingEffect>());
-            i.shortName = string(Effect::getName(item.get<LastingEffect>()));
+            i.shortName = string(LastingEffects::getName(item.get<LastingEffect>()));
             i.equipedEffect = item.get<LastingEffect>();
             i.name = "ring of " + *i.shortName;
             i.plural = "rings of " + *i.shortName;
@@ -1156,7 +1156,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.usedUpMsg = true;
             i.displayUses = true;
             i.price = 2;
-            i.effect = {EffectTypes::Heal{}};);
+            i.effect = {Effect::Heal{}};);
     case ItemId::AUTOMATON_ITEM: return ITATTR(
             i.viewId = ViewId::TRAP_ITEM;
             i.shortName = "automaton"_s;
@@ -1170,7 +1170,7 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.applyTime = 3;
             i.uses = 1;
             i.price = 60;
-            i.effect = EffectType(EffectTypes::Summon{CreatureId::AUTOMATON}););
+            i.effect = Effect(Effect::Summon{CreatureId::AUTOMATON}););
     case ItemId::TRAP_ITEM: return ITATTR(
             i.viewId = ViewId::TRAP_ITEM;
             auto trapName = getTrapName(item.get<TrapType>());
@@ -1183,15 +1183,15 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.uses = 1;
             i.usedUpMsg = true;
             i.trapType = item.get<TrapType>();
-            i.effect = EffectType(EffectTypes::PlaceFurniture{getTrapFurniture(item.get<TrapType>())});
+            i.effect = Effect(Effect::PlaceFurniture{getTrapFurniture(item.get<TrapType>())});
             i.price = 2;);
     case ItemId::POTION: return ITATTR(
-            EffectType effect = item.get<EffectType>();
+            Effect effect = item.get<Effect>();
             i.viewId = ViewId::POTION1;
-            i.shortName = Effect::getName(effect);
+            i.shortName = effect.getName();
             i.name = "potion of " + *i.shortName;
             i.plural = "potions of " + *i.shortName;
-            i.description = Effect::getDescription(effect);
+            i.description = effect.getDescription();
             i.blindName = "potion"_s;
             i.itemClass = ItemClass::POTION;
             i.fragile = true;
@@ -1201,12 +1201,12 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.flamability = 0.3;
             i.uses = 1;); 
     case ItemId::MUSHROOM: return ITATTR(
-            EffectType effect = item.get<EffectType>();
+            Effect effect = item.get<Effect>();
             i.viewId = getMushroomViewId(effect);
-            i.shortName = Effect::getName(effect);
+            i.shortName = effect.getName();
             i.name = *i.shortName + " mushroom";
             i.blindName = "mushroom"_s;
-            i.description = Effect::getDescription(effect);
+            i.description = effect.getDescription();
             i.itemClass= ItemClass::FOOD;
             i.weight = 0.1;
             i.modifiers[AttrType::DAMAGE] = -15;
@@ -1215,12 +1215,12 @@ ItemAttributes ItemFactory::getAttributes(ItemType item) {
             i.uses = 1;);
     case ItemId::SCROLL: 
         return ITATTR(
-            EffectType effect = item.get<EffectType>();
+            Effect effect = item.get<Effect>();
             i.viewId = ViewId::SCROLL;
-            i.shortName = Effect::getName(effect);
+            i.shortName = effect.getName();
             i.name = "scroll of " + *i.shortName;
             i.plural= "scrolls of "  + *i.shortName;
-            i.description = Effect::getDescription(effect);
+            i.description = effect.getDescription();
             i.blindName = "scroll"_s;
             i.itemClass = ItemClass::SCROLL;
             i.weight = 0.1;

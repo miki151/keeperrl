@@ -135,7 +135,7 @@ CreatureAction Creature::castSpell(Spell* spell) const {
   return CreatureAction(this, [=] (WCreature c) {
     c->addSound(spell->getSound());
     spell->addMessage(c);
-    Effect::applyToCreature(c, spell->getEffectType());
+    spell->getEffect().applyToCreature(c);
     getGame()->getStatistics().add(StatId::SPELL_CAST);
     c->attributes->getSpellMap().setReadyTime(spell, getGlobalTime() + spell->getDifficulty()
         * getWillpowerMult(attributes->getSkills().getValue(SkillId::SORCERY)));
@@ -153,7 +153,7 @@ CreatureAction Creature::castSpell(Spell* spell, Vec2 dir) const {
     c->addSound(spell->getSound());
     thirdPerson(getName().the() + " casts a spell");
     secondPerson("You cast " + spell->getName());
-    Effect::applyDirected(c, dir, spell->getDirEffectType());
+    applyDirected(c, dir, spell->getDirEffectType());
     getGame()->getStatistics().add(StatId::SPELL_CAST);
     c->attributes->getSpellMap().setReadyTime(spell, getGlobalTime() + spell->getDifficulty()
         * getWillpowerMult(attributes->getSkills().getValue(SkillId::SORCERY)));
@@ -985,7 +985,7 @@ bool Creature::takeDamage(const Attack& attack) {
   } else
     you(MsgType::GET_HIT_NODAMAGE, getAttackParam(attack.type));
   if (attack.effect)
-    Effect::applyToCreature(this, *attack.effect, this);
+    attack.effect->applyToCreature(this, attack.attacker);
   for (LastingEffect effect : ENUM_ALL(LastingEffect))
     if (isAffected(effect))
       LastingEffects::afterCreatureDamage(this, effect);
@@ -1733,7 +1733,7 @@ vector<AdjectiveInfo> Creature::getGoodAdjectives() const {
   for (LastingEffect effect : ENUM_ALL(LastingEffect))
     if (isAffected(effect))
       if (const char* name = LastingEffects::getGoodAdjective(effect)) {
-        ret.push_back({ name, Effect::getDescription(effect) });
+        ret.push_back({ name, LastingEffects::getDescription(effect) });
         if (!attributes->isAffectedPermanently(effect))
           ret.back().name += attributes->getRemainingString(effect, getGlobalTime());
       }
@@ -1753,7 +1753,7 @@ vector<AdjectiveInfo> Creature::getBadAdjectives() const {
   for (LastingEffect effect : ENUM_ALL(LastingEffect))
     if (isAffected(effect))
       if (const char* name = LastingEffects::getBadAdjective(effect)) {
-        ret.push_back({ name, Effect::getDescription(effect) });
+        ret.push_back({ name, LastingEffects::getDescription(effect) });
         if (!attributes->isAffectedPermanently(effect))
           ret.back().name += attributes->getRemainingString(effect, getGlobalTime());
       }

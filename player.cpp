@@ -640,7 +640,7 @@ void Player::makeMove() {
     case UserInputId::EXIT: getGame()->exitAction(); return;
     case UserInputId::APPLY_EFFECT:
       if (auto effect = PrettyPrinting::getEffect(action.get<string>()))
-        Effect::applyToCreature(getCreature(), *effect, nullptr);
+        effect->applyToCreature(getCreature(), nullptr);
       else
         getView()->presentText("Sorry", "Couldn't parse \"" + action.get<string>() + "\"");
       break;

@@ -67,8 +67,8 @@ RICH_ENUM(
     AUTOMATON_ITEM
 );
 
-class ItemType : public EnumVariant<ItemId, TYPES(EffectType, TrapType, LastingEffect, TechId),
-        ASSIGN(EffectType, ItemId::SCROLL, ItemId::POTION, ItemId::MUSHROOM),
+class ItemType : public EnumVariant<ItemId, TYPES(Effect, TrapType, LastingEffect, TechId),
+        ASSIGN(Effect, ItemId::SCROLL, ItemId::POTION, ItemId::MUSHROOM),
         ASSIGN(TrapType, ItemId::TRAP_ITEM),
         ASSIGN(LastingEffect, ItemId::RING),
         ASSIGN(TechId, ItemId::TECH_BOOK)> {

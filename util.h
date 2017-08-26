@@ -1513,7 +1513,7 @@ extern int getSize(const string&);
 extern const char* getString(const string&);
 
 
-template <const char* Names, typename... Types>
+template <const char* getNames(), typename... Types>
 class NamedVariant : public variant<Types...> {
   public:
   using variant<Types...>::variant;
@@ -1521,14 +1521,14 @@ class NamedVariant : public variant<Types...> {
     return getName(this->index());
   }
   static const char* getName(int num) {
-    static auto names = split(Names, {' ', ','}).filter([](const string& s){ return !s.empty(); });
+    static const auto names = split(getNames(), {' ', ','}).filter([](const string& s){ return !s.empty(); });
     return names[num].c_str();
   }
 };
 
 #define MAKE_VARIANT(NAME, ...)\
-constexpr static const char NAME##Names[] = #__VA_ARGS__; \
-using NAME = NamedVariant<NAME##Names, __VA_ARGS__>
+constexpr static inline const char* get##NAME##Names() { return #__VA_ARGS__;}\
+using NAME = NamedVariant<get##NAME##Names, __VA_ARGS__>
 
 
 #define COMPARE_ALL(...) \

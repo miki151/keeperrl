@@ -127,7 +127,7 @@ void FurnitureUsage::handle(FurnitureUsageType type, Position pos, WConstFurnitu
       break;
     }
     case FurnitureUsageType::SLEEP:
-      Effect::applyToCreature(c, EffectTypes::Lasting{LastingEffect::SLEEP});
+      Effect::Lasting{LastingEffect::SLEEP}.applyToCreature(c);
       break;
     case FurnitureUsageType::KEEPER_BOARD:
       c->getGame()->handleMessageBoard(pos, c);

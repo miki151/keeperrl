@@ -26,10 +26,10 @@
 #include "item_class.h"
 #include "corpse_info.h"
 
-static bool isCombatConsumable(EffectType type) {
+static bool isCombatConsumable(Effect type) {
   return type.visit(
       [&](const auto&) { return false; },
-      [&](const EffectTypes::Lasting& e) {
+      [&](const Effect::Lasting& e) {
         switch (e.lastingEffect) {
           case LastingEffect::SPEED:
           case LastingEffect::SLOWED:
@@ -67,8 +67,8 @@ optional<int> MinionEquipment::getEquipmentLimit(EquipmentType type) const {
 optional<MinionEquipment::EquipmentType> MinionEquipment::getEquipmentType(WConstItem it) {
   if (it->canEquip())
     return MinionEquipment::ARMOR;
-  if (auto& effect = it->getEffectType()) {
-    if (effect->contains<EffectTypes::Heal>())
+  if (auto& effect = it->getEffect()) {
+    if (effect->isType<Effect::Heal>())
       return MinionEquipment::HEALING;
     if (isCombatConsumable(*effect))
       return MinionEquipment::COMBAT_ITEM;

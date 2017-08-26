@@ -3,9 +3,9 @@
 #include "stdafx.h"
 #include "util.h"
 
-class EffectType;
+class Effect;
 
 class PrettyPrinting {
   public:
-  static optional<EffectType> getEffect(const string&);
+  static optional<Effect> getEffect(const string&);
 };

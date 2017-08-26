@@ -9,10 +9,10 @@
 #include "attr_type.h"
 #include "body.h"
 
-optional<EffectType> PrettyPrinting::getEffect(const string& s) {
+optional<Effect> PrettyPrinting::getEffect(const string& s) {
   try {
     PrettyInput input(s);
-    EffectType type;
+    Effect type;
     input.getArchive() >> type;
     return type;
   } catch (...) {}
