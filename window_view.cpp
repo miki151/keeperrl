@@ -1395,6 +1395,10 @@ void WindowView::keyboardAction(const SDL_Keysym& key) {
       if (auto input = getText("Enter item type", "", 100, ""))
         inputQueue.push({UserInputId::CREATE_ITEM, *input});
       break;
+    case SDL::SDLK_F12:
+      if (auto input = getText("Enter tribe you wish to join", "", 100, ""))
+        inputQueue.push({UserInputId::CHANGE_TRIBE, *input});
+      break;
     case SDL::SDLK_F9:
       inputQueue.push(UserInputId::CHEAT_ATTRIBUTES);
       break;

@@ -650,6 +650,47 @@ void Player::makeMove() {
       else
         getView()->presentText("Sorry", "Couldn't parse \"" + action.get<string>() + "\"");
       break;
+    case UserInputId::CHANGE_TRIBE: {
+      //Michal, is there a better way to do this?
+	  string tribe = action.get<string>();
+      if (tribe== "Monster")
+        getCreature()->setTribe(TribeId::getMonster());
+      else if (tribe== "Pest")
+        getCreature()->setTribe(TribeId::getPest());
+      else if (tribe== "Wildlife")
+        getCreature()->setTribe(TribeId::getWildlife());
+      else if (tribe== "Human")
+        getCreature()->setTribe(TribeId::getHuman());
+      else if (tribe== "Elf")
+        getCreature()->setTribe(TribeId::getElf());
+      else if (tribe== "DarkElf")
+        getCreature()->setTribe(TribeId::getDarkElf());
+      else if (tribe== "Dwarf")
+        getCreature()->setTribe(TribeId::getDwarf());
+      else if (tribe== "Gnome")
+        getCreature()->setTribe(TribeId::getGnome());
+      else if (tribe== "Adventurer")
+        getCreature()->setTribe(TribeId::getAdventurer());
+      else if (tribe== "Bandit")
+        getCreature()->setTribe(TribeId::getBandit());
+      else if (tribe== "Hostile")
+        getCreature()->setTribe(TribeId::getHostile());
+      else if (tribe== "Shelob")
+        getCreature()->setTribe(TribeId::getShelob());
+      else if (tribe== "Keeper")
+        getCreature()->setTribe(TribeId::getKeeper());
+      else if (tribe== "RetiredKeeper")
+        getCreature()->setTribe(TribeId::getRetiredKeeper());
+      else if (tribe== "Lizard")
+        getCreature()->setTribe(TribeId::getLizard());
+	  else if (tribe== "Greenskin")
+        getCreature()->setTribe(TribeId::getGreenskin());
+      else if (tribe== "Ant")
+        getCreature()->setTribe(TribeId::getAnt());
+      else
+        getView()->presentText("Sorry", "Couldn't parse \"" + action.get<string>() + "\"");
+	  break;
+	}
     case UserInputId::PLAYER_COMMAND: {
         int index = action.get<int>();
         auto commands = getCommands();

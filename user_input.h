@@ -91,7 +91,8 @@ enum class UserInputId {
     INVENTORY_ITEM,
     PAY_DEBT,
     APPLY_EFFECT,
-    CREATE_ITEM
+    CREATE_ITEM,
+	CHANGE_TRIBE
 };
 
 struct CreatureDropInfo {
@@ -231,7 +232,8 @@ class UserInput : public EnumVariant<UserInputId, TYPES(BuildingInfo, int, Uniqu
             UserInputId::TEAM_DRAG_DROP),
         ASSIGN(string,
             UserInputId::CREATE_ITEM,
-            UserInputId::APPLY_EFFECT)
+            UserInputId::APPLY_EFFECT,
+            UserInputId::CHANGE_TRIBE)
         > {
   using EnumVariant::EnumVariant;
 };
