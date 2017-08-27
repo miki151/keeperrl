@@ -34,7 +34,8 @@ RICH_ENUM(LastingEffect,
     RANGED_VULNERABILITY,
     ELF_VISION,
     NIGHT_VISION,
-    REGENERATION
+    REGENERATION,
+    WARNING
 );
 
 RICH_ENUM(CreatureCondition,
@@ -58,6 +59,7 @@ class LastingEffects {
   static double modifyCreatureDefense(LastingEffect, double damage, AttrType damageAttr);
   static const char* getName(LastingEffect);
   static const char* getDescription(LastingEffect);
+  int getPrice(LastingEffect);
 };
 
 
