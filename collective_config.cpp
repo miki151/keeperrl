@@ -535,6 +535,10 @@ unique_ptr<Workshops> CollectiveConfig::getWorkshops() const {
           Workshops::Item::fromType(ItemType::Potion{
               Effect::Lasting{LastingEffect::SPEED}}, 4, {CollectiveResourceId::GOLD, 6}),
           Workshops::Item::fromType(ItemType::Potion{
+              Effect::Lasting{LastingEffect::TELEPATHY}}, 4, {CollectiveResourceId::GOLD, 6}),
+          Workshops::Item::fromType(ItemType::Potion{
+              Effect::Lasting{LastingEffect::REGENERATION}}, 4, {CollectiveResourceId::GOLD, 8}),
+          Workshops::Item::fromType(ItemType::Potion{
               Effect::Lasting{LastingEffect::POISON}}, 4, {CollectiveResourceId::GOLD, 8}),
           Workshops::Item::fromType(ItemType::Potion{
               Effect::Lasting{LastingEffect::FLYING}}, 4, {CollectiveResourceId::GOLD, 8}),
@@ -542,6 +546,9 @@ unique_ptr<Workshops> CollectiveConfig::getWorkshops() const {
              .setTechId(TechId::ALCHEMY_ADV),
           Workshops::Item::fromType(ItemType::Potion{
               Effect::Lasting{LastingEffect::BLIND}}, 4, {CollectiveResourceId::GOLD, 15})
+                  .setTechId(TechId::ALCHEMY_ADV),
+          Workshops::Item::fromType(ItemType::Potion{
+              Effect::Lasting{LastingEffect::MELEE_RESISTANCE}}, 6, {CollectiveResourceId::GOLD, 20})
                   .setTechId(TechId::ALCHEMY_ADV),
           Workshops::Item::fromType(ItemType::Potion{
               Effect::Lasting{LastingEffect::INVISIBLE}}, 6, {CollectiveResourceId::GOLD, 20})
@@ -561,6 +568,10 @@ unique_ptr<Workshops> CollectiveConfig::getWorkshops() const {
               {CollectiveResourceId::GOLD, 20}),
           Workshops::Item::fromType(ItemType::Ring{LastingEffect::FIRE_RESISTANT}, 10,
               {CollectiveResourceId::GOLD, 30}),
+          Workshops::Item::fromType(ItemType::Ring{LastingEffect::MAGIC_RESISTANCE}, 10,
+              {CollectiveResourceId::GOLD, 30}),
+          Workshops::Item::fromType(ItemType::Amulet{LastingEffect::NIGHT_VISION}, 10, {CollectiveResourceId::GOLD, 20}),
+          Workshops::Item::fromType(ItemType::Amulet{LastingEffect::ELF_VISION}, 10, {CollectiveResourceId::GOLD, 20}),
           Workshops::Item::fromType(ItemType::Amulet{LastingEffect::WARNING}, 10, {CollectiveResourceId::GOLD, 30}),
           Workshops::Item::fromType(ItemType::DefenseAmulet{}, 10, {CollectiveResourceId::GOLD, 40}),
           Workshops::Item::fromType(ItemType::Amulet{LastingEffect::REGENERATION}, 10, {CollectiveResourceId::GOLD, 60}),
