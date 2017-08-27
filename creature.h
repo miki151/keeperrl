@@ -35,7 +35,6 @@ class Attack;
 class Controller;
 class ControllerFactory;
 class PlayerMessage;
-class CreatureVision;
 class ShortestPath;
 class LevelShortestPath;
 class Equipment;
@@ -95,7 +94,8 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   const Equipment& getEquipment() const;
   Equipment& getEquipment();
   vector<PItem> steal(const vector<WItem> items);
-  bool canSeeDisregardingPosition(WConstCreature) const;
+  bool canSeeInPosition(WConstCreature) const;
+  bool canSeeOutsidePosition(WConstCreature) const;
   bool canSee(WConstCreature) const;
   bool canSee(Position) const;
   bool canSee(Vec2) const;
@@ -250,8 +250,6 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   void setController(PController);
   void popController();
 
-  void addCreatureVision(WCreatureVision);
-  void removeCreatureVision(WCreatureVision);
   CreatureAction castSpell(Spell*) const;
   CreatureAction castSpell(Spell*, Vec2) const;
   double getSpellDelay(Spell*) const;
@@ -309,7 +307,6 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   EntitySet<Creature> SERIAL(privateEnemies);
   optional<Creature::Id> SERIAL(holding);
   vector<PController> SERIAL(controllerStack);
-  vector<WCreatureVision> SERIAL(creatureVisions);
   EntitySet<Creature> SERIAL(kills);
   mutable int SERIAL(difficultyPoints) = 0;
   int SERIAL(points) = 0;

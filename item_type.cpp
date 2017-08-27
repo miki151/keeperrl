@@ -45,34 +45,6 @@ class FireScrollItem : public Item {
   bool SERIAL(set) = false;
 };
 
-class Telepathy : public CreatureVision {
-  public:
-  virtual bool canSee(WConstCreature c1, WConstCreature c2) override {
-    return c1->getPosition().dist8(c2->getPosition()) < 5 && c2->getBody().hasBrain();
-  }
-
-  SERIALIZE_ALL(SUBCLASS(CreatureVision));
-};
-
-class ItemOfCreatureVision : public Item {
-  public:
-  ItemOfCreatureVision(const ItemAttributes& attr, PCreatureVision&& v) : Item(attr), vision(std::move(v)) {}
-
-  virtual void onEquipSpecial(WCreature c) {
-    c->addCreatureVision(vision.get());
-  }
-
-  virtual void onUnequipSpecial(WCreature c) {
-    c->removeCreatureVision(vision.get());
-  }
-
-  SERIALIZE_ALL(SUBCLASS(Item), vision);
-  SERIALIZATION_CONSTRUCTOR(ItemOfCreatureVision);
-
-  private:
-  PCreatureVision SERIAL(vision);
-};
-
 class Corpse : public Item {
   public:
   Corpse(const ViewObject& obj2, const ItemAttributes& attr, const string& rottenN,
@@ -216,8 +188,6 @@ REGISTER_TYPE(SkillBook)
 REGISTER_TYPE(TechBookItem)
 REGISTER_TYPE(PotionItem)
 REGISTER_TYPE(FireScrollItem)
-REGISTER_TYPE(Telepathy)
-REGISTER_TYPE(ItemOfCreatureVision)
 REGISTER_TYPE(Corpse)
 
 
@@ -227,9 +197,6 @@ ItemAttributes ItemType::getAttributes() const {
 
 PItem ItemType::get() const {
   return type.visit(
-      [&](const TelepathyHelm&) {
-        return makeOwner<ItemOfCreatureVision>(getAttributes(), makeOwner<Telepathy>());
-      },
       [&](const FireScroll&) {
         return makeOwner<FireScrollItem>(getAttributes());
       },
@@ -252,7 +219,7 @@ PItem ItemType::get() const {
 static int getEffectPrice(Effect type) {
   return type.visit(
       [&](const Effect::Lasting& e) {
-        return LastingEffects::getPrice(e);
+        return LastingEffects::getPrice(e.lastingEffect);
       },
       [&](const Effect::Acid&) {
         return 8;
@@ -319,18 +286,6 @@ static int getEffectPrice(Effect type) {
       }
   );
 }
-
-const static vector<Effect> potionEffects {
-   Effect::Lasting{LastingEffect::SLEEP},
-   Effect::Lasting{LastingEffect::SLOWED},
-   Effect::Heal{},
-   Effect::Lasting{LastingEffect::SPEED},
-   Effect::Lasting{LastingEffect::BLIND},
-   Effect::Lasting{LastingEffect::POISON_RESISTANT},
-   Effect::Lasting{LastingEffect::POISON},
-   Effect::Lasting{LastingEffect::INVISIBLE},
-   Effect::Lasting{LastingEffect::FLYING},
-};
 
 ViewId getRingViewId(LastingEffect e) {
   switch (e) {
@@ -843,6 +798,7 @@ ItemAttributes ItemType::TelepathyHelm::getAttributes() const {
       i.plural = "helms of " + *i.shortName;
       i.itemClass = ItemClass::ARMOR;
       i.equipmentSlot = EquipmentSlot::HELMET;
+      i.equipedEffect = LastingEffect::TELEPATHY;
       i.weight = 1.5;
       i.price = 70;
       i.modifiers[AttrType::DEFENSE]= 1 + maybePlusMinusOne(4);
