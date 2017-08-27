@@ -69,8 +69,11 @@ class ItemType {
     COMPARE_ALL(effect)
     ITEM_TYPE_INTERFACE;
   };
-  SIMPLE_ITEM(WarningAmulet);
-  SIMPLE_ITEM(HealingAmulet);
+  struct Amulet {
+    LastingEffect lastingEffect;
+    COMPARE_ALL(lastingEffect)
+    ITEM_TYPE_INTERFACE;
+  };
   SIMPLE_ITEM(DefenseAmulet);
   struct Ring {
     LastingEffect lastingEffect;
@@ -102,7 +105,7 @@ class ItemType {
       BattleAxe, SteelBattleAxe, SpecialBattleAxe, WarHammer, SpecialWarHammer, Club, HeavyClub, WoodenStaff, IronStaff,
       Scythe, Bow, ElvenBow, LeatherArmor, LeatherHelm, TelepathyHelm, ChainArmor, SteelArmor, IronHelm, LeatherBoots,
       IronBoots, SpeedBoots, LevitationBoots, LeatherGloves, StrengthGloves, Robe, Scroll, FireScroll, Potion,
-      Mushroom, WarningAmulet, HealingAmulet, DefenseAmulet, Ring, FirstAidKit, Rock, IronOre, SteelIngot, GoldPiece,
+      Mushroom, Amulet, DefenseAmulet, Ring, FirstAidKit, Rock, IronOre, SteelIngot, GoldPiece,
       WoodPlank, Bone, RandomTechBook, TechBook, TrapItem, AutomatonItem);
 
   template <typename T>
