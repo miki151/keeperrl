@@ -3,8 +3,6 @@
 #include "creature_attributes.h"
 #include "creature.h"
 
-SERIALIZE_DEF(CreatureVision, SUBCLASS(OwnedObject<CreatureVision>))
-
 SERIALIZE_DEF(Vision, id, nightVision)
 
 VisionId Vision::getId() const {

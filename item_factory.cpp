@@ -79,8 +79,8 @@ ItemFactory ItemFactory::villageShop() {
       {ItemType::Potion{Effect::Lasting{LastingEffect::SPEED}},5 },
       {ItemType::Potion{Effect::Lasting{LastingEffect::BLIND}}, 5 },
       {ItemType::Potion{Effect::Lasting{LastingEffect::INVISIBLE}}, 2 },
-      {ItemType::WarningAmulet{}, 0.5 },
-      {ItemType::HealingAmulet{}, 0.5 },
+      {ItemType::Amulet{LastingEffect::WARNING}, 0.5 },
+      {ItemType::Amulet{LastingEffect::REGENERATION}, 0.5 },
       {ItemType::DefenseAmulet{}, 0.5 },
       {ItemType::Ring{LastingEffect::POISON_RESISTANT}, 0.5},
       {ItemType::Ring{LastingEffect::FIRE_RESISTANT}, 0.5},
@@ -207,8 +207,8 @@ ItemFactory ItemFactory::mushrooms(bool onlyGood) {
 
 ItemFactory ItemFactory::amulets() {
   return ItemFactory({
-    {ItemType::WarningAmulet{}, 1},
-    {ItemType::HealingAmulet{}, 1},
+    {ItemType::Amulet{LastingEffect::REGENERATION}, 1},
+    {ItemType::Amulet{LastingEffect::WARNING}, 1},
     {ItemType::DefenseAmulet{}, 1},}
   );
 }
@@ -250,8 +250,8 @@ ItemFactory ItemFactory::dungeon() {
       {ItemType::Potion{Effect::Lasting{LastingEffect::POISON_RESISTANT}}, 20 },
       {ItemType::Potion{Effect::Lasting{LastingEffect::FLYING}}, 20 },
       {ItemType::Potion{Effect::Lasting{LastingEffect::SPEED}}, 50 },
-      {ItemType::WarningAmulet{}, 3 },
-      {ItemType::HealingAmulet{}, 3 },
+      {ItemType::Amulet{LastingEffect::WARNING}, 3 },
+      {ItemType::Amulet{LastingEffect::REGENERATION}, 3 },
       {ItemType::DefenseAmulet{}, 3 },
       {ItemType::Ring{LastingEffect::POISON_RESISTANT}, 3},
       {ItemType::Ring{LastingEffect::FIRE_RESISTANT}, 3}});

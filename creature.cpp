@@ -62,7 +62,7 @@ void Creature::serialize(Archive& ar, const unsigned int version) {
   ar(deathTime, hidden);
   ar(deathReason, swapPositionCooldown);
   ar(unknownAttackers, privateEnemies, holding);
-  ar(controllerStack, creatureVisions, kills);
+  ar(controllerStack, kills);
   ar(difficultyPoints, points, moraleOverride);
   ar(vision, lastCombatTime, debt, lastDamageType, highestAttackValueEver);
 }
@@ -159,14 +159,6 @@ CreatureAction Creature::castSpell(Spell* spell, Vec2 dir) const {
         * getWillpowerMult(attributes->getSkills().getValue(SkillId::SORCERY)));
     c->spendTime(1);
   });
-}
-
-void Creature::addCreatureVision(WCreatureVision creatureVision) {
-  creatureVisions.push_back(creatureVision);
-}
-
-void Creature::removeCreatureVision(WCreatureVision vision) {
-  creatureVisions.removeElement(vision);
 }
 
 void Creature::pushController(PController ctrl) {
@@ -548,9 +540,9 @@ CreatureAction Creature::equip(WItem item) const {
       WItem previousItem = self->equipment->getSlotItems(slot)[0];
       self->equipment->unequip(previousItem, self);
     }
-    self->equipment->equip(item, slot, self);
     secondPerson("You equip " + item->getTheName(false, self));
     thirdPerson(getName().the() + " equips " + item->getAName());
+    self->equipment->equip(item, slot, self);
     if (WGame game = getGame())
       game->addEvent(EventInfo::ItemsEquipped{self, {item}});
     self->spendTime(1);
@@ -568,11 +560,11 @@ CreatureAction Creature::unequip(WItem item) const {
     INFO << getName().the() << " unequip";
     CHECK(equipment->isEquipped(item)) << "Item not equipped.";
     EquipmentSlot slot = item->getEquipmentSlot();
-    self->equipment->unequip(item, self);
     secondPerson("You " + string(slot == EquipmentSlot::WEAPON ? " sheathe " : " remove ") +
         item->getTheName(false, this));
     thirdPerson(getName().the() + (slot == EquipmentSlot::WEAPON ? " sheathes " : " removes ") +
         item->getAName());
+    self->equipment->unequip(item, self);
     self->spendTime(1);
   });
 }
@@ -1404,18 +1396,19 @@ CreatureAction Creature::throwItem(WItem item, Vec2 direction) const {
   });
 }
 
-bool Creature::canSeeDisregardingPosition(WConstCreature c) const {
+bool Creature::canSeeOutsidePosition(WConstCreature c) const {
+  return LastingEffects::canSee(this, c);
+}
+
+bool Creature::canSeeInPosition(WConstCreature c) const {
   if (!c->getPosition().isSameLevel(position))
     return false;
-  for (auto vision : creatureVisions)
-    if (vision->canSee(this, c))
-      return true;
   return !isAffected(LastingEffect::BLIND) && (!c->isAffected(LastingEffect::INVISIBLE) || isFriend(c)) &&
       (!c->isHidden() || c->knowsHiding(this));
 }
 
 bool Creature::canSee(WConstCreature c) const {
-  return canSeeDisregardingPosition(c) && c->getPosition().isVisibleBy(this);
+  return canSeeInPosition(c) && c->getPosition().isVisibleBy(this);
 }
 
 bool Creature::canSee(Position pos) const {

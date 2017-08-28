@@ -45,91 +45,6 @@ class FireScrollItem : public Item {
   bool SERIAL(set) = false;
 };
 
-class AmuletOfWarning : public Item {
-  public:
-  AmuletOfWarning(const ItemAttributes& attr, int r) : Item(attr), radius(r) {}
-
-  virtual void specialTick(Position position) override {
-    WCreature owner = position.getCreature();
-    if (owner && owner->getEquipment().isEquipped(this)) {
-      bool isDanger = false;
-      bool isBigDanger = false;
-      for (Position v : position.getRectangle(Rectangle(-radius, -radius, radius + 1, radius + 1))) {
-        for (auto f : v.getFurniture())
-          if (f->emitsWarning(owner)) {
-            if (v.dist8(position) <= 1)
-              isBigDanger = true;
-            else
-              isDanger = true;
-          }
-        if (WCreature c = v.getCreature()) {
-          if (!owner->canSee(c) && c->isEnemy(owner)) {
-            int diff = c->getAttr(AttrType::DAMAGE) - owner->getAttr(AttrType::DEFENSE);
-            if (diff > 5)
-              isBigDanger = true;
-            else
-              if (diff > 0)
-                isDanger = true;
-          }
-        }
-      }
-      if (isBigDanger)
-        owner->privateMessage(getTheName() + " vibrates vigorously");
-      else
-      if (isDanger)
-        owner->privateMessage(getTheName() + " vibrates");
-    }
-  }
-
-  SERIALIZE_ALL(SUBCLASS(Item), radius);
-  SERIALIZATION_CONSTRUCTOR(AmuletOfWarning);
-
-  private:
-  int SERIAL(radius);
-};
-
-class AmuletOfHealing : public Item {
-  public:
-  AmuletOfHealing(const ItemAttributes& attr) : Item(attr) {}
-
-  virtual void specialTick(Position position) override {
-    WCreature owner = position.getCreature();
-    if (owner && owner->getEquipment().isEquipped(this))
-        owner->heal(1.0 / 20);
-  }
-
-  SERIALIZE_ALL(SUBCLASS(Item));
-  SERIALIZATION_CONSTRUCTOR(AmuletOfHealing);
-};
-
-class Telepathy : public CreatureVision {
-  public:
-  virtual bool canSee(WConstCreature c1, WConstCreature c2) override {
-    return c1->getPosition().dist8(c2->getPosition()) < 5 && c2->getBody().hasBrain();
-  }
-
-  SERIALIZE_ALL(SUBCLASS(CreatureVision));
-};
-
-class ItemOfCreatureVision : public Item {
-  public:
-  ItemOfCreatureVision(const ItemAttributes& attr, PCreatureVision&& v) : Item(attr), vision(std::move(v)) {}
-
-  virtual void onEquipSpecial(WCreature c) {
-    c->addCreatureVision(vision.get());
-  }
-
-  virtual void onUnequipSpecial(WCreature c) {
-    c->removeCreatureVision(vision.get());
-  }
-
-  SERIALIZE_ALL(SUBCLASS(Item), vision);
-  SERIALIZATION_CONSTRUCTOR(ItemOfCreatureVision);
-
-  private:
-  PCreatureVision SERIAL(vision);
-};
-
 class Corpse : public Item {
   public:
   Corpse(const ViewObject& obj2, const ItemAttributes& attr, const string& rottenN,
@@ -269,15 +184,11 @@ class TechBookItem : public Item {
   bool SERIAL(read) = false;
 };
 
-REGISTER_TYPE(SkillBook);
-REGISTER_TYPE(TechBookItem);
-REGISTER_TYPE(PotionItem);
-REGISTER_TYPE(FireScrollItem);
-REGISTER_TYPE(AmuletOfWarning);
-REGISTER_TYPE(AmuletOfHealing);
-REGISTER_TYPE(Telepathy);
-REGISTER_TYPE(ItemOfCreatureVision);
-REGISTER_TYPE(Corpse);
+REGISTER_TYPE(SkillBook)
+REGISTER_TYPE(TechBookItem)
+REGISTER_TYPE(PotionItem)
+REGISTER_TYPE(FireScrollItem)
+REGISTER_TYPE(Corpse)
 
 
 ItemAttributes ItemType::getAttributes() const {
@@ -286,15 +197,6 @@ ItemAttributes ItemType::getAttributes() const {
 
 PItem ItemType::get() const {
   return type.visit(
-      [&](const WarningAmulet&) {
-        return makeOwner<AmuletOfWarning>(getAttributes(), 5);
-      },
-      [&](const TelepathyHelm&) {
-        return makeOwner<ItemOfCreatureVision>(getAttributes(), makeOwner<Telepathy>());
-      },
-      [&](const HealingAmulet&) {
-        return makeOwner<AmuletOfHealing>(getAttributes());
-      },
       [&](const FireScroll&) {
         return makeOwner<FireScrollItem>(getAttributes());
       },
@@ -308,7 +210,7 @@ PItem ItemType::get() const {
         return makeOwner<PotionItem>(getAttributes());
       },
       [&](const auto&) {
-        return makeOwner<Item>(getAttributes());
+        return makeOwner<Item>(this->getAttributes());
       }
   );
 }
@@ -317,45 +219,7 @@ PItem ItemType::get() const {
 static int getEffectPrice(Effect type) {
   return type.visit(
       [&](const Effect::Lasting& e) {
-          switch (e.lastingEffect) {
-            case LastingEffect::INSANITY:
-            case LastingEffect::HALLU:
-            case LastingEffect::BLEEDING:
-              return 2;
-            case LastingEffect::SPEED:
-            case LastingEffect::PANIC:
-            case LastingEffect::SLEEP:
-            case LastingEffect::ENTANGLED:
-            case LastingEffect::TIED_UP:
-            case LastingEffect::STUNNED:
-            case LastingEffect::RAGE:
-            case LastingEffect::COLLAPSED:
-            case LastingEffect::NIGHT_VISION:
-            case LastingEffect::ELF_VISION:
-              return 12;
-            case LastingEffect::BLIND:
-              return 16;
-            case LastingEffect::DAM_BONUS:
-            case LastingEffect::DEF_BONUS:
-              return 20;
-            case LastingEffect::SLOWED:
-            case LastingEffect::POISON_RESISTANT:
-            case LastingEffect::SLEEP_RESISTANT:
-            case LastingEffect::FIRE_RESISTANT:
-            case LastingEffect::POISON:
-              return 20;
-            case LastingEffect::INVISIBLE:
-            case LastingEffect::MAGIC_RESISTANCE:
-            case LastingEffect::MELEE_RESISTANCE:
-            case LastingEffect::RANGED_RESISTANCE:
-            case LastingEffect::MAGIC_VULNERABILITY:
-            case LastingEffect::MELEE_VULNERABILITY:
-            case LastingEffect::RANGED_VULNERABILITY:
-            case LastingEffect::DARKNESS_SOURCE:
-            case LastingEffect::PREGNANT:
-            case LastingEffect::FLYING:
-              return 24;
-          }
+        return LastingEffects::getPrice(e.lastingEffect);
       },
       [&](const Effect::Acid&) {
         return 8;
@@ -423,25 +287,20 @@ static int getEffectPrice(Effect type) {
   );
 }
 
-const static vector<Effect> potionEffects {
-   Effect::Lasting{LastingEffect::SLEEP},
-   Effect::Lasting{LastingEffect::SLOWED},
-   Effect::Heal{},
-   Effect::Lasting{LastingEffect::SPEED},
-   Effect::Lasting{LastingEffect::BLIND},
-   Effect::Lasting{LastingEffect::POISON_RESISTANT},
-   Effect::Lasting{LastingEffect::POISON},
-   Effect::Lasting{LastingEffect::INVISIBLE},
-   Effect::Lasting{LastingEffect::FLYING},
-};
-
 ViewId getRingViewId(LastingEffect e) {
   switch (e) {
     case LastingEffect::FIRE_RESISTANT: return ViewId::FIRE_RESIST_RING;
     case LastingEffect::POISON_RESISTANT: return ViewId::POISON_RESIST_RING;
-    default: FATAL << "Unhandled lasting effect " << int(e);
+    default: return ViewId::FIRE_RESIST_RING;
   }
-  return ViewId(0);
+}
+
+ViewId getAmuletViewId(LastingEffect e) {
+  switch (e) {
+    case LastingEffect::REGENERATION: return ViewId::AMULET1;
+    case LastingEffect::WARNING: return ViewId::AMULET2;
+    default: return ViewId::AMULET3;
+  }
 }
 
 static int maybePlusMinusOne(int prob) {
@@ -939,6 +798,7 @@ ItemAttributes ItemType::TelepathyHelm::getAttributes() const {
       i.plural = "helms of " + *i.shortName;
       i.itemClass = ItemClass::ARMOR;
       i.equipmentSlot = EquipmentSlot::HELMET;
+      i.equipedEffect = LastingEffect::TELEPATHY;
       i.weight = 1.5;
       i.price = 70;
       i.modifiers[AttrType::DEFENSE]= 1 + maybePlusMinusOne(4);
@@ -1010,6 +870,7 @@ ItemAttributes ItemType::Ring::getAttributes() const {
       i.equipedEffect = lastingEffect;
       i.name = "ring of " + *i.shortName;
       i.plural = "rings of " + *i.shortName;
+      i.description = string(LastingEffects::getDescription(lastingEffect));
       i.weight = 0.05;
       i.equipmentSlot = EquipmentSlot::RINGS;
       i.itemClass = ItemClass::RING;
@@ -1017,30 +878,17 @@ ItemAttributes ItemType::Ring::getAttributes() const {
   );
 }
 
-ItemAttributes ItemType::WarningAmulet::getAttributes() const {
+ItemAttributes ItemType::Amulet::getAttributes() const {
   return ITATTR(
-      i.viewId = ViewId::AMULET1;
-      i.shortName = "warning"_s;
+      i.viewId = getAmuletViewId(lastingEffect);
+      i.shortName = string(LastingEffects::getName(lastingEffect));
+      i.equipedEffect = lastingEffect;
       i.name = "amulet of " + *i.shortName;
       i.plural = "amulets of " + *i.shortName;
-      i.description = "Warns about dangerous beasts and enemies.";
+      i.description = string(LastingEffects::getDescription(lastingEffect));
       i.itemClass = ItemClass::AMULET;
       i.equipmentSlot = EquipmentSlot::AMULET;
-      i.price = 40;
-      i.weight = 0.3;
-  );
-}
-
-ItemAttributes ItemType::HealingAmulet::getAttributes() const {
-  return ITATTR(
-      i.viewId = ViewId::AMULET2;
-      i.shortName = "healing"_s;
-      i.name = "amulet of " + *i.shortName;
-      i.plural = "amulets of " + *i.shortName;
-      i.description = "Slowly heals all wounds.";
-      i.itemClass = ItemClass::AMULET;
-      i.equipmentSlot = EquipmentSlot::AMULET;
-      i.price = 60;
+      i.price = 5 * LastingEffects::getPrice(lastingEffect);
       i.weight = 0.3;
   );
 }

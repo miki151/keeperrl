@@ -343,7 +343,6 @@ void CampaignBuilder::placeVillains(Campaign& campaign, vector<Campaign::SiteInf
 
 VillainPlacement CampaignBuilder::getVillainPlacement(const Campaign& campaign, VillainType type) {
   VillainPlacement ret { [&campaign](int x) { return campaign.sites.getBounds().getXRange().contains(x);}, none };
-  int width = campaign.sites.getBounds().right();
   switch (campaign.getType()) {
     case CampaignType::CAMPAIGN:
       switch (type) {

@@ -32,16 +32,3 @@ class Vision {
   VisionId SERIAL(id) = VisionId::NORMAL;
   bool SERIAL(nightVision) = false;
 };
-
-class Creature;
-class CreatureVision : public OwnedObject<CreatureVision> {
-  public:
-  virtual bool canSee(WConstCreature, WConstCreature) = 0;
-  virtual ~CreatureVision() {}
-
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version);
-};
-
-
-

@@ -561,9 +561,9 @@ unique_ptr<Workshops> CollectiveConfig::getWorkshops() const {
               {CollectiveResourceId::GOLD, 20}),
           Workshops::Item::fromType(ItemType::Ring{LastingEffect::FIRE_RESISTANT}, 10,
               {CollectiveResourceId::GOLD, 30}),
-          Workshops::Item::fromType(ItemType::WarningAmulet{}, 10, {CollectiveResourceId::GOLD, 30}),
+          Workshops::Item::fromType(ItemType::Amulet{LastingEffect::WARNING}, 10, {CollectiveResourceId::GOLD, 30}),
           Workshops::Item::fromType(ItemType::DefenseAmulet{}, 10, {CollectiveResourceId::GOLD, 40}),
-          Workshops::Item::fromType(ItemType::HealingAmulet{}, 10, {CollectiveResourceId::GOLD, 60}),
+          Workshops::Item::fromType(ItemType::Amulet{LastingEffect::REGENERATION}, 10, {CollectiveResourceId::GOLD, 60}),
       }},
       {WorkshopType::STEEL_FURNACE, {
           Workshops::Item::fromType(ItemType::SteelIngot{}, 50, {CollectiveResourceId::IRON, 30}).setBatchSize(10),

@@ -137,6 +137,9 @@ static double getDuration(WConstCreature c, LastingEffect e) {
     case LastingEffect::NIGHT_VISION:
     case LastingEffect::ELF_VISION: return 60;
     case LastingEffect::TIED_UP:
+    case LastingEffect::WARNING:
+    case LastingEffect::REGENERATION:
+    case LastingEffect::TELEPATHY:
     case LastingEffect::BLEEDING: return 50;
     case LastingEffect::ENTANGLED: return entangledTime(entangledTime(c->getAttr(AttrType::DAMAGE)));
     case LastingEffect::HALLU:

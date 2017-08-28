@@ -812,7 +812,8 @@ void Player::getViewIndex(Vec2 pos, ViewIndex& index) const {
   if (position.isTribeForbidden(getCreature()->getTribeId()))
     index.setHighlight(HighlightType::FORBIDDEN_ZONE);
   if (WConstCreature c = position.getCreature()) {
-    if ((canSee && getCreature()->canSeeDisregardingPosition(c)) || c == getCreature()) {
+    if ((canSee && getCreature()->canSeeInPosition(c)) || c == getCreature() ||
+        getCreature()->canSeeOutsidePosition(c)) {
       index.insert(c->getViewObjectFor(getCreature()->getTribe()));
       if (c == getCreature())
         index.getObject(ViewLayer::CREATURE).setModifier(ViewObject::Modifier::PLAYER);

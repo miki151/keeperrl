@@ -5,6 +5,7 @@
 #include "player_message.h"
 #include "creature_attributes.h"
 #include "body.h"
+#include "furniture.h"
 
 static optional<LastingEffect> getCancelledOneWay(LastingEffect effect) {
   switch (effect) {
@@ -12,6 +13,8 @@ static optional<LastingEffect> getCancelledOneWay(LastingEffect effect) {
       return LastingEffect::POISON;
     case LastingEffect::SLEEP_RESISTANT:
       return LastingEffect::SLEEP;
+    case LastingEffect::REGENERATION:
+      return LastingEffect::BLEEDING;
     default:
       return none;
   }
@@ -67,7 +70,7 @@ static optional<ViewObject::Modifier> getViewObjectModifier(LastingEffect effect
 
 void LastingEffects::onAffected(WCreature c, LastingEffect effect, bool msg) {
   if (auto e = getCancelled(effect))
-    c->removeEffect(*e, false);
+    c->removeEffect(*e, true);
   if (auto mod = getViewObjectModifier(effect))
     c->modViewObject().setModifier(*mod);
   if (msg)
@@ -143,6 +146,12 @@ void LastingEffects::onAffected(WCreature c, LastingEffect effect, bool msg) {
         c->you("can see through trees"); break;
       case LastingEffect::NIGHT_VISION:
         c->you("can see in the dark"); break;
+      case LastingEffect::REGENERATION:
+        c->you(MsgType::ARE, "regenerating"); break;
+      case LastingEffect::WARNING:
+        c->you(MsgType::FEEL, "more aware of danger"); break;
+      case LastingEffect::TELEPATHY:
+        c->you(MsgType::ARE, "telepathic"); break;
     }
 }
 
@@ -232,6 +241,12 @@ void LastingEffects::onTimedOut(WCreature c, LastingEffect effect, bool msg) {
         c->you("can't see through trees anymore"); break;
       case LastingEffect::NIGHT_VISION:
         c->you("can't see in the dark anymore"); break;
+      case LastingEffect::REGENERATION:
+        c->you(MsgType::ARE, "no longer regenerating"); break;
+      case LastingEffect::WARNING:
+        c->you(MsgType::FEEL, "less aware of danger"); break;
+      case LastingEffect::TELEPATHY:
+        c->you(MsgType::ARE, "no longer telepathic"); break;
       default: break;
     }
 }
@@ -303,6 +318,9 @@ static Adjective getAdjective(LastingEffect effect) {
     case LastingEffect::RANGED_RESISTANCE: return "Resistant to ranged attacks"_good;
     case LastingEffect::ELF_VISION: return "Can see through trees"_good;
     case LastingEffect::NIGHT_VISION: return "Can see in the dark"_good;
+    case LastingEffect::REGENERATION: return "Regenerating"_good;
+    case LastingEffect::WARNING: return "Aware of danger"_good;
+    case LastingEffect::TELEPATHY: return "Telepathic"_good;
 
     case LastingEffect::POISON: return "Poisoned"_bad;
     case LastingEffect::BLEEDING: return "Bleeding"_bad;
@@ -397,6 +415,9 @@ bool LastingEffects::tick(WCreature c, LastingEffect effect) {
         return true;
       }
       break;
+    case LastingEffect::REGENERATION:
+      c->getBody().heal(c, 0.03);
+      break;
     case LastingEffect::POISON:
       c->getBody().bleed(c, 0.03);
       c->secondPerson(PlayerMessage("You suffer from poisoning.", MessagePriority::HIGH));
@@ -407,6 +428,37 @@ bool LastingEffects::tick(WCreature c, LastingEffect effect) {
         return true;
       }
       break;
+    case LastingEffect::WARNING: {
+      const int radius = 5;
+      bool isDanger = false;
+      bool isBigDanger = false;
+      auto position = c->getPosition();
+      for (Position v : position.getRectangle(Rectangle(-radius, -radius, radius + 1, radius + 1))) {
+        for (auto f : v.getFurniture())
+          if (f->emitsWarning(c)) {
+            if (v.dist8(position) <= 1)
+              isBigDanger = true;
+            else
+              isDanger = true;
+          }
+        if (WCreature enemy = v.getCreature()) {
+          if (!c->canSee(enemy) && c->isEnemy(enemy)) {
+            int diff = enemy->getAttr(AttrType::DAMAGE) - c->getAttr(AttrType::DEFENSE);
+            if (diff > 5)
+              isBigDanger = true;
+            else
+              if (diff > 0)
+                isDanger = true;
+          }
+        }
+      }
+      if (isBigDanger)
+        c->privateMessage(PlayerMessage("You sense big danger!", MessagePriority::HIGH));
+      else
+      if (isDanger)
+        c->privateMessage(PlayerMessage("You sense danger!", MessagePriority::HIGH));
+      break;
+    }
     default:
       break;
   }
@@ -446,6 +498,9 @@ const char* LastingEffects::getName(LastingEffect type) {
     case LastingEffect::DARKNESS_SOURCE: return "source of darkness";
     case LastingEffect::NIGHT_VISION: return "night vision";
     case LastingEffect::ELF_VISION: return "elf vision";
+    case LastingEffect::REGENERATION: return "regeneration";
+    case LastingEffect::WARNING: return "warning";
+    case LastingEffect::TELEPATHY: return "telepathy";
   }
 }
 
@@ -483,5 +538,62 @@ const char* LastingEffects::getDescription(LastingEffect type) {
     case LastingEffect::DARKNESS_SOURCE: return "Causes the closest vicinity to become dark. Protects undead from sunlight.";
     case LastingEffect::NIGHT_VISION: return "Gives vision in the dark at full distance.";
     case LastingEffect::ELF_VISION: return "Allows to see and shoot through trees.";
+    case LastingEffect::REGENERATION: return "Recovers a little bit of health every turn.";
+    case LastingEffect::WARNING: return "Warns about dangerous enemies and traps.";
+    case LastingEffect::TELEPATHY: return "Allows you to detect other creatures with brains.";
+  }
+}
+
+bool LastingEffects::canSee(WConstCreature c1, WConstCreature c2) {
+  if (c1->isAffected(LastingEffect::TELEPATHY) &&
+      c1->getPosition().dist8(c2->getPosition()) < 5 && c2->getBody().hasBrain())
+    return true;
+  else
+    return false;
+}
+
+int LastingEffects::getPrice(LastingEffect e) {
+  switch (e) {
+    case LastingEffect::INSANITY:
+    case LastingEffect::HALLU:
+    case LastingEffect::BLEEDING:
+      return 2;
+    case LastingEffect::WARNING:
+      return 5;
+    case LastingEffect::SPEED:
+    case LastingEffect::PANIC:
+    case LastingEffect::SLEEP:
+    case LastingEffect::ENTANGLED:
+    case LastingEffect::TIED_UP:
+    case LastingEffect::STUNNED:
+    case LastingEffect::RAGE:
+    case LastingEffect::COLLAPSED:
+    case LastingEffect::NIGHT_VISION:
+    case LastingEffect::ELF_VISION:
+    case LastingEffect::REGENERATION:
+      return 12;
+    case LastingEffect::BLIND:
+      return 16;
+    case LastingEffect::DAM_BONUS:
+    case LastingEffect::DEF_BONUS:
+      return 20;
+    case LastingEffect::SLOWED:
+    case LastingEffect::POISON_RESISTANT:
+    case LastingEffect::SLEEP_RESISTANT:
+    case LastingEffect::FIRE_RESISTANT:
+    case LastingEffect::POISON:
+    case LastingEffect::TELEPATHY:
+      return 20;
+    case LastingEffect::INVISIBLE:
+    case LastingEffect::MAGIC_RESISTANCE:
+    case LastingEffect::MELEE_RESISTANCE:
+    case LastingEffect::RANGED_RESISTANCE:
+    case LastingEffect::MAGIC_VULNERABILITY:
+    case LastingEffect::MELEE_VULNERABILITY:
+    case LastingEffect::RANGED_VULNERABILITY:
+    case LastingEffect::DARKNESS_SOURCE:
+    case LastingEffect::PREGNANT:
+    case LastingEffect::FLYING:
+      return 24;
   }
 }
