@@ -2015,7 +2015,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::WEREWOLF:
       return CATTR(
           c.viewId = ViewId::WEREWOLF;
-          c.attr = LIST(20_dam, 9_def, 100_spd );
+          c.attr = LIST(20_dam, 7_def, 100_spd );
           c.body = Body::humanoid(Body::Size::LARGE);
           c.animal = true;
           c.spawnType = SpawnType::BEAST;
@@ -2023,6 +2023,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.skills.insert(SkillId::STEALTH);
           c.skills.insert(SkillId::EXPLORE_NOCTURNAL);
           c.permanentEffects[LastingEffect::MAGIC_RESISTANCE] = 1;
+          c.permanentEffects[LastingEffect::REGENERATION] = 1;
           c.maxLevelIncrease[ExperienceType::MELEE] = 12;
           c.name = CreatureName("werewolf", "werewolves");
           c.name->setFirst(NameGenerator::get(NameGeneratorId::DOG)->getNext());

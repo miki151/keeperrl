@@ -150,6 +150,8 @@ void LastingEffects::onAffected(WCreature c, LastingEffect effect, bool msg) {
         c->you(MsgType::ARE, "regenerating"); break;
       case LastingEffect::WARNING:
         c->you(MsgType::FEEL, "more aware of danger"); break;
+      case LastingEffect::TELEPATHY:
+        c->you(MsgType::ARE, "telepathic"); break;
     }
 }
 
@@ -243,6 +245,8 @@ void LastingEffects::onTimedOut(WCreature c, LastingEffect effect, bool msg) {
         c->you(MsgType::ARE, "no longer regenerating"); break;
       case LastingEffect::WARNING:
         c->you(MsgType::FEEL, "less aware of danger"); break;
+      case LastingEffect::TELEPATHY:
+        c->you(MsgType::ARE, "no longer telepathic"); break;
       default: break;
     }
 }
@@ -316,6 +320,7 @@ static Adjective getAdjective(LastingEffect effect) {
     case LastingEffect::NIGHT_VISION: return "Can see in the dark"_good;
     case LastingEffect::REGENERATION: return "Regenerating"_good;
     case LastingEffect::WARNING: return "Aware of danger"_good;
+    case LastingEffect::TELEPATHY: return "Telepathic"_good;
 
     case LastingEffect::POISON: return "Poisoned"_bad;
     case LastingEffect::BLEEDING: return "Bleeding"_bad;
@@ -495,6 +500,7 @@ const char* LastingEffects::getName(LastingEffect type) {
     case LastingEffect::ELF_VISION: return "elf vision";
     case LastingEffect::REGENERATION: return "regeneration";
     case LastingEffect::WARNING: return "warning";
+    case LastingEffect::TELEPATHY: return "telepathy";
   }
 }
 
@@ -534,7 +540,16 @@ const char* LastingEffects::getDescription(LastingEffect type) {
     case LastingEffect::ELF_VISION: return "Allows to see and shoot through trees.";
     case LastingEffect::REGENERATION: return "Recovers a little bit of health every turn.";
     case LastingEffect::WARNING: return "Warns about dangerous enemies and traps.";
+    case LastingEffect::TELEPATHY: return "Allows you to detect other creatures with brains.";
   }
+}
+
+bool LastingEffects::canSee(WConstCreature c1, WConstCreature c2) {
+  if (c1->isAffected(LastingEffect::TELEPATHY) &&
+      c1->getPosition().dist8(c2->getPosition()) < 5 && c2->getBody().hasBrain())
+    return true;
+  else
+    return false;
 }
 
 int LastingEffects::getPrice(LastingEffect e) {
@@ -567,6 +582,7 @@ int LastingEffects::getPrice(LastingEffect e) {
     case LastingEffect::SLEEP_RESISTANT:
     case LastingEffect::FIRE_RESISTANT:
     case LastingEffect::POISON:
+    case LastingEffect::TELEPATHY:
       return 20;
     case LastingEffect::INVISIBLE:
     case LastingEffect::MAGIC_RESISTANCE:

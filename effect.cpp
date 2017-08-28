@@ -139,6 +139,7 @@ static double getDuration(WConstCreature c, LastingEffect e) {
     case LastingEffect::TIED_UP:
     case LastingEffect::WARNING:
     case LastingEffect::REGENERATION:
+    case LastingEffect::TELEPATHY:
     case LastingEffect::BLEEDING: return 50;
     case LastingEffect::ENTANGLED: return entangledTime(entangledTime(c->getAttr(AttrType::DAMAGE)));
     case LastingEffect::HALLU:
@@ -166,7 +167,7 @@ static double getDuration(WConstCreature c, LastingEffect e) {
     case LastingEffect::MAGIC_RESISTANCE:
     case LastingEffect::MELEE_RESISTANCE:
     case LastingEffect::RANGED_RESISTANCE:
-      return 30;
+      return 25;
   }
   return 0;
 }

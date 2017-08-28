@@ -50,7 +50,7 @@ class Effect {
   SIMPLE_EFFECT(EnhanceWeapon);
   struct EmitPoisonGas {
     EFFECT_TYPE_INTERFACE;
-    double amount;
+    double amount = 0.8;
     COMPARE_ALL(amount)
   };
   SIMPLE_EFFECT(CircularBlast);
