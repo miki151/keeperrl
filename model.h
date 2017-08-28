@@ -54,6 +54,8 @@ class Model : public OwnedObject<Model> {
   void landHeroPlayer(PCreature);
   void addExternalEnemies(ExternalEnemies&&);
 
+  const optional<ExternalEnemies>& getExternalEnemies() const;
+
   bool isTurnBased();
 
   double getLocalTime() const;
