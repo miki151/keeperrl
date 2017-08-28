@@ -285,6 +285,7 @@ vector<ItemAction> Player::getItemActions(const vector<WItem>& item) const {
           break;
         }
   }
+  actions.push_back(ItemAction::NAME);
   return actions;
 }
 
@@ -307,6 +308,11 @@ void Player::handleItems(const EntitySet<Item>& itemIds, ItemAction action) {
     case ItemAction::GIVE: giveAction(items); break;
     case ItemAction::PAY: payForItemAction(items); break;
     case ItemAction::EQUIP: tryToPerform(getCreature()->equip(items[0])); break;
+    case ItemAction::NAME:
+      if (auto name = getView()->getText("Enter a name for " + items[0]->getTheName(),
+          items[0]->getArtifactName().value_or(""), 14))
+        items[0]->setArtifactName(*name);
+      break;
     default: FATAL << "Unhandled item action " << int(action);
   }
 }

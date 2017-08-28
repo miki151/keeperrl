@@ -955,6 +955,7 @@ static string getActionText(ItemAction a) {
     case ItemAction::UNLOCK: return "unlock";
     case ItemAction::REMOVE: return "remove";
     case ItemAction::CHANGE_NUMBER: return "change number";
+    case ItemAction::NAME: return "name";
   }
 }
 
