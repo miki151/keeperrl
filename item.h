@@ -43,7 +43,8 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
   string getTheName(bool plural = false, WConstCreature owner = nullptr) const;
   string getAName(bool plural = false, WConstCreature owner = nullptr) const;
   string getNameAndModifiers(bool plural = false, WConstCreature owner = nullptr) const;
-  string getArtifactName() const;
+  const optional<string>& getArtifactName() const;
+  void setArtifactName(const string&);
   string getShortName(WConstCreature owner = nullptr, bool noSuffix = false) const;
   string getPluralName(int count) const;
   string getPluralTheName(int count) const;

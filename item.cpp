@@ -319,9 +319,12 @@ static string withSign(int a) {
     return toString(a);
 }
 
-string Item::getArtifactName() const {
-  CHECK(attributes->artifactName);
-  return *attributes->artifactName;
+const optional<string>& Item::getArtifactName() const {
+  return attributes->artifactName;
+}
+
+void Item::setArtifactName(const string& s) {
+  attributes->artifactName = s;
 }
 
 string Item::getModifiers(bool shorten) const {
@@ -364,7 +367,7 @@ string Item::getShortName(WConstCreature owner, bool noSuffix) const {
   if (owner && owner->isAffected(LastingEffect::BLIND) && attributes->blindName)
     return getBlindName(false);
   string name = getModifiers(true);
-  if (attributes->shortName)
+  if (attributes->shortName && !attributes->artifactName)
     name = *attributes->shortName + " " + name;
   if (fire->isBurning() && !noSuffix)
     name.append(" (burning)");

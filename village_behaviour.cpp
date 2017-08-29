@@ -11,7 +11,7 @@
 #include "construction_map.h"
 #include "villain_type.h"
 
-SERIALIZE_DEF(VillageBehaviour, minPopulation, minTeamSize, triggers, attackBehaviour, welcomeMessage, ransom);
+SERIALIZE_DEF(VillageBehaviour, minPopulation, minTeamSize, triggers, attackBehaviour, welcomeMessage, ransom)
 
 VillageBehaviour::VillageBehaviour() {}
 

@@ -200,11 +200,13 @@ bool BuildInfo::meetsRequirement(WConstCollective col, Requirement req) {
   switch (req.getId()) {
     case RequirementId::TECHNOLOGY:
       return col->hasTech(req.get<TechId>());
-    case RequirementId::VILLAGE_CONQUERED:
-      for (WConstCollective enemy : col->getGame()->getVillains(VillainType::MAIN))
+    case RequirementId::VILLAGE_CONQUERED: {
+      auto& mainVillains = col->getGame()->getVillains(VillainType::MAIN);
+      for (WConstCollective enemy : mainVillains)
         if (enemy->isConquered())
           return true;
-      return false;
+      return mainVillains.empty();
+    }
   }
 }
 
