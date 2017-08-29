@@ -33,15 +33,14 @@ class ExternalEnemies {
     SERIALIZE_ALL(name, attackers)
   };
   struct NextWave {
-    NextWave() {}
-    NextWave(const NextWave&) = delete;
-    NextWave(NextWave&&) = default; // this is to fix a compiler error that I did't understand
-    vector<PCreature> SERIAL(attackers);
+    CreatureFactory SERIAL(factory);
+    int SERIAL(numCreatures);
+    ViewId SERIAL(viewId);
     string SERIAL(name);
-    double SERIAL(attackTime);
+    int SERIAL(attackTime);
     AttackBehaviour SERIAL(behaviour);
     int SERIAL(id);
-    SERIALIZE_ALL(attackers, name, attackTime, behaviour, id)
+    SERIALIZE_ALL(factory, numCreatures, viewId, name, attackTime, behaviour, id)
   };
   optional<const NextWave&> getNextWave() const;
 

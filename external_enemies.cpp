@@ -13,25 +13,23 @@
 #include "creature.h"
 #include "container_range.h"
 #include "monster.h"
+#include "view_object.h"
 
 SERIALIZE_DEF(ExternalEnemies, currentWaves, waves)
 SERIALIZATION_CONSTRUCTOR_IMPL(ExternalEnemies)
 
 ExternalEnemies::ExternalEnemies(RandomGen& random, vector<EnemyEvent> events) {
   for (int i : All(events)) {
-    NextWave wave;
     auto enemy = Random.choose(events[i].enemies);
-    enemy.factory.increaseLevel(events[i].levelIncrease);
-    for (int j : Range(Random.get(enemy.groupSize))) {
-      PCreature c = enemy.factory.random();
-      c->getAttributes().setCourage(1);
-      wave.attackers.push_back(std::move(c));
-    }
-    wave.attackTime = random.get(events[i].attackTime);
-    wave.name = enemy.name;
-    wave.behaviour = enemy.behaviour;
-    wave.id = i;
-    waves.push_back(std::move(wave));
+    waves.push_back(NextWave {
+        enemy.factory.increaseLevel(events[i].levelIncrease),
+        Random.get(enemy.groupSize),
+        enemy.factory.random()->getViewObject().id(),
+        enemy.name,
+        random.get(events[i].attackTime),
+        enemy.behaviour,
+        i
+      });
   }
 }
 
@@ -69,13 +67,12 @@ void ExternalEnemies::update(WLevel level, double localTime) {
   updateCurrentWaves(target);
   if (auto nextWave = popNextWave(localTime)) {
     vector<WCreature> attackers;
-    for (auto& c : nextWave->attackers) {
+    for (int i : Range(nextWave->numCreatures)) {
+      auto c = nextWave->factory.random(MonsterAIFactory::singleTask(getAttackTask(target, nextWave->behaviour)));
+      c->getAttributes().setCourage(1);
       auto ref = c.get();
-      if (level->landCreature(StairKey::transferLanding(), std::move(c))) {
+      if (level->landCreature(StairKey::transferLanding(), std::move(c)))
         attackers.push_back(ref);
-      }
-      ref->setController(makeOwner<Monster>(ref,
-          MonsterAIFactory::singleTask(getAttackTask(target, nextWave->behaviour))));
     }
     target->addAttack(CollectiveAttack(nextWave->name, attackers));
     currentWaves.push_back(CurrentWave{nextWave->name, attackers});

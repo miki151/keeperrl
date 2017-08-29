@@ -1131,9 +1131,9 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
     if (auto nextWave = enemies->getNextWave())
       if (!dismissedNextWaves.count(nextWave->id)) {
         info.nextWave = CollectiveInfo::NextWave {
-          nextWave->attackers.front()->getViewObject().id(),
+          nextWave->viewId,
           nextWave->name,
-          nextWave->attackers.size(),
+          nextWave->numCreatures,
           (int) (nextWave->attackTime - getLocalTime())
         };
       }
