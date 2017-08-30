@@ -5,7 +5,7 @@
 #include "view_object.h"
 
 WorkshopItem WorkshopItem::fromType(ItemType type, double workNeeded, CostInfo cost) {
-  PItem item = ItemFactory::fromId(type);
+  PItem item = type.get();
   return {
     type,
     item->getName(),

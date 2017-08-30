@@ -32,6 +32,7 @@
 #include "equipment.h"
 #include "attr_type.h"
 #include "attack.h"
+#include "lasting_effect.h"
 
 template <class Archive> 
 void Item::serialize(Archive& ar, const unsigned int version) {
@@ -39,8 +40,8 @@ void Item::serialize(Archive& ar, const unsigned int version) {
   ar(attributes, discarded, shopkeeper, fire, classCache, canEquipCache);
 }
 
-SERIALIZABLE(Item);
-SERIALIZATION_CONSTRUCTOR_IMPL(Item);
+SERIALIZABLE(Item)
+SERIALIZATION_CONSTRUCTOR_IMPL(Item)
 
 Item::Item(const ItemAttributes& attr) : Renderable(ViewObject(*attr.viewId, ViewLayer::ITEM, capitalFirst(*attr.name))),
     attributes(attr), fire(*attr.weight, attr.flamability), canEquipCache(!!attributes->equipmentSlot),
@@ -50,8 +51,8 @@ Item::Item(const ItemAttributes& attr) : Renderable(ViewObject(*attr.viewId, Vie
 Item::~Item() {
 }
 
-ItemPredicate Item::effectPredicate(EffectType type) {
-  return [type](WConstItem item) { return item->getEffectType() == type; };
+ItemPredicate Item::effectPredicate(Effect type) {
+  return [type](WConstItem item) { return item->getEffect() == type; };
 }
 
 ItemPredicate Item::classPredicate(ItemClass cl) {
@@ -142,7 +143,7 @@ void Item::onHitCreature(WCreature c, const Attack& attack, int numItems) {
   if (c->takeDamage(attack))
     return;
   if (attributes->effect && getClass() == ItemClass::POTION) {
-    Effect::applyToCreature(c, *attributes->effect, EffectStrength::NORMAL, attack.attacker);
+    attributes->effect->applyToCreature(c, attack.attacker);
   }
 }
 
@@ -199,7 +200,7 @@ void Item::applySpecial(WCreature c) {
   if (attributes->itemClass == ItemClass::SCROLL)
     c->getGame()->getStatistics().add(StatId::SCROLL_READ);
   if (attributes->effect)
-    Effect::applyToCreature(c, *attributes->effect, EffectStrength::NORMAL);
+    attributes->effect->applyToCreature(c);
   if (attributes->uses > -1 && --attributes->uses == 0) {
     discarded = true;
     if (attributes->usedUpMsg)
@@ -318,9 +319,12 @@ static string withSign(int a) {
     return toString(a);
 }
 
-string Item::getArtifactName() const {
-  CHECK(attributes->artifactName);
-  return *attributes->artifactName;
+const optional<string>& Item::getArtifactName() const {
+  return attributes->artifactName;
+}
+
+void Item::setArtifactName(const string& s) {
+  attributes->artifactName = s;
 }
 
 string Item::getModifiers(bool shorten) const {
@@ -363,7 +367,7 @@ string Item::getShortName(WConstCreature owner, bool noSuffix) const {
   if (owner && owner->isAffected(LastingEffect::BLIND) && attributes->blindName)
     return getBlindName(false);
   string name = getModifiers(true);
-  if (attributes->shortName)
+  if (attributes->shortName && !attributes->artifactName)
     name = *attributes->shortName + " " + name;
   if (fire->isBurning() && !noSuffix)
     name.append(" (burning)");
@@ -385,11 +389,11 @@ bool Item::isDiscarded() {
   return discarded;
 }
 
-const optional<EffectType>& Item::getEffectType() const {
+const optional<Effect>& Item::getEffect() const {
   return attributes->effect;
 }
 
-optional<EffectType> Item::getAttackEffect() const {
+optional<Effect> Item::getAttackEffect() const {
   return attributes->attackEffect;
 }
 

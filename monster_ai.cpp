@@ -31,7 +31,7 @@
 #include "creature_attributes.h"
 #include "creature_factory.h"
 #include "spell_map.h"
-#include "effect_type.h"
+#include "effect.h"
 #include "body.h"
 #include "item_class.h"
 #include "furniture.h"
@@ -47,7 +47,7 @@ class Behaviour {
   WItem getBestWeapon();
   WCreature getClosestEnemy();
   WCreature getClosestCreature();
-  MoveInfo tryEffect(EffectType, double maxTurns);
+  MoveInfo tryEffect(Effect, double maxTurns);
   MoveInfo tryEffect(DirEffectType, Vec2);
 
   virtual ~Behaviour() {}
@@ -102,7 +102,7 @@ WItem Behaviour::getBestWeapon() {
   return best;
 }
 
-MoveInfo Behaviour::tryEffect(EffectType type, double maxTurns) {
+MoveInfo Behaviour::tryEffect(Effect type, double maxTurns) {
   for (Spell* spell : creature->getAttributes().getSpellMap().getAll()) {
    if (spell->hasEffect(type))
       if (auto action = creature->castSpell(spell))
@@ -130,11 +130,10 @@ class Heal : public Behaviour {
   Heal(WCreature c) : Behaviour(c) {}
 
   virtual double itemValue(WConstItem item) {
-    if (item->getEffectType() == EffectType(EffectId::HEAL)) {
-      return 0.5;
-    }
-    else
-      return 0;
+    if (auto& effect = item->getEffect())
+      if (effect->isType<Effect::Heal>())
+        return 0.5;
+    return 0;
   }
 
   virtual MoveInfo getMove() {
@@ -148,15 +147,15 @@ class Heal : public Behaviour {
     if (!creature->getBody().isHumanoid())
       return NoMove;
     if (creature->isAffected(LastingEffect::POISON)) {
-      if (MoveInfo move = tryEffect(EffectType(EffectId::LASTING, LastingEffect::POISON_RESISTANT), 1))
+      if (MoveInfo move = tryEffect(Effect::Lasting{LastingEffect::POISON_RESISTANT}, 1))
         return move;
-      if (MoveInfo move = tryEffect(EffectType(EffectId::CURE_POISON), 1))
+      if (MoveInfo move = tryEffect(Effect::CurePoison{}, 1))
         return move;
     }
     if (creature->getBody().canHeal()) {
-      if (MoveInfo move = tryEffect(EffectId::HEAL, 1))
+      if (MoveInfo move = tryEffect(Effect::Heal{}, 1))
         return move.withValue(min(1.0, 1.5 - creature->getBody().getHealth()));
-      if (MoveInfo move = tryEffect(EffectId::HEAL, 3))
+      if (MoveInfo move = tryEffect(Effect::Heal{}, 3))
         return move.withValue(0.5 * min(1.0, 1.5 - creature->getBody().getHealth()));
     }
     for (Position pos : creature->getPosition().neighbors8())
@@ -248,7 +247,7 @@ class StayOnFurniture : public Behaviour {
             break;
           }
       if (nextPigsty)
-        if (auto move = creature->moveTowards(*nextPigsty, true))
+        if (auto move = creature->moveTowards(*nextPigsty, Creature::NavigationFlags().requireStepOnTile()))
           return move;
     }
     if (Random.roll(10))
@@ -365,7 +364,7 @@ class Fighter : public Behaviour {
   }
 
   MoveInfo getPanicMove(WCreature other, double weight) {
-    if (auto teleMove = tryEffect(EffectId::TELEPORT, 1))
+    if (auto teleMove = tryEffect(Effect::Teleport{}, 1))
       return teleMove.withValue(weight);
     if (other->getPosition().dist8(creature->getPosition()) > 3)
       if (auto move = getFireMove(creature->getPosition().getDir(other->getPosition())))
@@ -381,18 +380,19 @@ class Fighter : public Behaviour {
   }
 
   virtual double itemValue(WConstItem item) override {
-    if (contains<EffectType>({
-          EffectType(EffectId::LASTING, LastingEffect::INVISIBLE),
-          EffectType(EffectId::LASTING, LastingEffect::SLOWED),
-          EffectType(EffectId::LASTING, LastingEffect::BLIND),
-          EffectType(EffectId::LASTING, LastingEffect::SLEEP),
-          EffectType(EffectId::LASTING, LastingEffect::POISON),
-          EffectType(EffectId::LASTING, LastingEffect::POISON_RESISTANT),
-          EffectId::CURE_POISON,
-          EffectId::TELEPORT,
-          EffectType(EffectId::LASTING, LastingEffect::DAM_BONUS),
-          EffectType(EffectId::LASTING, LastingEffect::DEF_BONUS)},
-          item->getEffectType()))
+    if (auto& effect = item->getEffect())
+      if (contains<Effect>({
+            Effect::Lasting{LastingEffect::INVISIBLE},
+            Effect::Lasting{LastingEffect::SLOWED},
+            Effect::Lasting{LastingEffect::BLIND},
+            Effect::Lasting{LastingEffect::SLEEP},
+            Effect::Lasting{LastingEffect::POISON},
+            Effect::Lasting{LastingEffect::POISON_RESISTANT},
+            Effect::CurePoison{},
+            Effect::Teleport{},
+            Effect::Lasting{LastingEffect::DAM_BONUS},
+            Effect::Lasting{LastingEffect::DEF_BONUS}},
+            *effect))
       return 1;
     int damage = item->getModifier(AttrType::DAMAGE);
     WItem best = getBestWeapon();
@@ -412,15 +412,15 @@ class Fighter : public Behaviour {
   }
 
   double getThrowValue(WItem it) {
-    if (contains<EffectType>({
-          EffectType(EffectId::LASTING, LastingEffect::POISON),
-          EffectType(EffectId::LASTING, LastingEffect::SLOWED),
-          EffectType(EffectId::LASTING, LastingEffect::BLIND),
-          EffectType(EffectId::LASTING, LastingEffect::SLEEP)},
-          it->getEffectType()))
-      return 100;
-    else
-      return 0;
+    if (auto& effect = it->getEffect())
+      if (contains<Effect>({
+            Effect::Lasting{LastingEffect::POISON},
+            Effect::Lasting{LastingEffect::SLOWED},
+            Effect::Lasting{LastingEffect::BLIND},
+            Effect::Lasting{LastingEffect::SLEEP}},
+            *effect))
+        return 100;
+    return 0;
   }
 
   MoveInfo getThrowMove(Vec2 enemyDir) {
@@ -503,7 +503,7 @@ class Fighter : public Behaviour {
         if (c->isEnemy(creature))
           ++numEnemies;
     if (numEnemies >= 3)
-      if (MoveInfo move = tryEffect(EffectId::CIRCULAR_BLAST, 1))
+      if (MoveInfo move = tryEffect(Effect::CircularBlast{}, 1))
         return move;
     return NoMove;
   }
@@ -521,13 +521,13 @@ class Fighter : public Behaviour {
   }
 
   MoveInfo considerBuffs() {
-    for (EffectType effect : {
-        EffectType(EffectId::LASTING, LastingEffect::INVISIBLE),
-        EffectType(EffectId::LASTING, LastingEffect::DAM_BONUS),
-        EffectType(EffectId::LASTING, LastingEffect::DEF_BONUS),
-        EffectType(EffectId::LASTING, LastingEffect::SPEED),
-        EffectType(EffectId::DECEPTION),
-        EffectType(EffectId::SUMMON, CreatureId::SPIRIT)})
+    for (Effect effect : {
+        Effect(Effect::Lasting{LastingEffect::INVISIBLE}),
+        Effect(Effect::Lasting{LastingEffect::DAM_BONUS}),
+        Effect(Effect::Lasting{LastingEffect::DEF_BONUS}),
+        Effect(Effect::Lasting{LastingEffect::SPEED}),
+        Effect(Effect::Deception{}),
+        Effect(Effect::Summon{CreatureId::SPIRIT})})
       if (MoveInfo move = tryEffect(effect, 1))
         return move;
     return NoMove;
@@ -584,7 +584,7 @@ class Fighter : public Behaviour {
       if (chase && !other->getAttributes().dontChase() && !isChaseFrozen(other)) {
         lastSeen = none;
         if (auto action = creature->moveTowards(other->getPosition()))
-          return {max(0., 1.0 - double(distance) / 10), action.prepend([=](WCreature creature) {
+          return {max(0., 1.0 - double(distance) / 20), action.prepend([=](WCreature creature) {
             creature->setInCombat();
             other->setInCombat();
             lastSeen = LastSeen{other->getPosition(), creature->getGlobalTime(), LastSeen::ATTACK, other->getUniqueId()};
@@ -593,7 +593,7 @@ class Fighter : public Behaviour {
               chaseFreeze.set(other, make_pair(other->getGlobalTime() + 20, other->getGlobalTime() + 70));
           })};
       }
-      if (distance == 2)
+      if (distance == 2 && chase)
         if (auto move = considerBreakingChokePoint(other))
           return move;
     }
@@ -775,7 +775,7 @@ class Thief : public Behaviour {
       return NoMove;
     for (WConstCreature other : creature->getVisibleEnemies()) {
       if (robbed.contains(other)) {
-        if (MoveInfo teleMove = tryEffect(EffectId::TELEPORT, 1))
+        if (MoveInfo teleMove = tryEffect(Effect::Teleport{}, 1))
           return teleMove;
         if (auto action = creature->moveAway(other->getPosition()))
         return {1.0, action};
@@ -1159,6 +1159,19 @@ PMonsterAI MonsterAIFactory::getMonsterAI(WCreature c) const {
 MonsterAIFactory::MonsterAIFactory(MakerFun _maker) : maker(_maker) {
 }
 
+MonsterAIFactory MonsterAIFactory::guard() {
+  return MonsterAIFactory([=](WCreature c) {
+      vector<Behaviour*> actors {
+          new AvoidFire(c),
+          new Heal(c),
+          new Fighter(c, 0.6, false),
+          new Wait(c)
+      };
+      vector<int> weights { 10, 5, 4, 1 };
+      return new MonsterAI(c, actors, weights);
+  });
+}
+
 MonsterAIFactory MonsterAIFactory::monster() {
   return stayInLocation(Level::getMaxBounds());
 }
@@ -1256,15 +1269,6 @@ MonsterAIFactory MonsterAIFactory::scavengerBird(Position corpsePos) {
           new MoveRandomly(c),
           new GuardSquare(c, corpsePos, 1, 2)},
           {1, 1, 2});
-      });
-}
-
-MonsterAIFactory MonsterAIFactory::guardSquare(Position pos) {
-  return MonsterAIFactory([=](WCreature c) {
-      return new MonsterAI(c, {
-          new Wait(c),
-          new GuardSquare(c, pos, 0, 1)},
-          {1, 2});
       });
 }
 

@@ -26,7 +26,7 @@ class Level;
 class Attack;
 class Fire;
 class ItemAttributes;
-class EffectType;
+class Effect;
 struct CorpseInfo;
 class RangedWeapon;
 
@@ -43,14 +43,15 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
   string getTheName(bool plural = false, WConstCreature owner = nullptr) const;
   string getAName(bool plural = false, WConstCreature owner = nullptr) const;
   string getNameAndModifiers(bool plural = false, WConstCreature owner = nullptr) const;
-  string getArtifactName() const;
+  const optional<string>& getArtifactName() const;
+  void setArtifactName(const string&);
   string getShortName(WConstCreature owner = nullptr, bool noSuffix = false) const;
   string getPluralName(int count) const;
   string getPluralTheName(int count) const;
   string getPluralTheNameAndVerb(int count, const string& verbSingle, const string& verbPlural) const;
 
-  const optional<EffectType>& getEffectType() const;
-  optional<EffectType> getAttackEffect() const;
+  const optional<Effect>& getEffect() const;
+  optional<Effect> getAttackEffect() const;
   ItemClass getClass() const;
   
   int getPrice() const;
@@ -93,7 +94,7 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
   bool isWieldedTwoHanded() const;
   int getMinStrength() const;
 
-  static ItemPredicate effectPredicate(EffectType);
+  static ItemPredicate effectPredicate(Effect);
   static ItemPredicate classPredicate(ItemClass);
   static ItemPredicate equipmentSlotPredicate(EquipmentSlot);
   static ItemPredicate classPredicate(vector<ItemClass>);

@@ -25,17 +25,16 @@ enum class CastMessageType {
   AIR_BLAST
 };
 
-class EffectType;
+class Effect;
 class DirEffectType;
-class EffectType;
 
 class Spell : public Singleton<Spell, SpellId> {
   public:
   const string& getName() const;
   bool isDirected() const;
-  bool hasEffect(EffectType) const;
+  bool hasEffect(Effect) const;
   bool hasEffect(DirEffectType) const;
-  EffectType getEffectType() const;
+  Effect getEffect() const;
   DirEffectType getDirEffectType() const;
   int getDifficulty() const;
   string getDescription() const;
@@ -46,11 +45,11 @@ class Spell : public Singleton<Spell, SpellId> {
   static void init();
 
   private:
-  Spell(const string&, EffectType, int difficulty, SoundId, CastMessageType = CastMessageType::STANDARD);
+  Spell(const string&, Effect, int difficulty, SoundId, CastMessageType = CastMessageType::STANDARD);
   Spell(const string&, DirEffectType, int difficulty, SoundId, CastMessageType = CastMessageType::STANDARD);
 
   const string name;
-  const HeapAllocated<variant<EffectType, DirEffectType>> effect;
+  const HeapAllocated<variant<Effect, DirEffectType>> effect;
   const int difficulty;
   const CastMessageType castMessageType;
   const SoundId sound;

@@ -62,7 +62,7 @@ void Creature::serialize(Archive& ar, const unsigned int version) {
   ar(deathTime, hidden);
   ar(deathReason, swapPositionCooldown);
   ar(unknownAttackers, privateEnemies, holding);
-  ar(controllerStack, creatureVisions, kills);
+  ar(controllerStack, kills);
   ar(difficultyPoints, points, moraleOverride);
   ar(vision, lastCombatTime, debt, lastDamageType, highestAttackValueEver);
 }
@@ -135,7 +135,7 @@ CreatureAction Creature::castSpell(Spell* spell) const {
   return CreatureAction(this, [=] (WCreature c) {
     c->addSound(spell->getSound());
     spell->addMessage(c);
-    Effect::applyToCreature(c, spell->getEffectType(), EffectStrength::NORMAL);
+    spell->getEffect().applyToCreature(c);
     getGame()->getStatistics().add(StatId::SPELL_CAST);
     c->attributes->getSpellMap().setReadyTime(spell, getGlobalTime() + spell->getDifficulty()
         * getWillpowerMult(attributes->getSkills().getValue(SkillId::SORCERY)));
@@ -153,20 +153,12 @@ CreatureAction Creature::castSpell(Spell* spell, Vec2 dir) const {
     c->addSound(spell->getSound());
     thirdPerson(getName().the() + " casts a spell");
     secondPerson("You cast " + spell->getName());
-    Effect::applyDirected(c, dir, spell->getDirEffectType(), EffectStrength::NORMAL);
+    applyDirected(c, dir, spell->getDirEffectType());
     getGame()->getStatistics().add(StatId::SPELL_CAST);
     c->attributes->getSpellMap().setReadyTime(spell, getGlobalTime() + spell->getDifficulty()
         * getWillpowerMult(attributes->getSkills().getValue(SkillId::SORCERY)));
     c->spendTime(1);
   });
-}
-
-void Creature::addCreatureVision(WCreatureVision creatureVision) {
-  creatureVisions.push_back(creatureVision);
-}
-
-void Creature::removeCreatureVision(WCreatureVision vision) {
-  creatureVisions.removeElement(vision);
 }
 
 void Creature::pushController(PController ctrl) {
@@ -548,9 +540,9 @@ CreatureAction Creature::equip(WItem item) const {
       WItem previousItem = self->equipment->getSlotItems(slot)[0];
       self->equipment->unequip(previousItem, self);
     }
-    self->equipment->equip(item, slot, self);
     secondPerson("You equip " + item->getTheName(false, self));
     thirdPerson(getName().the() + " equips " + item->getAName());
+    self->equipment->equip(item, slot, self);
     if (WGame game = getGame())
       game->addEvent(EventInfo::ItemsEquipped{self, {item}});
     self->spendTime(1);
@@ -568,11 +560,11 @@ CreatureAction Creature::unequip(WItem item) const {
     INFO << getName().the() << " unequip";
     CHECK(equipment->isEquipped(item)) << "Item not equipped.";
     EquipmentSlot slot = item->getEquipmentSlot();
-    self->equipment->unequip(item, self);
     secondPerson("You " + string(slot == EquipmentSlot::WEAPON ? " sheathe " : " remove ") +
         item->getTheName(false, this));
     thirdPerson(getName().the() + (slot == EquipmentSlot::WEAPON ? " sheathes " : " removes ") +
         item->getAName());
+    self->equipment->unequip(item, self);
     self->spendTime(1);
   });
 }
@@ -985,7 +977,7 @@ bool Creature::takeDamage(const Attack& attack) {
   } else
     you(MsgType::GET_HIT_NODAMAGE, getAttackParam(attack.type));
   if (attack.effect)
-    Effect::applyToCreature(this, *attack.effect, EffectStrength::NORMAL, this);
+    attack.effect->applyToCreature(this, attack.attacker);
   for (LastingEffect effect : ENUM_ALL(LastingEffect))
     if (isAffected(effect))
       LastingEffects::afterCreatureDamage(this, effect);
@@ -1404,18 +1396,19 @@ CreatureAction Creature::throwItem(WItem item, Vec2 direction) const {
   });
 }
 
-bool Creature::canSeeDisregardingPosition(WConstCreature c) const {
+bool Creature::canSeeOutsidePosition(WConstCreature c) const {
+  return LastingEffects::canSee(this, c);
+}
+
+bool Creature::canSeeInPosition(WConstCreature c) const {
   if (!c->getPosition().isSameLevel(position))
     return false;
-  for (auto vision : creatureVisions)
-    if (vision->canSee(this, c))
-      return true;
   return !isAffected(LastingEffect::BLIND) && (!c->isAffected(LastingEffect::INVISIBLE) || isFriend(c)) &&
       (!c->isHidden() || c->knowsHiding(this));
 }
 
 bool Creature::canSee(WConstCreature c) const {
-  return canSeeDisregardingPosition(c) && c->getPosition().isVisibleBy(this);
+  return canSeeInPosition(c) && c->getPosition().isVisibleBy(this);
 }
 
 bool Creature::canSee(Position pos) const {
@@ -1488,16 +1481,16 @@ CreatureAction Creature::stayIn(WLevel level, Rectangle area) {
   return CreatureAction();
 }
 
-CreatureAction Creature::moveTowards(Position pos, bool stepOnTile) {
+CreatureAction Creature::moveTowards(Position pos, NavigationFlags flags) {
   if (!pos.isValid())
     return CreatureAction();
   if (pos.isSameLevel(position))
-    return moveTowards(pos, false, stepOnTile);
+    return moveTowards(pos, false, flags);
   else if (auto stairs = position.getStairsTo(pos)) {
     if (stairs == position)
       return applySquare(position);
     else
-      return moveTowards(*stairs, false, true);
+      return moveTowards(*stairs, false, flags.requireStepOnTile());
   } else
     return CreatureAction();
 }
@@ -1510,9 +1503,9 @@ bool Creature::canNavigateTo(Position pos) const {
   return false;
 }
 
-CreatureAction Creature::moveTowards(Position pos, bool away, bool stepOnTile) {
+CreatureAction Creature::moveTowards(Position pos, bool away, NavigationFlags flags) {
   CHECK(pos.isSameLevel(position));
-  if (stepOnTile && !pos.canEnterEmpty(this))
+  if (flags.stepOnTile && !pos.canEnterEmpty(this))
     return CreatureAction();
   MEASURE(
   if (!away && !canNavigateTo(pos))
@@ -1543,7 +1536,7 @@ CreatureAction Creature::moveTowards(Position pos, bool away, bool stepOnTile) {
     if (auto action = move(pos2))
       return action;
     else {
-      if (!pos2.canEnterEmpty(this))
+      if (!pos2.canEnterEmpty(this) && flags.destroy)
         if (auto destroyAction = pos2.getBestDestroyAction(getMovementType()))
             if (auto action = destroy(getPosition().getDir(pos2), *destroyAction))
             return action;
@@ -1558,7 +1551,7 @@ CreatureAction Creature::moveTowards(Position pos, bool away, bool stepOnTile) {
 CreatureAction Creature::moveAway(Position pos, bool pathfinding) {
   CHECK(pos.isSameLevel(position));
   if (pos.dist8(getPosition()) <= 5 && pathfinding)
-    if (auto action = moveTowards(pos, true, false))
+    if (auto action = moveTowards(pos, true, NavigationFlags().noDestroying()))
       return action;
   pair<Vec2, Vec2> dirs = pos.getDir(getPosition()).approxL1();
   vector<CreatureAction> moves;
@@ -1733,7 +1726,7 @@ vector<AdjectiveInfo> Creature::getGoodAdjectives() const {
   for (LastingEffect effect : ENUM_ALL(LastingEffect))
     if (isAffected(effect))
       if (const char* name = LastingEffects::getGoodAdjective(effect)) {
-        ret.push_back({ name, Effect::getDescription(effect) });
+        ret.push_back({ name, LastingEffects::getDescription(effect) });
         if (!attributes->isAffectedPermanently(effect))
           ret.back().name += attributes->getRemainingString(effect, getGlobalTime());
       }
@@ -1753,7 +1746,7 @@ vector<AdjectiveInfo> Creature::getBadAdjectives() const {
   for (LastingEffect effect : ENUM_ALL(LastingEffect))
     if (isAffected(effect))
       if (const char* name = LastingEffects::getBadAdjective(effect)) {
-        ret.push_back({ name, Effect::getDescription(effect) });
+        ret.push_back({ name, LastingEffects::getDescription(effect) });
         if (!attributes->isAffectedPermanently(effect))
           ret.back().name += attributes->getRemainingString(effect, getGlobalTime());
       }

@@ -235,6 +235,7 @@ class GuiBuilder {
   int workshopsOverlayHash = 0;
   SGuiElem drawTasksOverlay(const CollectiveInfo&);
   SGuiElem drawRansomOverlay(const optional<CollectiveInfo::Ransom>&);
+  SGuiElem drawNextWaveOverlay(const optional<CollectiveInfo::NextWave>&);
   SGuiElem drawBuildingsOverlay(const CollectiveInfo&, const optional<TutorialInfo>&);
   void renderMessages(const vector<PlayerMessage>&);
   int getNumMessageLines() const;

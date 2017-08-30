@@ -1,7 +1,7 @@
 #pragma once
 
 #include "util.h"
-#include "effect_type.h"
+#include "effect.h"
 #include "tribe.h"
 
 class Position;
@@ -13,9 +13,9 @@ class FurnitureEntry {
   struct Sokoban {};
 
   struct Trap {
-    Trap(EffectType e, bool s = false) : effect(e), spiderWeb(s) {}
+    Trap(Effect e, bool s = false) : effect(e), spiderWeb(s) {}
     SERIALIZATION_CONSTRUCTOR(Trap)
-    EffectType SERIAL(effect);
+    Effect SERIAL(effect);
     bool SERIAL(spiderWeb);
     SERIALIZE_ALL(effect, spiderWeb)
   };

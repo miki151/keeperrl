@@ -23,7 +23,7 @@
 #include "skill.h"
 #include "name_generator.h"
 #include "spell.h"
-#include "effect_type.h"
+#include "effect.h"
 
 template<class T, class E>
 EnumMap<E, unique_ptr<T>> Singleton<T, E>::elems;
@@ -68,10 +68,10 @@ void Singleton<T, E>::serialize(Archive& ar, const unsigned int version) {
   ar(id);
 }
 
-SERIALIZABLE_TMPL(Singleton, Technology, TechId);
-SERIALIZABLE_TMPL(Singleton, Skill, SkillId);
-SERIALIZABLE_TMPL(Singleton, NameGenerator, NameGeneratorId);
-SERIALIZABLE_TMPL(Singleton, Spell, SpellId);
+SERIALIZABLE_TMPL(Singleton, Technology, TechId)
+SERIALIZABLE_TMPL(Singleton, Skill, SkillId)
+SERIALIZABLE_TMPL(Singleton, NameGenerator, NameGeneratorId)
+SERIALIZABLE_TMPL(Singleton, Spell, SpellId)
 
 
 template<class T>

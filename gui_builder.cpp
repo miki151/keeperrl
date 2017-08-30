@@ -955,6 +955,7 @@ static string getActionText(ItemAction a) {
     case ItemAction::UNLOCK: return "unlock";
     case ItemAction::REMOVE: return "remove";
     case ItemAction::CHANGE_NUMBER: return "change number";
+    case ItemAction::NAME: return "name";
   }
 }
 
@@ -1473,6 +1474,24 @@ SGuiElem GuiBuilder::drawRansomOverlay(const optional<CollectiveInfo::Ransom>& r
   return gui.setWidth(600, gui.miniWindow(gui.margins(lines.buildVerticalList(), 20)));
 }
 
+SGuiElem GuiBuilder::drawNextWaveOverlay(const optional<CollectiveInfo::NextWave>& wave) {
+  if (!wave)
+    return gui.empty();
+  GuiFactory::ListBuilder lines(gui, legendLineHeight);
+  lines.addElem(gui.label("Next enemy wave:"));
+  lines.addElem(gui.getListBuilder()
+        .addElem(gui.viewObject(wave->viewId), 30)
+        .addElemAuto(gui.label(wave->attacker))// + " (" + toString(wave->count) + ")"))
+        .buildHorizontalList());
+  lines.addElem(gui.label("Attacking in " + toString(wave->numTurns) + " turns."));
+  return gui.setWidth(300, gui.translucentBackgroundWithBorder(gui.stack(
+        gui.margins(lines.buildVerticalList(), 10),
+        gui.alignment(GuiFactory::Alignment::TOP_RIGHT, gui.preferredSize(40, 40, gui.stack(
+            gui.leftMargin(22, gui.label("x")),
+            gui.button(getButtonCallback(UserInputId::DISMISS_NEXT_WAVE)))))
+      )));
+}
+
 SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo& info, const optional<TutorialInfo>& tutorial) {
   if (!info.chosenWorkshop)
     return gui.empty();
@@ -1715,9 +1734,8 @@ SGuiElem GuiBuilder::drawMapHintOverlay() {
       lines.addElem(gui.label("Position: " + toString(*highlighted.tilePos)));
   }
   if (!lines.isEmpty())
-    return gui.margins(gui.translucentBackground(gui.stack(
-        gui.rectangleBorder(Color::GRAY),
-        gui.margins(lines.buildVerticalList(), 10, 10, 10, 22))), 0, 0, -2, -2);
+    return gui.margins(gui.translucentBackgroundWithBorder(
+        gui.margins(lines.buildVerticalList(), 10, 10, 10, 22)), 0, 0, -2, -2);
   else
     return gui.empty();
 }
@@ -1734,6 +1752,8 @@ void GuiBuilder::drawOverlays(vector<OverlayInfo>& ret, GameInfo& info) {
            collectiveInfo, info.tutorial), OverlayInfo::IMMIGRATION});
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawRansomOverlay, this), THIS_LINE,
            collectiveInfo.ransom), OverlayInfo::TOP_LEFT});
+      ret.push_back({cache->get(bindMethod(&GuiBuilder::drawNextWaveOverlay, this), THIS_LINE,
+           collectiveInfo.nextWave), OverlayInfo::TOP_LEFT});
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawMinionsOverlay, this), THIS_LINE,
            collectiveInfo, info.tutorial), OverlayInfo::TOP_LEFT});
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawWorkshopsOverlay, this), THIS_LINE,

@@ -297,6 +297,10 @@ void Model::addExternalEnemies(ExternalEnemies&& e) {
   externalEnemies = optional<ExternalEnemies>(std::move(e));
 }
 
+const optional<ExternalEnemies>& Model::getExternalEnemies() const {
+  return *externalEnemies;
+}
+
 void Model::addEvent(const GameEvent& e) {
   eventGenerator->addEvent(e);
 }

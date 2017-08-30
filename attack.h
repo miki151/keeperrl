@@ -17,13 +17,13 @@
 
 #include "enums.h"
 #include "util.h"
-#include "effect_type.h"
+#include "effect.h"
 
 class Creature;
 
 class Attack {
   public:
-  Attack(WCreature a, AttackLevel l, AttackType t, int s, AttrType d, optional<EffectType> e = none)
+  Attack(WCreature a, AttackLevel l, AttackType t, int s, AttrType d, optional<Effect> e = none)
       : attacker(a), level(l), type(t), strength(s), damageType(d), effect(e) {}
 
   WCreature attacker;
@@ -31,6 +31,6 @@ class Attack {
   AttackType type;
   int strength;
   AttrType damageType;
-  optional<EffectType> effect;
+  optional<Effect> effect;
 };
 

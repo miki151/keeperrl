@@ -25,6 +25,7 @@ RICH_ENUM(LastingEffect,
     INSANITY,
     DARKNESS_SOURCE,
     PREGNANT,
+    SLEEP_RESISTANT,
     MAGIC_RESISTANCE,
     MELEE_RESISTANCE,
     RANGED_RESISTANCE,
@@ -32,7 +33,11 @@ RICH_ENUM(LastingEffect,
     MELEE_VULNERABILITY,
     RANGED_VULNERABILITY,
     ELF_VISION,
-    NIGHT_VISION
+    NIGHT_VISION,
+    REGENERATION,
+    WARNING,
+    TELEPATHY,
+    SUNLIGHT_VULNERABLE
 );
 
 RICH_ENUM(CreatureCondition,
@@ -54,6 +59,10 @@ class LastingEffects {
   static const char* getBadAdjective(LastingEffect);
   static const vector<LastingEffect>& getCausingCondition(CreatureCondition);
   static double modifyCreatureDefense(LastingEffect, double damage, AttrType damageAttr);
+  static const char* getName(LastingEffect);
+  static const char* getDescription(LastingEffect);
+  static bool canSee(WConstCreature c1, WConstCreature c2);
+  static int getPrice(LastingEffect);
 };
 
 

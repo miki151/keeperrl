@@ -51,6 +51,7 @@
 #include "tutorial.h"
 #include "message_generator.h"
 #include "message_buffer.h"
+#include "pretty_printing.h"
 
 template <class Archive>
 void Player::serialize(Archive& ar, const unsigned int) {
@@ -284,6 +285,7 @@ vector<ItemAction> Player::getItemActions(const vector<WItem>& item) const {
           break;
         }
   }
+  actions.push_back(ItemAction::NAME);
   return actions;
 }
 
@@ -306,6 +308,11 @@ void Player::handleItems(const EntitySet<Item>& itemIds, ItemAction action) {
     case ItemAction::GIVE: giveAction(items); break;
     case ItemAction::PAY: payForItemAction(items); break;
     case ItemAction::EQUIP: tryToPerform(getCreature()->equip(items[0])); break;
+    case ItemAction::NAME:
+      if (auto name = getView()->getText("Enter a name for " + items[0]->getTheName(),
+          items[0]->getArtifactName().value_or(""), 14))
+        items[0]->setArtifactName(*name);
+      break;
     default: FATAL << "Unhandled item action " << int(action);
   }
 }
@@ -362,7 +369,7 @@ void Player::targetAction() {
     target = none;
     return;
   }
-  if (auto action = getCreature()->moveTowards(*target))
+  if (auto action = getCreature()->moveTowards(*target, Creature::NavigationFlags().noDestroying()))
     action.perform(getCreature());
   else
     target = none;
@@ -637,6 +644,18 @@ void Player::makeMove() {
     case UserInputId::CREATURE_BUTTON: creatureAction(action.get<Creature::Id>()); break;
     case UserInputId::CREATURE_BUTTON2: extendedAttackAction(action.get<Creature::Id>()); break;
     case UserInputId::EXIT: getGame()->exitAction(); return;
+    case UserInputId::APPLY_EFFECT:
+      if (auto effect = PrettyPrinting::parseObject<Effect>(action.get<string>()))
+        effect->applyToCreature(getCreature(), nullptr);
+      else
+        getView()->presentText("Sorry", "Couldn't parse \"" + action.get<string>() + "\"");
+      break;
+    case UserInputId::CREATE_ITEM:
+      if (auto itemType = PrettyPrinting::parseObject<ItemType>(action.get<string>()))
+        getCreature()->take(itemType->get());
+      else
+        getView()->presentText("Sorry", "Couldn't parse \"" + action.get<string>() + "\"");
+      break;
     case UserInputId::PLAYER_COMMAND: {
         int index = action.get<int>();
         auto commands = getCommands();
@@ -799,7 +818,8 @@ void Player::getViewIndex(Vec2 pos, ViewIndex& index) const {
   if (position.isTribeForbidden(getCreature()->getTribeId()))
     index.setHighlight(HighlightType::FORBIDDEN_ZONE);
   if (WConstCreature c = position.getCreature()) {
-    if ((canSee && getCreature()->canSeeDisregardingPosition(c)) || c == getCreature()) {
+    if ((canSee && getCreature()->canSeeInPosition(c)) || c == getCreature() ||
+        getCreature()->canSeeOutsidePosition(c)) {
       index.insert(c->getViewObjectFor(getCreature()->getTribe()));
       if (c == getCreature())
         index.getObject(ViewLayer::CREATURE).setModifier(ViewObject::Modifier::PLAYER);

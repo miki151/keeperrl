@@ -51,8 +51,6 @@ class ItemFactory {
   static ItemFactory minerals();
   static ItemFactory singleType(ItemType, Range count = Range(1, 2));
 
-  static PItem fromId(ItemType);
-  static vector<PItem> fromId(ItemType, int num);
   static PItem corpse(const string& name, const string& rottenName, double weight, ItemClass = ItemClass::CORPSE,
       CorpseInfo corpseInfo = {UniqueEntity<Creature>::Id(), false, false, false});
 

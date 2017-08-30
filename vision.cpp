@@ -3,8 +3,6 @@
 #include "creature_attributes.h"
 #include "creature.h"
 
-SERIALIZE_DEF(CreatureVision, SUBCLASS(OwnedObject<CreatureVision>))
-
 SERIALIZE_DEF(Vision, id, nightVision)
 
 VisionId Vision::getId() const {
@@ -14,7 +12,7 @@ VisionId Vision::getId() const {
 constexpr int darkViewRadius = 5;
 
 bool Vision::canSeeAt(double light, double distance) const {
-  return nightVision || light > 0.3 || distance <= darkViewRadius;
+  return nightVision || light > 0.9999 || distance <= darkViewRadius;
 }
 
 void Vision::update(WConstCreature c) {

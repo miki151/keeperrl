@@ -78,6 +78,7 @@
 #include "minion_controller.h"
 #include "build_info.h"
 #include "vision.h"
+#include "external_enemies.h"
 
 template <class Archive>
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
@@ -166,6 +167,11 @@ void PlayerControl::onControlledKilled(WConstCreature victim) {
     }
   }
   leaveControl();
+}
+
+void PlayerControl::onSunlightVisibilityChanged() {
+  for (auto pos : getCollective()->getConstructions().getBuiltPositions(FurnitureType::EYEBALL))
+    visibilityMap->updateEyeball(pos);
 }
 
 void PlayerControl::setTutorial(STutorial t) {
@@ -1126,6 +1132,16 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
         getCollective()->hasResource({ResourceId::GOLD, *elem.getRansom()})};
     break;
   }
+  if (auto& enemies = getModel()->getExternalEnemies())
+    if (auto nextWave = enemies->getNextWave())
+      if (!dismissedNextWaves.count(nextWave->id)) {
+        info.nextWave = CollectiveInfo::NextWave {
+          nextWave->viewId,
+          nextWave->name,
+          nextWave->numCreatures,
+          (int) (nextWave->attackTime - getLocalTime())
+        };
+      }
 }
 
 void PlayerControl::addMessage(const PlayerMessage& msg) {
@@ -1885,6 +1901,11 @@ void PlayerControl::processInput(View* view, UserInput input) {
         break;
     case UserInputId::EXIT: getGame()->exitAction(); return;
     case UserInputId::IDLE: break;
+    case UserInputId::DISMISS_NEXT_WAVE:
+      if (auto& enemies = getModel()->getExternalEnemies())
+        if (auto nextWave = enemies->getNextWave())
+          dismissedNextWaves.insert(nextWave->id);
+      break;
     default: break;
   }
 }

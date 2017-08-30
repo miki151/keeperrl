@@ -40,6 +40,9 @@ class EnumVariant {
   }
 
   EnumVariant(const EnumVariant& other) = default;
+  EnumVariant(EnumVariant&& other) = default;
+  EnumVariant& operator = (const EnumVariant& other) = default;
+  EnumVariant& operator = (EnumVariant&& other) = default;
 
   template<typename U>
   EnumVariant(Id i, U u) : id(i), values(u) {

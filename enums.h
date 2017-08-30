@@ -62,7 +62,6 @@ enum class SquareAttrib;
 enum class Dir;
 
 enum class CreatureId;
-enum class ItemId;
 
 enum class ViewLayer;
 enum class HighlightType;
@@ -73,9 +72,6 @@ enum class VillainType;
 enum class BiomeId;
 
 enum class ViewId;
-
-enum class EffectStrength;
-enum class EffectId;
 
 enum class AnimationId;
 

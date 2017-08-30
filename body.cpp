@@ -439,13 +439,13 @@ PItem Body::getBodyPartItem(const string& name, BodyPart part) {
         weight / 8, isMinionFood() ? ItemClass::FOOD : ItemClass::CORPSE);
     case Material::CLAY:
     case Material::ROCK:
-      return ItemFactory::fromId(ItemId::ROCK);
+      return ItemType(ItemType::Rock{}).get();
     case Material::BONE:
-      return ItemFactory::fromId(ItemId::BONE);
+      return ItemType(ItemType::Bone{}).get();
     case Material::IRON:
-      return ItemFactory::fromId(ItemId::IRON_ORE);
+      return ItemType(ItemType::IronOre{}).get();
     case Material::WOOD:
-      return ItemFactory::fromId(ItemId::WOOD_PLANK);
+      return ItemType(ItemType::WoodPlank{}).get();
     default: return nullptr;
   }
 }
@@ -460,13 +460,13 @@ vector<PItem> Body::getCorpseItem(const string& name, Creature::Id id) {
             {id, true, numBodyParts(BodyPart::HEAD) > 0, false}));
     case Material::CLAY:
     case Material::ROCK:
-      return ItemFactory::fromId(ItemId::ROCK, numCorpseItems(size));
+      return ItemType(ItemType::Rock{}).get(numCorpseItems(size));
     case Material::BONE:
-      return ItemFactory::fromId(ItemId::BONE, numCorpseItems(size));
+      return ItemType(ItemType::Bone{}).get(numCorpseItems(size));
     case Material::IRON:
-      return ItemFactory::fromId(ItemId::IRON_ORE, numCorpseItems(size));
+      return ItemType(ItemType::IronOre{}).get(numCorpseItems(size));
     case Material::WOOD:
-      return ItemFactory::fromId(ItemId::WOOD_PLANK, numCorpseItems(size));
+      return ItemType(ItemType::WoodPlank{}).get(numCorpseItems(size));
     default: return {};
   }
 }
@@ -557,13 +557,6 @@ bool Body::tick(WConstCreature c) {
     c->you(MsgType::FALL, "apart");
     return true;
   }
-  if (c->getPosition().sunlightBurns() && isUndead()) {
-    c->you(MsgType::ARE, "burnt by the sun");
-    if (Random.roll(10)) {
-      c->you(MsgType::YOUR, "body crumbles to dust");
-      return true;
-    }
-  }
   return false;
 }
 
@@ -603,8 +596,23 @@ bool Body::isIntrinsicallyAffected(LastingEffect effect) const {
         case Material::WOOD: return false;
         default: return true;
       }
+    case LastingEffect::SUNLIGHT_VULNERABLE:
+      return material == Material::UNDEAD_FLESH;
     case LastingEffect::POISON_RESISTANT:
       return material != Material::FLESH;
+    case LastingEffect::SLEEP_RESISTANT:
+      switch (material) {
+        case Material::WATER:
+        case Material::FIRE:
+        case Material::SPIRIT:
+        case Material::CLAY:
+        case Material::ROCK:
+        case Material::IRON:
+        case Material::LAVA:
+          return true;
+        default:
+          return false;
+      }
     case LastingEffect::FLYING:
       return numGood(BodyPart::WING) >= 2;
     default:
@@ -615,10 +623,7 @@ bool Body::isIntrinsicallyAffected(LastingEffect effect) const {
 bool Body::isImmuneTo(LastingEffect effect) const {
   switch (effect) {
     case LastingEffect::BLEEDING:
-    case LastingEffect::POISON:
       return material != Material::FLESH;
-    case LastingEffect::SLEEP:
-      return material != Material::FLESH && material != Material::UNDEAD_FLESH;
     case LastingEffect::TIED_UP:
     case LastingEffect::ENTANGLED:
       switch (material) {

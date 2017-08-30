@@ -35,7 +35,6 @@ class Attack;
 class Controller;
 class ControllerFactory;
 class PlayerMessage;
-class CreatureVision;
 class ShortestPath;
 class LevelShortestPath;
 class Equipment;
@@ -95,7 +94,8 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   const Equipment& getEquipment() const;
   Equipment& getEquipment();
   vector<PItem> steal(const vector<WItem> items);
-  bool canSeeDisregardingPosition(WConstCreature) const;
+  bool canSeeInPosition(WConstCreature) const;
+  bool canSeeOutsidePosition(WConstCreature) const;
   bool canSee(WConstCreature) const;
   bool canSee(Position) const;
   bool canSee(Vec2) const;
@@ -197,8 +197,21 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   WItem getWeapon() const;
   void dropWeapon();
   vector<vector<WItem>> stackItems(vector<WItem>) const;
-
-  CreatureAction moveTowards(Position, bool stepOnTile = false);
+  struct NavigationFlags {
+    NavigationFlags() : stepOnTile(false), destroy(true) {}
+    NavigationFlags& requireStepOnTile() {
+      stepOnTile = true;
+      return *this;
+    }
+    // This makes the creature stop at the obstacle, and not navigate around it
+    NavigationFlags& noDestroying() {
+      destroy = false;
+      return *this;
+    }
+    bool stepOnTile;
+    bool destroy;
+  };
+  CreatureAction moveTowards(Position, NavigationFlags = {});
   CreatureAction moveAway(Position, bool pathfinding = true);
   CreatureAction continueMoving();
   CreatureAction stayIn(WLevel, Rectangle);
@@ -237,14 +250,12 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   void setController(PController);
   void popController();
 
-  void addCreatureVision(WCreatureVision);
-  void removeCreatureVision(WCreatureVision);
   CreatureAction castSpell(Spell*) const;
   CreatureAction castSpell(Spell*, Vec2) const;
   double getSpellDelay(Spell*) const;
   bool isReady(Spell*) const;
 
-  SERIALIZATION_DECL(Creature);
+  SERIALIZATION_DECL(Creature)
 
   void addEffect(LastingEffect, double time, bool msg = true);
   void removeEffect(LastingEffect, bool msg = true);
@@ -272,7 +283,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
 
   private:
 
-  CreatureAction moveTowards(Position, bool away, bool stepOnTile);
+  CreatureAction moveTowards(Position, bool away, NavigationFlags);
   void spendTime(double time);
   bool canCarry(const vector<WItem>&) const;
   TribeSet getFriendlyTribes() const;
@@ -296,7 +307,6 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   EntitySet<Creature> SERIAL(privateEnemies);
   optional<Creature::Id> SERIAL(holding);
   vector<PController> SERIAL(controllerStack);
-  vector<WCreatureVision> SERIAL(creatureVisions);
   EntitySet<Creature> SERIAL(kills);
   mutable int SERIAL(difficultyPoints) = 0;
   int SERIAL(points) = 0;

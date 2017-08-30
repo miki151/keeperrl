@@ -62,6 +62,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   bool swapTeam();
   void toggleControlAllTeamMembers();
   void onControlledKilled(WConstCreature victim);
+  void onSunlightVisibilityChanged();
   void setTutorial(STutorial);
   STutorial getTutorial() const;
 
@@ -221,5 +222,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void setChosenLibrary(bool);
   void acquireTech(int index);
   SMessageBuffer SERIAL(controlModeMessages);
+  unordered_set<int> dismissedNextWaves;
 };
 

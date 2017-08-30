@@ -12,7 +12,6 @@
 #include "event_listener.h"
 #include "item.h"
 #include "effect.h"
-#include "effect_type.h"
 #include "lasting_effect.h"
 #include "creature_name.h"
 #include "level.h"
@@ -128,7 +127,7 @@ void FurnitureUsage::handle(FurnitureUsageType type, Position pos, WConstFurnitu
       break;
     }
     case FurnitureUsageType::SLEEP:
-      Effect::applyToCreature(c, {EffectId::LASTING, LastingEffect::SLEEP}, EffectStrength::STRONG);
+      Effect::Lasting{LastingEffect::SLEEP}.applyToCreature(c);
       break;
     case FurnitureUsageType::KEEPER_BOARD:
       c->getGame()->handleMessageBoard(pos, c);

@@ -27,6 +27,9 @@
 #include "game_save_type.h"
 #include "exit_info.h"
 #include "tutorial.h"
+#include "model.h"
+#include "item_type.h"
+#include "pretty_printing.h"
 
 MainLoop::MainLoop(View* v, Highscores* h, FileSharing* fSharing, const DirectoryPath& freePath,
     const DirectoryPath& uPath, Options* o, Jukebox* j, SokobanInput* soko, bool singleThread,
@@ -54,7 +57,7 @@ static string getDateString(time_t t) {
   return buf;
 }
 
-static const int saveVersion = 1800;
+static const int saveVersion = 1900;
 
 static bool isCompatible(int loadedVersion) {
   return loadedVersion > 2 && loadedVersion <= saveVersion && loadedVersion / 100 == saveVersion / 100;
@@ -199,7 +202,14 @@ int MainLoop::getAutosaveFreq() {
   return 1500;
 }
 
-void MainLoop::playGame(PGame&& game, bool withMusic, bool noAutoSave) {
+enum class MainLoop::ExitCondition {
+  ALLIES_WON,
+  ENEMIES_WON,
+  UNKNOWN
+};
+
+MainLoop::ExitCondition MainLoop::playGame(PGame&& game, bool withMusic, bool noAutoSave,
+    function<optional<ExitCondition>(WGame)> exitCondition) {
   view->reset();
   game->initialize(options, highscores, view, fileSharing);
   const milliseconds stepTimeMilli {3};
@@ -217,7 +227,7 @@ void MainLoop::playGame(PGame&& game, bool withMusic, bool noAutoSave) {
     }
     INFO << "Time step " << step;
     if (auto exitInfo = game->update(step)) {
-      exitInfo->match(
+      exitInfo->visit(
           [&](ExitAndQuit) {
             eraseAllSavesExcept(game, none);
           },
@@ -231,8 +241,11 @@ void MainLoop::playGame(PGame&& game, bool withMusic, bool noAutoSave) {
             eraseAllSavesExcept(game, type);
           }
       );
-      return;
+      return ExitCondition::UNKNOWN;
     }
+    if (exitCondition)
+      if (auto c = exitCondition(game.get()))
+        return *c;
     double gameTime = game->getGlobalTime();
     if (lastMusicUpdate < gameTime - 1 && withMusic) {
       jukebox->setType(game->getCurrentMusic(), game->changeMusicNow());
@@ -475,6 +488,109 @@ void MainLoop::modelGenTest(int numTries, const vector<string>& types, RandomGen
   NameGenerator::init(dataFreePath.subdirectory("names"));
   ProgressMeter meter(1);
   ModelBuilder(&meter, random, options, sokobanInput).measureSiteGen(numTries, types);
+}
+
+void MainLoop::battleTest(int numTries, const FilePath& levelPath, const FilePath& battleInfoPath, string enemy,
+    RandomGen& random) {
+  auto input = battleInfoPath.createInputStream();
+  int cnt = 0;
+  auto enemySplit = split(enemy, {','});
+  auto enemyId = EnumInfo<CreatureId>::fromString(enemySplit[0]);
+  int maxEnemies = 100000;
+  if (enemySplit.size() > 1)
+    maxEnemies = fromString<int>(enemySplit[1]);
+  input >> cnt;
+  for (int i : Range(cnt)) {
+    BattleInfo info;
+    string ally;
+    input >> ally;
+    info.ally = EnumInfo<CreatureId>::fromString(ally);
+    string levelIncreases;
+    input >> levelIncreases;
+    for (auto increase : split(levelIncreases, {','})) {
+      int amount = fromString<int>(increase.substr(1));
+      switch (increase[0]) {
+        case 'M':
+          info.allyLevelIncrease[ExperienceType::MELEE] = amount;
+          break;
+        case 'S':
+          info.allyLevelIncrease[ExperienceType::SPELL] = amount;
+          break;
+        case 'A':
+          info.allyLevelIncrease[ExperienceType::ARCHERY] = amount;
+          break;
+        default:
+          FATAL << "Can't parse level increase " << increase;
+      }
+    }
+    string equipment;
+    input >> equipment;
+    for (auto id : split(equipment, {','}))
+      if (auto type = PrettyPrinting::parseObject<ItemType>(id))
+        info.allyEquipment.push_back(*type);
+      else
+        FATAL << "Can't parse item type: " << id;
+    std::cout << EnumInfo<CreatureId>::getString(info.ally) << " " << levelIncreases << ": ";
+    battleTest(numTries, levelPath, info, enemyId, maxEnemies, random);
+  }
+}
+
+void MainLoop::battleTest(int numTries, const FilePath& levelPath, BattleInfo info, CreatureId enemyId, int maxEnemies,
+    RandomGen& random) {
+  NameGenerator::init(dataFreePath.subdirectory("names"));
+  ProgressMeter meter(1);
+  int numAllies = 0;
+  int numEnemies = 0;
+  int numUnknown = 0;
+  auto allyTribe = TribeId::getKeeper();
+  auto enemyTribe = TribeId::getMonster();
+  auto allies = CreatureFactory::singleCreature(allyTribe, info.ally)
+      .increaseLevel(info.allyLevelIncrease)
+      .addInventory(info.allyEquipment);
+  auto enemies = CreatureFactory::singleCreature(enemyTribe, enemyId);
+  std::cout.flush();
+  for (int i : Range(numTries)) {
+    auto game = Game::splashScreen(ModelBuilder(&meter, Random, options, sokobanInput)
+        .battleModel(levelPath, allies, enemies, maxEnemies), CampaignBuilder::getEmptyCampaign());
+    auto exitCondition = [&](WGame game) -> optional<ExitCondition> {
+      unordered_set<TribeId, CustomHash<TribeId>> tribes;
+      for (auto& m : game->getAllModels())
+        for (auto c : m->getAllCreatures())
+          tribes.insert(c->getTribeId());
+      if (tribes.size() == 1) {
+        if (*tribes.begin() == allyTribe)
+          return ExitCondition::ALLIES_WON;
+        else if (*tribes.begin() == enemyTribe)
+          return ExitCondition::ENEMIES_WON;
+        else
+          return ExitCondition::UNKNOWN;
+      }
+      if (tribes.empty())
+        return ExitCondition::UNKNOWN;
+      else
+        return none;
+    };
+    auto result = playGame(std::move(game), false, true, exitCondition);
+    switch (result) {
+      case ExitCondition::ALLIES_WON:
+        ++numAllies;
+        std::cout << "a";
+        break;
+      case ExitCondition::ENEMIES_WON:
+        ++numEnemies;
+        std::cout << "e";
+        break;
+      case ExitCondition::UNKNOWN:
+        ++numUnknown;
+        std::cout << "u";
+        break;
+    }
+    std::cout.flush();
+  }
+  std::cout << " " << numAllies << ":" << numEnemies;
+  if (numUnknown > 0)
+    std::cout << " (" << numUnknown << ") unknown";
+  std::cout << "\n";
 }
 
 PModel MainLoop::getBaseModel(ModelBuilder& modelBuilder, CampaignSetup& setup) {

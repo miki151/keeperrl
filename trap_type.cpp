@@ -1,5 +1,5 @@
 #include "trap_type.h"
-#include "effect_type.h"
+#include "effect.h"
 #include "lasting_effect.h"
 #include "effect.h"
 #include "view_id.h"
