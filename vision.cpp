@@ -12,7 +12,7 @@ VisionId Vision::getId() const {
 constexpr int darkViewRadius = 5;
 
 bool Vision::canSeeAt(double light, double distance) const {
-  return nightVision || light > 0.3 || distance <= darkViewRadius;
+  return nightVision || light > 0.9999 || distance <= darkViewRadius;
 }
 
 void Vision::update(WConstCreature c) {

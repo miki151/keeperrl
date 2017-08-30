@@ -557,13 +557,6 @@ bool Body::tick(WConstCreature c) {
     c->you(MsgType::FALL, "apart");
     return true;
   }
-  if (c->getPosition().sunlightBurns() && isUndead()) {
-    c->you(MsgType::ARE, "burnt by the sun");
-    if (Random.roll(10)) {
-      c->you(MsgType::YOUR, "body crumbles to dust");
-      return true;
-    }
-  }
   return false;
 }
 
@@ -603,6 +596,8 @@ bool Body::isIntrinsicallyAffected(LastingEffect effect) const {
         case Material::WOOD: return false;
         default: return true;
       }
+    case LastingEffect::SUNLIGHT_VULNERABLE:
+      return material == Material::UNDEAD_FLESH;
     case LastingEffect::POISON_RESISTANT:
       return material != Material::FLESH;
     case LastingEffect::SLEEP_RESISTANT:

@@ -167,6 +167,7 @@ static double getDuration(WConstCreature c, LastingEffect e) {
     case LastingEffect::MAGIC_RESISTANCE:
     case LastingEffect::MELEE_RESISTANCE:
     case LastingEffect::RANGED_RESISTANCE:
+    case LastingEffect::SUNLIGHT_VULNERABLE:
       return 25;
   }
   return 0;
