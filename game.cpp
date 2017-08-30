@@ -296,8 +296,11 @@ void Game::tick(double time) {
   sunlightInfo.update(currentTime);
   if (previous != sunlightInfo.getState())
     for (Vec2 v : models.getBounds())
-      if (WModel m = models[v].get())
+      if (WModel m = models[v].get()) {
         m->updateSunlightMovement();
+        if (playerControl)
+          playerControl->onSunlightVisibilityChanged();
+      }
   INFO << "Global time " << time;
   for (WCollective col : collectives) {
     if (isVillainActive(col))

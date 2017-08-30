@@ -169,6 +169,11 @@ void PlayerControl::onControlledKilled(WConstCreature victim) {
   leaveControl();
 }
 
+void PlayerControl::onSunlightVisibilityChanged() {
+  for (auto pos : getCollective()->getConstructions().getBuiltPositions(FurnitureType::EYEBALL))
+    visibilityMap->updateEyeball(pos);
+}
+
 void PlayerControl::setTutorial(STutorial t) {
   tutorial = t;
 }
