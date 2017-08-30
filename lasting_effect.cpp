@@ -152,6 +152,8 @@ void LastingEffects::onAffected(WCreature c, LastingEffect effect, bool msg) {
         c->you(MsgType::FEEL, "more aware of danger"); break;
       case LastingEffect::TELEPATHY:
         c->you(MsgType::ARE, "telepathic"); break;
+      case LastingEffect::SUNLIGHT_VULNERABLE:
+        c->you(MsgType::ARE, "vulnerable to sunlight"); break;
     }
 }
 
@@ -166,6 +168,8 @@ optional<LastingEffect> LastingEffects::getSuppressor(LastingEffect effect) {
   switch (effect) {
     case LastingEffect::COLLAPSED:
       return LastingEffect::FLYING;
+    case LastingEffect::SUNLIGHT_VULNERABLE:
+      return LastingEffect::DARKNESS_SOURCE;
     default:
       return none;
   }
@@ -247,6 +251,8 @@ void LastingEffects::onTimedOut(WCreature c, LastingEffect effect, bool msg) {
         c->you(MsgType::FEEL, "less aware of danger"); break;
       case LastingEffect::TELEPATHY:
         c->you(MsgType::ARE, "no longer telepathic"); break;
+      case LastingEffect::SUNLIGHT_VULNERABLE:
+        c->you(MsgType::ARE, "no longer vulnerable to sunlight"); break;
       default: break;
     }
 }
@@ -335,6 +341,7 @@ static Adjective getAdjective(LastingEffect effect) {
     case LastingEffect::MAGIC_VULNERABILITY: return "Vulnerable to magical attacks"_bad;
     case LastingEffect::MELEE_VULNERABILITY: return "Vulnerable to melee attacks"_bad;
     case LastingEffect::RANGED_VULNERABILITY: return "Vulnerable to ranged attacks"_bad;
+    case LastingEffect::SUNLIGHT_VULNERABLE: return "Vulnerable to sunlight"_bad;
   }
 }
 
@@ -459,6 +466,16 @@ bool LastingEffects::tick(WCreature c, LastingEffect effect) {
         c->privateMessage(PlayerMessage("You sense danger!", MessagePriority::HIGH));
       break;
     }
+    case LastingEffect::SUNLIGHT_VULNERABLE:
+      if (c->getPosition().sunlightBurns()) {
+        c->you(MsgType::ARE, "burnt by the sun");
+        if (Random.roll(10)) {
+          c->you(MsgType::YOUR, "body crumbles to dust");
+          c->dieWithReason("killed by sunlight", Creature::DropType::ONLY_INVENTORY);
+          return true;
+        }
+      }
+      break;
     default:
       break;
   }
@@ -501,6 +518,7 @@ const char* LastingEffects::getName(LastingEffect type) {
     case LastingEffect::REGENERATION: return "regeneration";
     case LastingEffect::WARNING: return "warning";
     case LastingEffect::TELEPATHY: return "telepathy";
+    case LastingEffect::SUNLIGHT_VULNERABLE: return "sunlight vulnerability";
   }
 }
 
@@ -541,6 +559,7 @@ const char* LastingEffects::getDescription(LastingEffect type) {
     case LastingEffect::REGENERATION: return "Recovers a little bit of health every turn.";
     case LastingEffect::WARNING: return "Warns about dangerous enemies and traps.";
     case LastingEffect::TELEPATHY: return "Allows you to detect other creatures with brains.";
+    case LastingEffect::SUNLIGHT_VULNERABLE: return "Sunlight makes your body crumble to dust.";
   }
 }
 
@@ -557,6 +576,7 @@ int LastingEffects::getPrice(LastingEffect e) {
     case LastingEffect::INSANITY:
     case LastingEffect::HALLU:
     case LastingEffect::BLEEDING:
+    case LastingEffect::SUNLIGHT_VULNERABLE:
       return 2;
     case LastingEffect::WARNING:
       return 5;

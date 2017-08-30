@@ -36,7 +36,8 @@ RICH_ENUM(LastingEffect,
     NIGHT_VISION,
     REGENERATION,
     WARNING,
-    TELEPATHY
+    TELEPATHY,
+    SUNLIGHT_VULNERABLE
 );
 
 RICH_ENUM(CreatureCondition,
