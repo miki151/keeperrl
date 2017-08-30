@@ -110,8 +110,8 @@ vector<CampaignType> CampaignBuilder::getAvailableTypes() const {
         CampaignType::CAMPAIGN,
         CampaignType::FREE_PLAY,
         CampaignType::SINGLE_KEEPER,
-#ifndef RELEASE
         CampaignType::ENDLESS,
+#ifndef RELEASE
         CampaignType::QUICK_MAP,
 #endif
       };
