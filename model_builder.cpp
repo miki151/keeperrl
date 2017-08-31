@@ -2,7 +2,6 @@
 #include "model_builder.h"
 #include "level.h"
 #include "tribe.h"
-#include "item_type.h"
 #include "inventory.h"
 #include "collective_builder.h"
 #include "options.h"

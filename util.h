@@ -1401,7 +1401,7 @@ class HeapAllocated<optional<T>> {
     return *elem;
   }
 
-  operator bool () const {
+  explicit operator bool () const {
     return !!elem && !!(*elem);
   }
 

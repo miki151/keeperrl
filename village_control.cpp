@@ -42,7 +42,8 @@ SERIALIZATION_CONSTRUCTOR_IMPL(VillageControl)
 SERIALIZE_DEF(VillageControl, SUBCLASS(CollectiveControl), SUBCLASS(EventListener), villain, victims, myItems, stolenItemCount, attackSizes, entries, maxEnemyPower)
 REGISTER_TYPE(ListenerTemplate<VillageControl>)
 
-VillageControl::VillageControl(Private, WCollective col, optional<VillageBehaviour> v) : CollectiveControl(col), villain(v) {
+VillageControl::VillageControl(Private, WCollective col, optional<VillageBehaviour> v) : CollectiveControl(col),
+    villain(v) {
   for (Position v : col->getTerritory().getAll())
     for (WItem it : v.getItems())
       myItems.insert(it);
