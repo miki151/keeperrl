@@ -140,8 +140,8 @@ void Model::tick(double time) {
     l->tick();
   for (PCollective& col : collectives)
     col->tick();
-  if (*externalEnemies)
-    (*externalEnemies)->update(getTopLevel(), time);
+  if (externalEnemies)
+    externalEnemies->update(getTopLevel(), time);
 }
 
 void Model::addCreature(PCreature c) {
@@ -294,11 +294,11 @@ void Model::landHeroPlayer(PCreature player) {
 }
 
 void Model::addExternalEnemies(ExternalEnemies&& e) {
-  externalEnemies = optional<ExternalEnemies>(std::move(e));
+  externalEnemies = std::move(e);
 }
 
 const optional<ExternalEnemies>& Model::getExternalEnemies() const {
-  return *externalEnemies;
+  return externalEnemies.get();
 }
 
 void Model::addEvent(const GameEvent& e) {

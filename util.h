@@ -1349,10 +1349,65 @@ class HeapAllocated {
     elem.reset(new T(std::move(t)));
   }
 
-  /*HeapAllocated& operator = (const T& t) {
-    *elem.get() = t;
+  HeapAllocated& operator = (const HeapAllocated& t) {
+    *elem.get() = *t;
     return *this;
-  }*/
+  }
+
+  HeapAllocated& operator = (HeapAllocated&& t) {
+    elem = std::move(t.elem);
+    return *this;
+  }
+
+  SERIALIZE_ALL(elem)
+
+  private:
+  unique_ptr<T> SERIAL(elem);
+};
+
+template <class T>
+class HeapAllocated<optional<T>> {
+  public:
+  HeapAllocated() {}
+
+  template <typename... Args>
+  HeapAllocated(Args... a) : elem(new optional<T>(a...)) {}
+
+  HeapAllocated(T&& o) : elem(new optional<T>(std::move(o))) {}
+
+  HeapAllocated(const HeapAllocated& o) : elem(new optional<T>(*o)) {}
+
+  T* operator -> () {
+    return &(**elem);
+  }
+
+  const T* operator -> () const {
+    return &(**elem);
+  }
+
+  T& operator * () {
+    return **elem;
+  }
+
+  const T& operator * () const {
+    return **elem;
+  }
+
+  const optional<T>& get() const {
+    return *elem;
+  }
+
+  optional<T>& get() {
+    return *elem;
+  }
+
+  operator bool () const {
+    return !!elem && !!(*elem);
+  }
+
+  void reset(T&& t) {
+    elem.reset(new optional<T>(std::move(t)));
+  }
 
   HeapAllocated& operator = (const HeapAllocated& t) {
     *elem.get() = *t;
@@ -1364,10 +1419,10 @@ class HeapAllocated {
     return *this;
   }
 
-  SERIALIZE_ALL(elem);
+  SERIALIZE_ALL(elem)
 
   private:
-  unique_ptr<T> SERIAL(elem);
+  unique_ptr<optional<T>> SERIAL(elem);
 };
 
 class Semaphore {

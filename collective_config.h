@@ -20,7 +20,6 @@
 #include "workshop_type.h"
 #include "cost_info.h"
 #include "position.h"
-#include "item_type.h"
 
 enum class ItemClass;
 
@@ -28,6 +27,9 @@ class Game;
 class Workshops;
 class ImmigrantInfo;
 class Technology;
+
+struct ResourceInfo;
+struct ItemFetchInfo;
 
 struct PopulationIncrease {
   FurnitureType SERIAL(type);
@@ -51,28 +53,6 @@ struct GuardianInfo {
 struct DormInfo {
   FurnitureType bedType;
   optional<CollectiveWarning> warning;
-};
-
-typedef function<const set<Position>&(WConstCollective)> StorageDestinationFun;
-
-struct ResourceInfo {
-  StorageDestinationFun storageDestination;
-  optional<ItemIndex> itemIndex;
-  ItemType itemId;
-  string name;
-  ViewId viewId;
-  bool dontDisplay;
-  optional<TutorialHighlight> tutorialHighlight;
-};
-
-typedef function<bool(WConstCollective, WConstItem)> CollectiveItemPredicate;
-
-struct ItemFetchInfo {
-  ItemIndex index;
-  CollectiveItemPredicate predicate;
-  StorageDestinationFun destinationFun;
-  bool oneAtATime;
-  CollectiveWarning warning;
 };
 
 struct MinionTaskInfo {

@@ -47,6 +47,10 @@
 #include "collective_warning.h"
 #include "immigration.h"
 #include "trap_type.h"
+#include "creature_factory.h"
+#include "resource_info.h"
+#include "workshop_item.h"
+
 
 template <class Archive>
 void Collective::serialize(Archive& ar, const unsigned int version) {
@@ -88,7 +92,7 @@ void Collective::acquireInitialTech() {
 }
 
 const optional<CollectiveName>& Collective::getName() const {
-  return *name;
+  return name.get();
 }
 
 void Collective::setVillainType(VillainType t) {

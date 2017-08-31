@@ -29,6 +29,10 @@
 #include "trap_type.h"
 #include "spell_id.h"
 #include "spell.h"
+#include "creature_factory.h"
+#include "resource_info.h"
+#include "workshop_item.h"
+
 
 template <class Archive>
 void CollectiveConfig::serialize(Archive& ar, const unsigned int version) {

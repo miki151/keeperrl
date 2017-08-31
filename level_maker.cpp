@@ -34,6 +34,7 @@
 #include "file_path.h"
 #include "movement_set.h"
 #include "container_range.h"
+#include "settlement_info.h"
 
 namespace {
 

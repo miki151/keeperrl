@@ -157,8 +157,8 @@ string CreatureAttributes::getDescription() const {
   if (!isSpecial)
     return "";
   string attack;
-  if (*attackEffect)
-    attack = " It has a " + (*attackEffect)->getName() + " attack.";
+  if (attackEffect)
+    attack = " It has a " + attackEffect->getName() + " attack.";
   return body->getDescription() + ". " + attack;
 }
 
@@ -282,8 +282,8 @@ void CreatureAttributes::consume(WCreature self, const CreatureAttributes& other
   for (auto t : ENUM_ALL(AttrType))
     consumeAttr(attr[t], other.attr[t], adjectives, getAttrNameMore(t));
   consumeAttr(barehandedAttack, other.barehandedAttack, adjectives, "");
-  consumeAttr(*attackEffect, *other.attackEffect, adjectives, "");
-  consumeAttr(*passiveAttack, *other.passiveAttack, adjectives, "");
+  consumeAttr(attackEffect, other.attackEffect, adjectives, "");
+  consumeAttr(passiveAttack, other.passiveAttack, adjectives, "");
   consumeAttr(gender, other.gender, adjectives);
   consumeAttr(skills, other.skills, adjectives);
   if (!adjectives.empty()) {
@@ -323,7 +323,7 @@ ViewObject CreatureAttributes::createViewObject() const {
 }
 
 const optional<ViewObject>& CreatureAttributes::getIllusionViewObject() const {
-  return *illusionViewObject;
+  return illusionViewObject.get();
 }
 
 bool CreatureAttributes::canEquip() const {

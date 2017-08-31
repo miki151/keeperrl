@@ -32,6 +32,7 @@
 #include "container_range.h"
 #include "serialization.h"
 #include "text_serialization.h"
+#include "creature_factory.h"
 
 class Test {
   public:

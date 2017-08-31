@@ -31,11 +31,13 @@
 #include "body.h"
 #include "attack_trigger.h"
 #include "immigration.h"
+#include "village_behaviour.h"
+
 
 typedef EnumVariant<AttackTriggerId, TYPES(int),
         ASSIGN(int, AttackTriggerId::ENEMY_POPULATION, AttackTriggerId::GOLD)> OldTrigger;
 
-SERIALIZATION_CONSTRUCTOR_IMPL(VillageControl);
+SERIALIZATION_CONSTRUCTOR_IMPL(VillageControl)
 
 SERIALIZE_DEF(VillageControl, SUBCLASS(CollectiveControl), SUBCLASS(EventListener), villain, victims, myItems, stolenItemCount, attackSizes, entries, maxEnemyPower)
 REGISTER_TYPE(ListenerTemplate<VillageControl>)

@@ -57,11 +57,11 @@ void Furniture::serialize(Archive& ar, const unsigned) {
 SERIALIZABLE(Furniture)
 
 const optional<ViewObject>& Furniture::getViewObject() const {
-  return *viewObject;
+  return viewObject.get();
 }
 
 optional<ViewObject>& Furniture::getViewObject() {
-  return *viewObject;
+  return viewObject.get();
 }
 
 const string& Furniture::getName(FurnitureType type, int count) {
@@ -93,8 +93,8 @@ FurnitureType Furniture::getType() const {
 }
 
 bool Furniture::isVisibleTo(WConstCreature c) const {
-  if (*entryType)
-    return (*entryType)->isVisibleTo(this, c);
+  if (entryType)
+    return entryType->isVisibleTo(this, c);
   else
     return true;
 }
@@ -104,9 +104,9 @@ const MovementSet& Furniture::getMovementSet() const {
 }
 
 void Furniture::onEnter(WCreature c) const {
-  if (*entryType) {
+  if (entryType) {
     auto f = c->getPosition().modFurniture(layer);
-    (*f->entryType)->handle(f, c);
+    f->entryType->handle(f, c);
   }
 }
 
@@ -114,8 +114,8 @@ void Furniture::destroy(Position pos, const DestroyAction& action) {
   pos.globalMessage("The " + name + " " + action.getIsDestroyed());
   auto myLayer = layer;
   auto myType = type;
-  if (*itemDrop)
-    pos.dropItems((*itemDrop)->random());
+  if (itemDrop)
+    pos.dropItems(itemDrop->random());
   if (destroyedRemains)
     pos.replaceFurniture(this, FurnitureFactory::get(*destroyedRemains, getTribe()));
   else
@@ -143,8 +143,8 @@ void Furniture::setTribe(TribeId id) {
 void Furniture::tick(Position pos) {
   if (auto& fire = getFire())
     if (fire->isBurning()) {
-      if (*viewObject)
-        (*viewObject)->setAttribute(ViewObject::Attribute::BURNING, fire->getSize());
+      if (viewObject)
+        viewObject->setAttribute(ViewObject::Attribute::BURNING, fire->getSize());
       INFO << getName() << " burning " << fire->getSize();
       for (Position v : pos.neighbors8(Random))
         if (fire->getSize() > Random.getDouble() * 40)
@@ -276,8 +276,8 @@ optional<CreatureId> Furniture::getSummonedElement() const {
 }
 
 vector<PItem> Furniture::dropItems(Position pos, vector<PItem> v) const {
-  if (*droppedItems) {
-    return (*droppedItems)->handle(pos, this, std::move(v));
+  if (droppedItems) {
+    return droppedItems->handle(pos, this, std::move(v));
   } else
     return v;
 }
@@ -306,11 +306,11 @@ Furniture& Furniture::setConstructMessage(optional<ConstructMessage> msg) {
 }
 
 const optional<Fire>& Furniture::getFire() const {
-  return *fire;
+  return fire.get();
 }
 
 optional<Fire>& Furniture::getFire() {
-  return *fire;
+  return fire.get();
 }
 
 bool Furniture::canDestroy(const MovementType& movement, const DestroyAction& action) const {
@@ -325,8 +325,8 @@ void Furniture::fireDamage(Position pos, double amount) {
     fire->set(amount);
     if (!burning && fire->isBurning()) {
       pos.globalMessage("The " + getName() + " catches fire");
-      if (*viewObject)
-        (*viewObject)->setAttribute(ViewObject::Attribute::BURNING, fire->getSize());
+      if (viewObject)
+        viewObject->setAttribute(ViewObject::Attribute::BURNING, fire->getSize());
       pos.updateMovement();
       pos.getLevel()->addTickingFurniture(pos.getCoord());
     }

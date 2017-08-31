@@ -27,6 +27,9 @@
 #include "equipment.h"
 #include "collective_teams.h"
 #include "collective_warning.h"
+#include "creature_factory.h"
+#include "workshop_item.h"
+
 
 SERIALIZE_DEF(Tutorial, state, entrance)
 

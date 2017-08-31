@@ -19,7 +19,7 @@
 #include "creature_factory.h"
 #include "lasting_effect.h"
 #include "effect.h"
-
+#include "item_type.h"
 
 SERIALIZE_DEF(ItemFactory, items, weights, count, uniqueCounts)
 SERIALIZATION_CONSTRUCTOR_IMPL(ItemFactory)

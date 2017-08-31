@@ -34,6 +34,8 @@
 #include "game_save_type.h"
 #include "player_role.h"
 #include "collective_config.h"
+#include "attack_behaviour.h"
+#include "village_behaviour.h"
 
 template <class Archive> 
 void Game::serialize(Archive& ar, const unsigned int version) {

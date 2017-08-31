@@ -3,6 +3,7 @@
 #include "collective.h"
 #include "item_factory.h"
 #include "item.h"
+#include "workshop_item.h"
 
 Workshops::Workshops(const EnumMap<WorkshopType, vector<Item>>& options)
     : types([&options] (WorkshopType t) { return Type(options[t]);}) {

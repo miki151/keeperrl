@@ -79,6 +79,9 @@
 #include "build_info.h"
 #include "vision.h"
 #include "external_enemies.h"
+#include "resource_info.h"
+#include "workshop_item.h"
+
 
 template <class Archive>
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {

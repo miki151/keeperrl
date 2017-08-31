@@ -2,9 +2,10 @@
 
 #include "resource_id.h"
 #include "workshop_type.h"
-#include "workshop_item.h"
 
+class WorkshopItem;
 class Collective;
+class CostInfo;
 
 class Workshops {
   public:

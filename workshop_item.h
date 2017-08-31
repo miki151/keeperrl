@@ -20,7 +20,7 @@ struct WorkshopItem {
   optional<double> SERIAL(state);
   optional<TechId> SERIAL(techId);
   optional<TutorialHighlight> SERIAL(tutorialHighlight);
-  SERIALIZE_ALL(type, name, viewId, cost, number, batchSize, workNeeded, state, techId, description, tutorialHighlight);
+  SERIALIZE_ALL(type, name, viewId, cost, number, batchSize, workNeeded, state, techId, description, tutorialHighlight)
 };
 
 
