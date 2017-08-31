@@ -293,7 +293,7 @@ void Body::injureBodyPart(WCreature creature, BodyPart part, bool drop) {
 }
 
 template <typename T>
-void consumeAttr(T& mine, const T& his, vector<string>& adjectives, const string& adj) {
+void consumeBodyAttr(T& mine, const T& his, vector<string>& adjectives, const string& adj) {
   if (mine < his) {
     mine = his;
     if (!adj.empty())
@@ -317,7 +317,7 @@ void Body::consumeBodyParts(WCreature c, const Body& other, vector<string>& adje
     c->addPersonalEvent(c->getName().the() + " turns into a humanoid");
     xhumanoid = true;
   }
-  consumeAttr(size, other.size, adjectives, "larger");
+  consumeBodyAttr(size, other.size, adjectives, "larger");
 }
 
 

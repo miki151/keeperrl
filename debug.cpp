@@ -18,7 +18,7 @@
 #include "debug.h"
 #include "util.h"
 
-static void fail() {
+void fail() {
   *((int*) 0x1234) = 0; // best way to fail
 }
 

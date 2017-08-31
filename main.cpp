@@ -113,10 +113,6 @@ vector<pair<MusicType, FilePath>> getMusicTracks(const DirectoryPath& path, bool
   };
 }
 
-static void fail() {
-  *((int*) 0x1234) = 0; // best way to fail
-}
-
 static int keeperMain(po::parser&);
 static po::parser getCommandLineFlags();
 

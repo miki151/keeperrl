@@ -14,14 +14,14 @@
    If not, see http://www.gnu.org/licenses/ . */
 
 #include "stdafx.h"
-
+#include "util.h"
 #include "shortest_path.h"
 #include "level.h"
 #include "creature.h"
 #include "lasting_effect.h"
 
 SERIALIZE_DEF(ShortestPath, path, target, directions, bounds, reversed)
-SERIALIZATION_CONSTRUCTOR_IMPL(ShortestPath);
+SERIALIZATION_CONSTRUCTOR_IMPL(ShortestPath)
 
 const double ShortestPath::infinity = 1000000000;
 const double LevelShortestPath::infinity = 1000000000;

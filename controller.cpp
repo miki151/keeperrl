@@ -49,9 +49,9 @@ void DoNothingController::makeMove() {
 void DoNothingController::onBump(WCreature c) {
 }
 
-static MessageGenerator messageGenerator(MessageGenerator::NONE);
 
 MessageGenerator& DoNothingController::getMessageGenerator() const {
+  static MessageGenerator messageGenerator(MessageGenerator::NONE);
   return messageGenerator;
 }
 

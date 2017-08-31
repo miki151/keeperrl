@@ -705,50 +705,50 @@ class RemoveFurniture : public LevelMaker {
   FurnitureLayer layer;
 };
 
-struct BuildingInfo {
+struct BuildingType {
   FurnitureType wall;
   FurnitureType floorInside;
   FurnitureType floorOutside;
   optional<FurnitureFactory> door;
 };
 
-static BuildingInfo getBuildingInfo(SettlementInfo info) {
+static BuildingType getBuildingInfo(SettlementInfo info) {
   switch (info.buildingId) {
     case BuildingId::WOOD:
-      return CONSTRUCT(BuildingInfo,
+      return CONSTRUCT(BuildingType,
           c.wall = FurnitureType::WOOD_WALL;
           c.floorInside = FurnitureType::FLOOR;
           c.floorOutside = FurnitureType::GRASS;
           c.door = FurnitureFactory(info.tribe, FurnitureType::DOOR);
       );
     case BuildingId::WOOD_CASTLE:
-      return CONSTRUCT(BuildingInfo,
+      return CONSTRUCT(BuildingType,
           c.wall = FurnitureType::WOOD_WALL;
           c.floorInside = FurnitureType::FLOOR;
           c.floorOutside = FurnitureType::MUD;
           c.door = FurnitureFactory(info.tribe, FurnitureType::DOOR);
       );
     case BuildingId::MUD: 
-      return CONSTRUCT(BuildingInfo,
+      return CONSTRUCT(BuildingType,
           c.wall = FurnitureType::MUD_WALL;
           c.floorInside = FurnitureType::MUD;
           c.floorOutside = FurnitureType::MUD;);
     case BuildingId::BRICK:
-      return CONSTRUCT(BuildingInfo,
+      return CONSTRUCT(BuildingType,
           c.wall = FurnitureType::CASTLE_WALL;
           c.floorInside = FurnitureType::FLOOR;
           c.floorOutside = FurnitureType::MUD;
           c.door = FurnitureFactory(info.tribe, FurnitureType::DOOR);
       );
     case BuildingId::DUNGEON:
-      return CONSTRUCT(BuildingInfo,
+      return CONSTRUCT(BuildingType,
           c.wall = FurnitureType::MOUNTAIN;
           c.floorInside = FurnitureType::FLOOR;
           c.floorOutside = FurnitureType::FLOOR;
           c.door = FurnitureFactory(info.tribe, FurnitureType::DOOR);
       );
     case BuildingId::DUNGEON_SURFACE:
-      return CONSTRUCT(BuildingInfo,
+      return CONSTRUCT(BuildingType,
           c.wall = FurnitureType::MOUNTAIN;
           c.floorInside = FurnitureType::FLOOR;
           c.floorOutside = FurnitureType::HILL;
@@ -761,7 +761,7 @@ class Buildings : public LevelMaker {
   public:
   Buildings(int _minBuildings, int _maxBuildings,
       int _minSize, int _maxSize,
-      BuildingInfo _building,
+      BuildingType _building,
       bool _align,
       vector<LevelMaker*> _insideMakers,
       bool _roadConnection = true) :
@@ -869,7 +869,7 @@ class Buildings : public LevelMaker {
   int minSize;
   int maxSize;
   bool align;
-  BuildingInfo building;
+  BuildingType building;
   vector<PLevelMaker> insideMakers;
   bool roadConnection;
 };
@@ -1434,7 +1434,7 @@ class Stairs : public LevelMaker {
 
 class ShopMaker : public LevelMaker {
   public:
-  ShopMaker(ItemFactory _factory, TribeId _tribe, int _numItems, BuildingInfo _building)
+  ShopMaker(ItemFactory _factory, TribeId _tribe, int _numItems, BuildingType _building)
       : factory(_factory), tribe(_tribe), numItems(_numItems), building(_building) {}
 
   virtual void make(LevelBuilder* builder, Rectangle area) override {
@@ -1455,7 +1455,7 @@ class ShopMaker : public LevelMaker {
   ItemFactory factory;
   TribeId tribe;
   int numItems;
-  BuildingInfo building;
+  BuildingType building;
 };
 
 class LevelExit : public LevelMaker {
@@ -1577,7 +1577,7 @@ class AreaCorners : public LevelMaker {
 
 class CastleExit : public LevelMaker {
   public:
-  CastleExit(TribeId _guardTribe, BuildingInfo _building, CreatureId _guardId)
+  CastleExit(TribeId _guardTribe, BuildingType _building, CreatureId _guardId)
     : guardTribe(_guardTribe), building(_building), guardId(_guardId) {}
   
   virtual void make(LevelBuilder* builder, Rectangle area) override {
@@ -1602,7 +1602,7 @@ class CastleExit : public LevelMaker {
 
   private:
   TribeId guardTribe;
-  BuildingInfo building;
+  BuildingType building;
   CreatureId guardId;
 };
 
@@ -1668,7 +1668,7 @@ static MakerQueue* stockpileMaker(StockpileInfo info) {
 
 PLevelMaker LevelMaker::cryptLevel(RandomGen& random, SettlementInfo info) {
   MakerQueue* queue = new MakerQueue();
-  BuildingInfo building = getBuildingInfo(info);
+  BuildingType building = getBuildingInfo(info);
   queue->addMaker(new Empty(SquareChange(FurnitureType::FLOOR, FurnitureType::MOUNTAIN)));
   queue->addMaker(new PlaceCollective(info.collective));
   queue->addMaker(new RoomMaker(random.get(8, 15), 3, 5));
@@ -1687,7 +1687,7 @@ PLevelMaker LevelMaker::cryptLevel(RandomGen& random, SettlementInfo info) {
 
 PLevelMaker LevelMaker::mazeLevel(RandomGen& random, SettlementInfo info) {
   MakerQueue* queue = new MakerQueue();
-  BuildingInfo building = getBuildingInfo(info);
+  BuildingType building = getBuildingInfo(info);
   queue->addMaker(new Empty(SquareChange(FurnitureType::FLOOR, FurnitureType::MOUNTAIN)));
   queue->addMaker(new RoomMaker(random.get(8, 15), 3, 5));
   queue->addMaker(new Connector(building.door, 0.75));
@@ -1711,7 +1711,7 @@ LevelMaker* hatchery(CreatureFactory factory, int numCreatures) {
 }
 
 MakerQueue* getElderRoom(SettlementInfo info) {
-  BuildingInfo building = getBuildingInfo(info);
+  BuildingType building = getBuildingInfo(info);
   MakerQueue* elderRoom = new MakerQueue();
   if (info.elderLoot)
     elderRoom->addMaker(new Items(ItemFactory::singleType(*info.elderLoot), 1, 2));
@@ -1719,7 +1719,7 @@ MakerQueue* getElderRoom(SettlementInfo info) {
 }
 
 MakerQueue* village2(RandomGen& random, SettlementInfo info) {
-  BuildingInfo building = getBuildingInfo(info);
+  BuildingType building = getBuildingInfo(info);
   MakerQueue* queue = new MakerQueue();
   queue->addMaker(new PlaceCollective(info.collective));
   vector<LevelMaker*> insideMakers {getElderRoom(info)};
@@ -1743,7 +1743,7 @@ MakerQueue* village2(RandomGen& random, SettlementInfo info) {
 }
 
 MakerQueue* village(RandomGen& random, SettlementInfo info, int minRooms, int maxRooms) {
-  BuildingInfo building = getBuildingInfo(info);
+  BuildingType building = getBuildingInfo(info);
   MakerQueue* queue = new MakerQueue();
   queue->addMaker(new PlaceCollective(info.collective));
   queue->addMaker(new UniformBlob(building.floorOutside, none, none, 0.6));
@@ -1776,7 +1776,7 @@ MakerQueue* village(RandomGen& random, SettlementInfo info, int minRooms, int ma
 }
 
 MakerQueue* cottage(SettlementInfo info) {
-  BuildingInfo building = getBuildingInfo(info);
+  BuildingType building = getBuildingInfo(info);
   MakerQueue* queue = new MakerQueue();
   queue->addMaker(new Empty(building.floorOutside));
   MakerQueue* room = getElderRoom(info);
@@ -1801,7 +1801,7 @@ MakerQueue* cottage(SettlementInfo info) {
 }
 
 MakerQueue* forrestCottage(SettlementInfo info) {
-  BuildingInfo building = getBuildingInfo(info);
+  BuildingType building = getBuildingInfo(info);
   MakerQueue* queue = new MakerQueue();
   MakerQueue* room = getElderRoom(info);
   for (StairKey key : info.upStairs)
@@ -1825,7 +1825,7 @@ MakerQueue* forrestCottage(SettlementInfo info) {
 }
 
 MakerQueue* castle(RandomGen& random, SettlementInfo info) {
-  BuildingInfo building = getBuildingInfo(info);
+  BuildingType building = getBuildingInfo(info);
   LevelMaker* castleRoom = new BorderGuard(new Empty(SquareChange::reset(building.floorInside).add(SquareAttrib::EMPTY_ROOM)),
       SquareChange(building.wall, SquareAttrib::ROOM_WALL));
   MakerQueue* leftSide = new MakerQueue();
@@ -1877,7 +1877,7 @@ MakerQueue* castle(RandomGen& random, SettlementInfo info) {
 }
 
 MakerQueue* castle2(RandomGen& random, SettlementInfo info) {
-  BuildingInfo building = getBuildingInfo(info);
+  BuildingType building = getBuildingInfo(info);
   MakerQueue* inside = new MakerQueue();
   vector<LevelMaker*> insideMakers {new MakerQueue({
       getElderRoom(info),
@@ -1905,7 +1905,7 @@ MakerQueue* castle2(RandomGen& random, SettlementInfo info) {
 }
 
 static LevelMaker* tower(RandomGen& random, SettlementInfo info, bool withExit) {
-  BuildingInfo building = getBuildingInfo(info);
+  BuildingType building = getBuildingInfo(info);
   MakerQueue* queue = new MakerQueue();
   queue->addMaker(new Empty(SquareChange(FurnitureType::FLOOR, building.wall)));
   if (withExit)
@@ -1996,7 +1996,7 @@ RandomLocations::LocationPredicate getSettlementPredicate(SettlementType type) {
 
 static MakerQueue* genericMineTownMaker(RandomGen& random, SettlementInfo info, int numCavern, int maxCavernSize,
     int numRooms, int minRoomSize, int maxRoomSize, bool connect) {
-  BuildingInfo building = getBuildingInfo(info);
+  BuildingType building = getBuildingInfo(info);
   MakerQueue* queue = new MakerQueue();
   LevelMaker* cavern = new UniformBlob(building.floorInside);
   vector<LevelMaker*> vCavern;
@@ -2051,7 +2051,7 @@ static MakerQueue* smallMineTownMaker(RandomGen& random, SettlementInfo info) {
 
 static MakerQueue* vaultMaker(SettlementInfo info, bool connection) {
   MakerQueue* queue = new MakerQueue();
-  BuildingInfo building = getBuildingInfo(info);
+  BuildingType building = getBuildingInfo(info);
   if (connection)
     queue->addMaker(new UniformBlob(building.floorOutside, none, SquareAttrib::CONNECT_CORRIDOR));
   else
@@ -2072,7 +2072,7 @@ static MakerQueue* vaultMaker(SettlementInfo info, bool connection) {
 
 static MakerQueue* spiderCaveMaker(SettlementInfo info) {
   MakerQueue* queue = new MakerQueue();
-  BuildingInfo building = getBuildingInfo(info);
+  BuildingType building = getBuildingInfo(info);
   MakerQueue* inside = new MakerQueue();
   inside->addMaker(new UniformBlob(building.floorOutside, none, SquareAttrib::CONNECT_CORRIDOR));
   if (info.creatures)
@@ -2086,7 +2086,7 @@ static MakerQueue* spiderCaveMaker(SettlementInfo info) {
 }
 
 static LevelMaker* islandVaultMaker(RandomGen& random, SettlementInfo info, bool door) {
-  BuildingInfo building = getBuildingInfo(info);
+  BuildingType building = getBuildingInfo(info);
   MakerQueue* inside = new MakerQueue();
   inside->addMaker(new PlaceCollective(info.collective));
   Predicate featurePred = Predicate::type(building.floorInside);
@@ -2126,7 +2126,7 @@ PLevelMaker LevelMaker::mineTownLevel(RandomGen& random, SettlementInfo info) {
 }
 
 MakerQueue* cemetery(SettlementInfo info) {
-  BuildingInfo building = getBuildingInfo(info);
+  BuildingType building = getBuildingInfo(info);
   MakerQueue* queue = new MakerQueue({
           new PlaceCollective(info.collective),
           new Margin(1, new Buildings(1, 2, 2, 3, building, false, {}, false)),
