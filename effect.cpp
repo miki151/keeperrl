@@ -633,6 +633,14 @@ string Effect::getName() const {
   return FORWARD_CALL(effect, getName);
 }
 
+bool Effect::operator ==(const Effect& o) const {
+  return o.effect == effect;
+}
+
+bool Effect::operator !=(const Effect& o) const {
+  return !(*this == o);
+}
+
 void Effect::applyToCreature(WCreature c, WCreature attacker) const {
   FORWARD_CALL(effect, applyToCreature, c, attacker);
   if (isConsideredHostile(effect) && attacker)
@@ -697,4 +705,7 @@ string getDescription(const DirEffectType& type) {
   }
 }
 
+SERIALIZE_DEF(Effect, effect)
 
+#include "pretty_archive.h"
+template void Effect::serialize(PrettyInputArchive&, unsigned);

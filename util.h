@@ -1368,14 +1368,14 @@ class HeapAllocated {
 template <class T>
 class HeapAllocated<optional<T>> {
   public:
-  HeapAllocated() {}
+  HeapAllocated() : elem(new optional<T>()) {}
 
   template <typename... Args>
   HeapAllocated(Args... a) : elem(new optional<T>(a...)) {}
 
   HeapAllocated(T&& o) : elem(new optional<T>(std::move(o))) {}
 
-  HeapAllocated(const HeapAllocated& o) : elem(new optional<T>(*o)) {}
+  HeapAllocated(const HeapAllocated& o) : elem(new optional<T>(*o.elem)) {}
 
   T* operator -> () {
     return &(**elem);
