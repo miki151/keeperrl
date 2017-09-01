@@ -921,9 +921,9 @@ class SplashMonsters : public Behaviour {
     if (!initialPos)
       initialPos = creature->getPosition().getCoord();
     vector<WCreature> heroes;
-    for (Position v : creature->getLevel()->getAllPositions())
-      if (v.getCreature() && v.getCreature()->isEnemy(creature))
-        heroes.push_back(v.getCreature());
+    for (auto c : creature->getLevel()->getAllCreatures())
+      if (c->isEnemy(creature))
+        heroes.push_back(c);
     if (heroes.empty()) {
       if (creature->getPosition().getCoord() == *initialPos)
         return creature->wait();
