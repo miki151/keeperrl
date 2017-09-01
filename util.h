@@ -1385,19 +1385,11 @@ class HeapAllocated<optional<T>> {
     return &(**elem);
   }
 
-  T& operator * () {
-    return **elem;
-  }
-
-  const T& operator * () const {
-    return **elem;
-  }
-
-  const optional<T>& get() const {
+  optional<T>& operator * () {
     return *elem;
   }
 
-  optional<T>& get() {
+  const optional<T>& operator * () const {
     return *elem;
   }
 

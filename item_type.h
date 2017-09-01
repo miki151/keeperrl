@@ -110,24 +110,27 @@ class ItemType {
 
   template <typename T>
   ItemType(T&& t) : type(std::forward<T>(t)) {}
-  ItemType(const ItemType&) = default;
-  ItemType(ItemType&) = default;
-  ItemType(ItemType&&) = default;
-  ItemType() {}
-  ItemType& operator = (const ItemType&) = default;
-  ItemType& operator = (ItemType&&) = default;
+  ItemType(const ItemType&);
+  ItemType(ItemType&);
+  ItemType(ItemType&&);
+  ItemType();
+  ItemType& operator = (const ItemType&);
+  ItemType& operator = (ItemType&&);
 
   template <typename T>
   bool isType() const {
     return type.contains<T>();
   }
 
-  COMPARE_ALL(type)
+  bool operator == (const ItemType&) const;
+  bool operator != (const ItemType&) const;
+  template <class Archive>
+  void serialize(Archive&, const unsigned int);
 
   PItem get() const;
   vector<PItem> get(int) const;
 
   private:
-  Type type;
+  Type SERIAL(type);
   ItemAttributes getAttributes() const;
 };

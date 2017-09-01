@@ -14,7 +14,6 @@
    If not, see http://www.gnu.org/licenses/ . */
 
 #include "stdafx.h"
-
 #include "effect.h"
 #include "controller.h"
 #include "creature.h"

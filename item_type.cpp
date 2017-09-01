@@ -23,6 +23,22 @@
 #include "furniture_type.h"
 #include "resource_id.h"
 
+ItemType::ItemType(const ItemType&) = default;
+ItemType::ItemType(ItemType&) = default;
+ItemType::ItemType(ItemType&&) = default;
+ItemType::ItemType() {}
+
+ItemType& ItemType::operator = (const ItemType&) = default;
+ItemType& ItemType::operator = (ItemType&&) = default;
+
+bool ItemType::operator == (const ItemType& t) const {
+  return type == t.type;
+}
+
+bool ItemType::operator != (const ItemType& t) const {
+  return !(*this == t);
+}
+
 class FireScrollItem : public Item {
   public:
   FireScrollItem(const ItemAttributes& attr) : Item(attr) {}
@@ -38,8 +54,8 @@ class FireScrollItem : public Item {
     }
   }
 
-  SERIALIZE_ALL(SUBCLASS(Item), set);
-  SERIALIZATION_CONSTRUCTOR(FireScrollItem);
+  SERIALIZE_ALL(SUBCLASS(Item), set)
+  SERIALIZATION_CONSTRUCTOR(FireScrollItem)
 
   private:
   bool SERIAL(set) = false;
@@ -143,8 +159,8 @@ class PotionItem : public Item {
     heat = max(0., heat - 0.005);
   }
 
-  SERIALIZE_ALL(SUBCLASS(Item), heat);
-  SERIALIZATION_CONSTRUCTOR(PotionItem);
+  SERIALIZE_ALL(SUBCLASS(Item), heat)
+  SERIALIZATION_CONSTRUCTOR(PotionItem)
 
   private:
   double SERIAL(heat) = 0;
@@ -158,8 +174,8 @@ class SkillBook : public Item {
     c->addSkill(Skill::get(skill));
   }
 
-  SERIALIZE_ALL(SUBCLASS(Item), skill);
-  SERIALIZATION_CONSTRUCTOR(SkillBook);
+  SERIALIZE_ALL(SUBCLASS(Item), skill)
+  SERIALIZATION_CONSTRUCTOR(SkillBook)
 
   private:
   SkillId SERIAL(skill);
@@ -176,8 +192,8 @@ class TechBookItem : public Item {
     }
   }
 
-  SERIALIZE_ALL(SUBCLASS(Item), tech, read);
-  SERIALIZATION_CONSTRUCTOR(TechBookItem);
+  SERIALIZE_ALL(SUBCLASS(Item), tech, read)
+  SERIALIZATION_CONSTRUCTOR(TechBookItem)
 
   private:
   optional<TechId> SERIAL(tech);
@@ -1135,3 +1151,8 @@ ItemAttributes ItemType::GoldPiece::getAttributes() const {
       i.weight = 0.01;
   );
 }
+
+SERIALIZE_DEF(ItemType, type)
+
+#include "pretty_archive.h"
+template void ItemType::serialize(PrettyInputArchive&, unsigned);

@@ -57,11 +57,11 @@ void Furniture::serialize(Archive& ar, const unsigned) {
 SERIALIZABLE(Furniture)
 
 const optional<ViewObject>& Furniture::getViewObject() const {
-  return viewObject.get();
+  return *viewObject;
 }
 
 optional<ViewObject>& Furniture::getViewObject() {
-  return viewObject.get();
+  return *viewObject;
 }
 
 const string& Furniture::getName(FurnitureType type, int count) {
@@ -305,11 +305,11 @@ Furniture& Furniture::setConstructMessage(optional<ConstructMessage> msg) {
 }
 
 const optional<Fire>& Furniture::getFire() const {
-  return fire.get();
+  return *fire;
 }
 
 optional<Fire>& Furniture::getFire() {
-  return fire.get();
+  return *fire;
 }
 
 bool Furniture::canDestroy(const MovementType& movement, const DestroyAction& action) const {

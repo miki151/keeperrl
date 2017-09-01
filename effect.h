@@ -28,7 +28,7 @@ class CreatureFactory;
 class DirEffectType;
 
 
-#define EFFECT_TYPE_INTERFACE\
+#define EFFECT_TYPE_INTERFACE \
   void applyToCreature(WCreature, WCreature attacker = nullptr) const;\
   string getName() const;\
   string getDescription() const

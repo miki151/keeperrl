@@ -92,7 +92,7 @@ void Collective::acquireInitialTech() {
 }
 
 const optional<CollectiveName>& Collective::getName() const {
-  return name.get();
+  return *name;
 }
 
 void Collective::setVillainType(VillainType t) {

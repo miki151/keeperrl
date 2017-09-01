@@ -298,7 +298,7 @@ void Model::addExternalEnemies(ExternalEnemies&& e) {
 }
 
 const optional<ExternalEnemies>& Model::getExternalEnemies() const {
-  return externalEnemies.get();
+  return *externalEnemies;
 }
 
 void Model::addEvent(const GameEvent& e) {

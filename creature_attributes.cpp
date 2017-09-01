@@ -282,8 +282,8 @@ void CreatureAttributes::consume(WCreature self, const CreatureAttributes& other
   for (auto t : ENUM_ALL(AttrType))
     consumeAttr(attr[t], other.attr[t], adjectives, getAttrNameMore(t));
   consumeAttr(barehandedAttack, other.barehandedAttack, adjectives, "");
-  consumeAttr(attackEffect.get(), other.attackEffect.get(), adjectives, "");
-  consumeAttr(passiveAttack.get(), other.passiveAttack.get(), adjectives, "");
+  consumeAttr(*attackEffect, *other.attackEffect, adjectives, "");
+  consumeAttr(*passiveAttack, *other.passiveAttack, adjectives, "");
   consumeAttr(gender, other.gender, adjectives);
   consumeAttr(skills, other.skills, adjectives);
   if (!adjectives.empty()) {
@@ -323,7 +323,7 @@ ViewObject CreatureAttributes::createViewObject() const {
 }
 
 const optional<ViewObject>& CreatureAttributes::getIllusionViewObject() const {
-  return illusionViewObject.get();
+  return *illusionViewObject;
 }
 
 bool CreatureAttributes::canEquip() const {
