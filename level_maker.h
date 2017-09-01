@@ -34,6 +34,7 @@ class FilePath;
 class LevelMaker {
   public:
   virtual void make(LevelBuilder* builder, Rectangle area) = 0;
+  virtual ~LevelMaker() {}
 
   static PLevelMaker cryptLevel(RandomGen&, SettlementInfo);
   static PLevelMaker topLevel(RandomGen&, optional<CreatureFactory> wildlife, vector<SettlementInfo> village, int width,
