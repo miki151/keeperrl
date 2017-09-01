@@ -632,6 +632,9 @@ string Effect::getName() const {
   return FORWARD_CALL(effect, getName);
 }
 
+Effect::Effect() {
+}
+
 bool Effect::operator ==(const Effect& o) const {
   return o.effect == effect;
 }

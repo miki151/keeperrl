@@ -103,7 +103,7 @@ class Effect {
   Effect(const Effect&) = default;
   Effect(Effect&) = default;
   Effect(Effect&&) = default;
-  Effect() {}
+  Effect();
   Effect& operator = (const Effect&) = default;
   Effect& operator = (Effect&&) = default;
 
