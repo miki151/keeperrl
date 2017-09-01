@@ -67,13 +67,31 @@ class Predicate {
     return Predicate([=] (LevelBuilder* builder, Vec2 pos) { return builder->hasAttrib(pos, attr);});
   }
 
-  static Predicate negate(Predicate p) {
-    return Predicate([=] (LevelBuilder* builder, Vec2 pos) { return !p.apply(builder, pos);});
+  Predicate operator !() const {
+    PredFun self(predFun);
+    return Predicate([self] (LevelBuilder* builder, Vec2 pos) { return !self(builder, pos);});
+  }
+
+  Predicate operator && (const Predicate& p1) const {
+    PredFun self(predFun);
+    return Predicate([self, p1] (LevelBuilder* builder, Vec2 pos) {
+        return p1.apply(builder, pos) && self(builder, pos);});
+  }
+
+  Predicate operator || (const Predicate& p1) const {
+    PredFun self(predFun);
+    return Predicate([=] (LevelBuilder* builder, Vec2 pos) {
+        return p1.apply(builder, pos) || self(builder, pos);});
   }
 
   static Predicate type(FurnitureType t) {
     return Predicate([=] (LevelBuilder* builder, Vec2 pos) {
       return builder->isFurnitureType(pos, t);});
+  }
+
+  static Predicate inRectangle(Rectangle r) {
+    return Predicate([=] (LevelBuilder* builder, Vec2 pos) {
+      return pos.inRectangle(r);});
   }
 
   static Predicate alwaysTrue() {
@@ -82,16 +100,6 @@ class Predicate {
 
   static Predicate alwaysFalse() {
     return Predicate([=] (LevelBuilder* builder, Vec2 pos) { return false;});
-  }
-
-  static Predicate andPred(Predicate p1, Predicate p2) {
-    return Predicate([=] (LevelBuilder* builder, Vec2 pos) {
-        return p1.apply(builder, pos) && p2.apply(builder, pos);});
-  }
-
-  static Predicate orPred(Predicate p1, Predicate p2) {
-    return Predicate([=] (LevelBuilder* builder, Vec2 pos) {
-        return p1.apply(builder, pos) || p2.apply(builder, pos);});
   }
 
   static Predicate canEnter(MovementType m) {
@@ -1200,6 +1208,21 @@ vector<double> sortedValues(const Table<double>& t) {
   return values;
 }
 
+class SetSunlight : public LevelMaker {
+  public:
+  SetSunlight(double a, Predicate p) : amount(a), pred(p) {}
+
+  virtual void make(LevelBuilder* builder, Rectangle area) override {
+    for (Vec2 v : area)
+      if (pred.apply(builder, v))
+        builder->setSunlight(v, amount);
+  }
+
+  private:
+  double amount;
+  Predicate pred;
+};
+
 class Mountains : public LevelMaker {
   public:
   static constexpr double varianceM = 0.45;
@@ -1758,9 +1781,9 @@ MakerQueue* village(RandomGen& random, SettlementInfo info, int minRooms, int ma
   if (info.furniture)
     queue->addMaker(new Furnitures(Predicate::attrib(SquareAttrib::EMPTY_ROOM), 0.3, *info.furniture));
   if (info.outsideFeatures)
-    queue->addMaker(new Furnitures(Predicate::andPred(
-        Predicate::type(building.floorOutside),
-        Predicate::attrib(SquareAttrib::BUILDINGS_CENTER)), 0.2, *info.outsideFeatures, SquareAttrib::NO_ROAD));
+    queue->addMaker(new Furnitures(
+        Predicate::type(building.floorOutside) &&
+        Predicate::attrib(SquareAttrib::BUILDINGS_CENTER), 0.2, *info.outsideFeatures, SquareAttrib::NO_ROAD));
   for (StairKey key : info.downStairs)
     queue->addMaker(new Stairs(StairDirection::DOWN, key, Predicate::attrib(SquareAttrib::EMPTY_ROOM)));
   for (StairKey key : info.upStairs)
@@ -1868,9 +1891,9 @@ MakerQueue* castle(RandomGen& random, SettlementInfo info) {
   if (info.furniture)
     inside->addMaker(new Furnitures(Predicate::attrib(SquareAttrib::EMPTY_ROOM), 0.35, *info.furniture));
   for (StairKey key : info.downStairs)
-    queue->addMaker(new Stairs(StairDirection::DOWN, key, Predicate::andPred(
-          Predicate::attrib(SquareAttrib::CASTLE_CORNER),
-          Predicate::type(building.floorInside)), none));
+    queue->addMaker(new Stairs(StairDirection::DOWN, key,
+          Predicate::attrib(SquareAttrib::CASTLE_CORNER) &&
+          Predicate::type(building.floorInside), none));
   queue->addMaker(new StartingPos(Predicate::type(FurnitureType::MUD), StairKey::heroSpawn()));
   queue->addMaker(new AddAttrib(SquareAttrib::NO_DIG, Predicate::type(building.wall)));
   return queue;
@@ -1965,9 +1988,7 @@ RandomLocations::LocationPredicate getSettlementPredicate(SettlementType type) {
     case SettlementType::FOREST:
     case SettlementType::FORREST_COTTAGE:
     case SettlementType::FORREST_VILLAGE:
-      return Predicate::andPred(
-          Predicate::negate(Predicate::attrib(SquareAttrib::RIVER)),
-          Predicate::attrib(SquareAttrib::FORREST));
+      return !Predicate::attrib(SquareAttrib::RIVER) && Predicate::attrib(SquareAttrib::FORREST);
     case SettlementType::CAVE:
       return RandomLocations::LocationPredicate(
           Predicate::type(FurnitureType::MOUNTAIN), Predicate::attrib(SquareAttrib::HILL), 5, 15);
@@ -1985,12 +2006,11 @@ RandomLocations::LocationPredicate getSettlementPredicate(SettlementType type) {
       return Predicate::attrib(SquareAttrib::MOUNTAIN);
     case SettlementType::ISLAND_VAULT_DOOR:
       return RandomLocations::LocationPredicate(
-          Predicate::andPred(
-            Predicate::attrib(SquareAttrib::MOUNTAIN),
-            Predicate::negate(Predicate::attrib(SquareAttrib::RIVER))), Predicate::attrib(SquareAttrib::RIVER), 10, 30);
+            Predicate::attrib(SquareAttrib::MOUNTAIN) && !Predicate::attrib(SquareAttrib::RIVER),
+            Predicate::attrib(SquareAttrib::RIVER), 10, 30);
     default:
-      return Predicate::andPred(Predicate::attrib(SquareAttrib::LOWLAND),
-          Predicate::negate(Predicate::attrib(SquareAttrib::RIVER)));
+      return Predicate::attrib(SquareAttrib::LOWLAND) &&
+          !Predicate::attrib(SquareAttrib::RIVER);
   }
 }
 
@@ -2014,9 +2034,7 @@ static MakerQueue* genericMineTownMaker(RandomGen& random, SettlementInfo info, 
   queue->addMaker(new RoomMaker(numRooms, minRoomSize, maxRoomSize, building.wall, none,
       new Empty(SquareChange(building.floorInside, ifTrue(connect, SquareAttrib::CONNECT_CORRIDOR))), roomInsides, true));
   queue->addMaker(new Connector(none, 0));
-  Predicate featurePred = Predicate::andPred(
-      Predicate::attrib(SquareAttrib::EMPTY_ROOM),
-      Predicate::type(building.floorInside));
+  Predicate featurePred = Predicate::attrib(SquareAttrib::EMPTY_ROOM) && Predicate::type(building.floorInside);
   for (StairKey key : info.downStairs)
     queue->addMaker(new Stairs(StairDirection::DOWN, key, featurePred));
   for (StairKey key : info.upStairs)
@@ -2056,8 +2074,7 @@ static MakerQueue* vaultMaker(SettlementInfo info, bool connection) {
     queue->addMaker(new UniformBlob(building.floorOutside, none, SquareAttrib::CONNECT_CORRIDOR));
   else
     queue->addMaker(new UniformBlob(building.floorOutside));
-  auto insidePredicate = Predicate::andPred(Predicate::type(building.floorOutside),
-      Predicate::canEnter(MovementTrait::WALK));
+  auto insidePredicate = Predicate::type(building.floorOutside) && Predicate::canEnter(MovementTrait::WALK);
   if (info.creatures)
     queue->addMaker(new Creatures(*info.creatures, info.numCreatures, info.collective, insidePredicate));
   if (info.shopFactory)
@@ -2216,9 +2233,7 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, optional<CreatureFactory> fo
   if (keeperSpawn) {
     startingPos = new StartingPos(Predicate::alwaysTrue(), StairKey::keeperSpawn());
     locations->add(startingPos, Vec2(4, 4), RandomLocations::LocationPredicate(
-        Predicate::andPred(
-                       Predicate::attrib(SquareAttrib::HILL),
-                       Predicate::canEnter({MovementTrait::WALK})),
+        Predicate::attrib(SquareAttrib::HILL) && Predicate::canEnter({MovementTrait::WALK}),
         Predicate::attrib(SquareAttrib::MOUNTAIN), 1, 8));
     int minMargin = 50;
     locations->setMinMargin(startingPos, minMargin - locationMargin);
@@ -2314,9 +2329,7 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, optional<CreatureFactory> fo
       locations->add(queue, getSize(random, settlement.type), getSettlementPredicate(settlement.type));
     }
   }
-  Predicate lowlandPred = Predicate::andPred(
-      Predicate::attrib(SquareAttrib::LOWLAND),
-      Predicate::negate(Predicate::attrib(SquareAttrib::RIVER)));
+  Predicate lowlandPred = Predicate::attrib(SquareAttrib::LOWLAND) && !Predicate::attrib(SquareAttrib::RIVER);
   for (auto& cottage : cottages)
     for (int i : Range(random.get(1, 3))) {
       locations->add(new MakerQueue({
@@ -2352,9 +2365,9 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, optional<CreatureFactory> fo
   queue->addMaker(new Margin(mapBorder, new Roads()));
   queue->addMaker(new Margin(mapBorder,
         new TransferPos(Predicate::canEnter(MovementTrait::WALK), StairKey::transferLanding(), 2)));
-  queue->addMaker(new Margin(mapBorder, new Connector(none, 0, 5, Predicate::andPred(
-          Predicate::canEnter({MovementTrait::WALK}),
-          Predicate::attrib(SquareAttrib::CONNECT_CORRIDOR)),
+  queue->addMaker(new Margin(mapBorder, new Connector(none, 0, 5,
+          Predicate::canEnter({MovementTrait::WALK}) &&
+          Predicate::attrib(SquareAttrib::CONNECT_CORRIDOR),
       SquareAttrib::CONNECTOR)));
   queue->addMaker(new Margin(mapBorder + locationMargin, locations2));
   queue->addMaker(new Items(ItemFactory::mushrooms(), width / 10, width / 5));
@@ -2412,6 +2425,7 @@ PLevelMaker LevelMaker::splashLevel(CreatureFactory heroLeader, CreatureFactory 
           MonsterAIFactory::splashImps(splashPath))));
   queue->addMaker(new SpecificArea(monsterSpawn2, new Creatures(imps, 15,
           MonsterAIFactory::splashImps(splashPath))));
+  queue->addMaker(new SetSunlight(0.0, !Predicate::inRectangle(Level::getSplashVisibleBounds())));
   return PLevelMaker(queue);
 }
 
