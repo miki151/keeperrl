@@ -148,16 +148,8 @@ int Game::getSaveProgressCount() const {
 
 void Game::prepareSiteRetirement() {
   for (Vec2 v : models.getBounds())
-    if (models[v]) {
-      if (v != baseModel)
-        models[v]->lockSerialization();
-      else {
-        for (WCollective col : models[v]->getCollectives())
-          if (col->getLeader()->isDead())
-            col->clearLeader();
-        models[v]->setGame(nullptr);
-      }
-    }
+    if (models[v] && v != baseModel)
+      models[v]->discardForRetirement();
   playerCollective->setVillainType(VillainType::MAIN);
   playerCollective->retire();
   vector<Position> locationPos;
@@ -185,6 +177,7 @@ void Game::prepareSiteRetirement() {
           c.attackBehaviour = AttackBehaviour(AttackBehaviourId::KILL_LEADER);
           c.ransom = make_pair(0.8, Random.get(500, 700));)));
   WModel mainModel = models[baseModel].get();
+  mainModel->setGame(nullptr);
   for (WCollective col : models[baseModel]->getCollectives())
     for (WCreature c : col->getCreatures())
       if (c->getPosition().getModel() != mainModel)

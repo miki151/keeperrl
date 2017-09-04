@@ -89,7 +89,7 @@ class Model : public OwnedObject<Model> {
 
   SERIALIZATION_DECL(Model)
 
-  void lockSerialization();
+  void discardForRetirement();
 
   void addEvent(const GameEvent&);
 

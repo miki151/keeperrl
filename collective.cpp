@@ -1506,13 +1506,6 @@ void Collective::freeTeamMembers(TeamId id) {
   }
 }
 
-static optional<Vec2> getAdjacentWall(Position pos) {
-  for (Position p : pos.neighbors4(Random))
-    if (p.isWall())
-      return pos.getDir(p);
-  return none;
-}
-
 Zones& Collective::getZones() {
   return *zones;
 }

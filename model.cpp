@@ -63,11 +63,12 @@ void Model::serialize(Archive& ar, const unsigned int version) {
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Model)
 
-void Model::lockSerialization() {
-  serializationLocked = true;
-}
+SERIALIZABLE(Model)
 
-SERIALIZABLE(Model);
+void Model::discardForRetirement() {
+  serializationLocked = true;
+  deadCreatures.clear();
+}
 
 void Model::addWoodCount(int cnt) {
   woodCount += cnt;
