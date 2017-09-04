@@ -301,6 +301,10 @@ const optional<ExternalEnemies>& Model::getExternalEnemies() const {
   return *externalEnemies;
 }
 
+void Model::clearExternalEnemies() {
+  externalEnemies = none;
+}
+
 void Model::addEvent(const GameEvent& e) {
   eventGenerator->addEvent(e);
 }

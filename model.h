@@ -53,6 +53,7 @@ class Model : public OwnedObject<Model> {
   void addCreature(PCreature, double delay);
   void landHeroPlayer(PCreature);
   void addExternalEnemies(ExternalEnemies&&);
+  void clearExternalEnemies();
 
   const optional<ExternalEnemies>& getExternalEnemies() const;
 

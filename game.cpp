@@ -147,7 +147,6 @@ int Game::getSaveProgressCount() const {
 }
 
 void Game::prepareSiteRetirement() {
-  WModel mainModel = models[baseModel].get();
   for (Vec2 v : models.getBounds())
     if (models[v]) {
       if (v != baseModel)
@@ -185,6 +184,7 @@ void Game::prepareSiteRetirement() {
           );
           c.attackBehaviour = AttackBehaviour(AttackBehaviourId::KILL_LEADER);
           c.ransom = make_pair(0.8, Random.get(500, 700));)));
+  WModel mainModel = models[baseModel].get();
   for (WCollective col : models[baseModel]->getCollectives())
     for (WCreature c : col->getCreatures())
       if (c->getPosition().getModel() != mainModel)
@@ -198,6 +198,7 @@ void Game::prepareSiteRetirement() {
   // So we don't have references to creatures in another model.
   for (WCreature c : mainModel->getAllCreatures())
     c->clearLastAttacker();
+  mainModel->clearExternalEnemies();
   TribeId::switchForSerialization(TribeId::getKeeper(), TribeId::getRetiredKeeper());
   UniqueEntity<Item>::offsetForSerialization(Random.getLL());
 }
