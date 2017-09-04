@@ -105,7 +105,7 @@ static vector<string> getHints() {
     "Morale affects minion productivity and chances of fleeing from battle.",
  //   "You can turn these hints off in the settings (F2).",
 //    "Killing a leader greatly lowers the morale of his tribe and stops immigration.",
-    "Your minions' morale is boosted when they are commanded by the Keeper.",
+//    "Your minions' morale is boosted when they are commanded by the Keeper.",
   };
 }
 

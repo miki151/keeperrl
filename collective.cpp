@@ -122,29 +122,6 @@ optional<EnemyId> Collective::getEnemyId() const {
 Collective::~Collective() {
 }
 
-namespace {
-
-class LeaderControlOverride : public Creature::MoraleOverride {
-  public:
-  LeaderControlOverride(WCollective col) : collective(col) {}
-
-  virtual optional<double> getMorale(WConstCreature creature) override {
-    for (auto team : collective->getTeams().getContaining(collective->getLeader()))
-      if (collective->getTeams().isActive(team) && collective->getTeams().contains(team, creature) &&
-          collective->getTeams().getLeader(team) == collective->getLeader())
-        return 1;
-    return none;
-  }
-
-  SERIALIZATION_CONSTRUCTOR(LeaderControlOverride);
-  SERIALIZE_ALL(SUBCLASS(Creature::MoraleOverride), collective)
-
-  private:
-  WCollective SERIAL(collective);
-};
-
-}
-
 void Collective::addCreatureInTerritory(PCreature creature, EnumSet<MinionTrait> traits) {
   for (Position pos : Random.permutation(territory->getAll()))
     if (pos.canEnter(creature.get())) {
@@ -179,9 +156,6 @@ void Collective::addCreature(WCreature c, EnumSet<MinionTrait> traits) {
     bySpawnType[*spawnType].push_back(c);
   for (WItem item : c->getEquipment().getItems())
     CHECK(minionEquipment->tryToOwn(c, item));
-  if (traits.contains(MinionTrait::FIGHTER)) {
-    c->setMoraleOverride(Creature::PMoraleOverride(new LeaderControlOverride(this)));
-  }
   control->onMemberAdded(c);
 }
 
@@ -195,7 +169,6 @@ void Collective::removeCreature(WCreature c) {
   for (MinionTrait t : ENUM_ALL(MinionTrait))
     if (byTrait[t].contains(c))
       byTrait[t].removeElement(c);
-  c->setMoraleOverride(nullptr);
 }
 
 void Collective::banishCreature(WCreature c) {
@@ -1569,6 +1542,5 @@ int Collective::getMaxPopulation() const {
   return ret;
 }
 
-REGISTER_TYPE(LeaderControlOverride);
-REGISTER_TYPE(Collective);
+REGISTER_TYPE(Collective)
 REGISTER_TYPE(ListenerTemplate<Collective>)

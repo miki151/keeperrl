@@ -50,12 +50,6 @@
 #include "message_generator.h"
 
 template <class Archive> 
-void Creature::MoraleOverride::serialize(Archive& ar, const unsigned int version) {
-}
-
-SERIALIZABLE(Creature::MoraleOverride)
-
-template <class Archive> 
 void Creature::serialize(Archive& ar, const unsigned int version) { 
   ar & SUBCLASS(OwnedObject<Creature>) & SUBCLASS(Renderable) & SUBCLASS(UniqueEntity);
   ar(attributes, position, equipment, shortestPath, knownHiding, tribe, morale);
@@ -63,7 +57,7 @@ void Creature::serialize(Archive& ar, const unsigned int version) {
   ar(deathReason, swapPositionCooldown);
   ar(unknownAttackers, privateEnemies, holding);
   ar(controllerStack, kills);
-  ar(difficultyPoints, points, moraleOverride);
+  ar(difficultyPoints, points);
   ar(vision, lastCombatTime, debt, lastDamageType, highestAttackValueEver);
 }
 
@@ -1000,18 +994,11 @@ void Creature::updateViewObject() {
 }
 
 double Creature::getMorale() const {
-  if (moraleOverride)
-    if (auto ret = moraleOverride->getMorale(this))
-      return *ret;
   return morale;
 }
 
 void Creature::addMorale(double val) {
   morale = min(1.0, max(-1.0, morale + val));
-}
-
-void Creature::setMoraleOverride(PMoraleOverride mod) {
-  moraleOverride = std::move(mod);
 }
 
 string attrStr(bool strong, bool agile, bool fast) {

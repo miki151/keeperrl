@@ -79,16 +79,6 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   /** Morale is in the range [-1:1] **/
   double getMorale() const;
   void addMorale(double);
-  DEF_UNIQUE_PTR(MoraleOverride);
-  class MoraleOverride {
-    public:
-    virtual optional<double> getMorale(WConstCreature) = 0;
-    virtual ~MoraleOverride() {}
-    template <class Archive> 
-    void serialize(Archive& ar, const unsigned int version);
-  };
-  void setMoraleOverride(PMoraleOverride);
-
   void take(PItem item);
   void take(vector<PItem> item);
   const Equipment& getEquipment() const;
@@ -310,7 +300,6 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   EntitySet<Creature> SERIAL(kills);
   mutable int SERIAL(difficultyPoints) = 0;
   int SERIAL(points) = 0;
-  PMoraleOverride SERIAL(moraleOverride);
   void updateVisibleCreatures();
   vector<Position> visibleEnemies;
   vector<Position> visibleCreatures;
