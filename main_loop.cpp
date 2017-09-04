@@ -701,8 +701,8 @@ PGame MainLoop::loadPrevious() {
   if (savedGame) {
     PGame ret = loadGame(userPath.file(savedGame->filename));
     if (ret) {
-    if (eraseSave())
-      changeSaveType(userPath.file(savedGame->filename), GameSaveType::AUTOSAVE);
+      if (eraseSave())
+        changeSaveType(userPath.file(savedGame->filename), GameSaveType::AUTOSAVE);
     } else
       view->presentText("Sorry", "Failed to load the save file :(");
     return ret;

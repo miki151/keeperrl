@@ -453,7 +453,8 @@ class EnumMap {
     for (int i : All(elems))
       tmp.push_back(std::move(elems[i]));
     ar(tmp);
-    CHECK(tmp.size() <= elems.size()) << tmp.size() << " " << elems.size();
+    if (tmp.size() > elems.size())
+      throw ::cereal::Exception("EnumMap larger than legal enum range");
     for (int i : All(tmp))
       elems[i] = std::move(tmp[i]);
   }
@@ -1236,7 +1237,8 @@ class EnumSet {
       tmp.push_back(elem);
     ar(tmp);
     for (T elem : tmp) {
-      CHECK(int(elem) >= 0 && int(elem) < EnumInfo<T>::size);
+      if (int(elem) < 0 || int(elem) >= EnumInfo<T>::size)
+        throw ::cereal::Exception("EnumSet element outside of legal enum range");
       insert(elem);
     }
   }

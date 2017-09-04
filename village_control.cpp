@@ -210,7 +210,7 @@ void VillageControl::update(bool currentlyActive) {
       double prob = villain->getAttackProbability(this) / updateFreq;
       if (Random.chance(prob)) {
         vector<WCreature> fighters;
-        fighters = getCollective()->getCreatures({MinionTrait::FIGHTER}, {MinionTrait::SUMMONED});
+        fighters = getCollective()->getCreatures(MinionTrait::FIGHTER);
         /*if (getCollective()->getGame()->isSingleModel())
           fighters = filter(fighters, [this] (WConstCreature c) {
               return contains(getCollective()->getTerritory().getAll(), c->getPosition()); });*/

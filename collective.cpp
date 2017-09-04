@@ -703,26 +703,6 @@ vector<WCreature> Collective::getCreaturesAnyOf(EnumSet<MinionTrait> trait) cons
   return ret;
 }
 
-vector<WCreature> Collective::getCreatures(EnumSet<MinionTrait> with, EnumSet<MinionTrait> without) const {
-  vector<WCreature> ret;
-  for (WCreature c : creatures) {
-    bool ok = true;
-    for (MinionTrait t : with)
-      if (!hasTrait(c, t)) {
-        ok = false;
-        break;
-      }
-    for (MinionTrait t : without)
-      if (hasTrait(c, t)) {
-        ok = false;
-        break;
-      }
-    if (ok)
-      ret.push_back(c);
-  }
-  return ret;
-}
-
 double Collective::getKillManaScore(WConstCreature victim) const {
   return 0;
 /*  int ret = victim->getDifficultyPoints() / 3;
@@ -828,9 +808,6 @@ void Collective::onMinionKilled(WCreature victim, WCreature killer) {
   control->onMemberKilled(victim, killer);
   if (hasTrait(victim, MinionTrait::PRISONER) && killer && getCreatures().contains(killer))
     returnResource({ResourceId::PRISONER_HEAD, 1});
-  if (victim == leader)
-    for (WCreature c : getCreatures(MinionTrait::SUMMONED)) // shortcut to get rid of summons when summonner dies
-      c->disappear().perform(c);
   if (!hasTrait(victim, MinionTrait::FARM_ANIMAL)) {
     decreaseMoraleForKill(killer, victim);
     if (killer)
