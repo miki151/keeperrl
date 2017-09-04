@@ -617,7 +617,7 @@ class Fighter : public Behaviour {
   }
 
   SERIALIZATION_CONSTRUCTOR(Fighter)
-  SERIALIZE_ALL(SUBCLASS(Behaviour), maxPowerRatio, chase, lastSeen)
+  SERIALIZE_ALL(SUBCLASS(Behaviour), maxPowerRatio, chase)
 
   private:
   double SERIAL(maxPowerRatio);
@@ -629,7 +629,7 @@ class Fighter : public Behaviour {
     Creature::Id SERIAL(creature);
     SERIALIZE_ALL(pos, time, type, creature)
   };
-  optional<LastSeen> SERIAL(lastSeen);
+  optional<LastSeen> lastSeen;
   optional<LastSeen>& getLastSeen() {
     if (lastSeen && !creature->getLevel()->containsCreature(lastSeen->creature))
       lastSeen.reset();
