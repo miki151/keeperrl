@@ -37,6 +37,8 @@ bool MinionTaskMap::canChooseRandomly(WConstCreature c, MinionTask t) const {
       else
         return true;
     }
+    case MinionTask::EAT:
+      return !c->isAffected(LastingEffect::SATIATED);
     default:
       return true;
   }

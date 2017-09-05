@@ -154,6 +154,8 @@ void LastingEffects::onAffected(WCreature c, LastingEffect effect, bool msg) {
         c->you(MsgType::ARE, "telepathic"); break;
       case LastingEffect::SUNLIGHT_VULNERABLE:
         c->you(MsgType::ARE, "vulnerable to sunlight"); break;
+      case LastingEffect::SATIATED:
+        c->you(MsgType::ARE, "satiated"); break;
     }
 }
 
@@ -253,6 +255,8 @@ void LastingEffects::onTimedOut(WCreature c, LastingEffect effect, bool msg) {
         c->you(MsgType::ARE, "no longer telepathic"); break;
       case LastingEffect::SUNLIGHT_VULNERABLE:
         c->you(MsgType::ARE, "no longer vulnerable to sunlight"); break;
+      case LastingEffect::SATIATED:
+        break;
       default: break;
     }
 }
@@ -278,6 +282,8 @@ void LastingEffects::modifyAttr(WConstCreature c, AttrType type, double& value) 
           value *= 0.66;
         if (c->isAffected(LastingEffect::DEF_BONUS))
           value += attrBonus;
+        if (c->isAffected(LastingEffect::SATIATED))
+          value += 2;
       break;
     case AttrType::SPEED:
       if (c->isAffected(LastingEffect::SLOWED))
@@ -304,7 +310,7 @@ namespace {
 }
 
 
-static Adjective getAdjective(LastingEffect effect) {
+static optional<Adjective> getAdjective(LastingEffect effect) {
   switch (effect) {
     case LastingEffect::INVISIBLE: return "Invisible"_good;
     case LastingEffect::PANIC: return "Panic"_good;
@@ -327,6 +333,7 @@ static Adjective getAdjective(LastingEffect effect) {
     case LastingEffect::REGENERATION: return "Regenerating"_good;
     case LastingEffect::WARNING: return "Aware of danger"_good;
     case LastingEffect::TELEPATHY: return "Telepathic"_good;
+    case LastingEffect::SATIATED: return "Satiated"_good;
 
     case LastingEffect::POISON: return "Poisoned"_bad;
     case LastingEffect::BLEEDING: return "Bleeding"_bad;
@@ -346,19 +353,17 @@ static Adjective getAdjective(LastingEffect effect) {
 }
 
 const char* LastingEffects::getGoodAdjective(LastingEffect effect) {
-  auto adjective = getAdjective(effect);
-  if (!adjective.bad)
-    return adjective.name;
-  else
-    return nullptr;
+  if (auto adjective = getAdjective(effect))
+    if (!adjective->bad)
+      return adjective->name;
+  return nullptr;
 }
 
 const char* LastingEffects::getBadAdjective(LastingEffect effect) {
-  auto adjective = getAdjective(effect);
-  if (adjective.bad)
-    return adjective.name;
-  else
-    return nullptr;
+  if (auto adjective = getAdjective(effect))
+    if (adjective->bad)
+      return adjective->name;
+  return nullptr;
 }
 
 const vector<LastingEffect>& LastingEffects::getCausingCondition(CreatureCondition condition) {
@@ -519,6 +524,7 @@ const char* LastingEffects::getName(LastingEffect type) {
     case LastingEffect::WARNING: return "warning";
     case LastingEffect::TELEPATHY: return "telepathy";
     case LastingEffect::SUNLIGHT_VULNERABLE: return "sunlight vulnerability";
+    case LastingEffect::SATIATED: return "satiated";
   }
 }
 
@@ -560,6 +566,7 @@ const char* LastingEffects::getDescription(LastingEffect type) {
     case LastingEffect::WARNING: return "Warns about dangerous enemies and traps.";
     case LastingEffect::TELEPATHY: return "Allows you to detect other creatures with brains.";
     case LastingEffect::SUNLIGHT_VULNERABLE: return "Sunlight makes your body crumble to dust.";
+    case LastingEffect::SATIATED: return "Well-fed minions are said to have their defense improved by +2.";
   }
 }
 
@@ -577,6 +584,7 @@ int LastingEffects::getPrice(LastingEffect e) {
     case LastingEffect::HALLU:
     case LastingEffect::BLEEDING:
     case LastingEffect::SUNLIGHT_VULNERABLE:
+    case LastingEffect::SATIATED:
       return 2;
     case LastingEffect::WARNING:
       return 5;

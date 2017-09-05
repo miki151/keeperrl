@@ -1263,6 +1263,7 @@ CreatureAction Creature::eat(WItem item) const {
   return CreatureAction(this, [=](WCreature self) {
     thirdPerson(getName().the() + " eats " + item->getAName());
     secondPerson("You eat " + item->getAName());
+    self->addEffect(LastingEffect::SATIATED, 500);
     self->getPosition().removeItem(item);
     self->spendTime(3);
   });
