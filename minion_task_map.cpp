@@ -30,13 +30,8 @@ bool MinionTaskMap::canChooseRandomly(WConstCreature c, MinionTask t) const {
       return false;
     case MinionTask::LAIR:
     case MinionTask::GRAVE:
-    case MinionTask::SLEEP: {
-      constexpr int sleepNeededAfterTurns = 1000;
-      if (auto lastTime = c->getLastAffected(LastingEffect::SLEEP))
-        return *lastTime < c->getGlobalTime() - sleepNeededAfterTurns;
-      else
-        return true;
-    }
+    case MinionTask::SLEEP:
+      return !c->isAffected(LastingEffect::RESTED);
     case MinionTask::EAT:
       return !c->isAffected(LastingEffect::SATIATED);
     default:

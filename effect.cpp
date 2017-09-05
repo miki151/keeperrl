@@ -170,6 +170,8 @@ static double getDuration(WConstCreature c, LastingEffect e) {
       return 25;
     case LastingEffect::SATIATED:
       return 500;
+    case LastingEffect::RESTED:
+      return 1000;
   }
   return 0;
 }

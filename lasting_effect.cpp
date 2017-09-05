@@ -156,6 +156,8 @@ void LastingEffects::onAffected(WCreature c, LastingEffect effect, bool msg) {
         c->you(MsgType::ARE, "vulnerable to sunlight"); break;
       case LastingEffect::SATIATED:
         c->you(MsgType::ARE, "satiated"); break;
+      case LastingEffect::RESTED:
+        c->you(MsgType::ARE, "well rested"); break;
     }
 }
 
@@ -183,6 +185,9 @@ void LastingEffects::onRemoved(WCreature c, LastingEffect effect, bool msg) {
       if (msg)
         c->you(MsgType::ARE, "cured from poisoning");
       break;
+    case LastingEffect::SLEEP:
+      c->you(MsgType::WAKE_UP, "");
+      break;
     default:
       onTimedOut(c, effect, msg); break;
   }
@@ -196,7 +201,9 @@ void LastingEffects::onTimedOut(WCreature c, LastingEffect effect, bool msg) {
       case LastingEffect::SLOWED:
         c->you(MsgType::ARE, "moving faster again"); break;
       case LastingEffect::SLEEP:
-        c->you(MsgType::WAKE_UP, ""); break;
+        c->you(MsgType::WAKE_UP, "");
+        c->addEffect(LastingEffect::RESTED, 1000);
+        break;
       case LastingEffect::SPEED:
         c->you(MsgType::ARE, "moving more slowly again"); break;
       case LastingEffect::DAM_BONUS:
@@ -256,7 +263,9 @@ void LastingEffects::onTimedOut(WCreature c, LastingEffect effect, bool msg) {
       case LastingEffect::SUNLIGHT_VULNERABLE:
         c->you(MsgType::ARE, "no longer vulnerable to sunlight"); break;
       case LastingEffect::SATIATED:
-        break;
+        c->you(MsgType::ARE, "no longer satiated"); break;
+      case LastingEffect::RESTED:
+        c->you(MsgType::ARE, "no longer rested"); break;
       default: break;
     }
 }
@@ -283,7 +292,9 @@ void LastingEffects::modifyAttr(WConstCreature c, AttrType type, double& value) 
         if (c->isAffected(LastingEffect::DEF_BONUS))
           value += attrBonus;
         if (c->isAffected(LastingEffect::SATIATED))
-          value += 2;
+          value += 1;
+        if (c->isAffected(LastingEffect::RESTED))
+          value += 1;
       break;
     case AttrType::SPEED:
       if (c->isAffected(LastingEffect::SLOWED))
@@ -334,6 +345,7 @@ static optional<Adjective> getAdjective(LastingEffect effect) {
     case LastingEffect::WARNING: return "Aware of danger"_good;
     case LastingEffect::TELEPATHY: return "Telepathic"_good;
     case LastingEffect::SATIATED: return "Satiated"_good;
+    case LastingEffect::RESTED: return "Rested"_good;
 
     case LastingEffect::POISON: return "Poisoned"_bad;
     case LastingEffect::BLEEDING: return "Bleeding"_bad;
@@ -524,7 +536,8 @@ const char* LastingEffects::getName(LastingEffect type) {
     case LastingEffect::WARNING: return "warning";
     case LastingEffect::TELEPATHY: return "telepathy";
     case LastingEffect::SUNLIGHT_VULNERABLE: return "sunlight vulnerability";
-    case LastingEffect::SATIATED: return "satiated";
+    case LastingEffect::SATIATED: return "satiety";
+    case LastingEffect::RESTED: return "wakefulness";
   }
 }
 
@@ -566,7 +579,8 @@ const char* LastingEffects::getDescription(LastingEffect type) {
     case LastingEffect::WARNING: return "Warns about dangerous enemies and traps.";
     case LastingEffect::TELEPATHY: return "Allows you to detect other creatures with brains.";
     case LastingEffect::SUNLIGHT_VULNERABLE: return "Sunlight makes your body crumble to dust.";
-    case LastingEffect::SATIATED: return "Well-fed minions are said to have their defense improved by +2.";
+    case LastingEffect::SATIATED: return "Increases morale and improves defense by +1.";
+    case LastingEffect::RESTED: return "Increases morale and improves defense by +1.";
   }
 }
 
@@ -585,6 +599,7 @@ int LastingEffects::getPrice(LastingEffect e) {
     case LastingEffect::BLEEDING:
     case LastingEffect::SUNLIGHT_VULNERABLE:
     case LastingEffect::SATIATED:
+    case LastingEffect::RESTED:
       return 2;
     case LastingEffect::WARNING:
       return 5;
@@ -624,4 +639,13 @@ int LastingEffects::getPrice(LastingEffect e) {
     case LastingEffect::FLYING:
       return 24;
   }
+}
+
+double LastingEffects::getMoraleIncrease(WConstCreature c) {
+  double ret = 0;
+  if (c->isAffected(LastingEffect::RESTED))
+    ret += 0.2;
+  if (c->isAffected(LastingEffect::SATIATED))
+    ret += 0.2;
+  return ret;
 }

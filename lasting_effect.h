@@ -38,7 +38,8 @@ RICH_ENUM(LastingEffect,
     WARNING,
     TELEPATHY,
     SUNLIGHT_VULNERABLE,
-    SATIATED
+    SATIATED,
+    RESTED
 );
 
 RICH_ENUM(CreatureCondition,
@@ -62,8 +63,9 @@ class LastingEffects {
   static double modifyCreatureDefense(LastingEffect, double damage, AttrType damageAttr);
   static const char* getName(LastingEffect);
   static const char* getDescription(LastingEffect);
-  static bool canSee(WConstCreature c1, WConstCreature c2);
+  static bool canSee(WConstCreature, WConstCreature);
   static int getPrice(LastingEffect);
+  static double getMoraleIncrease(WConstCreature);
 };
 
 

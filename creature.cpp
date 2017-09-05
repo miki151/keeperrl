@@ -994,7 +994,7 @@ void Creature::updateViewObject() {
 }
 
 double Creature::getMorale() const {
-  return morale;
+  return min(1.0, max(-1.0, morale + LastingEffects::getMoraleIncrease(this)));
 }
 
 void Creature::addMorale(double val) {
