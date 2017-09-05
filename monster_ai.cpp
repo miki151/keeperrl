@@ -593,7 +593,7 @@ class Fighter : public Behaviour {
               chaseFreeze.set(other, make_pair(other->getGlobalTime() + 20, other->getGlobalTime() + 70));
           })};
       }
-      if (distance == 2 && chase)
+      if (distance == 2)
         if (auto move = considerBreakingChokePoint(other))
           return move;
     }
@@ -1219,7 +1219,7 @@ MonsterAIFactory MonsterAIFactory::singleTask(PTask&& t) {
       released = nullptr;
       return new MonsterAI(c, {
         new Heal(c),
-        new Fighter(c, 0.6, false),
+        new Fighter(c, 0.6, true),
         new SingleTask(c, std::move(task)),
         new ChooseRandom(c, makeVec(PBehaviour(new Rest(c)), PBehaviour(new MoveRandomly(c))), {3, 1})},
         { 6, 5, 2, 1}, true);

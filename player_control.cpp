@@ -149,27 +149,29 @@ optional<TeamId> PlayerControl::getCurrentTeam() const {
 }
 
 void PlayerControl::onControlledKilled(WConstCreature victim) {
-  vector<CreatureInfo> team;
   TeamId currentTeam = *getCurrentTeam();
-  for (auto c : getTeams().getMembers(currentTeam))
-    if (c != victim)
-      team.push_back(CreatureInfo(c));
-  if (team.empty())
-    return;
-  optional<Creature::Id> newLeader;
-  if (team.size() == 1)
-    newLeader = team[0].uniqueId;
-  else
-    newLeader = getView()->chooseCreature("Choose new team leader:", team, "Order team back to base");
-  if (newLeader) {
-    if (WCreature c = getCreature(*newLeader)) {
-      getTeams().setLeader(currentTeam, c);
-      if (!c->isPlayer())
-        c->pushController(createMinionController(c));
+  if (getTeams().getLeader(currentTeam) == victim) {
+    vector<CreatureInfo> team;
+    for (auto c : getTeams().getMembers(currentTeam))
+      if (c != victim)
+        team.push_back(CreatureInfo(c));
+    if (team.empty())
       return;
+    optional<Creature::Id> newLeader;
+    if (team.size() == 1)
+      newLeader = team[0].uniqueId;
+    else
+      newLeader = getView()->chooseCreature("Choose new team leader:", team, "Order team back to base");
+    if (newLeader) {
+      if (WCreature c = getCreature(*newLeader)) {
+        getTeams().setLeader(currentTeam, c);
+        if (!c->isPlayer())
+          c->pushController(createMinionController(c));
+        return;
+      }
     }
+    leaveControl();
   }
-  leaveControl();
 }
 
 void PlayerControl::onSunlightVisibilityChanged() {

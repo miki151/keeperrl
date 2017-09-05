@@ -723,32 +723,6 @@ Vec2 Renderer::getNominalSize() const {
   return nominalSize;
 }
 
-static void measureLatency() {
-  static milliseconds last;
-  static long maxLat = 0;
-  static int counter = 0;
-  auto curTime = Clock::getRealMillis();
-  auto latency = (curTime - last).count();
-  if (latency > maxLat)
-    maxLat = latency;
-  if (latency > 50)
-    std::cout << "Draw buffer " << latency << std::endl;
-  if (++counter > 100) {
-    std::cout << "Max latency " << maxLat << std::endl;
-    maxLat = 0;
-    counter = 0;
-  }
-  last = curTime;
-  auto state = Clock::getRealMillis().count() % 500;
-  SDL::glBegin(GL_QUADS);
-  Color(255, 255, 255).applyGl();
-  SDL::glVertex2f(0, 0);
-  SDL::glVertex2f(2 * state, 0);
-  SDL::glVertex2f(2 * state, 30);
-  SDL::glVertex2f(0, 30);
-  SDL::glEnd();
-}
-
 void Renderer::drawAndClearBuffer() {
   for (int i : All(renderList)) {
     for (auto& elem : renderList[i])

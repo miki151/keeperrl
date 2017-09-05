@@ -1750,13 +1750,6 @@ PLevelMaker LevelMaker::mazeLevel(RandomGen& random, SettlementInfo info) {
   return make_unique<BorderGuard>(std::move(queue), SquareChange(FurnitureType::FLOOR, FurnitureType::MOUNTAIN));
 }
 
-static PLevelMaker hatchery(CreatureFactory factory, int numCreatures) {
-  auto queue = make_unique<MakerQueue>();
-  queue->addMaker(make_unique<Empty>(FurnitureType::MUD));
-  queue->addMaker(make_unique<Creatures>(factory, numCreatures));
-  return queue;
-}
-
 static PMakerQueue getElderRoom(SettlementInfo info) {
   BuildingType building = getBuildingInfo(info);
   PMakerQueue elderRoom = make_unique<MakerQueue>();
