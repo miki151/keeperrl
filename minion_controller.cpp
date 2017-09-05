@@ -22,7 +22,7 @@ class MinionController : public Player {
       {PlayerInfo::CommandInfo{"Leave creature", 'u', "Leave creature and order team back to base.", true,
             tutorial && tutorial->getHighlights(getGame()).contains(TutorialHighlight::LEAVE_CONTROL)},
        [] (Player* player) { dynamic_cast<MinionController*>(player)->unpossess(); }, true},
-      {PlayerInfo::CommandInfo{"Toggle control all", none, "Control all team members.", true},
+      {PlayerInfo::CommandInfo{"Toggle control all", 'g', "Control all team members.", true},
        [] (Player* player) { dynamic_cast<MinionController*>(player)->control->toggleControlAllTeamMembers(); }, getTeam().size() > 1},
       {PlayerInfo::CommandInfo{"Switch control", 's', "Switch control to a different team member.", true},
        [] (Player* player) { dynamic_cast<MinionController*>(player)->swapTeam(); }, getTeam().size() > 1},
