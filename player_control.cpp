@@ -835,7 +835,8 @@ void PlayerControl::fillMinions(CollectiveInfo& info) const {
 
 ItemInfo PlayerControl::getWorkshopItem(const WorkshopItem& option) const {
   return CONSTRUCT(ItemInfo,
-      c.name = option.name;
+      c.number = option.number * option.batchSize;
+      c.name = c.number == 1 ? option.name : toString(c.number) + " " + option.pluralName;
       c.viewId = option.viewId;
       c.price = getCostObj(option.cost * option.number);
       if (option.techId && !getCollective()->hasTech(*option.techId)) {
@@ -845,7 +846,6 @@ ItemInfo PlayerControl::getWorkshopItem(const WorkshopItem& option) const {
       c.description = option.description;
       c.productionState = option.state.value_or(0);
       c.actions = LIST(ItemAction::REMOVE, ItemAction::CHANGE_NUMBER);
-      c.number = option.number * option.batchSize;
       c.tutorialHighlight = tutorial && option.tutorialHighlight &&
           tutorial->getHighlights(getGame()).contains(*option.tutorialHighlight);
     );

@@ -10,6 +10,7 @@ struct WorkshopItem {
   WorkshopItem& setTutorialHighlight(TutorialHighlight);
   ItemType SERIAL(type);
   string SERIAL(name);
+  string SERIAL(pluralName);
   ViewId SERIAL(viewId);
   CostInfo SERIAL(cost);
   string SERIAL(description);
@@ -20,7 +21,7 @@ struct WorkshopItem {
   optional<TechId> SERIAL(techId);
   optional<TutorialHighlight> SERIAL(tutorialHighlight);
   int SERIAL(indexInWorkshop);
-  SERIALIZE_ALL(type, name, viewId, cost, number, batchSize, workNeeded, state, techId, description, tutorialHighlight, indexInWorkshop)
+  SERIALIZE_ALL(type, name, pluralName, viewId, cost, number, batchSize, workNeeded, state, techId, description, tutorialHighlight, indexInWorkshop)
 };
 
 

@@ -1506,8 +1506,6 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo& info, const opti
     auto line = gui.getListBuilder();
     line.addElem(gui.viewObject(elem.viewId), 35);
     line.addElem(gui.label(elem.name, elem.unavailable ? Color::GRAY : Color::WHITE), 10);
-    if (elem.number > 1)
-      line.addBackElem(gui.label(toString(elem.number) + "x"), 35);
     line.addBackElem(gui.alignment(GuiFactory::Alignment::RIGHT, drawCost(*elem.price)), 80);
     SGuiElem guiElem = line.buildHorizontalList();
     if (elem.tutorialHighlight)
@@ -1556,8 +1554,7 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo& info, const opti
     line.addBackElem(gui.stack(
         gui.uiHighlightMouseOver(Color::GREEN),
         gui.button(getButtonCallback({UserInputId::WORKSHOP_ITEM_ACTION,
-            WorkshopQueuedActionInfo{i, ItemAction::CHANGE_NUMBER}})),
-        gui.label(toString(elem.number) + "x")), 35);
+            WorkshopQueuedActionInfo{i, ItemAction::CHANGE_NUMBER}}))), 35);
     line.addBackElem(gui.alignment(GuiFactory::Alignment::RIGHT, drawCost(*elem.price)), 80);
     lines2.addElem(gui.stack(
         gui.bottomMargin(5,

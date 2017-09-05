@@ -9,6 +9,7 @@ WorkshopItem WorkshopItem::fromType(ItemType type, double workNeeded, CostInfo c
   return {
     type,
     item->getName(),
+    item->getName(true),
     item->getViewObject().id(),
     cost,
     item->getDescription(),
