@@ -33,7 +33,7 @@ class Workshops {
     EnumMap<CollectiveResourceId, int> SERIAL(debt);
   };
 
-  SERIALIZATION_DECL(Workshops);
+  SERIALIZATION_DECL(Workshops)
   Workshops(const EnumMap<WorkshopType, vector<Item>>&);
   Workshops(const Workshops&) = delete;
   Type& get(WorkshopType);

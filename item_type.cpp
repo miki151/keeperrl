@@ -31,13 +31,6 @@ ItemType::ItemType() {}
 ItemType& ItemType::operator = (const ItemType&) = default;
 ItemType& ItemType::operator = (ItemType&&) = default;
 
-bool ItemType::operator == (const ItemType& t) const {
-  return type == t.type;
-}
-
-bool ItemType::operator != (const ItemType& t) const {
-  return !(*this == t);
-}
 
 class FireScrollItem : public Item {
   public:

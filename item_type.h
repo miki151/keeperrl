@@ -12,7 +12,7 @@ class ItemAttributes;
 
 #define SIMPLE_ITEM(Name) \
   struct Name { \
-    COMPARE_ALL()\
+    SERIALIZE_EMPTY()\
     ITEM_TYPE_INTERFACE;\
   }
 
@@ -54,30 +54,30 @@ class ItemType {
   SIMPLE_ITEM(Robe);
 
   struct Scroll {
-    Effect effect;
-    COMPARE_ALL(effect)
+    Effect SERIAL(effect);
+    SERIALIZE_ALL(effect)
     ITEM_TYPE_INTERFACE;
   };
   SIMPLE_ITEM(FireScroll);
   struct Potion {
-    Effect effect;
-    COMPARE_ALL(effect)
+    Effect SERIAL(effect);
+    SERIALIZE_ALL(effect)
     ITEM_TYPE_INTERFACE;
   };
   struct Mushroom {
-    Effect effect;
-    COMPARE_ALL(effect)
+    Effect SERIAL(effect);
+    SERIALIZE_ALL(effect)
     ITEM_TYPE_INTERFACE;
   };
   struct Amulet {
-    LastingEffect lastingEffect;
-    COMPARE_ALL(lastingEffect)
+    LastingEffect SERIAL(lastingEffect);
+    SERIALIZE_ALL(lastingEffect)
     ITEM_TYPE_INTERFACE;
   };
   SIMPLE_ITEM(DefenseAmulet);
   struct Ring {
-    LastingEffect lastingEffect;
-    COMPARE_ALL(lastingEffect)
+    LastingEffect SERIAL(lastingEffect);
+    SERIALIZE_ALL(lastingEffect)
     ITEM_TYPE_INTERFACE;
   };
 
@@ -95,8 +95,8 @@ class ItemType {
     ITEM_TYPE_INTERFACE;
   };
   struct TrapItem {
-    TrapType trapType;
-    COMPARE_ALL(trapType)
+    TrapType SERIAL(trapType);
+    SERIALIZE_ALL(trapType)
     ITEM_TYPE_INTERFACE;
   };
   SIMPLE_ITEM(AutomatonItem);
@@ -122,8 +122,6 @@ class ItemType {
     return type.contains<T>();
   }
 
-  bool operator == (const ItemType&) const;
-  bool operator != (const ItemType&) const;
   template <class Archive>
   void serialize(Archive&, const unsigned int);
 
