@@ -505,7 +505,7 @@ void Position::fireDamage(double amount) {
   for (auto furniture : modFurniture())
     furniture->fireDamage(*this, amount);
   if (WCreature creature = getCreature())
-    creature->fireDamage(amount);
+    creature->affectByFire(amount);
   for (WItem it : getItems())
     it->fireDamage(amount, *this);
 }

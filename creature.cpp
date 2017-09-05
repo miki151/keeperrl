@@ -1030,24 +1030,34 @@ void Creature::heal(double amount) {
   updateViewObject();
 }
 
-void Creature::fireDamage(double amount) {
-  if (!isAffected(LastingEffect::FIRE_RESISTANT))
-    getBody().fireDamage(this, amount);
+void Creature::affectByFire(double amount) {
+  if (!isAffected(LastingEffect::FIRE_RESISTANT) &&
+      getBody().affectByFire(this, amount)) {
+    thirdPerson(getName().the() + " burns to death");
+    secondPerson("You burn to death");
+    dieWithReason("burnt to death");
+  }
 }
 
 void Creature::affectBySilver() {
-  if (getBody().affectBySilver(this))
+  if (getBody().affectBySilver(this)) {
+    you(MsgType::DIE_OF, "silver damage");
     dieWithAttacker(lastAttacker);
+  }
 }
 
 void Creature::affectByAcid() {
-  if (getBody().affectByAcid(this))
+  if (getBody().affectByAcid(this)) {
+    you(MsgType::ARE, "dissolved by acid");
     dieWithReason("dissolved by acid");
+  }
 }
 
 void Creature::poisonWithGas(double amount) {
-  if (getBody().affectByPoisonGas(this, amount))
+  if (getBody().affectByPoisonGas(this, amount)) {
+    you(MsgType::DIE_OF, "gas poisoning");
     dieWithReason("poisoned with gas");
+  }
 }
 
 void Creature::setHeld(WCreature c) {
