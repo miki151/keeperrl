@@ -51,9 +51,9 @@ void GuiElem::setPreferredBounds(Vec2 origin) {
 GuiElem::~GuiElem() {
 }
 
-class Button : public GuiElem {
+class ButtonElem : public GuiElem {
   public:
-  Button(function<void(Rectangle, Vec2)> f) : fun(f) {}
+  ButtonElem(function<void(Rectangle, Vec2)> f) : fun(f) {}
 
   virtual bool onLeftClick(Vec2 pos) override {
     auto bounds = getBounds();
@@ -132,9 +132,9 @@ SDL_Keysym GuiFactory::getKey(SDL_Keycode code) {
   return ret;
 }
 
-class ButtonKey : public Button {
+class ButtonKey : public ButtonElem {
   public:
-  ButtonKey(function<void(Rectangle)> f, SDL_Keysym key, bool cap) : Button([f](Rectangle b, Vec2) { f(b);}),
+  ButtonKey(function<void(Rectangle)> f, SDL_Keysym key, bool cap) : ButtonElem([f](Rectangle b, Vec2) { f(b);}),
       hotkey(key), capture(cap) {}
 
   virtual bool onKeyPressed2(SDL_Keysym key) override {
@@ -201,15 +201,15 @@ SGuiElem GuiFactory::button(function<void()> fun, SDL_Keysym hotkey, bool captur
 }
 
 SGuiElem GuiFactory::buttonRect(function<void(Rectangle)> fun) {
-  return SGuiElem(new Button([=](Rectangle b, Vec2) {fun(b);}));
+  return SGuiElem(new ButtonElem([=](Rectangle b, Vec2) {fun(b);}));
 }
 
 SGuiElem GuiFactory::button(function<void()> fun) {
-  return SGuiElem(new Button([=](Rectangle, Vec2) { fun(); }));
+  return SGuiElem(new ButtonElem([=](Rectangle, Vec2) { fun(); }));
 }
 
 SGuiElem GuiFactory::buttonPos(function<void (Rectangle, Vec2)> fun) {
-  return make_shared<Button>(fun);
+  return make_shared<ButtonElem>(fun);
 }
 
 namespace {
@@ -1058,7 +1058,7 @@ SGuiElem GuiFactory::keyHandlerChar(function<void ()> fun, char hotkey, bool cap
 
 SGuiElem GuiFactory::buttonChar(function<void()> fun, char hotkey, bool capture, bool useAltIfWasdOn) {
   return stack(
-      SGuiElem(new Button([=](Rectangle, Vec2) { fun(); })),
+      SGuiElem(new ButtonElem([=](Rectangle, Vec2) { fun(); })),
       SGuiElem(keyHandlerChar(fun, hotkey, capture, useAltIfWasdOn)));
 }
 

@@ -31,16 +31,19 @@
 #include "body.h"
 #include "attack_trigger.h"
 #include "immigration.h"
+#include "village_behaviour.h"
+
 
 typedef EnumVariant<AttackTriggerId, TYPES(int),
         ASSIGN(int, AttackTriggerId::ENEMY_POPULATION, AttackTriggerId::GOLD)> OldTrigger;
 
-SERIALIZATION_CONSTRUCTOR_IMPL(VillageControl);
+SERIALIZATION_CONSTRUCTOR_IMPL(VillageControl)
 
 SERIALIZE_DEF(VillageControl, SUBCLASS(CollectiveControl), SUBCLASS(EventListener), villain, victims, myItems, stolenItemCount, attackSizes, entries, maxEnemyPower)
 REGISTER_TYPE(ListenerTemplate<VillageControl>)
 
-VillageControl::VillageControl(Private, WCollective col, optional<VillageBehaviour> v) : CollectiveControl(col), villain(v) {
+VillageControl::VillageControl(Private, WCollective col, optional<VillageBehaviour> v) : CollectiveControl(col),
+    villain(v) {
   for (Position v : col->getTerritory().getAll())
     for (WItem it : v.getItems())
       myItems.insert(it);
@@ -207,7 +210,7 @@ void VillageControl::update(bool currentlyActive) {
       double prob = villain->getAttackProbability(this) / updateFreq;
       if (Random.chance(prob)) {
         vector<WCreature> fighters;
-        fighters = getCollective()->getCreatures({MinionTrait::FIGHTER}, {MinionTrait::SUMMONED});
+        fighters = getCollective()->getCreatures(MinionTrait::FIGHTER);
         /*if (getCollective()->getGame()->isSingleModel())
           fighters = filter(fighters, [this] (WConstCreature c) {
               return contains(getCollective()->getTerritory().getAll(), c->getPosition()); });*/

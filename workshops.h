@@ -2,9 +2,10 @@
 
 #include "resource_id.h"
 #include "workshop_type.h"
-#include "workshop_item.h"
 
+class WorkshopItem;
 class Collective;
+class CostInfo;
 
 class Workshops {
   public:
@@ -32,7 +33,7 @@ class Workshops {
     EnumMap<CollectiveResourceId, int> SERIAL(debt);
   };
 
-  SERIALIZATION_DECL(Workshops);
+  SERIALIZATION_DECL(Workshops)
   Workshops(const EnumMap<WorkshopType, vector<Item>>&);
   Workshops(const Workshops&) = delete;
   Type& get(WorkshopType);

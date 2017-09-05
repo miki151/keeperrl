@@ -28,7 +28,7 @@ class CreatureFactory;
 class DirEffectType;
 
 
-#define EFFECT_TYPE_INTERFACE\
+#define EFFECT_TYPE_INTERFACE \
   void applyToCreature(WCreature, WCreature attacker = nullptr) const;\
   string getName() const;\
   string getDescription() const
@@ -103,11 +103,14 @@ class Effect {
   Effect(const Effect&) = default;
   Effect(Effect&) = default;
   Effect(Effect&&) = default;
-  Effect() {}
+  Effect();
   Effect& operator = (const Effect&) = default;
   Effect& operator = (Effect&&) = default;
 
-  COMPARE_ALL(effect)
+  bool operator == (const Effect&) const;
+  bool operator != (const Effect&) const;
+  template <class Archive>
+  void serialize(Archive&, const unsigned int);
 
   void applyToCreature(WCreature, WCreature attacker = nullptr) const;
   string getName() const;
@@ -135,7 +138,7 @@ class Effect {
   static void emitPoisonGas(Position, double amount, bool msg);
 
   private:
-  EffectType effect;
+  EffectType SERIAL(effect);
 };
 
 

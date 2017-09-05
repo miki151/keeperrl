@@ -79,6 +79,9 @@
 #include "build_info.h"
 #include "vision.h"
 #include "external_enemies.h"
+#include "resource_info.h"
+#include "workshop_item.h"
+
 
 template <class Archive>
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
@@ -102,7 +105,7 @@ static vector<string> getHints() {
     "Morale affects minion productivity and chances of fleeing from battle.",
  //   "You can turn these hints off in the settings (F2).",
 //    "Killing a leader greatly lowers the morale of his tribe and stops immigration.",
-    "Your minions' morale is boosted when they are commanded by the Keeper.",
+//    "Your minions' morale is boosted when they are commanded by the Keeper.",
   };
 }
 
@@ -146,27 +149,29 @@ optional<TeamId> PlayerControl::getCurrentTeam() const {
 }
 
 void PlayerControl::onControlledKilled(WConstCreature victim) {
-  vector<CreatureInfo> team;
   TeamId currentTeam = *getCurrentTeam();
-  for (auto c : getTeams().getMembers(currentTeam))
-    if (c != victim)
-      team.push_back(CreatureInfo(c));
-  if (team.empty())
-    return;
-  optional<Creature::Id> newLeader;
-  if (team.size() == 1)
-    newLeader = team[0].uniqueId;
-  else
-    newLeader = getView()->chooseCreature("Choose new team leader:", team, "Order team back to base");
-  if (newLeader) {
-    if (WCreature c = getCreature(*newLeader)) {
-      getTeams().setLeader(currentTeam, c);
-      if (!c->isPlayer())
-        c->pushController(createMinionController(c));
+  if (getTeams().getLeader(currentTeam) == victim) {
+    vector<CreatureInfo> team;
+    for (auto c : getTeams().getMembers(currentTeam))
+      if (c != victim)
+        team.push_back(CreatureInfo(c));
+    if (team.empty())
       return;
+    optional<Creature::Id> newLeader;
+    if (team.size() == 1)
+      newLeader = team[0].uniqueId;
+    else
+      newLeader = getView()->chooseCreature("Choose new team leader:", team, "Order team back to base");
+    if (newLeader) {
+      if (WCreature c = getCreature(*newLeader)) {
+        getTeams().setLeader(currentTeam, c);
+        if (!c->isPlayer())
+          c->pushController(createMinionController(c));
+        return;
+      }
     }
+    leaveControl();
   }
-  leaveControl();
 }
 
 void PlayerControl::onSunlightVisibilityChanged() {
@@ -832,7 +837,8 @@ void PlayerControl::fillMinions(CollectiveInfo& info) const {
 
 ItemInfo PlayerControl::getWorkshopItem(const WorkshopItem& option) const {
   return CONSTRUCT(ItemInfo,
-      c.name = option.name;
+      c.number = option.number * option.batchSize;
+      c.name = c.number == 1 ? option.name : toString(c.number) + " " + option.pluralName;
       c.viewId = option.viewId;
       c.price = getCostObj(option.cost * option.number);
       if (option.techId && !getCollective()->hasTech(*option.techId)) {
@@ -842,7 +848,6 @@ ItemInfo PlayerControl::getWorkshopItem(const WorkshopItem& option) const {
       c.description = option.description;
       c.productionState = option.state.value_or(0);
       c.actions = LIST(ItemAction::REMOVE, ItemAction::CHANGE_NUMBER);
-      c.number = option.number * option.batchSize;
       c.tutorialHighlight = tutorial && option.tutorialHighlight &&
           tutorial->getHighlights(getGame()).contains(*option.tutorialHighlight);
     );

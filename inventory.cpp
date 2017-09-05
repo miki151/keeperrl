@@ -88,9 +88,9 @@ WItem Inventory::getItemById(UniqueEntity<Item>::Id id) const {
     return nullptr;
 }
 
-static vector<WItem> empty;
 
 const vector<WItem>& Inventory::getItems(ItemIndex index) const {
+  static vector<WItem> empty;
   if (isEmpty()) {
     return empty;
   }

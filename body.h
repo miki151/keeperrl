@@ -70,7 +70,7 @@ class Body {
 
   bool tick(WConstCreature);
   bool heal(WCreature, double amount);
-  void fireDamage(WCreature, double amount);
+  bool affectByFire(WCreature, double amount);
   bool isIntrinsicallyAffected(LastingEffect) const;
   bool affectByPoisonGas(WCreature, double amount);
   void affectByTorture(WCreature);

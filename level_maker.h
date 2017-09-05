@@ -16,75 +16,17 @@
 #pragma once
 
 #include "util.h"
-#include "creature_factory.h"
-#include "item_factory.h"
-#include "furniture_factory.h"
-#include "item_type.h"
 
-enum class BuildingId { WOOD, MUD, BRICK, WOOD_CASTLE, DUNGEON, DUNGEON_SURFACE};
 
 class ItemFactory;
 class CollectiveBuilder;
 class LevelBuilder;
 class StairKey;
+class FurnitureFactory;
+class CreatureFactory;
+struct SettlementInfo;
 
 class LevelGenException {
-};
-
-enum class SettlementType {
-  VILLAGE,
-  SMALL_VILLAGE,
-  FORREST_VILLAGE,
-  FOREST,
-  CASTLE,
-  CASTLE2,
-  COTTAGE,
-  FORREST_COTTAGE,
-  TOWER,
-  WITCH_HOUSE,
-  MINETOWN,
-  ANT_NEST,
-  SMALL_MINETOWN,
-  VAULT,
-  CAVE,
-  SPIDER_CAVE,
-  ISLAND_VAULT,
-  ISLAND_VAULT_DOOR,
-  CEMETERY,
-  SWAMP,
-  MOUNTAIN_LAKE,
-};
-
-RICH_ENUM(BiomeId,
-  GRASSLAND,
-  FORREST,
-  MOUNTAIN
-);
-
-struct StockpileInfo {
-  enum Type { GOLD, MINERALS } type;
-  int number;
-};
-
-struct SettlementInfo {
-  SettlementType type;
-  optional<CreatureFactory> creatures;
-  int numCreatures;
-  optional<pair<CreatureFactory, int>> neutralCreatures;
-  optional<string> locationName;
-  TribeId tribe;
-  optional<string> race;
-  BuildingId buildingId;
-  vector<StairKey> downStairs;
-  vector<StairKey> upStairs;
-  vector<StockpileInfo> stockpiles;
-  optional<CreatureId> guardId;
-  optional<ItemType> elderLoot;
-  optional<ItemFactory> shopFactory;
-  CollectiveBuilder* collective;
-  optional<FurnitureFactory> furniture;
-  optional<FurnitureFactory> outsideFeatures;
-  bool closeToPlayer;
 };
 
 class FilePath;
@@ -92,6 +34,7 @@ class FilePath;
 class LevelMaker {
   public:
   virtual void make(LevelBuilder* builder, Rectangle area) = 0;
+  virtual ~LevelMaker() {}
 
   static PLevelMaker cryptLevel(RandomGen&, SettlementInfo);
   static PLevelMaker topLevel(RandomGen&, optional<CreatureFactory> wildlife, vector<SettlementInfo> village, int width,

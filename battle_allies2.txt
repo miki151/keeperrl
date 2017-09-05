@@ -1,0 +1,2 @@
+1
+OGRE M12 ChainArmor,BattleAxe,IronBoots,IronHelm,LeatherGloves

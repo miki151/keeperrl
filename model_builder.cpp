@@ -2,7 +2,6 @@
 #include "model_builder.h"
 #include "level.h"
 #include "tribe.h"
-#include "item_type.h"
 #include "inventory.h"
 #include "collective_builder.h"
 #include "options.h"
@@ -30,6 +29,8 @@
 #include "technology.h"
 #include "keybinding.h"
 #include "tutorial.h"
+#include "settlement_info.h"
+#include "enemy_info.h"
 
 using namespace std::chrono;
 
@@ -538,7 +539,7 @@ PModel ModelBuilder::splashModel(const FilePath& splashPath) {
 PModel ModelBuilder::battleModel(const FilePath& levelPath, CreatureFactory allies, CreatureFactory enemies,
     int maxEnemies) {
   auto m = Model::create();
-  auto stream = levelPath.createInputStream();
+  ifstream stream(levelPath.getPath());
   Table<char> level = *SokobanInput::readTable(stream);
   WLevel l = m->buildTopLevel(
       LevelBuilder(meter, Random, level.getBounds().width(), level.getBounds().height(), "Battle", false, 1.0),

@@ -54,8 +54,8 @@ void Monster::onBump(WCreature c) {
     action.perform(c);
 }
 
-static MessageGenerator messageGenerator(MessageGenerator::THIRD_PERSON);
 
 MessageGenerator& Monster::getMessageGenerator() const {
+  static MessageGenerator messageGenerator(MessageGenerator::THIRD_PERSON);
   return messageGenerator;
 }

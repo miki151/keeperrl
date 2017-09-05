@@ -3,6 +3,7 @@
 #include "collective.h"
 #include "item_factory.h"
 #include "item.h"
+#include "workshop_item.h"
 
 Workshops::Workshops(const EnumMap<WorkshopType, vector<Item>>& options)
     : types([&options] (WorkshopType t) { return Type(options[t]);}) {
@@ -16,13 +17,13 @@ const Workshops::Type& Workshops::get(WorkshopType type) const {
   return types[type];
 }
 
-SERIALIZATION_CONSTRUCTOR_IMPL(Workshops);
-SERIALIZE_DEF(Workshops, types);
+SERIALIZATION_CONSTRUCTOR_IMPL(Workshops)
+SERIALIZE_DEF(Workshops, types)
 
 Workshops::Type::Type(const vector<Item>& o) : options(o) {}
 
-SERIALIZATION_CONSTRUCTOR_IMPL2(Workshops::Type, Type);
-SERIALIZE_DEF(Workshops::Type, options, queued, debt);
+SERIALIZATION_CONSTRUCTOR_IMPL2(Workshops::Type, Type)
+SERIALIZE_DEF(Workshops::Type, options, queued, debt)
 
 
 const vector<Workshops::Item>& Workshops::Type::getOptions() const {
@@ -32,7 +33,7 @@ const vector<Workshops::Item>& Workshops::Type::getOptions() const {
 void Workshops::Type::stackQueue() {
   vector<Item> tmp;
   for (auto& elem : queued)
-    if (!tmp.empty() && elem == tmp.back())
+    if (!tmp.empty() && elem.indexInWorkshop == tmp.back().indexInWorkshop)
       tmp.back().number += elem.number;
     else
       tmp.push_back(elem);
@@ -45,9 +46,10 @@ void Workshops::Type::addDebt(CostInfo cost) {
 
 void Workshops::Type::queue(int index, int count) {
   CHECK(count > 0);
-  const Item& newElem = options[index];
+  Item newElem = options[index];
+  newElem.indexInWorkshop = index;
   addDebt(newElem.cost * count);
-  if (!queued.empty() && queued.back() == newElem)
+  if (!queued.empty() && queued.back().indexInWorkshop == index)
     queued.back().number += count;
   else {
     queued.push_back(newElem);

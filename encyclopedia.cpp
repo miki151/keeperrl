@@ -26,8 +26,6 @@
 #include "build_info.h"
 
 namespace {
-void bestiary(View* view, int lastInd) {
-}
 
 template<class T>
 string combine(const vector<T*>& v) {
@@ -88,25 +86,6 @@ void skills(View* view, int lastInd = 0) {
     return;
   skill(view, s[*index]);
   skills(view, *index);
-}
-
-void room(View* view, BuildInfo::RoomInfo& info) {
-  string text = info.description;
-  for (auto& req : info.requirements)
-    text += "\n \nRequires: " + BuildInfo::getRequirementText(req) + ".";
-  view->presentText(info.name, text);
-}
-
-void rooms(View* view, int lastInd = 0) {
-  vector<ListElem> options;
-  vector<BuildInfo::RoomInfo> roomList = BuildInfo::getRoomInfo();
-  for (auto& elem : roomList)
-    options.push_back(elem.name);
-  auto index = view->chooseFromList("Rooms", options, lastInd);
-  if (!index)
-    return;
-  room(view, roomList[*index]);
-  rooms(view, *index);
 }
 
 void spells(View* view) {

@@ -71,8 +71,8 @@ CEREAL_SERIALIZE_FUNCTION_NAME(Archive& ar1, cereal::SizeTag<T> & t) {
 }
 
 // register archives for polymorphic support
-CEREAL_REGISTER_ARCHIVE(TextOutputArchive)
-CEREAL_REGISTER_ARCHIVE(TextInputArchive)
+//CEREAL_REGISTER_ARCHIVE(TextOutputArchive)
+//CEREAL_REGISTER_ARCHIVE(TextInputArchive)
 
 // tie input and output archives together
 CEREAL_SETUP_ARCHIVE_TRAITS(TextInputArchive, TextOutputArchive)

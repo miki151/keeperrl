@@ -89,7 +89,6 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   const vector<WCreature>& getCreatures(SpawnType) const;
   const vector<WCreature>& getCreatures(MinionTrait) const;
   vector<WCreature> getCreaturesAnyOf(EnumSet<MinionTrait>) const;
-  vector<WCreature> getCreatures(EnumSet<MinionTrait> with, EnumSet<MinionTrait> without = {}) const;
   bool hasTrait(WConstCreature, MinionTrait) const;
   bool hasAnyTrait(WConstCreature, EnumSet<MinionTrait>) const;
   void setTrait(WCreature c, MinionTrait);

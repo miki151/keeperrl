@@ -18,10 +18,10 @@
 #include "collective_control.h"
 #include "enum_variant.h"
 #include "entity_set.h"
-#include "village_behaviour.h"
 #include "event_listener.h"
 
 class Task;
+class VillageBehaviour;
 
 class VillageControl : public CollectiveControl, public EventListener<VillageControl> {
   public:
@@ -55,7 +55,7 @@ class VillageControl : public CollectiveControl, public EventListener<VillageCon
   bool canPerformAttack(bool currentlyActive);
   void acceptImmigration();
 
-  optional<VillageBehaviour> SERIAL(villain);
+  HeapAllocated<optional<VillageBehaviour>> SERIAL(villain);
 
   double SERIAL(victims) = 0;
   EntitySet<Item> SERIAL(myItems);

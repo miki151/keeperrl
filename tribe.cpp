@@ -31,9 +31,10 @@ Tribe::Tribe(TribeId d, bool p) : diplomatic(p), friendlyTribes(TribeSet::getFul
 }
 
 double Tribe::getStanding(WConstCreature c) const {
-  if (!friendlyTribes.contains(c->getTribeId()))
+  auto tribeId = c->getTribeId();
+  if (!friendlyTribes.contains(tribeId))
     return -1;
-  if (c->getTribe() == this)
+  if (tribeId == id)
     return 1;
   if (auto res = standing.getMaybe(c)) 
     return *res;

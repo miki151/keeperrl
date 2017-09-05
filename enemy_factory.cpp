@@ -5,6 +5,8 @@
 #include "attack_trigger.h"
 #include "external_enemies.h"
 #include "immigrant_info.h"
+#include "settlement_info.h"
+#include "enemy_info.h"
 
 EnemyFactory::EnemyFactory(RandomGen& r) : random(r) {
 }

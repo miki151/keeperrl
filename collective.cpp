@@ -47,6 +47,10 @@
 #include "collective_warning.h"
 #include "immigration.h"
 #include "trap_type.h"
+#include "creature_factory.h"
+#include "resource_info.h"
+#include "workshop_item.h"
+
 
 template <class Archive>
 void Collective::serialize(Archive& ar, const unsigned int version) {
@@ -118,29 +122,6 @@ optional<EnemyId> Collective::getEnemyId() const {
 Collective::~Collective() {
 }
 
-namespace {
-
-class LeaderControlOverride : public Creature::MoraleOverride {
-  public:
-  LeaderControlOverride(WCollective col) : collective(col) {}
-
-  virtual optional<double> getMorale(WConstCreature creature) override {
-    for (auto team : collective->getTeams().getContaining(collective->getLeader()))
-      if (collective->getTeams().isActive(team) && collective->getTeams().contains(team, creature) &&
-          collective->getTeams().getLeader(team) == collective->getLeader())
-        return 1;
-    return none;
-  }
-
-  SERIALIZATION_CONSTRUCTOR(LeaderControlOverride);
-  SERIALIZE_ALL(SUBCLASS(Creature::MoraleOverride), collective)
-
-  private:
-  WCollective SERIAL(collective);
-};
-
-}
-
 void Collective::addCreatureInTerritory(PCreature creature, EnumSet<MinionTrait> traits) {
   for (Position pos : Random.permutation(territory->getAll()))
     if (pos.canEnter(creature.get())) {
@@ -175,9 +156,6 @@ void Collective::addCreature(WCreature c, EnumSet<MinionTrait> traits) {
     bySpawnType[*spawnType].push_back(c);
   for (WItem item : c->getEquipment().getItems())
     CHECK(minionEquipment->tryToOwn(c, item));
-  if (traits.contains(MinionTrait::FIGHTER)) {
-    c->setMoraleOverride(Creature::PMoraleOverride(new LeaderControlOverride(this)));
-  }
   control->onMemberAdded(c);
 }
 
@@ -191,7 +169,6 @@ void Collective::removeCreature(WCreature c) {
   for (MinionTrait t : ENUM_ALL(MinionTrait))
     if (byTrait[t].contains(c))
       byTrait[t].removeElement(c);
-  c->setMoraleOverride(nullptr);
 }
 
 void Collective::banishCreature(WCreature c) {
@@ -699,26 +676,6 @@ vector<WCreature> Collective::getCreaturesAnyOf(EnumSet<MinionTrait> trait) cons
   return ret;
 }
 
-vector<WCreature> Collective::getCreatures(EnumSet<MinionTrait> with, EnumSet<MinionTrait> without) const {
-  vector<WCreature> ret;
-  for (WCreature c : creatures) {
-    bool ok = true;
-    for (MinionTrait t : with)
-      if (!hasTrait(c, t)) {
-        ok = false;
-        break;
-      }
-    for (MinionTrait t : without)
-      if (hasTrait(c, t)) {
-        ok = false;
-        break;
-      }
-    if (ok)
-      ret.push_back(c);
-  }
-  return ret;
-}
-
 double Collective::getKillManaScore(WConstCreature victim) const {
   return 0;
 /*  int ret = victim->getDifficultyPoints() / 3;
@@ -824,9 +781,6 @@ void Collective::onMinionKilled(WCreature victim, WCreature killer) {
   control->onMemberKilled(victim, killer);
   if (hasTrait(victim, MinionTrait::PRISONER) && killer && getCreatures().contains(killer))
     returnResource({ResourceId::PRISONER_HEAD, 1});
-  if (victim == leader)
-    for (WCreature c : getCreatures(MinionTrait::SUMMONED)) // shortcut to get rid of summons when summonner dies
-      c->disappear().perform(c);
   if (!hasTrait(victim, MinionTrait::FARM_ANIMAL)) {
     decreaseMoraleForKill(killer, victim);
     if (killer)
@@ -1552,13 +1506,6 @@ void Collective::freeTeamMembers(TeamId id) {
   }
 }
 
-static optional<Vec2> getAdjacentWall(Position pos) {
-  for (Position p : pos.neighbors4(Random))
-    if (p.isWall())
-      return pos.getDir(p);
-  return none;
-}
-
 Zones& Collective::getZones() {
   return *zones;
 }
@@ -1588,6 +1535,5 @@ int Collective::getMaxPopulation() const {
   return ret;
 }
 
-REGISTER_TYPE(LeaderControlOverride);
-REGISTER_TYPE(Collective);
+REGISTER_TYPE(Collective)
 REGISTER_TYPE(ListenerTemplate<Collective>)

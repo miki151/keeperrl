@@ -11,6 +11,7 @@
 #include "retired_games.h"
 #include "view_object.h"
 #include "name_generator.h"
+#include "creature_factory.h"
 
 
 optional<Vec2> CampaignBuilder::considerStaticPlayerPos(const Campaign& campaign) {

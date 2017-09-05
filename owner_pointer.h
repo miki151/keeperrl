@@ -241,15 +241,15 @@ vector<WeakPointer<T>> getWeakPointers(const vector<OwnerPointer<T>>& v) {
 }
 
 #define DEF_UNIQUE_PTR(T) class T;\
-  typedef unique_ptr<T> P##T;
+  typedef unique_ptr<T> P##T
 
 #define DEF_SHARED_PTR(T) class T;\
-  typedef shared_ptr<T> S##T;
+  typedef shared_ptr<T> S##T
 
 #define DEF_OWNER_PTR(T) class T;\
   typedef OwnerPointer<T> P##T; \
   typedef WeakPointer<T> W##T; \
-  typedef WeakPointer<const T> WConst##T;
+  typedef WeakPointer<const T> WConst##T
 
 DEF_OWNER_PTR(Item);
 DEF_UNIQUE_PTR(LevelMaker);

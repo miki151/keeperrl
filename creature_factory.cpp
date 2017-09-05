@@ -548,7 +548,7 @@ PCreature CreatureFactory::getIllusion(WCreature creature) {
   auto ret = makeOwner<Creature>(viewObject, creature->getTribeId(), CATTR(
           c.viewId = ViewId::ROCK; //overriden anyway
           c.illusionViewObject = creature->getViewObject();
-          (*c.illusionViewObject)->removeModifier(ViewObject::Modifier::INVISIBLE);
+          c.illusionViewObject->removeModifier(ViewObject::Modifier::INVISIBLE);
           c.attr[AttrType::SPEED] = 100;
           c.body = Body::nonHumanoidSpirit(Body::Size::LARGE).setDeathSound(SoundId::MISSED_ATTACK);
           c.attr[AttrType::DAMAGE] = 20; // just so it's not ignored by creatures
@@ -1037,6 +1037,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.name = "Keeper";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_MALE)->getNext());
           c.name->useFullTitle();
+          c.spawnType = SpawnType::HUMANOID;
           c.skills.setValue(SkillId::SORCERY, 0.2);
           c.skills.setValue(SkillId::LABORATORY, 0.2);
           c.maxLevelIncrease[ExperienceType::MELEE] = 7;
@@ -1222,7 +1223,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
         c.spells->add(SpellId::BLAST);
         c.chatReactionFriendly = "\"Kneel before us!\""_s;
         c.chatReactionHostile = "\"Face your death!\""_s;
-        c.name = "Demon dweller";
+        c.name = "demon dweller";
         c.name->setFirst(NameGenerator::get(NameGeneratorId::DEMON)->getNext());
         c.name->setGroup("pack");
         );
@@ -1239,7 +1240,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
         c.spells->add(SpellId::BLAST);
         c.chatReactionFriendly = "\"Kneel before us!\""_s;
         c.chatReactionHostile = "\"Face your death!\""_s;
-        c.name = "Demon Lord";
+        c.name = "demon Lord";
         c.name->setFirst(NameGenerator::get(NameGeneratorId::DEMON)->getNext());
         c.name->setGroup("pack");
         );

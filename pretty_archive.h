@@ -165,8 +165,9 @@ CEREAL_SERIALIZE_FUNCTION_NAME(Archive& ar1, cereal::SizeTag<T> & t) {
 }
 
 // register archives for polymorphic support
-CEREAL_REGISTER_ARCHIVE(PrettyOutputArchive)
-CEREAL_REGISTER_ARCHIVE(PrettyInputArchive)
+// Commented out because it causes linker errors in item_type.cpp
+//CEREAL_REGISTER_ARCHIVE(PrettyOutputArchive)
+//CEREAL_REGISTER_ARCHIVE(PrettyInputArchive)
 
 // tie input and output archives together
 CEREAL_SETUP_ARCHIVE_TRAITS(PrettyInputArchive, PrettyOutputArchive)

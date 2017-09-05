@@ -113,10 +113,6 @@ vector<pair<MusicType, FilePath>> getMusicTracks(const DirectoryPath& path, bool
   };
 }
 
-static void fail() {
-  *((int*) 0x1234) = 0; // best way to fail
-}
-
 static int keeperMain(po::parser&);
 static po::parser getCommandLineFlags();
 
@@ -226,7 +222,9 @@ static po::parser getCommandLineFlags() {
 #include <SDL2/SDL.h>
 
 int main(int argc, char* argv[]) {
+#ifndef RELEASE
   StackPrinter::initialize(argv[0], time(0));
+#endif
   std::set_terminate(fail);
   po::parser flags = getCommandLineFlags();
   if (!flags.parseArgs(argc, argv))

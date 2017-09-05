@@ -30,6 +30,7 @@
 #include "model.h"
 #include "item_type.h"
 #include "pretty_printing.h"
+#include "creature_factory.h"
 
 MainLoop::MainLoop(View* v, Highscores* h, FileSharing* fSharing, const DirectoryPath& freePath,
     const DirectoryPath& uPath, Options* o, Jukebox* j, SokobanInput* soko, bool singleThread,
@@ -492,7 +493,7 @@ void MainLoop::modelGenTest(int numTries, const vector<string>& types, RandomGen
 
 void MainLoop::battleTest(int numTries, const FilePath& levelPath, const FilePath& battleInfoPath, string enemy,
     RandomGen& random) {
-  auto input = battleInfoPath.createInputStream();
+  ifstream input(battleInfoPath.getPath());
   int cnt = 0;
   auto enemySplit = split(enemy, {','});
   auto enemyId = EnumInfo<CreatureId>::fromString(enemySplit[0]);
@@ -700,8 +701,8 @@ PGame MainLoop::loadPrevious() {
   if (savedGame) {
     PGame ret = loadGame(userPath.file(savedGame->filename));
     if (ret) {
-    if (eraseSave())
-      changeSaveType(userPath.file(savedGame->filename), GameSaveType::AUTOSAVE);
+      if (eraseSave())
+        changeSaveType(userPath.file(savedGame->filename), GameSaveType::AUTOSAVE);
     } else
       view->presentText("Sorry", "Failed to load the save file :(");
     return ret;

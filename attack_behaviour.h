@@ -10,6 +10,9 @@ enum class AttackBehaviourId {
   CAMP_AND_SPAWN,
 };
 
-typedef EnumVariant<AttackBehaviourId, TYPES(int, CreatureFactory),
+class AttackBehaviour : public EnumVariant<AttackBehaviourId, TYPES(int, CreatureFactory),
         ASSIGN(int, AttackBehaviourId::KILL_MEMBERS),
-        ASSIGN(CreatureFactory, AttackBehaviourId::CAMP_AND_SPAWN)> AttackBehaviour;
+        ASSIGN(CreatureFactory, AttackBehaviourId::CAMP_AND_SPAWN)> {
+  public:
+  using EnumVariant::EnumVariant;
+};

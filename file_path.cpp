@@ -34,10 +34,6 @@ FilePath FilePath::changeSuffix(const string& current, const string& newSuf) con
         fullPath.substr(0, fullPath.size() - current.size()) + newSuf);
 }
 
-ifstream FilePath::createInputStream() const {
-  return ifstream(getPath());
-}
-
 FilePath::FilePath(const DirectoryPath& dir, const string& f) : filename(f), fullPath(dir.get() + "/"_s + f) {
 }
 

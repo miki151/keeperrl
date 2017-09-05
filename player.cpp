@@ -52,6 +52,7 @@
 #include "message_generator.h"
 #include "message_buffer.h"
 #include "pretty_printing.h"
+#include "item_type.h"
 
 template <class Archive>
 void Player::serialize(Archive& ar, const unsigned int) {

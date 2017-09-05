@@ -3,7 +3,6 @@
 #include "creature_factory.h"
 #include "attack_behaviour.h"
 #include "task_callback.h"
-#include "item_type.h"
 
 struct ExternalEnemy {
   CreatureFactory SERIAL(factory);

@@ -157,8 +157,8 @@ string CreatureAttributes::getDescription() const {
   if (!isSpecial)
     return "";
   string attack;
-  if (*attackEffect)
-    attack = " It has a " + (*attackEffect)->getName() + " attack.";
+  if (attackEffect)
+    attack = " It has a " + attackEffect->getName() + " attack.";
   return body->getDescription() + ". " + attack;
 }
 
