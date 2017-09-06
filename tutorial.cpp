@@ -64,6 +64,7 @@ enum class Tutorial::State {
   LOOT_VILLAGE,
   LEAVE_CONTROL,
   SUMMARY1,
+  RESEARCH,
   SUMMARY2,
   FINISHED,
 };
@@ -165,6 +166,9 @@ bool Tutorial::canContinue(WConstGame game) const {
     case State::LEAVE_CONTROL:
       return game->getPlayerControl()->getControlled().empty();
     case State::SUMMARY1:
+      return true;
+    case State::RESEARCH:
+      return collective->getTechnologies().size() > collective->getConfig().getInitialTech().size();
     case State::SUMMARY2:
       return true;
     case State::FINISHED:
@@ -293,6 +297,10 @@ string Tutorial::getMessage() const {
     case State::SUMMARY1:
       return "You are back in the real-time mode. Your minions will now return to base and resume their normal routine. "
           "Once they are back, they will drop all the loot for the imps to take care of.";
+    case State::RESEARCH:
+      return "You have received 100 mana for your conquest. Mana is the main source of progress in the game and allows "
+          "you to research new technologies or increase your population by building statues or a throne.\n \n"
+          "Go ahead and research something in your library.";
     case State::SUMMARY2:
       return "Thank you for completing the tutorial! We hope that we have made it a bit easier for you to get into "
           "KeeperRL. We would love to hear your comments, so please drop by on the forums on Steam or at keeperrl.com "
@@ -412,6 +420,9 @@ vector<Vec2> Tutorial::getHighlightedSquaresLow(WConstGame game) const {
     }
     case State::SCHEDULE_WORKSHOP_ITEMS:
       return collective->getConstructions().getBuiltPositions(FurnitureType::WORKSHOP).transform(
+          [](const Position& pos) { return pos.getCoord(); });
+    case State::RESEARCH:
+      return collective->getConstructions().getBuiltPositions(FurnitureType::BOOKCASE_WOOD).transform(
           [](const Position& pos) { return pos.getCoord(); });
     default:
       return {};
