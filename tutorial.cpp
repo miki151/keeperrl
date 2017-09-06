@@ -58,6 +58,7 @@ enum class Tutorial::State {
   CREATE_TEAM,
   CONTROL_TEAM,
   CONTROL_MODE_MOVEMENT,
+  FULL_CONTROL,
   DISCOVER_VILLAGE,
   KILL_VILLAGE,
   LOOT_VILLAGE,
@@ -146,6 +147,8 @@ bool Tutorial::canContinue(WConstGame game) const {
     case State::CONTROL_TEAM:
       return isTeam(collective) && !game->getPlayerControl()->getControlled().empty();
     case State::CONTROL_MODE_MOVEMENT:
+      return true;
+    case State::FULL_CONTROL:
       return true;
     case State::DISCOVER_VILLAGE:
       return collective->isKnownVillain(villain);
@@ -271,6 +274,10 @@ string Tutorial::getMessage() const {
           "the arrow keys or by left-clicking on the map. You can scroll the map by dragging it with the right "
           "mouse button.\n \n"
           "Notice the rest of your team following you.";
+    case State::FULL_CONTROL:
+      return "You can take control over all team members in a tactical situation. To do this click on the appropriate "
+          "command in the upper left corner or press [G]. Clicking again will go back to controlling only the team "
+          "leader.";
     case State::DISCOVER_VILLAGE:
       return "It's time to discover the whereabouts of the nearby human village. Click on the minimap in the upper "
           "right corner. The approximate location of the village is marked by a '?'. Take your team there.";
@@ -282,7 +289,7 @@ string Tutorial::getMessage() const {
       return "There is a nice pile of treasure in one of the houses. Pick it all up by entering the tiles containing "
           "the loot, and clicking in the menu in the upper left corner.";
     case State::LEAVE_CONTROL:
-      return "To relinquish control of your team, choose the appropriate action in the upper left corner.";
+      return "To relinquish control of your team, choose the appropriate command in the upper left corner.";
     case State::SUMMARY1:
       return "You are back in the real-time mode. Your minions will now return to base and resume their normal routine. "
           "Once they are back, they will drop all the loot for the imps to take care of.";
@@ -297,8 +304,8 @@ string Tutorial::getMessage() const {
 }
 
 EnumSet<TutorialHighlight> Tutorial::getHighlights(WConstGame game) const {
-  if (canContinue(game))
-    return {};
+  /*if (canContinue(game))
+    return {};*/
   switch (state) {
     case State::DIG_ROOM:
     case State::CUT_TREES:
@@ -327,6 +334,8 @@ EnumSet<TutorialHighlight> Tutorial::getHighlights(WConstGame game) const {
       return {TutorialHighlight::EQUIPMENT_SLOT_WEAPON};
     case State::CREATE_TEAM:
       return {TutorialHighlight::NEW_TEAM};
+    case State::FULL_CONTROL:
+      return {TutorialHighlight::FULL_CONTROL};
     case State::CONTROL_TEAM:
       return {TutorialHighlight::CONTROL_TEAM};
     case State::LEAVE_CONTROL:
@@ -409,7 +418,7 @@ vector<Vec2> Tutorial::getHighlightedSquaresLow(WConstGame game) const {
   }
 }
 
-Tutorial::Tutorial() : state(State::WELCOME) {
+Tutorial::Tutorial() : state(State::CREATE_TEAM) {
 
 }
 
