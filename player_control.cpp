@@ -1315,13 +1315,14 @@ static bool showEfficiency(FurnitureType type) {
 }
 
 void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
-  Position position(pos, getCollective()->getLevel());
+  auto collective = getCollective();
+  Position position(pos, collective->getLevel());
   bool canSeePos = canSee(position);
   getSquareViewIndex(position, canSeePos, index);
   if (!canSeePos)
     if (auto memIndex = getMemory().getViewIndex(position))
       index.mergeFromMemory(*memIndex);
-  if (getCollective()->getTerritory().contains(position))
+  if (collective->getTerritory().contains(position))
     if (auto furniture = position.getFurniture(FurnitureLayer::MIDDLE)) {
       if (furniture->getUsageType() == FurnitureUsageType::STUDY || CollectiveConfig::getWorkshopType(furniture->getType()))
         index.setHighlight(HighlightType::CLICKABLE_FURNITURE);
@@ -1331,27 +1332,27 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
       if (draggedCreature)
         if (WCreature c = getCreature(*draggedCreature))
           if (auto task = MinionTasks::getTaskFor(c, furniture->getType()))
-            if (c->getAttributes().getMinionTasks().isAvailable(getCollective(), c, *task))
+            if (c->getAttributes().getMinionTasks().isAvailable(collective, c, *task))
               index.setHighlight(HighlightType::CREATURE_DROP);
       if (showEfficiency(furniture->getType()) && index.hasObject(ViewLayer::FLOOR))
         index.getObject(ViewLayer::FLOOR).setAttribute(ViewObject::Attribute::EFFICIENCY,
-            getCollective()->getTileEfficiency().getEfficiency(position));
+            collective->getTileEfficiency().getEfficiency(position));
     }
-  if (getCollective()->isMarked(position))
-    index.setHighlight(getCollective()->getMarkHighlight(position));
-  if (getCollective()->hasPriorityTasks(position))
+  if (collective->isMarked(position))
+    index.setHighlight(collective->getMarkHighlight(position));
+  if (collective->hasPriorityTasks(position))
     index.setHighlight(HighlightType::PRIORITY_TASK);
   if (!index.hasObject(ViewLayer::CREATURE))
-    for (auto task : getCollective()->getTaskMap().getTasks(position))
+    for (auto task : collective->getTaskMap().getTasks(position))
       if (auto viewId = task->getViewId())
           index.insert(ViewObject(*viewId, ViewLayer::CREATURE));
   if (position.isTribeForbidden(getTribeId()))
     index.setHighlight(HighlightType::FORBIDDEN_ZONE);
-  getCollective()->getZones().setHighlights(position, index);
+  collective->getZones().setHighlights(position, index);
   if (rectSelection
       && pos.inRectangle(Rectangle::boundingBox({rectSelection->corner1, rectSelection->corner2})))
     index.setHighlight(rectSelection->deselect ? HighlightType::RECT_DESELECTION : HighlightType::RECT_SELECTION);
-  const ConstructionMap& constructions = getCollective()->getConstructions();
+  const ConstructionMap& constructions = collective->getConstructions();
   if (constructions.containsTrap(position))
     index.insert(getTrapObject(constructions.getTrap(position).getType(),
           constructions.getTrap(position).isArmed()));
@@ -1359,7 +1360,7 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
     if (auto f = constructions.getFurniture(position, layer))
       if (!f->isBuilt())
         index.insert(getConstructionObject(f->getFurnitureType()));
-  /*if (surprises.count(position) && !getCollective()->getKnownTiles().isKnown(position))
+  /*if (surprises.count(position) && !collective->getKnownTiles().isKnown(position))
     index.insert(ViewObject(ViewId::UNKNOWN_MONSTER, ViewLayer::CREATURE, "Surprise"));*/
 }
 
