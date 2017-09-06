@@ -168,7 +168,6 @@ class Renderer {
   void drawTile(Vec2 pos, TileCoord coord, Vec2 size, Color = Color::WHITE, SpriteOrientation orientation = {});
   void setScissor(optional<Rectangle>);
   void addQuad(const Rectangle&, Color);
-  void drawQuads();
   static Color getBleedingColor(const ViewObject&);
   Vec2 getSize();
   bool loadTilesFromDir(const DirectoryPath& path, Vec2 size);
@@ -217,12 +216,6 @@ class Renderer {
   bool monkey = false;
   deque<Event> eventQueue;
   bool genReleaseEvent = false;
-  void addRenderElem(function<void()>);
-  //sf::Text& getTextObject();
-  stack<int> layerStack;
-  int currentLayer = 0;
-  array<vector<function<void()>>, 2> renderList;
-//  vector<Vertex> quads;
   Vec2 mousePos;
   struct FontSet {
     int textFont;
@@ -236,8 +229,6 @@ class Renderer {
   bool fullscreen;
   int fullscreenMode;
   int zoom = 1;
-  optional<Rectangle> scissor;
-  void setGlScissor(optional<Rectangle>);
   bool cursorEnabled = true;
   void reloadCursors();
   FilePath cursorPath;

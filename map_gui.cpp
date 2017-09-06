@@ -769,7 +769,6 @@ void MapGui::renderHighlights(Renderer& renderer, Vec2 size, milliseconds curren
     if ((currentTimeReal.count() / 1000) % 2 == 0)
       renderTexturedHighlight(renderer, pos, size, Color(255, 255, 0, lowHighlights ? 120 : 40));
   }
-  renderer.drawQuads();
 }
 
 void MapGui::renderAnimations(Renderer& renderer, milliseconds currentTimeReal) {
@@ -866,7 +865,6 @@ void MapGui::renderMapObjects(Renderer& renderer, Vec2 size, milliseconds curren
     if (layer == ViewLayer::FLOOR_BACKGROUND)
       renderExtraBorders(renderer, currentTimeReal);
   }
-  renderer.drawQuads();
 }
 
 void MapGui::drawCreatureHighlight(Renderer& renderer, Vec2 pos, Vec2 size, Color color) {
