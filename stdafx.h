@@ -79,23 +79,6 @@
 #include <atomic>
 #include <condition_variable>
 
-#ifdef DEBUG_STL
-
-#include <debug/vector>
-//#include <debug/string>
-#include <string>
-#include <debug/deque>
-#include <debug/set>
-#include <debug/map>
-using __gnu_debug::vector;
-using __gnu_debug::map;
-using __gnu_debug::set;
-using __gnu_debug::deque;
-//using __gnu_debug::string;
-using std::string;
-
-#else
-
 #include <string>
 #include <deque>
 #include <map>
@@ -105,11 +88,10 @@ using std::multiset;
 using std::deque;
 using std::string;
 
-#endif
-
 using std::queue;
 using std::unique_ptr;
-using std::make_unique;
+template<typename T, typename... Args>
+std::unique_ptr<T> unique(Args&&... args) { return std::unique_ptr<T>(new T(std::forward<Args>(args)...)); }
 using std::shared_ptr;
 using std::weak_ptr;
 using std::make_shared;
