@@ -86,7 +86,6 @@ Renderer::TileCoord::TileCoord() : TileCoord(Vec2(0, 0), -1) {
 
 static void checkOpenglError() {
   auto error = SDL::glGetError();
-  string s;
   CHECK(error == GL_NO_ERROR) << (int)error;
 }
 
@@ -407,13 +406,12 @@ void Renderer::setScissor(optional<Rectangle> s) {
     SDL::glDisable(GL_SCISSOR_TEST);
 }
 
-void Renderer::setTopLayer() {
-  SDL::glPushMatrix();
-  SDL::glTranslated(0, 0, 1);
-}
-
-void Renderer::popLayer() {
-  SDL::glPopMatrix();
+void Renderer::setDepth(double depth) {
+  SDL::glTranslated(0, 0, -currentDepth);
+  checkOpenglError();
+  currentDepth = depth;
+  SDL::glTranslated(0, 0, depth);
+  checkOpenglError();
 }
 
 Vec2 Renderer::getSize() {
@@ -459,8 +457,6 @@ void Renderer::enableCustomCursor(bool state) {
 }
 
 void Renderer::initOpenGL() {
-  bool success = true;
-  SDL::GLenum error = GL_NO_ERROR;
   //Initialize Projection Matrix
   SDL::glMatrixMode( GL_PROJECTION );
   SDL::glLoadIdentity();
@@ -473,7 +469,10 @@ void Renderer::initOpenGL() {
   SDL::glEnable(GL_BLEND);
   SDL::glEnable(GL_TEXTURE_2D);
   SDL::glEnable(GL_DEPTH_TEST);
+  SDL::glAlphaFunc( GL_GREATER, 0.1 );
+  SDL::glEnable(GL_ALPHA_TEST );
   SDL::glDepthFunc(GL_LEQUAL);
+  SDL::glDepthRange(-1, 1);
   SDL::glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
   CHECK(SDL::glGetError() == GL_NO_ERROR);
   reloadCursors();

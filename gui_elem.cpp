@@ -2004,9 +2004,9 @@ class RenderLayer : public GuiStack {
   RenderLayer(SGuiElem content) : GuiStack(std::move(content)) {}
 
   virtual void render(Renderer& r) override {
-    r.setTopLayer();
+    r.setDepth(1);
     elems[0]->render(r);
-    r.popLayer();
+    r.setDepth(0);
   }
 };
 
@@ -2034,10 +2034,10 @@ class Tooltip2 : public GuiElem {
       Vec2 pos = positionFun(getBounds());
       pos.x = min(pos.x, r.getSize().x - size.x);
       pos.y = min(pos.y, r.getSize().y - size.y);
-      r.setTopLayer();
+      r.setDepth(1);
       elem->setBounds(Rectangle(pos, pos + size));
       elem->render(r);
-      r.popLayer();
+      r.setDepth(0);
     }
   }
 
@@ -2081,13 +2081,13 @@ class Tooltip : public GuiElem {
         Vec2 pos = getBounds().bottomLeft() + tooltipOffset;
         pos.x = min(pos.x, r.getSize().x - size.x);
         pos.y = min(pos.y, r.getSize().y - size.y);
-        r.setTopLayer();
+        r.setDepth(1);
         background->setBounds(Rectangle(pos, pos + size));
         background->render(r);
         for (int i : All(text))
           r.drawText(Color::WHITE, pos.x + tooltipHMargin, pos.y + tooltipVMargin + i * tooltipLineHeight,
               text[i]);
-        r.popLayer();
+        r.setDepth(0);
       }
     } else 
       lastTimeOut = clock->getRealMillis();

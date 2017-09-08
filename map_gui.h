@@ -45,7 +45,7 @@ class MapGui : public GuiElem {
     function<void(TeamId, Vec2)> teamDroppedFun;
   };
   MapGui(Callbacks, Clock*, Options*, GuiFactory*);
-
+  virtual ~MapGui();
   virtual void render(Renderer&) override;
   virtual bool onLeftClick(Vec2) override;
   virtual bool onRightClick(Vec2) override;

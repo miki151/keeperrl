@@ -182,9 +182,7 @@ class Renderer {
   void waitEvent(Event&);
   Vec2 getMousePos();
 
-  void setTopLayer();
-  void popLayer();
-
+  void setDepth(double depth);
   void startMonkey();
   bool isMonkey();
 
@@ -237,5 +235,6 @@ class Renderer {
   SDL::SDL_Cursor* cursor;
   SDL::SDL_Cursor* cursorClicked;
   SDL::SDL_Surface* loadScaledSurface(const FilePath& path, double scale);
+  double currentDepth = 0;
 };
 
