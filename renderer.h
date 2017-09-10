@@ -172,7 +172,6 @@ class Renderer {
   Vec2 getSize();
   bool loadTilesFromDir(const DirectoryPath& path, Vec2 size);
   bool loadTilesFromDir(const DirectoryPath&, vector<Texture>&, Vec2 size, int setWidth);
-  bool loadAltTilesFromDir(const DirectoryPath&, Vec2 altSize);
 
   void drawAndClearBuffer();
   void resize(int width, int height);
@@ -191,7 +190,6 @@ class Renderer {
   TileCoord getTileCoord(const string&);
   Vec2 getNominalSize() const;
   vector<Texture> tiles;
-  vector<Texture> altTiles;
 
   static void putPixel(SDL::SDL_Surface*, Vec2, Color);
 
@@ -199,7 +197,6 @@ class Renderer {
   friend class Texture;
   optional<Texture> textTexture;
   Renderer(const Renderer&);
-  vector<Vec2> altTileSize;
   vector<Vec2> tileSize;
   Vec2 nominalSize;
   map<string, TileCoord> tileCoords;

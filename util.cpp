@@ -188,8 +188,12 @@ int Vec2::dotProduct(Vec2 a, Vec2 b) {
   return a.x * b.x + a.y * b.y;
 }
 
-vector<Vec2> Vec2::directions8() {
-  return Vec2(0, 0).neighbors8();
+static const vector<Vec2> dir8 {
+  Vec2(0, -1), Vec2(0, 1), Vec2(1, 0), Vec2(-1, 0), Vec2(1, -1), Vec2(-1, -1), Vec2(1, 1), Vec2(-1, 1)
+};
+
+const vector<Vec2>& Vec2::directions8() {
+  return dir8;
 }
 
 vector<Vec2> Vec2::neighbors8() const {
@@ -197,8 +201,12 @@ vector<Vec2> Vec2::neighbors8() const {
       Vec2(x - 1, y - 1), Vec2(x - 1, y + 1)};
 }
 
-vector<Vec2> Vec2::directions4() {
-  return Vec2(0, 0).neighbors4();
+static const vector<Vec2> dir4 {
+  Vec2(0, -1), Vec2(0, 1), Vec2(1, 0), Vec2(-1, 0)
+};
+
+const vector<Vec2>& Vec2::directions4() {
+  return dir4;
 }
 
 vector<Vec2> Vec2::neighbors4() const {
@@ -230,24 +238,30 @@ bool Vec2::isCardinal8() const {
 }
 
 Dir Vec2::getCardinalDir() const {
-  if (x == 0 && y == -1)
-    return Dir::N;
-  if (x == 1 && y == -1)
-    return Dir::NE;
-  if (x == 1 && y == 0)
-    return Dir::E;
-  if (x == 1 && y == 1)
-    return Dir::SE;
-  if (x == 0 && y == 1)
-    return Dir::S;
-  if (x == -1 && y == 1)
-    return Dir::SW;
-  if (x == -1 && y == 0)
-    return Dir::W;
-  if (x == -1 && y == -1)
-    return Dir::NW;
+  switch (x) {
+    case 0:
+      switch (y) {
+        case -1: return Dir::N;
+        case 1: return Dir::S;
+      }
+      break;
+    case 1:
+      switch (y) {
+        case 0: return Dir::E;
+        case -1: return Dir::NE;
+        case 1: return Dir::SE;
+      }
+      break;
+    case -1:
+      switch (y) {
+        case 0: return Dir::W;
+        case -1: return Dir::NW;
+        case 1: return Dir::SW;
+      }
+      break;
+  }
   FATAL << "Not cardinal dir " << *this;
-  return Dir::N;
+  return {};
 }
 
 vector<Vec2> Vec2::corners() {

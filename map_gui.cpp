@@ -48,28 +48,6 @@ static Color getFireColor() {
   return Color(200 + Random.get(-fireVar, fireVar), Random.get(fireVar), Random.get(fireVar), 150);
 }
 
-MapGui::ViewIdMap::ViewIdMap(Rectangle bounds) : ids(bounds, {}) {
-}
-
-void MapGui::ViewIdMap::add(Vec2 pos, ViewId id) {
-  if (ids.isDirty(pos))
-    ids.getDirtyValue(pos).insert(id);
-  else
-    ids.setValue(pos, {id});
-}
-
-void MapGui::ViewIdMap::remove(Vec2 pos) {
-  ids.clear(pos);
-}
-
-bool MapGui::ViewIdMap::has(Vec2 pos, ViewId id) {
-  return ids.getValue(pos).contains(id);
-}
-
-void MapGui::ViewIdMap::clear() {
-  ids.clear();
-}
-
 void MapGui::setButtonViewId(ViewId id) {
   buttonViewId = id;
 }
@@ -157,7 +135,7 @@ Color MapGui::getHighlightColor(const ViewIndex& index, HighlightType type) {
   }
 }
 
-optional<ViewId> getConnectionId(ViewId id) {
+static ViewId getConnectionId(ViewId id) {
   switch (id) {
     case ViewId::BLACK_WALL:
     case ViewId::WOOD_WALL:
@@ -173,20 +151,16 @@ optional<ViewId> getConnectionId(ViewId id) {
   }
 }
 
-vector<Vec2>& getConnectionDirs(ViewId id) {
-  static vector<Vec2> v4 = Vec2::directions4();
-  static vector<Vec2> v8 = Vec2::directions8();
-  switch (id) {
-    case ViewId::DORM:
-    case ViewId::CEMETERY:
-    case ViewId::BEAST_LAIR:
-    case ViewId::MOUNTAIN:
-    case ViewId::DUNGEON_WALL:
-    case ViewId::GOLD_ORE:
-    case ViewId::IRON_ORE:
-    case ViewId::STONE: return v8;
-    default: return v4;
+DirSet MapGui::getConnectionSet(Vec2 tilePos, ViewId id) {
+  DirSet ret;
+  int cnt = 0;
+  for (Vec2 dir : Vec2::directions8()) {
+    Vec2 pos = tilePos + dir;
+    if (pos.inRectangle(levelBounds) && connectionMap[pos].contains(getConnectionId(id)))
+      ret.insert((Dir) cnt);
+    ++cnt;
   }
+  return ret;
 }
 
 void MapGui::setSoftCenter(Vec2 pos) {
@@ -503,7 +477,9 @@ void MapGui::drawHealthBar(Renderer& renderer, Vec2 pos, Vec2 size, double healt
         Color::f(min(1.0, 2 - health * 2), min(1.0, 2 * health), 0).transparency(200));
 }
 
-void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& object, Vec2 size,
+
+
+void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& object, Vec2 size, Vec2 movement,
     Vec2 tilePos, milliseconds curTimeReal) {
   auto id = object.id();
   const Tile& tile = Tile::getTile(id, spriteMode);
@@ -524,16 +500,9 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
     }
   if (spriteMode && tile.hasSpriteCoord()) {
     DirSet dirs;
-    DirSet borderDirs;
-    if (auto connectionId = getConnectionId(id))
-      for (Vec2 dir : getConnectionDirs(id)) {
-        if ((tilePos + dir).inRectangle(levelBounds) && connectionMap.has(tilePos + dir, *connectionId))
-          dirs.insert(dir.getCardinalDir());
-        else
-          borderDirs.insert(dir.getCardinalDir());
-      }
+    if (tile.hasAnyConnections() || tile.hasAnyCorners())
+      dirs = getConnectionSet(tilePos, id);
     Vec2 move;
-    Vec2 movement = getMovementOffset(object, size, currentTimeGame, curTimeReal, true);
     drawCreatureHighlights(renderer, object, pos + movement, size, curTimeReal);
     if (object.layer() == ViewLayer::CREATURE || tile.roundShadow) {
       static auto coord = renderer.getTileCoord("round_shadow");
@@ -548,7 +517,7 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
           Renderer::SpriteOrientation((bool) (tilePos.getHash() % 2), (bool) (tilePos.getHash() % 4 > 1)));
     else
       renderer.drawTile(pos + move, tile.getSpriteCoord(dirs), size, color);
-    if (tile.hasCorners()) {
+    if (tile.hasAnyCorners()) {
       for (auto coord : tile.getCornerCoords(dirs))
         renderer.drawTile(pos + move, coord, size, color);
     }
@@ -668,10 +637,10 @@ void MapGui::renderExtraBorders(Renderer& renderer, milliseconds currentTimeReal
     for (ViewId id : extraBorderPos.getValue(wpos)) {
       const Tile& tile = Tile::getTile(id, true);
       for (ViewId underId : tile.getExtraBorderIds())
-        if (connectionMap.has(wpos, underId)) {
+        if (connectionMap[wpos].contains(underId)) {
           DirSet dirs = 0;
           for (Vec2 v : Vec2::directions4())
-            if ((wpos + v).inRectangle(levelBounds) && connectionMap.has(wpos + v, id))
+            if ((wpos + v).inRectangle(levelBounds) && connectionMap[wpos + v].contains(id))
               dirs.insert(v.getCardinalDir());
           if (auto coord = tile.getExtraBorderCoord(dirs)) {
             Vec2 pos = projectOnScreen(wpos);
@@ -841,15 +810,15 @@ void MapGui::renderMapObjects(Renderer& renderer, Vec2 size, milliseconds curren
         fogOfWar.setValue(wpos, true);
     }
   }
-  auto drawLayer = [&](auto objectFun, auto setDepth) {
+  auto drawLayer = [&](auto objectFun, auto setDepthGetMovement) {
     for (Vec2 wpos : allTiles) {
       Vec2 pos = topLeftCorner + (wpos - allTiles.topLeft()).mult(size);
       if (objects[wpos] && !objects[wpos]->noObjects()) {
         const ViewIndex& index = *objects[wpos];
         const ViewObject* object = objectFun(index);
         if (object) {
-          setDepth(*object, wpos.y);
-          drawObjectAbs(renderer, pos, *object, size, wpos, currentTimeReal);
+          auto movement = setDepthGetMovement(*object, wpos.y);
+          drawObjectAbs(renderer, pos, *object, size, movement, wpos, currentTimeReal);
           if (lastHighlighted.tilePos == wpos && !lastHighlighted.creaturePos && object->layer() != ViewLayer::CREATURE)
             lastHighlighted.object = *object;
         }
@@ -868,6 +837,7 @@ void MapGui::renderMapObjects(Renderer& renderer, Vec2 size, milliseconds curren
         Vec2 movement = getMovementOffset(object, size, currentTimeGame, currentTimeReal, true);
         int offset = movement.y > 0 ? 1 : 0;
         renderer.setDepth(getSpriteDepth(allTiles.getYRange(), posY + offset, layer));
+        return movement;
       });
   else
     drawLayer([&](const ViewIndex& index) {
@@ -875,6 +845,7 @@ void MapGui::renderMapObjects(Renderer& renderer, Vec2 size, milliseconds curren
     },
     [&](const ViewObject&, int) {
       renderer.setDepth(0);
+      return Vec2(0, 0);
     });
 
   renderHighlights(renderer, size, currentTimeReal, true);
@@ -1003,7 +974,7 @@ void MapGui::updateObject(Vec2 pos, CreatureView* view, milliseconds currentTime
   if (index.hasObject(ViewLayer::FLOOR) || index.hasObject(ViewLayer::FLOOR_BACKGROUND))
     index.setHighlight(HighlightType::NIGHT, 1.0 - view->getLevel()->getLight(pos));
   lastSquareUpdate[pos] = currentTime;
-  connectionMap.remove(pos);
+  connectionMap[pos].clear();
   shadowed.erase(pos + Vec2(0, 1));
   if (index.hasObject(ViewLayer::FLOOR)) {
     auto& object = index.getObject(ViewLayer::FLOOR);
@@ -1011,16 +982,20 @@ void MapGui::updateObject(Vec2 pos, CreatureView* view, milliseconds currentTime
     if (tile.wallShadow) {
       shadowed.insert(pos + Vec2(0, 1));
     }
-    if (auto id = getConnectionId(object.id()))
-      connectionMap.add(pos, *id);
+    if (tile.hasAnyConnections() || tile.hasExtraBorders() || tile.hasAnyCorners())
+      connectionMap[pos].insert(getConnectionId(object.id()));
   }
   if (index.hasObject(ViewLayer::FLOOR_BACKGROUND)) {
-    if (auto id = getConnectionId(index.getObject(ViewLayer::FLOOR_BACKGROUND).id()))
-      connectionMap.add(pos, *id);
+    auto& object = index.getObject(ViewLayer::FLOOR_BACKGROUND);
+    auto& tile = Tile::getTile(object.id());
+    if (tile.hasAnyConnections() || tile.hasExtraBorders() || tile.hasAnyCorners())
+      connectionMap[pos].insert(getConnectionId(object.id()));
   }
-  if (auto viewId = index.getHiddenId())
-    if (auto id = getConnectionId(*viewId))
-      connectionMap.add(pos, *id);
+  if (auto viewId = index.getHiddenId()) {
+    auto& tile = Tile::getTile(*viewId);
+    if (tile.hasAnyConnections() || tile.hasExtraBorders() || tile.hasAnyCorners())
+      connectionMap[pos].insert(getConnectionId(*viewId));
+  }
 }
 
 double MapGui::getDistanceToEdgeRatio(Vec2 pos) {

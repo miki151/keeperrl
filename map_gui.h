@@ -84,7 +84,7 @@ class MapGui : public GuiElem {
 
   private:
   void updateObject(Vec2, CreatureView*, milliseconds currentTime);
-  void drawObjectAbs(Renderer&, Vec2 pos, const ViewObject&, Vec2 size, Vec2 tilePos, milliseconds currentTimeReal);
+  void drawObjectAbs(Renderer&, Vec2 pos, const ViewObject&, Vec2 size, Vec2 movement, Vec2 tilePos, milliseconds currentTimeReal);
   void drawCreatureHighlights(Renderer&, const ViewObject&, Vec2 pos, Vec2 sz, milliseconds currentTimeReal);
   void drawCreatureHighlight(Renderer&, Vec2 pos, Vec2 size, Color);
   void drawSquareHighlight(Renderer&, Vec2 pos, Vec2 size);
@@ -149,19 +149,8 @@ class MapGui : public GuiElem {
     double startTimeGame;
   };
   optional<ScreenMovement> screenMovement;
-  class ViewIdMap {
-    public:
-    ViewIdMap(Rectangle bounds);
-    void add(Vec2 pos, ViewId);
-    void remove(Vec2 pos);
-    bool has(Vec2 pos, ViewId);
-    void clear();
-
-    private:
-    DirtyTable<EnumSet<ViewId>> ids;
-  };
+  Table<EnumSet<ViewId>> connectionMap;
   bool keyScrolling = false;
-  ViewIdMap connectionMap;
   bool mouseUI = false;
   bool lockedView = true;
   optional<milliseconds> lastRightClick;
@@ -189,4 +178,5 @@ class MapGui : public GuiElem {
     bool softScroll;
   };
   optional<CenteredCreatureInfo> centeredCreaturePosition;
+  DirSet getConnectionSet(Vec2 tilePos, ViewId);
 };

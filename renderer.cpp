@@ -579,10 +579,6 @@ void Renderer::drawTile(Vec2 pos, TileCoord coord, Vec2 size, Color color, Sprit
   Vec2 tileSize = sz.mult(size).div(nominalSize);
   if (sz.y > nominalSize.y)
     off.y *= 2;
-  if (altTileSize.size() > coord.texNum && size == altTileSize[coord.texNum]) {
-    sz = size;
-    tex = &altTiles[coord.texNum];
-  }
   Vec2 coordPos = coord.pos.mult(sz);
   drawSprite(pos + off, coordPos, sz, *tex, tileSize, color, orientation);
 }
@@ -638,11 +634,6 @@ void Renderer::drawViewObject(Vec2 pos, const ViewObject& object) {
 void Renderer::drawAsciiBackground(ViewId id, Rectangle bounds) {
   if (!Tile::getTile(id, true).hasSpriteCoord())
     drawFilledRectangle(bounds, Color::BLACK);
-}
-
-bool Renderer::loadAltTilesFromDir(const DirectoryPath& path, Vec2 altSize) {
-  altTileSize.push_back(altSize);
-  return loadTilesFromDir(path, altTiles, altSize, 720 * altSize.x / tileSize.back().x);
 }
 
 bool Renderer::loadTilesFromDir(const DirectoryPath& path, Vec2 size) {
