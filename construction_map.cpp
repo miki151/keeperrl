@@ -56,27 +56,23 @@ FurnitureLayer ConstructionMap::FurnitureInfo::getLayer() const {
   return Furniture::getLayer(type);
 }
 
-optional<const ConstructionMap::FurnitureInfo&> ConstructionMap::getFurniture(Position pos, FurnitureLayer layer) const {
-  return getReferenceMaybe(furniture[layer], pos);
+const optional<ConstructionMap::FurnitureInfo>& ConstructionMap::getFurniture(Position pos, FurnitureLayer layer) const {
+  return furniture[layer].get(pos);
 }
 
 void ConstructionMap::setTask(Position pos, FurnitureLayer layer, UniqueEntity<Task>::Id id) {
-  modFurniture(pos, layer)->setTask(id);
-}
-
-optional<ConstructionMap::FurnitureInfo&> ConstructionMap::modFurniture(Position pos, FurnitureLayer layer) {
-  return getReferenceMaybe(furniture[layer], pos);
+  furniture[layer].getOrFail(pos)->setTask(id);
 }
 
 void ConstructionMap::removeFurniture(Position pos, FurnitureLayer layer) {
-  auto& info = furniture[layer].at(pos);
-  auto type = info.getFurnitureType();
-  if (!info.isBuilt()) {
+  auto& info = furniture[layer].getOrFail(pos);
+  auto type = info->getFurnitureType();
+  if (!info->isBuilt()) {
     --unbuiltCounts[type];
-    addDebt(-info.getCost());
+    addDebt(-info->getCost());
   }
   furniturePositions[type].erase(pos);
-  furniture[layer].erase(pos);
+  info = none;
   allFurniture.removeElement({pos, layer});
   pos.setNeedsRenderUpdate(true);
 }
@@ -86,7 +82,7 @@ void ConstructionMap::addDebt(const CostInfo& cost) {
 }
 
 void ConstructionMap::onFurnitureDestroyed(Position pos, FurnitureLayer layer) {
-  if (auto info = modFurniture(pos, layer)) {
+  if (auto& info = furniture[layer].getOrInit(pos)) {
     if (info->isBuilt())
       addDebt(info->getCost());
     info->reset();
@@ -100,9 +96,9 @@ void ConstructionMap::onFurnitureDestroyed(Position pos, FurnitureLayer layer) {
 
 void ConstructionMap::addFurniture(Position pos, const FurnitureInfo& info) {
   auto layer = info.getLayer();
-  CHECK(!furniture[layer].count(pos));
+  CHECK(!furniture[layer].get(pos));
   allFurniture.push_back({pos, layer});
-  furniture[layer].emplace(pos, info);
+  furniture[layer].set(pos, info);
   pos.setNeedsRenderUpdate(true);
   if (info.isBuilt())
     furniturePositions[info.getFurnitureType()].insert(pos);
@@ -113,7 +109,7 @@ void ConstructionMap::addFurniture(Position pos, const FurnitureInfo& info) {
 }
 
 bool ConstructionMap::containsFurniture(Position pos, FurnitureLayer layer) const {
-  return furniture[layer].count(pos);
+  return !!furniture[layer].get(pos);
 }
 
 int ConstructionMap::getBuiltCount(FurnitureType type) const {
@@ -138,38 +134,36 @@ void ConstructionMap::onConstructed(Position pos, FurnitureType type) {
     addFurniture(pos, FurnitureInfo::getBuilt(type));
   furniturePositions[type].insert(pos);
   --unbuiltCounts[type];
-  if (furniture[layer].count(pos)) { // why this if?
-    auto& info = furniture[layer].at(pos);
+  if (furniture[layer].get(pos)) { // why this if?
+    auto& info = *furniture[layer].getOrInit(pos);
     info.setBuilt();
     addDebt(-info.getCost());
   }
 }
 
-const ConstructionMap::TrapInfo& ConstructionMap::getTrap(Position pos) const {
-  return traps.at(pos);
+const optional<ConstructionMap::TrapInfo>& ConstructionMap::getTrap(Position pos) const {
+  return traps.get(pos);
 }
 
-ConstructionMap::TrapInfo& ConstructionMap::getTrap(Position pos) {
-  return traps.at(pos);
+optional<ConstructionMap::TrapInfo>& ConstructionMap::getTrap(Position pos) {
+  return traps.getOrInit(pos);
 }
 
 void ConstructionMap::removeTrap(Position pos) {
-  traps.erase(pos);
+  traps.set(pos, none);
+  allTraps.removeElement(pos);
   pos.setNeedsRenderUpdate(true);
 }
 
 void ConstructionMap::addTrap(Position pos, const TrapInfo& info) {
-  CHECK(!containsTrap(pos));
-  traps.insert(make_pair(pos, info));
+  CHECK(!traps.get(pos));
+  traps.set(pos, info);
+  allTraps.push_back(pos);
   pos.setNeedsRenderUpdate(true);
 }
 
-bool ConstructionMap::containsTrap(Position pos) const {
-  return traps.count(pos);
-}
-
-const map<Position, ConstructionMap::TrapInfo>& ConstructionMap::getTraps() const {
-  return traps;
+const vector<Position>& ConstructionMap::getAllTraps() const {
+  return allTraps;
 }
 
 void ConstructionMap::TrapInfo::setArmed() {
@@ -215,7 +209,7 @@ SERIALIZATION_CONSTRUCTOR_IMPL2(ConstructionMap::TrapInfo, TrapInfo);
 
 template <class Archive>
 void ConstructionMap::serialize(Archive& ar, const unsigned int version) {
-  ar(debt, traps, furniture, furniturePositions, unbuiltCounts, allFurniture);
+  ar(debt, traps, furniture, furniturePositions, unbuiltCounts, allFurniture, allTraps);
 }
 
 SERIALIZABLE(ConstructionMap);

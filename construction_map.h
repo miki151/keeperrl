@@ -7,6 +7,7 @@
 #include "furniture_type.h"
 #include "furniture_layer.h"
 #include "resource_id.h"
+#include "position_map.h"
 
 class ConstructionMap {
   public:
@@ -52,7 +53,7 @@ class ConstructionMap {
     bool SERIAL(marked) = false;
   };
 
-  optional<const FurnitureInfo&> getFurniture(Position, FurnitureLayer) const;
+  const optional<FurnitureInfo>& getFurniture(Position, FurnitureLayer) const;
   void setTask(Position, FurnitureLayer, UniqueEntity<Task>::Id);
   void removeFurniture(Position, FurnitureLayer);
   void onFurnitureDestroyed(Position, FurnitureLayer);
@@ -63,27 +64,26 @@ class ConstructionMap {
   const set<Position>& getBuiltPositions(FurnitureType) const;
   void onConstructed(Position, FurnitureType);
 
-  const TrapInfo& getTrap(Position) const;
-  TrapInfo& getTrap(Position);
+  const optional<TrapInfo>& getTrap(Position) const;
+  optional<TrapInfo>& getTrap(Position);
   void removeTrap(Position);
   void addTrap(Position, const TrapInfo&);
-  bool containsTrap(Position) const;
 
   const vector<Position>& getSquares() const;
   const vector<pair<Position, FurnitureLayer>>& getAllFurniture() const;
-  const map<Position, TrapInfo>& getTraps() const;
+  const vector<Position>& getAllTraps() const;
   int getDebt(CollectiveResourceId) const;
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);
 
   private:
-  optional<FurnitureInfo&> modFurniture(Position, FurnitureLayer);
-  EnumMap<FurnitureLayer, map<Position, FurnitureInfo>> SERIAL(furniture);
+  EnumMap<FurnitureLayer, PositionMap<optional<FurnitureInfo>>> SERIAL(furniture);
   EnumMap<FurnitureType, set<Position>> SERIAL(furniturePositions);
   EnumMap<FurnitureType, int> SERIAL(unbuiltCounts);
   vector<pair<Position, FurnitureLayer>> SERIAL(allFurniture);
-  map<Position, TrapInfo> SERIAL(traps);
+  PositionMap<optional<TrapInfo>> SERIAL(traps);
+  vector<Position> SERIAL(allTraps);
   EnumMap<CollectiveResourceId, int> SERIAL(debt);
   void addDebt(const CostInfo&);
 };

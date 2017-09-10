@@ -1353,9 +1353,8 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
       && pos.inRectangle(Rectangle::boundingBox({rectSelection->corner1, rectSelection->corner2})))
     index.setHighlight(rectSelection->deselect ? HighlightType::RECT_DESELECTION : HighlightType::RECT_SELECTION);
   const ConstructionMap& constructions = collective->getConstructions();
-  if (constructions.containsTrap(position))
-    index.insert(getTrapObject(constructions.getTrap(position).getType(),
-          constructions.getTrap(position).isArmed()));
+  if (auto& trap = constructions.getTrap(position))
+    index.insert(getTrapObject(trap->getType(), trap->isArmed()));
   for (auto layer : ENUM_ALL(FurnitureLayer))
     if (auto f = constructions.getFurniture(position, layer))
       if (!f->isBuilt())
@@ -1933,7 +1932,7 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
     return;
   switch (building.buildType) {
     case BuildInfo::TRAP:
-        if (getCollective()->getConstructions().containsTrap(position) && selection != SELECT) {
+        if (getCollective()->getConstructions().getTrap(position) && selection != SELECT) {
           getCollective()->removeTrap(position);
           getView()->addSound(SoundId::DIG_UNMARK);
           selection = DESELECT;
@@ -1941,7 +1940,7 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
         } else
         if (position.canEnterEmpty({MovementTrait::WALK}) &&
             getCollective()->getTerritory().contains(position) &&
-            !getCollective()->getConstructions().containsTrap(position) &&
+            !getCollective()->getConstructions().getTrap(position) &&
             selection != DESELECT) {
           getCollective()->addTrap(position, building.trapInfo.type);
           getView()->addSound(SoundId::ADD_CONSTRUCTION);

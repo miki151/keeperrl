@@ -731,18 +731,18 @@ void Collective::onEvent(const GameEvent& event) {
           surrendering.insert(info.victim);
       },
       [&](const TrapTriggered& info) {
-        if (constructions->containsTrap(info.pos)) {
-          constructions->getTrap(info.pos).reset();
-          if (constructions->getTrap(info.pos).getType() == TrapType::SURPRISE)
+        if (auto& trap = constructions->getTrap(info.pos)) {
+          trap->reset();
+          if (trap->getType() == TrapType::SURPRISE)
             handleSurprise(info.pos);
         }
       },
       [&](const TrapDisarmed& info) {
-        if (constructions->containsTrap(info.pos)) {
-          control->addMessage(PlayerMessage(info.creature->getName().a() + " disarms a "
-                + getTrapName(constructions->getTrap(info.pos).getType()) + " trap.",
-                MessagePriority::HIGH).setPosition(info.pos));
-          constructions->getTrap(info.pos).reset();
+        if (auto& trap = constructions->getTrap(info.pos)) {
+          control->addMessage(PlayerMessage(info.creature->getName().a() +
+              " disarms a " + getTrapName(trap->getType()) + " trap.",
+              MessagePriority::HIGH).setPosition(info.pos));
+          trap->reset();
         }
       },
       [&](const FurnitureDestroyed& info) {
@@ -1025,7 +1025,7 @@ bool Collective::canAddFurniture(Position position, FurnitureType type) const {
       && (territory->contains(position) ||
           canClaimSquare(position) ||
           CollectiveConfig::canBuildOutsideTerritory(type))
-      && !getConstructions().containsTrap(position)
+      && !getConstructions().getTrap(position)
       && !getConstructions().containsFurniture(position, Furniture::getLayer(type))
       && position.canConstruct(type);
 }
@@ -1048,7 +1048,7 @@ void Collective::destroySquare(Position pos, FurnitureLayer layer) {
   }
   if (layer != FurnitureLayer::FLOOR) {
     zones->eraseZones(pos);
-    if (constructions->containsTrap(pos))
+    if (constructions->getTrap(pos))
       removeTrap(pos);
   }
 }
@@ -1111,13 +1111,13 @@ void Collective::addTrap(Position pos, TrapType type) {
 
 void Collective::onAppliedItem(Position pos, WItem item) {
   CHECK(item->getTrapType());
-  if (constructions->containsTrap(pos))
-    constructions->getTrap(pos).setArmed();
+  if (auto& trap = constructions->getTrap(pos))
+    trap->setArmed();
 }
 
 void Collective::onAppliedItemCancel(Position pos) {
-  if (constructions->containsTrap(pos))
-    constructions->getTrap(pos).reset();
+  if (auto& trap = constructions->getTrap(pos))
+    trap->reset();
 }
 
 bool Collective::isConstructionReachable(Position pos) {
@@ -1160,18 +1160,20 @@ void Collective::handleTrapPlacementAndProduction() {
   EnumMap<TrapType, vector<pair<WItem, Position>>> trapItems(
       [this] (TrapType type) { return getTrapItems(type, territory->getAll());});
   EnumMap<TrapType, int> missingTraps;
-  for (auto elem : constructions->getTraps())
-    if (!elem.second.isArmed() && !elem.second.isMarked() && !isDelayed(elem.first)) {
-      vector<pair<WItem, Position>>& items = trapItems[elem.second.getType()];
+  for (auto trapPos : constructions->getAllTraps()) {
+    auto& trap = *constructions->getTrap(trapPos);
+    if (!trap.isArmed() && !trap.isMarked() && !isDelayed(trapPos)) {
+      vector<pair<WItem, Position>>& items = trapItems[trap.getType()];
       if (!items.empty()) {
         Position pos = items.back().second;
-        auto task = taskMap->addTask(Task::applyItem(this, pos, items.back().first, elem.first), pos);
+        auto task = taskMap->addTask(Task::applyItem(this, pos, items.back().first, trapPos), pos);
         markItem(items.back().first, task);
         items.pop_back();
-        constructions->getTrap(elem.first).setMarked();
+        trap.setMarked();
       } else
-        ++missingTraps[elem.second.getType()];
+        ++missingTraps[trap.getType()];
     }
+  }
   for (TrapType type : ENUM_ALL(TrapType))
     scheduleAutoProduction([type](WConstItem it) { return it->getTrapType() == type;}, missingTraps[type]);
 }
