@@ -505,7 +505,8 @@ void MapGui::drawHealthBar(Renderer& renderer, Vec2 pos, Vec2 size, double healt
 
 void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& object, Vec2 size,
     Vec2 tilePos, milliseconds curTimeReal) {
-  const Tile& tile = Tile::getTile(object.id(), spriteMode);
+  auto id = object.id();
+  const Tile& tile = Tile::getTile(id, spriteMode);
   Color color = colorWoundedRed ? Renderer::getBleedingColor(object) : Color::WHITE;
   if (object.hasModifier(ViewObject::Modifier::INVISIBLE) || object.hasModifier(ViewObject::Modifier::HIDDEN))
     color = color.transparency(70);
@@ -524,8 +525,8 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
   if (spriteMode && tile.hasSpriteCoord()) {
     DirSet dirs;
     DirSet borderDirs;
-    if (auto connectionId = getConnectionId(object.id()))
-      for (Vec2 dir : getConnectionDirs(object.id())) {
+    if (auto connectionId = getConnectionId(id))
+      for (Vec2 dir : getConnectionDirs(id)) {
         if ((tilePos + dir).inRectangle(levelBounds) && connectionMap.has(tilePos + dir, *connectionId))
           dirs.insert(dir.getCardinalDir());
         else
@@ -542,7 +543,7 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
     if (auto background = tile.getBackgroundCoord())
       renderer.drawTile(pos, *background, size, color);
     move += movement;
-    if (mirrorSprite(object.id()))
+    if (mirrorSprite(id))
       renderer.drawTile(pos + move, tile.getSpriteCoord(dirs), size, color,
           Renderer::SpriteOrientation((bool) (tilePos.getHash() % 2), (bool) (tilePos.getHash() % 4 > 1)));
     else
