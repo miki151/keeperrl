@@ -60,6 +60,7 @@ class Tile {
 
   const vector<ViewId>& getExtraBorderIds() const;
   bool hasExtraBorders() const;
+  bool hasAnyConnections() const;
   optional<TileCoord> getExtraBorderCoord(DirSet) const;
 
   bool hasSpriteCoord() const;
@@ -68,7 +69,7 @@ class Tile {
   TileCoord getSpriteCoord(DirSet) const;
   optional<TileCoord> getBackgroundCoord() const;
 
-  bool hasCorners() const;
+  bool hasAnyCorners() const;
   const vector<TileCoord>& getCornerCoords(DirSet) const;
 
   private:
@@ -86,6 +87,9 @@ class Tile {
   array<vector<TileCoord>, 256> corners;
   array<optional<TileCoord>, 256> extraBorders;
   bool anyExtraBorders = false;
+  bool anyConnections = false;
+  bool anyCorners = false;
+  DirSet connectionsMask = DirSet{Dir::N, Dir::E, Dir::S, Dir::W};
   vector<ViewId> extraBorderIds;
   static void addTile(ViewId, Tile);
   static void addSymbol(ViewId, Tile);

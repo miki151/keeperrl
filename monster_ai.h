@@ -54,7 +54,7 @@ class MonsterAIFactory {
 
   static MonsterAIFactory collective(WCollective);
   static MonsterAIFactory monster();
-  static MonsterAIFactory singleTask(PTask&&);
+  static MonsterAIFactory singleTask(PTask&&, bool chaseEnemies = true);
   static MonsterAIFactory stayInLocation(Rectangle, bool moveRandomly = true);
   static MonsterAIFactory wildlifeNonPredator();
   static MonsterAIFactory scavengerBird(Position corpsePos);

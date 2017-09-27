@@ -546,8 +546,8 @@ class Fighter : public Behaviour {
             isFriendBetween = true;
             continue;
           }
-        if (auto move = creature->move(pos))
-          return move;
+        /*if (auto move = creature->move(pos))
+          return move;*/
         if (!destroyMove)
           if (auto destroyAction = pos.getBestDestroyAction(creature->getMovementType()))
             if (auto move = creature->destroy(creature->getPosition().getDir(pos), *destroyAction))
@@ -593,7 +593,7 @@ class Fighter : public Behaviour {
               chaseFreeze.set(other, make_pair(other->getGlobalTime() + 20, other->getGlobalTime() + 70));
           })};
       }
-      if (distance == 2 && chase)
+      if (distance == 2)
         if (auto move = considerBreakingChokePoint(other))
           return move;
     }
@@ -617,7 +617,7 @@ class Fighter : public Behaviour {
   }
 
   SERIALIZATION_CONSTRUCTOR(Fighter)
-  SERIALIZE_ALL(SUBCLASS(Behaviour), maxPowerRatio, chase, lastSeen)
+  SERIALIZE_ALL(SUBCLASS(Behaviour), maxPowerRatio, chase)
 
   private:
   double SERIAL(maxPowerRatio);
@@ -629,7 +629,7 @@ class Fighter : public Behaviour {
     Creature::Id SERIAL(creature);
     SERIALIZE_ALL(pos, time, type, creature)
   };
-  optional<LastSeen> SERIAL(lastSeen);
+  optional<LastSeen> lastSeen;
   optional<LastSeen>& getLastSeen() {
     if (lastSeen && !creature->getLevel()->containsCreature(lastSeen->creature))
       lastSeen.reset();
@@ -921,9 +921,9 @@ class SplashMonsters : public Behaviour {
     if (!initialPos)
       initialPos = creature->getPosition().getCoord();
     vector<WCreature> heroes;
-    for (Position v : creature->getLevel()->getAllPositions())
-      if (v.getCreature() && v.getCreature()->isEnemy(creature))
-        heroes.push_back(v.getCreature());
+    for (auto c : creature->getLevel()->getAllCreatures())
+      if (c->isEnemy(creature))
+        heroes.push_back(c);
     if (heroes.empty()) {
       if (creature->getPosition().getCoord() == *initialPos)
         return creature->wait();
@@ -1210,7 +1210,7 @@ MonsterAIFactory MonsterAIFactory::stayInLocation(Rectangle rect, bool moveRando
   });
 }
 
-MonsterAIFactory MonsterAIFactory::singleTask(PTask&& t) {
+MonsterAIFactory MonsterAIFactory::singleTask(PTask&& t, bool chaseEnemies) {
   // Since the lambda can't capture OwnedPointer, let's release it to shared_ptr and recreate PTask inside the lambda.
   auto released = t.giveMeSharedPointer();
   return MonsterAIFactory([=](WCreature c) mutable {
@@ -1219,7 +1219,7 @@ MonsterAIFactory MonsterAIFactory::singleTask(PTask&& t) {
       released = nullptr;
       return new MonsterAI(c, {
         new Heal(c),
-        new Fighter(c, 0.6, false),
+        new Fighter(c, 0.6, chaseEnemies),
         new SingleTask(c, std::move(task)),
         new ChooseRandom(c, makeVec(PBehaviour(new Rest(c)), PBehaviour(new MoveRandomly(c))), {3, 1})},
         { 6, 5, 2, 1}, true);

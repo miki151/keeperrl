@@ -51,9 +51,9 @@ void GuiElem::setPreferredBounds(Vec2 origin) {
 GuiElem::~GuiElem() {
 }
 
-class Button : public GuiElem {
+class ButtonElem : public GuiElem {
   public:
-  Button(function<void(Rectangle, Vec2)> f) : fun(f) {}
+  ButtonElem(function<void(Rectangle, Vec2)> f) : fun(f) {}
 
   virtual bool onLeftClick(Vec2 pos) override {
     auto bounds = getBounds();
@@ -132,9 +132,9 @@ SDL_Keysym GuiFactory::getKey(SDL_Keycode code) {
   return ret;
 }
 
-class ButtonKey : public Button {
+class ButtonKey : public ButtonElem {
   public:
-  ButtonKey(function<void(Rectangle)> f, SDL_Keysym key, bool cap) : Button([f](Rectangle b, Vec2) { f(b);}),
+  ButtonKey(function<void(Rectangle)> f, SDL_Keysym key, bool cap) : ButtonElem([f](Rectangle b, Vec2) { f(b);}),
       hotkey(key), capture(cap) {}
 
   virtual bool onKeyPressed2(SDL_Keysym key) override {
@@ -201,15 +201,15 @@ SGuiElem GuiFactory::button(function<void()> fun, SDL_Keysym hotkey, bool captur
 }
 
 SGuiElem GuiFactory::buttonRect(function<void(Rectangle)> fun) {
-  return SGuiElem(new Button([=](Rectangle b, Vec2) {fun(b);}));
+  return SGuiElem(new ButtonElem([=](Rectangle b, Vec2) {fun(b);}));
 }
 
 SGuiElem GuiFactory::button(function<void()> fun) {
-  return SGuiElem(new Button([=](Rectangle, Vec2) { fun(); }));
+  return SGuiElem(new ButtonElem([=](Rectangle, Vec2) { fun(); }));
 }
 
 SGuiElem GuiFactory::buttonPos(function<void (Rectangle, Vec2)> fun) {
-  return make_shared<Button>(fun);
+  return make_shared<ButtonElem>(fun);
 }
 
 namespace {
@@ -1058,7 +1058,7 @@ SGuiElem GuiFactory::keyHandlerChar(function<void ()> fun, char hotkey, bool cap
 
 SGuiElem GuiFactory::buttonChar(function<void()> fun, char hotkey, bool capture, bool useAltIfWasdOn) {
   return stack(
-      SGuiElem(new Button([=](Rectangle, Vec2) { fun(); })),
+      SGuiElem(new ButtonElem([=](Rectangle, Vec2) { fun(); })),
       SGuiElem(keyHandlerChar(fun, hotkey, capture, useAltIfWasdOn)));
 }
 
@@ -2004,9 +2004,9 @@ class RenderLayer : public GuiStack {
   RenderLayer(SGuiElem content) : GuiStack(std::move(content)) {}
 
   virtual void render(Renderer& r) override {
-    r.setTopLayer();
+    r.setDepth(1);
     elems[0]->render(r);
-    r.popLayer();
+    r.setDepth(0);
   }
 };
 
@@ -2034,10 +2034,10 @@ class Tooltip2 : public GuiElem {
       Vec2 pos = positionFun(getBounds());
       pos.x = min(pos.x, r.getSize().x - size.x);
       pos.y = min(pos.y, r.getSize().y - size.y);
-      r.setTopLayer();
+      r.setDepth(1);
       elem->setBounds(Rectangle(pos, pos + size));
       elem->render(r);
-      r.popLayer();
+      r.setDepth(0);
     }
   }
 
@@ -2081,13 +2081,13 @@ class Tooltip : public GuiElem {
         Vec2 pos = getBounds().bottomLeft() + tooltipOffset;
         pos.x = min(pos.x, r.getSize().x - size.x);
         pos.y = min(pos.y, r.getSize().y - size.y);
-        r.setTopLayer();
+        r.setDepth(1);
         background->setBounds(Rectangle(pos, pos + size));
         background->render(r);
         for (int i : All(text))
           r.drawText(Color::WHITE, pos.x + tooltipHMargin, pos.y + tooltipVMargin + i * tooltipLineHeight,
               text[i]);
-        r.popLayer();
+        r.setDepth(0);
       }
     } else 
       lastTimeOut = clock->getRealMillis();
@@ -2628,7 +2628,13 @@ SGuiElem GuiFactory::mainDecoration(int rightBarWidth, int bottomBarHeight, opti
 SGuiElem GuiFactory::translucentBackground(SGuiElem content) {
   return stack(
       stopMouseMovement(),
-      background(std::move(content), translucentBgColor));
+        background(std::move(content), translucentBgColor));
+}
+
+SGuiElem GuiFactory::translucentBackgroundWithBorder(SGuiElem content) {
+  return stack(
+      rectangleBorder(Color::GRAY),
+      translucentBackground(std::move(content)));
 }
 
 SGuiElem GuiFactory::translucentBackground() {

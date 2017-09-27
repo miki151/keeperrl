@@ -19,6 +19,8 @@
 #include "clock.h"
 #include "tutorial.h"
 #include "container_range.h"
+#include "creature_factory.h"
+#include "resource_info.h"
 
 template <class Archive>
 void Immigration::serialize(Archive& ar, const unsigned int) {

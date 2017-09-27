@@ -9,6 +9,7 @@ WorkshopItem WorkshopItem::fromType(ItemType type, double workNeeded, CostInfo c
   return {
     type,
     item->getName(),
+    item->getName(true),
     item->getViewObject().id(),
     cost,
     item->getDescription(),
@@ -33,9 +34,3 @@ WorkshopItem& WorkshopItem::setTutorialHighlight(TutorialHighlight h) {
   tutorialHighlight = h;
   return *this;
 }
-
-bool WorkshopItem::operator == (const WorkshopItem& item) const {
-  return type == item.type;
-}
-
-

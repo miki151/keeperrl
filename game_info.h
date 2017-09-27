@@ -109,7 +109,14 @@ class PlayerInfo {
   vector<ItemInfo> HASH(lyingItems);
   vector<ItemInfo> HASH(inventory);
   int HASH(debt);
-  vector<CreatureInfo> HASH(team);
+  struct TeamMemberInfo {
+    ViewId HASH(viewId);
+    int HASH(bestAttack);
+    bool HASH(active);
+    bool HASH(leader);
+    HASH_ALL(viewId, bestAttack, active, leader)
+  };
+  vector<TeamMemberInfo> HASH(team);
   struct CommandInfo {
     string HASH(name);
     optional<char> HASH(keybinding);
@@ -275,7 +282,16 @@ class CollectiveInfo {
   };
   optional<Ransom> HASH(ransom);
 
-  HASH_ALL(warning, buildings, minionCount, minionLimit, monsterHeader, minions, minionGroups, enemyGroups, chosenCreature, numResource, teams, nextPayout, payoutTimeRemaining, techButtons, taskMap, ransom, chosenWorkshop, workshopButtons, immigration, allImmigration, libraryInfo)
+  struct NextWave {
+    ViewId HASH(viewId);
+    string HASH(attacker);
+    int HASH(count);
+    int HASH(numTurns);
+    HASH_ALL(viewId, attacker, count, numTurns)
+  };
+  optional<NextWave> HASH(nextWave);
+
+  HASH_ALL(warning, buildings, minionCount, minionLimit, monsterHeader, minions, minionGroups, enemyGroups, chosenCreature, numResource, teams, nextPayout, payoutTimeRemaining, techButtons, taskMap, ransom, nextWave, chosenWorkshop, workshopButtons, immigration, allImmigration, libraryInfo)
 };
 
 class VillageInfo {

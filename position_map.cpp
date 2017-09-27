@@ -7,6 +7,7 @@
 #include "view_object.h"
 #include "furniture_type.h"
 #include "furniture_layer.h"
+#include "construction_map.h"
 
 template <class T>
 PositionMap<T>::PositionMap(const T& def) : defaultVal(def) {
@@ -106,4 +107,6 @@ SERIALIZABLE_TMPL(PositionMap, HighlightType)
 SERIALIZABLE_TMPL(PositionMap, vector<WTask>)
 SERIALIZABLE_TMPL(PositionMap, optional<ViewIndex>)
 SERIALIZABLE_TMPL(PositionMap, optional<vector<Position>>)
+SERIALIZABLE_TMPL(PositionMap, optional<ConstructionMap::FurnitureInfo>);
+SERIALIZABLE_TMPL(PositionMap, optional<ConstructionMap::TrapInfo>);
 SERIALIZABLE_TMPL(PositionMap, EnumMap<FurnitureLayer, optional<FurnitureType>>)

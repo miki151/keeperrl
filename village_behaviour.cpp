@@ -10,10 +10,14 @@
 #include "creature_factory.h"
 #include "construction_map.h"
 #include "villain_type.h"
+#include "attack_behaviour.h"
 
-SERIALIZE_DEF(VillageBehaviour, minPopulation, minTeamSize, triggers, attackBehaviour, welcomeMessage, ransom);
+SERIALIZE_DEF(VillageBehaviour, minPopulation, minTeamSize, triggers, attackBehaviour, welcomeMessage, ransom)
 
 VillageBehaviour::VillageBehaviour() {}
+
+VillageBehaviour::VillageBehaviour(const VillageBehaviour&) = default;
+VillageBehaviour&VillageBehaviour::operator =(const VillageBehaviour&) = default;
 
 VillageBehaviour::~VillageBehaviour() {}
 

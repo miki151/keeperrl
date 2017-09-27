@@ -22,7 +22,6 @@
 #include "util.h"
 #include "corpse_info.h"
 #include "item_class.h"
-#include "item_type.h"
 
 class Item;
 class Technology;

@@ -22,8 +22,8 @@ void Sectors::serialize(Archive& ar, const unsigned int) {
   ar(sectors, bounds, sizes);
 }
 
-SERIALIZABLE(Sectors);
-SERIALIZATION_CONSTRUCTOR_IMPL(Sectors);
+SERIALIZABLE(Sectors)
+SERIALIZATION_CONSTRUCTOR_IMPL(Sectors)
 
 Sectors::Sectors(Rectangle b) : bounds(b), sectors(bounds, -1) {
 }
@@ -153,13 +153,11 @@ void Sectors::remove(Vec2 pos) {
     join(v, getNewSector());
 }
 
-using namespace std;
-
 void Sectors::dump() {
   for (int i : Range(bounds.height())) {
     for (int j : Range(bounds.width()))
-      cout << sectors[j][i] << " ";
-    cout << endl;
+      std::cout << sectors[j][i] << " ";
+    std::cout << endl;
   }
-  cout << endl;
+  std::cout << endl;
 }

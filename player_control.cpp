@@ -78,6 +78,10 @@
 #include "minion_controller.h"
 #include "build_info.h"
 #include "vision.h"
+#include "external_enemies.h"
+#include "resource_info.h"
+#include "workshop_item.h"
+
 
 template <class Archive>
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
@@ -101,7 +105,7 @@ static vector<string> getHints() {
     "Morale affects minion productivity and chances of fleeing from battle.",
  //   "You can turn these hints off in the settings (F2).",
 //    "Killing a leader greatly lowers the morale of his tribe and stops immigration.",
-    "Your minions' morale is boosted when they are commanded by the Keeper.",
+//    "Your minions' morale is boosted when they are commanded by the Keeper.",
   };
 }
 
@@ -145,27 +149,34 @@ optional<TeamId> PlayerControl::getCurrentTeam() const {
 }
 
 void PlayerControl::onControlledKilled(WConstCreature victim) {
-  vector<CreatureInfo> team;
   TeamId currentTeam = *getCurrentTeam();
-  for (auto c : getTeams().getMembers(currentTeam))
-    if (c != victim)
-      team.push_back(CreatureInfo(c));
-  if (team.empty())
-    return;
-  optional<Creature::Id> newLeader;
-  if (team.size() == 1)
-    newLeader = team[0].uniqueId;
-  else
-    newLeader = getView()->chooseCreature("Choose new team leader:", team, "Order team back to base");
-  if (newLeader) {
-    if (WCreature c = getCreature(*newLeader)) {
-      getTeams().setLeader(currentTeam, c);
-      if (!c->isPlayer())
-        c->pushController(createMinionController(c));
+  if (getTeams().getLeader(currentTeam) == victim) {
+    vector<CreatureInfo> team;
+    for (auto c : getTeams().getMembers(currentTeam))
+      if (c != victim)
+        team.push_back(CreatureInfo(c));
+    if (team.empty())
       return;
+    optional<Creature::Id> newLeader;
+    if (team.size() == 1)
+      newLeader = team[0].uniqueId;
+    else
+      newLeader = getView()->chooseCreature("Choose new team leader:", team, "Order team back to base");
+    if (newLeader) {
+      if (WCreature c = getCreature(*newLeader)) {
+        getTeams().setLeader(currentTeam, c);
+        if (!c->isPlayer())
+          c->pushController(createMinionController(c));
+        return;
+      }
     }
+    leaveControl();
   }
-  leaveControl();
+}
+
+void PlayerControl::onSunlightVisibilityChanged() {
+  for (auto pos : getCollective()->getConstructions().getBuiltPositions(FurnitureType::EYEBALL))
+    visibilityMap->updateEyeball(pos);
 }
 
 void PlayerControl::setTutorial(STutorial t) {
@@ -826,7 +837,8 @@ void PlayerControl::fillMinions(CollectiveInfo& info) const {
 
 ItemInfo PlayerControl::getWorkshopItem(const WorkshopItem& option) const {
   return CONSTRUCT(ItemInfo,
-      c.name = option.name;
+      c.number = option.number * option.batchSize;
+      c.name = c.number == 1 ? option.name : toString(c.number) + " " + option.pluralName;
       c.viewId = option.viewId;
       c.price = getCostObj(option.cost * option.number);
       if (option.techId && !getCollective()->hasTech(*option.techId)) {
@@ -836,7 +848,6 @@ ItemInfo PlayerControl::getWorkshopItem(const WorkshopItem& option) const {
       c.description = option.description;
       c.productionState = option.state.value_or(0);
       c.actions = LIST(ItemAction::REMOVE, ItemAction::CHANGE_NUMBER);
-      c.number = option.number * option.batchSize;
       c.tutorialHighlight = tutorial && option.tutorialHighlight &&
           tutorial->getHighlights(getGame()).contains(*option.tutorialHighlight);
     );
@@ -1126,6 +1137,16 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
         getCollective()->hasResource({ResourceId::GOLD, *elem.getRansom()})};
     break;
   }
+  if (auto& enemies = getModel()->getExternalEnemies())
+    if (auto nextWave = enemies->getNextWave())
+      if (!dismissedNextWaves.count(nextWave->id)) {
+        info.nextWave = CollectiveInfo::NextWave {
+          nextWave->viewId,
+          nextWave->name,
+          nextWave->numCreatures,
+          (int) (nextWave->attackTime - getLocalTime())
+        };
+      }
 }
 
 void PlayerControl::addMessage(const PlayerMessage& msg) {
@@ -1294,13 +1315,14 @@ static bool showEfficiency(FurnitureType type) {
 }
 
 void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
-  Position position(pos, getCollective()->getLevel());
+  auto collective = getCollective();
+  Position position(pos, collective->getLevel());
   bool canSeePos = canSee(position);
   getSquareViewIndex(position, canSeePos, index);
   if (!canSeePos)
     if (auto memIndex = getMemory().getViewIndex(position))
       index.mergeFromMemory(*memIndex);
-  if (getCollective()->getTerritory().contains(position))
+  if (collective->getTerritory().contains(position))
     if (auto furniture = position.getFurniture(FurnitureLayer::MIDDLE)) {
       if (furniture->getUsageType() == FurnitureUsageType::STUDY || CollectiveConfig::getWorkshopType(furniture->getType()))
         index.setHighlight(HighlightType::CLICKABLE_FURNITURE);
@@ -1310,35 +1332,34 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
       if (draggedCreature)
         if (WCreature c = getCreature(*draggedCreature))
           if (auto task = MinionTasks::getTaskFor(c, furniture->getType()))
-            if (c->getAttributes().getMinionTasks().isAvailable(getCollective(), c, *task))
+            if (c->getAttributes().getMinionTasks().isAvailable(collective, c, *task))
               index.setHighlight(HighlightType::CREATURE_DROP);
       if (showEfficiency(furniture->getType()) && index.hasObject(ViewLayer::FLOOR))
         index.getObject(ViewLayer::FLOOR).setAttribute(ViewObject::Attribute::EFFICIENCY,
-            getCollective()->getTileEfficiency().getEfficiency(position));
+            collective->getTileEfficiency().getEfficiency(position));
     }
-  if (getCollective()->isMarked(position))
-    index.setHighlight(getCollective()->getMarkHighlight(position));
-  if (getCollective()->hasPriorityTasks(position))
+  if (collective->isMarked(position))
+    index.setHighlight(collective->getMarkHighlight(position));
+  if (collective->hasPriorityTasks(position))
     index.setHighlight(HighlightType::PRIORITY_TASK);
   if (!index.hasObject(ViewLayer::CREATURE))
-    for (auto task : getCollective()->getTaskMap().getTasks(position))
+    for (auto task : collective->getTaskMap().getTasks(position))
       if (auto viewId = task->getViewId())
           index.insert(ViewObject(*viewId, ViewLayer::CREATURE));
   if (position.isTribeForbidden(getTribeId()))
     index.setHighlight(HighlightType::FORBIDDEN_ZONE);
-  getCollective()->getZones().setHighlights(position, index);
+  collective->getZones().setHighlights(position, index);
   if (rectSelection
       && pos.inRectangle(Rectangle::boundingBox({rectSelection->corner1, rectSelection->corner2})))
     index.setHighlight(rectSelection->deselect ? HighlightType::RECT_DESELECTION : HighlightType::RECT_SELECTION);
-  const ConstructionMap& constructions = getCollective()->getConstructions();
-  if (constructions.containsTrap(position))
-    index.insert(getTrapObject(constructions.getTrap(position).getType(),
-          constructions.getTrap(position).isArmed()));
+  const ConstructionMap& constructions = collective->getConstructions();
+  if (auto& trap = constructions.getTrap(position))
+    index.insert(getTrapObject(trap->getType(), trap->isArmed()));
   for (auto layer : ENUM_ALL(FurnitureLayer))
     if (auto f = constructions.getFurniture(position, layer))
       if (!f->isBuilt())
         index.insert(getConstructionObject(f->getFurnitureType()));
-  /*if (surprises.count(position) && !getCollective()->getKnownTiles().isKnown(position))
+  /*if (surprises.count(position) && !collective->getKnownTiles().isKnown(position))
     index.insert(ViewObject(ViewId::UNKNOWN_MONSTER, ViewLayer::CREATURE, "Surprise"));*/
 }
 
@@ -1885,6 +1906,11 @@ void PlayerControl::processInput(View* view, UserInput input) {
         break;
     case UserInputId::EXIT: getGame()->exitAction(); return;
     case UserInputId::IDLE: break;
+    case UserInputId::DISMISS_NEXT_WAVE:
+      if (auto& enemies = getModel()->getExternalEnemies())
+        if (auto nextWave = enemies->getNextWave())
+          dismissedNextWaves.insert(nextWave->id);
+      break;
     default: break;
   }
 }
@@ -1906,7 +1932,7 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
     return;
   switch (building.buildType) {
     case BuildInfo::TRAP:
-        if (getCollective()->getConstructions().containsTrap(position) && selection != SELECT) {
+        if (getCollective()->getConstructions().getTrap(position) && selection != SELECT) {
           getCollective()->removeTrap(position);
           getView()->addSound(SoundId::DIG_UNMARK);
           selection = DESELECT;
@@ -1914,7 +1940,7 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
         } else
         if (position.canEnterEmpty({MovementTrait::WALK}) &&
             getCollective()->getTerritory().contains(position) &&
-            !getCollective()->getConstructions().containsTrap(position) &&
+            !getCollective()->getConstructions().getTrap(position) &&
             selection != DESELECT) {
           getCollective()->addTrap(position, building.trapInfo.type);
           getView()->addSound(SoundId::ADD_CONSTRUCTION);

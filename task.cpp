@@ -35,7 +35,6 @@
 #include "model.h"
 #include "collective_name.h"
 #include "creature_attributes.h"
-#include "item_type.h"
 #include "body.h"
 #include "furniture_type.h"
 #include "furniture_factory.h"

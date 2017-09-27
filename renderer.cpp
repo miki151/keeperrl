@@ -86,7 +86,6 @@ Renderer::TileCoord::TileCoord() : TileCoord(Vec2(0, 0), -1) {
 
 static void checkOpenglError() {
   auto error = SDL::glGetError();
-  string s;
   CHECK(error == GL_NO_ERROR) << (int)error;
 }
 
@@ -283,30 +282,29 @@ int Renderer::getFont(Renderer::FontId id) {
 }
 
 void Renderer::drawText(FontId id, int size, Color color, int x, int y, const string& s, CenterType center) {
-  if (!s.empty())
-    addRenderElem([this, s, center, size, color, x, y, id] {
-        int ox = 0;
-        int oy = 0;
-        Vec2 dim = getTextSize(s, size, id);
-        switch (center) {
-          case HOR:
-            ox -= dim.x / 2;
-            break;
-          case VER:
-            oy -= dim.y / 2;
-            break;
-          case HOR_VER:
-            ox -= dim.x / 2;
-            oy -= dim.y / 2;
-            break;
-          default:
-            break;
-        }
-        sth_begin_draw(fontStash);
-        color.applyGl();
-        sth_draw_text(fontStash, getFont(id), sizeConv(size), ox + x, oy + y + (dim.y * 0.9), s.c_str(), nullptr);
-        sth_end_draw(fontStash);
-    });
+  if (!s.empty()) {
+    int ox = 0;
+    int oy = 0;
+    Vec2 dim = getTextSize(s, size, id);
+    switch (center) {
+      case HOR:
+        ox -= dim.x / 2;
+        break;
+      case VER:
+        oy -= dim.y / 2;
+        break;
+      case HOR_VER:
+        ox -= dim.x / 2;
+        oy -= dim.y / 2;
+        break;
+      default:
+        break;
+    }
+    sth_begin_draw(fontStash);
+    color.applyGl();
+    sth_draw_text(fontStash, getFont(id), sizeConv(size), ox + x, oy + y + (dim.y * 0.9), s.c_str(), nullptr);
+    sth_end_draw(fontStash);
+  }
 }
 
 void Renderer::drawText(Color color, int x, int y, const char* c, CenterType center, int size) {
@@ -330,9 +328,7 @@ void Renderer::drawTextWithHotkey(Color color, int x, int y, const string& text,
 
 void Renderer::drawImage(int px, int py, const Texture& image, double scale, optional<Color> color) {
   Vec2 p(px, py);
-  addRenderElem([p, &image, scale, color] {
-    image.render(p, p + image.getSize() * scale, Vec2(0, 0), image.getSize(), color);
-  });
+  image.render(p, p + image.getSize() * scale, Vec2(0, 0), image.getSize(), color);
 }
 
 void Renderer::drawImage(Rectangle target, Rectangle source, const Texture& image) {
@@ -350,50 +346,46 @@ static Vec2 rotate(Vec2 pos, Vec2 origin, double x, double y) {
 
 void Renderer::drawSprite(Vec2 pos, Vec2 source, Vec2 size, const Texture& t,
     optional<Vec2> targetSize, optional<Color> color, SpriteOrientation orientation) {
-  addRenderElem([&t, pos, source, size, targetSize, color, orientation] {
-      Vec2 a = pos;
-      Vec2 c = targetSize ? (a + *targetSize) : (a + size);
-      Vec2 b(c.x, a.y);
-      Vec2 d(a.x, c.y);
-      if (orientation.horizontalFlip) {
-        swap(a, b);
-        swap(c, d);
-      }
-      if (orientation.x != 1 || orientation.y != 0) {
-        Vec2 mid = (a + c) / 2;
-        a = rotate(a, mid, orientation.x, orientation.y);
-        b = rotate(b, mid, orientation.x, orientation.y);
-        c = rotate(c, mid, orientation.x, orientation.y);
-        d = rotate(d, mid, orientation.x, orientation.y);
-      }
-      t.render(a, b, c, d, source, source + size, color);
-  });
+  Vec2 a = pos;
+  Vec2 c = targetSize ? (a + *targetSize) : (a + size);
+  Vec2 b(c.x, a.y);
+  Vec2 d(a.x, c.y);
+  if (orientation.horizontalFlip) {
+    swap(a, b);
+    swap(c, d);
+  }
+  if (orientation.x != 1 || orientation.y != 0) {
+    Vec2 mid = (a + c) / 2;
+    a = rotate(a, mid, orientation.x, orientation.y);
+    b = rotate(b, mid, orientation.x, orientation.y);
+    c = rotate(c, mid, orientation.x, orientation.y);
+    d = rotate(d, mid, orientation.x, orientation.y);
+  }
+  t.render(a, b, c, d, source, source + size, color);
 }
 
 void Renderer::drawFilledRectangle(const Rectangle& t, Color color, optional<Color> outline) {
-  addRenderElem([t, color, outline] {
-    Vec2 a = t.topLeft();
-    Vec2 b = t.bottomRight();
-    if (outline) {
-      SDL::glLineWidth(2);
-      SDL::glBegin(GL_LINE_LOOP);
-      outline->applyGl();
-      SDL::glVertex2f(a.x + 1.5f, a.y + 1.5f);
-      SDL::glVertex2f(b.x - 0.5f, a.y + 1.5f);
-      SDL::glVertex2f(b.x - 0.5f, b.y - 0.5f);
-      SDL::glVertex2f(a.x + 1.5f, b.y - 0.5f);
-      SDL::glEnd();
-      a += Vec2(2, 2);
-      b -= Vec2(2, 2);
-    }
-    SDL::glBegin(GL_QUADS);
-    color.applyGl();
-    SDL::glVertex2f(a.x, a.y);
-    SDL::glVertex2f(b.x, a.y);
-    SDL::glVertex2f(b.x, b.y);
-    SDL::glVertex2f(a.x, b.y);
+  Vec2 a = t.topLeft();
+  Vec2 b = t.bottomRight();
+  if (outline) {
+    SDL::glLineWidth(2);
+    SDL::glBegin(GL_LINE_LOOP);
+    outline->applyGl();
+    SDL::glVertex2f(a.x + 1.5f, a.y + 1.5f);
+    SDL::glVertex2f(b.x - 0.5f, a.y + 1.5f);
+    SDL::glVertex2f(b.x - 0.5f, b.y - 0.5f);
+    SDL::glVertex2f(a.x + 1.5f, b.y - 0.5f);
     SDL::glEnd();
-  });
+    a += Vec2(2, 2);
+    b -= Vec2(2, 2);
+  }
+  SDL::glBegin(GL_QUADS);
+  color.applyGl();
+  SDL::glVertex2f(a.x, a.y);
+  SDL::glVertex2f(b.x, a.y);
+  SDL::glVertex2f(b.x, b.y);
+  SDL::glVertex2f(a.x, b.y);
+  SDL::glEnd();
 }
 
 void Renderer::drawFilledRectangle(int px, int py, int kx, int ky, Color color, optional<Color> outline) {
@@ -404,48 +396,22 @@ void Renderer::addQuad(const Rectangle& r, Color color) {
   drawFilledRectangle(r.left(), r.top(), r.right(), r.bottom(), color);
 }
 
-void Renderer::drawQuads() {
-/*  if (!quads.empty()) {
-    vector<Vertex>& quadsTmp = quads;
-    addRenderElem([this, quadsTmp] { display.draw(&quadsTmp[0], quadsTmp.size(), sf::Quads); });
-    quads.clear();
-  }*/
-}
-
 void Renderer::setScissor(optional<Rectangle> s) {
-  scissor = s;
-}
-
-void Renderer::setGlScissor(optional<Rectangle> s) {
-  if (s != scissor) {
-    if (s) {
-      int zoom = getZoom();
-      SDL::glScissor(s->left() * zoom, (getSize().y - s->bottom()) * zoom, s->width() * zoom, s->height() * zoom);
-      SDL::glEnable(GL_SCISSOR_TEST);
-    }
-    else
-      SDL::glDisable(GL_SCISSOR_TEST);
-    scissor = s;
+  if (s) {
+    int zoom = getZoom();
+    SDL::glScissor(s->left() * zoom, (getSize().y - s->bottom()) * zoom, s->width() * zoom, s->height() * zoom);
+    SDL::glEnable(GL_SCISSOR_TEST);
   }
+  else
+    SDL::glDisable(GL_SCISSOR_TEST);
 }
 
-void Renderer::addRenderElem(function<void()> f) {
-  if (currentLayer == 0) {
-    auto thisScissor = scissor;
-    f = [f, thisScissor, this] { setGlScissor(thisScissor); f(); };
-  } else
-    f = [f, this] { setGlScissor(none); f(); };
-  renderList[currentLayer].push_back(f);
-}
-
-void Renderer::setTopLayer() {
-  layerStack.push(currentLayer);
-  currentLayer = 1;
-}
-
-void Renderer::popLayer() {
-  currentLayer = layerStack.top();
-  layerStack.pop();
+void Renderer::setDepth(double depth) {
+  SDL::glTranslated(0, 0, -currentDepth);
+  checkOpenglError();
+  currentDepth = depth;
+  SDL::glTranslated(0, 0, depth);
+  checkOpenglError();
 }
 
 Vec2 Renderer::getSize() {
@@ -491,22 +457,25 @@ void Renderer::enableCustomCursor(bool state) {
 }
 
 void Renderer::initOpenGL() {
-    bool success = true;
-    SDL::GLenum error = GL_NO_ERROR;
-    //Initialize Projection Matrix
-    SDL::glMatrixMode( GL_PROJECTION );
-    SDL::glLoadIdentity();
-    SDL::glViewport(0, 0, width, height);
-    SDL::glOrtho(0.0, width / getZoom(), height / getZoom(), 0.0, -1.0, 1.0);
-    CHECK(SDL::glGetError() == GL_NO_ERROR);
-    //Initialize Modelview Matrix
-    SDL::glMatrixMode( GL_MODELVIEW );
-    SDL::glLoadIdentity();
-    SDL::glEnable(GL_BLEND);
-    SDL::glEnable(GL_TEXTURE_2D);
-    SDL::glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-    CHECK(SDL::glGetError() == GL_NO_ERROR);
-    reloadCursors();
+  //Initialize Projection Matrix
+  SDL::glMatrixMode( GL_PROJECTION );
+  SDL::glLoadIdentity();
+  SDL::glViewport(0, 0, width, height);
+  SDL::glOrtho(0.0, width / getZoom(), height / getZoom(), 0.0, -1.0, 1.0);
+  CHECK(SDL::glGetError() == GL_NO_ERROR);
+  //Initialize Modelview Matrix
+  SDL::glMatrixMode( GL_MODELVIEW );
+  SDL::glLoadIdentity();
+  SDL::glEnable(GL_BLEND);
+  SDL::glEnable(GL_TEXTURE_2D);
+  SDL::glEnable(GL_DEPTH_TEST);
+  SDL::glAlphaFunc( GL_GREATER, 0.1 );
+  SDL::glEnable(GL_ALPHA_TEST );
+  SDL::glDepthFunc(GL_LEQUAL);
+  SDL::glDepthRange(-1, 1);
+  SDL::glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+  CHECK(SDL::glGetError() == GL_NO_ERROR);
+  reloadCursors();
 }
 
 SDL::SDL_Surface* Renderer::loadScaledSurface(const FilePath& path, double scale) {
@@ -610,10 +579,6 @@ void Renderer::drawTile(Vec2 pos, TileCoord coord, Vec2 size, Color color, Sprit
   Vec2 tileSize = sz.mult(size).div(nominalSize);
   if (sz.y > nominalSize.y)
     off.y *= 2;
-  if (altTileSize.size() > coord.texNum && size == altTileSize[coord.texNum]) {
-    sz = size;
-    tex = &altTiles[coord.texNum];
-  }
   Vec2 coordPos = coord.pos.mult(sz);
   drawSprite(pos + off, coordPos, sz, *tex, tileSize, color, orientation);
 }
@@ -671,11 +636,6 @@ void Renderer::drawAsciiBackground(ViewId id, Rectangle bounds) {
     drawFilledRectangle(bounds, Color::BLACK);
 }
 
-bool Renderer::loadAltTilesFromDir(const DirectoryPath& path, Vec2 altSize) {
-  altTileSize.push_back(altSize);
-  return loadTilesFromDir(path, altTiles, altSize, 720 * altSize.x / tileSize.back().x);
-}
-
 bool Renderer::loadTilesFromDir(const DirectoryPath& path, Vec2 size) {
   tileSize.push_back(size);
   return loadTilesFromDir(path, tiles, size, 720);
@@ -723,41 +683,9 @@ Vec2 Renderer::getNominalSize() const {
   return nominalSize;
 }
 
-static void measureLatency() {
-  static milliseconds last;
-  static long maxLat = 0;
-  static int counter = 0;
-  auto curTime = Clock::getRealMillis();
-  auto latency = (curTime - last).count();
-  if (latency > maxLat)
-    maxLat = latency;
-  if (latency > 50)
-    std::cout << "Draw buffer " << latency << std::endl;
-  if (++counter > 100) {
-    std::cout << "Max latency " << maxLat << std::endl;
-    maxLat = 0;
-    counter = 0;
-  }
-  last = curTime;
-  auto state = Clock::getRealMillis().count() % 500;
-  SDL::glBegin(GL_QUADS);
-  Color(255, 255, 255).applyGl();
-  SDL::glVertex2f(0, 0);
-  SDL::glVertex2f(2 * state, 0);
-  SDL::glVertex2f(2 * state, 30);
-  SDL::glVertex2f(0, 30);
-  SDL::glEnd();
-}
-
 void Renderer::drawAndClearBuffer() {
-  for (int i : All(renderList)) {
-    for (auto& elem : renderList[i])
-      elem();
-    renderList[i].clear();
-  }
-  setGlScissor(none);
   SDL::SDL_GL_SwapWindow(window);
-  SDL::glClear(GL_COLOR_BUFFER_BIT);
+  SDL::glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   SDL::glClearColor(0.0, 0.0, 0.0, 0.0);
 
 }
@@ -805,7 +733,7 @@ bool Renderer::pollEvent(Event& ev) {
       return pollEventOrFromQueue(ev);
     ev = SdlEventGenerator::getRandom(Random, getSize());
     return true;
-  } else 
+  } else
     return pollEventOrFromQueue(ev);
 }
 
@@ -866,7 +794,7 @@ Vec2 Renderer::getMousePos() {
 void Renderer::startMonkey() {
   monkey = true;
 }
-  
+
 bool Renderer::isMonkey() {
   return monkey;
 }

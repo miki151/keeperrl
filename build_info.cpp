@@ -53,11 +53,11 @@ const vector<BuildInfo>& BuildInfo::get() {
       BuildInfo({FurnitureType::BOOKCASE_IRON, {ResourceId::IRON, 15}}, "Iron bookcase",
           {{RequirementId::TECHNOLOGY, TechId::SPELLS_ADV}}, "Train your minions here. Adds up to " +
           toString(*CollectiveConfig::getTrainingMaxLevel(ExperienceType::SPELL, FurnitureType::BOOKCASE_IRON)) + " spell levels.",
-          0, "Library").setTutorialHighlight(TutorialHighlight::BUILD_LIBRARY),
+          0, "Library"),
       BuildInfo({FurnitureType::BOOKCASE_GOLD, {ResourceId::GOLD, 15}}, "Golden bookcase",
           {{RequirementId::TECHNOLOGY, TechId::SPELLS_MAS}}, "Train your minions here. Adds up to " +
           toString(*CollectiveConfig::getTrainingMaxLevel(ExperienceType::SPELL, FurnitureType::BOOKCASE_GOLD)) + " spell levels.",
-          0, "Library").setTutorialHighlight(TutorialHighlight::BUILD_LIBRARY),
+          0, "Library"),
       BuildInfo({FurnitureType::THRONE, {ResourceId::MANA, 300}, false, 1}, "Throne",
           {{RequirementId::VILLAGE_CONQUERED}},
           "Increases population limit by " + toString(ModelBuilder::getThronePopulationIncrease())),
@@ -200,11 +200,13 @@ bool BuildInfo::meetsRequirement(WConstCollective col, Requirement req) {
   switch (req.getId()) {
     case RequirementId::TECHNOLOGY:
       return col->hasTech(req.get<TechId>());
-    case RequirementId::VILLAGE_CONQUERED:
-      for (WConstCollective enemy : col->getGame()->getVillains(VillainType::MAIN))
+    case RequirementId::VILLAGE_CONQUERED: {
+      auto& mainVillains = col->getGame()->getVillains(VillainType::MAIN);
+      for (WConstCollective enemy : mainVillains)
         if (enemy->isConquered())
           return true;
-      return false;
+      return mainVillains.empty();
+    }
   }
 }
 

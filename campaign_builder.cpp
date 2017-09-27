@@ -11,6 +11,7 @@
 #include "retired_games.h"
 #include "view_object.h"
 #include "name_generator.h"
+#include "creature_factory.h"
 
 
 optional<Vec2> CampaignBuilder::considerStaticPlayerPos(const Campaign& campaign) {
@@ -110,8 +111,8 @@ vector<CampaignType> CampaignBuilder::getAvailableTypes() const {
         CampaignType::CAMPAIGN,
         CampaignType::FREE_PLAY,
         CampaignType::SINGLE_KEEPER,
-#ifndef RELEASE
         CampaignType::ENDLESS,
+#ifndef RELEASE
         CampaignType::QUICK_MAP,
 #endif
       };

@@ -152,6 +152,12 @@ void LastingEffects::onAffected(WCreature c, LastingEffect effect, bool msg) {
         c->you(MsgType::FEEL, "more aware of danger"); break;
       case LastingEffect::TELEPATHY:
         c->you(MsgType::ARE, "telepathic"); break;
+      case LastingEffect::SUNLIGHT_VULNERABLE:
+        c->you(MsgType::ARE, "vulnerable to sunlight"); break;
+      case LastingEffect::SATIATED:
+        c->you(MsgType::ARE, "satiated"); break;
+      case LastingEffect::RESTED:
+        c->you(MsgType::ARE, "well rested"); break;
     }
 }
 
@@ -166,6 +172,8 @@ optional<LastingEffect> LastingEffects::getSuppressor(LastingEffect effect) {
   switch (effect) {
     case LastingEffect::COLLAPSED:
       return LastingEffect::FLYING;
+    case LastingEffect::SUNLIGHT_VULNERABLE:
+      return LastingEffect::DARKNESS_SOURCE;
     default:
       return none;
   }
@@ -176,6 +184,9 @@ void LastingEffects::onRemoved(WCreature c, LastingEffect effect, bool msg) {
     case LastingEffect::POISON:
       if (msg)
         c->you(MsgType::ARE, "cured from poisoning");
+      break;
+    case LastingEffect::SLEEP:
+      c->you(MsgType::WAKE_UP, "");
       break;
     default:
       onTimedOut(c, effect, msg); break;
@@ -190,7 +201,9 @@ void LastingEffects::onTimedOut(WCreature c, LastingEffect effect, bool msg) {
       case LastingEffect::SLOWED:
         c->you(MsgType::ARE, "moving faster again"); break;
       case LastingEffect::SLEEP:
-        c->you(MsgType::WAKE_UP, ""); break;
+        c->you(MsgType::WAKE_UP, "");
+        c->addEffect(LastingEffect::RESTED, 1000);
+        break;
       case LastingEffect::SPEED:
         c->you(MsgType::ARE, "moving more slowly again"); break;
       case LastingEffect::DAM_BONUS:
@@ -247,6 +260,12 @@ void LastingEffects::onTimedOut(WCreature c, LastingEffect effect, bool msg) {
         c->you(MsgType::FEEL, "less aware of danger"); break;
       case LastingEffect::TELEPATHY:
         c->you(MsgType::ARE, "no longer telepathic"); break;
+      case LastingEffect::SUNLIGHT_VULNERABLE:
+        c->you(MsgType::ARE, "no longer vulnerable to sunlight"); break;
+      case LastingEffect::SATIATED:
+        c->you(MsgType::ARE, "no longer satiated"); break;
+      case LastingEffect::RESTED:
+        c->you(MsgType::ARE, "no longer rested"); break;
       default: break;
     }
 }
@@ -272,6 +291,10 @@ void LastingEffects::modifyAttr(WConstCreature c, AttrType type, double& value) 
           value *= 0.66;
         if (c->isAffected(LastingEffect::DEF_BONUS))
           value += attrBonus;
+        if (c->isAffected(LastingEffect::SATIATED))
+          value += 1;
+        if (c->isAffected(LastingEffect::RESTED))
+          value += 1;
       break;
     case AttrType::SPEED:
       if (c->isAffected(LastingEffect::SLOWED))
@@ -298,7 +321,7 @@ namespace {
 }
 
 
-static Adjective getAdjective(LastingEffect effect) {
+static optional<Adjective> getAdjective(LastingEffect effect) {
   switch (effect) {
     case LastingEffect::INVISIBLE: return "Invisible"_good;
     case LastingEffect::PANIC: return "Panic"_good;
@@ -321,6 +344,8 @@ static Adjective getAdjective(LastingEffect effect) {
     case LastingEffect::REGENERATION: return "Regenerating"_good;
     case LastingEffect::WARNING: return "Aware of danger"_good;
     case LastingEffect::TELEPATHY: return "Telepathic"_good;
+    case LastingEffect::SATIATED: return "Satiated"_good;
+    case LastingEffect::RESTED: return "Rested"_good;
 
     case LastingEffect::POISON: return "Poisoned"_bad;
     case LastingEffect::BLEEDING: return "Bleeding"_bad;
@@ -335,23 +360,22 @@ static Adjective getAdjective(LastingEffect effect) {
     case LastingEffect::MAGIC_VULNERABILITY: return "Vulnerable to magical attacks"_bad;
     case LastingEffect::MELEE_VULNERABILITY: return "Vulnerable to melee attacks"_bad;
     case LastingEffect::RANGED_VULNERABILITY: return "Vulnerable to ranged attacks"_bad;
+    case LastingEffect::SUNLIGHT_VULNERABLE: return "Vulnerable to sunlight"_bad;
   }
 }
 
 const char* LastingEffects::getGoodAdjective(LastingEffect effect) {
-  auto adjective = getAdjective(effect);
-  if (!adjective.bad)
-    return adjective.name;
-  else
-    return nullptr;
+  if (auto adjective = getAdjective(effect))
+    if (!adjective->bad)
+      return adjective->name;
+  return nullptr;
 }
 
 const char* LastingEffects::getBadAdjective(LastingEffect effect) {
-  auto adjective = getAdjective(effect);
-  if (adjective.bad)
-    return adjective.name;
-  else
-    return nullptr;
+  if (auto adjective = getAdjective(effect))
+    if (adjective->bad)
+      return adjective->name;
+  return nullptr;
 }
 
 const vector<LastingEffect>& LastingEffects::getCausingCondition(CreatureCondition condition) {
@@ -459,6 +483,16 @@ bool LastingEffects::tick(WCreature c, LastingEffect effect) {
         c->privateMessage(PlayerMessage("You sense danger!", MessagePriority::HIGH));
       break;
     }
+    case LastingEffect::SUNLIGHT_VULNERABLE:
+      if (c->getPosition().sunlightBurns()) {
+        c->you(MsgType::ARE, "burnt by the sun");
+        if (Random.roll(10)) {
+          c->you(MsgType::YOUR, "body crumbles to dust");
+          c->dieWithReason("killed by sunlight", Creature::DropType::ONLY_INVENTORY);
+          return true;
+        }
+      }
+      break;
     default:
       break;
   }
@@ -501,6 +535,9 @@ const char* LastingEffects::getName(LastingEffect type) {
     case LastingEffect::REGENERATION: return "regeneration";
     case LastingEffect::WARNING: return "warning";
     case LastingEffect::TELEPATHY: return "telepathy";
+    case LastingEffect::SUNLIGHT_VULNERABLE: return "sunlight vulnerability";
+    case LastingEffect::SATIATED: return "satiety";
+    case LastingEffect::RESTED: return "wakefulness";
   }
 }
 
@@ -541,6 +578,9 @@ const char* LastingEffects::getDescription(LastingEffect type) {
     case LastingEffect::REGENERATION: return "Recovers a little bit of health every turn.";
     case LastingEffect::WARNING: return "Warns about dangerous enemies and traps.";
     case LastingEffect::TELEPATHY: return "Allows you to detect other creatures with brains.";
+    case LastingEffect::SUNLIGHT_VULNERABLE: return "Sunlight makes your body crumble to dust.";
+    case LastingEffect::SATIATED: return "Increases morale and improves defense by +1.";
+    case LastingEffect::RESTED: return "Increases morale and improves defense by +1.";
   }
 }
 
@@ -557,6 +597,9 @@ int LastingEffects::getPrice(LastingEffect e) {
     case LastingEffect::INSANITY:
     case LastingEffect::HALLU:
     case LastingEffect::BLEEDING:
+    case LastingEffect::SUNLIGHT_VULNERABLE:
+    case LastingEffect::SATIATED:
+    case LastingEffect::RESTED:
       return 2;
     case LastingEffect::WARNING:
       return 5;
@@ -596,4 +639,13 @@ int LastingEffects::getPrice(LastingEffect e) {
     case LastingEffect::FLYING:
       return 24;
   }
+}
+
+double LastingEffects::getMoraleIncrease(WConstCreature c) {
+  double ret = 0;
+  if (c->isAffected(LastingEffect::RESTED))
+    ret += 0.2;
+  if (c->isAffected(LastingEffect::SATIATED))
+    ret += 0.2;
+  return ret;
 }

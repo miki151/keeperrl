@@ -50,12 +50,6 @@
 #include "message_generator.h"
 
 template <class Archive> 
-void Creature::MoraleOverride::serialize(Archive& ar, const unsigned int version) {
-}
-
-SERIALIZABLE(Creature::MoraleOverride)
-
-template <class Archive> 
 void Creature::serialize(Archive& ar, const unsigned int version) { 
   ar & SUBCLASS(OwnedObject<Creature>) & SUBCLASS(Renderable) & SUBCLASS(UniqueEntity);
   ar(attributes, position, equipment, shortestPath, knownHiding, tribe, morale);
@@ -63,7 +57,7 @@ void Creature::serialize(Archive& ar, const unsigned int version) {
   ar(deathReason, swapPositionCooldown);
   ar(unknownAttackers, privateEnemies, holding);
   ar(controllerStack, kills);
-  ar(difficultyPoints, points, moraleOverride);
+  ar(difficultyPoints, points);
   ar(vision, lastCombatTime, debt, lastDamageType, highestAttackValueEver);
 }
 
@@ -1000,18 +994,11 @@ void Creature::updateViewObject() {
 }
 
 double Creature::getMorale() const {
-  if (moraleOverride)
-    if (auto ret = moraleOverride->getMorale(this))
-      return *ret;
-  return morale;
+  return min(1.0, max(-1.0, morale + LastingEffects::getMoraleIncrease(this)));
 }
 
 void Creature::addMorale(double val) {
   morale = min(1.0, max(-1.0, morale + val));
-}
-
-void Creature::setMoraleOverride(PMoraleOverride mod) {
-  moraleOverride = std::move(mod);
 }
 
 string attrStr(bool strong, bool agile, bool fast) {
@@ -1043,24 +1030,34 @@ void Creature::heal(double amount) {
   updateViewObject();
 }
 
-void Creature::fireDamage(double amount) {
-  if (!isAffected(LastingEffect::FIRE_RESISTANT))
-    getBody().fireDamage(this, amount);
+void Creature::affectByFire(double amount) {
+  if (!isAffected(LastingEffect::FIRE_RESISTANT) &&
+      getBody().affectByFire(this, amount)) {
+    thirdPerson(getName().the() + " burns to death");
+    secondPerson("You burn to death");
+    dieWithReason("burnt to death");
+  }
 }
 
 void Creature::affectBySilver() {
-  if (getBody().affectBySilver(this))
+  if (getBody().affectBySilver(this)) {
+    you(MsgType::DIE_OF, "silver damage");
     dieWithAttacker(lastAttacker);
+  }
 }
 
 void Creature::affectByAcid() {
-  if (getBody().affectByAcid(this))
+  if (getBody().affectByAcid(this)) {
+    you(MsgType::ARE, "dissolved by acid");
     dieWithReason("dissolved by acid");
+  }
 }
 
 void Creature::poisonWithGas(double amount) {
-  if (getBody().affectByPoisonGas(this, amount))
+  if (getBody().affectByPoisonGas(this, amount)) {
+    you(MsgType::DIE_OF, "gas poisoning");
     dieWithReason("poisoned with gas");
+  }
 }
 
 void Creature::setHeld(WCreature c) {
@@ -1276,6 +1273,7 @@ CreatureAction Creature::eat(WItem item) const {
   return CreatureAction(this, [=](WCreature self) {
     thirdPerson(getName().the() + " eats " + item->getAName());
     secondPerson("You eat " + item->getAName());
+    self->addEffect(LastingEffect::SATIATED, 500);
     self->getPosition().removeItem(item);
     self->spendTime(3);
   });

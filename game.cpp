@@ -34,6 +34,8 @@
 #include "game_save_type.h"
 #include "player_role.h"
 #include "collective_config.h"
+#include "attack_behaviour.h"
+#include "village_behaviour.h"
 
 template <class Archive> 
 void Game::serialize(Archive& ar, const unsigned int version) {
@@ -145,18 +147,9 @@ int Game::getSaveProgressCount() const {
 }
 
 void Game::prepareSiteRetirement() {
-  WModel mainModel = models[baseModel].get();
   for (Vec2 v : models.getBounds())
-    if (models[v]) {
-      if (v != baseModel)
-        models[v]->lockSerialization();
-      else {
-        for (WCollective col : models[v]->getCollectives())
-          if (col->getLeader()->isDead())
-            col->clearLeader();
-        models[v]->setGame(nullptr);
-      }
-    }
+    if (models[v] && v != baseModel)
+      models[v]->discardForRetirement();
   playerCollective->setVillainType(VillainType::MAIN);
   playerCollective->retire();
   vector<Position> locationPos;
@@ -183,6 +176,8 @@ void Game::prepareSiteRetirement() {
           );
           c.attackBehaviour = AttackBehaviour(AttackBehaviourId::KILL_LEADER);
           c.ransom = make_pair(0.8, Random.get(500, 700));)));
+  WModel mainModel = models[baseModel].get();
+  mainModel->setGame(nullptr);
   for (WCollective col : models[baseModel]->getCollectives())
     for (WCreature c : col->getCreatures())
       if (c->getPosition().getModel() != mainModel)
@@ -196,6 +191,7 @@ void Game::prepareSiteRetirement() {
   // So we don't have references to creatures in another model.
   for (WCreature c : mainModel->getAllCreatures())
     c->clearLastAttacker();
+  mainModel->clearExternalEnemies();
   TribeId::switchForSerialization(TribeId::getKeeper(), TribeId::getRetiredKeeper());
   UniqueEntity<Item>::offsetForSerialization(Random.getLL());
 }
@@ -296,8 +292,11 @@ void Game::tick(double time) {
   sunlightInfo.update(currentTime);
   if (previous != sunlightInfo.getState())
     for (Vec2 v : models.getBounds())
-      if (WModel m = models[v].get())
+      if (WModel m = models[v].get()) {
         m->updateSunlightMovement();
+        if (playerControl)
+          playerControl->onSunlightVisibilityChanged();
+      }
   INFO << "Global time " << time;
   for (WCollective col : collectives) {
     if (isVillainActive(col))

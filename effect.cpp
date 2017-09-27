@@ -14,7 +14,6 @@
    If not, see http://www.gnu.org/licenses/ . */
 
 #include "stdafx.h"
-
 #include "effect.h"
 #include "controller.h"
 #include "creature.h"
@@ -167,7 +166,12 @@ static double getDuration(WConstCreature c, LastingEffect e) {
     case LastingEffect::MAGIC_RESISTANCE:
     case LastingEffect::MELEE_RESISTANCE:
     case LastingEffect::RANGED_RESISTANCE:
-      return 30;
+    case LastingEffect::SUNLIGHT_VULNERABLE:
+      return 25;
+    case LastingEffect::SATIATED:
+      return 500;
+    case LastingEffect::RESTED:
+      return 1000;
   }
   return 0;
 }
@@ -632,6 +636,17 @@ string Effect::getName() const {
   return FORWARD_CALL(effect, getName);
 }
 
+Effect::Effect() {
+}
+
+bool Effect::operator ==(const Effect& o) const {
+  return o.effect == effect;
+}
+
+bool Effect::operator !=(const Effect& o) const {
+  return !(*this == o);
+}
+
 void Effect::applyToCreature(WCreature c, WCreature attacker) const {
   FORWARD_CALL(effect, applyToCreature, c, attacker);
   if (isConsideredHostile(effect) && attacker)
@@ -696,4 +711,7 @@ string getDescription(const DirEffectType& type) {
   }
 }
 
+SERIALIZE_DEF(Effect, effect)
 
+#include "pretty_archive.h"
+template void Effect::serialize(PrettyInputArchive&, unsigned);

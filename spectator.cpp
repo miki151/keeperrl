@@ -43,7 +43,7 @@ vector<Vec2> Spectator::getVisibleEnemies() const {
 }
 
 Spectator::CenterType Spectator::getCenterType() const {
-  return CenterType::FOLLOW;
+  return CenterType::NONE;
 }
 
 vector<Vec2> Spectator::getUnknownLocations(WConstLevel) const {

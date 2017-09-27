@@ -27,6 +27,9 @@
 #include "equipment.h"
 #include "collective_teams.h"
 #include "collective_warning.h"
+#include "creature_factory.h"
+#include "workshop_item.h"
+
 
 SERIALIZE_DEF(Tutorial, state, entrance)
 
@@ -55,11 +58,13 @@ enum class Tutorial::State {
   CREATE_TEAM,
   CONTROL_TEAM,
   CONTROL_MODE_MOVEMENT,
+  FULL_CONTROL,
   DISCOVER_VILLAGE,
   KILL_VILLAGE,
   LOOT_VILLAGE,
   LEAVE_CONTROL,
   SUMMARY1,
+  RESEARCH,
   SUMMARY2,
   FINISHED,
 };
@@ -144,6 +149,8 @@ bool Tutorial::canContinue(WConstGame game) const {
       return isTeam(collective) && !game->getPlayerControl()->getControlled().empty();
     case State::CONTROL_MODE_MOVEMENT:
       return true;
+    case State::FULL_CONTROL:
+      return true;
     case State::DISCOVER_VILLAGE:
       return collective->isKnownVillain(villain);
     case State::KILL_VILLAGE:
@@ -159,6 +166,9 @@ bool Tutorial::canContinue(WConstGame game) const {
     case State::LEAVE_CONTROL:
       return game->getPlayerControl()->getControlled().empty();
     case State::SUMMARY1:
+      return true;
+    case State::RESEARCH:
+      return collective->getTechnologies().size() > collective->getConfig().getInitialTech().size();
     case State::SUMMARY2:
       return true;
     case State::FINISHED:
@@ -210,7 +220,7 @@ string Tutorial::getMessage() const {
           "Try locking and unlocking your new door.";
     case State::BUILD_LIBRARY:
       return "The first room that you need to build is a library. This is where the Keeper and other minions "
-          "will learn spells, and research new technology. It is also a source of mana. Place 6 bookcases "
+          "will learn spells, and research new technology. Place 6 bookcases "
           "in the new room as highlighted. Remember that bookcases and other furniture block your minions' movement.";
     case State::DIG_2_ROOMS:
       return "Dig out some more rooms. "
@@ -268,6 +278,10 @@ string Tutorial::getMessage() const {
           "the arrow keys or by left-clicking on the map. You can scroll the map by dragging it with the right "
           "mouse button.\n \n"
           "Notice the rest of your team following you.";
+    case State::FULL_CONTROL:
+      return "You can take control over all team members in a tactical situation. To do this click on the appropriate "
+          "command in the upper left corner or press [G]. Clicking again will go back to controlling only the team "
+          "leader.";
     case State::DISCOVER_VILLAGE:
       return "It's time to discover the whereabouts of the nearby human village. Click on the minimap in the upper "
           "right corner. The approximate location of the village is marked by a '?'. Take your team there.";
@@ -279,10 +293,14 @@ string Tutorial::getMessage() const {
       return "There is a nice pile of treasure in one of the houses. Pick it all up by entering the tiles containing "
           "the loot, and clicking in the menu in the upper left corner.";
     case State::LEAVE_CONTROL:
-      return "To relinquish control of your team, choose the appropriate action in the upper left corner.";
+      return "To relinquish control of your team, choose the appropriate command in the upper left corner.";
     case State::SUMMARY1:
       return "You are back in the real-time mode. Your minions will now return to base and resume their normal routine. "
           "Once they are back, they will drop all the loot for the imps to take care of.";
+    case State::RESEARCH:
+      return "You have received 100 mana for your conquest. Mana is the main source of progress in the game and allows "
+          "you to research new technologies or increase your population by building statues or a throne.\n \n"
+          "Go ahead and research something in your library.";
     case State::SUMMARY2:
       return "Thank you for completing the tutorial! We hope that we have made it a bit easier for you to get into "
           "KeeperRL. We would love to hear your comments, so please drop by on the forums on Steam or at keeperrl.com "
@@ -294,8 +312,8 @@ string Tutorial::getMessage() const {
 }
 
 EnumSet<TutorialHighlight> Tutorial::getHighlights(WConstGame game) const {
-  if (canContinue(game))
-    return {};
+  /*if (canContinue(game))
+    return {};*/
   switch (state) {
     case State::DIG_ROOM:
     case State::CUT_TREES:
@@ -324,6 +342,8 @@ EnumSet<TutorialHighlight> Tutorial::getHighlights(WConstGame game) const {
       return {TutorialHighlight::EQUIPMENT_SLOT_WEAPON};
     case State::CREATE_TEAM:
       return {TutorialHighlight::NEW_TEAM};
+    case State::FULL_CONTROL:
+      return {TutorialHighlight::FULL_CONTROL};
     case State::CONTROL_TEAM:
       return {TutorialHighlight::CONTROL_TEAM};
     case State::LEAVE_CONTROL:
@@ -401,12 +421,15 @@ vector<Vec2> Tutorial::getHighlightedSquaresLow(WConstGame game) const {
     case State::SCHEDULE_WORKSHOP_ITEMS:
       return collective->getConstructions().getBuiltPositions(FurnitureType::WORKSHOP).transform(
           [](const Position& pos) { return pos.getCoord(); });
+    case State::RESEARCH:
+      return collective->getConstructions().getBuiltPositions(FurnitureType::BOOKCASE_WOOD).transform(
+          [](const Position& pos) { return pos.getCoord(); });
     default:
       return {};
   }
 }
 
-Tutorial::Tutorial() : state(State::WELCOME) {
+Tutorial::Tutorial() : state(State::CREATE_TEAM) {
 
 }
 

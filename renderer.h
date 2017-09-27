@@ -168,12 +168,10 @@ class Renderer {
   void drawTile(Vec2 pos, TileCoord coord, Vec2 size, Color = Color::WHITE, SpriteOrientation orientation = {});
   void setScissor(optional<Rectangle>);
   void addQuad(const Rectangle&, Color);
-  void drawQuads();
   static Color getBleedingColor(const ViewObject&);
   Vec2 getSize();
   bool loadTilesFromDir(const DirectoryPath& path, Vec2 size);
   bool loadTilesFromDir(const DirectoryPath&, vector<Texture>&, Vec2 size, int setWidth);
-  bool loadAltTilesFromDir(const DirectoryPath&, Vec2 altSize);
 
   void drawAndClearBuffer();
   void resize(int width, int height);
@@ -183,9 +181,7 @@ class Renderer {
   void waitEvent(Event&);
   Vec2 getMousePos();
 
-  void setTopLayer();
-  void popLayer();
-
+  void setDepth(double depth);
   void startMonkey();
   bool isMonkey();
 
@@ -194,7 +190,6 @@ class Renderer {
   TileCoord getTileCoord(const string&);
   Vec2 getNominalSize() const;
   vector<Texture> tiles;
-  vector<Texture> altTiles;
 
   static void putPixel(SDL::SDL_Surface*, Vec2, Color);
 
@@ -202,7 +197,6 @@ class Renderer {
   friend class Texture;
   optional<Texture> textTexture;
   Renderer(const Renderer&);
-  vector<Vec2> altTileSize;
   vector<Vec2> tileSize;
   Vec2 nominalSize;
   map<string, TileCoord> tileCoords;
@@ -217,12 +211,6 @@ class Renderer {
   bool monkey = false;
   deque<Event> eventQueue;
   bool genReleaseEvent = false;
-  void addRenderElem(function<void()>);
-  //sf::Text& getTextObject();
-  stack<int> layerStack;
-  int currentLayer = 0;
-  array<vector<function<void()>>, 2> renderList;
-//  vector<Vertex> quads;
   Vec2 mousePos;
   struct FontSet {
     int textFont;
@@ -236,8 +224,6 @@ class Renderer {
   bool fullscreen;
   int fullscreenMode;
   int zoom = 1;
-  optional<Rectangle> scissor;
-  void setGlScissor(optional<Rectangle>);
   bool cursorEnabled = true;
   void reloadCursors();
   FilePath cursorPath;
@@ -246,5 +232,6 @@ class Renderer {
   SDL::SDL_Cursor* cursor;
   SDL::SDL_Cursor* cursorClicked;
   SDL::SDL_Surface* loadScaledSurface(const FilePath& path, double scale);
+  double currentDepth = 0;
 };
 

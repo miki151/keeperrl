@@ -54,11 +54,15 @@ Tile Tile::setFloorBorders() {
 
 Tile Tile::addConnection(DirSet dirs, TileCoord coord) {
   connections[dirs] = coord;
+  if (dirs & (~connectionsMask))
+    connectionsMask = DirSet::fullSet();
+  anyConnections = true;
   return *this;
 }
 
 Tile Tile::addOption(Dir d, TileCoord coord) {
   connectionOption = make_pair(d, coord);
+  anyConnections = true;
   return *this;
 }
 
@@ -122,6 +126,10 @@ optional<Tile::TileCoord> Tile::getBackgroundCoord() const {
   return backgroundCoord;
 }
 
+bool Tile::hasAnyConnections() const {
+  return anyConnections;
+}
+
 Tile::TileCoord Tile::getSpriteCoord(DirSet c) const {
   if (connectionOption) {
     if (c.has(connectionOption->first))
@@ -131,6 +139,7 @@ Tile::TileCoord Tile::getSpriteCoord(DirSet c) const {
       return *tileCoord;
     }
   }
+  c = c & connectionsMask;
   if (connections[c])
     return *connections[c];
   else {
@@ -709,7 +718,7 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::UP_STAIRCASE, symbol(u8"➚", Color::ALMOST_WHITE, true));
     Tile::addSymbol(ViewId::WELL, symbol(u8"0", Color::BLUE));
     Tile::addSymbol(ViewId::MINION_STATUE, symbol(u8"&", Color::LIGHT_GRAY));
-    Tile::addSymbol(ViewId::THRONE, symbol(u8"Ω", Color::YELLOW));
+    Tile::addSymbol(ViewId::THRONE, symbol(u8"Ω", Color::YELLOW, true));
     Tile::addSymbol(ViewId::ORC, symbol(u8"o", Color::DARK_BLUE));
     Tile::addSymbol(ViewId::ORC_CAPTAIN, symbol(u8"o", Color::PURPLE));
     Tile::addSymbol(ViewId::ORC_SHAMAN, symbol(u8"o", Color::YELLOW));
@@ -991,14 +1000,15 @@ Color Tile::getColor(const ViewObject& object) {
 }
 
 Tile Tile::addCorner(DirSet corner, DirSet borders, TileCoord coord) {
+  anyCorners = true;
   for (DirSet dirs : Range(0, 255))
     if ((dirs & corner) == borders)
       corners[dirs].push_back(coord);
   return *this;
 }
 
-bool Tile::hasCorners() const {
-  return !corners.empty();
+bool Tile::hasAnyCorners() const {
+  return anyCorners;
 }
 
 const vector<Tile::TileCoord>& Tile::getCornerCoords(DirSet c) const {

@@ -93,8 +93,8 @@ FurnitureType Furniture::getType() const {
 }
 
 bool Furniture::isVisibleTo(WConstCreature c) const {
-  if (*entryType)
-    return (*entryType)->isVisibleTo(this, c);
+  if (entryType)
+    return entryType->isVisibleTo(this, c);
   else
     return true;
 }
@@ -104,9 +104,9 @@ const MovementSet& Furniture::getMovementSet() const {
 }
 
 void Furniture::onEnter(WCreature c) const {
-  if (*entryType) {
+  if (entryType) {
     auto f = c->getPosition().modFurniture(layer);
-    (*f->entryType)->handle(f, c);
+    f->entryType->handle(f, c);
   }
 }
 
@@ -114,8 +114,8 @@ void Furniture::destroy(Position pos, const DestroyAction& action) {
   pos.globalMessage("The " + name + " " + action.getIsDestroyed());
   auto myLayer = layer;
   auto myType = type;
-  if (*itemDrop)
-    pos.dropItems((*itemDrop)->random());
+  if (itemDrop)
+    pos.dropItems(itemDrop->random());
   if (destroyedRemains)
     pos.replaceFurniture(this, FurnitureFactory::get(*destroyedRemains, getTribe()));
   else
@@ -141,29 +141,28 @@ void Furniture::setTribe(TribeId id) {
 }
 
 void Furniture::tick(Position pos) {
-  if (auto& fire = getFire())
-    if (fire->isBurning()) {
-      if (*viewObject)
-        (*viewObject)->setAttribute(ViewObject::Attribute::BURNING, fire->getSize());
-      INFO << getName() << " burning " << fire->getSize();
-      for (Position v : pos.neighbors8(Random))
-        if (fire->getSize() > Random.getDouble() * 40)
-          v.fireDamage(fire->getSize() / 20);
-      fire->tick();
-      if (fire->isBurntOut()) {
-        pos.globalMessage("The " + getName() + " burns down");
-        pos.updateMovement();
-        auto myLayer = layer;
-        auto myType = type;
-        if (burntRemains)
-          pos.replaceFurniture(this, FurnitureFactory::get(*burntRemains, getTribe()));
-        else
-          pos.removeFurniture(this);
-        pos.getGame()->addEvent(EventInfo::FurnitureDestroyed{pos, myType, myLayer});
-        return;
-      }
-      pos.fireDamage(fire->getSize());
+  if (fire && fire->isBurning()) {
+    if (viewObject)
+      viewObject->setAttribute(ViewObject::Attribute::BURNING, fire->getSize());
+    INFO << getName() << " burning " << fire->getSize();
+    for (Position v : pos.neighbors8(Random))
+      if (fire->getSize() > Random.getDouble() * 40)
+        v.fireDamage(fire->getSize() / 20);
+    fire->tick();
+    if (fire->isBurntOut()) {
+      pos.globalMessage("The " + getName() + " burns down");
+      pos.updateMovement();
+      auto myLayer = layer;
+      auto myType = type;
+      if (burntRemains)
+        pos.replaceFurniture(this, FurnitureFactory::get(*burntRemains, getTribe()));
+      else
+        pos.removeFurniture(this);
+      pos.getGame()->addEvent(EventInfo::FurnitureDestroyed{pos, myType, myLayer});
+      return;
     }
+    pos.fireDamage(fire->getSize());
+  }
   if (tickType)
     FurnitureTick::handle(*tickType, pos, this); // this function can delete this
 }
@@ -276,8 +275,8 @@ optional<CreatureId> Furniture::getSummonedElement() const {
 }
 
 vector<PItem> Furniture::dropItems(Position pos, vector<PItem> v) const {
-  if (*droppedItems) {
-    return (*droppedItems)->handle(pos, this, std::move(v));
+  if (droppedItems) {
+    return droppedItems->handle(pos, this, std::move(v));
   } else
     return v;
 }
@@ -315,7 +314,7 @@ optional<Fire>& Furniture::getFire() {
 
 bool Furniture::canDestroy(const MovementType& movement, const DestroyAction& action) const {
    return canDestroy(action) &&
-       (!getFire() || !getFire()->isBurning()) &&
+       (!fire || !fire->isBurning()) &&
        (!movement.isCompatible(getTribe()) || action.canDestroyFriendly());
 }
 
@@ -325,8 +324,8 @@ void Furniture::fireDamage(Position pos, double amount) {
     fire->set(amount);
     if (!burning && fire->isBurning()) {
       pos.globalMessage("The " + getName() + " catches fire");
-      if (*viewObject)
-        (*viewObject)->setAttribute(ViewObject::Attribute::BURNING, fire->getSize());
+      if (viewObject)
+        viewObject->setAttribute(ViewObject::Attribute::BURNING, fire->getSize());
       pos.updateMovement();
       pos.getLevel()->addTickingFurniture(pos.getCoord());
     }
@@ -345,7 +344,7 @@ Furniture& Furniture::setDestroyable(double s, DestroyAction::Type type) {
 }
 
 Furniture& Furniture::setItemDrop(ItemFactory f) {
-  *itemDrop = f;
+  itemDrop = f;
   return *this;
 }
 
@@ -401,7 +400,7 @@ Furniture& Furniture::setDroppedItems(FurnitureDroppedItems t) {
 }
 
 Furniture& Furniture::setFireInfo(const Fire& f) {
-  *fire = f;
+  fire = f;
   return *this;
 }
 

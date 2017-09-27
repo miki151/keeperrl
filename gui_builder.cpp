@@ -955,6 +955,7 @@ static string getActionText(ItemAction a) {
     case ItemAction::UNLOCK: return "unlock";
     case ItemAction::REMOVE: return "remove";
     case ItemAction::CHANGE_NUMBER: return "change number";
+    case ItemAction::NAME: return "name";
   }
 }
 
@@ -1208,17 +1209,15 @@ SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info) {
           drawMiniMenu(std::move(lines), exit, bounds.bottomLeft(), 260);
      })));
   list.addElem(line.buildHorizontalList());
-  for (auto& elem : drawEffectsList(info))
-    list.addElem(std::move(elem));
-  list.addSpace();
   if (info.team.size() > 1) {
     const int numPerLine = 6;
     auto currentLine = gui.getListBuilder();
     currentLine.addElem(gui.label("Team: ", Color::WHITE), 60);
     for (auto& elem : info.team) {
       currentLine.addElem(gui.stack(
+            gui.translate(gui.rectangle((elem.active ? (elem.leader ? Color::YELLOW : Color::GREEN) : Color::BLACK).transparency(1094)), Vec2(-3, -3)),
             gui.viewObject(elem.viewId),
-            gui.label(toString((int) elem.bestAttack.value), 12)), 30);
+            gui.label(toString(elem.bestAttack), 12)), 30);
       if (currentLine.getLength() >= numPerLine) {
         list.addElem(currentLine.buildHorizontalList());
         currentLine.clear();
@@ -1228,6 +1227,9 @@ SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info) {
       list.addElem(currentLine.buildHorizontalList());
     list.addSpace();
   }
+  for (auto& elem : drawEffectsList(info))
+    list.addElem(std::move(elem));
+  list.addSpace();
   for (auto& elem : drawSkillsList(info))
     list.addElem(std::move(elem));
   if (auto spells = drawSpellsList(info, true)) {
@@ -1473,6 +1475,24 @@ SGuiElem GuiBuilder::drawRansomOverlay(const optional<CollectiveInfo::Ransom>& r
   return gui.setWidth(600, gui.miniWindow(gui.margins(lines.buildVerticalList(), 20)));
 }
 
+SGuiElem GuiBuilder::drawNextWaveOverlay(const optional<CollectiveInfo::NextWave>& wave) {
+  if (!wave)
+    return gui.empty();
+  GuiFactory::ListBuilder lines(gui, legendLineHeight);
+  lines.addElem(gui.label("Next enemy wave:"));
+  lines.addElem(gui.getListBuilder()
+        .addElem(gui.viewObject(wave->viewId), 30)
+        .addElemAuto(gui.label(wave->attacker))// + " (" + toString(wave->count) + ")"))
+        .buildHorizontalList());
+  lines.addElem(gui.label("Attacking in " + toString(wave->numTurns) + " turns."));
+  return gui.setWidth(300, gui.translucentBackgroundWithBorder(gui.stack(
+        gui.margins(lines.buildVerticalList(), 10),
+        gui.alignment(GuiFactory::Alignment::TOP_RIGHT, gui.preferredSize(40, 40, gui.stack(
+            gui.leftMargin(22, gui.label("x")),
+            gui.button(getButtonCallback(UserInputId::DISMISS_NEXT_WAVE)))))
+      )));
+}
+
 SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo& info, const optional<TutorialInfo>& tutorial) {
   if (!info.chosenWorkshop)
     return gui.empty();
@@ -1487,8 +1507,6 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo& info, const opti
     auto line = gui.getListBuilder();
     line.addElem(gui.viewObject(elem.viewId), 35);
     line.addElem(gui.label(elem.name, elem.unavailable ? Color::GRAY : Color::WHITE), 10);
-    if (elem.number > 1)
-      line.addBackElem(gui.label(toString(elem.number) + "x"), 35);
     line.addBackElem(gui.alignment(GuiFactory::Alignment::RIGHT, drawCost(*elem.price)), 80);
     SGuiElem guiElem = line.buildHorizontalList();
     if (elem.tutorialHighlight)
@@ -1537,8 +1555,7 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo& info, const opti
     line.addBackElem(gui.stack(
         gui.uiHighlightMouseOver(Color::GREEN),
         gui.button(getButtonCallback({UserInputId::WORKSHOP_ITEM_ACTION,
-            WorkshopQueuedActionInfo{i, ItemAction::CHANGE_NUMBER}})),
-        gui.label(toString(elem.number) + "x")), 35);
+            WorkshopQueuedActionInfo{i, ItemAction::CHANGE_NUMBER}}))), 35);
     line.addBackElem(gui.alignment(GuiFactory::Alignment::RIGHT, drawCost(*elem.price)), 80);
     lines2.addElem(gui.stack(
         gui.bottomMargin(5,
@@ -1715,9 +1732,8 @@ SGuiElem GuiBuilder::drawMapHintOverlay() {
       lines.addElem(gui.label("Position: " + toString(*highlighted.tilePos)));
   }
   if (!lines.isEmpty())
-    return gui.margins(gui.translucentBackground(gui.stack(
-        gui.rectangleBorder(Color::GRAY),
-        gui.margins(lines.buildVerticalList(), 10, 10, 10, 22))), 0, 0, -2, -2);
+    return gui.margins(gui.translucentBackgroundWithBorder(
+        gui.margins(lines.buildVerticalList(), 10, 10, 10, 22)), 0, 0, -2, -2);
   else
     return gui.empty();
 }
@@ -1734,6 +1750,8 @@ void GuiBuilder::drawOverlays(vector<OverlayInfo>& ret, GameInfo& info) {
            collectiveInfo, info.tutorial), OverlayInfo::IMMIGRATION});
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawRansomOverlay, this), THIS_LINE,
            collectiveInfo.ransom), OverlayInfo::TOP_LEFT});
+      ret.push_back({cache->get(bindMethod(&GuiBuilder::drawNextWaveOverlay, this), THIS_LINE,
+           collectiveInfo.nextWave), OverlayInfo::TOP_LEFT});
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawMinionsOverlay, this), THIS_LINE,
            collectiveInfo, info.tutorial), OverlayInfo::TOP_LEFT});
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawWorkshopsOverlay, this), THIS_LINE,

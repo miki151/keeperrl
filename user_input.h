@@ -80,6 +80,7 @@ enum class UserInputId {
     PAY_RANSOM,
     IGNORE_RANSOM,
     SHOW_HISTORY,
+    DISMISS_NEXT_WAVE,
 // turn-based actions
     MOVE,
     TRAVEL,

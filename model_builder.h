@@ -15,6 +15,7 @@ class ExternalEnemies;
 struct EnemyEvent;
 class Tutorial;
 class FilePath;
+class CreatureFactory;
 
 class ModelBuilder {
   public:

@@ -293,7 +293,7 @@ void Body::injureBodyPart(WCreature creature, BodyPart part, bool drop) {
 }
 
 template <typename T>
-void consumeAttr(T& mine, const T& his, vector<string>& adjectives, const string& adj) {
+void consumeBodyAttr(T& mine, const T& his, vector<string>& adjectives, const string& adj) {
   if (mine < his) {
     mine = his;
     if (!adj.empty())
@@ -317,7 +317,7 @@ void Body::consumeBodyParts(WCreature c, const Body& other, vector<string>& adje
     c->addPersonalEvent(c->getName().the() + " turns into a humanoid");
     xhumanoid = true;
   }
-  consumeAttr(size, other.size, adjectives, "larger");
+  consumeBodyAttr(size, other.size, adjectives, "larger");
 }
 
 
@@ -557,13 +557,6 @@ bool Body::tick(WConstCreature c) {
     c->you(MsgType::FALL, "apart");
     return true;
   }
-  if (c->getPosition().sunlightBurns() && isUndead()) {
-    c->you(MsgType::ARE, "burnt by the sun");
-    if (Random.roll(10)) {
-      c->you(MsgType::YOUR, "body crumbles to dust");
-      return true;
-    }
-  }
   return false;
 }
 
@@ -603,6 +596,8 @@ bool Body::isIntrinsicallyAffected(LastingEffect effect) const {
         case Material::WOOD: return false;
         default: return true;
       }
+    case LastingEffect::SUNLIGHT_VULNERABLE:
+      return material == Material::UNDEAD_FLESH;
     case LastingEffect::POISON_RESISTANT:
       return material != Material::FLESH;
     case LastingEffect::SLEEP_RESISTANT:
@@ -646,11 +641,6 @@ bool Body::isImmuneTo(LastingEffect effect) const {
   return false;
 }
 
-void Body::fireDamage(WCreature c, double amount) {
-  c->you(MsgType::ARE, "burnt by the fire");
-  bleed(c, 6. * amount / double(1 + c->getAttr(AttrType::DEFENSE)));
-}
-
 bool Body::affectByPoisonGas(WCreature c, double amount) {
   if (!c->isAffected(LastingEffect::POISON_RESISTANT) && material == Material::FLESH) {
     bleed(c, amount / 20);
@@ -690,6 +680,12 @@ bool Body::affectByAcid(WCreature c) {
   }
   c->you(MsgType::ARE, "hurt by the acid");
   bleed(c, 0.2);
+  return health <= 0;
+}
+
+bool Body::affectByFire(WCreature c, double amount) {
+  c->you(MsgType::ARE, "burnt by the fire");
+  bleed(c, 6. * amount / double(1 + c->getAttr(AttrType::DEFENSE)));
   return health <= 0;
 }
 

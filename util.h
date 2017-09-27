@@ -153,9 +153,9 @@ class Vec2 {
   static Vec2 getCenterOfWeight(vector<Vec2>);
 
   vector<Vec2> box(int radius, bool shuffle = false);
-  static vector<Vec2> directions8();
+  static const vector<Vec2>& directions8();
   vector<Vec2> neighbors8() const;
-  static vector<Vec2> directions4();
+  static const vector<Vec2>& directions4();
   vector<Vec2> neighbors4() const;
   static vector<Vec2> directions8(RandomGen&);
   vector<Vec2> neighbors8(RandomGen&) const;
@@ -453,7 +453,8 @@ class EnumMap {
     for (int i : All(elems))
       tmp.push_back(std::move(elems[i]));
     ar(tmp);
-    CHECK(tmp.size() <= elems.size()) << tmp.size() << " " << elems.size();
+    if (tmp.size() > elems.size())
+      throw ::cereal::Exception("EnumMap larger than legal enum range");
     for (int i : All(tmp))
       elems[i] = std::move(tmp[i]);
   }
@@ -1074,7 +1075,7 @@ class DirSet {
   DirSet intersection(DirSet) const;
   DirSet complement() const;
 
-  operator size_t() const {
+  operator ContentType() const {
     return content;
   }
 
@@ -1236,7 +1237,8 @@ class EnumSet {
       tmp.push_back(elem);
     ar(tmp);
     for (T elem : tmp) {
-      CHECK(int(elem) >= 0 && int(elem) < EnumInfo<T>::size);
+      if (int(elem) < 0 || int(elem) >= EnumInfo<T>::size)
+        throw ::cereal::Exception("EnumSet element outside of legal enum range");
       insert(elem);
     }
   }
@@ -1349,10 +1351,57 @@ class HeapAllocated {
     elem.reset(new T(std::move(t)));
   }
 
-  /*HeapAllocated& operator = (const T& t) {
-    *elem.get() = t;
+  HeapAllocated& operator = (const HeapAllocated& t) {
+    *elem.get() = *t;
     return *this;
-  }*/
+  }
+
+  HeapAllocated& operator = (HeapAllocated&& t) {
+    elem = std::move(t.elem);
+    return *this;
+  }
+
+  SERIALIZE_ALL(elem)
+
+  private:
+  unique_ptr<T> SERIAL(elem);
+};
+
+template <class T>
+class HeapAllocated<optional<T>> {
+  public:
+  HeapAllocated() : elem(new optional<T>()) {}
+
+  template <typename... Args>
+  HeapAllocated(Args... a) : elem(new optional<T>(a...)) {}
+
+  HeapAllocated(T&& o) : elem(new optional<T>(std::move(o))) {}
+
+  HeapAllocated(const HeapAllocated& o) : elem(new optional<T>(*o.elem)) {}
+
+  T* operator -> () {
+    return &(**elem);
+  }
+
+  const T* operator -> () const {
+    return &(**elem);
+  }
+
+  optional<T>& operator * () {
+    return *elem;
+  }
+
+  const optional<T>& operator * () const {
+    return *elem;
+  }
+
+  explicit operator bool () const {
+    return !!elem && !!(*elem);
+  }
+
+  void reset(T&& t) {
+    elem.reset(new optional<T>(std::move(t)));
+  }
 
   HeapAllocated& operator = (const HeapAllocated& t) {
     *elem.get() = *t;
@@ -1364,10 +1413,10 @@ class HeapAllocated {
     return *this;
   }
 
-  SERIALIZE_ALL(elem);
+  SERIALIZE_ALL(elem)
 
   private:
-  unique_ptr<T> SERIAL(elem);
+  unique_ptr<optional<T>> SERIAL(elem);
 };
 
 class Semaphore {

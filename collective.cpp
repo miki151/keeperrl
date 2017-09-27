@@ -47,6 +47,10 @@
 #include "collective_warning.h"
 #include "immigration.h"
 #include "trap_type.h"
+#include "creature_factory.h"
+#include "resource_info.h"
+#include "workshop_item.h"
+
 
 template <class Archive>
 void Collective::serialize(Archive& ar, const unsigned int version) {
@@ -118,29 +122,6 @@ optional<EnemyId> Collective::getEnemyId() const {
 Collective::~Collective() {
 }
 
-namespace {
-
-class LeaderControlOverride : public Creature::MoraleOverride {
-  public:
-  LeaderControlOverride(WCollective col) : collective(col) {}
-
-  virtual optional<double> getMorale(WConstCreature creature) override {
-    for (auto team : collective->getTeams().getContaining(collective->getLeader()))
-      if (collective->getTeams().isActive(team) && collective->getTeams().contains(team, creature) &&
-          collective->getTeams().getLeader(team) == collective->getLeader())
-        return 1;
-    return none;
-  }
-
-  SERIALIZATION_CONSTRUCTOR(LeaderControlOverride);
-  SERIALIZE_ALL(SUBCLASS(Creature::MoraleOverride), collective)
-
-  private:
-  WCollective SERIAL(collective);
-};
-
-}
-
 void Collective::addCreatureInTerritory(PCreature creature, EnumSet<MinionTrait> traits) {
   for (Position pos : Random.permutation(territory->getAll()))
     if (pos.canEnter(creature.get())) {
@@ -175,9 +156,6 @@ void Collective::addCreature(WCreature c, EnumSet<MinionTrait> traits) {
     bySpawnType[*spawnType].push_back(c);
   for (WItem item : c->getEquipment().getItems())
     CHECK(minionEquipment->tryToOwn(c, item));
-  if (traits.contains(MinionTrait::FIGHTER)) {
-    c->setMoraleOverride(Creature::PMoraleOverride(new LeaderControlOverride(this)));
-  }
   control->onMemberAdded(c);
 }
 
@@ -191,7 +169,6 @@ void Collective::removeCreature(WCreature c) {
   for (MinionTrait t : ENUM_ALL(MinionTrait))
     if (byTrait[t].contains(c))
       byTrait[t].removeElement(c);
-  c->setMoraleOverride(nullptr);
 }
 
 void Collective::banishCreature(WCreature c) {
@@ -699,26 +676,6 @@ vector<WCreature> Collective::getCreaturesAnyOf(EnumSet<MinionTrait> trait) cons
   return ret;
 }
 
-vector<WCreature> Collective::getCreatures(EnumSet<MinionTrait> with, EnumSet<MinionTrait> without) const {
-  vector<WCreature> ret;
-  for (WCreature c : creatures) {
-    bool ok = true;
-    for (MinionTrait t : with)
-      if (!hasTrait(c, t)) {
-        ok = false;
-        break;
-      }
-    for (MinionTrait t : without)
-      if (hasTrait(c, t)) {
-        ok = false;
-        break;
-      }
-    if (ok)
-      ret.push_back(c);
-  }
-  return ret;
-}
-
 double Collective::getKillManaScore(WConstCreature victim) const {
   return 0;
 /*  int ret = victim->getDifficultyPoints() / 3;
@@ -774,18 +731,18 @@ void Collective::onEvent(const GameEvent& event) {
           surrendering.insert(info.victim);
       },
       [&](const TrapTriggered& info) {
-        if (constructions->containsTrap(info.pos)) {
-          constructions->getTrap(info.pos).reset();
-          if (constructions->getTrap(info.pos).getType() == TrapType::SURPRISE)
+        if (auto& trap = constructions->getTrap(info.pos)) {
+          trap->reset();
+          if (trap->getType() == TrapType::SURPRISE)
             handleSurprise(info.pos);
         }
       },
       [&](const TrapDisarmed& info) {
-        if (constructions->containsTrap(info.pos)) {
-          control->addMessage(PlayerMessage(info.creature->getName().a() + " disarms a "
-                + getTrapName(constructions->getTrap(info.pos).getType()) + " trap.",
-                MessagePriority::HIGH).setPosition(info.pos));
-          constructions->getTrap(info.pos).reset();
+        if (auto& trap = constructions->getTrap(info.pos)) {
+          control->addMessage(PlayerMessage(info.creature->getName().a() +
+              " disarms a " + getTrapName(trap->getType()) + " trap.",
+              MessagePriority::HIGH).setPosition(info.pos));
+          trap->reset();
         }
       },
       [&](const FurnitureDestroyed& info) {
@@ -824,9 +781,6 @@ void Collective::onMinionKilled(WCreature victim, WCreature killer) {
   control->onMemberKilled(victim, killer);
   if (hasTrait(victim, MinionTrait::PRISONER) && killer && getCreatures().contains(killer))
     returnResource({ResourceId::PRISONER_HEAD, 1});
-  if (victim == leader)
-    for (WCreature c : getCreatures(MinionTrait::SUMMONED)) // shortcut to get rid of summons when summonner dies
-      c->disappear().perform(c);
   if (!hasTrait(victim, MinionTrait::FARM_ANIMAL)) {
     decreaseMoraleForKill(killer, victim);
     if (killer)
@@ -1071,7 +1025,7 @@ bool Collective::canAddFurniture(Position position, FurnitureType type) const {
       && (territory->contains(position) ||
           canClaimSquare(position) ||
           CollectiveConfig::canBuildOutsideTerritory(type))
-      && !getConstructions().containsTrap(position)
+      && !getConstructions().getTrap(position)
       && !getConstructions().containsFurniture(position, Furniture::getLayer(type))
       && position.canConstruct(type);
 }
@@ -1094,7 +1048,7 @@ void Collective::destroySquare(Position pos, FurnitureLayer layer) {
   }
   if (layer != FurnitureLayer::FLOOR) {
     zones->eraseZones(pos);
-    if (constructions->containsTrap(pos))
+    if (constructions->getTrap(pos))
       removeTrap(pos);
   }
 }
@@ -1157,13 +1111,13 @@ void Collective::addTrap(Position pos, TrapType type) {
 
 void Collective::onAppliedItem(Position pos, WItem item) {
   CHECK(item->getTrapType());
-  if (constructions->containsTrap(pos))
-    constructions->getTrap(pos).setArmed();
+  if (auto& trap = constructions->getTrap(pos))
+    trap->setArmed();
 }
 
 void Collective::onAppliedItemCancel(Position pos) {
-  if (constructions->containsTrap(pos))
-    constructions->getTrap(pos).reset();
+  if (auto& trap = constructions->getTrap(pos))
+    trap->reset();
 }
 
 bool Collective::isConstructionReachable(Position pos) {
@@ -1206,18 +1160,20 @@ void Collective::handleTrapPlacementAndProduction() {
   EnumMap<TrapType, vector<pair<WItem, Position>>> trapItems(
       [this] (TrapType type) { return getTrapItems(type, territory->getAll());});
   EnumMap<TrapType, int> missingTraps;
-  for (auto elem : constructions->getTraps())
-    if (!elem.second.isArmed() && !elem.second.isMarked() && !isDelayed(elem.first)) {
-      vector<pair<WItem, Position>>& items = trapItems[elem.second.getType()];
+  for (auto trapPos : constructions->getAllTraps()) {
+    auto& trap = *constructions->getTrap(trapPos);
+    if (!trap.isArmed() && !trap.isMarked() && !isDelayed(trapPos)) {
+      vector<pair<WItem, Position>>& items = trapItems[trap.getType()];
       if (!items.empty()) {
         Position pos = items.back().second;
-        auto task = taskMap->addTask(Task::applyItem(this, pos, items.back().first, elem.first), pos);
+        auto task = taskMap->addTask(Task::applyItem(this, pos, items.back().first, trapPos), pos);
         markItem(items.back().first, task);
         items.pop_back();
-        constructions->getTrap(elem.first).setMarked();
+        trap.setMarked();
       } else
-        ++missingTraps[elem.second.getType()];
+        ++missingTraps[trap.getType()];
     }
+  }
   for (TrapType type : ENUM_ALL(TrapType))
     scheduleAutoProduction([type](WConstItem it) { return it->getTrapType() == type;}, missingTraps[type]);
 }
@@ -1552,13 +1508,6 @@ void Collective::freeTeamMembers(TeamId id) {
   }
 }
 
-static optional<Vec2> getAdjacentWall(Position pos) {
-  for (Position p : pos.neighbors4(Random))
-    if (p.isWall())
-      return pos.getDir(p);
-  return none;
-}
-
 Zones& Collective::getZones() {
   return *zones;
 }
@@ -1588,6 +1537,5 @@ int Collective::getMaxPopulation() const {
   return ret;
 }
 
-REGISTER_TYPE(LeaderControlOverride);
-REGISTER_TYPE(Collective);
+REGISTER_TYPE(Collective)
 REGISTER_TYPE(ListenerTemplate<Collective>)
