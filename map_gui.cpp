@@ -748,7 +748,7 @@ void MapGui::renderHighlights(Renderer& renderer, Vec2 size, milliseconds curren
         renderer.setDepth(lowHighlights ? getSpriteDepth(allTiles.getYRange(), wpos.y,
             ViewLayer::FLOOR_BACKGROUND) : 0);
         for (HighlightType highlight : ENUM_ALL(HighlightType))
-          if (isRenderedHighlight(*index, highlight)  && isRenderedHighlightLow(*index, highlight) == lowHighlights)
+          if (isRenderedHighlight(*index, highlight) && isRenderedHighlightLow(*index, highlight) == lowHighlights)
             renderHighlight(renderer, pos, size, *index, highlight);
       }
   for (Vec2 wpos : lowHighlights ? tutorialHighlightLow : tutorialHighlightHigh) {
@@ -847,7 +847,6 @@ void MapGui::renderMapObjects(Renderer& renderer, Vec2 size, milliseconds curren
       renderer.setDepth(0);
       return Vec2(0, 0);
     });
-
   renderHighlights(renderer, size, currentTimeReal, true);
   if (spriteMode)
     renderExtraBorders(renderer, currentTimeReal);
@@ -867,7 +866,6 @@ void MapGui::renderMapObjects(Renderer& renderer, Vec2 size, milliseconds curren
             isFoW(wpos + Vec2(Dir::SW))));
       }
     }
-  renderHighlights(renderer, size, currentTimeReal, false);
   if (!buttonViewId && lastHighlighted.creaturePos) {
     renderer.setDepth(getSpriteDepth(allTiles.getYRange(), lastHighlighted.tilePos->y, ViewLayer::ITEM));
     drawCreatureHighlight(renderer, *lastHighlighted.creaturePos, size, Color::ALMOST_WHITE);
@@ -877,6 +875,8 @@ void MapGui::renderMapObjects(Renderer& renderer, Vec2 size, milliseconds curren
     drawSquareHighlight(renderer, topLeftCorner + (*lastHighlighted.tilePos - allTiles.topLeft()).mult(size),
         size);
   }
+  renderHighlights(renderer, size, currentTimeReal, false);
+  renderer.setDepth(0);
 }
 
 void MapGui::drawCreatureHighlight(Renderer& renderer, Vec2 pos, Vec2 size, Color color) {
