@@ -227,18 +227,15 @@ Texture::Texture() {
 }
 
 void Renderer::renderDeferredSprites() {
-  // sprites have individual depths specified so go back to origin to render them
-  SDL::glTranslated(0, 0, -currentDepth);
   static vector<SDL::GLfloat> vertices;
   static vector<SDL::GLfloat> texCoords;
   static vector<SDL::GLfloat> colors;
   vertices.clear();
   texCoords.clear();
   colors.clear();
-  auto addVertex = [&](Vec2 v, double depth, int texX, int texY, Vec2 texSize, Color color) {
+  auto addVertex = [&](Vec2 v, int texX, int texY, Vec2 texSize, Color color) {
     vertices.push_back(v.x);
     vertices.push_back(v.y);
-    vertices.push_back((float) depth);
     texCoords.push_back(((float)texX) / texSize.x);
     texCoords.push_back(((float)texY) / texSize.y);
     colors.push_back(((float) color.r) / 255);
@@ -249,7 +246,7 @@ void Renderer::renderDeferredSprites() {
   optional<SDL::GLuint> currentTex;
   for (auto& elem : deferredSprites) {
     auto add = [&](Vec2 v, int texX, int texY, const DeferredSprite& draw) {
-      addVertex(v, draw.depth, texX, texY, draw.realSize, draw.color.value_or(Color::WHITE));
+      addVertex(v, texX, texY, draw.realSize, draw.color.value_or(Color::WHITE));
     };
     add(elem.a, elem.p.x, elem.p.y, elem);
     add(elem.b, elem.k.x, elem.p.y, elem);
@@ -268,11 +265,11 @@ void Renderer::renderDeferredSprites() {
     checkOpenglError();
     SDL::glColorPointer(4, GL_FLOAT, 0, colors.data());
     checkOpenglError();
-    SDL::glVertexPointer(3, GL_FLOAT, 0, vertices.data());
+    SDL::glVertexPointer(2, GL_FLOAT, 0, vertices.data());
     checkOpenglError();
     SDL::glTexCoordPointer(2, GL_FLOAT, 0, texCoords.data());
     checkOpenglError();
-    SDL::glDrawArrays(GL_TRIANGLES, 0, vertices.size() / 3);
+    SDL::glDrawArrays(GL_TRIANGLES, 0, vertices.size() / 2);
     checkOpenglError();
     checkOpenglError();
     vertices.clear();
@@ -284,7 +281,6 @@ void Renderer::renderDeferredSprites() {
     SDL::glDisable(GL_TEXTURE_2D);
   }
   deferredSprites.clear();
-  SDL::glTranslated(0, 0, currentDepth);
 }
 
 void Renderer::drawSprite(const Texture& t, Vec2 topLeft, Vec2 bottomRight, Vec2 p, Vec2 k, optional<Color> color) {
@@ -295,7 +291,7 @@ void Renderer::drawSprite(const Texture& t, Vec2 a, Vec2 b, Vec2 c, Vec2 d, Vec2
   if (currentTexture && currentTexture != *t.texId)
     renderDeferredSprites();
   currentTexture = *t.texId;
-  deferredSprites.push_back({a, b, c, d, p, k, t.realSize, currentDepth, color});
+  deferredSprites.push_back({a, b, c, d, p, k, t.realSize, color});
 }
 
 static float sizeConv(int size) {
@@ -445,6 +441,7 @@ void Renderer::addQuad(const Rectangle& r, Color color) {
 }
 
 void Renderer::setScissor(optional<Rectangle> s) {
+  renderDeferredSprites();
   if (s) {
     int zoom = getZoom();
     SDL::glScissor(s->left() * zoom, (getSize().y - s->bottom()) * zoom, s->width() * zoom, s->height() * zoom);
@@ -454,12 +451,15 @@ void Renderer::setScissor(optional<Rectangle> s) {
     SDL::glDisable(GL_SCISSOR_TEST);
 }
 
-void Renderer::setDepth(double depth) {
-  SDL::glTranslated(0, 0, -currentDepth);
-  checkOpenglError();
-  currentDepth = depth;
-  SDL::glTranslated(0, 0, depth);
-  checkOpenglError();
+void Renderer::setTopLayer() {
+  renderDeferredSprites();
+  SDL::glPushMatrix();
+  SDL::glTranslated(0, 0, 1);
+}
+
+void Renderer::popLayer() {
+  renderDeferredSprites();
+  SDL::glPopMatrix();
 }
 
 Vec2 Renderer::getSize() {
@@ -517,10 +517,7 @@ void Renderer::initOpenGL() {
   SDL::glEnable(GL_BLEND);
   SDL::glEnable(GL_TEXTURE_2D);
   SDL::glEnable(GL_DEPTH_TEST);
-  SDL::glAlphaFunc( GL_GREATER, 0.1 );
-  SDL::glEnable(GL_ALPHA_TEST );
   SDL::glDepthFunc(GL_LEQUAL);
-  SDL::glDepthRange(-1, 1);
   SDL::glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
   CHECK(SDL::glGetError() == GL_NO_ERROR);
   reloadCursors();
