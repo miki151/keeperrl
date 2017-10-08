@@ -464,14 +464,17 @@ void MapGui::drawHealthBar(Renderer& renderer, Vec2 pos, Vec2 size, double healt
   double barWidth = 0.12;
   double barLength = 0.8;
   auto getBar = [&](double state) {
-    return Rectangle(pos.x + size.x * (1 - barLength) / 2, pos.y,
-        pos.x + size.x * state * (1 + barLength) / 2, pos.y + size.y * barWidth);
+    return Rectangle((int) (pos.x + size.x * (1 - barLength) / 2), pos.y,
+        (int) (pos.x + size.x * state * (1 + barLength) / 2), (int) (pos.y + size.y * barWidth));
   };
-
-  renderer.drawFilledRectangle(getBar(1), Color::BLACK.transparency(150));
+  auto color = Color::f(min(1.0, 2 - health * 2), min(1.0, 2 * health), 0);
+  auto fullRect = getBar(1);
+  renderer.drawFilledRectangle(fullRect.minusMargin(-1), Color::TRANSPARENT, Color::BLACK.transparency(100));
+  renderer.drawFilledRectangle(fullRect, color.transparency(100));
   if (health > 0)
-    renderer.drawFilledRectangle(getBar(health),
-        Color::f(min(1.0, 2 - health * 2), min(1.0, 2 * health), 0).transparency(200));
+    renderer.drawFilledRectangle(getBar(health), color.transparency(200));
+  Rectangle shadowRect(fullRect.bottomLeft() - Vec2(0, 1), fullRect.bottomRight());
+  renderer.drawFilledRectangle(shadowRect, Color::BLACK.transparency(100));
 }
 
 
