@@ -53,13 +53,13 @@ RICH_ENUM(EnemyId,
 );
 
 
-struct EnemyEvent;
+struct ExternalEnemy;
 
 class EnemyFactory {
   public:
   EnemyFactory(RandomGen&);
   EnemyInfo get(EnemyId);
-  vector<EnemyEvent> getExternalEnemies();
+  vector<ExternalEnemy> getExternalEnemies();
   vector<EnemyInfo> getVaults();
 
   private:

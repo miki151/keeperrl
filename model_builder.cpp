@@ -325,10 +325,10 @@ PModel ModelBuilder::tryCampaignBaseModel(const string& siteName, bool addExtern
   enemyInfo.push_back(enemyFactory->get(EnemyId::TUTORIAL_VILLAGE));
   if (random.chance(0.3))
     enemyInfo.push_back(enemyFactory->get(EnemyId::KRAKEN));
-  vector<EnemyEvent> externalEnemies;
+  optional<ExternalEnemies> externalEnemies;
   if (addExternalEnemies)
-    externalEnemies = enemyFactory->getExternalEnemies();
-  return tryModel(230, siteName, enemyInfo, true, biome, externalEnemies, true);
+    externalEnemies = ExternalEnemies(random, enemyFactory->getExternalEnemies());
+  return tryModel(230, siteName, enemyInfo, true, biome, std::move(externalEnemies), true);
 }
 
 PModel ModelBuilder::tryTutorialModel(const string& siteName) {
@@ -477,7 +477,7 @@ WCollective ModelBuilder::spawnKeeper(WModel m, PCreature keeper) {
 }
 
 PModel ModelBuilder::tryModel(int width, const string& levelName, vector<EnemyInfo> enemyInfo, bool keeperSpawn,
-    BiomeId biomeId, vector<EnemyEvent> externalEnemies, bool hasWildlife) {
+    BiomeId biomeId, optional<ExternalEnemies> externalEnemies, bool hasWildlife) {
   auto model = Model::create();
   vector<SettlementInfo> topLevelSettlements;
   vector<EnemyInfo> extraEnemies;
@@ -517,8 +517,8 @@ PModel ModelBuilder::tryModel(int width, const string& levelName, vector<EnemyIn
     collective->setControl(std::move(control));
     model->collectives.push_back(std::move(collective));
   }
-  if (!externalEnemies.empty())
-    model->addExternalEnemies(ExternalEnemies(random, externalEnemies));
+  if (externalEnemies)
+    model->addExternalEnemies(std::move(*externalEnemies));
   return model;
 }
 

@@ -45,7 +45,7 @@ class ModelBuilder {
   PModel tryTutorialModel(const string& siteName);
   PModel tryCampaignSiteModel(const string& siteName, EnemyId, VillainType);
   PModel tryModel(int width, const string& levelName, vector<EnemyInfo>,
-      bool keeperSpawn, BiomeId, vector<EnemyEvent>, bool wildlife);
+      bool keeperSpawn, BiomeId, optional<ExternalEnemies>, bool wildlife);
   SettlementInfo& makeExtraLevel(WModel, EnemyInfo&);
   PModel tryBuilding(int numTries, function<PModel()> buildFun);
   void addMapVillains(vector<EnemyInfo>&, BiomeId);

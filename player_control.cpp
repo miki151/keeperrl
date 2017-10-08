@@ -1139,11 +1139,11 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   }
   if (auto& enemies = getModel()->getExternalEnemies())
     if (auto nextWave = enemies->getNextWave())
-      if (!dismissedNextWaves.count(nextWave->id)) {
+      if (!dismissedNextWaves.count(enemies->getNextWaveIndex())) {
         info.nextWave = CollectiveInfo::NextWave {
           nextWave->viewId,
-          nextWave->name,
-          nextWave->numCreatures,
+          nextWave->enemy.name,
+          nextWave->groupSize,
           (int) (nextWave->attackTime - getLocalTime())
         };
       }
@@ -1909,7 +1909,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
     case UserInputId::DISMISS_NEXT_WAVE:
       if (auto& enemies = getModel()->getExternalEnemies())
         if (auto nextWave = enemies->getNextWave())
-          dismissedNextWaves.insert(nextWave->id);
+          dismissedNextWaves.insert(enemies->getNextWaveIndex());
       break;
     default: break;
   }
