@@ -23,14 +23,10 @@ class ItemType;
 
 class MainLoop {
   public:
-  struct ForceGameInfo {
-    PlayerRole role;
-    CampaignType type;
-  };
   MainLoop(View*, Highscores*, FileSharing*, const DirectoryPath& dataFreePath, const DirectoryPath& userPath,
-      Options*, Jukebox*, SokobanInput*, bool useSingleThread, optional<ForceGameInfo>);
+      Options*, Jukebox*, SokobanInput*, bool useSingleThread);
 
-  void start(bool tilesPresent);
+  void start(bool tilesPresent, bool quickGame);
   void modelGenTest(int numTries, const vector<std::string>& types, RandomGen&, Options*);
   struct BattleInfo {
     CreatureId ally;
@@ -59,7 +55,7 @@ class MainLoop {
 
   void doWithSplash(SplashType, const string& text, function<void()> fun, function<void()> cancelFun = nullptr);
 
-  PGame prepareCampaign(RandomGen&, const optional<ForceGameInfo>&);
+  PGame prepareCampaign(RandomGen&);
   enum class ExitCondition;
   ExitCondition playGame(PGame&&, bool withMusic, bool noAutoSave, function<optional<ExitCondition> (WGame)> = nullptr);
   void splashScreen();
@@ -85,13 +81,13 @@ class MainLoop {
   Highscores* highscores;
   FileSharing* fileSharing;
   bool useSingleThread;
-  optional<ForceGameInfo> forceGame;
   SokobanInput* sokobanInput;
   PModel getBaseModel(ModelBuilder&, CampaignSetup&);
   void considerGameEventsPrompt();
   void considerFreeVersionText(bool tilesPresent);
   void eraseAllSavesExcept(const PGame&, optional<GameSaveType>);
   PGame prepareTutorial();
+  void launchQuickGame();
 };
 
 

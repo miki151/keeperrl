@@ -33,11 +33,9 @@
 #include "creature_factory.h"
 
 MainLoop::MainLoop(View* v, Highscores* h, FileSharing* fSharing, const DirectoryPath& freePath,
-    const DirectoryPath& uPath, Options* o, Jukebox* j, SokobanInput* soko, bool singleThread,
-    optional<ForceGameInfo> force)
+    const DirectoryPath& uPath, Options* o, Jukebox* j, SokobanInput* soko, bool singleThread)
       : view(v), dataFreePath(freePath), userPath(uPath), options(o), jukebox(j),
-        highscores(h), fileSharing(fSharing), useSingleThread(singleThread), forceGame(force),
-        sokobanInput(soko) {
+        highscores(h), fileSharing(fSharing), useSingleThread(singleThread), sokobanInput(soko) {
 }
 
 vector<SaveFileInfo> MainLoop::getSaveFiles(const DirectoryPath& path, const string& suffix) {
@@ -313,12 +311,7 @@ PGame MainLoop::prepareTutorial() {
   return game;
 }
 
-PGame MainLoop::prepareCampaign(RandomGen& random, const optional<ForceGameInfo>& forceGameInfo) {
-  if (forceGameInfo) {
-    CampaignBuilder builder(view, random, options, forceGameInfo->role);
-    auto result = builder.prepareCampaign(bindMethod(&MainLoop::getRetiredGames, this), forceGameInfo->type);
-    return Game::campaignGame(prepareCampaignModels(*result, random), *result);
-  }
+PGame MainLoop::prepareCampaign(RandomGen& random) {
   auto choice = PlayerRoleChoice(PlayerRole::KEEPER);
   while (1) {
     choice = view->getPlayerRoleChoice(choice);
@@ -395,11 +388,32 @@ void MainLoop::considerFreeVersionText(bool tilesPresent) {
         "More information on the website.");
 }
 
-void MainLoop::start(bool tilesPresent) {
+void MainLoop::launchQuickGame() {
+  vector<ListElem> optionsUnused;
+  vector<SaveFileInfo> files;
+  getSaveOptions({
+      {GameSaveType::AUTOSAVE, "Recovered games:"},
+      {GameSaveType::KEEPER, "Keeper games:"}}, optionsUnused, files);
+  auto toLoad = std::min_element(files.begin(), files.end(),
+      [](const auto& f1, const auto& f2) { return f1.date > f2.date; });
+  PGame game;
+  if (toLoad != files.end())
+    game = loadGame(userPath.file((*toLoad).filename));
+  if (!game) {
+    CampaignBuilder builder(view, Random, options, PlayerRole::KEEPER);
+    auto result = builder.prepareCampaign(bindMethod(&MainLoop::getRetiredGames, this), CampaignType::QUICK_MAP);
+    game = Game::campaignGame(prepareCampaignModels(*result, Random), *result);
+  }
+  playGame(std::move(game), true, false);
+}
+
+void MainLoop::start(bool tilesPresent, bool quickGame) {
   if (options->getBoolValue(OptionId::MUSIC))
     jukebox->toggle(true);
   NameGenerator::init(dataFreePath.subdirectory("names"));
-  if (!forceGame)
+  if (quickGame)
+    launchQuickGame();
+  else
     splashScreen();
   view->reset();
   considerFreeVersionText(tilesPresent);
@@ -408,20 +422,16 @@ void MainLoop::start(bool tilesPresent) {
   while (1) {
     playMenuMusic();
     optional<int> choice;
-    if (forceGame)
-      choice = 0;
-    else
-      choice = view->chooseFromList("", {
+    choice = view->chooseFromList("", {
         "Play", "Settings", "High scores", "Credits", "Quit"}, lastIndex, MenuType::MAIN);
     if (!choice)
       continue;
     lastIndex = *choice;
     switch (*choice) {
       case 0:
-        if (PGame game = prepareCampaign(Random, forceGame))
+        if (PGame game = prepareCampaign(Random))
           playGame(std::move(game), true, false);
         view->reset();
-        forceGame = none;
         break;
       case 1: options->handle(view, OptionSet::GENERAL); break;
       case 2: highscores->present(view); break;
