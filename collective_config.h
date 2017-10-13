@@ -85,8 +85,8 @@ struct FloorInfo {
 
 class CollectiveConfig {
   public:
-  static CollectiveConfig keeper(int immigrantInterval, int maxPopulation, vector<PopulationIncrease>,
-      const vector<ImmigrantInfo>&);
+  static CollectiveConfig keeper(int immigrantInterval, int maxPopulation, bool regenerateMana,
+      vector<PopulationIncrease>, const vector<ImmigrantInfo>&);
   static CollectiveConfig withImmigrants(int immigrantInterval, int maxPopulation, const vector<ImmigrantInfo>&);
   static CollectiveConfig noImmigrants();
 
@@ -109,6 +109,7 @@ class CollectiveConfig {
   int getImmigrantTimeout() const;
   double getGhostProb() const;
   bool hasVillainSleepingTask() const;
+  bool getRegenerateMana() const;
   const vector<ImmigrantInfo>& getImmigrantInfo() const;
   const vector<PopulationIncrease>& getPopulationIncreases() const;
   const optional<GuardianInfo>& getGuardianInfo() const;
@@ -152,4 +153,5 @@ class CollectiveConfig {
   double SERIAL(ghostProb) = 0;
   optional<GuardianInfo> SERIAL(guardianInfo);
   void addBedRequirementToImmigrants();
+  bool SERIAL(regenerateMana) = false;
 };

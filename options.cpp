@@ -48,6 +48,7 @@ const EnumMap<OptionId, Options::Value> defaults {
   {OptionId::LESSER_VILLAINS, 3},
   {OptionId::ALLIES, 2},
   {OptionId::INFLUENCE_SIZE, 3},
+  {OptionId::GENERATE_MANA, 0},
 };
 
 const map<OptionId, string> names {
@@ -80,6 +81,7 @@ const map<OptionId, string> names {
   {OptionId::LESSER_VILLAINS, "Lesser villains"},
   {OptionId::ALLIES, "Allies"},
   {OptionId::INFLUENCE_SIZE, "Min. tribes in influence zone"},
+  {OptionId::GENERATE_MANA, "Generate mana in library"},
 };
 
 const map<OptionId, string> hints {
@@ -97,6 +99,7 @@ const map<OptionId, string> hints {
     "The save file will be used to recover in case of a crash."},
   {OptionId::WASD_SCROLLING, "Scroll the map using W-A-S-D keys. In this mode building shortcuts are accessed "
     "using alt + letter."},
+  {OptionId::GENERATE_MANA, "Your minions will generate mana while working in the library."}
 };
 
 const map<OptionSet, vector<OptionId>> optionSets {
@@ -154,6 +157,8 @@ Options::Type Options::getType(OptionId id) {
     case OptionId::ADVENTURER_TYPE:
     case OptionId::KEEPER_TYPE:
       return Options::PLAYER_TYPE;
+    case OptionId::GENERATE_MANA:
+      return Options::BOOL;
     default:
       return Options::INT;
   }
@@ -180,10 +185,6 @@ bool Options::getBoolValue(OptionId id) {
 
 string Options::getStringValue(OptionId id) {
   return getValueString(id);
-}
-
-int Options::getChoiceValue(OptionId id) {
-  return *getValue(id).getValueMaybe<int>();
 }
 
 int Options::getIntValue(OptionId id) {
@@ -254,6 +255,7 @@ string Options::getValueString(OptionId id) {
     case OptionId::ZOOM_UI:
     case OptionId::DISABLE_MOUSE_WHEEL:
     case OptionId::DISABLE_CURSOR:
+    case OptionId::GENERATE_MANA:
     case OptionId::START_WITH_NIGHT:
       return getYesNo(value);
     case OptionId::ADVENTURER_NAME:
@@ -331,6 +333,10 @@ void Options::setChoices(OptionId id, const vector<string>& v) {
 
 void Options::setChoices(OptionId id, const vector<CreatureId>& v) {
   choicesCreatureId[id] = v;
+}
+
+optional<string> Options::getHint(OptionId id) {
+  return getValueMaybe(hints, id);
 }
 
 bool Options::handleOrExit(View* view, OptionSet set, int lastIndex) {

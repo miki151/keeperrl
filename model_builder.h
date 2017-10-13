@@ -31,7 +31,7 @@ class ModelBuilder {
   PModel splashModel(const FilePath& splashPath);
   PModel battleModel(const FilePath& levelPath, CreatureFactory allies, CreatureFactory enemies, int maxEnemies);
 
-  WCollective spawnKeeper(WModel, PCreature);
+  WCollective spawnKeeper(WModel, PCreature, bool regenerateMana);
 
   static int getPigstyPopulationIncrease();
   static int getStatuePopulationIncrease();

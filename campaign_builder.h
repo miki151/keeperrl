@@ -42,4 +42,5 @@ struct CampaignSetup {
   PCreature player;
   string gameIdentifier;
   string gameDisplayName;
+  bool regenerateMana;
 };

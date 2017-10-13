@@ -2592,10 +2592,22 @@ SGuiElem GuiBuilder::drawOptionElem(Options* options, OptionId id, function<void
             options->setValue(id, value + v); onChanged();}, value < limits->second, value > limits->first));
       }
       break;
-    default:
+    case Options::BOOL: {
+      bool value = options->getBoolValue(id);
+      line.addElemAuto(
+            gui.getListBuilder()
+                .addElemAuto(gui.label(name + ": "))
+                .addElemAuto(gui.stack(
+                    gui.button([=]{options->setValue(id, int(!value)); onChanged();}),
+                    gui.labelHighlight("[" + valueString + "]", Color::LIGHT_BLUE)))
+                .buildHorizontalList());
+      }
       break;
   }
-  return line.buildHorizontalList();
+  return gui.stack(
+      gui.tooltip({options->getHint(id).value_or("")}),
+      line.buildHorizontalList()
+  );
 }
 
 GuiFactory::ListBuilder GuiBuilder::drawRetiredGames(RetiredGames& retired, function<void()> reloadCampaign,

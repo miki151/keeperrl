@@ -53,10 +53,11 @@ int ModelBuilder::getThronePopulationIncrease() {
   return 10;
 }
 
-static CollectiveConfig getKeeperConfig(RandomGen& random, bool fastImmigration) {
+static CollectiveConfig getKeeperConfig(RandomGen& random, bool fastImmigration, bool regenerateMana) {
   return CollectiveConfig::keeper(
       fastImmigration ? 10 : 140,
       10,
+      regenerateMana,
       {
       CONSTRUCT(PopulationIncrease,
         c.type = FurnitureType::PIGSTY;
@@ -459,13 +460,13 @@ void ModelBuilder::measureModelGen(const string& name, int numTries, function<vo
     minT << ". MaxT: " << maxT << ". AvgT: " << sumT / numSuccess << std::endl;
 }
 
-WCollective ModelBuilder::spawnKeeper(WModel m, PCreature keeper) {
+WCollective ModelBuilder::spawnKeeper(WModel m, PCreature keeper, bool regenerateMana) {
   WLevel level = m->getTopLevel();
   WCreature keeperRef = keeper.get();
   CHECK(level->landCreature(StairKey::keeperSpawn(), keeperRef)) << "Couldn't place keeper on level.";
   m->addCreature(std::move(keeper));
   m->collectives.push_back(CollectiveBuilder(
-        getKeeperConfig(random, options->getBoolValue(OptionId::FAST_IMMIGRATION)), TribeId::getKeeper())
+        getKeeperConfig(random, options->getBoolValue(OptionId::FAST_IMMIGRATION), regenerateMana), TribeId::getKeeper())
       .setLevel(level)
       .addCreature(keeperRef)
       .build());

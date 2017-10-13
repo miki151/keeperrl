@@ -37,7 +37,7 @@
 template <class Archive>
 void CollectiveConfig::serialize(Archive& ar, const unsigned int version) {
   ar(immigrantInterval, maxPopulation, populationIncreases, immigrantInfo);
-  ar(type, leaderAsFighter, spawnGhosts, ghostProb, guardianInfo);
+  ar(type, leaderAsFighter, spawnGhosts, ghostProb, guardianInfo, regenerateMana);
 }
 
 SERIALIZABLE(CollectiveConfig);
@@ -93,9 +93,11 @@ CollectiveConfig::CollectiveConfig(int interval, const vector<ImmigrantInfo>& im
     addBedRequirementToImmigrants();
 }
 
-CollectiveConfig CollectiveConfig::keeper(int immigrantInterval, int maxPopulation,
+CollectiveConfig CollectiveConfig::keeper(int immigrantInterval, int maxPopulation, bool regenerateMana,
     vector<PopulationIncrease> increases, const vector<ImmigrantInfo>& im) {
-  return CollectiveConfig(immigrantInterval, im, KEEPER, maxPopulation, increases);
+  auto ret = CollectiveConfig(immigrantInterval, im, KEEPER, maxPopulation, increases);
+  ret.regenerateMana = regenerateMana;
+  return ret;
 }
 
 CollectiveConfig CollectiveConfig::withImmigrants(int interval, int maxPopulation, const vector<ImmigrantInfo>& im) {
@@ -143,6 +145,10 @@ bool CollectiveConfig::getFollowLeaderIfNoTerritory() const {
 
 bool CollectiveConfig::hasVillainSleepingTask() const {
   return type != KEEPER;
+}
+
+bool CollectiveConfig::getRegenerateMana() const {
+  return regenerateMana;
 }
 
 bool CollectiveConfig::hasImmigrantion(bool currentlyActiveModel) const {

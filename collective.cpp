@@ -1364,6 +1364,8 @@ void Collective::onAppliedSquare(WCreature c, Position pos) {
           break;
         case FurnitureUsageType::STUDY:
           increaseLevel(ExperienceType::SPELL);
+          if (config->getRegenerateMana())
+            addMana(0.1 * efficiency);
           break;
         case FurnitureUsageType::ARCHERY_RANGE:
           increaseLevel(ExperienceType::ARCHERY);

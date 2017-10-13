@@ -615,7 +615,7 @@ PModel MainLoop::getBaseModel(ModelBuilder& modelBuilder, CampaignSetup& setup) 
         return modelBuilder.campaignBaseModel("Campaign base site", setup.campaign.getType() == CampaignType::ENDLESS);
     }
   }();
-  modelBuilder.spawnKeeper(ret.get(), std::move(setup.player));
+  modelBuilder.spawnKeeper(ret.get(), std::move(setup.player), setup.regenerateMana);
   return ret;
 }
 

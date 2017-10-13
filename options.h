@@ -50,7 +50,8 @@ RICH_ENUM(OptionId,
   RETIRED_VILLAINS,
   LESSER_VILLAINS,
   ALLIES,
-  INFLUENCE_SIZE
+  INFLUENCE_SIZE,
+  GENERATE_MANA
 );
 
 enum class OptionSet {
@@ -74,7 +75,6 @@ class Options {
   Type getType(OptionId);
   string getValueString(OptionId);
   void setValue(OptionId, Value);
-  int getChoiceValue(OptionId);
   int getIntValue(OptionId);
   void setLimits(OptionId, int min, int max);
   optional<pair<int, int>> getLimits(OptionId);
@@ -86,6 +86,7 @@ class Options {
   void setDefaultString(OptionId, const string&);
   void setChoices(OptionId, const vector<string>&);
   void setChoices(OptionId, const vector<CreatureId>&);
+  optional<string> getHint(OptionId);
 
   private:
   optional<Value> readValue(OptionId, const string&);
