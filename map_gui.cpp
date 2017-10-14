@@ -909,6 +909,9 @@ void MapGui::considerScrollingToCreature() {
       setSoftCenter(targetx, targety);
     else
       setCenter(targetx, targety);
+    // soft scrolling is done once when the creature is first controlled, so if we are centered then turn it off
+    if (fabs(center.x - targetx) + fabs(center.y - targety) < 0.01)
+      info->softScroll = false;
   }
 }
 
