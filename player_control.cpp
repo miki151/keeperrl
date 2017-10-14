@@ -2105,7 +2105,7 @@ void PlayerControl::checkKeeperDanger() {
   auto controlled = getControlled();
   WCreature keeper = getKeeper();
   auto prompt = [&] {
-      return getView()->yesOrNoPrompt("The keeper is in trouble. Do you want to control " +
+      return getView()->yesOrNoPrompt("The Keeper is in trouble. Do you want to control " +
           keeper->getAttributes().getGender().him() + "?");
   };
   if (!getKeeper()->isDead() && !controlled.contains(getKeeper())) {
