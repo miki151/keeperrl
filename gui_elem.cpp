@@ -738,7 +738,8 @@ class GuiLayout : public GuiElem {
 
   virtual void onRefreshBounds() override {
     for (int i : All(elems))
-      elems[i]->setBounds(getElemBounds(i));
+      if (isVisible(i))
+        elems[i]->setBounds(getElemBounds(i));
   }
 
   virtual bool onKeyPressed2(SDL_Keysym key) override {
@@ -2143,6 +2144,7 @@ class ScrollBar : public GuiLayout {
   }
 
   int scrollLength() {
+    CHECK(*content->getPreferredHeight() > getBounds().height());
     return max(0, *content->getPreferredHeight() - getBounds().height());
   }
 
