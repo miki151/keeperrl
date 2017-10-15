@@ -145,6 +145,6 @@ class Body {
   bool SERIAL(minionFood) = false;
   optional<SoundId> SERIAL(deathSound);
   optional<double> SERIAL(carryLimit);
-  bool SERIAL(doesntEat);
+  bool SERIAL(doesntEat) = false;
 };
 
