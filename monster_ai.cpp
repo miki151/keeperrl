@@ -333,7 +333,7 @@ class Fighter : public Behaviour {
       WItem weapon = getBestWeapon();
       if (!creature->getWeapon() && weapon)
         myDamage += weapon->getModifier(AttrType::DAMAGE);
-      double powerRatio = myDamage / other->getAttr(AttrType::DAMAGE);
+      double powerRatio = myDamage / (other->getAttr(AttrType::DAMAGE) + 1);
       bool significantEnemy = myDamage < 5 * other->getAttr(AttrType::DAMAGE);
       double panicWeight = 0;
       if (powerRatio < maxPowerRatio)
