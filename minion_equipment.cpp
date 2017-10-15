@@ -28,7 +28,7 @@
 
 static bool isCombatConsumable(Effect type) {
   return type.visit(
-      [&](const auto&) { return false; },
+      [&](const Effect::Teleport&) { return true; },
       [&](const Effect::Lasting& e) {
         switch (e.lastingEffect) {
           case LastingEffect::SPEED:
@@ -40,11 +40,14 @@ static bool isCombatConsumable(Effect type) {
           case LastingEffect::DAM_BONUS:
           case LastingEffect::DEF_BONUS:
           case LastingEffect::POISON_RESISTANT:
+          case LastingEffect::REGENERATION:
             return true;
           default:
             return false;
         }
-      });
+      },
+      [&](const auto&) { return false; }
+  );
 }
 
 template <class Archive>
