@@ -28,5 +28,6 @@ RICH_ENUM(DestroyAction::Type,
   BASH,
   CUT,
   DIG,
-  HOSTILE_DIG
+  HOSTILE_DIG,
+  HOSTILE_DIG_NO_SKILL
 );
