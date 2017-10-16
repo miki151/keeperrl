@@ -324,7 +324,7 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setDestroyable(200, DestroyAction::Type::BOULDER)
           .setDestroyable(50, DestroyAction::Type::DIG)
           .setDestroyable(200, DestroyAction::Type::HOSTILE_DIG)
-          .setDestroyable(2000, DestroyAction::Type::BASH)
+          .setDestroyable(2000, DestroyAction::Type::HOSTILE_DIG_NO_SKILL)
           .setSummonedElement(CreatureId::EARTH_ELEMENTAL);
     case FurnitureType::IRON_ORE:
       return Furniture("iron ore", ViewObject(ViewId::IRON_ORE, ViewLayer::FLOOR), type, tribe)
@@ -335,7 +335,7 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setDestroyable(200, DestroyAction::Type::BOULDER)
           .setDestroyable(220, DestroyAction::Type::DIG)
           .setDestroyable(200, DestroyAction::Type::HOSTILE_DIG)
-          .setDestroyable(2000, DestroyAction::Type::BASH);
+          .setDestroyable(2000, DestroyAction::Type::HOSTILE_DIG_NO_SKILL);
     case FurnitureType::STONE:
       return Furniture("granite", ViewObject(ViewId::STONE, ViewLayer::FLOOR), type, tribe)
           .setBlocking()
@@ -345,7 +345,7 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setDestroyable(200, DestroyAction::Type::BOULDER)
           .setDestroyable(250, DestroyAction::Type::DIG)
           .setDestroyable(200, DestroyAction::Type::HOSTILE_DIG)
-          .setDestroyable(2000, DestroyAction::Type::BASH);
+          .setDestroyable(2000, DestroyAction::Type::HOSTILE_DIG_NO_SKILL);
     case FurnitureType::GOLD_ORE:
       return Furniture("gold ore", ViewObject(ViewId::GOLD_ORE, ViewLayer::FLOOR), type, tribe)
           .setBlocking()
@@ -355,7 +355,7 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setDestroyable(200, DestroyAction::Type::BOULDER)
           .setDestroyable(220, DestroyAction::Type::DIG)
           .setDestroyable(200, DestroyAction::Type::HOSTILE_DIG)
-          .setDestroyable(2000, DestroyAction::Type::BASH);
+          .setDestroyable(2000, DestroyAction::Type::HOSTILE_DIG_NO_SKILL);
     case FurnitureType::DUNGEON_WALL:
       return Furniture("wall", ViewObject(ViewId::DUNGEON_WALL, ViewLayer::FLOOR), type, tribe)
           .setBlocking()
@@ -365,7 +365,7 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setDestroyable(300, DestroyAction::Type::BOULDER)
           .setDestroyable(100, DestroyAction::Type::DIG)
           .setDestroyable(1900, DestroyAction::Type::HOSTILE_DIG)
-          .setDestroyable(2000, DestroyAction::Type::BASH);
+          .setDestroyable(2000, DestroyAction::Type::HOSTILE_DIG_NO_SKILL);
     case FurnitureType::CASTLE_WALL:
       return Furniture("wall", ViewObject(ViewId::CASTLE_WALL, ViewLayer::FLOOR), type, tribe)
           .setBlocking()

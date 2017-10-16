@@ -294,7 +294,7 @@ void Model::landHeroPlayer(PCreature player) {
       make_shared<VisibilityMap>()));
 }
 
-void Model::addExternalEnemies(ExternalEnemies&& e) {
+void Model::addExternalEnemies(ExternalEnemies e) {
   externalEnemies = std::move(e);
 }
 

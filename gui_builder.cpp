@@ -1209,17 +1209,15 @@ SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info) {
           drawMiniMenu(std::move(lines), exit, bounds.bottomLeft(), 260);
      })));
   list.addElem(line.buildHorizontalList());
-  for (auto& elem : drawEffectsList(info))
-    list.addElem(std::move(elem));
-  list.addSpace();
   if (info.team.size() > 1) {
     const int numPerLine = 6;
     auto currentLine = gui.getListBuilder();
     currentLine.addElem(gui.label("Team: ", Color::WHITE), 60);
     for (auto& elem : info.team) {
       currentLine.addElem(gui.stack(
+            gui.translate(gui.rectangle((elem.active ? (elem.leader ? Color::YELLOW : Color::GREEN) : Color::BLACK).transparency(1094)), Vec2(-3, -3)),
             gui.viewObject(elem.viewId),
-            gui.label(toString((int) elem.bestAttack.value), 12)), 30);
+            gui.label(toString(elem.bestAttack), 12)), 30);
       if (currentLine.getLength() >= numPerLine) {
         list.addElem(currentLine.buildHorizontalList());
         currentLine.clear();
@@ -1229,6 +1227,9 @@ SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info) {
       list.addElem(currentLine.buildHorizontalList());
     list.addSpace();
   }
+  for (auto& elem : drawEffectsList(info))
+    list.addElem(std::move(elem));
+  list.addSpace();
   for (auto& elem : drawSkillsList(info))
     list.addElem(std::move(elem));
   if (auto spells = drawSpellsList(info, true)) {
@@ -2591,10 +2592,22 @@ SGuiElem GuiBuilder::drawOptionElem(Options* options, OptionId id, function<void
             options->setValue(id, value + v); onChanged();}, value < limits->second, value > limits->first));
       }
       break;
-    default:
+    case Options::BOOL: {
+      bool value = options->getBoolValue(id);
+      line.addElemAuto(
+            gui.getListBuilder()
+                .addElemAuto(gui.label(name + ": "))
+                .addElemAuto(gui.stack(
+                    gui.button([=]{options->setValue(id, int(!value)); onChanged();}),
+                    gui.labelHighlight("[" + valueString + "]", Color::LIGHT_BLUE)))
+                .buildHorizontalList());
+      }
       break;
   }
-  return line.buildHorizontalList();
+  return gui.stack(
+      gui.tooltip({options->getHint(id).value_or("")}),
+      line.buildHorizontalList()
+  );
 }
 
 GuiFactory::ListBuilder GuiBuilder::drawRetiredGames(RetiredGames& retired, function<void()> reloadCampaign,

@@ -682,220 +682,167 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
   }
 }
 
-vector<EnemyEvent> EnemyFactory::getExternalEnemies() {
-  vector<ExternalEnemy> enemies {
+vector<ExternalEnemy> EnemyFactory::getExternalEnemies() {
+  return {
     ExternalEnemy{
         CreatureFactory::singleCreature(TribeId::getHuman(), CreatureId::BANDIT),
         Range(1,2),
         AttackBehaviourId::KILL_LEADER,
-        "a curious bandit"
+        "a curious bandit",
+        Range(0, 10000),
+        1
     },
     ExternalEnemy{
         CreatureFactory::singleCreature(TribeId::getHuman(), CreatureId::LIZARDMAN),
         Range(1,2),
         AttackBehaviourId::KILL_LEADER,
-        "a lizardman scout"
+        "a lizardman scout",
+        Range(0, 10000),
+        1
     },
     ExternalEnemy{
         CreatureFactory::singleCreature(TribeId::getHuman(), CreatureId::ANT_WORKER),
-        Range(3,4),
-        AttackBehaviourId::KILL_LEADER,
-        "hungry ants"
-    },
-    ExternalEnemy{
-        CreatureFactory::singleCreature(TribeId::getHuman(), CreatureId::CLAY_GOLEM),
-        Range(5, 10),
-        AttackBehaviourId::KILL_LEADER,
-        "an elementalist's clay golems"
-    },
-    ExternalEnemy{
-        CreatureFactory::singleCreature(TribeId::getHuman(), CreatureId::BANDIT),
-        Range(7,12),
-        AttackBehaviourId::KILL_LEADER,
-        "a band of angry bandits"
-    },
-    ExternalEnemy{
-        CreatureFactory::singleCreature(TribeId::getHuman(), CreatureId::LIZARDMAN),
-        Range(8,13),
-        AttackBehaviourId::KILL_LEADER,
-        "a lizardman assault unit"
-    },
-    ExternalEnemy{
-        CreatureFactory::singleCreature(TribeId::getHuman(), CreatureId::WITCH),
         Range(3,5),
         AttackBehaviourId::KILL_LEADER,
-        "witches"
+        "an ant patrol",
+        Range(2500, 5000),
+        3
+    },
+    ExternalEnemy{
+        CreatureFactory::singleCreature(TribeId::getHuman(), CreatureId::ANT_SOLDIER),
+        Range(3,5),
+        AttackBehaviourId::KILL_LEADER,
+        "an ant soldier patrol",
+        Range(4000, 10000),
+        3
+    },
+    ExternalEnemy{
+        CreatureFactory::antNest(TribeId::getHuman()),
+        Range(10,15),
+        AttackBehaviourId::KILL_LEADER,
+        "an army of ants",
+        Range(10000, 15000),
+        3
+    },
+    ExternalEnemy{
+        CreatureFactory::singleCreature(TribeId::getHuman(), CreatureId::ENT),
+        Range(4,8),
+        AttackBehaviourId::KILL_LEADER,
+        "a group of ents",
+        Range(7000, 12000),
+        3
     },
     ExternalEnemy{
         CreatureFactory::singleCreature(TribeId::getHuman(), CreatureId::DWARF),
-        Range(3,5),
+        Range(4,8),
         AttackBehaviourId::KILL_LEADER,
-        "dwarven settlers"
+        "a band of dwarves",
+        Range(7000, 12000),
+        3
     },
     ExternalEnemy{
-        CreatureFactory::singleCreature(TribeId::getHuman(), CreatureId::HARPY),
-        Range(4,7),
+        CreatureFactory::singleCreature(TribeId::getHuman(), CreatureId::LIZARDMAN),
+        Range(4,8),
         AttackBehaviourId::KILL_LEADER,
-        "harpies"
+        "a nest of lizardmen",
+        Range(7000, 12000),
+        3
     },
     ExternalEnemy{
-        CreatureFactory::singleCreature(TribeId::getHuman(), CreatureId::SNAKE),
-        Range(4,7),
+        CreatureFactory::dwarfTown(TribeId::getHuman()),
+        Range(10,13),
         AttackBehaviourId::KILL_LEADER,
-        "a plague of snakes"
+        "a dwarf army",
+        Range(10000, 18000),
+        1
     },
     ExternalEnemy{
-        CreatureFactory::singleCreature(TribeId::getHuman(), CreatureId::STONE_GOLEM),
-        Range(5, 10),
+        CreatureFactory::singleCreature(TribeId::getHuman(), CreatureId::ARCHER),
+        Range(4,8),
         AttackBehaviourId::KILL_LEADER,
-        "an elementalist's stone golems"
+        "a patrol of archers",
+        Range(7000, 12000),
+        3
     },
     ExternalEnemy{
-        CreatureFactory::singleCreature(TribeId::getHuman(), CreatureId::IRON_GOLEM),
-        Range(5, 10),
+        CreatureFactory::singleCreature(TribeId::getHuman(), CreatureId::KNIGHT),
+        Range(4,8),
         AttackBehaviourId::KILL_LEADER,
-        "an elementalist's iron golems"
-    },
-    ExternalEnemy{
-        CreatureFactory::singleCreature(TribeId::getHuman(), CreatureId::LAVA_GOLEM),
-        Range(5, 10),
-        AttackBehaviourId::KILL_LEADER,
-        "an elementalist's lava golems"
-    },
-    ExternalEnemy{
-        CreatureFactory::singleCreature(TribeId::getHuman(), CreatureId::ELEMENTALIST),
-        Range(1,2),
-        {AttackBehaviourId::CAMP_AND_SPAWN, CreatureFactory::elementals(TribeId::getHuman())},
-        "an elementalist"
-    },	
-    ExternalEnemy{
-        CreatureFactory::singleCreature(TribeId::getHuman(), CreatureId::WEREWOLF),
-        Range(8, 12),
-        AttackBehaviourId::KILL_LEADER,
-        "werewolves"
-    },
-    ExternalEnemy{
-        CreatureFactory::singleCreature(TribeId::getHuman(), CreatureId::LAVA_GOLEM),
-        Range(10, 15),
-        AttackBehaviourId::KILL_LEADER,
-        "human archers"
-    },
-    ExternalEnemy{
-        CreatureFactory::singleCreature(TribeId::getHuman(), CreatureId::ANGEL),
-        Range(1, 2),
-        AttackBehaviourId::KILL_LEADER,
-        "an angel"
-    },
-    ExternalEnemy{
-        CreatureFactory::singleCreature(TribeId::getHuman(), CreatureId::ELF_ARCHER),
-        Range(10,15),
-        AttackBehaviourId::KILL_LEADER,
-        "elven archers"
-    },
-    ExternalEnemy{
-        CreatureFactory::singleCreature(TribeId::getHuman(), CreatureId::DEMON_DWELLER),
-        Range(10,15),
-        AttackBehaviourId::KILL_LEADER,
-        "demon dwellers "
+        "a group of knights",
+        Range(7000, 12000),
+        3
     },
     ExternalEnemy{
         CreatureFactory::singleCreature(TribeId::getHuman(), CreatureId::WARRIOR),
-        Range(15,20),
+        Range(4,8),
         AttackBehaviourId::KILL_LEADER,
-        "a tribe of warriors"
+        "a group of warriors",
+        Range(4000, 6000),
+        3
+    },
+    ExternalEnemy{
+        CreatureFactory::vikingTown(TribeId::getHuman()),
+        Range(12, 17),
+        AttackBehaviourId::KILL_LEADER,
+        "an army of warriors",
+        Range(7000, 12000),
+        3
+    },
+    ExternalEnemy{
+        CreatureFactory::humanCastle(TribeId::getHuman()),
+        Range(12,17),
+        AttackBehaviourId::KILL_LEADER,
+        "an army of knights",
+        Range(18000, 30000),
+        3
     },
     ExternalEnemy{
         CreatureFactory::singleCreature(TribeId::getHuman(), CreatureId::CYCLOPS),
-        Range(3,7),
+        Range(1,2),
         AttackBehaviourId::KILL_LEADER,
-        "an angry nest of cyclops"
+        "a cyclops",
+        Range(6000, 12000),
+        1
     },
     ExternalEnemy{
-        CreatureFactory::singleCreature(TribeId::getHuman(), CreatureId::HYDRA),
-        Range(2,3),
+        CreatureFactory::singleCreature(TribeId::getHuman(), CreatureId::WITCHMAN),
+        Range(1,2),
         AttackBehaviourId::KILL_LEADER,
-        "two hydra"
+        "a witchman",
+        Range(6000, 12000),
+        1
     },
     ExternalEnemy{
         CreatureFactory::singleCreature(TribeId::getHuman(), CreatureId::MINOTAUR),
         Range(1,2),
         AttackBehaviourId::KILL_LEADER,
-        "a minotaur"
+        "a minotaur",
+        Range(10000, 30000),
+        1
     },
     ExternalEnemy{
-        CreatureFactory::singleCreature(TribeId::getHuman(), CreatureId::ANT_SOLDIER),
-        Range(20,30),
-        AttackBehaviourId::KILL_LEADER,
-        "an angry ants nest"
-    },
-    ExternalEnemy{
-        CreatureFactory::singleCreature(TribeId::getHuman(), CreatureId::KNIGHT),
-        Range(5,8),
-        AttackBehaviourId::KILL_LEADER,
-        "heroic knights"
-    },
-    ExternalEnemy{
-        CreatureFactory::singleCreature(TribeId::getHuman(), CreatureId::AUTOMATON),
-        Range(3,4),
-        AttackBehaviourId::KILL_LEADER,
-        "mindless automatons"
-    },
-    ExternalEnemy{
-        CreatureFactory::singleCreature(TribeId::getHuman(), CreatureId::SHELOB),
-        Range(4,6),
-        AttackBehaviourId::KILL_LEADER,
-        "family of giant spiders"
+        CreatureFactory::singleCreature(TribeId::getHuman(), CreatureId::ELEMENTALIST),
+        Range(1,2),
+        {AttackBehaviourId::CAMP_AND_SPAWN, CreatureFactory::elementals(TribeId::getHuman())},
+        "an elementalist",
+        Range(15000, 30000),
+        1
     },
     ExternalEnemy{
         CreatureFactory::singleCreature(TribeId::getHuman(), CreatureId::GREEN_DRAGON),
-        Range(2,3),
+        Range(1,2),
         AttackBehaviourId::KILL_LEADER,
-        "a pair of green dragons"
+        "a green dragon",
+        Range(10000, 30000),
+        1
     },
     ExternalEnemy{
         CreatureFactory::singleCreature(TribeId::getHuman(), CreatureId::RED_DRAGON),
-        Range(2,5),
+        Range(1,2),
         AttackBehaviourId::KILL_LEADER,
-        "a tiny nest of red dragons"
+        "a red dragon",
+        Range(15000, 40000),
+        1
     },
-    ExternalEnemy{
-        CreatureFactory::singleCreature(TribeId::getHuman(), CreatureId::RED_DRAGON),
-        Range(3,8),
-        AttackBehaviourId::KILL_LEADER,
-        "a small nest of red dragons"
-    },
-    ExternalEnemy{
-        CreatureFactory::singleCreature(TribeId::getHuman(), CreatureId::RED_DRAGON),
-        Range(5,10),
-        AttackBehaviourId::KILL_LEADER,
-        "a nest of red dragons"
-    },
-    ExternalEnemy{
-        CreatureFactory::singleCreature(TribeId::getHuman(), CreatureId::RED_DRAGON),
-        Range(8,13),
-        AttackBehaviourId::KILL_LEADER,
-        "a large nest of red dragons"
-    },
-    ExternalEnemy{
-        CreatureFactory::singleCreature(TribeId::getHuman(), CreatureId::RED_DRAGON),
-        Range(15,20),
-        AttackBehaviourId::KILL_LEADER,
-        "a huge nest of red dragons"
-    },
-    ExternalEnemy{
-        CreatureFactory::singleCreature(TribeId::getHuman(), CreatureId::RED_DRAGON),
-        Range(20,30),
-        AttackBehaviourId::KILL_LEADER,
-        "an enormous nest of red dragons"
-    }
   };
-  vector<EnemyEvent> ret;
-  for (int i : Range(500)){
-    int monsterWave=i;
-    int lastWave=enemies.size()-1;
-    if (monsterWave>lastWave)
-      monsterWave=lastWave; //Repeat until the dungeon falls.
-    ret.push_back(EnemyEvent ( enemies[monsterWave], Range::singleElem(600 * (i + 2)), {{ExperienceType::MELEE, i * 4}} ));
-  }
-  return ret;
 }

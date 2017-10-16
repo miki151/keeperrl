@@ -93,8 +93,6 @@ class Texture {
   private:
   Texture();
   friend class Renderer;
-  void render(Vec2 screenTopLeft, Vec2 screenBottomRight, Vec2 srcP, Vec2 srck, optional<Color> = none) const;
-  void render(Vec2 screen1, Vec2 screen2, Vec2 screen3, Vec2 screen4, Vec2 srcP, Vec2 srck, optional<Color> = none) const;
   void addTexCoord(int x, int y) const;
   optional<SDL::GLuint> texId;
   Vec2 size;
@@ -168,12 +166,10 @@ class Renderer {
   void drawTile(Vec2 pos, TileCoord coord, Vec2 size, Color = Color::WHITE, SpriteOrientation orientation = {});
   void setScissor(optional<Rectangle>);
   void addQuad(const Rectangle&, Color);
-  void drawQuads();
   static Color getBleedingColor(const ViewObject&);
   Vec2 getSize();
   bool loadTilesFromDir(const DirectoryPath& path, Vec2 size);
   bool loadTilesFromDir(const DirectoryPath&, vector<Texture>&, Vec2 size, int setWidth);
-  bool loadAltTilesFromDir(const DirectoryPath&, Vec2 altSize);
 
   void drawAndClearBuffer();
   void resize(int width, int height);
@@ -194,7 +190,6 @@ class Renderer {
   TileCoord getTileCoord(const string&);
   Vec2 getNominalSize() const;
   vector<Texture> tiles;
-  vector<Texture> altTiles;
 
   static void putPixel(SDL::SDL_Surface*, Vec2, Color);
 
@@ -202,7 +197,6 @@ class Renderer {
   friend class Texture;
   optional<Texture> textTexture;
   Renderer(const Renderer&);
-  vector<Vec2> altTileSize;
   vector<Vec2> tileSize;
   Vec2 nominalSize;
   map<string, TileCoord> tileCoords;
@@ -217,12 +211,6 @@ class Renderer {
   bool monkey = false;
   deque<Event> eventQueue;
   bool genReleaseEvent = false;
-  void addRenderElem(function<void()>);
-  //sf::Text& getTextObject();
-  stack<int> layerStack;
-  int currentLayer = 0;
-  array<vector<function<void()>>, 2> renderList;
-//  vector<Vertex> quads;
   Vec2 mousePos;
   struct FontSet {
     int textFont;
@@ -236,8 +224,6 @@ class Renderer {
   bool fullscreen;
   int fullscreenMode;
   int zoom = 1;
-  optional<Rectangle> scissor;
-  void setGlScissor(optional<Rectangle>);
   bool cursorEnabled = true;
   void reloadCursors();
   FilePath cursorPath;
@@ -246,5 +232,16 @@ class Renderer {
   SDL::SDL_Cursor* cursor;
   SDL::SDL_Cursor* cursorClicked;
   SDL::SDL_Surface* loadScaledSurface(const FilePath& path, double scale);
+  optional<SDL::GLuint> currentTexture;
+  void drawSprite(const Texture& t, Vec2 a, Vec2 b, Vec2 c, Vec2 d, Vec2 p, Vec2 k, optional<Color> color);
+  void drawSprite(const Texture& t, Vec2 topLeft, Vec2 bottomRight, Vec2 p, Vec2 k, optional<Color> color);
+  struct DeferredSprite {
+    Vec2 a, b, c, d;
+    Vec2 p, k;
+    Vec2 realSize;
+    optional<Color> color;
+  };
+  vector<DeferredSprite> deferredSprites;
+  void renderDeferredSprites();
 };
 

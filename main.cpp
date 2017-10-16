@@ -208,7 +208,7 @@ static po::parser getCommandLineFlags() {
   flags["nolog"].description("No logging");
   flags["free_mode"].description("Run in free ascii mode");
 #ifndef RELEASE
-  flags["force_keeper"].description("Skip main menu and force keeper mode");
+  flags["quick_game"].description("Skip main menu and load the last save file or start a single map game");
 #endif
   flags["seed"].type(po::i32).description("Use given seed");
   flags["record"].type(po::string).description("Record game to file");
@@ -332,13 +332,10 @@ static int keeperMain(po::parser& commandLineFlags) {
       getMaxVolumes());
   FileSharing fileSharing(uploadUrl, options, installId);
   Highscores highscores(userPath.file("highscores.dat"), fileSharing, &options);
-  optional<MainLoop::ForceGameInfo> forceGame;
-  if (commandLineFlags["force_keeper"].was_set())
-    forceGame = MainLoop::ForceGameInfo {PlayerRole::KEEPER, CampaignType::QUICK_MAP};
   SokobanInput sokobanInput(freeDataPath.file("sokoban_input.txt"), userPath.file("sokoban_state.txt"));
   if (commandLineFlags["worldgen_test"].was_set()) {
     MainLoop loop(nullptr, &highscores, &fileSharing, freeDataPath, userPath, &options, &jukebox, &sokobanInput,
-        useSingleThread, forceGame);
+        useSingleThread);
     vector<string> types;
     if (commandLineFlags["worldgen_maps"].was_set())
       types = split(commandLineFlags["worldgen_maps"].get().string, {','});
@@ -347,7 +344,7 @@ static int keeperMain(po::parser& commandLineFlags) {
   }
   auto battleTest = [&] (View* view) {
     MainLoop loop(view, &highscores, &fileSharing, freeDataPath, userPath, &options, &jukebox, &sokobanInput,
-        useSingleThread, forceGame);
+        useSingleThread);
     auto level = commandLineFlags["battle_level"].get().string;
     auto info = commandLineFlags["battle_info"].get().string;
     auto numRounds = commandLineFlags["battle_rounds"].get().i32;
@@ -389,14 +386,14 @@ static int keeperMain(po::parser& commandLineFlags) {
     return 0;
   }
   MainLoop loop(view.get(), &highscores, &fileSharing, freeDataPath, userPath, &options, &jukebox, &sokobanInput,
-      useSingleThread, forceGame);
+      useSingleThread);
   try {
     if (audioError)
       view->presentText("Failed to initialize audio. The game will be started without sound.", *audioError);
     ofstream systemInfo(userPath.file("system_info.txt").getPath());
     systemInfo << "KeeperRL version " << BUILD_VERSION << " " << BUILD_DATE << std::endl;
     renderer.printSystemInfo(systemInfo);
-    loop.start(tilesPresent);
+    loop.start(tilesPresent, commandLineFlags["quick_game"].was_set());
   } catch (GameExitException ex) {
   }
   jukebox.toggle(false);

@@ -37,7 +37,7 @@
 template <class Archive>
 void CollectiveConfig::serialize(Archive& ar, const unsigned int version) {
   ar(immigrantInterval, maxPopulation, populationIncreases, immigrantInfo);
-  ar(type, leaderAsFighter, spawnGhosts, ghostProb, guardianInfo);
+  ar(type, leaderAsFighter, spawnGhosts, ghostProb, guardianInfo, regenerateMana);
 }
 
 SERIALIZABLE(CollectiveConfig);
@@ -93,9 +93,11 @@ CollectiveConfig::CollectiveConfig(int interval, const vector<ImmigrantInfo>& im
     addBedRequirementToImmigrants();
 }
 
-CollectiveConfig CollectiveConfig::keeper(int immigrantInterval, int maxPopulation,
+CollectiveConfig CollectiveConfig::keeper(int immigrantInterval, int maxPopulation, bool regenerateMana,
     vector<PopulationIncrease> increases, const vector<ImmigrantInfo>& im) {
-  return CollectiveConfig(immigrantInterval, im, KEEPER, maxPopulation, increases);
+  auto ret = CollectiveConfig(immigrantInterval, im, KEEPER, maxPopulation, increases);
+  ret.regenerateMana = regenerateMana;
+  return ret;
 }
 
 CollectiveConfig CollectiveConfig::withImmigrants(int interval, int maxPopulation, const vector<ImmigrantInfo>& im) {
@@ -143,6 +145,10 @@ bool CollectiveConfig::getFollowLeaderIfNoTerritory() const {
 
 bool CollectiveConfig::hasVillainSleepingTask() const {
   return type != KEEPER;
+}
+
+bool CollectiveConfig::getRegenerateMana() const {
+  return regenerateMana;
 }
 
 bool CollectiveConfig::hasImmigrantion(bool currentlyActiveModel) const {
@@ -332,7 +338,7 @@ MinionTaskInfo::MinionTaskInfo(Type t, const string& desc, optional<CollectiveWa
 MinionTaskInfo::MinionTaskInfo() {}
 
 MinionTaskInfo::MinionTaskInfo(FurnitureType type, const string& desc) : type(FURNITURE),
-  furniturePredicate([type](WConstCreature, FurnitureType t) { return t == type;}),
+  furniturePredicate([type](WConstCollective, WConstCreature, FurnitureType t) { return t == type;}),
     description(desc) {
 }
 
@@ -429,13 +435,22 @@ CollectiveConfig::~CollectiveConfig() {
 }
 
 static auto getTrainingPredicate(ExperienceType experienceType) {
-  return [experienceType] (WConstCreature c, FurnitureType t) {
+  return [experienceType] (WConstCollective, WConstCreature c, FurnitureType t) {
       if (auto maxIncrease = CollectiveConfig::getTrainingMaxLevel(experienceType, t))
         return !c || (c->getAttributes().getExpLevel(experienceType) < *maxIncrease &&
             !c->getAttributes().isTrainingMaxedOut(experienceType));
       else
         return false;
     };
+}
+
+template <typename Pred>
+static auto addManaGenerationPredicate(Pred p) {
+  return [p] (WConstCollective col, WConstCreature c, FurnitureType t) {
+    return (!!CollectiveConfig::getTrainingMaxLevel(ExperienceType::SPELL, t) &&
+            (!col || col->getConfig().getRegenerateMana()))
+        || p(col, c, t);
+  };
 }
 
 const MinionTaskInfo& CollectiveConfig::getTaskInfo(MinionTask task) {
@@ -448,7 +463,8 @@ const MinionTaskInfo& CollectiveConfig::getTaskInfo(MinionTask task) {
       case MinionTask::GRAVE: return {FurnitureType::GRAVE, "sleeping"};
       case MinionTask::LAIR: return {FurnitureType::BEAST_CAGE, "sleeping"};
       case MinionTask::THRONE: return {FurnitureType::THRONE, "throne"};
-      case MinionTask::STUDY: return {getTrainingPredicate(ExperienceType::SPELL), "studying"};
+      case MinionTask::STUDY: return {addManaGenerationPredicate(getTrainingPredicate(ExperienceType::SPELL)),
+           "studying"};
       case MinionTask::PRISON: return {FurnitureType::PRISON, "prison"};
       case MinionTask::CROPS: return {FurnitureType::CROPS, "crops"};
       case MinionTask::RITUAL: return {FurnitureType::DEMON_SHRINE, "rituals"};
@@ -461,7 +477,7 @@ const MinionTaskInfo& CollectiveConfig::getTaskInfo(MinionTask task) {
       case MinionTask::BE_WHIPPED: return {FurnitureType::WHIPPING_POST, "being whipped"};
       case MinionTask::BE_TORTURED: return {FurnitureType::TORTURE_TABLE, "being tortured"};
       case MinionTask::BE_EXECUTED: return {FurnitureType::GALLOWS, "being executed"};
-      case MinionTask::CRAFT: return {[](WConstCreature c, FurnitureType t) {
+      case MinionTask::CRAFT: return {[](WConstCollective, WConstCreature c, FurnitureType t) {
             if (auto type = getWorkshopType(t))
               return !c || c->getAttributes().getSkills().getValue(getWorkshopInfo(*type).skill) > 0;
             else

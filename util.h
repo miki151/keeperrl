@@ -153,9 +153,9 @@ class Vec2 {
   static Vec2 getCenterOfWeight(vector<Vec2>);
 
   vector<Vec2> box(int radius, bool shuffle = false);
-  static vector<Vec2> directions8();
+  static const vector<Vec2>& directions8();
   vector<Vec2> neighbors8() const;
-  static vector<Vec2> directions4();
+  static const vector<Vec2>& directions4();
   vector<Vec2> neighbors4() const;
   static vector<Vec2> directions8(RandomGen&);
   vector<Vec2> neighbors8(RandomGen&) const;
@@ -1075,7 +1075,7 @@ class DirSet {
   DirSet intersection(DirSet) const;
   DirSet complement() const;
 
-  operator size_t() const {
+  operator ContentType() const {
     return content;
   }
 

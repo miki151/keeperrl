@@ -31,7 +31,7 @@ class ModelBuilder {
   PModel splashModel(const FilePath& splashPath);
   PModel battleModel(const FilePath& levelPath, CreatureFactory allies, CreatureFactory enemies, int maxEnemies);
 
-  WCollective spawnKeeper(WModel, PCreature);
+  WCollective spawnKeeper(WModel, PCreature, bool regenerateMana);
 
   static int getPigstyPopulationIncrease();
   static int getStatuePopulationIncrease();
@@ -45,7 +45,7 @@ class ModelBuilder {
   PModel tryTutorialModel(const string& siteName);
   PModel tryCampaignSiteModel(const string& siteName, EnemyId, VillainType);
   PModel tryModel(int width, const string& levelName, vector<EnemyInfo>,
-      bool keeperSpawn, BiomeId, vector<EnemyEvent>, bool wildlife);
+      bool keeperSpawn, BiomeId, optional<ExternalEnemies>, bool wildlife);
   SettlementInfo& makeExtraLevel(WModel, EnemyInfo&);
   PModel tryBuilding(int numTries, function<PModel()> buildFun);
   void addMapVillains(vector<EnemyInfo>&, BiomeId);

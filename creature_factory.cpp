@@ -1042,6 +1042,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.skills.setValue(SkillId::LABORATORY, 0.2);
           c.maxLevelIncrease[ExperienceType::MELEE] = 7;
           c.maxLevelIncrease[ExperienceType::SPELL] = 12;
+          c.spells->add(SpellId::HEAL_SELF);
       );
     case CreatureId::KEEPER_F:
       return CATTR(

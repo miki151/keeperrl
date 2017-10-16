@@ -44,7 +44,7 @@ vector<OptionId> CampaignBuilder::getSecondaryOptions(CampaignType type) const {
     case CampaignType::ENDLESS:
       return {OptionId::LESSER_VILLAINS, OptionId::ALLIES};
     case CampaignType::FREE_PLAY:
-      return {OptionId::MAIN_VILLAINS, OptionId::LESSER_VILLAINS, OptionId::ALLIES};
+      return {OptionId::MAIN_VILLAINS, OptionId::LESSER_VILLAINS, OptionId::ALLIES, OptionId::GENERATE_MANA};
     case CampaignType::SINGLE_KEEPER:
       return {};
   }
@@ -471,6 +471,7 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(function<optional<Retir
                   setPlayerPos(campaign, *campaign.playerPos, player.get());
                 }
                 break;
+              case OptionId::GENERATE_MANA:
               case OptionId::INFLUENCE_SIZE: break;
               default: updateMap = true; break;
             }
@@ -488,7 +489,9 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(function<optional<Retir
               string name = *player->getName().first();
               string gameIdentifier = name + "_" + campaign.worldName + getNewIdSuffix();
               string gameDisplayName = name + " of " + campaign.worldName;
-              return CampaignSetup{campaign, std::move(player), gameIdentifier, gameDisplayName};
+              return CampaignSetup{campaign, std::move(player), gameIdentifier, gameDisplayName,
+                  options->getBoolValue(OptionId::GENERATE_MANA) &&
+                  getSecondaryOptions(type).contains(OptionId::GENERATE_MANA)};
             }
       }
       if (updateMap)

@@ -333,7 +333,7 @@ class Fighter : public Behaviour {
       WItem weapon = getBestWeapon();
       if (!creature->getWeapon() && weapon)
         myDamage += weapon->getModifier(AttrType::DAMAGE);
-      double powerRatio = myDamage / other->getAttr(AttrType::DAMAGE);
+      double powerRatio = myDamage / (other->getAttr(AttrType::DAMAGE) + 1);
       bool significantEnemy = myDamage < 5 * other->getAttr(AttrType::DAMAGE);
       double panicWeight = 0;
       if (powerRatio < maxPowerRatio)
@@ -546,8 +546,8 @@ class Fighter : public Behaviour {
             isFriendBetween = true;
             continue;
           }
-        if (auto move = creature->move(pos))
-          return move;
+        /*if (auto move = creature->move(pos))
+          return move;*/
         if (!destroyMove)
           if (auto destroyAction = pos.getBestDestroyAction(creature->getMovementType()))
             if (auto move = creature->destroy(creature->getPosition().getDir(pos), *destroyAction))
@@ -1210,7 +1210,7 @@ MonsterAIFactory MonsterAIFactory::stayInLocation(Rectangle rect, bool moveRando
   });
 }
 
-MonsterAIFactory MonsterAIFactory::singleTask(PTask&& t) {
+MonsterAIFactory MonsterAIFactory::singleTask(PTask&& t, bool chaseEnemies) {
   // Since the lambda can't capture OwnedPointer, let's release it to shared_ptr and recreate PTask inside the lambda.
   auto released = t.giveMeSharedPointer();
   return MonsterAIFactory([=](WCreature c) mutable {
@@ -1219,7 +1219,7 @@ MonsterAIFactory MonsterAIFactory::singleTask(PTask&& t) {
       released = nullptr;
       return new MonsterAI(c, {
         new Heal(c),
-        new Fighter(c, 0.6, true),
+        new Fighter(c, 0.6, chaseEnemies),
         new SingleTask(c, std::move(task)),
         new ChooseRandom(c, makeVec(PBehaviour(new Rest(c)), PBehaviour(new MoveRandomly(c))), {3, 1})},
         { 6, 5, 2, 1}, true);

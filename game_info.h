@@ -109,7 +109,14 @@ class PlayerInfo {
   vector<ItemInfo> HASH(lyingItems);
   vector<ItemInfo> HASH(inventory);
   int HASH(debt);
-  vector<CreatureInfo> HASH(team);
+  struct TeamMemberInfo {
+    ViewId HASH(viewId);
+    int HASH(bestAttack);
+    bool HASH(active);
+    bool HASH(leader);
+    HASH_ALL(viewId, bestAttack, active, leader)
+  };
+  vector<TeamMemberInfo> HASH(team);
   struct CommandInfo {
     string HASH(name);
     optional<char> HASH(keybinding);

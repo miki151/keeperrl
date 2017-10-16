@@ -871,13 +871,19 @@ void Player::refreshGameInfo(GameInfo& gameInfo) const {
   gameInfo.infoType = GameInfo::InfoType::PLAYER;
   SunlightInfo sunlightInfo = getGame()->getSunlightInfo();
   gameInfo.sunlightInfo.description = sunlightInfo.getText();
-  gameInfo.sunlightInfo.timeRemaining = sunlightInfo.getTimeRemaining();
-  gameInfo.time = getCreature()->getGame()->getGlobalTime();
+  gameInfo.sunlightInfo.timeRemaining = (int) sunlightInfo.getTimeRemaining();
+  gameInfo.time = (int) getCreature()->getGame()->getGlobalTime();
   gameInfo.playerInfo = PlayerInfo(getCreature());
   auto& info = *gameInfo.playerInfo.getReferenceMaybe<PlayerInfo>();
   info.team.clear();
-  for (WConstCreature c : getTeam())
-    info.team.push_back(c);
+  auto team = getTeam();
+  auto leader = team[0];
+  if (team.size() > 1 && team[1]->isPlayer()) {
+    auto timeCmp = [](WConstCreature c1, WConstCreature c2) { return c1->getLocalTime() < c2->getLocalTime();};
+    sort(team.begin(), team.end(), timeCmp);
+  }
+  for (WConstCreature c : team)
+    info.team.push_back({c->getViewObject().id(), (int) c->getBestAttack().value, c->isPlayer(), c == leader});
   info.levelName = getLevel()->getName();
   info.lyingItems.clear();
   if (auto usageType = getUsableUsageType()) {
