@@ -1337,6 +1337,8 @@ void Collective::onAppliedSquare(WCreature c, Position pos) {
     double efficiency = tileEfficiency->getEfficiency(pos) * furniture->getUsageTime() * getEfficiency(c);
     switch (furniture->getType()) {
       case FurnitureType::THRONE:
+        if (config->getRegenerateMana())
+          addMana(0.2 * efficiency);
         break;
       case FurnitureType::WHIPPING_POST:
         taskMap->addTask(Task::whipping(pos, c), pos);
