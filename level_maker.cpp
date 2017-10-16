@@ -1967,7 +1967,7 @@ static PLevelMaker tower(RandomGen& random, SettlementInfo info, bool withExit) 
   queue->addMaker(make_unique<Division>(0.5, 0.5, std::move(upStairs), nullptr, nullptr, std::move(downStairs)));
   if (info.furniture)
     queue->addMaker(make_unique<Furnitures>(Predicate::type(building.floorInside), 0.5, *info.furniture));
-  return queue;
+  return std::move(queue);
 }
 
 PLevelMaker LevelMaker::towerLevel(RandomGen& random, SettlementInfo info) {
@@ -2179,7 +2179,7 @@ static PLevelMaker emptyCollective(SettlementInfo info) {
       make_unique<Creatures>(*info.creatures, info.numCreatures, info.collective));
 }
 
-static PLevelMaker swamp(SettlementInfo info) {
+static PMakerQueue swamp(SettlementInfo info) {
   auto queue = make_unique<MakerQueue>(
       make_unique<Lake>(false),
       make_unique<PlaceCollective>(info.collective)
@@ -2189,7 +2189,7 @@ static PLevelMaker swamp(SettlementInfo info) {
   return queue;
 }
 
-static PLevelMaker mountainLake(SettlementInfo info) {
+static PMakerQueue mountainLake(SettlementInfo info) {
   auto queue = make_unique<MakerQueue>(
       make_unique<UniformBlob>(FurnitureType::WATER, none, SquareAttrib::LAKE),
       make_unique<PlaceCollective>(info.collective)
@@ -2392,7 +2392,7 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, optional<CreatureFactory> fo
   queue->addMaker(make_unique<AddMapBorder>(mapBorder));
   if (forrestCreatures)
     queue->addMaker(make_unique<Margin>(mapBorder, getForrestCreatures(*forrestCreatures, width - 2 * mapBorder, biomeId)));
-  return queue;
+  return std::move(queue);
 }
 
 Vec2 LevelMaker::getRandomExit(RandomGen& random, Rectangle rect, int minCornerDist) {
@@ -2444,7 +2444,7 @@ PLevelMaker LevelMaker::splashLevel(CreatureFactory heroLeader, CreatureFactory 
   queue->addMaker(make_unique<SpecificArea>(monsterSpawn2, make_unique<Creatures>(imps, 15,
           MonsterAIFactory::splashImps(splashPath))));
   queue->addMaker(make_unique<SetSunlight>(0.0, !Predicate::inRectangle(Level::getSplashVisibleBounds())));
-  return queue;
+  return std::move(queue);
 }
 
 
@@ -2490,7 +2490,7 @@ static PLevelMaker underground(RandomGen& random, CreatureFactory waterFactory, 
       }
     default: break;
   }
-  return queue;
+  return std::move(queue);
 }
 
 PLevelMaker LevelMaker::roomLevel(RandomGen& random, CreatureFactory roomFactory, CreatureFactory waterFactory,
@@ -2564,7 +2564,7 @@ PLevelMaker LevelMaker::sokobanFromFile(RandomGen& random, SettlementInfo info, 
   //queue->addMaker(make_unique<PlaceCollective>(info.collective));
   queue->addMaker(make_unique<Creatures>(*info.creatures, info.numCreatures, info.collective,
         Predicate::attrib(SquareAttrib::SOKOBAN_PRIZE)));
-  return queue;
+  return std::move(queue);
 }
 
 namespace {
@@ -2611,5 +2611,5 @@ PLevelMaker LevelMaker::battleLevel(Table<char> level, CreatureFactory allies, C
 PLevelMaker LevelMaker::emptyLevel(RandomGen&) {
   auto queue = make_unique<MakerQueue>();
   queue->addMaker(make_unique<Empty>(FurnitureType::GRASS));
-  return queue;
+  return std::move(queue);
 }
