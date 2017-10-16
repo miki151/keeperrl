@@ -429,7 +429,7 @@ vector<Vec2> Tutorial::getHighlightedSquaresLow(WConstGame game) const {
   }
 }
 
-Tutorial::Tutorial() : state(State::CREATE_TEAM) {
+Tutorial::Tutorial() : state(State::WELCOME) {
 
 }
 
