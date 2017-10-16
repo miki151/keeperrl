@@ -19,9 +19,9 @@ SERIALIZE_DEF(ExternalEnemies, currentWaves, waves)
 SERIALIZATION_CONSTRUCTOR_IMPL(ExternalEnemies)
 
 ExternalEnemies::ExternalEnemies(RandomGen& random, vector<ExternalEnemy> enemies) {
-  constexpr int firstAttackDelay = 20;
-  constexpr int attackInterval = 200;
-  constexpr int attackVariation = 30;
+  constexpr int firstAttackDelay = 1800;
+  constexpr int attackInterval = 1200;
+  constexpr int attackVariation = 300;
   for (int i : Range(500)) {
     int attackTime = firstAttackDelay + i * attackInterval + random.get(-attackVariation, attackVariation);
     vector<int> indexes(enemies.size());
