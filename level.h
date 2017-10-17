@@ -68,6 +68,7 @@ class Level : public OwnedObject<Level> {
   bool landCreature(StairKey key, WCreature);
   bool landCreature(StairKey key, PCreature);
   bool landCreature(StairKey key, WCreature, Vec2 travelDir);
+  bool landCreature(StairKey key, PCreature, Vec2 travelDir);
   //@}
 
   /** Lands the creature on the level randomly choosing one of the given squares.

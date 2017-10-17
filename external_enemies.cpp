@@ -23,7 +23,7 @@ ExternalEnemies::ExternalEnemies(RandomGen& random, vector<ExternalEnemy> enemie
   constexpr int attackInterval = 1200;
   constexpr int attackVariation = 300;
   for (int i : Range(500)) {
-    int attackTime = firstAttackDelay + i * attackInterval + random.get(-attackVariation, attackVariation);
+    int attackTime = firstAttackDelay + i * attackInterval + random.get(-attackVariation, attackVariation + 1);
     vector<int> indexes(enemies.size());
     for (int i : All(enemies))
       indexes[i] = i;
@@ -36,7 +36,7 @@ ExternalEnemies::ExternalEnemies(RandomGen& random, vector<ExternalEnemy> enemie
             attackTime,
             random.get(enemy.groupSize),
             enemy.factory.random()->getViewObject().id(),
-});
+        });
         break;
       }
     }
@@ -77,12 +77,13 @@ void ExternalEnemies::update(WLevel level, double localTime) {
   updateCurrentWaves(target);
   if (auto nextWave = popNextWave(localTime)) {
     vector<WCreature> attackers;
+    Vec2 landingDir(Random.choose<Dir>());
     for (int i : Range(nextWave->groupSize)) {
       auto c = nextWave->enemy.factory.random(MonsterAIFactory::singleTask(
           getAttackTask(target, nextWave->enemy.behaviour)));
       c->getAttributes().setCourage(1);
       auto ref = c.get();
-      if (level->landCreature(StairKey::transferLanding(), std::move(c)))
+      if (level->landCreature(StairKey::transferLanding(), std::move(c), landingDir))
         attackers.push_back(ref);
     }
     target->addAttack(CollectiveAttack(nextWave->enemy.name, attackers));
