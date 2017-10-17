@@ -41,7 +41,7 @@ class ExternalEnemies {
   void updateCurrentWaves(WCollective target);
   OwnerPointer<TaskCallback> callbackDummy = makeOwner<TaskCallback>();
   vector<CurrentWave> SERIAL(currentWaves);
-  int nextWave = 0;
+  int SERIAL(nextWave) = 0;
   vector<EnemyEvent> SERIAL(waves);
   PTask getAttackTask(WCollective target, AttackBehaviour);
 };

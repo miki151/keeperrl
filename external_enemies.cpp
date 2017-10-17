@@ -15,7 +15,7 @@
 #include "monster.h"
 #include "view_object.h"
 
-SERIALIZE_DEF(ExternalEnemies, currentWaves, waves)
+SERIALIZE_DEF(ExternalEnemies, currentWaves, waves, nextWave)
 SERIALIZATION_CONSTRUCTOR_IMPL(ExternalEnemies)
 
 ExternalEnemies::ExternalEnemies(RandomGen& random, vector<ExternalEnemy> enemies) {
