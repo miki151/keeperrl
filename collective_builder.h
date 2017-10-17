@@ -17,11 +17,12 @@ class CollectiveBuilder {
   public:
   CollectiveBuilder(const CollectiveConfig&, TribeId);
   CollectiveBuilder& setLevel(WLevel);
-  CollectiveBuilder& addCreature(WCreature);
+  CollectiveBuilder& addCreature(WCreature, EnumSet<MinionTrait>);
   CollectiveBuilder& addArea(const vector<Vec2>&);
   CollectiveBuilder& setLocationName(const string&);
   CollectiveBuilder& setRaceName(const string&);
   CollectiveBuilder& setDiscoverable();
+  TribeId getTribe();
   void setCentralPoint(Vec2);
   bool hasCentralPoint();
 

@@ -642,46 +642,6 @@ CreatureFactory::CreatureFactory(const CreatureFactory&) = default;
 
 CreatureFactory& CreatureFactory::operator =(const CreatureFactory&) = default;
 
-CreatureFactory CreatureFactory::humanVillage(TribeId tribe) {
-  return CreatureFactory(tribe, { CreatureId::KNIGHT, CreatureId::ARCHER,
-      CreatureId::PESEANT, CreatureId::CHILD, CreatureId::HORSE, CreatureId::DONKEY, CreatureId::COW,
-      CreatureId::PIG, CreatureId::DOG },
-      { 2, 6, 6, 4, 1, 1, 1, 1, 6}, {CreatureId::KNIGHT});
-}
-
-CreatureFactory CreatureFactory::humanPeaceful(TribeId tribe) {
-  return CreatureFactory(tribe, { CreatureId::PESEANT,
-      CreatureId::CHILD, CreatureId::HORSE, CreatureId::DONKEY, CreatureId::COW, CreatureId::PIG, CreatureId::DOG },
-      { 2, 1, 1, 1, 1, 1, 1}, {});
-}
-
-CreatureFactory CreatureFactory::tutorialVillage(TribeId tribe) {
-  return CreatureFactory(tribe, {}, {}, {CreatureId::PESEANT, CreatureId::PESEANT, CreatureId::PESEANT,
-      CreatureId::PESEANT, CreatureId::PESEANT, CreatureId::DONKEY, CreatureId::PIG, CreatureId::PIG, CreatureId::DOG});
-}
-
-CreatureFactory CreatureFactory::gnomeVillage(TribeId tribe) {
-  return CreatureFactory(tribe, { CreatureId::GNOME },
-      { 1}, { CreatureId::GNOME_CHIEF});
-}
-
-CreatureFactory CreatureFactory::gnomeEntrance(TribeId tribe) {
-  return CreatureFactory(tribe, { CreatureId::GNOME }, {1});
-}
-
-CreatureFactory CreatureFactory::koboldVillage(TribeId tribe) {
-  return CreatureFactory(tribe, { CreatureId::KOBOLD }, {1});
-}
-
-CreatureFactory CreatureFactory::darkElfVillage(TribeId tribe) {
-  return CreatureFactory(tribe, { CreatureId::DARK_ELF, CreatureId::DARK_ELF_CHILD, CreatureId::DARK_ELF_WARRIOR },
-      { 1, 1, 2}, { CreatureId::DARK_ELF_LORD});
-}
-
-CreatureFactory CreatureFactory::darkElfEntrance(TribeId tribe) {
-  return CreatureFactory(tribe, { CreatureId::DARK_ELF_WARRIOR }, {1});
-}
-
 CreatureFactory CreatureFactory::humanCastle(TribeId tribe) {
   return CreatureFactory(tribe, { CreatureId::KNIGHT, CreatureId::ARCHER,
       CreatureId::PESEANT, CreatureId::CHILD, CreatureId::HORSE, CreatureId::DONKEY, CreatureId::COW,
@@ -726,26 +686,6 @@ CreatureFactory CreatureFactory::splashMonsters(TribeId tribe) {
       { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}, {}, {}).increaseBaseLevel(ExperienceType::MELEE, 25);
 }
 
-CreatureFactory CreatureFactory::elvenVillage(TribeId tribe) {
-  double armedRatio = 0.4;
-  CreatureFactory ret(tribe, { CreatureId::ELF, CreatureId::ELF_CHILD, CreatureId::HORSE,
-      CreatureId::COW, CreatureId::DOG },
-      { 2, 2, 1, 1, 0}, {});
-  double sum = 0;
-  for (double w : ret.weights)
-    sum += w;
-  ret.weights.push_back(sum * armedRatio / (1 - armedRatio));
-  ret.creatures.push_back(CreatureId::ELF_ARCHER);
-  ret.unique.push_back(CreatureId::ELF_LORD);
-  return ret;
-}
-
-CreatureFactory CreatureFactory::elvenCottage(TribeId tribe) {
-  return CreatureFactory(tribe, { CreatureId::ELF, CreatureId::ELF_CHILD, CreatureId::HORSE,
-      CreatureId::COW, CreatureId::DOG },
-      { 2, 2, 1, 1, 0}, {CreatureId::ELF_ARCHER});
-}
-
 CreatureFactory CreatureFactory::forrest(TribeId tribe) {
   return CreatureFactory(tribe,
       { CreatureId::DEER, CreatureId::FOX, CreatureId::BOAR },
@@ -773,8 +713,7 @@ CreatureFactory CreatureFactory::dwarfCave(TribeId tribe) {
 }
 
 CreatureFactory CreatureFactory::antNest(TribeId tribe) {
-  return CreatureFactory(tribe, { CreatureId::ANT_WORKER, CreatureId::ANT_SOLDIER}, { 2, 1},
-      { CreatureId::ANT_QUEEN});
+  return CreatureFactory(tribe, { CreatureId::ANT_WORKER, CreatureId::ANT_SOLDIER}, { 2, 1});
 }
 
 CreatureFactory CreatureFactory::orcTown(TribeId tribe) {

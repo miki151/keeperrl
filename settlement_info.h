@@ -4,6 +4,7 @@
 #include "creature_factory.h"
 #include "item_factory.h"
 #include "furniture_factory.h"
+#include "inhabitants_info.h"
 
 enum class BuildingId { WOOD, MUD, BRICK, WOOD_CASTLE, DUNGEON, DUNGEON_SURFACE};
 
@@ -46,9 +47,7 @@ class CollectiveBuilder;
 
 struct SettlementInfo {
   SettlementType type;
-  optional<CreatureFactory> creatures;
-  int numCreatures;
-  optional<pair<CreatureFactory, int>> neutralCreatures;
+  InhabitantsInfo inhabitants;
   optional<string> locationName;
   TribeId tribe;
   optional<string> race;

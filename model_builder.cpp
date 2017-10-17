@@ -189,10 +189,11 @@ SettlementInfo& ModelBuilder::makeExtraLevel(WModel model, EnemyInfo& enemy) {
             LevelMaker::towerLevel(random,
                 CONSTRUCT(SettlementInfo,
                   c.type = SettlementType::TOWER;
-                  c.creatures = CreatureFactory::singleType(TribeId::getHuman(), random.choose(
-                      CreatureId::WATER_ELEMENTAL, CreatureId::AIR_ELEMENTAL, CreatureId::FIRE_ELEMENTAL,
-                      CreatureId::EARTH_ELEMENTAL));
-                  c.numCreatures = random.get(1, 3);
+                  c.inhabitants.fighters = make_pair(
+                      random.get(1, 3),
+                      makeVec(make_pair(1, random.choose(
+                          CreatureId::WATER_ELEMENTAL, CreatureId::AIR_ELEMENTAL, CreatureId::FIRE_ELEMENTAL,
+                          CreatureId::EARTH_ELEMENTAL))));
                   //c.location = new Location();
                   c.upStairs = {upLink};
                   c.downStairs = {downLink};
@@ -468,7 +469,7 @@ WCollective ModelBuilder::spawnKeeper(WModel m, PCreature keeper, bool regenerat
   m->collectives.push_back(CollectiveBuilder(
         getKeeperConfig(random, options->getBoolValue(OptionId::FAST_IMMIGRATION), regenerateMana), TribeId::getKeeper())
       .setLevel(level)
-      .addCreature(keeperRef)
+      .addCreature(keeperRef, {MinionTrait::LEADER})
       .build());
   WCollective playerCollective = m->collectives.back().get();
   playerCollective->setControl(PlayerControl::create(playerCollective));

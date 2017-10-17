@@ -35,11 +35,12 @@ CollectiveBuilder& CollectiveBuilder::setDiscoverable() {
   return *this;
 }
 
-CollectiveBuilder& CollectiveBuilder::addCreature(WCreature c) {
-  if (!c->getAttributes().isInnocent() && (!creatures.empty() || config->isLeaderFighter()))
-    creatures.push_back({c, {MinionTrait::FIGHTER}});
-  else
-    creatures.push_back({c, {}});
+TribeId CollectiveBuilder::getTribe() {
+  return *tribe;
+}
+
+CollectiveBuilder& CollectiveBuilder::addCreature(WCreature c, EnumSet<MinionTrait> traits) {
+  creatures.push_back({c, traits});
   return *this;
 }
 
@@ -87,8 +88,13 @@ PCollective CollectiveBuilder::build() {
   Immigration im(c.get());
   c->init(std::move(*config), std::move(im));
   c->setControl(CollectiveControl::idle(c.get()));
-  for (auto& elem : creatures)
+  bool wasLeader = false;
+  for (auto& elem : creatures) {
     c->addCreature(elem.creature, elem.traits);
+    if (elem.traits.contains(MinionTrait::LEADER))
+      wasLeader = true;
+  }
+  CHECK(wasLeader || creatures.empty()) << "No leader added to collective " << c->getName()->full;
   for (Vec2 v : squares) {
     Position pos(v, level);
     c->addKnownTile(pos);
