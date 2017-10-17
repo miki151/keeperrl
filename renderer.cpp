@@ -446,20 +446,26 @@ void Renderer::setScissor(optional<Rectangle> s) {
     int zoom = getZoom();
     SDL::glScissor(s->left() * zoom, (getSize().y - s->bottom()) * zoom, s->width() * zoom, s->height() * zoom);
     SDL::glEnable(GL_SCISSOR_TEST);
+    isScissor = true;
   }
-  else
+  else {
     SDL::glDisable(GL_SCISSOR_TEST);
+    isScissor = false;
+  }
 }
 
 void Renderer::setTopLayer() {
   renderDeferredSprites();
   SDL::glPushMatrix();
   SDL::glTranslated(0, 0, 1);
+  SDL::glDisable(GL_SCISSOR_TEST);
 }
 
 void Renderer::popLayer() {
   renderDeferredSprites();
   SDL::glPopMatrix();
+  if (isScissor)
+    SDL::glEnable(GL_SCISSOR_TEST);
 }
 
 Vec2 Renderer::getSize() {

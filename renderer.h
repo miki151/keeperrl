@@ -243,5 +243,6 @@ class Renderer {
   };
   vector<DeferredSprite> deferredSprites;
   void renderDeferredSprites();
+  bool isScissor = false;
 };
 
