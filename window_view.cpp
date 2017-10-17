@@ -347,7 +347,9 @@ void WindowView::displaySplash(const ProgressMeter* meter, const string& text, S
 void WindowView::clearSplash() {
   splashDone = true;
   if (currentThreadId() != renderThreadId)
-    while (splashDone) {}
+    while (splashDone) {
+      Progress::checkIfInterrupted();
+    }
 }
 
 void WindowView::resize(int width, int height) {
