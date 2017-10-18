@@ -53,6 +53,7 @@
 #include "message_buffer.h"
 #include "pretty_printing.h"
 #include "item_type.h"
+#include "creature_factory.h"
 
 template <class Archive>
 void Player::serialize(Archive& ar, const unsigned int) {
@@ -655,6 +656,13 @@ void Player::makeMove() {
       if (auto itemType = PrettyPrinting::parseObject<ItemType>(action.get<string>()))
         getCreature()->take(itemType->get());
       else
+        getView()->presentText("Sorry", "Couldn't parse \"" + action.get<string>() + "\"");
+      break;
+    case UserInputId::SUMMON_ENEMY:
+      if (auto id = PrettyPrinting::parseObject<CreatureId>(action.get<string>())) {
+        auto factory = CreatureFactory::singleCreature(TribeId::getMonster(), *id);
+        Effect::summon(getCreature()->getPosition(), factory, 1, 1000, 3);
+      } else
         getView()->presentText("Sorry", "Couldn't parse \"" + action.get<string>() + "\"");
       break;
     case UserInputId::PLAYER_COMMAND: {
