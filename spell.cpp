@@ -113,9 +113,9 @@ optional<int> Spell::getLearningExpLevel() const {
     case SpellId::HEAL_OTHER: return 3;
     case SpellId::MAGIC_MISSILE: return 4;
     case SpellId::DECEPTION: return 4;
-    case SpellId::TELEPORT: return 4;
+    case SpellId::TELEPORT: return 5;
     case SpellId::SPEED_SELF: return 5;
-    case SpellId::STUN_RAY: return 6;
+    //case SpellId::STUN_RAY: return 6;
     case SpellId::CURE_POISON: return 6;
     case SpellId::BLAST: return 7;
     case SpellId::CIRCULAR_BLAST: return 7;
