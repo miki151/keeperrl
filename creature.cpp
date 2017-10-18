@@ -1522,8 +1522,8 @@ CreatureAction Creature::moveTowards(Position pos, bool away, NavigationFlags fl
   if (shortestPath->isReachable(position))
     if (auto action = move(shortestPath->getNextMove(position)))
       return action;
-  if (newPath)
-    return CreatureAction();
+  /*if (newPath)
+    return CreatureAction();*/
   INFO << "Reconstructing shortest path.";
   if (!away)
     shortestPath.reset(new LevelShortestPath(this, pos, position));
