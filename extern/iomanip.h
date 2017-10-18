@@ -1,5 +1,9 @@
 #pragma once
 
+#ifdef OSX
+#include <iomanip>
+#else
+
 // Copied from stdc++, because some older platforms don't have this file.
 //
 // Standard stream manipulators -*- C++ -*-
@@ -185,3 +189,4 @@ template<typename _CharT, typename _Traits, typename _Alloc>
       __string, __delim, __escape);
   }
 }
+#endif

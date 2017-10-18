@@ -6,8 +6,10 @@ endif
 
 CFLAGS = -Wall -std=c++1y -Wno-sign-compare -Wno-unused-variable -Wno-shift-count-overflow -Wno-tautological-constant-out-of-range-compare -Wno-mismatched-tags -ftemplate-depth=512
 
-CC = g++
-LD = g++
+ifndef GCC
+GCC = g++
+endif
+LD = $(GCC)
 
 ifndef RELEASE
 CFLAGS += -Werror -Wimplicit-fallthrough
@@ -107,7 +109,7 @@ all:
 compile: gen_version $(NAME)
 
 $(OBJDIR)/stdafx.h.gch: stdafx.h
-	$(CC) -x c++-header $< -MMD $(CFLAGS) -o $@
+	$(GCC) -x c++-header $< -MMD $(CFLAGS) -o $@
 
 ifndef OPT
 PCH = $(OBJDIR)/stdafx.h.gch
@@ -115,7 +117,7 @@ PCHINC = -include-pch $(OBJDIR)/stdafx.h.gch
 endif
 
 $(OBJDIR)/%.o: %.cpp ${PCH}
-	$(CC) -MMD $(CFLAGS) $(PCHINC) -c $< -o $@
+	$(GCC) -MMD $(CFLAGS) $(PCHINC) -c $< -o $@
 
 $(NAME): $(OBJS)
 	$(LD) $(CFLAGS) -o $@ $^ $(LIBS)
@@ -132,7 +134,7 @@ run: $(NAME)
 run_gdb: $(NAME)
 	./run.sh ${RUN_FLAGS}
 info:
-	@$(CC) -v 2>&1 | head -n 2
+	@$(GCC) -v 2>&1 | head -n 2
 
 ifdef RELEASE
 gen_version:

@@ -2150,23 +2150,22 @@ static PLevelMaker emptyCollective(SettlementInfo info) {
       unique<Inhabitants>(info.inhabitants, info.collective));
 }
 
-static PLevelMaker swamp(SettlementInfo info) {
+static PMakerQueue swamp(SettlementInfo info) {
   auto queue = unique<MakerQueue>(
       unique<Lake>(false),
       unique<PlaceCollective>(info.collective)
   );
   queue->addMaker(unique<Inhabitants>(info.inhabitants, info.collective));
-  return std::move(queue);
+  return queue;
 }
 
-static PLevelMaker mountainLake(SettlementInfo info) {
+static PMakerQueue mountainLake(SettlementInfo info) {
   auto queue = unique<MakerQueue>(
       unique<UniformBlob>(FurnitureType::WATER, none, SquareAttrib::LAKE),
       unique<PlaceCollective>(info.collective)
   );
   queue->addMaker(unique<Inhabitants>(info.inhabitants, info.collective));
-  return std::move(queue);
-
+  return queue;
 }
 
 static PLevelMaker getMountains(BiomeId id) {
