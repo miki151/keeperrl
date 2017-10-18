@@ -704,21 +704,21 @@ vector<ExternalEnemy> EnemyFactory::getExternalEnemies() {
         CreatureList(random.get(3, 5), CreatureId::ANT_WORKER),
         AttackBehaviourId::KILL_LEADER,
         "an ant patrol",
-        Range(0, 5000),
-        3
+        Range(1000, 10000),
+        2
     },
     ExternalEnemy{
         CreatureList(random.get(3, 5), CreatureId::ANT_SOLDIER),
         AttackBehaviourId::KILL_LEADER,
         "an ant soldier patrol",
-        Range(1000, 10000),
+        Range(3000, 10000),
         3
     },
     ExternalEnemy{
         CreatureList(random.get(10, 15), CreatureId::ANT_SOLDIER).addUnique(CreatureId::ANT_QUEEN),
         AttackBehaviourId::KILL_LEADER,
         "an army of ants",
-        Range(0, 15000),
+        Range(6000, 15000),
         3
     },
     ExternalEnemy{
@@ -746,21 +746,21 @@ vector<ExternalEnemy> EnemyFactory::getExternalEnemies() {
         CreatureList(random.get(10, 13), CreatureId::DWARF).addUnique(CreatureId::DWARF_BARON),
         AttackBehaviourId::KILL_LEADER,
         "a dwarf tribe",
-        Range(0, 18000),
+        Range(10000, 18000),
         2
     },
     ExternalEnemy{
         CreatureList(random.get(4, 8), CreatureId::ARCHER),
         AttackBehaviourId::KILL_LEADER,
         "a patrol of archers",
-        Range(0, 12000),
+        Range(4000, 12000),
         3
     },
     ExternalEnemy{
         CreatureList(random.get(4, 8), CreatureId::KNIGHT),
         AttackBehaviourId::KILL_LEADER,
         "a group of knights",
-        Range(0, 12000),
+        Range(6000, 12000),
         3
     },
     ExternalEnemy{
@@ -774,14 +774,14 @@ vector<ExternalEnemy> EnemyFactory::getExternalEnemies() {
         CreatureList(random.get(12, 16), CreatureId::WARRIOR).addUnique(CreatureId::SHAMAN),
         AttackBehaviourId::KILL_LEADER,
         "an army of warriors",
-        Range(0, 12000),
+        Range(8000, 12000),
         3
     },
     ExternalEnemy{
         CreatureList(random.get(12, 16), {CreatureId::KNIGHT, CreatureId::ARCHER}).addUnique(CreatureId::AVATAR),
         AttackBehaviourId::KILL_LEADER,
         "an army of knights",
-        Range(0, 30000),
+        Range(12000, 30000),
         3
     },
     ExternalEnemy{
