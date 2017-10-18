@@ -1147,7 +1147,7 @@ class Eat : public Task {
 
   virtual MoveInfo getMove(WCreature c) override {
     if (!position) {
-      for (Position v : positions)
+      for (Position v : Random.permutation(positions))
         if (!rejectedPosition.count(v) && (!position ||
               position->dist8(c->getPosition()) > v.dist8(c->getPosition())))
           position = v;
@@ -1174,7 +1174,11 @@ class Eat : public Task {
             return move.append([this, ch, pos] (WCreature) { if (ch->isDead()) position = pos; });
       }
     }
-    return c->moveTowards(*position);
+    if (c->getPosition() != *position)
+      return c->moveTowards(*position);
+    else
+      position = none;
+    return NoMove;
   }
 
   virtual string getDescription() const override {
