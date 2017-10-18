@@ -1143,7 +1143,6 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
         info.nextWave = CollectiveInfo::NextWave {
           nextWave->viewId,
           nextWave->enemy.name,
-          nextWave->groupSize,
           (int) (nextWave->attackTime - getLocalTime())
         };
       }

@@ -34,8 +34,7 @@ ExternalEnemies::ExternalEnemies(RandomGen& random, vector<ExternalEnemy> enemie
         waves.push_back(EnemyEvent{
             enemy,
             attackTime,
-            random.get(enemy.groupSize),
-            enemy.factory.random()->getViewObject().id(),
+            enemy.creatures.getViewId()
         });
         break;
       }
@@ -78,9 +77,9 @@ void ExternalEnemies::update(WLevel level, double localTime) {
   if (auto nextWave = popNextWave(localTime)) {
     vector<WCreature> attackers;
     Vec2 landingDir(Random.choose<Dir>());
-    for (int i : Range(nextWave->groupSize)) {
-      auto c = nextWave->enemy.factory.random(MonsterAIFactory::singleTask(
-          getAttackTask(target, nextWave->enemy.behaviour)));
+    auto creatures = nextWave->enemy.creatures.generate(Random, TribeId::getHuman(),
+        MonsterAIFactory::singleTask(getAttackTask(target, nextWave->enemy.behaviour)));
+    for (auto& c : creatures) {
       c->getAttributes().setCourage(1);
       auto ref = c.get();
       if (level->landCreature(StairKey::transferLanding(), std::move(c), landingDir))

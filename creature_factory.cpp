@@ -642,13 +642,6 @@ CreatureFactory::CreatureFactory(const CreatureFactory&) = default;
 
 CreatureFactory& CreatureFactory::operator =(const CreatureFactory&) = default;
 
-CreatureFactory CreatureFactory::humanCastle(TribeId tribe) {
-  return CreatureFactory(tribe, { CreatureId::KNIGHT, CreatureId::ARCHER,
-      CreatureId::PESEANT, CreatureId::CHILD, CreatureId::HORSE, CreatureId::DONKEY, CreatureId::COW,
-      CreatureId::PIG, CreatureId::DOG },
-      { 10, 6, 2, 1, 1, 1, 1, 1, 1}, {CreatureId::AVATAR});
-}
-
 static optional<pair<CreatureFactory, CreatureFactory>> splashFactories;
 
 void CreatureFactory::initSplash(TribeId tribe) {
@@ -690,47 +683,6 @@ CreatureFactory CreatureFactory::forrest(TribeId tribe) {
   return CreatureFactory(tribe,
       { CreatureId::DEER, CreatureId::FOX, CreatureId::BOAR },
       { 4, 2, 2}, {});
-}
-
-CreatureFactory CreatureFactory::crypt(TribeId tribe) {
-  return CreatureFactory(tribe, { CreatureId::ZOMBIE}, { 1}, {});
-}
-
-CreatureFactory CreatureFactory::vikingTown(TribeId tribe) {
-  return CreatureFactory(tribe, { CreatureId::WARRIOR}, { 1}, {CreatureId::SHAMAN});
-}
-
-CreatureFactory CreatureFactory::lizardTown(TribeId tribe) {
-  return CreatureFactory(tribe, { CreatureId::LIZARDMAN, }, { 1}, {CreatureId::LIZARDLORD});
-}
-
-CreatureFactory CreatureFactory::dwarfTown(TribeId tribe) {
-  return CreatureFactory(tribe, { CreatureId::DWARF, CreatureId::DWARF_FEMALE}, { 2, 1},{ CreatureId::DWARF_BARON});
-}
-
-CreatureFactory CreatureFactory::dwarfCave(TribeId tribe) {
-  return CreatureFactory(tribe, { CreatureId::DWARF, CreatureId::DWARF_FEMALE}, { 2, 1});
-}
-
-CreatureFactory CreatureFactory::antNest(TribeId tribe) {
-  return CreatureFactory(tribe, { CreatureId::ANT_WORKER, CreatureId::ANT_SOLDIER}, { 2, 1});
-}
-
-CreatureFactory CreatureFactory::orcTown(TribeId tribe) {
-  return CreatureFactory(tribe, { CreatureId::ORC, CreatureId::OGRE }, {1, 1});
-}
-
-CreatureFactory CreatureFactory::demonDen(TribeId tribe) {
-  return CreatureFactory(tribe, { CreatureId::DEMON_DWELLER}, {1},
-      { CreatureId::DEMON_LORD});
-}
-
-CreatureFactory CreatureFactory::demonDenAbove(TribeId tribe) {
-  return CreatureFactory(tribe, { CreatureId::GHOST}, {1});
-}
-
-CreatureFactory CreatureFactory::insects(TribeId tribe) {
-  return CreatureFactory(tribe, { CreatureId::SPIDER}, {1});
 }
 
 CreatureFactory CreatureFactory::waterCreatures(TribeId tribe) {

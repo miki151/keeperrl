@@ -189,11 +189,11 @@ SettlementInfo& ModelBuilder::makeExtraLevel(WModel model, EnemyInfo& enemy) {
             LevelMaker::towerLevel(random,
                 CONSTRUCT(SettlementInfo,
                   c.type = SettlementType::TOWER;
-                  c.inhabitants.fighters = make_pair(
+                  c.inhabitants.fighters = CreatureList(
                       random.get(1, 3),
-                      makeVec(make_pair(1, random.choose(
+                      random.choose(
                           CreatureId::WATER_ELEMENTAL, CreatureId::AIR_ELEMENTAL, CreatureId::FIRE_ELEMENTAL,
-                          CreatureId::EARTH_ELEMENTAL))));
+                          CreatureId::EARTH_ELEMENTAL));
                   //c.location = new Location();
                   c.upStairs = {upLink};
                   c.downStairs = {downLink};

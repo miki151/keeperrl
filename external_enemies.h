@@ -3,23 +3,22 @@
 #include "creature_factory.h"
 #include "attack_behaviour.h"
 #include "task_callback.h"
+#include "inhabitants_info.h"
 
 struct ExternalEnemy {
-  CreatureFactory SERIAL(factory);
-  Range SERIAL(groupSize);
+  CreatureList SERIAL(creatures);
   AttackBehaviour SERIAL(behaviour);
   string SERIAL(name);
   Range SERIAL(attackTime);
   int SERIAL(maxOccurences);
-  SERIALIZE_ALL(factory, groupSize, behaviour, name, attackTime, maxOccurences)
+  SERIALIZE_ALL(creatures, behaviour, name, attackTime, maxOccurences)
 };
 
 struct EnemyEvent {
   ExternalEnemy SERIAL(enemy);
   int SERIAL(attackTime);
-  int SERIAL(groupSize);
   ViewId SERIAL(viewId);
-  SERIALIZE_ALL(enemy, attackTime, groupSize, viewId)
+  SERIALIZE_ALL(enemy, attackTime, viewId)
 };
 
 class ExternalEnemies {
