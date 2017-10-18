@@ -103,6 +103,9 @@ WItem Behaviour::getBestWeapon() {
 }
 
 MoveInfo Behaviour::tryEffect(Effect type, double maxTurns) {
+  if (auto effect = type.getValueMaybe<Effect::Lasting>())
+    if (creature->isAffected(effect->lastingEffect))
+      return NoMove;
   for (Spell* spell : creature->getAttributes().getSpellMap().getAll()) {
    if (spell->hasEffect(type))
       if (auto action = creature->castSpell(spell))

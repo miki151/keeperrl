@@ -131,6 +131,11 @@ class Effect {
     return effect.contains<T>();
   }
 
+  template <typename T>
+  auto getValueMaybe() const {
+    return effect.getValueMaybe<T>();
+  }
+
   static vector<WCreature> summon(WCreature, CreatureId, int num, int ttl, double delay = 0);
   static vector<WCreature> summon(Position, CreatureFactory&, int num, int ttl, double delay = 0);
   static vector<WCreature> summonCreatures(Position, int radius, vector<PCreature>, double delay = 0);
