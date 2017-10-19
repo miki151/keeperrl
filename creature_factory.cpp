@@ -1288,7 +1288,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::CLAY_GOLEM:
       return CATTR(
           c.viewId = ViewId::CLAY_GOLEM;
-          c.attr = LIST(14_dam, 12_def, 50_spd );
+          c.attr = LIST(19_dam, 19_def, 50_spd );
           c.body = Body::nonHumanoid(Body::Material::CLAY, Body::Size::LARGE).setHumanoidBodyParts();
           c.permanentEffects[LastingEffect::MELEE_RESISTANCE] = 1;
           c.barehandedAttack = AttackType::PUNCH;
@@ -1296,7 +1296,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::STONE_GOLEM: 
       return CATTR(
           c.viewId = ViewId::STONE_GOLEM;
-          c.attr = LIST(16_dam, 14_def, 60_spd );
+          c.attr = LIST(23_dam, 23_def, 60_spd );
           c.body = Body::nonHumanoid(Body::Material::ROCK, Body::Size::LARGE).setHumanoidBodyParts();
           c.permanentEffects[LastingEffect::MELEE_RESISTANCE] = 1;
           c.barehandedAttack = AttackType::PUNCH;
@@ -1304,7 +1304,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::IRON_GOLEM: 
       return CATTR(
           c.viewId = ViewId::IRON_GOLEM;
-          c.attr = LIST(18_dam, 16_def, 70_spd );
+          c.attr = LIST(30_dam, 30_def, 70_spd );
           c.permanentEffects[LastingEffect::MELEE_RESISTANCE] = 1;
           c.body = Body::nonHumanoid(Body::Material::IRON, Body::Size::LARGE).setHumanoidBodyParts();
           c.barehandedAttack = AttackType::PUNCH;
@@ -1312,7 +1312,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::LAVA_GOLEM: 
       return CATTR(
           c.viewId = ViewId::LAVA_GOLEM;
-          c.attr = LIST(20_dam, 18_def, 80_spd );
+          c.attr = LIST(36_dam, 36_def, 80_spd );
           c.permanentEffects[LastingEffect::MELEE_RESISTANCE] = 1;
           c.body = Body::nonHumanoid(Body::Material::LAVA, Body::Size::LARGE).setHumanoidBodyParts();
           c.barehandedAttack = AttackType::PUNCH;

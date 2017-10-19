@@ -738,7 +738,7 @@ vector<ExternalEnemy> EnemyFactory::getExternalEnemies() {
         1
     },
     ExternalEnemy{
-        CreatureList(random.get(3, 5), CreatureId::CLAY_GOLEM)
+        CreatureList(random.get(3, 5), CreatureId::STONE_GOLEM)
             .increaseBaseLevel({{ExperienceType::MELEE, 3}}),
         AttackBehaviourId::KILL_LEADER,
         "an alchemist's stone golems",
