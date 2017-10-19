@@ -14,6 +14,7 @@
 #include "container_range.h"
 #include "monster.h"
 #include "view_object.h"
+#include "view_id.h"
 
 SERIALIZE_DEF(ExternalEnemies, currentWaves, waves, nextWave)
 SERIALIZATION_CONSTRUCTOR_IMPL(ExternalEnemies)
@@ -36,6 +37,10 @@ ExternalEnemies::ExternalEnemies(RandomGen& random, vector<ExternalEnemy> enemie
             attackTime,
             enemy.creatures.getViewId()
         });
+        if (i % 6 == 5) {
+          waves.back().enemy.name = "Unknown";
+          waves.back().viewId = ViewId::UNKNOWN_MONSTER;
+        }
         break;
       }
     }
