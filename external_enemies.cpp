@@ -45,7 +45,7 @@ ExternalEnemies::ExternalEnemies(RandomGen& random, vector<ExternalEnemy> enemie
 PTask ExternalEnemies::getAttackTask(WCollective enemy, AttackBehaviour behaviour) {
   switch (behaviour.getId()) {
     case AttackBehaviourId::KILL_LEADER:
-      return Task::attackLeader(enemy);
+      return Task::attackCreatures({enemy->getLeader()});
     case AttackBehaviourId::KILL_MEMBERS:
       return Task::killFighters(enemy, behaviour.get<int>());
     case AttackBehaviourId::STEAL_GOLD:

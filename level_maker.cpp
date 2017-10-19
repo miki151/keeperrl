@@ -35,6 +35,7 @@
 #include "movement_set.h"
 #include "container_range.h"
 #include "settlement_info.h"
+#include "task.h"
 
 namespace {
 
@@ -2544,7 +2545,8 @@ class BattleFromFile : public LevelMaker {
     CHECK(area == level.getBounds()) << "Bad size of battle level input.";
     auto alliesList = allies.generate(builder->getRandom(), TribeId::getKeeper(), MonsterAIFactory::guard());
     int allyIndex = 0;
-    auto enemyList = enemies.generate(builder->getRandom(), TribeId::getHuman(), MonsterAIFactory::monster());
+    auto enemyList = enemies.generate(builder->getRandom(), TribeId::getHuman(),
+        MonsterAIFactory::singleTask(Task::attackCreatures(getWeakPointers(alliesList))));
     int enemyIndex = 0;
     for (Vec2 v : area) {
       builder->resetFurniture(v, FurnitureType::FLOOR);
