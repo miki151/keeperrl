@@ -32,11 +32,11 @@ class ExternalEnemies {
   };
   optional<const EnemyEvent&> getNextWave() const;
   int getNextWaveIndex() const;
+  optional<EnemyEvent> popNextWave(double localTime);
 
   SERIALIZATION_DECL(ExternalEnemies)
 
   private:
-  optional<EnemyEvent> popNextWave(double localTime);
   void updateCurrentWaves(WCollective target);
   OwnerPointer<TaskCallback> callbackDummy = makeOwner<TaskCallback>();
   vector<CurrentWave> SERIAL(currentWaves);

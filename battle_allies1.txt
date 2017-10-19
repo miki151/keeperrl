@@ -1,13 +1,26 @@
-12
+25
 ORC M0 LeatherArmor,Club,LeatherGloves
 ORC M1 LeatherArmor,Club,LeatherGloves
 ORC M2 LeatherArmor,Club,LeatherGloves
 ORC M3 LeatherArmor,Club,LeatherGloves,LeatherBoots
 ORC M3 ChainArmor,Sword,LeatherGloves,LeatherBoots
-ORC M7 ChainArmor,BattleAxe,IronBoots,LeatherGloves
+ORC M4 ChainArmor,Sword,LeatherGloves,LeatherBoots
+ORC M5 ChainArmor,Sword,LeatherGloves,LeatherBoots
+ORC M6 ChainArmor,Sword,LeatherGloves,LeatherBoots
+ORC M7 ChainArmor,Sword,IronBoots,LeatherGloves
+OGRE M2 ChainArmor,Sword,IronBoots,LeatherGloves
 OGRE M3 ChainArmor,Sword,IronBoots,LeatherGloves
-OGRE M7 ChainArmor,BattleAxe,IronBoots,LeatherGloves
-WEREWOLF M12 ChainArmor,BattleAxe,IronBoots,IronHelm,LeatherGloves
+OGRE M4 ChainArmor,Sword,IronBoots,LeatherGloves,IronHelm
+OGRE M5 ChainArmor,Sword,IronBoots,LeatherGloves,IronHelm
+OGRE M6 ChainArmor,Sword,IronBoots,LeatherGloves,IronHelm
+OGRE M7 ChainArmor,Sword,IronBoots,LeatherGloves,IronHelm
+OGRE M8 ChainArmor,BattleAxe,IronBoots,IronHelm,LeatherGloves
+OGRE M9 ChainArmor,BattleAxe,IronBoots,IronHelm,LeatherGloves
+OGRE M10 ChainArmor,BattleAxe,IronBoots,IronHelm,LeatherGloves
+OGRE M11 ChainArmor,BattleAxe,IronBoots,IronHelm,LeatherGloves
 OGRE M12 ChainArmor,BattleAxe,IronBoots,IronHelm,LeatherGloves
+WEREWOLF M12 ChainArmor,BattleAxe,IronBoots,IronHelm,LeatherGloves
 VAMPIRE M7,S7 ChainArmor,BattleAxe,IronBoots,IronHelm,LeatherGloves
 SPECIAL_HMBN M10,S10 ChainArmor,BattleAxe,IronBoots,IronHelm,LeatherGloves
+SPECIAL_HMBN M11,S11 ChainArmor,BattleAxe,IronBoots,IronHelm,LeatherGloves
+SPECIAL_HMBN M12,S12 ChainArmor,BattleAxe,IronBoots,IronHelm,LeatherGloves

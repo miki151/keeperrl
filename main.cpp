@@ -350,7 +350,10 @@ static int keeperMain(po::parser& commandLineFlags) {
     auto numRounds = commandLineFlags["battle_rounds"].get().i32;
     auto enemyId = commandLineFlags["battle_enemy"].get().string;
     try {
-      loop.battleTest(numRounds, FilePath::fromFullPath(level), FilePath::fromFullPath(info), enemyId, Random);
+      if (enemyId == "endless")
+        loop.endlessTest(numRounds, FilePath::fromFullPath(level), FilePath::fromFullPath(info), Random);
+      else
+        loop.battleTest(numRounds, FilePath::fromFullPath(level), FilePath::fromFullPath(info), enemyId, Random);
     } catch (GameExitException) {}
   };
   if (commandLineFlags["battle_level"].was_set() && !commandLineFlags["battle_view"].was_set()) {

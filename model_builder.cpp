@@ -538,14 +538,13 @@ PModel ModelBuilder::splashModel(const FilePath& splashPath) {
   return m;
 }
 
-PModel ModelBuilder::battleModel(const FilePath& levelPath, CreatureFactory allies, CreatureFactory enemies,
-    int maxEnemies) {
+PModel ModelBuilder::battleModel(const FilePath& levelPath, CreatureList allies, CreatureList enemies) {
   auto m = Model::create();
   ifstream stream(levelPath.getPath());
   Table<char> level = *SokobanInput::readTable(stream);
   WLevel l = m->buildTopLevel(
-      LevelBuilder(meter, Random, level.getBounds().width(), level.getBounds().height(), "Battle", false, 1.0),
-      LevelMaker::battleLevel(level, allies, enemies, maxEnemies));
+      LevelBuilder(meter, Random, level.getBounds().width(), level.getBounds().height(), "Battle", true, 1.0),
+      LevelMaker::battleLevel(level, allies, enemies));
   m->topLevel = l;
   return m;
 }

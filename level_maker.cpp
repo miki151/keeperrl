@@ -2537,11 +2537,15 @@ namespace {
 
 class BattleFromFile : public LevelMaker {
   public:
-  BattleFromFile(Table<char> f, CreatureFactory a, CreatureFactory e, int maxE)
-      : level(f), allies(a), enemies(e), maxEnemies(maxE) {}
+  BattleFromFile(Table<char> f, CreatureList a, CreatureList e)
+      : level(f), allies(a), enemies(e) {}
 
   virtual void make(LevelBuilder* builder, Rectangle area) override {
     CHECK(area == level.getBounds()) << "Bad size of battle level input.";
+    auto alliesList = allies.generate(builder->getRandom(), TribeId::getKeeper(), MonsterAIFactory::guard());
+    int allyIndex = 0;
+    auto enemyList = enemies.generate(builder->getRandom(), TribeId::getHuman(), MonsterAIFactory::monster());
+    int enemyIndex = 0;
     for (Vec2 v : area) {
       builder->resetFurniture(v, FurnitureType::FLOOR);
       switch (level[v]) {
@@ -2551,11 +2555,16 @@ class BattleFromFile : public LevelMaker {
           builder->putFurniture(v, FurnitureType::MOUNTAIN);
           break;
         case 'a':
-          builder->putCreature(v, allies.random(MonsterAIFactory::guard()));
+          if (allyIndex < alliesList.size()) {
+            builder->putCreature(v, std::move(alliesList[allyIndex]));
+            ++allyIndex;
+          }
           break;
         case 'e':
-          if (maxEnemies-- > 0)
-            builder->putCreature(v, enemies.random());
+          if (enemyIndex < enemyList.size()) {
+            builder->putCreature(v, std::move(enemyList[enemyIndex]));
+            ++enemyIndex;
+          }
           break;
         default: FATAL << "Unknown symbol in battle test data: " << level[v];
       }
@@ -2563,15 +2572,14 @@ class BattleFromFile : public LevelMaker {
   }
 
   Table<char> level;
-  CreatureFactory allies;
-  CreatureFactory enemies;
-  int maxEnemies;
+  CreatureList allies;
+  CreatureList enemies;
 };
 
 }
 
-PLevelMaker LevelMaker::battleLevel(Table<char> level, CreatureFactory allies, CreatureFactory enemies, int maxEnemies) {
-  return unique<BattleFromFile>(level, allies, enemies, maxEnemies);
+PLevelMaker LevelMaker::battleLevel(Table<char> level, CreatureList allies, CreatureList enemies) {
+  return unique<BattleFromFile>(level, allies, enemies);
 }
 
 PLevelMaker LevelMaker::emptyLevel(RandomGen&) {

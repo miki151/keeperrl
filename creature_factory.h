@@ -196,7 +196,6 @@ class CreatureFactory {
   static ViewId getViewId(CreatureId);
   static const Gender& getGender(CreatureId);
 
-  static void init();
   ~CreatureFactory();
   CreatureFactory& operator = (const CreatureFactory&);
   CreatureFactory(const CreatureFactory&);

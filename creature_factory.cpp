@@ -1943,7 +1943,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::ELEMENTALIST: 
       return CATTR(
           c.viewId = ViewId::ELEMENTALIST;
-          c.attr = LIST(5_dam, 25_def, 15_spell_dam, 120_spd );
+          c.attr = LIST(15_dam, 20_def, 15_spell_dam, 120_spd );
           c.body = Body::humanoid(Body::Size::LARGE);
           c.gender = Gender::female;
           c.permanentEffects[LastingEffect::FIRE_RESISTANT] = 1;
@@ -2171,6 +2171,9 @@ vector<ItemType> getDefaultInventory(CreatureId id) {
     case CreatureId::KEEPER:
       return ItemList()
         .add(ItemType::Robe{});
+    case CreatureId::ELEMENTALIST:
+      return ItemList()
+          .add(ItemType::IronStaff{});
     case CreatureId::ADVENTURER_F:
     case CreatureId::ADVENTURER:
       return ItemList()

@@ -30,6 +30,7 @@ class LevelGenException {
 };
 
 class FilePath;
+class CreatureList;
 
 class LevelMaker {
   public:
@@ -49,6 +50,6 @@ class LevelMaker {
   static PLevelMaker mazeLevel(RandomGen&, SettlementInfo);
   static PLevelMaker emptyLevel(RandomGen&);
   static PLevelMaker sokobanFromFile(RandomGen&, SettlementInfo, Table<char>);
-  static PLevelMaker battleLevel(Table<char>, CreatureFactory allies, CreatureFactory enemies, int maxEnemies);
+  static PLevelMaker battleLevel(Table<char>, CreatureList allies, CreatureList enemies);
 };
 

@@ -15,7 +15,7 @@ class ExternalEnemies;
 struct EnemyEvent;
 class Tutorial;
 class FilePath;
-class CreatureFactory;
+class CreatureList;
 
 class ModelBuilder {
   public:
@@ -29,7 +29,7 @@ class ModelBuilder {
   void measureSiteGen(int numTries, vector<std::string> types);
 
   PModel splashModel(const FilePath& splashPath);
-  PModel battleModel(const FilePath& levelPath, CreatureFactory allies, CreatureFactory enemies, int maxEnemies);
+  PModel battleModel(const FilePath& levelPath, CreatureList allies, CreatureList enemies);
 
   WCollective spawnKeeper(WModel, PCreature, bool regenerateMana);
 

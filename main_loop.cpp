@@ -31,6 +31,8 @@
 #include "item_type.h"
 #include "pretty_printing.h"
 #include "creature_factory.h"
+#include "enemy_factory.h"
+#include "external_enemies.h"
 
 MainLoop::MainLoop(View* v, Highscores* h, FileSharing* fSharing, const DirectoryPath& freePath,
     const DirectoryPath& uPath, Options* o, Jukebox* j, SokobanInput* soko, bool singleThread)
@@ -204,6 +206,7 @@ int MainLoop::getAutosaveFreq() {
 enum class MainLoop::ExitCondition {
   ALLIES_WON,
   ENEMIES_WON,
+  TIMEOUT,
   UNKNOWN
 };
 
@@ -501,8 +504,46 @@ void MainLoop::modelGenTest(int numTries, const vector<string>& types, RandomGen
   ModelBuilder(&meter, random, options, sokobanInput).measureSiteGen(numTries, types);
 }
 
+static CreatureList readAlly(ifstream& input) {
+  string ally;
+  input >> ally;
+  auto id = EnumInfo<CreatureId>::fromString(ally);
+  CreatureList ret(1000, id);
+  string levelIncreaseText;
+  input >> levelIncreaseText;
+  EnumMap<ExperienceType, int> levelIncrease;
+  vector<ItemType> equipment;
+  for (auto increase : split(levelIncreaseText, {','})) {
+    int amount = fromString<int>(increase.substr(1));
+    switch (increase[0]) {
+      case 'M':
+        levelIncrease[ExperienceType::MELEE] = amount;
+        break;
+      case 'S':
+        levelIncrease[ExperienceType::SPELL] = amount;
+        break;
+      case 'A':
+        levelIncrease[ExperienceType::ARCHERY] = amount;
+        break;
+      default:
+        FATAL << "Can't parse level increase " << increase;
+    }
+  }
+  string equipmentText;
+  input >> equipmentText;
+  for (auto id : split(equipmentText, {','}))
+    if (auto type = PrettyPrinting::parseObject<ItemType>(id))
+      equipment.push_back(*type);
+    else
+      FATAL << "Can't parse item type: " << id;
+  ret.addInventory(equipment);
+  ret.increaseBaseLevel(levelIncrease);
+  return ret;
+}
+
 void MainLoop::battleTest(int numTries, const FilePath& levelPath, const FilePath& battleInfoPath, string enemy,
     RandomGen& random) {
+  NameGenerator::init(dataFreePath.subdirectory("names"));
   ifstream input(battleInfoPath.getPath());
   int cnt = 0;
   auto enemySplit = split(enemy, {','});
@@ -512,57 +553,53 @@ void MainLoop::battleTest(int numTries, const FilePath& levelPath, const FilePat
     maxEnemies = fromString<int>(enemySplit[1]);
   input >> cnt;
   for (int i : Range(cnt)) {
-    BattleInfo info;
-    string ally;
-    input >> ally;
-    info.ally = EnumInfo<CreatureId>::fromString(ally);
-    string levelIncreases;
-    input >> levelIncreases;
-    for (auto increase : split(levelIncreases, {','})) {
-      int amount = fromString<int>(increase.substr(1));
-      switch (increase[0]) {
-        case 'M':
-          info.allyLevelIncrease[ExperienceType::MELEE] = amount;
-          break;
-        case 'S':
-          info.allyLevelIncrease[ExperienceType::SPELL] = amount;
-          break;
-        case 'A':
-          info.allyLevelIncrease[ExperienceType::ARCHERY] = amount;
-          break;
-        default:
-          FATAL << "Can't parse level increase " << increase;
-      }
-    }
-    string equipment;
-    input >> equipment;
-    for (auto id : split(equipment, {','}))
-      if (auto type = PrettyPrinting::parseObject<ItemType>(id))
-        info.allyEquipment.push_back(*type);
-      else
-        FATAL << "Can't parse item type: " << id;
-    std::cout << EnumInfo<CreatureId>::getString(info.ally) << " " << levelIncreases << ": ";
-    battleTest(numTries, levelPath, info, enemyId, maxEnemies, random);
+    auto creatureList = readAlly(input);
+    std::cout << creatureList.getSummary() << ": ";
+    battleTest(numTries, levelPath, creatureList, CreatureList(maxEnemies, enemyId), random);
   }
 }
 
-void MainLoop::battleTest(int numTries, const FilePath& levelPath, BattleInfo info, CreatureId enemyId, int maxEnemies,
+void MainLoop::endlessTest(int numTries, const FilePath& levelPath, const FilePath& battleInfoPath,
     RandomGen& random) {
   NameGenerator::init(dataFreePath.subdirectory("names"));
+  ifstream input(battleInfoPath.getPath());
+  int cnt = 0;
+  input >> cnt;
+  struct WinInfo {
+    string enemyName;
+    int won;
+  };
+  vector<WinInfo> wins;
+  vector<CreatureList> allies;
+  for (int i : Range(cnt))
+    allies.push_back(readAlly(input));
+  for (auto& enemy : EnemyFactory(random).getExternalEnemies()) {
+    std::cout << enemy.name << " against:\n";
+    wins.push_back(WinInfo{enemy.name, 0});
+    for (auto& allyInfo : allies) {
+      std::cout << allyInfo.getSummary() << ": ";
+      int numWins = battleTest(numTries, levelPath, allyInfo, enemy.creatures, random);
+      wins.back().won += numWins;
+    }
+    std::cout << wins.back().won << " wins\n";
+  }
+  sort(wins.begin(), wins.end(), [](const auto& e1, const auto& e2) { return e1.won < e2.won; });
+  for (auto& elem : wins) {
+    std::cout << "Enemy: " << elem.enemyName << ": " << elem.won << "\n";
+  }
+}
+
+int MainLoop::battleTest(int numTries, const FilePath& levelPath, CreatureList ally, CreatureList enemies,
+    RandomGen& random) {
   ProgressMeter meter(1);
   int numAllies = 0;
   int numEnemies = 0;
   int numUnknown = 0;
   auto allyTribe = TribeId::getKeeper();
-  auto enemyTribe = TribeId::getMonster();
-  auto allies = CreatureFactory::singleCreature(allyTribe, info.ally)
-      .increaseLevel(info.allyLevelIncrease)
-      .addInventory(info.allyEquipment);
-  auto enemies = CreatureFactory::singleCreature(enemyTribe, enemyId);
   std::cout.flush();
   for (int i : Range(numTries)) {
     auto game = Game::splashScreen(ModelBuilder(&meter, Random, options, sokobanInput)
-        .battleModel(levelPath, allies, enemies, maxEnemies), CampaignBuilder::getEmptyCampaign());
+        .battleModel(levelPath, ally, enemies), CampaignBuilder::getEmptyCampaign());
     auto exitCondition = [&](WGame game) -> optional<ExitCondition> {
       unordered_set<TribeId, CustomHash<TribeId>> tribes;
       for (auto& m : game->getAllModels())
@@ -571,11 +608,11 @@ void MainLoop::battleTest(int numTries, const FilePath& levelPath, BattleInfo in
       if (tribes.size() == 1) {
         if (*tribes.begin() == allyTribe)
           return ExitCondition::ALLIES_WON;
-        else if (*tribes.begin() == enemyTribe)
-          return ExitCondition::ENEMIES_WON;
         else
-          return ExitCondition::UNKNOWN;
+          return ExitCondition::ENEMIES_WON;
       }
+      if (game->getGlobalTime() > 200)
+        return ExitCondition::TIMEOUT;
       if (tribes.empty())
         return ExitCondition::UNKNOWN;
       else
@@ -591,6 +628,10 @@ void MainLoop::battleTest(int numTries, const FilePath& levelPath, BattleInfo in
         ++numEnemies;
         std::cout << "e";
         break;
+      case ExitCondition::TIMEOUT:
+        ++numUnknown;
+        std::cout << "t";
+        break;
       case ExitCondition::UNKNOWN:
         ++numUnknown;
         std::cout << "u";
@@ -602,6 +643,7 @@ void MainLoop::battleTest(int numTries, const FilePath& levelPath, BattleInfo in
   if (numUnknown > 0)
     std::cout << " (" << numUnknown << ") unknown";
   std::cout << "\n";
+  return numAllies;
 }
 
 PModel MainLoop::getBaseModel(ModelBuilder& modelBuilder, CampaignSetup& setup) {

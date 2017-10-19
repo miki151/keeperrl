@@ -417,7 +417,7 @@ void WindowView::rebuildGui() {
   }
   guiBuilder.drawOverlays(overlays, gameInfo);
   resetMapBounds();
-  if (rightBarWidth > 0) {
+  if (rightBarWidth > -1) {
     overlays.push_back({guiBuilder.drawMessages(gameInfo.messageBuffer, renderer.getSize().x - rightBarWidth),
                        GuiBuilder::OverlayInfo::MESSAGES});
     for (auto& overlay : overlays) {

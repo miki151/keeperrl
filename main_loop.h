@@ -20,6 +20,7 @@ class SokobanInput;
 struct CampaignSetup;
 class ModelBuilder;
 class ItemType;
+class CreatureList;
 
 class MainLoop {
   public:
@@ -28,13 +29,9 @@ class MainLoop {
 
   void start(bool tilesPresent, bool quickGame);
   void modelGenTest(int numTries, const vector<std::string>& types, RandomGen&, Options*);
-  struct BattleInfo {
-    CreatureId ally;
-    EnumMap<ExperienceType, int> allyLevelIncrease;
-    vector<ItemType> allyEquipment;
-  };
   void battleTest(int numTries, const FilePath& levelPath, const FilePath& battleInfoPath, string enemyId, RandomGen&);
-  void battleTest(int numTries, const FilePath& levelPath, BattleInfo, CreatureId enemyId, int maxEnemies, RandomGen&);
+  int battleTest(int numTries, const FilePath& levelPath, CreatureList ally, CreatureList enemyId, RandomGen&);
+  void endlessTest(int numTries, const FilePath& levelPath, const FilePath& battleInfoPath, RandomGen&);
 
   static int getAutosaveFreq();
 
