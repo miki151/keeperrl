@@ -986,7 +986,7 @@ void MapGui::updateObjects(CreatureView* view, MapLayout* mapLayout, bool smooth
   }
   WLevel level = view->getLevel();
   levelBounds = view->getLevel()->getBounds();
-  mouseUI = true;
+  mouseUI = ui;
   layout = mapLayout;
   auto currentTimeReal = clock->getRealMillis();
   if (view != previousView || level != previousLevel)
