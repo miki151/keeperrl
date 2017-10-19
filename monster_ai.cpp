@@ -544,6 +544,8 @@ class Fighter : public Behaviour {
     bool isFriendBetween = false;
     for (auto pos : other->getPosition().neighbors8())
       if (myNeighbors.count(pos)) {
+        if (pos.canEnter(creature))
+          return NoMove;
         if (auto c = pos.getCreature())
           if (c->isFriend(creature)) {
             isFriendBetween = true;
@@ -556,9 +558,11 @@ class Fighter : public Behaviour {
             if (auto move = creature->destroy(creature->getPosition().getDir(pos), *destroyAction))
               destroyMove = move;
       }
-    if (isFriendBetween)
+    if (isFriendBetween) {
+      if (auto move = tryEffect(Effect::DestroyWalls{}, 1))
+        return move;
       return destroyMove;
-    else
+    } else
       return NoMove;
   }
 
