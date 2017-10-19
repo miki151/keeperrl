@@ -1549,7 +1549,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::DWARF_BARON: 
       return CATTR(
           c.viewId = ViewId::DWARF_BARON;
-          c.attr = LIST(23_dam, 32_def, 90_spd );
+          c.attr = LIST(26_dam, 32_def, 90_spd );
           c.body = Body::humanoid(Body::Size::MEDIUM).setWeight(120);
           c.chatReactionFriendly = "curses all orcs"_s;
           c.chatReactionHostile = "\"Die!\""_s;
@@ -2171,9 +2171,6 @@ vector<ItemType> getDefaultInventory(CreatureId id) {
     case CreatureId::KEEPER:
       return ItemList()
         .add(ItemType::Robe{});
-    case CreatureId::ELEMENTALIST:
-      return ItemList()
-          .add(ItemType::IronStaff{});
     case CreatureId::ADVENTURER_F:
     case CreatureId::ADVENTURER:
       return ItemList()
@@ -2184,6 +2181,9 @@ vector<ItemType> getDefaultInventory(CreatureId id) {
         .add(ItemType::LeatherArmor{})
         .add(ItemType::LeatherHelm{})
         .add(ItemType::GoldPiece{}, Random.get(16, 26));
+    case CreatureId::ELEMENTALIST:
+      return ItemList()
+          .add(ItemType::IronStaff{});
     case CreatureId::DEATH:
       return ItemList()
         .add(ItemType::Scythe{});
