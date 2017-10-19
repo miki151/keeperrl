@@ -1137,15 +1137,17 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
         getCollective()->hasResource({ResourceId::GOLD, *elem.getRansom()})};
     break;
   }
+  constexpr int maxEnemyCountdown = 500;
   if (auto& enemies = getModel()->getExternalEnemies())
-    if (auto nextWave = enemies->getNextWave())
-      if (!dismissedNextWaves.count(enemies->getNextWaveIndex())) {
+    if (auto nextWave = enemies->getNextWave()) {
+      int countDown = (int) (nextWave->attackTime - getLocalTime());
+      if (!dismissedNextWaves.count(enemies->getNextWaveIndex()) && countDown <= maxEnemyCountdown)
         info.nextWave = CollectiveInfo::NextWave {
           nextWave->viewId,
           nextWave->enemy.name,
-          (int) (nextWave->attackTime - getLocalTime())
+          countDown
         };
-      }
+    }
 }
 
 void PlayerControl::addMessage(const PlayerMessage& msg) {
