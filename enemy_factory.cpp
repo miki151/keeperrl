@@ -800,14 +800,15 @@ vector<ExternalEnemy> EnemyFactory::getExternalEnemies() {
         3
     },
     ExternalEnemy{
-        CreatureList(random.get(4, 8), CreatureId::KNIGHT),
+        CreatureList(1, CreatureId::KNIGHT),
         AttackBehaviourId::KILL_LEADER,
-        "a group of knights",
+        "a lonely knight",
         Range(6000, 12000),
         3
     },
     ExternalEnemy{
-        CreatureList(random.get(4, 8), CreatureId::WARRIOR),
+        CreatureList(random.get(4, 8), CreatureId::WARRIOR)
+            .increaseBaseLevel({{ExperienceType::MELEE, 6}}),
         AttackBehaviourId::KILL_LEADER,
         "a group of warriors",
         Range(4000, 6000),
@@ -815,6 +816,7 @@ vector<ExternalEnemy> EnemyFactory::getExternalEnemies() {
     },
     ExternalEnemy{
         CreatureList(random.get(12, 16), CreatureId::WARRIOR).addUnique(CreatureId::SHAMAN)
+            .increaseBaseLevel({{ExperienceType::MELEE, 10}})
             .addInventory({ItemType::Scroll{Effect::DestroyWalls{}}}),
         AttackBehaviourId::KILL_LEADER,
         "an army of warriors",
