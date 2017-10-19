@@ -46,6 +46,7 @@ class Effect {
   SIMPLE_EFFECT(Heal);
   SIMPLE_EFFECT(Fire);
   SIMPLE_EFFECT(DestroyEquipment);
+  SIMPLE_EFFECT(DestroyWalls);
   SIMPLE_EFFECT(EnhanceArmor);
   SIMPLE_EFFECT(EnhanceWeapon);
   struct EmitPoisonGas {
@@ -96,7 +97,7 @@ class Effect {
 
   MAKE_VARIANT(EffectType, Teleport, Heal, Fire, DestroyEquipment, EnhanceArmor, EnhanceWeapon,
       EmitPoisonGas, CircularBlast, Deception, Summon, SummonElement, Acid, Alarm, TeleEnemies, SilverDamage,
-      CurePoison, Lasting, PlaceFurniture, Damage, InjureBodyPart, LooseBodyPart, RegrowBodyPart);
+      CurePoison, Lasting, PlaceFurniture, Damage, InjureBodyPart, LooseBodyPart, RegrowBodyPart, DestroyWalls);
 
   template <typename T>
   Effect(T&& t) : effect(std::forward<T>(t)) {}
