@@ -31,7 +31,7 @@ class MainLoop {
   void modelGenTest(int numTries, const vector<std::string>& types, RandomGen&, Options*);
   void battleTest(int numTries, const FilePath& levelPath, const FilePath& battleInfoPath, string enemyId, RandomGen&);
   int battleTest(int numTries, const FilePath& levelPath, CreatureList ally, CreatureList enemyId, RandomGen&);
-  void endlessTest(int numTries, const FilePath& levelPath, const FilePath& battleInfoPath, RandomGen&);
+  void endlessTest(int numTries, const FilePath& levelPath, const FilePath& battleInfoPath, RandomGen&, optional<int> numEnemy);
 
   static int getAutosaveFreq();
 

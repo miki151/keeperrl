@@ -202,6 +202,7 @@ static po::parser getCommandLineFlags() {
   flags["battle_level"].type(po::string).description("Path to battle test level");
   flags["battle_info"].type(po::string).description("Path to battle info file");
   flags["battle_enemy"].type(po::string).description("Battle enemy id");
+  flags["endless_enemy"].type(po::string).description("Endless mode enemy index");
   flags["battle_view"].description("Open game window and display battle");
   flags["battle_rounds"].type(po::i32).description("Number of battle rounds");
   flags["stderr"].description("Log to stderr");
@@ -348,12 +349,17 @@ static int keeperMain(po::parser& commandLineFlags) {
     auto level = commandLineFlags["battle_level"].get().string;
     auto info = commandLineFlags["battle_info"].get().string;
     auto numRounds = commandLineFlags["battle_rounds"].get().i32;
-    auto enemyId = commandLineFlags["battle_enemy"].get().string;
     try {
-      if (enemyId == "endless")
-        loop.endlessTest(numRounds, FilePath::fromFullPath(level), FilePath::fromFullPath(info), Random);
-      else
+      if (commandLineFlags["endless_enemy"].was_set()) {
+        auto enemy = commandLineFlags["endless_enemy"].get().string;
+        optional<int> chosenEnemy;
+        if (enemy != "all")
+          chosenEnemy = fromString<int>(enemy);
+        loop.endlessTest(numRounds, FilePath::fromFullPath(level), FilePath::fromFullPath(info), Random, chosenEnemy);
+      } else {
+        auto enemyId = commandLineFlags["battle_enemy"].get().string;
         loop.battleTest(numRounds, FilePath::fromFullPath(level), FilePath::fromFullPath(info), enemyId, Random);
+      }
     } catch (GameExitException) {}
   };
   if (commandLineFlags["battle_level"].was_set() && !commandLineFlags["battle_view"].was_set()) {

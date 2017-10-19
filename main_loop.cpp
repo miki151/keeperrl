@@ -560,7 +560,7 @@ void MainLoop::battleTest(int numTries, const FilePath& levelPath, const FilePat
 }
 
 void MainLoop::endlessTest(int numTries, const FilePath& levelPath, const FilePath& battleInfoPath,
-    RandomGen& random) {
+    RandomGen& random, optional<int> numEnemy) {
   NameGenerator::init(dataFreePath.subdirectory("names"));
   ifstream input(battleInfoPath.getPath());
   int cnt = 0;
@@ -573,7 +573,10 @@ void MainLoop::endlessTest(int numTries, const FilePath& levelPath, const FilePa
   vector<CreatureList> allies;
   for (int i : Range(cnt))
     allies.push_back(readAlly(input));
-  for (auto& enemy : EnemyFactory(random).getExternalEnemies()) {
+  vector<ExternalEnemy> enemies = EnemyFactory(random).getExternalEnemies();
+  if (numEnemy)
+    enemies = {enemies[*numEnemy]};
+  for (auto& enemy : enemies) {
     std::cout << enemy.name << " against:\n";
     wins.push_back(WinInfo{enemy.name, 0});
     for (auto& allyInfo : allies) {
