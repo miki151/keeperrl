@@ -1139,10 +1139,17 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   if (auto& enemies = getModel()->getExternalEnemies())
     if (auto nextWave = enemies->getNextWave()) {
       int countDown = (int) (nextWave->attackTime - getLocalTime());
-      if (!dismissedNextWaves.count(enemies->getNextWaveIndex()) && countDown <= maxEnemyCountdown)
+      auto index = enemies->getNextWaveIndex();
+      auto name = nextWave->enemy.name;
+      auto viewId = nextWave->viewId;
+      if (index % 6 == 5) {
+        name = "Unknown";
+        viewId = ViewId::UNKNOWN_MONSTER;
+      }
+      if (!dismissedNextWaves.count(index) && countDown <= maxEnemyCountdown)
         info.nextWave = CollectiveInfo::NextWave {
-          nextWave->viewId,
-          nextWave->enemy.name,
+          viewId,
+          name,
           countDown
         };
     }
