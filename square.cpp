@@ -80,7 +80,7 @@ void Square::tick(Position pos) {
   setDirty(pos);
   if (!inventory->isEmpty()) {
     vector<WItem> discarded;
-    for (auto item : inventory->getItems()) {
+    for (auto item : copyOf(inventory->getItems())) {
       item->tick(pos);
       if (item->isDiscarded())
         discarded.push_back(item);
