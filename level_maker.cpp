@@ -1947,7 +1947,7 @@ static PLevelMaker tower(RandomGen& random, SettlementInfo info, bool withExit) 
   PLevelMaker upStairs;
   for (StairKey key : info.upStairs)
     upStairs = unique<Stairs>(StairDirection::UP, key, Predicate::type(building.floorInside));
-  queue->addMaker(unique<Inhabitants>(info.inhabitants, info.collective, Predicate::type(building.floorOutside)));
+  queue->addMaker(unique<Inhabitants>(info.inhabitants, info.collective, Predicate::type(building.floorInside)));
   queue->addMaker(unique<Division>(0.5, 0.5, std::move(upStairs), nullptr, nullptr, std::move(downStairs)));
   if (info.furniture)
     queue->addMaker(unique<Furnitures>(Predicate::type(building.floorInside), 0.5, *info.furniture));
