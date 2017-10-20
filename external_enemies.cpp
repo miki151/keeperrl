@@ -36,6 +36,7 @@ ExternalEnemies::ExternalEnemies(RandomGen& random, vector<ExternalEnemy> enemie
             attackTime,
             enemy.creatures.getViewId()
         });
+        waves.back().enemy.creatures.increaseBaseLevel({{ExperienceType::MELEE, max(0, attackTime / 1000 - 10)}});
         break;
       }
     }

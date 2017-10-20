@@ -45,7 +45,8 @@ CreatureList& CreatureList::addInventory(vector<ItemType> v) {
 }
 
 CreatureList& CreatureList::increaseBaseLevel(EnumMap<ExperienceType, int> l) {
-  baseLevelIncrease = l;
+  for (auto exp : ENUM_ALL(ExperienceType))
+    baseLevelIncrease[exp] += l[exp];
   return *this;
 }
 

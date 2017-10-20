@@ -1083,7 +1083,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::WITCHMAN: 
       return CATTR(
           c.viewId = ViewId::WITCHMAN;
-          c.attr = LIST(20_dam, 20_def, 20_spell_dam, 140_spd );
+          c.attr = LIST(30_dam, 30_def, 20_spell_dam, 140_spd );
           c.body = Body::humanoid(Body::Size::LARGE);
           c.name = CreatureName("witchman", "witchmen");
           c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_MALE)->getNext());
@@ -1220,7 +1220,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::AVATAR: 
       return CATTR(
           c.viewId = ViewId::DUKE;
-          c.attr = LIST(45_dam, 29_def, 100_spd );
+          c.attr = LIST(43_dam, 32_def, 100_spd );
           c.body = Body::humanoid(Body::Size::LARGE);
           c.permanentEffects[LastingEffect::MELEE_RESISTANCE] = 1;
           c.chatReactionFriendly = "curses all dungeons"_s;

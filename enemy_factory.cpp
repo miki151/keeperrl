@@ -694,7 +694,8 @@ vector<ExternalEnemy> EnemyFactory::getExternalEnemies() {
         1
     },
     ExternalEnemy{
-        CreatureList(1, CreatureId::LIZARDMAN),
+        CreatureList(1, CreatureId::LIZARDMAN)
+            .increaseBaseLevel({{ExperienceType::MELEE, 3}}),
         AttackBehaviourId::KILL_LEADER,
         "a lizardman scout",
         Range(1000, 10000),
@@ -704,29 +705,30 @@ vector<ExternalEnemy> EnemyFactory::getExternalEnemies() {
         CreatureList(random.get(3, 5), CreatureId::ANT_WORKER),
         AttackBehaviourId::KILL_LEADER,
         "an ant patrol",
-        Range(1000, 10000),
+        Range(1000, 5000),
         2
     },
     ExternalEnemy{
-        CreatureList(random.get(4, 8), CreatureId::LIZARDMAN),
+        CreatureList(random.get(4, 8), CreatureId::LIZARDMAN)
+            .increaseBaseLevel({{ExperienceType::MELEE, 6}}),
         AttackBehaviourId::KILL_LEADER,
         "a nest of lizardmen",
-        Range(1000, 10000),
-        2
+        Range(6000, 15000),
+        5
     },
     ExternalEnemy{
         CreatureList(random.get(3, 5), CreatureId::BANDIT)
-            .increaseBaseLevel({{ExperienceType::MELEE, 3}}),
+            .increaseBaseLevel({{ExperienceType::MELEE, 11}}),
         AttackBehaviourId::KILL_LEADER,
         "a gang of bandits",
-        Range(3000, 10000),
-        1
+        Range(8000, 20000),
+        10
     },
     ExternalEnemy{
         CreatureList(random.get(3, 5), CreatureId::ANT_SOLDIER),
         AttackBehaviourId::KILL_LEADER,
         "an ant soldier patrol",
-        Range(3000, 10000),
+        Range(5000, 10000),
         1
     },
     ExternalEnemy{
@@ -743,26 +745,27 @@ vector<ExternalEnemy> EnemyFactory::getExternalEnemies() {
         AttackBehaviourId::KILL_LEADER,
         "an alchemist's stone golems",
         Range(5000, 12000),
-        1
+        2
     },
     ExternalEnemy{
         CreatureList(random.get(5, 8), CreatureId::ANT_SOLDIER)
-            .increaseBaseLevel({{ExperienceType::MELEE, 3}}),
+            .increaseBaseLevel({{ExperienceType::MELEE, 5}}),
         AttackBehaviourId::KILL_LEADER,
         "an ant soldier patrol",
-        Range(5000, 12000),
-        1
+        Range(6000, 12000),
+        2
     },
     ExternalEnemy{
         CreatureList(random.get(10, 15), CreatureId::ANT_SOLDIER).addUnique(CreatureId::ANT_QUEEN)
-            .increaseBaseLevel({{ExperienceType::MELEE, 5}}),
+            .increaseBaseLevel({{ExperienceType::MELEE, 6}}),
         AttackBehaviourId::KILL_LEADER,
         "an army of ants",
-        Range(7000, 15000),
-        1
+        Range(10000, 15000),
+        3
     },
     ExternalEnemy{
-        CreatureList(random.get(4, 8), CreatureId::ENT),
+        CreatureList(random.get(4, 8), CreatureId::ENT)
+            .increaseBaseLevel({{ExperienceType::MELEE, 3}}),
         AttackBehaviourId::KILL_LEADER,
         "a group of ents",
         Range(7000, 12000),
@@ -772,25 +775,25 @@ vector<ExternalEnemy> EnemyFactory::getExternalEnemies() {
         CreatureList(random.get(4, 8), CreatureId::DWARF),
         AttackBehaviourId::KILL_LEADER,
         "a band of dwarves",
-        Range(7000, 12000),
+        Range(7000, 15000),
         3
     },
     ExternalEnemy{
         CreatureList(random.get(3, 5), CreatureId::IRON_GOLEM)
-            .increaseBaseLevel({{ExperienceType::MELEE, 3}}),
+            .increaseBaseLevel({{ExperienceType::MELEE, 2}}),
         AttackBehaviourId::KILL_LEADER,
         "an alchemist's iron golems",
         Range(9000, 15000),
-        1
+        3
     },
     ExternalEnemy{
         CreatureList(random.get(10, 13), CreatureId::DWARF).addUnique(CreatureId::DWARF_BARON)
-            .increaseBaseLevel({{ExperienceType::MELEE, 8}})
+            .increaseBaseLevel({{ExperienceType::MELEE, 12}})
             .addInventory({ItemType::Scroll{Effect::DestroyWalls{}}}),
         AttackBehaviourId::KILL_LEADER,
         "a dwarf tribe",
-        Range(10000, 18000),
-        2
+        Range(12000, 25000),
+        10
     },
     ExternalEnemy{
         CreatureList(random.get(4, 8), CreatureId::ARCHER),
@@ -803,7 +806,7 @@ vector<ExternalEnemy> EnemyFactory::getExternalEnemies() {
         CreatureList(1, CreatureId::KNIGHT),
         AttackBehaviourId::KILL_LEADER,
         "a lonely knight",
-        Range(6000, 12000),
+        Range(10000, 16000),
         3
     },
     ExternalEnemy{
@@ -811,79 +814,90 @@ vector<ExternalEnemy> EnemyFactory::getExternalEnemies() {
             .increaseBaseLevel({{ExperienceType::MELEE, 6}}),
         AttackBehaviourId::KILL_LEADER,
         "a group of warriors",
-        Range(4000, 6000),
+        Range(6000, 12000),
         3
     },
     ExternalEnemy{
         CreatureList(random.get(12, 16), CreatureId::WARRIOR).addUnique(CreatureId::SHAMAN)
-            .increaseBaseLevel({{ExperienceType::MELEE, 10}})
+            .increaseBaseLevel({{ExperienceType::MELEE, 14}})
             .addInventory({ItemType::Scroll{Effect::DestroyWalls{}}}),
         AttackBehaviourId::KILL_LEADER,
         "an army of warriors",
-        Range(8000, 12000),
-        3
+        Range(18000, 100000),
+        100
     },
     ExternalEnemy{
         CreatureList(random.get(12, 16), {make_pair(2, CreatureId::KNIGHT), make_pair(1, CreatureId::ARCHER)})
             .addUnique(CreatureId::AVATAR)
-            .increaseBaseLevel({{ExperienceType::MELEE, 8}})
+            //.increaseBaseLevel({{ExperienceType::MELEE, 4}})
             .addInventory({ItemType::Scroll{Effect::DestroyWalls{}}}),
         AttackBehaviourId::KILL_LEADER,
         "an army of knights",
-        Range(12000, 30000),
-        3
+        Range(20000, 100000),
+        100
     },
     ExternalEnemy{
         CreatureList(1, CreatureId::CYCLOPS),
         AttackBehaviourId::KILL_LEADER,
         "a cyclops",
-        Range(6000, 12000),
-        1
+        Range(6000, 20000),
+        4
     },
     ExternalEnemy{
         CreatureList(1, CreatureId::WITCHMAN)
-            .increaseBaseLevel({{ExperienceType::MELEE, 12}}),
+            .increaseBaseLevel({{ExperienceType::MELEE, 20}}),
         AttackBehaviourId::KILL_LEADER,
         "a witchman",
-        Range(10000, 14000),
-        1
+        Range(15000, 40000),
+        5
     },
     ExternalEnemy{
         CreatureList(1, CreatureId::MINOTAUR)
-            .increaseBaseLevel({{ExperienceType::MELEE, 5}}),
+            .increaseBaseLevel({{ExperienceType::MELEE, 20}}),
         AttackBehaviourId::KILL_LEADER,
         "a minotaur",
-        Range(12000, 30000),
-        1
+        Range(15000, 100000),
+        100
     },
     ExternalEnemy{
         CreatureList(1, CreatureId::ELEMENTALIST),
         {AttackBehaviourId::CAMP_AND_SPAWN, CreatureFactory::elementals(TribeId::getHuman())},
         "an elementalist",
-        Range(15000, 30000),
+        Range(8000, 14000),
         1
     },
     ExternalEnemy{
-        CreatureList(1, CreatureId::GREEN_DRAGON),
+        CreatureList(1, CreatureId::GREEN_DRAGON)
+            .increaseBaseLevel({{ExperienceType::MELEE, 10}}),
         AttackBehaviourId::KILL_LEADER,
         "a green dragon",
-        Range(10000, 30000),
-        1
+        Range(15000, 40000),
+        100
     },
     ExternalEnemy{
-        CreatureList(1, CreatureId::RED_DRAGON),
+        CreatureList(1, CreatureId::RED_DRAGON)
+            .increaseBaseLevel({{ExperienceType::MELEE, 18}}),
         AttackBehaviourId::KILL_LEADER,
         "a red dragon",
-        Range(15000, 40000),
-        1
+        Range(19000, 100000),
+        100
     },
     ExternalEnemy{
         CreatureList(random.get(3, 6), {CreatureId::ADVENTURER_F, CreatureId::ADVENTURER})
-            .increaseBaseLevel({{ExperienceType::MELEE, 10}}),
+            .addInventory({ItemType::Scroll{Effect::DestroyWalls{}}})
+            .increaseBaseLevel({{ExperienceType::MELEE, 20}}),
         AttackBehaviourId::KILL_LEADER,
         "a group of adventurers",
-        Range(5000, 15000),
-        1
+        Range(10000, 25000),
+        100
+    },
+    ExternalEnemy{
+        CreatureList(random.get(3, 6), CreatureId::OGRE)
+            .increaseBaseLevel({{ExperienceType::MELEE, 25}}),
+        AttackBehaviourId::KILL_LEADER,
+        "a pack of ogres",
+        Range(15000, 50000),
+        100
     },
   };
 }
