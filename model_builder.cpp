@@ -194,7 +194,8 @@ SettlementInfo& ModelBuilder::makeExtraLevel(WModel model, EnemyInfo& enemy) {
                       random.choose(
                           CreatureId::WATER_ELEMENTAL, CreatureId::AIR_ELEMENTAL, CreatureId::FIRE_ELEMENTAL,
                           CreatureId::EARTH_ELEMENTAL));
-                  //c.location = new Location();
+                  c.tribe = enemy.settlement.tribe;
+                  c.collective = new CollectiveBuilder(CollectiveConfig::noImmigrants(), c.tribe);
                   c.upStairs = {upLink};
                   c.downStairs = {downLink};
                   c.furniture = FurnitureFactory(TribeId::getHuman(), FurnitureType::GROUND_TORCH);
@@ -461,7 +462,7 @@ void ModelBuilder::measureModelGen(const string& name, int numTries, function<vo
     minT << ". MaxT: " << maxT << ". AvgT: " << sumT / numSuccess << std::endl;
 }
 
-WCollective ModelBuilder::spawnKeeper(WModel m, PCreature keeper, bool regenerateMana) {
+WCollective ModelBuilder::spawnKeeper(WModel m, PCreature keeper, bool regenerateMana, vector<string> introText) {
   WLevel level = m->getTopLevel();
   WCreature keeperRef = keeper.get();
   CHECK(level->landCreature(StairKey::keeperSpawn(), keeperRef)) << "Couldn't place keeper on level.";
@@ -472,7 +473,7 @@ WCollective ModelBuilder::spawnKeeper(WModel m, PCreature keeper, bool regenerat
       .addCreature(keeperRef, {MinionTrait::LEADER})
       .build());
   WCollective playerCollective = m->collectives.back().get();
-  playerCollective->setControl(PlayerControl::create(playerCollective));
+  playerCollective->setControl(PlayerControl::create(playerCollective, introText));
   playerCollective->setVillainType(VillainType::PLAYER);
   playerCollective->acquireInitialTech();
   return playerCollective;

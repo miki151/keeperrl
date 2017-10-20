@@ -43,4 +43,5 @@ struct CampaignSetup {
   string gameIdentifier;
   string gameDisplayName;
   bool regenerateMana;
+  vector<string> introMessages;
 };

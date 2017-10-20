@@ -86,7 +86,7 @@
 template <class Archive>
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
   ar& SUBCLASS(CollectiveControl) & SUBCLASS(EventListener);
-  ar(memory, showWelcomeMsg, lastControlKeeperQuestion);
+  ar(memory, introText, lastControlKeeperQuestion);
   ar(newAttacks, ransomAttacks, messages, hints, visibleEnemies);
   ar(visibilityMap);
   ar(messageHistory, tutorial, controlModeMessages);
@@ -128,9 +128,10 @@ PlayerControl::PlayerControl(Private, WCollective col) : CollectiveControl(col),
   memory.reset(new MapMemory());
 }
 
-PPlayerControl PlayerControl::create(WCollective col) {
+PPlayerControl PlayerControl::create(WCollective col, vector<string> introText) {
   auto ret = makeOwner<PlayerControl>(Private{}, col);
   ret->subscribeTo(col->getLevel()->getModel());
+  ret->introText = introText;
   return ret;
 }
 
@@ -246,14 +247,11 @@ void PlayerControl::render(View* view) {
     ViewObject::setHallu(false);
     view->updateView(this, false);
   }
-  if (showWelcomeMsg && getGame()->getOptions()->getBoolValue(OptionId::HINTS)) {
+  if (!introText.empty() && getGame()->getOptions()->getBoolValue(OptionId::HINTS)) {
     view->updateView(this, false);
-    showWelcomeMsg = false;
-    view->presentText("", "So warlock,\n \nYou were dabbling in the Dark Arts, a tad, I see.\n \n "
-        "Welcome to the valley of " + getGame()->getWorldName() + ", where you'll have to do "
-        "what you can to KEEP yourself together. Build rooms, storage units and workshops to endorse your "
-        "minions. The only way to go forward in this world is to destroy the ones who oppose you.\n \n"
-"Use the mouse to dig into the mountain. You can select rectangular areas using the shift key. You will need access to trees, iron, stone and gold ore. Build rooms and traps and prepare for war. You can control a minion at any time by clicking on them in the minions tab or on the map.\n \n You can turn these messages off in the settings (press F2).");
+    for (auto& msg : introText)
+      view->presentText("", msg);
+    introText.clear();
   }
 }
 

@@ -99,6 +99,11 @@ static vector<string> getCampaignTypeDescription(CampaignType type) {
         "separate highscore table",
         "retiring not possible"
       };
+    case CampaignType::ENDLESS:
+      return {
+        "recurring enemy waves",
+        "survive as long as possible"
+      };
     default:
       return {};
   }
@@ -412,6 +417,28 @@ static bool autoConfirm(CampaignType type) {
   }
 }
 
+static vector<string> getIntroMessages(CampaignType type, string worldName) {
+  vector<string> ret = {
+    "Welcome to KeeperRL Alpha23! A lot of gameplay changes have arrived with this update. Below are a couple "
+    "of the most important ones, and we encourage you to check out the full change log at keeperrl.com.\n \n"
+    "Mana is no longer generated at the library, and instead you only receive it for defeating enemies. "
+    "Many features, including construction and crafting costs, have been rebalanced to accommodate this change. "
+    "You will only need mana to research new technology, and increase the population limit.\n \n"
+    "If you miss the old ways, you can enable mana regeneration when playing the 'free play' game mode.\n \n"
+    "When commanding a team, you can choose to control every team member directly. "
+    "We encourage you to use this feature during combat, as it's extremely useful. You can toggle it using the "
+    "shortcut [G] or by going into the [Commands] menu."
+  };
+  if (type == CampaignType::ENDLESS)
+    ret.push_back(
+        "Welcome to the new endless mode! Your task here is to survive as long as possible, while "
+        "defending your dungeon from incoming enemy waves. The enemies don't come from any specific place and "
+        "will just appear at the edge of the map. You will get 100 mana for defeating each wave. "
+        "Note that there are also traditional enemy villages scattered around and they may also attack you.\n \n");
+
+  return ret;
+}
+
 optional<CampaignSetup> CampaignBuilder::prepareCampaign(function<optional<RetiredGames>(CampaignType)> genRetired,
     CampaignType type) {
   Vec2 size(17, 9);
@@ -491,7 +518,8 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(function<optional<Retir
               string gameDisplayName = name + " of " + campaign.worldName;
               return CampaignSetup{campaign, std::move(player), gameIdentifier, gameDisplayName,
                   options->getBoolValue(OptionId::GENERATE_MANA) &&
-                  getSecondaryOptions(type).contains(OptionId::GENERATE_MANA)};
+                  getSecondaryOptions(type).contains(OptionId::GENERATE_MANA),
+                  getIntroMessages(type, campaign.getWorldName())};
             }
       }
       if (updateMap)
