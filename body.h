@@ -81,7 +81,6 @@ class Body {
   bool isMinionFood() const;
   bool canCopulateWith() const;
   bool canConsume() const;
-  bool isSunlightVulnerable() const;
   bool isWounded() const;
   bool isSeriouslyWounded() const;
   double getHealth() const;
