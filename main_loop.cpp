@@ -565,31 +565,22 @@ void MainLoop::endlessTest(int numTries, const FilePath& levelPath, const FilePa
   ifstream input(battleInfoPath.getPath());
   int cnt = 0;
   input >> cnt;
-  struct WinInfo {
-    string enemyName;
-    int won;
-  };
-  vector<WinInfo> wins;
   vector<CreatureList> allies;
   for (int i : Range(cnt))
     allies.push_back(readAlly(input));
-  vector<ExternalEnemy> enemies = EnemyFactory(random).getExternalEnemies();
-  if (numEnemy)
-    enemies = {enemies[*numEnemy]};
-  for (auto& enemy : enemies) {
-    std::cout << enemy.name << " against:\n";
-    wins.push_back(WinInfo{enemy.name, 0});
-    for (auto& allyInfo : allies) {
-      std::cout << allyInfo.getSummary() << ": ";
-      int numWins = battleTest(numTries, levelPath, allyInfo, enemy.creatures, random);
-      wins.back().won += numWins;
+  ExternalEnemies enemies(random, EnemyFactory(random).getExternalEnemies());
+  for (int turn : Range(100000))
+    if (auto wave = enemies.popNextWave(turn)) {
+      std::cerr << "Turn " << turn << ": " << wave->enemy.name << "\n";
+      int totalWins = 0;
+      for (auto& allyInfo : allies) {
+        std::cerr << allyInfo.getSummary() << ": ";
+        int numWins = battleTest(numTries, levelPath, allyInfo, wave->enemy.creatures, random);
+        totalWins += numWins;
+      }
+      std::cerr << totalWins << " wins\n";
+      std::cout << "Turn " << turn << ": " << wave->enemy.name << ": " << totalWins << "\n";
     }
-    std::cout << wins.back().won << " wins\n";
-  }
-  sort(wins.begin(), wins.end(), [](const auto& e1, const auto& e2) { return e1.won < e2.won; });
-  for (auto& elem : wins) {
-    std::cout << "Enemy: " << elem.enemyName << ": " << elem.won << "\n";
-  }
 }
 
 int MainLoop::battleTest(int numTries, const FilePath& levelPath, CreatureList ally, CreatureList enemies,
@@ -625,27 +616,27 @@ int MainLoop::battleTest(int numTries, const FilePath& levelPath, CreatureList a
     switch (result) {
       case ExitCondition::ALLIES_WON:
         ++numAllies;
-        std::cout << "a";
+        std::cerr << "a";
         break;
       case ExitCondition::ENEMIES_WON:
         ++numEnemies;
-        std::cout << "e";
+        std::cerr << "e";
         break;
       case ExitCondition::TIMEOUT:
         ++numUnknown;
-        std::cout << "t";
+        std::cerr << "t";
         break;
       case ExitCondition::UNKNOWN:
         ++numUnknown;
-        std::cout << "u";
+        std::cerr << "u";
         break;
     }
-    std::cout.flush();
+    std::cerr.flush();
   }
-  std::cout << " " << numAllies << ":" << numEnemies;
+  std::cerr << " " << numAllies << ":" << numEnemies;
   if (numUnknown > 0)
-    std::cout << " (" << numUnknown << ") unknown";
-  std::cout << "\n";
+    std::cerr << " (" << numUnknown << ") unknown";
+  std::cerr << "\n";
   return numAllies;
 }
 
