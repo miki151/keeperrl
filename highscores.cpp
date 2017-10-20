@@ -7,7 +7,7 @@
 #include "player_role.h"
 #include "parse_game.h"
 
-const static int highscoreVersion = 1;
+const static int highscoreVersion = 2;
 
 Highscores::Highscores(const FilePath& local, FileSharing& sharing, Options* o)
     : localPath(local), fileSharing(sharing), options(o) {
