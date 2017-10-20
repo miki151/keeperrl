@@ -532,7 +532,7 @@ unique_ptr<Workshops> CollectiveConfig::getWorkshops() const {
           Workshops::Item::fromType(ItemType::SteelSword{}, 20, {CollectiveResourceId::STEEL, 20})
                   .setTechId(TechId::STEEL_MAKING),
           Workshops::Item::fromType(ItemType::ChainArmor{}, 30, {CollectiveResourceId::IRON, 40}),
-          Workshops::Item::fromType(ItemType::SteelArmor{}, 60, {CollectiveResourceId::STEEL, 40})
+          Workshops::Item::fromType(ItemType::SteelArmor{}, 30, {CollectiveResourceId::STEEL, 40})
                   .setTechId(TechId::STEEL_MAKING),
           Workshops::Item::fromType(ItemType::IronHelm{}, 8, {CollectiveResourceId::IRON, 16}),
           Workshops::Item::fromType(ItemType::IronBoots{}, 12, {CollectiveResourceId::IRON, 24}),
@@ -540,7 +540,7 @@ unique_ptr<Workshops> CollectiveConfig::getWorkshops() const {
                   .setTechId(TechId::TWO_H_WEAP),
           Workshops::Item::fromType(ItemType::BattleAxe{}, 22, {CollectiveResourceId::IRON, 50})
                   .setTechId(TechId::TWO_H_WEAP),
-          Workshops::Item::fromType(ItemType::SteelBattleAxe{}, 44, {CollectiveResourceId::STEEL, 50})
+          Workshops::Item::fromType(ItemType::SteelBattleAxe{}, 22, {CollectiveResourceId::STEEL, 50})
                   .setTechId(TechId::STEEL_MAKING),
          Workshops::Item::fromType(ItemType::IronStaff{}, 20, {CollectiveResourceId::IRON, 40})
                  .setTechId(TechId::MAGICAL_WEAPONS),
@@ -599,7 +599,7 @@ unique_ptr<Workshops> CollectiveConfig::getWorkshops() const {
           Workshops::Item::fromType(ItemType::Amulet{LastingEffect::REGENERATION}, 10, {CollectiveResourceId::GOLD, 60}),
       }},
       {WorkshopType::STEEL_FURNACE, {
-          Workshops::Item::fromType(ItemType::SteelIngot{}, 50, {CollectiveResourceId::IRON, 30}).setBatchSize(10),
+          Workshops::Item::fromType(ItemType::SteelIngot{}, 25, {CollectiveResourceId::IRON, 30}).setBatchSize(10),
       }},
   }));
 }
