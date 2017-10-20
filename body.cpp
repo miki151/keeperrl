@@ -32,9 +32,9 @@ SERIALIZATION_CONSTRUCTOR_IMPL(Body)
 static double getDefaultCarryLimit(Body::Size size) {
   switch (size) {
     case Body::Size::HUGE: return 200;
-    case Body::Size::LARGE: return 60;
-    case Body::Size::MEDIUM: return 20;
-    case Body::Size::SMALL: return 4;
+    case Body::Size::LARGE: return 80;
+    case Body::Size::MEDIUM: return 60;
+    case Body::Size::SMALL: return 6;
   }
 }
 
@@ -731,10 +731,6 @@ bool Body::canConsume() const {
     case Material::SPIRIT: return false;
     default: return true;
   }
-}
-
-bool Body::isSunlightVulnerable() const {
-  return material == Material::UNDEAD_FLESH;
 }
 
 bool Body::isWounded() const {
