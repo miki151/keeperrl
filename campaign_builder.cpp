@@ -44,7 +44,10 @@ vector<OptionId> CampaignBuilder::getSecondaryOptions(CampaignType type) const {
     case CampaignType::ENDLESS:
       return {OptionId::LESSER_VILLAINS, OptionId::ALLIES};
     case CampaignType::FREE_PLAY:
-      return {OptionId::MAIN_VILLAINS, OptionId::LESSER_VILLAINS, OptionId::ALLIES, OptionId::GENERATE_MANA};
+      if (playerRole == PlayerRole::KEEPER)
+        return {OptionId::MAIN_VILLAINS, OptionId::LESSER_VILLAINS, OptionId::ALLIES, OptionId::GENERATE_MANA};
+      else
+        return {OptionId::MAIN_VILLAINS, OptionId::LESSER_VILLAINS, OptionId::ALLIES};
     case CampaignType::SINGLE_KEEPER:
       return {};
   }
@@ -96,11 +99,11 @@ static vector<string> getCampaignTypeDescription(CampaignType type) {
     case CampaignType::SINGLE_KEEPER:
       return {
         "everyone on one big map",
-        "separate highscore table",
         "retiring not possible"
       };
     case CampaignType::ENDLESS:
       return {
+        "conquest not mandatory"
         "recurring enemy waves",
         "survive as long as possible"
       };
