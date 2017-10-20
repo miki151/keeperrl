@@ -158,6 +158,8 @@ class Heal : public Behaviour {
     if (creature->getBody().canHeal()) {
       if (MoveInfo move = tryEffect(Effect::Heal{}, 1))
         return move.withValue(min(1.0, 1.5 - creature->getBody().getHealth()));
+      if (MoveInfo move = tryEffect(Effect::Lasting{LastingEffect::REGENERATION}, 1))
+        return move;
       if (MoveInfo move = tryEffect(Effect::Heal{}, 3))
         return move.withValue(0.5 * min(1.0, 1.5 - creature->getBody().getHealth()));
     }
