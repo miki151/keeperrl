@@ -103,7 +103,7 @@ static vector<string> getCampaignTypeDescription(CampaignType type) {
       };
     case CampaignType::ENDLESS:
       return {
-        "conquest not mandatory"
+        "conquest not mandatory",
         "recurring enemy waves",
         "survive as long as possible"
       };
