@@ -725,8 +725,6 @@ int Creature::getPoints() const {
 }
 
 void Creature::onKilled(WCreature victim, optional<ExperienceType> lastDamage) {
-  int difficulty = victim->getDifficultyPoints();
-  CHECK(difficulty >=0 && difficulty < 100000) << difficulty << " " << victim->getName().bare();
   double attackDiff = victim->highestAttackValueEver - highestAttackValueEver;
   constexpr double maxLevelGain = 1.0;
   constexpr double minLevelGain = 0.02;
@@ -735,6 +733,10 @@ void Creature::onKilled(WCreature victim, optional<ExperienceType> lastDamage) {
   double expIncrease = max(minLevelGain, min(maxLevelGain,
       (maxLevelGain - equalLevelGain) * attackDiff / maxLevelDiff + equalLevelGain));
   increaseExpLevel(lastDamage.value_or(ExperienceType::MELEE), expIncrease);
+  int difficulty = victim->getDifficultyPoints();
+  CHECK(difficulty >=0 && difficulty < 100000) << difficulty << " " << victim->getName().bare();
+  points += difficulty;
+  kills.insert(victim);
 }
 
 Tribe* Creature::getTribe() {
