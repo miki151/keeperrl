@@ -512,7 +512,7 @@ void Tutorial::createTutorial(Game& game) {
           .setKeybinding(Keybinding::CREATE_IMP)
           .setSound(Sound(SoundId::CREATE_IMP).setPitch(2))
           .setNoAuto()
-          .addRequirement(ExponentialCost{ CostInfo(CollectiveResourceId::MANA, 20), 5, 4 }),
+          .addRequirement(ExponentialCost{ CostInfo(CollectiveResourceId::GOLD, 6), 5, 4 }),
       ImmigrantInfo(CreatureId::ORC, {MinionTrait::FIGHTER, MinionTrait::NO_AUTO_EQUIPMENT})
           .setLimit(1)
           .setTutorialHighlight(TutorialHighlight::ACCEPT_IMMIGRANT)
