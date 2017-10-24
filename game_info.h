@@ -167,6 +167,11 @@ struct ImmigrantDataInfo {
 
 class CollectiveInfo {
   public:
+  CollectiveInfo() {}
+  CollectiveInfo(const CollectiveInfo&) = delete;
+  CollectiveInfo(CollectiveInfo&&) = default;
+  CollectiveInfo& operator = (CollectiveInfo&&) = default;
+  CollectiveInfo& operator = (const CollectiveInfo&) = delete;
   string HASH(warning);
   struct Button {
     ViewId HASH(viewId);
@@ -349,6 +354,11 @@ class GameInfo {
   int HASH(totalSquares);
 
   bool HASH(singleModel);
+  GameInfo() {}
+  GameInfo(const GameInfo&) = delete;
+  GameInfo(GameInfo&&) = default;
+  GameInfo& operator = (const GameInfo&) = delete;
+  GameInfo& operator = (GameInfo&&) = default;
 
   variant<CollectiveInfo, PlayerInfo> HASH(playerInfo);
   VillageInfo HASH(villageInfo);

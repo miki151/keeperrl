@@ -1686,8 +1686,8 @@ SGuiElem GuiBuilder::drawBuildingsOverlay(const CollectiveInfo& info, const opti
           gui.miniWindow(gui.stack(
               gui.keyHandler([=] { clearActiveButton(); }, {gui.getKey(SDL::SDLK_ESCAPE)}, true),
               gui.margins(lines.buildVerticalList(), margin))),
-          [=] { return !info.ransom && collectiveTab == CollectiveTab::BUILDINGS &&
-          activeGroup == groupName;})));
+          [isRansom = !!info.ransom, this, groupName] {
+              return !isRansom && collectiveTab == CollectiveTab::BUILDINGS && activeGroup == groupName;})));
   }
   return gui.stack(std::move(elems));
 }

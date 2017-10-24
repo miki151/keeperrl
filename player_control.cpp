@@ -1128,7 +1128,7 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
     optional<UniqueEntity<Creature>::Id> creature;
     if (auto c = getCollective()->getTaskMap().getOwner(task))
       creature = c->getUniqueId();
-    info.taskMap.push_back({task->getDescription(), creature, getCollective()->getTaskMap().isPriorityTask(task)});
+    info.taskMap.push_back(CollectiveInfo::Task{task->getDescription(), creature, getCollective()->getTaskMap().isPriorityTask(task)});
   }
   for (auto& elem : ransomAttacks) {
     info.ransom = CollectiveInfo::Ransom {make_pair(ViewId::GOLD, *elem.getRansom()), elem.getAttackerName(),
