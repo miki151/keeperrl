@@ -224,7 +224,8 @@ void PlayerControl::leaveControl() {
       allTeams.insert(team);
   }
   for (auto team : allTeams) {
-    for (WCreature c : getTeams().getMembers(team))
+    // a creature may die when landing and be removed from the team so copy the members vector
+    for (WCreature c : copyOf(getTeams().getMembers(team)))
 //      if (getGame()->canTransferCreature(c, getCollective()->getLevel()->getModel()))
         getGame()->transferCreature(c, getModel());
     if (!getTeams().isPersistent(team)) {

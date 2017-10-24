@@ -179,13 +179,13 @@ void Game::prepareSiteRetirement() {
   WModel mainModel = models[baseModel].get();
   mainModel->setGame(nullptr);
   for (WCollective col : models[baseModel]->getCollectives())
-    for (WCreature c : col->getCreatures())
+    for (WCreature c : copyOf(col->getCreatures()))
       if (c->getPosition().getModel() != mainModel)
         transferCreature(c, mainModel);
   for (Vec2 v : models.getBounds())
     if (models[v] && v != baseModel)
       for (WCollective col : models[v]->getCollectives())
-        for (WCreature c : col->getCreatures())
+        for (WCreature c : copyOf(col->getCreatures()))
           if (c->getPosition().getModel() == mainModel)
             transferCreature(c, models[v].get());
   // So we don't have references to creatures in another model.
