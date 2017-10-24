@@ -932,9 +932,9 @@ void Creature::onAttackedBy(WCreature attacker) {
 }
 
 constexpr double getDamage(double damageRatio) {
-  constexpr double minRatio = 0.66;  // the ratio at which the damage drops to 0
-  constexpr double maxRatio = 2;     // the ratio at which the damage reaches 1
-  constexpr double damageAtOne = 0.2;// damage dealt at a ratio of 1
+  constexpr double minRatio = 0.6;  // the ratio at which the damage drops to 0
+  constexpr double maxRatio = 2.2;     // the ratio at which the damage reaches 1
+  constexpr double damageAtOne = 0.12;// damage dealt at a ratio of 1
   if (damageRatio <= minRatio)
     return 0;
   else if (damageRatio <= 1)
