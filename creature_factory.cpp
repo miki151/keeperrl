@@ -516,8 +516,9 @@ class IllusionController : public DoNothingController {
   IllusionController(WCreature c, double deathT) : DoNothingController(c), deathTime(deathT) {}
 
   virtual void onBump(WCreature c) override {
+    auto myPos = getCreature()->getPosition();
     c->attack(getCreature(), none).perform(c);
-    getCreature()->message("It was just an illusion!");
+    myPos.globalMessage("It was just an illusion!");
     if (!getCreature()->isDead()) // so check necessary, as most likely was killed in attack 2 lines above
       getCreature()->dieNoReason();
   }
