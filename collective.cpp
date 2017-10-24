@@ -61,6 +61,9 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
   ar(credit, level, immigration, teams, name, conqueredVillains);
   ar(config, warnings, knownVillains, knownVillainLocations, banished);
   ar(villainType, enemyId, workshops, zones, tileEfficiency, discoverable);
+  // hack to make retired villains discoverable, remove with save version change
+  if (villainType == VillainType::MAIN)
+    discoverable = true;
 }
 
 SERIALIZABLE(Collective)
@@ -1293,6 +1296,7 @@ void Collective::retire() {
   knownTiles->limitToModel(getModel());
   knownVillainLocations.clear();
   knownVillains.clear();
+  discoverable = true;
 }
 
 CollectiveWarnings& Collective::getWarnings() {
