@@ -44,7 +44,7 @@ CFLAGS += -g
 endif
 
 ifdef SANITIZE
-CFLAGS += -fsanitize=${SANITIZE} -fsanitize-trap=alignment,bool,bounds,enum,float-divide-by-zero,function,integer-divide-by-zero,object-size,pointer-overflow,return,shift,signed-integer-overflow,unreachable,unsigned-integer-overflow -fno-omit-frame-pointer
+CFLAGS += -fsanitize=address
 endif
 
 ifdef DBG
