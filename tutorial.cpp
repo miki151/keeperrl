@@ -429,7 +429,7 @@ vector<Vec2> Tutorial::getHighlightedSquaresLow(WConstGame game) const {
   }
 }
 
-Tutorial::Tutorial() : state(State::CREATE_TEAM) {
+Tutorial::Tutorial() : state(State::WELCOME) {
 
 }
 
@@ -506,13 +506,13 @@ void Tutorial::createTutorial(Game& game) {
   CHECK(foundEntrance);
   collective->setTrait(collective->getLeader(), MinionTrait::NO_AUTO_EQUIPMENT);
   collective->getWarnings().disable();
-  collective->init(CollectiveConfig::keeper(50, 10, {}, {
+  collective->init(CollectiveConfig::keeper(50, 10, false, {}, {
       ImmigrantInfo(CreatureId::IMP, {MinionTrait::WORKER, MinionTrait::NO_LIMIT, MinionTrait::NO_EQUIPMENT})
           .setSpawnLocation(NearLeader{})
           .setKeybinding(Keybinding::CREATE_IMP)
           .setSound(Sound(SoundId::CREATE_IMP).setPitch(2))
           .setNoAuto()
-          .addRequirement(ExponentialCost{ CostInfo(CollectiveResourceId::MANA, 20), 5, 4 }),
+          .addRequirement(ExponentialCost{ CostInfo(CollectiveResourceId::GOLD, 6), 5, 4 }),
       ImmigrantInfo(CreatureId::ORC, {MinionTrait::FIGHTER, MinionTrait::NO_AUTO_EQUIPMENT})
           .setLimit(1)
           .setTutorialHighlight(TutorialHighlight::ACCEPT_IMMIGRANT)

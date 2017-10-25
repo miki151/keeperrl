@@ -68,7 +68,7 @@ const vector<FurnitureType>& MinionTasks::getAllFurniture(MinionTask task) {
           break;
         case MinionTaskInfo::FURNITURE:
           for (auto furnitureType : ENUM_ALL(FurnitureType))
-            if (taskInfo.furniturePredicate(nullptr, furnitureType))
+            if (taskInfo.furniturePredicate(nullptr, nullptr, furnitureType))
               cache[minionTask].push_back(furnitureType);
           break;
         default: break;
@@ -79,18 +79,22 @@ const vector<FurnitureType>& MinionTasks::getAllFurniture(MinionTask task) {
   return cache[task];
 }
 
-optional<MinionTask> MinionTasks::getTaskFor(WConstCreature c, FurnitureType type) {
+optional<MinionTask> MinionTasks::getTaskFor(WConstCollective col, WConstCreature c, FurnitureType type) {
   static EnumMap<FurnitureType, optional<MinionTask>> cache;
   static bool initialized = false;
   if (!initialized) {
     for (auto task : ENUM_ALL(MinionTask))
-      for (auto furnitureType : getAllFurniture(task))
+      for (auto furnitureType : getAllFurniture(task)) {
+        CHECK(!cache[furnitureType]) << "Minion tasks " << EnumInfo<MinionTask>::getString(task) << " and "
+            << EnumInfo<MinionTask>::getString(*cache[furnitureType]) << " both assigned to "
+            << EnumInfo<FurnitureType>::getString(furnitureType);
         cache[furnitureType] = task;
+      }
     initialized = true;
   }
   if (auto task = cache[type]) {
     auto& info = CollectiveConfig::getTaskInfo(*task);
-    if (info.furniturePredicate(c, type))
+    if (info.furniturePredicate(col, c, type))
       return *task;
   }
   return none;
@@ -101,7 +105,8 @@ vector<Position> MinionTasks::getAllPositions(WConstCollective collective, WCons
   vector<Position> ret;
   auto& info = CollectiveConfig::getTaskInfo(task);
   for (auto furnitureType : getAllFurniture(task))
-    if (info.furniturePredicate(c, furnitureType) && (!onlyActive || info.activePredicate(collective, furnitureType)))
+    if (info.furniturePredicate(collective, c, furnitureType) &&
+        (!onlyActive || info.activePredicate(collective, furnitureType)))
       append(ret, collective->getConstructions().getBuiltPositions(furnitureType));
   return ret;
 }

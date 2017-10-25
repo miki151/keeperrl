@@ -347,7 +347,9 @@ void WindowView::displaySplash(const ProgressMeter* meter, const string& text, S
 void WindowView::clearSplash() {
   splashDone = true;
   if (currentThreadId() != renderThreadId)
-    while (splashDone) {}
+    while (splashDone) {
+      Progress::checkIfInterrupted();
+    }
 }
 
 void WindowView::resize(int width, int height) {
@@ -1394,6 +1396,10 @@ void WindowView::keyboardAction(const SDL_Keysym& key) {
     case SDL::SDLK_F11:
       if (auto input = getText("Enter item type", "", 100, ""))
         inputQueue.push({UserInputId::CREATE_ITEM, *input});
+      break;
+    case SDL::SDLK_F12:
+      if (auto input = getText("Enter creature id", "", 100, ""))
+        inputQueue.push({UserInputId::SUMMON_ENEMY, *input});
       break;
     case SDL::SDLK_F9:
       inputQueue.push(UserInputId::CHEAT_ATTRIBUTES);

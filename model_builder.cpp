@@ -53,10 +53,11 @@ int ModelBuilder::getThronePopulationIncrease() {
   return 10;
 }
 
-static CollectiveConfig getKeeperConfig(RandomGen& random, bool fastImmigration) {
+static CollectiveConfig getKeeperConfig(RandomGen& random, bool fastImmigration, bool regenerateMana) {
   return CollectiveConfig::keeper(
       fastImmigration ? 10 : 140,
       10,
+      regenerateMana,
       {
       CONSTRUCT(PopulationIncrease,
         c.type = FurnitureType::PIGSTY;
@@ -188,11 +189,13 @@ SettlementInfo& ModelBuilder::makeExtraLevel(WModel model, EnemyInfo& enemy) {
             LevelMaker::towerLevel(random,
                 CONSTRUCT(SettlementInfo,
                   c.type = SettlementType::TOWER;
-                  c.creatures = CreatureFactory::singleType(TribeId::getHuman(), random.choose(
-                      CreatureId::WATER_ELEMENTAL, CreatureId::AIR_ELEMENTAL, CreatureId::FIRE_ELEMENTAL,
-                      CreatureId::EARTH_ELEMENTAL));
-                  c.numCreatures = random.get(1, 3);
-                  //c.location = new Location();
+                  c.inhabitants.fighters = CreatureList(
+                      random.get(1, 3),
+                      random.choose(
+                          CreatureId::WATER_ELEMENTAL, CreatureId::AIR_ELEMENTAL, CreatureId::FIRE_ELEMENTAL,
+                          CreatureId::EARTH_ELEMENTAL));
+                  c.tribe = enemy.settlement.tribe;
+                  c.collective = new CollectiveBuilder(CollectiveConfig::noImmigrants(), c.tribe);
                   c.upStairs = {upLink};
                   c.downStairs = {downLink};
                   c.furniture = FurnitureFactory(TribeId::getHuman(), FurnitureType::GROUND_TORCH);
@@ -325,10 +328,10 @@ PModel ModelBuilder::tryCampaignBaseModel(const string& siteName, bool addExtern
   enemyInfo.push_back(enemyFactory->get(EnemyId::TUTORIAL_VILLAGE));
   if (random.chance(0.3))
     enemyInfo.push_back(enemyFactory->get(EnemyId::KRAKEN));
-  vector<EnemyEvent> externalEnemies;
+  optional<ExternalEnemies> externalEnemies;
   if (addExternalEnemies)
-    externalEnemies = enemyFactory->getExternalEnemies();
-  return tryModel(230, siteName, enemyInfo, true, biome, externalEnemies, true);
+    externalEnemies = ExternalEnemies(random, enemyFactory->getExternalEnemies());
+  return tryModel(230, siteName, enemyInfo, true, biome, std::move(externalEnemies), true);
 }
 
 PModel ModelBuilder::tryTutorialModel(const string& siteName) {
@@ -459,25 +462,25 @@ void ModelBuilder::measureModelGen(const string& name, int numTries, function<vo
     minT << ". MaxT: " << maxT << ". AvgT: " << sumT / numSuccess << std::endl;
 }
 
-WCollective ModelBuilder::spawnKeeper(WModel m, PCreature keeper) {
+WCollective ModelBuilder::spawnKeeper(WModel m, PCreature keeper, bool regenerateMana, vector<string> introText) {
   WLevel level = m->getTopLevel();
   WCreature keeperRef = keeper.get();
   CHECK(level->landCreature(StairKey::keeperSpawn(), keeperRef)) << "Couldn't place keeper on level.";
   m->addCreature(std::move(keeper));
   m->collectives.push_back(CollectiveBuilder(
-        getKeeperConfig(random, options->getBoolValue(OptionId::FAST_IMMIGRATION)), TribeId::getKeeper())
+        getKeeperConfig(random, options->getBoolValue(OptionId::FAST_IMMIGRATION), regenerateMana), TribeId::getKeeper())
       .setLevel(level)
-      .addCreature(keeperRef)
+      .addCreature(keeperRef, {MinionTrait::LEADER})
       .build());
   WCollective playerCollective = m->collectives.back().get();
-  playerCollective->setControl(PlayerControl::create(playerCollective));
+  playerCollective->setControl(PlayerControl::create(playerCollective, introText));
   playerCollective->setVillainType(VillainType::PLAYER);
   playerCollective->acquireInitialTech();
   return playerCollective;
 }
 
 PModel ModelBuilder::tryModel(int width, const string& levelName, vector<EnemyInfo> enemyInfo, bool keeperSpawn,
-    BiomeId biomeId, vector<EnemyEvent> externalEnemies, bool hasWildlife) {
+    BiomeId biomeId, optional<ExternalEnemies> externalEnemies, bool hasWildlife) {
   auto model = Model::create();
   vector<SettlementInfo> topLevelSettlements;
   vector<EnemyInfo> extraEnemies;
@@ -517,8 +520,8 @@ PModel ModelBuilder::tryModel(int width, const string& levelName, vector<EnemyIn
     collective->setControl(std::move(control));
     model->collectives.push_back(std::move(collective));
   }
-  if (!externalEnemies.empty())
-    model->addExternalEnemies(ExternalEnemies(random, externalEnemies));
+  if (externalEnemies)
+    model->addExternalEnemies(std::move(*externalEnemies));
   return model;
 }
 
@@ -536,14 +539,13 @@ PModel ModelBuilder::splashModel(const FilePath& splashPath) {
   return m;
 }
 
-PModel ModelBuilder::battleModel(const FilePath& levelPath, CreatureFactory allies, CreatureFactory enemies,
-    int maxEnemies) {
+PModel ModelBuilder::battleModel(const FilePath& levelPath, CreatureList allies, CreatureList enemies) {
   auto m = Model::create();
   ifstream stream(levelPath.getPath());
   Table<char> level = *SokobanInput::readTable(stream);
   WLevel l = m->buildTopLevel(
-      LevelBuilder(meter, Random, level.getBounds().width(), level.getBounds().height(), "Battle", false, 1.0),
-      LevelMaker::battleLevel(level, allies, enemies, maxEnemies));
+      LevelBuilder(meter, Random, level.getBounds().width(), level.getBounds().height(), "Battle", true, 1.0),
+      LevelMaker::battleLevel(level, allies, enemies));
   m->topLevel = l;
   return m;
 }

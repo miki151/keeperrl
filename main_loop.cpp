@@ -31,13 +31,13 @@
 #include "item_type.h"
 #include "pretty_printing.h"
 #include "creature_factory.h"
+#include "enemy_factory.h"
+#include "external_enemies.h"
 
 MainLoop::MainLoop(View* v, Highscores* h, FileSharing* fSharing, const DirectoryPath& freePath,
-    const DirectoryPath& uPath, Options* o, Jukebox* j, SokobanInput* soko, bool singleThread,
-    optional<ForceGameInfo> force)
+    const DirectoryPath& uPath, Options* o, Jukebox* j, SokobanInput* soko, bool singleThread)
       : view(v), dataFreePath(freePath), userPath(uPath), options(o), jukebox(j),
-        highscores(h), fileSharing(fSharing), useSingleThread(singleThread), forceGame(force),
-        sokobanInput(soko) {
+        highscores(h), fileSharing(fSharing), useSingleThread(singleThread), sokobanInput(soko) {
 }
 
 vector<SaveFileInfo> MainLoop::getSaveFiles(const DirectoryPath& path, const string& suffix) {
@@ -58,7 +58,7 @@ static string getDateString(time_t t) {
   return buf;
 }
 
-static const int saveVersion = 1900;
+static const int saveVersion = 2200;
 
 static bool isCompatible(int loadedVersion) {
   return loadedVersion > 2 && loadedVersion <= saveVersion && loadedVersion / 100 == saveVersion / 100;
@@ -206,6 +206,7 @@ int MainLoop::getAutosaveFreq() {
 enum class MainLoop::ExitCondition {
   ALLIES_WON,
   ENEMIES_WON,
+  TIMEOUT,
   UNKNOWN
 };
 
@@ -313,12 +314,7 @@ PGame MainLoop::prepareTutorial() {
   return game;
 }
 
-PGame MainLoop::prepareCampaign(RandomGen& random, const optional<ForceGameInfo>& forceGameInfo) {
-  if (forceGameInfo) {
-    CampaignBuilder builder(view, random, options, forceGameInfo->role);
-    auto result = builder.prepareCampaign(bindMethod(&MainLoop::getRetiredGames, this), forceGameInfo->type);
-    return Game::campaignGame(prepareCampaignModels(*result, random), *result);
-  }
+PGame MainLoop::prepareCampaign(RandomGen& random) {
   auto choice = PlayerRoleChoice(PlayerRole::KEEPER);
   while (1) {
     choice = view->getPlayerRoleChoice(choice);
@@ -395,11 +391,32 @@ void MainLoop::considerFreeVersionText(bool tilesPresent) {
         "More information on the website.");
 }
 
-void MainLoop::start(bool tilesPresent) {
+void MainLoop::launchQuickGame() {
+  vector<ListElem> optionsUnused;
+  vector<SaveFileInfo> files;
+  getSaveOptions({
+      {GameSaveType::AUTOSAVE, "Recovered games:"},
+      {GameSaveType::KEEPER, "Keeper games:"}}, optionsUnused, files);
+  auto toLoad = std::min_element(files.begin(), files.end(),
+      [](const auto& f1, const auto& f2) { return f1.date > f2.date; });
+  PGame game;
+  if (toLoad != files.end())
+    game = loadGame(userPath.file((*toLoad).filename));
+  if (!game) {
+    CampaignBuilder builder(view, Random, options, PlayerRole::KEEPER);
+    auto result = builder.prepareCampaign(bindMethod(&MainLoop::getRetiredGames, this), CampaignType::QUICK_MAP);
+    game = Game::campaignGame(prepareCampaignModels(*result, Random), *result);
+  }
+  playGame(std::move(game), true, false);
+}
+
+void MainLoop::start(bool tilesPresent, bool quickGame) {
   if (options->getBoolValue(OptionId::MUSIC))
     jukebox->toggle(true);
   NameGenerator::init(dataFreePath.subdirectory("names"));
-  if (!forceGame)
+  if (quickGame)
+    launchQuickGame();
+  else
     splashScreen();
   view->reset();
   considerFreeVersionText(tilesPresent);
@@ -408,20 +425,16 @@ void MainLoop::start(bool tilesPresent) {
   while (1) {
     playMenuMusic();
     optional<int> choice;
-    if (forceGame)
-      choice = 0;
-    else
-      choice = view->chooseFromList("", {
+    choice = view->chooseFromList("", {
         "Play", "Settings", "High scores", "Credits", "Quit"}, lastIndex, MenuType::MAIN);
     if (!choice)
       continue;
     lastIndex = *choice;
     switch (*choice) {
       case 0:
-        if (PGame game = prepareCampaign(Random, forceGame))
+        if (PGame game = prepareCampaign(Random))
           playGame(std::move(game), true, false);
         view->reset();
-        forceGame = none;
         break;
       case 1: options->handle(view, OptionSet::GENERAL); break;
       case 2: highscores->present(view); break;
@@ -491,8 +504,46 @@ void MainLoop::modelGenTest(int numTries, const vector<string>& types, RandomGen
   ModelBuilder(&meter, random, options, sokobanInput).measureSiteGen(numTries, types);
 }
 
+static CreatureList readAlly(ifstream& input) {
+  string ally;
+  input >> ally;
+  auto id = EnumInfo<CreatureId>::fromString(ally);
+  CreatureList ret(1000, id);
+  string levelIncreaseText;
+  input >> levelIncreaseText;
+  EnumMap<ExperienceType, int> levelIncrease;
+  vector<ItemType> equipment;
+  for (auto increase : split(levelIncreaseText, {','})) {
+    int amount = fromString<int>(increase.substr(1));
+    switch (increase[0]) {
+      case 'M':
+        levelIncrease[ExperienceType::MELEE] = amount;
+        break;
+      case 'S':
+        levelIncrease[ExperienceType::SPELL] = amount;
+        break;
+      case 'A':
+        levelIncrease[ExperienceType::ARCHERY] = amount;
+        break;
+      default:
+        FATAL << "Can't parse level increase " << increase;
+    }
+  }
+  string equipmentText;
+  input >> equipmentText;
+  for (auto id : split(equipmentText, {','}))
+    if (auto type = PrettyPrinting::parseObject<ItemType>(id))
+      equipment.push_back(*type);
+    else
+      FATAL << "Can't parse item type: " << id;
+  ret.addInventory(equipment);
+  ret.increaseBaseLevel(levelIncrease);
+  return ret;
+}
+
 void MainLoop::battleTest(int numTries, const FilePath& levelPath, const FilePath& battleInfoPath, string enemy,
     RandomGen& random) {
+  NameGenerator::init(dataFreePath.subdirectory("names"));
   ifstream input(battleInfoPath.getPath());
   int cnt = 0;
   auto enemySplit = split(enemy, {','});
@@ -502,57 +553,47 @@ void MainLoop::battleTest(int numTries, const FilePath& levelPath, const FilePat
     maxEnemies = fromString<int>(enemySplit[1]);
   input >> cnt;
   for (int i : Range(cnt)) {
-    BattleInfo info;
-    string ally;
-    input >> ally;
-    info.ally = EnumInfo<CreatureId>::fromString(ally);
-    string levelIncreases;
-    input >> levelIncreases;
-    for (auto increase : split(levelIncreases, {','})) {
-      int amount = fromString<int>(increase.substr(1));
-      switch (increase[0]) {
-        case 'M':
-          info.allyLevelIncrease[ExperienceType::MELEE] = amount;
-          break;
-        case 'S':
-          info.allyLevelIncrease[ExperienceType::SPELL] = amount;
-          break;
-        case 'A':
-          info.allyLevelIncrease[ExperienceType::ARCHERY] = amount;
-          break;
-        default:
-          FATAL << "Can't parse level increase " << increase;
-      }
-    }
-    string equipment;
-    input >> equipment;
-    for (auto id : split(equipment, {','}))
-      if (auto type = PrettyPrinting::parseObject<ItemType>(id))
-        info.allyEquipment.push_back(*type);
-      else
-        FATAL << "Can't parse item type: " << id;
-    std::cout << EnumInfo<CreatureId>::getString(info.ally) << " " << levelIncreases << ": ";
-    battleTest(numTries, levelPath, info, enemyId, maxEnemies, random);
+    auto creatureList = readAlly(input);
+    std::cout << creatureList.getSummary() << ": ";
+    battleTest(numTries, levelPath, creatureList, CreatureList(maxEnemies, enemyId), random);
   }
 }
 
-void MainLoop::battleTest(int numTries, const FilePath& levelPath, BattleInfo info, CreatureId enemyId, int maxEnemies,
-    RandomGen& random) {
+void MainLoop::endlessTest(int numTries, const FilePath& levelPath, const FilePath& battleInfoPath,
+    RandomGen& random, optional<int> numEnemy) {
   NameGenerator::init(dataFreePath.subdirectory("names"));
+  ifstream input(battleInfoPath.getPath());
+  int cnt = 0;
+  input >> cnt;
+  vector<CreatureList> allies;
+  for (int i : Range(cnt))
+    allies.push_back(readAlly(input));
+  ExternalEnemies enemies(random, EnemyFactory(random).getExternalEnemies());
+  for (int turn : Range(100000))
+    if (auto wave = enemies.popNextWave(turn)) {
+      std::cerr << "Turn " << turn << ": " << wave->enemy.name << "\n";
+      int totalWins = 0;
+      for (auto& allyInfo : allies) {
+        std::cerr << allyInfo.getSummary() << ": ";
+        int numWins = battleTest(numTries, levelPath, allyInfo, wave->enemy.creatures, random);
+        totalWins += numWins;
+      }
+      std::cerr << totalWins << " wins\n";
+      std::cout << "Turn " << turn << ": " << wave->enemy.name << ": " << totalWins << "\n";
+    }
+}
+
+int MainLoop::battleTest(int numTries, const FilePath& levelPath, CreatureList ally, CreatureList enemies,
+    RandomGen& random) {
   ProgressMeter meter(1);
   int numAllies = 0;
   int numEnemies = 0;
   int numUnknown = 0;
   auto allyTribe = TribeId::getKeeper();
-  auto enemyTribe = TribeId::getMonster();
-  auto allies = CreatureFactory::singleCreature(allyTribe, info.ally)
-      .increaseLevel(info.allyLevelIncrease)
-      .addInventory(info.allyEquipment);
-  auto enemies = CreatureFactory::singleCreature(enemyTribe, enemyId);
   std::cout.flush();
   for (int i : Range(numTries)) {
     auto game = Game::splashScreen(ModelBuilder(&meter, Random, options, sokobanInput)
-        .battleModel(levelPath, allies, enemies, maxEnemies), CampaignBuilder::getEmptyCampaign());
+        .battleModel(levelPath, ally, enemies), CampaignBuilder::getEmptyCampaign());
     auto exitCondition = [&](WGame game) -> optional<ExitCondition> {
       unordered_set<TribeId, CustomHash<TribeId>> tribes;
       for (auto& m : game->getAllModels())
@@ -561,11 +602,11 @@ void MainLoop::battleTest(int numTries, const FilePath& levelPath, BattleInfo in
       if (tribes.size() == 1) {
         if (*tribes.begin() == allyTribe)
           return ExitCondition::ALLIES_WON;
-        else if (*tribes.begin() == enemyTribe)
-          return ExitCondition::ENEMIES_WON;
         else
-          return ExitCondition::UNKNOWN;
+          return ExitCondition::ENEMIES_WON;
       }
+      if (game->getGlobalTime() > 200)
+        return ExitCondition::TIMEOUT;
       if (tribes.empty())
         return ExitCondition::UNKNOWN;
       else
@@ -575,23 +616,28 @@ void MainLoop::battleTest(int numTries, const FilePath& levelPath, BattleInfo in
     switch (result) {
       case ExitCondition::ALLIES_WON:
         ++numAllies;
-        std::cout << "a";
+        std::cerr << "a";
         break;
       case ExitCondition::ENEMIES_WON:
         ++numEnemies;
-        std::cout << "e";
+        std::cerr << "e";
+        break;
+      case ExitCondition::TIMEOUT:
+        ++numUnknown;
+        std::cerr << "t";
         break;
       case ExitCondition::UNKNOWN:
         ++numUnknown;
-        std::cout << "u";
+        std::cerr << "u";
         break;
     }
-    std::cout.flush();
+    std::cerr.flush();
   }
-  std::cout << " " << numAllies << ":" << numEnemies;
+  std::cerr << " " << numAllies << ":" << numEnemies;
   if (numUnknown > 0)
-    std::cout << " (" << numUnknown << ") unknown";
-  std::cout << "\n";
+    std::cerr << " (" << numUnknown << ") unknown";
+  std::cerr << "\n";
+  return numAllies;
 }
 
 PModel MainLoop::getBaseModel(ModelBuilder& modelBuilder, CampaignSetup& setup) {
@@ -605,7 +651,7 @@ PModel MainLoop::getBaseModel(ModelBuilder& modelBuilder, CampaignSetup& setup) 
         return modelBuilder.campaignBaseModel("Campaign base site", setup.campaign.getType() == CampaignType::ENDLESS);
     }
   }();
-  modelBuilder.spawnKeeper(ret.get(), std::move(setup.player));
+  modelBuilder.spawnKeeper(ret.get(), std::move(setup.player), setup.regenerateMana, setup.introMessages);
   return ret;
 }
 

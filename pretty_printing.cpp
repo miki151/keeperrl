@@ -29,3 +29,6 @@ optional<Effect> PrettyPrinting::parseObject<Effect>(const string&);
 
 template
 optional<ItemType> PrettyPrinting::parseObject<ItemType>(const string&);
+
+template
+optional<CreatureId> PrettyPrinting::parseObject<CreatureId>(const string&);

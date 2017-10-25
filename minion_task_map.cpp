@@ -46,7 +46,8 @@ bool MinionTaskMap::isAvailable(WConstCollective col, WConstCreature c, MinionTa
     case MinionTask::TRAIN:
       return !c->getAttributes().isTrainingMaxedOut(ExperienceType::MELEE);
     case MinionTask::STUDY:
-      return !c->getAttributes().isTrainingMaxedOut(ExperienceType::SPELL);
+      return !c->getAttributes().isTrainingMaxedOut(ExperienceType::SPELL) ||
+          (col->getConfig().getRegenerateMana() && c->getAttributes().getMaxExpLevel()[ExperienceType::SPELL] > 0);
     case MinionTask::ARCHERY:
       return !c->getAttributes().isTrainingMaxedOut(ExperienceType::ARCHERY) &&
           !c->getEquipment().getItems(ItemIndex::RANGED_WEAPON).empty();

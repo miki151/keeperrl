@@ -5,7 +5,6 @@
 
 class RandomGen;
 class Position;
-class EffectType;
 
 struct FurnitureParams {
   FurnitureType SERIAL(type); // HASH(type)

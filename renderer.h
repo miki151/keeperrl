@@ -93,8 +93,6 @@ class Texture {
   private:
   Texture();
   friend class Renderer;
-  void render(Vec2 screenTopLeft, Vec2 screenBottomRight, Vec2 srcP, Vec2 srck, optional<Color> = none) const;
-  void render(Vec2 screen1, Vec2 screen2, Vec2 screen3, Vec2 screen4, Vec2 srcP, Vec2 srck, optional<Color> = none) const;
   void addTexCoord(int x, int y) const;
   optional<SDL::GLuint> texId;
   Vec2 size;
@@ -181,7 +179,9 @@ class Renderer {
   void waitEvent(Event&);
   Vec2 getMousePos();
 
-  void setDepth(double depth);
+  void setTopLayer();
+  void popLayer();
+
   void startMonkey();
   bool isMonkey();
 
@@ -232,6 +232,17 @@ class Renderer {
   SDL::SDL_Cursor* cursor;
   SDL::SDL_Cursor* cursorClicked;
   SDL::SDL_Surface* loadScaledSurface(const FilePath& path, double scale);
-  double currentDepth = 0;
+  optional<SDL::GLuint> currentTexture;
+  void drawSprite(const Texture& t, Vec2 a, Vec2 b, Vec2 c, Vec2 d, Vec2 p, Vec2 k, optional<Color> color);
+  void drawSprite(const Texture& t, Vec2 topLeft, Vec2 bottomRight, Vec2 p, Vec2 k, optional<Color> color);
+  struct DeferredSprite {
+    Vec2 a, b, c, d;
+    Vec2 p, k;
+    Vec2 realSize;
+    optional<Color> color;
+  };
+  vector<DeferredSprite> deferredSprites;
+  void renderDeferredSprites();
+  bool isScissor = false;
 };
 

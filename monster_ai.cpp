@@ -103,6 +103,9 @@ WItem Behaviour::getBestWeapon() {
 }
 
 MoveInfo Behaviour::tryEffect(Effect type, double maxTurns) {
+  if (auto effect = type.getValueMaybe<Effect::Lasting>())
+    if (creature->isAffected(effect->lastingEffect))
+      return NoMove;
   for (Spell* spell : creature->getAttributes().getSpellMap().getAll()) {
    if (spell->hasEffect(type))
       if (auto action = creature->castSpell(spell))
@@ -155,6 +158,8 @@ class Heal : public Behaviour {
     if (creature->getBody().canHeal()) {
       if (MoveInfo move = tryEffect(Effect::Heal{}, 1))
         return move.withValue(min(1.0, 1.5 - creature->getBody().getHealth()));
+      if (MoveInfo move = tryEffect(Effect::Lasting{LastingEffect::REGENERATION}, 1))
+        return move;
       if (MoveInfo move = tryEffect(Effect::Heal{}, 3))
         return move.withValue(0.5 * min(1.0, 1.5 - creature->getBody().getHealth()));
     }
@@ -333,7 +338,7 @@ class Fighter : public Behaviour {
       WItem weapon = getBestWeapon();
       if (!creature->getWeapon() && weapon)
         myDamage += weapon->getModifier(AttrType::DAMAGE);
-      double powerRatio = myDamage / other->getAttr(AttrType::DAMAGE);
+      double powerRatio = myDamage / (other->getAttr(AttrType::DAMAGE) + 1);
       bool significantEnemy = myDamage < 5 * other->getAttr(AttrType::DAMAGE);
       double panicWeight = 0;
       if (powerRatio < maxPowerRatio)
@@ -541,6 +546,8 @@ class Fighter : public Behaviour {
     bool isFriendBetween = false;
     for (auto pos : other->getPosition().neighbors8())
       if (myNeighbors.count(pos)) {
+        if (pos.canEnter(creature))
+          return NoMove;
         if (auto c = pos.getCreature())
           if (c->isFriend(creature)) {
             isFriendBetween = true;
@@ -553,9 +560,11 @@ class Fighter : public Behaviour {
             if (auto move = creature->destroy(creature->getPosition().getDir(pos), *destroyAction))
               destroyMove = move;
       }
-    if (isFriendBetween)
+    if (isFriendBetween) {
+      if (auto move = tryEffect(Effect::DestroyWalls{}, 1))
+        return move;
       return destroyMove;
-    else
+    } else
       return NoMove;
   }
 

@@ -226,30 +226,72 @@ void Texture::addTexCoord(int x, int y) const {
 Texture::Texture() {
 }
 
-void Texture::render(Vec2 topLeft, Vec2 bottomRight, Vec2 p, Vec2 k, optional<Color> color) const {
-  render(topLeft, Vec2(bottomRight.x, topLeft.y), bottomRight, Vec2(topLeft.x, bottomRight.y), p, k, color);
+void Renderer::renderDeferredSprites() {
+  static vector<SDL::GLfloat> vertices;
+  static vector<SDL::GLfloat> texCoords;
+  static vector<SDL::GLfloat> colors;
+  vertices.clear();
+  texCoords.clear();
+  colors.clear();
+  auto addVertex = [&](Vec2 v, int texX, int texY, Vec2 texSize, Color color) {
+    vertices.push_back(v.x);
+    vertices.push_back(v.y);
+    texCoords.push_back(((float)texX) / texSize.x);
+    texCoords.push_back(((float)texY) / texSize.y);
+    colors.push_back(((float) color.r) / 255);
+    colors.push_back(((float) color.g) / 255);
+    colors.push_back(((float) color.b) / 255);
+    colors.push_back(((float) color.a) / 255);
+  };
+  optional<SDL::GLuint> currentTex;
+  for (auto& elem : deferredSprites) {
+    auto add = [&](Vec2 v, int texX, int texY, const DeferredSprite& draw) {
+      addVertex(v, texX, texY, draw.realSize, draw.color.value_or(Color::WHITE));
+    };
+    add(elem.a, elem.p.x, elem.p.y, elem);
+    add(elem.b, elem.k.x, elem.p.y, elem);
+    add(elem.c, elem.k.x, elem.k.y, elem);
+    add(elem.a, elem.p.x, elem.p.y, elem);
+    add(elem.c, elem.k.x, elem.k.y, elem);
+    add(elem.d, elem.p.x, elem.k.y, elem);
+  }
+  if (!vertices.empty()) {
+    SDL::glEnable(GL_TEXTURE_2D);
+    SDL::glBindTexture(GL_TEXTURE_2D, *currentTexture);
+    checkOpenglError();
+    SDL::glEnableClientState(GL_VERTEX_ARRAY);
+    SDL::glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+    SDL::glEnableClientState(GL_COLOR_ARRAY);
+    checkOpenglError();
+    SDL::glColorPointer(4, GL_FLOAT, 0, colors.data());
+    checkOpenglError();
+    SDL::glVertexPointer(2, GL_FLOAT, 0, vertices.data());
+    checkOpenglError();
+    SDL::glTexCoordPointer(2, GL_FLOAT, 0, texCoords.data());
+    checkOpenglError();
+    SDL::glDrawArrays(GL_TRIANGLES, 0, vertices.size() / 2);
+    checkOpenglError();
+    checkOpenglError();
+    vertices.clear();
+    texCoords.clear();
+    colors.clear();
+    SDL::glDisableClientState(GL_VERTEX_ARRAY);
+    SDL::glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+    SDL::glDisableClientState(GL_COLOR_ARRAY);
+    SDL::glDisable(GL_TEXTURE_2D);
+  }
+  deferredSprites.clear();
 }
 
-void Texture::render(Vec2 a, Vec2 b, Vec2 c, Vec2 d, Vec2 p, Vec2 k, optional<Color> color) const {
-  SDL::glBindTexture(GL_TEXTURE_2D, (*texId));
-  checkOpenglError();
-  SDL::glEnable(GL_TEXTURE_2D);
-  SDL::glBegin(GL_QUADS);
-  if (color)
-    color->applyGl();
-  else
-    SDL::glColor3f(1, 1, 1);
-  addTexCoord(p.x, p.y);
-  SDL::glVertex2f(a.x, a.y);
-  addTexCoord(k.x, p.y);
-  SDL::glVertex2f(b.x, b.y);
-  addTexCoord(k.x, k.y);
-  SDL::glVertex2f(c.x, c.y);
-  addTexCoord(p.x, k.y);
-  SDL::glVertex2f(d.x, d.y);
-  SDL::glEnd();
-  SDL::glDisable(GL_TEXTURE_2D);
-  checkOpenglError();
+void Renderer::drawSprite(const Texture& t, Vec2 topLeft, Vec2 bottomRight, Vec2 p, Vec2 k, optional<Color> color) {
+  drawSprite(t, topLeft, Vec2(bottomRight.x, topLeft.y), bottomRight, Vec2(topLeft.x, bottomRight.y), p, k, color);
+}
+
+void Renderer::drawSprite(const Texture& t, Vec2 a, Vec2 b, Vec2 c, Vec2 d, Vec2 p, Vec2 k, optional<Color> color) {
+  if (currentTexture && currentTexture != *t.texId)
+    renderDeferredSprites();
+  currentTexture = *t.texId;
+  deferredSprites.push_back({a, b, c, d, p, k, t.realSize, color});
 }
 
 static float sizeConv(int size) {
@@ -282,6 +324,7 @@ int Renderer::getFont(Renderer::FontId id) {
 }
 
 void Renderer::drawText(FontId id, int size, Color color, int x, int y, const string& s, CenterType center) {
+  renderDeferredSprites();
   if (!s.empty()) {
     int ox = 0;
     int oy = 0;
@@ -328,7 +371,7 @@ void Renderer::drawTextWithHotkey(Color color, int x, int y, const string& text,
 
 void Renderer::drawImage(int px, int py, const Texture& image, double scale, optional<Color> color) {
   Vec2 p(px, py);
-  image.render(p, p + image.getSize() * scale, Vec2(0, 0), image.getSize(), color);
+  drawSprite(image, p, p + image.getSize() * scale, Vec2(0, 0), image.getSize(), color);
 }
 
 void Renderer::drawImage(Rectangle target, Rectangle source, const Texture& image) {
@@ -361,10 +404,11 @@ void Renderer::drawSprite(Vec2 pos, Vec2 source, Vec2 size, const Texture& t,
     c = rotate(c, mid, orientation.x, orientation.y);
     d = rotate(d, mid, orientation.x, orientation.y);
   }
-  t.render(a, b, c, d, source, source + size, color);
+  drawSprite(t, a, b, c, d, source, source + size, color);
 }
 
 void Renderer::drawFilledRectangle(const Rectangle& t, Color color, optional<Color> outline) {
+  renderDeferredSprites();
   Vec2 a = t.topLeft();
   Vec2 b = t.bottomRight();
   if (outline) {
@@ -397,21 +441,31 @@ void Renderer::addQuad(const Rectangle& r, Color color) {
 }
 
 void Renderer::setScissor(optional<Rectangle> s) {
+  renderDeferredSprites();
   if (s) {
     int zoom = getZoom();
     SDL::glScissor(s->left() * zoom, (getSize().y - s->bottom()) * zoom, s->width() * zoom, s->height() * zoom);
     SDL::glEnable(GL_SCISSOR_TEST);
+    isScissor = true;
   }
-  else
+  else {
     SDL::glDisable(GL_SCISSOR_TEST);
+    isScissor = false;
+  }
 }
 
-void Renderer::setDepth(double depth) {
-  SDL::glTranslated(0, 0, -currentDepth);
-  checkOpenglError();
-  currentDepth = depth;
-  SDL::glTranslated(0, 0, depth);
-  checkOpenglError();
+void Renderer::setTopLayer() {
+  renderDeferredSprites();
+  SDL::glPushMatrix();
+  SDL::glTranslated(0, 0, 1);
+  SDL::glDisable(GL_SCISSOR_TEST);
+}
+
+void Renderer::popLayer() {
+  renderDeferredSprites();
+  SDL::glPopMatrix();
+  if (isScissor)
+    SDL::glEnable(GL_SCISSOR_TEST);
 }
 
 Vec2 Renderer::getSize() {
@@ -437,7 +491,7 @@ void Renderer::setFullscreenMode(int v) {
   fullscreenMode = v;
 }
 
-const Vec2 minResolution = Vec2(800, 600);
+static const Vec2 minResolution = Vec2(800, 600);
 
 int Renderer::getZoom() {
   if (zoom == 1 || (width / zoom >= minResolution.x && height / zoom >= minResolution.y))
@@ -469,10 +523,7 @@ void Renderer::initOpenGL() {
   SDL::glEnable(GL_BLEND);
   SDL::glEnable(GL_TEXTURE_2D);
   SDL::glEnable(GL_DEPTH_TEST);
-  SDL::glAlphaFunc( GL_GREATER, 0.1 );
-  SDL::glEnable(GL_ALPHA_TEST );
   SDL::glDepthFunc(GL_LEQUAL);
-  SDL::glDepthRange(-1, 1);
   SDL::glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
   CHECK(SDL::glGetError() == GL_NO_ERROR);
   reloadCursors();
@@ -684,6 +735,7 @@ Vec2 Renderer::getNominalSize() const {
 }
 
 void Renderer::drawAndClearBuffer() {
+  renderDeferredSprites();
   SDL::SDL_GL_SwapWindow(window);
   SDL::glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   SDL::glClearColor(0.0, 0.0, 0.0, 0.0);

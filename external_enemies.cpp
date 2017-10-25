@@ -15,28 +15,38 @@
 #include "monster.h"
 #include "view_object.h"
 
-SERIALIZE_DEF(ExternalEnemies, currentWaves, waves)
+SERIALIZE_DEF(ExternalEnemies, currentWaves, waves, nextWave)
 SERIALIZATION_CONSTRUCTOR_IMPL(ExternalEnemies)
 
-ExternalEnemies::ExternalEnemies(RandomGen& random, vector<EnemyEvent> events) {
-  for (int i : All(events)) {
-    auto enemy = Random.choose(events[i].enemies);
-    waves.push_back(NextWave {
-        enemy.factory.increaseLevel(events[i].levelIncrease),
-        Random.get(enemy.groupSize),
-        enemy.factory.random()->getViewObject().id(),
-        enemy.name,
-        random.get(events[i].attackTime),
-        enemy.behaviour,
-        i
-      });
+ExternalEnemies::ExternalEnemies(RandomGen& random, vector<ExternalEnemy> enemies) {
+  constexpr int firstAttackDelay = 1800;
+  constexpr int attackInterval = 1200;
+  constexpr int attackVariation = 450;
+  for (int i : Range(500)) {
+    int attackTime = firstAttackDelay + max(0, i * attackInterval + random.get(-attackVariation, attackVariation + 1));
+    vector<int> indexes(enemies.size());
+    for (int i : All(enemies))
+      indexes[i] = i;
+    for (int index : random.permutation(indexes)) {
+      auto& enemy = enemies[index];
+      if (enemy.attackTime.contains(attackTime) && enemy.maxOccurences > 0) {
+        --enemy.maxOccurences;
+        waves.push_back(EnemyEvent{
+            enemy,
+            attackTime,
+            enemy.creatures.getViewId()
+        });
+        waves.back().enemy.creatures.increaseBaseLevel({{ExperienceType::MELEE, max(0, attackTime / 1000 - 10)}});
+        break;
+      }
+    }
   }
 }
 
 PTask ExternalEnemies::getAttackTask(WCollective enemy, AttackBehaviour behaviour) {
   switch (behaviour.getId()) {
     case AttackBehaviourId::KILL_LEADER:
-      return Task::attackLeader(enemy);
+      return Task::attackCreatures({enemy->getLeader()});
     case AttackBehaviourId::KILL_MEMBERS:
       return Task::killFighters(enemy, behaviour.get<int>());
     case AttackBehaviourId::STEAL_GOLD:
@@ -67,37 +77,34 @@ void ExternalEnemies::update(WLevel level, double localTime) {
   updateCurrentWaves(target);
   if (auto nextWave = popNextWave(localTime)) {
     vector<WCreature> attackers;
-    for (int i : Range(nextWave->numCreatures)) {
-      auto c = nextWave->factory.random(MonsterAIFactory::singleTask(getAttackTask(target, nextWave->behaviour)));
+    Vec2 landingDir(Random.choose<Dir>());
+    auto creatures = nextWave->enemy.creatures.generate(Random, TribeId::getHuman(),
+        MonsterAIFactory::singleTask(getAttackTask(target, nextWave->enemy.behaviour)));
+    for (auto& c : creatures) {
       c->getAttributes().setCourage(1);
       auto ref = c.get();
-      if (level->landCreature(StairKey::transferLanding(), std::move(c)))
+      if (level->landCreature(StairKey::transferLanding(), std::move(c), landingDir))
         attackers.push_back(ref);
     }
-    target->addAttack(CollectiveAttack(nextWave->name, attackers));
-    currentWaves.push_back(CurrentWave{nextWave->name, attackers});
+    target->addAttack(CollectiveAttack(nextWave->enemy.name, attackers));
+    currentWaves.push_back(CurrentWave{nextWave->enemy.name, attackers});
   }
 }
 
-optional<const ExternalEnemies::NextWave&> ExternalEnemies::getNextWave() const {
-  if (!waves.empty())
-    return waves.front();
+optional<const EnemyEvent&> ExternalEnemies::getNextWave() const {
+  if (nextWave < waves.size())
+    return waves[nextWave];
   else
     return none;
 }
 
-optional<ExternalEnemies::NextWave> ExternalEnemies::popNextWave(double localTime) {
-  if (!waves.empty() && waves.front().attackTime <= localTime) {
-    auto ret = std::move(waves.front());
-    waves.pop_front();
-    return ret;
+int ExternalEnemies::getNextWaveIndex() const {
+  return nextWave;
+}
+
+optional<EnemyEvent> ExternalEnemies::popNextWave(double localTime) {
+  if (nextWave < waves.size() && waves[nextWave].attackTime <= localTime) {
+    return waves[nextWave++];
   } else
     return none;
 }
-
-
-EnemyEvent::EnemyEvent(ExternalEnemy enemy, Range attackTime, EnumMap<ExperienceType, int> levelIncrease)
-  : EnemyEvent(vector<ExternalEnemy>{enemy}, attackTime, levelIncrease) {}
-
-EnemyEvent::EnemyEvent(vector<ExternalEnemy> e, Range attackT, EnumMap<ExperienceType, int> increase)
-    : enemies(e), attackTime(attackT), levelIncrease(increase) {}

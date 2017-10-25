@@ -7,7 +7,7 @@
 #include "player_role.h"
 #include "parse_game.h"
 
-const static int highscoreVersion = 1;
+const static int highscoreVersion = 2;
 
 Highscores::Highscores(const FilePath& local, FileSharing& sharing, Options* o)
     : localPath(local), fileSharing(sharing), options(o) {
@@ -86,24 +86,56 @@ optional<Highscores::Score> Highscores::Score::parse(const string& buf) {
 #endif
 }
 
+bool sortByShortestMostPoints(const Highscores::Score& a, const Highscores::Score& b) {
+  if (a.gameWon) {
+    if (!b.gameWon)
+      return true;
+    else
+      return a.turns < b.turns;
+  } else
+  if (b.gameWon)
+    return false;
+  else
+    return a.points > b.points || (a.points == b.points && a.gameId < b.gameId);
+}
+
+bool sortByLongest(const Highscores::Score& a, const Highscores::Score& b) {
+  return a.turns > b.turns;
+}
+
+enum class SortingType {
+  SHORTEST_MOST_POINTS,
+  LONGEST
+};
+
 typedef Highscores::Score Score;
-static HighscoreList fillScores(const string& name, optional<Score> lastElem, vector<Score> scores) {
+
+typedef bool (*SortingFun)(const Score&, const Score&);
+
+SortingFun getSortingFun(SortingType type) {
+  switch (type) {
+    case SortingType::SHORTEST_MOST_POINTS:
+      return sortByShortestMostPoints;
+    case SortingType::LONGEST:
+      return sortByLongest;
+  }
+}
+
+string getPointsColumn(const Score& score, SortingType sorting) {
+  switch (sorting) {
+    case SortingType::SHORTEST_MOST_POINTS:
+      return score.gameWon ? toString(score.turns) + " turns" : toString(score.points) + " points";
+    case SortingType::LONGEST:
+      return toString(score.turns) + " turns";
+  }
+}
+
+static HighscoreList fillScores(const string& name, optional<Score> lastElem, vector<Score> scores, SortingType sorting) {
   HighscoreList list { name, {} };
-  sort(scores.begin(), scores.end(), [] (const Score& a, const Score& b) -> bool {
-      if (a.gameWon) {
-        if (!b.gameWon)
-          return true;
-        else
-          return a.turns < b.turns;
-      } else
-      if (b.gameWon)
-        return false;
-      else
-        return a.points > b.points || (a.points == b.points && a.gameId < b.gameId);
-  });
+  sort(scores.begin(), scores.end(), getSortingFun(sorting));
   for (auto& score : scores) {
     bool highlight = lastElem == score;
-    string points = score.gameWon ? toString(score.turns) + " turns" : toString(score.points) + " points";
+    string points = getPointsColumn(score, sorting);
     if (score.gameResult.empty())
       list.scores.push_back({score.playerName + " of " + score.worldName, points, highlight});
     else
@@ -117,13 +149,15 @@ struct PublicScorePage {
   CampaignType type;
   PlayerRole role;
   const char* name;
+  SortingType sorting;
 };
 
 static vector<PublicScorePage> getPublicScores() {
   return {
-    {CampaignType::CAMPAIGN, PlayerRole::KEEPER, "Keepers"},
-    {CampaignType::CAMPAIGN, PlayerRole::ADVENTURER, "Adventurers"},
-    {CampaignType::SINGLE_KEEPER, PlayerRole::KEEPER, "Single map"},
+    {CampaignType::CAMPAIGN, PlayerRole::KEEPER, "Keeper", SortingType::SHORTEST_MOST_POINTS},
+    {CampaignType::CAMPAIGN, PlayerRole::ADVENTURER, "Adventurer", SortingType::SHORTEST_MOST_POINTS},
+    {CampaignType::SINGLE_KEEPER, PlayerRole::KEEPER, "Single map", SortingType::SHORTEST_MOST_POINTS},
+    {CampaignType::ENDLESS, PlayerRole::KEEPER, "Endless", SortingType::LONGEST},
   };
 }
 
@@ -140,10 +174,10 @@ void Highscores::present(View* view, optional<Score> lastAdded) const {
   vector<HighscoreList> lists;
   for (auto& elem : getPublicScores())
     lists.push_back(fillScores(elem.name, lastAdded, localScores.filter(
-        [&] (const Score& s) { return s.campaignType == elem.type && s.playerRole == elem.role;})));
+        [&] (const Score& s) { return s.campaignType == elem.type && s.playerRole == elem.role;}), elem.sorting));
   for (auto& elem : getPublicScores())
     lists.push_back(fillScores(elem.name, lastAdded, remoteScores.filter(
-        [&] (const Score& s) { return s.campaignType == elem.type && s.playerRole == elem.role;})));
+        [&] (const Score& s) { return s.campaignType == elem.type && s.playerRole == elem.role;}), elem.sorting));
   view->presentHighscores(lists);
 }
 

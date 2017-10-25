@@ -642,53 +642,6 @@ CreatureFactory::CreatureFactory(const CreatureFactory&) = default;
 
 CreatureFactory& CreatureFactory::operator =(const CreatureFactory&) = default;
 
-CreatureFactory CreatureFactory::humanVillage(TribeId tribe) {
-  return CreatureFactory(tribe, { CreatureId::KNIGHT, CreatureId::ARCHER,
-      CreatureId::PESEANT, CreatureId::CHILD, CreatureId::HORSE, CreatureId::DONKEY, CreatureId::COW,
-      CreatureId::PIG, CreatureId::DOG },
-      { 2, 6, 6, 4, 1, 1, 1, 1, 6}, {CreatureId::KNIGHT});
-}
-
-CreatureFactory CreatureFactory::humanPeaceful(TribeId tribe) {
-  return CreatureFactory(tribe, { CreatureId::PESEANT,
-      CreatureId::CHILD, CreatureId::HORSE, CreatureId::DONKEY, CreatureId::COW, CreatureId::PIG, CreatureId::DOG },
-      { 2, 1, 1, 1, 1, 1, 1}, {});
-}
-
-CreatureFactory CreatureFactory::tutorialVillage(TribeId tribe) {
-  return CreatureFactory(tribe, {}, {}, {CreatureId::PESEANT, CreatureId::PESEANT, CreatureId::PESEANT,
-      CreatureId::PESEANT, CreatureId::PESEANT, CreatureId::DONKEY, CreatureId::PIG, CreatureId::PIG, CreatureId::DOG});
-}
-
-CreatureFactory CreatureFactory::gnomeVillage(TribeId tribe) {
-  return CreatureFactory(tribe, { CreatureId::GNOME },
-      { 1}, { CreatureId::GNOME_CHIEF});
-}
-
-CreatureFactory CreatureFactory::gnomeEntrance(TribeId tribe) {
-  return CreatureFactory(tribe, { CreatureId::GNOME }, {1});
-}
-
-CreatureFactory CreatureFactory::koboldVillage(TribeId tribe) {
-  return CreatureFactory(tribe, { CreatureId::KOBOLD }, {1});
-}
-
-CreatureFactory CreatureFactory::darkElfVillage(TribeId tribe) {
-  return CreatureFactory(tribe, { CreatureId::DARK_ELF, CreatureId::DARK_ELF_CHILD, CreatureId::DARK_ELF_WARRIOR },
-      { 1, 1, 2}, { CreatureId::DARK_ELF_LORD});
-}
-
-CreatureFactory CreatureFactory::darkElfEntrance(TribeId tribe) {
-  return CreatureFactory(tribe, { CreatureId::DARK_ELF_WARRIOR }, {1});
-}
-
-CreatureFactory CreatureFactory::humanCastle(TribeId tribe) {
-  return CreatureFactory(tribe, { CreatureId::KNIGHT, CreatureId::ARCHER,
-      CreatureId::PESEANT, CreatureId::CHILD, CreatureId::HORSE, CreatureId::DONKEY, CreatureId::COW,
-      CreatureId::PIG, CreatureId::DOG },
-      { 10, 6, 2, 1, 1, 1, 1, 1, 1}, {CreatureId::AVATAR});
-}
-
 static optional<pair<CreatureFactory, CreatureFactory>> splashFactories;
 
 void CreatureFactory::initSplash(TribeId tribe) {
@@ -726,72 +679,10 @@ CreatureFactory CreatureFactory::splashMonsters(TribeId tribe) {
       { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}, {}, {}).increaseBaseLevel(ExperienceType::MELEE, 25);
 }
 
-CreatureFactory CreatureFactory::elvenVillage(TribeId tribe) {
-  double armedRatio = 0.4;
-  CreatureFactory ret(tribe, { CreatureId::ELF, CreatureId::ELF_CHILD, CreatureId::HORSE,
-      CreatureId::COW, CreatureId::DOG },
-      { 2, 2, 1, 1, 0}, {});
-  double sum = 0;
-  for (double w : ret.weights)
-    sum += w;
-  ret.weights.push_back(sum * armedRatio / (1 - armedRatio));
-  ret.creatures.push_back(CreatureId::ELF_ARCHER);
-  ret.unique.push_back(CreatureId::ELF_LORD);
-  return ret;
-}
-
-CreatureFactory CreatureFactory::elvenCottage(TribeId tribe) {
-  return CreatureFactory(tribe, { CreatureId::ELF, CreatureId::ELF_CHILD, CreatureId::HORSE,
-      CreatureId::COW, CreatureId::DOG },
-      { 2, 2, 1, 1, 0}, {CreatureId::ELF_ARCHER});
-}
-
 CreatureFactory CreatureFactory::forrest(TribeId tribe) {
   return CreatureFactory(tribe,
       { CreatureId::DEER, CreatureId::FOX, CreatureId::BOAR },
       { 4, 2, 2}, {});
-}
-
-CreatureFactory CreatureFactory::crypt(TribeId tribe) {
-  return CreatureFactory(tribe, { CreatureId::ZOMBIE}, { 1}, {});
-}
-
-CreatureFactory CreatureFactory::vikingTown(TribeId tribe) {
-  return CreatureFactory(tribe, { CreatureId::WARRIOR}, { 1}, {CreatureId::SHAMAN});
-}
-
-CreatureFactory CreatureFactory::lizardTown(TribeId tribe) {
-  return CreatureFactory(tribe, { CreatureId::LIZARDMAN, }, { 1}, {CreatureId::LIZARDLORD});
-}
-
-CreatureFactory CreatureFactory::dwarfTown(TribeId tribe) {
-  return CreatureFactory(tribe, { CreatureId::DWARF, CreatureId::DWARF_FEMALE}, { 2, 1},{ CreatureId::DWARF_BARON});
-}
-
-CreatureFactory CreatureFactory::dwarfCave(TribeId tribe) {
-  return CreatureFactory(tribe, { CreatureId::DWARF, CreatureId::DWARF_FEMALE}, { 2, 1});
-}
-
-CreatureFactory CreatureFactory::antNest(TribeId tribe) {
-  return CreatureFactory(tribe, { CreatureId::ANT_WORKER, CreatureId::ANT_SOLDIER}, { 2, 1},
-      { CreatureId::ANT_QUEEN});
-}
-
-CreatureFactory CreatureFactory::orcTown(TribeId tribe) {
-  return CreatureFactory(tribe, { CreatureId::ORC, CreatureId::OGRE }, {1, 1});
-}
-
-CreatureFactory CreatureFactory::demonDen(TribeId tribe) {
-  return CreatureFactory(tribe, { CreatureId::DEMON_DWELLER}, {1},
-      { CreatureId::DEMON_LORD});
-}
-
-CreatureFactory CreatureFactory::demonDenAbove(TribeId tribe) {
-  return CreatureFactory(tribe, { CreatureId::GHOST}, {1});
-}
-
-CreatureFactory CreatureFactory::insects(TribeId tribe) {
-  return CreatureFactory(tribe, { CreatureId::SPIDER}, {1});
 }
 
 CreatureFactory CreatureFactory::waterCreatures(TribeId tribe) {
@@ -1042,6 +933,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.skills.setValue(SkillId::LABORATORY, 0.2);
           c.maxLevelIncrease[ExperienceType::MELEE] = 7;
           c.maxLevelIncrease[ExperienceType::SPELL] = 12;
+          c.spells->add(SpellId::HEAL_SELF);
       );
     case CreatureId::KEEPER_F:
       return CATTR(
@@ -1057,6 +949,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.skills.setValue(SkillId::LABORATORY, 0.2);
           c.maxLevelIncrease[ExperienceType::MELEE] = 7;
           c.maxLevelIncrease[ExperienceType::SPELL] = 12;
+          c.spells->add(SpellId::HEAL_SELF);
       );
     case CreatureId::ADVENTURER:
       return CATTR(
@@ -1191,7 +1084,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::WITCHMAN: 
       return CATTR(
           c.viewId = ViewId::WITCHMAN;
-          c.attr = LIST(20_dam, 20_def, 20_spell_dam, 140_spd );
+          c.attr = LIST(30_dam, 30_def, 20_spell_dam, 140_spd );
           c.body = Body::humanoid(Body::Size::LARGE);
           c.name = CreatureName("witchman", "witchmen");
           c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_MALE)->getNext());
@@ -1328,7 +1221,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::AVATAR: 
       return CATTR(
           c.viewId = ViewId::DUKE;
-          c.attr = LIST(45_dam, 29_def, 100_spd );
+          c.attr = LIST(43_dam, 32_def, 100_spd );
           c.body = Body::humanoid(Body::Size::LARGE);
           c.permanentEffects[LastingEffect::MELEE_RESISTANCE] = 1;
           c.chatReactionFriendly = "curses all dungeons"_s;
@@ -1396,7 +1289,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::CLAY_GOLEM:
       return CATTR(
           c.viewId = ViewId::CLAY_GOLEM;
-          c.attr = LIST(14_dam, 12_def, 50_spd );
+          c.attr = LIST(19_dam, 19_def, 50_spd );
           c.body = Body::nonHumanoid(Body::Material::CLAY, Body::Size::LARGE).setHumanoidBodyParts();
           c.permanentEffects[LastingEffect::MELEE_RESISTANCE] = 1;
           c.barehandedAttack = AttackType::PUNCH;
@@ -1404,7 +1297,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::STONE_GOLEM: 
       return CATTR(
           c.viewId = ViewId::STONE_GOLEM;
-          c.attr = LIST(16_dam, 14_def, 60_spd );
+          c.attr = LIST(23_dam, 23_def, 60_spd );
           c.body = Body::nonHumanoid(Body::Material::ROCK, Body::Size::LARGE).setHumanoidBodyParts();
           c.permanentEffects[LastingEffect::MELEE_RESISTANCE] = 1;
           c.barehandedAttack = AttackType::PUNCH;
@@ -1412,7 +1305,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::IRON_GOLEM: 
       return CATTR(
           c.viewId = ViewId::IRON_GOLEM;
-          c.attr = LIST(18_dam, 16_def, 70_spd );
+          c.attr = LIST(30_dam, 30_def, 70_spd );
           c.permanentEffects[LastingEffect::MELEE_RESISTANCE] = 1;
           c.body = Body::nonHumanoid(Body::Material::IRON, Body::Size::LARGE).setHumanoidBodyParts();
           c.barehandedAttack = AttackType::PUNCH;
@@ -1420,7 +1313,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::LAVA_GOLEM: 
       return CATTR(
           c.viewId = ViewId::LAVA_GOLEM;
-          c.attr = LIST(20_dam, 18_def, 80_spd );
+          c.attr = LIST(36_dam, 36_def, 80_spd );
           c.permanentEffects[LastingEffect::MELEE_RESISTANCE] = 1;
           c.body = Body::nonHumanoid(Body::Material::LAVA, Body::Size::LARGE).setHumanoidBodyParts();
           c.barehandedAttack = AttackType::PUNCH;
@@ -1637,6 +1530,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.attr = LIST(23_dam, 27_def, 80_spd );
           c.body = Body::humanoid(Body::Size::MEDIUM).setWeight(90);
           c.name = CreatureName("dwarf", "dwarves");
+          c.skills.insert(SkillId::DIGGING);
           c.permanentEffects[LastingEffect::MAGIC_VULNERABILITY] = 1;
           c.name->setFirst(NameGenerator::get(NameGeneratorId::DWARF)->getNext());
           c.chatReactionFriendly = "curses all orcs"_s;
@@ -1649,6 +1543,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.attr = LIST(23_dam, 27_def, 80_spd );
           c.body = Body::humanoid(Body::Size::MEDIUM).setWeight(90);
           c.name = CreatureName("dwarf", "dwarves");
+          c.skills.insert(SkillId::DIGGING);
           c.permanentEffects[LastingEffect::MAGIC_VULNERABILITY] = 1;
           c.name->setFirst(NameGenerator::get(NameGeneratorId::DWARF)->getNext());
           c.chatReactionFriendly = "curses all orcs"_s;
@@ -1657,10 +1552,11 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::DWARF_BARON: 
       return CATTR(
           c.viewId = ViewId::DWARF_BARON;
-          c.attr = LIST(23_dam, 32_def, 90_spd );
+          c.attr = LIST(26_dam, 32_def, 90_spd );
           c.body = Body::humanoid(Body::Size::MEDIUM).setWeight(120);
           c.chatReactionFriendly = "curses all orcs"_s;
           c.chatReactionHostile = "\"Die!\""_s;
+          c.skills.insert(SkillId::DIGGING);
           c.permanentEffects[LastingEffect::MAGIC_VULNERABILITY] = 1;
           c.courage = 1;
           c.name = "dwarf baron";
@@ -2051,7 +1947,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::ELEMENTALIST: 
       return CATTR(
           c.viewId = ViewId::ELEMENTALIST;
-          c.attr = LIST(5_dam, 25_def, 15_spell_dam, 120_spd );
+          c.attr = LIST(15_dam, 20_def, 15_spell_dam, 120_spd );
           c.body = Body::humanoid(Body::Size::LARGE);
           c.gender = Gender::female;
           c.permanentEffects[LastingEffect::FIRE_RESISTANT] = 1;
@@ -2289,6 +2185,9 @@ vector<ItemType> getDefaultInventory(CreatureId id) {
         .add(ItemType::LeatherArmor{})
         .add(ItemType::LeatherHelm{})
         .add(ItemType::GoldPiece{}, Random.get(16, 26));
+    case CreatureId::ELEMENTALIST:
+      return ItemList()
+          .add(ItemType::IronStaff{});
     case CreatureId::DEATH:
       return ItemList()
         .add(ItemType::Scythe{});

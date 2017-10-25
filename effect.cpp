@@ -486,6 +486,21 @@ string Effect::DestroyEquipment::getDescription() const {
   return "Destroys a random piece of equipment.";
 }
 
+void Effect::DestroyWalls::applyToCreature(WCreature c, WCreature attacker) const {
+  for (auto pos : c->getPosition().neighbors8())
+    for (auto furniture : pos.modFurniture())
+      if (furniture->canDestroy(DestroyAction::Type::BOULDER))
+        furniture->destroy(pos, DestroyAction::Type::BOULDER);
+}
+
+string Effect::DestroyWalls::getName() const {
+  return "wall destruction";
+}
+
+string Effect::DestroyWalls::getDescription() const {
+  return "Destroys walls in adjacent tiles.";
+}
+
 void Effect::Heal::applyToCreature(WCreature c, WCreature attacker) const {
   if (c->getBody().canHeal()) {
     c->heal(1);

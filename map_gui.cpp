@@ -29,7 +29,6 @@
 #include "options.h"
 #include "drag_and_drop.h"
 #include "game_info.h"
-#include "gui_elem.h"
 
 using SDL::SDL_Keysym;
 using SDL::SDL_Keycode;
@@ -39,8 +38,6 @@ MapGui::MapGui(Callbacks call, Clock* c, Options* o, GuiFactory* f) : objects(Le
     lastSquareUpdate(Level::getMaxBounds()), connectionMap(Level::getMaxBounds()), guiFactory(f) {
   clearCenter();
 }
-
-MapGui::~MapGui() {}
 
 static int fireVar = 50;
 
@@ -467,14 +464,17 @@ void MapGui::drawHealthBar(Renderer& renderer, Vec2 pos, Vec2 size, double healt
   double barWidth = 0.12;
   double barLength = 0.8;
   auto getBar = [&](double state) {
-    return Rectangle(pos.x + size.x * (1 - barLength) / 2, pos.y,
-        pos.x + size.x * state * (1 + barLength) / 2, pos.y + size.y * barWidth);
+    return Rectangle((int) (pos.x + size.x * (1 - barLength) / 2), pos.y,
+        (int) (pos.x + size.x * state * (1 + barLength) / 2), (int) (pos.y + size.y * barWidth));
   };
-
-  renderer.drawFilledRectangle(getBar(1), Color::BLACK.transparency(150));
+  auto color = Color::f(min(1.0, 2 - health * 2), min(1.0, 2 * health), 0);
+  auto fullRect = getBar(1);
+  renderer.drawFilledRectangle(fullRect.minusMargin(-1), Color::TRANSPARENT, Color::BLACK.transparency(100));
+  renderer.drawFilledRectangle(fullRect, color.transparency(100));
   if (health > 0)
-    renderer.drawFilledRectangle(getBar(health),
-        Color::f(min(1.0, 2 - health * 2), min(1.0, 2 * health), 0).transparency(200));
+    renderer.drawFilledRectangle(getBar(health), color.transparency(200));
+  Rectangle shadowRect(fullRect.bottomLeft() - Vec2(0, 1), fullRect.bottomRight());
+  renderer.drawFilledRectangle(shadowRect, Color::BLACK.transparency(100));
 }
 
 
@@ -608,20 +608,9 @@ bool MapGui::isFoW(Vec2 pos) const {
   return !pos.inRectangle(Level::getMaxBounds()) || fogOfWar.getValue(pos);
 }
 
-static double getSpriteDepth(Range yRange, int y, ViewLayer layer) {
-  if (layer == ViewLayer::FLOOR_BACKGROUND)
-    y -= 2;
-  double numLayers = EnumInfo<ViewLayer>::size;
-  double layerDepth = (double)((int)layer);
-  y -= yRange.getStart() - 2;
-  double yLength = yRange.getEnd() - yRange.getStart() + 2;
-  return -1 + (y + layerDepth / numLayers) / yLength;
-}
-
 void MapGui::renderExtraBorders(Renderer& renderer, milliseconds currentTimeReal) {
   extraBorderPos.clear();
-  auto allTiles = layout->getAllTiles(getBounds(), levelBounds, getScreenPos());
-  for (Vec2 wpos : allTiles)
+  for (Vec2 wpos : layout->getAllTiles(getBounds(), levelBounds, getScreenPos()))
     if (objects[wpos] && objects[wpos]->hasObject(ViewLayer::FLOOR_BACKGROUND)) {
       ViewId viewId = objects[wpos]->getObject(ViewLayer::FLOOR_BACKGROUND).id();
       if (Tile::getTile(viewId, true).hasExtraBorders())
@@ -633,7 +622,7 @@ void MapGui::renderExtraBorders(Renderer& renderer, milliseconds currentTimeReal
               extraBorderPos.setValue(v, {viewId});
           }
     }
-  for (Vec2 wpos : allTiles)
+  for (Vec2 wpos : layout->getAllTiles(getBounds(), levelBounds, getScreenPos()))
     for (ViewId id : extraBorderPos.getValue(wpos)) {
       const Tile& tile = Tile::getTile(id, true);
       for (ViewId underId : tile.getExtraBorderIds())
@@ -644,7 +633,6 @@ void MapGui::renderExtraBorders(Renderer& renderer, milliseconds currentTimeReal
               dirs.insert(v.getCardinalDir());
           if (auto coord = tile.getExtraBorderCoord(dirs)) {
             Vec2 pos = projectOnScreen(wpos);
-            renderer.setDepth(getSpriteDepth(allTiles.getYRange(), wpos.y, ViewLayer::FLOOR_BACKGROUND));
             renderer.drawTile(pos, *coord, layout->getSquareSize());
           }
         }
@@ -745,16 +733,12 @@ void MapGui::renderHighlights(Renderer& renderer, Vec2 size, milliseconds curren
     if (auto& index = objects[wpos])
       if (index->hasAnyHighlight()) {
         Vec2 pos = topLeftCorner + (wpos - allTiles.topLeft()).mult(size);
-        renderer.setDepth(lowHighlights ? getSpriteDepth(allTiles.getYRange(), wpos.y,
-            ViewLayer::FLOOR_BACKGROUND) : 0);
         for (HighlightType highlight : ENUM_ALL(HighlightType))
-          if (isRenderedHighlight(*index, highlight)  && isRenderedHighlightLow(*index, highlight) == lowHighlights)
+          if (isRenderedHighlight(*index, highlight) && isRenderedHighlightLow(*index, highlight) == lowHighlights)
             renderHighlight(renderer, pos, size, *index, highlight);
       }
   for (Vec2 wpos : lowHighlights ? tutorialHighlightLow : tutorialHighlightHigh) {
     Vec2 pos = topLeftCorner + (wpos - allTiles.topLeft()).mult(size);
-    renderer.setDepth(lowHighlights ? getSpriteDepth(allTiles.getYRange(), wpos.y,
-        ViewLayer::FLOOR_BACKGROUND) : 0);
     if ((currentTimeReal.count() / 1000) % 2 == 0)
       renderTexturedHighlight(renderer, pos, size, Color(255, 255, 0, lowHighlights ? 120 : 40));
   }
@@ -801,82 +785,57 @@ void MapGui::renderMapObjects(Renderer& renderer, Vec2 size, milliseconds curren
   Rectangle allTiles = layout->getAllTiles(getBounds(), levelBounds, getScreenPos());
   Vec2 topLeftCorner = projectOnScreen(allTiles.topLeft());
   fogOfWar.clear();
-  if (spriteMode) {
-    renderer.setDepth(0);
-    for (Vec2 wpos : allTiles)
+  for (ViewLayer layer : layout->getLayers()) {
+    for (Vec2 wpos : allTiles) {
+      Vec2 pos = topLeftCorner + (wpos - allTiles.topLeft()).mult(size);
       if (!objects[wpos] || objects[wpos]->noObjects()) {
-        Vec2 pos = topLeftCorner + (wpos - allTiles.topLeft()).mult(size);
-        renderer.addQuad(Rectangle(pos, pos + size), Color::BLACK);
-        fogOfWar.setValue(wpos, true);
-    }
-  }
-  auto drawLayer = [&](auto objectFun, auto setDepthGetMovement) {
-    for (Vec2 wpos : allTiles) {
-      Vec2 pos = topLeftCorner + (wpos - allTiles.topLeft()).mult(size);
-      if (objects[wpos] && !objects[wpos]->noObjects()) {
-        const ViewIndex& index = *objects[wpos];
-        const ViewObject* object = objectFun(index);
-        if (object) {
-          auto movement = setDepthGetMovement(*object, wpos.y);
-          drawObjectAbs(renderer, pos, *object, size, movement, wpos, currentTimeReal);
-          if (lastHighlighted.tilePos == wpos && !lastHighlighted.creaturePos && object->layer() != ViewLayer::CREATURE)
-            lastHighlighted.object = *object;
+        if (layer == layout->getLayers().back()) {
+          if (wpos.inRectangle(levelBounds))
+            renderer.addQuad(Rectangle(pos, pos + size), Color::BLACK);
         }
+        fogOfWar.setValue(wpos, true);
+        continue;
       }
-    }
-  };
-  if (spriteMode)
-    for (ViewLayer layer : layout->getLayers())
-      drawLayer([&](const ViewIndex& index) -> const ViewObject* {
+      const ViewIndex& index = *objects[wpos];
+      const ViewObject* object = nullptr;
+      if (spriteMode) {
         if (index.hasObject(layer))
-          return &index.getObject(layer);
-        else
-          return nullptr;
-      },
-      [&](const ViewObject& object, int posY) {
-        Vec2 movement = getMovementOffset(object, size, currentTimeGame, currentTimeReal, true);
-        int offset = movement.y > 0 ? 1 : 0;
-        renderer.setDepth(getSpriteDepth(allTiles.getYRange(), posY + offset, layer));
-        return movement;
-      });
-  else
-    drawLayer([&](const ViewIndex& index) {
-      return index.getTopObject(layout->getLayers());
-    },
-    [&](const ViewObject&, int) {
-      renderer.setDepth(0);
-      return Vec2(0, 0);
-    });
-
-  renderHighlights(renderer, size, currentTimeReal, true);
-  if (spriteMode)
-    renderExtraBorders(renderer, currentTimeReal);
-  if (spriteMode)
-    for (Vec2 wpos : allTiles) {
-      Vec2 pos = topLeftCorner + (wpos - allTiles.topLeft()).mult(size);
-      if (!isFoW(wpos)) {
-        renderer.setDepth(0);
-        drawFoWSprite(renderer, pos, size, DirSet(
-            !isFoW(wpos + Vec2(Dir::N)),
-            !isFoW(wpos + Vec2(Dir::S)),
-            !isFoW(wpos + Vec2(Dir::E)),
-            !isFoW(wpos + Vec2(Dir::W)),
-            isFoW(wpos + Vec2(Dir::NE)),
-            isFoW(wpos + Vec2(Dir::NW)),
-            isFoW(wpos + Vec2(Dir::SE)),
-            isFoW(wpos + Vec2(Dir::SW))));
+          object = &index.getObject(layer);
+      } else
+        object = index.getTopObject(layout->getLayers());
+      if (object) {
+        Vec2 movement = getMovementOffset(*object, size, currentTimeGame, currentTimeReal, true);
+        drawObjectAbs(renderer, pos, *object, size, movement, wpos, currentTimeReal);
+        if (lastHighlighted.tilePos == wpos && !lastHighlighted.creaturePos && object->layer() != ViewLayer::CREATURE)
+          lastHighlighted.object = *object;
       }
+      if (spriteMode && layer == layout->getLayers().back())
+        if (!isFoW(wpos))
+          drawFoWSprite(renderer, pos, size, DirSet(
+              !isFoW(wpos + Vec2(Dir::N)),
+              !isFoW(wpos + Vec2(Dir::S)),
+              !isFoW(wpos + Vec2(Dir::E)),
+              !isFoW(wpos + Vec2(Dir::W)),
+              isFoW(wpos + Vec2(Dir::NE)),
+              isFoW(wpos + Vec2(Dir::NW)),
+              isFoW(wpos + Vec2(Dir::SE)),
+              isFoW(wpos + Vec2(Dir::SW))));
     }
+    if (layer == ViewLayer::FLOOR || !spriteMode) {
+      if (!buttonViewId && lastHighlighted.creaturePos)
+        drawCreatureHighlight(renderer, *lastHighlighted.creaturePos, size, Color::ALMOST_WHITE);
+      else if (lastHighlighted.tilePos && (!getHighlightedFurniture() || !!buttonViewId))
+        drawSquareHighlight(renderer, topLeftCorner + (*lastHighlighted.tilePos - allTiles.topLeft()).mult(size),
+            size);
+    }
+    if (layer == ViewLayer::FLOOR_BACKGROUND)
+      renderHighlights(renderer, size, currentTimeReal, true);
+    if (!spriteMode)
+      break;
+    if (layer == ViewLayer::FLOOR_BACKGROUND)
+      renderExtraBorders(renderer, currentTimeReal);
+  }
   renderHighlights(renderer, size, currentTimeReal, false);
-  if (!buttonViewId && lastHighlighted.creaturePos) {
-    renderer.setDepth(getSpriteDepth(allTiles.getYRange(), lastHighlighted.tilePos->y, ViewLayer::ITEM));
-    drawCreatureHighlight(renderer, *lastHighlighted.creaturePos, size, Color::ALMOST_WHITE);
-  }
-  else if (lastHighlighted.tilePos && (!getHighlightedFurniture() || !!buttonViewId)) {
-    renderer.setDepth(0);
-    drawSquareHighlight(renderer, topLeftCorner + (*lastHighlighted.tilePos - allTiles.topLeft()).mult(size),
-        size);
-  }
 }
 
 void MapGui::drawCreatureHighlight(Renderer& renderer, Vec2 pos, Vec2 size, Color color) {
@@ -950,6 +909,9 @@ void MapGui::considerScrollingToCreature() {
       setSoftCenter(targetx, targety);
     else
       setCenter(targetx, targety);
+    // soft scrolling is done once when the creature is first controlled, so if we are centered then turn it off
+    if (fabs(center.x - targetx) + fabs(center.y - targety) < 0.01)
+      info->softScroll = false;
   }
 }
 
@@ -960,6 +922,8 @@ void MapGui::render(Renderer& renderer) {
   lastHighlighted = getHighlightedInfo(size, currentTimeReal);
   renderMapObjects(renderer, size, currentTimeReal);
   renderAnimations(renderer, currentTimeReal);
+  if (lastHighlighted.tilePos)
+    considerRedrawingSquareHighlight(renderer, currentTimeReal, *lastHighlighted.tilePos, size);
   if (spriteMode && buttonViewId && renderer.getMousePos().inRectangle(getBounds()))
     renderer.drawViewObject(renderer.getMousePos() + Vec2(15, 15), *buttonViewId, spriteMode, size);
   processScrolling(currentTimeReal);

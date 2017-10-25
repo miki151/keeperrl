@@ -37,7 +37,7 @@
 template <class Archive>
 void CollectiveConfig::serialize(Archive& ar, const unsigned int version) {
   ar(immigrantInterval, maxPopulation, populationIncreases, immigrantInfo);
-  ar(type, leaderAsFighter, spawnGhosts, ghostProb, guardianInfo);
+  ar(type, leaderAsFighter, spawnGhosts, ghostProb, guardianInfo, regenerateMana);
 }
 
 SERIALIZABLE(CollectiveConfig);
@@ -93,9 +93,11 @@ CollectiveConfig::CollectiveConfig(int interval, const vector<ImmigrantInfo>& im
     addBedRequirementToImmigrants();
 }
 
-CollectiveConfig CollectiveConfig::keeper(int immigrantInterval, int maxPopulation,
+CollectiveConfig CollectiveConfig::keeper(int immigrantInterval, int maxPopulation, bool regenerateMana,
     vector<PopulationIncrease> increases, const vector<ImmigrantInfo>& im) {
-  return CollectiveConfig(immigrantInterval, im, KEEPER, maxPopulation, increases);
+  auto ret = CollectiveConfig(immigrantInterval, im, KEEPER, maxPopulation, increases);
+  ret.regenerateMana = regenerateMana;
+  return ret;
 }
 
 CollectiveConfig CollectiveConfig::withImmigrants(int interval, int maxPopulation, const vector<ImmigrantInfo>& im) {
@@ -143,6 +145,10 @@ bool CollectiveConfig::getFollowLeaderIfNoTerritory() const {
 
 bool CollectiveConfig::hasVillainSleepingTask() const {
   return type != KEEPER;
+}
+
+bool CollectiveConfig::getRegenerateMana() const {
+  return regenerateMana;
 }
 
 bool CollectiveConfig::hasImmigrantion(bool currentlyActiveModel) const {
@@ -332,7 +338,7 @@ MinionTaskInfo::MinionTaskInfo(Type t, const string& desc, optional<CollectiveWa
 MinionTaskInfo::MinionTaskInfo() {}
 
 MinionTaskInfo::MinionTaskInfo(FurnitureType type, const string& desc) : type(FURNITURE),
-  furniturePredicate([type](WConstCreature, FurnitureType t) { return t == type;}),
+  furniturePredicate([type](WConstCollective, WConstCreature, FurnitureType t) { return t == type;}),
     description(desc) {
 }
 
@@ -429,13 +435,22 @@ CollectiveConfig::~CollectiveConfig() {
 }
 
 static auto getTrainingPredicate(ExperienceType experienceType) {
-  return [experienceType] (WConstCreature c, FurnitureType t) {
+  return [experienceType] (WConstCollective, WConstCreature c, FurnitureType t) {
       if (auto maxIncrease = CollectiveConfig::getTrainingMaxLevel(experienceType, t))
         return !c || (c->getAttributes().getExpLevel(experienceType) < *maxIncrease &&
             !c->getAttributes().isTrainingMaxedOut(experienceType));
       else
         return false;
     };
+}
+
+template <typename Pred>
+static auto addManaGenerationPredicate(Pred p) {
+  return [p] (WConstCollective col, WConstCreature c, FurnitureType t) {
+    return (!!CollectiveConfig::getTrainingMaxLevel(ExperienceType::SPELL, t) &&
+            (!col || col->getConfig().getRegenerateMana()))
+        || p(col, c, t);
+  };
 }
 
 const MinionTaskInfo& CollectiveConfig::getTaskInfo(MinionTask task) {
@@ -448,7 +463,8 @@ const MinionTaskInfo& CollectiveConfig::getTaskInfo(MinionTask task) {
       case MinionTask::GRAVE: return {FurnitureType::GRAVE, "sleeping"};
       case MinionTask::LAIR: return {FurnitureType::BEAST_CAGE, "sleeping"};
       case MinionTask::THRONE: return {FurnitureType::THRONE, "throne"};
-      case MinionTask::STUDY: return {getTrainingPredicate(ExperienceType::SPELL), "studying"};
+      case MinionTask::STUDY: return {addManaGenerationPredicate(getTrainingPredicate(ExperienceType::SPELL)),
+           "studying"};
       case MinionTask::PRISON: return {FurnitureType::PRISON, "prison"};
       case MinionTask::CROPS: return {FurnitureType::CROPS, "crops"};
       case MinionTask::RITUAL: return {FurnitureType::DEMON_SHRINE, "rituals"};
@@ -461,7 +477,7 @@ const MinionTaskInfo& CollectiveConfig::getTaskInfo(MinionTask task) {
       case MinionTask::BE_WHIPPED: return {FurnitureType::WHIPPING_POST, "being whipped"};
       case MinionTask::BE_TORTURED: return {FurnitureType::TORTURE_TABLE, "being tortured"};
       case MinionTask::BE_EXECUTED: return {FurnitureType::GALLOWS, "being executed"};
-      case MinionTask::CRAFT: return {[](WConstCreature c, FurnitureType t) {
+      case MinionTask::CRAFT: return {[](WConstCollective, WConstCreature c, FurnitureType t) {
             if (auto type = getWorkshopType(t))
               return !c || c->getAttributes().getSkills().getValue(getWorkshopInfo(*type).skill) > 0;
             else
@@ -516,7 +532,7 @@ unique_ptr<Workshops> CollectiveConfig::getWorkshops() const {
           Workshops::Item::fromType(ItemType::SteelSword{}, 20, {CollectiveResourceId::STEEL, 20})
                   .setTechId(TechId::STEEL_MAKING),
           Workshops::Item::fromType(ItemType::ChainArmor{}, 30, {CollectiveResourceId::IRON, 40}),
-          Workshops::Item::fromType(ItemType::SteelArmor{}, 60, {CollectiveResourceId::STEEL, 40})
+          Workshops::Item::fromType(ItemType::SteelArmor{}, 30, {CollectiveResourceId::STEEL, 40})
                   .setTechId(TechId::STEEL_MAKING),
           Workshops::Item::fromType(ItemType::IronHelm{}, 8, {CollectiveResourceId::IRON, 16}),
           Workshops::Item::fromType(ItemType::IronBoots{}, 12, {CollectiveResourceId::IRON, 24}),
@@ -524,7 +540,7 @@ unique_ptr<Workshops> CollectiveConfig::getWorkshops() const {
                   .setTechId(TechId::TWO_H_WEAP),
           Workshops::Item::fromType(ItemType::BattleAxe{}, 22, {CollectiveResourceId::IRON, 50})
                   .setTechId(TechId::TWO_H_WEAP),
-          Workshops::Item::fromType(ItemType::SteelBattleAxe{}, 44, {CollectiveResourceId::STEEL, 50})
+          Workshops::Item::fromType(ItemType::SteelBattleAxe{}, 22, {CollectiveResourceId::STEEL, 50})
                   .setTechId(TechId::STEEL_MAKING),
          Workshops::Item::fromType(ItemType::IronStaff{}, 20, {CollectiveResourceId::IRON, 40})
                  .setTechId(TechId::MAGICAL_WEAPONS),
@@ -583,7 +599,7 @@ unique_ptr<Workshops> CollectiveConfig::getWorkshops() const {
           Workshops::Item::fromType(ItemType::Amulet{LastingEffect::REGENERATION}, 10, {CollectiveResourceId::GOLD, 60}),
       }},
       {WorkshopType::STEEL_FURNACE, {
-          Workshops::Item::fromType(ItemType::SteelIngot{}, 50, {CollectiveResourceId::IRON, 30}).setBatchSize(10),
+          Workshops::Item::fromType(ItemType::SteelIngot{}, 25, {CollectiveResourceId::IRON, 30}).setBatchSize(10),
       }},
   }));
 }

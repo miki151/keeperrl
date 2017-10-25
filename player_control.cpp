@@ -86,7 +86,7 @@
 template <class Archive>
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
   ar& SUBCLASS(CollectiveControl) & SUBCLASS(EventListener);
-  ar(memory, showWelcomeMsg, lastControlKeeperQuestion);
+  ar(memory, introText, lastControlKeeperQuestion);
   ar(newAttacks, ransomAttacks, messages, hints, visibleEnemies);
   ar(visibilityMap);
   ar(messageHistory, tutorial, controlModeMessages);
@@ -128,9 +128,10 @@ PlayerControl::PlayerControl(Private, WCollective col) : CollectiveControl(col),
   memory.reset(new MapMemory());
 }
 
-PPlayerControl PlayerControl::create(WCollective col) {
+PPlayerControl PlayerControl::create(WCollective col, vector<string> introText) {
   auto ret = makeOwner<PlayerControl>(Private{}, col);
   ret->subscribeTo(col->getLevel()->getModel());
+  ret->introText = introText;
   return ret;
 }
 
@@ -246,14 +247,11 @@ void PlayerControl::render(View* view) {
     ViewObject::setHallu(false);
     view->updateView(this, false);
   }
-  if (showWelcomeMsg && getGame()->getOptions()->getBoolValue(OptionId::HINTS)) {
+  if (!introText.empty() && getGame()->getOptions()->getBoolValue(OptionId::HINTS)) {
     view->updateView(this, false);
-    showWelcomeMsg = false;
-    view->presentText("", "So warlock,\n \nYou were dabbling in the Dark Arts, a tad, I see.\n \n "
-        "Welcome to the valley of " + getGame()->getWorldName() + ", where you'll have to do "
-        "what you can to KEEP yourself together. Build rooms, storage units and workshops to endorse your "
-        "minions. The only way to go forward in this world is to destroy the ones who oppose you.\n \n"
-"Use the mouse to dig into the mountain. You can select rectangular areas using the shift key. You will need access to trees, iron, stone and gold ore. Build rooms and traps and prepare for war. You can control a minion at any time by clicking on them in the minions tab or on the map.\n \n You can turn these messages off in the settings (press F2).");
+    for (auto& msg : introText)
+      view->presentText("", msg);
+    introText.clear();
   }
 }
 
@@ -1137,16 +1135,24 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
         getCollective()->hasResource({ResourceId::GOLD, *elem.getRansom()})};
     break;
   }
+  constexpr int maxEnemyCountdown = 500;
   if (auto& enemies = getModel()->getExternalEnemies())
-    if (auto nextWave = enemies->getNextWave())
-      if (!dismissedNextWaves.count(nextWave->id)) {
-        info.nextWave = CollectiveInfo::NextWave {
-          nextWave->viewId,
-          nextWave->name,
-          nextWave->numCreatures,
-          (int) (nextWave->attackTime - getLocalTime())
-        };
+    if (auto nextWave = enemies->getNextWave()) {
+      int countDown = (int) (nextWave->attackTime - getLocalTime());
+      auto index = enemies->getNextWaveIndex();
+      auto name = nextWave->enemy.name;
+      auto viewId = nextWave->viewId;
+      if (index % 6 == 5) {
+        name = "Unknown";
+        viewId = ViewId::UNKNOWN_MONSTER;
       }
+      if (!dismissedNextWaves.count(index) && countDown <= maxEnemyCountdown)
+        info.nextWave = CollectiveInfo::NextWave {
+          viewId,
+          name,
+          countDown
+        };
+    }
 }
 
 void PlayerControl::addMessage(const PlayerMessage& msg) {
@@ -1331,7 +1337,7 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
         index.setHighlight(HighlightType::CLICKED_FURNITURE);
       if (draggedCreature)
         if (WCreature c = getCreature(*draggedCreature))
-          if (auto task = MinionTasks::getTaskFor(c, furniture->getType()))
+          if (auto task = MinionTasks::getTaskFor(collective, c, furniture->getType()))
             if (c->getAttributes().getMinionTasks().isAvailable(collective, c, *task))
               index.setHighlight(HighlightType::CREATURE_DROP);
       if (showEfficiency(furniture->getType()) && index.hasObject(ViewLayer::FLOOR))
@@ -1512,7 +1518,7 @@ void PlayerControl::minionDragAndDrop(const CreatureDropInfo& info) {
     c->removeEffect(LastingEffect::TIED_UP);
     c->removeEffect(LastingEffect::SLEEP);
     if (auto furniture = getCollective()->getConstructions().getFurniture(pos, FurnitureLayer::MIDDLE))
-      if (auto task = MinionTasks::getTaskFor(c, furniture->getFurnitureType())) {
+      if (auto task = MinionTasks::getTaskFor(getCollective(), c, furniture->getFurnitureType())) {
         if (getCollective()->isMinionTaskPossible(c, *task)) {
           getCollective()->setMinionTask(c, *task);
           getCollective()->setTask(c, Task::goTo(pos));
@@ -1909,7 +1915,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
     case UserInputId::DISMISS_NEXT_WAVE:
       if (auto& enemies = getModel()->getExternalEnemies())
         if (auto nextWave = enemies->getNextWave())
-          dismissedNextWaves.insert(nextWave->id);
+          dismissedNextWaves.insert(enemies->getNextWaveIndex());
       break;
     default: break;
   }
@@ -2105,7 +2111,7 @@ void PlayerControl::checkKeeperDanger() {
   auto controlled = getControlled();
   WCreature keeper = getKeeper();
   auto prompt = [&] {
-      return getView()->yesOrNoPrompt("The keeper is in trouble. Do you want to control " +
+      return getView()->yesOrNoPrompt("The Keeper is in trouble. Do you want to control " +
           keeper->getAttributes().getGender().him() + "?");
   };
   if (!getKeeper()->isDead() && !controlled.contains(getKeeper())) {

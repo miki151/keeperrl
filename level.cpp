@@ -226,6 +226,14 @@ bool Level::landCreature(StairKey key, PCreature creature) {
     return false;
 }
 
+bool Level::landCreature(StairKey key, PCreature creature, Vec2 travelDir) {
+  if (landCreature(key, creature.get(), travelDir)) {
+    model->addCreature(std::move(creature));
+    return true;
+  } else
+    return false;
+}
+
 static Vec2 projectOnBorders(Rectangle area, Vec2 d) {
   Vec2 center = Vec2((area.left() + area.right()) / 2, (area.top() + area.bottom()) / 2);
   if (d.x == 0) {

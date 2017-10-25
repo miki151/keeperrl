@@ -725,8 +725,6 @@ int Creature::getPoints() const {
 }
 
 void Creature::onKilled(WCreature victim, optional<ExperienceType> lastDamage) {
-  int difficulty = victim->getDifficultyPoints();
-  CHECK(difficulty >=0 && difficulty < 100000) << difficulty << " " << victim->getName().bare();
   double attackDiff = victim->highestAttackValueEver - highestAttackValueEver;
   constexpr double maxLevelGain = 1.0;
   constexpr double minLevelGain = 0.02;
@@ -735,6 +733,10 @@ void Creature::onKilled(WCreature victim, optional<ExperienceType> lastDamage) {
   double expIncrease = max(minLevelGain, min(maxLevelGain,
       (maxLevelGain - equalLevelGain) * attackDiff / maxLevelDiff + equalLevelGain));
   increaseExpLevel(lastDamage.value_or(ExperienceType::MELEE), expIncrease);
+  int difficulty = victim->getDifficultyPoints();
+  CHECK(difficulty >=0 && difficulty < 100000) << difficulty << " " << victim->getName().bare();
+  points += difficulty;
+  kills.insert(victim);
 }
 
 Tribe* Creature::getTribe() {
@@ -1449,7 +1451,7 @@ MovementType Creature::getMovementType() const {
     .setDestroyActions(EnumSet<DestroyAction::Type>([this](auto t) { return DestroyAction(t).canNavigate(this); }))
     .setForced(isAffected(LastingEffect::BLIND) || getHoldingCreature() || forceMovement)
     .setFireResistant(isAffected(LastingEffect::FIRE_RESISTANT))
-    .setSunlightVulnerable(getBody().isSunlightVulnerable() && !isAffected(LastingEffect::DARKNESS_SOURCE)
+    .setSunlightVulnerable(isAffected(LastingEffect::SUNLIGHT_VULNERABLE) && !isAffected(LastingEffect::DARKNESS_SOURCE)
         && (!getGame() || getGame()->getSunlightInfo().getState() == SunlightState::DAY));
 }
 
@@ -1522,8 +1524,8 @@ CreatureAction Creature::moveTowards(Position pos, bool away, NavigationFlags fl
   if (shortestPath->isReachable(position))
     if (auto action = move(shortestPath->getNextMove(position)))
       return action;
-  if (newPath)
-    return CreatureAction();
+  /*if (newPath)
+    return CreatureAction();*/
   INFO << "Reconstructing shortest path.";
   if (!away)
     shortestPath.reset(new LevelShortestPath(this, pos, position));

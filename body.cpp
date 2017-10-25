@@ -32,9 +32,9 @@ SERIALIZATION_CONSTRUCTOR_IMPL(Body)
 static double getDefaultCarryLimit(Body::Size size) {
   switch (size) {
     case Body::Size::HUGE: return 200;
-    case Body::Size::LARGE: return 60;
-    case Body::Size::MEDIUM: return 20;
-    case Body::Size::SMALL: return 4;
+    case Body::Size::LARGE: return 80;
+    case Body::Size::MEDIUM: return 60;
+    case Body::Size::SMALL: return 6;
   }
 }
 
@@ -136,23 +136,23 @@ bool Body::hasHealth() const {
   }
 }
 
-double Body::getMinDamage(BodyPart part) const {
-  double ret;
-  switch (part) {
-    case BodyPart::WING: ret = 0.3; break;
-    case BodyPart::ARM: ret = 0.6; break;
-    case BodyPart::LEG:
-    case BodyPart::HEAD: ret = 0.8; break;
-    case BodyPart::BACK:
-    case BodyPart::TORSO: ret = 1.5; break;
-  }
+bool Body::isPartDamaged(BodyPart part, double damage) const {
+  double strength = [&] {
+    switch (part) {
+      case BodyPart::WING: return 0.3;
+      case BodyPart::ARM: return 0.6;
+      case BodyPart::LEG:
+      case BodyPart::HEAD: return 0.8;
+      case BodyPart::BACK:
+      case BodyPart::TORSO: return 1.5;
+    }
+  }();
   if (material == Material::FLESH)
-    return ret;
-  else
+    return damage >= strength;
   if (material == Material::SPIRIT)
-    return 10000;
+    return false;
   else
-    return ret / 2;
+    return Random.chance(damage / strength);
 }
 
 BodyPart Body::armOrWing() const {
@@ -224,7 +224,6 @@ BodyPart Body::getBodyPart(AttackLevel attack, bool flying, bool collapsed) cons
        else
          return BodyPart::LEG;
   }
-  return BodyPart::ARM;
 }
 
 void Body::healBodyParts(WCreature creature, bool regrow) {
@@ -480,7 +479,7 @@ bool Body::takeDamage(const Attack& attack, WCreature creature, double damage) {
   bleed(creature, damage);
   BodyPart part = getBodyPart(attack.level, creature->isAffected(LastingEffect::FLYING),
       creature->isAffected(LastingEffect::COLLAPSED));
-  if (damage >= getMinDamage(part) && numGood(part) > 0) {
+  if (isPartDamaged(part, damage) && numGood(part) > 0) {
     creature->youHit(part, attack.type);
     injureBodyPart(creature, part, contains({AttackType::CUT, AttackType::BITE}, attack.type));
     if (isCritical(part)) {
@@ -734,10 +733,6 @@ bool Body::canConsume() const {
   }
 }
 
-bool Body::isSunlightVulnerable() const {
-  return material == Material::UNDEAD_FLESH;
-}
-
 bool Body::isWounded() const {
   return health < 1;
 }
@@ -766,14 +761,7 @@ bool Body::needsToEat() const {
 }
 
 bool Body::fallsApartFromDamage() const {
-  switch (material) {
-    case Material::FLESH:
-    case Material::FIRE:
-    case Material::SPIRIT:
-    case Material::WATER: return false;
-    default: return true;
-
-  }
+  return !hasHealth();
 }
 
 bool Body::isUndead() const {

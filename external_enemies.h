@@ -3,53 +3,44 @@
 #include "creature_factory.h"
 #include "attack_behaviour.h"
 #include "task_callback.h"
+#include "inhabitants_info.h"
 
 struct ExternalEnemy {
-  CreatureFactory SERIAL(factory);
-  Range SERIAL(groupSize);
+  CreatureList SERIAL(creatures);
   AttackBehaviour SERIAL(behaviour);
   string SERIAL(name);
-  SERIALIZE_ALL(factory, groupSize, behaviour, name)
+  Range SERIAL(attackTime);
+  int SERIAL(maxOccurences);
+  SERIALIZE_ALL(creatures, behaviour, name, attackTime, maxOccurences)
 };
 
 struct EnemyEvent {
-  EnemyEvent(ExternalEnemy, Range attackTime, EnumMap<ExperienceType, int> = {});
-  EnemyEvent(vector<ExternalEnemy>, Range attackTime, EnumMap<ExperienceType, int> = {});
-  vector<ExternalEnemy> SERIAL(enemies);
-  Range SERIAL(attackTime);
-  EnumMap<ExperienceType, int> SERIAL(levelIncrease);
-  SERIALIZATION_CONSTRUCTOR(EnemyEvent)
-  SERIALIZE_ALL(enemies, attackTime, levelIncrease)
+  ExternalEnemy SERIAL(enemy);
+  int SERIAL(attackTime);
+  ViewId SERIAL(viewId);
+  SERIALIZE_ALL(enemy, attackTime, viewId)
 };
 
 class ExternalEnemies {
   public:
-  ExternalEnemies(RandomGen&, vector<EnemyEvent>);
+  ExternalEnemies(RandomGen&, vector<ExternalEnemy>);
   void update(WLevel, double localTime);
   struct CurrentWave {
     string SERIAL(name);
     vector<WCreature> SERIAL(attackers);
     SERIALIZE_ALL(name, attackers)
   };
-  struct NextWave {
-    CreatureFactory SERIAL(factory);
-    int SERIAL(numCreatures);
-    ViewId SERIAL(viewId);
-    string SERIAL(name);
-    int SERIAL(attackTime);
-    AttackBehaviour SERIAL(behaviour);
-    int SERIAL(id);
-    SERIALIZE_ALL(factory, numCreatures, viewId, name, attackTime, behaviour, id)
-  };
-  optional<const NextWave&> getNextWave() const;
+  optional<const EnemyEvent&> getNextWave() const;
+  int getNextWaveIndex() const;
+  optional<EnemyEvent> popNextWave(double localTime);
 
   SERIALIZATION_DECL(ExternalEnemies)
 
   private:
-  optional<NextWave> popNextWave(double localTime);
   void updateCurrentWaves(WCollective target);
   OwnerPointer<TaskCallback> callbackDummy = makeOwner<TaskCallback>();
   vector<CurrentWave> SERIAL(currentWaves);
-  std::deque<NextWave> SERIAL(waves);
+  int SERIAL(nextWave) = 0;
+  vector<EnemyEvent> SERIAL(waves);
   PTask getAttackTask(WCollective target, AttackBehaviour);
 };

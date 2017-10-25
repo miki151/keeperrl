@@ -517,6 +517,17 @@ class RandomGen {
   }
 
   template <typename T>
+  T choose(vector<pair<int, T>> vi) {
+    vector<T> v;
+    vector<double> p;
+    for (auto elem : vi) {
+      v.push_back(elem.second);
+      p.push_back(elem.first);
+    }
+    return choose(v, p);
+  }
+
+  template <typename T>
   T choose(vector<pair<T, double>> vi) {
     vector<T> v;
     vector<double> p;

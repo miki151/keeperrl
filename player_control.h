@@ -46,7 +46,7 @@ class MoveInfo;
 
 class PlayerControl : public CreatureView, public CollectiveControl, public EventListener<PlayerControl> {
   public:
-  static PPlayerControl create(WCollective col);
+  static PPlayerControl create(WCollective col, vector<string> introText);
   ~PlayerControl();
 
   void processInput(View* view, UserInput);
@@ -186,7 +186,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   PController createMinionController(WCreature);
 
   mutable SMapMemory SERIAL(memory);
-  bool SERIAL(showWelcomeMsg) = true;
+  vector<string> SERIAL(introText);
   struct SelectionInfo {
     Vec2 corner1;
     Vec2 corner2;

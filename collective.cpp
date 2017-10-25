@@ -141,7 +141,7 @@ void Collective::addCreature(PCreature creature, Position pos, EnumSet<MinionTra
 void Collective::addCreature(WCreature c, EnumSet<MinionTrait> traits) {
   if (!traits.contains(MinionTrait::FARM_ANIMAL) && !c->getController()->isCustomController())
     c->setController(makeOwner<Monster>(c, MonsterAIFactory::collective(this)));
-  if (!leader)
+  if (traits.contains(MinionTrait::LEADER))
     leader = c;
   if (c->getTribeId() != *tribe)
     c->setTribe(*tribe);
@@ -1337,6 +1337,8 @@ void Collective::onAppliedSquare(WCreature c, Position pos) {
     double efficiency = tileEfficiency->getEfficiency(pos) * furniture->getUsageTime() * getEfficiency(c);
     switch (furniture->getType()) {
       case FurnitureType::THRONE:
+        if (config->getRegenerateMana())
+          addMana(0.2 * efficiency);
         break;
       case FurnitureType::WHIPPING_POST:
         taskMap->addTask(Task::whipping(pos, c), pos);
@@ -1364,6 +1366,8 @@ void Collective::onAppliedSquare(WCreature c, Position pos) {
           break;
         case FurnitureUsageType::STUDY:
           increaseLevel(ExperienceType::SPELL);
+          if (config->getRegenerateMana())
+            addMana(0.1 * efficiency);
           break;
         case FurnitureUsageType::ARCHERY_RANGE:
           increaseLevel(ExperienceType::ARCHERY);

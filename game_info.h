@@ -285,9 +285,8 @@ class CollectiveInfo {
   struct NextWave {
     ViewId HASH(viewId);
     string HASH(attacker);
-    int HASH(count);
     int HASH(numTurns);
-    HASH_ALL(viewId, attacker, count, numTurns)
+    HASH_ALL(viewId, attacker, numTurns)
   };
   optional<NextWave> HASH(nextWave);
 

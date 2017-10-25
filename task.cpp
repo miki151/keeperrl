@@ -849,32 +849,41 @@ PTask Task::explore(Position pos) {
 
 namespace {
 
-class AttackLeader : public Task {
+class AttackCreatures : public Task {
   public:
-  AttackLeader(WCollective col) : collective(col) {}
+  AttackCreatures(vector<WCreature> v) : creatures(v) {}
 
   virtual MoveInfo getMove(WCreature c) override {
-    if (!collective->hasLeader())
-      return NoMove;
-    return c->moveTowards(collective->getLeader()->getPosition());
+    if (auto target = getNextCreature())
+      return c->moveTowards(target->getPosition());
+    return NoMove;
   }
 
+  WCreature getNextCreature() const {
+    for (auto c : creatures)
+      if (c && !c->isDead())
+        return c;
+    return nullptr;
+  }
 
   virtual string getDescription() const override {
-    return "Attack " + collective->getLeader()->getName().bare();
+    if (auto target = getNextCreature())
+      return "Attack " + target->getName().bare();
+    else
+      return "Attack someone, but everyone is dead";
   }
   
-  SERIALIZE_ALL(SUBCLASS(Task), collective); 
-  SERIALIZATION_CONSTRUCTOR(AttackLeader);
+  SERIALIZE_ALL(SUBCLASS(Task), creatures);
+  SERIALIZATION_CONSTRUCTOR(AttackCreatures);
 
   private:
-  WCollective SERIAL(collective);
+  vector<WCreature> SERIAL(creatures);
 };
 
 }
 
-PTask Task::attackLeader(WCollective col) {
-  return makeOwner<AttackLeader>(col);
+PTask Task::attackCreatures(vector<WCreature> c) {
+  return makeOwner<AttackCreatures>(std::move(c));
 }
 
 PTask Task::stealFrom(WCollective collective, WTaskCallback callback) {
@@ -941,7 +950,7 @@ class CampAndSpawn : public Task {
       else {
         vector<PCreature> team;
         for (int i : Range(Random.get(attackSize)))
-          team.push_back(spawns.random(MonsterAIFactory::singleTask(Task::attackLeader(target))));
+          team.push_back(spawns.random(MonsterAIFactory::singleTask(Task::attackCreatures({target->getLeader()}))));
         for (WCreature summon : Effect::summonCreatures(c, 4, std::move(team)))
           attackTeam.push_back(summon);
         attackCountdown = none;
@@ -1147,7 +1156,7 @@ class Eat : public Task {
 
   virtual MoveInfo getMove(WCreature c) override {
     if (!position) {
-      for (Position v : positions)
+      for (Position v : Random.permutation(positions))
         if (!rejectedPosition.count(v) && (!position ||
               position->dist8(c->getPosition()) > v.dist8(c->getPosition())))
           position = v;
@@ -1174,7 +1183,11 @@ class Eat : public Task {
             return move.append([this, ch, pos] (WCreature) { if (ch->isDead()) position = pos; });
       }
     }
-    return c->moveTowards(*position);
+    if (c->getPosition() != *position)
+      return c->moveTowards(*position);
+    else
+      position = none;
+    return NoMove;
   }
 
   virtual string getDescription() const override {
@@ -1443,7 +1456,7 @@ REGISTER_TYPE(Kill)
 REGISTER_TYPE(Disappear)
 REGISTER_TYPE(Chain)
 REGISTER_TYPE(Explore)
-REGISTER_TYPE(AttackLeader)
+REGISTER_TYPE(AttackCreatures)
 REGISTER_TYPE(KillFighters)
 REGISTER_TYPE(ConsumeItem)
 REGISTER_TYPE(Copulate)

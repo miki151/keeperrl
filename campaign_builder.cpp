@@ -44,7 +44,10 @@ vector<OptionId> CampaignBuilder::getSecondaryOptions(CampaignType type) const {
     case CampaignType::ENDLESS:
       return {OptionId::LESSER_VILLAINS, OptionId::ALLIES};
     case CampaignType::FREE_PLAY:
-      return {OptionId::MAIN_VILLAINS, OptionId::LESSER_VILLAINS, OptionId::ALLIES};
+      if (playerRole == PlayerRole::KEEPER)
+        return {OptionId::MAIN_VILLAINS, OptionId::LESSER_VILLAINS, OptionId::ALLIES, OptionId::GENERATE_MANA};
+      else
+        return {OptionId::MAIN_VILLAINS, OptionId::LESSER_VILLAINS, OptionId::ALLIES};
     case CampaignType::SINGLE_KEEPER:
       return {};
   }
@@ -96,8 +99,13 @@ static vector<string> getCampaignTypeDescription(CampaignType type) {
     case CampaignType::SINGLE_KEEPER:
       return {
         "everyone on one big map",
-        "separate highscore table",
         "retiring not possible"
+      };
+    case CampaignType::ENDLESS:
+      return {
+        "conquest not mandatory",
+        "recurring enemy waves",
+        "survive as long as possible"
       };
     default:
       return {};
@@ -412,6 +420,32 @@ static bool autoConfirm(CampaignType type) {
   }
 }
 
+static vector<string> getIntroMessages(CampaignType type, string worldName) {
+  vector<string> ret = {
+    "Welcome to KeeperRL Alpha23! A lot of gameplay changes have arrived with this update. Below is a very short "
+    "summary, and we encourage you to check out the full change log at www.keeperrl.com.\n \n"
+    "Mana is no longer generated at the library, and instead you only receive it for defeating enemies. "
+    "Many features, including construction and crafting costs, have been rebalanced to accommodate this change. "
+    "You will only need mana to research new technology, and increase the population limit.\n \n"
+    "If you miss the old ways, you can enable mana regeneration when playing the 'free play' game mode.\n \n"
+    "When commanding a team, you can choose to control every team member directly. "
+    "We encourage you to use this feature during combat, as it's extremely useful. You can toggle it using the "
+    "shortcut [G] or by going into the [Commands] menu.\n \n"
+    "From now on the vampire lord will be hostile when you wake him up, so be careful!"
+  };
+  if (type == CampaignType::ENDLESS)
+    ret.push_back(
+        "Welcome to the new endless mode! Your task here is to survive as long as possible, while "
+        "defending your dungeon from incoming enemy waves. The enemies don't come from any specific place and "
+        "will just appear at the edge of the map. You will get mana for defeating each wave. "
+        "Note that there are also traditional enemy villages scattered around and they may also attack you.\n \n"
+        "The endless mode is a completely new feature and we are very interested in your feedback on how "
+        "it can be developed further. Please drop by on the forums at keeperrl.com or on Steam and let us know!"
+    );
+
+  return ret;
+}
+
 optional<CampaignSetup> CampaignBuilder::prepareCampaign(function<optional<RetiredGames>(CampaignType)> genRetired,
     CampaignType type) {
   Vec2 size(17, 9);
@@ -471,6 +505,7 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(function<optional<Retir
                   setPlayerPos(campaign, *campaign.playerPos, player.get());
                 }
                 break;
+              case OptionId::GENERATE_MANA:
               case OptionId::INFLUENCE_SIZE: break;
               default: updateMap = true; break;
             }
@@ -488,7 +523,10 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(function<optional<Retir
               string name = *player->getName().first();
               string gameIdentifier = name + "_" + campaign.worldName + getNewIdSuffix();
               string gameDisplayName = name + " of " + campaign.worldName;
-              return CampaignSetup{campaign, std::move(player), gameIdentifier, gameDisplayName};
+              return CampaignSetup{campaign, std::move(player), gameIdentifier, gameDisplayName,
+                  options->getBoolValue(OptionId::GENERATE_MANA) &&
+                  getSecondaryOptions(type).contains(OptionId::GENERATE_MANA),
+                  getIntroMessages(type, campaign.getWorldName())};
             }
       }
       if (updateMap)
