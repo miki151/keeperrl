@@ -1008,8 +1008,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.attr = LIST(15_dam, 13_def, 100_spd );
           c.attr[AttrType::SPEED] = 100;
           c.body = Body::humanoid(Body::Size::LARGE);
-          c.attr[AttrType::DAMAGE] = 20;
-          c.attr[AttrType::DEFENSE] = 15;
           c.chatReactionFriendly = "curses all law enforcement"_s;
           c.chatReactionHostile = "\"Die!\""_s;
  //         c.skills.insert(SkillId::DISARM_TRAPS);
