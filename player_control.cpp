@@ -1209,9 +1209,16 @@ void PlayerControl::onEvent(const GameEvent& event) {
       [&](const WonGame&) {
         CHECK(!getKeeper()->isDead());
         getGame()->conquered(*getKeeper()->getName().first(), getCollective()->getKills().getSize(),
-            getCollective()->getDangerLevel() + getCollective()->getPoints());
+            (int) getCollective()->getDangerLevel() + getCollective()->getPoints());
         getView()->presentText("", "When you are ready, retire your dungeon and share it online. "
           "Other players will be able to invade it as adventurers. To do this, press Escape and choose \'retire\'.");
+      },
+      [&](const RetiredGame&) {
+        CHECK(!getKeeper()->isDead());
+        // No victory condition in this game, so we generate a highscore when retiring.
+        if (getGame()->getVillains(VillainType::MAIN).empty())
+          getGame()->retired(*getKeeper()->getName().first(), getCollective()->getKills().getSize(),
+              (int) getCollective()->getDangerLevel() + getCollective()->getPoints());
       },
       [&](const TechbookRead& info) {
         Technology* tech = info.technology;

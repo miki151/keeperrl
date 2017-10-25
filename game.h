@@ -61,7 +61,8 @@ class Game : public OwnedObject<Game> {
 
   void gameOver(WConstCreature player, int numKills, const string& enemiesString, int points);
   void conquered(const string& title, int numKills, int points);
-  void killedKeeper(const string& title, const string& keeper, const string& land, int numKills, int points);
+  void retired(const string& title, int numKills, int points);
+
   bool isGameOver() const;
   bool isTurnBased();
   bool isVillainActive(WConstCollective);

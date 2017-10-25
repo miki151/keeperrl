@@ -319,6 +319,7 @@ void Game::exitAction() {
   switch (Action(*ind)) {
     case RETIRE:
       if (view->yesOrNoPrompt("Retire your dungeon and share it online?")) {
+        addEvent(EventInfo::RetiredGame{});
         exitInfo = ExitInfo(GameSaveType::RETIRED_SITE);
         return;
       }
@@ -459,7 +460,7 @@ View* Game::getView() const {
 void Game::conquered(const string& title, int numKills, int points) {
   string text= "You have conquered this land. You killed " + toString(numKills) +
       " enemies and scored " + toString(points) +
-      " points. Thank you for playing KeeperRL alpha.\n \n";
+      " points. Thank you for playing KeeperRL!\n \n";
   for (string stat : statistics->getText())
     text += stat + "\n";
   view->presentText("Victory", text);
@@ -471,6 +472,28 @@ void Game::conquered(const string& title, int numKills, int points) {
         c.gameResult = "achieved world domination";
         c.gameWon = true;
         c.turns = (int) getGlobalTime();
+        c.campaignType = campaign->getType();
+        c.playerRole = campaign->getPlayerRole();
+  );
+  highscores->add(score);
+  highscores->present(view, score);
+}
+
+void Game::retired(const string& title, int numKills, int points) {
+  int turns = (int) getGlobalTime();
+  string text = "You have survived in this land for " + toString(turns) + " turns. You killed " + toString(numKills) +
+      " enemies. Thank you for playing KeeperRL!\n \n";
+  for (string stat : statistics->getText())
+    text += stat + "\n";
+  view->presentText("Survived", text);
+  Highscores::Score score = CONSTRUCT(Highscores::Score,
+        c.worldName = getWorldName();
+        c.points = points;
+        c.gameId = getGameIdentifier();
+        c.playerName = title;
+        c.gameResult = "retired";
+        c.gameWon = false;
+        c.turns = turns;
         c.campaignType = campaign->getType();
         c.playerRole = campaign->getPlayerRole();
   );

@@ -52,6 +52,8 @@ namespace EventInfo {
 
   struct WonGame {};
 
+  struct RetiredGame {};
+
   struct TechbookRead {
     Technology* technology;
   };
@@ -101,7 +103,7 @@ namespace EventInfo {
 
   class GameEvent : public variant<CreatureMoved, CreatureKilled, ItemsPickedUp, ItemsDropped, ItemsAppeared, Projectile,
       Explosion, ConqueredEnemy, WonGame, TechbookRead, Alarm, CreatureTortured, CreatureSurrendered, TrapTriggered,
-      TrapDisarmed, FurnitureDestroyed, ItemsEquipped, CreatureEvent, VisibilityChanged> {
+      TrapDisarmed, FurnitureDestroyed, ItemsEquipped, CreatureEvent, VisibilityChanged, RetiredGame> {
     using variant::variant;
   };
 
