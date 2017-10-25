@@ -1005,7 +1005,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::BANDIT:
       return CATTR(
           c.viewId = ViewId::BANDIT;
-          c.attr = LIST(20_dam, 13_def, 100_spd );
+          c.attr = LIST(15_dam, 13_def, 100_spd );
           c.attr[AttrType::SPEED] = 100;
           c.body = Body::humanoid(Body::Size::LARGE);
           c.attr[AttrType::DAMAGE] = 20;
