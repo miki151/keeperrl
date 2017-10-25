@@ -901,7 +901,7 @@ void MapGui::considerScrollingToCreature() {
     Vec2 size = layout->getSquareSize();
     Vec2 offset;
     if (auto index = objects[info->pos])
-      if (index->hasObject(ViewLayer::CREATURE))
+      if (index->hasObject(ViewLayer::CREATURE) && !!screenMovement)
         offset = getMovementOffset(index->getObject(ViewLayer::CREATURE), size, 0, clock->getRealMillis(), false);
     double targetx = info->pos.x + (double)offset.x / size.x;
     double targety = info->pos.y + (double)offset.y / size.y;
