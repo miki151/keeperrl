@@ -616,7 +616,6 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::COTTAGE;
             c.tribe = TribeId::getHuman();
-            c.inhabitants.leader = random.choose(CreatureId::KNIGHT, CreatureId::ARCHER);
             c.inhabitants.fighters = CreatureList(random.get(2, 4), CreatureId::PESEANT);
             c.inhabitants.civilians = CreatureList(
                 random.get(3, 7),
