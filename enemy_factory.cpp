@@ -900,3 +900,14 @@ vector<ExternalEnemy> EnemyFactory::getExternalEnemies() {
     },
   };
 }
+
+vector<ExternalEnemy> EnemyFactory::getHalloweenKids() {
+  return {
+    ExternalEnemy{
+        CreatureList(random.get(3, 6), CreatureId::HALLOWEEN_KID),
+        AttackBehaviourId::HALLOWEEN_KIDS,
+        "kids...?",
+        Range(0, 10000),
+        1
+    }};
+}

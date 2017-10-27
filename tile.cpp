@@ -624,6 +624,12 @@ class TileCoordLookup {
     Tile::addTile(ViewId::SPECIAL_HMBW, sprite("special_hmbw"));
     Tile::addTile(ViewId::SPECIAL_HMGN, sprite("special_hmgn"));
     Tile::addTile(ViewId::SPECIAL_HMGW, sprite("special_hmgw"));
+    Tile::addTile(ViewId::HALLOWEEN_KID1, sprite("halloween_kid1"));
+    Tile::addTile(ViewId::HALLOWEEN_KID2, sprite("halloween_kid2"));
+    Tile::addTile(ViewId::HALLOWEEN_KID3, sprite("halloween_kid3"));
+    Tile::addTile(ViewId::HALLOWEEN_KID4, sprite("halloween_kid4"));
+    Tile::addTile(ViewId::HALLOWEEN_COSTUME, sprite("halloween_costume"));
+    Tile::addTile(ViewId::BAG_OF_CANDY, sprite("halloween_candies"));
 #ifndef RELEASE
     Tile::addTile(ViewId::TUTORIAL_ENTRANCE, symbol(u8"?", Color::YELLOW));
 #else
@@ -945,6 +951,12 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::SPECIAL_HMBW, symbol(u8"H", Color::ORANGE));
     Tile::addSymbol(ViewId::SPECIAL_HMGN, symbol(u8"H", Color::GREEN));
     Tile::addSymbol(ViewId::SPECIAL_HMGW, symbol(u8"H", Color::LIGHT_GREEN));
+    Tile::addSymbol(ViewId::HALLOWEEN_KID1, symbol(u8"@", Color::PINK));
+    Tile::addSymbol(ViewId::HALLOWEEN_KID2, symbol(u8"@", Color::PURPLE));
+    Tile::addSymbol(ViewId::HALLOWEEN_KID3, symbol(u8"@", Color::BLUE));
+    Tile::addSymbol(ViewId::HALLOWEEN_KID4, symbol(u8"@", Color::YELLOW));
+    Tile::addSymbol(ViewId::HALLOWEEN_COSTUME, symbol(u8"[", Color::PINK));
+    Tile::addSymbol(ViewId::BAG_OF_CANDY, symbol(u8"*", Color::BLUE));
     Tile::addSymbol(ViewId::TUTORIAL_ENTRANCE, symbol(u8" ", Color::LIGHT_GREEN));
   }
  

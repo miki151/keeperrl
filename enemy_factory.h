@@ -60,6 +60,7 @@ class EnemyFactory {
   EnemyFactory(RandomGen&);
   EnemyInfo get(EnemyId);
   vector<ExternalEnemy> getExternalEnemies();
+  vector<ExternalEnemy> getHalloweenKids();
   vector<EnemyInfo> getVaults();
 
   private:

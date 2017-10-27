@@ -331,6 +331,8 @@ PModel ModelBuilder::tryCampaignBaseModel(const string& siteName, bool addExtern
   optional<ExternalEnemies> externalEnemies;
   if (addExternalEnemies)
     externalEnemies = ExternalEnemies(random, enemyFactory->getExternalEnemies());
+  else
+    externalEnemies = ExternalEnemies(random, enemyFactory->getHalloweenKids());
   return tryModel(230, siteName, enemyInfo, true, biome, std::move(externalEnemies), true);
 }
 

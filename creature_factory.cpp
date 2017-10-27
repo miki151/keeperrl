@@ -1285,6 +1285,16 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.chatReactionHostile = "\"Heeelp!\""_s;
           c.skills.insert(SkillId::CROPS);
           c.name = CreatureName("child", "children"););
+    case CreatureId::HALLOWEEN_KID:
+      return CATTR(
+          c.viewId = Random.choose(ViewId::HALLOWEEN_KID1,
+              ViewId::HALLOWEEN_KID2, ViewId::HALLOWEEN_KID3,ViewId::HALLOWEEN_KID4);
+          c.attr = LIST(8_dam, 8_def, 80_spd );
+          c.body = Body::humanoid(Body::Size::MEDIUM);
+          c.innocent = true;
+          c.chatReactionFriendly = "\"Trick or treat!\""_s;
+          c.chatReactionHostile = "\"Trick or treat!\""_s;
+          c.name = CreatureName("child", "children"););
     case CreatureId::CLAY_GOLEM:
       return CATTR(
           c.viewId = ViewId::CLAY_GOLEM;
@@ -2311,6 +2321,10 @@ vector<ItemType> getDefaultInventory(CreatureId id) {
             ItemType::Potion{Effect::Lasting{LastingEffect::INVISIBLE}},
             ItemType::Potion{Effect::Lasting{LastingEffect::POISON}},
             ItemType::Potion{Effect::Lasting{LastingEffect::SPEED}}});
+    case CreatureId::HALLOWEEN_KID:
+      return ItemList()
+        .add(ItemType::BagOfCandies{})
+        .add(ItemType::HalloweenCostume{});
     default: return {};
   }
 }

@@ -1139,20 +1139,22 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   constexpr int maxEnemyCountdown = 500;
   if (auto& enemies = getModel()->getExternalEnemies())
     if (auto nextWave = enemies->getNextWave()) {
-      int countDown = (int) (nextWave->attackTime - getLocalTime());
-      auto index = enemies->getNextWaveIndex();
-      auto name = nextWave->enemy.name;
-      auto viewId = nextWave->viewId;
-      if (index % 6 == 5) {
-        name = "Unknown";
-        viewId = ViewId::UNKNOWN_MONSTER;
+      if (nextWave->enemy.behaviour.getId() != AttackBehaviourId::HALLOWEEN_KIDS) {
+        int countDown = (int) (nextWave->attackTime - getLocalTime());
+        auto index = enemies->getNextWaveIndex();
+        auto name = nextWave->enemy.name;
+        auto viewId = nextWave->viewId;
+        if (index % 6 == 5) {
+          name = "Unknown";
+          viewId = ViewId::UNKNOWN_MONSTER;
+        }
+        if (!dismissedNextWaves.count(index) && countDown <= maxEnemyCountdown)
+          info.nextWave = CollectiveInfo::NextWave {
+            viewId,
+            name,
+            countDown
+          };
       }
-      if (!dismissedNextWaves.count(index) && countDown <= maxEnemyCountdown)
-        info.nextWave = CollectiveInfo::NextWave {
-          viewId,
-          name,
-          countDown
-        };
     }
 }
 

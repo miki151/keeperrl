@@ -52,6 +52,8 @@ class ItemType {
   SIMPLE_ITEM(LeatherGloves);
   SIMPLE_ITEM(StrengthGloves);
   SIMPLE_ITEM(Robe);
+  SIMPLE_ITEM(HalloweenCostume);
+  SIMPLE_ITEM(BagOfCandies);
 
   struct Scroll {
     Effect SERIAL(effect);
@@ -106,7 +108,7 @@ class ItemType {
       Scythe, Bow, ElvenBow, LeatherArmor, LeatherHelm, TelepathyHelm, ChainArmor, SteelArmor, IronHelm, LeatherBoots,
       IronBoots, SpeedBoots, LevitationBoots, LeatherGloves, StrengthGloves, Robe, Scroll, FireScroll, Potion,
       Mushroom, Amulet, DefenseAmulet, Ring, FirstAidKit, Rock, IronOre, SteelIngot, GoldPiece,
-      WoodPlank, Bone, RandomTechBook, TechBook, TrapItem, AutomatonItem);
+      WoodPlank, Bone, RandomTechBook, TechBook, TrapItem, AutomatonItem, BagOfCandies, HalloweenCostume);
 
   template <typename T>
   ItemType(T&& t) : type(std::forward<T>(t)) {}

@@ -709,6 +709,34 @@ ItemAttributes ItemType::Robe::getAttributes() const {
   );
 }
 
+ItemAttributes ItemType::HalloweenCostume::getAttributes() const {
+  return ITATTR(
+      i.viewId = ViewId::HALLOWEEN_COSTUME;
+      i.name = "halloween costume";
+      i.shortName = "halloween costume"_s;
+      i.itemClass = ItemClass::ARMOR;
+      i.equipmentSlot = EquipmentSlot::BODY_ARMOR;
+      i.weight = 1;
+      i.price = 10;
+      i.modifiers[AttrType::DEFENSE] = 1;
+  );
+}
+
+ItemAttributes ItemType::BagOfCandies::getAttributes() const {
+  return ITATTR(
+      i.viewId = ViewId::BAG_OF_CANDY;
+      i.shortName = "candies"_s;
+      i.name = "bag of candies";
+      i.blindName = "bag"_s;
+      i.description = "Really, just a bag of candies.";
+      i.itemClass= ItemClass::FOOD;
+      i.weight = 0.1;
+      i.modifiers[AttrType::DAMAGE] = -15;
+      i.price = 1;
+      i.uses = 1;
+  );
+}
+
 ItemAttributes ItemType::LeatherGloves::getAttributes() const {
   return ITATTR(
       i.viewId = ViewId::LEATHER_GLOVES;

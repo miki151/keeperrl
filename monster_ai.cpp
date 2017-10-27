@@ -1228,7 +1228,7 @@ MonsterAIFactory MonsterAIFactory::singleTask(PTask&& t, bool chaseEnemies) {
       released = nullptr;
       return new MonsterAI(c, {
         new Heal(c),
-        new Fighter(c, 0.6, chaseEnemies),
+        chaseEnemies ? (Behaviour*)(new Fighter(c, 0.6, chaseEnemies)) : (Behaviour*)(new Rest(c)),
         new SingleTask(c, std::move(task)),
         new ChooseRandom(c, makeVec(PBehaviour(new Rest(c)), PBehaviour(new MoveRandomly(c))), {3, 1})},
         { 6, 5, 2, 1}, true);

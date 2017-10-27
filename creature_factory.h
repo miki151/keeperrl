@@ -158,7 +158,8 @@ RICH_ENUM(CreatureId,
     ANT_SOLDIER,
     ANT_QUEEN,
 
-    SOKOBAN_BOULDER
+    SOKOBAN_BOULDER,
+    HALLOWEEN_KID
 );
 
 class CreatureFactory {
