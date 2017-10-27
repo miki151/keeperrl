@@ -25,7 +25,6 @@ class ModelBuilder {
   PModel campaignSiteModel(const string& siteName, EnemyId, VillainType);
   PModel tutorialModel(const string& siteName);
 
-  void measureModelGen(const std::string& name, int numTries, function<void()> genFun);
   void measureSiteGen(int numTries, vector<std::string> types);
 
   PModel splashModel(const FilePath& splashPath);
@@ -40,6 +39,7 @@ class ModelBuilder {
   ~ModelBuilder();
 
   private:
+  void measureModelGen(const std::string& name, int numTries, function<void()> genFun);
   PModel trySingleMapModel(const string& worldName);
   PModel tryCampaignBaseModel(const string& siteName, bool externalEnemies);
   PModel tryTutorialModel(const string& siteName);
