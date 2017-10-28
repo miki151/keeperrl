@@ -128,6 +128,9 @@ const vector<BuildInfo>& BuildInfo::get() {
              {FurnitureType::TORCH_N, FurnitureType::TORCH_E, FurnitureType::TORCH_S, FurnitureType::TORCH_W}),
              "Torch", {}, "Place it on tiles next to a wall.", 'c', "Installations")
           .setTutorialHighlight(TutorialHighlight::BUILD_TORCH),
+      BuildInfo(BuildInfo::FurnitureInfo(FurnitureType::GROUND_TORCH),
+             "Standing torch", {}, "", 0, "Installations")
+          .setTutorialHighlight(TutorialHighlight::BUILD_TORCH),
       BuildInfo({FurnitureType::KEEPER_BOARD, {ResourceId::WOOD, 15}}, "Message board", {},
           "A board where you can leave a message for other players.", 0, "Installations"),
       BuildInfo({FurnitureType::EYEBALL, {ResourceId::WOOD, 30}}, "Eyeball", {},

@@ -214,7 +214,7 @@ static Furniture get(FurnitureType type, TribeId tribe) {
                        type, tribe)
           .setTickType(FurnitureTickType::PIGSTY);
     case FurnitureType::GROUND_TORCH:
-      return Furniture("torch", ViewObject(ViewId::TORCH, ViewLayer::FLOOR), type, tribe)
+      return Furniture("standing torch", ViewObject(ViewId::STANDING_TORCH, ViewLayer::FLOOR), type, tribe)
           .setLightEmission(8.2);
     case FurnitureType::TORCH_N:
       return Furniture("torch", ViewObject(ViewId::TORCH, ViewLayer::TORCH1).setAttachmentDir(Dir::N), type, tribe)

@@ -35,6 +35,12 @@ Tile::Tile(TileCoord c) : color{255, 255, 255}, tileCoord(c) {
 
 Tile Tile::setRoundShadow() {
   roundShadow = true;
+  moveUp = true;
+  return *this;
+}
+
+Tile Tile::setMoveUp() {
+  moveUp = true;
   return *this;
 }
 
@@ -551,7 +557,8 @@ class TileCoordLookup {
     Tile::addTile(ViewId::PRISON, sprite("prison"));
     Tile::addTile(ViewId::BED, sprite("sleepdeco").setRoundShadow());
     Tile::addTile(ViewId::DORM, sprite("sleep").setFloorBorders());
-    Tile::addTile(ViewId::TORCH, sprite("torch").setTranslucent(0.35));
+    Tile::addTile(ViewId::TORCH, sprite("torch"));
+    Tile::addTile(ViewId::STANDING_TORCH, sprite("standing_torch").setMoveUp());
     Tile::addTile(ViewId::ALTAR, sprite("altar").setRoundShadow());
     Tile::addTile(ViewId::CREATURE_ALTAR, sprite("altar2").setRoundShadow());
     Tile::addTile(ViewId::TORTURE_TABLE, sprite("torturedeco").setRoundShadow());
@@ -879,6 +886,7 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::DORM, symbol(u8".", Color::BROWN));
     Tile::addSymbol(ViewId::BED, symbol(u8"=", Color::WHITE));
     Tile::addSymbol(ViewId::TORCH, symbol(u8"*", Color::YELLOW));
+    Tile::addSymbol(ViewId::STANDING_TORCH, symbol(u8"*", Color::YELLOW));
     Tile::addSymbol(ViewId::ALTAR, symbol(u8"Ω", Color::WHITE, true));
     Tile::addSymbol(ViewId::CREATURE_ALTAR, symbol(u8"Ω", Color::YELLOW, true));
     Tile::addSymbol(ViewId::TORTURE_TABLE, symbol(u8"=", Color::GRAY));

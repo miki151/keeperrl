@@ -39,6 +39,7 @@ class Tile {
   bool symFont = false;
   double translucent = 0;
   bool roundShadow = false;
+  bool moveUp = false;
   bool floorBorders = false;
   bool wallShadow = false;
 
@@ -55,6 +56,7 @@ class Tile {
   Tile addHighlight(TileCoord);
   Tile setColor(Color);
   Tile setRoundShadow();
+  Tile setMoveUp();
   Tile setWallShadow();
   optional<TileCoord> getHighlightCoord() const;
 

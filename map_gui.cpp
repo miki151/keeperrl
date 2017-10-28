@@ -507,8 +507,9 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
     if (object.layer() == ViewLayer::CREATURE || tile.roundShadow) {
       static auto coord = renderer.getTileCoord("round_shadow");
       renderer.drawTile(pos + movement, coord, size, Color(255, 255, 255, 160));
-      move.y = -4* size.y / renderer.getNominalSize().y;
     }
+    if (object.layer() == ViewLayer::CREATURE || tile.moveUp)
+      move.y = -4* size.y / renderer.getNominalSize().y;
     if (auto background = tile.getBackgroundCoord())
       renderer.drawTile(pos, *background, size, color);
     move += movement;
