@@ -148,7 +148,7 @@ class Destruction : public Task {
   public:
   Destruction(WTaskCallback c, Position pos, WConstFurniture furniture, DestroyAction action)
       : Task(true), position(pos), callback(c), destroyAction(action),
-        description(action.getVerbSecondPerson() + " "_s + furniture->getName()),
+        description(action.getVerbSecondPerson() + " "_s + furniture->getName() + " at " + toString(position)),
         furnitureType(furniture->getType()) {}
 
   WConstFurniture getFurniture() const {
@@ -160,6 +160,10 @@ class Destruction : public Task {
       if (furniture->canDestroy(destroyAction))
         return false;
     return true;
+  }
+
+  virtual bool isBlocked(WCreature) const override {
+    return !callback->isConstructionReachable(position);
   }
 
   virtual string getDescription() const override {
