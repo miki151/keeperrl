@@ -238,7 +238,7 @@ void Player::applyItem(vector<WItem> items) {
     privateMessage("You can't read while blind!");
     return;
   }
-  if (items[0]->getApplyTime() > TimeInterval::fromVisible(1)) {
+  if (items[0]->getApplyTime() > 1_visible) {
     for (WConstCreature c : getCreature()->getVisibleEnemies())
       if (getCreature()->getPosition().dist8(c->getPosition()) < 3) {
         if (!getView()->yesOrNoPrompt("Applying " + items[0]->getAName() + " takes " +
@@ -661,8 +661,8 @@ void Player::makeMove() {
     case UserInputId::SUMMON_ENEMY:
       if (auto id = PrettyPrinting::parseObject<CreatureId>(action.get<string>())) {
         auto factory = CreatureFactory::singleCreature(TribeId::getMonster(), *id);
-        Effect::summon(getCreature()->getPosition(), factory, 1, TimeInterval::fromVisible(1000),
-            TimeInterval::fromVisible(3));
+        Effect::summon(getCreature()->getPosition(), factory, 1, 1000_visible,
+            3_visible);
       } else
         getView()->presentText("Sorry", "Couldn't parse \"" + action.get<string>() + "\"");
       break;

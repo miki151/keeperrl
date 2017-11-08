@@ -1136,7 +1136,7 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
         getCollective()->hasResource({ResourceId::GOLD, *elem.getRansom()})};
     break;
   }
-  const auto maxEnemyCountdown = TimeInterval::fromVisible(500);
+  const auto maxEnemyCountdown = 500_visible;
   if (auto& enemies = getModel()->getExternalEnemies())
     if (auto nextWave = enemies->getNextWave()) {
       if (nextWave->enemy.behaviour.getId() != AttackBehaviourId::HALLOWEEN_KIDS) {
@@ -1535,7 +1535,7 @@ void PlayerControl::minionDragAndDrop(const CreatureDropInfo& info) {
           return;
         }
       }
-    PTask task = Task::goToAndWait(pos, TimeInterval::fromVisible(15));
+    PTask task = Task::goToAndWait(pos, 15_visible);
     task->setViewId(ViewId::GUARD_POST);
     getCollective()->setTask(c, std::move(task));
     pos.setNeedsRenderUpdate(true);
@@ -1617,7 +1617,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
           for (WCreature c : getTeams().getMembers(info.teamId)) {
             c->removeEffect(LastingEffect::TIED_UP);
             c->removeEffect(LastingEffect::SLEEP);
-            PTask task = Task::goToAndWait(pos, TimeInterval::fromVisible(15));
+            PTask task = Task::goToAndWait(pos, 15_visible);
             task->setViewId(ViewId::GUARD_POST);
             getCollective()->setTask(c, std::move(task));
             pos.setNeedsRenderUpdate(true);
@@ -2125,8 +2125,8 @@ void PlayerControl::checkKeeperDanger() {
           keeper->getAttributes().getGender().him() + "?");
   };
   if (!getKeeper()->isDead() && !controlled.contains(getKeeper())) {
-    if ((getKeeper()->wasInCombat(TimeInterval::fromVisible(5)) || getKeeper()->getBody().isWounded())
-        && lastControlKeeperQuestion < getCollective()->getGlobalTime() - TimeInterval::fromVisible(50)) {
+    if ((getKeeper()->wasInCombat(5_visible) || getKeeper()->getBody().isWounded())
+        && lastControlKeeperQuestion < getCollective()->getGlobalTime() - 50_visible) {
       lastControlKeeperQuestion = getCollective()->getGlobalTime();
       if (prompt()) {
         controlSingle(getKeeper());
@@ -2134,7 +2134,7 @@ void PlayerControl::checkKeeperDanger() {
       }
     }
     if (getKeeper()->isAffected(LastingEffect::POISON)
-        && lastControlKeeperQuestion < getCollective()->getGlobalTime() - TimeInterval::fromVisible(5)) {
+        && lastControlKeeperQuestion < getCollective()->getGlobalTime() - 5_visible) {
       lastControlKeeperQuestion = getCollective()->getGlobalTime();
       if (prompt()) {
         controlSingle(getKeeper());

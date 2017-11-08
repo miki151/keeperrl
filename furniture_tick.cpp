@@ -47,7 +47,7 @@ static void handleBoulder(Position pos, WFurniture furniture) {
             pos.globalMessage(PlayerMessage("The boulder starts rolling.", MessagePriority::CRITICAL));
             pos.unseenMessage(PlayerMessage("You hear a heavy boulder rolling.", MessagePriority::CRITICAL));
             CHECK(!pos.getCreature());
-            pos.addCreature(CreatureFactory::getRollingBoulder(furniture->getTribe(), direction), TimeInterval::fromVisible(0));
+            pos.addCreature(CreatureFactory::getRollingBoulder(furniture->getTribe(), direction), 0_visible);
           } else {
             other->you(MsgType::DISARM_TRAP, "boulder trap");
             pos.getGame()->addEvent(EventInfo::TrapDisarmed{pos, other});
@@ -64,7 +64,7 @@ static void handleBoulder(Position pos, WFurniture furniture) {
 
 static void meteorShower(Position position, WFurniture furniture) {
   auto creator = furniture->getCreator();
-  const auto duration = TimeInterval::fromVisible(15);
+  const auto duration = 15_visible;
   if (!creator ||
       creator->isDead() ||
       *furniture->getCreatedTime() + duration < position.getModel()->getLocalTime()) {

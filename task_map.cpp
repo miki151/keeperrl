@@ -197,7 +197,7 @@ CostInfo TaskMap::freeFromTask(WConstCreature c) {
       return removeTask(task);
     else {
       freeTask(task);
-      delayedTasks.set(task, c->getLocalTime() + TimeInterval::fromVisible(50));
+      delayedTasks.set(task, c->getLocalTime() + 50_visible);
     }
   }
   return CostInfo::noCost();

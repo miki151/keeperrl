@@ -202,7 +202,7 @@ void LastingEffects::onTimedOut(WCreature c, LastingEffect effect, bool msg) {
         c->you(MsgType::ARE, "moving faster again"); break;
       case LastingEffect::SLEEP:
         c->you(MsgType::WAKE_UP, "");
-        c->addEffect(LastingEffect::RESTED, TimeInterval::fromVisible(1000));
+        c->addEffect(LastingEffect::RESTED, 1000_visible);
         break;
       case LastingEffect::SPEED:
         c->you(MsgType::ARE, "moving more slowly again"); break;

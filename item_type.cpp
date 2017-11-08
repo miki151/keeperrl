@@ -95,7 +95,7 @@ class Corpse : public Item {
           if (v.canEnter(vulture.get())) {
             v.addCreature(std::move(vulture));
             v.globalMessage("A vulture lands near " + getTheName());
-            *rottenTime -= TimeInterval::fromVisible(40);
+            *rottenTime -= 40_visible;
             break;
           }
         }
@@ -121,7 +121,7 @@ class Corpse : public Item {
 
 PItem ItemFactory::corpse(const string& name, const string& rottenName, double weight, ItemClass itemClass,
     CorpseInfo corpseInfo) {
-  const auto rotTime = TimeInterval::fromVisible(300);
+  const auto rotTime = 300_visible;
   return makeOwner<Corpse>(
         ViewObject(ViewId::BONE, ViewLayer::ITEM, rottenName),
         ITATTR(
@@ -399,7 +399,7 @@ ItemAttributes ItemType::AutomatonItem::getAttributes() const {
       i.weight = 30;
       i.itemClass = ItemClass::TOOL;
       i.description = "";
-      i.applyTime = TimeInterval::fromVisible(3);
+      i.applyTime = 3_visible;
       i.uses = 1;
       i.price = 60;
       i.effect = Effect(Effect::Summon{CreatureId::AUTOMATON});
@@ -955,7 +955,7 @@ ItemAttributes ItemType::FirstAidKit::getAttributes() const {
       i.weight = 0.5;
       i.itemClass = ItemClass::TOOL;
       i.description = "Heals your wounds, but requires a few turns to apply.";
-      i.applyTime = TimeInterval::fromVisible(3);
+      i.applyTime = 3_visible;
       i.uses = Random.get(3, 6);
       i.usedUpMsg = true;
       i.displayUses = true;
@@ -989,7 +989,7 @@ ItemAttributes ItemType::TrapItem::getAttributes() const {
       i.shortName = trapName;
       i.weight = 0.5;
       i.itemClass = ItemClass::TOOL;
-      i.applyTime = TimeInterval::fromVisible(3);
+      i.applyTime = 3_visible;
       i.applySound = SoundId::TRAP_ARMING;
       i.uses = 1;
       i.usedUpMsg = true;
@@ -1094,7 +1094,7 @@ ItemAttributes ItemType::TechBook::getAttributes() const {
       i.plural = "books of " + *i.shortName;
       i.weight = 1;
       i.itemClass = ItemClass::BOOK;
-      i.applyTime = TimeInterval::fromVisible(3);
+      i.applyTime = 3_visible;
       i.price = 1000;
   );
 }
@@ -1106,7 +1106,7 @@ ItemAttributes ItemType::RandomTechBook::getAttributes() const {
       i.plural = "books of knowledge"_s;
       i.weight = 0.5;
       i.itemClass = ItemClass::BOOK;
-      i.applyTime = TimeInterval::fromVisible(3);
+      i.applyTime = 3_visible;
       i.price = 300;
   );
 }

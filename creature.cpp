@@ -263,7 +263,7 @@ CreatureAction Creature::move(Position pos) const {
     auto oldTime = getLocalTime();
     if (isAffected(LastingEffect::COLLAPSED)) {
       you(MsgType::CRAWL, getPosition().getName());
-      self->spendTime(TimeInterval::fromVisible(3));
+      self->spendTime(3_visible);
     } else
       self->spendTime();
     self->addMovementInfo({direction, oldTime, getLocalTime(), MovementInfo::MOVE});
@@ -272,7 +272,7 @@ CreatureAction Creature::move(Position pos) const {
 
 void Creature::displace(LocalTime time, Vec2 dir) {
   position.moveCreature(dir);
-  addMovementInfo({dir, time, time + TimeInterval::fromVisible(1), MovementInfo::MOVE});
+  addMovementInfo({dir, time, time + 1_visible, MovementInfo::MOVE});
 }
 
 bool Creature::canTakeItems(const vector<WItem>& items) const {
@@ -588,7 +588,7 @@ CreatureAction Creature::applySquare(Position pos) const {
         auto oldTime = getLocalTime();
         self->spendTime(usageTime);
         if (pos != getPosition() && getPosition() == originalPos)
-          self->addMovementInfo({getPosition().getDir(pos), oldTime, min(oldTime + TimeInterval::fromVisible(1),
+          self->addMovementInfo({getPosition().getDir(pos), oldTime, min(oldTime + 1_visible,
               getLocalTime()), MovementInfo::ATTACK});
       });
   return CreatureAction();
@@ -875,7 +875,7 @@ CreatureAction Creature::attack(WCreature other, optional<AttackParams> attackPa
   auto weapon = getWeapon();
   auto damageAttr = weapon ? weapon->getMeleeAttackAttr() : AttrType::DAMAGE;
   int damage = getAttr(damageAttr);
-  auto timeSpent = TimeInterval::fromVisible(1);
+  auto timeSpent = 1_visible;
   vector<string> attackAdjective;
   if (attackParams && attackParams->mod)
     switch (*attackParams->mod) {
@@ -945,7 +945,7 @@ bool Creature::takeDamage(const Attack& attack) {
     if (attack.type == AttackType::POSSESS) {
       you(MsgType::ARE, "possessed by " + attacker->getName().the());
       attacker->dieNoReason(Creature::DropType::NOTHING);
-      addEffect(LastingEffect::INSANITY, TimeInterval::fromVisible(10));
+      addEffect(LastingEffect::INSANITY, 10_visible);
       return false;
     }
     lastDamageType = getExperienceType(attack.damageType);
@@ -1265,9 +1265,9 @@ CreatureAction Creature::eat(WItem item) const {
   return CreatureAction(this, [=](WCreature self) {
     thirdPerson(getName().the() + " eats " + item->getAName());
     secondPerson("You eat " + item->getAName());
-    self->addEffect(LastingEffect::SATIATED, TimeInterval::fromVisible(500));
+    self->addEffect(LastingEffect::SATIATED, 500_visible);
     self->getPosition().removeItem(item);
-    self->spendTime(TimeInterval::fromVisible(3));
+    self->spendTime(3_visible);
   });
 }
 
@@ -1291,7 +1291,7 @@ CreatureAction Creature::destroy(Vec2 direction, const DestroyAction& action) co
         auto oldTime = getLocalTime();
         self->spendTime();
         if (direction.length8() == 1)
-          self->addMovementInfo({getPosition().getDir(pos), oldTime, min(oldTime + TimeInterval::fromVisible(1),
+          self->addMovementInfo({getPosition().getDir(pos), oldTime, min(oldTime + 1_visible,
               getLocalTime()), MovementInfo::ATTACK});
       });
   return CreatureAction();
@@ -1315,7 +1315,7 @@ CreatureAction Creature::copulate(Vec2 direction) const {
   return CreatureAction(this, [=](WCreature self) {
       INFO << getName().bare() << " copulate with " << other->getName().bare();
       you(MsgType::COPULATE, "with " + other->getName().the());
-      self->spendTime(TimeInterval::fromVisible(2));
+      self->spendTime(2_visible);
     });
 }
 
@@ -1330,7 +1330,7 @@ CreatureAction Creature::consume(WCreature other) const {
   return CreatureAction(this, [=] (WCreature self) {
     self->attributes->consume(self, *other->attributes);
     other->dieWithAttacker(self, Creature::DropType::ONLY_INVENTORY);
-    self->spendTime(TimeInterval::fromVisible(2));
+    self->spendTime(2_visible);
   });
 }
 

@@ -591,7 +591,7 @@ void Collective::tick() {
   if (config->getEnemyPositions() && Random.roll(5)) {
     vector<Position> enemyPos = getEnemyPositions();
     if (!enemyPos.empty())
-      delayDangerousTasks(enemyPos, getLocalTime() + TimeInterval::fromVisible(20));
+      delayDangerousTasks(enemyPos, getLocalTime() + 20_visible);
     else {
       alarmInfo.reset();
       control->onNoEnemies();
@@ -709,7 +709,7 @@ void Collective::onEvent(const GameEvent& event) {
   using namespace EventInfo;
   event.visit(
       [&](const Alarm& info) {
-        static const auto alarmTime = TimeInterval::fromVisible(100);
+        static const auto alarmTime = 100_visible;
         if (getTerritory().contains(info.pos)) {
           control->addMessage(PlayerMessage("An alarm goes off.", MessagePriority::HIGH).setPosition(info.pos));
           alarmInfo = AlarmInfo {getGlobalTime() + alarmTime, info.pos };

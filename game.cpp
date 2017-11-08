@@ -245,12 +245,12 @@ optional<ExitInfo> Game::update() {
       // Use top level's id as unique id of the model.
       auto id = models[v]->getTopLevel()->getUniqueId();
       if (!localTime.count(id)) {
-        localTime[id] = models[v]->getLocalTime() + TimeInterval::fromVisible(2);
+        localTime[id] = models[v]->getLocalTime() + 2_visible;
         updateModel(models[v].get(), localTime[id]);
       }
   }
   auto currentId = currentModel->getTopLevel()->getUniqueId();
-  while (!lastTick || currentTime >= *lastTick + TimeInterval::fromVisible(1)) {
+  while (!lastTick || currentTime >= *lastTick + 1_visible) {
     if (!lastTick)
       lastTick = currentTime;
     else

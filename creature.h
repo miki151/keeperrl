@@ -275,7 +275,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   private:
 
   CreatureAction moveTowards(Position, bool away, NavigationFlags);
-  void spendTime(TimeInterval = TimeInterval::fromVisible(1));
+  void spendTime(TimeInterval = 1_visible);
   bool canCarry(const vector<WItem>&) const;
   TribeSet getFriendlyTribes() const;
   void addMovementInfo(const MovementInfo&);

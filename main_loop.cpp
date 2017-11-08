@@ -200,7 +200,7 @@ optional<SaveFileInfo> MainLoop::chooseSaveFile(const vector<ListElem>& options,
 }
 
 TimeInterval MainLoop::getAutosaveFreq() {
-  return TimeInterval::fromVisible(1500);
+  return 1500_visible;
 }
 
 enum class MainLoop::ExitCondition {

@@ -147,7 +147,7 @@ void Model::tick(LocalTime time) {
 }
 
 void Model::addCreature(PCreature c) {
-  addCreature(std::move(c), TimeInterval::fromVisible(1));// + Random.getDouble());
+  addCreature(std::move(c), 1_visible);// + Random.getDouble());
 }
 
 void Model::addCreature(PCreature c, TimeInterval delay) {

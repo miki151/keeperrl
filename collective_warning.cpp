@@ -122,8 +122,8 @@ const char* CollectiveWarnings::getText(Warning w) {
   return "";
 }
 
-const auto anyWarningFrequency = TimeInterval::fromVisible(100);
-const auto warningFrequency = TimeInterval::fromVisible(500);
+const auto anyWarningFrequency = 100_visible;
+const auto warningFrequency = 500_visible;
 
 optional<const char*> CollectiveWarnings::getNextWarning(LocalTime time) {
   if (time > lastWarningTime + anyWarningFrequency)

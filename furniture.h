@@ -124,7 +124,7 @@ class Furniture : public OwnedObject<Furniture> {
   optional<FurnitureTickType> SERIAL(tickType);
   HeapAllocated<optional<FurnitureEntry>> SERIAL(entryType);
   HeapAllocated<optional<FurnitureDroppedItems>> SERIAL(droppedItems);
-  TimeInterval SERIAL(usageTime) = TimeInterval::fromVisible(1);
+  TimeInterval SERIAL(usageTime) = 1_visible;
   bool SERIAL(overrideMovement) = false;
   bool SERIAL(wall) = false;
   optional<ConstructMessage> SERIAL(constructMessage) = BUILD;

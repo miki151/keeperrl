@@ -47,7 +47,7 @@ class Behaviour {
   WItem getBestWeapon();
   WCreature getClosestEnemy();
   WCreature getClosestCreature();
-  MoveInfo tryEffect(Effect, TimeInterval maxTurns = TimeInterval::fromVisible(1));
+  MoveInfo tryEffect(Effect, TimeInterval maxTurns = 1_visible);
   MoveInfo tryEffect(DirEffectType, Vec2);
 
   virtual ~Behaviour() {}
@@ -160,7 +160,7 @@ class Heal : public Behaviour {
         return move.withValue(min(1.0, 1.5 - creature->getBody().getHealth()));
       if (MoveInfo move = tryEffect(Effect::Lasting{LastingEffect::REGENERATION}))
         return move;
-      if (MoveInfo move = tryEffect(Effect::Heal{}, TimeInterval::fromVisible(3)))
+      if (MoveInfo move = tryEffect(Effect::Heal{}, 3_visible))
         return move.withValue(0.5 * min(1.0, 1.5 - creature->getBody().getHealth()));
     }
     for (Position pos : creature->getPosition().neighbors8())
@@ -478,7 +478,7 @@ class Fighter : public Behaviour {
 
   MoveInfo getLastSeenMove() {
     if (auto lastSeen = getLastSeen()) {
-      auto lastSeenTimeout = TimeInterval::fromVisible(20);
+      auto lastSeenTimeout = 20_visible;
       if (!lastSeen->pos.isSameLevel(creature->getPosition()) ||
           lastSeen->time < creature->getGlobalTime() - lastSeenTimeout ||
           lastSeen->pos == creature->getPosition()) {
@@ -598,8 +598,8 @@ class Fighter : public Behaviour {
             other->setInCombat();
             lastSeen = LastSeen{other->getPosition(), creature->getGlobalTime(), LastSeen::ATTACK, other->getUniqueId()};
             auto chaseInfo = chaseFreeze.getMaybe(other);
-            auto startChaseFreeze = TimeInterval::fromVisible(20);
-            auto endChaseFreeze = TimeInterval::fromVisible(20);
+            auto startChaseFreeze = 20_visible;
+            auto endChaseFreeze = 20_visible;
             if (!chaseInfo || other->getGlobalTime() > chaseInfo->second)
               chaseFreeze.set(other, make_pair(other->getGlobalTime() + startChaseFreeze,
                   other->getGlobalTime() + endChaseFreeze));
@@ -1042,7 +1042,7 @@ class SplashImps : public Behaviour {
   }
 
   virtual MoveInfo getMove() override {
-    creature->addEffect(LastingEffect::SPEED, TimeInterval::fromVisible(1000));
+    creature->addEffect(LastingEffect::SPEED, 1000_visible);
     if (!initialPos)
       initialPos = creature->getPosition().getCoord();
     bool heroesDead = true;

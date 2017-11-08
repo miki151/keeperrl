@@ -13,9 +13,9 @@ const char* SunlightInfo::getText(SunlightState state) {
   }
 }
 
-const auto dayLength = TimeInterval::fromVisible(1500);
-const auto nightLength = TimeInterval::fromVisible(1500);
-const auto duskLength  = TimeInterval::fromVisible(180);
+const auto dayLength = 1500_visible;
+const auto nightLength = 1500_visible;
+const auto duskLength  = 180_visible;
 
 void SunlightInfo::update(GlobalTime currentTime) {
   GlobalTime d;

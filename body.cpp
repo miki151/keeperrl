@@ -488,7 +488,7 @@ bool Body::takeDamage(const Attack& attack, WCreature creature, double damage) {
       creature->dieWithAttacker(attack.attacker);
       return true;
     }
-    creature->addEffect(LastingEffect::BLEEDING, TimeInterval::fromVisible(50));
+    creature->addEffect(LastingEffect::BLEEDING, 50_visible);
     if (health <= 0)
       health = 0.1;
     return false;

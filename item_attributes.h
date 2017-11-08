@@ -60,7 +60,7 @@ class ItemAttributes {
   AttrType SERIAL(meleeAttackAttr) = AttrType::DAMAGE;
   double SERIAL(attackTime) = 1;
   optional<EquipmentSlot> SERIAL(equipmentSlot);
-  TimeInterval SERIAL(applyTime) = TimeInterval::fromVisible(1);
+  TimeInterval SERIAL(applyTime) = 1_visible;
   bool SERIAL(fragile) = false;
   optional<Effect> SERIAL(effect);
   optional<Effect> SERIAL(attackEffect);

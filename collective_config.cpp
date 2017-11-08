@@ -124,7 +124,7 @@ int CollectiveConfig::getNumGhostSpawns() const {
 }
 
 TimeInterval CollectiveConfig::getImmigrantTimeout() const {
-  return TimeInterval::fromVisible(500);
+  return 500_visible;
 }
 
 double CollectiveConfig::getGhostProb() const {
