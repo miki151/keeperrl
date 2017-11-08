@@ -52,7 +52,7 @@ class Furniture : public OwnedObject<Furniture> {
   void use(Position, WCreature) const;
   bool canUse(WConstCreature) const;
   optional<FurnitureUsageType> getUsageType() const;
-  int getUsageTime() const;
+  TimeInterval getUsageTime() const;
   optional<FurnitureClickType> getClickType() const;
   bool isTicking() const;
   bool isWall() const;
@@ -62,7 +62,7 @@ class Furniture : public OwnedObject<Furniture> {
   bool canHide() const;
   bool emitsWarning(WConstCreature) const;
   WCreature getCreator() const;
-  optional<double> getCreatedTime() const;
+  optional<LocalTime> getCreatedTime() const;
   optional<CreatureId> getSummonedElement() const;
   /**
    * @brief Calls special functionality to handle dropped items, if any.
@@ -84,7 +84,7 @@ class Furniture : public OwnedObject<Furniture> {
   Furniture& setBlockVision();
   Furniture& setBlockVision(VisionId, bool);
   Furniture& setUsageType(FurnitureUsageType);
-  Furniture& setUsageTime(int);
+  Furniture& setUsageTime(TimeInterval);
   Furniture& setClickType(FurnitureClickType);
   Furniture& setTickType(FurnitureTickType);
   Furniture& setEntryType(FurnitureEntry);
@@ -124,7 +124,7 @@ class Furniture : public OwnedObject<Furniture> {
   optional<FurnitureTickType> SERIAL(tickType);
   HeapAllocated<optional<FurnitureEntry>> SERIAL(entryType);
   HeapAllocated<optional<FurnitureDroppedItems>> SERIAL(droppedItems);
-  int SERIAL(usageTime) = 1;
+  TimeInterval SERIAL(usageTime) = TimeInterval::fromVisible(1);
   bool SERIAL(overrideMovement) = false;
   bool SERIAL(wall) = false;
   optional<ConstructMessage> SERIAL(constructMessage) = BUILD;
@@ -132,7 +132,7 @@ class Furniture : public OwnedObject<Furniture> {
   bool SERIAL(canHideHere) = false;
   bool SERIAL(warning) = false;
   WCreature SERIAL(creator);
-  optional<double> SERIAL(createdTime);
+  optional<LocalTime> SERIAL(createdTime);
   optional<CreatureId> SERIAL(summonedElement);
   bool SERIAL(canBuildBridge) = false;
   bool SERIAL(noProjectiles) = false;

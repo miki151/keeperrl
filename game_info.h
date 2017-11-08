@@ -14,6 +14,7 @@
 #include "attr_type.h"
 #include "best_attack.h"
 #include "villain_type.h"
+#include "game_time.h"
 
 enum class SpellId;
 
@@ -102,7 +103,7 @@ class PlayerInfo {
     SpellId HASH(id);
     string HASH(name);
     string HASH(help);
-    optional<int> HASH(timeout);
+    optional<TimeInterval> HASH(timeout);
     HASH_ALL(id, name, help, timeout)
   };
   vector<Spell> HASH(spells);
@@ -155,7 +156,7 @@ struct ImmigrantDataInfo {
   ViewId HASH(viewId);
   vector<AttributeInfo> HASH(attributes);
   int HASH(count);
-  optional<double> HASH(timeLeft);
+  optional<TimeInterval> HASH(timeLeft);
   int HASH(id);
   enum AutoState { AUTO_REJECT, AUTO_ACCEPT};
   optional<ImmigrantAutoState> HASH(autoState);
@@ -290,7 +291,7 @@ class CollectiveInfo {
   struct NextWave {
     ViewId HASH(viewId);
     string HASH(attacker);
-    int HASH(numTurns);
+    TimeInterval HASH(numTurns);
     HASH_ALL(viewId, attacker, numTurns)
   };
   optional<NextWave> HASH(nextWave);
@@ -329,7 +330,7 @@ class VillageInfo {
 class GameSunlightInfo {
   public:
   string HASH(description);
-  int HASH(timeRemaining);
+  TimeInterval HASH(timeRemaining);
   HASH_ALL(description, timeRemaining)
 };
 
@@ -349,7 +350,7 @@ class TutorialInfo {
 class GameInfo {
   public:
   enum class InfoType { PLAYER, BAND, SPECTATOR} HASH(infoType) = InfoType::PLAYER;
-  int HASH(time);
+  GlobalTime HASH(time);
   int HASH(modifiedSquares);
   int HASH(totalSquares);
 

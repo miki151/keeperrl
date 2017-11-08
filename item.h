@@ -21,6 +21,7 @@
 #include "renderable.h"
 #include "position.h"
 #include "owner_pointer.h"
+#include "game_time.h"
 
 class Level;
 class Attack;
@@ -86,7 +87,7 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
   void onHitSquareMessage(Position, int numItems);
   void onHitCreature(WCreature c, const Attack& attack, int numItems);
 
-  double getApplyTime() const;
+  TimeInterval getApplyTime() const;
   double getWeight() const;
   string getDescription() const;
 

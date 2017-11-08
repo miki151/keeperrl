@@ -104,7 +104,7 @@ bool Game::isTurnBased() {
   return !spectator && (!playerControl || playerControl->isTurnBased());
 }
 
-double Game::getGlobalTime() const {
+GlobalTime Game::getGlobalTime() const {
   return currentTime;
 }
 
@@ -201,9 +201,43 @@ void Game::doneRetirement() {
   UniqueEntity<Item>::clearOffset();
 }
 
+double Game::getUpdateRemainder() const {
+  return updateRemainder;
+}
+
 optional<ExitInfo> Game::update(double timeDiff) {
+  if (spectator)
+    while (1) {
+      UserInput input = view->getAction();
+      if (input.getId() == UserInputId::EXIT)
+        return ExitInfo(ExitAndQuit());
+      if (input.getId() == UserInputId::IDLE)
+        break;
+    }
+  if (playerControl && !playerControl->isTurnBased()) {
+    while (1) {
+      UserInput input = view->getAction();
+      if (input.getId() == UserInputId::IDLE)
+        break;
+      else
+        lastUpdate = none;
+      playerControl->processInput(view, input);
+      if (exitInfo)
+        return exitInfo;
+    }
+  }
+  considerRealTimeRender();
+  updateRemainder += timeDiff;
+  while (updateRemainder >= 1) {
+    updateRemainder -= 1;
+    if (auto exitInfo = update())
+      return exitInfo;
+  }
+  return none;
+}
+
+optional<ExitInfo> Game::update() {
   ScopeTimer timer("Game::update timer");
-  currentTime += timeDiff;
   WModel currentModel = getCurrentModel();
   // Give every model a couple of turns so that things like shopkeepers can initialize.
   for (Vec2 v : models.getBounds())
@@ -211,22 +245,25 @@ optional<ExitInfo> Game::update(double timeDiff) {
       // Use top level's id as unique id of the model.
       auto id = models[v]->getTopLevel()->getUniqueId();
       if (!localTime.count(id)) {
-        localTime[id] = models[v]->getLocalTime() + 2;
+        localTime[id] = models[v]->getLocalTime() + TimeInterval::fromVisible(2);
         updateModel(models[v].get(), localTime[id]);
       }
   }
   auto currentId = currentModel->getTopLevel()->getUniqueId();
-  localTime[currentId] += timeDiff;
-  while (!lastTick || currentTime > *lastTick + 1) {
+  while (!lastTick || currentTime >= *lastTick + TimeInterval::fromVisible(1)) {
     if (!lastTick)
       lastTick = currentTime;
     else
-      *lastTick += 1;
+      *lastTick += TimeInterval::fromInternal(1);
     tick(*lastTick);
   }
-  considerRealTimeRender();
   considerRetiredLoadedEvent(getModelCoords(currentModel));
-  return updateModel(currentModel, localTime[currentId]);
+  auto ret = updateModel(currentModel, localTime[currentId]);
+  if (!ret) {
+    currentTime += TimeInterval::fromInternal(1);
+    localTime[currentId] += TimeInterval::fromInternal(1);
+  }
+  return ret;
 }
 
 void Game::considerRealTimeRender() {
@@ -240,31 +277,10 @@ void Game::considerRealTimeRender() {
   }
 }
 
-optional<ExitInfo> Game::updateModel(WModel model, double totalTime) {
+optional<ExitInfo> Game::updateModel(WModel model, LocalTime totalTime) {
   do {
-    if (spectator)
-      while (1) {
-        UserInput input = view->getAction();
-        if (input.getId() == UserInputId::EXIT)
-          return ExitInfo(ExitAndQuit());
-        if (input.getId() == UserInputId::IDLE)
-          break;
-      }
-    if (playerControl && !playerControl->isTurnBased()) {
-      while (1) {
-        UserInput input = view->getAction();
-        if (input.getId() == UserInputId::IDLE)
-          break;
-        else
-          lastUpdate = none;
-        playerControl->processInput(view, input);
-        if (exitInfo)
-          return exitInfo;
-      }
-    }
-    if (model->getLocalTime() >= totalTime)
+    if (!model->update(totalTime))
       return none;
-    model->update(totalTime);
     if (exitInfo)
       return exitInfo;
     if (wasTransfered) {
@@ -279,9 +295,9 @@ bool Game::isVillainActive(WConstCollective col) {
   return m == getMainModel().get() || campaign->isInInfluence(getModelCoords(m));
 }
 
-void Game::tick(double time) {
-  if (!turnEvents.empty() && time > *turnEvents.begin()) {
-    int turn = *turnEvents.begin();
+void Game::tick(GlobalTime time) {
+  if (!turnEvents.empty() && time.getVisibleInt() > *turnEvents.begin()) {
+    auto turn = *turnEvents.begin();
     if (turn == 0)
       uploadEvent("campaignStarted", campaign->getParameters());
     else
@@ -471,7 +487,7 @@ void Game::conquered(const string& title, int numKills, int points) {
         c.playerName = title;
         c.gameResult = "achieved world domination";
         c.gameWon = true;
-        c.turns = (int) getGlobalTime();
+        c.turns = getGlobalTime().getVisibleInt();
         c.campaignType = campaign->getType();
         c.playerRole = campaign->getPlayerRole();
   );
@@ -480,7 +496,7 @@ void Game::conquered(const string& title, int numKills, int points) {
 }
 
 void Game::retired(const string& title, int numKills, int points) {
-  int turns = (int) getGlobalTime();
+  int turns = getGlobalTime().getVisibleInt();
   string text = "You have survived in this land for " + toString(turns) + " turns. You killed " + toString(numKills) +
       " enemies. Thank you for playing KeeperRL!\n \n";
   for (string stat : statistics->getText())
@@ -522,7 +538,7 @@ void Game::gameOver(WConstCreature creature, int numKills, const string& enemies
         c.playerName = *creature->getName().first();
         c.gameResult = creature->getDeathReason().value_or("");
         c.gameWon = false;
-        c.turns = (int) getGlobalTime();
+        c.turns = getGlobalTime().getVisibleInt();
         c.campaignType = campaign->getType();
         c.playerRole = campaign->getPlayerRole();
   );

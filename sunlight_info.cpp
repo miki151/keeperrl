@@ -13,12 +13,12 @@ const char* SunlightInfo::getText(SunlightState state) {
   }
 }
 
-const double dayLength = 1500;
-const double nightLength = 1500;
-const double duskLength  = 180;
+const auto dayLength = TimeInterval::fromVisible(1500);
+const auto nightLength = TimeInterval::fromVisible(1500);
+const auto duskLength  = TimeInterval::fromVisible(180);
 
-void SunlightInfo::update(double currentTime) {
-  double d = 0;
+void SunlightInfo::update(GlobalTime currentTime) {
+  GlobalTime d;
   while (1) {
     d += dayLength;
     if (d > currentTime) {
@@ -29,12 +29,12 @@ void SunlightInfo::update(double currentTime) {
     }
     d += duskLength;
     if (d > currentTime) {
-      lightAmount = (d - currentTime) / duskLength;
+      lightAmount = (d - currentTime).getDouble() / duskLength.getDouble();
       timeRemaining = d + nightLength - duskLength - currentTime;
       state = SunlightState::NIGHT;
       break;
     }
-    d += nightLength - 2 * duskLength;
+    d += nightLength - duskLength * 2;
     if (d > currentTime) {
       lightAmount = 0;
       timeRemaining = d + duskLength - currentTime;
@@ -43,7 +43,7 @@ void SunlightInfo::update(double currentTime) {
     }
     d += duskLength;
     if (d > currentTime) {
-      lightAmount = 1 - (d - currentTime) / duskLength;
+      lightAmount = 1 - (d - currentTime).getDouble() / duskLength.getDouble();
       timeRemaining = d - currentTime;
       state = SunlightState::NIGHT;
       break;
@@ -59,7 +59,7 @@ double SunlightInfo::getLightAmount() const {
   return lightAmount;
 }
 
-double SunlightInfo::getTimeRemaining() const {
+TimeInterval SunlightInfo::getTimeRemaining() const {
   return timeRemaining;
 }
 

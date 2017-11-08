@@ -331,7 +331,7 @@ WTask Collective::getStandardTask(WCreature c) {
     MinionTask task = current->task;
     auto& info = config->getTaskInfo(task);
     if (!current->finishTime) // see comment in header
-      currentTasks.getOrFail(c).finishTime = -1000;
+      currentTasks.getOrFail(c).finishTime = LocalTime::fromVisible(-1000);
     if (info.warning && !territory->isEmpty())
       warnings->setWarning(*info.warning, false);
     if (PTask ret = MinionTasks::generate(this, c, task))
@@ -591,7 +591,7 @@ void Collective::tick() {
   if (config->getEnemyPositions() && Random.roll(5)) {
     vector<Position> enemyPos = getEnemyPositions();
     if (!enemyPos.empty())
-      delayDangerousTasks(enemyPos, getLocalTime() + 20);
+      delayDangerousTasks(enemyPos, getLocalTime() + TimeInterval::fromVisible(20));
     else {
       alarmInfo.reset();
       control->onNoEnemies();
@@ -709,7 +709,7 @@ void Collective::onEvent(const GameEvent& event) {
   using namespace EventInfo;
   event.visit(
       [&](const Alarm& info) {
-        static const int alarmTime = 100;
+        static const auto alarmTime = TimeInterval::fromVisible(100);
         if (getTerritory().contains(info.pos)) {
           control->addMessage(PlayerMessage("An alarm goes off.", MessagePriority::HIGH).setPosition(info.pos));
           alarmInfo = AlarmInfo {getGlobalTime() + alarmTime, info.pos };
@@ -851,11 +851,11 @@ const TileEfficiency& Collective::getTileEfficiency() const {
   return *tileEfficiency;
 }
 
-double Collective::getLocalTime() const {
+LocalTime Collective::getLocalTime() const {
   return getModel()->getLocalTime();
 }
 
-double Collective::getGlobalTime() const {
+GlobalTime Collective::getGlobalTime() const {
   return getGame()->getGlobalTime();
 }
 
@@ -1226,7 +1226,7 @@ void Collective::updateConstructions() {
   }
 }
 
-void Collective::delayDangerousTasks(const vector<Position>& enemyPos1, double delayTime) {
+void Collective::delayDangerousTasks(const vector<Position>& enemyPos1, LocalTime delayTime) {
   vector<Vec2> enemyPos = enemyPos1
       .filter([=] (const Position& p) { return p.isSameLevel(level); })
       .transform([] (const Position& p) { return p.getCoord();});
@@ -1338,7 +1338,8 @@ void Collective::addProducesMessage(WConstCreature c, const vector<PItem>& items
 void Collective::onAppliedSquare(WCreature c, Position pos) {
   if (auto furniture = pos.getFurniture(FurnitureLayer::MIDDLE)) {
     // Furniture have variable usage time, so just multiply by it to be independent of changes.
-    double efficiency = tileEfficiency->getEfficiency(pos) * furniture->getUsageTime() * getEfficiency(c);
+    double efficiency = tileEfficiency->getEfficiency(pos) * furniture->getUsageTime().getVisibleDouble()
+        * getEfficiency(c);
     switch (furniture->getType()) {
       case FurnitureType::THRONE:
         if (config->getRegenerateMana())

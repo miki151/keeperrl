@@ -7,6 +7,7 @@
 #include "game_info.h"
 #include "creature.h"
 #include "view_index.h"
+#include "game.h"
 
 Spectator::Spectator(WLevel l) : level(l) {
 }
@@ -34,8 +35,9 @@ WLevel Spectator::getLevel() const {
   return level;
 }
 
-double Spectator::getLocalTime() const {
-  return level->getModel()->getLocalTime();
+double Spectator::getAnimationTime() const {
+  auto model = level->getModel();
+  return model->getLocalTime().getDouble() + model->getGame()->getUpdateRemainder();
 }
 
 vector<Vec2> Spectator::getVisibleEnemies() const {

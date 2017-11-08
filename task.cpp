@@ -936,7 +936,7 @@ class CampAndSpawn : public Task {
     updateTeams();
     if (defenseTeam.size() < defenseSize && Random.roll(5)) {
       for (WCreature summon : Effect::summonCreatures(c, 4,
-          makeVec(spawns.random(MonsterAIFactory::summoned(c, 100000)))))
+          makeVec(spawns.random(MonsterAIFactory::summoned(c, TimeInterval::fromVisible(100000))))))
         defenseTeam.push_back(summon);
     }
     if (!campPos.contains(c->getPosition()))
@@ -1286,7 +1286,7 @@ PTask Task::transferTo(WModel m) {
 namespace {
 class GoToAndWait : public Task {
   public:
-  GoToAndWait(Position pos, double waitT) : position(pos), waitTime(waitT) {}
+  GoToAndWait(Position pos, TimeInterval waitT) : position(pos), waitTime(waitT) {}
 
   bool arrived(WCreature c) {
     return c->getPosition() == position ||
@@ -1306,7 +1306,7 @@ class GoToAndWait : public Task {
       auto ret = c->moveTowards(position);
       if (!ret) {
         if (!timeout)
-          timeout = c->getLocalTime() + 30;
+          timeout = c->getLocalTime() + TimeInterval::fromVisible(30);
         else
           if (c->getLocalTime() > *timeout) {
             setDone();
@@ -1331,13 +1331,13 @@ class GoToAndWait : public Task {
 
   private:
   Position SERIAL(position);
-  double SERIAL(waitTime);
-  optional<double> SERIAL(maxTime);
-  optional<double> SERIAL(timeout);
+  TimeInterval SERIAL(waitTime);
+  optional<LocalTime> SERIAL(maxTime);
+  optional<LocalTime> SERIAL(timeout);
 };
 }
 
-PTask Task::goToAndWait(Position pos, double waitTime) {
+PTask Task::goToAndWait(Position pos, TimeInterval waitTime) {
   return makeOwner<GoToAndWait>(pos, waitTime);
 }
 

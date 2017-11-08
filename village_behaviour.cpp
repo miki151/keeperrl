@@ -147,7 +147,7 @@ double VillageBehaviour::getTriggerValue(const Trigger& trigger, const VillageCo
   if (WCollective collective = self->getEnemyCollective())
     switch (trigger.getId()) {
       case AttackTriggerId::TIMER: 
-        return collective->getGlobalTime() >= trigger.get<int>() ? timerProb : 0;
+        return collective->getGlobalTime().getVisibleInt() >= trigger.get<int>() ? timerProb : 0;
       case AttackTriggerId::ROOM_BUILT:
         if (trigger.get<FurnitureType>() ==FurnitureType::DEMON_SHRINE)
           {//Demon shrines actually decrease probability of demon attacks, not increase it

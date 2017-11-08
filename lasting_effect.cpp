@@ -202,7 +202,7 @@ void LastingEffects::onTimedOut(WCreature c, LastingEffect effect, bool msg) {
         c->you(MsgType::ARE, "moving faster again"); break;
       case LastingEffect::SLEEP:
         c->you(MsgType::WAKE_UP, "");
-        c->addEffect(LastingEffect::RESTED, 1000);
+        c->addEffect(LastingEffect::RESTED, TimeInterval::fromVisible(1000));
         break;
       case LastingEffect::SPEED:
         c->you(MsgType::ARE, "moving more slowly again"); break;
@@ -295,12 +295,6 @@ void LastingEffects::modifyAttr(WConstCreature c, AttrType type, double& value) 
           value += 1;
         if (c->isAffected(LastingEffect::RESTED))
           value += 1;
-      break;
-    case AttrType::SPEED:
-      if (c->isAffected(LastingEffect::SLOWED))
-        value /= 1.5;
-      if (c->isAffected(LastingEffect::SPEED))
-        value *= 1.5;
       break;
     default: break;
   }

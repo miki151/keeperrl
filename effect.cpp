@@ -42,7 +42,7 @@
 #include "movement_set.h"
 
 
-vector<WCreature> Effect::summonCreatures(Position pos, int radius, vector<PCreature> creatures, double delay) {
+vector<WCreature> Effect::summonCreatures(Position pos, int radius, vector<PCreature> creatures, TimeInterval delay) {
   vector<Position> area = pos.getRectangle(Rectangle(-Vec2(radius, radius), Vec2(radius + 1, radius + 1)));
   vector<WCreature> ret;
   for (int i : All(creatures))
@@ -55,7 +55,7 @@ vector<WCreature> Effect::summonCreatures(Position pos, int radius, vector<PCrea
   return ret;
 }
 
-vector<WCreature> Effect::summonCreatures(WCreature c, int radius, vector<PCreature> creatures, double delay) {
+vector<WCreature> Effect::summonCreatures(WCreature c, int radius, vector<PCreature> creatures, TimeInterval delay) {
   return summonCreatures(c->getPosition(), radius, std::move(creatures), delay);
 }
 
@@ -94,14 +94,14 @@ void Effect::emitPoisonGas(Position pos, double amount, bool msg) {
   }
 }
 
-vector<WCreature> Effect::summon(WCreature c, CreatureId id, int num, int ttl, double delay) {
+vector<WCreature> Effect::summon(WCreature c, CreatureId id, int num, TimeInterval ttl, TimeInterval delay) {
   vector<PCreature> creatures;
   for (int i : Range(num))
     creatures.push_back(CreatureFactory::fromId(id, c->getTribeId(), MonsterAIFactory::summoned(c, ttl)));
   return summonCreatures(c, 2, std::move(creatures), delay);
 }
 
-vector<WCreature> Effect::summon(Position pos, CreatureFactory& factory, int num, int ttl, double delay) {
+vector<WCreature> Effect::summon(Position pos, CreatureFactory& factory, int num, TimeInterval ttl, TimeInterval delay) {
   vector<PCreature> creatures;
   for (int i : Range(num))
     creatures.push_back(factory.random(MonsterAIFactory::dieTime(pos.getGame()->getGlobalTime() + ttl)));
@@ -126,40 +126,40 @@ static void enhanceWeapon(WCreature c, int mod, const string& msg) {
   }
 }
 
-static double entangledTime(int strength) {
-  return max(5, 30 - strength / 2);
+static TimeInterval entangledTime(int strength) {
+  return TimeInterval::fromVisible(max(5, 30 - strength / 2));
 }
 
-static double getDuration(WConstCreature c, LastingEffect e) {
+static TimeInterval getDuration(WConstCreature c, LastingEffect e) {
   switch (e) {
-    case LastingEffect::PREGNANT: return 900;
+    case LastingEffect::PREGNANT: return TimeInterval::fromVisible(900);
     case LastingEffect::NIGHT_VISION:
-    case LastingEffect::ELF_VISION: return 60;
+    case LastingEffect::ELF_VISION: return  TimeInterval::fromVisible(60);
     case LastingEffect::TIED_UP:
     case LastingEffect::WARNING:
     case LastingEffect::REGENERATION:
     case LastingEffect::TELEPATHY:
-    case LastingEffect::BLEEDING: return 50;
-    case LastingEffect::ENTANGLED: return entangledTime(entangledTime(c->getAttr(AttrType::DAMAGE)));
+    case LastingEffect::BLEEDING: return  TimeInterval::fromVisible(50);
+    case LastingEffect::ENTANGLED: return entangledTime(c->getAttr(AttrType::DAMAGE));
     case LastingEffect::HALLU:
     case LastingEffect::SLOWED:
     case LastingEffect::SPEED:
     case LastingEffect::RAGE:
     case LastingEffect::DARKNESS_SOURCE:
-    case LastingEffect::PANIC: return 15;
-    case LastingEffect::POISON: return 60;
+    case LastingEffect::PANIC: return  TimeInterval::fromVisible(15);
+    case LastingEffect::POISON: return  TimeInterval::fromVisible(60);
     case LastingEffect::DEF_BONUS:
-    case LastingEffect::DAM_BONUS: return 40;
-    case LastingEffect::BLIND: return 15;
-    case LastingEffect::INVISIBLE: return 15;
-    case LastingEffect::STUNNED: return 7;
+    case LastingEffect::DAM_BONUS: return  TimeInterval::fromVisible(40);
+    case LastingEffect::BLIND: return  TimeInterval::fromVisible(15);
+    case LastingEffect::INVISIBLE: return  TimeInterval::fromVisible(15);
+    case LastingEffect::STUNNED: return  TimeInterval::fromVisible(7);
     case LastingEffect::SLEEP_RESISTANT:
     case LastingEffect::FIRE_RESISTANT:
-    case LastingEffect::POISON_RESISTANT: return 60;
-    case LastingEffect::FLYING: return 60;
-    case LastingEffect::COLLAPSED: return 2;
-    case LastingEffect::SLEEP: return 80;
-    case LastingEffect::INSANITY: return 20;
+    case LastingEffect::POISON_RESISTANT: return  TimeInterval::fromVisible(60);
+    case LastingEffect::FLYING: return  TimeInterval::fromVisible(60);
+    case LastingEffect::COLLAPSED: return  TimeInterval::fromVisible(2);
+    case LastingEffect::SLEEP: return  TimeInterval::fromVisible(80);
+    case LastingEffect::INSANITY: return  TimeInterval::fromVisible(20);
     case LastingEffect::MAGIC_VULNERABILITY:
     case LastingEffect::MELEE_VULNERABILITY:
     case LastingEffect::RANGED_VULNERABILITY:
@@ -167,21 +167,20 @@ static double getDuration(WConstCreature c, LastingEffect e) {
     case LastingEffect::MELEE_RESISTANCE:
     case LastingEffect::RANGED_RESISTANCE:
     case LastingEffect::SUNLIGHT_VULNERABLE:
-      return 25;
+      return  TimeInterval::fromVisible(25);
     case LastingEffect::SATIATED:
-      return 500;
+      return  TimeInterval::fromVisible(500);
     case LastingEffect::RESTED:
-      return 1000;
+      return  TimeInterval::fromVisible(1000);
   }
-  return 0;
 }
 
-static int getSummonTtl(CreatureId id) {
+static TimeInterval getSummonTtl(CreatureId id) {
   switch (id) {
     case CreatureId::FIRE_SPHERE:
-      return 30;
+      return TimeInterval::fromVisible(30);
     default:
-      return 100;
+      return TimeInterval::fromVisible(100);
   }
 }
 
@@ -196,10 +195,10 @@ static Range getSummonNumber(CreatureId id) {
   }
 }
 
-static double getSummonDelay(CreatureId id) {
+static TimeInterval getSummonDelay(CreatureId id) {
   switch (id) {
-    case CreatureId::AUTOMATON: return 5;
-    default: return 1;
+    case CreatureId::AUTOMATON: return TimeInterval::fromVisible(5);
+    default: return TimeInterval::fromVisible(1);
   }
 }
 

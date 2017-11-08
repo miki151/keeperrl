@@ -6,6 +6,7 @@
 #include "cost_info.h"
 #include "position_map.h"
 #include "minion_trait.h"
+#include "game_time.h"
 
 class Task;
 class Creature;
@@ -50,7 +51,7 @@ class TaskMap {
   PositionMap<WTask> SERIAL(marked);
   PositionMap<HighlightType> SERIAL(highlight);
   EntityMap<Task, CostInfo> SERIAL(completionCost);
-  EntityMap<Task, double> SERIAL(delayedTasks);
+  EntityMap<Task, LocalTime> SERIAL(delayedTasks);
   EntitySet<Task> SERIAL(priorityTasks);
 };
 

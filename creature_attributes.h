@@ -26,6 +26,7 @@
 #include "attr_type.h"
 #include "lasting_effect.h"
 #include "experience_type.h"
+#include "game_time.h"
 
 inline bool isLarger(CreatureSize s1, CreatureSize s2) {
   return int(s1) > int(s2);
@@ -79,17 +80,16 @@ class CreatureAttributes {
   bool canEquip() const;
   void chatReaction(WCreature me, WCreature other);
   string getDescription() const;
-  bool isAffected(LastingEffect, double globalTime) const;
+  bool isAffected(LastingEffect, GlobalTime) const;
   bool isAffectedPermanently(LastingEffect) const;
-  double getTimeOut(LastingEffect) const;
-  string getRemainingString(LastingEffect, double time) const;
-  void shortenEffect(LastingEffect, double time);
-  void clearLastingEffect(LastingEffect, double globalTime);
+  GlobalTime getTimeOut(LastingEffect) const;
+  string getRemainingString(LastingEffect, GlobalTime) const;
+  void clearLastingEffect(LastingEffect, GlobalTime);
   void addPermanentEffect(LastingEffect, int count);
   void removePermanentEffect(LastingEffect, int count);
-  bool considerTimeout(LastingEffect, double globalTime);
-  void addLastingEffect(LastingEffect, double endtime);
-  optional<double> getLastAffected(LastingEffect, double currentGlobalTime) const;
+  bool considerTimeout(LastingEffect, GlobalTime current);
+  void addLastingEffect(LastingEffect, GlobalTime endtime);
+  optional<GlobalTime> getLastAffected(LastingEffect, GlobalTime currentGlobalTime) const;
   AttackType getAttackType(WConstItem weapon) const;
   optional<Effect> getAttackEffect() const;
   bool canSleep() const;
@@ -130,8 +130,8 @@ class CreatureAttributes {
   Skillset SERIAL(skills);
   HeapAllocated<SpellMap> SERIAL(spells);
   EnumMap<LastingEffect, int> SERIAL(permanentEffects);
-  EnumMap<LastingEffect, double> SERIAL(lastingEffects);
-  EnumMap<LastingEffect, optional<double>> SERIAL(lastAffected);
+  EnumMap<LastingEffect, GlobalTime> SERIAL(lastingEffects);
+  EnumMap<LastingEffect, optional<GlobalTime>> SERIAL(lastAffected);
   MinionTaskMap SERIAL(minionTasks);
   EnumMap<ExperienceType, double> SERIAL(expLevel);
   EnumMap<ExperienceType, int> SERIAL(maxLevelIncrease);

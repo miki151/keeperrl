@@ -2,6 +2,7 @@
 
 #include "util.h"
 #include "stair_key.h"
+#include "game_time.h"
 
 class Square;
 class Level;
@@ -53,7 +54,7 @@ class Position {
   vector<Position> neighbors8(RandomGen&) const;
   vector<Position> neighbors4(RandomGen&) const;
   vector<Position> getRectangle(Rectangle) const;
-  void addCreature(PCreature, double delay);
+  void addCreature(PCreature, TimeInterval delay);
   void addCreature(PCreature);
   bool canEnter(WConstCreature) const;
   bool canEnter(const MovementType&) const;

@@ -98,7 +98,7 @@ SERIALIZATION_CONSTRUCTOR_IMPL(PlayerControl)
 
 using ResourceId = Collective::ResourceId;
 
-const int hintFrequency = 700;
+const LocalTime hintFrequency = LocalTime::fromVisible(700);
 static vector<string> getHints() {
   return {
     "Research geology to uncover ores in the mountain.",
@@ -939,13 +939,13 @@ void PlayerControl::fillImmigration(CollectiveInfo& info) const {
   for (auto& elem : immigration.getAvailable()) {
     const auto& candidate = elem.second.get();
     const int count = (int) candidate.getCreatures().size();
-    optional<double> timeRemaining;
+    optional<TimeInterval> timeRemaining;
     if (auto time = candidate.getEndTime())
       timeRemaining = *time - getGame()->getGlobalTime();
     vector<string> infoLines;
     candidate.getInfo().visitRequirements(makeVisitor(
         [&](const Pregnancy&) {
-          optional<int> maxT;
+          optional<TimeInterval> maxT;
           for (WCreature c : getCollective()->getCreatures())
             if (c->isAffected(LastingEffect::PREGNANT))
               if (auto remaining = c->getTimeRemaining(LastingEffect::PREGNANT))
@@ -1073,7 +1073,7 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
     if (col->getName() && col->isDiscoverable())
       gameInfo.villageInfo.villages[col->getVillainType()].push_back(getVillageInfo(col));
   SunlightInfo sunlightInfo = getGame()->getSunlightInfo();
-  gameInfo.sunlightInfo = { sunlightInfo.getText(), (int)sunlightInfo.getTimeRemaining() };
+  gameInfo.sunlightInfo = { sunlightInfo.getText(), sunlightInfo.getTimeRemaining() };
   gameInfo.infoType = GameInfo::InfoType::BAND;
   gameInfo.playerInfo = CollectiveInfo();
   auto& info = *gameInfo.playerInfo.getReferenceMaybe<CollectiveInfo>();
@@ -1136,11 +1136,11 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
         getCollective()->hasResource({ResourceId::GOLD, *elem.getRansom()})};
     break;
   }
-  constexpr int maxEnemyCountdown = 500;
+  const auto maxEnemyCountdown = TimeInterval::fromVisible(500);
   if (auto& enemies = getModel()->getExternalEnemies())
     if (auto nextWave = enemies->getNextWave()) {
       if (nextWave->enemy.behaviour.getId() != AttackBehaviourId::HALLOWEEN_KIDS) {
-        int countDown = (int) (nextWave->attackTime - getLocalTime());
+        auto countDown = nextWave->attackTime - getModel()->getLocalTime();
         auto index = enemies->getNextWaveIndex();
         auto name = nextWave->enemy.name;
         auto viewId = nextWave->viewId;
@@ -1148,7 +1148,7 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
           name = "Unknown";
           viewId = ViewId::UNKNOWN_MONSTER;
         }
-        if (!dismissedNextWaves.count(index) && countDown <= maxEnemyCountdown)
+        if (!dismissedNextWaves.count(index) && countDown < maxEnemyCountdown)
           info.nextWave = CollectiveInfo::NextWave {
             viewId,
             name,
@@ -1535,7 +1535,7 @@ void PlayerControl::minionDragAndDrop(const CreatureDropInfo& info) {
           return;
         }
       }
-    PTask task = Task::goToAndWait(pos, 15);
+    PTask task = Task::goToAndWait(pos, TimeInterval::fromVisible(15));
     task->setViewId(ViewId::GUARD_POST);
     getCollective()->setTask(c, std::move(task));
     pos.setNeedsRenderUpdate(true);
@@ -1617,7 +1617,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
           for (WCreature c : getTeams().getMembers(info.teamId)) {
             c->removeEffect(LastingEffect::TIED_UP);
             c->removeEffect(LastingEffect::SLEEP);
-            PTask task = Task::goToAndWait(pos, 15);
+            PTask task = Task::goToAndWait(pos, TimeInterval::fromVisible(15));
             task->setViewId(ViewId::GUARD_POST);
             getCollective()->setTask(c, std::move(task));
             pos.setNeedsRenderUpdate(true);
@@ -2083,8 +2083,8 @@ void PlayerControl::onSquareClick(Position pos) {
     }
 }
 
-double PlayerControl::getLocalTime() const {
-  return getModel()->getLocalTime();
+double PlayerControl::getAnimationTime() const {
+  return getModel()->getLocalTime().getDouble() + getGame()->getUpdateRemainder();
 }
 
 PlayerControl::CenterType PlayerControl::getCenterType() const {
@@ -2125,8 +2125,8 @@ void PlayerControl::checkKeeperDanger() {
           keeper->getAttributes().getGender().him() + "?");
   };
   if (!getKeeper()->isDead() && !controlled.contains(getKeeper())) {
-    if ((getKeeper()->wasInCombat(5) || getKeeper()->getBody().isWounded())
-        && lastControlKeeperQuestion < getCollective()->getGlobalTime() - 50) {
+    if ((getKeeper()->wasInCombat(TimeInterval::fromVisible(5)) || getKeeper()->getBody().isWounded())
+        && lastControlKeeperQuestion < getCollective()->getGlobalTime() - TimeInterval::fromVisible(50)) {
       lastControlKeeperQuestion = getCollective()->getGlobalTime();
       if (prompt()) {
         controlSingle(getKeeper());
@@ -2134,7 +2134,7 @@ void PlayerControl::checkKeeperDanger() {
       }
     }
     if (getKeeper()->isAffected(LastingEffect::POISON)
-        && lastControlKeeperQuestion < getCollective()->getGlobalTime() - 5) {
+        && lastControlKeeperQuestion < getCollective()->getGlobalTime() - TimeInterval::fromVisible(5)) {
       lastControlKeeperQuestion = getCollective()->getGlobalTime();
       if (prompt()) {
         controlSingle(getKeeper());
@@ -2214,7 +2214,7 @@ void PlayerControl::tick() {
   messages = messages.filter([&] (const PlayerMessage& msg) {
       return msg.getFreshness() > 0; });
   considerNightfallMessage();
-  if (auto msg = getCollective()->getWarnings().getNextWarning(getLocalTime()))
+  if (auto msg = getCollective()->getWarnings().getNextWarning(getModel()->getLocalTime()))
     addMessage(PlayerMessage(*msg, MessagePriority::HIGH));
   checkKeeperDanger();
   for (auto attack : copyOf(ransomAttacks))
@@ -2236,9 +2236,9 @@ void PlayerControl::tick() {
           ransomAttacks.push_back(attack);
         break;
       }
-  double time = getCollective()->getLocalTime();
+  auto time = getCollective()->getLocalTime();
   if (getGame()->getOptions()->getBoolValue(OptionId::HINTS) && time > hintFrequency) {
-    int numHint = int(time) / hintFrequency - 1;
+    int numHint = time.getDouble() / hintFrequency.getDouble() - 1;
     if (numHint < hints.size() && !hints[numHint].empty()) {
       addMessage(PlayerMessage(hints[numHint], MessagePriority::HIGH));
       hints[numHint] = "";

@@ -407,9 +407,14 @@ Vec2 MapGui::getMovementOffset(const ViewObject& object, Vec2 size, double time,
     dir = info.direction;
 /*    if (info.direction.length8() == 0 || time >= info.tEnd + 0.001 || time <= info.tBegin - 0.001)
       return Vec2(0, 0);*/
-    state = (time - info.tBegin) / (info.tEnd - info.tBegin);
-    double minStopTime = 0.2;
-    state = min(1.0, max(0.0, (state - minStopTime) / (1.0 - 2 * minStopTime)));
+    state = (time - info.tBegin.getDouble()) / (info.tEnd.getDouble() - info.tBegin.getDouble());
+    double stopTime1 = 0.2;
+    if (auto id = object.getCreatureId())
+      // randomize the animation time frame a bit so creatures don't move synchronously
+      stopTime1 += -0.2 + (abs(id->getHash()) % 100) * 0.004;
+    double stopTime2 = 0.4 - stopTime1;
+    state = min(1.0, max(0.0, (state - stopTime1) / (1.0 - stopTime1 - stopTime2)));
+    INFO << "Anim time b: " << info.tBegin << " e: " << info.tEnd << " t: " << time;
   } else
     return Vec2(0, 0);
   double vertical = verticalMovement ? getJumpOffset(object, state) : 0;
@@ -1008,7 +1013,7 @@ void MapGui::updateObjects(CreatureView* view, MapLayout* mapLayout, bool smooth
   keyScrolling = view->getCenterType() == CreatureView::CenterType::NONE;
   bool newTurn = false;
   {
-    double newCurrentTimeGame = smoothMovement ? view->getLocalTime() : 1000000000;
+    double newCurrentTimeGame = smoothMovement ? view->getAnimationTime() : 1000000000;
     if (currentTimeGame != newCurrentTimeGame) {
       lastEndTimeGame = currentTimeGame;
       currentTimeGame = newCurrentTimeGame;

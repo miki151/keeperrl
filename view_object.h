@@ -21,6 +21,7 @@
 #include "unique_entity.h"
 #include "view_layer.h"
 #include "attr_type.h"
+#include "game_time.h"
 
 RICH_ENUM(ViewObjectModifier, PLAYER, HIDDEN, INVISIBLE, ILLUSION, PLANNED,
     TEAM_LEADER_HIGHLIGHT, TEAM_HIGHLIGHT, DRAW_MORALE, ROAD, NO_UP_MOVEMENT, REMEMBER, SPIRIT_DAMAGE, HOSTILE);
@@ -28,11 +29,11 @@ RICH_ENUM(ViewObjectAttribute, WOUNDED, BURNING, WATER_DEPTH, EFFICIENCY, MORALE
 
 struct MovementInfo {
   enum Type { MOVE, ATTACK };
-  MovementInfo(Vec2 direction, double tBegin, double tEnd, Type);
+  MovementInfo(Vec2 direction, LocalTime tBegin, LocalTime tEnd, Type);
   MovementInfo();
   Vec2 direction;
-  double tBegin;
-  double tEnd;
+  LocalTime tBegin;
+  LocalTime tEnd;
   Type type;
 };
 

@@ -85,7 +85,7 @@ void CollectiveConfig::addBedRequirementToImmigrants() {
   }
 }
 
-CollectiveConfig::CollectiveConfig(int interval, const vector<ImmigrantInfo>& im,
+CollectiveConfig::CollectiveConfig(TimeInterval interval, const vector<ImmigrantInfo>& im,
     CollectiveType t, int maxPop, vector<PopulationIncrease> popInc)
     : immigrantInterval(interval),
     maxPopulation(maxPop), populationIncreases(popInc), immigrantInfo(im), type(t) {
@@ -93,19 +93,19 @@ CollectiveConfig::CollectiveConfig(int interval, const vector<ImmigrantInfo>& im
     addBedRequirementToImmigrants();
 }
 
-CollectiveConfig CollectiveConfig::keeper(int immigrantInterval, int maxPopulation, bool regenerateMana,
+CollectiveConfig CollectiveConfig::keeper(TimeInterval immigrantInterval, int maxPopulation, bool regenerateMana,
     vector<PopulationIncrease> increases, const vector<ImmigrantInfo>& im) {
   auto ret = CollectiveConfig(immigrantInterval, im, KEEPER, maxPopulation, increases);
   ret.regenerateMana = regenerateMana;
   return ret;
 }
 
-CollectiveConfig CollectiveConfig::withImmigrants(int interval, int maxPopulation, const vector<ImmigrantInfo>& im) {
+CollectiveConfig CollectiveConfig::withImmigrants(TimeInterval interval, int maxPopulation, const vector<ImmigrantInfo>& im) {
   return CollectiveConfig(interval, im, VILLAGE, maxPopulation, {});
 }
 
 CollectiveConfig CollectiveConfig::noImmigrants() {
-  return CollectiveConfig(0, {}, VILLAGE, 10000, {});
+  return CollectiveConfig(TimeInterval {}, {}, VILLAGE, 10000, {});
 }
 
 CollectiveConfig& CollectiveConfig::setLeaderAsFighter() {
@@ -123,8 +123,8 @@ int CollectiveConfig::getNumGhostSpawns() const {
   return spawnGhosts;
 }
 
-int CollectiveConfig::getImmigrantTimeout() const {
-  return 500;
+TimeInterval CollectiveConfig::getImmigrantTimeout() const {
+  return TimeInterval::fromVisible(500);
 }
 
 double CollectiveConfig::getGhostProb() const {
@@ -155,7 +155,7 @@ bool CollectiveConfig::hasImmigrantion(bool currentlyActiveModel) const {
   return type != KEEPER || currentlyActiveModel;
 }
 
-int CollectiveConfig::getImmigrantInterval() const {
+TimeInterval CollectiveConfig::getImmigrantInterval() const {
   return immigrantInterval;
 }
 

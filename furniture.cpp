@@ -206,7 +206,7 @@ optional<FurnitureUsageType> Furniture::getUsageType() const {
   return usageType;
 }
 
-int Furniture::getUsageTime() const {
+TimeInterval Furniture::getUsageTime() const {
   return usageTime;
 }
 
@@ -266,7 +266,7 @@ WCreature Furniture::getCreator() const {
   return creator;
 }
 
-optional<double> Furniture::getCreatedTime() const {
+optional<LocalTime> Furniture::getCreatedTime() const {
   return createdTime;
 }
 
@@ -374,7 +374,7 @@ Furniture& Furniture::setUsageType(FurnitureUsageType type) {
   return *this;
 }
 
-Furniture& Furniture::setUsageTime(int t) {
+Furniture& Furniture::setUsageTime(TimeInterval t) {
   usageTime = t;
   return *this;
 }

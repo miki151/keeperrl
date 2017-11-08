@@ -36,7 +36,7 @@ class CreatureView {
   virtual CenterType getCenterType() const = 0;
   virtual Vec2 getPosition() const = 0;
   virtual WLevel getLevel() const = 0;
-  virtual double getLocalTime() const = 0;
+  virtual double getAnimationTime() const = 0;
   virtual vector<Vec2> getVisibleEnemies() const = 0;
   virtual vector<Vec2> getUnknownLocations(WConstLevel) const = 0;
   virtual ~CreatureView() {}

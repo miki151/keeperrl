@@ -168,7 +168,7 @@ PTask MinionTasks::generate(WCollective collective, WCreature c, MinionTask task
   return nullptr;
 }
 
-optional<double> MinionTasks::getDuration(WConstCreature c, MinionTask task) {
+optional<TimeInterval> MinionTasks::getDuration(WConstCreature c, MinionTask task) {
   switch (task) {
     case MinionTask::COPULATE:
     case MinionTask::GRAVE:
@@ -177,7 +177,7 @@ optional<double> MinionTasks::getDuration(WConstCreature c, MinionTask task) {
     case MinionTask::BE_WHIPPED:
     case MinionTask::BE_TORTURED:
     case MinionTask::SLEEP: return none;
-    default: return 500 + 250 * c->getMorale();
+    default: return TimeInterval::fromVisible((int) 500 + 250 * c->getMorale());
   }
 }
 

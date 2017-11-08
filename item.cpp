@@ -147,7 +147,7 @@ void Item::onHitCreature(WCreature c, const Attack& attack, int numItems) {
   }
 }
 
-double Item::getApplyTime() const {
+TimeInterval Item::getApplyTime() const {
   return attributes->applyTime;
 }
 

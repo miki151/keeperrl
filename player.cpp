@@ -238,7 +238,7 @@ void Player::applyItem(vector<WItem> items) {
     privateMessage("You can't read while blind!");
     return;
   }
-  if (items[0]->getApplyTime() > 1) {
+  if (items[0]->getApplyTime() > TimeInterval::fromVisible(1)) {
     for (WConstCreature c : getCreature()->getVisibleEnemies())
       if (getCreature()->getPosition().dist8(c->getPosition()) < 3) {
         if (!getView()->yesOrNoPrompt("Applying " + items[0]->getAName() + " takes " +
@@ -661,7 +661,8 @@ void Player::makeMove() {
     case UserInputId::SUMMON_ENEMY:
       if (auto id = PrettyPrinting::parseObject<CreatureId>(action.get<string>())) {
         auto factory = CreatureFactory::singleCreature(TribeId::getMonster(), *id);
-        Effect::summon(getCreature()->getPosition(), factory, 1, 1000, 3);
+        Effect::summon(getCreature()->getPosition(), factory, 1, TimeInterval::fromVisible(1000),
+            TimeInterval::fromVisible(3));
       } else
         getView()->presentText("Sorry", "Couldn't parse \"" + action.get<string>() + "\"");
       break;
@@ -691,7 +692,7 @@ void Player::makeMove() {
       getCreature()->getAttributes().setBaseAttr(AttrType::DAMAGE, 80);
       getCreature()->getAttributes().setBaseAttr(AttrType::DEFENSE, 80);
       getCreature()->getAttributes().setBaseAttr(AttrType::SPELL_DAMAGE, 80);
-      getCreature()->getAttributes().setBaseAttr(AttrType::SPEED, 200);
+      getCreature()->addPermanentEffect(LastingEffect::SPEED, true);
       getCreature()->addPermanentEffect(LastingEffect::FLYING, true);
       break;
 #endif
@@ -879,8 +880,8 @@ void Player::refreshGameInfo(GameInfo& gameInfo) const {
   gameInfo.infoType = GameInfo::InfoType::PLAYER;
   SunlightInfo sunlightInfo = getGame()->getSunlightInfo();
   gameInfo.sunlightInfo.description = sunlightInfo.getText();
-  gameInfo.sunlightInfo.timeRemaining = (int) sunlightInfo.getTimeRemaining();
-  gameInfo.time = (int) getCreature()->getGame()->getGlobalTime();
+  gameInfo.sunlightInfo.timeRemaining = sunlightInfo.getTimeRemaining();
+  gameInfo.time = getCreature()->getGame()->getGlobalTime();
   gameInfo.playerInfo = PlayerInfo(getCreature());
   auto& info = *gameInfo.playerInfo.getReferenceMaybe<PlayerInfo>();
   info.team.clear();
@@ -952,8 +953,8 @@ vector<Vec2> Player::getVisibleEnemies() const {
       [](WConstCreature c) { return c->getPosition().getCoord(); });
 }
 
-double Player::getLocalTime() const {
-  return getCreature()->getLocalTime();
+double Player::getAnimationTime() const {
+  return getCreature()->getLocalTime().getDouble();
 }
 
 Player::CenterType Player::getCenterType() const {

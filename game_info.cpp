@@ -68,9 +68,9 @@ PlayerInfo::PlayerInfo(WConstCreature c) : bestAttack(c) {
     bool ready = c->isReady(spell);
     spells.push_back({
         spell->getId(),
-        spell->getName() + (ready ? "" : " [" + toString<int>(c->getSpellDelay(spell)) + "]"),
+        spell->getName() + (ready ? "" : " [" + toString(c->getSpellDelay(spell)) + "]"),
         spell->getDescription(),
-        c->isReady(spell) ? none : optional<int>(c->getSpellDelay(spell))});
+        c->isReady(spell) ? none : optional<TimeInterval>(c->getSpellDelay(spell))});
   }
 }
 
@@ -112,11 +112,6 @@ vector<AttributeInfo> AttributeInfo::fromCreature(WConstCreature c) {
           AttrType::RANGED_DAMAGE,
           0,
           "Affects if and how much damage is dealt when shooting a ranged weapon."
-      ),
-      genInfo(
-          AttrType::SPEED,
-          c->isAffected(LastingEffect::SPEED) ? 1 : c->isAffected(LastingEffect::SLOWED) ? -1 : 0,
-          "Affects how much game time every action uses."
       ),
     };
 }

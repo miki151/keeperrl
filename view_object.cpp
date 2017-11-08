@@ -39,7 +39,7 @@ optional<UniqueEntity<Creature>::Id> ViewObject::getCreatureId() const {
   return creatureId;
 }
 
-MovementInfo::MovementInfo(Vec2 dir, double b, double e, Type t) : direction(dir), tBegin(b), tEnd(e),
+MovementInfo::MovementInfo(Vec2 dir, LocalTime b, LocalTime e, Type t) : direction(dir), tBegin(b), tEnd(e),
   type(t) {
 }
 
@@ -88,7 +88,7 @@ Vec2 ViewObject::MovementQueue::getTotalMovement(double tBegin) const {
   Vec2 ret;
   bool attack = false;
   for (int i : Range(min<int>(totalMoves, elems.size())))
-    if (elems[i].tBegin >= tBegin) {
+    if (elems[i].tBegin.getDouble() >= tBegin) {
       if (elems[i].type == MovementInfo::ATTACK/* && ret.length8() == 0*/) {
         attack = true;
         ret = elems[i].direction;

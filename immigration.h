@@ -7,6 +7,7 @@
 #include "collective_config.h"
 #include "immigrant_info.h"
 #include "immigrant_auto_state.h"
+#include "game_time.h"
 
 class Collective;
 struct AttractionInfo;
@@ -24,7 +25,7 @@ class Immigration : public OwnedObject<Immigration> {
   class Available {
     public:
     vector<WCreature> getCreatures() const;
-    optional<double> getEndTime() const;
+    optional<GlobalTime> getEndTime() const;
     optional<CostInfo> getCost() const;
     const ImmigrantInfo& getInfo() const;
     bool isUnavailable() const;
@@ -37,12 +38,12 @@ class Immigration : public OwnedObject<Immigration> {
     static Available generate(WImmigration, const Group& group);
     static Available generate(WImmigration, int index);
     vector<Position> getSpawnPositions() const;
-    Available(WImmigration, vector<PCreature>, int immigrantIndex, optional<double> endTime);
+    Available(WImmigration, vector<PCreature>, int immigrantIndex, optional<GlobalTime> endTime);
     void addAllCreatures(const vector<Position>& spawnPositions);
     friend class Immigration;
     vector<PCreature> SERIAL(creatures);
     int SERIAL(immigrantIndex);
-    optional<double> SERIAL(endTime);
+    optional<GlobalTime> SERIAL(endTime);
     WImmigration SERIAL(immigration);
     optional<milliseconds> createdTime;
   };
@@ -70,7 +71,7 @@ class Immigration : public OwnedObject<Immigration> {
   double getImmigrantChance(const Group& info) const;
   vector<string> getMissingAttractions(const ImmigrantInfo&) const;
   int SERIAL(idCnt) = 0;
-  int SERIAL(candidateTimeout);
+  TimeInterval SERIAL(candidateTimeout);
   void occupyAttraction(WConstCreature, const AttractionInfo&);
   void occupyRequirements(WConstCreature, int immigrantIndex);
   double getRequirementMultiplier(const Group&) const;
@@ -79,7 +80,7 @@ class Immigration : public OwnedObject<Immigration> {
   CostInfo calculateCost(int index, const ExponentialCost&) const;
   bool SERIAL(initialized) = false;
   void initializePersistent();
-  double SERIAL(nextImmigrantTime) = -1;
+  optional<GlobalTime> SERIAL(nextImmigrantTime);
   void resetImmigrantTime();
   map<int, ImmigrantAutoState> SERIAL(autoState);
   int getNumGeneratedAndCandidates(int index) const;

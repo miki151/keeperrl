@@ -16,6 +16,7 @@
 #pragma once
 
 #include "spell_id.h"
+#include "game_time.h"
 
 class Spell;
 
@@ -23,8 +24,8 @@ class SpellMap {
   public:
   void add(Spell*);
   void add(SpellId);
-  double getReadyTime(Spell*) const;
-  void setReadyTime(Spell*, double);
+  GlobalTime getReadyTime(Spell*) const;
+  void setReadyTime(Spell*, GlobalTime);
   vector<Spell*> getAll() const;
   bool contains(Spell*) const;
   bool contains(SpellId) const;
@@ -35,6 +36,6 @@ class SpellMap {
   void serialize(Archive& ar, const unsigned int version);
 
   private:
-  EnumMap<SpellId, optional<double>> SERIAL(elems);
+  EnumMap<SpellId, optional<GlobalTime>> SERIAL(elems);
 };
 

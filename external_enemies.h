@@ -4,6 +4,7 @@
 #include "attack_behaviour.h"
 #include "task_callback.h"
 #include "inhabitants_info.h"
+#include "game_time.h"
 
 struct ExternalEnemy {
   CreatureList SERIAL(creatures);
@@ -16,7 +17,7 @@ struct ExternalEnemy {
 
 struct EnemyEvent {
   ExternalEnemy SERIAL(enemy);
-  int SERIAL(attackTime);
+  LocalTime SERIAL(attackTime);
   ViewId SERIAL(viewId);
   SERIALIZE_ALL(enemy, attackTime, viewId)
 };
@@ -24,7 +25,7 @@ struct EnemyEvent {
 class ExternalEnemies {
   public:
   ExternalEnemies(RandomGen&, vector<ExternalEnemy>);
-  void update(WLevel, double localTime);
+  void update(WLevel, LocalTime);
   struct CurrentWave {
     string SERIAL(name);
     vector<WCreature> SERIAL(attackers);
@@ -32,7 +33,7 @@ class ExternalEnemies {
   };
   optional<const EnemyEvent&> getNextWave() const;
   int getNextWaveIndex() const;
-  optional<EnemyEvent> popNextWave(double localTime);
+  optional<EnemyEvent> popNextWave(LocalTime localTime);
 
   SERIALIZATION_DECL(ExternalEnemies)
 

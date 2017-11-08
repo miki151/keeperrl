@@ -2351,8 +2351,6 @@ void GuiFactory::loadFreeImages(const DirectoryPath& path) {
         return Vec2(0, 1);
       case AttrType::RANGED_DAMAGE:
         return Vec2(1, 1);
-      case AttrType::SPEED:
-        return Vec2(2, 1);
     }
   };
   for (auto attr : ENUM_ALL(AttrType))

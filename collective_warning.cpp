@@ -21,7 +21,7 @@ void CollectiveWarnings::setWarning(Warning w, bool state) {
 }
 
 void CollectiveWarnings::disable() {
-  lastWarningTime = 1000000000;
+  lastWarningTime = LocalTime::fromVisible(100000000);
 }
 
 void CollectiveWarnings::considerWarnings(WCollective col) {
@@ -122,10 +122,10 @@ const char* CollectiveWarnings::getText(Warning w) {
   return "";
 }
 
-const double anyWarningFrequency = 100;
-const double warningFrequency = 500;
+const auto anyWarningFrequency = TimeInterval::fromVisible(100);
+const auto warningFrequency = TimeInterval::fromVisible(500);
 
-optional<const char*> CollectiveWarnings::getNextWarning(double time) {
+optional<const char*> CollectiveWarnings::getNextWarning(LocalTime time) {
   if (time > lastWarningTime + anyWarningFrequency)
     for (Warning w : ENUM_ALL(Warning))
       if (isWarning(w) && (!warningTimes[w] || time > *warningTimes[w] + warningFrequency)) {

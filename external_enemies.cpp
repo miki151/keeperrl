@@ -34,7 +34,7 @@ ExternalEnemies::ExternalEnemies(RandomGen& random, vector<ExternalEnemy> enemie
         --enemy.maxOccurences;
         waves.push_back(EnemyEvent{
             enemy,
-            attackTime,
+            LocalTime::fromVisible(attackTime),
             enemy.creatures.getViewId()
         });
         waves.back().enemy.creatures.increaseBaseLevel({{ExperienceType::MELEE, max(0, attackTime / 1000 - 10)}});
@@ -79,7 +79,7 @@ void ExternalEnemies::updateCurrentWaves(WCollective target) {
     }
 }
 
-void ExternalEnemies::update(WLevel level, double localTime) {
+void ExternalEnemies::update(WLevel level, LocalTime localTime) {
   WCollective target = level->getModel()->getGame()->getPlayerCollective();
   CHECK(!!target);
   updateCurrentWaves(target);
@@ -113,7 +113,7 @@ int ExternalEnemies::getNextWaveIndex() const {
   return nextWave;
 }
 
-optional<EnemyEvent> ExternalEnemies::popNextWave(double localTime) {
+optional<EnemyEvent> ExternalEnemies::popNextWave(LocalTime localTime) {
   if (nextWave < waves.size() && waves[nextWave].attackTime <= localTime) {
     return waves[nextWave++];
   } else

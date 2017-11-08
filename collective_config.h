@@ -20,6 +20,7 @@
 #include "workshop_type.h"
 #include "cost_info.h"
 #include "position.h"
+#include "game_time.h"
 
 enum class ItemClass;
 
@@ -85,9 +86,9 @@ struct FloorInfo {
 
 class CollectiveConfig {
   public:
-  static CollectiveConfig keeper(int immigrantInterval, int maxPopulation, bool regenerateMana,
+  static CollectiveConfig keeper(TimeInterval immigrantInterval, int maxPopulation, bool regenerateMana,
       vector<PopulationIncrease>, const vector<ImmigrantInfo>&);
-  static CollectiveConfig withImmigrants(int immigrantInterval, int maxPopulation, const vector<ImmigrantInfo>&);
+  static CollectiveConfig withImmigrants(TimeInterval immigrantInterval, int maxPopulation, const vector<ImmigrantInfo>&);
   static CollectiveConfig noImmigrants();
 
   CollectiveConfig& setLeaderAsFighter();
@@ -97,7 +98,7 @@ class CollectiveConfig {
   bool isLeaderFighter() const;
   bool getManageEquipment() const;
   bool getFollowLeaderIfNoTerritory() const;
-  int getImmigrantInterval() const;
+  TimeInterval getImmigrantInterval() const;
   bool getStripSpawns() const;
   bool getFetchItems() const;
   bool getEnemyPositions() const;
@@ -106,7 +107,7 @@ class CollectiveConfig {
   bool bedsLimitImmigration() const;
   int getMaxPopulation() const;
   int getNumGhostSpawns() const;
-  int getImmigrantTimeout() const;
+  TimeInterval getImmigrantTimeout() const;
   double getGhostProb() const;
   bool hasVillainSleepingTask() const;
   bool getRegenerateMana() const;
@@ -140,10 +141,10 @@ class CollectiveConfig {
 
   private:
   enum CollectiveType { KEEPER, VILLAGE };
-  CollectiveConfig(int immigrantInterval, const vector<ImmigrantInfo>&, CollectiveType, int maxPopulation,
+  CollectiveConfig(TimeInterval immigrantInterval, const vector<ImmigrantInfo>&, CollectiveType, int maxPopulation,
       vector<PopulationIncrease>);
 
-  int SERIAL(immigrantInterval);
+  TimeInterval SERIAL(immigrantInterval);
   int SERIAL(maxPopulation);
   vector<PopulationIncrease> SERIAL(populationIncreases);
   vector<ImmigrantInfo> SERIAL(immigrantInfo);

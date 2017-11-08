@@ -15,6 +15,7 @@
 #include "item_type.h"
 #include "effect.h"
 #include "item.h"
+#include "game_time.h"
 
 static double getDefaultWeight(Body::Size size) {
   switch (size) {
@@ -487,7 +488,7 @@ bool Body::takeDamage(const Attack& attack, WCreature creature, double damage) {
       creature->dieWithAttacker(attack.attacker);
       return true;
     }
-    creature->addEffect(LastingEffect::BLEEDING, 50);
+    creature->addEffect(LastingEffect::BLEEDING, TimeInterval::fromVisible(50));
     if (health <= 0)
       health = 0.1;
     return false;

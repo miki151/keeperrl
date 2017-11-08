@@ -31,6 +31,7 @@
 #include "tutorial.h"
 #include "settlement_info.h"
 #include "enemy_info.h"
+#include "game_time.h"
 
 using namespace std::chrono;
 
@@ -55,7 +56,7 @@ int ModelBuilder::getThronePopulationIncrease() {
 
 static CollectiveConfig getKeeperConfig(RandomGen& random, bool fastImmigration, bool regenerateMana) {
   return CollectiveConfig::keeper(
-      fastImmigration ? 10 : 140,
+      TimeInterval::fromVisible(fastImmigration ? 10 : 140),
       10,
       regenerateMana,
       {

@@ -76,8 +76,8 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   VillainType getVillainType() const;
   optional<EnemyId> getEnemyId() const;
   WCollectiveControl getControl() const;
-  double getLocalTime() const;
-  double getGlobalTime() const;
+  LocalTime getLocalTime() const;
+  GlobalTime getGlobalTime() const;
 
   typedef CollectiveResourceId ResourceId;
 
@@ -251,7 +251,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
     MinionTask SERIAL(task);
     // If none then it's a one-time task. Upon allocating the task, the variable is set to a negative value,
     // so the job immediately times out after finishing the task.
-    optional<double> SERIAL(finishTime);
+    optional<LocalTime> SERIAL(finishTime);
 
     SERIALIZE_ALL(task, finishTime)
   };
@@ -276,7 +276,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   WLevel SERIAL(level) = nullptr;
   HeapAllocated<Territory> SERIAL(territory);
   struct AlarmInfo {
-    double SERIAL(finishTime);
+    GlobalTime SERIAL(finishTime);
     Position SERIAL(position);
     SERIALIZE_ALL(finishTime, position)
   };
@@ -287,9 +287,9 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   void updateConstructions();
   void handleTrapPlacementAndProduction();
   void scheduleAutoProduction(function<bool (WConstItem)> itemPredicate, int count);
-  void delayDangerousTasks(const vector<Position>& enemyPos, double delayTime);
+  void delayDangerousTasks(const vector<Position>& enemyPos, LocalTime delayTime);
   bool isDelayed(Position);
-  unordered_map<Position, double, CustomHash<Position>> SERIAL(delayedPos);
+  unordered_map<Position, LocalTime, CustomHash<Position>> SERIAL(delayedPos);
   vector<Position> getEnemyPositions() const;
   double manaRemainder = 0;
   double getKillManaScore(WConstCreature) const;

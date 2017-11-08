@@ -199,8 +199,8 @@ optional<SaveFileInfo> MainLoop::chooseSaveFile(const vector<ListElem>& options,
     return none;
 }
 
-int MainLoop::getAutosaveFreq() {
-  return 1500;
+TimeInterval MainLoop::getAutosaveFreq() {
+  return TimeInterval::fromVisible(1500);
 }
 
 enum class MainLoop::ExitCondition {
@@ -216,8 +216,8 @@ MainLoop::ExitCondition MainLoop::playGame(PGame&& game, bool withMusic, bool no
   game->initialize(options, highscores, view, fileSharing);
   const milliseconds stepTimeMilli {3};
   Intervalometer meter(stepTimeMilli);
-  double lastMusicUpdate = -1000;
-  double lastAutoSave = game->getGlobalTime();
+  auto lastMusicUpdate = GlobalTime::fromVisible(-1000);
+  auto lastAutoSave = game->getGlobalTime();
   while (1) {
     double step = 1;
     if (!game->isTurnBased()) {
@@ -248,8 +248,8 @@ MainLoop::ExitCondition MainLoop::playGame(PGame&& game, bool withMusic, bool no
     if (exitCondition)
       if (auto c = exitCondition(game.get()))
         return *c;
-    double gameTime = game->getGlobalTime();
-    if (lastMusicUpdate < gameTime - 1 && withMusic) {
+    auto gameTime = game->getGlobalTime();
+    if (lastMusicUpdate < gameTime && withMusic) {
       jukebox->setType(game->getCurrentMusic(), game->changeMusicNow());
       lastMusicUpdate = gameTime;
     }
@@ -570,7 +570,7 @@ void MainLoop::endlessTest(int numTries, const FilePath& levelPath, const FilePa
     allies.push_back(readAlly(input));
   ExternalEnemies enemies(random, EnemyFactory(random).getExternalEnemies());
   for (int turn : Range(100000))
-    if (auto wave = enemies.popNextWave(turn)) {
+    if (auto wave = enemies.popNextWave(LocalTime::fromVisible(turn))) {
       std::cerr << "Turn " << turn << ": " << wave->enemy.name << "\n";
       int totalWins = 0;
       for (auto& allyInfo : allies) {
@@ -605,7 +605,7 @@ int MainLoop::battleTest(int numTries, const FilePath& levelPath, CreatureList a
         else
           return ExitCondition::ENEMIES_WON;
       }
-      if (game->getGlobalTime() > 200)
+      if (game->getGlobalTime().getVisibleInt() > 200)
         return ExitCondition::TIMEOUT;
       if (tribes.empty())
         return ExitCondition::UNKNOWN;

@@ -580,7 +580,7 @@ SGuiElem GuiBuilder::drawImmigrantInfo(const ImmigrantDataInfo& info) {
           .buildHorizontalList());
   lines.addElemAuto(drawAttributesOnPage(drawPlayerAttributes(info.attributes)));
   if (info.timeLeft)
-    lines.addElem(gui.label("Turns left: " + toString((int)*info.timeLeft)));
+    lines.addElem(gui.label("Turns left: " + toString(info.timeLeft)));
   for (auto& req : info.info)
     lines.addElem(gui.label(req, Color::WHITE));
   for (auto& req : info.requirements)
@@ -740,7 +740,7 @@ SGuiElem GuiBuilder::getSunlightInfoGui(const GameSunlightInfo& sunlightInfo) {
           [&] { return sunlightInfo.description == "day" ? Color::WHITE : Color::LIGHT_BLUE;}));
 }
 
-SGuiElem GuiBuilder::getTurnInfoGui(const int& turn) {
+SGuiElem GuiBuilder::getTurnInfoGui(const GlobalTime& turn) {
   return gui.stack(getHintCallback({"Current turn."}),
       gui.labelFun([&turn] { return "T: " + toString(turn); }, Color::WHITE));
 }

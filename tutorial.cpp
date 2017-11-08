@@ -506,7 +506,7 @@ void Tutorial::createTutorial(Game& game) {
   CHECK(foundEntrance);
   collective->setTrait(collective->getLeader(), MinionTrait::NO_AUTO_EQUIPMENT);
   collective->getWarnings().disable();
-  collective->init(CollectiveConfig::keeper(50, 10, false, {}, {
+  collective->init(CollectiveConfig::keeper(TimeInterval::fromVisible(50), 10, false, {}, {
       ImmigrantInfo(CreatureId::IMP, {MinionTrait::WORKER, MinionTrait::NO_LIMIT, MinionTrait::NO_EQUIPMENT})
           .setSpawnLocation(NearLeader{})
           .setKeybinding(Keybinding::CREATE_IMP)

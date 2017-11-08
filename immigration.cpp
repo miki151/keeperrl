@@ -326,7 +326,7 @@ const ImmigrantInfo& Immigration::Available::getInfo() const {
   return immigration->getImmigrants()[immigrantIndex];
 }
 
-optional<double> Immigration::Available::getEndTime() const {
+optional<GlobalTime> Immigration::Available::getEndTime() const {
   return endTime;
 }
 
@@ -364,7 +364,7 @@ CostInfo Immigration::calculateCost(int index, const ExponentialCost& cost) cons
   return info;
 }*/
 
-Immigration::Available::Available(WImmigration im, vector<PCreature> c, int ind, optional<double> t)
+Immigration::Available::Available(WImmigration im, vector<PCreature> c, int ind, optional<GlobalTime> t)
   : creatures(std::move(c)), immigrantIndex(ind), endTime(t), immigration(im) {
 }
 
@@ -428,7 +428,7 @@ void Immigration::accept(int id, bool withMessage) {
 void Immigration::rejectIfNonPersistent(int id) {
   if (auto immigrant = getReferenceMaybe(available, id))
     if (!immigrant->getInfo().isPersistent())
-      immigrant->endTime = -1;
+      immigrant->endTime = none;
 }
 
 SERIALIZE_DEF(Immigration::Available, creatures, immigrantIndex, endTime, immigration)
@@ -461,7 +461,7 @@ Immigration::Available Immigration::Available::generate(WImmigration immigration
     group.immigrantIndex,
     !info.isPersistent()
         ? immigration->collective->getGame()->getGlobalTime() + immigration->candidateTimeout
-        : optional<double>(none)
+        : optional<GlobalTime>(none)
   );
 }
 
@@ -470,7 +470,7 @@ vector<WCreature> Immigration::Available::getCreatures() const {
 }
 
 bool Immigration::Available::isUnavailable() const {
-  return creatures.empty() || (endTime && endTime < immigration->collective->getGame()->getGlobalTime());
+  return creatures.empty() || (endTime && *endTime < immigration->collective->getGame()->getGlobalTime());
 }
 
 optional<milliseconds> Immigration::Available::getCreatedTime() const {
@@ -492,10 +492,12 @@ void Immigration::initializePersistent() {
 }
 
 void Immigration::resetImmigrantTime() {
-  double interval = collective->getConfig().getImmigrantInterval();
+  auto interval = collective->getConfig().getImmigrantInterval();
+  auto lastImmigrantIndex = floor(nextImmigrantTime.value_or(GlobalTime::fromVisible(-1)).getDouble() /
+      interval.getDouble());
   nextImmigrantTime = max(
       collective->getGlobalTime(),
-      interval * (Random.getDouble() + 1 + floor(nextImmigrantTime / interval)));
+      GlobalTime::fromInteral((int) (interval.getDouble() * (Random.getDouble() + 1 + lastImmigrantIndex))));
 }
 
 void Immigration::update() {
@@ -510,7 +512,7 @@ void Immigration::update() {
   for (auto elem : Iter(available))
     if (getValueMaybe(autoState, elem->second.immigrantIndex) == ImmigrantAutoState::AUTO_ACCEPT)
       accept(elem->first);
-  if (nextImmigrantTime < collective->getGlobalTime()) {
+  if (!nextImmigrantTime || *nextImmigrantTime < collective->getGlobalTime()) {
     vector<Group> immigrantInfo;
     for (auto elem : Iter(getImmigrants()))
       immigrantInfo.push_back(Group {elem.index(), Random.get(elem->getGroupSize())});

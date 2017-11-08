@@ -63,7 +63,7 @@ class GuiBuilder {
   int getItemLineOwnerMargin();
 
   SGuiElem getSunlightInfoGui(const GameSunlightInfo& sunlightInfo);
-  SGuiElem getTurnInfoGui(const int& turn);
+  SGuiElem getTurnInfoGui(const GlobalTime& turn);
   SGuiElem drawBottomPlayerInfo(const GameInfo&);
   SGuiElem drawRightPlayerInfo(const PlayerInfo&);
   SGuiElem drawPlayerInventory(const PlayerInfo&);

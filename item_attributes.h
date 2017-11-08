@@ -25,6 +25,7 @@
 #include "attr_type.h"
 #include "ranged_weapon.h"
 #include "item_type.h"
+#include "game_time.h"
 
 #define ITATTR(X) ItemAttributes([&](ItemAttributes& i) { X })
 
@@ -59,7 +60,7 @@ class ItemAttributes {
   AttrType SERIAL(meleeAttackAttr) = AttrType::DAMAGE;
   double SERIAL(attackTime) = 1;
   optional<EquipmentSlot> SERIAL(equipmentSlot);
-  double SERIAL(applyTime) = 1;
+  TimeInterval SERIAL(applyTime) = TimeInterval::fromVisible(1);
   bool SERIAL(fragile) = false;
   optional<Effect> SERIAL(effect);
   optional<Effect> SERIAL(attackEffect);

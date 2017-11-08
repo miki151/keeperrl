@@ -6,6 +6,7 @@
 #include "enum_variant.h"
 #include "position.h"
 #include "exit_info.h"
+#include "game_time.h"
 
 class Options;
 class Highscores;
@@ -43,7 +44,7 @@ class Game : public OwnedObject<Game> {
   Statistics& getStatistics();
   const Statistics& getStatistics() const;
   Tribe* getTribe(TribeId) const;
-  double getGlobalTime() const;
+  GlobalTime getGlobalTime() const;
   WCollective getPlayerCollective() const;
   WPlayerControl getPlayerControl() const;
   void addPlayer(WCreature);
@@ -65,6 +66,7 @@ class Game : public OwnedObject<Game> {
 
   bool isGameOver() const;
   bool isTurnBased();
+  double getUpdateRemainder() const;
   bool isVillainActive(WConstCollective);
   SavedGameInfo getSavedGameInfo() const;
 
@@ -90,25 +92,27 @@ class Game : public OwnedObject<Game> {
   Game(Table<PModel>&&, Vec2 basePos, const CampaignSetup&);
 
   private:
+  double updateRemainder = 0;
+  optional<ExitInfo> update();
   void updateSunlightInfo();
-  void tick(double time);
+  void tick(GlobalTime);
   PCreature makeAdventurer(int handicap);
   WModel getCurrentModel() const;
   Vec2 getModelCoords(const WModel) const;
-  optional<ExitInfo> updateModel(WModel, double totalTime);
+  optional<ExitInfo> updateModel(WModel, LocalTime totalTime);
   string getPlayerName() const;
   void uploadEvent(const string& name, const map<string, string>&);
 
   SunlightInfo sunlightInfo;
   Table<PModel> SERIAL(models);
   Table<bool> SERIAL(visited);
-  map<LevelId, double> SERIAL(localTime);
+  map<LevelId, LocalTime> SERIAL(localTime);
   Vec2 SERIAL(baseModel);
   View* view;
-  double SERIAL(currentTime) = 0;
+  GlobalTime SERIAL(currentTime);
   optional<ExitInfo> exitInfo;
   Tribe::Map SERIAL(tribes);
-  optional<double> SERIAL(lastTick);
+  optional<GlobalTime> SERIAL(lastTick);
   string SERIAL(gameIdentifier);
   string SERIAL(gameDisplayName);
   map<VillainType, vector<WCollective>> SERIAL(villainsByType);

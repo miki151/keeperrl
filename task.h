@@ -20,6 +20,7 @@
 #include "entity_set.h"
 #include "position.h"
 #include "destroy_action.h"
+#include "game_time.h"
 
 class TaskCallback;
 class CreatureFactory;
@@ -76,7 +77,7 @@ class Task : public UniqueEntity<Task>, public OwnedObject<Task> {
   static PTask goTo(Position);
   static PTask goToTryForever(Position);
   static PTask transferTo(WModel);
-  static PTask goToAndWait(Position, double waitTime);
+  static PTask goToAndWait(Position, TimeInterval waitTime);
   static PTask whipping(Position, WCreature whipped);
   static PTask dropItems(vector<WItem>);
   static PTask spider(Position origin, const vector<Position>& posClose, const vector<Position>& posFurther);

@@ -26,33 +26,39 @@ void TimeQueue::serialize(Archive& ar, const unsigned int version) {
 
 SERIALIZABLE(TimeQueue);
 
-void TimeQueue::addCreature(PCreature c, double time) {
+void TimeQueue::addCreature(PCreature c, LocalTime time) {
   timeMap.set(c.get(), time);
-  queue.insert(c.get());
+  queue[time].push_back(c.get());
   creatures.push_back(std::move(c));
 }
 
-double TimeQueue::getTime(WConstCreature c) {
+LocalTime TimeQueue::getTime(WConstCreature c) {
   return timeMap.getOrFail(c);
 }
 
-void TimeQueue::increaseTime(WCreature c, double diff) {
-  CHECK(queue.count(c));
-  queue.erase(c);
-  timeMap.getOrFail(c) += diff;
-  queue.insert(c);
+void TimeQueue::eraseFromQueue(deque<WCreature>& q, WCreature c) {
+  for (int i : All(q))
+    if (q[i] == c) {
+      q[i] = nullptr;
+      break;
+    }
+}
+
+void TimeQueue::increaseTime(WCreature c, TimeInterval diff) {
+  LocalTime& time = timeMap.getOrFail(c);
+  eraseFromQueue(queue.at(time), c);
+  time += diff;
+  queue[time].push_back(c);
 }
 
 // Queue is initialized in a lazy manner because during deserialization the comparator doesn't 
 // work, as the Creatures are still being deserialized.
-TimeQueue::TimeQueue() : queue([this](WConstCreature c1, WConstCreature c2) {
-        return make_tuple(timeMap.getOrFail(c1), c1->getUniqueId()) <
-            make_tuple(timeMap.getOrFail(c2), c2->getUniqueId()); }) {}
+TimeQueue::TimeQueue() {}
   
 PCreature TimeQueue::removeCreature(WCreature cRef) {
   for (int i : All(creatures))
     if (creatures[i].get() == cRef) {
-      queue.erase(cRef);
+      eraseFromQueue(queue.at(timeMap.getOrFail(cRef)), cRef);
       PCreature ret = std::move(creatures[i]);
       creatures.removeIndexPreserveOrder(i);
       return ret;
@@ -68,7 +74,18 @@ vector<WCreature> TimeQueue::getAllCreatures() const {
 WCreature TimeQueue::getNextCreature() {
   if (creatures.empty())
     return nullptr;
-  else
-    return *queue.begin();
+  while (1) {
+    while (1) {
+      CHECK(!queue.empty());
+      if (!queue.begin()->second.empty())
+        break;
+      queue.erase(queue.begin());
+    }
+    auto& q = queue.begin()->second;
+    while (!q.empty() && q.front() == nullptr)
+      q.pop_front();
+    if (!q.empty())
+      return q.front();
+  }
 }
 

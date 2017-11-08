@@ -18,6 +18,8 @@
 #include "util.h"
 #include "entity_set.h"
 #include "entity_map.h"
+#include "indexed_vector.h"
+#include "game_time.h"
 
 class Creature;
 
@@ -26,18 +28,18 @@ class TimeQueue {
   TimeQueue();
   WCreature getNextCreature();
   vector<WCreature> getAllCreatures() const;
-  void addCreature(PCreature, double time);
+  void addCreature(PCreature, LocalTime time);
   PCreature removeCreature(WCreature);
-  double getTime(WConstCreature);
-  void increaseTime(WCreature, double diff);
+  LocalTime getTime(WConstCreature);
+  void increaseTime(WCreature, TimeInterval);
 
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version);
 
   private:
-  typedef set<WCreature, function<bool(WConstCreature, WConstCreature)>> Queue;
   vector<PCreature> SERIAL(creatures);
-  Queue SERIAL(queue);
-  EntityMap<Creature, double> SERIAL(timeMap);
+  map<LocalTime, deque<WCreature>> SERIAL(queue);
+  EntityMap<Creature, LocalTime> SERIAL(timeMap);
+  void eraseFromQueue(deque<WCreature>&, WCreature);
 };
 

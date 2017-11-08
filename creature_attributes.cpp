@@ -32,7 +32,7 @@
 CreatureAttributes::CreatureAttributes(function<void(CreatureAttributes&)> fun) {
   fun(*this);
   for (LastingEffect effect : ENUM_ALL(LastingEffect))
-    lastingEffects[effect] = -500;
+    lastingEffects[effect] = GlobalTime::fromVisible(-500);
   for (auto effect : ENUM_ALL(LastingEffect))
     if (body->isIntrinsicallyAffected(effect))
       ++permanentEffects[effect];
@@ -177,34 +177,34 @@ void CreatureAttributes::chatReaction(WCreature me, WCreature other) {
   }
 }
 
-bool CreatureAttributes::isAffected(LastingEffect effect, double time) const {
+bool CreatureAttributes::isAffected(LastingEffect effect, GlobalTime time) const {
   if (auto suppressor = LastingEffects::getSuppressor(effect))
     if (isAffected(*suppressor, time))
       return false;
-  return lastingEffects[effect] >= time || isAffectedPermanently(effect);
+  return lastingEffects[effect] > time || isAffectedPermanently(effect);
 }
 
-double CreatureAttributes::getTimeOut(LastingEffect effect) const {
+GlobalTime CreatureAttributes::getTimeOut(LastingEffect effect) const {
   return lastingEffects[effect];
 }
 
-bool CreatureAttributes::considerTimeout(LastingEffect effect, double globalTime) {
-  if (lastingEffects[effect] > 0 && lastingEffects[effect] < globalTime) {
-    clearLastingEffect(effect, globalTime);
-    if (!isAffected(effect, globalTime))
+bool CreatureAttributes::considerTimeout(LastingEffect effect, GlobalTime current) {
+  if (lastingEffects[effect] > GlobalTime::fromVisible(0) && lastingEffects[effect] <= current) {
+    clearLastingEffect(effect, current);
+    if (!isAffected(effect, current))
       return true;
   }
   return false;
 }
   
-void CreatureAttributes::addLastingEffect(LastingEffect effect, double endTime) {
+void CreatureAttributes::addLastingEffect(LastingEffect effect, GlobalTime endTime) {
   if (lastingEffects[effect] < endTime)
     lastingEffects[effect] = endTime;
 }
 
-optional<double> CreatureAttributes::getLastAffected(LastingEffect effect, double currentGlobalTime) const {
-  if (isAffected(effect, currentGlobalTime))
-    return currentGlobalTime;
+optional<GlobalTime> CreatureAttributes::getLastAffected(LastingEffect effect, GlobalTime current) const {
+  if (isAffected(effect, current))
+    return current;
   else
     return lastAffected[effect];
 }
@@ -219,7 +219,6 @@ static string getAttrNameMore(AttrType attr) {
     case AttrType::DEFENSE: return "more protected";
     case AttrType::SPELL_DAMAGE: return "more powerful";
     case AttrType::RANGED_DAMAGE: return "more accurate";
-    case AttrType::SPEED: return "faster";
   }
 }
 
@@ -302,8 +301,8 @@ AttackType CreatureAttributes::getAttackType(WConstItem weapon) const {
     return body->isHumanoid() ? AttackType::PUNCH : AttackType::BITE;
 }
 
-string CreatureAttributes::getRemainingString(LastingEffect effect, double time) const {
-  return "[" + toString<int>(lastingEffects[effect] - time) + "]";
+string CreatureAttributes::getRemainingString(LastingEffect effect, GlobalTime time) const {
+  return "[" + toString(lastingEffects[effect] - time) + "]";
 }
 
 bool CreatureAttributes::isBoulder() const {
@@ -334,14 +333,9 @@ bool CreatureAttributes::isAffectedPermanently(LastingEffect effect) const {
   return permanentEffects[effect] > 0;
 }
 
-void CreatureAttributes::shortenEffect(LastingEffect effect, double time) {
-  CHECK(lastingEffects[effect] >= time);
-  lastingEffects[effect] -= time;
-}
-
-void CreatureAttributes::clearLastingEffect(LastingEffect effect, double globalTime) {
-  lastingEffects[effect] = 0;
-  lastAffected[effect] = globalTime;
+void CreatureAttributes::clearLastingEffect(LastingEffect effect, GlobalTime t) {
+  lastingEffects[effect] = GlobalTime::fromVisible(0);
+  lastAffected[effect] = t;
 }
 
 void CreatureAttributes::addPermanentEffect(LastingEffect effect, int count) {

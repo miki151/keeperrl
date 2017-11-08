@@ -56,7 +56,7 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   virtual Vec2 getPosition() const override;
   virtual WLevel getLevel() const override;
   virtual vector<Vec2> getVisibleEnemies() const override;
-  virtual double getLocalTime() const override;
+  virtual double getAnimationTime() const override;
   virtual CenterType getCenterType() const override;
   virtual vector<Vec2> getUnknownLocations(WConstLevel) const override;
 

@@ -57,7 +57,7 @@ class FireScrollItem : public Item {
 class Corpse : public Item {
   public:
   Corpse(const ViewObject& obj2, const ItemAttributes& attr, const string& rottenN,
-      double rottingT, CorpseInfo info) :
+      TimeInterval rottingT, CorpseInfo info) :
       Item(attr),
       object2(obj2),
       rottingTime(rottingT),
@@ -76,8 +76,8 @@ class Corpse : public Item {
   }
 
   virtual void specialTick(Position position) override {
-    double time = position.getGame()->getGlobalTime();
-    if (rottenTime == -1)
+    auto time = position.getGame()->getGlobalTime();
+    if (!rottenTime)
       rottenTime = time + rottingTime;
     if (time >= rottenTime && !rotten) {
       setName(rottenName);
@@ -85,7 +85,7 @@ class Corpse : public Item {
       corpseInfo.isSkeleton = true;
       rotten = true;
     } else {
-      if (!rotten && getWeight() > 10 && Random.roll(20 + (rottenTime - time) / 10))
+      if (!rotten && getWeight() > 10 && Random.roll(20 + (*rottenTime - time).getDouble() / 10))
         Effect::emitPoisonGas(position, 0.3, false);
       if (getWeight() > 10 && !corpseInfo.isSkeleton &&
           !position.isCovered() && Random.roll(350)) {
@@ -95,7 +95,7 @@ class Corpse : public Item {
           if (v.canEnter(vulture.get())) {
             v.addCreature(std::move(vulture));
             v.globalMessage("A vulture lands near " + getTheName());
-            rottenTime -= 40;
+            *rottenTime -= TimeInterval::fromVisible(40);
             break;
           }
         }
@@ -113,15 +113,15 @@ class Corpse : public Item {
   private:
   ViewObject SERIAL(object2);
   bool SERIAL(rotten) = false;
-  double SERIAL(rottenTime) = -1;
-  double SERIAL(rottingTime);
+  optional<GlobalTime> SERIAL(rottenTime);
+  TimeInterval SERIAL(rottingTime);
   string SERIAL(rottenName);
   CorpseInfo SERIAL(corpseInfo);
 };
 
 PItem ItemFactory::corpse(const string& name, const string& rottenName, double weight, ItemClass itemClass,
     CorpseInfo corpseInfo) {
-  const double rotTime = 300;
+  const auto rotTime = TimeInterval::fromVisible(300);
   return makeOwner<Corpse>(
         ViewObject(ViewId::BONE, ViewLayer::ITEM, rottenName),
         ITATTR(
@@ -399,7 +399,7 @@ ItemAttributes ItemType::AutomatonItem::getAttributes() const {
       i.weight = 30;
       i.itemClass = ItemClass::TOOL;
       i.description = "";
-      i.applyTime = 3;
+      i.applyTime = TimeInterval::fromVisible(3);
       i.uses = 1;
       i.price = 60;
       i.effect = Effect(Effect::Summon{CreatureId::AUTOMATON});
@@ -883,7 +883,7 @@ ItemAttributes ItemType::SpeedBoots::getAttributes() const {
       i.equipmentSlot = EquipmentSlot::BOOTS;
       i.weight = 2;
       i.price = 70;
-      i.modifiers[AttrType::SPEED] = 30;
+      i.equipedEffect = LastingEffect::SPEED;
       i.modifiers[AttrType::DEFENSE] = 1 + maybePlusMinusOne(4);
   );
 }
@@ -955,7 +955,7 @@ ItemAttributes ItemType::FirstAidKit::getAttributes() const {
       i.weight = 0.5;
       i.itemClass = ItemClass::TOOL;
       i.description = "Heals your wounds, but requires a few turns to apply.";
-      i.applyTime = 3;
+      i.applyTime = TimeInterval::fromVisible(3);
       i.uses = Random.get(3, 6);
       i.usedUpMsg = true;
       i.displayUses = true;
@@ -989,7 +989,7 @@ ItemAttributes ItemType::TrapItem::getAttributes() const {
       i.shortName = trapName;
       i.weight = 0.5;
       i.itemClass = ItemClass::TOOL;
-      i.applyTime = 3;
+      i.applyTime = TimeInterval::fromVisible(3);
       i.applySound = SoundId::TRAP_ARMING;
       i.uses = 1;
       i.usedUpMsg = true;
@@ -1094,7 +1094,7 @@ ItemAttributes ItemType::TechBook::getAttributes() const {
       i.plural = "books of " + *i.shortName;
       i.weight = 1;
       i.itemClass = ItemClass::BOOK;
-      i.applyTime = 3;
+      i.applyTime = TimeInterval::fromVisible(3);
       i.price = 1000;
   );
 }
@@ -1106,7 +1106,7 @@ ItemAttributes ItemType::RandomTechBook::getAttributes() const {
       i.plural = "books of knowledge"_s;
       i.weight = 0.5;
       i.itemClass = ItemClass::BOOK;
-      i.applyTime = 3;
+      i.applyTime = TimeInterval::fromVisible(3);
       i.price = 300;
   );
 }

@@ -47,7 +47,7 @@ class Behaviour {
   WItem getBestWeapon();
   WCreature getClosestEnemy();
   WCreature getClosestCreature();
-  MoveInfo tryEffect(Effect, double maxTurns);
+  MoveInfo tryEffect(Effect, TimeInterval maxTurns = TimeInterval::fromVisible(1));
   MoveInfo tryEffect(DirEffectType, Vec2);
 
   virtual ~Behaviour() {}
@@ -102,7 +102,7 @@ WItem Behaviour::getBestWeapon() {
   return best;
 }
 
-MoveInfo Behaviour::tryEffect(Effect type, double maxTurns) {
+MoveInfo Behaviour::tryEffect(Effect type, TimeInterval maxTurns) {
   if (auto effect = type.getValueMaybe<Effect::Lasting>())
     if (creature->isAffected(effect->lastingEffect))
       return NoMove;
@@ -150,17 +150,17 @@ class Heal : public Behaviour {
     if (!creature->getBody().isHumanoid())
       return NoMove;
     if (creature->isAffected(LastingEffect::POISON)) {
-      if (MoveInfo move = tryEffect(Effect::Lasting{LastingEffect::POISON_RESISTANT}, 1))
+      if (MoveInfo move = tryEffect(Effect::Lasting{LastingEffect::POISON_RESISTANT}))
         return move;
-      if (MoveInfo move = tryEffect(Effect::CurePoison{}, 1))
+      if (MoveInfo move = tryEffect(Effect::CurePoison{}))
         return move;
     }
     if (creature->getBody().canHeal()) {
-      if (MoveInfo move = tryEffect(Effect::Heal{}, 1))
+      if (MoveInfo move = tryEffect(Effect::Heal{}))
         return move.withValue(min(1.0, 1.5 - creature->getBody().getHealth()));
-      if (MoveInfo move = tryEffect(Effect::Lasting{LastingEffect::REGENERATION}, 1))
+      if (MoveInfo move = tryEffect(Effect::Lasting{LastingEffect::REGENERATION}))
         return move;
-      if (MoveInfo move = tryEffect(Effect::Heal{}, 3))
+      if (MoveInfo move = tryEffect(Effect::Heal{}, TimeInterval::fromVisible(3)))
         return move.withValue(0.5 * min(1.0, 1.5 - creature->getBody().getHealth()));
     }
     for (Position pos : creature->getPosition().neighbors8())
@@ -369,7 +369,7 @@ class Fighter : public Behaviour {
   }
 
   MoveInfo getPanicMove(WCreature other, double weight) {
-    if (auto teleMove = tryEffect(Effect::Teleport{}, 1))
+    if (auto teleMove = tryEffect(Effect::Teleport{}))
       return teleMove.withValue(weight);
     if (other->getPosition().dist8(creature->getPosition()) > 3)
       if (auto move = getFireMove(creature->getPosition().getDir(other->getPosition())))
@@ -478,7 +478,7 @@ class Fighter : public Behaviour {
 
   MoveInfo getLastSeenMove() {
     if (auto lastSeen = getLastSeen()) {
-      double lastSeenTimeout = 20;
+      auto lastSeenTimeout = TimeInterval::fromVisible(20);
       if (!lastSeen->pos.isSameLevel(creature->getPosition()) ||
           lastSeen->time < creature->getGlobalTime() - lastSeenTimeout ||
           lastSeen->pos == creature->getPosition()) {
@@ -508,7 +508,7 @@ class Fighter : public Behaviour {
         if (c->isEnemy(creature))
           ++numEnemies;
     if (numEnemies >= 3)
-      if (MoveInfo move = tryEffect(Effect::CircularBlast{}, 1))
+      if (MoveInfo move = tryEffect(Effect::CircularBlast{}))
         return move;
     return NoMove;
   }
@@ -533,7 +533,7 @@ class Fighter : public Behaviour {
         Effect(Effect::Lasting{LastingEffect::SPEED}),
         Effect(Effect::Deception{}),
         Effect(Effect::Summon{CreatureId::SPIRIT})})
-      if (MoveInfo move = tryEffect(effect, 1))
+      if (MoveInfo move = tryEffect(effect))
         return move;
     return NoMove;
   }
@@ -561,7 +561,7 @@ class Fighter : public Behaviour {
               destroyMove = move;
       }
     if (isFriendBetween) {
-      if (auto move = tryEffect(Effect::DestroyWalls{}, 1))
+      if (auto move = tryEffect(Effect::DestroyWalls{}))
         return move;
       return destroyMove;
     } else
@@ -598,8 +598,11 @@ class Fighter : public Behaviour {
             other->setInCombat();
             lastSeen = LastSeen{other->getPosition(), creature->getGlobalTime(), LastSeen::ATTACK, other->getUniqueId()};
             auto chaseInfo = chaseFreeze.getMaybe(other);
+            auto startChaseFreeze = TimeInterval::fromVisible(20);
+            auto endChaseFreeze = TimeInterval::fromVisible(20);
             if (!chaseInfo || other->getGlobalTime() > chaseInfo->second)
-              chaseFreeze.set(other, make_pair(other->getGlobalTime() + 20, other->getGlobalTime() + 70));
+              chaseFreeze.set(other, make_pair(other->getGlobalTime() + startChaseFreeze,
+                  other->getGlobalTime() + endChaseFreeze));
           })};
       }
       if (distance == 2)
@@ -633,7 +636,7 @@ class Fighter : public Behaviour {
   bool SERIAL(chase);
   struct LastSeen {
     Position SERIAL(pos);
-    double SERIAL(time);
+    GlobalTime SERIAL(time);
     enum { ATTACK, PANIC} SERIAL(type);
     Creature::Id SERIAL(creature);
     SERIALIZE_ALL(pos, time, type, creature)
@@ -644,7 +647,7 @@ class Fighter : public Behaviour {
       lastSeen.reset();
     return lastSeen;
   }
-  EntityMap<Creature, pair<double, double>> chaseFreeze;
+  EntityMap<Creature, pair<GlobalTime, GlobalTime>> chaseFreeze;
 
   bool isChaseFrozen(WConstCreature c) {
     auto chaseInfo = chaseFreeze.getMaybe(c);
@@ -728,7 +731,7 @@ class Wait : public Behaviour {
 
 class DieTime : public Behaviour {
   public:
-  DieTime(WCreature c, double t) : Behaviour(c), dieTime(t) {}
+  DieTime(WCreature c, GlobalTime t) : Behaviour(c), dieTime(t) {}
 
   virtual MoveInfo getMove() override {
     if (creature->getGlobalTime() > dieTime) {
@@ -743,12 +746,12 @@ class DieTime : public Behaviour {
   SERIALIZE_ALL(SUBCLASS(Behaviour), dieTime);
 
   private:
-  double SERIAL(dieTime);
+  GlobalTime SERIAL(dieTime);
 };
 
 class Summoned : public GuardTarget {
   public:
-  Summoned(WCreature c, WCreature _target, double minDist, double maxDist, double ttl) 
+  Summoned(WCreature c, WCreature _target, double minDist, double maxDist, TimeInterval ttl)
       : GuardTarget(c, minDist, maxDist), target(_target), dieTime(target->getGlobalTime() + ttl) {
   }
 
@@ -772,7 +775,7 @@ class Summoned : public GuardTarget {
 
   private:
   WCreature SERIAL(target);
-  double SERIAL(dieTime);
+  GlobalTime SERIAL(dieTime);
 };
 
 class Thief : public Behaviour {
@@ -784,7 +787,7 @@ class Thief : public Behaviour {
       return NoMove;
     for (WConstCreature other : creature->getVisibleEnemies()) {
       if (robbed.contains(other)) {
-        if (MoveInfo teleMove = tryEffect(Effect::Teleport{}, 1))
+        if (MoveInfo teleMove = tryEffect(Effect::Teleport{}))
           return teleMove;
         if (auto action = creature->moveAway(other->getPosition()))
         return {1.0, action};
@@ -1039,7 +1042,7 @@ class SplashImps : public Behaviour {
   }
 
   virtual MoveInfo getMove() override {
-    creature->addEffect(LastingEffect::SPEED, 1000);
+    creature->addEffect(LastingEffect::SPEED, TimeInterval::fromVisible(1000));
     if (!initialPos)
       initialPos = creature->getPosition().getCoord();
     bool heroesDead = true;
@@ -1281,7 +1284,7 @@ MonsterAIFactory MonsterAIFactory::scavengerBird(Position corpsePos) {
       });
 }
 
-MonsterAIFactory MonsterAIFactory::summoned(WCreature leader, int ttl) {
+MonsterAIFactory MonsterAIFactory::summoned(WCreature leader, TimeInterval ttl) {
   return MonsterAIFactory([=](WCreature c) {
       return new MonsterAI(c, {
           new Summoned(c, leader, 1, 3, ttl),
@@ -1294,7 +1297,7 @@ MonsterAIFactory MonsterAIFactory::summoned(WCreature leader, int ttl) {
       });
 }
 
-MonsterAIFactory MonsterAIFactory::dieTime(double dieTime) {
+MonsterAIFactory MonsterAIFactory::dieTime(GlobalTime dieTime) {
   return MonsterAIFactory([=](WCreature c) {
       return new MonsterAI(c, {
           new DieTime(c, dieTime),

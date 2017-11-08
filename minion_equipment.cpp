@@ -263,9 +263,6 @@ int MinionEquipment::getItemValue(WConstCreature c, WConstItem it) const {
   int sum = 0;
   for (auto attr : ENUM_ALL(AttrType))
     switch (attr) {
-      case AttrType::SPEED:
-        sum += 10 * it->getModifier(attr);
-        break;
       case AttrType::DAMAGE:
       case AttrType::SPELL_DAMAGE:
         if (it->getClass() != ItemClass::WEAPON || attr == it->getMeleeAttackAttr())
