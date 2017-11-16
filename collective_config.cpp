@@ -424,7 +424,7 @@ int CollectiveConfig::getManaForConquering(const optional<VillainType>& type) {
       case VillainType::LESSER:
         return 100;
       default:
-        break;;
+        break;
     }
   return 50;
 }
