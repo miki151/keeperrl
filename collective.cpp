@@ -754,23 +754,17 @@ void Collective::onEvent(const GameEvent& event) {
       },
       [&](const ConqueredEnemy& info) {
         auto col = info.collective;
-        if (col->isDiscoverable())
-          if (auto enemyId = col->getEnemyId()) {
-            if (auto& name = col->getName())
-              control->addMessage(PlayerMessage("The tribe of " + name->full + " is destroyed.",
-                  MessagePriority::CRITICAL));
-            else
-              control->addMessage(PlayerMessage("An unnamed tribe is destroyed.", MessagePriority::CRITICAL));
-            if (!conqueredVillains.count(*enemyId)) {
-              auto mana = config->getManaForConquering(col->getVillainType());
-              addMana(mana);
-              control->addMessage(PlayerMessage("You feel a surge of power (+" + toString(mana) + " mana)",
-                  MessagePriority::CRITICAL));
-              conqueredVillains.insert(*enemyId);
-            } else
-              control->addMessage(PlayerMessage("Note: mana is only rewarded once per each kind of enemy.",
-                  MessagePriority::CRITICAL));
-          }
+        if (col->isDiscoverable()) {
+          if (auto& name = col->getName())
+            control->addMessage(PlayerMessage("The tribe of " + name->full + " is destroyed.",
+                MessagePriority::CRITICAL));
+          else
+            control->addMessage(PlayerMessage("An unnamed tribe is destroyed.", MessagePriority::CRITICAL));
+          auto mana = config->getManaForConquering(col->getVillainType());
+          addMana(mana);
+          control->addMessage(PlayerMessage("You feel a surge of power (+" + toString(mana) + " mana)",
+              MessagePriority::CRITICAL));
+        }
       },
       [&](const auto&) {}
   );
