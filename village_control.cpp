@@ -188,11 +188,17 @@ void VillageControl::acceptImmigration() {
     getCollective()->getImmigration().setAutoState(i, ImmigrantAutoState::AUTO_ACCEPT);
 }
 
+void VillageControl::healAllCreatures() {
+  for (auto c : getCollective()->getCreatures())
+    c->heal(0.002);
+}
+
 void VillageControl::update(bool currentlyActive) {
   considerWelcomeMessage();
   considerCancellingAttack();
   checkEntries();
   acceptImmigration();
+  healAllCreatures();
   vector<WCreature> allMembers = getCollective()->getCreatures();
   for (auto team : getCollective()->getTeams().getAll()) {
     for (WConstCreature c : getCollective()->getTeams().getMembers(team))
@@ -203,7 +209,7 @@ void VillageControl::update(bool currentlyActive) {
     return;
   }
   double updateFreq = 0.1;
-  if (canPerformAttack(currentlyActive) && Random.roll(1 / updateFreq))
+  if (canPerformAttack(currentlyActive) && Random.chance(updateFreq))
     if (villain) {
       if (WCollective enemy = getEnemyCollective())
         maxEnemyPower = max(maxEnemyPower, enemy->getDangerLevel());

@@ -63,5 +63,6 @@ class VillageControl : public CollectiveControl, public EventListener<VillageCon
   map<TeamId, int> SERIAL(attackSizes);
   bool SERIAL(entries) = false;
   double SERIAL(maxEnemyPower) = 0;
+  void healAllCreatures();
 };
 
