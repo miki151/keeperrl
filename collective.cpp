@@ -532,8 +532,8 @@ MoveInfo Collective::getMove(WCreature c) {
     }
     return NoMove;
   };
-
-  considerHealingTask(c);
+  if (getConfig().allowHealingTaskOutsideTerritory() || territory->contains(c->getPosition()))
+    considerHealingTask(c);
   return getFirstGoodMove(
       priorityTask,
       followTeamLeader,

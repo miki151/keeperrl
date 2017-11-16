@@ -151,6 +151,10 @@ bool CollectiveConfig::getRegenerateMana() const {
   return regenerateMana;
 }
 
+bool CollectiveConfig::allowHealingTaskOutsideTerritory() const {
+  return type == KEEPER;
+}
+
 bool CollectiveConfig::hasImmigrantion(bool currentlyActiveModel) const {
   return type != KEEPER || currentlyActiveModel;
 }

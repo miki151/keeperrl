@@ -110,6 +110,7 @@ class CollectiveConfig {
   double getGhostProb() const;
   bool hasVillainSleepingTask() const;
   bool getRegenerateMana() const;
+  bool allowHealingTaskOutsideTerritory() const;
   const vector<ImmigrantInfo>& getImmigrantInfo() const;
   const vector<PopulationIncrease>& getPopulationIncreases() const;
   const optional<GuardianInfo>& getGuardianInfo() const;
