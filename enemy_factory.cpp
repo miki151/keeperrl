@@ -84,13 +84,12 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::FOREST;
             c.inhabitants.fighters = CreatureList(random.get(5, 8), CreatureId::UNICORN);
-            c.stockpiles = LIST({StockpileInfo::GOLD, 100});
             c.tribe = TribeId::getMonster();
             c.race = "unicorns"_s;
             c.buildingId = BuildingId::WOOD;),
           CollectiveConfig::withImmigrants(200, 9, {
               ImmigrantInfo(CreatureId::UNICORN, {MinionTrait::FIGHTER}).setFrequency(1),
-          })); 
+          }));
     case EnemyId::ANTS_CLOSED:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::ANT_NEST;

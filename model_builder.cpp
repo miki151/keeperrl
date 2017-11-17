@@ -259,7 +259,7 @@ SettlementInfo& ModelBuilder::makeExtraLevel(WModel model, EnemyInfo& enemy) {
 }
 
 PModel ModelBuilder::singleMapModel(const string& worldName) {
-  return tryBuilding(10, [&] { return trySingleMapModel(worldName);});
+  return tryBuilding(10, [&] { return trySingleMapModel(worldName);}, "single map");
 }
 
 PModel ModelBuilder::trySingleMapModel(const string& worldName) {
@@ -358,13 +358,13 @@ static optional<BiomeId> getBiome(EnemyId enemyId, RandomGen& random) {
     case EnemyId::HARPY_CAVE:
     case EnemyId::SOKOBAN:
     case EnemyId::GNOMES:
-    case EnemyId::UNICORN_HERD:
     case EnemyId::CYCLOPS:
     case EnemyId::SHELOB:
-    case EnemyId::DEMON_DEN:
     case EnemyId::ANTS_OPEN: return BiomeId::MOUNTAIN;
+    case EnemyId::DEMON_DEN:
     case EnemyId::ELVES:
     case EnemyId::DRIADS:
+    case EnemyId::UNICORN_HERD:
     case EnemyId::ENTS: return BiomeId::FORREST;
     case EnemyId::BANDITS: return random.choose<BiomeId>();
     case EnemyId::CEMETERY: return random.choose(BiomeId::GRASSLAND, BiomeId::FORREST);
@@ -380,7 +380,7 @@ PModel ModelBuilder::tryCampaignSiteModel(const string& siteName, EnemyId enemyI
   return tryModel(170, siteName, enemyInfo, false, *biomeId, {}, true);
 }
 
-PModel ModelBuilder::tryBuilding(int numTries, function<PModel()> buildFun) {
+PModel ModelBuilder::tryBuilding(int numTries, function<PModel()> buildFun, const string& name) {
   for (int i : Range(numTries)) {
     try {
       if (meter)
@@ -390,21 +390,22 @@ PModel ModelBuilder::tryBuilding(int numTries, function<PModel()> buildFun) {
       INFO << "Retrying level gen";
     }
   }
-  FATAL << "Couldn't generate a level";
+  FATAL << "Couldn't generate a level: " << name;
   return nullptr;
 
 }
 
 PModel ModelBuilder::campaignBaseModel(const string& siteName, bool externalEnemies) {
-  return tryBuilding(20, [=] { return tryCampaignBaseModel(siteName, externalEnemies); });
+  return tryBuilding(20, [=] { return tryCampaignBaseModel(siteName, externalEnemies); }, "campaign base");
 }
 
 PModel ModelBuilder::tutorialModel(const string& siteName) {
-  return tryBuilding(20, [=] { return tryTutorialModel(siteName); });
+  return tryBuilding(20, [=] { return tryTutorialModel(siteName); }, "tutorial");
 }
 
 PModel ModelBuilder::campaignSiteModel(const string& siteName, EnemyId enemyId, VillainType type) {
-  return tryBuilding(20, [&] { return tryCampaignSiteModel(siteName, enemyId, type); });
+  return tryBuilding(20, [&] { return tryCampaignSiteModel(siteName, enemyId, type); },
+      EnumInfo<EnemyId>::getString(enemyId));
 }
 
 void ModelBuilder::measureSiteGen(int numTries, vector<string> types) {
