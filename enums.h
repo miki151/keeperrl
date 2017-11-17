@@ -15,8 +15,6 @@
 
 #pragma once
 
-#include "serialization.h"
-
 typedef int TeamId;
 typedef long long LevelId;
 
@@ -30,7 +28,6 @@ enum class MsgType;
 enum class BodyPart;
 enum class AttackType;
 enum class AttackLevel;
-enum class ModifierType;
 enum class AttrType;
 enum class ExperienceType;
 enum class ItemClass;
@@ -51,12 +48,10 @@ enum class FurnitureType;
 enum class FurnitureLayer;
 enum class ItemAction;
 enum class WorshipType;
-enum class SquareInteraction;
 
 enum class FurnitureUsageType;
 enum class FurnitureClickType;
 enum class FurnitureTickType;
-enum class FurnitureEntryType;
 
 enum class MinionTask;
 enum class MinionTrait;
@@ -67,7 +62,6 @@ enum class SquareAttrib;
 enum class Dir;
 
 enum class CreatureId;
-enum class ItemId;
 
 enum class ViewLayer;
 enum class HighlightType;
@@ -78,9 +72,6 @@ enum class VillainType;
 enum class BiomeId;
 
 enum class ViewId;
-
-enum class EffectStrength;
-enum class EffectId;
 
 enum class AnimationId;
 
@@ -98,6 +89,7 @@ enum class ItemIndex;
 enum class CollectiveWarning;
 enum class SoundId;
 enum class Keybinding;
+enum class TutorialHighlight;
 
 enum class MessagePriority;
 enum class WorkshopType;

@@ -15,13 +15,14 @@
 
 #pragma once
 
-#include <string>
-#include <ostream>
-#include <functional>
+#include <vector>
+#include "stdafx.h"
 
 #define FATAL FatalLog.get() << "FATAL " << __FILE__ << ":" << __LINE__ << " "
+#define USER_FATAL UserErrorLog.get()
 #define INFO InfoLog.get() << __FILE__ << ":" <<  __LINE__ << " "
 #define CHECK(exp) if (!(exp)) FATAL << ": " << #exp << " is false. "
+#define USER_CHECK(exp) if (!(exp)) USER_FATAL
 //#define CHECKEQ(exp, exp2) if ((exp) != (exp2)) FATAL << __FILE__ << ":" << __LINE__ << ": " << #exp << " = " << #exp2 << " is false. " << exp << " " << exp2
 //#define TRY(exp, msg) do { try { exp; } catch (...) { FATAL << __FILE__ << ":" << __LINE__ << ": " << #exp << " failed. " << msg; exp; } } while(0)
 
@@ -48,32 +49,11 @@
 #define NO_RELEASE(exp) exp
 #endif
 
-
-template<class T>
-std::ostream& operator<<(std::ostream& d, const vector<T>& container){
-  d << "{";
-  for (const T& elem : container) {
-    d << elem << ",";
-  }
-  d << "}";
-  return d;
-}
+// Just crashes the program with a segfault
+extern void fail();
 
 inline std::ostream& operator<<(std::ostream& d, const milliseconds& millis) {
   return d << millis.count() << "ms";
-}
-
-template<class T>
-std::ostream& operator<<(std::ostream& d, const vector<vector<T> >& container){
-  d << "{";
-  for (int i = 0; i < container[0].size(); ++i) {
-    for (int j = 0; j < container[0].size(); ++i) {
-      d << container[j][i] << ",";
-    }
-    d << '\n';
-  }
-  d << "}";
-  return d;
 }
 
 class DebugOutput {
@@ -81,6 +61,7 @@ class DebugOutput {
   static DebugOutput toStream(std::ostream&);
   static DebugOutput toString(function<void(const string&)> callback);
   static DebugOutput crash();
+  static DebugOutput exitProgram();
 
   typedef function<void()> LineEndFun;
   std::ostream& out;
@@ -96,7 +77,7 @@ class DebugLog {
 
   class Logger {
     public:
-    Logger(vector<DebugOutput>& s) : outputs(s) {}
+    Logger(std::vector<DebugOutput>& s) : outputs(s) {}
 
     template <typename T>
     Logger& operator << (const T& t) {
@@ -110,17 +91,18 @@ class DebugLog {
     }
 
     private:
-    vector<DebugOutput>& outputs;
+    std::vector<DebugOutput>& outputs;
   };
 
   Logger get();
 
   private:
-  vector<DebugOutput> outputs;
+  std::vector<DebugOutput> outputs;
 };
 
 extern DebugLog InfoLog;
 extern DebugLog FatalLog;
+extern DebugLog UserErrorLog;
 
 template <class T, class V>
 const T& valueCheck(const T& e, const V& v, const string& msg) {
@@ -129,14 +111,8 @@ const T& valueCheck(const T& e, const V& v, const string& msg) {
 }
 
 template <class T>
-T* notNullCheck(T* e, const char* file, int line, const char* exp) {
-  if (e == nullptr) FATAL << file << ": " << line << ": " << exp << " is null";
-  return e;
-}
-
-template <class T>
-unique_ptr<T> notNullCheck(unique_ptr<T> e, const char* file, int line, const char* exp) {
-  if (e.get() == nullptr) FATAL << file << ": " << line << ": " << exp << " is null";
+T notNullCheck(T&& e, const char* file, int line, const char* exp) {
+  if (!e) FATAL << file << ": " << line << ": " << exp << " is null";
   return e;
 }
 

@@ -2,6 +2,7 @@
 
 #include "util.h"
 #include "tribe.h"
+#include "destroy_action.h"
 
 RICH_ENUM(MovementTrait,
   WALK,
@@ -22,7 +23,9 @@ class MovementType {
   MovementType& setSunlightVulnerable(bool = true);
   MovementType& setFireResistant(bool = true);
   MovementType& setForced(bool = true);
-  
+  MovementType& setDestroyActions(EnumSet<DestroyAction::Type>);
+  const EnumSet<DestroyAction::Type>& getDestroyActions() const;
+
   bool isSunlightVulnerable() const;
   bool isFireResistant() const;
   bool isForced() const;
@@ -38,6 +41,7 @@ class MovementType {
   bool SERIAL(fireResistant) = false;
   bool SERIAL(forced) = false;
   EnumSet<MovementTrait> SERIAL(traits);
+  EnumSet<DestroyAction::Type> SERIAL(destroyActions);
   optional<TribeSet> SERIAL(tribeSet);
 };
 

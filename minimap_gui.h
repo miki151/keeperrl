@@ -17,6 +17,7 @@
 
 #include "util.h"
 #include "gui_elem.h"
+#include "hashing.h"
 
 class Level;
 class CreatureView;
@@ -25,18 +26,17 @@ class Renderer;
 class MinimapGui : public GuiElem {
   public:
 
-  MinimapGui(Renderer&, function<void()> clickFun);
+  MinimapGui(function<void()> clickFun);
 
-  void update(const Level* level, Rectangle bounds, const CreatureView* creature, bool printLocations = false);
-  void presentMap(const CreatureView*, Rectangle bounds, Renderer&, function<void(double, double)> clickFun);
+  void update(Rectangle bounds, const CreatureView*);
   void clear();
+  void renderMap(Renderer&, Rectangle target);
 
   virtual void render(Renderer&) override;
   virtual bool onLeftClick(Vec2) override;
 
   private:
 
-  void renderMap(Renderer&, Rectangle target);
   void putMapPixel(Vec2 pos, Color col);
 
   struct MinimapInfo {
@@ -44,18 +44,13 @@ class MinimapGui : public GuiElem {
     unordered_set<Vec2, CustomHash<Vec2>> roads;
     vector<Vec2> enemies;
     Vec2 player;
-    struct Location {
-      Vec2 pos;
-      string text;
-    };
-    vector<Location> locations;
+    vector<Vec2> locations;
   } info;
 
   function<void()> clickFun;
 
   SDL::SDL_Surface* mapBuffer;
   optional<Texture> mapBufferTex;
-  const Level* currentLevel = nullptr;
-  Renderer& renderer;
+  WConstLevel currentLevel = nullptr;
 };
 

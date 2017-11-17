@@ -24,6 +24,12 @@ class EntityMap {
   using EntityId = typename UniqueEntity<Key>::Id;
   EntityMap();
   EntityMap& operator = (const EntityMap&) = default;
+
+  bool empty() const;
+  void clear();
+  int getSize() const;
+  vector<EntityId> getKeys() const;
+
   void set(const Key*, const Value&);
   void erase(const Key*);
   const Value& getOrFail(const Key*) const;
@@ -31,10 +37,16 @@ class EntityMap {
   Value& getOrInit(const Key*);
   optional<Value> getMaybe(const Key*) const;
   const Value& getOrElse(const Key*, const Value&) const;
-  bool empty() const;
-  void clear();
-  int getSize() const;
-  vector<EntityId> getKeys() const;
+  bool hasKey(const Key*) const;
+
+  void set(WeakPointer<const Key>, const Value&);
+  void erase(WeakPointer<const Key>);
+  const Value& getOrFail(WeakPointer<const Key>) const;
+  Value& getOrFail(WeakPointer<const Key>);
+  Value& getOrInit(WeakPointer<const Key>);
+  optional<Value> getMaybe(WeakPointer<const Key>) const;
+  const Value& getOrElse(WeakPointer<const Key>, const Value&) const;
+  bool hasKey(WeakPointer<const Key>) const;
 
   void set(EntityId, const Value&);
   void erase(EntityId);
@@ -43,6 +55,7 @@ class EntityMap {
   Value& getOrInit(EntityId);
   optional<Value> getMaybe(EntityId) const;
   const Value& getOrElse(EntityId, const Value&) const;
+  bool hasKey(EntityId) const;
 
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version);

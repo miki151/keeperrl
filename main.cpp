@@ -18,13 +18,10 @@
 #include <ctime>
 #include <locale>
 
-#include <boost/iostreams/filtering_streambuf.hpp>
-#include <boost/iostreams/copy.hpp>
-#include <boost/program_options.hpp>
-#include <boost/filesystem.hpp>
+#define ProgramOptions_no_colors
+#include "extern/ProgramOptions.h"
 
 #include <exception>
-#include "dirent.h"
 
 #include "view.h"
 #include "options.h"
@@ -48,6 +45,8 @@
 #include "sokoban_input.h"
 #include "keybinding_map.h"
 #include "player_role.h"
+#include "campaign_type.h"
+#include "dummy_view.h"
 
 #ifndef VSTUDIO
 #include "stack_printer.h"
@@ -65,60 +64,12 @@
 #define DATA_DIR "."
 #endif
 
-#ifndef USER_DIR
-#define USER_DIR "."
-#endif
-
-using namespace boost::iostreams;
-using namespace boost::program_options;
-using namespace boost::archive;
-
-
-void renderLoop(View* view, Options* options, atomic<bool>& finished, atomic<bool>& initialized) {
-  view->initialize();
-  options->setChoices(OptionId::FULLSCREEN_RESOLUTION, Renderer::getFullscreenResolutions());
-  initialized = true;
-  Intervalometer meter(milliseconds{1000 / 60});
-  while (!finished) {    
-    while (!meter.getCount(view->getTimeMilliAbsolute())) {
-    }
-    view->refreshView();
-  }
-}
-
-#ifdef OSX // threads have a small stack by default on OSX, and we need a larger stack here for level gen
-static thread::attributes getAttributes() {
-  thread::attributes attr;
-  attr.set_stack_size(4096 * 4000);
-  return attr;
-}
-
-static void runGame(function<void()> game, function<void()> render, bool singleThread) {
-  if (singleThread)
-    game();
-  else {
-    FATAL << "Unimplemented";
-  }
-}
-
-#else
-static void runGame(function<void()> game, function<void()> render, bool singleThread) {
-  if (singleThread)
-    game();
-  else {
-    thread t(render);
-    game();
-    t.join();
-  }
-}
-
-#endif
-void initializeRendererTiles(Renderer& r, const string& path) {
-  r.loadTilesFromDir(path + "/orig16", Vec2(16, 16));
+static void initializeRendererTiles(Renderer& r, const DirectoryPath& path) {
+  r.loadTilesFromDir(path.subdirectory("orig16"), Vec2(16, 16));
 //  r.loadAltTilesFromDir(path + "/orig16_scaled", Vec2(24, 24));
-  r.loadTilesFromDir(path + "/orig24", Vec2(24, 24));
+  r.loadTilesFromDir(path.subdirectory("orig24"), Vec2(24, 24));
 //  r.loadAltTilesFromDir(path + "/orig24_scaled", Vec2(36, 36));
-  r.loadTilesFromDir(path + "/orig30", Vec2(30, 30));
+  r.loadTilesFromDir(path.subdirectory("orig30"), Vec2(30, 30));
 //  r.loadAltTilesFromDir(path + "/orig30_scaled", Vec2(45, 45));
 }
 
@@ -130,47 +81,40 @@ static map<MusicType, float> getMaxVolumes() {
   return {{MusicType::ADV_BATTLE, 0.4}, {MusicType::ADV_PEACEFUL, 0.4}};
 }
 
-vector<pair<MusicType, string>> getMusicTracks(const string& path, bool present) {
+vector<pair<MusicType, FilePath>> getMusicTracks(const DirectoryPath& path, bool present) {
   if (!present)
     return {};
   else
     return {
-    {MusicType::INTRO, path + "/intro.ogg"},
-      {MusicType::MAIN, path + "/main.ogg"},
-      {MusicType::PEACEFUL, path + "/peaceful1.ogg"},
-      {MusicType::PEACEFUL, path + "/peaceful2.ogg"},
-      {MusicType::PEACEFUL, path + "/peaceful3.ogg"},
-      {MusicType::PEACEFUL, path + "/peaceful4.ogg"},
-      {MusicType::PEACEFUL, path + "/peaceful5.ogg"},
-      {MusicType::BATTLE, path + "/battle1.ogg"},
-      {MusicType::BATTLE, path + "/battle2.ogg"},
-      {MusicType::BATTLE, path + "/battle3.ogg"},
-      {MusicType::BATTLE, path + "/battle4.ogg"},
-      {MusicType::BATTLE, path + "/battle5.ogg"},
-      {MusicType::NIGHT, path + "/night1.ogg"},
-      {MusicType::NIGHT, path + "/night2.ogg"},
-      {MusicType::NIGHT, path + "/night3.ogg"},
-      {MusicType::ADV_BATTLE, path + "/adv_battle1.ogg"},
-      {MusicType::ADV_BATTLE, path + "/adv_battle2.ogg"},
-      {MusicType::ADV_BATTLE, path + "/adv_battle3.ogg"},
-      {MusicType::ADV_BATTLE, path + "/adv_battle4.ogg"},
-      {MusicType::ADV_PEACEFUL, path + "/adv_peaceful1.ogg"},
-      {MusicType::ADV_PEACEFUL, path + "/adv_peaceful2.ogg"},
-      {MusicType::ADV_PEACEFUL, path + "/adv_peaceful3.ogg"},
-      {MusicType::ADV_PEACEFUL, path + "/adv_peaceful4.ogg"},
-      {MusicType::ADV_PEACEFUL, path + "/adv_peaceful5.ogg"},
+      {MusicType::INTRO, path.file("intro.ogg")},
+      {MusicType::MAIN, path.file("main.ogg")},
+      {MusicType::PEACEFUL, path.file("peaceful1.ogg")},
+      {MusicType::PEACEFUL, path.file("peaceful2.ogg")},
+      {MusicType::PEACEFUL, path.file("peaceful3.ogg")},
+      {MusicType::PEACEFUL, path.file("peaceful4.ogg")},
+      {MusicType::PEACEFUL, path.file("peaceful5.ogg")},
+      {MusicType::BATTLE, path.file("battle1.ogg")},
+      {MusicType::BATTLE, path.file("battle2.ogg")},
+      {MusicType::BATTLE, path.file("battle3.ogg")},
+      {MusicType::BATTLE, path.file("battle4.ogg")},
+      {MusicType::BATTLE, path.file("battle5.ogg")},
+      {MusicType::NIGHT, path.file("night1.ogg")},
+      {MusicType::NIGHT, path.file("night2.ogg")},
+      {MusicType::NIGHT, path.file("night3.ogg")},
+      {MusicType::ADV_BATTLE, path.file("adv_battle1.ogg")},
+      {MusicType::ADV_BATTLE, path.file("adv_battle2.ogg")},
+      {MusicType::ADV_BATTLE, path.file("adv_battle3.ogg")},
+      {MusicType::ADV_BATTLE, path.file("adv_battle4.ogg")},
+      {MusicType::ADV_PEACEFUL, path.file("adv_peaceful1.ogg")},
+      {MusicType::ADV_PEACEFUL, path.file("adv_peaceful2.ogg")},
+      {MusicType::ADV_PEACEFUL, path.file("adv_peaceful3.ogg")},
+      {MusicType::ADV_PEACEFUL, path.file("adv_peaceful4.ogg")},
+      {MusicType::ADV_PEACEFUL, path.file("adv_peaceful5.ogg")},
   };
 }
-void makeDir(const string& path) {
-  boost::filesystem::create_directories(path.c_str());
-}
 
-static void fail() {
-  *((int*) 0x1234) = 0; // best way to fail
-}
-
-static int keeperMain(const variables_map&);
-static options_description getOptions();
+static int keeperMain(po::parser&);
+static po::parser getCommandLineFlags();
 
 #ifdef VSTUDIO
 
@@ -213,7 +157,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     args = split_winmain(lpCmdLine);
     store(command_line_parser(args).options(getOptions()).run(), vars);
   }
-  catch (boost::exception& ex) {
+  catch (...) {
     std::cout << "Bad command line flags.";
   }
   if (!vars.count("no_minidump"))
@@ -242,28 +186,34 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 #endif
 
 
-static options_description getOptions() {
-  options_description flags("KeeperRL");
-  flags.add_options()
-    ("help", "Print help")
-    ("steam", "Run with Steam")
-    ("no_minidump", "Don't write minidumps when crashed.")
-    ("single_thread", "Use a single thread for rendering and game logic")
-    ("user_dir", value<string>(), "Directory for options and save files")
-    ("data_dir", value<string>(), "Directory containing the game data")
-    ("upload_url", value<string>(), "URL for uploading maps")
-    ("restore_settings", "Restore settings to default values.")
-    ("run_tests", "Run all unit tests and exit")
-    ("worldgen_test", value<int>(), "Test how often world generation fails")
-    ("stderr", "Log to stderr")
-    ("nolog", "No logging")
-    ("free_mode", "Run in free ascii mode")
+static po::parser getCommandLineFlags() {
+  po::parser flags;
+  flags["help"].description("Print help");
+  flags["steam"].description("Run with Steam");
+  flags["no_minidump"].description("Don't write minidumps when crashed.");
+  flags["single_thread"].description("Do operations like loading, saving and level generation without starting an extra thread.");
+  flags["user_dir"].type(po::string).description("Directory for options and save files");
+  flags["data_dir"].type(po::string).description("Directory containing the game data");
+  flags["upload_url"].type(po::string).description("URL for uploading maps");
+  flags["restore_settings"].description("Restore settings to default values.");
+  flags["run_tests"].description("Run all unit tests and exit");
+  flags["worldgen_test"].type(po::i32).description("Test how often world generation fails");
+  flags["worldgen_maps"].type(po::string).description("List of maps or enemy types in world generation test. Skip to test all.");
+  flags["battle_level"].type(po::string).description("Path to battle test level");
+  flags["battle_info"].type(po::string).description("Path to battle info file");
+  flags["battle_enemy"].type(po::string).description("Battle enemy id");
+  flags["endless_enemy"].type(po::string).description("Endless mode enemy index");
+  flags["battle_view"].description("Open game window and display battle");
+  flags["battle_rounds"].type(po::i32).description("Number of battle rounds");
+  flags["stderr"].description("Log to stderr");
+  flags["nolog"].description("No logging");
+  flags["free_mode"].description("Run in free ascii mode");
 #ifndef RELEASE
-    ("force_keeper", "Skip main menu and force keeper mode")
+  flags["quick_game"].description("Skip main menu and load the last save file or start a single map game");
 #endif
-    ("seed", value<int>(), "Use given seed")
-    ("record", value<string>(), "Record game to file")
-    ("replay", value<string>(), "Replay game from file");
+  flags["seed"].type(po::i32).description("Use given seed");
+  flags["record"].type(po::string).description("Record game to file");
+  flags["replay"].type(po::string).description("Replay game from file");
   return flags;
 }
 
@@ -273,145 +223,189 @@ static options_description getOptions() {
 #include <SDL2/SDL.h>
 
 int main(int argc, char* argv[]) {
+#ifdef RELEASE
   StackPrinter::initialize(argv[0], time(0));
+#endif
   std::set_terminate(fail);
-  variables_map vars;
-  store(parse_command_line(argc, argv, getOptions()), vars);
-  keeperMain(vars);
+  po::parser flags = getCommandLineFlags();
+  if (!flags.parseArgs(argc, argv))
+    return -1;
+  keeperMain(flags);
 }
 #endif
 
-static long long getInstallId(const string& path, RandomGen& random) {
+static long long getInstallId(const FilePath& path, RandomGen& random) {
   long long ret;
-  ifstream in(path);
+  ifstream in(path.getPath());
   if (in)
     in >> ret;
   else {
     ret = random.getLL();
-    ofstream(path) << ret;
+    ofstream(path.getPath()) << ret;
   }
   return ret;
 }
 
-const static string serverVersion = "21";
+const static string serverVersion = "22";
 
-static int keeperMain(const variables_map& vars) {
-  if (vars.count("help")) {
-    std::cout << getOptions() << endl;
+static int keeperMain(po::parser& commandLineFlags) {
+  if (commandLineFlags["help"].was_set()) {
+    std::cout << commandLineFlags << endl;
     return 0;
   }
-  bool useSingleThread = true;//vars.count("single_thread");
+  bool useSingleThread = commandLineFlags["single_thread"].was_set();
   FatalLog.addOutput(DebugOutput::crash());
   FatalLog.addOutput(DebugOutput::toStream(std::cerr));
+  UserErrorLog.addOutput(DebugOutput::exitProgram());
+  UserErrorLog.addOutput(DebugOutput::toStream(std::cerr));
 #ifndef RELEASE
   ogzstream compressedLog("log.gz");
-  if (!vars.count("nolog"))
+  if (!commandLineFlags["nolog"].was_set())
     InfoLog.addOutput(DebugOutput::toStream(compressedLog));
 #endif
   FatalLog.addOutput(DebugOutput::toString(
       [](const string& s) { ofstream("stacktrace.out") << s << "\n" << std::flush; } ));
-  if (vars.count("stderr") || vars.count("run_tests"))
+  if (commandLineFlags["stderr"].was_set() || commandLineFlags["run_tests"].was_set())
     InfoLog.addOutput(DebugOutput::toStream(std::cerr));
   Skill::init();
   Technology::init();
   Spell::init();
-  Vision::init();
-  if (vars.count("run_tests")) {
+  if (commandLineFlags["run_tests"].was_set()) {
     testAll();
     return 0;
   }
-  string dataPath;
-  if (vars.count("data_dir"))
-    dataPath = vars["data_dir"].as<string>();
-  else
-    dataPath = DATA_DIR;
-  string freeDataPath = dataPath + "/data_free";
-  string paidDataPath = dataPath + "/data";
-  string contribDataPath = dataPath + "/data_contrib";
-  bool tilesPresent = !vars.count("free_mode") && !!opendir(paidDataPath.c_str());
-  string userPath;
-  if (vars.count("user_dir"))
-    userPath = vars["user_dir"].as<string>();
+  DirectoryPath dataPath([&]() -> string {
+    if (commandLineFlags["data_dir"].was_set())
+      return commandLineFlags["data_dir"].get().string;
+    else
+      return DATA_DIR;
+  }());
+  auto freeDataPath = dataPath.subdirectory("data_free");
+  auto paidDataPath = dataPath.subdirectory("data");
+  auto contribDataPath = dataPath.subdirectory("data_contrib");
+  bool tilesPresent = !commandLineFlags["free_mode"].was_set() && paidDataPath.exists();
+  DirectoryPath userPath([&] () -> string {
+    if (commandLineFlags["user_dir"].was_set())
+      return commandLineFlags["user_dir"].get().string;
+#ifdef USER_DIR
+    else if (const char* userDir = USER_DIR)
+      return userDir;
+#endif // USER_DIR
 #ifndef WINDOWS
-  else
-  if (const char* localPath = std::getenv("XDG_DATA_HOME"))
-    userPath = localPath + string("/KeeperRL");
+    else if (const char* localPath = std::getenv("XDG_DATA_HOME"))
+      return localPath + string("/KeeperRL");
 #endif
-  else
-    userPath = USER_DIR;
+#ifdef ENABLE_LOCAL_USER_DIR // Some environments don't define XDG_DATA_HOME
+    else if (const char* homePath = std::getenv("HOME"))
+      return homePath + string("/.local/share/KeeperRL");
+#endif // ENABLE_LOCAL_USER_DIR
+    else
+      return ".";
+  }());
   INFO << "Data path: " << dataPath;
   INFO << "User path: " << userPath;
   string uploadUrl;
-  if (vars.count("upload_url"))
-    uploadUrl = vars["upload_url"].as<string>();
+  if (commandLineFlags["upload_url"].was_set())
+    uploadUrl = commandLineFlags["upload_url"].get().string;
   else
 #ifdef RELEASE
     uploadUrl = "http://keeperrl.com/~retired/" + serverVersion;
 #else
     uploadUrl = "http://localhost/~michal/" + serverVersion;
 #endif
-  makeDir(userPath);
-  string settingsPath = userPath + "/options.txt";
-  if (vars.count("restore_settings"))
-    remove(settingsPath.c_str());
+  //userPath.createIfDoesntExist();
+  CHECK(userPath.exists()) << "User directory \"" << userPath << "\" doesn't exist.";
+  auto settingsPath = userPath.file("options.txt");
+  if (commandLineFlags["restore_settings"].was_set())
+    remove(settingsPath.getPath());
   Options options(settingsPath);
-  int seed = vars.count("seed") ? vars["seed"].as<int>() : int(time(0));
+  int seed = commandLineFlags["seed"].was_set() ? commandLineFlags["seed"].get().i32 : int(time(0));
   Random.init(seed);
-  long long installId = getInstallId(userPath + "/installId.txt", Random);
-  Renderer renderer("KeeperRL", Vec2(24, 24), contribDataPath);
-  FatalLog.addOutput(DebugOutput::toString([&renderer](const string& s) { renderer.showError(s);}));
+  long long installId = getInstallId(userPath.file("installId.txt"), Random);
   SoundLibrary* soundLibrary = nullptr;
   AudioDevice audioDevice;
   optional<string> audioError = audioDevice.initialize();
   Clock clock;
-  KeybindingMap keybindingMap(userPath + "/keybindings.txt");
+  KeybindingMap keybindingMap(userPath.file("keybindings.txt"));
+  Jukebox jukebox(
+      &options,
+      audioDevice,
+      getMusicTracks(paidDataPath.subdirectory("music"), tilesPresent && !audioError),
+      getMaxVolume(),
+      getMaxVolumes());
+  FileSharing fileSharing(uploadUrl, options, installId);
+  Highscores highscores(userPath.file("highscores.dat"), fileSharing, &options);
+  SokobanInput sokobanInput(freeDataPath.file("sokoban_input.txt"), userPath.file("sokoban_state.txt"));
+  if (commandLineFlags["worldgen_test"].was_set()) {
+    MainLoop loop(nullptr, &highscores, &fileSharing, freeDataPath, userPath, &options, &jukebox, &sokobanInput,
+        useSingleThread);
+    vector<string> types;
+    if (commandLineFlags["worldgen_maps"].was_set())
+      types = split(commandLineFlags["worldgen_maps"].get().string, {','});
+    loop.modelGenTest(commandLineFlags["worldgen_test"].get().i32, types, Random, &options);
+    return 0;
+  }
+  auto battleTest = [&] (View* view) {
+    MainLoop loop(view, &highscores, &fileSharing, freeDataPath, userPath, &options, &jukebox, &sokobanInput,
+        useSingleThread);
+    auto level = commandLineFlags["battle_level"].get().string;
+    auto info = commandLineFlags["battle_info"].get().string;
+    auto numRounds = commandLineFlags["battle_rounds"].get().i32;
+    try {
+      if (commandLineFlags["endless_enemy"].was_set()) {
+        auto enemy = commandLineFlags["endless_enemy"].get().string;
+        optional<int> chosenEnemy;
+        if (enemy != "all")
+          chosenEnemy = fromString<int>(enemy);
+        loop.endlessTest(numRounds, FilePath::fromFullPath(level), FilePath::fromFullPath(info), Random, chosenEnemy);
+      } else {
+        auto enemyId = commandLineFlags["battle_enemy"].get().string;
+        loop.battleTest(numRounds, FilePath::fromFullPath(level), FilePath::fromFullPath(info), enemyId, Random);
+      }
+    } catch (GameExitException) {}
+  };
+  if (commandLineFlags["battle_level"].was_set() && !commandLineFlags["battle_view"].was_set()) {
+    battleTest(new DummyView(&clock));
+    return 0;
+  }
+  Renderer renderer(
+      "KeeperRL",
+      Vec2(24, 24),
+      contribDataPath,
+      freeDataPath.file("images/mouse_cursor.png"),
+      freeDataPath.file("images/mouse_cursor2.png"));
+  FatalLog.addOutput(DebugOutput::toString([&renderer](const string& s) { renderer.showError(s);}));
+  UserErrorLog.addOutput(DebugOutput::toString([&renderer](const string& s) { renderer.showError(s);}));
   GuiFactory guiFactory(renderer, &clock, &options, &keybindingMap);
-  guiFactory.loadFreeImages(freeDataPath + "/images");
+  guiFactory.loadFreeImages(freeDataPath.subdirectory("images"));
   if (tilesPresent) {
-    guiFactory.loadNonFreeImages(paidDataPath + "/images");
+    guiFactory.loadNonFreeImages(paidDataPath.subdirectory("images"));
     if (!audioError)
-      soundLibrary = new SoundLibrary(&options, audioDevice, paidDataPath + "/sound");
+      soundLibrary = new SoundLibrary(&options, audioDevice, paidDataPath.subdirectory("sound"));
   }
   if (tilesPresent)
-    initializeRendererTiles(renderer, paidDataPath + "/images");
-  renderer.setCursorPath(freeDataPath + "/images/mouse_cursor.png", freeDataPath + "/images/mouse_cursor2.png");
+    initializeRendererTiles(renderer, paidDataPath.subdirectory("images"));
+  Tile::initialize(renderer, tilesPresent);
   unique_ptr<View> view;
   view.reset(WindowView::createDefaultView(
       {renderer, guiFactory, tilesPresent, &options, &clock, soundLibrary}));
 #ifndef RELEASE
   InfoLog.addOutput(DebugOutput::toString([&view](const string& s) { view->logMessage(s);}));
 #endif
-  std::atomic<bool> gameFinished(false);
-  std::atomic<bool> viewInitialized(false);
-  if (useSingleThread) {
-    view->initialize();
-    viewInitialized = true;
-  }
-  Tile::initialize(renderer, tilesPresent);
-  Jukebox jukebox(&options, audioDevice, getMusicTracks(paidDataPath + "/music", tilesPresent && !audioError), getMaxVolume(), getMaxVolumes());
-  FileSharing fileSharing(uploadUrl, options, installId);
-  Highscores highscores(userPath + "/" + "highscores.dat", fileSharing, &options);
-  optional<PlayerRole> forceGame;
-  if (vars.count("force_keeper"))
-    forceGame = PlayerRole::KEEPER;
-  SokobanInput sokobanInput(freeDataPath + "/sokoban_input.txt", userPath + "/sokoban_state.txt");
-  MainLoop loop(view.get(), &highscores, &fileSharing, freeDataPath, userPath, &options, &jukebox, &sokobanInput,
-      gameFinished, useSingleThread, forceGame);
-  if (vars.count("worldgen_test")) {
-    loop.modelGenTest(vars["worldgen_test"].as<int>(), Random, &options);
+  view->initialize();
+  if (commandLineFlags["battle_level"].was_set() && commandLineFlags["battle_view"].was_set()) {
+    battleTest(view.get());
     return 0;
   }
-  auto game = [&] {
-    while (!viewInitialized) {}
-    ofstream systemInfo(userPath + "/system_info.txt");
-    systemInfo << "KeeperRL version " << BUILD_VERSION << " " << BUILD_DATE << std::endl;
-    renderer.printSystemInfo(systemInfo);
-    loop.start(tilesPresent); };
-  auto render = [&] { renderLoop(view.get(), &options, gameFinished, viewInitialized); };
+  MainLoop loop(view.get(), &highscores, &fileSharing, freeDataPath, userPath, &options, &jukebox, &sokobanInput,
+      useSingleThread);
   try {
     if (audioError)
       view->presentText("Failed to initialize audio. The game will be started without sound.", *audioError);
-    runGame(game, render, useSingleThread);
+    ofstream systemInfo(userPath.file("system_info.txt").getPath());
+    systemInfo << "KeeperRL version " << BUILD_VERSION << " " << BUILD_DATE << std::endl;
+    renderer.printSystemInfo(systemInfo);
+    loop.start(tilesPresent, commandLineFlags["quick_game"].was_set());
   } catch (GameExitException ex) {
   }
   jukebox.toggle(false);

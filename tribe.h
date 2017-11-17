@@ -21,6 +21,7 @@
 #include "enums.h"
 #include "singleton.h"
 #include "entity_map.h"
+#include "hashing.h"
 
 class Creature;
 
@@ -86,13 +87,13 @@ class Tribe {
   Tribe(const Tribe&) = delete;
   Tribe& operator = (Tribe&&) = default;
   Tribe(Tribe&&) = default;
-  bool isEnemy(const Creature*) const;
+  bool isEnemy(WConstCreature) const;
   bool isEnemy(const Tribe*) const;
   void addEnemy(Tribe*);
   const TribeSet& getFriendlyTribes() const;
 
-  void onMemberKilled(Creature* member, Creature* killer);
-  void onItemsStolen(const Creature* thief);
+  void onMemberKilled(WCreature member, WCreature killer);
+  void onItemsStolen(WConstCreature thief);
 
   SERIALIZATION_DECL(Tribe);
 
@@ -103,15 +104,14 @@ class Tribe {
   private:
   Tribe(TribeId, bool diplomatic);
   static void init(Tribe::Map&, TribeId, bool diplomatic);
-  double getStanding(const Creature*) const;
+  double getStanding(WConstCreature) const;
 
   bool SERIAL(diplomatic);
 
-  void initStanding(const Creature*);
-  double getMultiplier(const Creature* member);
+  void initStanding(WConstCreature);
+  double getMultiplier(WConstCreature member);
 
   EntityMap<Creature, double> SERIAL(standing);
-  unordered_set<Tribe*> SERIAL(enemyTribes);
   TribeSet SERIAL(friendlyTribes);
   TribeId SERIAL(id);
 };

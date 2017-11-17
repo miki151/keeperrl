@@ -9,44 +9,113 @@
 #include "attack_behaviour.h"
 #include "model.h"
 #include "game.h"
+#include "creature_attributes.h"
+#include "creature.h"
+#include "container_range.h"
+#include "monster.h"
+#include "view_object.h"
+#include "territory.h"
 
-SERIALIZE_DEF(ExternalEnemies, enemies, attackTime)
+SERIALIZE_DEF(ExternalEnemies, currentWaves, waves, nextWave)
 SERIALIZATION_CONSTRUCTOR_IMPL(ExternalEnemies)
 
-ExternalEnemies::ExternalEnemies(RandomGen& random, vector<ExternalEnemy> e) : enemies(e) {
-  for (int i : All(enemies))
-    attackTime.push_back(random.get(enemies[i].attackTime));
-}
-
-PTask ExternalEnemies::getAttackTask(Collective* enemy, AttackBehaviour behaviour) {
-  switch (behaviour.getId()) {
-    case AttackBehaviourId::KILL_LEADER:
-      return Task::attackLeader(enemy);
-    case AttackBehaviourId::KILL_MEMBERS:
-      return Task::killFighters(enemy, behaviour.get<int>());
-    case AttackBehaviourId::STEAL_GOLD:
-      return Task::stealFrom(enemy, this);
-    case AttackBehaviourId::CAMP_AND_SPAWN:
-      return Task::campAndSpawn(enemy,
-            behaviour.get<CreatureFactory>(), Random.get(3, 7), Range(3, 7), Random.get(3, 7));
+ExternalEnemies::ExternalEnemies(RandomGen& random, vector<ExternalEnemy> enemies) {
+  constexpr int firstAttackDelay = 1800;
+  constexpr int attackInterval = 1200;
+  constexpr int attackVariation = 450;
+  for (int i : Range(500)) {
+    int attackTime = firstAttackDelay + max(0, i * attackInterval + random.get(-attackVariation, attackVariation + 1));
+    vector<int> indexes(enemies.size());
+    for (int i : All(enemies))
+      indexes[i] = i;
+    for (int index : random.permutation(indexes)) {
+      auto& enemy = enemies[index];
+      if (enemy.attackTime.contains(attackTime) && enemy.maxOccurences > 0) {
+        --enemy.maxOccurences;
+        waves.push_back(EnemyEvent{
+            enemy,
+            attackTime,
+            enemy.creatures.getViewId()
+        });
+        waves.back().enemy.creatures.increaseBaseLevel({{ExperienceType::MELEE, max(0, attackTime / 1000 - 10)}});
+        break;
+      }
+    }
   }
 }
 
-void ExternalEnemies::update(Level* level, double localTime) {
-  Collective* target = level->getModel()->getGame()->getPlayerCollective();
-  CHECK(!!target);
-  for (int i : All(enemies))
-    if (attackTime[i] && *attackTime[i] <= localTime) {
-      vector<Creature*> attackers;
-      for (int j : Range(Random.get(enemies[i].groupSize))) {
-        PCreature c = enemies[i].factory.random(
-            MonsterAIFactory::singleTask(getAttackTask(target, enemies[i].behaviour)));
-        Creature* ref = c.get();
-        if (level->landCreature(StairKey::transferLanding(), std::move(c)))
-          attackers.push_back(ref);
-      }
-      target->addAttack(CollectiveAttack(enemies[i].name, attackers));
-      attackTime[i] = none;
+PTask ExternalEnemies::getAttackTask(WCollective enemy, AttackBehaviour behaviour) {
+  switch (behaviour.getId()) {
+    case AttackBehaviourId::KILL_LEADER:
+      return Task::attackCreatures({enemy->getLeader()});
+    case AttackBehaviourId::KILL_MEMBERS:
+      return Task::killFighters(enemy, behaviour.get<int>());
+    case AttackBehaviourId::STEAL_GOLD:
+      return Task::stealFrom(enemy, callbackDummy.get());
+    case AttackBehaviourId::CAMP_AND_SPAWN:
+      return Task::campAndSpawn(enemy,
+            behaviour.get<CreatureFactory>(), Random.get(3, 7), Range(3, 7), Random.get(3, 7));
+    case AttackBehaviourId::HALLOWEEN_KIDS: {
+      auto nextToDoor = enemy->getTerritory().getExtended(2, 4);
+      if (nextToDoor.empty())
+        return Task::goToTryForever(enemy->getLeader()->getPosition());
+      else
+        return Task::goToTryForever(Random.choose(nextToDoor));
+    }
+  }
+}
+
+void ExternalEnemies::updateCurrentWaves(WCollective target) {
+  auto areAllDead = [](const vector<WCreature>& wave) {
+    for (auto c : wave)
+      if (!c->isDead())
+        return false;
+    return true;
+  };
+  for (auto wave : Iter(currentWaves))
+    if (areAllDead(wave->attackers)) {
+      target->onExternalEnemyKilled(wave->name);
+      wave.markToErase();
     }
 }
 
+void ExternalEnemies::update(WLevel level, double localTime) {
+  WCollective target = level->getModel()->getGame()->getPlayerCollective();
+  CHECK(!!target);
+  updateCurrentWaves(target);
+  if (auto nextWave = popNextWave(localTime)) {
+    vector<WCreature> attackers;
+    Vec2 landingDir(Random.choose<Dir>());
+    auto creatures = nextWave->enemy.creatures.generate(Random, TribeId::getHuman(),
+        MonsterAIFactory::singleTask(getAttackTask(target, nextWave->enemy.behaviour),
+            nextWave->enemy.behaviour.getId() != AttackBehaviourId::HALLOWEEN_KIDS));
+    for (auto& c : creatures) {
+      c->getAttributes().setCourage(1);
+      auto ref = c.get();
+      if (level->landCreature(StairKey::transferLanding(), std::move(c), landingDir))
+        attackers.push_back(ref);
+    }
+    if (nextWave->enemy.behaviour.getId() != AttackBehaviourId::HALLOWEEN_KIDS) {
+      target->addAttack(CollectiveAttack(nextWave->enemy.name, attackers));
+      currentWaves.push_back(CurrentWave{nextWave->enemy.name, attackers});
+    }
+  }
+}
+
+optional<const EnemyEvent&> ExternalEnemies::getNextWave() const {
+  if (nextWave < waves.size())
+    return waves[nextWave];
+  else
+    return none;
+}
+
+int ExternalEnemies::getNextWaveIndex() const {
+  return nextWave;
+}
+
+optional<EnemyEvent> ExternalEnemies::popNextWave(double localTime) {
+  if (nextWave < waves.size() && waves[nextWave].attackTime <= localTime) {
+    return waves[nextWave++];
+  } else
+    return none;
+}

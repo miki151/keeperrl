@@ -19,56 +19,43 @@
 #include "map_memory.h"
 #include "creature.h"
 #include "player_message.h"
+#include "message_generator.h"
 
-template <class Archive> 
-void DoNothingController::serialize(Archive& ar, const unsigned int version) {
-  ar & SUBCLASS(Controller);
-}
-
-SERIALIZABLE(DoNothingController);
+SERIALIZE_DEF(DoNothingController, SUBCLASS(Controller))
 SERIALIZATION_CONSTRUCTOR_IMPL(DoNothingController);
 
-template <class Archive> 
-void Controller::serialize(Archive& ar, const unsigned int version) {
-  ar & SVAR(creature);
-}
-
-SERIALIZABLE(Controller);
-
+SERIALIZE_DEF(Controller, SUBCLASS(OwnedObject<Controller>), creature)
 SERIALIZATION_CONSTRUCTOR_IMPL(Controller);
 
-Controller::Controller(Creature* c) : creature(c) {
+Controller::Controller(WCreature c) : creature(c) {
 }
 
-ControllerFactory::ControllerFactory(function<SController(Creature*)> f) : fun(f) {}
+ControllerFactory::ControllerFactory(function<PController(WCreature)> f) : fun(f) {}
 
-SController ControllerFactory::get(Creature* c) const {
-  return SController(fun(c));
+PController ControllerFactory::get(WCreature c) const {
+  return fun(c);
 }
 
-DoNothingController::DoNothingController(Creature* c) : Controller(c) {}
+DoNothingController::DoNothingController(WCreature c) : Controller(c) {}
 
 bool DoNothingController::isPlayer() const {
   return false;
-}
-
-void DoNothingController::you(MsgType type, const vector<string>& param) {
-}
-
-void DoNothingController::you(MsgType type, const string& param) {
-}
-
-void DoNothingController::you(const string& param) {
 }
 
 void DoNothingController::makeMove() {
   getCreature()->wait().perform(getCreature());
 }
 
-void DoNothingController::onBump(Creature* c) {
+void DoNothingController::onBump(WCreature c) {
 }
 
-Creature* Controller::getCreature() const {
+
+MessageGenerator& DoNothingController::getMessageGenerator() const {
+  static MessageGenerator messageGenerator(MessageGenerator::NONE);
+  return messageGenerator;
+}
+
+WCreature Controller::getCreature() const {
   return creature;
 }
 

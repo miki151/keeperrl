@@ -19,7 +19,8 @@
 const Gender Gender::male(false);
 const Gender Gender::female(true);
 
-SERIALIZATION_CONSTRUCTOR_IMPL(Gender);
+SERIALIZATION_CONSTRUCTOR_IMPL(Gender)
+SERIALIZE_DEF(Gender, fem)
 
 Gender::Gender(bool f) : fem(f) {}
 
@@ -39,11 +40,6 @@ string Gender::god() const {
   return fem ? "goddess" : "god";
 }
 
-template <class Archive>
-void Gender::serialize(Archive& ar, const unsigned int version) {
-  ar & SVAR(fem);
-}
-
 bool Gender::operator == (const Gender& o) const {
   return fem == o.fem;
 }
@@ -51,6 +47,4 @@ bool Gender::operator == (const Gender& o) const {
 bool Gender::operator != (const Gender& o) const {
   return !(*this == o);
 }
-
-SERIALIZABLE(Gender);
 

@@ -22,7 +22,6 @@
 #include "tribe.h"
 #include "enum_variant.h"
 #include "event_generator.h"
-#include "event_listener.h"
 
 class Level;
 class ProgressMeter;
@@ -37,85 +36,97 @@ class Options;
 /**
   * Main class that holds all game logic.
   */
-class Model {
+class Model : public OwnedObject<Model> {
   public:
-  ~Model();
+  static PModel create();
   
   /** Makes an update to the game. This method is repeatedly called to make the game run.
     Returns the total logical time elapsed.*/
   void update(double totalTime);
 
   /** Returns the level that the stairs lead to. */
-  Level* getLinkedLevel(Level* from, StairKey) const;
+  WLevel getLinkedLevel(WLevel from, StairKey) const;
 
-  optional<Position> getStairs(const Level* from, const Level* to);
+  optional<Position> getStairs(WConstLevel from, WConstLevel to);
 
   void addCreature(PCreature);
   void addCreature(PCreature, double delay);
   void landHeroPlayer(PCreature);
-  void addExternalEnemies(const ExternalEnemies&);
+  void addExternalEnemies(ExternalEnemies);
+  void clearExternalEnemies();
+
+  const optional<ExternalEnemies>& getExternalEnemies() const;
 
   bool isTurnBased();
 
   double getLocalTime() const;
-  void increaseLocalTime(Creature*, double diff);
-  double getLocalTime(const Creature*);
+  void increaseLocalTime(WCreature, double diff);
+  double getLocalTime(WConstCreature);
 
-  void setGame(Game*);
-  Game* getGame() const;
+  void setGame(WGame);
+  WGame getGame() const;
   void tick(double time);
-  vector<Collective*> getCollectives() const;
-  vector<Creature*> getAllCreatures() const;
-  vector<Level*> getLevels() const;
+  vector<WCollective> getCollectives() const;
+  vector<WCreature> getAllCreatures() const;
+  vector<WLevel> getLevels() const;
 
-  Level* getTopLevel() const;
+  WLevel getTopLevel() const;
 
   void addWoodCount(int);
   int getWoodCount() const;
 
   int getSaveProgressCount() const;
 
-  void killCreature(Creature* victim);
+  void killCreature(WCreature victim);
   void updateSunlightMovement();
 
-  PCreature extractCreature(Creature*);
+  optional<Position> getOtherPortal(Position) const;
+  void registerPortal(Position);
+
+  PCreature extractCreature(WCreature);
   void transferCreature(PCreature, Vec2 travelDir);
-  bool canTransferCreature(Creature*, Vec2 travelDir);
+  bool canTransferCreature(WCreature, Vec2 travelDir);
 
-  Model();
+  SERIALIZATION_DECL(Model)
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version);
-
-  void lockSerialization();
+  void discardForRetirement();
 
   void addEvent(const GameEvent&);
+
+  private:
+  struct Private {};
+
+  public:
+  Model(Private);
+  ~Model();
 
   private:
 
   friend class ModelBuilder;
 
   PCreature makePlayer(int handicap);
-  Level* buildLevel(LevelBuilder&&, PLevelMaker);
-  Level* buildTopLevel(LevelBuilder&&, PLevelMaker);
+  WLevel buildLevel(LevelBuilder&&, PLevelMaker);
+  WLevel buildTopLevel(LevelBuilder&&, PLevelMaker);
 
   vector<PLevel> SERIAL(levels);
   PLevel SERIAL(cemetery);
   vector<PCollective> SERIAL(collectives);
-  Game* SERIAL(game) = nullptr;
+  WGame SERIAL(game) = nullptr;
   double SERIAL(lastTick) = 0;
   HeapAllocated<TimeQueue> SERIAL(timeQueue);
   vector<PCreature> SERIAL(deadCreatures);
   double SERIAL(currentTime) = 0;
   int SERIAL(woodCount) = 0;
   void calculateStairNavigation();
-  optional<StairKey> getStairsBetween(const Level* from, const Level* to);
-  map<pair<const Level*, const Level*>, StairKey> SERIAL(stairNavigation);
+  optional<StairKey> getStairsBetween(WConstLevel from, WConstLevel to);
+  map<pair<LevelId, LevelId>, StairKey> SERIAL(stairNavigation);
   bool serializationLocked = false;
-  Level* SERIAL(topLevel) = nullptr;
+  WLevel SERIAL(topLevel) = nullptr;
+  template <typename>
   friend class EventListener;
-  HeapAllocated<EventGenerator<EventListener>> SERIAL(eventGenerator);
+  OwnerPointer<EventGenerator> SERIAL(eventGenerator);
   void checkCreatureConsistency();
   HeapAllocated<optional<ExternalEnemies>> SERIAL(externalEnemies);
+  vector<Position> SERIAL(portals);
 };
 

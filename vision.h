@@ -15,31 +15,20 @@
 
 #pragma once
 
-#include "singleton.h"
 #include "enums.h"
 #include "level.h"
 
-class Vision : public Singleton<Vision, VisionId> {
+class Vision {
   public:
-  Vision(Vision* inheritedFov, bool nightVision);
-  Vision* getInheritedFov() const;
-  bool isNightVision() const;
-  static void init();
+  Vision() {}
+  VisionId getId() const;
+  bool canSeeAt(double light, double distance) const;
+  void update(WConstCreature);
+
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version);
 
   private:
-  Vision* inheritedFov;
-  bool nightVision;
+  VisionId SERIAL(id) = VisionId::NORMAL;
+  bool SERIAL(nightVision) = false;
 };
-
-class Creature;
-class CreatureVision {
-  public:
-  virtual bool canSee(const Creature*, const Creature*) = 0;
-  virtual ~CreatureVision() {}
-
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version);
-};
-
-
-

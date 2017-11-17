@@ -114,10 +114,9 @@ optional<T> fromStringSafe(const string& s){
 }
 
 void trim(string& s) {
-  CHECK(s.size() > 0);
-  while (isspace(s[0])) 
+  while (!s.empty() && isspace(s[0]))
     s.erase(s.begin());
-  while (isspace(*s.rbegin()))
+  while (!s.empty() && isspace(*s.rbegin()))
     s.erase(s.size() - 1);
 }
 
@@ -151,11 +150,6 @@ vector<string> split(const string& s, const set<char>& delim) {
   return ret;
 }
 
-vector<string> removeEmpty(const vector<string>& v) {
-  return filter(v, [] (const string& s) { return !s.empty(); });
-}
-
-template<>
 bool contains(const string& s, const string& p) {
   return s.find(p) != string::npos;
 }
@@ -194,13 +188,12 @@ int Vec2::dotProduct(Vec2 a, Vec2 b) {
   return a.x * b.x + a.y * b.y;
 }
 
-vector<Vec2> Vec2::circle(double radius, bool shuffle) {
-  return filter(Rectangle(*this - Vec2(radius, radius), *this + Vec2(radius, radius)).getAllSquares(),
-      [&](const Vec2& pos) { return distD(pos) <= radius; });
-}
+static const vector<Vec2> dir8 {
+  Vec2(0, -1), Vec2(0, 1), Vec2(1, 0), Vec2(-1, 0), Vec2(1, -1), Vec2(-1, -1), Vec2(1, 1), Vec2(-1, 1)
+};
 
-vector<Vec2> Vec2::directions8() {
-  return Vec2(0, 0).neighbors8();
+const vector<Vec2>& Vec2::directions8() {
+  return dir8;
 }
 
 vector<Vec2> Vec2::neighbors8() const {
@@ -208,8 +201,12 @@ vector<Vec2> Vec2::neighbors8() const {
       Vec2(x - 1, y - 1), Vec2(x - 1, y + 1)};
 }
 
-vector<Vec2> Vec2::directions4() {
-  return Vec2(0, 0).neighbors4();
+static const vector<Vec2> dir4 {
+  Vec2(0, -1), Vec2(0, 1), Vec2(1, 0), Vec2(-1, 0)
+};
+
+const vector<Vec2>& Vec2::directions4() {
+  return dir4;
 }
 
 vector<Vec2> Vec2::neighbors4() const {
@@ -232,10 +229,6 @@ vector<Vec2> Vec2::neighbors4(RandomGen& random) const {
   return random.permutation(neighbors4());
 }
 
-vector<Vec2> Vec2::neighbors(const vector<Vec2>& directions) const {
-  return transform2<Vec2>(directions, [this] (const Vec2& v) { return *this + v;});
-}
-
 bool Vec2::isCardinal4() const {
   return abs(x) + abs(y) == 1;
 }
@@ -245,24 +238,30 @@ bool Vec2::isCardinal8() const {
 }
 
 Dir Vec2::getCardinalDir() const {
-  if (x == 0 && y == -1)
-    return Dir::N;
-  if (x == 1 && y == -1)
-    return Dir::NE;
-  if (x == 1 && y == 0)
-    return Dir::E;
-  if (x == 1 && y == 1)
-    return Dir::SE;
-  if (x == 0 && y == 1)
-    return Dir::S;
-  if (x == -1 && y == 1)
-    return Dir::SW;
-  if (x == -1 && y == 0)
-    return Dir::W;
-  if (x == -1 && y == -1)
-    return Dir::NW;
+  switch (x) {
+    case 0:
+      switch (y) {
+        case -1: return Dir::N;
+        case 1: return Dir::S;
+      }
+      break;
+    case 1:
+      switch (y) {
+        case 0: return Dir::E;
+        case -1: return Dir::NE;
+        case 1: return Dir::SE;
+      }
+      break;
+    case -1:
+      switch (y) {
+        case 0: return Dir::W;
+        case -1: return Dir::NW;
+        case 1: return Dir::SW;
+      }
+      break;
+  }
   FATAL << "Not cardinal dir " << *this;
-  return Dir::N;
+  return {};
 }
 
 vector<Vec2> Vec2::corners() {
@@ -287,17 +286,8 @@ vector<set<Vec2>> Vec2::calculateLayers(set<Vec2> elems) {
   return ret;
 }
 
-template <class Archive> 
-void Rectangle::serialize(Archive& ar, const unsigned int version) {
-  ar& BOOST_SERIALIZATION_NVP(px)
-    & BOOST_SERIALIZATION_NVP(py)
-    & BOOST_SERIALIZATION_NVP(kx)
-    & BOOST_SERIALIZATION_NVP(ky)
-    & BOOST_SERIALIZATION_NVP(w)
-    & BOOST_SERIALIZATION_NVP(h);
-}
+SERIALIZE_DEF(Rectangle, px, py, kx, ky, w, h)
 
-SERIALIZABLE(Rectangle);
 SERIALIZATION_CONSTRUCTOR_IMPL(Rectangle);
 
 Rectangle Rectangle::boundingBox(const vector<Vec2>& verts) {
@@ -315,6 +305,10 @@ Rectangle Rectangle::boundingBox(const vector<Vec2>& verts) {
 
 Rectangle Rectangle::centered(Vec2 center, int radius) {
   return Rectangle(center - Vec2(radius, radius), center + Vec2(radius + 1, radius + 1));
+}
+
+Rectangle Rectangle::centered(int radius) {
+  return Rectangle(-Vec2(radius, radius), Vec2(radius + 1, radius + 1));
 }
 
 vector<Vec2> Rectangle::getAllSquares() const {
@@ -340,7 +334,7 @@ bool Rectangle::operator != (const Rectangle& r) const {
 
 template <class Archive>
 void Vec2::serialize(Archive& ar, const unsigned int) {
-  serializeAll(ar, x, y);
+  ar(x, y);
 }
 
 SERIALIZABLE(Vec2);
@@ -479,21 +473,25 @@ Vec2 Vec2::getCenterOfWeight(vector<Vec2> vs) {
 }
 
 Rectangle::Rectangle(int _w, int _h) : px(0), py(0), kx(_w), ky(_h), w(_w), h(_h) {
-  CHECK(w > 0 && h > 0);
+  if (w <= 0 || h <= 0) {
+    kx = ky = 0;
+    w = h = 0;
+  }
 }
 
-Rectangle::Rectangle(Vec2 d) : px(0), py(0), kx(d.x), ky(d.y), w(d.x), h(d.y) {
-  CHECK(d.x > 0 && d.y > 0);
+Rectangle::Rectangle(Vec2 d) : Rectangle(d.x, d.y) {
 }
 
 Rectangle::Rectangle(int px1, int py1, int kx1, int ky1) : px(px1), py(py1), kx(kx1), ky(ky1), w(kx1 - px1),
     h(ky1 - py1) {
-  CHECK(kx > px && ky > py) << "(" << px << " " << py << ") (" << kx << " " << ky << ") ";
+  if (kx <= px || ky <= py) {
+    kx = px;
+    ky = py;
+    w = h = 0;
+  }
 }
 
-Rectangle::Rectangle(Vec2 p, Vec2 k) : px(p.x), py(p.y), kx(k.x), ky(k.y), w(k.x - p.x), h(k.y - p.y) {
-  CHECK(k.x > p.x) << p << " " << k;
-  CHECK(k.y > p.y) << p << " " << k;
+Rectangle::Rectangle(Vec2 p, Vec2 k) : Rectangle(p.x, p.y, k.x, k.y) {
 }
 
 Rectangle::Rectangle(Range xRange, Range yRange)
@@ -583,7 +581,6 @@ Rectangle Rectangle::translate(Vec2 v) const {
 }
 
 Rectangle Rectangle::minusMargin(int margin) const {
-  CHECK(px + margin < kx - margin && py + margin < ky - margin) << "Margin too big";
   return Rectangle(px + margin, py + margin, kx - margin, ky - margin);
 }
 
@@ -686,14 +683,7 @@ const Range::Iter& Range::Iter::operator++ () {
   return *this;
 }
 
-template <class Archive> 
-void Range::serialize(Archive& ar, const unsigned int version) {
-  ar& SVAR(start)
-    & SVAR(finish)
-    & SVAR(increment);
-}
-
-SERIALIZABLE(Range);
+SERIALIZE_DEF(Range, start, finish, increment)
 SERIALIZATION_CONSTRUCTOR_IMPL(Range);
 
 string combine(const vector<string>& adj, bool commasOnly) {

@@ -17,11 +17,8 @@
 
 
 #include "window_view.h"
-#include "logging_view.h"
-#include "replay_view.h"
 #include "level.h"
 #include "options.h"
-#include "location.h"
 #include "renderer.h"
 #include "tile.h"
 #include "clock.h"
@@ -54,10 +51,10 @@ View* WindowView::createReplayView(InputArchive& ifs, ViewParams params) {
   //return new ReplayView(ifs, new WindowView(params));
 }
 
-int rightBarWidthCollective = 344;
-int rightBarWidthPlayer = 344;
-int bottomBarHeightCollective = 62;
-int bottomBarHeightPlayer = 62;
+constexpr int rightBarWidthCollective = 344;
+constexpr int rightBarWidthPlayer = 344;
+constexpr int bottomBarHeightCollective = 62;
+constexpr int bottomBarHeightPlayer = 62;
 
 Rectangle WindowView::getMapGuiBounds() const {
   switch (gameInfo.infoType) {
@@ -76,32 +73,38 @@ Rectangle WindowView::getMapGuiBounds() const {
 
 Rectangle WindowView::getMinimapBounds() const {
   Vec2 offset(-20, 70);
-  Vec2 size(Vec2(renderer.getSize().x, renderer.getSize().x) / 12);
+  Vec2 size(Vec2(renderer.getSize().x, renderer.getSize().x) / 11);
   return Rectangle(Vec2(renderer.getSize().x - size.x, 0), Vec2(renderer.getSize().x, size.y)).translate(offset);
 }
 
 void WindowView::resetMapBounds() {
   mapGui->setBounds(getMapGuiBounds());
-  minimapDecoration->setBounds(getMinimapBounds().minusMargin(-6));
+  minimapDecoration->setBounds(getMinimapBounds());
 }
 
 WindowView::WindowView(ViewParams params) : renderer(params.renderer), gui(params.gui), useTiles(params.useTiles),
     options(params.options), clock(params.clock), guiBuilder(renderer, gui, clock, params.options, {
         [this](UserInput input) { inputQueue.push(input);},
-        [this](const vector<string>& s) { mapGui->setHint(s);},
         [this](SDL_Keysym ev) { keyboardAction(ev);},
         [this]() { refreshScreen(false);},
         [this](const string& s) { presentText("", s); },
-        }), fullScreenTrigger(-1), fullScreenResolution(-1), zoomUI(-1),
+        }), zoomUI(-1),
     soundLibrary(params.soundLibrary) {}
 
 void WindowView::initialize() {
   renderer.setFullscreen(options->getBoolValue(OptionId::FULLSCREEN));
+  renderer.setVsync(options->getBoolValue(OptionId::VSYNC));
   renderer.enableCustomCursor(!options->getBoolValue(OptionId::DISABLE_CURSOR));
 //  renderer.setFullscreenMode(options->getChoiceValue(OptionId::FULLSCREEN_RESOLUTION));
   renderer.initialize();
   renderer.setZoom(options->getBoolValue(OptionId::ZOOM_UI) ? 2 : 1);
-  options->addTrigger(OptionId::FULLSCREEN, [this] (int on) { fullScreenTrigger = on; });
+  options->addTrigger(OptionId::FULLSCREEN, [this] (int on) {
+    renderer.setFullscreen(on);
+    renderer.initialize();
+  });
+  options->addTrigger(OptionId::VSYNC, [this] (int on) {
+    renderer.setVsync(on);
+  });
   options->addTrigger(OptionId::DISABLE_CURSOR, [this] (int on) { renderer.enableCustomCursor(!on); });
   //options->addTrigger(OptionId::FULLSCREEN_RESOLUTION, [this] (int index) { fullScreenResolution = index; });
   options->addTrigger(OptionId::ZOOM_UI, [this] (int on) { zoomUI = on; });
@@ -112,7 +115,7 @@ void WindowView::initialize() {
   asciiLayouts = {
     {MapLayout(Vec2(16, 20), allLayers),
     MapLayout(Vec2(8, 10),
-        {ViewLayer::FLOOR_BACKGROUND, ViewLayer::FLOOR, ViewLayer::LARGE_ITEM, ViewLayer::CREATURE})}, false};
+        {ViewLayer::FLOOR_BACKGROUND, ViewLayer::FLOOR, ViewLayer::CREATURE})}, false};
   spriteLayouts = {{
     MapLayout(Vec2(48, 48), allLayers),
 //    MapLayout(Vec2(36, 36), allLayers),
@@ -124,8 +127,11 @@ void WindowView::initialize() {
   mapGui.reset(new MapGui({
       bindMethod(&WindowView::mapContinuousLeftClickFun, this),
       [this] (Vec2 pos) {
-          if (!guiBuilder.getActiveButton(CollectiveTab::BUILDINGS))
-            inputQueue.push(UserInput(UserInputId::TILE_CLICK, pos));},
+          if (!guiBuilder.getActiveButton(CollectiveTab::BUILDINGS)) {
+            guiBuilder.closeOverlayWindowsAndClearButton();
+            inputQueue.push(UserInput(UserInputId::TILE_CLICK, pos));
+          }
+      },
       bindMethod(&WindowView::mapRightClickFun, this),
       bindMethod(&WindowView::mapCreatureClickFun, this),
       [this] { refreshInput = true;},
@@ -138,8 +144,8 @@ void WindowView::initialize() {
       clock,
       options,
       &gui));
-  minimapGui.reset(new MinimapGui(renderer, [this]() { inputQueue.push(UserInput(UserInputId::DRAW_LEVEL_MAP)); }));
-  minimapDecoration = gui.stack(gui.rectangle(colors[ColorId::BLACK]), gui.miniWindow(),
+  minimapGui.reset(new MinimapGui([this]() { inputQueue.push(UserInput(UserInputId::DRAW_LEVEL_MAP)); }));
+  minimapDecoration = gui.stack(gui.rectangle(Color::BLACK), gui.miniWindow(),
       gui.margins(gui.renderInBounds(SGuiElem(minimapGui)), 6));
   resetMapBounds();
   guiBuilder.setMapGui(mapGui);
@@ -235,7 +241,7 @@ void WindowView::drawMenuBackground(double barState, double mouthState) {
       (mouthPos2 + menuMouth.getSize().y) * scale, Color(60, 76, 48));
   renderer.drawImage((renderer.getSize().x - width) / 2, 0, menuCore, scale);
   renderer.drawImage(mouthX, scale * (mouthPos1 * (1 - mouthState) + mouthPos2 * mouthState), menuMouth, scale);
-  renderer.drawText(colors[ColorId::WHITE], 30, renderer.getSize().y - 40, "Version " BUILD_DATE " " BUILD_VERSION,
+  renderer.drawText(Color::WHITE, 30, renderer.getSize().y - 40, "Version " BUILD_DATE " " BUILD_VERSION,
       Renderer::NONE, 16);
 }
 
@@ -251,8 +257,8 @@ void WindowView::getAutosaveSplash(const ProgressMeter& meter) {
     double progress = meter.getProgress();
     Rectangle bar(progressBar.topLeft(), Vec2(1 + progressBar.left() * (1.0 - progress) +
           progressBar.right() * progress, progressBar.bottom()));
-    renderer.drawFilledRectangle(bar, transparency(colors[ColorId::DARK_GREEN], 50));
-    renderer.drawText(colors[ColorId::WHITE], bounds.middle().x, bounds.top() + 20, "Autosaving", Renderer::HOR);
+    renderer.drawFilledRectangle(bar, Color::DARK_GREEN.transparency(50));
+    renderer.drawText(Color::WHITE, bounds.middle().x, bounds.top() + 20, "Autosaving", Renderer::HOR);
     renderer.drawAndClearBuffer();
     sleep_for(milliseconds(30));
     Event event;
@@ -273,11 +279,11 @@ void WindowView::getSmallSplash(const string& text, function<void()> cancelFun) 
   while (!splashDone) {
     refreshScreen(false);
     window->render(renderer);
-    renderer.drawText(colors[ColorId::WHITE], bounds.middle().x, bounds.top() + 20, text, Renderer::HOR);
+    renderer.drawText(Color::WHITE, bounds.middle().x, bounds.top() + 20, text, Renderer::HOR);
     Rectangle cancelBut(bounds.middle().x - renderer.getTextLength(cancelText) / 2, bounds.top() + 50,
         bounds.middle().x + renderer.getTextLength(cancelText) / 2, bounds.top() + 80);
     if (cancelFun)
-      renderer.drawText(colors[ColorId::LIGHT_BLUE], cancelBut.left(), cancelBut.top(), cancelText);
+      renderer.drawText(Color::LIGHT_BLUE, cancelBut.left(), cancelBut.top(), cancelText);
     renderer.drawAndClearBuffer();
     sleep_for(milliseconds(30));
     Event event;
@@ -307,9 +313,9 @@ void WindowView::getBigSplash(const ProgressMeter& meter, const string& text, fu
     else
       renderer.drawImage((renderer.getSize().x - loadingSplash.getSize().x) / 2,
           (renderer.getSize().y - loadingSplash.getSize().y) / 2, loadingSplash);
-    renderer.drawText(colors[ColorId::WHITE], textPos.x, textPos.y, text, Renderer::HOR);
+    renderer.drawText(Color::WHITE, textPos.x, textPos.y, text, Renderer::HOR);
     if (cancelFun)
-      renderer.drawText(colors[ColorId::LIGHT_BLUE], cancelBut.left(), cancelBut.top(), cancelText);
+      renderer.drawText(Color::LIGHT_BLUE, cancelBut.left(), cancelBut.top(), cancelText);
     renderer.drawAndClearBuffer();
     sleep_for(milliseconds(30));
     Event event;
@@ -341,7 +347,9 @@ void WindowView::displaySplash(const ProgressMeter* meter, const string& text, S
 void WindowView::clearSplash() {
   splashDone = true;
   if (currentThreadId() != renderThreadId)
-    while (splashDone) {}
+    while (splashDone) {
+      Progress::checkIfInterrupted();
+    }
 }
 
 void WindowView::resize(int width, int height) {
@@ -360,11 +368,7 @@ Color getSpeedColor(int value) {
 }
 
 void WindowView::rebuildGui() {
-  int newHash = gameInfo.getHash();
-  if (newHash == lastGuiHash)
-    return;
   INFO << "Rebuilding UI";
-  lastGuiHash = newHash;
   SGuiElem bottom, right;
   vector<GuiBuilder::OverlayInfo> overlays;
   int rightBarWidth = 0;
@@ -385,20 +389,20 @@ void WindowView::rebuildGui() {
         rightBarWidth = 0;
         bottomBarHeight = 0;
         if (getMapGuiBounds().left() > 0) {
-          tempGuiElems.push_back(gui.rectangle(colors[ColorId::BLACK]));
+          tempGuiElems.push_back(gui.rectangle(Color::BLACK));
           tempGuiElems.back()->setBounds(Rectangle(0, 0, getMapGuiBounds().left(), renderer.getSize().y));
-          tempGuiElems.push_back(gui.rectangle(colors[ColorId::BLACK]));
+          tempGuiElems.push_back(gui.rectangle(Color::BLACK));
           tempGuiElems.back()->setBounds(Rectangle(Vec2(getMapGuiBounds().right(), 0), renderer.getSize()));
         }
         if (getMapGuiBounds().top() > 0) {
-          tempGuiElems.push_back(gui.rectangle(colors[ColorId::BLACK]));
+          tempGuiElems.push_back(gui.rectangle(Color::BLACK));
           tempGuiElems.back()->setBounds(Rectangle(0, 0, renderer.getSize().x, getMapGuiBounds().top()));
-          tempGuiElems.push_back(gui.rectangle(colors[ColorId::BLACK]));
+          tempGuiElems.push_back(gui.rectangle(Color::BLACK));
           tempGuiElems.back()->setBounds(Rectangle(Vec2(0, getMapGuiBounds().bottom()), renderer.getSize()));
         }
         break;
     case GameInfo::InfoType::PLAYER:
-        right = guiBuilder.drawRightPlayerInfo(gameInfo.playerInfo);
+        right = guiBuilder.drawRightPlayerInfo(*gameInfo.playerInfo.getReferenceMaybe<PlayerInfo>());
         bottom = guiBuilder.drawBottomPlayerInfo(gameInfo);
         rightBarWidth = rightBarWidthPlayer;
         bottomBarHeight = bottomBarHeightPlayer;
@@ -413,10 +417,26 @@ void WindowView::rebuildGui() {
   }
   guiBuilder.drawOverlays(overlays, gameInfo);
   resetMapBounds();
-  int bottomOffset = 35;
-  int sideOffset = 10;
-  int rightWindowHeight = 80;
   if (rightBarWidth > 0) {
+    overlays.push_back({guiBuilder.drawMessages(gameInfo.messageBuffer, renderer.getSize().x - rightBarWidth),
+                       GuiBuilder::OverlayInfo::MESSAGES});
+    for (auto& overlay : overlays) {
+      Vec2 pos;
+      if (auto width = overlay.elem->getPreferredWidth())
+        if (auto height = overlay.elem->getPreferredHeight()) {
+          pos = getOverlayPosition(overlay.alignment, *height, *width, rightBarWidth, bottomBarHeight);
+          tempGuiElems.push_back(std::move(overlay.elem));
+          switch (overlay.alignment) {
+            case GuiBuilder::OverlayInfo::GAME_SPEED:
+              tempGuiElems.back() = gui.renderTopLayer(std::move(tempGuiElems.back()));
+              break;
+            default:
+              break;
+          }
+          *height = min(*height, renderer.getSize().y - pos.y);
+          tempGuiElems.back()->setBounds(Rectangle(pos, pos + Vec2(*width, *height)));
+        }
+    }
     tempGuiElems.push_back(gui.mainDecoration(rightBarWidth, bottomBarHeight, topBarHeight));
     tempGuiElems.back()->setBounds(Rectangle(renderer.getSize()));
     tempGuiElems.push_back(gui.margins(std::move(right), 20, 20, 10, 0));
@@ -425,48 +445,46 @@ void WindowView::rebuildGui() {
     tempGuiElems.push_back(gui.margins(std::move(bottom), 105, 10, 105, 0));
     tempGuiElems.back()->setBounds(Rectangle(
           Vec2(rightBarWidth, renderer.getSize().y - bottomBarHeight), renderer.getSize()));
-    overlays.push_back({guiBuilder.drawMessages(gameInfo.messageBuffer, renderer.getSize().x - rightBarWidth),
-                       GuiBuilder::OverlayInfo::MESSAGES});
-    for (auto& overlay : overlays) {
-      Vec2 pos;
-      if (auto width = overlay.elem->getPreferredWidth())
-        if (auto height = overlay.elem->getPreferredHeight()) {
-          switch (overlay.alignment) {
-            case GuiBuilder::OverlayInfo::MINIONS:
-              pos = Vec2(rightBarWidth - 20, rightWindowHeight - 6);
-              break;
-            case GuiBuilder::OverlayInfo::TOP_LEFT:
-              pos = Vec2(rightBarWidth + sideOffset, rightWindowHeight);
-              break;
-            case GuiBuilder::OverlayInfo::IMMIGRATION:
-              pos = Vec2(rightBarWidth, renderer.getSize().y - bottomBarHeight - 21 - *height);
-              break;
-            case GuiBuilder::OverlayInfo::BOTTOM_LEFT:
-              pos = Vec2(rightBarWidth + guiBuilder.getImmigrationBarWidth(),
-                         renderer.getSize().y - bottomBarHeight - 21 - *height);
-              break;
-            case GuiBuilder::OverlayInfo::LEFT:
-              pos = Vec2(sideOffset,
-                  renderer.getSize().y - bottomBarHeight - bottomOffset - *height);
-              break;
-            case GuiBuilder::OverlayInfo::MESSAGES:
-              pos = Vec2(rightBarWidth, 0);
-              break;
-            case GuiBuilder::OverlayInfo::GAME_SPEED:
-              pos = Vec2(26, renderer.getSize().y - *height - 50);
-              break;
-            case GuiBuilder::OverlayInfo::INVISIBLE:
-              pos = Vec2(renderer.getSize().x, 0);
-              overlay.elem = gui.invisible(std::move(overlay.elem));
-              break;
-          }
-          tempGuiElems.push_back(std::move(overlay.elem));
-          *height = min(*height, renderer.getSize().y - pos.y);
-          tempGuiElems.back()->setBounds(Rectangle(pos, pos + Vec2(*width, *height)));
-        }
-    }
   }
   propagateMousePosition(getClickableGuiElems());
+}
+
+Vec2 WindowView::getOverlayPosition(GuiBuilder::OverlayInfo::Alignment alignment, int height, int width,
+    int rightBarWidth, int bottomBarHeight) {
+  int bottomOffset = 35;
+  int sideOffset = 0;
+  int rightWindowHeight = 80;
+  switch (alignment) {
+    case GuiBuilder::OverlayInfo::MINIONS:
+      return Vec2(rightBarWidth - 20, rightWindowHeight - 6);
+      break;
+    case GuiBuilder::OverlayInfo::TOP_LEFT:
+      return Vec2(rightBarWidth + sideOffset, rightWindowHeight);
+      break;
+    case GuiBuilder::OverlayInfo::IMMIGRATION:
+      return Vec2(rightBarWidth, renderer.getSize().y - bottomBarHeight - 21 - height);
+      break;
+    case GuiBuilder::OverlayInfo::BOTTOM_LEFT:
+      return Vec2(rightBarWidth + guiBuilder.getImmigrationBarWidth(),
+                 renderer.getSize().y - bottomBarHeight - 21 - height);
+      break;
+    case GuiBuilder::OverlayInfo::LEFT:
+      return Vec2(sideOffset,
+          renderer.getSize().y - bottomBarHeight - bottomOffset - height);
+      break;
+    case GuiBuilder::OverlayInfo::MESSAGES:
+      return Vec2(rightBarWidth, 0);
+      break;
+    case GuiBuilder::OverlayInfo::GAME_SPEED:
+      return Vec2(26, renderer.getSize().y - height - 50);
+      break;
+    case GuiBuilder::OverlayInfo::TUTORIAL:
+      return Vec2(rightBarWidth + guiBuilder.getImmigrationBarWidth(),
+          renderer.getSize().y - bottomBarHeight - height);
+      break;
+    case GuiBuilder::OverlayInfo::MAP_HINT:
+      return Vec2(renderer.getSize().x - width, renderer.getSize().y - bottomBarHeight - height);
+  }
 }
 
 void WindowView::propagateMousePosition(const vector<SGuiElem>& elems) {
@@ -494,7 +512,7 @@ vector<SGuiElem> WindowView::getClickableGuiElems() {
   if (gameInfo.infoType == GameInfo::InfoType::SPECTATOR)
     return {mapGui};
   vector<SGuiElem> ret = concat(tempGuiElems, blockingElems);
-  reverse(ret.begin(), ret.end());
+  std::reverse(ret.begin(), ret.end());
   if (gameReady) {
     ret.push_back(minimapGui);
     ret.push_back(mapGui);
@@ -525,38 +543,37 @@ void WindowView::addVoidDialog(function<void()> fun) {
 }
 
 void WindowView::drawLevelMap(const CreatureView* creature) {
-  TempClockPause pause(clock);
-  addVoidDialog([=] {
-    minimapGui->presentMap(creature, Rectangle(renderer.getSize()), renderer,
-        [this](double x, double y) { mapGui->setCenter(x, y);}); });
+  Semaphore sem;
+  auto gui = guiBuilder.drawLevelMap(sem, creature);
+  Vec2 origin(getMinimapBounds().right() - *gui->getPreferredWidth(), getMinimapBounds().top());
+  return getBlockingGui(sem, std::move(gui), origin);
 }
 
 void WindowView::updateMinimap(const CreatureView* creature) {
-  const Level* level = creature->getLevel();
+  WConstLevel level = creature->getLevel();
   Vec2 rad(40, 40);
   Vec2 playerPos = mapGui->getScreenPos().div(mapLayout->getSquareSize());
   Rectangle bounds(playerPos - rad, playerPos + rad);
-  minimapGui->update(level, bounds, creature, true);
+  minimapGui->update(bounds, creature);
 }
 
 void WindowView::updateView(CreatureView* view, bool noRefresh) {
   ScopeTimer timer("UpdateView timer");
   if (!wasRendered && currentThreadId() != renderThreadId)
     return;
-  GameInfo newInfo;
-  view->refreshGameInfo(newInfo);
   RecursiveLock lock(renderMutex);
+  gameInfo = {};
+  view->refreshGameInfo(gameInfo);
   wasRendered = false;
   guiBuilder.addUpsCounterTick();
   gameReady = true;
   if (!noRefresh)
     uiLock = false;
   switchTiles();
-  gameInfo = newInfo;
   rebuildGui();
   mapGui->setSpriteMode(currentTileLayout.sprites);
   bool spectator = gameInfo.infoType == GameInfo::InfoType::SPECTATOR;
-  mapGui->updateObjects(view, mapLayout, currentTileLayout.sprites || spectator, !spectator);
+  mapGui->updateObjects(view, mapLayout, currentTileLayout.sprites || spectator, !spectator, gameInfo.tutorial);
   updateMinimap(view);
   if (gameInfo.infoType == GameInfo::InfoType::SPECTATOR)
     guiBuilder.setGameSpeed(GuiBuilder::GameSpeed::NORMAL);
@@ -579,16 +596,16 @@ void WindowView::playSounds(const CreatureView* view) {
   soundQueue.clear();
 }
 
-void WindowView::animateObject(vector<Vec2> trajectory, ViewObject object) {
+void WindowView::animateObject(Vec2 begin, Vec2 end, ViewId object) {
   RecursiveLock lock(renderMutex);
-  if (trajectory.size() >= 2)
+  if (begin != end)
     mapGui->addAnimation(
         Animation::thrownObject(
-          (trajectory.back() - trajectory.front()).mult(mapLayout->getSquareSize()),
+          (end - begin).mult(mapLayout->getSquareSize()),
           object,
           currentTileLayout.sprites,
           mapLayout->getSquareSize()),
-        trajectory.front());
+        begin);
 }
 
 void WindowView::animation(Vec2 pos, AnimationId id) {
@@ -633,18 +650,6 @@ void WindowView::drawMap() {
 void WindowView::refreshScreen(bool flipBuffer) {
   {
     RecursiveLock lock(renderMutex);
-    if (fullScreenTrigger > -1) {
-      renderer.setFullscreen(fullScreenTrigger);
-      renderer.initialize();
-      fullScreenTrigger = -1;
-    }
-    if (fullScreenResolution > -1) {
-      if (renderer.isFullscreen()) {
-        renderer.setFullscreenMode(fullScreenResolution);
-        renderer.initialize();
-      }
-      fullScreenResolution = -1;
-    }
     if (zoomUI > -1) {
       renderer.setZoom(zoomUI ? 2 : 1);
       zoomUI = -1;
@@ -681,7 +686,7 @@ optional<int> reverseIndexHeight(const vector<ListElem>& options, int height) {
   return height - sub;
 }
 
-optional<Vec2> WindowView::chooseDirection(const string& message) {
+optional<Vec2> WindowView::chooseDirection(Vec2 playerPos, const string& message) {
   RecursiveLock lock(renderMutex);
   TempClockPause pause(clock);
   gameInfo.messageBuffer = { PlayerMessage(message) };
@@ -696,12 +701,11 @@ optional<Vec2> WindowView::chooseDirection(const string& message) {
     if (event.type == SDL::SDL_MOUSEMOTION || event.type == SDL::SDL_MOUSEBUTTONDOWN) {
       if (auto pos = mapGui->projectOnMap(renderer.getMousePos())) {
         refreshScreen(false);
-        Vec2 middle = mapGui->getScreenPos().div(mapLayout->getSquareSize());
-        if (pos == middle)
+        if (pos == playerPos)
           continue;
-        Vec2 dir = (*pos - middle).getBearing();
+        Vec2 dir = (*pos - playerPos).getBearing();
         Vec2 wpos = mapLayout->projectOnScreen(getMapGuiBounds(), mapGui->getScreenPos(),
-            middle.x + dir.x, middle.y + dir.y);
+            playerPos.x + dir.x, playerPos.y + dir.y);
         if (currentTileLayout.sprites) {
           static vector<Renderer::TileCoord> coords;
           if (coords.empty())
@@ -711,7 +715,7 @@ optional<Vec2> WindowView::chooseDirection(const string& message) {
         } else {
           int numArrow = int(dir.getCardinalDir());
           static string arrows[] = { u8"⇑", u8"⇓", u8"⇒", u8"⇐", u8"⇗", u8"⇖", u8"⇘", u8"⇙"};
-          renderer.drawText(Renderer::SYMBOL_FONT, mapLayout->getSquareSize().y, colors[ColorId::WHITE],
+          renderer.drawText(Renderer::SYMBOL_FONT, mapLayout->getSquareSize().y, Color::WHITE,
               wpos.x + mapLayout->getSquareSize().x / 2, wpos.y, arrows[numArrow], Renderer::HOR);
         }
         renderer.drawAndClearBuffer();
@@ -785,6 +789,13 @@ optional<string> WindowView::getText(const string& title, const string& value, i
   return returnQueue.pop();
 }
 
+Rectangle WindowView::getEquipmentMenuPosition(int height) {
+  int width = 340;
+  Vec2 origin = Vec2(rightBarWidthCollective, 200);
+  origin.x = min(origin.x, renderer.getSize().x - width);
+  return Rectangle(origin, origin + Vec2(width, height)).intersection(Rectangle(Vec2(0, 0), renderer.getSize()));
+}
+
 optional<int> WindowView::chooseItem(const vector<ItemInfo>& items, ScrollPosition* scrollPos1) {
   RecursiveLock lock(renderMutex);
   uiLock = true;
@@ -796,17 +807,21 @@ optional<int> WindowView::chooseItem(const vector<ItemInfo>& items, ScrollPositi
     if (!scrollPos)
       scrollPos = &localScrollPos;
     optional<optional<int>> retVal;
-    vector<SGuiElem> lines = guiBuilder.drawItemMenu(items,
-      [&retVal] (Rectangle butBounds, optional<int> a) { retVal = a;}, true);
+    vector<SGuiElem> lines;
+    lines.push_back(gui.getListBuilder()
+        .addElemAuto(gui.label("Available items:"))
+        .addBackElem(gui.label("Owners:"), guiBuilder.getItemLineOwnerMargin()).buildHorizontalList());
+    lines.append(guiBuilder.drawItemMenu(items,
+      [&retVal] (Rectangle butBounds, optional<int> a) { retVal = a;}, true));
     int menuHeight = lines.size() * guiBuilder.getStandardLineHeight() + 30;
     SGuiElem menu = gui.miniWindow(gui.margins(
             gui.scrollable(gui.verticalList(std::move(lines), guiBuilder.getStandardLineHeight()), scrollPos),
         15), [&retVal] { retVal = optional<int>(none); });
     SGuiElem bg2 = gui.darken();
-    bg2->setBounds(renderer.getSize());
+    bg2->setBounds(Rectangle(renderer.getSize()));
     while (1) {
       refreshScreen(false);
-      menu->setBounds(guiBuilder.getEquipmentMenuPosition(menuHeight));
+      menu->setBounds(getEquipmentMenuPosition(menuHeight));
       bg2->render(renderer);
       menu->render(renderer);
       renderer.drawAndClearBuffer();
@@ -853,15 +868,21 @@ CampaignAction WindowView::prepareCampaign(CampaignOptions campaign, Options* op
   return getBlockingGui(returnQueue, guiBuilder.drawCampaignMenu(returnQueue, campaign, options, state));
 }
 
-optional<UniqueEntity<Creature>::Id> WindowView::chooseTeamLeader(const string& title,
+optional<UniqueEntity<Creature>::Id> WindowView::chooseCreature(const string& title,
     const vector<CreatureInfo>& creatures, const string& cancelText) {
   SyncQueue<optional<UniqueEntity<Creature>::Id>> returnQueue;
-  return getBlockingGui(returnQueue, guiBuilder.drawTeamLeaderMenu(returnQueue, title, creatures, cancelText));
+  return getBlockingGui(returnQueue, guiBuilder.drawChooseCreatureMenu(returnQueue, title, creatures, cancelText));
 }
 
-bool WindowView::creaturePrompt(const string& title, const vector<CreatureInfo>& creatures) {
+/*vector<UniqueEntity<Creature>::Id> WindowView::chooseTeamLeader(const string& title,
+    const vector<CreatureInfo>& creatures) {
+  SyncQueue<vector<UniqueEntity<Creature>::Id>> returnQueue;
+  return getBlockingGui(returnQueue, guiBuilder.drawTeamLeaderMenu(returnQueue, title, creatures));
+}*/
+
+bool WindowView::creatureInfo(const string& title, bool prompt, const vector<CreatureInfo>& creatures) {
   SyncQueue<bool> returnQueue;
-  return getBlockingGui(returnQueue, guiBuilder.drawCreaturePrompt(returnQueue, title, creatures));
+  return getBlockingGui(returnQueue, guiBuilder.drawCreatureInfo(returnQueue, title, prompt, creatures));
 }
 
 void WindowView::logMessage(const std::string& message) {
@@ -878,7 +899,7 @@ void WindowView::getBlockingGui(Semaphore& sem, SGuiElem elem, optional<Vec2> or
     origin = (renderer.getSize() - Vec2(*elem->getPreferredWidth(), *elem->getPreferredHeight())) / 2;
   if (blockingElems.empty()) {
     blockingElems.push_back(gui.darken());
-    blockingElems.back()->setBounds(renderer.getSize());
+    blockingElems.back()->setBounds(Rectangle(renderer.getSize()));
   }
   Vec2 size(*elem->getPreferredWidth(), min(renderer.getSize().y - origin->y, *elem->getPreferredHeight()));
   elem->setBounds(Rectangle(*origin, *origin + size));
@@ -908,57 +929,82 @@ struct GameChoice {
   GuiFactory::TexId texId;
   GuiFactory::TexId highlightId;
   string name;
+  string description;
 };
 
 const static vector<GameChoice> gameChoices {
-  {PlayerRole::KEEPER, GuiFactory::TexId::KEEPER_CHOICE, GuiFactory::TexId::KEEPER_HIGHLIGHT, "keeper"},
-  {PlayerRole::ADVENTURER, GuiFactory::TexId::ADVENTURER_CHOICE, GuiFactory::TexId::ADVENTURER_HIGHLIGHT,
-      "adventurer"},
+  {PlayerRole::KEEPER,
+   GuiFactory::TexId::KEEPER_CHOICE,
+   GuiFactory::TexId::KEEPER_HIGHLIGHT,
+   "keeper",
+   "Play as a keeper. Build and manage your dream dungeon, defend against raids, and attack your enemies!"},
+  {PlayerRole::ADVENTURER,
+   GuiFactory::TexId::ADVENTURER_CHOICE,
+   GuiFactory::TexId::ADVENTURER_HIGHLIGHT,
+   "adventurer",
+   "Play as an adventurer. Roam the land in search of adventures and loot!"},
 };
+
+static const char* getRoleText(NonRoleChoice c) {
+  switch (c) {
+    case NonRoleChoice::GO_BACK: return "Go back";
+    case NonRoleChoice::LOAD_GAME: return "Load game";
+    case NonRoleChoice::TUTORIAL: return "Tutorial";
+  }
+}
 
 SGuiElem WindowView::drawGameChoices(optional<PlayerRoleChoice>& choice, optional<PlayerRoleChoice>& index) {
   vector<SGuiElem> choiceElems;
+  const Vec2 hintSize(500, 100);
   for (auto& elem : gameChoices)
     choiceElems.push_back(
-        gui.stack(makeVec<SGuiElem>(
+        gui.stack(makeVec(
           gui.button([&] { choice = PlayerRoleChoice(elem.type);}),
-          gui.mouseOverAction([&] { index = elem.type;}),
+          gui.tooltip2(gui.preferredSize(hintSize, gui.miniWindow(gui.margins(
+              gui.labelMultiLine(elem.description, guiBuilder.getStandardLineHeight()), 20))),
+              [=](const Rectangle&) { return Vec2((renderer.getSize().x - hintSize.x) / 2, renderer.getSize().y * 4 / 5); }),
+          gui.mouseOverAction([&] { index = PlayerRoleChoice(elem.type);}),
           gui.sprite(elem.texId, GuiFactory::Alignment::CENTER_STRETCHED),
           gui.marginFit(gui.empty(), gui.centerHoriz(gui.mainMenuLabel(elem.name, -0.08,
-              colors[ColorId::MAIN_MENU_OFF])), 0.94, gui.TOP),
+              Color::MAIN_MENU_OFF)), 0.94, gui.TOP),
           gui.mouseHighlightGameChoice(gui.stack(
             gui.sprite(elem.highlightId, GuiFactory::Alignment::CENTER_STRETCHED),
           gui.marginFit(gui.empty(), gui.centerHoriz(gui.mainMenuLabel(elem.name, -0.08)),
               0.94, gui.TOP)),
             PlayerRoleChoice(elem.type), index)
           )));
+  vector<SGuiElem> nonRoleChoices;
+  for (auto nonRoleChoice : ENUM_ALL(NonRoleChoice))
+    nonRoleChoices.push_back(
+        gui.stack(
+            gui.button([&choice, nonRoleChoice] { choice = PlayerRoleChoice(nonRoleChoice);}),
+            gui.mainMenuLabelBg(getRoleText(nonRoleChoice), 0.15),
+            gui.mouseHighlightGameChoice(gui.mainMenuLabel(getRoleText(nonRoleChoice), 0.15),
+                PlayerRoleChoice(nonRoleChoice), index))
+        );
   return gui.verticalAspect(
       gui.marginFit(
       gui.horizontalListFit(std::move(choiceElems), 0),
-      gui.topMargin(30, gui.verticalListFit(makeVec<SGuiElem>(
-          gui.stack(
-            gui.button([&] { choice = PlayerRoleChoice(LoadGameChoice());}),
-            gui.mainMenuLabelBg("Load game", 0.15),
-            gui.mouseHighlightGameChoice(gui.mainMenuLabel("Load game", 0.15), PlayerRoleChoice(LoadGameChoice()), index)),
-          gui.stack(
-            gui.button([&] { choice = PlayerRoleChoice(GoBackChoice());}),
-            gui.mainMenuLabelBg("Go back", 0.15),
-            gui.mouseHighlightGameChoice(gui.mainMenuLabel("Go back", 0.15), PlayerRoleChoice(GoBackChoice()), index))), 0)),
-      0.7, gui.TOP), 0.6 * gameChoices.size());
+      gui.topMargin(30, gui.verticalListFit(nonRoleChoices, 0)),
+      0.65, gui.TOP), 0.6 * gameChoices.size());
 }
 
 PlayerRoleChoice WindowView::getPlayerRoleChoice(optional<PlayerRoleChoice> index) {
+  int numRoles = EnumInfo<PlayerRole>::size;
+  int numNonRoles = EnumInfo<NonRoleChoice>::size;
   if (!useTiles) {
-    if (auto ind = chooseFromListInternal("", {
-          ListElem("Choose your role:", ListElem::TITLE),
-          "Keeper",
-          "Adventurer",
-          "Load game",
-          },
-        0, MenuType::MAIN, nullptr))
-      return *ind == 2 ? LoadGameChoice() : PlayerRoleChoice((PlayerRole)(*ind));
-    else
-      return GoBackChoice();
+    vector<ListElem> choices {ListElem("Choose your role:", ListElem::TITLE)};
+    for (auto role : ENUM_ALL(PlayerRole))
+      choices.emplace_back("Play as " + EnumInfo<PlayerRole>::getString(role));
+    for (auto nonRole : ENUM_ALL(NonRoleChoice))
+      choices.emplace_back(getRoleText(nonRole));
+    if (auto ind = chooseFromListInternal("", choices, 0, MenuType::MAIN, nullptr)) {
+      if (*ind < numRoles)
+        return PlayerRole(*ind);
+      else
+        return NonRoleChoice(*ind - numRoles);
+    } else
+      return NonRoleChoice::GO_BACK;
   }
   RecursiveLock lock(renderMutex);
   uiLock = true;
@@ -979,53 +1025,70 @@ PlayerRoleChoice WindowView::getPlayerRoleChoice(optional<PlayerRoleChoice> inde
         return *choice;
       if (considerResizeEvent(event))
         continue;
-      int numRoles = EnumInfo<PlayerRole>::size;
       if (event.type == SDL::SDL_KEYDOWN)
         switch (event.key.keysym.sym) {
           case SDL::SDLK_KP_4:
           case SDL::SDLK_LEFT:
             if (!index)
-              index = (PlayerRole) 0;
+              index = PlayerRoleChoice((PlayerRole) 0);
             else
-              apply_visitor(*index, makeDefaultVisitor(
-                  [&](PlayerRole& role) { role = PlayerRole(((int) role - 1 + numRoles) % numRoles); },
-                  [&](LoadGameChoice) { index = (PlayerRole) 0; },
-                  [&](GoBackChoice) { index = (PlayerRole) 0; }
-              ));
+              index->match(
+                  [&] (PlayerRole role) {
+                    index = PlayerRoleChoice(PlayerRole(((int) role - 1 + numRoles) % numRoles));
+                  },
+                  [&] (NonRoleChoice) {
+                    index = PlayerRoleChoice(PlayerRole(0));
+                  }
+              );
             break;
           case SDL::SDLK_KP_6:
           case SDL::SDLK_RIGHT: {
             if (!index)
-              index = (PlayerRole) (numRoles - 1);
+              index = PlayerRoleChoice((PlayerRole) (numRoles - 1));
             else
-              apply_visitor(*index, makeDefaultVisitor(
-                  [&](PlayerRole& role) { role = PlayerRole(((int) role - 1 + numRoles) % numRoles); },
-                  [&](LoadGameChoice) { index = (PlayerRole) (numRoles - 1); },
-                  [&](GoBackChoice) { index = (PlayerRole) (numRoles - 1); }
-            ));
+              index->match(
+                  [&] (PlayerRole role) {
+                    index = PlayerRoleChoice(PlayerRole(((int) role + 1) % numRoles));
+                  },
+                  [&] (NonRoleChoice) {
+                    index = PlayerRoleChoice(PlayerRole(numRoles - 1));
+                  }
+              );
             break;
           }
           case SDL::SDLK_KP_8:
           case SDL::SDLK_UP:
             if (!index)
-              index = (PlayerRole) 0;
+              index = PlayerRoleChoice((PlayerRole) 0);
             else
-              apply_visitor(*index, makeDefaultVisitor(
-                  [&](PlayerRole&) { index = GoBackChoice(); },
-                  [&](LoadGameChoice) { index = (PlayerRole) 0; },
-                  [&](GoBackChoice) { index = LoadGameChoice(); }
-              ));
+              index->match(
+                  [&] (PlayerRole) {
+                    index = PlayerRoleChoice(NonRoleChoice(numNonRoles - 1));
+                  },
+                  [&] (NonRoleChoice choice) {
+                    if ((int) choice == 0)
+                      index = PlayerRoleChoice(PlayerRole(0));
+                    else
+                      index = PlayerRoleChoice(NonRoleChoice((int) choice - 1));
+                  }
+              );
             break;
           case SDL::SDLK_KP_2:
           case SDL::SDLK_DOWN:
             if (!index)
-              index = (PlayerRole) 0;
+              index = PlayerRoleChoice((PlayerRole) 0);
             else
-              apply_visitor(*index, makeDefaultVisitor(
-                  [&](PlayerRole& role) { index = LoadGameChoice(); },
-                  [&](LoadGameChoice) { index = GoBackChoice(); },
-                  [&](GoBackChoice) { index = (PlayerRole) 0; }
-              ));
+              index->match(
+                  [&] (PlayerRole role) {
+                    index = PlayerRoleChoice(NonRoleChoice(0));
+                  },
+                  [&] (NonRoleChoice choice) {
+                    if ((int) choice >= numNonRoles - 1)
+                      index = PlayerRoleChoice(PlayerRole(0));
+                    else
+                      index = PlayerRoleChoice(NonRoleChoice((int) choice + 1));
+                  }
+              );
             break;
           case SDL::SDLK_KP_5:
           case SDL::SDLK_KP_ENTER:
@@ -1034,7 +1097,7 @@ PlayerRoleChoice WindowView::getPlayerRoleChoice(optional<PlayerRoleChoice> inde
               return *index;
             break;
           case SDL::SDLK_ESCAPE:
-            return GoBackChoice();
+            return PlayerRoleChoice(NonRoleChoice::GO_BACK);
           default: break;
         }
     }
@@ -1044,8 +1107,9 @@ PlayerRoleChoice WindowView::getPlayerRoleChoice(optional<PlayerRoleChoice> inde
   return returnQueue.pop();
 }
 
-optional<int> WindowView::chooseFromListInternal(const string& title, const vector<ListElem>& options, int index1,
-    MenuType menuType, ScrollPosition* scrollPos1) {
+optional<int> WindowView::chooseFromListInternal(const string& title, const vector<ListElem>& options,
+    optional<int> index1, MenuType menuType, ScrollPosition* scrollPos1) {
+  CHECK(!index1 || *index1 >= 0);
   if (!useTiles && menuType == MenuType::MAIN)
     menuType = MenuType::MAIN_NO_TILES;
   if (options.size() == 0)
@@ -1060,7 +1124,7 @@ optional<int> WindowView::chooseFromListInternal(const string& title, const vect
   int choice = -1;
   int count = 0;
   ScrollPosition* scrollPos = scrollPos1;
-  int index = index1;
+  optional<int> index = index1;
   vector<int> indexes(options.size());
   vector<int> optionIndexes;
   int elemCount = 0;
@@ -1081,14 +1145,14 @@ optional<int> WindowView::chooseFromListInternal(const string& title, const vect
     stuff = gui.topMargin(guiBuilder.getStandardLineHeight() / 2, std::move(stuff));
   auto getScrollPos = [&](int index) {
     if (index >= 0 && index < positions.size())
-      return positions.at(index);
+      return positions[index];
     else
       return 0;
   };
-  ScrollPosition localScrollPos(index >= 0 ? getScrollPos(optionIndexes[index]) : 0);
+  ScrollPosition localScrollPos(index ? getScrollPos(optionIndexes[*index]) : 0);
   if (scrollPos == nullptr)
     scrollPos = &localScrollPos;
-  SGuiElem dismissBut = gui.margins(gui.stack(makeVec<SGuiElem>(
+  SGuiElem dismissBut = gui.margins(gui.stack(makeVec(
         gui.button([&](){ choice = -100; }),
         gui.mouseHighlight2(gui.mainMenuHighlight()),
         gui.centeredLabel(Renderer::HOR, "Dismiss"))), 0, 5, 0, 0);
@@ -1105,33 +1169,35 @@ optional<int> WindowView::chooseFromListInternal(const string& title, const vect
       break;
   }
   optional<optional<int>> callbackRet;
+  auto scrollIndex = [&](int dir) {
+    if (count > 0) {
+      if (index)
+        index = (*index + dir + count) % count;
+      else
+        index = 0;
+      scrollPos->set(getScrollPos(optionIndexes[*index]), clock->getRealMillis());
+    } else
+      scrollPos->add(dir * 100, clock->getRealMillis());
+  };
   stuff = gui.stack(
       std::move(stuff),
       gui.keyHandler([&] (SDL_Keysym key) {
         switch (key.sym) {
           case SDL::SDLK_KP_8:
           case SDL::SDLK_UP:
-            if (count > 0) {
-              index = (index - 1 + count) % count;
-              scrollPos->set(getScrollPos(optionIndexes[index]), clock->getRealMillis());
-            } else
-              scrollPos->add(-100, clock->getRealMillis());
+            scrollIndex(-1);
             break;
           case SDL::SDLK_KP_2:
           case SDL::SDLK_DOWN:
-            if (count > 0) {
-              index = (index + 1 + count) % count;
-              scrollPos->set(getScrollPos(optionIndexes[index]), clock->getRealMillis());
-            } else
-              scrollPos->add(100, clock->getRealMillis());
+            scrollIndex(1);
             break;
           case SDL::SDLK_KP_5:
           case SDL::SDLK_KP_ENTER:
           case SDL::SDLK_RETURN:
-            if (count > 0 && index > -1) {
-              CHECK(index < indexes.size()) <<
-                  index << " " << indexes.size() << " " << count << " " << options.size();
-              callbackRet = indexes[index];
+            if (count > 0 && index) {
+              CHECK(*index < indexes.size()) <<
+                  *index << " " << indexes.size() << " " << count << " " << options.size();
+              callbackRet = optional<int>(indexes[*index]);
               break;
             }
             break;
@@ -1140,7 +1206,7 @@ optional<int> WindowView::chooseFromListInternal(const string& title, const vect
             break;
           default:
             break;
-        }        
+        }
       }, true));
   while (1) {
     refreshScreen(false);
@@ -1179,13 +1245,13 @@ void WindowView::presentList(const string& title, const vector<ListElem>& option
     if (e.getMod() == ListElem::NORMAL)
       e.setMod(ListElem::TEXT);
   ScrollPosition scrollPos(scrollDown ? options.size() - 1 : 0);
-  chooseFromListInternal(title, conv, -1, menu, &scrollPos);
+  chooseFromListInternal(title, conv, none, menu, &scrollPos);
 }
 
 void WindowView::zoom(int dir) {
   refreshInput = true;
   auto& layouts = currentTileLayout.layouts;
-  int index = *findAddress(layouts, mapLayout);
+  int index = *layouts.findAddress(mapLayout);
   if (dir != 0 )
     index += dir;
   else {
@@ -1197,7 +1263,7 @@ void WindowView::zoom(int dir) {
 }
 
 void WindowView::switchTiles() {
-  int index = *findAddress(currentTileLayout.layouts, mapLayout);
+  int index = *currentTileLayout.layouts.findAddress(mapLayout);
   if (options->getBoolValue(OptionId::ASCII) || !useTiles)
     currentTileLayout = asciiLayouts;
   else
@@ -1297,7 +1363,7 @@ void WindowView::processEvents() {
 void WindowView::propagateEvent(const Event& event, vector<SGuiElem> guiElems) {
   CHECK(currentThreadId() == renderThreadId);
   if (gameReady)
-    mapGui->setHint({});
+    guiBuilder.clearHint();
   switch (event.type) {
     case SDL::SDL_MOUSEBUTTONUP:
       // MapGui needs this event otherwise it will sometimes lock the mouse button
@@ -1323,6 +1389,18 @@ UserInputId getDirActionId(const SDL_Keysym& key) {
 void WindowView::keyboardAction(const SDL_Keysym& key) {
   switch (key.sym) {
 #ifndef RELEASE
+    case SDL::SDLK_F10:
+      if (auto input = getText("Enter effect", "", 100, ""))
+        inputQueue.push({UserInputId::APPLY_EFFECT, *input});
+      break;
+    case SDL::SDLK_F11:
+      if (auto input = getText("Enter item type", "", 100, ""))
+        inputQueue.push({UserInputId::CREATE_ITEM, *input});
+      break;
+    case SDL::SDLK_F12:
+      if (auto input = getText("Enter creature id", "", 100, ""))
+        inputQueue.push({UserInputId::SUMMON_ENEMY, *input});
+      break;
     case SDL::SDLK_F9:
       inputQueue.push(UserInputId::CHEAT_ATTRIBUTES);
       break;
@@ -1353,7 +1431,7 @@ void WindowView::keyboardAction(const SDL_Keysym& key) {
       inputQueue.push(UserInput(getDirActionId(key), Vec2(1, -1)));
       mapGui->onMouseGone();
       break;
-    case SDL::SDLK_RIGHT: 
+    case SDL::SDLK_RIGHT:
     case SDL::SDLK_KP_6:
       inputQueue.push(UserInput(getDirActionId(key), Vec2(1, 0)));
       mapGui->onMouseGone();

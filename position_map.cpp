@@ -7,6 +7,7 @@
 #include "view_object.h"
 #include "furniture_type.h"
 #include "furniture_layer.h"
+#include "construction_map.h"
 
 template <class T>
 PositionMap<T>::PositionMap(const T& def) : defaultVal(def) {
@@ -77,9 +78,9 @@ void PositionMap<T>::set(Position pos, const T& elem) {
 }
 
 template <class T>
-void PositionMap<T>::limitToModel(const Model* m) {
+void PositionMap<T>::limitToModel(const WModel m) {
   std::set<LevelId> goodIds;
-  for (Level* l : m->getLevels())
+  for (WLevel l : m->getLevels())
     goodIds.insert(l->getUniqueId());
   for (auto& elem : copyOf(tables))
     if (!goodIds.count(elem.first))
@@ -92,17 +93,20 @@ void PositionMap<T>::limitToModel(const Model* m) {
 template <class T>
 template <class Archive> 
 void PositionMap<T>::serialize(Archive& ar, const unsigned int version) {
-  serializeAll(ar, tables, outliers, defaultVal);
+  ar(tables, outliers, defaultVal);
 }
 
-SERIALIZABLE_TMPL(PositionMap, int);
-SERIALIZABLE_TMPL(PositionMap, bool);
-SERIALIZABLE_TMPL(PositionMap, double);
+SERIALIZABLE_TMPL(PositionMap, int)
+SERIALIZABLE_TMPL(PositionMap, bool)
+SERIALIZABLE_TMPL(PositionMap, double)
 
 class Task;
 
-SERIALIZABLE_TMPL(PositionMap, Task*);
-SERIALIZABLE_TMPL(PositionMap, HighlightType);
-SERIALIZABLE_TMPL(PositionMap, vector<Task*>);
-SERIALIZABLE_TMPL(PositionMap, optional<ViewIndex>);
-SERIALIZABLE_TMPL(PositionMap, EnumMap<FurnitureLayer, optional<FurnitureType>>);
+SERIALIZABLE_TMPL(PositionMap, WTask)
+SERIALIZABLE_TMPL(PositionMap, HighlightType)
+SERIALIZABLE_TMPL(PositionMap, vector<WTask>)
+SERIALIZABLE_TMPL(PositionMap, optional<ViewIndex>)
+SERIALIZABLE_TMPL(PositionMap, optional<vector<Position>>)
+SERIALIZABLE_TMPL(PositionMap, optional<ConstructionMap::FurnitureInfo>);
+SERIALIZABLE_TMPL(PositionMap, optional<ConstructionMap::TrapInfo>);
+SERIALIZABLE_TMPL(PositionMap, EnumMap<FurnitureLayer, optional<FurnitureType>>)

@@ -37,12 +37,14 @@ RICH_ENUM(NameGeneratorId,
   VAMPIRE
 );
 
+class DirectoryPath;
+
 class NameGenerator : public Singleton<NameGenerator, NameGeneratorId> {
   public:
   NameGenerator() = default;
   string getNext();
 
-  static void init(const string&);
+  static void init(const DirectoryPath&);
 
   private:
   NameGenerator(vector<string> names, bool oneName = false);

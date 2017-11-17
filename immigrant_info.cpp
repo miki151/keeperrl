@@ -6,22 +6,23 @@
 #include "collective.h"
 #include "creature.h"
 #include "creature_attributes.h"
+#include "tutorial.h"
 
-SERIALIZE_DEF(ImmigrantInfo, ids, frequency, requirements, traits, spawnLocation, groupSize, autoTeam, initialRecruitment, consumeIds, keybinding, sound, noAuto)
+SERIALIZE_DEF(ImmigrantInfo, ids, frequency, requirements, traits, spawnLocation, groupSize, autoTeam, initialRecruitment, consumeIds, keybinding, sound, noAuto, tutorialHighlight, hiddenInHelp)
 SERIALIZATION_CONSTRUCTOR_IMPL(ImmigrantInfo)
 
 AttractionInfo::AttractionInfo(int cl,  AttractionType a)
   : types({a}), amountClaimed(cl) {}
 
 string AttractionInfo::getAttractionName(const AttractionType& attraction, int count) {
-  return apply_visitor(attraction, makeVisitor<string>(
-      [&](FurnitureType type) {
+  return attraction.match(
+      [&](FurnitureType type)->string {
         return Furniture::getName(type, count);
       },
-      [&](ItemIndex index) {
+      [&](ItemIndex index)->string {
         return getName(index, count);
       }
-  ));
+  );
 }
 
 AttractionInfo::AttractionInfo(int cl, vector<AttractionType> a)
@@ -35,7 +36,7 @@ CreatureId ImmigrantInfo::getId(int numCreated) const {
   if (!consumeIds)
     return Random.choose(ids);
   else
-    return ids.at(numCreated);
+    return ids[numCreated];
 }
 
 bool ImmigrantInfo::isAvailable(int numCreated) const {
@@ -93,6 +94,14 @@ bool ImmigrantInfo::isNoAuto() const {
   return noAuto;
 }
 
+optional<TutorialHighlight> ImmigrantInfo::getTutorialHighlight() const {
+  return tutorialHighlight;
+}
+
+bool ImmigrantInfo::isHiddenInHelp() const {
+  return hiddenInHelp;
+}
+
 ImmigrantInfo& ImmigrantInfo::addRequirement(ImmigrantRequirement t) {
   requirements.push_back({t, 1});
   return *this;
@@ -143,22 +152,43 @@ ImmigrantInfo& ImmigrantInfo::setNoAuto() {
   return *this;
 }
 
-vector<Creature*> RecruitmentInfo::getAllRecruits(Game* game, CreatureId id) const {
-  vector<Creature*> ret;
-  if (Collective* col = findEnemy(game))
-    ret = filter(col->getCreatures(), [&](const Creature* c) { return c->getAttributes().getCreatureId() == id; });
+ImmigrantInfo&ImmigrantInfo::setLimit(int num) {
+  consumeIds = true;
+  ids = vector<CreatureId>(num, ids[0]);
+  return *this;
+}
+
+ImmigrantInfo& ImmigrantInfo::setTutorialHighlight(TutorialHighlight h) {
+  tutorialHighlight = h;
+  return *this;
+}
+
+ImmigrantInfo& ImmigrantInfo::setHiddenInHelp() {
+  hiddenInHelp = true;
+  return *this;
+}
+
+vector<WCreature> RecruitmentInfo::getAllRecruits(WGame game, CreatureId id) const {
+  vector<WCreature> ret;
+  if (WCollective col = findEnemy(game))
+    ret = col->getCreatures().filter([&](WConstCreature c) { return c->getAttributes().getCreatureId() == id; });
   return ret;
 }
 
-vector<Creature*> RecruitmentInfo::getAvailableRecruits(Game* game, CreatureId id) const {
+vector<WCreature> RecruitmentInfo::getAvailableRecruits(WGame game, CreatureId id) const {
   auto ret = getAllRecruits(game, id);
   return getPrefix(ret, max(0, (int)ret.size() - minPopulation));
 }
 
-Collective* RecruitmentInfo::findEnemy(Game* game) const {
-  for (Collective* col : game->getCollectives())
+WCollective RecruitmentInfo::findEnemy(WGame game) const {
+  for (WCollective col : game->getCollectives())
     if (auto id = col->getEnemyId())
       if (enemyId.contains(*id))
         return col;
   return nullptr;
+}
+
+template <typename Archive>
+void TutorialRequirement::serialize(Archive& ar, const unsigned) {
+  ar(tutorial);
 }

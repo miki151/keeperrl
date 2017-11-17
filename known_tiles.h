@@ -22,7 +22,7 @@ class KnownTiles {
   void addTile(Position);
   bool isKnown(Position) const;
   const set<Position>& getBorderTiles() const;
-  void limitToModel(const Model*);
+  void limitToModel(const WModel);
 
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version);

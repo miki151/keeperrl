@@ -15,13 +15,12 @@ class PlayerControl;
 class CreatureView;
 class FileSharing;
 class Technology;
-class EventListener;
 class GameEvent;
 class Campaign;
 class SavedGameInfo;
 struct CampaignSetup;
 
-class Game {
+class Game : public OwnedObject<Game> {
   public:
   static PGame campaignGame(Table<PModel>&&, CampaignSetup&);
   static PGame splashScreen(PModel&&, const CampaignSetup&);
@@ -31,11 +30,11 @@ class Game {
   void initialize(Options*, Highscores*, View*, FileSharing*);
   View* getView() const;
   void exitAction();
-  void transferAction(vector<Creature*>);
+  void transferAction(vector<WCreature>);
   void presentWorldmap();
-  void transferCreature(Creature*, Model* to);
-  bool canTransferCreature(Creature*, Model* to);
-  Position getTransferPos(Model* from, Model* to) const;
+  void transferCreature(WCreature, WModel to);
+  bool canTransferCreature(WCreature, WModel to);
+  Position getTransferPos(WModel from, WModel to) const;
   string getGameIdentifier() const;
   string getGameDisplayName() const;
   MusicType getCurrentMusic() const;
@@ -45,65 +44,65 @@ class Game {
   const Statistics& getStatistics() const;
   Tribe* getTribe(TribeId) const;
   double getGlobalTime() const;
-  Collective* getPlayerCollective() const;
-  void setPlayer(Creature*);
-  Creature* getPlayer() const;
-  void clearPlayer();
+  WCollective getPlayerCollective() const;
+  WPlayerControl getPlayerControl() const;
+  void addPlayer(WCreature);
+  void removePlayer(WCreature);
+  const vector<WCreature>& getPlayerCreatures() const;
 
-  int getModelDistance(const Collective* c1, const Collective* c2) const;
+  int getModelDistance(WConstCollective c1, WConstCollective c2) const;
 
-  const vector<Collective*>& getVillains(VillainType) const;
-  const vector<Collective*>& getCollectives() const;
+  const vector<WCollective>& getVillains(VillainType) const;
+  const vector<WCollective>& getCollectives() const;
 
   const SunlightInfo& getSunlightInfo() const;
   const string& getWorldName() const;
   bool gameWon() const;
 
-  void gameOver(const Creature* player, int numKills, const string& enemiesString, int points);
+  void gameOver(WConstCreature player, int numKills, const string& enemiesString, int points);
   void conquered(const string& title, int numKills, int points);
-  void killedKeeper(const string& title, const string& keeper, const string& land, int numKills, int points);
+  void retired(const string& title, int numKills, int points);
+
   bool isGameOver() const;
   bool isTurnBased();
-  bool isVillainActive(const Collective*);
+  bool isVillainActive(WConstCollective);
   SavedGameInfo getSavedGameInfo() const;
 
   /** Removes creature from the queue. Assumes it has already been removed from its level. */
-  void killCreature(Creature*, Creature* attacker);
+  void killCreature(WCreature, WCreature attacker);
 
-  optional<Position> getOtherPortal(Position) const;
-  void registerPortal(Position);
-  void handleMessageBoard(Position, Creature*);
+  void handleMessageBoard(Position, WCreature);
 
   PModel& getMainModel();
-  vector<Model*> getAllModels() const;
+  vector<WModel> getAllModels() const;
   bool isSingleModel() const;
   int getSaveProgressCount() const;
 
   void prepareSiteRetirement();
   void doneRetirement();
 
-  typedef function<void(EventListener*)> EventFun;
   void addEvent(const GameEvent&);
 
   ~Game();
 
   SERIALIZATION_DECL(Game)
 
-  private:
   Game(Table<PModel>&&, Vec2 basePos, const CampaignSetup&);
+
+  private:
   void updateSunlightInfo();
   void tick(double time);
   PCreature makeAdventurer(int handicap);
-  Model* getCurrentModel() const;
-  Vec2 getModelCoords(const Model*) const;
-  optional<ExitInfo> updateModel(Model*, double totalTime);
+  WModel getCurrentModel() const;
+  Vec2 getModelCoords(const WModel) const;
+  optional<ExitInfo> updateModel(WModel, double totalTime);
   string getPlayerName() const;
   void uploadEvent(const string& name, const map<string, string>&);
 
   SunlightInfo sunlightInfo;
   Table<PModel> SERIAL(models);
   Table<bool> SERIAL(visited);
-  map<Model*, double> SERIAL(localTime);
+  map<LevelId, double> SERIAL(localTime);
   Vec2 SERIAL(baseModel);
   View* view;
   double SERIAL(currentTime) = 0;
@@ -112,21 +111,20 @@ class Game {
   optional<double> SERIAL(lastTick);
   string SERIAL(gameIdentifier);
   string SERIAL(gameDisplayName);
-  map<VillainType, vector<Collective*>> SERIAL(villainsByType);
-  vector<Collective*> SERIAL(collectives);
+  map<VillainType, vector<WCollective>> SERIAL(villainsByType);
+  vector<WCollective> SERIAL(collectives);
   MusicType SERIAL(musicType);
   bool SERIAL(finishCurrentMusic) = true;
   unique_ptr<CreatureView> SERIAL(spectator);
-  vector<Position> SERIAL(portals);
   HeapAllocated<Statistics> SERIAL(statistics);
   Options* options;
   Highscores* highscores;
   optional<milliseconds> lastUpdate;
-  PlayerControl* SERIAL(playerControl) = nullptr;
-  Collective* SERIAL(playerCollective) = nullptr;
+  WeakPointer<PlayerControl> SERIAL(playerControl);
+  WCollective SERIAL(playerCollective);
   HeapAllocated<Campaign> SERIAL(campaign);
   bool wasTransfered = false;
-  Creature* SERIAL(player) = nullptr;
+  vector<WCreature> SERIAL(players);
   FileSharing* fileSharing;
   set<int> SERIAL(turnEvents);
   friend class GameListener;

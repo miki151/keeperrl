@@ -1,14 +1,16 @@
 #pragma once
 
 #include "util.h"
+#include "file_path.h"
 
 class SokobanInput {
   public:
-  SokobanInput(const string& levelsPath, const string& statePath);
+  SokobanInput(const FilePath& levels, const FilePath& state);
 
   Table<char> getNext();
+  static optional<Table<char> > readTable(ifstream&);
 
   private:
-  string levelsPath;
-  string statePath;
+  FilePath levelsPath;
+  FilePath statePath;
 };

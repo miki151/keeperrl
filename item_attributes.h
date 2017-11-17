@@ -20,9 +20,11 @@
 
 #include "util.h"
 #include "enums.h"
-#include "effect_type.h"
-#include "modifier_type.h"
+#include "effect.h"
 #include "attack_type.h"
+#include "attr_type.h"
+#include "ranged_weapon.h"
+#include "item_type.h"
 
 #define ITATTR(X) ItemAttributes([&](ItemAttributes& i) { X })
 
@@ -44,23 +46,23 @@ class ItemAttributes {
   MustInitialize<ItemClass> SERIAL(itemClass);
   optional<string> SERIAL(plural);
   optional<string> SERIAL(blindName);
-  optional<ItemId> SERIAL(firingWeapon);
+  optional<ItemType> SERIAL(firingWeapon);
   optional<string> SERIAL(artifactName);
   optional<TrapType> SERIAL(trapType);
   optional<CollectiveResourceId> SERIAL(resourceId);
   double SERIAL(flamability) = 0;
   int SERIAL(price) = 0;
   bool SERIAL(noArticle) = false;
-  EnumMap<ModifierType, int> SERIAL(modifiers);
-  EnumMap<AttrType, int> SERIAL(attrs);
+  EnumMap<AttrType, int> SERIAL(modifiers);
   bool SERIAL(twoHanded) = false;
   AttackType SERIAL(attackType) = AttackType::HIT;
+  AttrType SERIAL(meleeAttackAttr) = AttrType::DAMAGE;
   double SERIAL(attackTime) = 1;
   optional<EquipmentSlot> SERIAL(equipmentSlot);
   double SERIAL(applyTime) = 1;
   bool SERIAL(fragile) = false;
-  optional<EffectType> SERIAL(effect);
-  optional<EffectType> SERIAL(attackEffect);
+  optional<Effect> SERIAL(effect);
+  optional<Effect> SERIAL(attackEffect);
   int SERIAL(uses) = -1;
   bool SERIAL(usedUpMsg) = false;
   bool SERIAL(displayUses) = false;
@@ -68,5 +70,6 @@ class ItemAttributes {
   optional<string> SERIAL(applyMsgFirstPerson);
   optional<string> SERIAL(applyMsgThirdPerson);
   optional<SoundId> SERIAL(applySound);
+  optional<RangedWeapon> SERIAL(rangedWeapon);
 };
 

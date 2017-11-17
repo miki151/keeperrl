@@ -4,21 +4,21 @@
 #include "task.h"
 #include "creature_name.h"
 
-SERIALIZE_DEF(TaskMap, tasks, positionMap, reversePositions, creatureMap, marked, completionCost, priorityTasks, delayedTasks, highlight, requiredTraits);
+SERIALIZE_DEF(TaskMap, tasks, positionMap, reversePositions, taskByCreature, creatureByTask, marked, completionCost, priorityTasks, delayedTasks, highlight, taskById);
 
 SERIALIZATION_CONSTRUCTOR_IMPL(TaskMap);
 
-Task* TaskMap::getClosestTask(Creature* c, MinionTrait trait) {
+WTask TaskMap::getClosestTask(WCreature c) {
   if (Random.roll(20))
-    for (Task* t : extractRefs(tasks))
+    for (WTask t : getWeakPointers(tasks))
       if (t->isDone())
         removeTask(t);
-  Task* closest = nullptr;
+  WTask closest = nullptr;
   for (PTask& task : tasks)
-    if (requiredTraits.count(task.get()) && requiredTraits.at(task.get()) == trait && task->canPerform(c))
+    if (task->canPerform(c))
       if (auto pos = getPosition(task.get())) {
         double dist = pos->dist8(c->getPosition());
-        const Creature* owner = getOwner(task.get());
+        WConstCreature owner = getOwner(task.get());
         auto delayed = delayedTasks.getMaybe(task.get());
         if (!task->isDone() &&
             (!owner || (task->canTransfer() && pos->dist8(owner->getPosition()) > dist && dist <= 6)) &&
@@ -33,46 +33,49 @@ Task* TaskMap::getClosestTask(Creature* c, MinionTrait trait) {
   return closest;
 }
 
-vector<const Task*> TaskMap::getAllTasks() const {
-  return transform2(tasks, [] (const PTask& t) -> const Task* { return t.get(); });
+vector<WConstTask> TaskMap::getAllTasks() const {
+  return tasks.transform([] (const PTask& t) -> WConstTask { return t.get(); });
 }
 
 void TaskMap::setPriorityTasks(Position pos) {
-  for (Task* t : getTasks(pos))
+  for (WTask t : getTasks(pos))
     priorityTasks.insert(t);
   pos.setNeedsRenderUpdate(true);
 }
 
-Task* TaskMap::addTaskCost(PTask task, Position position, CostInfo cost) {
-  completionCost[task.get()] = cost;
-  return addTask(std::move(task), position, MinionTrait::WORKER);
+WTask TaskMap::addTaskCost(PTask task, Position position, CostInfo cost) {
+  completionCost.set(task.get(), cost);
+  return addTask(std::move(task), position);
 }
 
-CostInfo TaskMap::removeTask(Task* task) {
+CostInfo TaskMap::removeTask(WTask task) {
   if (!task->isDone())
     task->cancel();
   CostInfo cost;
-  if (completionCost.count(task)) {
-    cost = completionCost.at(task);
+  if (auto c = completionCost.getMaybe(task)) {
+    cost = *c;
     completionCost.erase(task);
   }
   if (auto pos = getPosition(task)) {
     marked.set(*pos, nullptr);
     pos->setNeedsRenderUpdate(true);
   }
-  for (int i : All(tasks))
-    if (tasks[i].get() == task) {
-      removeIndex(tasks, i);
-      break;
-    }
-  if (creatureMap.contains(task))
-    creatureMap.erase(task);
-  if (positionMap.count(task)) {
-    removeElement(reversePositions.getOrFail(positionMap.at(task)), task);
+  if (auto c = creatureByTask.getMaybe(task)) {
+    CHECK(taskByCreature.getMaybe(*c));
+     taskByCreature.erase(*c);
+    creatureByTask.erase(task);
+  }
+  CHECK(taskByCreature.getSize() == creatureByTask.getSize());
+  if (auto pos = positionMap.getMaybe(task)) {
+    reversePositions.getOrFail(*pos).removeElement(task);
     positionMap.erase(task);
   }
-  if (requiredTraits.count(task))
-    requiredTraits.erase(task);
+  for (int i : All(tasks))
+    if (tasks[i].get() == task) {
+      taskById.erase(task);
+      tasks.removeIndex(i);
+      break;
+    }
   return cost;
 }
 
@@ -84,18 +87,18 @@ CostInfo TaskMap::removeTask(UniqueEntity<Task>::Id id) {
   return CostInfo();
 }
 
-bool TaskMap::isPriorityTask(const Task* t) const {
+bool TaskMap::isPriorityTask(WConstTask t) const {
   return priorityTasks.contains(t);
 }
 
 bool TaskMap::hasPriorityTasks(Position pos) const {
-  for (Task* task : reversePositions.get(pos))
+  for (WTask task : reversePositions.get(pos))
     if (isPriorityTask(task))
       return true;
   return false;
 }
 
-Task* TaskMap::getMarked(Position pos) const {
+WTask TaskMap::getMarked(Position pos) const {
   return marked.get(pos);
 }
 
@@ -110,75 +113,86 @@ HighlightType TaskMap::getHighlightType(Position pos) const {
   return highlight.get(pos);
 }
 
-bool TaskMap::hasTask(const Creature* c) const {
-  if (creatureMap.contains(c))
-    return !creatureMap.get(c)->isDone();
+bool TaskMap::hasTask(WConstCreature c) const {
+  if (auto task = taskByCreature.getMaybe(c))
+    return !(*task)->isDone();
   else
     return false;
 }
 
-Task* TaskMap::getTask(const Creature* c) {
-  if (creatureMap.contains(c)) {
-    Task* task = creatureMap.get(c);
-    if (task->isDone())
-      removeTask(task);
-    else
-      return task;
+WTask TaskMap::getTask(WConstCreature c) {
+  if (auto task = taskByCreature.getMaybe(c)) {
+    if ((*task)->isDone()) {
+      removeTask(*task);
+      CHECK(!taskByCreature.getMaybe(c));
+    } else
+      return *task;
   }
   return nullptr;
 }
 
-const vector<Task*>& TaskMap::getTasks(Position pos) const {
+const vector<WTask>& TaskMap::getTasks(Position pos) const {
   return reversePositions.get(pos);
 }
 
-Task* TaskMap::addTaskFor(PTask task, const Creature* c) {
+WTask TaskMap::addTaskFor(PTask task, WCreature c) {
   CHECK(!hasTask(c)) << c->getName().bare() << " already has a task";
-  creatureMap.insert(c, task.get());
+  CHECK(!taskByCreature.getMaybe(c));
+  CHECK(!creatureByTask.getMaybe(task.get()));
+  taskByCreature.set(c, task.get());
+  creatureByTask.set(task.get(), c);
+  CHECK(taskByCreature.getSize() == creatureByTask.getSize());
   if (auto pos = task->getPosition())
     setPosition(task.get(), *pos);
+  taskById.set(task->getUniqueId(), task.get());
   tasks.push_back(std::move(task));
   return tasks.back().get();
 }
 
-Task* TaskMap::addTask(PTask task, Position position, MinionTrait required) {
+WTask TaskMap::addTask(PTask task, Position position) {
   setPosition(task.get(), position);
-  requiredTraits[task.get()] = required;
+  taskById.set(task->getUniqueId(), task.get());
   tasks.push_back(std::move(task));
   return tasks.back().get();
 }
 
-void TaskMap::takeTask(const Creature* c, Task* task) {
+void TaskMap::takeTask(WCreature c, WTask task) {
   freeTask(task);
-  creatureMap.insert(c, task);
+  CHECK(taskByCreature.getSize() == creatureByTask.getSize());
+  CHECK(!taskByCreature.getMaybe(c));
+  CHECK(!creatureByTask.getMaybe(task));
+  taskByCreature.set(c, task);
+  creatureByTask.set(task, c);
+  CHECK(taskByCreature.getSize() == creatureByTask.getSize());
 }
 
-optional<Position> TaskMap::getPosition(Task* task) const {
-  if (positionMap.count(task))
-    return positionMap.at(task);
-  else
-    return none;
+optional<Position> TaskMap::getPosition(WTask task) const {
+  return positionMap.getMaybe(task);
 }
 
-const Creature* TaskMap::getOwner(const Task* task) const {
-  if (creatureMap.contains(const_cast<Task*>(task)))
-    return creatureMap.get(const_cast<Task*>(task));
+WCreature TaskMap::getOwner(WConstTask task) const {
+  if (auto c = creatureByTask.getMaybe(task))
+    return *c;
   else
     return nullptr;
 }
 
-void TaskMap::freeTask(Task* task) {
-  if (creatureMap.contains(task))
-    creatureMap.erase(task);
+void TaskMap::freeTask(WTask task) {
+  if (auto c = creatureByTask.getMaybe(task)) {
+    CHECK(taskByCreature.getMaybe(*c));
+    taskByCreature.erase(*c);
+    creatureByTask.erase(task);
+    CHECK(taskByCreature.getSize() == creatureByTask.getSize());
+  }
 }
 
-void TaskMap::setPosition(Task* task, Position position) {
-  positionMap[task] = position;
+void TaskMap::setPosition(WTask task, Position position) {
+  positionMap.set(task, position);
   reversePositions.getOrInit(position).push_back(task);
 }
 
-CostInfo TaskMap::freeFromTask(const Creature* c) {
-  if (Task* task = getTask(c)) {
+CostInfo TaskMap::freeFromTask(WConstCreature c) {
+  if (WTask task = getTask(c)) {
     if (!task->canTransfer())
       return removeTask(task);
     else {
@@ -189,7 +203,11 @@ CostInfo TaskMap::freeFromTask(const Creature* c) {
   return CostInfo::noCost();
 }
 
-const map<Task*, CostInfo>& TaskMap::getCompletionCosts() const {
+const EntityMap<Task, CostInfo>& TaskMap::getCompletionCosts() const {
   return completionCost;
+}
+
+WTask TaskMap::getTask(UniqueEntity<Task>::Id id) const {
+  return taskById.getOrFail(id);
 }
 

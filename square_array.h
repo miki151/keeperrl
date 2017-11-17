@@ -2,18 +2,18 @@
 
 #include "util.h"
 #include "square_array.h"
-#include "square_factory.h"
 #include "square.h"
-#include "square_type.h"
 #include "read_write_array.h"
 
+using SquareParam = int;
+
 struct GenerateSquare {
-  PSquare operator()(SquareType t) {
-    return SquareFactory::get(t);
+  PSquare operator()(SquareParam) {
+    return makeOwner<Square>();
   }
 };
 
-class SquareArray : public ReadWriteArray<Square, SquareType, GenerateSquare> {
+class SquareArray : public ReadWriteArray<Square, SquareParam, GenerateSquare> {
   public:
   using ReadWriteArray::ReadWriteArray;
 };

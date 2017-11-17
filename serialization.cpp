@@ -17,12 +17,10 @@
 
 #include "serialization.h"
 #include "creature_factory.h"
-#include "square_factory.h"
 #include "monster_ai.h"
 #include "effect.h"
 #include "skill.h"
 #include "tribe.h"
-#include "trigger.h"
 #include "player.h"
 #include "monster.h"
 #include "ranged_weapon.h"
@@ -36,30 +34,11 @@
 #include "map_memory.h"
 #include "visibility_map.h"
 #include "view_index.h"
-#include "event_proxy.h"
+#include "village_behaviour.h"
 
-template <class Archive>
-void Serialization::registerTypes(Archive& ar, int version) {
-  CreatureFactory::registerTypes(ar, version);
-  ItemFactory::registerTypes(ar, version);
-  SquareFactory::registerTypes(ar, version);
-  MonsterAI::registerTypes(ar, version);
-  REGISTER_TYPE(ar, Player);
-  REGISTER_TYPE(ar, Monster);
-  REGISTER_TYPE(ar, RangedWeapon);
-  REGISTER_TYPE(ar, PlayerControl);
-  REGISTER_TYPE(ar, VillageControl);
-  REGISTER_TYPE(ar, DoNothingController);
-  REGISTER_TYPE(ar, EventProxy<Collective>);
-  REGISTER_TYPE(ar, EventProxy<PlayerControl>);
-  REGISTER_TYPE(ar, EventProxy<Player>);
-  REGISTER_TYPE(ar, EventProxy<VillageControl>);
-  Trigger::registerTypes(ar, version);
-  Task::registerTypes(ar, version);
-  PlayerControl::registerTypes(ar, version);
-  CollectiveControl::registerTypes(ar, version);
-  Collective::registerTypes(ar, version);
-}
-
-REGISTER_TYPES(Serialization::registerTypes);
+REGISTER_TYPE(Player)
+REGISTER_TYPE(Monster)
+REGISTER_TYPE(PlayerControl)
+REGISTER_TYPE(VillageControl)
+REGISTER_TYPE(DoNothingController)
 

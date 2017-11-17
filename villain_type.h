@@ -1,3 +1,9 @@
 #pragma once
 
-enum class VillainType { MAIN, LESSER, ALLY, PLAYER };
+RICH_ENUM(VillainType,
+  MAIN,
+  LESSER,
+  ALLY,
+  PLAYER,
+  NONE
+);

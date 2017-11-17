@@ -21,9 +21,9 @@
 RICH_ENUM(TechId,
   ALCHEMY,
   ALCHEMY_ADV,
+  ALCHEMY_CONV,
   HUMANOID_MUT,
   BEAST_MUT,
-  CRAFTING,
   PIGSTY,
   IRON_WORKING,
   STEEL_MAKING,
@@ -34,6 +34,7 @@ RICH_ENUM(TechId,
   SPELLS,
   SPELLS_ADV,
   SPELLS_MAS,
+  MAGICAL_WEAPONS,
   GEOLOGY1,
   GEOLOGY2,
   GEOLOGY3,
@@ -42,25 +43,31 @@ RICH_ENUM(TechId,
 
 class Spell;
 class Collective;
+class CostInfo;
 
 class Technology : public Singleton<Technology, TechId> {
   public:
   Technology(const string& name, const string& description, int cost, const vector<TechId>& prerequisites = {},
       bool canResearch = true);
   const string& getName() const;
-  int getCost() const;
+  CostInfo getCost() const;
   bool canResearch() const;
+  Technology* setTutorialHighlight(TutorialHighlight);
   const string& getDescription() const;
-  static vector<Technology*> getSorted();
+  const optional<TutorialHighlight> getTutorialHighlight() const;
   const vector<Technology*> getPrerequisites() const;
   const vector<Technology*> getAllowed() const;
+
+  static CostInfo getAvailableResource(WConstCollective);
+
+  static vector<Technology*> getSorted();
   static vector<Technology*> getNextTechs(const vector<Technology*>& current);
   static vector<Spell*> getSpellLearning(TechId tech);
-  static vector<Spell*> getAvailableSpells(const Collective*);
+  static vector<Spell*> getAvailableSpells(WConstCollective);
   static vector<Spell*> getAllKeeperSpells();
   static TechId getNeededTech(Spell*);
 
-  static void onAcquired(TechId, Collective*);
+  static void onAcquired(TechId, WCollective);
 
   static void init();
 
@@ -71,5 +78,6 @@ class Technology : public Singleton<Technology, TechId> {
   int cost;
   vector<Technology*> prerequisites;
   bool research;
+  optional<TutorialHighlight> tutorial;
 };
 

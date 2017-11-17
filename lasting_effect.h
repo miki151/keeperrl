@@ -8,8 +8,9 @@ RICH_ENUM(LastingEffect,
     RAGE,
     SLOWED,
     SPEED,
-    STR_BONUS,
-    DEX_BONUS,
+    DAM_BONUS,
+    DEF_BONUS,
+    BLEEDING,
     HALLU,
     BLIND,
     INVISIBLE,
@@ -20,10 +21,25 @@ RICH_ENUM(LastingEffect,
     POISON_RESISTANT,
     FIRE_RESISTANT,
     FLYING,
+    COLLAPSED,
     INSANITY,
-    MAGIC_SHIELD,
     DARKNESS_SOURCE,
-    PREGNANT
+    PREGNANT,
+    SLEEP_RESISTANT,
+    MAGIC_RESISTANCE,
+    MELEE_RESISTANCE,
+    RANGED_RESISTANCE,
+    MAGIC_VULNERABILITY,
+    MELEE_VULNERABILITY,
+    RANGED_VULNERABILITY,
+    ELF_VISION,
+    NIGHT_VISION,
+    REGENERATION,
+    WARNING,
+    TELEPATHY,
+    SUNLIGHT_VULNERABLE,
+    SATIATED,
+    RESTED
 );
 
 RICH_ENUM(CreatureCondition,
@@ -33,16 +49,23 @@ RICH_ENUM(CreatureCondition,
 
 class LastingEffects {
   public:
-  static void onAffected(Creature*, LastingEffect, bool msg);
-  static bool affects(const Creature*, LastingEffect);
-  static void onRemoved(Creature*, LastingEffect, bool msg);
-  static void onTimedOut(Creature*, LastingEffect, bool msg);
-  static void modifyAttr(const Creature*, AttrType, int&);
-  static void modifyMod(const Creature*, ModifierType, int&);
-  static void onCreatureDamage(Creature*, LastingEffect);
+  static void onAffected(WCreature, LastingEffect, bool msg);
+  static bool affects(WConstCreature, LastingEffect);
+  static optional<LastingEffect> getSuppressor(LastingEffect);
+  static void onRemoved(WCreature, LastingEffect, bool msg);
+  static void onTimedOut(WCreature, LastingEffect, bool msg);
+  static void modifyAttr(WConstCreature, AttrType, double&);
+  static void afterCreatureDamage(WCreature, LastingEffect);
+  static bool tick(WCreature, LastingEffect);
   static const char* getGoodAdjective(LastingEffect);
   static const char* getBadAdjective(LastingEffect);
   static const vector<LastingEffect>& getCausingCondition(CreatureCondition);
+  static double modifyCreatureDefense(LastingEffect, double damage, AttrType damageAttr);
+  static const char* getName(LastingEffect);
+  static const char* getDescription(LastingEffect);
+  static bool canSee(WConstCreature, WConstCreature);
+  static int getPrice(LastingEffect);
+  static double getMoraleIncrease(WConstCreature);
 };
 
 

@@ -3,13 +3,15 @@
 #include "util.h"
 #include "enum_variant.h"
 #include "creature_factory.h"
-#include "attack_behaviour.h"
+#include "attack_trigger.h"
 
-class AttackTrigger;
+class AttackBehaviour;
 
 class VillageBehaviour {
   public:
   VillageBehaviour();
+  VillageBehaviour(const VillageBehaviour&);
+  VillageBehaviour& operator = (const VillageBehaviour&);
 
   typedef AttackTrigger Trigger;
   enum WelcomeMessage {
@@ -30,7 +32,7 @@ class VillageBehaviour {
   PTask getAttackTask(VillageControl* self);
   double getAttackProbability(const VillageControl* self) const;
   double getTriggerValue(const Trigger&, const VillageControl* self) const;
-  bool contains(const Creature*);
+  bool contains(WConstCreature);
 
   ~VillageBehaviour();
 

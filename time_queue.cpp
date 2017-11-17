@@ -21,7 +21,7 @@
 
 template <class Archive> 
 void TimeQueue::serialize(Archive& ar, const unsigned int version) { 
-  serializeAll(ar, creatures, timeMap, queue);
+  ar(creatures, timeMap, queue);
 }
 
 SERIALIZABLE(TimeQueue);
@@ -32,11 +32,11 @@ void TimeQueue::addCreature(PCreature c, double time) {
   creatures.push_back(std::move(c));
 }
 
-double TimeQueue::getTime(const Creature* c) {
+double TimeQueue::getTime(WConstCreature c) {
   return timeMap.getOrFail(c);
 }
 
-void TimeQueue::increaseTime(Creature* c, double diff) {
+void TimeQueue::increaseTime(WCreature c, double diff) {
   CHECK(queue.count(c));
   queue.erase(c);
   timeMap.getOrFail(c) += diff;
@@ -45,27 +45,27 @@ void TimeQueue::increaseTime(Creature* c, double diff) {
 
 // Queue is initialized in a lazy manner because during deserialization the comparator doesn't 
 // work, as the Creatures are still being deserialized.
-TimeQueue::TimeQueue() : queue([this](const Creature* c1, const Creature* c2) {
+TimeQueue::TimeQueue() : queue([this](WConstCreature c1, WConstCreature c2) {
         return make_tuple(timeMap.getOrFail(c1), c1->getUniqueId()) <
             make_tuple(timeMap.getOrFail(c2), c2->getUniqueId()); }) {}
   
-PCreature TimeQueue::removeCreature(Creature* cRef) {
+PCreature TimeQueue::removeCreature(WCreature cRef) {
   for (int i : All(creatures))
     if (creatures[i].get() == cRef) {
       queue.erase(cRef);
       PCreature ret = std::move(creatures[i]);
-      creatures.erase(creatures.begin() + i);
+      creatures.removeIndexPreserveOrder(i);
       return ret;
     }
   FATAL << "Creature not found";
   return nullptr;
 }
 
-vector<Creature*> TimeQueue::getAllCreatures() const {
-  return extractRefs(creatures);
+vector<WCreature> TimeQueue::getAllCreatures() const {
+  return getWeakPointers(creatures);
 }
 
-Creature* TimeQueue::getNextCreature() {
+WCreature TimeQueue::getNextCreature() {
   if (creatures.empty())
     return nullptr;
   else

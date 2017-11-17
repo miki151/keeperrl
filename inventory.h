@@ -29,18 +29,17 @@ class Inventory {
   public:
   void addItem(PItem);
   void addItems(vector<PItem>);
-  static function<bool(const Item*)> getIndexPredicate(ItemIndex);
-  PItem removeItem(Item* item);
-  vector<PItem> removeItems(vector<Item*> items);
+  PItem removeItem(WItem item);
+  vector<PItem> removeItems(vector<WItem> items);
   vector<PItem> removeAllItems();
   void clearIndex(ItemIndex);
 
-  const vector<Item*>& getItems() const;
-  vector<Item*> getItems(function<bool (Item*)> predicate) const;
-  const vector<Item*>& getItems(ItemIndex) const;
+  const vector<WItem>& getItems() const;
+  vector<WItem> getItems(function<bool (WConstItem)> predicate) const;
+  const vector<WItem>& getItems(ItemIndex) const;
 
-  bool hasItem(const Item*) const;
-  Item* getItemById(UniqueEntity<Item>::Id) const;
+  bool hasItem(WConstItem) const;
+  WItem getItemById(UniqueEntity<Item>::Id) const;
   int size() const;
   double getTotalWeight() const;
 
@@ -53,7 +52,7 @@ class Inventory {
 
   private:
 
-  typedef IndexedVector<Item*, UniqueEntity<Item>::Id> ItemVector;
+  typedef IndexedVector<WItem, UniqueEntity<Item>::Id> ItemVector;
   typedef IndexedVector<PItem, UniqueEntity<Item>::Id> PItemVector;
 
   PItemVector SERIAL(items);
@@ -61,5 +60,3 @@ class Inventory {
   double SERIAL(weight) = 0;
   mutable EnumMap<ItemIndex, optional<ItemVector>> indexes;
 };
-
-BOOST_CLASS_VERSION(Inventory, 1)

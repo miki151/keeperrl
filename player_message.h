@@ -4,7 +4,6 @@
 #include "unique_entity.h"
 #include "position.h"
 
-class Location;
 class View;
 
 enum class MessagePriority { NORMAL, HIGH, CRITICAL };
@@ -24,9 +23,6 @@ class PlayerMessage : public UniqueEntity<PlayerMessage> {
   PlayerMessage& setCreature(UniqueEntity<Creature>::Id);
   optional<UniqueEntity<Creature>::Id> getCreature() const;
 
-  PlayerMessage& setLocation(const Location*);
-  const Location* getLocation() const;
-
   bool isClickable() const;
 
   string getText() const;
@@ -36,7 +32,6 @@ class PlayerMessage : public UniqueEntity<PlayerMessage> {
 
   int getHash() const;
 
-  
   SERIALIZATION_DECL(PlayerMessage);
 
   private:
@@ -47,6 +42,5 @@ class PlayerMessage : public UniqueEntity<PlayerMessage> {
   optional<string> SERIAL(announcementTitle);
   optional<Position> SERIAL(position);
   optional<UniqueEntity<Creature>::Id> SERIAL(creature);
-  const Location* SERIAL(location) = nullptr;
 };
 

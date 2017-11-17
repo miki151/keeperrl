@@ -7,9 +7,10 @@ struct WorkshopItem {
   static WorkshopItem fromType(ItemType, double workNeeded, CostInfo);
   WorkshopItem& setBatchSize(int);
   WorkshopItem& setTechId(TechId);
-  bool operator == (const WorkshopItem&) const;
+  WorkshopItem& setTutorialHighlight(TutorialHighlight);
   ItemType SERIAL(type);
   string SERIAL(name);
+  string SERIAL(pluralName);
   ViewId SERIAL(viewId);
   CostInfo SERIAL(cost);
   string SERIAL(description);
@@ -18,7 +19,9 @@ struct WorkshopItem {
   double SERIAL(workNeeded);
   optional<double> SERIAL(state);
   optional<TechId> SERIAL(techId);
-  SERIALIZE_ALL(type, name, viewId, cost, number, batchSize, workNeeded, state, techId, description);
+  optional<TutorialHighlight> SERIAL(tutorialHighlight);
+  int SERIAL(indexInWorkshop);
+  SERIALIZE_ALL(type, name, pluralName, viewId, cost, number, batchSize, workNeeded, state, techId, description, tutorialHighlight, indexInWorkshop)
 };
 
 

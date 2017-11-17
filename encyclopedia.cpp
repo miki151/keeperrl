@@ -23,8 +23,20 @@
 #include "creature.h"
 #include "spell.h"
 #include "skill.h"
+#include "build_info.h"
 
-void bestiary(View* view, int lastInd) {
+namespace {
+
+template<class T>
+string combine(const vector<T*>& v) {
+  return combine(
+      v.transform([](const T* e) -> string { return e->getName(); }));
+}
+
+template<class T>
+string combine(const vector<T>& v) {
+  return combine(
+      v.transform([](const T& e) -> string { return e.name; }));
 }
 
 void advance(View* view, const Technology* tech) {
@@ -35,13 +47,10 @@ void advance(View* view, const Technology* tech) {
     text += "Requires: " + combine(prerequisites) + "\n";
   if (!allowed.empty())
     text += "Allows research: " + combine(allowed) + "\n";
-  vector<Spell*> spells = Technology::getSpellLearning(tech->getId());
-  if (!spells.empty())
-    text += "Teaches spells: " + combine(spells) + "\n";
-  const vector<PlayerControl::RoomInfo>& rooms = filter(PlayerControl::getRoomInfo(), 
-      [tech] (const PlayerControl::RoomInfo& info) {
+  const vector<BuildInfo::RoomInfo>& rooms = BuildInfo::getRoomInfo().filter(
+      [tech] (const BuildInfo::RoomInfo& info) {
           for (auto& req : info.requirements)
-            if (req.getId() == PlayerControl::RequirementId::TECHNOLOGY && req.get<TechId>() == tech->getId())
+            if (req.getId() == BuildInfo::RequirementId::TECHNOLOGY && req.get<TechId>() == tech->getId())
               return true;
           return false;});
   if (!rooms.empty())
@@ -79,36 +88,32 @@ void skills(View* view, int lastInd = 0) {
   skills(view, *index);
 }
 
-void room(View* view, PlayerControl::RoomInfo& info) {
-  string text = info.description;
-  for (auto& req : info.requirements)
-    text += "\n \nRequires: " + PlayerControl::getRequirementText(req) + ".";
-  view->presentText(info.name, text);
-}
-
-void rooms(View* view, int lastInd = 0) {
+void spells(View* view) {
   vector<ListElem> options;
-  vector<PlayerControl::RoomInfo> roomList = PlayerControl::getRoomInfo();
-  for (auto& elem : roomList)
-    options.push_back(elem.name);
-  auto index = view->chooseFromList("Rooms", options, lastInd);
-  if (!index)
-    return;
-  room(view, roomList[*index]);
-  rooms(view, *index);
+  options.emplace_back("Spell:", "Level:", ListElem::ElemMod::TITLE);
+  vector<Spell*> spells = Spell::getAll();
+  sort(spells.begin(), spells.end(), [](const Spell* s1, const Spell* s2) {
+      auto l1 = s1->getLearningExpLevel();
+      auto l2 = s2->getLearningExpLevel();
+      return (l1 && !l2) || (l2 && l1 && *l1 < *l2); });
+  for (auto spell : spells) {
+    auto level = spell->getLearningExpLevel();
+    options.emplace_back(spell->getName(), level ? toString(*level) : "none"_s, ListElem::ElemMod::TEXT);
+  }
+  view->presentList("List of spells and the spellcaster levels at which they are acquired.", options);
 }
 
-void tribes(View* view, int lastInd = 0) {
 }
 
 void Encyclopedia::present(View* view, int lastInd) {
-  auto index = view->chooseFromList("Choose topic:", {"Advances", "Skills"}, lastInd);
+  auto index = view->chooseFromList("Choose topic:", {"Technology", "Skills", "Spells"}, lastInd);
   if (!index)
     return;
   switch (*index) {
     case 0: advances(view); break;
 //    case 1: workshop(view); break;
     case 1: skills(view); break;
+    case 2: spells(view); break;
     default: FATAL << "wfepok";
   }
   present(view, *index);

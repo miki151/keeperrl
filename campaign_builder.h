@@ -26,7 +26,7 @@ class CampaignBuilder {
   vector<Campaign::VillainInfo> getLesserVillains();
   vector<Campaign::VillainInfo> getAllies();
   const char* getIntroText() const;
-  void setPlayerPos(Campaign&, Vec2, const Creature* player);
+  void setPlayerPos(Campaign&, Vec2, WConstCreature player);
   PCreature getPlayerCreature();
   vector<CampaignType> getAvailableTypes() const;
   VillainPlacement getVillainPlacement(const Campaign&, VillainType);
@@ -42,4 +42,6 @@ struct CampaignSetup {
   PCreature player;
   string gameIdentifier;
   string gameDisplayName;
+  bool regenerateMana;
+  vector<string> introMessages;
 };

@@ -17,6 +17,7 @@
 
 #include "name_generator.h"
 #include "util.h"
+#include "file_path.h"
 
 string getSyllable() {
   string vowels = "aeyuio";
@@ -38,9 +39,9 @@ string getWord() {
   return ret;
 }
 
-vector<string> readLines(const string& path) {
+vector<string> readLines(const FilePath& path) {
   vector<string> input;
-  ifstream in(path);
+  ifstream in(path.getPath());
   CHECK(in.is_open()) << "Unable to open " << path;
   char buf[100];
   while (in.getline(buf, 100))
@@ -48,7 +49,7 @@ vector<string> readLines(const string& path) {
   return input;
 }
 
-void NameGenerator::init(const string& namesPath) {
+void NameGenerator::init(const DirectoryPath& namesPath) {
   clearAll();
   vector<string> input;
   for (int i : Range(1000)) {
@@ -60,21 +61,21 @@ void NameGenerator::init(const string& namesPath) {
     input.push_back(ret);
   }
   set(NameGeneratorId::SCROLL, new NameGenerator(input));
-  set(NameGeneratorId::FIRST_MALE, new NameGenerator(readLines(namesPath + "/first_male.txt")));
-  set(NameGeneratorId::FIRST_FEMALE, new NameGenerator(readLines(namesPath + "/first_female.txt")));
-  set(NameGeneratorId::AZTEC, new NameGenerator(readLines(namesPath + "/aztec_names.txt")));
-  set(NameGeneratorId::CREATURE, new NameGenerator(readLines(namesPath + "/creatures.txt")));
-  set(NameGeneratorId::WEAPON, new NameGenerator(readLines(namesPath + "/artifacts.txt")));
-  set(NameGeneratorId::WORLD, new NameGenerator(readLines(namesPath + "/world.txt")));
-  set(NameGeneratorId::TOWN, new NameGenerator(readLines(namesPath + "/town_names.txt")));
-  set(NameGeneratorId::DEITY, new NameGenerator(readLines(namesPath + "/gods.txt")));
-  set(NameGeneratorId::DWARF, new NameGenerator(readLines(namesPath + "/dwarfs.txt")));
-  set(NameGeneratorId::DEMON, new NameGenerator(readLines(namesPath + "/demons.txt")));
-  set(NameGeneratorId::DOG, new NameGenerator(readLines(namesPath + "/dogs.txt")));
-  set(NameGeneratorId::DRAGON, new NameGenerator(readLines(namesPath + "/dragons.txt")));
-  set(NameGeneratorId::CYCLOPS, new NameGenerator(readLines(namesPath + "/cyclops.txt")));
-  set(NameGeneratorId::ORC, new NameGenerator(readLines(namesPath + "/orc.txt")));
-  set(NameGeneratorId::VAMPIRE, new NameGenerator(readLines(namesPath + "/vampires.txt")));
+  set(NameGeneratorId::FIRST_MALE, new NameGenerator(readLines(namesPath.file("first_male.txt"))));
+  set(NameGeneratorId::FIRST_FEMALE, new NameGenerator(readLines(namesPath.file("first_female.txt"))));
+  set(NameGeneratorId::AZTEC, new NameGenerator(readLines(namesPath.file("aztec_names.txt"))));
+  set(NameGeneratorId::CREATURE, new NameGenerator(readLines(namesPath.file("creatures.txt"))));
+  set(NameGeneratorId::WEAPON, new NameGenerator(readLines(namesPath.file("artifacts.txt"))));
+  set(NameGeneratorId::WORLD, new NameGenerator(readLines(namesPath.file("world.txt"))));
+  set(NameGeneratorId::TOWN, new NameGenerator(readLines(namesPath.file("town_names.txt"))));
+  set(NameGeneratorId::DEITY, new NameGenerator(readLines(namesPath.file("gods.txt"))));
+  set(NameGeneratorId::DWARF, new NameGenerator(readLines(namesPath.file("dwarfs.txt"))));
+  set(NameGeneratorId::DEMON, new NameGenerator(readLines(namesPath.file("demons.txt"))));
+  set(NameGeneratorId::DOG, new NameGenerator(readLines(namesPath.file("dogs.txt"))));
+  set(NameGeneratorId::DRAGON, new NameGenerator(readLines(namesPath.file("dragons.txt"))));
+  set(NameGeneratorId::CYCLOPS, new NameGenerator(readLines(namesPath.file("cyclops.txt"))));
+  set(NameGeneratorId::ORC, new NameGenerator(readLines(namesPath.file("orc.txt"))));
+  set(NameGeneratorId::VAMPIRE, new NameGenerator(readLines(namesPath.file("vampires.txt"))));
 }
 
 

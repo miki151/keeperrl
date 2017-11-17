@@ -19,12 +19,7 @@ ViewObject& Renderable::modViewObject() {
   return *viewObject.get();
 }
 
-template <class Archive>
-void Renderable::serialize(Archive& ar, const unsigned int version) {
-  ar & SVAR(viewObject);
-}
-
-SERIALIZABLE(Renderable);
+SERIALIZE_DEF(Renderable, viewObject)
 
 void Renderable::setViewObject(const ViewObject& obj) {
   viewObject = HeapAllocated<ViewObject>(obj);

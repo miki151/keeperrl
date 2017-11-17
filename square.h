@@ -17,47 +17,24 @@
 
 #include "util.h"
 #include "debug.h"
-#include "renderable.h"
 #include "stair_key.h"
-#include "position.h"
 #include "tribe.h"
 
-class Level;
 class Creature;
 class Item;
-class CreatureView;
-class Attack;
 class ProgressMeter;
-class SquareType;
-class ViewIndex;
-class Fire;
 class PoisonGas;
 class Inventory;
-class MovementType;
-class MovementSet;
-class ViewObject;
+class Position;
+class ViewIndex;
+class Attack;
 
-class Square : public Renderable {
+class Square : public OwnedObject<Square> {
   public:
-  struct Params {
-    string name;
-    optional<VisionId> vision;
-    HeapAllocated<MovementSet> movementSet;
-    bool canDestroy;
-    optional<SoundId> applySound;
-    optional<double> applyTime;
-    optional<SquareInteraction> interaction;
-  };
-  Square(const ViewObject&, Params);
+  Square();
 
   /** For displaying progress while loading/saving the game.*/
   static ProgressMeter* progressMeter;
-
-  /** Returns the square name. */
-  string getName() const;
-
-  /** Sets the square name.*/
-  void setName(Position, const string&);
 
   /** Links this square as point of entry from another level.
     * \param direction direction where the creature is coming from
@@ -66,16 +43,6 @@ class Square : public Renderable {
 
   /** Returns the entry point details. Returns none if square is not entry point. See setLandingLink().*/
   optional<StairKey> getLandingLink() const;
-
-  /** Checks if this square obstructs view.*/
-  bool canSeeThru(VisionId) const;
-  bool canSeeThru() const;
-
-  /** Sets if this square obstructs view.*/
-  void setVision(Position, VisionId);
-
-  /** Returns the strength, i.e. resistance to demolition.*/
-  int getStrength() const;
 
   /** Adds some poison gas to the square.*/
   void addPoisonGas(Position, double amount);
@@ -87,33 +54,24 @@ class Square : public Renderable {
   void onAddedToLevel(Position) const;
 
   /** Puts a creature on the square.*/
-  void putCreature(Creature*);
+  void putCreature(WCreature);
 
   /** Puts a creature on the square without triggering any mechanisms that happen when a creature enters.*/ 
-  void setCreature(Creature*);
+  void setCreature(WCreature);
 
   /** Removes the creature from the square.*/
   void removeCreature(Position);
 
   /** Returns the creature from the square.*/
-  Creature* getCreature() const;
+  WCreature getCreature() const;
 
-  /** Adds a trigger to the square.*/
-  void addTrigger(Position, PTrigger);
-
-  /** Returns all triggers.*/
-  vector<Trigger*> getTriggers() const;
-
-  /** Removes the trigger from the square.*/
-  PTrigger removeTrigger(Position, Trigger*);
-
-  /** Removes all triggers from the square.*/
-  vector<PTrigger> removeTriggers(Position);
+  bool isOnFire() const;
+  void setOnFire(bool);
 
   //@{
   /** Drops item or items on the square. The square assumes ownership.*/
   void dropItem(Position, PItem);
-  virtual void dropItems(Position, vector<PItem>);
+  void dropItems(Position, vector<PItem>);
   void dropItemsLevelGen(vector<PItem>);
   //@}
 
@@ -121,54 +79,42 @@ class Square : public Renderable {
       For this method to be called, the square coordinates must be added with Level::addTickingSquare().*/
   void tick(Position);
 
-  optional<ViewObject> extractBackground() const;
-  void getViewIndex(ViewIndex&, const Creature* viewer) const;
+  void getViewIndex(ViewIndex&, WConstCreature viewer) const;
 
-  bool itemLands(vector<Item*> item, const Attack& attack) const;
+  bool itemLands(vector<WItem> item, const Attack& attack) const;
   void onItemLands(Position, vector<PItem>, const Attack&, int remainingDist, Vec2 dir, VisionId);
-  const vector<Item*>& getItems() const;
-  vector<Item*> getItems(function<bool (Item*)> predicate) const;
-  const vector<Item*>& getItems(ItemIndex) const;
-  PItem removeItem(Position, Item*);
-  vector<PItem> removeItems(Position, vector<Item*>);
+  PItem removeItem(Position, WItem);
+  vector<PItem> removeItems(Position, vector<WItem>);
 
   void forbidMovementForTribe(Position, TribeId);
   void allowMovementForTribe(Position, TribeId);
   bool isTribeForbidden(TribeId) const;
   optional<TribeId> getForbiddenTribe() const;
  
-  virtual ~Square();
+  ~Square();
 
   bool needsMemoryUpdate() const;
   void setMemoryUpdated();
 
   void clearItemIndex(ItemIndex);
   void setDirty(Position);
-  MovementSet& getMovementSet();
-  const MovementSet& getMovementSet() const;
 
   Inventory& getInventory();
   const Inventory& getInventory() const;
 
-  SERIALIZATION_DECL(Square);
+  void onEnter(WCreature);
 
-  protected:
-  void onEnter(Creature*);
-  virtual void onEnterSpecial(Creature*) {}
-  virtual void onApply(Creature*) { FATAL << "Bad square applied"; }
-  virtual void onApply(Position) { FATAL << "Bad square applied"; }
-  string SERIAL(name);
+  template <class Archive>
+  void serialize(Archive&, const unsigned int);
 
   private:
-  Item* getTopItem() const;
+  WItem getTopItem() const;
   HeapAllocated<Inventory> SERIAL(inventory);
-  Creature* SERIAL(creature) = nullptr;
-  vector<PTrigger> SERIAL(triggers);
-  optional<VisionId> SERIAL(vision);
+  WCreature SERIAL(creature) = nullptr;
   optional<StairKey> SERIAL(landingLink);
   HeapAllocated<PoisonGas> SERIAL(poisonGas);
-  HeapAllocated<MovementSet> SERIAL(movementSet);
   mutable optional<UniqueEntity<Creature>::Id> SERIAL(lastViewer);
   unique_ptr<ViewIndex> SERIAL(viewIndex);
   optional<TribeId> SERIAL(forbiddenTribe);
+  bool SERIAL(onFire) = false;
 };

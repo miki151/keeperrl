@@ -16,12 +16,7 @@
 #include "stdafx.h"
 #include "statistics.h"
 
-template <class Archive>
-void Statistics::serialize(Archive& ar, const unsigned int version) {
-  ar & SVAR(count);
-}
-
-SERIALIZABLE(Statistics);
+SERIALIZE_DEF(Statistics, count)
 
 void Statistics::add(StatId id) {
   ++count[id];

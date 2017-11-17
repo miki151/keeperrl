@@ -63,9 +63,9 @@ class WindowView: public View {
       MenuType = MenuType::NORMAL, ScrollPosition* scrollPos = nullptr,
       optional<UserInputId> exitAction = none) override;
   virtual PlayerRoleChoice getPlayerRoleChoice(optional<PlayerRoleChoice> initial) override;
-  virtual optional<Vec2> chooseDirection(const string& message) override;
+  virtual optional<Vec2> chooseDirection(Vec2 playerPos, const string& message) override;
   virtual bool yesOrNoPrompt(const string& message, bool defaultNo) override;
-  virtual void animateObject(vector<Vec2> trajectory, ViewObject object) override;
+  virtual void animateObject(Vec2 begin, Vec2 end, ViewId object) override;
   virtual void animation(Vec2 pos, AnimationId) override;
   virtual double getGameSpeed() override;
 
@@ -91,9 +91,10 @@ class WindowView: public View {
   virtual optional<Vec2> chooseSite(const string& message, const Campaign&, optional<Vec2> current) override;
   virtual void presentWorldmap(const Campaign&) override;
   virtual CampaignAction prepareCampaign(CampaignOptions, Options*, CampaignMenuState&) override;
-  virtual optional<UniqueEntity<Creature>::Id> chooseTeamLeader(const string& title, const vector<CreatureInfo>&,
+  virtual optional<UniqueEntity<Creature>::Id> chooseCreature(const string& title, const vector<CreatureInfo>&,
       const string& cancelText) override;
-  virtual bool creaturePrompt(const string& title, const vector<CreatureInfo>&) override;
+  //virtual vector<UniqueEntity<Creature>::Id> chooseTeamLeader(const string& title, const vector<CreatureInfo>&) override;
+  virtual bool creatureInfo(const string& title, bool prompt, const vector<CreatureInfo>&) override;
   virtual void logMessage(const string&) override;
 
   private:
@@ -109,8 +110,8 @@ class WindowView: public View {
   void mapCreatureDragFun(UniqueEntity<Creature>::Id, ViewId, Vec2 origin);
   void mapRightClickFun(Vec2);
   Rectangle getTextInputPosition();
-  optional<int> chooseFromListInternal(const string& title, const vector<ListElem>& options, int index, MenuType,
-      ScrollPosition* scrollPos);
+  optional<int> chooseFromListInternal(const string& title, const vector<ListElem>& options, optional<int> index,
+      MenuType, ScrollPosition*);
   void refreshViewInt(const CreatureView*, bool flipBuffer = true);
   SGuiElem drawGameChoices(optional<PlayerRoleChoice>& choice, optional<PlayerRoleChoice>& index);
   SGuiElem getTextContent(const string& title, const string& value, const string& hint);
@@ -215,7 +216,7 @@ class WindowView: public View {
     TempClockPause pause(clock);
     if (blockingElems.empty()) {
       blockingElems.push_back(gui.darken());
-      blockingElems.back()->setBounds(renderer.getSize());
+      blockingElems.back()->setBounds(Rectangle(renderer.getSize()));
     }
     if (!origin)
       origin = (renderer.getSize() - Vec2(*elem->getPreferredWidth(), *elem->getPreferredHeight())) / 2;
@@ -241,8 +242,6 @@ class WindowView: public View {
   Clock* clock;
   GuiBuilder guiBuilder;
   void drawMenuBackground(double barState, double mouthState);
-  atomic<int> fullScreenTrigger;
-  atomic<int> fullScreenResolution;
   atomic<int> zoomUI;
   void playSounds(const CreatureView*);
   vector<Sound> soundQueue;
@@ -250,4 +249,6 @@ class WindowView: public View {
   SoundLibrary* soundLibrary;
   deque<string> messageLog;
   void propagateMousePosition(const vector<SGuiElem>&);
+  Rectangle getEquipmentMenuPosition(int height);
+  Vec2 getOverlayPosition(GuiBuilder::OverlayInfo::Alignment, int height, int width, int rightBarWidth, int bottomBarHeight);
 };

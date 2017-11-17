@@ -15,7 +15,9 @@ RICH_ENUM(ItemIndex,
   MINION_EQUIPMENT,
   RANGED_WEAPON,
   CAN_EQUIP,
-  FOR_SALE
+  FOR_SALE,
+  HEALING_ITEM
 );
 
 extern const char* getName(ItemIndex, int count = 1);
+extern function<bool(WConstItem)> getIndexPredicate(ItemIndex);

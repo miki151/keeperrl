@@ -17,30 +17,20 @@
 
 #include "enums.h"
 #include "util.h"
-#include "effect_type.h"
+#include "effect.h"
 
 class Creature;
 
 class Attack {
   public:
-  Attack(Creature* attacker, AttackLevel level, AttackType type, int toHit, int strength,
-      bool back, optional<EffectType> effect = none);
+  Attack(WCreature a, AttackLevel l, AttackType t, int s, AttrType d, optional<Effect> e = none)
+      : attacker(a), level(l), type(t), strength(s), damageType(d), effect(e) {}
 
-  Creature* getAttacker() const;
-  int getStrength() const;
-  int getAccuracy() const;
-  AttackType getType() const;
-  AttackLevel getLevel() const;
-  bool inTheBack() const;
-  optional<EffectType> getEffect() const;
-
-  private:
-  Creature* attacker;
+  WCreature attacker;
   AttackLevel level;
   AttackType type;
-  int accuracy;
   int strength;
-  bool back;
-  optional<EffectType> effect;
+  AttrType damageType;
+  optional<Effect> effect;
 };
 

@@ -16,6 +16,7 @@
 #pragma once
 
 #include "enums.h"
+#include "serialization.h"
 
 template<typename T>
 class UniqueEntity {

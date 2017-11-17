@@ -18,28 +18,28 @@
 #include "field_of_view.h"
 #include "square.h"
 #include "square_array.h"
-#include "square_type.h"
 #include "level.h"
+#include "position.h"
 
 template <class Archive> 
 void FieldOfView::serialize(Archive& ar, const unsigned int) {
   if (Archive::is_saving::value) // don't save the visibility values, as they can be easily recomputed
     visibility = Table<unique_ptr<Visibility>>(visibility.getBounds());
-  serializeAll(ar, level, visibility, vision);
+  ar(level, visibility, vision);
 }
 
-SERIALIZABLE(FieldOfView);
+SERIALIZABLE(FieldOfView)
 
 template <class Archive> 
 void FieldOfView::Visibility::serialize(Archive& ar, const unsigned int) {
-  serializeAll(ar, visible, visibleTiles, px, py);
+  ar(visible, visibleTiles, px, py);
 }
 
-SERIALIZABLE(FieldOfView::Visibility);
-SERIALIZATION_CONSTRUCTOR_IMPL(FieldOfView);
-SERIALIZATION_CONSTRUCTOR_IMPL2(FieldOfView::Visibility, Visibility);
+SERIALIZABLE(FieldOfView::Visibility)
+SERIALIZATION_CONSTRUCTOR_IMPL(FieldOfView)
+SERIALIZATION_CONSTRUCTOR_IMPL2(FieldOfView::Visibility, Visibility)
 
-FieldOfView::FieldOfView(Level* l, VisionId v)
+FieldOfView::FieldOfView(WLevel l, VisionId v)
   : level(l), visibility(l->getBounds()), vision(v) {
 }
 
@@ -62,7 +62,7 @@ void FieldOfView::squareChanged(Vec2 pos) {
     }
 }
 
-void FieldOfView::Visibility::setVisible(const Level* level, int x, int y) {
+void FieldOfView::Visibility::setVisible(WConstLevel level, int x, int y) {
   if (level->inBounds(Vec2(px + x, py + y)) &&
       !visible[x + sightRange][y + sightRange] && x * x + y * y <= sightRange * sightRange) {
     visible[x + sightRange][y + sightRange] = 1;
@@ -73,7 +73,7 @@ void FieldOfView::Visibility::setVisible(const Level* level, int x, int y) {
 static int totalIter = 0;
 static int numSamples = 0;
 
-FieldOfView::Visibility::Visibility(Level* level, VisionId vision, int x, int y) : px(x), py(y) {
+FieldOfView::Visibility::Visibility(WLevel level, VisionId vision, int x, int y) : px(x), py(y) {
   memset(visible, 0, (2 * sightRange + 1) * (2 * sightRange + 1));
   calculate(2 * sightRange, 2 * sightRange,2 * sightRange, 2,-1,1,1,1,
       [&](int px, int py) { return !Position(Vec2(x + px, y + py), level).canSeeThru(vision); },

@@ -1,5 +1,6 @@
+#ifdef PARSE_GAME
 #include "stdafx.h"
-
+#include "text_serialization.h"
 #include "gzstream.h"
 
 #include "debug.h"
@@ -8,14 +9,9 @@
 #include "highscores.h"
 #include "campaign_type.h"
 #include "player_role.h"
+#define ProgramOptions_no_colors
+#include "extern/ProgramOptions.h"
 
-#include <boost/program_options.hpp>
-
-
-using namespace boost::program_options;
-using namespace boost::archive;
-
-#ifdef PARSE_GAME
 
 const char delim = ',';
 
@@ -33,42 +29,42 @@ static string getString(Highscores::Score score) {
 }
 
 int main(int argc, char* argv[]) {
-  options_description flags("Flags");
-  flags.add_options()
-    ("help", "Print help")
-    ("input", value<string>(), "Path a KeeperRL save file")
-    ("display_name", "Print display name of the save file")
-    ("serial_info", "Print serialized game info of the save file")
-    ("info", "Print game info of the save file")
-    ("highscores", "Print out highscores from file")
-    ("version", "Print version the save file");
-  variables_map vars;
-  store(parse_command_line(argc, argv, flags), vars);
-  if (vars.count("help") || !vars.count("input")) {
+  po::parser flags;
+  flags["help"].description("Print help");
+  flags["input"].type(po::string).description("Path a KeeperRL save file");
+  flags["display_name"].description("Print display name of the save file");
+  flags["serial_info"].description("Print serialized game info of the save file");
+  flags["info"].description("Print game info of the save file");
+  flags["highscores"].description("Print out highscores from file");
+  flags["version"].description("Print version the save file");
+  if (!flags.parseArgs(argc, argv))
+    return -1;
+  if (flags["help"].was_set() || !flags["input"].was_set()) {
     std::cout << flags << endl;
     return 0;
   }
-  string path = vars["input"].as<string>();
-  if (vars.count("highscores")) {
+  FilePath inputPath = FilePath::fromFullPath(flags["input"].get().string);
+  if (flags["highscores"].was_set()) {
     vector<Highscores::Score> scores;
-    CompressedInput in(path.c_str());
-    in.getArchive() >> BOOST_SERIALIZATION_NVP(scores);
+    std::cerr << "Loading highscores from " << inputPath << std::endl;
+    CompressedInput in(inputPath.getPath());
+    in.getArchive() >> scores;
     for (auto& score : scores)
       std::cout << getString(score) << std::endl;
-  } else{
-    auto info = getNameAndVersion(path);
-    if (vars.count("display_name"))
+  } else {
+    auto info = getNameAndVersion(inputPath);
+    if (flags["display_name"].was_set())
       std::cout << info->first << endl;
-    if (vars.count("version"))
+    if (flags["version"].was_set())
       std::cout << info->second << endl;
-    if (vars.count("serial_info")) {
-      auto savedInfo = getSavedGameInfo(path);
+    if (flags["serial_info"].was_set()) {
+      auto savedInfo = getSavedGameInfo(inputPath);
       TextOutput output;
       output.getArchive() << *savedInfo;
       std::cout << output.getStream().str() << endl;
     }
-    if (vars.count("info")) {
-      auto savedInfo = getSavedGameInfo(path);
+    if (flags["info"].was_set()) {
+      auto savedInfo = getSavedGameInfo(inputPath);
       std::cout << savedInfo->getName() << endl;
       for (auto& minion : savedInfo->getMinions())
         std::cout << EnumInfo<ViewId>::getString(minion.viewId) << " level " << minion.level << endl;

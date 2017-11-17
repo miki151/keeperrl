@@ -26,47 +26,38 @@ class Level;
 class Attack;
 class Fire;
 class ItemAttributes;
-class EffectType;
+class Effect;
 struct CorpseInfo;
+class RangedWeapon;
 
-RICH_ENUM(TrapType,
-  BOULDER,
-  POISON_GAS,
-  ALARM,
-  WEB,
-  SURPRISE,
-  TERROR
-);
-
-class Item : public Renderable, public UniqueEntity<Item>, public std::enable_shared_from_this<Item> {
+class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<Item> {
   public:
   Item(const ItemAttributes&);
   virtual ~Item();
 
-  static string getTrapName(TrapType);
-
-  void apply(Creature*, bool noSound = false);
+  void apply(WCreature, bool noSound = false);
 
   bool isDiscarded();
 
-  string getName(bool plural = false, const Creature* owner = nullptr) const;
-  string getTheName(bool plural = false, const Creature* owner = nullptr) const;
-  string getAName(bool plural = false, const Creature* owner = nullptr) const;
-  string getNameAndModifiers(bool plural = false, const Creature* owner = nullptr) const;
-  string getArtifactName() const;
-  string getShortName(const Creature* owner = nullptr, bool noSuffix = false) const;
+  string getName(bool plural = false, WConstCreature owner = nullptr) const;
+  string getTheName(bool plural = false, WConstCreature owner = nullptr) const;
+  string getAName(bool plural = false, WConstCreature owner = nullptr) const;
+  string getNameAndModifiers(bool plural = false, WConstCreature owner = nullptr) const;
+  const optional<string>& getArtifactName() const;
+  void setArtifactName(const string&);
+  string getShortName(WConstCreature owner = nullptr, bool noSuffix = false) const;
   string getPluralName(int count) const;
   string getPluralTheName(int count) const;
   string getPluralTheNameAndVerb(int count, const string& verbSingle, const string& verbPlural) const;
 
-  const optional<EffectType>& getEffectType() const;
-  optional<EffectType> getAttackEffect() const;
+  const optional<Effect>& getEffect() const;
+  optional<Effect> getAttackEffect() const;
   ItemClass getClass() const;
   
   int getPrice() const;
-  void setShopkeeper(const Creature* shopkeeper);
-  Creature* getShopkeeper(const Creature* owner) const;
-  bool isShopkeeper(const Creature*) const;
+  void setShopkeeper(WConstCreature shopkeeper);
+  WCreature getShopkeeper(WConstCreature owner) const;
+  bool isShopkeeper(WConstCreature) const;
   // This function returns true after shopkeeper was killed. TODO: refactor shops.
   bool isOrWasForSale() const;
 
@@ -75,25 +66,25 @@ class Item : public Renderable, public UniqueEntity<Item>, public std::enable_sh
 
   bool canEquip() const;
   EquipmentSlot getEquipmentSlot() const;
-  void addModifier(ModifierType, int value);
-  int getModifier(ModifierType) const;
-  int getAttr(AttrType) const;
-
+  void addModifier(AttrType, int value);
+  int getModifier(AttrType) const;
+  const optional<RangedWeapon>& getRangedWeapon() const;
+  AttrType getMeleeAttackAttr() const;
   void tick(Position);
   
-  string getApplyMsgThirdPerson(const Creature* owner) const;
-  string getApplyMsgFirstPerson(const Creature* owner) const;
+  string getApplyMsgThirdPerson(WConstCreature owner) const;
+  string getApplyMsgFirstPerson(WConstCreature owner) const;
   string getNoSeeApplyMsg() const;
 
-  void onEquip(Creature*);
-  void onUnequip(Creature*);
-  virtual void onEquipSpecial(Creature*) {}
-  virtual void onUnequipSpecial(Creature*) {}
+  void onEquip(WCreature);
+  void onUnequip(WCreature);
+  virtual void onEquipSpecial(WCreature) {}
+  virtual void onUnequipSpecial(WCreature) {}
   virtual void fireDamage(double amount, Position);
   double getFireSize() const;
 
   void onHitSquareMessage(Position, int numItems);
-  void onHitCreature(Creature* c, const Attack& attack, int numItems);
+  void onHitCreature(WCreature c, const Attack& attack, int numItems);
 
   double getApplyTime() const;
   double getWeight() const;
@@ -103,15 +94,15 @@ class Item : public Renderable, public UniqueEntity<Item>, public std::enable_sh
   bool isWieldedTwoHanded() const;
   int getMinStrength() const;
 
-  static ItemPredicate effectPredicate(EffectType);
+  static ItemPredicate effectPredicate(Effect);
   static ItemPredicate classPredicate(ItemClass);
   static ItemPredicate equipmentSlotPredicate(EquipmentSlot);
   static ItemPredicate classPredicate(vector<ItemClass>);
   static ItemPredicate namePredicate(const string& name);
   static ItemPredicate isRangedWeaponPredicate();
 
-  static vector<pair<string, vector<Item*>>> stackItems(vector<Item*>,
-      function<string(const Item*)> addSuffix = [](const Item*) { return ""; });
+  static vector<vector<WItem>> stackItems(vector<WItem>,
+      function<string(WConstItem)> addSuffix = [](WConstItem) { return ""; });
 
   virtual optional<CorpseInfo> getCorpseInfo() const;
 
@@ -121,7 +112,7 @@ class Item : public Renderable, public UniqueEntity<Item>, public std::enable_sh
   virtual void specialTick(Position) {}
   void setName(const string& name);
   bool SERIAL(discarded) = false;
-  virtual void applySpecial(Creature*);
+  virtual void applySpecial(WCreature);
 
   private:
   string getModifiers(bool shorten = false) const;

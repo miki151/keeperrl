@@ -1,6 +1,7 @@
 #pragma once
 
 #include "sdl.h"
+#include "util.h"
 
 class RandomGen;
 

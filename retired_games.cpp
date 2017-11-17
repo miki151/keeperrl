@@ -49,13 +49,6 @@ void RetiredGames::sort() {
   std::sort(games.begin() + numLocal, games.end(), compare);
 }
 
-static optional<int> containsFilename(const vector<SaveFileInfo>& files, const string& filename) {
-  for (int i : All(files))
-    if (files[i].filename == filename)
-      return i;
-  return none;
-}
-
 int RetiredGames::getNumLocal() const {
   return numLocal;
 }

@@ -9,6 +9,8 @@
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Campaign);
 
+SERIALIZE_DEF(Campaign, sites, playerPos, worldName, defeated, influencePos, influenceSize, playerRole, type)
+
 const Table<Campaign::SiteInfo>& Campaign::getSites() const {
   return sites;
 }
@@ -66,27 +68,27 @@ string Campaign::VillainInfo::getDescription() const {
     case VillainType::MAIN: return "main villain";
     case VillainType::LESSER: return "lesser villain";
     case VillainType::PLAYER: return "player";
+    case VillainType::NONE:
+      FATAL << "Tried to present villain of type NONE in campaign";
+      return "player";
   }
 }
 
 optional<Campaign::VillainInfo> Campaign::SiteInfo::getVillain() const {
   if (dweller)
-    if (const VillainInfo* info = boost::get<VillainInfo>(&(*dweller)))
-      return *info;
+    return dweller->getValueMaybe<VillainInfo>();
   return none;
 }
 
 optional<Campaign::KeeperInfo> Campaign::SiteInfo::getKeeper() const {
   if (dweller)
-    if (const KeeperInfo* info = boost::get<KeeperInfo>(&(*dweller)))
-      return *info;
+    return dweller->getValueMaybe<KeeperInfo>();
   return none;
 }
 
 optional<Campaign::RetiredInfo> Campaign::SiteInfo::getRetired() const {
   if (dweller)
-    if (const RetiredInfo* info = boost::get<RetiredInfo>(&(*dweller)))
-      return *info;
+    return dweller->getValueMaybe<RetiredInfo>();
   return none;
 }
  
@@ -96,30 +98,30 @@ bool Campaign::SiteInfo::isEmpty() const {
 
 optional<string> Campaign::SiteInfo::getDwellerDescription() const {
   if (dweller)
-    return apply_visitor(*dweller, makeVisitor<string>(
+    return dweller->match(
         [](const VillainInfo& info) { return info.name + " (" + info.getDescription() + ")"; },
         [](const RetiredInfo& info) { return info.gameInfo.getName() + " (main villain)" ;},
-        [](const KeeperInfo&) { return "This is your home site"; }));
+        [](const KeeperInfo&)->string { return "This is your home site"; });
   else
     return none;
 }
 
 optional<VillainType> Campaign::SiteInfo::getVillainType() const {
   if (dweller)
-    return apply_visitor(*dweller, makeVisitor<VillainType>(
+    return dweller->match(
         [](const VillainInfo& info) { return info.type; },
         [](const RetiredInfo&) { return VillainType::MAIN; },
-        [](const KeeperInfo&) { return VillainType::PLAYER; }));
+        [](const KeeperInfo&) { return VillainType::PLAYER; });
   else
     return none;
 }
 
 optional<ViewId> Campaign::SiteInfo::getDwellerViewId() const {
   if (dweller)
-    return apply_visitor(*dweller, makeVisitor<ViewId>(
+    return dweller->match(
         [](const VillainInfo& info) { return info.viewId; },
         [](const RetiredInfo& info) { return info.gameInfo.getViewId(); },
-        [](const KeeperInfo& info) { return info.viewId; }));
+        [](const KeeperInfo& info) { return info.viewId; });
   else
     return none;
 }
@@ -176,7 +178,7 @@ map<string, string> Campaign::getParameters() const {
         case VillainType::ALLY: ++numAlly; break;
         case VillainType::MAIN: ++numMain; break;
         case VillainType::LESSER: ++numLesser; break;
-        case VillainType::PLAYER: break;
+        default: break;
       }
   return {
     {"main", toString(numMain)},

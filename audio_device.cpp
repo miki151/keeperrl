@@ -6,6 +6,7 @@
 #include <vorbis/vorbisfile.h>
 
 #include "audio_device.h"
+#include "file_path.h"
 
 AudioDevice::AudioDevice() {
 }
@@ -87,14 +88,14 @@ static vector<char> readSoundData(OggVorbis_File& file, optional<int> length = n
     int result = ov_read(&file, tmp, lengthNow, 0, 2, 1, &bit_stream);
     if (result <= 0)
       break;
-    ret.insert(end(ret), tmp, tmp + result);
+    ret.append(tmp, tmp + result);
   }
   return ret;
 }
 
-SoundBuffer::SoundBuffer(const char* path) {
+SoundBuffer::SoundBuffer(const FilePath& path) {
   OggVorbis_File file;
-  CHECK(ov_fopen(path, &file) == 0) << "Error opening audio file: " << path;
+  CHECK(ov_fopen(path.getPath(), &file) == 0) << "Error opening audio file: " << path;
   vorbis_info* info = ov_info(&file, -1);
   ov_raw_seek(&file, 0);
   vector<char> buffer = readSoundData(file);
@@ -154,8 +155,8 @@ void SoundSource::destroy() {
 
 const int streamingBufferSize = 1 * 2 * 2 * 44100;
 
-SoundStream::SoundStream(const char* path, double volume) : startedPlaying(false),
-      streamer([path, this]{init(path);}, [volume, this]{loop(volume);}) {
+SoundStream::SoundStream(const FilePath& path, double volume) : startedPlaying(false),
+      streamer([path, this]{ init(path);}, [volume, this]{loop(volume);}) {
 }
 
 bool SoundStream::isPlaying() const {
@@ -176,8 +177,8 @@ double SoundStream::getVolume() const {
   return ret;
 }
 
-void SoundStream::init(const char* path) {
-  CHECK(ov_fopen(path, file.get()) == 0) << "Error opening audio file: " << path;
+void SoundStream::init(const FilePath& path) {
+  CHECK(ov_fopen(path.getPath(), file.get()) == 0) << "Error opening audio file: " << path;
   info = ov_info(file.get(), -1);
   AL(alGenBuffers(2, buffers));
 }

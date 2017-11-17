@@ -2,12 +2,12 @@
 
 #include "cost_info.h"
 #include "util.h"
-#include "square_type.h"
 #include "unique_entity.h"
 #include "position.h"
 #include "furniture_type.h"
 #include "furniture_layer.h"
 #include "resource_id.h"
+#include "position_map.h"
 
 class ConstructionMap {
   public:
@@ -53,27 +53,7 @@ class ConstructionMap {
     bool SERIAL(marked) = false;
   };
 
-  class TorchInfo {
-    public:
-    TorchInfo(Dir);
-    Dir getAttachmentDir() const;
-    UniqueEntity<Task>::Id getTask() const;
-    bool hasTask() const;
-    bool isBuilt() const;
-    Trigger* getTrigger();
-    void setTask(UniqueEntity<Task>::Id);
-    void setBuilt(Trigger*);
-
-    SERIALIZATION_DECL(TorchInfo);
-    
-    private:
-    bool SERIAL(built) = false;
-    optional<UniqueEntity<Task>::Id> SERIAL(task);
-    Dir SERIAL(attachmentDir);
-    Trigger* SERIAL(trigger) = nullptr;
-  };
-
-  const FurnitureInfo& getFurniture(Position, FurnitureLayer) const;
+  const optional<FurnitureInfo>& getFurniture(Position, FurnitureLayer) const;
   void setTask(Position, FurnitureLayer, UniqueEntity<Task>::Id);
   void removeFurniture(Position, FurnitureLayer);
   void onFurnitureDestroyed(Position, FurnitureLayer);
@@ -84,36 +64,26 @@ class ConstructionMap {
   const set<Position>& getBuiltPositions(FurnitureType) const;
   void onConstructed(Position, FurnitureType);
 
-  const TrapInfo& getTrap(Position) const;
-  TrapInfo& getTrap(Position);
+  const optional<TrapInfo>& getTrap(Position) const;
+  optional<TrapInfo>& getTrap(Position);
   void removeTrap(Position);
   void addTrap(Position, const TrapInfo&);
-  bool containsTrap(Position) const;
 
-  const TorchInfo& getTorch(Position) const;
-  TorchInfo& getTorch(Position);
-  void removeTorch(Position);
-  void addTorch(Position, const TorchInfo&);
-  bool containsTorch(Position) const;
   const vector<Position>& getSquares() const;
   const vector<pair<Position, FurnitureLayer>>& getAllFurniture() const;
-  const map<Position, TrapInfo>& getTraps() const;
-  const map<Position, TorchInfo>& getTorches() const;
+  const vector<Position>& getAllTraps() const;
   int getDebt(CollectiveResourceId) const;
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);
 
   private:
-  FurnitureInfo& modFurniture(Position, FurnitureLayer);
-  EnumMap<FurnitureLayer, map<Position, FurnitureInfo>> SERIAL(furniture);
+  EnumMap<FurnitureLayer, PositionMap<optional<FurnitureInfo>>> SERIAL(furniture);
   EnumMap<FurnitureType, set<Position>> SERIAL(furniturePositions);
   EnumMap<FurnitureType, int> SERIAL(unbuiltCounts);
   vector<pair<Position, FurnitureLayer>> SERIAL(allFurniture);
-  map<Position, TrapInfo> SERIAL(traps);
-  map<Position, TorchInfo> SERIAL(torches);
+  PositionMap<optional<TrapInfo>> SERIAL(traps);
+  vector<Position> SERIAL(allTraps);
   EnumMap<CollectiveResourceId, int> SERIAL(debt);
   void addDebt(const CostInfo&);
 };
-
-BOOST_CLASS_VERSION(ConstructionMap, 1)

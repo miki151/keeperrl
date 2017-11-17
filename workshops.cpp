@@ -3,9 +3,10 @@
 #include "collective.h"
 #include "item_factory.h"
 #include "item.h"
+#include "workshop_item.h"
 
 Workshops::Workshops(const EnumMap<WorkshopType, vector<Item>>& options)
-    : types([&options, this] (WorkshopType t) { return Type(this, options[t]);}) {
+    : types([&options] (WorkshopType t) { return Type(options[t]);}) {
 }
 
 Workshops::Type& Workshops::get(WorkshopType type) {
@@ -16,13 +17,13 @@ const Workshops::Type& Workshops::get(WorkshopType type) const {
   return types[type];
 }
 
-SERIALIZATION_CONSTRUCTOR_IMPL(Workshops);
-SERIALIZE_DEF(Workshops, types, debt);
+SERIALIZATION_CONSTRUCTOR_IMPL(Workshops)
+SERIALIZE_DEF(Workshops, types)
 
-Workshops::Type::Type(Workshops* w, const vector<Item>& o) : options(o), workshops(w) {}
+Workshops::Type::Type(const vector<Item>& o) : options(o) {}
 
-SERIALIZATION_CONSTRUCTOR_IMPL2(Workshops::Type, Type);
-SERIALIZE_DEF(Workshops::Type, options, queued, workshops);
+SERIALIZATION_CONSTRUCTOR_IMPL2(Workshops::Type, Type)
+SERIALIZE_DEF(Workshops::Type, options, queued, debt)
 
 
 const vector<Workshops::Item>& Workshops::Type::getOptions() const {
@@ -32,7 +33,7 @@ const vector<Workshops::Item>& Workshops::Type::getOptions() const {
 void Workshops::Type::stackQueue() {
   vector<Item> tmp;
   for (auto& elem : queued)
-    if (!tmp.empty() && elem == tmp.back())
+    if (!tmp.empty() && elem.indexInWorkshop == tmp.back().indexInWorkshop)
       tmp.back().number += elem.number;
     else
       tmp.push_back(elem);
@@ -40,14 +41,15 @@ void Workshops::Type::stackQueue() {
 }
 
 void Workshops::Type::addDebt(CostInfo cost) {
-  workshops->debt[cost.id] += cost.value;
+  debt[cost.id] += cost.value;
 }
 
 void Workshops::Type::queue(int index, int count) {
   CHECK(count > 0);
-  const Item& newElem = options[index];
+  Item newElem = options[index];
+  newElem.indexInWorkshop = index;
   addDebt(newElem.cost * count);
-  if (!queued.empty() && queued.back() == newElem)
+  if (!queued.empty() && queued.back().indexInWorkshop == index)
     queued.back().number += count;
   else {
     queued.push_back(newElem);
@@ -58,11 +60,11 @@ void Workshops::Type::queue(int index, int count) {
 
 void Workshops::Type::unqueue(int index) {
   if (index >= 0 && index < queued.size()) {
-    if (queued[index].state.get_value_or(0) == 0)
+    if (queued[index].state.value_or(0) == 0)
       addDebt(-queued[index].cost * queued[index].number);
     else
       addDebt(-queued[index].cost * (queued[index].number - 1));
-    queued.erase(queued.begin() + index);
+    queued.removeIndexPreserveOrder(index);
   }
   stackQueue();
 }
@@ -82,12 +84,12 @@ bool Workshops::Type::isIdle() const {
   return queued.empty() || !queued[0].state;
 }
 
-void Workshops::scheduleItems(Collective* collective) {
+void Workshops::scheduleItems(WCollective collective) {
   for (auto type : ENUM_ALL(WorkshopType))
     types[type].scheduleItems(collective);
 }
 
-void Workshops::Type::scheduleItems(Collective* collective) {
+void Workshops::Type::scheduleItems(WCollective collective) {
   if (queued.empty() || queued[0].state)
     return;
   for (int i : All(queued))
@@ -106,10 +108,10 @@ vector<PItem> Workshops::Type::addWork(double amount) {
     auto& product = queued[0];
     *product.state += amount * prodMult / product.workNeeded;
     if (*product.state >= 1) {
-      vector<PItem> ret = ItemFactory::fromId(product.type, product.batchSize);
+      vector<PItem> ret = product.type.get(product.batchSize);
       product.state = none;
       if (!--product.number)
-        queued.erase(queued.begin());
+        queued.removeIndexPreserveOrder(0);
       return ret;
     }
   }
@@ -121,6 +123,9 @@ const vector<Workshops::Item>& Workshops::Type::getQueued() const {
 }
 
 int Workshops::getDebt(CollectiveResourceId resource) const {
-  return debt[resource];
+  int ret = 0;
+  for (auto type : ENUM_ALL(WorkshopType))
+    ret += types[type].debt[resource];
+  return ret;
 }
 

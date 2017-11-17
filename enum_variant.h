@@ -26,7 +26,7 @@ struct EmptyThing {
   bool operator == (const EmptyThing& other) const {
     return true;
   }
-  template <class Archive> 
+  template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
   }
 };
@@ -36,14 +36,17 @@ class EnumVariant {
   public:
   EnumVariant() {}
   EnumVariant(Id i) : id(i) {
-    NO_RELEASE(boost::apply_visitor(CheckVisitor(id), values));
+    NO_RELEASE(values.visit(CheckVisitor(id)));
   }
 
   EnumVariant(const EnumVariant& other) = default;
+  EnumVariant(EnumVariant&& other) = default;
+  EnumVariant& operator = (const EnumVariant& other) = default;
+  EnumVariant& operator = (EnumVariant&& other) = default;
 
   template<typename U>
   EnumVariant(Id i, U u) : id(i), values(u) {
-    NO_RELEASE(boost::apply_visitor(CheckVisitor(id), values));
+    NO_RELEASE(values.visit(CheckVisitor(id)));
   }
 
   Id getId() const {
@@ -52,7 +55,7 @@ class EnumVariant {
 
   template<typename U>
   const U& get() const {
-    return boost::get<U>(values);
+    return *values.template getReferenceMaybe<U>();
   }
 
   bool operator == (const EnumVariant& other) const {
@@ -63,10 +66,7 @@ class EnumVariant {
     return !(*this == other);
   }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SVAR(id) & SVAR(values);
-  }
+  SERIALIZE_ALL(id, values)
 
   private:
   template<typename T>
@@ -75,7 +75,7 @@ class EnumVariant {
     }
   };
 
-  struct CheckVisitor : public boost::static_visitor<> {
+  struct CheckVisitor {
     public:
     CheckVisitor(Id i) : id(i) {}
     template<typename T>
@@ -90,7 +90,7 @@ class EnumVariant {
 };
 
 #define FIRST(first, ...) first
-#define TYPES(...) boost::variant<EmptyThing, __VA_ARGS__>
+#define TYPES(...) variant<EmptyThing, __VA_ARGS__>
 #define ASSIGN(T, ...)\
 TypeAssign<T, decltype(FIRST(__VA_ARGS__)), __VA_ARGS__>
 

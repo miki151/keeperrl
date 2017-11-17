@@ -18,44 +18,44 @@
 #include "collective_control.h"
 #include "enum_variant.h"
 #include "entity_set.h"
-#include "village_behaviour.h"
 #include "event_listener.h"
 
 class Task;
-template <typename T>
-class EventProxy;
+class VillageBehaviour;
 
-class VillageControl : public CollectiveControl {
+class VillageControl : public CollectiveControl, public EventListener<VillageControl> {
   public:
+  static PVillageControl create(WCollective col, optional<VillageBehaviour> v);
 
-  friend class VillageBehaviour;
+  void onEvent(const GameEvent&);
 
-  VillageControl(Collective*, optional<VillageBehaviour>);
+  private:
+  struct Private {};
+
+  public:
+  VillageControl(Private, WCollective, optional<VillageBehaviour>);
 
   protected:
   virtual void update(bool currentlyActive) override;
-  virtual void onMemberKilled(const Creature* victim, const Creature* killer) override;
-  virtual void onOtherKilled(const Creature* victim, const Creature* killer) override;
+  virtual void onMemberKilled(WConstCreature victim, WConstCreature killer) override;
+  virtual void onOtherKilled(WConstCreature victim, WConstCreature killer) override;
   virtual void onRansomPaid() override;
-  virtual vector<TriggerInfo> getTriggers(const Collective* against) const override;
+  virtual vector<TriggerInfo> getTriggers(WConstCollective against) const override;
 
   SERIALIZATION_DECL(VillageControl);
 
   private:
-  HeapAllocated<EventProxy<VillageControl>> SERIAL(eventProxy);
-  friend EventProxy<VillageControl>;
-  void onEvent(const GameEvent&);
-
-  void launchAttack(vector<Creature*> attackers);
+  friend class VillageBehaviour;
+  void launchAttack(vector<WCreature> attackers);
   void considerWelcomeMessage();
   void considerCancellingAttack();
   void checkEntries();
-  bool isEnemy(const Creature*);
-  Collective* getEnemyCollective() const;
+  bool isEnemy(WConstCreature);
+  WCollective getEnemyCollective() const;
   bool canPerformAttack(bool currentlyActive);
   void acceptImmigration();
 
-  optional<VillageBehaviour> SERIAL(villain);
+  HeapAllocated<optional<VillageBehaviour>> SERIAL(villain);
 
   double SERIAL(victims) = 0;
   EntitySet<Item> SERIAL(myItems);
@@ -63,5 +63,6 @@ class VillageControl : public CollectiveControl {
   map<TeamId, int> SERIAL(attackSizes);
   bool SERIAL(entries) = false;
   double SERIAL(maxEnemyPower) = 0;
+  void healAllCreatures();
 };
 

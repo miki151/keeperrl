@@ -14,14 +14,14 @@
    If not, see http://www.gnu.org/licenses/ . */
 
 #include "stdafx.h"
-
+#include "util.h"
 #include "shortest_path.h"
 #include "level.h"
 #include "creature.h"
 #include "lasting_effect.h"
 
 SERIALIZE_DEF(ShortestPath, path, target, directions, bounds, reversed)
-SERIALIZATION_CONSTRUCTOR_IMPL(ShortestPath);
+SERIALIZATION_CONSTRUCTOR_IMPL(ShortestPath)
 
 const double ShortestPath::infinity = 1000000000;
 const double LevelShortestPath::infinity = 1000000000;
@@ -178,7 +178,7 @@ void ShortestPath::constructPath(Vec2 pos, bool reversed) {
   }
   if (!reversed)
     ret.push_back(target);
-  path = vector<Vec2>(ret.rbegin(), ret.rend());
+  path = ret.reverse();
 }
 
 bool ShortestPath::isReversed() const {
@@ -200,21 +200,19 @@ Vec2 ShortestPath::getTarget() const {
   return target;
 }
 
-ShortestPath LevelShortestPath::makeShortestPath(const Creature* creature, Position to, Position from, double mult) {
-  Level* level = from.getLevel();
+ShortestPath LevelShortestPath::makeShortestPath(WConstCreature creature, Position to, Position from, double mult) {
+  WLevel level = from.getLevel();
   Rectangle bounds = level->getBounds();
   CHECK(to.isSameLevel(from));
   auto entryFun = [=](Vec2 v) { 
-      Position pos(v, level);
-      if (pos.canEnter(creature) || creature->getPosition() == pos) 
-        return 1.0;
-      if (pos.canNavigate(creature->getMovementType())) {
-        if (const Creature* other = pos.getCreature())
-          if (other->isFriend(creature) && !other->hasCondition(CreatureCondition::RESTRICTED_MOVEMENT))
-            return 2.1;
-        return 5.0;
-      }
-      return ShortestPath::infinity;};
+    Position pos(v, level);
+    if (creature->getPosition() == pos)
+      return 1.0;
+    else if (auto cost = pos.getNavigationCost(creature->getMovementType()))
+      return *cost;
+    else
+      return ShortestPath::infinity;
+  };
   CHECK(to.getCoord().inRectangle(level->getBounds()));
   CHECK(from.getCoord().inRectangle(level->getBounds()));
   if (mult == 0)
@@ -231,21 +229,15 @@ ShortestPath LevelShortestPath::makeShortestPath(const Creature* creature, Posit
   }
 }
 
-template <class Archive> 
-void LevelShortestPath::serialize(Archive& ar, const unsigned int version) {
-  ar& SVAR(path)
-    & SVAR(level);
-}
-
-SERIALIZABLE(LevelShortestPath);
+SERIALIZE_DEF(LevelShortestPath, path, level)
 SERIALIZATION_CONSTRUCTOR_IMPL(LevelShortestPath);
 
 
-LevelShortestPath::LevelShortestPath(const Creature* creature, Position to, Position from, double mult)
+LevelShortestPath::LevelShortestPath(WConstCreature creature, Position to, Position from, double mult)
     : path(makeShortestPath(creature, to, from, mult)), level(to.getLevel()) {
 }
 
-Level* LevelShortestPath::getLevel() const {
+WLevel LevelShortestPath::getLevel() const {
   return level;
 }
 
@@ -269,7 +261,7 @@ bool LevelShortestPath::isReversed() const {
 Dijkstra::Dijkstra(Rectangle bounds, Vec2 from, int maxDist, function<double(Vec2)> entryFun,
       vector<Vec2> directions) {
   distanceTable.clear();
-  function<bool(Vec2, Vec2)> comparator = [this](Vec2 pos1, Vec2 pos2) {
+  function<bool(Vec2, Vec2)> comparator = [](Vec2 pos1, Vec2 pos2) {
       double diff = distanceTable.getDistance(pos1) - distanceTable.getDistance(pos2);
       if (diff > 0 || (diff == 0 && pos1 < pos2))
         return 1;

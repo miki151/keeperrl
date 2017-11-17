@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "player_message.h"
-#include "location.h"
 #include "view.h"
 
 PlayerMessage::PlayerMessage(const string& t, MessagePriority p) : text(makeSentence(t)), priority(p), freshness(1) {}
@@ -14,7 +13,7 @@ PlayerMessage PlayerMessage::announcement(const string& title, const string& tex
 }
 
 void PlayerMessage::presentMessages(View* view, const vector<PlayerMessage>& messages) {
-  view->presentList("Message history", transform2(messages,
+  view->presentList("Message history", messages.transform(
         [](const PlayerMessage& msg) { return ListElem(msg.text).setMessagePriority(msg.priority);}), true);
 }
 
@@ -58,34 +57,13 @@ optional<UniqueEntity<Creature>::Id> PlayerMessage::getCreature() const {
   return creature;
 }
 
-PlayerMessage& PlayerMessage::setLocation(const Location* l) {
-  location = l;
-  return *this;
-}
-
-const Location* PlayerMessage::getLocation() const {
-  return location;
-}
-
 bool PlayerMessage::isClickable() const {
-  return position || creature || location;
+  return position || creature;
 }
 
 int PlayerMessage::getHash() const {
   return combineHash(text, priority, freshness);
 }
 
-template <class Archive> 
-void PlayerMessage::serialize(Archive& ar, const unsigned int version) { 
-  ar & SUBCLASS(UniqueEntity) 
-     & SVAR(text)
-     & SVAR(priority)
-     & SVAR(freshness)
-     & SVAR(announcementTitle)
-     & SVAR(position)
-     & SVAR(creature)
-     & SVAR(location);
-}
-
-SERIALIZABLE(PlayerMessage);
+SERIALIZE_DEF(PlayerMessage, SUBCLASS(UniqueEntity), text, priority, freshness, announcementTitle, position, creature)
 SERIALIZATION_CONSTRUCTOR_IMPL(PlayerMessage);

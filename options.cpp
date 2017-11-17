@@ -27,6 +27,7 @@ const EnumMap<OptionId, Options::Value> defaults {
   {OptionId::SHOW_MAP, 0},
   {OptionId::FULLSCREEN, 0},
   {OptionId::FULLSCREEN_RESOLUTION, 0},
+  {OptionId::VSYNC, 1},
   {OptionId::ZOOM_UI, 0},
   {OptionId::DISABLE_MOUSE_WHEEL, 0},
   {OptionId::DISABLE_CURSOR, 0},
@@ -47,6 +48,7 @@ const EnumMap<OptionId, Options::Value> defaults {
   {OptionId::LESSER_VILLAINS, 3},
   {OptionId::ALLIES, 2},
   {OptionId::INFLUENCE_SIZE, 3},
+  {OptionId::GENERATE_MANA, 0},
 };
 
 const map<OptionId, string> names {
@@ -58,6 +60,7 @@ const map<OptionId, string> names {
   {OptionId::SHOW_MAP, "Show map"},
   {OptionId::FULLSCREEN, "Fullscreen"},
   {OptionId::FULLSCREEN_RESOLUTION, "Fullscreen resolution"},
+  {OptionId::VSYNC, "Vertical Sync"},
   {OptionId::ZOOM_UI, "Zoom in UI"},
   {OptionId::DISABLE_MOUSE_WHEEL, "Disable mouse wheel scrolling"},
   {OptionId::DISABLE_CURSOR, "Disable pretty mouse cursor"},
@@ -78,6 +81,7 @@ const map<OptionId, string> names {
   {OptionId::LESSER_VILLAINS, "Lesser villains"},
   {OptionId::ALLIES, "Allies"},
   {OptionId::INFLUENCE_SIZE, "Min. tribes in influence zone"},
+  {OptionId::GENERATE_MANA, "Generate mana in library"},
 };
 
 const map<OptionId, string> hints {
@@ -86,6 +90,7 @@ const map<OptionId, string> hints {
   {OptionId::KEEP_SAVEFILES, "Don't remove the save file when a game is loaded."},
   {OptionId::FULLSCREEN, "Switch between fullscreen and windowed mode."},
   {OptionId::FULLSCREEN_RESOLUTION, "Choose resolution for fullscreen mode."},
+  {OptionId::VSYNC, "Limits frame rate to your monitor's refresh rate. Turning off may fix frame rate issues."},
   {OptionId::ZOOM_UI, "All UI and graphics are zoomed in 2x. "
       "Use you have a large resolution screen and things appear too small."},
   {OptionId::ONLINE, "Enable online features, like dungeon sharing and highscores."},
@@ -94,6 +99,7 @@ const map<OptionId, string> hints {
     "The save file will be used to recover in case of a crash."},
   {OptionId::WASD_SCROLLING, "Scroll the map using W-A-S-D keys. In this mode building shortcuts are accessed "
     "using alt + letter."},
+  {OptionId::GENERATE_MANA, "Your minions will generate mana while working in the library."}
 };
 
 const map<OptionSet, vector<OptionId>> optionSets {
@@ -105,6 +111,7 @@ const map<OptionSet, vector<OptionId>> optionSets {
       OptionId::SOUND,
 #endif
       OptionId::FULLSCREEN,
+      OptionId::VSYNC,
   //    OptionId::FULLSCREEN_RESOLUTION,
       OptionId::ZOOM_UI,
       OptionId::DISABLE_MOUSE_WHEEL,
@@ -150,6 +157,8 @@ Options::Type Options::getType(OptionId id) {
     case OptionId::ADVENTURER_TYPE:
     case OptionId::KEEPER_TYPE:
       return Options::PLAYER_TYPE;
+    case OptionId::GENERATE_MANA:
+      return Options::BOOL;
     default:
       return Options::INT;
   }
@@ -159,7 +168,7 @@ vector<OptionId> Options::getOptions(OptionSet set) {
   return optionSets.at(set);
 }
 
-Options::Options(const string& path) : filename(path) {
+Options::Options(const FilePath& path) : filename(path) {
   readValues();
 }
 
@@ -171,19 +180,15 @@ Options::Value Options::getValue(OptionId id) {
 }
 
 bool Options::getBoolValue(OptionId id) {
-  return boost::get<int>(getValue(id));
+  return *getValue(id).getValueMaybe<int>();
 }
 
 string Options::getStringValue(OptionId id) {
   return getValueString(id);
 }
 
-int Options::getChoiceValue(OptionId id) {
-  return boost::get<int>(getValue(id));
-}
-
 int Options::getIntValue(OptionId id) {
-  int v = boost::get<int>(getValue(id));
+  int v = *getValue(id).getValueMaybe<int>();
   if (limits[id]) {
     if (v > limits[id]->second)
       return limits[id]->second;
@@ -194,11 +199,11 @@ int Options::getIntValue(OptionId id) {
 }
 
 CreatureId Options::getCreatureId(OptionId id) {
-  return choicesCreatureId[id].at(boost::get<int>(getValue(id)) % choicesCreatureId[id].size());
+  return choicesCreatureId[id][*getValue(id).getValueMaybe<int>() % choicesCreatureId[id].size()];
 }
 
 void Options::setNextCreatureId(OptionId id) {
-  setValue(id, boost::get<int>(getValue(id)) + 1);
+  setValue(id, *getValue(id).getValueMaybe<int>() + 1);
 }
 
 void Options::setLimits(OptionId id, int minV, int maxV) {
@@ -213,7 +218,7 @@ void Options::setValue(OptionId id, Value value) {
   readValues();
   (*values)[id] = value;
   if (triggers.count(id))
-    triggers.at(id)(boost::get<int>(value));
+    triggers.at(id)(*value.getValueMaybe<int>());
   writeValues();
 }
 
@@ -222,11 +227,11 @@ void Options::setDefaultString(OptionId id, const string& s) {
 }
 
 static string getOnOff(const Options::Value& value) {
-  return boost::get<int>(value) ? "on" : "off";
+  return *value.getValueMaybe<int>() ? "on" : "off";
 }
 
 static string getYesNo(const Options::Value& value) {
-  return boost::get<int>(value) ? "yes" : "no";
+  return *value.getValueMaybe<int>() ? "yes" : "no";
 }
 
 string Options::getValueString(OptionId id) {
@@ -235,6 +240,7 @@ string Options::getValueString(OptionId id) {
     case OptionId::HINTS:
     case OptionId::ASCII:
     case OptionId::FULLSCREEN:
+    case OptionId::VSYNC:
     case OptionId::AUTOSAVE:
     case OptionId::WASD_SCROLLING:
     case OptionId::SOUND:
@@ -249,19 +255,20 @@ string Options::getValueString(OptionId id) {
     case OptionId::ZOOM_UI:
     case OptionId::DISABLE_MOUSE_WHEEL:
     case OptionId::DISABLE_CURSOR:
+    case OptionId::GENERATE_MANA:
     case OptionId::START_WITH_NIGHT:
       return getYesNo(value);
     case OptionId::ADVENTURER_NAME:
     case OptionId::KEEPER_SEED:
     case OptionId::KEEPER_NAME: {
-      string val = boost::get<string>(value);
+      string val = *value.getValueMaybe<string>();
       if (val.empty())
         return defaultStrings[id];
       else
         return val;
       }
     case OptionId::FULLSCREEN_RESOLUTION: {
-      int val = boost::get<int>(value);
+      int val = *value.getValueMaybe<int>();
       if (val >= 0 && val < choices[id].size())
         return choices[id][val];
       else
@@ -302,12 +309,12 @@ void Options::changeValue(OptionId id, const Options::Value& value, View* view) 
   switch (id) {
     case OptionId::KEEPER_NAME:
     case OptionId::ADVENTURER_NAME:
-        if (auto val = view->getText("Enter " + names.at(id), boost::get<string>(value), 23,
+        if (auto val = view->getText("Enter " + names.at(id), *value.getValueMaybe<string>(), 23,
               "Leave blank to use a random name."))
           setValue(id, *val);
         break;
     case OptionId::KEEPER_SEED:
-        if (auto val = view->getText("Enter " + names.at(id), boost::get<string>(value), 23,
+        if (auto val = view->getText("Enter " + names.at(id), *value.getValueMaybe<string>(), 23,
               "Leave blank to use a random seed."))
           setValue(id, *val);
         break;
@@ -316,7 +323,7 @@ void Options::changeValue(OptionId id, const Options::Value& value, View* view) 
           setValue(id, *index);
         break;
     default:
-        setValue(id, !boost::get<int>(value));
+        setValue(id, (int) !*value.getValueMaybe<int>());
   }
 }
 
@@ -326,6 +333,10 @@ void Options::setChoices(OptionId id, const vector<string>& v) {
 
 void Options::setChoices(OptionId id, const vector<CreatureId>& v) {
   choicesCreatureId[id] = v;
+}
+
+optional<string> Options::getHint(OptionId id) {
+  return getValueMaybe(hints, id);
 }
 
 bool Options::handleOrExit(View* view, OptionSet set, int lastIndex) {
@@ -373,7 +384,7 @@ void Options::handle(View* view, OptionSet set, int lastIndex) {
 void Options::readValues() {
   if (!values) {
     values = defaults;
-    ifstream in(filename);
+    ifstream in(filename.getPath());
     while (1) {
       char buf[100];
       in.getline(buf, 100);
@@ -396,7 +407,7 @@ void Options::readValues() {
 }
 
 void Options::writeValues() {
-  ofstream out(filename);
+  ofstream out(filename.getPath());
   for (OptionId id : ENUM_ALL(OptionId))
     out << EnumInfo<OptionId>::getString(id) << "," << (*values)[id] << std::endl;
 }

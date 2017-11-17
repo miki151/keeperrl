@@ -16,6 +16,7 @@
 #pragma once
 
 #include "util.h"
+#include "file_path.h"
 
 RICH_ENUM(OptionId,
   HINTS,
@@ -25,6 +26,7 @@ RICH_ENUM(OptionId,
   KEEP_SAVEFILES,
   FULLSCREEN,
   FULLSCREEN_RESOLUTION,
+  VSYNC,
   ONLINE,
   GAME_EVENTS,
   AUTOSAVE,
@@ -48,7 +50,8 @@ RICH_ENUM(OptionId,
   RETIRED_VILLAINS,
   LESSER_VILLAINS,
   ALLIES,
-  INFLUENCE_SIZE
+  INFLUENCE_SIZE,
+  GENERATE_MANA
 );
 
 enum class OptionSet {
@@ -62,7 +65,7 @@ class View;
 class Options {
   public:
   typedef variant<int, string> Value;
-  Options(const string& path);
+  Options(const FilePath& path);
   bool getBoolValue(OptionId);
   string getStringValue(OptionId);
   CreatureId getCreatureId(OptionId);
@@ -72,7 +75,6 @@ class Options {
   Type getType(OptionId);
   string getValueString(OptionId);
   void setValue(OptionId, Value);
-  int getChoiceValue(OptionId);
   int getIntValue(OptionId);
   void setLimits(OptionId, int min, int max);
   optional<pair<int, int>> getLimits(OptionId);
@@ -84,6 +86,7 @@ class Options {
   void setDefaultString(OptionId, const string&);
   void setChoices(OptionId, const vector<string>&);
   void setChoices(OptionId, const vector<CreatureId>&);
+  optional<string> getHint(OptionId);
 
   private:
   optional<Value> readValue(OptionId, const string&);
@@ -92,7 +95,7 @@ class Options {
   void readValues();
   optional<EnumMap<OptionId, Value>> values;
   void writeValues();
-  string filename;
+  FilePath filename;
   EnumMap<OptionId, string> defaultStrings;
   EnumMap<OptionId, optional<Value>> overrides;
   EnumMap<OptionId, vector<string>> choices;

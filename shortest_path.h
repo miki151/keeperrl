@@ -56,21 +56,21 @@ class ShortestPath {
 
 class LevelShortestPath {
   public:
-  LevelShortestPath(const Creature* creature, Position target, Position from, double mult = 0);
+  LevelShortestPath(WConstCreature creature, Position target, Position from, double mult = 0);
   bool isReachable(Position) const;
   Position getNextMove(Position);
   Position getTarget() const;
   bool isReversed() const;
-  Level* getLevel() const;
+  WLevel getLevel() const;
 
   static const double infinity;
 
   SERIALIZATION_DECL(LevelShortestPath);
 
   private:
-  static ShortestPath makeShortestPath(const Creature* creature, Position to, Position from, double mult);
+  static ShortestPath makeShortestPath(WConstCreature creature, Position to, Position from, double mult);
   ShortestPath SERIAL(path);
-  Level* SERIAL(level);
+  WLevel SERIAL(level);
 };
 
 class Dijkstra {

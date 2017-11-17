@@ -17,10 +17,9 @@
 
 #include "creature_action.h"
 #include "position.h"
+#include "file_path.h"
 
 class Creature;
-class Location;
-
 
 enum MonsterAIType { 
   MONSTER,
@@ -36,17 +35,14 @@ class MonsterAI {
 
   SERIALIZATION_DECL(MonsterAI);
 
-  template <class Archive>
-  static void registerTypes(Archive& ar, int version);
-
   ~MonsterAI();
 
   private:
   friend class MonsterAIFactory;
-  MonsterAI(Creature*, const vector<Behaviour*>& behaviours, const vector<int>& weights, bool pickItems = true);
+  MonsterAI(WCreature, const vector<Behaviour*>& behaviours, const vector<int>& weights, bool pickItems = true);
   vector<PBehaviour> SERIAL(behaviours);
   vector<int> SERIAL(weights);
-  Creature* SERIAL(creature);
+  WCreature SERIAL(creature);
   bool SERIAL(pickItems);
 };
 
@@ -54,26 +50,26 @@ class Collective;
 
 class MonsterAIFactory {
   public:
-  PMonsterAI getMonsterAI(Creature* c) const;
+  PMonsterAI getMonsterAI(WCreature c) const;
 
-  static MonsterAIFactory collective(Collective*);
+  static MonsterAIFactory collective(WCollective);
   static MonsterAIFactory monster();
-  static MonsterAIFactory singleTask(PTask&&);
-  static MonsterAIFactory stayInLocation(Location*, bool moveRandomly = true);
-  static MonsterAIFactory guardSquare(Position);
+  static MonsterAIFactory singleTask(PTask&&, bool chaseEnemies = true);
+  static MonsterAIFactory stayInLocation(Rectangle, bool moveRandomly = true);
   static MonsterAIFactory wildlifeNonPredator();
   static MonsterAIFactory scavengerBird(Position corpsePos);
-  static MonsterAIFactory summoned(Creature*, int ttl);
+  static MonsterAIFactory summoned(WCreature, int ttl);
   static MonsterAIFactory dieTime(double time);
   static MonsterAIFactory moveRandomly();
   static MonsterAIFactory stayOnFurniture(FurnitureType);
+  static MonsterAIFactory guard();
   static MonsterAIFactory idle();
   static MonsterAIFactory splashHeroes(bool leader);
   static MonsterAIFactory splashMonsters();
-  static MonsterAIFactory splashImps(const string& splashPath);
+  static MonsterAIFactory splashImps(const FilePath& splashPath);
 
   private:
-  typedef function<MonsterAI*(Creature*)> MakerFun;
+  typedef function<MonsterAI*(WCreature)> MakerFun;
   MonsterAIFactory(MakerFun);
   MakerFun maker;
 };

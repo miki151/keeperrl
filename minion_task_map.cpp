@@ -16,17 +16,83 @@
 #include "stdafx.h"
 #include "minion_task_map.h"
 #include "collective_config.h"
+#include "creature.h"
+#include "creature_attributes.h"
+#include "body.h"
+#include "collective.h"
+#include "equipment.h"
 
-void MinionTaskMap::setValue(MinionTask t, double v) {
-  tasks[t] = v;
+bool MinionTaskMap::canChooseRandomly(WConstCreature c, MinionTask t) const {
+  switch (t) {
+    case MinionTask::BE_EXECUTED:
+    case MinionTask::BE_WHIPPED:
+    case MinionTask::BE_TORTURED:
+      return false;
+    case MinionTask::LAIR:
+    case MinionTask::GRAVE:
+    case MinionTask::SLEEP:
+      return !c->isAffected(LastingEffect::RESTED);
+    case MinionTask::EAT:
+      return !c->isAffected(LastingEffect::SATIATED);
+    default:
+      return true;
+  }
 }
 
-void MinionTaskMap::clear() {
-  tasks.clear();
-}
-
-double MinionTaskMap::getValue(MinionTask t, bool ignoreTaskLock) const {
-  return (locked.contains(t) && !ignoreTaskLock) ? 0 : tasks[t];
+bool MinionTaskMap::isAvailable(WConstCollective col, WConstCreature c, MinionTask t, bool ignoreTaskLock) const {
+  if (locked.contains(t) && !ignoreTaskLock)
+    return false;
+  switch (t) {
+    case MinionTask::TRAIN:
+      return !c->getAttributes().isTrainingMaxedOut(ExperienceType::MELEE);
+    case MinionTask::STUDY:
+      return !c->getAttributes().isTrainingMaxedOut(ExperienceType::SPELL) ||
+          (col->getConfig().getRegenerateMana() && c->getAttributes().getMaxExpLevel()[ExperienceType::SPELL] > 0);
+    case MinionTask::ARCHERY:
+      return !c->getAttributes().isTrainingMaxedOut(ExperienceType::ARCHERY) &&
+          !c->getEquipment().getItems(ItemIndex::RANGED_WEAPON).empty();
+    case MinionTask::BE_WHIPPED:
+      return !c->getBody().isImmuneTo(LastingEffect::ENTANGLED) &&
+          !c->getBody().isMinionFood() &&
+          c->getBody().isHumanoid();
+    case MinionTask::THRONE:
+      return col->getLeader() == c;
+    case MinionTask::BE_EXECUTED:
+    case MinionTask::PRISON:
+    case MinionTask::BE_TORTURED:
+      return col->hasTrait(c, MinionTrait::PRISONER);
+    case MinionTask::CRAFT:
+      return c->getAttributes().getSkills().getValue(SkillId::FORGE) > 0 ||
+          c->getAttributes().getSkills().getValue(SkillId::WORKSHOP) > 0 ||
+          c->getAttributes().getSkills().getValue(SkillId::FURNACE) > 0 ||
+          c->getAttributes().getSkills().getValue(SkillId::JEWELER) > 0 ||
+          c->getAttributes().getSkills().getValue(SkillId::LABORATORY) > 0;
+    case MinionTask::SLEEP:
+      return c->getAttributes().getSpawnType() == SpawnType::HUMANOID ||
+          (c->getBody().isHumanoid() && col->getConfig().hasVillainSleepingTask());
+    case MinionTask::GRAVE:
+      return c->getAttributes().getSpawnType() == SpawnType::UNDEAD;
+    case MinionTask::LAIR:
+      return c->getAttributes().getSpawnType() == SpawnType::BEAST;
+    case MinionTask::EAT:
+      return c->getBody().needsToEat();
+    case MinionTask::COPULATE:
+      return c->getAttributes().getSkills().hasDiscrete(SkillId::COPULATION);
+    case MinionTask::RITUAL:
+      return c->getAttributes().getSpawnType() == SpawnType::DEMON;
+    case MinionTask::CROPS:
+      return c->getAttributes().getSkills().hasDiscrete(SkillId::CROPS);
+    case MinionTask::SPIDER:
+      return c->getAttributes().getSkills().hasDiscrete(SkillId::SPIDER);
+    case MinionTask::EXPLORE_CAVES:
+      return c->getAttributes().getSkills().hasDiscrete(SkillId::EXPLORE_CAVES);
+    case MinionTask::EXPLORE:
+      return c->getAttributes().getSkills().hasDiscrete(SkillId::EXPLORE);
+    case MinionTask::EXPLORE_NOCTURNAL:
+      return c->getAttributes().getSkills().hasDiscrete(SkillId::EXPLORE_NOCTURNAL);
+    case MinionTask::WORKER:
+      return c->getAttributes().getSkills().hasDiscrete(SkillId::CONSTRUCTION);
+  }
 }
 
 void MinionTaskMap::toggleLock(MinionTask task) {
@@ -37,18 +103,4 @@ bool MinionTaskMap::isLocked(MinionTask task) const {
   return locked.contains(task);
 }
 
-bool MinionTaskMap::hasAnyTask() const {
-  for (MinionTask t : ENUM_ALL(MinionTask))
-    if (tasks[t] > 0 && !locked.contains(t))
-      return true;
-  return false;
-}
-
-template <class Archive>
-void MinionTaskMap::serialize(Archive& ar, const unsigned int version) {
-  ar& SVAR(tasks);
-  if (version >= 1)
-    ar & SVAR(locked);
-}
-
-SERIALIZABLE(MinionTaskMap);
+SERIALIZE_DEF(MinionTaskMap, locked);

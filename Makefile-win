@@ -2,7 +2,7 @@
 
 CC = g++
 LD = g++
-CFLAGS = -Wall -std=c++11 -Wno-sign-compare -Wno-unused-variable -Wl,--stack,16000000
+CFLAGS = -Wall -std=c++1y -Wno-sign-compare -Wno-unused-variable -Wno-strict-aliasing -Wl,--stack,16000000
 
 ifdef DATA_DIR
 	CFLAGS += -DDATA_DIR=\"$(DATA_DIR)\"
@@ -50,12 +50,18 @@ CFLAGS += $(IPATH)
 
 SRCS = $(shell ls -t *.cpp)
 
-LIBS = -mwindows keeper.res -lvorbisfile -lvorbis -logg -lSDL2_image -lkernel32 -luser32 -lgdi32 -lcomdlg32 -lole32 -ldinput -lddraw -ldxguid -lwinmm -ldsound -lpsapi -lgdiplus -lshlwapi -luuid -lfreetype
+ifdef AMD64
+RES_FILE=keeper.res
+else
+RES_FILE=keeper32.res
+endif
+
+LIBS = -mwindows ${RES_FILE} -lvorbisfile -lvorbis -logg -lSDL2_image -lkernel32 -luser32 -lgdi32 -lcomdlg32 -lole32 -ldinput -lddraw -ldxguid -lwinmm -ldsound -lpsapi -lgdiplus -lshlwapi -luuid
 
 ifdef AMD64
-LIBS += -lmingw32 -lSDL2main -lSDL2 -lfreeglut -lglu32 -lz -lboost_serialization-mgw49-mt-1_57 -lboost_program_options-mgw49-mt-1_57 -lboost_system-mgw49-mt-1_57 -lboost_filesystem-mgw49-mt-1_57 -lglew32 -ljpeg -lOpenAL32.dll -lsndfile -lopengl32 -lcurldll -limagehlp
+LIBS += -lmingw32 -lSDL2main -lSDL2 -lfreeglut -lglu32 -lz -lglew32 -ljpeg -lopenal -lopengl32 -lcurl -limagehlp -lpthread
 else
-LIBS += -lSDL2.dll -lSDL2main  -lglut -lglu32 -lz -lboost_serialization-mgw49-mt-1_56 -lboost_program_options-mgw49-mt-1_56 -lboost_system-mgw49-mt-1_56 -lboost_filesystem-mgw49-mt-1_56 -lglew -ljpeg -lOpenAL32.dll -lsndfile -lopengl32 -lcurldll -limagehlp
+LIBS += -lSDL2 -lSDL2main  -lglut -lglu32 -lz -ljpeg -lopenal -lopengl32 -lcurl -limagehlp -l pthread
 endif
 
 ifdef debug
@@ -72,7 +78,12 @@ DEPS = $(addprefix $(OBJDIR)/,$(SRCS:.cpp=.d))
 
 ##############################################################################
 
-all: gen_version $(NAME)
+all:
+	@$(MAKE) -f Makefile-win --no-print-directory info
+	bash ./gen_version.sh
+	@$(MAKE) -f Makefile-win --no-print-directory compile
+
+compile: gen_version $(NAME)
 
 stdafx.h.gch: stdafx.h $(wildcard *.h)
 	$(CC) -MMD $(CFLAGS) -c $< -o $@
@@ -89,6 +100,8 @@ test: $(OBJS) $(OBJDIR)/test.o
 gen_version:
 	bash ./gen_version.sh
 
+info:
+	@$(CC) -v 2>&1 | head -n 2
 clean:
 	$(RM) $(OBJDIR)/*.o
 	$(RM) $(OBJDIR)/*.d

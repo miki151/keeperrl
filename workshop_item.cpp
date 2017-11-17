@@ -5,10 +5,11 @@
 #include "view_object.h"
 
 WorkshopItem WorkshopItem::fromType(ItemType type, double workNeeded, CostInfo cost) {
-  PItem item = ItemFactory::fromId(type);
+  PItem item = type.get();
   return {
     type,
     item->getName(),
+    item->getName(true),
     item->getViewObject().id(),
     cost,
     item->getDescription(),
@@ -29,8 +30,7 @@ WorkshopItem& WorkshopItem::setTechId(TechId id) {
   return *this;
 }
 
-bool WorkshopItem::operator == (const WorkshopItem& item) const {
-  return type == item.type;
+WorkshopItem& WorkshopItem::setTutorialHighlight(TutorialHighlight h) {
+  tutorialHighlight = h;
+  return *this;
 }
-
-

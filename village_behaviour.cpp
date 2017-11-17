@@ -10,28 +10,35 @@
 #include "creature_factory.h"
 #include "construction_map.h"
 #include "villain_type.h"
+#include "attack_behaviour.h"
 
-SERIALIZE_DEF(VillageBehaviour, minPopulation, minTeamSize, triggers, attackBehaviour, welcomeMessage, ransom);
+SERIALIZE_DEF(VillageBehaviour, minPopulation, minTeamSize, triggers, attackBehaviour, welcomeMessage, ransom)
 
 VillageBehaviour::VillageBehaviour() {}
+
+VillageBehaviour::VillageBehaviour(const VillageBehaviour&) = default;
+VillageBehaviour&VillageBehaviour::operator =(const VillageBehaviour&) = default;
 
 VillageBehaviour::~VillageBehaviour() {}
 
 PTask VillageBehaviour::getAttackTask(VillageControl* self) {
-  Collective* enemy = self->getEnemyCollective();
+  WCollective enemy = self->getEnemyCollective();
   switch (attackBehaviour->getId()) {
     case AttackBehaviourId::KILL_LEADER:
-      return Task::attackLeader(enemy);
+      return Task::attackCreatures({enemy->getLeader()});
     case AttackBehaviourId::KILL_MEMBERS:
       return Task::killFighters(enemy, attackBehaviour->get<int>());
     case AttackBehaviourId::STEAL_GOLD:
       if (auto ret = Task::stealFrom(enemy, self->getCollective()))
         return ret;
       else
-        return Task::attackLeader(enemy);
+        return Task::attackCreatures({enemy->getLeader()});
     case AttackBehaviourId::CAMP_AND_SPAWN:
       return Task::campAndSpawn(enemy,
             attackBehaviour->get<CreatureFactory>(), Random.get(3, 7), Range(3, 7), Random.get(3, 7));
+    case AttackBehaviourId::HALLOWEEN_KIDS:
+      FATAL << "Not handled";
+      return {};
   }
 }
 
@@ -101,6 +108,7 @@ static double stolenItemsFun(int numStolen) {
 static double getRoomProb(FurnitureType id) {
   switch (id) {
     case FurnitureType::THRONE: return 0.001;
+    case FurnitureType::DEMON_SHRINE: return 0.001;
     case FurnitureType::IMPALED_HEAD: return 0.000125;
     default: FATAL << "Unsupported ROOM_BUILT type"; return 0;
   }
@@ -113,7 +121,7 @@ static double getFinishOffProb(double maxPower, double currentPower, double self
   return 1 - 2 * (currentPower / maxPower) * (1 - minProb);
 }
 
-static double getNumConqueredProb(const Game* game, int minCount) {
+static double getNumConqueredProb(WConstGame game, int minCount) {
   int numConquered = 0;
   for (auto col : game->getCollectives())
     if ((col->getVillainType() == VillainType::LESSER || col->getVillainType() == VillainType::MAIN) &&
@@ -136,11 +144,17 @@ double VillageBehaviour::getTriggerValue(const Trigger& trigger, const VillageCo
   double proximityMaxProb = 1.0 / 5000;
   double timerProb = 1.0 / 3000;
   double numConqueredMaxProb = 1.0 / 3000;
-  if (Collective* collective = self->getEnemyCollective())
+  if (WCollective collective = self->getEnemyCollective())
     switch (trigger.getId()) {
       case AttackTriggerId::TIMER: 
         return collective->getGlobalTime() >= trigger.get<int>() ? timerProb : 0;
-      case AttackTriggerId::ROOM_BUILT: 
+      case AttackTriggerId::ROOM_BUILT:
+        if (trigger.get<FurnitureType>() ==FurnitureType::DEMON_SHRINE)
+          {//Demon shrines actually decrease probability of demon attacks, not increase it
+            double numShrines = collective->getConstructions().getBuiltCount(trigger.get<FurnitureType>());
+            if (numShrines>4) return 0;
+            return getRoomProb(trigger.get<FurnitureType>()) / (numShrines+1);}   
+        //Not a demon shrine. These items increase attack chance.
         return collective->getConstructions().getBuiltCount(trigger.get<FurnitureType>()) *
           getRoomProb(trigger.get<FurnitureType>());
       case AttackTriggerId::POWER: 
@@ -177,8 +191,9 @@ double VillageBehaviour::getAttackProbability(const VillageControl* self) const 
     double val = getTriggerValue(elem, self);
     CHECK(val >= 0 && val <= 1);
     ret = max(ret, val);
-    INFO << "trigger " << EnumInfo<AttackTriggerId>::getString(elem.getId()) << " village "
-        << self->getCollective()->getName().getFull() << " under attack probability " << val;
+    if (auto& name = self->getCollective()->getName())
+      INFO << "trigger " << EnumInfo<AttackTriggerId>::getString(elem.getId()) << " village "
+          << name->full << " under attack probability " << val;
   }
   return ret;
 }

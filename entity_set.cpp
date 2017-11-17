@@ -19,19 +19,30 @@
 #include "task.h"
 #include "creature.h"
 #include "level.h"
+#include "collective.h"
 
 template<class T>
 template<class Container>
 EntitySet<T>::EntitySet(const Container& v) {
-  for (const T* e : v)
+  for (auto&& e : v)
     insert(e);
 }
 
 template
-EntitySet<Item>::EntitySet(const vector<Item*>&);
+EntitySet<Item>::EntitySet(const vector<WItem>&);
 
 template
-EntitySet<Creature>::EntitySet(const vector<Creature*>&);
+EntitySet<Creature>::EntitySet(const vector<WCreature>&);
+
+template <class T>
+bool EntitySet<T>::empty() const {
+  return elems.empty();
+}
+
+template <class T>
+int EntitySet<T>::getSize() const {
+  return elems.size();
+}
 
 template <class T>
 void EntitySet<T>::insert(const T* e) {
@@ -49,13 +60,18 @@ bool EntitySet<T>::contains(const T* e) const {
 }
 
 template <class T>
-bool EntitySet<T>::empty() const {
-  return elems.empty();
+void EntitySet<T>::insert(WeakPointer<const T> e) {
+  elems.insert(e->getUniqueId());
 }
 
 template <class T>
-int EntitySet<T>::getSize() const {
-  return elems.size();
+void EntitySet<T>::erase(WeakPointer<const T> e) {
+  elems.erase(e->getUniqueId());
+}
+
+template <class T>
+bool EntitySet<T>::contains(WeakPointer<const T> e) const {
+  return elems.count(e->getUniqueId());
 }
 
 template <class T>
@@ -79,12 +95,6 @@ bool EntitySet<T>::contains(typename UniqueEntity<T>::Id e) const {
 }
 
 template <class T>
-template <class Archive> 
-void EntitySet<T>::serialize(Archive& ar, const unsigned int version) {
-  ar & SVAR(elems);
-}
-
-template <class T>
 typename EntitySet<T>::Iter EntitySet<T>::begin() const {
   return elems.begin();
 }
@@ -96,11 +106,13 @@ typename EntitySet<T>::Iter EntitySet<T>::end() const {
 
 template <>
 ItemPredicate EntitySet<Item>::containsPredicate() const {
-  return [this](const Item* it) { return contains(it); };
+  return [this](WConstItem it) { return contains(it); };
 }
+
+template <class T>
+SERIALIZE_TMPL(EntitySet<T>, elems)
 
 SERIALIZABLE_TMPL(EntitySet, Item);
 SERIALIZABLE_TMPL(EntitySet, Task);
 SERIALIZABLE_TMPL(EntitySet, Creature);
-
-
+SERIALIZABLE_TMPL(EntitySet, Collective);

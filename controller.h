@@ -19,56 +19,55 @@
 #include "util.h"
 
 class Creature;
-class Location;
 class MapMemory;
 class Item;
 class Level;
 class PlayerMessage;
+class MessageGenerator;
 
-class Controller {
+class Controller : public OwnedObject<Controller> {
   public:
-  Controller(Creature*);
+  Controller(WCreature);
   Controller(const Controller&) = delete;
   Controller(Controller&&) = delete;
 
   virtual bool isPlayer() const = 0;
 
-  virtual void you(MsgType type, const string& param) = 0;
-  virtual void you(MsgType type, const vector<string>& param) = 0;
-  virtual void you(const string& param) = 0;
+  virtual MessageGenerator& getMessageGenerator() const = 0;
+
   virtual void privateMessage(const PlayerMessage& message) {}
 
-  virtual void onKilled(const Creature* attacker) {}
-  virtual void onItemsGiven(vector<Item*> items, Creature* from) { }
-  virtual void onDisplaced() {}
+  virtual void onKilled(WConstCreature attacker) {}
+  virtual void onItemsGiven(vector<WItem> items, WCreature from) { }
 
   virtual void makeMove() = 0;
   virtual void sleeping() {}
   virtual bool isCustomController() { return false; }
 
-  virtual void onBump(Creature*) = 0;
+  virtual void onStartedControl() {}
+  virtual void onEndedControl() {}
+
+  virtual void onBump(WCreature) {}
 
   virtual ~Controller() {}
 
   SERIALIZATION_DECL(Controller);
 
   protected:
-  Creature* getCreature() const;
+  WCreature getCreature() const;
 
   private:
-  Creature* SERIAL(creature);
+  WCreature SERIAL(creature);
 };
 
 class DoNothingController : public Controller {
   public:
-  DoNothingController(Creature*);
+  DoNothingController(WCreature);
 
   virtual bool isPlayer() const override;
-  virtual void you(MsgType type, const string& param) override;
-  virtual void you(MsgType type, const vector<string>& param) override;
-  virtual void you(const string& param) override;
   virtual void makeMove() override;
-  virtual void onBump(Creature*) override;
+  virtual void onBump(WCreature) override;
+  virtual MessageGenerator& getMessageGenerator() const override;
 
   protected:
   SERIALIZATION_DECL(DoNothingController);
@@ -76,10 +75,10 @@ class DoNothingController : public Controller {
 
 class ControllerFactory {
   public:
-  ControllerFactory(function<SController(Creature*)>);
-  SController get(Creature*) const;
+  ControllerFactory(function<PController(WCreature)>);
+  PController get(WCreature) const;
 
   private:
-  function<SController(Creature*)> fun;
+  function<PController(WCreature)> fun;
 };
 

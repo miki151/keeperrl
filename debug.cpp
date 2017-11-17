@@ -18,15 +18,8 @@
 #include "debug.h"
 #include "util.h"
 
-static void fail() {
+void fail() {
   *((int*) 0x1234) = 0; // best way to fail
-}
-
-namespace boost {
-  void assertion_failed(char const * expr, char const * function, char const * file, long line) {
-    FATAL << "Assertion at " << file << ":" << (int)line;
-    fail();
-  }
 }
 
 DebugOutput DebugOutput::toStream(std::ostream& o) {
@@ -42,6 +35,10 @@ DebugOutput DebugOutput::crash() {
   return DebugOutput(*(new stringstream()), [] { fail(); });
 }
 
+DebugOutput DebugOutput::exitProgram() {
+  return DebugOutput(*(new stringstream()), [] { exit(0); });
+}
+
 void DebugLog::addOutput(DebugOutput o) {
   outputs.push_back(o);
 }
@@ -52,3 +49,4 @@ DebugLog::Logger DebugLog::get() {
 
 DebugLog InfoLog;
 DebugLog FatalLog;
+DebugLog UserErrorLog;

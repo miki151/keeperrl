@@ -1,5 +1,8 @@
 #pragma once
 
+#include "stdafx.h"
+#include "extern/optional.h"
+
 class Clock {
   public:
   Clock();

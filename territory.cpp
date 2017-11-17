@@ -3,12 +3,7 @@
 #include "position.h"
 #include "movement_type.h"
 
-template <class Archive>
-void Territory::serialize(Archive& ar, const unsigned int version) {
-  ar & SVAR(allSquares) & SVAR(allSquaresVec);
-}
-
-SERIALIZABLE(Territory);
+SERIALIZE_DEF(Territory, allSquares, allSquaresVec, centralPoint)
 
 void Territory::clearCache() {
   extendedCache.clear();
@@ -24,9 +19,13 @@ void Territory::insert(Position pos) {
 }
 
 void Territory::remove(Position pos) {
-  removeElement(allSquaresVec, pos);
+  allSquaresVec.removeElement(pos);
   allSquares.erase(pos);
   clearCache();
+}
+
+void Territory::setCentralPoint(Position pos) {
+  centralPoint = pos;
 }
   
 bool Territory::contains(Position pos) const {
@@ -49,15 +48,14 @@ vector<Position> Territory::calculateExtended(int minRadius, int maxRadius) cons
   for (int i = 0; i < extendedQueue.size(); ++i) {
     Position pos = extendedQueue[i];
     for (Position v : pos.neighbors8())
-      if (!contains(v) && !extendedTiles.count(v) 
-          && v.canEnterEmpty({MovementTrait::WALK})) {
+      if (!contains(v) && !extendedTiles.count(v) && v.canEnterEmpty({MovementTrait::WALK})) {
         int a = extendedTiles[v] = extendedTiles[pos] + 1;
         if (a < maxRadius)
           extendedQueue.push_back(v);
       }
   }
   if (minRadius > 0)
-    return filter(extendedQueue, [&] (const Position& v) { return extendedTiles.at(v) >= minRadius; });
+    return extendedQueue.filter([&] (const Position& v) { return extendedTiles.at(v) >= minRadius; });
   return extendedQueue;
 }
 
@@ -79,5 +77,9 @@ const vector<Position>& Territory::getExtended(int max) const {
 
 bool Territory::isEmpty() const {
   return allSquaresVec.empty();
+}
+
+const optional<Position>& Territory::getCentralPoint() const {
+  return centralPoint;
 }
 

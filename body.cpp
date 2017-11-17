@@ -25,13 +25,22 @@ static double getDefaultWeight(Body::Size size) {
   }
 }
 
-SERIALIZE_DEF(Body, xhumanoid, size, weight, bodyParts, injuredBodyParts, lostBodyParts, material, health, minionFood, deathSound);
+SERIALIZE_DEF(Body, xhumanoid, size, weight, bodyParts, injuredBodyParts, lostBodyParts, material, health, minionFood, deathSound, carryLimit, doesntEat)
 
-SERIALIZATION_CONSTRUCTOR_IMPL(Body);
+SERIALIZATION_CONSTRUCTOR_IMPL(Body)
+
+static double getDefaultCarryLimit(Body::Size size) {
+  switch (size) {
+    case Body::Size::HUGE: return 200;
+    case Body::Size::LARGE: return 80;
+    case Body::Size::MEDIUM: return 60;
+    case Body::Size::SMALL: return 6;
+  }
+}
 
 Body::Body(bool humanoid, Material m, Size s) : xhumanoid(humanoid), size(s),
     weight(getDefaultWeight(size)), material(m),
-    deathSound(humanoid ? SoundId::HUMANOID_DEATH : SoundId::BEAST_DEATH) {
+    deathSound(humanoid ? SoundId::HUMANOID_DEATH : SoundId::BEAST_DEATH), carryLimit(getDefaultCarryLimit(size)) {
   if (humanoid)
     setHumanoidBodyParts();
 }
@@ -103,6 +112,16 @@ Body& Body::setDeathSound(optional<SoundId> s) {
   return *this;
 }
 
+Body& Body::setNoCarryLimit() {
+  carryLimit = none;
+  return *this;
+}
+
+Body& Body::setDoesntEat() {
+  doesntEat = true;
+  return *this;
+}
+
 bool Body::canHeal() const {
   return health < 1;
 }
@@ -111,28 +130,29 @@ bool Body::hasHealth() const {
   switch (material) {
     case Material::FLESH:
     case Material::SPIRIT:
-    case Material::FIRE: return true;
+    case Material::FIRE:
+      return true;
     default: return false;
   }
 }
 
-double Body::getMinDamage(BodyPart part) const {
-  double ret;
-  switch (part) {
-    case BodyPart::WING: ret = 0.3; break;
-    case BodyPart::ARM: ret = 0.6; break;
-    case BodyPart::LEG:
-    case BodyPart::HEAD: ret = 0.8; break;
-    case BodyPart::BACK:
-    case BodyPart::TORSO: ret = 1.5; break;
-  }
+bool Body::isPartDamaged(BodyPart part, double damage) const {
+  double strength = [&] {
+    switch (part) {
+      case BodyPart::WING: return 0.3;
+      case BodyPart::ARM: return 0.6;
+      case BodyPart::LEG:
+      case BodyPart::HEAD: return 0.8;
+      case BodyPart::BACK:
+      case BodyPart::TORSO: return 1.5;
+    }
+  }();
   if (material == Material::FLESH)
-    return ret;
-  else
+    return damage >= strength;
   if (material == Material::SPIRIT)
-    return 10000;
+    return false;
   else
-    return ret / 2;
+    return Random.chance(damage / strength);
 }
 
 BodyPart Body::armOrWing() const {
@@ -179,6 +199,7 @@ void Body::clearInjured(BodyPart part) {
 }
 
 void Body::clearLost(BodyPart part) {
+  bodyParts[part] += lostBodyParts[part];
   lostBodyParts[part] = 0;
 }
 
@@ -203,45 +224,75 @@ BodyPart Body::getBodyPart(AttackLevel attack, bool flying, bool collapsed) cons
        else
          return BodyPart::LEG;
   }
-  return BodyPart::ARM;
 }
 
-void Body::injureBodyPart(Creature* creature, BodyPart part, bool drop) {
-  bool wasCollapsed = isCollapsed(creature);
-  if (numBodyParts(part) == 0)
+void Body::healBodyParts(WCreature creature, bool regrow) {
+  auto updateEffects = [&] (BodyPart part, int count) {
+    switch (part) {
+      case BodyPart::LEG:
+        creature->removePermanentEffect(LastingEffect::COLLAPSED, count);
+        break;
+      case BodyPart::WING:
+        creature->addPermanentEffect(LastingEffect::FLYING, count);
+        break;
+      case BodyPart::HEAD:
+        if (numGood(BodyPart::HEAD) == 1)
+          creature->removePermanentEffect(LastingEffect::BLIND, count);
+        break;
+      default:
+        break;
+    }
+  };
+  for (BodyPart part : ENUM_ALL(BodyPart))
+    if (int count = numInjured(part)) {
+      creature->you(MsgType::YOUR,
+          string(getName(part)) + (count > 1 ? "s are" : " is") + " in better shape");
+      clearInjured(part);
+      updateEffects(part, count);
+    }
+  if (regrow)
+    for (BodyPart part : ENUM_ALL(BodyPart))
+      if (int count = numLost(part)) {
+        creature->you(MsgType::YOUR, string(getName(part)) + (count > 1 ? "s grow back!" : " grows back!"));
+        clearLost(part);
+        updateEffects(part, count);
+      }
+}
+
+void Body::injureBodyPart(WCreature creature, BodyPart part, bool drop) {
+  if (bodyParts[part] == 0 || (!drop && injuredBodyParts[part] == bodyParts[part]))
     return;
   if (drop) {
     if (contains({BodyPart::LEG, BodyPart::ARM, BodyPart::WING}, part))
       creature->getGame()->getStatistics().add(StatId::CHOPPED_LIMB);
     else if (part == BodyPart::HEAD)
       creature->getGame()->getStatistics().add(StatId::CHOPPED_HEAD);
+    if (PItem item = getBodyPartItem(creature->getAttributes().getName().bare(), part))
+      creature->getPosition().dropItem(std::move(item));
     looseBodyPart(part);
   } else
     injureBodyPart(part);
   switch (part) {
+    case BodyPart::HEAD:
+      if (numGood(BodyPart::HEAD) == 0)
+        creature->addPermanentEffect(LastingEffect::BLIND);
+      break;
     case BodyPart::LEG:
-      if (!wasCollapsed && !creature->isAffected(LastingEffect::FLYING))
-        creature->you(MsgType::COLLAPSE, "");
+      creature->addPermanentEffect(LastingEffect::COLLAPSED);
       break;
     case BodyPart::ARM:
       if (creature->getWeapon())
         creature->dropWeapon();
       break;
     case BodyPart::WING:
-      if (creature->getAttributes().isAffectedPermanently(LastingEffect::FLYING))
-        creature->removePermanentEffect(LastingEffect::FLYING);
-/*      if ((numBodyParts(BodyPart::LEG) < 2 || numInjured(BodyPart::LEG) > 0))
-        collapsed = true;*/
+      creature->removePermanentEffect(LastingEffect::FLYING);
       break;
     default: break;
   }
-  if (drop)
-    if (PItem item = getBodyPartItem(creature->getAttributes().getName().bare(), part))
-      creature->getPosition().dropItem(std::move(item));
 }
 
 template <typename T>
-void consumeAttr(T& mine, const T& his, vector<string>& adjectives, const string& adj) {
+void consumeBodyAttr(T& mine, const T& his, vector<string>& adjectives, const string& adj) {
   if (mine < his) {
     mine = his;
     if (!adj.empty())
@@ -250,14 +301,13 @@ void consumeAttr(T& mine, const T& his, vector<string>& adjectives, const string
 }
 
 
-void Body::consumeBodyParts(Creature* c, const Body& other, vector<string>& adjectives) {
+void Body::consumeBodyParts(WCreature c, const Body& other, vector<string>& adjectives) {
   for (BodyPart part : ENUM_ALL(BodyPart))
     if (other.bodyParts[part] > bodyParts[part]) {
       if (bodyParts[part] + 1 == other.bodyParts[part])
-        c->you(MsgType::GROW, string("a ") + getBodyPartName(part));
+        c->you(MsgType::GROW, string("a ") + getName(part));
       else
-        c->you(MsgType::GROW, toString(other.bodyParts[part] - bodyParts[part]) + " " +
-            getBodyPartName(part) + "s");
+        c->you(MsgType::GROW, toString(other.bodyParts[part] - bodyParts[part]) + " " + getName(part) + "s");
       bodyParts[part] = other.bodyParts[part];
     }
   if (other.isHumanoid() && !isHumanoid() && numBodyParts(BodyPart::ARM) >= 2 &&
@@ -266,15 +316,17 @@ void Body::consumeBodyParts(Creature* c, const Body& other, vector<string>& adje
     c->addPersonalEvent(c->getName().the() + " turns into a humanoid");
     xhumanoid = true;
   }
-  consumeAttr(size, other.size, adjectives, "larger");
+  consumeBodyAttr(size, other.size, adjectives, "larger");
 }
 
 
 void Body::looseBodyPart(BodyPart part) {
-  --bodyParts[part];
-  ++lostBodyParts[part];
-  if (injuredBodyParts[part] > bodyParts[part])
-    --injuredBodyParts[part];
+  if (bodyParts[part] > 0) {
+    --bodyParts[part];
+    ++lostBodyParts[part];
+    if (injuredBodyParts[part] > bodyParts[part])
+      --injuredBodyParts[part];
+  }
 }
 
 void Body::injureBodyPart(BodyPart part) {
@@ -283,7 +335,7 @@ void Body::injureBodyPart(BodyPart part) {
 }
 
 
-const char* Body::getBodyPartName(BodyPart part) {
+const char* getName(BodyPart part) {
   switch (part) {
     case BodyPart::LEG: return "leg";
     case BodyPart::ARM: return "arm";
@@ -301,7 +353,6 @@ string sizeStr(Body::Size s) {
     case Body::Size::LARGE: return "large";
     case Body::Size::HUGE: return "huge";
   }
-  return 0;
 }
 
 static string getMaterialName(Body::Material material) {
@@ -317,7 +368,6 @@ static string getMaterialName(Body::Material material) {
     case Body::Material::SPIRIT: return "ectoplasm";
     case Body::Material::CLAY: return "clay";
     case Body::Material::IRON: return "iron";
-
   }
 }
 
@@ -339,7 +389,7 @@ string Body::getDescription() const {
     listParts = {BodyPart::WING};
   for (BodyPart part : listParts)
     if (int num = numBodyParts(part)) {
-      ret.push_back(getPluralText(getBodyPartName(part), num));
+      ret.push_back(getPluralText(getName(part), num));
       anyLimbs = true;
     }
   if (xhumanoid) {
@@ -384,17 +434,17 @@ PItem Body::getBodyPartItem(const string& name, BodyPart part) {
   switch (material) {
     case Material::FLESH:
     case Material::UNDEAD_FLESH:
-      return ItemFactory::corpse(name + " " + getBodyPartName(part), name + " " + getBodyPartBone(part),
+      return ItemFactory::corpse(name + " " + getName(part), name + " " + getBodyPartBone(part),
         weight / 8, isMinionFood() ? ItemClass::FOOD : ItemClass::CORPSE);
     case Material::CLAY:
     case Material::ROCK:
-      return ItemFactory::fromId(ItemId::ROCK);
+      return ItemType(ItemType::Rock{}).get();
     case Material::BONE:
-      return ItemFactory::fromId(ItemId::BONE);
+      return ItemType(ItemType::Bone{}).get();
     case Material::IRON:
-      return ItemFactory::fromId(ItemId::IRON_ORE);
+      return ItemType(ItemType::IronOre{}).get();
     case Material::WOOD:
-      return ItemFactory::fromId(ItemId::WOOD_PLANK);
+      return ItemType(ItemType::WoodPlank{}).get();
     default: return nullptr;
   }
 }
@@ -403,19 +453,19 @@ vector<PItem> Body::getCorpseItem(const string& name, Creature::Id id) {
   switch (material) {
     case Material::FLESH:
     case Material::UNDEAD_FLESH:
-      return makeVec<PItem>(
+      return makeVec(
           ItemFactory::corpse(name + " corpse", name + " skeleton", weight,
             minionFood ? ItemClass::FOOD : ItemClass::CORPSE,
             {id, true, numBodyParts(BodyPart::HEAD) > 0, false}));
     case Material::CLAY:
     case Material::ROCK:
-      return ItemFactory::fromId(ItemId::ROCK, numCorpseItems(size));
+      return ItemType(ItemType::Rock{}).get(numCorpseItems(size));
     case Material::BONE:
-      return ItemFactory::fromId(ItemId::BONE, numCorpseItems(size));
+      return ItemType(ItemType::Bone{}).get(numCorpseItems(size));
     case Material::IRON:
-      return ItemFactory::fromId(ItemId::IRON_ORE, numCorpseItems(size));
+      return ItemType(ItemType::IronOre{}).get(numCorpseItems(size));
     case Material::WOOD:
-      return ItemFactory::fromId(ItemId::WOOD_PLANK, numCorpseItems(size));
+      return ItemType(ItemType::WoodPlank{}).get(numCorpseItems(size));
     default: return {};
   }
 }
@@ -425,19 +475,19 @@ void Body::affectPosition(Position position) {
     position.fireDamage(1);
 }
 
-bool Body::takeDamage(const Attack& attack, Creature* creature, double damage) {
+bool Body::takeDamage(const Attack& attack, WCreature creature, double damage) {
   bleed(creature, damage);
-  AttackType attackType = attack.getType();
-  BodyPart part = attack.inTheBack() && Random.roll(3) ? BodyPart::BACK :
-    getBodyPart(attack.getLevel(), creature->isAffected(LastingEffect::FLYING), isCollapsed(creature));
-  if (damage >= getMinDamage(part) && numGood(part) > 0) {
-    creature->youHit(part, attackType); 
-    injureBodyPart(creature, part, contains({AttackType::CUT, AttackType::BITE}, attackType));
+  BodyPart part = getBodyPart(attack.level, creature->isAffected(LastingEffect::FLYING),
+      creature->isAffected(LastingEffect::COLLAPSED));
+  if (isPartDamaged(part, damage) && numGood(part) > 0) {
+    creature->youHit(part, attack.type);
+    injureBodyPart(creature, part, contains({AttackType::CUT, AttackType::BITE}, attack.type));
     if (isCritical(part)) {
       creature->you(MsgType::DIE, "");
-      creature->die(attack.getAttacker());
+      creature->dieWithAttacker(attack.attacker);
       return true;
     }
+    creature->addEffect(LastingEffect::BLEEDING, 50);
     if (health <= 0)
       health = 0.1;
     return false;
@@ -445,66 +495,38 @@ bool Body::takeDamage(const Attack& attack, Creature* creature, double damage) {
   if (health <= 0) {
     creature->you(MsgType::ARE, "critically wounded");
     creature->you(MsgType::DIE, "");
-    creature->die(attack.getAttacker());
+    creature->dieWithAttacker(attack.attacker);
     return true;
   } else
-    if (health < 0.5)
-      creature->you(MsgType::ARE, "critically wounded");
-    else {
-      if (hasHealth())
-        creature->you(MsgType::ARE, "wounded");
-      else if (!attack.getEffect())
-        creature->you(MsgType::ARE, "not hurt");
-    }
-  if (auto effect = attack.getEffect())
-    Effect::applyToCreature(creature, *effect, EffectStrength::WEAK);
+  if (health < 0.5)
+    creature->you(MsgType::ARE, "critically wounded");
+  else {
+    if (hasHealth())
+      creature->you(MsgType::ARE, "wounded");
+    else if (!attack.effect)
+      creature->you(MsgType::ARE, "not hurt");
+  }
   return false;
-}
-
-bool Body::isBleeding() const {
-  return health < 0.5;
 }
 
 void Body::getBadAdjectives(vector<AdjectiveInfo>& ret) const {
   if (health < 1)
-    ret.push_back({isBleeding() ? "Bleeding" : "Wounded", ""});
+    ret.push_back({"Wounded", ""});
   for (BodyPart part : ENUM_ALL(BodyPart))
     if (int num = numInjured(part))
-      ret.push_back({getPlural(string("Injured ") + getBodyPartName(part), num), ""});
+      ret.push_back({getPlural(string("Injured ") + getName(part), num), ""});
   for (BodyPart part : ENUM_ALL(BodyPart))
     if (int num = numLost(part))
-      ret.push_back({getPlural(string("Lost ") + getBodyPartName(part), num), ""});
+      ret.push_back({getPlural(string("Lost ") + getName(part), num), ""});
 }
 
-void Body::healLimbs(Creature* creature, bool regrow) {
-  for (BodyPart part : ENUM_ALL(BodyPart))
-    if (numInjured(part) > 0) {
-      creature->you(MsgType::YOUR, string(getBodyPartName(part)) + (numInjured(part) > 1 ? "s are" : " is") +
-          " in better shape");
-      if (part == BodyPart::LEG && numLost(BodyPart::LEG) == 0 && isCollapsed(creature))
-        creature->you(MsgType::STAND_UP, "");
-      clearInjured(part);
-    }
-  if (regrow)
-    for (BodyPart part : ENUM_ALL(BodyPart))
-      if (int numInjured = numLost(part)) {
-        creature->you(MsgType::YOUR, string(getBodyPartName(part)) +
-            (numInjured > 1 ? "s grow back!" : " grows back!"));
-        if (part == BodyPart::LEG && isCollapsed(creature))
-          creature->you(MsgType::STAND_UP, "");
-        if (part == BodyPart::WING)
-          creature->addPermanentEffect(LastingEffect::FLYING);
-        clearLost(part);
-      }
-}
-
-map<BodyPart, int> dexPenalty {
+const static map<BodyPart, int> defensePenalty {
   {BodyPart::ARM, 2},
   {BodyPart::LEG, 10},
   {BodyPart::WING, 3},
   {BodyPart::HEAD, 3}};
 
-map<BodyPart, int> strPenalty {
+const static map<BodyPart, int> damagePenalty {
   {BodyPart::ARM, 2},
   {BodyPart::LEG, 5},
   {BodyPart::WING, 2},
@@ -512,16 +534,16 @@ map<BodyPart, int> strPenalty {
 
 double Body::modifyAttr(AttrType type, double def) const {
   switch (type) {
-    case AttrType::STRENGTH:
-        if (health < 1)
-          def *= 0.666 + health / 3;
-        for (auto elem : strPenalty)
+    case AttrType::DAMAGE:
+        //if (health < 1)
+        //  def *= 0.666 + health / 3;
+        for (auto elem : damagePenalty)
           def -= elem.second * (numInjured(elem.first) + numLost(elem.first));
         break;
-    case AttrType::DEXTERITY:
-        if (health < 1)
-          def *= 0.666 + health / 3;
-        for (auto elem : dexPenalty)
+    case AttrType::DEFENSE:
+        //if (health < 1)
+        //  def *= 0.666 + health / 3;
+        for (auto elem : defensePenalty)
           def -= elem.second * (numInjured(elem.first) + numLost(elem.first));
         break;
     default: break;
@@ -529,25 +551,10 @@ double Body::modifyAttr(AttrType type, double def) const {
   return def;
 }
 
-bool Body::tick(const Creature* c) {
+bool Body::tick(WConstCreature c) {
   if (fallsApartFromDamage() && lostOrInjuredBodyParts() >= 4) {
     c->you(MsgType::FALL, "apart");
     return true;
-  }
-  if (isBleeding()) {
-    health -= 1.0 / 40;
-    c->playerMessage(PlayerMessage("You are bleeding.", MessagePriority::HIGH));
-  }
-  if (health <= 0) {
-    c->you(MsgType::DIE_OF, c->isAffected(LastingEffect::POISON) ? "poisoning" : "bleeding");
-    return true;
-  }
-  if (c->getPosition().sunlightBurns() && isUndead()) {
-    c->you(MsgType::ARE, "burnt by the sun");
-    if (Random.roll(10)) {
-      c->you(MsgType::YOUR, "body crumbles to dust");
-      return true;
-    }
   }
   return false;
 }
@@ -564,16 +571,12 @@ void Body::updateViewObject(ViewObject& obj) const {
   }
 }
 
-bool Body::heal(Creature* c, double amount, bool replaceLimbs) {
+bool Body::heal(WCreature c, double amount) {
   INFO << c->getName().the() << " heal";
-  if (replaceLimbs)
-    healLimbs(c, true);
   if (health < 1) {
     health = min(1., health + amount);
-    if (health >= 0.5)
-      healLimbs(c, replaceLimbs);
-    if (health == 1) {
-      c->you(MsgType::BLEEDING_STOPS, "");
+    if (health >= 1) {
+      c->you(MsgType::ARE, "fully healed");
       health = 1;
       c->updateViewObject();
       return true;
@@ -592,8 +595,23 @@ bool Body::isIntrinsicallyAffected(LastingEffect effect) const {
         case Material::WOOD: return false;
         default: return true;
       }
+    case LastingEffect::SUNLIGHT_VULNERABLE:
+      return material == Material::UNDEAD_FLESH;
     case LastingEffect::POISON_RESISTANT:
       return material != Material::FLESH;
+    case LastingEffect::SLEEP_RESISTANT:
+      switch (material) {
+        case Material::WATER:
+        case Material::FIRE:
+        case Material::SPIRIT:
+        case Material::CLAY:
+        case Material::ROCK:
+        case Material::IRON:
+        case Material::LAVA:
+          return true;
+        default:
+          return false;
+      }
     case LastingEffect::FLYING:
       return numGood(BodyPart::WING) >= 2;
     default:
@@ -601,24 +619,28 @@ bool Body::isIntrinsicallyAffected(LastingEffect effect) const {
   }
 }
 
-void Body::fireDamage(Creature* c, double amount) {
-  c->you(MsgType::ARE, "burnt by the fire");
-  bleed(c, 6. * amount / double(1 + c->getAttr(AttrType::STRENGTH)));
-}
-
-bool Body::affectByPoison(Creature* c, double amount) {
-  if (material == Material::FLESH) {
-    bleed(c, amount);
-    c->playerMessage("You feel poison flowing in your veins.");
-    if (health <= 0) {
-      c->you(MsgType::DIE_OF, "poisoning");
-      return true;
-    }
+bool Body::isImmuneTo(LastingEffect effect) const {
+  switch (effect) {
+    case LastingEffect::BLEEDING:
+      return material != Material::FLESH;
+    case LastingEffect::TIED_UP:
+    case LastingEffect::ENTANGLED:
+      switch (material) {
+        case Material::WATER:
+        case Material::FIRE:
+        case Material::SPIRIT:
+          return true;
+        default:
+          break;
+      }
+      break;
+    default:
+      break;
   }
   return false;
 }
 
-bool Body::affectByPoisonGas(Creature* c, double amount) {
+bool Body::affectByPoisonGas(WCreature c, double amount) {
   if (!c->isAffected(LastingEffect::POISON_RESISTANT) && material == Material::FLESH) {
     bleed(c, amount / 20);
     c->you(MsgType::ARE, "poisoned by the gas");
@@ -630,17 +652,17 @@ bool Body::affectByPoisonGas(Creature* c, double amount) {
   return false;
 }
 
-void Body::affectByTorture(Creature* c) {
+void Body::affectByTorture(WCreature c) {
   bleed(c, 0.1);
   if (health < 0.3) {
     if (!Random.roll(8))
       c->heal();
     else
-      c->die("killed by torture");
+      c->dieWithReason("killed by torture");
   }
 }
 
-bool Body::affectBySilver(Creature* c) {
+bool Body::affectBySilver(WCreature c) {
   if (isUndead()) {
     c->you(MsgType::ARE, "hurt by the silver");
     bleed(c, Random.getDouble(0.0, 0.15));
@@ -648,7 +670,7 @@ bool Body::affectBySilver(Creature* c) {
   return health <= 0;
 }
 
-bool Body::affectByAcid(Creature* c) {
+bool Body::affectByAcid(WCreature c) {
   switch (material) {
     case Material::FIRE:
     case Material::SPIRIT:
@@ -660,7 +682,13 @@ bool Body::affectByAcid(Creature* c) {
   return health <= 0;
 }
 
-void Body::bleed(Creature* c, double amount) {
+bool Body::affectByFire(WCreature c, double amount) {
+  c->you(MsgType::ARE, "burnt by the fire");
+  bleed(c, 6. * amount / double(1 + c->getAttr(AttrType::DEFENSE)));
+  return health <= 0;
+}
+
+void Body::bleed(WCreature c, double amount) {
   if (hasHealth()) {
     health -= amount;
     c->updateViewObject();
@@ -705,25 +733,12 @@ bool Body::canConsume() const {
   }
 }
 
-bool Body::isSunlightVulnerable() const {
-  return material == Material::UNDEAD_FLESH;
-}
-
 bool Body::isWounded() const {
   return health < 1;
 }
 
 bool Body::isSeriouslyWounded() const {
   return health < 0.5;
-}
-
-bool Body::canEntangle() const {
-  switch (material) {
-    case Material::WATER:
-    case Material::FIRE:
-    case Material::SPIRIT: return false;
-    default: return true;
-  }
 }
 
 double Body::getHealth() const {
@@ -734,24 +749,23 @@ bool Body::hasBrain() const {
   return material == Material::FLESH;
 }
 
-bool Body::fallsApartFromDamage() const {
+bool Body::needsToEat() const {
   switch (material) {
     case Material::FLESH:
-    case Material::FIRE:
-    case Material::SPIRIT:
-    case Material::WATER: return false;
-    default: return true;
-
+    case Material::BONE:
+    case Material::UNDEAD_FLESH:
+      return !doesntEat;
+    default:
+      return false;
   }
+}
+
+bool Body::fallsApartFromDamage() const {
+  return !hasHealth();
 }
 
 bool Body::isUndead() const {
   return material == Material::UNDEAD_FLESH || material == Material::BONE;
-}
-
-bool Body::isCollapsed(const Creature* c) const {
-  return (numInjured(BodyPart::LEG) + numLost(BodyPart::LEG) > 0 && !c->isAffected(LastingEffect::FLYING))
-   || (numInjured(BodyPart::WING) + numLost(BodyPart::WING) > 0 && numGood(BodyPart::LEG) < 2);
 }
 
 vector<AttackLevel> Body::getAttackLevels() const {
@@ -782,12 +796,14 @@ optional<Sound> Body::getDeathSound() const {
 }
 
 double Body::getBoulderDamage() const {
-    switch (size) {
-      case Body::Size::HUGE: return 1;
-      case Body::Size::LARGE: return 0.3;
-      case Body::Size::MEDIUM: return 0.15;
-      case Body::Size::SMALL: return 0;
-    }
+  switch (size) {
+    case Body::Size::HUGE: return 1;
+    case Body::Size::LARGE: return 0.3;
+    case Body::Size::MEDIUM: return 0.15;
+    case Body::Size::SMALL: return 0;
   }
+}
 
-
+const optional<double>& Body::getCarryLimit() const {
+  return carryLimit;
+}

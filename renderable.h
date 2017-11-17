@@ -1,5 +1,8 @@
 #pragma once
 
+#include "serialization.h"
+#include "util.h"
+
 class ViewObject;
 
 class Renderable {

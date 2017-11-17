@@ -13,8 +13,7 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
-#ifndef _STDAFX_H
-#define _STDAFX_H
+#pragma once
 
 #ifndef RELEASE
 #if __has_cpp_attribute(nodiscard)
@@ -41,6 +40,7 @@
 #include <iostream>
 #include <fstream>
 #include <algorithm>
+#include <functional>
 #include <sstream>
 #include <string>
 #include <cstdlib>
@@ -63,6 +63,7 @@
 #include <tuple>
 #include <numeric>
 #include <chrono>
+#include <cstddef>
 
 // Use boost threads on OSX to use the main thread for rendering
 // and set a large stack size for the model thread.
@@ -77,67 +78,20 @@
 #include <mutex>
 #include <atomic>
 #include <condition_variable>
-#include "extern/portable_iarchive.hpp"
-#include "extern/portable_oarchive.hpp"
 
-
-#define BOOST_ENABLE_ASSERT_HANDLER
-#include <boost/assert.hpp>
-
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/serialization/export.hpp>
-#include <boost/serialization/deque.hpp>
-#include <boost/serialization/set.hpp>
-#include <boost/serialization/utility.hpp>
-#include <boost/serialization/string.hpp>
-#include <boost/serialization/array.hpp>
-#include "variant_serialization.h"
-#include <boost/serialization/optional.hpp>
-#include <boost/serialization/bitset.hpp>
-#include <boost/serialization/shared_ptr.hpp>
-#include <boost/serialization/weak_ptr.hpp>
-#include <boost/serialization/unique_ptr.hpp>
-#include <boost/algorithm/string/replace.hpp>
-#include <boost/variant.hpp>
-#include <boost/any.hpp>
-#include <boost/optional.hpp>
-#include <boost/version.hpp>
-#include <boost/operators.hpp>
-
-#ifdef DEBUG_STL
-
-#include <debug/vector>
-//#include <debug/string>
-#include <string>
-#include <debug/deque>
-#include <debug/set>
-#include <debug/map>
-using __gnu_debug::vector;
-using __gnu_debug::map;
-using __gnu_debug::set;
-using __gnu_debug::deque;
-//using __gnu_debug::string;
-using std::string;
-
-#else
-
-#include <vector>
 #include <string>
 #include <deque>
-#include <set>
 #include <map>
-using std::vector;
+#include <set>
 using std::map;
-using std::set;
 using std::multiset;
 using std::deque;
 using std::string;
 
-#endif
-
 using std::queue;
 using std::unique_ptr;
+template<typename T, typename... Args>
+std::unique_ptr<T> unique(Args&&... args) { return std::unique_ptr<T>(new T(std::forward<Args>(args)...)); }
 using std::shared_ptr;
 using std::weak_ptr;
 using std::make_shared;
@@ -166,7 +120,6 @@ using std::stack;
 using std::uniform_int_distribution;
 using std::uniform_real_distribution;
 using std::make_tuple;
-using std::get;
 using std::hash;
 using std::array;
 
@@ -193,18 +146,3 @@ inline thread::id currentThreadId() { return std::this_thread::get_id(); }
 using std::atomic;
 using std::swap;
 using std::remove_if;
-using boost::variant;
-using boost::optional;
-using boost::none_t;
-using boost::none;
-using boost::replace_all;
-using eos::portable_oarchive;
-using eos::portable_iarchive;
-using boost::archive::text_iarchive;
-using boost::archive::text_oarchive;
-#include "serialization.h"
-#include "util.h"
-#include "debug.h"
-#include "enums.h"
-
-#endif

@@ -24,7 +24,6 @@
 #include "creature_attributes.h"
 #include "view_object.h"
 #include "view_id.h"
-#include "location.h"
 #include "creature.h"
 #include "game.h"
 #include "name_generator.h"
@@ -33,7 +32,6 @@
 #include "minion_task_map.h"
 #include "spell_map.h"
 #include "tribe.h"
-#include "square_type.h"
 #include "monster_ai.h"
 #include "sound.h"
 #include "player.h"
@@ -42,7 +40,6 @@
 #include "attack_type.h"
 #include "attack_level.h"
 #include "attack.h"
-#include "event_proxy.h"
 #include "spell_map.h"
 #include "item_type.h"
 #include "item.h"
@@ -51,8 +48,8 @@
 #include "experience_type.h"
 #include "creature_debt.h"
 
-SERIALIZE_DEF(CreatureFactory, tribe, creatures, weights, unique, tribeOverrides, levelIncrease)
-SERIALIZATION_CONSTRUCTOR_IMPL(CreatureFactory);
+SERIALIZE_DEF(CreatureFactory, tribe, creatures, weights, unique, tribeOverrides, levelIncrease, baseLevelIncrease, inventory)
+SERIALIZATION_CONSTRUCTOR_IMPL(CreatureFactory)
 
 CreatureFactory CreatureFactory::singleCreature(TribeId tribe, CreatureId id) {
   return CreatureFactory(tribe, {id}, {1}, {});
@@ -60,13 +57,13 @@ CreatureFactory CreatureFactory::singleCreature(TribeId tribe, CreatureId id) {
 
 class BoulderController : public Monster {
   public:
-  BoulderController(Creature* c, Vec2 dir) : Monster(c, MonsterAIFactory::idle()), direction(dir) {
+  BoulderController(WCreature c, Vec2 dir) : Monster(c, MonsterAIFactory::idle()), direction(dir) {
     CHECK(direction.length4() == 1);
   }
 
   virtual void makeMove() override {
     Position nextPos = getCreature()->getPosition().plus(direction);
-    if (Creature* c = nextPos.getCreature()) {
+    if (WCreature c = nextPos.getCreature()) {
       if (!c->getBody().isKilledByBoulder()) {
         if (nextPos.canEnterEmpty(getCreature())) {
           getCreature()->swapPosition(direction);
@@ -75,58 +72,49 @@ class BoulderController : public Monster {
       } else {
         health -= c->getBody().getBoulderDamage();
         if (health <= 0) {
-          nextPos.globalMessage(getCreature()->getName().the() + " crashes on " + c->getName().the(),
-                "You hear a crash");
-          getCreature()->die();
-          c->takeDamage(Attack(getCreature(), AttackLevel::MIDDLE, AttackType::HIT, 1000, 35, false));
+          nextPos.globalMessage(getCreature()->getName().the() + " crashes on " + c->getName().the());
+          nextPos.unseenMessage("You hear a crash");
+          getCreature()->dieNoReason();
+          c->takeDamage(Attack(getCreature(), AttackLevel::MIDDLE, AttackType::HIT, 1000, AttrType::DAMAGE));
           return;
         } else {
           c->you(MsgType::KILLED_BY, getCreature()->getName().the());
-          c->die(getCreature());
+          c->dieWithAttacker(getCreature());
         }
       }
     }
     if (auto furniture = nextPos.getFurniture(FurnitureLayer::MIDDLE))
       if (furniture->canDestroy(getCreature()->getMovementType(), DestroyAction::Type::BOULDER) &&
           *furniture->getStrength(DestroyAction::Type::BOULDER) <
-          health * getCreature()->getAttr(AttrType::STRENGTH)) {
+          health * getCreature()->getAttr(AttrType::DAMAGE)) {
         health -= *furniture->getStrength(DestroyAction::Type::BOULDER) /
-            (double) getCreature()->getAttr(AttrType::STRENGTH);
+            (double) getCreature()->getAttr(AttrType::DAMAGE);
         getCreature()->destroyImpl(direction, DestroyAction::Type::BOULDER);
       }
     if (auto action = getCreature()->move(direction))
       action.perform(getCreature());
     else {
-      nextPos.globalMessage(getCreature()->getName().the() + " crashes on the " + nextPos.getName(),
-          "You hear a crash");
-      getCreature()->die();
+      nextPos.globalMessage(getCreature()->getName().the() + " crashes on the " + nextPos.getName());
+      nextPos.unseenMessage("You hear a crash");
+      getCreature()->dieNoReason();
       return;
     }
     int speed = getCreature()->getAttr(AttrType::SPEED);
     double deceleration = 0.1;
     speed -= deceleration * 100 * 100 / speed;
     if (speed < 30 && !getCreature()->isDead()) {
-      getCreature()->die();
+      getCreature()->dieNoReason();
       return;
     }
     getCreature()->getAttributes().setBaseAttr(AttrType::SPEED, speed);
   }
 
-  virtual void you(MsgType type, const string& param) override {
-    string msg, msgNoSee;
-    switch (type) {
-      case MsgType::BURN: msg = getCreature()->getName().the() + " burns in the " + param; break;
-      case MsgType::DROWN: msg = getCreature()->getName().the() + " falls into the " + param;
-                           msgNoSee = "You hear a loud splash"; break;
-      case MsgType::KILLED_BY: msg = getCreature()->getName().the() + " is destroyed by " + param; break;
-      case MsgType::ENTER_PORTAL: msg = getCreature()->getName().the() + " disappears in the portal."; break;
-      default: break;
-    }
-    if (!msg.empty())
-      getCreature()->monsterMessage(msg, msgNoSee);
+  virtual MessageGenerator& getMessageGenerator() const override {
+    static MessageGenerator g(MessageGenerator::BOULDER);
+    return g;
   }
 
-  SERIALIZE_ALL2(Monster, direction)
+  SERIALIZE_ALL(SUBCLASS(Monster), direction)
   SERIALIZATION_CONSTRUCTOR(BoulderController)
 
   private:
@@ -137,47 +125,39 @@ class BoulderController : public Monster {
 PCreature CreatureFactory::getRollingBoulder(TribeId tribe, Vec2 direction) {
   ViewObject viewObject(ViewId::BOULDER, ViewLayer::CREATURE);
   viewObject.setModifier(ViewObjectModifier::NO_UP_MOVEMENT);
-  return PCreature(new Creature(viewObject, tribe, CATTR(
+  auto ret = makeOwner<Creature>(viewObject, tribe, CATTR(
             c.viewId = ViewId::BOULDER;
-            c.attr[AttrType::DEXTERITY] = 1;
-            c.attr[AttrType::STRENGTH] = 250;
+            c.attr[AttrType::DAMAGE] = 250;
+            c.attr[AttrType::DEFENSE] = 250;
             c.body = Body::nonHumanoid(Body::Material::ROCK, Body::Size::HUGE).setDeathSound(none);
             c.attr[AttrType::SPEED] = 140;
             c.permanentEffects[LastingEffect::BLIND] = 1;
             c.boulder = true;
             c.name = "boulder";
-            ), ControllerFactory([direction](Creature* c) {
-              return SController(new BoulderController(c, direction)); })));
+            ));
+  ret->setController(makeOwner<BoulderController>(ret.get(), direction));
+  return ret;
 }
 
 class SokobanController : public Monster {
   public:
-  SokobanController(Creature* c) : Monster(c, MonsterAIFactory::idle()) {}
+  SokobanController(WCreature c) : Monster(c, MonsterAIFactory::idle()) {}
 
-  virtual void onBump(Creature* player) override {
+  virtual void onBump(WCreature player) override {
     Vec2 goDir = player->getPosition().getDir(getCreature()->getPosition());
     if (goDir.isCardinal4() && getCreature()->getPosition().plus(goDir).canEnter(
           getCreature()->getMovementType().setForced(true))) {
-      getCreature()->displace(getCreature()->getLocalTime(), goDir);
+      getCreature()->displace(player->getLocalTime(), goDir);
       player->move(goDir).perform(player);
     }
   }
 
-  virtual void you(MsgType type, const string& param) override {
-    string msg, msgNoSee;
-    switch (type) {
-      case MsgType::BURN: msg = getCreature()->getName().the() + " burns in the " + param; break;
-      case MsgType::DROWN: msg = getCreature()->getName().the() + " falls into the " + param;
-                           msgNoSee = "You hear a loud splash"; break;
-      case MsgType::KILLED_BY: msg = getCreature()->getName().the() + " is destroyed by " + param; break;
-      case MsgType::ENTER_PORTAL: msg = getCreature()->getName().the() + " disappears in the portal."; break;
-      default: break;
-    }
-    if (!msg.empty())
-      getCreature()->monsterMessage(msg, msgNoSee);
+  virtual MessageGenerator& getMessageGenerator() const override {
+    static MessageGenerator g(MessageGenerator::BOULDER);
+    return g;
   }
 
-  SERIALIZE_SUBCLASS(Monster);
+  SERIALIZE_ALL(SUBCLASS(Monster));
   SERIALIZATION_CONSTRUCTOR(SokobanController);
 
   private:
@@ -186,16 +166,17 @@ class SokobanController : public Monster {
 PCreature CreatureFactory::getSokobanBoulder(TribeId tribe) {
   ViewObject viewObject(ViewId::BOULDER, ViewLayer::CREATURE);
   viewObject.setModifier(ViewObjectModifier::NO_UP_MOVEMENT).setModifier(ViewObjectModifier::REMEMBER);
-  return PCreature(new Creature(viewObject, tribe, CATTR(
+  auto ret = makeOwner<Creature>(viewObject, tribe, CATTR(
             c.viewId = ViewId::BOULDER;
-            c.attr[AttrType::DEXTERITY] = 1;
-            c.attr[AttrType::STRENGTH] = 1000;
+            c.attr[AttrType::DAMAGE] = 250;
+            c.attr[AttrType::DEFENSE] = 250;
             c.body = Body::nonHumanoid(Body::Material::ROCK, Body::Size::HUGE).setDeathSound(none);
             c.attr[AttrType::SPEED] = 140;
             c.permanentEffects[LastingEffect::BLIND] = 1;
             c.boulder = true;
-            c.name = "boulder";), ControllerFactory([](Creature* c) { 
-              return SController(new SokobanController(c)); })));
+            c.name = "boulder";));
+  ret->setController(makeOwner<SokobanController>(ret.get()));
+  return ret;
 }
 
 CreatureAttributes CreatureFactory::getKrakenAttributes(ViewId id, const char* name) {
@@ -203,9 +184,8 @@ CreatureAttributes CreatureFactory::getKrakenAttributes(ViewId id, const char* n
       c.viewId = id;
       c.attr[AttrType::SPEED] = 40;
       c.body = Body::nonHumanoid(Body::Size::LARGE).setDeathSound(none);
-      c.attr[AttrType::STRENGTH] = 15;
-      c.attr[AttrType::DEXTERITY] = 15;
-      c.barehandedDamage = 10;
+      c.attr[AttrType::DAMAGE] = 15;
+      c.attr[AttrType::DEFENSE] = 15;
       c.permanentEffects[LastingEffect::POISON_RESISTANT] = 1;
       c.skills.insert(SkillId::SWIMMING);
       c.name = name;);
@@ -221,10 +201,10 @@ ViewId CreatureFactory::getViewId(CreatureId id) {
 
 class KrakenController : public Monster {
   public:
-  KrakenController(Creature* c) : Monster(c, MonsterAIFactory::monster()) {
+  KrakenController(WCreature c) : Monster(c, MonsterAIFactory::monster()) {
   }
 
-  KrakenController(Creature* c, KrakenController* f) : KrakenController(c) {
+  KrakenController(WCreature c, WeakPointer<KrakenController> f) : KrakenController(c) {
     father = f;
   }
 
@@ -239,50 +219,42 @@ class KrakenController : public Monster {
       return 7;
   }
 
-  virtual void onKilled(const Creature* attacker) override {
+  virtual void onKilled(WConstCreature attacker) override {
     if (attacker) {
       if (father)
-        attacker->playerMessage("You cut the kraken's tentacle");
+        attacker->secondPerson("You cut the kraken's tentacle");
       else
-        attacker->playerMessage("You kill the kraken!");
+        attacker->secondPerson("You kill the kraken!");
     }
-    for (Creature* c : spawns)
+    for (WCreature c : spawns)
       if (!c->isDead())
-        c->die(nullptr);
+        c->dieNoReason();
   }
 
-  virtual void you(MsgType type, const string& param) override {
-    string msg, msgNoSee;
-    switch (type) {
-      case MsgType::KILLED_BY:
-        if (father)
-          msg = param + "cuts the kraken's tentacle";
-        else
-          msg = param + "kills the kraken!";
-        break;
-      case MsgType::DIE:
-      case MsgType::DIE_OF: return;
-      default: Monster::you(type, param); break;
-    }
-    if (!msg.empty())
-      getCreature()->monsterMessage(msg, msgNoSee);
+  virtual MessageGenerator& getMessageGenerator() const override {
+    static MessageGenerator kraken(MessageGenerator::KRAKEN);
+    static MessageGenerator third(MessageGenerator::THIRD_PERSON);
+    if (father)
+      return kraken;
+    else
+      return third;
   }
 
-  void pullEnemy(Creature* held) {
+  void pullEnemy(WCreature held) {
     held->you(MsgType::HAPPENS_TO, getCreature()->getName().the() + " pulls");
     if (father) {
       held->setHeld(father->getCreature());
       Vec2 pullDir = held->getPosition().getDir(getCreature()->getPosition());
       double localTime = getCreature()->getLocalTime();
-      getCreature()->die(nullptr, false, false);
+      getCreature()->dieNoReason(Creature::DropType::NOTHING);
       held->displace(localTime, pullDir);
     } else {
       held->you(MsgType::ARE, "eaten by " + getCreature()->getName().the());
-      held->die();
+      held->dieNoReason();
     }
   }
 
-  Creature* getHeld() {
+  WCreature getHeld() {
     for (auto pos : getCreature()->getPosition().neighbors8())
       if (auto creature = pos.getCreature())
         if (creature->getHoldingCreature() == getCreature())
@@ -290,12 +262,12 @@ class KrakenController : public Monster {
     return nullptr;
   }
 
-  Creature* getVisibleEnemy() {
+  WCreature getVisibleEnemy() {
     const int radius = 10;
-    Creature* ret = nullptr;
+    WCreature ret = nullptr;
     auto myPos = getCreature()->getPosition();
     for (Position pos : getCreature()->getPosition().getRectangle(Rectangle::centered(Vec2(0, 0), radius)))
-      if (Creature* c = pos.getCreature())
+      if (WCreature c = pos.getCreature())
         if (c->getAttributes().getCreatureId() != getCreature()->getAttributes().getCreatureId() &&
             (!ret || ret->getPosition().dist8(myPos) > c->getPosition().dist8(myPos)) &&
             getCreature()->canSee(c) && getCreature()->isEnemy(c) && !c->getHoldingCreature())
@@ -303,7 +275,7 @@ class KrakenController : public Monster {
     return ret;
   }
 
-  void considerAttacking(Creature* c) {
+  void considerAttacking(WCreature c) {
     auto pos = c->getPosition();
     Vec2 v = getCreature()->getPosition().getDir(pos);
     if (v.length8() == 1) {
@@ -322,11 +294,9 @@ class KrakenController : public Monster {
         Vec2 move = Random.choose(moves);
         ViewId viewId = getCreature()->getPosition().plus(move).canEnter({MovementTrait::SWIM})
           ? ViewId::KRAKEN_WATER : ViewId::KRAKEN_LAND;
-        PCreature spawn(new Creature(getCreature()->getTribeId(),
-              CreatureFactory::getKrakenAttributes(viewId, "kraken tentacle"),
-              ControllerFactory([=](Creature* c) {
-                return SController(new KrakenController(c, this));
-                })));
+        auto spawn = makeOwner<Creature>(getCreature()->getTribeId(),
+              CreatureFactory::getKrakenAttributes(viewId, "kraken tentacle"));
+        spawn->setController(makeOwner<KrakenController>(spawn.get(), getThis().dynamicCast<KrakenController>()));
         spawns.push_back(spawn.get());
         getCreature()->getPosition().plus(move).addCreature(std::move(spawn));
       }
@@ -334,9 +304,9 @@ class KrakenController : public Monster {
   }
 
   virtual void makeMove() override {
-    for (Creature* c : spawns)
+    for (WCreature c : spawns)
       if (c->isDead()) {
-        removeElement(spawns, c);
+        spawns.removeElement(c);
         break;
       }
     if (spawns.empty()) {
@@ -346,35 +316,35 @@ class KrakenController : public Monster {
       } else if (auto c = getVisibleEnemy()) {
         considerAttacking(c);
       } else if (father && Random.roll(5)) {
-        getCreature()->die(nullptr, false, false);
+        getCreature()->dieNoReason(Creature::DropType::NOTHING);
         return;
       }
     }
     getCreature()->wait().perform(getCreature());
   }
 
-  SERIALIZE_ALL2(Monster, ready, spawns, father);
+  SERIALIZE_ALL(SUBCLASS(Monster), ready, spawns, father);
   SERIALIZATION_CONSTRUCTOR(KrakenController);
 
   private:
   bool SERIAL(ready) = false;
-  vector<Creature*> SERIAL(spawns);
-  KrakenController* SERIAL(father) = nullptr;
+  vector<WCreature> SERIAL(spawns);
+  WeakPointer<KrakenController> SERIAL(father);
 };
 
 class KamikazeController : public Monster {
   public:
-  KamikazeController(Creature* c, MonsterAIFactory f) : Monster(c, f) {}
+  KamikazeController(WCreature c, MonsterAIFactory f) : Monster(c, f) {}
 
   virtual void makeMove() override {
     for (Position pos : getCreature()->getPosition().neighbors8())
-      if (Creature* c = pos.getCreature())
+      if (WCreature c = pos.getCreature())
         if (getCreature()->isEnemy(c) && getCreature()->canSee(c)) {
-          getCreature()->monsterMessage(getCreature()->getName().the() + " explodes!");
+          getCreature()->thirdPerson(getCreature()->getName().the() + " explodes!");
           for (Position v : c->getPosition().neighbors8())
             v.fireDamage(1);
           c->getPosition().fireDamage(1);
-          getCreature()->die(nullptr, false);
+          getCreature()->dieNoReason(Creature::DropType::ONLY_INVENTORY);
           return;
         }
     Monster::makeMove();
@@ -388,220 +358,216 @@ class KamikazeController : public Monster {
   SERIALIZATION_CONSTRUCTOR(KamikazeController);
 };
 
-class ShopkeeperController : public Monster {
+class ShopkeeperController : public Monster, public EventListener<ShopkeeperController> {
   public:
-  ShopkeeperController(Creature* c, Location* area)
-      : Monster(c, MonsterAIFactory::stayInLocation(area)), eventProxy(this), shopArea(area) {
+  ShopkeeperController(WCreature c, Rectangle area)
+      : Monster(c, MonsterAIFactory::stayInLocation(area)), shopArea(area) {
   }
 
+  vector<Position> getAllShopPositions() const {
+    return shopArea.getAllSquares().transform([this](Vec2 v){ return Position(v, myLevel); });
+  }
 
+  bool isShopPosition(const Position& pos) {
+    return pos.isSameLevel(myLevel) && pos.getCoord().inRectangle(shopArea);
+  }
 
   virtual void makeMove() override {
-    if (!getCreature()->getPosition().isSameLevel(shopArea->getLevel())) {
-      Monster::makeMove();
-      return;
-    }
     if (firstMove) {
-      eventProxy->subscribeTo(getCreature()->getPosition().getModel());
-      for (Position v : shopArea->getAllSquares()) {
-        for (Item* item : v.getItems())
+      myLevel = getCreature()->getLevel();
+      subscribeTo(getCreature()->getPosition().getModel());
+      for (Position v : getAllShopPositions()) {
+        for (WItem item : v.getItems())
           item->setShopkeeper(getCreature());
         v.clearItemIndex(ItemIndex::FOR_SALE);
       }
       firstMove = false;
     }
-    vector<const Creature*> creatures;
-    for (Position v : shopArea->getAllSquares())
-      if (const Creature* c = v.getCreature()) {
-        creatures.push_back(c);
-        if (!prevCreatures.count(c) && !thieves.count(c) && !getCreature()->isEnemy(c)) {
-          if (!debtors.count(c))
-            c->playerMessage("\"Welcome to " + *getCreature()->getName().first() + "'s shop!\"");
+    if (!getCreature()->getPosition().isSameLevel(myLevel)) {
+      Monster::makeMove();
+      return;
+    }
+    vector<Creature::Id> creatures;
+    for (Position v : getAllShopPositions())
+      if (WCreature c = v.getCreature()) {
+        creatures.push_back(c->getUniqueId());
+        if (!prevCreatures.contains(c) && !thieves.contains(c) && !getCreature()->isEnemy(c)) {
+          if (!debtors.contains(c))
+            c->secondPerson("\"Welcome to " + *getCreature()->getName().first() + "'s shop!\"");
           else {
-            c->playerMessage("\"Pay your debt or... !\"");
+            c->secondPerson("\"Pay your debt or... !\"");
             thiefCount.erase(c);
           }
         }
       }
-    for (auto debtor : copyOf(debtors)) {
-      if (!contains(creatures, debtor)) {
-        debtor->playerMessage("\"Come back, you owe me " + toString(debtor->getDebt().getAmountOwed(getCreature())) +
-            " gold!\"");
-        if (++thiefCount[debtor] == 4) {
-          debtor->playerMessage("\"Thief! Thief!\"");
-          getCreature()->getTribe()->onItemsStolen(debtor);
-          thiefCount.erase(debtor);
-          debtors.erase(debtor);
-          thieves.insert(debtor);
-          for (Item* item : debtor->getEquipment().getItems())
-            item->setShopkeeper(nullptr);
-          break;
-        }
-      }
-    }
+    for (auto debtorId : copyOf(debtors))
+      if (!creatures.contains(debtorId))
+        for (auto pos : getCreature()->getPosition().getRectangle(Rectangle::centered(Vec2(0, 0), 30)))
+          if (auto debtor = pos.getCreature())
+            if (debtor->getUniqueId() == debtorId) {
+              debtor->privateMessage("\"Come back, you owe me " + toString(debtor->getDebt().getAmountOwed(getCreature())) +
+                  " gold!\"");
+              if (++thiefCount.getOrInit(debtor) == 4) {
+                debtor->privateMessage("\"Thief! Thief!\"");
+                getCreature()->getTribe()->onItemsStolen(debtor);
+                thiefCount.erase(debtor);
+                debtors.erase(debtor);
+                thieves.insert(debtor);
+                for (WItem item : debtor->getEquipment().getItems())
+                  item->setShopkeeper(nullptr);
+                break;
+              }
+            }
     prevCreatures.clear();
-    prevCreatures.insert(creatures.begin(), creatures.end());
+    for (auto c : creatures)
+      prevCreatures.insert(c);
     Monster::makeMove();
   }
 
-  virtual void onItemsGiven(vector<Item*> items, Creature* from) override {
-    int paid = (int) filter(items, Item::classPredicate(ItemClass::GOLD)).size();
+  virtual void onItemsGiven(vector<WItem> items, WCreature from) override {
+    int paid = items.filter(Item::classPredicate(ItemClass::GOLD)).size();
     from->getDebt().add(getCreature(), -paid);
     if (from->getDebt().getAmountOwed(getCreature()) <= 0)
       debtors.erase(from);
   }
   
   void onEvent(const GameEvent& event) {
-    switch (event.getId()) {
-      case EventId::ITEMS_APPEARED: {
-          auto info = event.get<EventInfo::ItemsAppeared>();
-          if (shopArea->contains(info.position)) {
-           for (Item* it : info.items) {
-             it->setShopkeeper(getCreature());
-             info.position.clearItemIndex(ItemIndex::FOR_SALE);
-           }
-         }
-        }
-        break;
-      case EventId::PICKED_UP: {
-          auto info = event.get<EventInfo::ItemsHandled>();
-          if (shopArea->contains(info.creature->getPosition())) {
-            for (const Item* item : info.items)
+    using namespace EventInfo;
+    event.visit(
+        [&](const ItemsAppeared& info) {
+          if (isShopPosition(info.position)) {
+            for (auto& it : info.items) {
+              it->setShopkeeper(getCreature());
+              info.position.clearItemIndex(ItemIndex::FOR_SALE);
+            }
+          }
+        },
+        [&](const ItemsPickedUp& info) {
+          if (isShopPosition(info.creature->getPosition())) {
+            for (auto& item : info.items)
               if (item->isShopkeeper(getCreature())) {
                 info.creature->getDebt().add(getCreature(), item->getPrice());
                 debtors.insert(info.creature);
               }
           }
-        }
-        break;
-      case EventId::DROPPED: {
-          auto info = event.get<EventInfo::ItemsHandled>();
-          if (shopArea->contains(info.creature->getPosition())) {
-            for (const Item* item : info.items)
+        },
+        [&](const ItemsDropped& info) {
+          if (isShopPosition(info.creature->getPosition())) {
+            for (auto& item : info.items)
               if (item->isShopkeeper(getCreature())) {
                 info.creature->getDebt().add(getCreature(), -item->getPrice());
                 if (info.creature->getDebt().getAmountOwed(getCreature()) == 0)
                   debtors.erase(info.creature);
               }
           }
-        }
-        break;
-      default:
-        break;
-    }
+        },
+        [&](const auto&) {}
+    );
   }
 
-  HeapAllocated<EventProxy<ShopkeeperController>> SERIAL(eventProxy);
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int) {
+    ar & SUBCLASS(Monster) & SUBCLASS(EventListener);
+    ar(prevCreatures, debtors, thiefCount, thieves, shopArea, myLevel, firstMove);
+  }
 
-  SERIALIZE_ALL2(Monster, prevCreatures, debtors, thiefCount, thieves, shopArea, firstMove, eventProxy);
   SERIALIZATION_CONSTRUCTOR(ShopkeeperController);
 
   private:
-  unordered_set<const Creature*> SERIAL(prevCreatures);
-  unordered_set<const Creature*> SERIAL(debtors);
-  unordered_map<const Creature*, int> SERIAL(thiefCount);
-  unordered_set<const Creature*> SERIAL(thieves);
-  Location* SERIAL(shopArea);
+  EntitySet<Creature> SERIAL(prevCreatures);
+  EntitySet<Creature> SERIAL(debtors);
+  EntityMap<Creature, int> SERIAL(thiefCount);
+  EntitySet<Creature> SERIAL(thieves);
+  Rectangle SERIAL(shopArea);
+  WLevel SERIAL(myLevel) = nullptr;
   bool SERIAL(firstMove) = true;
 };
 
-PCreature CreatureFactory::addInventory(PCreature c, const vector<ItemType>& items) {
-  for (ItemType item : items) {
-    PItem it = ItemFactory::fromId(item);
-    c->take(std::move(it));
-  }
-  return c;
+void CreatureFactory::addInventory(WCreature c, const vector<ItemType>& items) {
+  for (ItemType item : items)
+    c->take(item.get());
 }
 
-PCreature CreatureFactory::getShopkeeper(Location* shopArea, TribeId tribe) {
-  PCreature ret(new Creature(tribe,
+PCreature CreatureFactory::getShopkeeper(Rectangle shopArea, TribeId tribe) {
+  auto ret = makeOwner<Creature>(tribe,
       CATTR(
         c.viewId = ViewId::SHOPKEEPER;
         c.attr[AttrType::SPEED] = 100;
         c.body = Body::humanoid(Body::Size::LARGE);
-        c.attr[AttrType::STRENGTH] = 17;
-        c.attr[AttrType::DEXTERITY] = 13;
-        c.barehandedDamage = 13;
-        c.chatReactionFriendly = "complains about high import tax";
-        c.chatReactionHostile = "\"Die!\"";
+        c.attr[AttrType::DAMAGE] = 17;
+        c.attr[AttrType::DEFENSE] = 20;
+        c.chatReactionFriendly = "complains about high import tax"_s;
+        c.chatReactionHostile = "\"Die!\""_s;
         c.name = "shopkeeper";
-        c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_MALE)->getNext());),
-      ControllerFactory([shopArea](Creature* c) { 
-          return SController(new ShopkeeperController(c, shopArea)); })));
-  vector<ItemType> inventory(Random.get(100, 300), ItemId::GOLD_PIECE);
-  inventory.push_back(ItemId::SWORD);
-  inventory.push_back(ItemId::LEATHER_ARMOR);
-  inventory.push_back(ItemId::LEATHER_BOOTS);
-  inventory.push_back({ItemId::POTION, EffectId::HEAL});
-  inventory.push_back({ItemId::POTION, EffectId::HEAL});
-  return addInventory(std::move(ret), inventory);
+        c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_MALE)->getNext());));
+  ret->setController(makeOwner<ShopkeeperController>(ret.get(), shopArea));
+  vector<ItemType> inventory(Random.get(20, 60), ItemType::GoldPiece{});
+  inventory.push_back(ItemType::Sword{});
+  inventory.push_back(ItemType::LeatherArmor{});
+  inventory.push_back(ItemType::LeatherBoots{});
+  inventory.push_back(ItemType::Potion{Effect::Heal{}});
+  inventory.push_back(ItemType::Potion{Effect::Heal{}});
+  addInventory(ret.get(), inventory);
+  return ret;
 }
 
 class IllusionController : public DoNothingController {
   public:
-  IllusionController(Creature* c, double deathT) : DoNothingController(c), deathTime(deathT) {}
+  IllusionController(WCreature c, double deathT) : DoNothingController(c), deathTime(deathT) {}
 
-  void kill() {
-    getCreature()->monsterMessage("The illusion disappears.");
-    if (!getCreature()->isDead())
-      getCreature()->die();
-  }
-
-  virtual void onBump(Creature* c) override {
-    c->attack(getCreature(), none, false).perform(c);
-    kill();
+  virtual void onBump(WCreature c) override {
+    auto myPos = getCreature()->getPosition();
+    c->attack(getCreature(), none).perform(c);
+    myPos.globalMessage("It was just an illusion!");
+    if (!getCreature()->isDead()) // so check necessary, as most likely was killed in attack 2 lines above
+      getCreature()->dieNoReason();
   }
 
   virtual void makeMove() override {
-    if (getCreature()->getGlobalTime() >= deathTime)
-      kill();
-    else
+    if (getCreature()->getGlobalTime() >= deathTime) {
+      getCreature()->message("The illusion disappears.");
+      getCreature()->dieNoReason();
+    } else
       getCreature()->wait().perform(getCreature());
   }
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar& SUBCLASS(DoNothingController);
-    serializeAll(ar, deathTime);
+    ar(deathTime);
   }
 
-  SERIALIZATION_CONSTRUCTOR(IllusionController);
+  SERIALIZATION_CONSTRUCTOR(IllusionController)
 
   private:
   double SERIAL(deathTime);
 };
 
-PCreature CreatureFactory::getIllusion(Creature* creature) {
+PCreature CreatureFactory::getIllusion(WCreature creature) {
   ViewObject viewObject(creature->getViewObject().id(), ViewLayer::CREATURE, "Illusion");
   viewObject.setModifier(ViewObject::Modifier::ILLUSION);
-  return PCreature(new Creature(viewObject, creature->getTribeId(), CATTR(
+  auto ret = makeOwner<Creature>(viewObject, creature->getTribeId(), CATTR(
           c.viewId = ViewId::ROCK; //overriden anyway
           c.illusionViewObject = creature->getViewObject();
-          (*c.illusionViewObject)->removeModifier(ViewObject::Modifier::INVISIBLE);
+          c.illusionViewObject->removeModifier(ViewObject::Modifier::INVISIBLE);
           c.attr[AttrType::SPEED] = 100;
           c.body = Body::nonHumanoidSpirit(Body::Size::LARGE).setDeathSound(SoundId::MISSED_ATTACK);
-          c.attr[AttrType::STRENGTH] = 1;
-          c.attr[AttrType::DEXTERITY] = 1;
-          c.barehandedDamage = 20; // just so it's not ignored by creatures
+          c.attr[AttrType::DAMAGE] = 20; // just so it's not ignored by creatures
+          c.attr[AttrType::DEFENSE] = 1;
           c.permanentEffects[LastingEffect::FLYING] = 1;
           c.noAttackSound = true;
-          c.name = "illusion";),
-        ControllerFactory([creature] (Creature* o) { return SController(new IllusionController(o,
-            creature->getGlobalTime() + Random.get(5, 10)));})));
+          c.name = creature->getName();));
+  ret->setController(makeOwner<IllusionController>(ret.get(), creature->getGlobalTime() + Random.get(5, 10)));
+  return ret;
 }
 
-template <class Archive>
-void CreatureFactory::registerTypes(Archive& ar, int version) {
-  REGISTER_TYPE(ar, BoulderController);
-  REGISTER_TYPE(ar, SokobanController);
-  REGISTER_TYPE(ar, KrakenController);
-  REGISTER_TYPE(ar, KamikazeController);
-  REGISTER_TYPE(ar, ShopkeeperController);
-  REGISTER_TYPE(ar, EventProxy<ShopkeeperController>);
-  REGISTER_TYPE(ar, IllusionController);
-}
-
-REGISTER_TYPES(CreatureFactory::registerTypes);
+REGISTER_TYPE(BoulderController)
+REGISTER_TYPE(SokobanController)
+REGISTER_TYPE(KrakenController)
+REGISTER_TYPE(KamikazeController)
+REGISTER_TYPE(ShopkeeperController)
+REGISTER_TYPE(IllusionController)
+REGISTER_TYPE(ListenerTemplate<ShopkeeperController>)
 
 TribeId CreatureFactory::getTribeFor(CreatureId id) {
   if (auto t = tribeOverrides[id])
@@ -621,17 +587,37 @@ PCreature CreatureFactory::random(const MonsterAIFactory& actorFactory) {
     unique.pop_back();
   } else
     id = Random.choose(creatures, weights);
-  PCreature ret = fromId(id, getTribeFor(id), actorFactory);
-  ret->getAttributes().increaseBaseExpLevel(levelIncrease);
+  PCreature ret = fromId(id, getTribeFor(id), actorFactory, inventory);
+  for (auto exp : ENUM_ALL(ExperienceType)) {
+    ret->getAttributes().increaseBaseExpLevel(exp, baseLevelIncrease[exp]);
+    ret->increaseExpLevel(exp, levelIncrease[exp]);
+  }
   return ret;
 }
 
 PCreature CreatureFactory::get(const CreatureAttributes& attr, TribeId tribe, const ControllerFactory& factory) {
-  return PCreature(new Creature(tribe, attr, factory));
+  auto ret = makeOwner<Creature>(tribe, attr);
+  ret->setController(factory.get(ret.get()));
+  return ret;
 }
 
-CreatureFactory& CreatureFactory::increaseLevel(double l) {
-  levelIncrease += l;
+CreatureFactory& CreatureFactory::increaseLevel(EnumMap<ExperienceType, int> l) {
+  levelIncrease = l;
+  return *this;
+}
+
+CreatureFactory& CreatureFactory::increaseLevel(ExperienceType t, int l) {
+  levelIncrease[t] = l;
+  return *this;
+}
+
+CreatureFactory& CreatureFactory::increaseBaseLevel(ExperienceType t, int l) {
+  baseLevelIncrease[t] = l;
+  return *this;
+}
+
+CreatureFactory& CreatureFactory::addInventory(vector<ItemType> items) {
+  inventory = items;
   return *this;
 }
 
@@ -643,53 +629,19 @@ CreatureFactory::CreatureFactory(TribeId t, const vector<CreatureId>& c, const v
 CreatureFactory::CreatureFactory(const vector<tuple<CreatureId, double, TribeId>>& c, const vector<CreatureId>& u)
     : unique(u) {
   for (auto& elem : c) {
-    creatures.push_back(::get<0>(elem));
-    weights.push_back(::get<1>(elem));
-    tribeOverrides[::get<0>(elem)] = ::get<2>(elem);
+    creatures.push_back(std::get<0>(elem));
+    weights.push_back(std::get<1>(elem));
+    tribeOverrides[std::get<0>(elem)] = std::get<2>(elem);
   }
 }
 
-CreatureFactory CreatureFactory::humanVillage(TribeId tribe) {
-  return CreatureFactory(tribe, { CreatureId::KNIGHT, CreatureId::ARCHER,
-      CreatureId::PESEANT, CreatureId::CHILD, CreatureId::HORSE, CreatureId::DONKEY, CreatureId::COW,
-      CreatureId::PIG, CreatureId::DOG },
-      { 2, 6, 6, 4, 1, 1, 1, 1, 6}, {CreatureId::KNIGHT});
+// These have to be defined here to be able to forward declare some ItemType and other classes
+CreatureFactory::~CreatureFactory() {
 }
 
-CreatureFactory CreatureFactory::humanPeaceful(TribeId tribe) {
-  return CreatureFactory(tribe, { CreatureId::PESEANT,
-      CreatureId::CHILD, CreatureId::HORSE, CreatureId::DONKEY, CreatureId::COW, CreatureId::PIG, CreatureId::DOG },
-      { 2, 1, 1, 1, 1, 1, 1}, {});
-}
+CreatureFactory::CreatureFactory(const CreatureFactory&) = default;
 
-CreatureFactory CreatureFactory::gnomeVillage(TribeId tribe) {
-  return CreatureFactory(tribe, { CreatureId::GNOME },
-      { 1}, { CreatureId::GNOME_CHIEF});
-}
-
-CreatureFactory CreatureFactory::gnomeEntrance(TribeId tribe) {
-  return CreatureFactory(tribe, { CreatureId::GNOME }, {1});
-}
-
-CreatureFactory CreatureFactory::koboldVillage(TribeId tribe) {
-  return CreatureFactory(tribe, { CreatureId::KOBOLD }, {1});
-}
-
-CreatureFactory CreatureFactory::darkElfVillage(TribeId tribe) {
-  return CreatureFactory(tribe, { CreatureId::DARK_ELF, CreatureId::DARK_ELF_CHILD, CreatureId::DARK_ELF_WARRIOR },
-      { 1, 1, 2}, { CreatureId::DARK_ELF_LORD});
-}
-
-CreatureFactory CreatureFactory::darkElfEntrance(TribeId tribe) {
-  return CreatureFactory(tribe, { CreatureId::DARK_ELF_WARRIOR }, {1});
-}
-
-CreatureFactory CreatureFactory::humanCastle(TribeId tribe) {
-  return CreatureFactory(tribe, { CreatureId::KNIGHT, CreatureId::ARCHER,
-      CreatureId::PESEANT, CreatureId::CHILD, CreatureId::HORSE, CreatureId::DONKEY, CreatureId::COW,
-      CreatureId::PIG, CreatureId::DOG },
-      { 10, 6, 2, 1, 1, 1, 1, 1, 1}, {CreatureId::AVATAR});
-}
+CreatureFactory& CreatureFactory::operator =(const CreatureFactory&) = default;
 
 static optional<pair<CreatureFactory, CreatureFactory>> splashFactories;
 
@@ -725,66 +677,13 @@ CreatureFactory CreatureFactory::splashMonsters(TribeId tribe) {
       CreatureId::SPECIAL_HLBN, CreatureId::SPECIAL_BLBW, CreatureId::WOLF, CreatureId::CAVE_BEAR,
       CreatureId::BAT, CreatureId::WEREWOLF, CreatureId::ZOMBIE, CreatureId::VAMPIRE, CreatureId::DOPPLEGANGER,
       CreatureId::SUCCUBUS},
-      { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}, {}, {}).increaseLevel(25);
-}
-
-CreatureFactory CreatureFactory::elvenVillage(TribeId tribe) {
-  double armedRatio = 0.4;
-  CreatureFactory ret(tribe, { CreatureId::ELF, CreatureId::ELF_CHILD, CreatureId::HORSE,
-      CreatureId::COW, CreatureId::DOG },
-      { 2, 2, 1, 1, 0}, {});
-  double sum = 0;
-  for (double w : ret.weights)
-    sum += w;
-  ret.weights.push_back(sum * armedRatio / (1 - armedRatio));
-  ret.creatures.push_back(CreatureId::ELF_ARCHER);
-  ret.unique.push_back(CreatureId::ELF_LORD);
-  return ret;
-}
-
-CreatureFactory CreatureFactory::elvenCottage(TribeId tribe) {
-  return CreatureFactory(tribe, { CreatureId::ELF, CreatureId::ELF_CHILD, CreatureId::HORSE,
-      CreatureId::COW, CreatureId::DOG },
-      { 2, 2, 1, 1, 0}, {CreatureId::ELF_ARCHER});
+      { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}, {}, {}).increaseBaseLevel(ExperienceType::MELEE, 25);
 }
 
 CreatureFactory CreatureFactory::forrest(TribeId tribe) {
   return CreatureFactory(tribe,
       { CreatureId::DEER, CreatureId::FOX, CreatureId::BOAR },
       { 4, 2, 2}, {});
-}
-
-CreatureFactory CreatureFactory::crypt(TribeId tribe) {
-  return CreatureFactory(tribe, { CreatureId::ZOMBIE}, { 1}, {});
-}
-
-CreatureFactory CreatureFactory::vikingTown(TribeId tribe) {
-  return CreatureFactory(tribe, { CreatureId::WARRIOR}, { 1}, {CreatureId::SHAMAN});
-}
-
-CreatureFactory CreatureFactory::lizardTown(TribeId tribe) {
-  return CreatureFactory(tribe, { CreatureId::LIZARDMAN, }, { 1}, {CreatureId::LIZARDLORD});
-}
-
-CreatureFactory CreatureFactory::dwarfTown(TribeId tribe) {
-  return CreatureFactory(tribe, { CreatureId::DWARF, CreatureId::DWARF_FEMALE}, { 2, 1},{ CreatureId::DWARF_BARON});
-}
-
-CreatureFactory CreatureFactory::dwarfCave(TribeId tribe) {
-  return CreatureFactory(tribe, { CreatureId::DWARF, CreatureId::DWARF_FEMALE}, { 2, 1});
-}
-
-CreatureFactory CreatureFactory::antNest(TribeId tribe) {
-  return CreatureFactory(tribe, { CreatureId::ANT_WORKER, CreatureId::ANT_SOLDIER}, { 2, 1},
-      { CreatureId::ANT_QUEEN});
-}
-
-CreatureFactory CreatureFactory::orcTown(TribeId tribe) {
-  return CreatureFactory(tribe, { CreatureId::ORC, CreatureId::OGRE }, {1, 1});
-}
-
-CreatureFactory CreatureFactory::insects(TribeId tribe) {
-  return CreatureFactory(tribe, { CreatureId::SPIDER}, {1});
 }
 
 CreatureFactory CreatureFactory::waterCreatures(TribeId tribe) {
@@ -876,15 +775,15 @@ static string getSpeciesName(bool humanoid, bool large, bool body, bool wings) {
   return names[humanoid * 8 + (!large) * 4 + (!body) * 2 + wings];
 }
 
-static optional<EffectType> getSpecialBeastAttack(bool large, bool body, bool wings) {
-  static vector<optional<EffectType>> attacks {
+static optional<Effect> getSpecialBeastAttack(bool large, bool body, bool wings) {
+  static vector<optional<Effect>> attacks {
     none,
-    EffectType(EffectId::FIRE),
-    EffectType(EffectId::FIRE),
+    Effect(Effect::Fire{}),
+    Effect(Effect::Fire{}),
     none,
-    EffectType(EffectId::LASTING, LastingEffect::POISON),
+    Effect(Effect::Lasting{LastingEffect::POISON}),
     none,
-    EffectType(EffectId::LASTING, LastingEffect::POISON),
+    Effect(Effect::Lasting{LastingEffect::POISON}),
     none,
   };
   return attacks[(!large) * 4 + (!body) * 2 + wings];
@@ -921,6 +820,24 @@ static EnumMap<BodyPart, int> getSpecialBeastBody(bool large, bool living, bool 
   return parts[(!large) * 4 + (!living) * 2 + wings];
 }
 
+static vector<LastingEffect> getResistanceAndVulnerability(RandomGen& random) {
+  vector<LastingEffect> resistances {
+      LastingEffect::MAGIC_RESISTANCE,
+      LastingEffect::MELEE_RESISTANCE,
+      LastingEffect::RANGED_RESISTANCE
+  };
+  vector<LastingEffect> vulnerabilities {
+      LastingEffect::MAGIC_VULNERABILITY,
+      LastingEffect::MELEE_VULNERABILITY,
+      LastingEffect::RANGED_VULNERABILITY
+  };
+  vector<LastingEffect> ret;
+  ret.push_back(Random.choose(resistances));
+  vulnerabilities.removeIndex(*resistances.findElement(ret[0]));
+  ret.push_back(Random.choose(vulnerabilities));
+  return ret;
+}
+
 PCreature CreatureFactory::getSpecial(TribeId tribe, bool humanoid, bool large, bool living, bool wings,
     const ControllerFactory& factory) {
   Body body = Body(humanoid, living ? Body::Material::FLESH : Body::Material::SPIRIT,
@@ -935,34 +852,28 @@ PCreature CreatureFactory::getSpecial(TribeId tribe, bool humanoid, bool large, 
         c.attr[AttrType::SPEED] = Random.get(80, 120);
         if (!large)
           c.attr[AttrType::SPEED] += 20;
-        c.attr[AttrType::STRENGTH] = Random.get(18, 24);
-        c.attr[AttrType::DEXTERITY] = Random.get(18, 24);
+        c.attr[AttrType::DAMAGE] = Random.get(18, 24);
+        c.attr[AttrType::DEFENSE] = Random.get(18, 24);
+        for (auto effect : getResistanceAndVulnerability(Random))
+          c.permanentEffects[effect] = 1;
         if (large) {
-          c.attr[AttrType::STRENGTH] += 6;
-          c.attr[AttrType::DEXTERITY] -= 2;
+          c.attr[AttrType::DAMAGE] += 6;
+          c.attr[AttrType::DEFENSE] += 2;
         }
-        c.barehandedDamage = Random.get(5, 15);
         c.spawnType = humanoid ? SpawnType::HUMANOID : SpawnType::BEAST;
         if (humanoid) {
-          c.skills.setValue(SkillId::WEAPON_MELEE, Random.getDouble(0, 1));
-          c.skills.setValue(SkillId::UNARMED_MELEE, Random.getDouble(0, 1));
-          c.skills.setValue(SkillId::ARCHERY, Random.getDouble(0, 1));
           c.skills.setValue(SkillId::SORCERY, Random.getDouble(0, 1));
-          c.skills.setValue(SkillId::MANA, Random.getDouble(0, 1));
           c.skills.setValue(SkillId::WORKSHOP, Random.getDouble(0, 1));
           c.skills.setValue(SkillId::FORGE, Random.getDouble(0, 1));
           c.skills.setValue(SkillId::LABORATORY, Random.getDouble(0, 1));
           c.skills.setValue(SkillId::JEWELER, Random.getDouble(0, 1));
           c.skills.setValue(SkillId::FURNACE, Random.getDouble(0, 1));
+          c.maxLevelIncrease[ExperienceType::MELEE] = 10;
+          c.maxLevelIncrease[ExperienceType::SPELL] = 10;
         }
         if (humanoid) {
           c.chatReactionFriendly = "\"I am the mighty " + name + "\"";
           c.chatReactionHostile = "\"I am the mighty " + name + ". Die!\"";
-          c.minionTasks.setValue(MinionTask::CRAFT, 1);
-          c.minionTasks.setValue(MinionTask::TRAIN, 4); 
-          c.minionTasks.setValue(MinionTask::SLEEP, 1);
-          c.minionTasks.setValue(MinionTask::STUDY, 1);
-          c.minionTasks.setValue(MinionTask::EAT, 3);
         } else {
           c.chatReactionFriendly = c.chatReactionHostile = "The " + name + " snarls.";
         }
@@ -971,21 +882,21 @@ PCreature CreatureFactory::getSpecial(TribeId tribe, bool humanoid, bool large, 
         c.name->setFirst(NameGenerator::get(NameGeneratorId::DEMON)->getNext());
         if (!humanoid) {
           c.body->setBodyParts(getSpecialBeastBody(large, living, wings));
-          c.attr[AttrType::STRENGTH] += 5;
-          c.attr[AttrType::DEXTERITY] += 5;
-          c.barehandedDamage += 5;
+          c.attr[AttrType::DAMAGE] += 5;
+          c.attr[AttrType::DEFENSE] += 5;
           c.attackEffect = getSpecialBeastAttack(large, living, wings);
         }
         if (Random.roll(3))
           c.skills.insert(SkillId::SWIMMING);
         ), tribe, factory);
   if (body.isHumanoid()) {
-    if (Random.roll(4)) {
-      c->take(ItemFactory::fromId(ItemId::BOW));
-      c->take(ItemFactory::fromId(ItemId::ARROW, Random.get(20, 36)));
-    }
-    c->take(ItemFactory::fromId(Random.choose(
-            ItemId::SPECIAL_SWORD, ItemId::SPECIAL_BATTLE_AXE, ItemId::SPECIAL_WAR_HAMMER)));
+    if (Random.roll(4))
+      c->take(ItemType(ItemType::Bow{}).get());
+    c->take(Random.choose(
+          ItemType(ItemType::SpecialSword{}),
+          ItemType(ItemType::SpecialBattleAxe{}),
+          ItemType(ItemType::SpecialWarHammer{}))
+        .get());
   }
   return c;
 }
@@ -994,159 +905,166 @@ CreatureAttributes CreatureFactory::getAttributes(CreatureId id) {
   return getAttributesFromId(id).setCreatureId(id);
 }
 
+#define CREATE_LITERAL(NAME, SHORT) \
+static pair<AttrType, int> operator "" _##SHORT(unsigned long long value) {\
+  return {AttrType::NAME, value};\
+}
+
+CREATE_LITERAL(DAMAGE, dam)
+CREATE_LITERAL(DEFENSE, def)
+CREATE_LITERAL(SPELL_DAMAGE, spell_dam)
+CREATE_LITERAL(RANGED_DAMAGE, ranged_dam)
+CREATE_LITERAL(SPEED, spd)
+
+#undef CREATE_LITERAL
+
 CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
   switch (id) {
     case CreatureId::KEEPER: 
       return CATTR(
           c.viewId = ViewId::KEEPER;
           c.retiredViewId = ViewId::RETIRED_KEEPER;
-          c.attr[AttrType::SPEED] = 100;
+          c.attr = LIST(12_dam, 12_def, 20_spell_dam, 100_spd );
           c.body = Body::humanoid(Body::Size::LARGE);
-          c.attr[AttrType::STRENGTH] = 15;
-          c.attr[AttrType::DEXTERITY] = 15;
-          c.barehandedDamage = 5;
           c.name = "Keeper";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_MALE)->getNext());
           c.name->useFullTitle();
-          c.spells->add(SpellId::HEALING);
-          c.minionTasks.setValue(MinionTask::STUDY, 1);
-          c.minionTasks.setValue(MinionTask::CRAFT, 0.0001);
-          c.minionTasks.setValue(MinionTask::TRAIN, 0.0001); 
-          c.minionTasks.setValue(MinionTask::THRONE, 0.0001); 
+          c.spawnType = SpawnType::HUMANOID;
           c.skills.setValue(SkillId::SORCERY, 0.2);
           c.skills.setValue(SkillId::LABORATORY, 0.2);
-          c.skills.setValue(SkillId::MANA, 1);
+          c.maxLevelIncrease[ExperienceType::MELEE] = 7;
+          c.maxLevelIncrease[ExperienceType::SPELL] = 12;
+          c.spells->add(SpellId::HEAL_SELF);
       );
     case CreatureId::KEEPER_F:
       return CATTR(
           c.viewId = ViewId::KEEPER_F;
           c.retiredViewId = ViewId::RETIRED_KEEPER_F;
-          c.attr[AttrType::SPEED] = 100;
+          c.attr = LIST(12_dam, 12_def, 12_spell_dam, 100_spd );
           c.gender = Gender::female;
           c.body = Body::humanoid(Body::Size::LARGE);
-          c.attr[AttrType::STRENGTH] = 15;
-          c.attr[AttrType::DEXTERITY] = 15;
-          c.barehandedDamage = 5;
           c.name = "Keeper";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_FEMALE)->getNext());
           c.name->useFullTitle();
-          c.spells->add(SpellId::HEALING);
-          c.minionTasks.setValue(MinionTask::STUDY, 1);
-          c.minionTasks.setValue(MinionTask::CRAFT, 0.0001);
-          c.minionTasks.setValue(MinionTask::TRAIN, 0.0001);
-          c.minionTasks.setValue(MinionTask::THRONE, 0.0001);
           c.skills.setValue(SkillId::SORCERY, 0.2);
           c.skills.setValue(SkillId::LABORATORY, 0.2);
-          c.skills.setValue(SkillId::MANA, 1);
+          c.maxLevelIncrease[ExperienceType::MELEE] = 7;
+          c.maxLevelIncrease[ExperienceType::SPELL] = 12;
+          c.spells->add(SpellId::HEAL_SELF);
       );
     case CreatureId::ADVENTURER:
       return CATTR(
           c.viewId = ViewId::PLAYER;
-          c.attr[AttrType::SPEED] = 100;
+          c.attr = LIST(15_dam, 20_def, 100_spd );
           c.body = Body::humanoid(Body::Size::LARGE);
-          c.attr[AttrType::STRENGTH] = 15;
-          c.attr[AttrType::DEXTERITY] = 15;
-          c.barehandedDamage = 5;
-          c.maxExpFromCombat = 15;
+          c.maxLevelIncrease[ExperienceType::MELEE] = 15;
           c.name = "Adventurer";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_MALE)->getNext());
           c.name->useFullTitle();
           c.skills.insert(SkillId::AMBUSH);
+          c.maxLevelIncrease[ExperienceType::MELEE] = 16;
+          c.maxLevelIncrease[ExperienceType::SPELL] = 8;
+          c.maxLevelIncrease[ExperienceType::ARCHERY] = 8;
       );
     case CreatureId::ADVENTURER_F:
       return CATTR(
           c.viewId = ViewId::PLAYER_F;
           c.gender = Gender::female;
-          c.attr[AttrType::SPEED] = 100;
+          c.attr = LIST(15_dam, 20_def, 100_spd );
           c.body = Body::humanoid(Body::Size::LARGE);
-          c.attr[AttrType::STRENGTH] = 15;
-          c.attr[AttrType::DEXTERITY] = 15;
-          c.barehandedDamage = 5;
-          c.maxExpFromCombat = 15;
+          c.maxLevelIncrease[ExperienceType::MELEE] = 15;
           c.name = "Adventurer";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_FEMALE)->getNext());
           c.name->useFullTitle();
+          c.maxLevelIncrease[ExperienceType::MELEE] = 16;
+          c.maxLevelIncrease[ExperienceType::SPELL] = 8;
+          c.maxLevelIncrease[ExperienceType::ARCHERY] = 8;
       );
+    case CreatureId::UNICORN:
+      return CATTR(
+        c.viewId = ViewId::UNICORN;
+        c.attr = LIST(20_dam, 20_def, 20_spell_dam, 200_spd );
+        c.body = Body::nonHumanoid(Body::Size::LARGE).setWeight(500).setHorseBodyParts();
+        //Ideally, you should club them to death or chop them up with a sword.
+        c.permanentEffects[LastingEffect::RANGED_RESISTANCE] = 1;
+        c.permanentEffects[LastingEffect::MAGIC_RESISTANCE] = 1;
+        c.barehandedAttack = AttackType::HIT;
+        c.courage = 100;
+        //They heal up and summon friends.
+        c.spells->add(SpellId::HEAL_SELF);
+        c.spells->add(SpellId::HEAL_OTHER);
+        c.spells->add(SpellId::SUMMON_SPIRIT);
+        c.chatReactionFriendly = "\"mhhhhhrrrr!\""_s;
+        c.chatReactionHostile = "\"mhhhhhrrrr!\""_s;
+        c.name = "unicorn";
+        //Pet names like dogs would have.
+        c.name->setFirst(NameGenerator::get(NameGeneratorId::DOG)->getNext());
+        c.name->setGroup("herd");
+        c.animal = true;
+        );
     case CreatureId::BANDIT:
       return CATTR(
           c.viewId = ViewId::BANDIT;
+          c.attr = LIST(15_dam, 13_def, 100_spd );
           c.attr[AttrType::SPEED] = 100;
           c.body = Body::humanoid(Body::Size::LARGE);
-          c.attr[AttrType::STRENGTH] = 15;
-          c.attr[AttrType::DEXTERITY] = 15;
-          c.barehandedDamage = 3;
-          c.chatReactionFriendly = "curses all law enforcement";
-          c.chatReactionHostile = "\"Die!\"";
+          c.chatReactionFriendly = "curses all law enforcement"_s;
+          c.chatReactionHostile = "\"Die!\""_s;
  //         c.skills.insert(SkillId::DISARM_TRAPS);
           c.name = "bandit";);
     case CreatureId::GHOST: 
       return CATTR(
           c.viewId = ViewId::GHOST;
-          c.attr[AttrType::SPEED] = 80;
+          c.attr = LIST(35_def, 30_spell_dam, 80_spd );
           c.body = Body::nonHumanoidSpirit(Body::Size::LARGE);
-          c.attr[AttrType::STRENGTH] = 14;
-          c.attr[AttrType::DEXTERITY] = 35;
-          c.barehandedDamage = 3;
           c.barehandedAttack = AttackType::HIT;
           c.permanentEffects[LastingEffect::FLYING] = 1;
-          c.chatReactionFriendly = "\"Wouuuouuu!!!\"";
-          c.chatReactionHostile = "\"Wouuuouuu!!!\"";
+          c.permanentEffects[LastingEffect::MAGIC_VULNERABILITY] = 1;
+          c.chatReactionFriendly = "\"Wouuuouuu!!!\""_s;
+          c.chatReactionHostile = "\"Wouuuouuu!!!\""_s;
           c.name = "ghost";);
     case CreatureId::SPIRIT:
       return CATTR(
           c.viewId = ViewId::SPIRIT;
-          c.attr[AttrType::STRENGTH] = 24;
-          c.attr[AttrType::SPEED] = 100;
-          c.attr[AttrType::DEXTERITY] = 30;
-          c.barehandedDamage = 30;
+          c.attr = LIST(35_def, 40_spell_dam, 100_spd );
           c.body = Body::nonHumanoidSpirit(Body::Size::LARGE);
           c.barehandedAttack = AttackType::HIT;
           c.permanentEffects[LastingEffect::FLYING] = 1;
-          c.chatReactionFriendly = "\"Wouuuouuu!!!\"";
-          c.chatReactionHostile = "\"Wouuuouuu!!!\"";
+          c.permanentEffects[LastingEffect::MAGIC_VULNERABILITY] = 1;
+          c.chatReactionFriendly = "\"Wouuuouuu!!!\""_s;
+          c.chatReactionHostile = "\"Wouuuouuu!!!\""_s;
           c.name = "ancient spirit";);
     case CreatureId::LOST_SOUL:
       return CATTR(
           c.viewId = ViewId::GHOST;
-          c.attr[AttrType::STRENGTH] = 5;
-          c.attr[AttrType::DEXTERITY] = 35;
-          c.attr[AttrType::SPEED] = 80;
-          c.courage = 10;
+          c.attr = LIST(25_def, 5_spell_dam, 120_spd );
+          c.courage = 1;
           c.spawnType = SpawnType::DEMON;
+          c.spells->add(SpellId::INVISIBILITY);
           c.barehandedAttack = AttackType::POSSESS;
-          c.minionTasks.setValue(MinionTask::RITUAL, 1);
           c.body = Body::nonHumanoidSpirit(Body::Size::LARGE);
-          c.barehandedDamage = 3;
           c.permanentEffects[LastingEffect::FLYING] = 1;
-          c.chatReactionFriendly = "\"Wouuuouuu!!!\"";
-          c.chatReactionHostile = "\"Wouuuouuu!!!\"";
+          c.chatReactionFriendly = "\"Wouuuouuu!!!\""_s;
+          c.chatReactionHostile = "\"Wouuuouuu!!!\""_s;
           c.name = "ghost";);
     case CreatureId::SUCCUBUS:
       return CATTR(
-          c.attr[AttrType::STRENGTH] = 5;
-          c.attr[AttrType::SPEED] = 80;
-          c.attr[AttrType::DEXTERITY] = 35;
-          c.barehandedDamage = 3;
+          c.attr = LIST(25_def, 5_spell_dam, 80_spd );
           c.barehandedAttack = AttackType::HIT;
           c.viewId = ViewId::SUCCUBUS;
           c.spawnType = SpawnType::DEMON;
           c.body = Body::humanoidSpirit(Body::Size::LARGE).addWings();
-          c.minionTasks.setValue(MinionTask::COPULATE, 1);
-          c.minionTasks.setValue(MinionTask::RITUAL, 1);
+          c.skills.insert(SkillId::COPULATION);
           c.gender = Gender::female;
-          c.courage = 0.0;
+          c.courage = -1;
           c.name = CreatureName("succubus", "succubi");
           );
     case CreatureId::DOPPLEGANGER:
       return CATTR(
           c.viewId = ViewId::DOPPLEGANGER;
-          c.attr[AttrType::SPEED] = 80;
-          c.attr[AttrType::STRENGTH] = 14;
-          c.attr[AttrType::DEXTERITY] = 35;
-          c.barehandedDamage = 3;
+          c.attr = LIST(25_def, 5_spell_dam, 80_spd );
           c.barehandedAttack = AttackType::HIT;
           c.body = Body::nonHumanoidSpirit(Body::Size::LARGE);
-          c.minionTasks.setValue(MinionTask::RITUAL, 1);
           c.spawnType = SpawnType::DEMON;
           c.skills.insert(SkillId::CONSUMPTION);
           c.name = "doppelganger";
@@ -1154,483 +1072,413 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::WITCH: 
       return CATTR(
           c.viewId = ViewId::WITCH;
-          c.attr[AttrType::SPEED] = 100;
+          c.attr = LIST(14_dam, 14_def, 20_spell_dam, 60_spd );
           c.body = Body::humanoid(Body::Size::MEDIUM);
-          c.attr[AttrType::STRENGTH] = 14;
-          c.attr[AttrType::DEXTERITY] = 12;
           c.name = CreatureName("witch", "witches");
           c.name->setFirst("Cornelia");
-          c.barehandedDamage = 6;
           c.gender = Gender::female;
-          c.chatReactionFriendly = "curses all humans";
-          c.chatReactionHostile = "\"Die!\"";
+          c.chatReactionFriendly = "curses all humans"_s;
+          c.chatReactionHostile = "\"Die!\""_s;
           );
     case CreatureId::WITCHMAN: 
       return CATTR(
           c.viewId = ViewId::WITCHMAN;
-          c.attr[AttrType::SPEED] = 140;
+          c.attr = LIST(30_dam, 30_def, 20_spell_dam, 140_spd );
           c.body = Body::humanoid(Body::Size::LARGE);
-          c.attr[AttrType::STRENGTH] = 20;
-          c.attr[AttrType::DEXTERITY] = 20;
           c.name = CreatureName("witchman", "witchmen");
           c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_MALE)->getNext());
-          c.barehandedDamage = 6;
+          c.permanentEffects[LastingEffect::MAGIC_RESISTANCE] = 1;
           c.gender = Gender::male;
-          c.chatReactionFriendly = "curses all monsters";
-          c.chatReactionHostile = "\"Die!\"";
+          c.chatReactionFriendly = "curses all monsters"_s;
+          c.chatReactionHostile = "\"Die!\""_s;
           );
     case CreatureId::CYCLOPS: 
       return CATTR(
           c.viewId = ViewId::CYCLOPS;
-          c.attr[AttrType::SPEED] = 90;
+          c.attr = LIST(34_dam, 40_def, 100_spd );
           c.body = Body::humanoid(Body::Size::LARGE).setWeight(400);
-          c.attr[AttrType::STRENGTH] = 33;
-          c.attr[AttrType::DEXTERITY] = 23;
-          c.barehandedDamage = 10;
+          c.permanentEffects[LastingEffect::RANGED_RESISTANCE] = 1;
           c.barehandedAttack = AttackType::BITE;
           c.name = CreatureName("cyclops", "cyclopes");
           c.name->setFirst(NameGenerator::get(NameGeneratorId::CYCLOPS)->getNext());
           );
+    case CreatureId::DEMON_DWELLER:
+      return CATTR(
+        c.viewId = ViewId::DEMON_DWELLER;
+        c.attr = LIST(25_dam, 30_def, 35_spell_dam, 120_spd );
+        c.body = Body::humanoidSpirit(Body::Size::LARGE).addWings();
+        c.permanentEffects[LastingEffect::FLYING] = 1;
+        c.permanentEffects[LastingEffect::MAGIC_RESISTANCE] = 1;
+        c.barehandedAttack = AttackType::HIT;
+        c.courage = 100;
+        c.gender = Gender::male;
+        c.spells->add(SpellId::BLAST);
+        c.chatReactionFriendly = "\"Kneel before us!\""_s;
+        c.chatReactionHostile = "\"Face your death!\""_s;
+        c.name = "demon dweller";
+        c.name->setFirst(NameGenerator::get(NameGeneratorId::DEMON)->getNext());
+        c.name->setGroup("pack");
+        );
+    case CreatureId::DEMON_LORD:
+      return CATTR(
+        c.viewId = ViewId::DEMON_LORD;
+        c.attr = LIST(40_dam, 45_def, 50_spell_dam, 130_spd );
+        c.body = Body::humanoidSpirit(Body::Size::LARGE).addWings();
+        c.permanentEffects[LastingEffect::FLYING] = 1;
+        c.permanentEffects[LastingEffect::MAGIC_RESISTANCE] = 1;
+        c.barehandedAttack = AttackType::HIT;
+        c.courage = 100;
+        c.gender = Gender::male;
+        c.spells->add(SpellId::BLAST);
+        c.chatReactionFriendly = "\"Kneel before us!\""_s;
+        c.chatReactionHostile = "\"Face your death!\""_s;
+        c.name = "demon Lord";
+        c.name->setFirst(NameGenerator::get(NameGeneratorId::DEMON)->getNext());
+        c.name->setGroup("pack");
+        );
     case CreatureId::MINOTAUR: 
       return CATTR(
           c.viewId = ViewId::MINOTAUR;
-          c.attr[AttrType::SPEED] = 90;
+          c.attr = LIST(35_dam, 45_def, 90_spd );
+          c.permanentEffects[LastingEffect::RANGED_RESISTANCE] = 1;
           c.body = Body::humanoid(Body::Size::LARGE).setWeight(400);
-          c.attr[AttrType::STRENGTH] = 45;
-          c.attr[AttrType::DEXTERITY] = 35;
-          c.barehandedDamage = 20;
           c.barehandedAttack = AttackType::BITE;
           c.name = "minotaur";);
     case CreatureId::SOFT_MONSTER:
       return CATTR(
           c.viewId = ViewId::SOFT_MONSTER;
-          c.attr[AttrType::SPEED] = 100;
+          c.attr = LIST(45_dam, 25_def, 100_spd );
           c.body = Body::humanoid(Body::Size::LARGE).setWeight(400);
-          c.attr[AttrType::STRENGTH] = 45;
-          c.attr[AttrType::DEXTERITY] = 35;
-          c.barehandedDamage = 1;
-          c.courage = 0.1;
+          c.courage = -1;
           c.name = "soft monster";);
     case CreatureId::HYDRA:
       return CATTR(
           c.viewId = ViewId::HYDRA;
-          c.attr[AttrType::SPEED] = 110;
+          c.attr = LIST(35_dam, 45_def, 110_spd );
           c.body = Body::nonHumanoid(Body::Size::LARGE).setWeight(400);
-          c.attr[AttrType::STRENGTH] = 35;
-          c.attr[AttrType::DEXTERITY] = 45;
-          c.attackEffect = EffectType(EffectId::LASTING, LastingEffect::POISON);
+          c.attackEffect = Effect(Effect::Lasting{LastingEffect::POISON});
           c.permanentEffects[LastingEffect::POISON_RESISTANT] = 1;
-          c.barehandedDamage = 10;
+          c.permanentEffects[LastingEffect::RANGED_RESISTANCE] = 1;
           c.barehandedAttack = AttackType::BITE;
           c.skills.insert(SkillId::SWIMMING);
           c.name = "hydra";);
     case CreatureId::SHELOB:
       return CATTR(
           c.viewId = ViewId::SHELOB;
-          c.attr[AttrType::SPEED] = 110;
+          c.attr = LIST(48_dam, 38_def, 130_spd );
           c.body = Body::nonHumanoid(Body::Size::LARGE).setWeight(400)
               .setBodyParts({{BodyPart::LEG, 8}, {BodyPart::TORSO, 1}})
               .setDeathSound(none);
-          c.attr[AttrType::STRENGTH] = 35;
-          c.attr[AttrType::DEXTERITY] = 45;
-          c.attackEffect = EffectType(EffectId::LASTING, LastingEffect::POISON);
+          c.attackEffect = Effect(Effect::Lasting{LastingEffect::POISON});
           c.permanentEffects[LastingEffect::POISON_RESISTANT] = 1;
-          c.barehandedDamage = 10;
+          c.permanentEffects[LastingEffect::RANGED_RESISTANCE] = 1;
           c.barehandedAttack = AttackType::BITE;
-          c.minionTasks.setValue(MinionTask::SPIDER, 1); 
+          c.skills.insert(SkillId::SPIDER);
           c.name = "giant spider";
           );
     case CreatureId::GREEN_DRAGON: 
       return CATTR(
           c.viewId = ViewId::GREEN_DRAGON;
-          c.attr[AttrType::SPEED] = 90;
+          c.attr = LIST(52_dam, 40_def, 110_spd );
           c.body = Body::nonHumanoid(Body::Size::HUGE).setHorseBodyParts().addWings();
-          c.attr[AttrType::STRENGTH] = 38;
-          c.attr[AttrType::DEXTERITY] = 28;
-          c.barehandedDamage = 10;
           c.barehandedAttack = AttackType::BITE;
           c.permanentEffects[LastingEffect::POISON_RESISTANT] = 1;
+          c.permanentEffects[LastingEffect::RANGED_VULNERABILITY] = 1;
           c.name = "green dragon";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::DRAGON)->getNext());
+          c.spells->add(SpellId::HEAL_SELF);
+          c.spells->add(SpellId::CURE_POISON);
+          c.spells->add(SpellId::DECEPTION);
+          c.spells->add(SpellId::SPEED_SELF);
           c.name->setStack("dragon");
           );
     case CreatureId::RED_DRAGON:
       return CATTR(
           c.viewId = ViewId::RED_DRAGON;
-          c.attr[AttrType::SPEED] = 100;
+          c.attr = LIST(55_dam, 42_def, 120_spd );
           c.body = Body::nonHumanoid(Body::Size::HUGE).setHorseBodyParts().addWings();
-          c.attr[AttrType::STRENGTH] = 47;
-          c.attr[AttrType::DEXTERITY] = 28;
-          c.barehandedDamage = 10;
+          c.permanentEffects[LastingEffect::FIRE_RESISTANT] = 1;
           c.barehandedAttack = AttackType::BITE;
           c.name = "red dragon";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::DRAGON)->getNext());
+          c.permanentEffects[LastingEffect::RANGED_VULNERABILITY] = 1;
+          c.spells->add(SpellId::HEAL_SELF);
+          c.spells->add(SpellId::CURE_POISON);
+          c.spells->add(SpellId::DECEPTION);
+          c.spells->add(SpellId::SPEED_SELF);
           c.name->setStack("dragon");
           );
     case CreatureId::KNIGHT: 
       return CATTR(
           c.viewId = ViewId::KNIGHT;
-          c.attr[AttrType::SPEED] = 100;
+          c.attr = LIST(36_dam, 28_def, 100_spd );
           c.body = Body::humanoid(Body::Size::LARGE);
-          c.attr[AttrType::STRENGTH] = 30;
-          c.attr[AttrType::DEXTERITY] = 22;
-          c.barehandedDamage = 3;
-          c.chatReactionFriendly = "curses all dungeons";
-          c.chatReactionHostile = "\"Die!\"";
-          c.skills.setValue(SkillId::WEAPON_MELEE, 0.3);
-          c.minionTasks.setValue(MinionTask::SLEEP, 1);
+          c.permanentEffects[LastingEffect::MELEE_RESISTANCE] = 1;
+          c.chatReactionFriendly = "curses all dungeons"_s;
+          c.chatReactionHostile = "\"Die!\""_s;
           c.name = "knight";);
-    case CreatureId::CASTLE_GUARD: 
-      return CATTR(
-          c.viewId = ViewId::CASTLE_GUARD;
-          c.attr[AttrType::SPEED] = 100;
-          c.body = Body::humanoid(Body::Size::LARGE);
-          c.attr[AttrType::STRENGTH] = 30;
-          c.attr[AttrType::DEXTERITY] = 22;
-          c.barehandedDamage = 3;
-          c.chatReactionFriendly = "curses all dungeons";
-          c.chatReactionHostile = "\"Die!\"";
-          c.skills.setValue(SkillId::WEAPON_MELEE, 0.3);
-          c.minionTasks.setValue(MinionTask::SLEEP, 1);
-          c.name = "guard";);
     case CreatureId::AVATAR: 
       return CATTR(
           c.viewId = ViewId::DUKE;
-          c.attr[AttrType::SPEED] = 100;
+          c.attr = LIST(43_dam, 32_def, 100_spd );
           c.body = Body::humanoid(Body::Size::LARGE);
-          c.attr[AttrType::STRENGTH] = 40;
-          c.attr[AttrType::DEXTERITY] = 29;
-          c.barehandedDamage = 8;
-          c.chatReactionFriendly = "curses all dungeons";
-          c.chatReactionHostile = "\"Die!\"";
-          c.skills.setValue(SkillId::WEAPON_MELEE, 0.3);
-          c.minionTasks.setValue(MinionTask::SLEEP, 1);
-          c.courage = 3;
+          c.permanentEffects[LastingEffect::MELEE_RESISTANCE] = 1;
+          c.chatReactionFriendly = "curses all dungeons"_s;
+          c.chatReactionHostile = "\"Die!\""_s;
+          c.courage = 1;
           c.name = "Duke of " + NameGenerator::get(NameGeneratorId::WORLD)->getNext(););
+    case CreatureId::ARCHER:
+      return CATTR(
+          c.viewId = ViewId::ARCHER;
+          c.attr = LIST(17_dam, 22_def, 30_ranged_dam, 120_spd );
+          c.body = Body::humanoid(Body::Size::LARGE);
+          c.chatReactionFriendly = "curses all dungeons"_s;
+          c.chatReactionHostile = "\"Die!\""_s;
+          c.name = "archer";);
     case CreatureId::WARRIOR:
       return CATTR(
           c.viewId = ViewId::WARRIOR;
-          c.attr[AttrType::SPEED] = 100;
+          c.attr = LIST(27_dam, 19_def, 100_spd );
           c.body = Body::humanoid(Body::Size::LARGE);
-          c.attr[AttrType::STRENGTH] = 27;
-          c.attr[AttrType::DEXTERITY] = 19;
-          c.barehandedDamage = 3;
-          c.chatReactionFriendly = "curses all dungeons";
-          c.chatReactionHostile = "\"Die!\"";
-          c.skills.setValue(SkillId::WEAPON_MELEE, 0.3);
-          c.minionTasks.setValue(MinionTask::SLEEP, 1);
+          c.chatReactionFriendly = "curses all dungeons"_s;
+          c.chatReactionHostile = "\"Die!\""_s;
           c.name = "warrior";);
     case CreatureId::SHAMAN:
       return CATTR(
           c.viewId = ViewId::SHAMAN;
-          c.attr[AttrType::SPEED] = 100;
+          c.attr = LIST(27_dam, 19_def, 30_spell_dam, 100_spd );
           c.body = Body::humanoid(Body::Size::LARGE);
-          c.attr[AttrType::STRENGTH] = 27;
-          c.attr[AttrType::DEXTERITY] = 19;
-          c.barehandedDamage = 3;
-          c.chatReactionFriendly = "curses all dungeons";
-          c.chatReactionHostile = "\"Die!\"";
-          c.skills.setValue(SkillId::WEAPON_MELEE, 0.3);
-          c.minionTasks.setValue(MinionTask::SLEEP, 1);
-          c.courage = 3;
-          c.spells->add(SpellId::HEALING);
+          c.permanentEffects[LastingEffect::MAGIC_RESISTANCE] = 1;
+          c.chatReactionFriendly = "curses all dungeons"_s;
+          c.chatReactionHostile = "\"Die!\""_s;
+          c.courage = 1;
+          c.spells->add(SpellId::HEAL_SELF);
           c.spells->add(SpellId::SPEED_SELF);
-          c.spells->add(SpellId::STR_BONUS);
+          c.spells->add(SpellId::DEF_BONUS);
           c.spells->add(SpellId::SUMMON_SPIRIT);
           c.spells->add(SpellId::STUN_RAY);
           c.spells->add(SpellId::BLAST);
+          c.spells->add(SpellId::HEAL_OTHER);
           c.skills.setValue(SkillId::SORCERY, 1);
-          c.skills.insert(SkillId::HEALING);
           c.name = "shaman";);
-    case CreatureId::ARCHER: 
-      return CATTR(
-          c.viewId = ViewId::ARCHER;
-          c.attr[AttrType::SPEED] = 100;
-          c.body = Body::humanoid(Body::Size::LARGE);
-          c.attr[AttrType::STRENGTH] = 17;
-          c.attr[AttrType::DEXTERITY] = 24;
-          c.barehandedDamage = 3;
-          c.chatReactionFriendly = "curses all dungeons";
-          c.chatReactionHostile = "\"Die!\"";
-          c.skills.setValue(SkillId::ARCHERY, 1);
-          c.minionTasks.setValue(MinionTask::SLEEP, 1);
-          c.name = "archer";);
     case CreatureId::PESEANT: 
       return CATTR(
-          c.viewId = Random.choose(ViewId::PESEANT, ViewId::PESEANT_WOMAN);
-          c.attr[AttrType::SPEED] = 80;
+          if (Random.roll(2)) {
+            c.viewId = ViewId::PESEANT_WOMAN;
+            c.gender = Gender::female;
+          } else
+            c.viewId = ViewId::PESEANT;
+          c.attr = LIST(14_dam, 12_def, 80_spd );
           c.body = Body::humanoid(Body::Size::LARGE);
-          c.attr[AttrType::STRENGTH] = 14;
-          c.attr[AttrType::DEXTERITY] = 12;
-          c.barehandedDamage = 3;
           c.innocent = true;
-          c.chatReactionFriendly = "curses all dungeons";
-          c.chatReactionHostile = "\"Heeelp!\"";
-          c.minionTasks.setValue(MinionTask::CROPS, 4);
-          c.minionTasks.setValue(MinionTask::SLEEP, 1);
+          c.chatReactionFriendly = "curses all dungeons"_s;
+          c.chatReactionHostile = "\"Heeelp!\""_s;
+          c.skills.insert(SkillId::CROPS);
           c.name = "peasant";);
     case CreatureId::CHILD: 
       return CATTR(
           c.viewId = ViewId::CHILD;
-          c.attr[AttrType::SPEED] = 140;
+          c.attr = LIST(8_dam, 8_def, 140_spd );
           c.body = Body::humanoid(Body::Size::MEDIUM);
-          c.attr[AttrType::STRENGTH] = 8;
-          c.attr[AttrType::DEXTERITY] = 16;
-          c.barehandedDamage = 3;
           c.innocent = true;
-          c.chatReactionFriendly = "\"plaaaaay!\"";
-          c.chatReactionHostile = "\"Heeelp!\"";
-          c.minionTasks.setValue(MinionTask::CROPS, 4);
-          c.minionTasks.setValue(MinionTask::SLEEP, 1);
+          c.chatReactionFriendly = "\"plaaaaay!\""_s;
+          c.chatReactionHostile = "\"Heeelp!\""_s;
+          c.skills.insert(SkillId::CROPS);
           c.name = CreatureName("child", "children"););
-    case CreatureId::CLAY_GOLEM: 
+    case CreatureId::HALLOWEEN_KID:
+      return CATTR(
+          c.viewId = Random.choose(ViewId::HALLOWEEN_KID1,
+              ViewId::HALLOWEEN_KID2, ViewId::HALLOWEEN_KID3,ViewId::HALLOWEEN_KID4);
+          c.attr = LIST(8_dam, 8_def, 80_spd );
+          c.body = Body::humanoid(Body::Size::MEDIUM);
+          c.innocent = true;
+          c.chatReactionFriendly = "\"Trick or treat!\""_s;
+          c.chatReactionHostile = "\"Trick or treat!\""_s;
+          c.name = CreatureName("child", "children"););
+    case CreatureId::CLAY_GOLEM:
       return CATTR(
           c.viewId = ViewId::CLAY_GOLEM;
-          c.attr[AttrType::SPEED] = 50;
+          c.attr = LIST(19_dam, 19_def, 50_spd );
           c.body = Body::nonHumanoid(Body::Material::CLAY, Body::Size::LARGE).setHumanoidBodyParts();
-          c.attr[AttrType::STRENGTH] = 14;
-          c.attr[AttrType::DEXTERITY] = 12;
-          c.barehandedDamage = 13;
+          c.permanentEffects[LastingEffect::MELEE_RESISTANCE] = 1;
           c.barehandedAttack = AttackType::PUNCH;
           c.name = "clay golem";);
     case CreatureId::STONE_GOLEM: 
       return CATTR(
           c.viewId = ViewId::STONE_GOLEM;
-          c.attr[AttrType::SPEED] = 60;
+          c.attr = LIST(23_dam, 23_def, 60_spd );
           c.body = Body::nonHumanoid(Body::Material::ROCK, Body::Size::LARGE).setHumanoidBodyParts();
-          c.attr[AttrType::STRENGTH] = 16;
-          c.attr[AttrType::DEXTERITY] = 14;
-          c.barehandedDamage = 15;
+          c.permanentEffects[LastingEffect::MELEE_RESISTANCE] = 1;
           c.barehandedAttack = AttackType::PUNCH;
           c.name = "stone golem";);
     case CreatureId::IRON_GOLEM: 
       return CATTR(
           c.viewId = ViewId::IRON_GOLEM;
-          c.attr[AttrType::SPEED] = 70;
+          c.attr = LIST(30_dam, 30_def, 70_spd );
+          c.permanentEffects[LastingEffect::MELEE_RESISTANCE] = 1;
           c.body = Body::nonHumanoid(Body::Material::IRON, Body::Size::LARGE).setHumanoidBodyParts();
-          c.attr[AttrType::STRENGTH] = 18;
-          c.attr[AttrType::DEXTERITY] = 16;
-          c.barehandedDamage = 17;
           c.barehandedAttack = AttackType::PUNCH;
           c.name = "iron golem";);
     case CreatureId::LAVA_GOLEM: 
       return CATTR(
           c.viewId = ViewId::LAVA_GOLEM;
-          c.attr[AttrType::SPEED] = 80;
+          c.attr = LIST(36_dam, 36_def, 80_spd );
+          c.permanentEffects[LastingEffect::MELEE_RESISTANCE] = 1;
           c.body = Body::nonHumanoid(Body::Material::LAVA, Body::Size::LARGE).setHumanoidBodyParts();
-          c.attr[AttrType::STRENGTH] = 20;
-          c.attr[AttrType::DEXTERITY] = 18;
-          c.barehandedDamage = 19;
           c.barehandedAttack = AttackType::PUNCH;
-          c.attackEffect = EffectId::FIRE;
+          c.attackEffect = Effect::Fire{};
+          c.permanentEffects[LastingEffect::FIRE_RESISTANT] = 1;
           c.name = "lava golem";);
     case CreatureId::AUTOMATON: 
       return CATTR(
           c.viewId = ViewId::AUTOMATON;
-          c.attr[AttrType::SPEED] = 100;
+          c.attr = LIST(45_dam, 45_def, 100_spd );
+          c.permanentEffects[LastingEffect::MELEE_RESISTANCE] = 1;
           c.body = Body::nonHumanoid(Body::Material::IRON, Body::Size::LARGE).setHumanoidBodyParts();
-          c.attr[AttrType::STRENGTH] = 45;
-          c.attr[AttrType::DEXTERITY] = 23;
-          c.barehandedDamage = 15;
           c.barehandedAttack = AttackType::PUNCH;
           c.name = "automaton";);
     case CreatureId::ZOMBIE: 
       return CATTR(
           c.viewId = ViewId::ZOMBIE;
-          c.attr[AttrType::SPEED] = 60;
+          c.attr = LIST(14_dam, 17_def, 60_spd );
           c.body = Body::humanoid(Body::Material::UNDEAD_FLESH, Body::Size::LARGE);
-          c.attr[AttrType::STRENGTH] = 14;
-          c.attr[AttrType::DEXTERITY] = 13;
-          c.barehandedDamage = 13;
           c.spawnType = SpawnType::UNDEAD;
-          c.minionTasks.setValue(MinionTask::TRAIN, 4); 
-          c.minionTasks.setValue(MinionTask::GRAVE, 1);
-          c.minionTasks.setValue(MinionTask::EAT, 3);
+          c.permanentEffects[LastingEffect::RANGED_RESISTANCE] = 1;
+          c.maxLevelIncrease[ExperienceType::MELEE] = 3;
           c.name = "zombie";);
     case CreatureId::SKELETON: 
       return CATTR(
           c.viewId = ViewId::SKELETON;
-          c.attr[AttrType::SPEED] = 80;
+          c.attr = LIST(17_dam, 13_def, 100_spd, 5_ranged_dam);
           c.body = Body::humanoid(Body::Material::BONE, Body::Size::LARGE);
-          c.attr[AttrType::STRENGTH] = 14;
-          c.attr[AttrType::DEXTERITY] = 13;
-          c.barehandedDamage = 13;
+          c.spawnType = SpawnType::UNDEAD;
+          c.permanentEffects[LastingEffect::RANGED_RESISTANCE] = 1;
+          c.maxLevelIncrease[ExperienceType::MELEE] = 3;
+          c.maxLevelIncrease[ExperienceType::ARCHERY] = 4;
           c.name = "skeleton";);
     case CreatureId::VAMPIRE: 
       return CATTR(
           c.viewId = ViewId::VAMPIRE;
-          c.attr[AttrType::SPEED] = 100;
+          c.attr = LIST(17_dam, 17_def, 17_spell_dam, 100_spd );
           c.body = Body::humanoid(Body::Material::UNDEAD_FLESH, Body::Size::LARGE);
-          c.attr[AttrType::STRENGTH] = 17;
-          c.attr[AttrType::DEXTERITY] = 17;
-          c.barehandedDamage = 2;
-          c.chatReactionFriendly = "\"All men be cursed!\"";
-          c.chatReactionHostile = "\"Die!\"";
+          c.chatReactionFriendly = "\"All men be cursed!\""_s;
+          c.chatReactionHostile = "\"Die!\""_s;
           c.spawnType = SpawnType::UNDEAD;
-          c.skills.insert(SkillId::NIGHT_VISION);
-          c.minionTasks.setValue(MinionTask::TRAIN, 4); 
-          c.minionTasks.setValue(MinionTask::STUDY, 1);
-          c.minionTasks.setValue(MinionTask::GRAVE, 1);
-          c.minionTasks.setValue(MinionTask::EAT, 3);
           c.skills.setValue(SkillId::SORCERY, 0.1);
-          c.skills.setValue(SkillId::MANA, 0.4);
+          c.permanentEffects[LastingEffect::NIGHT_VISION] = 1;
+          c.permanentEffects[LastingEffect::RANGED_RESISTANCE] = 1;
+          c.maxLevelIncrease[ExperienceType::MELEE] = 7;
+          c.maxLevelIncrease[ExperienceType::SPELL] = 7;
           c.name = "vampire";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::VAMPIRE)->getNext());
           );
     case CreatureId::VAMPIRE_LORD: 
       return CATTR(
           c.viewId = ViewId::VAMPIRE_LORD;
-          c.attr[AttrType::SPEED] = 120;
+          c.attr = LIST(17_dam, 17_def, 27_spell_dam, 120_spd );
           c.body = Body::humanoid(Body::Material::UNDEAD_FLESH, Body::Size::LARGE);
-          c.attr[AttrType::STRENGTH] = 20;
-          c.attr[AttrType::DEXTERITY] = 27;
-          c.barehandedDamage = 6;
           c.spawnType = SpawnType::UNDEAD;
-          c.skills.insert(SkillId::NIGHT_VISION);
+          c.permanentEffects[LastingEffect::NIGHT_VISION] = 1;
           c.skills.setValue(SkillId::SORCERY, 0.5);
-          c.skills.setValue(SkillId::MANA, 0.7);
-          c.minionTasks.setValue(MinionTask::TRAIN, 4); 
-          c.minionTasks.setValue(MinionTask::STUDY, 1);
-          c.minionTasks.setValue(MinionTask::GRAVE, 1);
-          c.minionTasks.setValue(MinionTask::EAT, 3);
           c.name = "vampire lord";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::VAMPIRE)->getNext());
+          c.maxLevelIncrease[ExperienceType::MELEE] = 12;
+          c.maxLevelIncrease[ExperienceType::SPELL] = 12;
           c.permanentEffects[LastingEffect::FLYING] = 1;
+          c.permanentEffects[LastingEffect::RANGED_RESISTANCE] = 1;
           c.permanentEffects[LastingEffect::FIRE_RESISTANT] = 1;
           c.permanentEffects[LastingEffect::DARKNESS_SOURCE] = 1;
-          for (SpellId id : Random.chooseN(Random.get(3, 6), {SpellId::WORD_OF_POWER, SpellId::DEX_BONUS,
-              SpellId::STR_BONUS, SpellId::MAGIC_SHIELD, SpellId::STUN_RAY, SpellId::DECEPTION, SpellId::DECEPTION,
+          for (SpellId id : Random.chooseN(Random.get(3, 6), {SpellId::CIRCULAR_BLAST, SpellId::DEF_BONUS,
+              SpellId::DAM_BONUS, SpellId::STUN_RAY, SpellId::DECEPTION, SpellId::DECEPTION,
               SpellId::TELEPORT}))
             c.spells->add(id);
           c.chatReactionFriendly = c.chatReactionHostile =
-              "\"There are times when you simply cannot refuse a drink!\"";
+              "\"There are times when you simply cannot refuse a drink!\""_s;
           );
     case CreatureId::MUMMY: 
       return CATTR(
           c.viewId = ViewId::MUMMY;
-          c.attr[AttrType::SPEED] = 60;
+          c.attr = LIST(15_dam, 14_def, 10_spell_dam, 60_spd );
           c.body = Body::humanoid(Body::Material::UNDEAD_FLESH, Body::Size::LARGE);
-          c.attr[AttrType::STRENGTH] = 12;
-          c.attr[AttrType::DEXTERITY] = 13;
-          c.barehandedDamage = 13;
           c.spawnType = SpawnType::UNDEAD;
-          c.minionTasks.setValue(MinionTask::TRAIN, 4); 
-          c.minionTasks.setValue(MinionTask::GRAVE, 1);
-          c.minionTasks.setValue(MinionTask::EAT, 3);
+          c.permanentEffects[LastingEffect::RANGED_RESISTANCE] = 1;
+          c.maxLevelIncrease[ExperienceType::MELEE] = 3;
+          c.maxLevelIncrease[ExperienceType::SPELL] = 3;
           c.name = CreatureName("mummy", "mummies"););
     case CreatureId::ORC:
       return CATTR(
           c.viewId = ViewId::ORC;
-          c.attr[AttrType::SPEED] = 100;
+          c.attr = LIST(16_dam, 14_def, 100_spd );
           c.body = Body::humanoid(Body::Size::LARGE);
-          c.attr[AttrType::STRENGTH] = 16;
-          c.attr[AttrType::DEXTERITY] = 14;
-          c.barehandedDamage = 3;
           c.spawnType = SpawnType::HUMANOID;
-          c.chatReactionFriendly = "curses all elves";
-          c.chatReactionHostile = "\"Die!\"";
-          c.minionTasks.setValue(MinionTask::TRAIN, 4);
-          c.minionTasks.setValue(MinionTask::CRAFT, 1);
-          c.minionTasks.setValue(MinionTask::SLEEP, 1);
-          c.minionTasks.setValue(MinionTask::EAT, 3);
-          c.skills.setValue(SkillId::WEAPON_MELEE, 0.3);
+          c.chatReactionFriendly = "curses all elves"_s;
+          c.chatReactionHostile = "\"Die!\""_s;
           c.skills.setValue(SkillId::WORKSHOP, 0.3);
           c.skills.setValue(SkillId::FORGE, 0.3);
+          c.maxLevelIncrease[ExperienceType::MELEE] = 7;
           c.name = "orc";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::ORC)->getNext());
           );
     case CreatureId::ORC_SHAMAN:
       return CATTR(
           c.viewId = ViewId::ORC_SHAMAN;
-          c.attr[AttrType::SPEED] = 100;
+          c.attr = LIST(12_dam, 8_def, 16_spell_dam, 100_spd );
           c.body = Body::humanoid(Body::Size::LARGE);
-          c.attr[AttrType::STRENGTH] = 13;
-          c.attr[AttrType::DEXTERITY] = 11;
-          c.barehandedDamage = 3;
           c.spawnType = SpawnType::HUMANOID;
-          c.minionTasks.setValue(MinionTask::CRAFT, 4);
-          c.minionTasks.setValue(MinionTask::STUDY, 4);
-          c.minionTasks.setValue(MinionTask::SLEEP, 1);
-          c.minionTasks.setValue(MinionTask::EAT, 3);
           c.skills.setValue(SkillId::SORCERY, 0.7);
-          c.skills.setValue(SkillId::MANA, 0.4);
           c.skills.setValue(SkillId::LABORATORY, 0.7);
-          c.skills.insert(SkillId::HEALING);
-          c.chatReactionFriendly = "curses all elves";
-          c.chatReactionHostile = "\"Die!\"";
+          c.chatReactionFriendly = "curses all elves"_s;
+          c.chatReactionHostile = "\"Die!\""_s;
+          c.maxLevelIncrease[ExperienceType::MELEE] = 4;
+          c.maxLevelIncrease[ExperienceType::SPELL] = 7;
           c.name = "orc shaman";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::ORC)->getNext());
           );
     case CreatureId::HARPY:
       return CATTR(
           c.viewId = ViewId::HARPY;
-          c.attr[AttrType::SPEED] = 120;
+          c.attr = LIST(13_dam, 16_def, 15_ranged_dam, 120_spd );
           c.body = Body::humanoid(Body::Size::LARGE).addWings();
-          c.attr[AttrType::STRENGTH] = 13;
-          c.attr[AttrType::DEXTERITY] = 16;
-          c.barehandedDamage = 3;
           c.spawnType = SpawnType::HUMANOID;
-          c.minionTasks.setValue(MinionTask::TRAIN, 4);
-          c.minionTasks.setValue(MinionTask::CRAFT, 0.5);
-          c.minionTasks.setValue(MinionTask::SLEEP, 1);
-          c.minionTasks.setValue(MinionTask::EAT, 3);
           c.skills.setValue(SkillId::LABORATORY, 0.3);
           c.gender = Gender::female;
-          c.skills.setValue(SkillId::ARCHERY, 1);
+          c.maxLevelIncrease[ExperienceType::MELEE] = 4;
+          c.maxLevelIncrease[ExperienceType::ARCHERY] = 7;
           c.name = CreatureName("harpy", "harpies");
           c.name->setFirst(NameGenerator::get(NameGeneratorId::ORC)->getNext());
           );
     case CreatureId::KOBOLD: 
       return CATTR(
           c.viewId = ViewId::KOBOLD;
-          c.attr[AttrType::SPEED] = 80;
+          c.attr = LIST(12_dam, 13_def, 80_spd );
           c.body = Body::humanoid(Body::Size::MEDIUM);
-          c.attr[AttrType::STRENGTH] = 12;
-          c.attr[AttrType::DEXTERITY] = 13;
-          c.barehandedDamage = 3;
-          c.chatReactionFriendly = "talks about digging";
-          c.chatReactionHostile = "\"Die!\"";
-          c.minionTasks.setValue(MinionTask::SLEEP, 1);
+          c.chatReactionFriendly = "talks about digging"_s;
+          c.chatReactionHostile = "\"Die!\""_s;
           c.name = "kobold";);
     case CreatureId::GNOME: 
       return CATTR(
           c.viewId = ViewId::GNOME;
-          c.attr[AttrType::SPEED] = 80;
+          c.attr = LIST(12_dam, 13_def, 80_spd );
           c.body = Body::humanoid(Body::Size::MEDIUM);
-          c.attr[AttrType::STRENGTH] = 12;
-          c.attr[AttrType::DEXTERITY] = 13;
-          c.barehandedDamage = 3;
-          c.chatReactionFriendly = "talks about digging";
-          c.chatReactionHostile = "\"Die!\"";
-          c.minionTasks.setValue(MinionTask::SLEEP, 1);
+          c.chatReactionFriendly = "talks about digging"_s;
+          c.chatReactionHostile = "\"Die!\""_s;
           c.name = "gnome";);
     case CreatureId::GNOME_CHIEF:
       return CATTR(
           c.viewId = ViewId::GNOME_BOSS;
-          c.attr[AttrType::SPEED] = 80;
+          c.attr = LIST(15_dam, 16_def, 80_spd );
           c.body = Body::humanoid(Body::Size::MEDIUM);
-          c.attr[AttrType::STRENGTH] = 15;
-          c.attr[AttrType::DEXTERITY] = 16;
-          c.barehandedDamage = 3;
-          c.chatReactionFriendly = "talks about digging";
-          c.chatReactionHostile = "\"Die!\"";
-          c.minionTasks.setValue(MinionTask::SLEEP, 1);
+          c.chatReactionFriendly = "talks about digging"_s;
+          c.chatReactionHostile = "\"Die!\""_s;
           c.name = "gnome chief";);
     case CreatureId::GOBLIN: 
       return CATTR(
           c.viewId = ViewId::GOBLIN;
-          c.attr[AttrType::SPEED] = 80;
+          c.attr = LIST(12_dam, 13_def, 80_spd );
           c.body = Body::humanoid(Body::Size::MEDIUM);
-          c.attr[AttrType::STRENGTH] = 12;
-          c.attr[AttrType::DEXTERITY] = 13;
-          c.barehandedDamage = 3;
           c.spawnType = SpawnType::HUMANOID;
-          c.chatReactionFriendly = "talks about crafting";
-          c.chatReactionHostile = "\"Die!\"";
-          c.minionTasks.setValue(MinionTask::TRAIN, 1);
-          c.minionTasks.setValue(MinionTask::CRAFT, 4);
-          c.minionTasks.setValue(MinionTask::SLEEP, 1);
-          c.minionTasks.setValue(MinionTask::EAT, 3);
+          c.chatReactionFriendly = "talks about crafting"_s;
+          c.chatReactionHostile = "\"Die!\""_s;
           c.skills.insert(SkillId::DISARM_TRAPS);
           c.skills.setValue(SkillId::LABORATORY, 0.3);
           c.skills.setValue(SkillId::WORKSHOP, 0.9);
@@ -1643,315 +1491,235 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::IMP: 
       return CATTR(
           c.viewId = ViewId::IMP;
-          c.attr[AttrType::SPEED] = 200;
-          c.body = Body::humanoid(Body::Size::SMALL);
-          c.attr[AttrType::STRENGTH] = 8;
-          c.attr[AttrType::DEXTERITY] = 15;
-          c.barehandedDamage = 3;
-          c.courage = 0.1;
-          c.carryAnything = true;
+          c.attr = LIST(5_dam, 15_def, 200_spd );
+          c.body = Body::humanoid(Body::Size::SMALL).setNoCarryLimit().setDoesntEat();
+          c.courage = -1;
           c.noChase = true;
           c.cantEquip = true;
           c.skills.insert(SkillId::CONSTRUCTION);
-          c.chatReactionFriendly = "talks about digging";
-          c.chatReactionHostile = "\"Die!\"";
+          c.chatReactionFriendly = "talks about digging"_s;
+          c.chatReactionHostile = "\"Die!\""_s;
           c.permanentEffects[LastingEffect::POISON_RESISTANT] = 1;
+          c.moraleSpeedIncrease = 1.3;
           c.name = "imp";);
     case CreatureId::PRISONER:
       return CATTR(
           c.viewId = ViewId::PRISONER;
-          c.attr[AttrType::SPEED] = 100;
-          c.attr[AttrType::STRENGTH] = 8;
-          c.attr[AttrType::DEXTERITY] = 15;
-          c.body = Body::humanoid(Body::Size::LARGE).setWeight(60);
-          c.courage = 0.1;
-          c.carryAnything = true;
+          c.attr = LIST(8_dam, 15_def, 100_spd );
+          c.body = Body::humanoid(Body::Size::LARGE).setWeight(60).setNoCarryLimit();
+          c.courage = -1;
           c.noChase = true;
           c.cantEquip = true;
           c.skills.insert(SkillId::CONSTRUCTION);
-          c.chatReactionFriendly = "talks about escape plans";
-          c.minionTasks.setValue(MinionTask::PRISON, 1);
-          c.minionTasks.setValue(MinionTask::BE_TORTURED, 0.0001);
-          c.minionTasks.setValue(MinionTask::EXECUTE, 0.0001);
+          c.chatReactionFriendly = "talks about escape plans"_s;
           c.name = "prisoner";);
     case CreatureId::OGRE: 
       return CATTR(
           c.viewId = ViewId::OGRE;
-          c.attr[AttrType::SPEED] = 80;
+          c.attr = LIST(18_dam, 18_def, 80_spd );
           c.body = Body::humanoid(Body::Size::LARGE).setWeight(140);
-          c.attr[AttrType::STRENGTH] = 20;
-          c.attr[AttrType::DEXTERITY] = 17;
-          c.barehandedDamage = 6;
           c.name = "ogre";
+          c.permanentEffects[LastingEffect::MAGIC_VULNERABILITY] = 1;
           c.name->setFirst(NameGenerator::get(NameGeneratorId::ORC)->getNext());
           c.spawnType = SpawnType::HUMANOID;
-          c.minionTasks.setValue(MinionTask::CRAFT, 1);
-          c.minionTasks.setValue(MinionTask::TRAIN, 4); 
-          c.minionTasks.setValue(MinionTask::SLEEP, 1);
-          c.minionTasks.setValue(MinionTask::EAT, 5);
-          c.skills.setValue(SkillId::WEAPON_MELEE, 0.3);
           c.skills.setValue(SkillId::WORKSHOP, 0.5);
           c.skills.setValue(SkillId::FORGE, 0.5);
           c.skills.setValue(SkillId::FURNACE, 0.9);
+          c.maxLevelIncrease[ExperienceType::MELEE] = 12;
           );
     case CreatureId::CHICKEN: 
       return CATTR(
           c.viewId = ViewId::CHICKEN;
-          c.attr[AttrType::SPEED] = 50;
+          c.attr = LIST(2_dam, 2_def, 50_spd );
           c.body = Body::nonHumanoid(Body::Size::SMALL).setWeight(3).setMinionFood();
-          c.attr[AttrType::STRENGTH] = 2;
-          c.attr[AttrType::DEXTERITY] = 2;
-          c.barehandedDamage = 5;
           c.name = "chicken";);
-    case CreatureId::LEPRECHAUN: 
-      return CATTR(
-          c.viewId = ViewId::LEPRECHAUN;
-          c.attr[AttrType::SPEED] = 160;
-          c.body = Body::humanoid(Body::Size::MEDIUM);
-          c.attr[AttrType::STRENGTH] = 10;
-          c.attr[AttrType::DEXTERITY] = 16;
-          c.barehandedDamage = 3;
-          c.courage = 20;
-          c.skills.insert(SkillId::STEALING);
-          c.chatReactionFriendly = "discusses the weather";
-          c.chatReactionHostile = "discusses the weather";
-          c.name = "leprechaun";);
     case CreatureId::DWARF: 
       return CATTR(
           c.viewId = ViewId::DWARF;
-          c.attr[AttrType::SPEED] = 80;
+          c.attr = LIST(21_dam, 25_def, 80_spd );
           c.body = Body::humanoid(Body::Size::MEDIUM).setWeight(90);
           c.name = CreatureName("dwarf", "dwarves");
+          c.skills.insert(SkillId::DIGGING);
+          c.permanentEffects[LastingEffect::MAGIC_VULNERABILITY] = 1;
           c.name->setFirst(NameGenerator::get(NameGeneratorId::DWARF)->getNext());
-          c.attr[AttrType::STRENGTH] = 28;
-          c.attr[AttrType::DEXTERITY] = 19;
-          c.barehandedDamage = 3;
-          c.chatReactionFriendly = "curses all orcs";
-          c.chatReactionHostile = "\"Die!\"";
+          c.chatReactionFriendly = "curses all orcs"_s;
+          c.chatReactionHostile = "\"Die!\""_s;
           );
     case CreatureId::DWARF_FEMALE:
       return CATTR(
           c.viewId = ViewId::DWARF_FEMALE;
           c.innocent = true;
-          c.attr[AttrType::SPEED] = 80;
+          c.attr = LIST(21_dam, 25_def, 80_spd );
           c.body = Body::humanoid(Body::Size::MEDIUM).setWeight(90);
           c.name = CreatureName("dwarf", "dwarves");
+          c.skills.insert(SkillId::DIGGING);
+          c.permanentEffects[LastingEffect::MAGIC_VULNERABILITY] = 1;
           c.name->setFirst(NameGenerator::get(NameGeneratorId::DWARF)->getNext());
-          c.attr[AttrType::STRENGTH] = 25;
-          c.attr[AttrType::DEXTERITY] = 17;
-          c.barehandedDamage = 3;
-          c.chatReactionFriendly = "curses all orcs";
-          c.chatReactionHostile = "\"Die!\"";
+          c.chatReactionFriendly = "curses all orcs"_s;
+          c.chatReactionHostile = "\"Die!\""_s;
           c.gender = Gender::female;);
     case CreatureId::DWARF_BARON: 
       return CATTR(
           c.viewId = ViewId::DWARF_BARON;
-          c.attr[AttrType::SPEED] = 90;
+          c.attr = LIST(28_dam, 32_def, 90_spd );
           c.body = Body::humanoid(Body::Size::MEDIUM).setWeight(120);
-          c.attr[AttrType::STRENGTH] = 37;
-          c.attr[AttrType::DEXTERITY] = 27;
-          c.barehandedDamage = 3;
-          c.chatReactionFriendly = "curses all orcs";
-          c.chatReactionHostile = "\"Die!\"";
-          c.courage = 3;
+          c.chatReactionFriendly = "curses all orcs"_s;
+          c.chatReactionHostile = "\"Die!\""_s;
+          c.skills.insert(SkillId::DIGGING);
+          c.permanentEffects[LastingEffect::MAGIC_VULNERABILITY] = 1;
+          c.courage = 1;
           c.name = "dwarf baron";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::DWARF)->getNext());
           );
     case CreatureId::LIZARDMAN: 
       return CATTR(
           c.viewId = ViewId::LIZARDMAN;
-          c.attr[AttrType::SPEED] = 120;
+          c.attr = LIST(25_dam, 14_def, 120_spd );
           c.body = Body::humanoid(Body::Size::MEDIUM);
-          c.attr[AttrType::STRENGTH] = 16;
-          c.attr[AttrType::DEXTERITY] = 18;
-          c.barehandedDamage = 9;
           c.barehandedAttack = AttackType::BITE;
-          c.attackEffect = EffectType(EffectId::LASTING, LastingEffect::POISON);
+          c.attackEffect = Effect(Effect::Lasting{LastingEffect::POISON});
           c.permanentEffects[LastingEffect::POISON_RESISTANT] = 1;
-          c.chatReactionFriendly = "curses all humans";
-          c.chatReactionHostile = "\"Die!\"";
-          c.minionTasks.setValue(MinionTask::SLEEP, 1);
+          c.chatReactionFriendly = "curses all humans"_s;
+          c.chatReactionHostile = "\"Die!\""_s;
           c.name = CreatureName("lizardman", "lizardmen"););
     case CreatureId::LIZARDLORD: 
       return CATTR(
           c.viewId = ViewId::LIZARDLORD;
-          c.attr[AttrType::SPEED] = 140;
+          c.attr = LIST(38_dam, 16_def, 140_spd );
           c.body = Body::humanoid(Body::Size::MEDIUM);
-          c.attr[AttrType::STRENGTH] = 24;
-          c.attr[AttrType::DEXTERITY] = 28;
-          c.barehandedDamage = 14;
           c.barehandedAttack = AttackType::BITE;
-          c.attackEffect = EffectType(EffectId::LASTING, LastingEffect::POISON);
           c.permanentEffects[LastingEffect::POISON_RESISTANT] = 1;
-          c.chatReactionFriendly = "curses all humans";
-          c.chatReactionHostile = "\"Die!\"";
-          c.minionTasks.setValue(MinionTask::SLEEP, 1);
-          c.courage = 3;
+          c.attackEffect = Effect(Effect::Lasting{LastingEffect::POISON});
+          c.chatReactionFriendly = "curses all humans"_s;
+          c.chatReactionHostile = "\"Die!\""_s;
+          c.courage = 1;
           c.name = "lizardman chief";);
     case CreatureId::ELF: 
       return CATTR(
           c.viewId = Random.choose(ViewId::ELF, ViewId::ELF_WOMAN);
-          c.attr[AttrType::SPEED] = 100;
+          c.attr = LIST(14_dam, 6_def, 100_spd );
           c.body = Body::humanoid(Body::Size::MEDIUM);
-          c.attr[AttrType::STRENGTH] = 11;
-          c.attr[AttrType::DEXTERITY] = 17;
-          c.barehandedDamage = 3;
           c.innocent = true;
-          c.chatReactionFriendly = "curses all dwarves";
-          c.chatReactionHostile = "\"Die!\"";
-          c.spells->add(SpellId::HEALING);
-          c.skills.insert(SkillId::ELF_VISION);
-          c.minionTasks.setValue(MinionTask::SLEEP, 1);
+          c.chatReactionFriendly = "curses all dwarves"_s;
+          c.chatReactionHostile = "\"Die!\""_s;
+          c.spells->add(SpellId::HEAL_SELF);
+          c.permanentEffects[LastingEffect::ELF_VISION] = 1;
           c.name = CreatureName("elf", "elves"););
     case CreatureId::ELF_ARCHER: 
       return CATTR(
           c.viewId = ViewId::ELF_ARCHER;
-          c.attr[AttrType::SPEED] = 120;
+          c.attr = LIST(18_dam, 12_def, 25_ranged_dam, 120_spd );
           c.body = Body::humanoid(Body::Size::MEDIUM);
-          c.attr[AttrType::STRENGTH] = 11;
-          c.attr[AttrType::DEXTERITY] = 17;
-          c.barehandedDamage = 3;
-          c.chatReactionFriendly = "curses all dwarves";
-          c.chatReactionHostile = "\"Die!\"";
-          c.spells->add(SpellId::HEALING);
-          c.skills.setValue(SkillId::ARCHERY, 1);
-          c.skills.insert(SkillId::ELF_VISION);
-          c.minionTasks.setValue(MinionTask::SLEEP, 1);
+          c.chatReactionFriendly = "curses all dwarves"_s;
+          c.chatReactionHostile = "\"Die!\""_s;
+          c.permanentEffects[LastingEffect::MAGIC_RESISTANCE] = 1;
+          c.spells->add(SpellId::HEAL_SELF);
+          c.permanentEffects[LastingEffect::ELF_VISION] = 1;
           c.name = "elven archer";);
     case CreatureId::ELF_CHILD: 
       return CATTR(
           c.viewId = ViewId::ELF_CHILD;
-          c.attr[AttrType::SPEED] = 120;
+          c.attr = LIST(6_dam, 6_def, 120_spd );
           c.body = Body::humanoid(Body::Size::SMALL);
-          c.attr[AttrType::STRENGTH] = 7;
-          c.attr[AttrType::DEXTERITY] = 17;
-          c.barehandedDamage = 0;
           c.innocent = true;
-          c.chatReactionFriendly = "curses all dwarves";
-          c.chatReactionHostile = "\"Die!\"";
-          c.spells->add(SpellId::HEALING);
-          c.skills.insert(SkillId::ELF_VISION);
-          c.minionTasks.setValue(MinionTask::SLEEP, 1);
+          c.chatReactionFriendly = "curses all dwarves"_s;
+          c.chatReactionHostile = "\"Die!\""_s;
+          c.permanentEffects[LastingEffect::MAGIC_RESISTANCE] = 1;
+          c.spells->add(SpellId::HEAL_SELF);
+          c.permanentEffects[LastingEffect::ELF_VISION] = 1;
           c.name = CreatureName("elf child", "elf children"););
     case CreatureId::ELF_LORD: 
       return CATTR(
           c.viewId = ViewId::ELF_LORD;
-          c.attr[AttrType::SPEED] = 140;
+          c.attr = LIST(22_dam, 14_def, 16_spell_dam, 30_ranged_dam, 140_spd );
           c.body = Body::humanoid(Body::Size::MEDIUM);
-          c.attr[AttrType::STRENGTH] = 16;
-          c.attr[AttrType::DEXTERITY] = 23;
-          c.barehandedDamage = 3;
-          c.chatReactionFriendly = "curses all dwarves";
-          c.chatReactionHostile = "\"Die!\"";
-          c.spells->add(SpellId::HEALING);
-          c.skills.setValue(SkillId::ARCHERY, 1);
-          c.skills.setValue(SkillId::WEAPON_MELEE, 1);
+          c.chatReactionFriendly = "curses all dwarves"_s;
+          c.chatReactionHostile = "\"Die!\""_s;
+          c.permanentEffects[LastingEffect::MAGIC_RESISTANCE] = 1;
+          c.spells->add(SpellId::HEAL_SELF);
           c.skills.setValue(SkillId::SORCERY, 1);
-          c.skills.insert(SkillId::HEALING);
-          c.skills.insert(SkillId::ELF_VISION);
-          c.spells->add(SpellId::HEALING);
+          c.spells->add(SpellId::HEAL_OTHER);
+          c.permanentEffects[LastingEffect::ELF_VISION] = 1;
+          c.spells->add(SpellId::HEAL_SELF);
           c.spells->add(SpellId::SPEED_SELF);
-          c.spells->add(SpellId::STR_BONUS);
+          c.spells->add(SpellId::DAM_BONUS);
+          c.spells->add(SpellId::DEF_BONUS);
           c.spells->add(SpellId::STUN_RAY);
           c.spells->add(SpellId::BLAST);
-          c.minionTasks.setValue(MinionTask::SLEEP, 1);
           c.name = "elf lord";);
     case CreatureId::DARK_ELF:
       return CATTR(
           c.viewId = Random.choose(ViewId::DARK_ELF, ViewId::DARK_ELF_WOMAN);
-          c.attr[AttrType::SPEED] = 100;
+          c.attr = LIST(14_dam, 6_def, 100_spd );
           c.body = Body::humanoid(Body::Size::MEDIUM);
-          c.attr[AttrType::STRENGTH] = 11;
-          c.attr[AttrType::DEXTERITY] = 17;
-          c.barehandedDamage = 3;
           c.innocent = true;
-          c.chatReactionFriendly = "curses all dwarves";
-          c.chatReactionHostile = "\"Die!\"";
-          c.spells->add(SpellId::HEALING);
-          c.skills.insert(SkillId::NIGHT_VISION);
-          c.minionTasks.setValue(MinionTask::SLEEP, 1);
+          c.chatReactionFriendly = "curses all dwarves"_s;
+          c.chatReactionHostile = "\"Die!\""_s;
+          c.permanentEffects[LastingEffect::MAGIC_RESISTANCE] = 1;
+          c.spells->add(SpellId::HEAL_SELF);
+          c.permanentEffects[LastingEffect::NIGHT_VISION] = 1;
           c.name = CreatureName("dark elf", "dark elves"););
     case CreatureId::DARK_ELF_WARRIOR:
       return CATTR(
           c.viewId = ViewId::DARK_ELF_WARRIOR;
-          c.attr[AttrType::SPEED] = 120;
+          c.attr = LIST(18_dam, 12_def, 6_spell_dam, 120_spd );
           c.body = Body::humanoid(Body::Size::MEDIUM);
-          c.attr[AttrType::STRENGTH] = 11;
-          c.attr[AttrType::STRENGTH] = 11;
-          c.attr[AttrType::DEXTERITY] = 17;
-          c.barehandedDamage = 3;
-          c.chatReactionFriendly = "curses all dwarves";
-          c.chatReactionHostile = "\"Die!\"";
-          c.spells->add(SpellId::HEALING);
-          c.skills.setValue(SkillId::ARCHERY, 0.5);
-          c.skills.insert(SkillId::NIGHT_VISION);
-          c.skills.setValue(SkillId::WEAPON_MELEE, 1);
-          c.skills.setValue(SkillId::MANA, 0.3);
+          c.chatReactionFriendly = "curses all dwarves"_s;
+          c.chatReactionHostile = "\"Die!\""_s;
+          c.permanentEffects[LastingEffect::MAGIC_RESISTANCE] = 1;
+          c.spells->add(SpellId::HEAL_SELF);
+          c.permanentEffects[LastingEffect::NIGHT_VISION] = 1;
           c.skills.setValue(SkillId::SORCERY, 0.3);
-          c.minionTasks.setValue(MinionTask::TRAIN, 4); 
-          c.minionTasks.setValue(MinionTask::SLEEP, 1);
-          c.minionTasks.setValue(MinionTask::STUDY, 1);
-          c.minionTasks.setValue(MinionTask::EAT, 3);
+          c.maxLevelIncrease[ExperienceType::MELEE] = 5;
+          c.maxLevelIncrease[ExperienceType::SPELL] = 5;
           c.name = CreatureName("dark elf", "dark elves"););
     case CreatureId::DARK_ELF_CHILD:
       return CATTR(
           c.viewId = ViewId::DARK_ELF_CHILD;
-          c.attr[AttrType::SPEED] = 120;
+          c.attr = LIST(6_dam, 6_def, 120_spd );
           c.body = Body::humanoid(Body::Size::SMALL);
-          c.attr[AttrType::STRENGTH] = 7;
-          c.attr[AttrType::DEXTERITY] = 17;
-          c.barehandedDamage = 0;
           c.innocent = true;
-          c.chatReactionFriendly = "curses all dwarves";
-          c.chatReactionHostile = "\"Die!\"";
-          c.spells->add(SpellId::HEALING);
-          c.skills.insert(SkillId::NIGHT_VISION);
-          c.minionTasks.setValue(MinionTask::SLEEP, 1);
+          c.permanentEffects[LastingEffect::MAGIC_RESISTANCE] = 1;
+          c.chatReactionFriendly = "curses all dwarves"_s;
+          c.chatReactionHostile = "\"Die!\""_s;
+          c.spells->add(SpellId::HEAL_SELF);
+          c.permanentEffects[LastingEffect::NIGHT_VISION] = 1;
           c.name = CreatureName("dark elf child", "dark elf children"););
     case CreatureId::DARK_ELF_LORD:
       return CATTR(
           c.viewId = ViewId::DARK_ELF_LORD;
-          c.attr[AttrType::SPEED] = 140;
+          c.attr = LIST(22_dam, 14_def, 16_spell_dam, 140_spd );
           c.body = Body::humanoid(Body::Size::MEDIUM);
-          c.attr[AttrType::STRENGTH] = 16;
-          c.attr[AttrType::DEXTERITY] = 23;
-          c.barehandedDamage = 3;
-          c.chatReactionFriendly = "curses all dwarves";
-          c.chatReactionHostile = "\"Die!\"";
-          c.spells->add(SpellId::HEALING);
-          c.skills.setValue(SkillId::ARCHERY, 1);
-          c.skills.setValue(SkillId::WEAPON_MELEE, 1);
+          c.chatReactionFriendly = "curses all dwarves"_s;
+          c.chatReactionHostile = "\"Die!\""_s;
+          c.permanentEffects[LastingEffect::MAGIC_RESISTANCE] = 1;
+          c.spells->add(SpellId::HEAL_SELF);
           c.skills.setValue(SkillId::SORCERY, 1);
-          c.skills.insert(SkillId::HEALING);
-          c.skills.insert(SkillId::NIGHT_VISION);
-          c.spells->add(SpellId::HEALING);
+          c.spells->add(SpellId::HEAL_OTHER);
+          c.permanentEffects[LastingEffect::NIGHT_VISION] = 1;
+          c.spells->add(SpellId::HEAL_SELF);
           c.spells->add(SpellId::SPEED_SELF);
-          c.spells->add(SpellId::STR_BONUS);
+          c.spells->add(SpellId::DEF_BONUS);
+          c.spells->add(SpellId::DAM_BONUS);
           c.spells->add(SpellId::STUN_RAY);
           c.spells->add(SpellId::BLAST);
-          c.minionTasks.setValue(MinionTask::SLEEP, 1);
           c.name = "dark elf lord";);
     case CreatureId::DRIAD: 
       return CATTR(
           c.viewId = ViewId::DRIAD;
-          c.attr[AttrType::SPEED] = 80;
+          c.attr = LIST(6_dam, 14_def, 25_ranged_dam, 80_spd );
           c.body = Body::humanoid(Body::Size::MEDIUM);
-          c.attr[AttrType::STRENGTH] = 11;
-          c.attr[AttrType::DEXTERITY] = 17;
-          c.barehandedDamage = 3;
-          c.chatReactionFriendly = "curses all humans";
-          c.chatReactionHostile = "\"Die!\"";
-          c.spells->add(SpellId::HEALING);
-          c.skills.insert(SkillId::ELF_VISION);
-          c.skills.setValue(SkillId::ARCHERY, 1);
+          c.permanentEffects[LastingEffect::MAGIC_RESISTANCE] = 1;
+          c.chatReactionFriendly = "curses all humans"_s;
+          c.chatReactionHostile = "\"Die!\""_s;
+          c.spells->add(SpellId::HEAL_SELF);
+          c.permanentEffects[LastingEffect::ELF_VISION] = 1;
           c.name = "driad";);
     case CreatureId::HORSE: 
       return CATTR(
           c.viewId = ViewId::HORSE;
-          c.attr[AttrType::SPEED] = 100;
+          c.attr = LIST(16_dam, 7_def, 100_spd );
           c.body = Body::nonHumanoid(Body::Size::LARGE).setWeight(500).setHorseBodyParts();
-          c.attr[AttrType::STRENGTH] = 10;
-          c.attr[AttrType::DEXTERITY] = 13;
           c.innocent = true;
           c.animal = true;
           c.noChase = true;
@@ -1959,11 +1727,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::COW: 
       return CATTR(
           c.viewId = ViewId::COW;
-          c.attr[AttrType::SPEED] = 40;
+          c.attr = LIST(10_dam, 7_def, 40_spd );
           c.body = Body::nonHumanoid(Body::Size::LARGE).setWeight(400).setHorseBodyParts();
-          c.attr[AttrType::STRENGTH] = 10;
-          c.attr[AttrType::STRENGTH] = 10;
-          c.attr[AttrType::DEXTERITY] = 12;
           c.innocent = true;
           c.animal = true;
           c.noChase = true;
@@ -1971,11 +1736,9 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::DONKEY: 
       return CATTR(
           c.viewId = ViewId::DONKEY;
-          c.attr[AttrType::SPEED] = 40;
+          c.attr = LIST(10_dam, 7_def, 40_spd );
           c.body = Body::nonHumanoid(Body::Size::LARGE).setWeight(200).setHorseBodyParts()
               .setDeathSound(SoundId::DYING_DONKEY);
-          c.attr[AttrType::STRENGTH] = 10;
-          c.attr[AttrType::DEXTERITY] = 12;
           c.innocent = true;
           c.animal = true;
           c.noChase = true;
@@ -1983,11 +1746,9 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::PIG: 
       return CATTR(
           c.viewId = ViewId::PIG;
-          c.attr[AttrType::SPEED] = 60;
+          c.attr = LIST(5_dam, 2_def, 60_spd );
           c.body = Body::nonHumanoid(Body::Size::MEDIUM).setWeight(150).setHorseBodyParts().setMinionFood()
               .setDeathSound(SoundId::DYING_PIG);
-          c.attr[AttrType::STRENGTH] = 12;
-          c.attr[AttrType::DEXTERITY] = 8;
           c.innocent = true;
           c.noChase = true;
           c.animal = true;
@@ -1995,10 +1756,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::GOAT:
       return CATTR(
           c.viewId = ViewId::GOAT;
-          c.attr[AttrType::SPEED] = 60;
+          c.attr = LIST(10_dam, 7_def, 60_spd );
           c.body = Body::nonHumanoid(Body::Size::MEDIUM).setHorseBodyParts().setMinionFood();
-          c.attr[AttrType::STRENGTH] = 12;
-          c.attr[AttrType::DEXTERITY] = 8;
           c.innocent = true;
           c.noChase = true;
           c.animal = true;
@@ -2006,20 +1765,15 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::JACKAL: 
       return CATTR(
           c.viewId = ViewId::JACKAL;
-          c.attr[AttrType::SPEED] = 120;
+          c.attr = LIST(15_dam, 10_def, 120_spd );
           c.body = Body::nonHumanoid(Body::Size::SMALL).setWeight(10).setHorseBodyParts();
-          c.attr[AttrType::STRENGTH] = 10;
-          c.attr[AttrType::DEXTERITY] = 15;
-          c.barehandedDamage = 2;
           c.animal = true;
           c.name = "jackal";);
     case CreatureId::DEER: 
       return CATTR(
           c.viewId = ViewId::DEER;
-          c.attr[AttrType::SPEED] = 200;
+          c.attr = LIST(10_dam, 10_def, 200_spd );
           c.body = Body::nonHumanoid(Body::Size::LARGE).setWeight(400).setHorseBodyParts();
-          c.attr[AttrType::STRENGTH] = 10;
-          c.attr[AttrType::DEXTERITY] = 17;
           c.innocent = true;
           c.animal = true;
           c.noChase = true;
@@ -2027,10 +1781,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::BOAR: 
       return CATTR(
           c.viewId = ViewId::BOAR;
-          c.attr[AttrType::SPEED] = 180;
+          c.attr = LIST(15_dam, 10_def, 180_spd );
           c.body = Body::nonHumanoid(Body::Size::MEDIUM).setWeight(200).setHorseBodyParts();
-          c.attr[AttrType::STRENGTH] = 18;
-          c.attr[AttrType::DEXTERITY] = 15;
           c.innocent = true;
           c.animal = true;
           c.noChase = true;
@@ -2038,37 +1790,26 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::FOX: 
       return CATTR(
           c.viewId = ViewId::FOX;
-          c.attr[AttrType::SPEED] = 140;
+          c.attr = LIST(10_dam, 5_def, 140_spd );
           c.body = Body::nonHumanoid(Body::Size::SMALL).setWeight(10).setHorseBodyParts();
-          c.attr[AttrType::STRENGTH] = 10;
-          c.attr[AttrType::DEXTERITY] = 15;
-          c.barehandedDamage = 2;
           c.innocent = true;
           c.animal = true;
           c.noChase = true;
           c.name = CreatureName("fox", "foxes"););
-    case CreatureId::CAVE_BEAR: 
+    case CreatureId::CAVE_BEAR:
       return CATTR(
           c.viewId = ViewId::BEAR;
-          c.attr[AttrType::SPEED] = 120;
+          c.attr = LIST(26_dam, 10_def, 120_spd );
           c.body = Body::nonHumanoid(Body::Size::MEDIUM).setWeight(250).setHorseBodyParts();
-          c.attr[AttrType::STRENGTH] = 23;
-          c.attr[AttrType::DEXTERITY] = 18;
-          c.barehandedDamage = 11;
           c.animal = true;
           c.spawnType = SpawnType::BEAST;
-          c.minionTasks.setValue(MinionTask::EXPLORE_CAVES, 1);
-          c.minionTasks.setValue(MinionTask::LAIR, 1);
-          c.minionTasks.setValue(MinionTask::EAT, 3);
+          c.skills.insert(SkillId::EXPLORE_CAVES);
           c.name = "cave bear";);
     case CreatureId::RAT: 
       return CATTR(
           c.viewId = ViewId::RAT;
-          c.attr[AttrType::SPEED] = 180;
+          c.attr = LIST(2_dam, 2_def, 180_spd );
           c.body = Body::nonHumanoid(Body::Size::SMALL).setWeight(1).setHorseBodyParts();
-          c.attr[AttrType::STRENGTH] = 2;
-          c.attr[AttrType::DEXTERITY] = 12;
-          c.barehandedDamage = 2;
           c.animal = true;
           c.noChase = true;
           c.skills.insert(SkillId::SWIMMING);
@@ -2076,164 +1817,128 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::SPIDER: 
       return CATTR(
           c.viewId = ViewId::SPIDER;
-          c.attr[AttrType::SPEED] = 100;
+          c.attr = LIST(9_dam, 13_def, 180_spd );
           c.body = Body::nonHumanoid(Body::Size::SMALL)
               .setWeight(0.3)
               .setBodyParts({{BodyPart::LEG, 8}, {BodyPart::TORSO, 1}})
               .setDeathSound(none);
-          c.attr[AttrType::STRENGTH] = 9;
-          c.attr[AttrType::DEXTERITY] = 13;
-          c.barehandedDamage = 10;
-          c.attackEffect = EffectType(EffectId::LASTING, LastingEffect::POISON);
+          c.attackEffect = Effect(Effect::Lasting{LastingEffect::POISON});
           c.animal = true;
           c.name = "spider";);
     case CreatureId::FLY: 
       return CATTR(
           c.viewId = ViewId::FLY;
-          c.attr[AttrType::SPEED] = 150;
+          c.attr = LIST(2_dam, 12_def, 150_spd );
           c.body = Body::nonHumanoid(Body::Size::SMALL)
               .setWeight(0.1)
               .setBodyParts({{BodyPart::LEG, 6}, {BodyPart::WING, 2}, {BodyPart::TORSO, 1}})
               .setDeathSound(none);
-          c.attr[AttrType::STRENGTH] = 1;
-          c.attr[AttrType::DEXTERITY] = 14;
-          c.barehandedDamage = 10;
-          c.courage = 100;
+          c.courage = 1;
           c.noChase = true;
           c.animal = true;
           c.name = CreatureName("fly", "flies"););
     case CreatureId::ANT_WORKER:
       return CATTR(
           c.viewId = ViewId::ANT_WORKER;
-          c.attr[AttrType::SPEED] = 100;
+          c.attr = LIST(16_dam, 16_def, 100_spd );
           c.body = Body::nonHumanoid(Body::Size::MEDIUM)
               .setWeight(10)
               .setBodyParts({{BodyPart::LEG, 6}, {BodyPart::HEAD, 1}, {BodyPart::TORSO, 1}})
               .setDeathSound(none);
-          c.attr[AttrType::STRENGTH] = 16;
-          c.attr[AttrType::DEXTERITY] = 16;
-          c.barehandedDamage = 4;
           c.animal = true;
           c.name = "giant ant";);
     case CreatureId::ANT_SOLDIER:
       return CATTR(
           c.viewId = ViewId::ANT_SOLDIER;
-          c.attr[AttrType::SPEED] = 130;
-          c.attackEffect = EffectType(EffectId::LASTING, LastingEffect::POISON);
+          c.attr = LIST(36_dam, 20_def, 130_spd );
+          c.attackEffect = Effect(Effect::Lasting{LastingEffect::POISON});
+          c.skills.insert(SkillId::DIGGING);
           c.body = Body::nonHumanoid(Body::Size::MEDIUM)
               .setWeight(10)
               .setBodyParts({{BodyPart::LEG, 6}, {BodyPart::HEAD, 1}, {BodyPart::TORSO, 1}})
               .setDeathSound(none);
-          c.attr[AttrType::STRENGTH] = 24;
-          c.attr[AttrType::DEXTERITY] = 24;
-          c.barehandedDamage = 12;
           c.animal = true;
-          c.name = "soldier ant";);
+          c.name = "giant ant soldier";);
     case CreatureId::ANT_QUEEN:      
       return CATTR(
           c.viewId = ViewId::ANT_QUEEN;
-          c.attr[AttrType::SPEED] = 130;
-          c.attackEffect = EffectType(EffectId::LASTING, LastingEffect::POISON);
+          c.attr = LIST(42_dam, 26_def, 130_spd );
+          c.attackEffect = Effect(Effect::Lasting{LastingEffect::POISON});
           c.body = Body::nonHumanoid(Body::Size::MEDIUM)
               .setWeight(10)
               .setBodyParts({{BodyPart::LEG, 6}, {BodyPart::HEAD, 1}, {BodyPart::TORSO, 1}})
               .setDeathSound(none);
-          c.attr[AttrType::STRENGTH] = 28;
-          c.attr[AttrType::DEXTERITY] = 28;
-          c.barehandedDamage = 20;
           c.animal = true;
           c.name = "ant queen";);
     case CreatureId::SNAKE: 
       return CATTR(
           c.viewId = ViewId::SNAKE;
-          c.attr[AttrType::SPEED] = 100;
+          c.attr = LIST(14_dam, 14_def, 100_spd );
           c.body = Body::nonHumanoid(Body::Size::SMALL)
               .setWeight(2)
               .setBodyParts({{BodyPart::HEAD, 1}, {BodyPart::TORSO, 1}})
               .setDeathSound(none);
-          c.attr[AttrType::STRENGTH] = 2;
-          c.attr[AttrType::DEXTERITY] = 14;
-          c.barehandedDamage = 15;
           c.animal = true;
-          c.attackEffect = EffectType(EffectId::LASTING, LastingEffect::POISON);
+          c.attackEffect = Effect(Effect::Lasting{LastingEffect::POISON});
           c.skills.insert(SkillId::SWIMMING);
           c.name = "snake";);
     case CreatureId::RAVEN: 
       return CATTR(
           c.viewId = ViewId::RAVEN;
-          c.attr[AttrType::SPEED] = 250;
+          c.attr = LIST(2_dam, 12_def, 250_spd );
           c.body = Body::nonHumanoid(Body::Size::SMALL).setWeight(0.5).setBirdBodyParts().setDeathSound(none);
-          c.attr[AttrType::STRENGTH] = 2;
-          c.attr[AttrType::DEXTERITY] = 12;
-          c.barehandedDamage = 0;
           c.animal = true;
           c.noChase = true;
-          c.courage = 100;
+          c.courage = 1;
           c.spawnType = SpawnType::BEAST;
-          c.minionTasks.setValue(MinionTask::EXPLORE, 1);
-          c.minionTasks.setValue(MinionTask::LAIR, 1);
+          c.skills.insert(SkillId::EXPLORE);
           c.name = "raven";
           c.name->setGroup("flock");
           );
     case CreatureId::VULTURE: 
       return CATTR(
           c.viewId = ViewId::VULTURE;
-          c.attr[AttrType::SPEED] = 80;
+          c.attr = LIST(2_dam, 12_def, 80_spd );
           c.body = Body::nonHumanoid(Body::Size::SMALL).setWeight(5).setBirdBodyParts().setDeathSound(none);
-          c.attr[AttrType::STRENGTH] = 2;
-          c.attr[AttrType::DEXTERITY] = 12;
-          c.barehandedDamage = 0;
           c.animal = true;
           c.noChase = true;
-          c.courage = 100;
+          c.courage = 1;
           c.spawnType = SpawnType::BEAST;
-          c.minionTasks.setValue(MinionTask::EXPLORE, 1);
-          c.minionTasks.setValue(MinionTask::LAIR, 1);
           c.name = "vulture";);
     case CreatureId::WOLF: 
       return CATTR(
           c.viewId = ViewId::WOLF;
-          c.attr[AttrType::SPEED] = 160;
+          c.attr = LIST(20_dam, 9_def, 160_spd );
           c.body = Body::nonHumanoid(Body::Size::MEDIUM).setWeight(35).setHorseBodyParts();
-          c.attr[AttrType::STRENGTH] = 18;
-          c.attr[AttrType::DEXTERITY] = 17;
-          c.barehandedDamage = 12;
           c.animal = true;
-          c.skills.insert(SkillId::NIGHT_VISION);
+          c.permanentEffects[LastingEffect::NIGHT_VISION] = 1;
           c.spawnType = SpawnType::BEAST;
           c.name = CreatureName("wolf", "wolves");
           c.name->setGroup("pack");
           c.name->setFirst(NameGenerator::get(NameGeneratorId::DOG)->getNext());
-          c.minionTasks.setValue(MinionTask::EXPLORE_NOCTURNAL, 1);
-          c.minionTasks.setValue(MinionTask::LAIR, 1);
+          c.skills.insert(SkillId::EXPLORE_NOCTURNAL);
           );    
     case CreatureId::WEREWOLF:
       return CATTR(
           c.viewId = ViewId::WEREWOLF;
-          c.attr[AttrType::SPEED] = 100;
+          c.attr = LIST(20_dam, 7_def, 100_spd );
           c.body = Body::humanoid(Body::Size::LARGE);
-          c.attr[AttrType::STRENGTH] = 18;
-          c.attr[AttrType::DEXTERITY] = 17;
-          c.barehandedDamage = 12;
           c.animal = true;
           c.spawnType = SpawnType::BEAST;
-          c.skills.insert(SkillId::NIGHT_VISION);
+          c.permanentEffects[LastingEffect::NIGHT_VISION] = 1;
           c.skills.insert(SkillId::STEALTH);
-          c.minionTasks.setValue(MinionTask::EXPLORE_NOCTURNAL, 1);
-          c.minionTasks.setValue(MinionTask::TRAIN, 1);
-          c.minionTasks.setValue(MinionTask::LAIR, 1);
-          c.minionTasks.setValue(MinionTask::EAT, 3);
+          c.skills.insert(SkillId::EXPLORE_NOCTURNAL);
+          c.permanentEffects[LastingEffect::MAGIC_RESISTANCE] = 1;
+          c.permanentEffects[LastingEffect::REGENERATION] = 1;
+          c.maxLevelIncrease[ExperienceType::MELEE] = 12;
           c.name = CreatureName("werewolf", "werewolves");
           c.name->setFirst(NameGenerator::get(NameGeneratorId::DOG)->getNext());
           );
     case CreatureId::DOG: 
       return CATTR(
           c.viewId = ViewId::DOG;
-          c.attr[AttrType::SPEED] = 160;
+          c.attr = LIST(18_dam, 7_def, 160_spd );
           c.body = Body::nonHumanoid(Body::Size::MEDIUM).setWeight(25).setHorseBodyParts();
-          c.attr[AttrType::STRENGTH] = 15;
-          c.attr[AttrType::DEXTERITY] = 13;
-          c.barehandedDamage = 12;
           c.animal = true;
           c.innocent = true;
           c.name = "dog";
@@ -2243,25 +1948,21 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::FIRE_SPHERE: 
       return CATTR(
           c.viewId = ViewId::FIRE_SPHERE;
-          c.attr[AttrType::SPEED] = 100;
+          c.attr = LIST(5_dam, 15_def, 100_spd );
           c.body = Body::nonHumanoid(Body::Material::FIRE, Body::Size::SMALL).setDeathSound(none);
-          c.attr[AttrType::STRENGTH] = 5;
-          c.attr[AttrType::DEXTERITY] = 15;
-          c.barehandedDamage = 10;
+          c.permanentEffects[LastingEffect::FIRE_RESISTANT] = 1;
           c.permanentEffects[LastingEffect::FLYING] = 1;
           c.name = "fire sphere";);
     case CreatureId::ELEMENTALIST: 
       return CATTR(
           c.viewId = ViewId::ELEMENTALIST;
-          c.attr[AttrType::SPEED] = 120;
+          c.attr = LIST(15_dam, 20_def, 15_spell_dam, 120_spd );
           c.body = Body::humanoid(Body::Size::LARGE);
-          c.attr[AttrType::STRENGTH] = 16;
-          c.attr[AttrType::DEXTERITY] = 14;
-          c.barehandedDamage = 3;
           c.gender = Gender::female;
           c.permanentEffects[LastingEffect::FIRE_RESISTANT] = 1;
-          c.chatReactionFriendly = "curses all dungeons";
-          c.chatReactionHostile = "\"Die!\"";
+          c.permanentEffects[LastingEffect::MAGIC_RESISTANCE] = 1;
+          c.chatReactionFriendly = "curses all dungeons"_s;
+          c.chatReactionHostile = "\"Die!\""_s;
           c.name = "elementalist";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_FEMALE)->getNext());
           );
@@ -2269,73 +1970,58 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
       return CATTR(
           c.viewId = ViewId::FIRE_ELEMENTAL;
           c.body = Body::nonHumanoid(Body::Material::FIRE, Body::Size::LARGE).setDeathSound(none);
-          c.attr[AttrType::SPEED] = 120;
-          c.attr[AttrType::STRENGTH] = 25;
-          c.attr[AttrType::DEXTERITY] = 30;
+          c.attr = LIST(25_dam, 30_def, 120_spd );
           c.barehandedAttack = AttackType::HIT;
-          c.barehandedDamage = 10;
-          c.attackEffect = EffectId::FIRE;
+          c.attackEffect = Effect::Fire{};
+          c.permanentEffects[LastingEffect::FIRE_RESISTANT] = 1;
           c.permanentEffects[LastingEffect::FLYING] = 1;
           c.name = "fire elemental";);
     case CreatureId::AIR_ELEMENTAL:
       return CATTR(
           c.viewId = ViewId::AIR_ELEMENTAL;
           c.body = Body::nonHumanoid(Body::Material::SPIRIT, Body::Size::LARGE).setDeathSound(none);
-          c.attr[AttrType::SPEED] = 160;
-          c.attr[AttrType::STRENGTH] = 20;
-          c.attr[AttrType::DEXTERITY] = 30;
+          c.attr = LIST(25_dam, 35_def, 160_spd );
           c.barehandedAttack = AttackType::HIT;
-          c.barehandedDamage = 10;
           c.permanentEffects[LastingEffect::FLYING] = 1;
-          c.spells->add(SpellId::AIR_BLAST);
+          c.permanentEffects[LastingEffect::RANGED_RESISTANCE] = 1;
+          c.spells->add(SpellId::CIRCULAR_BLAST);
           c.name = "air elemental";);
     case CreatureId::EARTH_ELEMENTAL:
       return CATTR(
           c.viewId = ViewId::EARTH_ELEMENTAL;
           c.body = Body::nonHumanoid(Body::Material::ROCK, Body::Size::LARGE).setWeight(500)
               .setHumanoidBodyParts().setDeathSound(none);
-          c.attr[AttrType::SPEED] = 80;
-          c.attr[AttrType::STRENGTH] = 45;
-          c.attr[AttrType::DEXTERITY] = 20;
+          c.attr = LIST(25_dam, 45_def, 80_spd );
+          c.permanentEffects[LastingEffect::RANGED_RESISTANCE] = 1;
           c.barehandedAttack = AttackType::HIT;
-          c.barehandedDamage = 10;
           c.name = "earth elemental";);
     case CreatureId::WATER_ELEMENTAL:
       return CATTR(
           c.viewId = ViewId::WATER_ELEMENTAL;
           c.body = Body::nonHumanoid(Body::Material::WATER, Body::Size::LARGE).setWeight(300).setHumanoidBodyParts()
               .setDeathSound(none);
-          c.attr[AttrType::SPEED] = 80;
-          c.attr[AttrType::STRENGTH] = 45;
-          c.attr[AttrType::DEXTERITY] = 20;
+          c.attr = LIST(45_dam, 15_def, 80_spd );
           c.barehandedAttack = AttackType::HIT;
-          c.barehandedDamage = 10;
+          c.permanentEffects[LastingEffect::RANGED_RESISTANCE] = 1;
           c.skills.insert(SkillId::SWIMMING);
           c.name = "water elemental";);
     case CreatureId::ENT:
       return CATTR(
           c.viewId = ViewId::ENT;
           c.body = Body::nonHumanoid(Body::Material::WOOD, Body::Size::HUGE).setHumanoidBodyParts();
-          c.attr[AttrType::SPEED] = 30;
-          c.attr[AttrType::STRENGTH] = 40;
-          c.attr[AttrType::DEXTERITY] = 26;
-          c.barehandedDamage = 0;
-          c.skills.insert(SkillId::ELF_VISION);
-          c.minionTasks.clear();
-          c.chatReactionFriendly = "curses all dungeons";
-          c.chatReactionHostile = "\"Die!\"";
+          c.attr = LIST(45_dam, 25_def, 30_spd );
+          c.permanentEffects[LastingEffect::ELF_VISION] = 1;
+          c.permanentEffects[LastingEffect::RANGED_RESISTANCE] = 1;
+          c.chatReactionFriendly = "curses all dungeons"_s;
+          c.chatReactionHostile = "\"Die!\""_s;
           c.name = "tree spirit";);
     case CreatureId::ANGEL:
       return CATTR(
           c.viewId = ViewId::ANGEL;
-          c.attr[AttrType::SPEED] = 100;
+          c.attr = LIST(22_def, 20_spell_dam, 100_spd );
           c.body = Body::nonHumanoid(Body::Material::SPIRIT, Body::Size::LARGE);
-          c.attr[AttrType::STRENGTH] = 30;
-          c.attr[AttrType::DEXTERITY] = 22;
-          c.barehandedDamage = 3;
-          c.chatReactionFriendly = "curses all dungeons";
-          c.chatReactionHostile = "\"Die!\"";
-          c.skills.setValue(SkillId::WEAPON_MELEE, 0.3);
+          c.chatReactionFriendly = "curses all dungeons"_s;
+          c.chatReactionHostile = "\"Die!\""_s;
           c.name = "angel";);
     case CreatureId::KRAKEN:
       return getKrakenAttributes(ViewId::KRAKEN_HEAD, "kraken");
@@ -2343,28 +2029,22 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
       return CATTR(
           c.viewId = ViewId::BAT;
           c.body = Body::nonHumanoid(Body::Size::SMALL).setWeight(1).setBirdBodyParts();
-          c.attr[AttrType::SPEED] = 150;
-          c.attr[AttrType::STRENGTH] = 3;
-          c.attr[AttrType::DEXTERITY] = 16;
-          c.barehandedDamage = 2;
+          c.attr = LIST(3_dam, 16_def, 150_spd );
           c.animal = true;
           c.noChase = true;
-          c.courage = 100;
+          c.courage = 1;
           c.spawnType = SpawnType::BEAST;
-          c.skills.insert(SkillId::NIGHT_VISION);
-          c.minionTasks.setValue(MinionTask::EXPLORE_CAVES, 1);
-          c.minionTasks.setValue(MinionTask::EXPLORE_NOCTURNAL, 1);
-          c.minionTasks.setValue(MinionTask::LAIR, 1);
+          c.permanentEffects[LastingEffect::NIGHT_VISION] = 1;
+          c.skills.insert(SkillId::EXPLORE_NOCTURNAL);
+          c.skills.insert(SkillId::EXPLORE_CAVES);
           c.name = "bat";);
     case CreatureId::DEATH: 
       return CATTR(
           c.viewId = ViewId::DEATH;
-          c.attr[AttrType::SPEED] = 95;
+          c.attr = LIST(100_spell_dam, 35_def, 95_spd );
           c.body = Body::humanoidSpirit(Body::Size::LARGE);
-          c.attr[AttrType::STRENGTH] = 100;
-          c.attr[AttrType::DEXTERITY] = 35;
-          c.barehandedDamage = 10;
-          c.chatReactionFriendly = c.chatReactionHostile = "\"IN ORDER TO HAVE A CHANGE OF FORTUNE AT THE LAST MINUTE YOU HAVE TO TAKE YOUR FORTUNE TO THE LAST MINUTE.\"";
+          c.chatReactionFriendly = c.chatReactionHostile = "\"IN ORDER TO HAVE A CHANGE OF FORTUNE AT THE LAST MINUTE "
+              "YOU HAVE TO TAKE YOUR FORTUNE TO THE LAST MINUTE.\""_s;
           c.name = "Death";);
     default: FATAL << "This is not handled here " << int(id);
   }
@@ -2375,12 +2055,12 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
 ControllerFactory getController(CreatureId id, MonsterAIFactory normalFactory) {
   switch (id) {
     case CreatureId::KRAKEN:
-      return ControllerFactory([=](Creature* c) {
-          return SController(new KrakenController(c));
+      return ControllerFactory([=](WCreature c) {
+          return makeOwner<KrakenController>(c);
           });
     case CreatureId::FIRE_SPHERE:
-      return ControllerFactory([=](Creature* c) {
-          return SController(new KamikazeController(c, normalFactory));
+      return ControllerFactory([=](WCreature c) {
+          return makeOwner<KamikazeController>(c, normalFactory);
           });
     default: return Monster::getFactory(normalFactory);
   }
@@ -2427,24 +2107,27 @@ PCreature CreatureFactory::get(CreatureId id, TribeId tribe, MonsterAIFactory ai
   }
 }
 
-PCreature CreatureFactory::getGhost(Creature* creature) {
+PCreature CreatureFactory::getGhost(WCreature creature) {
   ViewObject viewObject(creature->getViewObject().id(), ViewLayer::CREATURE, "Ghost");
   viewObject.setModifier(ViewObject::Modifier::ILLUSION);
-  return PCreature(new Creature(viewObject, creature->getTribeId(), getAttributes(CreatureId::LOST_SOUL),
-        Monster::getFactory(MonsterAIFactory::monster())));
+  auto ret = makeOwner<Creature>(viewObject, creature->getTribeId(), getAttributes(CreatureId::LOST_SOUL));
+  ret->setController(Monster::getFactory(MonsterAIFactory::monster()).get(ret.get()));
+  return ret;
 }
 
 ItemType randomHealing() {
-  return Random.choose(ItemType(ItemId::POTION, EffectId::HEAL), ItemType(ItemId::FIRST_AID_KIT));
+  return ItemType::Potion{Effect::Heal{}};
 }
 
 ItemType randomBackup() {
-  return Random.choose({ ItemType(ItemId::SCROLL, EffectId::DECEPTION), ItemType(ItemId::SCROLL, EffectId::TELEPORT),
-      randomHealing()}, {1, 1, 8});
+  return Random.choose(
+      ItemType(ItemType::Scroll{Effect::Deception{}}),
+      ItemType(ItemType::Scroll{Effect::Teleport{}}),
+      randomHealing());
 }
 
 ItemType randomArmor() {
-  return Random.choose({ItemId::LEATHER_ARMOR, ItemId::CHAIN_ARMOR}, {4, 1});
+  return Random.choose({ItemType(ItemType::LeatherArmor{}), ItemType(ItemType::ChainArmor{})}, {4, 1});
 }
 
 class ItemList {
@@ -2482,157 +2165,166 @@ class ItemList {
   vector<ItemType> ret;
 };
 
-vector<ItemType> getInventory(CreatureId id) {
+vector<ItemType> getDefaultInventory(CreatureId id) {
   switch (id) {
-    case CreatureId::CYCLOPS: 
-      return ItemList().add(ItemId::HEAVY_CLUB).add(ItemId::GOLD_PIECE, Random.get(200, 400));
+    case CreatureId::CYCLOPS:
+      return ItemList()
+        .add(ItemType::HeavyClub{})
+        .add(ItemType::GoldPiece{}, Random.get(40, 80));
     case CreatureId::GREEN_DRAGON:
-      return ItemList().add(ItemId::GOLD_PIECE, Random.get(300, 500));
+      return ItemList().add(ItemType::GoldPiece{}, Random.get(60, 100));
+    case CreatureId::DEMON_DWELLER:
+      return ItemList().add(ItemType::GoldPiece{}, Random.get(50, 100));
     case CreatureId::RED_DRAGON:
-      return ItemList().add(ItemId::GOLD_PIECE, Random.get(600, 1000));
+      return ItemList().add(ItemType::GoldPiece{}, Random.get(120, 200));
+    case CreatureId::DEMON_LORD:
     case CreatureId::ANGEL:
-      return ItemList().add(ItemId::SPECIAL_SWORD);
+      return ItemList().add(ItemType::SpecialSword{});
     case CreatureId::KEEPER_F:
     case CreatureId::KEEPER:
       return ItemList()
-        .add(ItemId::ROBE);
+        .add(ItemType::Robe{});
     case CreatureId::ADVENTURER_F:
     case CreatureId::ADVENTURER:
       return ItemList()
-        .add(ItemId::FIRST_AID_KIT)
-        .add(ItemId::KNIFE)
-        .add(ItemId::SWORD)
-        .add(ItemId::LEATHER_GLOVES)
-        .add(ItemId::LEATHER_ARMOR)
-        .add(ItemId::LEATHER_HELM)
-        .add(ItemId::GOLD_PIECE, Random.get(80, 130));
+        .add(ItemType::FirstAidKit{}, 3)
+        .add(ItemType::Knife{})
+        .add(ItemType::Sword{})
+        .add(ItemType::LeatherGloves{})
+        .add(ItemType::LeatherArmor{})
+        .add(ItemType::LeatherHelm{})
+        .add(ItemType::GoldPiece{}, Random.get(16, 26));
+    case CreatureId::ELEMENTALIST:
+      return ItemList()
+          .add(ItemType::IronStaff{});
     case CreatureId::DEATH:
       return ItemList()
-        .add(ItemId::SCYTHE);
-    case CreatureId::LEPRECHAUN: 
-      return ItemList()
-        .add({ItemId::SCROLL, EffectId::TELEPORT}, Random.get(1, 4));
+        .add(ItemType::Scythe{});
     case CreatureId::GOBLIN: 
       return ItemList()
-        .add(ItemId::CLUB)
-        .maybe(0.3, ItemId::LEATHER_BOOTS);
+        .add(ItemType::Club{})
+        .maybe(0.3, ItemType::LeatherBoots{});
     case CreatureId::WARRIOR: 
       return ItemList()
-        .add(ItemId::LEATHER_ARMOR)
-        .add(ItemId::CLUB)
-        .add(ItemId::GOLD_PIECE, Random.get(10, 20));
+        .add(ItemType::LeatherArmor{})
+        .add(ItemType::Club{})
+        .add(ItemType::GoldPiece{}, Random.get(2, 5));
     case CreatureId::SHAMAN: 
       return ItemList()
-        .add(ItemId::LEATHER_ARMOR)
-        .add(ItemId::CLUB);
-    case CreatureId::LIZARDLORD: 
-    case CreatureId::LIZARDMAN: 
-      return ItemList().add(ItemId::LEATHER_ARMOR)
-        .add(ItemId::GOLD_PIECE, Random.get(10, 20));
+        .add(ItemType::LeatherArmor{})
+        .add(ItemType::Club{})
+        .add(ItemType::GoldPiece{}, Random.get(80, 120));
+    case CreatureId::LIZARDLORD:
+      return ItemList().add(ItemType::LeatherArmor{})
+        .add(ItemType::Potion{Effect::RegrowBodyPart{}})
+        .add(ItemType::GoldPiece{}, Random.get(50, 90));
+    case CreatureId::LIZARDMAN:
+      return ItemList().add(ItemType::LeatherArmor{})
+        .add(ItemType::GoldPiece{}, Random.get(2, 4));
     case CreatureId::HARPY: 
       return ItemList()
-        .add(ItemId::BOW).add(ItemId::ARROW, Random.get(20, 36));
+        .add(ItemType::Bow{});
     case CreatureId::ARCHER: 
       return ItemList()
-        .add(ItemId::BOW).add(ItemId::ARROW, Random.get(20, 36))
-        .add(ItemId::KNIFE)
-        .add(ItemId::LEATHER_ARMOR)
-        .add(ItemId::LEATHER_BOOTS)
+        .add(ItemType::Bow{})
+        .add(ItemType::Knife{})
+        .add(ItemType::LeatherArmor{})
+        .add(ItemType::LeatherBoots{})
         .add(randomHealing())
-        .add(ItemId::GOLD_PIECE, Random.get(20, 50));
-    case CreatureId::CASTLE_GUARD:
+        .add(ItemType::GoldPiece{}, Random.get(4, 10));
     case CreatureId::WITCHMAN:
       return ItemList()
-        .add(ItemId::SWORD)
-        .add(ItemId::LEATHER_ARMOR)
-        .add(ItemId::LEATHER_BOOTS)
+        .add(ItemType::Sword{})
+        .add(ItemType::LeatherArmor{})
+        .add(ItemType::LeatherBoots{})
         .add(randomHealing())
-        .add({ItemId::POTION, EffectType{EffectId::LASTING, LastingEffect::SPEED}}, 4)
-        .add(ItemId::GOLD_PIECE, Random.get(350, 500));
+        .add(ItemType::Potion{Effect::Lasting{LastingEffect::SPEED}}, 4)
+        .add(ItemType::GoldPiece{}, Random.get(60, 80));
     case CreatureId::KNIGHT: 
       return ItemList()
-        .add(ItemId::SWORD)
-        .add(ItemId::CHAIN_ARMOR)
-        .add(ItemId::LEATHER_BOOTS)
+        .add(ItemType::Sword{})
+        .add(ItemType::ChainArmor{})
+        .add(ItemType::LeatherBoots{})
         .add(randomHealing())
-        .add(ItemId::GOLD_PIECE, Random.get(30, 80));
+        .add(ItemType::GoldPiece{}, Random.get(6, 16));
     case CreatureId::MINOTAUR: 
       return ItemList()
-        .add(ItemId::BATTLE_AXE);
+        .add(ItemType::BattleAxe{});
     case CreatureId::AVATAR: 
       return ItemList()
-        .add(ItemId::SPECIAL_BATTLE_AXE)
-        .add(ItemId::CHAIN_ARMOR)
-        .add(ItemId::IRON_HELM)
-        .add(ItemId::IRON_BOOTS)
-        .add({ItemId::POTION, EffectId::HEAL}, Random.get(1, 4))
-        .add(ItemId::GOLD_PIECE, Random.get(200, 300));
+        .add(ItemType::SpecialBattleAxe{})
+        .add(ItemType::ChainArmor{})
+        .add(ItemType::IronHelm{})
+        .add(ItemType::IronBoots{})
+        .add(randomHealing(), 3)
+        .add(ItemType::GoldPiece{}, Random.get(140, 200));
     case CreatureId::OGRE: 
-      return ItemList().add(ItemId::HEAVY_CLUB);
+      return ItemList().add(ItemType::HeavyClub{});
     case CreatureId::BANDIT:
-    case CreatureId::ORC: 
       return ItemList()
-        .add(ItemId::SWORD)
+        .add(ItemType::Sword{})
         .maybe(0.3, randomBackup())
-        .maybe(0.05, ItemList().add(ItemId::BOW).add(ItemId::ARROW, Random.get(20, 36)));
-    case CreatureId::DWARF: 
+        .maybe(0.05, ItemType::Bow{});
+    case CreatureId::DWARF:
       return ItemList()
-        .add(Random.choose({ItemId::BATTLE_AXE, ItemId::WAR_HAMMER}, {1, 1}))
+        .add(Random.choose({ItemType(ItemType::BattleAxe{}), ItemType(ItemType::WarHammer{})}, {1, 1}))
         .maybe(0.6, randomBackup())
-        .add(ItemId::CHAIN_ARMOR)
-        .maybe(0.5, ItemId::IRON_HELM)
-        .maybe(0.3, ItemId::IRON_BOOTS)
-        .add(ItemId::GOLD_PIECE, Random.get(10, 30));
+        .add(ItemType::ChainArmor{})
+        .maybe(0.5, ItemType::IronHelm{})
+        .maybe(0.3, ItemType::IronBoots{})
+        .add(ItemType::GoldPiece{}, Random.get(2, 6));
     case CreatureId::DWARF_BARON: 
       return ItemList()
-        .add(Random.choose({ItemId::SPECIAL_BATTLE_AXE, ItemId::SPECIAL_WAR_HAMMER}, {1, 1}))
+        .add(Random.choose({ItemType(ItemType::SpecialBattleAxe{}), ItemType(ItemType::SpecialWarHammer{})}, {1, 1}))
         .add(randomBackup())
-        .add(ItemId::CHAIN_ARMOR)
-        .add(ItemId::IRON_BOOTS)
-        .add(ItemId::IRON_HELM)
-        .add(ItemId::GOLD_PIECE, Random.get(200, 400));
+        .add(randomHealing())
+        .add(ItemType::ChainArmor{})
+        .add(ItemType::IronBoots{})
+        .add(ItemType::IronHelm{})
+        .add(ItemType::GoldPiece{}, Random.get(80, 120));
     case CreatureId::GNOME_CHIEF:
       return ItemList()
-        .add(ItemId::SWORD)
+        .add(ItemType::Sword{})
         .add(randomBackup());
     case CreatureId::DARK_ELF_LORD: 
     case CreatureId::ELF_LORD: 
       return ItemList()
-        .add(ItemId::SPECIAL_ELVEN_SWORD)
-        .add(ItemId::LEATHER_ARMOR)
-        .add(ItemId::BOW)
-        .add(ItemId::ARROW, Random.get(20, 36))
-        .add(ItemId::GOLD_PIECE, Random.get(100, 300))
+        .add(ItemType::SpecialElvenSword{})
+        .add(ItemType::LeatherArmor{})
+        .add(ItemType::ElvenBow{})
+        .add(ItemType::GoldPiece{}, Random.get(80, 120))
         .add(randomBackup());
     case CreatureId::DRIAD: 
       return ItemList()
-        .add(ItemId::BOW)
-        .add(ItemId::ARROW, Random.get(20, 36));
+        .add(ItemType::Bow{});
     case CreatureId::DARK_ELF_WARRIOR: 
       return ItemList()
-        .add(ItemId::ELVEN_SWORD)
-        .add(ItemId::LEATHER_ARMOR)
-        .add(ItemId::GOLD_PIECE, Random.get(10, 30))
+        .add(ItemType::ElvenSword{})
+        .add(ItemType::LeatherArmor{})
+        .add(ItemType::GoldPiece{}, Random.get(2, 6))
         .add(randomBackup());
     case CreatureId::ELF_ARCHER: 
       return ItemList()
-        .add(ItemId::ELVEN_SWORD)
-        .add(ItemId::LEATHER_ARMOR)
-        .add(ItemId::BOW)
-        .add(ItemId::ARROW, Random.get(20, 36))
-        .add(ItemId::GOLD_PIECE, Random.get(10, 30))
+        .add(ItemType::ElvenSword{})
+        .add(ItemType::LeatherArmor{})
+        .add(ItemType::Bow{})
+        .add(ItemType::GoldPiece{}, Random.get(2, 6))
         .add(randomBackup());
-    case CreatureId::WITCH: 
+    case CreatureId::WITCH:
       return ItemList()
-        .add(ItemId::KNIFE)
+        .add(ItemType::Knife{})
         .add({
-            {ItemId::POTION, EffectType(EffectId::HEAL)},
-            {ItemId::POTION, EffectType(EffectId::LASTING, LastingEffect::SLEEP)},
-            {ItemId::POTION, EffectType(EffectId::LASTING, LastingEffect::SLOWED)},
-            {ItemId::POTION, EffectType(EffectId::LASTING, LastingEffect::BLIND)},
-            {ItemId::POTION, EffectType(EffectId::LASTING, LastingEffect::INVISIBLE)},
-            {ItemId::POTION, EffectType(EffectId::LASTING, LastingEffect::POISON)},
-            {ItemId::POTION, EffectType(EffectId::LASTING, LastingEffect::SPEED)}});
+            ItemType::Potion{Effect::Heal{}},
+            ItemType::Potion{Effect::Lasting{LastingEffect::SLEEP}},
+            ItemType::Potion{Effect::Lasting{LastingEffect::SLOWED}},
+            ItemType::Potion{Effect::Lasting{LastingEffect::BLIND}},
+            ItemType::Potion{Effect::Lasting{LastingEffect::INVISIBLE}},
+            ItemType::Potion{Effect::Lasting{LastingEffect::POISON}},
+            ItemType::Potion{Effect::Lasting{LastingEffect::SPEED}}});
+    case CreatureId::HALLOWEEN_KID:
+      return ItemList()
+        .add(ItemType::BagOfCandies{})
+        .add(ItemType::HalloweenCostume{});
     default: return {};
   }
 }
@@ -2641,7 +2333,15 @@ PCreature CreatureFactory::fromId(CreatureId id, TribeId t) {
   return fromId(id, t, MonsterAIFactory::monster());
 }
 
-PCreature CreatureFactory::fromId(CreatureId id, TribeId t, const MonsterAIFactory& factory) {
-  return addInventory(get(id, t, factory), getInventory(id));
+
+PCreature CreatureFactory::fromId(CreatureId id, TribeId t, const MonsterAIFactory& f) {
+  return fromId(id, t, f, {});
+}
+
+PCreature CreatureFactory::fromId(CreatureId id, TribeId t, const MonsterAIFactory& factory, const vector<ItemType>& inventory) {
+  auto ret = get(id, t, factory);
+  addInventory(ret.get(), inventory);
+  addInventory(ret.get(), getDefaultInventory(id));
+  return ret;
 }
 

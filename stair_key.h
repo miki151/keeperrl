@@ -1,5 +1,7 @@
 #pragma once
 
+#include "util.h"
+
 class StairKey {
   public:
   static StairKey getNew();

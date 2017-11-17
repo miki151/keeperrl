@@ -4,111 +4,148 @@
 #include "event_generator.h"
 #include "position.h"
 #include "enum_variant.h"
+#include "model.h"
 
 class Model;
 class Technology;
 class Collective;
 
-enum class EventId {
-  MOVED,
-  KILLED,
-  PICKED_UP,
-  DROPPED,
-  ITEMS_APPEARED,
-  ITEMS_THROWN,
-  EXPLOSION,
-  CONQUERED_ENEMY,
-  WON_GAME,
-  TECHBOOK_READ,
-  ALARM,
-  TORTURED,
-  SURRENDERED,
-  TRAP_TRIGGERED,
-  TRAP_DISARMED,
-  FURNITURE_DESTROYED,
-  EQUIPED,
-  CREATURE_EVENT,
-  POSITION_DISCOVERED
-};
-
 namespace EventInfo {
 
-struct Attacked {
-  Creature* victim;
-  Creature* attacker;
-};
+  struct CreatureMoved {
+    WCreature creature;
+  };
 
-struct ItemsHandled {
-  Creature* creature;
-  vector<Item*> items;
-};
+  struct CreatureKilled {
+    WCreature victim;
+    WCreature attacker;
+  };
 
-struct ItemsAppeared {
-  Position position;
-  vector<Item*> items;
-};
+  struct ItemsPickedUp {
+    WCreature creature;
+    vector<WItem> items;
+  };
 
-struct ItemsThrown {
-  Level* level;
-  vector<Item*> items;
-  vector<Vec2> trajectory;
-};
+  struct ItemsDropped {
+    WCreature creature;
+    vector<WItem> items;
+  };
 
-struct TrapDisarmed {
-  Position position;
-  Creature* creature;
-};
+  struct ItemsAppeared {
+    Position position;
+    vector<WItem> items;
+  };
 
-struct CreatureEvent {
-  Creature* creature;
-  string message;
-};
+  struct Projectile {
+    ViewId viewId;
+    Position begin;
+    Position end;
+  };
 
-struct FurnitureEvent {
-  Position position;
-  FurnitureLayer layer;
-};
+  struct Explosion {
+    Position pos;
+  };
+
+  struct ConqueredEnemy {
+    WCollective collective;
+  };
+
+  struct WonGame {};
+
+  struct RetiredGame {};
+
+  struct TechbookRead {
+    Technology* technology;
+  };
+
+  struct Alarm {
+    Position pos;
+  };
+
+  struct CreatureTortured {
+    WCreature victim;
+    WCreature torturer;
+  };
+
+  struct CreatureSurrendered {
+    WCreature victim;
+    WCreature attacker;
+  };
+
+  struct TrapTriggered {
+    Position pos;
+  };
+
+  struct TrapDisarmed {
+    Position pos;
+    WCreature creature;
+  };
+
+  struct FurnitureDestroyed {
+    Position position;
+    FurnitureType type;
+    FurnitureLayer layer;
+  };
+
+  struct ItemsEquipped {
+    WCreature creature;
+    vector<WItem> items;
+  };
+
+  struct CreatureEvent {
+    WCreature creature;
+    string message;
+  };
+
+  struct VisibilityChanged {
+    Position pos;
+  };
+
+  class GameEvent : public variant<CreatureMoved, CreatureKilled, ItemsPickedUp, ItemsDropped, ItemsAppeared, Projectile,
+      Explosion, ConqueredEnemy, WonGame, TechbookRead, Alarm, CreatureTortured, CreatureSurrendered, TrapTriggered,
+      TrapDisarmed, FurnitureDestroyed, ItemsEquipped, CreatureEvent, VisibilityChanged, RetiredGame> {
+    using variant::variant;
+  };
 
 }
 
-class GameEvent : public EnumVariant<EventId, TYPES(Creature*, Position, Technology*, Collective*,
-    EventInfo::CreatureEvent, EventInfo::Attacked, EventInfo::ItemsHandled, EventInfo::ItemsAppeared,
-    EventInfo::ItemsThrown, EventInfo::TrapDisarmed, EventInfo::FurnitureEvent),
-    ASSIGN(Creature*, EventId::MOVED),
-    ASSIGN(Position, EventId::EXPLOSION, EventId::ALARM, EventId::TRAP_TRIGGERED,
-        EventId::POSITION_DISCOVERED),
-    ASSIGN(Technology*, EventId::TECHBOOK_READ),
-    ASSIGN(Collective*, EventId::CONQUERED_ENEMY),
-    ASSIGN(EventInfo::CreatureEvent, EventId::CREATURE_EVENT),
-    ASSIGN(EventInfo::Attacked, EventId::KILLED, EventId::TORTURED, EventId::SURRENDERED),
-    ASSIGN(EventInfo::ItemsHandled, EventId::PICKED_UP, EventId::DROPPED, EventId::EQUIPED),
-    ASSIGN(EventInfo::ItemsAppeared, EventId::ITEMS_APPEARED),
-    ASSIGN(EventInfo::ItemsThrown, EventId::ITEMS_THROWN),
-    ASSIGN(EventInfo::TrapDisarmed, EventId::TRAP_DISARMED),
-    ASSIGN(EventInfo::FurnitureEvent, EventId::FURNITURE_DESTROYED) > {
-  using EnumVariant::EnumVariant;
+class GameEvent : public EventInfo::GameEvent {
+  using EventInfo::GameEvent::GameEvent;
 };
 
+template <typename T>
 class EventListener {
   public:
-  typedef EventGenerator<EventListener> Generator;
+  EventListener() {}
 
-  EventListener();
-  EventListener(Model*);
   EventListener(const EventListener&) = delete;
   EventListener(EventListener&&) = delete;
-  virtual ~EventListener();
 
-  void subscribeTo(Model*);
-  void unsubscribe();
-  bool isSubscribed() const;
+  void subscribeTo(WModel m) {
+    CHECK(!generator && !id);
+    generator = m->eventGenerator.get();
+    id = generator->addListener(WeakPointer<T>(static_cast<T*>(this)));
+  }
 
-  virtual void onEvent(const GameEvent&) = 0;
+  void unsubscribe() {
+    if (generator) {
+      generator->removeListener(*id);
+      generator = nullptr;
+    }
+  }
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version);
+  bool isSubscribed() const {
+    return !!generator;
+  }
+
+  SERIALIZE_ALL(generator, id)
+
+  ~EventListener() {
+    unsubscribe();
+  }
 
   private:
-  Generator* SERIAL(generator) = nullptr;
+  WeakPointer<EventGenerator> SERIAL(generator);
+  optional<EventGenerator::SubscriberId> SERIAL(id);
 };
 

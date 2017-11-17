@@ -11,29 +11,38 @@ class Creature;
 class ImmigrantInfo;
 class Position;
 class CollectiveConfig;
+struct CollectiveName;
 
 class CollectiveBuilder {
   public:
   CollectiveBuilder(const CollectiveConfig&, TribeId);
-  CollectiveBuilder& setLevel(Level*);
-  CollectiveBuilder& addCreature(Creature*);
-  CollectiveBuilder& addSquares(const vector<Vec2>&);
-  CollectiveBuilder& addSquares(const vector<Position>&);
+  CollectiveBuilder& setLevel(WLevel);
+  CollectiveBuilder& addCreature(WCreature, EnumSet<MinionTrait>);
+  CollectiveBuilder& addArea(const vector<Vec2>&);
   CollectiveBuilder& setLocationName(const string&);
   CollectiveBuilder& setRaceName(const string&);
+  CollectiveBuilder& setDiscoverable();
+  TribeId getTribe();
+  void setCentralPoint(Vec2);
+  bool hasCentralPoint();
+
   PCollective build();
   bool hasCreatures() const;
 
   private:
-  Level* level = nullptr;
+  optional<CollectiveName> getCollectiveName();
+  WLevel level = nullptr;
   struct CreatureInfo {
-    Creature* creature;
+    WCreature creature;
     EnumSet<MinionTrait> traits;
   };
   vector<CreatureInfo> creatures;
   HeapAllocated<CollectiveConfig> config;
   HeapAllocated<TribeId> tribe;
   vector<Vec2> squares;
+  optional<Vec2> centralPoint;
   optional<string> locationName;
   optional<string> raceName;
+  bool discoverable = false;
+  optional<CollectiveName> generateName();
 };

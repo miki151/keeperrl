@@ -1,6 +1,7 @@
 #pragma once
 
 #include "util.h"
+#include "position.h"
 
 RICH_ENUM(ZoneId,
   FETCH_ITEMS,

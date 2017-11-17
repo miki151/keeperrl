@@ -20,12 +20,7 @@
 #include "view_object.h"
 #include "view_index.h"
 
-template <class Archive> 
-void MapMemory::serialize(Archive& ar, const unsigned int version) {
-  ar & SVAR(table);
-}
-
-SERIALIZABLE(MapMemory);
+SERIALIZE_DEF(MapMemory, table)
 
 MapMemory::MapMemory() {}
 
@@ -71,10 +66,10 @@ const MapMemory& MapMemory::empty() {
   return mem;
 } 
 
-const unordered_set<Position, CustomHash<Position>>& MapMemory::getUpdated(const Level* level) const {
+const unordered_set<Position, CustomHash<Position>>& MapMemory::getUpdated(WConstLevel level) const {
   return updated[level->getUniqueId()];
 }
 
-void MapMemory::clearUpdated(const Level* level) const {
+void MapMemory::clearUpdated(WConstLevel level) const {
   updated[level->getUniqueId()].clear();
 }

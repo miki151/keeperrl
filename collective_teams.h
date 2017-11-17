@@ -21,23 +21,22 @@ class Creature;
 
 class CollectiveTeams {
   public:
-  bool contains(TeamId, const Creature*) const;
+  bool contains(TeamId, WConstCreature) const;
   bool isActive(TeamId) const;
-  void add(TeamId, Creature*);
-  void remove(TeamId, Creature*);
-  void setLeader(TeamId, Creature*);
+  void add(TeamId, WCreature);
+  void remove(TeamId, WCreature);
+  void setLeader(TeamId, WCreature);
   void rotateLeader(TeamId);
   void activate(TeamId);
   void deactivate(TeamId);
-  TeamId create(vector<Creature*>);
-  TeamId createPersistent(vector<Creature*>);
-  Creature* getLeader(TeamId) const;
-  const vector<Creature*>& getMembers(TeamId) const;
-  vector<Creature*> getMembers(TeamId);
-  vector<TeamId> getContaining(const Creature*) const;
+  TeamId create(vector<WCreature>);
+  TeamId createPersistent(vector<WCreature>);
+  WCreature getLeader(TeamId) const;
+  const vector<WCreature>& getMembers(TeamId) const;
+  vector<TeamId> getContaining(WConstCreature) const;
   vector<TeamId> getAll() const;
-  vector<TeamId> getActive(const Creature*) const;
-  vector<TeamId> getActiveNonPersistent(const Creature*) const;
+  vector<TeamId> getActive(WConstCreature) const;
+  vector<TeamId> getActiveNonPersistent(WConstCreature) const;
   vector<TeamId> getAllActive() const;
   void cancel(TeamId);
   bool exists(TeamId) const;
@@ -48,7 +47,7 @@ class CollectiveTeams {
 
   private:
   struct TeamInfo {
-    vector<Creature*> SERIAL(creatures);
+    vector<WCreature> SERIAL(creatures);
     bool SERIAL(active);
     bool SERIAL(persistent);
     SERIALIZE_ALL(creatures, active, persistent);

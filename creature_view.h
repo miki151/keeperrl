@@ -28,19 +28,17 @@ class CreatureView {
   virtual const MapMemory& getMemory() const = 0;
   virtual void getViewIndex(Vec2 pos, ViewIndex&) const = 0;
   virtual void refreshGameInfo(GameInfo&) const = 0;
-  virtual bool isPlayerView() const = 0;
-  virtual Vec2 getPosition() const = 0;
-  struct MovementInfo {
-    Vec2 from;
-    Vec2 to;
-    double prevTime;
-    UniqueEntity<Creature>::Id creatureId;
+  enum class CenterType {
+    NONE,
+    STAY_ON_SCREEN,
+    FOLLOW
   };
-  virtual optional<MovementInfo> getMovementInfo() const = 0;
-  virtual Level* getLevel() const = 0;
+  virtual CenterType getCenterType() const = 0;
+  virtual Vec2 getPosition() const = 0;
+  virtual WLevel getLevel() const = 0;
   virtual double getLocalTime() const = 0;
   virtual vector<Vec2> getVisibleEnemies() const = 0;
-
+  virtual vector<Vec2> getUnknownLocations(WConstLevel) const = 0;
   virtual ~CreatureView() {}
 };
 

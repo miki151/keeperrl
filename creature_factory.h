@@ -17,10 +17,10 @@
 
 #include "util.h"
 #include "tribe.h"
+#include "experience_type.h"
 
 class Creature;
 class MonsterAIFactory;
-class Location;
 class Tribe;
 class ItemType;
 class CreatureAttributes;
@@ -59,11 +59,14 @@ RICH_ENUM(CreatureId,
     SPECIAL_HMGW,
 
     GHOST,
+    UNICORN,    
     SPIRIT,
     LOST_SOUL,
     GREEN_DRAGON,
     RED_DRAGON,
     CYCLOPS,
+    DEMON_DWELLER,  
+    DEMON_LORD, 
     MINOTAUR,
     HYDRA,
     SHELOB,
@@ -104,7 +107,6 @@ RICH_ENUM(CreatureId,
 
     KNIGHT,
     AVATAR,
-    CASTLE_GUARD,
     ARCHER,
     PESEANT,
     CHILD,
@@ -131,8 +133,6 @@ RICH_ENUM(CreatureId,
     GOAT,
     DONKEY,
     
-    LEPRECHAUN,
-    
     JACKAL,
     DEER,
     BOAR,
@@ -158,7 +158,8 @@ RICH_ENUM(CreatureId,
     ANT_SOLDIER,
     ANT_QUEEN,
 
-    SOKOBAN_BOULDER
+    SOKOBAN_BOULDER,
+    HALLOWEEN_KID
 );
 
 class CreatureFactory {
@@ -166,31 +167,13 @@ class CreatureFactory {
   static CreatureFactory singleCreature(TribeId, CreatureId);
 
   static PCreature fromId(CreatureId, TribeId, const MonsterAIFactory&);
+  static PCreature fromId(CreatureId, TribeId, const MonsterAIFactory&, const vector<ItemType>& inventory);
   static PCreature fromId(CreatureId, TribeId);
-  static vector<PCreature> getFlock(int size, CreatureId, Creature* leader);
-  static CreatureFactory humanVillage(TribeId);
-  static CreatureFactory humanPeaceful(TribeId);
   static CreatureFactory splashHeroes(TribeId);
   static CreatureFactory splashLeader(TribeId);
   static CreatureFactory splashMonsters(TribeId);
-  static CreatureFactory koboldVillage(TribeId);
-  static CreatureFactory gnomeVillage(TribeId);
-  static CreatureFactory gnomeEntrance(TribeId);
-  static CreatureFactory humanCastle(TribeId);
-  static CreatureFactory elvenVillage(TribeId);
-  static CreatureFactory elvenCottage(TribeId);
-  static CreatureFactory darkElfVillage(TribeId);
-  static CreatureFactory darkElfEntrance(TribeId);
   static CreatureFactory forrest(TribeId);
-  static CreatureFactory crypt(TribeId);
-  static CreatureFactory dwarfTown(TribeId);
-  static CreatureFactory dwarfCave(TribeId);
-  static CreatureFactory antNest(TribeId);
-  static CreatureFactory vikingTown(TribeId);
-  static CreatureFactory lizardTown(TribeId);
-  static CreatureFactory orcTown(TribeId);
   static CreatureFactory singleType(TribeId, CreatureId);
-  static CreatureFactory insects(TribeId tribe);
   static CreatureFactory lavaCreatures(TribeId tribe);
   static CreatureFactory waterCreatures(TribeId tribe);
   static CreatureFactory elementals(TribeId tribe);
@@ -199,22 +182,24 @@ class CreatureFactory {
   PCreature random(const MonsterAIFactory&);
   PCreature random();
 
-  CreatureFactory& increaseLevel(double);
+  CreatureFactory& increaseBaseLevel(ExperienceType, int);
+  CreatureFactory& increaseLevel(ExperienceType, int);
+  CreatureFactory& increaseLevel(EnumMap<ExperienceType, int>);
+  CreatureFactory& addInventory(vector<ItemType>);
 
-  static PCreature getShopkeeper(Location* shopArea, TribeId);
+  static PCreature getShopkeeper(Rectangle shopArea, TribeId);
   static PCreature getRollingBoulder(TribeId, Vec2 direction);
-  static PCreature getGhost(Creature*);
-  static PCreature getIllusion(Creature*);
+  static PCreature getGhost(WCreature);
+  static PCreature getIllusion(WCreature);
 
-  static PCreature addInventory(PCreature c, const vector<ItemType>& items);
+  static void addInventory(WCreature, const vector<ItemType>& items);
   static CreatureAttributes getKrakenAttributes(ViewId, const char* name);
   static ViewId getViewId(CreatureId);
   static const Gender& getGender(CreatureId);
 
-  static void init();
-
-  template <class Archive>
-  static void registerTypes(Archive& ar, int version);
+  ~CreatureFactory();
+  CreatureFactory& operator = (const CreatureFactory&);
+  CreatureFactory(const CreatureFactory&);
 
   SERIALIZATION_DECL(CreatureFactory)
 
@@ -236,5 +221,7 @@ class CreatureFactory {
   vector<double> SERIAL(weights);
   vector<CreatureId> SERIAL(unique);
   EnumMap<CreatureId, optional<TribeId>> SERIAL(tribeOverrides);
-  double SERIAL(levelIncrease) = 0;
+  EnumMap<ExperienceType, int> SERIAL(baseLevelIncrease);
+  EnumMap<ExperienceType, int> SERIAL(levelIncrease);
+  vector<ItemType> SERIAL(inventory);
 };

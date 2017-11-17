@@ -9,3 +9,6 @@ data
 sound_wav
 stdafx.h.*
 installid.txt
+KeeperRL.config
+KeeperRL.files
+KeeperRL.includes

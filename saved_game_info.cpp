@@ -1,11 +1,12 @@
 #include "stdafx.h"
 #include "saved_game_info.h"
+#include "text_serialization.h"
+#include "parse_game.h"
 
 SERIALIZE_DEF(SavedGameInfo, minions, dangerLevel, name, progressCount);
 
-#ifdef PARSE_GAME
-template void SavedGameInfo::serialize(text_oarchive&, unsigned);
-#endif
+template void SavedGameInfo::serialize(TextOutputArchive&, unsigned);
+template void SavedGameInfo::serialize(TextInputArchive&, unsigned);
 
 SERIALIZATION_CONSTRUCTOR_IMPL(SavedGameInfo);
 
@@ -26,7 +27,7 @@ const string& SavedGameInfo::getName() const {
 }
 
 ViewId SavedGameInfo::getViewId() const {
-  return minions.at(0).viewId;
+  return minions[0].viewId;
 }
 
 int SavedGameInfo::getProgressCount() const {

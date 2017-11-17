@@ -14,7 +14,7 @@ class PositionMap {
   T& getOrInit(Position);
   T& getOrFail(Position);
   void set(Position, const T&);
-  void limitToModel(const Model*);
+  void limitToModel(const WModel);
 
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version);

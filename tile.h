@@ -29,7 +29,7 @@ class Tile {
   static Color getColor(const ViewObject& object);
 
   static Tile empty();
-  static Tile fromString(const string&, ColorId, bool symbol = false);
+  static Tile fromString(const string&, Color, bool symbol = false);
   static Tile byCoord(TileCoord);
 
   static void initialize(Renderer&, bool useTiles);
@@ -39,6 +39,7 @@ class Tile {
   bool symFont = false;
   double translucent = 0;
   bool roundShadow = false;
+  bool moveUp = false;
   bool floorBorders = false;
   bool wallShadow = false;
 
@@ -55,11 +56,13 @@ class Tile {
   Tile addHighlight(TileCoord);
   Tile setColor(Color);
   Tile setRoundShadow();
+  Tile setMoveUp();
   Tile setWallShadow();
   optional<TileCoord> getHighlightCoord() const;
 
   const vector<ViewId>& getExtraBorderIds() const;
   bool hasExtraBorders() const;
+  bool hasAnyConnections() const;
   optional<TileCoord> getExtraBorderCoord(DirSet) const;
 
   bool hasSpriteCoord() const;
@@ -68,7 +71,7 @@ class Tile {
   TileCoord getSpriteCoord(DirSet) const;
   optional<TileCoord> getBackgroundCoord() const;
 
-  bool hasCorners() const;
+  bool hasAnyCorners() const;
   const vector<TileCoord>& getCornerCoords(DirSet) const;
 
   private:
@@ -86,6 +89,9 @@ class Tile {
   array<vector<TileCoord>, 256> corners;
   array<optional<TileCoord>, 256> extraBorders;
   bool anyExtraBorders = false;
+  bool anyConnections = false;
+  bool anyCorners = false;
+  DirSet connectionsMask = DirSet{Dir::N, Dir::E, Dir::S, Dir::W};
   vector<ViewId> extraBorderIds;
   static void addTile(ViewId, Tile);
   static void addSymbol(ViewId, Tile);

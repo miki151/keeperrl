@@ -71,7 +71,7 @@ template<typename T>
 template <class Archive> 
 void UniqueEntity<T>::Id::serialize(Archive& ar, const unsigned int version) {
   key += offset;
-  serializeAll(ar, key, hash);
+  ar(key, hash);
   key -= offset;
 }
 
@@ -83,7 +83,7 @@ auto UniqueEntity<T>::getUniqueId() const -> Id {
 template<typename T>
 template <class Archive> 
 void UniqueEntity<T>::serialize(Archive& ar, const unsigned int version) {
-  serializeAll(ar, id);
+  ar(id);
 }
 
 SERIALIZABLE_TMPL(UniqueEntity, Level);
@@ -92,11 +92,11 @@ SERIALIZABLE_TMPL(UniqueEntity, Creature);
 SERIALIZABLE_TMPL(UniqueEntity, Task);
 SERIALIZABLE_TMPL(UniqueEntity, PlayerMessage);
 SERIALIZABLE_TMPL(UniqueEntity, Furniture);
+SERIALIZABLE_TMPL(UniqueEntity, Collective);
 
 SERIALIZABLE(UniqueEntity<Creature>::Id);
 SERIALIZABLE(UniqueEntity<Item>::Id);
 SERIALIZABLE(UniqueEntity<PlayerMessage>::Id);
 SERIALIZABLE(UniqueEntity<Task>::Id);
 SERIALIZABLE(UniqueEntity<Furniture>::Id);
-
-
+SERIALIZABLE(UniqueEntity<Collective>::Id);

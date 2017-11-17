@@ -28,6 +28,9 @@ class EntitySet {
   void insert(const T*);
   void erase(const T*);
   bool contains(const T*) const;
+  void insert(WeakPointer<const T>);
+  void erase(WeakPointer<const T>);
+  bool contains(WeakPointer<const T>) const;
   bool empty() const;
   void clear();
   int getSize() const;

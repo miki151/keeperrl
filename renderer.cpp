@@ -22,42 +22,45 @@
 
 #include "fontstash.h"
 #include "sdl_event_generator.h"
+#include "clock.h"
 
-EnumMap<ColorId, Color> colors({
-  {ColorId::WHITE, Color(255, 255, 255)},
-  {ColorId::YELLOW, Color(250, 255, 0)},
-  {ColorId::LIGHT_BROWN, Color(210, 150, 0)},
-  {ColorId::ORANGE_BROWN, Color(250, 150, 0)},
-  {ColorId::BROWN, Color(240, 130, 0)},
-  {ColorId::DARK_BROWN, Color(100, 60, 0)},
-  {ColorId::MAIN_MENU_ON, Color(255, 255, 255, 190)},
-  {ColorId::MAIN_MENU_OFF, Color(255, 255, 255, 70)},
-  {ColorId::LIGHT_GRAY, Color(150, 150, 150)},
-  {ColorId::GRAY, Color(100, 100, 100)},
-  {ColorId::ALMOST_GRAY, Color(102, 102, 102)},
-  {ColorId::DARK_GRAY, Color(50, 50, 50)},
-  {ColorId::ALMOST_BLACK, Color(20, 20, 20)},
-  {ColorId::ALMOST_DARK_GRAY, Color(60, 60, 60)},
-  {ColorId::BLACK, Color(0, 0, 0)},
-  {ColorId::ALMOST_WHITE, Color(200, 200, 200)},
-  {ColorId::GREEN, Color(0, 255, 0)},
-  {ColorId::LIGHT_GREEN, Color(100, 255, 100)},
-  {ColorId::DARK_GREEN, Color(0, 150, 0)},
-  {ColorId::RED, Color(255, 0, 0)},
-  {ColorId::LIGHT_RED, Color(255, 100, 100)},
-  {ColorId::PINK, Color(255, 20, 147)},
-  {ColorId::ORANGE, Color(255, 165, 0)},
-  {ColorId::BLUE, Color(0, 0, 255)},
-  {ColorId::NIGHT_BLUE, Color(0, 0, 20)},
-  {ColorId::DARK_BLUE, Color(50, 50, 200)},
-  {ColorId::LIGHT_BLUE, Color(100, 100, 255)},
-  {ColorId::PURPLE, Color(160, 32, 240)},
-  {ColorId::VIOLET, Color(120, 0, 255)},
-  {ColorId::TRANSLUCENT_BLACK, Color(0, 0, 0)},
-  {ColorId::TRANSPARENT, Color(0, 0, 0, 0)}
-});
+Color Color::WHITE(255, 255, 255);
+Color Color::YELLOW(250, 255, 0);
+Color Color::LIGHT_BROWN(210, 150, 0);
+Color Color::ORANGE_BROWN(250, 150, 0);
+Color Color::BROWN(240, 130, 0);
+Color Color::DARK_BROWN(100, 60, 0);
+Color Color::MAIN_MENU_ON(255, 255, 255, 190);
+Color Color::MAIN_MENU_OFF(255, 255, 255, 70);
+Color Color::LIGHT_GRAY(150, 150, 150);
+Color Color::GRAY(100, 100, 100);
+Color Color::ALMOST_GRAY(102, 102, 102);
+Color Color::DARK_GRAY(50, 50, 50);
+Color Color::ALMOST_BLACK(20, 20, 20);
+Color Color::ALMOST_DARK_GRAY(60, 60, 60);
+Color Color::BLACK(0, 0, 0);
+Color Color::ALMOST_WHITE(200, 200, 200);
+Color Color::GREEN(0, 255, 0);
+Color Color::LIGHT_GREEN(100, 255, 100);
+Color Color::DARK_GREEN(0, 150, 0);
+Color Color::RED(255, 0, 0);
+Color Color::LIGHT_RED(255, 100, 100);
+Color Color::PINK(255, 20, 147);
+Color Color::ORANGE(255, 165, 0);
+Color Color::BLUE(0, 0, 255);
+Color Color::NIGHT_BLUE(0, 0, 20);
+Color Color::DARK_BLUE(50, 50, 200);
+Color Color::LIGHT_BLUE(100, 100, 255);
+Color Color::PURPLE(160, 32, 240);
+Color Color::VIOLET(120, 0, 255);
+Color Color::TRANSLUCENT_BLACK(0, 0, 0);
+Color Color::TRANSPARENT(0, 0, 0, 0);
 
 Color::Color(Uint8 r, Uint8 g, Uint8 b, Uint8 a) : SDL_Color{r, g, b, a} {
+}
+
+Color Color::transparency(int trans) {
+  return Color(r, g, b, (Uint8)trans);
 }
 
 Color::Color() : Color(0, 0, 0) {
@@ -81,31 +84,17 @@ Renderer::TileCoord::TileCoord(Vec2 p, int t) : pos(p), texNum(t) {
 Renderer::TileCoord::TileCoord() : TileCoord(Vec2(0, 0), -1) {
 }
 
-Color transparency(const Color& color, int trans) {
-  return Color{color.r, color.g, color.b, (Uint8)trans};
-}
-
-/*Text& Renderer::getTextObject() {
-  static Text t1, t2;
-  if (currentThreadId() == *renderThreadId)
-    return t1;
-  else
-    return t2;
-}*/
-
 static void checkOpenglError() {
   auto error = SDL::glGetError();
-  string s;
   CHECK(error == GL_NO_ERROR) << (int)error;
 }
 
-Texture::Texture(const string& fileName){
-  SDL::SDL_Surface* image= SDL::IMG_Load(fileName.c_str());
+Texture::Texture(const FilePath& fileName) : path(fileName) {
+  SDL::SDL_Surface* image= SDL::IMG_Load(fileName.getPath());
   CHECK(image) << SDL::IMG_GetError();
   if (auto error = loadFromMaybe(image))
     FATAL << "Couldn't load image: " << fileName << ". Error code " << toString(*error);
   SDL::SDL_FreeSurface(image);
-  path = fileName;
 }
 
 Texture::~Texture() {
@@ -180,8 +169,8 @@ optional<SDL::GLenum> Texture::loadFromMaybe(SDL::SDL_Surface* imageOrig) {
   return none;
 }
 
-Texture::Texture(const string& path, int px, int py, int w, int h) {
-  SDL::SDL_Surface* image = SDL::IMG_Load(path.c_str());
+Texture::Texture(const FilePath& filename, int px, int py, int w, int h) : path(filename) {
+  SDL::SDL_Surface* image = SDL::IMG_Load(path->getPath());
   CHECK(image) << SDL::IMG_GetError();
   SDL::SDL_Rect offset;
   offset.x = 0;
@@ -192,9 +181,8 @@ Texture::Texture(const string& path, int px, int py, int w, int h) {
   CHECK(!SDL_BlitSurface(image, &src, sub, &offset)) << SDL::SDL_GetError();
   SDL::SDL_FreeSurface(image);
   if (auto error = loadFromMaybe(sub))
-    FATAL << "Couldn't load image: " << path << ". Error code " << toString(*error);
+    FATAL << "Couldn't load image: " << *path << ". Error code " << toString(*error);
   SDL::SDL_FreeSurface(sub);
-  this->path = path;
 }
 
 Texture::Texture(SDL::SDL_Surface* surface) {
@@ -214,13 +202,15 @@ Texture& Texture::operator = (Texture&& tex) {
   return *this;
 }
 
-optional<Texture> Texture::loadMaybe(const string& path) {
-  if (SDL::SDL_Surface* image = SDL::IMG_Load(path.c_str())) {
+optional<Texture> Texture::loadMaybe(const FilePath& path) {
+  if (SDL::SDL_Surface* image = SDL::IMG_Load(path.getPath())) {
     Texture ret;
     bool ok = !ret.loadFromMaybe(image);
     SDL::SDL_FreeSurface(image);
-    if (ok)
+    if (ok) {
+      ret.path = path;
       return std::move(ret);
+    }
   }
   return none;
 }
@@ -235,31 +225,73 @@ void Texture::addTexCoord(int x, int y) const {
 
 Texture::Texture() {
 }
-  
-void Texture::render(Vec2 a, Vec2 b, Vec2 p, Vec2 k, optional<Color> color, bool vFlip, bool hFlip) const {
-  if (vFlip)
-    swap(p.y, k.y);
-  if (hFlip)
-    swap(p.x, k.x);
-  SDL::glBindTexture(GL_TEXTURE_2D, (*texId));
-  checkOpenglError();
-  SDL::glEnable(GL_TEXTURE_2D);
-  SDL::glBegin(GL_QUADS);
-  if (color)
-    color->applyGl();
-  else
-    SDL::glColor3f(1, 1, 1);
-  addTexCoord(p.x, p.y);
-  SDL::glVertex2f(a.x, a.y);
-  addTexCoord(k.x, p.y);
-  SDL::glVertex2f(b.x, a.y);
-  addTexCoord(k.x, k.y);
-  SDL::glVertex2f(b.x, b.y);
-  addTexCoord(p.x, k.y);
-  SDL::glVertex2f(a.x, b.y);
-  SDL::glEnd();
-  SDL::glDisable(GL_TEXTURE_2D);
-  checkOpenglError();
+
+void Renderer::renderDeferredSprites() {
+  static vector<SDL::GLfloat> vertices;
+  static vector<SDL::GLfloat> texCoords;
+  static vector<SDL::GLfloat> colors;
+  vertices.clear();
+  texCoords.clear();
+  colors.clear();
+  auto addVertex = [&](Vec2 v, int texX, int texY, Vec2 texSize, Color color) {
+    vertices.push_back(v.x);
+    vertices.push_back(v.y);
+    texCoords.push_back(((float)texX) / texSize.x);
+    texCoords.push_back(((float)texY) / texSize.y);
+    colors.push_back(((float) color.r) / 255);
+    colors.push_back(((float) color.g) / 255);
+    colors.push_back(((float) color.b) / 255);
+    colors.push_back(((float) color.a) / 255);
+  };
+  optional<SDL::GLuint> currentTex;
+  for (auto& elem : deferredSprites) {
+    auto add = [&](Vec2 v, int texX, int texY, const DeferredSprite& draw) {
+      addVertex(v, texX, texY, draw.realSize, draw.color.value_or(Color::WHITE));
+    };
+    add(elem.a, elem.p.x, elem.p.y, elem);
+    add(elem.b, elem.k.x, elem.p.y, elem);
+    add(elem.c, elem.k.x, elem.k.y, elem);
+    add(elem.a, elem.p.x, elem.p.y, elem);
+    add(elem.c, elem.k.x, elem.k.y, elem);
+    add(elem.d, elem.p.x, elem.k.y, elem);
+  }
+  if (!vertices.empty()) {
+    SDL::glEnable(GL_TEXTURE_2D);
+    SDL::glBindTexture(GL_TEXTURE_2D, *currentTexture);
+    checkOpenglError();
+    SDL::glEnableClientState(GL_VERTEX_ARRAY);
+    SDL::glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+    SDL::glEnableClientState(GL_COLOR_ARRAY);
+    checkOpenglError();
+    SDL::glColorPointer(4, GL_FLOAT, 0, colors.data());
+    checkOpenglError();
+    SDL::glVertexPointer(2, GL_FLOAT, 0, vertices.data());
+    checkOpenglError();
+    SDL::glTexCoordPointer(2, GL_FLOAT, 0, texCoords.data());
+    checkOpenglError();
+    SDL::glDrawArrays(GL_TRIANGLES, 0, vertices.size() / 2);
+    checkOpenglError();
+    checkOpenglError();
+    vertices.clear();
+    texCoords.clear();
+    colors.clear();
+    SDL::glDisableClientState(GL_VERTEX_ARRAY);
+    SDL::glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+    SDL::glDisableClientState(GL_COLOR_ARRAY);
+    SDL::glDisable(GL_TEXTURE_2D);
+  }
+  deferredSprites.clear();
+}
+
+void Renderer::drawSprite(const Texture& t, Vec2 topLeft, Vec2 bottomRight, Vec2 p, Vec2 k, optional<Color> color) {
+  drawSprite(t, topLeft, Vec2(bottomRight.x, topLeft.y), bottomRight, Vec2(topLeft.x, bottomRight.y), p, k, color);
+}
+
+void Renderer::drawSprite(const Texture& t, Vec2 a, Vec2 b, Vec2 c, Vec2 d, Vec2 p, Vec2 k, optional<Color> color) {
+  if (currentTexture && currentTexture != *t.texId)
+    renderDeferredSprites();
+  currentTexture = *t.texId;
+  deferredSprites.push_back({a, b, c, d, p, k, t.realSize, color});
 }
 
 static float sizeConv(int size) {
@@ -292,30 +324,30 @@ int Renderer::getFont(Renderer::FontId id) {
 }
 
 void Renderer::drawText(FontId id, int size, Color color, int x, int y, const string& s, CenterType center) {
-  if (!s.empty())
-    addRenderElem([this, s, center, size, color, x, y, id] {
-        int ox = 0;
-        int oy = 0;
-        Vec2 dim = getTextSize(s, size, id);
-        switch (center) {
-          case HOR:
-            ox -= dim.x / 2;
-            break;
-          case VER:
-            oy -= dim.y / 2;
-            break;
-          case HOR_VER:
-            ox -= dim.x / 2;
-            oy -= dim.y / 2;
-            break;
-          default:
-            break;
-        }
-        sth_begin_draw(fontStash);
-        color.applyGl();
-        sth_draw_text(fontStash, getFont(id), sizeConv(size), ox + x, oy + y + (dim.y * 0.9), s.c_str(), nullptr);
-        sth_end_draw(fontStash);
-    });
+  renderDeferredSprites();
+  if (!s.empty()) {
+    int ox = 0;
+    int oy = 0;
+    Vec2 dim = getTextSize(s, size, id);
+    switch (center) {
+      case HOR:
+        ox -= dim.x / 2;
+        break;
+      case VER:
+        oy -= dim.y / 2;
+        break;
+      case HOR_VER:
+        ox -= dim.x / 2;
+        oy -= dim.y / 2;
+        break;
+      default:
+        break;
+    }
+    sth_begin_draw(fontStash);
+    color.applyGl();
+    sth_draw_text(fontStash, getFont(id), sizeConv(size), ox + x, oy + y + (dim.y * 0.9), s.c_str(), nullptr);
+    sth_end_draw(fontStash);
+  }
 }
 
 void Renderer::drawText(Color color, int x, int y, const char* c, CenterType center, int size) {
@@ -331,7 +363,7 @@ void Renderer::drawTextWithHotkey(Color color, int x, int y, const string& text,
     int ind = lowercase(text).find(key);
     if (ind != string::npos) {
       int pos = x + getTextLength(text.substr(0, ind));
-      drawFilledRectangle(pos, y + 23, pos + getTextLength(text.substr(ind, 1)), y + 25, colors[ColorId::GREEN]);
+      drawFilledRectangle(pos, y + 23, pos + getTextLength(text.substr(ind, 1)), y + 25, Color::GREEN);
     }
   }
   drawText(color, x, y, text);
@@ -339,9 +371,7 @@ void Renderer::drawTextWithHotkey(Color color, int x, int y, const string& text,
 
 void Renderer::drawImage(int px, int py, const Texture& image, double scale, optional<Color> color) {
   Vec2 p(px, py);
-  addRenderElem([this, p, &image, scale, color] {
-    image.render(p, p + image.getSize() * scale, Vec2(0, 0), image.getSize(), color);
-  });
+  drawSprite(image, p, p + image.getSize() * scale, Vec2(0, 0), image.getSize(), color);
 }
 
 void Renderer::drawImage(Rectangle target, Rectangle source, const Texture& image) {
@@ -352,40 +382,54 @@ void Renderer::drawSprite(Vec2 pos, Vec2 stretchSize, const Texture& t) {
   drawSprite(pos, Vec2(0, 0), t.getSize(), t, stretchSize);
 }
 
-void Renderer::drawSprite(Vec2 pos, Vec2 source, Vec2 size, const Texture& t, optional<Vec2> targetSize,
-    optional<Color> color, bool vFlip, bool hFlip) {
-  addRenderElem([this, &t, pos, source, size, targetSize, color, vFlip, hFlip] {
-      if (targetSize)
-        t.render(pos, pos + *targetSize, source, source + size, color, vFlip, hFlip);
-      else
-        t.render(pos, pos + size, source, source + size, color, vFlip, hFlip);
-  });
+static Vec2 rotate(Vec2 pos, Vec2 origin, double x, double y) {
+  Vec2 v = pos - origin;
+  return origin + Vec2(v.x * x - v.y * y, v.x * y + v.y * x);
+}
+
+void Renderer::drawSprite(Vec2 pos, Vec2 source, Vec2 size, const Texture& t,
+    optional<Vec2> targetSize, optional<Color> color, SpriteOrientation orientation) {
+  Vec2 a = pos;
+  Vec2 c = targetSize ? (a + *targetSize) : (a + size);
+  Vec2 b(c.x, a.y);
+  Vec2 d(a.x, c.y);
+  if (orientation.horizontalFlip) {
+    swap(a, b);
+    swap(c, d);
+  }
+  if (orientation.x != 1 || orientation.y != 0) {
+    Vec2 mid = (a + c) / 2;
+    a = rotate(a, mid, orientation.x, orientation.y);
+    b = rotate(b, mid, orientation.x, orientation.y);
+    c = rotate(c, mid, orientation.x, orientation.y);
+    d = rotate(d, mid, orientation.x, orientation.y);
+  }
+  drawSprite(t, a, b, c, d, source, source + size, color);
 }
 
 void Renderer::drawFilledRectangle(const Rectangle& t, Color color, optional<Color> outline) {
-  addRenderElem([this, t, color, outline] {
-    Vec2 a = t.topLeft();
-    Vec2 b = t.bottomRight();
-    if (outline) {
-      SDL::glLineWidth(2);
-      SDL::glBegin(GL_LINE_LOOP);
-      outline->applyGl();
-      SDL::glVertex2f(a.x + 1.5f, a.y + 1.5f);
-      SDL::glVertex2f(b.x - 0.5f, a.y + 1.5f);
-      SDL::glVertex2f(b.x - 0.5f, b.y - 0.5f);
-      SDL::glVertex2f(a.x + 1.5f, b.y - 0.5f);
-      SDL::glEnd();
-      a += Vec2(2, 2);
-      b -= Vec2(2, 2);
-    }
-    SDL::glBegin(GL_QUADS);
-    color.applyGl();
-    SDL::glVertex2f(a.x, a.y);
-    SDL::glVertex2f(b.x, a.y);
-    SDL::glVertex2f(b.x, b.y);
-    SDL::glVertex2f(a.x, b.y);
+  renderDeferredSprites();
+  Vec2 a = t.topLeft();
+  Vec2 b = t.bottomRight();
+  if (outline) {
+    SDL::glLineWidth(2);
+    SDL::glBegin(GL_LINE_LOOP);
+    outline->applyGl();
+    SDL::glVertex2f(a.x + 1.5f, a.y + 1.5f);
+    SDL::glVertex2f(b.x - 0.5f, a.y + 1.5f);
+    SDL::glVertex2f(b.x - 0.5f, b.y - 0.5f);
+    SDL::glVertex2f(a.x + 1.5f, b.y - 0.5f);
     SDL::glEnd();
-  });
+    a += Vec2(2, 2);
+    b -= Vec2(2, 2);
+  }
+  SDL::glBegin(GL_QUADS);
+  color.applyGl();
+  SDL::glVertex2f(a.x, a.y);
+  SDL::glVertex2f(b.x, a.y);
+  SDL::glVertex2f(b.x, b.y);
+  SDL::glVertex2f(a.x, b.y);
+  SDL::glEnd();
 }
 
 void Renderer::drawFilledRectangle(int px, int py, int kx, int ky, Color color, optional<Color> outline) {
@@ -396,48 +440,35 @@ void Renderer::addQuad(const Rectangle& r, Color color) {
   drawFilledRectangle(r.left(), r.top(), r.right(), r.bottom(), color);
 }
 
-void Renderer::drawQuads() {
-/*  if (!quads.empty()) {
-    vector<Vertex>& quadsTmp = quads;
-    addRenderElem([this, quadsTmp] { display.draw(&quadsTmp[0], quadsTmp.size(), sf::Quads); });
-    quads.clear();
-  }*/
-}
-
 void Renderer::setScissor(optional<Rectangle> s) {
-  scissor = s;
-}
-
-void Renderer::setGlScissor(optional<Rectangle> s) {
-  if (s != scissor) {
-    if (s) {
-      int zoom = getZoom();
-      SDL::glScissor(s->left() * zoom, (getSize().y - s->bottom()) * zoom, s->width() * zoom, s->height() * zoom);
-      SDL::glEnable(GL_SCISSOR_TEST);
-    }
-    else
-      SDL::glDisable(GL_SCISSOR_TEST);
-    scissor = s;
+  renderDeferredSprites();
+  if (s) {
+    int zoom = getZoom();
+    SDL::glScissor(s->left() * zoom, (getSize().y - s->bottom()) * zoom, s->width() * zoom, s->height() * zoom);
+    SDL::glEnable(GL_SCISSOR_TEST);
+    isScissor = true;
+  }
+  else {
+    SDL::glDisable(GL_SCISSOR_TEST);
+    isScissor = false;
   }
 }
 
-void Renderer::addRenderElem(function<void()> f) {
-  if (currentLayer == 0) {
-    auto thisScissor = scissor;
-    f = [f, thisScissor, this] { setGlScissor(thisScissor); f(); };
-  } else
-    f = [f, this] { setGlScissor(none); f(); };
-  renderList[currentLayer].push_back(f);
-}
-
 void Renderer::setTopLayer() {
-  layerStack.push(currentLayer);
-  currentLayer = 1;
+  renderDeferredSprites();
+  SDL::glPushMatrix();
+  checkOpenglError();
+  SDL::glTranslated(0, 0, 1);
+  checkOpenglError();
+  SDL::glDisable(GL_SCISSOR_TEST);
 }
 
 void Renderer::popLayer() {
-  currentLayer = layerStack.top();
-  layerStack.pop();
+  renderDeferredSprites();
+  SDL::glPopMatrix();
+  checkOpenglError();
+  if (isScissor)
+    SDL::glEnable(GL_SCISSOR_TEST);
 }
 
 Vec2 Renderer::getSize() {
@@ -463,7 +494,7 @@ void Renderer::setFullscreenMode(int v) {
   fullscreenMode = v;
 }
 
-const Vec2 minResolution = Vec2(800, 600);
+static const Vec2 minResolution = Vec2(800, 600);
 
 int Renderer::getZoom() {
   if (zoom == 1 || (width / zoom >= minResolution.x && height / zoom >= minResolution.y))
@@ -483,26 +514,26 @@ void Renderer::enableCustomCursor(bool state) {
 }
 
 void Renderer::initOpenGL() {
-    bool success = true;
-    SDL::GLenum error = GL_NO_ERROR;
-    //Initialize Projection Matrix
-    SDL::glMatrixMode( GL_PROJECTION );
-    SDL::glLoadIdentity();
-    SDL::glViewport(0, 0, width, height);
-    SDL::glOrtho(0.0, width / getZoom(), height / getZoom(), 0.0, -1.0, 1.0);
-    CHECK(SDL::glGetError() == GL_NO_ERROR);
-    //Initialize Modelview Matrix
-    SDL::glMatrixMode( GL_MODELVIEW );
-    SDL::glLoadIdentity();
-    SDL::glEnable(GL_BLEND);
-    SDL::glEnable(GL_TEXTURE_2D);
-    SDL::glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-    CHECK(SDL::glGetError() == GL_NO_ERROR);
-    reloadCursors();
+  //Initialize Projection Matrix
+  SDL::glMatrixMode( GL_PROJECTION );
+  SDL::glLoadIdentity();
+  SDL::glViewport(0, 0, width, height);
+  SDL::glOrtho(0.0, width / getZoom(), height / getZoom(), 0.0, -1.0, 1.0);
+  CHECK(SDL::glGetError() == GL_NO_ERROR);
+  //Initialize Modelview Matrix
+  SDL::glMatrixMode( GL_MODELVIEW );
+  SDL::glLoadIdentity();
+  SDL::glEnable(GL_BLEND);
+  SDL::glEnable(GL_TEXTURE_2D);
+  SDL::glEnable(GL_DEPTH_TEST);
+  SDL::glDepthFunc(GL_LEQUAL);
+  SDL::glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+  CHECK(SDL::glGetError() == GL_NO_ERROR);
+  reloadCursors();
 }
 
-SDL::SDL_Surface* Renderer::loadScaledSurface(const string& path, double scale) {
-  if (auto surface = SDL::IMG_Load(path.c_str())) {
+SDL::SDL_Surface* Renderer::loadScaledSurface(const FilePath& path, double scale) {
+  if (auto surface = SDL::IMG_Load(path.getPath())) {
     if (scale == 1)
       return surface;
     if (auto scaled = createSurface(surface->w * scale, surface->h * scale)) {
@@ -530,11 +561,6 @@ void Renderer::reloadCursors() {
   }
 }
 
-void Renderer::setCursorPath(const string& path, const string& pathClicked) {
-  cursorPath = path;
-  clickedCursorPath = pathClicked;
-}
-
 void Renderer::initialize() {
   if (!renderThreadId)
     renderThreadId = currentThreadId();
@@ -551,19 +577,26 @@ vector<string> Renderer::getFullscreenResolutions() {
 void Renderer::printSystemInfo(ostream& out) {
 }
 
-void Renderer::loadFonts(const string& fontPath, FontSet& fonts) {
+void Renderer::loadFonts(const DirectoryPath& fontPath, FontSet& fonts) {
   CHECK(fontStash = sth_create(512, 512)) << "Error initializing fonts";
-  fonts.textFont = sth_add_font(fontStash, (fontPath + "/Lato-Bol.ttf").c_str());
-  fonts.symbolFont = sth_add_font(fontStash, (fontPath + "/Symbola.ttf").c_str());
-  CHECK(fonts.textFont >= 0) << "Error loading " << fontPath + "/Lato-Bol.ttf";
-  CHECK(fonts.symbolFont >= 0) << "Error loading " << fontPath + "/Symbola.ttf";
+  auto textFont = fontPath.file("Lato-Bol.ttf");
+  auto symbolFont = fontPath.file("Symbola.ttf");
+  fonts.textFont = sth_add_font(fontStash, textFont.getPath());
+  fonts.symbolFont = sth_add_font(fontStash, symbolFont.getPath());
+  CHECK(fonts.textFont >= 0) << "Error loading " << textFont;
+  CHECK(fonts.symbolFont >= 0) << "Error loading " << symbolFont;
 }
 
 void Renderer::showError(const string& s) {
   SDL_ShowSimpleMessageBox(SDL::SDL_MESSAGEBOX_ERROR, "Error", s.c_str(), window);
 }
 
-Renderer::Renderer(const string& title, Vec2 nominal, const string& fontPath) : nominalSize(nominal) {
+void Renderer::setVsync(bool on) {
+  SDL::SDL_GL_SetSwapInterval(on ? 1 : 0);
+}
+
+Renderer::Renderer(const string& title, Vec2 nominal, const DirectoryPath& fontPath, const FilePath& cursorP,
+    const FilePath& clickedCursorP) : nominalSize(nominal), cursorPath(cursorP), clickedCursorPath(clickedCursorP) {
   CHECK(SDL::SDL_Init(SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_EVENTS) >= 0) << SDL::SDL_GetError();
   SDL::SDL_GL_SetAttribute(SDL::SDL_GL_CONTEXT_MAJOR_VERSION, 2 );
   SDL::SDL_GL_SetAttribute(SDL::SDL_GL_CONTEXT_MINOR_VERSION, 1 );
@@ -572,6 +605,7 @@ Renderer::Renderer(const string& title, Vec2 nominal, const string& fontPath) : 
   CHECK(SDL::SDL_GL_CreateContext(window)) << SDL::SDL_GetError();
   SDL_SetWindowMinimumSize(window, minResolution.x, minResolution.y);
   SDL_GetWindowSize(window, &width, &height);
+  setVsync(true);
   originalCursor = SDL::SDL_GetCursor();
   initOpenGL();
   loadFonts(fontPath, fonts);
@@ -582,7 +616,7 @@ Vec2 getOffset(Vec2 sizeDiff, double scale) {
 }
 
 Color Renderer::getBleedingColor(const ViewObject& object) {
-  double bleeding = object.getAttribute(ViewObject::Attribute::WOUNDED).get_value_or(0);
+  double bleeding = object.getAttribute(ViewObject::Attribute::WOUNDED).value_or(0);
   if (bleeding > 0)
     bleeding = 0.3 + bleeding * 0.7;
   if (object.hasModifier(ViewObject::Modifier::SPIRIT_DAMAGE))
@@ -591,7 +625,7 @@ Color Renderer::getBleedingColor(const ViewObject& object) {
     return Color::f(1, max(0., 1 - bleeding), max(0., 1 - bleeding));
 }
 
-void Renderer::drawTile(Vec2 pos, TileCoord coord, Vec2 size, Color color, bool hFlip, bool vFlip) {
+void Renderer::drawTile(Vec2 pos, TileCoord coord, Vec2 size, Color color, SpriteOrientation orientation) {
   CHECK(coord.texNum >= 0 && coord.texNum < Renderer::tiles.size());
   Texture* tex = &tiles[coord.texNum];
   Vec2 sz = tileSize[coord.texNum];
@@ -599,12 +633,8 @@ void Renderer::drawTile(Vec2 pos, TileCoord coord, Vec2 size, Color color, bool 
   Vec2 tileSize = sz.mult(size).div(nominalSize);
   if (sz.y > nominalSize.y)
     off.y *= 2;
-  if (altTileSize.size() > coord.texNum && size == altTileSize[coord.texNum]) {
-    sz = size;
-    tex = &altTiles[coord.texNum];
-  }
   Vec2 coordPos = coord.pos.mult(sz);
-  drawSprite(pos + off, coordPos, sz, *tex, tileSize, color, vFlip, hFlip);
+  drawSprite(pos + off, coordPos, sz, *tex, tileSize, color, orientation);
 }
 
 void Renderer::drawTile(Vec2 pos, TileCoord coord, double scale, Color color) {
@@ -613,7 +643,7 @@ void Renderer::drawTile(Vec2 pos, TileCoord coord, double scale, Color color) {
   Vec2 off = getOffset(Renderer::nominalSize - sz, scale);
   if (sz.y > nominalSize.y)
     off.y *= 2;
-  drawSprite(pos + off, coord.pos.mult(sz), sz, tiles.at(coord.texNum), sz * scale, color);
+  drawSprite(pos + off, coord.pos.mult(sz), sz, tiles[coord.texNum], sz * scale, color);
 }
 
 void Renderer::drawViewObject(Vec2 pos, ViewId id, Color color) {
@@ -634,10 +664,10 @@ void Renderer::drawViewObject(Vec2 pos, ViewId id, bool useSprite, double scale,
         pos.x + scale * nominalSize.x / 2, pos.y, tile.text, HOR);
 }
 
-void Renderer::drawViewObject(Vec2 pos, ViewId id, bool useSprite, Vec2 size, Color color) {
+void Renderer::drawViewObject(Vec2 pos, ViewId id, bool useSprite, Vec2 size, Color color, SpriteOrientation orient) {
   const Tile& tile = Tile::getTile(id, useSprite);
   if (tile.hasSpriteCoord())
-    drawTile(pos, tile.getSpriteCoord(DirSet::fullSet()), size, color * tile.color);
+    drawTile(pos, tile.getSpriteCoord(DirSet::fullSet()), size, color * tile.color, orient);
   else
     drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TEXT_FONT, size.y, color * tile.color, pos.x, pos.y,
         tile.text);
@@ -657,17 +687,10 @@ void Renderer::drawViewObject(Vec2 pos, const ViewObject& object) {
 
 void Renderer::drawAsciiBackground(ViewId id, Rectangle bounds) {
   if (!Tile::getTile(id, true).hasSpriteCoord())
-    drawFilledRectangle(bounds, colors[ColorId::BLACK]);
+    drawFilledRectangle(bounds, Color::BLACK);
 }
 
-const static string imageSuf = ".png";
-
-bool Renderer::loadAltTilesFromDir(const string& path, Vec2 altSize) {
-  altTileSize.push_back(altSize);
-  return loadTilesFromDir(path, altTiles, altSize, 720 * altSize.x / tileSize.back().x);
-}
-
-bool Renderer::loadTilesFromDir(const string& path, Vec2 size) {
+bool Renderer::loadTilesFromDir(const DirectoryPath& path, Vec2 size) {
   tileSize.push_back(size);
   return loadTilesFromDir(path, tiles, size, 720);
 }
@@ -678,31 +701,26 @@ SDL::SDL_Surface* Renderer::createSurface(int w, int h) {
   return ret;
 }
 
-bool Renderer::loadTilesFromDir(const string& path, vector<Texture>& tiles, Vec2 size, int setWidth) {
-  DIR* dir = opendir(path.c_str());
-  if (!dir)
-    return false;
-  vector<string> files;
-  while (dirent* ent = readdir(dir)) {
-    string name(ent->d_name);
-    INFO << "Found " << name;
-    if (endsWith(name, imageSuf))
-      files.push_back(name);
-  }
+bool Renderer::loadTilesFromDir(const DirectoryPath& path, vector<Texture>& tiles, Vec2 size, int setWidth) {
+  const static string imageSuf = ".png";
+  auto files = path.getFiles().filter([](const FilePath& f) { return f.hasSuffix(imageSuf);});
   int rowLength = setWidth / size.x;
   SDL::SDL_Surface* image = createSurface(setWidth, ((files.size() + rowLength - 1) / rowLength) * size.y);
+  SDL::SDL_SetSurfaceBlendMode(image, SDL::SDL_BLENDMODE_NONE);
   CHECK(image) << SDL::SDL_GetError();
   for (int i : All(files)) {
-    SDL::SDL_Surface* im = SDL::IMG_Load((path + "/" + files[i]).c_str());
+    SDL::SDL_Surface* im = SDL::IMG_Load(files[i].getPath());
+    SDL::SDL_SetSurfaceBlendMode(im, SDL::SDL_BLENDMODE_NONE);
     CHECK(im) << files[i] << ": "<< SDL::IMG_GetError();
     CHECK(im->w == size.x && im->h == size.y) << files[i] << " has wrong size " << im->w << " " << im->h;
     SDL::SDL_Rect offset;
     offset.x = size.x * (i % rowLength);
     offset.y = size.y * (i / rowLength);
     SDL_BlitSurface(im, nullptr, image, &offset);
-    CHECK(!tileCoords.count(files[i])) << "Duplicate name " << files[i];
-    tileCoords[files[i].substr(0, files[i].size() - imageSuf.size())] =
-        {{i % rowLength, i / rowLength}, int(tiles.size())};
+    string fileName = files[i].getFileName();
+    string spriteName = fileName.substr(0, fileName.size() - imageSuf.size());
+    CHECK(!tileCoords.count(spriteName)) << "Duplicate name " << spriteName;
+    tileCoords[spriteName] = {{i % rowLength, i / rowLength}, int(tiles.size())};
     SDL::SDL_FreeSurface(im);
   }
   tiles.push_back(Texture(image));
@@ -711,7 +729,7 @@ bool Renderer::loadTilesFromDir(const string& path, vector<Texture>& tiles, Vec2
 }
 
 Renderer::TileCoord Renderer::getTileCoord(const string& name) {
-  CHECK(tileCoords.count(name)) << "Tile not found " << name;
+  USER_CHECK(tileCoords.count(name)) << "Tile not found: '" << name << "'. Please make sure all game data is in place.";
   return tileCoords.at(name);
 }
 
@@ -720,14 +738,9 @@ Vec2 Renderer::getNominalSize() const {
 }
 
 void Renderer::drawAndClearBuffer() {
-  for (int i : All(renderList)) {
-    for (auto& elem : renderList[i])
-      elem();
-    renderList[i].clear();
-  }
-  setGlScissor(none);
+  renderDeferredSprites();
   SDL::SDL_GL_SwapWindow(window);
-  SDL::glClear(GL_COLOR_BUFFER_BIT);
+  SDL::glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   SDL::glClearColor(0.0, 0.0, 0.0, 0.0);
 
 }
@@ -775,7 +788,7 @@ bool Renderer::pollEvent(Event& ev) {
       return pollEventOrFromQueue(ev);
     ev = SdlEventGenerator::getRandom(Random, getSize());
     return true;
-  } else 
+  } else
     return pollEventOrFromQueue(ev);
 }
 
@@ -836,7 +849,7 @@ Vec2 Renderer::getMousePos() {
 void Renderer::startMonkey() {
   monkey = true;
 }
-  
+
 bool Renderer::isMonkey() {
   return monkey;
 }

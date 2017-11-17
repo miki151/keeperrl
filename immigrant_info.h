@@ -37,10 +37,16 @@ struct RecruitmentInfo {
   EnumSet<EnemyId> SERIAL(enemyId);
   int SERIAL(minPopulation);
   MinionTrait SERIAL(trait);
-  Collective* findEnemy(Game*) const;
-  vector<Creature*> getAvailableRecruits(Game*, CreatureId) const;
-  vector<Creature*> getAllRecruits(Game*, CreatureId) const;
+  WCollective findEnemy(WGame) const;
+  vector<WCreature> getAvailableRecruits(WGame, CreatureId) const;
+  vector<WCreature> getAllRecruits(WGame, CreatureId) const;
   SERIALIZE_ALL(enemyId, minPopulation, trait)
+};
+
+struct TutorialRequirement {
+  STutorial SERIAL(tutorial);
+  template <class Archive>
+  void serialize(Archive&, const unsigned);
 };
 
 using ImmigrantRequirement = variant<
@@ -51,7 +57,8 @@ using ImmigrantRequirement = variant<
     CostInfo,
     ExponentialCost,
     Pregnancy,
-    RecruitmentInfo
+    RecruitmentInfo,
+    TutorialRequirement
 >;
 
 struct OutsideTerritory { SERIALIZE_EMPTY() };
@@ -76,6 +83,8 @@ class ImmigrantInfo {
   optional<Keybinding> getKeybinding() const;
   optional<Sound> getSound() const;
   bool isNoAuto() const;
+  optional<TutorialHighlight> getTutorialHighlight() const;
+  bool isHiddenInHelp() const;
 
   ImmigrantInfo& addRequirement(double candidateProb, ImmigrantRequirement);
   ImmigrantInfo& addRequirement(ImmigrantRequirement);
@@ -87,9 +96,12 @@ class ImmigrantInfo {
   ImmigrantInfo& setKeybinding(Keybinding);
   ImmigrantInfo& setSound(Sound);
   ImmigrantInfo& setNoAuto();
+  ImmigrantInfo& setLimit(int);
+  ImmigrantInfo& setTutorialHighlight(TutorialHighlight);
+  ImmigrantInfo& setHiddenInHelp();
 
   template <typename Visitor>
-  struct RequirementVisitor : public boost::static_visitor<void> {
+  struct RequirementVisitor {
     RequirementVisitor(const Visitor& v, double p) : visitor(v), prob(p) {}
     const Visitor& visitor;
     double prob;
@@ -103,14 +115,14 @@ class ImmigrantInfo {
   void visitRequirementsAndProb(const Visitor& visitor) const {
     for (auto& requirement : requirements) {
       RequirementVisitor<Visitor> v {visitor, requirement.candidateProb};
-      apply_visitor(requirement.type, v);
+      requirement.type.visit(v);
     }
   }
 
   template <typename Visitor>
   void visitRequirements(const Visitor& visitor) const {
     for (auto& requirement : requirements) {
-      apply_visitor(requirement.type, visitor);
+      requirement.type.visit(visitor);
     }
   }
 
@@ -135,4 +147,6 @@ class ImmigrantInfo {
   optional<Keybinding> SERIAL(keybinding);
   optional<Sound> SERIAL(sound);
   bool SERIAL(noAuto) = false;
+  optional<TutorialHighlight> SERIAL(tutorialHighlight);
+  bool SERIAL(hiddenInHelp) = false;
 };

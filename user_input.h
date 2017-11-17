@@ -35,6 +35,8 @@ enum class UserInputId {
     EXIT,
     MESSAGE_INFO,
     CHEAT_ATTRIBUTES,
+    TUTORIAL_CONTINUE,
+    TUTORIAL_GO_BACK,
 // real-time actions
     BUILD,
     TILE_CLICK,
@@ -53,7 +55,6 @@ enum class UserInputId {
     CREATURE_CONTROL,
     CREATURE_RENAME,
     CREATURE_BANISH,
-    CREATURE_EXECUTE,
     CREATURE_CONSUME,
     CREATURE_DRAG_DROP,
     CREATURE_DRAG,
@@ -72,11 +73,14 @@ enum class UserInputId {
     WORKSHOP,
     WORKSHOP_ADD,
     WORKSHOP_ITEM_ACTION,
+    LIBRARY_ADD,
+    LIBRARY_CLOSE,
     VILLAGE_ACTION,
     GO_TO_VILLAGE,
     PAY_RANSOM,
     IGNORE_RANSOM,
     SHOW_HISTORY,
+    DISMISS_NEXT_WAVE,
 // turn-based actions
     MOVE,
     TRAVEL,
@@ -87,6 +91,9 @@ enum class UserInputId {
     CAST_SPELL,
     INVENTORY_ITEM,
     PAY_DEBT,
+    APPLY_EFFECT,
+    CREATE_ITEM,
+    SUMMON_ENEMY
 };
 
 struct CreatureDropInfo {
@@ -116,20 +123,20 @@ struct TeamCreatureInfo {
 struct InventoryItemInfo {
   EntitySet<Item> SERIAL(items);
   ItemAction SERIAL(action);
-  SERIALIZE_ALL(items, action);
+  SERIALIZE_ALL(items, action)
 };
 
 struct VillageActionInfo {
-  int SERIAL(villageIndex);
+  UniqueEntity<Collective>::Id SERIAL(id);
   VillageAction SERIAL(action);
-  SERIALIZE_ALL(villageIndex, action);
+  SERIALIZE_ALL(id, action)
 };
 
 struct TaskActionInfo {
   UniqueEntity<Creature>::Id SERIAL(creature);
   optional<MinionTask> SERIAL(switchTo);
   EnumSet<MinionTask> SERIAL(lock);
-  SERIALIZE_ALL(creature, switchTo, lock);
+  SERIALIZE_ALL(creature, switchTo, lock)
 };
 
 struct EquipmentActionInfo {
@@ -137,26 +144,27 @@ struct EquipmentActionInfo {
   EntitySet<Item> SERIAL(ids);
   optional<EquipmentSlot> SERIAL(slot);
   ItemAction SERIAL(action);
-  SERIALIZE_ALL(creature, ids, slot, action);
+  SERIALIZE_ALL(creature, ids, slot, action)
 };
 
 struct WorkshopQueuedActionInfo {
   int SERIAL(itemIndex);
   ItemAction SERIAL(action);
-  SERIALIZE_ALL(itemIndex, action);
+  SERIALIZE_ALL(itemIndex, action)
 };
 
 struct RenameActionInfo {
   UniqueEntity<Creature>::Id SERIAL(creature);
   string SERIAL(name);
-  SERIALIZE_ALL(creature, name);
+  SERIALIZE_ALL(creature, name)
 };
 
 enum class SpellId;
 
 class UserInput : public EnumVariant<UserInputId, TYPES(BuildingInfo, int, UniqueEntity<Creature>::Id,
     UniqueEntity<PlayerMessage>::Id, InventoryItemInfo, Vec2, TeamCreatureInfo, SpellId, VillageActionInfo,
-    TaskActionInfo, EquipmentActionInfo, RenameActionInfo, WorkshopQueuedActionInfo, CreatureDropInfo, TeamDropInfo),
+    TaskActionInfo, EquipmentActionInfo, RenameActionInfo, WorkshopQueuedActionInfo, CreatureDropInfo, TeamDropInfo,
+    UniqueEntity<Collective>::Id, string),
         ASSIGN(BuildingInfo,
             UserInputId::BUILD,
             UserInputId::RECT_SELECTION,
@@ -169,7 +177,6 @@ class UserInput : public EnumVariant<UserInputId, TYPES(BuildingInfo, int, Uniqu
             UserInputId::CREATURE_GROUP_BUTTON,
             UserInputId::CREATURE_CONTROL,
             UserInputId::CREATURE_BANISH,
-            UserInputId::CREATURE_EXECUTE,
             UserInputId::CREATURE_CONSUME,
             UserInputId::CREATURE_DRAG,
             UserInputId::GO_TO_ENEMY
@@ -177,16 +184,19 @@ class UserInput : public EnumVariant<UserInputId, TYPES(BuildingInfo, int, Uniqu
         ASSIGN(UniqueEntity<PlayerMessage>::Id,
             UserInputId::MESSAGE_INFO
             ),
+        ASSIGN(UniqueEntity<Collective>::Id,
+            UserInputId::GO_TO_VILLAGE
+            ),
         ASSIGN(int,
             UserInputId::TECHNOLOGY,
             UserInputId::WORKSHOP,
             UserInputId::WORKSHOP_ADD,
+            UserInputId::LIBRARY_ADD,
             UserInputId::CANCEL_TEAM,
             UserInputId::ACTIVATE_TEAM,
             UserInputId::SELECT_TEAM,
             UserInputId::PICK_UP_ITEM,
             UserInputId::PICK_UP_ITEM_MULTI,
-            UserInputId::GO_TO_VILLAGE,
             UserInputId::PLAYER_COMMAND,
             UserInputId::IMMIGRANT_ACCEPT,
             UserInputId::IMMIGRANT_REJECT,
@@ -220,7 +230,12 @@ class UserInput : public EnumVariant<UserInputId, TYPES(BuildingInfo, int, Uniqu
         ASSIGN(CreatureDropInfo,
             UserInputId::CREATURE_DRAG_DROP),
         ASSIGN(TeamDropInfo,
-            UserInputId::TEAM_DRAG_DROP)
+            UserInputId::TEAM_DRAG_DROP),
+        ASSIGN(string,
+            UserInputId::CREATE_ITEM,
+            UserInputId::APPLY_EFFECT,
+            UserInputId::SUMMON_ENEMY
+        )
         > {
   using EnumVariant::EnumVariant;
 };

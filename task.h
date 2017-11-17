@@ -21,73 +21,69 @@
 #include "position.h"
 #include "destroy_action.h"
 
-class SquareType;
-class Location;
 class TaskCallback;
 class CreatureFactory;
 
-class Task : public UniqueEntity<Task> {
+using WTaskCallback = WeakPointer<TaskCallback>;
+
+class Task : public UniqueEntity<Task>, public OwnedObject<Task> {
   public:
 
   Task(bool transferable = false);
   virtual ~Task();
 
-  virtual MoveInfo getMove(Creature*) = 0;
+  virtual MoveInfo getMove(WCreature) = 0;
   virtual bool isBogus() const;
-  virtual bool isBlocked(Creature*) const;
+  virtual bool isBlocked(WCreature) const;
   virtual bool canTransfer();
   virtual void cancel() {}
   virtual string getDescription() const = 0;
-  virtual bool canPerform(const Creature* c);
+  virtual bool canPerform(WConstCreature c);
   virtual optional<Position> getPosition() const;
   optional<ViewId> getViewId() const;
   bool isDone();
   void setViewId(ViewId);
 
-  static PTask construction(TaskCallback*, Position, FurnitureType);
-  static PTask destruction(TaskCallback*, Position, const Furniture*, DestroyAction);
-  static PTask buildTorch(TaskCallback*, Position, Dir attachmentDir);
-  static PTask bringItem(TaskCallback*, Position position, vector<Item*>, const set<Position>& target,
+  static PTask construction(WTaskCallback, Position, FurnitureType);
+  static PTask destruction(WTaskCallback, Position, WConstFurniture, DestroyAction);
+  static PTask bringItem(WTaskCallback, Position position, vector<WItem>, const set<Position>& target,
       int numRetries = 10);
-  static PTask applyItem(TaskCallback*, Position, Item*, Position target);
+  static PTask applyItem(WTaskCallback, Position, WItem, Position target);
   enum SearchType { LAZY, RANDOM_CLOSE };
   enum ActionType { APPLY, NONE };
-  static PTask applySquare(TaskCallback*, vector<Position>, SearchType, ActionType);
-  static PTask pickAndEquipItem(TaskCallback*, Position, Item*);
-  static PTask equipItem(Item*);
-  static PTask pickItem(TaskCallback*, Position, vector<Item*>);
-  static PTask kill(TaskCallback*, Creature*);
-  static PTask torture(TaskCallback*, Creature*);
-  static PTask sacrifice(TaskCallback*, Creature*);
+  static PTask applySquare(WTaskCallback, vector<Position>, SearchType, ActionType);
+  static PTask archeryRange(WTaskCallback, vector<Position>);
+  static PTask pickAndEquipItem(WTaskCallback, Position, WItem);
+  static PTask equipItem(WItem);
+  static PTask pickItem(WTaskCallback, Position, vector<WItem>);
+  static PTask kill(WTaskCallback, WCreature);
+  static PTask torture(WTaskCallback, WCreature);
+  static PTask sacrifice(WTaskCallback, WCreature);
   static PTask disappear();
   static PTask chain(PTask, PTask);
   static PTask chain(PTask, PTask, PTask);
   static PTask chain(vector<PTask>);
   static PTask explore(Position);
-  static PTask attackLeader(Collective*);
-  static PTask campAndSpawn(Collective* target, const CreatureFactory&, int defenseSize,
+  static PTask attackCreatures(vector<WCreature>);
+  static PTask campAndSpawn(WCollective target, const CreatureFactory&, int defenseSize,
       Range attackSize, int numAttacks);
-  static PTask killFighters(Collective*, int numFighters);
-  static PTask stealFrom(Collective*, TaskCallback*);
-  static PTask createBed(TaskCallback*, Position, const SquareType& fromType, const SquareType& toType);
-  static PTask consumeItem(TaskCallback*, vector<Item*> items);
-  static PTask copulate(TaskCallback*, Creature* target, int numTurns);
-  static PTask consume(TaskCallback*, Creature* target);
+  static PTask killFighters(WCollective, int numFighters);
+  static PTask stealFrom(WCollective, WTaskCallback);
+  static PTask consumeItem(WTaskCallback, vector<WItem> items);
+  static PTask copulate(WTaskCallback, WCreature target, int numTurns);
+  static PTask consume(WTaskCallback, WCreature target);
   static PTask eat(set<Position> hatcherySquares);
   static PTask goTo(Position);
   static PTask goToTryForever(Position);
-  static PTask transferTo(Model*);
+  static PTask transferTo(WModel);
   static PTask goToAndWait(Position, double waitTime);
-  static PTask whipping(Position, Creature* whipped);
-  static PTask dropItems(vector<Item*>);
+  static PTask whipping(Position, WCreature whipped);
+  static PTask dropItems(vector<WItem>);
   static PTask spider(Position origin, const vector<Position>& posClose, const vector<Position>& posFurther);
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);
   
-  template <class Archive>
-  static void registerTypes(Archive& ar, int version);
-
   protected:
   void setDone();
 

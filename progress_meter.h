@@ -15,6 +15,8 @@
 
 #pragma once
 
+#include "stdafx.h"
+
 class ProgressMeter {
   public:
   ProgressMeter(float increase);
