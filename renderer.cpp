@@ -457,13 +457,16 @@ void Renderer::setScissor(optional<Rectangle> s) {
 void Renderer::setTopLayer() {
   renderDeferredSprites();
   SDL::glPushMatrix();
+  checkOpenglError();
   SDL::glTranslated(0, 0, 1);
+  checkOpenglError();
   SDL::glDisable(GL_SCISSOR_TEST);
 }
 
 void Renderer::popLayer() {
   renderDeferredSprites();
   SDL::glPopMatrix();
+  checkOpenglError();
   if (isScissor)
     SDL::glEnable(GL_SCISSOR_TEST);
 }
