@@ -726,7 +726,7 @@ bool Renderer::loadTilesFromDir(const DirectoryPath& path, vector<Texture>& tile
 }
 
 Renderer::TileCoord Renderer::getTileCoord(const string& name) {
-  CHECK(tileCoords.count(name)) << "Tile not found " << name;
+  USER_CHECK(tileCoords.count(name)) << "Tile not found: '" << name << "'. Please make sure all game data is in place.";
   return tileCoords.at(name);
 }
 
