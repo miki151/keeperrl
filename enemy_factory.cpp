@@ -685,7 +685,8 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
 vector<ExternalEnemy> EnemyFactory::getExternalEnemies() {
   return {
     ExternalEnemy{
-        CreatureList(1, CreatureId::BANDIT),
+        CreatureList(1, CreatureId::BANDIT)
+            .increaseBaseLevel({{ExperienceType::MELEE, -2}}),
         AttackBehaviourId::KILL_LEADER,
         "a curious bandit",
         Range(1000, 10000),
@@ -693,14 +694,15 @@ vector<ExternalEnemy> EnemyFactory::getExternalEnemies() {
     },
     ExternalEnemy{
         CreatureList(1, CreatureId::LIZARDMAN)
-            .increaseBaseLevel({{ExperienceType::MELEE, 3}}),
+            .increaseBaseLevel({{ExperienceType::MELEE, 1}}),
         AttackBehaviourId::KILL_LEADER,
         "a lizardman scout",
         Range(1000, 10000),
         1
     },
     ExternalEnemy{
-        CreatureList(random.get(3, 5), CreatureId::ANT_WORKER),
+        CreatureList(random.get(3, 5), CreatureId::ANT_WORKER)
+            .increaseBaseLevel({{ExperienceType::MELEE, -2}}),
         AttackBehaviourId::KILL_LEADER,
         "an ant patrol",
         Range(1000, 5000),
@@ -708,7 +710,7 @@ vector<ExternalEnemy> EnemyFactory::getExternalEnemies() {
     },
     ExternalEnemy{
         CreatureList(random.get(4, 8), CreatureId::LIZARDMAN)
-            .increaseBaseLevel({{ExperienceType::MELEE, 6}}),
+            .increaseBaseLevel({{ExperienceType::MELEE, 2}}),
         AttackBehaviourId::KILL_LEADER,
         "a nest of lizardmen",
         Range(6000, 15000),
@@ -716,7 +718,7 @@ vector<ExternalEnemy> EnemyFactory::getExternalEnemies() {
     },
     ExternalEnemy{
         CreatureList(random.get(3, 5), CreatureId::BANDIT)
-            .increaseBaseLevel({{ExperienceType::MELEE, 11}}),
+            .increaseBaseLevel({{ExperienceType::MELEE, 9}}),
         AttackBehaviourId::KILL_LEADER,
         "a gang of bandits",
         Range(8000, 20000),
@@ -797,7 +799,7 @@ vector<ExternalEnemy> EnemyFactory::getExternalEnemies() {
         CreatureList(random.get(4, 8), CreatureId::ARCHER),
         AttackBehaviourId::KILL_LEADER,
         "a patrol of archers",
-        Range(4000, 12000),
+        Range(6000, 12000),
         3
     },
     ExternalEnemy{
