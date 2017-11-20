@@ -757,8 +757,9 @@ void Collective::onEvent(const GameEvent& event) {
         if (col->isDiscoverable())
           if (auto enemyId = col->getEnemyId()) {
             if (auto& name = col->getName())
-              control->addMessage(PlayerMessage("The tribe of " + name->full + " is destroyed.",
-                  MessagePriority::CRITICAL));
+              control->addMessage(PlayerMessage(
+                "You draw mana from the destruction of a tribe of " + name->full + ".",
+                MessagePriority::CRITICAL));
             else
               control->addMessage(PlayerMessage("An unnamed tribe is destroyed.", MessagePriority::CRITICAL));
             if (!conqueredVillains.count(*enemyId)) {
