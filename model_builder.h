@@ -47,7 +47,7 @@ class ModelBuilder {
   PModel tryModel(int width, const string& levelName, vector<EnemyInfo>,
       bool keeperSpawn, BiomeId, optional<ExternalEnemies>, bool wildlife);
   SettlementInfo& makeExtraLevel(WModel, EnemyInfo&);
-  PModel tryBuilding(int numTries, function<PModel()> buildFun);
+  PModel tryBuilding(int numTries, function<PModel()> buildFun, const string& name);
   void addMapVillains(vector<EnemyInfo>&, BiomeId);
   RandomGen& random;
   ProgressMeter* meter;

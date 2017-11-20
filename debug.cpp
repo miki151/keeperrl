@@ -35,6 +35,10 @@ DebugOutput DebugOutput::crash() {
   return DebugOutput(*(new stringstream()), [] { fail(); });
 }
 
+DebugOutput DebugOutput::exitProgram() {
+  return DebugOutput(*(new stringstream()), [] { exit(0); });
+}
+
 void DebugLog::addOutput(DebugOutput o) {
   outputs.push_back(o);
 }
@@ -45,3 +49,4 @@ DebugLog::Logger DebugLog::get() {
 
 DebugLog InfoLog;
 DebugLog FatalLog;
+DebugLog UserErrorLog;

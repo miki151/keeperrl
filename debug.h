@@ -19,8 +19,10 @@
 #include "stdafx.h"
 
 #define FATAL FatalLog.get() << "FATAL " << __FILE__ << ":" << __LINE__ << " "
+#define USER_FATAL UserErrorLog.get()
 #define INFO InfoLog.get() << __FILE__ << ":" <<  __LINE__ << " "
 #define CHECK(exp) if (!(exp)) FATAL << ": " << #exp << " is false. "
+#define USER_CHECK(exp) if (!(exp)) USER_FATAL
 //#define CHECKEQ(exp, exp2) if ((exp) != (exp2)) FATAL << __FILE__ << ":" << __LINE__ << ": " << #exp << " = " << #exp2 << " is false. " << exp << " " << exp2
 //#define TRY(exp, msg) do { try { exp; } catch (...) { FATAL << __FILE__ << ":" << __LINE__ << ": " << #exp << " failed. " << msg; exp; } } while(0)
 
@@ -59,6 +61,7 @@ class DebugOutput {
   static DebugOutput toStream(std::ostream&);
   static DebugOutput toString(function<void(const string&)> callback);
   static DebugOutput crash();
+  static DebugOutput exitProgram();
 
   typedef function<void()> LineEndFun;
   std::ostream& out;
@@ -99,6 +102,7 @@ class DebugLog {
 
 extern DebugLog InfoLog;
 extern DebugLog FatalLog;
+extern DebugLog UserErrorLog;
 
 template <class T, class V>
 const T& valueCheck(const T& e, const V& v, const string& msg) {

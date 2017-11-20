@@ -151,6 +151,10 @@ bool CollectiveConfig::getRegenerateMana() const {
   return regenerateMana;
 }
 
+bool CollectiveConfig::allowHealingTaskOutsideTerritory() const {
+  return type == KEEPER;
+}
+
 bool CollectiveConfig::hasImmigrantion(bool currentlyActiveModel) const {
   return type != KEEPER || currentlyActiveModel;
 }
@@ -424,7 +428,7 @@ int CollectiveConfig::getManaForConquering(const optional<VillainType>& type) {
       case VillainType::LESSER:
         return 100;
       default:
-        break;;
+        break;
     }
   return 50;
 }

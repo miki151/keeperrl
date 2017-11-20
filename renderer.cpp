@@ -457,13 +457,16 @@ void Renderer::setScissor(optional<Rectangle> s) {
 void Renderer::setTopLayer() {
   renderDeferredSprites();
   SDL::glPushMatrix();
+  checkOpenglError();
   SDL::glTranslated(0, 0, 1);
+  checkOpenglError();
   SDL::glDisable(GL_SCISSOR_TEST);
 }
 
 void Renderer::popLayer() {
   renderDeferredSprites();
   SDL::glPopMatrix();
+  checkOpenglError();
   if (isScissor)
     SDL::glEnable(GL_SCISSOR_TEST);
 }
@@ -726,7 +729,7 @@ bool Renderer::loadTilesFromDir(const DirectoryPath& path, vector<Texture>& tile
 }
 
 Renderer::TileCoord Renderer::getTileCoord(const string& name) {
-  CHECK(tileCoords.count(name)) << "Tile not found " << name;
+  USER_CHECK(tileCoords.count(name)) << "Tile not found: '" << name << "'. Please make sure all game data is in place.";
   return tileCoords.at(name);
 }
 

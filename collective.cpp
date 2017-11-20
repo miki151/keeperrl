@@ -532,8 +532,8 @@ MoveInfo Collective::getMove(WCreature c) {
     }
     return NoMove;
   };
-
-  considerHealingTask(c);
+  if (getConfig().allowHealingTaskOutsideTerritory() || territory->contains(c->getPosition()))
+    considerHealingTask(c);
   return getFirstGoodMove(
       priorityTask,
       followTeamLeader,
@@ -754,23 +754,17 @@ void Collective::onEvent(const GameEvent& event) {
       },
       [&](const ConqueredEnemy& info) {
         auto col = info.collective;
-        if (col->isDiscoverable())
-          if (auto enemyId = col->getEnemyId()) {
-            if (auto& name = col->getName())
-              control->addMessage(PlayerMessage("The tribe of " + name->full + " is destroyed.",
-                  MessagePriority::CRITICAL));
-            else
-              control->addMessage(PlayerMessage("An unnamed tribe is destroyed.", MessagePriority::CRITICAL));
-            if (!conqueredVillains.count(*enemyId)) {
-              auto mana = config->getManaForConquering(col->getVillainType());
-              addMana(mana);
-              control->addMessage(PlayerMessage("You feel a surge of power (+" + toString(mana) + " mana)",
-                  MessagePriority::CRITICAL));
-              conqueredVillains.insert(*enemyId);
-            } else
-              control->addMessage(PlayerMessage("Note: mana is only rewarded once per each kind of enemy.",
-                  MessagePriority::CRITICAL));
-          }
+        if (col->isDiscoverable()) {
+          if (auto& name = col->getName())
+            control->addMessage(PlayerMessage("The tribe of " + name->full + " is destroyed.",
+                MessagePriority::CRITICAL));
+          else
+            control->addMessage(PlayerMessage("An unnamed tribe is destroyed.", MessagePriority::CRITICAL));
+          auto mana = config->getManaForConquering(col->getVillainType());
+          addMana(mana);
+          control->addMessage(PlayerMessage("You feel a surge of power (+" + toString(mana) + " mana)",
+              MessagePriority::CRITICAL));
+        }
       },
       [&](const auto&) {}
   );
@@ -1359,7 +1353,7 @@ void Collective::onAppliedSquare(WCreature c, Position pos) {
     }
     if (auto usage = furniture->getUsageType()) {
       auto increaseLevel = [&] (ExperienceType exp) {
-        double increase = 0.005 * efficiency;
+        double increase = 0.007 * efficiency;
         if (auto maxLevel = config->getTrainingMaxLevel(exp, furniture->getType()))
           increase = min(increase, *maxLevel - c->getAttributes().getExpLevel(exp));
         if (increase > 0)
