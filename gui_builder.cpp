@@ -1732,7 +1732,7 @@ SGuiElem GuiBuilder::drawMapHintOverlay() {
       lines.addElem(gui.label("Position: " + toString(*highlighted.tilePos)));
   }
   if (!lines.isEmpty())
-    return gui.margins(gui.translucentBackgroundWithBorder(
+    return gui.margins(gui.translucentBackgroundWithBorderPassMouse(
         gui.margins(lines.buildVerticalList(), 10, 10, 10, 22)), 0, 0, -2, -2);
   else
     return gui.empty();

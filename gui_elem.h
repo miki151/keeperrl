@@ -265,6 +265,7 @@ class GuiFactory {
   SGuiElem background(SGuiElem content, Color);
   SGuiElem translucentBackground(SGuiElem content);
   SGuiElem translucentBackgroundWithBorder(SGuiElem content);
+  SGuiElem translucentBackgroundWithBorderPassMouse(SGuiElem content);
   SGuiElem translucentBackground();
   Color translucentBgColor = Color(0, 0, 0, 150);
   Color foreground1 = Color(0x20, 0x5c, 0x4a, 150);

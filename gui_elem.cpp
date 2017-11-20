@@ -2628,7 +2628,13 @@ SGuiElem GuiFactory::mainDecoration(int rightBarWidth, int bottomBarHeight, opti
 SGuiElem GuiFactory::translucentBackground(SGuiElem content) {
   return stack(
       stopMouseMovement(),
-        background(std::move(content), translucentBgColor));
+      background(std::move(content), translucentBgColor));
+}
+
+SGuiElem GuiFactory::translucentBackgroundWithBorderPassMouse(SGuiElem content) {
+  return stack(
+      rectangleBorder(Color::GRAY),
+      background(std::move(content), translucentBgColor));
 }
 
 SGuiElem GuiFactory::translucentBackgroundWithBorder(SGuiElem content) {
