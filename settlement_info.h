@@ -48,6 +48,7 @@ class CollectiveBuilder;
 struct SettlementInfo {
   SettlementType type;
   InhabitantsInfo inhabitants;
+  optional<InhabitantsInfo> corpses;
   optional<string> locationName;
   TribeId tribe;
   optional<string> race;
@@ -58,6 +59,7 @@ struct SettlementInfo {
   optional<CreatureId> guardId;
   optional<ItemType> elderLoot;
   optional<ItemFactory> shopFactory;
+  bool shopkeeperDead;
   CollectiveBuilder* collective;
   optional<FurnitureFactory> furniture;
   optional<FurnitureFactory> outsideFeatures;

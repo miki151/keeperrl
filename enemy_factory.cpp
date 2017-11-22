@@ -31,6 +31,24 @@ EnemyInfo& EnemyInfo::setNonDiscoverable() {
   return *this;
 }
 
+EnemyInfo& EnemyInfo::setCreateOnBones(EnemyFactory& factory, double prob, vector<EnemyId> enemies) {
+  if (factory.random.chance(prob)) {
+    EnemyInfo enemy = factory.get(factory.random.choose(enemies));
+    settlement.buildingId = enemy.settlement.buildingId;
+    settlement.type = enemy.settlement.type;
+    settlement.corpses = enemy.settlement.inhabitants;
+    settlement.furniture = enemy.settlement.furniture;
+    settlement.outsideFeatures = enemy.settlement.outsideFeatures;
+    settlement.shopFactory = enemy.settlement.shopFactory;
+    settlement.shopkeeperDead = true;
+    levelConnection = enemy.levelConnection;
+    if (levelConnection)
+      levelConnection->deadInhabitants = true;
+  }
+  return *this;
+}
+
+
 static EnemyInfo getVault(SettlementType type, CreatureId creature, TribeId tribe, int num,
     optional<ItemFactory> itemFactory = none) {
   return EnemyInfo(CONSTRUCT(SettlementInfo,
@@ -110,6 +128,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
     case EnemyId::ANTS_OPEN: {
         auto ants = get(EnemyId::ANTS_CLOSED);
         ants.settlement.type = SettlementType::MINETOWN;
+        ants.setCreateOnBones(*this, 0.1, {EnemyId::DWARVES});
         return ants;
       }
     case EnemyId::ORC_VILLAGE:
@@ -127,7 +146,8 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
           CollectiveConfig::withImmigrants(300_visible, 16, {
               ImmigrantInfo(CreatureId::ORC, {MinionTrait::FIGHTER}).setFrequency(3),
               ImmigrantInfo(CreatureId::OGRE, {MinionTrait::FIGHTER}).setFrequency(1)
-            }));
+            }))
+        .setCreateOnBones(*this, 0.1, {EnemyId::DWARVES, EnemyId::VILLAGE});
     case EnemyId::DEMON_DEN_ABOVE:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::VILLAGE;
@@ -273,7 +293,9 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
                   AttackTriggerId::FINISH_OFF,
                   AttackTriggerId::PROXIMITY);
               c.attackBehaviour = AttackBehaviour(AttackBehaviourId::KILL_MEMBERS, 12);
-              c.welcomeMessage = VillageBehaviour::DRAGON_WELCOME;));
+              c.welcomeMessage = VillageBehaviour::DRAGON_WELCOME;))
+          .setCreateOnBones(*this, 0.1, {EnemyId::KNIGHTS, EnemyId::DWARVES, EnemyId::GREEN_DRAGON,
+              EnemyId::ELEMENTALIST});
     case EnemyId::GREEN_DRAGON:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::CAVE;
@@ -293,7 +315,8 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
                   AttackTriggerId::FINISH_OFF,
                   AttackTriggerId::PROXIMITY);
               c.attackBehaviour = AttackBehaviour(AttackBehaviourId::KILL_MEMBERS, 7);
-              c.welcomeMessage = VillageBehaviour::DRAGON_WELCOME;));
+              c.welcomeMessage = VillageBehaviour::DRAGON_WELCOME;))
+          .setCreateOnBones(*this, 0.1, {EnemyId::KNIGHTS, EnemyId::DWARVES, EnemyId::ELEMENTALIST});
     case EnemyId::DWARVES:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::MINETOWN;
@@ -386,14 +409,16 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.buildingId = BuildingId::DUNGEON;),
           CollectiveConfig::withImmigrants(1000_visible, 10, {
               ImmigrantInfo(CreatureId::BANDIT, {MinionTrait::FIGHTER}).setFrequency(1),
-            }));
+            }))
+         .setCreateOnBones(*this, 0.1, {EnemyId::KOBOLD_CAVE});
     case EnemyId::BANDITS:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::CAVE;
             c.inhabitants.fighters = CreatureList(random.get(4, 9), CreatureId::BANDIT);
             c.tribe = TribeId::getBandit();
             c.race = "bandits"_s;
-            c.buildingId = BuildingId::DUNGEON;),
+            c.buildingId = BuildingId::DUNGEON;
+          ),
           CollectiveConfig::withImmigrants(1000_visible, 10, {
               ImmigrantInfo(CreatureId::BANDIT, {MinionTrait::FIGHTER}).setFrequency(1),
             }),
@@ -402,7 +427,10 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
               c.minTeamSize = 3;
               c.triggers = LIST({AttackTriggerId::GOLD, 100});
               c.attackBehaviour = AttackBehaviour(AttackBehaviourId::STEAL_GOLD);
-              c.ransom = make_pair(0.5, random.get(40, 80));));
+              c.ransom = make_pair(0.5, random.get(40, 80));))
+          .setCreateOnBones(*this, 0.1, {EnemyId::KOBOLD_CAVE});
+    case EnemyId::COTTAGE_BANDITS:
+      return getById(EnemyId::NO_AGGRO_BANDITS).setCreateOnBones(*this, 1.0, {EnemyId::HUMAN_COTTAGE});
     case EnemyId::LIZARDMEN:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::VILLAGE;
@@ -430,7 +458,8 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
                   {AttackTriggerId::NUM_CONQUERED, 2},
                   AttackTriggerId::FINISH_OFF,
                   AttackTriggerId::PROXIMITY);
-              c.attackBehaviour = AttackBehaviour(AttackBehaviourId::KILL_LEADER);));
+              c.attackBehaviour = AttackBehaviour(AttackBehaviourId::KILL_LEADER);))
+          .setCreateOnBones(*this, 1.0, {EnemyId::VILLAGE, EnemyId::ELVES});
     case EnemyId::DARK_ELVES:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::MINETOWN;
@@ -512,7 +541,8 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.inhabitants.leader = CreatureId::SHELOB;
             c.race = "giant spider"_s;
             c.buildingId = BuildingId::DUNGEON;
-            ), CollectiveConfig::noImmigrants().setLeaderAsFighter());
+            ), CollectiveConfig::noImmigrants().setLeaderAsFighter())
+          .setCreateOnBones(*this, 0.1, {EnemyId::DWARF_CAVE, EnemyId::KOBOLD_CAVE});
     case EnemyId::CYCLOPS:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::CAVE;

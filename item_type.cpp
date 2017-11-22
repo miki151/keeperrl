@@ -57,12 +57,14 @@ class FireScrollItem : public Item {
 class Corpse : public Item {
   public:
   Corpse(const ViewObject& obj2, const ItemAttributes& attr, const string& rottenN,
-      TimeInterval rottingT, CorpseInfo info) :
+      TimeInterval rottingT, CorpseInfo info, bool instantlyRotten) :
       Item(attr),
       object2(obj2),
       rottingTime(rottingT),
       rottenName(rottenN),
       corpseInfo(info) {
+    if (instantlyRotten)
+      makeRotten();
   }
 
   virtual void applySpecial(WCreature c) override {
@@ -75,16 +77,20 @@ class Corpse : public Item {
     }
   }
 
+  void makeRotten() {
+    setName(rottenName);
+    setViewObject(object2);
+    corpseInfo.isSkeleton = true;
+    rotten = true;
+  }
+
   virtual void specialTick(Position position) override {
     auto time = position.getGame()->getGlobalTime();
     if (!rottenTime)
       rottenTime = time + rottingTime;
-    if (time >= rottenTime && !rotten) {
-      setName(rottenName);
-      setViewObject(object2);
-      corpseInfo.isSkeleton = true;
-      rotten = true;
-    } else {
+    if (time >= rottenTime && !rotten)
+      makeRotten();
+    else {
       if (!rotten && getWeight() > 10 && Random.roll(20 + (*rottenTime - time).getDouble() / 10))
         Effect::emitPoisonGas(position, 0.3, false);
       if (getWeight() > 10 && !corpseInfo.isSkeleton &&
@@ -119,8 +125,8 @@ class Corpse : public Item {
   CorpseInfo SERIAL(corpseInfo);
 };
 
-PItem ItemFactory::corpse(const string& name, const string& rottenName, double weight, ItemClass itemClass,
-    CorpseInfo corpseInfo) {
+PItem ItemFactory::corpse(const string& name, const string& rottenName, double weight, bool instantlyRotten,
+    ItemClass itemClass, CorpseInfo corpseInfo) {
   const auto rotTime = 300_visible;
   return makeOwner<Corpse>(
         ViewObject(ViewId::BONE, ViewLayer::ITEM, rottenName),
@@ -132,7 +138,8 @@ PItem ItemFactory::corpse(const string& name, const string& rottenName, double w
           i.weight = weight;),
         rottenName,
         rotTime,
-        corpseInfo);
+        corpseInfo,
+        instantlyRotten);
 }
 
 class PotionItem : public Item {

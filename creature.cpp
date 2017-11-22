@@ -1086,6 +1086,10 @@ void Creature::dieWithLastAttacker(DropType drops) {
   dieWithAttacker(lastAttacker, drops);
 }
 
+vector<PItem> Creature::generateCorpse(bool instantlyRotten) const {
+  return getBody().getCorpseItems(getName().bare(), getUniqueId(), instantlyRotten);
+}
+
 void Creature::dieWithAttacker(WCreature attacker, DropType drops) {
   CHECK(!isDead()) << getName().bare() << " is already dead. " << getDeathReason().value_or("");
   deathTime = getGlobalTime();
@@ -1096,7 +1100,7 @@ void Creature::dieWithAttacker(WCreature attacker, DropType drops) {
     for (PItem& item : equipment->removeAllItems(this))
       getPosition().dropItem(std::move(item));
   if (drops == DropType::EVERYTHING) {
-    getPosition().dropItems(getBody().getCorpseItem(getName().bare(), getUniqueId()));
+    getPosition().dropItems(generateCorpse());
     if (auto sound = getBody().getDeathSound())
       addSound(*sound);
   }

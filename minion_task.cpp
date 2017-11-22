@@ -160,7 +160,7 @@ PTask MinionTasks::generate(WCollective collective, WCreature c, MinionTask task
       }
     case MinionTaskInfo::SPIDER: {
       auto& territory = collective->getTerritory();
-      return Task::spider(territory.getAll().front(), territory.getExtended(3), territory.getExtended(2, 10));
+      return Task::spider(territory.getAll().front(), territory.getExtended(3));
     }
     default:
       return nullptr;

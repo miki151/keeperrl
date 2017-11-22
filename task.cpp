@@ -1406,15 +1406,15 @@ PTask Task::dropItems(vector<WItem> items) {
 namespace {
 class Spider : public Task {
   public:
-  Spider(Position orig, const vector<Position>& pos, const vector<Position>& pos2)
-      : origin(orig), positionsClose(pos), positionsFurther(pos2) {}
+  Spider(Position orig, const vector<Position>& pos)
+      : origin(orig), webPositions(pos) {}
 
   virtual MoveInfo getMove(WCreature c) override {
     auto layer = Furniture::getLayer(FurnitureType::SPIDER_WEB);
-    for (auto pos : positionsFurther)
+    for (auto pos : webPositions)
       if (!pos.getFurniture(layer))
         pos.addFurniture(FurnitureFactory::get(FurnitureType::SPIDER_WEB, c->getTribeId()));
-    for (auto& pos : Random.permutation(positionsFurther))
+    for (auto& pos : Random.permutation(webPositions))
       if (pos.getCreature() && pos.getCreature()->isAffected(LastingEffect::ENTANGLED)) {
         attackPosition = pos;
         break;
@@ -1433,19 +1433,18 @@ class Spider : public Task {
     return "Spider";
   }
 
-  SERIALIZE_ALL(SUBCLASS(Task), origin, positionsClose, positionsFurther, attackPosition)
+  SERIALIZE_ALL(SUBCLASS(Task), origin, webPositions, attackPosition)
   SERIALIZATION_CONSTRUCTOR(Spider)
 
   protected:
   Position SERIAL(origin);
-  vector<Position> SERIAL(positionsClose);
-  vector<Position> SERIAL(positionsFurther);
+  vector<Position> SERIAL(webPositions);
   optional<Position> SERIAL(attackPosition);
 };
 }
 
-PTask Task::spider(Position origin, const vector<Position>& posClose, const vector<Position>& posFurther) {
-  return makeOwner<Spider>(origin, posClose, posFurther);
+PTask Task::spider(Position origin, const vector<Position>& posClose) {
+  return makeOwner<Spider>(origin, posClose);
 }
 
 REGISTER_TYPE(Construction)

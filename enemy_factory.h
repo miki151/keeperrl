@@ -20,6 +20,7 @@ RICH_ENUM(EnemyId,
   VILLAGE,
   BANDITS,
   NO_AGGRO_BANDITS,
+  COTTAGE_BANDITS,
   ENTS,
   DRIADS,
   CYCLOPS,
@@ -54,6 +55,7 @@ RICH_ENUM(EnemyId,
 
 
 struct ExternalEnemy;
+struct SettlementInfo;
 
 class EnemyFactory {
   public:
@@ -63,7 +65,8 @@ class EnemyFactory {
   vector<ExternalEnemy> getHalloweenKids();
   vector<EnemyInfo> getVaults();
 
+  RandomGen& random;
+
   private:
   EnemyInfo getById(EnemyId);
-  RandomGen& random;
 };

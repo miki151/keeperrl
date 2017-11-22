@@ -80,7 +80,7 @@ class Task : public UniqueEntity<Task>, public OwnedObject<Task> {
   static PTask goToAndWait(Position, TimeInterval waitTime);
   static PTask whipping(Position, WCreature whipped);
   static PTask dropItems(vector<WItem>);
-  static PTask spider(Position origin, const vector<Position>& posClose, const vector<Position>& posFurther);
+  static PTask spider(Position origin, const vector<Position>& posClose);
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);

@@ -436,7 +436,7 @@ PItem Body::getBodyPartItem(const string& name, BodyPart part) {
     case Material::FLESH:
     case Material::UNDEAD_FLESH:
       return ItemFactory::corpse(name + " " + getName(part), name + " " + getBodyPartBone(part),
-        weight / 8, isMinionFood() ? ItemClass::FOOD : ItemClass::CORPSE);
+        weight / 8, false, isMinionFood() ? ItemClass::FOOD : ItemClass::CORPSE);
     case Material::CLAY:
     case Material::ROCK:
       return ItemType(ItemType::Rock{}).get();
@@ -450,12 +450,12 @@ PItem Body::getBodyPartItem(const string& name, BodyPart part) {
   }
 }
 
-vector<PItem> Body::getCorpseItem(const string& name, Creature::Id id) {
+vector<PItem> Body::getCorpseItems(const string& name, Creature::Id id, bool instantlyRotten) const {
   switch (material) {
     case Material::FLESH:
     case Material::UNDEAD_FLESH:
       return makeVec(
-          ItemFactory::corpse(name + " corpse", name + " skeleton", weight,
+          ItemFactory::corpse(name + " corpse", name + " skeleton", weight, instantlyRotten,
             minionFood ? ItemClass::FOOD : ItemClass::CORPSE,
             {id, true, numBodyParts(BodyPart::HEAD) > 0, false}));
     case Material::CLAY:
