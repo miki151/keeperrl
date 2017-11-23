@@ -91,7 +91,8 @@ class Corpse : public Item {
     if (time >= rottenTime && !rotten)
       makeRotten();
     else {
-      if (!rotten && getWeight() > 10 && Random.roll(20 + (*rottenTime - time).getDouble() / 10))
+      if (!rotten && getWeight() > 10 && Random.roll(20 + (*rottenTime - time).getDouble() / 10)
+          && getClass() != ItemClass::FOOD)
         Effect::emitPoisonGas(position, 0.3, false);
       if (getWeight() > 10 && !corpseInfo.isSkeleton &&
           !position.isCovered() && Random.roll(350)) {
