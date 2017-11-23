@@ -11,6 +11,7 @@
 #include "view_object.h"
 #include "spell_map.h"
 #include "item.h"
+#include "body.h"
 
 CreatureInfo::CreatureInfo(WConstCreature c)
     : viewId(c->getViewObject().id()),
@@ -72,6 +73,7 @@ PlayerInfo::PlayerInfo(WConstCreature c) : bestAttack(c) {
         spell->getDescription(),
         c->isReady(spell) ? none : optional<TimeInterval>(c->getSpellDelay(spell))});
   }
+  carryLimit = c->getBody().getCarryLimit();
 }
 
 const CreatureInfo* CollectiveInfo::getMinion(UniqueEntity<Creature>::Id id) const {

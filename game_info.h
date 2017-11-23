@@ -145,7 +145,8 @@ class PlayerInfo {
     CONSUME
   };
   vector<Action> HASH(actions);
-  HASH_ALL(attributes, skills, firstName, name, title, levelInfo, levelName, positionHash, weaponName, effects, spells, lyingItems, inventory, team, minionTasks, creatureId, morale, viewId, actions, commands, debt, bestAttack)
+  optional<double> HASH(carryLimit);
+  HASH_ALL(attributes, skills, firstName, name, title, levelInfo, levelName, positionHash, weaponName, effects, spells, lyingItems, inventory, team, minionTasks, creatureId, morale, viewId, actions, commands, debt, bestAttack, carryLimit)
 };
 
 struct ImmigrantDataInfo {

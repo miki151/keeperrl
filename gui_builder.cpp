@@ -812,6 +812,10 @@ SGuiElem GuiBuilder::drawBestAttack(const BestAttack& info) {
       .buildHorizontalList();
 }
 
+static string getWeightString(double weight) {
+  return toString<int>((int)(weight * 10)) + "s";
+}
+
 SGuiElem GuiBuilder::getItemLine(const ItemInfo& item, function<void(Rectangle)> onClick,
     function<void()> onMultiClick) {
   GuiFactory::ListBuilder line(gui);
@@ -839,7 +843,7 @@ SGuiElem GuiBuilder::getItemLine(const ItemInfo& item, function<void(Rectangle)>
   if (item.price)
     line.addBackElemAuto(drawCost(*item.price));
   if (item.weight)
-    line.addBackElemAuto(gui.label("[" + toString((int)(*item.weight * item.number * 10)) + "s]"));
+    line.addBackElemAuto(gui.label("[" + getWeightString(*item.weight * item.number) + "]"));
   if (onMultiClick && item.number > 1) {
     line.addBackElem(gui.stack(
         gui.label("[#]"),
@@ -1245,12 +1249,17 @@ SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info) {
         gui.button(getButtonCallback(UserInputId::PAY_DEBT))));
     list.addSpace();
   }
-  if (!info.inventory.empty()) {
+  if (!info.inventory.empty()) {    
     list.addElem(gui.label("Inventory", Color::YELLOW));
     for (auto& item : info.inventory)
       list.addElem(getItemLine(item, [=](Rectangle butBounds) {
             if (auto choice = getItemChoice(item, butBounds.bottomLeft() + Vec2(50, 0), false))
               callbacks.input({UserInputId::INVENTORY_ITEM, InventoryItemInfo{item.ids, *choice}});}));
+    double totWeight = 0;
+    for (auto& item : info.inventory)
+      totWeight += item.weight.value_or(0) * item.number;
+    list.addElem(gui.label("Total weight: " + getWeightString(totWeight)));
+    list.addElem(gui.label("Capacity: " +  (info.carryLimit ? getWeightString(*info.carryLimit) : "infinite"_s)));
   }
   list.addSpace();
   if (auto elem = drawTrainingInfo(info))
