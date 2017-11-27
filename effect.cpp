@@ -40,6 +40,7 @@
 #include "furniture_factory.h"
 #include "furniture.h"
 #include "movement_set.h"
+#include "weapon_info.h"
 
 
 vector<WCreature> Effect::summonCreatures(Position pos, int radius, vector<PCreature> creatures, TimeInterval delay) {
@@ -77,7 +78,7 @@ static void airBlast(WCreature who, Position position, Vec2 direction) {
     position.throwItem(
         position.removeItems(stack),
         Attack(who, Random.choose<AttackLevel>(),
-          stack[0]->getAttackType(), 15, AttrType::DAMAGE), maxDistance, direction, VisionId::NORMAL);
+          stack[0]->getWeaponInfo().attackType, 15, AttrType::DAMAGE), maxDistance, direction, VisionId::NORMAL);
   }
   for (auto furniture : position.modFurniture())
     if (furniture->canDestroy(DestroyAction::Type::BASH))
@@ -120,9 +121,9 @@ static void enhanceArmor(WCreature c, int mod, const string& msg) {
 }
 
 static void enhanceWeapon(WCreature c, int mod, const string& msg) {
-  if (WItem item = c->getWeapon()) {
+  if (auto item = c->getWeapon()) {
     c->you(MsgType::YOUR, item->getName() + " " + msg);
-    item->addModifier(item->getMeleeAttackAttr(), mod);
+    item->addModifier(item->getWeaponInfo().meleeAttackAttr, mod);
   }
 }
 

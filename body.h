@@ -4,19 +4,12 @@
 #include "unique_entity.h"
 #include "position.h"
 #include "sound.h"
+#include "item_type.h"
+#include "body_part.h"
+#include "intrinsic_attack.h"
 
 #undef HUGE
 
-RICH_ENUM(BodyPart,
-  HEAD,
-  TORSO,
-  ARM,
-  WING,
-  LEG,
-  BACK
-);
-
-extern const char* getName(BodyPart);
 
 class Attack;
 struct AdjectiveInfo;
@@ -52,17 +45,17 @@ class Body {
   static Body humanoidSpirit(Size);
   static Body nonHumanoidSpirit(Size);
   Body(bool humanoid, Material, Size);
-
-  Body& addWings();
-  Body& setWeight(double);
-  Body& setBodyParts(const EnumMap<BodyPart, int>&);
-  Body& setHumanoidBodyParts();
-  Body& setHorseBodyParts();
-  Body& setBirdBodyParts();
-  Body& setMinionFood();
-  Body& setDeathSound(optional<SoundId>);
-  Body& setNoCarryLimit();
-  Body& setDoesntEat();
+  void addWings();
+  void setWeight(double);
+  void setBodyParts(const EnumMap<BodyPart, int>&);
+  void setHumanoidBodyParts(int intrinsicDamage);
+  void setHorseBodyParts(int intrinsicDamage);
+  void setBirdBodyParts(int intrinsicDamage);
+  void setMinionFood();
+  void setDeathSound(optional<SoundId>);
+  void setNoCarryLimit();
+  void setDoesntEat();
+  void setIntrinsicAttack(BodyPart, IntrinsicAttack);
 
   void affectPosition(Position);
 
@@ -105,13 +98,14 @@ class Body {
   bool isImmuneTo(LastingEffect effect) const;
   bool hasHealth() const;
 
-  void consumeBodyParts(WCreature, const Body& other, vector<string>& adjectives);
+  void consumeBodyParts(WCreature, Body& other, vector<string>& adjectives);
 
   bool isHumanoid() const;
   string getDescription() const;
   void updateViewObject(ViewObject&) const;
   const optional<double>& getCarryLimit() const;
   void bleed(WCreature, double amount);
+  WItem getIntrinsicWeapon() const;
 
   bool isUndead() const;
   double getBoulderDamage() const;
@@ -145,5 +139,6 @@ class Body {
   optional<SoundId> SERIAL(deathSound);
   optional<double> SERIAL(carryLimit);
   bool SERIAL(doesntEat) = false;
+  EnumMap<BodyPart, optional<IntrinsicAttack>> SERIAL(intrinsicAttacks);
 };
 

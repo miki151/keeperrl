@@ -43,7 +43,7 @@ CreatureAttributes::~CreatureAttributes() {}
 template <class Archive> 
 void CreatureAttributes::serialize(Archive& ar, const unsigned int version) {
   ar(viewId, retiredViewId, illusionViewObject, spawnType, name, attr, chatReactionFriendly);
-  ar(chatReactionHostile, barehandedAttack, attackEffect, passiveAttack, gender);
+  ar(chatReactionHostile, passiveAttack, gender);
   ar(body, innocent, moraleSpeedIncrease);
   ar(animal, cantEquip, courage);
   ar(boulder, noChase, isSpecial, skills, spells);
@@ -143,7 +143,6 @@ optional<SoundId> CreatureAttributes::getAttackSound(AttackType type, bool damag
   if (!noAttackSound)
     switch (type) {
       case AttackType::HIT:
-      case AttackType::PUNCH:
       case AttackType::CRUSH: return damage ? SoundId::BLUNT_DAMAGE : SoundId::BLUNT_NO_DAMAGE;
       case AttackType::CUT:
       case AttackType::STAB: return damage ? SoundId::BLADE_DAMAGE : SoundId::BLADE_NO_DAMAGE;
@@ -157,8 +156,6 @@ string CreatureAttributes::getDescription() const {
   if (!isSpecial)
     return "";
   string attack;
-  if (attackEffect)
-    attack = " It has a " + attackEffect->getName() + " attack.";
   return body->getDescription() + ". " + attack;
 }
 
@@ -272,7 +269,7 @@ void CreatureAttributes::consumeEffects(const EnumMap<LastingEffect, int>& perma
     }
 }
 
-void CreatureAttributes::consume(WCreature self, const CreatureAttributes& other) {
+void CreatureAttributes::consume(WCreature self, CreatureAttributes& other) {
   INFO << name->bare() << " consume " << other.name->bare();
   self->you(MsgType::CONSUME, other.name->the());
   self->addPersonalEvent(self->getName().a() + " absorbs " + other.name->a());
@@ -280,8 +277,6 @@ void CreatureAttributes::consume(WCreature self, const CreatureAttributes& other
   body->consumeBodyParts(self, other.getBody(), adjectives);
   for (auto t : ENUM_ALL(AttrType))
     consumeAttr(attr[t], other.attr[t], adjectives, getAttrNameMore(t));
-  consumeAttr(barehandedAttack, other.barehandedAttack, adjectives, "");
-  consumeAttr(*attackEffect, *other.attackEffect, adjectives, "");
   consumeAttr(*passiveAttack, *other.passiveAttack, adjectives, "");
   consumeAttr(gender, other.gender, adjectives);
   consumeAttr(skills, other.skills, adjectives);
@@ -290,15 +285,6 @@ void CreatureAttributes::consume(WCreature self, const CreatureAttributes& other
     self->addPersonalEvent(getName().the() + " becomes " + combine(adjectives));
   }
   consumeEffects(other.permanentEffects);
-}
-
-AttackType CreatureAttributes::getAttackType(WConstItem weapon) const {
-  if (weapon)
-    return weapon->getAttackType();
-  else if (barehandedAttack)
-    return *barehandedAttack;
-  else
-    return body->isHumanoid() ? AttackType::PUNCH : AttackType::BITE;
 }
 
 string CreatureAttributes::getRemainingString(LastingEffect effect, GlobalTime time) const {
@@ -344,10 +330,6 @@ void CreatureAttributes::addPermanentEffect(LastingEffect effect, int count) {
 
 void CreatureAttributes::removePermanentEffect(LastingEffect effect, int count) {
   permanentEffects[effect] -= count;
-}
-
-optional<Effect> CreatureAttributes::getAttackEffect() const {
-  return *attackEffect;
 }
 
 bool CreatureAttributes::isInnocent() const {

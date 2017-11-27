@@ -56,8 +56,8 @@ struct MovementInfo;
 
 class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedObject<Creature> {
   public:
-  Creature(TribeId, const CreatureAttributes&);
-  Creature(const ViewObject&, TribeId, const CreatureAttributes&);
+  Creature(TribeId, CreatureAttributes);
+  Creature(const ViewObject&, TribeId, CreatureAttributes);
   virtual ~Creature();
 
   static vector<vector<WCreature>> stack(const vector<WCreature>&);
@@ -142,8 +142,6 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   void drop(vector<PItem> item);
   struct AttackParams {
     optional<AttackLevel> level;
-    enum Mod { WILD, SWIFT};
-    optional<Mod> mod;
   };
   CreatureAction attack(WCreature, optional<AttackParams> = none) const;
   CreatureAction execute(WCreature) const;
@@ -226,10 +224,9 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
 
   bool isPlayer() const;
 
-  void you(MsgType type, const vector<string>& param) const;
   void you(MsgType type, const string& param = "") const;
   void you(const string& param) const;
-  void youHit(BodyPart part, AttackType type) const;
+  void verb(const char* second, const char* third, const string& param);
   void secondPerson(const PlayerMessage&) const;
   void thirdPerson(const PlayerMessage& playerCanSee, const PlayerMessage& cant) const;
   void thirdPerson(const PlayerMessage& playerCanSee) const;

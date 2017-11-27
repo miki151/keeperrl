@@ -33,6 +33,7 @@
 #include "attr_type.h"
 #include "attack.h"
 #include "lasting_effect.h"
+#include "creature_name.h"
 
 template <class Archive> 
 void Item::serialize(Archive& ar, const unsigned int version) {
@@ -157,6 +158,10 @@ double Item::getWeight() const {
 
 string Item::getDescription() const {
   return attributes->description;
+}
+
+const WeaponInfo& Item::getWeaponInfo() const {
+  return attributes->weaponInfo;
 }
 
 ItemClass Item::getClass() const {
@@ -345,7 +350,7 @@ string Item::getModifiers(bool shorten) const {
         printAttr.insert(getRangedWeapon()->getDamageAttr());
         break;
       case ItemClass::WEAPON:
-        printAttr.insert(attributes->meleeAttackAttr);
+        printAttr.insert(getWeaponInfo().meleeAttackAttr);
         break;
       case ItemClass::ARMOR:
         printAttr.insert(AttrType::DEFENSE);
@@ -393,10 +398,6 @@ const optional<Effect>& Item::getEffect() const {
   return attributes->effect;
 }
 
-optional<Effect> Item::getAttackEffect() const {
-  return attributes->attackEffect;
-}
-
 bool Item::canEquip() const {
   return canEquipCache;
 }
@@ -420,23 +421,38 @@ const optional<RangedWeapon>& Item::getRangedWeapon() const {
   return attributes->rangedWeapon;
 }
 
-AttrType Item::getMeleeAttackAttr() const {
-  return attributes->meleeAttackAttr;
-}
- 
-AttackType Item::getAttackType() const {
-  return attributes->attackType;
-}
-
-bool Item::isWieldedTwoHanded() const {
-  return attributes->twoHanded;
-}
-
-int Item::getMinStrength() const {
-  return 10 + getWeight();
-}
-
 optional<CorpseInfo> Item::getCorpseInfo() const {
   return none;
 }
 
+void Item::getAttackMsg(const Creature* c, const string& enemyName) const {
+  auto weaponInfo = getWeaponInfo();
+  auto swingMsg = [&] (const char* verb) {
+    c->secondPerson("You "_s + verb + " your " + getName() + " at " + enemyName);
+    c->thirdPerson(c->getName().the() + " " + verb + "s his " + getName() + " at " + enemyName);
+  };
+  auto biteMsg = [&] (const char* verb2, const char* verb3) {
+    c->secondPerson("You "_s + verb2 + " " + enemyName);
+    c->thirdPerson(c->getName().the() + " " + verb3 + " " + enemyName);
+  };
+  switch (weaponInfo.attackMsg) {
+    case AttackMsg::SWING:
+      swingMsg("swing");
+      break;
+    case AttackMsg::THRUST:
+      swingMsg("thrust");
+      break;
+    case AttackMsg::WAVE:
+      swingMsg("wave");
+      break;
+    case AttackMsg::KICK:
+      biteMsg("kick", "kicks");
+      break;
+    case AttackMsg::BITE:
+      biteMsg("bite", "bites");
+      break;
+    case AttackMsg::TOUCH:
+      biteMsg("touch", "touches");
+      break;
+  }
+}

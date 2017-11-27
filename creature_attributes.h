@@ -47,7 +47,7 @@ struct AdjectiveInfo;
 class CreatureAttributes {
   public:
   CreatureAttributes(function<void(CreatureAttributes&)>);
-  CreatureAttributes(const CreatureAttributes& other) = default;
+  CreatureAttributes(CreatureAttributes&& other) = default;
   ~CreatureAttributes();
   SERIALIZATION_DECL(CreatureAttributes)
 
@@ -90,11 +90,9 @@ class CreatureAttributes {
   bool considerTimeout(LastingEffect, GlobalTime current);
   void addLastingEffect(LastingEffect, GlobalTime endtime);
   optional<GlobalTime> getLastAffected(LastingEffect, GlobalTime currentGlobalTime) const;
-  AttackType getAttackType(WConstItem weapon) const;
-  optional<Effect> getAttackEffect() const;
   bool canSleep() const;
   bool isInnocent() const;
-  void consume(WCreature self, const CreatureAttributes& other);
+  void consume(WCreature self, CreatureAttributes& other);
   optional<SpawnType> getSpawnType() const; 
   const MinionTaskMap& getMinionTasks() const;
   MinionTaskMap& getMinionTasks();
@@ -115,8 +113,6 @@ class CreatureAttributes {
   HeapAllocated<Body> SERIAL(body);
   optional<string> SERIAL(chatReactionFriendly);
   optional<string> SERIAL(chatReactionHostile);
-  optional<AttackType> SERIAL(barehandedAttack);
-  HeapAllocated<optional<Effect>> SERIAL(attackEffect);
   HeapAllocated<optional<Effect>> SERIAL(passiveAttack);
   Gender SERIAL(gender) = Gender::male;
   optional<SpawnType> SERIAL(spawnType);

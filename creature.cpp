@@ -48,6 +48,7 @@
 #include "furniture.h"
 #include "creature_debt.h"
 #include "message_generator.h"
+#include "weapon_info.h"
 
 template <class Archive> 
 void Creature::serialize(Archive& ar, const unsigned int version) { 
@@ -65,13 +66,13 @@ SERIALIZABLE(Creature)
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Creature)
 
-Creature::Creature(const ViewObject& object, TribeId t, const CreatureAttributes& attr)
-    : Renderable(object), attributes(attr), tribe(t) {
+Creature::Creature(const ViewObject& object, TribeId t, CreatureAttributes attr)
+    : Renderable(object), attributes(std::move(attr)), tribe(t) {
   modViewObject().setCreatureId(getUniqueId());
 }
 
-Creature::Creature(TribeId t, const CreatureAttributes& attr)
-    : Creature(attr.createViewObject(), t, attr) {
+Creature::Creature(TribeId t, CreatureAttributes attr)
+    : Creature(attr.createViewObject(), t, std::move(attr)) {
 }
 
 Creature::~Creature() {
@@ -285,16 +286,17 @@ void Creature::takeItems(vector<PItem> items, WCreature from) {
   getController()->onItemsGiven(ref, from);
 }
 
-void Creature::you(MsgType type, const vector<string>& param) const {
-  getController()->getMessageGenerator().add(this, type, param);
-}
-
 void Creature::you(MsgType type, const string& param) const {
   getController()->getMessageGenerator().add(this, type, param);
 }
 
 void Creature::you(const string& param) const {
   getController()->getMessageGenerator().add(this, param);
+}
+
+void Creature::verb(const char* second, const char* third, const std::string& param) {
+  secondPerson("You "_s + second + " " + param);
+  thirdPerson(getName().the() + " " + third + " "_s + param);
 }
 
 void Creature::secondPerson(const PlayerMessage& message) const {
@@ -513,7 +515,7 @@ bool Creature::canEquipIfEmptySlot(WConstItem item, string* reason) const {
       *reason = "You have no healthy arms!";
     return false;
   }
-  if (getBody().numGood(BodyPart::ARM) == 1 && item->isWieldedTwoHanded()) {
+  if (getBody().numGood(BodyPart::ARM) == 1 && item->getWeaponInfo().twoHanded) {
     if (reason)
       *reason = "You need two hands to wield " + item->getAName() + "!";
     return false;
@@ -705,7 +707,8 @@ int simulAttackPen(int attackers) {
 int Creature::getAttr(AttrType type) const {
   double def = getBody().modifyAttr(type, attributes->getRawAttr(type));
   for (WItem item : equipment->getAllEquipped())
-    def += item->getModifier(type);
+    if (item->getClass() != ItemClass::WEAPON || type != item->getWeaponInfo().meleeAttackAttr)
+      def += item->getModifier(type);
   LastingEffects::modifyAttr(this, type, def);
   return max(0, (int) def);
 }
@@ -817,40 +820,12 @@ void Creature::tick() {
   }
 }
 
-static string getAttackParam(AttackType type) {
-  switch (type) {
-    case AttackType::CUT: return "cut";
-    case AttackType::STAB: return "stab";
-    case AttackType::CRUSH: return "crush";
-    case AttackType::PUNCH: return "punch";
-    case AttackType::EAT:
-    case AttackType::BITE: return "bite";
-    case AttackType::HIT: return "hit";
-    case AttackType::SHOOT: return "shot";
-    case AttackType::SPELL: return "spell";
-    case AttackType::POSSESS: return "touch";
-  }
-}
-
-static MsgType getAttackMsg(AttackType type, bool weapon, AttackLevel level) {
-  if (weapon)
-    return type == AttackType::STAB ? MsgType::THRUST_WEAPON : MsgType::SWING_WEAPON;
-  switch (type) {
-    case AttackType::EAT:
-    case AttackType::BITE: return MsgType::BITE;
-    case AttackType::PUNCH: return level == AttackLevel::LOW ? MsgType::KICK : MsgType::PUNCH;
-    case AttackType::HIT: return MsgType::HIT;
-    case AttackType::POSSESS: return MsgType::TOUCH;
-    default: FATAL << "Unhandled barehanded attack: " << int(type);
-  }
-  return MsgType(0);
-}
-
 void Creature::dropWeapon() {
-  if (auto weapon = getWeapon()) {
-    you(MsgType::DROP_WEAPON, weapon->getName());
-    getPosition().dropItem(equipment->removeItem(weapon, this));
-  }
+  if (auto weapon = getWeapon())
+    if (equipment->hasItem(weapon)) {
+      you(MsgType::DROP_WEAPON, weapon->getName());
+      getPosition().dropItem(equipment->removeItem(weapon, this));
+    }
 }
 
 CreatureAction Creature::execute(WCreature c) const {
@@ -870,46 +845,27 @@ CreatureAction Creature::attack(WCreature other, optional<AttackParams> attackPa
   Vec2 dir = getPosition().getDir(other->getPosition());
   if (dir.length8() != 1)
     return CreatureAction();
-  return CreatureAction(this, [=] (WCreature self) {
-  INFO << getName().the() << " attacking " << other->getName().the();
   auto weapon = getWeapon();
-  auto damageAttr = weapon ? weapon->getMeleeAttackAttr() : AttrType::DAMAGE;
-  int damage = getAttr(damageAttr);
-  auto timeSpent = 1_visible;
-  vector<string> attackAdjective;
-  if (attackParams && attackParams->mod)
-    switch (*attackParams->mod) {
-      case AttackParams::WILD: 
-        damage *= 1.2;
-        //timeSpent *= 1.5;
-        attackAdjective.push_back("wildly");
-        break;
-      case AttackParams::SWIFT: 
-        damage *= 0.8;
-        //timeSpent *= 0.7;
-        attackAdjective.push_back("swiftly");
-        break;
-    }
-  AttackLevel attackLevel = Random.choose(getBody().getAttackLevels());
-  if (attackParams && attackParams->level)
-    attackLevel = *attackParams->level;
-  Attack attack(self, attackLevel, attributes->getAttackType(getWeapon()), damage, damageAttr,
-      getWeapon() ? getWeapon()->getAttackEffect() : attributes->getAttackEffect());
-  const string enemyName = other->getController()->getMessageGenerator().getEnemyName(other);
-  if (getWeapon()) {
-    attackAdjective.push_front(getWeapon()->getName());
-    attackAdjective.push_back("at " + enemyName);
-    you(getAttackMsg(attack.type, true, attack.level), attackAdjective);
+  if (!weapon)
+    return CreatureAction("No available weapon or intrinsic attack");
+  return CreatureAction(this, [=] (WCreature self) {
+    INFO << getName().the() << " attacking " << other->getName().the();
+    auto damageAttr = weapon->getWeaponInfo().meleeAttackAttr;
+    int damage = getAttr(damageAttr) + weapon->getModifier(damageAttr);
+    auto timeSpent = 1_visible;
+    AttackLevel attackLevel = Random.choose(getBody().getAttackLevels());
+    if (attackParams && attackParams->level)
+      attackLevel = *attackParams->level;
+    Attack attack(self, attackLevel, weapon->getWeaponInfo().attackType, damage, damageAttr,
+        weapon->getWeaponInfo().attackEffect);
+    string enemyName = other->getController()->getMessageGenerator().getEnemyName(other);
     if (!canSee(other))
-      you(MsgType::HIT, "something");
-  } else {
-    attackAdjective.push_front(enemyName);
-    you(getAttackMsg(attack.type, false, attack.level), attackAdjective);
-  }
-  other->takeDamage(attack);
-  auto oldTime = getLocalTime();
-  self->spendTime(timeSpent);
-  self->addMovementInfo({dir, oldTime, getLocalTime(), MovementInfo::ATTACK});
+      enemyName = "something";
+    weapon->getAttackMsg(this, enemyName);
+    other->takeDamage(attack);
+    auto oldTime = getLocalTime();
+    self->spendTime(timeSpent);
+    self->addMovementInfo({dir, oldTime, getLocalTime(), MovementInfo::ATTACK});
   });
 }
 
@@ -942,12 +898,6 @@ bool Creature::takeDamage(const Attack& attack) {
       for (Position p : visibleCreatures)
         if (p.dist8(position) < 10 && p.getCreature() && !p.getCreature()->isDead())
           p.getCreature()->removeEffect(LastingEffect::SLEEP);
-    if (attack.type == AttackType::POSSESS) {
-      you(MsgType::ARE, "possessed by " + attacker->getName().the());
-      attacker->dieNoReason(Creature::DropType::NOTHING);
-      addEffect(LastingEffect::INSANITY, 10_visible);
-      return false;
-    }
     lastDamageType = getExperienceType(attack.damageType);
   }
   double defense = getAttr(AttrType::DEFENSE);
@@ -961,7 +911,7 @@ bool Creature::takeDamage(const Attack& attack) {
     if (attributes->getBody().takeDamage(attack, this, damage))
       return true;
   } else
-    you(MsgType::GET_HIT_NODAMAGE, getAttackParam(attack.type));
+    you(MsgType::GET_HIT_NODAMAGE);
   if (attack.effect)
     attack.effect->applyToCreature(this, attack.attacker);
   for (LastingEffect effect : ENUM_ALL(LastingEffect))
@@ -1341,7 +1291,7 @@ CreatureAction Creature::consume(WCreature other) const {
 WItem Creature::getWeapon() const {
   vector<WItem> it = equipment->getSlotItems(EquipmentSlot::WEAPON);
   if (it.empty())
-    return nullptr;
+    return getBody().getIntrinsicWeapon();
   else
     return it.getOnlyElement();
 }
@@ -1382,7 +1332,7 @@ CreatureAction Creature::throwItem(WItem item, Vec2 direction) const {
     FATAL << "Item too heavy.";
   int damage = getAttr(AttrType::RANGED_DAMAGE) + item->getModifier(AttrType::RANGED_DAMAGE);
   return CreatureAction(this, [=](WCreature self) {
-    Attack attack(self, Random.choose(getBody().getAttackLevels()), item->getAttackType(), damage, AttrType::DAMAGE);
+    Attack attack(self, Random.choose(getBody().getAttackLevels()), item->getWeaponInfo().attackType, damage, AttrType::DAMAGE);
     secondPerson("You throw " + item->getAName(false, this));
     thirdPerson(getName().the() + " throws " + item->getAName());
     self->getPosition().throwItem(self->equipment->removeItem(item, self), attack, dist, direction, getVision().getId());
@@ -1560,92 +1510,6 @@ CreatureAction Creature::moveAway(Position pos, bool pathfinding) {
 
 bool Creature::atTarget() const {
   return shortestPath && getPosition() == shortestPath->getTarget();
-}
-
-void Creature::youHit(BodyPart part, AttackType type) const {
-  switch (part) {
-    case BodyPart::BACK:
-        switch (type) {
-          case AttackType::SHOOT: you(MsgType::ARE, "shot in the back!"); break;
-          case AttackType::BITE: you(MsgType::ARE, "bitten in the neck!"); break;
-          case AttackType::CUT: you(MsgType::YOUR, "throat is cut!"); break;
-          case AttackType::CRUSH: you(MsgType::YOUR, "spine is crushed!"); break;
-          case AttackType::PUNCH: you(MsgType::YOUR, "neck is broken!"); break;
-          case AttackType::HIT: you(MsgType::ARE, "hit in the back of the head!"); break;
-          case AttackType::STAB: you(MsgType::ARE, "stabbed in the "_s + 
-                                     Random.choose("back"_s, "neck"_s)); break;
-          case AttackType::SPELL: you(MsgType::ARE, "ripped to pieces!"); break;
-          default: FATAL << "Unhandled attack type " << int(type);
-        }
-        break;
-    case BodyPart::HEAD: 
-        switch (type) {
-          case AttackType::SHOOT: you(MsgType::ARE, "shot in the " +
-                                      Random.choose("eye"_s, "neck"_s, "forehead"_s) + "!"); break;
-          case AttackType::BITE: you(MsgType::YOUR, "head is bitten off!"); break;
-          case AttackType::CUT: you(MsgType::YOUR, "head is chopped off!"); break;
-          case AttackType::CRUSH: you(MsgType::YOUR, "skull is shattered!"); break;
-          case AttackType::PUNCH: you(MsgType::YOUR, "neck is broken!"); break;
-          case AttackType::HIT: you(MsgType::ARE, "hit in the head!"); break;
-          case AttackType::STAB: you(MsgType::ARE, "stabbed in the eye!"); break;
-          case AttackType::SPELL: you(MsgType::YOUR, "head is ripped to pieces!"); break;
-          default: FATAL << "Unhandled attack type " << int(type);
-        }
-        break;
-    case BodyPart::TORSO:
-        switch (type) {
-          case AttackType::SHOOT: you(MsgType::YOUR, "shot in the heart!"); break;
-          case AttackType::BITE: you(MsgType::YOUR, "internal organs are ripped out!"); break;
-          case AttackType::CUT: you(MsgType::ARE, "cut in half!"); break;
-          case AttackType::STAB: you(MsgType::ARE, "stabbed in the " +
-                                     Random.choose("stomach"_s, "heart"_s) + "!"); break;
-          case AttackType::CRUSH: you(MsgType::YOUR, "ribs and internal organs are crushed!"); break;
-          case AttackType::HIT: you(MsgType::ARE, "hit in the chest!"); break;
-          case AttackType::PUNCH: you(MsgType::YOUR, "stomach receives a deadly blow!"); break;
-          case AttackType::SPELL: you(MsgType::ARE, "ripped to pieces!"); break;
-          default: FATAL << "Unhandled attack type " << int(type);
-        }
-        break;
-    case BodyPart::ARM:
-        switch (type) {
-          case AttackType::SHOOT: you(MsgType::YOUR, "shot in the arm!"); break;
-          case AttackType::BITE: you(MsgType::YOUR, "arm is bitten off!"); break;
-          case AttackType::CUT: you(MsgType::YOUR, "arm is chopped off!"); break;
-          case AttackType::STAB: you(MsgType::ARE, "stabbed in the arm!"); break;
-          case AttackType::CRUSH: you(MsgType::YOUR, "arm is smashed!"); break;
-          case AttackType::HIT: you(MsgType::ARE, "hit in the arm!"); break;
-          case AttackType::PUNCH: you(MsgType::YOUR, "arm is broken!"); break;
-          case AttackType::SPELL: you(MsgType::YOUR, "arm is ripped to pieces!"); break;
-          default: FATAL << "Unhandled attack type " << int(type);
-        }
-        break;
-    case BodyPart::WING:
-        switch (type) {
-          case AttackType::SHOOT: you(MsgType::YOUR, "shot in the wing!"); break;
-          case AttackType::BITE: you(MsgType::YOUR, "wing is bitten off!"); break;
-          case AttackType::CUT: you(MsgType::YOUR, "wing is chopped off!"); break;
-          case AttackType::STAB: you(MsgType::ARE, "stabbed in the wing!"); break;
-          case AttackType::CRUSH: you(MsgType::YOUR, "wing is smashed!"); break;
-          case AttackType::HIT: you(MsgType::ARE, "hit in the wing!"); break;
-          case AttackType::PUNCH: you(MsgType::YOUR, "wing is broken!"); break;
-          case AttackType::SPELL: you(MsgType::YOUR, "wing is ripped to pieces!"); break;
-          default: FATAL << "Unhandled attack type " << int(type);
-        }
-        break;
-    case BodyPart::LEG:
-        switch (type) {
-          case AttackType::SHOOT: you(MsgType::YOUR, "shot in the leg!"); break;
-          case AttackType::BITE: you(MsgType::YOUR, "leg is bitten off!"); break;
-          case AttackType::CUT: you(MsgType::YOUR, "leg is cut off!"); break;
-          case AttackType::STAB: you(MsgType::YOUR, "stabbed in the leg!"); break;
-          case AttackType::CRUSH: you(MsgType::YOUR, "knee is crushed!"); break;
-          case AttackType::HIT: you(MsgType::ARE, "hit in the leg!"); break;
-          case AttackType::PUNCH: you(MsgType::YOUR, "leg is broken!"); break;
-          case AttackType::SPELL: you(MsgType::YOUR, "leg is ripped to pieces!"); break;
-          default: FATAL << "Unhandled attack type " << int(type);
-        }
-        break;
-  }
 }
 
 bool Creature::isUnknownAttacker(WConstCreature c) const {

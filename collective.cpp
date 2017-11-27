@@ -355,7 +355,7 @@ bool Collective::isConquered() const {
 
 vector<WCreature> Collective::getConsumptionTargets(WCreature consumer) const {
   vector<WCreature> ret;
-  for (WCreature c : getCreatures(MinionTrait::FIGHTER))
+  for (WCreature c : getCreatures())
     if (consumer->canConsume(c) && c != getLeader())
       ret.push_back(c);
   return ret;

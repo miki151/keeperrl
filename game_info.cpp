@@ -48,8 +48,6 @@ PlayerInfo::PlayerInfo(WConstCreature c) : bestAttack(c) {
   name = c->getName().bare();
   title = c->getName().title();
   description = capitalFirst(c->getAttributes().getDescription());
-  WItem weapon = c->getWeapon();
-  weaponName = weapon ? weapon->getName() : "";
   viewId = c->getViewObject().id();
   morale = c->getMorale();
   levelName = c->getLevel()->getName();

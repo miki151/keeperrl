@@ -514,14 +514,8 @@ void Player::extendedAttackAction(WCreature other) {
       case AttackLevel::MIDDLE: elems.push_back(ListElem("Middle").setTip("Aim at middle parts of the body.")); break;
       case AttackLevel::HIGH: elems.push_back(ListElem("High").setTip("Aim at higher parts of the body.")); break;
     }
-  elems.push_back(ListElem("Wild").setTip("+20\% damage, -20\% accuracy, +50\% time spent."));
-  elems.push_back(ListElem("Swift").setTip("-20\% damage, +20\% accuracy, -30\% time spent."));
-  if (auto ind = getView()->chooseFromList("Choose attack parameters:", elems)) {
-    if (*ind < levels.size())
-      getCreature()->attack(other, CONSTRUCT(Creature::AttackParams, c.level = levels[*ind];)).perform(getCreature());
-    else
-      getCreature()->attack(other, CONSTRUCT(Creature::AttackParams, c.mod = Creature::AttackParams::Mod(*ind - levels.size());)).perform(getCreature());
-  }
+  if (auto ind = getView()->chooseFromList("Choose attack parameters:", elems))
+    getCreature()->attack(other, CONSTRUCT(Creature::AttackParams, c.level = levels[*ind];)).perform(getCreature());
 }
 
 void Player::retireMessages() {

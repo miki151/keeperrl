@@ -1333,6 +1333,7 @@ class HeapAllocated {
   HeapAllocated(T&& o) : elem(new T(std::move(o))) {}
 
   HeapAllocated(const HeapAllocated& o) : elem(new T(*o)) {}
+  HeapAllocated(HeapAllocated&& o) : elem(std::move(o.elem)) {}
 
   T* operator -> () {
     return elem.get();

@@ -29,7 +29,7 @@ class vector {
   vector(InputIter begin, InputIter end) : impl(begin, end) {}
 
   vector(const std::vector<T>& v) : impl(v) {}
-  vector(std::vector<T>&& v) : impl(std::move(v)) {}
+  vector(std::vector<T>&& v) noexcept : impl(std::move(v)) {}
 
   vector(int size, const T& elem) : impl(size, elem) {}
   vector(int size) : impl(size) {}

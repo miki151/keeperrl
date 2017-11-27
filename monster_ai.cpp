@@ -619,13 +619,7 @@ class Fighter : public Behaviour {
   }
 
   Creature::AttackParams getAttackParams(WConstCreature enemy) {
-    int damDiff = enemy->getAttr(AttrType::DEFENSE) - creature->getAttr(AttrType::DAMAGE);
-    if (damDiff > 10)
-      return CONSTRUCT(Creature::AttackParams, c.mod = Creature::AttackParams::WILD;);
-    else if (damDiff < -10)
-      return CONSTRUCT(Creature::AttackParams, c.mod = Creature::AttackParams::SWIFT;);
-    else
-      return Creature::AttackParams {};
+    return Creature::AttackParams {};
   }
 
   SERIALIZATION_CONSTRUCTOR(Fighter)

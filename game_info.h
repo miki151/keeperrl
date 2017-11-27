@@ -91,7 +91,6 @@ class PlayerInfo {
   string description;
   string HASH(levelName);
   int HASH(positionHash);
-  string HASH(weaponName);
   struct Effect {
     string HASH(name);
     string HASH(help);
@@ -146,7 +145,7 @@ class PlayerInfo {
   };
   vector<Action> HASH(actions);
   optional<double> HASH(carryLimit);
-  HASH_ALL(attributes, skills, firstName, name, title, levelInfo, levelName, positionHash, weaponName, effects, spells, lyingItems, inventory, team, minionTasks, creatureId, morale, viewId, actions, commands, debt, bestAttack, carryLimit)
+  HASH_ALL(attributes, skills, firstName, name, title, levelInfo, levelName, positionHash, effects, spells, lyingItems, inventory, team, minionTasks, creatureId, morale, viewId, actions, commands, debt, bestAttack, carryLimit)
 };
 
 struct ImmigrantDataInfo {

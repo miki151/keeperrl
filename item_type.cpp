@@ -26,6 +26,42 @@
 ItemType::ItemType(const ItemType&) = default;
 ItemType::ItemType(ItemType&) = default;
 ItemType::ItemType(ItemType&&) = default;
+
+ItemType ItemType::touch(Effect effect) {
+  return ItemType::Intrinsic{"touch", 0, WeaponInfo{false, AttackType::HIT, AttrType::DAMAGE, effect, AttackMsg::TOUCH}};
+}
+
+ItemType ItemType::legs(int damage) {
+  return ItemType::Intrinsic{"legs", damage,
+      WeaponInfo{false, AttackType::HIT, AttrType::DAMAGE, none, AttackMsg::KICK}};
+}
+
+static ItemType fistsBase(int damage, optional<Effect> effect) {
+  return ItemType::Intrinsic{"fists", damage,
+      WeaponInfo{false, AttackType::HIT, AttrType::DAMAGE, effect, AttackMsg::SWING}};
+}
+
+ItemType ItemType::fists(int damage) {
+  return fistsBase(damage, none);
+}
+
+ItemType ItemType::fists(int damage, Effect effect) {
+  return fistsBase(damage, effect);
+}
+
+static ItemType fangsBase(int damage, optional<Effect> effect) {
+  return ItemType::Intrinsic{"fangs", damage,
+      WeaponInfo{false, AttackType::BITE, AttrType::DAMAGE, effect, AttackMsg::BITE}};
+}
+
+ItemType ItemType::fangs(int damage) {
+  return fangsBase(damage, none);
+}
+
+ItemType ItemType::fangs(int damage, Effect effect) {
+  return fangsBase(damage, effect);
+}
+
 ItemType::ItemType() {}
 
 ItemType& ItemType::operator = (const ItemType&) = default;
@@ -68,8 +104,8 @@ class Corpse : public Item {
   }
 
   virtual void applySpecial(WCreature c) override {
-    WItem it = c->getWeapon();
-    if (it && it->getAttackType() == AttackType::CUT) {
+    auto it = c->getWeapon();
+    if (it && it->getWeaponInfo().attackType == AttackType::CUT) {
       c->you(MsgType::DECAPITATE, getTheName());
       setName("decapitated " + getName());
     } else {
@@ -360,31 +396,31 @@ static void addPrefix(ItemAttributes& i, WeaponPrefix prefix) {
       i.name = "silver " + *i.name;
       if (i.plural)
         i.plural = "silver " + *i.plural;
-      i.attackEffect = Effect(Effect::SilverDamage{});
+      i.weaponInfo.attackEffect = Effect(Effect::SilverDamage{});
       break;
     case WeaponPrefix::FLAMING:
       i.name = "flaming " + *i.name;
       if (i.plural)
         i.plural = "flaming " + *i.plural;
-      i.attackEffect = Effect(Effect::Fire{});
+      i.weaponInfo.attackEffect = Effect(Effect::Fire{});
       break;
     case WeaponPrefix::POISONOUS:
       i.name = "poisonous " + *i.name;
       if (i.plural)
         i.plural = "poisonous " + *i.plural;
-      i.attackEffect = Effect(Effect::Lasting{LastingEffect::POISON});
+      i.weaponInfo.attackEffect = Effect(Effect::Lasting{LastingEffect::POISON});
       break;
     case WeaponPrefix::GREAT:
       i.name = "great " + *i.name;
       if (i.plural)
         i.plural = "great " + *i.plural;
-      i.attackEffect = Effect(Effect::Lasting{LastingEffect::BLEEDING});
+      i.weaponInfo.attackEffect = Effect(Effect::Lasting{LastingEffect::BLEEDING});
       break;
     case WeaponPrefix::LEAD_FILLED:
       i.name = "lead-filled " + *i.name;
       if (i.plural)
         i.plural = "lead-filled " + *i.plural;
-      i.attackEffect = Effect(Effect::Lasting{LastingEffect::COLLAPSED});
+      i.weaponInfo.attackEffect = Effect(Effect::Lasting{LastingEffect::COLLAPSED});
       break;
   }
 }
@@ -423,9 +459,40 @@ ItemAttributes ItemType::Knife::getAttributes() const {
       i.equipmentSlot = EquipmentSlot::WEAPON;
       i.weight = 0.3;
       i.modifiers[AttrType::DAMAGE] = 5 + maybePlusMinusOne(4);
-      i.attackTime = 0.7;
       i.price = 1;
-      i.attackType = AttackType::STAB;
+      i.weaponInfo.attackType = AttackType::STAB;
+      i.weaponInfo.attackMsg = AttackMsg::THRUST;
+  );
+}
+
+
+
+ItemAttributes ItemType::Intrinsic::getAttributes() const {
+  return ITATTR(
+      i.viewId = ViewId::KNIFE;
+      i.name = name;
+      i.itemClass = ItemClass::WEAPON;
+      i.equipmentSlot = EquipmentSlot::WEAPON;
+      i.weight = 0.3;
+      i.modifiers[AttrType::DAMAGE] = 5 + maybePlusMinusOne(4);
+      i.price = 1;
+      i.weaponInfo = weaponInfo;
+  );
+}
+
+ItemAttributes ItemType::UnicornHorn::getAttributes() const {
+  return ITATTR(
+      i.viewId = ViewId::KNIFE;
+      i.name = "horn";
+      i.plural = "horn"_s;
+      i.itemClass = ItemClass::WEAPON;
+      i.equipmentSlot = EquipmentSlot::WEAPON;
+      i.weight = 0.3;
+      i.modifiers[AttrType::DAMAGE] = 5 + maybePlusMinusOne(4);
+      i.weaponInfo.attackEffect = Effect(Effect::Lasting{LastingEffect::POISON});
+      i.price = 1;
+      i.weaponInfo.attackType = AttackType::STAB;
+      i.weaponInfo.attackMsg = AttackMsg::THRUST;
   );
 }
 
@@ -438,9 +505,9 @@ ItemAttributes ItemType::SpecialKnife::getAttributes() const {
       i.equipmentSlot = EquipmentSlot::WEAPON;
       i.weight = 0.3;
       i.modifiers[AttrType::DAMAGE] = 5 + maybePlusMinusOne(4);
-      i.attackTime = 0.7;
       i.price = 1;
-      i.attackType = AttackType::STAB;
+      i.weaponInfo.attackType = AttackType::STAB;
+      i.weaponInfo.attackMsg = AttackMsg::THRUST;
       addPrefix(i, WeaponPrefix::POISONOUS);
       makeArtifact(i);
   );
@@ -455,7 +522,8 @@ ItemAttributes ItemType::Spear::getAttributes() const {
       i.weight = 1.5;
       i.modifiers[AttrType::DAMAGE] = 10 + maybePlusMinusOne(4);
       i.price = 4;
-      i.attackType = AttackType::STAB;
+      i.weaponInfo.attackType = AttackType::STAB;
+      i.weaponInfo.attackMsg = AttackMsg::THRUST;
   );
 }
 
@@ -468,7 +536,7 @@ ItemAttributes ItemType::Sword::getAttributes() const {
       i.weight = 1.5;
       i.modifiers[AttrType::DAMAGE] = 8 + maybePlusMinusOne(4);
       i.price = 4;
-      i.attackType = AttackType::CUT;
+      i.weaponInfo.attackType = AttackType::CUT;
   );
 }
 
@@ -481,7 +549,7 @@ ItemAttributes ItemType::SpecialSword::getAttributes() const {
       i.weight = 1.5;
       i.modifiers[AttrType::DAMAGE] = 8 + maybePlusMinusOne(4);
       i.price = 4;
-      i.attackType = AttackType::CUT;
+      i.weaponInfo.attackType = AttackType::CUT;
       addPrefix(i, WeaponPrefix::FLAMING);
       makeArtifact(i);
   );
@@ -496,7 +564,7 @@ ItemAttributes ItemType::SteelSword::getAttributes() const {
       i.weight = 1.2;
       i.modifiers[AttrType::DAMAGE] = 11 + maybePlusMinusOne(4);
       i.price = 20;
-      i.attackType = AttackType::CUT;
+      i.weaponInfo.attackType = AttackType::CUT;
   );
 }
 
@@ -509,7 +577,7 @@ ItemAttributes ItemType::ElvenSword::getAttributes() const {
       i.weight = 1;
       i.modifiers[AttrType::DAMAGE] = 9 + maybePlusMinusOne(4);
       i.price = 8;
-      i.attackType = AttackType::CUT;
+      i.weaponInfo.attackType = AttackType::CUT;
   );
 }
 
@@ -522,7 +590,7 @@ ItemAttributes ItemType::SpecialElvenSword::getAttributes() const {
       i.weight = 1;
       i.modifiers[AttrType::DAMAGE] = 9 + maybePlusMinusOne(4);
       i.price = 8;
-      i.attackType = AttackType::CUT;
+      i.weaponInfo.attackType = AttackType::CUT;
       addPrefix(i, WeaponPrefix::SILVER);
       makeArtifact(i);
   );
@@ -536,10 +604,9 @@ ItemAttributes ItemType::BattleAxe::getAttributes() const {
       i.equipmentSlot = EquipmentSlot::WEAPON;
       i.weight = 8;
       i.modifiers[AttrType::DAMAGE] = 14 + maybePlusMinusOne(4);
-      i.attackTime = 1.2;
-      i.twoHanded = true;
+      i.weaponInfo.twoHanded = true;
       i.price = 30;
-      i.attackType = AttackType::CUT;
+      i.weaponInfo.attackType = AttackType::CUT;
   );
 }
 
@@ -551,10 +618,9 @@ ItemAttributes ItemType::SpecialBattleAxe::getAttributes() const {
       i.equipmentSlot = EquipmentSlot::WEAPON;
       i.weight = 8;
       i.modifiers[AttrType::DAMAGE] = 14 + maybePlusMinusOne(4);
-      i.attackTime = 1.2;
-      i.twoHanded = true;
+      i.weaponInfo.twoHanded = true;
       i.price = 30;
-      i.attackType = AttackType::CUT;
+      i.weaponInfo.attackType = AttackType::CUT;
       addPrefix(i, WeaponPrefix::GREAT);
       makeArtifact(i);
   );
@@ -568,10 +634,9 @@ ItemAttributes ItemType::SteelBattleAxe::getAttributes() const {
       i.equipmentSlot = EquipmentSlot::WEAPON;
       i.weight = 7;
       i.modifiers[AttrType::DAMAGE] = 18 + maybePlusMinusOne(4);
-      i.attackTime = 1.2;
-      i.twoHanded = true;
+      i.weaponInfo.twoHanded = true;
       i.price = 150;
-      i.attackType = AttackType::CUT;
+      i.weaponInfo.attackType = AttackType::CUT;
   );
 }
 
@@ -583,10 +648,9 @@ ItemAttributes ItemType::WarHammer::getAttributes() const {
       i.equipmentSlot = EquipmentSlot::WEAPON;
       i.weight = 8;
       i.modifiers[AttrType::DAMAGE] = 12 + maybePlusMinusOne(4);
-      i.attackTime = 1.2;
-      i.twoHanded = true;
+      i.weaponInfo.twoHanded = true;
       i.price = 20;
-      i.attackType = AttackType::CRUSH;
+      i.weaponInfo.attackType = AttackType::CRUSH;
   );
 }
 
@@ -598,10 +662,9 @@ ItemAttributes ItemType::SpecialWarHammer::getAttributes() const {
       i.equipmentSlot = EquipmentSlot::WEAPON;
       i.weight = 8;
       i.modifiers[AttrType::DAMAGE] = 12 + maybePlusMinusOne(4);
-      i.attackTime = 1.2;
-      i.twoHanded = true;
+      i.weaponInfo.twoHanded = true;
       i.price = 20;
-      i.attackType = AttackType::CRUSH;
+      i.weaponInfo.attackType = AttackType::CRUSH;
       addPrefix(i, WeaponPrefix::LEAD_FILLED);
       makeArtifact(i);
   );
@@ -616,7 +679,7 @@ ItemAttributes ItemType::Club::getAttributes() const {
       i.weight = 2;
       i.modifiers[AttrType::DAMAGE] = 4 + maybePlusMinusOne(4);
       i.price = 2;
-      i.attackType = AttackType::CRUSH;
+      i.weaponInfo.attackType = AttackType::CRUSH;
   );
 }
 
@@ -628,9 +691,9 @@ ItemAttributes ItemType::HeavyClub::getAttributes() const {
       i.equipmentSlot = EquipmentSlot::WEAPON;
       i.weight = 8;
       i.modifiers[AttrType::DAMAGE] = 10 + maybePlusMinusOne(4);
-      i.twoHanded = true;
+      i.weaponInfo.twoHanded = true;
       i.price = 4;
-      i.attackType = AttackType::CRUSH;
+      i.weaponInfo.attackType = AttackType::CRUSH;
   );
 }
 
@@ -642,9 +705,10 @@ ItemAttributes ItemType::WoodenStaff::getAttributes() const {
       i.equipmentSlot = EquipmentSlot::WEAPON;
       i.weight = 1.5;
       i.modifiers[AttrType::SPELL_DAMAGE] = 4 + maybePlusMinusOne(4);
-      i.meleeAttackAttr = AttrType::SPELL_DAMAGE;
+      i.weaponInfo.meleeAttackAttr = AttrType::SPELL_DAMAGE;
       i.price = 30;
-      i.attackType = AttackType::SPELL;
+      i.weaponInfo.attackType = AttackType::SPELL;
+      i.weaponInfo.attackMsg = AttackMsg::WAVE;
   );
 }
 
@@ -656,9 +720,10 @@ ItemAttributes ItemType::IronStaff::getAttributes() const {
       i.equipmentSlot = EquipmentSlot::WEAPON;
       i.weight = 1.5;
       i.modifiers[AttrType::SPELL_DAMAGE] = 8 + maybePlusMinusOne(4);
-      i.meleeAttackAttr = AttrType::SPELL_DAMAGE;
+      i.weaponInfo.meleeAttackAttr = AttrType::SPELL_DAMAGE;
       i.price = 60;
-      i.attackType = AttackType::SPELL;
+      i.weaponInfo.attackType = AttackType::SPELL;
+      i.weaponInfo.attackMsg = AttackMsg::WAVE;
   );
 }
 
@@ -670,9 +735,9 @@ ItemAttributes ItemType::Scythe::getAttributes() const {
       i.equipmentSlot = EquipmentSlot::WEAPON;
       i.weight = 5;
       i.modifiers[AttrType::DAMAGE] = 12 + maybePlusMinusOne(4);
-      i.twoHanded = true;
+      i.weaponInfo.twoHanded = true;
       i.price = 20;
-      i.attackType = AttackType::CUT;
+      i.weaponInfo.attackType = AttackType::CUT;
   );
 }
 
@@ -682,7 +747,7 @@ ItemAttributes ItemType::ElvenBow::getAttributes() const {
       i.itemClass = ItemClass::RANGED_WEAPON;
       i.equipmentSlot = EquipmentSlot::RANGED_WEAPON;
       i.rangedWeapon = RangedWeapon(AttrType::RANGED_DAMAGE, "arrow", ViewId::ARROW);
-      i.twoHanded = true;
+      i.weaponInfo.twoHanded = true;
       i.weight = 1;
       i.modifiers[AttrType::RANGED_DAMAGE] = 16;
       i.name = "silver elven bow";
@@ -697,7 +762,7 @@ ItemAttributes ItemType::Bow::getAttributes() const {
       i.itemClass = ItemClass::RANGED_WEAPON;
       i.equipmentSlot = EquipmentSlot::RANGED_WEAPON;
       i.rangedWeapon = RangedWeapon(AttrType::RANGED_DAMAGE, "arrow", ViewId::ARROW);
-      i.twoHanded = true;
+      i.weaponInfo.twoHanded = true;
       i.weight = 1;
       i.modifiers[AttrType::RANGED_DAMAGE] = 10 + maybePlusMinusOne(4);
       i.price = 12;

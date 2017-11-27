@@ -12,7 +12,6 @@ class MessageGenerator {
   enum Type { SECOND_PERSON, THIRD_PERSON, BOULDER, KRAKEN, NONE };
   MessageGenerator(Type);
   void add(WConstCreature, MsgType, const string&);
-  void add(WConstCreature, MsgType, const vector<string>&);
   void add(WConstCreature, const string&);
   void addThirdPerson(WConstCreature, const PlayerMessage&);
   void addSecondPerson(WConstCreature, const PlayerMessage&);

@@ -3,6 +3,7 @@
 #include "enum_variant.h"
 #include "effect.h"
 #include "util.h"
+#include "weapon_info.h"
 
 class ItemAttributes;
 
@@ -20,6 +21,7 @@ class ItemType {
   public:
   SIMPLE_ITEM(SpecialKnife);
   SIMPLE_ITEM(Knife);
+  SIMPLE_ITEM(UnicornHorn);
   SIMPLE_ITEM(Spear);
   SIMPLE_ITEM(Sword);
   SIMPLE_ITEM(SteelSword);
@@ -55,6 +57,19 @@ class ItemType {
   SIMPLE_ITEM(HalloweenCostume);
   SIMPLE_ITEM(BagOfCandies);
 
+  struct Intrinsic {
+    string SERIAL(name);
+    int SERIAL(damage);
+    WeaponInfo SERIAL(weaponInfo);
+    SERIALIZE_ALL(name, damage, weaponInfo)
+    ITEM_TYPE_INTERFACE;
+  };
+  static ItemType touch(Effect);
+  static ItemType legs(int damage);
+  static ItemType fists(int damage);
+  static ItemType fists(int damage, Effect);
+  static ItemType fangs(int damage);
+  static ItemType fangs(int damage, Effect);
   struct Scroll {
     Effect SERIAL(effect);
     SERIALIZE_ALL(effect)
@@ -108,7 +123,8 @@ class ItemType {
       Scythe, Bow, ElvenBow, LeatherArmor, LeatherHelm, TelepathyHelm, ChainArmor, SteelArmor, IronHelm, LeatherBoots,
       IronBoots, SpeedBoots, LevitationBoots, LeatherGloves, StrengthGloves, Robe, Scroll, FireScroll, Potion,
       Mushroom, Amulet, DefenseAmulet, Ring, FirstAidKit, Rock, IronOre, SteelIngot, GoldPiece,
-      WoodPlank, Bone, RandomTechBook, TechBook, TrapItem, AutomatonItem, BagOfCandies, HalloweenCostume);
+      WoodPlank, Bone, RandomTechBook, TechBook, TrapItem, AutomatonItem, BagOfCandies, HalloweenCostume,
+      UnicornHorn, Intrinsic);
 
   template <typename T>
   ItemType(T&& t) : type(std::forward<T>(t)) {}
@@ -129,6 +145,7 @@ class ItemType {
 
   PItem get() const;
   vector<PItem> get(int) const;
+  ~ItemType(){}
 
   private:
   Type SERIAL(type);
