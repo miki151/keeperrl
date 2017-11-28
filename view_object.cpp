@@ -39,13 +39,6 @@ optional<UniqueEntity<Creature>::Id> ViewObject::getCreatureId() const {
   return creatureId;
 }
 
-MovementInfo::MovementInfo(Vec2 dir, LocalTime b, LocalTime e, Type t) : direction(dir), tBegin(b), tEnd(e),
-  type(t) {
-}
-
-MovementInfo::MovementInfo() {
-}
-
 void ViewObject::addMovementInfo(MovementInfo info) {
   movementQueue.add(info);
 }
@@ -58,11 +51,11 @@ MovementInfo ViewObject::getLastMovementInfo() const {
   return movementQueue.getLast();
 }
 
-Vec2 ViewObject::getMovementInfo(double tBegin) const {
+Vec2 ViewObject::getMovementInfo(int moveCounter) const {
   if (!movementQueue.hasAny())
     return Vec2(0, 0);
   CHECK(creatureId);
-  return movementQueue.getTotalMovement(tBegin);
+  return movementQueue.getTotalMovement(moveCounter);
 }
 
 void ViewObject::clearMovementInfo() {
@@ -84,11 +77,11 @@ const MovementInfo& ViewObject::MovementQueue::getLast() const {
   return elems[makeGoodIndex(index - 1)];
 }
 
-Vec2 ViewObject::MovementQueue::getTotalMovement(double tBegin) const {
+Vec2 ViewObject::MovementQueue::getTotalMovement(int moveCounter) const {
   Vec2 ret;
   bool attack = false;
   for (int i : Range(min<int>(totalMoves, elems.size())))
-    if (elems[i].tBegin.getDouble() >= tBegin) {
+    if (elems[i].moveCounter >= moveCounter) {
       if (elems[i].type == MovementInfo::ATTACK/* && ret.length8() == 0*/) {
         attack = true;
         ret = elems[i].direction;

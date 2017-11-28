@@ -142,7 +142,7 @@ class SokobanController : public Monster {
     Vec2 goDir = player->getPosition().getDir(getCreature()->getPosition());
     if (goDir.isCardinal4() && getCreature()->getPosition().plus(goDir).canEnter(
           getCreature()->getMovementType().setForced(true))) {
-      getCreature()->displace(player->getLocalTime(), goDir);
+      getCreature()->displace(player->getTimeInfo(), goDir);
       player->move(goDir).perform(player);
     }
   }
@@ -240,7 +240,7 @@ class KrakenController : public Monster {
     if (father) {
       held->setHeld(father->getCreature());
       Vec2 pullDir = held->getPosition().getDir(getCreature()->getPosition());
-      auto localTime = getCreature()->getLocalTime();
+      auto localTime = getCreature()->getTimeInfo();
       getCreature()->dieNoReason(Creature::DropType::NOTHING);
       held->displace(localTime, pullDir);
     } else {

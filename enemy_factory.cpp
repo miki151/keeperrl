@@ -624,7 +624,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             ), CollectiveConfig::noImmigrants());
     case EnemyId::SOKOBAN:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
-            c.type = SettlementType::ISLAND_VAULT;
+            c.type = SettlementType::CAVE;
             c.inhabitants.leader = random.choose(
                 CreatureId::SPECIAL_HLBN, CreatureId::SPECIAL_HLBW, CreatureId::SPECIAL_HLGN, CreatureId::SPECIAL_HLGW);
             c.tribe = TribeId::getKeeper();

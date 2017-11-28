@@ -146,7 +146,7 @@ class MapGui : public GuiElem {
   struct ScreenMovement {
     milliseconds startTimeReal;
     milliseconds endTimeReal;
-    double startTimeGame;
+    int moveCounter;
   };
   optional<ScreenMovement> screenMovement;
   Table<EnumSet<ViewId>> connectionMap;
@@ -171,7 +171,8 @@ class MapGui : public GuiElem {
   vector<Vec2> tutorialHighlightLow;
   vector<Vec2> tutorialHighlightHigh;
   void drawHealthBar(Renderer&, Vec2 pos, Vec2 size, double health);
-  double lastEndTimeGame = -1000;
+  int lastMoveCounter = -1000;
+  int currentMoveCounter = -1000;
   double getDistanceToEdgeRatio(Vec2);
   struct CenteredCreatureInfo {
     Vec2 pos;

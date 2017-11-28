@@ -22,20 +22,11 @@
 #include "view_layer.h"
 #include "attr_type.h"
 #include "game_time.h"
+#include "movement_info.h"
 
 RICH_ENUM(ViewObjectModifier, PLAYER, HIDDEN, INVISIBLE, ILLUSION, PLANNED,
     TEAM_LEADER_HIGHLIGHT, TEAM_HIGHLIGHT, DRAW_MORALE, ROAD, NO_UP_MOVEMENT, REMEMBER, SPIRIT_DAMAGE, HOSTILE);
 RICH_ENUM(ViewObjectAttribute, WOUNDED, BURNING, WATER_DEPTH, EFFICIENCY, MORALE);
-
-struct MovementInfo {
-  enum Type { MOVE, ATTACK };
-  MovementInfo(Vec2 direction, LocalTime tBegin, LocalTime tEnd, Type);
-  MovementInfo();
-  Vec2 direction;
-  LocalTime tBegin;
-  LocalTime tEnd;
-  Type type;
-};
 
 class ViewObject {
   public:
@@ -77,7 +68,7 @@ class ViewObject {
   void clearMovementInfo();
   bool hasAnyMovementInfo() const;
   MovementInfo getLastMovementInfo() const;
-  Vec2 getMovementInfo(double tBegin) const;
+  Vec2 getMovementInfo(int moveCounter) const;
 
   void setCreatureId(UniqueEntity<Creature>::Id);
   optional<UniqueEntity<Creature>::Id> getCreatureId() const;
@@ -106,7 +97,7 @@ class ViewObject {
     public:
     void add(MovementInfo);
     const MovementInfo& getLast() const;
-    Vec2 getTotalMovement(double tBegin) const;
+    Vec2 getTotalMovement(int moveCounter) const;
     bool hasAny() const;
     void clear();
 

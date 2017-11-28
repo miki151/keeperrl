@@ -63,6 +63,8 @@ class Model : public OwnedObject<Model> {
   LocalTime getLocalTime() const;
   void increaseLocalTime(WCreature, TimeInterval);
   LocalTime getLocalTime(WConstCreature);
+  int getMoveCounter() const;
+  void increaseMoveCounter();
 
   void setGame(WGame);
   WGame getGame() const;
@@ -129,5 +131,6 @@ class Model : public OwnedObject<Model> {
   void checkCreatureConsistency();
   HeapAllocated<optional<ExternalEnemies>> SERIAL(externalEnemies);
   vector<Position> SERIAL(portals);
+  int moveCounter = 0;
 };
 

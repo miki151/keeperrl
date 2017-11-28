@@ -70,7 +70,7 @@ static void airBlast(WCreature who, Position position, Vec2 direction) {
       else
         break;
     if (dist > 0) {
-      c->displace(who->getLocalTime(), direction * dist);
+      c->displace(who->getTimeInfo(), direction * dist);
       c->you(MsgType::ARE, "thrown back");
     }
   }
@@ -577,7 +577,7 @@ void Effect::PlaceFurniture::applyToCreature(WCreature c, WCreature attacker) co
         break;
       }
     if (dest)
-      c->displace(c->getLocalTime(), *dest);
+      c->displace(c->getTimeInfo(), *dest);
     else
       Effect::Teleport{}.applyToCreature(c);
   }

@@ -29,6 +29,7 @@
 #include "options.h"
 #include "drag_and_drop.h"
 #include "game_info.h"
+#include "model.h"
 
 using SDL::SDL_Keysym;
 using SDL::SDL_Keycode;
@@ -400,7 +401,7 @@ Vec2 MapGui::getMovementOffset(const ViewObject& object, Vec2 size, double time,
       curTimeReal <= screenMovement->endTimeReal) {
     state = (double) (curTimeReal - screenMovement->startTimeReal).count() /
           (double) (screenMovement->endTimeReal - screenMovement->startTimeReal).count();
-    dir = object.getMovementInfo(screenMovement->startTimeGame);
+    dir = object.getMovementInfo(screenMovement->moveCounter);
   }
   else if (!screenMovement) {
     MovementInfo info = object.getLastMovementInfo();
@@ -1011,12 +1012,13 @@ void MapGui::updateObjects(CreatureView* view, MapLayout* mapLayout, bool smooth
     mouseOffset = {0, 0};
   }
   keyScrolling = view->getCenterType() == CreatureView::CenterType::NONE;
+  currentTimeGame = view->getAnimationTime();
   bool newTurn = false;
   {
-    double newCurrentTimeGame = smoothMovement ? view->getAnimationTime() : 1000000000;
-    if (currentTimeGame != newCurrentTimeGame) {
-      lastEndTimeGame = currentTimeGame;
-      currentTimeGame = newCurrentTimeGame;
+    int newMoveCounter = smoothMovement ? level->getModel()->getMoveCounter() : 1000000000;
+    if (currentMoveCounter != newMoveCounter) {
+      lastMoveCounter = currentMoveCounter;
+      currentMoveCounter = newMoveCounter;
       newTurn = true;
     }
   }
@@ -1025,7 +1027,7 @@ void MapGui::updateObjects(CreatureView* view, MapLayout* mapLayout, bool smooth
       screenMovement = ScreenMovement {
         clock->getRealMillis(),
         clock->getRealMillis() + milliseconds{100},
-        lastEndTimeGame
+        lastMoveCounter
       };
     }
   } else

@@ -204,15 +204,19 @@ const EntitySet<Creature>& Creature::getKills() const {
   return kills;
 }
 
-void Creature::spendTime(TimeInterval t) {
+MovementInfo::TimeInfo Creature::spendTime(TimeInterval t) {
+  auto ret = getTimeInfo();
   if (isAffected(LastingEffect::SPEED))
     t.tryToHalve();
   if (isAffected(LastingEffect::SLOWED))
     t *= 2;
-  if (!isDead())
-    if (WModel m = position.getModel())
+  if (WModel m = position.getModel()) {
+    if (!isDead())
       m->increaseLocalTime(this, t);
+    m->increaseMoveCounter();
+  }
   hidden = false;
+  return ret;
 }
 
 CreatureAction Creature::forceMove(Vec2 dir) const {
@@ -261,19 +265,18 @@ CreatureAction Creature::move(Position pos) const {
       self->swapPosition(direction);
       return;
     }
-    auto oldTime = getLocalTime();
+    auto timeSpent = 1_visible;
     if (isAffected(LastingEffect::COLLAPSED)) {
       you(MsgType::CRAWL, getPosition().getName());
-      self->spendTime(3_visible);
-    } else
-      self->spendTime();
-    self->addMovementInfo({direction, oldTime, getLocalTime(), MovementInfo::MOVE});
+      timeSpent = 3_visible;
+    }
+    self->addMovementInfo(MovementInfo(direction, self->spendTime(timeSpent), getLocalTime(), MovementInfo::MOVE));
   });
 }
 
-void Creature::displace(LocalTime time, Vec2 dir) {
+void Creature::displace(MovementInfo::TimeInfo timeInfo, Vec2 dir) {
   position.moveCreature(dir);
-  addMovementInfo({dir, time, time + 1_visible, MovementInfo::MOVE});
+  addMovementInfo({dir, timeInfo, timeInfo.begin + 1_visible, MovementInfo::MOVE});
 }
 
 bool Creature::canTakeItems(const vector<WItem>& items) const {
@@ -334,10 +337,9 @@ void Creature::swapPosition(Vec2 direction) {
   privateMessage("Excuse me!");
   other->privateMessage("Excuse me!");
   position.swapCreatures(other);
-  auto oldTime = getLocalTime();
-  spendTime();
-  addMovementInfo({direction, oldTime, getLocalTime(), MovementInfo::MOVE});
-  other->addMovementInfo({-direction, oldTime, getLocalTime(), MovementInfo::MOVE});
+  auto timeInfo = spendTime();
+  addMovementInfo({direction, timeInfo, getLocalTime(), MovementInfo::MOVE});
+  other->addMovementInfo({-direction, timeInfo, getLocalTime(), MovementInfo::MOVE});
 }
 
 void Creature::makeMove() {
@@ -587,10 +589,9 @@ CreatureAction Creature::applySquare(Position pos) const {
         auto originalPos = getPosition();
         auto usageTime = furniture->getUsageTime();
         furniture->use(pos, self);
-        auto oldTime = getLocalTime();
-        self->spendTime(usageTime);
+        auto oldTime = self->spendTime(usageTime);
         if (pos != getPosition() && getPosition() == originalPos)
-          self->addMovementInfo({getPosition().getDir(pos), oldTime, min(oldTime + 1_visible,
+          self->addMovementInfo({getPosition().getDir(pos), oldTime, min(oldTime.begin + 1_visible,
               getLocalTime()), MovementInfo::ATTACK});
       });
   return CreatureAction();
@@ -787,6 +788,14 @@ LocalTime Creature::getLocalTime() const {
     return LocalTime();
 }
 
+MovementInfo::TimeInfo Creature::getTimeInfo() const {
+  MovementInfo::TimeInfo ret;
+  ret.begin = getLocalTime();
+  if (auto m = position.getModel())
+    ret.moveCounter = m->getMoveCounter();
+  return ret;
+}
+
 GlobalTime Creature::getGlobalTime() const {
   if (WGame g = getGame())
     return g->getGlobalTime();
@@ -863,9 +872,7 @@ CreatureAction Creature::attack(WCreature other, optional<AttackParams> attackPa
       enemyName = "something";
     weapon->getAttackMsg(this, enemyName);
     other->takeDamage(attack);
-    auto oldTime = getLocalTime();
-    self->spendTime(timeSpent);
-    self->addMovementInfo({dir, oldTime, getLocalTime(), MovementInfo::ATTACK});
+    self->addMovementInfo({dir, self->spendTime(timeSpent), getLocalTime(), MovementInfo::ATTACK});
   });
 }
 
@@ -1167,7 +1174,7 @@ CreatureAction Creature::fire(Vec2 direction) const {
   });
 }
 
-void Creature::addMovementInfo(const MovementInfo& info) {
+void Creature::addMovementInfo(MovementInfo info) {
   modViewObject().addMovementInfo(info);
   getPosition().setNeedsRenderUpdate(true);
 }
@@ -1178,8 +1185,7 @@ CreatureAction Creature::whip(const Position& pos) const {
     return CreatureAction();
   return CreatureAction(this, [=](WCreature self) {
     thirdPerson(PlayerMessage(getName().the() + " whips " + whipped->getName().the()));
-    auto oldTime = getLocalTime();
-    self->spendTime();
+    auto oldTime = self->spendTime();
     if (Random.roll(3)) {
       addSound(SoundId::WHIP);
       self->addMovementInfo({position.getDir(pos), oldTime, getLocalTime(), MovementInfo::ATTACK});
@@ -1242,10 +1248,9 @@ CreatureAction Creature::destroy(Vec2 direction, const DestroyAction& action) co
     if (direction.length8() <= 1 && furniture->canDestroy(getMovementType(), action))
       return CreatureAction(this, [=](WCreature self) {
         self->destroyImpl(direction, action);
-        auto oldTime = getLocalTime();
-        self->spendTime();
+        auto oldTime = self->spendTime();
         if (direction.length8() == 1)
-          self->addMovementInfo({getPosition().getDir(pos), oldTime, min(oldTime + 1_visible,
+          self->addMovementInfo({getPosition().getDir(pos), oldTime, min(oldTime.begin + 1_visible,
               getLocalTime()), MovementInfo::ATTACK});
       });
   return CreatureAction();
@@ -1376,7 +1381,7 @@ CreatureName& Creature::getName() {
 }
 
 const char* Creature::identify() const {
-  return getName().bare().c_str();
+  return getName().identify();
 }
 
 TribeSet Creature::getFriendlyTribes() const {

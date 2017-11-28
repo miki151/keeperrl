@@ -14,6 +14,10 @@ CreatureName::CreatureName(const string& n, const string& p) : name(n), pluralNa
   CHECK(!pluralName.empty());
 }
 
+const char* CreatureName::identify() const {
+  return name.c_str();
+}
+
 string CreatureName::bare() const {
   if (fullTitle)
     return title();

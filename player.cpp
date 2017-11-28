@@ -948,7 +948,7 @@ vector<Vec2> Player::getVisibleEnemies() const {
 }
 
 double Player::getAnimationTime() const {
-  return getCreature()->getLocalTime().getDouble();
+  return getCreature()->getTimeInfo().moveCounter;
 }
 
 Player::CenterType Player::getCenterType() const {
@@ -964,6 +964,7 @@ vector<Vec2> Player::getUnknownLocations(WConstLevel level) const {
           ret.push_back(pos->getCoord());
   return ret;
 }
+
 
 void Player::considerAdventurerMusic() {
   for (WCollective col : getCreature()->getPosition().getModel()->getCollectives())

@@ -192,6 +192,14 @@ LocalTime Model::getLocalTime(WConstCreature c) {
   return timeQueue->getTime(c);
 }
 
+int Model::getMoveCounter() const {
+  return moveCounter;
+}
+
+void Model::increaseMoveCounter() {
+  ++moveCounter;
+}
+
 void Model::setGame(WGame g) {
   game = g;
 }
