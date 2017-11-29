@@ -1273,6 +1273,39 @@ SGuiElem GuiBuilder::drawRightPlayerInfo(const PlayerInfo& info) {
   return gui.margins(std::move(main), 15, 24, 15, 5);
 }
 
+SGuiElem GuiBuilder::drawMoveQueueOverlay(const PlayerInfo& info) {
+  const int elemWidth = getImmigrationBarWidth();
+  auto makeHighlight = [=] (Color c) { return gui.margins(gui.rectangle(c), 4); };
+  auto lines = gui.getListBuilder(elemWidth);
+  auto getAcceptButton = [=] (int immigrantId, optional<Keybinding> keybinding) {
+    return gui.stack(
+        gui.releaseLeftButton(getButtonCallback({UserInputId::IMMIGRANT_ACCEPT, immigrantId}), keybinding),
+        gui.onMouseLeftButtonHeld(makeHighlight(Color(0, 255, 0, 100))));
+  };
+  auto getRejectButton = [=] (int immigrantId) {
+    return gui.stack(
+        gui.releaseRightButton(getButtonCallback({UserInputId::IMMIGRANT_REJECT, immigrantId})),
+        gui.onMouseRightButtonHeld(makeHighlight(Color(255, 0, 0, 100))));
+  };
+  for (int i : All(info.team).reverse()) {
+    auto& elem = info.team[i];
+    SGuiElem button = gui.translucentBackground();
+    lines.addElem(
+        gui.stack(
+            std::move(button),
+            //gui.tooltip2(drawImmigrantInfo(elem), [](const Rectangle& r) { return r.topRight();}),
+            gui.setWidth(elemWidth, gui.centerVert(gui.centerHoriz(gui.bottomMargin(-3,
+                gui.viewObject(ViewId::ROUND_SHADOW, 1, Color(255, 255, 255, 160)))))),
+            gui.setWidth(elemWidth, gui.centerVert(gui.centerHoriz(gui.bottomMargin(5,
+                gui.viewObject(elem.viewId)))))
+    ));
+  }
+  return gui.setWidth(elemWidth, gui.stack(
+        gui.stopMouseMovement(),
+        lines.buildVerticalList()));
+}
+
+
 typedef CreatureInfo CreatureInfo;
 
 struct CreatureMapElem {
@@ -1782,6 +1815,8 @@ void GuiBuilder::drawOverlays(vector<OverlayInfo>& ret, GameInfo& info) {
       auto& playerInfo = *info.playerInfo.getReferenceMaybe<PlayerInfo>();
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawPlayerOverlay, this), THIS_LINE,
            playerInfo), OverlayInfo::TOP_LEFT});
+      ret.push_back({cache->get(bindMethod(&GuiBuilder::drawMoveQueueOverlay, this), THIS_LINE,
+           playerInfo), OverlayInfo::IMMIGRATION});
       break;
     }
     default:
