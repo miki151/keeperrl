@@ -32,14 +32,24 @@ class TimeQueue {
   PCreature removeCreature(WCreature);
   LocalTime getTime(WConstCreature);
   void increaseTime(WCreature, TimeInterval);
+  void postponeMove(WCreature);
 
-  template <class Archive> 
+  template <class Archive>
   void serialize(Archive& ar, const unsigned int version);
 
   private:
   vector<PCreature> SERIAL(creatures);
-  map<LocalTime, deque<WCreature>> SERIAL(queue);
+  struct Queue {
+    deque<WCreature> SERIAL(players);
+    deque<WCreature> SERIAL(nonPlayers);
+    void push(WCreature);
+    bool empty() const;
+    WCreature front();
+    void popFront();
+    void erase(WCreature);
+    SERIALIZE_ALL(players, nonPlayers)
+  };
+  map<LocalTime, Queue> SERIAL(queue);
   EntityMap<Creature, LocalTime> SERIAL(timeMap);
-  void eraseFromQueue(deque<WCreature>&, WCreature);
 };
 

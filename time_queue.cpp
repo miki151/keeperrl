@@ -28,7 +28,7 @@ SERIALIZABLE(TimeQueue);
 
 void TimeQueue::addCreature(PCreature c, LocalTime time) {
   timeMap.set(c.get(), time);
-  queue[time].push_back(c.get());
+  queue[time].push(c.get());
   creatures.push_back(std::move(c));
 }
 
@@ -36,19 +36,54 @@ LocalTime TimeQueue::getTime(WConstCreature c) {
   return timeMap.getOrFail(c);
 }
 
-void TimeQueue::eraseFromQueue(deque<WCreature>& q, WCreature c) {
-  for (int i : All(q))
-    if (q[i] == c) {
-      q[i] = nullptr;
-      break;
-    }
+void TimeQueue::Queue::push(WCreature c) {
+  if (c->isPlayer())
+    players.push_back(c);
+  else
+    nonPlayers.push_back(c);
+}
+
+bool TimeQueue::Queue::empty() const {
+  return players.empty() && nonPlayers.empty();
+}
+
+WCreature TimeQueue::Queue::front() {
+  if (!players.empty())
+    return players.front();
+  else
+    return nonPlayers.front();
+}
+
+void TimeQueue::Queue::popFront() {
+  if (!players.empty())
+    return players.pop_front();
+  else
+    return nonPlayers.pop_front();
+}
+
+void TimeQueue::Queue::erase(WCreature c) {
+  auto eraseFrom = [&c] (deque<WCreature>& queue) {
+    for (int i : All(queue))
+      if (queue[i] == c) {
+        queue[i] = nullptr;
+        break;
+      }
+  };
+  eraseFrom(players);
+  eraseFrom(nonPlayers);
 }
 
 void TimeQueue::increaseTime(WCreature c, TimeInterval diff) {
   LocalTime& time = timeMap.getOrFail(c);
-  eraseFromQueue(queue.at(time), c);
+  queue.at(time).erase(c);
   time += diff;
-  queue[time].push_back(c);
+  queue[time].push(c);
+}
+
+void TimeQueue::postponeMove(WCreature c) {
+  LocalTime time = timeMap.getOrFail(c);
+  queue.at(time).erase(c);
+  queue[time].push(c);
 }
 
 // Queue is initialized in a lazy manner because during deserialization the comparator doesn't 
@@ -58,7 +93,7 @@ TimeQueue::TimeQueue() {}
 PCreature TimeQueue::removeCreature(WCreature cRef) {
   for (int i : All(creatures))
     if (creatures[i].get() == cRef) {
-      eraseFromQueue(queue.at(timeMap.getOrFail(cRef)), cRef);
+      queue.at(timeMap.getOrFail(cRef)).erase(cRef);
       PCreature ret = std::move(creatures[i]);
       creatures.removeIndexPreserveOrder(i);
       return ret;
@@ -83,9 +118,8 @@ WCreature TimeQueue::getNextCreature() {
     }
     auto& q = queue.begin()->second;
     while (!q.empty() && q.front() == nullptr)
-      q.pop_front();
+      q.popFront();
     if (!q.empty())
       return q.front();
   }
 }
-

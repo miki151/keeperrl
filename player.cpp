@@ -534,8 +534,11 @@ vector<Player::CommandInfo> Player::getCommands() const {
   return {
     {PlayerInfo::CommandInfo{"Fire ranged weapon", 'f', "", true},
       [] (Player* player) { player->fireAction(); }, false},
-    {PlayerInfo::CommandInfo{"Wait", ' ', "Skip this turn.", true},
+    {PlayerInfo::CommandInfo{"Skip turn", ' ', "Skip this turn.", true},
       [] (Player* player) { player->tryToPerform(player->getCreature()->wait()); }, false},
+    {PlayerInfo::CommandInfo{"Wait", 'w', "Wait until all other team members make their moves (doesn't skip turn).",
+        getGame()->getPlayerCreatures().size() > 1},
+      [] (Player* player) { player->getCreature()->getPosition().getModel()->postponeMove(player->getCreature()); }, false},
     {PlayerInfo::CommandInfo{"Travel", 't', "Travel to another site.", !getGame()->isSingleModel()},
       [] (Player* player) { player->getGame()->transferAction(player->getTeam()); }, false},
     {PlayerInfo::CommandInfo{"Chat", 'c', "Chat with someone.", canChat},
@@ -801,11 +804,14 @@ MessageGenerator& Player::getMessageGenerator() const {
 
 void Player::onStartedControl() {
   getGame()->addPlayer(getCreature());
+  getCreature()->getPosition().getModel()->postponeMove(getCreature());
 }
 
 void Player::onEndedControl() {
   if (auto game = getGame()) // if the whole Game is being destructed then we get null here
     game->removePlayer(getCreature());
+  if (!getCreature()->isDead())
+    getCreature()->getPosition().getModel()->postponeMove(getCreature());
 }
 
 void Player::getViewIndex(Vec2 pos, ViewIndex& index) const {
