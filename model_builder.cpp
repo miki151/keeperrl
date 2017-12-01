@@ -56,7 +56,7 @@ int ModelBuilder::getThronePopulationIncrease() {
 
 static CollectiveConfig getKeeperConfig(RandomGen& random, bool fastImmigration, bool regenerateMana) {
   return CollectiveConfig::keeper(
-      TimeInterval::fromVisible(fastImmigration ? 10 : 140),
+      TimeInterval(fastImmigration ? 10 : 140),
       10,
       regenerateMana,
       {

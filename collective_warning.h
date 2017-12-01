@@ -49,6 +49,6 @@ class CollectiveWarnings {
   const char*getText(Warning w);
   EnumSet<Warning> SERIAL(warnings);
   EnumMap<CollectiveWarning, optional<LocalTime>> SERIAL(warningTimes);
-  LocalTime SERIAL(lastWarningTime) = LocalTime::fromVisible(100);
+  LocalTime SERIAL(lastWarningTime) = LocalTime(100);
 };
 

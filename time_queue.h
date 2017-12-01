@@ -26,12 +26,14 @@ class Creature;
 class TimeQueue {
   public:
   TimeQueue();
-  WCreature getNextCreature();
+  WCreature getNextCreature(double maxTime);
   vector<WCreature> getAllCreatures() const;
   void addCreature(PCreature, LocalTime time);
   PCreature removeCreature(WCreature);
   LocalTime getTime(WConstCreature);
   void increaseTime(WCreature, TimeInterval);
+  void makeExtraMove(WCreature);
+  bool hasExtraMove(WCreature);
   void postponeMove(WCreature);
 
   template <class Archive>
@@ -49,7 +51,16 @@ class TimeQueue {
     void erase(WCreature);
     SERIALIZE_ALL(players, nonPlayers)
   };
-  map<LocalTime, Queue> SERIAL(queue);
-  EntityMap<Creature, LocalTime> SERIAL(timeMap);
+  struct ExtendedTime {
+    ExtendedTime();
+    ExtendedTime(LocalTime);
+    double getDouble() const;
+    bool operator < (ExtendedTime) const;
+    LocalTime SERIAL(time);
+    bool SERIAL(extraTurn) = false;
+    SERIALIZE_ALL(time, extraTurn)
+  };
+  map<ExtendedTime, Queue> SERIAL(queue);
+  EntityMap<Creature, ExtendedTime> SERIAL(timeMap);
 };
 

@@ -5,16 +5,6 @@ GameTime<Tag>::GameTime() {
 }
 
 template<typename Tag>
-GameTime<Tag> GameTime<Tag>::fromInteral(int i) {
-  return GameTime<Tag>(i);
-}
-
-template<typename Tag>
-GameTime<Tag> GameTime<Tag>::fromVisible(int i) {
-  return GameTime<Tag>(i * 2);
-}
-
-template<typename Tag>
 GameTime<Tag>::GameTime(int i) : cnt(i) {
 }
 
@@ -87,7 +77,7 @@ double GameTime<Tag>::getDouble() const {
 
 template<typename Tag>
 int GameTime<Tag>::getVisibleInt() const {
-  return cnt / 2;
+  return cnt;
 }
 
 template<typename Tag>
@@ -103,14 +93,6 @@ void GameTime<Tag>::serialize(Archive& ar, const unsigned int version) {
 
 TimeInterval::TimeInterval() {}
 
-TimeInterval TimeInterval::fromVisible(int i) {
-  return TimeInterval(i * 2);
-}
-
-TimeInterval TimeInterval::fromInternal(int i) {
-  return TimeInterval(i);
-}
-
 bool TimeInterval::operator < (TimeInterval i) const {
   return cnt < i.cnt;
 }
@@ -119,19 +101,16 @@ bool TimeInterval::operator > (TimeInterval i) const {
   return cnt > i.cnt;
 }
 
-bool TimeInterval::operator <=(TimeInterval i) const {
+bool TimeInterval::operator <= (TimeInterval i) const {
   return cnt <= i.cnt;
 }
 
-bool TimeInterval::operator >=(TimeInterval i) const {
+bool TimeInterval::operator >= (TimeInterval i) const {
   return cnt >= i.cnt;
 }
 
-TimeInterval& TimeInterval::tryToHalve() {
-  cnt /= 2;
-  if (cnt == 0)
-    cnt = 1;
-  return *this;
+bool TimeInterval::operator == (TimeInterval i) const {
+  return cnt == i.cnt;
 }
 
 TimeInterval TimeInterval::operator -(TimeInterval i) const {
@@ -147,11 +126,11 @@ double TimeInterval::getDouble() const {
 }
 
 double TimeInterval::getVisibleDouble() const {
-  return double(cnt) / 2;
+  return double(cnt);
 }
 
 int TimeInterval::getVisibleInt() const {
-  return cnt / 2;
+  return cnt;
 }
 
 int TimeInterval::getInternal() const {
@@ -177,9 +156,7 @@ TimeInterval::TimeInterval(int i) : cnt(i) {}
 
 template<class T>
 std::ostream& operator<<(std::ostream& d, GameTime<T> time) {
-  d << time.getInternal() / 2;
-  if (time.getInternal() % 2 == 1)
-    d << ".5";
+  d << time.getInternal();
   return d;
 }
 
@@ -190,9 +167,7 @@ template
 std::ostream& operator<<(std::ostream& d, GameTime<GlobalTimeTag> time);
 
 std::ostream& operator<<(std::ostream& d, TimeInterval i) {
-  d << i.getInternal() / 2;
-  if (i.getInternal() % 2 == 1)
-    d << ".5";
+  d << i.getInternal();
   return d;
 }
 
@@ -201,5 +176,5 @@ SERIALIZABLE_TMPL(GameTime, GlobalTimeTag);
 
 
 TimeInterval operator "" _visible(unsigned long long value) {
-  return TimeInterval::fromVisible((int) value);
+  return TimeInterval((int) value);
 }

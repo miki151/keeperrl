@@ -43,7 +43,7 @@ class Model : public OwnedObject<Model> {
   
   /** Makes an update to the game. This method is repeatedly called to make the game run.
     Returns the total logical time elapsed.*/
-  bool update(LocalTime totalTime);
+  bool update(double totalTime);
 
   /** Returns the level that the stairs lead to. */
   WLevel getLinkedLevel(WLevel from, StairKey) const;
@@ -61,8 +61,8 @@ class Model : public OwnedObject<Model> {
   bool isTurnBased();
 
   LocalTime getLocalTime() const;
-  void increaseLocalTime(WCreature, TimeInterval);
-  LocalTime getLocalTime(WConstCreature);
+  double getLocalTimeDouble() const;
+  TimeQueue& getTimeQueue();
   int getMoveCounter() const;
   void increaseMoveCounter();
   void postponeMove(WCreature);
@@ -119,7 +119,7 @@ class Model : public OwnedObject<Model> {
   LocalTime SERIAL(lastTick);
   HeapAllocated<TimeQueue> SERIAL(timeQueue);
   vector<PCreature> SERIAL(deadCreatures);
-  LocalTime SERIAL(currentTime);
+  double SERIAL(currentTime);
   int SERIAL(woodCount) = 0;
   void calculateStairNavigation();
   optional<StairKey> getStairsBetween(WConstLevel from, WConstLevel to);

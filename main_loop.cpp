@@ -216,7 +216,7 @@ MainLoop::ExitCondition MainLoop::playGame(PGame&& game, bool withMusic, bool no
   game->initialize(options, highscores, view, fileSharing);
   const milliseconds stepTimeMilli {3};
   Intervalometer meter(stepTimeMilli);
-  auto lastMusicUpdate = GlobalTime::fromVisible(-1000);
+  auto lastMusicUpdate = GlobalTime(-1000);
   auto lastAutoSave = game->getGlobalTime();
   while (1) {
     double step = 1;
@@ -570,7 +570,7 @@ void MainLoop::endlessTest(int numTries, const FilePath& levelPath, const FilePa
     allies.push_back(readAlly(input));
   ExternalEnemies enemies(random, EnemyFactory(random).getExternalEnemies());
   for (int turn : Range(100000))
-    if (auto wave = enemies.popNextWave(LocalTime::fromVisible(turn))) {
+    if (auto wave = enemies.popNextWave(LocalTime(turn))) {
       std::cerr << "Turn " << turn << ": " << wave->enemy.name << "\n";
       int totalWins = 0;
       for (auto& allyInfo : allies) {

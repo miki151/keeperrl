@@ -1476,10 +1476,10 @@ UserInput WindowView::getAction() {
 
 double WindowView::getGameSpeed() {
   switch (guiBuilder.getGameSpeed()) {
-    case GuiBuilder::GameSpeed::SLOW: return 0.030;
-    case GuiBuilder::GameSpeed::NORMAL: return 0.050;
-    case GuiBuilder::GameSpeed::FAST: return 0.08;
-    case GuiBuilder::GameSpeed::VERY_FAST: return 0.12;
+    case GuiBuilder::GameSpeed::SLOW: return 0.015;
+    case GuiBuilder::GameSpeed::NORMAL: return 0.025;
+    case GuiBuilder::GameSpeed::FAST: return 0.04;
+    case GuiBuilder::GameSpeed::VERY_FAST: return 0.06;
   }
 }
 

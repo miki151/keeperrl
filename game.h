@@ -66,7 +66,6 @@ class Game : public OwnedObject<Game> {
 
   bool isGameOver() const;
   bool isTurnBased();
-  double getUpdateRemainder() const;
   bool isVillainActive(WConstCollective);
   SavedGameInfo getSavedGameInfo() const;
 
@@ -92,27 +91,26 @@ class Game : public OwnedObject<Game> {
   Game(Table<PModel>&&, Vec2 basePos, const CampaignSetup&);
 
   private:
-  double updateRemainder = 0;
   optional<ExitInfo> update();
   void updateSunlightInfo();
   void tick(GlobalTime);
   PCreature makeAdventurer(int handicap);
   WModel getCurrentModel() const;
   Vec2 getModelCoords(const WModel) const;
-  optional<ExitInfo> updateModel(WModel, LocalTime totalTime);
+  optional<ExitInfo> updateModel(WModel, double totalTime);
   string getPlayerName() const;
   void uploadEvent(const string& name, const map<string, string>&);
 
   SunlightInfo sunlightInfo;
   Table<PModel> SERIAL(models);
   Table<bool> SERIAL(visited);
-  map<LevelId, LocalTime> SERIAL(localTime);
+  map<LevelId, double> SERIAL(localTime);
   Vec2 SERIAL(baseModel);
   View* view;
-  GlobalTime SERIAL(currentTime);
+  double SERIAL(currentTime);
   optional<ExitInfo> exitInfo;
   Tribe::Map SERIAL(tribes);
-  optional<GlobalTime> SERIAL(lastTick);
+  optional<int> SERIAL(lastTick);
   string SERIAL(gameIdentifier);
   string SERIAL(gameDisplayName);
   map<VillainType, vector<WCollective>> SERIAL(villainsByType);
@@ -134,6 +132,8 @@ class Game : public OwnedObject<Game> {
   friend class GameListener;
   void considerRealTimeRender();
   void considerRetiredLoadedEvent(Vec2 coord);
+  optional<ExitInfo> updateInput();
+  void initializeModels();
 };
 
 

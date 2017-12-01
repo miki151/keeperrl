@@ -194,7 +194,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   };
   optional<SelectionInfo> rectSelection;
   void updateSelectionSquares();
-  GlobalTime SERIAL(lastControlKeeperQuestion) = GlobalTime::fromVisible(-1000);
+  GlobalTime SERIAL(lastControlKeeperQuestion) = GlobalTime(-1000);
   optional<UniqueEntity<Creature>::Id> chosenCreature;
   void setChosenCreature(optional<UniqueEntity<Creature>::Id>);
   optional<WorkshopType> chosenWorkshop;

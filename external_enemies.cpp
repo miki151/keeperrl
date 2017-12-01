@@ -34,7 +34,7 @@ ExternalEnemies::ExternalEnemies(RandomGen& random, vector<ExternalEnemy> enemie
         --enemy.maxOccurences;
         waves.push_back(EnemyEvent{
             enemy,
-            LocalTime::fromVisible(attackTime),
+            LocalTime(attackTime),
             enemy.creatures.getViewId()
         });
         waves.back().enemy.creatures.increaseBaseLevel({{ExperienceType::MELEE, max(0, attackTime / 1000 - 10)}});

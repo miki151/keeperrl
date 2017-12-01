@@ -44,7 +44,7 @@ void Game::serialize(Archive& ar, const unsigned int version) {
   ar(musicType, statistics, spectator, tribes, gameIdentifier, players);
   ar(gameDisplayName, finishCurrentMusic, models, visited, baseModel, campaign, localTime, turnEvents);
   if (Archive::is_loading::value)
-    sunlightInfo.update(currentTime);
+    sunlightInfo.update(getGlobalTime());
 }
 
 SERIALIZABLE(Game);
@@ -57,7 +57,7 @@ static string getGameId(SaveFileInfo info) {
 Game::Game(Table<PModel>&& m, Vec2 basePos, const CampaignSetup& c)
     : models(std::move(m)), visited(models.getBounds(), false), baseModel(basePos),
       tribes(Tribe::generateTribes()), musicType(MusicType::PEACEFUL), campaign(c.campaign) {
-  sunlightInfo.update(currentTime);
+  sunlightInfo.update(getGlobalTime());
   gameIdentifier = c.gameIdentifier;
   gameDisplayName = c.gameDisplayName;
   for (Vec2 v : models.getBounds())
@@ -105,7 +105,7 @@ bool Game::isTurnBased() {
 }
 
 GlobalTime Game::getGlobalTime() const {
-  return currentTime;
+  return GlobalTime((int) currentTime);
 }
 
 const vector<WCollective>& Game::getVillains(VillainType type) const {
@@ -201,11 +201,7 @@ void Game::doneRetirement() {
   UniqueEntity<Item>::clearOffset();
 }
 
-double Game::getUpdateRemainder() const {
-  return updateRemainder;
-}
-
-optional<ExitInfo> Game::update(double timeDiff) {
+optional<ExitInfo> Game::updateInput() {
   if (spectator)
     while (1) {
       UserInput input = view->getAction();
@@ -226,44 +222,41 @@ optional<ExitInfo> Game::update(double timeDiff) {
         return exitInfo;
     }
   }
-  considerRealTimeRender();
-  updateRemainder += timeDiff;
-  while (updateRemainder >= 1) {
-    updateRemainder -= 1;
-    if (auto exitInfo = update())
-      return exitInfo;
-  }
   return none;
 }
 
-optional<ExitInfo> Game::update() {
-  ScopeTimer timer("Game::update timer");
-  WModel currentModel = getCurrentModel();
+void Game::initializeModels() {
   // Give every model a couple of turns so that things like shopkeepers can initialize.
   for (Vec2 v : models.getBounds())
     if (models[v]) {
       // Use top level's id as unique id of the model.
       auto id = models[v]->getTopLevel()->getUniqueId();
       if (!localTime.count(id)) {
-        localTime[id] = models[v]->getLocalTime() + 2_visible;
+        localTime[id] = models[v]->getLocalTime().getDouble() + 2;
         updateModel(models[v].get(), localTime[id]);
       }
   }
+}
+
+optional<ExitInfo> Game::update(double timeDiff) {
+  ScopeTimer timer("Game::update timer");
+  if (auto exitInfo = updateInput())
+    return exitInfo;
+  considerRealTimeRender();
+  initializeModels();
+  currentTime += timeDiff;
+  WModel currentModel = getCurrentModel();
   auto currentId = currentModel->getTopLevel()->getUniqueId();
-  while (!lastTick || currentTime >= *lastTick + 1_visible) {
+  while (!lastTick || currentTime >= *lastTick + 1) {
     if (!lastTick)
-      lastTick = currentTime;
+      lastTick = (int)currentTime;
     else
-      *lastTick += TimeInterval::fromInternal(1);
-    tick(*lastTick);
+      *lastTick += 1;
+    tick(GlobalTime(*lastTick));
   }
   considerRetiredLoadedEvent(getModelCoords(currentModel));
-  auto ret = updateModel(currentModel, localTime[currentId]);
-  if (!ret) {
-    currentTime += TimeInterval::fromInternal(1);
-    localTime[currentId] += TimeInterval::fromInternal(1);
-  }
-  return ret;
+  localTime[currentId] += timeDiff;
+  return updateModel(currentModel, localTime[currentId]);
 }
 
 void Game::considerRealTimeRender() {
@@ -277,7 +270,7 @@ void Game::considerRealTimeRender() {
   }
 }
 
-optional<ExitInfo> Game::updateModel(WModel model, LocalTime totalTime) {
+optional<ExitInfo> Game::updateModel(WModel model, double totalTime) {
   do {
     if (!model->update(totalTime))
       return none;
@@ -305,7 +298,7 @@ void Game::tick(GlobalTime time) {
     turnEvents.erase(turn);
   }
   auto previous = sunlightInfo.getState();
-  sunlightInfo.update(currentTime);
+  sunlightInfo.update(GlobalTime((int) currentTime));
   if (previous != sunlightInfo.getState())
     for (Vec2 v : models.getBounds())
       if (WModel m = models[v].get()) {

@@ -7,6 +7,7 @@
 #include "item.h"
 #include "immigrant_info.h"
 #include "cost_info.h"
+#include "time_queue.h"
 #include "game_time.h"
 
 template <typename Key, typename Value>
@@ -174,7 +175,7 @@ void EntityMap<Key, Value>::serialize(Archive& ar, const unsigned int version) {
 }
 
 SERIALIZABLE_TMPL(EntityMap, Creature, double);
-SERIALIZABLE_TMPL(EntityMap, Creature, LocalTime);
+SERIALIZABLE_TMPL(EntityMap, Creature, TimeQueue::ExtendedTime);
 SERIALIZABLE_TMPL(EntityMap, Creature, int);
 SERIALIZABLE_TMPL(EntityMap, Creature, WTask);
 SERIALIZABLE_TMPL(EntityMap, Creature, Collective::CurrentTaskInfo);

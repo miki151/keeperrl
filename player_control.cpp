@@ -98,7 +98,7 @@ SERIALIZATION_CONSTRUCTOR_IMPL(PlayerControl)
 
 using ResourceId = Collective::ResourceId;
 
-const LocalTime hintFrequency = LocalTime::fromVisible(700);
+const LocalTime hintFrequency = LocalTime(700);
 static vector<string> getHints() {
   return {
     "Research geology to uncover ores in the mountain.",
@@ -2084,7 +2084,7 @@ void PlayerControl::onSquareClick(Position pos) {
 }
 
 double PlayerControl::getAnimationTime() const {
-  return getModel()->getLocalTime().getDouble() + getGame()->getUpdateRemainder();
+  return getModel()->getLocalTimeDouble();
 }
 
 PlayerControl::CenterType PlayerControl::getCenterType() const {

@@ -177,7 +177,7 @@ optional<TimeInterval> MinionTasks::getDuration(WConstCreature c, MinionTask tas
     case MinionTask::BE_WHIPPED:
     case MinionTask::BE_TORTURED:
     case MinionTask::SLEEP: return none;
-    default: return TimeInterval::fromVisible((int) 500 + 250 * c->getMorale());
+    default: return TimeInterval((int) 500 + 250 * c->getMorale());
   }
 }
 

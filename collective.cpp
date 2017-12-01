@@ -277,7 +277,7 @@ const vector<WCreature>& Collective::getCreatures() const {
 
 void Collective::setMinionTask(WConstCreature c, MinionTask task) {
   if (auto duration = MinionTasks::getDuration(c, task))
-    currentTasks.set(c, {task, c->getLocalTime() + *duration});
+    currentTasks.set(c, {task, getLocalTime() + *duration});
   else
     currentTasks.set(c, {task, none});
 }
@@ -323,7 +323,7 @@ bool Collective::isMinionTaskPossible(WCreature c, MinionTask task) {
 
 WTask Collective::getStandardTask(WCreature c) {
   auto current = currentTasks.getMaybe(c);
-  if (!current || (current->finishTime && *current->finishTime < c->getLocalTime()) || !isTaskGood(c, current->task)) {
+  if (!current || (current->finishTime && *current->finishTime < getLocalTime()) || !isTaskGood(c, current->task)) {
     currentTasks.erase(c);
     setRandomTask(c);
   }
@@ -331,7 +331,7 @@ WTask Collective::getStandardTask(WCreature c) {
     MinionTask task = current->task;
     auto& info = config->getTaskInfo(task);
     if (!current->finishTime) // see comment in header
-      currentTasks.getOrFail(c).finishTime = LocalTime::fromVisible(-1000);
+      currentTasks.getOrFail(c).finishTime = LocalTime(-1000);
     if (info.warning && !territory->isEmpty())
       warnings->setWarning(*info.warning, false);
     if (PTask ret = MinionTasks::generate(this, c, task))

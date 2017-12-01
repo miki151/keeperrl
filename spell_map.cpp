@@ -10,7 +10,7 @@ void SpellMap::add(Spell* spell) {
 
 void SpellMap::add(SpellId id) {
   if (!elems[id])
-    elems[id] = GlobalTime::fromVisible(-10000);
+    elems[id] = GlobalTime(-10000);
 }
 
 GlobalTime SpellMap::getReadyTime(Spell* spell) const {

@@ -7,13 +7,12 @@
 class TimeInterval {
   public:
   TimeInterval();
-  static TimeInterval fromVisible(int);
-  static TimeInterval fromInternal(int);
+  explicit TimeInterval(int);
   bool operator < (TimeInterval) const;
   bool operator > (TimeInterval) const;
   bool operator <= (TimeInterval) const;
   bool operator >= (TimeInterval) const;
-  TimeInterval& tryToHalve();
+  bool operator == (TimeInterval) const;
   TimeInterval operator + (TimeInterval) const;
   TimeInterval operator - (TimeInterval) const;
   TimeInterval& operator *= (int);
@@ -30,7 +29,6 @@ class TimeInterval {
   int getHash() const;
 
   private:
-  TimeInterval(int);
   template<typename Tag>
   friend class GameTime;
   int SERIAL(cnt) = 0;
@@ -42,8 +40,7 @@ template<typename Tag>
 class GameTime {
   public:
   GameTime();
-  static GameTime fromVisible(int);
-  static GameTime fromInteral(int);
+  explicit GameTime(int);
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int);
@@ -67,7 +64,6 @@ class GameTime {
   int getHash() const;
 
   private:
-  explicit GameTime(int);
   int SERIAL(cnt) = 0;
 };
 

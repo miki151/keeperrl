@@ -32,7 +32,7 @@
 CreatureAttributes::CreatureAttributes(function<void(CreatureAttributes&)> fun) {
   fun(*this);
   for (LastingEffect effect : ENUM_ALL(LastingEffect))
-    lastingEffects[effect] = GlobalTime::fromVisible(-500);
+    lastingEffects[effect] = GlobalTime(-500);
   for (auto effect : ENUM_ALL(LastingEffect))
     if (body->isIntrinsicallyAffected(effect))
       ++permanentEffects[effect];
@@ -186,7 +186,7 @@ GlobalTime CreatureAttributes::getTimeOut(LastingEffect effect) const {
 }
 
 bool CreatureAttributes::considerTimeout(LastingEffect effect, GlobalTime current) {
-  if (lastingEffects[effect] > GlobalTime::fromVisible(0) && lastingEffects[effect] <= current) {
+  if (lastingEffects[effect] > GlobalTime(0) && lastingEffects[effect] <= current) {
     clearLastingEffect(effect, current);
     if (!isAffected(effect, current))
       return true;
@@ -320,7 +320,7 @@ bool CreatureAttributes::isAffectedPermanently(LastingEffect effect) const {
 }
 
 void CreatureAttributes::clearLastingEffect(LastingEffect effect, GlobalTime t) {
-  lastingEffects[effect] = GlobalTime::fromVisible(0);
+  lastingEffects[effect] = GlobalTime(0);
   lastAffected[effect] = t;
 }
 

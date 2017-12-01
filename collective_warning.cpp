@@ -21,7 +21,7 @@ void CollectiveWarnings::setWarning(Warning w, bool state) {
 }
 
 void CollectiveWarnings::disable() {
-  lastWarningTime = LocalTime::fromVisible(100000000);
+  lastWarningTime = LocalTime(100000000);
 }
 
 void CollectiveWarnings::considerWarnings(WCollective col) {

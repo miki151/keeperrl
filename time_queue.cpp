@@ -33,7 +33,7 @@ void TimeQueue::addCreature(PCreature c, LocalTime time) {
 }
 
 LocalTime TimeQueue::getTime(WConstCreature c) {
-  return timeMap.getOrFail(c);
+  return timeMap.getOrFail(c).time;
 }
 
 void TimeQueue::Queue::push(WCreature c) {
@@ -74,22 +74,37 @@ void TimeQueue::Queue::erase(WCreature c) {
 }
 
 void TimeQueue::increaseTime(WCreature c, TimeInterval diff) {
-  LocalTime& time = timeMap.getOrFail(c);
+  auto& time = timeMap.getOrFail(c);
   queue.at(time).erase(c);
-  time += diff;
+  time.time += diff;
+  time.extraTurn = false;
   queue[time].push(c);
+}
+
+void TimeQueue::makeExtraMove(WCreature c) {
+  auto& time = timeMap.getOrFail(c);
+  queue.at(time).erase(c);
+  if (!time.extraTurn)
+    time.extraTurn = true;
+  else {
+    time.time += 1_visible;
+    time.extraTurn = false;
+  }
+  queue[time].push(c);
+}
+
+bool TimeQueue::hasExtraMove(WCreature c) {
+  return timeMap.getOrFail(c).extraTurn;
 }
 
 void TimeQueue::postponeMove(WCreature c) {
-  LocalTime time = timeMap.getOrFail(c);
+  auto time = timeMap.getOrFail(c);
   queue.at(time).erase(c);
-  queue[time].push(c);
+  queue.at(time).push(c);
 }
 
-// Queue is initialized in a lazy manner because during deserialization the comparator doesn't 
-// work, as the Creatures are still being deserialized.
 TimeQueue::TimeQueue() {}
-  
+
 PCreature TimeQueue::removeCreature(WCreature cRef) {
   for (int i : All(creatures))
     if (creatures[i].get() == cRef) {
@@ -106,7 +121,7 @@ vector<WCreature> TimeQueue::getAllCreatures() const {
   return getWeakPointers(creatures);
 }
 
-WCreature TimeQueue::getNextCreature() {
+WCreature TimeQueue::getNextCreature(double maxTime) {
   if (creatures.empty())
     return nullptr;
   while (1) {
@@ -116,10 +131,27 @@ WCreature TimeQueue::getNextCreature() {
         break;
       queue.erase(queue.begin());
     }
+    if (queue.begin()->first.getDouble() > maxTime)
+      return nullptr;
     auto& q = queue.begin()->second;
     while (!q.empty() && q.front() == nullptr)
       q.popFront();
     if (!q.empty())
       return q.front();
   }
+}
+
+TimeQueue::ExtendedTime::ExtendedTime() {}
+
+TimeQueue::ExtendedTime::ExtendedTime(LocalTime t) : time(t) {}
+
+double TimeQueue::ExtendedTime::getDouble() const {
+  double ret = time.getDouble();
+  if (extraTurn)
+    ret += 0.5;
+  return ret;
+}
+
+bool TimeQueue::ExtendedTime::operator <(TimeQueue::ExtendedTime o) const {
+  return time < o.time || (time == o.time && !extraTurn && o.extraTurn);
 }

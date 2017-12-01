@@ -36,8 +36,7 @@ WLevel Spectator::getLevel() const {
 }
 
 double Spectator::getAnimationTime() const {
-  auto model = level->getModel();
-  return model->getLocalTime().getDouble() + model->getGame()->getUpdateRemainder();
+  return level->getModel()->getLocalTimeDouble();
 }
 
 vector<Vec2> Spectator::getVisibleEnemies() const {

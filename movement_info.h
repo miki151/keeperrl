@@ -6,15 +6,14 @@
 
 struct MovementInfo {
   enum Type { MOVE, ATTACK };
-  struct TimeInfo {
-    LocalTime begin;
-    int moveCounter = 0;
-  };
-  MovementInfo(Vec2 direction, TimeInfo, LocalTime tEnd, Type);
+  MovementInfo(Vec2 direction, LocalTime tBegin, LocalTime tEnd, int moveCounter, Type);
   MovementInfo();
+  MovementInfo& setDirection(Vec2);
+  MovementInfo& setType(Type);
+  MovementInfo& setMaxLength(TimeInterval);
   Vec2 direction;
-  LocalTime tBegin;
-  LocalTime tEnd;
+  double tBegin;
+  double tEnd;
   Type type = MOVE;
   int moveCounter = 0;
 };

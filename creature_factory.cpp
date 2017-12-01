@@ -142,7 +142,7 @@ class SokobanController : public Monster {
     Vec2 goDir = player->getPosition().getDir(getCreature()->getPosition());
     if (goDir.isCardinal4() && getCreature()->getPosition().plus(goDir).canEnter(
           getCreature()->getMovementType().setForced(true))) {
-      getCreature()->displace(player->getTimeInfo(), goDir);
+      getCreature()->displace(goDir);
       player->move(goDir).perform(player);
     }
   }
@@ -240,9 +240,8 @@ class KrakenController : public Monster {
     if (father) {
       held->setHeld(father->getCreature());
       Vec2 pullDir = held->getPosition().getDir(getCreature()->getPosition());
-      auto localTime = getCreature()->getTimeInfo();
       getCreature()->dieNoReason(Creature::DropType::NOTHING);
-      held->displace(localTime, pullDir);
+      held->displace(pullDir);
     } else {
       held->you(MsgType::ARE, "eaten by " + getCreature()->getName().the());
       held->dieNoReason();
@@ -552,7 +551,7 @@ PCreature CreatureFactory::getIllusion(WCreature creature) {
           c.noAttackSound = true;
           c.name = creature->getName();));
   ret->setController(makeOwner<IllusionController>(ret.get(), creature->getGlobalTime()
-      + TimeInterval::fromVisible(Random.get(5, 10))));
+      + TimeInterval(Random.get(5, 10))));
   return ret;
 }
 

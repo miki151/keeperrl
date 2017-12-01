@@ -106,19 +106,17 @@ void Model::checkCreatureConsistency() {
   }
 }
 
-bool Model::update(LocalTime totalTime) {
-  if (WCreature creature = timeQueue->getNextCreature()) {
+bool Model::update(double totalTime) {
+  currentTime = totalTime;
+  if (WCreature creature = timeQueue->getNextCreature(totalTime)) {
     CHECK(creature->getLevel() != nullptr) << "Creature misplaced before processing: " << creature->getName().bare() <<
         ". Any idea why this happened?";
     if (creature->isDead()) {
       checkCreatureConsistency();
       FATAL << "Dead: " << creature->getName().bare();
     }
-    currentTime = totalTime;
-    if (creature->getLocalTime() > totalTime)
-      return false;
-    while (totalTime > lastTick) {
-      lastTick += TimeInterval::fromInternal(1);
+    while (totalTime > lastTick.getDouble()) {
+      lastTick += 1_visible;
       tick(lastTick);
     }
     CHECK(creature->getLevel() != nullptr) << "Creature misplaced before moving: " << creature->getName().bare() <<
@@ -129,9 +127,9 @@ bool Model::update(LocalTime totalTime) {
         ". Any idea why this happened?";
     if (!creature->isDead() && creature->getLevel()->getModel() == this)
       CHECK(creature->getPosition().getCreature() == creature);
-  } else
-    currentTime = totalTime;
-  return true;
+    return true;
+  }
+  return false;
 }
 
 void Model::tick(LocalTime time) {
@@ -181,15 +179,15 @@ Model::~Model() {
 }
 
 LocalTime Model::getLocalTime() const {
+  return LocalTime((int) currentTime);
+}
+
+double Model::getLocalTimeDouble() const {
   return currentTime;
 }
 
-void Model::increaseLocalTime(WCreature c, TimeInterval diff) {
-  timeQueue->increaseTime(c, diff);
-}
-
-LocalTime Model::getLocalTime(WConstCreature c) {
-  return timeQueue->getTime(c);
+TimeQueue& Model::getTimeQueue() {
+  return *timeQueue;
 }
 
 int Model::getMoveCounter() const {

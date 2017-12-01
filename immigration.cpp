@@ -493,11 +493,11 @@ void Immigration::initializePersistent() {
 
 void Immigration::resetImmigrantTime() {
   auto interval = collective->getConfig().getImmigrantInterval();
-  auto lastImmigrantIndex = floor(nextImmigrantTime.value_or(GlobalTime::fromVisible(-1)).getDouble() /
+  auto lastImmigrantIndex = floor(nextImmigrantTime.value_or(GlobalTime(-1)).getDouble() /
       interval.getDouble());
   nextImmigrantTime = max(
       collective->getGlobalTime(),
-      GlobalTime::fromInteral((int) (interval.getDouble() * (Random.getDouble() + 1 + lastImmigrantIndex))));
+      GlobalTime((int) (interval.getDouble() * (Random.getDouble() + 1 + lastImmigrantIndex))));
 }
 
 void Immigration::update() {

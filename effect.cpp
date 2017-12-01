@@ -70,7 +70,7 @@ static void airBlast(WCreature who, Position position, Vec2 direction) {
       else
         break;
     if (dist > 0) {
-      c->displace(who->getTimeInfo(), direction * dist);
+      c->displace(direction * dist);
       c->you(MsgType::ARE, "thrown back");
     }
   }
@@ -128,7 +128,7 @@ static void enhanceWeapon(WCreature c, int mod, const string& msg) {
 }
 
 static TimeInterval entangledTime(int strength) {
-  return TimeInterval::fromVisible(max(5, 30 - strength / 2));
+  return TimeInterval(max(5, 30 - strength / 2));
 }
 
 static TimeInterval getDuration(WConstCreature c, LastingEffect e) {
@@ -577,7 +577,7 @@ void Effect::PlaceFurniture::applyToCreature(WCreature c, WCreature attacker) co
         break;
       }
     if (dest)
-      c->displace(c->getTimeInfo(), *dest);
+      c->displace(*dest);
     else
       Effect::Teleport{}.applyToCreature(c);
   }

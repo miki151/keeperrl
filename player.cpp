@@ -954,7 +954,7 @@ vector<Vec2> Player::getVisibleEnemies() const {
 }
 
 double Player::getAnimationTime() const {
-  return getCreature()->getTimeInfo().moveCounter;
+  return getCreature()->getPosition().getModel()->getMoveCounter();
 }
 
 Player::CenterType Player::getCenterType() const {

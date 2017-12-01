@@ -27,7 +27,6 @@
 #include "best_attack.h"
 #include "msg_type.h"
 #include "game_time.h"
-#include "movement_info.h"
 
 class Skill;
 class Level;
@@ -66,7 +65,6 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   const ViewObject& getViewObjectFor(const Tribe* observer) const;
   void makeMove();
   LocalTime getLocalTime() const;
-  MovementInfo::TimeInfo getTimeInfo() const;
   GlobalTime getGlobalTime() const;
   WLevel getLevel() const;
   WGame getGame() const;
@@ -177,7 +175,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   CreatureAction consume(WCreature) const;
   bool canConsume(WConstCreature) const;
   
-  void displace(MovementInfo::TimeInfo, Vec2);
+  void displace(Vec2);
   void surrender(WCreature to);
   void retire();
   
@@ -275,7 +273,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   private:
 
   CreatureAction moveTowards(Position, bool away, NavigationFlags);
-  MovementInfo::TimeInfo spendTime(TimeInterval = 1_visible);
+  MovementInfo spendTime(TimeInterval = 1_visible);
   bool canCarry(const vector<WItem>&) const;
   TribeSet getFriendlyTribes() const;
   void addMovementInfo(MovementInfo);
