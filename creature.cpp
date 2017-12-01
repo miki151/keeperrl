@@ -206,9 +206,10 @@ const EntitySet<Creature>& Creature::getKills() const {
 }
 
 MovementInfo Creature::spendTime(TimeInterval t) {
-  MovementInfo ret(Vec2(0, 0), getLocalTime(), getLocalTime() + t, position.getModel()->getMoveCounter(),
+  MovementInfo ret(Vec2(0, 0), getLocalTime(), getLocalTime() + t, 0,
       MovementInfo::MOVE);
   if (WModel m = position.getModel()) {
+    ret.moveCounter = position.getModel()->getMoveCounter();
     if (!isDead()) {
       if (isAffected(LastingEffect::SPEED) && t == 1_visible) {
         if (m->getTimeQueue().hasExtraMove(this))
@@ -380,6 +381,8 @@ void Creature::makeMove() {
   getBody().affectPosition(position);
   highestAttackValueEver = max(highestAttackValueEver, getBestAttack().value);
   vision->update(this);
+  if (isPlayer() && position.getModel()->getTimeQueue().hasExtraMove(this))
+    makeMove();
 }
 
 CreatureAction Creature::wait() const {
