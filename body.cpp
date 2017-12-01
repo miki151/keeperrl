@@ -89,9 +89,15 @@ void Body::setWeight(double w) {
 
 void Body::setBodyParts(const EnumMap<BodyPart, int>& p) {
   bodyParts = p;
+  bodyParts[BodyPart::TORSO] = 1;
+  bodyParts[BodyPart::BACK] = 1;
 }
 
 void Body::setIntrinsicAttack(BodyPart part, IntrinsicAttack attack) {
+  if (!numGood(part)) {
+    part = BodyPart::TORSO;
+    CHECK(numGood(part));
+  }
   intrinsicAttacks[part] = std::move(attack);
 }
 
