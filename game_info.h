@@ -15,6 +15,7 @@
 #include "best_attack.h"
 #include "villain_type.h"
 #include "game_time.h"
+#include "intrinsic_attack.h"
 
 enum class SpellId;
 
@@ -33,6 +34,7 @@ struct CreatureInfo {
 
 
 struct ItemInfo {
+  static ItemInfo get(WConstCreature, const vector<WItem>&);
   string HASH(name);
   string HASH(fullName);
   string HASH(description);
@@ -44,6 +46,7 @@ struct ItemInfo {
   bool HASH(locked);
   bool HASH(pending);
   bool HASH(unavailable);
+  optional<IntrinsicAttack::Active> HASH(intrinsicState);
   string HASH(unavailableReason);
   optional<EquipmentSlot> HASH(slot);
   optional<CreatureInfo> HASH(owner);
@@ -52,7 +55,7 @@ struct ItemInfo {
   double HASH(productionState);
   optional<double> HASH(weight);
   bool HASH(tutorialHighlight);
-  HASH_ALL(name, fullName, description, number, viewId, ids, actions, equiped, locked, pending, unavailable, slot, owner, type, price, productionState, unavailableReason, weight, tutorialHighlight)
+  HASH_ALL(name, fullName, description, number, viewId, ids, actions, equiped, locked, pending, unavailable, slot, owner, type, price, productionState, unavailableReason, weight, tutorialHighlight, intrinsicState)
 };
 
 struct AttributeInfo {
@@ -108,6 +111,7 @@ class PlayerInfo {
   vector<Spell> HASH(spells);
   vector<ItemInfo> HASH(lyingItems);
   vector<ItemInfo> HASH(inventory);
+  vector<ItemInfo> HASH(intrinsicAttacks);
   int HASH(debt);
   struct TeamMemberInfo {
     ViewId HASH(viewId);
@@ -145,7 +149,7 @@ class PlayerInfo {
   };
   vector<Action> HASH(actions);
   optional<double> HASH(carryLimit);
-  HASH_ALL(attributes, skills, firstName, name, title, levelInfo, levelName, positionHash, effects, spells, lyingItems, inventory, team, minionTasks, creatureId, morale, viewId, actions, commands, debt, bestAttack, carryLimit)
+  HASH_ALL(attributes, skills, firstName, name, title, levelInfo, levelName, positionHash, effects, spells, lyingItems, inventory, team, minionTasks, creatureId, morale, viewId, actions, commands, debt, bestAttack, carryLimit, intrinsicAttacks)
 };
 
 struct ImmigrantDataInfo {

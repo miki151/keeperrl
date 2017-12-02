@@ -90,6 +90,7 @@ enum class UserInputId {
     PLAYER_COMMAND,
     CAST_SPELL,
     INVENTORY_ITEM,
+    INTRINSIC_ATTACK,
     PAY_DEBT,
     APPLY_EFFECT,
     CREATE_ITEM,
@@ -204,7 +205,9 @@ class UserInput : public EnumVariant<UserInputId, TYPES(BuildingInfo, int, Uniqu
             UserInputId::IMMIGRANT_AUTO_REJECT
         ),
         ASSIGN(InventoryItemInfo,
-            UserInputId::INVENTORY_ITEM),
+            UserInputId::INVENTORY_ITEM,
+            UserInputId::INTRINSIC_ATTACK
+        ),
         ASSIGN(Vec2,
             UserInputId::TILE_CLICK,
             UserInputId::MOVE, 

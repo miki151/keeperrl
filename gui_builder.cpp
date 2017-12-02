@@ -790,6 +790,17 @@ int GuiBuilder::getItemLineOwnerMargin() {
   return viewObjectWidth + 60;
 }
 
+static string getIntrinsicStateText(IntrinsicAttack::Active state) {
+  switch (state) {
+    case IntrinsicAttack::ALWAYS:
+      return "always active.";
+    case IntrinsicAttack::NO_WEAPON:
+      return "active when no weapon is equipped.";
+    case IntrinsicAttack::NEVER:
+      return "disabled.";
+  }
+}
+
 vector<string> GuiBuilder::getItemHint(const ItemInfo& item) {
   vector<string> out { capitalFirst(item.fullName)};
   if (!item.description.empty())
@@ -800,6 +811,8 @@ vector<string> GuiBuilder::getItemHint(const ItemInfo& item) {
     out.push_back("Not equipped yet.");
   if (item.locked)
     out.push_back("Locked: minion won't change to another item.");
+  if (item.intrinsicState)
+    out.push_back(capitalFirst(getIntrinsicStateText(*item.intrinsicState)));
   if (!item.unavailableReason.empty())
     out.push_back(item.unavailableReason);
   return out;
@@ -816,6 +829,17 @@ static string getWeightString(double weight) {
   return toString<int>((int)(weight * 10)) + "s";
 }
 
+static Color getIntrinsicStateColor(IntrinsicAttack::Active state) {
+  switch (state) {
+    case IntrinsicAttack::ALWAYS:
+      return Color::GREEN;
+    case IntrinsicAttack::NO_WEAPON:
+      return Color::WHITE;
+    case IntrinsicAttack::NEVER:
+      return Color::GRAY;
+  }
+}
+
 SGuiElem GuiBuilder::getItemLine(const ItemInfo& item, function<void(Rectangle)> onClick,
     function<void()> onMultiClick) {
   GuiFactory::ListBuilder line(gui);
@@ -827,6 +851,8 @@ SGuiElem GuiBuilder::getItemLine(const ItemInfo& item, function<void(Rectangle)>
   line.addElem(gui.viewObject(item.viewId), viewObjectWidth);
   Color color = item.equiped ? Color::GREEN : (item.pending || item.unavailable) ?
       Color::GRAY : Color::WHITE;
+  if (item.intrinsicState)
+    color = getIntrinsicStateColor(*item.intrinsicState);
   if (item.number > 1)
     line.addElemAuto(gui.rightMargin(8, gui.label(toString(item.number), color)));
   line.addMiddleElem(gui.label(item.name, color));
@@ -960,6 +986,9 @@ static string getActionText(ItemAction a) {
     case ItemAction::REMOVE: return "remove";
     case ItemAction::CHANGE_NUMBER: return "change number";
     case ItemAction::NAME: return "name";
+    case ItemAction::INTRINSIC_ALWAYS: return "set " + getIntrinsicStateText(IntrinsicAttack::ALWAYS);
+    case ItemAction::INTRINSIC_NO_WEAPON: return "set " + getIntrinsicStateText(IntrinsicAttack::NO_WEAPON);
+    case ItemAction::INTRINSIC_NEVER: return "set " + getIntrinsicStateText(IntrinsicAttack::NEVER);
   }
 }
 
@@ -1260,8 +1289,16 @@ SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info) {
       totWeight += item.weight.value_or(0) * item.number;
     list.addElem(gui.label("Total weight: " + getWeightString(totWeight)));
     list.addElem(gui.label("Capacity: " +  (info.carryLimit ? getWeightString(*info.carryLimit) : "infinite"_s)));
+    list.addSpace();
   }
-  list.addSpace();
+  if (!info.intrinsicAttacks.empty()) {
+    list.addElem(gui.label("Intrinsic attacks", Color::YELLOW));
+    for (auto& item : info.intrinsicAttacks)
+      list.addElem(getItemLine(item, [=](Rectangle butBounds) {
+            if (auto choice = getItemChoice(item, butBounds.bottomLeft() + Vec2(50, 0), false))
+              callbacks.input({UserInputId::INTRINSIC_ATTACK, InventoryItemInfo{item.ids, *choice}});}));
+    list.addSpace();
+  }
   if (auto elem = drawTrainingInfo(info))
     list.addElemAuto(std::move(elem));
   return gui.margins(

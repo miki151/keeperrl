@@ -1306,10 +1306,10 @@ CreatureAction Creature::consume(WCreature other) const {
 
 WItem Creature::getWeapon() const {
   vector<WItem> it = equipment->getSlotItems(EquipmentSlot::WEAPON);
-  if (it.empty())
-    return getBody().getIntrinsicWeapon();
-  else
-    return it.getOnlyElement();
+  WItem weapon;
+  if (!it.empty())
+    weapon = it[0];
+  return getBody().getIntrinsicWeapon(weapon);
 }
 
 CreatureAction Creature::applyItem(WItem item) const {

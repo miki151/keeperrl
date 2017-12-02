@@ -265,30 +265,25 @@ void Player::throwItem(vector<WItem> items, optional<Vec2> dir) {
   tryToPerform(getCreature()->throwItem(items[0], *dir));
 }
 
-vector<ItemAction> Player::getItemActions(const vector<WItem>& item) const {
-  vector<ItemAction> actions;
-  if (getCreature()->equip(item[0]))
-    actions.push_back(ItemAction::EQUIP);
-  if (getCreature()->applyItem(item[0]))
-    actions.push_back(ItemAction::APPLY);
-  if (getCreature()->unequip(item[0]))
-    actions.push_back(ItemAction::UNEQUIP);
-  else {
-    actions.push_back(ItemAction::THROW);
-    actions.push_back(ItemAction::DROP);
-    if (item.size() > 1)
-      actions.push_back(ItemAction::DROP_MULTI);
-    if (item[0]->getShopkeeper(getCreature()))
-      actions.push_back(ItemAction::PAY);
-    for (Position v : getCreature()->getPosition().neighbors8())
-      if (WCreature c = v.getCreature())
-        if (getCreature()->isFriend(c)/* && c->canTakeItems(item)*/) {
-          actions.push_back(ItemAction::GIVE);
-          break;
+void Player::handleIntrinsicAttacks(const EntitySet<Item>& itemIds, ItemAction action) {
+  auto& attacks = getCreature()->getBody().getIntrinsicAttacks();
+  for (auto part : ENUM_ALL(BodyPart))
+    if (auto& attack = attacks[part])
+      if (itemIds.contains(attack->item.get()))
+        switch (action) {
+          case ItemAction::INTRINSIC_ALWAYS:
+            attack->active = IntrinsicAttack::ALWAYS;
+            break;
+          case ItemAction::INTRINSIC_NO_WEAPON:
+            attack->active = IntrinsicAttack::NO_WEAPON;
+            break;
+          case ItemAction::INTRINSIC_NEVER:
+            attack->active = IntrinsicAttack::NEVER;
+            break;
+          default:
+            FATAL << "Unhandled intrinsic item action: " << (int) action;
+            break;
         }
-  }
-  actions.push_back(ItemAction::NAME);
-  return actions;
 }
 
 void Player::handleItems(const EntitySet<Item>& itemIds, ItemAction action) {
@@ -635,7 +630,11 @@ void Player::makeMove() {
       break;
     }
     case UserInputId::INVENTORY_ITEM:
-      handleItems(action.get<InventoryItemInfo>().items, action.get<InventoryItemInfo>().action); break;
+      handleItems(action.get<InventoryItemInfo>().items, action.get<InventoryItemInfo>().action);
+      break;
+    case UserInputId::INTRINSIC_ATTACK:
+      handleIntrinsicAttacks(action.get<InventoryItemInfo>().items, action.get<InventoryItemInfo>().action);
+      break;
     case UserInputId::PICK_UP_ITEM: pickUpItemAction(action.get<int>()); break;
     case UserInputId::PICK_UP_ITEM_MULTI: pickUpItemAction(action.get<int>(), true); break;
     case UserInputId::CAST_SPELL: spellAction(action.get<SpellId>()); break;
@@ -900,7 +899,7 @@ void Player::refreshGameInfo(GameInfo& gameInfo) const {
     info.lyingItems.push_back(getFurnitureUsageInfo(question, getCreature()->getPosition().getViewObject().id()));
   }
   for (auto stack : getCreature()->stackItems(getCreature()->getPickUpOptions()))
-    info.lyingItems.push_back(getItemInfo(stack));
+    info.lyingItems.push_back(ItemInfo::get(getCreature(), stack));
   info.inventory.clear();
   map<ItemClass, vector<WItem> > typeGroups = groupBy<WItem, ItemClass>(
       getCreature()->getEquipment().getItems(), [](WItem const& item) { return item->getClass();});
@@ -922,29 +921,12 @@ ItemInfo Player::getFurnitureUsageInfo(const string& question, ViewId viewId) co
     c.viewId = viewId;);
 }
 
-ItemInfo Player::getItemInfo(const vector<WItem>& stack) const {
-  return CONSTRUCT(ItemInfo,
-    c.name = stack[0]->getShortName(getCreature());
-    c.fullName = stack[0]->getNameAndModifiers(false, getCreature());
-    c.description = getCreature()->isAffected(LastingEffect::BLIND) ? "" : stack[0]->getDescription();
-    c.number = stack.size();
-    c.viewId = stack[0]->getViewObject().id();
-    for (auto it : stack)
-      c.ids.insert(it->getUniqueId());
-    c.actions = getItemActions(stack);
-    c.equiped = getCreature()->getEquipment().isEquipped(stack[0]);
-    c.weight = stack[0]->getWeight();
-    if (stack[0]->getShopkeeper(getCreature()))
-      c.price = make_pair(ViewId::GOLD, stack[0]->getPrice());
-  );
-}
-
 vector<ItemInfo> Player::getItemInfos(const vector<WItem>& items) const {
   map<string, vector<WItem> > stacks = groupBy<WItem, string>(items,
       [this] (WItem const& item) { return getInventoryItemName(item, false); });
   vector<ItemInfo> ret;
   for (auto elem : stacks)
-    ret.push_back(getItemInfo(elem.second));
+    ret.push_back(ItemInfo::get(getCreature(), elem.second));
   return ret;
 }
 

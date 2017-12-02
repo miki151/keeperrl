@@ -101,17 +101,28 @@ void Body::setIntrinsicAttack(BodyPart part, IntrinsicAttack attack) {
   intrinsicAttacks[part] = std::move(attack);
 }
 
-WItem Body::getIntrinsicWeapon() const {
-  WItem ret;
+WItem Body::chooseWeapon(WItem weapon) const {
   // choose one of the available weapons with equal probability
-  double numOptions = 0;
-  for (auto part : ENUM_ALL(BodyPart))
-    if (numGood(part) > 0 && intrinsicAttacks[part]) {
+  bool hasRealWeapon = !!weapon;
+  double numOptions = !!weapon ? 1 : 0;
+  for (auto part : ENUM_ALL(BodyPart)) {
+    auto& attack = intrinsicAttacks[part];
+    if (numGood(part) > 0 && attack &&
+        (attack->active == attack->ALWAYS || (attack->active == attack->NO_WEAPON && !hasRealWeapon))) {
       ++numOptions;
-      if (!ret || Random.chance(1 / numOptions))
-        ret = intrinsicAttacks[part]->item.get();
+      if (!weapon || Random.chance(1.0 / numOptions))
+        weapon = intrinsicAttacks[part]->item.get();
     }
-  return ret;
+  }
+  return weapon;
+}
+
+EnumMap<BodyPart, optional<IntrinsicAttack>>& Body::getIntrinsicAttacks() {
+  return intrinsicAttacks;
+}
+
+const EnumMap<BodyPart, optional<IntrinsicAttack>>& Body::getIntrinsicAttacks() const {
+  return intrinsicAttacks;
 }
 
 void Body::setHumanoidBodyParts(int intrinsicDamage) {

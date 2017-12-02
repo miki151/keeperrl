@@ -104,7 +104,7 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   void hideAction();
   void displayInventory();
   void handleItems(const EntitySet<Item>&, ItemAction);
-  vector<ItemAction> getItemActions(const vector<WItem>&) const;
+  void handleIntrinsicAttacks(const EntitySet<Item>&, ItemAction);
   bool interruptedByEnemy();
   void travelAction();
   void targetAction();
@@ -130,7 +130,6 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   SMessageBuffer SERIAL(messageBuffer);
   string getRemainingString(LastingEffect) const;
   vector<ItemInfo> getItemInfos(const vector<WItem>&) const;
-  ItemInfo getItemInfo(const vector<WItem>&) const;
   ItemInfo getFurnitureUsageInfo(const string& question, ViewId viewId) const;
   optional<FurnitureUsageType> getUsableUsageType() const;
   SVisibilityMap SERIAL(visibilityMap);

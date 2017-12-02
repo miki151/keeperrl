@@ -465,8 +465,6 @@ ItemAttributes ItemType::Knife::getAttributes() const {
   );
 }
 
-
-
 ItemAttributes ItemType::Intrinsic::getAttributes() const {
   return ITATTR(
       i.viewId = ViewId::KNIFE;

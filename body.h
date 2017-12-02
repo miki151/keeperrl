@@ -105,7 +105,9 @@ class Body {
   void updateViewObject(ViewObject&) const;
   const optional<double>& getCarryLimit() const;
   void bleed(WCreature, double amount);
-  WItem getIntrinsicWeapon() const;
+  WItem getIntrinsicWeapon(WItem realWeapon) const;
+  const EnumMap<BodyPart, optional<IntrinsicAttack>>& getIntrinsicAttacks() const;
+  EnumMap<BodyPart, optional<IntrinsicAttack>>& getIntrinsicAttacks();
 
   bool isUndead() const;
   double getBoulderDamage() const;

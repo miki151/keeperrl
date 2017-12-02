@@ -12,6 +12,7 @@
 #include "spell_map.h"
 #include "item.h"
 #include "body.h"
+#include "equipment.h"
 
 CreatureInfo::CreatureInfo(WConstCreature c)
     : viewId(c->getViewObject().id()),
@@ -43,6 +44,69 @@ vector<PlayerInfo::SkillInfo> getSkillNames(WConstCreature c) {
   return ret;
 }
 
+vector<ItemAction> getItemActions(WConstCreature c, const vector<WItem>& item) {
+  vector<ItemAction> actions;
+  if (c->equip(item[0]))
+    actions.push_back(ItemAction::EQUIP);
+  if (c->applyItem(item[0]))
+    actions.push_back(ItemAction::APPLY);
+  if (c->unequip(item[0]))
+    actions.push_back(ItemAction::UNEQUIP);
+  else {
+    actions.push_back(ItemAction::THROW);
+    actions.push_back(ItemAction::DROP);
+    if (item.size() > 1)
+      actions.push_back(ItemAction::DROP_MULTI);
+    if (item[0]->getShopkeeper(c))
+      actions.push_back(ItemAction::PAY);
+    for (Position v : c->getPosition().neighbors8())
+      if (WCreature other = v.getCreature())
+        if (c->isFriend(other)/* && c->canTakeItems(item)*/) {
+          actions.push_back(ItemAction::GIVE);
+          break;
+        }
+  }
+  actions.push_back(ItemAction::NAME);
+  return actions;
+}
+
+ItemInfo ItemInfo::get(WConstCreature creature, const vector<WItem>& stack) {
+  return CONSTRUCT(ItemInfo,
+    c.name = stack[0]->getShortName(creature);
+    c.fullName = stack[0]->getNameAndModifiers(false, creature);
+    c.description = creature->isAffected(LastingEffect::BLIND) ? "" : stack[0]->getDescription();
+    c.number = stack.size();
+    c.viewId = stack[0]->getViewObject().id();
+    for (auto it : stack)
+      c.ids.insert(it->getUniqueId());
+    c.actions = getItemActions(creature, stack);
+    c.equiped = creature->getEquipment().isEquipped(stack[0]);
+    c.weight = stack[0]->getWeight();
+    if (stack[0]->getShopkeeper(creature))
+      c.price = make_pair(ViewId::GOLD, stack[0]->getPrice());
+  );
+}
+
+static vector<ItemInfo> fillIntrinsicAttacks(WConstCreature c) {
+  vector<ItemInfo> ret;
+  auto& intrinsicAttacks = c->getBody().getIntrinsicAttacks();
+  for (auto part : ENUM_ALL(BodyPart))
+    if (auto& attack = intrinsicAttacks[part]) {
+      ret.push_back(ItemInfo::get(c, {attack->item.get()}));
+      auto& item = ret.back();
+      if (!c->getBody().numGood(part)) {
+        item.unavailable = true;
+        item.unavailableReason = "No functional body part: "_s + getName(part);
+        item.actions.clear();
+      } else {
+        item.intrinsicState = attack->active;
+        item.actions = {
+            ItemAction::INTRINSIC_ALWAYS, ItemAction::INTRINSIC_NO_WEAPON, ItemAction::INTRINSIC_NEVER};
+      }
+    }
+  return ret;
+}
+
 PlayerInfo::PlayerInfo(WConstCreature c) : bestAttack(c) {
   firstName = c->getName().first().value_or("");
   name = c->getName().bare();
@@ -56,6 +120,7 @@ PlayerInfo::PlayerInfo(WConstCreature c) : bestAttack(c) {
   attributes = AttributeInfo::fromCreature(c);
   levelInfo.level = c->getAttributes().getExpLevel();
   levelInfo.limit = c->getAttributes().getMaxExpLevel();
+  intrinsicAttacks = fillIntrinsicAttacks(c);
   skills = getSkillNames(c);
   effects.clear();
   for (auto& adj : c->getBadAdjectives())
