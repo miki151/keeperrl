@@ -428,7 +428,7 @@ void Immigration::accept(int id, bool withMessage) {
 void Immigration::rejectIfNonPersistent(int id) {
   if (auto immigrant = getReferenceMaybe(available, id))
     if (!immigrant->getInfo().isPersistent())
-      immigrant->endTime = none;
+      immigrant->endTime = GlobalTime(-1);
 }
 
 SERIALIZE_DEF(Immigration::Available, creatures, immigrantIndex, endTime, immigration)
