@@ -341,13 +341,24 @@ void Item::setArtifactName(const string& s) {
   attributes->artifactName = s;
 }
 
-string Item::getModifiers(bool shorten) const {
+static void appendWithSpace(string& s, const string& suf) {
+  if (!s.empty() && !suf.empty())
+    s += " ";
+  s += suf;
+}
+
+string Item::getSuffix() const {
   string artStr;
-  if (attributes->artifactName) {
-    artStr = *attributes->artifactName;
-    if (!shorten)
-      artStr = " named " + artStr;
-  }
+  if (auto& effect = getWeaponInfo().attackEffect)
+    artStr += "of " + effect->getName();
+  if (attributes->artifactName)
+    appendWithSpace(artStr, "named " + *attributes->artifactName);
+  if (fire->isBurning())
+    appendWithSpace(artStr, "(burning)");
+  return artStr;
+}
+
+string Item::getModifiers(bool shorten) const {
   EnumSet<AttrType> printAttr;
   if (!shorten) {
     for (auto attr : ENUM_ALL(AttrType))
@@ -371,28 +382,28 @@ string Item::getModifiers(bool shorten) const {
     attrStrings.push_back(withSign(attributes->modifiers[attr]) + (shorten ? "" : " " + ::getName(attr)));
   string attrString = combine(attrStrings, true);
   if (!attrString.empty())
-    attrString = " (" + attrString + ")";
+    attrString = "(" + attrString + ")";
   if (attributes->uses > -1 && attributes->displayUses) 
-    attrString += " (" + toString(attributes->uses) + " uses left)";
-  return artStr + attrString;
+    appendWithSpace(attrString, "(" + toString(attributes->uses) + " uses left)");
+  return attrString;
 }
 
-string Item::getShortName(WConstCreature owner, bool noSuffix) const {
+string Item::getShortName(WConstCreature owner, bool plural) const {
   if (owner && owner->isAffected(LastingEffect::BLIND) && attributes->blindName)
-    return getBlindName(false);
-  string name = getModifiers(true);
-  if (attributes->shortName) {
-    if (!attributes->artifactName)
-      name = *attributes->shortName + " " + name;
-  } else
-    name = *attributes->name + " " + name;
-  if (fire->isBurning() && !noSuffix)
-    name.append(" (burning)");
+    return getBlindName(plural);
+  if (attributes->artifactName)
+    return *attributes->artifactName + " " + getModifiers(true);
+  string name = getVisibleName(plural);
+  appendWithSpace(name, getSuffix());
+  appendWithSpace(name, getModifiers(true));
   return name;
 }
 
 string Item::getNameAndModifiers(bool getPlural, WConstCreature owner) const {
-  return getName(getPlural, owner) + getModifiers();
+  auto ret = getName(getPlural, owner);
+  appendWithSpace(ret, getSuffix());
+  appendWithSpace(ret, getModifiers());
+  return ret;
 }
 
 string Item::getBlindName(bool plural) const {

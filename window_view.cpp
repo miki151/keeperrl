@@ -790,7 +790,7 @@ optional<string> WindowView::getText(const string& title, const string& value, i
 }
 
 Rectangle WindowView::getEquipmentMenuPosition(int height) {
-  int width = 340;
+  int width = 440;
   Vec2 origin = Vec2(rightBarWidthCollective, 200);
   origin.x = min(origin.x, renderer.getSize().x - width);
   return Rectangle(origin, origin + Vec2(width, height)).intersection(Rectangle(Vec2(0, 0), renderer.getSize()));

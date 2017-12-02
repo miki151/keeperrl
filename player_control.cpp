@@ -325,7 +325,7 @@ void PlayerControl::minionTaskAction(const TaskActionInfo& action) {
 static ItemInfo getItemInfo(const vector<WItem>& stack, bool equiped, bool pending, bool locked,
     optional<ItemInfo::Type> type = none) {
   return CONSTRUCT(ItemInfo,
-    c.name = stack[0]->getShortName();
+    c.name = stack[0]->getShortName(nullptr, stack.size() > 1);
     c.fullName = stack[0]->getNameAndModifiers(false);
     c.description = stack[0]->getDescription();
     c.number = stack.size();
@@ -370,7 +370,7 @@ static ItemInfo getEmptySlotItem(EquipmentSlot slot) {
 
 static ItemInfo getTradeItemInfo(const vector<WItem>& stack, int budget) {
   return CONSTRUCT(ItemInfo,
-    c.name = stack[0]->getShortName(nullptr, true);
+    c.name = stack[0]->getShortName(nullptr, stack.size() > 1);
     c.price = make_pair(ViewId::GOLD, stack[0]->getPrice());
     c.fullName = stack[0]->getNameAndModifiers(false);
     c.description = stack[0]->getDescription();
@@ -686,7 +686,7 @@ void PlayerControl::handleTrading(WCollective ally) {
 
 static ItemInfo getPillageItemInfo(const vector<WItem>& stack, bool noStorage) {
   return CONSTRUCT(ItemInfo,
-    c.name = stack[0]->getShortName(nullptr, true);
+    c.name = stack[0]->getShortName(nullptr, stack.size() > 1);
     c.fullName = stack[0]->getNameAndModifiers(false);
     c.description = stack[0]->getDescription();
     c.number = stack.size();

@@ -854,7 +854,7 @@ SGuiElem GuiBuilder::getItemLine(const ItemInfo& item, function<void(Rectangle)>
   if (item.intrinsicState)
     color = getIntrinsicStateColor(*item.intrinsicState);
   if (item.number > 1)
-    line.addElemAuto(gui.rightMargin(8, gui.label(toString(item.number), color)));
+    line.addElemAuto(gui.rightMargin(0, gui.label(toString(item.number) + " ", color)));
   line.addMiddleElem(gui.label(item.name, color));
   auto mainLine = gui.stack(
       gui.buttonRect(onClick),

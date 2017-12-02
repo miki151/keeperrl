@@ -72,7 +72,7 @@ vector<ItemAction> getItemActions(WConstCreature c, const vector<WItem>& item) {
 
 ItemInfo ItemInfo::get(WConstCreature creature, const vector<WItem>& stack) {
   return CONSTRUCT(ItemInfo,
-    c.name = stack[0]->getShortName(creature);
+    c.name = stack[0]->getShortName(creature, stack.size() > 1);
     c.fullName = stack[0]->getNameAndModifiers(false, creature);
     c.description = creature->isAffected(LastingEffect::BLIND) ? "" : stack[0]->getDescription();
     c.number = stack.size();

@@ -403,33 +403,18 @@ static void addPrefix(ItemAttributes& i, WeaponPrefix prefix) {
   i.price *= 7;
   switch (prefix) {
     case WeaponPrefix::SILVER:
-      i.name = "silver " + *i.name;
-      if (i.plural)
-        i.plural = "silver " + *i.plural;
       i.weaponInfo.attackEffect = Effect(Effect::SilverDamage{});
       break;
     case WeaponPrefix::FLAMING:
-      i.name = "flaming " + *i.name;
-      if (i.plural)
-        i.plural = "flaming " + *i.plural;
       i.weaponInfo.attackEffect = Effect(Effect::Fire{});
       break;
     case WeaponPrefix::POISONOUS:
-      i.name = "poisonous " + *i.name;
-      if (i.plural)
-        i.plural = "poisonous " + *i.plural;
       i.weaponInfo.attackEffect = Effect(Effect::Lasting{LastingEffect::POISON});
       break;
     case WeaponPrefix::GREAT:
-      i.name = "great " + *i.name;
-      if (i.plural)
-        i.plural = "great " + *i.plural;
       i.weaponInfo.attackEffect = Effect(Effect::Lasting{LastingEffect::BLEEDING});
       break;
     case WeaponPrefix::LEAD_FILLED:
-      i.name = "lead-filled " + *i.name;
-      if (i.plural)
-        i.plural = "lead-filled " + *i.plural;
       i.weaponInfo.attackEffect = Effect(Effect::Lasting{LastingEffect::COLLAPSED});
       break;
   }
@@ -452,7 +437,6 @@ ItemAttributes ItemType::AutomatonItem::getAttributes() const {
       i.applySound = SoundId::TRAP_ARMING;
       i.weight = 30;
       i.itemClass = ItemClass::TOOL;
-      i.description = "";
       i.applyTime = 3_visible;
       i.uses = 1;
       i.price = 60;
@@ -991,7 +975,6 @@ ItemAttributes ItemType::Ring::getAttributes() const {
       i.equipedEffect = lastingEffect;
       i.name = "ring of " + *i.shortName;
       i.plural = "rings of " + *i.shortName;
-      i.description = string(LastingEffects::getDescription(lastingEffect));
       i.weight = 0.05;
       i.equipmentSlot = EquipmentSlot::RINGS;
       i.itemClass = ItemClass::RING;
@@ -1006,7 +989,6 @@ ItemAttributes ItemType::Amulet::getAttributes() const {
       i.equipedEffect = lastingEffect;
       i.name = "amulet of " + *i.shortName;
       i.plural = "amulets of " + *i.shortName;
-      i.description = string(LastingEffects::getDescription(lastingEffect));
       i.itemClass = ItemClass::AMULET;
       i.equipmentSlot = EquipmentSlot::AMULET;
       i.price = 5 * LastingEffects::getPrice(lastingEffect);
@@ -1086,7 +1068,6 @@ ItemAttributes ItemType::Potion::getAttributes() const {
       i.shortName = effect.getName();
       i.name = "potion of " + *i.shortName;
       i.plural = "potions of " + *i.shortName;
-      i.description = effect.getDescription();
       i.blindName = "potion"_s;
       i.itemClass = ItemClass::POTION;
       i.fragile = true;
@@ -1122,7 +1103,6 @@ ItemAttributes ItemType::Mushroom::getAttributes() const {
       i.shortName = effect.getName();
       i.name = *i.shortName + " mushroom";
       i.blindName = "mushroom"_s;
-      i.description = effect.getDescription();
       i.itemClass= ItemClass::FOOD;
       i.weight = 0.1;
       i.modifiers[AttrType::DAMAGE] = -15;
@@ -1138,7 +1118,6 @@ ItemAttributes ItemType::Scroll::getAttributes() const {
       i.shortName = effect.getName();
       i.name = "scroll of " + *i.shortName;
       i.plural= "scrolls of "  + *i.shortName;
-      i.description = effect.getDescription();
       i.blindName = "scroll"_s;
       i.itemClass = ItemClass::SCROLL;
       i.weight = 0.1;
