@@ -559,7 +559,7 @@ const char* LastingEffects::getDescription(LastingEffect type) {
     case LastingEffect::ENTANGLED: return "web";
     case LastingEffect::STUNNED: return "Causes inability to make any action.";
     case LastingEffect::FIRE_RESISTANT: return "Gives fire resistance.";
-    case LastingEffect::INSANITY: return "Confuses the target about who is friend and who is foe.";
+    case LastingEffect::INSANITY: return "Causes the target to attack his friends.";
     case LastingEffect::MAGIC_RESISTANCE: return "Increases defense against magical attacks by 30%.";
     case LastingEffect::MELEE_RESISTANCE: return "Increases defense against melee attacks by 30%.";
     case LastingEffect::RANGED_RESISTANCE: return "Increases defense against ranged attacks by 30%.";
