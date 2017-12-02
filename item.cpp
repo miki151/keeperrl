@@ -157,7 +157,16 @@ double Item::getWeight() const {
 }
 
 string Item::getDescription() const {
-  return attributes->description;
+  if (!attributes->description.empty())
+    return attributes->description;
+  else if (auto& effect = attributes->effect)
+    return effect->getDescription();
+  else if (auto& effect = getWeaponInfo().attackEffect)
+    return effect->getDescription();
+  else if (auto& effect = attributes->equipedEffect)
+    return LastingEffects::getDescription(*effect);
+  else
+    return "";
 }
 
 const WeaponInfo& Item::getWeaponInfo() const {
