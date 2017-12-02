@@ -12,7 +12,8 @@ RICH_ENUM(AttackMsg,
   WAVE,
   KICK,
   BITE,
-  TOUCH
+  TOUCH,
+  CLAW
 );
 
 struct WeaponInfo {

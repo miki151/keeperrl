@@ -1309,7 +1309,7 @@ WItem Creature::getWeapon() const {
   WItem weapon;
   if (!it.empty())
     weapon = it[0];
-  return getBody().getIntrinsicWeapon(weapon);
+  return getBody().chooseWeapon(weapon);
 }
 
 CreatureAction Creature::applyItem(WItem item) const {

@@ -1844,10 +1844,11 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::CAVE_BEAR:
       return CATTR(
           c.viewId = ViewId::BEAR;
-          c.attr = LIST(20_dam, 12_def );
+          c.attr = LIST(20_dam, 18_def );
           c.body = Body::nonHumanoid(Body::Size::MEDIUM);
           c.body->setWeight(250);
           c.body->setHorseBodyParts(8);
+          c.body->setIntrinsicAttack(BodyPart::LEG, IntrinsicAttack(ItemType::claws(10)));
           c.animal = true;
           c.spawnType = SpawnType::BEAST;
           c.skills.insert(SkillId::EXPLORE_CAVES);

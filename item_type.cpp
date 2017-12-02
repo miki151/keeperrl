@@ -33,7 +33,17 @@ ItemType ItemType::touch(Effect effect) {
 
 ItemType ItemType::legs(int damage) {
   return ItemType::Intrinsic{"legs", damage,
-      WeaponInfo{false, AttackType::HIT, AttrType::DAMAGE, none, AttackMsg::KICK}};
+        WeaponInfo{false, AttackType::HIT, AttrType::DAMAGE, none, AttackMsg::KICK}};
+}
+
+ItemType ItemType::claws(int damage) {
+  return ItemType::Intrinsic{"claws", damage,
+        WeaponInfo{false, AttackType::HIT, AttrType::DAMAGE, none, AttackMsg::CLAW}};
+}
+
+ItemType ItemType::beak(int damage) {
+  return ItemType::Intrinsic{"beak", damage,
+        WeaponInfo{false, AttackType::HIT, AttrType::DAMAGE, none, AttackMsg::BITE}};
 }
 
 static ItemType fistsBase(int damage, optional<Effect> effect) {
@@ -472,7 +482,7 @@ ItemAttributes ItemType::Intrinsic::getAttributes() const {
       i.itemClass = ItemClass::WEAPON;
       i.equipmentSlot = EquipmentSlot::WEAPON;
       i.weight = 0.3;
-      i.modifiers[AttrType::DAMAGE] = 5 + maybePlusMinusOne(4);
+      i.modifiers[AttrType::DAMAGE] = damage;
       i.price = 1;
       i.weaponInfo = weaponInfo;
   );

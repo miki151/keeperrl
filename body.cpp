@@ -142,7 +142,7 @@ void Body::setHorseBodyParts(int intrinsicDamage) {
 void Body::setBirdBodyParts(int intrinsicDamage) {
   setBodyParts({{BodyPart::LEG, 2}, {BodyPart::WING, 2}, {BodyPart::HEAD, 1}, {BodyPart::BACK, 1},
       {BodyPart::TORSO, 1}});
-  setIntrinsicAttack(BodyPart::HEAD, IntrinsicAttack(ItemType::fangs(intrinsicDamage), IntrinsicAttack::NO_WEAPON));
+  setIntrinsicAttack(BodyPart::HEAD, IntrinsicAttack(ItemType::beak(intrinsicDamage), IntrinsicAttack::NO_WEAPON));
 }
 
 void Body::setMinionFood() {

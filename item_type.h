@@ -66,6 +66,8 @@ class ItemType {
   };
   static ItemType touch(Effect);
   static ItemType legs(int damage);
+  static ItemType claws(int damage);
+  static ItemType beak(int damage);
   static ItemType fists(int damage);
   static ItemType fists(int damage, Effect);
   static ItemType fangs(int damage);
