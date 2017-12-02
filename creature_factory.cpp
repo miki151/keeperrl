@@ -1975,6 +1975,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body->setWeight(35);
           c.body->setHorseBodyParts(7);
           c.body->setIntrinsicAttack(BodyPart::HEAD, IntrinsicAttack(ItemType::fangs(8)));
+          c.body->setIntrinsicAttack(BodyPart::LEG, IntrinsicAttack(ItemType::claws(7)));
           c.animal = true;
           c.permanentEffects[LastingEffect::NIGHT_VISION] = 1;
           c.spawnType = SpawnType::BEAST;
@@ -1988,6 +1989,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.viewId = ViewId::WEREWOLF;
           c.attr = LIST(20_dam, 7_def );
           c.body = Body::humanoid(Body::Size::LARGE);
+          c.body->setIntrinsicAttack(BodyPart::HEAD, IntrinsicAttack(ItemType::fangs(8)));
+          c.body->setIntrinsicAttack(BodyPart::LEG, IntrinsicAttack(ItemType::claws(7)));
           c.animal = true;
           c.spawnType = SpawnType::BEAST;
           c.permanentEffects[LastingEffect::NIGHT_VISION] = 1;
