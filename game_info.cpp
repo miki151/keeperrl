@@ -13,6 +13,10 @@
 #include "item.h"
 #include "body.h"
 #include "equipment.h"
+#include "creature_debt.h"
+#include "item_class.h"
+#include "model.h"
+#include "time_queue.h"
 
 CreatureInfo::CreatureInfo(WConstCreature c)
     : viewId(c->getViewObject().id()),
@@ -94,6 +98,7 @@ static vector<ItemInfo> fillIntrinsicAttacks(WConstCreature c) {
     if (auto& attack = intrinsicAttacks[part]) {
       ret.push_back(ItemInfo::get(c, {attack->item.get()}));
       auto& item = ret.back();
+      item.weight.reset();
       if (!c->getBody().numGood(part)) {
         item.unavailable = true;
         item.unavailableReason = "No functional body part: "_s + getName(part);
@@ -107,6 +112,16 @@ static vector<ItemInfo> fillIntrinsicAttacks(WConstCreature c) {
   return ret;
 }
 
+static vector<ItemInfo> getItemInfos(WConstCreature c, const vector<WItem>& items) {
+  map<string, vector<WItem> > stacks = groupBy<WItem, string>(items,
+      [&] (WItem const& item) {
+          return item->getNameAndModifiers(false, c) + (c->getEquipment().isEquipped(item) ? "(e)" : ""); });
+  vector<ItemInfo> ret;
+  for (auto elem : stacks)
+    ret.push_back(ItemInfo::get(c, elem.second));
+  return ret;
+}
+
 PlayerInfo::PlayerInfo(WConstCreature c) : bestAttack(c) {
   firstName = c->getName().first().value_or("");
   name = c->getName().bare();
@@ -114,7 +129,6 @@ PlayerInfo::PlayerInfo(WConstCreature c) : bestAttack(c) {
   description = capitalFirst(c->getAttributes().getDescription());
   viewId = c->getViewObject().id();
   morale = c->getMorale();
-  levelName = c->getLevel()->getName();
   positionHash = c->getPosition().getHash();
   creatureId = c->getUniqueId();
   attributes = AttributeInfo::fromCreature(c);
@@ -122,6 +136,7 @@ PlayerInfo::PlayerInfo(WConstCreature c) : bestAttack(c) {
   levelInfo.limit = c->getAttributes().getMaxExpLevel();
   intrinsicAttacks = fillIntrinsicAttacks(c);
   skills = getSkillNames(c);
+  willMoveThisTurn = c->getPosition().getModel()->getTimeQueue().willMoveThisTurn(c);
   effects.clear();
   for (auto& adj : c->getBadAdjectives())
     effects.push_back({adj.name, adj.help, true});
@@ -137,6 +152,14 @@ PlayerInfo::PlayerInfo(WConstCreature c) : bestAttack(c) {
         c->isReady(spell) ? none : optional<TimeInterval>(c->getSpellDelay(spell))});
   }
   carryLimit = c->getBody().getCarryLimit();
+  map<ItemClass, vector<WItem> > typeGroups = groupBy<WItem, ItemClass>(
+      c->getEquipment().getItems(), [](WItem const& item) { return item->getClass();});
+  debt = c->getDebt().getTotal();
+  for (auto elem : ENUM_ALL(ItemClass))
+    if (typeGroups[elem].size() > 0)
+      append(inventory, getItemInfos(c, typeGroups[elem]));
+  moveCounter = c->getPosition().getModel()->getMoveCounter();
+  isPlayerControlled = c->isPlayer();
 }
 
 const CreatureInfo* CollectiveInfo::getMinion(UniqueEntity<Creature>::Id id) const {

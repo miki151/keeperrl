@@ -36,18 +36,38 @@ LocalTime TimeQueue::getTime(WConstCreature c) {
   return timeMap.getOrFail(c).time;
 }
 
-void TimeQueue::Queue::push(WCreature c) {
-  if (c->isPlayer())
-    players.push_back(c);
-  else
-    nonPlayers.push_back(c);
+static void clearNull(deque<WCreature>& q) {
+  while (!q.empty() && q.back() == nullptr)
+    q.pop_back();
+  while (!q.empty() && q.front() == nullptr)
+    q.pop_front();
 }
 
-bool TimeQueue::Queue::empty() const {
+void TimeQueue::Queue::clearNull() {
+  ::clearNull(players);
+  ::clearNull(nonPlayers);
+}
+
+void TimeQueue::Queue::push(WCreature c) {
+  clearNull();
+  if (c->isPlayer()) {
+    int order = players.empty() ? 0 : orderMap.getOrFail(players.back()) + 1;
+    orderMap.set(c, order);
+    players.push_back(c);
+  } else {
+    int order = nonPlayers.empty() ? 1000000000 : orderMap.getOrFail(nonPlayers.back()) + 1;
+    orderMap.set(c, order);
+    nonPlayers.push_back(c);
+  }
+}
+
+bool TimeQueue::Queue::empty() {
+  clearNull();
   return players.empty() && nonPlayers.empty();
 }
 
 WCreature TimeQueue::Queue::front() {
+  clearNull();
   if (!players.empty())
     return players.front();
   else
@@ -103,6 +123,29 @@ void TimeQueue::postponeMove(WCreature c) {
   queue.at(time).push(c);
 }
 
+bool TimeQueue::willMoveThisTurn(WConstCreature c) {
+  auto hisTime = timeMap.getOrFail(c);
+  auto curTime = queue.begin()->first;
+  return hisTime.time == curTime.time && (!hisTime.extraTurn || curTime.extraTurn);
+}
+
+bool TimeQueue::compareOrder(WConstCreature c1, WConstCreature c2) {
+  if (!willMoveThisTurn(c1) && willMoveThisTurn(c2))
+    return true;
+  else if (willMoveThisTurn(c1) && !willMoveThisTurn(c2))
+    return false;
+  if (!willMoveThisTurn(c1))
+    return c1->getLastMoveCounter() < c2->getLastMoveCounter();
+  auto time1 = timeMap.getOrFail(c1);
+  auto time2 = timeMap.getOrFail(c2);
+  if (time1 < time2)
+    return true;
+  if (time2 < time1)
+    return false;
+  auto& orderMap = queue.at(time1).orderMap;
+  return orderMap.getOrFail(c1) < orderMap.getOrFail(c2);
+}
+
 TimeQueue::TimeQueue() {}
 
 PCreature TimeQueue::removeCreature(WCreature cRef) {
@@ -125,20 +168,23 @@ WCreature TimeQueue::getNextCreature(double maxTime) {
   if (creatures.empty())
     return nullptr;
   while (1) {
-    while (1) {
-      CHECK(!queue.empty());
-      if (!queue.begin()->second.empty())
-        break;
-      queue.erase(queue.begin());
-    }
-    if (queue.begin()->first.getDouble() > maxTime)
-      return nullptr;
-    auto& q = queue.begin()->second;
-    while (!q.empty() && q.front() == nullptr)
-      q.popFront();
-    if (!q.empty())
-      return q.front();
+    CHECK(!queue.empty());
+    if (!queue.begin()->second.empty())
+      break;
+    queue.erase(queue.begin());
   }
+  auto nowTime = queue.begin()->first;
+  if (nowTime.getDouble() > maxTime)
+    return nullptr;
+  auto& q = queue.begin()->second;
+  if (!nowTime.extraTurn) {
+    auto nextQueue = ++queue.begin();
+    if (nextQueue != queue.end()) {
+      if (nextQueue->first.time == nowTime.time && !nextQueue->second.empty() && nextQueue->second.front()->isPlayer())
+        return nextQueue->second.front();
+    }
+  }
+  return q.front();
 }
 
 TimeQueue::ExtendedTime::ExtendedTime() {}
@@ -152,6 +198,6 @@ double TimeQueue::ExtendedTime::getDouble() const {
   return ret;
 }
 
-bool TimeQueue::ExtendedTime::operator <(TimeQueue::ExtendedTime o) const {
+bool TimeQueue::ExtendedTime::operator < (TimeQueue::ExtendedTime o) const {
   return time < o.time || (time == o.time && !extraTurn && o.extraTurn);
 }

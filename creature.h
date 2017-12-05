@@ -269,6 +269,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   void updateViewObject();
   void swapPosition(Vec2 direction);
   vector<PItem> generateCorpse(bool instantlyRotten = false) const;
+  int getLastMoveCounter() const;
 
   private:
 
@@ -307,6 +308,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   optional<GlobalTime> SERIAL(lastCombatTime);
   HeapAllocated<CreatureDebt> SERIAL(debt);
   double SERIAL(highestAttackValueEver) = 0;
+  int SERIAL(lastMoveCounter) = 0;
 };
 
 struct AdjectiveInfo {

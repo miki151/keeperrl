@@ -92,7 +92,6 @@ class PlayerInfo {
   };
   LevelInfo HASH(levelInfo);
   string description;
-  string HASH(levelName);
   int HASH(positionHash);
   struct Effect {
     string HASH(name);
@@ -120,7 +119,9 @@ class PlayerInfo {
     bool HASH(leader);
     HASH_ALL(viewId, bestAttack, active, leader)
   };
+  bool HASH(willMoveThisTurn);
   vector<TeamMemberInfo> HASH(team);
+  vector<PlayerInfo> HASH(teamInfos);
   struct CommandInfo {
     string HASH(name);
     optional<char> HASH(keybinding);
@@ -139,8 +140,10 @@ class PlayerInfo {
   };
   vector<MinionTaskInfo> HASH(minionTasks);
   UniqueEntity<Creature>::Id HASH(creatureId);
+  int HASH(moveCounter);
   double HASH(morale);
   ViewId HASH(viewId);
+  bool HASH(isPlayerControlled);
   enum Action {
     CONTROL,
     RENAME,
@@ -149,7 +152,7 @@ class PlayerInfo {
   };
   vector<Action> HASH(actions);
   optional<double> HASH(carryLimit);
-  HASH_ALL(attributes, skills, firstName, name, title, levelInfo, levelName, positionHash, effects, spells, lyingItems, inventory, team, minionTasks, creatureId, morale, viewId, actions, commands, debt, bestAttack, carryLimit, intrinsicAttacks)
+  HASH_ALL(attributes, skills, firstName, name, title, levelInfo, positionHash, effects, spells, lyingItems, inventory, team, minionTasks, creatureId, morale, viewId, actions, commands, debt, bestAttack, carryLimit, intrinsicAttacks, teamInfos, moveCounter, willMoveThisTurn, isPlayerControlled)
 };
 
 struct ImmigrantDataInfo {

@@ -54,6 +54,7 @@
 #include "pretty_printing.h"
 #include "item_type.h"
 #include "creature_factory.h"
+#include "time_queue.h"
 
 template <class Archive>
 void Player::serialize(Archive& ar, const unsigned int) {
@@ -179,22 +180,6 @@ bool Player::tryToPerform(CreatureAction action) {
   return !!action;
 }
 
-ItemClass typeDisplayOrder[] {
-  ItemClass::WEAPON,
-    ItemClass::RANGED_WEAPON,
-    ItemClass::ARMOR,
-    ItemClass::POTION,
-    ItemClass::SCROLL,
-    ItemClass::FOOD,
-    ItemClass::BOOK,
-    ItemClass::AMULET,
-    ItemClass::RING,
-    ItemClass::TOOL,
-    ItemClass::CORPSE,
-    ItemClass::OTHER,
-    ItemClass::GOLD
-};
-
 static string getText(ItemClass type) {
   switch (type) {
     case ItemClass::WEAPON: return "Weapons";
@@ -215,13 +200,12 @@ static string getText(ItemClass type) {
   return "";
 }
 
-
 vector<WItem> Player::chooseItem(const string& text, ItemPredicate predicate, optional<UserInputId> exitAction) {
   map<ItemClass, vector<WItem> > typeGroups = groupBy<WItem, ItemClass>(
       getCreature()->getEquipment().getItems(), [](WItem const& item) { return item->getClass();});
   vector<ListElem> names;
   vector<vector<WItem> > groups;
-  for (auto elem : typeDisplayOrder)
+  for (auto elem : ENUM_ALL(ItemClass))
     if (typeGroups[elem].size() > 0) {
       names.push_back(ListElem(getText(elem), ListElem::TITLE));
       getItemNames(typeGroups[elem], names, groups, predicate);
@@ -533,7 +517,7 @@ vector<Player::CommandInfo> Player::getCommands() const {
       [] (Player* player) { player->tryToPerform(player->getCreature()->wait()); }, false},
     {PlayerInfo::CommandInfo{"Wait", 'w', "Wait until all other team members make their moves (doesn't skip turn).",
         getGame()->getPlayerCreatures().size() > 1},
-      [] (Player* player) { player->getCreature()->getPosition().getModel()->postponeMove(player->getCreature()); }, false},
+      [] (Player* player) { player->getModel()->getTimeQueue().postponeMove(player->getCreature()); }, false},
     {PlayerInfo::CommandInfo{"Travel", 't', "Travel to another site.", !getGame()->isSingleModel()},
       [] (Player* player) { player->getGame()->transferAction(player->getTeam()); }, false},
     {PlayerInfo::CommandInfo{"Chat", 'c', "Chat with someone.", canChat},
@@ -552,7 +536,7 @@ vector<Player::CommandInfo> Player::getCommands() const {
 
 void Player::makeMove() {
   if (!isSubscribed())
-    subscribeTo(getCreature()->getPosition().getModel());
+    subscribeTo(getModel());
   if (adventurer)
     considerAdventurerMusic();
   if (getCreature()->isAffected(LastingEffect::HALLU))
@@ -784,6 +768,10 @@ WGame Player::getGame() const {
     return nullptr;
 }
 
+WModel Player::getModel() const {
+  return getCreature()->getLevel()->getModel();
+}
+
 View* Player::getView() const {
   if (WGame game = getGame())
     return game->getView();
@@ -803,14 +791,14 @@ MessageGenerator& Player::getMessageGenerator() const {
 
 void Player::onStartedControl() {
   getGame()->addPlayer(getCreature());
-  getCreature()->getPosition().getModel()->postponeMove(getCreature());
+  getModel()->getTimeQueue().postponeMove(getCreature());
 }
 
 void Player::onEndedControl() {
   if (auto game = getGame()) // if the whole Game is being destructed then we get null here
     game->removePlayer(getCreature());
   if (!getCreature()->isDead())
-    getCreature()->getPosition().getModel()->postponeMove(getCreature());
+    getModel()->getTimeQueue().postponeMove(getCreature());
 }
 
 void Player::getViewIndex(Vec2 pos, ViewIndex& index) const {
@@ -886,13 +874,21 @@ void Player::refreshGameInfo(GameInfo& gameInfo) const {
   info.team.clear();
   auto team = getTeam();
   auto leader = team[0];
-  if (team.size() > 1 && team[1]->isPlayer()) {
-    auto timeCmp = [](WConstCreature c1, WConstCreature c2) { return c1->getLocalTime() < c2->getLocalTime();};
+  if (team.size() > 1) {
+    auto& timeQueue = getModel()->getTimeQueue();
+    auto timeCmp = [&timeQueue](WConstCreature c1, WConstCreature c2) {
+      if (c1->isPlayer() && !c2->isPlayer())
+        return true;
+      if (!c1->isPlayer() && c2->isPlayer())
+        return false;
+      return timeQueue.compareOrder(c1, c2);
+    };
     sort(team.begin(), team.end(), timeCmp);
   }
-  for (WConstCreature c : team)
+  for (WConstCreature c : team) {
     info.team.push_back({c->getViewObject().id(), (int) c->getBestAttack().value, c->isPlayer(), c == leader});
-  info.levelName = getLevel()->getName();
+    info.teamInfos.emplace_back(c);
+  }
   info.lyingItems.clear();
   if (auto usageType = getUsableUsageType()) {
     string question = FurnitureUsage::getUsageQuestion(*usageType, getCreature()->getPosition().getName());
@@ -900,13 +896,6 @@ void Player::refreshGameInfo(GameInfo& gameInfo) const {
   }
   for (auto stack : getCreature()->stackItems(getCreature()->getPickUpOptions()))
     info.lyingItems.push_back(ItemInfo::get(getCreature(), stack));
-  info.inventory.clear();
-  map<ItemClass, vector<WItem> > typeGroups = groupBy<WItem, ItemClass>(
-      getCreature()->getEquipment().getItems(), [](WItem const& item) { return item->getClass();});
-  info.debt = getCreature()->getDebt().getTotal();
-  for (auto elem : typeDisplayOrder)
-    if (typeGroups[elem].size() > 0)
-      append(info.inventory, getItemInfos(typeGroups[elem]));
   info.commands = getCommands().transform([](const CommandInfo& info) -> PlayerInfo::CommandInfo { return info.commandInfo;});
   if (tutorial)
     tutorial->refreshInfo(getGame(), gameInfo.tutorial);
@@ -921,22 +910,13 @@ ItemInfo Player::getFurnitureUsageInfo(const string& question, ViewId viewId) co
     c.viewId = viewId;);
 }
 
-vector<ItemInfo> Player::getItemInfos(const vector<WItem>& items) const {
-  map<string, vector<WItem> > stacks = groupBy<WItem, string>(items,
-      [this] (WItem const& item) { return getInventoryItemName(item, false); });
-  vector<ItemInfo> ret;
-  for (auto elem : stacks)
-    ret.push_back(ItemInfo::get(getCreature(), elem.second));
-  return ret;
-}
-
 vector<Vec2> Player::getVisibleEnemies() const {
   return getCreature()->getVisibleEnemies().transform(
       [](WConstCreature c) { return c->getPosition().getCoord(); });
 }
 
 double Player::getAnimationTime() const {
-  return getCreature()->getPosition().getModel()->getMoveCounter();
+  return getModel()->getMoveCounter();
 }
 
 Player::CenterType Player::getCenterType() const {
@@ -945,7 +925,7 @@ Player::CenterType Player::getCenterType() const {
 
 vector<Vec2> Player::getUnknownLocations(WConstLevel level) const {
   vector<Vec2> ret;
-  for (auto col : getCreature()->getPosition().getModel()->getCollectives())
+  for (auto col : getModel()->getCollectives())
     if (col->getLevel() == getLevel())
       if (auto& pos = col->getTerritory().getCentralPoint())
         if (!getMemory().getViewIndex(*pos))
@@ -955,7 +935,7 @@ vector<Vec2> Player::getUnknownLocations(WConstLevel level) const {
 
 
 void Player::considerAdventurerMusic() {
-  for (WCollective col : getCreature()->getPosition().getModel()->getCollectives())
+  for (WCollective col : getModel()->getCollectives())
     if (col->getVillainType() == VillainType::MAIN && !col->isConquered() &&
         col->getTerritory().contains(getCreature()->getPosition())) {
       getGame()->setCurrentMusic(MusicType::ADV_BATTLE, true);

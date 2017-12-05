@@ -65,7 +65,6 @@ class Model : public OwnedObject<Model> {
   TimeQueue& getTimeQueue();
   int getMoveCounter() const;
   void increaseMoveCounter();
-  void postponeMove(WCreature);
 
   void setGame(WGame);
   WGame getGame() const;

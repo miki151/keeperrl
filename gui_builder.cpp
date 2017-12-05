@@ -1198,6 +1198,7 @@ SGuiElem GuiBuilder::drawTrainingInfo(const PlayerInfo& info) {
 
 SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info) {
   GuiFactory::ListBuilder list(gui, legendLineHeight);
+  list.addSpace();
   list.addElem(gui.label(info.getTitle(), Color::WHITE));
   auto line = gui.getListBuilder();
   vector<SGuiElem> keyElems;
@@ -1242,24 +1243,6 @@ SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info) {
           drawMiniMenu(std::move(lines), exit, bounds.bottomLeft(), 260);
      })));
   list.addElem(line.buildHorizontalList());
-  if (info.team.size() > 1) {
-    const int numPerLine = 6;
-    auto currentLine = gui.getListBuilder();
-    currentLine.addElem(gui.label("Team: ", Color::WHITE), 60);
-    for (auto& elem : info.team) {
-      currentLine.addElem(gui.stack(
-            gui.translate(gui.rectangle((elem.active ? (elem.leader ? Color::YELLOW : Color::GREEN) : Color::BLACK).transparency(1094)), Vec2(-3, -3)),
-            gui.viewObject(elem.viewId),
-            gui.label(toString(elem.bestAttack), 12)), 30);
-      if (currentLine.getLength() >= numPerLine) {
-        list.addElem(currentLine.buildHorizontalList());
-        currentLine.clear();
-      }
-    }
-    if (!currentLine.isEmpty())
-      list.addElem(currentLine.buildHorizontalList());
-    list.addSpace();
-  }
   for (auto& elem : drawEffectsList(info))
     list.addElem(std::move(elem));
   list.addSpace();
@@ -1306,8 +1289,42 @@ SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info) {
 }
 
 SGuiElem GuiBuilder::drawRightPlayerInfo(const PlayerInfo& info) {
-  SGuiElem main = drawPlayerInventory(info);
-  return gui.margins(std::move(main), 15, 24, 15, 5);
+  if (teamMemberViewInfo &&
+      (teamMemberViewInfo->currentId != info.creatureId || teamMemberViewInfo->moveCounter != info.moveCounter))
+    teamMemberViewInfo = none;
+  auto getIconHighlight = [&] (Color c) { return gui.topMargin(-1, gui.uiHighlight(c)); };
+  auto vList = gui.getListBuilder();
+  auto teamList = gui.getListBuilder();
+  for (int i : All(info.teamInfos)) {
+    auto& member = info.teamInfos[i];
+    auto icon = gui.stack(
+        gui.button([this, i, counter = info.moveCounter, id = info.creatureId]() {
+            teamMemberViewInfo = TeamMemberViewInfo{i, counter, id};}),
+        gui.viewObject(member.viewId, 2)
+    );
+    if (member.creatureId == info.creatureId)
+      icon = gui.stack(getIconHighlight(Color::GREEN), std::move(icon));
+    else if (teamMemberViewInfo && i == teamMemberViewInfo->memberIndex)
+      icon = gui.stack(getIconHighlight(Color::GREEN.transparency(50)), std::move(icon));
+    if (!member.isPlayerControlled)
+      icon = gui.translate(std::move(icon), Vec2(0, 10));
+    teamList.addElemAuto(std::move(icon));
+    if (teamList.getLength() >= 6) {
+      vList.addElemAuto(gui.leftMargin(-7, teamList.buildHorizontalList()));
+      teamList.clear();
+    }
+  }
+  if (!teamList.isEmpty())
+    vList.addElemAuto(gui.leftMargin(-7, teamList.buildHorizontalList()));
+  vList.addSpace(10);
+  vList.addElem(gui.margins(gui.sprite(GuiFactory::TexId::HORI_LINE, GuiFactory::Alignment::TOP), -15, 0, -6, 0), 10);
+  auto getCurrentInfo = [&] () -> const PlayerInfo& {
+    if (teamMemberViewInfo)
+      return info.teamInfos[teamMemberViewInfo->memberIndex];
+    return info;
+  };
+  vList.addMiddleElem(drawPlayerInventory(getCurrentInfo()));
+  return gui.margins(vList.buildVerticalList(), 15, 24, 15, 5);
 }
 
 SGuiElem GuiBuilder::drawMoveQueueOverlay(const PlayerInfo& info) {

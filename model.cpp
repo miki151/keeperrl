@@ -198,10 +198,6 @@ void Model::increaseMoveCounter() {
   ++moveCounter;
 }
 
-void Model::postponeMove(WCreature c) {
-  timeQueue->postponeMove(c);
-}
-
 void Model::setGame(WGame g) {
   game = g;
 }

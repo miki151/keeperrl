@@ -1798,6 +1798,14 @@ class TranslateGui : public GuiLayout {
     return Rectangle(getBounds().topLeft() + pos, getBounds().topLeft() + pos + sz);
   }
 
+  virtual optional<int> getPreferredWidth() override {
+    return elems[0]->getPreferredWidth();
+  }
+
+  virtual optional<int> getPreferredHeight() override {
+    return elems[0]->getPreferredHeight();
+  }
+
   private:
   Vec2 pos;
   optional<Vec2> size;

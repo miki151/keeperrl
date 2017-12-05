@@ -51,11 +51,11 @@
 #include "weapon_info.h"
 #include "time_queue.h"
 
-template <class Archive> 
-void Creature::serialize(Archive& ar, const unsigned int version) { 
+template <class Archive>
+void Creature::serialize(Archive& ar, const unsigned int version) {
   ar & SUBCLASS(OwnedObject<Creature>) & SUBCLASS(Renderable) & SUBCLASS(UniqueEntity);
   ar(attributes, position, equipment, shortestPath, knownHiding, tribe, morale);
-  ar(deathTime, hidden);
+  ar(deathTime, hidden, lastMoveCounter);
   ar(deathReason, swapPositionCooldown);
   ar(unknownAttackers, privateEnemies, holding);
   ar(controllerStack, kills);
@@ -111,7 +111,7 @@ bool Creature::isReady(Spell* spell) const {
 }
 
 static double getWillpowerMult(double sorcerySkill) {
-  return 2 * pow(0.25, sorcerySkill); 
+  return 2 * pow(0.25, sorcerySkill);
 }
 
 const CreatureAttributes& Creature::getAttributes() const {
@@ -205,11 +205,15 @@ const EntitySet<Creature>& Creature::getKills() const {
   return kills;
 }
 
+int Creature::getLastMoveCounter() const {
+  return lastMoveCounter;
+}
+
 MovementInfo Creature::spendTime(TimeInterval t) {
   MovementInfo ret(Vec2(0, 0), getLocalTime(), getLocalTime() + t, 0,
       MovementInfo::MOVE);
   if (WModel m = position.getModel()) {
-    ret.moveCounter = position.getModel()->getMoveCounter();
+    lastMoveCounter = ret.moveCounter = position.getModel()->getMoveCounter();
     if (!isDead()) {
       if (isAffected(LastingEffect::SPEED) && t == 1_visible) {
         if (m->getTimeQueue().hasExtraMove(this))
@@ -381,8 +385,6 @@ void Creature::makeMove() {
   getBody().affectPosition(position);
   highestAttackValueEver = max(highestAttackValueEver, getBestAttack().value);
   vision->update(this);
-  if (isPlayer() && position.getModel()->getTimeQueue().hasExtraMove(this))
-    makeMove();
 }
 
 CreatureAction Creature::wait() const {
@@ -492,7 +494,7 @@ CreatureAction Creature::pickUp(const vector<WItem>& items) const {
 }
 
 vector<vector<WItem>> Creature::stackItems(vector<WItem> items) const {
-  map<string, vector<WItem> > stacks = groupBy<WItem, string>(items, 
+  map<string, vector<WItem> > stacks = groupBy<WItem, string>(items,
       [this] (WItem const& item) { return item->getNameAndModifiers(false, this); });
   return getValues(stacks);
 }
@@ -1344,7 +1346,7 @@ CreatureAction Creature::throwItem(WItem item, Vec2 direction) const {
     dist = 5 * str / 15;
   else if (item->getWeight() <= 20)
     dist = 2 * str / 15;
-  else 
+  else
     FATAL << "Item too heavy.";
   int damage = getAttr(AttrType::RANGED_DAMAGE) + item->getModifier(AttrType::RANGED_DAMAGE);
   return CreatureAction(this, [=](WCreature self) {
@@ -1378,7 +1380,7 @@ bool Creature::canSee(Position pos) const {
 bool Creature::canSee(Vec2 pos) const {
   return !isAffected(LastingEffect::BLIND) && position.withCoord(pos).isVisibleBy(this);
 }
-  
+
 bool Creature::isPlayer() const {
   return getController()->isPlayer();
 }
@@ -1548,7 +1550,7 @@ void Creature::updateVisibleCreatures() {
   int range = FieldOfView::sightRange;
   visibleEnemies.clear();
   visibleCreatures.clear();
-  for (WCreature c : position.getAllCreatures(range)) 
+  for (WCreature c : position.getAllCreatures(range))
     if (canSee(c) || isUnknownAttacker(c)) {
       visibleCreatures.push_back(c->getPosition());
       if (isEnemy(c))
@@ -1594,7 +1596,7 @@ const char* getMoraleText(double morale) {
 }
 
 vector<AdjectiveInfo> Creature::getGoodAdjectives() const {
-  vector<AdjectiveInfo> ret; 
+  vector<AdjectiveInfo> ret;
   if (!!attributes->getMoraleSpeedIncrease())
     ret.push_back({"Morale affects speed", ""});
   for (LastingEffect effect : ENUM_ALL(LastingEffect))

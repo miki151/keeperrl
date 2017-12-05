@@ -86,6 +86,7 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   SMapMemory SERIAL(levelMemory);
   void showHistory();
   WGame getGame() const;
+  WModel getModel() const;
   View* getView() const;
 
   bool tryToPerform(CreatureAction);
@@ -129,7 +130,6 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   void retireMessages();
   SMessageBuffer SERIAL(messageBuffer);
   string getRemainingString(LastingEffect) const;
-  vector<ItemInfo> getItemInfos(const vector<WItem>&) const;
   ItemInfo getFurnitureUsageInfo(const string& question, ViewId viewId) const;
   optional<FurnitureUsageType> getUsableUsageType() const;
   SVisibilityMap SERIAL(visibilityMap);

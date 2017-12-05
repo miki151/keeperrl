@@ -35,6 +35,8 @@ class TimeQueue {
   void makeExtraMove(WCreature);
   bool hasExtraMove(WCreature);
   void postponeMove(WCreature);
+  bool willMoveThisTurn(WConstCreature);
+  bool compareOrder(WConstCreature, WConstCreature);
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);
@@ -42,14 +44,18 @@ class TimeQueue {
   private:
   vector<PCreature> SERIAL(creatures);
   struct Queue {
-    deque<WCreature> SERIAL(players);
-    deque<WCreature> SERIAL(nonPlayers);
     void push(WCreature);
-    bool empty() const;
+    bool empty();
     WCreature front();
     void popFront();
     void erase(WCreature);
-    SERIALIZE_ALL(players, nonPlayers)
+    deque<WCreature> SERIAL(players);
+    deque<WCreature> SERIAL(nonPlayers);
+    EntityMap<Creature, int> SERIAL(orderMap);
+    SERIALIZE_ALL(players, nonPlayers, orderMap)
+
+    private:
+    void clearNull();
   };
   struct ExtendedTime {
     ExtendedTime();
