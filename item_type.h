@@ -58,10 +58,11 @@ class ItemType {
   SIMPLE_ITEM(BagOfCandies);
 
   struct Intrinsic {
+    ViewId SERIAL(viewId);
     string SERIAL(name);
     int SERIAL(damage);
     WeaponInfo SERIAL(weaponInfo);
-    SERIALIZE_ALL(name, damage, weaponInfo)
+    SERIALIZE_ALL(viewId, name, damage, weaponInfo)
     ITEM_TYPE_INTERFACE;
   };
   static ItemType touch(Effect);

@@ -28,26 +28,27 @@ ItemType::ItemType(ItemType&) = default;
 ItemType::ItemType(ItemType&&) = default;
 
 ItemType ItemType::touch(Effect effect) {
-  return ItemType::Intrinsic{"touch", 0, WeaponInfo{false, AttackType::HIT, AttrType::DAMAGE, effect, AttackMsg::TOUCH}};
+  return ItemType::Intrinsic{ViewId::TOUCH_ATTACK, "touch", 0,
+      WeaponInfo{false, AttackType::HIT, AttrType::DAMAGE, effect, AttackMsg::TOUCH}};
 }
 
 ItemType ItemType::legs(int damage) {
-  return ItemType::Intrinsic{"legs", damage,
+  return ItemType::Intrinsic{ViewId::LEG_ATTACK, "legs", damage,
         WeaponInfo{false, AttackType::HIT, AttrType::DAMAGE, none, AttackMsg::KICK}};
 }
 
 ItemType ItemType::claws(int damage) {
-  return ItemType::Intrinsic{"claws", damage,
+  return ItemType::Intrinsic{ViewId::CLAWS_ATTACK, "claws", damage,
         WeaponInfo{false, AttackType::HIT, AttrType::DAMAGE, none, AttackMsg::CLAW}};
 }
 
 ItemType ItemType::beak(int damage) {
-  return ItemType::Intrinsic{"beak", damage,
+  return ItemType::Intrinsic{ViewId::BEAK_ATTACK, "beak", damage,
         WeaponInfo{false, AttackType::HIT, AttrType::DAMAGE, none, AttackMsg::BITE}};
 }
 
 static ItemType fistsBase(int damage, optional<Effect> effect) {
-  return ItemType::Intrinsic{"fists", damage,
+  return ItemType::Intrinsic{ViewId::FIST_ATTACK, "fists", damage,
       WeaponInfo{false, AttackType::HIT, AttrType::DAMAGE, effect, AttackMsg::SWING}};
 }
 
@@ -60,7 +61,7 @@ ItemType ItemType::fists(int damage, Effect effect) {
 }
 
 static ItemType fangsBase(int damage, optional<Effect> effect) {
-  return ItemType::Intrinsic{"fangs", damage,
+  return ItemType::Intrinsic{ViewId::BITE_ATTACK, "fangs", damage,
       WeaponInfo{false, AttackType::BITE, AttrType::DAMAGE, effect, AttackMsg::BITE}};
 }
 
@@ -461,7 +462,7 @@ ItemAttributes ItemType::Knife::getAttributes() const {
 
 ItemAttributes ItemType::Intrinsic::getAttributes() const {
   return ITATTR(
-      i.viewId = ViewId::KNIFE;
+      i.viewId = viewId;
       i.name = name;
       i.itemClass = ItemClass::WEAPON;
       i.equipmentSlot = EquipmentSlot::WEAPON;
