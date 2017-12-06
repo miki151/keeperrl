@@ -185,6 +185,10 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   void onRansomPaid();
   void onExternalEnemyKilled(const string& name);
 
+  void addPrisonerOrder();
+  void removePrisonerOrder();
+  int getNumPrisonerOrders() const;
+
   CollectiveTeams& getTeams();
   const CollectiveTeams& getTeams() const;
   void freeTeamMembers(TeamId);
@@ -313,4 +317,5 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   set<EnemyId> SERIAL(conqueredVillains); // OBSOLETE
   void setDiscoverable();
   bool SERIAL(discoverable) = false;
+  int SERIAL(numPrisonerOrders) = 0;
 };

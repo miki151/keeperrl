@@ -666,7 +666,7 @@ SGuiElem GuiBuilder::drawImmigrationOverlay(const CollectiveInfo& info, const op
             gui.setWidth(elemWidth, gui.centerVert(gui.centerHoriz(gui.bottomMargin(-3,
                 gui.viewObject(ViewId::ROUND_SHADOW, 1, Color(255, 255, 255, 160)))))),
             gui.setWidth(elemWidth, gui.centerVert(gui.centerHoriz(gui.bottomMargin(5,
-                elem.count == 1 ? gui.viewObject(elem.viewId) : drawMinionAndLevel(elem.viewId, elem.count, 1)))))
+                elem.count ? drawMinionAndLevel(elem.viewId, *elem.count, 1) : gui.viewObject(elem.viewId)))))
     )));
   }
   lines.addElem(gui.stack(makeVec(
@@ -1031,7 +1031,7 @@ optional<ItemAction> GuiBuilder::getItemChoice(const ItemInfo& itemInfo, Vec2 me
   options.push_back("cancel");
   int count = options.size();
   SGuiElem stuff = gui.margins(
-      drawListGui("", ListElem::convert(options), MenuType::NORMAL, &index, &choice, nullptr), 15);
+      drawListGui("", ListElem::convert(options), MenuType::NORMAL, &index, &choice, nullptr), 15, 15, 18, 15);
   stuff = gui.miniWindow(gui.margins(std::move(stuff), 0));
   Vec2 size(*stuff->getPreferredWidth() + 15, *stuff->getPreferredHeight());
   menuPos.x = min(menuPos.x, renderer.getSize().x - size.x);
@@ -1326,39 +1326,6 @@ SGuiElem GuiBuilder::drawRightPlayerInfo(const PlayerInfo& info) {
   vList.addMiddleElem(drawPlayerInventory(getCurrentInfo()));
   return gui.margins(vList.buildVerticalList(), 15, 24, 15, 5);
 }
-
-SGuiElem GuiBuilder::drawMoveQueueOverlay(const PlayerInfo& info) {
-  const int elemWidth = getImmigrationBarWidth();
-  auto makeHighlight = [=] (Color c) { return gui.margins(gui.rectangle(c), 4); };
-  auto lines = gui.getListBuilder(elemWidth);
-  auto getAcceptButton = [=] (int immigrantId, optional<Keybinding> keybinding) {
-    return gui.stack(
-        gui.releaseLeftButton(getButtonCallback({UserInputId::IMMIGRANT_ACCEPT, immigrantId}), keybinding),
-        gui.onMouseLeftButtonHeld(makeHighlight(Color(0, 255, 0, 100))));
-  };
-  auto getRejectButton = [=] (int immigrantId) {
-    return gui.stack(
-        gui.releaseRightButton(getButtonCallback({UserInputId::IMMIGRANT_REJECT, immigrantId})),
-        gui.onMouseRightButtonHeld(makeHighlight(Color(255, 0, 0, 100))));
-  };
-  for (int i : All(info.team).reverse()) {
-    auto& elem = info.team[i];
-    SGuiElem button = gui.translucentBackground();
-    lines.addElem(
-        gui.stack(
-            std::move(button),
-            //gui.tooltip2(drawImmigrantInfo(elem), [](const Rectangle& r) { return r.topRight();}),
-            gui.setWidth(elemWidth, gui.centerVert(gui.centerHoriz(gui.bottomMargin(-3,
-                gui.viewObject(ViewId::ROUND_SHADOW, 1, Color(255, 255, 255, 160)))))),
-            gui.setWidth(elemWidth, gui.centerVert(gui.centerHoriz(gui.bottomMargin(5,
-                gui.viewObject(elem.viewId)))))
-    ));
-  }
-  return gui.setWidth(elemWidth, gui.stack(
-        gui.stopMouseMovement(),
-        lines.buildVerticalList()));
-}
-
 
 typedef CreatureInfo CreatureInfo;
 
@@ -1869,8 +1836,6 @@ void GuiBuilder::drawOverlays(vector<OverlayInfo>& ret, GameInfo& info) {
       auto& playerInfo = *info.playerInfo.getReferenceMaybe<PlayerInfo>();
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawPlayerOverlay, this), THIS_LINE,
            playerInfo), OverlayInfo::TOP_LEFT});
-      ret.push_back({cache->get(bindMethod(&GuiBuilder::drawMoveQueueOverlay, this), THIS_LINE,
-           playerInfo), OverlayInfo::IMMIGRATION});
       break;
     }
     default:
@@ -2165,7 +2130,7 @@ SGuiElem GuiBuilder::getHighlight(SGuiElem line, MenuType type, const string& la
           gui.mouseHighlight(menuElemMargins(gui.mainMenuLabel(label, menuLabelVPadding)), numActive, highlight));
     default:
       return gui.stack(gui.mouseHighlight(
-          gui.leftMargin(-12, gui.translate(gui.uiHighlightLine(), Vec2(0, 4))),
+          gui.leftMargin(0, gui.translate(gui.uiHighlightLine(), Vec2(0, 4))),
           numActive, highlight), std::move(line));
   }
 }
@@ -2173,7 +2138,7 @@ SGuiElem GuiBuilder::getHighlight(SGuiElem line, MenuType type, const string& la
 SGuiElem GuiBuilder::drawListGui(const string& title, const vector<ListElem>& options,
     MenuType menuType, optional<int>* highlight, int* choice, vector<int>* positions) {
   auto lines = gui.getListBuilder(listLineHeight);
-  int leftMargin = 30;
+  int leftMargin = 8;
   if (!title.empty()) {
     lines.addElem(gui.leftMargin(leftMargin, gui.label(capitalFirst(title), Color::WHITE)));
     lines.addSpace();

@@ -263,7 +263,6 @@ class GuiBuilder {
   SGuiElem drawMapHintOverlay();
   vector<string> hint;
   SGuiElem getExpIncreaseLine(const PlayerInfo::LevelInfo&, ExperienceType);
-  SGuiElem drawMoveQueueOverlay(const PlayerInfo&);
   struct TeamMemberViewInfo {
     int memberIndex;
     int moveCounter;

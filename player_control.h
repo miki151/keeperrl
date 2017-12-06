@@ -223,5 +223,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void acquireTech(int index);
   SMessageBuffer SERIAL(controlModeMessages);
   unordered_set<int> dismissedNextWaves;
+  ImmigrantDataInfo getPrisonerImmigrantData() const;
 };
 

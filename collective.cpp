@@ -60,7 +60,7 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
   ar(surrendering, delayedPos, knownTiles, technologies, kills, points, currentTasks);
   ar(credit, level, immigration, teams, name, conqueredVillains);
   ar(config, warnings, knownVillains, knownVillainLocations, banished);
-  ar(villainType, enemyId, workshops, zones, tileEfficiency, discoverable);
+  ar(villainType, enemyId, workshops, zones, tileEfficiency, discoverable, numPrisonerOrders);
   // hack to make retired villains discoverable, remove with save version change
   if (villainType == VillainType::MAIN)
     discoverable = true;
@@ -565,7 +565,7 @@ void Collective::addNewCreatureMessage(const vector<WCreature>& immigrants) {
     control->addMessage(PlayerMessage(immigrants[0]->getName().a() + " joins your forces.")
         .setCreature(immigrants[0]->getUniqueId()));
   else {
-    control->addMessage(PlayerMessage("A " + immigrants[0]->getName().multiple(immigrants.size()) +
+    control->addMessage(PlayerMessage("A " + immigrants[0]->getName().groupOf(immigrants.size()) +
           " joins your forces.").setCreature(immigrants[0]->getUniqueId()));
   }
 }
@@ -1451,7 +1451,20 @@ void Collective::onExternalEnemyKilled(const std::string& name) {
   int mana = 100;
   addMana(mana);
   control->addMessage(PlayerMessage("You feel a surge of power (+" + toString(mana) + " mana)",
-      MessagePriority::CRITICAL));
+                                    MessagePriority::CRITICAL));
+}
+
+void Collective::addPrisonerOrder() {
+  ++numPrisonerOrders;
+}
+
+void Collective::removePrisonerOrder() {
+  if (numPrisonerOrders > 0)
+    --numPrisonerOrders;
+}
+
+int Collective::getNumPrisonerOrders() const {
+  return numPrisonerOrders;
 }
 
 void Collective::onCopulated(WCreature who, WCreature with) {

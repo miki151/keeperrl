@@ -35,6 +35,7 @@ class CreatureName {
   string a() const;
   string plural() const;
   string multiple(int) const;
+  string groupOf(int) const;
   string title() const;
 
   SERIALIZATION_DECL(CreatureName);

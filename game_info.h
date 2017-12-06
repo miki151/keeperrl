@@ -162,7 +162,7 @@ struct ImmigrantDataInfo {
   string HASH(name);
   ViewId HASH(viewId);
   vector<AttributeInfo> HASH(attributes);
-  int HASH(count);
+  optional<int> HASH(count);
   optional<TimeInterval> HASH(timeLeft);
   int HASH(id);
   enum AutoState { AUTO_REJECT, AUTO_ACCEPT};

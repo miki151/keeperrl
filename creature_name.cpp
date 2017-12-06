@@ -45,6 +45,13 @@ string CreatureName::plural() const {
 
 string CreatureName::multiple(int count) const {
   if (count == 1)
+    return "1 " + name;
+  else
+    return toString(count) + " " + plural();
+}
+
+string CreatureName::groupOf(int count) const {
+  if (count == 1)
     return name;
   else
     return groupName + " of " + toString(count) + " " + plural();
