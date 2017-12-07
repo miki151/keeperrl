@@ -263,12 +263,7 @@ class GuiBuilder {
   SGuiElem drawMapHintOverlay();
   vector<string> hint;
   SGuiElem getExpIncreaseLine(const PlayerInfo::LevelInfo&, ExperienceType);
-  struct TeamMemberViewInfo {
-    int memberIndex;
-    int moveCounter;
-    UniqueEntity<Creature>::Id currentId;
-  };
-  optional<TeamMemberViewInfo> teamMemberViewInfo;
+  optional<int> highlightedTeamMember;
 };
 
 RICH_ENUM(GuiBuilder::GameSpeed,

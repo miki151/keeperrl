@@ -1200,7 +1200,6 @@ SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info) {
   GuiFactory::ListBuilder list(gui, legendLineHeight);
   list.addSpace();
   list.addElem(gui.label(info.getTitle(), Color::WHITE));
-  auto line = gui.getListBuilder();
   vector<SGuiElem> keyElems;
   bool isTutorial = false;
   for (int i : All(info.commands)) {
@@ -1210,39 +1209,39 @@ SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info) {
       if (auto key = info.commands[i].keybinding)
         keyElems.push_back(gui.keyHandlerChar(getButtonCallback({UserInputId::PLAYER_COMMAND, i}), *key));
   }
-  line.addElemAuto(gui.stack(
-      gui.stack(std::move(keyElems)),
-      gui.labelHighlight("[Commands]", Color::LIGHT_BLUE),
-      gui.conditional(gui.tutorialHighlight(), [=]{ return isTutorial;}),
-      gui.buttonRect([=] (Rectangle bounds) {
-          auto lines = gui.getListBuilder(legendLineHeight);
-          bool exit = false;
-          for (auto& elem : help)
-            lines.addElem(gui.label(elem, Color::LIGHT_BLUE));
-          for (int i : All(info.commands)) {
-            auto& command = info.commands[i];
-            function<void()> buttonFun = [] {};
-            if (command.active)
-              buttonFun = [&exit, i, this] {
-                  callbacks.input({UserInputId::PLAYER_COMMAND, i});
-                  exit = true;
-              };
-            auto labelColor = command.active ? Color::WHITE : Color::GRAY;
-            auto button = command.keybinding ? gui.buttonChar(buttonFun, *command.keybinding) : gui.button(buttonFun);
-            if (command.tutorialHighlight)
-              button = gui.stack(gui.tutorialHighlight(), std::move(button));
-            lines.addElem(gui.stack(
-                button,
-                command.active ? gui.uiHighlightMouseOver(Color::GREEN) : gui.empty(),
-                gui.tooltip({command.description}),
-                gui.label((command.keybinding ? getKeybindingDesc(*command.keybinding) + " " : ""_s) +
-                    command.name, labelColor)));
-          }
-          for (auto& button : getSettingsButtons())
-            lines.addElem(std::move(button));
-          drawMiniMenu(std::move(lines), exit, bounds.bottomLeft(), 260);
-     })));
-  list.addElem(line.buildHorizontalList());
+  if (!info.commands.empty())
+    list.addElem(gui.stack(
+        gui.stack(std::move(keyElems)),
+        gui.labelHighlight("[Commands]", Color::LIGHT_BLUE),
+        gui.conditional(gui.tutorialHighlight(), [=]{ return isTutorial;}),
+        gui.buttonRect([this, commands = info.commands] (Rectangle bounds) {
+            auto lines = gui.getListBuilder(legendLineHeight);
+            bool exit = false;
+            for (auto& elem : help)
+              lines.addElem(gui.label(elem, Color::LIGHT_BLUE));
+            for (int i : All(commands)) {
+              auto& command = commands[i];
+              function<void()> buttonFun = [] {};
+              if (command.active)
+                buttonFun = [&exit, i, this] {
+                    callbacks.input({UserInputId::PLAYER_COMMAND, i});
+                    exit = true;
+                };
+              auto labelColor = command.active ? Color::WHITE : Color::GRAY;
+              auto button = command.keybinding ? gui.buttonChar(buttonFun, *command.keybinding) : gui.button(buttonFun);
+              if (command.tutorialHighlight)
+                button = gui.stack(gui.tutorialHighlight(), std::move(button));
+              lines.addElem(gui.stack(
+                  button,
+                  command.active ? gui.uiHighlightMouseOver(Color::GREEN) : gui.empty(),
+                  gui.tooltip({command.description}),
+                  gui.label((command.keybinding ? getKeybindingDesc(*command.keybinding) + " " : ""_s) +
+                      command.name, labelColor)));
+            }
+            for (auto& button : getSettingsButtons())
+              lines.addElem(std::move(button));
+            drawMiniMenu(std::move(lines), exit, bounds.bottomLeft(), 260);
+       })));
   for (auto& elem : drawEffectsList(info))
     list.addElem(std::move(elem));
   list.addSpace();
@@ -1289,42 +1288,53 @@ SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info) {
 }
 
 SGuiElem GuiBuilder::drawRightPlayerInfo(const PlayerInfo& info) {
-  if (teamMemberViewInfo &&
-      (teamMemberViewInfo->currentId != info.creatureId || teamMemberViewInfo->moveCounter != info.moveCounter))
-    teamMemberViewInfo = none;
+  if (highlightedTeamMember && *highlightedTeamMember >= info.teamInfos.size())
+    highlightedTeamMember = none;
   auto getIconHighlight = [&] (Color c) { return gui.topMargin(-1, gui.uiHighlight(c)); };
   auto vList = gui.getListBuilder();
   auto teamList = gui.getListBuilder();
   for (int i : All(info.teamInfos)) {
     auto& member = info.teamInfos[i];
     auto icon = gui.stack(
-        gui.button([this, i, counter = info.moveCounter, id = info.creatureId]() {
-            teamMemberViewInfo = TeamMemberViewInfo{i, counter, id};}),
-        gui.viewObject(member.viewId, 2)
+        gui.mouseOverAction([this, i] { highlightedTeamMember = i;},
+            [this, i] { if (highlightedTeamMember == i) highlightedTeamMember = none; }),
+        gui.mouseHighlight2(getIconHighlight(Color::GREEN)),
+        gui.margins(gui.viewObject(member.viewId, 2), 1)
     );
     if (member.creatureId == info.creatureId)
-      icon = gui.stack(getIconHighlight(Color::GREEN), std::move(icon));
-    else if (teamMemberViewInfo && i == teamMemberViewInfo->memberIndex)
-      icon = gui.stack(getIconHighlight(Color::GREEN.transparency(50)), std::move(icon));
+      icon = gui.stack(
+          std::move(icon),
+          gui.translate(gui.translucentBackgroundPassMouse(gui.translate(gui.labelUnicode(u8"⬆"), Vec2(2, -1))),
+              Vec2(16, 50), Vec2(17, 21))
+      );
     if (!member.isPlayerControlled)
-      icon = gui.translate(std::move(icon), Vec2(0, 10));
+      icon = gui.stack(
+          std::move(icon),
+          gui.translate(gui.translucentBackgroundPassMouse(gui.translate(gui.label("AI"), Vec2(2, -1))),
+              Vec2(16, 50), Vec2(21, 21))
+      );
     teamList.addElemAuto(std::move(icon));
     if (teamList.getLength() >= 6) {
-      vList.addElemAuto(gui.leftMargin(-7, teamList.buildHorizontalList()));
+      int bottomMargin = i == info.teamInfos.size() - 1 ? 20 : 35;
+      vList.addElemAuto(gui.margins(teamList.buildHorizontalList(), -9, 25, 0, bottomMargin));
       teamList.clear();
     }
   }
   if (!teamList.isEmpty())
-    vList.addElemAuto(gui.leftMargin(-7, teamList.buildHorizontalList()));
+    vList.addElemAuto(gui.margins(teamList.buildHorizontalList(), -9, 0, 0, 20));
   vList.addSpace(10);
   vList.addElem(gui.margins(gui.sprite(GuiFactory::TexId::HORI_LINE, GuiFactory::Alignment::TOP), -15, 0, -6, 0), 10);
-  auto getCurrentInfo = [&] () -> const PlayerInfo& {
-    if (teamMemberViewInfo)
-      return info.teamInfos[teamMemberViewInfo->memberIndex];
-    return info;
-  };
-  vList.addMiddleElem(drawPlayerInventory(getCurrentInfo()));
-  return gui.margins(vList.buildVerticalList(), 15, 24, 15, 5);
+  vector<SGuiElem> others;
+  for (int i : All(info.teamInfos)) {
+    auto& elem = info.teamInfos[i];
+    if (elem.creatureId != info.creatureId)
+      others.push_back(gui.conditional(drawPlayerInventory(elem), [this, i]{ return highlightedTeamMember == i;}));
+    else
+      others.push_back(gui.conditional(drawPlayerInventory(info),
+          [this, i]{ return !highlightedTeamMember || highlightedTeamMember == i;}));
+  }
+  vList.addMiddleElem(gui.stack(std::move(others)));
+  return gui.margins(vList.buildVerticalList(), 15, 0, 15, 5);
 }
 
 typedef CreatureInfo CreatureInfo;
