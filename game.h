@@ -78,6 +78,7 @@ class Game : public OwnedObject<Game> {
   vector<WModel> getAllModels() const;
   bool isSingleModel() const;
   int getSaveProgressCount() const;
+  WModel getCurrentModel() const;
 
   void prepareSiteRetirement();
   void doneRetirement();
@@ -95,7 +96,6 @@ class Game : public OwnedObject<Game> {
   void updateSunlightInfo();
   void tick(GlobalTime);
   PCreature makeAdventurer(int handicap);
-  WModel getCurrentModel() const;
   Vec2 getModelCoords(const WModel) const;
   optional<ExitInfo> updateModel(WModel, double totalTime);
   string getPlayerName() const;

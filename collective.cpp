@@ -581,7 +581,14 @@ void Collective::update(bool currentlyActive) {
     immigration->update();
 }
 
+void Collective::considerTransferingLostMinions() {
+  for (auto c : getCreatures())
+    if (c->getPosition().getModel() != getGame()->getCurrentModel())
+      getGame()->transferCreature(c, getModel());
+}
+
 void Collective::tick() {
+  considerTransferingLostMinions();
   dangerLevelCache = none;
   control->tick();
   zones->tick();
@@ -764,6 +771,16 @@ void Collective::onEvent(const GameEvent& event) {
           addMana(mana);
           control->addMessage(PlayerMessage("You feel a surge of power (+" + toString(mana) + " mana)",
               MessagePriority::CRITICAL));
+        }
+        auto civilians = col->getCreatures().filter(
+            [&](WConstCreature c) { return c->getBody().isHumanoid() && !col->hasTrait(c, MinionTrait::FIGHTER); });
+        int numCaptured = min(civilians.size(), numPrisonerOrders);
+        numPrisonerOrders -= numCaptured;
+        for (int i : Range(numCaptured)) {
+          auto pos = civilians[i]->getPosition();
+          civilians[i]->dieNoReason(Creature::DropType::ONLY_INVENTORY);
+          addCreature(CreatureFactory::fromId(CreatureId::PRISONER, getTribeId()), pos,
+              {MinionTrait::PRISONER, MinionTrait::NO_LIMIT});
         }
       },
       [&](const auto&) {}

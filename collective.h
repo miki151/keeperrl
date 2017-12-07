@@ -318,4 +318,5 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   void setDiscoverable();
   bool SERIAL(discoverable) = false;
   int SERIAL(numPrisonerOrders) = 0;
+  void considerTransferingLostMinions();
 };

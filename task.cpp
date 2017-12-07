@@ -1258,6 +1258,10 @@ class TransferTo : public Task {
   TransferTo(WModel m) : model(m) {}
 
   virtual MoveInfo getMove(WCreature c) override {
+    if (c->getPosition().getModel() == model) {
+      setDone();
+      return NoMove;
+    }
     if (!target)
       target = c->getGame()->getTransferPos(model, c->getPosition().getModel());
     if (c->getPosition() == target && c->getGame()->canTransferCreature(c, model)) {
