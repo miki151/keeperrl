@@ -382,6 +382,7 @@ static ItemInfo getTradeItemInfo(const vector<WItem>& stack, int budget) {
 }
 
 void PlayerControl::fillEquipment(WCreature creature, PlayerInfo& info) const {
+  info.inventory.clear();
   if (!creature->getBody().isHumanoid())
     return;
   int index = 0;
