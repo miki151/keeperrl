@@ -112,15 +112,7 @@ class PlayerInfo {
   vector<ItemInfo> HASH(inventory);
   vector<ItemInfo> HASH(intrinsicAttacks);
   int HASH(debt);
-  struct TeamMemberInfo {
-    ViewId HASH(viewId);
-    int HASH(bestAttack);
-    bool HASH(active);
-    bool HASH(leader);
-    HASH_ALL(viewId, bestAttack, active, leader)
-  };
   bool HASH(willMoveThisTurn);
-  vector<TeamMemberInfo> HASH(team);
   vector<PlayerInfo> HASH(teamInfos);
   struct CommandInfo {
     string HASH(name);
@@ -144,6 +136,11 @@ class PlayerInfo {
   double HASH(morale);
   ViewId HASH(viewId);
   bool HASH(isPlayerControlled);
+  enum ControlMode {
+    FULL,
+    LEADER
+  };
+  ControlMode HASH(controlMode);
   enum Action {
     CONTROL,
     RENAME,
@@ -152,7 +149,7 @@ class PlayerInfo {
   };
   vector<Action> HASH(actions);
   optional<double> HASH(carryLimit);
-  HASH_ALL(attributes, skills, firstName, name, title, levelInfo, positionHash, effects, spells, lyingItems, inventory, team, minionTasks, creatureId, morale, viewId, actions, commands, debt, bestAttack, carryLimit, intrinsicAttacks, teamInfos, moveCounter, willMoveThisTurn, isPlayerControlled)
+  HASH_ALL(attributes, skills, firstName, name, title, levelInfo, positionHash, effects, spells, lyingItems, inventory, minionTasks, creatureId, morale, viewId, actions, commands, debt, bestAttack, carryLimit, intrinsicAttacks, teamInfos, moveCounter, willMoveThisTurn, isPlayerControlled, controlMode)
 };
 
 struct ImmigrantDataInfo {

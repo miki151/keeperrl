@@ -594,59 +594,60 @@ void Player::makeMove() {
     }
     updateView = true;
   }
-  switch (action.getId()) {
-    case UserInputId::FIRE: fireAction(action.get<Vec2>()); break;
-    case UserInputId::TRAVEL: travel = true;
-      FALLTHROUGH;
-    case UserInputId::MOVE: direction.push_back(action.get<Vec2>()); break;
-    case UserInputId::TILE_CLICK: {
-      Position newPos = getCreature()->getPosition().withCoord(action.get<Vec2>());
-      if (newPos.dist8(getCreature()->getPosition()) == 1) {
-        Vec2 dir = getCreature()->getPosition().getDir(newPos);
-        if (WCreature c = newPos.getCreature()) {
-          creatureAction(c->getUniqueId());
-          break;
-        }
-        direction.push_back(dir);
-      } else
-      if (newPos != getCreature()->getPosition() && !wasJustTravelling)
-        target = newPos;
-      break;
-    }
-    case UserInputId::INVENTORY_ITEM:
-      handleItems(action.get<InventoryItemInfo>().items, action.get<InventoryItemInfo>().action);
-      break;
-    case UserInputId::INTRINSIC_ATTACK:
-      handleIntrinsicAttacks(action.get<InventoryItemInfo>().items, action.get<InventoryItemInfo>().action);
-      break;
-    case UserInputId::PICK_UP_ITEM: pickUpItemAction(action.get<int>()); break;
-    case UserInputId::PICK_UP_ITEM_MULTI: pickUpItemAction(action.get<int>(), true); break;
-    case UserInputId::CAST_SPELL: spellAction(action.get<SpellId>()); break;
-    case UserInputId::DRAW_LEVEL_MAP: getView()->drawLevelMap(this); break;
-    case UserInputId::CREATURE_BUTTON: creatureAction(action.get<Creature::Id>()); break;
-    case UserInputId::CREATURE_BUTTON2: extendedAttackAction(action.get<Creature::Id>()); break;
-    case UserInputId::EXIT: getGame()->exitAction(); return;
-    case UserInputId::APPLY_EFFECT:
-      if (auto effect = PrettyPrinting::parseObject<Effect>(action.get<string>()))
-        effect->applyToCreature(getCreature(), nullptr);
-      else
-        getView()->presentText("Sorry", "Couldn't parse \"" + action.get<string>() + "\"");
-      break;
-    case UserInputId::CREATE_ITEM:
-      if (auto itemType = PrettyPrinting::parseObject<ItemType>(action.get<string>()))
-        getCreature()->take(itemType->get());
-      else
-        getView()->presentText("Sorry", "Couldn't parse \"" + action.get<string>() + "\"");
-      break;
-    case UserInputId::SUMMON_ENEMY:
-      if (auto id = PrettyPrinting::parseObject<CreatureId>(action.get<string>())) {
-        auto factory = CreatureFactory::singleCreature(TribeId::getMonster(), *id);
-        Effect::summon(getCreature()->getPosition(), factory, 1, 1000_visible,
-            3_visible);
-      } else
-        getView()->presentText("Sorry", "Couldn't parse \"" + action.get<string>() + "\"");
-      break;
-    case UserInputId::PLAYER_COMMAND: {
+  if (!handleUserInput(action))
+    switch (action.getId()) {
+      case UserInputId::FIRE: fireAction(action.get<Vec2>()); break;
+      case UserInputId::TRAVEL: travel = true;
+        FALLTHROUGH;
+      case UserInputId::MOVE: direction.push_back(action.get<Vec2>()); break;
+      case UserInputId::TILE_CLICK: {
+        Position newPos = getCreature()->getPosition().withCoord(action.get<Vec2>());
+        if (newPos.dist8(getCreature()->getPosition()) == 1) {
+          Vec2 dir = getCreature()->getPosition().getDir(newPos);
+          if (WCreature c = newPos.getCreature()) {
+            creatureAction(c->getUniqueId());
+            break;
+          }
+          direction.push_back(dir);
+        } else
+        if (newPos != getCreature()->getPosition() && !wasJustTravelling)
+          target = newPos;
+        break;
+      }
+      case UserInputId::INVENTORY_ITEM:
+        handleItems(action.get<InventoryItemInfo>().items, action.get<InventoryItemInfo>().action);
+        break;
+      case UserInputId::INTRINSIC_ATTACK:
+        handleIntrinsicAttacks(action.get<InventoryItemInfo>().items, action.get<InventoryItemInfo>().action);
+        break;
+      case UserInputId::PICK_UP_ITEM: pickUpItemAction(action.get<int>()); break;
+      case UserInputId::PICK_UP_ITEM_MULTI: pickUpItemAction(action.get<int>(), true); break;
+      case UserInputId::CAST_SPELL: spellAction(action.get<SpellId>()); break;
+      case UserInputId::DRAW_LEVEL_MAP: getView()->drawLevelMap(this); break;
+      case UserInputId::CREATURE_BUTTON: creatureAction(action.get<Creature::Id>()); break;
+      case UserInputId::CREATURE_BUTTON2: extendedAttackAction(action.get<Creature::Id>()); break;
+      case UserInputId::EXIT: getGame()->exitAction(); return;
+      case UserInputId::APPLY_EFFECT:
+        if (auto effect = PrettyPrinting::parseObject<Effect>(action.get<string>()))
+          effect->applyToCreature(getCreature(), nullptr);
+        else
+          getView()->presentText("Sorry", "Couldn't parse \"" + action.get<string>() + "\"");
+        break;
+      case UserInputId::CREATE_ITEM:
+        if (auto itemType = PrettyPrinting::parseObject<ItemType>(action.get<string>()))
+          getCreature()->take(itemType->get());
+        else
+          getView()->presentText("Sorry", "Couldn't parse \"" + action.get<string>() + "\"");
+        break;
+      case UserInputId::SUMMON_ENEMY:
+        if (auto id = PrettyPrinting::parseObject<CreatureId>(action.get<string>())) {
+          auto factory = CreatureFactory::singleCreature(TribeId::getMonster(), *id);
+          Effect::summon(getCreature()->getPosition(), factory, 1, 1000_visible,
+              3_visible);
+        } else
+          getView()->presentText("Sorry", "Couldn't parse \"" + action.get<string>() + "\"");
+        break;
+      case UserInputId::PLAYER_COMMAND: {
         int index = action.get<int>();
         auto commands = getCommands();
         if (index >= 0 && index < commands.size()) {
@@ -654,30 +655,30 @@ void Player::makeMove() {
           if (commands[index].actionKillsController)
             return;
         }
+        break;
       }
-      break;
-    case UserInputId::PAY_DEBT:
+      case UserInputId::PAY_DEBT:
         payForAllItemsAction();
-      break;
-    case UserInputId::TUTORIAL_CONTINUE:
+        break;
+      case UserInputId::TUTORIAL_CONTINUE:
         if (tutorial)
           tutorial->continueTutorial(getGame());
         break;
-    case UserInputId::TUTORIAL_GO_BACK:
+      case UserInputId::TUTORIAL_GO_BACK:
         if (tutorial)
           tutorial->goBack();
         break;
-#ifndef RELEASE
-    case UserInputId::CHEAT_ATTRIBUTES:
-      getCreature()->getAttributes().setBaseAttr(AttrType::DAMAGE, 80);
-      getCreature()->getAttributes().setBaseAttr(AttrType::DEFENSE, 80);
-      getCreature()->getAttributes().setBaseAttr(AttrType::SPELL_DAMAGE, 80);
-      getCreature()->addPermanentEffect(LastingEffect::SPEED, true);
-      getCreature()->addPermanentEffect(LastingEffect::FLYING, true);
-      break;
-#endif
-    default: break;
-  }
+  #ifndef RELEASE
+      case UserInputId::CHEAT_ATTRIBUTES:
+        getCreature()->getAttributes().setBaseAttr(AttrType::DAMAGE, 80);
+        getCreature()->getAttributes().setBaseAttr(AttrType::DEFENSE, 80);
+        getCreature()->getAttributes().setBaseAttr(AttrType::SPELL_DAMAGE, 80);
+        getCreature()->addPermanentEffect(LastingEffect::SPEED, true);
+        getCreature()->addPermanentEffect(LastingEffect::FLYING, true);
+        break;
+  #endif
+      default: break;
+    }
   if (getCreature()->isAffected(LastingEffect::SLEEP)) {
     onFellAsleep();
     return;
@@ -852,6 +853,10 @@ bool Player::isTravelEnabled() const {
   return true;
 }
 
+bool Player::handleUserInput(UserInput) {
+  return false;
+}
+
 optional<FurnitureUsageType> Player::getUsableUsageType() const {
   if (auto furniture = getCreature()->getPosition().getFurniture(FurnitureLayer::MIDDLE))
     if (furniture->canUse(getCreature()))
@@ -871,7 +876,7 @@ void Player::refreshGameInfo(GameInfo& gameInfo) const {
   gameInfo.time = getCreature()->getGame()->getGlobalTime();
   gameInfo.playerInfo = PlayerInfo(getCreature());
   auto& info = *gameInfo.playerInfo.getReferenceMaybe<PlayerInfo>();
-  info.team.clear();
+  info.controlMode = getGame()->getPlayerCreatures().size() == 1 ? PlayerInfo::LEADER : PlayerInfo::FULL;
   auto team = getTeam();
   auto leader = team[0];
   if (team.size() > 1) {
@@ -886,7 +891,6 @@ void Player::refreshGameInfo(GameInfo& gameInfo) const {
     sort(team.begin(), team.end(), timeCmp);
   }
   for (WConstCreature c : team) {
-    info.team.push_back({c->getViewObject().id(), (int) c->getBestAttack().value, c->isPlayer(), c == leader});
     info.teamInfos.emplace_back(c);
   }
   info.lyingItems.clear();

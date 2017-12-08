@@ -80,6 +80,7 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   virtual void onFellAsleep();
   virtual vector<WCreature> getTeam() const;
   virtual bool isTravelEnabled() const;
+  virtual bool handleUserInput(UserInput);
 
   optional<Vec2> chooseDirection(const string& question);
 

@@ -1283,47 +1283,67 @@ SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info) {
   }
   if (auto elem = drawTrainingInfo(info))
     list.addElemAuto(std::move(elem));
-  return gui.margins(
-      gui.scrollable(list.buildVerticalList(), &inventoryScroll, &scrollbarsHeld), -5, 0, 0, 0);
+  return
+      gui.scrollable(list.buildVerticalList(), &inventoryScroll, &scrollbarsHeld);
+}
+
+static const char* getControlModeName(PlayerInfo::ControlMode m) {
+  switch (m) {
+    case PlayerInfo::FULL: return "full";
+    case PlayerInfo::LEADER: return "leader";
+  }
 }
 
 SGuiElem GuiBuilder::drawRightPlayerInfo(const PlayerInfo& info) {
   if (highlightedTeamMember && *highlightedTeamMember >= info.teamInfos.size())
     highlightedTeamMember = none;
   auto getIconHighlight = [&] (Color c) { return gui.topMargin(-1, gui.uiHighlight(c)); };
-  auto vList = gui.getListBuilder();
+  auto vList = gui.getListBuilder(legendLineHeight);
   auto teamList = gui.getListBuilder();
   for (int i : All(info.teamInfos)) {
     auto& member = info.teamInfos[i];
-    auto icon = gui.stack(
-        gui.mouseOverAction([this, i] { highlightedTeamMember = i;},
-            [this, i] { if (highlightedTeamMember == i) highlightedTeamMember = none; }),
-        gui.mouseHighlight2(getIconHighlight(Color::GREEN)),
-        gui.margins(gui.viewObject(member.viewId, 2), 1)
-    );
-    if (member.creatureId == info.creatureId)
+    auto icon = gui.margins(gui.viewObject(member.viewId, 2), 1);
+    if (member.creatureId != info.creatureId)
       icon = gui.stack(
-          std::move(icon),
-          gui.translate(gui.translucentBackgroundPassMouse(gui.translate(gui.labelUnicode(u8"⬆"), Vec2(2, -1))),
-              Vec2(16, 50), Vec2(17, 21))
+          gui.mouseOverAction([this, i] { highlightedTeamMember = i;},
+              [this, i] { if (highlightedTeamMember == i) highlightedTeamMember = none; }),
+          gui.mouseHighlight2(getIconHighlight(Color::GREEN)),
+          std::move(icon)
       );
-    if (!member.isPlayerControlled)
-      icon = gui.stack(
-          std::move(icon),
-          gui.translate(gui.translucentBackgroundPassMouse(gui.translate(gui.label("AI"), Vec2(2, -1))),
-              Vec2(16, 50), Vec2(21, 21))
-      );
+    if (info.teamInfos.size() > 1) {
+      if (member.creatureId == info.creatureId)
+        icon = gui.stack(
+            std::move(icon),
+            gui.translate(gui.translucentBackgroundPassMouse(gui.translate(gui.labelUnicode(u8"⬆"), Vec2(2, -1))),
+                Vec2(16, 50), Vec2(17, 21))
+        );
+      if (member.isPlayerControlled)
+        icon = gui.stack(
+            gui.margins(gui.rectangle(Color::GREEN.transparency(1094)), 2),
+            std::move(icon)
+        );
+    }
     teamList.addElemAuto(std::move(icon));
     if (teamList.getLength() >= 6) {
-      int bottomMargin = i == info.teamInfos.size() - 1 ? 20 : 35;
-      vList.addElemAuto(gui.margins(teamList.buildHorizontalList(), -9, 25, 0, bottomMargin));
+      int bottomMargin = i == info.teamInfos.size() - 1 ? -5 : 15;
+      vList.addElemAuto(gui.margins(teamList.buildHorizontalList(), 0, 25, 0, bottomMargin));
       teamList.clear();
     }
   }
   if (!teamList.isEmpty())
-    vList.addElemAuto(gui.margins(teamList.buildHorizontalList(), -9, 0, 0, 20));
+    vList.addElemAuto(gui.margins(teamList.buildHorizontalList(), 0, 25, 0, 20));
   vList.addSpace(10);
-  vList.addElem(gui.margins(gui.sprite(GuiFactory::TexId::HORI_LINE, GuiFactory::Alignment::TOP), -15, 0, -6, 0), 10);
+  if (info.teamInfos.size() > 1)
+  vList.addElem(gui.stack(
+      gui.labelHighlight("[Control mode: "_s + getControlModeName(info.controlMode) + "]", Color::LIGHT_BLUE),
+      gui.button(getButtonCallback(UserInputId::TOGGLE_CONTROL_MODE), gui.getKey(SDL::SDLK_g))
+  ));
+  vList.addElem(gui.stack(
+      gui.labelHighlight("[Exit control mode]", Color::LIGHT_BLUE),
+      gui.button(getButtonCallback(UserInputId::EXIT_CONTROL_MODE), gui.getKey(SDL::SDLK_u))
+  ));
+  vList.addSpace(10);
+  vList.addElem(gui.margins(gui.sprite(GuiFactory::TexId::HORI_LINE, GuiFactory::Alignment::TOP), -6, 0, -6, 0), 10);
   vector<SGuiElem> others;
   for (int i : All(info.teamInfos)) {
     auto& elem = info.teamInfos[i];
@@ -1334,7 +1354,7 @@ SGuiElem GuiBuilder::drawRightPlayerInfo(const PlayerInfo& info) {
           [this, i]{ return !highlightedTeamMember || highlightedTeamMember == i;}));
   }
   vList.addMiddleElem(gui.stack(std::move(others)));
-  return gui.margins(vList.buildVerticalList(), 15, 0, 15, 5);
+  return gui.margins(vList.buildVerticalList(), 6, 0, 15, 5);
 }
 
 typedef CreatureInfo CreatureInfo;
