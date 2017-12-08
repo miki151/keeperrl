@@ -234,7 +234,9 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.inhabitants.leader = CreatureId::AVATAR;
             c.inhabitants.fighters = CreatureList(
                 random.get(12, 17),
-                makeVec(CreatureId::KNIGHT, CreatureId::ARCHER));
+                makeVec(make_pair(1, CreatureId::PRIEST),
+                    make_pair(3, CreatureId::KNIGHT),
+                    make_pair(1, CreatureId::ARCHER)));
             c.inhabitants.civilians = CreatureList(
                 random.get(6, 9),
                 makeVec(CreatureId::PESEANT, CreatureId::CHILD, CreatureId::DONKEY, CreatureId::HORSE,

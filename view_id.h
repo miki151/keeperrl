@@ -50,6 +50,7 @@ RICH_ENUM(
     GHOST,
     SPIRIT,
     KNIGHT,
+    PRIEST,
     DUKE,
     ARCHER,
     PESEANT,

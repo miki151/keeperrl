@@ -1236,6 +1236,20 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.chatReactionFriendly = "curses all dungeons"_s;
           c.chatReactionHostile = "\"Die!\""_s;
           c.name = "archer";);
+    case CreatureId::PRIEST:
+      return CATTR(
+          c.viewId = ViewId::PRIEST;
+          c.attr = LIST(15_dam, 15_def, 27_spell_dam );
+          c.body = Body::humanoid(Body::Size::LARGE);
+          c.permanentEffects[LastingEffect::MAGIC_RESISTANCE] = 1;
+          c.chatReactionFriendly = "curses all dungeons"_s;
+          c.chatReactionHostile = "\"Die!\""_s;
+          c.spells->add(SpellId::HEAL_SELF);
+          c.spells->add(SpellId::SPEED_SELF);
+          c.spells->add(SpellId::DEF_BONUS);
+          c.spells->add(SpellId::BLAST);
+          c.spells->add(SpellId::HEAL_OTHER);
+          c.name = "priest";);
     case CreatureId::WARRIOR:
       return CATTR(
           c.viewId = ViewId::WARRIOR;
@@ -2320,7 +2334,12 @@ vector<ItemType> getDefaultInventory(CreatureId id) {
         .add(randomHealing())
         .add(ItemType::Potion{Effect::Lasting{LastingEffect::SPEED}}, 4)
         .add(ItemType::GoldPiece{}, Random.get(60, 80));
-    case CreatureId::KNIGHT: 
+    case CreatureId::PRIEST:
+      return ItemList()
+          .add(ItemType::IronStaff{})
+          .add(ItemType::LeatherBoots{})
+          .add(ItemType::Robe{});
+    case CreatureId::KNIGHT:
       return ItemList()
         .add(ItemType::Sword{})
         .add(ItemType::ChainArmor{})

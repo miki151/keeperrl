@@ -105,6 +105,7 @@ RICH_ENUM(CreatureId,
     OGRE,
     CHICKEN,
 
+    PRIEST,
     KNIGHT,
     AVATAR,
     ARCHER,
