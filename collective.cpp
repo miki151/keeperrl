@@ -718,7 +718,8 @@ void Collective::onEvent(const GameEvent& event) {
       [&](const Alarm& info) {
         static const auto alarmTime = 100_visible;
         if (getTerritory().contains(info.pos)) {
-          control->addMessage(PlayerMessage("An alarm goes off.", MessagePriority::HIGH).setPosition(info.pos));
+          if (!info.silent)
+            control->addMessage(PlayerMessage("An alarm goes off.", MessagePriority::HIGH).setPosition(info.pos));
           alarmInfo = AlarmInfo {getGlobalTime() + alarmTime, info.pos };
           for (WCreature c : byTrait[MinionTrait::FIGHTER])
             if (c->isAffected(LastingEffect::SLEEP))

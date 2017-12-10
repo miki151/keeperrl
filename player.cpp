@@ -96,13 +96,15 @@ void Player::onEvent(const GameEvent& event) {
         }
       },
       [&](const Alarm& info) {
-        Position pos = info.pos;
-        Position myPos = getCreature()->getPosition();
-        if (pos == myPos)
-          privateMessage("An alarm sounds near you.");
-        else if (pos.isSameLevel(myPos))
-          privateMessage("An alarm sounds in the " +
-              getCardinalName(myPos.getDir(pos).getBearing().getCardinalDir()));
+        if (!info.silent) {
+          Position pos = info.pos;
+          Position myPos = getCreature()->getPosition();
+          if (pos == myPos)
+            privateMessage("An alarm sounds near you.");
+          else if (pos.isSameLevel(myPos))
+            privateMessage("An alarm sounds in the " +
+                getCardinalName(myPos.getDir(pos).getBearing().getCardinalDir()));
+        }
       },
       [&](const ConqueredEnemy& info) {
         if (adventurer) {

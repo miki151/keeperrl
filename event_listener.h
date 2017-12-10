@@ -60,6 +60,7 @@ namespace EventInfo {
 
   struct Alarm {
     Position pos;
+    bool silent = false;
   };
 
   struct CreatureTortured {

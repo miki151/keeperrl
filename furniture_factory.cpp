@@ -411,6 +411,9 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setEntryType(FurnitureEntry(FurnitureEntry::Trap(Effect::Alarm{})))
           .setEmitsWarning()
           .setConstructMessage(Furniture::SET_UP);
+    case FurnitureType::INVISIBLE_ALARM:
+      return Furniture("", ViewObject(ViewId::EMPTY, ViewLayer::FLOOR), type, tribe)
+          .setEntryType(FurnitureEntry(FurnitureEntry::Trap(Effect::Alarm{true}, true)));
     case FurnitureType::POISON_GAS_TRAP:
       return Furniture("poison gas trap", ViewObject(ViewId::GAS_TRAP, ViewLayer::FLOOR), type, tribe)
           .setEntryType(FurnitureEntry(FurnitureEntry::Trap(Effect::EmitPoisonGas{})))
@@ -638,6 +641,7 @@ FurnitureFactory FurnitureFactory::dungeonOutside(TribeId tribe) {
 
 FurnitureFactory FurnitureFactory::castleOutside(TribeId tribe) {
   return FurnitureFactory(tribe, {
+      {FurnitureType::INVISIBLE_ALARM, 10},
       {FurnitureType::GROUND_TORCH, 1},
       {FurnitureType::WELL, 1},
   });

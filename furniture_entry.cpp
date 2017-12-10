@@ -34,8 +34,8 @@ void FurnitureEntry::handle(WFurniture f, WCreature c) {
         auto position = c->getPosition();
         if (auto game = c->getGame()) // check in case the creature is placed here during level generation
           if (game->getTribe(f->getTribe())->isEnemy(c)) {
-            if (type.spiderWeb || !c->getAttributes().getSkills().hasDiscrete(SkillId::DISARM_TRAPS)) {
-              if (!type.spiderWeb)
+            if (type.invisible || !c->getAttributes().getSkills().hasDiscrete(SkillId::DISARM_TRAPS)) {
+              if (!type.invisible)
                 c->you(MsgType::TRIGGER_TRAP, "");
               type.effect.applyToCreature(c);
               position.getGame()->addEvent(EventInfo::TrapTriggered{c->getPosition()});
@@ -74,7 +74,7 @@ bool FurnitureEntry::isVisibleTo(WConstFurniture f, WConstCreature c) const {
   return entryData.visit(
       [&](const Trap& type) {
         return !c->getGame()->getTribe(f->getTribe())->isEnemy(c)
-            || (!type.spiderWeb && c->getAttributes().getSkills().hasDiscrete(SkillId::DISARM_TRAPS));
+            || (!type.invisible && c->getAttributes().getSkills().hasDiscrete(SkillId::DISARM_TRAPS));
       },
       [&](const auto&) {
         return true;

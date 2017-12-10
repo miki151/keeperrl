@@ -64,7 +64,11 @@ class Effect {
   };
   SIMPLE_EFFECT(SummonElement);
   SIMPLE_EFFECT(Acid);
-  SIMPLE_EFFECT(Alarm);
+  struct Alarm {
+    EFFECT_TYPE_INTERFACE;
+    bool silent = false;
+    COMPARE_ALL(silent)
+  };
   SIMPLE_EFFECT(TeleEnemies);
   SIMPLE_EFFECT(SilverDamage);
   SIMPLE_EFFECT(CurePoison);

@@ -336,7 +336,7 @@ string Effect::TeleEnemies::getDescription() const {
 }
 
 void Effect::Alarm::applyToCreature(WCreature c, WCreature attacker) const {
-  c->getGame()->addEvent(EventInfo::Alarm{c->getPosition()});
+  c->getGame()->addEvent(EventInfo::Alarm{c->getPosition(), silent});
 }
 
 string Effect::Alarm::getName() const {

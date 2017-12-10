@@ -1919,7 +1919,7 @@ static PMakerQueue castle(RandomGen& random, SettlementInfo info) {
             SquareChange(building.wall, SquareAttrib::ROOM_WALL)));
   auto insidePlusWall = unique<MakerQueue>();
   if (info.outsideFeatures)
-    inside->addMaker(unique<Furnitures>(Predicate::type(building.floorOutside), 0.03, *info.outsideFeatures));
+    inside->addMaker(unique<Furnitures>(Predicate::type(building.floorOutside), 0.18, *info.outsideFeatures));
   if (info.furniture)
     inside->addMaker(unique<Furnitures>(Predicate::attrib(SquareAttrib::EMPTY_ROOM), 0.35, *info.furniture));
   insidePlusWall->addMaker(unique<Empty>(SquareChange::reset(building.floorOutside)));
