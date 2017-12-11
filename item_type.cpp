@@ -771,6 +771,7 @@ ItemAttributes ItemType::Robe::getAttributes() const {
       i.equipmentSlot = EquipmentSlot::BODY_ARMOR;
       i.weight = 2;
       i.price = 10;
+      i.equipedEffect = LastingEffect::MAGIC_RESISTANCE;
       i.modifiers[AttrType::DEFENSE] = 1 + maybePlusMinusOne(4);
   );
 }
