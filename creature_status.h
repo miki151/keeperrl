@@ -1,0 +1,4 @@
+#ifndef CREATURE_STATUS_H
+#define CREATURE_STATUS_H
+
+#endif // CREATURE_STATUS_H

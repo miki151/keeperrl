@@ -13,11 +13,12 @@ auto InhabitantsInfo::generateCreatures(RandomGen& random, TribeId tribe, Monste
   }
   auto addCreatures = [&](const CreatureList& info, EnumSet<MinionTrait> traits) {
     for (auto& creature : info.generate(random, tribe, aiFactory)) {
+      auto myTraits = traits;
       if (!wasLeader) {
         wasLeader = true;
-        traits.insert(MinionTrait::LEADER);
+        myTraits.insert(MinionTrait::LEADER);
       }
-      ret.push_back(make_pair(std::move(creature), traits));
+      ret.push_back(make_pair(std::move(creature), myTraits));
     }
   };
   addCreatures(fighters, EnumSet<MinionTrait>{MinionTrait::FIGHTER});
