@@ -72,7 +72,9 @@ WCreature Behaviour::getClosestEnemy() {
   WCreature result = nullptr;
   for (WCreature other : creature->getVisibleEnemies()) {
     int curDist = other->getPosition().dist8(creature->getPosition());
-    if (curDist < dist && (!other->getAttributes().dontChase() || curDist == 1)) {
+    if (curDist < dist &&
+        ((!other->getAttributes().dontChase() && !other->getStatus().contains(CreatureStatus::CIVILIAN))
+            || curDist == 1)) {
       result = other;
       dist = creature->getPosition().dist8(other->getPosition());
     }
@@ -346,7 +348,7 @@ class Fighter : public Behaviour {
       panicWeight -= creature->getAttributes().getCourage();
       panicWeight -= creature->getMorale() * 0.3;
       panicWeight = min(1.0, max(0.0, panicWeight));
-      if (creature->isAffected(LastingEffect::PANIC))
+      if (creature->isAffected(LastingEffect::PANIC) || creature->getStatus().contains(CreatureStatus::CIVILIAN))
         panicWeight = 1;
       if (other->hasCondition(CreatureCondition::SLEEPING))
         panicWeight = 0;
