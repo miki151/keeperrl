@@ -1,3 +1,4 @@
+
 /* Copyright (C) 2013-2014 Michal Brzozowski (rusolis@poczta.fm)
 
    This file is part of KeeperRL.
@@ -88,9 +89,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
 
   const vector<WCreature>& getCreatures(SpawnType) const;
   const vector<WCreature>& getCreatures(MinionTrait) const;
-  vector<WCreature> getCreaturesAnyOf(EnumSet<MinionTrait>) const;
   bool hasTrait(WConstCreature, MinionTrait) const;
-  bool hasAnyTrait(WConstCreature, EnumSet<MinionTrait>) const;
   void setTrait(WCreature c, MinionTrait);
   void removeTrait(WCreature c, MinionTrait);
 
@@ -319,4 +318,5 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   bool SERIAL(discoverable) = false;
   int SERIAL(numPrisonerOrders) = 0;
   void considerTransferingLostMinions();
+  void updateCreatureStatus(WCreature);
 };

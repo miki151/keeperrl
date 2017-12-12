@@ -107,7 +107,7 @@ class Game : public OwnedObject<Game> {
   map<LevelId, double> SERIAL(localTime);
   Vec2 SERIAL(baseModel);
   View* view;
-  double SERIAL(currentTime);
+  double SERIAL(currentTime) = 0;
   optional<ExitInfo> exitInfo;
   Tribe::Map SERIAL(tribes);
   optional<int> SERIAL(lastTick);

@@ -825,9 +825,10 @@ vector<CollectiveInfo::CreatureGroup> PlayerControl::getEnemyGroups() const {
 
 void PlayerControl::fillMinions(CollectiveInfo& info) const {
   vector<WCreature> minions;
-  for (WCreature c : getCollective()->getCreaturesAnyOf(
-        {MinionTrait::FIGHTER, MinionTrait::PRISONER, MinionTrait::WORKER}))
-    minions.push_back(c);
+  for (auto trait : {MinionTrait::FIGHTER, MinionTrait::PRISONER, MinionTrait::WORKER})
+    for (WCreature c : getCollective()->getCreatures(trait))
+      if (!minions.contains(c))
+        minions.push_back(c);
   minions.push_back(getCollective()->getLeader());
   info.minionGroups = getCreatureGroups(minions);
   info.minions = minions.transform([](WConstCreature c) { return CreatureInfo(c) ;});
@@ -1339,8 +1340,11 @@ void PlayerControl::getSquareViewIndex(Position pos, bool canSee, ViewIndex& ind
   if (WConstCreature c = pos.getCreature())
     if (canSee) {
       index.insert(c->getViewObject());
+      auto& object = index.getObject(ViewLayer::CREATURE);
       if (isEnemy(c))
-        index.getObject(ViewLayer::CREATURE).setModifier(ViewObject::Modifier::HOSTILE);
+        object.setModifier(ViewObject::Modifier::HOSTILE);
+      else
+        object.getCreatureStatus().clear();
     }
 }
 

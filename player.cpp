@@ -821,12 +821,15 @@ void Player::getViewIndex(Vec2 pos, ViewIndex& index) const {
     if ((canSee && getCreature()->canSeeInPosition(c)) || c == getCreature() ||
         getCreature()->canSeeOutsidePosition(c)) {
       index.insert(c->getViewObjectFor(getCreature()->getTribe()));
+      auto& object = index.getObject(ViewLayer::CREATURE);
       if (c == getCreature())
-        index.getObject(ViewLayer::CREATURE).setModifier(ViewObject::Modifier::PLAYER);
+        object.setModifier(ViewObject::Modifier::PLAYER);
       if (getTeam().contains(c))
-        index.getObject(ViewLayer::CREATURE).setModifier(ViewObject::Modifier::TEAM_HIGHLIGHT);
+        object.setModifier(ViewObject::Modifier::TEAM_HIGHLIGHT);
       if (getCreature()->isEnemy(c))
-        index.getObject(ViewLayer::CREATURE).setModifier(ViewObject::Modifier::HOSTILE);
+        object.setModifier(ViewObject::Modifier::HOSTILE);
+      else
+        object.getCreatureStatus().clear();
     } else if (getCreature()->isUnknownAttacker(c))
       index.insert(copyOf(ViewObject::unknownMonster()));
   }

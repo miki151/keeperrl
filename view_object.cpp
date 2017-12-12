@@ -19,7 +19,7 @@
 #include "view_id.h"
 #include "experience_type.h"
 
-SERIALIZE_DEF(ViewObject, resource_id, viewLayer, description, modifiers, attributes, attachmentDir, creatureId, goodAdjectives, badAdjectives, creatureAttributes)
+SERIALIZE_DEF(ViewObject, resource_id, viewLayer, description, modifiers, attributes, attachmentDir, creatureId, goodAdjectives, badAdjectives, creatureAttributes, status)
 
 SERIALIZATION_CONSTRUCTOR_IMPL(ViewObject);
 
@@ -116,6 +116,14 @@ ViewObject& ViewObject::removeModifier(Modifier mod) {
 
 bool ViewObject::hasModifier(Modifier mod) const {
   return modifiers.contains(mod);
+}
+
+EnumSet<CreatureStatus>& ViewObject::getCreatureStatus() {
+  return status;
+}
+
+const EnumSet<CreatureStatus>& ViewObject::getCreatureStatus() const {
+  return status;
 }
 
 ViewObject& ViewObject::setAttribute(Attribute attr, double d) {

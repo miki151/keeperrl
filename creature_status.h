@@ -1,4 +1,15 @@
-#ifndef CREATURE_STATUS_H
-#define CREATURE_STATUS_H
+#pragma once
 
-#endif // CREATURE_STATUS_H
+#include "util.h"
+
+RICH_ENUM(CreatureStatus,
+  CIVILIAN,
+  LEADER,
+  FIGHTER
+);
+
+class Color;
+
+extern Color getColor(CreatureStatus);
+extern const char* getDescription(CreatureStatus);
+extern const char* getName(CreatureStatus);

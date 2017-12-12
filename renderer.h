@@ -56,6 +56,7 @@ struct Color : public SDL::SDL_Color {
   static Color DARK_BLUE;
   static Color NIGHT_BLUE;
   static Color LIGHT_BLUE;
+  static Color SKY_BLUE;
   static Color PURPLE;
   static Color VIOLET;
   static Color TRANSLUCENT_BLACK;

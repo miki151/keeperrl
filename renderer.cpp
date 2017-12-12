@@ -51,6 +51,7 @@ Color Color::BLUE(0, 0, 255);
 Color Color::NIGHT_BLUE(0, 0, 20);
 Color Color::DARK_BLUE(50, 50, 200);
 Color Color::LIGHT_BLUE(100, 100, 255);
+Color Color::SKY_BLUE(0, 191, 255);
 Color Color::PURPLE(160, 32, 240);
 Color Color::VIOLET(120, 0, 255);
 Color Color::TRANSLUCENT_BLACK(0, 0, 0);

@@ -30,6 +30,7 @@
 #include "drag_and_drop.h"
 #include "game_info.h"
 #include "model.h"
+#include "creature_status.h"
 
 using SDL::SDL_Keysym;
 using SDL::SDL_Keycode;
@@ -360,12 +361,12 @@ void MapGui::onMouseRelease(Vec2 v) {
   }
 }*/
 
-static Color getMoraleColor(double morale) {
+/*static Color getMoraleColor(double morale) {
   if (morale < 0)
     return Color(255, 0, 0, -morale * 150);
   else
     return Color(0, 255, 0, morale * 150);
-}
+}*/
 
 static Vec2 getAttachmentOffset(Dir dir, Vec2 size) {
   switch (dir) {
@@ -434,11 +435,15 @@ Vec2 MapGui::getMovementOffset(const ViewObject& object, Vec2 size, double time,
 void MapGui::drawCreatureHighlights(Renderer& renderer, const ViewObject& object, Vec2 pos, Vec2 sz,
     milliseconds curTime) {
   auto getHighlight = [](Color id) { return Color(id).transparency(200); };
-  if (object.hasModifier(ViewObject::Modifier::HOSTILE) && highlightEnemies)
-    drawCreatureHighlight(renderer, pos, sz, getHighlight(Color::PURPLE));
-  if (object.hasModifier(ViewObject::Modifier::DRAW_MORALE) && highlightMorale)
+  for (auto status : object.getCreatureStatus()) {
+    drawCreatureHighlight(renderer, pos, sz, getHighlight(getColor(status)));
+    break;
+  }
+  if (object.getCreatureStatus().isEmpty() && object.hasModifier(ViewObject::Modifier::HOSTILE))
+    drawCreatureHighlight(renderer, pos, sz, getHighlight(Color::ORANGE));
+  /*if (object.hasModifier(ViewObject::Modifier::DRAW_MORALE) && highlightMorale)
     if (auto morale = object.getAttribute(ViewObject::Attribute::MORALE))
-      drawCreatureHighlight(renderer, pos, sz, getMoraleColor(*morale));
+      drawCreatureHighlight(renderer, pos, sz, getMoraleColor(*morale));*/
   if (object.hasModifier(ViewObject::Modifier::PLAYER)) {
     if ((curTime.count() / 500) % 2 == 0)
       drawCreatureHighlight(renderer, pos, sz, getHighlight(Color::YELLOW));

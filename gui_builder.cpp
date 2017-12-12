@@ -1799,7 +1799,12 @@ SGuiElem GuiBuilder::drawMapHintOverlay() {
             .addElemAuto(gui.label(viewObject->getDescription()))
             .buildHorizontalList());
       if (viewObject->hasModifier(ViewObject::Modifier::HOSTILE))
-        lines.addElem(gui.label("Enemy", Color::RED));
+        lines.addElem(gui.label("Hostile", Color::ORANGE));
+      for (auto status : viewObject->getCreatureStatus()) {
+        lines.addElem(gui.label(getName(status), getColor(status)));
+        lines.addElem(gui.label(getDescription(status), getColor(status)));
+        break;
+      }
       if (!viewObject->getBadAdjectives().empty()) {
         lines.addElemAuto(gui.labelMultiLineWidth(viewObject->getBadAdjectives(), legendLineHeight * 2 / 3, 300,
             Renderer::textSize, Color::RED, ','));

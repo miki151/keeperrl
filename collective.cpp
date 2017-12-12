@@ -141,11 +141,22 @@ void Collective::addCreature(PCreature creature, Position pos, EnumSet<MinionTra
   addCreature(c, traits);
 }
 
+void Collective::updateCreatureStatus(WCreature c) {
+  c->getStatus().set(CreatureStatus::CIVILIAN,
+      c->getBody().isHumanoid() &&
+      !hasTrait(c, MinionTrait::FIGHTER) &&
+      !hasTrait(c, MinionTrait::LEADER));
+  c->getStatus().set(CreatureStatus::FIGHTER, hasTrait(c, MinionTrait::FIGHTER));
+  c->getStatus().set(CreatureStatus::LEADER, hasTrait(c, MinionTrait::LEADER));
+}
+
 void Collective::addCreature(WCreature c, EnumSet<MinionTrait> traits) {
   if (!traits.contains(MinionTrait::FARM_ANIMAL) && !c->getController()->isCustomController())
     c->setController(makeOwner<Monster>(c, MonsterAIFactory::collective(this)));
-  if (traits.contains(MinionTrait::LEADER))
+  if (traits.contains(MinionTrait::LEADER)) {
+    CHECK(!leader);
     leader = c;
+  }
   if (c->getTribeId() != *tribe)
     c->setTribe(*tribe);
   if (WGame game = getGame())
@@ -155,6 +166,7 @@ void Collective::addCreature(WCreature c, EnumSet<MinionTrait> traits) {
   creatures.push_back(c);
   for (MinionTrait t : traits)
     byTrait[t].push_back(c);
+  updateCreatureStatus(c);
   if (auto spawnType = c->getAttributes().getSpawnType())
     bySpawnType[*spawnType].push_back(c);
   for (WItem item : c->getEquipment().getItems())
@@ -658,32 +670,15 @@ bool Collective::hasTrait(WConstCreature c, MinionTrait t) const {
   return byTrait[t].contains(c);
 }
 
-bool Collective::hasAnyTrait(WConstCreature c, EnumSet<MinionTrait> traits) const {
-  for (MinionTrait t : traits)
-    if (hasTrait(c, t))
-      return true;
-  return false;
-}
-
 void Collective::setTrait(WCreature c, MinionTrait t) {
   if (!hasTrait(c, t))
     byTrait[t].push_back(c);
+  updateCreatureStatus(c);
 }
 
 void Collective::removeTrait(WCreature c, MinionTrait t) {
   byTrait[t].removeElementMaybe(c);
-}
-
-vector<WCreature> Collective::getCreaturesAnyOf(EnumSet<MinionTrait> trait) const {
-  EntitySet<Creature> added;
-  vector<WCreature> ret;
-  for (MinionTrait t : trait)
-    for (WCreature c : byTrait[t])
-      if (!added.contains(c)) {
-        ret.push_back(c);
-        added.insert(c);
-      }
-  return ret;
+  updateCreatureStatus(c);
 }
 
 double Collective::getKillManaScore(WConstCreature victim) const {

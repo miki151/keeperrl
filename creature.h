@@ -27,6 +27,7 @@
 #include "best_attack.h"
 #include "msg_type.h"
 #include "game_time.h"
+#include "creature_status.h"
 
 class Skill;
 class Level;
@@ -271,6 +272,9 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   vector<PItem> generateCorpse(bool instantlyRotten = false) const;
   int getLastMoveCounter() const;
 
+  EnumSet<CreatureStatus>& getStatus();
+  const EnumSet<CreatureStatus>& getStatus() const;
+
   private:
 
   CreatureAction moveTowards(Position, bool away, NavigationFlags);
@@ -309,6 +313,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   HeapAllocated<CreatureDebt> SERIAL(debt);
   double SERIAL(highestAttackValueEver) = 0;
   int SERIAL(lastMoveCounter) = 0;
+  EnumSet<CreatureStatus> SERIAL(statuses);
 };
 
 struct AdjectiveInfo {

@@ -23,6 +23,7 @@
 #include "attr_type.h"
 #include "game_time.h"
 #include "movement_info.h"
+#include "creature_status.h"
 
 RICH_ENUM(ViewObjectModifier, PLAYER, HIDDEN, INVISIBLE, ILLUSION, PLANNED,
     TEAM_LEADER_HIGHLIGHT, TEAM_HIGHLIGHT, DRAW_MORALE, ROAD, NO_UP_MOVEMENT, REMEMBER, SPIRIT_DAMAGE, HOSTILE);
@@ -38,6 +39,9 @@ class ViewObject {
   ViewObject& setModifier(Modifier);
   ViewObject& removeModifier(Modifier);
   bool hasModifier(Modifier) const;
+
+  EnumSet<CreatureStatus>& getCreatureStatus();
+  const EnumSet<CreatureStatus>& getCreatureStatus() const;
 
   static void setHallu(bool);
   
@@ -83,6 +87,7 @@ class ViewObject {
   string getAttributeString(Attribute) const;
   const char* getDefaultDescription() const;
   EnumSet<Modifier> SERIAL(modifiers);
+  EnumSet<CreatureStatus> SERIAL(status);
   EnumMap<Attribute, optional<float>> SERIAL(attributes);
   ViewId SERIAL(resource_id);
   ViewLayer SERIAL(viewLayer);

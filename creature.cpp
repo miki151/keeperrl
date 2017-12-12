@@ -58,7 +58,7 @@ void Creature::serialize(Archive& ar, const unsigned int version) {
   ar(deathTime, hidden, lastMoveCounter);
   ar(deathReason, swapPositionCooldown);
   ar(unknownAttackers, privateEnemies, holding);
-  ar(controllerStack, kills);
+  ar(controllerStack, kills, statuses);
   ar(difficultyPoints, points);
   ar(vision, lastCombatTime, debt, lastDamageType, highestAttackValueEver);
 }
@@ -207,6 +207,14 @@ const EntitySet<Creature>& Creature::getKills() const {
 
 int Creature::getLastMoveCounter() const {
   return lastMoveCounter;
+}
+
+const EnumSet<CreatureStatus>& Creature::getStatus() const {
+  return statuses;
+}
+
+EnumSet<CreatureStatus>& Creature::getStatus() {
+  return statuses;
 }
 
 MovementInfo Creature::spendTime(TimeInterval t) {
@@ -946,6 +954,7 @@ void Creature::updateViewObject() {
   modViewObject().setCreatureAttributes(ViewObject::CreatureAttributes([this](AttrType t) { return getAttr(t);}));
   modViewObject().setAttribute(ViewObject::Attribute::MORALE, getMorale());
   modViewObject().setModifier(ViewObject::Modifier::DRAW_MORALE);
+  modViewObject().getCreatureStatus() = getStatus();
   modViewObject().setGoodAdjectives(combine(extractNames(getGoodAdjectives()), true));
   modViewObject().setBadAdjectives(combine(extractNames(getBadAdjectives()), true));
   getBody().updateViewObject(modViewObject());
