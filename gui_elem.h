@@ -177,7 +177,7 @@ class GuiFactory {
   SGuiElem onMouseLeftButtonHeld(SGuiElem);
   SGuiElem onMouseRightButtonHeld(SGuiElem);
   SGuiElem mouseHighlight(SGuiElem highlight, int myIndex, optional<int>* highlighted);
-  SGuiElem mouseHighlight2(SGuiElem highlight);
+  SGuiElem mouseHighlight2(SGuiElem highlight, SGuiElem noHighlight = nullptr);
   SGuiElem mouseHighlightGameChoice(SGuiElem, optional<PlayerRoleChoice> my, optional<PlayerRoleChoice>& highlight);
   static int getHeldInitValue();
   SGuiElem scrollable(SGuiElem content, ScrollPosition* scrollPos = nullptr, int* held = nullptr);

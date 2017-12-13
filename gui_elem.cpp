@@ -533,16 +533,9 @@ static void lighten(Color& c) {
 }
 
 SGuiElem GuiFactory::labelHighlight(const string& s, Color c, char hotkey) {
-  auto width = [=] { return renderer.getTextLength(s); };
-  return SGuiElem(new DrawCustom(
-        [=] (Renderer& r, Rectangle bounds) {
-          r.drawTextWithHotkey(Color::BLACK.transparency(100),
-            bounds.topLeft().x + 1, bounds.topLeft().y + 2, s, 0);
-          Color c1(c);
-          if (r.getMousePos().inRectangle(bounds))
-            lighten(c1);
-          r.drawTextWithHotkey(c1, bounds.topLeft().x, bounds.topLeft().y, s, hotkey);
-        }, width));
+  auto highlighted = c;
+  lighten(highlighted);
+  return mouseHighlight2(label(s, highlighted, hotkey), label(s, c, hotkey));
 }
 
 static double blinkingState(milliseconds time, int numBlinks, int numCycle) {
@@ -1962,12 +1955,26 @@ class MouseHighlight : public MouseHighlightBase {
 
 class MouseHighlight2 : public GuiStack {
   public:
-  MouseHighlight2(SGuiElem h) : GuiStack(makeVec(std::move(h))) {}
+  MouseHighlight2(SGuiElem h, SGuiElem h2 = nullptr)
+      : GuiStack(h2 ? makeVec(std::move(h), std::move(h2)) : makeVec(std::move(h))) {}
 
   virtual void render(Renderer& r) override {
-    if (r.getMousePos().inRectangle(getBounds()))
+    if (over)
       elems[0]->render(r);
+    else if (elems.size() > 1)
+      elems[1]->render(r);
   }
+
+  virtual void onMouseGone() override {
+    over = false;
+  }
+
+  virtual bool onMouseMove(Vec2 pos) override {
+    over = pos.inRectangle(getBounds());
+    return false;
+  }
+
+  bool over = false;
 };
 
 SGuiElem GuiFactory::mouseHighlight(SGuiElem elem, int myIndex, optional<int>* highlighted) {
@@ -2007,8 +2014,8 @@ SGuiElem GuiFactory::mouseHighlightGameChoice(SGuiElem elem,
   return SGuiElem(new MouseHighlightGameChoice(std::move(elem), my, highlight));
 }
 
-SGuiElem GuiFactory::mouseHighlight2(SGuiElem elem) {
-  return SGuiElem(new MouseHighlight2(std::move(elem)));
+SGuiElem GuiFactory::mouseHighlight2(SGuiElem elem, SGuiElem noHighlight) {
+  return SGuiElem(new MouseHighlight2(std::move(elem), std::move(noHighlight)));
 }
 
 class RenderLayer : public GuiStack {
