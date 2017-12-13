@@ -897,6 +897,11 @@ void Player::refreshGameInfo(GameInfo& gameInfo) const {
   }
   for (WConstCreature c : team) {
     info.teamInfos.emplace_back(c);
+    auto& memberInfo = info.teamInfos.back();
+    if (info.controlMode == PlayerInfo::LEADER && c != getCreature())
+      memberInfo.teamMemberActions.push_back(TeamMemberAction::CHANGE_LEADER);
+    if (team.size() >= 2)
+      memberInfo.teamMemberActions.push_back(TeamMemberAction::REMOVE_MEMBER);
   }
   info.lyingItems.clear();
   if (auto usageType = getUsableUsageType()) {

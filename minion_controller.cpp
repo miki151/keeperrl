@@ -21,8 +21,6 @@ class MinionController : public Player {
   virtual vector<CommandInfo> getCommands() const override {
     auto tutorial = control->getTutorial();
     return concat(Player::getCommands(), {
-      {PlayerInfo::CommandInfo{"Switch control", 's', "Switch control to a different team member.", true},
-       [] (Player* player) { dynamic_cast<MinionController*>(player)->swapTeam(); }, getTeam().size() > 1},
       {PlayerInfo::CommandInfo{"Absorb", 'a',
           "Absorb a friendly creature and inherit its attributes. Requires the absorbtion skill.",
           getCreature()->getAttributes().getSkills().hasDiscrete(SkillId::CONSUMPTION)},
@@ -38,6 +36,11 @@ class MinionController : public Player {
       case UserInputId::EXIT_CONTROL_MODE:
         unpossess();
         return true;
+      case UserInputId::TEAM_MEMBER_ACTION: {
+        auto& info = input.get<TeamMemberActionInfo>();
+        control->teamMemberAction(info.action, info.memberId);
+        return true;
+      }
       default:
         return false;
     }
@@ -64,10 +67,6 @@ class MinionController : public Player {
 
   void unpossess() {
     control->leaveControl();
-  }
-
-  bool swapTeam() {
-    return control->swapTeam();
   }
 
   virtual bool isTravelEnabled() const override {

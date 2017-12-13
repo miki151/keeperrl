@@ -98,7 +98,7 @@ optional<Vec2> MapGui::projectOnMap(Vec2 screenCoord) {
     return none;
 }
 
-optional<Vec2> MapGui::getHighlightedTile(Renderer& renderer) {
+optional<Vec2> MapGui::getHighlightedTile(Renderer&) {
   if (auto pos = getMousePos())
     return layout->projectOnMap(getBounds(), getScreenPos(), *pos);
   else
@@ -116,11 +116,11 @@ Color MapGui::getHighlightColor(const ViewIndex& index, HighlightType type) {
     case HighlightType::STORAGE_EQUIPMENT: return Color::BLUE.transparency(buttonViewId ? 120 : 50);
     case HighlightType::STORAGE_RESOURCES: return Color::GREEN.transparency(buttonViewId ? 120 : 50);
     case HighlightType::RECT_SELECTION: return Color::YELLOW.transparency(90);
-    case HighlightType::FOG: return Color::WHITE.transparency(120 * amount);
-    case HighlightType::POISON_GAS: return Color(0, min<Uint8>(255., amount * 500), 0, (Uint8)(amount * 140));
+    case HighlightType::FOG: return Color::WHITE.transparency(int(120 * amount));
+    case HighlightType::POISON_GAS: return Color(0, min<Uint8>(255., Uint8(amount * 500)), 0, (Uint8)(amount * 140));
     case HighlightType::MEMORY: return Color::BLACK.transparency(80);
-    case HighlightType::NIGHT: return Color::NIGHT_BLUE.transparency(amount * 160);
-    case HighlightType::EFFICIENCY: return Color(255, 0, 0, 120 * (1 - amount));
+    case HighlightType::NIGHT: return Color::NIGHT_BLUE.transparency(int(amount * 160));
+    case HighlightType::EFFICIENCY: return Color(255, 0, 0, Uint8(120 * (1 - amount)));
     case HighlightType::PRIORITY_TASK: return Color(0, 255, 0, 120);
     case HighlightType::CREATURE_DROP:
       if (index.hasObject(ViewLayer::FLOOR) && getHighlightedFurniture() == index.getObject(ViewLayer::FLOOR).id())

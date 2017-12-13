@@ -21,6 +21,7 @@
 #include "village_action.h"
 #include "minion_task.h"
 #include "entity_set.h"
+#include "team_member_action.h"
 
 class PlayerMessage;
 
@@ -90,6 +91,7 @@ enum class UserInputId {
     PLAYER_COMMAND,
     TOGGLE_CONTROL_MODE,
     EXIT_CONTROL_MODE,
+    TEAM_MEMBER_ACTION,
     CAST_SPELL,
     INVENTORY_ITEM,
     INTRINSIC_ATTACK,
@@ -162,12 +164,18 @@ struct RenameActionInfo {
   SERIALIZE_ALL(creature, name)
 };
 
+struct TeamMemberActionInfo {
+  TeamMemberAction SERIAL(action);
+  UniqueEntity<Creature>::Id SERIAL(memberId);
+  SERIALIZE_ALL(action, memberId)
+};
+
 enum class SpellId;
 
 class UserInput : public EnumVariant<UserInputId, TYPES(BuildingInfo, int, UniqueEntity<Creature>::Id,
     UniqueEntity<PlayerMessage>::Id, InventoryItemInfo, Vec2, TeamCreatureInfo, SpellId, VillageActionInfo,
     TaskActionInfo, EquipmentActionInfo, RenameActionInfo, WorkshopQueuedActionInfo, CreatureDropInfo, TeamDropInfo,
-    UniqueEntity<Collective>::Id, string),
+    UniqueEntity<Collective>::Id, string, TeamMemberActionInfo),
         ASSIGN(BuildingInfo,
             UserInputId::BUILD,
             UserInputId::RECT_SELECTION,
@@ -236,6 +244,8 @@ class UserInput : public EnumVariant<UserInputId, TYPES(BuildingInfo, int, Uniqu
             UserInputId::CREATURE_DRAG_DROP),
         ASSIGN(TeamDropInfo,
             UserInputId::TEAM_DRAG_DROP),
+        ASSIGN(TeamMemberActionInfo,
+            UserInputId::TEAM_MEMBER_ACTION),
         ASSIGN(string,
             UserInputId::CREATE_ITEM,
             UserInputId::APPLY_EFFECT,

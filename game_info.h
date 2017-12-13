@@ -16,6 +16,7 @@
 #include "villain_type.h"
 #include "game_time.h"
 #include "intrinsic_attack.h"
+#include "team_member_action.h"
 
 enum class SpellId;
 
@@ -148,8 +149,9 @@ class PlayerInfo {
     CONSUME
   };
   vector<Action> HASH(actions);
+  vector<TeamMemberAction> HASH(teamMemberActions);
   optional<double> HASH(carryLimit);
-  HASH_ALL(attributes, skills, firstName, name, title, levelInfo, positionHash, effects, spells, lyingItems, inventory, minionTasks, creatureId, morale, viewId, actions, commands, debt, bestAttack, carryLimit, intrinsicAttacks, teamInfos, moveCounter, willMoveThisTurn, isPlayerControlled, controlMode)
+  HASH_ALL(attributes, skills, firstName, name, title, levelInfo, positionHash, effects, spells, lyingItems, inventory, minionTasks, creatureId, morale, viewId, actions, commands, debt, bestAttack, carryLimit, intrinsicAttacks, teamInfos, moveCounter, willMoveThisTurn, isPlayerControlled, controlMode, teamMemberActions)
 };
 
 struct ImmigrantDataInfo {

@@ -59,7 +59,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
 
   bool isTurnBased();
   void leaveControl();
-  bool swapTeam();
+  void teamMemberAction(TeamMemberAction, UniqueEntity<Creature>::Id);
   void toggleControlAllTeamMembers();
   void onControlledKilled(WConstCreature victim);
   void onSunlightVisibilityChanged();

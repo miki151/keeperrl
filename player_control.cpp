@@ -151,7 +151,7 @@ optional<TeamId> PlayerControl::getCurrentTeam() const {
 
 void PlayerControl::onControlledKilled(WConstCreature victim) {
   TeamId currentTeam = *getCurrentTeam();
-  if (getTeams().getLeader(currentTeam) == victim) {
+  if (getTeams().getLeader(currentTeam) == victim && getGame()->getPlayerCreatures().size() == 1) {
     vector<CreatureInfo> team;
     for (auto c : getTeams().getMembers(currentTeam))
       if (c != victim)
@@ -188,28 +188,37 @@ STutorial PlayerControl::getTutorial() const {
   return tutorial;
 }
 
-bool PlayerControl::swapTeam() {
-  if (auto teamId = getCurrentTeam())
-    if (getTeams().getMembers(*teamId).size() > 1) {
-      auto controlled = getControlled();
-      if (controlled.size() == 1) {
-        vector<CreatureInfo> team;
-        TeamId currentTeam = *getCurrentTeam();
-        for (auto c : getTeams().getMembers(currentTeam))
-          if (!c->isPlayer())
-            team.push_back(CreatureInfo(c));
-        if (team.empty())
-          return false;
-        if (auto newLeader = getView()->chooseCreature("Choose new team leader:", team, "Cancel"))
-          if (WCreature c = getCreature(*newLeader)) {
-            getTeams().getLeader(*teamId)->popController();
-            getTeams().setLeader(*teamId, c);
-            c->pushController(createMinionController(c));
+void PlayerControl::teamMemberAction(TeamMemberAction action, Creature::Id id) {
+  switch (action) {
+    case TeamMemberAction::CHANGE_LEADER:
+      if (auto teamId = getCurrentTeam())
+        if (getTeams().getMembers(*teamId).size() > 1) {
+          auto controlled = getControlled();
+          if (controlled.size() == 1) {
+            if (WCreature c = getCreature(id)) {
+              getTeams().getLeader(*teamId)->popController();
+              getTeams().setLeader(*teamId, c);
+              c->pushController(createMinionController(c));
+            }
           }
-        return true;
-      }
-    }
-  return false;
+        }
+      break;
+    case TeamMemberAction::REMOVE_MEMBER:
+      if (auto teamId = getCurrentTeam())
+        if (getTeams().getMembers(*teamId).size() > 1) {
+          auto controlled = getControlled();
+          if (WCreature c = getCreature(id)) {
+            getTeams().remove(*teamId, c);
+            if (c->isPlayer()) {
+              c->popController();
+              auto newLeader = getTeams().getLeader(*teamId);
+              if (!newLeader->isPlayer())
+                newLeader->pushController(createMinionController(newLeader));
+            }
+          }
+        }
+      break;
+  }
 }
 
 void PlayerControl::leaveControl() {

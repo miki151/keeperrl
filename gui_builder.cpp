@@ -1294,6 +1294,15 @@ static const char* getControlModeName(PlayerInfo::ControlMode m) {
   }
 }
 
+static const char* getActionText(TeamMemberAction action) {
+  switch (action) {
+    case TeamMemberAction::CHANGE_LEADER:
+      return "Switch leader";
+    case TeamMemberAction::REMOVE_MEMBER:
+      return "Remove from team";
+  }
+}
+
 SGuiElem GuiBuilder::drawRightPlayerInfo(const PlayerInfo& info) {
   if (highlightedTeamMember && *highlightedTeamMember >= info.teamInfos.size())
     highlightedTeamMember = none;
@@ -1322,6 +1331,27 @@ SGuiElem GuiBuilder::drawRightPlayerInfo(const PlayerInfo& info) {
             gui.margins(gui.rectangle(Color::GREEN.transparency(1094)), 2),
             std::move(icon)
         );
+    }
+    if (!member.teamMemberActions.empty()) {
+      icon = gui.stack(std::move(icon),
+        gui.buttonRect([memberId = member.creatureId, actions = member.teamMemberActions, this] (Rectangle bounds) {
+              auto lines = gui.getListBuilder(legendLineHeight);
+              bool exit = false;
+              optional<TeamMemberAction> ret;
+              for (auto action : actions) {
+                auto buttonFun = [&exit, &ret, action] {
+                  ret = action;
+                  exit = true;
+                };
+                lines.addElem(gui.stack(
+                      gui.uiHighlightMouseOver(),
+                      gui.button(buttonFun),
+                      gui.label(getActionText(action))));
+              }
+              drawMiniMenu(std::move(lines), exit, bounds.bottomLeft(), 200);
+              if (ret)
+                callbacks.input({UserInputId::TEAM_MEMBER_ACTION, TeamMemberActionInfo{*ret, memberId}});
+        }));
     }
     teamList.addElemAuto(std::move(icon));
     if (teamList.getLength() >= 6) {
