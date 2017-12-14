@@ -997,9 +997,9 @@ void GuiBuilder::drawMiniMenu(GuiFactory::ListBuilder elems, bool& exit, Vec2 me
     return;
   int contentHeight = elems.getSize();
   int margin = 15;
-  SGuiElem menu = gui.miniWindow(gui.margins(elems.buildVerticalList(), margin),
+  SGuiElem menu = gui.miniWindow(gui.margins(elems.buildVerticalList(), 5 + margin, margin, margin, margin - 5),
           [&exit] { exit = true; });
-  menu->setBounds(Rectangle(menuPos, menuPos + Vec2(width + 2 * margin, contentHeight + 2 * margin)));
+  menu->setBounds(Rectangle(menuPos, menuPos + Vec2(width + 2 * margin, contentHeight + 2 * margin - 5)));
   SGuiElem bg = gui.darken();
   bg->setBounds(Rectangle(renderer.getSize()));
   while (1) {
@@ -1031,7 +1031,7 @@ optional<ItemAction> GuiBuilder::getItemChoice(const ItemInfo& itemInfo, Vec2 me
   options.push_back("cancel");
   int count = options.size();
   SGuiElem stuff = gui.margins(
-      drawListGui("", ListElem::convert(options), MenuType::NORMAL, &index, &choice, nullptr), 15, 15, 18, 15);
+      drawListGui("", ListElem::convert(options), MenuType::NORMAL, &index, &choice, nullptr), 20, 15, 15, 10);
   stuff = gui.miniWindow(gui.margins(std::move(stuff), 0));
   Vec2 size(*stuff->getPreferredWidth() + 15, *stuff->getPreferredHeight());
   menuPos.x = min(menuPos.x, renderer.getSize().x - size.x);
@@ -2185,7 +2185,7 @@ vector<SGuiElem> GuiBuilder::getMultiLine(const string& text, Color color, MenuT
 }
 
 SGuiElem GuiBuilder::menuElemMargins(SGuiElem elem) {
-  return gui.margins(std::move(elem), 10, 3, 10, 0);
+  return elem;
 }
 
 SGuiElem GuiBuilder::getHighlight(SGuiElem line, MenuType type, const string& label, int numActive, optional<int>* highlight) {
@@ -2195,7 +2195,7 @@ SGuiElem GuiBuilder::getHighlight(SGuiElem line, MenuType type, const string& la
           gui.mouseHighlight(menuElemMargins(gui.mainMenuLabel(label, menuLabelVPadding)), numActive, highlight));
     default:
       return gui.stack(gui.mouseHighlight(
-          gui.leftMargin(0, gui.translate(gui.uiHighlightLine(), Vec2(0, 4))),
+          gui.leftMargin(0, gui.translate(gui.uiHighlightLine(), Vec2(0, 0))),
           numActive, highlight), std::move(line));
   }
 }
@@ -2203,9 +2203,8 @@ SGuiElem GuiBuilder::getHighlight(SGuiElem line, MenuType type, const string& la
 SGuiElem GuiBuilder::drawListGui(const string& title, const vector<ListElem>& options,
     MenuType menuType, optional<int>* highlight, int* choice, vector<int>* positions) {
   auto lines = gui.getListBuilder(listLineHeight);
-  int leftMargin = 8;
   if (!title.empty()) {
-    lines.addElem(gui.leftMargin(leftMargin, gui.label(capitalFirst(title), Color::WHITE)));
+    lines.addElem(gui.label(capitalFirst(title), Color::WHITE));
     lines.addSpace();
   }
   int numActive = 0;
@@ -2232,12 +2231,12 @@ SGuiElem GuiBuilder::drawListGui(const string& title, const vector<ListElem>& op
     vector<SGuiElem> label1 = getMultiLine(options[i].getText(), color, menuType, columnWidth);
     if (options.size() == 1 && label1.size() > 1) { // hacky way of checking that we display a wall of text
       for (auto& line : label1)
-        lines.addElem(gui.leftMargin(leftMargin, std::move(line)));
+        lines.addElem(std::move(line));
       break;
     }
     SGuiElem line;
     if (menuType != MenuType::MAIN)
-      line = gui.verticalList(std::move(label1), listBrokenLineHeight);
+      line = gui.verticalList(std::move(label1), legendLineHeight);
     else
       line = std::move(label1.getOnlyElement());
     if (!options[i].getTip().empty())
@@ -2253,16 +2252,11 @@ SGuiElem GuiBuilder::drawListGui(const string& title, const vector<ListElem>& op
           getHighlight(std::move(line), menuType, options[i].getText(), numActive, highlight));
       ++numActive;
     }
-    line = gui.margins(std::move(line), leftMargin, 0, 0, 0);
     if (positions && menuType != MenuType::MAIN)
       positions->push_back(lines.getSize() + *line->getPreferredHeight() / 2);
-    if (auto height = line->getPreferredHeight())
-      lines.addElem(std::move(line), *height);
-    else
-      lines.addElemAuto(std::move(line));
+    lines.addElemAuto(std::move(line));
   }
   if (menuType != MenuType::MAIN) {
-    lines.addSpace(5); // For highlight margin
     return lines.buildVerticalList();
   } else
     return lines.buildVerticalListFit();
@@ -2324,8 +2318,6 @@ SGuiElem GuiBuilder::drawMinionButtons(const vector<PlayerInfo>& minions, Unique
 
 static string getTaskText(MinionTask option) {
   switch (option) {
-    case MinionTask::GRAVE:
-    case MinionTask::LAIR:
     case MinionTask::SLEEP: return "Sleeping";
     case MinionTask::WORKER: return "Working";
     case MinionTask::EAT: return "Eating";
@@ -2334,7 +2326,6 @@ static string getTaskText(MinionTask option) {
     case MinionTask::EXPLORE: return "Exploring";
     case MinionTask::RITUAL: return "Rituals";
     case MinionTask::CROPS: return "Crops";
-    case MinionTask::PRISON: return "Prison";
     case MinionTask::TRAIN: return "Training";
     case MinionTask::ARCHERY: return "Archery range";
     case MinionTask::CRAFT: return "Crafting";

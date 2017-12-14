@@ -1140,7 +1140,7 @@ optional<int> WindowView::chooseFromListInternal(const string& title, const vect
   if (optionIndexes.empty())
     optionIndexes.push_back(0);
   vector<int> positions;
-  SGuiElem stuff = guiBuilder.drawListGui(capitalFirst(title), options, menuType, &index, &choice, &positions);
+  SGuiElem stuff = gui.leftMargin(25, guiBuilder.drawListGui(capitalFirst(title), options, menuType, &index, &choice, &positions));
   if (title.empty())
     stuff = gui.topMargin(guiBuilder.getStandardLineHeight() / 2, std::move(stuff));
   auto getScrollPos = [&](int index) {
