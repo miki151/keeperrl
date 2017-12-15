@@ -51,11 +51,6 @@ struct GuardianInfo {
   void serialize(Archive& ar, const unsigned int version);
 };
 
-struct DormInfo {
-  FurnitureType bedType;
-  optional<CollectiveWarning> warning;
-};
-
 struct MinionTaskInfo {
   enum Type { FURNITURE, EXPLORE, COPULATE, EAT, SPIDER, WORKER, ARCHERY } type;
   MinionTaskInfo();
@@ -124,7 +119,6 @@ class CollectiveConfig {
   map<CollectiveResourceId, int> getStartingResource() const;
 
   bool hasImmigrantion(bool currentlyActiveModel) const;
-  const EnumMap<SpawnType, DormInfo>& getDormInfo() const;
   const vector<FurnitureType>& getRoomsNeedingLight() const;
   static const ResourceInfo& getResourceInfo(CollectiveResourceId);
   static const vector<ItemFetchInfo>& getFetchInfo();

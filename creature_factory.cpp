@@ -43,7 +43,6 @@
 #include "spell_map.h"
 #include "item_type.h"
 #include "item.h"
-#include "spawn_type.h"
 #include "furniture.h"
 #include "experience_type.h"
 #include "creature_debt.h"
@@ -851,7 +850,6 @@ PCreature CreatureFactory::getSpecial(TribeId tribe, bool humanoid, bool large, 
           c.attr[AttrType::DAMAGE] += 6;
           c.attr[AttrType::DEFENSE] += 2;
         }
-        c.spawnType = humanoid ? SpawnType::HUMANOID : SpawnType::BEAST;
         if (humanoid) {
           c.skills.setValue(SkillId::SORCERY, Random.getDouble(0, 1));
           c.skills.setValue(SkillId::WORKSHOP, Random.getDouble(0, 1));
@@ -922,7 +920,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.name = "Keeper";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_MALE)->getNext());
           c.name->useFullTitle();
-          c.spawnType = SpawnType::HUMANOID;
           c.skills.setValue(SkillId::SORCERY, 0.2);
           c.skills.setValue(SkillId::LABORATORY, 0.2);
           c.maxLevelIncrease[ExperienceType::MELEE] = 7;
@@ -1032,7 +1029,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.viewId = ViewId::GHOST;
           c.attr = LIST(25_def, 5_spell_dam );
           c.courage = 1;
-          c.spawnType = SpawnType::DEMON;
           c.spells->add(SpellId::INVISIBILITY);
           c.body->setIntrinsicAttack(BodyPart::TORSO, IntrinsicAttack(
               ItemType::touch(Effect::Lasting{LastingEffect::INSANITY})));
@@ -1044,7 +1040,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
       return CATTR(
           c.attr = LIST(25_def, 5_spell_dam );
           c.viewId = ViewId::SUCCUBUS;
-          c.spawnType = SpawnType::DEMON;
           c.body = Body::humanoidSpirit(Body::Size::LARGE);
           c.body->addWings();
           c.skills.insert(SkillId::COPULATION);
@@ -1057,7 +1052,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.viewId = ViewId::DOPPLEGANGER;
           c.attr = LIST(25_def, 5_spell_dam );
           c.body = Body::nonHumanoidSpirit(Body::Size::LARGE);
-          c.spawnType = SpawnType::DEMON;
           c.skills.insert(SkillId::CONSUMPTION);
           c.name = "doppelganger";
           );
@@ -1360,7 +1354,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.viewId = ViewId::ZOMBIE;
           c.attr = LIST(14_dam, 17_def );
           c.body = Body::humanoid(Body::Material::UNDEAD_FLESH, Body::Size::LARGE);
-          c.spawnType = SpawnType::UNDEAD;
           c.permanentEffects[LastingEffect::RANGED_RESISTANCE] = 1;
           c.permanentEffects[LastingEffect::SLOWED] = 1;
           c.maxLevelIncrease[ExperienceType::MELEE] = 3;
@@ -1370,7 +1363,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.viewId = ViewId::SKELETON;
           c.attr = LIST(17_dam, 13_def, 5_ranged_dam);
           c.body = Body::humanoid(Body::Material::BONE, Body::Size::LARGE);
-          c.spawnType = SpawnType::UNDEAD;
           c.permanentEffects[LastingEffect::RANGED_RESISTANCE] = 1;
           c.maxLevelIncrease[ExperienceType::MELEE] = 3;
           c.maxLevelIncrease[ExperienceType::ARCHERY] = 4;
@@ -1382,7 +1374,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body = Body::humanoid(Body::Material::UNDEAD_FLESH, Body::Size::LARGE);
           c.chatReactionFriendly = "\"All men be cursed!\""_s;
           c.chatReactionHostile = "\"Die!\""_s;
-          c.spawnType = SpawnType::UNDEAD;
           c.skills.setValue(SkillId::SORCERY, 0.1);
           c.permanentEffects[LastingEffect::NIGHT_VISION] = 1;
           c.permanentEffects[LastingEffect::RANGED_RESISTANCE] = 1;
@@ -1396,7 +1387,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.viewId = ViewId::VAMPIRE_LORD;
           c.attr = LIST(17_dam, 17_def, 27_spell_dam );
           c.body = Body::humanoid(Body::Material::UNDEAD_FLESH, Body::Size::LARGE);
-          c.spawnType = SpawnType::UNDEAD;
           c.permanentEffects[LastingEffect::NIGHT_VISION] = 1;
           c.skills.setValue(SkillId::SORCERY, 0.5);
           c.name = "vampire lord";
@@ -1419,7 +1409,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.viewId = ViewId::MUMMY;
           c.attr = LIST(15_dam, 14_def, 10_spell_dam );
           c.body = Body::humanoid(Body::Material::UNDEAD_FLESH, Body::Size::LARGE);
-          c.spawnType = SpawnType::UNDEAD;
           c.permanentEffects[LastingEffect::RANGED_RESISTANCE] = 1;
           c.permanentEffects[LastingEffect::SLOWED] = 1;
           c.maxLevelIncrease[ExperienceType::MELEE] = 3;
@@ -1430,7 +1419,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.viewId = ViewId::ORC;
           c.attr = LIST(16_dam, 14_def );
           c.body = Body::humanoid(Body::Size::LARGE);
-          c.spawnType = SpawnType::HUMANOID;
           c.chatReactionFriendly = "curses all elves"_s;
           c.chatReactionHostile = "\"Die!\""_s;
           c.skills.setValue(SkillId::WORKSHOP, 0.3);
@@ -1444,7 +1432,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.viewId = ViewId::ORC_SHAMAN;
           c.attr = LIST(12_dam, 8_def, 16_spell_dam );
           c.body = Body::humanoid(Body::Size::LARGE);
-          c.spawnType = SpawnType::HUMANOID;
           c.skills.setValue(SkillId::SORCERY, 0.7);
           c.skills.setValue(SkillId::LABORATORY, 0.7);
           c.chatReactionFriendly = "curses all elves"_s;
@@ -1460,7 +1447,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.attr = LIST(13_dam, 16_def, 15_ranged_dam );
           c.body = Body::humanoid(Body::Size::LARGE);
           c.body->addWings();
-          c.spawnType = SpawnType::HUMANOID;
           c.skills.setValue(SkillId::LABORATORY, 0.3);
           c.gender = Gender::female;
           c.maxLevelIncrease[ExperienceType::MELEE] = 4;
@@ -1497,7 +1483,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.viewId = ViewId::GOBLIN;
           c.attr = LIST(12_dam, 13_def );
           c.body = Body::humanoid(Body::Size::MEDIUM);
-          c.spawnType = SpawnType::HUMANOID;
           c.chatReactionFriendly = "talks about crafting"_s;
           c.chatReactionHostile = "\"Die!\""_s;
           c.skills.insert(SkillId::DISARM_TRAPS);
@@ -1513,9 +1498,9 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
       return CATTR(
           c.viewId = ViewId::IMP;
           c.attr = LIST(5_dam, 15_def );
-          c.body = Body::humanoid(Body::Size::SMALL);
+          c.body = Body::humanoidSpirit(Body::Size::SMALL);
           c.body->setNoCarryLimit();
-          c.body->setDoesntEat();
+          //c.body->setDoesntEat();
           c.courage = -1;
           c.noChase = true;
           c.cantEquip = true;
@@ -1525,8 +1510,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.permanentEffects[LastingEffect::POISON_RESISTANT] = 1;
           c.permanentEffects[LastingEffect::SPEED] = 1;
           c.moraleSpeedIncrease = 1.3;
-          c.body->setIntrinsicAttack(BodyPart::HEAD, IntrinsicAttack(
-              ItemType::fangs(8, Effect::Lasting{LastingEffect::POISON})));
           c.name = "imp";
       );
     case CreatureId::PRISONER:
@@ -1551,7 +1534,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.name = "ogre";
           c.permanentEffects[LastingEffect::MAGIC_VULNERABILITY] = 1;
           c.name->setFirst(NameGenerator::get(NameGeneratorId::ORC)->getNext());
-          c.spawnType = SpawnType::HUMANOID;
           c.skills.setValue(SkillId::WORKSHOP, 0.5);
           c.skills.setValue(SkillId::FORGE, 0.5);
           c.skills.setValue(SkillId::FURNACE, 0.9);
@@ -1627,6 +1609,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.permanentEffects[LastingEffect::POISON_RESISTANT] = 1;
           c.body->setIntrinsicAttack(BodyPart::HEAD, IntrinsicAttack(
               ItemType::fangs(8, Effect::Lasting{LastingEffect::POISON})));
+          c.permanentEffects[LastingEffect::SPEED] = 1;
           c.chatReactionFriendly = "curses all humans"_s;
           c.chatReactionHostile = "\"Die!\""_s;
           c.courage = 1;
@@ -1863,7 +1846,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body->setHorseBodyParts(8);
           c.body->setIntrinsicAttack(BodyPart::LEG, IntrinsicAttack(ItemType::claws(10)));
           c.animal = true;
-          c.spawnType = SpawnType::BEAST;
           c.skills.insert(SkillId::EXPLORE_CAVES);
           c.name = "cave bear";);
     case CreatureId::RAT: 
@@ -1962,7 +1944,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.noChase = true;
           c.courage = 1;
           c.permanentEffects[LastingEffect::SPEED] = 1;
-          c.spawnType = SpawnType::BEAST;
           c.skills.insert(SkillId::EXPLORE);
           c.name = "raven";
           c.name->setGroup("flock");
@@ -1978,7 +1959,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.animal = true;
           c.noChase = true;
           c.courage = 1;
-          c.spawnType = SpawnType::BEAST;
           c.name = "vulture";);
     case CreatureId::WOLF: 
       return CATTR(
@@ -1991,7 +1971,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body->setIntrinsicAttack(BodyPart::LEG, IntrinsicAttack(ItemType::claws(7)));
           c.animal = true;
           c.permanentEffects[LastingEffect::NIGHT_VISION] = 1;
-          c.spawnType = SpawnType::BEAST;
           c.name = CreatureName("wolf", "wolves");
           c.name->setGroup("pack");
           c.name->setFirst(NameGenerator::get(NameGeneratorId::DOG)->getNext());
@@ -2005,7 +1984,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body->setIntrinsicAttack(BodyPart::HEAD, IntrinsicAttack(ItemType::fangs(8)));
           c.body->setIntrinsicAttack(BodyPart::LEG, IntrinsicAttack(ItemType::claws(7)));
           c.animal = true;
-          c.spawnType = SpawnType::BEAST;
           c.permanentEffects[LastingEffect::NIGHT_VISION] = 1;
           c.skills.insert(SkillId::STEALTH);
           c.skills.insert(SkillId::EXPLORE_NOCTURNAL);
@@ -2126,7 +2104,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.animal = true;
           c.noChase = true;
           c.courage = 1;
-          c.spawnType = SpawnType::BEAST;
           c.permanentEffects[LastingEffect::NIGHT_VISION] = 1;
           c.skills.insert(SkillId::EXPLORE_NOCTURNAL);
           c.skills.insert(SkillId::EXPLORE_CAVES);

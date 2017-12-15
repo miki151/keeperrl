@@ -866,6 +866,17 @@ bool Body::needsToEat() const {
   }
 }
 
+bool Body::needsToSleep() const {
+  switch (material) {
+    case Material::FLESH:
+    case Material::BONE:
+    case Material::UNDEAD_FLESH:
+      return true;
+    default:
+      return false;
+  }
+}
+
 bool Body::fallsApartFromDamage() const {
   return !hasHealth();
 }

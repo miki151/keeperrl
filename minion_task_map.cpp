@@ -28,8 +28,6 @@ bool MinionTaskMap::canChooseRandomly(WConstCreature c, MinionTask t) const {
     case MinionTask::BE_WHIPPED:
     case MinionTask::BE_TORTURED:
       return false;
-    case MinionTask::LAIR:
-    case MinionTask::GRAVE:
     case MinionTask::SLEEP:
       return !c->isAffected(LastingEffect::RESTED);
     case MinionTask::EAT:
@@ -58,7 +56,6 @@ bool MinionTaskMap::isAvailable(WConstCollective col, WConstCreature c, MinionTa
     case MinionTask::THRONE:
       return col->getLeader() == c;
     case MinionTask::BE_EXECUTED:
-    case MinionTask::PRISON:
     case MinionTask::BE_TORTURED:
       return col->hasTrait(c, MinionTrait::PRISONER);
     case MinionTask::CRAFT:
@@ -68,18 +65,13 @@ bool MinionTaskMap::isAvailable(WConstCollective col, WConstCreature c, MinionTa
           c->getAttributes().getSkills().getValue(SkillId::JEWELER) > 0 ||
           c->getAttributes().getSkills().getValue(SkillId::LABORATORY) > 0;
     case MinionTask::SLEEP:
-      return c->getAttributes().getSpawnType() == SpawnType::HUMANOID ||
-          (c->getBody().isHumanoid() && col->getConfig().hasVillainSleepingTask());
-    case MinionTask::GRAVE:
-      return c->getAttributes().getSpawnType() == SpawnType::UNDEAD;
-    case MinionTask::LAIR:
-      return c->getAttributes().getSpawnType() == SpawnType::BEAST;
+      return c->getBody().needsToSleep();
     case MinionTask::EAT:
       return c->getBody().needsToEat();
     case MinionTask::COPULATE:
       return c->getAttributes().getSkills().hasDiscrete(SkillId::COPULATION);
     case MinionTask::RITUAL:
-      return c->getAttributes().getSpawnType() == SpawnType::DEMON;
+      return c->getBody().isHumanoid();
     case MinionTask::CROPS:
       return c->getAttributes().getSkills().hasDiscrete(SkillId::CROPS);
     case MinionTask::SPIDER:

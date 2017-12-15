@@ -171,8 +171,6 @@ PTask MinionTasks::generate(WCollective collective, WCreature c, MinionTask task
 optional<TimeInterval> MinionTasks::getDuration(WConstCreature c, MinionTask task) {
   switch (task) {
     case MinionTask::COPULATE:
-    case MinionTask::GRAVE:
-    case MinionTask::LAIR:
     case MinionTask::EAT:
     case MinionTask::BE_WHIPPED:
     case MinionTask::BE_TORTURED:

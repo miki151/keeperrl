@@ -55,7 +55,7 @@
 template <class Archive>
 void Collective::serialize(Archive& ar, const unsigned int version) {
   ar(SUBCLASS(TaskCallback), SUBCLASS(UniqueEntity<Collective>), SUBCLASS(EventListener));
-  ar(creatures, leader, taskMap, tribe, control, byTrait, bySpawnType);
+  ar(creatures, leader, taskMap, tribe, control, byTrait);
   ar(territory, alarmInfo, markedItems, constructions, minionEquipment);
   ar(surrendering, delayedPos, knownTiles, technologies, kills, points, currentTasks);
   ar(credit, level, immigration, teams, name, conqueredVillains);
@@ -167,8 +167,6 @@ void Collective::addCreature(WCreature c, EnumSet<MinionTrait> traits) {
   for (MinionTrait t : traits)
     byTrait[t].push_back(c);
   updateCreatureStatus(c);
-  if (auto spawnType = c->getAttributes().getSpawnType())
-    bySpawnType[*spawnType].push_back(c);
   for (WItem item : c->getEquipment().getItems())
     CHECK(minionEquipment->tryToOwn(c, item));
   control->onMemberAdded(c);
@@ -177,8 +175,6 @@ void Collective::addCreature(WCreature c, EnumSet<MinionTrait> traits) {
 void Collective::removeCreature(WCreature c) {
   creatures.removeElement(c);
   returnResource(taskMap->freeFromTask(c));
-  if (auto spawnType = c->getAttributes().getSpawnType())
-    bySpawnType[*spawnType].removeElement(c);
   for (auto team : teams->getContaining(c))
     teams->remove(team, c);
   for (MinionTrait t : ENUM_ALL(MinionTrait))
@@ -404,7 +400,7 @@ PTask Collective::getEquipmentTask(WCreature c) {
   return nullptr;
 }
 
-const static EnumSet<MinionTask> healingTasks {MinionTask::SLEEP, MinionTask::GRAVE, MinionTask::LAIR};
+const static EnumSet<MinionTask> healingTasks {MinionTask::SLEEP};
 
 void Collective::considerHealingTask(WCreature c) {
   if (c->getBody().canHeal() && !c->isAffected(LastingEffect::POISON))
@@ -660,10 +656,6 @@ void Collective::tick() {
 
 const vector<WCreature>& Collective::getCreatures(MinionTrait trait) const {
   return byTrait[trait];
-}
-
-const vector<WCreature>& Collective::getCreatures(SpawnType type) const {
-  return bySpawnType[type];
 }
 
 bool Collective::hasTrait(WConstCreature c, MinionTrait t) const {

@@ -49,6 +49,8 @@ struct TutorialRequirement {
   void serialize(Archive&, const unsigned);
 };
 
+struct CivilianCapture {};
+
 using ImmigrantRequirement = variant<
     AttractionInfo,
     TechId,
@@ -58,7 +60,8 @@ using ImmigrantRequirement = variant<
     ExponentialCost,
     Pregnancy,
     RecruitmentInfo,
-    TutorialRequirement
+    TutorialRequirement,
+    CivilianCapture
 >;
 
 struct OutsideTerritory { SERIALIZE_EMPTY() };

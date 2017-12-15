@@ -981,7 +981,7 @@ ImmigrantDataInfo PlayerControl::getPrisonerImmigrantData() const {
 void PlayerControl::fillImmigration(CollectiveInfo& info) const {
   info.immigration.clear();
   auto& immigration = getCollective()->getImmigration();
-  info.immigration.push_back(getPrisonerImmigrantData());
+  //info.immigration.push_back(getPrisonerImmigrantData());
   for (auto& elem : immigration.getAvailable()) {
     const auto& candidate = elem.second.get();
     const int count = (int) candidate.getCreatures().size();
@@ -1091,6 +1091,9 @@ void PlayerControl::fillImmigrationHelp(CollectiveInfo& info) const {
             requirements.push_back("Recruit is not available in this game");
         },
         [&](const TutorialRequirement&) {
+        },
+        [&](const CivilianCapture&) {
+          requirements.push_back("Requires a captured tribe with civilians");
         }
     ));
     if (auto limit = elem->getLimit())
@@ -2231,7 +2234,7 @@ void PlayerControl::update(bool currentlyActive) {
   for (WLevel l : currentLevels)
     for (WCreature c : l->getAllCreatures())
       if (c->getTribeId() == getTribeId() && canSee(c) && !isEnemy(c)) {
-        if (c->getAttributes().getSpawnType() && !getCreatures().contains(c) && !getCollective()->wasBanished(c)) {
+        if (!getCreatures().contains(c) && !getCollective()->wasBanished(c)) {
           addedCreatures.push_back(c);
           getCollective()->addCreature(c, {MinionTrait::FIGHTER});
           for (auto controlled : getControlled())

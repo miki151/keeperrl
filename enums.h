@@ -39,7 +39,6 @@ enum class CampaignType;
 enum class PlayerRole;
 
 enum class MovementTrait;
-enum class SpawnType;
 enum class CreatureSize;
 
 enum class SquareApplyType;

@@ -81,6 +81,9 @@ static CollectiveConfig getKeeperConfig(RandomGen& random, bool fastImmigration,
           .setNoAuto()
           .setInitialRecruitment(4)
           .addRequirement(ExponentialCost{ CostInfo(CollectiveResourceId::GOLD, 6), 5, 4 }),
+      ImmigrantInfo(CreatureId::PRISONER, {MinionTrait::WORKER, MinionTrait::NO_LIMIT, MinionTrait::NO_EQUIPMENT})
+          .addRequirement(AttractionInfo{2, FurnitureType::PRISON})
+          .addRequirement(CivilianCapture{}),
       ImmigrantInfo(CreatureId::GOBLIN, {MinionTrait::FIGHTER, MinionTrait::NO_EQUIPMENT})
           .setFrequency(0.7)
           .addRequirement(0.1, AttractionInfo{1, vector<AttractionType>(

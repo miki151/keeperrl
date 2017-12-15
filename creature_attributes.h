@@ -93,7 +93,6 @@ class CreatureAttributes {
   bool canSleep() const;
   bool isInnocent() const;
   void consume(WCreature self, CreatureAttributes& other);
-  optional<SpawnType> getSpawnType() const; 
   const MinionTaskMap& getMinionTasks() const;
   MinionTaskMap& getMinionTasks();
   bool dontChase() const;
@@ -115,7 +114,6 @@ class CreatureAttributes {
   optional<string> SERIAL(chatReactionHostile);
   HeapAllocated<optional<Effect>> SERIAL(passiveAttack);
   Gender SERIAL(gender) = Gender::male;
-  optional<SpawnType> SERIAL(spawnType);
   bool SERIAL(innocent) = false;
   bool SERIAL(animal) = false;
   bool SERIAL(cantEquip) = false;

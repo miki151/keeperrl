@@ -21,7 +21,6 @@
 #include "event_listener.h"
 #include "entity_map.h"
 #include "minion_trait.h"
-#include "spawn_type.h"
 
 class CollectiveAttack;
 class Creature;
@@ -87,7 +86,6 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   const vector<WCreature>& getCreatures() const;
   bool isConquered() const;
 
-  const vector<WCreature>& getCreatures(SpawnType) const;
   const vector<WCreature>& getCreatures(MinionTrait) const;
   bool hasTrait(WConstCreature, MinionTrait) const;
   void setTrait(WCreature c, MinionTrait);
@@ -273,7 +271,6 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   vector<WCreature> SERIAL(creatures);
   WCreature SERIAL(leader) = nullptr;
   EnumMap<MinionTrait, vector<WCreature>> SERIAL(byTrait);
-  EnumMap<SpawnType, vector<WCreature>> SERIAL(bySpawnType);
   PCollectiveControl SERIAL(control);
   HeapAllocated<TribeId> SERIAL(tribe);
   WLevel SERIAL(level) = nullptr;
