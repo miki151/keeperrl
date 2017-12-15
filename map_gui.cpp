@@ -108,20 +108,20 @@ optional<Vec2> MapGui::getHighlightedTile(Renderer&) {
 Color MapGui::getHighlightColor(const ViewIndex& index, HighlightType type) {
   double amount = index.getHighlight(type);
   switch (type) {
-    case HighlightType::RECT_DESELECTION: return Color::RED.transparency(90);
-    case HighlightType::DIG: return Color::YELLOW.transparency(120);
+    case HighlightType::RECT_DESELECTION: return Color::RED.transparency(100);
+    case HighlightType::DIG: return Color::YELLOW.transparency(100);
     case HighlightType::FETCH_ITEMS: //return Color(Color::YELLOW).transparency(50);
-    case HighlightType::CUT_TREE: return Color::YELLOW.transparency(100);
-    case HighlightType::PERMANENT_FETCH_ITEMS: return Color::ORANGE.transparency(50);
-    case HighlightType::STORAGE_EQUIPMENT: return Color::BLUE.transparency(buttonViewId ? 120 : 50);
-    case HighlightType::STORAGE_RESOURCES: return Color::GREEN.transparency(buttonViewId ? 120 : 50);
-    case HighlightType::RECT_SELECTION: return Color::YELLOW.transparency(90);
+    case HighlightType::CUT_TREE: return Color::YELLOW.transparency(200);
+    case HighlightType::PERMANENT_FETCH_ITEMS: return Color::ORANGE.transparency(100);
+    case HighlightType::STORAGE_EQUIPMENT: return Color::BLUE.transparency(100);
+    case HighlightType::STORAGE_RESOURCES: return Color::GREEN.transparency(100);
+    case HighlightType::RECT_SELECTION: return Color::YELLOW.transparency(100);
     case HighlightType::FOG: return Color::WHITE.transparency(int(120 * amount));
     case HighlightType::POISON_GAS: return Color(0, min<Uint8>(255., Uint8(amount * 500)), 0, (Uint8)(amount * 140));
     case HighlightType::MEMORY: return Color::BLACK.transparency(80);
     case HighlightType::NIGHT: return Color::NIGHT_BLUE.transparency(int(amount * 160));
     case HighlightType::EFFICIENCY: return Color(255, 0, 0, Uint8(120 * (1 - amount)));
-    case HighlightType::PRIORITY_TASK: return Color(0, 255, 0, 120);
+    case HighlightType::PRIORITY_TASK: return Color(0, 255, 0, 200);
     case HighlightType::CREATURE_DROP:
       if (index.hasObject(ViewLayer::FLOOR) && getHighlightedFurniture() == index.getObject(ViewLayer::FLOOR).id())
         return Color(0, 255, 0);
@@ -746,7 +746,7 @@ void MapGui::renderHighlights(Renderer& renderer, Vec2 size, milliseconds curren
     if (auto& index = objects[wpos])
       if (index->hasAnyHighlight()) {
         Vec2 pos = topLeftCorner + (wpos - allTiles.topLeft()).mult(size);
-        for (HighlightType highlight : ENUM_ALL(HighlightType))
+        for (HighlightType highlight : ENUM_ALL_REVERSE(HighlightType))
           if (isRenderedHighlight(*index, highlight) && isRenderedHighlightLow(*index, highlight) == lowHighlights)
             renderHighlight(renderer, pos, size, *index, highlight);
       }
