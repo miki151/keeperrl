@@ -156,6 +156,8 @@ void Collective::addCreature(WCreature c, EnumSet<MinionTrait> traits) {
   if (traits.contains(MinionTrait::LEADER)) {
     CHECK(!leader);
     leader = c;
+    if (config->isLeaderFighter())
+      traits.insert(MinionTrait::FIGHTER);
   }
   if (c->getTribeId() != *tribe)
     c->setTribe(*tribe);
