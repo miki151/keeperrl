@@ -144,8 +144,11 @@ void Collective::addCreature(PCreature creature, Position pos, EnumSet<MinionTra
 void Collective::addCreature(WCreature c, EnumSet<MinionTrait> traits) {
   if (!traits.contains(MinionTrait::FARM_ANIMAL) && !c->getController()->isCustomController())
     c->setController(makeOwner<Monster>(c, MonsterAIFactory::collective(this)));
-  if (traits.contains(MinionTrait::LEADER))
+  if (traits.contains(MinionTrait::LEADER)) {
     leader = c;
+    if (config->isLeaderFighter())
+      traits.insert(MinionTrait::FIGHTER);
+  }
   if (c->getTribeId() != *tribe)
     c->setTribe(*tribe);
   if (WGame game = getGame())
