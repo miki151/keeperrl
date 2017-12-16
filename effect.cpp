@@ -98,15 +98,21 @@ void Effect::emitPoisonGas(Position pos, double amount, bool msg) {
 vector<WCreature> Effect::summon(WCreature c, CreatureId id, int num, TimeInterval ttl, TimeInterval delay) {
   vector<PCreature> creatures;
   for (int i : Range(num))
-    creatures.push_back(CreatureFactory::fromId(id, c->getTribeId(), MonsterAIFactory::summoned(c, ttl)));
-  return summonCreatures(c, 2, std::move(creatures), delay);
+    creatures.push_back(CreatureFactory::fromId(id, c->getTribeId(), MonsterAIFactory::summoned(c)));
+  auto ret = summonCreatures(c, 2, std::move(creatures), delay);
+  for (auto c : ret)
+    c->addEffect(LastingEffect::SUMMONED, ttl, false);
+  return ret;
 }
 
 vector<WCreature> Effect::summon(Position pos, CreatureFactory& factory, int num, TimeInterval ttl, TimeInterval delay) {
   vector<PCreature> creatures;
   for (int i : Range(num))
-    creatures.push_back(factory.random(MonsterAIFactory::dieTime(pos.getGame()->getGlobalTime() + ttl)));
-  return summonCreatures(pos, 2, std::move(creatures), delay);
+    creatures.push_back(factory.random(MonsterAIFactory::monster()));
+  auto ret = summonCreatures(pos, 2, std::move(creatures), delay);
+  for (auto c : ret)
+    c->addEffect(LastingEffect::SUMMONED, ttl, false);
+  return ret;
 }
 
 static void enhanceArmor(WCreature c, int mod, const string& msg) {
@@ -133,6 +139,7 @@ static TimeInterval entangledTime(int strength) {
 
 static TimeInterval getDuration(WConstCreature c, LastingEffect e) {
   switch (e) {
+    case LastingEffect::SUMMONED: return 900_visible;
     case LastingEffect::PREGNANT: return 900_visible;
     case LastingEffect::NIGHT_VISION:
     case LastingEffect::ELF_VISION: return  60_visible;

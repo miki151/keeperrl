@@ -59,8 +59,7 @@ class MonsterAIFactory {
   static MonsterAIFactory stayInLocation(Rectangle, bool moveRandomly = true);
   static MonsterAIFactory wildlifeNonPredator();
   static MonsterAIFactory scavengerBird(Position corpsePos);
-  static MonsterAIFactory summoned(WCreature, TimeInterval ttl);
-  static MonsterAIFactory dieTime(GlobalTime);
+  static MonsterAIFactory summoned(WCreature);
   static MonsterAIFactory moveRandomly();
   static MonsterAIFactory stayOnFurniture(FurnitureType);
   static MonsterAIFactory guard();

@@ -936,7 +936,7 @@ class CampAndSpawn : public Task {
     updateTeams();
     if (defenseTeam.size() < defenseSize && Random.roll(5)) {
       for (WCreature summon : Effect::summonCreatures(c, 4,
-          makeVec(spawns.random(MonsterAIFactory::summoned(c, 100000_visible)))))
+          makeVec(spawns.random(MonsterAIFactory::summoned(c)))))
         defenseTeam.push_back(summon);
     }
     if (!campPos.contains(c->getPosition()))
@@ -1310,7 +1310,7 @@ class GoToAndWait : public Task {
       auto ret = c->moveTowards(position);
       if (!ret) {
         if (!timeout)
-          timeout = c->getLocalTime() + 30_visible;
+          timeout = *c->getLocalTime() + 30_visible;
         else
           if (c->getLocalTime() > *timeout) {
             setDone();
@@ -1321,7 +1321,7 @@ class GoToAndWait : public Task {
       return ret;
     } else {
       if (!maxTime)
-        maxTime = c->getLocalTime() + waitTime;
+        maxTime = *c->getLocalTime() + waitTime;
       return c->wait();
     }
   }

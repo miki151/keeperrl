@@ -380,7 +380,7 @@ class Fighter : public Behaviour {
       return {weight, action.prepend([=](WCreature creature) {
         creature->setInCombat();
         other->setInCombat();
-        lastSeen = LastSeen{creature->getPosition(), creature->getGlobalTime(), LastSeen::PANIC, other->getUniqueId()};
+        lastSeen = LastSeen{creature->getPosition(), *creature->getGlobalTime(), LastSeen::PANIC, other->getUniqueId()};
       })};
     else
       return NoMove;
@@ -482,7 +482,7 @@ class Fighter : public Behaviour {
     if (auto lastSeen = getLastSeen()) {
       auto lastSeenTimeout = 20_visible;
       if (!lastSeen->pos.isSameLevel(creature->getPosition()) ||
-          lastSeen->time < creature->getGlobalTime() - lastSeenTimeout ||
+          lastSeen->time < *creature->getGlobalTime() - lastSeenTimeout ||
           lastSeen->pos == creature->getPosition()) {
         lastSeen = none;
         return NoMove;
@@ -598,13 +598,13 @@ class Fighter : public Behaviour {
           return {max(0., 1.0 - double(distance) / 20), action.prepend([=](WCreature creature) {
             creature->setInCombat();
             other->setInCombat();
-            lastSeen = LastSeen{other->getPosition(), creature->getGlobalTime(), LastSeen::ATTACK, other->getUniqueId()};
+            lastSeen = LastSeen{other->getPosition(), *creature->getGlobalTime(), LastSeen::ATTACK, other->getUniqueId()};
             auto chaseInfo = chaseFreeze.getMaybe(other);
             auto startChaseFreeze = 20_visible;
             auto endChaseFreeze = 20_visible;
-            if (!chaseInfo || other->getGlobalTime() > chaseInfo->second)
-              chaseFreeze.set(other, make_pair(other->getGlobalTime() + startChaseFreeze,
-                  other->getGlobalTime() + endChaseFreeze));
+            auto time = *other->getGlobalTime();
+            if (!chaseInfo || time > chaseInfo->second)
+              chaseFreeze.set(other, make_pair(time + startChaseFreeze, time + endChaseFreeze));
           })};
       }
       if (distance == 2)
@@ -647,7 +647,8 @@ class Fighter : public Behaviour {
 
   bool isChaseFrozen(WConstCreature c) {
     auto chaseInfo = chaseFreeze.getMaybe(c);
-    return chaseInfo && chaseInfo->first <= c->getGlobalTime() && chaseInfo->second >= c->getGlobalTime();
+    auto time = *c->getGlobalTime();
+    return chaseInfo && chaseInfo->first <= time && chaseInfo->second >= time;
   }
 };
 
@@ -747,15 +748,15 @@ class DieTime : public Behaviour {
 
 class Summoned : public GuardTarget {
   public:
-  Summoned(WCreature c, WCreature _target, double minDist, double maxDist, TimeInterval ttl)
-      : GuardTarget(c, minDist, maxDist), target(_target), dieTime(target->getGlobalTime() + ttl) {
+  Summoned(WCreature c, WCreature _target, double minDist, double maxDist)
+      : GuardTarget(c, minDist, maxDist), target(_target) {
   }
 
   virtual ~Summoned() {
   }
 
   virtual MoveInfo getMove() override {
-    if (target->isDead() || creature->getGlobalTime() > dieTime) {
+    if (target->isDead()) {
       return {1.0, CreatureAction(creature, [=](WCreature creature) {
         creature->dieNoReason(Creature::DropType::NOTHING);
       })};
@@ -1280,23 +1281,10 @@ MonsterAIFactory MonsterAIFactory::scavengerBird(Position corpsePos) {
       });
 }
 
-MonsterAIFactory MonsterAIFactory::summoned(WCreature leader, TimeInterval ttl) {
+MonsterAIFactory MonsterAIFactory::summoned(WCreature leader) {
   return MonsterAIFactory([=](WCreature c) {
       return new MonsterAI(c, {
-          new Summoned(c, leader, 1, 3, ttl),
-          new AvoidFire(c),
-          new Heal(c),
-          new Fighter(c, 0.6, true),
-          new MoveRandomly(c),
-          new GoldLust(c)},
-          { 6, 5, 4, 3, 1, 1 });
-      });
-}
-
-MonsterAIFactory MonsterAIFactory::dieTime(GlobalTime dieTime) {
-  return MonsterAIFactory([=](WCreature c) {
-      return new MonsterAI(c, {
-          new DieTime(c, dieTime),
+          new Summoned(c, leader, 1, 3),
           new AvoidFire(c),
           new Heal(c),
           new Fighter(c, 0.6, true),

@@ -158,6 +158,8 @@ void LastingEffects::onAffected(WCreature c, LastingEffect effect, bool msg) {
         c->you(MsgType::ARE, "satiated"); break;
       case LastingEffect::RESTED:
         c->you(MsgType::ARE, "well rested"); break;
+      case LastingEffect::SUMMONED:
+        c->you(MsgType::YOUR, "days are numbered"); break;
     }
 }
 
@@ -266,6 +268,8 @@ void LastingEffects::onTimedOut(WCreature c, LastingEffect effect, bool msg) {
         c->you(MsgType::ARE, "no longer satiated"); break;
       case LastingEffect::RESTED:
         c->you(MsgType::ARE, "no longer rested"); break;
+      case LastingEffect::SUMMONED:
+        c->dieNoReason(Creature::DropType::ONLY_INVENTORY); break;
       default: break;
     }
 }
@@ -355,6 +359,7 @@ static optional<Adjective> getAdjective(LastingEffect effect) {
     case LastingEffect::MELEE_VULNERABILITY: return "Vulnerable to melee attacks"_bad;
     case LastingEffect::RANGED_VULNERABILITY: return "Vulnerable to ranged attacks"_bad;
     case LastingEffect::SUNLIGHT_VULNERABLE: return "Vulnerable to sunlight"_bad;
+    case LastingEffect::SUMMONED: return "Time to live"_bad;
   }
 }
 
@@ -532,6 +537,7 @@ const char* LastingEffects::getName(LastingEffect type) {
     case LastingEffect::SUNLIGHT_VULNERABLE: return "sunlight vulnerability";
     case LastingEffect::SATIATED: return "satiety";
     case LastingEffect::RESTED: return "wakefulness";
+    case LastingEffect::SUMMONED: return "time to live";
   }
 }
 
@@ -575,6 +581,7 @@ const char* LastingEffects::getDescription(LastingEffect type) {
     case LastingEffect::SUNLIGHT_VULNERABLE: return "Sunlight makes your body crumble to dust.";
     case LastingEffect::SATIATED: return "Increases morale and improves defense by +1.";
     case LastingEffect::RESTED: return "Increases morale and improves defense by +1.";
+    case LastingEffect::SUMMONED: return "Will disappear after the given number of turns.";
   }
 }
 
@@ -594,6 +601,7 @@ int LastingEffects::getPrice(LastingEffect e) {
     case LastingEffect::SUNLIGHT_VULNERABLE:
     case LastingEffect::SATIATED:
     case LastingEffect::RESTED:
+    case LastingEffect::SUMMONED:
       return 2;
     case LastingEffect::WARNING:
       return 5;

@@ -39,7 +39,8 @@ RICH_ENUM(LastingEffect,
     TELEPATHY,
     SUNLIGHT_VULNERABLE,
     SATIATED,
-    RESTED
+    RESTED,
+    SUMMONED
 );
 
 RICH_ENUM(CreatureCondition,

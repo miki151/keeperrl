@@ -103,11 +103,14 @@ Body& Creature::getBody() {
 
 TimeInterval Creature::getSpellDelay(Spell* spell) const {
   CHECK(!isReady(spell));
-  return attributes->getSpellMap().getReadyTime(spell) - getGlobalTime();
+  return attributes->getSpellMap().getReadyTime(spell) - *getGlobalTime();
 }
 
 bool Creature::isReady(Spell* spell) const {
-  return attributes->getSpellMap().getReadyTime(spell) <= getGlobalTime();
+  if (auto time = getGlobalTime())
+    return attributes->getSpellMap().getReadyTime(spell) <= *time;
+  else
+    return true;
 }
 
 static double getWillpowerMult(double sorcerySkill) {
@@ -133,7 +136,7 @@ CreatureAction Creature::castSpell(Spell* spell) const {
     spell->addMessage(c);
     spell->getEffect().applyToCreature(c);
     getGame()->getStatistics().add(StatId::SPELL_CAST);
-    c->attributes->getSpellMap().setReadyTime(spell, getGlobalTime() + TimeInterval(
+    c->attributes->getSpellMap().setReadyTime(spell, *getGlobalTime() + TimeInterval(
         int(spell->getDifficulty() * getWillpowerMult(attributes->getSkills().getValue(SkillId::SORCERY)))));
     c->spendTime();
   });
@@ -151,7 +154,7 @@ CreatureAction Creature::castSpell(Spell* spell, Vec2 dir) const {
     secondPerson("You cast " + spell->getName());
     applyDirected(c, dir, spell->getDirEffectType());
     getGame()->getStatistics().add(StatId::SPELL_CAST);
-    c->attributes->getSpellMap().setReadyTime(spell, getGlobalTime() + TimeInterval(
+    c->attributes->getSpellMap().setReadyTime(spell, *getGlobalTime() + TimeInterval(
         int(spell->getDifficulty() * getWillpowerMult(attributes->getSkills().getValue(SkillId::SORCERY)))));
     c->spendTime();
   });
@@ -217,10 +220,9 @@ EnumSet<CreatureStatus>& Creature::getStatus() {
   return statuses;
 }
 
-MovementInfo Creature::spendTime(TimeInterval t) {
-  MovementInfo ret(Vec2(0, 0), getLocalTime(), getLocalTime() + t, 0,
-      MovementInfo::MOVE);
+optional<MovementInfo> Creature::spendTime(TimeInterval t) {
   if (WModel m = position.getModel()) {
+    MovementInfo ret(Vec2(0, 0), *getLocalTime(), *getLocalTime() + t, 0, MovementInfo::MOVE);
     lastMoveCounter = ret.moveCounter = position.getModel()->getMoveCounter();
     if (!isDead()) {
       if (isAffected(LastingEffect::SPEED) && t == 1_visible) {
@@ -238,9 +240,10 @@ MovementInfo Creature::spendTime(TimeInterval t) {
       }
     }
     m->increaseMoveCounter();
+    hidden = false;
+    return ret;
   }
-  hidden = false;
-  return ret;
+  return none;
 }
 
 CreatureAction Creature::forceMove(Vec2 dir) const {
@@ -294,13 +297,13 @@ CreatureAction Creature::move(Position pos) const {
       you(MsgType::CRAWL, getPosition().getName());
       timeSpent = 3_visible;
     }
-    self->addMovementInfo(self->spendTime(timeSpent).setDirection(direction));
+    self->addMovementInfo(self->spendTime(timeSpent)->setDirection(direction));
   });
 }
 
 void Creature::displace(Vec2 dir) {
   position.moveCreature(dir);
-  auto time = getLocalTime();
+  auto time = *getLocalTime();
   addMovementInfo({dir, time, time + 1_visible, position.getModel()->getMoveCounter(), MovementInfo::MOVE});
 }
 
@@ -362,7 +365,7 @@ void Creature::swapPosition(Vec2 direction) {
   privateMessage("Excuse me!");
   other->privateMessage("Excuse me!");
   position.swapCreatures(other);
-  auto movementInfo = spendTime();
+  auto movementInfo = *spendTime();
   addMovementInfo(movementInfo.setDirection(direction));
   other->addMovementInfo(movementInfo.setDirection(-direction));
 }
@@ -614,7 +617,7 @@ CreatureAction Creature::applySquare(Position pos) const {
         auto originalPos = getPosition();
         auto usageTime = furniture->getUsageTime();
         furniture->use(pos, self);
-        auto movementInfo = self->spendTime(usageTime);
+        auto movementInfo = *self->spendTime(usageTime);
         if (pos != getPosition() && getPosition() == originalPos)
           self->addMovementInfo(movementInfo
               .setDirection(getPosition().getDir(pos))
@@ -679,7 +682,7 @@ bool Creature::knowsHiding(WConstCreature c) const {
 void Creature::addEffect(LastingEffect effect, TimeInterval time, bool msg) {
   if (LastingEffects::affects(this, effect) && !getBody().isImmuneTo(effect)) {
     bool was = isAffected(effect);
-    attributes->addLastingEffect(effect, getGlobalTime() + time);
+    attributes->addLastingEffect(effect, *getGlobalTime() + time);
     if (!was && isAffected(effect))
       LastingEffects::onAffected(this, effect, msg);
   }
@@ -687,7 +690,7 @@ void Creature::addEffect(LastingEffect effect, TimeInterval time, bool msg) {
 
 void Creature::removeEffect(LastingEffect effect, bool msg) {
   bool was = isAffected(effect);
-  attributes->clearLastingEffect(effect, getGlobalTime());
+  attributes->clearLastingEffect(effect, *getGlobalTime());
   if (was && !isAffected(effect))
     LastingEffects::onRemoved(this, effect, msg);
 }
@@ -707,20 +710,18 @@ void Creature::removePermanentEffect(LastingEffect effect, int count) {
 }
 
 bool Creature::isAffected(LastingEffect effect) const {
-  return attributes->isAffected(effect, getGlobalTime());
-}
-
-optional<GlobalTime> Creature::getLastAffected(LastingEffect effect) const {
-  return attributes->getLastAffected(effect, getGlobalTime());
+  if (auto time = getGlobalTime())
+    return attributes->isAffected(effect, *time);
+  else
+    return false;
 }
 
 optional<TimeInterval> Creature::getTimeRemaining(LastingEffect effect) const {
   auto t = attributes->getTimeOut(effect);
-  auto global = getGlobalTime();
-  if (t >= global)
-    return t - global;
-  else
-    return none;
+  if (auto global = getGlobalTime())
+    if (t >= *global)
+      return t - *global;
+  return none;
 }
 
 bool Creature::isDarknessSource() const {
@@ -808,18 +809,18 @@ void Creature::setPosition(Position pos) {
   position = pos;
 }
 
-LocalTime Creature::getLocalTime() const {
+optional<LocalTime> Creature::getLocalTime() const {
   if (WModel m = position.getModel())
     return m->getLocalTime();
   else
-    return LocalTime();
+    return none;
 }
 
-GlobalTime Creature::getGlobalTime() const {
+optional<GlobalTime> Creature::getGlobalTime() const {
   if (WGame g = getGame())
     return g->getGlobalTime();
   else
-    return GlobalTime();
+    return none;
 }
 
 void Creature::tick() {
@@ -834,9 +835,8 @@ void Creature::tick() {
   }
   for (auto item : discarded)
     equipment->removeItem(item, this);
-  auto globalTime = getGlobalTime();
   for (LastingEffect effect : ENUM_ALL(LastingEffect)) {
-    if (attributes->considerTimeout(effect, globalTime))
+    if (attributes->considerTimeout(effect, *getGlobalTime()))
       LastingEffects::onTimedOut(this, effect, true);
     if (isAffected(effect) && LastingEffects::tick(this, effect))
       return;
@@ -891,7 +891,8 @@ CreatureAction Creature::attack(WCreature other, optional<AttackParams> attackPa
       enemyName = "something";
     weapon->getAttackMsg(this, enemyName);
     other->takeDamage(attack);
-    self->addMovementInfo(self->spendTime(timeSpent).setDirection(dir).setType(MovementInfo::ATTACK));
+    auto movementInfo = *self->spendTime(timeSpent);
+    self->addMovementInfo(movementInfo.setDirection(dir).setType(MovementInfo::ATTACK));
   });
 }
 
@@ -1069,7 +1070,7 @@ vector<PItem> Creature::generateCorpse(bool instantlyRotten) const {
 
 void Creature::dieWithAttacker(WCreature attacker, DropType drops) {
   CHECK(!isDead()) << getName().bare() << " is already dead. " << getDeathReason().value_or("");
-  deathTime = getGlobalTime();
+  deathTime = *getGlobalTime();
   lastAttacker = attacker;
   INFO << getName().the() << " dies. Killed by " << (attacker ? attacker->getName().bare() : "");
   getController()->onKilled(attacker);
@@ -1205,7 +1206,7 @@ CreatureAction Creature::whip(const Position& pos) const {
     return CreatureAction();
   return CreatureAction(this, [=](WCreature self) {
     thirdPerson(PlayerMessage(getName().the() + " whips " + whipped->getName().the()));
-    auto moveInfo = self->spendTime();
+    auto moveInfo = *self->spendTime();
     if (Random.roll(3)) {
       addSound(SoundId::WHIP);
       self->addMovementInfo(moveInfo.setDirection(position.getDir(pos)).setType(MovementInfo::ATTACK));
@@ -1268,7 +1269,7 @@ CreatureAction Creature::destroy(Vec2 direction, const DestroyAction& action) co
     if (direction.length8() <= 1 && furniture->canDestroy(getMovementType(), action))
       return CreatureAction(this, [=](WCreature self) {
         self->destroyImpl(direction, action);
-        auto movementInfo = self->spendTime();
+        auto movementInfo = *self->spendTime();
         if (direction.length8() == 1)
           self->addMovementInfo(movementInfo
               .setDirection(getPosition().getDir(pos))
@@ -1613,7 +1614,7 @@ vector<AdjectiveInfo> Creature::getGoodAdjectives() const {
       if (const char* name = LastingEffects::getGoodAdjective(effect)) {
         ret.push_back({ name, LastingEffects::getDescription(effect) });
         if (!attributes->isAffectedPermanently(effect))
-          ret.back().name += attributes->getRemainingString(effect, getGlobalTime());
+          ret.back().name += attributes->getRemainingString(effect, *getGlobalTime());
       }
   if (getBody().isUndead())
     ret.push_back({"Undead",
@@ -1633,7 +1634,7 @@ vector<AdjectiveInfo> Creature::getBadAdjectives() const {
       if (const char* name = LastingEffects::getBadAdjective(effect)) {
         ret.push_back({ name, LastingEffects::getDescription(effect) });
         if (!attributes->isAffectedPermanently(effect))
-          ret.back().name += attributes->getRemainingString(effect, getGlobalTime());
+          ret.back().name += attributes->getRemainingString(effect, *getGlobalTime());
       }
   auto morale = getMorale();
   if (morale < 0)

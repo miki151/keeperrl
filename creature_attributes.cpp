@@ -47,7 +47,7 @@ void CreatureAttributes::serialize(Archive& ar, const unsigned int version) {
   ar(body, innocent, moraleSpeedIncrease);
   ar(animal, cantEquip, courage);
   ar(boulder, noChase, isSpecial, skills, spells);
-  ar(permanentEffects, lastingEffects, lastAffected, minionTasks, expLevel);
+  ar(permanentEffects, lastingEffects, minionTasks, expLevel);
   ar(noAttackSound, maxLevelIncrease, creatureId);
 }
 
@@ -199,13 +199,6 @@ void CreatureAttributes::addLastingEffect(LastingEffect effect, GlobalTime endTi
     lastingEffects[effect] = endTime;
 }
 
-optional<GlobalTime> CreatureAttributes::getLastAffected(LastingEffect effect, GlobalTime current) const {
-  if (isAffected(effect, current))
-    return current;
-  else
-    return lastAffected[effect];
-}
-
 static bool consumeProb() {
   return true;
 }
@@ -321,7 +314,6 @@ bool CreatureAttributes::isAffectedPermanently(LastingEffect effect) const {
 
 void CreatureAttributes::clearLastingEffect(LastingEffect effect, GlobalTime t) {
   lastingEffects[effect] = GlobalTime(0);
-  lastAffected[effect] = t;
 }
 
 void CreatureAttributes::addPermanentEffect(LastingEffect effect, int count) {

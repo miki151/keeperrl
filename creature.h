@@ -65,8 +65,8 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
 
   const ViewObject& getViewObjectFor(const Tribe* observer) const;
   void makeMove();
-  LocalTime getLocalTime() const;
-  GlobalTime getGlobalTime() const;
+  optional<LocalTime> getLocalTime() const;
+  optional<GlobalTime> getGlobalTime() const;
   WLevel getLevel() const;
   WGame getGame() const;
   vector<WCreature> getVisibleEnemies() const;
@@ -252,7 +252,6 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   void removePermanentEffect(LastingEffect, int count = 1);
   bool isAffected(LastingEffect) const;
   optional<TimeInterval> getTimeRemaining(LastingEffect) const;
-  optional<GlobalTime> getLastAffected(LastingEffect) const;
   bool hasCondition(CreatureCondition) const;
   bool isDarknessSource() const;
 
@@ -278,7 +277,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   private:
 
   CreatureAction moveTowards(Position, bool away, NavigationFlags);
-  MovementInfo spendTime(TimeInterval = 1_visible);
+  optional<MovementInfo> spendTime(TimeInterval = 1_visible);
   bool canCarry(const vector<WItem>&) const;
   TribeSet getFriendlyTribes() const;
   void addMovementInfo(MovementInfo);

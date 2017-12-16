@@ -516,7 +516,7 @@ class IllusionController : public DoNothingController {
   }
 
   virtual void makeMove() override {
-    if (getCreature()->getGlobalTime() >= deathTime) {
+    if (*getCreature()->getGlobalTime() >= deathTime) {
       getCreature()->message("The illusion disappears.");
       getCreature()->dieNoReason();
     } else
@@ -549,7 +549,7 @@ PCreature CreatureFactory::getIllusion(WCreature creature) {
           c.permanentEffects[LastingEffect::FLYING] = 1;
           c.noAttackSound = true;
           c.name = creature->getName();));
-  ret->setController(makeOwner<IllusionController>(ret.get(), creature->getGlobalTime()
+  ret->setController(makeOwner<IllusionController>(ret.get(), *creature->getGlobalTime()
       + TimeInterval(Random.get(5, 10))));
   return ret;
 }
@@ -1500,7 +1500,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.attr = LIST(5_dam, 15_def );
           c.body = Body::humanoidSpirit(Body::Size::SMALL);
           c.body->setNoCarryLimit();
-          //c.body->setDoesntEat();
           c.courage = -1;
           c.noChase = true;
           c.cantEquip = true;

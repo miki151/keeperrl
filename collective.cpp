@@ -151,6 +151,10 @@ void Collective::updateCreatureStatus(WCreature c) {
 }
 
 void Collective::addCreature(WCreature c, EnumSet<MinionTrait> traits) {
+  if (c->isAffected(LastingEffect::SUMMONED)) {
+    traits.insert(MinionTrait::NO_LIMIT);
+    traits.insert(MinionTrait::SUMMONED);
+  }
   if (!traits.contains(MinionTrait::FARM_ANIMAL) && !c->getController()->isCustomController())
     c->setController(makeOwner<Monster>(c, MonsterAIFactory::collective(this)));
   if (traits.contains(MinionTrait::LEADER)) {
@@ -785,7 +789,7 @@ void Collective::onMinionKilled(WCreature victim, WCreature killer) {
   control->onMemberKilled(victim, killer);
   if (hasTrait(victim, MinionTrait::PRISONER) && killer && getCreatures().contains(killer))
     returnResource({ResourceId::PRISONER_HEAD, 1});
-  if (!hasTrait(victim, MinionTrait::FARM_ANIMAL)) {
+  if (!hasTrait(victim, MinionTrait::FARM_ANIMAL) && !hasTrait(victim, MinionTrait::SUMMONED)) {
     decreaseMoraleForKill(killer, victim);
     if (killer)
       control->addMessage(PlayerMessage(victim->getName().a() + " is killed by " + killer->getName().a(),

@@ -125,7 +125,6 @@ class CreatureAttributes {
   HeapAllocated<SpellMap> SERIAL(spells);
   EnumMap<LastingEffect, int> SERIAL(permanentEffects);
   EnumMap<LastingEffect, GlobalTime> SERIAL(lastingEffects);
-  EnumMap<LastingEffect, optional<GlobalTime>> SERIAL(lastAffected);
   MinionTaskMap SERIAL(minionTasks);
   EnumMap<ExperienceType, double> SERIAL(expLevel);
   EnumMap<ExperienceType, int> SERIAL(maxLevelIncrease);

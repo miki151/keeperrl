@@ -26,7 +26,7 @@ static double getDefaultWeight(Body::Size size) {
   }
 }
 
-SERIALIZE_DEF(Body, xhumanoid, size, weight, bodyParts, injuredBodyParts, lostBodyParts, material, health, minionFood, deathSound, carryLimit, doesntEat, intrinsicAttacks)
+SERIALIZE_DEF(Body, xhumanoid, size, weight, bodyParts, injuredBodyParts, lostBodyParts, material, health, minionFood, deathSound, carryLimit, intrinsicAttacks)
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Body)
 
@@ -155,10 +155,6 @@ void Body::setDeathSound(optional<SoundId> s) {
 
 void Body::setNoCarryLimit() {
   carryLimit = none;
-}
-
-void Body::setDoesntEat() {
-  doesntEat = true;
 }
 
 bool Body::canHeal() const {
@@ -860,7 +856,7 @@ bool Body::needsToEat() const {
     case Material::FLESH:
     case Material::BONE:
     case Material::UNDEAD_FLESH:
-      return !doesntEat;
+      return true;
     default:
       return false;
   }
