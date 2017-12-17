@@ -35,6 +35,7 @@ class TimeQueue {
   void makeExtraMove(WCreature);
   bool hasExtraMove(WCreature);
   void postponeMove(WCreature);
+  void moveNow(WCreature);
   bool willMoveThisTurn(WConstCreature);
   bool compareOrder(WConstCreature, WConstCreature);
 
@@ -45,6 +46,7 @@ class TimeQueue {
   vector<PCreature> SERIAL(creatures);
   struct Queue {
     void push(WCreature);
+    void pushFront(WCreature);
     bool empty();
     WCreature front();
     void popFront();
@@ -55,7 +57,7 @@ class TimeQueue {
     SERIALIZE_ALL(players, nonPlayers, orderMap)
 
     private:
-    void clearNull();
+      void clearNull();
   };
   struct ExtendedTime {
     ExtendedTime();

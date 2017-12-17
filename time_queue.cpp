@@ -61,6 +61,19 @@ void TimeQueue::Queue::push(WCreature c) {
   }
 }
 
+void TimeQueue::Queue::pushFront(WCreature c) {
+  clearNull();
+  if (c->isPlayer()) {
+    int order = players.empty() ? 0 : orderMap.getOrFail(players.front()) - 1;
+    orderMap.set(c, order);
+    players.push_front(c);
+  } else {
+    int order = nonPlayers.empty() ? 1000000000 : orderMap.getOrFail(nonPlayers.front()) - 1;
+    orderMap.set(c, order);
+    nonPlayers.push_front(c);
+  }
+}
+
 bool TimeQueue::Queue::empty() {
   clearNull();
   return players.empty() && nonPlayers.empty();
@@ -121,6 +134,12 @@ void TimeQueue::postponeMove(WCreature c) {
   auto time = timeMap.getOrFail(c);
   queue.at(time).erase(c);
   queue.at(time).push(c);
+}
+
+void TimeQueue::moveNow(WCreature c) {
+  auto time = timeMap.getOrFail(c);
+  queue.at(time).erase(c);
+  queue.at(time).pushFront(c);
 }
 
 bool TimeQueue::willMoveThisTurn(WConstCreature c) {

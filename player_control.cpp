@@ -81,7 +81,7 @@
 #include "external_enemies.h"
 #include "resource_info.h"
 #include "workshop_item.h"
-
+#include "time_queue.h"
 
 template <class Archive>
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
@@ -189,17 +189,19 @@ STutorial PlayerControl::getTutorial() const {
 }
 
 void PlayerControl::teamMemberAction(TeamMemberAction action, Creature::Id id) {
+  if (WCreature c = getCreature(id))
   switch (action) {
+    case TeamMemberAction::MOVE_NOW:
+      getModel()->getTimeQueue().moveNow(c);
+      break;
     case TeamMemberAction::CHANGE_LEADER:
       if (auto teamId = getCurrentTeam())
         if (getTeams().getMembers(*teamId).size() > 1) {
           auto controlled = getControlled();
           if (controlled.size() == 1) {
-            if (WCreature c = getCreature(id)) {
-              getTeams().getLeader(*teamId)->popController();
-              getTeams().setLeader(*teamId, c);
-              c->pushController(createMinionController(c));
-            }
+            getTeams().getLeader(*teamId)->popController();
+            getTeams().setLeader(*teamId, c);
+            c->pushController(createMinionController(c));
           }
         }
       break;
@@ -207,14 +209,12 @@ void PlayerControl::teamMemberAction(TeamMemberAction action, Creature::Id id) {
       if (auto teamId = getCurrentTeam())
         if (getTeams().getMembers(*teamId).size() > 1) {
           auto controlled = getControlled();
-          if (WCreature c = getCreature(id)) {
-            getTeams().remove(*teamId, c);
-            if (c->isPlayer()) {
-              c->popController();
-              auto newLeader = getTeams().getLeader(*teamId);
-              if (!newLeader->isPlayer())
-                newLeader->pushController(createMinionController(newLeader));
-            }
+          getTeams().remove(*teamId, c);
+          if (c->isPlayer()) {
+            c->popController();
+            auto newLeader = getTeams().getLeader(*teamId);
+            if (!newLeader->isPlayer())
+              newLeader->pushController(createMinionController(newLeader));
           }
         }
       break;

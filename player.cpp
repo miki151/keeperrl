@@ -900,6 +900,8 @@ void Player::refreshGameInfo(GameInfo& gameInfo) const {
     auto& memberInfo = info.teamInfos.back();
     if (info.controlMode == PlayerInfo::LEADER && c != getCreature())
       memberInfo.teamMemberActions.push_back(TeamMemberAction::CHANGE_LEADER);
+    if (c->isPlayer() && c != getCreature() && getModel()->getTimeQueue().willMoveThisTurn(c))
+      memberInfo.teamMemberActions.push_back(TeamMemberAction::MOVE_NOW);
     if (team.size() >= 2)
       memberInfo.teamMemberActions.push_back(TeamMemberAction::REMOVE_MEMBER);
   }

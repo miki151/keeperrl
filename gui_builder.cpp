@@ -1300,6 +1300,8 @@ static const char* getActionText(TeamMemberAction action) {
       return "Switch leader";
     case TeamMemberAction::REMOVE_MEMBER:
       return "Remove from team";
+    case TeamMemberAction::MOVE_NOW:
+      return "Move now";
   }
 }
 
