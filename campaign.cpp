@@ -144,7 +144,7 @@ void Campaign::refreshInfluencePos() {
   influencePos.clear();
   if (!playerPos)
     return;
-  for (double r = 1; r <= max(sites.getWidth(), sites.getHeight()); r += 0.1) {
+  for (double r = 1; r <= sites.getWidth() + sites.getHeight(); r += 0.1) {
     for (Vec2 v : sites.getBounds())
       if ((sites[v].getVillain() || sites[v].getRetired()) && v.distD(*playerPos) <= r)
         influencePos.insert(v);
