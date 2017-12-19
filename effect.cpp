@@ -166,7 +166,7 @@ static TimeInterval getDuration(WConstCreature c, LastingEffect e) {
     case LastingEffect::POISON_RESISTANT: return  60_visible;
     case LastingEffect::FLYING: return  60_visible;
     case LastingEffect::COLLAPSED: return  2_visible;
-    case LastingEffect::SLEEP: return  80_visible;
+    case LastingEffect::SLEEP: return  200_visible;
     case LastingEffect::INSANITY: return  20_visible;
     case LastingEffect::MAGIC_VULNERABILITY:
     case LastingEffect::MELEE_VULNERABILITY:
