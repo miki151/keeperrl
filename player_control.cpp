@@ -188,6 +188,19 @@ STutorial PlayerControl::getTutorial() const {
   return tutorial;
 }
 
+bool PlayerControl::canAddToTeam(WConstCreature c) {
+  return getCollective()->hasTrait(c, MinionTrait::FIGHTER) || c == getCollective()->getLeader();
+}
+
+void PlayerControl::addToCurrentTeam(WCreature c) {
+  CHECK(canAddToTeam(c));
+  if (auto teamId = getCurrentTeam()) {
+    getTeams().add(*teamId, c);
+    if (getGame()->getPlayerCreatures().size() > 1)
+      c->pushController(createMinionController(c));
+  }
+}
+
 void PlayerControl::teamMemberAction(TeamMemberAction action, Creature::Id id) {
   if (WCreature c = getCreature(id))
   switch (action) {
@@ -208,7 +221,6 @@ void PlayerControl::teamMemberAction(TeamMemberAction action, Creature::Id id) {
     case TeamMemberAction::REMOVE_MEMBER:
       if (auto teamId = getCurrentTeam())
         if (getTeams().getMembers(*teamId).size() > 1) {
-          auto controlled = getControlled();
           getTeams().remove(*teamId, c);
           if (c->isPlayer()) {
             c->popController();
@@ -1772,6 +1784,15 @@ void PlayerControl::processInput(View* view, UserInput input) {
       setChosenTeam(none);
       chosenCreature = none;
       break;
+    case UserInputId::CREATURE_MAP_CLICK: {
+      if (WCreature c = Position(input.get<Vec2>(), getLevel()).getCreature()) {
+        if (!getChosenTeam() || !getTeams().contains(*getChosenTeam(), c))
+          setChosenCreature(c->getUniqueId());
+        else
+          setChosenTeam(*chosenTeam, c->getUniqueId());
+      }
+      break;
+    }
     case UserInputId::CREATURE_BUTTON: {
       auto chosenId = input.get<Creature::Id>();
       if (WCreature c = getCreature(chosenId)) {
@@ -1851,8 +1872,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
     case UserInputId::ADD_TO_TEAM: {
       auto info = input.get<TeamCreatureInfo>();
       if (WCreature c = getCreature(info.creatureId))
-        if (getTeams().exists(info.team) && !getTeams().contains(info.team, c) &&
-            (getCollective()->hasTrait(c, MinionTrait::FIGHTER) || c == getCollective()->getLeader()))
+        if (getTeams().exists(info.team) && !getTeams().contains(info.team, c) && canAddToTeam(c))
           getTeams().add(info.team, c);
       break;
     }

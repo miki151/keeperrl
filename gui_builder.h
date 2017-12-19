@@ -133,6 +133,7 @@ class GuiBuilder {
   void setMapGui(shared_ptr<MapGui>);
   void clearHint();
   ~GuiBuilder();
+  optional<int> chooseAtMouse(const vector<string>& elems);
 
   private:
   SGuiElem getImmigrationHelpText();
@@ -168,7 +169,7 @@ class GuiBuilder {
   vector<SGuiElem> drawEffectsList(const PlayerInfo&);
   vector<SGuiElem> drawMinionActions(const PlayerInfo&, const optional<TutorialInfo>&);
   function<void()> getButtonCallback(UserInput);
-  void drawMiniMenu(GuiFactory::ListBuilder elems, bool& exit, Vec2 menuPos, int width);
+  void drawMiniMenu(GuiFactory::ListBuilder elems, bool& exit, Vec2 menuPos, int width, bool darkBg);
   void showAttackTriggers(const vector<VillageInfo::Village::TriggerInfo>&, Vec2 pos);
   SGuiElem getTextContent(const string& title, const string& value, const string& hint);
   SGuiElem getVillageActionButton(UniqueEntity<Collective>::Id, VillageInfo::Village::ActionInfo);

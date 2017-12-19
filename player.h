@@ -81,6 +81,11 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   virtual vector<WCreature> getTeam() const;
   virtual bool isTravelEnabled() const;
   virtual bool handleUserInput(UserInput);
+  struct OtherCreatureCommand {
+    string name;
+    function<void(Player*)> perform;
+  };
+  virtual vector<OtherCreatureCommand> getOtherCreatureCommands(WCreature) const;
 
   optional<Vec2> chooseDirection(const string& question);
 
@@ -95,9 +100,7 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   private:
 
   void considerAdventurerMusic();
-  void extendedAttackAction(UniqueEntity<Creature>::Id);
-  void extendedAttackAction(WCreature other);
-  void creatureAction(UniqueEntity<Creature>::Id);
+  void creatureClickAction(Position, bool extended);
   void pickUpItemAction(int item, bool multi = false);
   void equipmentAction();
   void applyItem(vector<WItem> item);
@@ -135,5 +138,6 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   optional<FurnitureUsageType> getUsableUsageType() const;
   SVisibilityMap SERIAL(visibilityMap);
   STutorial SERIAL(tutorial);
+  vector<TeamMemberAction> getTeamMemberActions(WConstCreature) const;
 };
 

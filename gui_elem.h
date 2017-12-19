@@ -200,6 +200,7 @@ class GuiFactory {
   SGuiElem darken();
   SGuiElem stopMouseMovement();
   SGuiElem fullScreen(SGuiElem);
+  SGuiElem absolutePosition(SGuiElem content, Vec2 pos);
   SGuiElem alignment(GuiFactory::Alignment, SGuiElem, optional<Vec2> size = none);
   SGuiElem dragSource(DragContent, function<SGuiElem()>);
   SGuiElem dragListener(function<void(DragContent)>);

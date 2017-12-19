@@ -874,6 +874,8 @@ CreatureAction Creature::attack(WCreature other, optional<AttackParams> attackPa
   if (dir.length8() != 1)
     return CreatureAction();
   auto weapon = getWeapon();
+  if (attackParams && attackParams->weapon)
+    weapon = attackParams->weapon;
   if (!weapon)
     return CreatureAction("No available weapon or intrinsic attack");
   return CreatureAction(this, [=] (WCreature self) {

@@ -1517,6 +1517,33 @@ SGuiElem GuiFactory::fullScreen(SGuiElem content) {
   return SGuiElem(new FullScreen(std::move(content), renderer));
 }
 
+class AbsolutePosition : public GuiLayout {
+  public:
+  AbsolutePosition(SGuiElem content, Vec2 pos, Renderer& r)
+      : GuiLayout(makeVec(std::move(content))), position(pos), renderer(r) {
+  }
+
+  virtual void render(Renderer& r) override {
+    GuiLayout::render(r);
+  }
+
+  virtual Rectangle getElemBounds(int num) override {
+    auto size = Vec2(*elems[0]->getPreferredWidth(), *elems[0]->getPreferredHeight());
+    auto pos = position;
+    pos.x = min(pos.x, renderer.getSize().x - size.x);
+    pos.y = min(pos.y, renderer.getSize().y - size.y);
+    return Rectangle(pos, pos + size);
+  }
+
+  private:
+  Vec2 position;
+  Renderer& renderer;
+};
+
+SGuiElem GuiFactory::absolutePosition(SGuiElem content, Vec2 pos) {
+  return SGuiElem(new AbsolutePosition(std::move(content), pos, renderer));
+}
+
 class MarginFit : public GuiLayout {
   public:
   MarginFit(SGuiElem top, SGuiElem rest, double _width, GuiFactory::MarginType t)

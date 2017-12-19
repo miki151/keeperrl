@@ -77,6 +77,9 @@ class ViewObject {
   void setCreatureId(UniqueEntity<Creature>::Id);
   optional<UniqueEntity<Creature>::Id> getCreatureId() const;
 
+  void setClickAction(const string&);
+  const string& getClickAction() const;
+
   const static ViewObject& unknownMonster();
   const static ViewObject& empty();
   const static ViewObject& mana();
@@ -97,6 +100,7 @@ class ViewObject {
   string SERIAL(goodAdjectives);
   string SERIAL(badAdjectives);
   optional<CreatureAttributes> SERIAL(creatureAttributes);
+  string SERIAL(clickAction);
 
   class MovementQueue {
     public:

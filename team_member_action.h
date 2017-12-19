@@ -5,3 +5,5 @@ enum class TeamMemberAction {
   REMOVE_MEMBER,
   MOVE_NOW
 };
+
+extern const char* getText(TeamMemberAction);

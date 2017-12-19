@@ -295,8 +295,8 @@ bool MapGui::onMouseMove(Vec2 v) {
 
 optional<MapGui::CreatureInfo> MapGui::getCreature(Vec2 mousePos) {
   auto info = getHighlightedInfo(layout->getSquareSize(), clock->getRealMillis());
-  if (info.creaturePos && info.object && info.object->getCreatureId())
-    return CreatureInfo {*info.object->getCreatureId(), info.object->id()};
+  if (info.tilePos && info.creaturePos && info.object && info.object->getCreatureId())
+    return CreatureInfo {*info.object->getCreatureId(), info.object->id(), *info.tilePos};
   else
     return none;
 }
@@ -335,7 +335,7 @@ void MapGui::onMouseRelease(Vec2 v) {
         considerContinuousLeftClick(v);
     } else {
       if (auto c = getCreature(*mouseHeldPos))
-        callbacks.creatureClickFun(c->id);
+        callbacks.creatureClickFun(c->id, c->position);
       else {
         callbacks.leftClickFun(layout->projectOnMap(getBounds(), getScreenPos(), v));
         considerContinuousLeftClick(v);

@@ -70,6 +70,8 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
 
   vector<WCreature> getTeam(WConstCreature);
   optional<FurnitureType> getMissingTrainingDummy(WConstCreature);
+  bool canAddToTeam(WConstCreature);
+  void addToCurrentTeam(WCreature c);
 
   void onEvent(const GameEvent&);
   const vector<WCreature>& getControlled() const;

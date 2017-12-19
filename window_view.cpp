@@ -159,12 +159,12 @@ bool WindowView::isKeyPressed(SDL::SDL_Scancode code) {
   return SDL::SDL_GetKeyboardState(nullptr)[code];
 }
 
-void WindowView::mapCreatureClickFun(UniqueEntity<Creature>::Id id) {
+void WindowView::mapCreatureClickFun(UniqueEntity<Creature>::Id id, Vec2 position) {
   if (isKeyPressed(SDL::SDL_SCANCODE_LCTRL) || isKeyPressed(SDL::SDL_SCANCODE_RCTRL)) {
-    inputQueue.push(UserInput(UserInputId::CREATURE_BUTTON2, id));
+    inputQueue.push(UserInput(UserInputId::CREATURE_MAP_CLICK_EXTENDED, position));
   } else {
     guiBuilder.setCollectiveTab(CollectiveTab::MINIONS);
-    inputQueue.push(UserInput(UserInputId::CREATURE_BUTTON, id));
+    inputQueue.push(UserInput(UserInputId::CREATURE_MAP_CLICK, position));
   }
 }
 
@@ -1481,6 +1481,10 @@ double WindowView::getGameSpeed() {
     case GuiBuilder::GameSpeed::FAST: return 0.04;
     case GuiBuilder::GameSpeed::VERY_FAST: return 0.06;
   }
+}
+
+optional<int> WindowView::chooseAtMouse(const vector<string>& elems) {
+  return guiBuilder.chooseAtMouse(elems);
 }
 
 void WindowView::addSound(const Sound& sound) {

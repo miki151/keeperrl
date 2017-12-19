@@ -68,6 +68,7 @@ class WindowView: public View {
   virtual void animateObject(Vec2 begin, Vec2 end, ViewId object) override;
   virtual void animation(Vec2 pos, AnimationId) override;
   virtual double getGameSpeed() override;
+  virtual optional<int> chooseAtMouse(const vector<string>& elems) override;
 
   virtual void presentText(const string& title, const string& text) override;
   virtual void presentList(const string& title, const vector<ListElem>& options, bool scrollDown = false,
@@ -106,7 +107,7 @@ class WindowView: public View {
   void displayOldSplash();
   void updateMinimap(const CreatureView*);
   void mapContinuousLeftClickFun(Vec2);
-  void mapCreatureClickFun(UniqueEntity<Creature>::Id);
+  void mapCreatureClickFun(UniqueEntity<Creature>::Id, Vec2 position);
   void mapCreatureDragFun(UniqueEntity<Creature>::Id, ViewId, Vec2 origin);
   void mapRightClickFun(Vec2);
   Rectangle getTextInputPosition();

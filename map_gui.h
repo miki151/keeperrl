@@ -38,7 +38,7 @@ class MapGui : public GuiElem {
     function<void(Vec2)> continuousLeftClickFun;
     function<void(Vec2)> leftClickFun;
     function<void(Vec2)> rightClickFun;
-    function<void(UniqueEntity<Creature>::Id)> creatureClickFun;
+    function<void(UniqueEntity<Creature>::Id, Vec2)> creatureClickFun;
     function<void()> refreshFun;
     function<void(UniqueEntity<Creature>::Id, ViewId, Vec2)> creatureDragFun;
     function<void(UniqueEntity<Creature>::Id, Vec2)> creatureDroppedFun;
@@ -108,6 +108,7 @@ class MapGui : public GuiElem {
   struct CreatureInfo {
     UniqueEntity<Creature>::Id id;
     ViewId viewId;
+    Vec2 position;
   };
   optional<CreatureInfo> getCreature(Vec2 mousePos);
   void considerContinuousLeftClick(Vec2 mousePos);

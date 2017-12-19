@@ -142,6 +142,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   CreatureAction drop(const vector<WItem>& item) const;
   void drop(vector<PItem> item);
   struct AttackParams {
+    WItem weapon;
     optional<AttackLevel> level;
   };
   CreatureAction attack(WCreature, optional<AttackParams> = none) const;

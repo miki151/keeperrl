@@ -69,6 +69,9 @@ class DummyView : public View {
   virtual optional<Vec2> chooseSite(const string& message, const Campaign&, optional<Vec2> current = none) {
     return none;
   }
+  virtual optional<int> chooseAtMouse(const vector<string>& elems) {
+    return none;
+  }
   virtual void presentWorldmap(const Campaign&) {}
   virtual void animateObject(Vec2 begin, Vec2 end, ViewId object) {}
   virtual void animation(Vec2 pos, AnimationId) {}

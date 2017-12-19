@@ -9,6 +9,7 @@
 #include "view.h"
 #include "game.h"
 #include "message_generator.h"
+#include "time_queue.h"
 
 class MinionController : public Player {
   public:
@@ -26,6 +27,30 @@ class MinionController : public Player {
           getCreature()->getAttributes().getSkills().hasDiscrete(SkillId::CONSUMPTION)},
        [] (Player* player) { dynamic_cast<MinionController*>(player)->consumeAction();}, false},
     });
+  }
+
+  virtual vector<TeamMemberAction> getTeamMemberActions(WConstCreature member) const {
+    vector<TeamMemberAction> ret;
+    if (getGame()->getPlayerCreatures().size() == 1 && member != getCreature())
+      ret.push_back(TeamMemberAction::CHANGE_LEADER);
+    if (member->isPlayer() && member != getCreature() && getModel()->getTimeQueue().willMoveThisTurn(member))
+      ret.push_back(TeamMemberAction::MOVE_NOW);
+    if (getTeam().size() >= 2)
+      ret.push_back(TeamMemberAction::REMOVE_MEMBER);
+    return ret;
+  }
+
+  virtual vector<OtherCreatureCommand> getOtherCreatureCommands(WCreature c) const override {
+    vector<OtherCreatureCommand> ret = Player::getOtherCreatureCommands(c);
+    if (getTeam().contains(c)) {
+      for (auto& action : getTeamMemberActions(c))
+        ret.push_back({getText(action), [action, id = c->getUniqueId()](Player* player){
+            (dynamic_cast<MinionController*>(player))->control->teamMemberAction(action, id);}});
+    }
+    else if (control->getCollective()->getCreatures().contains(c) && control->canAddToTeam(c))
+      ret.push_back({"Add to team", [c](Player* player) {
+          (dynamic_cast<MinionController*>(player))->control->addToCurrentTeam(c);}});
+    return ret;
   }
 
   virtual bool handleUserInput(UserInput input) override {
