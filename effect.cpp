@@ -158,7 +158,7 @@ static double getDuration(WConstCreature c, LastingEffect e) {
     case LastingEffect::POISON_RESISTANT: return 60;
     case LastingEffect::FLYING: return 60;
     case LastingEffect::COLLAPSED: return 2;
-    case LastingEffect::SLEEP: return 80;
+    case LastingEffect::SLEEP: return 200;
     case LastingEffect::INSANITY: return 20;
     case LastingEffect::MAGIC_VULNERABILITY:
     case LastingEffect::MELEE_VULNERABILITY:
