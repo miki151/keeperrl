@@ -52,6 +52,7 @@ RICH_ENUM(
     KNIGHT,
     PRIEST,
     DUKE,
+    JESTER,
     ARCHER,
     PESEANT,
     PESEANT_WOMAN,

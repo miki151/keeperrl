@@ -1211,7 +1211,16 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.chatReactionFriendly = "curses all dungeons"_s;
           c.chatReactionHostile = "\"Die!\""_s;
           c.name = "knight";);
-    case CreatureId::AVATAR: 
+    case CreatureId::JESTER:
+      return CATTR(
+          c.viewId = ViewId::JESTER;
+          c.attr = LIST(8_dam, 8_def );
+          c.body = Body::humanoid(Body::Size::LARGE);
+          c.permanentEffects[LastingEffect::MAGIC_RESISTANCE] = 1;
+          c.chatReactionFriendly = "curses all dungeons"_s;
+          c.chatReactionHostile = "\"Die!\""_s;
+          c.name = "jester";);
+    case CreatureId::AVATAR:
       return CATTR(
           c.viewId = ViewId::DUKE;
           c.attr = LIST(43_dam, 32_def );

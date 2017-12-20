@@ -107,6 +107,7 @@ RICH_ENUM(CreatureId,
 
     PRIEST,
     KNIGHT,
+    JESTER,
     AVATAR,
     ARCHER,
     PESEANT,
