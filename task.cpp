@@ -361,20 +361,26 @@ PTask Task::equipItem(WItem item) {
   return makeOwner<EquipItem>(item);
 }
 
-static Position chooseRandomClose(Position start, const vector<Position>& squares, Task::SearchType type) {
-  CHECK(!squares.empty());
+static optional<Position> chooseRandomClose(WCreature c, const vector<Position>& squares, Task::SearchType type) {
   int minD = 10000;
   int margin = type == Task::LAZY ? 0 : 3;
   vector<Position> close;
+  auto start = c->getPosition();
   for (Position v : squares)
-    minD = min(minD, v.dist8(start));
+    if (c->canNavigateTo(v))
+      minD = min(minD, v.dist8(start));
   for (Position v : squares)
-    if (v.dist8(start) <= minD + margin)
+    if (c->canNavigateTo(v) && v.dist8(start) <= minD + margin)
       close.push_back(v);
-  if (close.empty())
-    return Random.choose(squares);
-  else
+  if (!close.empty())
     return Random.choose(close);
+  else {
+    auto all = squares.filter([&](auto pos) { return c->canNavigateTo(pos); });
+    if (!all.empty())
+      return Random.choose(all);
+    else
+      return none;
+  }
 }
 
 class BringItem : public PickItem {
@@ -409,11 +415,7 @@ class BringItem : public PickItem {
   }
 
   optional<Position> getBestTarget(WCreature c, const vector<Position>& pos) const {
-    vector<Position> available = pos.filter([c](const Position& pos) { return c->isSameSector(pos); });
-    if (!available.empty())
-      return chooseRandomClose(c->getPosition(), available, LAZY);
-    else
-      return none;
+    return chooseRandomClose(c, pos, LAZY);
   }
 
   virtual MoveInfo getMove(WCreature c) override {
@@ -523,10 +525,7 @@ class ApplySquare : public Task {
       if (!rejectedPosition.count(pos))
         candidates.push_back(pos);
     }
-    if (!candidates.empty())
-      return chooseRandomClose(c->getPosition(), candidates, searchType);
-    else
-      return none;
+    return chooseRandomClose(c, candidates, searchType);
   }
 
   virtual MoveInfo getMove(WCreature c) override {
@@ -651,22 +650,26 @@ class ArcheryRange : public Task {
 
   optional<ShootInfo> getShootInfo(WCreature c) {
     const int distance = 5;
-    auto getDir = [&](Position pos) -> optional<Vec2> {
+    auto getDir = [&](Position target) -> optional<ShootInfo> {
       for (Vec2 dir : Vec2::directions4(Random)) {
         bool ok = true;
         for (int i : Range(distance))
-          if (pos.minus(dir * (i + 1)).stopsProjectiles(c->getVision().getId())) {
+          if (target.minus(dir * (i + 1)).stopsProjectiles(c->getVision().getId())) {
             ok = false;
             break;
           }
-        if (ok)
-          return dir;
+        auto pos = target.minus(dir * distance);
+        if (ok && c->isSameSector(pos))
+          return ShootInfo{pos, target, dir};
       }
       return none;
     };
+    map<Position, vector<ShootInfo>> shootPositions;
     for (auto pos : Random.permutation(targets))
       if (auto dir = getDir(pos))
-        return ShootInfo{ pos.minus(*dir * distance), pos, *dir };
+        shootPositions[dir->pos].push_back(*dir);
+    if (auto chosen = chooseRandomClose(c, getKeys(shootPositions), Task::RANDOM_CLOSE))
+      return Random.choose(shootPositions.at(*chosen));
     return none;
   }
 };

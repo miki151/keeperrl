@@ -108,6 +108,8 @@ vector<Position> MinionTasks::getAllPositions(WConstCollective collective, WCons
     if (info.furniturePredicate(collective, c, furnitureType) &&
         (!onlyActive || info.activePredicate(collective, furnitureType)))
       append(ret, collective->getConstructions().getBuiltPositions(furnitureType));
+  if (c)
+    ret = ret.filter([c](Position pos) { return c->canNavigateTo(pos); });
   return ret;
 }
 
