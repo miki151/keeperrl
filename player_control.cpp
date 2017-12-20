@@ -2199,23 +2199,30 @@ void PlayerControl::addToMemory(Position pos) {
 void PlayerControl::checkKeeperDanger() {
   auto controlled = getControlled();
   WCreature keeper = getKeeper();
-  auto prompt = [&] {
-      return getView()->yesOrNoPrompt("The Keeper is in trouble. Do you want to control " +
+  auto prompt = [&] (const string& reason) {
+      return getView()->yesOrNoPrompt(reason + ". Do you want to control " +
           keeper->getAttributes().getGender().him() + "?");
   };
-  if (!getKeeper()->isDead() && !controlled.contains(getKeeper())) {
-    if ((getKeeper()->wasInCombat(5_visible) || getKeeper()->getBody().isWounded())
-        && lastControlKeeperQuestion < getCollective()->getGlobalTime() - 50_visible) {
+  if (!getKeeper()->isDead() && !controlled.contains(getKeeper()) &&
+      lastControlKeeperQuestion < getCollective()->getGlobalTime() - 50_visible) {
+    if (auto lastCombatIntent = getKeeper()->getLastCombatIntent())
+      if (lastCombatIntent->time > getGame()->getGlobalTime() - 5_visible) {
+        lastControlKeeperQuestion = getCollective()->getGlobalTime();
+        if (prompt("The Keeper is engaged in a fight with " + lastCombatIntent->attacker)) {
+          controlSingle(getKeeper());
+          return;
+        }
+      }
+    if (getKeeper()->isAffected(LastingEffect::POISON)) {
       lastControlKeeperQuestion = getCollective()->getGlobalTime();
-      if (prompt()) {
+      if (prompt("The Keeper is suffering from poisoning")) {
         controlSingle(getKeeper());
         return;
       }
     }
-    if (getKeeper()->isAffected(LastingEffect::POISON)
-        && lastControlKeeperQuestion < getCollective()->getGlobalTime() - 5_visible) {
+    if (getKeeper()->getBody().isWounded()) {
       lastControlKeeperQuestion = getCollective()->getGlobalTime();
-      if (prompt()) {
+      if (prompt("The Keeper is wounded")) {
         controlSingle(getKeeper());
         return;
       }

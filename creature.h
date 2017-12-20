@@ -262,8 +262,13 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
 
   vector<string> popPersonalEvents();
   void addPersonalEvent(const string&);
-  void setInCombat();
-  bool wasInCombat(TimeInterval numLastTurns) const;
+  struct CombatIntentInfo {
+    string SERIAL(attacker);
+    GlobalTime SERIAL(time);
+    SERIALIZE_ALL(attacker, time)
+  };
+  void setLastCombatIntent(CombatIntentInfo);
+  optional<CombatIntentInfo> getLastCombatIntent() const;
   void onKilled(WCreature victim, optional<ExperienceType> lastDamage);
 
   void addSound(const Sound&) const;
@@ -309,7 +314,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   vector<Position> visibleCreatures;
   HeapAllocated<Vision> SERIAL(vision);
   bool forceMovement = false;
-  optional<GlobalTime> SERIAL(lastCombatTime);
+  optional<CombatIntentInfo> SERIAL(lastCombatIntent);
   HeapAllocated<CreatureDebt> SERIAL(debt);
   double SERIAL(highestAttackValueEver) = 0;
   int SERIAL(lastMoveCounter) = 0;

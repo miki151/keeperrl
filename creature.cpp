@@ -60,7 +60,7 @@ void Creature::serialize(Archive& ar, const unsigned int version) {
   ar(unknownAttackers, privateEnemies, holding);
   ar(controllerStack, kills, statuses);
   ar(difficultyPoints, points);
-  ar(vision, lastCombatTime, debt, lastDamageType, highestAttackValueEver);
+  ar(vision, lastCombatIntent, debt, lastDamageType, highestAttackValueEver);
 }
 
 SERIALIZABLE(Creature)
@@ -1649,11 +1649,11 @@ bool Creature::isSameSector(Position pos) const {
   return pos.isConnectedTo(position, getMovementType());
 }
 
-void Creature::setInCombat() {
-  lastCombatTime = getGame()->getGlobalTime();
+void Creature::setLastCombatIntent(CombatIntentInfo info) {
+  lastCombatIntent = info;
 }
 
-bool Creature::wasInCombat(TimeInterval numLastTurns) const {
-  return lastCombatTime && *lastCombatTime >= getGame()->getGlobalTime() - numLastTurns;
+optional<Creature::CombatIntentInfo> Creature::getLastCombatIntent() const {
+  return lastCombatIntent;
 }
 

@@ -370,16 +370,19 @@ class Fighter : public Behaviour {
       return getLastSeenMove();
   }
 
+  void setLastCombatIntent(WCreature attacked) {
+    attacked->setLastCombatIntent({creature->getName().a(), *creature->getGlobalTime()});
+    creature->setLastCombatIntent({attacked->getName().a(), *creature->getGlobalTime()});
+  }
+
   MoveInfo getPanicMove(WCreature other, double weight) {
     if (auto teleMove = tryEffect(Effect::Teleport{}))
       return teleMove.withValue(weight);
     if (other->getPosition().dist8(creature->getPosition()) > 3)
-      if (auto move = getFireMove(creature->getPosition().getDir(other->getPosition())))
+      if (auto move = getFireMove(creature->getPosition().getDir(other->getPosition()), other))
         return move.withValue(weight);
     if (auto action = creature->moveAway(other->getPosition(), chase))
       return {weight, action.prepend([=](WCreature creature) {
-        creature->setInCombat();
-        other->setInCombat();
         lastSeen = LastSeen{creature->getPosition(), *creature->getGlobalTime(), LastSeen::PANIC, other->getUniqueId()};
       })};
     else
@@ -430,7 +433,7 @@ class Fighter : public Behaviour {
     return 0;
   }
 
-  MoveInfo getThrowMove(Vec2 enemyDir) {
+  MoveInfo getThrowMove(Vec2 enemyDir, WCreature other) {
     if (enemyDir.x != 0 && enemyDir.y != 0 && abs(enemyDir.x) != abs(enemyDir.y))
       return NoMove;
     if (checkFriendlyFire(enemyDir))
@@ -446,10 +449,8 @@ class Fighter : public Behaviour {
         best = item;
       }
     if (best)
-      if (auto action = creature->throwItem(best, dir)) {
-        creature->setInCombat();
-        return {1.0, action };
-      }
+      if (auto action = creature->throwItem(best, dir))
+        return {1.0, action.append([=](WCreature) { setLastCombatIntent(other); }) };
     return NoMove;
   }
 
@@ -463,7 +464,7 @@ class Fighter : public Behaviour {
     return effects;
   }
 
-  MoveInfo getFireMove(Vec2 dir) {
+  MoveInfo getFireMove(Vec2 dir, WCreature other) {
     if (dir.x != 0 && dir.y != 0 && abs(dir.x) != abs(dir.y))
       return NoMove;
     if (checkFriendlyFire(dir))
@@ -473,7 +474,7 @@ class Fighter : public Behaviour {
         return action;
     if (auto action = creature->fire(dir.shorten()))
       return {1.0, action.append([=](WCreature creature) {
-          creature->setInCombat();
+          setLastCombatIntent(other);
       })};
     return NoMove;
   }
@@ -489,15 +490,11 @@ class Fighter : public Behaviour {
       }
       if (chase && lastSeen->type == LastSeen::ATTACK)
         if (auto action = creature->moveTowards(lastSeen->pos)) {
-          return {0.5, action.append([=](WCreature creature) {
-              creature->setInCombat();
-              })};
+          return {0.5, action};
         }
       if (lastSeen->type == LastSeen::PANIC && lastSeen->pos.dist8(creature->getPosition()) < 4)
         if (auto action = creature->moveAway(lastSeen->pos, chase))
-          return {0.5, action.append([=](WCreature creature) {
-              creature->setInCombat();
-              })};
+          return {0.5, action};
     }
     return NoMove;
   }
@@ -520,8 +517,7 @@ class Fighter : public Behaviour {
       if (WItem weapon = getBestWeapon())
         if (auto action = creature->equip(weapon))
           return {3.0 / (2.0 + distance), action.prepend([=](WCreature creature) {
-            creature->setInCombat();
-            other->setInCombat();
+            setLastCombatIntent(other);
         })};
     }
     return NoMove;
@@ -587,17 +583,16 @@ class Fighter : public Behaviour {
         return move;
     if (distance > 1) {
       if (distance < 10) {
-        if (MoveInfo move = getFireMove(enemyDir))
+        if (MoveInfo move = getFireMove(enemyDir, other))
           return move;
-        if (MoveInfo move = getThrowMove(enemyDir))
+        if (MoveInfo move = getThrowMove(enemyDir, other))
           return move;
       }
       if (chase && !other->getAttributes().dontChase() && !isChaseFrozen(other)) {
         lastSeen = none;
         if (auto action = creature->moveTowards(other->getPosition()))
           return {max(0., 1.0 - double(distance) / 20), action.prepend([=](WCreature creature) {
-            creature->setInCombat();
-            other->setInCombat();
+            setLastCombatIntent(other);
             lastSeen = LastSeen{other->getPosition(), *creature->getGlobalTime(), LastSeen::ATTACK, other->getUniqueId()};
             auto chaseInfo = chaseFreeze.getMaybe(other);
             auto startChaseFreeze = 20_visible;
@@ -614,8 +609,7 @@ class Fighter : public Behaviour {
     if (distance == 1)
       if (auto action = creature->attack(other, getAttackParams(other)))
         return {1.0, action.prepend([=](WCreature creature) {
-            creature->setInCombat();
-            other->setInCombat();
+            setLastCombatIntent(other);
         })};
     return NoMove;
   }

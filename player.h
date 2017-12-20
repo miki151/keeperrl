@@ -139,5 +139,6 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   SVisibilityMap SERIAL(visibilityMap);
   STutorial SERIAL(tutorial);
   vector<TeamMemberAction> getTeamMemberActions(WConstCreature) const;
+  optional<GlobalTime> lastEnemyInterruption;
 };
 

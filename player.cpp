@@ -305,15 +305,12 @@ void Player::hideAction() {
 }
 
 bool Player::interruptedByEnemy() {
-  vector<WCreature> enemies = getCreature()->getVisibleEnemies();
-  vector<string> ignoreCreatures { "a boar" ,"a deer", "a fox", "a vulture", "a rat", "a jackal", "a boulder" };
-  if (enemies.size() > 0) {
-    for (WCreature c : enemies)
-      if (!ignoreCreatures.contains(c->getName().a())) {
-        privateMessage("You notice " + c->getName().a());
-        return true;
-      }
-  }
+  if (auto combatIntent = getCreature()->getLastCombatIntent())
+    if (combatIntent->time > lastEnemyInterruption && combatIntent->time > getGame()->getGlobalTime() - 5_visible) {
+      lastEnemyInterruption = combatIntent->time;
+      privateMessage("You are being attacked by " + combatIntent->attacker);
+      return true;
+    }
   return false;
 }
 
