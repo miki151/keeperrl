@@ -2280,8 +2280,8 @@ void PlayerControl::update(bool currentlyActive) {
       currentLevels.push_back(c->getLevel());
   for (WLevel l : currentLevels)
     for (WCreature c : l->getAllCreatures())
-      if (c->getTribeId() == getTribeId() && canSee(c) && !isEnemy(c)) {
-        if (!getCreatures().contains(c) && !getCollective()->wasBanished(c)) {
+      if (!getCreatures().contains(c) && c->getTribeId() == getTribeId() && canSee(c) && !isEnemy(c)) {
+        if (!getCollective()->wasBanished(c) && !c->getBody().isMinionFood()) {
           addedCreatures.push_back(c);
           getCollective()->addCreature(c, {MinionTrait::FIGHTER});
           for (auto controlled : getControlled())
@@ -2297,7 +2297,7 @@ void PlayerControl::update(bool currentlyActive) {
               break;
             }
         } else
-          if (c->getBody().isMinionFood() && !getCreatures().contains(c))
+          if (c->getBody().isMinionFood())
             getCollective()->addCreature(c, {MinionTrait::FARM_ANIMAL, MinionTrait::NO_LIMIT});
       }
   if (!addedCreatures.empty()) {
