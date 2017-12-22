@@ -1043,6 +1043,9 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body = Body::humanoidSpirit(Body::Size::LARGE);
           c.body->addWings();
           c.skills.insert(SkillId::COPULATION);
+          c.body->getIntrinsicAttacks().clear();
+          c.body->setIntrinsicAttack(BodyPart::ARM, IntrinsicAttack(
+              ItemType::touch(Effect::Lasting{LastingEffect::PEACEFULNESS})));
           c.gender = Gender::female;
           c.courage = -1;
           c.name = CreatureName("succubus", "succubi");

@@ -784,10 +784,9 @@ bool Creature::isFriend(WConstCreature c) const {
 bool Creature::isEnemy(WConstCreature c) const {
   if (c == this)
     return false;
-  if (isAffected(LastingEffect::INSANITY))
-    return c != this;
-  return getTribe()->isEnemy(c) || c->getTribe()->isEnemy(this) ||
+  auto result = getTribe()->isEnemy(c) || c->getTribe()->isEnemy(this) ||
     privateEnemies.contains(c) || c->privateEnemies.contains(this);
+  return LastingEffects::modifyIsEnemyResult(this, c, result);
 }
 
 vector<WItem> Creature::getGold(int num) const {

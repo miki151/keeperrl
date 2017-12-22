@@ -23,6 +23,7 @@ RICH_ENUM(LastingEffect,
     FLYING,
     COLLAPSED,
     INSANITY,
+    PEACEFULNESS,
     DARKNESS_SOURCE,
     PREGNANT,
     SLEEP_RESISTANT,
@@ -65,6 +66,7 @@ class LastingEffects {
   static const char* getName(LastingEffect);
   static const char* getDescription(LastingEffect);
   static bool canSee(WConstCreature, WConstCreature);
+  static bool modifyIsEnemyResult(WConstCreature, WConstCreature, bool);
   static int getPrice(LastingEffect);
   static double getMoraleIncrease(WConstCreature);
 };
