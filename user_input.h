@@ -60,6 +60,7 @@ enum class UserInputId {
     CREATURE_CONSUME,
     CREATURE_DRAG_DROP,
     CREATURE_DRAG,
+    ASSIGN_QUARTERS,
     IMMIGRANT_ACCEPT,
     IMMIGRANT_REJECT,
     IMMIGRANT_AUTO_ACCEPT,
@@ -171,12 +172,18 @@ struct TeamMemberActionInfo {
   SERIALIZE_ALL(action, memberId)
 };
 
+struct AssignQuartersInfo {
+  optional<int> SERIAL(index);
+  UniqueEntity<Creature>::Id SERIAL(minionId);
+  SERIALIZE_ALL(index, minionId)
+};
+
 enum class SpellId;
 
 class UserInput : public EnumVariant<UserInputId, TYPES(BuildingInfo, int, UniqueEntity<Creature>::Id,
     UniqueEntity<PlayerMessage>::Id, InventoryItemInfo, Vec2, TeamCreatureInfo, SpellId, VillageActionInfo,
     TaskActionInfo, EquipmentActionInfo, RenameActionInfo, WorkshopQueuedActionInfo, CreatureDropInfo, TeamDropInfo,
-    UniqueEntity<Collective>::Id, string, TeamMemberActionInfo),
+    UniqueEntity<Collective>::Id, string, TeamMemberActionInfo, AssignQuartersInfo),
         ASSIGN(BuildingInfo,
             UserInputId::BUILD,
             UserInputId::RECT_SELECTION,
@@ -248,6 +255,8 @@ class UserInput : public EnumVariant<UserInputId, TYPES(BuildingInfo, int, Uniqu
             UserInputId::TEAM_DRAG_DROP),
         ASSIGN(TeamMemberActionInfo,
             UserInputId::TEAM_MEMBER_ACTION),
+        ASSIGN(AssignQuartersInfo,
+            UserInputId::ASSIGN_QUARTERS),
         ASSIGN(string,
             UserInputId::CREATE_ITEM,
             UserInputId::APPLY_EFFECT,

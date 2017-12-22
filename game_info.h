@@ -151,7 +151,9 @@ class PlayerInfo {
   vector<Action> HASH(actions);
   vector<TeamMemberAction> HASH(teamMemberActions);
   optional<double> HASH(carryLimit);
-  HASH_ALL(attributes, skills, firstName, name, title, levelInfo, positionHash, effects, spells, lyingItems, inventory, minionTasks, creatureId, morale, viewId, actions, commands, debt, bestAttack, carryLimit, intrinsicAttacks, teamInfos, moveCounter, willMoveThisTurn, isPlayerControlled, controlMode, teamMemberActions)
+  optional<ViewId> HASH(quarters);
+  bool HASH(canAssignQuarters);
+  HASH_ALL(attributes, skills, firstName, name, title, levelInfo, positionHash, effects, spells, lyingItems, inventory, minionTasks, creatureId, morale, viewId, actions, commands, debt, bestAttack, carryLimit, intrinsicAttacks, teamInfos, moveCounter, willMoveThisTurn, isPlayerControlled, controlMode, teamMemberActions, quarters, canAssignQuarters)
 };
 
 struct ImmigrantDataInfo {
@@ -301,8 +303,8 @@ class CollectiveInfo {
     HASH_ALL(viewId, attacker, numTurns)
   };
   optional<NextWave> HASH(nextWave);
-
-  HASH_ALL(warning, buildings, minionCount, minionLimit, monsterHeader, minions, minionGroups, enemyGroups, chosenCreature, numResource, teams, nextPayout, payoutTimeRemaining, techButtons, taskMap, ransom, nextWave, chosenWorkshop, workshopButtons, immigration, allImmigration, libraryInfo)
+  vector<ViewId> HASH(allQuarters);
+  HASH_ALL(warning, buildings, minionCount, minionLimit, monsterHeader, minions, minionGroups, enemyGroups, chosenCreature, numResource, teams, nextPayout, payoutTimeRemaining, techButtons, taskMap, ransom, nextWave, chosenWorkshop, workshopButtons, immigration, allImmigration, libraryInfo, allQuarters)
 };
 
 class VillageInfo {

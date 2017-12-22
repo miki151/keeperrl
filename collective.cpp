@@ -50,6 +50,7 @@
 #include "creature_factory.h"
 #include "resource_info.h"
 #include "workshop_item.h"
+#include "quarters.h"
 
 
 template <class Archive>
@@ -60,7 +61,7 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
   ar(surrendering, delayedPos, knownTiles, technologies, kills, points, currentTasks);
   ar(credit, level, immigration, teams, name, conqueredVillains);
   ar(config, warnings, knownVillains, knownVillainLocations, banished);
-  ar(villainType, enemyId, workshops, zones, tileEfficiency, discoverable, numPrisonerOrders);
+  ar(villainType, enemyId, workshops, zones, tileEfficiency, discoverable, numPrisonerOrders, quarters);
   // hack to make retired villains discoverable, remove with save version change
   if (villainType == VillainType::MAIN)
     discoverable = true;
@@ -1541,6 +1542,14 @@ Zones& Collective::getZones() {
 
 const Zones& Collective::getZones() const {
   return *zones;
+}
+
+Quarters& Collective::getQuarters() {
+  return *quarters;
+}
+
+const Quarters& Collective::getQuarters() const {
+  return *quarters;
 }
 
 const TaskMap& Collective::getTaskMap() const {

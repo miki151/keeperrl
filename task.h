@@ -73,7 +73,7 @@ class Task : public UniqueEntity<Task>, public OwnedObject<Task> {
   static PTask consumeItem(WTaskCallback, vector<WItem> items);
   static PTask copulate(WTaskCallback, WCreature target, int numTurns);
   static PTask consume(WTaskCallback, WCreature target);
-  static PTask eat(set<Position> hatcherySquares);
+  static PTask eat(vector<Position> hatcherySquares);
   static PTask goTo(Position);
   static PTask goToTryForever(Position);
   static PTask transferTo(WModel);

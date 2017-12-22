@@ -115,6 +115,9 @@ Color MapGui::getHighlightColor(const ViewIndex& index, HighlightType type) {
     case HighlightType::PERMANENT_FETCH_ITEMS: return Color::ORANGE.transparency(100);
     case HighlightType::STORAGE_EQUIPMENT: return Color::BLUE.transparency(100);
     case HighlightType::STORAGE_RESOURCES: return Color::GREEN.transparency(100);
+    case HighlightType::QUARTERS1: return Color::PINK.transparency(45);
+    case HighlightType::QUARTERS2: return Color::SKY_BLUE.transparency(45);
+    case HighlightType::QUARTERS3: return Color::ORANGE.transparency(45);
     case HighlightType::RECT_SELECTION: return Color::YELLOW.transparency(100);
     case HighlightType::FOG: return Color::WHITE.transparency(int(120 * amount));
     case HighlightType::POISON_GAS: return Color(0, min<Uint8>(255., Uint8(amount * 500)), 0, (Uint8)(amount * 140));
@@ -707,6 +710,9 @@ bool MapGui::isRenderedHighlightLow(const ViewIndex& index, HighlightType type) 
     case HighlightType::PERMANENT_FETCH_ITEMS:
     case HighlightType::STORAGE_EQUIPMENT:
     case HighlightType::STORAGE_RESOURCES:
+    case HighlightType::QUARTERS1:
+    case HighlightType::QUARTERS2:
+    case HighlightType::QUARTERS3:
     case HighlightType::CLICKED_FURNITURE:
     case HighlightType::CUT_TREE:
       return true;
@@ -714,9 +720,9 @@ bool MapGui::isRenderedHighlightLow(const ViewIndex& index, HighlightType type) 
   }
 }
 
-void MapGui::renderTexturedHighlight(Renderer& renderer, Vec2 pos, Vec2 size, Color color) {
+void MapGui::renderTexturedHighlight(Renderer& renderer, Vec2 pos, Vec2 size, Color color, ViewId viewId) {
   if (spriteMode)
-    renderer.drawTile(pos, Tile::getTile(ViewId::DIG_MARK, true).getSpriteCoord(), size, color);
+    renderer.drawTile(pos, Tile::getTile(viewId, true).getSpriteCoord(), size, color);
   else
     renderer.addQuad(Rectangle(pos, pos + size), color);
 }
@@ -733,8 +739,14 @@ void MapGui::renderHighlight(Renderer& renderer, Vec2 pos, Vec2 size, const View
       if (spriteMode && index.hasObject(ViewLayer::FLOOR))
         break;
       FALLTHROUGH;*/
+    case HighlightType::QUARTERS1:
+    case HighlightType::QUARTERS2:
+    case HighlightType::QUARTERS3:
+    case HighlightType::UNAVAILABLE:
+      renderTexturedHighlight(renderer, pos, size, color, ViewId::DIG_MARK2);
+      break;
     default:
-      renderTexturedHighlight(renderer, pos, size, color);
+      renderTexturedHighlight(renderer, pos, size, color, ViewId::DIG_MARK);
       break;
   }
 }
@@ -753,7 +765,7 @@ void MapGui::renderHighlights(Renderer& renderer, Vec2 size, milliseconds curren
   for (Vec2 wpos : lowHighlights ? tutorialHighlightLow : tutorialHighlightHigh) {
     Vec2 pos = topLeftCorner + (wpos - allTiles.topLeft()).mult(size);
     if ((currentTimeReal.count() / 1000) % 2 == 0)
-      renderTexturedHighlight(renderer, pos, size, Color(255, 255, 0, lowHighlights ? 120 : 40));
+      renderTexturedHighlight(renderer, pos, size, Color(255, 255, 0, lowHighlights ? 120 : 40), ViewId::DIG_MARK);
   }
 }
 

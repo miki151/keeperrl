@@ -47,6 +47,7 @@ class Zones;
 struct ItemFetchInfo;
 class CollectiveWarnings;
 class Immigration;
+class Quarters;
 
 class Collective : public TaskCallback, public UniqueEntity<Collective>, public EventListener<Collective> {
   public:
@@ -147,6 +148,8 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   void addTorch(Position);
   Zones& getZones();
   const Zones& getZones() const;
+  Quarters& getQuarters();
+  const Quarters& getQuarters() const;
   void cancelMarkedTask(Position);
   void orderDestruction(Position pos, const DestroyAction&);
   double getDangerLevel() const;
@@ -316,4 +319,5 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   int SERIAL(numPrisonerOrders) = 0;
   void considerTransferingLostMinions();
   void updateCreatureStatus(WCreature);
+  HeapAllocated<Quarters> SERIAL(quarters);
 };

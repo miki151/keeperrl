@@ -156,7 +156,7 @@ class GuiBuilder {
   SGuiElem drawMinionButtons(const vector<PlayerInfo>&, UniqueEntity<Creature>::Id current, optional<TeamId> teamId);
   SGuiElem minionButtonsCache;
   int minionButtonsHash = 0;
-  SGuiElem drawMinionPage(const PlayerInfo&, const optional<TutorialInfo>&);
+  SGuiElem drawMinionPage(const PlayerInfo&, const CollectiveInfo&, const optional<TutorialInfo>&);
   SGuiElem drawActivityButton(const PlayerInfo&);
   SGuiElem drawVillages(VillageInfo&);
   SGuiElem villagesCache;
@@ -265,6 +265,7 @@ class GuiBuilder {
   vector<string> hint;
   SGuiElem getExpIncreaseLine(const PlayerInfo::LevelInfo&, ExperienceType);
   optional<int> highlightedTeamMember;
+  SGuiElem drawQuartersButton(const PlayerInfo&, const CollectiveInfo&);
 };
 
 RICH_ENUM(GuiBuilder::GameSpeed,

@@ -163,7 +163,7 @@ class MapGui : public GuiElem {
   optional<ViewId> getHighlightedFurniture();
   Color getHighlightColor(const ViewIndex&, HighlightType);
   void renderHighlight(Renderer& renderer, Vec2 pos, Vec2 size, const ViewIndex& index, HighlightType highlight);
-  void renderTexturedHighlight(Renderer&, Vec2 pos, Vec2 size, Color);
+  void renderTexturedHighlight(Renderer&, Vec2 pos, Vec2 size, Color, ViewId viewId);
   void processScrolling(milliseconds);
   void considerScrollingToCreature();
   GuiFactory* guiFactory;

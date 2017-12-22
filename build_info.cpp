@@ -12,6 +12,7 @@
 #include "experience_type.h"
 #include "model_builder.h"
 #include "trap_type.h"
+#include "quarters.h"
 
 using ResourceId = Collective::ResourceId;
 
@@ -45,7 +46,13 @@ const vector<BuildInfo>& BuildInfo::get() {
              .setTutorialHighlight(TutorialHighlight::RESOURCE_STORAGE),
       BuildInfo(ZoneId::STORAGE_EQUIPMENT, ViewId::STORAGE_EQUIPMENT, "Equipment",
           "All equipment for your minions can be stored here.", 0, "Storage")
-             .setTutorialHighlight(TutorialHighlight::EQUIPMENT_STORAGE),
+             .setTutorialHighlight(TutorialHighlight::EQUIPMENT_STORAGE) });
+    auto& quarters = Quarters::getAllQuarters();
+    for (int i : All(quarters))
+      buildInfo->emplace_back(
+        quarters[i].zone, quarters[i].viewId, "Quarters "_s + toString(i),
+            "Designate separate quarters for chosen minions.", i == 0 ? 'q' : '\0', "Quarters", true);
+    append(*buildInfo, {
       BuildInfo({FurnitureType::BOOKCASE_WOOD, {ResourceId::WOOD, 15}}, "Wooden bookcase",
           {{RequirementId::TECHNOLOGY, TechId::SPELLS}}, "Train your minions here. Adds up to " +
           toString(*CollectiveConfig::getTrainingMaxLevel(ExperienceType::SPELL, FurnitureType::BOOKCASE_WOOD)) + " spell levels.",

@@ -1147,7 +1147,7 @@ namespace {
 
 class Eat : public Task {
   public:
-  Eat(set<Position> pos) : positions(pos) {}
+  Eat(vector<Position> pos) : positions(pos) {}
 
   virtual bool canTransfer() override {
     return false;
@@ -1209,13 +1209,13 @@ class Eat : public Task {
 
   private:
   optional<Position> SERIAL(position);
-  set<Position> SERIAL(positions);
+  vector<Position> SERIAL(positions);
   set<Position> SERIAL(rejectedPosition);
 };
 
 }
 
-PTask Task::eat(set<Position> hatcherySquares) {
+PTask Task::eat(vector<Position> hatcherySquares) {
   return makeOwner<Eat>(hatcherySquares);
 }
 

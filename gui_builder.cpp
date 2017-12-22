@@ -34,6 +34,7 @@
 #include "minimap_gui.h"
 #include "creature_view.h"
 #include "level.h"
+#include "quarters.h"
 
 using SDL::SDL_Keysym;
 using SDL::SDL_Keycode;
@@ -1765,7 +1766,7 @@ SGuiElem GuiBuilder::drawMinionsOverlay(const CollectiveInfo& info, const option
   auto current = info.chosenCreature->chosenId;
   for (int i : All(minions))
     if (minions[i].creatureId == current)
-      minionPage = gui.margins(drawMinionPage(minions[i], tutorial), 10, 15, 10, 10);
+      minionPage = gui.margins(drawMinionPage(minions[i], info, tutorial), 10, 15, 10, 10);
   if (!minionPage)
     return gui.empty();
   SGuiElem menu;
@@ -2372,15 +2373,48 @@ vector<SGuiElem> GuiBuilder::drawItemMenu(const vector<ItemInfo>& items, ItemMen
   return lines;
 }
 
+SGuiElem GuiBuilder::drawQuartersButton(const PlayerInfo& minion, const CollectiveInfo& collective) {
+  auto current = minion.quarters ? gui.viewObject(*minion.quarters) : gui.label("none");
+  return gui.stack(
+      gui.uiHighlightMouseOver(),
+      gui.getListBuilder()
+            .addElemAuto(gui.label("Assigned Quarters: ", Color::YELLOW))
+            .addElemAuto(std::move(current))
+            .buildHorizontalList(),
+      gui.buttonRect([this, minionId = minion.creatureId, allQuarters = collective.allQuarters] (Rectangle bounds) {
+          auto tasks = gui.getListBuilder(legendLineHeight);
+          bool exit = false;
+          auto retAction = [&] (optional<int> index) {
+            callbacks.input({UserInputId::ASSIGN_QUARTERS, AssignQuartersInfo{index, minionId}});
+          };
+          tasks.addElem(gui.stack(
+              gui.button([&retAction, &exit] { retAction(none); exit = true; }),
+              gui.uiHighlightMouseOver(),
+              gui.label("none")));
+          for (int i : All(allQuarters)) {
+            tasks.addElem(gui.stack(
+                gui.button([i, &retAction, &exit] { retAction(i); exit = true; }),
+                gui.uiHighlightMouseOver(),
+                gui.getListBuilder(32)
+                    .addElem(gui.viewObject(allQuarters[i]))
+                    .addElem(gui.label(toString(i)))
+                    .buildHorizontalList()));
+          }
+          drawMiniMenu(std::move(tasks), exit, bounds.bottomLeft(), 50, true);
+        }));
+}
+
 SGuiElem GuiBuilder::drawActivityButton(const PlayerInfo& minion) {
   string curTask = "(none)";
   for (auto task : minion.minionTasks)
     if (task.current)
       curTask = getTaskText(task.task);
   return gui.stack(
-      gui.horizontalList(makeVec(
-          gui.labelHighlight(curTask), gui.labelHighlight("[change]", Color::LIGHT_BLUE)),
-        renderer.getTextLength(curTask) + 20),
+      gui.uiHighlightMouseOver(),
+      gui.getListBuilder()
+          .addElemAuto(gui.label("Activity: ", Color::YELLOW))
+          .addElemAuto(gui.label(curTask))
+          .buildHorizontalList(),
       gui.buttonRect([=] (Rectangle bounds) {
           auto tasks = gui.getListBuilder(legendLineHeight);
           bool exit = false;
@@ -2490,7 +2524,8 @@ vector<SGuiElem> GuiBuilder::drawMinionActions(const PlayerInfo& minion, const o
   return line;
 }
 
-SGuiElem GuiBuilder::drawMinionPage(const PlayerInfo& minion, const optional<TutorialInfo>& tutorial) {
+SGuiElem GuiBuilder::drawMinionPage(const PlayerInfo& minion, const CollectiveInfo& collective,
+    const optional<TutorialInfo>& tutorial) {
   auto list = gui.getListBuilder(legendLineHeight);
   list.addElem(gui.label(minion.getTitle()));
   if (!minion.description.empty())
@@ -2506,8 +2541,9 @@ SGuiElem GuiBuilder::drawMinionPage(const PlayerInfo& minion, const optional<Tut
     leftLines.addElemAuto(std::move(elem));
     leftLines.addSpace();
   }
-  leftLines.addElem(gui.label("Activity", Color::YELLOW));
   leftLines.addElem(drawActivityButton(minion));
+  if (minion.canAssignQuarters)
+    leftLines.addElem(drawQuartersButton(minion, collective));
   leftLines.addSpace();
   for (auto& elem : drawSkillsList(minion))
     leftLines.addElem(std::move(elem));
@@ -2516,7 +2552,7 @@ SGuiElem GuiBuilder::drawMinionPage(const PlayerInfo& minion, const optional<Tut
   int topMargin = list.getSize() + 20;
   return gui.margin(list.buildVerticalList(),
       gui.scrollable(gui.horizontalListFit(makeVec(
-          leftLines.buildVerticalList(),
+          gui.rightMargin(15, leftLines.buildVerticalList()),
           drawEquipmentAndConsumables(minion))), &minionPageScroll, &scrollbarsHeld),
       topMargin, GuiFactory::TOP);
 }

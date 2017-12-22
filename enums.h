@@ -69,7 +69,7 @@ enum class StairLook;
 enum class SettlementType;
 enum class VillainType;
 enum class BiomeId;
-
+enum class ZoneId;
 enum class ViewId;
 
 enum class AnimationId;

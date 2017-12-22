@@ -82,6 +82,7 @@
 #include "resource_info.h"
 #include "workshop_item.h"
 #include "time_queue.h"
+#include "quarters.h"
 
 template <class Archive>
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
@@ -796,28 +797,37 @@ vector<PlayerInfo> PlayerControl::getPlayerInfos(vector<WCreature> creatures, Un
   vector<PlayerInfo> minions;
   for (WCreature c : creatures) {
     minions.emplace_back(c);
+    auto& minionInfo = minions.back();
     // only fill equipment for the chosen minion to avoid lag
     if (c->getUniqueId() == chosenId) {
       for (auto expType : ENUM_ALL(ExperienceType))
         if (auto requiredDummy = getCollective()->getMissingTrainingFurniture(c, expType))
-          minions.back().levelInfo.warning[expType] =
+          minionInfo.levelInfo.warning[expType] =
               "Requires " + Furniture::getName(*requiredDummy) + " to train further.";
       for (MinionTask t : ENUM_ALL(MinionTask))
         if (c->getAttributes().getMinionTasks().isAvailable(getCollective(), c, t, true)) {
-          minions.back().minionTasks.push_back({t,
+          minionInfo.minionTasks.push_back({t,
               !getCollective()->isMinionTaskPossible(c, t),
               getCollective()->getMinionTask(c) == t,
               c->getAttributes().getMinionTasks().isLocked(t)});
         }
       if (getCollective()->usesEquipment(c))
-        fillEquipment(c, minions.back());
+        fillEquipment(c, minionInfo);
       if (!getCollective()->hasTrait(c, MinionTrait::PRISONER)) {
-        minions.back().actions = { PlayerInfo::CONTROL, PlayerInfo::RENAME };
+        minionInfo.actions = { PlayerInfo::CONTROL, PlayerInfo::RENAME };
         if (c != getCollective()->getLeader())
-          minions.back().actions.push_back(PlayerInfo::BANISH);
+          minionInfo.actions.push_back(PlayerInfo::BANISH);
+      }
+      if (!getCollective()->hasTrait(c, MinionTrait::WORKER)) {
+        minionInfo.canAssignQuarters = true;
+        auto& quarters = getCollective()->getQuarters();
+        if (auto index = quarters.getAssigned(c->getUniqueId()))
+          minionInfo.quarters = quarters.getAllQuarters()[*index].viewId;
+        else
+          minionInfo.quarters = none;
       }
       if (c->getAttributes().getSkills().hasDiscrete(SkillId::CONSUMPTION))
-        minions.back().actions.push_back(PlayerInfo::CONSUME);
+        minionInfo.actions.push_back(PlayerInfo::CONSUME);
     }
   }
   return minions;
@@ -1217,6 +1227,8 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
           };
       }
     }
+  info.allQuarters = getCollective()->getQuarters().getAllQuarters().transform(
+      [](const auto& info) { return info.viewId; });
 }
 
 void PlayerControl::addMessage(const PlayerMessage& msg) {
@@ -1889,6 +1901,11 @@ void PlayerControl::processInput(View* view, UserInput input) {
         }
       break;
     }
+    case UserInputId::ASSIGN_QUARTERS: {
+      auto& info = input.get<AssignQuartersInfo>();
+      getCollective()->getQuarters().assign(info.index, info.minionId);
+      break;
+    }
     case UserInputId::IMMIGRANT_ACCEPT: {
       int index = input.get<int>();
       if (index == -1)
@@ -2027,123 +2044,126 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
     return;
   switch (building.buildType) {
     case BuildInfo::TRAP:
-        if (getCollective()->getConstructions().getTrap(position) && selection != SELECT) {
-          getCollective()->removeTrap(position);
-          getView()->addSound(SoundId::DIG_UNMARK);
-          selection = DESELECT;
-          // Does this mean I can remove the order if the trap physically exists?
-        } else
-        if (position.canEnterEmpty({MovementTrait::WALK}) &&
-            getCollective()->getTerritory().contains(position) &&
-            !getCollective()->getConstructions().getTrap(position) &&
-            selection != DESELECT) {
-          getCollective()->addTrap(position, building.trapInfo.type);
-          getView()->addSound(SoundId::ADD_CONSTRUCTION);
-          selection = SELECT;
-        }
+      if (getCollective()->getConstructions().getTrap(position) && selection != SELECT) {
+        getCollective()->removeTrap(position);
+        getView()->addSound(SoundId::DIG_UNMARK);
+        selection = DESELECT;
+        // Does this mean I can remove the order if the trap physically exists?
+      } else
+      if (position.canEnterEmpty({MovementTrait::WALK}) &&
+          getCollective()->getTerritory().contains(position) &&
+          !getCollective()->getConstructions().getTrap(position) &&
+          selection != DESELECT) {
+        getCollective()->addTrap(position, building.trapInfo.type);
+        getView()->addSound(SoundId::ADD_CONSTRUCTION);
+        selection = SELECT;
+      }
       break;
     case BuildInfo::DESTROY:
-        for (auto layer : building.destroyLayers) {
-          auto f = getCollective()->getConstructions().getFurniture(position, layer);
-          if (f && !f->isBuilt()) {
-            getCollective()->removeFurniture(position, layer);
-            getView()->addSound(SoundId::DIG_UNMARK);
-            selection = SELECT;
-          } else
-          if (getCollective()->getKnownTiles().isKnown(position) && !position.isBurning()) {
-            selection = SELECT;
-            getCollective()->destroySquare(position, layer);
-            if (auto f = position.getFurniture(layer))
-              if (f->getType() == FurnitureType::TREE_TRUNK)
-                position.removeFurniture(f);
-            getView()->addSound(SoundId::REMOVE_CONSTRUCTION);
-            updateSquareMemory(position);
-          }
-        }
-        break;
-    case BuildInfo::FORBID_ZONE:
-        if (position.isTribeForbidden(getTribeId()) && selection != SELECT) {
-          position.allowMovementForTribe(getTribeId());
-          selection = DESELECT;
-        }
-        else if (!position.isTribeForbidden(getTribeId()) && selection != DESELECT) {
-          position.forbidMovementForTribe(getTribeId());
-          selection = SELECT;
-        }
-        break;
-    case BuildInfo::DIG: {
-        bool markedToDig = getCollective()->isMarked(position) &&
-            (getCollective()->getMarkHighlight(position) == HighlightType::DIG ||
-             getCollective()->getMarkHighlight(position) == HighlightType::CUT_TREE);
-        if (markedToDig && selection != SELECT) {
-          getCollective()->cancelMarkedTask(position);
-          getView()->addSound(SoundId::DIG_UNMARK);
-          selection = DESELECT;
-        } else
-        if (!markedToDig && selection != DESELECT) {
-          if (auto furniture = position.getFurniture(FurnitureLayer::MIDDLE))
-            for (auto type : {DestroyAction::Type::CUT, DestroyAction::Type::DIG})
-              if (furniture->canDestroy(type)) {
-                getCollective()->orderDestruction(position, type);
-                getView()->addSound(SoundId::DIG_MARK);
-                selection = SELECT;
-                break;
-              }
-        }
-        break;
-        }
-    case BuildInfo::ZONE:
-        if (getCollective()->getZones().isZone(position, building.zone) && selection != SELECT) {
-          getCollective()->getZones().eraseZone(position, building.zone);
-          selection = DESELECT;
-        } else if (selection != DESELECT && !getCollective()->getZones().isZone(position, building.zone) &&
-            getCollective()->getKnownTiles().isKnown(position)) {
-          getCollective()->getZones().setZone(position, building.zone);
-          selection = SELECT;
-        }
-        break;
-    case BuildInfo::CLAIM_TILE:
-        if (getCollective()->canClaimSquare(position))
-          getCollective()->claimSquare(position);
-        break;
-    case BuildInfo::DISPATCH:
-        getCollective()->setPriorityTasks(position);
-        break;
-    case BuildInfo::FURNITURE: {
-        auto& info = building.furnitureInfo;
-        auto layer = Furniture::getLayer(info.types[0]);
-        auto currentPlanned = getCollective()->getConstructions().getFurniture(position, layer);
-        if (currentPlanned && currentPlanned->isBuilt())
-          currentPlanned = none;
-        int nextIndex = 0;
-        if (currentPlanned) {
-          if (auto currentIndex = info.types.findElement(currentPlanned->getFurnitureType()))
-            nextIndex = *currentIndex + 1;
-          else
-            break;
-        }
-        bool removed = false;
-        if (!!currentPlanned && selection != SELECT) {
+      for (auto layer : building.destroyLayers) {
+        auto f = getCollective()->getConstructions().getFurniture(position, layer);
+        if (f && !f->isBuilt()) {
           getCollective()->removeFurniture(position, layer);
-          removed = true;
-        }
-        while (nextIndex < info.types.size() && !getCollective()->canAddFurniture(position, info.types[nextIndex]))
-          ++nextIndex;
-        int totalCount = 0;
-        for (auto type : info.types)
-          totalCount += getCollective()->getConstructions().getTotalCount(type);
-        if (nextIndex < info.types.size() && selection != DESELECT &&
-            (!info.maxNumber || *info.maxNumber > totalCount)) {
-          getCollective()->addFurniture(position, info.types[nextIndex], info.cost, info.noCredit);
-          getCollective()->updateResourceProduction();
-          selection = SELECT;
-          getView()->addSound(SoundId::ADD_CONSTRUCTION);
-        } else if (removed) {
-          selection = DESELECT;
           getView()->addSound(SoundId::DIG_UNMARK);
+          selection = SELECT;
+        } else
+        if (getCollective()->getKnownTiles().isKnown(position) && !position.isBurning()) {
+          selection = SELECT;
+          getCollective()->destroySquare(position, layer);
+          if (auto f = position.getFurniture(layer))
+            if (f->getType() == FurnitureType::TREE_TRUNK)
+              position.removeFurniture(f);
+          getView()->addSound(SoundId::REMOVE_CONSTRUCTION);
+          updateSquareMemory(position);
         }
-        break;
       }
+      break;
+    case BuildInfo::FORBID_ZONE:
+      if (position.isTribeForbidden(getTribeId()) && selection != SELECT) {
+        position.allowMovementForTribe(getTribeId());
+        selection = DESELECT;
+      }
+      else if (!position.isTribeForbidden(getTribeId()) && selection != DESELECT) {
+        position.forbidMovementForTribe(getTribeId());
+        selection = SELECT;
+      }
+      break;
+    case BuildInfo::DIG: {
+      bool markedToDig = getCollective()->isMarked(position) &&
+          (getCollective()->getMarkHighlight(position) == HighlightType::DIG ||
+           getCollective()->getMarkHighlight(position) == HighlightType::CUT_TREE);
+      if (markedToDig && selection != SELECT) {
+        getCollective()->cancelMarkedTask(position);
+        getView()->addSound(SoundId::DIG_UNMARK);
+        selection = DESELECT;
+      } else
+      if (!markedToDig && selection != DESELECT) {
+        if (auto furniture = position.getFurniture(FurnitureLayer::MIDDLE))
+          for (auto type : {DestroyAction::Type::CUT, DestroyAction::Type::DIG})
+            if (furniture->canDestroy(type)) {
+              getCollective()->orderDestruction(position, type);
+              getView()->addSound(SoundId::DIG_MARK);
+              selection = SELECT;
+              break;
+            }
+      }
+      break;
+    }
+    case BuildInfo::ZONE: {
+      auto& zones = getCollective()->getZones();
+      if (zones.isZone(position, building.zone) && selection != SELECT) {
+        zones.eraseZone(position, building.zone);
+        selection = DESELECT;
+      } else if (selection != DESELECT && !zones.isZone(position, building.zone) &&
+          getCollective()->getKnownTiles().isKnown(position) &&
+          zones.canSet(position, building.zone, getCollective())) {
+        zones.setZone(position, building.zone);
+        selection = SELECT;
+      }
+      break;
+    }
+    case BuildInfo::CLAIM_TILE:
+      if (getCollective()->canClaimSquare(position))
+        getCollective()->claimSquare(position);
+      break;
+    case BuildInfo::DISPATCH:
+      getCollective()->setPriorityTasks(position);
+      break;
+    case BuildInfo::FURNITURE: {
+      auto& info = building.furnitureInfo;
+      auto layer = Furniture::getLayer(info.types[0]);
+      auto currentPlanned = getCollective()->getConstructions().getFurniture(position, layer);
+      if (currentPlanned && currentPlanned->isBuilt())
+        currentPlanned = none;
+      int nextIndex = 0;
+      if (currentPlanned) {
+        if (auto currentIndex = info.types.findElement(currentPlanned->getFurnitureType()))
+          nextIndex = *currentIndex + 1;
+        else
+          break;
+      }
+      bool removed = false;
+      if (!!currentPlanned && selection != SELECT) {
+        getCollective()->removeFurniture(position, layer);
+        removed = true;
+      }
+      while (nextIndex < info.types.size() && !getCollective()->canAddFurniture(position, info.types[nextIndex]))
+        ++nextIndex;
+      int totalCount = 0;
+      for (auto type : info.types)
+        totalCount += getCollective()->getConstructions().getTotalCount(type);
+      if (nextIndex < info.types.size() && selection != DESELECT &&
+          (!info.maxNumber || *info.maxNumber > totalCount)) {
+        getCollective()->addFurniture(position, info.types[nextIndex], info.cost, info.noCredit);
+        getCollective()->updateResourceProduction();
+        selection = SELECT;
+        getView()->addSound(SoundId::ADD_CONSTRUCTION);
+      } else if (removed) {
+        selection = DESELECT;
+        getView()->addSound(SoundId::DIG_UNMARK);
+      }
+      break;
+    }
   }
 }
 
