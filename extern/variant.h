@@ -111,6 +111,30 @@ class variant : public stx::variant<Arg...> {
             >::type>
   variant(Param&& param) : base(std::forward<Param>(param)) {}
 
+  template <typename Param, typename _Enable=
+            typename std::enable_if<
+                    variant_helpers::is_one_of<typename variant_helpers::bare_type<Param>::type, Arg...>::value
+            >::type>
+  bool operator == (const Param& param) const {
+    return getReferenceMaybe<Param>() == param;
+  }
+
+  bool operator == (const variant& v) const {
+    return visit([&](const auto& e) { return v == e; });
+  }
+
+  template <typename Param, typename _Enable=
+            typename std::enable_if<
+                    variant_helpers::is_one_of<typename variant_helpers::bare_type<Param>::type, Arg...>::value
+            >::type>
+  bool operator != (const Param& param) const {
+    return getReferenceMaybe<Param>() != param;
+  }
+
+  bool operator != (const variant& v) const {
+    return visit([&](const auto& e) { return v != e; });
+  }
+
   constexpr static int num_types = stx::variant_size<base>::value;
 
   template<typename... Fs>

@@ -27,6 +27,7 @@ class CreatureName {
   void setGroup(const string&);
   void useFullTitle();
   const string& stack() const;
+  const char* identify() const;
   const optional<string>& stackOnly() const;
   optional<string> first() const;
   string bare() const;
@@ -34,6 +35,7 @@ class CreatureName {
   string a() const;
   string plural() const;
   string multiple(int) const;
+  string groupOf(int) const;
   string title() const;
 
   SERIALIZATION_DECL(CreatureName);

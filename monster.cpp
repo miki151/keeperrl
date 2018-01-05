@@ -47,11 +47,19 @@ const MapMemory& Monster::getMemory() const {
   return MapMemory::empty();
 }
 
+static bool tryToPerform(WCreature c, CreatureAction action) {
+  if (action)
+    action.perform(c);
+  else
+    c->privateMessage(action.getFailedReason());
+  return !!action;
+}
+
 void Monster::onBump(WCreature c) {
   if (c->isEnemy(getCreature()))
-    c->attack(getCreature(), none).perform(c);
-  else if (auto action = c->move(getCreature()->getPosition()))
-    action.perform(c);
+    tryToPerform(c, c->attack(getCreature(), none));
+  else
+    tryToPerform(c, c->move(getCreature()->getPosition()));
 }
 
 

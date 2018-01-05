@@ -21,6 +21,7 @@
 #include "village_action.h"
 #include "minion_task.h"
 #include "entity_set.h"
+#include "team_member_action.h"
 
 class PlayerMessage;
 
@@ -48,7 +49,8 @@ enum class UserInputId {
     ADD_GROUP_TO_TEAM,
     REMOVE_FROM_TEAM,
     CREATURE_BUTTON,
-    CREATURE_BUTTON2,
+    CREATURE_MAP_CLICK,
+    CREATURE_MAP_CLICK_EXTENDED,
     CREATURE_GROUP_BUTTON,
     CREATURE_TASK_ACTION,
     CREATURE_EQUIPMENT_ACTION,
@@ -58,6 +60,7 @@ enum class UserInputId {
     CREATURE_CONSUME,
     CREATURE_DRAG_DROP,
     CREATURE_DRAG,
+    ASSIGN_QUARTERS,
     IMMIGRANT_ACCEPT,
     IMMIGRANT_REJECT,
     IMMIGRANT_AUTO_ACCEPT,
@@ -88,8 +91,12 @@ enum class UserInputId {
     PICK_UP_ITEM,
     PICK_UP_ITEM_MULTI,
     PLAYER_COMMAND,
+    TOGGLE_CONTROL_MODE,
+    EXIT_CONTROL_MODE,
+    TEAM_MEMBER_ACTION,
     CAST_SPELL,
     INVENTORY_ITEM,
+    INTRINSIC_ATTACK,
     PAY_DEBT,
     APPLY_EFFECT,
     CREATE_ITEM,
@@ -159,12 +166,24 @@ struct RenameActionInfo {
   SERIALIZE_ALL(creature, name)
 };
 
+struct TeamMemberActionInfo {
+  TeamMemberAction SERIAL(action);
+  UniqueEntity<Creature>::Id SERIAL(memberId);
+  SERIALIZE_ALL(action, memberId)
+};
+
+struct AssignQuartersInfo {
+  optional<int> SERIAL(index);
+  UniqueEntity<Creature>::Id SERIAL(minionId);
+  SERIALIZE_ALL(index, minionId)
+};
+
 enum class SpellId;
 
 class UserInput : public EnumVariant<UserInputId, TYPES(BuildingInfo, int, UniqueEntity<Creature>::Id,
     UniqueEntity<PlayerMessage>::Id, InventoryItemInfo, Vec2, TeamCreatureInfo, SpellId, VillageActionInfo,
     TaskActionInfo, EquipmentActionInfo, RenameActionInfo, WorkshopQueuedActionInfo, CreatureDropInfo, TeamDropInfo,
-    UniqueEntity<Collective>::Id, string),
+    UniqueEntity<Collective>::Id, string, TeamMemberActionInfo, AssignQuartersInfo),
         ASSIGN(BuildingInfo,
             UserInputId::BUILD,
             UserInputId::RECT_SELECTION,
@@ -173,7 +192,6 @@ class UserInput : public EnumVariant<UserInputId, TYPES(BuildingInfo, int, Uniqu
             UserInputId::CREATURE_BUTTON,
             UserInputId::CREATE_TEAM,
             UserInputId::CREATE_TEAM_FROM_GROUP,
-            UserInputId::CREATURE_BUTTON2,
             UserInputId::CREATURE_GROUP_BUTTON,
             UserInputId::CREATURE_CONTROL,
             UserInputId::CREATURE_BANISH,
@@ -204,10 +222,14 @@ class UserInput : public EnumVariant<UserInputId, TYPES(BuildingInfo, int, Uniqu
             UserInputId::IMMIGRANT_AUTO_REJECT
         ),
         ASSIGN(InventoryItemInfo,
-            UserInputId::INVENTORY_ITEM),
+            UserInputId::INVENTORY_ITEM,
+            UserInputId::INTRINSIC_ATTACK
+        ),
         ASSIGN(Vec2,
             UserInputId::TILE_CLICK,
-            UserInputId::MOVE, 
+            UserInputId::CREATURE_MAP_CLICK,
+            UserInputId::CREATURE_MAP_CLICK_EXTENDED,
+            UserInputId::MOVE,
             UserInputId::TRAVEL, 
             UserInputId::FIRE,
             UserInputId::RECT_DESELECTION),
@@ -231,6 +253,10 @@ class UserInput : public EnumVariant<UserInputId, TYPES(BuildingInfo, int, Uniqu
             UserInputId::CREATURE_DRAG_DROP),
         ASSIGN(TeamDropInfo,
             UserInputId::TEAM_DRAG_DROP),
+        ASSIGN(TeamMemberActionInfo,
+            UserInputId::TEAM_MEMBER_ACTION),
+        ASSIGN(AssignQuartersInfo,
+            UserInputId::ASSIGN_QUARTERS),
         ASSIGN(string,
             UserInputId::CREATE_ITEM,
             UserInputId::APPLY_EFFECT,

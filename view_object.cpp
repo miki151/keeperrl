@@ -19,7 +19,7 @@
 #include "view_id.h"
 #include "experience_type.h"
 
-SERIALIZE_DEF(ViewObject, resource_id, viewLayer, description, modifiers, attributes, attachmentDir, creatureId, goodAdjectives, badAdjectives, creatureAttributes)
+SERIALIZE_DEF(ViewObject, resource_id, viewLayer, description, modifiers, attributes, attachmentDir, creatureId, goodAdjectives, badAdjectives, creatureAttributes, status, clickAction)
 
 SERIALIZATION_CONSTRUCTOR_IMPL(ViewObject);
 
@@ -39,11 +39,12 @@ optional<UniqueEntity<Creature>::Id> ViewObject::getCreatureId() const {
   return creatureId;
 }
 
-MovementInfo::MovementInfo(Vec2 dir, double b, double e, Type t) : direction(dir), tBegin(b), tEnd(e),
-  type(t) {
+void ViewObject::setClickAction(const string& s) {
+  clickAction = s;
 }
 
-MovementInfo::MovementInfo() {
+const string& ViewObject::getClickAction() const {
+  return clickAction;
 }
 
 void ViewObject::addMovementInfo(MovementInfo info) {
@@ -58,11 +59,11 @@ MovementInfo ViewObject::getLastMovementInfo() const {
   return movementQueue.getLast();
 }
 
-Vec2 ViewObject::getMovementInfo(double tBegin) const {
+Vec2 ViewObject::getMovementInfo(int moveCounter) const {
   if (!movementQueue.hasAny())
     return Vec2(0, 0);
   CHECK(creatureId);
-  return movementQueue.getTotalMovement(tBegin);
+  return movementQueue.getTotalMovement(moveCounter);
 }
 
 void ViewObject::clearMovementInfo() {
@@ -84,11 +85,11 @@ const MovementInfo& ViewObject::MovementQueue::getLast() const {
   return elems[makeGoodIndex(index - 1)];
 }
 
-Vec2 ViewObject::MovementQueue::getTotalMovement(double tBegin) const {
+Vec2 ViewObject::MovementQueue::getTotalMovement(int moveCounter) const {
   Vec2 ret;
   bool attack = false;
   for (int i : Range(min<int>(totalMoves, elems.size())))
-    if (elems[i].tBegin >= tBegin) {
+    if (elems[i].moveCounter >= moveCounter) {
       if (elems[i].type == MovementInfo::ATTACK/* && ret.length8() == 0*/) {
         attack = true;
         ret = elems[i].direction;
@@ -123,6 +124,14 @@ ViewObject& ViewObject::removeModifier(Modifier mod) {
 
 bool ViewObject::hasModifier(Modifier mod) const {
   return modifiers.contains(mod);
+}
+
+EnumSet<CreatureStatus>& ViewObject::getCreatureStatus() {
+  return status;
+}
+
+const EnumSet<CreatureStatus>& ViewObject::getCreatureStatus() const {
+  return status;
 }
 
 ViewObject& ViewObject::setAttribute(Attribute attr, double d) {

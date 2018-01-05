@@ -4,6 +4,7 @@
 #include "file_sharing.h"
 #include "exit_info.h"
 #include "experience_type.h"
+#include "game_time.h"
 
 class View;
 class Highscores;
@@ -33,7 +34,7 @@ class MainLoop {
   int battleTest(int numTries, const FilePath& levelPath, CreatureList ally, CreatureList enemyId, RandomGen&);
   void endlessTest(int numTries, const FilePath& levelPath, const FilePath& battleInfoPath, RandomGen&, optional<int> numEnemy);
 
-  static int getAutosaveFreq();
+  static TimeInterval getAutosaveFreq();
 
   private:
 

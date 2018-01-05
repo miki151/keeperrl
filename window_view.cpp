@@ -159,12 +159,12 @@ bool WindowView::isKeyPressed(SDL::SDL_Scancode code) {
   return SDL::SDL_GetKeyboardState(nullptr)[code];
 }
 
-void WindowView::mapCreatureClickFun(UniqueEntity<Creature>::Id id) {
+void WindowView::mapCreatureClickFun(UniqueEntity<Creature>::Id id, Vec2 position) {
   if (isKeyPressed(SDL::SDL_SCANCODE_LCTRL) || isKeyPressed(SDL::SDL_SCANCODE_RCTRL)) {
-    inputQueue.push(UserInput(UserInputId::CREATURE_BUTTON2, id));
+    inputQueue.push(UserInput(UserInputId::CREATURE_MAP_CLICK_EXTENDED, position));
   } else {
     guiBuilder.setCollectiveTab(CollectiveTab::MINIONS);
-    inputQueue.push(UserInput(UserInputId::CREATURE_BUTTON, id));
+    inputQueue.push(UserInput(UserInputId::CREATURE_MAP_CLICK, position));
   }
 }
 
@@ -790,7 +790,7 @@ optional<string> WindowView::getText(const string& title, const string& value, i
 }
 
 Rectangle WindowView::getEquipmentMenuPosition(int height) {
-  int width = 340;
+  int width = 440;
   Vec2 origin = Vec2(rightBarWidthCollective, 200);
   origin.x = min(origin.x, renderer.getSize().x - width);
   return Rectangle(origin, origin + Vec2(width, height)).intersection(Rectangle(Vec2(0, 0), renderer.getSize()));
@@ -1140,7 +1140,7 @@ optional<int> WindowView::chooseFromListInternal(const string& title, const vect
   if (optionIndexes.empty())
     optionIndexes.push_back(0);
   vector<int> positions;
-  SGuiElem stuff = guiBuilder.drawListGui(capitalFirst(title), options, menuType, &index, &choice, &positions);
+  SGuiElem stuff = gui.leftMargin(25, guiBuilder.drawListGui(capitalFirst(title), options, menuType, &index, &choice, &positions));
   if (title.empty())
     stuff = gui.topMargin(guiBuilder.getStandardLineHeight() / 2, std::move(stuff));
   auto getScrollPos = [&](int index) {
@@ -1481,6 +1481,10 @@ double WindowView::getGameSpeed() {
     case GuiBuilder::GameSpeed::FAST: return 0.04;
     case GuiBuilder::GameSpeed::VERY_FAST: return 0.06;
   }
+}
+
+optional<int> WindowView::chooseAtMouse(const vector<string>& elems) {
+  return guiBuilder.chooseAtMouse(elems);
 }
 
 void WindowView::addSound(const Sound& sound) {

@@ -6,15 +6,14 @@ RICH_ENUM(ItemClass,
   WEAPON,
   RANGED_WEAPON,
   ARMOR,
-  SCROLL,
   POTION,
+  SCROLL,
+  FOOD,
   BOOK,
   AMULET,
   RING,
   TOOL,
+  CORPSE,
   OTHER,
-  GOLD,
-  FOOD,
-  CORPSE
+  GOLD
 );
-

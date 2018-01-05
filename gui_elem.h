@@ -177,7 +177,7 @@ class GuiFactory {
   SGuiElem onMouseLeftButtonHeld(SGuiElem);
   SGuiElem onMouseRightButtonHeld(SGuiElem);
   SGuiElem mouseHighlight(SGuiElem highlight, int myIndex, optional<int>* highlighted);
-  SGuiElem mouseHighlight2(SGuiElem highlight);
+  SGuiElem mouseHighlight2(SGuiElem highlight, SGuiElem noHighlight = nullptr);
   SGuiElem mouseHighlightGameChoice(SGuiElem, optional<PlayerRoleChoice> my, optional<PlayerRoleChoice>& highlight);
   static int getHeldInitValue();
   SGuiElem scrollable(SGuiElem content, ScrollPosition* scrollPos = nullptr, int* held = nullptr);
@@ -200,6 +200,7 @@ class GuiFactory {
   SGuiElem darken();
   SGuiElem stopMouseMovement();
   SGuiElem fullScreen(SGuiElem);
+  SGuiElem absolutePosition(SGuiElem content, Vec2 pos);
   SGuiElem alignment(GuiFactory::Alignment, SGuiElem, optional<Vec2> size = none);
   SGuiElem dragSource(DragContent, function<SGuiElem()>);
   SGuiElem dragListener(function<void(DragContent)>);
@@ -264,7 +265,9 @@ class GuiFactory {
   SGuiElem invisible(SGuiElem content);
   SGuiElem background(SGuiElem content, Color);
   SGuiElem translucentBackground(SGuiElem content);
+  SGuiElem translucentBackgroundPassMouse(SGuiElem content);
   SGuiElem translucentBackgroundWithBorder(SGuiElem content);
+  SGuiElem translucentBackgroundWithBorderPassMouse(SGuiElem content);
   SGuiElem translucentBackground();
   Color translucentBgColor = Color(0, 0, 0, 150);
   Color foreground1 = Color(0x20, 0x5c, 0x4a, 150);

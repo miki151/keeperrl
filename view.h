@@ -185,6 +185,8 @@ class View {
 
   virtual optional<int> chooseItem(const vector<ItemInfo>& items, ScrollPosition* scrollpos) = 0;
 
+  virtual optional<int> chooseAtMouse(const vector<string>& elems) = 0;
+
   virtual void presentHighscores(const vector<HighscoreList>&) = 0;
 
   struct CampaignMenuState {

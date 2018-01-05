@@ -14,6 +14,9 @@
 #include "attr_type.h"
 #include "best_attack.h"
 #include "villain_type.h"
+#include "game_time.h"
+#include "intrinsic_attack.h"
+#include "team_member_action.h"
 
 enum class SpellId;
 
@@ -32,6 +35,7 @@ struct CreatureInfo {
 
 
 struct ItemInfo {
+  static ItemInfo get(WConstCreature, const vector<WItem>&);
   string HASH(name);
   string HASH(fullName);
   string HASH(description);
@@ -43,6 +47,7 @@ struct ItemInfo {
   bool HASH(locked);
   bool HASH(pending);
   bool HASH(unavailable);
+  optional<IntrinsicAttack::Active> HASH(intrinsicState);
   string HASH(unavailableReason);
   optional<EquipmentSlot> HASH(slot);
   optional<CreatureInfo> HASH(owner);
@@ -51,7 +56,7 @@ struct ItemInfo {
   double HASH(productionState);
   optional<double> HASH(weight);
   bool HASH(tutorialHighlight);
-  HASH_ALL(name, fullName, description, number, viewId, ids, actions, equiped, locked, pending, unavailable, slot, owner, type, price, productionState, unavailableReason, weight, tutorialHighlight)
+  HASH_ALL(name, fullName, description, number, viewId, ids, actions, equiped, locked, pending, unavailable, slot, owner, type, price, productionState, unavailableReason, weight, tutorialHighlight, intrinsicState)
 };
 
 struct AttributeInfo {
@@ -88,9 +93,7 @@ class PlayerInfo {
   };
   LevelInfo HASH(levelInfo);
   string description;
-  string HASH(levelName);
   int HASH(positionHash);
-  string HASH(weaponName);
   struct Effect {
     string HASH(name);
     string HASH(help);
@@ -102,21 +105,16 @@ class PlayerInfo {
     SpellId HASH(id);
     string HASH(name);
     string HASH(help);
-    optional<int> HASH(timeout);
+    optional<TimeInterval> HASH(timeout);
     HASH_ALL(id, name, help, timeout)
   };
   vector<Spell> HASH(spells);
   vector<ItemInfo> HASH(lyingItems);
   vector<ItemInfo> HASH(inventory);
+  vector<ItemInfo> HASH(intrinsicAttacks);
   int HASH(debt);
-  struct TeamMemberInfo {
-    ViewId HASH(viewId);
-    int HASH(bestAttack);
-    bool HASH(active);
-    bool HASH(leader);
-    HASH_ALL(viewId, bestAttack, active, leader)
-  };
-  vector<TeamMemberInfo> HASH(team);
+  bool HASH(willMoveThisTurn);
+  vector<PlayerInfo> HASH(teamInfos);
   struct CommandInfo {
     string HASH(name);
     optional<char> HASH(keybinding);
@@ -135,8 +133,15 @@ class PlayerInfo {
   };
   vector<MinionTaskInfo> HASH(minionTasks);
   UniqueEntity<Creature>::Id HASH(creatureId);
+  int HASH(moveCounter);
   double HASH(morale);
   ViewId HASH(viewId);
+  bool HASH(isPlayerControlled);
+  enum ControlMode {
+    FULL,
+    LEADER
+  };
+  ControlMode HASH(controlMode);
   enum Action {
     CONTROL,
     RENAME,
@@ -144,7 +149,11 @@ class PlayerInfo {
     CONSUME
   };
   vector<Action> HASH(actions);
-  HASH_ALL(attributes, skills, firstName, name, title, levelInfo, levelName, positionHash, weaponName, effects, spells, lyingItems, inventory, team, minionTasks, creatureId, morale, viewId, actions, commands, debt, bestAttack)
+  vector<TeamMemberAction> HASH(teamMemberActions);
+  optional<double> HASH(carryLimit);
+  optional<ViewId> HASH(quarters);
+  bool HASH(canAssignQuarters);
+  HASH_ALL(attributes, skills, firstName, name, title, levelInfo, positionHash, effects, spells, lyingItems, inventory, minionTasks, creatureId, morale, viewId, actions, commands, debt, bestAttack, carryLimit, intrinsicAttacks, teamInfos, moveCounter, willMoveThisTurn, isPlayerControlled, controlMode, teamMemberActions, quarters, canAssignQuarters)
 };
 
 struct ImmigrantDataInfo {
@@ -154,8 +163,8 @@ struct ImmigrantDataInfo {
   string HASH(name);
   ViewId HASH(viewId);
   vector<AttributeInfo> HASH(attributes);
-  int HASH(count);
-  optional<double> HASH(timeLeft);
+  optional<int> HASH(count);
+  optional<TimeInterval> HASH(timeLeft);
   int HASH(id);
   enum AutoState { AUTO_REJECT, AUTO_ACCEPT};
   optional<ImmigrantAutoState> HASH(autoState);
@@ -167,6 +176,11 @@ struct ImmigrantDataInfo {
 
 class CollectiveInfo {
   public:
+  CollectiveInfo() {}
+  CollectiveInfo(const CollectiveInfo&) = delete;
+  CollectiveInfo(CollectiveInfo&&) = default;
+  CollectiveInfo& operator = (CollectiveInfo&&) = default;
+  CollectiveInfo& operator = (const CollectiveInfo&) = delete;
   string HASH(warning);
   struct Button {
     ViewId HASH(viewId);
@@ -285,12 +299,12 @@ class CollectiveInfo {
   struct NextWave {
     ViewId HASH(viewId);
     string HASH(attacker);
-    int HASH(numTurns);
+    TimeInterval HASH(numTurns);
     HASH_ALL(viewId, attacker, numTurns)
   };
   optional<NextWave> HASH(nextWave);
-
-  HASH_ALL(warning, buildings, minionCount, minionLimit, monsterHeader, minions, minionGroups, enemyGroups, chosenCreature, numResource, teams, nextPayout, payoutTimeRemaining, techButtons, taskMap, ransom, nextWave, chosenWorkshop, workshopButtons, immigration, allImmigration, libraryInfo)
+  vector<ViewId> HASH(allQuarters);
+  HASH_ALL(warning, buildings, minionCount, minionLimit, monsterHeader, minions, minionGroups, enemyGroups, chosenCreature, numResource, teams, nextPayout, payoutTimeRemaining, techButtons, taskMap, ransom, nextWave, chosenWorkshop, workshopButtons, immigration, allImmigration, libraryInfo, allQuarters)
 };
 
 class VillageInfo {
@@ -324,7 +338,7 @@ class VillageInfo {
 class GameSunlightInfo {
   public:
   string HASH(description);
-  int HASH(timeRemaining);
+  TimeInterval HASH(timeRemaining);
   HASH_ALL(description, timeRemaining)
 };
 
@@ -344,11 +358,16 @@ class TutorialInfo {
 class GameInfo {
   public:
   enum class InfoType { PLAYER, BAND, SPECTATOR} HASH(infoType) = InfoType::PLAYER;
-  int HASH(time);
+  GlobalTime HASH(time);
   int HASH(modifiedSquares);
   int HASH(totalSquares);
 
   bool HASH(singleModel);
+  GameInfo() {}
+  GameInfo(const GameInfo&) = delete;
+  GameInfo(GameInfo&&) = default;
+  GameInfo& operator = (const GameInfo&) = delete;
+  GameInfo& operator = (GameInfo&&) = default;
 
   variant<CollectiveInfo, PlayerInfo> HASH(playerInfo);
   VillageInfo HASH(villageInfo);

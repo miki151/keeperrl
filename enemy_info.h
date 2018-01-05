@@ -6,6 +6,9 @@
 #include "village_behaviour.h"
 #include "attack_trigger.h"
 
+struct EnemyInfo;
+class EnemyFactory;
+
 struct LevelConnection {
   enum Type {
     CRYPT,
@@ -16,6 +19,7 @@ struct LevelConnection {
   };
   Type type;
   HeapAllocated<EnemyInfo> otherEnemy;
+  bool deadInhabitants;
 };
 
 struct EnemyInfo {
@@ -24,6 +28,7 @@ struct EnemyInfo {
   EnemyInfo& setVillainType(VillainType type);
   EnemyInfo& setId(EnemyId);
   EnemyInfo& setNonDiscoverable();
+  EnemyInfo& setCreateOnBones(EnemyFactory&, double prob, vector<EnemyId>);
   SettlementInfo settlement;
   CollectiveConfig config;
   optional<VillageBehaviour> villain;

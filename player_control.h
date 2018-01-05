@@ -59,7 +59,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
 
   bool isTurnBased();
   void leaveControl();
-  bool swapTeam();
+  void teamMemberAction(TeamMemberAction, UniqueEntity<Creature>::Id);
   void toggleControlAllTeamMembers();
   void onControlledKilled(WConstCreature victim);
   void onSunlightVisibilityChanged();
@@ -70,6 +70,8 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
 
   vector<WCreature> getTeam(WConstCreature);
   optional<FurnitureType> getMissingTrainingDummy(WConstCreature);
+  bool canAddToTeam(WConstCreature);
+  void addToCurrentTeam(WCreature c);
 
   void onEvent(const GameEvent&);
   const vector<WCreature>& getControlled() const;
@@ -88,7 +90,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   virtual void refreshGameInfo(GameInfo&) const override;
   virtual Vec2 getPosition() const override;
   virtual vector<Vec2> getVisibleEnemies() const override;
-  virtual double getLocalTime() const override;
+  virtual double getAnimationTime() const override;
   virtual CenterType getCenterType() const override;
   virtual vector<Vec2> getUnknownLocations(WConstLevel) const override;
 
@@ -194,7 +196,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   };
   optional<SelectionInfo> rectSelection;
   void updateSelectionSquares();
-  double SERIAL(lastControlKeeperQuestion) = -100;
+  GlobalTime SERIAL(lastControlKeeperQuestion) = GlobalTime(-1000);
   optional<UniqueEntity<Creature>::Id> chosenCreature;
   void setChosenCreature(optional<UniqueEntity<Creature>::Id>);
   optional<WorkshopType> chosenWorkshop;
@@ -223,5 +225,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void acquireTech(int index);
   SMessageBuffer SERIAL(controlModeMessages);
   unordered_set<int> dismissedNextWaves;
+  ImmigrantDataInfo getPrisonerImmigrantData() const;
 };
 

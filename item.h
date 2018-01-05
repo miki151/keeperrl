@@ -21,6 +21,7 @@
 #include "renderable.h"
 #include "position.h"
 #include "owner_pointer.h"
+#include "game_time.h"
 
 class Level;
 class Attack;
@@ -29,6 +30,7 @@ class ItemAttributes;
 class Effect;
 struct CorpseInfo;
 class RangedWeapon;
+class WeaponInfo;
 
 class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<Item> {
   public:
@@ -45,13 +47,12 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
   string getNameAndModifiers(bool plural = false, WConstCreature owner = nullptr) const;
   const optional<string>& getArtifactName() const;
   void setArtifactName(const string&);
-  string getShortName(WConstCreature owner = nullptr, bool noSuffix = false) const;
+  string getShortName(WConstCreature owner, bool plural) const;
   string getPluralName(int count) const;
   string getPluralTheName(int count) const;
   string getPluralTheNameAndVerb(int count, const string& verbSingle, const string& verbPlural) const;
 
   const optional<Effect>& getEffect() const;
-  optional<Effect> getAttackEffect() const;
   ItemClass getClass() const;
   
   int getPrice() const;
@@ -69,7 +70,6 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
   void addModifier(AttrType, int value);
   int getModifier(AttrType) const;
   const optional<RangedWeapon>& getRangedWeapon() const;
-  AttrType getMeleeAttackAttr() const;
   void tick(Position);
   
   string getApplyMsgThirdPerson(WConstCreature owner) const;
@@ -86,13 +86,12 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
   void onHitSquareMessage(Position, int numItems);
   void onHitCreature(WCreature c, const Attack& attack, int numItems);
 
-  double getApplyTime() const;
+  TimeInterval getApplyTime() const;
   double getWeight() const;
   string getDescription() const;
 
-  AttackType getAttackType() const;
-  bool isWieldedTwoHanded() const;
-  int getMinStrength() const;
+  const WeaponInfo& getWeaponInfo() const;
+  void getAttackMsg(const Creature*, const string& enemyName) const;
 
   static ItemPredicate effectPredicate(Effect);
   static ItemPredicate classPredicate(ItemClass);
@@ -123,4 +122,5 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
   HeapAllocated<Fire> SERIAL(fire);
   bool SERIAL(canEquipCache);
   ItemClass SERIAL(classCache);
+  string getSuffix() const;
 };

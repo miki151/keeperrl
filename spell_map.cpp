@@ -10,15 +10,15 @@ void SpellMap::add(Spell* spell) {
 
 void SpellMap::add(SpellId id) {
   if (!elems[id])
-    elems[id] = -1.0;
+    elems[id] = GlobalTime(-10000);
 }
 
-double SpellMap::getReadyTime(Spell* spell) const {
+GlobalTime SpellMap::getReadyTime(Spell* spell) const {
   CHECK(contains(spell));
   return *elems[spell->getId()];
 }
 
-void SpellMap::setReadyTime(Spell* spell, double time) {
+void SpellMap::setReadyTime(Spell* spell, GlobalTime time) {
   elems[spell->getId()] = time;
 }
 

@@ -247,7 +247,7 @@ void Position::addCreature(PCreature c) {
   }
 }
 
-void Position::addCreature(PCreature c, double delay) {
+void Position::addCreature(PCreature c, TimeInterval delay) {
   if (isValid()) {
     WCreature ref = c.get();
     getModel()->addCreature(std::move(c), delay);

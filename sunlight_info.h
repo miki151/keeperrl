@@ -2,18 +2,20 @@
 
 enum class SunlightState { DAY, NIGHT};
 
+#include "game_time.h"
+
 class SunlightInfo {
   public:
   const char* getText() const;
   static const char* getText(SunlightState);
-  void update(double currentTime);
+  void update(GlobalTime currentTime);
   SunlightState getState() const;
   double getLightAmount() const;
-  double getTimeRemaining() const;
+  TimeInterval getTimeRemaining() const;
 
   private:
   double lightAmount;
-  double timeRemaining;
+  TimeInterval timeRemaining;
   SunlightState state;
 };
 

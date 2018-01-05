@@ -63,7 +63,7 @@ class GuiBuilder {
   int getItemLineOwnerMargin();
 
   SGuiElem getSunlightInfoGui(const GameSunlightInfo& sunlightInfo);
-  SGuiElem getTurnInfoGui(const int& turn);
+  SGuiElem getTurnInfoGui(const GlobalTime& turn);
   SGuiElem drawBottomPlayerInfo(const GameInfo&);
   SGuiElem drawRightPlayerInfo(const PlayerInfo&);
   SGuiElem drawPlayerInventory(const PlayerInfo&);
@@ -133,6 +133,7 @@ class GuiBuilder {
   void setMapGui(shared_ptr<MapGui>);
   void clearHint();
   ~GuiBuilder();
+  optional<int> chooseAtMouse(const vector<string>& elems);
 
   private:
   SGuiElem getImmigrationHelpText();
@@ -155,7 +156,7 @@ class GuiBuilder {
   SGuiElem drawMinionButtons(const vector<PlayerInfo>&, UniqueEntity<Creature>::Id current, optional<TeamId> teamId);
   SGuiElem minionButtonsCache;
   int minionButtonsHash = 0;
-  SGuiElem drawMinionPage(const PlayerInfo&, const optional<TutorialInfo>&);
+  SGuiElem drawMinionPage(const PlayerInfo&, const CollectiveInfo&, const optional<TutorialInfo>&);
   SGuiElem drawActivityButton(const PlayerInfo&);
   SGuiElem drawVillages(VillageInfo&);
   SGuiElem villagesCache;
@@ -168,7 +169,7 @@ class GuiBuilder {
   vector<SGuiElem> drawEffectsList(const PlayerInfo&);
   vector<SGuiElem> drawMinionActions(const PlayerInfo&, const optional<TutorialInfo>&);
   function<void()> getButtonCallback(UserInput);
-  void drawMiniMenu(GuiFactory::ListBuilder elems, bool& exit, Vec2 menuPos, int width);
+  void drawMiniMenu(GuiFactory::ListBuilder elems, bool& exit, Vec2 menuPos, int width, bool darkBg);
   void showAttackTriggers(const vector<VillageInfo::Village::TriggerInfo>&, Vec2 pos);
   SGuiElem getTextContent(const string& title, const string& value, const string& hint);
   SGuiElem getVillageActionButton(UniqueEntity<Collective>::Id, VillageInfo::Village::ActionInfo);
@@ -263,6 +264,8 @@ class GuiBuilder {
   SGuiElem drawMapHintOverlay();
   vector<string> hint;
   SGuiElem getExpIncreaseLine(const PlayerInfo::LevelInfo&, ExperienceType);
+  optional<int> highlightedTeamMember;
+  SGuiElem drawQuartersButton(const PlayerInfo&, const CollectiveInfo&);
 };
 
 RICH_ENUM(GuiBuilder::GameSpeed,

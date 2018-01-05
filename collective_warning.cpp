@@ -21,7 +21,7 @@ void CollectiveWarnings::setWarning(Warning w, bool state) {
 }
 
 void CollectiveWarnings::disable() {
-  lastWarningTime = 1000000000;
+  lastWarningTime = LocalTime(100000000);
 }
 
 void CollectiveWarnings::considerWarnings(WCollective col) {
@@ -29,12 +29,6 @@ void CollectiveWarnings::considerWarnings(WCollective col) {
   setWarning(Warning::DIGGING, col->getTerritory().isEmpty());
   /*setWarning(Warning::LIBRARY, !col->getTerritory().isEmpty() &&
       col->getConstructions().getTotalCount(FurnitureType::BOOKCASE) == 0);*/
-  for (SpawnType spawnType : ENUM_ALL(SpawnType)) {
-    DormInfo info = col->getConfig().getDormInfo()[spawnType];
-    if (info.warning)
-      setWarning(*info.warning, col->getConstructions().getBuiltCount(info.bedType) <
-          col->getCreatures(spawnType).size());
-  }
   considerMoraleWarning(col);
   considerWeaponWarning(col);
   considerTorchesWarning(col);
@@ -122,10 +116,10 @@ const char* CollectiveWarnings::getText(Warning w) {
   return "";
 }
 
-const double anyWarningFrequency = 100;
-const double warningFrequency = 500;
+const auto anyWarningFrequency = 100_visible;
+const auto warningFrequency = 500_visible;
 
-optional<const char*> CollectiveWarnings::getNextWarning(double time) {
+optional<const char*> CollectiveWarnings::getNextWarning(LocalTime time) {
   if (time > lastWarningTime + anyWarningFrequency)
     for (Warning w : ENUM_ALL(Warning))
       if (isWarning(w) && (!warningTimes[w] || time > *warningTimes[w] + warningFrequency)) {

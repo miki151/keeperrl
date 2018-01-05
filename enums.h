@@ -39,7 +39,6 @@ enum class CampaignType;
 enum class PlayerRole;
 
 enum class MovementTrait;
-enum class SpawnType;
 enum class CreatureSize;
 
 enum class SquareApplyType;
@@ -70,7 +69,7 @@ enum class StairLook;
 enum class SettlementType;
 enum class VillainType;
 enum class BiomeId;
-
+enum class ZoneId;
 enum class ViewId;
 
 enum class AnimationId;
@@ -94,3 +93,4 @@ enum class TutorialHighlight;
 enum class MessagePriority;
 enum class WorkshopType;
 enum class PlayerType;
+enum class CreatureStatus;

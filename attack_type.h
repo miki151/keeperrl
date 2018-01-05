@@ -5,13 +5,10 @@ RICH_ENUM(
     CUT,
     STAB,
     CRUSH,
-    PUNCH,
     BITE,
-    EAT,
     HIT,
     SHOOT,
-    SPELL,
-    POSSESS
+    SPELL
 );
 
 

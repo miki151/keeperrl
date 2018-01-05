@@ -11,6 +11,8 @@
 #include "furniture_factory.h"
 #include "furniture.h"
 #include "task_map.h"
+#include "quarters.h"
+#include "zones.h"
 
 static bool betterPos(Position from, Position current, Position candidate) {
   double maxDiff = 0.3;
@@ -100,6 +102,26 @@ optional<MinionTask> MinionTasks::getTaskFor(WConstCollective col, WConstCreatur
   return none;
 }
 
+static vector<Position> tryInQuarters(vector<Position> pos, WConstCollective collective, WConstCreature c) {
+  auto& quarters = collective->getQuarters();
+  auto& zones = collective->getZones();
+  auto index = quarters.getAssigned(c->getUniqueId());
+  auto inQuarters = pos.filter([&](Position pos) {
+    if (index)
+      return zones.isZone(pos, quarters.getAllQuarters()[*index].zone);
+    else {
+      for (auto& q : quarters.getAllQuarters())
+        if (zones.isZone(pos, q.zone))
+          return false;
+      return true;
+    }
+  });
+  if (!inQuarters.empty())
+    return inQuarters;
+  else
+    return pos;
+}
+
 vector<Position> MinionTasks::getAllPositions(WConstCollective collective, WConstCreature c, MinionTask task,
     bool onlyActive) {
   vector<Position> ret;
@@ -108,6 +130,10 @@ vector<Position> MinionTasks::getAllPositions(WConstCollective collective, WCons
     if (info.furniturePredicate(collective, c, furnitureType) &&
         (!onlyActive || info.activePredicate(collective, furnitureType)))
       append(ret, collective->getConstructions().getBuiltPositions(furnitureType));
+  if (c) {
+    ret = ret.filter([c](Position pos) { return c->canNavigateTo(pos); });
+    ret = tryInQuarters(ret, collective, c);
+  }
   return ret;
 }
 
@@ -140,7 +166,7 @@ PTask MinionTasks::generate(WCollective collective, WCreature c, MinionTask task
     case MinionTaskInfo::ARCHERY: {
       auto pos = collective->getConstructions().getBuiltPositions(FurnitureType::ARCHERY_RANGE);
       if (!pos.empty())
-        return Task::archeryRange(collective, vector<Position>(pos.begin(), pos.end()));
+        return Task::archeryRange(collective, tryInQuarters(vector<Position>(pos.begin(), pos.end()), collective, c));
       else
         return nullptr;
     }
@@ -155,12 +181,12 @@ PTask MinionTasks::generate(WCollective collective, WCreature c, MinionTask task
     case MinionTaskInfo::EAT: {
       const set<Position>& hatchery = collective->getConstructions().getBuiltPositions(FurnitureType::PIGSTY);
       if (!hatchery.empty())
-        return Task::eat(hatchery);
+        return Task::eat(tryInQuarters(vector<Position>(hatchery.begin(), hatchery.end()), collective, c));
       break;
       }
     case MinionTaskInfo::SPIDER: {
       auto& territory = collective->getTerritory();
-      return Task::spider(territory.getAll().front(), territory.getExtended(3), territory.getExtended(2, 10));
+      return Task::spider(territory.getAll().front(), territory.getExtended(3));
     }
     default:
       return nullptr;
@@ -168,16 +194,14 @@ PTask MinionTasks::generate(WCollective collective, WCreature c, MinionTask task
   return nullptr;
 }
 
-optional<double> MinionTasks::getDuration(WConstCreature c, MinionTask task) {
+optional<TimeInterval> MinionTasks::getDuration(WConstCreature c, MinionTask task) {
   switch (task) {
     case MinionTask::COPULATE:
-    case MinionTask::GRAVE:
-    case MinionTask::LAIR:
     case MinionTask::EAT:
     case MinionTask::BE_WHIPPED:
     case MinionTask::BE_TORTURED:
     case MinionTask::SLEEP: return none;
-    default: return 500 + 250 * c->getMorale();
+    default: return TimeInterval((int) 500 + 250 * c->getMorale());
   }
 }
 

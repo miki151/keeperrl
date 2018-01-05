@@ -36,6 +36,9 @@ PTask VillageBehaviour::getAttackTask(VillageControl* self) {
     case AttackBehaviourId::CAMP_AND_SPAWN:
       return Task::campAndSpawn(enemy,
             attackBehaviour->get<CreatureFactory>(), Random.get(3, 7), Range(3, 7), Random.get(3, 7));
+    case AttackBehaviourId::HALLOWEEN_KIDS:
+      FATAL << "Not handled";
+      return {};
   }
 }
 
@@ -144,7 +147,7 @@ double VillageBehaviour::getTriggerValue(const Trigger& trigger, const VillageCo
   if (WCollective collective = self->getEnemyCollective())
     switch (trigger.getId()) {
       case AttackTriggerId::TIMER: 
-        return collective->getGlobalTime() >= trigger.get<int>() ? timerProb : 0;
+        return collective->getGlobalTime().getVisibleInt() >= trigger.get<int>() ? timerProb : 0;
       case AttackTriggerId::ROOM_BUILT:
         if (trigger.get<FurnitureType>() ==FurnitureType::DEMON_SHRINE)
           {//Demon shrines actually decrease probability of demon attacks, not increase it

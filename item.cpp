@@ -33,6 +33,7 @@
 #include "attr_type.h"
 #include "attack.h"
 #include "lasting_effect.h"
+#include "creature_name.h"
 
 template <class Archive> 
 void Item::serialize(Archive& ar, const unsigned int version) {
@@ -147,7 +148,7 @@ void Item::onHitCreature(WCreature c, const Attack& attack, int numItems) {
   }
 }
 
-double Item::getApplyTime() const {
+TimeInterval Item::getApplyTime() const {
   return attributes->applyTime;
 }
 
@@ -156,7 +157,20 @@ double Item::getWeight() const {
 }
 
 string Item::getDescription() const {
-  return attributes->description;
+  if (!attributes->description.empty())
+    return attributes->description;
+  else if (auto& effect = attributes->effect)
+    return effect->getDescription();
+  else if (auto& effect = getWeaponInfo().attackEffect)
+    return effect->getDescription();
+  else if (auto& effect = attributes->equipedEffect)
+    return LastingEffects::getDescription(*effect);
+  else
+    return "";
+}
+
+const WeaponInfo& Item::getWeaponInfo() const {
+  return attributes->weaponInfo;
 }
 
 ItemClass Item::getClass() const {
@@ -327,13 +341,24 @@ void Item::setArtifactName(const string& s) {
   attributes->artifactName = s;
 }
 
-string Item::getModifiers(bool shorten) const {
+static void appendWithSpace(string& s, const string& suf) {
+  if (!s.empty() && !suf.empty())
+    s += " ";
+  s += suf;
+}
+
+string Item::getSuffix() const {
   string artStr;
-  if (attributes->artifactName) {
-    artStr = *attributes->artifactName;
-    if (!shorten)
-      artStr = " named " + artStr;
-  }
+  if (auto& effect = getWeaponInfo().attackEffect)
+    artStr += "of " + effect->getName();
+  if (attributes->artifactName)
+    appendWithSpace(artStr, "named " + *attributes->artifactName);
+  if (fire->isBurning())
+    appendWithSpace(artStr, "(burning)");
+  return artStr;
+}
+
+string Item::getModifiers(bool shorten) const {
   EnumSet<AttrType> printAttr;
   if (!shorten) {
     for (auto attr : ENUM_ALL(AttrType))
@@ -345,7 +370,7 @@ string Item::getModifiers(bool shorten) const {
         printAttr.insert(getRangedWeapon()->getDamageAttr());
         break;
       case ItemClass::WEAPON:
-        printAttr.insert(attributes->meleeAttackAttr);
+        printAttr.insert(getWeaponInfo().meleeAttackAttr);
         break;
       case ItemClass::ARMOR:
         printAttr.insert(AttrType::DEFENSE);
@@ -357,25 +382,28 @@ string Item::getModifiers(bool shorten) const {
     attrStrings.push_back(withSign(attributes->modifiers[attr]) + (shorten ? "" : " " + ::getName(attr)));
   string attrString = combine(attrStrings, true);
   if (!attrString.empty())
-    attrString = " (" + attrString + ")";
+    attrString = "(" + attrString + ")";
   if (attributes->uses > -1 && attributes->displayUses) 
-    attrString += " (" + toString(attributes->uses) + " uses left)";
-  return artStr + attrString;
+    appendWithSpace(attrString, "(" + toString(attributes->uses) + " uses left)");
+  return attrString;
 }
 
-string Item::getShortName(WConstCreature owner, bool noSuffix) const {
+string Item::getShortName(WConstCreature owner, bool plural) const {
   if (owner && owner->isAffected(LastingEffect::BLIND) && attributes->blindName)
-    return getBlindName(false);
-  string name = getModifiers(true);
-  if (attributes->shortName && !attributes->artifactName)
-    name = *attributes->shortName + " " + name;
-  if (fire->isBurning() && !noSuffix)
-    name.append(" (burning)");
+    return getBlindName(plural);
+  if (attributes->artifactName)
+    return *attributes->artifactName + " " + getModifiers(true);
+  string name = getVisibleName(plural);
+  appendWithSpace(name, getSuffix());
+  appendWithSpace(name, getModifiers(true));
   return name;
 }
 
 string Item::getNameAndModifiers(bool getPlural, WConstCreature owner) const {
-  return getName(getPlural, owner) + getModifiers();
+  auto ret = getName(getPlural, owner);
+  appendWithSpace(ret, getSuffix());
+  appendWithSpace(ret, getModifiers());
+  return ret;
 }
 
 string Item::getBlindName(bool plural) const {
@@ -391,10 +419,6 @@ bool Item::isDiscarded() {
 
 const optional<Effect>& Item::getEffect() const {
   return attributes->effect;
-}
-
-optional<Effect> Item::getAttackEffect() const {
-  return attributes->attackEffect;
 }
 
 bool Item::canEquip() const {
@@ -420,23 +444,41 @@ const optional<RangedWeapon>& Item::getRangedWeapon() const {
   return attributes->rangedWeapon;
 }
 
-AttrType Item::getMeleeAttackAttr() const {
-  return attributes->meleeAttackAttr;
-}
- 
-AttackType Item::getAttackType() const {
-  return attributes->attackType;
-}
-
-bool Item::isWieldedTwoHanded() const {
-  return attributes->twoHanded;
-}
-
-int Item::getMinStrength() const {
-  return 10 + getWeight();
-}
-
 optional<CorpseInfo> Item::getCorpseInfo() const {
   return none;
 }
 
+void Item::getAttackMsg(const Creature* c, const string& enemyName) const {
+  auto weaponInfo = getWeaponInfo();
+  auto swingMsg = [&] (const char* verb) {
+    c->secondPerson("You "_s + verb + " your " + getName() + " at " + enemyName);
+    c->thirdPerson(c->getName().the() + " " + verb + "s his " + getName() + " at " + enemyName);
+  };
+  auto biteMsg = [&] (const char* verb2, const char* verb3) {
+    c->secondPerson("You "_s + verb2 + " " + enemyName);
+    c->thirdPerson(c->getName().the() + " " + verb3 + " " + enemyName);
+  };
+  switch (weaponInfo.attackMsg) {
+    case AttackMsg::SWING:
+      swingMsg("swing");
+      break;
+    case AttackMsg::THRUST:
+      swingMsg("thrust");
+      break;
+    case AttackMsg::WAVE:
+      swingMsg("wave");
+      break;
+    case AttackMsg::KICK:
+      biteMsg("kick", "kicks");
+      break;
+    case AttackMsg::BITE:
+      biteMsg("bite", "bites");
+      break;
+    case AttackMsg::TOUCH:
+      biteMsg("touch", "touches");
+      break;
+    case AttackMsg::CLAW:
+      biteMsg("claw", "claws");
+      break;
+  }
+}

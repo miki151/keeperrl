@@ -434,12 +434,12 @@ class EnumMap {
   }
 
   const U& operator[](T elem) const {
-    CHECK(int(elem) >= 0 && int(elem) < EnumInfo<T>::size);
+    CHECK(int(elem) >= 0 && int(elem) < EnumInfo<T>::size) << int(elem);
     return elems[int(elem)];
   }
 
   U& operator[](T elem) {
-    CHECK(int(elem) >= 0 && int(elem) < EnumInfo<T>::size);
+    CHECK(int(elem) >= 0 && int(elem) < EnumInfo<T>::size) << int(elem);
     return elems[int(elem)];
   }
 
@@ -1333,6 +1333,7 @@ class HeapAllocated {
   HeapAllocated(T&& o) : elem(new T(std::move(o))) {}
 
   HeapAllocated(const HeapAllocated& o) : elem(new T(*o)) {}
+  HeapAllocated(HeapAllocated&& o) : elem(std::move(o.elem)) {}
 
   T* operator -> () {
     return elem.get();

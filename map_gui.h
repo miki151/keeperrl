@@ -38,7 +38,7 @@ class MapGui : public GuiElem {
     function<void(Vec2)> continuousLeftClickFun;
     function<void(Vec2)> leftClickFun;
     function<void(Vec2)> rightClickFun;
-    function<void(UniqueEntity<Creature>::Id)> creatureClickFun;
+    function<void(UniqueEntity<Creature>::Id, Vec2)> creatureClickFun;
     function<void()> refreshFun;
     function<void(UniqueEntity<Creature>::Id, ViewId, Vec2)> creatureDragFun;
     function<void(UniqueEntity<Creature>::Id, Vec2)> creatureDroppedFun;
@@ -108,6 +108,7 @@ class MapGui : public GuiElem {
   struct CreatureInfo {
     UniqueEntity<Creature>::Id id;
     ViewId viewId;
+    Vec2 position;
   };
   optional<CreatureInfo> getCreature(Vec2 mousePos);
   void considerContinuousLeftClick(Vec2 mousePos);
@@ -146,7 +147,7 @@ class MapGui : public GuiElem {
   struct ScreenMovement {
     milliseconds startTimeReal;
     milliseconds endTimeReal;
-    double startTimeGame;
+    int moveCounter;
   };
   optional<ScreenMovement> screenMovement;
   Table<EnumSet<ViewId>> connectionMap;
@@ -162,7 +163,7 @@ class MapGui : public GuiElem {
   optional<ViewId> getHighlightedFurniture();
   Color getHighlightColor(const ViewIndex&, HighlightType);
   void renderHighlight(Renderer& renderer, Vec2 pos, Vec2 size, const ViewIndex& index, HighlightType highlight);
-  void renderTexturedHighlight(Renderer&, Vec2 pos, Vec2 size, Color);
+  void renderTexturedHighlight(Renderer&, Vec2 pos, Vec2 size, Color, ViewId viewId);
   void processScrolling(milliseconds);
   void considerScrollingToCreature();
   GuiFactory* guiFactory;
@@ -171,7 +172,8 @@ class MapGui : public GuiElem {
   vector<Vec2> tutorialHighlightLow;
   vector<Vec2> tutorialHighlightHigh;
   void drawHealthBar(Renderer&, Vec2 pos, Vec2 size, double health);
-  double lastEndTimeGame = -1000;
+  int lastMoveCounter = -1000;
+  int currentMoveCounter = -1000;
   double getDistanceToEdgeRatio(Vec2);
   struct CenteredCreatureInfo {
     Vec2 pos;

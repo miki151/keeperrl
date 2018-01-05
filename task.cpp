@@ -148,7 +148,7 @@ class Destruction : public Task {
   public:
   Destruction(WTaskCallback c, Position pos, WConstFurniture furniture, DestroyAction action)
       : Task(true), position(pos), callback(c), destroyAction(action),
-        description(action.getVerbSecondPerson() + " "_s + furniture->getName()),
+        description(action.getVerbSecondPerson() + " "_s + furniture->getName() + " at " + toString(position)),
         furnitureType(furniture->getType()) {}
 
   WConstFurniture getFurniture() const {
@@ -160,6 +160,10 @@ class Destruction : public Task {
       if (furniture->canDestroy(destroyAction))
         return false;
     return true;
+  }
+
+  virtual bool isBlocked(WCreature) const override {
+    return !callback->isConstructionReachable(position);
   }
 
   virtual string getDescription() const override {
@@ -357,20 +361,26 @@ PTask Task::equipItem(WItem item) {
   return makeOwner<EquipItem>(item);
 }
 
-static Position chooseRandomClose(Position start, const vector<Position>& squares, Task::SearchType type) {
-  CHECK(!squares.empty());
+static optional<Position> chooseRandomClose(WCreature c, const vector<Position>& squares, Task::SearchType type) {
   int minD = 10000;
   int margin = type == Task::LAZY ? 0 : 3;
   vector<Position> close;
+  auto start = c->getPosition();
   for (Position v : squares)
-    minD = min(minD, v.dist8(start));
+    if (c->canNavigateTo(v))
+      minD = min(minD, v.dist8(start));
   for (Position v : squares)
-    if (v.dist8(start) <= minD + margin)
+    if (c->canNavigateTo(v) && v.dist8(start) <= minD + margin)
       close.push_back(v);
-  if (close.empty())
-    return Random.choose(squares);
-  else
+  if (!close.empty())
     return Random.choose(close);
+  else {
+    auto all = squares.filter([&](auto pos) { return c->canNavigateTo(pos); });
+    if (!all.empty())
+      return Random.choose(all);
+    else
+      return none;
+  }
 }
 
 class BringItem : public PickItem {
@@ -405,11 +415,7 @@ class BringItem : public PickItem {
   }
 
   optional<Position> getBestTarget(WCreature c, const vector<Position>& pos) const {
-    vector<Position> available = pos.filter([c](const Position& pos) { return c->isSameSector(pos); });
-    if (!available.empty())
-      return chooseRandomClose(c->getPosition(), available, LAZY);
-    else
-      return none;
+    return chooseRandomClose(c, pos, LAZY);
   }
 
   virtual MoveInfo getMove(WCreature c) override {
@@ -519,10 +525,7 @@ class ApplySquare : public Task {
       if (!rejectedPosition.count(pos))
         candidates.push_back(pos);
     }
-    if (!candidates.empty())
-      return chooseRandomClose(c->getPosition(), candidates, searchType);
-    else
-      return none;
+    return chooseRandomClose(c, candidates, searchType);
   }
 
   virtual MoveInfo getMove(WCreature c) override {
@@ -647,22 +650,26 @@ class ArcheryRange : public Task {
 
   optional<ShootInfo> getShootInfo(WCreature c) {
     const int distance = 5;
-    auto getDir = [&](Position pos) -> optional<Vec2> {
+    auto getDir = [&](Position target) -> optional<ShootInfo> {
       for (Vec2 dir : Vec2::directions4(Random)) {
         bool ok = true;
         for (int i : Range(distance))
-          if (pos.minus(dir * (i + 1)).stopsProjectiles(c->getVision().getId())) {
+          if (target.minus(dir * (i + 1)).stopsProjectiles(c->getVision().getId())) {
             ok = false;
             break;
           }
-        if (ok)
-          return dir;
+        auto pos = target.minus(dir * distance);
+        if (ok && c->isSameSector(pos))
+          return ShootInfo{pos, target, dir};
       }
       return none;
     };
+    map<Position, vector<ShootInfo>> shootPositions;
     for (auto pos : Random.permutation(targets))
       if (auto dir = getDir(pos))
-        return ShootInfo{ pos.minus(*dir * distance), pos, *dir };
+        shootPositions[dir->pos].push_back(*dir);
+    if (auto chosen = chooseRandomClose(c, getKeys(shootPositions), Task::RANDOM_CLOSE))
+      return Random.choose(shootPositions.at(*chosen));
     return none;
   }
 };
@@ -932,7 +939,7 @@ class CampAndSpawn : public Task {
     updateTeams();
     if (defenseTeam.size() < defenseSize && Random.roll(5)) {
       for (WCreature summon : Effect::summonCreatures(c, 4,
-          makeVec(spawns.random(MonsterAIFactory::summoned(c, 100000)))))
+          makeVec(spawns.random(MonsterAIFactory::summoned(c)))))
         defenseTeam.push_back(summon);
     }
     if (!campPos.contains(c->getPosition()))
@@ -1140,7 +1147,7 @@ namespace {
 
 class Eat : public Task {
   public:
-  Eat(set<Position> pos) : positions(pos) {}
+  Eat(vector<Position> pos) : positions(pos) {}
 
   virtual bool canTransfer() override {
     return false;
@@ -1202,13 +1209,13 @@ class Eat : public Task {
 
   private:
   optional<Position> SERIAL(position);
-  set<Position> SERIAL(positions);
+  vector<Position> SERIAL(positions);
   set<Position> SERIAL(rejectedPosition);
 };
 
 }
 
-PTask Task::eat(set<Position> hatcherySquares) {
+PTask Task::eat(vector<Position> hatcherySquares) {
   return makeOwner<Eat>(hatcherySquares);
 }
 
@@ -1254,6 +1261,10 @@ class TransferTo : public Task {
   TransferTo(WModel m) : model(m) {}
 
   virtual MoveInfo getMove(WCreature c) override {
+    if (c->getPosition().getModel() == model) {
+      setDone();
+      return NoMove;
+    }
     if (!target)
       target = c->getGame()->getTransferPos(model, c->getPosition().getModel());
     if (c->getPosition() == target && c->getGame()->canTransferCreature(c, model)) {
@@ -1282,7 +1293,7 @@ PTask Task::transferTo(WModel m) {
 namespace {
 class GoToAndWait : public Task {
   public:
-  GoToAndWait(Position pos, double waitT) : position(pos), waitTime(waitT) {}
+  GoToAndWait(Position pos, TimeInterval waitT) : position(pos), waitTime(waitT) {}
 
   bool arrived(WCreature c) {
     return c->getPosition() == position ||
@@ -1302,7 +1313,7 @@ class GoToAndWait : public Task {
       auto ret = c->moveTowards(position);
       if (!ret) {
         if (!timeout)
-          timeout = c->getLocalTime() + 30;
+          timeout = *c->getLocalTime() + 30_visible;
         else
           if (c->getLocalTime() > *timeout) {
             setDone();
@@ -1313,7 +1324,7 @@ class GoToAndWait : public Task {
       return ret;
     } else {
       if (!maxTime)
-        maxTime = c->getLocalTime() + waitTime;
+        maxTime = *c->getLocalTime() + waitTime;
       return c->wait();
     }
   }
@@ -1327,13 +1338,13 @@ class GoToAndWait : public Task {
 
   private:
   Position SERIAL(position);
-  double SERIAL(waitTime);
-  optional<double> SERIAL(maxTime);
-  optional<double> SERIAL(timeout);
+  TimeInterval SERIAL(waitTime);
+  optional<LocalTime> SERIAL(maxTime);
+  optional<LocalTime> SERIAL(timeout);
 };
 }
 
-PTask Task::goToAndWait(Position pos, double waitTime) {
+PTask Task::goToAndWait(Position pos, TimeInterval waitTime) {
   return makeOwner<GoToAndWait>(pos, waitTime);
 }
 
@@ -1402,15 +1413,15 @@ PTask Task::dropItems(vector<WItem> items) {
 namespace {
 class Spider : public Task {
   public:
-  Spider(Position orig, const vector<Position>& pos, const vector<Position>& pos2)
-      : origin(orig), positionsClose(pos), positionsFurther(pos2) {}
+  Spider(Position orig, const vector<Position>& pos)
+      : origin(orig), webPositions(pos) {}
 
   virtual MoveInfo getMove(WCreature c) override {
     auto layer = Furniture::getLayer(FurnitureType::SPIDER_WEB);
-    for (auto pos : positionsFurther)
+    for (auto pos : webPositions)
       if (!pos.getFurniture(layer))
         pos.addFurniture(FurnitureFactory::get(FurnitureType::SPIDER_WEB, c->getTribeId()));
-    for (auto& pos : Random.permutation(positionsFurther))
+    for (auto& pos : Random.permutation(webPositions))
       if (pos.getCreature() && pos.getCreature()->isAffected(LastingEffect::ENTANGLED)) {
         attackPosition = pos;
         break;
@@ -1429,19 +1440,18 @@ class Spider : public Task {
     return "Spider";
   }
 
-  SERIALIZE_ALL(SUBCLASS(Task), origin, positionsClose, positionsFurther, attackPosition)
+  SERIALIZE_ALL(SUBCLASS(Task), origin, webPositions, attackPosition)
   SERIALIZATION_CONSTRUCTOR(Spider)
 
   protected:
   Position SERIAL(origin);
-  vector<Position> SERIAL(positionsClose);
-  vector<Position> SERIAL(positionsFurther);
+  vector<Position> SERIAL(webPositions);
   optional<Position> SERIAL(attackPosition);
 };
 }
 
-PTask Task::spider(Position origin, const vector<Position>& posClose, const vector<Position>& posFurther) {
-  return makeOwner<Spider>(origin, posClose, posFurther);
+PTask Task::spider(Position origin, const vector<Position>& posClose) {
+  return makeOwner<Spider>(origin, posClose);
 }
 
 REGISTER_TYPE(Construction)

@@ -9,8 +9,8 @@ CreatureAction::CreatureAction(const string& msg)
 }
 
 void CreatureAction::perform(WCreature c) {
-  CHECK(c == performer);
   CHECK(action);
+  CHECK(c == performer);
   action(c);
 }
 

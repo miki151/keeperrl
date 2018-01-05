@@ -14,6 +14,7 @@
 #include "container_range.h"
 #include "monster.h"
 #include "view_object.h"
+#include "territory.h"
 
 SERIALIZE_DEF(ExternalEnemies, currentWaves, waves, nextWave)
 SERIALIZATION_CONSTRUCTOR_IMPL(ExternalEnemies)
@@ -33,7 +34,7 @@ ExternalEnemies::ExternalEnemies(RandomGen& random, vector<ExternalEnemy> enemie
         --enemy.maxOccurences;
         waves.push_back(EnemyEvent{
             enemy,
-            attackTime,
+            LocalTime(attackTime),
             enemy.creatures.getViewId()
         });
         waves.back().enemy.creatures.increaseBaseLevel({{ExperienceType::MELEE, max(0, attackTime / 1000 - 10)}});
@@ -54,6 +55,13 @@ PTask ExternalEnemies::getAttackTask(WCollective enemy, AttackBehaviour behaviou
     case AttackBehaviourId::CAMP_AND_SPAWN:
       return Task::campAndSpawn(enemy,
             behaviour.get<CreatureFactory>(), Random.get(3, 7), Range(3, 7), Random.get(3, 7));
+    case AttackBehaviourId::HALLOWEEN_KIDS: {
+      auto nextToDoor = enemy->getTerritory().getExtended(2, 4);
+      if (nextToDoor.empty())
+        return Task::goToTryForever(enemy->getLeader()->getPosition());
+      else
+        return Task::goToTryForever(Random.choose(nextToDoor));
+    }
   }
 }
 
@@ -71,7 +79,7 @@ void ExternalEnemies::updateCurrentWaves(WCollective target) {
     }
 }
 
-void ExternalEnemies::update(WLevel level, double localTime) {
+void ExternalEnemies::update(WLevel level, LocalTime localTime) {
   WCollective target = level->getModel()->getGame()->getPlayerCollective();
   CHECK(!!target);
   updateCurrentWaves(target);
@@ -79,15 +87,18 @@ void ExternalEnemies::update(WLevel level, double localTime) {
     vector<WCreature> attackers;
     Vec2 landingDir(Random.choose<Dir>());
     auto creatures = nextWave->enemy.creatures.generate(Random, TribeId::getHuman(),
-        MonsterAIFactory::singleTask(getAttackTask(target, nextWave->enemy.behaviour)));
+        MonsterAIFactory::singleTask(getAttackTask(target, nextWave->enemy.behaviour),
+            nextWave->enemy.behaviour.getId() != AttackBehaviourId::HALLOWEEN_KIDS));
     for (auto& c : creatures) {
       c->getAttributes().setCourage(1);
       auto ref = c.get();
       if (level->landCreature(StairKey::transferLanding(), std::move(c), landingDir))
         attackers.push_back(ref);
     }
-    target->addAttack(CollectiveAttack(nextWave->enemy.name, attackers));
-    currentWaves.push_back(CurrentWave{nextWave->enemy.name, attackers});
+    if (nextWave->enemy.behaviour.getId() != AttackBehaviourId::HALLOWEEN_KIDS) {
+      target->addAttack(CollectiveAttack(nextWave->enemy.name, attackers));
+      currentWaves.push_back(CurrentWave{nextWave->enemy.name, attackers});
+    }
   }
 }
 
@@ -102,7 +113,7 @@ int ExternalEnemies::getNextWaveIndex() const {
   return nextWave;
 }
 
-optional<EnemyEvent> ExternalEnemies::popNextWave(double localTime) {
+optional<EnemyEvent> ExternalEnemies::popNextWave(LocalTime localTime) {
   if (nextWave < waves.size() && waves[nextWave].attackTime <= localTime) {
     return waves[nextWave++];
   } else

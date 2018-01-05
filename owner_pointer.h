@@ -13,7 +13,7 @@ class OwnerPointer {
   public:
 
   template <typename U>
-  OwnerPointer(OwnerPointer<U>&& o) : elem(std::move(o.elem)) {
+  OwnerPointer(OwnerPointer<U>&& o) noexcept : elem(std::move(o.elem)) {
   }
 
   OwnerPointer() {}

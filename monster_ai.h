@@ -18,6 +18,7 @@
 #include "creature_action.h"
 #include "position.h"
 #include "file_path.h"
+#include "game_time.h"
 
 class Creature;
 
@@ -58,8 +59,7 @@ class MonsterAIFactory {
   static MonsterAIFactory stayInLocation(Rectangle, bool moveRandomly = true);
   static MonsterAIFactory wildlifeNonPredator();
   static MonsterAIFactory scavengerBird(Position corpsePos);
-  static MonsterAIFactory summoned(WCreature, int ttl);
-  static MonsterAIFactory dieTime(double time);
+  static MonsterAIFactory summoned(WCreature);
   static MonsterAIFactory moveRandomly();
   static MonsterAIFactory stayOnFurniture(FurnitureType);
   static MonsterAIFactory guard();

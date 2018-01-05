@@ -7,7 +7,10 @@ RICH_ENUM(ZoneId,
   FETCH_ITEMS,
   PERMANENT_FETCH_ITEMS,
   STORAGE_EQUIPMENT,
-  STORAGE_RESOURCES
+  STORAGE_RESOURCES,
+  QUARTERS1,
+  QUARTERS2,
+  QUARTERS3
 );
 
 class Position;
@@ -22,6 +25,7 @@ class Zones {
   void eraseZones(Position);
   const set<Position>& getPositions(ZoneId) const;
   void setHighlights(Position, ViewIndex&) const;
+  bool canSet(Position, ZoneId, WConstCollective) const;
   void tick();
 
   template <class Archive>

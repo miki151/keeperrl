@@ -31,6 +31,7 @@
 #include "tutorial.h"
 #include "settlement_info.h"
 #include "enemy_info.h"
+#include "game_time.h"
 
 using namespace std::chrono;
 
@@ -55,7 +56,7 @@ int ModelBuilder::getThronePopulationIncrease() {
 
 static CollectiveConfig getKeeperConfig(RandomGen& random, bool fastImmigration, bool regenerateMana) {
   return CollectiveConfig::keeper(
-      fastImmigration ? 10 : 140,
+      TimeInterval(fastImmigration ? 10 : 140),
       10,
       regenerateMana,
       {
@@ -80,6 +81,9 @@ static CollectiveConfig getKeeperConfig(RandomGen& random, bool fastImmigration,
           .setNoAuto()
           .setInitialRecruitment(4)
           .addRequirement(ExponentialCost{ CostInfo(CollectiveResourceId::GOLD, 6), 5, 4 }),
+      ImmigrantInfo(CreatureId::PRISONER, {MinionTrait::WORKER, MinionTrait::NO_LIMIT, MinionTrait::NO_EQUIPMENT})
+          .addRequirement(AttractionInfo{2, FurnitureType::PRISON})
+          .addRequirement(CivilianCapture{}),
       ImmigrantInfo(CreatureId::GOBLIN, {MinionTrait::FIGHTER, MinionTrait::NO_EQUIPMENT})
           .setFrequency(0.7)
           .addRequirement(0.1, AttractionInfo{1, vector<AttractionType>(
@@ -199,6 +203,10 @@ SettlementInfo& ModelBuilder::makeExtraLevel(WModel model, EnemyInfo& enemy) {
                   c.upStairs = {upLink};
                   c.downStairs = {downLink};
                   c.furniture = FurnitureFactory(TribeId::getHuman(), FurnitureType::GROUND_TORCH);
+                  if (enemy.levelConnection->deadInhabitants) {
+                    c.corpses = c.inhabitants;
+                    c.inhabitants = InhabitantsInfo{};
+                  }
                   c.buildingId = BuildingId::BRICK;)));
         downLink = upLink;
       }
@@ -259,7 +267,7 @@ SettlementInfo& ModelBuilder::makeExtraLevel(WModel model, EnemyInfo& enemy) {
 }
 
 PModel ModelBuilder::singleMapModel(const string& worldName) {
-  return tryBuilding(10, [&] { return trySingleMapModel(worldName);});
+  return tryBuilding(10, [&] { return trySingleMapModel(worldName);}, "single map");
 }
 
 PModel ModelBuilder::trySingleMapModel(const string& worldName) {
@@ -269,7 +277,8 @@ PModel ModelBuilder::trySingleMapModel(const string& worldName) {
   for (int i : Range(random.get(1, 3)))
     enemies.push_back(enemyFactory->get(EnemyId::KOBOLD_CAVE));
   for (int i : Range(random.get(1, 3)))
-    enemies.push_back(enemyFactory->get(EnemyId::BANDITS).setVillainType(VillainType::LESSER));
+    enemies.push_back(enemyFactory->get(random.choose({EnemyId::BANDITS, EnemyId::COTTAGE_BANDITS}, {3, 1}))
+        .setVillainType(VillainType::LESSER));
   enemies.push_back(enemyFactory->get(random.choose(EnemyId::GNOMES, EnemyId::DARK_ELVES)).setVillainType(VillainType::ALLY));
   append(enemies, enemyFactory->getVaults());
   if (random.roll(4))
@@ -306,6 +315,8 @@ void ModelBuilder::addMapVillains(vector<EnemyInfo>& enemyInfo, BiomeId biomeId)
     case BiomeId::GRASSLAND:
       for (int i : Range(random.get(3, 5)))
         enemyInfo.push_back(enemyFactory->get(EnemyId::HUMAN_COTTAGE));
+      if (random.roll(2))
+        enemyInfo.push_back(enemyFactory->get(EnemyId::COTTAGE_BANDITS));
       break;
     case BiomeId::MOUNTAIN:
       for (int i : Range(random.get(1, 4)))
@@ -325,7 +336,7 @@ PModel ModelBuilder::tryCampaignBaseModel(const string& siteName, bool addExtern
   BiomeId biome = BiomeId::MOUNTAIN;
   enemyInfo.push_back(random.choose(enemyFactory->get(EnemyId::DWARF_CAVE), enemyFactory->get(EnemyId::KOBOLD_CAVE)));
   enemyInfo.push_back(enemyFactory->get(EnemyId::BANDITS));
-  enemyInfo.push_back(enemyFactory->get(EnemyId::TUTORIAL_VILLAGE));
+  enemyInfo.push_back(enemyFactory->get(EnemyId::TUTORIAL_VILLAGE).setVillainType(VillainType::LESSER));
   if (random.chance(0.3))
     enemyInfo.push_back(enemyFactory->get(EnemyId::KRAKEN));
   optional<ExternalEnemies> externalEnemies;
@@ -337,50 +348,43 @@ PModel ModelBuilder::tryCampaignBaseModel(const string& siteName, bool addExtern
 PModel ModelBuilder::tryTutorialModel(const string& siteName) {
   vector<EnemyInfo> enemyInfo;
   BiomeId biome = BiomeId::MOUNTAIN;
+  enemyInfo.push_back(enemyFactory->get(EnemyId::BANDITS));
   enemyInfo.push_back(enemyFactory->get(EnemyId::TUTORIAL_VILLAGE).setVillainType(VillainType::LESSER));
   return tryModel(230, siteName, enemyInfo, true, biome, {}, false);
 }
 
-static optional<BiomeId> getBiome(EnemyId enemyId, RandomGen& random) {
-  switch (enemyId) {
-    case EnemyId::KNIGHTS:
-    case EnemyId::WARRIORS:
-    case EnemyId::ELEMENTALIST:
-    case EnemyId::LIZARDMEN:
-    case EnemyId::HYDRA:
-    case EnemyId::VILLAGE:
-    case EnemyId::ORC_VILLAGE: return BiomeId::GRASSLAND;
-    case EnemyId::RED_DRAGON:
-    case EnemyId::GREEN_DRAGON:
-    case EnemyId::DWARVES:
-    case EnemyId::DARK_ELVES:
-    case EnemyId::OGRE_CAVE:
-    case EnemyId::HARPY_CAVE:
-    case EnemyId::SOKOBAN:
-    case EnemyId::GNOMES:
-    case EnemyId::UNICORN_HERD:
-    case EnemyId::CYCLOPS:
-    case EnemyId::SHELOB:
-    case EnemyId::DEMON_DEN:
-    case EnemyId::ANTS_OPEN: return BiomeId::MOUNTAIN;
-    case EnemyId::ELVES:
-    case EnemyId::DRIADS:
-    case EnemyId::ENTS: return BiomeId::FORREST;
-    case EnemyId::BANDITS: return random.choose<BiomeId>();
-    case EnemyId::CEMETERY: return random.choose(BiomeId::GRASSLAND, BiomeId::FORREST);
+static optional<BiomeId> getBiome(EnemyInfo& enemy, RandomGen& random) {
+  switch (enemy.settlement.type) {
+    case SettlementType::CASTLE:
+    case SettlementType::CASTLE2:
+    case SettlementType::TOWER:
+    case SettlementType::VILLAGE:
+    case SettlementType::SWAMP:
+      return BiomeId::GRASSLAND;
+    case SettlementType::CAVE:
+    case SettlementType::MINETOWN:
+    case SettlementType::SMALL_MINETOWN:
+      return BiomeId::MOUNTAIN;
+    case SettlementType::FORREST_COTTAGE:
+    case SettlementType::FORREST_VILLAGE:
+    case SettlementType::ISLAND_VAULT_DOOR:
+    case SettlementType::FOREST:
+      return BiomeId::FORREST;
+    case SettlementType::CEMETERY:
+      return random.choose(BiomeId::GRASSLAND, BiomeId::FORREST);
     default: return none;
   }
 }
 
 PModel ModelBuilder::tryCampaignSiteModel(const string& siteName, EnemyId enemyId, VillainType type) {
   vector<EnemyInfo> enemyInfo { enemyFactory->get(enemyId).setVillainType(type)};
-  auto biomeId = getBiome(enemyId, random);
+  auto biomeId = getBiome(enemyInfo[0], random);
   CHECK(biomeId) << "Unimplemented enemy in campaign " << EnumInfo<EnemyId>::getString(enemyId);
   addMapVillains(enemyInfo, *biomeId);
   return tryModel(170, siteName, enemyInfo, false, *biomeId, {}, true);
 }
 
-PModel ModelBuilder::tryBuilding(int numTries, function<PModel()> buildFun) {
+PModel ModelBuilder::tryBuilding(int numTries, function<PModel()> buildFun, const string& name) {
   for (int i : Range(numTries)) {
     try {
       if (meter)
@@ -390,29 +394,32 @@ PModel ModelBuilder::tryBuilding(int numTries, function<PModel()> buildFun) {
       INFO << "Retrying level gen";
     }
   }
-  FATAL << "Couldn't generate a level";
+  FATAL << "Couldn't generate a level: " << name;
   return nullptr;
 
 }
 
 PModel ModelBuilder::campaignBaseModel(const string& siteName, bool externalEnemies) {
-  return tryBuilding(20, [=] { return tryCampaignBaseModel(siteName, externalEnemies); });
+  return tryBuilding(20, [=] { return tryCampaignBaseModel(siteName, externalEnemies); }, "campaign base");
 }
 
 PModel ModelBuilder::tutorialModel(const string& siteName) {
-  return tryBuilding(20, [=] { return tryTutorialModel(siteName); });
+  return tryBuilding(20, [=] { return tryTutorialModel(siteName); }, "tutorial");
 }
 
 PModel ModelBuilder::campaignSiteModel(const string& siteName, EnemyId enemyId, VillainType type) {
-  return tryBuilding(20, [&] { return tryCampaignSiteModel(siteName, enemyId, type); });
+  return tryBuilding(20, [&] { return tryCampaignSiteModel(siteName, enemyId, type); },
+      EnumInfo<EnemyId>::getString(enemyId));
 }
 
 void ModelBuilder::measureSiteGen(int numTries, vector<string> types) {
   if (types.empty()) {
     types = {"single_map", "campaign_base"};
-    for (auto enemy : ENUM_ALL(EnemyId))
+    for (auto id : ENUM_ALL(EnemyId)) {
+      auto enemy = enemyFactory->get(id);
       if (!!getBiome(enemy, random))
-        types.push_back(EnumInfo<EnemyId>::getString(enemy));
+        types.push_back(EnumInfo<EnemyId>::getString(id));
+    }
   }
   vector<function<void()>> tasks;
   for (auto& type : types) {
@@ -421,8 +428,7 @@ void ModelBuilder::measureSiteGen(int numTries, vector<string> types) {
     else if (type == "campaign_base")
       tasks.push_back([=] { measureModelGen(type, numTries, [this] { tryCampaignBaseModel("pok", false); }); });
     else if (auto id = EnumInfo<EnemyId>::fromStringSafe(type)) {
-      if (!!getBiome(*id, random))
-        tasks.push_back([=] { measureModelGen(type, numTries, [&] { tryCampaignSiteModel("", *id, VillainType::LESSER); }); });
+      tasks.push_back([=] { measureModelGen(type, numTries, [&] { tryCampaignSiteModel("", *id, VillainType::LESSER); }); });
     } else {
       std::cout << "Bad map type: " << type << std::endl;
       return;

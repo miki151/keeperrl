@@ -56,7 +56,7 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   virtual Vec2 getPosition() const override;
   virtual WLevel getLevel() const override;
   virtual vector<Vec2> getVisibleEnemies() const override;
-  virtual double getLocalTime() const override;
+  virtual double getAnimationTime() const override;
   virtual CenterType getCenterType() const override;
   virtual vector<Vec2> getUnknownLocations(WConstLevel) const override;
 
@@ -80,12 +80,19 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   virtual void onFellAsleep();
   virtual vector<WCreature> getTeam() const;
   virtual bool isTravelEnabled() const;
+  virtual bool handleUserInput(UserInput);
+  struct OtherCreatureCommand {
+    string name;
+    function<void(Player*)> perform;
+  };
+  virtual vector<OtherCreatureCommand> getOtherCreatureCommands(WCreature) const;
 
   optional<Vec2> chooseDirection(const string& question);
 
   SMapMemory SERIAL(levelMemory);
   void showHistory();
   WGame getGame() const;
+  WModel getModel() const;
   View* getView() const;
 
   bool tryToPerform(CreatureAction);
@@ -93,9 +100,7 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   private:
 
   void considerAdventurerMusic();
-  void extendedAttackAction(UniqueEntity<Creature>::Id);
-  void extendedAttackAction(WCreature other);
-  void creatureAction(UniqueEntity<Creature>::Id);
+  void creatureClickAction(Position, bool extended);
   void pickUpItemAction(int item, bool multi = false);
   void equipmentAction();
   void applyItem(vector<WItem> item);
@@ -104,7 +109,7 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   void hideAction();
   void displayInventory();
   void handleItems(const EntitySet<Item>&, ItemAction);
-  vector<ItemAction> getItemActions(const vector<WItem>&) const;
+  void handleIntrinsicAttacks(const EntitySet<Item>&, ItemAction);
   bool interruptedByEnemy();
   void travelAction();
   void targetAction();
@@ -129,11 +134,11 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   void retireMessages();
   SMessageBuffer SERIAL(messageBuffer);
   string getRemainingString(LastingEffect) const;
-  vector<ItemInfo> getItemInfos(const vector<WItem>&) const;
-  ItemInfo getItemInfo(const vector<WItem>&) const;
   ItemInfo getFurnitureUsageInfo(const string& question, ViewId viewId) const;
   optional<FurnitureUsageType> getUsableUsageType() const;
   SVisibilityMap SERIAL(visibilityMap);
   STutorial SERIAL(tutorial);
+  vector<TeamMemberAction> getTeamMemberActions(WConstCreature) const;
+  optional<GlobalTime> lastEnemyInterruption;
 };
 

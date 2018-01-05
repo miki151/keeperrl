@@ -36,6 +36,7 @@
 #include "container_range.h"
 #include "settlement_info.h"
 #include "task.h"
+#include "equipment.h"
 
 namespace {
 
@@ -411,6 +412,36 @@ class Inhabitants : public LevelMaker {
   optional<MonsterAIFactory> actorFactory;
   Predicate onPred;
   CollectiveBuilder* collective = nullptr;
+};
+
+class Corpses : public LevelMaker {
+  public:
+
+  Corpses(InhabitantsInfo inhab, Predicate pred = Predicate::alwaysTrue()) : inhabitants(inhab), onPred(pred) {}
+
+  virtual void make(LevelBuilder* builder, Rectangle area) override {
+    Table<char> taken(area.right(), area.bottom());
+    auto creatures = inhabitants.generateCreatures(builder->getRandom(), TribeId::getMonster(),
+        MonsterAIFactory::monster());
+    for (auto& minion : creatures) {
+      PCreature& creature = minion.first;
+      Vec2 pos;
+      int numTries = 100;
+      do {
+        pos = Vec2(builder->getRandom().get(area.left(), area.right()),
+            builder->getRandom().get(area.top(), area.bottom()));
+      } while (--numTries > 0 && (!builder->canPutCreature(pos, creature.get()) || (!onPred.apply(builder, pos))));
+      checkGen(numTries > 0);
+      if (builder->getRandom().roll(10))
+        builder->putItems(pos, creature->getEquipment().removeAllItems(creature.get()));
+      builder->putItems(pos, creature->generateCorpse(true));
+      taken[pos] = 1;
+    }
+  }
+
+  private:
+  InhabitantsInfo inhabitants;
+  Predicate onPred;
 };
 
 class Creatures : public LevelMaker {
@@ -1502,8 +1533,9 @@ class Stairs : public LevelMaker {
 
 class ShopMaker : public LevelMaker {
   public:
-  ShopMaker(ItemFactory _factory, TribeId _tribe, int _numItems, BuildingType _building)
-      : factory(_factory), tribe(_tribe), numItems(_numItems), building(_building) {}
+  ShopMaker(SettlementInfo& info, int _numItems)
+      : factory(*info.shopFactory), tribe(info.tribe), numItems(_numItems),
+        building(getBuildingInfo(info)), shopkeeperDead(info.shopkeeperDead)  {}
 
   virtual void make(LevelBuilder* builder, Rectangle area) override {
     PCreature shopkeeper = CreatureFactory::getShopkeeper(builder->toGlobalCoordinates(area), tribe);
@@ -1511,7 +1543,13 @@ class ShopMaker : public LevelMaker {
     for (Vec2 v : area)
       if (builder->canNavigate(v, MovementTrait::WALK) && builder->isFurnitureType(v, building.floorInside))
         pos.push_back(v);
-    builder->putCreature(pos[builder->getRandom().get(pos.size())], std::move(shopkeeper));
+    Vec2 shopkeeperPos = pos[builder->getRandom().get(pos.size())];
+    if (!shopkeeperDead)
+      builder->putCreature(shopkeeperPos, std::move(shopkeeper));
+    else {
+      builder->putItems(shopkeeperPos, shopkeeper->getEquipment().removeAllItems(shopkeeper.get()));
+      builder->putItems(shopkeeperPos, shopkeeper->generateCorpse(true));
+    }
     builder->putFurniture(pos[builder->getRandom().get(pos.size())], FurnitureParams{FurnitureType::GROUND_TORCH, tribe});
     for (int i : Range(numItems)) {
       Vec2 v = pos[builder->getRandom().get(pos.size())];
@@ -1524,6 +1562,7 @@ class ShopMaker : public LevelMaker {
   TribeId tribe;
   int numItems;
   BuildingType building;
+  bool shopkeeperDead;
 };
 
 class LevelExit : public LevelMaker {
@@ -1646,7 +1685,7 @@ class AreaCorners : public LevelMaker {
 
 class CastleExit : public LevelMaker {
   public:
-  CastleExit(TribeId _guardTribe, BuildingType _building, CreatureId _guardId)
+  CastleExit(TribeId _guardTribe, BuildingType _building, optional<CreatureId> _guardId)
     : guardTribe(_guardTribe), building(_building), guardId(_guardId) {}
 
   virtual void make(LevelBuilder* builder, Rectangle area) override {
@@ -1662,17 +1701,18 @@ class CastleExit : public LevelMaker {
     for (Vec2 v : floor)
       builder->resetFurniture(loc + v, building.floorInside);
     vector<Vec2> guardPos { Vec2(1, 1), Vec2(1, -1) };
-    for (Vec2 pos : guardPos) {
-      builder->putCreature(loc + pos, CreatureFactory::fromId(guardId, guardTribe,
-          MonsterAIFactory::stayInLocation(
-              builder->toGlobalCoordinates(Rectangle(loc + pos, loc + pos + Vec2(1, 1))), false)));
+    if (guardId)
+      for (Vec2 pos : guardPos) {
+        builder->putCreature(loc + pos, CreatureFactory::fromId(*guardId, guardTribe,
+            MonsterAIFactory::stayInLocation(
+                builder->toGlobalCoordinates(Rectangle(loc + pos, loc + pos + Vec2(1, 1))), false)));
     }
   }
 
   private:
   TribeId guardTribe;
   BuildingType building;
-  CreatureId guardId;
+  optional<CreatureId> guardId;
 };
 
 class AddMapBorder : public LevelMaker {
@@ -1788,7 +1828,7 @@ static PMakerQueue village2(RandomGen& random, SettlementInfo info) {
   for (auto& elem : info.stockpiles)
     insideMakers.push_back(stockpileMaker(elem));
   if (info.shopFactory)
-    insideMakers.push_back(unique<ShopMaker>(*info.shopFactory, info.tribe, random.get(8, 16), building));
+    insideMakers.push_back(unique<ShopMaker>(info, random.get(8, 16)));
   queue->addMaker(unique<Buildings>(6, 10, 3, 4, building, false, std::move(insideMakers)));
   if (info.furniture)
     queue->addMaker(unique<Furnitures>(Predicate::attrib(SquareAttrib::EMPTY_ROOM), 0.3, *info.furniture));
@@ -1807,7 +1847,7 @@ static PMakerQueue village(RandomGen& random, SettlementInfo info, int minRooms,
  //     hatchery(CreatureFactory::singleType(info.tribe, CreatureId::PIG), random.get(2, 5)),
       getElderRoom(info));
   if (info.shopFactory)
-    insideMakers.push_back(unique<ShopMaker>(*info.shopFactory, info.tribe, random.get(8, 16), building));
+    insideMakers.push_back(unique<ShopMaker>(info, random.get(8, 16)));
   for (auto& elem : info.stockpiles)
     insideMakers.push_back(stockpileMaker(elem));
   queue->addMaker(unique<Buildings>(minRooms, maxRooms, 3, 7, building, true, std::move(insideMakers)));
@@ -1873,13 +1913,13 @@ static PMakerQueue castle(RandomGen& random, SettlementInfo info) {
   auto inside = unique<MakerQueue>();
   vector<PLevelMaker> insideMakers;
   if (info.shopFactory)
-    insideMakers.push_back(unique<ShopMaker>(*info.shopFactory, info.tribe, random.get(8, 16), building));
+    insideMakers.push_back(unique<ShopMaker>(info, random.get(8, 16)));
   inside->addMaker(unique<Division>(random.getDouble(0.25, 0.4), std::move(leftSide),
         unique<Buildings>(1, 3, 3, 6, building, false, std::move(insideMakers), false),
             SquareChange(building.wall, SquareAttrib::ROOM_WALL)));
   auto insidePlusWall = unique<MakerQueue>();
   if (info.outsideFeatures)
-    inside->addMaker(unique<Furnitures>(Predicate::type(building.floorOutside), 0.03, *info.outsideFeatures));
+    inside->addMaker(unique<Furnitures>(Predicate::type(building.floorOutside), 0.18, *info.outsideFeatures));
   if (info.furniture)
     inside->addMaker(unique<Furnitures>(Predicate::attrib(SquareAttrib::EMPTY_ROOM), 0.35, *info.furniture));
   insidePlusWall->addMaker(unique<Empty>(SquareChange::reset(building.floorOutside)));
@@ -1897,7 +1937,7 @@ static PMakerQueue castle(RandomGen& random, SettlementInfo info) {
       Vec2(5, 5),
       std::move(cornerMakers)));
   queue->addMaker(unique<Margin>(insideMargin, unique<Connector>(building.door, 1, 18)));
-  queue->addMaker(unique<Margin>(insideMargin, unique<CastleExit>(info.tribe, building, *info.guardId)));
+  queue->addMaker(unique<Margin>(insideMargin, unique<CastleExit>(info.tribe, building, info.guardId)));
   queue->addMaker(unique<Inhabitants>(info.inhabitants, info.collective, Predicate::type(building.floorOutside)));
   for (StairKey key : info.downStairs)
     queue->addMaker(unique<Stairs>(StairDirection::DOWN, key,
@@ -1930,7 +1970,7 @@ static PMakerQueue castle2(RandomGen& random, SettlementInfo info) {
   return queue;
 }
 
-static PLevelMaker tower(RandomGen& random, SettlementInfo info, bool withExit) {
+static PMakerQueue tower(RandomGen& random, SettlementInfo info, bool withExit) {
   BuildingType building = getBuildingInfo(info);
   auto queue = unique<MakerQueue>();
   queue->addMaker(unique<Empty>(SquareChange(FurnitureType::FLOOR, building.wall)));
@@ -1951,7 +1991,9 @@ static PLevelMaker tower(RandomGen& random, SettlementInfo info, bool withExit) 
   queue->addMaker(unique<Division>(0.5, 0.5, std::move(upStairs), nullptr, nullptr, std::move(downStairs)));
   if (info.furniture)
     queue->addMaker(unique<Furnitures>(Predicate::type(building.floorInside), 0.5, *info.furniture));
-  return std::move(queue);
+  if (info.corpses)
+    queue->addMaker(unique<Corpses>(*info.corpses));
+  return queue;
 }
 
 PLevelMaker LevelMaker::towerLevel(RandomGen& random, SettlementInfo info) {
@@ -1963,7 +2005,7 @@ Vec2 getSize(RandomGen& random, SettlementType type) {
     case SettlementType::WITCH_HOUSE:
     case SettlementType::CEMETERY:
     case SettlementType::MOUNTAIN_LAKE:
-    case SettlementType::SMALL_VILLAGE:
+    case SettlementType::SMALL_VILLAGE: return {15, 15};
     case SettlementType::SWAMP: return {random.get(12, 16), random.get(12, 16)};
     case SettlementType::COTTAGE: return {random.get(8, 10), random.get(8, 10)};
     case SettlementType::FORREST_COTTAGE: return {15, 15};
@@ -2028,7 +2070,7 @@ static PMakerQueue genericMineTownMaker(RandomGen& random, SettlementInfo info, 
   queue->addMaker(unique<RandomLocations>(std::move(vCavern), sizes, Predicate::alwaysTrue(), false));
   vector<PLevelMaker> roomInsides;
   if (info.shopFactory)
-    roomInsides.push_back(unique<ShopMaker>(*info.shopFactory, info.tribe, random.get(8, 16), building));
+    roomInsides.push_back(unique<ShopMaker>(info, random.get(8, 16)));
   for (auto& elem : info.stockpiles)
     roomInsides.push_back(stockpileMaker(elem));
   queue->addMaker(unique<RoomMaker>(numRooms, minRoomSize, maxRoomSize, building.wall, none,
@@ -2092,7 +2134,7 @@ static PMakerQueue spiderCaveMaker(SettlementInfo info) {
   return queue;
 }
 
-static PLevelMaker islandVaultMaker(RandomGen& random, SettlementInfo info, bool door) {
+static PMakerQueue islandVaultMaker(RandomGen& random, SettlementInfo info, bool door) {
   BuildingType building = getBuildingInfo(info);
   auto inside = unique<MakerQueue>();
   inside->addMaker(unique<PlaceCollective>(info.collective));
@@ -2145,7 +2187,7 @@ static PMakerQueue cemetery(SettlementInfo info) {
   return queue;
 }
 
-static PLevelMaker emptyCollective(SettlementInfo info) {
+static PMakerQueue emptyCollective(SettlementInfo info) {
   return unique<MakerQueue>(
       unique<PlaceCollective>(info.collective),
       unique<Inhabitants>(info.inhabitants, info.collective));
@@ -2234,7 +2276,7 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, optional<CreatureFactory> fo
   };
   vector<CottageInfo> cottages;
   for (SettlementInfo settlement : settlements) {
-    PLevelMaker queue;
+    PMakerQueue queue;
     switch (settlement.type) {
       case SettlementType::SMALL_VILLAGE:
         queue = village(random, settlement, 3, 4);
@@ -2304,6 +2346,8 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, optional<CreatureFactory> fo
         queue = swamp(settlement);
         break;
     }
+    if (settlement.corpses)
+      queue->addMaker(unique<Corpses>(*settlement.corpses));
     if (settlement.type == SettlementType::SPIDER_CAVE)
       locations2->add(std::move(queue), getSize(random, settlement.type), getSettlementPredicate(settlement.type));
     else {

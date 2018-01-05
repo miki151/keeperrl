@@ -18,26 +18,57 @@
 #include "util.h"
 #include "entity_set.h"
 #include "entity_map.h"
+#include "indexed_vector.h"
+#include "game_time.h"
 
 class Creature;
 
 class TimeQueue {
   public:
   TimeQueue();
-  WCreature getNextCreature();
+  WCreature getNextCreature(double maxTime);
   vector<WCreature> getAllCreatures() const;
-  void addCreature(PCreature, double time);
+  void addCreature(PCreature, LocalTime time);
   PCreature removeCreature(WCreature);
-  double getTime(WConstCreature);
-  void increaseTime(WCreature, double diff);
+  LocalTime getTime(WConstCreature);
+  void increaseTime(WCreature, TimeInterval);
+  void makeExtraMove(WCreature);
+  bool hasExtraMove(WCreature);
+  void postponeMove(WCreature);
+  void moveNow(WCreature);
+  bool willMoveThisTurn(WConstCreature);
+  bool compareOrder(WConstCreature, WConstCreature);
 
-  template <class Archive> 
+  template <class Archive>
   void serialize(Archive& ar, const unsigned int version);
 
   private:
-  typedef set<WCreature, function<bool(WConstCreature, WConstCreature)>> Queue;
   vector<PCreature> SERIAL(creatures);
-  Queue SERIAL(queue);
-  EntityMap<Creature, double> SERIAL(timeMap);
+  struct Queue {
+    void push(WCreature);
+    void pushFront(WCreature);
+    bool empty();
+    WCreature front();
+    void popFront();
+    void erase(WCreature);
+    deque<WCreature> SERIAL(players);
+    deque<WCreature> SERIAL(nonPlayers);
+    EntityMap<Creature, int> SERIAL(orderMap);
+    SERIALIZE_ALL(players, nonPlayers, orderMap)
+
+    private:
+      void clearNull();
+  };
+  struct ExtendedTime {
+    ExtendedTime();
+    ExtendedTime(LocalTime);
+    double getDouble() const;
+    bool operator < (ExtendedTime) const;
+    LocalTime SERIAL(time);
+    bool SERIAL(extraTurn) = false;
+    SERIALIZE_ALL(time, extraTurn)
+  };
+  map<ExtendedTime, Queue> SERIAL(queue);
+  EntityMap<Creature, ExtendedTime> SERIAL(timeMap);
 };
 

@@ -143,15 +143,23 @@ vector<string> Immigration::getMissingRequirements(const Group& group) const {
       [&](const RecruitmentInfo& info) {
         auto col = info.findEnemy(collective->getGame());
         if (!col)
-          ret.push_back("Ally doesn't exist.");
+          ret.push_back("Ally doesn't exist");
         if (!collective->isKnownVillainLocation(col))
-          ret.push_back("Ally hasn't been discovered.");
+          ret.push_back("Ally hasn't been discovered");
         else if (info.getAvailableRecruits(collective->getGame(), immigrantInfo.getId(0)).empty())
-          ret.push_back("Ally doesn't have recruits available at this moment.");
+          ret.push_back("Ally doesn't have recruits available at this moment");
       },
       [&](const TutorialRequirement& t) {
         if (!t.tutorial->showImmigrant(immigrantInfo))
-          ret.push_back("Tutorial not there yet.");
+          ret.push_back("Tutorial not there yet");
+      },
+      [&](const CivilianCapture& t) {
+        for (auto col : collective->getGame()->getCollectives())
+          if (col->isConquered())
+            for (auto c : col->getCreatures())
+              if (c->getStatus().contains(CreatureStatus::CIVILIAN))
+                return;
+        ret.push_back("Requires a captured tribe with civilians");
       }
   );
   immigrantInfo.visitRequirements(visitor);
@@ -201,8 +209,16 @@ double Immigration::getRequirementMultiplier(const Group& group) const {
       [&](const TutorialRequirement& t, double prob) {
         if (!t.tutorial->showImmigrant(immigrantInfo))
           ret *= prob;
+      },
+      [&](const CivilianCapture&, double prob) {
+        for (auto col : collective->getGame()->getCollectives())
+          if (col->isConquered())
+            for (auto c : col->getCreatures())
+              if (c->getStatus().contains(CreatureStatus::CIVILIAN))
+                return;
+        ret *= prob;
       }
-  );
+    );
   getImmigrants()[group.immigrantIndex].visitRequirementsAndProb(visitor);
   return ret;
 }
@@ -227,7 +243,22 @@ void Immigration::occupyRequirements(WConstCreature c, int index) {
           }
       },
       [&](const RecruitmentInfo&) {},
-      [&](const TutorialRequirement&) {}
+      [&](const TutorialRequirement&) {},
+      [&](const CivilianCapture&) {
+        for (auto col : collective->getGame()->getCollectives())
+          if (col->isConquered())
+            for (auto c : copyOf(col->getCreatures()))
+              if (c->getStatus().contains(CreatureStatus::CIVILIAN)) {
+                Position pos = c->getPosition();
+                PCreature prisoner = CreatureFactory::fromId(CreatureId::PRISONER, collective->getTribeId(),
+                    MonsterAIFactory::collective(collective));
+                c->dieNoReason(Creature::DropType::ONLY_INVENTORY);
+                if (pos.canEnter(prisoner.get())) {
+                  collective->addCreature(std::move(prisoner), pos, {MinionTrait::PRISONER, MinionTrait::NO_LIMIT});
+                  return;
+                }
+              }
+      }
   );
   getImmigrants()[index].visitRequirements(visitor);
 }
@@ -326,7 +357,7 @@ const ImmigrantInfo& Immigration::Available::getInfo() const {
   return immigration->getImmigrants()[immigrantIndex];
 }
 
-optional<double> Immigration::Available::getEndTime() const {
+optional<GlobalTime> Immigration::Available::getEndTime() const {
   return endTime;
 }
 
@@ -364,7 +395,7 @@ CostInfo Immigration::calculateCost(int index, const ExponentialCost& cost) cons
   return info;
 }*/
 
-Immigration::Available::Available(WImmigration im, vector<PCreature> c, int ind, optional<double> t)
+Immigration::Available::Available(WImmigration im, vector<PCreature> c, int ind, optional<GlobalTime> t)
   : creatures(std::move(c)), immigrantIndex(ind), endTime(t), immigration(im) {
 }
 
@@ -382,6 +413,9 @@ void Immigration::Available::addAllCreatures(const vector<Position>& spawnPositi
             c->getGame()->transferCreature(c, target);
           addedRecruits = true;
         }
+      },
+      [&](const CivilianCapture&) {
+        addedRecruits = true;
       },
       [](const auto&) {}
   ));
@@ -428,7 +462,7 @@ void Immigration::accept(int id, bool withMessage) {
 void Immigration::rejectIfNonPersistent(int id) {
   if (auto immigrant = getReferenceMaybe(available, id))
     if (!immigrant->getInfo().isPersistent())
-      immigrant->endTime = -1;
+      immigrant->endTime = GlobalTime(-1);
 }
 
 SERIALIZE_DEF(Immigration::Available, creatures, immigrantIndex, endTime, immigration)
@@ -461,7 +495,7 @@ Immigration::Available Immigration::Available::generate(WImmigration immigration
     group.immigrantIndex,
     !info.isPersistent()
         ? immigration->collective->getGame()->getGlobalTime() + immigration->candidateTimeout
-        : optional<double>(none)
+        : optional<GlobalTime>(none)
   );
 }
 
@@ -470,7 +504,7 @@ vector<WCreature> Immigration::Available::getCreatures() const {
 }
 
 bool Immigration::Available::isUnavailable() const {
-  return creatures.empty() || (endTime && endTime < immigration->collective->getGame()->getGlobalTime());
+  return creatures.empty() || (endTime && *endTime < immigration->collective->getGame()->getGlobalTime());
 }
 
 optional<milliseconds> Immigration::Available::getCreatedTime() const {
@@ -492,10 +526,12 @@ void Immigration::initializePersistent() {
 }
 
 void Immigration::resetImmigrantTime() {
-  double interval = collective->getConfig().getImmigrantInterval();
+  auto interval = collective->getConfig().getImmigrantInterval();
+  auto lastImmigrantIndex = floor(nextImmigrantTime.value_or(GlobalTime(-1)).getDouble() /
+      interval.getDouble());
   nextImmigrantTime = max(
       collective->getGlobalTime(),
-      interval * (Random.getDouble() + 1 + floor(nextImmigrantTime / interval)));
+      GlobalTime((int) (interval.getDouble() * (Random.getDouble() + 1 + lastImmigrantIndex))));
 }
 
 void Immigration::update() {
@@ -510,7 +546,7 @@ void Immigration::update() {
   for (auto elem : Iter(available))
     if (getValueMaybe(autoState, elem->second.immigrantIndex) == ImmigrantAutoState::AUTO_ACCEPT)
       accept(elem->first);
-  if (nextImmigrantTime < collective->getGlobalTime()) {
+  if (!nextImmigrantTime || *nextImmigrantTime < collective->getGlobalTime()) {
     vector<Group> immigrantInfo;
     for (auto elem : Iter(getImmigrants()))
       immigrantInfo.push_back(Group {elem.index(), Random.get(elem->getGroupSize())});

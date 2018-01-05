@@ -22,6 +22,7 @@
 #include "tribe.h"
 #include "enum_variant.h"
 #include "event_generator.h"
+#include "game_time.h"
 
 class Level;
 class ProgressMeter;
@@ -42,7 +43,7 @@ class Model : public OwnedObject<Model> {
   
   /** Makes an update to the game. This method is repeatedly called to make the game run.
     Returns the total logical time elapsed.*/
-  void update(double totalTime);
+  bool update(double totalTime);
 
   /** Returns the level that the stairs lead to. */
   WLevel getLinkedLevel(WLevel from, StairKey) const;
@@ -50,7 +51,7 @@ class Model : public OwnedObject<Model> {
   optional<Position> getStairs(WConstLevel from, WConstLevel to);
 
   void addCreature(PCreature);
-  void addCreature(PCreature, double delay);
+  void addCreature(PCreature, TimeInterval delay);
   void landHeroPlayer(PCreature);
   void addExternalEnemies(ExternalEnemies);
   void clearExternalEnemies();
@@ -59,13 +60,15 @@ class Model : public OwnedObject<Model> {
 
   bool isTurnBased();
 
-  double getLocalTime() const;
-  void increaseLocalTime(WCreature, double diff);
-  double getLocalTime(WConstCreature);
+  LocalTime getLocalTime() const;
+  double getLocalTimeDouble() const;
+  TimeQueue& getTimeQueue();
+  int getMoveCounter() const;
+  void increaseMoveCounter();
 
   void setGame(WGame);
   WGame getGame() const;
-  void tick(double time);
+  void tick(LocalTime);
   vector<WCollective> getCollectives() const;
   vector<WCreature> getAllCreatures() const;
   vector<WLevel> getLevels() const;
@@ -112,10 +115,10 @@ class Model : public OwnedObject<Model> {
   PLevel SERIAL(cemetery);
   vector<PCollective> SERIAL(collectives);
   WGame SERIAL(game) = nullptr;
-  double SERIAL(lastTick) = 0;
+  LocalTime SERIAL(lastTick);
   HeapAllocated<TimeQueue> SERIAL(timeQueue);
   vector<PCreature> SERIAL(deadCreatures);
-  double SERIAL(currentTime) = 0;
+  double SERIAL(currentTime);
   int SERIAL(woodCount) = 0;
   void calculateStairNavigation();
   optional<StairKey> getStairsBetween(WConstLevel from, WConstLevel to);
@@ -128,5 +131,6 @@ class Model : public OwnedObject<Model> {
   void checkCreatureConsistency();
   HeapAllocated<optional<ExternalEnemies>> SERIAL(externalEnemies);
   vector<Position> SERIAL(portals);
+  int moveCounter = 0;
 };
 

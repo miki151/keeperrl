@@ -26,6 +26,8 @@ static optional<LastingEffect> getCancelledBothWays(LastingEffect effect) {
       return LastingEffect::RAGE;
     case LastingEffect::SPEED:
       return LastingEffect::SLOWED;
+    case LastingEffect::PEACEFULNESS:
+      return LastingEffect::INSANITY;
     default:
       return none;
   }
@@ -129,6 +131,8 @@ void LastingEffects::onAffected(WCreature c, LastingEffect effect, bool msg) {
         c->you(MsgType::ARE, "now fire resistant"); break;
       case LastingEffect::INSANITY:
         c->you(MsgType::BECOME, "insane"); break;
+      case LastingEffect::PEACEFULNESS:
+        c->you(MsgType::BECOME, "peaceful"); break;
       case LastingEffect::DARKNESS_SOURCE: break;
       case LastingEffect::MAGIC_RESISTANCE:
         c->you(MsgType::ARE, "now resistant to magical attacks"); break;
@@ -158,6 +162,8 @@ void LastingEffects::onAffected(WCreature c, LastingEffect effect, bool msg) {
         c->you(MsgType::ARE, "satiated"); break;
       case LastingEffect::RESTED:
         c->you(MsgType::ARE, "well rested"); break;
+      case LastingEffect::SUMMONED:
+        c->you(MsgType::YOUR, "days are numbered"); break;
     }
 }
 
@@ -202,7 +208,7 @@ void LastingEffects::onTimedOut(WCreature c, LastingEffect effect, bool msg) {
         c->you(MsgType::ARE, "moving faster again"); break;
       case LastingEffect::SLEEP:
         c->you(MsgType::WAKE_UP, "");
-        c->addEffect(LastingEffect::RESTED, 1000);
+        c->addEffect(LastingEffect::RESTED, 1000_visible);
         break;
       case LastingEffect::SPEED:
         c->you(MsgType::ARE, "moving more slowly again"); break;
@@ -238,6 +244,8 @@ void LastingEffects::onTimedOut(WCreature c, LastingEffect effect, bool msg) {
         c->you(MsgType::STAND_UP); break;
       case LastingEffect::INSANITY:
         c->you(MsgType::BECOME, "sane again"); break;
+      case LastingEffect::PEACEFULNESS:
+        c->you(MsgType::BECOME, "less peaceful"); break;
       case LastingEffect::MAGIC_RESISTANCE:
         c->you(MsgType::FEEL, "less resistant to magical attacks"); break;
       case LastingEffect::MELEE_RESISTANCE:
@@ -266,6 +274,8 @@ void LastingEffects::onTimedOut(WCreature c, LastingEffect effect, bool msg) {
         c->you(MsgType::ARE, "no longer satiated"); break;
       case LastingEffect::RESTED:
         c->you(MsgType::ARE, "no longer rested"); break;
+      case LastingEffect::SUMMONED:
+        c->dieNoReason(Creature::DropType::ONLY_INVENTORY); break;
       default: break;
     }
 }
@@ -295,12 +305,6 @@ void LastingEffects::modifyAttr(WConstCreature c, AttrType type, double& value) 
           value += 1;
         if (c->isAffected(LastingEffect::RESTED))
           value += 1;
-      break;
-    case AttrType::SPEED:
-      if (c->isAffected(LastingEffect::SLOWED))
-        value /= 1.5;
-      if (c->isAffected(LastingEffect::SPEED))
-        value *= 1.5;
       break;
     default: break;
   }
@@ -346,6 +350,7 @@ static optional<Adjective> getAdjective(LastingEffect effect) {
     case LastingEffect::TELEPATHY: return "Telepathic"_good;
     case LastingEffect::SATIATED: return "Satiated"_good;
     case LastingEffect::RESTED: return "Rested"_good;
+    case LastingEffect::PEACEFULNESS: return "Peaceful"_good;
 
     case LastingEffect::POISON: return "Poisoned"_bad;
     case LastingEffect::BLEEDING: return "Bleeding"_bad;
@@ -361,6 +366,7 @@ static optional<Adjective> getAdjective(LastingEffect effect) {
     case LastingEffect::MELEE_VULNERABILITY: return "Vulnerable to melee attacks"_bad;
     case LastingEffect::RANGED_VULNERABILITY: return "Vulnerable to ranged attacks"_bad;
     case LastingEffect::SUNLIGHT_VULNERABLE: return "Vulnerable to sunlight"_bad;
+    case LastingEffect::SUMMONED: return "Time to live"_bad;
   }
 }
 
@@ -523,6 +529,7 @@ const char* LastingEffects::getName(LastingEffect type) {
     case LastingEffect::STUNNED: return "stunning";
     case LastingEffect::FIRE_RESISTANT: return "fire resistance";
     case LastingEffect::INSANITY: return "insanity";
+    case LastingEffect::PEACEFULNESS: return "love";
     case LastingEffect::MAGIC_RESISTANCE: return "magic resistance";
     case LastingEffect::MELEE_RESISTANCE: return "melee resistance";
     case LastingEffect::RANGED_RESISTANCE: return "ranged resistance";
@@ -538,6 +545,7 @@ const char* LastingEffects::getName(LastingEffect type) {
     case LastingEffect::SUNLIGHT_VULNERABLE: return "sunlight vulnerability";
     case LastingEffect::SATIATED: return "satiety";
     case LastingEffect::RESTED: return "wakefulness";
+    case LastingEffect::SUMMONED: return "time to live";
   }
 }
 
@@ -565,7 +573,8 @@ const char* LastingEffects::getDescription(LastingEffect type) {
     case LastingEffect::ENTANGLED: return "web";
     case LastingEffect::STUNNED: return "Causes inability to make any action.";
     case LastingEffect::FIRE_RESISTANT: return "Gives fire resistance.";
-    case LastingEffect::INSANITY: return "Confuses the target about who is friend and who is foe.";
+    case LastingEffect::INSANITY: return "Makes the target hostile to every creature.";
+    case LastingEffect::PEACEFULNESS: return "Makes the target friendly to every creature.";
     case LastingEffect::MAGIC_RESISTANCE: return "Increases defense against magical attacks by 30%.";
     case LastingEffect::MELEE_RESISTANCE: return "Increases defense against melee attacks by 30%.";
     case LastingEffect::RANGED_RESISTANCE: return "Increases defense against ranged attacks by 30%.";
@@ -581,6 +590,7 @@ const char* LastingEffects::getDescription(LastingEffect type) {
     case LastingEffect::SUNLIGHT_VULNERABLE: return "Sunlight makes your body crumble to dust.";
     case LastingEffect::SATIATED: return "Increases morale and improves defense by +1.";
     case LastingEffect::RESTED: return "Increases morale and improves defense by +1.";
+    case LastingEffect::SUMMONED: return "Will disappear after the given number of turns.";
   }
 }
 
@@ -592,14 +602,24 @@ bool LastingEffects::canSee(WConstCreature c1, WConstCreature c2) {
     return false;
 }
 
+bool LastingEffects::modifyIsEnemyResult(WConstCreature c, WConstCreature other, bool result) {
+  if (c->isAffected(LastingEffect::INSANITY))
+    return true;
+  if (c->isAffected(LastingEffect::PEACEFULNESS))
+    return false;
+  return result;
+}
+
 int LastingEffects::getPrice(LastingEffect e) {
   switch (e) {
     case LastingEffect::INSANITY:
+    case LastingEffect::PEACEFULNESS:
     case LastingEffect::HALLU:
     case LastingEffect::BLEEDING:
     case LastingEffect::SUNLIGHT_VULNERABLE:
     case LastingEffect::SATIATED:
     case LastingEffect::RESTED:
+    case LastingEffect::SUMMONED:
       return 2;
     case LastingEffect::WARNING:
       return 5;

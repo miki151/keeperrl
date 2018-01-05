@@ -73,15 +73,17 @@ class ReleaseButton : public GuiElem {
   ReleaseButton(function<void()> f, int but) : fun(f), button(but) {}
 
   virtual void onMouseRelease(Vec2 pos) override {
-    if (clicked && pos.inRectangle(getBounds()))
+    if (clicked && pos.inRectangle(getBounds())) {
+      std::cout << "Released " << (button == 0 ? "left" : "right") << std::endl;
       fun();
-    else
-      clicked = false;
+    }
+    clicked = false;
   }
 
   virtual bool onLeftClick(Vec2 pos) override {
     if (button == 0 && pos.inRectangle(getBounds())) {
       clicked = true;
+      std::cout << "Clicked left" << std::endl;
       return true;
     } else
       return false;
@@ -90,6 +92,7 @@ class ReleaseButton : public GuiElem {
   virtual bool onRightClick(Vec2 pos) override {
     if (button == 1 && pos.inRectangle(getBounds())) {
       clicked = true;
+      std::cout << "Clicked right" << std::endl;
       return true;
     } else
       return false;
@@ -530,16 +533,9 @@ static void lighten(Color& c) {
 }
 
 SGuiElem GuiFactory::labelHighlight(const string& s, Color c, char hotkey) {
-  auto width = [=] { return renderer.getTextLength(s); };
-  return SGuiElem(new DrawCustom(
-        [=] (Renderer& r, Rectangle bounds) {
-          r.drawTextWithHotkey(Color::BLACK.transparency(100),
-            bounds.topLeft().x + 1, bounds.topLeft().y + 2, s, 0);
-          Color c1(c);
-          if (r.getMousePos().inRectangle(bounds))
-            lighten(c1);
-          r.drawTextWithHotkey(c1, bounds.topLeft().x, bounds.topLeft().y, s, hotkey);
-        }, width));
+  auto highlighted = c;
+  lighten(highlighted);
+  return mouseHighlight2(label(s, highlighted, hotkey), label(s, c, hotkey));
 }
 
 static double blinkingState(milliseconds time, int numBlinks, int numCycle) {
@@ -1521,6 +1517,33 @@ SGuiElem GuiFactory::fullScreen(SGuiElem content) {
   return SGuiElem(new FullScreen(std::move(content), renderer));
 }
 
+class AbsolutePosition : public GuiLayout {
+  public:
+  AbsolutePosition(SGuiElem content, Vec2 pos, Renderer& r)
+      : GuiLayout(makeVec(std::move(content))), position(pos), renderer(r) {
+  }
+
+  virtual void render(Renderer& r) override {
+    GuiLayout::render(r);
+  }
+
+  virtual Rectangle getElemBounds(int num) override {
+    auto size = Vec2(*elems[0]->getPreferredWidth(), *elems[0]->getPreferredHeight());
+    auto pos = position;
+    pos.x = min(pos.x, renderer.getSize().x - size.x);
+    pos.y = min(pos.y, renderer.getSize().y - size.y);
+    return Rectangle(pos, pos + size);
+  }
+
+  private:
+  Vec2 position;
+  Renderer& renderer;
+};
+
+SGuiElem GuiFactory::absolutePosition(SGuiElem content, Vec2 pos) {
+  return SGuiElem(new AbsolutePosition(std::move(content), pos, renderer));
+}
+
 class MarginFit : public GuiLayout {
   public:
   MarginFit(SGuiElem top, SGuiElem rest, double _width, GuiFactory::MarginType t)
@@ -1798,6 +1821,14 @@ class TranslateGui : public GuiLayout {
     return Rectangle(getBounds().topLeft() + pos, getBounds().topLeft() + pos + sz);
   }
 
+  virtual optional<int> getPreferredWidth() override {
+    return elems[0]->getPreferredWidth();
+  }
+
+  virtual optional<int> getPreferredHeight() override {
+    return elems[0]->getPreferredHeight();
+  }
+
   private:
   Vec2 pos;
   optional<Vec2> size;
@@ -1951,12 +1982,26 @@ class MouseHighlight : public MouseHighlightBase {
 
 class MouseHighlight2 : public GuiStack {
   public:
-  MouseHighlight2(SGuiElem h) : GuiStack(makeVec(std::move(h))) {}
+  MouseHighlight2(SGuiElem h, SGuiElem h2 = nullptr)
+      : GuiStack(h2 ? makeVec(std::move(h), std::move(h2)) : makeVec(std::move(h))) {}
 
   virtual void render(Renderer& r) override {
-    if (r.getMousePos().inRectangle(getBounds()))
+    if (over)
       elems[0]->render(r);
+    else if (elems.size() > 1)
+      elems[1]->render(r);
   }
+
+  virtual void onMouseGone() override {
+    over = false;
+  }
+
+  virtual bool onMouseMove(Vec2 pos) override {
+    over = pos.inRectangle(getBounds());
+    return false;
+  }
+
+  bool over = false;
 };
 
 SGuiElem GuiFactory::mouseHighlight(SGuiElem elem, int myIndex, optional<int>* highlighted) {
@@ -1996,8 +2041,8 @@ SGuiElem GuiFactory::mouseHighlightGameChoice(SGuiElem elem,
   return SGuiElem(new MouseHighlightGameChoice(std::move(elem), my, highlight));
 }
 
-SGuiElem GuiFactory::mouseHighlight2(SGuiElem elem) {
-  return SGuiElem(new MouseHighlight2(std::move(elem)));
+SGuiElem GuiFactory::mouseHighlight2(SGuiElem elem, SGuiElem noHighlight) {
+  return SGuiElem(new MouseHighlight2(std::move(elem), std::move(noHighlight)));
 }
 
 class RenderLayer : public GuiStack {
@@ -2351,8 +2396,6 @@ void GuiFactory::loadFreeImages(const DirectoryPath& path) {
         return Vec2(0, 1);
       case AttrType::RANGED_DAMAGE:
         return Vec2(1, 1);
-      case AttrType::SPEED:
-        return Vec2(2, 1);
     }
   };
   for (auto attr : ENUM_ALL(AttrType))
@@ -2630,7 +2673,17 @@ SGuiElem GuiFactory::mainDecoration(int rightBarWidth, int bottomBarHeight, opti
 SGuiElem GuiFactory::translucentBackground(SGuiElem content) {
   return stack(
       stopMouseMovement(),
-        background(std::move(content), translucentBgColor));
+      background(std::move(content), translucentBgColor));
+}
+
+SGuiElem GuiFactory::translucentBackgroundPassMouse(SGuiElem content) {
+  return background(std::move(content), translucentBgColor);
+}
+
+SGuiElem GuiFactory::translucentBackgroundWithBorderPassMouse(SGuiElem content) {
+  return stack(
+      rectangleBorder(Color::GRAY),
+      background(std::move(content), translucentBgColor));
 }
 
 SGuiElem GuiFactory::translucentBackgroundWithBorder(SGuiElem content) {

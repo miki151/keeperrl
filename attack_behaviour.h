@@ -8,6 +8,7 @@ enum class AttackBehaviourId {
   KILL_MEMBERS,
   STEAL_GOLD,
   CAMP_AND_SPAWN,
+  HALLOWEEN_KIDS
 };
 
 class AttackBehaviour : public EnumVariant<AttackBehaviourId, TYPES(int, CreatureFactory),

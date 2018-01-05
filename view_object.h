@@ -21,20 +21,13 @@
 #include "unique_entity.h"
 #include "view_layer.h"
 #include "attr_type.h"
+#include "game_time.h"
+#include "movement_info.h"
+#include "creature_status.h"
 
 RICH_ENUM(ViewObjectModifier, PLAYER, HIDDEN, INVISIBLE, ILLUSION, PLANNED,
     TEAM_LEADER_HIGHLIGHT, TEAM_HIGHLIGHT, DRAW_MORALE, ROAD, NO_UP_MOVEMENT, REMEMBER, SPIRIT_DAMAGE, HOSTILE);
 RICH_ENUM(ViewObjectAttribute, WOUNDED, BURNING, WATER_DEPTH, EFFICIENCY, MORALE);
-
-struct MovementInfo {
-  enum Type { MOVE, ATTACK };
-  MovementInfo(Vec2 direction, double tBegin, double tEnd, Type);
-  MovementInfo();
-  Vec2 direction;
-  double tBegin;
-  double tEnd;
-  Type type;
-};
 
 class ViewObject {
   public:
@@ -46,6 +39,9 @@ class ViewObject {
   ViewObject& setModifier(Modifier);
   ViewObject& removeModifier(Modifier);
   bool hasModifier(Modifier) const;
+
+  EnumSet<CreatureStatus>& getCreatureStatus();
+  const EnumSet<CreatureStatus>& getCreatureStatus() const;
 
   static void setHallu(bool);
   
@@ -76,10 +72,13 @@ class ViewObject {
   void clearMovementInfo();
   bool hasAnyMovementInfo() const;
   MovementInfo getLastMovementInfo() const;
-  Vec2 getMovementInfo(double tBegin) const;
+  Vec2 getMovementInfo(int moveCounter) const;
 
   void setCreatureId(UniqueEntity<Creature>::Id);
   optional<UniqueEntity<Creature>::Id> getCreatureId() const;
+
+  void setClickAction(const string&);
+  const string& getClickAction() const;
 
   const static ViewObject& unknownMonster();
   const static ViewObject& empty();
@@ -91,6 +90,7 @@ class ViewObject {
   string getAttributeString(Attribute) const;
   const char* getDefaultDescription() const;
   EnumSet<Modifier> SERIAL(modifiers);
+  EnumSet<CreatureStatus> SERIAL(status);
   EnumMap<Attribute, optional<float>> SERIAL(attributes);
   ViewId SERIAL(resource_id);
   ViewLayer SERIAL(viewLayer);
@@ -100,12 +100,13 @@ class ViewObject {
   string SERIAL(goodAdjectives);
   string SERIAL(badAdjectives);
   optional<CreatureAttributes> SERIAL(creatureAttributes);
+  string SERIAL(clickAction);
 
   class MovementQueue {
     public:
     void add(MovementInfo);
     const MovementInfo& getLast() const;
-    Vec2 getTotalMovement(double tBegin) const;
+    Vec2 getTotalMovement(int moveCounter) const;
     bool hasAny() const;
     void clear();
 

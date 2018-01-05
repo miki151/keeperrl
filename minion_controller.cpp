@@ -9,6 +9,7 @@
 #include "view.h"
 #include "game.h"
 #include "message_generator.h"
+#include "time_queue.h"
 
 class MinionController : public Player {
   public:
@@ -16,22 +17,58 @@ class MinionController : public Player {
                    SVisibilityMap visibilityMap, STutorial tutorial)
       : Player(c, false, memory, messages, visibilityMap, tutorial), control(ctrl) {}
 
+
+
   virtual vector<CommandInfo> getCommands() const override {
     auto tutorial = control->getTutorial();
     return concat(Player::getCommands(), {
-      {PlayerInfo::CommandInfo{"Leave creature", 'u', "Leave creature and order team back to base.", true,
-            tutorial && tutorial->getHighlights(getGame()).contains(TutorialHighlight::LEAVE_CONTROL)},
-       [] (Player* player) { dynamic_cast<MinionController*>(player)->unpossess(); }, true},
-      {PlayerInfo::CommandInfo{"Toggle control all", 'g', "Control all team members.", true,
-            tutorial && tutorial->getHighlights(getGame()).contains(TutorialHighlight::FULL_CONTROL)},
-       [] (Player* player) { dynamic_cast<MinionController*>(player)->control->toggleControlAllTeamMembers(); }, getTeam().size() > 1},
-      {PlayerInfo::CommandInfo{"Switch control", 's', "Switch control to a different team member.", true},
-       [] (Player* player) { dynamic_cast<MinionController*>(player)->swapTeam(); }, getTeam().size() > 1},
       {PlayerInfo::CommandInfo{"Absorb", 'a',
           "Absorb a friendly creature and inherit its attributes. Requires the absorbtion skill.",
           getCreature()->getAttributes().getSkills().hasDiscrete(SkillId::CONSUMPTION)},
        [] (Player* player) { dynamic_cast<MinionController*>(player)->consumeAction();}, false},
     });
+  }
+
+  virtual vector<TeamMemberAction> getTeamMemberActions(WConstCreature member) const {
+    vector<TeamMemberAction> ret;
+    if (getGame()->getPlayerCreatures().size() == 1 && member != getCreature())
+      ret.push_back(TeamMemberAction::CHANGE_LEADER);
+    if (member->isPlayer() && member != getCreature() && getModel()->getTimeQueue().willMoveThisTurn(member))
+      ret.push_back(TeamMemberAction::MOVE_NOW);
+    if (getTeam().size() >= 2)
+      ret.push_back(TeamMemberAction::REMOVE_MEMBER);
+    return ret;
+  }
+
+  virtual vector<OtherCreatureCommand> getOtherCreatureCommands(WCreature c) const override {
+    vector<OtherCreatureCommand> ret = Player::getOtherCreatureCommands(c);
+    if (getTeam().contains(c)) {
+      for (auto& action : getTeamMemberActions(c))
+        ret.push_back({getText(action), [action, id = c->getUniqueId()](Player* player){
+            (dynamic_cast<MinionController*>(player))->control->teamMemberAction(action, id);}});
+    }
+    else if (control->getCollective()->getCreatures().contains(c) && control->canAddToTeam(c))
+      ret.push_back({"Add to team", [c](Player* player) {
+          (dynamic_cast<MinionController*>(player))->control->addToCurrentTeam(c);}});
+    return ret;
+  }
+
+  virtual bool handleUserInput(UserInput input) override {
+    switch (input.getId()) {
+      case UserInputId::TOGGLE_CONTROL_MODE:
+        control->toggleControlAllTeamMembers();
+        return true;
+      case UserInputId::EXIT_CONTROL_MODE:
+        unpossess();
+        return true;
+      case UserInputId::TEAM_MEMBER_ACTION: {
+        auto& info = input.get<TeamMemberActionInfo>();
+        control->teamMemberAction(info.action, info.memberId);
+        return true;
+      }
+      default:
+        return false;
+    }
   }
 
   void consumeAction() {
@@ -55,10 +92,6 @@ class MinionController : public Player {
 
   void unpossess() {
     control->leaveControl();
-  }
-
-  bool swapTeam() {
-    return control->swapTeam();
   }
 
   virtual bool isTravelEnabled() const override {

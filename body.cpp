@@ -15,6 +15,7 @@
 #include "item_type.h"
 #include "effect.h"
 #include "item.h"
+#include "game_time.h"
 
 static double getDefaultWeight(Body::Size size) {
   switch (size) {
@@ -25,7 +26,7 @@ static double getDefaultWeight(Body::Size size) {
   }
 }
 
-SERIALIZE_DEF(Body, xhumanoid, size, weight, bodyParts, injuredBodyParts, lostBodyParts, material, health, minionFood, deathSound, carryLimit, doesntEat)
+SERIALIZE_DEF(Body, xhumanoid, size, weight, bodyParts, injuredBodyParts, lostBodyParts, material, health, minionFood, deathSound, carryLimit, intrinsicAttacks)
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Body)
 
@@ -38,11 +39,20 @@ static double getDefaultCarryLimit(Body::Size size) {
   }
 }
 
+static int getDefaultIntrinsicDamage(Body::Size size) {
+  switch (size) {
+    case Body::Size::HUGE: return 8;
+    case Body::Size::LARGE: return 5;
+    case Body::Size::MEDIUM: return 3;
+    case Body::Size::SMALL: return 1;
+  }
+}
+
 Body::Body(bool humanoid, Material m, Size s) : xhumanoid(humanoid), size(s),
     weight(getDefaultWeight(size)), material(m),
     deathSound(humanoid ? SoundId::HUMANOID_DEATH : SoundId::BEAST_DEATH), carryLimit(getDefaultCarryLimit(size)) {
   if (humanoid)
-    setHumanoidBodyParts();
+    setHumanoidBodyParts(getDefaultIntrinsicDamage(size));
 }
 
 Body Body::humanoid(Material m, Size s) {
@@ -69,57 +79,82 @@ Body Body::nonHumanoidSpirit(Size s) {
   return Body(false, Material::SPIRIT, s);
 }
 
-Body& Body::addWings() {
+void Body::addWings() {
   bodyParts[BodyPart::WING] = 2;
-  return *this;
 }
 
-Body& Body::setWeight(double w) {
+void Body::setWeight(double w) {
   weight = w;
-  return *this;
 }
 
-Body& Body::setBodyParts(const EnumMap<BodyPart, int>& p) {
+void Body::setBodyParts(const EnumMap<BodyPart, int>& p) {
   bodyParts = p;
-  return *this;
+  bodyParts[BodyPart::TORSO] = 1;
+  bodyParts[BodyPart::BACK] = 1;
 }
 
-Body& Body::setHumanoidBodyParts() {
+void Body::setIntrinsicAttack(BodyPart part, IntrinsicAttack attack) {
+  if (!numGood(part)) {
+    part = BodyPart::TORSO;
+    CHECK(numGood(part));
+  }
+  intrinsicAttacks[part] = std::move(attack);
+}
+
+WItem Body::chooseWeapon(WItem weapon) const {
+  // choose one of the available weapons with equal probability
+  bool hasRealWeapon = !!weapon;
+  double numOptions = !!weapon ? 1 : 0;
+  for (auto part : ENUM_ALL(BodyPart)) {
+    auto& attack = intrinsicAttacks[part];
+    if (numGood(part) > 0 && attack &&
+        (attack->active == attack->ALWAYS || (attack->active == attack->NO_WEAPON && !hasRealWeapon))) {
+      ++numOptions;
+      if (!weapon || Random.chance(1.0 / numOptions))
+        weapon = intrinsicAttacks[part]->item.get();
+    }
+  }
+  return weapon;
+}
+
+EnumMap<BodyPart, optional<IntrinsicAttack>>& Body::getIntrinsicAttacks() {
+  return intrinsicAttacks;
+}
+
+const EnumMap<BodyPart, optional<IntrinsicAttack>>& Body::getIntrinsicAttacks() const {
+  return intrinsicAttacks;
+}
+
+void Body::setHumanoidBodyParts(int intrinsicDamage) {
   setBodyParts({{BodyPart::LEG, 2}, {BodyPart::ARM, 2}, {BodyPart::HEAD, 1}, {BodyPart::BACK, 1},
       {BodyPart::TORSO, 1}});
-  return *this;
+  setIntrinsicAttack(BodyPart::ARM, IntrinsicAttack(ItemType::fists(intrinsicDamage), IntrinsicAttack::NO_WEAPON));
+  setIntrinsicAttack(BodyPart::LEG, IntrinsicAttack(ItemType::legs(intrinsicDamage), IntrinsicAttack::NO_WEAPON));
 }
 
-Body& Body::setHorseBodyParts() {
+void Body::setHorseBodyParts(int intrinsicDamage) {
   setBodyParts({{BodyPart::LEG, 4}, {BodyPart::HEAD, 1}, {BodyPart::BACK, 1},
       {BodyPart::TORSO, 1}});
-  return *this;
+  setIntrinsicAttack(BodyPart::HEAD, IntrinsicAttack(ItemType::fangs(intrinsicDamage), IntrinsicAttack::NO_WEAPON));
+  setIntrinsicAttack(BodyPart::LEG, IntrinsicAttack(ItemType::legs(intrinsicDamage), IntrinsicAttack::NO_WEAPON));
 }
 
-Body& Body::setBirdBodyParts() {
+void Body::setBirdBodyParts(int intrinsicDamage) {
   setBodyParts({{BodyPart::LEG, 2}, {BodyPart::WING, 2}, {BodyPart::HEAD, 1}, {BodyPart::BACK, 1},
       {BodyPart::TORSO, 1}});
-  return *this;
+  setIntrinsicAttack(BodyPart::HEAD, IntrinsicAttack(ItemType::beak(intrinsicDamage), IntrinsicAttack::NO_WEAPON));
 }
 
-Body& Body::setMinionFood() {
+void Body::setMinionFood() {
   minionFood = true;
-  return *this;
 }
 
-Body& Body::setDeathSound(optional<SoundId> s) {
+void Body::setDeathSound(optional<SoundId> s) {
   deathSound = s;
-  return *this;
 }
 
-Body& Body::setNoCarryLimit() {
+void Body::setNoCarryLimit() {
   carryLimit = none;
-  return *this;
-}
-
-Body& Body::setDoesntEat() {
-  doesntEat = true;
-  return *this;
 }
 
 bool Body::canHeal() const {
@@ -281,8 +316,7 @@ void Body::injureBodyPart(WCreature creature, BodyPart part, bool drop) {
       creature->addPermanentEffect(LastingEffect::COLLAPSED);
       break;
     case BodyPart::ARM:
-      if (creature->getWeapon())
-        creature->dropWeapon();
+      creature->dropWeapon();
       break;
     case BodyPart::WING:
       creature->removePermanentEffect(LastingEffect::FLYING);
@@ -300,16 +334,22 @@ void consumeBodyAttr(T& mine, const T& his, vector<string>& adjectives, const st
   }
 }
 
-
-void Body::consumeBodyParts(WCreature c, const Body& other, vector<string>& adjectives) {
-  for (BodyPart part : ENUM_ALL(BodyPart))
+void Body::consumeBodyParts(WCreature c, Body& other, vector<string>& adjectives) {
+  for (BodyPart part : ENUM_ALL(BodyPart)) {
     if (other.bodyParts[part] > bodyParts[part]) {
       if (bodyParts[part] + 1 == other.bodyParts[part])
-        c->you(MsgType::GROW, string("a ") + getName(part));
+        c->verb("grow", "grows", "a "_s + getName(part));
       else
-        c->you(MsgType::GROW, toString(other.bodyParts[part] - bodyParts[part]) + " " + getName(part) + "s");
+        c->verb("grow", "grows", toString(other.bodyParts[part] - bodyParts[part]) + " " + getName(part) + "s");
       bodyParts[part] = other.bodyParts[part];
+      c->addPersonalEvent(c->getName().the() + " grows a "_s + getName(part));
     }
+    if (auto& attack = other.intrinsicAttacks[part]) {
+      c->verb("develop", "develops",  "a " + attack->item->getNameAndModifiers() + " attack");
+      c->addPersonalEvent(c->getName().the() + " develops a " + attack->item->getNameAndModifiers() + " attack");
+      intrinsicAttacks[part] = std::move(*attack);
+    }
+  }
   if (other.isHumanoid() && !isHumanoid() && numBodyParts(BodyPart::ARM) >= 2 &&
       numBodyParts(BodyPart::LEG) >= 2 && numBodyParts(BodyPart::HEAD) >= 1) {
     c->you(MsgType::BECOME, "a humanoid");
@@ -332,18 +372,6 @@ void Body::looseBodyPart(BodyPart part) {
 void Body::injureBodyPart(BodyPart part) {
   if (injuredBodyParts[part] < bodyParts[part])
     ++injuredBodyParts[part];
-}
-
-
-const char* getName(BodyPart part) {
-  switch (part) {
-    case BodyPart::LEG: return "leg";
-    case BodyPart::ARM: return "arm";
-    case BodyPart::WING: return "wing";
-    case BodyPart::HEAD: return "head";
-    case BodyPart::TORSO: return "torso";
-    case BodyPart::BACK: return "back";
-  }
 }
 
 string sizeStr(Body::Size s) {
@@ -435,7 +463,7 @@ PItem Body::getBodyPartItem(const string& name, BodyPart part) {
     case Material::FLESH:
     case Material::UNDEAD_FLESH:
       return ItemFactory::corpse(name + " " + getName(part), name + " " + getBodyPartBone(part),
-        weight / 8, isMinionFood() ? ItemClass::FOOD : ItemClass::CORPSE);
+        weight / 8, false, isMinionFood() ? ItemClass::FOOD : ItemClass::CORPSE);
     case Material::CLAY:
     case Material::ROCK:
       return ItemType(ItemType::Rock{}).get();
@@ -449,12 +477,12 @@ PItem Body::getBodyPartItem(const string& name, BodyPart part) {
   }
 }
 
-vector<PItem> Body::getCorpseItem(const string& name, Creature::Id id) {
+vector<PItem> Body::getCorpseItems(const string& name, Creature::Id id, bool instantlyRotten) const {
   switch (material) {
     case Material::FLESH:
     case Material::UNDEAD_FLESH:
       return makeVec(
-          ItemFactory::corpse(name + " corpse", name + " skeleton", weight,
+          ItemFactory::corpse(name + " corpse", name + " skeleton", weight, instantlyRotten,
             minionFood ? ItemClass::FOOD : ItemClass::CORPSE,
             {id, true, numBodyParts(BodyPart::HEAD) > 0, false}));
     case Material::CLAY:
@@ -475,19 +503,93 @@ void Body::affectPosition(Position position) {
     position.fireDamage(1);
 }
 
+static void youHit(WConstCreature c, BodyPart part, AttackType type) {
+  switch (part) {
+    case BodyPart::BACK:
+        switch (type) {
+          case AttackType::SHOOT: c->you(MsgType::ARE, "shot in the back!"); break;
+          case AttackType::BITE: c->you(MsgType::ARE, "bitten in the neck!"); break;
+          case AttackType::CUT: c->you(MsgType::YOUR, "throat is cut!"); break;
+          case AttackType::CRUSH: c->you(MsgType::YOUR, "spine is crushed!"); break;
+          case AttackType::HIT: c->you(MsgType::YOUR, "neck is broken!"); break;
+          case AttackType::STAB: c->you(MsgType::ARE, "stabbed in the "_s +
+                                     Random.choose("back"_s, "neck"_s)); break;
+          case AttackType::SPELL: c->you(MsgType::ARE, "ripped to pieces!"); break;
+        }
+        break;
+    case BodyPart::HEAD:
+        switch (type) {
+          case AttackType::SHOOT: c->you(MsgType::ARE, "shot in the " +
+                                      Random.choose("eye"_s, "neck"_s, "forehead"_s) + "!"); break;
+          case AttackType::BITE: c->you(MsgType::YOUR, "head is bitten off!"); break;
+          case AttackType::CUT: c->you(MsgType::YOUR, "head is chopped off!"); break;
+          case AttackType::CRUSH: c->you(MsgType::YOUR, "skull is shattered!"); break;
+          case AttackType::HIT: c->you(MsgType::YOUR, "neck is broken!"); break;
+          case AttackType::STAB: c->you(MsgType::ARE, "stabbed in the eye!"); break;
+          case AttackType::SPELL: c->you(MsgType::YOUR, "head is ripped to pieces!"); break;
+        }
+        break;
+    case BodyPart::TORSO:
+        switch (type) {
+          case AttackType::SHOOT: c->you(MsgType::YOUR, "shot in the heart!"); break;
+          case AttackType::BITE: c->you(MsgType::YOUR, "internal organs are ripped out!"); break;
+          case AttackType::CUT: c->you(MsgType::ARE, "cut in half!"); break;
+          case AttackType::STAB: c->you(MsgType::ARE, "stabbed in the " +
+                                     Random.choose("stomach"_s, "heart"_s) + "!"); break;
+          case AttackType::CRUSH: c->you(MsgType::YOUR, "ribs and internal organs are crushed!"); break;
+          case AttackType::HIT: c->you(MsgType::YOUR, "stomach receives a deadly blow!"); break;
+          case AttackType::SPELL: c->you(MsgType::ARE, "ripped to pieces!"); break;
+        }
+        break;
+    case BodyPart::ARM:
+        switch (type) {
+          case AttackType::SHOOT: c->you(MsgType::YOUR, "shot in the arm!"); break;
+          case AttackType::BITE: c->you(MsgType::YOUR, "arm is bitten off!"); break;
+          case AttackType::CUT: c->you(MsgType::YOUR, "arm is chopped off!"); break;
+          case AttackType::STAB: c->you(MsgType::ARE, "stabbed in the arm!"); break;
+          case AttackType::CRUSH: c->you(MsgType::YOUR, "arm is smashed!"); break;
+          case AttackType::HIT: c->you(MsgType::YOUR, "arm is broken!"); break;
+          case AttackType::SPELL: c->you(MsgType::YOUR, "arm is ripped to pieces!"); break;
+        }
+        break;
+    case BodyPart::WING:
+        switch (type) {
+          case AttackType::SHOOT: c->you(MsgType::YOUR, "shot in the wing!"); break;
+          case AttackType::BITE: c->you(MsgType::YOUR, "wing is bitten off!"); break;
+          case AttackType::CUT: c->you(MsgType::YOUR, "wing is chopped off!"); break;
+          case AttackType::STAB: c->you(MsgType::ARE, "stabbed in the wing!"); break;
+          case AttackType::CRUSH: c->you(MsgType::YOUR, "wing is smashed!"); break;
+          case AttackType::HIT: c->you(MsgType::YOUR, "wing is broken!"); break;
+          case AttackType::SPELL: c->you(MsgType::YOUR, "wing is ripped to pieces!"); break;
+        }
+        break;
+    case BodyPart::LEG:
+        switch (type) {
+          case AttackType::SHOOT: c->you(MsgType::YOUR, "shot in the leg!"); break;
+          case AttackType::BITE: c->you(MsgType::YOUR, "leg is bitten off!"); break;
+          case AttackType::CUT: c->you(MsgType::YOUR, "leg is cut off!"); break;
+          case AttackType::STAB: c->you(MsgType::YOUR, "stabbed in the leg!"); break;
+          case AttackType::CRUSH: c->you(MsgType::YOUR, "knee is crushed!"); break;
+          case AttackType::HIT: c->you(MsgType::YOUR, "leg is broken!"); break;
+          case AttackType::SPELL: c->you(MsgType::YOUR, "leg is ripped to pieces!"); break;
+        }
+        break;
+  }
+}
+
 bool Body::takeDamage(const Attack& attack, WCreature creature, double damage) {
   bleed(creature, damage);
   BodyPart part = getBodyPart(attack.level, creature->isAffected(LastingEffect::FLYING),
       creature->isAffected(LastingEffect::COLLAPSED));
   if (isPartDamaged(part, damage) && numGood(part) > 0) {
-    creature->youHit(part, attack.type);
+    youHit(creature, part, attack.type);
     injureBodyPart(creature, part, contains({AttackType::CUT, AttackType::BITE}, attack.type));
     if (isCritical(part)) {
       creature->you(MsgType::DIE, "");
       creature->dieWithAttacker(attack.attacker);
       return true;
     }
-    creature->addEffect(LastingEffect::BLEEDING, 50);
+    creature->addEffect(LastingEffect::BLEEDING, 50_visible);
     if (health <= 0)
       health = 0.1;
     return false;
@@ -726,9 +828,9 @@ bool Body::canCopulateWith() const {
 
 bool Body::canConsume() const {
   switch (material) {
-    case Material::WATER:
+    /*case Material::WATER:
     case Material::FIRE:
-    case Material::SPIRIT: return false;
+    case Material::SPIRIT: return false;*/
     default: return true;
   }
 }
@@ -754,7 +856,18 @@ bool Body::needsToEat() const {
     case Material::FLESH:
     case Material::BONE:
     case Material::UNDEAD_FLESH:
-      return !doesntEat;
+      return true;
+    default:
+      return false;
+  }
+}
+
+bool Body::needsToSleep() const {
+  switch (material) {
+    case Material::FLESH:
+    case Material::BONE:
+    case Material::UNDEAD_FLESH:
+      return true;
     default:
       return false;
   }

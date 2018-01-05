@@ -105,7 +105,9 @@ RICH_ENUM(CreatureId,
     OGRE,
     CHICKEN,
 
+    PRIEST,
     KNIGHT,
+    JESTER,
     AVATAR,
     ARCHER,
     PESEANT,
@@ -158,7 +160,8 @@ RICH_ENUM(CreatureId,
     ANT_SOLDIER,
     ANT_QUEEN,
 
-    SOKOBAN_BOULDER
+    SOKOBAN_BOULDER,
+    HALLOWEEN_KID
 );
 
 class CreatureFactory {
@@ -211,7 +214,7 @@ class CreatureFactory {
   static PCreature getSokobanBoulder(TribeId);
   static PCreature getSpecial(TribeId, bool humanoid, bool large, bool living, bool wings, const ControllerFactory&);
   static PCreature get(CreatureId, TribeId, MonsterAIFactory);
-  static PCreature get(const CreatureAttributes&, TribeId, const ControllerFactory&);
+  static PCreature get(CreatureAttributes, TribeId, const ControllerFactory&);
   static CreatureAttributes getAttributesFromId(CreatureId);
   static CreatureAttributes getAttributes(CreatureId id);
   TribeId getTribeFor(CreatureId);

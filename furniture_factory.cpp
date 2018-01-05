@@ -49,40 +49,40 @@ static Furniture get(FurnitureType type, TribeId tribe) {
     case FurnitureType::WORKSHOP:
       return Furniture("workshop", ViewObject(ViewId::WORKSHOP, ViewLayer::FLOOR), type, tribe)
           .setBlocking()
-          .setUsageTime(5)
+          .setUsageTime(5_visible)
           .setCanHide()
           .setFireInfo(Fire(500, 0.5))
           .setDestroyable(80);
     case FurnitureType::FORGE:
       return Furniture("forge", ViewObject(ViewId::FORGE, ViewLayer::FLOOR), type, tribe)
           .setBlocking()
-          .setUsageTime(5)
+          .setUsageTime(5_visible)
           .setCanHide()
           .setDestroyable(80);
     case FurnitureType::LABORATORY:
       return Furniture("laboratory", ViewObject(ViewId::LABORATORY, ViewLayer::FLOOR), type, tribe)
           .setBlocking()
-          .setUsageTime(5)
+          .setUsageTime(5_visible)
           .setCanHide()
           .setDestroyable(80);
     case FurnitureType::JEWELER:
       return Furniture("jeweler", ViewObject(ViewId::JEWELER, ViewLayer::FLOOR), type, tribe)
           .setBlocking()
-          .setUsageTime(5)
+          .setUsageTime(5_visible)
           .setCanHide()
           .setFireInfo(Fire(500, 0.5))
           .setDestroyable(40);
     case FurnitureType::STEEL_FURNACE:
       return Furniture("steel furnace", ViewObject(ViewId::STEEL_FURNACE, ViewLayer::FLOOR), type, tribe)
           .setBlocking()
-          .setUsageTime(5)
+          .setUsageTime(5_visible)
           .setCanHide()
           .setDestroyable(100);
     case FurnitureType::BOOKCASE_WOOD:
       return Furniture("wooden bookcase", ViewObject(ViewId::BOOKCASE_WOOD, ViewLayer::FLOOR), type, tribe)
           .setBlocking()
           .setUsageType(FurnitureUsageType::STUDY)
-          .setUsageTime(5)
+          .setUsageTime(5_visible)
           .setCanHide()
           .setFireInfo(Fire(700, 1.0))
           .setDestroyable(50);
@@ -90,7 +90,7 @@ static Furniture get(FurnitureType type, TribeId tribe) {
       return Furniture("iron bookcase", ViewObject(ViewId::BOOKCASE_IRON, ViewLayer::FLOOR), type, tribe)
           .setBlocking()
           .setUsageType(FurnitureUsageType::STUDY)
-          .setUsageTime(5)
+          .setUsageTime(5_visible)
           .setCanHide()
           .setFireInfo(Fire(700, 0.5))
           .setDestroyable(50);
@@ -98,7 +98,7 @@ static Furniture get(FurnitureType type, TribeId tribe) {
       return Furniture("golden bookcase", ViewObject(ViewId::BOOKCASE_GOLD, ViewLayer::FLOOR), type, tribe)
           .setBlocking()
           .setUsageType(FurnitureUsageType::STUDY)
-          .setUsageTime(5)
+          .setUsageTime(5_visible)
           .setCanHide()
           .setFireInfo(Fire(700, 0.5))
           .setDestroyable(50);
@@ -133,10 +133,11 @@ static Furniture get(FurnitureType type, TribeId tribe) {
       return Furniture("demon shrine", ViewObject(ViewId::DEMON_SHRINE, ViewLayer::FLOOR), type, tribe)
           .setBlocking()
           .setCanHide()
-          .setUsageTime(5)
+          .setUsageTime(5_visible)
           .setDestroyable(80);
     case FurnitureType::PRISON:
-        return Furniture("prison", ViewObject(ViewId::PRISON, ViewLayer::FLOOR_BACKGROUND), type, tribe);
+      return Furniture("prison", ViewObject(ViewId::PRISON, ViewLayer::FLOOR_BACKGROUND), type, tribe)
+          .setUsageType(FurnitureUsageType::SLEEP);
     case FurnitureType::TREASURE_CHEST:
       return Furniture("treasure chest", ViewObject(ViewId::TREASURE_CHEST, ViewLayer::FLOOR), type, tribe)
           .setCanHide()
@@ -208,13 +209,13 @@ static Furniture get(FurnitureType type, TribeId tribe) {
     case FurnitureType::CROPS:
       return Furniture("wheat", ViewObject(Random.choose(ViewId::CROPS, ViewId::CROPS2), ViewLayer::FLOOR), type, tribe)
           .setUsageType(FurnitureUsageType::CROPS)
-          .setUsageTime(3);
+          .setUsageTime(3_visible);
     case FurnitureType::PIGSTY:
       return Furniture("pigsty", ViewObject(ViewId::MUD, ViewLayer::FLOOR),
                        type, tribe)
           .setTickType(FurnitureTickType::PIGSTY);
     case FurnitureType::GROUND_TORCH:
-      return Furniture("torch", ViewObject(ViewId::TORCH, ViewLayer::FLOOR), type, tribe)
+      return Furniture("standing torch", ViewObject(ViewId::STANDING_TORCH, ViewLayer::FLOOR), type, tribe)
           .setLightEmission(8.2);
     case FurnitureType::TORCH_N:
       return Furniture("torch", ViewObject(ViewId::TORCH, ViewLayer::TORCH1).setAttachmentDir(Dir::N), type, tribe)
@@ -411,6 +412,9 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setEntryType(FurnitureEntry(FurnitureEntry::Trap(Effect::Alarm{})))
           .setEmitsWarning()
           .setConstructMessage(Furniture::SET_UP);
+    case FurnitureType::INVISIBLE_ALARM:
+      return Furniture("", ViewObject(ViewId::EMPTY, ViewLayer::FLOOR), type, tribe)
+          .setEntryType(FurnitureEntry(FurnitureEntry::Trap(Effect::Alarm{true}, true)));
     case FurnitureType::POISON_GAS_TRAP:
       return Furniture("poison gas trap", ViewObject(ViewId::GAS_TRAP, ViewLayer::FLOOR), type, tribe)
           .setEntryType(FurnitureEntry(FurnitureEntry::Trap(Effect::EmitPoisonGas{})))
@@ -638,6 +642,7 @@ FurnitureFactory FurnitureFactory::dungeonOutside(TribeId tribe) {
 
 FurnitureFactory FurnitureFactory::castleOutside(TribeId tribe) {
   return FurnitureFactory(tribe, {
+      {FurnitureType::INVISIBLE_ALARM, 10},
       {FurnitureType::GROUND_TORCH, 1},
       {FurnitureType::WELL, 1},
   });

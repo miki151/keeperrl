@@ -14,7 +14,6 @@
 #include "item.h"
 #include "view_id.h"
 #include "furniture_type.h"
-#include "spawn_type.h"
 #include "minion_task.h"
 #include "furniture_usage.h"
 #include "creature_attributes.h"
@@ -32,6 +31,9 @@
 #include "creature_factory.h"
 #include "resource_info.h"
 #include "workshop_item.h"
+#include "body.h"
+#include "view_id.h"
+#include "view_object.h"
 
 
 template <class Archive>
@@ -65,27 +67,51 @@ void GuardianInfo::serialize(Archive& ar, const unsigned int version) {
 
 SERIALIZABLE(GuardianInfo);
 
+static bool isSleepingFurniture(FurnitureType t) {
+  switch (t) {
+    case FurnitureType::BED:
+    case FurnitureType::BEAST_CAGE:
+    case FurnitureType::GRAVE:
+    case FurnitureType::PRISON:
+      return true;
+    default:
+      return false;
+  }
+}
+
+static optional<FurnitureType> getBedType(WConstCreature c) {
+  if (!c->getBody().needsToSleep())
+    return none;
+  if (c->getViewObject().id() == ViewId::PRISONER)
+    return FurnitureType::PRISON;
+  if (c->getBody().isUndead())
+    return FurnitureType::GRAVE;
+  if (c->getBody().isHumanoid())
+    return FurnitureType::BED;
+  else
+    return FurnitureType::BEAST_CAGE;
+}
+
 void CollectiveConfig::addBedRequirementToImmigrants() {
   for (auto& info : immigrantInfo) {
     PCreature c = CreatureFactory::fromId(info.getId(0), TribeId::getKeeper());
-    if (auto spawnType = c->getAttributes().getSpawnType()) {
-      AttractionType bedType = getDormInfo()[*spawnType].bedType;
+    if (auto bedType = getBedType(c.get())) {
       bool hasBed = false;
       info.visitRequirements(makeVisitor(
           [&](const AttractionInfo& attraction) -> void {
             for (auto& type : attraction.types)
-              if (type == bedType)
+              if (type == *bedType)
                 hasBed = true;
           },
           [&](const auto&) {}
       ));
       if (!hasBed)
-        info.addRequirement(AttractionInfo(1, bedType));
+        info.addRequirement(AttractionInfo(1, *bedType));
     }
   }
 }
 
-CollectiveConfig::CollectiveConfig(int interval, const vector<ImmigrantInfo>& im,
+CollectiveConfig::CollectiveConfig(TimeInterval interval, const vector<ImmigrantInfo>& im,
     CollectiveType t, int maxPop, vector<PopulationIncrease> popInc)
     : immigrantInterval(interval),
     maxPopulation(maxPop), populationIncreases(popInc), immigrantInfo(im), type(t) {
@@ -93,19 +119,19 @@ CollectiveConfig::CollectiveConfig(int interval, const vector<ImmigrantInfo>& im
     addBedRequirementToImmigrants();
 }
 
-CollectiveConfig CollectiveConfig::keeper(int immigrantInterval, int maxPopulation, bool regenerateMana,
+CollectiveConfig CollectiveConfig::keeper(TimeInterval immigrantInterval, int maxPopulation, bool regenerateMana,
     vector<PopulationIncrease> increases, const vector<ImmigrantInfo>& im) {
   auto ret = CollectiveConfig(immigrantInterval, im, KEEPER, maxPopulation, increases);
   ret.regenerateMana = regenerateMana;
   return ret;
 }
 
-CollectiveConfig CollectiveConfig::withImmigrants(int interval, int maxPopulation, const vector<ImmigrantInfo>& im) {
+CollectiveConfig CollectiveConfig::withImmigrants(TimeInterval interval, int maxPopulation, const vector<ImmigrantInfo>& im) {
   return CollectiveConfig(interval, im, VILLAGE, maxPopulation, {});
 }
 
 CollectiveConfig CollectiveConfig::noImmigrants() {
-  return CollectiveConfig(0, {}, VILLAGE, 10000, {});
+  return CollectiveConfig(TimeInterval {}, {}, VILLAGE, 10000, {});
 }
 
 CollectiveConfig& CollectiveConfig::setLeaderAsFighter() {
@@ -123,8 +149,8 @@ int CollectiveConfig::getNumGhostSpawns() const {
   return spawnGhosts;
 }
 
-int CollectiveConfig::getImmigrantTimeout() const {
-  return 500;
+TimeInterval CollectiveConfig::getImmigrantTimeout() const {
+  return 500_visible;
 }
 
 double CollectiveConfig::getGhostProb() const {
@@ -151,11 +177,15 @@ bool CollectiveConfig::getRegenerateMana() const {
   return regenerateMana;
 }
 
+bool CollectiveConfig::allowHealingTaskOutsideTerritory() const {
+  return type == KEEPER;
+}
+
 bool CollectiveConfig::hasImmigrantion(bool currentlyActiveModel) const {
   return type != KEEPER || currentlyActiveModel;
 }
 
-int CollectiveConfig::getImmigrantInterval() const {
+TimeInterval CollectiveConfig::getImmigrantInterval() const {
   return immigrantInterval;
 }
 
@@ -202,18 +232,6 @@ CollectiveConfig& CollectiveConfig::setGuardian(GuardianInfo info) {
 
 const optional<GuardianInfo>& CollectiveConfig::getGuardianInfo() const {
   return guardianInfo;
-}
-
-const EnumMap<SpawnType, DormInfo>& CollectiveConfig::getDormInfo() const {
-  static EnumMap<SpawnType, DormInfo> dormInfo ([](SpawnType type) -> DormInfo {
-      switch (type) {
-        case SpawnType::HUMANOID: return {FurnitureType::BED, CollectiveWarning::BEDS};
-        case SpawnType::UNDEAD: return {FurnitureType::GRAVE};
-        case SpawnType::BEAST: return {FurnitureType::BEAST_CAGE};
-        case SpawnType::DEMON: return {FurnitureType::DEMON_SHRINE};
-      }
-  });
-  return dormInfo;
 }
 
 const vector<FurnitureType>& CollectiveConfig::getRoomsNeedingLight() const {
@@ -424,7 +442,7 @@ int CollectiveConfig::getManaForConquering(const optional<VillainType>& type) {
       case VillainType::LESSER:
         return 100;
       default:
-        break;;
+        break;
     }
   return 50;
 }
@@ -458,14 +476,13 @@ const MinionTaskInfo& CollectiveConfig::getTaskInfo(MinionTask task) {
     switch (task) {
       case MinionTask::WORKER: return {MinionTaskInfo::WORKER, "working"};
       case MinionTask::TRAIN: return {getTrainingPredicate(ExperienceType::MELEE), "training"};
-      case MinionTask::SLEEP: return {FurnitureType::BED, "sleeping"};
+      case MinionTask::SLEEP: return {[](WConstCollective, WConstCreature c, FurnitureType t) {
+            return (!c && isSleepingFurniture(t)) || (c && t == getBedType(c));
+          }, "sleeping"};
       case MinionTask::EAT: return {MinionTaskInfo::EAT, "eating"};
-      case MinionTask::GRAVE: return {FurnitureType::GRAVE, "sleeping"};
-      case MinionTask::LAIR: return {FurnitureType::BEAST_CAGE, "sleeping"};
       case MinionTask::THRONE: return {FurnitureType::THRONE, "throne"};
       case MinionTask::STUDY: return {addManaGenerationPredicate(getTrainingPredicate(ExperienceType::SPELL)),
            "studying"};
-      case MinionTask::PRISON: return {FurnitureType::PRISON, "prison"};
       case MinionTask::CROPS: return {FurnitureType::CROPS, "crops"};
       case MinionTask::RITUAL: return {FurnitureType::DEMON_SHRINE, "rituals"};
       case MinionTask::ARCHERY: return {MinionTaskInfo::ARCHERY, "archery range"};

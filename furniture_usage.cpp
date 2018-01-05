@@ -142,7 +142,7 @@ void FurnitureUsage::handle(FurnitureUsageType type, Position pos, WConstFurnitu
       c->getLevel()->changeLevel(*pos.getLandingLink(), c);
       break;
     case FurnitureUsageType::TIE_UP:
-      c->addEffect(LastingEffect::TIED_UP, 100);
+      c->addEffect(LastingEffect::TIED_UP, 100_visible);
       break;
     case FurnitureUsageType::TRAIN:
       c->addSound(SoundId::MISSED_ATTACK);

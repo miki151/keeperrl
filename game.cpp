@@ -44,7 +44,7 @@ void Game::serialize(Archive& ar, const unsigned int version) {
   ar(musicType, statistics, spectator, tribes, gameIdentifier, players);
   ar(gameDisplayName, finishCurrentMusic, models, visited, baseModel, campaign, localTime, turnEvents);
   if (Archive::is_loading::value)
-    sunlightInfo.update(currentTime);
+    sunlightInfo.update(getGlobalTime());
 }
 
 SERIALIZABLE(Game);
@@ -57,7 +57,7 @@ static string getGameId(SaveFileInfo info) {
 Game::Game(Table<PModel>&& m, Vec2 basePos, const CampaignSetup& c)
     : models(std::move(m)), visited(models.getBounds(), false), baseModel(basePos),
       tribes(Tribe::generateTribes()), musicType(MusicType::PEACEFUL), campaign(c.campaign) {
-  sunlightInfo.update(currentTime);
+  sunlightInfo.update(getGlobalTime());
   gameIdentifier = c.gameIdentifier;
   gameDisplayName = c.gameDisplayName;
   for (Vec2 v : models.getBounds())
@@ -104,8 +104,8 @@ bool Game::isTurnBased() {
   return !spectator && (!playerControl || playerControl->isTurnBased());
 }
 
-double Game::getGlobalTime() const {
-  return currentTime;
+GlobalTime Game::getGlobalTime() const {
+  return GlobalTime((int) currentTime);
 }
 
 const vector<WCollective>& Game::getVillains(VillainType type) const {
@@ -179,13 +179,13 @@ void Game::prepareSiteRetirement() {
   WModel mainModel = models[baseModel].get();
   mainModel->setGame(nullptr);
   for (WCollective col : models[baseModel]->getCollectives())
-    for (WCreature c : col->getCreatures())
+    for (WCreature c : copyOf(col->getCreatures()))
       if (c->getPosition().getModel() != mainModel)
         transferCreature(c, mainModel);
   for (Vec2 v : models.getBounds())
     if (models[v] && v != baseModel)
       for (WCollective col : models[v]->getCollectives())
-        for (WCreature c : col->getCreatures())
+        for (WCreature c : copyOf(col->getCreatures()))
           if (c->getPosition().getModel() == mainModel)
             transferCreature(c, models[v].get());
   // So we don't have references to creatures in another model.
@@ -201,31 +201,61 @@ void Game::doneRetirement() {
   UniqueEntity<Item>::clearOffset();
 }
 
-optional<ExitInfo> Game::update(double timeDiff) {
-  ScopeTimer timer("Game::update timer");
-  currentTime += timeDiff;
-  WModel currentModel = getCurrentModel();
+optional<ExitInfo> Game::updateInput() {
+  if (spectator)
+    while (1) {
+      UserInput input = view->getAction();
+      if (input.getId() == UserInputId::EXIT)
+        return ExitInfo(ExitAndQuit());
+      if (input.getId() == UserInputId::IDLE)
+        break;
+    }
+  if (playerControl && !playerControl->isTurnBased()) {
+    while (1) {
+      UserInput input = view->getAction();
+      if (input.getId() == UserInputId::IDLE)
+        break;
+      else
+        lastUpdate = none;
+      playerControl->processInput(view, input);
+      if (exitInfo)
+        return exitInfo;
+    }
+  }
+  return none;
+}
+
+void Game::initializeModels() {
   // Give every model a couple of turns so that things like shopkeepers can initialize.
   for (Vec2 v : models.getBounds())
     if (models[v]) {
       // Use top level's id as unique id of the model.
       auto id = models[v]->getTopLevel()->getUniqueId();
       if (!localTime.count(id)) {
-        localTime[id] = models[v]->getLocalTime() + 2;
+        localTime[id] = models[v]->getLocalTime().getDouble() + 2;
         updateModel(models[v].get(), localTime[id]);
       }
   }
+}
+
+optional<ExitInfo> Game::update(double timeDiff) {
+  ScopeTimer timer("Game::update timer");
+  if (auto exitInfo = updateInput())
+    return exitInfo;
+  considerRealTimeRender();
+  initializeModels();
+  currentTime += timeDiff;
+  WModel currentModel = getCurrentModel();
   auto currentId = currentModel->getTopLevel()->getUniqueId();
-  localTime[currentId] += timeDiff;
-  while (!lastTick || currentTime > *lastTick + 1) {
+  while (!lastTick || currentTime >= *lastTick + 1) {
     if (!lastTick)
-      lastTick = currentTime;
+      lastTick = (int)currentTime;
     else
       *lastTick += 1;
-    tick(*lastTick);
+    tick(GlobalTime(*lastTick));
   }
-  considerRealTimeRender();
   considerRetiredLoadedEvent(getModelCoords(currentModel));
+  localTime[currentId] += timeDiff;
   return updateModel(currentModel, localTime[currentId]);
 }
 
@@ -242,29 +272,8 @@ void Game::considerRealTimeRender() {
 
 optional<ExitInfo> Game::updateModel(WModel model, double totalTime) {
   do {
-    if (spectator)
-      while (1) {
-        UserInput input = view->getAction();
-        if (input.getId() == UserInputId::EXIT)
-          return ExitInfo(ExitAndQuit());
-        if (input.getId() == UserInputId::IDLE)
-          break;
-      }
-    if (playerControl && !playerControl->isTurnBased()) {
-      while (1) {
-        UserInput input = view->getAction();
-        if (input.getId() == UserInputId::IDLE)
-          break;
-        else
-          lastUpdate = none;
-        playerControl->processInput(view, input);
-        if (exitInfo)
-          return exitInfo;
-      }
-    }
-    if (model->getLocalTime() >= totalTime)
+    if (!model->update(totalTime))
       return none;
-    model->update(totalTime);
     if (exitInfo)
       return exitInfo;
     if (wasTransfered) {
@@ -279,9 +288,9 @@ bool Game::isVillainActive(WConstCollective col) {
   return m == getMainModel().get() || campaign->isInInfluence(getModelCoords(m));
 }
 
-void Game::tick(double time) {
-  if (!turnEvents.empty() && time > *turnEvents.begin()) {
-    int turn = *turnEvents.begin();
+void Game::tick(GlobalTime time) {
+  if (!turnEvents.empty() && time.getVisibleInt() > *turnEvents.begin()) {
+    auto turn = *turnEvents.begin();
     if (turn == 0)
       uploadEvent("campaignStarted", campaign->getParameters());
     else
@@ -289,7 +298,7 @@ void Game::tick(double time) {
     turnEvents.erase(turn);
   }
   auto previous = sunlightInfo.getState();
-  sunlightInfo.update(currentTime);
+  sunlightInfo.update(GlobalTime((int) currentTime));
   if (previous != sunlightInfo.getState())
     for (Vec2 v : models.getBounds())
       if (WModel m = models[v].get()) {
@@ -319,6 +328,7 @@ void Game::exitAction() {
   switch (Action(*ind)) {
     case RETIRE:
       if (view->yesOrNoPrompt("Retire your dungeon and share it online?")) {
+        addEvent(EventInfo::RetiredGame{});
         exitInfo = ExitInfo(GameSaveType::RETIRED_SITE);
         return;
       }
@@ -459,7 +469,7 @@ View* Game::getView() const {
 void Game::conquered(const string& title, int numKills, int points) {
   string text= "You have conquered this land. You killed " + toString(numKills) +
       " enemies and scored " + toString(points) +
-      " points. Thank you for playing KeeperRL alpha.\n \n";
+      " points. Thank you for playing KeeperRL!\n \n";
   for (string stat : statistics->getText())
     text += stat + "\n";
   view->presentText("Victory", text);
@@ -470,7 +480,29 @@ void Game::conquered(const string& title, int numKills, int points) {
         c.playerName = title;
         c.gameResult = "achieved world domination";
         c.gameWon = true;
-        c.turns = (int) getGlobalTime();
+        c.turns = getGlobalTime().getVisibleInt();
+        c.campaignType = campaign->getType();
+        c.playerRole = campaign->getPlayerRole();
+  );
+  highscores->add(score);
+  highscores->present(view, score);
+}
+
+void Game::retired(const string& title, int numKills, int points) {
+  int turns = getGlobalTime().getVisibleInt();
+  string text = "You have survived in this land for " + toString(turns) + " turns. You killed " + toString(numKills) +
+      " enemies. Thank you for playing KeeperRL!\n \n";
+  for (string stat : statistics->getText())
+    text += stat + "\n";
+  view->presentText("Survived", text);
+  Highscores::Score score = CONSTRUCT(Highscores::Score,
+        c.worldName = getWorldName();
+        c.points = points;
+        c.gameId = getGameIdentifier();
+        c.playerName = title;
+        c.gameResult = "retired";
+        c.gameWon = false;
+        c.turns = turns;
         c.campaignType = campaign->getType();
         c.playerRole = campaign->getPlayerRole();
   );
@@ -499,7 +531,7 @@ void Game::gameOver(WConstCreature creature, int numKills, const string& enemies
         c.playerName = *creature->getName().first();
         c.gameResult = creature->getDeathReason().value_or("");
         c.gameWon = false;
-        c.turns = (int) getGlobalTime();
+        c.turns = getGlobalTime().getVisibleInt();
         c.campaignType = campaign->getType();
         c.playerRole = campaign->getPlayerRole();
   );

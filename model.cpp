@@ -106,34 +106,33 @@ void Model::checkCreatureConsistency() {
   }
 }
 
-void Model::update(double totalTime) {
-  if (WCreature creature = timeQueue->getNextCreature()) {
+bool Model::update(double totalTime) {
+  currentTime = totalTime;
+  if (WCreature creature = timeQueue->getNextCreature(totalTime)) {
     CHECK(creature->getLevel() != nullptr) << "Creature misplaced before processing: " << creature->getName().bare() <<
         ". Any idea why this happened?";
     if (creature->isDead()) {
       checkCreatureConsistency();
       FATAL << "Dead: " << creature->getName().bare();
     }
-    currentTime = creature->getLocalTime();
-    if (currentTime > totalTime)
-      return;
-    while (totalTime > lastTick + 1) {
-      lastTick += 1;
+    while (totalTime > lastTick.getDouble()) {
+      lastTick += 1_visible;
       tick(lastTick);
     }
     CHECK(creature->getLevel() != nullptr) << "Creature misplaced before moving: " << creature->getName().bare() <<
         ". Any idea why this happened?";
     if (!creature->isDead())
-      creature->makeMove();
+       creature->makeMove();
     CHECK(creature->getLevel() != nullptr) << "Creature misplaced after moving: " << creature->getName().bare() <<
         ". Any idea why this happened?";
     if (!creature->isDead() && creature->getLevel()->getModel() == this)
       CHECK(creature->getPosition().getCreature() == creature);
-  } else
-    currentTime = totalTime;
+    return true;
+  }
+  return false;
 }
 
-void Model::tick(double time) {
+void Model::tick(LocalTime time) {
   for (WCreature c : timeQueue->getAllCreatures()) {
     c->tick();
   }
@@ -146,10 +145,10 @@ void Model::tick(double time) {
 }
 
 void Model::addCreature(PCreature c) {
-  addCreature(std::move(c), 1 + Random.getDouble());
+  addCreature(std::move(c), 1_visible);// + Random.getDouble());
 }
 
-void Model::addCreature(PCreature c, double delay) {
+void Model::addCreature(PCreature c, TimeInterval delay) {
   timeQueue->addCreature(std::move(c), getLocalTime() + delay);
 }
 
@@ -179,16 +178,24 @@ PModel Model::create() {
 Model::~Model() {
 }
 
-double Model::getLocalTime() const {
+LocalTime Model::getLocalTime() const {
+  return LocalTime((int) currentTime);
+}
+
+double Model::getLocalTimeDouble() const {
   return currentTime;
 }
 
-void Model::increaseLocalTime(WCreature c, double diff) {
-  timeQueue->increaseTime(c, diff);
+TimeQueue& Model::getTimeQueue() {
+  return *timeQueue;
 }
 
-double Model::getLocalTime(WConstCreature c) {
-  return timeQueue->getTime(c);
+int Model::getMoveCounter() const {
+  return moveCounter;
+}
+
+void Model::increaseMoveCounter() {
+  ++moveCounter;
 }
 
 void Model::setGame(WGame g) {

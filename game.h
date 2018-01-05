@@ -6,6 +6,7 @@
 #include "enum_variant.h"
 #include "position.h"
 #include "exit_info.h"
+#include "game_time.h"
 
 class Options;
 class Highscores;
@@ -43,7 +44,7 @@ class Game : public OwnedObject<Game> {
   Statistics& getStatistics();
   const Statistics& getStatistics() const;
   Tribe* getTribe(TribeId) const;
-  double getGlobalTime() const;
+  GlobalTime getGlobalTime() const;
   WCollective getPlayerCollective() const;
   WPlayerControl getPlayerControl() const;
   void addPlayer(WCreature);
@@ -61,7 +62,8 @@ class Game : public OwnedObject<Game> {
 
   void gameOver(WConstCreature player, int numKills, const string& enemiesString, int points);
   void conquered(const string& title, int numKills, int points);
-  void killedKeeper(const string& title, const string& keeper, const string& land, int numKills, int points);
+  void retired(const string& title, int numKills, int points);
+
   bool isGameOver() const;
   bool isTurnBased();
   bool isVillainActive(WConstCollective);
@@ -76,6 +78,7 @@ class Game : public OwnedObject<Game> {
   vector<WModel> getAllModels() const;
   bool isSingleModel() const;
   int getSaveProgressCount() const;
+  WModel getCurrentModel() const;
 
   void prepareSiteRetirement();
   void doneRetirement();
@@ -89,10 +92,10 @@ class Game : public OwnedObject<Game> {
   Game(Table<PModel>&&, Vec2 basePos, const CampaignSetup&);
 
   private:
+  optional<ExitInfo> update();
   void updateSunlightInfo();
-  void tick(double time);
+  void tick(GlobalTime);
   PCreature makeAdventurer(int handicap);
-  WModel getCurrentModel() const;
   Vec2 getModelCoords(const WModel) const;
   optional<ExitInfo> updateModel(WModel, double totalTime);
   string getPlayerName() const;
@@ -107,7 +110,7 @@ class Game : public OwnedObject<Game> {
   double SERIAL(currentTime) = 0;
   optional<ExitInfo> exitInfo;
   Tribe::Map SERIAL(tribes);
-  optional<double> SERIAL(lastTick);
+  optional<int> SERIAL(lastTick);
   string SERIAL(gameIdentifier);
   string SERIAL(gameDisplayName);
   map<VillainType, vector<WCollective>> SERIAL(villainsByType);
@@ -129,6 +132,8 @@ class Game : public OwnedObject<Game> {
   friend class GameListener;
   void considerRealTimeRender();
   void considerRetiredLoadedEvent(Vec2 coord);
+  optional<ExitInfo> updateInput();
+  void initializeModels();
 };
 
 

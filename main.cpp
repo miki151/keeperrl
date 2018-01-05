@@ -256,6 +256,8 @@ static int keeperMain(po::parser& commandLineFlags) {
   bool useSingleThread = commandLineFlags["single_thread"].was_set();
   FatalLog.addOutput(DebugOutput::crash());
   FatalLog.addOutput(DebugOutput::toStream(std::cerr));
+  UserErrorLog.addOutput(DebugOutput::exitProgram());
+  UserErrorLog.addOutput(DebugOutput::toStream(std::cerr));
 #ifndef RELEASE
   ogzstream compressedLog("log.gz");
   if (!commandLineFlags["nolog"].was_set())
@@ -373,6 +375,7 @@ static int keeperMain(po::parser& commandLineFlags) {
       freeDataPath.file("images/mouse_cursor.png"),
       freeDataPath.file("images/mouse_cursor2.png"));
   FatalLog.addOutput(DebugOutput::toString([&renderer](const string& s) { renderer.showError(s);}));
+  UserErrorLog.addOutput(DebugOutput::toString([&renderer](const string& s) { renderer.showError(s);}));
   GuiFactory guiFactory(renderer, &clock, &options, &keybindingMap);
   guiFactory.loadFreeImages(freeDataPath.subdirectory("images"));
   if (tilesPresent) {

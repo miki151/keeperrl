@@ -50,17 +50,21 @@
 #include "creature_factory.h"
 #include "resource_info.h"
 #include "workshop_item.h"
+#include "quarters.h"
 
 
 template <class Archive>
 void Collective::serialize(Archive& ar, const unsigned int version) {
   ar(SUBCLASS(TaskCallback), SUBCLASS(UniqueEntity<Collective>), SUBCLASS(EventListener));
-  ar(creatures, leader, taskMap, tribe, control, byTrait, bySpawnType);
+  ar(creatures, leader, taskMap, tribe, control, byTrait);
   ar(territory, alarmInfo, markedItems, constructions, minionEquipment);
   ar(surrendering, delayedPos, knownTiles, technologies, kills, points, currentTasks);
   ar(credit, level, immigration, teams, name, conqueredVillains);
   ar(config, warnings, knownVillains, knownVillainLocations, banished);
-  ar(villainType, enemyId, workshops, zones, tileEfficiency, discoverable);
+  ar(villainType, enemyId, workshops, zones, tileEfficiency, discoverable, numPrisonerOrders, quarters);
+  // hack to make retired villains discoverable, remove with save version change
+  if (villainType == VillainType::MAIN)
+    discoverable = true;
 }
 
 SERIALIZABLE(Collective)
@@ -138,11 +142,28 @@ void Collective::addCreature(PCreature creature, Position pos, EnumSet<MinionTra
   addCreature(c, traits);
 }
 
+void Collective::updateCreatureStatus(WCreature c) {
+  c->getStatus().set(CreatureStatus::CIVILIAN,
+      c->getBody().isHumanoid() &&
+      !hasTrait(c, MinionTrait::FIGHTER) &&
+      !hasTrait(c, MinionTrait::LEADER));
+  c->getStatus().set(CreatureStatus::FIGHTER, hasTrait(c, MinionTrait::FIGHTER));
+  c->getStatus().set(CreatureStatus::LEADER, hasTrait(c, MinionTrait::LEADER));
+}
+
 void Collective::addCreature(WCreature c, EnumSet<MinionTrait> traits) {
+  if (c->isAffected(LastingEffect::SUMMONED)) {
+    traits.insert(MinionTrait::NO_LIMIT);
+    traits.insert(MinionTrait::SUMMONED);
+  }
   if (!traits.contains(MinionTrait::FARM_ANIMAL) && !c->getController()->isCustomController())
     c->setController(makeOwner<Monster>(c, MonsterAIFactory::collective(this)));
-  if (traits.contains(MinionTrait::LEADER))
+  if (traits.contains(MinionTrait::LEADER)) {
+    CHECK(!leader);
     leader = c;
+    if (config->isLeaderFighter())
+      traits.insert(MinionTrait::FIGHTER);
+  }
   if (c->getTribeId() != *tribe)
     c->setTribe(*tribe);
   if (WGame game = getGame())
@@ -152,8 +173,7 @@ void Collective::addCreature(WCreature c, EnumSet<MinionTrait> traits) {
   creatures.push_back(c);
   for (MinionTrait t : traits)
     byTrait[t].push_back(c);
-  if (auto spawnType = c->getAttributes().getSpawnType())
-    bySpawnType[*spawnType].push_back(c);
+  updateCreatureStatus(c);
   for (WItem item : c->getEquipment().getItems())
     CHECK(minionEquipment->tryToOwn(c, item));
   control->onMemberAdded(c);
@@ -162,8 +182,6 @@ void Collective::addCreature(WCreature c, EnumSet<MinionTrait> traits) {
 void Collective::removeCreature(WCreature c) {
   creatures.removeElement(c);
   returnResource(taskMap->freeFromTask(c));
-  if (auto spawnType = c->getAttributes().getSpawnType())
-    bySpawnType[*spawnType].removeElement(c);
   for (auto team : teams->getContaining(c))
     teams->remove(team, c);
   for (MinionTrait t : ENUM_ALL(MinionTrait))
@@ -274,7 +292,7 @@ const vector<WCreature>& Collective::getCreatures() const {
 
 void Collective::setMinionTask(WConstCreature c, MinionTask task) {
   if (auto duration = MinionTasks::getDuration(c, task))
-    currentTasks.set(c, {task, c->getLocalTime() + *duration});
+    currentTasks.set(c, {task, getLocalTime() + *duration});
   else
     currentTasks.set(c, {task, none});
 }
@@ -320,7 +338,7 @@ bool Collective::isMinionTaskPossible(WCreature c, MinionTask task) {
 
 WTask Collective::getStandardTask(WCreature c) {
   auto current = currentTasks.getMaybe(c);
-  if (!current || (current->finishTime && *current->finishTime < c->getLocalTime()) || !isTaskGood(c, current->task)) {
+  if (!current || (current->finishTime && *current->finishTime < getLocalTime()) || !isTaskGood(c, current->task)) {
     currentTasks.erase(c);
     setRandomTask(c);
   }
@@ -328,7 +346,7 @@ WTask Collective::getStandardTask(WCreature c) {
     MinionTask task = current->task;
     auto& info = config->getTaskInfo(task);
     if (!current->finishTime) // see comment in header
-      currentTasks.getOrFail(c).finishTime = -1000;
+      currentTasks.getOrFail(c).finishTime = LocalTime(-1000);
     if (info.warning && !territory->isEmpty())
       warnings->setWarning(*info.warning, false);
     if (PTask ret = MinionTasks::generate(this, c, task))
@@ -352,7 +370,7 @@ bool Collective::isConquered() const {
 
 vector<WCreature> Collective::getConsumptionTargets(WCreature consumer) const {
   vector<WCreature> ret;
-  for (WCreature c : getCreatures(MinionTrait::FIGHTER))
+  for (WCreature c : getCreatures())
     if (consumer->canConsume(c) && c != getLeader())
       ret.push_back(c);
   return ret;
@@ -389,7 +407,7 @@ PTask Collective::getEquipmentTask(WCreature c) {
   return nullptr;
 }
 
-const static EnumSet<MinionTask> healingTasks {MinionTask::SLEEP, MinionTask::GRAVE, MinionTask::LAIR};
+const static EnumSet<MinionTask> healingTasks {MinionTask::SLEEP};
 
 void Collective::considerHealingTask(WCreature c) {
   if (c->getBody().canHeal() && !c->isAffected(LastingEffect::POISON))
@@ -529,8 +547,8 @@ MoveInfo Collective::getMove(WCreature c) {
     }
     return NoMove;
   };
-
-  considerHealingTask(c);
+  if (getConfig().allowHealingTaskOutsideTerritory() || territory->contains(c->getPosition()))
+    considerHealingTask(c);
   return getFirstGoodMove(
       priorityTask,
       followTeamLeader,
@@ -562,7 +580,7 @@ void Collective::addNewCreatureMessage(const vector<WCreature>& immigrants) {
     control->addMessage(PlayerMessage(immigrants[0]->getName().a() + " joins your forces.")
         .setCreature(immigrants[0]->getUniqueId()));
   else {
-    control->addMessage(PlayerMessage("A " + immigrants[0]->getName().multiple(immigrants.size()) +
+    control->addMessage(PlayerMessage("A " + immigrants[0]->getName().groupOf(immigrants.size()) +
           " joins your forces.").setCreature(immigrants[0]->getUniqueId()));
   }
 }
@@ -578,7 +596,14 @@ void Collective::update(bool currentlyActive) {
     immigration->update();
 }
 
+void Collective::considerTransferingLostMinions() {
+  for (auto c : getCreatures())
+    if (c->getPosition().getModel() != getGame()->getCurrentModel())
+      getGame()->transferCreature(c, getModel());
+}
+
 void Collective::tick() {
+  considerTransferingLostMinions();
   dangerLevelCache = none;
   control->tick();
   zones->tick();
@@ -588,7 +613,7 @@ void Collective::tick() {
   if (config->getEnemyPositions() && Random.roll(5)) {
     vector<Position> enemyPos = getEnemyPositions();
     if (!enemyPos.empty())
-      delayDangerousTasks(enemyPos, getLocalTime() + 20);
+      delayDangerousTasks(enemyPos, getLocalTime() + 20_visible);
     else {
       alarmInfo.reset();
       control->onNoEnemies();
@@ -640,40 +665,19 @@ const vector<WCreature>& Collective::getCreatures(MinionTrait trait) const {
   return byTrait[trait];
 }
 
-const vector<WCreature>& Collective::getCreatures(SpawnType type) const {
-  return bySpawnType[type];
-}
-
 bool Collective::hasTrait(WConstCreature c, MinionTrait t) const {
   return byTrait[t].contains(c);
-}
-
-bool Collective::hasAnyTrait(WConstCreature c, EnumSet<MinionTrait> traits) const {
-  for (MinionTrait t : traits)
-    if (hasTrait(c, t))
-      return true;
-  return false;
 }
 
 void Collective::setTrait(WCreature c, MinionTrait t) {
   if (!hasTrait(c, t))
     byTrait[t].push_back(c);
+  updateCreatureStatus(c);
 }
 
 void Collective::removeTrait(WCreature c, MinionTrait t) {
   byTrait[t].removeElementMaybe(c);
-}
-
-vector<WCreature> Collective::getCreaturesAnyOf(EnumSet<MinionTrait> trait) const {
-  EntitySet<Creature> added;
-  vector<WCreature> ret;
-  for (MinionTrait t : trait)
-    for (WCreature c : byTrait[t])
-      if (!added.contains(c)) {
-        ret.push_back(c);
-        added.insert(c);
-      }
-  return ret;
+  updateCreatureStatus(c);
 }
 
 double Collective::getKillManaScore(WConstCreature victim) const {
@@ -706,9 +710,10 @@ void Collective::onEvent(const GameEvent& event) {
   using namespace EventInfo;
   event.visit(
       [&](const Alarm& info) {
-        static const int alarmTime = 100;
+        static const auto alarmTime = 100_visible;
         if (getTerritory().contains(info.pos)) {
-          control->addMessage(PlayerMessage("An alarm goes off.", MessagePriority::HIGH).setPosition(info.pos));
+          if (!info.silent)
+            control->addMessage(PlayerMessage("An alarm goes off.", MessagePriority::HIGH).setPosition(info.pos));
           alarmInfo = AlarmInfo {getGlobalTime() + alarmTime, info.pos };
           for (WCreature c : byTrait[MinionTrait::FIGHTER])
             if (c->isAffected(LastingEffect::SLEEP))
@@ -751,23 +756,27 @@ void Collective::onEvent(const GameEvent& event) {
       },
       [&](const ConqueredEnemy& info) {
         auto col = info.collective;
-        if (col->isDiscoverable())
-          if (auto enemyId = col->getEnemyId()) {
-            if (auto& name = col->getName())
-              control->addMessage(PlayerMessage("The tribe of " + name->full + " is destroyed.",
-                  MessagePriority::CRITICAL));
-            else
-              control->addMessage(PlayerMessage("An unnamed tribe is destroyed.", MessagePriority::CRITICAL));
-            if (!conqueredVillains.count(*enemyId)) {
-              auto mana = config->getManaForConquering(col->getVillainType());
-              addMana(mana);
-              control->addMessage(PlayerMessage("You feel a surge of power (+" + toString(mana) + " mana)",
-                  MessagePriority::CRITICAL));
-              conqueredVillains.insert(*enemyId);
-            } else
-              control->addMessage(PlayerMessage("Note: mana is only rewarded once per each kind of enemy.",
-                  MessagePriority::CRITICAL));
-          }
+        if (col->isDiscoverable()) {
+          if (auto& name = col->getName())
+            control->addMessage(PlayerMessage("The tribe of " + name->full + " is destroyed.",
+                MessagePriority::CRITICAL));
+          else
+            control->addMessage(PlayerMessage("An unnamed tribe is destroyed.", MessagePriority::CRITICAL));
+          auto mana = config->getManaForConquering(col->getVillainType());
+          addMana(mana);
+          control->addMessage(PlayerMessage("You feel a surge of power (+" + toString(mana) + " mana)",
+              MessagePriority::CRITICAL));
+        }
+        auto civilians = col->getCreatures().filter(
+            [&](WConstCreature c) { return c->getBody().isHumanoid() && !col->hasTrait(c, MinionTrait::FIGHTER); });
+        int numCaptured = min(civilians.size(), numPrisonerOrders);
+        numPrisonerOrders -= numCaptured;
+        for (int i : Range(numCaptured)) {
+          auto pos = civilians[i]->getPosition();
+          civilians[i]->dieNoReason(Creature::DropType::ONLY_INVENTORY);
+          addCreature(CreatureFactory::fromId(CreatureId::PRISONER, getTribeId()), pos,
+              {MinionTrait::PRISONER, MinionTrait::NO_LIMIT});
+        }
       },
       [&](const auto&) {}
   );
@@ -781,7 +790,7 @@ void Collective::onMinionKilled(WCreature victim, WCreature killer) {
   control->onMemberKilled(victim, killer);
   if (hasTrait(victim, MinionTrait::PRISONER) && killer && getCreatures().contains(killer))
     returnResource({ResourceId::PRISONER_HEAD, 1});
-  if (!hasTrait(victim, MinionTrait::FARM_ANIMAL)) {
+  if (!hasTrait(victim, MinionTrait::FARM_ANIMAL) && !hasTrait(victim, MinionTrait::SUMMONED)) {
     decreaseMoraleForKill(killer, victim);
     if (killer)
       control->addMessage(PlayerMessage(victim->getName().a() + " is killed by " + killer->getName().a(),
@@ -848,11 +857,11 @@ const TileEfficiency& Collective::getTileEfficiency() const {
   return *tileEfficiency;
 }
 
-double Collective::getLocalTime() const {
+LocalTime Collective::getLocalTime() const {
   return getModel()->getLocalTime();
 }
 
-double Collective::getGlobalTime() const {
+GlobalTime Collective::getGlobalTime() const {
   return getGame()->getGlobalTime();
 }
 
@@ -1223,7 +1232,7 @@ void Collective::updateConstructions() {
   }
 }
 
-void Collective::delayDangerousTasks(const vector<Position>& enemyPos1, double delayTime) {
+void Collective::delayDangerousTasks(const vector<Position>& enemyPos1, LocalTime delayTime) {
   vector<Vec2> enemyPos = enemyPos1
       .filter([=] (const Position& p) { return p.isSameLevel(level); })
       .transform([] (const Position& p) { return p.getCoord();});
@@ -1293,6 +1302,7 @@ void Collective::retire() {
   knownTiles->limitToModel(getModel());
   knownVillainLocations.clear();
   knownVillains.clear();
+  discoverable = true;
 }
 
 CollectiveWarnings& Collective::getWarnings() {
@@ -1334,7 +1344,8 @@ void Collective::addProducesMessage(WConstCreature c, const vector<PItem>& items
 void Collective::onAppliedSquare(WCreature c, Position pos) {
   if (auto furniture = pos.getFurniture(FurnitureLayer::MIDDLE)) {
     // Furniture have variable usage time, so just multiply by it to be independent of changes.
-    double efficiency = tileEfficiency->getEfficiency(pos) * furniture->getUsageTime() * getEfficiency(c);
+    double efficiency = tileEfficiency->getEfficiency(pos) * furniture->getUsageTime().getVisibleDouble()
+        * getEfficiency(c);
     switch (furniture->getType()) {
       case FurnitureType::THRONE:
         if (config->getRegenerateMana())
@@ -1354,7 +1365,7 @@ void Collective::onAppliedSquare(WCreature c, Position pos) {
     }
     if (auto usage = furniture->getUsageType()) {
       auto increaseLevel = [&] (ExperienceType exp) {
-        double increase = 0.005 * efficiency;
+        double increase = 0.007 * efficiency;
         if (auto maxLevel = config->getTrainingMaxLevel(exp, furniture->getType()))
           increase = min(increase, *maxLevel - c->getAttributes().getExpLevel(exp));
         if (increase > 0)
@@ -1452,7 +1463,20 @@ void Collective::onExternalEnemyKilled(const std::string& name) {
   int mana = 100;
   addMana(mana);
   control->addMessage(PlayerMessage("You feel a surge of power (+" + toString(mana) + " mana)",
-      MessagePriority::CRITICAL));
+                                    MessagePriority::CRITICAL));
+}
+
+void Collective::addPrisonerOrder() {
+  ++numPrisonerOrders;
+}
+
+void Collective::removePrisonerOrder() {
+  if (numPrisonerOrders > 0)
+    --numPrisonerOrders;
+}
+
+int Collective::getNumPrisonerOrders() const {
+  return numPrisonerOrders;
 }
 
 void Collective::onCopulated(WCreature who, WCreature with) {
@@ -1518,6 +1542,14 @@ Zones& Collective::getZones() {
 
 const Zones& Collective::getZones() const {
   return *zones;
+}
+
+Quarters& Collective::getQuarters() {
+  return *quarters;
+}
+
+const Quarters& Collective::getQuarters() const {
+  return *quarters;
 }
 
 const TaskMap& Collective::getTaskMap() const {

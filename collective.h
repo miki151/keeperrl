@@ -1,3 +1,4 @@
+
 /* Copyright (C) 2013-2014 Michal Brzozowski (rusolis@poczta.fm)
 
    This file is part of KeeperRL.
@@ -20,7 +21,6 @@
 #include "event_listener.h"
 #include "entity_map.h"
 #include "minion_trait.h"
-#include "spawn_type.h"
 
 class CollectiveAttack;
 class Creature;
@@ -47,6 +47,7 @@ class Zones;
 struct ItemFetchInfo;
 class CollectiveWarnings;
 class Immigration;
+class Quarters;
 
 class Collective : public TaskCallback, public UniqueEntity<Collective>, public EventListener<Collective> {
   public:
@@ -76,8 +77,8 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   VillainType getVillainType() const;
   optional<EnemyId> getEnemyId() const;
   WCollectiveControl getControl() const;
-  double getLocalTime() const;
-  double getGlobalTime() const;
+  LocalTime getLocalTime() const;
+  GlobalTime getGlobalTime() const;
 
   typedef CollectiveResourceId ResourceId;
 
@@ -86,11 +87,8 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   const vector<WCreature>& getCreatures() const;
   bool isConquered() const;
 
-  const vector<WCreature>& getCreatures(SpawnType) const;
   const vector<WCreature>& getCreatures(MinionTrait) const;
-  vector<WCreature> getCreaturesAnyOf(EnumSet<MinionTrait>) const;
   bool hasTrait(WConstCreature, MinionTrait) const;
-  bool hasAnyTrait(WConstCreature, EnumSet<MinionTrait>) const;
   void setTrait(WCreature c, MinionTrait);
   void removeTrait(WCreature c, MinionTrait);
 
@@ -150,6 +148,8 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   void addTorch(Position);
   Zones& getZones();
   const Zones& getZones() const;
+  Quarters& getQuarters();
+  const Quarters& getQuarters() const;
   void cancelMarkedTask(Position);
   void orderDestruction(Position pos, const DestroyAction&);
   double getDangerLevel() const;
@@ -184,6 +184,10 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   void addAttack(const CollectiveAttack&);
   void onRansomPaid();
   void onExternalEnemyKilled(const string& name);
+
+  void addPrisonerOrder();
+  void removePrisonerOrder();
+  int getNumPrisonerOrders() const;
 
   CollectiveTeams& getTeams();
   const CollectiveTeams& getTeams() const;
@@ -251,7 +255,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
     MinionTask SERIAL(task);
     // If none then it's a one-time task. Upon allocating the task, the variable is set to a negative value,
     // so the job immediately times out after finishing the task.
-    optional<double> SERIAL(finishTime);
+    optional<LocalTime> SERIAL(finishTime);
 
     SERIALIZE_ALL(task, finishTime)
   };
@@ -270,13 +274,12 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   vector<WCreature> SERIAL(creatures);
   WCreature SERIAL(leader) = nullptr;
   EnumMap<MinionTrait, vector<WCreature>> SERIAL(byTrait);
-  EnumMap<SpawnType, vector<WCreature>> SERIAL(bySpawnType);
   PCollectiveControl SERIAL(control);
   HeapAllocated<TribeId> SERIAL(tribe);
   WLevel SERIAL(level) = nullptr;
   HeapAllocated<Territory> SERIAL(territory);
   struct AlarmInfo {
-    double SERIAL(finishTime);
+    GlobalTime SERIAL(finishTime);
     Position SERIAL(position);
     SERIALIZE_ALL(finishTime, position)
   };
@@ -287,9 +290,9 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   void updateConstructions();
   void handleTrapPlacementAndProduction();
   void scheduleAutoProduction(function<bool (WConstItem)> itemPredicate, int count);
-  void delayDangerousTasks(const vector<Position>& enemyPos, double delayTime);
+  void delayDangerousTasks(const vector<Position>& enemyPos, LocalTime delayTime);
   bool isDelayed(Position);
-  unordered_map<Position, double, CustomHash<Position>> SERIAL(delayedPos);
+  unordered_map<Position, LocalTime, CustomHash<Position>> SERIAL(delayedPos);
   vector<Position> getEnemyPositions() const;
   double manaRemainder = 0;
   double getKillManaScore(WConstCreature) const;
@@ -310,7 +313,11 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   mutable optional<double> dangerLevelCache;
   EntitySet<Collective> SERIAL(knownVillains);
   EntitySet<Collective> SERIAL(knownVillainLocations);
-  set<EnemyId> SERIAL(conqueredVillains);
+  set<EnemyId> SERIAL(conqueredVillains); // OBSOLETE
   void setDiscoverable();
   bool SERIAL(discoverable) = false;
+  int SERIAL(numPrisonerOrders) = 0;
+  void considerTransferingLostMinions();
+  void updateCreatureStatus(WCreature);
+  HeapAllocated<Quarters> SERIAL(quarters);
 };

@@ -35,6 +35,12 @@ Tile::Tile(TileCoord c) : color{255, 255, 255}, tileCoord(c) {
 
 Tile Tile::setRoundShadow() {
   roundShadow = true;
+  moveUp = true;
+  return *this;
+}
+
+Tile Tile::setMoveUp() {
+  moveUp = true;
   return *this;
 }
 
@@ -296,6 +302,7 @@ class TileCoordLookup {
   void genTiles() {
     Tile::addTile(ViewId::UNKNOWN_MONSTER, sprite("unknown"));
     Tile::addTile(ViewId::DIG_MARK, sprite("dig_mark"));
+    Tile::addTile(ViewId::DIG_MARK2, sprite("dig_mark2"));
     Tile::addTile(ViewId::FORBID_ZONE, sprite("dig_mark").setColor(Color::RED));
     Tile::addTile(ViewId::DESTROY_BUTTON, sprite("remove"));
     Tile::addTile(ViewId::EMPTY, empty());
@@ -422,6 +429,8 @@ class TileCoordLookup {
     Tile::addTile(ViewId::WITCH, sprite("witch"));
     Tile::addTile(ViewId::WITCHMAN, sprite("witchman"));
     Tile::addTile(ViewId::KNIGHT, sprite("knight"));
+    Tile::addTile(ViewId::JESTER, sprite("jester"));
+    Tile::addTile(ViewId::PRIEST, sprite("priest"));
     Tile::addTile(ViewId::WARRIOR, sprite("warrior"));
     Tile::addTile(ViewId::SHAMAN, sprite("shaman"));
     Tile::addTile(ViewId::DUKE, sprite("knightboss"));
@@ -548,10 +557,14 @@ class TileCoordLookup {
     Tile::addTile(ViewId::WOOD_PLANK, sprite("wood2"));
     Tile::addTile(ViewId::STORAGE_EQUIPMENT, sprite("dig_mark").setColor(Color::BLUE.transparency(120)));
     Tile::addTile(ViewId::STORAGE_RESOURCES, sprite("dig_mark").setColor(Color::GREEN.transparency(120)));
+    Tile::addTile(ViewId::QUARTERS1, sprite("dig_mark2").setColor(Color::PINK.transparency(120)));
+    Tile::addTile(ViewId::QUARTERS2, sprite("dig_mark2").setColor(Color::SKY_BLUE.transparency(120)));
+    Tile::addTile(ViewId::QUARTERS3, sprite("dig_mark2").setColor(Color::ORANGE.transparency(120)));
     Tile::addTile(ViewId::PRISON, sprite("prison"));
     Tile::addTile(ViewId::BED, sprite("sleepdeco").setRoundShadow());
     Tile::addTile(ViewId::DORM, sprite("sleep").setFloorBorders());
-    Tile::addTile(ViewId::TORCH, sprite("torch").setTranslucent(0.35));
+    Tile::addTile(ViewId::TORCH, sprite("torch"));
+    Tile::addTile(ViewId::STANDING_TORCH, sprite("standing_torch").setMoveUp());
     Tile::addTile(ViewId::ALTAR, sprite("altar").setRoundShadow());
     Tile::addTile(ViewId::CREATURE_ALTAR, sprite("altar2").setRoundShadow());
     Tile::addTile(ViewId::TORTURE_TABLE, sprite("torturedeco").setRoundShadow());
@@ -624,6 +637,19 @@ class TileCoordLookup {
     Tile::addTile(ViewId::SPECIAL_HMBW, sprite("special_hmbw"));
     Tile::addTile(ViewId::SPECIAL_HMGN, sprite("special_hmgn"));
     Tile::addTile(ViewId::SPECIAL_HMGW, sprite("special_hmgw"));
+    Tile::addTile(ViewId::HALLOWEEN_KID1, sprite("halloween_kid1"));
+    Tile::addTile(ViewId::HALLOWEEN_KID2, sprite("halloween_kid2"));
+    Tile::addTile(ViewId::HALLOWEEN_KID3, sprite("halloween_kid3"));
+    Tile::addTile(ViewId::HALLOWEEN_KID4, sprite("halloween_kid4"));
+    Tile::addTile(ViewId::HALLOWEEN_COSTUME, sprite("halloween_costume"));
+    Tile::addTile(ViewId::BAG_OF_CANDY, sprite("halloween_candies"));
+    Tile::addTile(ViewId::HORN_ATTACK, sprite("horn_attack"));
+    Tile::addTile(ViewId::BEAK_ATTACK, sprite("beak_attack"));
+    Tile::addTile(ViewId::TOUCH_ATTACK, sprite("touch_attack"));
+    Tile::addTile(ViewId::BITE_ATTACK, sprite("bite_attack"));
+    Tile::addTile(ViewId::CLAWS_ATTACK, sprite("claws_attack"));
+    Tile::addTile(ViewId::LEG_ATTACK, sprite("leg_attack"));
+    Tile::addTile(ViewId::FIST_ATTACK, sprite("fist_attack"));
 #ifndef RELEASE
     Tile::addTile(ViewId::TUTORIAL_ENTRANCE, symbol(u8"?", Color::YELLOW));
 #else
@@ -641,6 +667,7 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::DEMON_LORD, symbol(u8"U", Color::YELLOW));
     Tile::addSymbol(ViewId::EMPTY, symbol(u8" ", Color::BLACK));
     Tile::addSymbol(ViewId::DIG_MARK, symbol(u8" ", Color::BLACK));
+    Tile::addSymbol(ViewId::DIG_MARK2, symbol(u8" ", Color::BLACK));
     Tile::addSymbol(ViewId::PLAYER, symbol(u8"@", Color::WHITE));
     Tile::addSymbol(ViewId::PLAYER_F, symbol(u8"@", Color::YELLOW));
     Tile::addSymbol(ViewId::KEEPER, symbol(u8"@", Color::PURPLE));
@@ -738,6 +765,8 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::GHOST, symbol(u8"&", Color::WHITE));
     Tile::addSymbol(ViewId::SPIRIT, symbol(u8"&", Color::LIGHT_BLUE));
     Tile::addSymbol(ViewId::KNIGHT, symbol(u8"@", Color::LIGHT_GRAY));
+    Tile::addSymbol(ViewId::PRIEST, symbol(u8"@", Color::SKY_BLUE));
+    Tile::addSymbol(ViewId::JESTER, symbol(u8"@", Color::PINK));
     Tile::addSymbol(ViewId::WARRIOR, symbol(u8"@", Color::DARK_GRAY));
     Tile::addSymbol(ViewId::SHAMAN, symbol(u8"@", Color::YELLOW));
     Tile::addSymbol(ViewId::DUKE, symbol(u8"@", Color::BLUE));
@@ -869,10 +898,14 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::WOOD_PLANK, symbol(u8"\\", Color::BROWN));
     Tile::addSymbol(ViewId::STORAGE_EQUIPMENT, symbol(u8".", Color::GREEN));
     Tile::addSymbol(ViewId::STORAGE_RESOURCES, symbol(u8".", Color::BLUE));
+    Tile::addSymbol(ViewId::QUARTERS1, symbol(u8".", Color::PINK));
+    Tile::addSymbol(ViewId::QUARTERS2, symbol(u8".", Color::SKY_BLUE));
+    Tile::addSymbol(ViewId::QUARTERS3, symbol(u8".", Color::ORANGE));
     Tile::addSymbol(ViewId::PRISON, symbol(u8".", Color::BLUE));
     Tile::addSymbol(ViewId::DORM, symbol(u8".", Color::BROWN));
     Tile::addSymbol(ViewId::BED, symbol(u8"=", Color::WHITE));
     Tile::addSymbol(ViewId::TORCH, symbol(u8"*", Color::YELLOW));
+    Tile::addSymbol(ViewId::STANDING_TORCH, symbol(u8"*", Color::YELLOW));
     Tile::addSymbol(ViewId::ALTAR, symbol(u8"Ω", Color::WHITE, true));
     Tile::addSymbol(ViewId::CREATURE_ALTAR, symbol(u8"Ω", Color::YELLOW, true));
     Tile::addSymbol(ViewId::TORTURE_TABLE, symbol(u8"=", Color::GRAY));
@@ -945,7 +978,20 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::SPECIAL_HMBW, symbol(u8"H", Color::ORANGE));
     Tile::addSymbol(ViewId::SPECIAL_HMGN, symbol(u8"H", Color::GREEN));
     Tile::addSymbol(ViewId::SPECIAL_HMGW, symbol(u8"H", Color::LIGHT_GREEN));
+    Tile::addSymbol(ViewId::HALLOWEEN_KID1, symbol(u8"@", Color::PINK));
+    Tile::addSymbol(ViewId::HALLOWEEN_KID2, symbol(u8"@", Color::PURPLE));
+    Tile::addSymbol(ViewId::HALLOWEEN_KID3, symbol(u8"@", Color::BLUE));
+    Tile::addSymbol(ViewId::HALLOWEEN_KID4, symbol(u8"@", Color::YELLOW));
+    Tile::addSymbol(ViewId::HALLOWEEN_COSTUME, symbol(u8"[", Color::PINK));
+    Tile::addSymbol(ViewId::BAG_OF_CANDY, symbol(u8"*", Color::BLUE));
     Tile::addSymbol(ViewId::TUTORIAL_ENTRANCE, symbol(u8" ", Color::LIGHT_GREEN));
+    Tile::addSymbol(ViewId::HORN_ATTACK, symbol(u8" ", Color::PINK));
+    Tile::addSymbol(ViewId::BEAK_ATTACK, symbol(u8" ", Color::YELLOW));
+    Tile::addSymbol(ViewId::TOUCH_ATTACK, symbol(u8" ", Color::WHITE));
+    Tile::addSymbol(ViewId::BITE_ATTACK, symbol(u8" ", Color::RED));
+    Tile::addSymbol(ViewId::CLAWS_ATTACK, symbol(u8" ", Color::BROWN));
+    Tile::addSymbol(ViewId::LEG_ATTACK, symbol(u8" ", Color::GRAY));
+    Tile::addSymbol(ViewId::FIST_ATTACK, symbol(u8" ", Color::ORANGE));
   }
  
   private:
