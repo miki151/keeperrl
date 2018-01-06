@@ -164,6 +164,9 @@ void LastingEffects::onAffected(WCreature c, LastingEffect effect, bool msg) {
         c->you(MsgType::ARE, "well rested"); break;
       case LastingEffect::SUMMONED:
         c->you(MsgType::YOUR, "days are numbered"); break;
+      case LastingEffect::MAGICAL_DISARMING_SKILL:
+        c->you(MsgType::ARE, "able to disarm traps");
+		c->getAttributes().getSkills().insert(SkillId::DISARM_TRAPS); break;
     }
 }
 
@@ -274,6 +277,9 @@ void LastingEffects::onTimedOut(WCreature c, LastingEffect effect, bool msg) {
         c->you(MsgType::ARE, "no longer satiated"); break;
       case LastingEffect::RESTED:
         c->you(MsgType::ARE, "no longer rested"); break;
+      case LastingEffect::MAGICAL_DISARMING_SKILL:
+        c->you(MsgType::ARE, "less nimble with traps");
+		c->getAttributes().getSkills().erase(SkillId::DISARM_TRAPS); break;
       case LastingEffect::SUMMONED:
         c->dieNoReason(Creature::DropType::ONLY_INVENTORY); break;
       default: break;
@@ -351,7 +357,7 @@ static optional<Adjective> getAdjective(LastingEffect effect) {
     case LastingEffect::SATIATED: return "Satiated"_good;
     case LastingEffect::RESTED: return "Rested"_good;
     case LastingEffect::PEACEFULNESS: return "Peaceful"_good;
-
+    case LastingEffect::MAGICAL_DISARMING_SKILL: return "Nimble with traps"_good;
     case LastingEffect::POISON: return "Poisoned"_bad;
     case LastingEffect::BLEEDING: return "Bleeding"_bad;
     case LastingEffect::SLEEP: return "Sleeping"_bad;
@@ -546,6 +552,7 @@ const char* LastingEffects::getName(LastingEffect type) {
     case LastingEffect::SATIATED: return "satiety";
     case LastingEffect::RESTED: return "wakefulness";
     case LastingEffect::SUMMONED: return "time to live";
+    case LastingEffect::MAGICAL_DISARMING_SKILL: return "trap detection";
   }
 }
 
@@ -563,6 +570,7 @@ const char* LastingEffects::getDescription(LastingEffect type) {
     case LastingEffect::COLLAPSED: return "Moving across tiles takes three times longer.";
     case LastingEffect::PANIC: return "Increases defense and lowers damage.";
     case LastingEffect::RAGE: return "Increases damage and lowers defense.";
+    case LastingEffect::MAGICAL_DISARMING_SKILL: return "Helps you disarm traps.";
     case LastingEffect::HALLU: return "Causes hallucinations.";
     case LastingEffect::DAM_BONUS: return "Gives a damage bonus.";
     case LastingEffect::DEF_BONUS: return "Gives a defense bonus.";
@@ -657,6 +665,7 @@ int LastingEffects::getPrice(LastingEffect e) {
     case LastingEffect::DARKNESS_SOURCE:
     case LastingEffect::PREGNANT:
     case LastingEffect::FLYING:
+	case LastingEffect::MAGICAL_DISARMING_SKILL:
       return 24;
   }
 }
