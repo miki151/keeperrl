@@ -787,16 +787,17 @@ void Collective::onPositionDiscovered(Position pos) {
 }
 
 void Collective::onMinionKilled(WCreature victim, WCreature killer) {
+  string deathDescription=victim->getAttributes().getDeathDescription();
   control->onMemberKilled(victim, killer);
   if (hasTrait(victim, MinionTrait::PRISONER) && killer && getCreatures().contains(killer))
     returnResource({ResourceId::PRISONER_HEAD, 1});
   if (!hasTrait(victim, MinionTrait::FARM_ANIMAL) && !hasTrait(victim, MinionTrait::SUMMONED)) {
     decreaseMoraleForKill(killer, victim);
     if (killer)
-      control->addMessage(PlayerMessage(victim->getName().a() + " is killed by " + killer->getName().a(),
+      control->addMessage(PlayerMessage(victim->getName().a() + " is "+deathDescription+" by " + killer->getName().a(),
             MessagePriority::HIGH).setPosition(victim->getPosition()));
     else
-      control->addMessage(PlayerMessage(victim->getName().a() + " is killed.", MessagePriority::HIGH)
+      control->addMessage(PlayerMessage(victim->getName().a() + " is "+deathDescription+".", MessagePriority::HIGH)
           .setPosition(victim->getPosition()));
   }
   bool fighterKilled = hasTrait(victim, MinionTrait::FIGHTER) || victim == getLeader();
@@ -806,6 +807,7 @@ void Collective::onMinionKilled(WCreature victim, WCreature killer) {
 }
 
 void Collective::onKilledSomeone(WCreature killer, WCreature victim) {
+  string deathDescription=victim->getAttributes().getDeathDescription();
   if (victim->getTribe() != getTribe()) {
     addMana(getKillManaScore(victim));
     addMoraleForKill(killer, victim);
@@ -813,7 +815,7 @@ void Collective::onKilledSomeone(WCreature killer, WCreature victim) {
     int difficulty = victim->getDifficultyPoints();
     CHECK(difficulty >=0 && difficulty < 100000) << difficulty << " " << victim->getName().bare();
     points += difficulty;
-    control->addMessage(PlayerMessage(victim->getName().a() + " is killed by " + killer->getName().a())
+    control->addMessage(PlayerMessage(victim->getName().a() + " is "+deathDescription+" by " + killer->getName().a())
         .setPosition(victim->getPosition()));
   }
 }

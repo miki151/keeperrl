@@ -1305,6 +1305,18 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.chatReactionHostile = "\"Heeelp!\""_s;
           c.skills.insert(SkillId::CROPS);
           c.name = CreatureName("child", "children"););
+    case CreatureId::SPIDER_FOOD: 
+      return CATTR(
+          c.viewId = ViewId::CHILD;
+          c.attr = LIST(20_dam, 20_def );
+          c.body = Body::humanoid(Body::Size::MEDIUM);
+          c.innocent = true;
+          c.permanentEffects[LastingEffect::ENTANGLED] = 1;
+          c.permanentEffects[LastingEffect::BLIND] = 1;
+          c.chatReactionFriendly = "\"Put me out of my misery PLEASE!\""_s;
+          c.chatReactionHostile = "\"End my torture!\""_s;
+		  c.deathDescription = "dead, released from unthinkable agony"_s;
+          c.name = CreatureName("child", "children"););
     case CreatureId::HALLOWEEN_KID:
       return CATTR(
           c.viewId = Random.choose(ViewId::HALLOWEEN_KID1,

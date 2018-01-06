@@ -86,6 +86,14 @@ void CreatureAttributes::setCourage(double c) {
   courage = c;
 }
 
+string CreatureAttributes::getDeathDescription() const {
+  return deathDescription;
+}
+
+void CreatureAttributes::setDeathDescription(string c) {
+  deathDescription = c;
+}
+
 const Gender& CreatureAttributes::getGender() const {
   return gender;
 }

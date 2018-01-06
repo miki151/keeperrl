@@ -70,6 +70,7 @@ RICH_ENUM(CreatureId,
     MINOTAUR,
     HYDRA,
     SHELOB,
+	SPIDER_FOOD,
     WITCH,
     WITCHMAN,
 
