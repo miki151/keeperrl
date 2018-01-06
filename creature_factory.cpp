@@ -1308,7 +1308,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::SPIDER_FOOD: 
       return CATTR(
           c.viewId = ViewId::CHILD;
-          c.attr = LIST(20_dam, 20_def );
+          c.attr = LIST(2_dam, 2_def );
           c.body = Body::humanoid(Body::Size::MEDIUM);
           c.innocent = true;
           c.permanentEffects[LastingEffect::ENTANGLED] = 1;
