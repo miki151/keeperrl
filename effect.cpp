@@ -332,6 +332,20 @@ string Effect::Lasting::getDescription() const {
   return desc.substr(0, desc.size() - 1) + " for some turns.";
 }
 
+void Effect::Permanent::applyToCreature(WCreature c, WCreature attacker) const {
+  c->addPermanentEffect(lastingEffect);
+}
+
+string Effect::Permanent::getName() const {
+  string desc=LastingEffects::getName(lastingEffect);
+  return "permanent "+desc;
+}
+
+string Effect::Permanent::getDescription() const {
+  string desc = LastingEffects::getDescription(lastingEffect);
+  return desc.substr(0, desc.size() - 1) + " permanently.";
+}
+
 void Effect::TeleEnemies::applyToCreature(WCreature, WCreature attacker) const {
 }
 

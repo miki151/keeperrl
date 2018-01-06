@@ -536,7 +536,7 @@ const char* LastingEffects::getName(LastingEffect type) {
     case LastingEffect::MAGIC_VULNERABILITY: return "magic vulnerability";
     case LastingEffect::MELEE_VULNERABILITY: return "melee vulnerability";
     case LastingEffect::RANGED_VULNERABILITY: return "ranged vulnerability";
-    case LastingEffect::DARKNESS_SOURCE: return "source of darkness";
+    case LastingEffect::DARKNESS_SOURCE: return "night"; //This adjective fits on-screen properly.
     case LastingEffect::NIGHT_VISION: return "night vision";
     case LastingEffect::ELF_VISION: return "elf vision";
     case LastingEffect::REGENERATION: return "regeneration";
