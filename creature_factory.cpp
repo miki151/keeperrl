@@ -1007,10 +1007,10 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.viewId = ViewId::BANDIT;
           c.attr = LIST(20_dam, 20_def);
           c.body = Body::humanoid(Body::Size::LARGE);
-		  //You really need to defeat this guy with magic.
-		  //He is an expert at conventional fighting.
-          c.permanentEffects[LastingEffect::MELEE_RESISTANCE] = 1;
+		  //Defeat this guy with close combat most easily.
+          c.permanentEffects[LastingEffect::MELEE_VULNERABILITY] = 1;
           c.permanentEffects[LastingEffect::RANGED_RESISTANCE] = 1;
+          c.permanentEffects[LastingEffect::MAGIC_RESISTANCE] = 1;
           c.chatReactionFriendly = "curses you"_s;
           c.chatReactionHostile = "\"Face death!\""_s;
           c.name = "master thief";);
