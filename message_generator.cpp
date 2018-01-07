@@ -27,8 +27,8 @@ static void addThird(WConstCreature c, MsgType type, const string& param) {
                                (param.size() > 0 ? " on the " + param : ".");
                                unseenMsg = "You hear snoring."; break;
     case MsgType::WAKE_UP: msg = c->getName().the() + " wakes up."; break;
-    case MsgType::DIE: msg = c->getName().the() + " is "+c->getAttributes().
-	    getDeathDescription()+"!"; break;
+    case MsgType::DIE: msg = c->getName().the() + " is " + 
+                          c->getAttributes().getDeathDescription()+"!"; break;
     case MsgType::TELE_APPEAR: msg = c->getName().the() + " appears out of nowhere!"; break;
     case MsgType::TELE_DISAPPEAR: msg = c->getName().the() + " suddenly disappears!"; break;
     case MsgType::BLEEDING_STOPS: msg = c->getName().the() + "'s bleeding stops."; break;

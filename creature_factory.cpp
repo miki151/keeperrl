@@ -1315,7 +1315,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.permanentEffects[LastingEffect::BLIND] = 1;
           c.chatReactionFriendly = "\"Put me out of my misery PLEASE!\""_s;
           c.chatReactionHostile = "\"End my torture!\""_s;
-		  c.deathDescription = "dead, released from unthinkable agony"_s;
+          c.deathDescription = "dead, released from unthinkable agony"_s;
           c.name = CreatureName("child", "children"););
     case CreatureId::HALLOWEEN_KID:
       return CATTR(
