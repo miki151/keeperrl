@@ -52,18 +52,17 @@ struct GuardianInfo {
 };
 
 struct MinionTaskInfo {
-  enum Type { FURNITURE, EXPLORE, COPULATE, EAT, SPIDER, WORKER, ARCHERY } type;
+  enum Type { FURNITURE, EXPLORE, COPULATE, EAT, SPIDER, WORKER, ARCHERY, IDLE } type;
   MinionTaskInfo();
   MinionTaskInfo(FurnitureType, const string& description);
   typedef function<bool(WConstCollective, WConstCreature, FurnitureType)> UsagePredicate;
   typedef function<bool(WConstCollective, FurnitureType)> ActivePredicate;
   MinionTaskInfo(UsagePredicate, const string& description);
   MinionTaskInfo(UsagePredicate, ActivePredicate, const string& description);
-  MinionTaskInfo(Type, const string& description, optional<CollectiveWarning> = none);
+  MinionTaskInfo(Type, const string& description);
   UsagePredicate furniturePredicate = [](WConstCollective, WConstCreature, FurnitureType) { return true; };
   ActivePredicate activePredicate = [](WConstCollective, FurnitureType) { return true; };
   string description;
-  optional<CollectiveWarning> warning;
 };
 
 struct WorkshopInfo {

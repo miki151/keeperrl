@@ -51,7 +51,7 @@ static optional<Position> getTileToExplore(WConstCollective collective, WConstCr
   return none;
 }
 
-static WCreature getCopulationTarget(WConstCollective collective, WCreature succubus) {
+static WCreature getCopulationTarget(WConstCollective collective, WConstCreature succubus) {
   for (WCreature c : Random.permutation(collective->getCreatures(MinionTrait::FIGHTER)))
     if (succubus->canCopulateWith(c))
       return c;
@@ -139,7 +139,7 @@ vector<Position> MinionTasks::getAllPositions(WConstCollective collective, WCons
 
 
 
-WTask MinionTasks::getExisting(WCollective collective, WCreature c, MinionTask task) {
+WTask MinionTasks::getExisting(WCollective collective, WConstCreature c, MinionTask task) {
   auto& info = CollectiveConfig::getTaskInfo(task);
   switch (info.type) {
     case MinionTaskInfo::WORKER:
@@ -149,9 +149,19 @@ WTask MinionTasks::getExisting(WCollective collective, WCreature c, MinionTask t
   }
 }
 
-PTask MinionTasks::generate(WCollective collective, WCreature c, MinionTask task) {
+PTask MinionTasks::generate(WCollective collective, WConstCreature c, MinionTask task) {
   auto& info = CollectiveConfig::getTaskInfo(task);
   switch (info.type) {
+    case MinionTaskInfo::IDLE: {
+      auto myTerritory = tryInQuarters(collective->getTerritory().getAll(), collective, c);
+      if (!myTerritory.empty())
+        return Task::stayIn(myTerritory);
+      else if (collective->getConfig().getFollowLeaderIfNoTerritory() && collective->getLeader()
+          && !collective->getLeader()->isDead())
+        return Task::follow(collective->getLeader());
+      else
+        return Task::idle();
+    }
     case MinionTaskInfo::FURNITURE: {
       vector<Position> squares = getAllPositions(collective, c, task, true);
       if (!squares.empty())
@@ -198,6 +208,7 @@ optional<TimeInterval> MinionTasks::getDuration(WConstCreature c, MinionTask tas
   switch (task) {
     case MinionTask::COPULATE:
     case MinionTask::EAT:
+    case MinionTask::IDLE:
     case MinionTask::BE_WHIPPED:
     case MinionTask::BE_TORTURED:
     case MinionTask::SLEEP: return none;

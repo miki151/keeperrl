@@ -808,7 +808,7 @@ vector<PlayerInfo> PlayerControl::getPlayerInfos(vector<WCreature> creatures, Un
         if (c->getAttributes().getMinionTasks().isAvailable(getCollective(), c, t, true)) {
           minionInfo.minionTasks.push_back({t,
               !getCollective()->isMinionTaskPossible(c, t),
-              getCollective()->getMinionTask(c) == t,
+              getCollective()->getCurrentTask(c).task == t,
               c->getAttributes().getMinionTasks().isLocked(t)});
         }
       if (getCollective()->usesEquipment(c))
@@ -825,7 +825,8 @@ vector<PlayerInfo> PlayerControl::getPlayerInfos(vector<WCreature> creatures, Un
           minionInfo.quarters = quarters.getAllQuarters()[*index].viewId;
         else
           minionInfo.quarters = none;
-      }
+      } else
+        minionInfo.canAssignQuarters = false;
       if (c->getAttributes().getSkills().hasDiscrete(SkillId::CONSUMPTION))
         minionInfo.actions.push_back(PlayerInfo::CONSUME);
     }

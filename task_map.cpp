@@ -8,7 +8,7 @@ SERIALIZE_DEF(TaskMap, tasks, positionMap, reversePositions, taskByCreature, cre
 
 SERIALIZATION_CONSTRUCTOR_IMPL(TaskMap);
 
-WTask TaskMap::getClosestTask(WCreature c) {
+WTask TaskMap::getClosestTask(WConstCreature c) {
   if (Random.roll(20))
     for (WTask t : getWeakPointers(tasks))
       if (t->isDone())

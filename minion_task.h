@@ -22,15 +22,16 @@ RICH_ENUM(
     BE_WHIPPED,
     BE_TORTURED,
     BE_EXECUTED,
-    WORKER
+    WORKER,
+    IDLE
 );
 
 class Position;
 
 class MinionTasks {
   public:
-  static WTask getExisting(WCollective, WCreature, MinionTask);
-  static PTask generate(WCollective, WCreature, MinionTask);
+  static WTask getExisting(WCollective, WConstCreature, MinionTask);
+  static PTask generate(WCollective, WConstCreature, MinionTask);
   static optional<TimeInterval> getDuration(WConstCreature, MinionTask);
   static vector<Position> getAllPositions(WConstCollective, WConstCreature, MinionTask, bool onlyActive = false);
   static const vector<FurnitureType>& getAllFurniture(MinionTask);

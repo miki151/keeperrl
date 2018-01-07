@@ -37,10 +37,21 @@ bool MinionTaskMap::canChooseRandomly(WConstCreature c, MinionTask t) const {
   }
 }
 
+static bool canLock(MinionTask t) {
+  switch (t) {
+    case MinionTask::IDLE:
+      return false;
+    default:
+      return true;
+  }
+}
+
 bool MinionTaskMap::isAvailable(WConstCollective col, WConstCreature c, MinionTask t, bool ignoreTaskLock) const {
   if (locked.contains(t) && !ignoreTaskLock)
     return false;
   switch (t) {
+    case MinionTask::IDLE:
+      return true;
     case MinionTask::TRAIN:
       return !c->getAttributes().isTrainingMaxedOut(ExperienceType::MELEE);
     case MinionTask::STUDY:
@@ -88,11 +99,15 @@ bool MinionTaskMap::isAvailable(WConstCollective col, WConstCreature c, MinionTa
 }
 
 void MinionTaskMap::toggleLock(MinionTask task) {
-  locked.toggle(task);
+  if (canLock(task))
+    locked.toggle(task);
 }
 
-bool MinionTaskMap::isLocked(MinionTask task) const {
-  return locked.contains(task);
+optional<bool> MinionTaskMap::isLocked(MinionTask task) const {
+  if (canLock(task))
+    return locked.contains(task);
+  else
+    return none;
 }
 
 SERIALIZE_DEF(MinionTaskMap, locked);

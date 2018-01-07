@@ -20,7 +20,7 @@
 class MinionTaskMap {
   public:
   void toggleLock(MinionTask);
-  bool isLocked(MinionTask) const;
+  optional<bool> isLocked(MinionTask) const;
   
   bool isAvailable(WConstCollective, WConstCreature, MinionTask, bool ignoreTaskLock = false) const;
   bool canChooseRandomly(WConstCreature c, MinionTask) const;

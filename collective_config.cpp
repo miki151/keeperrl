@@ -348,8 +348,7 @@ const vector<ItemFetchInfo>& CollectiveConfig::getFetchInfo() {
   return ret;
 }
 
-MinionTaskInfo::MinionTaskInfo(Type t, const string& desc, optional<CollectiveWarning> w)
-    : type(t), description(desc), warning(w) {
+MinionTaskInfo::MinionTaskInfo(Type t, const string& desc) : type(t), description(desc) {
   CHECK(type != FURNITURE);
 }
 
@@ -474,6 +473,7 @@ static auto addManaGenerationPredicate(Pred p) {
 const MinionTaskInfo& CollectiveConfig::getTaskInfo(MinionTask task) {
   static EnumMap<MinionTask, MinionTaskInfo> map([](MinionTask task) -> MinionTaskInfo {
     switch (task) {
+      case MinionTask::IDLE: return {MinionTaskInfo::IDLE, "idle"};
       case MinionTask::WORKER: return {MinionTaskInfo::WORKER, "working"};
       case MinionTask::TRAIN: return {getTrainingPredicate(ExperienceType::MELEE), "training"};
       case MinionTask::SLEEP: return {[](WConstCollective, WConstCreature c, FurnitureType t) {

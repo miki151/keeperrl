@@ -35,7 +35,7 @@ class TaskMap {
   bool isPriorityTask(WConstTask) const;
   bool hasPriorityTasks(Position) const;
   void setPriorityTasks(Position);
-  WTask getClosestTask(WCreature);
+  WTask getClosestTask(WConstCreature);
   const EntityMap<Task, CostInfo>& getCompletionCosts() const;
   WTask getTask(UniqueEntity<Task>::Id) const;
 

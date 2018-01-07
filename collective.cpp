@@ -297,15 +297,16 @@ void Collective::setMinionTask(WConstCreature c, MinionTask task) {
     currentTasks.set(c, {task, none});
 }
 
-optional<MinionTask> Collective::getMinionTask(WConstCreature c) const {
+Collective::CurrentTaskInfo Collective::getCurrentTask(WConstCreature c) const {
   if (auto current = currentTasks.getMaybe(c))
-    return current->task;
+    return *current;
   else
-    return none;
+    return CurrentTaskInfo{MinionTask::IDLE, none};
 }
 
-bool Collective::isTaskGood(WConstCreature c, MinionTask task, bool ignoreTaskLock) const {
-  if (!c->getAttributes().getMinionTasks().isAvailable(this, c, task, ignoreTaskLock))
+bool Collective::isTaskGood(WConstCreature c, MinionTask task, bool ignoreTaskLock) {
+  if (!c->getAttributes().getMinionTasks().isAvailable(this, c, task, ignoreTaskLock) ||
+      (!MinionTasks::generate(this, c, task) && !MinionTasks::getExisting(this, c, task)))
     return false;
   switch (task) {
     case MinionTask::BE_WHIPPED:
@@ -342,26 +343,19 @@ WTask Collective::getStandardTask(WCreature c) {
     currentTasks.erase(c);
     setRandomTask(c);
   }
-  if (auto current = currentTasks.getMaybe(c)) {
-    MinionTask task = current->task;
-    auto& info = config->getTaskInfo(task);
-    if (!current->finishTime) // see comment in header
-      currentTasks.getOrFail(c).finishTime = LocalTime(-1000);
-    if (info.warning && !territory->isEmpty())
-      warnings->setWarning(*info.warning, false);
-    if (PTask ret = MinionTasks::generate(this, c, task))
-      if (ret->getMove(c))
-        return taskMap->addTaskFor(std::move(ret), c);
-    if (WTask ret = MinionTasks::getExisting(this, c, task))
-      if (ret->getMove(c)) {
-        taskMap->takeTask(c, ret);
-        return ret;
-      }
-    if (info.warning && !territory->isEmpty())
-      warnings->setWarning(*info.warning, true);
-    currentTasks.erase(c);
+  current = getCurrentTask(c);
+  CHECK(current) << "No minion task found for " << c->getName().bare();
+  MinionTask task = current->task;
+  if (!current->finishTime) // see comment in header
+    currentTasks.getOrFail(c).finishTime = LocalTime(-1000);
+  if (PTask ret = MinionTasks::generate(this, c, task))
+    return taskMap->addTaskFor(std::move(ret), c);
+  if (WTask ret = MinionTasks::getExisting(this, c, task)) {
+    taskMap->takeTask(c, ret);
+    return ret;
   }
-  return nullptr;
+  FATAL << "No task generated for minion task " << EnumInfo<MinionTask>::getString(task);
+  return {};
 }
 
 bool Collective::isConquered() const {
@@ -412,9 +406,8 @@ const static EnumSet<MinionTask> healingTasks {MinionTask::SLEEP};
 void Collective::considerHealingTask(WCreature c) {
   if (c->getBody().canHeal() && !c->isAffected(LastingEffect::POISON))
     for (MinionTask t : healingTasks) {
-      auto currentTask = getMinionTask(c);
-      if (c->getAttributes().getMinionTasks().isAvailable(this, c, t) &&
-          (!currentTask || !healingTasks.contains(*currentTask))) {
+      auto currentTask = getCurrentTask(c).task;
+      if (c->getAttributes().getMinionTasks().isAvailable(this, c, t) && !healingTasks.contains(currentTask)) {
         cancelTask(c);
         setMinionTask(c, t);
         return;
@@ -520,32 +513,8 @@ MoveInfo Collective::getMove(WCreature c) {
   };
 
   auto newStandardTask = [&] {
-    if (WTask t = getStandardTask(c))
-      return waitIfNoMove(t->getMove(c));
-    return NoMove;
-  };
-
-  auto followLeader = [&] () -> MoveInfo {
-    if (config->getFollowLeaderIfNoTerritory() && hasLeader() && territory->isEmpty()) {
-      Position leaderPos = getLeader()->getPosition();
-      if (leaderPos.dist8(c->getPosition()) < 3)
-        return NoMove;
-      if (auto action = c->moveTowards(leaderPos))
-        return {1.0, action};
-    }
-    return NoMove;
-  };
-
-  auto returnToBase = [&] () -> MoveInfo {
-    if (!hasTrait(c, MinionTrait::NO_RETURNING) && !territory->isEmpty() &&
-        !territory->contains(c->getPosition()) && teams->getActive(c).empty()) {
-      if (c->getPosition().getModel() == getModel())
-        return c->moveTowards(Random.choose(territory->getAll()));
-      else
-        if (PTask t = Task::transferTo(getModel()))
-          return taskMap->addTaskFor(std::move(t), c)->getMove(c);
-    }
-    return NoMove;
+    WTask t = getStandardTask(c);
+    return waitIfNoMove(t->getMove(c));
   };
   if (getConfig().allowHealingTaskOutsideTerritory() || territory->contains(c->getPosition()))
     considerHealingTask(c);
@@ -556,9 +525,7 @@ MoveInfo Collective::getMove(WCreature c) {
       goToAlarm,
       normalTask,
       newEquipmentTask,
-      newStandardTask,
-      followLeader,
-      returnToBase
+      newStandardTask
   );
 }
 

@@ -61,7 +61,7 @@ bool Task::isBogus() const {
   return false;
 }
 
-bool Task::isBlocked(WCreature) const {
+bool Task::isBlocked(WConstCreature) const {
   return false;
 }
 
@@ -162,7 +162,7 @@ class Destruction : public Task {
     return true;
   }
 
-  virtual bool isBlocked(WCreature) const override {
+  virtual bool isBlocked(WConstCreature) const override {
     return !callback->isConstructionReachable(position);
   }
 
@@ -220,7 +220,7 @@ class PickItem : public Task {
     setDone();
   }
 
-  virtual bool isBlocked(WCreature c) const override {
+  virtual bool isBlocked(WConstCreature c) const override {
     return !c->isSameSector(position);
   }
 
@@ -405,7 +405,7 @@ class BringItem : public PickItem {
   virtual void onPickedUp() override {
   }
 
-  virtual bool isBlocked(WCreature c) const override {
+  virtual bool isBlocked(WConstCreature c) const override {
     if (!c->isSameSector(position))
       return true;
     for (auto& pos : allTargets)
@@ -1256,6 +1256,102 @@ PTask Task::goToTryForever(Position pos) {
 }
 
 namespace {
+class StayIn : public Task {
+  public:
+  StayIn(vector<Position> pos) : target(pos.begin(), pos.end()) {}
+
+  virtual MoveInfo getMove(WCreature c) override {
+    auto pos = c->getPosition();
+    if (target.count(pos)) {
+      setDone();
+      if (Random.roll(15))
+        if (auto move = c->move(pos.plus(Vec2(Random.choose<Dir>()))))
+          return move;
+      if (Random.roll(100))
+        if (auto move = c->moveTowards(Random.choose(target)))
+          return move;
+      return c->wait();
+    }
+    if (!currentTarget)
+      currentTarget = Random.choose(target);
+    return c->moveTowards(*currentTarget);
+  }
+
+  virtual string getDescription() const override {
+    return "Go to " + toString(currentTarget);
+  }
+
+  SERIALIZE_ALL(SUBCLASS(Task), target, currentTarget)
+  SERIALIZATION_CONSTRUCTOR(StayIn);
+
+  protected:
+  set<Position> SERIAL(target);
+  optional<Position> SERIAL(currentTarget);
+};
+}
+
+PTask Task::stayIn(vector<Position> pos) {
+  return makeOwner<StayIn>(pos);
+}
+
+namespace {
+class Idle : public Task {
+  public:
+
+  virtual MoveInfo getMove(WCreature c) override {
+    setDone();
+    return c->wait();
+  }
+
+  virtual string getDescription() const override {
+    return "Idle";
+  }
+
+  SERIALIZE_ALL(SUBCLASS(Task))
+  SERIALIZATION_CONSTRUCTOR(Idle);
+};
+}
+
+PTask Task::idle() {
+  return makeOwner<Idle>();
+}
+
+namespace {
+class Follow : public Task {
+  public:
+  Follow(WCreature t) : target(t) {}
+
+  virtual MoveInfo getMove(WCreature c) override {
+    setDone();
+    if (!target->isDead()) {
+      Position targetPos = target->getPosition();
+      if (targetPos.dist8(c->getPosition()) < 3) {
+        if (Random.roll(15))
+          if (auto move = c->move(c->getPosition().plus(Vec2(Random.choose<Dir>()))))
+            return move;
+        return NoMove;
+      }
+      return c->moveTowards(targetPos);
+    }
+    return NoMove;
+  }
+
+  virtual string getDescription() const override {
+    return "Follow " + target->getName().bare();
+  }
+
+  WCreature SERIAL(target);
+
+  SERIALIZE_ALL(SUBCLASS(Task), target)
+  SERIALIZATION_CONSTRUCTOR(Follow);
+};
+}
+
+PTask Task::follow(WCreature c) {
+  return makeOwner<Follow>(c);
+}
+
+namespace {
 class TransferTo : public Task {
   public:
   TransferTo(WModel m) : model(m) {}
@@ -1473,6 +1569,9 @@ REGISTER_TYPE(Copulate)
 REGISTER_TYPE(Consume)
 REGISTER_TYPE(Eat)
 REGISTER_TYPE(GoTo)
+REGISTER_TYPE(StayIn)
+REGISTER_TYPE(Idle)
+REGISTER_TYPE(Follow)
 REGISTER_TYPE(TransferTo)
 REGISTER_TYPE(Whipping)
 REGISTER_TYPE(GoToAndWait)

@@ -2331,6 +2331,7 @@ SGuiElem GuiBuilder::drawMinionButtons(const vector<PlayerInfo>& minions, Unique
 
 static string getTaskText(MinionTask option) {
   switch (option) {
+    case MinionTask::IDLE: return "Idle";
     case MinionTask::SLEEP: return "Sleeping";
     case MinionTask::WORKER: return "Working";
     case MinionTask::EAT: return "Eating";
@@ -2427,6 +2428,11 @@ SGuiElem GuiBuilder::drawActivityButton(const PlayerInfo& minion) {
                   retAction.switchTo = task.task;
                   exit = true;
                 };
+            auto lockButton = task.locked
+                  ? gui.rightMargin(20, gui.labelUnicode(u8"✓", [&retAction, task] {
+                      return (retAction.lock.contains(task.task) ^ *task.locked) ?
+                          Color::LIGHT_GRAY : Color::GREEN;}))
+                  : gui.empty();
             tasks.addElem(GuiFactory::ListBuilder(gui)
                 .addMiddleElem(gui.stack(
                     gui.button(buttonFun),
@@ -2436,9 +2442,7 @@ SGuiElem GuiBuilder::drawActivityButton(const PlayerInfo& minion) {
                     gui.button([&retAction, task] {
                       retAction.lock.toggle(task.task);
                     }),
-                    gui.rightMargin(20, gui.labelUnicode(u8"✓", [&retAction, task] {
-                        return (retAction.lock.contains(task.task) ^ task.locked) ?
-                            Color::LIGHT_GRAY : Color::GREEN;})))).buildHorizontalList());
+                    lockButton)).buildHorizontalList());
           }
           drawMiniMenu(std::move(tasks), exit, bounds.bottomLeft(), 200, true);
           callbacks.input({UserInputId::CREATURE_TASK_ACTION, retAction});
