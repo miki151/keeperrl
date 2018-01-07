@@ -286,7 +286,7 @@ static int getEffectPrice(Effect type) {
         return LastingEffects::getPrice(e.lastingEffect);
       },
       [&](const Effect::Permanent& e) {
-        //Permanent effects will probably be from consumable artefacts.
+        //Permanent effects will probably be from consumable artifacts.
         return LastingEffects::getPrice(e.lastingEffect)*100;
       },
       [&](const Effect::Acid&) {
@@ -1096,10 +1096,6 @@ static ViewId getMushroomViewId(Effect e) {
           case LastingEffect::RAGE: return ViewId::MUSHROOM5;
           default: return ViewId::MUSHROOM6;
         }
-      },
-      [&](Effect::Permanent) {
-        //Probably an artefact
-        return ViewId::MUSHROOM6;
       },
       [&](const auto&) {
         return ViewId::MUSHROOM6;
