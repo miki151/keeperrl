@@ -1408,7 +1408,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.permanentEffects[LastingEffect::FLYING] = 1;
           c.permanentEffects[LastingEffect::RANGED_RESISTANCE] = 1;
           c.permanentEffects[LastingEffect::FIRE_RESISTANT] = 1;
-          c.permanentEffects[LastingEffect::DARKNESS_SOURCE] = 1;
           for (SpellId id : Random.chooseN(Random.get(3, 6), {SpellId::CIRCULAR_BLAST, SpellId::DEF_BONUS,
               SpellId::DAM_BONUS, SpellId::STUN_RAY, SpellId::DECEPTION, SpellId::DECEPTION,
               SpellId::TELEPORT}))
@@ -2372,6 +2371,9 @@ vector<ItemType> getDefaultInventory(CreatureId id) {
       return ItemList()
         .add(ItemType::Sword{})
         .add(randomBackup());
+    case CreatureId::VAMPIRE_LORD:
+      return ItemList()
+        .add(ItemType::Scroll{Effect::Permanent{LastingEffect::DARKNESS_SOURCE}});
     case CreatureId::DARK_ELF_LORD: 
     case CreatureId::ELF_LORD: 
       return ItemList()

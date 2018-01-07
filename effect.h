@@ -72,7 +72,16 @@ class Effect {
   SIMPLE_EFFECT(TeleEnemies);
   SIMPLE_EFFECT(SilverDamage);
   SIMPLE_EFFECT(CurePoison);
+
+  //Lasting effect with a timer
   struct Lasting {
+    EFFECT_TYPE_INTERFACE;
+    LastingEffect lastingEffect;
+    COMPARE_ALL(lastingEffect)
+  };
+
+  //Lasting effect forever. Use carefully.
+  struct Permanent {
     EFFECT_TYPE_INTERFACE;
     LastingEffect lastingEffect;
     COMPARE_ALL(lastingEffect)
@@ -102,7 +111,7 @@ class Effect {
 
   MAKE_VARIANT(EffectType, Teleport, Heal, Fire, DestroyEquipment, EnhanceArmor, EnhanceWeapon,
       EmitPoisonGas, CircularBlast, Deception, Summon, SummonElement, Acid, Alarm, TeleEnemies, SilverDamage,
-      CurePoison, Lasting, PlaceFurniture, Damage, InjureBodyPart, LooseBodyPart, RegrowBodyPart, DestroyWalls);
+      CurePoison, Lasting, Permanent, PlaceFurniture, Damage, InjureBodyPart, LooseBodyPart, RegrowBodyPart, DestroyWalls);
 
   template <typename T>
   Effect(T&& t) : effect(std::forward<T>(t)) {}
