@@ -208,7 +208,7 @@ string Tutorial::getMessage() const {
     case State::CONTROLS2:
       return "Try zooming in and out of the map using the 'z' key or mouse wheel.";
     case State::GET_200_WOOD:
-      return "Cut some more trees until how have gathered at least 200 wood.\n \n";
+      return "Cut some more trees until you have gathered at least 200 wood.\n \n";
           //"You can mark things in bulk by dragging the mouse or by holding SHIFT and selecting a rectangle. Try it!";
     case State::DIG_ROOM:
       return "Time to strike the earth! Dig out a tunnel and a room, as shown by the yellow highlight.\n \n"
@@ -229,7 +229,7 @@ string Tutorial::getMessage() const {
           "lower left corner if it's taking too long.";
     case State::ACCEPT_IMMIGRANT:
       return "Your dungeon has attracted an orc. "
-          "Before your new minion joins you, you must fullfil a few requirements. "
+          "Before your new minion joins you, you must fulfill a few requirements. "
           "Hover your mouse over the immigrant icon to see them. "
           "Once you are ready, accept the immigrant with a left click. Click on the '?' icon immediately to the left "
           "to learn more about immigration.";
@@ -239,7 +239,7 @@ string Tutorial::getMessage() const {
           "and look in the lower right corner to make sure that their efficiency is at least 100.";
     case State::FLOORS:
       return "Minions are also more efficient if there is a nice floor where they are working. For now you can only "
-          "afford wooden floor, but it should do.\n \n"
+          "afford wooden floors, but it should do.\n \n"
           "Make sure you have enough wood!";
     case State::BUILD_WORKSHOP:
       return "Your minions will need equipment, such as weapons, armor, and consumables, to be more deadly in "
