@@ -337,8 +337,8 @@ void Effect::Permanent::applyToCreature(WCreature c, WCreature attacker) const {
 }
 
 string Effect::Permanent::getName() const {
-  string desc=LastingEffects::getName(lastingEffect);
-  return "permanent "+desc;
+  string desc = LastingEffects::getName(lastingEffect);
+  return "eternal " + desc;
 }
 
 string Effect::Permanent::getDescription() const {
