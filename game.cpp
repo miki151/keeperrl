@@ -320,7 +320,7 @@ void Game::exitAction() {
 #else
   bool canRetire = playerControl && players.empty();
 #endif
-  vector<ListElem> elems { "Save the game",
+  vector<ListElem> elems { "Save and exit the game",
     {"Retire", canRetire ? ListElem::NORMAL : ListElem::INACTIVE} , "Change options", "Abandon the game" };
   auto ind = view->chooseFromList("Would you like to:", elems);
   if (!ind)

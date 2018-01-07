@@ -2745,7 +2745,7 @@ SGuiElem GuiBuilder::drawOptionElem(Options* options, OptionId id, function<void
       line.addElemAuto(gui.label(name + ": "));
       line.addElemAuto(gui.stack(
           gui.button([=] {
-              if (auto val = getTextInput("Enter " + name, valueString, 10, "Leave blank to use a random name.")) {
+              if (auto val = getTextInput("Enter " + name, valueString, 10, "Leave blank to use a random name. Hit enter to confirm.")) {
                 options->setValue(id, *val);
                 onChanged();
               }}),
