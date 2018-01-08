@@ -1002,18 +1002,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.chatReactionFriendly = "curses all law enforcement"_s;
           c.chatReactionHostile = "\"Die!\""_s;
           c.name = "bandit";);
-    case CreatureId::MASTER_THIEF: 
-      return CATTR(
-          c.viewId = ViewId::BANDIT;
-          c.attr = LIST(20_dam, 20_def);
-          c.body = Body::humanoid(Body::Size::LARGE);
-		  //Defeat this guy with close combat most easily.
-          c.permanentEffects[LastingEffect::MELEE_VULNERABILITY] = 1;
-          c.permanentEffects[LastingEffect::RANGED_RESISTANCE] = 1;
-          c.permanentEffects[LastingEffect::MAGIC_RESISTANCE] = 1;
-          c.chatReactionFriendly = "curses you"_s;
-          c.chatReactionHostile = "\"Face death!\""_s;
-          c.name = "master thief";);
     case CreatureId::GHOST: 
       return CATTR(
           c.viewId = ViewId::GHOST;
@@ -2288,7 +2276,8 @@ vector<ItemType> getDefaultInventory(CreatureId id) {
         .add(ItemType::GoldPiece{}, Random.get(16, 26));
     case CreatureId::ELEMENTALIST:
       return ItemList()
-          .add(ItemType::IronStaff{});
+        .add(ItemType::IronStaff{})
+        .add(ItemType::Ring{LastingEffect::MAGICAL_DISARMING_SKILL});
     case CreatureId::DEATH:
       return ItemList()
         .add(ItemType::Scythe{});
@@ -2362,11 +2351,6 @@ vector<ItemType> getDefaultInventory(CreatureId id) {
         .add(ItemType::Sword{})
         .maybe(0.3, randomBackup())
         .maybe(0.05, ItemType::Bow{});
-    case CreatureId::MASTER_THIEF:
-      return ItemList()
-        .add(ItemType::Sword{})
-        .add(ItemType::LeatherArmor{})
-        .add(ItemType::Ring{LastingEffect::MAGICAL_DISARMING_SKILL});
     case CreatureId::DWARF:
       return ItemList()
         .add(Random.choose({ItemType(ItemType::BattleAxe{}), ItemType(ItemType::WarHammer{})}, {1, 1}))

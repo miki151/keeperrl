@@ -166,7 +166,7 @@ void LastingEffects::onAffected(WCreature c, LastingEffect effect, bool msg) {
         c->you(MsgType::YOUR, "days are numbered"); break;
       case LastingEffect::MAGICAL_DISARMING_SKILL:
         c->you(MsgType::ARE, "able to disarm traps");
-		c->getAttributes().getSkills().insert(SkillId::DISARM_TRAPS); break;
+        c->getAttributes().getSkills().insert(SkillId::DISARM_TRAPS); break;
     }
 }
 
@@ -279,7 +279,7 @@ void LastingEffects::onTimedOut(WCreature c, LastingEffect effect, bool msg) {
         c->you(MsgType::ARE, "no longer rested"); break;
       case LastingEffect::MAGICAL_DISARMING_SKILL:
         c->you(MsgType::ARE, "less nimble with traps");
-		c->getAttributes().getSkills().erase(SkillId::DISARM_TRAPS); break;
+        c->getAttributes().getSkills().erase(SkillId::DISARM_TRAPS); break;
       case LastingEffect::SUMMONED:
         c->dieNoReason(Creature::DropType::ONLY_INVENTORY); break;
       default: break;
@@ -665,7 +665,7 @@ int LastingEffects::getPrice(LastingEffect e) {
     case LastingEffect::DARKNESS_SOURCE:
     case LastingEffect::PREGNANT:
     case LastingEffect::FLYING:
-	case LastingEffect::MAGICAL_DISARMING_SKILL:
+    case LastingEffect::MAGICAL_DISARMING_SKILL:
       return 24;
   }
 }

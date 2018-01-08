@@ -416,7 +416,6 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
     case EnemyId::BANDITS:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::CAVE;
-            c.inhabitants.leader = CreatureId::MASTER_THIEF;
             c.inhabitants.fighters = CreatureList(random.get(4, 9), CreatureId::BANDIT);
             c.tribe = TribeId::getBandit();
             c.race = "bandits"_s;
