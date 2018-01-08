@@ -1090,6 +1090,7 @@ static ViewId getMushroomViewId(Effect e) {
           case LastingEffect::PANIC: return ViewId::MUSHROOM3;
           case LastingEffect::HALLU: return ViewId::MUSHROOM4;
           case LastingEffect::RAGE: return ViewId::MUSHROOM5;
+          case LastingEffect::REGENERATION: return ViewId::MUSHROOM6;
           case LastingEffect::NIGHT_VISION: return ViewId::MUSHROOM7;
           default: return ViewId::MUSHROOM6;
         }
