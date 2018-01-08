@@ -787,7 +787,7 @@ void Collective::onPositionDiscovered(Position pos) {
 }
 
 void Collective::onMinionKilled(WCreature victim, WCreature killer) {
-  string deathDescription=victim->getAttributes().getDeathDescription();
+  string deathDescription = victim->getAttributes().getDeathDescription();
   control->onMemberKilled(victim, killer);
   if (hasTrait(victim, MinionTrait::PRISONER) && killer && getCreatures().contains(killer))
     returnResource({ResourceId::PRISONER_HEAD, 1});
