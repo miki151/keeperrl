@@ -536,6 +536,7 @@ class TileCoordLookup {
     Tile::addTile(ViewId::MUSHROOM4, sprite("mushroom4").setRoundShadow());
     Tile::addTile(ViewId::MUSHROOM5, sprite("mushroom5").setRoundShadow());
     Tile::addTile(ViewId::MUSHROOM6, sprite("mushroom6").setRoundShadow());
+    Tile::addTile(ViewId::MUSHROOM7, sprite("mushroom2").setColor(Color::LIGHT_BLUE)); //For now.
     Tile::addTile(ViewId::KEY, sprite("key"));
     Tile::addTile(ViewId::FOUNTAIN, sprite("fountain").setRoundShadow());
     Tile::addTile(ViewId::GOLD, sprite("gold"));
@@ -877,6 +878,7 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::MUSHROOM4, symbol(u8"⋆", Color::BROWN, true));
     Tile::addSymbol(ViewId::MUSHROOM5, symbol(u8"⋆", Color::LIGHT_GRAY, true));
     Tile::addSymbol(ViewId::MUSHROOM6, symbol(u8"⋆", Color::ORANGE, true));
+    Tile::addSymbol(ViewId::MUSHROOM7, symbol(u8"⋆", Color::LIGHT_BLUE, true));
     Tile::addSymbol(ViewId::KEY, symbol(u8"*", Color::YELLOW));
     Tile::addSymbol(ViewId::FOUNTAIN, symbol(u8"0", Color::LIGHT_BLUE));
     Tile::addSymbol(ViewId::GOLD, symbol(u8"$", Color::YELLOW));

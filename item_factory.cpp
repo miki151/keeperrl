@@ -200,6 +200,7 @@ ItemFactory ItemFactory::mushrooms(bool onlyGood) {
   return ItemFactory({
       {ItemType::Mushroom{Effect::Lasting{LastingEffect::DAM_BONUS}}, 1 },
       {ItemType::Mushroom{Effect::Lasting{LastingEffect::DEF_BONUS}}, 1 },
+      {ItemType::Mushroom{Effect::Lasting{LastingEffect::NIGHT_VISION}}, 1 },
       {ItemType::Mushroom{Effect::Lasting{LastingEffect::PANIC}}, 1 },
       {ItemType::Mushroom{Effect::Lasting{LastingEffect::REGENERATION}}, 1 },
       {ItemType::Mushroom{Effect::Lasting{LastingEffect::HALLU}}, onlyGood ? 0.1 : 8. },
