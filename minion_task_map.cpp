@@ -94,7 +94,8 @@ bool MinionTaskMap::isAvailable(WConstCollective col, WConstCreature c, MinionTa
     case MinionTask::EXPLORE_NOCTURNAL:
       return c->getAttributes().getSkills().hasDiscrete(SkillId::EXPLORE_NOCTURNAL);
     case MinionTask::WORKER:
-      return c->getAttributes().getSkills().hasDiscrete(SkillId::CONSTRUCTION);
+      return c->getAttributes().getSkills().hasDiscrete(SkillId::CONSTRUCTION) ||
+          col->hasTrait(c, MinionTrait::PRISONER);
   }
 }
 

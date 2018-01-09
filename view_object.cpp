@@ -112,13 +112,11 @@ int ViewObject::MovementQueue::makeGoodIndex(int index) const {
   return (index + elems.size()) % elems.size();
 }
 
-ViewObject& ViewObject::setModifier(Modifier mod) {
-  modifiers.insert(mod);
-  return *this;
-}
-
-ViewObject& ViewObject::removeModifier(Modifier mod) {
-  modifiers.erase(mod);
+ViewObject& ViewObject::setModifier(Modifier mod, bool state) {
+  if (state)
+    modifiers.insert(mod);
+  else
+    modifiers.erase(mod);
   return *this;
 }
 

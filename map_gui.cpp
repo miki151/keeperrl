@@ -472,8 +472,12 @@ static bool mirrorSprite(ViewId id) {
   }
 }
 
-void MapGui::drawHealthBar(Renderer& renderer, Vec2 pos, Vec2 size, double health) {
-  if (hideFullHealthBars && health == 1)
+void MapGui::drawHealthBar(Renderer& renderer, Vec2 pos, Vec2 size, const ViewObject& object) {
+  bool capture = object.hasModifier(ViewObject::Modifier::CAPTURE_ORDERED);
+  auto health = object.getAttribute(ViewObject::Attribute::HEALTH);
+  if (!health)
+    return;
+  if (hideFullHealthBars && !capture && *health == 1)
     return;
   pos.y -= size.y * 0.2;
   double barWidth = 0.12;
@@ -482,12 +486,12 @@ void MapGui::drawHealthBar(Renderer& renderer, Vec2 pos, Vec2 size, double healt
     return Rectangle((int) (pos.x + size.x * (1 - barLength) / 2), pos.y,
         (int) (pos.x + size.x * state * (1 + barLength) / 2), (int) (pos.y + size.y * barWidth));
   };
-  auto color = Color::f(min(1.0, 2 - health * 2), min(1.0, 2 * health), 0);
+  auto color = capture ? Color::WHITE : Color::f(min<double>(1.0, 2 - *health * 2), min<double>(1.0, 2 * *health), 0);
   auto fullRect = getBar(1);
   renderer.drawFilledRectangle(fullRect.minusMargin(-1), Color::TRANSPARENT, Color::BLACK.transparency(100));
   renderer.drawFilledRectangle(fullRect, color.transparency(100));
-  if (health > 0)
-    renderer.drawFilledRectangle(getBar(health), color.transparency(200));
+  if (*health > 0)
+    renderer.drawFilledRectangle(getBar(*health), color.transparency(200));
   Rectangle shadowRect(fullRect.bottomLeft() - Vec2(0, 1), fullRect.bottomRight());
   renderer.drawFilledRectangle(shadowRect, Color::BLACK.transparency(100));
 }
@@ -549,9 +553,10 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
         static auto fire2 = renderer.getTileCoord("fire2");
         renderer.drawTile(pos, (curTimeReal.count() + pos.getHash()) % 500 < 250 ? fire1 : fire2, size);
       }
-    if (displayAllHealthBars || lastHighlighted.creaturePos == pos + movement)
-      if (auto wounded = object.getAttribute(ViewObject::Attribute::WOUNDED))
-        drawHealthBar(renderer, pos + move, size, 1 - *wounded);
+    if (displayAllHealthBars || lastHighlighted.creaturePos == pos + movement ||
+        object.hasModifier(ViewObject::Modifier::CAPTURE_ORDERED))
+      drawHealthBar(renderer, pos + move, size, object);
+
   } else {
     Vec2 movement = getMovementOffset(object, size, currentTimeGame, curTimeReal, true);
     Vec2 tilePos = pos + movement + Vec2(size.x / 2, -3);

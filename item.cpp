@@ -141,11 +141,9 @@ void Item::onHitCreature(WCreature c, const Attack& attack, int numItems) {
     discarded = true;
   } else
     c->you(numItems > 1 ? MsgType::HIT_THROWN_ITEM_PLURAL : MsgType::HIT_THROWN_ITEM, getPluralTheName(numItems));
-  if (c->takeDamage(attack))
-    return;
-  if (attributes->effect && getClass() == ItemClass::POTION) {
+  if (attributes->effect && getClass() == ItemClass::POTION)
     attributes->effect->applyToCreature(c, attack.attacker);
-  }
+  c->takeDamage(attack);
 }
 
 TimeInterval Item::getApplyTime() const {

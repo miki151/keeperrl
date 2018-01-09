@@ -617,7 +617,7 @@ Vec2 getOffset(Vec2 sizeDiff, double scale) {
 }
 
 Color Renderer::getBleedingColor(const ViewObject& object) {
-  double bleeding = object.getAttribute(ViewObject::Attribute::WOUNDED).value_or(0);
+  double bleeding = 1 - object.getAttribute(ViewObject::Attribute::HEALTH).value_or(0);
   if (bleeding > 0)
     bleeding = 0.3 + bleeding * 0.7;
   if (object.hasModifier(ViewObject::Modifier::SPIRIT_DAMAGE))

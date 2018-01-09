@@ -356,8 +356,6 @@ class Fighter : public Behaviour {
       if (panicWeight >= 0.5) {
         double dist = creature->getPosition().dist8(other->getPosition());
         if (dist < 7) {
-          if (dist == 1 && creature->getBody().isHumanoid())
-            creature->surrender(other);
           if (MoveInfo move = getPanicMove(other, panicWeight))
             return move;
           else

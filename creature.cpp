@@ -55,11 +55,11 @@ template <class Archive>
 void Creature::serialize(Archive& ar, const unsigned int version) {
   ar & SUBCLASS(OwnedObject<Creature>) & SUBCLASS(Renderable) & SUBCLASS(UniqueEntity);
   ar(attributes, position, equipment, shortestPath, knownHiding, tribe, morale);
-  ar(deathTime, hidden, lastMoveCounter);
+  ar(deathTime, hidden, lastMoveCounter, captureHealth);
   ar(deathReason, swapPositionCooldown);
   ar(unknownAttackers, privateEnemies, holding);
   ar(controllerStack, kills, statuses);
-  ar(difficultyPoints, points);
+  ar(difficultyPoints, points, capture);
   ar(vision, lastCombatIntent, debt, lastDamageType, highestAttackValueEver);
 }
 
@@ -216,6 +216,18 @@ const EnumSet<CreatureStatus>& Creature::getStatus() const {
   return statuses;
 }
 
+void Creature::toggleCaptureOrder() {
+  if (getBody().isHumanoid()) {
+    capture = !capture;
+    updateViewObject();
+    position.setNeedsRenderUpdate(true);
+  }
+}
+
+bool Creature::isCaptureOrdered() {
+  return capture;
+}
+
 EnumSet<CreatureStatus>& Creature::getStatus() {
   return statuses;
 }
@@ -325,9 +337,9 @@ void Creature::you(const string& param) const {
   getController()->getMessageGenerator().add(this, param);
 }
 
-void Creature::verb(const char* second, const char* third, const std::string& param) {
-  secondPerson("You "_s + second + " " + param);
-  thirdPerson(getName().the() + " " + third + " "_s + param);
+void Creature::verb(const char* second, const char* third, const string& param) {
+  secondPerson("You "_s + second + (param.empty() ? "" : " " + param));
+  thirdPerson(getName().the() + " " + third + (param.empty() ? "" : " " + param));
 }
 
 void Creature::secondPerson(const PlayerMessage& message) const {
@@ -390,8 +402,7 @@ void Creature::makeMove() {
   }
 
   INFO << getName().bare() << " morale " << getMorale();
-  if (!hidden)
-    modViewObject().removeModifier(ViewObject::Modifier::HIDDEN);
+  modViewObject().setModifier(ViewObject::Modifier::HIDDEN, hidden);
   unknownAttackers.clear();
   getBody().affectPosition(position);
   highestAttackValueEver = max(highestAttackValueEver, getBestAttack().value);
@@ -823,6 +834,7 @@ optional<GlobalTime> Creature::getGlobalTime() const {
 }
 
 void Creature::tick() {
+  captureHealth = min(1.0, captureHealth + 0.02);
   vision->update(this);
   if (Random.roll(5))
     getDifficultyPoints();
@@ -905,6 +917,10 @@ void Creature::onAttackedBy(WCreature attacker) {
   lastAttacker = attacker;
 }
 
+void Creature::removePrivateEnemy(WConstCreature c) {
+  privateEnemies.erase(c);
+}
+
 constexpr double getDamage(double damageRatio) {
   constexpr double minRatio = 0.6;  // the ratio at which the damage drops to 0
   constexpr double maxRatio = 2.2;     // the ratio at which the damage reaches 1
@@ -919,7 +935,19 @@ constexpr double getDamage(double damageRatio) {
     return 1.0;
 }
 
-bool Creature::takeDamage(const Attack& attack) {
+bool Creature::captureDamage(double damage, WCreature attacker) {
+  captureHealth -= damage;
+  updateViewObject();
+  if (captureHealth <= 0) {
+    getGame()->addEvent(EventInfo::CreatureSurrendered{this, attacker});
+    captureHealth = 1;
+    toggleCaptureOrder();
+    return true;
+  } else
+    return false;
+}
+
+void Creature::takeDamage(const Attack& attack) {
   if (WCreature attacker = attack.attacker) {
     onAttackedBy(attacker);
     if (!attacker->getAttributes().getSkills().hasDiscrete(SkillId::STEALTH))
@@ -936,8 +964,10 @@ bool Creature::takeDamage(const Attack& attack) {
   if (auto sound = attributes->getAttackSound(attack.type, damage > 0))
     addSound(*sound);
   if (damage > 0) {
-    if (attributes->getBody().takeDamage(attack, this, damage))
-      return true;
+    bool canCapture = capture && attack.attacker;
+    if ((canCapture && captureDamage(damage, attack.attacker)) ||
+        (!canCapture && attributes->getBody().takeDamage(attack, this, damage)))
+      return;
   } else
     you(MsgType::GET_HIT_NODAMAGE);
   if (attack.effect)
@@ -945,7 +975,6 @@ bool Creature::takeDamage(const Attack& attack) {
   for (LastingEffect effect : ENUM_ALL(LastingEffect))
     if (isAffected(effect))
       LastingEffects::afterCreatureDamage(this, effect);
-  return false;
 }
 
 static vector<string> extractNames(const vector<AdjectiveInfo>& adjectives) {
@@ -953,14 +982,18 @@ static vector<string> extractNames(const vector<AdjectiveInfo>& adjectives) {
 }
 
 void Creature::updateViewObject() {
-  modViewObject().setCreatureAttributes(ViewObject::CreatureAttributes([this](AttrType t) { return getAttr(t);}));
-  modViewObject().setAttribute(ViewObject::Attribute::MORALE, getMorale());
-  modViewObject().setModifier(ViewObject::Modifier::DRAW_MORALE);
-  modViewObject().getCreatureStatus() = getStatus();
-  modViewObject().setGoodAdjectives(combine(extractNames(getGoodAdjectives()), true));
-  modViewObject().setBadAdjectives(combine(extractNames(getBadAdjectives()), true));
-  getBody().updateViewObject(modViewObject());
-  modViewObject().setDescription(getName().title());
+  auto& object = modViewObject();
+  object.setCreatureAttributes(ViewObject::CreatureAttributes([this](AttrType t) { return getAttr(t);}));
+  object.setAttribute(ViewObject::Attribute::MORALE, getMorale());
+  object.setModifier(ViewObject::Modifier::DRAW_MORALE);
+  object.getCreatureStatus() = getStatus();
+  object.setGoodAdjectives(combine(extractNames(getGoodAdjectives()), true));
+  object.setBadAdjectives(combine(extractNames(getBadAdjectives()), true));
+  getBody().updateViewObject(object);
+  object.setModifier(ViewObject::Modifier::CAPTURE_ORDERED, capture);
+  if (capture)
+    object.setAttribute(ViewObject::Attribute::HEALTH, captureHealth);
+  object.setDescription(getName().title());
   getPosition().setNeedsRenderUpdate(true);
 }
 
@@ -1130,10 +1163,6 @@ CreatureAction Creature::torture(WCreature other) const {
     getGame()->addEvent(EventInfo::CreatureTortured{other, self});
     self->spendTime();
   });
-}
-
-void Creature::surrender(WCreature to) {
-  getGame()->addEvent(EventInfo::CreatureSurrendered{this, to});
 }
 
 void Creature::retire() {

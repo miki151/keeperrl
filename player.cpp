@@ -473,6 +473,8 @@ vector<Player::OtherCreatureCommand> Player::getOtherCreatureCommands(WCreature 
     genAction("Swap position", getCreature()->moveTowards(c->getPosition()));
   if (getCreature()->isEnemy(c)) {
     genAction("Attack", getCreature()->attack(c));
+    ret.push_back({c->isCaptureOrdered() ? "Cancel capture order" : "Order capture",
+        [c](Player*) { c->toggleCaptureOrder();}});
     auto equipped = getCreature()->getEquipment().getSlotItems(EquipmentSlot::WEAPON);
     if (equipped.size() == 1) {
       auto weapon = equipped[0];
@@ -835,7 +837,7 @@ void Player::getViewIndex(Vec2 pos, ViewIndex& index) const {
       if (getCreature()->isEnemy(c))
         object.setModifier(ViewObject::Modifier::HOSTILE);
       else
-        object.getCreatureStatus().clear();
+        object.getCreatureStatus().intersectWith(getDisplayedOnMinions());
       auto actions = getOtherCreatureCommands(c);
       if (!actions.empty())
         object.setClickAction(actions[0].name);

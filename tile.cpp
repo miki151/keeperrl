@@ -1033,14 +1033,13 @@ Color Tile::getColor(const ViewObject& object) {
   if (object.hasModifier(ViewObject::Modifier::PLANNED)) {
     return Color(color.r / 2, color.g / 2, color.b / 2);
   }
-  if (auto bleeding = object.getAttribute(ViewObject::Attribute::WOUNDED))
-    if (*bleeding > 0) {
+  if (auto bleeding = object.getAttribute(ViewObject::Attribute::HEALTH))
+    if (*bleeding < 1) {
       *bleeding = 0.5 + *bleeding / 2;
-      *bleeding = min(1.0f, *bleeding);
       return Color(
-          (1 - *bleeding) * color.r + *bleeding * 255,
-          (1 - *bleeding) * color.g,
-          (1 - *bleeding) * color.b);
+          *bleeding * color.r + *bleeding * 255,
+          *bleeding * color.g,
+          *bleeding * color.b);
   }
   return color;
 }

@@ -189,15 +189,15 @@ STutorial PlayerControl::getTutorial() const {
   return tutorial;
 }
 
-bool PlayerControl::canAddToTeam(WConstCreature c) {
+bool PlayerControl::canControl(WConstCreature c) {
   return getCollective()->hasTrait(c, MinionTrait::FIGHTER) || c == getCollective()->getLeader();
 }
 
 void PlayerControl::addToCurrentTeam(WCreature c) {
-  CHECK(canAddToTeam(c));
+  //CHECK(canAddToTeam(c)); can also add a prisoner.
   if (auto teamId = getCurrentTeam()) {
     getTeams().add(*teamId, c);
-    if (getGame()->getPlayerCreatures().size() > 1)
+    if (getGame()->getPlayerCreatures().size() > 1 && !getCollective()->hasTrait(c, MinionTrait::PRISONER))
       c->pushController(createMinionController(c));
   }
 }
@@ -210,7 +210,7 @@ void PlayerControl::teamMemberAction(TeamMemberAction action, Creature::Id id) {
       break;
     case TeamMemberAction::CHANGE_LEADER:
       if (auto teamId = getCurrentTeam())
-        if (getTeams().getMembers(*teamId).size() > 1) {
+        if (getTeams().getMembers(*teamId).size() > 1 && canControl(c)) {
           auto controlled = getControlled();
           if (controlled.size() == 1) {
             getTeams().getLeader(*teamId)->popController();
@@ -1381,7 +1381,7 @@ void PlayerControl::getSquareViewIndex(Position pos, bool canSee, ViewIndex& ind
       if (isEnemy(c))
         object.setModifier(ViewObject::Modifier::HOSTILE);
       else
-        object.getCreatureStatus().clear();
+        object.getCreatureStatus().intersectWith(getDisplayedOnMinions());
     }
 }
 
@@ -1503,7 +1503,7 @@ void PlayerControl::toggleControlAllTeamMembers() {
     if (members.size() > 1) {
       if (getControlled().size() == 1) {
         for (auto c : members)
-          if (!c->isPlayer())
+          if (!c->isPlayer() && canControl(c))
             c->pushController(createMinionController(c));
       } else
         for (auto c : members)
@@ -1885,7 +1885,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
     case UserInputId::ADD_TO_TEAM: {
       auto info = input.get<TeamCreatureInfo>();
       if (WCreature c = getCreature(info.creatureId))
-        if (getTeams().exists(info.team) && !getTeams().contains(info.team, c) && canAddToTeam(c))
+        if (getTeams().exists(info.team) && !getTeams().contains(info.team, c) && canControl(c))
           getTeams().add(info.team, c);
       break;
     }
@@ -2379,8 +2379,12 @@ void PlayerControl::onMemberKilled(WConstCreature victim, WConstCreature killer)
   }
 }
 
-void PlayerControl::onMemberAdded(WConstCreature c) {
+void PlayerControl::onMemberAdded(WCreature c) {
   updateMinionVisibility(c);
+  auto team = getControlled();
+  if (getCollective()->hasTrait(c, MinionTrait::PRISONER) && !team.empty() &&
+      team[0]->getPosition().isSameLevel(c->getPosition()))
+    addToCurrentTeam(c);
 }
 
 WLevel PlayerControl::getLevel() const {

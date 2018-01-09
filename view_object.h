@@ -25,9 +25,9 @@
 #include "movement_info.h"
 #include "creature_status.h"
 
-RICH_ENUM(ViewObjectModifier, PLAYER, HIDDEN, INVISIBLE, ILLUSION, PLANNED,
+RICH_ENUM(ViewObjectModifier, PLAYER, HIDDEN, INVISIBLE, ILLUSION, PLANNED, CAPTURE_ORDERED,
     TEAM_LEADER_HIGHLIGHT, TEAM_HIGHLIGHT, DRAW_MORALE, ROAD, NO_UP_MOVEMENT, REMEMBER, SPIRIT_DAMAGE, HOSTILE);
-RICH_ENUM(ViewObjectAttribute, WOUNDED, BURNING, WATER_DEPTH, EFFICIENCY, MORALE);
+RICH_ENUM(ViewObjectAttribute, HEALTH, BURNING, WATER_DEPTH, EFFICIENCY, MORALE);
 
 class ViewObject {
   public:
@@ -36,8 +36,7 @@ class ViewObject {
   ViewObject(ViewId id, ViewLayer l, const string& description);
   ViewObject(ViewId id, ViewLayer l);
 
-  ViewObject& setModifier(Modifier);
-  ViewObject& removeModifier(Modifier);
+  ViewObject& setModifier(Modifier, bool state = true);
   bool hasModifier(Modifier) const;
 
   EnumSet<CreatureStatus>& getCreatureStatus();

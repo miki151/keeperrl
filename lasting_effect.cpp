@@ -201,7 +201,7 @@ void LastingEffects::onRemoved(WCreature c, LastingEffect effect, bool msg) {
 
 void LastingEffects::onTimedOut(WCreature c, LastingEffect effect, bool msg) {
   if (auto mod = getViewObjectModifier(effect))
-    c->modViewObject().removeModifier(*mod);
+    c->modViewObject().setModifier(*mod, false);
   if (msg)
     switch (effect) {
       case LastingEffect::SLOWED:

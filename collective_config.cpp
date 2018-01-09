@@ -82,7 +82,7 @@ static bool isSleepingFurniture(FurnitureType t) {
 static optional<FurnitureType> getBedType(WConstCreature c) {
   if (!c->getBody().needsToSleep())
     return none;
-  if (c->getViewObject().id() == ViewId::PRISONER)
+  if (c->getStatus().contains(CreatureStatus::PRISONER))
     return FurnitureType::PRISON;
   if (c->getBody().isUndead())
     return FurnitureType::GRAVE;

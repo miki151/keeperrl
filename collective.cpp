@@ -149,6 +149,7 @@ void Collective::updateCreatureStatus(WCreature c) {
       !hasTrait(c, MinionTrait::LEADER));
   c->getStatus().set(CreatureStatus::FIGHTER, hasTrait(c, MinionTrait::FIGHTER));
   c->getStatus().set(CreatureStatus::LEADER, hasTrait(c, MinionTrait::LEADER));
+  c->getStatus().set(CreatureStatus::PRISONER, hasTrait(c, MinionTrait::PRISONER));
 }
 
 void Collective::addCreature(WCreature c, EnumSet<MinionTrait> traits) {
@@ -176,6 +177,10 @@ void Collective::addCreature(WCreature c, EnumSet<MinionTrait> traits) {
   updateCreatureStatus(c);
   for (WItem item : c->getEquipment().getItems())
     CHECK(minionEquipment->tryToOwn(c, item));
+  for (auto minion : creatures) {
+    c->removePrivateEnemy(minion);
+    minion->removePrivateEnemy(c);
+  }
   control->onMemberAdded(c);
 }
 
@@ -698,9 +703,14 @@ void Collective::onEvent(const GameEvent& event) {
           returnResource({ResourceId::MANA, 1});
       },
       [&](const CreatureSurrendered& info) {
-        if (getCreatures().contains(info.attacker) && !getCreatures().contains(info.victim) &&
-            info.victim->getBody().isHumanoid())
-          surrendering.insert(info.victim);
+        auto victim = info.victim;
+        auto attacker = info.attacker;
+        if (getCreatures().contains(attacker) && !getCreatures().contains(victim)) {
+          addCreature(victim, {MinionTrait::PRISONER, MinionTrait::NO_LIMIT});
+          victim->verb("surrender", "surrenders");
+          control->addMessage(PlayerMessage(victim->getName().a() + " surrenders.")
+              .setPosition(victim->getPosition()));
+        }
       },
       [&](const TrapTriggered& info) {
         if (auto& trap = constructions->getTrap(info.pos)) {

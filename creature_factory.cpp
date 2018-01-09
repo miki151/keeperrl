@@ -541,7 +541,7 @@ PCreature CreatureFactory::getIllusion(WCreature creature) {
   auto ret = makeOwner<Creature>(viewObject, creature->getTribeId(), CATTR(
           c.viewId = ViewId::ROCK; //overriden anyway
           c.illusionViewObject = creature->getViewObject();
-          c.illusionViewObject->removeModifier(ViewObject::Modifier::INVISIBLE);
+          c.illusionViewObject->setModifier(ViewObject::Modifier::INVISIBLE, false);
           c.body = Body::nonHumanoidSpirit(Body::Size::LARGE);
           c.body->setDeathSound(SoundId::MISSED_ATTACK);
           c.attr[AttrType::DAMAGE] = 20; // just so it's not ignored by creatures

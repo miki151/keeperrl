@@ -662,7 +662,7 @@ bool Body::tick(WConstCreature c) {
 }
 
 void Body::updateViewObject(ViewObject& obj) const {
-  obj.setAttribute(ViewObject::Attribute::WOUNDED, 1 - health);
+  obj.setAttribute(ViewObject::Attribute::HEALTH, health);
   switch (material) {
     case Material::SPIRIT:
     case Material::FIRE:
