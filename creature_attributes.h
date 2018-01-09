@@ -61,6 +61,8 @@ class CreatureAttributes {
   void setBaseAttr(AttrType, int);
   double getCourage() const;
   void setCourage(double);
+  string getDeathDescription() const;
+  void setDeathDescription(string);
   const Gender& getGender() const;
   double getExpLevel(ExperienceType type) const;
   const EnumMap<ExperienceType, double>& getExpLevel() const;
@@ -131,4 +133,5 @@ class CreatureAttributes {
   bool SERIAL(noAttackSound) = false;
   optional<CreatureId> SERIAL(creatureId);
   optional<double> SERIAL(moraleSpeedIncrease);
+  string SERIAL(deathDescription)="killed"_s;
 };

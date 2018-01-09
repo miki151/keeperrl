@@ -1305,6 +1305,18 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.chatReactionHostile = "\"Heeelp!\""_s;
           c.skills.insert(SkillId::CROPS);
           c.name = CreatureName("child", "children"););
+    case CreatureId::SPIDER_FOOD: 
+      return CATTR(
+          c.viewId = ViewId::CHILD;
+          c.attr = LIST(2_dam, 2_def );
+          c.body = Body::humanoid(Body::Size::MEDIUM);
+          c.innocent = true;
+          c.permanentEffects[LastingEffect::ENTANGLED] = 1;
+          c.permanentEffects[LastingEffect::BLIND] = 1;
+          c.chatReactionFriendly = "\"Put me out of my misery PLEASE!\""_s;
+          c.chatReactionHostile = "\"End my torture!\""_s;
+          c.deathDescription = "dead, released from unthinkable agony"_s;
+          c.name = CreatureName("child", "children"););
     case CreatureId::HALLOWEEN_KID:
       return CATTR(
           c.viewId = Random.choose(ViewId::HALLOWEEN_KID1,
@@ -1408,7 +1420,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.permanentEffects[LastingEffect::FLYING] = 1;
           c.permanentEffects[LastingEffect::RANGED_RESISTANCE] = 1;
           c.permanentEffects[LastingEffect::FIRE_RESISTANT] = 1;
-          c.permanentEffects[LastingEffect::DARKNESS_SOURCE] = 1;
           for (SpellId id : Random.chooseN(Random.get(3, 6), {SpellId::CIRCULAR_BLAST, SpellId::DEF_BONUS,
               SpellId::DAM_BONUS, SpellId::STUN_RAY, SpellId::DECEPTION, SpellId::DECEPTION,
               SpellId::TELEPORT}))
@@ -2372,6 +2383,9 @@ vector<ItemType> getDefaultInventory(CreatureId id) {
       return ItemList()
         .add(ItemType::Sword{})
         .add(randomBackup());
+    case CreatureId::VAMPIRE_LORD:
+      return ItemList()
+        .add(ItemType::Scroll{Effect::Permanent{LastingEffect::DARKNESS_SOURCE}});
     case CreatureId::DARK_ELF_LORD: 
     case CreatureId::ELF_LORD: 
       return ItemList()

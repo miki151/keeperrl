@@ -27,7 +27,8 @@ static void addThird(WConstCreature c, MsgType type, const string& param) {
                                (param.size() > 0 ? " on the " + param : ".");
                                unseenMsg = "You hear snoring."; break;
     case MsgType::WAKE_UP: msg = c->getName().the() + " wakes up."; break;
-    case MsgType::DIE: msg = c->getName().the() + " is killed!"; break;
+    case MsgType::DIE: msg = c->getName().the() + " is " + 
+        c->getAttributes().getDeathDescription() + "!"; break;
     case MsgType::TELE_APPEAR: msg = c->getName().the() + " appears out of nowhere!"; break;
     case MsgType::TELE_DISAPPEAR: msg = c->getName().the() + " suddenly disappears!"; break;
     case MsgType::BLEEDING_STOPS: msg = c->getName().the() + "'s bleeding stops."; break;
@@ -61,7 +62,8 @@ static void addThird(WConstCreature c, MsgType type, const string& param) {
     case MsgType::BURN: msg = c->getName().the() + " burns in the " + param; unseenMsg = "You hear a horrible shriek"; break;
     case MsgType::DROWN: msg = c->getName().the() + " drowns in the " + param; unseenMsg = "You hear a loud splash" ;break;
     case MsgType::SET_UP_TRAP: msg = c->getName().the() + " sets up the trap"; break;
-    case MsgType::KILLED_BY: msg = c->getName().the() + " is killed by " + param; break;
+    case MsgType::KILLED_BY: msg = c->getName().the() + " is "+
+        c->getAttributes().getDeathDescription() + " by " + param; break;
     case MsgType::TURN: msg = c->getName().the() + " turns " + param; break;
     case MsgType::BECOME: msg = c->getName().the() + " becomes " + param; break;
     case MsgType::COPULATE: msg = c->getName().the() + " copulates " + param; break;

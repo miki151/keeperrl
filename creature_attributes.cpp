@@ -43,8 +43,8 @@ CreatureAttributes::~CreatureAttributes() {}
 template <class Archive> 
 void CreatureAttributes::serialize(Archive& ar, const unsigned int version) {
   ar(viewId, retiredViewId, illusionViewObject, name, attr, chatReactionFriendly);
-  ar(chatReactionHostile, passiveAttack, gender);
-  ar(body, innocent, moraleSpeedIncrease);
+  ar(chatReactionHostile,passiveAttack, gender);
+  ar(body, innocent, moraleSpeedIncrease, deathDescription);
   ar(animal, cantEquip, courage);
   ar(boulder, noChase, isSpecial, skills, spells);
   ar(permanentEffects, lastingEffects, minionTasks, expLevel);
@@ -84,6 +84,14 @@ double CreatureAttributes::getCourage() const {
 
 void CreatureAttributes::setCourage(double c) {
   courage = c;
+}
+
+string CreatureAttributes::getDeathDescription() const {
+  return deathDescription;
+}
+
+void CreatureAttributes::setDeathDescription(string c) {
+  deathDescription = c;
 }
 
 const Gender& CreatureAttributes::getGender() const {
