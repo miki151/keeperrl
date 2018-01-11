@@ -46,6 +46,7 @@
 #include "furniture.h"
 #include "experience_type.h"
 #include "creature_debt.h"
+#include "furniture_type.h"
 
 SERIALIZE_DEF(CreatureFactory, tribe, creatures, weights, unique, tribeOverrides, levelIncrease, baseLevelIncrease, inventory)
 SERIALIZATION_CONSTRUCTOR_IMPL(CreatureFactory)
@@ -675,8 +676,8 @@ CreatureFactory CreatureFactory::splashMonsters(TribeId tribe) {
 
 CreatureFactory CreatureFactory::forrest(TribeId tribe) {
   return CreatureFactory(tribe,
-      { CreatureId::DEER, CreatureId::FOX, CreatureId::BOAR },
-      { 4, 2, 2}, {});
+      { CreatureId::DEER, CreatureId::FOX, CreatureId::BOAR, CreatureId::FLOATING_EYE },
+      { 4, 2, 2, 1}, {});
 }
 
 CreatureFactory CreatureFactory::waterCreatures(TribeId tribe) {
@@ -1837,6 +1838,17 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.animal = true;
           c.noChase = true;
           c.name = "boar";);
+    case CreatureId::FLOATING_EYE: 
+      return CATTR(
+          c.viewId = ViewId::EYEBALL;
+          c.attr = LIST(2_dam, 2_def, 30_spell_dam );
+          c.body = Body::nonHumanoid(Body::Material::SPIRIT, Body::Size::SMALL);
+          c.body->setWeight(2);
+          c.permanentEffects[LastingEffect::MAGIC_RESISTANCE] = 1;
+          c.permanentEffects[LastingEffect::FLYING] = 1;
+          c.spells->add(SpellId::CIRCULAR_BLAST);
+          c.spells->add(SpellId::BLAST);
+          c.name = "floating eyestalk";);
     case CreatureId::FOX: 
       return CATTR(
           c.viewId = ViewId::FOX;
@@ -2261,6 +2273,8 @@ vector<ItemType> getDefaultInventory(CreatureId id) {
     case CreatureId::DEMON_LORD:
     case CreatureId::ANGEL:
       return ItemList().add(ItemType::SpecialSword{});
+    case CreatureId::FLOATING_EYE:
+      return ItemList().add(ItemType::MagicDevice{Effect::PlaceFurniture{FurnitureType::CHEST}});
     case CreatureId::KEEPER_F:
     case CreatureId::KEEPER:
       return ItemList()

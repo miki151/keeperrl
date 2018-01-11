@@ -1099,6 +1099,30 @@ static ViewId getMushroomViewId(Effect e) {
   );
 }
 
+static string getMagicDeviceName(Effect e) {
+  return e.visit(
+      [&](const Effect::PlaceFurniture& e) {
+        //Eyeballs are the items that summon furniture.
+        return "eyeball of summon " + e.getName();
+      },
+      [&](const auto&) {
+        //Default magic device can be a crystal for now.
+        return "crystal of " + e.getName();
+      }
+  );
+}
+
+static ViewId getMagicDeviceViewId(Effect e) {
+  return e.visit(
+      [&](const Effect::PlaceFurniture& e) {
+        return ViewId::EYEBALL;
+      },
+      [&](const auto&) {
+        return ViewId::STONE;
+      }
+  );
+}
+
 ItemAttributes ItemType::Mushroom::getAttributes() const {
   return ITATTR(
       i.viewId = getMushroomViewId(effect);
@@ -1110,6 +1134,23 @@ ItemAttributes ItemType::Mushroom::getAttributes() const {
       i.modifiers[AttrType::DAMAGE] = -15;
       i.effect = effect;
       i.price = getEffectPrice(effect);
+      i.uses = 1;
+  );
+}
+
+ItemAttributes ItemType::MagicDevice::getAttributes() const {
+  return ITATTR(
+      i.viewId = getMagicDeviceViewId(effect);
+      i.shortName = effect.getName();
+      i.name = getMagicDeviceName(effect);
+      i.blindName = *i.name;
+      i.itemClass= ItemClass::TOOL;
+      i.weight = 0.1;
+      i.modifiers[AttrType::DAMAGE] = -15;
+      i.effect = effect;
+      i.price = getEffectPrice(effect);
+      //Number of uses could vary according to the effect.
+      //For now, the devices are single use items (like potions are).
       i.uses = 1;
   );
 }

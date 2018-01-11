@@ -89,6 +89,12 @@ class ItemType {
     SERIALIZE_ALL(effect)
     ITEM_TYPE_INTERFACE;
   };
+  //The sort of device that exists will depend on the effect it has.
+  struct MagicDevice {
+    Effect SERIAL(effect);
+    SERIALIZE_ALL(effect)
+    ITEM_TYPE_INTERFACE;
+  };
   struct Amulet {
     LastingEffect SERIAL(lastingEffect);
     SERIALIZE_ALL(lastingEffect)
@@ -125,7 +131,7 @@ class ItemType {
       BattleAxe, SteelBattleAxe, SpecialBattleAxe, WarHammer, SpecialWarHammer, Club, HeavyClub, WoodenStaff, IronStaff,
       Scythe, Bow, ElvenBow, LeatherArmor, LeatherHelm, TelepathyHelm, ChainArmor, SteelArmor, IronHelm, LeatherBoots,
       IronBoots, SpeedBoots, LevitationBoots, LeatherGloves, StrengthGloves, Robe, Scroll, FireScroll, Potion,
-      Mushroom, Amulet, DefenseAmulet, Ring, FirstAidKit, Rock, IronOre, SteelIngot, GoldPiece,
+      Mushroom, MagicDevice, Amulet, DefenseAmulet, Ring, FirstAidKit, Rock, IronOre, SteelIngot, GoldPiece,
       WoodPlank, Bone, RandomTechBook, TechBook, TrapItem, AutomatonItem, BagOfCandies, HalloweenCostume,
       UnicornHorn, Intrinsic);
 
