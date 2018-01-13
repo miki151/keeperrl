@@ -1841,13 +1841,12 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::FLOATING_EYE: 
       return CATTR(
           c.viewId = ViewId::EYEBALL;
-          c.attr = LIST(2_dam, 2_def, 30_spell_dam );
-          c.body = Body::nonHumanoid(Body::Material::SPIRIT, Body::Size::SMALL);
+          c.attr = LIST(2_dam, 10_def);
+          c.body = Body::nonHumanoidSpirit(Body::Size::SMALL);
           c.body->setWeight(2);
           c.permanentEffects[LastingEffect::MAGIC_RESISTANCE] = 1;
           c.permanentEffects[LastingEffect::FLYING] = 1;
-          c.spells->add(SpellId::CIRCULAR_BLAST);
-          c.spells->add(SpellId::BLAST);
+          c.permanentEffects[LastingEffect::SLOWED] = 1;
           c.name = "floating eyestalk";);
     case CreatureId::FOX: 
       return CATTR(
