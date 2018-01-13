@@ -26,7 +26,7 @@ static double getDefaultWeight(Body::Size size) {
   }
 }
 
-SERIALIZE_DEF(Body, xhumanoid, size, weight, bodyParts, injuredBodyParts, lostBodyParts, material, health, minionFood, deathSound, carryLimit, intrinsicAttacks)
+SERIALIZE_DEF(Body, xhumanoid, size, weight, bodyParts, injuredBodyParts, lostBodyParts, material, health, minionFood, deathSound, carryLimit, naturalCarryLimit, intrinsicAttacks)
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Body)
 
@@ -154,7 +154,12 @@ void Body::setDeathSound(optional<SoundId> s) {
 }
 
 void Body::setNoCarryLimit() {
+  naturalCarryLimit=carryLimit; //Store how much it used to be able to carry.
   carryLimit = none;
+}
+
+void Body::resetCarryLimit() {
+  carryLimit = naturalCarryLimit;
 }
 
 bool Body::canHeal() const {

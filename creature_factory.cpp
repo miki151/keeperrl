@@ -994,6 +994,14 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
         c.name->setGroup("herd");
         c.animal = true;
         );
+    case CreatureId::BANDIT_CHIEF: 
+      return CATTR(
+          c.viewId = ViewId::BANDIT;
+          c.attr = LIST(20_dam, 20_def);
+          c.body = Body::humanoid(Body::Size::LARGE);
+          c.chatReactionFriendly = "curses you"_s;
+          c.chatReactionHostile = "\"Face death!\""_s;
+          c.name = "bandit chief";);
     case CreatureId::BANDIT:
       return CATTR(
           c.viewId = ViewId::BANDIT;
@@ -2346,6 +2354,11 @@ vector<ItemType> getDefaultInventory(CreatureId id) {
         .add(ItemType::GoldPiece{}, Random.get(140, 200));
     case CreatureId::OGRE: 
       return ItemList().add(ItemType::HeavyClub{});
+    case CreatureId::BANDIT_CHIEF:
+      return ItemList()
+        .add(ItemType::Sword{})
+        .add(ItemType::LeatherArmor{})
+        .add(ItemType::Ring{LastingEffect::LOOTING_POWERS});
     case CreatureId::BANDIT:
       return ItemList()
         .add(ItemType::Sword{})

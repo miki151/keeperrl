@@ -54,6 +54,7 @@ class Body {
   void setMinionFood();
   void setDeathSound(optional<SoundId>);
   void setNoCarryLimit();
+  void resetCarryLimit();
   void setIntrinsicAttack(BodyPart, IntrinsicAttack);
 
   void affectPosition(Position);
@@ -140,6 +141,7 @@ class Body {
   bool SERIAL(minionFood) = false;
   optional<SoundId> SERIAL(deathSound);
   optional<double> SERIAL(carryLimit);
+  optional<double> SERIAL(naturalCarryLimit);
   EnumMap<BodyPart, optional<IntrinsicAttack>> SERIAL(intrinsicAttacks);
 };
 

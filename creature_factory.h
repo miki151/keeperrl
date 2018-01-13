@@ -39,6 +39,7 @@ RICH_ENUM(CreatureId,
     HARPY,
     SUCCUBUS,
     DOPPLEGANGER,
+    BANDIT_CHIEF,
     BANDIT,
 
     SPECIAL_BLBN,

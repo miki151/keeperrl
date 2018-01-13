@@ -162,6 +162,9 @@ void LastingEffects::onAffected(WCreature c, LastingEffect effect, bool msg) {
         c->you(MsgType::ARE, "satiated"); break;
       case LastingEffect::RESTED:
         c->you(MsgType::ARE, "well rested"); break;
+      case LastingEffect::LOOTING_POWERS:
+        c->you(MsgType::ARE, "able to shrink and carry endless loot");
+        c->getBody().setNoCarryLimit(); break;
       case LastingEffect::SUMMONED:
         c->you(MsgType::YOUR, "days are numbered"); break;
     }
@@ -274,6 +277,9 @@ void LastingEffects::onTimedOut(WCreature c, LastingEffect effect, bool msg) {
         c->you(MsgType::ARE, "no longer satiated"); break;
       case LastingEffect::RESTED:
         c->you(MsgType::ARE, "no longer rested"); break;
+      case LastingEffect::LOOTING_POWERS:
+        c->you(MsgType::ARE, "unable to shrink loot");
+		c->getBody().resetCarryLimit(); break;
       case LastingEffect::SUMMONED:
         c->dieNoReason(Creature::DropType::ONLY_INVENTORY); break;
       default: break;
@@ -351,7 +357,7 @@ static optional<Adjective> getAdjective(LastingEffect effect) {
     case LastingEffect::SATIATED: return "Satiated"_good;
     case LastingEffect::RESTED: return "Rested"_good;
     case LastingEffect::PEACEFULNESS: return "Peaceful"_good;
-
+    case LastingEffect::LOOTING_POWERS: return "Can shrink loot"_good;
     case LastingEffect::POISON: return "Poisoned"_bad;
     case LastingEffect::BLEEDING: return "Bleeding"_bad;
     case LastingEffect::SLEEP: return "Sleeping"_bad;
@@ -546,6 +552,7 @@ const char* LastingEffects::getName(LastingEffect type) {
     case LastingEffect::SATIATED: return "satiety";
     case LastingEffect::RESTED: return "wakefulness";
     case LastingEffect::SUMMONED: return "time to live";
+    case LastingEffect::LOOTING_POWERS: return "looting";
   }
 }
 
@@ -563,6 +570,7 @@ const char* LastingEffects::getDescription(LastingEffect type) {
     case LastingEffect::COLLAPSED: return "Moving across tiles takes three times longer.";
     case LastingEffect::PANIC: return "Increases defense and lowers damage.";
     case LastingEffect::RAGE: return "Increases damage and lowers defense.";
+    case LastingEffect::LOOTING_POWERS: return "Lets you shrink and carry endless loot.";
     case LastingEffect::HALLU: return "Causes hallucinations.";
     case LastingEffect::DAM_BONUS: return "Gives a damage bonus.";
     case LastingEffect::DEF_BONUS: return "Gives a defense bonus.";
@@ -657,6 +665,7 @@ int LastingEffects::getPrice(LastingEffect e) {
     case LastingEffect::DARKNESS_SOURCE:
     case LastingEffect::PREGNANT:
     case LastingEffect::FLYING:
+	case LastingEffect::LOOTING_POWERS:
       return 24;
   }
 }

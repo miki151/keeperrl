@@ -179,6 +179,7 @@ static TimeInterval getDuration(WConstCreature c, LastingEffect e) {
       return  25_visible;
     case LastingEffect::SATIATED:
       return  500_visible;
+    case LastingEffect::LOOTING_POWERS:
     case LastingEffect::RESTED:
       return  1000_visible;
   }
