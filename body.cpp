@@ -154,7 +154,7 @@ void Body::setDeathSound(optional<SoundId> s) {
 }
 
 void Body::setNoCarryLimit() {
-  naturalCarryLimit=carryLimit; //Store how much it used to be able to carry.
+  naturalCarryLimit = carryLimit; //Store how much it used to be able to carry.
   carryLimit = none;
 }
 
