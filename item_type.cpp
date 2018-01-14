@@ -358,6 +358,7 @@ ViewId getRingViewId(LastingEffect e) {
   switch (e) {
     case LastingEffect::FIRE_RESISTANT: return ViewId::FIRE_RESIST_RING;
     case LastingEffect::POISON_RESISTANT: return ViewId::POISON_RESIST_RING;
+    case LastingEffect::MAGICAL_DISARMING_SKILL: return ViewId::DISARMING_RING;
     default: return ViewId::FIRE_RESIST_RING;
   }
 }
