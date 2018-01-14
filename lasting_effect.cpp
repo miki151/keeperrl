@@ -595,8 +595,10 @@ const char* LastingEffects::getDescription(LastingEffect type) {
 }
 
 bool LastingEffects::canSee(WConstCreature c1, WConstCreature c2) {
-  if (c1->isAffected(LastingEffect::TELEPATHY) &&
-      c1->getPosition().dist8(c2->getPosition()) < 5 && c2->getBody().hasBrain())
+  bool brainInRange = c1->getPosition().dist8(c2->getPosition()) < 5 && c2->getBody().hasBrain();
+  bool telepathic = c1->isAffected(LastingEffect::TELEPATHY);
+  bool hallucinating = c1->isAffected(LastingEffect::HALLU);
+  if ( (telepathic || hallucinating) && brainInRange)
     return true;
   else
     return false;
