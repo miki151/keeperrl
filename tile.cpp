@@ -519,6 +519,7 @@ class TileCoordLookup {
     Tile::addTile(ViewId::AMULET3, sprite("amulet3"));
     Tile::addTile(ViewId::AMULET4, sprite("amulet4"));
     Tile::addTile(ViewId::AMULET5, sprite("amulet5"));
+    Tile::addTile(ViewId::LOOTING_RING, sprite("ring_red")); //For now
     Tile::addTile(ViewId::FIRE_RESIST_RING, sprite("ring_red"));
     Tile::addTile(ViewId::POISON_RESIST_RING, sprite("ring_green"));
     Tile::addTile(ViewId::BOOK, sprite("book"));
@@ -860,6 +861,7 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::AMULET3, symbol(u8"\"", Color::YELLOW));
     Tile::addSymbol(ViewId::AMULET4, symbol(u8"\"", Color::YELLOW));
     Tile::addSymbol(ViewId::AMULET5, symbol(u8"\"", Color::YELLOW));
+    Tile::addSymbol(ViewId::LOOTING_RING, symbol(u8"=", Color::WHITE));
     Tile::addSymbol(ViewId::FIRE_RESIST_RING, symbol(u8"=", Color::RED));
     Tile::addSymbol(ViewId::POISON_RESIST_RING, symbol(u8"=", Color::GREEN));
     Tile::addSymbol(ViewId::BOOK, symbol(u8"+", Color::YELLOW));
