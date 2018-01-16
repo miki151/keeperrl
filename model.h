@@ -118,7 +118,7 @@ class Model : public OwnedObject<Model> {
   LocalTime SERIAL(lastTick);
   HeapAllocated<TimeQueue> SERIAL(timeQueue);
   vector<PCreature> SERIAL(deadCreatures);
-  double SERIAL(currentTime);
+  double SERIAL(currentTime) = 0;
   int SERIAL(woodCount) = 0;
   void calculateStairNavigation();
   optional<StairKey> getStairsBetween(WConstLevel from, WConstLevel to);
