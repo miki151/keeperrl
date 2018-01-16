@@ -43,7 +43,7 @@ class Equipment;
 class Spell;
 class CreatureAttributes;
 class Body;
-class MinionTaskMap;
+class MinionActivityMap;
 class CreatureName;
 class Gender;
 class SpellMap;

@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "minion_task.h"
+#include "minion_activity.h"
 #include "creature.h"
 #include "collective.h"
 #include "collective_config.h"
@@ -30,19 +30,19 @@ static optional<Position> getRandomCloseTile(Position from, const vector<Positio
   return ret;
 }
 
-static optional<Position> getTileToExplore(WConstCollective collective, WConstCreature c, MinionTask task) {
+static optional<Position> getTileToExplore(WConstCollective collective, WConstCreature c, MinionActivity task) {
   vector<Position> border = Random.permutation(collective->getKnownTiles().getBorderTiles());
   switch (task) {
-    case MinionTask::EXPLORE_CAVES:
+    case MinionActivity::EXPLORE_CAVES:
       if (auto pos = getRandomCloseTile(c->getPosition(), border,
             [&](Position p) {
                 return p.isSameLevel(collective->getLevel()) && p.isCovered() &&
                     (!c->getPosition().isSameLevel(collective->getLevel()) || c->isSameSector(p));}))
         return pos;
       FALLTHROUGH;
-    case MinionTask::EXPLORE:
+    case MinionActivity::EXPLORE:
       FALLTHROUGH;
-    case MinionTask::EXPLORE_NOCTURNAL:
+    case MinionActivity::EXPLORE_NOCTURNAL:
       return getRandomCloseTile(c->getPosition(), border,
           [&](Position pos) { return pos.isSameLevel(collective->getLevel()) && !pos.isCovered()
               && (!c->getPosition().isSameLevel(collective->getLevel()) || c->isSameSector(pos));});
@@ -58,17 +58,17 @@ static WCreature getCopulationTarget(WConstCollective collective, WConstCreature
   return nullptr;
 }
 
-const vector<FurnitureType>& MinionTasks::getAllFurniture(MinionTask task) {
-  static EnumMap<MinionTask, vector<FurnitureType>> cache;
+const vector<FurnitureType>& MinionActivities::getAllFurniture(MinionActivity task) {
+  static EnumMap<MinionActivity, vector<FurnitureType>> cache;
   static bool initialized = false;
   if (!initialized) {
-    for (auto minionTask : ENUM_ALL(MinionTask)) {
+    for (auto minionTask : ENUM_ALL(MinionActivity)) {
       auto& taskInfo = CollectiveConfig::getTaskInfo(minionTask);
       switch (taskInfo.type) {
-        case MinionTaskInfo::ARCHERY:
+        case MinionActivityInfo::ARCHERY:
           cache[minionTask].push_back(FurnitureType::ARCHERY_RANGE);
           break;
-        case MinionTaskInfo::FURNITURE:
+        case MinionActivityInfo::FURNITURE:
           for (auto furnitureType : ENUM_ALL(FurnitureType))
             if (taskInfo.furniturePredicate(nullptr, nullptr, furnitureType))
               cache[minionTask].push_back(furnitureType);
@@ -81,14 +81,14 @@ const vector<FurnitureType>& MinionTasks::getAllFurniture(MinionTask task) {
   return cache[task];
 }
 
-optional<MinionTask> MinionTasks::getTaskFor(WConstCollective col, WConstCreature c, FurnitureType type) {
-  static EnumMap<FurnitureType, optional<MinionTask>> cache;
+optional<MinionActivity> MinionActivities::getTaskFor(WConstCollective col, WConstCreature c, FurnitureType type) {
+  static EnumMap<FurnitureType, optional<MinionActivity>> cache;
   static bool initialized = false;
   if (!initialized) {
-    for (auto task : ENUM_ALL(MinionTask))
+    for (auto task : ENUM_ALL(MinionActivity))
       for (auto furnitureType : getAllFurniture(task)) {
-        CHECK(!cache[furnitureType]) << "Minion tasks " << EnumInfo<MinionTask>::getString(task) << " and "
-            << EnumInfo<MinionTask>::getString(*cache[furnitureType]) << " both assigned to "
+        CHECK(!cache[furnitureType]) << "Minion tasks " << EnumInfo<MinionActivity>::getString(task) << " and "
+            << EnumInfo<MinionActivity>::getString(*cache[furnitureType]) << " both assigned to "
             << EnumInfo<FurnitureType>::getString(furnitureType);
         cache[furnitureType] = task;
       }
@@ -122,7 +122,7 @@ static vector<Position> tryInQuarters(vector<Position> pos, WConstCollective col
     return pos;
 }
 
-vector<Position> MinionTasks::getAllPositions(WConstCollective collective, WConstCreature c, MinionTask task,
+vector<Position> MinionActivities::getAllPositions(WConstCollective collective, WConstCreature c, MinionActivity task,
     bool onlyActive) {
   vector<Position> ret;
   auto& info = CollectiveConfig::getTaskInfo(task);
@@ -139,20 +139,20 @@ vector<Position> MinionTasks::getAllPositions(WConstCollective collective, WCons
 
 
 
-WTask MinionTasks::getExisting(WCollective collective, WConstCreature c, MinionTask task) {
+WTask MinionActivities::getExisting(WCollective collective, WConstCreature c, MinionActivity task) {
   auto& info = CollectiveConfig::getTaskInfo(task);
   switch (info.type) {
-    case MinionTaskInfo::WORKER:
+    case MinionActivityInfo::WORKER:
       return collective->getTaskMap().getClosestTask(c);
     default:
       return nullptr;
   }
 }
 
-PTask MinionTasks::generate(WCollective collective, WConstCreature c, MinionTask task) {
+PTask MinionActivities::generate(WCollective collective, WConstCreature c, MinionActivity task) {
   auto& info = CollectiveConfig::getTaskInfo(task);
   switch (info.type) {
-    case MinionTaskInfo::IDLE: {
+    case MinionActivityInfo::IDLE: {
       auto myTerritory = tryInQuarters(collective->getTerritory().getAll(), collective, c);
       if (!myTerritory.empty())
         return Task::stayIn(myTerritory);
@@ -162,7 +162,7 @@ PTask MinionTasks::generate(WCollective collective, WConstCreature c, MinionTask
       else
         return Task::idle();
     }
-    case MinionTaskInfo::FURNITURE: {
+    case MinionActivityInfo::FURNITURE: {
       vector<Position> squares = getAllPositions(collective, c, task, true);
       if (!squares.empty())
         return Task::applySquare(collective, squares, Task::RANDOM_CLOSE, Task::APPLY);
@@ -173,28 +173,28 @@ PTask MinionTasks::generate(WCollective collective, WConstCreature c, MinionTask
       }
       break;
     }
-    case MinionTaskInfo::ARCHERY: {
+    case MinionActivityInfo::ARCHERY: {
       auto pos = collective->getConstructions().getBuiltPositions(FurnitureType::ARCHERY_RANGE);
       if (!pos.empty())
         return Task::archeryRange(collective, tryInQuarters(vector<Position>(pos.begin(), pos.end()), collective, c));
       else
         return nullptr;
     }
-    case MinionTaskInfo::EXPLORE:
+    case MinionActivityInfo::EXPLORE:
       if (auto pos = getTileToExplore(collective, c, task))
         return Task::explore(*pos);
       break;
-    case MinionTaskInfo::COPULATE:
+    case MinionActivityInfo::COPULATE:
       if (WCreature target = getCopulationTarget(collective, c))
         return Task::copulate(collective, target, 20);
       break;
-    case MinionTaskInfo::EAT: {
+    case MinionActivityInfo::EAT: {
       const set<Position>& hatchery = collective->getConstructions().getBuiltPositions(FurnitureType::PIGSTY);
       if (!hatchery.empty())
         return Task::eat(tryInQuarters(vector<Position>(hatchery.begin(), hatchery.end()), collective, c));
       break;
       }
-    case MinionTaskInfo::SPIDER: {
+    case MinionActivityInfo::SPIDER: {
       auto& territory = collective->getTerritory();
       return Task::spider(territory.getAll().front(), territory.getExtended(3));
     }
@@ -204,14 +204,14 @@ PTask MinionTasks::generate(WCollective collective, WConstCreature c, MinionTask
   return nullptr;
 }
 
-optional<TimeInterval> MinionTasks::getDuration(WConstCreature c, MinionTask task) {
+optional<TimeInterval> MinionActivities::getDuration(WConstCreature c, MinionActivity task) {
   switch (task) {
-    case MinionTask::COPULATE:
-    case MinionTask::EAT:
-    case MinionTask::IDLE:
-    case MinionTask::BE_WHIPPED:
-    case MinionTask::BE_TORTURED:
-    case MinionTask::SLEEP: return none;
+    case MinionActivity::COPULATE:
+    case MinionActivity::EAT:
+    case MinionActivity::IDLE:
+    case MinionActivity::BE_WHIPPED:
+    case MinionActivity::BE_TORTURED:
+    case MinionActivity::SLEEP: return none;
     default: return TimeInterval((int) 500 + 250 * c->getMorale());
   }
 }

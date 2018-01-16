@@ -52,7 +52,7 @@ enum class FurnitureUsageType;
 enum class FurnitureClickType;
 enum class FurnitureTickType;
 
-enum class MinionTask;
+enum class MinionActivity;
 enum class MinionTrait;
 enum class TrapType;
 

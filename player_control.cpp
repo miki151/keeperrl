@@ -39,7 +39,7 @@
 #include "minion_equipment.h"
 #include "task_map.h"
 #include "construction_map.h"
-#include "minion_task_map.h"
+#include "minion_activity_map.h"
 #include "spell.h"
 #include "tribe.h"
 #include "visibility_map.h"
@@ -338,9 +338,9 @@ void PlayerControl::minionEquipmentAction(const EquipmentActionInfo& action) {
 void PlayerControl::minionTaskAction(const TaskActionInfo& action) {
   if (auto c = getCreature(action.creature)) {
     if (action.switchTo)
-      getCollective()->setMinionTask(c, *action.switchTo);
-    for (MinionTask task : action.lock)
-      c->getAttributes().getMinionTasks().toggleLock(task);
+      getCollective()->setMinionActivity(c, *action.switchTo);
+    for (MinionActivity task : action.lock)
+      c->getAttributes().getMinionActivities().toggleLock(task);
   }
 }
 
@@ -804,12 +804,12 @@ vector<PlayerInfo> PlayerControl::getPlayerInfos(vector<WCreature> creatures, Un
         if (auto requiredDummy = getCollective()->getMissingTrainingFurniture(c, expType))
           minionInfo.levelInfo.warning[expType] =
               "Requires " + Furniture::getName(*requiredDummy) + " to train further.";
-      for (MinionTask t : ENUM_ALL(MinionTask))
-        if (c->getAttributes().getMinionTasks().isAvailable(getCollective(), c, t, true)) {
+      for (MinionActivity t : ENUM_ALL(MinionActivity))
+        if (c->getAttributes().getMinionActivities().isAvailable(getCollective(), c, t, true)) {
           minionInfo.minionTasks.push_back({t,
-              !getCollective()->isMinionTaskPossible(c, t),
+              !getCollective()->isMinionActivityPossible(c, t),
               getCollective()->getCurrentTask(c).task == t,
-              c->getAttributes().getMinionTasks().isLocked(t)});
+              c->getAttributes().getMinionActivities().isLocked(t)});
         }
       if (getCollective()->usesEquipment(c))
         fillEquipment(c, minionInfo);
@@ -1456,8 +1456,8 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
         index.setHighlight(HighlightType::CLICKED_FURNITURE);
       if (draggedCreature)
         if (WCreature c = getCreature(*draggedCreature))
-          if (auto task = MinionTasks::getTaskFor(collective, c, furniture->getType()))
-            if (c->getAttributes().getMinionTasks().isAvailable(collective, c, *task))
+          if (auto task = MinionActivities::getTaskFor(collective, c, furniture->getType()))
+            if (c->getAttributes().getMinionActivities().isAvailable(collective, c, *task))
               index.setHighlight(HighlightType::CREATURE_DROP);
       if (showEfficiency(furniture->getType()) && index.hasObject(ViewLayer::FLOOR))
         index.getObject(ViewLayer::FLOOR).setAttribute(ViewObject::Attribute::EFFICIENCY,
@@ -1637,9 +1637,9 @@ void PlayerControl::minionDragAndDrop(const CreatureDropInfo& info) {
     c->removeEffect(LastingEffect::TIED_UP);
     c->removeEffect(LastingEffect::SLEEP);
     if (auto furniture = getCollective()->getConstructions().getFurniture(pos, FurnitureLayer::MIDDLE))
-      if (auto task = MinionTasks::getTaskFor(getCollective(), c, furniture->getFurnitureType())) {
-        if (getCollective()->isMinionTaskPossible(c, *task)) {
-          getCollective()->setMinionTask(c, *task);
+      if (auto task = MinionActivities::getTaskFor(getCollective(), c, furniture->getFurnitureType())) {
+        if (getCollective()->isMinionActivityPossible(c, *task)) {
+          getCollective()->setMinionActivity(c, *task);
           getCollective()->setTask(c, Task::goTo(pos));
           return;
         }
@@ -1711,8 +1711,8 @@ void PlayerControl::processInput(View* view, UserInput input) {
       break;
     case UserInputId::CREATURE_DRAG:
       draggedCreature = input.get<Creature::Id>();
-      for (auto task : ENUM_ALL(MinionTask))
-        for (auto& pos : MinionTasks::getAllPositions(getCollective(), nullptr, task))
+      for (auto task : ENUM_ALL(MinionActivity))
+        for (auto& pos : MinionActivities::getAllPositions(getCollective(), nullptr, task))
           pos.setNeedsRenderUpdate(true);
       break;
     case UserInputId::CREATURE_DRAG_DROP:

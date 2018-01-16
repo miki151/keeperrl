@@ -21,7 +21,7 @@
 #include "collective_teams.h"
 #include "known_tiles.h"
 #include "construction_map.h"
-#include "minion_task_map.h"
+#include "minion_activity_map.h"
 #include "tribe.h"
 #include "collective_config.h"
 #include "creature_name.h"
@@ -295,8 +295,8 @@ const vector<WCreature>& Collective::getCreatures() const {
   return creatures;
 }
 
-void Collective::setMinionTask(WConstCreature c, MinionTask task) {
-  if (auto duration = MinionTasks::getDuration(c, task))
+void Collective::setMinionActivity(WConstCreature c, MinionActivity task) {
+  if (auto duration = MinionActivities::getDuration(c, task))
     currentTasks.set(c, {task, getLocalTime() + *duration});
   else
     currentTasks.set(c, {task, none});
@@ -306,40 +306,40 @@ Collective::CurrentTaskInfo Collective::getCurrentTask(WConstCreature c) const {
   if (auto current = currentTasks.getMaybe(c))
     return *current;
   else
-    return CurrentTaskInfo{MinionTask::IDLE, none};
+    return CurrentTaskInfo{MinionActivity::IDLE, none};
 }
 
-bool Collective::isTaskGood(WConstCreature c, MinionTask task, bool ignoreTaskLock) {
-  if (!c->getAttributes().getMinionTasks().isAvailable(this, c, task, ignoreTaskLock) ||
-      (!MinionTasks::generate(this, c, task) && !MinionTasks::getExisting(this, c, task)))
+bool Collective::isTaskGood(WConstCreature c, MinionActivity task, bool ignoreTaskLock) {
+  if (!c->getAttributes().getMinionActivities().isAvailable(this, c, task, ignoreTaskLock) ||
+      (!MinionActivities::generate(this, c, task) && !MinionActivities::getExisting(this, c, task)))
     return false;
   switch (task) {
-    case MinionTask::BE_WHIPPED:
+    case MinionActivity::BE_WHIPPED:
       return c->getMorale() < 0.95;
-    case MinionTask::CROPS:
-    case MinionTask::EXPLORE:
+    case MinionActivity::CROPS:
+    case MinionActivity::EXPLORE:
       return getGame()->getSunlightInfo().getState() == SunlightState::DAY;
-    case MinionTask::SLEEP:
+    case MinionActivity::SLEEP:
       if (!config->hasVillainSleepingTask())
         return true;
       FALLTHROUGH;
-    case MinionTask::EXPLORE_NOCTURNAL:
+    case MinionActivity::EXPLORE_NOCTURNAL:
       return getGame()->getSunlightInfo().getState() == SunlightState::NIGHT;
     default: return true;
   }
 }
 
 void Collective::setRandomTask(WConstCreature c) {
-  vector<MinionTask> goodTasks;
-  for (MinionTask t : ENUM_ALL(MinionTask))
-    if (isTaskGood(c, t) && c->getAttributes().getMinionTasks().canChooseRandomly(c, t))
+  vector<MinionActivity> goodTasks;
+  for (MinionActivity t : ENUM_ALL(MinionActivity))
+    if (isTaskGood(c, t) && c->getAttributes().getMinionActivities().canChooseRandomly(c, t))
       goodTasks.push_back(t);
   if (!goodTasks.empty())
-    setMinionTask(c, Random.choose(goodTasks));
+    setMinionActivity(c, Random.choose(goodTasks));
 }
 
-bool Collective::isMinionTaskPossible(WCreature c, MinionTask task) {
-  return isTaskGood(c, task, true) && (MinionTasks::generate(this, c, task) || MinionTasks::getExisting(this, c, task));
+bool Collective::isMinionActivityPossible(WCreature c, MinionActivity task) {
+  return isTaskGood(c, task, true) && (MinionActivities::generate(this, c, task) || MinionActivities::getExisting(this, c, task));
 }
 
 WTask Collective::getStandardTask(WCreature c) {
@@ -350,16 +350,16 @@ WTask Collective::getStandardTask(WCreature c) {
   }
   current = getCurrentTask(c);
   CHECK(current) << "No minion task found for " << c->getName().bare();
-  MinionTask task = current->task;
+  MinionActivity task = current->task;
   if (!current->finishTime) // see comment in header
     currentTasks.getOrFail(c).finishTime = LocalTime(-1000);
-  if (PTask ret = MinionTasks::generate(this, c, task))
+  if (PTask ret = MinionActivities::generate(this, c, task))
     return taskMap->addTaskFor(std::move(ret), c);
-  if (WTask ret = MinionTasks::getExisting(this, c, task)) {
+  if (WTask ret = MinionActivities::getExisting(this, c, task)) {
     taskMap->takeTask(c, ret);
     return ret;
   }
-  FATAL << "No task generated for minion task " << EnumInfo<MinionTask>::getString(task);
+  FATAL << "No task generated for minion task " << EnumInfo<MinionActivity>::getString(task);
   return {};
 }
 
@@ -406,15 +406,15 @@ PTask Collective::getEquipmentTask(WCreature c) {
   return nullptr;
 }
 
-const static EnumSet<MinionTask> healingTasks {MinionTask::SLEEP};
+const static EnumSet<MinionActivity> healingTasks {MinionActivity::SLEEP};
 
 void Collective::considerHealingTask(WCreature c) {
   if (c->getBody().canHeal() && !c->isAffected(LastingEffect::POISON))
-    for (MinionTask t : healingTasks) {
+    for (MinionActivity t : healingTasks) {
       auto currentTask = getCurrentTask(c).task;
-      if (c->getAttributes().getMinionTasks().isAvailable(this, c, t) && !healingTasks.contains(currentTask)) {
+      if (c->getAttributes().getMinionActivities().isAvailable(this, c, t) && !healingTasks.contains(currentTask)) {
         cancelTask(c);
-        setMinionTask(c, t);
+        setMinionActivity(c, t);
         return;
       }
     }

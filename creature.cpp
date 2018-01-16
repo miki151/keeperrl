@@ -31,7 +31,7 @@
 #include "equipment.h"
 #include "shortest_path.h"
 #include "spell_map.h"
-#include "minion_task_map.h"
+#include "minion_activity_map.h"
 #include "tribe.h"
 #include "creature_attributes.h"
 #include "position.h"

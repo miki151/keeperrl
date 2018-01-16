@@ -47,7 +47,7 @@ void CreatureAttributes::serialize(Archive& ar, const unsigned int version) {
   ar(body, innocent, moraleSpeedIncrease, deathDescription);
   ar(animal, cantEquip, courage);
   ar(boulder, noChase, isSpecial, skills, spells);
-  ar(permanentEffects, lastingEffects, minionTasks, expLevel);
+  ar(permanentEffects, lastingEffects, minionActivities, expLevel);
   ar(noAttackSound, maxLevelIncrease, creatureId);
 }
 
@@ -336,12 +336,12 @@ bool CreatureAttributes::isInnocent() const {
   return innocent;
 }
  
-const MinionTaskMap& CreatureAttributes::getMinionTasks() const {
-  return minionTasks;
+const MinionActivityMap& CreatureAttributes::getMinionActivities() const {
+  return minionActivities;
 }
 
-MinionTaskMap& CreatureAttributes::getMinionTasks() {
-  return minionTasks;
+MinionActivityMap& CreatureAttributes::getMinionActivities() {
+  return minionActivities;
 }
 
 bool CreatureAttributes::dontChase() const {

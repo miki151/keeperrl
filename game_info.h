@@ -124,14 +124,14 @@ class PlayerInfo {
     HASH_ALL(name, keybinding, description, active, tutorialHighlight)
   };
   vector<CommandInfo> HASH(commands);
-  struct MinionTaskInfo {
-    MinionTask HASH(task);
+  struct MinionActivityInfo {
+    MinionActivity HASH(task);
     bool HASH(inactive);
     bool HASH(current);
     optional<bool> HASH(locked);
     HASH_ALL(task, inactive, current, locked)
   };
-  vector<MinionTaskInfo> HASH(minionTasks);
+  vector<MinionActivityInfo> HASH(minionTasks);
   UniqueEntity<Creature>::Id HASH(creatureId);
   int HASH(moveCounter);
   double HASH(morale);

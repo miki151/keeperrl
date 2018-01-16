@@ -21,7 +21,7 @@
 #include "technology.h"
 #include "workshops.h"
 #include "item_index.h"
-#include "minion_task.h"
+#include "minion_activity.h"
 #include "creature.h"
 #include "body.h"
 #include "equipment.h"

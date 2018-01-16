@@ -29,7 +29,7 @@
 #include "name_generator.h"
 #include "player_message.h"
 #include "equipment.h"
-#include "minion_task_map.h"
+#include "minion_activity_map.h"
 #include "spell_map.h"
 #include "tribe.h"
 #include "monster_ai.h"
