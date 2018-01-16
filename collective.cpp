@@ -1058,7 +1058,7 @@ static HighlightType getHighlight(const DestroyAction& action) {
 void Collective::orderDestruction(Position pos, const DestroyAction& action) {
   auto f = NOTNULL(pos.getFurniture(FurnitureLayer::MIDDLE));
   CHECK(f->canDestroy(action));
-  taskMap->markSquare(pos, getHighlight(action), Task::destruction(this, pos, f, action));
+  taskMap->markSquare(pos, getHighlight(action), Task::destruction(this, pos, f, action), MinionActivity::WORKING);
 }
 
 void Collective::addTrap(Position pos, TrapType type) {
@@ -1123,7 +1123,8 @@ void Collective::handleTrapPlacementAndProduction() {
       vector<pair<WItem, Position>>& items = trapItems[trap.getType()];
       if (!items.empty()) {
         Position pos = items.back().second;
-        auto task = taskMap->addTask(Task::applyItem(this, pos, items.back().first, trapPos), pos);
+        auto task = taskMap->addTask(Task::applyItem(this, pos, items.back().first, trapPos), pos,
+            MinionActivity::CONSTRUCTION);
         markItem(items.back().first, task);
         items.pop_back();
         trap.setMarked();
@@ -1174,7 +1175,7 @@ void Collective::updateConstructions() {
         hasResource(construction.getCost())) {
       constructions->setTask(pos.first, pos.second,
           taskMap->addTaskCost(Task::construction(this, pos.first, construction.getFurnitureType()), pos.first,
-          construction.getCost())->getUniqueId());
+              construction.getCost(), MinionActivity::CONSTRUCTION)->getUniqueId());
       takeResource(construction.getCost());
     }
   }
@@ -1223,7 +1224,7 @@ void Collective::fetchItems(Position pos, const ItemFetchInfo& elem) {
       warnings->setWarning(elem.warning, false);
       if (elem.oneAtATime)
         equipment = {equipment[0]};
-      auto task = taskMap->addTask(Task::bringItem(this, pos, equipment, destination), pos);
+      auto task = taskMap->addTask(Task::bringItem(this, pos, equipment, destination), pos, MinionActivity::HAULING);
       for (WItem it : equipment)
         markItem(it, task);
     } else
@@ -1300,13 +1301,13 @@ void Collective::onAppliedSquare(WCreature c, Position pos) {
           addMana(0.2 * efficiency);
         break;
       case FurnitureType::WHIPPING_POST:
-        taskMap->addTask(Task::whipping(pos, c), pos);
+        taskMap->addTask(Task::whipping(pos, c), pos, MinionActivity::WORKING);
         break;
       case FurnitureType::GALLOWS:
-        taskMap->addTask(Task::kill(this, c), pos);
+        taskMap->addTask(Task::kill(this, c), pos, MinionActivity::WORKING);
         break;
       case FurnitureType::TORTURE_TABLE:
-        taskMap->addTask(Task::torture(this, c), pos);
+        taskMap->addTask(Task::torture(this, c), pos, MinionActivity::WORKING);
         break;
       default:
         break;

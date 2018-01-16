@@ -194,10 +194,9 @@ bool PlayerControl::canControl(WConstCreature c) {
 }
 
 void PlayerControl::addToCurrentTeam(WCreature c) {
-  //CHECK(canAddToTeam(c)); can also add a prisoner.
   if (auto teamId = getCurrentTeam()) {
     getTeams().add(*teamId, c);
-    if (getGame()->getPlayerCreatures().size() > 1 && !getCollective()->hasTrait(c, MinionTrait::PRISONER))
+    if (getGame()->getPlayerCreatures().size() > 1)
       c->pushController(createMinionController(c));
   }
 }
@@ -979,7 +978,7 @@ void PlayerControl::acceptPrisoner(int index) {
   if (index < immigrants.size()) {
     auto victim = immigrants[index][0];
     victim->removeEffect(LastingEffect::STUNNED);
-    getCollective()->addCreature(victim, {MinionTrait::PRISONER, MinionTrait::NO_LIMIT});
+    getCollective()->addCreature(victim, {MinionTrait::WORKER, MinionTrait::PRISONER, MinionTrait::NO_LIMIT});
     addMessage(PlayerMessage("You enslave  " + victim->getName().a()).setPosition(victim->getPosition()));
   }
 }

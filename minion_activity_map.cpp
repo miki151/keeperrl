@@ -93,8 +93,14 @@ bool MinionActivityMap::isAvailable(WConstCollective col, WConstCreature c, Mini
       return c->getAttributes().getSkills().hasDiscrete(SkillId::EXPLORE);
     case MinionActivity::EXPLORE_NOCTURNAL:
       return c->getAttributes().getSkills().hasDiscrete(SkillId::EXPLORE_NOCTURNAL);
-    case MinionActivity::WORKER:
+    case MinionActivity::CONSTRUCTION:
       return c->getAttributes().getSkills().hasDiscrete(SkillId::CONSTRUCTION);
+    case MinionActivity::WORKING:
+      return c->getBody().isHumanoid() && col->hasTrait(c, MinionTrait::WORKER);
+    case MinionActivity::HAULING:
+      return !c->getBody().getCarryLimit() && col->hasTrait(c, MinionTrait::WORKER);
+    case MinionActivity::DIGGING:
+      return c->getAttributes().getSkills().hasDiscrete(SkillId::DIGGING) && col->hasTrait(c, MinionTrait::WORKER);
   }
 }
 

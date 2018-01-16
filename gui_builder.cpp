@@ -2333,7 +2333,10 @@ static string getTaskText(MinionActivity option) {
   switch (option) {
     case MinionActivity::IDLE: return "Idle";
     case MinionActivity::SLEEP: return "Sleeping";
-    case MinionActivity::WORKER: return "Working";
+    case MinionActivity::CONSTRUCTION: return "Construction";
+    case MinionActivity::DIGGING: return "Digging";
+    case MinionActivity::HAULING: return "Hauling";
+    case MinionActivity::WORKING: return "Labour";
     case MinionActivity::EAT: return "Eating";
     case MinionActivity::EXPLORE_NOCTURNAL: return "Exploring (night)";
     case MinionActivity::EXPLORE_CAVES: return "Exploring caves";

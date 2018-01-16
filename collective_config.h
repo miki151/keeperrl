@@ -123,7 +123,7 @@ class CollectiveConfig {
   static const vector<ItemFetchInfo>& getFetchInfo();
   static optional<int> getTrainingMaxLevel(ExperienceType, FurnitureType);
   static const vector<FurnitureType>& getTrainingFurniture(ExperienceType);
-  static const MinionActivityInfo& getTaskInfo(MinionActivity);
+  static const MinionActivityInfo& getActivityInfo(MinionActivity);
   static const vector<FloorInfo>& getFloors();
   static double getEfficiencyBonus(FurnitureType);
   static bool canBuildOutsideTerritory(FurnitureType);

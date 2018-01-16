@@ -470,11 +470,14 @@ static auto addManaGenerationPredicate(Pred p) {
   };
 }
 
-const MinionActivityInfo& CollectiveConfig::getTaskInfo(MinionActivity task) {
+const MinionActivityInfo& CollectiveConfig::getActivityInfo(MinionActivity task) {
   static EnumMap<MinionActivity, MinionActivityInfo> map([](MinionActivity task) -> MinionActivityInfo {
     switch (task) {
       case MinionActivity::IDLE: return {MinionActivityInfo::IDLE, "idle"};
-      case MinionActivity::WORKER: return {MinionActivityInfo::WORKER, "working"};
+      case MinionActivity::CONSTRUCTION: return {MinionActivityInfo::WORKER, "construction"};
+      case MinionActivity::HAULING: return {MinionActivityInfo::WORKER, "hauling"};
+      case MinionActivity::WORKING: return {MinionActivityInfo::WORKER, "labour"};
+      case MinionActivity::DIGGING: return {MinionActivityInfo::WORKER, "digging"};
       case MinionActivity::TRAIN: return {getTrainingPredicate(ExperienceType::MELEE), "training"};
       case MinionActivity::SLEEP: return {[](WConstCollective, WConstCreature c, FurnitureType t) {
             return (!c && isSleepingFurniture(t)) || (c && t == getBedType(c));

@@ -7,6 +7,7 @@
 #include "position_map.h"
 #include "minion_trait.h"
 #include "game_time.h"
+#include "minion_activity.h"
 
 class Task;
 class Creature;
@@ -14,7 +15,7 @@ class Creature;
 class TaskMap {
   public:
   WTask addTaskFor(PTask, WCreature);
-  WTask addTask(PTask, Position);
+  WTask addTask(PTask, Position, MinionActivity);
   WTask getTask(WConstCreature);
   bool hasTask(WConstCreature) const;
   const vector<WTask>& getTasks(Position) const;
@@ -25,8 +26,8 @@ class TaskMap {
   void freeTask(WTask);
 
   void setPosition(WTask, Position);
-  WTask addTaskCost(PTask, Position, CostInfo);
-  void markSquare(Position, HighlightType, PTask);
+  WTask addTaskCost(PTask, Position, CostInfo, MinionActivity);
+  void markSquare(Position, HighlightType, PTask, MinionActivity);
   WTask getMarked(Position) const;
   HighlightType getHighlightType(Position) const;
   CostInfo removeTask(WTask);
@@ -35,7 +36,7 @@ class TaskMap {
   bool isPriorityTask(WConstTask) const;
   bool hasPriorityTasks(Position) const;
   void setPriorityTasks(Position);
-  WTask getClosestTask(WConstCreature);
+  WTask getClosestTask(WConstCreature, MinionActivity);
   const EntityMap<Task, CostInfo>& getCompletionCosts() const;
   WTask getTask(UniqueEntity<Task>::Id) const;
 
@@ -53,5 +54,7 @@ class TaskMap {
   EntityMap<Task, CostInfo> SERIAL(completionCost);
   EntityMap<Task, LocalTime> SERIAL(delayedTasks);
   EntitySet<Task> SERIAL(priorityTasks);
+  EnumMap<MinionActivity, vector<WTask>> SERIAL(taskByActivity);
+  EntityMap<Task, MinionActivity> SERIAL(activityByTask);
 };
 

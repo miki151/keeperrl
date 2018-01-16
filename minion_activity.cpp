@@ -63,7 +63,7 @@ const vector<FurnitureType>& MinionActivities::getAllFurniture(MinionActivity ta
   static bool initialized = false;
   if (!initialized) {
     for (auto minionTask : ENUM_ALL(MinionActivity)) {
-      auto& taskInfo = CollectiveConfig::getTaskInfo(minionTask);
+      auto& taskInfo = CollectiveConfig::getActivityInfo(minionTask);
       switch (taskInfo.type) {
         case MinionActivityInfo::ARCHERY:
           cache[minionTask].push_back(FurnitureType::ARCHERY_RANGE);
@@ -95,7 +95,7 @@ optional<MinionActivity> MinionActivities::getTaskFor(WConstCollective col, WCon
     initialized = true;
   }
   if (auto task = cache[type]) {
-    auto& info = CollectiveConfig::getTaskInfo(*task);
+    auto& info = CollectiveConfig::getActivityInfo(*task);
     if (info.furniturePredicate(col, c, type))
       return *task;
   }
@@ -122,11 +122,11 @@ static vector<Position> tryInQuarters(vector<Position> pos, WConstCollective col
     return pos;
 }
 
-vector<Position> MinionActivities::getAllPositions(WConstCollective collective, WConstCreature c, MinionActivity task,
+vector<Position> MinionActivities::getAllPositions(WConstCollective collective, WConstCreature c, MinionActivity activity,
     bool onlyActive) {
   vector<Position> ret;
-  auto& info = CollectiveConfig::getTaskInfo(task);
-  for (auto furnitureType : getAllFurniture(task))
+  auto& info = CollectiveConfig::getActivityInfo(activity);
+  for (auto furnitureType : getAllFurniture(activity))
     if (info.furniturePredicate(collective, c, furnitureType) &&
         (!onlyActive || info.activePredicate(collective, furnitureType)))
       append(ret, collective->getConstructions().getBuiltPositions(furnitureType));
@@ -139,18 +139,18 @@ vector<Position> MinionActivities::getAllPositions(WConstCollective collective, 
 
 
 
-WTask MinionActivities::getExisting(WCollective collective, WConstCreature c, MinionActivity task) {
-  auto& info = CollectiveConfig::getTaskInfo(task);
+WTask MinionActivities::getExisting(WCollective collective, WConstCreature c, MinionActivity activity) {
+  auto& info = CollectiveConfig::getActivityInfo(activity);
   switch (info.type) {
     case MinionActivityInfo::WORKER:
-      return collective->getTaskMap().getClosestTask(c);
+      return collective->getTaskMap().getClosestTask(c, activity);
     default:
       return nullptr;
   }
 }
 
 PTask MinionActivities::generate(WCollective collective, WConstCreature c, MinionActivity task) {
-  auto& info = CollectiveConfig::getTaskInfo(task);
+  auto& info = CollectiveConfig::getActivityInfo(task);
   switch (info.type) {
     case MinionActivityInfo::IDLE: {
       auto myTerritory = tryInQuarters(collective->getTerritory().getAll(), collective, c);

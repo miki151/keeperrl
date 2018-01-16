@@ -175,7 +175,6 @@ class Destruction : public Task {
       return NoMove;
     if (c->getPosition().dist8(position) > 1)
       return c->moveTowards(position);
-    CHECK(c->getAttributes().getSkills().hasDiscrete(SkillId::CONSTRUCTION));
     Vec2 dir = c->getPosition().getDir(position);
     if (auto action = c->destroy(dir, destroyAction))
       return {1.0, action.append([=](WCreature c) {

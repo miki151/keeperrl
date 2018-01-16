@@ -4,30 +4,30 @@
 #include "task.h"
 #include "creature_name.h"
 
-SERIALIZE_DEF(TaskMap, tasks, positionMap, reversePositions, taskByCreature, creatureByTask, marked, completionCost, priorityTasks, delayedTasks, highlight, taskById);
+SERIALIZE_DEF(TaskMap, tasks, positionMap, reversePositions, taskByCreature, creatureByTask, marked, completionCost, priorityTasks, delayedTasks, highlight, taskById, taskByActivity, activityByTask);
 
 SERIALIZATION_CONSTRUCTOR_IMPL(TaskMap);
 
-WTask TaskMap::getClosestTask(WConstCreature c) {
+WTask TaskMap::getClosestTask(WConstCreature c, MinionActivity activity) {
   if (Random.roll(20))
     for (WTask t : getWeakPointers(tasks))
       if (t->isDone())
         removeTask(t);
   WTask closest = nullptr;
-  for (PTask& task : tasks)
+  for (auto task : taskByActivity[activity])
     if (task->canPerform(c))
-      if (auto pos = getPosition(task.get())) {
+      if (auto pos = getPosition(task)) {
         double dist = pos->dist8(c->getPosition());
-        WConstCreature owner = getOwner(task.get());
-        auto delayed = delayedTasks.getMaybe(task.get());
+        WConstCreature owner = getOwner(task);
+        auto delayed = delayedTasks.getMaybe(task);
         if (!task->isDone() &&
             (!owner || (task->canTransfer() && pos->dist8(owner->getPosition()) > dist && dist <= 6)) &&
-            (!closest || dist < getPosition(closest)->dist8(c->getPosition()) || isPriorityTask(task.get())) &&
+            (!closest || dist < getPosition(closest)->dist8(c->getPosition()) || isPriorityTask(task)) &&
             c->canNavigateTo(*pos) && !task->isBlocked(c) &&
             (!delayed || *delayed < c->getLocalTime())) {
-          closest = task.get();
-          if (isPriorityTask(task.get()))
-            return task.get();
+          closest = task;
+          if (isPriorityTask(task))
+            return task;
         }
       }
   return closest;
@@ -43,9 +43,9 @@ void TaskMap::setPriorityTasks(Position pos) {
   pos.setNeedsRenderUpdate(true);
 }
 
-WTask TaskMap::addTaskCost(PTask task, Position position, CostInfo cost) {
+WTask TaskMap::addTaskCost(PTask task, Position position, CostInfo cost, MinionActivity activity) {
   completionCost.set(task.get(), cost);
-  return addTask(std::move(task), position);
+  return addTask(std::move(task), position, activity);
 }
 
 CostInfo TaskMap::removeTask(WTask task) {
@@ -69,6 +69,10 @@ CostInfo TaskMap::removeTask(WTask task) {
   if (auto pos = positionMap.getMaybe(task)) {
     reversePositions.getOrFail(*pos).removeElement(task);
     positionMap.erase(task);
+  }
+  if (auto activity = activityByTask.getMaybe(task)) {
+    activityByTask.erase(task);
+    taskByActivity[*activity].removeElement(task);
   }
   for (int i : All(tasks))
     if (tasks[i].get() == task) {
@@ -102,11 +106,11 @@ WTask TaskMap::getMarked(Position pos) const {
   return marked.get(pos);
 }
 
-void TaskMap::markSquare(Position pos, HighlightType h, PTask task) {
+void TaskMap::markSquare(Position pos, HighlightType h, PTask task, MinionActivity activity) {
   marked.set(pos, task.get());
   pos.setNeedsRenderUpdate(true);
   highlight.set(pos, h);
-  addTask(std::move(task), pos);
+  addTask(std::move(task), pos, activity);
 }
 
 HighlightType TaskMap::getHighlightType(Position pos) const {
@@ -149,9 +153,11 @@ WTask TaskMap::addTaskFor(PTask task, WCreature c) {
   return tasks.back().get();
 }
 
-WTask TaskMap::addTask(PTask task, Position position) {
+WTask TaskMap::addTask(PTask task, Position position, MinionActivity activity) {
   setPosition(task.get(), position);
-  taskById.set(task->getUniqueId(), task.get());
+  taskById.set(task.get(), task.get());
+  taskByActivity[activity].push_back(task.get());
+  activityByTask.set(task.get(), activity);
   tasks.push_back(std::move(task));
   return tasks.back().get();
 }
