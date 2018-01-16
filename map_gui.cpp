@@ -107,6 +107,8 @@ optional<Vec2> MapGui::getHighlightedTile(Renderer&) {
 
 Color MapGui::getHighlightColor(const ViewIndex& index, HighlightType type) {
   double amount = index.getHighlight(type);
+  bool quartersSelected = buttonViewId == ViewId::QUARTERS1 || buttonViewId == ViewId::QUARTERS2 ||
+      buttonViewId == ViewId::QUARTERS3;
   switch (type) {
     case HighlightType::RECT_DESELECTION: return Color::RED.transparency(100);
     case HighlightType::DIG: return Color::YELLOW.transparency(100);
@@ -115,9 +117,9 @@ Color MapGui::getHighlightColor(const ViewIndex& index, HighlightType type) {
     case HighlightType::PERMANENT_FETCH_ITEMS: return Color::ORANGE.transparency(100);
     case HighlightType::STORAGE_EQUIPMENT: return Color::BLUE.transparency(100);
     case HighlightType::STORAGE_RESOURCES: return Color::GREEN.transparency(100);
-    case HighlightType::QUARTERS1: return Color::PINK.transparency(45);
-    case HighlightType::QUARTERS2: return Color::SKY_BLUE.transparency(45);
-    case HighlightType::QUARTERS3: return Color::ORANGE.transparency(45);
+    case HighlightType::QUARTERS1: return Color::PINK.transparency(quartersSelected ? 70 : 20);
+    case HighlightType::QUARTERS2: return Color::SKY_BLUE.transparency(quartersSelected ? 70 : 20);
+    case HighlightType::QUARTERS3: return Color::ORANGE.transparency(quartersSelected ? 70 : 20);
     case HighlightType::RECT_SELECTION: return Color::YELLOW.transparency(100);
     case HighlightType::FOG: return Color::WHITE.transparency(int(120 * amount));
     case HighlightType::POISON_GAS: return Color(0, min<Uint8>(255., Uint8(amount * 500)), 0, (Uint8)(amount * 140));
