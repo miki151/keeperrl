@@ -556,19 +556,20 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
     if (displayAllHealthBars || lastHighlighted.creaturePos == pos + movement ||
         object.hasModifier(ViewObject::Modifier::CAPTURE_ORDERED))
       drawHealthBar(renderer, pos + move, size, object);
-
+    if (object.hasModifier(ViewObject::Modifier::STUNNED))
+      renderer.drawText(Color::WHITE, pos + move + size / 2, "S", Renderer::CenterType::HOR_VER, size.x * 2 / 3);
   } else {
     Vec2 movement = getMovementOffset(object, size, currentTimeGame, curTimeReal, true);
     Vec2 tilePos = pos + movement + Vec2(size.x / 2, -3);
     drawCreatureHighlights(renderer, object, pos, size, curTimeReal);
     renderer.drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TILE_FONT, size.y, Tile::getColor(object),
-        tilePos.x, tilePos.y, tile.text, Renderer::HOR);
+        tilePos, tile.text, Renderer::HOR);
     if (auto burningVal = object.getAttribute(ViewObject::Attribute::BURNING))
       if (*burningVal > 0) {
-        renderer.drawText(Renderer::SYMBOL_FONT, size.y, getFireColor(), pos.x + size.x / 2, pos.y - 3, u8"ѡ",
+        renderer.drawText(Renderer::SYMBOL_FONT, size.y, getFireColor(), pos + Vec2(size.x / 2, -3), u8"ѡ",
             Renderer::HOR);
         if (*burningVal > 0.5)
-          renderer.drawText(Renderer::SYMBOL_FONT, size.y, getFireColor(), pos.x + size.x / 2, pos.y - 3, u8"Ѡ",
+          renderer.drawText(Renderer::SYMBOL_FONT, size.y, getFireColor(), pos + Vec2(size.x / 2, -3), u8"Ѡ",
               Renderer::HOR);
       }
   }

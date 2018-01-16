@@ -43,7 +43,7 @@ CreatureAttributes::~CreatureAttributes() {}
 template <class Archive> 
 void CreatureAttributes::serialize(Archive& ar, const unsigned int version) {
   ar(viewId, retiredViewId, illusionViewObject, name, attr, chatReactionFriendly);
-  ar(chatReactionHostile,passiveAttack, gender);
+  ar(chatReactionHostile, passiveAttack, gender);
   ar(body, innocent, moraleSpeedIncrease, deathDescription);
   ar(animal, cantEquip, courage);
   ar(boulder, noChase, isSpecial, skills, spells);

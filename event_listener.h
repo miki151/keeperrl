@@ -68,7 +68,7 @@ namespace EventInfo {
     WCreature torturer;
   };
 
-  struct CreatureSurrendered {
+  struct CreatureStunned {
     WCreature victim;
     WCreature attacker;
   };
@@ -103,8 +103,8 @@ namespace EventInfo {
   };
 
   class GameEvent : public variant<CreatureMoved, CreatureKilled, ItemsPickedUp, ItemsDropped, ItemsAppeared, Projectile,
-      Explosion, ConqueredEnemy, WonGame, TechbookRead, Alarm, CreatureTortured, CreatureSurrendered, TrapTriggered,
-      TrapDisarmed, FurnitureDestroyed, ItemsEquipped, CreatureEvent, VisibilityChanged, RetiredGame> {
+      Explosion, ConqueredEnemy, WonGame, TechbookRead, Alarm, CreatureTortured, CreatureStunned,
+      TrapTriggered, TrapDisarmed, FurnitureDestroyed, ItemsEquipped, CreatureEvent, VisibilityChanged, RetiredGame> {
     using variant::variant;
   };
 

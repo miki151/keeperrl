@@ -365,7 +365,7 @@ bool Creature::canSwapPositionInMovement(WCreature other) const {
       && (swapPositionCooldown == 0 || isPlayer())
       && !other->getAttributes().isBoulder()
       && (!other->isPlayer() || isPlayer())
-      && !other->isEnemy(this)
+      && (!other->isEnemy(this) || other->isAffected(LastingEffect::STUNNED))
       && other->getPosition().canEnterEmpty(this)
       && getPosition().canEnterEmpty(other);
 }
@@ -939,9 +939,10 @@ bool Creature::captureDamage(double damage, WCreature attacker) {
   captureHealth -= damage;
   updateViewObject();
   if (captureHealth <= 0) {
-    getGame()->addEvent(EventInfo::CreatureSurrendered{this, attacker});
+    addEffect(LastingEffect::STUNNED, 300_visible);
     captureHealth = 1;
     toggleCaptureOrder();
+    getGame()->addEvent(EventInfo::CreatureStunned{this, attacker});
     return true;
   } else
     return false;
@@ -986,6 +987,7 @@ void Creature::updateViewObject() {
   object.setCreatureAttributes(ViewObject::CreatureAttributes([this](AttrType t) { return getAttr(t);}));
   object.setAttribute(ViewObject::Attribute::MORALE, getMorale());
   object.setModifier(ViewObject::Modifier::DRAW_MORALE);
+  object.setModifier(ViewObject::Modifier::STUNNED, isAffected(LastingEffect::STUNNED));
   object.getCreatureStatus() = getStatus();
   object.setGoodAdjectives(combine(extractNames(getGoodAdjectives()), true));
   object.setBadAdjectives(combine(extractNames(getBadAdjectives()), true));

@@ -225,6 +225,9 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void acquireTech(int index);
   SMessageBuffer SERIAL(controlModeMessages);
   unordered_set<int> dismissedNextWaves;
-  ImmigrantDataInfo getPrisonerImmigrantData() const;
+  vector<ImmigrantDataInfo> getPrisonerImmigrantData() const;
+  void acceptPrisoner(int index);
+  void rejectPrisoner(int index);
+  vector<vector<WCreature>> getPrisonerImmigrantStack() const;
 };
 

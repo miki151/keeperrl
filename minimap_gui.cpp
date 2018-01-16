@@ -50,7 +50,7 @@ void MinimapGui::renderMap(Renderer& renderer, Rectangle target) {
   for (auto loc : info.locations) {
     Vec2 v = (loc - info.bounds.topLeft()) * scale;
 //    if (loc.text.empty())
-      renderer.drawText(Color::LIGHT_GREEN, topLeft.x + v.x + 5, topLeft.y + v.y, "?");
+      renderer.drawText(Color::LIGHT_GREEN, topLeft + v + Vec2(5, 0), "?");
 /*    else {
       renderer.drawFilledRectangle(topLeft.x + v.x, topLeft.y + v.y,
           topLeft.x + v.x + renderer.getTextLength(loc.text) + 10, topLeft.y + v.y + 25,

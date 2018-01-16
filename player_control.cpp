@@ -838,11 +838,17 @@ vector<CollectiveInfo::CreatureGroup> PlayerControl::getCreatureGroups(vector<WC
   sortMinionsForUI(v);
   map<string, CollectiveInfo::CreatureGroup> groups;
   for (WCreature c : v) {
-    if (!groups.count(c->getName().stack()))
-      groups[c->getName().stack()] = { c->getUniqueId(), c->getName().stack(), c->getViewObject().id(), 0};
-    ++groups[c->getName().stack()].count;
+    auto groupName = c->getName().stack();
+    auto viewId = c->getViewObject().id();
+    if (getCollective()->hasTrait(c, MinionTrait::PRISONER)) {
+      viewId = ViewId::PRISONER;
+      groupName = "prisoner";
+    }
+    if (!groups.count(groupName))
+      groups[groupName] = { c->getUniqueId(), groupName, viewId, 0};
+    ++groups[groupName].count;
     if (chosenCreature == c->getUniqueId() && !getChosenTeam())
-      groups[c->getName().stack()].highlight = true;
+      groups[groupName].highlight = true;
   }
   return getValues(groups);
 }
@@ -967,44 +973,73 @@ void PlayerControl::fillWorkshopInfo(CollectiveInfo& info) const {
   }
 }
 
-ImmigrantDataInfo PlayerControl::getPrisonerImmigrantData() const {
-  static auto creature = CreatureFactory::fromId(CreatureId::PRISONER, TribeId::getKeeper());
+void PlayerControl::acceptPrisoner(int index) {
+  index = -index - 1;
+  auto immigrants = getPrisonerImmigrantStack();
+  if (index < immigrants.size()) {
+    auto victim = immigrants[index][0];
+    victim->removeEffect(LastingEffect::STUNNED);
+    getCollective()->addCreature(victim, {MinionTrait::PRISONER, MinionTrait::NO_LIMIT});
+    addMessage(PlayerMessage("You enslave  " + victim->getName().a()).setPosition(victim->getPosition()));
+  }
+}
+
+void PlayerControl::rejectPrisoner(int index) {
+  index = -index - 1;
+  auto immigrants = getPrisonerImmigrantStack();
+  if (index < immigrants.size()) {
+    auto victim = immigrants[index][0];
+    victim->dieWithLastAttacker();
+  }
+}
+
+vector<vector<WCreature>> PlayerControl::getPrisonerImmigrantStack() const {
+  vector<WCreature> ret;
+  for (auto villain : getGame()->getCollectives())
+    if (villain != getCollective())
+      ret.append(villain->getCreatures(MinionTrait::STUNNED));
+  return Creature::stack(ret);
+}
+
+vector<ImmigrantDataInfo> PlayerControl::getPrisonerImmigrantData() const {
   auto collective = getCollective();
-  int numPrisoners = getCollective()->getCreatures(MinionTrait::PRISONER).size();
-  int numOrders = getCollective()->getNumPrisonerOrders();
-  int prisonSize = getCollective()->getConstructions().getBuiltCount(FurnitureType::PRISON);
-  int requiredPrisonSize = 2;
-  vector<string> requirements;
-  int missingSize = (numOrders + numPrisoners + 1) * requiredPrisonSize - prisonSize;
-  if (prisonSize == 0)
-    requirements.push_back("Requires a prison.");
-  else if (missingSize > 0)
-    requirements.push_back("Requires " + toString(missingSize) + " more prison tiles.");
-  vector<string> info {
-    creature->getName().multiple(numOrders) + " ordered.",
-    "Prisoners will be captured at nearest opportunity."
-  };
-  return ImmigrantDataInfo {
-          requirements,
-          info,
-          none,
-          creature->getName().bare(),
-          creature->getViewObject().id(),
-          AttributeInfo::fromCreature(creature.get()),
-          numOrders == 0 ? none : optional<int>(numOrders),
-          none,
-          -1,
-          none,
-          none,
-          none,
-          none
-      };
+  vector<ImmigrantDataInfo> ret;
+  int index = -1;
+  for (auto stack : getPrisonerImmigrantStack()) {
+    auto c = stack[0];
+    int numPrisoners = getCollective()->getCreatures(MinionTrait::PRISONER).size();
+    int prisonSize = getCollective()->getConstructions().getBuiltCount(FurnitureType::PRISON);
+    int requiredPrisonSize = 2;
+    vector<string> requirements;
+    int missingSize = (numPrisoners + 1) * requiredPrisonSize - prisonSize;
+    if (prisonSize == 0)
+      requirements.push_back("Requires a prison.");
+    else if (missingSize > 0)
+      requirements.push_back("Requires " + toString(missingSize) + " more prison tiles.");
+    ret.push_back(ImmigrantDataInfo {
+        requirements,
+        {},
+        none,
+        c->getName().bare() + " (prisoner)",
+        c->getViewObject().id(),
+        AttributeInfo::fromCreature(c),
+        stack.size() == 1 ? none : optional<int>(stack.size()),
+        none,
+        index,
+        none,
+        none,
+        none,
+        none
+    });
+    --index;
+  }
+  return ret;
 }
 
 void PlayerControl::fillImmigration(CollectiveInfo& info) const {
   info.immigration.clear();
   auto& immigration = getCollective()->getImmigration();
-  //info.immigration.push_back(getPrisonerImmigrantData());
+  info.immigration.append(getPrisonerImmigrantData());
   for (auto& elem : immigration.getAvailable()) {
     const auto& candidate = elem.second.get();
     const int count = (int) candidate.getCreatures().size();
@@ -1114,9 +1149,6 @@ void PlayerControl::fillImmigrationHelp(CollectiveInfo& info) const {
             requirements.push_back("Recruit is not available in this game");
         },
         [&](const TutorialRequirement&) {
-        },
-        [&](const CivilianCapture&) {
-          requirements.push_back("Requires a captured tribe with civilians");
         }
     ));
     if (auto limit = elem->getLimit())
@@ -1909,8 +1941,8 @@ void PlayerControl::processInput(View* view, UserInput input) {
     }
     case UserInputId::IMMIGRANT_ACCEPT: {
       int index = input.get<int>();
-      if (index == -1)
-        getCollective()->addPrisonerOrder();
+      if (index < 0)
+        acceptPrisoner(index);
       else {
         auto available = getCollective()->getImmigration().getAvailable();
         if (auto info = getReferenceMaybe(available, index))
@@ -1922,8 +1954,8 @@ void PlayerControl::processInput(View* view, UserInput input) {
     }
     case UserInputId::IMMIGRANT_REJECT: {
       int index = input.get<int>();
-      if (index == -1)
-        getCollective()->removePrisonerOrder();
+      if (index < 0)
+        rejectPrisoner(index);
       else {
         getCollective()->getImmigration().rejectIfNonPersistent(index);
       }

@@ -88,7 +88,7 @@ void LastingEffects::onAffected(WCreature c, LastingEffect effect, bool msg) {
       case LastingEffect::PREGNANT:
         c->you(MsgType::ARE, "pregnant!"); break;
       case LastingEffect::STUNNED:
-        c->you(MsgType::ARE, "stunned"); break;
+        c->you(MsgType::ARE, "knocked out"); break;
       case LastingEffect::PANIC:
         c->you(MsgType::PANIC, ""); break;
       case LastingEffect::RAGE:
@@ -276,6 +276,8 @@ void LastingEffects::onTimedOut(WCreature c, LastingEffect effect, bool msg) {
         c->you(MsgType::ARE, "no longer rested"); break;
       case LastingEffect::SUMMONED:
         c->dieNoReason(Creature::DropType::ONLY_INVENTORY); break;
+      case LastingEffect::STUNNED:
+        c->dieWithLastAttacker(); break;
       default: break;
     }
 }
@@ -360,7 +362,7 @@ static optional<Adjective> getAdjective(LastingEffect effect) {
     case LastingEffect::SLOWED: return "Slowed"_bad;
     case LastingEffect::INSANITY: return "Insane"_bad;
     case LastingEffect::BLIND: return "Blind"_bad;
-    case LastingEffect::STUNNED: return "Stunned"_bad;
+    case LastingEffect::STUNNED: return "Unconscious"_bad;
     case LastingEffect::COLLAPSED: return "Collapsed"_bad;
     case LastingEffect::MAGIC_VULNERABILITY: return "Vulnerable to magical attacks"_bad;
     case LastingEffect::MELEE_VULNERABILITY: return "Vulnerable to melee attacks"_bad;
@@ -388,7 +390,7 @@ const vector<LastingEffect>& LastingEffects::getCausingCondition(CreatureConditi
   switch (condition) {
     case CreatureCondition::RESTRICTED_MOVEMENT: {
       static vector<LastingEffect> ret {LastingEffect::ENTANGLED, LastingEffect::TIED_UP,
-          LastingEffect::SLEEP, LastingEffect::STUNNED};
+          LastingEffect::SLEEP};
       return ret;
     }
     case CreatureCondition::SLEEPING: {
@@ -571,7 +573,7 @@ const char* LastingEffects::getDescription(LastingEffect type) {
     case LastingEffect::TIED_UP:
       FALLTHROUGH;
     case LastingEffect::ENTANGLED: return "web";
-    case LastingEffect::STUNNED: return "Causes inability to make any action.";
+    case LastingEffect::STUNNED: return "Allows enslaving as a prisoner, otherwise creature will die.";
     case LastingEffect::FIRE_RESISTANT: return "Gives fire resistance.";
     case LastingEffect::INSANITY: return "Makes the target hostile to every creature.";
     case LastingEffect::PEACEFULNESS: return "Makes the target friendly to every creature.";

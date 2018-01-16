@@ -184,10 +184,6 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   void onRansomPaid();
   void onExternalEnemyKilled(const string& name);
 
-  void addPrisonerOrder();
-  void removePrisonerOrder();
-  int getNumPrisonerOrders() const;
-
   CollectiveTeams& getTeams();
   const CollectiveTeams& getTeams() const;
   void freeTeamMembers(TeamId);
@@ -287,7 +283,6 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   optional<AlarmInfo> SERIAL(alarmInfo);
   HeapAllocated<ConstructionMap> SERIAL(constructions);
   EntityMap<Item, WConstTask> SERIAL(markedItems);
-  EntitySet<Creature> SERIAL(surrendering);
   void updateConstructions();
   void handleTrapPlacementAndProduction();
   void scheduleAutoProduction(function<bool (WConstItem)> itemPredicate, int count);
@@ -317,7 +312,6 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   set<EnemyId> SERIAL(conqueredVillains); // OBSOLETE
   void setDiscoverable();
   bool SERIAL(discoverable) = false;
-  int SERIAL(numPrisonerOrders) = 0;
   void considerTransferingLostMinions();
   void updateCreatureStatus(WCreature);
   HeapAllocated<Quarters> SERIAL(quarters);

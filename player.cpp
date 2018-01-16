@@ -470,7 +470,7 @@ vector<Player::OtherCreatureCommand> Player::getOtherCreatureCommands(WCreature 
       ret.push_back({text, [action](Player* player) { player->tryToPerform(action); }});
   };
   if (c->getPosition().dist8(getCreature()->getPosition()) == 1)
-    genAction("Swap position", getCreature()->moveTowards(c->getPosition()));
+    genAction("Swap position", getCreature()->move(c->getPosition()));
   if (getCreature()->isEnemy(c)) {
     genAction("Attack", getCreature()->attack(c));
     ret.push_back({c->isCaptureOrdered() ? "Cancel capture order" : "Order capture",

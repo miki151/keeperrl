@@ -1276,7 +1276,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.spells->add(SpellId::SPEED_SELF);
           c.spells->add(SpellId::DEF_BONUS);
           c.spells->add(SpellId::SUMMON_SPIRIT);
-          c.spells->add(SpellId::STUN_RAY);
           c.spells->add(SpellId::BLAST);
           c.spells->add(SpellId::HEAL_OTHER);
           c.skills.setValue(SkillId::SORCERY, 1);
@@ -1421,8 +1420,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.permanentEffects[LastingEffect::RANGED_RESISTANCE] = 1;
           c.permanentEffects[LastingEffect::FIRE_RESISTANT] = 1;
           for (SpellId id : Random.chooseN(Random.get(3, 6), {SpellId::CIRCULAR_BLAST, SpellId::DEF_BONUS,
-              SpellId::DAM_BONUS, SpellId::STUN_RAY, SpellId::DECEPTION, SpellId::DECEPTION,
-              SpellId::TELEPORT}))
+              SpellId::DAM_BONUS, SpellId::DECEPTION, SpellId::DECEPTION, SpellId::TELEPORT}))
             c.spells->add(id);
           c.chatReactionFriendly = c.chatReactionHostile =
               "\"There are times when you simply cannot refuse a drink!\""_s;
@@ -1686,7 +1684,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.spells->add(SpellId::SPEED_SELF);
           c.spells->add(SpellId::DAM_BONUS);
           c.spells->add(SpellId::DEF_BONUS);
-          c.spells->add(SpellId::STUN_RAY);
           c.spells->add(SpellId::BLAST);
           c.name = "elf lord";);
     case CreatureId::DARK_ELF:
@@ -1743,7 +1740,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.spells->add(SpellId::SPEED_SELF);
           c.spells->add(SpellId::DEF_BONUS);
           c.spells->add(SpellId::DAM_BONUS);
-          c.spells->add(SpellId::STUN_RAY);
           c.spells->add(SpellId::BLAST);
           c.name = "dark elf lord";);
     case CreatureId::DRIAD: 

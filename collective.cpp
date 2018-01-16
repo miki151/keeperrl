@@ -61,7 +61,7 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
   ar(surrendering, delayedPos, knownTiles, technologies, kills, points, currentTasks);
   ar(credit, level, immigration, teams, name, conqueredVillains);
   ar(config, warnings, knownVillains, knownVillainLocations, banished);
-  ar(villainType, enemyId, workshops, zones, tileEfficiency, discoverable, numPrisonerOrders, quarters);
+  ar(villainType, enemyId, workshops, zones, tileEfficiency, discoverable, quarters);
   // hack to make retired villains discoverable, remove with save version change
   if (villainType == VillainType::MAIN)
     discoverable = true;
@@ -264,7 +264,7 @@ WCreature Collective::getLeader() {
 }
 
 bool Collective::hasLeader() const {
-  return leader && !leader->isDead();
+  return leader && !leader->isDead() && !leader->isAffected(LastingEffect::STUNNED);
 }
 
 WLevel Collective::getLevel() const {
@@ -590,30 +590,6 @@ void Collective::tick() {
       alarmInfo.reset();
       control->onNoEnemies();
     }
-    bool allSurrender = true;
-    vector<WCreature> surrenderingVec;
-    for (Position v : enemyPos)
-      if (!surrendering.contains(NOTNULL(v.getCreature()))) {
-        allSurrender = false;
-        break;
-      } else
-        surrenderingVec.push_back(v.getCreature());
-    if (allSurrender) {
-      for (WCreature c : surrenderingVec) {
-        if (!c->isDead() && territory->contains(c->getPosition())) {
-          Position pos = c->getPosition();
-          PCreature prisoner = CreatureFactory::fromId(CreatureId::PRISONER, getTribeId(),
-              MonsterAIFactory::collective(this));
-          if (pos.canEnterEmpty(prisoner.get())) {
-            pos.globalMessage(c->getName().the() + " surrenders.");
-            control->addMessage(PlayerMessage(c->getName().a() + " surrenders.").setPosition(c->getPosition()));
-            c->dieNoReason(Creature::DropType::ONLY_INVENTORY);
-            addCreature(std::move(prisoner), pos, {MinionTrait::PRISONER, MinionTrait::NO_LIMIT});
-          }
-        }
-        surrendering.erase(c);
-      }
-    }
   }
   if (config->getConstructions())
     updateConstructions();
@@ -642,14 +618,15 @@ bool Collective::hasTrait(WConstCreature c, MinionTrait t) const {
 }
 
 void Collective::setTrait(WCreature c, MinionTrait t) {
-  if (!hasTrait(c, t))
+  if (!hasTrait(c, t)) {
     byTrait[t].push_back(c);
-  updateCreatureStatus(c);
+    updateCreatureStatus(c);
+  }
 }
 
 void Collective::removeTrait(WCreature c, MinionTrait t) {
-  byTrait[t].removeElementMaybe(c);
-  updateCreatureStatus(c);
+  if (byTrait[t].removeElementMaybe(c))
+    updateCreatureStatus(c);
 }
 
 double Collective::getKillManaScore(WConstCreature victim) const {
@@ -702,14 +679,16 @@ void Collective::onEvent(const GameEvent& event) {
         if (creatures.contains(info.torturer))
           returnResource({ResourceId::MANA, 1});
       },
-      [&](const CreatureSurrendered& info) {
+      [&](const CreatureStunned& info) {
         auto victim = info.victim;
-        auto attacker = info.attacker;
-        if (getCreatures().contains(attacker) && !getCreatures().contains(victim)) {
-          addCreature(victim, {MinionTrait::PRISONER, MinionTrait::NO_LIMIT});
-          victim->verb("surrender", "surrenders");
-          control->addMessage(PlayerMessage(victim->getName().a() + " surrenders.")
+        if (getCreatures().contains(victim)) {
+          bool fighterStunned = hasTrait(victim, MinionTrait::FIGHTER) || victim == getLeader();
+          setTrait(victim, MinionTrait::STUNNED);
+          removeTrait(victim, MinionTrait::FIGHTER);
+          control->addMessage(PlayerMessage(victim->getName().a() + " is unconsious.")
               .setPosition(victim->getPosition()));
+          if (isConquered() && fighterStunned)
+            getGame()->addEvent(EventInfo::ConqueredEnemy{this});
         }
       },
       [&](const TrapTriggered& info) {
@@ -743,16 +722,6 @@ void Collective::onEvent(const GameEvent& event) {
           addMana(mana);
           control->addMessage(PlayerMessage("You feel a surge of power (+" + toString(mana) + " mana)",
               MessagePriority::CRITICAL));
-        }
-        auto civilians = col->getCreatures().filter(
-            [&](WConstCreature c) { return c->getBody().isHumanoid() && !col->hasTrait(c, MinionTrait::FIGHTER); });
-        int numCaptured = min(civilians.size(), numPrisonerOrders);
-        numPrisonerOrders -= numCaptured;
-        for (int i : Range(numCaptured)) {
-          auto pos = civilians[i]->getPosition();
-          civilians[i]->dieNoReason(Creature::DropType::ONLY_INVENTORY);
-          addCreature(CreatureFactory::fromId(CreatureId::PRISONER, getTribeId()), pos,
-              {MinionTrait::PRISONER, MinionTrait::NO_LIMIT});
         }
       },
       [&](const auto&) {}
@@ -1443,19 +1412,6 @@ void Collective::onExternalEnemyKilled(const std::string& name) {
   addMana(mana);
   control->addMessage(PlayerMessage("You feel a surge of power (+" + toString(mana) + " mana)",
                                     MessagePriority::CRITICAL));
-}
-
-void Collective::addPrisonerOrder() {
-  ++numPrisonerOrders;
-}
-
-void Collective::removePrisonerOrder() {
-  if (numPrisonerOrders > 0)
-    --numPrisonerOrders;
-}
-
-int Collective::getNumPrisonerOrders() const {
-  return numPrisonerOrders;
 }
 
 void Collective::onCopulated(WCreature who, WCreature with) {
