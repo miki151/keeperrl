@@ -1405,7 +1405,8 @@ void WindowView::keyboardAction(const SDL_Keysym& key) {
       inputQueue.push(UserInputId::CHEAT_ATTRIBUTES);
       break;
     case SDL::SDLK_F8:
-      renderer.startMonkey();
+      //renderer.startMonkey();
+      renderer.loadTiles();
       break;
 #endif
     case SDL::SDLK_F7:

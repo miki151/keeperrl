@@ -169,8 +169,6 @@ class Renderer {
   void addQuad(const Rectangle&, Color);
   static Color getBleedingColor(const ViewObject&);
   Vec2 getSize();
-  bool loadTilesFromDir(const DirectoryPath& path, Vec2 size);
-  bool loadTilesFromDir(const DirectoryPath&, vector<Texture>&, Vec2 size, int setWidth);
 
   void drawAndClearBuffer();
   void resize(int width, int height);
@@ -193,12 +191,13 @@ class Renderer {
   vector<Texture> tiles;
 
   static void putPixel(SDL::SDL_Surface*, Vec2, Color);
+  void addTilesDirectory(const DirectoryPath& path, Vec2 size);
+  void loadTiles();
 
   private:
   friend class Texture;
   optional<Texture> textTexture;
   Renderer(const Renderer&);
-  vector<Vec2> tileSize;
   Vec2 nominalSize;
   map<string, TileCoord> tileCoords;
   bool pollEventOrFromQueue(Event&);
@@ -245,5 +244,11 @@ class Renderer {
   vector<DeferredSprite> deferredSprites;
   void renderDeferredSprites();
   bool isScissor = false;
+  void loadTilesFromDir(const DirectoryPath&, vector<Texture>&, Vec2 size, int setWidth);
+  struct TileDirectory {
+    DirectoryPath path;
+    Vec2 size;
+  };
+  vector<TileDirectory> tileDirectories;
 };
 

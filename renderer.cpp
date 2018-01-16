@@ -629,7 +629,7 @@ Color Renderer::getBleedingColor(const ViewObject& object) {
 void Renderer::drawTile(Vec2 pos, TileCoord coord, Vec2 size, Color color, SpriteOrientation orientation) {
   CHECK(coord.texNum >= 0 && coord.texNum < Renderer::tiles.size());
   Texture* tex = &tiles[coord.texNum];
-  Vec2 sz = tileSize[coord.texNum];
+  Vec2 sz = tileDirectories[coord.texNum].size;
   Vec2 off = (nominalSize -  sz).mult(size).div(Renderer::nominalSize * 2);
   Vec2 tileSize = sz.mult(size).div(nominalSize);
   if (sz.y > nominalSize.y)
@@ -640,7 +640,7 @@ void Renderer::drawTile(Vec2 pos, TileCoord coord, Vec2 size, Color color, Sprit
 
 void Renderer::drawTile(Vec2 pos, TileCoord coord, double scale, Color color) {
   CHECK(coord.texNum >= 0 && coord.texNum < Renderer::tiles.size());
-  Vec2 sz = Renderer::tileSize[coord.texNum];
+  Vec2 sz = tileDirectories[coord.texNum].size;
   Vec2 off = getOffset(Renderer::nominalSize - sz, scale);
   if (sz.y > nominalSize.y)
     off.y *= 2;
@@ -690,9 +690,15 @@ void Renderer::drawAsciiBackground(ViewId id, Rectangle bounds) {
     drawFilledRectangle(bounds, Color::BLACK);
 }
 
-bool Renderer::loadTilesFromDir(const DirectoryPath& path, Vec2 size) {
-  tileSize.push_back(size);
-  return loadTilesFromDir(path, tiles, size, 720);
+void Renderer::loadTiles() {
+  tiles.clear();
+  tileCoords.clear();
+  for (auto& dir : tileDirectories)
+    loadTilesFromDir(dir.path, tiles, dir.size, 720);
+}
+
+void Renderer::addTilesDirectory(const DirectoryPath& path, Vec2 size) {
+  tileDirectories.push_back({path, size});
 }
 
 SDL::SDL_Surface* Renderer::createSurface(int w, int h) {
@@ -701,7 +707,7 @@ SDL::SDL_Surface* Renderer::createSurface(int w, int h) {
   return ret;
 }
 
-bool Renderer::loadTilesFromDir(const DirectoryPath& path, vector<Texture>& tiles, Vec2 size, int setWidth) {
+void Renderer::loadTilesFromDir(const DirectoryPath& path, vector<Texture>& tiles, Vec2 size, int setWidth) {
   const static string imageSuf = ".png";
   auto files = path.getFiles().filter([](const FilePath& f) { return f.hasSuffix(imageSuf);});
   int rowLength = setWidth / size.x;
@@ -725,7 +731,6 @@ bool Renderer::loadTilesFromDir(const DirectoryPath& path, vector<Texture>& tile
   }
   tiles.push_back(Texture(image));
   SDL::SDL_FreeSurface(image);
-  return true;
 }
 
 Renderer::TileCoord Renderer::getTileCoord(const string& name) {

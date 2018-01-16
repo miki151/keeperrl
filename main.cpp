@@ -65,12 +65,10 @@
 #endif
 
 static void initializeRendererTiles(Renderer& r, const DirectoryPath& path) {
-  r.loadTilesFromDir(path.subdirectory("orig16"), Vec2(16, 16));
-//  r.loadAltTilesFromDir(path + "/orig16_scaled", Vec2(24, 24));
-  r.loadTilesFromDir(path.subdirectory("orig24"), Vec2(24, 24));
-//  r.loadAltTilesFromDir(path + "/orig24_scaled", Vec2(36, 36));
-  r.loadTilesFromDir(path.subdirectory("orig30"), Vec2(30, 30));
-//  r.loadAltTilesFromDir(path + "/orig30_scaled", Vec2(45, 45));
+  r.addTilesDirectory(path.subdirectory("orig16"), Vec2(16, 16));
+  r.addTilesDirectory(path.subdirectory("orig24"), Vec2(24, 24));
+  r.addTilesDirectory(path.subdirectory("orig30"), Vec2(30, 30));
+  r.loadTiles();
 }
 
 static float getMaxVolume() {
