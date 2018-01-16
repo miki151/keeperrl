@@ -58,7 +58,7 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
   ar(SUBCLASS(TaskCallback), SUBCLASS(UniqueEntity<Collective>), SUBCLASS(EventListener));
   ar(creatures, leader, taskMap, tribe, control, byTrait);
   ar(territory, alarmInfo, markedItems, constructions, minionEquipment);
-  ar(surrendering, delayedPos, knownTiles, technologies, kills, points, currentTasks);
+  ar(delayedPos, knownTiles, technologies, kills, points, currentTasks);
   ar(credit, level, immigration, teams, name, conqueredVillains);
   ar(config, warnings, knownVillains, knownVillainLocations, banished);
   ar(villainType, enemyId, workshops, zones, tileEfficiency, discoverable, quarters);
