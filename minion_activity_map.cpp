@@ -100,7 +100,7 @@ bool MinionActivityMap::isAvailable(WConstCollective col, WConstCreature c, Mini
     case MinionActivity::HAULING:
       return !c->getBody().getCarryLimit() && col->hasTrait(c, MinionTrait::WORKER);
     case MinionActivity::DIGGING:
-      return c->getAttributes().getSkills().hasDiscrete(SkillId::DIGGING) && col->hasTrait(c, MinionTrait::WORKER);
+      return c->getAttributes().getSkills().getValue(SkillId::DIGGING) > 0 && col->hasTrait(c, MinionTrait::WORKER);
   }
 }
 

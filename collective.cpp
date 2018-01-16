@@ -1058,7 +1058,7 @@ static HighlightType getHighlight(const DestroyAction& action) {
 void Collective::orderDestruction(Position pos, const DestroyAction& action) {
   auto f = NOTNULL(pos.getFurniture(FurnitureLayer::MIDDLE));
   CHECK(f->canDestroy(action));
-  taskMap->markSquare(pos, getHighlight(action), Task::destruction(this, pos, f, action), MinionActivity::WORKING);
+  taskMap->markSquare(pos, getHighlight(action), Task::destruction(this, pos, f, action), action.getMinionActivity());
 }
 
 void Collective::addTrap(Position pos, TrapType type) {

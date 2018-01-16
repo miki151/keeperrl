@@ -1525,7 +1525,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.noChase = true;
           c.cantEquip = true;
           c.skills.insert(SkillId::CONSTRUCTION);
-          c.skills.insert(SkillId::DIGGING);
+          c.skills.setValue(SkillId::DIGGING, 0.4);
           c.chatReactionFriendly = "talks about digging"_s;
           c.chatReactionHostile = "\"Die!\""_s;
           c.permanentEffects[LastingEffect::POISON_RESISTANT] = 1;
@@ -1533,19 +1533,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.moraleSpeedIncrease = 1.3;
           c.name = "imp";
       );
-    case CreatureId::PRISONER:
-      return CATTR(
-          c.viewId = ViewId::PRISONER;
-          c.attr = LIST(8_dam, 15_def );
-          c.body = Body::humanoid(Body::Size::LARGE);
-          c.body->setWeight(60);
-          c.body->setNoCarryLimit();
-          c.courage = -1;
-          c.noChase = true;
-          c.cantEquip = true;
-          c.skills.insert(SkillId::CONSTRUCTION);
-          c.chatReactionFriendly = "talks about escape plans"_s;
-          c.name = "prisoner";);
     case CreatureId::OGRE: 
       return CATTR(
           c.viewId = ViewId::OGRE;
@@ -1576,7 +1563,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body = Body::humanoid(Body::Size::MEDIUM);
           c.body->setWeight(90);
           c.name = CreatureName("dwarf", "dwarves");
-          c.skills.insert(SkillId::DIGGING);
+          c.skills.insert(SkillId::NAVIGATION_DIGGING);
           c.permanentEffects[LastingEffect::MAGIC_VULNERABILITY] = 1;
           c.name->setFirst(NameGenerator::get(NameGeneratorId::DWARF)->getNext());
           c.chatReactionFriendly = "curses all orcs"_s;
@@ -1590,7 +1577,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body = Body::humanoid(Body::Size::MEDIUM);
           c.body->setWeight(90);
           c.name = CreatureName("dwarf", "dwarves");
-          c.skills.insert(SkillId::DIGGING);
+          c.skills.insert(SkillId::NAVIGATION_DIGGING);
           c.permanentEffects[LastingEffect::MAGIC_VULNERABILITY] = 1;
           c.name->setFirst(NameGenerator::get(NameGeneratorId::DWARF)->getNext());
           c.chatReactionFriendly = "curses all orcs"_s;
@@ -1604,7 +1591,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body->setWeight(120);
           c.chatReactionFriendly = "curses all orcs"_s;
           c.chatReactionHostile = "\"Die!\""_s;
-          c.skills.insert(SkillId::DIGGING);
+          c.skills.insert(SkillId::NAVIGATION_DIGGING);
           c.permanentEffects[LastingEffect::MAGIC_VULNERABILITY] = 1;
           c.courage = 1;
           c.name = "dwarf baron";
@@ -1917,7 +1904,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
       return CATTR(
           c.viewId = ViewId::ANT_SOLDIER;
           c.attr = LIST(30_dam, 20_def );
-          c.skills.insert(SkillId::DIGGING);
+          c.skills.insert(SkillId::NAVIGATION_DIGGING);
           c.body = Body::nonHumanoid(Body::Size::MEDIUM);
           c.body->setWeight(10);
           c.body->setBodyParts({{BodyPart::LEG, 6}, {BodyPart::HEAD, 1}, {BodyPart::TORSO, 1}});

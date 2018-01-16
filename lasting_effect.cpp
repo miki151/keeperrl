@@ -194,6 +194,9 @@ void LastingEffects::onRemoved(WCreature c, LastingEffect effect, bool msg) {
     case LastingEffect::SLEEP:
       c->you(MsgType::WAKE_UP, "");
       break;
+    case LastingEffect::STUNNED:
+      c->you(MsgType::ARE, "no longer unconscious");
+      break;
     default:
       onTimedOut(c, effect, msg); break;
   }

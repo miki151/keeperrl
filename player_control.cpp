@@ -978,8 +978,11 @@ void PlayerControl::acceptPrisoner(int index) {
   if (index < immigrants.size()) {
     auto victim = immigrants[index][0];
     victim->removeEffect(LastingEffect::STUNNED);
+    auto& skills = victim->getAttributes().getSkills();
+    skills.setValue(SkillId::DIGGING, skills.hasDiscrete(SkillId::NAVIGATION_DIGGING) ? 1 : 0.2);
+    skills.erase(SkillId::NAVIGATION_DIGGING);
     getCollective()->addCreature(victim, {MinionTrait::WORKER, MinionTrait::PRISONER, MinionTrait::NO_LIMIT});
-    addMessage(PlayerMessage("You enslave  " + victim->getName().a()).setPosition(victim->getPosition()));
+    addMessage(PlayerMessage("You enslave " + victim->getName().a()).setPosition(victim->getPosition()));
   }
 }
 
@@ -1023,7 +1026,7 @@ vector<ImmigrantDataInfo> PlayerControl::getPrisonerImmigrantData() const {
         c->getViewObject().id(),
         AttributeInfo::fromCreature(c),
         stack.size() == 1 ? none : optional<int>(stack.size()),
-        none,
+        c->getTimeRemaining(LastingEffect::STUNNED),
         index,
         none,
         none,

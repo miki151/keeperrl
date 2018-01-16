@@ -102,7 +102,6 @@ RICH_ENUM(CreatureId,
     KOBOLD,
 
     IMP,
-    PRISONER,
     OGRE,
     CHICKEN,
 

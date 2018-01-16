@@ -82,11 +82,29 @@ bool DestroyAction::canDestroyFriendly() const {
 bool DestroyAction::canNavigate(WConstCreature c) const {
   switch (type) {
     case Type::HOSTILE_DIG:
-      return c->getAttributes().getSkills().hasDiscrete(SkillId::DIGGING);
+      return c->getAttributes().getSkills().hasDiscrete(SkillId::NAVIGATION_DIGGING) > 0;
     case Type::HOSTILE_DIG_NO_SKILL:
     case Type::BASH:
       return true;
     default:
       return false;
+  }
+}
+
+MinionActivity DestroyAction::getMinionActivity() const {
+  switch (type) {
+    case Type::DIG:
+      return MinionActivity::DIGGING;
+    default:
+      return MinionActivity::WORKING;
+  }
+}
+
+optional<SkillId> DestroyAction::getDestroyingSkillMultiplier() const {
+  switch (type) {
+    case Type::DIG:
+      return SkillId::DIGGING;
+    default:
+      return none;
   }
 }

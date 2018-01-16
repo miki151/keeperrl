@@ -323,7 +323,7 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setConstructMessage(Furniture::FILL_UP)
           .setIsWall()
           .setDestroyable(200, DestroyAction::Type::BOULDER)
-          .setDestroyable(50, DestroyAction::Type::DIG)
+          .setDestroyable(30, DestroyAction::Type::DIG)
           .setDestroyable(200, DestroyAction::Type::HOSTILE_DIG)
           .setDestroyable(2000, DestroyAction::Type::HOSTILE_DIG_NO_SKILL)
           .setSummonedElement(CreatureId::EARTH_ELEMENTAL);
