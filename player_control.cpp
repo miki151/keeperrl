@@ -189,7 +189,11 @@ STutorial PlayerControl::getTutorial() const {
   return tutorial;
 }
 
-bool PlayerControl::canControl(WConstCreature c) {
+bool PlayerControl::canControlSingle(WConstCreature c) const {
+  return !getCollective()->hasTrait(c, MinionTrait::PRISONER);
+}
+
+bool PlayerControl::canControlInTeam(WConstCreature c) const {
   return getCollective()->hasTrait(c, MinionTrait::FIGHTER) || c == getCollective()->getLeader();
 }
 
@@ -209,7 +213,7 @@ void PlayerControl::teamMemberAction(TeamMemberAction action, Creature::Id id) {
       break;
     case TeamMemberAction::CHANGE_LEADER:
       if (auto teamId = getCurrentTeam())
-        if (getTeams().getMembers(*teamId).size() > 1 && canControl(c)) {
+        if (getTeams().getMembers(*teamId).size() > 1 && canControlInTeam(c)) {
           auto controlled = getControlled();
           if (controlled.size() == 1) {
             getTeams().getLeader(*teamId)->popController();
@@ -812,11 +816,13 @@ vector<PlayerInfo> PlayerControl::getPlayerInfos(vector<WCreature> creatures, Un
         }
       if (getCollective()->usesEquipment(c))
         fillEquipment(c, minionInfo);
+      if (canControlSingle(c))
+        minionInfo.actions.push_back(PlayerInfo::CONTROL);
       if (!getCollective()->hasTrait(c, MinionTrait::PRISONER)) {
-        minionInfo.actions = { PlayerInfo::CONTROL, PlayerInfo::RENAME };
-        if (c != getCollective()->getLeader())
-          minionInfo.actions.push_back(PlayerInfo::BANISH);
+        minionInfo.actions.push_back(PlayerInfo::RENAME);
       }
+      if (c != getCollective()->getLeader())
+        minionInfo.actions.push_back(PlayerInfo::BANISH);
       if (!getCollective()->hasTrait(c, MinionTrait::WORKER)) {
         minionInfo.canAssignQuarters = true;
         auto& quarters = getCollective()->getQuarters();
@@ -1537,7 +1543,7 @@ void PlayerControl::toggleControlAllTeamMembers() {
     if (members.size() > 1) {
       if (getControlled().size() == 1) {
         for (auto c : members)
-          if (!c->isPlayer() && canControl(c))
+          if (!c->isPlayer() && canControlInTeam(c))
             c->pushController(createMinionController(c));
       } else
         for (auto c : members)
@@ -1919,7 +1925,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
     case UserInputId::ADD_TO_TEAM: {
       auto info = input.get<TeamCreatureInfo>();
       if (WCreature c = getCreature(info.creatureId))
-        if (getTeams().exists(info.team) && !getTeams().contains(info.team, c) && canControl(c))
+        if (getTeams().exists(info.team) && !getTeams().contains(info.team, c) && canControlInTeam(c))
           getTeams().add(info.team, c);
       break;
     }
