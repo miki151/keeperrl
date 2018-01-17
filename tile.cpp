@@ -491,7 +491,6 @@ class TileCoordLookup {
     Tile::addTile(ViewId::WATER, getWaterTile("waternesw", "water"));
     Tile::addTile(ViewId::MAGMA, getWaterTile("magmanesw", "magma"));
     Tile::addTile(ViewId::DOOR, sprite("door").setWallShadow());
-    Tile::addTile(ViewId::LOCKED_DOOR, sprite("locked_door").setWallShadow());
     Tile::addTile(ViewId::BARRICADE, sprite("barricade").setRoundShadow());
     Tile::addTile(ViewId::DIG_ICON, sprite("dig_icon"));
     Tile::addTile(ViewId::SWORD, sprite("sword"));
@@ -834,7 +833,6 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::WATER, symbol(u8"~", Color::LIGHT_BLUE));
     Tile::addSymbol(ViewId::MAGMA, symbol(u8"~", Color::RED));
     Tile::addSymbol(ViewId::DOOR, symbol(u8"|", Color::BROWN));
-    Tile::addSymbol(ViewId::LOCKED_DOOR, symbol(u8"|", Color::YELLOW));
     Tile::addSymbol(ViewId::BARRICADE, symbol(u8"X", Color::BROWN));
     Tile::addSymbol(ViewId::DIG_ICON, symbol(u8"⛏", Color::LIGHT_GRAY, true));
     Tile::addSymbol(ViewId::STEEL_SWORD, symbol(u8")", Color::LIGHT_BLUE));

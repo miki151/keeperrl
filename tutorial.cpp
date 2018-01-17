@@ -102,8 +102,7 @@ bool Tutorial::canContinue(WConstGame game) const {
     case State::DIG_ROOM:
       return getHighlightedSquaresHigh(game).empty();
     case State::BUILD_DOOR:
-      return collective->getConstructions().getBuiltCount(FurnitureType::DOOR)
-          + collective->getConstructions().getBuiltCount(FurnitureType::LOCKED_DOOR) >= 1;
+      return collective->getConstructions().getBuiltCount(FurnitureType::DOOR);
     case State::BUILD_LIBRARY:
       return collective->getConstructions().getBuiltCount(FurnitureType::BOOKCASE_WOOD) >= 5;
     case State::DIG_2_ROOMS:

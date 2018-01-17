@@ -281,13 +281,6 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setFireInfo(Fire(500, 0.5))
           .setDestroyable(100)
           .setClickType(FurnitureClickType::LOCK);
-    case FurnitureType::LOCKED_DOOR:
-      return Furniture("locked door", ViewObject(ViewId::LOCKED_DOOR, ViewLayer::FLOOR), type, tribe)
-          .setBlocking()
-          .setBlockVision()
-          .setFireInfo(Fire(500, 0.5))
-          .setDestroyable(100)
-          .setClickType(FurnitureClickType::UNLOCK);
     case FurnitureType::WELL:
       return Furniture("well", ViewObject(ViewId::WELL, ViewLayer::FLOOR), type, tribe)
           .setCanHide()

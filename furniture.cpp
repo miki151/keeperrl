@@ -294,6 +294,7 @@ Furniture& Furniture::setBlocking() {
 }
 
 Furniture& Furniture::setBlockingEnemies() {
+  movementSet->addTrait(MovementTrait::WALK);
   movementSet->setBlockingEnemies();
   return *this;
 }

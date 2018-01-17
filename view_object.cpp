@@ -220,8 +220,7 @@ const char* ViewObject::getDefaultDescription() const {
     case ViewId::COFFIN: return "Coffin";
     case ViewId::CEMETERY: return "Cemetery";
     case ViewId::GRAVE: return "Grave";
-    case ViewId::DOOR: return "Door (click to lock)";
-    case ViewId::LOCKED_DOOR: return "Door (click to unlock)";
+    case ViewId::DOOR: return hasModifier(Modifier::LOCKED) ? "Door (click to unlock)" : "Door (click to lock)";
     case ViewId::BARRICADE: return "Barricade";
     case ViewId::WOOD_FLOOR1:
     case ViewId::WOOD_FLOOR2:

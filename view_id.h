@@ -185,7 +185,6 @@ RICH_ENUM(
     WATER,
     MAGMA,
     DOOR,
-    LOCKED_DOOR,
     BARRICADE,
     DIG_ICON,
     FOUNTAIN,
