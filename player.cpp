@@ -469,8 +469,12 @@ vector<Player::OtherCreatureCommand> Player::getOtherCreatureCommands(WCreature 
     if (action)
       ret.push_back({text, [action](Player* player) { player->tryToPerform(action); }});
   };
-  if (c->getPosition().dist8(getCreature()->getPosition()) == 1)
-    genAction("Swap position", getCreature()->move(c->getPosition()));
+  if (c->getPosition().dist8(getCreature()->getPosition()) == 1) {
+    if (c->getAttributes().isBoulder())
+      genAction("Push boulder", getCreature()->bumpInto(getCreature()->getPosition().getDir(c->getPosition())));
+    else
+      genAction("Swap position", getCreature()->move(c->getPosition()));
+  }
   if (getCreature()->isEnemy(c)) {
     genAction("Attack", getCreature()->attack(c));
     ret.push_back({c->isCaptureOrdered() ? "Cancel capture order" : "Order capture",

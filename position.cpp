@@ -658,9 +658,12 @@ optional<DestroyAction> Position::getBestDestroyAction(const MovementType& movem
 
 optional<double> Position::getNavigationCost(const MovementType& movement) const {
   if (canEnterEmpty(movement)) {
-    if (getCreature())
-      return 5.0;
-    else
+    if (auto c = getCreature()) {
+      if (c->getAttributes().isBoulder())
+        return none;
+      else
+        return 5.0;
+    } else
       return 1.0;
   }
   if (auto furniture = getFurniture(FurnitureLayer::MIDDLE))
