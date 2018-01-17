@@ -83,6 +83,7 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   virtual bool handleUserInput(UserInput);
   struct OtherCreatureCommand {
     string name;
+    bool allowAuto;
     function<void(Player*)> perform;
   };
   virtual vector<OtherCreatureCommand> getOtherCreatureCommands(WCreature) const;

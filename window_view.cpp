@@ -159,8 +159,8 @@ bool WindowView::isKeyPressed(SDL::SDL_Scancode code) {
   return SDL::SDL_GetKeyboardState(nullptr)[code];
 }
 
-void WindowView::mapCreatureClickFun(UniqueEntity<Creature>::Id id, Vec2 position) {
-  if (isKeyPressed(SDL::SDL_SCANCODE_LCTRL) || isKeyPressed(SDL::SDL_SCANCODE_RCTRL)) {
+void WindowView::mapCreatureClickFun(UniqueEntity<Creature>::Id id, Vec2 position, bool rightClick) {
+  if (rightClick) {
     inputQueue.push(UserInput(UserInputId::CREATURE_MAP_CLICK_EXTENDED, position));
   } else {
     guiBuilder.setCollectiveTab(CollectiveTab::MINIONS);

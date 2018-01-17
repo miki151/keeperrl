@@ -78,6 +78,8 @@ class ViewObject {
 
   void setClickAction(const string&);
   const string& getClickAction() const;
+  void setExtendedActions(const vector<string>&);
+  const vector<string>& getExtendedActions() const;
 
   const static ViewObject& unknownMonster();
   const static ViewObject& empty();
@@ -100,6 +102,7 @@ class ViewObject {
   string SERIAL(badAdjectives);
   optional<CreatureAttributes> SERIAL(creatureAttributes);
   string SERIAL(clickAction);
+  vector<string> SERIAL(extendedActions);
 
   class MovementQueue {
     public:

@@ -465,49 +465,48 @@ static bool displayTravelInfo = true;
 
 vector<Player::OtherCreatureCommand> Player::getOtherCreatureCommands(WCreature c) const {
   vector<OtherCreatureCommand> ret;
-  auto genAction = [&](const string& text, CreatureAction action) {
+  auto genAction = [&](const string& text, bool allowAuto, CreatureAction action) {
     if (action)
-      ret.push_back({text, [action](Player* player) { player->tryToPerform(action); }});
+      ret.push_back({text, allowAuto, [action](Player* player) { player->tryToPerform(action); }});
   };
   if (c->getPosition().dist8(getCreature()->getPosition()) == 1) {
     if (c->getAttributes().isBoulder())
-      genAction("Push boulder", getCreature()->bumpInto(getCreature()->getPosition().getDir(c->getPosition())));
+      genAction("Push boulder", true, getCreature()->bumpInto(getCreature()->getPosition().getDir(c->getPosition())));
     else
-      genAction("Swap position", getCreature()->move(c->getPosition()));
+      genAction("Swap position", true, getCreature()->move(c->getPosition()));
   }
   if (getCreature()->isEnemy(c)) {
-    genAction("Attack", getCreature()->attack(c));
-    ret.push_back({c->isCaptureOrdered() ? "Cancel capture order" : "Order capture",
+    genAction("Attack", true, getCreature()->attack(c));
+    ret.push_back({c->isCaptureOrdered() ? "Cancel capture order" : "Order capture", true,
         [c](Player*) { c->toggleCaptureOrder();}});
     auto equipped = getCreature()->getEquipment().getSlotItems(EquipmentSlot::WEAPON);
     if (equipped.size() == 1) {
       auto weapon = equipped[0];
-      genAction("Attack using " + weapon->getName(), getCreature()->attack(c,
+      genAction("Attack using " + weapon->getName(), true, getCreature()->attack(c,
           CONSTRUCT(Creature::AttackParams, c.weapon = weapon;)));
     }
     for (auto part : ENUM_ALL(BodyPart))
       if (auto& attack = getCreature()->getBody().getIntrinsicAttacks()[part])
-        genAction("Attack using " + attack->item->getName(), getCreature()->attack(c,
+        genAction("Attack using " + attack->item->getName(), true, getCreature()->attack(c,
             CONSTRUCT(Creature::AttackParams, c.weapon = attack->item.get();)));
   }
   if (getCreature() == c)
-    genAction("Skip turn", getCreature()->wait());
+    genAction("Skip turn", true, getCreature()->wait());
   if (c->getPosition().dist8(getCreature()->getPosition()) == 1)
-    genAction("Chat", getCreature()->chatTo(c));
+    genAction("Chat", true, getCreature()->chatTo(c));
   return ret;
 }
 
 void Player::creatureClickAction(Position pos, bool extended) {
   if (auto clicked = pos.getCreature()) {
     auto commands = getOtherCreatureCommands(clicked);
-    if (commands.size() == 1 || (!extended && !commands.empty()))
-      commands[0].perform(this);
-    else {
+    if (extended) {
       auto commandsText = commands.transform([](auto& command) -> string { return command.name; });
-      if (auto index = getView()->chooseAtMouse(commandsText)) {
+      if (auto index = getView()->chooseAtMouse(commandsText))
         commands[*index].perform(this);
-      }
     }
+    else if (!commands.empty() && commands[0].allowAuto)
+      commands[0].perform(this);
   }
 }
 
@@ -843,8 +842,15 @@ void Player::getViewIndex(Vec2 pos, ViewIndex& index) const {
       else
         object.getCreatureStatus().intersectWith(getDisplayedOnMinions());
       auto actions = getOtherCreatureCommands(c);
-      if (!actions.empty())
-        object.setClickAction(actions[0].name);
+      if (!actions.empty()) {
+        if (actions[0].allowAuto)
+          object.setClickAction(actions[0].name);
+        vector<string> extended;
+        for (auto& action : actions)
+          if (action.name != object.getClickAction())
+            extended.push_back(action.name);
+        object.setExtendedActions(extended);
+      }
     } else if (getCreature()->isUnknownAttacker(c))
       index.insert(copyOf(ViewObject::unknownMonster()));
   }

@@ -44,12 +44,12 @@ class MinionController : public Player {
     vector<OtherCreatureCommand> ret = Player::getOtherCreatureCommands(c);
     if (getTeam().contains(c)) {
       for (auto& action : getTeamMemberActions(c))
-        ret.push_back({getText(action), [action, id = c->getUniqueId()](Player* player){
+        ret.push_back({getText(action), false, [action, id = c->getUniqueId()](Player* player){
             (dynamic_cast<MinionController*>(player))->control->teamMemberAction(action, id);}});
     }
     else if (control->getCollective()->getCreatures().contains(c) && control->canControlInTeam(c) &&
         control->canControlInTeam(getCreature()))
-      ret.push_back({"Add to team", [c](Player* player) {
+      ret.push_back({"Add to team", false, [c](Player* player) {
           (dynamic_cast<MinionController*>(player))->control->addToCurrentTeam(c);}});
     return ret;
   }

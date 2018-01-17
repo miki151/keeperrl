@@ -1824,6 +1824,24 @@ SGuiElem GuiBuilder::drawBuildingsOverlay(const CollectiveInfo& info, const opti
   return gui.stack(std::move(elems));
 }
 
+SGuiElem GuiBuilder::getClickActions(const ViewObject& object) {
+  auto lines = gui.getListBuilder(legendLineHeight * 2 / 3);
+  if (!object.getClickAction().empty()) {
+    lines.addElem(gui.label(object.getClickAction()));
+    lines.addSpace(legendLineHeight / 3);
+  }
+  if (!object.getExtendedActions().empty()) {
+    lines.addElem(gui.label("Right click:", Color::LIGHT_BLUE));
+    for (auto action : object.getExtendedActions())
+      lines.addElem(gui.label(action, Color::LIGHT_GRAY));
+    lines.addSpace(legendLineHeight / 3);
+  }
+  if (!lines.isEmpty())
+    return lines.buildVerticalList();
+  else
+    return nullptr;
+}
+
 SGuiElem GuiBuilder::drawMapHintOverlay() {
   auto lines = gui.getListBuilder(legendLineHeight);
   vector<SGuiElem> allElems;
@@ -1845,10 +1863,11 @@ SGuiElem GuiBuilder::drawMapHintOverlay() {
         lines.addElem(gui.label(getDescription(status), getColor(status)));
         break;
       }
-      if (!viewObject->getClickAction().empty() && highlighted.creaturePos)
-        allElems.push_back(gui.absolutePosition(gui.translucentBackgroundWithBorderPassMouse(gui.margins(
-            gui.setHeight(legendLineHeight, gui.label(viewObject->getClickAction())), 5, 1, 5, -2)),
-            *highlighted.creaturePos + Vec2(60, 60)));
+      if (auto actions = getClickActions(*viewObject))
+        if (highlighted.creaturePos)
+          allElems.push_back(gui.absolutePosition(gui.translucentBackgroundWithBorderPassMouse(gui.margins(
+              gui.setHeight(*actions->getPreferredHeight(), actions), 5, 1, 5, -2)),
+              *highlighted.creaturePos + Vec2(60, 60)));
       if (!viewObject->getBadAdjectives().empty()) {
         lines.addElemAuto(gui.labelMultiLineWidth(viewObject->getBadAdjectives(), legendLineHeight * 2 / 3, 300,
             Renderer::textSize, Color::RED, ','));

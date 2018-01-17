@@ -19,7 +19,7 @@
 #include "view_id.h"
 #include "experience_type.h"
 
-SERIALIZE_DEF(ViewObject, resource_id, viewLayer, description, modifiers, attributes, attachmentDir, creatureId, goodAdjectives, badAdjectives, creatureAttributes, status, clickAction)
+SERIALIZE_DEF(ViewObject, resource_id, viewLayer, description, modifiers, attributes, attachmentDir, creatureId, goodAdjectives, badAdjectives, creatureAttributes, status, clickAction, extendedActions)
 
 SERIALIZATION_CONSTRUCTOR_IMPL(ViewObject);
 
@@ -45,6 +45,14 @@ void ViewObject::setClickAction(const string& s) {
 
 const string& ViewObject::getClickAction() const {
   return clickAction;
+}
+
+void ViewObject::setExtendedActions(const vector<string>& s) {
+  extendedActions = s;
+}
+
+const vector<string>& ViewObject::getExtendedActions() const {
+  return extendedActions;
 }
 
 void ViewObject::addMovementInfo(MovementInfo info) {
