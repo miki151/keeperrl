@@ -317,7 +317,7 @@ static Furniture get(FurnitureType type, TribeId tribe) {
     case FurnitureType::ROAD:
       return Furniture("road", ViewObject(ViewId::ROAD, ViewLayer::FLOOR), type, tribe);
     case FurnitureType::MOUNTAIN:
-      return Furniture("mountain", ViewObject(ViewId::MOUNTAIN, ViewLayer::FLOOR), type, tribe)
+      return Furniture("soft earth", ViewObject(ViewId::MOUNTAIN, ViewLayer::FLOOR), type, tribe)
           .setBlocking()
           .setBlockVision()
           .setConstructMessage(Furniture::FILL_UP)
@@ -325,6 +325,17 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setDestroyable(200, DestroyAction::Type::BOULDER)
           .setDestroyable(30, DestroyAction::Type::DIG)
           .setDestroyable(200, DestroyAction::Type::HOSTILE_DIG)
+          .setDestroyable(2000, DestroyAction::Type::HOSTILE_DIG_NO_SKILL)
+          .setSummonedElement(CreatureId::EARTH_ELEMENTAL);
+    case FurnitureType::MOUNTAIN2:
+      return Furniture("hard rock", ViewObject(ViewId::MOUNTAIN2, ViewLayer::FLOOR), type, tribe)
+          .setBlocking()
+          .setBlockVision()
+          .setConstructMessage(Furniture::FILL_UP)
+          .setIsWall()
+          .setDestroyable(500, DestroyAction::Type::BOULDER)
+          .setDestroyable(70, DestroyAction::Type::DIG)
+          .setDestroyable(500, DestroyAction::Type::HOSTILE_DIG)
           .setDestroyable(2000, DestroyAction::Type::HOSTILE_DIG_NO_SKILL)
           .setSummonedElement(CreatureId::EARTH_ELEMENTAL);
     case FurnitureType::IRON_ORE:
@@ -359,6 +370,16 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setDestroyable(2000, DestroyAction::Type::HOSTILE_DIG_NO_SKILL);
     case FurnitureType::DUNGEON_WALL:
       return Furniture("wall", ViewObject(ViewId::DUNGEON_WALL, ViewLayer::FLOOR), type, tribe)
+          .setBlocking()
+          .setBlockVision()
+          .setIsWall()
+          .setConstructMessage(Furniture::REINFORCE)
+          .setDestroyable(300, DestroyAction::Type::BOULDER)
+          .setDestroyable(100, DestroyAction::Type::DIG)
+          .setDestroyable(1900, DestroyAction::Type::HOSTILE_DIG)
+          .setDestroyable(2000, DestroyAction::Type::HOSTILE_DIG_NO_SKILL);
+    case FurnitureType::DUNGEON_WALL2:
+      return Furniture("wall", ViewObject(ViewId::DUNGEON_WALL2, ViewLayer::FLOOR), type, tribe)
           .setBlocking()
           .setBlockVision()
           .setIsWall()
@@ -570,6 +591,11 @@ bool FurnitureFactory::canBuild(FurnitureType type, Position pos) {
     case FurnitureType::DUNGEON_WALL:
       if (auto furniture = pos.getFurniture(FurnitureLayer::MIDDLE))
         return furniture->getType() == FurnitureType::MOUNTAIN;
+      else
+        return false;
+    case FurnitureType::DUNGEON_WALL2:
+      if (auto furniture = pos.getFurniture(FurnitureLayer::MIDDLE))
+        return furniture->getType() == FurnitureType::MOUNTAIN2;
       else
         return false;
     default:

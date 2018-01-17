@@ -146,7 +146,9 @@ static ViewId getConnectionId(ViewId id) {
     case ViewId::CASTLE_WALL:
     case ViewId::MUD_WALL:
     case ViewId::MOUNTAIN:
+    case ViewId::MOUNTAIN2:
     case ViewId::DUNGEON_WALL:
+    case ViewId::DUNGEON_WALL2:
     case ViewId::GOLD_ORE:
     case ViewId::IRON_ORE:
     case ViewId::STONE:

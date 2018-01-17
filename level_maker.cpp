@@ -1318,7 +1318,10 @@ class Mountains : public LevelMaker {
       builder->setHeightMap(v, wys[v]);
       if (wys[v] >= cutOffHill) {
         builder->putFurniture(v, FurnitureType::FLOOR);
-        builder->putFurniture(v, {FurnitureType::MOUNTAIN, TribeId::getKeeper()}, SquareAttrib::MOUNTAIN);
+        auto type = FurnitureType::MOUNTAIN;
+        if (wys[v] >= cutOffDarkness)
+          type = FurnitureType::MOUNTAIN2;
+        builder->putFurniture(v, {type, TribeId::getKeeper()}, SquareAttrib::MOUNTAIN);
         builder->setSunlight(v, max(0.0, 1. - (wys[v] - cutOffHill) / (cutOffDarkness - cutOffHill)));
         builder->setCovered(v, true);
         ++mCnt;

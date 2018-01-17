@@ -269,6 +269,7 @@ double CollectiveConfig::getEfficiencyBonus(FurnitureType type) {
       return info.efficiencyBonus;
   switch (type) {
     case FurnitureType::DUNGEON_WALL:
+    case FurnitureType::DUNGEON_WALL2:
       return 0.04;
     default:
       return 0;
@@ -280,6 +281,7 @@ bool CollectiveConfig::canBuildOutsideTerritory(FurnitureType type) {
     case FurnitureType::EYEBALL:
     case FurnitureType::KEEPER_BOARD:
     case FurnitureType::DUNGEON_WALL:
+    case FurnitureType::DUNGEON_WALL2:
     case FurnitureType::TORCH_N:
     case FurnitureType::TORCH_E:
     case FurnitureType::TORCH_S:

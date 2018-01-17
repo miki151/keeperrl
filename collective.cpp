@@ -1011,9 +1011,6 @@ void Collective::destroySquare(Position pos, FurnitureLayer layer) {
 }
 
 void Collective::addFurniture(Position pos, FurnitureType type, const CostInfo& cost, bool noCredit) {
-  /*if (type == FurnitureType::MOUNTAIN && (pos.isChokePoint({MovementTrait::WALK}) ||
-        constructions->getTotalCount(type) - constructions->getBuiltCount(type) > 0))
-    return;*/
   if (!noCredit || hasResource(cost)) {
     constructions->addFurniture(pos, ConstructionMap::FurnitureInfo(type, cost));
     updateConstructions();
