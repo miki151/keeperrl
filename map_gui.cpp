@@ -575,6 +575,8 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
           renderer.drawText(Renderer::SYMBOL_FONT, size.y, getFireColor(), pos + Vec2(size.x / 2, -3), u8"Ѡ",
               Renderer::HOR);
       }
+    if (object.hasModifier(ViewObject::Modifier::LOCKED))
+      renderer.drawText(Color::YELLOW, pos + size / 2, "*", Renderer::CenterType::HOR_VER, size.y);
   }
 }
 

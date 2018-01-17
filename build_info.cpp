@@ -26,7 +26,14 @@ const vector<BuildInfo>& BuildInfo::get() {
           "Fill up one tile at a time. Cutting off an area is not allowed.", 0, "Structure"),
       BuildInfo({{FurnitureType::DUNGEON_WALL, FurnitureType::DUNGEON_WALL2}, {ResourceId::STONE, 2}}, "Reinforce wall", {},
           "Reinforce wall. +" + toString<int>(100 * CollectiveConfig::getEfficiencyBonus(FurnitureType::DUNGEON_WALL)) +
-          " efficiency to surrounding tiles.", 0, "Structure")
+          " efficiency to surrounding tiles.", 0, "Structure"),
+      BuildInfo({FurnitureType::WOOD_DOOR, {ResourceId::WOOD, 5}}, "Wooden door", {},
+          "Click on a built door to lock it.", 'o', "Doors", true)
+             .setTutorialHighlight(TutorialHighlight::BUILD_DOOR),
+      BuildInfo({FurnitureType::IRON_DOOR, {ResourceId::IRON, 5}}, "Iron door", {},
+          "Click on a built door to lock it.", 0, "Doors"),
+      BuildInfo({FurnitureType::STEEL_DOOR, {ResourceId::STEEL, 5}}, "Steel door", {},
+          "Click on a built door to lock it.", 0, "Doors"),
     });
     for (int i : All(CollectiveConfig::getFloors())) {
       auto& floor = CollectiveConfig::getFloors()[i];
@@ -46,7 +53,10 @@ const vector<BuildInfo>& BuildInfo::get() {
              .setTutorialHighlight(TutorialHighlight::RESOURCE_STORAGE),
       BuildInfo(ZoneId::STORAGE_EQUIPMENT, ViewId::STORAGE_EQUIPMENT, "Equipment",
           "All equipment for your minions can be stored here.", 0, "Storage")
-             .setTutorialHighlight(TutorialHighlight::EQUIPMENT_STORAGE) });
+             .setTutorialHighlight(TutorialHighlight::EQUIPMENT_STORAGE),
+      BuildInfo({FurnitureType::TREASURE_CHEST, {ResourceId::WOOD, 5}}, "Treasure chest", {},
+          "Stores gold.", 0, "Storage"),
+    });
     auto& quarters = Quarters::getAllQuarters();
     for (int i : All(quarters))
       buildInfo->emplace_back(
@@ -68,15 +78,16 @@ const vector<BuildInfo>& BuildInfo::get() {
       BuildInfo({FurnitureType::THRONE, {ResourceId::MANA, 300}, false, 1}, "Throne",
           {{RequirementId::VILLAGE_CONQUERED}},
           "Increases population limit by " + toString(ModelBuilder::getThronePopulationIncrease())),
-      BuildInfo({FurnitureType::TREASURE_CHEST, {ResourceId::WOOD, 5}}, "Treasure chest", {},
-          "Stores gold."),
+      BuildInfo({FurnitureType::BED, {ResourceId::WOOD, 12}}, "Bed", {},
+          "Humanoid minions sleep here.", 'b', "Living", true)
+             .setTutorialHighlight(TutorialHighlight::BUILD_BED),
+      BuildInfo({FurnitureType::GRAVE, {ResourceId::STONE, 15}}, "Graveyard", {},
+          "Spot for hauling dead bodies and for undead creatures to sleep in.", 0, "Living"),
+      BuildInfo({FurnitureType::BEAST_CAGE, {ResourceId::WOOD, 8}}, "Beast cage", {}, "Beasts sleep here.", 0, "Living"),
       BuildInfo({FurnitureType::PIGSTY, {ResourceId::WOOD, 5}}, "Pigsty",
           {{RequirementId::TECHNOLOGY, TechId::PIGSTY}},
           "Increases minion population limit by up to " +
-          toString(ModelBuilder::getPigstyPopulationIncrease()) + ".", 'p'),
-      BuildInfo({FurnitureType::BED, {ResourceId::WOOD, 12}}, "Bed", {},
-          "Humanoid minions sleep here.", 'b')
-             .setTutorialHighlight(TutorialHighlight::BUILD_BED),
+          toString(ModelBuilder::getPigstyPopulationIncrease()) + ".", 0, "Living"),
       BuildInfo({FurnitureType::TRAINING_WOOD, {ResourceId::WOOD, 12}}, "Wooden dummy", {},
           "Train your minions here. Adds up to " +
           toString(*CollectiveConfig::getTrainingMaxLevel(ExperienceType::MELEE, FurnitureType::TRAINING_WOOD)) + " melee levels.",
@@ -108,12 +119,10 @@ const vector<BuildInfo>& BuildInfo::get() {
           {{RequirementId::TECHNOLOGY, TechId::STEEL_MAKING}}, "Turns iron ore into steel.", 0, workshop),
       BuildInfo({FurnitureType::DEMON_SHRINE, {ResourceId::GOLD, 30}}, "Demon shrine", {},
           "Summons various demons to your dungeon."),
-      BuildInfo({FurnitureType::BEAST_CAGE, {ResourceId::WOOD, 8}}, "Beast cage", {}, "Beasts sleep here."),
-      BuildInfo({FurnitureType::GRAVE, {ResourceId::STONE, 15}}, "Graveyard", {},
-          "Spot for hauling dead bodies and for undead creatures to sleep in.", 'g'),
-      BuildInfo({FurnitureType::PRISON, {ResourceId::IRON, 5}}, "Prison", {}, "Captured enemies are kept here.", 0),
+      BuildInfo({FurnitureType::PRISON, {ResourceId::IRON, 5}}, "Prison", {}, "Captured enemies are kept here.",
+          'p', "Prison", true),
       BuildInfo({FurnitureType::TORTURE_TABLE, {ResourceId::IRON, 20}}, "Torture table", {},
-          "Can be used to torture prisoners.", 'u'),
+          "Can be used to torture prisoners.", 0, "Prison"),
       BuildInfo(BuildInfo::CLAIM_TILE, "Claim tile", "Claim a tile. Building anything has the same effect.", 0, "Orders"),
       BuildInfo(ZoneId::FETCH_ITEMS, ViewId::FETCH_ICON, "Fetch items",
           "Order imps to fetch items from locations outside the dungeon. This is a one-time order.", 0, "Orders"),
@@ -125,9 +134,6 @@ const vector<BuildInfo>& BuildInfo::get() {
       BuildInfo({FurnitureLayer::CEILING, FurnitureLayer::MIDDLE}, "Remove construction", "", 'e', "Orders")
           .setTutorialHighlight(TutorialHighlight::REMOVE_CONSTRUCTION),
       BuildInfo(BuildInfo::FORBID_ZONE, "Forbid zone", "Mark tiles to keep minions from entering.", 0, "Orders"),
-      BuildInfo({FurnitureType::DOOR, {ResourceId::WOOD, 5}}, "Door", {},
-          "Click on a built door to lock it.", 'o', "Installations")
-             .setTutorialHighlight(TutorialHighlight::BUILD_DOOR),
       BuildInfo({FurnitureType::BRIDGE, {ResourceId::WOOD, 5}}, "Bridge", {},
         "Build it to pass over water or lava.", 0, "Installations"),
       BuildInfo({FurnitureType::BARRICADE, {ResourceId::WOOD, 5}}, "Barricade", {}, "", 0, "Installations"),
