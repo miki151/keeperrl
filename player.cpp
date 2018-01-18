@@ -473,7 +473,7 @@ vector<Player::OtherCreatureCommand> Player::getOtherCreatureCommands(WCreature 
     if (c->getAttributes().isBoulder())
       genAction("Push boulder", true, getCreature()->bumpInto(getCreature()->getPosition().getDir(c->getPosition())));
     else
-      genAction("Swap position", true, getCreature()->move(c->getPosition()));
+      genAction("Swap position", true, getCreature()->move(c->getPosition(), none));
   }
   if (getCreature()->isEnemy(c)) {
     genAction("Attack", true, getCreature()->attack(c));

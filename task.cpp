@@ -1271,9 +1271,17 @@ class StayIn : public Task {
           return move;
       return c->wait();
     }
-    if (!currentTarget)
+    for (int i : Range(10)) {
       currentTarget = Random.choose(target);
-    return c->moveTowards(*currentTarget);
+      if (!currentTarget->getCreature())
+        break;
+      else
+        currentTarget = none;
+    }
+    if (currentTarget)
+      return c->moveTowards(*currentTarget);
+    else
+      return c->wait();
   }
 
   virtual string getDescription() const override {

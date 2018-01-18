@@ -196,6 +196,16 @@ Vec2 ShortestPath::getNextMove(Vec2 pos) {
   return path[path.size() - 2];
 }
 
+optional<Vec2> ShortestPath::getNextNextMove(Vec2 pos) {
+  CHECK(isReachable(pos));
+  if (pos != path.back())
+    path.pop_back();
+  if (path.size() > 2)
+    return path[path.size() - 3];
+  else
+    return none;
+}
+
 Vec2 ShortestPath::getTarget() const {
   return target;
 }
@@ -248,6 +258,14 @@ bool LevelShortestPath::isReachable(Position pos) const {
 Position LevelShortestPath::getNextMove(Position pos) {
   CHECK(pos.getLevel() == level);
   return Position(path.getNextMove(pos.getCoord()), level);
+}
+
+optional<Position> LevelShortestPath::getNextNextMove(Position pos) {
+  CHECK(pos.getLevel() == level);
+  if (auto next = path.getNextNextMove(pos.getCoord()))
+    return Position(*next, level);
+  else
+    return none;
 }
 
 Position LevelShortestPath::getTarget() const {
