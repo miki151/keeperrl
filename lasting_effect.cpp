@@ -563,7 +563,7 @@ const char* LastingEffects::getDescription(LastingEffect type) {
     case LastingEffect::COLLAPSED: return "Moving across tiles takes three times longer.";
     case LastingEffect::PANIC: return "Increases defense and lowers damage.";
     case LastingEffect::RAGE: return "Increases damage and lowers defense.";
-    case LastingEffect::HALLU: return "Causes hallucinations.";
+    case LastingEffect::HALLU: return "Causes a telepathic awareness of some creatures but also hallucinations.";
     case LastingEffect::DAM_BONUS: return "Gives a damage bonus.";
     case LastingEffect::DEF_BONUS: return "Gives a defense bonus.";
     case LastingEffect::SLEEP_RESISTANT: return "Prevents being put to sleep.";
