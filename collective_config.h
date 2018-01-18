@@ -51,19 +51,18 @@ struct GuardianInfo {
   void serialize(Archive& ar, const unsigned int version);
 };
 
-struct MinionTaskInfo {
-  enum Type { FURNITURE, EXPLORE, COPULATE, EAT, SPIDER, WORKER, ARCHERY } type;
-  MinionTaskInfo();
-  MinionTaskInfo(FurnitureType, const string& description);
+struct MinionActivityInfo {
+  enum Type { FURNITURE, EXPLORE, COPULATE, EAT, SPIDER, WORKER, ARCHERY, IDLE } type;
+  MinionActivityInfo();
+  MinionActivityInfo(FurnitureType, const string& description);
   typedef function<bool(WConstCollective, WConstCreature, FurnitureType)> UsagePredicate;
   typedef function<bool(WConstCollective, FurnitureType)> ActivePredicate;
-  MinionTaskInfo(UsagePredicate, const string& description);
-  MinionTaskInfo(UsagePredicate, ActivePredicate, const string& description);
-  MinionTaskInfo(Type, const string& description, optional<CollectiveWarning> = none);
+  MinionActivityInfo(UsagePredicate, const string& description);
+  MinionActivityInfo(UsagePredicate, ActivePredicate, const string& description);
+  MinionActivityInfo(Type, const string& description);
   UsagePredicate furniturePredicate = [](WConstCollective, WConstCreature, FurnitureType) { return true; };
   ActivePredicate activePredicate = [](WConstCollective, FurnitureType) { return true; };
   string description;
-  optional<CollectiveWarning> warning;
 };
 
 struct WorkshopInfo {
@@ -124,7 +123,7 @@ class CollectiveConfig {
   static const vector<ItemFetchInfo>& getFetchInfo();
   static optional<int> getTrainingMaxLevel(ExperienceType, FurnitureType);
   static const vector<FurnitureType>& getTrainingFurniture(ExperienceType);
-  static const MinionTaskInfo& getTaskInfo(MinionTask);
+  static const MinionActivityInfo& getActivityInfo(MinionActivity);
   static const vector<FloorInfo>& getFloors();
   static double getEfficiencyBonus(FurnitureType);
   static bool canBuildOutsideTerritory(FurnitureType);

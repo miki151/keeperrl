@@ -385,7 +385,9 @@ class TileCoordLookup {
     Tile::addTile(ViewId::CROPS, sprite("wheatfield1"));
     Tile::addTile(ViewId::CROPS2, sprite("wheatfield2"));
     Tile::addTile(ViewId::MOUNTAIN, getMountainTile(sprite("mountain_ted"), "mountain").setWallShadow());
+    Tile::addTile(ViewId::MOUNTAIN2, getMountainTile(sprite("mountain_ted2"), "mountain").setWallShadow());
     Tile::addTile(ViewId::DUNGEON_WALL, getMountainTile(sprite("mountain_ted"), "dungeonwall").setWallShadow());
+    Tile::addTile(ViewId::DUNGEON_WALL2, getMountainTile(sprite("mountain_ted2"), "dungeonwall").setWallShadow());
     Tile::addTile(ViewId::WALL, getWallTile("wall"));
     Tile::addTile(ViewId::MAP_MOUNTAIN1, sprite("map_mountain1"));
     Tile::addTile(ViewId::MAP_MOUNTAIN2, sprite("map_mountain2"));
@@ -488,8 +490,9 @@ class TileCoordLookup {
     Tile::addTile(ViewId::BUSH, sprite("bush").addHighlight(byName("bush_mark")));
     Tile::addTile(ViewId::WATER, getWaterTile("waternesw", "water"));
     Tile::addTile(ViewId::MAGMA, getWaterTile("magmanesw", "magma"));
-    Tile::addTile(ViewId::DOOR, sprite("door").setWallShadow());
-    Tile::addTile(ViewId::LOCKED_DOOR, sprite("locked_door").setWallShadow());
+    Tile::addTile(ViewId::WOOD_DOOR, sprite("door_wood").setWallShadow());
+    Tile::addTile(ViewId::IRON_DOOR, sprite("door_iron").setWallShadow());
+    Tile::addTile(ViewId::STEEL_DOOR, sprite("door_steel").setWallShadow());
     Tile::addTile(ViewId::BARRICADE, sprite("barricade").setRoundShadow());
     Tile::addTile(ViewId::DIG_ICON, sprite("dig_icon"));
     Tile::addTile(ViewId::SWORD, sprite("sword"));
@@ -730,8 +733,10 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::CASTLE_WALL, symbol(u8"#", Color::LIGHT_GRAY));
     Tile::addSymbol(ViewId::MUD_WALL, symbol(u8"#", Color::LIGHT_BROWN));
     Tile::addSymbol(ViewId::WALL, symbol(u8"#", Color::LIGHT_GRAY));
-    Tile::addSymbol(ViewId::MOUNTAIN, symbol(u8"#", Color::DARK_GRAY));
+    Tile::addSymbol(ViewId::MOUNTAIN, symbol(u8"#", Color::GRAY));
+    Tile::addSymbol(ViewId::MOUNTAIN2, symbol(u8"#", Color::DARK_GRAY));
     Tile::addSymbol(ViewId::DUNGEON_WALL, symbol(u8"#", Color::LIGHT_GRAY));
+    Tile::addSymbol(ViewId::DUNGEON_WALL2, symbol(u8"#", Color::DARK_BLUE));
     Tile::addSymbol(ViewId::MAP_MOUNTAIN1, symbol(u8"^", Color::DARK_GRAY));
     Tile::addSymbol(ViewId::MAP_MOUNTAIN2, symbol(u8"^", Color::GRAY));
     Tile::addSymbol(ViewId::MAP_MOUNTAIN3, symbol(u8"^", Color::LIGHT_GRAY));
@@ -829,8 +834,9 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::BURNT_TREE, symbol(u8".", Color::DARK_GRAY));
     Tile::addSymbol(ViewId::WATER, symbol(u8"~", Color::LIGHT_BLUE));
     Tile::addSymbol(ViewId::MAGMA, symbol(u8"~", Color::RED));
-    Tile::addSymbol(ViewId::DOOR, symbol(u8"|", Color::BROWN));
-    Tile::addSymbol(ViewId::LOCKED_DOOR, symbol(u8"|", Color::YELLOW));
+    Tile::addSymbol(ViewId::WOOD_DOOR, symbol(u8"|", Color::BROWN));
+    Tile::addSymbol(ViewId::IRON_DOOR, symbol(u8"|", Color::LIGHT_GRAY));
+    Tile::addSymbol(ViewId::STEEL_DOOR, symbol(u8"|", Color::LIGHT_BLUE));
     Tile::addSymbol(ViewId::BARRICADE, symbol(u8"X", Color::BROWN));
     Tile::addSymbol(ViewId::DIG_ICON, symbol(u8"⛏", Color::LIGHT_GRAY, true));
     Tile::addSymbol(ViewId::STEEL_SWORD, symbol(u8")", Color::LIGHT_BLUE));
@@ -1033,14 +1039,13 @@ Color Tile::getColor(const ViewObject& object) {
   if (object.hasModifier(ViewObject::Modifier::PLANNED)) {
     return Color(color.r / 2, color.g / 2, color.b / 2);
   }
-  if (auto bleeding = object.getAttribute(ViewObject::Attribute::WOUNDED))
-    if (*bleeding > 0) {
+  if (auto bleeding = object.getAttribute(ViewObject::Attribute::HEALTH))
+    if (*bleeding < 1) {
       *bleeding = 0.5 + *bleeding / 2;
-      *bleeding = min(1.0f, *bleeding);
       return Color(
-          (1 - *bleeding) * color.r + *bleeding * 255,
-          (1 - *bleeding) * color.g,
-          (1 - *bleeding) * color.b);
+          *bleeding * color.r + *bleeding * 255,
+          *bleeding * color.g,
+          *bleeding * color.b);
   }
   return color;
 }

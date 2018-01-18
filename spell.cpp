@@ -83,8 +83,6 @@ void Spell::init() {
         SoundId::SPELL_STR_BONUS));
   set(SpellId::DEF_BONUS, new Spell("defense", Effect::Lasting{LastingEffect::DEF_BONUS}, 90,
         SoundId::SPELL_DEX_BONUS));
-  set(SpellId::STUN_RAY, new Spell("stun ray",  DirEffectType(4, DirEffectId::CREATURE_EFFECT,
-      Effect::Lasting{LastingEffect::STUNNED}) , 60, SoundId::SPELL_STUN_RAY));
   set(SpellId::HEAL_OTHER, new Spell("heal other",  DirEffectType(1, DirEffectId::CREATURE_EFFECT,
       Effect::Heal{}) , 6, SoundId::SPELL_HEALING));
   set(SpellId::FIRE_SPHERE_PET, new Spell("fire sphere", Effect::Summon{CreatureId::FIRE_SPHERE}, 20,

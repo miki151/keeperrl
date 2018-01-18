@@ -152,14 +152,6 @@ vector<string> Immigration::getMissingRequirements(const Group& group) const {
       [&](const TutorialRequirement& t) {
         if (!t.tutorial->showImmigrant(immigrantInfo))
           ret.push_back("Tutorial not there yet");
-      },
-      [&](const CivilianCapture& t) {
-        for (auto col : collective->getGame()->getCollectives())
-          if (col->isConquered())
-            for (auto c : col->getCreatures())
-              if (c->getStatus().contains(CreatureStatus::CIVILIAN))
-                return;
-        ret.push_back("Requires a captured tribe with civilians");
       }
   );
   immigrantInfo.visitRequirements(visitor);
@@ -209,14 +201,6 @@ double Immigration::getRequirementMultiplier(const Group& group) const {
       [&](const TutorialRequirement& t, double prob) {
         if (!t.tutorial->showImmigrant(immigrantInfo))
           ret *= prob;
-      },
-      [&](const CivilianCapture&, double prob) {
-        for (auto col : collective->getGame()->getCollectives())
-          if (col->isConquered())
-            for (auto c : col->getCreatures())
-              if (c->getStatus().contains(CreatureStatus::CIVILIAN))
-                return;
-        ret *= prob;
       }
     );
   getImmigrants()[group.immigrantIndex].visitRequirementsAndProb(visitor);
@@ -243,22 +227,7 @@ void Immigration::occupyRequirements(WConstCreature c, int index) {
           }
       },
       [&](const RecruitmentInfo&) {},
-      [&](const TutorialRequirement&) {},
-      [&](const CivilianCapture&) {
-        for (auto col : collective->getGame()->getCollectives())
-          if (col->isConquered())
-            for (auto c : copyOf(col->getCreatures()))
-              if (c->getStatus().contains(CreatureStatus::CIVILIAN)) {
-                Position pos = c->getPosition();
-                PCreature prisoner = CreatureFactory::fromId(CreatureId::PRISONER, collective->getTribeId(),
-                    MonsterAIFactory::collective(collective));
-                c->dieNoReason(Creature::DropType::ONLY_INVENTORY);
-                if (pos.canEnter(prisoner.get())) {
-                  collective->addCreature(std::move(prisoner), pos, {MinionTrait::PRISONER, MinionTrait::NO_LIMIT});
-                  return;
-                }
-              }
-      }
+      [&](const TutorialRequirement&) {}
   );
   getImmigrants()[index].visitRequirements(visitor);
 }
@@ -413,9 +382,6 @@ void Immigration::Available::addAllCreatures(const vector<Position>& spawnPositi
             c->getGame()->transferCreature(c, target);
           addedRecruits = true;
         }
-      },
-      [&](const CivilianCapture&) {
-        addedRecruits = true;
       },
       [](const auto&) {}
   ));

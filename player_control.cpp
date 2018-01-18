@@ -39,7 +39,7 @@
 #include "minion_equipment.h"
 #include "task_map.h"
 #include "construction_map.h"
-#include "minion_task_map.h"
+#include "minion_activity_map.h"
 #include "spell.h"
 #include "tribe.h"
 #include "visibility_map.h"
@@ -189,12 +189,11 @@ STutorial PlayerControl::getTutorial() const {
   return tutorial;
 }
 
-bool PlayerControl::canAddToTeam(WConstCreature c) {
+bool PlayerControl::canControl(WConstCreature c) {
   return getCollective()->hasTrait(c, MinionTrait::FIGHTER) || c == getCollective()->getLeader();
 }
 
 void PlayerControl::addToCurrentTeam(WCreature c) {
-  CHECK(canAddToTeam(c));
   if (auto teamId = getCurrentTeam()) {
     getTeams().add(*teamId, c);
     if (getGame()->getPlayerCreatures().size() > 1)
@@ -210,7 +209,7 @@ void PlayerControl::teamMemberAction(TeamMemberAction action, Creature::Id id) {
       break;
     case TeamMemberAction::CHANGE_LEADER:
       if (auto teamId = getCurrentTeam())
-        if (getTeams().getMembers(*teamId).size() > 1) {
+        if (getTeams().getMembers(*teamId).size() > 1 && canControl(c)) {
           auto controlled = getControlled();
           if (controlled.size() == 1) {
             getTeams().getLeader(*teamId)->popController();
@@ -338,9 +337,9 @@ void PlayerControl::minionEquipmentAction(const EquipmentActionInfo& action) {
 void PlayerControl::minionTaskAction(const TaskActionInfo& action) {
   if (auto c = getCreature(action.creature)) {
     if (action.switchTo)
-      getCollective()->setMinionTask(c, *action.switchTo);
-    for (MinionTask task : action.lock)
-      c->getAttributes().getMinionTasks().toggleLock(task);
+      getCollective()->setMinionActivity(c, *action.switchTo);
+    for (MinionActivity task : action.lock)
+      c->getAttributes().getMinionActivities().toggleLock(task);
   }
 }
 
@@ -804,12 +803,12 @@ vector<PlayerInfo> PlayerControl::getPlayerInfos(vector<WCreature> creatures, Un
         if (auto requiredDummy = getCollective()->getMissingTrainingFurniture(c, expType))
           minionInfo.levelInfo.warning[expType] =
               "Requires " + Furniture::getName(*requiredDummy) + " to train further.";
-      for (MinionTask t : ENUM_ALL(MinionTask))
-        if (c->getAttributes().getMinionTasks().isAvailable(getCollective(), c, t, true)) {
+      for (MinionActivity t : ENUM_ALL(MinionActivity))
+        if (c->getAttributes().getMinionActivities().isAvailable(getCollective(), c, t, true)) {
           minionInfo.minionTasks.push_back({t,
-              !getCollective()->isMinionTaskPossible(c, t),
-              getCollective()->getMinionTask(c) == t,
-              c->getAttributes().getMinionTasks().isLocked(t)});
+              !getCollective()->isMinionActivityPossible(c, t),
+              getCollective()->getCurrentTask(c).task == t,
+              c->getAttributes().getMinionActivities().isLocked(t)});
         }
       if (getCollective()->usesEquipment(c))
         fillEquipment(c, minionInfo);
@@ -825,7 +824,8 @@ vector<PlayerInfo> PlayerControl::getPlayerInfos(vector<WCreature> creatures, Un
           minionInfo.quarters = quarters.getAllQuarters()[*index].viewId;
         else
           minionInfo.quarters = none;
-      }
+      } else
+        minionInfo.canAssignQuarters = false;
       if (c->getAttributes().getSkills().hasDiscrete(SkillId::CONSUMPTION))
         minionInfo.actions.push_back(PlayerInfo::CONSUME);
     }
@@ -837,11 +837,17 @@ vector<CollectiveInfo::CreatureGroup> PlayerControl::getCreatureGroups(vector<WC
   sortMinionsForUI(v);
   map<string, CollectiveInfo::CreatureGroup> groups;
   for (WCreature c : v) {
-    if (!groups.count(c->getName().stack()))
-      groups[c->getName().stack()] = { c->getUniqueId(), c->getName().stack(), c->getViewObject().id(), 0};
-    ++groups[c->getName().stack()].count;
+    auto groupName = c->getName().stack();
+    auto viewId = c->getViewObject().id();
+    if (getCollective()->hasTrait(c, MinionTrait::PRISONER)) {
+      viewId = ViewId::PRISONER;
+      groupName = "prisoner";
+    }
+    if (!groups.count(groupName))
+      groups[groupName] = { c->getUniqueId(), groupName, viewId, 0};
+    ++groups[groupName].count;
     if (chosenCreature == c->getUniqueId() && !getChosenTeam())
-      groups[c->getName().stack()].highlight = true;
+      groups[groupName].highlight = true;
   }
   return getValues(groups);
 }
@@ -966,44 +972,76 @@ void PlayerControl::fillWorkshopInfo(CollectiveInfo& info) const {
   }
 }
 
-ImmigrantDataInfo PlayerControl::getPrisonerImmigrantData() const {
-  static auto creature = CreatureFactory::fromId(CreatureId::PRISONER, TribeId::getKeeper());
+void PlayerControl::acceptPrisoner(int index) {
+  index = -index - 1;
+  auto immigrants = getPrisonerImmigrantStack();
+  if (index < immigrants.size()) {
+    auto victim = immigrants[index][0];
+    victim->removeEffect(LastingEffect::STUNNED);
+    auto& skills = victim->getAttributes().getSkills();
+    skills.setValue(SkillId::DIGGING, skills.hasDiscrete(SkillId::NAVIGATION_DIGGING) ? 1 : 0.2);
+    skills.erase(SkillId::NAVIGATION_DIGGING);
+    getCollective()->addCreature(victim, {MinionTrait::WORKER, MinionTrait::PRISONER, MinionTrait::NO_LIMIT});
+    addMessage(PlayerMessage("You enslave " + victim->getName().a()).setPosition(victim->getPosition()));
+  }
+}
+
+void PlayerControl::rejectPrisoner(int index) {
+  index = -index - 1;
+  auto immigrants = getPrisonerImmigrantStack();
+  if (index < immigrants.size()) {
+    auto victim = immigrants[index][0];
+    victim->dieWithLastAttacker();
+  }
+}
+
+vector<vector<WCreature>> PlayerControl::getPrisonerImmigrantStack() const {
+  vector<WCreature> ret;
+  for (auto villain : getGame()->getCollectives())
+    if (villain != getCollective())
+      ret.append(villain->getCreatures(MinionTrait::STUNNED));
+  return Creature::stack(ret);
+}
+
+vector<ImmigrantDataInfo> PlayerControl::getPrisonerImmigrantData() const {
   auto collective = getCollective();
-  int numPrisoners = getCollective()->getCreatures(MinionTrait::PRISONER).size();
-  int numOrders = getCollective()->getNumPrisonerOrders();
-  int prisonSize = getCollective()->getConstructions().getBuiltCount(FurnitureType::PRISON);
-  int requiredPrisonSize = 2;
-  vector<string> requirements;
-  int missingSize = (numOrders + numPrisoners + 1) * requiredPrisonSize - prisonSize;
-  if (prisonSize == 0)
-    requirements.push_back("Requires a prison.");
-  else if (missingSize > 0)
-    requirements.push_back("Requires " + toString(missingSize) + " more prison tiles.");
-  vector<string> info {
-    creature->getName().multiple(numOrders) + " ordered.",
-    "Prisoners will be captured at nearest opportunity."
-  };
-  return ImmigrantDataInfo {
-          requirements,
-          info,
-          none,
-          creature->getName().bare(),
-          creature->getViewObject().id(),
-          AttributeInfo::fromCreature(creature.get()),
-          numOrders == 0 ? none : optional<int>(numOrders),
-          none,
-          -1,
-          none,
-          none,
-          none,
-          none
-      };
+  vector<ImmigrantDataInfo> ret;
+  int index = -1;
+  for (auto stack : getPrisonerImmigrantStack()) {
+    auto c = stack[0];
+    int numPrisoners = getCollective()->getCreatures(MinionTrait::PRISONER).size();
+    int prisonSize = getCollective()->getConstructions().getBuiltCount(FurnitureType::PRISON);
+    int requiredPrisonSize = 2;
+    vector<string> requirements;
+    int missingSize = (numPrisoners + 1) * requiredPrisonSize - prisonSize;
+    if (prisonSize == 0)
+      requirements.push_back("Requires a prison.");
+    else if (missingSize > 0)
+      requirements.push_back("Requires " + toString(missingSize) + " more prison tiles.");
+    ret.push_back(ImmigrantDataInfo {
+        requirements,
+        {},
+        none,
+        c->getName().bare() + " (prisoner)",
+        c->getViewObject().id(),
+        AttributeInfo::fromCreature(c),
+        stack.size() == 1 ? none : optional<int>(stack.size()),
+        c->getTimeRemaining(LastingEffect::STUNNED),
+        index,
+        none,
+        none,
+        none,
+        none
+    });
+    --index;
+  }
+  return ret;
 }
 
 void PlayerControl::fillImmigration(CollectiveInfo& info) const {
   info.immigration.clear();
   auto& immigration = getCollective()->getImmigration();
-  //info.immigration.push_back(getPrisonerImmigrantData());
+  info.immigration.append(getPrisonerImmigrantData());
   for (auto& elem : immigration.getAvailable()) {
     const auto& candidate = elem.second.get();
     const int count = (int) candidate.getCreatures().size();
@@ -1113,9 +1151,6 @@ void PlayerControl::fillImmigrationHelp(CollectiveInfo& info) const {
             requirements.push_back("Recruit is not available in this game");
         },
         [&](const TutorialRequirement&) {
-        },
-        [&](const CivilianCapture&) {
-          requirements.push_back("Requires a captured tribe with civilians");
         }
     ));
     if (auto limit = elem->getLimit())
@@ -1380,7 +1415,7 @@ void PlayerControl::getSquareViewIndex(Position pos, bool canSee, ViewIndex& ind
       if (isEnemy(c))
         object.setModifier(ViewObject::Modifier::HOSTILE);
       else
-        object.getCreatureStatus().clear();
+        object.getCreatureStatus().intersectWith(getDisplayedOnMinions());
     }
 }
 
@@ -1423,8 +1458,8 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
         index.setHighlight(HighlightType::CLICKED_FURNITURE);
       if (draggedCreature)
         if (WCreature c = getCreature(*draggedCreature))
-          if (auto task = MinionTasks::getTaskFor(collective, c, furniture->getType()))
-            if (c->getAttributes().getMinionTasks().isAvailable(collective, c, *task))
+          if (auto task = MinionActivities::getTaskFor(collective, c, furniture->getType()))
+            if (c->getAttributes().getMinionActivities().isAvailable(collective, c, *task))
               index.setHighlight(HighlightType::CREATURE_DROP);
       if (showEfficiency(furniture->getType()) && index.hasObject(ViewLayer::FLOOR))
         index.getObject(ViewLayer::FLOOR).setAttribute(ViewObject::Attribute::EFFICIENCY,
@@ -1502,7 +1537,7 @@ void PlayerControl::toggleControlAllTeamMembers() {
     if (members.size() > 1) {
       if (getControlled().size() == 1) {
         for (auto c : members)
-          if (!c->isPlayer())
+          if (!c->isPlayer() && canControl(c))
             c->pushController(createMinionController(c));
       } else
         for (auto c : members)
@@ -1604,9 +1639,9 @@ void PlayerControl::minionDragAndDrop(const CreatureDropInfo& info) {
     c->removeEffect(LastingEffect::TIED_UP);
     c->removeEffect(LastingEffect::SLEEP);
     if (auto furniture = getCollective()->getConstructions().getFurniture(pos, FurnitureLayer::MIDDLE))
-      if (auto task = MinionTasks::getTaskFor(getCollective(), c, furniture->getFurnitureType())) {
-        if (getCollective()->isMinionTaskPossible(c, *task)) {
-          getCollective()->setMinionTask(c, *task);
+      if (auto task = MinionActivities::getTaskFor(getCollective(), c, furniture->getFurnitureType())) {
+        if (getCollective()->isMinionActivityPossible(c, *task)) {
+          getCollective()->setMinionActivity(c, *task);
           getCollective()->setTask(c, Task::goTo(pos));
           return;
         }
@@ -1678,8 +1713,8 @@ void PlayerControl::processInput(View* view, UserInput input) {
       break;
     case UserInputId::CREATURE_DRAG:
       draggedCreature = input.get<Creature::Id>();
-      for (auto task : ENUM_ALL(MinionTask))
-        for (auto& pos : MinionTasks::getAllPositions(getCollective(), nullptr, task))
+      for (auto task : ENUM_ALL(MinionActivity))
+        for (auto& pos : MinionActivities::getAllPositions(getCollective(), nullptr, task))
           pos.setNeedsRenderUpdate(true);
       break;
     case UserInputId::CREATURE_DRAG_DROP:
@@ -1884,7 +1919,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
     case UserInputId::ADD_TO_TEAM: {
       auto info = input.get<TeamCreatureInfo>();
       if (WCreature c = getCreature(info.creatureId))
-        if (getTeams().exists(info.team) && !getTeams().contains(info.team, c) && canAddToTeam(c))
+        if (getTeams().exists(info.team) && !getTeams().contains(info.team, c) && canControl(c))
           getTeams().add(info.team, c);
       break;
     }
@@ -1908,8 +1943,8 @@ void PlayerControl::processInput(View* view, UserInput input) {
     }
     case UserInputId::IMMIGRANT_ACCEPT: {
       int index = input.get<int>();
-      if (index == -1)
-        getCollective()->addPrisonerOrder();
+      if (index < 0)
+        acceptPrisoner(index);
       else {
         auto available = getCollective()->getImmigration().getAvailable();
         if (auto info = getReferenceMaybe(available, index))
@@ -1921,8 +1956,8 @@ void PlayerControl::processInput(View* view, UserInput input) {
     }
     case UserInputId::IMMIGRANT_REJECT: {
       int index = input.get<int>();
-      if (index == -1)
-        getCollective()->removePrisonerOrder();
+      if (index < 0)
+        rejectPrisoner(index);
       else {
         getCollective()->getImmigration().rejectIfNonPersistent(index);
       }
@@ -2378,8 +2413,12 @@ void PlayerControl::onMemberKilled(WConstCreature victim, WConstCreature killer)
   }
 }
 
-void PlayerControl::onMemberAdded(WConstCreature c) {
+void PlayerControl::onMemberAdded(WCreature c) {
   updateMinionVisibility(c);
+  auto team = getControlled();
+  if (getCollective()->hasTrait(c, MinionTrait::PRISONER) && !team.empty() &&
+      team[0]->getPosition().isSameLevel(c->getPosition()))
+    addToCurrentTeam(c);
 }
 
 WLevel PlayerControl::getLevel() const {

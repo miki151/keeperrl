@@ -107,6 +107,8 @@ optional<Vec2> MapGui::getHighlightedTile(Renderer&) {
 
 Color MapGui::getHighlightColor(const ViewIndex& index, HighlightType type) {
   double amount = index.getHighlight(type);
+  bool quartersSelected = buttonViewId == ViewId::QUARTERS1 || buttonViewId == ViewId::QUARTERS2 ||
+      buttonViewId == ViewId::QUARTERS3;
   switch (type) {
     case HighlightType::RECT_DESELECTION: return Color::RED.transparency(100);
     case HighlightType::DIG: return Color::YELLOW.transparency(100);
@@ -115,9 +117,9 @@ Color MapGui::getHighlightColor(const ViewIndex& index, HighlightType type) {
     case HighlightType::PERMANENT_FETCH_ITEMS: return Color::ORANGE.transparency(100);
     case HighlightType::STORAGE_EQUIPMENT: return Color::BLUE.transparency(100);
     case HighlightType::STORAGE_RESOURCES: return Color::GREEN.transparency(100);
-    case HighlightType::QUARTERS1: return Color::PINK.transparency(45);
-    case HighlightType::QUARTERS2: return Color::SKY_BLUE.transparency(45);
-    case HighlightType::QUARTERS3: return Color::ORANGE.transparency(45);
+    case HighlightType::QUARTERS1: return Color::PINK.transparency(quartersSelected ? 70 : 20);
+    case HighlightType::QUARTERS2: return Color::SKY_BLUE.transparency(quartersSelected ? 70 : 20);
+    case HighlightType::QUARTERS3: return Color::ORANGE.transparency(quartersSelected ? 70 : 20);
     case HighlightType::RECT_SELECTION: return Color::YELLOW.transparency(100);
     case HighlightType::FOG: return Color::WHITE.transparency(int(120 * amount));
     case HighlightType::POISON_GAS: return Color(0, min<Uint8>(255., Uint8(amount * 500)), 0, (Uint8)(amount * 140));
@@ -144,7 +146,9 @@ static ViewId getConnectionId(ViewId id) {
     case ViewId::CASTLE_WALL:
     case ViewId::MUD_WALL:
     case ViewId::MOUNTAIN:
+    case ViewId::MOUNTAIN2:
     case ViewId::DUNGEON_WALL:
+    case ViewId::DUNGEON_WALL2:
     case ViewId::GOLD_ORE:
     case ViewId::IRON_ORE:
     case ViewId::STONE:
@@ -472,8 +476,12 @@ static bool mirrorSprite(ViewId id) {
   }
 }
 
-void MapGui::drawHealthBar(Renderer& renderer, Vec2 pos, Vec2 size, double health) {
-  if (hideFullHealthBars && health == 1)
+void MapGui::drawHealthBar(Renderer& renderer, Vec2 pos, Vec2 size, const ViewObject& object) {
+  bool capture = object.hasModifier(ViewObject::Modifier::CAPTURE_ORDERED);
+  auto health = object.getAttribute(ViewObject::Attribute::HEALTH);
+  if (!health)
+    return;
+  if (hideFullHealthBars && !capture && *health == 1)
     return;
   pos.y -= size.y * 0.2;
   double barWidth = 0.12;
@@ -482,12 +490,12 @@ void MapGui::drawHealthBar(Renderer& renderer, Vec2 pos, Vec2 size, double healt
     return Rectangle((int) (pos.x + size.x * (1 - barLength) / 2), pos.y,
         (int) (pos.x + size.x * state * (1 + barLength) / 2), (int) (pos.y + size.y * barWidth));
   };
-  auto color = Color::f(min(1.0, 2 - health * 2), min(1.0, 2 * health), 0);
+  auto color = capture ? Color::WHITE : Color::f(min<double>(1.0, 2 - *health * 2), min<double>(1.0, 2 * *health), 0);
   auto fullRect = getBar(1);
   renderer.drawFilledRectangle(fullRect.minusMargin(-1), Color::TRANSPARENT, Color::BLACK.transparency(100));
   renderer.drawFilledRectangle(fullRect, color.transparency(100));
-  if (health > 0)
-    renderer.drawFilledRectangle(getBar(health), color.transparency(200));
+  if (*health > 0)
+    renderer.drawFilledRectangle(getBar(*health), color.transparency(200));
   Rectangle shadowRect(fullRect.bottomLeft() - Vec2(0, 1), fullRect.bottomRight());
   renderer.drawFilledRectangle(shadowRect, Color::BLACK.transparency(100));
 }
@@ -537,9 +545,6 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
       for (auto coord : tile.getCornerCoords(dirs))
         renderer.drawTile(pos + move, coord, size, color);
     }
-/*    if (tile.floorBorders) {
-      drawFloorBorders(renderer, borderDirs, x, y);
-    }*/
     static auto shortShadow = renderer.getTileCoord("short_shadow");
     if (object.layer() == ViewLayer::FLOOR_BACKGROUND && shadowed.count(tilePos))
       renderer.drawTile(pos, shortShadow, size, Color(255, 255, 255, 170));
@@ -549,23 +554,29 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
         static auto fire2 = renderer.getTileCoord("fire2");
         renderer.drawTile(pos, (curTimeReal.count() + pos.getHash()) % 500 < 250 ? fire1 : fire2, size);
       }
-    if (displayAllHealthBars || lastHighlighted.creaturePos == pos + movement)
-      if (auto wounded = object.getAttribute(ViewObject::Attribute::WOUNDED))
-        drawHealthBar(renderer, pos + move, size, 1 - *wounded);
+    if (displayAllHealthBars || lastHighlighted.creaturePos == pos + movement ||
+        object.hasModifier(ViewObject::Modifier::CAPTURE_ORDERED))
+      drawHealthBar(renderer, pos + move, size, object);
+    if (object.hasModifier(ViewObject::Modifier::STUNNED))
+      renderer.drawText(Color::WHITE, pos + move + size / 2, "S", Renderer::CenterType::HOR_VER, size.x * 2 / 3);
+    if (object.hasModifier(ViewObject::Modifier::LOCKED))
+      renderer.drawTile(pos + move, Tile::getTile(ViewId::KEY, spriteMode).getSpriteCoord(), size);
   } else {
     Vec2 movement = getMovementOffset(object, size, currentTimeGame, curTimeReal, true);
     Vec2 tilePos = pos + movement + Vec2(size.x / 2, -3);
     drawCreatureHighlights(renderer, object, pos, size, curTimeReal);
     renderer.drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TILE_FONT, size.y, Tile::getColor(object),
-        tilePos.x, tilePos.y, tile.text, Renderer::HOR);
+        tilePos, tile.text, Renderer::HOR);
     if (auto burningVal = object.getAttribute(ViewObject::Attribute::BURNING))
       if (*burningVal > 0) {
-        renderer.drawText(Renderer::SYMBOL_FONT, size.y, getFireColor(), pos.x + size.x / 2, pos.y - 3, u8"ѡ",
+        renderer.drawText(Renderer::SYMBOL_FONT, size.y, getFireColor(), pos + Vec2(size.x / 2, -3), u8"ѡ",
             Renderer::HOR);
         if (*burningVal > 0.5)
-          renderer.drawText(Renderer::SYMBOL_FONT, size.y, getFireColor(), pos.x + size.x / 2, pos.y - 3, u8"Ѡ",
+          renderer.drawText(Renderer::SYMBOL_FONT, size.y, getFireColor(), pos + Vec2(size.x / 2, -3), u8"Ѡ",
               Renderer::HOR);
       }
+    if (object.hasModifier(ViewObject::Modifier::LOCKED))
+      renderer.drawText(Color::YELLOW, pos + size / 2, "*", Renderer::CenterType::HOR_VER, size.y);
   }
 }
 

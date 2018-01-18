@@ -5,14 +5,24 @@
 #include "furniture.h"
 #include "position.h"
 #include "tribe.h"
+#include "view_object.h"
+#include "movement_set.h"
 
 void FurnitureClick::handle(FurnitureClickType type, Position pos, WConstFurniture furniture) {
+  auto layer = furniture->getLayer();
   switch (type) {
-    case FurnitureClickType::LOCK:
-      pos.replaceFurniture(furniture, FurnitureFactory::get(FurnitureType::LOCKED_DOOR, furniture->getTribe()));
+    case FurnitureClickType::LOCK: {
+      // Note: the original furniture object is destroyed after this line
+      auto f = pos.modFurniture(layer);
+      if (f->getMovementSet().hasTrait(MovementTrait::WALK)) {
+        f->getViewObject()->setModifier(ViewObject::Modifier::LOCKED);
+        f->setBlocking();
+      } else {
+        f->getViewObject()->setModifier(ViewObject::Modifier::LOCKED, false);
+        f->setBlockingEnemies();
+      }
+      pos.updateConnectivity();
       break;
-    case FurnitureClickType::UNLOCK:
-      pos.replaceFurniture(furniture, FurnitureFactory::get(FurnitureType::DOOR, furniture->getTribe()));
-    break;
+    }
   }
 }

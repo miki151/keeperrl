@@ -70,7 +70,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
 
   vector<WCreature> getTeam(WConstCreature);
   optional<FurnitureType> getMissingTrainingDummy(WConstCreature);
-  bool canAddToTeam(WConstCreature);
+  bool canControl(WConstCreature);
   void addToCurrentTeam(WCreature c);
 
   void onEvent(const GameEvent&);
@@ -98,7 +98,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   virtual void addAttack(const CollectiveAttack&) override;
   virtual void addMessage(const PlayerMessage&) override;
   virtual void onMemberKilled(WConstCreature victim, WConstCreature killer) override;
-  virtual void onMemberAdded(WConstCreature) override;
+  virtual void onMemberAdded(WCreature) override;
   virtual void onConstructed(Position, FurnitureType) override;
   virtual void onClaimedSquare(Position) override;
   virtual void onDestructed(Position, FurnitureType, const DestroyAction&) override;
@@ -225,6 +225,9 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void acquireTech(int index);
   SMessageBuffer SERIAL(controlModeMessages);
   unordered_set<int> dismissedNextWaves;
-  ImmigrantDataInfo getPrisonerImmigrantData() const;
+  vector<ImmigrantDataInfo> getPrisonerImmigrantData() const;
+  void acceptPrisoner(int index);
+  void rejectPrisoner(int index);
+  vector<vector<WCreature>> getPrisonerImmigrantStack() const;
 };
 

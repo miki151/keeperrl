@@ -19,7 +19,7 @@
 #include "enum_variant.h"
 #include "unique_entity.h"
 #include "village_action.h"
-#include "minion_task.h"
+#include "minion_activity.h"
 #include "entity_set.h"
 #include "team_member_action.h"
 
@@ -141,8 +141,8 @@ struct VillageActionInfo {
 
 struct TaskActionInfo {
   UniqueEntity<Creature>::Id SERIAL(creature);
-  optional<MinionTask> SERIAL(switchTo);
-  EnumSet<MinionTask> SERIAL(lock);
+  optional<MinionActivity> SERIAL(switchTo);
+  EnumSet<MinionActivity> SERIAL(lock);
   SERIALIZE_ALL(creature, switchTo, lock)
 };
 

@@ -171,7 +171,7 @@ class MapGui : public GuiElem {
   void setDraggedCreature(UniqueEntity<Creature>::Id, ViewId, Vec2 origin);
   vector<Vec2> tutorialHighlightLow;
   vector<Vec2> tutorialHighlightHigh;
-  void drawHealthBar(Renderer&, Vec2 pos, Vec2 size, double health);
+  void drawHealthBar(Renderer&, Vec2 pos, Vec2 size, const ViewObject&);
   int lastMoveCounter = -1000;
   int currentMoveCounter = -1000;
   double getDistanceToEdgeRatio(Vec2);

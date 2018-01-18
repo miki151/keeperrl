@@ -72,5 +72,6 @@ void MovementSet::setTribe(TribeId id) {
 MovementSet& MovementSet::clearTraits() {
   traits.clear();
   forcibleTraits.clear();
+  blockingEnemies = false;
   return *this;
 }

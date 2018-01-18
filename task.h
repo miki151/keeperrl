@@ -35,7 +35,7 @@ class Task : public UniqueEntity<Task>, public OwnedObject<Task> {
 
   virtual MoveInfo getMove(WCreature) = 0;
   virtual bool isBogus() const;
-  virtual bool isBlocked(WCreature) const;
+  virtual bool isBlocked(WConstCreature) const;
   virtual bool canTransfer();
   virtual void cancel() {}
   virtual string getDescription() const = 0;
@@ -75,6 +75,9 @@ class Task : public UniqueEntity<Task>, public OwnedObject<Task> {
   static PTask consume(WTaskCallback, WCreature target);
   static PTask eat(vector<Position> hatcherySquares);
   static PTask goTo(Position);
+  static PTask stayIn(vector<Position>);
+  static PTask idle();
+  static PTask follow(WCreature);
   static PTask goToTryForever(Position);
   static PTask transferTo(WModel);
   static PTask goToAndWait(Position, TimeInterval waitTime);

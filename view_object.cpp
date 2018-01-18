@@ -112,13 +112,11 @@ int ViewObject::MovementQueue::makeGoodIndex(int index) const {
   return (index + elems.size()) % elems.size();
 }
 
-ViewObject& ViewObject::setModifier(Modifier mod) {
-  modifiers.insert(mod);
-  return *this;
-}
-
-ViewObject& ViewObject::removeModifier(Modifier mod) {
-  modifiers.erase(mod);
+ViewObject& ViewObject::setModifier(Modifier mod, bool state) {
+  if (state)
+    modifiers.insert(mod);
+  else
+    modifiers.erase(mod);
   return *this;
 }
 
@@ -174,7 +172,10 @@ const char* ViewObject::getDefaultDescription() const {
     case ViewId::IRON_ORE: return "Iron ore";
     case ViewId::STONE: return "Granite";
     case ViewId::WOOD_WALL: return "Wooden wall";
-    case ViewId::MOUNTAIN: return "Mountain";
+    case ViewId::MOUNTAIN: return "Soft earth";
+    case ViewId::MOUNTAIN2: return "Hard rock";
+    case ViewId::DUNGEON_WALL:
+    case ViewId::DUNGEON_WALL2: return "Reinforced wall";
     case ViewId::HILL: return "Hill";
     case ViewId::WATER: return "Water";
     case ViewId::MAGMA: return "Magma";
@@ -219,8 +220,9 @@ const char* ViewObject::getDefaultDescription() const {
     case ViewId::COFFIN: return "Coffin";
     case ViewId::CEMETERY: return "Cemetery";
     case ViewId::GRAVE: return "Grave";
-    case ViewId::DOOR: return "Door (click to lock)";
-    case ViewId::LOCKED_DOOR: return "Door (click to unlock)";
+    case ViewId::WOOD_DOOR: return hasModifier(Modifier::LOCKED) ? "Wooden door (click to unlock)" : "Wooden door (click to lock)";
+    case ViewId::IRON_DOOR: return hasModifier(Modifier::LOCKED) ? "Iron door (click to unlock)" : "Iron door (click to lock)";
+    case ViewId::STEEL_DOOR: return hasModifier(Modifier::LOCKED) ? "Steel door (click to unlock)" : "Steel door (click to lock)";
     case ViewId::BARRICADE: return "Barricade";
     case ViewId::WOOD_FLOOR1:
     case ViewId::WOOD_FLOOR2:

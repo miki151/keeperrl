@@ -73,8 +73,9 @@ WCreature Behaviour::getClosestEnemy() {
   for (WCreature other : creature->getVisibleEnemies()) {
     int curDist = other->getPosition().dist8(creature->getPosition());
     if (curDist < dist &&
-        ((!other->getAttributes().dontChase() && !other->getStatus().contains(CreatureStatus::CIVILIAN))
-            || curDist == 1)) {
+        ((!other->getAttributes().dontChase() || curDist == 1) &&
+        !other->getStatus().contains(CreatureStatus::CIVILIAN)) &&
+        !other->isAffected(LastingEffect::STUNNED)) {
       result = other;
       dist = creature->getPosition().dist8(other->getPosition());
     }
@@ -356,8 +357,6 @@ class Fighter : public Behaviour {
       if (panicWeight >= 0.5) {
         double dist = creature->getPosition().dist8(other->getPosition());
         if (dist < 7) {
-          if (dist == 1 && creature->getBody().isHumanoid())
-            creature->surrender(other);
           if (MoveInfo move = getPanicMove(other, panicWeight))
             return move;
           else
@@ -457,7 +456,7 @@ class Fighter : public Behaviour {
   vector<DirEffectType> getOffensiveEffects() {
     static vector<DirEffectType> effects = [] {
       vector<DirEffectType> ret;
-      for (auto id : {SpellId::BLAST, SpellId::MAGIC_MISSILE, SpellId::STUN_RAY})
+      for (auto id : {SpellId::BLAST, SpellId::MAGIC_MISSILE})
         ret.push_back(Spell::get(id)->getDirEffectType());
       return ret;
     }();

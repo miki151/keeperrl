@@ -3,6 +3,7 @@
 #include "util.h"
 
 class Sound;
+class Skill;
 
 class DestroyAction {
   public:
@@ -16,6 +17,8 @@ class DestroyAction {
   Type getType() const;
   bool canDestroyFriendly() const;
   bool canNavigate(WConstCreature) const;
+  MinionActivity getMinionActivity() const;
+  optional<SkillId> getDestroyingSkillMultiplier() const;
 
   SERIALIZATION_DECL(DestroyAction)
 

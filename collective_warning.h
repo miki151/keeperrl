@@ -45,7 +45,6 @@ class CollectiveWarnings {
   void considerWeaponWarning(WCollective);
   void considerMoraleWarning(WCollective);
   void considerTorchesWarning(WCollective);
-  void considerTrainingRoomWarning(WCollective);
   const char*getText(Warning w);
   EnumSet<Warning> SERIAL(warnings);
   EnumMap<CollectiveWarning, optional<LocalTime>> SERIAL(warningTimes);

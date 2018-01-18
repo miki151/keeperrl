@@ -187,6 +187,7 @@ SERIALIZABLE_TMPL(EntityMap, Creature, pair<GlobalTime, GlobalTime>);
 SERIALIZABLE_TMPL(EntityMap, Creature, ExperienceType);
 SERIALIZABLE_TMPL(EntityMap, Creature, ZoneId);
 SERIALIZABLE_TMPL(EntityMap, Task, LocalTime);
+SERIALIZABLE_TMPL(EntityMap, Task, MinionActivity);
 SERIALIZABLE_TMPL(EntityMap, Task, WTask);
 SERIALIZABLE_TMPL(EntityMap, Task, MinionTrait);
 SERIALIZABLE_TMPL(EntityMap, Task, Position);

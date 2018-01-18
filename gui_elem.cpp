@@ -441,8 +441,8 @@ SGuiElem GuiFactory::label(const string& s, Color c, char hotkey) {
   return SGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
           r.drawTextWithHotkey(Color::BLACK.transparency(100),
-            bounds.topLeft().x + 1, bounds.topLeft().y + 2, s, 0);
-          r.drawTextWithHotkey(c, bounds.topLeft().x, bounds.topLeft().y, s, hotkey);
+            bounds.topLeft() + Vec2(1, 2), s, 0);
+          r.drawTextWithHotkey(c, bounds.topLeft(), s, hotkey);
         }, width));
 }
 
@@ -494,7 +494,7 @@ class VariableLabel : public GuiElem {
     vector<string> lines = breakText(renderer, text(), getBounds().width(), size);
     int height = getBounds().top();
     for (int i : All(lines)) {
-      renderer.drawText(color, getBounds().left(), height, lines[i],
+      renderer.drawText(color, Vec2(getBounds().left(), height), lines[i],
           Renderer::NONE, size);
       if (!lines[i].empty())
         height += lineHeight;
@@ -557,11 +557,11 @@ SGuiElem GuiFactory::labelHighlightBlink(const string& s, Color c1, Color c2, ch
         [=] (Renderer& r, Rectangle bounds) {
           Color c = blinkingColor(c1, c2, clock->getRealMillis());
           r.drawTextWithHotkey(Color::BLACK.transparency(100),
-            bounds.topLeft().x + 1, bounds.topLeft().y + 2, s, hotkey);
+            bounds.topLeft() + Vec2(1, 2), s, hotkey);
           Color c1(c);
           if (r.getMousePos().inRectangle(bounds))
             lighten(c1);
-          r.drawTextWithHotkey(c1, bounds.topLeft().x, bounds.topLeft().y, s, hotkey);
+          r.drawTextWithHotkey(c1, bounds.topLeft(), s, hotkey);
         }, width));
 }
 
@@ -570,9 +570,8 @@ SGuiElem GuiFactory::label(const string& s, function<Color()> colorFun, char hot
   return SGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
           auto color = colorFun();
-          r.drawText(Color::BLACK.transparency(min<Uint8>(100, color.a)),
-            bounds.topLeft().x + 1, bounds.topLeft().y + 2, s);
-          r.drawTextWithHotkey(colorFun(), bounds.topLeft().x, bounds.topLeft().y, s, hotkey);
+          r.drawText(Color::BLACK.transparency(min<Uint8>(100, color.a)), bounds.topLeft() + Vec2(1, 2), s);
+          r.drawTextWithHotkey(colorFun(), bounds.topLeft(), s, hotkey);
         }, width));
 }
 
@@ -580,9 +579,8 @@ SGuiElem GuiFactory::labelFun(function<string()> textFun, function<Color()> colo
   function<int()> width = [this, textFun] { return renderer.getTextLength(textFun()); };
   return SGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
-          r.drawText(Color::BLACK.transparency(100),
-            bounds.topLeft().x + 1, bounds.topLeft().y + 2, textFun());
-          r.drawText(colorFun(), bounds.topLeft().x, bounds.topLeft().y, textFun());
+          r.drawText(Color::BLACK.transparency(100), bounds.topLeft() + Vec2(1, 2), textFun());
+          r.drawText(colorFun(), bounds.topLeft(), textFun());
         }, width));
 }
 
@@ -590,9 +588,8 @@ SGuiElem GuiFactory::labelFun(function<string()> textFun, Color color) {
   auto width = [=] { return renderer.getTextLength(textFun()); };
   return SGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
-          r.drawText(Color::BLACK.transparency(100),
-            bounds.topLeft().x + 1, bounds.topLeft().y + 2, textFun());
-          r.drawText(color, bounds.topLeft().x, bounds.topLeft().y, textFun());
+          r.drawText(Color::BLACK.transparency(100), bounds.topLeft() + Vec2(1, 2), textFun());
+          r.drawText(color, bounds.topLeft(), textFun());
         }, width));
 }
 
@@ -600,9 +597,8 @@ SGuiElem GuiFactory::label(const string& s, int size, Color c) {
   auto width = [=] { return renderer.getTextLength(s, size) + 1; };
   return SGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
-          r.drawText(Color::BLACK.transparency(100),
-            bounds.topLeft().x + 1, bounds.topLeft().y + 2, s, Renderer::NONE, size);
-          r.drawText(c, bounds.topLeft().x, bounds.topLeft().y, s, Renderer::NONE, size);
+          r.drawText(Color::BLACK.transparency(100), bounds.topLeft() + Vec2(1, 2), s, Renderer::NONE, size);
+          r.drawText(c, bounds.topLeft(), s, Renderer::NONE, size);
         }, width));
 }
 
@@ -623,8 +619,8 @@ SGuiElem GuiFactory::centeredLabel(Renderer::CenterType center, const string& s,
   return SGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
           Vec2 pos = getTextPos(bounds, center);
-          r.drawText(Color::BLACK.transparency(100), pos.x + 1, pos.y + 2, s, center, size);
-          r.drawText(c, pos.x, pos.y, s, center, size);
+          r.drawText(Color::BLACK.transparency(100), pos + Vec2(1, 2), s, center, size);
+          r.drawText(c, pos, s, center, size);
         }));
 }
 
@@ -647,7 +643,7 @@ SGuiElem GuiFactory::labelUnicode(const string& s, function<Color()> color, int 
           Color c = color();
           if (r.getMousePos().inRectangle(bounds))
             lighten(c);
-          r.drawText(fontId, size, c, bounds.topLeft().x, bounds.topLeft().y, s);
+          r.drawText(fontId, size, c, bounds.topLeft(), s);
         }, width));
 }
 
@@ -662,7 +658,7 @@ class MainMenuLabel : public GuiElem {
   virtual void render(Renderer& renderer) override {
     double height = getBounds().top() + vPadding * getBounds().height();
     int size = getSize();
-    renderer.drawText(color, getBounds().middle().x, height - size / 11, text, Renderer::HOR, size);
+    renderer.drawText(color, Vec2(getBounds().middle().x, height - size / 11), text, Renderer::HOR, size);
   }
 
   virtual optional<int> getPreferredWidth() override {
@@ -2131,8 +2127,7 @@ class Tooltip : public GuiElem {
         background->setBounds(Rectangle(pos, pos + size));
         background->render(r);
         for (int i : All(text))
-          r.drawText(Color::WHITE, pos.x + tooltipHMargin, pos.y + tooltipVMargin + i * tooltipLineHeight,
-              text[i]);
+          r.drawText(Color::WHITE, pos + Vec2(tooltipHMargin, tooltipVMargin + i * tooltipLineHeight), text[i]);
         r.popLayer();
       }
     } else 
@@ -2447,8 +2442,6 @@ void GuiFactory::loadFreeImages(const DirectoryPath& path) {
         return Vec2(0, 13);
       case SpellId::MAGIC_MISSILE:
         return Vec2(1, 1);
-      case SpellId::STUN_RAY:
-        return Vec2(0, 16);
       case SpellId::SUMMON_ELEMENT:
         return Vec2(1, 0);
       case SpellId::HEAL_OTHER:

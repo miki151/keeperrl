@@ -541,6 +541,9 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.type = SettlementType::CAVE;
             c.tribe = TribeId::getShelob();
             c.inhabitants.leader = CreatureId::SHELOB;
+            c.inhabitants.civilians = CreatureList(
+                random.get(4, 6),
+                makeVec(CreatureId::SPIDER_FOOD,CreatureId::SPIDER));			
             c.race = "giant spider"_s;
             c.buildingId = BuildingId::DUNGEON;
             ), CollectiveConfig::noImmigrants().setLeaderAsFighter())

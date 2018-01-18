@@ -11,7 +11,7 @@
 #include "collective_config.h"
 #include "territory.h"
 #include "item.h"
-#include "minion_task.h"
+#include "minion_activity.h"
 #include "experience_type.h"
 
 SERIALIZE_DEF(CollectiveWarnings, warnings, warningTimes, lastWarningTime)
@@ -27,17 +27,9 @@ void CollectiveWarnings::disable() {
 void CollectiveWarnings::considerWarnings(WCollective col) {
   setWarning(Warning::MANA, col->numResource(CollectiveResourceId::MANA) < 100);
   setWarning(Warning::DIGGING, col->getTerritory().isEmpty());
-  /*setWarning(Warning::LIBRARY, !col->getTerritory().isEmpty() &&
-      col->getConstructions().getTotalCount(FurnitureType::BOOKCASE) == 0);*/
   considerMoraleWarning(col);
   considerWeaponWarning(col);
   considerTorchesWarning(col);
-  considerTrainingRoomWarning(col);
-  /*    for (auto minionTask : ENUM_ALL(MinionTask)) {
-        auto& elem = config->getTaskInfo(minionTask);
-        if (!getAllSquares(elem.squares).empty() && elem.warning)
-          setWarning(*elem.warning, false);
-      }*/
 }
 
 bool CollectiveWarnings::isWarning(Warning w) const {
@@ -72,24 +64,6 @@ void CollectiveWarnings::considerTorchesWarning(WCollective col) {
   setWarning(Warning::MORE_LIGHTS, numLit < 0);
 }
 
-void CollectiveWarnings::considerTrainingRoomWarning(WCollective col) {
-  /*optional<FurnitureType> firstDummy;
-  for (auto dummyType : MinionTasks::getAllFurniture(MinionTask::TRAIN))
-    if (!firstDummy ||
-        *col->getConfig().getTrainingMaxLevelIncrease(ExperienceType::MELEE, dummyType) <
-            *col->getConfig().getTrainingMaxLevelIncrease(ExperienceType::MELEE, *firstDummy))
-      firstDummy = dummyType;
-  setWarning(Warning::TRAINING, false);
-  setWarning(Warning::TRAINING_UPGRADE, false);
-  for (auto creature : col->getCreatures())
-    if (auto type = col->getMissingTrainingFurniture(creature)) {
-      if (type == firstDummy)
-        setWarning(Warning::TRAINING, true);
-      else
-        setWarning(Warning::TRAINING_UPGRADE, true);
-    }*/
-}
-
 const char* CollectiveWarnings::getText(Warning w) {
   switch (w) {
     case Warning::DIGGING: return "Dig into the mountain and start building a dungeon.";
@@ -108,7 +82,6 @@ const char* CollectiveWarnings::getText(Warning w) {
     case Warning::NO_PRISON: return "You need to build a prison.";
     case Warning::LARGER_PRISON: return "You need a larger prison.";
     case Warning::TORTURE_ROOM: return "You need to build a torture room.";
-//    case Warning::ALTAR: return "You need to build a shrine to sacrifice.";
     case Warning::MORE_CHESTS: return "You need a larger treasure room.";
     case Warning::MANA: return "Conquer an enemy tribe or torture some innocent beings for more mana.";
     case Warning::MORE_LIGHTS: return "Place some torches to light up your dungeon.";

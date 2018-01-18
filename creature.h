@@ -43,7 +43,7 @@ class Equipment;
 class Spell;
 class CreatureAttributes;
 class Body;
-class MinionTaskMap;
+class MinionActivityMap;
 class CreatureName;
 class Gender;
 class SpellMap;
@@ -75,7 +75,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   void setPosition(Position);
   Position getPosition() const;
   bool dodgeAttack(const Attack&);
-  bool takeDamage(const Attack&);
+  void takeDamage(const Attack&);
   void onAttackedBy(WCreature);
   void heal(double amount = 1);
   /** Morale is in the range [-1:1] **/
@@ -178,7 +178,6 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   bool canConsume(WConstCreature) const;
   
   void displace(Vec2);
-  void surrender(WCreature to);
   void retire();
   
   void increaseExpLevel(ExperienceType, double increase);
@@ -228,7 +227,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
 
   void you(MsgType type, const string& param = "") const;
   void you(const string& param) const;
-  void verb(const char* second, const char* third, const string& param);
+  void verb(const char* second, const char* third, const string& param = "");
   void secondPerson(const PlayerMessage&) const;
   void thirdPerson(const PlayerMessage& playerCanSee, const PlayerMessage& cant) const;
   void thirdPerson(const PlayerMessage& playerCanSee) const;
@@ -280,6 +279,10 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   EnumSet<CreatureStatus>& getStatus();
   const EnumSet<CreatureStatus>& getStatus() const;
 
+  void toggleCaptureOrder();
+  bool isCaptureOrdered();
+  void removePrivateEnemy(WConstCreature);
+
   private:
 
   CreatureAction moveTowards(Position, bool away, NavigationFlags);
@@ -319,6 +322,9 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   double SERIAL(highestAttackValueEver) = 0;
   int SERIAL(lastMoveCounter) = 0;
   EnumSet<CreatureStatus> SERIAL(statuses);
+  bool SERIAL(capture) = 0;
+  double SERIAL(captureHealth) = 1;
+  bool captureDamage(double damage, WCreature attacker);
 };
 
 struct AdjectiveInfo {

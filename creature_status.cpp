@@ -4,6 +4,8 @@
 
 Color getColor(CreatureStatus status) {
   switch (status) {
+    case CreatureStatus::PRISONER:
+      return Color::WHITE;
     case CreatureStatus::CIVILIAN:
       return Color::YELLOW;
     case CreatureStatus::LEADER:
@@ -15,6 +17,8 @@ Color getColor(CreatureStatus status) {
 
 const char* getName(CreatureStatus status) {
   switch (status) {
+    case CreatureStatus::PRISONER:
+      return "Prisoner";
     case CreatureStatus::CIVILIAN:
       return "Civilian";
     case CreatureStatus::LEADER:
@@ -26,6 +30,8 @@ const char* getName(CreatureStatus status) {
 
 const char* getDescription(CreatureStatus status) {
   switch (status) {
+    case CreatureStatus::PRISONER:
+      return "Captured from a hostile tribe";
     case CreatureStatus::CIVILIAN:
       return "Can be captured by conquering tribe";
     case CreatureStatus::LEADER:
@@ -34,3 +40,8 @@ const char* getDescription(CreatureStatus status) {
       return "Must be killed to conquer tribe";
   }
 }
+
+EnumSet<CreatureStatus> getDisplayedOnMinions() {
+  return {CreatureStatus::PRISONER};
+}
+

@@ -2329,30 +2329,34 @@ SGuiElem GuiBuilder::drawMinionButtons(const vector<PlayerInfo>& minions, Unique
   return gui.scrollable(list.buildVerticalList(), &minionButtonsScroll, &scrollbarsHeld);
 }
 
-static string getTaskText(MinionTask option) {
+static string getTaskText(MinionActivity option) {
   switch (option) {
-    case MinionTask::SLEEP: return "Sleeping";
-    case MinionTask::WORKER: return "Working";
-    case MinionTask::EAT: return "Eating";
-    case MinionTask::EXPLORE_NOCTURNAL: return "Exploring (night)";
-    case MinionTask::EXPLORE_CAVES: return "Exploring caves";
-    case MinionTask::EXPLORE: return "Exploring";
-    case MinionTask::RITUAL: return "Rituals";
-    case MinionTask::CROPS: return "Crops";
-    case MinionTask::TRAIN: return "Training";
-    case MinionTask::ARCHERY: return "Archery range";
-    case MinionTask::CRAFT: return "Crafting";
-    case MinionTask::STUDY: return "Studying";
-    case MinionTask::COPULATE: return "Copulating";
-    case MinionTask::SPIDER: return "Spinning webs";
-    case MinionTask::THRONE: return "Throne";
-    case MinionTask::BE_WHIPPED: return "Being whipped";
-    case MinionTask::BE_TORTURED: return "Being tortured";
-    case MinionTask::BE_EXECUTED: return "Being executed";
+    case MinionActivity::IDLE: return "Idle";
+    case MinionActivity::SLEEP: return "Sleeping";
+    case MinionActivity::CONSTRUCTION: return "Construction";
+    case MinionActivity::DIGGING: return "Digging";
+    case MinionActivity::HAULING: return "Hauling";
+    case MinionActivity::WORKING: return "Labour";
+    case MinionActivity::EAT: return "Eating";
+    case MinionActivity::EXPLORE_NOCTURNAL: return "Exploring (night)";
+    case MinionActivity::EXPLORE_CAVES: return "Exploring caves";
+    case MinionActivity::EXPLORE: return "Exploring";
+    case MinionActivity::RITUAL: return "Rituals";
+    case MinionActivity::CROPS: return "Crops";
+    case MinionActivity::TRAIN: return "Training";
+    case MinionActivity::ARCHERY: return "Archery range";
+    case MinionActivity::CRAFT: return "Crafting";
+    case MinionActivity::STUDY: return "Studying";
+    case MinionActivity::COPULATE: return "Copulating";
+    case MinionActivity::SPIDER: return "Spinning webs";
+    case MinionActivity::THRONE: return "Throne";
+    case MinionActivity::BE_WHIPPED: return "Being whipped";
+    case MinionActivity::BE_TORTURED: return "Being tortured";
+    case MinionActivity::BE_EXECUTED: return "Being executed";
   }
 }
 
-static Color getTaskColor(PlayerInfo::MinionTaskInfo info) {
+static Color getTaskColor(PlayerInfo::MinionActivityInfo info) {
   if (info.inactive)
     return Color::GRAY;
   else if (info.current)
@@ -2427,6 +2431,11 @@ SGuiElem GuiBuilder::drawActivityButton(const PlayerInfo& minion) {
                   retAction.switchTo = task.task;
                   exit = true;
                 };
+            auto lockButton = task.locked
+                  ? gui.rightMargin(20, gui.labelUnicode(u8"✓", [&retAction, task] {
+                      return (retAction.lock.contains(task.task) ^ *task.locked) ?
+                          Color::LIGHT_GRAY : Color::GREEN;}))
+                  : gui.empty();
             tasks.addElem(GuiFactory::ListBuilder(gui)
                 .addMiddleElem(gui.stack(
                     gui.button(buttonFun),
@@ -2436,9 +2445,7 @@ SGuiElem GuiBuilder::drawActivityButton(const PlayerInfo& minion) {
                     gui.button([&retAction, task] {
                       retAction.lock.toggle(task.task);
                     }),
-                    gui.rightMargin(20, gui.labelUnicode(u8"✓", [&retAction, task] {
-                        return (retAction.lock.contains(task.task) ^ task.locked) ?
-                            Color::LIGHT_GRAY : Color::GREEN;})))).buildHorizontalList());
+                    lockButton)).buildHorizontalList());
           }
           drawMiniMenu(std::move(tasks), exit, bounds.bottomLeft(), 200, true);
           callbacks.input({UserInputId::CREATURE_TASK_ACTION, retAction});
@@ -2745,7 +2752,7 @@ SGuiElem GuiBuilder::drawOptionElem(Options* options, OptionId id, function<void
       line.addElemAuto(gui.label(name + ": "));
       line.addElemAuto(gui.stack(
           gui.button([=] {
-              if (auto val = getTextInput("Enter " + name, valueString, 10, "Leave blank to use a random name.")) {
+              if (auto val = getTextInput("Enter " + name, valueString, 10, "Leave blank to use a random name. Hit enter to confirm.")) {
                 options->setValue(id, *val);
                 onChanged();
               }}),

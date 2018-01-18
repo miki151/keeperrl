@@ -47,7 +47,7 @@ class MinionController : public Player {
         ret.push_back({getText(action), [action, id = c->getUniqueId()](Player* player){
             (dynamic_cast<MinionController*>(player))->control->teamMemberAction(action, id);}});
     }
-    else if (control->getCollective()->getCreatures().contains(c) && control->canAddToTeam(c))
+    else if (control->getCollective()->getCreatures().contains(c) && control->canControl(c))
       ret.push_back({"Add to team", [c](Player* player) {
           (dynamic_cast<MinionController*>(player))->control->addToCurrentTeam(c);}});
     return ret;

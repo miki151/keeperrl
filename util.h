@@ -1193,6 +1193,10 @@ class EnumSet {
     return ret;
   }
 
+  void intersectWith(const EnumSet& other) {
+    elems &= other.elems;
+  }
+
   static EnumSet<T> fullSet() {
     EnumSet<T> ret;
     ret.elems.flip();

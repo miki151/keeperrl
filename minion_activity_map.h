@@ -15,20 +15,20 @@
 
 #pragma once
 
-#include "minion_task.h"
+#include "minion_activity.h"
 
-class MinionTaskMap {
+class MinionActivityMap {
   public:
-  void toggleLock(MinionTask);
-  bool isLocked(MinionTask) const;
+  void toggleLock(MinionActivity);
+  optional<bool> isLocked(MinionActivity) const;
   
-  bool isAvailable(WConstCollective, WConstCreature, MinionTask, bool ignoreTaskLock = false) const;
-  bool canChooseRandomly(WConstCreature c, MinionTask) const;
+  bool isAvailable(WConstCollective, WConstCreature, MinionActivity, bool ignoreTaskLock = false) const;
+  bool canChooseRandomly(WConstCreature c, MinionActivity) const;
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);
   
   private:
-  EnumSet<MinionTask> SERIAL(locked);
+  EnumSet<MinionActivity> SERIAL(locked);
 };
 

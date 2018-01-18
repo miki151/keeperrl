@@ -22,7 +22,7 @@
 #include "skill.h"
 #include "gender.h"
 #include "creature_name.h"
-#include "minion_task_map.h"
+#include "minion_activity_map.h"
 #include "attr_type.h"
 #include "lasting_effect.h"
 #include "experience_type.h"
@@ -37,7 +37,7 @@ enum class SpawnType;
 #define CATTR(X) CreatureAttributes([&](CreatureAttributes& c) { X })
 
 struct SpellInfo;
-class MinionTaskMap;
+class MinionActivityMap;
 class SpellMap;
 class Body;
 class SpellMap;
@@ -61,6 +61,8 @@ class CreatureAttributes {
   void setBaseAttr(AttrType, int);
   double getCourage() const;
   void setCourage(double);
+  string getDeathDescription() const;
+  void setDeathDescription(string);
   const Gender& getGender() const;
   double getExpLevel(ExperienceType type) const;
   const EnumMap<ExperienceType, double>& getExpLevel() const;
@@ -93,8 +95,8 @@ class CreatureAttributes {
   bool canSleep() const;
   bool isInnocent() const;
   void consume(WCreature self, CreatureAttributes& other);
-  const MinionTaskMap& getMinionTasks() const;
-  MinionTaskMap& getMinionTasks();
+  const MinionActivityMap& getMinionActivities() const;
+  MinionActivityMap& getMinionActivities();
   bool dontChase() const;
   optional<ViewId> getRetiredViewId();
   void increaseExpFromCombat(double attackDiff);
@@ -125,10 +127,11 @@ class CreatureAttributes {
   HeapAllocated<SpellMap> SERIAL(spells);
   EnumMap<LastingEffect, int> SERIAL(permanentEffects);
   EnumMap<LastingEffect, GlobalTime> SERIAL(lastingEffects);
-  MinionTaskMap SERIAL(minionTasks);
+  MinionActivityMap SERIAL(minionActivities);
   EnumMap<ExperienceType, double> SERIAL(expLevel);
   EnumMap<ExperienceType, int> SERIAL(maxLevelIncrease);
   bool SERIAL(noAttackSound) = false;
   optional<CreatureId> SERIAL(creatureId);
   optional<double> SERIAL(moraleSpeedIncrease);
+  string SERIAL(deathDescription)="killed"_s;
 };

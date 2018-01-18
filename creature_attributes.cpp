@@ -44,10 +44,10 @@ template <class Archive>
 void CreatureAttributes::serialize(Archive& ar, const unsigned int version) {
   ar(viewId, retiredViewId, illusionViewObject, name, attr, chatReactionFriendly);
   ar(chatReactionHostile, passiveAttack, gender);
-  ar(body, innocent, moraleSpeedIncrease);
+  ar(body, innocent, moraleSpeedIncrease, deathDescription);
   ar(animal, cantEquip, courage);
   ar(boulder, noChase, isSpecial, skills, spells);
-  ar(permanentEffects, lastingEffects, minionTasks, expLevel);
+  ar(permanentEffects, lastingEffects, minionActivities, expLevel);
   ar(noAttackSound, maxLevelIncrease, creatureId);
 }
 
@@ -84,6 +84,14 @@ double CreatureAttributes::getCourage() const {
 
 void CreatureAttributes::setCourage(double c) {
   courage = c;
+}
+
+string CreatureAttributes::getDeathDescription() const {
+  return deathDescription;
+}
+
+void CreatureAttributes::setDeathDescription(string c) {
+  deathDescription = c;
 }
 
 const Gender& CreatureAttributes::getGender() const {
@@ -328,12 +336,12 @@ bool CreatureAttributes::isInnocent() const {
   return innocent;
 }
  
-const MinionTaskMap& CreatureAttributes::getMinionTasks() const {
-  return minionTasks;
+const MinionActivityMap& CreatureAttributes::getMinionActivities() const {
+  return minionActivities;
 }
 
-MinionTaskMap& CreatureAttributes::getMinionTasks() {
-  return minionTasks;
+MinionActivityMap& CreatureAttributes::getMinionActivities() {
+  return minionActivities;
 }
 
 bool CreatureAttributes::dontChase() const {

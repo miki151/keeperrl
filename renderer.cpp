@@ -324,7 +324,7 @@ int Renderer::getFont(Renderer::FontId id) {
   }
 }
 
-void Renderer::drawText(FontId id, int size, Color color, int x, int y, const string& s, CenterType center) {
+void Renderer::drawText(FontId id, int size, Color color, Vec2 pos, const string& s, CenterType center) {
   renderDeferredSprites();
   if (!s.empty()) {
     int ox = 0;
@@ -346,28 +346,28 @@ void Renderer::drawText(FontId id, int size, Color color, int x, int y, const st
     }
     sth_begin_draw(fontStash);
     color.applyGl();
-    sth_draw_text(fontStash, getFont(id), sizeConv(size), ox + x, oy + y + (dim.y * 0.9), s.c_str(), nullptr);
+    sth_draw_text(fontStash, getFont(id), sizeConv(size), ox + pos.x, oy + pos.y + (dim.y * 0.9), s.c_str(), nullptr);
     sth_end_draw(fontStash);
   }
 }
 
-void Renderer::drawText(Color color, int x, int y, const char* c, CenterType center, int size) {
-  drawText(TEXT_FONT, size, color, x, y, c, center);
+void Renderer::drawText(Color color, Vec2 pos, const char* c, CenterType center, int size) {
+  drawText(TEXT_FONT, size, color, pos, c, center);
 }
 
-void Renderer::drawText(Color color, int x, int y, const string& c, CenterType center, int size) {
-  drawText(TEXT_FONT, size, color, x, y, c, center);
+void Renderer::drawText(Color color, Vec2 pos, const string& c, CenterType center, int size) {
+  drawText(TEXT_FONT, size, color, pos, c, center);
 }
 
-void Renderer::drawTextWithHotkey(Color color, int x, int y, const string& text, char key) {
+void Renderer::drawTextWithHotkey(Color color, Vec2 pos, const string& text, char key) {
   if (key) {
     int ind = lowercase(text).find(key);
     if (ind != string::npos) {
-      int pos = x + getTextLength(text.substr(0, ind));
-      drawFilledRectangle(pos, y + 23, pos + getTextLength(text.substr(ind, 1)), y + 25, Color::GREEN);
+      int posHotkey = pos.x + getTextLength(text.substr(0, ind));
+      drawFilledRectangle(posHotkey, pos.y + 23, posHotkey + getTextLength(text.substr(ind, 1)), pos.y + 25, Color::GREEN);
     }
   }
-  drawText(color, x, y, text);
+  drawText(color, pos, text);
 }
 
 void Renderer::drawImage(int px, int py, const Texture& image, double scale, optional<Color> color) {
@@ -617,7 +617,7 @@ Vec2 getOffset(Vec2 sizeDiff, double scale) {
 }
 
 Color Renderer::getBleedingColor(const ViewObject& object) {
-  double bleeding = object.getAttribute(ViewObject::Attribute::WOUNDED).value_or(0);
+  double bleeding = 1 - object.getAttribute(ViewObject::Attribute::HEALTH).value_or(0);
   if (bleeding > 0)
     bleeding = 0.3 + bleeding * 0.7;
   if (object.hasModifier(ViewObject::Modifier::SPIRIT_DAMAGE))
@@ -629,7 +629,7 @@ Color Renderer::getBleedingColor(const ViewObject& object) {
 void Renderer::drawTile(Vec2 pos, TileCoord coord, Vec2 size, Color color, SpriteOrientation orientation) {
   CHECK(coord.texNum >= 0 && coord.texNum < Renderer::tiles.size());
   Texture* tex = &tiles[coord.texNum];
-  Vec2 sz = tileSize[coord.texNum];
+  Vec2 sz = tileDirectories[coord.texNum].size;
   Vec2 off = (nominalSize -  sz).mult(size).div(Renderer::nominalSize * 2);
   Vec2 tileSize = sz.mult(size).div(nominalSize);
   if (sz.y > nominalSize.y)
@@ -640,7 +640,7 @@ void Renderer::drawTile(Vec2 pos, TileCoord coord, Vec2 size, Color color, Sprit
 
 void Renderer::drawTile(Vec2 pos, TileCoord coord, double scale, Color color) {
   CHECK(coord.texNum >= 0 && coord.texNum < Renderer::tiles.size());
-  Vec2 sz = Renderer::tileSize[coord.texNum];
+  Vec2 sz = tileDirectories[coord.texNum].size;
   Vec2 off = getOffset(Renderer::nominalSize - sz, scale);
   if (sz.y > nominalSize.y)
     off.y *= 2;
@@ -652,8 +652,8 @@ void Renderer::drawViewObject(Vec2 pos, ViewId id, Color color) {
   if (tile.hasSpriteCoord())
     drawTile(pos, tile.getSpriteCoord(DirSet::fullSet()), 1, color * tile.color);
   else
-    drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TEXT_FONT, 20, tile.color, pos.x + nominalSize.x / 2,
-        pos.y, tile.text, HOR);
+    drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TEXT_FONT, 20, tile.color,
+        pos + Vec2(nominalSize.x / 2, 0), tile.text, HOR);
 }
 
 void Renderer::drawViewObject(Vec2 pos, ViewId id, bool useSprite, double scale, Color color) {
@@ -662,7 +662,7 @@ void Renderer::drawViewObject(Vec2 pos, ViewId id, bool useSprite, double scale,
     drawTile(pos, tile.getSpriteCoord(DirSet::fullSet()), scale, color * tile.color);
   else
     drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TEXT_FONT, 20 * scale, color * tile.color,
-        pos.x + scale * nominalSize.x / 2, pos.y, tile.text, HOR);
+        pos + Vec2(scale * nominalSize.x / 2, 0), tile.text, HOR);
 }
 
 void Renderer::drawViewObject(Vec2 pos, ViewId id, bool useSprite, Vec2 size, Color color, SpriteOrientation orient) {
@@ -670,8 +670,7 @@ void Renderer::drawViewObject(Vec2 pos, ViewId id, bool useSprite, Vec2 size, Co
   if (tile.hasSpriteCoord())
     drawTile(pos, tile.getSpriteCoord(DirSet::fullSet()), size, color * tile.color, orient);
   else
-    drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TEXT_FONT, size.y, color * tile.color, pos.x, pos.y,
-        tile.text);
+    drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TEXT_FONT, size.y, color * tile.color, pos, tile.text);
 }
 
 void Renderer::drawViewObject(Vec2 pos, const ViewObject& object, bool useSprite, Vec2 size) {
@@ -691,9 +690,15 @@ void Renderer::drawAsciiBackground(ViewId id, Rectangle bounds) {
     drawFilledRectangle(bounds, Color::BLACK);
 }
 
-bool Renderer::loadTilesFromDir(const DirectoryPath& path, Vec2 size) {
-  tileSize.push_back(size);
-  return loadTilesFromDir(path, tiles, size, 720);
+void Renderer::loadTiles() {
+  tiles.clear();
+  tileCoords.clear();
+  for (auto& dir : tileDirectories)
+    loadTilesFromDir(dir.path, tiles, dir.size, 720);
+}
+
+void Renderer::addTilesDirectory(const DirectoryPath& path, Vec2 size) {
+  tileDirectories.push_back({path, size});
 }
 
 SDL::SDL_Surface* Renderer::createSurface(int w, int h) {
@@ -702,7 +707,7 @@ SDL::SDL_Surface* Renderer::createSurface(int w, int h) {
   return ret;
 }
 
-bool Renderer::loadTilesFromDir(const DirectoryPath& path, vector<Texture>& tiles, Vec2 size, int setWidth) {
+void Renderer::loadTilesFromDir(const DirectoryPath& path, vector<Texture>& tiles, Vec2 size, int setWidth) {
   const static string imageSuf = ".png";
   auto files = path.getFiles().filter([](const FilePath& f) { return f.hasSuffix(imageSuf);});
   int rowLength = setWidth / size.x;
@@ -726,7 +731,6 @@ bool Renderer::loadTilesFromDir(const DirectoryPath& path, vector<Texture>& tile
   }
   tiles.push_back(Texture(image));
   SDL::SDL_FreeSurface(image);
-  return true;
 }
 
 Renderer::TileCoord Renderer::getTileCoord(const string& name) {

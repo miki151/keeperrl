@@ -70,6 +70,7 @@ RICH_ENUM(CreatureId,
     MINOTAUR,
     HYDRA,
     SHELOB,
+    SPIDER_FOOD,
     WITCH,
     WITCHMAN,
 
@@ -101,7 +102,6 @@ RICH_ENUM(CreatureId,
     KOBOLD,
 
     IMP,
-    PRISONER,
     OGRE,
     CHICKEN,
 
