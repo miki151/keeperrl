@@ -2241,8 +2241,12 @@ class ItemList {
   vector<ItemType> ret;
 };
 
-vector<ItemType> getDefaultInventory(CreatureId id) {
+static vector<ItemType> getDefaultInventory(CreatureId id) {
   switch (id) {
+    case CreatureId::KEEPER_F:
+    case CreatureId::KEEPER:
+      return ItemList()
+        .add(ItemType::Robe{});
     case CreatureId::CYCLOPS:
       return ItemList()
         .add(ItemType::HeavyClub{})
@@ -2256,10 +2260,6 @@ vector<ItemType> getDefaultInventory(CreatureId id) {
     case CreatureId::DEMON_LORD:
     case CreatureId::ANGEL:
       return ItemList().add(ItemType::SpecialSword{});
-    case CreatureId::KEEPER_F:
-    case CreatureId::KEEPER:
-      return ItemList()
-        .add(ItemType::Robe{});
     case CreatureId::ADVENTURER_F:
     case CreatureId::ADVENTURER:
       return ItemList()
@@ -2272,7 +2272,8 @@ vector<ItemType> getDefaultInventory(CreatureId id) {
         .add(ItemType::GoldPiece{}, Random.get(16, 26));
     case CreatureId::ELEMENTALIST:
       return ItemList()
-          .add(ItemType::IronStaff{});
+          .add(ItemType::IronStaff{})
+          .add(ItemType::Torch{});
     case CreatureId::DEATH:
       return ItemList()
         .add(ItemType::Scythe{});
@@ -2306,6 +2307,7 @@ vector<ItemType> getDefaultInventory(CreatureId id) {
         .add(ItemType::Knife{})
         .add(ItemType::LeatherArmor{})
         .add(ItemType::LeatherBoots{})
+        .maybe(0.3, ItemType::Torch{})
         .add(randomHealing())
         .add(ItemType::GoldPiece{}, Random.get(4, 10));
     case CreatureId::WITCHMAN:
@@ -2326,6 +2328,7 @@ vector<ItemType> getDefaultInventory(CreatureId id) {
         .add(ItemType::Sword{})
         .add(ItemType::ChainArmor{})
         .add(ItemType::LeatherBoots{})
+        .maybe(0.3, ItemType::Torch{})
         .add(randomHealing())
         .add(ItemType::GoldPiece{}, Random.get(6, 16));
     case CreatureId::MINOTAUR: 
@@ -2338,6 +2341,7 @@ vector<ItemType> getDefaultInventory(CreatureId id) {
         .add(ItemType::IronHelm{})
         .add(ItemType::IronBoots{})
         .add(randomHealing(), 3)
+        .maybe(0.3, ItemType::Torch{})
         .add(ItemType::GoldPiece{}, Random.get(140, 200));
     case CreatureId::OGRE: 
       return ItemList().add(ItemType::HeavyClub{});
@@ -2345,6 +2349,7 @@ vector<ItemType> getDefaultInventory(CreatureId id) {
       return ItemList()
         .add(ItemType::Sword{})
         .maybe(0.3, randomBackup())
+        .maybe(0.3, ItemType::Torch{})
         .maybe(0.05, ItemType::Bow{});
     case CreatureId::DWARF:
       return ItemList()
@@ -2353,6 +2358,7 @@ vector<ItemType> getDefaultInventory(CreatureId id) {
         .add(ItemType::ChainArmor{})
         .maybe(0.5, ItemType::IronHelm{})
         .maybe(0.3, ItemType::IronBoots{})
+        .maybe(0.3, ItemType::Torch{})
         .add(ItemType::GoldPiece{}, Random.get(2, 6));
     case CreatureId::DWARF_BARON: 
       return ItemList()
@@ -2362,6 +2368,7 @@ vector<ItemType> getDefaultInventory(CreatureId id) {
         .add(ItemType::ChainArmor{})
         .add(ItemType::IronBoots{})
         .add(ItemType::IronHelm{})
+        .maybe(0.3, ItemType::Torch{})
         .add(ItemType::GoldPiece{}, Random.get(80, 120));
     case CreatureId::GNOME_CHIEF:
       return ItemList()

@@ -305,13 +305,6 @@ const vector<WItem>& Position::getItems() const {
   }
 }
 
-vector<WItem> Position::getItems(function<bool (WConstItem)> predicate) const {
-  if (isValid())
-    return getSquare()->getInventory().getItems(predicate);
-  else
-    return {};
-}
-
 const vector<WItem>& Position::getItems(ItemIndex index) const {
   if (isValid())
     return getSquare()->getInventory().getItems(index);
@@ -431,6 +424,25 @@ void Position::addFurniture(PFurniture f) const {
   level->addLightSource(coord, furniture->getLightEmission());
   setNeedsRenderUpdate(true);
 }
+
+void Position::addCreatureLight(bool darkness) {
+  if (isValid()) {
+    if (darkness)
+      level->addDarknessSource(coord, Level::getCreatureLightRadius(), 1);
+    else
+      level->addLightSource(coord, Level::getCreatureLightRadius(), 1);
+  }
+}
+
+void Position::removeCreatureLight(bool darkness) {
+  if (isValid()) {
+    if (darkness)
+      level->addDarknessSource(coord, Level::getCreatureLightRadius(), -1);
+    else
+      level->addLightSource(coord, Level::getCreatureLightRadius(), -1);
+  }
+}
+
 
 void Position::replaceFurniture(WConstFurniture prev, PFurniture next) const {
   level->removeLightSource(coord, prev->getLightEmission());

@@ -97,7 +97,7 @@ WCreature Behaviour::getClosestCreature() {
 WItem Behaviour::getBestWeapon() {
   WItem best = nullptr;
   int damage = -1;
-  for (WItem item : creature->getEquipment().getItems(Item::classPredicate(ItemClass::WEAPON))) 
+  for (WItem item : creature->getEquipment().getItems().filter(Item::classPredicate(ItemClass::WEAPON)))
     if (item->getModifier(AttrType::DAMAGE) > damage) {
       damage = item->getModifier(AttrType::DAMAGE);
       best = item;
@@ -114,7 +114,7 @@ MoveInfo Behaviour::tryEffect(Effect type, TimeInterval maxTurns) {
       if (auto action = creature->castSpell(spell))
         return { 1, action };
   }
-  auto items = creature->getEquipment().getItems(Item::effectPredicate(type)); 
+  auto items = creature->getEquipment().getItems().filter(Item::effectPredicate(type));
   for (WItem item : items)
     if (item->getApplyTime() <= maxTurns)
       if (auto action = creature->applyItem(item))
@@ -440,10 +440,8 @@ class Fighter : public Behaviour {
     Vec2 dir = enemyDir.shorten();
     WItem best = nullptr;
     int damage = 0;
-    auto items = creature->getEquipment().getItems([this](WConstItem item) {
-        return !creature->getEquipment().isEquipped(item);});
-    for (WItem item : items)
-      if (getThrowValue(item) > damage) {
+    for (WItem item : creature->getEquipment().getItems())
+      if (!creature->getEquipment().isEquipped(item) && getThrowValue(item) > damage) {
         damage = getThrowValue(item);
         best = item;
       }
@@ -1023,7 +1021,7 @@ class SplashImps : public Behaviour {
 
   void initializeSplashItems() {
     for (Vec2 v : Level::getSplashVisibleBounds()) {
-      vector<WItem> inv = Position(v, creature->getLevel()).getItems(
+      vector<WItem> inv = Position(v, creature->getLevel()).getItems().filter(
           [](WConstItem it) { return it->getClass() == ItemClass::GOLD || it->getClass() == ItemClass::CORPSE;});
       if (!inv.empty())
         splashItems.addItems(v, inv);

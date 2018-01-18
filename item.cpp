@@ -86,6 +86,16 @@ vector<vector<WItem>> Item::stackItems(vector<WItem> items, function<string(WCon
   return ret;
 }
 
+void Item::onOwned(WCreature c) {
+  if (attributes->ownedEffect)
+    c->addPermanentEffect(*attributes->ownedEffect);
+}
+
+void Item::onDropped(WCreature c) {
+  if (attributes->ownedEffect)
+    c->removePermanentEffect(*attributes->ownedEffect);
+}
+
 void Item::onEquip(WCreature c) {
   onEquipSpecial(c);
   if (attributes->equipedEffect)
@@ -133,6 +143,8 @@ void Item::onHitSquareMessage(Position pos, int numItems) {
     discarded = true;
   } else
     pos.globalMessage(getPluralTheNameAndVerb(numItems, "hits", "hit") + " the " + pos.getName());
+  if (attributes->ownedEffect == LastingEffect::LIGHT_SOURCE)
+    pos.fireDamage(1);
 }
 
 void Item::onHitCreature(WCreature c, const Attack& attack, int numItems) {
@@ -144,6 +156,8 @@ void Item::onHitCreature(WCreature c, const Attack& attack, int numItems) {
   if (attributes->effect && getClass() == ItemClass::POTION)
     attributes->effect->applyToCreature(c, attack.attacker);
   c->takeDamage(attack);
+  if (attributes->ownedEffect == LastingEffect::LIGHT_SOURCE)
+    c->affectByFire(1);
 }
 
 TimeInterval Item::getApplyTime() const {
@@ -165,6 +179,10 @@ string Item::getDescription() const {
     return LastingEffects::getDescription(*effect);
   else
     return "";
+}
+
+optional<LastingEffect> Item::getOwnedEffect() const {
+  return attributes->ownedEffect;
 }
 
 const WeaponInfo& Item::getWeaponInfo() const {

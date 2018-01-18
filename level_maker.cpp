@@ -1299,7 +1299,7 @@ class SetSunlight : public LevelMaker {
   Predicate pred;
 };
 
-static void removeEdge(Table<bool>& values, int thickness, const Table<double>& noise) {
+static void removeEdge(Table<bool>& values, int thickness) {
   auto bounds = values.getBounds();
   Table<int> distance(bounds, 1000000);
   queue<Vec2> q;

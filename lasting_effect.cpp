@@ -6,6 +6,7 @@
 #include "creature_attributes.h"
 #include "body.h"
 #include "furniture.h"
+#include "level.h"
 
 static optional<LastingEffect> getCancelledOneWay(LastingEffect effect) {
   switch (effect) {
@@ -133,7 +134,12 @@ void LastingEffects::onAffected(WCreature c, LastingEffect effect, bool msg) {
         c->you(MsgType::BECOME, "insane"); break;
       case LastingEffect::PEACEFULNESS:
         c->you(MsgType::BECOME, "peaceful"); break;
-      case LastingEffect::DARKNESS_SOURCE: break;
+      case LastingEffect::LIGHT_SOURCE:
+        c->getPosition().addCreatureLight(false);
+        break;
+      case LastingEffect::DARKNESS_SOURCE:
+        c->getPosition().addCreatureLight(true);
+        break;
       case LastingEffect::MAGIC_RESISTANCE:
         c->you(MsgType::ARE, "now resistant to magical attacks"); break;
       case LastingEffect::MELEE_RESISTANCE:
@@ -281,6 +287,12 @@ void LastingEffects::onTimedOut(WCreature c, LastingEffect effect, bool msg) {
         c->dieNoReason(Creature::DropType::ONLY_INVENTORY); break;
       case LastingEffect::STUNNED:
         c->dieWithLastAttacker(); break;
+      case LastingEffect::LIGHT_SOURCE:
+        c->getPosition().removeCreatureLight(false);
+        break;
+      case LastingEffect::DARKNESS_SOURCE:
+        c->getPosition().removeCreatureLight(true);
+        break;
       default: break;
     }
 }
@@ -343,6 +355,7 @@ static optional<Adjective> getAdjective(LastingEffect effect) {
     case LastingEffect::POISON_RESISTANT: return "Poison resistant"_good;
     case LastingEffect::FIRE_RESISTANT: return "Fire resistant"_good;
     case LastingEffect::FLYING: return "Flying"_good;
+    case LastingEffect::LIGHT_SOURCE: return "Source of light"_good;
     case LastingEffect::DARKNESS_SOURCE: return "Source of darkness"_good;
     case LastingEffect::PREGNANT: return "Pregnant"_good;
     case LastingEffect::MAGIC_RESISTANCE: return "Resistant to magical attacks"_good;
@@ -541,6 +554,7 @@ const char* LastingEffects::getName(LastingEffect type) {
     case LastingEffect::MAGIC_VULNERABILITY: return "magic vulnerability";
     case LastingEffect::MELEE_VULNERABILITY: return "melee vulnerability";
     case LastingEffect::RANGED_VULNERABILITY: return "ranged vulnerability";
+    case LastingEffect::LIGHT_SOURCE: return "light";
     case LastingEffect::DARKNESS_SOURCE: return "darkness";
     case LastingEffect::NIGHT_VISION: return "night vision";
     case LastingEffect::ELF_VISION: return "elf vision";
@@ -587,6 +601,7 @@ const char* LastingEffects::getDescription(LastingEffect type) {
     case LastingEffect::MELEE_VULNERABILITY: return "Decreases defense against melee attacks by 23%.";
     case LastingEffect::RANGED_VULNERABILITY: return "Decreases defense against ranged attacks by 23%.";
     case LastingEffect::DARKNESS_SOURCE: return "Causes the closest vicinity to become dark. Protects undead from sunlight.";
+    case LastingEffect::LIGHT_SOURCE: return "Casts light on the closest surroundings.";
     case LastingEffect::NIGHT_VISION: return "Gives vision in the dark at full distance.";
     case LastingEffect::ELF_VISION: return "Allows to see and shoot through trees.";
     case LastingEffect::REGENERATION: return "Recovers a little bit of health every turn.";
@@ -659,6 +674,7 @@ int LastingEffects::getPrice(LastingEffect e) {
     case LastingEffect::MAGIC_VULNERABILITY:
     case LastingEffect::MELEE_VULNERABILITY:
     case LastingEffect::RANGED_VULNERABILITY:
+    case LastingEffect::LIGHT_SOURCE:
     case LastingEffect::DARKNESS_SOURCE:
     case LastingEffect::PREGNANT:
     case LastingEffect::FLYING:

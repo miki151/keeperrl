@@ -78,6 +78,8 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
 
   void onEquip(WCreature);
   void onUnequip(WCreature);
+  void onOwned(WCreature);
+  void onDropped(WCreature);
   virtual void onEquipSpecial(WCreature) {}
   virtual void onUnequipSpecial(WCreature) {}
   virtual void fireDamage(double amount, Position);
@@ -89,6 +91,7 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
   TimeInterval getApplyTime() const;
   double getWeight() const;
   string getDescription() const;
+  optional<LastingEffect> getOwnedEffect() const;
 
   const WeaponInfo& getWeaponInfo() const;
   void getAttackMsg(const Creature*, const string& enemyName) const;

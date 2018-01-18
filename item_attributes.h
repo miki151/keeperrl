@@ -63,6 +63,7 @@ class ItemAttributes {
   bool SERIAL(usedUpMsg) = false;
   bool SERIAL(displayUses) = false;
   optional<LastingEffect> SERIAL(equipedEffect);
+  optional<LastingEffect> SERIAL(ownedEffect);
   optional<string> SERIAL(applyMsgFirstPerson);
   optional<string> SERIAL(applyMsgThirdPerson);
   optional<SoundId> SERIAL(applySound);

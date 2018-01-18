@@ -273,7 +273,7 @@ void Player::handleIntrinsicAttacks(const EntitySet<Item>& itemIds, ItemAction a
 }
 
 void Player::handleItems(const EntitySet<Item>& itemIds, ItemAction action) {
-  vector<WItem> items = getCreature()->getEquipment().getItems(
+  vector<WItem> items = getCreature()->getEquipment().getItems().filter(
       [&](WConstItem it) { return itemIds.contains(it);});
   //CHECK(items.size() == itemIds.size()) << int(items.size()) << " " << int(itemIds.size());
   // the above assertion fails for unknown reason, so just fail this softly.

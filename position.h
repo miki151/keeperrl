@@ -65,7 +65,6 @@ class Position {
   void addSound(const Sound&) const;
   void getViewIndex(ViewIndex&, WConstCreature viewer) const;
   const vector<WItem>& getItems() const;
-  vector<WItem> getItems(function<bool(WConstItem)> predicate) const;
   const vector<WItem>& getItems(ItemIndex) const;
   PItem removeItem(WItem);
   Inventory& modInventory() const;
@@ -98,6 +97,8 @@ class Position {
   bool isCovered() const;
   bool sunlightBurns() const;
   double getLightEmission() const;
+  void addCreatureLight(bool darkness);
+  void removeCreatureLight(bool darkness);
   void throwItem(PItem item, const Attack& attack, int maxDist, Vec2 direction, VisionId);
   void throwItem(vector<PItem> item, const Attack& attack, int maxDist, Vec2 direction, VisionId);
   bool canNavigate(const MovementType&) const;

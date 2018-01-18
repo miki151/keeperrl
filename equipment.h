@@ -29,9 +29,12 @@ RICH_ENUM(EquipmentSlot,
   RINGS
 );
 
-class Equipment : public Inventory {
+class Equipment {
   public:
+  void addItem(PItem, WCreature);
+  void addItems(vector<PItem>, WCreature);
   vector<WItem> getSlotItems(EquipmentSlot slot) const;
+  bool hasItem(WConstItem) const;
   bool isEquipped(WConstItem) const;
   bool canEquip(WConstItem) const;
   void equip(WItem, EquipmentSlot, WCreature);
@@ -39,14 +42,20 @@ class Equipment : public Inventory {
   PItem removeItem(WItem, WCreature);
   int getMaxItems(EquipmentSlot) const;
   const vector<WItem>& getAllEquipped() const;
+  const vector<WItem>& getItems() const;
+  const vector<WItem>& getItems(ItemIndex) const;
+  WItem getItemById(UniqueEntity<Item>::Id) const;
   vector<PItem> removeItems(const vector<WItem>&, WCreature);
   vector<PItem> removeAllItems(WCreature);
+  double getTotalWeight() const;
+  bool isEmpty() const;
 
   SERIALIZATION_DECL(Equipment);
 
   static map<EquipmentSlot, string> slotTitles;
 
   private:
+  Inventory SERIAL(inventory);
   EnumMap<EquipmentSlot, vector<WItem>> SERIAL(items);
   vector<WItem> SERIAL(equipped);
 };

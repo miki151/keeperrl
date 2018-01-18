@@ -488,7 +488,7 @@ MoveInfo Collective::getMove(WCreature c) {
 
   auto dropLoot = [&] () -> MoveInfo {
     if (config->getFetchItems() && territory->contains(c->getPosition())) {
-      vector<WItem> items = c->getEquipment().getItems([this, c](WConstItem item) {
+      vector<WItem> items = c->getEquipment().getItems().filter([this, c](WConstItem item) {
           return !isItemMarked(item) && !minionEquipment->isOwner(item, c); });
       if (!items.empty())
         return c->drop(items);
@@ -909,10 +909,10 @@ vector<WItem> Collective::getAllItems(bool includeMinions) const {
 vector<WItem> Collective::getAllItems(ItemPredicate predicate, bool includeMinions) const {
   vector<WItem> allItems;
   for (Position v : territory->getAll())
-    append(allItems, v.getItems(predicate));
+    append(allItems, v.getItems().filter(predicate));
   if (includeMinions)
     for (WCreature c : getCreatures())
-      append(allItems, c->getEquipment().getItems(predicate));
+      append(allItems, c->getEquipment().getItems().filter(predicate));
   return allItems;
 }
 

@@ -69,6 +69,7 @@ ItemFactory ItemFactory::villageShop() {
       {ItemType::Scroll{Effect::EnhanceArmor{}}, 5 },
       {ItemType::Scroll{Effect::EnhanceWeapon{}}, 5 },
       {ItemType::FireScroll{}, 5 },
+      {ItemType::Torch{}, 10 },
       {ItemType::Scroll{Effect::Summon{CreatureId::FIRE_SPHERE}}, 5 },
       {ItemType::Scroll{Effect::CircularBlast{}}, 1 },
       {ItemType::Scroll{Effect::Deception{}}, 2 },
@@ -127,6 +128,7 @@ ItemFactory ItemFactory::orcShop() {
       {ItemType::TelepathyHelm{}, 0.1 },
       {ItemType::LeatherBoots{}, 2 },
       {ItemType::IronBoots{}, 1 },
+      {ItemType::Torch{}, 10 },
       {ItemType::SpeedBoots{}, 0.3 },
       {ItemType::LevitationBoots{}, 0.3 },
       {ItemType::LeatherGloves{}, 2 },
@@ -153,6 +155,7 @@ ItemFactory ItemFactory::gnomeShop() {
       {ItemType::SpeedBoots{}, 0.3 },
       {ItemType::LevitationBoots{}, 0.3 },
       {ItemType::LeatherGloves{}, 2 },
+      {ItemType::Torch{}, 10 },
       {ItemType::StrengthGloves{}, 0.5 } })
       .addUniqueItem({ItemType::AutomatonItem{}});
 }
@@ -230,6 +233,7 @@ ItemFactory ItemFactory::dungeon() {
       {ItemType::TelepathyHelm{}, 1 },
       {ItemType::LeatherBoots{}, 20 },
       {ItemType::IronBoots{}, 7 },
+      {ItemType::Torch{}, 7 },
       {ItemType::SpeedBoots{}, 3 },
       {ItemType::LevitationBoots{}, 3 },
       {ItemType::LeatherGloves{}, 30 },

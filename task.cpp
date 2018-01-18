@@ -302,7 +302,7 @@ class PickAndEquipItem : public PickItem {
   virtual MoveInfo getMove(WCreature c) override {
     if (!pickedUp)
       return PickItem::getMove(c);
-    vector<WItem> it = c->getEquipment().getItems(items.containsPredicate());
+    vector<WItem> it = c->getEquipment().getItems().filter(items.containsPredicate());
     if (!it.empty()) {
       CHECK(it.size() == 1) << "Duplicate items: " << it[0]->getName() << " " << it[1]->getName();
       if (auto action = c->equip(it.getOnlyElement()))
@@ -423,12 +423,12 @@ class BringItem : public PickItem {
     if (!target || !c->isSameSector(*target))
       target = getBestTarget(c, allTargets);
     if (!target)
-      return c->drop(c->getEquipment().getItems(items.containsPredicate())).append(
+      return c->drop(c->getEquipment().getItems().filter(items.containsPredicate())).append(
           [this] (WCreature) {
             setDone();
           });
     if (c->getPosition() == target) {
-      vector<WItem> myItems = c->getEquipment().getItems(items.containsPredicate());
+      vector<WItem> myItems = c->getEquipment().getItems().filter(items.containsPredicate());
       if (auto action = getBroughtAction(c, myItems))
         return {1.0, action.append([=](WCreature) {setDone();})};
       else {
@@ -895,7 +895,7 @@ PTask Task::attackCreatures(vector<WCreature> c) {
 PTask Task::stealFrom(WCollective collective, WTaskCallback callback) {
   vector<PTask> tasks;
   for (Position pos : collective->getConstructions().getBuiltPositions(FurnitureType::TREASURE_CHEST)) {
-    vector<WItem> gold = pos.getItems(Item::classPredicate(ItemClass::GOLD));
+    vector<WItem> gold = pos.getItems().filter(Item::classPredicate(ItemClass::GOLD));
     if (!gold.empty())
       tasks.push_back(pickItem(callback, pos, gold));
   }
@@ -1038,7 +1038,7 @@ class ConsumeItem : public Task {
 
   virtual MoveInfo getMove(WCreature c) override {
     return c->wait().append([=](WCreature c) {
-        c->getEquipment().removeItems(c->getEquipment().getItems(items.containsPredicate()), c); });
+        c->getEquipment().removeItems(c->getEquipment().getItems().filter(items.containsPredicate()), c); });
   }
 
   virtual string getDescription() const override {
@@ -1153,7 +1153,7 @@ class Eat : public Task {
   }
 
   WItem getDeadChicken(Position pos) {
-    vector<WItem> chickens = pos.getItems(Item::classPredicate(ItemClass::FOOD));
+    vector<WItem> chickens = pos.getItems().filter(Item::classPredicate(ItemClass::FOOD));
     if (chickens.empty())
       return nullptr;
     else
@@ -1494,7 +1494,7 @@ class DropItems : public Task {
   DropItems(EntitySet<Item> it) : items(it) {}
 
   virtual MoveInfo getMove(WCreature c) override {
-    return c->drop(c->getEquipment().getItems(items.containsPredicate())).append([=] (WCreature) { setDone(); });
+    return c->drop(c->getEquipment().getItems().filter(items.containsPredicate())).append([=] (WCreature) { setDone(); });
   }
 
   virtual string getDescription() const override {

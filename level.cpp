@@ -99,7 +99,9 @@ Rectangle Level::getSplashVisibleBounds() {
   return Rectangle(getSplashBounds().middle() - sz / 2, getSplashBounds().middle() + sz / 2);
 }
 
-const static double darknessRadius = 3.5;
+double Level::getCreatureLightRadius() {
+  return 5.5;
+}
 
 void Level::putCreature(Vec2 position, WCreature c) {
   CHECK(inBounds(position));
@@ -143,24 +145,27 @@ void Level::addDarknessSource(Vec2 pos, double radius, int numDarkness) {
   }
 }
 
+void Level::updateCreatureLight(Vec2 pos, int diff) {
+  auto square = squares->getReadonly(pos);
+  CHECK(square) << pos << " " << getBounds();
+  if (WCreature c = square->getCreature()) {
+    if (c->isAffected(LastingEffect::DARKNESS_SOURCE))
+      addDarknessSource(pos, getCreatureLightRadius(), diff);
+    if (c->isAffected(LastingEffect::LIGHT_SOURCE))
+      addLightSource(pos, getCreatureLightRadius(), diff);
+  }
+}
+
 void Level::updateVisibility(Vec2 changedSquare) {
   for (Vec2 pos : getVisibleTilesNoDarkness(changedSquare, VisionId::NORMAL)) {
     addLightSource(pos, Position(pos, this).getLightEmission(), -1);
-    auto square = squares->getReadonly(pos);
-    CHECK(square) << pos << " " << getBounds();
-    if (WCreature c = square->getCreature())
-      if (c->isDarknessSource())
-        addDarknessSource(pos, darknessRadius, -1);
+    updateCreatureLight(pos, -1);
   }
   for (VisionId vision : ENUM_ALL(VisionId))
     getFieldOfView(vision).squareChanged(changedSquare);
   for (Vec2 pos : getVisibleTilesNoDarkness(changedSquare, VisionId::NORMAL)) {
     addLightSource(pos, Position(pos, this).getLightEmission(), 1);
-    auto square = squares->getReadonly(pos);
-    CHECK(square) << pos << " " << getBounds();
-    if (WCreature c = square->getCreature())
-      if (c->isDarknessSource())
-        addDarknessSource(pos, darknessRadius, 1);
+    updateCreatureLight(pos, 1);
   }
   for (Vec2 pos : getVisibleTilesNoDarkness(changedSquare, VisionId::NORMAL))
     getModel()->addEvent(EventInfo::VisibilityChanged{Position(pos, this)});
@@ -411,9 +416,8 @@ void Level::moveCreature(WCreature creature, Vec2 direction) {
 
 void Level::unplaceCreature(WCreature creature, Vec2 pos) {
   bucketMap->removeElement(pos, creature);
+  updateCreatureLight(pos, -1);
   modSafeSquare(pos)->removeCreature(Position(pos, this));
-  if (creature->isDarknessSource())   
-    addDarknessSource(pos, darknessRadius, -1);
 }
 
 void Level::placeCreature(WCreature creature, Vec2 pos) {
@@ -421,8 +425,7 @@ void Level::placeCreature(WCreature creature, Vec2 pos) {
   creature->setPosition(position);
   bucketMap->addElement(pos, creature);
   modSafeSquare(pos)->putCreature(creature);
-  if (creature->isDarknessSource())
-    addDarknessSource(pos, darknessRadius, 1);
+  updateCreatureLight(pos, 1);
   position.onEnter(creature);
 }
 

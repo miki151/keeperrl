@@ -345,7 +345,7 @@ bool Creature::canTakeItems(const vector<WItem>& items) const {
 
 void Creature::takeItems(vector<PItem> items, WCreature from) {
   vector<WItem> ref = getWeakPointers(items);
-  equipment->addItems(std::move(items));
+  equipment->addItems(std::move(items), this);
   getController()->onItemsGiven(ref, from);
 }
 
@@ -514,7 +514,7 @@ CreatureAction Creature::pickUp(const vector<WItem>& items) const {
       thirdPerson(getName().the() + " picks up " + getPluralAName(stack[0], stack.size()));
       secondPerson("You pick up " + getPluralTheName(stack[0], stack.size()));
     }
-    self->equipment->addItems(self->getPosition().removeItems(items));
+    self->equipment->addItems(self->getPosition().removeItems(items), self);
     if (auto& limit = getBody().getCarryLimit())
       if (equipment->getTotalWeight() > *limit / 2)
         you(MsgType::ARE, "overloaded");
@@ -686,7 +686,7 @@ CreatureAction Creature::stealFrom(Vec2 direction, const vector<WItem>& items) c
   if (getPosition().plus(direction).getCreature())
     return CreatureAction(this, [=](WCreature self) {
         WCreature other = NOTNULL(getPosition().plus(direction).getCreature());
-        self->equipment->addItems(other->steal(items));
+        self->equipment->addItems(other->steal(items), self);
       });
   return CreatureAction();
 }
@@ -733,7 +733,7 @@ bool Creature::isAffected(LastingEffect effect) const {
   if (auto time = getGlobalTime())
     return attributes->isAffected(effect, *time);
   else
-    return false;
+    return attributes->isAffectedPermanently(effect);
 }
 
 optional<TimeInterval> Creature::getTimeRemaining(LastingEffect effect) const {
@@ -742,10 +742,6 @@ optional<TimeInterval> Creature::getTimeRemaining(LastingEffect effect) const {
     if (t >= *global)
       return t - *global;
   return none;
-}
-
-bool Creature::isDarknessSource() const {
-  return isAffected(LastingEffect::DARKNESS_SOURCE);
 }
 
 // penalty to strength and dexterity per extra attacker in a single turn
@@ -811,7 +807,7 @@ bool Creature::isEnemy(WConstCreature c) const {
 
 vector<WItem> Creature::getGold(int num) const {
   vector<WItem> ret;
-  for (WItem item : equipment->getItems([](WConstItem it) { return it->getClass() == ItemClass::GOLD; })) {
+  for (WItem item : equipment->getItems().filter([](WConstItem it) { return it->getClass() == ItemClass::GOLD; })) {
     ret.push_back(item);
     if (ret.size() == num)
       return ret;
@@ -1095,7 +1091,7 @@ void Creature::take(vector<PItem> items) {
 
 void Creature::take(PItem item) {
   WItem ref = item.get();
-  equipment->addItem(std::move(item));
+  equipment->addItem(std::move(item), this);
   if (auto action = equip(ref))
     action.perform(this);
 }
