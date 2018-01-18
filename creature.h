@@ -280,7 +280,8 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   const EnumSet<CreatureStatus>& getStatus() const;
 
   void toggleCaptureOrder();
-  bool isCaptureOrdered();
+  bool isCaptureOrdered() const;
+  bool canCapture() const;
   void removePrivateEnemy(WConstCreature);
 
   private:

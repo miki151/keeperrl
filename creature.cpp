@@ -216,15 +216,19 @@ const EnumSet<CreatureStatus>& Creature::getStatus() const {
   return statuses;
 }
 
+bool Creature::canCapture() const {
+  return getBody().isHumanoid() && !isAffected(LastingEffect::STUNNED);
+}
+
 void Creature::toggleCaptureOrder() {
-  if (getBody().isHumanoid()) {
+  if (canCapture()) {
     capture = !capture;
     updateViewObject();
     position.setNeedsRenderUpdate(true);
   }
 }
 
-bool Creature::isCaptureOrdered() {
+bool Creature::isCaptureOrdered() const {
   return capture;
 }
 
@@ -362,7 +366,7 @@ bool Creature::hasCondition(CreatureCondition condition) const {
 
 bool Creature::canSwapPositionInMovement(WCreature other) const {
   return !other->hasCondition(CreatureCondition::RESTRICTED_MOVEMENT)
-      && (swapPositionCooldown == 0 || isPlayer())
+      && (swapPositionCooldown == 0 || isPlayer() || other->isAffected(LastingEffect::STUNNED))
       && !other->getAttributes().isBoulder()
       && (!other->isPlayer() || isPlayer())
       && (!other->isEnemy(this) || other->isAffected(LastingEffect::STUNNED))

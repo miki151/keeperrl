@@ -1418,9 +1418,11 @@ void PlayerControl::getSquareViewIndex(Position pos, bool canSee, ViewIndex& ind
     if (canSee) {
       index.insert(c->getViewObject());
       auto& object = index.getObject(ViewLayer::CREATURE);
-      if (isEnemy(c))
+      if (isEnemy(c)) {
         object.setModifier(ViewObject::Modifier::HOSTILE);
-      else
+        if (c->canCapture())
+          object.setClickAction(c->isCaptureOrdered() ? "Cancel capture order" : "Order capture");
+      } else
         object.getCreatureStatus().intersectWith(getDisplayedOnMinions());
     }
 }
@@ -1839,10 +1841,13 @@ void PlayerControl::processInput(View* view, UserInput input) {
       break;
     case UserInputId::CREATURE_MAP_CLICK: {
       if (WCreature c = Position(input.get<Vec2>(), getLevel()).getCreature()) {
-        if (!getChosenTeam() || !getTeams().contains(*getChosenTeam(), c))
-          setChosenCreature(c->getUniqueId());
-        else
-          setChosenTeam(*chosenTeam, c->getUniqueId());
+        if (getCreatures().contains(c)) {
+          if (!getChosenTeam() || !getTeams().contains(*getChosenTeam(), c))
+            setChosenCreature(c->getUniqueId());
+          else
+            setChosenTeam(*chosenTeam, c->getUniqueId());
+        } else
+          c->toggleCaptureOrder();
       }
       break;
     }

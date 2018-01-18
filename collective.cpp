@@ -145,6 +145,7 @@ void Collective::addCreature(PCreature creature, Position pos, EnumSet<MinionTra
 void Collective::updateCreatureStatus(WCreature c) {
   c->getStatus().set(CreatureStatus::CIVILIAN,
       c->getBody().isHumanoid() &&
+      !hasTrait(c, MinionTrait::STUNNED) &&
       !hasTrait(c, MinionTrait::FIGHTER) &&
       !hasTrait(c, MinionTrait::LEADER));
   c->getStatus().set(CreatureStatus::FIGHTER, hasTrait(c, MinionTrait::FIGHTER));
@@ -542,7 +543,7 @@ vector<Position> Collective::getEnemyPositions() const {
   vector<Position> enemyPos;
   for (Position pos : territory->getExtended(10))
     if (WConstCreature c = pos.getCreature())
-      if (getTribe()->isEnemy(c))
+      if (getTribe()->isEnemy(c) && !c->isAffected(LastingEffect::STUNNED))
         enemyPos.push_back(pos);
   return enemyPos;
 }

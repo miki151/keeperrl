@@ -163,7 +163,6 @@ void WindowView::mapCreatureClickFun(UniqueEntity<Creature>::Id id, Vec2 positio
   if (rightClick) {
     inputQueue.push(UserInput(UserInputId::CREATURE_MAP_CLICK_EXTENDED, position));
   } else {
-    guiBuilder.setCollectiveTab(CollectiveTab::MINIONS);
     inputQueue.push(UserInput(UserInputId::CREATURE_MAP_CLICK, position));
   }
 }

@@ -86,7 +86,11 @@ void GuiBuilder::setCollectiveTab(CollectiveTab t) {
   if (collectiveTab != t) {
     collectiveTab = t;
     clearActiveButton();
-    closeOverlayWindowsAndClearButton();
+    if (t != CollectiveTab::MINIONS)
+      callbacks.input({UserInputId::CREATURE_BUTTON, UniqueEntity<Creature>::Id()});
+    callbacks.input({UserInputId::WORKSHOP, -1});
+    callbacks.input({UserInputId::LIBRARY_CLOSE});
+    showTasks = false;
   }
 }
 
@@ -1761,6 +1765,7 @@ SGuiElem GuiBuilder::drawMinionsOverlay(const CollectiveInfo& info, const option
   int minionListWidth = 220;
   if (!info.chosenCreature)
     return gui.empty();
+  setCollectiveTab(CollectiveTab::MINIONS);
   SGuiElem minionPage;
   auto& minions = info.chosenCreature->creatures;
   auto current = info.chosenCreature->chosenId;
