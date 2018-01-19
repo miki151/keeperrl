@@ -51,6 +51,7 @@ class Level : public OwnedObject<Level> {
   static Rectangle getMaxBounds();
   static Rectangle getSplashBounds();
   static Rectangle getSplashVisibleBounds();
+  static double getCreatureLightRadius();
 
   /** Moves the creature. Updates the creature's position.*/
   void moveCreature(WCreature, Vec2 direction);
@@ -217,6 +218,7 @@ class Level : public OwnedObject<Level> {
   public:
   Level(Private, SquareArray, FurnitureArray, WModel, const string& name, Table<double> sunlight, LevelId, Table<bool> cover);
 
+
   private:
   void addLightSource(Vec2 pos, double radius, int numLight);
   void addDarknessSource(Vec2 pos, double radius, int numLight);
@@ -225,5 +227,6 @@ class Level : public OwnedObject<Level> {
   bool isWithinVision(Vec2 from, Vec2 to, const Vision&) const;
   LevelId SERIAL(levelId) = 0;
   bool SERIAL(noDiagonalPassing) = false;
+  void updateCreatureLight(Vec2, int diff);
 };
 

@@ -310,9 +310,12 @@ optional<MapGui::CreatureInfo> MapGui::getCreature(Vec2 mousePos) {
 
 void MapGui::onMouseRelease(Vec2 v) {
   if (isScrollingNow) {
-    if (fabs(mouseOffset.x) + fabs(mouseOffset.y) < 1)
-      callbacks.rightClickFun(layout->projectOnMap(getBounds(), getScreenPos(), lastMousePos));
-    else {
+    if (fabs(mouseOffset.x) + fabs(mouseOffset.y) < 1) {
+      if (auto c = getCreature(lastMousePos))
+        callbacks.creatureClickFun(c->id, c->position, true);
+      else
+        callbacks.rightClickFun(layout->projectOnMap(getBounds(), getScreenPos(), lastMousePos));
+    } else {
       center.x = min<double>(levelBounds.right(), max(0.0, center.x - mouseOffset.x));
       center.y = min<double>(levelBounds.bottom(), max(0.0, center.y - mouseOffset.y));
     }
@@ -342,7 +345,7 @@ void MapGui::onMouseRelease(Vec2 v) {
         considerContinuousLeftClick(v);
     } else {
       if (auto c = getCreature(*mouseHeldPos))
-        callbacks.creatureClickFun(c->id, c->position);
+        callbacks.creatureClickFun(c->id, c->position, false);
       else {
         callbacks.leftClickFun(layout->projectOnMap(getBounds(), getScreenPos(), v));
         considerContinuousLeftClick(v);
@@ -552,7 +555,8 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
       if (*burningVal > 0) {
         static auto fire1 = renderer.getTileCoord("fire1");
         static auto fire2 = renderer.getTileCoord("fire2");
-        renderer.drawTile(pos, (curTimeReal.count() + pos.getHash()) % 500 < 250 ? fire1 : fire2, size);
+        renderer.drawTile(pos - Vec2(0, 4 * size.y / renderer.getNominalSize().y),
+            (curTimeReal.count() + pos.getHash()) % 500 < 250 ? fire1 : fire2, size);
       }
     if (displayAllHealthBars || lastHighlighted.creaturePos == pos + movement ||
         object.hasModifier(ViewObject::Modifier::CAPTURE_ORDERED))

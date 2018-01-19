@@ -153,6 +153,7 @@ static TimeInterval getDuration(WConstCreature c, LastingEffect e) {
     case LastingEffect::SLOWED:
     case LastingEffect::SPEED:
     case LastingEffect::RAGE:
+    case LastingEffect::LIGHT_SOURCE:
     case LastingEffect::DARKNESS_SOURCE:
     case LastingEffect::PANIC: return  15_visible;
     case LastingEffect::POISON: return  60_visible;

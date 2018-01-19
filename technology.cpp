@@ -67,6 +67,8 @@ void Technology::init() {
         "magical weapons", "Produce melee weapons that deal "_s + ::getName(AttrType::SPELL_DAMAGE), 120, {TechId::SPELLS_ADV}));
   Technology::set(TechId::SPELLS_MAS, new Technology(
         "master sorcery", "Learn the most powerful spells.", 350, {TechId::SPELLS_ADV}));
+  Technology::set(TechId::DEMONOLOGY, new Technology(
+        "demonology", "Build demon shrines to summon demons.", 350, {TechId::SPELLS_ADV}));
   Technology::set(TechId::GEOLOGY1, new Technology(
         "geology", "Discover precious ores in the earth.", 60, {}));
   Technology::set(TechId::GEOLOGY2, new Technology(

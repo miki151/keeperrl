@@ -132,7 +132,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
 
   string getPluralTheName(WItem item, int num) const;
   string getPluralAName(WItem item, int num) const;
-  CreatureAction move(Position) const;
+  CreatureAction move(Position, optional<Position> nextPosIntent = none) const;
   CreatureAction move(Vec2) const;
   CreatureAction forceMove(Position) const;
   CreatureAction forceMove(Vec2) const;
@@ -253,7 +253,6 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   bool isAffected(LastingEffect) const;
   optional<TimeInterval> getTimeRemaining(LastingEffect) const;
   bool hasCondition(CreatureCondition) const;
-  bool isDarknessSource() const;
 
   bool isUnknownAttacker(WConstCreature) const;
   vector<AdjectiveInfo> getGoodAdjectives() const;
@@ -280,7 +279,8 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   const EnumSet<CreatureStatus>& getStatus() const;
 
   void toggleCaptureOrder();
-  bool isCaptureOrdered();
+  bool isCaptureOrdered() const;
+  bool canCapture() const;
   void removePrivateEnemy(WConstCreature);
 
   private:
@@ -290,7 +290,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   bool canCarry(const vector<WItem>&) const;
   TribeSet getFriendlyTribes() const;
   void addMovementInfo(MovementInfo);
-  bool canSwapPositionInMovement(WCreature other) const;
+  bool canSwapPositionInMovement(WCreature other, optional<Position> nextPos) const;
 
   HeapAllocated<CreatureAttributes> SERIAL(attributes);
   Position SERIAL(position);
@@ -304,7 +304,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   WCreature lastAttacker;
   optional<ExperienceType> SERIAL(lastDamageType);
   optional<string> SERIAL(deathReason);
-  int SERIAL(swapPositionCooldown) = 0;
+  optional<Position> SERIAL(nextPosIntent);
   EntitySet<Creature> SERIAL(unknownAttackers);
   EntitySet<Creature> SERIAL(privateEnemies);
   optional<Creature::Id> SERIAL(holding);

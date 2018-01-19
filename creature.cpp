@@ -56,7 +56,7 @@ void Creature::serialize(Archive& ar, const unsigned int version) {
   ar & SUBCLASS(OwnedObject<Creature>) & SUBCLASS(Renderable) & SUBCLASS(UniqueEntity);
   ar(attributes, position, equipment, shortestPath, knownHiding, tribe, morale);
   ar(deathTime, hidden, lastMoveCounter, captureHealth);
-  ar(deathReason, swapPositionCooldown);
+  ar(deathReason, nextPosIntent);
   ar(unknownAttackers, privateEnemies, holding);
   ar(controllerStack, kills, statuses);
   ar(difficultyPoints, points, capture);
@@ -216,15 +216,19 @@ const EnumSet<CreatureStatus>& Creature::getStatus() const {
   return statuses;
 }
 
+bool Creature::canCapture() const {
+  return getBody().isHumanoid() && !isAffected(LastingEffect::STUNNED);
+}
+
 void Creature::toggleCaptureOrder() {
-  if (getBody().isHumanoid()) {
+  if (canCapture()) {
     capture = !capture;
     updateViewObject();
     position.setNeedsRenderUpdate(true);
   }
 }
 
-bool Creature::isCaptureOrdered() {
+bool Creature::isCaptureOrdered() const {
   return capture;
 }
 
@@ -264,7 +268,7 @@ CreatureAction Creature::forceMove(Vec2 dir) const {
 
 CreatureAction Creature::forceMove(Position pos) const {
   const_cast<Creature*>(this)->forceMovement = true;
-  CreatureAction action = move(pos);
+  CreatureAction action = move(pos, none);
   const_cast<Creature*>(this)->forceMovement = false;
   if (action)
     return action.prepend([] (WCreature c) { c->forceMovement = true; })
@@ -274,10 +278,10 @@ CreatureAction Creature::forceMove(Position pos) const {
 }
 
 CreatureAction Creature::move(Vec2 dir) const {
-  return move(getPosition().plus(dir));
+  return move(getPosition().plus(dir), none);
 }
 
-CreatureAction Creature::move(Position pos) const {
+CreatureAction Creature::move(Position pos, optional<Position> nextPos) const {
   Vec2 direction = getPosition().getDir(pos);
   if (getHoldingCreature())
     return CreatureAction("You can't break free!");
@@ -285,7 +289,7 @@ CreatureAction Creature::move(Position pos) const {
     return CreatureAction();
   if (!position.canMoveCreature(direction)) {
     if (pos.getCreature()) {
-      if (!canSwapPositionInMovement(pos.getCreature()))
+      if (!canSwapPositionInMovement(pos.getCreature(), nextPos))
         return CreatureAction(/*"You can't swap position with " + pos.getCreature()->getName().the()*/);
     } else
       return CreatureAction();
@@ -298,6 +302,7 @@ CreatureAction Creature::move(Position pos) const {
       self->spendTime();
       return;
     }
+    self->nextPosIntent = nextPos;
     if (position.canMoveCreature(direction))
       self->position.moveCreature(direction);
     else {
@@ -313,6 +318,21 @@ CreatureAction Creature::move(Position pos) const {
   });
 }
 
+static bool posIntentsConflict(Position myPos, Position hisPos, optional<Position> hisIntent) {
+  return hisIntent && myPos.dist8(*hisIntent) > hisPos.dist8(*hisIntent) && hisPos.dist8(*hisIntent) <= 1;
+}
+
+bool Creature::canSwapPositionInMovement(WCreature other, optional<Position> nextPos) const {
+  return !other->hasCondition(CreatureCondition::RESTRICTED_MOVEMENT)
+      && (!posIntentsConflict(position, other->position, other->nextPosIntent)
+          || isPlayer() || other->isAffected(LastingEffect::STUNNED))
+      && !other->getAttributes().isBoulder()
+      && (!other->isPlayer() || isPlayer())
+      && (!other->isEnemy(this) || other->isAffected(LastingEffect::STUNNED))
+      && other->getPosition().canEnterEmpty(this)
+      && getPosition().canEnterEmpty(other);
+}
+
 void Creature::displace(Vec2 dir) {
   position.moveCreature(dir);
   auto time = *getLocalTime();
@@ -325,7 +345,7 @@ bool Creature::canTakeItems(const vector<WItem>& items) const {
 
 void Creature::takeItems(vector<PItem> items, WCreature from) {
   vector<WItem> ref = getWeakPointers(items);
-  equipment->addItems(std::move(items));
+  equipment->addItems(std::move(items), this);
   getController()->onItemsGiven(ref, from);
 }
 
@@ -360,20 +380,9 @@ bool Creature::hasCondition(CreatureCondition condition) const {
   return false;
 }
 
-bool Creature::canSwapPositionInMovement(WCreature other) const {
-  return !other->hasCondition(CreatureCondition::RESTRICTED_MOVEMENT)
-      && (swapPositionCooldown == 0 || isPlayer())
-      && !other->getAttributes().isBoulder()
-      && (!other->isPlayer() || isPlayer())
-      && (!other->isEnemy(this) || other->isAffected(LastingEffect::STUNNED))
-      && other->getPosition().canEnterEmpty(this)
-      && getPosition().canEnterEmpty(other);
-}
-
 void Creature::swapPosition(Vec2 direction) {
   CHECK(direction.length8() == 1);
   WCreature other = NOTNULL(getPosition().plus(direction).getCreature());
-  swapPositionCooldown = 4;
   privateMessage("Excuse me!");
   other->privateMessage("Excuse me!");
   position.swapCreatures(other);
@@ -392,8 +401,6 @@ void Creature::makeMove() {
   }
   updateVisibleCreatures();
   updateViewObject();
-  if (swapPositionCooldown)
-    --swapPositionCooldown;
   {
     // Calls makeMove() while preventing Controller destruction by holding a shared_ptr on stack.
     // This is needed, otherwise Controller could be destroyed during makeMove() if creature committed suicide.
@@ -411,6 +418,7 @@ void Creature::makeMove() {
 
 CreatureAction Creature::wait() const {
   return CreatureAction(this, [=](WCreature self) {
+    self->nextPosIntent = none;
     INFO << getName().the() << " waiting";
     bool keepHiding = hidden;
     self->spendTime();
@@ -506,7 +514,7 @@ CreatureAction Creature::pickUp(const vector<WItem>& items) const {
       thirdPerson(getName().the() + " picks up " + getPluralAName(stack[0], stack.size()));
       secondPerson("You pick up " + getPluralTheName(stack[0], stack.size()));
     }
-    self->equipment->addItems(self->getPosition().removeItems(items));
+    self->equipment->addItems(self->getPosition().removeItems(items), self);
     if (auto& limit = getBody().getCarryLimit())
       if (equipment->getTotalWeight() > *limit / 2)
         you(MsgType::ARE, "overloaded");
@@ -624,6 +632,7 @@ CreatureAction Creature::applySquare(Position pos) const {
   if (auto furniture = pos.getFurniture(FurnitureLayer::MIDDLE))
     if (furniture->canUse(this))
       return CreatureAction(this, [=](WCreature self) {
+        self->nextPosIntent = none;
         INFO << getName().the() << " applying " << getPosition().getName();
         auto originalPos = getPosition();
         auto usageTime = furniture->getUsageTime();
@@ -677,7 +686,7 @@ CreatureAction Creature::stealFrom(Vec2 direction, const vector<WItem>& items) c
   if (getPosition().plus(direction).getCreature())
     return CreatureAction(this, [=](WCreature self) {
         WCreature other = NOTNULL(getPosition().plus(direction).getCreature());
-        self->equipment->addItems(other->steal(items));
+        self->equipment->addItems(other->steal(items), self);
       });
   return CreatureAction();
 }
@@ -724,7 +733,7 @@ bool Creature::isAffected(LastingEffect effect) const {
   if (auto time = getGlobalTime())
     return attributes->isAffected(effect, *time);
   else
-    return false;
+    return attributes->isAffectedPermanently(effect);
 }
 
 optional<TimeInterval> Creature::getTimeRemaining(LastingEffect effect) const {
@@ -733,10 +742,6 @@ optional<TimeInterval> Creature::getTimeRemaining(LastingEffect effect) const {
     if (t >= *global)
       return t - *global;
   return none;
-}
-
-bool Creature::isDarknessSource() const {
-  return isAffected(LastingEffect::DARKNESS_SOURCE);
 }
 
 // penalty to strength and dexterity per extra attacker in a single turn
@@ -802,7 +807,7 @@ bool Creature::isEnemy(WConstCreature c) const {
 
 vector<WItem> Creature::getGold(int num) const {
   vector<WItem> ret;
-  for (WItem item : equipment->getItems([](WConstItem it) { return it->getClass() == ItemClass::GOLD; })) {
+  for (WItem item : equipment->getItems().filter([](WConstItem it) { return it->getClass() == ItemClass::GOLD; })) {
     ret.push_back(item);
     if (ret.size() == num)
       return ret;
@@ -1086,7 +1091,7 @@ void Creature::take(vector<PItem> items) {
 
 void Creature::take(PItem item) {
   WItem ref = item.get();
-  equipment->addItem(std::move(item));
+  equipment->addItem(std::move(item), this);
   if (auto action = equip(ref))
     action.perform(this);
 }
@@ -1468,7 +1473,7 @@ int Creature::getDifficultyPoints() const {
 
 CreatureAction Creature::continueMoving() {
   if (shortestPath && shortestPath->isReachable(getPosition()))
-    return move(shortestPath->getNextMove(getPosition()));
+    return move(shortestPath->getNextMove(getPosition()), shortestPath->getNextNextMove(getPosition()));
   else
     return CreatureAction();
 }
@@ -1511,10 +1516,8 @@ CreatureAction Creature::moveTowards(Position pos, bool away, NavigationFlags fl
   CHECK(pos.isSameLevel(position));
   if (flags.stepOnTile && !pos.canEnterEmpty(this))
     return CreatureAction();
-  MEASURE(
   if (!away && !canNavigateTo(pos))
     return CreatureAction();
-  , "Creature Sector checking " + getName().bare() + " from " + toString(position) + " to " + toString(pos));
   bool newPath = false;
   bool targetChanged = shortestPath && shortestPath->getTarget().dist8(pos) > getPosition().dist8(pos) / 10;
   if (!shortestPath || targetChanged || shortestPath->isReversed() != away) {
@@ -1526,10 +1529,8 @@ CreatureAction Creature::moveTowards(Position pos, bool away, NavigationFlags fl
   }
   CHECK(shortestPath);
   if (shortestPath->isReachable(position))
-    if (auto action = move(shortestPath->getNextMove(position)))
+    if (auto action = move(shortestPath->getNextMove(position), shortestPath->getNextNextMove(position)))
       return action;
-  /*if (newPath)
-    return CreatureAction();*/
   INFO << "Reconstructing shortest path.";
   if (!away)
     shortestPath.reset(new LevelShortestPath(this, pos, position));
@@ -1537,7 +1538,7 @@ CreatureAction Creature::moveTowards(Position pos, bool away, NavigationFlags fl
     shortestPath.reset(new LevelShortestPath(this, pos, position, -1.5));
   if (shortestPath->isReachable(position)) {
     Position pos2 = shortestPath->getNextMove(position);
-    if (auto action = move(pos2))
+    if (auto action = move(pos2, shortestPath->getNextNextMove(position)))
       return action;
     else {
       if (!pos2.canEnterEmpty(this) && flags.destroy)
@@ -1547,7 +1548,6 @@ CreatureAction Creature::moveTowards(Position pos, bool away, NavigationFlags fl
       return CreatureAction();
     }
   } else {
-    //INFO << "Cannot move toward " << pos.getCoord();
     return CreatureAction();
   }
 }

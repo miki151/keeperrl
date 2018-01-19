@@ -305,13 +305,6 @@ const vector<WItem>& Position::getItems() const {
   }
 }
 
-vector<WItem> Position::getItems(function<bool (WConstItem)> predicate) const {
-  if (isValid())
-    return getSquare()->getInventory().getItems(predicate);
-  else
-    return {};
-}
-
 const vector<WItem>& Position::getItems(ItemIndex index) const {
   if (isValid())
     return getSquare()->getInventory().getItems(index);
@@ -430,6 +423,24 @@ void Position::addFurniture(PFurniture f) const {
   updateVisibility();
   level->addLightSource(coord, furniture->getLightEmission());
   setNeedsRenderUpdate(true);
+}
+
+void Position::addCreatureLight(bool darkness) {
+  if (isValid()) {
+    if (darkness)
+      level->addDarknessSource(coord, Level::getCreatureLightRadius(), 1);
+    else
+      level->addLightSource(coord, Level::getCreatureLightRadius(), 1);
+  }
+}
+
+void Position::removeCreatureLight(bool darkness) {
+  if (isValid()) {
+    if (darkness)
+      level->addDarknessSource(coord, Level::getCreatureLightRadius(), -1);
+    else
+      level->addLightSource(coord, Level::getCreatureLightRadius(), -1);
+  }
 }
 
 void Position::replaceFurniture(WConstFurniture prev, PFurniture next) const {
@@ -658,9 +669,12 @@ optional<DestroyAction> Position::getBestDestroyAction(const MovementType& movem
 
 optional<double> Position::getNavigationCost(const MovementType& movement) const {
   if (canEnterEmpty(movement)) {
-    if (getCreature())
-      return 5.0;
-    else
+    if (auto c = getCreature()) {
+      if (c->getAttributes().isBoulder())
+        return none;
+      else
+        return 5.0;
+    } else
       return 1.0;
   }
   if (auto furniture = getFurniture(FurnitureLayer::MIDDLE))

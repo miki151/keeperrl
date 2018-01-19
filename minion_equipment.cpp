@@ -63,6 +63,8 @@ optional<int> MinionEquipment::getEquipmentLimit(EquipmentType type) const {
     case MinionEquipment::COMBAT_ITEM:
     case MinionEquipment::HEALING:
       return 6;
+    case MinionEquipment::TORCH:
+      return 1;
     default:
       return none;
   }
@@ -77,6 +79,8 @@ optional<MinionEquipment::EquipmentType> MinionEquipment::getEquipmentType(WCons
     if (isCombatConsumable(*effect))
       return MinionEquipment::COMBAT_ITEM;
   }
+  if (it->getOwnedEffect() == LastingEffect::LIGHT_SOURCE)
+    return MinionEquipment::TORCH;
   return none;
 }
 
@@ -114,7 +118,7 @@ bool MinionEquipment::needsItem(WConstCreature c, WConstItem it, bool noLimit) c
     }
     return (c->canEquipIfEmptySlot(it))
       || (type == HEALING && c->getBody().hasHealth()) 
-      || type == COMBAT_ITEM;
+      || type == COMBAT_ITEM || type == TORCH;
   } else
     return false;
 }

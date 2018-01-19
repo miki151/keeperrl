@@ -41,7 +41,6 @@ class Furniture : public OwnedObject<Furniture> {
   TribeId getTribe() const;
   void setTribe(TribeId);
   const optional<Fire>& getFire() const;
-  optional<Fire>& getFire();
   void fireDamage(Position, double amount);
   void tick(Position);
   bool canSeeThru(VisionId) const;

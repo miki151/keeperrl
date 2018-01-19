@@ -1299,6 +1299,30 @@ class SetSunlight : public LevelMaker {
   Predicate pred;
 };
 
+static void removeEdge(Table<bool>& values, int thickness) {
+  auto bounds = values.getBounds();
+  Table<int> distance(bounds, 1000000);
+  queue<Vec2> q;
+  for (auto v : bounds)
+    if (!values[v]) {
+      distance[v] = 0;
+      q.push(v);
+    }
+  while (!q.empty()) {
+    auto v = q.front();
+    q.pop();
+    if (distance[v] <= thickness)
+      values[v] = false;
+    else
+      break;
+    for (auto neighbor : v.neighbors4())
+      if (neighbor.inRectangle(bounds) && distance[neighbor] > distance[v] + 1) {
+        distance[neighbor] = distance[v] + 1;
+        q.push(neighbor);
+      }
+  }
+}
+
 class Mountains : public LevelMaker {
   public:
   static constexpr double varianceM = 0.45;
@@ -1314,13 +1338,13 @@ class Mountains : public LevelMaker {
     double cutOffHill = values[(int)((ratioHill + ratioLowland) * double(values.size() - 1))];
     double cutOffDarkness = values[(int)((ratioHill + ratioLowland + 1.0) * 0.5 * double(values.size() - 1))];
     int dCnt = 0, mCnt = 0, hCnt = 0, lCnt = 0;
+    Table<bool> isMountain(area, false);
     for (Vec2 v : area) {
       builder->setHeightMap(v, wys[v]);
       if (wys[v] >= cutOffHill) {
+        isMountain[v] = true;
         builder->putFurniture(v, FurnitureType::FLOOR);
         auto type = FurnitureType::MOUNTAIN;
-        if (wys[v] >= cutOffDarkness)
-          type = FurnitureType::MOUNTAIN2;
         builder->putFurniture(v, {type, TribeId::getKeeper()}, SquareAttrib::MOUNTAIN);
         builder->setSunlight(v, max(0.0, 1. - (wys[v] - cutOffHill) / (cutOffDarkness - cutOffHill)));
         builder->setCovered(v, true);
@@ -1335,6 +1359,11 @@ class Mountains : public LevelMaker {
         ++lCnt;
       }
     }
+    // Remove the MOUNTAIN2 tiles that are to close to the edge of the mountain
+    removeEdge(isMountain, 20);
+    for (auto v : area)
+      if (isMountain[v])
+        builder->putFurniture(v, {FurnitureType::MOUNTAIN2, TribeId::getKeeper()}, SquareAttrib::MOUNTAIN);
     INFO << "Terrain distribution " << dCnt << " darkness, " << mCnt << " mountain, " << hCnt << " hill, " << lCnt << " lowland";
   }
 
@@ -2037,15 +2066,15 @@ RandomLocations::LocationPredicate getSettlementPredicate(SettlementType type) {
       return !Predicate::attrib(SquareAttrib::RIVER) && Predicate::attrib(SquareAttrib::FORREST);
     case SettlementType::CAVE:
       return RandomLocations::LocationPredicate(
-          Predicate::type(FurnitureType::MOUNTAIN), Predicate::attrib(SquareAttrib::HILL), 5, 15);
+          Predicate::attrib(SquareAttrib::MOUNTAIN), Predicate::attrib(SquareAttrib::HILL), 5, 15);
     case SettlementType::VAULT:
     case SettlementType::ANT_NEST:
     case SettlementType::SMALL_MINETOWN:
     case SettlementType::MINETOWN:
-      return Predicate::type(FurnitureType::MOUNTAIN);
+      return Predicate::attrib(SquareAttrib::MOUNTAIN);
     case SettlementType::SPIDER_CAVE:
       return RandomLocations::LocationPredicate(
-          Predicate::type(FurnitureType::MOUNTAIN),
+          Predicate::attrib(SquareAttrib::MOUNTAIN),
           Predicate::attrib(SquareAttrib::CONNECTOR), 1, 2);
     case SettlementType::MOUNTAIN_LAKE:
     case SettlementType::ISLAND_VAULT:
@@ -2381,7 +2410,7 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, optional<CreatureFactory> fo
   if (biomeId == BiomeId::MOUNTAIN)
     for (int i : Range(random.get(3, 6))) {
       locations->add(unique<UniformBlob>(FurnitureType::WATER, none, SquareAttrib::LAKE),
-          {random.get(10, 30), random.get(10, 30)}, Predicate::type(FurnitureType::MOUNTAIN));
+          {random.get(10, 30), random.get(10, 30)}, Predicate::attrib(SquareAttrib::MOUNTAIN));
   //  locations->setMaxDistanceLast(startingPos, i == 0 ? 25 : 60);
   }
 /*  for (int i : Range(random.get(3, 5))) {
@@ -2392,7 +2421,7 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, optional<CreatureFactory> fo
   int mapBorder = 30;
   queue->addMaker(unique<Empty>(FurnitureType::WATER));
   queue->addMaker(getMountains(biomeId));
-  queue->addMaker(unique<MountainRiver>(1, Predicate::type(FurnitureType::MOUNTAIN)));
+  queue->addMaker(unique<MountainRiver>(1, Predicate::attrib(SquareAttrib::MOUNTAIN)));
   queue->addMaker(unique<AddAttrib>(SquareAttrib::CONNECT_CORRIDOR, Predicate::attrib(SquareAttrib::LOWLAND)));
   queue->addMaker(unique<AddAttrib>(SquareAttrib::CONNECT_CORRIDOR, Predicate::attrib(SquareAttrib::HILL)));
   queue->addMaker(getForrest(biomeId));

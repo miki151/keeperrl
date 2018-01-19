@@ -145,6 +145,7 @@ void Collective::addCreature(PCreature creature, Position pos, EnumSet<MinionTra
 void Collective::updateCreatureStatus(WCreature c) {
   c->getStatus().set(CreatureStatus::CIVILIAN,
       c->getBody().isHumanoid() &&
+      !hasTrait(c, MinionTrait::STUNNED) &&
       !hasTrait(c, MinionTrait::FIGHTER) &&
       !hasTrait(c, MinionTrait::LEADER));
   c->getStatus().set(CreatureStatus::FIGHTER, hasTrait(c, MinionTrait::FIGHTER));
@@ -487,7 +488,7 @@ MoveInfo Collective::getMove(WCreature c) {
 
   auto dropLoot = [&] () -> MoveInfo {
     if (config->getFetchItems() && territory->contains(c->getPosition())) {
-      vector<WItem> items = c->getEquipment().getItems([this, c](WConstItem item) {
+      vector<WItem> items = c->getEquipment().getItems().filter([this, c](WConstItem item) {
           return !isItemMarked(item) && !minionEquipment->isOwner(item, c); });
       if (!items.empty())
         return c->drop(items);
@@ -542,7 +543,7 @@ vector<Position> Collective::getEnemyPositions() const {
   vector<Position> enemyPos;
   for (Position pos : territory->getExtended(10))
     if (WConstCreature c = pos.getCreature())
-      if (getTribe()->isEnemy(c))
+      if (getTribe()->isEnemy(c) && !c->isAffected(LastingEffect::STUNNED))
         enemyPos.push_back(pos);
   return enemyPos;
 }
@@ -908,10 +909,10 @@ vector<WItem> Collective::getAllItems(bool includeMinions) const {
 vector<WItem> Collective::getAllItems(ItemPredicate predicate, bool includeMinions) const {
   vector<WItem> allItems;
   for (Position v : territory->getAll())
-    append(allItems, v.getItems(predicate));
+    append(allItems, v.getItems().filter(predicate));
   if (includeMinions)
     for (WCreature c : getCreatures())
-      append(allItems, c->getEquipment().getItems(predicate));
+      append(allItems, c->getEquipment().getItems().filter(predicate));
   return allItems;
 }
 

@@ -35,6 +35,7 @@ class ShortestPath {
       double mult = 0);
   bool isReachable(Vec2 pos) const;
   Vec2 getNextMove(Vec2 pos);
+  optional<Vec2> getNextNextMove(Vec2 pos);
   Vec2 getTarget() const;
   bool isReversed() const;
 
@@ -59,6 +60,7 @@ class LevelShortestPath {
   LevelShortestPath(WConstCreature creature, Position target, Position from, double mult = 0);
   bool isReachable(Position) const;
   Position getNextMove(Position);
+  optional<Position> getNextNextMove(Position);
   Position getTarget() const;
   bool isReversed() const;
   WLevel getLevel() const;

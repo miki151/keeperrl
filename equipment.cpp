@@ -28,21 +28,41 @@ map<EquipmentSlot, string> Equipment::slotTitles = {
   {EquipmentSlot::RINGS, "Rings"},
   {EquipmentSlot::AMULET, "Amulet"}};
 
-template <class Archive> 
-void Equipment::serialize(Archive& ar, const unsigned int version) {
-  ar & SUBCLASS(Inventory);
-  ar(items, equipped);
+SERIALIZE_DEF(Equipment, inventory, items, equipped)
+SERIALIZATION_CONSTRUCTOR_IMPL(Equipment);
+
+void Equipment::addItem(PItem item, WCreature c) {
+  item->onOwned(c);
+  inventory.addItem(std::move(item));
 }
 
-SERIALIZABLE(Equipment);
-SERIALIZATION_CONSTRUCTOR_IMPL(Equipment);
+void Equipment::addItems(vector<PItem> items, WCreature c) {
+  for (auto& item : items)
+    addItem(std::move(item), c);
+}
 
 vector<WItem> Equipment::getSlotItems(EquipmentSlot slot) const {
   return items[slot];
 }
 
+bool Equipment::hasItem(WConstItem it) const {
+  return inventory.hasItem(it);
+}
+
 const vector<WItem>& Equipment::getAllEquipped() const {
   return equipped;
+}
+
+const vector<WItem>& Equipment::getItems() const {
+  return inventory.getItems();
+}
+
+const vector<WItem>& Equipment::getItems(ItemIndex index) const {
+  return inventory.getItems(index);
+}
+
+WItem Equipment::getItemById(UniqueEntity<Item>::Id id) const {
+  return inventory.getItemById(id);
 }
 
 bool Equipment::isEquipped(WConstItem item) const {
@@ -67,7 +87,7 @@ void Equipment::equip(WItem item, EquipmentSlot slot, WCreature c) {
   items[slot].push_back(item);
   equipped.push_back(item);
   item->onEquip(c);
-  CHECK(hasItem(item));
+  CHECK(inventory.hasItem(item));
 }
 
 void Equipment::unequip(WItem item, WCreature c) {
@@ -79,7 +99,8 @@ void Equipment::unequip(WItem item, WCreature c) {
 PItem Equipment::removeItem(WItem item, WCreature c) {
   if (isEquipped(item))
     unequip(item, c);
-  return Inventory::removeItem(item);
+  item->onDropped(c);
+  return inventory.removeItem(item);
 }
   
 vector<PItem> Equipment::removeItems(const vector<WItem>& items, WCreature c) {
@@ -90,6 +111,14 @@ vector<PItem> Equipment::removeItems(const vector<WItem>& items, WCreature c) {
 }
 
 vector<PItem> Equipment::removeAllItems(WCreature c) {
-  return removeItems(getItems(), c);
+  return removeItems(inventory.getItems(), c);
+}
+
+double Equipment::getTotalWeight() const {
+  return inventory.getTotalWeight();
+}
+
+bool Equipment::isEmpty() const {
+  return inventory.isEmpty();
 }
 

@@ -766,6 +766,18 @@ ItemAttributes ItemType::Bow::getAttributes() const {
   );
 }
 
+ItemAttributes ItemType::Torch::getAttributes() const {
+  return ITATTR(
+      i.viewId = ViewId::HAND_TORCH;
+      i.itemClass = ItemClass::TOOL;
+      i.weight = 1;
+      i.ownedEffect = LastingEffect::LIGHT_SOURCE;
+      i.name = "torch";
+      i.plural = "torches"_s;
+      i.price = 2;
+  );
+}
+
 ItemAttributes ItemType::Robe::getAttributes() const {
   return ITATTR(
       i.viewId = ViewId::ROBE;

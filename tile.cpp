@@ -525,6 +525,7 @@ class TileCoordLookup {
     Tile::addTile(ViewId::FIRE_RESIST_RING, sprite("ring_red"));
     Tile::addTile(ViewId::POISON_RESIST_RING, sprite("ring_green"));
     Tile::addTile(ViewId::BOOK, sprite("book"));
+    Tile::addTile(ViewId::HAND_TORCH, sprite("hand_torch"));
     Tile::addTile(ViewId::FIRST_AID, sprite("medkit"));
     Tile::addTile(ViewId::TRAP_ITEM, sprite("trapbox"));
     Tile::addTile(ViewId::POTION1, sprite("potion1"));
@@ -869,6 +870,7 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::FIRE_RESIST_RING, symbol(u8"=", Color::RED));
     Tile::addSymbol(ViewId::POISON_RESIST_RING, symbol(u8"=", Color::GREEN));
     Tile::addSymbol(ViewId::BOOK, symbol(u8"+", Color::YELLOW));
+    Tile::addSymbol(ViewId::HAND_TORCH, symbol(u8"/", Color::YELLOW));
     Tile::addSymbol(ViewId::FIRST_AID, symbol(u8"+", Color::RED));
     Tile::addSymbol(ViewId::TRAP_ITEM, symbol(u8"+", Color::YELLOW));
     Tile::addSymbol(ViewId::POTION1, symbol(u8"!", Color::LIGHT_RED));

@@ -262,6 +262,7 @@ class GuiBuilder {
   void onTutorialClicked(size_t hash, TutorialHighlight);
   SGuiElem drawLibraryOverlay(const CollectiveInfo&, const optional<TutorialInfo>&);
   SGuiElem drawMapHintOverlay();
+  SGuiElem getClickActions(const ViewObject&);
   vector<string> hint;
   SGuiElem getExpIncreaseLine(const PlayerInfo::LevelInfo&, ExperienceType);
   optional<int> highlightedTeamMember;
