@@ -944,9 +944,10 @@ bool Creature::captureDamage(double damage, WCreature attacker) {
   captureHealth -= damage;
   updateViewObject();
   if (captureHealth <= 0) {
+    toggleCaptureOrder();
     addEffect(LastingEffect::STUNNED, 300_visible);
     captureHealth = 1;
-    toggleCaptureOrder();
+    updateViewObject();
     getGame()->addEvent(EventInfo::CreatureStunned{this, attacker});
     return true;
   } else
