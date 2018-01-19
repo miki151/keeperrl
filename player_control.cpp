@@ -872,7 +872,8 @@ void PlayerControl::fillMinions(CollectiveInfo& info) const {
     for (WCreature c : getCollective()->getCreatures(trait))
       if (!minions.contains(c))
         minions.push_back(c);
-  minions.push_back(getCollective()->getLeader());
+  if (auto leader = getCollective()->getLeader())
+    minions.push_back(leader);
   info.minionGroups = getCreatureGroups(minions);
   info.minions = minions.transform([](WConstCreature c) { return CreatureInfo(c) ;});
   info.minionCount = getCollective()->getPopulationSize();
@@ -1410,8 +1411,10 @@ ViewObject PlayerControl::getTrapObject(TrapType type, bool armed) {
 }
 
 void PlayerControl::getSquareViewIndex(Position pos, bool canSee, ViewIndex& index) const {
+  auto leader = getCollective()->getLeader();
+  CHECK(leader);
   if (canSee)
-    pos.getViewIndex(index, getCollective()->getLeader()); // use the leader as a generic viewer
+    pos.getViewIndex(index, leader); // use the leader as a generic viewer
   else
     index.setHiddenId(pos.getViewObject().id());
   if (WConstCreature c = pos.getCreature())

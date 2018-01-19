@@ -580,9 +580,11 @@ static SavedGameInfo::MinionInfo getMinionInfo(WConstCreature c) {
 }
 
 string Game::getPlayerName() const {
-  if (playerCollective)
-    return *playerCollective->getLeader()->getName().first();
-  else // adventurer mode
+  if (playerCollective) {
+    auto leader = playerCollective->getLeader();
+    CHECK(leader);
+    return *leader->getName().first();
+  } else // adventurer mode
     return *players.getOnlyElement()->getName().first();
 }
 
@@ -591,7 +593,7 @@ SavedGameInfo Game::getSavedGameInfo() const {
     vector<WCreature> creatures = col->getCreatures();
     CHECK(!creatures.empty());
     WCreature leader = col->getLeader();
-    //  CHECK(!leader->isDead());
+    CHECK(leader);
     sort(creatures.begin(), creatures.end(), [leader] (WConstCreature c1, WConstCreature c2) {
         return c1 == leader || (c2 != leader && c1->getBestAttack().value > c2->getBestAttack().value);});
     CHECK(creatures[0] == leader);

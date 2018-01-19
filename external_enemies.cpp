@@ -47,7 +47,10 @@ ExternalEnemies::ExternalEnemies(RandomGen& random, vector<ExternalEnemy> enemie
 PTask ExternalEnemies::getAttackTask(WCollective enemy, AttackBehaviour behaviour) {
   switch (behaviour.getId()) {
     case AttackBehaviourId::KILL_LEADER:
-      return Task::attackCreatures({enemy->getLeader()});
+      if (auto leader = enemy->getLeader())
+        return Task::attackCreatures({leader});
+      else
+        return Task::idle();
     case AttackBehaviourId::KILL_MEMBERS:
       return Task::killFighters(enemy, behaviour.get<int>());
     case AttackBehaviourId::STEAL_GOLD:
@@ -57,9 +60,12 @@ PTask ExternalEnemies::getAttackTask(WCollective enemy, AttackBehaviour behaviou
             behaviour.get<CreatureFactory>(), Random.get(3, 7), Range(3, 7), Random.get(3, 7));
     case AttackBehaviourId::HALLOWEEN_KIDS: {
       auto nextToDoor = enemy->getTerritory().getExtended(2, 4);
-      if (nextToDoor.empty())
-        return Task::goToTryForever(enemy->getLeader()->getPosition());
-      else
+      if (nextToDoor.empty()) {
+        if (auto leader = enemy->getLeader())
+          return Task::goToTryForever(leader->getPosition());
+        else
+          return Task::idle();
+      } else
         return Task::goToTryForever(Random.choose(nextToDoor));
     }
   }
