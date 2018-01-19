@@ -443,7 +443,6 @@ void Position::removeCreatureLight(bool darkness) {
   }
 }
 
-
 void Position::replaceFurniture(WConstFurniture prev, PFurniture next) const {
   level->removeLightSource(coord, prev->getLightEmission());
   auto furniture = next.get();

@@ -155,6 +155,7 @@ void Furniture::tick(Position pos) {
     if (fire->isBurntOut()) {
       pos.globalMessage("The " + getName() + " burns down");
       pos.updateMovement();
+      pos.removeCreatureLight(false);
       auto myLayer = layer;
       auto myType = type;
       if (burntRemains)
@@ -312,10 +313,6 @@ const optional<Fire>& Furniture::getFire() const {
   return *fire;
 }
 
-optional<Fire>& Furniture::getFire() {
-  return *fire;
-}
-
 bool Furniture::canDestroy(const MovementType& movement, const DestroyAction& action) const {
    return canDestroy(action) &&
        (!fire || !fire->isBurning()) &&
@@ -323,7 +320,7 @@ bool Furniture::canDestroy(const MovementType& movement, const DestroyAction& ac
 }
 
 void Furniture::fireDamage(Position pos, double amount) {
-  if (auto& fire = getFire()) {
+  if (fire) {
     bool burning = fire->isBurning();
     fire->set(amount);
     if (!burning && fire->isBurning()) {
@@ -332,6 +329,7 @@ void Furniture::fireDamage(Position pos, double amount) {
         viewObject->setAttribute(ViewObject::Attribute::BURNING, fire->getSize());
       pos.updateMovement();
       pos.getLevel()->addTickingFurniture(pos.getCoord());
+      pos.addCreatureLight(false);
     }
   }
 }
