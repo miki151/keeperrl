@@ -582,7 +582,7 @@ const char* LastingEffects::getDescription(LastingEffect type) {
     case LastingEffect::COLLAPSED: return "Moving across tiles takes three times longer.";
     case LastingEffect::PANIC: return "Increases defense and lowers damage.";
     case LastingEffect::RAGE: return "Increases damage and lowers defense.";
-    case LastingEffect::HALLU: return "Causes hallucinations.";
+    case LastingEffect::HALLU: return "Causes a telepathic awareness of some creatures but also hallucinations.";
     case LastingEffect::DAM_BONUS: return "Gives a damage bonus.";
     case LastingEffect::DEF_BONUS: return "Gives a defense bonus.";
     case LastingEffect::SLEEP_RESISTANT: return "Prevents being put to sleep.";
@@ -615,8 +615,10 @@ const char* LastingEffects::getDescription(LastingEffect type) {
 }
 
 bool LastingEffects::canSee(WConstCreature c1, WConstCreature c2) {
-  if (c1->isAffected(LastingEffect::TELEPATHY) &&
-      c1->getPosition().dist8(c2->getPosition()) < 5 && c2->getBody().hasBrain())
+  bool brainInRange = c1->getPosition().dist8(c2->getPosition()) < 5 && c2->getBody().hasBrain();
+  bool telepathic = c1->isAffected(LastingEffect::TELEPATHY);
+  bool hallucinating = c1->isAffected(LastingEffect::HALLU);
+  if ( (telepathic || hallucinating) && brainInRange)
     return true;
   else
     return false;
