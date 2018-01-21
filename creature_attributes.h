@@ -80,6 +80,7 @@ class CreatureAttributes {
   ViewObject createViewObject() const;
   const optional<ViewObject>& getIllusionViewObject() const;
   bool canEquip() const;
+  bool understandsSurrender() const;
   void chatReaction(WCreature me, WCreature other);
   string getDescription() const;
   bool isAffected(LastingEffect, GlobalTime) const;
@@ -118,6 +119,7 @@ class CreatureAttributes {
   Gender SERIAL(gender) = Gender::male;
   bool SERIAL(innocent) = false;
   bool SERIAL(animal) = false;
+  bool SERIAL(wouldSurrender) = false;
   bool SERIAL(cantEquip) = false;
   double SERIAL(courage) = 1;
   bool SERIAL(boulder) = false;

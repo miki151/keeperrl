@@ -997,6 +997,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::BANDIT:
       return CATTR(
           c.viewId = ViewId::BANDIT;
+          c.wouldSurrender = true;
           c.attr = LIST(15_dam, 13_def);
           c.body = Body::humanoid(Body::Size::LARGE);
           c.chatReactionFriendly = "curses all law enforcement"_s;
@@ -1061,6 +1062,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::WITCH: 
       return CATTR(
           c.viewId = ViewId::WITCH;
+          c.wouldSurrender = true;
           c.attr = LIST(14_dam, 14_def, 20_spell_dam );
           c.body = Body::humanoid(Body::Size::MEDIUM);
           c.name = CreatureName("witch", "witches");
@@ -1084,6 +1086,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::CYCLOPS: 
       return CATTR(
           c.viewId = ViewId::CYCLOPS;
+          c.wouldSurrender = true;
           c.attr = LIST(34_dam, 40_def );
           c.body = Body::humanoid(Body::Size::LARGE);
           c.body->setWeight(400);
@@ -1094,6 +1097,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::DEMON_DWELLER:
       return CATTR(
           c.viewId = ViewId::DEMON_DWELLER;
+          c.wouldSurrender = true;
           c.attr = LIST(25_dam, 30_def, 35_spell_dam );
           c.body = Body::humanoidSpirit(Body::Size::LARGE);
           c.body->addWings();
@@ -1111,6 +1115,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::DEMON_LORD:
       return CATTR(
           c.viewId = ViewId::DEMON_LORD;
+          c.wouldSurrender = true;
           c.attr = LIST(40_dam, 45_def, 50_spell_dam );
           c.body = Body::humanoidSpirit(Body::Size::LARGE);
           c.body->addWings();
@@ -1128,6 +1133,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::MINOTAUR: 
       return CATTR(
           c.viewId = ViewId::MINOTAUR;
+          c.wouldSurrender = true;
           c.attr = LIST(35_dam, 45_def );
           c.permanentEffects[LastingEffect::RANGED_RESISTANCE] = 1;
           c.body = Body::humanoid(Body::Size::LARGE);
@@ -1208,6 +1214,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::KNIGHT: 
       return CATTR(
           c.viewId = ViewId::KNIGHT;
+          c.wouldSurrender = true;
           c.attr = LIST(36_dam, 28_def );
           c.body = Body::humanoid(Body::Size::LARGE);
           c.permanentEffects[LastingEffect::MELEE_RESISTANCE] = 1;
@@ -1226,6 +1233,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::AVATAR:
       return CATTR(
           c.viewId = ViewId::DUKE;
+          c.wouldSurrender = true;
           c.attr = LIST(43_dam, 32_def );
           c.body = Body::humanoid(Body::Size::LARGE);
           c.permanentEffects[LastingEffect::MELEE_RESISTANCE] = 1;
@@ -1236,6 +1244,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::ARCHER:
       return CATTR(
           c.viewId = ViewId::ARCHER;
+          c.wouldSurrender = true;
           c.attr = LIST(17_dam, 22_def, 30_ranged_dam );
           c.body = Body::humanoid(Body::Size::LARGE);
           c.chatReactionFriendly = "curses all dungeons"_s;
@@ -1244,6 +1253,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::PRIEST:
       return CATTR(
           c.viewId = ViewId::PRIEST;
+          c.wouldSurrender = true;
           c.attr = LIST(15_dam, 15_def, 27_spell_dam );
           c.body = Body::humanoid(Body::Size::LARGE);
           c.permanentEffects[LastingEffect::MAGIC_RESISTANCE] = 1;
@@ -1258,6 +1268,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::WARRIOR:
       return CATTR(
           c.viewId = ViewId::WARRIOR;
+          c.wouldSurrender = true;
           c.attr = LIST(27_dam, 19_def );
           c.body = Body::humanoid(Body::Size::LARGE);
           c.chatReactionFriendly = "curses all dungeons"_s;
@@ -1266,6 +1277,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::SHAMAN:
       return CATTR(
           c.viewId = ViewId::SHAMAN;
+          c.wouldSurrender = true;
           c.attr = LIST(27_dam, 19_def, 30_spell_dam );
           c.body = Body::humanoid(Body::Size::LARGE);
           c.permanentEffects[LastingEffect::MAGIC_RESISTANCE] = 1;
@@ -1288,6 +1300,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           } else
             c.viewId = ViewId::PESEANT;
           c.attr = LIST(14_dam, 12_def );
+          c.wouldSurrender = true;
           c.body = Body::humanoid(Body::Size::LARGE);
           c.innocent = true;
           c.chatReactionFriendly = "curses all dungeons"_s;
@@ -1297,6 +1310,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::CHILD: 
       return CATTR(
           c.viewId = ViewId::CHILD;
+          c.wouldSurrender = true;
           c.attr = LIST(8_dam, 8_def );
           c.body = Body::humanoid(Body::Size::MEDIUM);
           c.innocent = true;
@@ -1408,6 +1422,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::VAMPIRE_LORD: 
       return CATTR(
           c.viewId = ViewId::VAMPIRE_LORD;
+          c.wouldSurrender = true;
           c.attr = LIST(17_dam, 17_def, 27_spell_dam );
           c.body = Body::humanoid(Body::Material::UNDEAD_FLESH, Body::Size::LARGE);
           c.permanentEffects[LastingEffect::NIGHT_VISION] = 1;
@@ -1438,6 +1453,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::ORC:
       return CATTR(
           c.viewId = ViewId::ORC;
+          c.wouldSurrender = true;
           c.attr = LIST(16_dam, 14_def );
           c.body = Body::humanoid(Body::Size::LARGE);
           c.chatReactionFriendly = "curses all elves"_s;
@@ -1451,6 +1467,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::ORC_SHAMAN:
       return CATTR(
           c.viewId = ViewId::ORC_SHAMAN;
+          c.wouldSurrender = true;
           c.attr = LIST(12_dam, 8_def, 16_spell_dam );
           c.body = Body::humanoid(Body::Size::LARGE);
           c.skills.setValue(SkillId::SORCERY, 0.7);
@@ -1465,6 +1482,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::HARPY:
       return CATTR(
           c.viewId = ViewId::HARPY;
+          c.wouldSurrender = true;
           c.attr = LIST(13_dam, 16_def, 15_ranged_dam );
           c.body = Body::humanoid(Body::Size::LARGE);
           c.body->addWings();
@@ -1478,6 +1496,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::KOBOLD: 
       return CATTR(
           c.viewId = ViewId::KOBOLD;
+          c.wouldSurrender = true;
           c.attr = LIST(12_dam, 13_def );
           c.body = Body::humanoid(Body::Size::MEDIUM);
           c.chatReactionFriendly = "talks about digging"_s;
@@ -1486,6 +1505,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::GNOME: 
       return CATTR(
           c.viewId = ViewId::GNOME;
+          c.wouldSurrender = true;
           c.attr = LIST(12_dam, 13_def );
           c.body = Body::humanoid(Body::Size::MEDIUM);
           c.chatReactionFriendly = "talks about digging"_s;
@@ -1494,6 +1514,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::GNOME_CHIEF:
       return CATTR(
           c.viewId = ViewId::GNOME_BOSS;
+          c.wouldSurrender = true;
           c.attr = LIST(15_dam, 16_def );
           c.body = Body::humanoid(Body::Size::MEDIUM);
           c.chatReactionFriendly = "talks about digging"_s;
@@ -1502,6 +1523,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::GOBLIN: 
       return CATTR(
           c.viewId = ViewId::GOBLIN;
+          c.wouldSurrender = true;
           c.attr = LIST(12_dam, 13_def );
           c.body = Body::humanoid(Body::Size::MEDIUM);
           c.chatReactionFriendly = "talks about crafting"_s;
@@ -1536,6 +1558,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::OGRE: 
       return CATTR(
           c.viewId = ViewId::OGRE;
+          c.wouldSurrender = true;
           c.attr = LIST(18_dam, 18_def );
           c.body = Body::humanoid(Body::Size::LARGE);
           c.body->setWeight(140);
@@ -1559,6 +1582,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::DWARF: 
       return CATTR(
           c.viewId = ViewId::DWARF;
+          c.wouldSurrender = true;
           c.attr = LIST(21_dam, 25_def );
           c.body = Body::humanoid(Body::Size::MEDIUM);
           c.body->setWeight(90);
@@ -1572,6 +1596,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::DWARF_FEMALE:
       return CATTR(
           c.viewId = ViewId::DWARF_FEMALE;
+          c.wouldSurrender = true;
           c.innocent = true;
           c.attr = LIST(21_dam, 25_def );
           c.body = Body::humanoid(Body::Size::MEDIUM);
@@ -1586,6 +1611,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::DWARF_BARON: 
       return CATTR(
           c.viewId = ViewId::DWARF_BARON;
+          c.wouldSurrender = true;
           c.attr = LIST(28_dam, 32_def );
           c.body = Body::humanoid(Body::Size::MEDIUM);
           c.body->setWeight(120);
@@ -1600,6 +1626,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::LIZARDMAN: 
       return CATTR(
           c.viewId = ViewId::LIZARDMAN;
+          c.wouldSurrender = true;
           c.attr = LIST(20_dam, 14_def );
           c.body = Body::humanoid(Body::Size::MEDIUM);
           c.body->setIntrinsicAttack(BodyPart::HEAD, IntrinsicAttack(
@@ -1612,6 +1639,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::LIZARDLORD: 
       return CATTR(
           c.viewId = ViewId::LIZARDLORD;
+          c.wouldSurrender = true;
           c.attr = LIST(30_dam, 16_def );
           c.body = Body::humanoid(Body::Size::MEDIUM);
           c.permanentEffects[LastingEffect::POISON_RESISTANT] = 1;
@@ -1625,6 +1653,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::ELF: 
       return CATTR(
           c.viewId = Random.choose(ViewId::ELF, ViewId::ELF_WOMAN);
+          c.wouldSurrender = true;
           c.attr = LIST(14_dam, 6_def );
           c.body = Body::humanoid(Body::Size::MEDIUM);
           c.innocent = true;
@@ -1636,6 +1665,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::ELF_ARCHER: 
       return CATTR(
           c.viewId = ViewId::ELF_ARCHER;
+          c.wouldSurrender = true;
           c.attr = LIST(18_dam, 12_def, 25_ranged_dam );
           c.body = Body::humanoid(Body::Size::MEDIUM);
           c.chatReactionFriendly = "curses all dwarves"_s;
@@ -1647,6 +1677,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::ELF_CHILD: 
       return CATTR(
           c.viewId = ViewId::ELF_CHILD;
+          c.wouldSurrender = true;
           c.attr = LIST(6_dam, 6_def );
           c.body = Body::humanoid(Body::Size::SMALL);
           c.innocent = true;
@@ -1659,6 +1690,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::ELF_LORD: 
       return CATTR(
           c.viewId = ViewId::ELF_LORD;
+          c.wouldSurrender = true;
           c.attr = LIST(22_dam, 14_def, 16_spell_dam, 30_ranged_dam );
           c.body = Body::humanoid(Body::Size::MEDIUM);
           c.chatReactionFriendly = "curses all dwarves"_s;
@@ -1677,6 +1709,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::DARK_ELF:
       return CATTR(
           c.viewId = Random.choose(ViewId::DARK_ELF, ViewId::DARK_ELF_WOMAN);
+          c.wouldSurrender = true;
           c.attr = LIST(14_dam, 6_def );
           c.body = Body::humanoid(Body::Size::MEDIUM);
           c.innocent = true;
@@ -1689,6 +1722,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::DARK_ELF_WARRIOR:
       return CATTR(
           c.viewId = ViewId::DARK_ELF_WARRIOR;
+          c.wouldSurrender = true;
           c.attr = LIST(18_dam, 12_def, 6_spell_dam );
           c.body = Body::humanoid(Body::Size::MEDIUM);
           c.chatReactionFriendly = "curses all dwarves"_s;
@@ -1703,6 +1737,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::DARK_ELF_CHILD:
       return CATTR(
           c.viewId = ViewId::DARK_ELF_CHILD;
+          c.wouldSurrender = true;
           c.attr = LIST(6_dam, 6_def );
           c.body = Body::humanoid(Body::Size::SMALL);
           c.innocent = true;
@@ -1715,6 +1750,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::DARK_ELF_LORD:
       return CATTR(
           c.viewId = ViewId::DARK_ELF_LORD;
+          c.wouldSurrender = true;
           c.attr = LIST(22_dam, 14_def, 16_spell_dam );
           c.body = Body::humanoid(Body::Size::MEDIUM);
           c.chatReactionFriendly = "curses all dwarves"_s;
@@ -1733,6 +1769,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::DRIAD: 
       return CATTR(
           c.viewId = ViewId::DRIAD;
+          c.wouldSurrender = true;
           c.attr = LIST(6_dam, 14_def, 25_ranged_dam );
           c.body = Body::humanoid(Body::Size::MEDIUM);
           c.permanentEffects[LastingEffect::MAGIC_RESISTANCE] = 1;
@@ -1985,6 +2022,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::WEREWOLF:
       return CATTR(
           c.viewId = ViewId::WEREWOLF;
+          c.wouldSurrender = true;
           c.attr = LIST(20_dam, 7_def );
           c.body = Body::humanoid(Body::Size::LARGE);
           c.body->setIntrinsicAttack(BodyPart::HEAD, IntrinsicAttack(ItemType::fangs(8)));
@@ -2026,6 +2064,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::ELEMENTALIST: 
       return CATTR(
           c.viewId = ViewId::ELEMENTALIST;
+          c.wouldSurrender = true;
           c.attr = LIST(15_dam, 20_def, 15_spell_dam );
           c.body = Body::humanoid(Body::Size::LARGE);
           c.gender = Gender::female;
