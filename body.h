@@ -55,6 +55,7 @@ class Body {
   void setDeathSound(optional<SoundId>);
   void setNoCarryLimit();
   void setIntrinsicAttack(BodyPart, IntrinsicAttack);
+  void setCanAlwaysPush();
 
   void affectPosition(Position);
 
@@ -79,6 +80,7 @@ class Body {
   bool hasBrain() const;
   bool needsToEat() const;
   bool needsToSleep() const;
+  bool canPush(const Body& other);
   vector<PItem> getCorpseItems(const string& name, UniqueEntity<Creature>::Id, bool instantlyRotten) const;
 
   vector<AttackLevel> getAttackLevels() const;
@@ -141,5 +143,6 @@ class Body {
   optional<SoundId> SERIAL(deathSound);
   optional<double> SERIAL(carryLimit);
   EnumMap<BodyPart, optional<IntrinsicAttack>> SERIAL(intrinsicAttacks);
+  bool SERIAL(canAlwaysPush) = false;
 };
 

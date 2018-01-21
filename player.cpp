@@ -470,10 +470,8 @@ vector<Player::OtherCreatureCommand> Player::getOtherCreatureCommands(WCreature 
       ret.push_back({text, allowAuto, [action](Player* player) { player->tryToPerform(action); }});
   };
   if (c->getPosition().dist8(getCreature()->getPosition()) == 1) {
-    if (c->getAttributes().isBoulder())
-      genAction("Push boulder", true, getCreature()->bumpInto(getCreature()->getPosition().getDir(c->getPosition())));
-    else
-      genAction("Swap position", true, getCreature()->move(c->getPosition(), none));
+    genAction("Swap position", true, getCreature()->move(c->getPosition(), none));
+    genAction("Push", true, getCreature()->push(c));
   }
   if (getCreature()->isEnemy(c)) {
     genAction("Attack", true, getCreature()->attack(c));
@@ -493,7 +491,7 @@ vector<Player::OtherCreatureCommand> Player::getOtherCreatureCommands(WCreature 
   if (getCreature() == c)
     genAction("Skip turn", true, getCreature()->wait());
   if (c->getPosition().dist8(getCreature()->getPosition()) == 1)
-    genAction("Chat", true, getCreature()->chatTo(c));
+    genAction("Chat", false, getCreature()->chatTo(c));
   return ret;
 }
 
@@ -743,9 +741,15 @@ void Player::moveAction(Vec2 dir) {
     string hereQuestion = getForceMovementQuestion(getCreature()->getPosition(), getCreature());
     if (hereQuestion == nextQuestion || getView()->yesOrNoPrompt(nextQuestion, true))
       action.perform(getCreature());
-  } else if (auto action = getCreature()->bumpInto(dir))
-    action.perform(getCreature());
-  else if (!getCreature()->getPosition().plus(dir).canEnterEmpty(getCreature()))
+    return;
+  }
+  if (auto other = getCreature()->getPosition().plus(dir).getCreature()) {
+    auto actions = getOtherCreatureCommands(other);
+    if (!actions.empty() && actions[0].allowAuto)
+      actions[0].perform(this);
+    return;
+  }
+  if (!getCreature()->getPosition().plus(dir).canEnterEmpty(getCreature()))
     tryToPerform(getCreature()->destroy(dir, DestroyAction::Type::BASH));
 }
 

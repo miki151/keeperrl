@@ -133,5 +133,5 @@ class CreatureAttributes {
   bool SERIAL(noAttackSound) = false;
   optional<CreatureId> SERIAL(creatureId);
   optional<double> SERIAL(moraleSpeedIncrease);
-  string SERIAL(deathDescription)="killed"_s;
+  string SERIAL(deathDescription) = "killed"_s;
 };

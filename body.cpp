@@ -26,7 +26,7 @@ static double getDefaultWeight(Body::Size size) {
   }
 }
 
-SERIALIZE_DEF(Body, xhumanoid, size, weight, bodyParts, injuredBodyParts, lostBodyParts, material, health, minionFood, deathSound, carryLimit, intrinsicAttacks)
+SERIALIZE_DEF(Body, xhumanoid, size, weight, bodyParts, injuredBodyParts, lostBodyParts, material, health, minionFood, deathSound, carryLimit, intrinsicAttacks, canAlwaysPush)
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Body)
 
@@ -99,6 +99,10 @@ void Body::setIntrinsicAttack(BodyPart part, IntrinsicAttack attack) {
     CHECK(numGood(part));
   }
   intrinsicAttacks[part] = std::move(attack);
+}
+
+void Body::setCanAlwaysPush() {
+  canAlwaysPush = true;
 }
 
 WItem Body::chooseWeapon(WItem weapon) const {
@@ -871,6 +875,10 @@ bool Body::needsToSleep() const {
     default:
       return false;
   }
+}
+
+bool Body::canPush(const Body& other) {
+  return int(size) > int(other.size) || other.canAlwaysPush;
 }
 
 bool Body::fallsApartFromDamage() const {

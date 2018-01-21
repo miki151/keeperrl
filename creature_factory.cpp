@@ -137,15 +137,6 @@ class SokobanController : public Monster {
   public:
   SokobanController(WCreature c) : Monster(c, MonsterAIFactory::idle()) {}
 
-  virtual void onBump(WCreature player) override {
-    Vec2 goDir = player->getPosition().getDir(getCreature()->getPosition());
-    if (goDir.isCardinal4() && getCreature()->getPosition().plus(goDir).canEnter(
-          getCreature()->getMovementType().setForced(true))) {
-      getCreature()->displace(goDir);
-      player->move(goDir).perform(player);
-    }
-  }
-
   virtual MessageGenerator& getMessageGenerator() const override {
     static MessageGenerator g(MessageGenerator::BOULDER);
     return g;
@@ -166,6 +157,7 @@ PCreature CreatureFactory::getSokobanBoulder(TribeId tribe) {
             c.attr[AttrType::DEFENSE] = 250;
             c.body = Body::nonHumanoid(Body::Material::ROCK, Body::Size::HUGE);
             c.body->setDeathSound(none);
+            c.body->setCanAlwaysPush();
             c.permanentEffects[LastingEffect::BLIND] = 1;
             c.boulder = true;
             c.name = "boulder";));
@@ -507,12 +499,9 @@ class IllusionController : public DoNothingController {
   public:
   IllusionController(WCreature c, GlobalTime deathT) : DoNothingController(c), deathTime(deathT) {}
 
-  virtual void onBump(WCreature c) override {
-    auto myPos = getCreature()->getPosition();
-    c->attack(getCreature(), none).perform(c);
-    myPos.globalMessage("It was just an illusion!");
-    if (!getCreature()->isDead()) // so check necessary, as most likely was killed in attack 2 lines above
-      getCreature()->dieNoReason();
+  virtual void onKilled(WConstCreature attacker) override {
+    if (attacker)
+      attacker->message("It was just an illusion!");
   }
 
   virtual void makeMove() override {
