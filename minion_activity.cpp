@@ -154,11 +154,11 @@ PTask MinionActivities::generate(WCollective collective, WConstCreature c, Minio
   switch (info.type) {
     case MinionActivityInfo::IDLE: {
       auto myTerritory = tryInQuarters(collective->getTerritory().getAll(), collective, c);
+      auto leader = collective->getLeader();
       if (!myTerritory.empty())
         return Task::stayIn(myTerritory);
-      else if (collective->getConfig().getFollowLeaderIfNoTerritory() && collective->getLeader()
-          && !collective->getLeader()->isDead())
-        return Task::follow(collective->getLeader());
+      else if (collective->getConfig().getFollowLeaderIfNoTerritory() && leader)
+        return Task::follow(leader);
       else
         return Task::idle();
     }

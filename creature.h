@@ -147,7 +147,6 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   };
   CreatureAction attack(WCreature, optional<AttackParams> = none) const;
   CreatureAction execute(WCreature) const;
-  CreatureAction bumpInto(Vec2 direction) const;
   CreatureAction applyItem(WItem item) const;
   CreatureAction equip(WItem item) const;
   CreatureAction unequip(WItem item) const;
@@ -176,7 +175,8 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   bool canCopulateWith(WConstCreature) const;
   CreatureAction consume(WCreature) const;
   bool canConsume(WConstCreature) const;
-  
+  CreatureAction push(WCreature);
+
   void displace(Vec2);
   void retire();
   

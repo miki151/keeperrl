@@ -618,13 +618,15 @@ CreatureAction Creature::unequip(WItem item) const {
   });
 }
 
-CreatureAction Creature::bumpInto(Vec2 direction) const {
-  if (WConstCreature other = getPosition().plus(direction).getCreature())
-    return CreatureAction(this, [=](WCreature self) {
-      other->getController()->onBump(self);
-    });
-  else
-    return CreatureAction();
+CreatureAction Creature::push(WCreature other) {
+  Vec2 goDir = position.getDir(other->position);
+  if (!goDir.isCardinal4() || !other->position.plus(goDir).canEnter(
+      other->getMovementType()) || !getBody().canPush(other->getBody()))
+    return CreatureAction("You can't push " + other->getName().the());
+  return CreatureAction(this, [=](WCreature self) {
+    other->displace(goDir);
+    self->move(goDir).perform(self);
+  });
 }
 
 CreatureAction Creature::applySquare(Position pos) const {
@@ -944,9 +946,10 @@ bool Creature::captureDamage(double damage, WCreature attacker) {
   captureHealth -= damage;
   updateViewObject();
   if (captureHealth <= 0) {
+    toggleCaptureOrder();
     addEffect(LastingEffect::STUNNED, 300_visible);
     captureHealth = 1;
-    toggleCaptureOrder();
+    updateViewObject();
     getGame()->addEvent(EventInfo::CreatureStunned{this, attacker});
     return true;
   } else

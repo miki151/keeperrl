@@ -47,8 +47,6 @@ class Controller : public OwnedObject<Controller> {
   virtual void onStartedControl() {}
   virtual void onEndedControl() {}
 
-  virtual void onBump(WCreature) {}
-
   virtual ~Controller() {}
 
   SERIALIZATION_DECL(Controller);
@@ -66,7 +64,6 @@ class DoNothingController : public Controller {
 
   virtual bool isPlayer() const override;
   virtual void makeMove() override;
-  virtual void onBump(WCreature) override;
   virtual MessageGenerator& getMessageGenerator() const override;
 
   protected:

@@ -47,22 +47,6 @@ const MapMemory& Monster::getMemory() const {
   return MapMemory::empty();
 }
 
-static bool tryToPerform(WCreature c, CreatureAction action) {
-  if (action)
-    action.perform(c);
-  else
-    c->privateMessage(action.getFailedReason());
-  return !!action;
-}
-
-void Monster::onBump(WCreature c) {
-  if (c->isEnemy(getCreature()))
-    tryToPerform(c, c->attack(getCreature(), none));
-  else
-    tryToPerform(c, c->move(getCreature()->getPosition()));
-}
-
-
 MessageGenerator& Monster::getMessageGenerator() const {
   static MessageGenerator messageGenerator(MessageGenerator::THIRD_PERSON);
   return messageGenerator;

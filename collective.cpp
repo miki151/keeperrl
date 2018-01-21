@@ -56,7 +56,7 @@
 template <class Archive>
 void Collective::serialize(Archive& ar, const unsigned int version) {
   ar(SUBCLASS(TaskCallback), SUBCLASS(UniqueEntity<Collective>), SUBCLASS(EventListener));
-  ar(creatures, leader, taskMap, tribe, control, byTrait);
+  ar(creatures, taskMap, tribe, control, byTrait);
   ar(territory, alarmInfo, markedItems, constructions, minionEquipment);
   ar(delayedPos, knownTiles, technologies, kills, points, currentTasks);
   ar(credit, level, immigration, teams, name, conqueredVillains);
@@ -161,8 +161,7 @@ void Collective::addCreature(WCreature c, EnumSet<MinionTrait> traits) {
   if (!traits.contains(MinionTrait::FARM_ANIMAL) && !c->getController()->isCustomController())
     c->setController(makeOwner<Monster>(c, MonsterAIFactory::collective(this)));
   if (traits.contains(MinionTrait::LEADER)) {
-    CHECK(!leader);
-    leader = c;
+    CHECK(!getLeader());
     if (config->isLeaderFighter())
       traits.insert(MinionTrait::FIGHTER);
   }
@@ -256,16 +255,11 @@ vector<TriggerInfo> Collective::getTriggers(WConstCollective against) const {
   return control->getTriggers(against);
 }
 
-WConstCreature Collective::getLeader() const {
-  return leader;
-}
-
-WCreature Collective::getLeader() {
-  return leader;
-}
-
-bool Collective::hasLeader() const {
-  return leader && !leader->isDead() && !leader->isAffected(LastingEffect::STUNNED);
+WCreature Collective::getLeader() const {
+  if (!byTrait[MinionTrait::LEADER].empty())
+    return byTrait[MinionTrait::LEADER].getOnlyElement();
+  else
+    return nullptr;
 }
 
 WLevel Collective::getLevel() const {
@@ -365,7 +359,7 @@ WTask Collective::getStandardTask(WCreature c) {
 }
 
 bool Collective::isConquered() const {
-  return getCreatures(MinionTrait::FIGHTER).empty() && !hasLeader();
+  return getCreatures(MinionTrait::FIGHTER).empty() && !getLeader();
 }
 
 vector<WCreature> Collective::getConsumptionTargets(WCreature consumer) const {
@@ -419,10 +413,6 @@ void Collective::considerHealingTask(WCreature c) {
         return;
       }
     }
-}
-
-void Collective::clearLeader() {
-  leader = nullptr;
 }
 
 void Collective::setTask(WCreature c, PTask task) {
@@ -565,7 +555,7 @@ void Collective::decayMorale() {
 
 void Collective::update(bool currentlyActive) {
   control->update(currentlyActive);
-  if (config->hasImmigrantion(currentlyActive) && hasLeader())
+  if (config->hasImmigrantion(currentlyActive) && getLeader())
     immigration->update();
 }
 
@@ -686,6 +676,7 @@ void Collective::onEvent(const GameEvent& event) {
           bool fighterStunned = hasTrait(victim, MinionTrait::FIGHTER) || victim == getLeader();
           setTrait(victim, MinionTrait::STUNNED);
           removeTrait(victim, MinionTrait::FIGHTER);
+          removeTrait(victim, MinionTrait::LEADER);
           control->addMessage(PlayerMessage(victim->getName().a() + " is unconsious.")
               .setPosition(victim->getPosition()));
           if (isConquered() && fighterStunned)

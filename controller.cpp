@@ -46,10 +46,6 @@ void DoNothingController::makeMove() {
   getCreature()->wait().perform(getCreature());
 }
 
-void DoNothingController::onBump(WCreature c) {
-}
-
-
 MessageGenerator& DoNothingController::getMessageGenerator() const {
   static MessageGenerator messageGenerator(MessageGenerator::NONE);
   return messageGenerator;

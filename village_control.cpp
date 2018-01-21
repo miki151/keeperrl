@@ -81,7 +81,7 @@ void VillageControl::onEvent(const GameEvent& event) {
   using namespace EventInfo;
   event.visit(
       [&](const ItemsPickedUp& info) {
-        if (getCollective()->getTerritory().contains(info.creature->getPosition()))
+        if (!getCollective()->isConquered() && getCollective()->getTerritory().contains(info.creature->getPosition()))
           if (isEnemy(info.creature) && villain)
             if (villain->triggers.contains(AttackTriggerId::STOLEN_ITEMS)) {
               bool wasTheft = false;
@@ -91,7 +91,7 @@ void VillageControl::onEvent(const GameEvent& event) {
                   ++stolenItemCount;
                   myItems.erase(it);
                 }
-              if (getCollective()->hasLeader() && wasTheft) {
+              if (wasTheft) {
                 info.creature->privateMessage(PlayerMessage("You are going to regret this", MessagePriority::HIGH));
               }
             }
@@ -150,7 +150,8 @@ vector<TriggerInfo> VillageControl::getTriggers(WConstCollective against) const 
 }
 
 void VillageControl::considerWelcomeMessage() {
-  if (!getCollective()->hasLeader())
+  auto leader = getCollective()->getLeader();
+  if (!leader)
     return;
   if (villain)
     if (villain->welcomeMessage)
@@ -159,7 +160,7 @@ void VillageControl::considerWelcomeMessage() {
           for (Position pos : getCollective()->getTerritory().getAll())
             if (WCreature c = pos.getCreature())
               if (c->isAffected(LastingEffect::INVISIBLE) && isEnemy(c) && c->isPlayer()
-                  && getCollective()->getLeader()->canSee(c->getPosition())) {
+                  && leader->canSee(c->getPosition())) {
                 c->privateMessage(PlayerMessage("\"Well thief! I smell you and I feel your air. "
                       "I hear your breath. Come along!\"", MessagePriority::CRITICAL));
                 villain->welcomeMessage.reset();

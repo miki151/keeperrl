@@ -31,8 +31,6 @@ class Monster : public Controller {
   virtual const MapMemory& getMemory() const;
   virtual MessageGenerator& getMessageGenerator() const override;
 
-  virtual void onBump(WCreature) override;
-
   static ControllerFactory getFactory(MonsterAIFactory);
 
   SERIALIZATION_DECL(Monster);

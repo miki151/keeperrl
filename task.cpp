@@ -931,7 +931,7 @@ class CampAndSpawn : public Task {
   }
 
   virtual MoveInfo getMove(WCreature c) override {
-    if (!target->hasLeader() || campPos.empty()) {
+    if (!target->getLeader() || campPos.empty()) {
       setDone();
       return NoMove;
     }

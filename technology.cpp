@@ -180,8 +180,8 @@ static void addResource(WCollective col, FurnitureType type, int maxDist) {
         if (!pos.empty())
           return Random.choose(pos);
       }
-      if (col->hasLeader())
-        return col->getLeader()->getPosition();
+      if (auto leader = col->getLeader())
+        return leader->getPosition();
       FATAL << "Couldn't find library to spawn resources.";
       return Position();
   }();

@@ -99,10 +99,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   vector<TriggerInfo> getTriggers(WConstCollective against) const;
 
   double getEfficiency(WConstCreature) const;
-  WConstCreature getLeader() const;
-  WCreature getLeader();
-  bool hasLeader() const;
-  void clearLeader();
+  WCreature getLeader() const;
 
   const Territory& getTerritory() const;
   Territory& getTerritory();
@@ -269,7 +266,6 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   int getTaskDuration(WConstCreature, MinionActivity) const;
   void decayMorale();
   vector<WCreature> SERIAL(creatures);
-  WCreature SERIAL(leader) = nullptr;
   EnumMap<MinionTrait, vector<WCreature>> SERIAL(byTrait);
   PCollectiveControl SERIAL(control);
   HeapAllocated<TribeId> SERIAL(tribe);

@@ -304,12 +304,16 @@ vector<Position> Immigration::Available::getSpawnPositions() const {
       auto ret = immigration->collective->getTerritory().getExtended(10, 20);
       if (ret.empty())
         ret = immigration->collective->getTerritory().getAll();
-      if (ret.empty() && immigration->collective->hasLeader())
-        ret = {immigration->collective->getLeader()->getPosition()};
+      auto leader = immigration->collective->getLeader();
+      if (ret.empty() && leader)
+        ret = {leader->getPosition()};
       return ret;
     },
-    [&] (NearLeader) {
-      return vector<Position> { immigration->collective->getLeader()->getPosition() };
+    [&] (NearLeader) -> vector<Position> {
+      if (auto leader = immigration->collective->getLeader())
+        return {leader->getPosition()};
+      else
+        return {};
     },
     [&] (Pregnancy) {
       vector<Position> ret;
