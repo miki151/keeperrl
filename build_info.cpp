@@ -119,7 +119,7 @@ const vector<BuildInfo>& BuildInfo::get() {
           {{RequirementId::TECHNOLOGY, TechId::STEEL_MAKING}}, "Turns iron ore into steel.", 0, workshop),
       BuildInfo({FurnitureType::DEMON_SHRINE, {ResourceId::GOLD, 30}}, "Demon shrine", {{RequirementId::TECHNOLOGY, TechId::DEMONOLOGY}},
           "Summons various demons to your dungeon."),
-      BuildInfo({FurnitureType::PRISON, {ResourceId::IRON, 5}}, "Prison", {}, "Captured enemies are kept here.",
+      BuildInfo({FurnitureType::PRISON, {ResourceId::IRON, 45}}, "Prison", {}, "Captured enemies are kept here.",
           'p', "Prison", true),
       BuildInfo({FurnitureType::TORTURE_TABLE, {ResourceId::IRON, 20}}, "Torture table", {},
           "Can be used to torture prisoners.", 0, "Prison"),
