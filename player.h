@@ -82,6 +82,7 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   virtual bool isTravelEnabled() const;
   virtual bool handleUserInput(UserInput);
   struct OtherCreatureCommand {
+    int priority;
     string name;
     bool allowAuto;
     function<void(Player*)> perform;
