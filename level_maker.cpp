@@ -134,6 +134,11 @@ class SquareChange {
       builder->addAttrib(pos, *attrib);
   }) {}
 
+  SquareChange(FurnitureParams f)
+      : changeFun([=](LevelBuilder* builder, Vec2 pos) {
+    builder->putFurniture(pos, f);
+  }) {}
+
   SquareChange(SquareAttrib attrib)
       : changeFun([=](LevelBuilder* builder, Vec2 pos) {
     builder->addAttrib(pos, attrib);
@@ -728,14 +733,14 @@ class UniformBlob : public Blob {
 
 class FurnitureBlob : public Blob {
   public:
-  FurnitureBlob(FurnitureFactory in, double insideRatio = 0.3333) : Blob(insideRatio), inside(in) {}
+  FurnitureBlob(SquareChange in, double insideRatio = 0.3333) : Blob(insideRatio), inside(in) {}
 
   virtual void addSquare(LevelBuilder* builder, Vec2 pos, int edgeDist) override {
-    builder->putFurniture(pos, inside);
+    inside.apply(builder, pos);
   }
 
   private:
-  FurnitureFactory inside;
+  SquareChange inside;
 };
 
 class Lake : public Blob {
@@ -2398,7 +2403,7 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, optional<CreatureFactory> fo
     for (int i : Range(random.get(1, 3))) {
       locations->add(unique<MakerQueue>(
             unique<RemoveFurniture>(FurnitureLayer::MIDDLE),
-            unique<FurnitureBlob>(FurnitureFactory(cottage.tribe, FurnitureType::CROPS)),
+            unique<FurnitureBlob>(SquareChange(FurnitureParams{FurnitureType::CROPS, cottage.tribe})),
             unique<PlaceCollective>(cottage.collective)),
           {random.get(7, 12), random.get(7, 12)},
           lowlandPred);
@@ -2418,6 +2423,20 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, optional<CreatureFactory> fo
         {random.get(5, 12), random.get(5, 12)}, Predicate::type(SquareId::MOUNTAIN));
  //   locations->setMaxDistanceLast(startingPos, i == 0 ? 25 : 40);
   }*/
+
+  auto addResources = [&](int count, Range size, int maxDist, FurnitureType type, FurnitureType onType) {
+    for (int i : Range(count)) {
+      locations->add(unique<FurnitureBlob>(type), {random.get(size), random.get(size)}, Predicate::type(onType));
+      locations->setMaxDistanceLast(startingPos, maxDist);
+    }
+  };
+  if (keeperSpawn) {
+    addResources(6, Range(5, 10), 90, FurnitureType::GOLD_ORE, FurnitureType::MOUNTAIN2);
+    addResources(2, Range(5, 10), 30, FurnitureType::STONE, FurnitureType::MOUNTAIN);
+    addResources(8, Range(5, 10), 90, FurnitureType::STONE, FurnitureType::MOUNTAIN2);
+    addResources(4, Range(5, 10), 30, FurnitureType::IRON_ORE, FurnitureType::MOUNTAIN);
+    addResources(13, Range(5, 10), 90, FurnitureType::IRON_ORE, FurnitureType::MOUNTAIN2);
+  }
   int mapBorder = 30;
   queue->addMaker(unique<Empty>(FurnitureType::WATER));
   queue->addMaker(getMountains(biomeId));

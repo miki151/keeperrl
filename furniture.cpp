@@ -51,7 +51,7 @@ void Furniture::serialize(Archive& ar, const unsigned) {
   ar(name, pluralName, type, movementSet, fire, burntRemains, destroyedRemains, destroyActions, itemDrop);
   ar(blockVision, usageType, clickType, tickType, usageTime, overrideMovement, wall, creator, createdTime);
   ar(constructMessage, layer, entryType, lightEmission, canHideHere, warning, summonedElement, droppedItems);
-  ar(canBuildBridge, noProjectiles);
+  ar(canBuildBridge, noProjectiles, clearFogOfWar);
 }
 
 SERIALIZABLE(Furniture)
@@ -278,6 +278,10 @@ optional<CreatureId> Furniture::getSummonedElement() const {
   return summonedElement;
 }
 
+bool Furniture::isClearFogOfWar() const {
+  return clearFogOfWar;
+}
+
 vector<PItem> Furniture::dropItems(Position pos, vector<PItem> v) const {
   if (droppedItems) {
     return droppedItems->handle(pos, this, std::move(v));
@@ -448,6 +452,11 @@ Furniture& Furniture::setCanBuildBridgeOver() {
 
 Furniture&Furniture::setStopProjectiles() {
   noProjectiles = true;
+  return *this;
+}
+
+Furniture&Furniture::setClearFogOfWar() {
+  clearFogOfWar = true;
   return *this;
 }
 

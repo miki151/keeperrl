@@ -630,7 +630,6 @@ unique_ptr<Workshops> CollectiveConfig::getWorkshops() const {
 vector<Technology*> CollectiveConfig::getInitialTech() const {
   if (type == KEEPER)
     return {
-      Technology::get(TechId::GEOLOGY1),
       Technology::get(TechId::SPELLS),
     };
   else

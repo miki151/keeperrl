@@ -127,6 +127,10 @@ PlayerControl::PlayerControl(Private, WCollective col) : CollectiveControl(col),
     }
   }
   memory.reset(new MapMemory());
+  for (auto pos : col->getLevel()->getAllPositions())
+    if (auto f = pos.getFurniture(FurnitureLayer::MIDDLE))
+      if (f->isClearFogOfWar())
+        addToMemory(pos);
 }
 
 PPlayerControl PlayerControl::create(WCollective col, vector<string> introText) {
