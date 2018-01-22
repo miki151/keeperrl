@@ -30,9 +30,9 @@ const vector<BuildInfo>& BuildInfo::get() {
       BuildInfo({FurnitureType::WOOD_DOOR, {ResourceId::WOOD, 5}}, "Wooden door", {},
           "Click on a built door to lock it.", 'o', "Doors", true)
              .setTutorialHighlight(TutorialHighlight::BUILD_DOOR),
-      BuildInfo({FurnitureType::IRON_DOOR, {ResourceId::IRON, 5}}, "Iron door", {},
+      BuildInfo({FurnitureType::IRON_DOOR, {ResourceId::IRON, 5}}, "Iron door", {{RequirementId::TECHNOLOGY, TechId::IRON_WORKING}},
           "Click on a built door to lock it.", 0, "Doors"),
-      BuildInfo({FurnitureType::STEEL_DOOR, {ResourceId::STEEL, 5}}, "Steel door", {},
+      BuildInfo({FurnitureType::STEEL_DOOR, {ResourceId::STEEL, 5}}, "Steel door", {{RequirementId::TECHNOLOGY, TechId::STEEL_MAKING}},
           "Click on a built door to lock it.", 0, "Doors"),
     });
     for (int i : All(CollectiveConfig::getFloors())) {
