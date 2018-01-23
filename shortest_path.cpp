@@ -203,7 +203,7 @@ optional<Vec2> ShortestPath::getNextNextMove(Vec2 pos) {
   if (path.size() > 2)
     return path[path.size() - 3];
   else
-    return none;
+    return path[path.size() - 2];
 }
 
 Vec2 ShortestPath::getTarget() const {
