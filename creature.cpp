@@ -217,7 +217,7 @@ const EnumSet<CreatureStatus>& Creature::getStatus() const {
 }
 
 bool Creature::canCapture() const {
-  return getBody().isHumanoid() && !isAffected(LastingEffect::STUNNED);
+  return getAttributes().understandsSurrender() && !isAffected(LastingEffect::STUNNED);
 }
 
 void Creature::toggleCaptureOrder() {
