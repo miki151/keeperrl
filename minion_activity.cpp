@@ -158,7 +158,7 @@ PTask MinionActivities::generate(WCollective collective, WConstCreature c, Minio
       if (!myTerritory.empty())
         return Task::stayIn(myTerritory);
       else if (collective->getConfig().getFollowLeaderIfNoTerritory() && leader)
-        return Task::follow(leader);
+        return Task::alwaysDone(Task::follow(leader));
       else
         return Task::idle();
     }

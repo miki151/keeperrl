@@ -1324,12 +1324,62 @@ PTask Task::idle() {
 }
 
 namespace {
+class AlwaysDone : public Task {
+  public:
+  AlwaysDone(PTask t) : task(std::move(t)) {}
+
+  virtual MoveInfo getMove(WCreature c) override {
+    setDone();
+    return task->getMove(c);
+  }
+
+  virtual string getDescription() const override {
+    return task->getDescription();
+  }
+
+  virtual bool isBogus() const override {
+    return task->isBogus();
+  }
+
+  virtual bool isBlocked(WConstCreature c) const override {
+    return task->isBlocked(c);
+  }
+
+  virtual bool canTransfer() override {
+    return task->canTransfer();
+  }
+
+  virtual void cancel() override {
+    task->cancel();
+  }
+
+  virtual bool canPerform(WConstCreature c) override {
+    return task->canPerform(c);
+  }
+
+  virtual optional<Position> getPosition() const override {
+    return task->getPosition();
+  }
+
+  SERIALIZE_ALL(SUBCLASS(Task), task)
+  SERIALIZATION_CONSTRUCTOR(AlwaysDone);
+
+  private:
+  PTask SERIAL(task);
+
+};
+}
+
+PTask Task::alwaysDone(PTask t) {
+  return makeOwner<AlwaysDone>(std::move(t));
+}
+
+namespace {
 class Follow : public Task {
   public:
   Follow(WCreature t) : target(t) {}
 
   virtual MoveInfo getMove(WCreature c) override {
-    setDone();
     if (!target->isDead()) {
       Position targetPos = target->getPosition();
       if (targetPos.dist8(c->getPosition()) < 3) {
@@ -1339,8 +1389,10 @@ class Follow : public Task {
         return NoMove;
       }
       return c->moveTowards(targetPos);
+    } else {
+      setDone();
+      return NoMove;
     }
-    return NoMove;
   }
 
   virtual string getDescription() const override {
@@ -1578,6 +1630,7 @@ REGISTER_TYPE(Eat)
 REGISTER_TYPE(GoTo)
 REGISTER_TYPE(StayIn)
 REGISTER_TYPE(Idle)
+REGISTER_TYPE(AlwaysDone)
 REGISTER_TYPE(Follow)
 REGISTER_TYPE(TransferTo)
 REGISTER_TYPE(Whipping)

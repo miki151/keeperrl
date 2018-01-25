@@ -115,7 +115,10 @@ void VillageControl::launchAttack(vector<WCreature> attackers) {
     getCollective()->getTeams().activate(team);
     getCollective()->freeTeamMembers(team);
     for (WCreature c : attackers)
-      getCollective()->setTask(c, villain->getAttackTask(this));
+      if (c != getCollective()->getTeams().getLeader(team))
+        getCollective()->setTask(c, Task::chain(Task::follow(c), villain->getAttackTask(this)));
+      else
+        getCollective()->setTask(c, villain->getAttackTask(this));
     attackSizes[team] = attackers.size();
   }
 }

@@ -77,6 +77,7 @@ class Task : public UniqueEntity<Task>, public OwnedObject<Task> {
   static PTask goTo(Position);
   static PTask stayIn(vector<Position>);
   static PTask idle();
+  static PTask alwaysDone(PTask);
   static PTask follow(WCreature);
   static PTask goToTryForever(Position);
   static PTask transferTo(WModel);
