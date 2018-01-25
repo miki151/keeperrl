@@ -295,7 +295,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   HeapAllocated<CreatureAttributes> SERIAL(attributes);
   Position SERIAL(position);
   HeapAllocated<Equipment> SERIAL(equipment);
-  unique_ptr<LevelShortestPath> SERIAL(shortestPath);
+  HeapAllocated<optional<LevelShortestPath>> SERIAL(shortestPath);
   EntitySet<Creature> SERIAL(knownHiding);
   TribeId SERIAL(tribe);
   double SERIAL(morale) = 0;

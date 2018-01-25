@@ -822,7 +822,7 @@ void Creature::setPosition(Position pos) {
     modViewObject().clearMovementInfo();
   }
   if (shortestPath && shortestPath->getLevel() != pos.getLevel())
-    shortestPath.reset();
+    shortestPath = none;
   position = pos;
 }
 
@@ -1521,36 +1521,35 @@ CreatureAction Creature::moveTowards(Position pos, bool away, NavigationFlags fl
     return CreatureAction();
   if (!away && !canNavigateTo(pos))
     return CreatureAction();
-  bool newPath = false;
-  bool targetChanged = shortestPath && shortestPath->getTarget().dist8(pos) > getPosition().dist8(pos) / 10;
-  if (!shortestPath || targetChanged || shortestPath->isReversed() != away) {
-    newPath = true;
+  optional<LevelShortestPath> currentPath = *shortestPath;
+  auto constructPath = [&] {
     if (!away)
-      shortestPath.reset(new LevelShortestPath(this, pos, position));
+      currentPath = LevelShortestPath(this, pos, position);
     else
-      shortestPath.reset(new LevelShortestPath(this, pos, position, -1.5));
-  }
-  CHECK(shortestPath);
-  if (shortestPath->isReachable(position))
-    if (auto action = move(shortestPath->getNextMove(position), shortestPath->getNextNextMove(position)))
-      return action;
+      currentPath = LevelShortestPath(this, pos, position, -1.5);
+  };
+  if (!currentPath || currentPath->isReversed() != away ||
+      currentPath->getTarget().dist8(pos) > getPosition().dist8(pos) / 10)
+    constructPath();
+  CHECK(!!currentPath);
+  /*if (currentPath->isReachable(position))
+    if (auto action = move(currentPath->getNextMove(position), currentPath->getNextNextMove(position)))
+      return action.append(rememberPath);
   INFO << "Reconstructing shortest path.";
-  if (!away)
-    shortestPath.reset(new LevelShortestPath(this, pos, position));
-  else
-    shortestPath.reset(new LevelShortestPath(this, pos, position, -1.5));
-  if (shortestPath->isReachable(position)) {
-    Position pos2 = shortestPath->getNextMove(position);
-    if (auto action = move(pos2, shortestPath->getNextNextMove(position)))
-      return action;
+  constructPath();*/
+  if (currentPath->isReachable(position)) {
+    Position pos2 = currentPath->getNextMove(position);
+    if (auto action = move(pos2, currentPath->getNextNextMove(position)))
+      return action.append([path = *currentPath](WCreature c) { c->shortestPath = path; });
     else {
       if (!pos2.canEnterEmpty(this) && flags.destroy)
         if (auto destroyAction = pos2.getBestDestroyAction(getMovementType()))
             if (auto action = destroy(getPosition().getDir(pos2), *destroyAction))
-            return action;
+              return action.append([path = *currentPath](WCreature c) { c->shortestPath = path; });
       return CreatureAction();
     }
   } else {
+    shortestPath = none;
     return CreatureAction();
   }
 }
