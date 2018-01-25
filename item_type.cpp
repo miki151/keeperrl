@@ -552,10 +552,10 @@ ItemAttributes ItemType::SpecialSword::getAttributes() const {
   );
 }
 
-ItemAttributes ItemType::SteelSword::getAttributes() const {
+ItemAttributes ItemType::AdaSword::getAttributes() const {
   return ITATTR(
-      i.viewId = ViewId::STEEL_SWORD;
-      i.name = "steel sword";
+      i.viewId = ViewId::ADA_SWORD;
+      i.name = "adamantine sword";
       i.itemClass = ItemClass::WEAPON;
       i.equipmentSlot = EquipmentSlot::WEAPON;
       i.weight = 1.2;
@@ -623,10 +623,11 @@ ItemAttributes ItemType::SpecialBattleAxe::getAttributes() const {
   );
 }
 
-ItemAttributes ItemType::SteelBattleAxe::getAttributes() const {
+ItemAttributes ItemType::AdaBattleAxe::getAttributes() const {
   return ITATTR(
-      i.viewId = ViewId::STEEL_BATTLE_AXE;
-      i.name = "steel battle axe";
+      i.viewId = ViewId::ADA_BATTLE_AXE;
+      i.shortName = "adamantine"_s;
+      i.name = "adamantine battle axe";
       i.itemClass = ItemClass::WEAPON;
       i.equipmentSlot = EquipmentSlot::WEAPON;
       i.weight = 7;
@@ -887,11 +888,11 @@ ItemAttributes ItemType::ChainArmor::getAttributes() const {
   );
 }
 
-ItemAttributes ItemType::SteelArmor::getAttributes() const {
+ItemAttributes ItemType::AdaArmor::getAttributes() const {
   return ITATTR(
-      i.viewId = ViewId::STEEL_ARMOR;
-      i.shortName = "steel"_s;
-      i.name = "steel armor";
+      i.viewId = ViewId::ADA_ARMOR;
+      i.shortName = "adamantine"_s;
+      i.name = "adamantine armor";
       i.itemClass = ItemClass::ARMOR;
       i.equipmentSlot = EquipmentSlot::BODY_ARMOR;
       i.weight = 13;
@@ -1211,13 +1212,13 @@ ItemAttributes ItemType::IronOre::getAttributes() const {
   );
 }
 
-ItemAttributes ItemType::SteelIngot::getAttributes() const {
+ItemAttributes ItemType::AdaOre::getAttributes() const {
   return ITATTR(
-      i.viewId = ViewId::STEEL_INGOT;
-      i.name = "steel ingot";
+      i.viewId = ViewId::ADA_ORE;
+      i.name = "adamantine ore";
       i.itemClass = ItemClass::OTHER;
       i.price = 0;
-      i.resourceId = CollectiveResourceId::STEEL;
+      i.resourceId = CollectiveResourceId::ADA;
       i.weight = 0.5;
   );
 }

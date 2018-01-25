@@ -29,6 +29,7 @@ class Body {
     WOOD,
     IRON,
     LAVA,
+    ADA
   };
 
   enum class Size {

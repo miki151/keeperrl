@@ -1353,7 +1353,17 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body->setIntrinsicAttack(BodyPart::ARM, IntrinsicAttack(ItemType::fists(10, Effect::Fire{})));
           c.permanentEffects[LastingEffect::FIRE_RESISTANT] = 1;
           c.name = "lava golem";);
-    case CreatureId::AUTOMATON: 
+    case CreatureId::ADA_GOLEM:
+      return CATTR(
+          c.viewId = ViewId::ADA_GOLEM;
+          c.attr = LIST(36_dam, 36_def );
+          c.permanentEffects[LastingEffect::MELEE_RESISTANCE] = 1;
+          c.permanentEffects[LastingEffect::SLOWED] = 1;
+          c.body = Body::nonHumanoid(Body::Material::ADA, Body::Size::LARGE);
+          c.body->setHumanoidBodyParts(8);
+          c.permanentEffects[LastingEffect::FIRE_RESISTANT] = 1;
+          c.name = "adamantine golem";);
+    case CreatureId::AUTOMATON:
       return CATTR(
           c.viewId = ViewId::AUTOMATON;
           c.attr = LIST(40_dam, 40_def );

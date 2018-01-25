@@ -66,4 +66,5 @@ struct SettlementInfo {
   bool closeToPlayer;
   bool dontConnectCave;
   int surroundWithResources;
+  optional<FurnitureType> extraResources;
 };

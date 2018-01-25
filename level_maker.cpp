@@ -2049,7 +2049,7 @@ Vec2 getSize(RandomGen& random, SettlementType type) {
     case SettlementType::FOREST: return {18, 13};
     case SettlementType::FORREST_VILLAGE: return {20, 20};
     case SettlementType::VILLAGE:
-    case SettlementType::ANT_NEST:
+    case SettlementType::ANT_NEST:  return {20, 20};
     case SettlementType::CASTLE: return {30, 20};
     case SettlementType::CASTLE2: return {13, 13};
     case SettlementType::MINETOWN: return {30, 20};
@@ -2149,10 +2149,10 @@ static PMakerQueue smallMineTownMaker(RandomGen& random, SettlementInfo info) {
   return ret;
 }
 
-static PMakerQueue vaultMaker(SettlementInfo info, bool connection) {
+static PMakerQueue vaultMaker(SettlementInfo info) {
   auto queue = unique<MakerQueue>();
   BuildingType building = getBuildingInfo(info);
-  if (connection)
+  if (!info.dontConnectCave)
     queue->addMaker(unique<UniformBlob>(building.floorOutside, none, SquareAttrib::CONNECT_CORRIDOR));
   else
     queue->addMaker(unique<UniformBlob>(building.floorOutside));
@@ -2161,6 +2161,8 @@ static PMakerQueue vaultMaker(SettlementInfo info, bool connection) {
   if (info.shopFactory)
     queue->addMaker(unique<Items>(*info.shopFactory, 16, 20, insidePredicate));
   queue->addMaker(unique<PlaceCollective>(info.collective, insidePredicate));
+  if (info.dontConnectCave)
+    queue->addMaker(unique<AddAttrib>(SquareAttrib::NO_DIG));
   return queue;
 }
 
@@ -2202,13 +2204,6 @@ static PMakerQueue islandVaultMaker(RandomGen& random, SettlementInfo info, bool
   return unique<MakerQueue>(
         unique<Empty>(SquareChange::reset(FurnitureType::WATER)),
         unique<Margin>(1, std::move(buildingMaker)));
-}
-
-static PMakerQueue dragonCaveMaker(SettlementInfo info) {
-  auto queue = vaultMaker(info, true);
-/*  queue->addMaker(unique<RandomLocations>({unique<CreatureAltarMaker>(info.collective)}, {{1, 1}},
-      {Predicate::type(FurnitureType::HILL)}));*/
-  return queue;
 }
 
 PLevelMaker LevelMaker::mineTownLevel(RandomGen& random, SettlementInfo info) {
@@ -2259,7 +2254,7 @@ static PLevelMaker getMountains(BiomeId id) {
   switch (id) {
     case BiomeId::GRASSLAND:
     case BiomeId::FORREST:
-      return unique<Mountains>(0.68, 0.06, NoiseInit{0, 1, 0, 0, 0});
+      return unique<Mountains>(0.45, 0.06, NoiseInit{0, 1, 0, 0, 0});
     case BiomeId::MOUNTAIN:
       return unique<Mountains>(0.25, 0.1, NoiseInit{0, 1, 0, 0, 0});
   }
@@ -2298,8 +2293,7 @@ static PLevelMaker getForrestCreatures(CreatureFactory factory, int levelWidth, 
 
 struct SurroundWithResourcesInfo {
   LevelMaker* maker;
-  CollectiveBuilder* collective;
-  int count;
+  SettlementInfo info;
 };
 
 static void generateResources(RandomGen& random, LevelMaker* startingPos, RandomLocations* locations,
@@ -2321,18 +2315,21 @@ static void generateResources(RandomGen& random, LevelMaker* startingPos, Random
     int countFurther;
   };
   vector<ResourceInfo> resourceInfo = {
-      {FurnitureType::STONE, 2, 8},
-      {FurnitureType::IRON_ORE, 4, 13},
-      {FurnitureType::GOLD_ORE, 1, 6}
+      {FurnitureType::STONE, 2, 4},
+      {FurnitureType::IRON_ORE, 3, 4},
+      {FurnitureType::GOLD_ORE, 1, 3},
   };
   for (auto& info : resourceInfo)
     addResources(info.countStartingPos, Range(5, 10), 30, info.type, startingPos, nullptr);
   for (auto enemy : surroundWithResources)
-    for (int i : Range(enemy.count)) {
-      auto& info = resourceInfo[i % resourceInfo.size()];
-      if (info.countFurther > 0) {
-        addResources(1, Range(5, 10), 0, info.type, enemy.maker, enemy.collective);
-        --info.countFurther;
+    for (int i : Range(enemy.info.surroundWithResources))
+      if (auto type = enemy.info.extraResources)
+        addResources(1, Range(5, 10), 0, *type, enemy.maker, enemy.info.collective);
+      else {
+        auto& info = resourceInfo[i % resourceInfo.size()];
+        if (info.countFurther > 0) {
+          addResources(1, Range(5, 10), 0, info.type, enemy.maker, enemy.info.collective);
+          --info.countFurther;
       }
     }
   for (auto& info : resourceInfo)
@@ -2408,19 +2405,15 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, optional<CreatureFactory> fo
       case SettlementType::SMALL_MINETOWN:
         queue = smallMineTownMaker(random, settlement);
         break;
-      case SettlementType::VAULT:
-        queue = vaultMaker(settlement, false);
-        if (keeperSpawn)
-          locations->setMaxDistance(startingPos, queue.get(), width / 3);
-        break;
       case SettlementType::ISLAND_VAULT:
         queue = islandVaultMaker(random, settlement, false);
         break;
       case SettlementType::ISLAND_VAULT_DOOR:
         queue = islandVaultMaker(random, settlement, true);
         break;
+      case SettlementType::VAULT:
       case SettlementType::CAVE:
-        queue = dragonCaveMaker(settlement);
+        queue = vaultMaker(settlement);
         break;
       case SettlementType::SPIDER_CAVE:
         queue = spiderCaveMaker(settlement);
@@ -2438,7 +2431,7 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, optional<CreatureFactory> fo
     if (settlement.corpses)
       queue->addMaker(unique<Corpses>(*settlement.corpses));
     if (settlement.surroundWithResources > 0)
-      surroundWithResources.push_back({queue.get(), settlement.collective, settlement.surroundWithResources});
+      surroundWithResources.push_back({queue.get(), settlement});
     if (settlement.type == SettlementType::SPIDER_CAVE)
       locations2->add(std::move(queue), getSize(random, settlement.type), getSettlementPredicate(settlement.type));
     else {

@@ -1443,13 +1443,12 @@ static bool showEfficiency(FurnitureType type) {
     case FurnitureType::WORKSHOP:
     case FurnitureType::TRAINING_WOOD:
     case FurnitureType::TRAINING_IRON:
-    case FurnitureType::TRAINING_STEEL:
+    case FurnitureType::TRAINING_ADA:
     case FurnitureType::LABORATORY:
     case FurnitureType::JEWELER:
     case FurnitureType::THRONE:
     case FurnitureType::FORGE:
     case FurnitureType::ARCHERY_RANGE:
-    case FurnitureType::STEEL_FURNACE:
       return true;
     default:
       return false;

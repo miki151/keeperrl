@@ -240,10 +240,9 @@ const vector<FurnitureType>& CollectiveConfig::getRoomsNeedingLight() const {
     FurnitureType::FORGE,
     FurnitureType::LABORATORY,
     FurnitureType::JEWELER,
-    FurnitureType::STEEL_FURNACE,
     FurnitureType::TRAINING_WOOD,
     FurnitureType::TRAINING_IRON,
-    FurnitureType::TRAINING_STEEL,
+    FurnitureType::TRAINING_ADA,
     FurnitureType::BOOKCASE_WOOD,
     FurnitureType::BOOKCASE_IRON,
     FurnitureType::BOOKCASE_GOLD,
@@ -314,8 +313,8 @@ const ResourceInfo& CollectiveConfig::getResourceInfo(CollectiveResourceId id) {
             false, TutorialHighlight::WOOD_RESOURCE};
       case CollectiveResourceId::IRON:
         return { getZoneStorage(ZoneId::STORAGE_RESOURCES), ItemIndex::IRON, ItemType::IronOre{}, "iron", ViewId::IRON_ROCK};
-      case CollectiveResourceId::STEEL:
-        return { getZoneStorage(ZoneId::STORAGE_RESOURCES), ItemIndex::STEEL, ItemType::SteelIngot{}, "steel", ViewId::STEEL_INGOT};
+      case CollectiveResourceId::ADA:
+        return { getZoneStorage(ZoneId::STORAGE_RESOURCES), ItemIndex::ADA, ItemType::AdaOre{}, "adamantium", ViewId::ADA_ORE};
       case CollectiveResourceId::STONE:
         return { getZoneStorage(ZoneId::STORAGE_RESOURCES), ItemIndex::STONE, ItemType::Rock{}, "granite", ViewId::ROCK};
       case CollectiveResourceId::CORPSE:
@@ -342,7 +341,7 @@ const vector<ItemFetchInfo>& CollectiveConfig::getFetchInfo() {
           CollectiveWarning::RESOURCE_STORAGE},
       {ItemIndex::IRON, unMarkedItems(), getZoneStorage(ZoneId::STORAGE_RESOURCES), false,
           CollectiveWarning::RESOURCE_STORAGE},
-      {ItemIndex::STEEL, unMarkedItems(), getZoneStorage(ZoneId::STORAGE_RESOURCES), false,
+      {ItemIndex::ADA, unMarkedItems(), getZoneStorage(ZoneId::STORAGE_RESOURCES), false,
           CollectiveWarning::RESOURCE_STORAGE},
       {ItemIndex::STONE, unMarkedItems(), getZoneStorage(ZoneId::STORAGE_RESOURCES), false,
           CollectiveWarning::RESOURCE_STORAGE},
@@ -375,7 +374,6 @@ static EnumMap<WorkshopType, WorkshopInfo> workshops([](WorkshopType type)->Work
     case WorkshopType::FORGE: return {FurnitureType::FORGE, "forge", SkillId::FORGE};
     case WorkshopType::LABORATORY: return {FurnitureType::LABORATORY, "laboratory", SkillId::LABORATORY};
     case WorkshopType::JEWELER: return {FurnitureType::JEWELER, "jeweler", SkillId::JEWELER};
-    case WorkshopType::STEEL_FURNACE: return {FurnitureType::STEEL_FURNACE, "steel furnace", SkillId::FURNACE};
   }});
 
 optional<WorkshopType> CollectiveConfig::getWorkshopType(FurnitureType furniture) {
@@ -412,7 +410,7 @@ optional<int> CollectiveConfig::getTrainingMaxLevel(ExperienceType experienceTyp
           return 3;
         case FurnitureType::TRAINING_IRON:
           return 7;
-        case FurnitureType::TRAINING_STEEL:
+        case FurnitureType::TRAINING_ADA:
           return 12;
         default:
           return none;
@@ -552,19 +550,16 @@ unique_ptr<Workshops> CollectiveConfig::getWorkshops() const {
       }},
       {WorkshopType::FORGE, {
           Workshops::Item::fromType(ItemType::Sword{}, 10, {CollectiveResourceId::IRON, 20}),
-          Workshops::Item::fromType(ItemType::SteelSword{}, 20, {CollectiveResourceId::STEEL, 20})
-                  .setTechId(TechId::STEEL_MAKING),
+          Workshops::Item::fromType(ItemType::AdaSword{}, 20, {CollectiveResourceId::ADA, 20}),
           Workshops::Item::fromType(ItemType::ChainArmor{}, 30, {CollectiveResourceId::IRON, 40}),
-          Workshops::Item::fromType(ItemType::SteelArmor{}, 30, {CollectiveResourceId::STEEL, 40})
-                  .setTechId(TechId::STEEL_MAKING),
+          Workshops::Item::fromType(ItemType::AdaArmor{}, 30, {CollectiveResourceId::ADA, 40}),
           Workshops::Item::fromType(ItemType::IronHelm{}, 8, {CollectiveResourceId::IRON, 16}),
           Workshops::Item::fromType(ItemType::IronBoots{}, 12, {CollectiveResourceId::IRON, 24}),
           Workshops::Item::fromType(ItemType::WarHammer{}, 16, {CollectiveResourceId::IRON, 40})
                   .setTechId(TechId::TWO_H_WEAP),
           Workshops::Item::fromType(ItemType::BattleAxe{}, 22, {CollectiveResourceId::IRON, 50})
                   .setTechId(TechId::TWO_H_WEAP),
-          Workshops::Item::fromType(ItemType::SteelBattleAxe{}, 22, {CollectiveResourceId::STEEL, 50})
-                  .setTechId(TechId::STEEL_MAKING),
+          Workshops::Item::fromType(ItemType::AdaBattleAxe{}, 22, {CollectiveResourceId::ADA, 50}),
          Workshops::Item::fromType(ItemType::IronStaff{}, 20, {CollectiveResourceId::IRON, 40})
                  .setTechId(TechId::MAGICAL_WEAPONS),
       }},
@@ -620,9 +615,6 @@ unique_ptr<Workshops> CollectiveConfig::getWorkshops() const {
           Workshops::Item::fromType(ItemType::Amulet{LastingEffect::WARNING}, 10, {CollectiveResourceId::GOLD, 30}),
           Workshops::Item::fromType(ItemType::DefenseAmulet{}, 10, {CollectiveResourceId::GOLD, 40}),
           Workshops::Item::fromType(ItemType::Amulet{LastingEffect::REGENERATION}, 10, {CollectiveResourceId::GOLD, 60}),
-      }},
-      {WorkshopType::STEEL_FURNACE, {
-          Workshops::Item::fromType(ItemType::SteelIngot{}, 25, {CollectiveResourceId::IRON, 30}).setBatchSize(10),
       }},
   }));
 }

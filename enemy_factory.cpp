@@ -55,6 +55,8 @@ static EnemyInfo getVault(SettlementType type, CreatureId creature, TribeId trib
       c.type = type;
       c.inhabitants.fighters = CreatureList(num, creature);
       c.tribe = tribe;
+      c.closeToPlayer = true;
+      c.dontConnectCave = true;
       c.buildingId = BuildingId::DUNGEON;
       c.shopFactory = itemFactory;
     ), CollectiveConfig::noImmigrants())
@@ -149,6 +151,22 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
         ants.setCreateOnBones(*this, 0.1, {EnemyId::DWARVES});
         return ants;
       }
+    case EnemyId::ADA_GOLEMS:
+      return EnemyInfo(CONSTRUCT(SettlementInfo,
+            c.type = SettlementType::VAULT;
+            c.inhabitants.fighters = CreatureList(8, CreatureId::ADA_GOLEM);
+            c.tribe = TribeId::getAnt();
+            c.race = "adamantine golems"_s;
+            c.dontConnectCave = true;
+            c.surroundWithResources = 3;
+            c.extraResources = FurnitureType::ADAMANTIUM_ORE;
+            c.buildingId = BuildingId::DUNGEON;),
+          CollectiveConfig::noImmigrants(),
+          CONSTRUCT(VillageBehaviour,
+            c.minPopulation = 1;
+            c.minTeamSize = 4;
+            c.triggers = LIST(AttackTriggerId::ENTRY);
+            c.attackBehaviour = AttackBehaviour(AttackBehaviourId::KILL_LEADER);));
     case EnemyId::ORC_VILLAGE:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::VILLAGE;

@@ -24,12 +24,12 @@ class ItemType {
   SIMPLE_ITEM(UnicornHorn);
   SIMPLE_ITEM(Spear);
   SIMPLE_ITEM(Sword);
-  SIMPLE_ITEM(SteelSword);
+  SIMPLE_ITEM(AdaSword);
   SIMPLE_ITEM(SpecialSword);
   SIMPLE_ITEM(ElvenSword);
   SIMPLE_ITEM(SpecialElvenSword);
   SIMPLE_ITEM(BattleAxe);
-  SIMPLE_ITEM(SteelBattleAxe);
+  SIMPLE_ITEM(AdaBattleAxe);
   SIMPLE_ITEM(SpecialBattleAxe);
   SIMPLE_ITEM(WarHammer);
   SIMPLE_ITEM(SpecialWarHammer);
@@ -46,7 +46,7 @@ class ItemType {
   SIMPLE_ITEM(LeatherHelm);
   SIMPLE_ITEM(TelepathyHelm);
   SIMPLE_ITEM(ChainArmor);
-  SIMPLE_ITEM(SteelArmor);
+  SIMPLE_ITEM(AdaArmor);
   SIMPLE_ITEM(IronHelm);
   SIMPLE_ITEM(LeatherBoots);
   SIMPLE_ITEM(IronBoots);
@@ -105,7 +105,7 @@ class ItemType {
   SIMPLE_ITEM(FirstAidKit);
   SIMPLE_ITEM(Rock);
   SIMPLE_ITEM(IronOre);
-  SIMPLE_ITEM(SteelIngot);
+  SIMPLE_ITEM(AdaOre);
   SIMPLE_ITEM(GoldPiece);
   SIMPLE_ITEM(WoodPlank);
   SIMPLE_ITEM(Bone);
@@ -122,11 +122,11 @@ class ItemType {
   };
   SIMPLE_ITEM(AutomatonItem);
 
-  MAKE_VARIANT(Type, SpecialKnife, Knife, Spear, Sword, SteelSword, SpecialSword, ElvenSword, SpecialElvenSword,
-      BattleAxe, SteelBattleAxe, SpecialBattleAxe, WarHammer, SpecialWarHammer, Club, HeavyClub, WoodenStaff, IronStaff,
-      Scythe, Bow, ElvenBow, LeatherArmor, LeatherHelm, TelepathyHelm, ChainArmor, SteelArmor, IronHelm, LeatherBoots,
+  MAKE_VARIANT(Type, SpecialKnife, Knife, Spear, Sword, AdaSword, SpecialSword, ElvenSword, SpecialElvenSword,
+      BattleAxe, AdaBattleAxe, SpecialBattleAxe, WarHammer, SpecialWarHammer, Club, HeavyClub, WoodenStaff, IronStaff,
+      Scythe, Bow, ElvenBow, LeatherArmor, LeatherHelm, TelepathyHelm, ChainArmor, AdaArmor, IronHelm, LeatherBoots,
       IronBoots, SpeedBoots, LevitationBoots, LeatherGloves, StrengthGloves, Robe, Scroll, FireScroll, Potion,
-      Mushroom, Amulet, DefenseAmulet, Ring, FirstAidKit, Rock, IronOre, SteelIngot, GoldPiece,
+      Mushroom, Amulet, DefenseAmulet, Ring, FirstAidKit, Rock, IronOre, AdaOre, GoldPiece,
       WoodPlank, Bone, RandomTechBook, TechBook, TrapItem, AutomatonItem, BagOfCandies, HalloweenCostume,
       UnicornHorn, Intrinsic, Torch);
 

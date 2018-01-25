@@ -400,6 +400,7 @@ static string getMaterialName(Body::Material material) {
     case Body::Material::SPIRIT: return "ectoplasm";
     case Body::Material::CLAY: return "clay";
     case Body::Material::IRON: return "iron";
+    case Body::Material::ADA: return "adamantium";
   }
 }
 
