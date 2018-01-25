@@ -278,16 +278,15 @@ PModel ModelBuilder::trySingleMapModel(const string& worldName) {
         .setVillainType(VillainType::LESSER));
   enemies.push_back(enemyFactory->get(random.choose(EnemyId::GNOMES, EnemyId::DARK_ELVES)).setVillainType(VillainType::ALLY));
   append(enemies, enemyFactory->getVaults());
-  if (random.roll(4))
-    enemies.push_back(enemyFactory->get(EnemyId::ANTS_CLOSED).setVillainType(VillainType::LESSER));
+  enemies.push_back(enemyFactory->get(EnemyId::ANTS_CLOSED).setVillainType(VillainType::LESSER));
+  enemies.push_back(enemyFactory->get(EnemyId::DWARVES).setVillainType(VillainType::MAIN));
   enemies.push_back(enemyFactory->get(EnemyId::KNIGHTS).setVillainType(VillainType::MAIN));
   enemies.push_back(enemyFactory->get(random.choose(EnemyId::OGRE_CAVE, EnemyId::HARPY_CAVE))
       .setVillainType(VillainType::ALLY));
-  for (auto& enemy : random.chooseN(3, {
+  for (auto& enemy : random.chooseN(2, {
         EnemyId::ELEMENTALIST,
         EnemyId::WARRIORS,
         EnemyId::ELVES,
-        EnemyId::DWARVES,
         EnemyId::VILLAGE}))
     enemies.push_back(enemyFactory->get(enemy).setVillainType(VillainType::MAIN));
   for (auto& enemy : random.chooseN(3, {
@@ -331,7 +330,8 @@ void ModelBuilder::addMapVillains(vector<EnemyInfo>& enemyInfo, BiomeId biomeId)
 PModel ModelBuilder::tryCampaignBaseModel(const string& siteName, bool addExternalEnemies) {
   vector<EnemyInfo> enemyInfo;
   BiomeId biome = BiomeId::MOUNTAIN;
-  enemyInfo.push_back(random.choose(enemyFactory->get(EnemyId::DWARF_CAVE), enemyFactory->get(EnemyId::KOBOLD_CAVE)));
+  enemyInfo.push_back(random.choose(enemyFactory->get(EnemyId::DWARF_CAVE),
+      enemyFactory->get(EnemyId::ANTS_CLOSED_SMALL)));
   enemyInfo.push_back(enemyFactory->get(EnemyId::BANDITS));
   enemyInfo.push_back(enemyFactory->get(EnemyId::TUTORIAL_VILLAGE).setVillainType(VillainType::LESSER));
   if (random.chance(0.3))
@@ -361,6 +361,7 @@ static optional<BiomeId> getBiome(EnemyInfo& enemy, RandomGen& random) {
     case SettlementType::CAVE:
     case SettlementType::MINETOWN:
     case SettlementType::SMALL_MINETOWN:
+    case SettlementType::ANT_NEST:
       return BiomeId::MOUNTAIN;
     case SettlementType::FORREST_COTTAGE:
     case SettlementType::FORREST_VILLAGE:
@@ -411,7 +412,7 @@ PModel ModelBuilder::campaignSiteModel(const string& siteName, EnemyId enemyId, 
 
 void ModelBuilder::measureSiteGen(int numTries, vector<string> types) {
   if (types.empty()) {
-    types = {"single_map", "campaign_base"};
+    types = {"single_map", "campaign_base", "tutorial"};
     for (auto id : ENUM_ALL(EnemyId)) {
       auto enemy = enemyFactory->get(id);
       if (!!getBiome(enemy, random))
@@ -424,6 +425,8 @@ void ModelBuilder::measureSiteGen(int numTries, vector<string> types) {
       tasks.push_back([=] { measureModelGen(type, numTries, [this] { trySingleMapModel("pok"); }); });
     else if (type == "campaign_base")
       tasks.push_back([=] { measureModelGen(type, numTries, [this] { tryCampaignBaseModel("pok", false); }); });
+    else if (type == "tutorial")
+      tasks.push_back([=] { measureModelGen(type, numTries, [this] { tryTutorialModel("pok"); }); });
     else if (auto id = EnumInfo<EnemyId>::fromStringSafe(type)) {
       tasks.push_back([=] { measureModelGen(type, numTries, [&] { tryCampaignSiteModel("", *id, VillainType::LESSER); }); });
     } else {

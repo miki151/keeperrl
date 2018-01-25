@@ -134,6 +134,11 @@ class SquareChange {
       builder->addAttrib(pos, *attrib);
   }) {}
 
+  SquareChange(FurnitureParams f)
+      : changeFun([=](LevelBuilder* builder, Vec2 pos) {
+    builder->putFurniture(pos, f);
+  }) {}
+
   SquareChange(SquareAttrib attrib)
       : changeFun([=](LevelBuilder* builder, Vec2 pos) {
     builder->addAttrib(pos, attrib);
@@ -728,14 +733,14 @@ class UniformBlob : public Blob {
 
 class FurnitureBlob : public Blob {
   public:
-  FurnitureBlob(FurnitureFactory in, double insideRatio = 0.3333) : Blob(insideRatio), inside(in) {}
+  FurnitureBlob(SquareChange in, double insideRatio = 0.3333) : Blob(insideRatio), inside(in) {}
 
   virtual void addSquare(LevelBuilder* builder, Vec2 pos, int edgeDist) override {
-    builder->putFurniture(pos, inside);
+    inside.apply(builder, pos);
   }
 
   private:
-  FurnitureFactory inside;
+  SquareChange inside;
 };
 
 class Lake : public Blob {
@@ -952,8 +957,8 @@ class MakerQueue : public LevelMaker {
   MakerQueue() = default;
   MakerQueue(vector<PLevelMaker> _makers) : makers(std::move(_makers)) {}
 
-  template <typename T1, typename T2, typename... Args>
-  MakerQueue(T1&& t1, T2&& t2, Args&&... args) : MakerQueue(makeVec<PLevelMaker>(std::move(t1), std::move(t2), std::move(args)...)) {}
+  template <typename T1, typename... Args>
+  MakerQueue(T1&& t1, Args&&... args) : MakerQueue(makeVec<PLevelMaker>(std::move(t1), std::move(args)...)) {}
 
   void addMaker(PLevelMaker maker) {
     makers.push_back(std::move(maker));
@@ -992,23 +997,12 @@ class PredicatePrecalc {
   Table<int> counts;
 };
 
-
 class RandomLocations : public LevelMaker {
   public:
-  RandomLocations(vector<PLevelMaker> _insideMakers, const vector<pair<int, int>>& _sizes,
-      Predicate pred, bool _separate = true)
-        : insideMakers(std::move(_insideMakers)), sizes(_sizes), predicate(sizes.size(), pred),
-          separate(_separate) {
-        CHECK(insideMakers.size() == sizes.size());
-        CHECK(predicate.size() == sizes.size());
-      }
-
-  RandomLocations(vector<PLevelMaker> _insideMakers, const vector<pair<int, int>>& _sizes,
-      const vector<Predicate>& pred, bool _separate = true)
-        : insideMakers(std::move(_insideMakers)), sizes(_sizes), predicate(pred.begin(), pred.end()),
-          separate(_separate) {
+  RandomLocations(vector<PLevelMaker> _insideMakers, const vector<pair<int, int>>& _sizes, Predicate pred)
+      : insideMakers(std::move(_insideMakers)), sizes(_sizes), predicate(sizes.size(), pred) {
     CHECK(insideMakers.size() == sizes.size());
-    CHECK(pred.size() == sizes.size());
+    CHECK(predicate.size() == sizes.size());
   }
 
   class LocationPredicate {
@@ -1050,7 +1044,7 @@ class RandomLocations : public LevelMaker {
     int maxSecond = 1;
   };
 
-  RandomLocations(bool _separate = true) : separate(_separate) {}
+  RandomLocations() {}
 
   void add(PLevelMaker maker, Vec2 size, LocationPredicate pred) {
     insideMakers.push_back(std::move(maker));
@@ -1082,6 +1076,14 @@ class RandomLocations : public LevelMaker {
     maxDistance[{insideMakers.back().get(), m}] = dist;
   }
 
+  void setCanOverlap(LevelMaker* m) {
+    overlapping.insert(m);
+  }
+
+  LevelMaker* getLast() {
+    return insideMakers.back().get();
+  }
+
   virtual void make(LevelBuilder* builder, Rectangle area) override {
     vector<LocationPredicate::Precomputed> precomputed;
     for (int i : All(insideMakers))
@@ -1101,6 +1103,7 @@ class RandomLocations : public LevelMaker {
             LevelBuilder::CW0, LevelBuilder::CW1, LevelBuilder::CW2, LevelBuilder::CW3));
     for (int i : All(insideMakers)) {
       auto maker = insideMakers[i].get();
+      bool canOverlap = overlapping.count(maker);
       int width = sizes[i].first;
       int height = sizes[i].second;
       if (contains({LevelBuilder::CW1, LevelBuilder::CW3}, maps[i]))
@@ -1119,17 +1122,19 @@ class RandomLocations : public LevelMaker {
         px = area.left() + margin + builder->getRandom().get(area.width() - width - 2 * margin);
         py = area.top() + margin + builder->getRandom().get(area.height() - height - 2 * margin);
         Rectangle area(px, py, px + width, py + height);
-        for (int j : Range(i))
-          if ((maxDistance.count({insideMakers[j].get(), maker}) &&
-                maxDistance[{insideMakers[j].get(), maker}] < area.middle().dist8(occupied[j].middle())) ||
-              minDistance[{insideMakers[j].get(), maker}] > area.middle().dist8(occupied[j].middle())) {
+        for (int j : Range(i)) {
+          auto distance = area.getDistance(occupied[j]);
+          auto maxDist = getValueMaybe(maxDistance, make_pair(insideMakers[j].get(), maker));
+          auto minDist = getValueMaybe(minDistance, make_pair(insideMakers[j].get(), maker));
+          if ((maxDist && *maxDist < distance) || (minDist && *minDist > distance)) {
             ok = false;
             break;
           }
+        }
         if (!precomputed[i].apply(area))
           ok = false;
         else
-          if (separate)
+          if (!canOverlap)
             for (Rectangle r : occupied)
               if (r.intersects(area)) {
                 ok = false;
@@ -1154,7 +1159,7 @@ class RandomLocations : public LevelMaker {
   vector<PLevelMaker> insideMakers;
   vector<pair<int, int>> sizes;
   vector<LocationPredicate> predicate;
-  bool separate;
+  set<LevelMaker*> overlapping;
   map<pair<LevelMaker*, LevelMaker*>, double> minDistance;
   map<pair<LevelMaker*, LevelMaker*>, double> maxDistance;
   map<LevelMaker*, int> minMargin;
@@ -2090,23 +2095,26 @@ RandomLocations::LocationPredicate getSettlementPredicate(SettlementType type) {
 }
 
 static PMakerQueue genericMineTownMaker(RandomGen& random, SettlementInfo info, int numCavern, int maxCavernSize,
-    int numRooms, int minRoomSize, int maxRoomSize, bool connect) {
+    int numRooms, int minRoomSize, int maxRoomSize) {
   BuildingType building = getBuildingInfo(info);
   auto queue = unique<MakerQueue>();
+  auto caverns = unique<RandomLocations>();
   vector<PLevelMaker> vCavern;
   vector<pair<int, int>> sizes;
   for (int i : Range(numCavern)) {
-    sizes.push_back(make_pair(random.get(5, maxCavernSize), random.get(5, maxCavernSize)));
-    vCavern.push_back(unique<UniformBlob>(building.floorInside));
+    caverns->add(unique<UniformBlob>(building.floorInside),
+        Vec2(random.get(5, maxCavernSize), random.get(5, maxCavernSize)),
+        Predicate::alwaysTrue());
+    caverns->setCanOverlap(caverns->getLast());
   }
-  queue->addMaker(unique<RandomLocations>(std::move(vCavern), sizes, Predicate::alwaysTrue(), false));
+  queue->addMaker(std::move(caverns));
   vector<PLevelMaker> roomInsides;
   if (info.shopFactory)
     roomInsides.push_back(unique<ShopMaker>(info, random.get(8, 16)));
   for (auto& elem : info.stockpiles)
     roomInsides.push_back(stockpileMaker(elem));
   queue->addMaker(unique<RoomMaker>(numRooms, minRoomSize, maxRoomSize, building.wall, none,
-      unique<Empty>(SquareChange(building.floorInside, ifTrue(connect, SquareAttrib::CONNECT_CORRIDOR))),
+      unique<Empty>(SquareChange(building.floorInside, ifTrue(!info.dontConnectCave, SquareAttrib::CONNECT_CORRIDOR))),
       std::move(roomInsides), true));
   queue->addMaker(unique<Connector>(none, 0));
   Predicate featurePred = Predicate::attrib(SquareAttrib::EMPTY_ROOM) && Predicate::type(building.floorInside);
@@ -2124,17 +2132,21 @@ static PMakerQueue genericMineTownMaker(RandomGen& random, SettlementInfo info, 
 }
 
 static PMakerQueue mineTownMaker(RandomGen& random, SettlementInfo info) {
-  return genericMineTownMaker(random, info, 10, 12, random.get(5, 7), 6, 8, true);
+  return genericMineTownMaker(random, info, 10, 12, random.get(5, 7), 6, 8);
 }
 
 static PMakerQueue antNestMaker(RandomGen& random, SettlementInfo info) {
-  auto ret = genericMineTownMaker(random, info, 4, 6, random.get(5, 7), 3, 4, false);
-  ret->addMaker(unique<AddAttrib>(SquareAttrib::NO_DIG));
+  auto ret = genericMineTownMaker(random, info, 4, 6, random.get(5, 7), 3, 4);
+  if (info.dontConnectCave)
+    ret->addMaker(unique<AddAttrib>(SquareAttrib::NO_DIG));
   return ret;
 }
 
 static PMakerQueue smallMineTownMaker(RandomGen& random, SettlementInfo info) {
-  return genericMineTownMaker(random, info, 2, 7, random.get(3, 5), 5, 7, true);
+  auto ret = genericMineTownMaker(random, info, 2, 7, random.get(3, 5), 5, 7);
+  if (info.dontConnectCave)
+    ret->addMaker(unique<AddAttrib>(SquareAttrib::NO_DIG));
+  return ret;
 }
 
 static PMakerQueue vaultMaker(SettlementInfo info, bool connection) {
@@ -2284,6 +2296,50 @@ static PLevelMaker getForrestCreatures(CreatureFactory factory, int levelWidth, 
   return unique<Creatures>(factory, levelWidth * levelWidth / div, MonsterAIFactory::wildlifeNonPredator());
 }
 
+struct SurroundWithResourcesInfo {
+  LevelMaker* maker;
+  CollectiveBuilder* collective;
+  int count;
+};
+
+static void generateResources(RandomGen& random, LevelMaker* startingPos, RandomLocations* locations,
+    const vector<SurroundWithResourcesInfo>& surroundWithResources) {
+  auto addResources = [&](int count, Range size, int maxDist, FurnitureType type, LevelMaker* center,
+      CollectiveBuilder* collective) {
+    for (int i : Range(count)) {
+      auto queue = unique<MakerQueue>(unique<FurnitureBlob>(type));
+      if (collective)
+        queue->addMaker(unique<PlaceCollective>(collective));
+      locations->add(std::move(queue), {random.get(size), random.get(size)},
+          Predicate::type(FurnitureType::MOUNTAIN) || Predicate::type(FurnitureType::MOUNTAIN2));
+      locations->setMaxDistanceLast(center, maxDist);
+    }
+  };
+  struct ResourceInfo {
+    FurnitureType type;
+    int countStartingPos;
+    int countFurther;
+  };
+  vector<ResourceInfo> resourceInfo = {
+      {FurnitureType::STONE, 2, 8},
+      {FurnitureType::IRON_ORE, 4, 13},
+      {FurnitureType::GOLD_ORE, 1, 6}
+  };
+  for (auto& info : resourceInfo)
+    addResources(info.countStartingPos, Range(5, 10), 30, info.type, startingPos, nullptr);
+  for (auto enemy : surroundWithResources)
+    for (int i : Range(enemy.count)) {
+      auto& info = resourceInfo[i % resourceInfo.size()];
+      if (info.countFurther > 0) {
+        addResources(1, Range(5, 10), 0, info.type, enemy.maker, enemy.collective);
+        --info.countFurther;
+      }
+    }
+  for (auto& info : resourceInfo)
+    if (info.countFurther > 0)
+      addResources(info.countFurther, Range(5, 10), 90, info.type, startingPos, nullptr);
+}
+
 PLevelMaker LevelMaker::topLevel(RandomGen& random, optional<CreatureFactory> forrestCreatures,
     vector<SettlementInfo> settlements, int width, bool keeperSpawn, BiomeId biomeId) {
   auto queue = unique<MakerQueue>();
@@ -2307,6 +2363,7 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, optional<CreatureFactory> fo
     int maxDistance;
   };
   vector<CottageInfo> cottages;
+  vector<SurroundWithResourcesInfo> surroundWithResources;
   for (SettlementInfo settlement : settlements) {
     PMakerQueue queue;
     switch (settlement.type) {
@@ -2380,6 +2437,8 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, optional<CreatureFactory> fo
     }
     if (settlement.corpses)
       queue->addMaker(unique<Corpses>(*settlement.corpses));
+    if (settlement.surroundWithResources > 0)
+      surroundWithResources.push_back({queue.get(), settlement.collective, settlement.surroundWithResources});
     if (settlement.type == SettlementType::SPIDER_CAVE)
       locations2->add(std::move(queue), getSize(random, settlement.type), getSettlementPredicate(settlement.type));
     else {
@@ -2398,7 +2457,7 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, optional<CreatureFactory> fo
     for (int i : Range(random.get(1, 3))) {
       locations->add(unique<MakerQueue>(
             unique<RemoveFurniture>(FurnitureLayer::MIDDLE),
-            unique<FurnitureBlob>(FurnitureFactory(cottage.tribe, FurnitureType::CROPS)),
+            unique<FurnitureBlob>(SquareChange(FurnitureParams{FurnitureType::CROPS, cottage.tribe})),
             unique<PlaceCollective>(cottage.collective)),
           {random.get(7, 12), random.get(7, 12)},
           lowlandPred);
@@ -2418,6 +2477,8 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, optional<CreatureFactory> fo
         {random.get(5, 12), random.get(5, 12)}, Predicate::type(SquareId::MOUNTAIN));
  //   locations->setMaxDistanceLast(startingPos, i == 0 ? 25 : 40);
   }*/
+  if (keeperSpawn)
+    generateResources(random, startingPos, locations.get(), surroundWithResources);
   int mapBorder = 30;
   queue->addMaker(unique<Empty>(FurnitureType::WATER));
   queue->addMaker(getMountains(biomeId));
@@ -2497,43 +2558,40 @@ PLevelMaker LevelMaker::splashLevel(CreatureFactory heroLeader, CreatureFactory 
 static PLevelMaker underground(RandomGen& random, CreatureFactory waterFactory, CreatureFactory lavaFactory) {
   auto queue = unique<MakerQueue>();
   if (random.roll(1)) {
-    vector<PLevelMaker> vCavern;
-    vector<pair<int, int>> sizes;
+    auto caverns = unique<RandomLocations>();
     int minSize = random.get(5, 15);
     int maxSize = minSize + random.get(3, 10);
     for (int i : Range(sqrt(random.get(4, 100)))) {
       int size = random.get(minSize, maxSize);
-      sizes.push_back(make_pair(size, size));
-   /*   if (random.roll(4))
-        queue->addMaker(unique<Items>(ItemFactory::mushrooms(), SquareId::PATH, 2, 5));*/
-      vCavern.push_back(unique<UniformBlob>(FurnitureType::FLOOR));
+      caverns->add(unique<UniformBlob>(FurnitureType::FLOOR), Vec2(size, size), Predicate::alwaysTrue());
+      caverns->setCanOverlap(caverns->getLast());
     }
-    queue->addMaker(unique<RandomLocations>(std::move(vCavern), sizes, Predicate::alwaysTrue(), false));
+    queue->addMaker(std::move(caverns));
   }
   switch (random.get(1, 3)) {
-    case 1: queue->addMaker(unique<River>(3, random.choose(FurnitureType::WATER, FurnitureType::MAGMA)));
-            break;
-    case 2:{
-          int numLakes = sqrt(random.get(1, 100));
-          auto lakeType = random.choose(FurnitureType::WATER, FurnitureType::MAGMA);
-          vector<pair<int, int>> sizes;
-          vector<PLevelMaker> makers;
-          for (int i : Range(numLakes)) {
-            int size = random.get(6, 20);
-            sizes.emplace_back(size, size);
-            makers.push_back(unique<UniformBlob>(lakeType, none, SquareAttrib::LAKE));
-          }
-          queue->addMaker(unique<RandomLocations>(std::move(makers), sizes, Predicate::alwaysTrue(), false));
-          if (lakeType == FurnitureType::WATER) {
-            queue->addMaker(unique<Creatures>(waterFactory, 1, MonsterAIFactory::monster(),
-                  Predicate::type(FurnitureType::WATER)));
-          }
-          if (lakeType == FurnitureType::MAGMA) {
-            queue->addMaker(unique<Creatures>(lavaFactory, random.get(1, 4),
-                  MonsterAIFactory::monster(), Predicate::type(FurnitureType::MAGMA)));
-          }
-           break;
+    case 1:
+      queue->addMaker(unique<River>(3, random.choose(FurnitureType::WATER, FurnitureType::MAGMA)));
+      break;
+    case 2: {
+      int numLakes = sqrt(random.get(1, 100));
+      auto lakeType = random.choose(FurnitureType::WATER, FurnitureType::MAGMA);
+      auto caverns = unique<RandomLocations>();
+      for (int i : Range(numLakes)) {
+        int size = random.get(6, 20);
+        caverns->add(unique<UniformBlob>(lakeType, none, SquareAttrib::LAKE), Vec2(size, size), Predicate::alwaysTrue());
+        caverns->setCanOverlap(caverns->getLast());
       }
+      queue->addMaker(std::move(caverns));
+      if (lakeType == FurnitureType::WATER) {
+        queue->addMaker(unique<Creatures>(waterFactory, 1, MonsterAIFactory::monster(),
+              Predicate::type(FurnitureType::WATER)));
+      }
+      if (lakeType == FurnitureType::MAGMA) {
+        queue->addMaker(unique<Creatures>(lavaFactory, random.get(1, 4),
+              MonsterAIFactory::monster(), Predicate::type(FurnitureType::MAGMA)));
+      }
+      break;
+    }
     default: break;
   }
   return std::move(queue);

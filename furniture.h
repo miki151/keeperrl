@@ -63,6 +63,7 @@ class Furniture : public OwnedObject<Furniture> {
   WCreature getCreator() const;
   optional<LocalTime> getCreatedTime() const;
   optional<CreatureId> getSummonedElement() const;
+  bool isClearFogOfWar() const;
   /**
    * @brief Calls special functionality to handle dropped items, if any.
    * @return possibly empty subset of the items that weren't consumned and can be dropped normally.
@@ -99,6 +100,7 @@ class Furniture : public OwnedObject<Furniture> {
   Furniture& setSummonedElement(CreatureId);
   Furniture& setCanBuildBridgeOver();
   Furniture& setStopProjectiles();
+  Furniture& setClearFogOfWar();
   MovementSet& modMovementSet();
 
   SERIALIZATION_DECL(Furniture)
@@ -135,4 +137,5 @@ class Furniture : public OwnedObject<Furniture> {
   optional<CreatureId> SERIAL(summonedElement);
   bool SERIAL(canBuildBridge) = false;
   bool SERIAL(noProjectiles) = false;
+  bool SERIAL(clearFogOfWar) = false;
 };

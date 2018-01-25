@@ -284,7 +284,7 @@ SGuiElem GuiBuilder::drawBuildings(const CollectiveInfo& info, const optional<Tu
       keypressOnly.push_back(gui.invisible(getButtonLine(buttons[i], i, tab, tutorial)));
   }
   keypressOnly.push_back(elems.buildVerticalList());
-  return gui.scrollable(gui.stack(std::move(keypressOnly)));
+  return gui.scrollable(gui.stack(std::move(keypressOnly)), &buildingsScroll, &scrollbarsHeld);
 }
 
 SGuiElem GuiBuilder::drawTechnology(CollectiveInfo& info) {

@@ -69,14 +69,6 @@ void Technology::init() {
         "master sorcery", "Learn the most powerful spells.", 350, {TechId::SPELLS_ADV}));
   Technology::set(TechId::DEMONOLOGY, new Technology(
         "demonology", "Build demon shrines to summon demons.", 350, {TechId::SPELLS_ADV}));
-  Technology::set(TechId::GEOLOGY1, new Technology(
-        "geology", "Discover precious ores in the earth.", 60, {}));
-  Technology::set(TechId::GEOLOGY2, new Technology(
-        "advanced geology", "Discover more precious ores in the earth.", 180, {TechId::GEOLOGY1}));
-  Technology::set(TechId::GEOLOGY3, new Technology(
-        "expert geology", "Discover even more precious ores in the earth.", 400, {TechId::GEOLOGY2}));
-  Technology::set(TechId::GEOLOGY4, new Technology(
-        "master geology", "Discover ALL precious ores in the earth!", 1200, {TechId::GEOLOGY3}));
 }
 
 bool Technology::canResearch() const {
@@ -151,70 +143,8 @@ const vector<Technology*> Technology::getAllowed() const {
   return ret;
 }
 
-static bool areaOk(const vector<Position>& v) {
-  for (Position pos : v) {
-    auto furniture = pos.getFurniture(FurnitureLayer::MIDDLE);
-    if (pos.isUnavailable() || !furniture || furniture->getType() != FurnitureType::MOUNTAIN)
-      return false;
-  }
-  return true;
-}
-
-static vector<Vec2> cutShape(Rectangle rect) {
-  vector<Vec2> ret;
-  for (Vec2 v : rect)
-    if ((v.inRectangle(rect.minusMargin(1)) || !Random.roll(4)) &&
-        v != rect.topRight() - Vec2(1, 0) &&
-        v != rect.topLeft() &&
-        v != rect.bottomLeft() - Vec2(0, 1) &&
-        v != rect.bottomRight() - Vec2(1, 1))
-      ret.push_back(v);
-  return ret;
-}
-
-
-static void addResource(WCollective col, FurnitureType type, int maxDist) {
-  Position init = [&]{
-      for (auto f : CollectiveConfig::getTrainingFurniture(ExperienceType::SPELL)) {
-        auto& pos = col->getConstructions().getBuiltPositions(f);
-        if (!pos.empty())
-          return Random.choose(pos);
-      }
-      if (auto leader = col->getLeader())
-        return leader->getPosition();
-      FATAL << "Couldn't find library to spawn resources.";
-      return Position();
-  }();
-  Rectangle resourceArea(Random.get(4, 7), Random.get(4, 7));
-  resourceArea.translate(-resourceArea.middle());
-  for (int t = 0; t < 200; ++t) {
-    Position center = init.plus(Vec2(Random.get(-maxDist, maxDist + 1), Random.get(-maxDist, maxDist + 1)));
-    vector<Position> all = center.getRectangle(resourceArea.minusMargin(-1));
-    if (areaOk(all)) {
-      for (Vec2 pos : cutShape(resourceArea)) {
-        center.plus(pos).addFurniture(FurnitureFactory::get(type, TribeId::getKeeper()));
-        col->onPositionDiscovered(center.plus(pos));
-      }
-      return;
-    }
-  }
-}
-
-static void addResources(WCollective col, int numGold, int numIron, int numStone, int maxDist) {
-  for (int i : Range(numGold))
-    addResource(col, FurnitureType::GOLD_ORE, maxDist);
-  for (int i : Range(numIron))
-    addResource(col, FurnitureType::IRON_ORE, maxDist);
-  for (int i : Range(numStone))
-    addResource(col, FurnitureType::STONE, maxDist);
-}
-
 void Technology::onAcquired(TechId id, WCollective col) {
   switch (id) {
-    case TechId::GEOLOGY1: addResources(col, 0, 2, 1, 25); break;
-    case TechId::GEOLOGY2: addResources(col, 1, 3, 2, 35); break;
-    case TechId::GEOLOGY3: addResources(col, 2, 4, 3, 50); break;
-    case TechId::GEOLOGY4: addResources(col, 3, 8, 4, 70); break;
     default: break;
   } 
 }

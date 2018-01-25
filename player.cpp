@@ -465,33 +465,34 @@ static bool displayTravelInfo = true;
 
 vector<Player::OtherCreatureCommand> Player::getOtherCreatureCommands(WCreature c) const {
   vector<OtherCreatureCommand> ret;
-  auto genAction = [&](const string& text, bool allowAuto, CreatureAction action) {
+  auto genAction = [&](int priority, const string& text, bool allowAuto, CreatureAction action) {
     if (action)
-      ret.push_back({text, allowAuto, [action](Player* player) { player->tryToPerform(action); }});
+      ret.push_back({priority, text, allowAuto, [action](Player* player) { player->tryToPerform(action); }});
   };
   if (c->getPosition().dist8(getCreature()->getPosition()) == 1) {
-    genAction("Swap position", true, getCreature()->move(c->getPosition(), none));
-    genAction("Push", true, getCreature()->push(c));
+    genAction(0, "Swap position", true, getCreature()->move(c->getPosition(), none));
+    genAction(3, "Push", true, getCreature()->push(c));
   }
   if (getCreature()->isEnemy(c)) {
-    genAction("Attack", true, getCreature()->attack(c));
-    ret.push_back({c->isCaptureOrdered() ? "Cancel capture order" : "Order capture", true,
+    genAction(1, "Attack", true, getCreature()->attack(c));
+    ret.push_back({2, c->isCaptureOrdered() ? "Cancel capture order" : "Order capture", true,
         [c](Player*) { c->toggleCaptureOrder();}});
     auto equipped = getCreature()->getEquipment().getSlotItems(EquipmentSlot::WEAPON);
     if (equipped.size() == 1) {
       auto weapon = equipped[0];
-      genAction("Attack using " + weapon->getName(), true, getCreature()->attack(c,
+      genAction(4, "Attack using " + weapon->getName(), true, getCreature()->attack(c,
           CONSTRUCT(Creature::AttackParams, c.weapon = weapon;)));
     }
     for (auto part : ENUM_ALL(BodyPart))
       if (auto& attack = getCreature()->getBody().getIntrinsicAttacks()[part])
-        genAction("Attack using " + attack->item->getName(), true, getCreature()->attack(c,
+        genAction(4, "Attack using " + attack->item->getName(), true, getCreature()->attack(c,
             CONSTRUCT(Creature::AttackParams, c.weapon = attack->item.get();)));
   }
   if (getCreature() == c)
-    genAction("Skip turn", true, getCreature()->wait());
+    genAction(0, "Skip turn", true, getCreature()->wait());
   if (c->getPosition().dist8(getCreature()->getPosition()) == 1)
-    genAction("Chat", false, getCreature()->chatTo(c));
+    genAction(10, "Chat", false, getCreature()->chatTo(c));
+  std::stable_sort(ret.begin(), ret.end(), [](const auto& c1, const auto& c2) { return c1.priority < c2.priority; });
   return ret;
 }
 

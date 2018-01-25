@@ -114,6 +114,8 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.inhabitants.leader = CreatureId::ANT_QUEEN;
             c.inhabitants.civilians = CreatureList(random.get(5, 7), CreatureId::ANT_WORKER);
             c.inhabitants.fighters = CreatureList(random.get(5, 7), CreatureId::ANT_SOLDIER);
+            c.dontConnectCave = true;
+            c.surroundWithResources = 5;
             c.tribe = TribeId::getAnt();
             c.race = "ants"_s;
             c.buildingId = BuildingId::DUNGEON;),
@@ -125,9 +127,25 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.minTeamSize = 4;
             c.triggers = LIST(AttackTriggerId::ENTRY);
             c.attackBehaviour = AttackBehaviour(AttackBehaviourId::KILL_LEADER);));
+    case EnemyId::ANTS_CLOSED_SMALL:
+      return EnemyInfo(CONSTRUCT(SettlementInfo,
+            c.type = SettlementType::SMALL_MINETOWN;
+            c.inhabitants.civilians = CreatureList(random.get(2, 5), CreatureId::ANT_WORKER);
+            c.inhabitants.fighters = CreatureList(random.get(3, 5), CreatureId::ANT_SOLDIER);
+            c.tribe = TribeId::getAnt();
+            c.race = "ants"_s;
+            c.dontConnectCave = true;
+            c.surroundWithResources = 6;
+            c.buildingId = BuildingId::DUNGEON;),
+          CollectiveConfig::noImmigrants(),
+          CONSTRUCT(VillageBehaviour,
+            c.minPopulation = 1;
+            c.minTeamSize = 4;
+            c.triggers = LIST(AttackTriggerId::ENTRY);
+            c.attackBehaviour = AttackBehaviour(AttackBehaviourId::KILL_LEADER);));
     case EnemyId::ANTS_OPEN: {
         auto ants = get(EnemyId::ANTS_CLOSED);
-        ants.settlement.type = SettlementType::MINETOWN;
+        ants.settlement.dontConnectCave = false;
         ants.setCreateOnBones(*this, 0.1, {EnemyId::DWARVES});
         return ants;
       }
@@ -334,6 +352,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.stockpiles = LIST({StockpileInfo::GOLD, 200}, {StockpileInfo::MINERALS, 120});
             c.shopFactory = ItemFactory::dwarfShop();
             c.outsideFeatures = FurnitureFactory::dungeonOutside(c.tribe);
+            c.surroundWithResources = 5;
             c.furniture = FurnitureFactory::roomFurniture(c.tribe);),
           CollectiveConfig::withImmigrants(500_visible, 15, {
               ImmigrantInfo(CreatureId::DWARF, {MinionTrait::FIGHTER}).setFrequency(1),
@@ -706,12 +725,14 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.stockpiles = LIST(random.choose(StockpileInfo{StockpileInfo::MINERALS, 60},
                 StockpileInfo{StockpileInfo::GOLD, 60}));
             c.outsideFeatures = FurnitureFactory::dungeonOutside(c.tribe);
-            c.furniture = FurnitureFactory::roomFurniture(c.tribe);),
+            c.furniture = FurnitureFactory::roomFurniture(c.tribe);
+            c.surroundWithResources = 6;
+          ),
           CollectiveConfig::noImmigrants(),
           CONSTRUCT(VillageBehaviour,
             c.minPopulation = 0;
             c.minTeamSize = 1;
-            c.triggers = LIST(AttackTriggerId::SELF_VICTIMS, AttackTriggerId::STOLEN_ITEMS);
+            c.triggers = LIST(AttackTriggerId::SELF_VICTIMS, AttackTriggerId::STOLEN_ITEMS, AttackTriggerId::ENTRY);
             c.attackBehaviour = AttackBehaviour(AttackBehaviourId::KILL_LEADER);
             c.ransom = make_pair(0.5, random.get(40, 80));));
   }
