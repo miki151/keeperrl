@@ -163,8 +163,11 @@ PLevel LevelBuilder::build(WModel m, LevelMaker* maker, LevelId levelId) {
       squares.getWritable(v)->dropItemsLevelGen(std::move(items[v]));
   auto l = Level::create(std::move(squares), std::move(furniture), m, name, sunlight, levelId, covered);
   l->unavailable = unavailable;
-  for (pair<PCreature, Vec2>& c : creatures)
-    Position(c.second, l.get()).addCreature(std::move(c.first));
+  for (pair<PCreature, Vec2>& c : creatures) {
+    Position pos(c.second, l.get());
+    CHECK(pos.canEnter(c.first.get()));
+    pos.addCreature(std::move(c.first));
+  }
   for (CollectiveBuilder* c : collectives)
     c->setLevel(l.get());
   l->noDiagonalPassing = noDiagonalPassing;

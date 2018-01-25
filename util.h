@@ -188,6 +188,7 @@ class Range {
   int getEnd() const;
   int getLength() const;
   bool contains(int) const;
+  bool intersects(Range) const;
 
   class Iter {
     public:
@@ -250,6 +251,8 @@ class Rectangle {
   bool intersects(const Rectangle& other) const;
   bool contains(const Rectangle& other) const;
   Rectangle intersection(const Rectangle& other) const;
+  // can be negative if rectangles intersect
+  int getDistance(const Rectangle& other) const;
 
   Rectangle minusMargin(int margin) const;
   Rectangle translate(Vec2 v) const;

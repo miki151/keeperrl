@@ -92,6 +92,39 @@ class Test {
     CHECK(Rectangle(0, 0, 4, 4).intersects(Rectangle(1, 1, 3, 3)));
     CHECK(Rectangle(0, 0, 4, 4).intersects(Rectangle(0, 0, 3, 4)));
   }
+  void testRectangleDistance() {
+    Rectangle r(-3, -6, 4, 3);
+    CHECKEQ(r.getDistance(Rectangle(5, 5, 7, 7)), 2);
+    CHECKEQ(r.getDistance(Rectangle(4, 4, 7, 7)), 1);
+    CHECKEQ(r.getDistance(Rectangle(4, 3, 7, 7)), 0);
+    CHECKEQ(r.getDistance(Rectangle(3, 2, 7, 7)), -1);
+    CHECKEQ(r.getDistance(Rectangle(2, 3, 7, 7)), 0);
+    CHECKEQ(r.getDistance(Rectangle(2, 4, 7, 7)), 1);
+    CHECKEQ(r.getDistance(Rectangle(2, 2, 7, 7)), -1);
+    CHECKEQ(r.getDistance(Rectangle(0, 5, 2, 7)), 2);
+    CHECKEQ(r.getDistance(Rectangle(6, -2, 8, 0)), 2);
+    CHECKEQ(r.getDistance(Rectangle(4, -2, 6, 0)), 0);
+    CHECKEQ(r.getDistance(Rectangle(3, -2, 5, 0)), -1);
+    CHECKEQ(r.getDistance(Rectangle(2, -2, 4, 0)), -2);
+    CHECKEQ(r.getDistance(Rectangle(1, -2, 3, 0)), -3);
+    CHECKEQ(r.getDistance(Rectangle(0, -2, 2, 0)), -4);
+    CHECKEQ(r.getDistance(Rectangle(-1, -2, 1, 0)), -4);
+    CHECKEQ(r.getDistance(Rectangle(-2, -2, 0, 0)), -3);
+    CHECKEQ(r.getDistance(Rectangle(-2, -3, 0, -1)), -3);
+    CHECKEQ(r.getDistance(Rectangle(-2, -4, 0, -2)), -3);
+    CHECKEQ(r.getDistance(Rectangle(-2, -5, 0, -3)), -3);
+    CHECKEQ(r.getDistance(Rectangle(-2, -6, 0, -4)), -2);
+    CHECKEQ(r.getDistance(Rectangle(-2, -7, 0, -5)), -1);
+    CHECKEQ(r.getDistance(Rectangle(-3, -7, -1, -5)), -1);
+    CHECKEQ(r.getDistance(Rectangle(-4, -7, -2, -5)), -1);
+    CHECKEQ(r.getDistance(Rectangle(-5, -7, -3, -5)), 0);
+    CHECKEQ(r.getDistance(Rectangle(-5, -8, -3, -6)), 0);
+    CHECKEQ(r.getDistance(Rectangle(-5, -9, -3, -7)), 1);
+    CHECKEQ(r.getDistance(Rectangle(-6, -8, -4, -6)), 1);
+    CHECKEQ(r.getDistance(Rectangle(-6, -2, -4, 0)), 1);
+    CHECKEQ(r.getDistance(Rectangle(-6, 3, -4, 5)), 1);
+    CHECKEQ(r.getDistance(Rectangle(-5, 3, -3, 5)), 0);
+  }
 
   void testValueCheck() {
     CHECK(3 == CHECKEQ(1 + 2, 3));
@@ -189,6 +222,19 @@ class Test {
     for (int x : Range(4, 5).reverse())
       a.push_back(x);
     CHECK(a.getOnlyElement() == 4);
+  }
+
+  void testRange3() {
+    CHECK(!Range(1, 5).intersects(Range(5, 10)));
+    CHECK(!Range(1, 5).intersects(Range(0, 1)));
+    CHECK(!Range(1, 5).intersects(Range(-1, 0)));
+    CHECK(!Range(1, 5).intersects(Range(5, 10).reverse()));
+    CHECK(!Range(1, 5).intersects(Range(0, 1).reverse()));
+    CHECK(!Range(1, 5).intersects(Range(-1, 0).reverse()));
+    CHECK(Range(1, 5).intersects(Range(4, 10)));
+    CHECK(Range(1, 5).intersects(Range(-1, 2)));
+    CHECK(Range(1, 5).intersects(Range(-1, 2).reverse()));
+    CHECK(Range(1, 5).intersects(Range(4, 10).reverse()));
   }
 
   void testContains() {
@@ -834,6 +880,7 @@ void testAll() {
   Test().testShortestPathReverse();
   Test().testRange();
   Test().testRange2();
+  Test().testRange3();
   Test().testContains();
   Test().testPredicates();
   Test().testOptional();
@@ -843,6 +890,7 @@ void testAll() {
   Test().testTable();
   Test().testVec2();
   Test().testRectangle();
+  Test().testRectangleDistance();
   Test().testProjection();
   Test().testRandomExit();
   Test().testCombine();

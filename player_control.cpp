@@ -639,7 +639,7 @@ static string getTriggerLabel(const AttackTrigger& trigger) {
     case AttackTriggerId::ENEMY_POPULATION: return "Dungeon population";
     case AttackTriggerId::TIMER: return "Your evilness";
     case AttackTriggerId::NUM_CONQUERED: return "Your aggression";
-    case AttackTriggerId::ENTRY: return "Entry";
+    case AttackTriggerId::ENTRY: return "Breach of territory";
     case AttackTriggerId::PROXIMITY: return "Proximity";
   }
 }
@@ -651,7 +651,7 @@ VillageInfo::Village PlayerControl::getVillageInfo(WConstCollective col) const {
   info.tribeName = col->getName()->race;
   info.triggers.clear();
   if (col->getModel() == getModel()) {
-    if (!getCollective()->isKnownVillainLocation(col))
+    if (!getCollective()->isKnownVillainLocation(col) && !getGame()->getOptions()->getBoolValue(OptionId::SHOW_MAP))
       info.access = VillageInfo::Village::NO_LOCATION;
     else {
       info.access = VillageInfo::Village::LOCATION;
@@ -2360,7 +2360,8 @@ void PlayerControl::update(bool currentlyActive) {
 
 bool PlayerControl::isConsideredAttacking(WConstCreature c, WConstCollective enemy) {
   if (enemy && enemy->getModel() == getModel())
-    return canSee(c) && getCollective()->getTerritory().getStandardExtended().contains(c->getPosition());
+    return canSee(c) && (getCollective()->getTerritory().contains(c->getPosition()) ||
+        getCollective()->getTerritory().getStandardExtended().contains(c->getPosition()));
   else
     return canSee(c) && c->getLevel() == getLevel();
 }

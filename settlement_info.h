@@ -64,4 +64,6 @@ struct SettlementInfo {
   optional<FurnitureFactory> furniture;
   optional<FurnitureFactory> outsideFeatures;
   bool closeToPlayer;
+  bool dontConnectCave;
+  int surroundWithResources;
 };

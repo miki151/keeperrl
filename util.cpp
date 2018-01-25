@@ -576,6 +576,19 @@ Rectangle Rectangle::intersection(const Rectangle& other) const {
   return Rectangle(max(px, other.px), max(py, other.py), min(kx, other.kx), min(ky, other.ky));
 }
 
+int Rectangle::getDistance(const Rectangle& other) const {
+  int ret = min(
+      min(bottomRight().dist8(other.topLeft()), other.bottomRight().dist8(topLeft())),
+      min(bottomLeft().dist8(other.topRight()), other.bottomLeft().dist8(topRight())));
+  if (getXRange().intersects(other.getXRange()))
+    ret = min(ret, min(abs(top() - other.bottom()), abs(other.top() - bottom())));
+  if (getYRange().intersects(other.getYRange()))
+    ret = min(ret, min(abs(left()- other.right()), abs(other.left()- right())));
+  if (intersects(other))
+    ret = -ret;
+  return ret;
+}
+
 Rectangle Rectangle::translate(Vec2 v) const {
   return Rectangle(topLeft() + v, bottomRight() + v);
 }
@@ -654,6 +667,10 @@ int Range::getLength() const {
 
 bool Range::contains(int p) const {
   return (increment > 0 && p >= start && p < finish) || (increment < 0 && p <= start && p > finish);
+}
+
+bool Range::intersects(Range r) const {
+  return contains(r.start) || contains(r.finish - r.increment) || r.contains(start);
 }
 
 Range::Iter Range::begin() {
