@@ -393,13 +393,13 @@ class TileCoordLookup {
     Tile::addTile(ViewId::MAP_MOUNTAIN2, sprite("map_mountain2"));
     Tile::addTile(ViewId::MAP_MOUNTAIN3, sprite("map_mountain3"));
     Tile::addTile(ViewId::GOLD_ORE, getMountainTile(sprite("gold_ore")
-          .addBackground(byName("mountain_ted")).setWallShadow(), "mountain"));
+          .addBackground(byName("mountain_ted2")).setWallShadow(), "mountain"));
     Tile::addTile(ViewId::IRON_ORE, getMountainTile(sprite("iron_ore")
-          .addBackground(byName("mountain_ted")).setWallShadow(), "mountain"));
+          .addBackground(byName("mountain_ted2")).setWallShadow(), "mountain"));
     Tile::addTile(ViewId::STONE, getMountainTile(sprite("stone_ore")
-          .addBackground(byName("mountain_ted")).setWallShadow(), "mountain"));
+          .addBackground(byName("mountain_ted2")).setWallShadow(), "mountain"));
     Tile::addTile(ViewId::ADAMANTIUM_ORE, getMountainTile(sprite("adamantium")
-          .addBackground(byName("mountain_ted")).setWallShadow(), "mountain"));
+          .addBackground(byName("mountain_ted2")).setWallShadow(), "mountain"));
     Tile::addTile(ViewId::HILL, getExtraBorderTile("hill")
         .addExtraBorderId(ViewId::SAND)
         .addExtraBorderId(ViewId::WATER));

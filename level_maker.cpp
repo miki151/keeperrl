@@ -2297,7 +2297,7 @@ struct SurroundWithResourcesInfo {
 };
 
 static void generateResources(RandomGen& random, LevelMaker* startingPos, RandomLocations* locations,
-    const vector<SurroundWithResourcesInfo>& surroundWithResources) {
+    const vector<SurroundWithResourcesInfo>& surroundWithResources, int mapWidth) {
   auto addResources = [&](int count, Range size, int maxDist, FurnitureType type, LevelMaker* center,
       CollectiveBuilder* collective) {
     for (int i : Range(count)) {
@@ -2305,7 +2305,7 @@ static void generateResources(RandomGen& random, LevelMaker* startingPos, Random
       if (collective)
         queue->addMaker(unique<PlaceCollective>(collective));
       locations->add(std::move(queue), {random.get(size), random.get(size)},
-          Predicate::type(FurnitureType::MOUNTAIN) || Predicate::type(FurnitureType::MOUNTAIN2));
+          Predicate::type(FurnitureType::MOUNTAIN2));
       locations->setMaxDistanceLast(center, maxDist);
     }
   };
@@ -2319,26 +2319,27 @@ static void generateResources(RandomGen& random, LevelMaker* startingPos, Random
       {FurnitureType::IRON_ORE, 3, 4},
       {FurnitureType::GOLD_ORE, 1, 3},
   };
+  const int closeDist = 0;
   for (auto& info : resourceInfo)
     addResources(info.countStartingPos, Range(5, 10), 30, info.type, startingPos, nullptr);
   for (auto enemy : surroundWithResources)
     for (int i : Range(enemy.info.surroundWithResources))
       if (auto type = enemy.info.extraResources)
-        addResources(1, Range(5, 10), 0, *type, enemy.maker, enemy.info.collective);
+        addResources(1, Range(5, 10), closeDist, *type, enemy.maker, enemy.info.collective);
       else {
         auto& info = resourceInfo[i % resourceInfo.size()];
         if (info.countFurther > 0) {
-          addResources(1, Range(5, 10), 0, info.type, enemy.maker, enemy.info.collective);
+          addResources(1, Range(5, 10), closeDist, info.type, enemy.maker, enemy.info.collective);
           --info.countFurther;
       }
     }
   for (auto& info : resourceInfo)
     if (info.countFurther > 0)
-      addResources(info.countFurther, Range(5, 10), 90, info.type, startingPos, nullptr);
+      addResources(info.countFurther, Range(5, 10), mapWidth / 3, info.type, startingPos, nullptr);
 }
 
 PLevelMaker LevelMaker::topLevel(RandomGen& random, optional<CreatureFactory> forrestCreatures,
-    vector<SettlementInfo> settlements, int width, bool keeperSpawn, BiomeId biomeId) {
+    vector<SettlementInfo> settlements, int mapWidth, bool keeperSpawn, BiomeId biomeId) {
   auto queue = unique<MakerQueue>();
   auto locations = unique<RandomLocations>();
   auto locations2 = unique<RandomLocations>();
@@ -2471,7 +2472,7 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, optional<CreatureFactory> fo
  //   locations->setMaxDistanceLast(startingPos, i == 0 ? 25 : 40);
   }*/
   if (keeperSpawn)
-    generateResources(random, startingPos, locations.get(), surroundWithResources);
+    generateResources(random, startingPos, locations.get(), surroundWithResources, mapWidth);
   int mapBorder = 30;
   queue->addMaker(unique<Empty>(FurnitureType::WATER));
   queue->addMaker(getMountains(biomeId));
@@ -2488,10 +2489,10 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, optional<CreatureFactory> fo
           Predicate::attrib(SquareAttrib::CONNECT_CORRIDOR),
       SquareAttrib::CONNECTOR)));
   queue->addMaker(unique<Margin>(mapBorder + locationMargin, std::move(locations2)));
-  queue->addMaker(unique<Items>(ItemFactory::mushrooms(), width / 10, width / 5));
+  queue->addMaker(unique<Items>(ItemFactory::mushrooms(), mapWidth / 10, mapWidth / 5));
   queue->addMaker(unique<AddMapBorder>(mapBorder));
   if (forrestCreatures)
-    queue->addMaker(unique<Margin>(mapBorder, getForrestCreatures(*forrestCreatures, width - 2 * mapBorder, biomeId)));
+    queue->addMaker(unique<Margin>(mapBorder, getForrestCreatures(*forrestCreatures, mapWidth - 2 * mapBorder, biomeId)));
   return std::move(queue);
 }
 

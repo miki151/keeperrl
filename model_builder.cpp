@@ -467,7 +467,7 @@ void ModelBuilder::measureModelGen(const string& name, int numTries, function<vo
 #endif
   }
   std::cout << std::endl << numSuccess << " / " << numTries << ". MinT: " <<
-    minT << ". MaxT: " << maxT << ". AvgT: " << sumT / numSuccess << std::endl;
+    minT << ". MaxT: " << maxT << ". AvgT: " << sumT / numTries << std::endl;
 }
 
 WCollective ModelBuilder::spawnKeeper(WModel m, PCreature keeper, bool regenerateMana, vector<string> introText) {
