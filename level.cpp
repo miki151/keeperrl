@@ -278,9 +278,10 @@ bool Level::landCreature(vector<Position> landing, PCreature creature) {
 }
 
 bool Level::landCreature(vector<Position> landing, WCreature creature) {
+  PROFILE;
   CHECK(creature);
   queue<Position> q;
-  set<Position> marked;
+  PositionSet marked;
   for (Position pos : Random.permutation(landing)) {
     q.push(pos);
     marked.insert(pos);
@@ -392,18 +393,22 @@ bool Level::containsCreature(UniqueEntity<Creature>::Id id) const {
 }
 
 bool Level::isWithinVision(Vec2 from, Vec2 to, const Vision& v) const {
+  PROFILE;
   return v.canSeeAt(getLight(to), from.distD(to));
 }
 
 FieldOfView& Level::getFieldOfView(VisionId vision) const {
+  PROFILE;
   return (*fieldOfView)[vision];
 }
 
 bool Level::canSee(Vec2 from, Vec2 to, const Vision& vision) const {
+  PROFILE;
   return isWithinVision(from, to, vision) && getFieldOfView(vision.getId()).canSee(from, to);
 }
 
 bool Level::canSee(WConstCreature c, Vec2 pos) const {
+  PROFILE;
   return canSee(c->getPosition().getCoord(), pos, c->getVision());
 }
 
@@ -482,6 +487,7 @@ void Level::tick() {
 }
 
 bool Level::inBounds(Vec2 pos) const {
+  PROFILE;
   return pos.inRectangle(getBounds());
 }
 

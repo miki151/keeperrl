@@ -9,15 +9,18 @@
 SERIALIZE_DEF(Zones, zones)
 
 bool Zones::isZone(Position pos, ZoneId id) const {
+  PROFILE;
   return zones[id].count(pos);
 }
 
 void Zones::setZone(Position pos, ZoneId id) {
+  PROFILE;
   zones[id].insert(pos);
   pos.setNeedsRenderUpdate(true);
 }
 
 void Zones::eraseZone(Position pos, ZoneId id) {
+  PROFILE;
   zones[id].erase(pos);
   pos.setNeedsRenderUpdate(true);
 }
@@ -27,7 +30,7 @@ void Zones::eraseZones(Position pos) {
     eraseZone(pos, id);
 }
 
-const set<Position>& Zones::getPositions(ZoneId id) const {
+const PositionSet& Zones::getPositions(ZoneId id) const {
   return zones[id];
 }
 
@@ -51,6 +54,7 @@ static HighlightType getHighlight(ZoneId id) {
 }
 
 void Zones::setHighlights(Position pos, ViewIndex& index) const {
+  PROFILE;
   for (auto id : ENUM_ALL(ZoneId))
     if (isZone(pos, id))
       index.setHighlight(getHighlight(id));
@@ -71,6 +75,7 @@ bool Zones::canSet(Position pos, ZoneId id, WConstCollective col) const {
 }
 
 void Zones::tick() {
+  PROFILE;
   for (auto pos : copyOf(zones[ZoneId::FETCH_ITEMS]))
     if (pos.getItems().empty())
       eraseZone(pos, ZoneId::FETCH_ITEMS);

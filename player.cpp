@@ -219,6 +219,7 @@ vector<WItem> Player::chooseItem(const string& text, ItemPredicate predicate, op
 }
 
 void Player::applyItem(vector<WItem> items) {
+  PROFILE;
   if (getCreature()->isAffected(LastingEffect::BLIND) &&
       contains({ItemClass::SCROLL, ItemClass::BOOK}, items[0]->getClass())) {
     privateMessage("You can't read while blind!");
@@ -391,6 +392,7 @@ void Player::payForAllItemsAction() {
 }
 
 void Player::giveAction(vector<WItem> items) {
+  PROFILE;
   if (items.size() > 1) {
     if (auto num = getView()->getNumber("Give how many " + items[0]->getName(true) + "?", 1, items.size()))
       items = getPrefix(items, *num);
@@ -410,6 +412,7 @@ void Player::giveAction(vector<WItem> items) {
 }
 
 void Player::chatAction(optional<Vec2> dir) {
+  PROFILE;
   vector<WCreature> creatures;
   for (Position pos : getCreature()->getPosition().neighbors8())
     if (WCreature c = pos.getCreature())
@@ -452,6 +455,7 @@ const MapMemory& Player::getMemory() const {
 }
 
 void Player::sleeping() {
+  PROFILE;
   if (getCreature()->isAffected(LastingEffect::HALLU))
     ViewObject::setHallu(true);
   else
@@ -518,6 +522,7 @@ void Player::retireMessages() {
 }
 
 vector<Player::CommandInfo> Player::getCommands() const {
+  PROFILE;
   bool canChat = false;
   for (Position pos : getCreature()->getPosition().neighbors8())
     if (WCreature c = pos.getCreature())
@@ -547,6 +552,7 @@ vector<Player::CommandInfo> Player::getCommands() const {
 }
 
 void Player::makeMove() {
+  PROFILE;
   if (!isSubscribed())
     subscribeTo(getModel());
   if (adventurer)
@@ -780,7 +786,7 @@ WLevel Player::getLevel() const {
   return getCreature()->getLevel();
 }
 
-WGame Player::getGame() const {
+Game* Player::getGame() const {
   if (auto creature = getCreature())
     return creature->getGame();
   else
@@ -792,7 +798,7 @@ WModel Player::getModel() const {
 }
 
 View* Player::getView() const {
-  if (WGame game = getGame())
+  if (auto game = getGame())
     return game->getView();
   else
     return nullptr;

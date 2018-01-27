@@ -292,11 +292,11 @@ bool CollectiveConfig::canBuildOutsideTerritory(FurnitureType type) {
 }
 
 static StorageDestinationFun getFurnitureStorage(FurnitureType t) {
-  return [t](WConstCollective col)->const set<Position>& { return col->getConstructions().getBuiltPositions(t); };
+  return [t](WConstCollective col)->const PositionSet& { return col->getConstructions().getBuiltPositions(t); };
 }
 
 static StorageDestinationFun getZoneStorage(ZoneId zone) {
-  return [zone](WConstCollective col)->const set<Position>& { return col->getZones().getPositions(zone); };
+  return [zone](WConstCollective col)->const PositionSet& { return col->getZones().getPositions(zone); };
 }
 
 const ResourceInfo& CollectiveConfig::getResourceInfo(CollectiveResourceId id) {

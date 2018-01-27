@@ -95,6 +95,10 @@ SRCS = $(shell ls -t *.cpp)
 
 LIBS = -L/usr/lib/x86_64-linux-gnu $(OPENGL_LIBS) -lSDL2 -lopenal -lvorbis -lvorbisfile -lSDL2_image $(BOOST_LIBS) -lz -lpthread -lcurl ${LDFLAGS}
 
+ifdef EASY_PROFILER
+LIBS += libeasy_profiler.so
+CFLAGS += -DEASY_PROFILER
+endif
 
 OBJS = $(addprefix $(OBJDIR)/,$(SRCS:.cpp=.o))
 DEPS = $(addprefix $(OBJDIR)/,$(SRCS:.cpp=.d))

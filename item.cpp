@@ -291,6 +291,7 @@ WCreature Item::getShopkeeper(WConstCreature owner) const {
 }
 
 string Item::getName(bool plural, WConstCreature owner) const {
+  PROFILE;
   string suff;
   if (fire->isBurning())
     suff.append(" (burning)");
@@ -405,6 +406,7 @@ string Item::getModifiers(bool shorten) const {
 }
 
 string Item::getShortName(WConstCreature owner, bool plural) const {
+  PROFILE;
   if (owner && owner->isAffected(LastingEffect::BLIND) && attributes->blindName)
     return getBlindName(plural);
   if (attributes->artifactName)

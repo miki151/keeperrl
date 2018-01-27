@@ -170,15 +170,15 @@ class WeakPointer {
     return !!elem.lock();
   }
 
+  T* get() const {
+    return elem.lock().get();
+  }
+
   SERIALIZE_ALL(elem)
 
   private:
   template<class U>
   friend std::ostream& operator<<(std::ostream&, const WeakPointer<U>&);
-
-  T* get() const {
-    return elem.lock().get();
-  }
 
   template <typename>
   friend class OwnerPointer;

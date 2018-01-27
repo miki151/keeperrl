@@ -16,12 +16,14 @@
 #include "attack.h"
 
 static void handleBed(Position pos) {
+  PROFILE;
   if (WCreature c = pos.getCreature())
     if (c->isAffected(LastingEffect::SLEEP))
       c->heal(0.005);
 }
 
 static void handlePigsty(Position pos, WFurniture furniture) {
+  PROFILE;
   if (pos.getCreature() || !Random.roll(10) || pos.getPoisonGasAmount() > 0)
     return;
   for (Position v : pos.neighbors8())

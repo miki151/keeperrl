@@ -23,6 +23,7 @@
 #include "equipment.h"
 
 bool MinionActivityMap::canChooseRandomly(WConstCreature c, MinionActivity t) const {
+  PROFILE;
   switch (t) {
     case MinionActivity::BE_EXECUTED:
     case MinionActivity::BE_WHIPPED:

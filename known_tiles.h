@@ -21,7 +21,7 @@ class KnownTiles {
   public:
   void addTile(Position);
   bool isKnown(Position) const;
-  const set<Position>& getBorderTiles() const;
+  const PositionSet& getBorderTiles() const;
   void limitToModel(const WModel);
 
   template <class Archive> 
@@ -29,6 +29,6 @@ class KnownTiles {
 
   private:
   PositionMap<bool> SERIAL(known);
-  set<Position> SERIAL(border);
+  PositionSet SERIAL(border);
 };
 

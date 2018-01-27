@@ -167,7 +167,7 @@ void Collective::addCreature(WCreature c, EnumSet<MinionTrait> traits) {
   }
   if (c->getTribeId() != *tribe)
     c->setTribe(*tribe);
-  if (WGame game = getGame())
+  if (auto game = getGame())
     for (WCollective col : getGame()->getCollectives())
       if (col->getCreatures().contains(c))
         col->removeCreature(c);
@@ -305,6 +305,7 @@ Collective::CurrentTaskInfo Collective::getCurrentTask(WConstCreature c) const {
 }
 
 bool Collective::isTaskGood(WConstCreature c, MinionActivity task, bool ignoreTaskLock) {
+  PROFILE;
   if (!c->getAttributes().getMinionActivities().isAvailable(this, c, task, ignoreTaskLock) ||
       (!MinionActivities::generate(this, c, task) && !MinionActivities::getExisting(this, c, task)))
     return false;
@@ -334,10 +335,12 @@ void Collective::setRandomTask(WConstCreature c) {
 }
 
 bool Collective::isMinionActivityPossible(WCreature c, MinionActivity task) {
+  PROFILE;
   return isTaskGood(c, task, true) && (MinionActivities::generate(this, c, task) || MinionActivities::getExisting(this, c, task));
 }
 
 WTask Collective::getStandardTask(WCreature c) {
+  PROFILE;
   auto current = currentTasks.getMaybe(c);
   if (!current || (current->finishTime && *current->finishTime < getLocalTime()) || !isTaskGood(c, current->task)) {
     currentTasks.erase(c);
@@ -404,6 +407,7 @@ PTask Collective::getEquipmentTask(WCreature c) {
 const static EnumSet<MinionActivity> healingTasks {MinionActivity::SLEEP};
 
 void Collective::considerHealingTask(WCreature c) {
+  PROFILE;
   if (c->getBody().canHeal() && !c->isAffected(LastingEffect::POISON))
     for (MinionActivity t : healingTasks) {
       auto currentTask = getCurrentTask(c).task;
@@ -442,6 +446,7 @@ MoveInfo getFirstGoodMove(MoveFun1&& f1, MoveFuns&&... funs) {
 }
 
 MoveInfo Collective::getMove(WCreature c) {
+  PROFILE;
   CHECK(control);
   CHECK(creatures.contains(c));
   CHECK(!c->isDead());
@@ -530,6 +535,7 @@ void Collective::setControl(PCollectiveControl c) {
 }
 
 vector<Position> Collective::getEnemyPositions() const {
+  PROFILE;
   vector<Position> enemyPos;
   for (Position pos : territory->getExtended(10))
     if (WConstCreature c = pos.getCreature())
@@ -647,6 +653,7 @@ void Collective::onKillCancelled(WCreature c) {
 }
 
 void Collective::onEvent(const GameEvent& event) {
+  PROFILE;
   using namespace EventInfo;
   event.visit(
       [&](const Alarm& info) {
@@ -863,7 +870,7 @@ void Collective::returnResource(const CostInfo& amount) {
     return;
   CHECK(amount.value > 0);
   if (auto storageType = config->getResourceInfo(amount.id).storageDestination) {
-    const set<Position>& destination = storageType(this);
+    const auto& destination = storageType(this);
     if (!destination.empty()) {
       Random.choose(destination).dropItems(config->getResourceInfo(amount.id).itemId.get(amount.value));
       return;
@@ -934,7 +941,7 @@ int Collective::getNumItems(ItemIndex index, bool includeMinions) const {
   return ret;
 }
 
-optional<set<Position>> Collective::getStorageFor(WConstItem item) const {
+optional<PositionSet> Collective::getStorageFor(WConstItem item) const {
   for (auto& info : config->getFetchInfo())
     if (getIndexPredicate(info.index)(item))
       return info.destinationFun(this);
@@ -1067,6 +1074,7 @@ void Collective::onAppliedItemCancel(Position pos) {
 }
 
 bool Collective::isConstructionReachable(Position pos) {
+  PROFILE;
   for (Position v : pos.neighbors8())
     if (knownTiles->isKnown(v))
       return true;
@@ -1203,12 +1211,13 @@ bool Collective::isDelayed(Position pos) {
 }
 
 void Collective::fetchItems(Position pos, const ItemFetchInfo& elem) {
+  PROFILE;
   if (isDelayed(pos) || !pos.canEnterEmpty(MovementTrait::WALK) || elem.destinationFun(this).count(pos))
     return;
   vector<WItem> equipment = pos.getItems(elem.index).filter(
       [this, &elem] (WConstItem item) { return elem.predicate(this, item); });
   if (!equipment.empty()) {
-    const set<Position>& destination = elem.destinationFun(this);
+    const auto& destination = elem.destinationFun(this);
     if (!destination.empty()) {
       warnings->setWarning(elem.warning, false);
       if (elem.oneAtATime)
@@ -1405,6 +1414,7 @@ void Collective::onExternalEnemyKilled(const std::string& name) {
 }
 
 void Collective::onCopulated(WCreature who, WCreature with) {
+  PROFILE;
   if (with->getName().bare() == "vampire")
     control->addMessage(who->getName().a() + " makes love to " + with->getName().a()
         + " with a monkey on " + who->getAttributes().getGender().his() + " knee");
@@ -1455,6 +1465,7 @@ const CollectiveTeams& Collective::getTeams() const {
 }
 
 void Collective::freeTeamMembers(TeamId id) {
+  PROFILE;
   for (WCreature c : teams->getMembers(id)) {
     if (c->isAffected(LastingEffect::SLEEP))
       c->removeEffect(LastingEffect::SLEEP);

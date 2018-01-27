@@ -99,6 +99,7 @@ optional<ImmigrantAutoState> Immigration::getAutoState(int index) const {
 }
 
 vector<string> Immigration::getMissingRequirements(const Group& group) const {
+  PROFILE;
   vector<string> ret;
   auto& immigrantInfo = getImmigrants()[group.immigrantIndex];
    auto visitor = makeVisitor(
@@ -159,6 +160,7 @@ vector<string> Immigration::getMissingRequirements(const Group& group) const {
 }
 
 double Immigration::getRequirementMultiplier(const Group& group) const {
+  PROFILE;
   double ret = 1;
   auto& immigrantInfo = getImmigrants()[group.immigrantIndex];
   auto visitor = makeVisitor(
@@ -208,6 +210,7 @@ double Immigration::getRequirementMultiplier(const Group& group) const {
 }
 
 void Immigration::occupyRequirements(WConstCreature c, int index) {
+  PROFILE;
   auto visitor = makeVisitor(
       [&](const AttractionInfo& attraction) { occupyAttraction(c, attraction); },
       [&](const TechId&) {},
@@ -296,6 +299,7 @@ static vector<Position> pickSpawnPositions(const vector<WCreature>& creatures, v
 }
 
 vector<Position> Immigration::Available::getSpawnPositions() const {
+  PROFILE;
   vector<Position> positions = getInfo().getSpawnLocation().match(
     [&] (FurnitureType type) {
       return asVector<Position>(immigration->collective->getConstructions().getBuiltPositions(type));

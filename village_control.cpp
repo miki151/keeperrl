@@ -153,6 +153,7 @@ vector<TriggerInfo> VillageControl::getTriggers(WConstCollective against) const 
 }
 
 void VillageControl::considerWelcomeMessage() {
+  PROFILE;
   auto leader = getCollective()->getLeader();
   if (!leader)
     return;

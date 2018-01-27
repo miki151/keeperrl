@@ -29,6 +29,7 @@ ViewIndex::~ViewIndex() {
 }
 
 void ViewIndex::insert(const ViewObject& obj) {
+  PROFILE;
   int ind = objIndex[int(obj.layer())];
   if (ind < 100)
     objects[ind] = obj;
@@ -55,6 +56,7 @@ bool ViewIndex::hasAnyHighlight() const {
 }
 
 bool ViewIndex::noObjects() const {
+  PROFILE;
   return objects.empty();
 }
 

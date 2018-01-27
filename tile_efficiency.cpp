@@ -14,6 +14,7 @@ double TileEfficiency::getEfficiency(Position pos) const {
 }
 
 void TileEfficiency::update(Position pos) {
+  PROFILE;
   for (Position updated : concat({pos}, pos.neighbors8())) {
     double value = 0;
     for (Position p : concat({updated}, updated.neighbors8()))

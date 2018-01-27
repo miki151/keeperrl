@@ -132,6 +132,7 @@ class Corpse : public Item {
   }
 
   virtual void specialTick(Position position) override {
+  PROFILE;
     auto time = position.getGame()->getGlobalTime();
     if (!rottenTime)
       rottenTime = time + rottingTime;

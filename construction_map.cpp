@@ -82,6 +82,7 @@ void ConstructionMap::addDebt(const CostInfo& cost) {
 }
 
 void ConstructionMap::onFurnitureDestroyed(Position pos, FurnitureLayer layer) {
+  PROFILE;
   if (auto& info = furniture[layer].getOrInit(pos)) {
     if (info->isBuilt())
       addDebt(info->getCost());
@@ -120,7 +121,7 @@ int ConstructionMap::getTotalCount(FurnitureType type) const {
   return unbuiltCounts[type] + getBuiltCount(type);
 }
 
-const set<Position>& ConstructionMap::getBuiltPositions(FurnitureType type) const {
+const PositionSet& ConstructionMap::getBuiltPositions(FurnitureType type) const {
   return furniturePositions[type];
 }
 

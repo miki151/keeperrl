@@ -72,6 +72,8 @@ Game::Game(Table<PModel>&& m, Vec2 basePos, const CampaignSetup& c)
         }
       }
       m->updateSunlightMovement();
+      for (auto c : m->getAllCreatures())
+        c->setGlobalTime(getGlobalTime());
     }
   turnEvents = {0, 10, 50, 100, 300, 500};
   for (int i : Range(200))
@@ -105,6 +107,7 @@ bool Game::isTurnBased() {
 }
 
 GlobalTime Game::getGlobalTime() const {
+  PROFILE;
   return GlobalTime((int) currentTime);
 }
 
@@ -238,13 +241,23 @@ void Game::initializeModels() {
   }
 }
 
+void Game::increaseTime(double diff) {
+  auto before = getGlobalTime();
+  currentTime += diff;
+  auto after = getGlobalTime();
+  if (after > before)
+    for (auto m : getAllModels())
+      for (auto c : m->getAllCreatures())
+        c->setGlobalTime(after);
+}
+
 optional<ExitInfo> Game::update(double timeDiff) {
   ScopeTimer timer("Game::update timer");
   if (auto exitInfo = updateInput())
     return exitInfo;
   considerRealTimeRender();
   initializeModels();
-  currentTime += timeDiff;
+  increaseTime(timeDiff);
   WModel currentModel = getCurrentModel();
   auto currentId = currentModel->getTopLevel()->getUniqueId();
   while (!lastTick || currentTime >= *lastTick + 1) {

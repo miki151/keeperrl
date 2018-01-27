@@ -56,11 +56,12 @@ void Furniture::serialize(Archive& ar, const unsigned) {
 
 SERIALIZABLE(Furniture)
 
-const optional<ViewObject>& Furniture::getViewObject() const {
+const optional<ViewObject>& Furniture::getViewObject() const {  PROFILE
   return *viewObject;
 }
 
 optional<ViewObject>& Furniture::getViewObject() {
+  PROFILE;
   return *viewObject;
 }
 
@@ -93,6 +94,7 @@ FurnitureType Furniture::getType() const {
 }
 
 bool Furniture::isVisibleTo(WConstCreature c) const {
+  PROFILE;
   if (entryType)
     return entryType->isVisibleTo(this, c);
   else
@@ -144,6 +146,7 @@ void Furniture::setTribe(TribeId id) {
 }
 
 void Furniture::tick(Position pos) {
+  PROFILE;
   if (fire && fire->isBurning()) {
     if (viewObject)
       viewObject->setAttribute(ViewObject::Attribute::BURNING, fire->getSize());

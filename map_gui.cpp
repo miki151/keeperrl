@@ -823,6 +823,7 @@ MapGui::HighlightedInfo MapGui::getHighlightedInfo(Vec2 size, milliseconds curre
 }
 
 void MapGui::renderMapObjects(Renderer& renderer, Vec2 size, milliseconds currentTimeReal) {
+  PROFILE;
   Rectangle allTiles = layout->getAllTiles(getBounds(), levelBounds, getScreenPos());
   Vec2 topLeftCorner = projectOnScreen(allTiles.topLeft());
   fogOfWar.clear();
@@ -894,6 +895,7 @@ void MapGui::drawSquareHighlight(Renderer& renderer, Vec2 pos, Vec2 size) {
 }
 
 void MapGui::considerRedrawingSquareHighlight(Renderer& renderer, milliseconds currentTimeReal, Vec2 pos, Vec2 size) {
+  PROFILE;
   Rectangle allTiles = layout->getAllTiles(getBounds(), levelBounds, getScreenPos());
   Vec2 topLeftCorner = projectOnScreen(allTiles.topLeft());
   for (Vec2 v : concat({pos}, pos.neighbors8()))

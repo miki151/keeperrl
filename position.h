@@ -46,7 +46,6 @@ class Position {
   Position& operator = (const Position&);
   Position plus(Vec2) const;
   Position minus(Vec2) const;
-  bool operator < (const Position&) const;
   void unseenMessage(const PlayerMessage&) const;
   void globalMessage(const PlayerMessage&) const;
   vector<Position> neighbors8() const;
@@ -136,7 +135,8 @@ class Position {
   WSquare modSquare() const;
   WConstSquare getSquare() const;
   Vec2 SERIAL(coord);
-  WLevel SERIAL(level) = nullptr;
+  Level* level = nullptr;
+  bool SERIAL(valid) = false;
   void updateSupport() const;
 };
 
@@ -147,3 +147,4 @@ inline string toString(const Position& t) {
 	return ss.str();
 }
 
+using PositionSet = unordered_set<Position, CustomHash<Position>>;

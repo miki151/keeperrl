@@ -68,10 +68,11 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   optional<LocalTime> getLocalTime() const;
   optional<GlobalTime> getGlobalTime() const;
   WLevel getLevel() const;
-  WGame getGame() const;
+  Game* getGame() const;
   vector<WCreature> getVisibleEnemies() const;
   vector<WCreature> getVisibleCreatures() const;
   vector<Position> getVisibleTiles() const;
+  void setGlobalTime(GlobalTime);
   void setPosition(Position);
   Position getPosition() const;
   bool dodgeAttack(const Attack&);
@@ -325,6 +326,8 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   bool SERIAL(capture) = 0;
   double SERIAL(captureHealth) = 1;
   bool captureDamage(double damage, WCreature attacker);
+  mutable Game* gameCache = nullptr;
+  optional<GlobalTime> SERIAL(globalTime);
 };
 
 struct AdjectiveInfo {

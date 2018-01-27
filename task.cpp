@@ -418,6 +418,7 @@ class BringItem : public PickItem {
   }
 
   virtual MoveInfo getMove(WCreature c) override {
+  PROFILE;
     if (!pickedUp)
       return PickItem::getMove(c);
     if (!target || !c->isSameSector(*target))
@@ -456,7 +457,7 @@ class BringItem : public PickItem {
   vector<Position> SERIAL(allTargets);
 };
 
-PTask Task::bringItem(WTaskCallback c, Position pos, vector<WItem> items, const set<Position>& target, int numRetries) {
+PTask Task::bringItem(WTaskCallback c, Position pos, vector<WItem> items, const PositionSet& target, int numRetries) {
   return makeOwner<BringItem>(c, pos, items, vector<Position>(target.begin(), target.end()), numRetries);
 }
 
@@ -528,6 +529,7 @@ class ApplySquare : public Task {
   }
 
   virtual MoveInfo getMove(WCreature c) override {
+  PROFILE;
     changePosIfOccupied();
     if (!position) {
       if (auto pos = choosePosition(c))
@@ -585,7 +587,7 @@ class ApplySquare : public Task {
 
   private:
   vector<Position> SERIAL(positions);
-  set<Position> SERIAL(rejectedPosition);
+  PositionSet SERIAL(rejectedPosition);
   int SERIAL(invalidCount) = 5;
   optional<Position> SERIAL(position);
   WTaskCallback SERIAL(callback);
@@ -663,7 +665,7 @@ class ArcheryRange : public Task {
       }
       return none;
     };
-    map<Position, vector<ShootInfo>> shootPositions;
+    unordered_map<Position, vector<ShootInfo>, CustomHash<Position>> shootPositions;
     for (auto pos : Random.permutation(targets))
       if (auto dir = getDir(pos))
         shootPositions[dir->pos].push_back(*dir);
@@ -1161,6 +1163,7 @@ class Eat : public Task {
   }
 
   virtual MoveInfo getMove(WCreature c) override {
+  PROFILE;
     if (!position) {
       for (Position v : Random.permutation(positions))
         if (!rejectedPosition.count(v) && (!position ||
@@ -1209,7 +1212,7 @@ class Eat : public Task {
   private:
   optional<Position> SERIAL(position);
   vector<Position> SERIAL(positions);
-  set<Position> SERIAL(rejectedPosition);
+  PositionSet SERIAL(rejectedPosition);
 };
 
 }
@@ -1257,11 +1260,14 @@ PTask Task::goToTryForever(Position pos) {
 namespace {
 class StayIn : public Task {
   public:
-  StayIn(vector<Position> pos) : target(pos.begin(), pos.end()) {}
+  StayIn(vector<Position> pos) : target(std::move(pos)) {}
 
   virtual MoveInfo getMove(WCreature c) override {
+    PROFILE_BLOCK("StayIn::getMove");
     auto pos = c->getPosition();
-    if (target.count(pos)) {
+    if (!targetSet)
+      targetSet = PositionSet(target.begin(), target.end());
+    if (targetSet->count(pos)) {
       setDone();
       if (Random.roll(15))
         if (auto move = c->move(pos.plus(Vec2(Random.choose<Dir>()))))
@@ -1292,7 +1298,8 @@ class StayIn : public Task {
   SERIALIZATION_CONSTRUCTOR(StayIn);
 
   protected:
-  set<Position> SERIAL(target);
+  vector<Position> SERIAL(target);
+  optional<PositionSet> targetSet;
   optional<Position> SERIAL(currentTarget);
 };
 }

@@ -93,7 +93,7 @@ class Player : public Controller, public CreatureView, public EventListener<Play
 
   SMapMemory SERIAL(levelMemory);
   void showHistory();
-  WGame getGame() const;
+  Game* getGame() const;
   WModel getModel() const;
   View* getView() const;
 

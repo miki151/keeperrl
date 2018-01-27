@@ -23,7 +23,7 @@ class Territory {
   private:
   void clearCache();
   vector<Position> calculateExtended(int minRadius, int maxRadius) const;
-  set<Position> SERIAL(allSquares);
+  PositionSet SERIAL(allSquares);
   vector<Position> SERIAL(allSquaresVec);
   optional<Position> SERIAL(centralPoint);
   mutable map<pair<int, int>, vector<Position>> extendedCache;

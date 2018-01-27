@@ -688,7 +688,7 @@ VillageInfo::Village PlayerControl::getVillageInfo(WConstCollective col) const {
 
 void PlayerControl::handleTrading(WCollective ally) {
   ScrollPosition scrollPos;
-  const set<Position>& storage = getCollective()->getZones().getPositions(ZoneId::STORAGE_EQUIPMENT);
+  auto& storage = getCollective()->getZones().getPositions(ZoneId::STORAGE_EQUIPMENT);
   if (storage.empty()) {
     getView()->presentText("Information", "You need a storage room for equipment in order to trade.");
     return;
@@ -744,7 +744,7 @@ void PlayerControl::handlePillage(WCollective col) {
   while (1) {
     struct PillageOption {
       vector<WItem> items;
-      set<Position> storage;
+      PositionSet storage;
     };
     vector<PillageOption> options;
     for (auto& elem : Item::stackItems(col->getAllItems(false)))
@@ -800,6 +800,7 @@ void PlayerControl::sortMinionsForUI(vector<WCreature>& minions) const {
 }
 
 vector<PlayerInfo> PlayerControl::getPlayerInfos(vector<WCreature> creatures, UniqueEntity<Creature>::Id chosenId) const {
+  PROFILE;
   sortMinionsForUI(creatures);
   vector<PlayerInfo> minions;
   for (WCreature c : creatures) {
@@ -1050,6 +1051,7 @@ vector<ImmigrantDataInfo> PlayerControl::getPrisonerImmigrantData() const {
 }
 
 void PlayerControl::fillImmigration(CollectiveInfo& info) const {
+  PROFILE;
   info.immigration.clear();
   auto& immigration = getCollective()->getImmigration();
   info.immigration.append(getPrisonerImmigrantData());
@@ -1648,6 +1650,7 @@ void PlayerControl::setChosenWorkshop(optional<WorkshopType> type) {
 }
 
 void PlayerControl::minionDragAndDrop(const CreatureDropInfo& info) {
+  PROFILE;
   Position pos(info.pos, getLevel());
   if (WCreature c = getCreature(info.creatureId)) {
     c->removeEffect(LastingEffect::TIED_UP);
@@ -2086,6 +2089,7 @@ void PlayerControl::updateSelectionSquares() {
 }
 
 void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool rectangle, bool deselectOnly) {
+  PROFILE;
   Position position(pos, getLevel());
   for (auto& req : building.requirements)
     if (!BuildInfo::meetsRequirement(getCollective(), req))
@@ -2269,6 +2273,7 @@ void PlayerControl::addToMemory(Position pos) {
 }
 
 void PlayerControl::checkKeeperDanger() {
+  PROFILE;
   auto controlled = getControlled();
   WCreature keeper = getKeeper();
   auto prompt = [&] (const string& reason) {

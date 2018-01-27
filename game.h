@@ -134,6 +134,7 @@ class Game : public OwnedObject<Game> {
   void considerRetiredLoadedEvent(Vec2 coord);
   optional<ExitInfo> updateInput();
   void initializeModels();
+  void increaseTime(double diff);
 };
 
 

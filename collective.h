@@ -191,7 +191,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   void updateResourceProduction();
   bool isItemMarked(WConstItem) const;
   int getNumItems(ItemIndex, bool includeMinions = true) const;
-  optional<set<Position>> getStorageFor(WConstItem) const;
+  optional<PositionSet> getStorageFor(WConstItem) const;
 
   void addKnownVillain(WConstCollective);
   bool isKnownVillain(WConstCollective) const;

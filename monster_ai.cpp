@@ -68,6 +68,7 @@ Behaviour::Behaviour(WCreature c) : creature(c) {
 }
 
 WCreature Behaviour::getClosestEnemy() {
+  PROFILE;
   int dist = 1000000000;
   WCreature result = nullptr;
   for (WCreature other : creature->getVisibleEnemies()) {
@@ -534,6 +535,7 @@ class Fighter : public Behaviour {
   }
 
   MoveInfo considerBreakingChokePoint(WCreature other) {
+  PROFILE;
     unordered_set<Position, CustomHash<Position>> myNeighbors;
     for (auto pos : creature->getPosition().neighbors8(Random))
       myNeighbors.insert(pos);

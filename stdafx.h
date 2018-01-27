@@ -98,7 +98,6 @@ using std::make_shared;
 using std::default_random_engine;
 using std::function;
 using std::initializer_list;
-using std::unordered_set;
 using std::pair;
 using std::tuple;
 using std::out_of_range;

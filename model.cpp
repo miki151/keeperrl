@@ -149,6 +149,8 @@ void Model::addCreature(PCreature c) {
 }
 
 void Model::addCreature(PCreature c, TimeInterval delay) {
+  if (auto game = getGame())
+    c->setGlobalTime(getGame()->getGlobalTime());
   timeQueue->addCreature(std::move(c), getLocalTime() + delay);
 }
 

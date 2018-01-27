@@ -44,6 +44,7 @@ FieldOfView::FieldOfView(WLevel l, VisionId v)
 }
 
 bool FieldOfView::canSee(Vec2 from, Vec2 to) {
+  PROFILE;;
   if ((from - to).lengthD() > sightRange)
     return false;
   if (!visibility[from])
@@ -74,6 +75,7 @@ static int totalIter = 0;
 static int numSamples = 0;
 
 FieldOfView::Visibility::Visibility(WLevel level, VisionId vision, int x, int y) : px(x), py(y) {
+  PROFILE;
   memset(visible, 0, (2 * sightRange + 1) * (2 * sightRange + 1));
   calculate(2 * sightRange, 2 * sightRange,2 * sightRange, 2,-1,1,1,1,
       [&](int px, int py) { return !Position(Vec2(x + px, y + py), level).canSeeThru(vision); },

@@ -583,6 +583,7 @@ static void youHit(WConstCreature c, BodyPart part, AttackType type) {
 }
 
 bool Body::takeDamage(const Attack& attack, WCreature creature, double damage) {
+  PROFILE;
   bleed(creature, damage);
   BodyPart part = getBodyPart(attack.level, creature->isAffected(LastingEffect::FLYING),
       creature->isAffected(LastingEffect::COLLAPSED));
@@ -748,6 +749,7 @@ bool Body::isImmuneTo(LastingEffect effect) const {
 }
 
 bool Body::affectByPoisonGas(WCreature c, double amount) {
+  PROFILE;
   if (!c->isAffected(LastingEffect::POISON_RESISTANT) && material == Material::FLESH) {
     bleed(c, amount / 20);
     c->you(MsgType::ARE, "poisoned by the gas");

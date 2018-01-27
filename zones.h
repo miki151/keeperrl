@@ -23,7 +23,7 @@ class Zones {
   void setZone(Position, ZoneId);
   void eraseZone(Position, ZoneId);
   void eraseZones(Position);
-  const set<Position>& getPositions(ZoneId) const;
+  const PositionSet& getPositions(ZoneId) const;
   void setHighlights(Position, ViewIndex&) const;
   bool canSet(Position, ZoneId, WConstCollective) const;
   void tick();
@@ -32,5 +32,5 @@ class Zones {
   void serialize(Archive& ar, const unsigned int version);
 
   private:
-  EnumMap<ZoneId, set<Position>> SERIAL(zones);
+  EnumMap<ZoneId, PositionSet> SERIAL(zones);
 };

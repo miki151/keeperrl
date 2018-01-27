@@ -14,6 +14,7 @@ FurnitureEntry::FurnitureEntry(FurnitureEntry::EntryData d) : entryData(d) {
 }
 
 void FurnitureEntry::handle(WFurniture f, WCreature c) {
+  PROFILE;
   entryData.match(
       [&](Sokoban) {
         if (c->getAttributes().isBoulder()) {

@@ -31,6 +31,7 @@ static optional<Position> getRandomCloseTile(Position from, const vector<Positio
 }
 
 static optional<Position> getTileToExplore(WConstCollective collective, WConstCreature c, MinionActivity task) {
+  PROFILE;
   vector<Position> border = Random.permutation(collective->getKnownTiles().getBorderTiles());
   switch (task) {
     case MinionActivity::EXPLORE_CAVES:
@@ -103,8 +104,17 @@ optional<MinionActivity> MinionActivities::getTaskFor(WConstCollective col, WCon
 }
 
 static vector<Position> tryInQuarters(vector<Position> pos, WConstCollective collective, WConstCreature c) {
+  PROFILE;
   auto& quarters = collective->getQuarters();
   auto& zones = collective->getZones();
+  bool hasAnyQuarters = [&] {
+    for (auto& q : quarters.getAllQuarters())
+      if (!zones.getPositions(q.zone).empty())
+        return true;
+    return false;
+  }();
+  if (!hasAnyQuarters)
+    return pos;
   auto index = quarters.getAssigned(c->getUniqueId());
   auto inQuarters = pos.filter([&](Position pos) {
     if (index)
@@ -122,8 +132,9 @@ static vector<Position> tryInQuarters(vector<Position> pos, WConstCollective col
     return pos;
 }
 
-vector<Position> MinionActivities::getAllPositions(WConstCollective collective, WConstCreature c, MinionActivity activity,
-    bool onlyActive) {
+vector<Position> MinionActivities::getAllPositions(WConstCollective collective, WConstCreature c,
+    MinionActivity activity, bool onlyActive) {
+  PROFILE;
   vector<Position> ret;
   auto& info = CollectiveConfig::getActivityInfo(activity);
   for (auto furnitureType : getAllFurniture(activity))
@@ -150,9 +161,11 @@ WTask MinionActivities::getExisting(WCollective collective, WConstCreature c, Mi
 }
 
 PTask MinionActivities::generate(WCollective collective, WConstCreature c, MinionActivity task) {
+  PROFILE;
   auto& info = CollectiveConfig::getActivityInfo(task);
   switch (info.type) {
     case MinionActivityInfo::IDLE: {
+      PROFILE_BLOCK("Idle");
       auto myTerritory = tryInQuarters(collective->getTerritory().getAll(), collective, c);
       auto leader = collective->getLeader();
       if (!myTerritory.empty())
@@ -163,6 +176,7 @@ PTask MinionActivities::generate(WCollective collective, WConstCreature c, Minio
         return Task::idle();
     }
     case MinionActivityInfo::FURNITURE: {
+      PROFILE_BLOCK("Furniture");
       vector<Position> squares = getAllPositions(collective, c, task, true);
       if (!squares.empty())
         return Task::applySquare(collective, squares, Task::RANDOM_CLOSE, Task::APPLY);
@@ -174,27 +188,34 @@ PTask MinionActivities::generate(WCollective collective, WConstCreature c, Minio
       break;
     }
     case MinionActivityInfo::ARCHERY: {
+      PROFILE_BLOCK("Archery");
       auto pos = collective->getConstructions().getBuiltPositions(FurnitureType::ARCHERY_RANGE);
       if (!pos.empty())
         return Task::archeryRange(collective, tryInQuarters(vector<Position>(pos.begin(), pos.end()), collective, c));
       else
         return nullptr;
     }
-    case MinionActivityInfo::EXPLORE:
+    case MinionActivityInfo::EXPLORE: {
+      PROFILE_BLOCK("Explore");
       if (auto pos = getTileToExplore(collective, c, task))
         return Task::explore(*pos);
       break;
-    case MinionActivityInfo::COPULATE:
+    }
+    case MinionActivityInfo::COPULATE: {
+      PROFILE_BLOCK("Copulate");
       if (WCreature target = getCopulationTarget(collective, c))
         return Task::copulate(collective, target, 20);
       break;
+    }
     case MinionActivityInfo::EAT: {
-      const set<Position>& hatchery = collective->getConstructions().getBuiltPositions(FurnitureType::PIGSTY);
+      PROFILE_BLOCK("Eat");
+      const auto& hatchery = collective->getConstructions().getBuiltPositions(FurnitureType::PIGSTY);
       if (!hatchery.empty())
         return Task::eat(tryInQuarters(vector<Position>(hatchery.begin(), hatchery.end()), collective, c));
       break;
       }
     case MinionActivityInfo::SPIDER: {
+      PROFILE_BLOCK("Spider");
       auto& territory = collective->getTerritory();
       return Task::spider(territory.getAll().front(), territory.getExtended(3));
     }
