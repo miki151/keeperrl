@@ -1265,9 +1265,7 @@ class StayIn : public Task {
   virtual MoveInfo getMove(WCreature c) override {
     PROFILE_BLOCK("StayIn::getMove");
     auto pos = c->getPosition();
-    if (!targetSet)
-      targetSet = PositionSet(target.begin(), target.end());
-    if (targetSet->count(pos)) {
+    if (target.contains(pos)) {
       setDone();
       if (Random.roll(15))
         if (auto move = c->move(pos.plus(Vec2(Random.choose<Dir>()))))
@@ -1299,7 +1297,6 @@ class StayIn : public Task {
 
   protected:
   vector<Position> SERIAL(target);
-  optional<PositionSet> targetSet;
   optional<Position> SERIAL(currentTarget);
 };
 }
