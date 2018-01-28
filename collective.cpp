@@ -604,6 +604,10 @@ void Collective::tick() {
     minionEquipment->updateItems(getAllItems(ItemIndex::MINION_EQUIPMENT, true));
   }
   workshops->scheduleItems(this);
+  for (auto c : creatures)
+    if (!usesEquipment(c))
+      for (auto it : minionEquipment->getItemsOwnedBy(c))
+        minionEquipment->discard(it);
 }
 
 const vector<WCreature>& Collective::getCreatures(MinionTrait trait) const {
