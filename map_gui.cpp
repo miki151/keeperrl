@@ -508,6 +508,7 @@ void MapGui::drawHealthBar(Renderer& renderer, Vec2 pos, Vec2 size, const ViewOb
 
 void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& object, Vec2 size, Vec2 movement,
     Vec2 tilePos, milliseconds curTimeReal) {
+  PROFILE;
   auto id = object.id();
   const Tile& tile = Tile::getTile(id, spriteMode);
   Color color = colorWoundedRed ? Renderer::getBleedingColor(object) : Color::WHITE;
@@ -641,6 +642,7 @@ bool MapGui::isFoW(Vec2 pos) const {
 }
 
 void MapGui::renderExtraBorders(Renderer& renderer, milliseconds currentTimeReal) {
+  PROFILE;
   extraBorderPos.clear();
   for (Vec2 wpos : layout->getAllTiles(getBounds(), levelBounds, getScreenPos()))
     if (objects[wpos] && objects[wpos]->hasObject(ViewLayer::FLOOR_BACKGROUND)) {
@@ -768,6 +770,7 @@ void MapGui::renderHighlight(Renderer& renderer, Vec2 pos, Vec2 size, const View
 }
 
 void MapGui::renderHighlights(Renderer& renderer, Vec2 size, milliseconds currentTimeReal, bool lowHighlights) {
+  PROFILE;
   Rectangle allTiles = layout->getAllTiles(getBounds(), levelBounds, getScreenPos());
   Vec2 topLeftCorner = projectOnScreen(allTiles.topLeft());
   for (Vec2 wpos : allTiles)
@@ -786,6 +789,7 @@ void MapGui::renderHighlights(Renderer& renderer, Vec2 size, milliseconds curren
 }
 
 void MapGui::renderAnimations(Renderer& renderer, milliseconds currentTimeReal) {
+  PROFILE;
   animations = std::move(animations).filter([=](const AnimationInfo& elem)
       { return !elem.animation->isDone(currentTimeReal);});
   for (auto& elem : animations)
@@ -797,6 +801,7 @@ void MapGui::renderAnimations(Renderer& renderer, milliseconds currentTimeReal) 
 }
 
 MapGui::HighlightedInfo MapGui::getHighlightedInfo(Vec2 size, milliseconds currentTimeReal) {
+  PROFILE;
   HighlightedInfo ret {};
   Rectangle allTiles = layout->getAllTiles(getBounds(), levelBounds, getScreenPos());
   Vec2 topLeftCorner = projectOnScreen(allTiles.topLeft());
@@ -906,6 +911,7 @@ void MapGui::considerRedrawingSquareHighlight(Renderer& renderer, milliseconds c
 }
 
 void MapGui::processScrolling(milliseconds time) {
+  PROFILE;
   if (!!softCenter && !!lastScrollUpdate) {
     double offsetx = softCenter->x - center.x;
     double offsety = softCenter->y - center.y;
@@ -940,6 +946,7 @@ void MapGui::setDraggedCreature(UniqueEntity<Creature>::Id id, ViewId viewId, Ve
 }
 
 void MapGui::considerScrollingToCreature() {
+  PROFILE;
   if (auto& info = centeredCreaturePosition) {
     Vec2 size = layout->getSquareSize();
     Vec2 offset;
@@ -959,6 +966,7 @@ void MapGui::considerScrollingToCreature() {
 }
 
 void MapGui::render(Renderer& renderer) {
+  PROFILE;
   considerScrollingToCreature();
   Vec2 size = layout->getSquareSize();
   auto currentTimeReal = clock->getRealMillis();

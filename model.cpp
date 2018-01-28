@@ -132,7 +132,7 @@ bool Model::update(double totalTime) {
   return false;
 }
 
-void Model::tick(LocalTime time) {
+void Model::tick(LocalTime time) { PROFILE
   for (WCreature c : timeQueue->getAllCreatures()) {
     c->tick();
   }
