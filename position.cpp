@@ -39,17 +39,14 @@ SERIALIZABLE(Position)
 SERIALIZATION_CONSTRUCTOR_IMPL(Position);
 
 int Position::getHash() const {
-  PROFILE;
-  return combineHash(coord, level->getUniqueId());
+  return coord.getHash();
 }
 
 Vec2 Position::getCoord() const {
-  PROFILE;
   return coord;
 }
 
 WLevel Position::getLevel() const {
-  PROFILE;
   return level;
 }
 
