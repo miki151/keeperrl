@@ -25,8 +25,15 @@ void Zones::eraseZone(Position pos, ZoneId id) {
   pos.setNeedsRenderUpdate(true);
 }
 
-void Zones::eraseZones(Position pos) {
-  for (auto id : ENUM_ALL(ZoneId))
+static ZoneId destroyedOnOrder[] = {
+  ZoneId::FETCH_ITEMS,
+  ZoneId::PERMANENT_FETCH_ITEMS,
+  ZoneId::STORAGE_EQUIPMENT,
+  ZoneId::STORAGE_RESOURCES
+};
+
+void Zones::onDestroyOrder(Position pos) {
+  for (auto id : destroyedOnOrder)
     eraseZone(pos, id);
 }
 

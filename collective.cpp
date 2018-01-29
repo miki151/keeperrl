@@ -997,7 +997,7 @@ void Collective::removeFurniture(Position pos, FurnitureLayer layer) {
   constructions->removeFurniture(pos, layer);
 }
 
-void Collective::destroySquare(Position pos, FurnitureLayer layer) {
+void Collective::destroyOrder(Position pos, FurnitureLayer layer) {
   if (constructions->containsFurniture(pos, layer)) {
     if (auto furniture = pos.modFurniture(layer))
       if (furniture->getTribe() == getTribeId()) {
@@ -1007,7 +1007,7 @@ void Collective::destroySquare(Position pos, FurnitureLayer layer) {
     removeFurniture(pos, layer);
   }
   if (layer != FurnitureLayer::FLOOR) {
-    zones->eraseZones(pos);
+    zones->onDestroyOrder(pos);
     if (constructions->getTrap(pos))
       removeTrap(pos);
   }

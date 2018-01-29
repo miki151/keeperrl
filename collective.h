@@ -137,7 +137,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   bool canAddFurniture(Position, FurnitureType) const;
   void addFurniture(Position, FurnitureType, const CostInfo&, bool noCredit);
   void removeFurniture(Position, FurnitureLayer);
-  void destroySquare(Position, FurnitureLayer);
+  void destroyOrder(Position, FurnitureLayer);
   bool isPlannedTorch(Position) const;
   bool canPlaceTorch(Position) const;
   void removeTorch(Position);

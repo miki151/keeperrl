@@ -22,7 +22,7 @@ class Zones {
   bool isZone(Position, ZoneId) const;
   void setZone(Position, ZoneId);
   void eraseZone(Position, ZoneId);
-  void eraseZones(Position);
+  void onDestroyOrder(Position);
   const PositionSet& getPositions(ZoneId) const;
   void setHighlights(Position, ViewIndex&) const;
   bool canSet(Position, ZoneId, WConstCollective) const;
