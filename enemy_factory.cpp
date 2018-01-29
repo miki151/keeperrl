@@ -127,7 +127,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
           CONSTRUCT(VillageBehaviour,
             c.minPopulation = 1;
             c.minTeamSize = 4;
-            c.triggers = LIST(AttackTriggerId::ENTRY);
+            c.triggers = LIST(AttackTriggerId::MINING_IN_PROXIMITY);
             c.attackBehaviour = AttackBehaviour(AttackBehaviourId::KILL_LEADER);));
     case EnemyId::ANTS_CLOSED_SMALL:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
@@ -143,7 +143,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
           CONSTRUCT(VillageBehaviour,
             c.minPopulation = 1;
             c.minTeamSize = 4;
-            c.triggers = LIST(AttackTriggerId::ENTRY);
+            c.triggers = LIST(AttackTriggerId::MINING_IN_PROXIMITY);
             c.attackBehaviour = AttackBehaviour(AttackBehaviourId::KILL_LEADER);));
     case EnemyId::ANTS_OPEN: {
         auto ants = get(EnemyId::ANTS_CLOSED);
@@ -165,7 +165,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
           CONSTRUCT(VillageBehaviour,
             c.minPopulation = 1;
             c.minTeamSize = 4;
-            c.triggers = LIST(AttackTriggerId::ENTRY);
+            c.triggers = LIST(AttackTriggerId::MINING_IN_PROXIMITY);
             c.attackBehaviour = AttackBehaviour(AttackBehaviourId::KILL_LEADER);));
     case EnemyId::ORC_VILLAGE:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
@@ -750,7 +750,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
           CONSTRUCT(VillageBehaviour,
             c.minPopulation = 0;
             c.minTeamSize = 1;
-            c.triggers = LIST(AttackTriggerId::SELF_VICTIMS, AttackTriggerId::STOLEN_ITEMS, AttackTriggerId::ENTRY);
+            c.triggers = LIST(AttackTriggerId::SELF_VICTIMS, AttackTriggerId::STOLEN_ITEMS, AttackTriggerId::MINING_IN_PROXIMITY);
             c.attackBehaviour = AttackBehaviour(AttackBehaviourId::KILL_LEADER);
             c.ransom = make_pair(0.5, random.get(40, 80));));
   }

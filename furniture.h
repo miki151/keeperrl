@@ -23,6 +23,7 @@ class Furniture : public OwnedObject<Furniture> {
   public:
   static const string& getName(FurnitureType, int count = 1);
   static FurnitureLayer getLayer(FurnitureType);
+  static bool isWall(FurnitureType);
 
   Furniture(const string& name, const optional<ViewObject>&, FurnitureType, TribeId);
   Furniture(const Furniture&);

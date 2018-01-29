@@ -639,7 +639,7 @@ static string getTriggerLabel(const AttackTrigger& trigger) {
     case AttackTriggerId::ENEMY_POPULATION: return "Dungeon population";
     case AttackTriggerId::TIMER: return "Your evilness";
     case AttackTriggerId::NUM_CONQUERED: return "Your aggression";
-    case AttackTriggerId::ENTRY: return "Breach of territory";
+    case AttackTriggerId::MINING_IN_PROXIMITY: return "Breach of territory";
     case AttackTriggerId::PROXIMITY: return "Proximity";
   }
 }

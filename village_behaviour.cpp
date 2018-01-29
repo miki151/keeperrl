@@ -177,7 +177,7 @@ double VillageBehaviour::getTriggerValue(const Trigger& trigger, const VillageCo
         return goldMaxProb * goldFun(collective->numResource(Collective::ResourceId::GOLD), trigger.get<int>());
       case AttackTriggerId::STOLEN_ITEMS:
         return stolenMaxProb * stolenItemsFun(self->stolenItemCount);
-      case AttackTriggerId::ENTRY:
+      case AttackTriggerId::MINING_IN_PROXIMITY:
         return entryMaxProb * self->entries;
       case AttackTriggerId::PROXIMITY:
         if (collective->getGame()->getModelDistance(collective, self->getCollective()) == 1)

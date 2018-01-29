@@ -32,7 +32,7 @@
 #include "attack_trigger.h"
 #include "immigration.h"
 #include "village_behaviour.h"
-
+#include "furniture.h"
 
 typedef EnumVariant<AttackTriggerId, TYPES(int),
         ASSIGN(int, AttackTriggerId::ENEMY_POPULATION, AttackTriggerId::GOLD)> OldTrigger;
@@ -95,6 +95,10 @@ void VillageControl::onEvent(const GameEvent& event) {
                 info.creature->privateMessage(PlayerMessage("You are going to regret this", MessagePriority::HIGH));
               }
             }
+      },
+      [&](const FurnitureDestroyed& info) {
+        if (getCollective()->getTerritory().contains(info.position) && Furniture::isWall(info.type))
+          entries = true;
       },
       [&](const auto&) {}
   );
@@ -173,16 +177,6 @@ void VillageControl::considerWelcomeMessage() {
       }
 }
 
-void VillageControl::checkEntries() {
-  if (villain)
-    for (auto& trigger : villain->triggers)
-      if (trigger.getId() == AttackTriggerId::ENTRY)
-        for (Position pos : getCollective()->getTerritory().getAll())
-          if (WCreature c = pos.getCreature())
-            if (getCollective()->getTribe()->isEnemy(c))
-              entries = true;
-}
-
 bool VillageControl::canPerformAttack(bool currentlyActive) {
   return !currentlyActive ||
       getCollective()->getModel() == getCollective()->getGame()->getMainModel().get();
@@ -201,7 +195,6 @@ void VillageControl::healAllCreatures() {
 void VillageControl::update(bool currentlyActive) {
   considerWelcomeMessage();
   considerCancellingAttack();
-  checkEntries();
   acceptImmigration();
   healAllCreatures();
   vector<WCreature> allMembers = getCollective()->getCreatures();

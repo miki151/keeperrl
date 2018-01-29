@@ -89,6 +89,12 @@ const string& Furniture::getName(int count) const {
     return name;
 }
 
+bool Furniture::isWall(FurnitureType type) {
+  static EnumMap<FurnitureType, bool> layers(
+      [] (FurnitureType type) { return FurnitureFactory::get(type, TribeId::getHostile())->isWall(); });
+  return layers[type];
+}
+
 FurnitureType Furniture::getType() const {
   return type;
 }
