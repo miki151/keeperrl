@@ -47,7 +47,7 @@ class MinionController : public Player {
         ret.push_back({1, getText(action), false, [action, id = c->getUniqueId()](Player* player){
             (dynamic_cast<MinionController*>(player))->control->teamMemberAction(action, id);}});
     }
-    else if (control->getCollective()->getCreatures().contains(c) && control->canControlInTeam(c) &&
+    else if (control->collective->getCreatures().contains(c) && control->canControlInTeam(c) &&
         control->canControlInTeam(getCreature()))
       ret.push_back({10, "Add to team", false, [c](Player* player) {
           (dynamic_cast<MinionController*>(player))->control->addToCurrentTeam(c);}});
@@ -73,7 +73,7 @@ class MinionController : public Player {
   }
 
   void consumeAction() {
-    vector<WCreature> targets = control->getCollective()->getConsumptionTargets(getCreature());
+    vector<WCreature> targets = control->collective->getConsumptionTargets(getCreature());
     vector<WCreature> actions;
     for (auto target : targets)
       if (auto action = getCreature()->consume(target))

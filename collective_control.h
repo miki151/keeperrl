@@ -26,8 +26,6 @@ class CollectiveControl : public OwnedObject<CollectiveControl> {
   virtual void onPositionDiscovered(Position) {}
   virtual vector<TriggerInfo> getTriggers(WConstCollective against) const;
 
-  WCollective getCollective() const;
-
   SERIALIZATION_DECL(CollectiveControl)
 
   virtual ~CollectiveControl();
@@ -36,8 +34,7 @@ class CollectiveControl : public OwnedObject<CollectiveControl> {
 
   const vector<WCreature>& getCreatures() const;
 
-  private:
-  WCollective SERIAL(collective) = nullptr;
+  WCollective SERIAL(collective);
 };
 
 

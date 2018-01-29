@@ -32,7 +32,7 @@ PTask VillageBehaviour::getAttackTask(VillageControl* self) {
     case AttackBehaviourId::KILL_MEMBERS:
       return Task::killFighters(enemy, attackBehaviour->get<int>());
     case AttackBehaviourId::STEAL_GOLD:
-      if (auto ret = Task::stealFrom(enemy, self->getCollective()))
+      if (auto ret = Task::stealFrom(enemy, self->collective))
         return ret;
       else if (auto leader = enemy->getLeader())
         return Task::attackCreatures({leader});
@@ -149,43 +149,43 @@ double VillageBehaviour::getTriggerValue(const Trigger& trigger, const VillageCo
   double proximityMaxProb = 1.0 / 5000;
   double timerProb = 1.0 / 3000;
   double numConqueredMaxProb = 1.0 / 3000;
-  if (WCollective collective = self->getEnemyCollective())
+  if (auto enemy = self->getEnemyCollective())
     switch (trigger.getId()) {
       case AttackTriggerId::TIMER: 
-        return collective->getGlobalTime().getVisibleInt() >= trigger.get<int>() ? timerProb : 0;
+        return enemy->getGlobalTime().getVisibleInt() >= trigger.get<int>() ? timerProb : 0;
       case AttackTriggerId::ROOM_BUILT:
         if (trigger.get<FurnitureType>() ==FurnitureType::DEMON_SHRINE)
           {//Demon shrines actually decrease probability of demon attacks, not increase it
-            double numShrines = collective->getConstructions().getBuiltCount(trigger.get<FurnitureType>());
+            double numShrines = enemy->getConstructions().getBuiltCount(trigger.get<FurnitureType>());
             if (numShrines>4) return 0;
             return getRoomProb(trigger.get<FurnitureType>()) / (numShrines+1);}   
         //Not a demon shrine. These items increase attack chance.
-        return collective->getConstructions().getBuiltCount(trigger.get<FurnitureType>()) *
+        return enemy->getConstructions().getBuiltCount(trigger.get<FurnitureType>()) *
           getRoomProb(trigger.get<FurnitureType>());
       case AttackTriggerId::POWER: 
         return powerMaxProb *
-            powerClosenessFun(self->getCollective()->getDangerLevel(), collective->getDangerLevel());
+            powerClosenessFun(self->collective->getDangerLevel(), enemy->getDangerLevel());
       case AttackTriggerId::FINISH_OFF:
-        return finishOffMaxProb * getFinishOffProb(self->maxEnemyPower, collective->getDangerLevel(),
-            self->getCollective()->getDangerLevel());
+        return finishOffMaxProb * getFinishOffProb(self->maxEnemyPower, enemy->getDangerLevel(),
+            self->collective->getDangerLevel());
       case AttackTriggerId::SELF_VICTIMS:
         return victimsMaxProb * victimsFun(self->victims, 0);
       case AttackTriggerId::ENEMY_POPULATION:
         return populationMaxProb * populationFun(
-            collective->getCreatures(MinionTrait::FIGHTER).size(), trigger.get<int>());
+            enemy->getCreatures(MinionTrait::FIGHTER).size(), trigger.get<int>());
       case AttackTriggerId::GOLD:
-        return goldMaxProb * goldFun(collective->numResource(Collective::ResourceId::GOLD), trigger.get<int>());
+        return goldMaxProb * goldFun(enemy->numResource(Collective::ResourceId::GOLD), trigger.get<int>());
       case AttackTriggerId::STOLEN_ITEMS:
         return stolenMaxProb * stolenItemsFun(self->stolenItemCount);
       case AttackTriggerId::MINING_IN_PROXIMITY:
         return entryMaxProb * self->entries;
       case AttackTriggerId::PROXIMITY:
-        if (collective->getGame()->getModelDistance(collective, self->getCollective()) == 1)
+        if (enemy->getGame()->getModelDistance(enemy, self->collective) == 1)
           return proximityMaxProb;
         else
           return 0;
       case AttackTriggerId::NUM_CONQUERED:
-        return numConqueredMaxProb * getNumConqueredProb(self->getCollective()->getGame(), trigger.get<int>());
+        return numConqueredMaxProb * getNumConqueredProb(self->collective->getGame(), trigger.get<int>());
     }
   return 0;
 }
@@ -196,7 +196,7 @@ double VillageBehaviour::getAttackProbability(const VillageControl* self) const 
     double val = getTriggerValue(elem, self);
     CHECK(val >= 0 && val <= 1);
     ret = max(ret, val);
-    if (auto& name = self->getCollective()->getName())
+    if (auto& name = self->collective->getName())
       INFO << "trigger " << EnumInfo<AttackTriggerId>::getString(elem.getId()) << " village "
           << name->full << " under attack probability " << val;
   }
