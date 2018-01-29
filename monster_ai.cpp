@@ -75,7 +75,7 @@ WCreature Behaviour::getClosestEnemy() {
     int curDist = other->getPosition().dist8(creature->getPosition());
     if (curDist < dist &&
         ((!other->getAttributes().dontChase() || curDist == 1) &&
-        !other->getStatus().contains(CreatureStatus::CIVILIAN)) &&
+        (!other->getStatus().contains(CreatureStatus::CIVILIAN) || other->isCaptureOrdered()) &&
         !other->isAffected(LastingEffect::STUNNED)) {
       result = other;
       dist = creature->getPosition().dist8(other->getPosition());
