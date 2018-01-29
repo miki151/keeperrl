@@ -61,46 +61,46 @@ class BoulderController : public Monster {
   }
 
   virtual void makeMove() override {
-    Position nextPos = getCreature()->getPosition().plus(direction);
+    Position nextPos = creature->getPosition().plus(direction);
     if (WCreature c = nextPos.getCreature()) {
       if (!c->getBody().isKilledByBoulder()) {
-        if (nextPos.canEnterEmpty(getCreature())) {
-          getCreature()->swapPosition(direction);
+        if (nextPos.canEnterEmpty(creature)) {
+          creature->swapPosition(direction);
           return;
         }
       } else {
         health -= c->getBody().getBoulderDamage();
         if (health <= 0) {
-          nextPos.globalMessage(getCreature()->getName().the() + " crashes on " + c->getName().the());
+          nextPos.globalMessage(creature->getName().the() + " crashes on " + c->getName().the());
           nextPos.unseenMessage("You hear a crash");
-          getCreature()->dieNoReason();
-          c->takeDamage(Attack(getCreature(), AttackLevel::MIDDLE, AttackType::HIT, 1000, AttrType::DAMAGE));
+          creature->dieNoReason();
+          c->takeDamage(Attack(creature, AttackLevel::MIDDLE, AttackType::HIT, 1000, AttrType::DAMAGE));
           return;
         } else {
-          c->you(MsgType::KILLED_BY, getCreature()->getName().the());
-          c->dieWithAttacker(getCreature());
+          c->you(MsgType::KILLED_BY, creature->getName().the());
+          c->dieWithAttacker(creature);
         }
       }
     }
     if (auto furniture = nextPos.getFurniture(FurnitureLayer::MIDDLE))
-      if (furniture->canDestroy(getCreature()->getMovementType(), DestroyAction::Type::BOULDER) &&
+      if (furniture->canDestroy(creature->getMovementType(), DestroyAction::Type::BOULDER) &&
           *furniture->getStrength(DestroyAction::Type::BOULDER) <
-          health * getCreature()->getAttr(AttrType::DAMAGE)) {
+          health * creature->getAttr(AttrType::DAMAGE)) {
         health -= *furniture->getStrength(DestroyAction::Type::BOULDER) /
-            (double) getCreature()->getAttr(AttrType::DAMAGE);
-        getCreature()->destroyImpl(direction, DestroyAction::Type::BOULDER);
+            (double) creature->getAttr(AttrType::DAMAGE);
+        creature->destroyImpl(direction, DestroyAction::Type::BOULDER);
       }
-    if (auto action = getCreature()->move(direction))
-      action.perform(getCreature());
+    if (auto action = creature->move(direction))
+      action.perform(creature);
     else {
-      nextPos.globalMessage(getCreature()->getName().the() + " crashes on the " + nextPos.getName());
+      nextPos.globalMessage(creature->getName().the() + " crashes on the " + nextPos.getName());
       nextPos.unseenMessage("You hear a crash");
-      getCreature()->dieNoReason();
+      creature->dieNoReason();
       return;
     }
     health -= 0.2;
-    if (health <= 0 && !getCreature()->isDead())
-      getCreature()->dieNoReason();
+    if (health <= 0 && !creature->isDead())
+      creature->dieNoReason();
   }
 
   virtual MessageGenerator& getMessageGenerator() const override {
@@ -194,10 +194,6 @@ class KrakenController : public Monster {
     father = f;
   }
 
-  virtual bool isCustomController() override {
-    return true;
-  }
-
   int getMaxSpawns() {
     if (father)
       return 1;
@@ -227,22 +223,22 @@ class KrakenController : public Monster {
   }
 
   void pullEnemy(WCreature held) {
-    held->you(MsgType::HAPPENS_TO, getCreature()->getName().the() + " pulls");
+    held->you(MsgType::HAPPENS_TO, creature->getName().the() + " pulls");
     if (father) {
-      held->setHeld(father->getCreature());
-      Vec2 pullDir = held->getPosition().getDir(getCreature()->getPosition());
-      getCreature()->dieNoReason(Creature::DropType::NOTHING);
+      held->setHeld(father->creature);
+      Vec2 pullDir = held->getPosition().getDir(creature->getPosition());
+      creature->dieNoReason(Creature::DropType::NOTHING);
       held->displace(pullDir);
     } else {
-      held->you(MsgType::ARE, "eaten by " + getCreature()->getName().the());
+      held->you(MsgType::ARE, "eaten by " + creature->getName().the());
       held->dieNoReason();
     }
   }
 
   WCreature getHeld() {
-    for (auto pos : getCreature()->getPosition().neighbors8())
+    for (auto pos : creature->getPosition().neighbors8())
       if (auto creature = pos.getCreature())
-        if (creature->getHoldingCreature() == getCreature())
+        if (creature->getHoldingCreature() == creature)
           return creature;
     return nullptr;
   }
@@ -250,40 +246,40 @@ class KrakenController : public Monster {
   WCreature getVisibleEnemy() {
     const int radius = 10;
     WCreature ret = nullptr;
-    auto myPos = getCreature()->getPosition();
-    for (Position pos : getCreature()->getPosition().getRectangle(Rectangle::centered(Vec2(0, 0), radius)))
+    auto myPos = creature->getPosition();
+    for (Position pos : creature->getPosition().getRectangle(Rectangle::centered(Vec2(0, 0), radius)))
       if (WCreature c = pos.getCreature())
-        if (c->getAttributes().getCreatureId() != getCreature()->getAttributes().getCreatureId() &&
+        if (c->getAttributes().getCreatureId() != creature->getAttributes().getCreatureId() &&
             (!ret || ret->getPosition().dist8(myPos) > c->getPosition().dist8(myPos)) &&
-            getCreature()->canSee(c) && getCreature()->isEnemy(c) && !c->getHoldingCreature())
+            creature->canSee(c) && creature->isEnemy(c) && !c->getHoldingCreature())
           ret = c;
     return ret;
   }
 
   void considerAttacking(WCreature c) {
     auto pos = c->getPosition();
-    Vec2 v = getCreature()->getPosition().getDir(pos);
+    Vec2 v = creature->getPosition().getDir(pos);
     if (v.length8() == 1) {
-      c->you(MsgType::HAPPENS_TO, getCreature()->getName().the() + " swings itself around");
-      c->setHeld(getCreature());
+      c->you(MsgType::HAPPENS_TO, creature->getName().the() + " swings itself around");
+      c->setHeld(creature);
     } else {
       pair<Vec2, Vec2> dirs = v.approxL1();
       vector<Vec2> moves;
-      if (getCreature()->getPosition().plus(dirs.first).canEnter(
+      if (creature->getPosition().plus(dirs.first).canEnter(
             {{MovementTrait::WALK, MovementTrait::SWIM}}))
         moves.push_back(dirs.first);
-      if (getCreature()->getPosition().plus(dirs.second).canEnter(
+      if (creature->getPosition().plus(dirs.second).canEnter(
             {{MovementTrait::WALK, MovementTrait::SWIM}}))
         moves.push_back(dirs.second);
       if (!moves.empty()) {
         Vec2 move = Random.choose(moves);
-        ViewId viewId = getCreature()->getPosition().plus(move).canEnter({MovementTrait::SWIM})
+        ViewId viewId = creature->getPosition().plus(move).canEnter({MovementTrait::SWIM})
           ? ViewId::KRAKEN_WATER : ViewId::KRAKEN_LAND;
-        auto spawn = makeOwner<Creature>(getCreature()->getTribeId(),
+        auto spawn = makeOwner<Creature>(creature->getTribeId(),
               CreatureFactory::getKrakenAttributes(viewId, "kraken tentacle"));
         spawn->setController(makeOwner<KrakenController>(spawn.get(), getThis().dynamicCast<KrakenController>()));
         spawns.push_back(spawn.get());
-        getCreature()->getPosition().plus(move).addCreature(std::move(spawn));
+        creature->getPosition().plus(move).addCreature(std::move(spawn));
       }
     }
   }
@@ -301,11 +297,11 @@ class KrakenController : public Monster {
       } else if (auto c = getVisibleEnemy()) {
         considerAttacking(c);
       } else if (father && Random.roll(5)) {
-        getCreature()->dieNoReason(Creature::DropType::NOTHING);
+        creature->dieNoReason(Creature::DropType::NOTHING);
         return;
       }
     }
-    getCreature()->wait().perform(getCreature());
+    creature->wait().perform(creature);
   }
 
   SERIALIZE_ALL(SUBCLASS(Monster), ready, spawns, father);
@@ -322,14 +318,14 @@ class KamikazeController : public Monster {
   KamikazeController(WCreature c, MonsterAIFactory f) : Monster(c, f) {}
 
   virtual void makeMove() override {
-    for (Position pos : getCreature()->getPosition().neighbors8())
+    for (Position pos : creature->getPosition().neighbors8())
       if (WCreature c = pos.getCreature())
-        if (getCreature()->isEnemy(c) && getCreature()->canSee(c)) {
-          getCreature()->thirdPerson(getCreature()->getName().the() + " explodes!");
+        if (creature->isEnemy(c) && creature->canSee(c)) {
+          creature->thirdPerson(creature->getName().the() + " explodes!");
           for (Position v : c->getPosition().neighbors8())
             v.fireDamage(1);
           c->getPosition().fireDamage(1);
-          getCreature()->dieNoReason(Creature::DropType::ONLY_INVENTORY);
+          creature->dieNoReason(Creature::DropType::ONLY_INVENTORY);
           return;
         }
     Monster::makeMove();
@@ -359,16 +355,16 @@ class ShopkeeperController : public Monster, public EventListener<ShopkeeperCont
 
   virtual void makeMove() override {
     if (firstMove) {
-      myLevel = getCreature()->getLevel();
-      subscribeTo(getCreature()->getPosition().getModel());
+      myLevel = creature->getLevel();
+      subscribeTo(creature->getPosition().getModel());
       for (Position v : getAllShopPositions()) {
         for (WItem item : v.getItems())
-          item->setShopkeeper(getCreature());
+          item->setShopkeeper(creature);
         v.clearItemIndex(ItemIndex::FOR_SALE);
       }
       firstMove = false;
     }
-    if (!getCreature()->getPosition().isSameLevel(myLevel)) {
+    if (!creature->getPosition().isSameLevel(myLevel)) {
       Monster::makeMove();
       return;
     }
@@ -376,9 +372,9 @@ class ShopkeeperController : public Monster, public EventListener<ShopkeeperCont
     for (Position v : getAllShopPositions())
       if (WCreature c = v.getCreature()) {
         creatures.push_back(c->getUniqueId());
-        if (!prevCreatures.contains(c) && !thieves.contains(c) && !getCreature()->isEnemy(c)) {
+        if (!prevCreatures.contains(c) && !thieves.contains(c) && !creature->isEnemy(c)) {
           if (!debtors.contains(c))
-            c->secondPerson("\"Welcome to " + *getCreature()->getName().first() + "'s shop!\"");
+            c->secondPerson("\"Welcome to " + *creature->getName().first() + "'s shop!\"");
           else {
             c->secondPerson("\"Pay your debt or... !\"");
             thiefCount.erase(c);
@@ -387,14 +383,14 @@ class ShopkeeperController : public Monster, public EventListener<ShopkeeperCont
       }
     for (auto debtorId : copyOf(debtors))
       if (!creatures.contains(debtorId))
-        for (auto pos : getCreature()->getPosition().getRectangle(Rectangle::centered(Vec2(0, 0), 30)))
+        for (auto pos : creature->getPosition().getRectangle(Rectangle::centered(Vec2(0, 0), 30)))
           if (auto debtor = pos.getCreature())
             if (debtor->getUniqueId() == debtorId) {
-              debtor->privateMessage("\"Come back, you owe me " + toString(debtor->getDebt().getAmountOwed(getCreature())) +
+              debtor->privateMessage("\"Come back, you owe me " + toString(debtor->getDebt().getAmountOwed(creature)) +
                   " gold!\"");
               if (++thiefCount.getOrInit(debtor) == 4) {
                 debtor->privateMessage("\"Thief! Thief!\"");
-                getCreature()->getTribe()->onItemsStolen(debtor);
+                creature->getTribe()->onItemsStolen(debtor);
                 thiefCount.erase(debtor);
                 debtors.erase(debtor);
                 thieves.insert(debtor);
@@ -411,8 +407,8 @@ class ShopkeeperController : public Monster, public EventListener<ShopkeeperCont
 
   virtual void onItemsGiven(vector<WItem> items, WCreature from) override {
     int paid = items.filter(Item::classPredicate(ItemClass::GOLD)).size();
-    from->getDebt().add(getCreature(), -paid);
-    if (from->getDebt().getAmountOwed(getCreature()) <= 0)
+    from->getDebt().add(creature, -paid);
+    if (from->getDebt().getAmountOwed(creature) <= 0)
       debtors.erase(from);
   }
   
@@ -422,7 +418,7 @@ class ShopkeeperController : public Monster, public EventListener<ShopkeeperCont
         [&](const ItemsAppeared& info) {
           if (isShopPosition(info.position)) {
             for (auto& it : info.items) {
-              it->setShopkeeper(getCreature());
+              it->setShopkeeper(creature);
               info.position.clearItemIndex(ItemIndex::FOR_SALE);
             }
           }
@@ -430,8 +426,8 @@ class ShopkeeperController : public Monster, public EventListener<ShopkeeperCont
         [&](const ItemsPickedUp& info) {
           if (isShopPosition(info.creature->getPosition())) {
             for (auto& item : info.items)
-              if (item->isShopkeeper(getCreature())) {
-                info.creature->getDebt().add(getCreature(), item->getPrice());
+              if (item->isShopkeeper(creature)) {
+                info.creature->getDebt().add(creature, item->getPrice());
                 debtors.insert(info.creature);
               }
           }
@@ -439,9 +435,9 @@ class ShopkeeperController : public Monster, public EventListener<ShopkeeperCont
         [&](const ItemsDropped& info) {
           if (isShopPosition(info.creature->getPosition())) {
             for (auto& item : info.items)
-              if (item->isShopkeeper(getCreature())) {
-                info.creature->getDebt().add(getCreature(), -item->getPrice());
-                if (info.creature->getDebt().getAmountOwed(getCreature()) == 0)
+              if (item->isShopkeeper(creature)) {
+                info.creature->getDebt().add(creature, -item->getPrice());
+                if (info.creature->getDebt().getAmountOwed(creature) == 0)
                   debtors.erase(info.creature);
               }
           }
@@ -505,11 +501,11 @@ class IllusionController : public DoNothingController {
   }
 
   virtual void makeMove() override {
-    if (*getCreature()->getGlobalTime() >= deathTime) {
-      getCreature()->message("The illusion disappears.");
-      getCreature()->dieNoReason();
+    if (*creature->getGlobalTime() >= deathTime) {
+      creature->message("The illusion disappears.");
+      creature->dieNoReason();
     } else
-      getCreature()->wait().perform(getCreature());
+      creature->wait().perform(creature);
   }
 
   template <class Archive>

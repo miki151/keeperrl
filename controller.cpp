@@ -43,16 +43,12 @@ bool DoNothingController::isPlayer() const {
 }
 
 void DoNothingController::makeMove() {
-  getCreature()->wait().perform(getCreature());
+  creature->wait().perform(creature);
 }
 
 MessageGenerator& DoNothingController::getMessageGenerator() const {
   static MessageGenerator messageGenerator(MessageGenerator::NONE);
   return messageGenerator;
-}
-
-WCreature Controller::getCreature() const {
-  return creature;
 }
 
 

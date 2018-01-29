@@ -24,16 +24,16 @@ class MinionController : public Player {
     return concat(Player::getCommands(), {
       {PlayerInfo::CommandInfo{"Absorb", 'a',
           "Absorb a friendly creature and inherit its attributes. Requires the absorbtion skill.",
-          getCreature()->getAttributes().getSkills().hasDiscrete(SkillId::CONSUMPTION)},
+          creature->getAttributes().getSkills().hasDiscrete(SkillId::CONSUMPTION)},
        [] (Player* player) { dynamic_cast<MinionController*>(player)->consumeAction();}, false},
     });
   }
 
   virtual vector<TeamMemberAction> getTeamMemberActions(WConstCreature member) const {
     vector<TeamMemberAction> ret;
-    if (getGame()->getPlayerCreatures().size() == 1 && member != getCreature())
+    if (getGame()->getPlayerCreatures().size() == 1 && member != creature)
       ret.push_back(TeamMemberAction::CHANGE_LEADER);
-    if (member->isPlayer() && member != getCreature() && getModel()->getTimeQueue().willMoveThisTurn(member))
+    if (member->isPlayer() && member != creature && getModel()->getTimeQueue().willMoveThisTurn(member))
       ret.push_back(TeamMemberAction::MOVE_NOW);
     if (getTeam().size() >= 2)
       ret.push_back(TeamMemberAction::REMOVE_MEMBER);
@@ -48,7 +48,7 @@ class MinionController : public Player {
             (dynamic_cast<MinionController*>(player))->control->teamMemberAction(action, id);}});
     }
     else if (control->collective->getCreatures().contains(c) && control->canControlInTeam(c) &&
-        control->canControlInTeam(getCreature()))
+        control->canControlInTeam(creature))
       ret.push_back({10, "Add to team", false, [c](Player* player) {
           (dynamic_cast<MinionController*>(player))->control->addToCurrentTeam(c);}});
     return ret;
@@ -73,21 +73,21 @@ class MinionController : public Player {
   }
 
   void consumeAction() {
-    vector<WCreature> targets = control->collective->getConsumptionTargets(getCreature());
+    vector<WCreature> targets = control->collective->getConsumptionTargets(creature);
     vector<WCreature> actions;
     for (auto target : targets)
-      if (auto action = getCreature()->consume(target))
+      if (auto action = creature->consume(target))
         actions.push_back(target);
     if (actions.size() == 1 && getView()->yesOrNoPrompt("Really absorb " + actions[0]->getName().the() + "?")) {
-      tryToPerform(getCreature()->consume(actions[0]));
+      tryToPerform(creature->consume(actions[0]));
     } else
     if (actions.size() > 1) {
       auto dir = chooseDirection("Which direction?");
       if (!dir)
         return;
-      if (WCreature c = getCreature()->getPosition().plus(*dir).getCreature())
+      if (WCreature c = creature->getPosition().plus(*dir).getCreature())
         if (targets.contains(c) && getView()->yesOrNoPrompt("Really absorb " + c->getName().the() + "?"))
-          tryToPerform(getCreature()->consume(c));
+          tryToPerform(creature->consume(c));
     }
   }
 
@@ -112,7 +112,7 @@ class MinionController : public Player {
   }
 
   virtual vector<WCreature> getTeam() const override {
-    return control->getTeam(getCreature());
+    return control->getTeam(creature);
   }
 
   virtual MessageGenerator& getMessageGenerator() const override {
