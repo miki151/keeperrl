@@ -2336,7 +2336,7 @@ void PlayerControl::update(bool currentlyActive) {
   for (WLevel l : currentLevels)
     for (WCreature c : l->getAllCreatures())
       if (!getCreatures().contains(c) && c->getTribeId() == getTribeId() && canSee(c) && !isEnemy(c)) {
-        if (!collective->wasBanished(c) && !c->getBody().isMinionFood()) {
+        if (!collective->wasBanished(c) && !c->getBody().isMinionFood() && c->getAttributes().getCanJoinCollective()) {
           addedCreatures.push_back(c);
           collective->addCreature(c, {MinionTrait::FIGHTER});
           for (auto controlled : getControlled())

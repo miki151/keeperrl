@@ -98,6 +98,7 @@ class CreatureAttributes {
   const MinionActivityMap& getMinionActivities() const;
   MinionActivityMap& getMinionActivities();
   bool dontChase() const;
+  bool getCanJoinCollective() const;
   optional<ViewId> getRetiredViewId();
   void increaseExpFromCombat(double attackDiff);
   optional<double> getMoraleSpeedIncrease() const;
@@ -134,4 +135,5 @@ class CreatureAttributes {
   optional<CreatureId> SERIAL(creatureId);
   optional<double> SERIAL(moraleSpeedIncrease);
   string SERIAL(deathDescription) = "killed"_s;
+  bool SERIAL(canJoinCollective) = true;
 };

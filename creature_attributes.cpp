@@ -45,7 +45,7 @@ void CreatureAttributes::serialize(Archive& ar, const unsigned int version) {
   ar(viewId, retiredViewId, illusionViewObject, name, attr, chatReactionFriendly);
   ar(chatReactionHostile, passiveAttack, gender);
   ar(body, innocent, moraleSpeedIncrease, deathDescription);
-  ar(animal, cantEquip, courage);
+  ar(animal, cantEquip, courage, canJoinCollective);
   ar(boulder, noChase, isSpecial, skills, spells);
   ar(permanentEffects, lastingEffects, minionActivities, expLevel);
   ar(noAttackSound, maxLevelIncrease, creatureId);
@@ -347,6 +347,10 @@ MinionActivityMap& CreatureAttributes::getMinionActivities() {
 
 bool CreatureAttributes::dontChase() const {
   return noChase;
+}
+
+bool CreatureAttributes::getCanJoinCollective() const {
+  return canJoinCollective;
 }
 
 optional<ViewId> CreatureAttributes::getRetiredViewId() {

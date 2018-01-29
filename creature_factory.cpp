@@ -508,12 +508,7 @@ class IllusionController : public DoNothingController {
       creature->wait().perform(creature);
   }
 
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
-    ar& SUBCLASS(DoNothingController);
-    ar(deathTime);
-  }
-
+  SERIALIZE_DEF(SUBCLASS(DoNothingController), deathTime)
   SERIALIZATION_CONSTRUCTOR(IllusionController)
 
   private:
@@ -533,6 +528,7 @@ PCreature CreatureFactory::getIllusion(WCreature creature) {
           c.attr[AttrType::DEFENSE] = 1;
           c.permanentEffects[LastingEffect::FLYING] = 1;
           c.noAttackSound = true;
+          c.canJoinCollective = false;
           c.name = creature->getName();));
   ret->setController(makeOwner<IllusionController>(ret.get(), *creature->getGlobalTime()
       + TimeInterval(Random.get(5, 10))));
