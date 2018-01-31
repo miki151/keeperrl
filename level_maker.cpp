@@ -2113,7 +2113,7 @@ static PMakerQueue genericMineTownMaker(RandomGen& random, SettlementInfo info, 
     roomInsides.push_back(unique<ShopMaker>(info, random.get(8, 16)));
   for (auto& elem : info.stockpiles)
     roomInsides.push_back(stockpileMaker(elem));
-  queue->addMaker(unique<RoomMaker>(numRooms, minRoomSize, maxRoomSize, building.wall, none,
+  queue->addMaker(unique<RoomMaker>(numRooms, minRoomSize, maxRoomSize, SquareChange::none(), none,
       unique<Empty>(SquareChange(building.floorInside, ifTrue(!info.dontConnectCave, SquareAttrib::CONNECT_CORRIDOR))),
       std::move(roomInsides), true));
   queue->addMaker(unique<Connector>(none, 0));
