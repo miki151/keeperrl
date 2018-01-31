@@ -117,7 +117,6 @@ class CreatureAttributes {
   optional<string> SERIAL(chatReactionHostile);
   HeapAllocated<optional<Effect>> SERIAL(passiveAttack);
   Gender SERIAL(gender) = Gender::male;
-  bool SERIAL(innocent) = false;
   bool SERIAL(animal) = false;
   bool SERIAL(cantEquip) = false;
   double SERIAL(courage) = 1;

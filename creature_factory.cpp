@@ -1270,7 +1270,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
             c.viewId = ViewId::PESEANT;
           c.attr = LIST(14_dam, 12_def );
           c.body = Body::humanoid(Body::Size::LARGE);
-          c.innocent = true;
           c.chatReactionFriendly = "curses all dungeons"_s;
           c.chatReactionHostile = "\"Heeelp!\""_s;
           c.skills.insert(SkillId::CROPS);
@@ -1280,7 +1279,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.viewId = ViewId::CHILD;
           c.attr = LIST(8_dam, 8_def );
           c.body = Body::humanoid(Body::Size::MEDIUM);
-          c.innocent = true;
           c.chatReactionFriendly = "\"plaaaaay!\""_s;
           c.chatReactionHostile = "\"Heeelp!\""_s;
           c.skills.insert(SkillId::CROPS);
@@ -1290,7 +1288,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.viewId = ViewId::CHILD;
           c.attr = LIST(2_dam, 2_def );
           c.body = Body::humanoid(Body::Size::MEDIUM);
-          c.innocent = true;
           c.permanentEffects[LastingEffect::ENTANGLED] = 1;
           c.permanentEffects[LastingEffect::BLIND] = 1;
           c.chatReactionFriendly = "\"Put me out of my misery PLEASE!\""_s;
@@ -1303,7 +1300,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
               ViewId::HALLOWEEN_KID2, ViewId::HALLOWEEN_KID3,ViewId::HALLOWEEN_KID4);
           c.attr = LIST(8_dam, 8_def );
           c.body = Body::humanoid(Body::Size::MEDIUM);
-          c.innocent = true;
           c.chatReactionFriendly = "\"Trick or treat!\""_s;
           c.chatReactionHostile = "\"Trick or treat!\""_s;
           c.name = CreatureName("child", "children"););
@@ -1563,7 +1559,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::DWARF_FEMALE:
       return CATTR(
           c.viewId = ViewId::DWARF_FEMALE;
-          c.innocent = true;
           c.attr = LIST(21_dam, 25_def );
           c.body = Body::humanoid(Body::Size::MEDIUM);
           c.body->setWeight(90);
@@ -1618,7 +1613,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.viewId = Random.choose(ViewId::ELF, ViewId::ELF_WOMAN);
           c.attr = LIST(14_dam, 6_def );
           c.body = Body::humanoid(Body::Size::MEDIUM);
-          c.innocent = true;
           c.chatReactionFriendly = "curses all dwarves"_s;
           c.chatReactionHostile = "\"Die!\""_s;
           c.spells->add(SpellId::HEAL_SELF);
@@ -1640,7 +1634,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.viewId = ViewId::ELF_CHILD;
           c.attr = LIST(6_dam, 6_def );
           c.body = Body::humanoid(Body::Size::SMALL);
-          c.innocent = true;
           c.chatReactionFriendly = "curses all dwarves"_s;
           c.chatReactionHostile = "\"Die!\""_s;
           c.permanentEffects[LastingEffect::MAGIC_RESISTANCE] = 1;
@@ -1670,7 +1663,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.viewId = Random.choose(ViewId::DARK_ELF, ViewId::DARK_ELF_WOMAN);
           c.attr = LIST(14_dam, 6_def );
           c.body = Body::humanoid(Body::Size::MEDIUM);
-          c.innocent = true;
           c.chatReactionFriendly = "curses all dwarves"_s;
           c.chatReactionHostile = "\"Die!\""_s;
           c.permanentEffects[LastingEffect::MAGIC_RESISTANCE] = 1;
@@ -1696,7 +1688,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.viewId = ViewId::DARK_ELF_CHILD;
           c.attr = LIST(6_dam, 6_def );
           c.body = Body::humanoid(Body::Size::SMALL);
-          c.innocent = true;
           c.permanentEffects[LastingEffect::MAGIC_RESISTANCE] = 1;
           c.chatReactionFriendly = "curses all dwarves"_s;
           c.chatReactionHostile = "\"Die!\""_s;
@@ -1739,7 +1730,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body = Body::nonHumanoid(Body::Size::LARGE);
           c.body->setWeight(500);
           c.body->setHorseBodyParts(2);
-          c.innocent = true;
           c.animal = true;
           c.noChase = true;
           c.name = "horse";);
@@ -1750,7 +1740,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body = Body::nonHumanoid(Body::Size::LARGE);
           c.body->setWeight(400);
           c.body->setHorseBodyParts(2);
-          c.innocent = true;
           c.animal = true;
           c.noChase = true;
           c.name = "cow";);
@@ -1762,7 +1751,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body->setWeight(200);
           c.body->setHorseBodyParts(2);
           c.body->setDeathSound(SoundId::DYING_DONKEY);
-          c.innocent = true;
           c.animal = true;
           c.noChase = true;
           c.name = "donkey";);
@@ -1776,7 +1764,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body->setMinionFood();
           c.body->setDeathSound(SoundId::DYING_PIG);
           c.permanentEffects[LastingEffect::SLOWED] = 1;
-          c.innocent = true;
           c.noChase = true;
           c.animal = true;
           c.name = "pig";);
@@ -1787,7 +1774,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body = Body::nonHumanoid(Body::Size::MEDIUM);
           c.body->setHorseBodyParts(2);
           c.body->setMinionFood();
-          c.innocent = true;
           c.noChase = true;
           c.animal = true;
           c.name = "goat";);
@@ -1808,7 +1794,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body->setWeight(400);
           c.body->setHorseBodyParts(2);
           c.permanentEffects[LastingEffect::SPEED] = 1;
-          c.innocent = true;
           c.animal = true;
           c.noChase = true;
           c.name = CreatureName("deer", "deer"););
@@ -1819,7 +1804,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body = Body::nonHumanoid(Body::Size::MEDIUM);
           c.body->setWeight(200);
           c.body->setHorseBodyParts(5);
-          c.innocent = true;
           c.animal = true;
           c.noChase = true;
           c.name = "boar";);
@@ -1830,7 +1814,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body = Body::nonHumanoid(Body::Size::SMALL);
           c.body->setWeight(10);
           c.body->setHorseBodyParts(1);
-          c.innocent = true;
           c.animal = true;
           c.noChase = true;
           c.name = CreatureName("fox", "foxes"););
@@ -2000,7 +1983,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body->setHorseBodyParts(2);
           c.body->setIntrinsicAttack(BodyPart::HEAD, IntrinsicAttack(ItemType::fangs(4)));
           c.animal = true;
-          c.innocent = true;
           c.name = "dog";
           c.name->setGroup("pack");
           c.name->setFirst(NameGenerator::get(NameGeneratorId::DOG)->getNext());

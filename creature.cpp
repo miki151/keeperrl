@@ -1157,7 +1157,7 @@ void Creature::dieWithAttacker(WCreature attacker, DropType drops) {
     if (auto sound = getBody().getDeathSound())
       addSound(*sound);
   }
-  if (attributes->isInnocent())
+  if (statuses.contains(CreatureStatus::CIVILIAN))
     getGame()->getStatistics().add(StatId::INNOCENT_KILLED);
   getGame()->getStatistics().add(StatId::DEATH);
   if (attacker)

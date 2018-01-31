@@ -44,7 +44,7 @@ template <class Archive>
 void CreatureAttributes::serialize(Archive& ar, const unsigned int version) {
   ar(viewId, retiredViewId, illusionViewObject, name, attr, chatReactionFriendly);
   ar(chatReactionHostile, passiveAttack, gender);
-  ar(body, innocent, moraleSpeedIncrease, deathDescription);
+  ar(body, moraleSpeedIncrease, deathDescription);
   ar(animal, cantEquip, courage, canJoinCollective);
   ar(boulder, noChase, isSpecial, skills, spells);
   ar(permanentEffects, lastingEffects, minionActivities, expLevel);
@@ -333,10 +333,6 @@ void CreatureAttributes::removePermanentEffect(LastingEffect effect, int count) 
   permanentEffects[effect] -= count;
 }
 
-bool CreatureAttributes::isInnocent() const {
-  return innocent;
-}
- 
 const MinionActivityMap& CreatureAttributes::getMinionActivities() const {
   return minionActivities;
 }
