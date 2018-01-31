@@ -598,6 +598,7 @@ void Effect::PlaceFurniture::applyToCreature(WCreature c, WCreature attacker) co
   bool furnitureBlocks = !f->getMovementSet().canEnter(c->getMovementType());
   if (furnitureBlocks) {
     optional<Vec2> dest;
+/*  With automatic removing creatures from inaccessible squares this code shouldn't be needed.
     for (Position pos2 : c->getPosition().neighbors8(Random))
       if (c->move(pos2) && !pos2.getCreature()) {
         dest = pos.getDir(pos2);
@@ -605,7 +606,7 @@ void Effect::PlaceFurniture::applyToCreature(WCreature c, WCreature attacker) co
       }
     if (dest)
       c->displace(*dest);
-    else
+    else*/
       Effect::Teleport{}.applyToCreature(c);
   }
   if (c->getPosition() != pos || !furnitureBlocks) {

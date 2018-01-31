@@ -854,8 +854,20 @@ optional<GlobalTime> Creature::getGlobalTime() const {
   return globalTime;
 }
 
+void Creature::considerMovingFromInaccessibleSquare() {
+  auto movement = getMovementType().setForced();
+  if (!position.canEnterEmpty(movement))
+    for (auto neighbor : position.neighbors8(Random))
+      if (neighbor.canEnter(movement)) {
+        displace(position.getDir(neighbor));
+        CHECK(getPosition().getCreature() == this);
+        break;
+      }
+}
+
 void Creature::tick() {
   PROFILE;
+  considerMovingFromInaccessibleSquare();
   captureHealth = min(1.0, captureHealth + 0.02);
   vision->update(this);
   if (Random.roll(5))

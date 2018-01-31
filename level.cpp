@@ -413,7 +413,6 @@ bool Level::canSee(WConstCreature c, Vec2 pos) const {
 }
 
 void Level::moveCreature(WCreature creature, Vec2 direction) {
-//  CHECK(canMoveCreature(creature, direction));
   Vec2 position = creature->getPosition().getCoord();
   unplaceCreature(creature, position);
   placeCreature(creature, position + direction);

@@ -328,6 +328,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   bool captureDamage(double damage, WCreature attacker);
   mutable Game* gameCache = nullptr;
   optional<GlobalTime> SERIAL(globalTime);
+  void considerMovingFromInaccessibleSquare();
 };
 
 struct AdjectiveInfo {
