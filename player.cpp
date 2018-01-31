@@ -464,8 +464,6 @@ void Player::sleeping() {
       "level render time");
 }
 
-static bool displayTravelInfo = true;
-
 vector<Player::OtherCreatureCommand> Player::getOtherCreatureCommands(WCreature c) const {
   vector<OtherCreatureCommand> ret;
   auto genAction = [&](int priority, const string& text, bool allowAuto, CreatureAction action) {
@@ -478,8 +476,9 @@ vector<Player::OtherCreatureCommand> Player::getOtherCreatureCommands(WCreature 
   }
   if (creature->isEnemy(c)) {
     genAction(1, "Attack", true, creature->attack(c));
-    ret.push_back({2, c->isCaptureOrdered() ? "Cancel capture order" : "Order capture", true,
-        [c](Player*) { c->toggleCaptureOrder();}});
+    if (c->canCapture())
+      ret.push_back({2, c->isCaptureOrdered() ? "Cancel capture order" : "Order capture", true,
+          [c](Player*) { c->toggleCaptureOrder();}});
     auto equipped = creature->getEquipment().getSlotItems(EquipmentSlot::WEAPON);
     if (equipped.size() == 1) {
       auto weapon = equipped[0];
