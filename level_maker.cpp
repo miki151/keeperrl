@@ -2712,8 +2712,8 @@ PLevelMaker LevelMaker::battleLevel(Table<char> level, CreatureList allies, Crea
   return unique<BattleFromFile>(level, allies, enemies);
 }
 
-PLevelMaker LevelMaker::emptyLevel(RandomGen&) {
+PLevelMaker LevelMaker::emptyLevel(FurnitureType t) {
   auto queue = unique<MakerQueue>();
-  queue->addMaker(unique<Empty>(FurnitureType::GRASS));
+  queue->addMaker(unique<Empty>(t));
   return std::move(queue);
 }

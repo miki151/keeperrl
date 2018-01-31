@@ -172,7 +172,7 @@ Model::Model(Private) {
 PModel Model::create() {
   auto ret = makeOwner<Model>(Private{});
   ret->cemetery = LevelBuilder(Random, 100, 100, "Dead creatures", false)
-      .build(ret.get(), LevelMaker::emptyLevel(Random).get(), Random.getLL());
+      .build(ret.get(), LevelMaker::emptyLevel(FurnitureType::GRASS).get(), Random.getLL());
   ret->eventGenerator = makeOwner<EventGenerator>();
   return ret;
 }

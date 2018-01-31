@@ -42,6 +42,7 @@
 #include "furniture.h"
 #include "monster_ai.h"
 #include "vision.h"
+#include "position_matching.h"
 
 template <class Archive> 
 void Task::serialize(Archive& ar, const unsigned int version) {
@@ -146,10 +147,12 @@ PTask Task::construction(WTaskCallback c, Position target, FurnitureType type) {
 namespace {
 class Destruction : public Task {
   public:
-  Destruction(WTaskCallback c, Position pos, WConstFurniture furniture, DestroyAction action)
+  Destruction(WTaskCallback c, Position pos, WConstFurniture furniture, DestroyAction action, WPositionMatching m)
       : Task(true), position(pos), callback(c), destroyAction(action),
         description(action.getVerbSecondPerson() + " "_s + furniture->getName() + " at " + toString(position)),
-        furnitureType(furniture->getType()) {}
+        furnitureType(furniture->getType()), matching(m) {
+    matching->addTarget(position);
+  }
 
   WConstFurniture getFurniture() const {
     return position.getFurniture(Furniture::getLayer(furnitureType));
@@ -163,7 +166,7 @@ class Destruction : public Task {
   }
 
   virtual bool isBlocked(WConstCreature) const override {
-    return !callback->isConstructionReachable(position);
+    return !callback->isConstructionReachable(position) || !matching->getMatch(position);
   }
 
   virtual string getDescription() const override {
@@ -171,11 +174,17 @@ class Destruction : public Task {
   }
 
   virtual MoveInfo getMove(WCreature c) override {
-    if (!callback->isConstructionReachable(position))
+    if (isBlocked(c))
       return NoMove;
-    if (c->getPosition().dist8(position) > 1)
-      return c->moveTowards(position);
+    auto match = *matching->getMatch(position);
+    if (c->getPosition() != match) {
+      if (c->isSameSector(match))
+        return c->moveTowards(*matching->getMatch(position));
+      else if (c->getPosition().dist8(position) > 1)
+        return c->moveTowards(position);
+    }
     Vec2 dir = c->getPosition().getDir(position);
+    CHECK(dir.length8() == 1);
     if (auto action = c->destroy(dir, destroyAction))
       return {1.0, action.append([=](WCreature c) {
           if (!getFurniture() || getFurniture()->getType() != furnitureType) {
@@ -189,7 +198,12 @@ class Destruction : public Task {
     }
   }
 
-  SERIALIZE_ALL(SUBCLASS(Task), position, callback, destroyAction, description, furnitureType)
+  ~Destruction() {
+    if (matching)
+      matching->releaseTarget(position);
+  }
+
+  SERIALIZE_ALL(SUBCLASS(Task), position, callback, destroyAction, description, furnitureType, matching)
   SERIALIZATION_CONSTRUCTOR(Destruction)
 
   private:
@@ -198,12 +212,13 @@ class Destruction : public Task {
   DestroyAction SERIAL(destroyAction);
   string SERIAL(description);
   FurnitureType SERIAL(furnitureType);
+  WPositionMatching SERIAL(matching);
 };
 
 }
 
-PTask Task::destruction(WTaskCallback c, Position target, WConstFurniture furniture, DestroyAction destroyAction) {
-  return makeOwner<Destruction>(c, target, furniture, destroyAction);
+PTask Task::destruction(WTaskCallback c, Position target, WConstFurniture furniture, DestroyAction destroyAction, WPositionMatching matching) {
+  return makeOwner<Destruction>(c, target, furniture, destroyAction, matching);
 }
 
 namespace {

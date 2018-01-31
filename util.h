@@ -1211,6 +1211,10 @@ class EnumSet {
     return ret;
   }
 
+  void sumWith(const EnumSet& other) {
+    elems |= other.elems;
+  }
+
   void intersectWith(const EnumSet& other) {
     elems &= other.elems;
   }

@@ -702,13 +702,17 @@ void Position::throwItem(vector<PItem> item, const Attack& attack, int maxDist, 
 
 void Position::updateConnectivity() const {
   PROFILE;
+  bool changed = false;
   if (isValid()) {
     for (auto& elem : level->sectors)
       if (canNavigate(elem.first))
-        elem.second.add(coord);
+        changed = elem.second.add(coord) || changed;
       else
-        elem.second.remove(coord);
+        changed = elem.second.remove(coord) || changed;
   }
+  if (changed)
+    if (auto game = getGame())
+      game->addEvent(EventInfo::MovementChanged{*this});
 }
 
 void Position::updateVisibility() const {

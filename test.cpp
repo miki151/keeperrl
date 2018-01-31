@@ -33,6 +33,9 @@
 #include "serialization.h"
 #include "text_serialization.h"
 #include "creature_factory.h"
+#include "level_builder.h"
+#include "model.h"
+#include "position_matching.h"
 
 class Test {
   public:
@@ -866,6 +869,71 @@ class Test {
     CHECK(a == b);
   }
 
+  struct MatchingTest {
+    auto get(int x, int y) {
+      return Position(Vec2(x, y), level.get());
+    };
+    void free(Position pos) {
+      pos.removeFurniture(pos.getFurniture(FurnitureLayer::MIDDLE));
+      matching.updateMovement(pos);
+    };
+    PositionMatching matching;
+    PModel model = Model::create();
+    LevelBuilder builder = LevelBuilder(nullptr, Random, 10, 10, "", false, none);
+    PLevelMaker levelMaker = LevelMaker::emptyLevel(FurnitureType::MOUNTAIN);
+    PLevel level = builder.build(model.get(), levelMaker.get(), 1234);
+  };
+
+  void testPositionMatching1() {
+    MatchingTest t;
+    auto pos1 = t.get(5, 5);
+    t.matching.addTarget(pos1);
+    CHECK(!t.matching.getMatch(pos1));
+    auto pos2 = t.get(4, 5);
+    t.free(pos2);
+    CHECK(t.matching.getMatch(pos1) == pos2);
+    auto pos3 = t.get(3, 5);
+    t.matching.addTarget(pos3);
+    CHECK(!t.matching.getMatch(pos3));
+    t.matching.releaseTarget(pos1);
+    CHECK(t.matching.getMatch(pos3) == pos2);
+  }
+
+  void testPositionMatching2() {
+    MatchingTest t;
+    auto pos1 = t.get(5, 5);
+    t.matching.addTarget(pos1);
+    CHECK(!t.matching.getMatch(pos1));
+    auto pos2 = t.get(4, 5);
+    t.free(pos2);
+    CHECK(t.matching.getMatch(pos1) == pos2);
+    auto pos3 = t.get(3, 5);
+    t.matching.addTarget(pos3);
+    CHECK(!t.matching.getMatch(pos3));
+    auto pos4 = t.get(3, 6);
+    t.free(pos4);
+    CHECK(t.matching.getMatch(pos3) == pos4);
+    auto pos5 = t.get(3, 7);
+    t.matching.addTarget(pos5);
+    CHECK(!t.matching.getMatch(pos5));
+    auto pos6 = t.get(6, 5);
+    t.free(pos6);
+    CHECK(t.matching.getMatch(pos5) == pos4);
+    CHECK(t.matching.getMatch(pos3) == pos2);
+    CHECK(t.matching.getMatch(pos1) == pos6);
+  }
+
+  void testPositionMatching3() {
+    MatchingTest t;
+    for (auto v : Rectangle(10, 10))
+      t.free(t.get(v.x, v.y));
+  }
+
+  void testPositionMatching4() {
+    MatchingTest t;
+    for (auto v : Rectangle(10, 10))
+      t.matching.addTarget(t.get(v.x, v.y));
+  }
 };
 
 void testAll() {
@@ -918,5 +986,9 @@ void testAll() {
   Test().testCacheTemplate();
   Test().testCacheTemplate2();
   Test().testTextSerialization();
+  Test().testPositionMatching1();
+  Test().testPositionMatching2();
+  Test().testPositionMatching3();
+  Test().testPositionMatching4();
   INFO << "-----===== OK =====-----";
 }

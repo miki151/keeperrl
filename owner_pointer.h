@@ -277,3 +277,4 @@ DEF_SHARED_PTR(MapMemory);
 DEF_SHARED_PTR(MessageBuffer);
 DEF_SHARED_PTR(VisibilityMap);
 DEF_OWNER_PTR(Immigration);
+DEF_OWNER_PTR(PositionMatching);

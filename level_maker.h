@@ -48,7 +48,7 @@ class LevelMaker {
   static PLevelMaker roomLevel(RandomGen&, CreatureFactory roomFactory, CreatureFactory waterFactory,
     CreatureFactory lavaFactory, vector<StairKey> up, vector<StairKey> down, FurnitureFactory furniture);
   static PLevelMaker mazeLevel(RandomGen&, SettlementInfo);
-  static PLevelMaker emptyLevel(RandomGen&);
+  static PLevelMaker emptyLevel(FurnitureType);
   static PLevelMaker sokobanFromFile(RandomGen&, SettlementInfo, Table<char>);
   static PLevelMaker battleLevel(Table<char>, CreatureList allies, CreatureList enemies);
 };

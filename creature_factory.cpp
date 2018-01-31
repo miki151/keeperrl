@@ -508,7 +508,7 @@ class IllusionController : public DoNothingController {
       creature->wait().perform(creature);
   }
 
-  SERIALIZE_DEF(SUBCLASS(DoNothingController), deathTime)
+  SERIALIZE_ALL(SUBCLASS(DoNothingController), deathTime)
   SERIALIZATION_CONSTRUCTOR(IllusionController)
 
   private:

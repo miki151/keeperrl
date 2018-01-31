@@ -48,6 +48,7 @@ struct ItemFetchInfo;
 class CollectiveWarnings;
 class Immigration;
 class Quarters;
+class PositionMatching;
 
 class Collective : public TaskCallback, public UniqueEntity<Collective>, public EventListener<Collective> {
   public:
@@ -311,4 +312,5 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   void considerTransferingLostMinions();
   void updateCreatureStatus(WCreature);
   HeapAllocated<Quarters> SERIAL(quarters);
+  PPositionMatching SERIAL(positionMatching);
 };

@@ -51,6 +51,7 @@
 #include "resource_info.h"
 #include "workshop_item.h"
 #include "quarters.h"
+#include "position_matching.h"
 
 
 template <class Archive>
@@ -60,7 +61,7 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
   ar(territory, alarmInfo, markedItems, constructions, minionEquipment);
   ar(delayedPos, knownTiles, technologies, kills, points, currentTasks);
   ar(credit, level, immigration, teams, name, conqueredVillains);
-  ar(config, warnings, knownVillains, knownVillainLocations, banished);
+  ar(config, warnings, knownVillains, knownVillainLocations, banished, positionMatching);
   ar(villainType, enemyId, workshops, zones, tileEfficiency, discoverable, quarters);
   // hack to make retired villains discoverable, remove with save version change
   if (villainType == VillainType::MAIN)
@@ -72,7 +73,8 @@ SERIALIZABLE(Collective)
 SERIALIZATION_CONSTRUCTOR_IMPL(Collective)
 
 Collective::Collective(Private, WLevel l, TribeId t, const optional<CollectiveName>& n)
-    : tribe(t), level(NOTNULL(l)), name(n), villainType(VillainType::NONE) {
+    : tribe(t), level(NOTNULL(l)), name(n), villainType(VillainType::NONE),
+      positionMatching(makeOwner<PositionMatching>()) {
 }
 
 PCollective Collective::create(WLevel level, TribeId tribe, const optional<CollectiveName>& name, bool discoverable) {
@@ -709,6 +711,9 @@ void Collective::onEvent(const GameEvent& event) {
           trap->reset();
         }
       },
+      [&](const MovementChanged& info) {
+        positionMatching->updateMovement(info.pos);
+      },
       [&](const FurnitureDestroyed& info) {
         constructions->onFurnitureDestroyed(info.position, info.layer);
         tileEfficiency->update(info.position);
@@ -1058,7 +1063,8 @@ static HighlightType getHighlight(const DestroyAction& action) {
 void Collective::orderDestruction(Position pos, const DestroyAction& action) {
   auto f = NOTNULL(pos.getFurniture(FurnitureLayer::MIDDLE));
   CHECK(f->canDestroy(action));
-  taskMap->markSquare(pos, getHighlight(action), Task::destruction(this, pos, f, action), action.getMinionActivity());
+  taskMap->markSquare(pos, getHighlight(action), Task::destruction(this, pos, f, action, positionMatching.get()),
+      action.getMinionActivity());
 }
 
 void Collective::addTrap(Position pos, TrapType type) {

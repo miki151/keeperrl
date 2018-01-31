@@ -46,7 +46,7 @@ class Task : public UniqueEntity<Task>, public OwnedObject<Task> {
   void setViewId(ViewId);
 
   static PTask construction(WTaskCallback, Position, FurnitureType);
-  static PTask destruction(WTaskCallback, Position, WConstFurniture, DestroyAction);
+  static PTask destruction(WTaskCallback, Position, WConstFurniture, DestroyAction, WPositionMatching);
   static PTask bringItem(WTaskCallback, Position position, vector<WItem>, const PositionSet& target,
       int numRetries = 10);
   static PTask applyItem(WTaskCallback, Position, WItem, Position target);

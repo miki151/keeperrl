@@ -22,8 +22,8 @@ class Sectors {
   Sectors(Rectangle bounds);
 
   bool same(Vec2, Vec2) const;
-  void add(Vec2);
-  void remove(Vec2);
+  bool add(Vec2);
+  bool remove(Vec2);
   void dump();
   bool contains(Vec2) const;
   int getNumSectors() const;
