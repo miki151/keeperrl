@@ -116,7 +116,7 @@ const vector<BuildInfo>& BuildInfo::get() {
           {{RequirementId::TECHNOLOGY, TechId::JEWELLERY}}, "Produces magical rings and amulets.", 0, workshop),
       BuildInfo({FurnitureType::DEMON_SHRINE, {ResourceId::GOLD, 30}}, "Demon shrine", {{RequirementId::TECHNOLOGY, TechId::DEMONOLOGY}},
           "Summons various demons to your dungeon."),
-      BuildInfo({FurnitureType::PRISON, {ResourceId::IRON, 5}}, "Prison", {}, "Captured enemies are kept here.",
+      BuildInfo({FurnitureType::PRISON, {ResourceId::IRON, 15}}, "Prison", {}, "Captured enemies are kept here.",
           'p', "Prison", true),
       BuildInfo({FurnitureType::TORTURE_TABLE, {ResourceId::IRON, 20}}, "Torture table", {},
           "Can be used to torture prisoners.", 0, "Prison"),
@@ -147,7 +147,7 @@ const vector<BuildInfo>& BuildInfo::get() {
         "Makes the area around it visible.", 0, "Installations"),
       BuildInfo({FurnitureType::PORTAL, {ResourceId::STONE, 60}}, "Portal", {},
         "Opens a connection if another portal is present.", 0, "Installations"),
-      BuildInfo({FurnitureType::MINION_STATUE, {ResourceId::MANA, 50}}, "Statue", {},
+      BuildInfo({FurnitureType::MINION_STATUE, {ResourceId::GOLD, 50}}, "Statue", {},
         "Increases minion population limit by " +
               toString(ModelBuilder::getStatuePopulationIncrease()) + ".", 0, "Installations"),
       BuildInfo({FurnitureType::WHIPPING_POST, {ResourceId::WOOD, 20}}, "Whipping post", {},
