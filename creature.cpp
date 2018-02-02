@@ -1150,10 +1150,10 @@ vector<PItem> Creature::generateCorpse(bool instantlyRotten) const {
 
 void Creature::dieWithAttacker(WCreature attacker, DropType drops) {
   CHECK(!isDead()) << getName().bare() << " is already dead. " << getDeathReason().value_or("");
+  getController()->onKilled(attacker);
   deathTime = *getGlobalTime();
   lastAttacker = attacker;
   INFO << getName().the() << " dies. Killed by " << (attacker ? attacker->getName().bare() : "");
-  getController()->onKilled(attacker);
   if (drops == DropType::EVERYTHING || drops == DropType::ONLY_INVENTORY)
     for (PItem& item : equipment->removeAllItems(this))
       getPosition().dropItem(std::move(item));
