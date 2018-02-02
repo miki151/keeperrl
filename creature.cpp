@@ -927,7 +927,6 @@ CreatureAction Creature::attack(WCreature other, optional<AttackParams> attackPa
     INFO << getName().the() << " attacking " << other->getName().the();
     auto damageAttr = weapon->getWeaponInfo().meleeAttackAttr;
     int damage = getAttr(damageAttr) + weapon->getModifier(damageAttr);
-    auto timeSpent = 1_visible;
     AttackLevel attackLevel = Random.choose(getBody().getAttackLevels());
     if (attackParams && attackParams->level)
       attackLevel = *attackParams->level;
@@ -938,7 +937,7 @@ CreatureAction Creature::attack(WCreature other, optional<AttackParams> attackPa
       enemyName = "something";
     weapon->getAttackMsg(this, enemyName);
     bool wasDamaged = other->takeDamage(attack);
-    auto movementInfo = (*self->spendTime(timeSpent))
+    auto movementInfo = (*self->spendTime())
         .setDirection(dir)
         .setType(MovementInfo::ATTACK);
     if (wasDamaged)
@@ -1206,9 +1205,14 @@ CreatureAction Creature::torture(WCreature other) const {
       other->thirdPerson(other->getName().the() + " screams!");
       other->getPosition().unseenMessage("You hear a horrible scream");
     }
-    other->getBody().affectByTorture(other);
+    auto dir = position.getDir(other->position);
+    // Note: the event can kill the victim
     getGame()->addEvent(EventInfo::CreatureTortured{other, self});
-    self->spendTime();
+    auto movementInfo = (*self->spendTime())
+        .setDirection(dir)
+        .setType(MovementInfo::WORK)
+        .setVictim(other->getUniqueId());
+    self->addMovementInfo(movementInfo);
   });
 }
 

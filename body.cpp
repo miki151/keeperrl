@@ -761,16 +761,6 @@ bool Body::affectByPoisonGas(WCreature c, double amount) {
   return false;
 }
 
-void Body::affectByTorture(WCreature c) {
-  bleed(c, 0.1);
-  if (health < 0.3) {
-    if (!Random.roll(8))
-      c->heal();
-    else
-      c->dieWithReason("killed by torture");
-  }
-}
-
 bool Body::affectBySilver(WCreature c) {
   if (isUndead()) {
     c->you(MsgType::ARE, "hurt by the silver");

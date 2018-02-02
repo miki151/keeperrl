@@ -444,7 +444,7 @@ Vec2 MapGui::getMovementOffset(const ViewObject& object, Vec2 size, double time,
     return Vec2(0, 0);
   double vertical = verticalMovement ? getJumpOffset(object, state) : 0;
   if (dir.length8() == 1) {
-    if (movementInfo.type == MovementInfo::ATTACK && movementInfo.victim && state >= 0.5)
+    if (movementInfo.victim && state >= 0.5 && state < 1.0)
       woundedInfo.getOrInit(*movementInfo.victim) = curTimeReal;
     if (auto mult = getPartialMovement(movementInfo.type)) {
       if (verticalMovement)
@@ -922,13 +922,15 @@ void MapGui::drawSquareHighlight(Renderer& renderer, Vec2 pos, Vec2 size) {
 
 void MapGui::considerRedrawingSquareHighlight(Renderer& renderer, milliseconds currentTimeReal, Vec2 pos, Vec2 size) {
   PROFILE;
-  Rectangle allTiles = layout->getAllTiles(getBounds(), levelBounds, getScreenPos());
-  Vec2 topLeftCorner = projectOnScreen(allTiles.topLeft());
-  for (Vec2 v : concat({pos}, pos.neighbors8()))
-    if (v.inRectangle(objects.getBounds()) && (!objects[v] || objects[v]->noObjects())) {
-      drawSquareHighlight(renderer, topLeftCorner + (pos - allTiles.topLeft()).mult(size), size);
-      break;
-    }
+  if (!lastHighlighted.creaturePos) {
+    Rectangle allTiles = layout->getAllTiles(getBounds(), levelBounds, getScreenPos());
+    Vec2 topLeftCorner = projectOnScreen(allTiles.topLeft());
+    for (Vec2 v : concat({pos}, pos.neighbors8()))
+      if (v.inRectangle(objects.getBounds()) && (!objects[v] || objects[v]->noObjects())) {
+        drawSquareHighlight(renderer, topLeftCorner + (pos - allTiles.topLeft()).mult(size), size);
+        break;
+      }
+  }
 }
 
 void MapGui::processScrolling(milliseconds time) {

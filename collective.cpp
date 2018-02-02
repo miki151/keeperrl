@@ -677,8 +677,20 @@ void Collective::onEvent(const GameEvent& event) {
           onKilledSomeone(info.attacker, info.victim);
       },
       [&](const CreatureTortured& info) {
-        if (creatures.contains(info.torturer))
-          returnResource({ResourceId::MANA, 1});
+        auto victim = info.victim;
+        if (creatures.contains(victim)) {
+          if (Random.roll(30)) {
+            if (Random.roll(2)) {
+              victim->dieWithReason("killed by torture");
+            } else {
+              control->addMessage("A prisoner is converted to your side");
+              removeTrait(victim, MinionTrait::PRISONER);
+              removeTrait(victim, MinionTrait::NO_LIMIT);
+              setTrait(victim, MinionTrait::FIGHTER);
+              victim->removeEffect(LastingEffect::TIED_UP);
+            }
+          }
+        }
       },
       [&](const CreatureStunned& info) {
         auto victim = info.victim;
