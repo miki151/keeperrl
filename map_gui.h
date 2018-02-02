@@ -181,4 +181,6 @@ class MapGui : public GuiElem {
   };
   optional<CenteredCreatureInfo> centeredCreaturePosition;
   DirSet getConnectionSet(Vec2 tilePos, ViewId);
+  EntityMap<Creature, milliseconds> woundedInfo;
+  void considerWoundedAnimation(const ViewObject&, Color&, milliseconds curTimeReal);
 };

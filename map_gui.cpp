@@ -400,6 +400,17 @@ static double getJumpOffset(const ViewObject& object, double state) {
   return maxH * (1.0 - (2.0 * state - 1) * (2.0 * state - 1));
 }
 
+static optional<double> getPartialMovement(MovementInfo::Type type) {
+  switch (type) {
+    case MovementInfo::Type::ATTACK:
+      return 0.8;
+    case MovementInfo::Type::WORK:
+      return 0.5;
+    default:
+      return none;
+  }
+}
+
 Vec2 MapGui::getMovementOffset(const ViewObject& object, Vec2 size, double time, milliseconds curTimeReal,
     bool verticalMovement) {
   if (auto dir = object.getAttachmentDir())
@@ -408,6 +419,7 @@ Vec2 MapGui::getMovementOffset(const ViewObject& object, Vec2 size, double time,
     return Vec2(0, 0);
   double state;
   Vec2 dir;
+  auto& movementInfo = object.getLastMovementInfo();
   if (screenMovement &&
       curTimeReal >= screenMovement->startTimeReal &&
       curTimeReal <= screenMovement->endTimeReal) {
@@ -416,11 +428,10 @@ Vec2 MapGui::getMovementOffset(const ViewObject& object, Vec2 size, double time,
     dir = object.getMovementInfo(screenMovement->moveCounter);
   }
   else if (!screenMovement) {
-    MovementInfo info = object.getLastMovementInfo();
-    dir = info.direction;
+    dir = movementInfo.direction;
 /*    if (info.direction.length8() == 0 || time >= info.tEnd + 0.001 || time <= info.tBegin - 0.001)
       return Vec2(0, 0);*/
-    state = (time - info.tBegin) / (info.tEnd - info.tBegin);
+    state = (time - movementInfo.tBegin) / (movementInfo.tEnd - movementInfo.tBegin);
     constexpr double stopTime = 0.0;
     double stopTime1 = stopTime / 2;
     if (auto id = object.getCreatureId())
@@ -428,18 +439,21 @@ Vec2 MapGui::getMovementOffset(const ViewObject& object, Vec2 size, double time,
       stopTime1 += -stopTime / 2 + (abs(id->getHash()) % 100) * 0.01 * stopTime;
     double stopTime2 = stopTime - stopTime1;
     state = min(1.0, max(0.0, (state - stopTime1) / (1.0 - stopTime1 - stopTime2)));
-    INFO << "Anim time b: " << info.tBegin << " e: " << info.tEnd << " t: " << time;
+    INFO << "Anim time b: " << movementInfo.tBegin << " e: " << movementInfo.tEnd << " t: " << time;
   } else
     return Vec2(0, 0);
   double vertical = verticalMovement ? getJumpOffset(object, state) : 0;
-  if (object.getLastMovementInfo().type == MovementInfo::ATTACK)
-    if (dir.length8() == 1) {
+  if (dir.length8() == 1) {
+    if (movementInfo.type == MovementInfo::ATTACK && movementInfo.victim && state >= 0.5)
+      woundedInfo.getOrInit(*movementInfo.victim) = curTimeReal;
+    if (auto mult = getPartialMovement(movementInfo.type)) {
       if (verticalMovement)
-        return Vec2(0.8 * (state < 0.5 ? state : 1 - state) * dir.x * size.x,
-            (0.8 * (state < 0.5 ? state : 1 - state)* dir.y - vertical) * size.y);
+        return Vec2(*mult * (state < 0.5 ? state : 1 - state) * dir.x * size.x,
+            (*mult * (state < 0.5 ? state : 1 - state)* dir.y - vertical) * size.y);
       else
         return Vec2(0, 0);
     }
+  }
   return Vec2((state - 1) * dir.x * size.x, ((state - 1)* dir.y - vertical) * size.y);
 }
 
@@ -504,7 +518,13 @@ void MapGui::drawHealthBar(Renderer& renderer, Vec2 pos, Vec2 size, const ViewOb
   renderer.drawFilledRectangle(shadowRect, Color::BLACK.transparency(100));
 }
 
-
+void MapGui::considerWoundedAnimation(const ViewObject& object, Color& color, milliseconds curTimeReal) {
+  const auto woundedAnimLength = milliseconds{40};
+  if (auto id = object.getCreatureId())
+    if (auto time = woundedInfo.getMaybe(*id))
+      if (*time > curTimeReal - woundedAnimLength)
+        color = Color::RED;
+}
 
 void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& object, Vec2 size, Vec2 movement,
     Vec2 tilePos, milliseconds curTimeReal) {
@@ -512,6 +532,7 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
   auto id = object.id();
   const Tile& tile = Tile::getTile(id, spriteMode);
   Color color = colorWoundedRed ? Renderer::getBleedingColor(object) : Color::WHITE;
+  considerWoundedAnimation(object, color, curTimeReal);
   if (object.hasModifier(ViewObject::Modifier::INVISIBLE) || object.hasModifier(ViewObject::Modifier::HIDDEN))
     color = color.transparency(70);
   else

@@ -102,10 +102,9 @@ using ResourceId = Collective::ResourceId;
 const LocalTime hintFrequency = LocalTime(700);
 static vector<string> getHints() {
   return {
-    "Research geology to uncover ores in the mountain.",
     "Morale affects minion productivity and chances of fleeing from battle.",
  //   "You can turn these hints off in the settings (F2).",
-//    "Killing a leader greatly lowers the morale of his tribe and stops immigration.",
+    "Killing a leader greatly lowers the morale of his tribe and stops immigration.",
 //    "Your minions' morale is boosted when they are commanded by the Keeper.",
   };
 }

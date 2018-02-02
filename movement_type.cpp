@@ -66,7 +66,7 @@ MovementType& MovementType::setDestroyActions(EnumSet<DestroyAction::Type> d) {
   return *this;
 }
 
-const EnumSet<DestroyAction::Type>&MovementType::getDestroyActions() const {
+const EnumSet<DestroyAction::Type>& MovementType::getDestroyActions() const {
   return destroyActions;
 }
 

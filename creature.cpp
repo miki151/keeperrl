@@ -654,7 +654,7 @@ CreatureAction Creature::applySquare(Position pos) const {
           self->addMovementInfo(movementInfo
               .setDirection(getPosition().getDir(pos))
               .setMaxLength(1_visible)
-              .setType(MovementInfo::ATTACK));
+              .setType(MovementInfo::WORK));
       });
   return CreatureAction();
 }
@@ -937,9 +937,13 @@ CreatureAction Creature::attack(WCreature other, optional<AttackParams> attackPa
     if (!canSee(other))
       enemyName = "something";
     weapon->getAttackMsg(this, enemyName);
-    other->takeDamage(attack);
-    auto movementInfo = *self->spendTime(timeSpent);
-    self->addMovementInfo(movementInfo.setDirection(dir).setType(MovementInfo::ATTACK));
+    bool wasDamaged = other->takeDamage(attack);
+    auto movementInfo = (*self->spendTime(timeSpent))
+        .setDirection(dir)
+        .setType(MovementInfo::ATTACK);
+    if (wasDamaged)
+      movementInfo.setVictim(other->getUniqueId());
+    self->addMovementInfo(movementInfo);
   });
 }
 
@@ -983,7 +987,7 @@ bool Creature::captureDamage(double damage, WCreature attacker) {
     return false;
 }
 
-void Creature::takeDamage(const Attack& attack) {
+bool Creature::takeDamage(const Attack& attack) {
   PROFILE;
   if (WCreature attacker = attack.attacker) {
     onAttackedBy(attacker);
@@ -1004,7 +1008,7 @@ void Creature::takeDamage(const Attack& attack) {
     bool canCapture = capture && attack.attacker;
     if ((canCapture && captureDamage(damage, attack.attacker)) ||
         (!canCapture && attributes->getBody().takeDamage(attack, this, damage)))
-      return;
+      return true;
   } else
     you(MsgType::GET_HIT_NODAMAGE);
   if (attack.effect)
@@ -1012,6 +1016,7 @@ void Creature::takeDamage(const Attack& attack) {
   for (LastingEffect effect : ENUM_ALL(LastingEffect))
     if (isAffected(effect))
       LastingEffects::afterCreatureDamage(this, effect);
+  return damage > 0;
 }
 
 static vector<string> extractNames(const vector<AdjectiveInfo>& adjectives) {
@@ -1281,7 +1286,10 @@ CreatureAction Creature::whip(const Position& pos) const {
     auto moveInfo = *self->spendTime();
     if (Random.roll(3)) {
       addSound(SoundId::WHIP);
-      self->addMovementInfo(moveInfo.setDirection(position.getDir(pos)).setType(MovementInfo::ATTACK));
+      self->addMovementInfo(moveInfo
+          .setDirection(position.getDir(pos))
+          .setType(MovementInfo::ATTACK)
+          .setVictim(whipped->getUniqueId()));
     }
     if (Random.roll(5)) {
       whipped->thirdPerson(whipped->getName().the() + " screams!");
@@ -1346,7 +1354,7 @@ CreatureAction Creature::destroy(Vec2 direction, const DestroyAction& action) co
           self->addMovementInfo(movementInfo
               .setDirection(getPosition().getDir(pos))
               .setMaxLength(1_visible)
-              .setType(MovementInfo::ATTACK));
+              .setType(MovementInfo::WORK));
       });
   return CreatureAction();
 }

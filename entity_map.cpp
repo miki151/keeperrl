@@ -195,3 +195,4 @@ SERIALIZABLE_TMPL(EntityMap, Task, CostInfo);
 SERIALIZABLE_TMPL(EntityMap, Task, WCreature);
 SERIALIZABLE_TMPL(EntityMap, Item, Creature::Id);
 SERIALIZABLE_TMPL(EntityMap, Item, WConstTask);
+template class EntityMap<Creature, milliseconds>;

@@ -63,7 +63,7 @@ bool ViewObject::hasAnyMovementInfo() const {
   return movementQueue.hasAny();
 }
 
-MovementInfo ViewObject::getLastMovementInfo() const {
+const MovementInfo& ViewObject::getLastMovementInfo() const {
   return movementQueue.getLast();
 }
 
@@ -98,7 +98,7 @@ Vec2 ViewObject::MovementQueue::getTotalMovement(int moveCounter) const {
   bool attack = false;
   for (int i : Range(min<int>(totalMoves, elems.size())))
     if (elems[i].moveCounter >= moveCounter) {
-      if (elems[i].type == MovementInfo::ATTACK/* && ret.length8() == 0*/) {
+      if (elems[i].type != MovementInfo::MOVE/* && ret.length8() == 0*/) {
         attack = true;
         ret = elems[i].direction;
       } else {
