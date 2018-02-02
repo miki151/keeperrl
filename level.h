@@ -209,11 +209,13 @@ class Level : public OwnedObject<Level> {
   Table<double> SERIAL(lightCapAmount);
   mutable unordered_map<MovementType, Sectors> SERIAL(sectors);
   Sectors& getSectors(const MovementType&) const;
-  
+  Sectors& getSectorsDontCreate(const MovementType&) const;
+
   friend class LevelBuilder;
   struct Private {};
 
-  static PLevel create(SquareArray s, FurnitureArray f, WModel m, const string& n, Table<double> sun, LevelId id, Table<bool> cover);
+  static PLevel create(SquareArray s, FurnitureArray f, WModel m, const string& n, Table<double> sun, LevelId id,
+      Table<bool> cover, Table<bool> unavailable);
 
   public:
   Level(Private, SquareArray, FurnitureArray, WModel, const string& name, Table<double> sunlight, LevelId, Table<bool> cover);

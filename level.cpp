@@ -63,7 +63,7 @@ Level::Level(Private, SquareArray s, FurnitureArray f, WModel m, const string& n
 }
 
 PLevel Level::create(SquareArray s, FurnitureArray f, WModel m, const string& n,
-    Table<double> sun, LevelId id, Table<bool> cover) {
+    Table<double> sun, LevelId id, Table<bool> cover, Table<bool> unavailable) {
   auto ret = makeOwner<Level>(Private{}, std::move(s), std::move(f), m, n, sun, id, cover);
   for (Vec2 pos : ret->squares->getBounds()) {
     auto square = ret->squares->getReadonly(pos);
@@ -79,6 +79,8 @@ PLevel Level::create(SquareArray s, FurnitureArray f, WModel m, const string& n,
     (*ret->fieldOfView)[vision] = FieldOfView(ret.get(), vision);
   for (auto pos : ret->getAllPositions())
     ret->addLightSource(pos.getCoord(), pos.getLightEmission(), 1);
+  ret->unavailable = unavailable;
+  ret->getSectors({MovementTrait::WALK});
   return ret;
 }
 
@@ -502,6 +504,10 @@ bool Level::areConnected(Vec2 p1, Vec2 p2, const MovementType& movement) const {
   return inBounds(p1) && inBounds(p2) && getSectors(movement).same(p1, p2);
 }
 
+Sectors& Level::getSectorsDontCreate(const MovementType& movement) const {
+  return sectors.at(movement);
+}
+
 Sectors& Level::getSectors(const MovementType& movement) const {
   if (!sectors.count(movement)) {
     sectors[movement] = Sectors(getBounds());
@@ -518,7 +524,9 @@ bool Level::isChokePoint(Vec2 pos, const MovementType& movement) const {
 }
 
 void Level::updateSunlightMovement() {
-  sectors.clear();
+  for (auto movement : getKeys(sectors))
+    if (movement.isSunlightVulnerable())
+      sectors.erase(movement);
 }
 
 int Level::getNumGeneratedSquares() const {

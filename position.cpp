@@ -702,15 +702,17 @@ void Position::throwItem(vector<PItem> item, const Attack& attack, int maxDist, 
 
 void Position::updateConnectivity() const {
   PROFILE;
-  bool changed = false;
+  // It's important that sectors aren't generated at this point, because we need stale data to detect change.
+  auto movementEventPredicate = [this] { return level->getSectorsDontCreate({MovementTrait::WALK}).contains(coord); };
+  bool couldEnter = movementEventPredicate();
   if (isValid()) {
     for (auto& elem : level->sectors)
       if (canNavigate(elem.first))
-        changed = elem.second.add(coord) || changed;
+        elem.second.add(coord);
       else
-        changed = elem.second.remove(coord) || changed;
+        elem.second.remove(coord);
   }
-  if (changed)
+  if (couldEnter != movementEventPredicate())
     if (auto game = getGame())
       game->addEvent(EventInfo::MovementChanged{*this});
 }
