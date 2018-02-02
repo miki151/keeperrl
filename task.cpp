@@ -151,7 +151,8 @@ class Destruction : public Task {
       : Task(true), position(pos), callback(c), destroyAction(action),
         description(action.getVerbSecondPerson() + " "_s + furniture->getName() + " at " + toString(position)),
         furnitureType(furniture->getType()), matching(m) {
-    matching->addTarget(position);
+    if (matching)
+      matching->addTarget(position);
   }
 
   WConstFurniture getFurniture() const {
@@ -166,7 +167,7 @@ class Destruction : public Task {
   }
 
   virtual bool isBlocked(WConstCreature) const override {
-    return !callback->isConstructionReachable(position) || !matching->getMatch(position);
+    return !callback->isConstructionReachable(position) || (matching && !matching->getMatch(position));
   }
 
   virtual string getDescription() const override {
@@ -176,15 +177,17 @@ class Destruction : public Task {
   virtual MoveInfo getMove(WCreature c) override {
     if (isBlocked(c))
       return NoMove;
-    auto match = *matching->getMatch(position);
-    if (c->getPosition() != match) {
-      if (c->isSameSector(match))
-        return c->moveTowards(*matching->getMatch(position));
-      else if (c->getPosition().dist8(position) > 1)
-        return c->moveTowards(position);
+    if (matching) {
+      auto match = *matching->getMatch(position);
+      if (c->getPosition() != match) {
+        if (c->isSameSector(match))
+          return c->moveTowards(*matching->getMatch(position));
+      }
     }
+    if (c->getPosition().dist8(position) > 1)
+      return c->moveTowards(position);
     Vec2 dir = c->getPosition().getDir(position);
-    CHECK(dir.length8() == 1);
+    CHECK(dir.length8() <= 1);
     if (auto action = c->destroy(dir, destroyAction))
       return {1.0, action.append([=](WCreature c) {
           if (!getFurniture() || getFurniture()->getType() != furnitureType) {
@@ -731,10 +734,6 @@ class Kill : public Task {
       return action.append([=](WCreature c) { if (creature->isDead()) setDone(); });
     else
       return c->moveTowards(creature->getPosition());
-  }
-
-  virtual void cancel() override {
-    callback->onKillCancelled(creature);
   }
 
   SERIALIZE_ALL(SUBCLASS(Task), creature, type, callback); 

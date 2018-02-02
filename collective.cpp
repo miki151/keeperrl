@@ -655,9 +655,6 @@ void Collective::decreaseMoraleForBanishing(WConstCreature) {
     c->addMorale(-0.05);
 }
 
-void Collective::onKillCancelled(WCreature c) {
-}
-
 void Collective::onEvent(const GameEvent& event) {
   PROFILE;
   using namespace EventInfo;
@@ -1063,7 +1060,8 @@ static HighlightType getHighlight(const DestroyAction& action) {
 void Collective::orderDestruction(Position pos, const DestroyAction& action) {
   auto f = NOTNULL(pos.getFurniture(FurnitureLayer::MIDDLE));
   CHECK(f->canDestroy(action));
-  taskMap->markSquare(pos, getHighlight(action), Task::destruction(this, pos, f, action, positionMatching.get()),
+  taskMap->markSquare(pos, getHighlight(action), Task::destruction(this, pos, f, action,
+      pos.canEnterEmpty({MovementTrait::WALK}) ? nullptr : positionMatching.get()),
       action.getMinionActivity());
 }
 

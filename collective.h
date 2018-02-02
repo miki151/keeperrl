@@ -226,7 +226,6 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   virtual void onConstructed(Position, FurnitureType) override;
   virtual void onDestructed(Position, FurnitureType, const DestroyAction&) override;
   virtual void onAppliedSquare(WCreature, Position) override;
-  virtual void onKillCancelled(WCreature) override;
   virtual void onCopulated(WCreature who, WCreature with) override;
   virtual bool isConstructionReachable(Position) override;
 
