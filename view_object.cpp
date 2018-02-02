@@ -181,7 +181,7 @@ const char* ViewObject::getDefaultDescription() const {
     case ViewId::ADAMANTIUM_ORE: return "Adamantium ore";
     case ViewId::STONE: return "Granite";
     case ViewId::WOOD_WALL: return "Wooden wall";
-    case ViewId::MOUNTAIN: return "Soft earth";
+    case ViewId::MOUNTAIN: return "Soft rock";
     case ViewId::MOUNTAIN2: return "Hard rock";
     case ViewId::DUNGEON_WALL:
     case ViewId::DUNGEON_WALL2: return "Reinforced wall";

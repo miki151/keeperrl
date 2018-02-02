@@ -324,7 +324,7 @@ static Furniture get(FurnitureType type, TribeId tribe) {
     case FurnitureType::ROAD:
       return Furniture("road", ViewObject(ViewId::ROAD, ViewLayer::FLOOR), type, tribe);
     case FurnitureType::MOUNTAIN:
-      return Furniture("soft earth", ViewObject(ViewId::MOUNTAIN, ViewLayer::FLOOR), type, tribe)
+      return Furniture("soft rock", ViewObject(ViewId::MOUNTAIN, ViewLayer::FLOOR), type, tribe)
           .setBlocking()
           .setBlockVision()
           .setConstructMessage(Furniture::FILL_UP)
