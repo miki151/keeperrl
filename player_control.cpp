@@ -782,10 +782,24 @@ vector<WCollective> PlayerControl::getKnownVillains() const {
       return showAll || collective->isKnownVillain(c);});
 }
 
+string PlayerControl::getMinionGroupName(WCreature c) const {
+  if (collective->hasTrait(c, MinionTrait::PRISONER)) {
+    return "prisoner";
+  } else
+    return c->getName().stack();
+}
+
+ViewId PlayerControl::getMinionGroupViewId(WCreature c) const {
+  if (collective->hasTrait(c, MinionTrait::PRISONER)) {
+    return ViewId::PRISONER;
+  } else
+    return c->getViewObject().id();
+}
+
 vector<WCreature> PlayerControl::getMinionsLike(WCreature like) const {
   vector<WCreature> minions;
   for (WCreature c : getCreatures())
-    if (c->getName().stack() == like->getName().stack())
+    if (getMinionGroupName(c) == getMinionGroupName(like))
       minions.push_back(c);
   return minions;
 }
@@ -847,12 +861,8 @@ vector<CollectiveInfo::CreatureGroup> PlayerControl::getCreatureGroups(vector<WC
   sortMinionsForUI(v);
   map<string, CollectiveInfo::CreatureGroup> groups;
   for (WCreature c : v) {
-    auto groupName = c->getName().stack();
-    auto viewId = c->getViewObject().id();
-    if (collective->hasTrait(c, MinionTrait::PRISONER)) {
-      viewId = ViewId::PRISONER;
-      groupName = "prisoner";
-    }
+    auto groupName = getMinionGroupName(c);
+    auto viewId = getMinionGroupViewId(c);
     if (!groups.count(groupName))
       groups[groupName] = { c->getUniqueId(), groupName, viewId, 0};
     ++groups[groupName].count;
