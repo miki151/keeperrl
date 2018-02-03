@@ -982,7 +982,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body = Body::humanoid(Body::Size::LARGE);
           c.chatReactionFriendly = "curses all law enforcement"_s;
           c.chatReactionHostile = "\"Die!\""_s;
- //         c.skills.insert(SkillId::DISARM_TRAPS);
+          c.maxLevelIncrease[ExperienceType::MELEE] = 2;
+ //       c.skills.insert(SkillId::DISARM_TRAPS);
           c.name = "bandit";);
     case CreatureId::GHOST: 
       return CATTR(
@@ -1049,6 +1050,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.gender = Gender::female;
           c.chatReactionFriendly = "curses all humans"_s;
           c.chatReactionHostile = "\"Die!\""_s;
+          c.skills.setValue(SkillId::LABORATORY, 0.7);
+          c.maxLevelIncrease[ExperienceType::SPELL] = 4;
           );
     case CreatureId::WITCHMAN: 
       return CATTR(
@@ -1071,6 +1074,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.permanentEffects[LastingEffect::RANGED_RESISTANCE] = 1;
           c.name = CreatureName("cyclops", "cyclopes");
           c.name->setFirst(NameGenerator::get(NameGeneratorId::CYCLOPS)->getNext());
+          c.maxLevelIncrease[ExperienceType::MELEE] = 5;
           );
     case CreatureId::DEMON_DWELLER:
       return CATTR(
@@ -1088,6 +1092,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.name = "demon dweller";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::DEMON)->getNext());
           c.name->setGroup("pack");
+          c.maxLevelIncrease[ExperienceType::MELEE] = 4;
+          c.maxLevelIncrease[ExperienceType::SPELL] = 4;
         );
     case CreatureId::DEMON_LORD:
       return CATTR(
@@ -1105,6 +1111,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.name = "demon Lord";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::DEMON)->getNext());
           c.name->setGroup("pack");
+          c.maxLevelIncrease[ExperienceType::SPELL] = 7;
       );
     case CreatureId::MINOTAUR: 
       return CATTR(
@@ -1113,6 +1120,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.permanentEffects[LastingEffect::RANGED_RESISTANCE] = 1;
           c.body = Body::humanoid(Body::Size::LARGE);
           c.body->setWeight(400);
+          c.maxLevelIncrease[ExperienceType::MELEE] = 5;
           c.name = "minotaur";);
     case CreatureId::SOFT_MONSTER:
       return CATTR(
@@ -1191,6 +1199,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.viewId = ViewId::KNIGHT;
           c.attr = LIST(36_dam, 28_def );
           c.body = Body::humanoid(Body::Size::LARGE);
+          c.maxLevelIncrease[ExperienceType::MELEE] = 4;
           c.permanentEffects[LastingEffect::MELEE_RESISTANCE] = 1;
           c.chatReactionFriendly = "curses all dungeons"_s;
           c.chatReactionHostile = "\"Die!\""_s;
@@ -1212,6 +1221,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.permanentEffects[LastingEffect::MELEE_RESISTANCE] = 1;
           c.chatReactionFriendly = "curses all dungeons"_s;
           c.chatReactionHostile = "\"Die!\""_s;
+          c.maxLevelIncrease[ExperienceType::MELEE] = 3;
           c.courage = 1;
           c.name = "Duke of " + NameGenerator::get(NameGeneratorId::WORLD)->getNext(););
     case CreatureId::ARCHER:
@@ -1221,6 +1231,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body = Body::humanoid(Body::Size::LARGE);
           c.chatReactionFriendly = "curses all dungeons"_s;
           c.chatReactionHostile = "\"Die!\""_s;
+          c.maxLevelIncrease[ExperienceType::ARCHERY] = 4;
           c.name = "archer";);
     case CreatureId::PRIEST:
       return CATTR(
@@ -1235,12 +1246,15 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.spells->add(SpellId::DEF_BONUS);
           c.spells->add(SpellId::BLAST);
           c.spells->add(SpellId::HEAL_OTHER);
+          c.maxLevelIncrease[ExperienceType::SPELL] = 2;
           c.name = "priest";);
     case CreatureId::WARRIOR:
       return CATTR(
           c.viewId = ViewId::WARRIOR;
           c.attr = LIST(27_dam, 19_def );
           c.body = Body::humanoid(Body::Size::LARGE);
+          c.maxLevelIncrease[ExperienceType::MELEE] = 5;
+          c.skills.setValue(SkillId::WORKSHOP, 0.3);
           c.chatReactionFriendly = "curses all dungeons"_s;
           c.chatReactionHostile = "\"Die!\""_s;
           c.name = "warrior";);
@@ -1260,6 +1274,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.spells->add(SpellId::BLAST);
           c.spells->add(SpellId::HEAL_OTHER);
           c.skills.setValue(SkillId::SORCERY, 1);
+          c.maxLevelIncrease[ExperienceType::SPELL] = 5;
           c.name = "shaman";);
     case CreatureId::PESEANT: 
       return CATTR(
@@ -1273,6 +1288,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.chatReactionFriendly = "curses all dungeons"_s;
           c.chatReactionHostile = "\"Heeelp!\""_s;
           c.skills.insert(SkillId::CROPS);
+          c.maxLevelIncrease[ExperienceType::MELEE] = 3;
           c.name = "peasant";);
     case CreatureId::CHILD: 
       return CATTR(
@@ -1282,6 +1298,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.chatReactionFriendly = "\"plaaaaay!\""_s;
           c.chatReactionHostile = "\"Heeelp!\""_s;
           c.skills.insert(SkillId::CROPS);
+          c.skills.insert(SkillId::STEALTH);
           c.name = CreatureName("child", "children"););
     case CreatureId::SPIDER_FOOD: 
       return CATTR(
@@ -1467,6 +1484,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.viewId = ViewId::KOBOLD;
           c.attr = LIST(12_dam, 13_def );
           c.body = Body::humanoid(Body::Size::MEDIUM);
+          c.skills.insert(SkillId::SWIMMING);
           c.chatReactionFriendly = "talks about digging"_s;
           c.chatReactionHostile = "\"Die!\""_s;
           c.name = "kobold";);
@@ -1475,6 +1493,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.viewId = ViewId::GNOME;
           c.attr = LIST(12_dam, 13_def );
           c.body = Body::humanoid(Body::Size::MEDIUM);
+          c.skills.setValue(SkillId::JEWELER, 0.5);
           c.chatReactionFriendly = "talks about digging"_s;
           c.chatReactionHostile = "\"Die!\""_s;
           c.name = "gnome";);
@@ -1483,6 +1502,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.viewId = ViewId::GNOME_BOSS;
           c.attr = LIST(15_dam, 16_def );
           c.body = Body::humanoid(Body::Size::MEDIUM);
+          c.skills.setValue(SkillId::JEWELER, 1);
           c.chatReactionFriendly = "talks about digging"_s;
           c.chatReactionHostile = "\"Die!\""_s;
           c.name = "gnome chief";);
@@ -1551,6 +1571,9 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body->setWeight(90);
           c.name = CreatureName("dwarf", "dwarves");
           c.skills.insert(SkillId::NAVIGATION_DIGGING);
+          c.skills.setValue(SkillId::FORGE, 0.8);
+          c.skills.setValue(SkillId::FURNACE, 0.8);
+          c.maxLevelIncrease[ExperienceType::MELEE] = 2;
           c.permanentEffects[LastingEffect::MAGIC_VULNERABILITY] = 1;
           c.name->setFirst(NameGenerator::get(NameGeneratorId::DWARF)->getNext());
           c.chatReactionFriendly = "curses all orcs"_s;
@@ -1564,6 +1587,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body->setWeight(90);
           c.name = CreatureName("dwarf", "dwarves");
           c.skills.insert(SkillId::NAVIGATION_DIGGING);
+          c.skills.setValue(SkillId::WORKSHOP, 0.5);
           c.permanentEffects[LastingEffect::MAGIC_VULNERABILITY] = 1;
           c.name->setFirst(NameGenerator::get(NameGeneratorId::DWARF)->getNext());
           c.chatReactionFriendly = "curses all orcs"_s;
@@ -1578,6 +1602,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.chatReactionFriendly = "curses all orcs"_s;
           c.chatReactionHostile = "\"Die!\""_s;
           c.skills.insert(SkillId::NAVIGATION_DIGGING);
+          c.maxLevelIncrease[ExperienceType::MELEE] = 10;
           c.permanentEffects[LastingEffect::MAGIC_VULNERABILITY] = 1;
           c.courage = 1;
           c.name = "dwarf baron";
@@ -1592,6 +1617,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
               ItemType::fangs(5, Effect::Lasting{LastingEffect::POISON})));
           c.permanentEffects[LastingEffect::SPEED] = 1;
           c.permanentEffects[LastingEffect::POISON_RESISTANT] = 1;
+          c.maxLevelIncrease[ExperienceType::MELEE] = 5;
           c.chatReactionFriendly = "curses all humans"_s;
           c.chatReactionHostile = "\"Die!\""_s;
           c.name = CreatureName("lizardman", "lizardmen"););
@@ -1604,6 +1630,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body->setIntrinsicAttack(BodyPart::HEAD, IntrinsicAttack(
               ItemType::fangs(8, Effect::Lasting{LastingEffect::POISON})));
           c.permanentEffects[LastingEffect::SPEED] = 1;
+          c.maxLevelIncrease[ExperienceType::MELEE] = 10;
           c.chatReactionFriendly = "curses all humans"_s;
           c.chatReactionHostile = "\"Die!\""_s;
           c.courage = 1;
@@ -1616,6 +1643,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.chatReactionFriendly = "curses all dwarves"_s;
           c.chatReactionHostile = "\"Die!\""_s;
           c.spells->add(SpellId::HEAL_SELF);
+          c.skills.setValue(SkillId::JEWELER, 0.9);
+          c.maxLevelIncrease[ExperienceType::SPELL] = 1;
           c.permanentEffects[LastingEffect::ELF_VISION] = 1;
           c.name = CreatureName("elf", "elves"););
     case CreatureId::ELF_ARCHER: 
@@ -1628,6 +1657,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.permanentEffects[LastingEffect::MAGIC_RESISTANCE] = 1;
           c.spells->add(SpellId::HEAL_SELF);
           c.permanentEffects[LastingEffect::ELF_VISION] = 1;
+          c.maxLevelIncrease[ExperienceType::ARCHERY] = 3;
           c.name = "elven archer";);
     case CreatureId::ELF_CHILD: 
       return CATTR(
@@ -1637,6 +1667,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.chatReactionFriendly = "curses all dwarves"_s;
           c.chatReactionHostile = "\"Die!\""_s;
           c.permanentEffects[LastingEffect::MAGIC_RESISTANCE] = 1;
+          c.skills.insert(SkillId::STEALTH);
           c.spells->add(SpellId::HEAL_SELF);
           c.permanentEffects[LastingEffect::ELF_VISION] = 1;
           c.name = CreatureName("elf child", "elf children"););
@@ -1657,6 +1688,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.spells->add(SpellId::DAM_BONUS);
           c.spells->add(SpellId::DEF_BONUS);
           c.spells->add(SpellId::BLAST);
+          c.maxLevelIncrease[ExperienceType::SPELL] = 4;
+          c.maxLevelIncrease[ExperienceType::MELEE] = 4;
           c.name = "elf lord";);
     case CreatureId::DARK_ELF:
       return CATTR(
@@ -1666,6 +1699,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.chatReactionFriendly = "curses all dwarves"_s;
           c.chatReactionHostile = "\"Die!\""_s;
           c.permanentEffects[LastingEffect::MAGIC_RESISTANCE] = 1;
+          c.skills.insert(SkillId::SWIMMING);
           c.spells->add(SpellId::HEAL_SELF);
           c.permanentEffects[LastingEffect::NIGHT_VISION] = 1;
           c.name = CreatureName("dark elf", "dark elves"););
@@ -1693,6 +1727,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.chatReactionHostile = "\"Die!\""_s;
           c.spells->add(SpellId::HEAL_SELF);
           c.permanentEffects[LastingEffect::NIGHT_VISION] = 1;
+          c.skills.insert(SkillId::STEALTH);
           c.name = CreatureName("dark elf child", "dark elf children"););
     case CreatureId::DARK_ELF_LORD:
       return CATTR(
@@ -1722,6 +1757,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.chatReactionHostile = "\"Die!\""_s;
           c.spells->add(SpellId::HEAL_SELF);
           c.permanentEffects[LastingEffect::ELF_VISION] = 1;
+          c.maxLevelIncrease[ExperienceType::ARCHERY] = 4;
           c.name = "driad";);
     case CreatureId::HORSE: 
       return CATTR(
@@ -2001,6 +2037,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.viewId = ViewId::ELEMENTALIST;
           c.attr = LIST(15_dam, 20_def, 15_spell_dam );
           c.body = Body::humanoid(Body::Size::LARGE);
+          c.skills.setValue(SkillId::LABORATORY, 1);
+          c.maxLevelIncrease[ExperienceType::SPELL] = 9;
           c.gender = Gender::female;
           c.permanentEffects[LastingEffect::FIRE_RESISTANT] = 1;
           c.permanentEffects[LastingEffect::MAGIC_RESISTANCE] = 1;
