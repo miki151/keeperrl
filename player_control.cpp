@@ -828,8 +828,8 @@ vector<PlayerInfo> PlayerControl::getPlayerInfos(vector<WCreature> creatures, Un
       for (MinionActivity t : ENUM_ALL(MinionActivity))
         if (c->getAttributes().getMinionActivities().isAvailable(collective, c, t, true)) {
           minionInfo.minionTasks.push_back({t,
-              !collective->isMinionActivityPossible(c, t),
-              collective->getCurrentTask(c).task == t,
+              !collective->isActivityGood(c, t, true),
+              collective->getCurrentActivity(c).task == t,
               c->getAttributes().getMinionActivities().isLocked(t)});
         }
       if (collective->usesEquipment(c))
@@ -1664,7 +1664,7 @@ void PlayerControl::minionDragAndDrop(const CreatureDropInfo& info) {
     c->removeEffect(LastingEffect::SLEEP);
     if (auto furniture = collective->getConstructions().getFurniture(pos, FurnitureLayer::MIDDLE))
       if (auto task = MinionActivities::getTaskFor(collective, c, furniture->getFurnitureType())) {
-        if (collective->isMinionActivityPossible(c, *task)) {
+        if (collective->isActivityGood(c, *task, true)) {
           collective->setMinionActivity(c, *task);
           collective->setTask(c, Task::goTo(pos));
           return;

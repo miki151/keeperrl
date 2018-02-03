@@ -125,7 +125,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   const ConstructionMap& getConstructions() const;
 
   void setMinionActivity(WConstCreature c, MinionActivity task);
-  bool isMinionActivityPossible(WCreature c, MinionActivity task);
+  bool isActivityGood(WConstCreature, MinionActivity, bool ignoreTaskLock = false);
 
   vector<WItem> getAllItems(bool includeMinions = true) const;
   vector<WItem> getAllItems(ItemPredicate predicate, bool includeMinions = true) const;
@@ -202,7 +202,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   void onEvent(const GameEvent&);
   void onPositionDiscovered(Position);
 
-  struct CurrentTaskInfo {
+  struct CurrentActivity {
     MinionActivity SERIAL(task);
     // If none then it's a one-time task. Upon allocating the task, the variable is set to a negative value,
     // so the job immediately times out after finishing the task.
@@ -211,7 +211,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
     SERIALIZE_ALL(task, finishTime)
   };
 
-  CurrentTaskInfo getCurrentTask(WConstCreature) const;
+  CurrentActivity getCurrentActivity(WConstCreature) const;
 
   private:
   struct Private {};
@@ -254,12 +254,11 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
 
   HeapAllocated<KnownTiles> SERIAL(knownTiles);
 
-  EntityMap<Creature, CurrentTaskInfo> SERIAL(currentTasks);
+  EntityMap<Creature, CurrentActivity> SERIAL(currentActivity);
   optional<Position> getTileToExplore(WConstCreature, MinionActivity) const;
   WTask getStandardTask(WCreature c);
   PTask getEquipmentTask(WCreature c);
   void considerHealingTask(WCreature c);
-  bool isTaskGood(WConstCreature, MinionActivity, bool ignoreTaskLock = false);
   void setRandomTask(WConstCreature);
 
   void handleSurprise(Position);

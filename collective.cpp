@@ -59,7 +59,7 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
   ar(SUBCLASS(TaskCallback), SUBCLASS(UniqueEntity<Collective>), SUBCLASS(EventListener));
   ar(creatures, taskMap, tribe, control, byTrait);
   ar(territory, alarmInfo, markedItems, constructions, minionEquipment);
-  ar(delayedPos, knownTiles, technologies, kills, points, currentTasks);
+  ar(delayedPos, knownTiles, technologies, kills, points, currentActivity);
   ar(credit, level, immigration, teams, name, conqueredVillains);
   ar(config, warnings, knownVillains, knownVillainLocations, banished, positionMatching);
   ar(villainType, enemyId, workshops, zones, tileEfficiency, discoverable, quarters);
@@ -292,26 +292,26 @@ const vector<WCreature>& Collective::getCreatures() const {
   return creatures;
 }
 
-void Collective::setMinionActivity(WConstCreature c, MinionActivity task) {
-  if (auto duration = MinionActivities::getDuration(c, task))
-    currentTasks.set(c, {task, getLocalTime() + *duration});
+void Collective::setMinionActivity(WConstCreature c, MinionActivity activity) {
+  if (auto duration = MinionActivities::getDuration(c, activity))
+    currentActivity.set(c, {activity, getLocalTime() + *duration});
   else
-    currentTasks.set(c, {task, none});
+    currentActivity.set(c, {activity, none});
 }
 
-Collective::CurrentTaskInfo Collective::getCurrentTask(WConstCreature c) const {
-  if (auto current = currentTasks.getMaybe(c))
+Collective::CurrentActivity Collective::getCurrentActivity(WConstCreature c) const {
+  if (auto current = currentActivity.getMaybe(c))
     return *current;
   else
-    return CurrentTaskInfo{MinionActivity::IDLE, none};
+    return CurrentActivity{MinionActivity::IDLE, none};
 }
 
-bool Collective::isTaskGood(WConstCreature c, MinionActivity task, bool ignoreTaskLock) {
+bool Collective::isActivityGood(WConstCreature c, MinionActivity activity, bool ignoreTaskLock) {
   PROFILE;
-  if (!c->getAttributes().getMinionActivities().isAvailable(this, c, task, ignoreTaskLock) ||
-      (!MinionActivities::generate(this, c, task) && !MinionActivities::getExisting(this, c, task)))
+  if (!c->getAttributes().getMinionActivities().isAvailable(this, c, activity, ignoreTaskLock) ||
+      (!MinionActivities::generate(this, c, activity) && !MinionActivities::getExisting(this, c, activity)))
     return false;
-  switch (task) {
+  switch (activity) {
     case MinionActivity::BE_WHIPPED:
       return c->getMorale() < 0.95;
     case MinionActivity::CROPS:
@@ -330,29 +330,24 @@ bool Collective::isTaskGood(WConstCreature c, MinionActivity task, bool ignoreTa
 void Collective::setRandomTask(WConstCreature c) {
   vector<MinionActivity> goodTasks;
   for (MinionActivity t : ENUM_ALL(MinionActivity))
-    if (isTaskGood(c, t) && c->getAttributes().getMinionActivities().canChooseRandomly(c, t))
+    if (isActivityGood(c, t) && c->getAttributes().getMinionActivities().canChooseRandomly(c, t))
       goodTasks.push_back(t);
   if (!goodTasks.empty())
     setMinionActivity(c, Random.choose(goodTasks));
 }
 
-bool Collective::isMinionActivityPossible(WCreature c, MinionActivity task) {
-  PROFILE;
-  return isTaskGood(c, task, true) && (MinionActivities::generate(this, c, task) || MinionActivities::getExisting(this, c, task));
-}
-
 WTask Collective::getStandardTask(WCreature c) {
   PROFILE;
-  auto current = currentTasks.getMaybe(c);
-  if (!current || (current->finishTime && *current->finishTime < getLocalTime()) || !isTaskGood(c, current->task)) {
-    currentTasks.erase(c);
+  auto current = currentActivity.getMaybe(c);
+  if (!current || (current->finishTime && *current->finishTime < getLocalTime()) || !isActivityGood(c, current->task)) {
+    currentActivity.erase(c);
     setRandomTask(c);
   }
-  current = getCurrentTask(c);
+  current = getCurrentActivity(c);
   CHECK(current) << "No minion task found for " << c->getName().bare();
   MinionActivity task = current->task;
   if (!current->finishTime) // see comment in header
-    currentTasks.getOrFail(c).finishTime = LocalTime(-1000);
+    currentActivity.getOrFail(c).finishTime = LocalTime(-1000);
   if (PTask ret = MinionActivities::generate(this, c, task))
     return taskMap->addTaskFor(std::move(ret), c);
   if (WTask ret = MinionActivities::getExisting(this, c, task)) {
@@ -412,7 +407,7 @@ void Collective::considerHealingTask(WCreature c) {
   PROFILE;
   if (c->getBody().canHeal() && !c->isAffected(LastingEffect::POISON))
     for (MinionActivity t : healingTasks) {
-      auto currentTask = getCurrentTask(c).task;
+      auto currentTask = getCurrentActivity(c).task;
       if (c->getAttributes().getMinionActivities().isAvailable(this, c, t) && !healingTasks.contains(currentTask)) {
         cancelTask(c);
         setMinionActivity(c, t);
