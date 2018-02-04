@@ -3,7 +3,7 @@
 #include "util.h"
 #include "item_type.h"
 
-typedef function<const set<Position>&(WConstCollective)> StorageDestinationFun;
+typedef function<const PositionSet&(WConstCollective)> StorageDestinationFun;
 typedef function<bool(WConstCollective, WConstItem)> CollectiveItemPredicate;
 
 struct ItemFetchInfo {

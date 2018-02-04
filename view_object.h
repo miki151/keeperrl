@@ -70,7 +70,7 @@ class ViewObject {
   void addMovementInfo(MovementInfo);
   void clearMovementInfo();
   bool hasAnyMovementInfo() const;
-  MovementInfo getLastMovementInfo() const;
+  const MovementInfo& getLastMovementInfo() const;
   Vec2 getMovementInfo(int moveCounter) const;
 
   void setCreatureId(UniqueEntity<Creature>::Id);

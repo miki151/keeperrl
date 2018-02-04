@@ -247,6 +247,7 @@ static long long getInstallId(const FilePath& path, RandomGen& random) {
 const static string serverVersion = "22";
 
 static int keeperMain(po::parser& commandLineFlags) {
+  ENABLE_PROFILER;
   if (commandLineFlags["help"].was_set()) {
     std::cout << commandLineFlags << endl;
     return 0;

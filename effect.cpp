@@ -86,6 +86,7 @@ static void airBlast(WCreature who, Position position, Vec2 direction) {
 }
 
 void Effect::emitPoisonGas(Position pos, double amount, bool msg) {
+  PROFILE;
   for (Position v : pos.neighbors8())
     pos.addPoisonGas(amount / 2);
   pos.addPoisonGas(amount);
@@ -269,6 +270,7 @@ static bool isConsideredHostile(const Effect& effect) {
 }
 
 void Effect::Teleport::applyToCreature(WCreature c, WCreature attacker) const {
+  PROFILE;
   Rectangle area = Rectangle::centered(Vec2(0, 0), 12);
   int infinity = 10000;
   PositionMap<int> weight(infinity);
@@ -510,6 +512,7 @@ string Effect::DestroyEquipment::getDescription() const {
 }
 
 void Effect::DestroyWalls::applyToCreature(WCreature c, WCreature attacker) const {
+  PROFILE;
   for (auto pos : c->getPosition().neighbors8())
     for (auto furniture : pos.modFurniture())
       if (furniture->canDestroy(DestroyAction::Type::BOULDER))
@@ -589,11 +592,13 @@ string Effect::CurePoison::getDescription() const {
 }
 
 void Effect::PlaceFurniture::applyToCreature(WCreature c, WCreature attacker) const {
+  PROFILE;
   Position pos = c->getPosition();
   auto f = FurnitureFactory::get(furniture, c->getTribeId());
   bool furnitureBlocks = !f->getMovementSet().canEnter(c->getMovementType());
   if (furnitureBlocks) {
     optional<Vec2> dest;
+/*  With automatic removing creatures from inaccessible squares this code shouldn't be needed.
     for (Position pos2 : c->getPosition().neighbors8(Random))
       if (c->move(pos2) && !pos2.getCreature()) {
         dest = pos.getDir(pos2);
@@ -601,7 +606,7 @@ void Effect::PlaceFurniture::applyToCreature(WCreature c, WCreature attacker) co
       }
     if (dest)
       c->displace(*dest);
-    else
+    else*/
       Effect::Teleport{}.applyToCreature(c);
   }
   if (c->getPosition() != pos || !furnitureBlocks) {

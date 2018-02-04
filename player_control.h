@@ -230,5 +230,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void acceptPrisoner(int index);
   void rejectPrisoner(int index);
   vector<vector<WCreature>> getPrisonerImmigrantStack() const;
+  string getMinionGroupName(WCreature) const;
+  ViewId getMinionGroupViewId(WCreature) const;
 };
 

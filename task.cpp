@@ -42,6 +42,7 @@
 #include "furniture.h"
 #include "monster_ai.h"
 #include "vision.h"
+#include "position_matching.h"
 
 template <class Archive> 
 void Task::serialize(Archive& ar, const unsigned int version) {
@@ -146,10 +147,13 @@ PTask Task::construction(WTaskCallback c, Position target, FurnitureType type) {
 namespace {
 class Destruction : public Task {
   public:
-  Destruction(WTaskCallback c, Position pos, WConstFurniture furniture, DestroyAction action)
+  Destruction(WTaskCallback c, Position pos, WConstFurniture furniture, DestroyAction action, WPositionMatching m)
       : Task(true), position(pos), callback(c), destroyAction(action),
         description(action.getVerbSecondPerson() + " "_s + furniture->getName() + " at " + toString(position)),
-        furnitureType(furniture->getType()) {}
+        furnitureType(furniture->getType()), matching(m) {
+    if (matching)
+      matching->addTarget(position);
+  }
 
   WConstFurniture getFurniture() const {
     return position.getFurniture(Furniture::getLayer(furnitureType));
@@ -163,7 +167,7 @@ class Destruction : public Task {
   }
 
   virtual bool isBlocked(WConstCreature) const override {
-    return !callback->isConstructionReachable(position);
+    return !callback->isConstructionReachable(position) || (matching && !matching->getMatch(position));
   }
 
   virtual string getDescription() const override {
@@ -171,11 +175,19 @@ class Destruction : public Task {
   }
 
   virtual MoveInfo getMove(WCreature c) override {
-    if (!callback->isConstructionReachable(position))
+    if (isBlocked(c))
       return NoMove;
+    if (matching) {
+      auto match = *matching->getMatch(position);
+      if (c->getPosition() != match) {
+        if (c->isSameSector(match))
+          return c->moveTowards(*matching->getMatch(position));
+      }
+    }
     if (c->getPosition().dist8(position) > 1)
       return c->moveTowards(position);
     Vec2 dir = c->getPosition().getDir(position);
+    CHECK(dir.length8() <= 1);
     if (auto action = c->destroy(dir, destroyAction))
       return {1.0, action.append([=](WCreature c) {
           if (!getFurniture() || getFurniture()->getType() != furnitureType) {
@@ -189,7 +201,12 @@ class Destruction : public Task {
     }
   }
 
-  SERIALIZE_ALL(SUBCLASS(Task), position, callback, destroyAction, description, furnitureType)
+  ~Destruction() {
+    if (matching)
+      matching->releaseTarget(position);
+  }
+
+  SERIALIZE_ALL(SUBCLASS(Task), position, callback, destroyAction, description, furnitureType, matching)
   SERIALIZATION_CONSTRUCTOR(Destruction)
 
   private:
@@ -198,12 +215,13 @@ class Destruction : public Task {
   DestroyAction SERIAL(destroyAction);
   string SERIAL(description);
   FurnitureType SERIAL(furnitureType);
+  WPositionMatching SERIAL(matching);
 };
 
 }
 
-PTask Task::destruction(WTaskCallback c, Position target, WConstFurniture furniture, DestroyAction destroyAction) {
-  return makeOwner<Destruction>(c, target, furniture, destroyAction);
+PTask Task::destruction(WTaskCallback c, Position target, WConstFurniture furniture, DestroyAction destroyAction, WPositionMatching matching) {
+  return makeOwner<Destruction>(c, target, furniture, destroyAction, matching);
 }
 
 namespace {
@@ -418,6 +436,7 @@ class BringItem : public PickItem {
   }
 
   virtual MoveInfo getMove(WCreature c) override {
+  PROFILE;
     if (!pickedUp)
       return PickItem::getMove(c);
     if (!target || !c->isSameSector(*target))
@@ -456,7 +475,7 @@ class BringItem : public PickItem {
   vector<Position> SERIAL(allTargets);
 };
 
-PTask Task::bringItem(WTaskCallback c, Position pos, vector<WItem> items, const set<Position>& target, int numRetries) {
+PTask Task::bringItem(WTaskCallback c, Position pos, vector<WItem> items, const PositionSet& target, int numRetries) {
   return makeOwner<BringItem>(c, pos, items, vector<Position>(target.begin(), target.end()), numRetries);
 }
 
@@ -528,6 +547,7 @@ class ApplySquare : public Task {
   }
 
   virtual MoveInfo getMove(WCreature c) override {
+  PROFILE;
     changePosIfOccupied();
     if (!position) {
       if (auto pos = choosePosition(c))
@@ -585,7 +605,7 @@ class ApplySquare : public Task {
 
   private:
   vector<Position> SERIAL(positions);
-  set<Position> SERIAL(rejectedPosition);
+  PositionSet SERIAL(rejectedPosition);
   int SERIAL(invalidCount) = 5;
   optional<Position> SERIAL(position);
   WTaskCallback SERIAL(callback);
@@ -663,7 +683,7 @@ class ArcheryRange : public Task {
       }
       return none;
     };
-    map<Position, vector<ShootInfo>> shootPositions;
+    unordered_map<Position, vector<ShootInfo>, CustomHash<Position>> shootPositions;
     for (auto pos : Random.permutation(targets))
       if (auto dir = getDir(pos))
         shootPositions[dir->pos].push_back(*dir);
@@ -714,10 +734,6 @@ class Kill : public Task {
       return action.append([=](WCreature c) { if (creature->isDead()) setDone(); });
     else
       return c->moveTowards(creature->getPosition());
-  }
-
-  virtual void cancel() override {
-    callback->onKillCancelled(creature);
   }
 
   SERIALIZE_ALL(SUBCLASS(Task), creature, type, callback); 
@@ -1161,6 +1177,7 @@ class Eat : public Task {
   }
 
   virtual MoveInfo getMove(WCreature c) override {
+  PROFILE;
     if (!position) {
       for (Position v : Random.permutation(positions))
         if (!rejectedPosition.count(v) && (!position ||
@@ -1209,7 +1226,7 @@ class Eat : public Task {
   private:
   optional<Position> SERIAL(position);
   vector<Position> SERIAL(positions);
-  set<Position> SERIAL(rejectedPosition);
+  PositionSet SERIAL(rejectedPosition);
 };
 
 }
@@ -1257,11 +1274,12 @@ PTask Task::goToTryForever(Position pos) {
 namespace {
 class StayIn : public Task {
   public:
-  StayIn(vector<Position> pos) : target(pos.begin(), pos.end()) {}
+  StayIn(vector<Position> pos) : target(std::move(pos)) {}
 
   virtual MoveInfo getMove(WCreature c) override {
+    PROFILE_BLOCK("StayIn::getMove");
     auto pos = c->getPosition();
-    if (target.count(pos)) {
+    if (target.contains(pos)) {
       setDone();
       if (Random.roll(15))
         if (auto move = c->move(pos.plus(Vec2(Random.choose<Dir>()))))
@@ -1292,7 +1310,7 @@ class StayIn : public Task {
   SERIALIZATION_CONSTRUCTOR(StayIn);
 
   protected:
-  set<Position> SERIAL(target);
+  vector<Position> SERIAL(target);
   optional<Position> SERIAL(currentTarget);
 };
 }
@@ -1324,12 +1342,62 @@ PTask Task::idle() {
 }
 
 namespace {
+class AlwaysDone : public Task {
+  public:
+  AlwaysDone(PTask t) : task(std::move(t)) {}
+
+  virtual MoveInfo getMove(WCreature c) override {
+    setDone();
+    return task->getMove(c);
+  }
+
+  virtual string getDescription() const override {
+    return task->getDescription();
+  }
+
+  virtual bool isBogus() const override {
+    return task->isBogus();
+  }
+
+  virtual bool isBlocked(WConstCreature c) const override {
+    return task->isBlocked(c);
+  }
+
+  virtual bool canTransfer() override {
+    return task->canTransfer();
+  }
+
+  virtual void cancel() override {
+    task->cancel();
+  }
+
+  virtual bool canPerform(WConstCreature c) override {
+    return task->canPerform(c);
+  }
+
+  virtual optional<Position> getPosition() const override {
+    return task->getPosition();
+  }
+
+  SERIALIZE_ALL(SUBCLASS(Task), task)
+  SERIALIZATION_CONSTRUCTOR(AlwaysDone);
+
+  private:
+  PTask SERIAL(task);
+
+};
+}
+
+PTask Task::alwaysDone(PTask t) {
+  return makeOwner<AlwaysDone>(std::move(t));
+}
+
+namespace {
 class Follow : public Task {
   public:
   Follow(WCreature t) : target(t) {}
 
   virtual MoveInfo getMove(WCreature c) override {
-    setDone();
     if (!target->isDead()) {
       Position targetPos = target->getPosition();
       if (targetPos.dist8(c->getPosition()) < 3) {
@@ -1339,8 +1407,10 @@ class Follow : public Task {
         return NoMove;
       }
       return c->moveTowards(targetPos);
+    } else {
+      setDone();
+      return NoMove;
     }
-    return NoMove;
   }
 
   virtual string getDescription() const override {
@@ -1578,6 +1648,7 @@ REGISTER_TYPE(Eat)
 REGISTER_TYPE(GoTo)
 REGISTER_TYPE(StayIn)
 REGISTER_TYPE(Idle)
+REGISTER_TYPE(AlwaysDone)
 REGISTER_TYPE(Follow)
 REGISTER_TYPE(TransferTo)
 REGISTER_TYPE(Whipping)

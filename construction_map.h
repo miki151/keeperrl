@@ -61,7 +61,7 @@ class ConstructionMap {
   bool containsFurniture(Position, FurnitureLayer) const;
   int getBuiltCount(FurnitureType) const;
   int getTotalCount(FurnitureType) const;
-  const set<Position>& getBuiltPositions(FurnitureType) const;
+  const PositionSet& getBuiltPositions(FurnitureType) const;
   void onConstructed(Position, FurnitureType);
 
   const optional<TrapInfo>& getTrap(Position) const;
@@ -79,7 +79,7 @@ class ConstructionMap {
 
   private:
   EnumMap<FurnitureLayer, PositionMap<optional<FurnitureInfo>>> SERIAL(furniture);
-  EnumMap<FurnitureType, set<Position>> SERIAL(furniturePositions);
+  EnumMap<FurnitureType, PositionSet> SERIAL(furniturePositions);
   EnumMap<FurnitureType, int> SERIAL(unbuiltCounts);
   vector<pair<Position, FurnitureLayer>> SERIAL(allFurniture);
   PositionMap<optional<TrapInfo>> SERIAL(traps);

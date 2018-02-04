@@ -63,7 +63,7 @@ bool ViewObject::hasAnyMovementInfo() const {
   return movementQueue.hasAny();
 }
 
-MovementInfo ViewObject::getLastMovementInfo() const {
+const MovementInfo& ViewObject::getLastMovementInfo() const {
   return movementQueue.getLast();
 }
 
@@ -98,7 +98,7 @@ Vec2 ViewObject::MovementQueue::getTotalMovement(int moveCounter) const {
   bool attack = false;
   for (int i : Range(min<int>(totalMoves, elems.size())))
     if (elems[i].moveCounter >= moveCounter) {
-      if (elems[i].type == MovementInfo::ATTACK/* && ret.length8() == 0*/) {
+      if (elems[i].type != MovementInfo::MOVE/* && ret.length8() == 0*/) {
         attack = true;
         ret = elems[i].direction;
       } else {
@@ -178,9 +178,10 @@ const char* ViewObject::getDefaultDescription() const {
     case ViewId::WALL: return "Wall";
     case ViewId::GOLD_ORE: return "Gold ore";
     case ViewId::IRON_ORE: return "Iron ore";
+    case ViewId::ADAMANTIUM_ORE: return "Adamantium ore";
     case ViewId::STONE: return "Granite";
     case ViewId::WOOD_WALL: return "Wooden wall";
-    case ViewId::MOUNTAIN: return "Soft earth";
+    case ViewId::MOUNTAIN: return "Soft rock";
     case ViewId::MOUNTAIN2: return "Hard rock";
     case ViewId::DUNGEON_WALL:
     case ViewId::DUNGEON_WALL2: return "Reinforced wall";
@@ -202,7 +203,7 @@ const char* ViewObject::getDefaultDescription() const {
     case ViewId::BEAST_CAGE: return "Beast cage";
     case ViewId::TRAINING_WOOD: return "Wooden training dummy";
     case ViewId::TRAINING_IRON: return "Iron training dummy";
-    case ViewId::TRAINING_STEEL: return "Steel training dummy";
+    case ViewId::TRAINING_ADA: return "Adamantine training dummy";
     case ViewId::THRONE: return "Throne";
     case ViewId::WHIPPING_POST: return "Whipping post";
     case ViewId::NOTICE_BOARD: return "Message board";
@@ -218,7 +219,7 @@ const char* ViewObject::getDefaultDescription() const {
     case ViewId::FORGE: return "Forge";
     case ViewId::WORKSHOP: return "Workshop";
     case ViewId::JEWELER: return "Jeweler";
-    case ViewId::STEEL_FURNACE: return "Steel furnace";
+    case ViewId::FURNACE: return "Furnace";
     case ViewId::MINION_STATUE: return "Statue";
     case ViewId::CREATURE_ALTAR: return "Shrine";
     case ViewId::FOUNTAIN: return "Fountain";
@@ -230,7 +231,7 @@ const char* ViewObject::getDefaultDescription() const {
     case ViewId::GRAVE: return "Grave";
     case ViewId::WOOD_DOOR: return hasModifier(Modifier::LOCKED) ? "Wooden door (click to unlock)" : "Wooden door (click to lock)";
     case ViewId::IRON_DOOR: return hasModifier(Modifier::LOCKED) ? "Iron door (click to unlock)" : "Iron door (click to lock)";
-    case ViewId::STEEL_DOOR: return hasModifier(Modifier::LOCKED) ? "Steel door (click to unlock)" : "Steel door (click to lock)";
+    case ViewId::ADA_DOOR: return hasModifier(Modifier::LOCKED) ? "Adamantine door (click to unlock)" : "Adamantine door (click to lock)";
     case ViewId::BARRICADE: return "Barricade";
     case ViewId::WOOD_FLOOR1:
     case ViewId::WOOD_FLOOR2:

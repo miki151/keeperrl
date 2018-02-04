@@ -2,6 +2,7 @@
 #include "territory.h"
 #include "position.h"
 #include "movement_type.h"
+#include "position_map.h"
 
 SERIALIZE_DEF(Territory, allSquares, allSquaresVec, centralPoint)
 
@@ -37,25 +38,27 @@ const vector<Position>& Territory::getAll() const {
 }
 
 vector<Position> Territory::calculateExtended(int minRadius, int maxRadius) const {
-  map<Position, int> extendedTiles;
+  PROFILE;
+  PositionMap<optional<int>> extendedTiles;
   vector<Position> extendedQueue;
   for (Position pos : allSquaresVec) {
-    if (!extendedTiles.count(pos))  {
-      extendedTiles[pos] = 1;
+    if (!extendedTiles.get(pos))  {
+      extendedTiles.set(pos, 1);
       extendedQueue.push_back(pos);
     }
   }
   for (int i = 0; i < extendedQueue.size(); ++i) {
     Position pos = extendedQueue[i];
+    auto value = *extendedTiles.getOrFail(pos);
     for (Position v : pos.neighbors8())
-      if (!contains(v) && !extendedTiles.count(v) && v.canEnterEmpty({MovementTrait::WALK})) {
-        int a = extendedTiles[v] = extendedTiles[pos] + 1;
-        if (a < maxRadius)
+      if (!contains(v) && !extendedTiles.get(v) && v.canEnterEmpty({MovementTrait::WALK})) {
+        extendedTiles.set(v, value + 1);
+        if (value + 1 < maxRadius)
           extendedQueue.push_back(v);
       }
   }
   if (minRadius > 0)
-    return extendedQueue.filter([&] (const Position& v) { return extendedTiles.at(v) >= minRadius; });
+    return extendedQueue.filter([&] (const Position& v) { return *extendedTiles.getOrFail(v) >= minRadius; });
   return extendedQueue;
 }
 

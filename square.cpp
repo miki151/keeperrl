@@ -52,10 +52,10 @@ Square::~Square() {
 }
 
 void Square::putCreature(WCreature c) {
-  //CHECK(canEnter(c)) << c->getName().bare() << " " << getName();
+  CHECK(!creature);
   setCreature(c);
   onEnter(c);
-  if (WGame game = c->getGame())
+  if (auto game = c->getGame())
     game->addEvent(EventInfo::CreatureMoved{c});
 }
 
@@ -87,6 +87,12 @@ void Square::tick(Position pos) {
     }
     for (auto item : discarded)
       inventory->removeItem(item);
+    if (!pos.canEnterEmpty({MovementTrait::WALK}))
+      for (auto neighbor : pos.neighbors8(Random))
+        if (neighbor.canEnterEmpty({MovementTrait::WALK})) {
+          neighbor.dropItems(pos.removeItems(pos.getItems()));
+          break;
+        }
   }
   poisonGas->tick(pos);
   if (creature && poisonGas->getAmount() > 0.2) {

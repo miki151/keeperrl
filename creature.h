@@ -68,14 +68,15 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   optional<LocalTime> getLocalTime() const;
   optional<GlobalTime> getGlobalTime() const;
   WLevel getLevel() const;
-  WGame getGame() const;
+  Game* getGame() const;
   vector<WCreature> getVisibleEnemies() const;
   vector<WCreature> getVisibleCreatures() const;
   vector<Position> getVisibleTiles() const;
+  void setGlobalTime(GlobalTime);
   void setPosition(Position);
   Position getPosition() const;
   bool dodgeAttack(const Attack&);
-  void takeDamage(const Attack&);
+  bool takeDamage(const Attack&);
   void onAttackedBy(WCreature);
   void heal(double amount = 1);
   /** Morale is in the range [-1:1] **/
@@ -295,7 +296,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   HeapAllocated<CreatureAttributes> SERIAL(attributes);
   Position SERIAL(position);
   HeapAllocated<Equipment> SERIAL(equipment);
-  unique_ptr<LevelShortestPath> SERIAL(shortestPath);
+  HeapAllocated<optional<LevelShortestPath>> SERIAL(shortestPath);
   EntitySet<Creature> SERIAL(knownHiding);
   TribeId SERIAL(tribe);
   double SERIAL(morale) = 0;
@@ -325,6 +326,9 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   bool SERIAL(capture) = 0;
   double SERIAL(captureHealth) = 1;
   bool captureDamage(double damage, WCreature attacker);
+  mutable Game* gameCache = nullptr;
+  optional<GlobalTime> SERIAL(globalTime);
+  void considerMovingFromInaccessibleSquare();
 };
 
 struct AdjectiveInfo {

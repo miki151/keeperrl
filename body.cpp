@@ -400,6 +400,7 @@ static string getMaterialName(Body::Material material) {
     case Body::Material::SPIRIT: return "ectoplasm";
     case Body::Material::CLAY: return "clay";
     case Body::Material::IRON: return "iron";
+    case Body::Material::ADA: return "adamantium";
   }
 }
 
@@ -582,6 +583,7 @@ static void youHit(WConstCreature c, BodyPart part, AttackType type) {
 }
 
 bool Body::takeDamage(const Attack& attack, WCreature creature, double damage) {
+  PROFILE;
   bleed(creature, damage);
   BodyPart part = getBodyPart(attack.level, creature->isAffected(LastingEffect::FLYING),
       creature->isAffected(LastingEffect::COLLAPSED));
@@ -747,6 +749,7 @@ bool Body::isImmuneTo(LastingEffect effect) const {
 }
 
 bool Body::affectByPoisonGas(WCreature c, double amount) {
+  PROFILE;
   if (!c->isAffected(LastingEffect::POISON_RESISTANT) && material == Material::FLESH) {
     bleed(c, amount / 20);
     c->you(MsgType::ARE, "poisoned by the gas");
@@ -756,16 +759,6 @@ bool Body::affectByPoisonGas(WCreature c, double amount) {
     }
   }
   return false;
-}
-
-void Body::affectByTorture(WCreature c) {
-  bleed(c, 0.1);
-  if (health < 0.3) {
-    if (!Random.roll(8))
-      c->heal();
-    else
-      c->dieWithReason("killed by torture");
-  }
 }
 
 bool Body::affectBySilver(WCreature c) {

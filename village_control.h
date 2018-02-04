@@ -49,7 +49,6 @@ class VillageControl : public CollectiveControl, public EventListener<VillageCon
   void launchAttack(vector<WCreature> attackers);
   void considerWelcomeMessage();
   void considerCancellingAttack();
-  void checkEntries();
   bool isEnemy(WConstCreature);
   WCollective getEnemyCollective() const;
   bool canPerformAttack(bool currentlyActive);

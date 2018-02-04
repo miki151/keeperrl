@@ -42,7 +42,6 @@ class Controller : public OwnedObject<Controller> {
 
   virtual void makeMove() = 0;
   virtual void sleeping() {}
-  virtual bool isCustomController() { return false; }
 
   virtual void onStartedControl() {}
   virtual void onEndedControl() {}
@@ -51,10 +50,6 @@ class Controller : public OwnedObject<Controller> {
 
   SERIALIZATION_DECL(Controller);
 
-  protected:
-  WCreature getCreature() const;
-
-  private:
   WCreature SERIAL(creature);
 };
 

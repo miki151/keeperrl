@@ -149,6 +149,7 @@ static ViewId getConnectionId(ViewId id) {
     case ViewId::MOUNTAIN2:
     case ViewId::DUNGEON_WALL:
     case ViewId::DUNGEON_WALL2:
+    case ViewId::ADAMANTIUM_ORE:
     case ViewId::GOLD_ORE:
     case ViewId::IRON_ORE:
     case ViewId::STONE:
@@ -399,6 +400,17 @@ static double getJumpOffset(const ViewObject& object, double state) {
   return maxH * (1.0 - (2.0 * state - 1) * (2.0 * state - 1));
 }
 
+static optional<double> getPartialMovement(MovementInfo::Type type) {
+  switch (type) {
+    case MovementInfo::Type::ATTACK:
+      return 0.8;
+    case MovementInfo::Type::WORK:
+      return 0.5;
+    default:
+      return none;
+  }
+}
+
 Vec2 MapGui::getMovementOffset(const ViewObject& object, Vec2 size, double time, milliseconds curTimeReal,
     bool verticalMovement) {
   if (auto dir = object.getAttachmentDir())
@@ -407,6 +419,7 @@ Vec2 MapGui::getMovementOffset(const ViewObject& object, Vec2 size, double time,
     return Vec2(0, 0);
   double state;
   Vec2 dir;
+  auto& movementInfo = object.getLastMovementInfo();
   if (screenMovement &&
       curTimeReal >= screenMovement->startTimeReal &&
       curTimeReal <= screenMovement->endTimeReal) {
@@ -415,11 +428,10 @@ Vec2 MapGui::getMovementOffset(const ViewObject& object, Vec2 size, double time,
     dir = object.getMovementInfo(screenMovement->moveCounter);
   }
   else if (!screenMovement) {
-    MovementInfo info = object.getLastMovementInfo();
-    dir = info.direction;
+    dir = movementInfo.direction;
 /*    if (info.direction.length8() == 0 || time >= info.tEnd + 0.001 || time <= info.tBegin - 0.001)
       return Vec2(0, 0);*/
-    state = (time - info.tBegin) / (info.tEnd - info.tBegin);
+    state = (time - movementInfo.tBegin) / (movementInfo.tEnd - movementInfo.tBegin);
     constexpr double stopTime = 0.0;
     double stopTime1 = stopTime / 2;
     if (auto id = object.getCreatureId())
@@ -427,18 +439,21 @@ Vec2 MapGui::getMovementOffset(const ViewObject& object, Vec2 size, double time,
       stopTime1 += -stopTime / 2 + (abs(id->getHash()) % 100) * 0.01 * stopTime;
     double stopTime2 = stopTime - stopTime1;
     state = min(1.0, max(0.0, (state - stopTime1) / (1.0 - stopTime1 - stopTime2)));
-    INFO << "Anim time b: " << info.tBegin << " e: " << info.tEnd << " t: " << time;
+    INFO << "Anim time b: " << movementInfo.tBegin << " e: " << movementInfo.tEnd << " t: " << time;
   } else
     return Vec2(0, 0);
   double vertical = verticalMovement ? getJumpOffset(object, state) : 0;
-  if (object.getLastMovementInfo().type == MovementInfo::ATTACK)
-    if (dir.length8() == 1) {
+  if (dir.length8() == 1) {
+    if (movementInfo.victim && state >= 0.5 && state < 1.0)
+      woundedInfo.getOrInit(*movementInfo.victim) = curTimeReal;
+    if (auto mult = getPartialMovement(movementInfo.type)) {
       if (verticalMovement)
-        return Vec2(0.8 * (state < 0.5 ? state : 1 - state) * dir.x * size.x,
-            (0.8 * (state < 0.5 ? state : 1 - state)* dir.y - vertical) * size.y);
+        return Vec2(*mult * (state < 0.5 ? state : 1 - state) * dir.x * size.x,
+            (*mult * (state < 0.5 ? state : 1 - state)* dir.y - vertical) * size.y);
       else
         return Vec2(0, 0);
     }
+  }
   return Vec2((state - 1) * dir.x * size.x, ((state - 1)* dir.y - vertical) * size.y);
 }
 
@@ -503,13 +518,21 @@ void MapGui::drawHealthBar(Renderer& renderer, Vec2 pos, Vec2 size, const ViewOb
   renderer.drawFilledRectangle(shadowRect, Color::BLACK.transparency(100));
 }
 
-
+void MapGui::considerWoundedAnimation(const ViewObject& object, Color& color, milliseconds curTimeReal) {
+  const auto woundedAnimLength = milliseconds{40};
+  if (auto id = object.getCreatureId())
+    if (auto time = woundedInfo.getMaybe(*id))
+      if (*time > curTimeReal - woundedAnimLength)
+        color = Color::RED;
+}
 
 void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& object, Vec2 size, Vec2 movement,
     Vec2 tilePos, milliseconds curTimeReal) {
+  PROFILE;
   auto id = object.id();
   const Tile& tile = Tile::getTile(id, spriteMode);
   Color color = colorWoundedRed ? Renderer::getBleedingColor(object) : Color::WHITE;
+  considerWoundedAnimation(object, color, curTimeReal);
   if (object.hasModifier(ViewObject::Modifier::INVISIBLE) || object.hasModifier(ViewObject::Modifier::HIDDEN))
     color = color.transparency(70);
   else
@@ -640,6 +663,7 @@ bool MapGui::isFoW(Vec2 pos) const {
 }
 
 void MapGui::renderExtraBorders(Renderer& renderer, milliseconds currentTimeReal) {
+  PROFILE;
   extraBorderPos.clear();
   for (Vec2 wpos : layout->getAllTiles(getBounds(), levelBounds, getScreenPos()))
     if (objects[wpos] && objects[wpos]->hasObject(ViewLayer::FLOOR_BACKGROUND)) {
@@ -767,6 +791,7 @@ void MapGui::renderHighlight(Renderer& renderer, Vec2 pos, Vec2 size, const View
 }
 
 void MapGui::renderHighlights(Renderer& renderer, Vec2 size, milliseconds currentTimeReal, bool lowHighlights) {
+  PROFILE;
   Rectangle allTiles = layout->getAllTiles(getBounds(), levelBounds, getScreenPos());
   Vec2 topLeftCorner = projectOnScreen(allTiles.topLeft());
   for (Vec2 wpos : allTiles)
@@ -785,6 +810,7 @@ void MapGui::renderHighlights(Renderer& renderer, Vec2 size, milliseconds curren
 }
 
 void MapGui::renderAnimations(Renderer& renderer, milliseconds currentTimeReal) {
+  PROFILE;
   animations = std::move(animations).filter([=](const AnimationInfo& elem)
       { return !elem.animation->isDone(currentTimeReal);});
   for (auto& elem : animations)
@@ -796,6 +822,7 @@ void MapGui::renderAnimations(Renderer& renderer, milliseconds currentTimeReal) 
 }
 
 MapGui::HighlightedInfo MapGui::getHighlightedInfo(Vec2 size, milliseconds currentTimeReal) {
+  PROFILE;
   HighlightedInfo ret {};
   Rectangle allTiles = layout->getAllTiles(getBounds(), levelBounds, getScreenPos());
   Vec2 topLeftCorner = projectOnScreen(allTiles.topLeft());
@@ -822,6 +849,7 @@ MapGui::HighlightedInfo MapGui::getHighlightedInfo(Vec2 size, milliseconds curre
 }
 
 void MapGui::renderMapObjects(Renderer& renderer, Vec2 size, milliseconds currentTimeReal) {
+  PROFILE;
   Rectangle allTiles = layout->getAllTiles(getBounds(), levelBounds, getScreenPos());
   Vec2 topLeftCorner = projectOnScreen(allTiles.topLeft());
   fogOfWar.clear();
@@ -893,16 +921,20 @@ void MapGui::drawSquareHighlight(Renderer& renderer, Vec2 pos, Vec2 size) {
 }
 
 void MapGui::considerRedrawingSquareHighlight(Renderer& renderer, milliseconds currentTimeReal, Vec2 pos, Vec2 size) {
-  Rectangle allTiles = layout->getAllTiles(getBounds(), levelBounds, getScreenPos());
-  Vec2 topLeftCorner = projectOnScreen(allTiles.topLeft());
-  for (Vec2 v : concat({pos}, pos.neighbors8()))
-    if (v.inRectangle(objects.getBounds()) && (!objects[v] || objects[v]->noObjects())) {
-      drawSquareHighlight(renderer, topLeftCorner + (pos - allTiles.topLeft()).mult(size), size);
-      break;
-    }
+  PROFILE;
+  if (!lastHighlighted.creaturePos) {
+    Rectangle allTiles = layout->getAllTiles(getBounds(), levelBounds, getScreenPos());
+    Vec2 topLeftCorner = projectOnScreen(allTiles.topLeft());
+    for (Vec2 v : concat({pos}, pos.neighbors8()))
+      if (v.inRectangle(objects.getBounds()) && (!objects[v] || objects[v]->noObjects())) {
+        drawSquareHighlight(renderer, topLeftCorner + (pos - allTiles.topLeft()).mult(size), size);
+        break;
+      }
+  }
 }
 
 void MapGui::processScrolling(milliseconds time) {
+  PROFILE;
   if (!!softCenter && !!lastScrollUpdate) {
     double offsetx = softCenter->x - center.x;
     double offsety = softCenter->y - center.y;
@@ -937,6 +969,7 @@ void MapGui::setDraggedCreature(UniqueEntity<Creature>::Id id, ViewId viewId, Ve
 }
 
 void MapGui::considerScrollingToCreature() {
+  PROFILE;
   if (auto& info = centeredCreaturePosition) {
     Vec2 size = layout->getSquareSize();
     Vec2 offset;
@@ -956,6 +989,7 @@ void MapGui::considerScrollingToCreature() {
 }
 
 void MapGui::render(Renderer& renderer) {
+  PROFILE;
   considerScrollingToCreature();
   Vec2 size = layout->getSquareSize();
   auto currentTimeReal = clock->getRealMillis();

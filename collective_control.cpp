@@ -9,10 +9,6 @@ SERIALIZATION_CONSTRUCTOR_IMPL(CollectiveControl);
 CollectiveControl::CollectiveControl(WCollective c) : collective(c) {
 }
 
-WCollective CollectiveControl::getCollective() const {
-  return NOTNULL(collective);
-}
-
 void CollectiveControl::update(bool currentlyActive) {
 }
 
@@ -20,7 +16,7 @@ void CollectiveControl::tick() {
 }
 
 const vector<WCreature>& CollectiveControl::getCreatures() const {
-  return getCollective()->getCreatures();
+  return collective->getCreatures();
 }
 
 void CollectiveControl::onMemberKilled(WConstCreature victim, WConstCreature killer) {

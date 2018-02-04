@@ -400,6 +400,27 @@ class set : public std::set<T, Compare> {
   }
 };
 
+template <typename T, typename Hash = std::hash<T>>
+class unordered_set : public std::unordered_set<T, Hash> {
+  public:
+  using std::unordered_set<T, Hash>::unordered_set;
+
+  using base = std::unordered_set<T, Hash>;
+
+  int size() const {
+    return (int) base::size();
+  }
+
+  template <typename Fun>
+  auto transform(Fun fun) const {
+    vector<decltype(fun(std::declval<T>()))> ret;
+    ret.reserve(size());
+    for (const auto& elem : *this)
+      ret.push_back(fun(elem));
+    return ret;
+  }
+};
+
 template<class T>
 std::ostream& operator<<(std::ostream& d, const vector<T>& container){
   d << "{";

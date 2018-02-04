@@ -44,8 +44,8 @@ template <class Archive>
 void CreatureAttributes::serialize(Archive& ar, const unsigned int version) {
   ar(viewId, retiredViewId, illusionViewObject, name, attr, chatReactionFriendly);
   ar(chatReactionHostile, passiveAttack, gender);
-  ar(body, innocent, moraleSpeedIncrease, deathDescription);
-  ar(animal, cantEquip, courage);
+  ar(body, moraleSpeedIncrease, deathDescription);
+  ar(animal, cantEquip, courage, canJoinCollective);
   ar(boulder, noChase, isSpecial, skills, spells);
   ar(permanentEffects, lastingEffects, minionActivities, expLevel);
   ar(noAttackSound, maxLevelIncrease, creatureId);
@@ -183,6 +183,7 @@ void CreatureAttributes::chatReaction(WCreature me, WCreature other) {
 }
 
 bool CreatureAttributes::isAffected(LastingEffect effect, GlobalTime time) const {
+  PROFILE;
   if (auto suppressor = LastingEffects::getSuppressor(effect))
     if (isAffected(*suppressor, time))
       return false;
@@ -332,10 +333,6 @@ void CreatureAttributes::removePermanentEffect(LastingEffect effect, int count) 
   permanentEffects[effect] -= count;
 }
 
-bool CreatureAttributes::isInnocent() const {
-  return innocent;
-}
- 
 const MinionActivityMap& CreatureAttributes::getMinionActivities() const {
   return minionActivities;
 }
@@ -346,6 +343,10 @@ MinionActivityMap& CreatureAttributes::getMinionActivities() {
 
 bool CreatureAttributes::dontChase() const {
   return noChase;
+}
+
+bool CreatureAttributes::getCanJoinCollective() const {
+  return canJoinCollective;
 }
 
 optional<ViewId> CreatureAttributes::getRetiredViewId() {

@@ -110,3 +110,5 @@ SERIALIZABLE_TMPL(PositionMap, optional<vector<Position>>)
 SERIALIZABLE_TMPL(PositionMap, optional<ConstructionMap::FurnitureInfo>);
 SERIALIZABLE_TMPL(PositionMap, optional<ConstructionMap::TrapInfo>);
 SERIALIZABLE_TMPL(PositionMap, EnumMap<FurnitureLayer, optional<FurnitureType>>)
+SERIALIZABLE_TMPL(PositionMap, optional<int>)
+SERIALIZABLE_TMPL(PositionMap, optional<Position>)

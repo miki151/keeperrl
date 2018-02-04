@@ -36,9 +36,9 @@ bool Sectors::contains(Vec2 v) const {
   return sectors[v] > -1;
 }
 
-void Sectors::add(Vec2 pos) {
+bool Sectors::add(Vec2 pos) {
   if (contains(pos))
-    return;
+    return false;
   set<int> neighbors;
   for (Vec2 v : pos.neighbors8())
     if (v.inRectangle(bounds) && contains(v))
@@ -55,6 +55,7 @@ void Sectors::add(Vec2 pos) {
         largest = elem;
     join(pos, largest);
   }
+  return true;
 }
 
 void Sectors::setSector(Vec2 pos, int sector) {
@@ -144,13 +145,14 @@ bool Sectors::isChokePoint(Vec2 pos) const {
   return !getDisjoint(pos).empty();
 }
 
-void Sectors::remove(Vec2 pos) {
+bool Sectors::remove(Vec2 pos) {
   if (!contains(pos))
-    return;
+    return false;
   --sizes[sectors[pos]];
   sectors[pos] = -1;
   for (Vec2 v : getDisjoint(pos))
     join(v, getNewSector());
+  return true;
 }
 
 void Sectors::dump() {

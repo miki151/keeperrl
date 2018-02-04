@@ -93,6 +93,7 @@ static void addSecond(WConstCreature c, const string& param) {
 }
 
 static void addSecond(WConstCreature c, MsgType type, const string& param) {
+  PROFILE;
   string msg;
   switch (type) {
     case MsgType::ARE: msg = "You are " + param; break;

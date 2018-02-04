@@ -63,7 +63,7 @@ Level::Level(Private, SquareArray s, FurnitureArray f, WModel m, const string& n
 }
 
 PLevel Level::create(SquareArray s, FurnitureArray f, WModel m, const string& n,
-    Table<double> sun, LevelId id, Table<bool> cover) {
+    Table<double> sun, LevelId id, Table<bool> cover, Table<bool> unavailable) {
   auto ret = makeOwner<Level>(Private{}, std::move(s), std::move(f), m, n, sun, id, cover);
   for (Vec2 pos : ret->squares->getBounds()) {
     auto square = ret->squares->getReadonly(pos);
@@ -79,6 +79,8 @@ PLevel Level::create(SquareArray s, FurnitureArray f, WModel m, const string& n,
     (*ret->fieldOfView)[vision] = FieldOfView(ret.get(), vision);
   for (auto pos : ret->getAllPositions())
     ret->addLightSource(pos.getCoord(), pos.getLightEmission(), 1);
+  ret->unavailable = unavailable;
+  ret->getSectors({MovementTrait::WALK});
   return ret;
 }
 
@@ -278,9 +280,10 @@ bool Level::landCreature(vector<Position> landing, PCreature creature) {
 }
 
 bool Level::landCreature(vector<Position> landing, WCreature creature) {
+  PROFILE;
   CHECK(creature);
   queue<Position> q;
-  set<Position> marked;
+  PositionSet marked;
   for (Position pos : Random.permutation(landing)) {
     q.push(pos);
     marked.insert(pos);
@@ -392,23 +395,26 @@ bool Level::containsCreature(UniqueEntity<Creature>::Id id) const {
 }
 
 bool Level::isWithinVision(Vec2 from, Vec2 to, const Vision& v) const {
+  PROFILE;
   return v.canSeeAt(getLight(to), from.distD(to));
 }
 
 FieldOfView& Level::getFieldOfView(VisionId vision) const {
+  PROFILE;
   return (*fieldOfView)[vision];
 }
 
 bool Level::canSee(Vec2 from, Vec2 to, const Vision& vision) const {
+  PROFILE;
   return isWithinVision(from, to, vision) && getFieldOfView(vision.getId()).canSee(from, to);
 }
 
 bool Level::canSee(WConstCreature c, Vec2 pos) const {
+  PROFILE;
   return canSee(c->getPosition().getCoord(), pos, c->getVision());
 }
 
 void Level::moveCreature(WCreature creature, Vec2 direction) {
-//  CHECK(canMoveCreature(creature, direction));
   Vec2 position = creature->getPosition().getCoord();
   unplaceCreature(creature, position);
   placeCreature(creature, position + direction);
@@ -482,6 +488,7 @@ void Level::tick() {
 }
 
 bool Level::inBounds(Vec2 pos) const {
+  PROFILE;
   return pos.inRectangle(getBounds());
 }
 
@@ -495,6 +502,10 @@ const string& Level::getName() const {
 
 bool Level::areConnected(Vec2 p1, Vec2 p2, const MovementType& movement) const {
   return inBounds(p1) && inBounds(p2) && getSectors(movement).same(p1, p2);
+}
+
+Sectors& Level::getSectorsDontCreate(const MovementType& movement) const {
+  return sectors.at(movement);
 }
 
 Sectors& Level::getSectors(const MovementType& movement) const {
@@ -513,7 +524,9 @@ bool Level::isChokePoint(Vec2 pos, const MovementType& movement) const {
 }
 
 void Level::updateSunlightMovement() {
-  sectors.clear();
+  for (auto movement : getKeys(sectors))
+    if (movement.isSunlightVulnerable())
+      sectors.erase(movement);
 }
 
 int Level::getNumGeneratedSquares() const {

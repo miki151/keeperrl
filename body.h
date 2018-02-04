@@ -29,6 +29,7 @@ class Body {
     WOOD,
     IRON,
     LAVA,
+    ADA
   };
 
   enum class Size {
@@ -66,7 +67,6 @@ class Body {
   bool affectByFire(WCreature, double amount);
   bool isIntrinsicallyAffected(LastingEffect) const;
   bool affectByPoisonGas(WCreature, double amount);
-  void affectByTorture(WCreature);
   bool affectBySilver(WCreature);
   bool affectByAcid(WCreature);
   bool isKilledByBoulder() const;

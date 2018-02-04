@@ -55,6 +55,8 @@ static EnemyInfo getVault(SettlementType type, CreatureId creature, TribeId trib
       c.type = type;
       c.inhabitants.fighters = CreatureList(num, creature);
       c.tribe = tribe;
+      c.closeToPlayer = true;
+      c.dontConnectCave = true;
       c.buildingId = BuildingId::DUNGEON;
       c.shopFactory = itemFactory;
     ), CollectiveConfig::noImmigrants())
@@ -125,7 +127,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
           CONSTRUCT(VillageBehaviour,
             c.minPopulation = 1;
             c.minTeamSize = 4;
-            c.triggers = LIST(AttackTriggerId::ENTRY);
+            c.triggers = LIST(AttackTriggerId::MINING_IN_PROXIMITY);
             c.attackBehaviour = AttackBehaviour(AttackBehaviourId::KILL_LEADER);));
     case EnemyId::ANTS_CLOSED_SMALL:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
@@ -141,7 +143,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
           CONSTRUCT(VillageBehaviour,
             c.minPopulation = 1;
             c.minTeamSize = 4;
-            c.triggers = LIST(AttackTriggerId::ENTRY);
+            c.triggers = LIST(AttackTriggerId::MINING_IN_PROXIMITY);
             c.attackBehaviour = AttackBehaviour(AttackBehaviourId::KILL_LEADER);));
     case EnemyId::ANTS_OPEN: {
         auto ants = get(EnemyId::ANTS_CLOSED);
@@ -149,6 +151,22 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
         ants.setCreateOnBones(*this, 0.1, {EnemyId::DWARVES});
         return ants;
       }
+    case EnemyId::ADA_GOLEMS:
+      return EnemyInfo(CONSTRUCT(SettlementInfo,
+            c.type = SettlementType::VAULT;
+            c.inhabitants.fighters = CreatureList(8, CreatureId::ADA_GOLEM);
+            c.tribe = TribeId::getAnt();
+            c.race = "adamantine golems"_s;
+            c.dontConnectCave = true;
+            c.surroundWithResources = 3;
+            c.extraResources = FurnitureType::ADAMANTIUM_ORE;
+            c.buildingId = BuildingId::DUNGEON;),
+          CollectiveConfig::noImmigrants(),
+          CONSTRUCT(VillageBehaviour,
+            c.minPopulation = 1;
+            c.minTeamSize = 4;
+            c.triggers = LIST(AttackTriggerId::MINING_IN_PROXIMITY);
+            c.attackBehaviour = AttackBehaviour(AttackBehaviourId::KILL_LEADER);));
     case EnemyId::ORC_VILLAGE:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::VILLAGE;
@@ -732,7 +750,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
           CONSTRUCT(VillageBehaviour,
             c.minPopulation = 0;
             c.minTeamSize = 1;
-            c.triggers = LIST(AttackTriggerId::SELF_VICTIMS, AttackTriggerId::STOLEN_ITEMS, AttackTriggerId::ENTRY);
+            c.triggers = LIST(AttackTriggerId::SELF_VICTIMS, AttackTriggerId::STOLEN_ITEMS, AttackTriggerId::MINING_IN_PROXIMITY);
             c.attackBehaviour = AttackBehaviour(AttackBehaviourId::KILL_LEADER);
             c.ransom = make_pair(0.5, random.get(40, 80));));
   }

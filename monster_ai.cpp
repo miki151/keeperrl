@@ -68,13 +68,14 @@ Behaviour::Behaviour(WCreature c) : creature(c) {
 }
 
 WCreature Behaviour::getClosestEnemy() {
+  PROFILE;
   int dist = 1000000000;
   WCreature result = nullptr;
   for (WCreature other : creature->getVisibleEnemies()) {
     int curDist = other->getPosition().dist8(creature->getPosition());
     if (curDist < dist &&
-        ((!other->getAttributes().dontChase() || curDist == 1) &&
-        !other->getStatus().contains(CreatureStatus::CIVILIAN)) &&
+        (!other->getAttributes().dontChase() || curDist == 1) &&
+        (!other->getStatus().contains(CreatureStatus::CIVILIAN) || other->isCaptureOrdered()) &&
         !other->isAffected(LastingEffect::STUNNED)) {
       result = other;
       dist = creature->getPosition().dist8(other->getPosition());
@@ -534,6 +535,7 @@ class Fighter : public Behaviour {
   }
 
   MoveInfo considerBreakingChokePoint(WCreature other) {
+  PROFILE;
     unordered_set<Position, CustomHash<Position>> myNeighbors;
     for (auto pos : creature->getPosition().neighbors8(Random))
       myNeighbors.insert(pos);

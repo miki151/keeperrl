@@ -56,11 +56,12 @@ void Furniture::serialize(Archive& ar, const unsigned) {
 
 SERIALIZABLE(Furniture)
 
-const optional<ViewObject>& Furniture::getViewObject() const {
+const optional<ViewObject>& Furniture::getViewObject() const {  PROFILE
   return *viewObject;
 }
 
 optional<ViewObject>& Furniture::getViewObject() {
+  PROFILE;
   return *viewObject;
 }
 
@@ -88,11 +89,18 @@ const string& Furniture::getName(int count) const {
     return name;
 }
 
+bool Furniture::isWall(FurnitureType type) {
+  static EnumMap<FurnitureType, bool> layers(
+      [] (FurnitureType type) { return FurnitureFactory::get(type, TribeId::getHostile())->isWall(); });
+  return layers[type];
+}
+
 FurnitureType Furniture::getType() const {
   return type;
 }
 
 bool Furniture::isVisibleTo(WConstCreature c) const {
+  PROFILE;
   if (entryType)
     return entryType->isVisibleTo(this, c);
   else
@@ -144,6 +152,7 @@ void Furniture::setTribe(TribeId id) {
 }
 
 void Furniture::tick(Position pos) {
+  PROFILE;
   if (fire && fire->isBurning()) {
     if (viewObject)
       viewObject->setAttribute(ViewObject::Attribute::BURNING, fire->getSize());

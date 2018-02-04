@@ -49,6 +49,7 @@ vector<PlayerInfo::SkillInfo> getSkillNames(WConstCreature c) {
 }
 
 vector<ItemAction> getItemActions(WConstCreature c, const vector<WItem>& item) {
+  PROFILE;
   vector<ItemAction> actions;
   if (c->equip(item[0]))
     actions.push_back(ItemAction::EQUIP);
@@ -75,6 +76,7 @@ vector<ItemAction> getItemActions(WConstCreature c, const vector<WItem>& item) {
 }
 
 ItemInfo ItemInfo::get(WConstCreature creature, const vector<WItem>& stack) {
+  PROFILE;
   return CONSTRUCT(ItemInfo,
     c.name = stack[0]->getShortName(creature, stack.size() > 1);
     c.fullName = stack[0]->getNameAndModifiers(false, creature);
@@ -171,6 +173,7 @@ const CreatureInfo* CollectiveInfo::getMinion(UniqueEntity<Creature>::Id id) con
 
 
 vector<AttributeInfo> AttributeInfo::fromCreature(WConstCreature c) {
+  PROFILE;
   auto genInfo = [c](AttrType type, int bonus, const char* help) {
     return AttributeInfo {
         getName(type),

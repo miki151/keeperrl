@@ -26,6 +26,7 @@
 #include "hashing.h"
 #include "extern/variant.h"
 #include "extern/optional.h"
+#include "profiler.h"
 
 template <class T>
 string toString(const T& t) {
@@ -501,6 +502,13 @@ class RandomGen {
     return choose(v);
   }
 
+  template <typename T, typename Hash>
+  T choose(const unordered_set<T, Hash>& vi) {
+    vector<T> v(vi.size());
+    std::copy(vi.begin(), vi.end(), v.begin());
+    return choose(v);
+  }
+
   template <typename T>
   T choose(initializer_list<T> vi, initializer_list<double> pi) {
     return choose(vector<T>(vi), vector<double>(pi));
@@ -559,6 +567,13 @@ class RandomGen {
 
   template <typename T>
   vector<T> permutation(const set<T>& vi) {
+    vector<T> v(vi.size());
+    std::copy(vi.begin(), vi.end(), v.begin());
+    return permutation(v);
+  }
+
+  template <typename T, typename Hash>
+  vector<T> permutation(const unordered_set<T, Hash>& vi) {
     vector<T> v(vi.size());
     std::copy(vi.begin(), vi.end(), v.begin());
     return permutation(v);
@@ -799,8 +814,8 @@ vector<V> getValues(const map<T, V>& m) {
   return ret;
 }
 
-template <typename T, typename V>
-vector<T> getKeys(const unordered_map<T, V>& m) {
+template <typename T, typename V, typename Hash>
+vector<T> getKeys(const unordered_map<T, V, Hash>& m) {
   vector<T> ret;
   for (auto elem : m)
     ret.push_back(elem.first);
@@ -1194,6 +1209,10 @@ class EnumSet {
     EnumSet<T> ret(other);
     ret.elems &= elems;
     return ret;
+  }
+
+  void sumWith(const EnumSet& other) {
+    elems |= other.elems;
   }
 
   void intersectWith(const EnumSet& other) {

@@ -21,3 +21,8 @@ MovementInfo&MovementInfo::setMaxLength(TimeInterval i) {
   tEnd = min(tEnd, tBegin + i.getDouble());
   return *this;
 }
+
+MovementInfo& MovementInfo::setVictim(UniqueEntity<Creature>::Id id) {
+  victim = id;
+  return *this;
+}

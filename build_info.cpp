@@ -32,7 +32,7 @@ const vector<BuildInfo>& BuildInfo::get() {
              .setTutorialHighlight(TutorialHighlight::BUILD_DOOR),
       BuildInfo({FurnitureType::IRON_DOOR, {ResourceId::IRON, 5}}, "Iron door", {},
           "Click on a built door to lock it.", 0, "Doors"),
-      BuildInfo({FurnitureType::STEEL_DOOR, {ResourceId::STEEL, 5}}, "Steel door", {},
+      BuildInfo({FurnitureType::ADA_DOOR, {ResourceId::ADA, 5}}, "Adamantine door", {},
           "Click on a built door to lock it.", 0, "Doors"),
     });
     for (int i : All(CollectiveConfig::getFloors())) {
@@ -98,10 +98,9 @@ const vector<BuildInfo>& BuildInfo::get() {
           "Train your minions here. Adds up to " +
           toString(*CollectiveConfig::getTrainingMaxLevel(ExperienceType::MELEE, FurnitureType::TRAINING_IRON)) + " melee levels.",
           0, "Training room"),
-      BuildInfo({FurnitureType::TRAINING_STEEL, {ResourceId::STEEL, 12}}, "Steel dummy",
-          {{RequirementId::TECHNOLOGY, TechId::STEEL_MAKING}},
+      BuildInfo({FurnitureType::TRAINING_ADA, {ResourceId::ADA, 12}}, "Adamantine dummy", {},
           "Train your minions here. Adds up to " +
-          toString(*CollectiveConfig::getTrainingMaxLevel(ExperienceType::MELEE, FurnitureType::TRAINING_STEEL)) + " melee levels.",
+          toString(*CollectiveConfig::getTrainingMaxLevel(ExperienceType::MELEE, FurnitureType::TRAINING_ADA)) + " melee levels.",
           0, "Training room"),
       BuildInfo({FurnitureType::ARCHERY_RANGE, {ResourceId::WOOD, 12}}, "Archery target",
           {{RequirementId::TECHNOLOGY, TechId::ARCHERY}},
@@ -115,11 +114,9 @@ const vector<BuildInfo>& BuildInfo::get() {
           {{RequirementId::TECHNOLOGY, TechId::ALCHEMY}}, "Produces magical potions.", 0, workshop),
       BuildInfo({FurnitureType::JEWELER, {ResourceId::WOOD, 12}}, "Jeweler",
           {{RequirementId::TECHNOLOGY, TechId::JEWELLERY}}, "Produces magical rings and amulets.", 0, workshop),
-      BuildInfo({FurnitureType::STEEL_FURNACE, {ResourceId::STONE, 100}}, "Steel furnace",
-          {{RequirementId::TECHNOLOGY, TechId::STEEL_MAKING}}, "Turns iron ore into steel.", 0, workshop),
       BuildInfo({FurnitureType::DEMON_SHRINE, {ResourceId::GOLD, 30}}, "Demon shrine", {{RequirementId::TECHNOLOGY, TechId::DEMONOLOGY}},
           "Summons various demons to your dungeon."),
-      BuildInfo({FurnitureType::PRISON, {ResourceId::IRON, 5}}, "Prison", {}, "Captured enemies are kept here.",
+      BuildInfo({FurnitureType::PRISON, {ResourceId::IRON, 15}}, "Prison", {}, "Captured enemies are kept here.",
           'p', "Prison", true),
       BuildInfo({FurnitureType::TORTURE_TABLE, {ResourceId::IRON, 20}}, "Torture table", {},
           "Can be used to torture prisoners.", 0, "Prison"),
@@ -150,7 +147,7 @@ const vector<BuildInfo>& BuildInfo::get() {
         "Makes the area around it visible.", 0, "Installations"),
       BuildInfo({FurnitureType::PORTAL, {ResourceId::STONE, 60}}, "Portal", {},
         "Opens a connection if another portal is present.", 0, "Installations"),
-      BuildInfo({FurnitureType::MINION_STATUE, {ResourceId::MANA, 50}}, "Statue", {},
+      BuildInfo({FurnitureType::MINION_STATUE, {ResourceId::GOLD, 50}}, "Statue", {},
         "Increases minion population limit by " +
               toString(ModelBuilder::getStatuePopulationIncrease()) + ".", 0, "Installations"),
       BuildInfo({FurnitureType::WHIPPING_POST, {ResourceId::WOOD, 20}}, "Whipping post", {},

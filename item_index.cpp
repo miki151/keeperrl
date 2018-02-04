@@ -22,8 +22,8 @@ function<bool(WConstItem)> getIndexPredicate(ItemIndex index) {
         return it->getResourceId() == CollectiveResourceId::WOOD; };
     case ItemIndex::IRON: return [](WConstItem it) {
         return it->getResourceId() == CollectiveResourceId::IRON; };
-    case ItemIndex::STEEL: return [](WConstItem it) {
-        return it->getResourceId() == CollectiveResourceId::STEEL; };
+    case ItemIndex::ADA: return [](WConstItem it) {
+        return it->getResourceId() == CollectiveResourceId::ADA; };
     case ItemIndex::STONE: return [](WConstItem it) {
         return it->getResourceId() == CollectiveResourceId::STONE; };
     case ItemIndex::REVIVABLE_CORPSE: return [](WConstItem it) {

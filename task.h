@@ -46,8 +46,8 @@ class Task : public UniqueEntity<Task>, public OwnedObject<Task> {
   void setViewId(ViewId);
 
   static PTask construction(WTaskCallback, Position, FurnitureType);
-  static PTask destruction(WTaskCallback, Position, WConstFurniture, DestroyAction);
-  static PTask bringItem(WTaskCallback, Position position, vector<WItem>, const set<Position>& target,
+  static PTask destruction(WTaskCallback, Position, WConstFurniture, DestroyAction, WPositionMatching);
+  static PTask bringItem(WTaskCallback, Position position, vector<WItem>, const PositionSet& target,
       int numRetries = 10);
   static PTask applyItem(WTaskCallback, Position, WItem, Position target);
   enum SearchType { LAZY, RANDOM_CLOSE };
@@ -77,6 +77,7 @@ class Task : public UniqueEntity<Task>, public OwnedObject<Task> {
   static PTask goTo(Position);
   static PTask stayIn(vector<Position>);
   static PTask idle();
+  static PTask alwaysDone(PTask);
   static PTask follow(WCreature);
   static PTask goToTryForever(Position);
   static PTask transferTo(WModel);

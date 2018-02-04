@@ -269,11 +269,10 @@ PModel ModelBuilder::singleMapModel(const string& worldName) {
 
 PModel ModelBuilder::trySingleMapModel(const string& worldName) {
   vector<EnemyInfo> enemies;
-  for (int i : Range(random.get(5, 9)))
+  for (int i : Range(random.get(3, 6)))
     enemies.push_back(enemyFactory->get(EnemyId::HUMAN_COTTAGE));
-  for (int i : Range(random.get(1, 3)))
-    enemies.push_back(enemyFactory->get(EnemyId::KOBOLD_CAVE));
-  for (int i : Range(random.get(1, 3)))
+  enemies.push_back(enemyFactory->get(EnemyId::KOBOLD_CAVE));
+  for (int i : Range(random.get(2, 4)))
     enemies.push_back(enemyFactory->get(random.choose({EnemyId::BANDITS, EnemyId::COTTAGE_BANDITS}, {3, 1}))
         .setVillainType(VillainType::LESSER));
   enemies.push_back(enemyFactory->get(random.choose(EnemyId::GNOMES, EnemyId::DARK_ELVES)).setVillainType(VillainType::ALLY));
@@ -281,6 +280,7 @@ PModel ModelBuilder::trySingleMapModel(const string& worldName) {
   enemies.push_back(enemyFactory->get(EnemyId::ANTS_CLOSED).setVillainType(VillainType::LESSER));
   enemies.push_back(enemyFactory->get(EnemyId::DWARVES).setVillainType(VillainType::MAIN));
   enemies.push_back(enemyFactory->get(EnemyId::KNIGHTS).setVillainType(VillainType::MAIN));
+  enemies.push_back(enemyFactory->get(EnemyId::ADA_GOLEMS));
   enemies.push_back(enemyFactory->get(random.choose(EnemyId::OGRE_CAVE, EnemyId::HARPY_CAVE))
       .setVillainType(VillainType::ALLY));
   for (auto& enemy : random.chooseN(2, {
@@ -289,7 +289,7 @@ PModel ModelBuilder::trySingleMapModel(const string& worldName) {
         EnemyId::ELVES,
         EnemyId::VILLAGE}))
     enemies.push_back(enemyFactory->get(enemy).setVillainType(VillainType::MAIN));
-  for (auto& enemy : random.chooseN(3, {
+  for (auto& enemy : random.chooseN(2, {
         EnemyId::GREEN_DRAGON,
         EnemyId::SHELOB,
         EnemyId::HYDRA,
@@ -333,6 +333,7 @@ PModel ModelBuilder::tryCampaignBaseModel(const string& siteName, bool addExtern
   enemyInfo.push_back(random.choose(enemyFactory->get(EnemyId::DWARF_CAVE),
       enemyFactory->get(EnemyId::ANTS_CLOSED_SMALL)));
   enemyInfo.push_back(enemyFactory->get(EnemyId::BANDITS));
+  enemyInfo.push_back(enemyFactory->get(EnemyId::ADA_GOLEMS));
   enemyInfo.push_back(enemyFactory->get(EnemyId::TUTORIAL_VILLAGE).setVillainType(VillainType::LESSER));
   if (random.chance(0.3))
     enemyInfo.push_back(enemyFactory->get(EnemyId::KRAKEN));
@@ -346,6 +347,7 @@ PModel ModelBuilder::tryTutorialModel(const string& siteName) {
   vector<EnemyInfo> enemyInfo;
   BiomeId biome = BiomeId::MOUNTAIN;
   enemyInfo.push_back(enemyFactory->get(EnemyId::BANDITS));
+  enemyInfo.push_back(enemyFactory->get(EnemyId::ADA_GOLEMS));
   enemyInfo.push_back(enemyFactory->get(EnemyId::TUTORIAL_VILLAGE).setVillainType(VillainType::LESSER));
   return tryModel(230, siteName, enemyInfo, true, biome, {}, false);
 }
@@ -465,7 +467,7 @@ void ModelBuilder::measureModelGen(const string& name, int numTries, function<vo
 #endif
   }
   std::cout << std::endl << numSuccess << " / " << numTries << ". MinT: " <<
-    minT << ". MaxT: " << maxT << ". AvgT: " << sumT / numSuccess << std::endl;
+    minT << ". MaxT: " << maxT << ". AvgT: " << sumT / numTries << std::endl;
 }
 
 WCollective ModelBuilder::spawnKeeper(WModel m, PCreature keeper, bool regenerateMana, vector<string> introText) {

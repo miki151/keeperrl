@@ -16,7 +16,7 @@ void KnownTiles::addTile(Position pos) {
       border.insert(v);
 }
 
-const set<Position>& KnownTiles::getBorderTiles() const {
+const PositionSet& KnownTiles::getBorderTiles() const {
   return border;
 }
 
@@ -25,7 +25,7 @@ bool KnownTiles::isKnown(Position pos) const {
 };
 
 void KnownTiles::limitToModel(const WModel m) {
-  set<Position> copy;
+  PositionSet copy;
   for (Position p : border)
     if (p.getModel() == m)
       copy.insert(p);

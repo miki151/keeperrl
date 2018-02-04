@@ -72,6 +72,7 @@ static optional<ViewObject::Modifier> getViewObjectModifier(LastingEffect effect
 }
 
 void LastingEffects::onAffected(WCreature c, LastingEffect effect, bool msg) {
+  PROFILE;
   if (auto e = getCancelled(effect))
     c->removeEffect(*e, true);
   if (auto mod = getViewObjectModifier(effect))
@@ -615,6 +616,7 @@ const char* LastingEffects::getDescription(LastingEffect type) {
 }
 
 bool LastingEffects::canSee(WConstCreature c1, WConstCreature c2) {
+  PROFILE;
   bool brainInRange = c1->getPosition().dist8(c2->getPosition()) < 5 && c2->getBody().hasBrain();
   bool telepathic = c1->isAffected(LastingEffect::TELEPATHY);
   bool hallucinating = c1->isAffected(LastingEffect::HALLU);
@@ -625,6 +627,7 @@ bool LastingEffects::canSee(WConstCreature c1, WConstCreature c2) {
 }
 
 bool LastingEffects::modifyIsEnemyResult(WConstCreature c, WConstCreature other, bool result) {
+  PROFILE;
   if (c->isAffected(LastingEffect::INSANITY))
     return true;
   if (c->isAffected(LastingEffect::PEACEFULNESS))
@@ -685,6 +688,7 @@ int LastingEffects::getPrice(LastingEffect e) {
 }
 
 double LastingEffects::getMoraleIncrease(WConstCreature c) {
+  PROFILE;
   double ret = 0;
   if (c->isAffected(LastingEffect::RESTED))
     ret += 0.2;
