@@ -36,7 +36,7 @@ class MinionActivities {
   static WTask getExisting(WCollective, WConstCreature, MinionActivity);
   static PTask generate(WCollective, WConstCreature, MinionActivity);
   static optional<TimeInterval> getDuration(WConstCreature, MinionActivity);
-  static vector<Position> getAllPositions(WConstCollective, WConstCreature, MinionActivity, bool onlyActive = false);
+  static vector<Position> getAllPositions(WConstCollective, WConstCreature, MinionActivity);
   static const vector<FurnitureType>& getAllFurniture(MinionActivity);
-  static optional<MinionActivity> getTaskFor(WConstCollective, WConstCreature, FurnitureType);
+  static optional<MinionActivity> getActivityFor(WConstCollective, WConstCreature, FurnitureType);
 };

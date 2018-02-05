@@ -82,7 +82,7 @@ const vector<FurnitureType>& MinionActivities::getAllFurniture(MinionActivity ta
   return cache[task];
 }
 
-optional<MinionActivity> MinionActivities::getTaskFor(WConstCollective col, WConstCreature c, FurnitureType type) {
+optional<MinionActivity> MinionActivities::getActivityFor(WConstCollective col, WConstCreature c, FurnitureType type) {
   static EnumMap<FurnitureType, optional<MinionActivity>> cache;
   static bool initialized = false;
   if (!initialized) {
@@ -133,13 +133,12 @@ static vector<Position> tryInQuarters(vector<Position> pos, WConstCollective col
 }
 
 vector<Position> MinionActivities::getAllPositions(WConstCollective collective, WConstCreature c,
-    MinionActivity activity, bool onlyActive) {
+    MinionActivity activity) {
   PROFILE;
   vector<Position> ret;
   auto& info = CollectiveConfig::getActivityInfo(activity);
   for (auto furnitureType : getAllFurniture(activity))
-    if (info.furniturePredicate(collective, c, furnitureType) &&
-        (!onlyActive || info.activePredicate(collective, furnitureType)))
+    if (info.furniturePredicate(collective, c, furnitureType))
       append(ret, collective->getConstructions().getBuiltPositions(furnitureType));
   if (c) {
     ret = ret.filter([c](Position pos) { return c->canNavigateTo(pos); });
@@ -177,14 +176,9 @@ PTask MinionActivities::generate(WCollective collective, WConstCreature c, Minio
     }
     case MinionActivityInfo::FURNITURE: {
       PROFILE_BLOCK("Furniture");
-      vector<Position> squares = getAllPositions(collective, c, task, true);
+      vector<Position> squares = getAllPositions(collective, c, task);
       if (!squares.empty())
         return Task::applySquare(collective, squares, Task::RANDOM_CLOSE, Task::APPLY);
-      else {
-        vector<Position> squares = getAllPositions(collective, c, task, false);
-        if (!squares.empty())
-          return Task::applySquare(collective, squares, Task::LAZY, Task::NONE);
-      }
       break;
     }
     case MinionActivityInfo::ARCHERY: {

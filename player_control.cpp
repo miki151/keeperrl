@@ -1481,7 +1481,7 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
         index.setHighlight(HighlightType::CLICKED_FURNITURE);
       if (draggedCreature)
         if (WCreature c = getCreature(*draggedCreature))
-          if (auto task = MinionActivities::getTaskFor(collective, c, furniture->getType()))
+          if (auto task = MinionActivities::getActivityFor(collective, c, furniture->getType()))
             if (c->getAttributes().getMinionActivities().isAvailable(collective, c, *task))
               index.setHighlight(HighlightType::CREATURE_DROP);
       if (showEfficiency(furniture->getType()) && index.hasObject(ViewLayer::FLOOR))
@@ -1663,7 +1663,7 @@ void PlayerControl::minionDragAndDrop(const CreatureDropInfo& info) {
     c->removeEffect(LastingEffect::TIED_UP);
     c->removeEffect(LastingEffect::SLEEP);
     if (auto furniture = collective->getConstructions().getFurniture(pos, FurnitureLayer::MIDDLE))
-      if (auto task = MinionActivities::getTaskFor(collective, c, furniture->getFurnitureType())) {
+      if (auto task = MinionActivities::getActivityFor(collective, c, furniture->getFurnitureType())) {
         if (collective->isActivityGood(c, *task, true)) {
           collective->setMinionActivity(c, *task);
           collective->setTask(c, Task::goTo(pos));
