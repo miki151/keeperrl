@@ -838,7 +838,8 @@ vector<PlayerInfo> PlayerControl::getPlayerInfos(vector<WCreature> creatures, Un
         minionInfo.actions.push_back(PlayerInfo::CONTROL);
       if (!collective->hasTrait(c, MinionTrait::PRISONER)) {
         minionInfo.actions.push_back(PlayerInfo::RENAME);
-      }
+      } else
+        minionInfo.levelInfo.limit.clear();
       if (c != collective->getLeader())
         minionInfo.actions.push_back(PlayerInfo::BANISH);
       if (!collective->hasTrait(c, MinionTrait::WORKER)) {
