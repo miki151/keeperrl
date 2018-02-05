@@ -610,10 +610,8 @@ void Effect::PlaceFurniture::applyToCreature(WCreature c, WCreature attacker) co
     else*/
       Effect::Teleport{}.applyToCreature(c);
   }
-  if (c->getPosition() != pos || !furnitureBlocks) {
-    f->onConstructedBy(c);
-    pos.addFurniture(std::move(f));
-  }
+  f->onConstructedBy(c);
+  pos.addFurniture(std::move(f));
 }
 
 string Effect::PlaceFurniture::getName() const {
