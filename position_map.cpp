@@ -9,31 +9,70 @@
 #include "furniture_layer.h"
 #include "construction_map.h"
 
-template <class T>
-PositionMap<T>::PositionMap(const T& def) : defaultVal(def) {
+template <typename T>
+optional<T&> getReferenceOptional(optional<T>& t) {
+  if (t)
+    return *t;
+  else
+    return none;
+}
+
+template <typename T>
+optional<const T&> getReferenceOptional(const optional<T>& t) {
+  if (t)
+    return *t;
+  else
+    return none;
 }
 
 template <class T>
-const T& PositionMap<T>::get(Position pos) const {
+optional<const T&> PositionMap<T>::getReferenceMaybe(Position pos) const {
   LevelId levelId = pos.getLevel()->getUniqueId();
   try {
-    const Table<T>& table = tables.at(levelId);
+    const auto& table = tables.at(levelId);
     if (pos.getCoord().inRectangle(table.getBounds()))
-      return table[pos.getCoord()];
+      return getReferenceOptional(table[pos.getCoord()]);
     else
       return outliers.at(levelId).at(pos.getCoord());
   } catch (std::out_of_range) {
-    return defaultVal;
+    return none;
   }
 }
 
 template <class T>
-Table<T>& PositionMap<T>::getTable(Position pos) {
+optional<T&> PositionMap<T>::getReferenceMaybe(Position pos) {
+  LevelId levelId = pos.getLevel()->getUniqueId();
+  try {
+    auto& table = tables.at(levelId);
+    if (pos.getCoord().inRectangle(table.getBounds()))
+      return getReferenceOptional(table[pos.getCoord()]);
+    else
+      return outliers.at(levelId).at(pos.getCoord());
+  } catch (std::out_of_range) {
+    return none;
+  }
+}
+
+template<class T>
+optional<T> PositionMap<T>::getValueMaybe(Position pos) const {
+  if (auto elem = getReferenceMaybe(pos))
+    return *elem;
+  else
+    return none;
+}
+
+template<class T>
+bool PositionMap<T>::contains(Position pos) const {
+  return !!getReferenceMaybe(pos);
+}
+
+template <class T>
+Table<optional<T>>& PositionMap<T>::getTable(Position pos) {
   LevelId levelId = pos.getLevel()->getUniqueId();
   try {
     return tables.at(levelId);
   } catch (std::out_of_range) {
-    auto it = tables.insert(make_pair(levelId, Table<T>(pos.getLevel()->getBounds().minusMargin(-20), defaultVal)));
+    auto it = tables.insert(make_pair(levelId, Table<optional<T>>(pos.getLevel()->getBounds().minusMargin(-20))));
     return it.first->second;
   }
 }
@@ -41,14 +80,16 @@ Table<T>& PositionMap<T>::getTable(Position pos) {
 template <class T>
 T& PositionMap<T>::getOrInit(Position pos) {
   LevelId levelId = pos.getLevel()->getUniqueId();
-  Table<T>& table = getTable(pos);
+  auto& table = getTable(pos);
   if (pos.getCoord().inRectangle(table.getBounds())) {
-    return table[pos.getCoord()];
+    if (!table[pos.getCoord()])
+      table[pos.getCoord()] = T();
+    return *table[pos.getCoord()];
   }
   else try {
     return outliers.at(levelId).at(pos.getCoord());
   } catch (std::out_of_range) {
-    return outliers[levelId][pos.getCoord()]  = defaultVal;
+    return outliers[levelId][pos.getCoord()] = T();
   }
 }
 
@@ -56,25 +97,54 @@ template <class T>
 T& PositionMap<T>::getOrFail(Position pos) {
   LevelId levelId = pos.getLevel()->getUniqueId();
   try {
-    Table<T>& table = tables.at(levelId);
+    auto& table = tables.at(levelId);
     if (pos.getCoord().inRectangle(table.getBounds()))
-      return table[pos.getCoord()];
+      return *table[pos.getCoord()];
     else
       return outliers.at(levelId).at(pos.getCoord());
   } catch (std::out_of_range) {
     FATAL << "getOrFail failed " << pos.getCoord();
-    return defaultVal;
+    static T t;
+    return t;
+  }
+}
+
+template <class T>
+const T& PositionMap<T>::getOrFail(Position pos) const {
+  LevelId levelId = pos.getLevel()->getUniqueId();
+  try {
+    auto& table = tables.at(levelId);
+    if (pos.getCoord().inRectangle(table.getBounds()))
+      return *table[pos.getCoord()];
+    else
+      return outliers.at(levelId).at(pos.getCoord());
+  } catch (std::out_of_range) {
+    FATAL << "getOrFail failed " << pos.getCoord();
+    static T t;
+    return t;
   }
 }
 
 template <class T>
 void PositionMap<T>::set(Position pos, const T& elem) {
   LevelId levelId = pos.getLevel()->getUniqueId();
-  Table<T>& table = getTable(pos);
+  auto& table = getTable(pos);
   if (pos.getCoord().inRectangle(table.getBounds()))
     table[pos.getCoord()] = elem;
   else
     outliers[levelId][pos.getCoord()] = elem;
+}
+
+template<class T>
+void PositionMap<T>::erase(Position pos) {
+  LevelId levelId = pos.getLevel()->getUniqueId();
+  if (auto table = ::getReferenceMaybe(tables, levelId))
+    if (pos.getCoord().inRectangle(table->getBounds()))
+      (*table)[pos.getCoord()] = none;
+  if (auto out = ::getReferenceMaybe(outliers, levelId))
+    if (auto elem = ::getReferenceMaybe(*out, pos.getCoord()))
+      elem = none;
+
 }
 
 template <class T>
@@ -93,8 +163,11 @@ void PositionMap<T>::limitToModel(const WModel m) {
 template <class T>
 template <class Archive> 
 void PositionMap<T>::serialize(Archive& ar, const unsigned int version) {
-  ar(tables, outliers, defaultVal);
+  ar(tables, outliers);
 }
+
+template <class T>
+SERIALIZATION_CONSTRUCTOR_IMPL2(PositionMap<T>, PositionMap)
 
 SERIALIZABLE_TMPL(PositionMap, int)
 SERIALIZABLE_TMPL(PositionMap, bool)
@@ -105,10 +178,10 @@ class Task;
 SERIALIZABLE_TMPL(PositionMap, WTask)
 SERIALIZABLE_TMPL(PositionMap, HighlightType)
 SERIALIZABLE_TMPL(PositionMap, vector<WTask>)
-SERIALIZABLE_TMPL(PositionMap, optional<ViewIndex>)
-SERIALIZABLE_TMPL(PositionMap, optional<vector<Position>>)
-SERIALIZABLE_TMPL(PositionMap, optional<ConstructionMap::FurnitureInfo>);
-SERIALIZABLE_TMPL(PositionMap, optional<ConstructionMap::TrapInfo>);
+SERIALIZABLE_TMPL(PositionMap, ViewIndex)
+SERIALIZABLE_TMPL(PositionMap, vector<Position>)
+SERIALIZABLE_TMPL(PositionMap, ConstructionMap::FurnitureInfo);
+SERIALIZABLE_TMPL(PositionMap, ConstructionMap::TrapInfo);
 SERIALIZABLE_TMPL(PositionMap, EnumMap<FurnitureLayer, optional<FurnitureType>>)
-SERIALIZABLE_TMPL(PositionMap, optional<int>)
-SERIALIZABLE_TMPL(PositionMap, optional<Position>)
+SERIALIZABLE_TMPL(PositionMap, Position)
+

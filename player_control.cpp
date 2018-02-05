@@ -1503,7 +1503,7 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
       && pos.inRectangle(Rectangle::boundingBox({rectSelection->corner1, rectSelection->corner2})))
     index.setHighlight(rectSelection->deselect ? HighlightType::RECT_DESELECTION : HighlightType::RECT_SELECTION);
   const ConstructionMap& constructions = collective->getConstructions();
-  if (auto& trap = constructions.getTrap(position))
+  if (auto trap = constructions.getTrap(position))
     index.insert(getTrapObject(trap->getType(), trap->isArmed()));
   for (auto layer : ENUM_ALL(FurnitureLayer))
     if (auto f = constructions.getFurniture(position, layer))

@@ -3,12 +3,12 @@
 
 
 optional<Position> PositionMatching::getMatch(Position pos) const {
-  return matches.get(pos);
+  return matches.getValueMaybe(pos);
 }
 
 void PositionMatching::releaseTarget(Position pos) {
   targets.erase(pos);
-  if (auto match = matches.get(pos)) {
+  if (auto match = matches.getValueMaybe(pos)) {
     removeMatch(pos);
     findPath(*match);
   }
@@ -29,7 +29,7 @@ void PositionMatching::updateMovement(Position pos) {
   if (isOpen(pos))
     findPath(pos);
   else {
-    if (auto match = reverseMatches.get(pos)) {
+    if (auto match = reverseMatches.getValueMaybe(pos)) {
       removeMatch(pos);
       findPath(*match);
     }
@@ -37,14 +37,14 @@ void PositionMatching::updateMovement(Position pos) {
 }
 
 void PositionMatching::removeMatch(Position pos) {
-  if (auto match = matches.get(pos)) {
-    reverseMatches.set(*match, none);
-    matches.set(pos, none);
+  if (auto match = matches.getValueMaybe(pos)) {
+    reverseMatches.erase(*match);
+    matches.erase(pos);
     std::cout << "Removed match " << pos.getCoord() << " " << match->getCoord() << std::endl;
   }
-  if (auto match = reverseMatches.get(pos)) {
-    matches.set(*match, none);
-    reverseMatches.set(pos, none);
+  if (auto match = reverseMatches.getValueMaybe(pos)) {
+    matches.erase(*match);
+    reverseMatches.erase(pos);
     std::cout << "Removed match " << pos.getCoord() << " " << match->getCoord() << std::endl;
   }
 }
@@ -71,7 +71,7 @@ bool PositionMatching::findPath(Position pos, PositionSet& visited, bool matched
     return false;
   visited.insert(pos);
   bool isTarget = targets.count(pos);
-  auto match = isTarget ? matches.get(pos) : reverseMatches.get(pos);
+  auto match = isTarget ? matches.getValueMaybe(pos) : reverseMatches.getValueMaybe(pos);
   if (matchedWithFather) {
     for (auto candidate : pos.neighbors8())
       if (((isTarget && isOpen(candidate)) || (!isTarget && targets.count(candidate))) &&

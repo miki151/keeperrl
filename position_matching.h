@@ -18,8 +18,8 @@ class PositionMatching : public OwnedObject<PositionMatching> {
   private:
   void findPath(Position);
   bool findPath(Position, PositionSet& visited, bool matchedWithFather);
-  PositionMap<optional<Position>> SERIAL(matches);
-  PositionMap<optional<Position>> SERIAL(reverseMatches);
+  PositionMap<Position> SERIAL(matches);
+  PositionMap<Position> SERIAL(reverseMatches);
   PositionSet SERIAL(targets);
   void setMatch(Position, Position);
   void removeMatch(Position);
