@@ -98,7 +98,8 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   const CreatureName& getName() const;
   CreatureName& getName();
   const char* identify() const;
-  int getAttr(AttrType) const;
+  int getAttr(AttrType, bool includeWeapon = true) const;
+  int getAttrBonus(AttrType, bool includeWeapon = true) const;
 
   int getPoints() const;
   const Vision& getVision() const;
