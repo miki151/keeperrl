@@ -997,8 +997,8 @@ void PlayerControl::fillWorkshopInfo(CollectiveInfo& info) const {
 void PlayerControl::acceptPrisoner(int index) {
   index = -index - 1;
   auto immigrants = getPrisonerImmigrantStack();
-  if (index < immigrants.size()) {
-    auto victim = immigrants[index][0];
+  if (index < immigrants.size() && !immigrants[index].collective) {
+    auto victim = immigrants[index].creatures[0];
     victim->removeEffect(LastingEffect::STUNNED);
     auto& skills = victim->getAttributes().getSkills();
     skills.setValue(SkillId::DIGGING, skills.hasDiscrete(SkillId::NAVIGATION_DIGGING) ? 1 : 0.2);
@@ -1012,24 +1012,39 @@ void PlayerControl::rejectPrisoner(int index) {
   index = -index - 1;
   auto immigrants = getPrisonerImmigrantStack();
   if (index < immigrants.size()) {
-    auto victim = immigrants[index][0];
+    auto victim = immigrants[index].creatures[0];
     victim->dieWithLastAttacker();
   }
 }
 
-vector<vector<WCreature>> PlayerControl::getPrisonerImmigrantStack() const {
-  vector<WCreature> ret;
-  for (auto villain : getGame()->getCollectives())
-    if (villain != collective)
-      ret.append(villain->getCreatures(MinionTrait::STUNNED));
-  return Creature::stack(ret);
+vector<PlayerControl::StunnedInfo> PlayerControl::getPrisonerImmigrantStack() const {
+  vector<StunnedInfo> ret;
+  vector<WCreature> outside;
+  for (auto villain : getGame()->getCollectives()) {
+    if (villain != collective) {
+      auto& territory = villain->getTerritory();
+      vector<WCreature> inside;
+      for (auto c : villain->getCreatures(MinionTrait::STUNNED))
+        if (c->isAffected(LastingEffect::STUNNED)) {
+          if (villain->isConquered() || !territory.contains(c->getPosition()))
+            outside.push_back(c);
+          else
+            inside.push_back(c);
+        }
+      for (auto& stack : Creature::stack(inside))
+        ret.push_back(StunnedInfo{stack, villain});
+    }
+  }
+  for (auto& stack : Creature::stack(outside))
+    ret.push_back(StunnedInfo{stack, nullptr});
+  return ret;
 }
 
 vector<ImmigrantDataInfo> PlayerControl::getPrisonerImmigrantData() const {
   vector<ImmigrantDataInfo> ret;
   int index = -1;
   for (auto stack : getPrisonerImmigrantStack()) {
-    auto c = stack[0];
+    auto c = stack.creatures[0];
     int numPrisoners = collective->getCreatures(MinionTrait::PRISONER).size();
     int prisonSize = collective->getConstructions().getBuiltCount(FurnitureType::PRISON);
     int requiredPrisonSize = 2;
@@ -1039,6 +1054,8 @@ vector<ImmigrantDataInfo> PlayerControl::getPrisonerImmigrantData() const {
       requirements.push_back("Requires a prison.");
     else if (missingSize > 0)
       requirements.push_back("Requires " + toString(missingSize) + " more prison tiles.");
+    if (stack.collective)
+      requirements.push_back("Requires conquering " + stack.collective->getName()->full);
     ret.push_back(ImmigrantDataInfo {
         requirements,
         {},
@@ -1046,7 +1063,7 @@ vector<ImmigrantDataInfo> PlayerControl::getPrisonerImmigrantData() const {
         c->getName().bare() + " (prisoner)",
         c->getViewObject().id(),
         AttributeInfo::fromCreature(c),
-        stack.size() == 1 ? none : optional<int>(stack.size()),
+        stack.creatures.size() == 1 ? none : optional<int>(stack.creatures.size()),
         c->getTimeRemaining(LastingEffect::STUNNED),
         index,
         none,
