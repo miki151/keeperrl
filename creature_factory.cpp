@@ -1073,6 +1073,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body->setWeight(400);
           c.permanentEffects[LastingEffect::RANGED_RESISTANCE] = 1;
           c.permanentEffects[LastingEffect::HALLU] = 1;
+          c.permanentEffects[LastingEffect::INSANITY] = 1;
           c.name = CreatureName("cyclops", "cyclopes");
           c.name->setFirst(NameGenerator::get(NameGeneratorId::CYCLOPS)->getNext());
           c.maxLevelIncrease[ExperienceType::MELEE] = 5;
