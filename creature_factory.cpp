@@ -1068,15 +1068,19 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::CYCLOPS: 
       return CATTR(
           c.viewId = ViewId::CYCLOPS;
-          c.attr = LIST(34_dam, 40_def );
-          c.body = Body::humanoid(Body::Size::LARGE);
+          //He is just too big to wear armour and hold little weapons
+          //In all honesty, capturing him was fun but with full equipment
+          //he was very over powered.
+          c.cantEquip = true; 
+          c.attr = LIST(40_dam, 40_def );
+          c.body = Body::humanoid(Body::Size::HUGE);
           c.body->setWeight(400);
           c.permanentEffects[LastingEffect::RANGED_RESISTANCE] = 1;
           c.permanentEffects[LastingEffect::HALLU] = 1;
           c.permanentEffects[LastingEffect::INSANITY] = 1;
           c.name = CreatureName("cyclops", "cyclopes");
           c.name->setFirst(NameGenerator::get(NameGeneratorId::CYCLOPS)->getNext());
-          c.maxLevelIncrease[ExperienceType::MELEE] = 5;
+          c.maxLevelIncrease[ExperienceType::MELEE] = 3;
           );
     case CreatureId::DEMON_DWELLER:
       return CATTR(
@@ -2262,7 +2266,6 @@ static vector<ItemType> getDefaultInventory(CreatureId id) {
         .add(ItemType::Robe{});
     case CreatureId::CYCLOPS:
       return ItemList()
-        .add(ItemType::HeavyClub{})
         .add(ItemType::GoldPiece{}, Random.get(40, 80));
     case CreatureId::GREEN_DRAGON:
       return ItemList().add(ItemType::GoldPiece{}, Random.get(60, 100));
