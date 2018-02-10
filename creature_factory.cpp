@@ -911,7 +911,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
       return CATTR(
           c.viewId = ViewId::KEEPER_F;
           c.retiredViewId = ViewId::RETIRED_KEEPER_F;
-          c.attr = LIST(12_dam, 12_def, 12_spell_dam );
+          c.attr = LIST(12_dam, 12_def, 20_spell_dam );
           c.gender = Gender::female;
           c.body = Body::humanoid(Body::Size::LARGE);
           c.name = "Keeper";
