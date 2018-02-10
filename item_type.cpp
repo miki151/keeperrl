@@ -462,6 +462,7 @@ ItemAttributes ItemType::Knife::getAttributes() const {
       i.price = 1;
       i.weaponInfo.attackType = AttackType::STAB;
       i.weaponInfo.attackMsg = AttackMsg::THRUST;
+      i.enableSharpWeapons(10);
   );
 }
 
@@ -535,6 +536,7 @@ ItemAttributes ItemType::Sword::getAttributes() const {
       i.modifiers[AttrType::DAMAGE] = 8 + maybePlusMinusOne(4);
       i.price = 4;
       i.weaponInfo.attackType = AttackType::CUT;
+      i.enableSharpWeapons(5);
   );
 }
 
@@ -576,6 +578,7 @@ ItemAttributes ItemType::ElvenSword::getAttributes() const {
       i.modifiers[AttrType::DAMAGE] = 9 + maybePlusMinusOne(4);
       i.price = 8;
       i.weaponInfo.attackType = AttackType::CUT;
+      i.enableSharpWeapons(2);
   );
 }
 
@@ -605,6 +608,7 @@ ItemAttributes ItemType::BattleAxe::getAttributes() const {
       i.weaponInfo.twoHanded = true;
       i.price = 30;
       i.weaponInfo.attackType = AttackType::CUT;
+      i.enableSharpWeapons(4);
   );
 }
 
@@ -650,6 +654,7 @@ ItemAttributes ItemType::WarHammer::getAttributes() const {
       i.weaponInfo.twoHanded = true;
       i.price = 20;
       i.weaponInfo.attackType = AttackType::CRUSH;
+      i.enableHardenedWeapons(5);
   );
 }
 
@@ -679,6 +684,7 @@ ItemAttributes ItemType::Club::getAttributes() const {
       i.modifiers[AttrType::DAMAGE] = 4 + maybePlusMinusOne(4);
       i.price = 2;
       i.weaponInfo.attackType = AttackType::CRUSH;
+      i.enableHardenedWeapons(10);
   );
 }
 
@@ -693,6 +699,7 @@ ItemAttributes ItemType::HeavyClub::getAttributes() const {
       i.weaponInfo.twoHanded = true;
       i.price = 4;
       i.weaponInfo.attackType = AttackType::CRUSH;
+      i.enableHardenedWeapons(2);      
   );
 }
 
@@ -860,6 +867,7 @@ ItemAttributes ItemType::LeatherArmor::getAttributes() const {
       i.weight = 7;
       i.price = 4;
       i.modifiers[AttrType::DEFENSE] = 3 + maybePlusMinusOne(4);
+      i.enableHardenedArmours(5);            
   );
 }
 
@@ -873,7 +881,8 @@ ItemAttributes ItemType::LeatherHelm::getAttributes() const {
       i.weight = 1.5;
       i.price = 1;
       i.modifiers[AttrType::DEFENSE] = 1 + maybePlusMinusOne(4);
-  );
+      i.enableHardenedArmours(2);            
+      );
 }
 
 ItemAttributes ItemType::ChainArmor::getAttributes() const {
@@ -886,6 +895,7 @@ ItemAttributes ItemType::ChainArmor::getAttributes() const {
       i.weight = 15;
       i.price = 25;
       i.modifiers[AttrType::DEFENSE] = 5 + maybePlusMinusOne(4);
+      i.enableHardenedArmours(2);                  
   );
 }
 
