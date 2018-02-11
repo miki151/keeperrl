@@ -300,32 +300,34 @@ void LastingEffects::onTimedOut(WCreature c, LastingEffect effect, bool msg) {
 
 static const int attrBonus = 3;
 
-void LastingEffects::modifyAttr(WConstCreature c, AttrType type, double& value) {
+int LastingEffects::getAttrBonus(WConstCreature c, AttrType type) {
+  int value = 0;
   switch (type) {
     case AttrType::DAMAGE:
-        if (c->isAffected(LastingEffect::PANIC))
-          value -= attrBonus;
-        if (c->isAffected(LastingEffect::RAGE))
-          value += attrBonus;
-        if (c->isAffected(LastingEffect::DAM_BONUS))
-          value += attrBonus;
+      if (c->isAffected(LastingEffect::PANIC))
+        value -= attrBonus;
+      if (c->isAffected(LastingEffect::RAGE))
+        value += attrBonus;
+      if (c->isAffected(LastingEffect::DAM_BONUS))
+        value += attrBonus;
       break;
     case AttrType::DEFENSE:
-        if (c->isAffected(LastingEffect::PANIC))
-          value += attrBonus;
-        if (c->isAffected(LastingEffect::RAGE))
-          value -= attrBonus;
-        if (c->isAffected(LastingEffect::SLEEP))
-          value *= 0.66;
-        if (c->isAffected(LastingEffect::DEF_BONUS))
-          value += attrBonus;
-        if (c->isAffected(LastingEffect::SATIATED))
-          value += 1;
-        if (c->isAffected(LastingEffect::RESTED))
-          value += 1;
+      if (c->isAffected(LastingEffect::PANIC))
+        value += attrBonus;
+      if (c->isAffected(LastingEffect::RAGE))
+        value -= attrBonus;
+      if (c->isAffected(LastingEffect::SLEEP))
+        value -= attrBonus;
+      if (c->isAffected(LastingEffect::DEF_BONUS))
+        value += attrBonus;
+      if (c->isAffected(LastingEffect::SATIATED))
+        value += 1;
+      if (c->isAffected(LastingEffect::RESTED))
+        value += 1;
       break;
     default: break;
   }
+  return value;
 }
 
 namespace {

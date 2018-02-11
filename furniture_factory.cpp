@@ -137,6 +137,7 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setDestroyable(80);
     case FurnitureType::PRISON:
       return Furniture("prison", ViewObject(ViewId::PRISON, ViewLayer::FLOOR_BACKGROUND), type, tribe)
+          .setTickType(FurnitureTickType::BED)
           .setUsageType(FurnitureUsageType::SLEEP);
     case FurnitureType::TREASURE_CHEST:
       return Furniture("treasure chest", ViewObject(ViewId::TREASURE_CHEST, ViewLayer::FLOOR), type, tribe)

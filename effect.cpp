@@ -273,7 +273,7 @@ void Effect::Teleport::applyToCreature(WCreature c, WCreature attacker) const {
   PROFILE;
   Rectangle area = Rectangle::centered(Vec2(0, 0), 12);
   int infinity = 10000;
-  PositionMap<int> weight(infinity);
+  PositionMap<int> weight;
   queue<Position> q;
   for (Position v : c->getPosition().getRectangle(area))
     if (auto other = v.getCreature())
@@ -285,8 +285,8 @@ void Effect::Teleport::applyToCreature(WCreature c, WCreature attacker) const {
     Position v = q.front();
     q.pop();
     for (Position w : v.neighbors8())
-      if (w.canEnterEmpty({MovementTrait::WALK}) && weight.get(w) == infinity) {
-        weight.set(w, weight.get(v) + 1);
+      if (w.canEnterEmpty({MovementTrait::WALK}) && !weight.contains(w)) {
+        weight.set(w, weight.getOrFail(v) + 1);
         q.push(w);
       }
   }
@@ -295,12 +295,13 @@ void Effect::Teleport::applyToCreature(WCreature c, WCreature attacker) const {
   for (Position v : c->getPosition().getRectangle(area)) {
     if (!v.canEnter(c) || v.isBurning() || v.getPoisonGasAmount() > 0 || !c->isSameSector(v))
       continue;
-    int weightV = weight.get(v);
-    if (weightV == maxW)
-      good.push_back(v);
-    else if (weightV > maxW) {
-      good = {v};
-      maxW = weightV;
+    if (auto weightV = weight.getValueMaybe(v)) {
+      if (*weightV == maxW)
+        good.push_back(v);
+      else if (*weightV > maxW) {
+        good = {v};
+        maxW = *weightV;
+      }
     }
   }
   if (maxW < 2) {
@@ -609,10 +610,8 @@ void Effect::PlaceFurniture::applyToCreature(WCreature c, WCreature attacker) co
     else*/
       Effect::Teleport{}.applyToCreature(c);
   }
-  if (c->getPosition() != pos || !furnitureBlocks) {
-    f->onConstructedBy(c);
-    pos.addFurniture(std::move(f));
-  }
+  f->onConstructedBy(c);
+  pos.addFurniture(std::move(f));
 }
 
 string Effect::PlaceFurniture::getName() const {

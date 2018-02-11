@@ -750,21 +750,17 @@ SGuiElem GuiBuilder::getTurnInfoGui(const GlobalTime& turn) {
       gui.labelFun([&turn] { return "T: " + toString(turn); }, Color::WHITE));
 }
 
-static Color getBonusColor(int bonus) {
-  if (bonus < 0)
-    return Color::RED;
-  if (bonus > 0)
-    return Color::GREEN;
-  return Color::WHITE;
-}
-
 vector<SGuiElem> GuiBuilder::drawPlayerAttributes(const vector<AttributeInfo>& attr) {
   vector<SGuiElem> ret;
-  for (auto& elem : attr)
+  for (auto& elem : attr) {
+    auto attrText = toString(elem.value);
+    if (elem.bonus != 0)
+      attrText += (elem.bonus > 0 ? "+" : "") + toString(elem.bonus);
     ret.push_back(gui.stack(getTooltip({elem.name, elem.help}, THIS_LINE),
         gui.horizontalList(makeVec(
           gui.icon(elem.attr),
-          gui.margins(gui.label(toString(elem.value), getBonusColor(elem.bonus)), 0, 2, 0, 0)), 30)));
+          gui.margins(gui.label(attrText), 0, 2, 0, 0)), 30)));
+  }
   return ret;
 }
 
@@ -2481,7 +2477,7 @@ SGuiElem GuiBuilder::drawAttributesOnPage(vector<SGuiElem>&& attrs) {
   vector<SGuiElem> lines[2];
   for (int i : All(attrs))
     lines[i % 2].push_back(std::move(attrs[i]));
-  int elemWidth = 80;
+  int elemWidth = 100;
   return gui.verticalList(makeVec(
       gui.horizontalList(std::move(lines[0]), elemWidth),
       gui.horizontalList(std::move(lines[1]), elemWidth)), legendLineHeight);

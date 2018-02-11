@@ -39,26 +39,26 @@ const vector<Position>& Territory::getAll() const {
 
 vector<Position> Territory::calculateExtended(int minRadius, int maxRadius) const {
   PROFILE;
-  PositionMap<optional<int>> extendedTiles;
+  PositionMap<int> extendedTiles;
   vector<Position> extendedQueue;
   for (Position pos : allSquaresVec) {
-    if (!extendedTiles.get(pos))  {
+    if (!extendedTiles.contains(pos))  {
       extendedTiles.set(pos, 1);
       extendedQueue.push_back(pos);
     }
   }
   for (int i = 0; i < extendedQueue.size(); ++i) {
     Position pos = extendedQueue[i];
-    auto value = *extendedTiles.getOrFail(pos);
+    auto value = extendedTiles.getOrFail(pos);
     for (Position v : pos.neighbors8())
-      if (!contains(v) && !extendedTiles.get(v) && v.canEnterEmpty({MovementTrait::WALK})) {
+      if (!contains(v) && !extendedTiles.contains(v) && v.canEnterEmpty({MovementTrait::WALK})) {
         extendedTiles.set(v, value + 1);
         if (value + 1 < maxRadius)
           extendedQueue.push_back(v);
       }
   }
   if (minRadius > 0)
-    return extendedQueue.filter([&] (const Position& v) { return *extendedTiles.getOrFail(v) >= minRadius; });
+    return extendedQueue.filter([&] (const Position& v) { return extendedTiles.getOrFail(v) >= minRadius; });
   return extendedQueue;
 }
 

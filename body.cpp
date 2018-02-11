@@ -640,23 +640,20 @@ const static map<BodyPart, int> damagePenalty {
   {BodyPart::WING, 2},
   {BodyPart::HEAD, 3}};
 
-double Body::modifyAttr(AttrType type, double def) const {
+int Body::getAttrBonus(AttrType type) const {
+  int ret = 0;
   switch (type) {
     case AttrType::DAMAGE:
-        //if (health < 1)
-        //  def *= 0.666 + health / 3;
-        for (auto elem : damagePenalty)
-          def -= elem.second * (numInjured(elem.first) + numLost(elem.first));
-        break;
+      for (auto elem : damagePenalty)
+        ret -= elem.second * (numInjured(elem.first) + numLost(elem.first));
+      break;
     case AttrType::DEFENSE:
-        //if (health < 1)
-        //  def *= 0.666 + health / 3;
-        for (auto elem : defensePenalty)
-          def -= elem.second * (numInjured(elem.first) + numLost(elem.first));
-        break;
+      for (auto elem : defensePenalty)
+        ret -= elem.second * (numInjured(elem.first) + numLost(elem.first));
+      break;
     default: break;
   }
-  return def;
+  return ret;
 }
 
 bool Body::tick(WConstCreature c) {

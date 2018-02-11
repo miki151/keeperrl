@@ -22,13 +22,13 @@ class KnownTiles {
   void addTile(Position);
   bool isKnown(Position) const;
   const PositionSet& getBorderTiles() const;
-  void limitToModel(const WModel);
+  void limitToModel(WConstModel);
 
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version);
 
   private:
-  PositionMap<bool> SERIAL(known);
+  PositionSet SERIAL(known);
   PositionSet SERIAL(border);
 };
 

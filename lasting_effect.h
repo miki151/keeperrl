@@ -57,7 +57,7 @@ class LastingEffects {
   static optional<LastingEffect> getSuppressor(LastingEffect);
   static void onRemoved(WCreature, LastingEffect, bool msg);
   static void onTimedOut(WCreature, LastingEffect, bool msg);
-  static void modifyAttr(WConstCreature, AttrType, double&);
+  static int getAttrBonus(WConstCreature, AttrType);
   static void afterCreatureDamage(WCreature, LastingEffect);
   static bool tick(WCreature, LastingEffect);
   static const char* getGoodAdjective(LastingEffect);

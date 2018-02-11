@@ -55,12 +55,15 @@ bool MinionActivityMap::isAvailable(WConstCollective col, WConstCreature c, Mini
     case MinionActivity::IDLE:
       return true;
     case MinionActivity::TRAIN:
-      return !c->getAttributes().isTrainingMaxedOut(ExperienceType::MELEE);
+      return !c->getAttributes().isTrainingMaxedOut(ExperienceType::MELEE) &&
+          !col->hasTrait(c, MinionTrait::PRISONER);
     case MinionActivity::STUDY:
-      return !c->getAttributes().isTrainingMaxedOut(ExperienceType::SPELL) ||
-          (col->getConfig().getRegenerateMana() && c->getAttributes().getMaxExpLevel()[ExperienceType::SPELL] > 0);
+      return !col->hasTrait(c, MinionTrait::PRISONER) &&
+          (!c->getAttributes().isTrainingMaxedOut(ExperienceType::SPELL) ||
+          (col->getConfig().getRegenerateMana() && c->getAttributes().getMaxExpLevel()[ExperienceType::SPELL] > 0));
     case MinionActivity::ARCHERY:
-      return !c->getAttributes().isTrainingMaxedOut(ExperienceType::ARCHERY) &&
+      return !col->hasTrait(c, MinionTrait::PRISONER) &&
+          !c->getAttributes().isTrainingMaxedOut(ExperienceType::ARCHERY) &&
           !c->getEquipment().getItems(ItemIndex::RANGED_WEAPON).empty();
     case MinionActivity::BE_WHIPPED:
       return !c->getBody().isImmuneTo(LastingEffect::ENTANGLED) &&

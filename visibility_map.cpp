@@ -39,20 +39,20 @@ void VisibilityMap::updateEyeball(Position pos) {
 }
 
 void VisibilityMap::removeEyeball(Position pos) {
-  if (auto& positions = eyeballs.get(pos))
+  if (auto positions = eyeballs.getReferenceMaybe(pos))
     removePositions(*positions);
-  eyeballs.set(pos, none);
+  eyeballs.erase(pos);
 }
 
 void VisibilityMap::onVisibilityChanged(Position pos) {
   if (auto c = pos.getCreature())
     if (lastUpdates.hasKey(c))
       update(c, c->getVisibleTiles());
-  if (eyeballs.get(pos))
+  if (eyeballs.contains(pos))
     updateEyeball(pos);
 }
 
 bool VisibilityMap::isVisible(Position pos) const {
-  return visibilityCount.get(pos) > 0;
+  return visibilityCount.getValueMaybe(pos).value_or(0) > 0;
 }
 

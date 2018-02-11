@@ -702,14 +702,14 @@ void Collective::onEvent(const GameEvent& event) {
         }
       },
       [&](const TrapTriggered& info) {
-        if (auto& trap = constructions->getTrap(info.pos)) {
+        if (auto trap = constructions->getTrap(info.pos)) {
           trap->reset();
           if (trap->getType() == TrapType::SURPRISE)
             handleSurprise(info.pos);
         }
       },
       [&](const TrapDisarmed& info) {
-        if (auto& trap = constructions->getTrap(info.pos)) {
+        if (auto trap = constructions->getTrap(info.pos)) {
           control->addMessage(PlayerMessage(info.creature->getName().a() +
               " disarms a " + getTrapName(trap->getType()) + " trap.",
               MessagePriority::HIGH).setPosition(info.pos));
@@ -1080,12 +1080,12 @@ void Collective::addTrap(Position pos, TrapType type) {
 
 void Collective::onAppliedItem(Position pos, WItem item) {
   CHECK(item->getTrapType());
-  if (auto& trap = constructions->getTrap(pos))
+  if (auto trap = constructions->getTrap(pos))
     trap->setArmed();
 }
 
 void Collective::onAppliedItemCancel(Position pos) {
-  if (auto& trap = constructions->getTrap(pos))
+  if (auto trap = constructions->getTrap(pos))
     trap->reset();
 }
 

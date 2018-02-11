@@ -56,23 +56,23 @@ FurnitureLayer ConstructionMap::FurnitureInfo::getLayer() const {
   return Furniture::getLayer(type);
 }
 
-const optional<ConstructionMap::FurnitureInfo>& ConstructionMap::getFurniture(Position pos, FurnitureLayer layer) const {
-  return furniture[layer].get(pos);
+optional<const ConstructionMap::FurnitureInfo&> ConstructionMap::getFurniture(Position pos, FurnitureLayer layer) const {
+  return furniture[layer].getReferenceMaybe(pos);
 }
 
 void ConstructionMap::setTask(Position pos, FurnitureLayer layer, UniqueEntity<Task>::Id id) {
-  furniture[layer].getOrFail(pos)->setTask(id);
+  furniture[layer].getOrFail(pos).setTask(id);
 }
 
 void ConstructionMap::removeFurniture(Position pos, FurnitureLayer layer) {
   auto& info = furniture[layer].getOrFail(pos);
-  auto type = info->getFurnitureType();
-  if (!info->isBuilt()) {
+  auto type = info.getFurnitureType();
+  if (!info.isBuilt()) {
     --unbuiltCounts[type];
-    addDebt(-info->getCost());
+    addDebt(-info.getCost());
   }
   furniturePositions[type].erase(pos);
-  info = none;
+  furniture[layer].erase(pos);
   allFurniture.removeElement({pos, layer});
   pos.setNeedsRenderUpdate(true);
 }
@@ -83,7 +83,7 @@ void ConstructionMap::addDebt(const CostInfo& cost) {
 
 void ConstructionMap::onFurnitureDestroyed(Position pos, FurnitureLayer layer) {
   PROFILE;
-  if (auto& info = furniture[layer].getOrInit(pos)) {
+  if (auto info = furniture[layer].getReferenceMaybe(pos)) {
     if (info->isBuilt())
       addDebt(info->getCost());
     info->reset();
@@ -97,7 +97,7 @@ void ConstructionMap::onFurnitureDestroyed(Position pos, FurnitureLayer layer) {
 
 void ConstructionMap::addFurniture(Position pos, const FurnitureInfo& info) {
   auto layer = info.getLayer();
-  CHECK(!furniture[layer].get(pos));
+  CHECK(!furniture[layer].contains(pos));
   allFurniture.push_back({pos, layer});
   furniture[layer].set(pos, info);
   pos.setNeedsRenderUpdate(true);
@@ -110,7 +110,7 @@ void ConstructionMap::addFurniture(Position pos, const FurnitureInfo& info) {
 }
 
 bool ConstructionMap::containsFurniture(Position pos, FurnitureLayer layer) const {
-  return !!furniture[layer].get(pos);
+  return furniture[layer].contains(pos);
 }
 
 int ConstructionMap::getBuiltCount(FurnitureType type) const {
@@ -135,29 +135,29 @@ void ConstructionMap::onConstructed(Position pos, FurnitureType type) {
     addFurniture(pos, FurnitureInfo::getBuilt(type));
   furniturePositions[type].insert(pos);
   --unbuiltCounts[type];
-  if (furniture[layer].get(pos)) { // why this if?
-    auto& info = *furniture[layer].getOrInit(pos);
+  if (furniture[layer].contains(pos)) { // why this if?
+    auto& info = furniture[layer].getOrInit(pos);
     info.setBuilt();
     addDebt(-info.getCost());
   }
 }
 
-const optional<ConstructionMap::TrapInfo>& ConstructionMap::getTrap(Position pos) const {
-  return traps.get(pos);
+optional<const ConstructionMap::TrapInfo&> ConstructionMap::getTrap(Position pos) const {
+  return traps.getReferenceMaybe(pos);
 }
 
-optional<ConstructionMap::TrapInfo>& ConstructionMap::getTrap(Position pos) {
-  return traps.getOrInit(pos);
+optional<ConstructionMap::TrapInfo&> ConstructionMap::getTrap(Position pos) {
+  return traps.getReferenceMaybe(pos);
 }
 
 void ConstructionMap::removeTrap(Position pos) {
-  traps.set(pos, none);
+  traps.erase(pos);
   allTraps.removeElement(pos);
   pos.setNeedsRenderUpdate(true);
 }
 
 void ConstructionMap::addTrap(Position pos, const TrapInfo& info) {
-  CHECK(!traps.get(pos));
+  CHECK(!traps.contains(pos));
   traps.set(pos, info);
   allTraps.push_back(pos);
   pos.setNeedsRenderUpdate(true);

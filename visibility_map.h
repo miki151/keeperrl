@@ -22,7 +22,7 @@ class VisibilityMap {
 
   private:
   EntityMap<Creature, vector<Position>> SERIAL(lastUpdates);
-  PositionMap<optional<vector<Position>>> SERIAL(eyeballs);
+  PositionMap<vector<Position>> SERIAL(eyeballs);
   PositionMap<int> SERIAL(visibilityCount);
   void addPositions(const vector<Position>&);
   void removePositions(const vector<Position>&);

@@ -10,7 +10,8 @@ static const double lightBase = 0.5;
 static const double flattenVal = 0.9;
 
 double TileEfficiency::getEfficiency(Position pos) const {
-  return (1 + efficiency.get(pos)) * min(1.0, (lightBase + pos.getLight() * (1 - lightBase)) / flattenVal);
+  return (1 + efficiency.getValueMaybe(pos).value_or(0)) *
+      min(1.0, (lightBase + pos.getLight() * (1 - lightBase)) / flattenVal);
 }
 
 void TileEfficiency::update(Position pos) {
