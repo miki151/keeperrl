@@ -232,6 +232,7 @@ optional<TimeInterval> MinionActivities::getDuration(WConstCreature c, MinionAct
     case MinionActivity::IDLE:
     case MinionActivity::BE_WHIPPED:
     case MinionActivity::BE_TORTURED:
+    case MinionActivity::BE_RANSOMED:
     case MinionActivity::SLEEP: return none;
     default: return TimeInterval((int) 500 + 250 * c->getMorale());
   }

@@ -28,6 +28,7 @@ bool MinionActivityMap::canChooseRandomly(WConstCreature c, MinionActivity t) co
     case MinionActivity::BE_EXECUTED:
     case MinionActivity::BE_WHIPPED:
     case MinionActivity::BE_TORTURED:
+    case MinionActivity::BE_RANSOMED:
       return false;
     case MinionActivity::SLEEP:
       return !c->isAffected(LastingEffect::RESTED);
@@ -70,6 +71,9 @@ bool MinionActivityMap::isAvailable(WConstCollective col, WConstCreature c, Mini
     case MinionActivity::BE_EXECUTED:
     case MinionActivity::BE_TORTURED:
       return col->hasTrait(c, MinionTrait::PRISONER);
+    case MinionActivity::BE_RANSOMED:
+      return col->hasTrait(c, MinionTrait::PRISONER) && 
+             c->getAttributes().getSkills().getValue(SkillId::NOBILITY) > 0;
     case MinionActivity::CRAFT:
       return c->getAttributes().getSkills().getValue(SkillId::FORGE) > 0 ||
           c->getAttributes().getSkills().getValue(SkillId::WORKSHOP) > 0 ||
