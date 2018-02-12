@@ -30,6 +30,7 @@
 
 template <class T>
 string toString(const T& t) {
+  PROFILE;
   stringstream ss;
   ss << t;
   return ss.str();
@@ -49,6 +50,7 @@ class GameExitException {};
 
 template <class T>
 T fromString(const string& s) {
+  PROFILE;
   std::stringstream ss(s);
   T t;
   ss >> t;

@@ -9,10 +9,10 @@ void KnownTiles::serialize(Archive& ar, const unsigned int version) {
 SERIALIZABLE(KnownTiles);
 
 void KnownTiles::addTile(Position pos) {
-  known.set(pos, true);
+  known.insert(pos);
   border.erase(pos);
   for (Position v : pos.neighbors4())
-    if (!known.get(v))
+    if (!known.count(v))
       border.insert(v);
 }
 
@@ -21,14 +21,18 @@ const PositionSet& KnownTiles::getBorderTiles() const {
 }
 
 bool KnownTiles::isKnown(Position pos) const {
-  return known.get(pos);
+  return known.count(pos);
 };
 
-void KnownTiles::limitToModel(const WModel m) {
+static PositionSet limitToModel(const PositionSet& s, WConstModel m) {
   PositionSet copy;
-  for (Position p : border)
+  for (Position p : s)
     if (p.getModel() == m)
       copy.insert(p);
-  border = copy;
-  known.limitToModel(m);
+  return copy;
+}
+
+void KnownTiles::limitToModel(WConstModel m) {
+  ::limitToModel(known, m);
+  ::limitToModel(border, m);
 }

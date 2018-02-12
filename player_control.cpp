@@ -838,7 +838,8 @@ vector<PlayerInfo> PlayerControl::getPlayerInfos(vector<WCreature> creatures, Un
         minionInfo.actions.push_back(PlayerInfo::CONTROL);
       if (!collective->hasTrait(c, MinionTrait::PRISONER)) {
         minionInfo.actions.push_back(PlayerInfo::RENAME);
-      }
+      } else
+        minionInfo.levelInfo.limit.clear();
       if (c != collective->getLeader())
         minionInfo.actions.push_back(PlayerInfo::BANISH);
       if (!collective->hasTrait(c, MinionTrait::WORKER)) {
@@ -996,8 +997,8 @@ void PlayerControl::fillWorkshopInfo(CollectiveInfo& info) const {
 void PlayerControl::acceptPrisoner(int index) {
   index = -index - 1;
   auto immigrants = getPrisonerImmigrantStack();
-  if (index < immigrants.size()) {
-    auto victim = immigrants[index][0];
+  if (index < immigrants.size() && !immigrants[index].collective) {
+    auto victim = immigrants[index].creatures[0];
     victim->removeEffect(LastingEffect::STUNNED);
     auto& skills = victim->getAttributes().getSkills();
     skills.setValue(SkillId::DIGGING, skills.hasDiscrete(SkillId::NAVIGATION_DIGGING) ? 1 : 0.2);
@@ -1011,24 +1012,39 @@ void PlayerControl::rejectPrisoner(int index) {
   index = -index - 1;
   auto immigrants = getPrisonerImmigrantStack();
   if (index < immigrants.size()) {
-    auto victim = immigrants[index][0];
+    auto victim = immigrants[index].creatures[0];
     victim->dieWithLastAttacker();
   }
 }
 
-vector<vector<WCreature>> PlayerControl::getPrisonerImmigrantStack() const {
-  vector<WCreature> ret;
-  for (auto villain : getGame()->getCollectives())
-    if (villain != collective)
-      ret.append(villain->getCreatures(MinionTrait::STUNNED));
-  return Creature::stack(ret);
+vector<PlayerControl::StunnedInfo> PlayerControl::getPrisonerImmigrantStack() const {
+  vector<StunnedInfo> ret;
+  vector<WCreature> outside;
+  for (auto villain : getGame()->getCollectives()) {
+    if (villain != collective) {
+      auto& territory = villain->getTerritory();
+      vector<WCreature> inside;
+      for (auto c : villain->getCreatures(MinionTrait::STUNNED))
+        if (c->isAffected(LastingEffect::STUNNED)) {
+          if (villain->isConquered() || !territory.contains(c->getPosition()))
+            outside.push_back(c);
+          else
+            inside.push_back(c);
+        }
+      for (auto& stack : Creature::stack(inside))
+        ret.push_back(StunnedInfo{stack, villain});
+    }
+  }
+  for (auto& stack : Creature::stack(outside))
+    ret.push_back(StunnedInfo{stack, nullptr});
+  return ret;
 }
 
 vector<ImmigrantDataInfo> PlayerControl::getPrisonerImmigrantData() const {
   vector<ImmigrantDataInfo> ret;
   int index = -1;
   for (auto stack : getPrisonerImmigrantStack()) {
-    auto c = stack[0];
+    auto c = stack.creatures[0];
     int numPrisoners = collective->getCreatures(MinionTrait::PRISONER).size();
     int prisonSize = collective->getConstructions().getBuiltCount(FurnitureType::PRISON);
     int requiredPrisonSize = 2;
@@ -1038,6 +1054,8 @@ vector<ImmigrantDataInfo> PlayerControl::getPrisonerImmigrantData() const {
       requirements.push_back("Requires a prison.");
     else if (missingSize > 0)
       requirements.push_back("Requires " + toString(missingSize) + " more prison tiles.");
+    if (stack.collective)
+      requirements.push_back("Requires conquering " + stack.collective->getName()->full);
     ret.push_back(ImmigrantDataInfo {
         requirements,
         {},
@@ -1045,7 +1063,7 @@ vector<ImmigrantDataInfo> PlayerControl::getPrisonerImmigrantData() const {
         c->getName().bare() + " (prisoner)",
         c->getViewObject().id(),
         AttributeInfo::fromCreature(c),
-        stack.size() == 1 ? none : optional<int>(stack.size()),
+        stack.creatures.size() == 1 ? none : optional<int>(stack.creatures.size()),
         c->getTimeRemaining(LastingEffect::STUNNED),
         index,
         none,
@@ -1481,7 +1499,7 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
         index.setHighlight(HighlightType::CLICKED_FURNITURE);
       if (draggedCreature)
         if (WCreature c = getCreature(*draggedCreature))
-          if (auto task = MinionActivities::getTaskFor(collective, c, furniture->getType()))
+          if (auto task = MinionActivities::getActivityFor(collective, c, furniture->getType()))
             if (c->getAttributes().getMinionActivities().isAvailable(collective, c, *task))
               index.setHighlight(HighlightType::CREATURE_DROP);
       if (showEfficiency(furniture->getType()) && index.hasObject(ViewLayer::FLOOR))
@@ -1503,7 +1521,7 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
       && pos.inRectangle(Rectangle::boundingBox({rectSelection->corner1, rectSelection->corner2})))
     index.setHighlight(rectSelection->deselect ? HighlightType::RECT_DESELECTION : HighlightType::RECT_SELECTION);
   const ConstructionMap& constructions = collective->getConstructions();
-  if (auto& trap = constructions.getTrap(position))
+  if (auto trap = constructions.getTrap(position))
     index.insert(getTrapObject(trap->getType(), trap->isArmed()));
   for (auto layer : ENUM_ALL(FurnitureLayer))
     if (auto f = constructions.getFurniture(position, layer))
@@ -1663,7 +1681,7 @@ void PlayerControl::minionDragAndDrop(const CreatureDropInfo& info) {
     c->removeEffect(LastingEffect::TIED_UP);
     c->removeEffect(LastingEffect::SLEEP);
     if (auto furniture = collective->getConstructions().getFurniture(pos, FurnitureLayer::MIDDLE))
-      if (auto task = MinionActivities::getTaskFor(collective, c, furniture->getFurnitureType())) {
+      if (auto task = MinionActivities::getActivityFor(collective, c, furniture->getFurnitureType())) {
         if (collective->isActivityGood(c, *task, true)) {
           collective->setMinionActivity(c, *task);
           collective->setTask(c, Task::goTo(pos));

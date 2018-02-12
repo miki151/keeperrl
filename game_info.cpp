@@ -174,34 +174,30 @@ const CreatureInfo* CollectiveInfo::getMinion(UniqueEntity<Creature>::Id id) con
 
 vector<AttributeInfo> AttributeInfo::fromCreature(WConstCreature c) {
   PROFILE;
-  auto genInfo = [c](AttrType type, int bonus, const char* help) {
+  auto genInfo = [c](AttrType type, const char* help) {
     return AttributeInfo {
         getName(type),
         type,
-        c->getAttr(type),
-        bonus,
+        c->getAttributes().getRawAttr(type),
+        c->getAttrBonus(type),
         help
     };
   };
   return {
       genInfo(
           AttrType::DAMAGE,
-          c->isAffected(LastingEffect::RAGE) ? 1 : c->isAffected(LastingEffect::PANIC) ? -1 : 0,
           "Affects if and how much damage is dealt in combat."
       ),
       genInfo(
           AttrType::DEFENSE,
-          c->isAffected(LastingEffect::RAGE) ? -1 : (c->isAffected(LastingEffect::PANIC)) ? 1 : 0,
           "Affects if and how much damage is taken in combat."
       ),
       genInfo(
           AttrType::SPELL_DAMAGE,
-          0,
           "Base value of magic attacks."
       ),
       genInfo(
           AttrType::RANGED_DAMAGE,
-          0,
           "Affects if and how much damage is dealt when shooting a ranged weapon."
       ),
     };

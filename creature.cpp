@@ -767,13 +767,17 @@ int simulAttackPen(int attackers) {
   return max(0, (attackers - 1) * 2);
 }
 
-int Creature::getAttr(AttrType type) const {
-  double def = getBody().modifyAttr(type, attributes->getRawAttr(type));
+int Creature::getAttrBonus(AttrType type, bool includeWeapon) const {
+  int def = getBody().getAttrBonus(type);
   for (WItem item : equipment->getAllEquipped())
-    if (item->getClass() != ItemClass::WEAPON || type != item->getWeaponInfo().meleeAttackAttr)
+    if (includeWeapon || item->getClass() != ItemClass::WEAPON || type != item->getWeaponInfo().meleeAttackAttr)
       def += item->getModifier(type);
-  LastingEffects::modifyAttr(this, type, def);
-  return max(0, (int) def);
+  def += LastingEffects::getAttrBonus(this, type);
+  return def;
+}
+
+int Creature::getAttr(AttrType type, bool includeWeapon) const {
+  return max(0, attributes->getRawAttr(type) + getAttrBonus(type, includeWeapon));
 }
 
 int Creature::getPoints() const {
@@ -926,7 +930,7 @@ CreatureAction Creature::attack(WCreature other, optional<AttackParams> attackPa
   return CreatureAction(this, [=] (WCreature self) {
     INFO << getName().the() << " attacking " << other->getName().the();
     auto damageAttr = weapon->getWeaponInfo().meleeAttackAttr;
-    int damage = getAttr(damageAttr) + weapon->getModifier(damageAttr);
+    int damage = getAttr(damageAttr, false) + weapon->getModifier(damageAttr);
     AttackLevel attackLevel = Random.choose(getBody().getAttackLevels());
     if (attackParams && attackParams->level)
       attackLevel = *attackParams->level;

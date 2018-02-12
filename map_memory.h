@@ -32,14 +32,14 @@ class MapMemory {
   void clearUpdated(WConstLevel) const;
   void clearSquare(Position pos);
   static const MapMemory& empty();
-  const optional<ViewIndex>& getViewIndex(Position) const;
+  optional<const ViewIndex&> getViewIndex(Position) const;
 
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version);
 
   private:
   void updateUpdated(Position);
-  optional<ViewIndex>& getViewIndex(Position);
-  HeapAllocated<PositionMap<optional<ViewIndex>>> SERIAL(table);
-  mutable map<int, unordered_set<Position, CustomHash<Position>>> updated;
+  optional<ViewIndex&> getViewIndex(Position);
+  HeapAllocated<PositionMap<ViewIndex>> SERIAL(table);
+  mutable map<int, PositionSet> updated;
 };

@@ -229,7 +229,11 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   vector<ImmigrantDataInfo> getPrisonerImmigrantData() const;
   void acceptPrisoner(int index);
   void rejectPrisoner(int index);
-  vector<vector<WCreature>> getPrisonerImmigrantStack() const;
+  struct StunnedInfo {
+    vector<WCreature> creatures;
+    WCollective collective;
+  };
+  vector<StunnedInfo> getPrisonerImmigrantStack() const;
   string getMinionGroupName(WCreature) const;
   ViewId getMinionGroupViewId(WCreature) const;
 };

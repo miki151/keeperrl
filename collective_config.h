@@ -58,10 +58,8 @@ struct MinionActivityInfo {
   typedef function<bool(WConstCollective, WConstCreature, FurnitureType)> UsagePredicate;
   typedef function<bool(WConstCollective, FurnitureType)> ActivePredicate;
   MinionActivityInfo(UsagePredicate, const string& description);
-  MinionActivityInfo(UsagePredicate, ActivePredicate, const string& description);
   MinionActivityInfo(Type, const string& description);
   UsagePredicate furniturePredicate = [](WConstCollective, WConstCreature, FurnitureType) { return true; };
-  ActivePredicate activePredicate = [](WConstCollective, FurnitureType) { return true; };
   string description;
 };
 

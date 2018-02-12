@@ -95,15 +95,16 @@ bool TaskMap::isPriorityTask(WConstTask t) const {
   return priorityTasks.contains(t);
 }
 
+
 bool TaskMap::hasPriorityTasks(Position pos) const {
-  for (WTask task : reversePositions.get(pos))
+  for (auto task : getTasks(pos))
     if (isPriorityTask(task))
       return true;
   return false;
 }
 
 WTask TaskMap::getMarked(Position pos) const {
-  return marked.get(pos);
+  return marked.getValueMaybe(pos).value_or(nullptr);
 }
 
 void TaskMap::markSquare(Position pos, HighlightType h, PTask task, MinionActivity activity) {
@@ -114,7 +115,7 @@ void TaskMap::markSquare(Position pos, HighlightType h, PTask task, MinionActivi
 }
 
 HighlightType TaskMap::getHighlightType(Position pos) const {
-  return highlight.get(pos);
+  return highlight.getOrFail(pos);
 }
 
 bool TaskMap::hasTask(WConstCreature c) const {
@@ -136,7 +137,12 @@ WTask TaskMap::getTask(WConstCreature c) {
 }
 
 const vector<WTask>& TaskMap::getTasks(Position pos) const {
-  return reversePositions.get(pos);
+  if (auto tasks = reversePositions.getReferenceMaybe(pos))
+    return *tasks;
+  else {
+    static const vector<WTask> empty;
+    return empty;
+  }
 }
 
 WTask TaskMap::addTaskFor(PTask task, WCreature c) {

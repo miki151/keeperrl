@@ -26,29 +26,28 @@ MapMemory::MapMemory() {}
 
 void MapMemory::addObject(Position pos, const ViewObject& obj) {
   CHECK(pos.isValid());
-  if (!getViewIndex(pos))
-    getViewIndex(pos) = ViewIndex();
-  getViewIndex(pos)->insert(obj);
-  getViewIndex(pos)->setHighlight(HighlightType::MEMORY);
+  auto& index = table->getOrInit(pos);
+  index.insert(obj);
+  index.setHighlight(HighlightType::MEMORY);
   updateUpdated(pos);
 }
 
-optional<ViewIndex>& MapMemory::getViewIndex(Position pos) {
-  return table->getOrInit(pos);
+optional<ViewIndex&> MapMemory::getViewIndex(Position pos) {
+  return table->getReferenceMaybe(pos);
 }
 
-const optional<ViewIndex>& MapMemory::getViewIndex(Position pos) const {
-  return table->get(pos);
+optional<const ViewIndex&> MapMemory::getViewIndex(Position pos) const {
+  return table->getReferenceMaybe(pos);
 }
 
 void MapMemory::update(Position pos, const ViewIndex& index1) {
   CHECK(pos.isValid());
-  auto& index = getViewIndex(pos); 
+  auto& index = table->getOrInit(pos);
   index = index1;
-  index->setHighlight(HighlightType::MEMORY);
-  if (index->hasObject(ViewLayer::CREATURE) && 
-      !index->getObject(ViewLayer::CREATURE).hasModifier(ViewObjectModifier::REMEMBER))
-    index->removeObject(ViewLayer::CREATURE);
+  index.setHighlight(HighlightType::MEMORY);
+  if (index.hasObject(ViewLayer::CREATURE) &&
+      !index.getObject(ViewLayer::CREATURE).hasModifier(ViewObjectModifier::REMEMBER))
+    index.removeObject(ViewLayer::CREATURE);
   updateUpdated(pos);
 }
 

@@ -84,7 +84,7 @@ class Body {
   vector<PItem> getCorpseItems(const string& name, UniqueEntity<Creature>::Id, bool instantlyRotten) const;
 
   vector<AttackLevel> getAttackLevels() const;
-  double modifyAttr(AttrType, double) const;
+  int getAttrBonus(AttrType) const;
 
   bool isCollapsed(WConstCreature) const;
   int numGood(BodyPart) const;

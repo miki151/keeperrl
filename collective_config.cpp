@@ -364,10 +364,6 @@ MinionActivityInfo::MinionActivityInfo(UsagePredicate pred, const string& desc) 
   furniturePredicate(pred), description(desc) {
 }
 
-MinionActivityInfo::MinionActivityInfo(UsagePredicate usagePred, ActivePredicate activePred, const string& desc) :
-    type(FURNITURE), furniturePredicate(usagePred), activePredicate(activePred), description(desc) {
-}
-
 static EnumMap<WorkshopType, WorkshopInfo> workshops([](WorkshopType type)->WorkshopInfo {
   switch (type) {
     case WorkshopType::WORKSHOP: return {FurnitureType::WORKSHOP, "workshop", SkillId::WORKSHOP};
@@ -497,15 +493,10 @@ const MinionActivityInfo& CollectiveConfig::getActivityInfo(MinionActivity task)
       case MinionActivity::BE_WHIPPED: return {FurnitureType::WHIPPING_POST, "being whipped"};
       case MinionActivity::BE_TORTURED: return {FurnitureType::TORTURE_TABLE, "being tortured"};
       case MinionActivity::BE_EXECUTED: return {FurnitureType::GALLOWS, "being executed"};
-      case MinionActivity::CRAFT: return {[](WConstCollective, WConstCreature c, FurnitureType t) {
+      case MinionActivity::CRAFT: return {[](WConstCollective col, WConstCreature c, FurnitureType t) {
             if (auto type = getWorkshopType(t))
-              return !c || c->getAttributes().getSkills().getValue(getWorkshopInfo(*type).skill) > 0;
-            else
-              return false;
-          },
-          [](WConstCollective collective, FurnitureType t) {
-            if (auto type = getWorkshopType(t))
-              return !collective->getWorkshops().get(*type).isIdle();
+              return !c || !col || (c->getAttributes().getSkills().getValue(getWorkshopInfo(*type).skill) > 0 &&
+                            !col->getWorkshops().get(*type).isIdle());
             else
               return false;
           },

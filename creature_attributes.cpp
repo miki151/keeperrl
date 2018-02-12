@@ -98,10 +98,10 @@ const Gender& CreatureAttributes::getGender() const {
   return gender;
 }
 
-double CreatureAttributes::getRawAttr(AttrType type) const {
-  double ret = attr[type];
+int CreatureAttributes::getRawAttr(AttrType type) const {
+  int ret = attr[type];
   if (auto expType = getExperienceType(type))
-    ret += expLevel[*expType];
+    ret += (int) expLevel[*expType];
   return ret;
 }
 
