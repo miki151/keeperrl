@@ -928,7 +928,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.viewId = ViewId::PLAYER;
           c.attr = LIST(15_dam, 20_def );
           c.body = Body::humanoid(Body::Size::LARGE);
-          c.maxLevelIncrease[ExperienceType::MELEE] = 15;
           c.name = "Adventurer";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_MALE)->getNext());
           c.name->useFullTitle();
@@ -943,7 +942,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.gender = Gender::female;
           c.attr = LIST(15_dam, 20_def );
           c.body = Body::humanoid(Body::Size::LARGE);
-          c.maxLevelIncrease[ExperienceType::MELEE] = 15;
           c.name = "Adventurer";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_FEMALE)->getNext());
           c.name->useFullTitle();
