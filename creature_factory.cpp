@@ -2265,7 +2265,7 @@ static vector<ItemType> getDefaultInventory(CreatureId id) {
     case CreatureId::GREEN_DRAGON:
       return ItemList().add(ItemType::GoldPiece{}, Random.get(60, 100));
     case CreatureId::DEMON_DWELLER:
-      return ItemList().add(ItemType::GoldPiece{}, Random.get(50, 100));
+      return ItemList().add(ItemType::GoldPiece{}, Random.get(5, 10));
     case CreatureId::RED_DRAGON:
       return ItemList().add(ItemType::GoldPiece{}, Random.get(120, 200));
     case CreatureId::DEMON_LORD:
