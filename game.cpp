@@ -664,10 +664,20 @@ void Game::handleMessageBoard(Position pos, WCreature c) {
 }
 
 bool Game::gameWon() const {
+  if (campaign->getType() == CampaignType::ENDLESS)
+  {
+      //There are no main villains in endless mode.
+      return getGlobalTime().getVisibleInt() > 20000;
+  }
+  int mainVillainsDefeated = 0;
   for (WCollective col : getCollectives())
-    if (!col->isConquered() && col->getVillainType() == VillainType::MAIN)
-      return false;
-  return true;
+    if (col->getVillainType() == VillainType::MAIN)
+    {
+      if (!col->isConquered()) return false;
+      mainVillainsDefeated++;
+    }
+  //Conquered them all, but how many actually were there?
+  return mainVillainsDefeated > 0;
 }
 
 void Game::addEvent(const GameEvent& event) {
