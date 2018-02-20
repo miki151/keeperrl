@@ -526,7 +526,7 @@ unique_ptr<Workshops> CollectiveConfig::getWorkshops() const {
           Workshops::Item::fromType(ItemType::WoodenStaff{}, 13, {CollectiveResourceId::WOOD, 20})
                   .setTechId(TechId::MAGICAL_WEAPONS),
           Workshops::Item::fromType(ItemType::Torch{}, 2, {CollectiveResourceId::WOOD, 4}),
-          Workshops::Item::fromType(ItemType::TrapItem{TrapType::BOULDER}, 20, {CollectiveResourceId::STONE, 50})
+          Workshops::Item::fromType(ItemType::TrapItem{TrapType::BOULDER}, 20, {CollectiveResourceId::STONE, 120})
                   .setTechId(TechId::TRAPS),
           Workshops::Item::fromType(ItemType::TrapItem{TrapType::POISON_GAS}, 10, {CollectiveResourceId::WOOD, 20})
                   .setTechId(TechId::TRAPS),
