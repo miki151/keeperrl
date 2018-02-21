@@ -303,7 +303,7 @@ PModel ModelBuilder::trySingleMapModel(const string& worldName) {
         EnemyId::WITCH,
         EnemyId::CEMETERY}))
     enemies.push_back(enemyFactory->get(enemy));
-  return tryModel(360, worldName, enemies, true, BiomeId::GRASSLAND, {}, true);
+  return tryModel(304, worldName, enemies, true, BiomeId::GRASSLAND, {}, true);
 }
 
 void ModelBuilder::addMapVillains(vector<EnemyInfo>& enemyInfo, BiomeId biomeId) {
@@ -340,7 +340,7 @@ PModel ModelBuilder::tryCampaignBaseModel(const string& siteName, bool addExtern
   optional<ExternalEnemies> externalEnemies;
   if (addExternalEnemies)
     externalEnemies = ExternalEnemies(random, enemyFactory->getExternalEnemies());
-  return tryModel(230, siteName, enemyInfo, true, biome, std::move(externalEnemies), true);
+  return tryModel(174, siteName, enemyInfo, true, biome, std::move(externalEnemies), true);
 }
 
 PModel ModelBuilder::tryTutorialModel(const string& siteName) {
@@ -349,7 +349,7 @@ PModel ModelBuilder::tryTutorialModel(const string& siteName) {
   enemyInfo.push_back(enemyFactory->get(EnemyId::BANDITS));
   enemyInfo.push_back(enemyFactory->get(EnemyId::ADA_GOLEMS));
   enemyInfo.push_back(enemyFactory->get(EnemyId::TUTORIAL_VILLAGE).setVillainType(VillainType::LESSER));
-  return tryModel(230, siteName, enemyInfo, true, biome, {}, false);
+  return tryModel(174, siteName, enemyInfo, true, biome, {}, false);
 }
 
 static optional<BiomeId> getBiome(EnemyInfo& enemy, RandomGen& random) {
@@ -381,7 +381,7 @@ PModel ModelBuilder::tryCampaignSiteModel(const string& siteName, EnemyId enemyI
   auto biomeId = getBiome(enemyInfo[0], random);
   CHECK(biomeId) << "Unimplemented enemy in campaign " << EnumInfo<EnemyId>::getString(enemyId);
   addMapVillains(enemyInfo, *biomeId);
-  return tryModel(170, siteName, enemyInfo, false, *biomeId, {}, true);
+  return tryModel(114, siteName, enemyInfo, false, *biomeId, {}, true);
 }
 
 PModel ModelBuilder::tryBuilding(int numTries, function<PModel()> buildFun, const string& name) {

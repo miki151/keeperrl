@@ -2473,7 +2473,7 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, optional<CreatureFactory> fo
   }*/
   if (keeperSpawn)
     generateResources(random, startingPos, locations.get(), surroundWithResources, mapWidth);
-  int mapBorder = 30;
+  int mapBorder = 2;
   queue->addMaker(unique<Empty>(FurnitureType::WATER));
   queue->addMaker(getMountains(biomeId));
   queue->addMaker(unique<MountainRiver>(1, Predicate::attrib(SquareAttrib::MOUNTAIN)));
