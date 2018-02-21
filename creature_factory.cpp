@@ -911,7 +911,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
       return CATTR(
           c.viewId = ViewId::KEEPER_F;
           c.retiredViewId = ViewId::RETIRED_KEEPER_F;
-          c.attr = LIST(12_dam, 12_def, 12_spell_dam );
+          c.attr = LIST(12_dam, 12_def, 20_spell_dam );
           c.gender = Gender::female;
           c.body = Body::humanoid(Body::Size::LARGE);
           c.name = "Keeper";
@@ -928,7 +928,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.viewId = ViewId::PLAYER;
           c.attr = LIST(15_dam, 20_def );
           c.body = Body::humanoid(Body::Size::LARGE);
-          c.maxLevelIncrease[ExperienceType::MELEE] = 15;
           c.name = "Adventurer";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_MALE)->getNext());
           c.name->useFullTitle();
@@ -943,7 +942,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.gender = Gender::female;
           c.attr = LIST(15_dam, 20_def );
           c.body = Body::humanoid(Body::Size::LARGE);
-          c.maxLevelIncrease[ExperienceType::MELEE] = 15;
           c.name = "Adventurer";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_FEMALE)->getNext());
           c.name->useFullTitle();
@@ -2265,7 +2263,7 @@ static vector<ItemType> getDefaultInventory(CreatureId id) {
     case CreatureId::GREEN_DRAGON:
       return ItemList().add(ItemType::GoldPiece{}, Random.get(60, 100));
     case CreatureId::DEMON_DWELLER:
-      return ItemList().add(ItemType::GoldPiece{}, Random.get(50, 100));
+      return ItemList().add(ItemType::GoldPiece{}, Random.get(5, 10));
     case CreatureId::RED_DRAGON:
       return ItemList().add(ItemType::GoldPiece{}, Random.get(120, 200));
     case CreatureId::DEMON_LORD:
