@@ -36,9 +36,10 @@ class TaskMap {
   bool isPriorityTask(WConstTask) const;
   bool hasPriorityTasks(Position) const;
   void setPriorityTasks(Position);
-  WTask getClosestTask(WConstCreature, MinionActivity);
+  WTask getClosestTask(WConstCreature, MinionActivity, bool priorityOnly) const;
   const EntityMap<Task, CostInfo>& getCompletionCosts() const;
   WTask getTask(UniqueEntity<Task>::Id) const;
+  void clearFinishedTasks();
 
   SERIALIZATION_DECL(TaskMap);
 

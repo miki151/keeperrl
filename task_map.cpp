@@ -8,26 +8,37 @@ SERIALIZE_DEF(TaskMap, tasks, positionMap, reversePositions, taskByCreature, cre
 
 SERIALIZATION_CONSTRUCTOR_IMPL(TaskMap);
 
-WTask TaskMap::getClosestTask(WConstCreature c, MinionActivity activity) {
-  if (Random.roll(20))
-    for (WTask t : getWeakPointers(tasks))
-      if (t->isDone())
-        removeTask(t);
+void TaskMap::clearFinishedTasks() {
+  for (WTask t : getWeakPointers(tasks))
+    if (t->isDone())
+      removeTask(t);
+}
+
+WTask TaskMap::getClosestTask(WConstCreature c, MinionActivity activity, bool priorityOnly) const {
   WTask closest = nullptr;
+  auto isBetter = [&](WTask task, double dist) {
+    if (!closest)
+      return true;
+    bool pTask = isPriorityTask(task);
+    bool pClosest = isPriorityTask(closest);
+    if (pTask && !pClosest)
+      return true;
+    if (!pTask && pClosest)
+      return false;
+    return dist < getPosition(closest)->dist8(c->getPosition());
+  };
   for (auto task : taskByActivity[activity])
-    if (task->canPerform(c))
+    if (task->canPerform(c) && (!priorityOnly || isPriorityTask(task)))
       if (auto pos = getPosition(task)) {
         double dist = pos->dist8(c->getPosition());
         WConstCreature owner = getOwner(task);
         auto delayed = delayedTasks.getMaybe(task);
         if (!task->isDone() &&
             (!owner || (task->canTransfer() && pos->dist8(owner->getPosition()) > dist && dist <= 6)) &&
-            (!closest || dist < getPosition(closest)->dist8(c->getPosition()) || isPriorityTask(task)) &&
+            isBetter(task, dist) &&
             c->canNavigateTo(*pos) && !task->isBlocked(c) &&
             (!delayed || *delayed < c->getLocalTime())) {
           closest = task;
-          if (isPriorityTask(task))
-            return task;
         }
       }
   return closest;
@@ -222,4 +233,3 @@ const EntityMap<Task, CostInfo>& TaskMap::getCompletionCosts() const {
 WTask TaskMap::getTask(UniqueEntity<Task>::Id id) const {
   return taskById.getOrFail(id);
 }
-
