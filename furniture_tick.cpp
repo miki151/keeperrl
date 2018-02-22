@@ -14,6 +14,7 @@
 #include "attack_type.h"
 #include "item_type.h"
 #include "attack.h"
+#include "tribe.h"
 
 static void handleBed(Position pos) {
   PROFILE;
@@ -49,7 +50,7 @@ static void handleBoulder(Position pos, WFurniture furniture) {
             pos.globalMessage(PlayerMessage("The boulder starts rolling.", MessagePriority::CRITICAL));
             pos.unseenMessage(PlayerMessage("You hear a heavy boulder rolling.", MessagePriority::CRITICAL));
             CHECK(!pos.getCreature());
-            pos.addCreature(CreatureFactory::getRollingBoulder(furniture->getTribe(), direction), 0_visible);
+            pos.addCreature(CreatureFactory::getRollingBoulder(TribeId::getMonster(), direction), 0_visible);
           } else {
             other->you(MsgType::DISARM_TRAP, "boulder trap");
             pos.getGame()->addEvent(EventInfo::TrapDisarmed{pos, other});
