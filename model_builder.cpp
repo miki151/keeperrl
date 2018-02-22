@@ -90,20 +90,25 @@ static CollectiveConfig getKeeperConfig(RandomGen& random, bool fastImmigration,
           .addRequirement(0.1, AttractionInfo{1, FurnitureType::TRAINING_WOOD}),
       ImmigrantInfo(CreatureId::ORC_SHAMAN, {MinionTrait::FIGHTER})
           .setFrequency(0.6)
+          .addRequirement(0.0, MinTurnRequirement{500_global})
           .addRequirement(0.1, AttractionInfo{1, {FurnitureType::BOOKCASE_WOOD, FurnitureType::LABORATORY}}),
       ImmigrantInfo(CreatureId::OGRE, {MinionTrait::FIGHTER})
           .setFrequency(0.3)
+          .addRequirement(0.0, MinTurnRequirement{2000_global})
           .addRequirement(0.1, AttractionInfo{1, FurnitureType::TRAINING_IRON}),
       ImmigrantInfo(CreatureId::HARPY, {MinionTrait::FIGHTER})
           .setFrequency(0.3)
+          .addRequirement(0.0, MinTurnRequirement{2000_global})
           .addRequirement(0.1, AttractionInfo{1, FurnitureType::TRAINING_WOOD})
           .addRequirement(0.3, AttractionInfo{1, ItemIndex::RANGED_WEAPON}),
       ImmigrantInfo(CreatureId::ZOMBIE, {MinionTrait::FIGHTER})
           .setFrequency(0.5)
+          .addRequirement(0.0, MinTurnRequirement{1000_global})
           .setSpawnLocation(FurnitureType::GRAVE)
           .addRequirement(0.0, CostInfo(CollectiveResourceId::CORPSE, 1)),
       ImmigrantInfo(CreatureId::SKELETON, {MinionTrait::FIGHTER})
           .setFrequency(0.5)
+          .addRequirement(0.0, MinTurnRequirement{1000_global})
           .setSpawnLocation(FurnitureType::GRAVE)
           .addRequirement(0.1, AttractionInfo{1, FurnitureType::TRAINING_IRON})
           .addRequirement(0.0, CostInfo(CollectiveResourceId::CORPSE, 1)),
@@ -146,6 +151,7 @@ static CollectiveConfig getKeeperConfig(RandomGen& random, bool fastImmigration,
           .setFrequency(0.1),
       ImmigrantInfo(CreatureId::WEREWOLF, {MinionTrait::FIGHTER, MinionTrait::NO_RETURNING})
           .setFrequency(0.1)
+          .addRequirement(0.0, MinTurnRequirement{2000_global})
           .addRequirement(0.1, AttractionInfo{2, FurnitureType::TRAINING_IRON}),
       ImmigrantInfo(CreatureId::DARK_ELF_WARRIOR, {MinionTrait::FIGHTER})
           .addRequirement(0.0, RecruitmentInfo{{EnemyId::DARK_ELVES}, 3, MinionTrait::FIGHTER})

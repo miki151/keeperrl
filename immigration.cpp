@@ -135,6 +135,10 @@ vector<string> Immigration::getMissingRequirements(const Group& group) const {
         if (collective->getConstructions().getBuiltCount(type) == 0)
           ret.push_back("Requires " + Furniture::getName(type));
       },
+      [&](const MinTurnRequirement& type) {
+        if (collective->getGlobalTime() < type.turn)
+          ret.push_back("Not available until turn " + toString(type.turn));
+      },
       [&](const Pregnancy&) {
         for (WCreature c : collective->getCreatures())
           if (c->isAffected(LastingEffect::PREGNANT))
@@ -200,6 +204,10 @@ double Immigration::getRequirementMultiplier(const Group& group) const {
             info.getAvailableRecruits(collective->getGame(), getImmigrants()[group.immigrantIndex].getId(0)).empty())
           ret *= prob;
       },
+      [&](const MinTurnRequirement& type, double prob) {
+        if (collective->getGlobalTime() < type.turn)
+          ret *= prob;
+      },
       [&](const TutorialRequirement& t, double prob) {
         if (!t.tutorial->showImmigrant(immigrantInfo))
           ret *= prob;
@@ -230,6 +238,7 @@ void Immigration::occupyRequirements(WConstCreature c, int index) {
           }
       },
       [&](const RecruitmentInfo&) {},
+      [&](const MinTurnRequirement&) {},
       [&](const TutorialRequirement&) {}
   );
   getImmigrants()[index].visitRequirements(visitor);

@@ -432,7 +432,7 @@ Vec2 MapGui::getMovementOffset(const ViewObject& object, Vec2 size, double time,
 /*    if (info.direction.length8() == 0 || time >= info.tEnd + 0.001 || time <= info.tBegin - 0.001)
       return Vec2(0, 0);*/
     state = (time - movementInfo.tBegin) / (movementInfo.tEnd - movementInfo.tBegin);
-    const double stopTime = movementInfo.type == MovementInfo::Type::MOVE ? 0.0 : 0.4;
+    const double stopTime = movementInfo.type == MovementInfo::Type::MOVE ? 0.0 : 0.3;
     double stopTime1 = stopTime / 2;
     if (auto id = object.getCreatureId())
       // randomize the animation time frame a bit so creatures don't move synchronously

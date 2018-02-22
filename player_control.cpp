@@ -1190,6 +1190,8 @@ void PlayerControl::fillImmigrationHelp(CollectiveInfo& info) const {
             requirements.push_back("Recruit is not available in this game");
         },
         [&](const TutorialRequirement&) {
+        },
+        [&](const MinTurnRequirement&) {
         }
     ));
     if (auto limit = elem->getLimit())
