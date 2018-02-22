@@ -43,7 +43,7 @@ using SDL::SDL_Keycode;
 
 GuiBuilder::GuiBuilder(Renderer& r, GuiFactory& g, Clock* c, Options* o, Callbacks call)
     : renderer(r), gui(g), clock(c), options(o), callbacks(call), gameSpeed(GameSpeed::NORMAL),
-      fpsCounter(60), upsCounter(60), cache(1000) {
+      fpsCounter(60), upsCounter(60), cache(100) {
 }
 
 void GuiBuilder::reset() {

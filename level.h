@@ -186,7 +186,6 @@ class Level : public OwnedObject<Level> {
   WConstSquare getSafeSquare(Vec2) const;
   WSquare modSafeSquare(Vec2);
   HeapAllocated<SquareArray> SERIAL(squares);
-  Table<PSquare> SERIAL(oldSquares);
   HeapAllocated<FurnitureArray> SERIAL(furniture);
   Table<bool> SERIAL(memoryUpdates);
   Table<bool> renderUpdates = Table<bool>(getMaxBounds(), true);

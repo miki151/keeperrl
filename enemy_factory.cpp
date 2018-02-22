@@ -337,7 +337,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
     case EnemyId::GREEN_DRAGON:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::CAVE;
-            c.inhabitants.leader = CreatureId::RED_DRAGON;
+            c.inhabitants.leader = CreatureId::GREEN_DRAGON;
             c.tribe = TribeId::getMonster();
             c.race = "dragon"_s;
             c.buildingId = BuildingId::DUNGEON;

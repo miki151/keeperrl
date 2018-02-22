@@ -41,7 +41,7 @@
 template <class Archive> 
 void Level::serialize(Archive& ar, const unsigned int version) {
   ar & SUBCLASS(OwnedObject<Level>);
-  ar(squares, oldSquares, landingSquares, tickingSquares, creatures, model, fieldOfView);
+  ar(squares, landingSquares, tickingSquares, creatures, model, fieldOfView);
   ar(name, sunlight, bucketMap, sectors, lightAmount, unavailable);
   ar(levelId, noDiagonalPassing, lightCapAmount, creatureIds, memoryUpdates);
   ar(furniture, tickingFurniture, covered);
@@ -55,7 +55,7 @@ Level::~Level() {}
 
 Level::Level(Private, SquareArray s, FurnitureArray f, WModel m, const string& n,
     Table<double> sun, LevelId id, Table<bool> cover)
-    : squares(std::move(s)), oldSquares(squares->getBounds()), furniture(std::move(f)),
+    : squares(std::move(s)), furniture(std::move(f)),
       memoryUpdates(squares->getBounds(), true), model(m),
       name(n), sunlight(sun), covered(cover), bucketMap(squares->getBounds().width(), squares->getBounds().height(),
       FieldOfView::sightRange), lightAmount(squares->getBounds(), 0), lightCapAmount(squares->getBounds(), 1),
