@@ -72,3 +72,94 @@ PAnimation Animation::fromId(AnimationId id) {
         {{577, 598}, {94, 94}, {-29, -29}},
         }));
 }
+
+
+class Particle{
+  
+  public:
+    Particle(Vec2 position, Vec2 origin, Color color, Vec2 speed, int size):
+     _position(position), _origin(origin), _color(color), _speed(speed), _size(size)
+    {
+
+      _color.a = 128;
+    }
+
+    void Update(){
+
+      // custom prticle effect logic
+       _position +=_speed;
+
+      if (_size > 1){
+        _size--;
+      }
+
+      _color.r-=10;
+      _color.g-=10;
+      _color.b-=10;
+      _color.a-=10;
+       
+    }
+
+    void Draw(Renderer& renderer){
+
+      renderer.drawPoint(_position + _origin, _color, _size);
+    }
+
+  private:
+    
+    Vec2 _position;
+    Vec2 _origin;
+    Color  _color;
+    Vec2 _speed;
+    int _size;
+
+    friend class ParticleEffect;
+  };
+
+
+
+
+class ParticleEffect : public Animation {
+
+  public:
+  ParticleEffect(milliseconds duration, unsigned int particleNum, Vec2 origin)
+      : Animation(duration), _particleNum(particleNum), _origin(origin)  {
+
+        // custom particel effect setup
+        _particleNum = 8;
+        _particles.reserve(_particleNum);
+        int size = 15;
+        
+        _particles.push_back(Particle(Vec2(1,1), _origin, Color::LIGHT_RED,Vec2(3,3), size));
+        _particles.push_back(Particle(Vec2(1,1), _origin, Color::LIGHT_RED,Vec2(3,-3), size));
+        _particles.push_back(Particle(Vec2(1,1), _origin, Color::LIGHT_RED,Vec2(-3,3), size));
+        _particles.push_back(Particle(Vec2(1,1), _origin, Color::LIGHT_RED,Vec2(-3,-3), size));
+        _particles.push_back(Particle(Vec2(1,1), _origin, Color::YELLOW,Vec2(0,7), size));
+        _particles.push_back(Particle(Vec2(1,1), _origin, Color::YELLOW,Vec2(7,0), size));
+        _particles.push_back(Particle(Vec2(1,1), _origin, Color::YELLOW,Vec2(-7,0), size));
+        _particles.push_back(Particle(Vec2(1,1), _origin, Color::YELLOW,Vec2(0,-7), size));
+      }
+
+  virtual void renderSpec(Renderer& renderer, Rectangle bounds, Vec2 origin, double state) {
+
+    // update particles
+    for (auto& particle : _particles){
+      particle.Update();
+    }
+    // render particles
+    for (auto& particle : _particles){
+      particle.Draw(renderer);
+    } 
+  } 
+
+  private:
+
+    unsigned int _particleNum;
+    Vec2 _origin;
+    vector<Particle> _particles;
+};
+
+PAnimation Animation::perticleEffect(int id, milliseconds duration, unsigned int particleNum, Vec2 origin){
+
+  return PAnimation(new ParticleEffect(duration, particleNum, origin));
+}
