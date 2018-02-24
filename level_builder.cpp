@@ -78,9 +78,13 @@ void LevelBuilder::putCreature(Vec2 pos, PCreature creature) {
 }
 
 void LevelBuilder::putItems(Vec2 posT, vector<PItem> it) {
-  CHECK(canNavigate(posT, {MovementTrait::WALK}));
+  CHECK(canPutItems(posT));
   Vec2 pos = transform(posT);
   append(items[pos], std::move(it));
+}
+
+bool LevelBuilder::canPutItems(Vec2 posT) {
+  return canNavigate(posT, {MovementTrait::WALK});
 }
 
 void LevelBuilder::putFurniture(Vec2 posT, FurnitureFactory& f, optional<SquareAttrib> attrib) {

@@ -435,7 +435,7 @@ class Corpses : public LevelMaker {
       do {
         pos = Vec2(builder->getRandom().get(area.left(), area.right()),
             builder->getRandom().get(area.top(), area.bottom()));
-      } while (--numTries > 0 && (!builder->canPutCreature(pos, creature.get()) || (!onPred.apply(builder, pos))));
+      } while (--numTries > 0 && (!builder->canPutItems(pos) || (!onPred.apply(builder, pos))));
       checkGen(numTries > 0);
       if (builder->getRandom().roll(10))
         builder->putItems(pos, creature->getEquipment().removeAllItems(creature.get()));

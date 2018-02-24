@@ -59,6 +59,7 @@ class LevelBuilder {
 
   /** Puts items on a given square. If the square is later changed to something else, the items remain.*/
   void putItems(Vec2, vector<PItem> items);
+  bool canPutItems(Vec2);
 
   /** Sets the message displayed when the player first enters the level.*/
   void setMessage(const string& message);
