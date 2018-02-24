@@ -21,6 +21,7 @@
 #include "container_range.h"
 #include "creature_factory.h"
 #include "resource_info.h"
+#include "equipment.h"
 
 template <class Archive>
 void Immigration::serialize(Archive& ar, const unsigned int) {
@@ -469,9 +470,12 @@ Immigration::Available Immigration::Available::generate(WImmigration immigration
   const ImmigrantInfo& info = immigration->getImmigrants()[group.immigrantIndex];
   vector<PCreature> immigrants;
   int numGenerated = immigration->generated[group.immigrantIndex].getSize();
-  for (int i : Range(group.count))
+  for (int i : Range(group.count)) {
     immigrants.push_back(CreatureFactory::fromId(info.getId(numGenerated), immigration->collective->getTribeId(),
         MonsterAIFactory::collective(immigration->collective)));
+    if (immigration->collective->getConfig().getStripSpawns())
+      immigrants.back()->getEquipment().removeAllItems(immigrants.back().get());
+  }
   return Available(
     immigration,
     std::move(immigrants),
