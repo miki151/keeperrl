@@ -79,6 +79,7 @@ class CreatureAttributes {
   const Skillset& getSkills() const;
   ViewObject createViewObject() const;
   const optional<ViewObject>& getIllusionViewObject() const;
+  optional<ViewObject>& getIllusionViewObject();
   bool canEquip() const;
   void chatReaction(WCreature me, WCreature other);
   string getDescription() const;

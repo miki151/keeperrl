@@ -71,6 +71,8 @@ SERIALIZATION_CONSTRUCTOR_IMPL(Creature)
 Creature::Creature(const ViewObject& object, TribeId t, CreatureAttributes attr)
     : Renderable(object), attributes(std::move(attr)), tribe(t) {
   modViewObject().setCreatureId(getUniqueId());
+  if (auto& obj = attributes->getIllusionViewObject())
+    obj->setCreatureId(getUniqueId());
 }
 
 Creature::Creature(TribeId t, CreatureAttributes attr)
