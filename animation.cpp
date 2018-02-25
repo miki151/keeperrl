@@ -77,7 +77,6 @@ class Particle {
   public:
   Particle(Vec2 position, Vec2 origin, Color color, Vec2 speed, int size)
       : position(position), origin(origin), color(color), speed(speed), size(size) {
-
     color.a = 128;
   }
 
@@ -129,7 +128,6 @@ class ParticleEffect : public Animation {
   }
 
   virtual void renderSpec(Renderer& renderer, Rectangle bounds, Vec2 origin, double state) {
-
     // update particles
     for (auto& particle : particles) {
       particle.update();
@@ -147,6 +145,5 @@ class ParticleEffect : public Animation {
 };
 
 PAnimation Animation::perticleEffect(int id, milliseconds duration, unsigned int particleNum, Vec2 origin){
-
   return PAnimation(new ParticleEffect(duration, particleNum, origin));
 }
