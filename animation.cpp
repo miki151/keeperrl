@@ -112,8 +112,7 @@ class Particle {
 class ParticleEffect : public Animation {
   public:
   ParticleEffect(milliseconds duration, unsigned int particleNum, Vec2 origin)
-      : Animation(duration), particleNum(particleNum), origin(origin)  {
-
+      : Animation(duration), particleNum(particleNum), origin(origin) {
     // custom particle effect setup
     this->particleNum = 8;
     particles.reserve(this->particleNum);
@@ -132,11 +131,11 @@ class ParticleEffect : public Animation {
   virtual void renderSpec(Renderer& renderer, Rectangle bounds, Vec2 origin, double state) {
 
     // update particles
-    for (auto& particle : particles){
+    for (auto& particle : particles) {
       particle.update();
     }
     // render particles
-    for (auto& particle : particles){
+    for (auto& particle : particles) {
       particle.draw(renderer);
     } 
   } 
