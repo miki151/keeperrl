@@ -1458,16 +1458,18 @@ void WindowView::keyboardAction(const SDL_Keysym& key) {
       inputQueue.push(UserInput(getDirActionId(key), Vec2(-1, -1)));
       mapGui->onMouseGone();
       break;
-   case SDL::SDLK_TAB:
-      {
-        RecursiveLock lock(renderMutex);
-        if (currentTileLayout.sprites){
-          Vec2 origin;
-          SDL::SDL_GetMouseState(&origin.x, &origin.y);
-          mapGui->addAnimation(Animation::perticleEffect(1, milliseconds(1000), 1, origin), Vec2(10,10));
-        }
-        break;
+  #ifndef RELEASE
+    case SDL::SDLK_TAB:
+    {
+      RecursiveLock lock(renderMutex);
+      if (currentTileLayout.sprites) {
+        Vec2 origin;
+        SDL::SDL_GetMouseState(&origin.x, &origin.y);
+        mapGui->addAnimation(Animation::perticleEffect(1, milliseconds(1000), 1, origin), Vec2(10, 10));
       }
+      break;
+    }
+  #endif
     default: break;
   }
 }

@@ -73,90 +73,78 @@ PAnimation Animation::fromId(AnimationId id) {
         }));
 }
 
-
-class Particle{
-  
+class Particle {
   public:
-    Particle(Vec2 position, Vec2 origin, Color color, Vec2 speed, int size):
-     _position(position), _origin(origin), _color(color), _speed(speed), _size(size)
-    {
+  Particle(Vec2 position, Vec2 origin, Color color, Vec2 speed, int size)
+      : position(position), origin(origin), color(color), speed(speed), size(size) {
 
-      _color.a = 128;
+    color.a = 128;
+  }
+
+  void update() {
+    // custom particle effect logic
+    position +=speed;
+
+    if (size > 1) {
+      size--;
     }
 
-    void Update(){
+    color.r -= 10;
+    color.g -= 10;
+    color.b -= 10;
+    color.a -= 10;
+  }
 
-      // custom prticle effect logic
-       _position +=_speed;
-
-      if (_size > 1){
-        _size--;
-      }
-
-      _color.r-=10;
-      _color.g-=10;
-      _color.b-=10;
-      _color.a-=10;
-       
-    }
-
-    void Draw(Renderer& renderer){
-
-      renderer.drawPoint(_position + _origin, _color, _size);
-    }
+  void draw(Renderer& renderer) {
+    renderer.drawPoint(position + origin, color, size);
+  }
 
   private:
-    
-    Vec2 _position;
-    Vec2 _origin;
-    Color  _color;
-    Vec2 _speed;
-    int _size;
+  Vec2 position;
+  Vec2 origin;
+  Color color;
+  Vec2 speed;
+  int size;
 
-    friend class ParticleEffect;
+  friend class ParticleEffect;
   };
 
-
-
-
 class ParticleEffect : public Animation {
-
   public:
   ParticleEffect(milliseconds duration, unsigned int particleNum, Vec2 origin)
-      : Animation(duration), _particleNum(particleNum), _origin(origin)  {
+      : Animation(duration), particleNum(particleNum), origin(origin)  {
 
-        // custom particel effect setup
-        _particleNum = 8;
-        _particles.reserve(_particleNum);
-        int size = 15;
-        
-        _particles.push_back(Particle(Vec2(1,1), _origin, Color::LIGHT_RED,Vec2(3,3), size));
-        _particles.push_back(Particle(Vec2(1,1), _origin, Color::LIGHT_RED,Vec2(3,-3), size));
-        _particles.push_back(Particle(Vec2(1,1), _origin, Color::LIGHT_RED,Vec2(-3,3), size));
-        _particles.push_back(Particle(Vec2(1,1), _origin, Color::LIGHT_RED,Vec2(-3,-3), size));
-        _particles.push_back(Particle(Vec2(1,1), _origin, Color::YELLOW,Vec2(0,7), size));
-        _particles.push_back(Particle(Vec2(1,1), _origin, Color::YELLOW,Vec2(7,0), size));
-        _particles.push_back(Particle(Vec2(1,1), _origin, Color::YELLOW,Vec2(-7,0), size));
-        _particles.push_back(Particle(Vec2(1,1), _origin, Color::YELLOW,Vec2(0,-7), size));
-      }
+    // custom particle effect setup
+    this->particleNum = 8;
+    particles.reserve(this->particleNum);
+    int size = 15;
+    
+    particles.push_back(Particle(Vec2(1,1), origin, Color::LIGHT_RED, Vec2(3,3), size));
+    particles.push_back(Particle(Vec2(1,1), origin, Color::LIGHT_RED, Vec2(3,-3), size));
+    particles.push_back(Particle(Vec2(1,1), origin, Color::LIGHT_RED, Vec2(-3,3), size));
+    particles.push_back(Particle(Vec2(1,1), origin, Color::LIGHT_RED, Vec2(-3,-3), size));
+    particles.push_back(Particle(Vec2(1,1), origin, Color::YELLOW, Vec2(0,7), size));
+    particles.push_back(Particle(Vec2(1,1), origin, Color::YELLOW, Vec2(7,0), size));
+    particles.push_back(Particle(Vec2(1,1), origin, Color::YELLOW, Vec2(-7,0), size));
+    particles.push_back(Particle(Vec2(1,1), origin, Color::YELLOW, Vec2(0,-7), size));
+  }
 
   virtual void renderSpec(Renderer& renderer, Rectangle bounds, Vec2 origin, double state) {
 
     // update particles
-    for (auto& particle : _particles){
-      particle.Update();
+    for (auto& particle : particles){
+      particle.update();
     }
     // render particles
-    for (auto& particle : _particles){
-      particle.Draw(renderer);
+    for (auto& particle : particles){
+      particle.draw(renderer);
     } 
   } 
 
   private:
-
-    unsigned int _particleNum;
-    Vec2 _origin;
-    vector<Particle> _particles;
+  unsigned int particleNum;
+  Vec2 origin;
+  vector<Particle> particles;
 };
 
 PAnimation Animation::perticleEffect(int id, milliseconds duration, unsigned int particleNum, Vec2 origin){
