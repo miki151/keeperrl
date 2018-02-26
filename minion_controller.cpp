@@ -10,12 +10,13 @@
 #include "game.h"
 #include "message_generator.h"
 #include "time_queue.h"
+#include "unknown_locations.h"
 
 class MinionController : public Player {
   public:
   MinionController(WCreature c, SMapMemory memory, WPlayerControl ctrl, SMessageBuffer messages,
-                   SVisibilityMap visibilityMap, STutorial tutorial)
-      : Player(c, false, memory, messages, visibilityMap, tutorial), control(ctrl) {}
+                   SVisibilityMap visibilityMap, SUnknownLocations locations, STutorial tutorial)
+      : Player(c, false, memory, messages, visibilityMap, locations, tutorial), control(ctrl) {}
 
 
 
@@ -125,6 +126,10 @@ class MinionController : public Player {
       return messageGeneratorThird;
   }
 
+  virtual void updateUnknownLocations() override {
+    control->updateUnknownLocations();
+  }
+
   SERIALIZE_ALL(SUBCLASS(Player), control)
   SERIALIZATION_CONSTRUCTOR(MinionController)
 
@@ -136,6 +141,6 @@ REGISTER_TYPE(MinionController)
 
 
 PController getMinionController(WCreature c, SMapMemory m, WPlayerControl ctrl, SMessageBuffer buf, SVisibilityMap v,
-    STutorial t) {
-  return makeOwner<MinionController>(c, m, ctrl, buf, v, t);
+    SUnknownLocations l, STutorial t) {
+  return makeOwner<MinionController>(c, m, ctrl, buf, v, l, t);
 }

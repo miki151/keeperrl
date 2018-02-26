@@ -47,7 +47,8 @@ Spectator::CenterType Spectator::getCenterType() const {
   return CenterType::NONE;
 }
 
-vector<Vec2> Spectator::getUnknownLocations(WConstLevel) const {
-  return {};
+const vector<Vec2>& Spectator::getUnknownLocations(WConstLevel) const {
+  static vector<Vec2> empty;
+  return empty;
 }
 

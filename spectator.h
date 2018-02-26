@@ -13,7 +13,7 @@ class Spectator : public CreatureView {
   virtual double getAnimationTime() const override;
   virtual vector<Vec2> getVisibleEnemies() const override;
   virtual CenterType getCenterType() const override;
-  virtual vector<Vec2> getUnknownLocations(WConstLevel) const override;
+  virtual const vector<Vec2>& getUnknownLocations(WConstLevel) const override;
 
   private:
   WLevel level;

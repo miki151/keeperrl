@@ -83,13 +83,14 @@
 #include "workshop_item.h"
 #include "time_queue.h"
 #include "quarters.h"
+#include "unknown_locations.h"
 
 template <class Archive>
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
   ar& SUBCLASS(CollectiveControl) & SUBCLASS(EventListener);
   ar(memory, introText, lastControlKeeperQuestion);
   ar(newAttacks, ransomAttacks, messages, hints, visibleEnemies);
-  ar(visibilityMap);
+  ar(visibilityMap, unknownLocations);
   ar(messageHistory, tutorial, controlModeMessages);
 }
 
@@ -112,6 +113,7 @@ static vector<string> getHints() {
 PlayerControl::PlayerControl(Private, WCollective col) : CollectiveControl(col), hints(getHints()) {
   controlModeMessages = make_shared<MessageBuffer>();
   visibilityMap = make_shared<VisibilityMap>();
+  unknownLocations = make_shared<UnknownLocations>();
   bool hotkeys[128] = {0};
   for (auto& info : BuildInfo::get()) {
     if (info.hotkey) {
@@ -1486,6 +1488,7 @@ static bool showEfficiency(FurnitureType type) {
 }
 
 void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
+  PROFILE;
   Position position(pos, collective->getLevel());
   bool canSeePos = canSee(position);
   getSquareViewIndex(position, canSeePos, index);
@@ -1529,8 +1532,8 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
     if (auto f = constructions.getFurniture(position, layer))
       if (!f->isBuilt())
         index.insert(getConstructionObject(f->getFurnitureType()));
-  /*if (surprises.count(position) && !collective->getKnownTiles().isKnown(position))
-    index.insert(ViewObject(ViewId::UNKNOWN_MONSTER, ViewLayer::CREATURE, "Surprise"));*/
+  if (unknownLocations->contains(position))
+    index.insert(ViewObject(ViewId::UNKNOWN_MONSTER, ViewLayer::TORCH2, "Surprise"));
 }
 
 Vec2 PlayerControl::getPosition() const {
@@ -2273,13 +2276,9 @@ PlayerControl::CenterType PlayerControl::getCenterType() const {
   return CenterType::NONE;
 }
 
-vector<Vec2> PlayerControl::getUnknownLocations(WConstLevel) const {
-  vector<Vec2> ret;
-  for (auto col : getModel()->getCollectives())
-    if (col->getLevel() == getLevel() && !collective->isKnownVillainLocation(col))
-      if (auto& pos = col->getTerritory().getCentralPoint())
-        ret.push_back(pos->getCoord());
-  return ret;
+const vector<Vec2>& PlayerControl::getUnknownLocations(WConstLevel) const {
+  PROFILE;
+  return unknownLocations->getOnLevel(getLevel());
 }
 
 WConstCreature PlayerControl::getKeeper() const {
@@ -2399,7 +2398,17 @@ bool PlayerControl::isConsideredAttacking(WConstCreature c, WConstCollective ene
 
 const double messageTimeout = 80;
 
+void PlayerControl::updateUnknownLocations() {
+  vector<Position> locations;
+  for (auto col : getGame()->getCollectives())
+    if (!collective->isKnownVillainLocation(col))
+      if (auto& pos = col->getTerritory().getCentralPoint())
+        locations.push_back(*pos);
+  unknownLocations->update(locations);
+}
+
 void PlayerControl::tick() {
+  updateUnknownLocations();
   for (auto& elem : messages)
     elem.setFreshness(max(0.0, elem.getFreshness() - 1.0 / messageTimeout));
   messages = messages.filter([&] (const PlayerMessage& msg) {
@@ -2503,7 +2512,7 @@ void PlayerControl::onConstructed(Position pos, FurnitureType type) {
 }
 
 PController PlayerControl::createMinionController(WCreature c) {
-  return ::getMinionController(c, memory, this, controlModeMessages, visibilityMap, tutorial);
+  return ::getMinionController(c, memory, this, controlModeMessages, visibilityMap, unknownLocations, tutorial);
 }
 
 void PlayerControl::onClaimedSquare(Position position) {
