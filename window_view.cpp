@@ -1407,6 +1407,16 @@ void WindowView::keyboardAction(const SDL_Keysym& key) {
       //renderer.startMonkey();
       renderer.loadTiles();
       break;
+    case SDL::SDLK_TAB:
+    {
+      RecursiveLock lock(renderMutex);
+      if (currentTileLayout.sprites) {
+        Vec2 origin;
+        SDL::SDL_GetMouseState(&origin.x, &origin.y);
+        mapGui->addAnimation(Animation::perticleEffect(1, milliseconds(1000), 1, origin), Vec2(10, 10));
+      }
+      break;
+    }
 #endif
     case SDL::SDLK_F7:
       presentList("", ListElem::convert(vector<string>(messageLog.begin(), messageLog.end())), true);
@@ -1458,18 +1468,6 @@ void WindowView::keyboardAction(const SDL_Keysym& key) {
       inputQueue.push(UserInput(getDirActionId(key), Vec2(-1, -1)));
       mapGui->onMouseGone();
       break;
-  #ifndef RELEASE
-    case SDL::SDLK_TAB:
-    {
-      RecursiveLock lock(renderMutex);
-      if (currentTileLayout.sprites) {
-        Vec2 origin;
-        SDL::SDL_GetMouseState(&origin.x, &origin.y);
-        mapGui->addAnimation(Animation::perticleEffect(1, milliseconds(1000), 1, origin), Vec2(10, 10));
-      }
-      break;
-    }
-  #endif
     default: break;
   }
 }

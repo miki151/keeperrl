@@ -82,7 +82,7 @@ class Particle {
 
   void update() {
     // custom particle effect logic
-    position +=speed;
+    position += speed;
 
     if (size > 1) {
       size--;
@@ -106,7 +106,7 @@ class Particle {
   int size;
 
   friend class ParticleEffect;
-  };
+};
 
 class ParticleEffect : public Animation {
   public:
@@ -144,6 +144,6 @@ class ParticleEffect : public Animation {
   vector<Particle> particles;
 };
 
-PAnimation Animation::perticleEffect(int id, milliseconds duration, unsigned int particleNum, Vec2 origin){
+PAnimation Animation::perticleEffect(int id, milliseconds duration, unsigned int particleNum, Vec2 origin) {
   return PAnimation(new ParticleEffect(duration, particleNum, origin));
 }

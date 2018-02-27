@@ -441,7 +441,7 @@ void Renderer::drawPoint(Vec2 pos, Color color, int size) {
   SDL::glPointSize(size);
   SDL::glBegin(GL_POINTS);
   color.applyGl();
-  SDL::glVertex2f(pos.x, pos.y );
+  SDL::glVertex2f(pos.x, pos.y);
   SDL::glEnd();
 }
 
