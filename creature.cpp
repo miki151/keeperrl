@@ -334,7 +334,7 @@ bool Creature::canSwapPositionInMovement(WCreature other, optional<Position> nex
   return !other->hasCondition(CreatureCondition::RESTRICTED_MOVEMENT)
       && (!posIntentsConflict(position, other->position, other->nextPosIntent) ||
           isPlayer() || other->isAffected(LastingEffect::STUNNED) ||
-          getGlobalTime()->getInternal() % 10 == (getUniqueId().getHash() + 10) % 10)
+          getGlobalTime()->getInternal() % 10 == (getUniqueId().getHash() % 10 + 10) % 10)
       && !other->getAttributes().isBoulder()
       && (!other->isPlayer() || isPlayer())
       && (!other->isEnemy(this) || other->isAffected(LastingEffect::STUNNED))
