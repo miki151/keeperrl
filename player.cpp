@@ -916,7 +916,12 @@ void Player::refreshGameInfo(GameInfo& gameInfo) const {
   gameInfo.time = creature->getGame()->getGlobalTime();
   gameInfo.playerInfo = PlayerInfo(creature);
   auto& info = *gameInfo.playerInfo.getReferenceMaybe<PlayerInfo>();
-  info.controlMode = getGame()->getPlayerCreatures().size() == 1 ? PlayerInfo::LEADER : PlayerInfo::FULL;
+  if (getGame()->getHasOrderedToStandGround()) {
+    info.controlMode = PlayerInfo::STAND_GROUND;
+  }
+  else {
+      info.controlMode = getGame()->getPlayerCreatures().size() == 1 ? PlayerInfo::LEADER : PlayerInfo::FULL;
+  }
   auto team = getTeam();
   auto leader = team[0];
   if (team.size() > 1) {

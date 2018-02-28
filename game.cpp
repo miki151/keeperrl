@@ -106,6 +106,10 @@ bool Game::isTurnBased() {
   return !spectator && (!playerControl || playerControl->isTurnBased());
 }
 
+bool Game::getHasOrderedToStandGround() {
+  return (playerControl && playerControl->isTurnBased() && playerControl->getHasOrderedToStandGround());
+}
+
 GlobalTime Game::getGlobalTime() const {
   PROFILE;
   return GlobalTime((int) currentTime);

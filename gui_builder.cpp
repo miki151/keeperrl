@@ -1309,6 +1309,7 @@ static const char* getControlModeName(PlayerInfo::ControlMode m) {
   switch (m) {
     case PlayerInfo::FULL: return "full";
     case PlayerInfo::LEADER: return "leader";
+    case PlayerInfo::STAND_GROUND: return "stand ground";
   }
 }
 

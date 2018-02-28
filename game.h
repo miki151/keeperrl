@@ -66,6 +66,7 @@ class Game : public OwnedObject<Game> {
 
   bool isGameOver() const;
   bool isTurnBased();
+  bool getHasOrderedToStandGround();
   bool isVillainActive(WConstCollective);
   SavedGameInfo getSavedGameInfo() const;
 
