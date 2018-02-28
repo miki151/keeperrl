@@ -90,6 +90,7 @@ class CollectiveConfig {
   bool isLeaderFighter() const;
   bool getManageEquipment() const;
   bool getFollowLeaderIfNoTerritory() const;
+  bool stayInTerritory() const;
   TimeInterval getImmigrantInterval() const;
   bool getStripSpawns() const;
   bool getFetchItems() const;

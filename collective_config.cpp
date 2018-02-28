@@ -169,6 +169,10 @@ bool CollectiveConfig::getFollowLeaderIfNoTerritory() const {
   return type == KEEPER;
 }
 
+bool CollectiveConfig::stayInTerritory() const {
+  return type != KEEPER;
+}
+
 bool CollectiveConfig::hasVillainSleepingTask() const {
   return type != KEEPER;
 }
