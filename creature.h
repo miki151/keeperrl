@@ -204,6 +204,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
     bool destroy;
   };
   CreatureAction standGroundOrMoveTowards(Position, NavigationFlags = {});
+  bool orderedToStandGround();
   CreatureAction moveTowards(Position, NavigationFlags = {});
   CreatureAction moveAway(Position, bool pathfinding = true);
   CreatureAction continueMoving();

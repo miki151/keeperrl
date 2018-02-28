@@ -600,7 +600,7 @@ class Fighter : public Behaviour {
               chaseFreeze.set(other, make_pair(time + startChaseFreeze, time + endChaseFreeze));
           })};
       }
-      if (distance == 2)
+      if (distance == 2 && !creature->orderedToStandGround())
         if (auto move = considerBreakingChokePoint(other))
           return move;
     }
