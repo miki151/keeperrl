@@ -1547,6 +1547,12 @@ CreatureAction Creature::stayIn(WLevel level, Rectangle area) {
   return CreatureAction();
 }
 
+CreatureAction Creature::standGroundOrMoveTowards(Position pos, NavigationFlags flags) {
+  if (getGame()->getHasOrderedToStandGround() && getTribeId()==TribeId::getKeeper()) return wait();
+  return moveTowards(pos,flags);  
+}
+
+
 CreatureAction Creature::moveTowards(Position pos, NavigationFlags flags) {
   if (!pos.isValid())
     return CreatureAction();

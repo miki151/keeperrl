@@ -62,7 +62,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void leaveControl();
   void teamMemberAction(TeamMemberAction, UniqueEntity<Creature>::Id);
   void toggleControlAllTeamMembers();
-  void toggleStandGround();
   void onControlledKilled(WConstCreature victim);
   void onSunlightVisibilityChanged();
   void setTutorial(STutorial);

@@ -203,6 +203,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
     bool stepOnTile;
     bool destroy;
   };
+  CreatureAction standGroundOrMoveTowards(Position, NavigationFlags = {});
   CreatureAction moveTowards(Position, NavigationFlags = {});
   CreatureAction moveAway(Position, bool pathfinding = true);
   CreatureAction continueMoving();
