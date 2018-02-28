@@ -83,7 +83,7 @@ optional<ViewId> Task::getViewId() const {
 }
 
 bool Task::isDone() {
-  return done;
+  return isBogus() || done;
 }
 
 void Task::setViewId(ViewId id) {
@@ -102,7 +102,7 @@ class Construction : public Task {
       callback(c) {}
 
   virtual bool isBogus() const override {
-    return position.canConstruct(furnitureType);
+    return !position.canConstruct(furnitureType);
   }
 
   virtual string getDescription() const override {
