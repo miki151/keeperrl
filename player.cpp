@@ -916,12 +916,14 @@ void Player::refreshGameInfo(GameInfo& gameInfo) const {
   gameInfo.time = creature->getGame()->getGlobalTime();
   gameInfo.playerInfo = PlayerInfo(creature);
   auto& info = *gameInfo.playerInfo.getReferenceMaybe<PlayerInfo>();
-  if (getGame()->getHasOrderedToStandGround()) {
+  if (getGame()->getPlayerCreatures().size() != 1)
+    info.controlMode = PlayerInfo::FULL;
+  else if (getGame()->getHasOrderedToStandGround())
     info.controlMode = PlayerInfo::STAND_GROUND;
-  }
-  else {
-      info.controlMode = getGame()->getPlayerCreatures().size() == 1 ? PlayerInfo::LEADER : PlayerInfo::FULL;
-  }
+  else if (getGame()->getHasOrderedToFollowOnly())
+    info.controlMode = PlayerInfo::FOLLOW_ONLY;
+  else
+      info.controlMode = PlayerInfo::LEADER;
   auto team = getTeam();
   auto leader = team[0];
   if (team.size() > 1) {

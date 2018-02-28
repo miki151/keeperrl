@@ -586,7 +586,7 @@ class Fighter : public Behaviour {
         if (MoveInfo move = getThrowMove(enemyDir, other))
           return move;
       }
-      if (chase && !other->getAttributes().dontChase() && !isChaseFrozen(other)) {
+      if (chase && !other->getAttributes().dontChase() && !isChaseFrozen(other) && !creature->orderedToFollowOnly()) {
         lastSeen = none;
         if (auto action = creature->standGroundOrMoveTowards(other->getPosition()))
           return {max(0., 1.0 - double(distance) / 20), action.prepend([=](WCreature creature) {

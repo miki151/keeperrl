@@ -59,6 +59,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
 
   bool isTurnBased();
   bool getHasOrderedToStandGround();
+  bool getHasOrderedToFollowOnly();
   void leaveControl();
   void teamMemberAction(TeamMemberAction, UniqueEntity<Creature>::Id);
   void toggleControlAllTeamMembers();
@@ -118,6 +119,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   bool canSee(WConstCreature) const;
   bool canSee(Position) const;
   bool hasOrderedToStandGround;
+  bool hasOrderedToFollowOnly;
   
   void initialize();
   bool isConsideredAttacking(WConstCreature, WConstCollective enemy);

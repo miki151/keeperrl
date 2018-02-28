@@ -205,6 +205,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   };
   CreatureAction standGroundOrMoveTowards(Position, NavigationFlags = {});
   bool orderedToStandGround();
+  bool orderedToFollowOnly();
   CreatureAction moveTowards(Position, NavigationFlags = {});
   CreatureAction moveAway(Position, bool pathfinding = true);
   CreatureAction continueMoving();

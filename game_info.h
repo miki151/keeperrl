@@ -140,7 +140,8 @@ class PlayerInfo {
   enum ControlMode {
     FULL,
     LEADER,
-    STAND_GROUND
+    STAND_GROUND,
+    FOLLOW_ONLY
   };
   ControlMode HASH(controlMode);
   enum Action {
