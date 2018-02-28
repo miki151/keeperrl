@@ -2301,7 +2301,7 @@ static void generateResources(RandomGen& random, LevelMaker* startingPos, Random
   auto addResources = [&](int count, Range size, int maxDist, FurnitureType type, LevelMaker* center,
       CollectiveBuilder* collective) {
     for (int i : Range(count)) {
-      auto queue = unique<MakerQueue>(unique<FurnitureBlob>(type));
+      auto queue = unique<MakerQueue>(unique<FurnitureBlob>(SquareChange(FurnitureParams{type, TribeId::getKeeper()})));
       if (collective)
         queue->addMaker(unique<PlaceCollective>(collective));
       locations->add(std::move(queue), {random.get(size), random.get(size)},
