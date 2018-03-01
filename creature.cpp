@@ -71,6 +71,8 @@ SERIALIZATION_CONSTRUCTOR_IMPL(Creature)
 Creature::Creature(const ViewObject& object, TribeId t, CreatureAttributes attr)
     : Renderable(object), attributes(std::move(attr)), tribe(t) {
   modViewObject().setCreatureId(getUniqueId());
+  if (auto& obj = attributes->getIllusionViewObject())
+    obj->setCreatureId(getUniqueId());
 }
 
 Creature::Creature(TribeId t, CreatureAttributes attr)
@@ -330,8 +332,9 @@ static bool posIntentsConflict(Position myPos, Position hisPos, optional<Positio
 bool Creature::canSwapPositionInMovement(WCreature other, optional<Position> nextPos) const {
   PROFILE;
   return !other->hasCondition(CreatureCondition::RESTRICTED_MOVEMENT)
-      && (!posIntentsConflict(position, other->position, other->nextPosIntent)
-          || isPlayer() || other->isAffected(LastingEffect::STUNNED))
+      && (!posIntentsConflict(position, other->position, other->nextPosIntent) ||
+          isPlayer() || other->isAffected(LastingEffect::STUNNED) ||
+          getGlobalTime()->getInternal() % 10 == (getUniqueId().getHash() % 10 + 10) % 10)
       && !other->getAttributes().isBoulder()
       && (!other->isPlayer() || isPlayer())
       && (!other->isEnemy(this) || other->isAffected(LastingEffect::STUNNED))

@@ -55,21 +55,23 @@
 #include "item_type.h"
 #include "creature_factory.h"
 #include "time_queue.h"
+#include "unknown_locations.h"
 
 template <class Archive>
 void Player::serialize(Archive& ar, const unsigned int) {
   ar& SUBCLASS(Controller) & SUBCLASS(EventListener);
   ar(travelling, travelDir, target, displayGreeting, levelMemory, messageBuffer);
-  ar(adventurer, visibilityMap, tutorial);
+  ar(adventurer, visibilityMap, tutorial, unknownLocations);
 }
 
 SERIALIZABLE(Player)
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Player)
 
-Player::Player(WCreature c, bool adv, SMapMemory memory, SMessageBuffer buf, SVisibilityMap v, STutorial t) :
+Player::Player(WCreature c, bool adv, SMapMemory memory, SMessageBuffer buf, SVisibilityMap v, SUnknownLocations loc,
+      STutorial t) :
     Controller(c), levelMemory(memory), adventurer(adv), displayGreeting(adventurer), messageBuffer(buf),
-    visibilityMap(v), tutorial(t) {
+    visibilityMap(v), tutorial(t), unknownLocations(loc) {
   visibilityMap->update(c, c->getVisibleTiles());
 }
 
@@ -550,8 +552,19 @@ vector<Player::CommandInfo> Player::getCommands() const {
   };
 }
 
+void Player::updateUnknownLocations() {
+  vector<Position> locations;
+  for (auto col : getModel()->getCollectives())
+    if (col->getLevel() == getLevel())
+      if (auto& pos = col->getTerritory().getCentralPoint())
+        if (!getMemory().getViewIndex(*pos))
+          locations.push_back(*pos);
+  unknownLocations->update(locations);
+}
+
 void Player::makeMove() {
   PROFILE;
+  updateUnknownLocations();
   if (!isSubscribed())
     subscribeTo(getModel());
   if (adventurer)
@@ -864,6 +877,8 @@ void Player::getViewIndex(Vec2 pos, ViewIndex& index) const {
     } else if (creature->isUnknownAttacker(c))
       index.insert(copyOf(ViewObject::unknownMonster()));
   }
+  if (unknownLocations->contains(position))
+    index.insert(ViewObject(ViewId::UNKNOWN_MONSTER, ViewLayer::TORCH2, "Surprise"));
  /* if (pos == creature->getPosition() && index.hasObject(ViewLayer::CREATURE))
       index.getObject(ViewLayer::CREATURE).setModifier(ViewObject::Modifier::TEAM_LEADER_HIGHLIGHT);*/
 
@@ -968,16 +983,9 @@ Player::CenterType Player::getCenterType() const {
   return CenterType::FOLLOW;
 }
 
-vector<Vec2> Player::getUnknownLocations(WConstLevel level) const {
-  vector<Vec2> ret;
-  for (auto col : getModel()->getCollectives())
-    if (col->getLevel() == getLevel())
-      if (auto& pos = col->getTerritory().getCentralPoint())
-        if (!getMemory().getViewIndex(*pos))
-          ret.push_back(pos->getCoord());
-  return ret;
+const vector<Vec2>& Player::getUnknownLocations(WConstLevel level) const {
+  return unknownLocations->getOnLevel(level);
 }
-
 
 void Player::considerAdventurerMusic() {
   for (WCollective col : getModel()->getCollectives())

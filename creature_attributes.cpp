@@ -313,6 +313,10 @@ const optional<ViewObject>& CreatureAttributes::getIllusionViewObject() const {
   return *illusionViewObject;
 }
 
+optional<ViewObject>& CreatureAttributes::getIllusionViewObject() {
+  return *illusionViewObject;
+}
+
 bool CreatureAttributes::canEquip() const {
   return !cantEquip;
 }

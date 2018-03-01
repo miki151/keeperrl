@@ -52,6 +52,7 @@
 #include "player_control.h"
 #include "tutorial.h"
 #include "message_buffer.h"
+#include "unknown_locations.h"
 
 template <class Archive> 
 void Model::serialize(Archive& ar, const unsigned int version) {
@@ -300,7 +301,7 @@ void Model::landHeroPlayer(PCreature player) {
   }
   addCreature(std::move(player));
   ref->setController(makeOwner<Player>(ref, true, make_shared<MapMemory>(), make_shared<MessageBuffer>(),
-      make_shared<VisibilityMap>()));
+      make_shared<VisibilityMap>(), make_shared<UnknownLocations>()));
 }
 
 void Model::addExternalEnemies(ExternalEnemies e) {

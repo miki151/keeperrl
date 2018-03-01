@@ -21,6 +21,7 @@
 #include "container_range.h"
 #include "creature_factory.h"
 #include "resource_info.h"
+#include "equipment.h"
 
 template <class Archive>
 void Immigration::serialize(Archive& ar, const unsigned int) {
@@ -135,6 +136,10 @@ vector<string> Immigration::getMissingRequirements(const Group& group) const {
         if (collective->getConstructions().getBuiltCount(type) == 0)
           ret.push_back("Requires " + Furniture::getName(type));
       },
+      [&](const MinTurnRequirement& type) {
+        if (collective->getGlobalTime() < type.turn)
+          ret.push_back("Not available until turn " + toString(type.turn));
+      },
       [&](const Pregnancy&) {
         for (WCreature c : collective->getCreatures())
           if (c->isAffected(LastingEffect::PREGNANT))
@@ -200,6 +205,10 @@ double Immigration::getRequirementMultiplier(const Group& group) const {
             info.getAvailableRecruits(collective->getGame(), getImmigrants()[group.immigrantIndex].getId(0)).empty())
           ret *= prob;
       },
+      [&](const MinTurnRequirement& type, double prob) {
+        if (collective->getGlobalTime() < type.turn)
+          ret *= prob;
+      },
       [&](const TutorialRequirement& t, double prob) {
         if (!t.tutorial->showImmigrant(immigrantInfo))
           ret *= prob;
@@ -230,6 +239,7 @@ void Immigration::occupyRequirements(WConstCreature c, int index) {
           }
       },
       [&](const RecruitmentInfo&) {},
+      [&](const MinTurnRequirement&) {},
       [&](const TutorialRequirement&) {}
   );
   getImmigrants()[index].visitRequirements(visitor);
@@ -460,9 +470,12 @@ Immigration::Available Immigration::Available::generate(WImmigration immigration
   const ImmigrantInfo& info = immigration->getImmigrants()[group.immigrantIndex];
   vector<PCreature> immigrants;
   int numGenerated = immigration->generated[group.immigrantIndex].getSize();
-  for (int i : Range(group.count))
+  for (int i : Range(group.count)) {
     immigrants.push_back(CreatureFactory::fromId(info.getId(numGenerated), immigration->collective->getTribeId(),
         MonsterAIFactory::collective(immigration->collective)));
+    if (immigration->collective->getConfig().getStripSpawns())
+      immigrants.back()->getEquipment().removeAllItems(immigrants.back().get());
+  }
   return Available(
     immigration,
     std::move(immigrants),

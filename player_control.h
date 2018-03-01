@@ -43,6 +43,7 @@ class ScrollPosition;
 class Tutorial;
 struct BuildInfo;
 class MoveInfo;
+class UnknownLocations;
 
 class PlayerControl : public CreatureView, public CollectiveControl, public EventListener<PlayerControl> {
   public:
@@ -73,6 +74,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   bool canControlInTeam(WConstCreature) const;
   bool canControlSingle(WConstCreature) const;
   void addToCurrentTeam(WCreature c);
+  void updateUnknownLocations();
 
   void onEvent(const GameEvent&);
   const vector<WCreature>& getControlled() const;
@@ -93,7 +95,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   virtual vector<Vec2> getVisibleEnemies() const override;
   virtual double getAnimationTime() const override;
   virtual CenterType getCenterType() const override;
-  virtual vector<Vec2> getUnknownLocations(WConstLevel) const override;
+  virtual const vector<Vec2>& getUnknownLocations(WConstLevel) const override;
 
   // from CollectiveControl
   virtual void addAttack(const CollectiveAttack&) override;
@@ -236,5 +238,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   vector<StunnedInfo> getPrisonerImmigrantStack() const;
   string getMinionGroupName(WCreature) const;
   ViewId getMinionGroupViewId(WCreature) const;
+  SUnknownLocations SERIAL(unknownLocations);
 };
 

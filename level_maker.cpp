@@ -435,7 +435,7 @@ class Corpses : public LevelMaker {
       do {
         pos = Vec2(builder->getRandom().get(area.left(), area.right()),
             builder->getRandom().get(area.top(), area.bottom()));
-      } while (--numTries > 0 && (!builder->canPutCreature(pos, creature.get()) || (!onPred.apply(builder, pos))));
+      } while (--numTries > 0 && (!builder->canPutItems(pos) || (!onPred.apply(builder, pos))));
       checkGen(numTries > 0);
       if (builder->getRandom().roll(10))
         builder->putItems(pos, creature->getEquipment().removeAllItems(creature.get()));
@@ -2301,7 +2301,7 @@ static void generateResources(RandomGen& random, LevelMaker* startingPos, Random
   auto addResources = [&](int count, Range size, int maxDist, FurnitureType type, LevelMaker* center,
       CollectiveBuilder* collective) {
     for (int i : Range(count)) {
-      auto queue = unique<MakerQueue>(unique<FurnitureBlob>(type));
+      auto queue = unique<MakerQueue>(unique<FurnitureBlob>(SquareChange(FurnitureParams{type, TribeId::getKeeper()})));
       if (collective)
         queue->addMaker(unique<PlaceCollective>(collective));
       locations->add(std::move(queue), {random.get(size), random.get(size)},

@@ -63,9 +63,6 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
   ar(credit, level, immigration, teams, name, conqueredVillains);
   ar(config, warnings, knownVillains, knownVillainLocations, banished, positionMatching);
   ar(villainType, enemyId, workshops, zones, tileEfficiency, discoverable, quarters);
-  // hack to make retired villains discoverable, remove with save version change
-  if (villainType == VillainType::MAIN)
-    discoverable = true;
 }
 
 SERIALIZABLE(Collective)
@@ -156,6 +153,10 @@ void Collective::updateCreatureStatus(WCreature c) {
 }
 
 void Collective::addCreature(WCreature c, EnumSet<MinionTrait> traits) {
+  if (c->getGlobalTime()) { // only do this if creature already exists on the map
+    c->addEffect(LastingEffect::RESTED, 500_visible);
+    c->addEffect(LastingEffect::SATIATED, 500_visible);
+  }
   if (c->isAffected(LastingEffect::SUMMONED)) {
     traits.insert(MinionTrait::NO_LIMIT);
     traits.insert(MinionTrait::SUMMONED);
@@ -456,9 +457,16 @@ MoveInfo Collective::getMove(WCreature c) {
   };
 
   auto priorityTask = [&] {
-    if (WTask task = taskMap->getTask(c))
+    if (auto task = taskMap->getTask(c))
       if (taskMap->isPriorityTask(task))
         return waitIfNoMove(task->getMove(c));
+    for (auto activity : ENUM_ALL(MinionActivity))
+      if (c->getAttributes().getMinionActivities().isAvailable(this, c, activity))
+        if (auto task = taskMap->getClosestTask(c, activity, true)) {
+          taskMap->freeFromTask(c);
+          taskMap->takeTask(c, task);
+          return waitIfNoMove(task->getMove(c));
+        }
     return NoMove;
   };
 
@@ -574,6 +582,7 @@ void Collective::tick() {
   control->tick();
   zones->tick();
   decayMorale();
+  taskMap->clearFinishedTasks();
   if (config->getWarnings() && Random.roll(5))
     warnings->considerWarnings(this);
   if (config->getEnemyPositions() && Random.roll(5)) {

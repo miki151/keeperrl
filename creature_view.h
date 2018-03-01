@@ -38,7 +38,7 @@ class CreatureView {
   virtual WLevel getLevel() const = 0;
   virtual double getAnimationTime() const = 0;
   virtual vector<Vec2> getVisibleEnemies() const = 0;
-  virtual vector<Vec2> getUnknownLocations(WConstLevel) const = 0;
+  virtual const vector<Vec2>& getUnknownLocations(WConstLevel) const = 0;
   virtual ~CreatureView() {}
 };
 

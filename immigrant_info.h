@@ -49,6 +49,11 @@ struct TutorialRequirement {
   void serialize(Archive&, const unsigned);
 };
 
+struct MinTurnRequirement {
+  GlobalTime SERIAL(turn);
+  SERIALIZE_ALL(turn)
+};
+
 using ImmigrantRequirement = variant<
     AttractionInfo,
     TechId,
@@ -58,7 +63,8 @@ using ImmigrantRequirement = variant<
     ExponentialCost,
     Pregnancy,
     RecruitmentInfo,
-    TutorialRequirement
+    TutorialRequirement,
+    MinTurnRequirement
 >;
 
 struct OutsideTerritory { SERIALIZE_EMPTY() };

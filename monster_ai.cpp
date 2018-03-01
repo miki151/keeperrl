@@ -370,7 +370,8 @@ class Fighter : public Behaviour {
   }
 
   void setLastCombatIntent(WCreature attacked) {
-    attacked->setLastCombatIntent({creature->getName().a(), *creature->getGlobalTime()});
+    if (attacked->canSee(creature))
+      attacked->setLastCombatIntent({creature->getName().a(), *creature->getGlobalTime()});
     creature->setLastCombatIntent({attacked->getName().a(), *creature->getGlobalTime()});
   }
 

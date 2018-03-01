@@ -34,12 +34,14 @@ class Game;
 class VisibilityMap;
 class Tutorial;
 class MessageBuffer;
+class UnknownLocations;
 
 class Player : public Controller, public CreatureView, public EventListener<Player> {
   public:
   virtual ~Player() override;
 
-  Player(WCreature, bool adventurer, SMapMemory, SMessageBuffer, SVisibilityMap, STutorial = nullptr);
+  Player(WCreature, bool adventurer, SMapMemory, SMessageBuffer, SVisibilityMap, SUnknownLocations,
+      STutorial = nullptr);
 
   void onEvent(const GameEvent&);
 
@@ -58,7 +60,7 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   virtual vector<Vec2> getVisibleEnemies() const override;
   virtual double getAnimationTime() const override;
   virtual CenterType getCenterType() const override;
-  virtual vector<Vec2> getUnknownLocations(WConstLevel) const override;
+  virtual const vector<Vec2>& getUnknownLocations(WConstLevel) const override;
 
   // from Controller
   virtual void onKilled(WConstCreature attacker) override;
@@ -81,6 +83,8 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   virtual vector<WCreature> getTeam() const;
   virtual bool isTravelEnabled() const;
   virtual bool handleUserInput(UserInput);
+  virtual void updateUnknownLocations();
+
   struct OtherCreatureCommand {
     int priority;
     string name;
@@ -142,5 +146,6 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   STutorial SERIAL(tutorial);
   vector<TeamMemberAction> getTeamMemberActions(WConstCreature) const;
   optional<GlobalTime> lastEnemyInterruption;
+  SUnknownLocations SERIAL(unknownLocations);
 };
 

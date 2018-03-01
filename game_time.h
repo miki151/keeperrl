@@ -75,3 +75,5 @@ std::ostream& operator<<(std::ostream& d, TimeInterval time);
 using LocalTime = GameTime<struct LocalTimeTag>;
 using GlobalTime = GameTime<struct GlobalTimeTag>;
 
+GlobalTime operator "" _global(unsigned long long value);
+LocalTime operator "" _local(unsigned long long value);

@@ -432,7 +432,7 @@ Vec2 MapGui::getMovementOffset(const ViewObject& object, Vec2 size, double time,
 /*    if (info.direction.length8() == 0 || time >= info.tEnd + 0.001 || time <= info.tBegin - 0.001)
       return Vec2(0, 0);*/
     state = (time - movementInfo.tBegin) / (movementInfo.tEnd - movementInfo.tBegin);
-    const double stopTime = movementInfo.type == MovementInfo::Type::MOVE ? 0.0 : 0.4;
+    const double stopTime = movementInfo.type == MovementInfo::Type::MOVE ? 0.0 : 0.3;
     double stopTime1 = stopTime / 2;
     if (auto id = object.getCreatureId())
       // randomize the animation time frame a bit so creatures don't move synchronously
@@ -853,56 +853,80 @@ void MapGui::renderMapObjects(Renderer& renderer, Vec2 size, milliseconds curren
   Rectangle allTiles = layout->getAllTiles(getBounds(), levelBounds, getScreenPos());
   Vec2 topLeftCorner = projectOnScreen(allTiles.topLeft());
   fogOfWar.clear();
-  for (ViewLayer layer : layout->getLayers()) {
-    for (Vec2 wpos : allTiles) {
-      Vec2 pos = topLeftCorner + (wpos - allTiles.topLeft()).mult(size);
-      if (!objects[wpos] || objects[wpos]->noObjects()) {
-        if (layer == layout->getLayers().back()) {
-          if (wpos.inRectangle(levelBounds))
-            renderer.addQuad(Rectangle(pos, pos + size), Color::BLACK);
+  for (ViewLayer layer : layout->getLayers())
+    if ((int)layer < (int)ViewLayer::CREATURE) {
+      for (Vec2 wpos : allTiles) {
+        Vec2 pos = topLeftCorner + (wpos - allTiles.topLeft()).mult(size);
+        if (!objects[wpos] || objects[wpos]->noObjects()) {
+          if (layer == ViewLayer::TORCH1) {
+            if (wpos.inRectangle(levelBounds))
+              renderer.addQuad(Rectangle(pos, pos + size), Color::BLACK);
+          }
+          fogOfWar.setValue(wpos, true);
+          continue;
         }
-        fogOfWar.setValue(wpos, true);
-        continue;
+        const ViewIndex& index = *objects[wpos];
+        const ViewObject* object = nullptr;
+        if (spriteMode) {
+          if (index.hasObject(layer))
+            object = &index.getObject(layer);
+        } else
+          object = index.getTopObject(layout->getLayers());
+        if (object) {
+          Vec2 movement = getMovementOffset(*object, size, currentTimeGame, currentTimeReal, true);
+          drawObjectAbs(renderer, pos, *object, size, movement, wpos, currentTimeReal);
+          if (lastHighlighted.tilePos == wpos && !lastHighlighted.creaturePos && object->layer() != ViewLayer::CREATURE)
+            lastHighlighted.object = *object;
+        }
+        if (spriteMode && layer == ViewLayer::TORCH1)
+          if (!isFoW(wpos))
+            drawFoWSprite(renderer, pos, size, DirSet(
+                !isFoW(wpos + Vec2(Dir::N)),
+                !isFoW(wpos + Vec2(Dir::S)),
+                !isFoW(wpos + Vec2(Dir::E)),
+                !isFoW(wpos + Vec2(Dir::W)),
+                isFoW(wpos + Vec2(Dir::NE)),
+                isFoW(wpos + Vec2(Dir::NW)),
+                isFoW(wpos + Vec2(Dir::SE)),
+                isFoW(wpos + Vec2(Dir::SW))));
       }
-      const ViewIndex& index = *objects[wpos];
-      const ViewObject* object = nullptr;
-      if (spriteMode) {
-        if (index.hasObject(layer))
-          object = &index.getObject(layer);
-      } else
-        object = index.getTopObject(layout->getLayers());
-      if (object) {
-        Vec2 movement = getMovementOffset(*object, size, currentTimeGame, currentTimeReal, true);
-        drawObjectAbs(renderer, pos, *object, size, movement, wpos, currentTimeReal);
-        if (lastHighlighted.tilePos == wpos && !lastHighlighted.creaturePos && object->layer() != ViewLayer::CREATURE)
-          lastHighlighted.object = *object;
+      if (layer == ViewLayer::FLOOR || !spriteMode) {
+        if (!buttonViewId && lastHighlighted.creaturePos)
+          drawCreatureHighlight(renderer, *lastHighlighted.creaturePos, size, Color::ALMOST_WHITE);
+        else if (lastHighlighted.tilePos && (!getHighlightedFurniture() || !!buttonViewId))
+          drawSquareHighlight(renderer, topLeftCorner + (*lastHighlighted.tilePos - allTiles.topLeft()).mult(size),
+              size);
       }
-      if (spriteMode && layer == layout->getLayers().back())
-        if (!isFoW(wpos))
-          drawFoWSprite(renderer, pos, size, DirSet(
-              !isFoW(wpos + Vec2(Dir::N)),
-              !isFoW(wpos + Vec2(Dir::S)),
-              !isFoW(wpos + Vec2(Dir::E)),
-              !isFoW(wpos + Vec2(Dir::W)),
-              isFoW(wpos + Vec2(Dir::NE)),
-              isFoW(wpos + Vec2(Dir::NW)),
-              isFoW(wpos + Vec2(Dir::SE)),
-              isFoW(wpos + Vec2(Dir::SW))));
+      if (layer == ViewLayer::FLOOR_BACKGROUND)
+        renderHighlights(renderer, size, currentTimeReal, true);
+      if (!spriteMode)
+        break;
+      if (layer == ViewLayer::FLOOR_BACKGROUND)
+        renderExtraBorders(renderer, currentTimeReal);
     }
-    if (layer == ViewLayer::FLOOR || !spriteMode) {
-      if (!buttonViewId && lastHighlighted.creaturePos)
-        drawCreatureHighlight(renderer, *lastHighlighted.creaturePos, size, Color::ALMOST_WHITE);
-      else if (lastHighlighted.tilePos && (!getHighlightedFurniture() || !!buttonViewId))
-        drawSquareHighlight(renderer, topLeftCorner + (*lastHighlighted.tilePos - allTiles.topLeft()).mult(size),
-            size);
+  for (ViewLayer layer : layout->getLayers())
+    if ((int)layer >= (int)ViewLayer::CREATURE) {
+      for (Vec2 wpos : allTiles) {
+        Vec2 pos = topLeftCorner + (wpos - allTiles.topLeft()).mult(size);
+        if (!objects[wpos] || objects[wpos]->noObjects()) {
+          continue;
+        }
+        const ViewIndex& index = *objects[wpos];
+        const ViewObject* object = nullptr;
+        if (spriteMode) {
+          if (index.hasObject(layer))
+            object = &index.getObject(layer);
+        } else
+          object = index.getTopObject(layout->getLayers());
+        if (object) {
+          Vec2 movement = getMovementOffset(*object, size, currentTimeGame, currentTimeReal, true);
+          drawObjectAbs(renderer, pos, *object, size, movement, wpos, currentTimeReal);
+          if (lastHighlighted.tilePos == wpos && !lastHighlighted.creaturePos && object->layer() != ViewLayer::CREATURE)
+            lastHighlighted.object = *object;
+        }
+      }
+
     }
-    if (layer == ViewLayer::FLOOR_BACKGROUND)
-      renderHighlights(renderer, size, currentTimeReal, true);
-    if (!spriteMode)
-      break;
-    if (layer == ViewLayer::FLOOR_BACKGROUND)
-      renderExtraBorders(renderer, currentTimeReal);
-  }
   renderHighlights(renderer, size, currentTimeReal, false);
 }
 

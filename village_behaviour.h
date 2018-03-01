@@ -29,10 +29,9 @@ class VillageBehaviour {
   optional<WelcomeMessage> SERIAL(welcomeMessage);
   optional<pair<double, int>> SERIAL(ransom);
 
-  PTask getAttackTask(VillageControl* self);
+  PTask getAttackTask(VillageControl* self) const;
   double getAttackProbability(const VillageControl* self) const;
   double getTriggerValue(const Trigger&, const VillageControl* self) const;
-  bool contains(WConstCreature);
 
   ~VillageBehaviour();
 

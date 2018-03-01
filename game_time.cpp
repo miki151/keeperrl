@@ -178,3 +178,11 @@ SERIALIZABLE_TMPL(GameTime, GlobalTimeTag);
 TimeInterval operator "" _visible(unsigned long long value) {
   return TimeInterval((int) value);
 }
+
+GlobalTime operator "" _global(unsigned long long value) {
+  return GlobalTime((int) value);
+}
+
+LocalTime operator "" _local(unsigned long long value) {
+  return LocalTime((int) value);
+}

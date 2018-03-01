@@ -21,7 +21,7 @@ VillageBehaviour&VillageBehaviour::operator =(const VillageBehaviour&) = default
 
 VillageBehaviour::~VillageBehaviour() {}
 
-PTask VillageBehaviour::getAttackTask(VillageControl* self) {
+PTask VillageBehaviour::getAttackTask(VillageControl* self) const {
   WCollective enemy = self->getEnemyCollective();
   switch (attackBehaviour->getId()) {
     case AttackBehaviourId::KILL_LEADER:
