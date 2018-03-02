@@ -589,6 +589,8 @@ unique_ptr<Workshops> CollectiveConfig::getWorkshops() const {
               .setTechId(TechId::ALCHEMY_CONV).setBatchSize(10),
           Workshops::Item::fromType(ItemType::IronOre{}, 5, {CollectiveResourceId::GOLD, 10})
               .setTechId(TechId::ALCHEMY_CONV).setBatchSize(10),
+          Workshops::Item::fromType(ItemType::AdaOre{}, 5, {CollectiveResourceId::GOLD, 40})
+              .setTechId(TechId::ALCHEMY_CONV).setBatchSize(10),
          Workshops::Item::fromType(ItemType::Rock{}, 5, {CollectiveResourceId::GOLD, 10})
              .setTechId(TechId::ALCHEMY_CONV).setBatchSize(10),
       }},
