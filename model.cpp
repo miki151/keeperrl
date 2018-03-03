@@ -66,8 +66,9 @@ SERIALIZATION_CONSTRUCTOR_IMPL(Model)
 
 SERIALIZABLE(Model)
 
-Position Model::keeperPosition() {
-  return getGame()->getPlayerControl()->getKeeper()->getPosition();
+Vec2 Model::keeperPosition() {
+  if (getGame()->isTurnBased()) return Vec2(0,0);
+  return getGame()->getPlayerControl()->getKeeper()->getPosition().getCoord();
 }
 
 void Model::discardForRetirement() {

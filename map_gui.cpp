@@ -175,7 +175,7 @@ WModel MapGui::getModel() {
 }
 
 void MapGui::locateKeeper(WModel mod) {
- setSoftCenter(mod->keeperPosition().getCoord());
+ setSoftCenter(mod->keeperPosition());
 }
 
 void MapGui::setSoftCenter(Vec2 pos) {

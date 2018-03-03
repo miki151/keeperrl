@@ -55,7 +55,7 @@ class Model : public OwnedObject<Model> {
   void landHeroPlayer(PCreature);
   void addExternalEnemies(ExternalEnemies);
   void clearExternalEnemies();
-  Position keeperPosition();
+  Vec2 keeperPosition();
 
   const optional<ExternalEnemies>& getExternalEnemies() const;
 
