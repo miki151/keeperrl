@@ -130,6 +130,7 @@ class WindowView: public View {
   void getSmallSplash(const string& text, function<void()> cancelFun);
 
   void zoom(int dir);
+  void locateKeeper();
   void resize(int width, int height);
   Rectangle getMapGuiBounds() const;
   Rectangle getMinimapBounds() const;

@@ -170,6 +170,14 @@ DirSet MapGui::getConnectionSet(Vec2 tilePos, ViewId id) {
   return ret;
 }
 
+WModel MapGui::getModel() {
+  return previousView->getLevel()->getModel();
+}
+
+void MapGui::locateKeeper(WModel mod) {
+ setSoftCenter(mod->keeperPosition().getCoord());
+}
+
 void MapGui::setSoftCenter(Vec2 pos) {
   setSoftCenter(pos.x, pos.y);
 }

@@ -66,6 +66,10 @@ SERIALIZATION_CONSTRUCTOR_IMPL(Model)
 
 SERIALIZABLE(Model)
 
+Position Model::keeperPosition() {
+  return getGame()->getPlayerControl()->getKeeper()->getPosition();
+}
+
 void Model::discardForRetirement() {
   serializationLocked = true;
   deadCreatures.clear();
