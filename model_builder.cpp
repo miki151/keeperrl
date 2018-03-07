@@ -80,7 +80,7 @@ static CollectiveConfig getKeeperConfig(RandomGen& random, bool fastImmigration,
           .setSound(Sound(SoundId::CREATE_IMP).setPitch(2))
           .setNoAuto()
           .setInitialRecruitment(4)
-          .addRequirement(ExponentialCost{ CostInfo(CollectiveResourceId::GOLD, 6), 5, 4 }),
+          .addRequirement(ExponentialCost{ CostInfo(CollectiveResourceId::GOLD, 30), 5, 4 }),
       ImmigrantInfo(CreatureId::GOBLIN, {MinionTrait::FIGHTER, MinionTrait::NO_EQUIPMENT})
           .setFrequency(0.7)
           .addRequirement(0.1, AttractionInfo{1, vector<AttractionType>(
