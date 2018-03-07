@@ -689,6 +689,55 @@ int LastingEffects::getPrice(LastingEffect e) {
   }
 }
 
+bool LastingEffects::isAbsorbable(LastingEffect e) {
+  switch (e) {
+    //These are the effects that can't be absorbed.
+    case LastingEffect::COLLAPSED:
+    case LastingEffect::BLIND:
+    case LastingEffect::POISON:
+    case LastingEffect::STUNNED:
+    case LastingEffect::SLEEP:
+    case LastingEffect::ENTANGLED:
+    case LastingEffect::TIED_UP:
+    case LastingEffect::BLEEDING:
+    case LastingEffect::SATIATED:
+    case LastingEffect::RESTED:
+    case LastingEffect::SUMMONED:
+    case LastingEffect::WARNING:
+    case LastingEffect::LIGHT_SOURCE:
+    case LastingEffect::PREGNANT:
+    case LastingEffect::MAGIC_RESISTANCE:
+    case LastingEffect::RANGED_RESISTANCE:
+    case LastingEffect::MELEE_RESISTANCE:
+      return false;
+    //These effects are absorbed if permanent.
+    case LastingEffect::FLYING:
+    case LastingEffect::SPEED:
+    case LastingEffect::NIGHT_VISION:
+    case LastingEffect::ELF_VISION:
+    case LastingEffect::REGENERATION:
+    case LastingEffect::POISON_RESISTANT:
+    case LastingEffect::SLEEP_RESISTANT:
+    case LastingEffect::FIRE_RESISTANT:
+    case LastingEffect::TELEPATHY:
+    case LastingEffect::INVISIBLE:
+    case LastingEffect::RAGE:
+    case LastingEffect::PANIC:
+    case LastingEffect::INSANITY:
+    case LastingEffect::PEACEFULNESS:
+    case LastingEffect::HALLU:
+    case LastingEffect::DAM_BONUS:
+    case LastingEffect::DEF_BONUS:
+    case LastingEffect::SLOWED:
+    case LastingEffect::MAGIC_VULNERABILITY:
+    case LastingEffect::MELEE_VULNERABILITY:
+    case LastingEffect::RANGED_VULNERABILITY:
+    case LastingEffect::SUNLIGHT_VULNERABLE:
+    case LastingEffect::DARKNESS_SOURCE:
+      return true;
+  }
+}
+
 double LastingEffects::getMoraleIncrease(WConstCreature c) {
   PROFILE;
   double ret = 0;
