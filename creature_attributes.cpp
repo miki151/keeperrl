@@ -221,10 +221,20 @@ static string getAttrNameMore(AttrType attr) {
   }
 }
 
+static int getAbsorbtionLevelCap(AttrType attr) {
+  switch (attr) {
+    case AttrType::DAMAGE: return 25;
+    case AttrType::DEFENSE: return 25;
+    case AttrType::SPELL_DAMAGE: return 20;
+    case AttrType::RANGED_DAMAGE: return 15;
+  }
+}
+
 template <typename T>
-void consumeAttr(T& mine, const T& his, vector<string>& adjectives, const string& adj) {
-  if (consumeProb() && mine < his) {
-    mine = his;
+void consumeAttr(T& mine, const T& his, vector<string>& adjectives, const string& adj, const int& cap) {
+  int hisCapped = (his > cap) ? cap : his;
+  if (consumeProb() && mine < hisCapped) {
+    mine = hisCapped;
     if (!adj.empty())
       adjectives.push_back(adj);
   }
@@ -255,9 +265,10 @@ void consumeAttr(Skillset& mine, const Skillset& his, vector<string>& adjectives
       was = true;
     }
   for (SkillId id : ENUM_ALL(SkillId)) {
-    if (!Skill::get(id)->isDiscrete() && mine.getValue(id) < his.getValue(id)) {
-      mine.setValue(id, his.getValue(id));
-      was = true;
+    if (!Skill::get(id)->isDiscrete() && mine.getValue(id) < his.getValue(id)
+      && Skill::get(id)->transferOnConsumption()) {
+        mine.setValue(id, his.getValue(id));
+        was = true;
     }
   }
   if (was)
@@ -278,7 +289,8 @@ void CreatureAttributes::consume(WCreature self, CreatureAttributes& other) {
   vector<string> adjectives;
   body->consumeBodyParts(self, other.getBody(), adjectives);
   for (auto t : ENUM_ALL(AttrType))
-    consumeAttr(attr[t], other.attr[t], adjectives, getAttrNameMore(t));
+    consumeAttr(attr[t], other.attr[t], adjectives,
+      getAttrNameMore(t), getAbsorbtionLevelCap(t));
   consumeAttr(*passiveAttack, *other.passiveAttack, adjectives, "");
   consumeAttr(gender, other.gender, adjectives);
   consumeAttr(skills, other.skills, adjectives);

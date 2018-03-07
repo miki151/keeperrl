@@ -83,7 +83,7 @@ optional<ViewId> Task::getViewId() const {
 }
 
 bool Task::isDone() {
-  return done;
+  return isBogus() || done;
 }
 
 void Task::setViewId(ViewId id) {
@@ -102,7 +102,7 @@ class Construction : public Task {
       callback(c) {}
 
   virtual bool isBogus() const override {
-    return position.canConstruct(furnitureType);
+    return !position.canConstruct(furnitureType);
   }
 
   virtual string getDescription() const override {
@@ -1279,7 +1279,7 @@ class StayIn : public Task {
   virtual MoveInfo getMove(WCreature c) override {
     PROFILE_BLOCK("StayIn::getMove");
     auto pos = c->getPosition();
-    if (target.contains(pos)) {
+    if (Random.roll(15) && target.contains(pos)) {
       setDone();
       if (Random.roll(15))
         if (auto move = c->move(pos.plus(Vec2(Random.choose<Dir>()))))
@@ -1289,13 +1289,14 @@ class StayIn : public Task {
           return move;
       return c->wait();
     }
-    for (int i : Range(10)) {
-      currentTarget = Random.choose(target);
-      if (!currentTarget->getCreature())
-        break;
-      else
-        currentTarget = none;
-    }
+    if (!currentTarget)
+      for (int i : Range(100)) {
+        currentTarget = Random.choose(target);
+        if (currentTarget->canEnter(c))
+          break;
+        else
+          currentTarget = none;
+      }
     if (currentTarget)
       return c->moveTowards(*currentTarget);
     else
