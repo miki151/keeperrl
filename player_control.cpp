@@ -1022,6 +1022,10 @@ void PlayerControl::rejectPrisoner(int index) {
 vector<PlayerControl::StunnedInfo> PlayerControl::getPrisonerImmigrantStack() const {
   vector<StunnedInfo> ret;
   vector<WCreature> outside;
+
+  if (auto& externalEnemies = getModel()->getExternalEnemies())
+    outside = externalEnemies->getWavePrisoners();
+
   for (auto villain : getGame()->getCollectives()) {
     if (villain != collective) {
       auto& territory = villain->getTerritory();

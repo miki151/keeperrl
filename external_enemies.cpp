@@ -119,6 +119,15 @@ int ExternalEnemies::getNextWaveIndex() const {
   return nextWave;
 }
 
+vector<WCreature> ExternalEnemies::getWavePrisoners() const {
+  vector<WCreature> ret;
+    for (auto wave : Iter(currentWaves))
+      for (auto c: wave->attackers)
+        if (c->isAffected(LastingEffect::STUNNED))
+          ret.push_back(c);
+  return ret;
+}
+
 optional<EnemyEvent> ExternalEnemies::popNextWave(LocalTime localTime) {
   if (nextWave < waves.size() && waves[nextWave].attackTime <= localTime) {
     return waves[nextWave++];
