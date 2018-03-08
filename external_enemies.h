@@ -33,6 +33,7 @@ class ExternalEnemies {
   };
   optional<const EnemyEvent&> getNextWave() const;
   int getNextWaveIndex() const;
+  vector<WCreature> getWavePrisoners() const;
   optional<EnemyEvent> popNextWave(LocalTime localTime);
 
   SERIALIZATION_DECL(ExternalEnemies)
