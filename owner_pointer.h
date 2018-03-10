@@ -174,6 +174,11 @@ class WeakPointer {
     return elem.lock().get();
   }
 
+  int getHash() const {
+    auto sp = elem.lock();
+    return std::hash<decltype(sp)>()(sp);
+  }
+
   SERIALIZE_ALL(elem)
 
   private:

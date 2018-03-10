@@ -91,7 +91,7 @@ void PlayerControl::serialize(Archive& ar, const unsigned int version) {
   ar(memory, introText, lastControlKeeperQuestion);
   ar(newAttacks, ransomAttacks, messages, hints, visibleEnemies);
   ar(visibilityMap, unknownLocations);
-  ar(messageHistory, tutorial, controlModeMessages);
+  ar(messageHistory, tutorial, controlModeMessages, stunnedCreatures);
 }
 
 SERIALIZABLE(PlayerControl)
@@ -1022,21 +1022,20 @@ void PlayerControl::rejectPrisoner(int index) {
 vector<PlayerControl::StunnedInfo> PlayerControl::getPrisonerImmigrantStack() const {
   vector<StunnedInfo> ret;
   vector<WCreature> outside;
-  for (auto villain : getGame()->getCollectives()) {
-    if (villain != collective) {
-      auto& territory = villain->getTerritory();
-      vector<WCreature> inside;
-      for (auto c : villain->getCreatures(MinionTrait::STUNNED))
-        if (c->isAffected(LastingEffect::STUNNED)) {
-          if (villain->isConquered() || !territory.contains(c->getPosition()))
-            outside.push_back(c);
-          else
-            inside.push_back(c);
-        }
-      for (auto& stack : Creature::stack(inside))
-        ret.push_back(StunnedInfo{stack, villain});
+  unordered_map<WCollective, vector<WCreature>, CustomHash<WCollective>> inside;
+  for (auto stunned : stunnedCreatures)
+    if (stunned.first->isAffected(LastingEffect::STUNNED)) {
+      if (auto villain = stunned.second) {
+	if (villain->isConquered() || !villain->getTerritory().contains(stunned.first->getPosition()))
+	  outside.push_back(stunned.first);
+	else
+	  inside[villain].push_back(stunned.first);
+      } else
+	outside.push_back(stunned.first);
     }
-  }
+  for (auto& elem : inside)
+    for (auto& stack : Creature::stack(elem.second))
+      ret.push_back(StunnedInfo{stack, elem.first});
   for (auto& stack : Creature::stack(outside))
     ret.push_back(StunnedInfo{stack, nullptr});
   return ret;
@@ -1394,6 +1393,14 @@ void PlayerControl::onEvent(const GameEvent& event) {
           getView()->presentText("Information", "The tome describes the knowledge of " + tech->getName()
               + ", which you already possess.");
         }
+      },
+      [&](const CreatureStunned& info) {
+        for (auto villain : getGame()->getCollectives())
+          if (villain->getCreatures().contains(info.victim)) {
+            stunnedCreatures.push_back({info.victim, villain});
+            return;
+          }
+        stunnedCreatures.push_back({info.victim, nullptr});
       },
       [&](const FurnitureDestroyed& info) {
         if (info.type == FurnitureType::EYEBALL)

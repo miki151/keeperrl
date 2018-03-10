@@ -74,7 +74,7 @@ PTask ExternalEnemies::getAttackTask(WCollective enemy, AttackBehaviour behaviou
 void ExternalEnemies::updateCurrentWaves(WCollective target) {
   auto areAllDead = [](const vector<WCreature>& wave) {
     for (auto c : wave)
-      if (!c->isDead())
+      if (!c->isDead() && !c->isAffected(LastingEffect::STUNNED))
         return false;
     return true;
   };

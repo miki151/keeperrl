@@ -144,7 +144,7 @@ void Collective::addCreature(PCreature creature, Position pos, EnumSet<MinionTra
 void Collective::updateCreatureStatus(WCreature c) {
   c->getStatus().set(CreatureStatus::CIVILIAN,
       c->getBody().isHumanoid() &&
-      !hasTrait(c, MinionTrait::STUNNED) &&
+      !c->isAffected(LastingEffect::STUNNED) &&
       !hasTrait(c, MinionTrait::FIGHTER) &&
       !hasTrait(c, MinionTrait::LEADER));
   c->getStatus().set(CreatureStatus::FIGHTER, hasTrait(c, MinionTrait::FIGHTER));
@@ -700,7 +700,6 @@ void Collective::onEvent(const GameEvent& event) {
         auto victim = info.victim;
         if (getCreatures().contains(victim)) {
           bool fighterStunned = hasTrait(victim, MinionTrait::FIGHTER) || victim == getLeader();
-          setTrait(victim, MinionTrait::STUNNED);
           removeTrait(victim, MinionTrait::FIGHTER);
           removeTrait(victim, MinionTrait::LEADER);
           control->addMessage(PlayerMessage(victim->getName().a() + " is unconsious.")

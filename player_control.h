@@ -236,6 +236,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
     WCollective collective;
   };
   vector<StunnedInfo> getPrisonerImmigrantStack() const;
+  vector<pair<WCreature, WCollective>> SERIAL(stunnedCreatures);
   string getMinionGroupName(WCreature) const;
   ViewId getMinionGroupViewId(WCreature) const;
   SUnknownLocations SERIAL(unknownLocations);
