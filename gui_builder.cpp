@@ -1706,7 +1706,7 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo& info, const opti
             .addElem(gui.margins(gui.scrollable(
                   lines.buildVerticalList(), &workshopsScroll, &scrollbarsHeld), margin))
             .addElem(gui.margins(
-                gui.scrollable(lines2.buildVerticalList(), &workshopsScroll2, &scrollbarsHeld2),
+                gui.scrollable(lines2.buildVerticalList(), &workshopsScroll2, &scrollbarsHeld),
                 margin)).buildHorizontalList())));
 }
 

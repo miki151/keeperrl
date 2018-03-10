@@ -69,6 +69,8 @@ class MapGui : public GuiElem {
   void unhighlightTeam(const vector<UniqueEntity<Creature>::Id>&);
   void setButtonViewId(ViewId);
   void clearButtonViewId();
+  void locateKeeper(WModel mod);
+  WModel getModel();
   bool highlightMorale = true;
   bool highlightEnemies = true;
   bool displayAllHealthBars = true;

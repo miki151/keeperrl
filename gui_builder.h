@@ -214,7 +214,6 @@ class GuiBuilder {
   bool playerOverlayFocused = false;
   optional<int> lastPlayerPositionHash;
   int scrollbarsHeld = GuiFactory::getHeldInitValue();
-  int scrollbarsHeld2 = GuiFactory::getHeldInitValue();
   bool disableTooltip = false;
   CollectiveTab collectiveTab = CollectiveTab::BUILDINGS;
   MinionTab minionTab = MinionTab::INVENTORY;
