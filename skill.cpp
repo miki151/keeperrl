@@ -45,18 +45,18 @@ void Skill::init() {
   Skill::set(SkillId::STEALING,
       new Skill("stealing", "Steal from other monsters. Not available for player ATM.", true));
   Skill::set(SkillId::SWIMMING, new Skill("swimming", "Cross water without drowning.", true));
-  Skill::set(SkillId::CONSTRUCTION, new Skill("construction", "Mine and construct rooms.", true));
+  Skill::set(SkillId::CONSTRUCTION, new Skill("construction", "Mine and construct rooms.", true, false));
   Skill::set(SkillId::DIGGING, new Skill("digging", "Dig.", false));
   Skill::set(SkillId::NAVIGATION_DIGGING, new Skill("digging to navigate",
       "Creature will try to dig when travelling somewhere.", true));
   Skill::set(SkillId::DISARM_TRAPS, new Skill("disarm traps", "Evade traps and disarm them.", true));
-  Skill::set(SkillId::SORCERY, new Skill("sorcery", "Affects the length of spell cooldowns.", false));
+  Skill::set(SkillId::SORCERY, new Skill("sorcery", "Affects the length of spell cooldowns.", false, false));
   Skill::set(SkillId::CONSUMPTION, new Skill("absorbtion",
         "Absorb other creatures and retain their attributes.", true, false));
   Skill::set(SkillId::COPULATION, new Skill("copulation",
-        "Copulate with other creatures and give birth to hideus spawns.", true));
+        "Copulate with other creatures and give birth to hideus spawns.", true, false));
   Skill::set(SkillId::SPIDER, new Skill("spin spider webs", "Spin spider webs.", true));
-  Skill::set(SkillId::CROPS, new Skill("tend crops", "Tend crops.", true));
+  Skill::set(SkillId::CROPS, new Skill("tend crops", "Tend crops.", true, false));
   Skill::set(SkillId::EXPLORE, new Skill("exploring", "Explore all surroundings.", true));
   Skill::set(SkillId::EXPLORE_CAVES, new Skill("exploring caves", "Explore caves.", true));
   Skill::set(SkillId::EXPLORE_NOCTURNAL, new Skill("exploring at night", "Explore at night.", true));
