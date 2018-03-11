@@ -30,6 +30,7 @@
 #include "view_id.h"
 #include "event_listener.h"
 #include "vision.h"
+#define MAX_RANGED_DISTANCE 10
 
 SERIALIZE_DEF(RangedWeapon, damageAttr, projectileName, projectileViewId)
 SERIALIZATION_CONSTRUCTOR_IMPL(RangedWeapon)
@@ -46,8 +47,10 @@ void RangedWeapon::fire(WCreature c, Vec2 dir) const {
   const auto position = c->getPosition();
   auto vision = c->getVision().getId();
   Position lastPos;
+  int distance = 0;
   for (Position pos = position.plus(dir);; pos = pos.plus(dir)) {
     lastPos = pos;
+    distance++;
     if (auto c = pos.getCreature()) {
       c->you(MsgType::HIT_THROWN_ITEM, "the " + projectileName);
       c->takeDamage(attack);
@@ -56,6 +59,11 @@ void RangedWeapon::fire(WCreature c, Vec2 dir) const {
     if (pos.stopsProjectiles(vision)) {
       pos.globalMessage("the " + projectileName + " hits the " + pos.getName());
       break;
+    }
+    if (distance >= MAX_RANGED_DISTANCE)
+    {
+        pos.globalMessage("the " + projectileName + " falls short.");
+        break;
     }
   }
   c->getGame()->addEvent(EventInfo::Projectile{projectileViewId, position, lastPos});
