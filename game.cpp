@@ -508,8 +508,8 @@ void Game::retired(const string& title, int numKills, int points) {
   string text = "You have survived in this land for " + toString(turns) + " turns. You killed " + toString(numKills) +
       " enemies.\n";
   if (dungeonTurns > 0) {
-    text += toString(dungeonTurns)+" turns defending the base.\n";
-    text += toString(turns-dungeonTurns)+" turns spent adventuring and attacking.\n";
+    text += toString(dungeonTurns) + " turns defending the base.\n";
+    text += toString(turns - dungeonTurns) + " turns spent adventuring and attacking.\n";
   }
   text += " Thank you for playing KeeperRL!\n \n";
   for (string stat : statistics->getText())
@@ -544,8 +544,8 @@ void Game::gameOver(WConstCreature creature, int numKills, const string& enemies
   }
   text += ". You killed " + toString(numKills) + " " + enemiesString + " and scored " + toString(points) + " points.\n";
   if (dungeonTurns > 0) {
-    text += toString(dungeonTurns)+" turns defending the base.\n";
-    text += toString(turns-dungeonTurns)+" turns spent adventuring and attacking.\n";
+    text += toString(dungeonTurns) + " turns defending the base.\n";
+    text += toString(turns - dungeonTurns) + " turns spent adventuring and attacking.\n";
   }
   for (string stat : statistics->getText())
     text += stat + "\n";
