@@ -1010,11 +1010,17 @@ bool Creature::takeDamage(const Attack& attack) {
   double damage = getDamage((double) attack.strength / defense);
   if (auto sound = attributes->getAttackSound(attack.type, damage > 0))
     addSound(*sound);
+  bool returnValue = damage > 0;
   if (damage > 0) {
     bool canCapture = capture && attack.attacker;
-    if ((canCapture && captureDamage(damage, attack.attacker)) ||
-        (!canCapture && attributes->getBody().takeDamage(attack, this, damage)))
+    if (canCapture && captureDamage(damage, attack.attacker))
       return true;
+    if (!canCapture) {
+      auto res = attributes->getBody().takeDamage(attack, this, damage);
+      returnValue = (res != Body::NOT_HURT);
+      if (res == Body::KILLED)
+        return true;
+    }
   } else
     you(MsgType::GET_HIT_NODAMAGE);
   if (attack.effect)
@@ -1022,7 +1028,7 @@ bool Creature::takeDamage(const Attack& attack) {
   for (LastingEffect effect : ENUM_ALL(LastingEffect))
     if (isAffected(effect))
       LastingEffects::afterCreatureDamage(this, effect);
-  return damage > 0;
+  return returnValue;
 }
 
 static vector<string> extractNames(const vector<AdjectiveInfo>& adjectives) {

@@ -582,7 +582,7 @@ static void youHit(WConstCreature c, BodyPart part, AttackType type) {
   }
 }
 
-bool Body::takeDamage(const Attack& attack, WCreature creature, double damage) {
+Body::DamageResult Body::takeDamage(const Attack& attack, WCreature creature, double damage) {
   PROFILE;
   bleed(creature, damage);
   BodyPart part = getBodyPart(attack.level, creature->isAffected(LastingEffect::FLYING),
@@ -593,28 +593,31 @@ bool Body::takeDamage(const Attack& attack, WCreature creature, double damage) {
     if (isCritical(part)) {
       creature->you(MsgType::DIE, "");
       creature->dieWithAttacker(attack.attacker);
-      return true;
+      return Body::KILLED;
     }
     creature->addEffect(LastingEffect::BLEEDING, 50_visible);
     if (health <= 0)
       health = 0.1;
-    return false;
+    return Body::HURT;
   }
   if (health <= 0) {
     creature->you(MsgType::ARE, "critically wounded");
     creature->you(MsgType::DIE, "");
     creature->dieWithAttacker(attack.attacker);
-    return true;
+    return Body::KILLED;
   } else
-  if (health < 0.5)
+  if (health < 0.5) {
     creature->you(MsgType::ARE, "critically wounded");
-  else {
+    return Body::HURT;
+  } else {
     if (hasHealth())
       creature->you(MsgType::ARE, "wounded");
-    else if (!attack.effect)
+    else if (!attack.effect) {
       creature->you(MsgType::ARE, "not hurt");
+      return Body::NOT_HURT;
+    }
+    return Body::HURT;
   }
-  return false;
 }
 
 void Body::getBadAdjectives(vector<AdjectiveInfo>& ret) const {

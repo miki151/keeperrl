@@ -60,7 +60,12 @@ class Body {
 
   void affectPosition(Position);
 
-  bool takeDamage(const Attack&, WCreature, double damage);
+  enum DamageResult {
+    NOT_HURT,
+    HURT,
+    KILLED
+  };
+  DamageResult takeDamage(const Attack&, WCreature, double damage);
 
   bool tick(WConstCreature);
   bool heal(WCreature, double amount);
