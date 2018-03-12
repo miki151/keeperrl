@@ -17,6 +17,7 @@
 
 #include "util.h"
 #include "item.h"
+#define MAX_RANGED_DISTANCE 10
 
 class RangedWeapon {
   public:

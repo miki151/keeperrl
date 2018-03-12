@@ -30,7 +30,6 @@
 #include "view_id.h"
 #include "event_listener.h"
 #include "vision.h"
-#define MAX_RANGED_DISTANCE 10
 
 SERIALIZE_DEF(RangedWeapon, damageAttr, projectileName, projectileViewId)
 SERIALIZATION_CONSTRUCTOR_IMPL(RangedWeapon)
