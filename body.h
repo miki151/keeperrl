@@ -123,7 +123,7 @@ class Body {
 
   private:
   friend class Test;
-  BodyPart getBodyPart(AttackLevel attack, bool flying, bool collapsed) const;
+  optional<BodyPart> getBodyPart(AttackLevel attack, bool flying, bool collapsed) const;
   BodyPart armOrWing() const;
   int numInjured(BodyPart) const;
   void clearInjured(BodyPart);
@@ -149,5 +149,6 @@ class Body {
   optional<double> SERIAL(carryLimit);
   EnumMap<BodyPart, optional<IntrinsicAttack>> SERIAL(intrinsicAttacks);
   bool SERIAL(canAlwaysPush) = false;
+  optional<BodyPart> getAnyGoodBodyPart() const;
 };
 

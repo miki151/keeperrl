@@ -242,27 +242,40 @@ void Body::clearLost(BodyPart part) {
   lostBodyParts[part] = 0;
 }
 
+optional<BodyPart> Body::getAnyGoodBodyPart() const {
+  vector<BodyPart> good;
+  for (auto part : ENUM_ALL(BodyPart))
+    if (numGood(part) > 0)
+      good.push_back(part);
+  return Random.choose(good);
+}
 
-BodyPart Body::getBodyPart(AttackLevel attack, bool flying, bool collapsed) const {
-  if (flying)
-    return Random.choose({BodyPart::TORSO, BodyPart::HEAD, BodyPart::LEG, BodyPart::WING, BodyPart::ARM},
-        {1, 1, 1, 2, 1});
-  switch (attack) {
-    case AttackLevel::HIGH: 
-       return BodyPart::HEAD;
-    case AttackLevel::MIDDLE:
-       if (size == Size::SMALL || size == Size::MEDIUM || collapsed)
+optional<BodyPart> Body::getBodyPart(AttackLevel attack, bool flying, bool collapsed) const {
+  auto best = [&] {
+    if (flying)
+      return Random.choose({BodyPart::TORSO, BodyPart::HEAD, BodyPart::LEG, BodyPart::WING, BodyPart::ARM},
+          {1, 1, 1, 2, 1});
+    switch (attack) {
+      case AttackLevel::HIGH:
          return BodyPart::HEAD;
-       else
-         return Random.choose({BodyPart::TORSO, armOrWing()}, {1, 1});
-    case AttackLevel::LOW:
-       if (size == Size::SMALL || collapsed)
-         return Random.choose({BodyPart::TORSO, armOrWing(), BodyPart::HEAD, BodyPart::LEG}, {1, 1, 1, 1});
-       if (size == Size::MEDIUM)
-         return Random.choose({BodyPart::TORSO, armOrWing(), BodyPart::LEG}, {1, 1, 3});
-       else
-         return BodyPart::LEG;
-  }
+      case AttackLevel::MIDDLE:
+         if (size == Size::SMALL || size == Size::MEDIUM || collapsed)
+           return BodyPart::HEAD;
+         else
+           return Random.choose({BodyPart::TORSO, armOrWing()}, {1, 1});
+      case AttackLevel::LOW:
+         if (size == Size::SMALL || collapsed)
+           return Random.choose({BodyPart::TORSO, armOrWing(), BodyPart::HEAD, BodyPart::LEG}, {1, 1, 1, 1});
+         if (size == Size::MEDIUM)
+           return Random.choose({BodyPart::TORSO, armOrWing(), BodyPart::LEG}, {1, 1, 3});
+         else
+           return BodyPart::LEG;
+    }
+  }();
+  if (numGood(best) > 0)
+    return best;
+  else
+    return getAnyGoodBodyPart();
 }
 
 void Body::healBodyParts(WCreature creature, bool regrow) {
@@ -585,21 +598,21 @@ static void youHit(WConstCreature c, BodyPart part, AttackType type) {
 Body::DamageResult Body::takeDamage(const Attack& attack, WCreature creature, double damage) {
   PROFILE;
   bleed(creature, damage);
-  BodyPart part = getBodyPart(attack.level, creature->isAffected(LastingEffect::FLYING),
-      creature->isAffected(LastingEffect::COLLAPSED));
-  if (isPartDamaged(part, damage) && numGood(part) > 0) {
-    youHit(creature, part, attack.type);
-    injureBodyPart(creature, part, contains({AttackType::CUT, AttackType::BITE}, attack.type));
-    if (isCritical(part)) {
-      creature->you(MsgType::DIE, "");
-      creature->dieWithAttacker(attack.attacker);
-      return Body::KILLED;
+  if (auto part = getBodyPart(attack.level, creature->isAffected(LastingEffect::FLYING),
+      creature->isAffected(LastingEffect::COLLAPSED)))
+    if (isPartDamaged(*part, damage)) {
+      youHit(creature, *part, attack.type);
+      injureBodyPart(creature, *part, contains({AttackType::CUT, AttackType::BITE}, attack.type));
+      if (isCritical(*part)) {
+        creature->you(MsgType::DIE, "");
+        creature->dieWithAttacker(attack.attacker);
+        return Body::KILLED;
+      }
+      creature->addEffect(LastingEffect::BLEEDING, 50_visible);
+      if (health <= 0)
+        health = 0.1;
+      return Body::HURT;
     }
-    creature->addEffect(LastingEffect::BLEEDING, 50_visible);
-    if (health <= 0)
-      health = 0.1;
-    return Body::HURT;
-  }
   if (health <= 0) {
     creature->you(MsgType::ARE, "critically wounded");
     creature->you(MsgType::DIE, "");
