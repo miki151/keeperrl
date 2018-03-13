@@ -337,12 +337,9 @@ class Fighter : public Behaviour {
 
   virtual MoveInfo getMove() override {
     if (WCreature other = getClosestEnemy()) {
-      double myDamage = creature->getAttr(AttrType::DAMAGE);
-      WItem weapon = getBestWeapon();
-      if (!creature->getWeapon() && weapon)
-        myDamage += weapon->getModifier(AttrType::DAMAGE);
-      double powerRatio = myDamage / (other->getAttr(AttrType::DAMAGE) + 1);
-      bool significantEnemy = myDamage < 5 * other->getAttr(AttrType::DAMAGE);
+      double myDamage = creature->getDefaultWeaponDamage();
+      double powerRatio = myDamage / (other->getDefaultWeaponDamage() + 1);
+      bool significantEnemy = myDamage < 5 * other->getDefaultWeaponDamage();
       double panicWeight = 0;
       if (powerRatio < maxPowerRatio)
         panicWeight += 2 - powerRatio * 2;
@@ -1116,20 +1113,25 @@ MonsterAI::MonsterAI(WCreature c, const vector<Behaviour*>& beh, const vector<in
 }
 
 void MonsterAI::makeMove() {
-  vector<pair<MoveInfo, int>> moves;
+  vector<MoveInfo> moves;
   for (int i : All(behaviours)) {
     MoveInfo move = behaviours[i]->getMove();
     move.setValue(move.getValue() * weights[i]);
-    moves.emplace_back(move, weights[i]);
-    if (pickItems) {
+    moves.push_back(move);
+    bool skipNextMoves = false;
+    if (i < behaviours.size() - 1) {
+      CHECK(weights[i] >= weights[i + 1]);
+      if (moves.back().getValue() > weights[i + 1])
+        skipNextMoves = true;
+    }
+    if (pickItems)
       for (auto& stack : Item::stackItems(creature->getPickUpOptions())) {
         WItem item = stack[0];
         if (!item->isOrWasForSale() && creature->pickUp(stack))
-          moves.emplace_back(
-              MoveInfo({ behaviours[i]->itemValue(item) * weights[i], creature->pickUp(stack)}),
-              weights[i]);
+          moves.push_back(MoveInfo({ behaviours[i]->itemValue(item) * weights[i], creature->pickUp(stack)}));
       }
-    }
+    if (skipNextMoves)
+      break;
   }
   /*vector<WItem> inventory = creature->getEquipment().getItems([this](WItem item) { return !creature->getEquipment().isEquiped(item);});
   for (WItem item : inventory) {
@@ -1143,13 +1145,9 @@ void MonsterAI::makeMove() {
       }});
   }*/
   MoveInfo winner = NoMove;
-  for (int i : All(moves)) {
-    MoveInfo& move = moves[i].first;
-    if (move.getValue() > winner.getValue())
-      winner = move;
-    if (i < moves.size() - 1 && move.getValue() > moves[i + 1].second)
-      break;
-  }
+  for (int i : All(moves))
+    if (moves[i].getValue() > winner.getValue())
+      winner = moves[i];
   CHECK(winner.getValue() > 0);
   winner.getMove().perform(creature);
 }
@@ -1231,10 +1229,10 @@ MonsterAIFactory MonsterAIFactory::singleTask(PTask&& t, bool chaseEnemies) {
 MonsterAIFactory MonsterAIFactory::wildlifeNonPredator() {
   return MonsterAIFactory([](WCreature c) {
       return new MonsterAI(c, {
-          new Fighter(c, 1.2, false),
           new Wildlife(c),
+          new Fighter(c, 1.2, false),
           new MoveRandomly(c)},
-          {5, 6, 1});
+          {6, 5, 1});
       });
 }
 
@@ -1267,10 +1265,11 @@ MonsterAIFactory MonsterAIFactory::idle() {
 MonsterAIFactory MonsterAIFactory::scavengerBird(Position corpsePos) {
   return MonsterAIFactory([=](WCreature c) {
       return new MonsterAI(c, {
+          new GuardSquare(c, corpsePos, 1, 2),
           new BirdFlyAway(c, 3),
           new MoveRandomly(c),
-          new GuardSquare(c, corpsePos, 1, 2)},
-          {1, 1, 2});
+      },
+      {2, 1, 1});
       });
 }
 

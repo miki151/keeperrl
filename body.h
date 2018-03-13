@@ -60,7 +60,12 @@ class Body {
 
   void affectPosition(Position);
 
-  bool takeDamage(const Attack&, WCreature, double damage);
+  enum DamageResult {
+    NOT_HURT,
+    HURT,
+    KILLED
+  };
+  DamageResult takeDamage(const Attack&, WCreature, double damage);
 
   bool tick(WConstCreature);
   bool heal(WCreature, double amount);
@@ -118,7 +123,7 @@ class Body {
 
   private:
   friend class Test;
-  BodyPart getBodyPart(AttackLevel attack, bool flying, bool collapsed) const;
+  optional<BodyPart> getBodyPart(AttackLevel attack, bool flying, bool collapsed) const;
   BodyPart armOrWing() const;
   int numInjured(BodyPart) const;
   void clearInjured(BodyPart);
@@ -144,5 +149,6 @@ class Body {
   optional<double> SERIAL(carryLimit);
   EnumMap<BodyPart, optional<IntrinsicAttack>> SERIAL(intrinsicAttacks);
   bool SERIAL(canAlwaysPush) = false;
+  optional<BodyPart> getAnyGoodBodyPart() const;
 };
 

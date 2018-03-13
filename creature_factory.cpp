@@ -996,8 +996,9 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::SPIRIT:
       return CATTR(
           c.viewId = ViewId::SPIRIT;
-          c.attr = LIST(35_def, 40_spell_dam );
+          c.attr = LIST(35_def, 30_spell_dam );
           c.body = Body::nonHumanoidSpirit(Body::Size::LARGE);
+          c.body->setIntrinsicAttack(BodyPart::TORSO, IntrinsicAttack(ItemType::spellHit(10)));
           c.permanentEffects[LastingEffect::FLYING] = 1;
           c.permanentEffects[LastingEffect::MAGIC_VULNERABILITY] = 1;
           c.chatReactionFriendly = "\"Wouuuouuu!!!\""_s;

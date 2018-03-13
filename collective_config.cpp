@@ -545,18 +545,19 @@ unique_ptr<Workshops> CollectiveConfig::getWorkshops() const {
       }},
       {WorkshopType::FORGE, {
           Workshops::Item::fromType(ItemType::Sword{}, 10, {CollectiveResourceId::IRON, 20}),
-          Workshops::Item::fromType(ItemType::AdaSword{}, 20, {CollectiveResourceId::ADA, 20}),
           Workshops::Item::fromType(ItemType::ChainArmor{}, 30, {CollectiveResourceId::IRON, 40}),
-          Workshops::Item::fromType(ItemType::AdaArmor{}, 30, {CollectiveResourceId::ADA, 40}),
           Workshops::Item::fromType(ItemType::IronHelm{}, 8, {CollectiveResourceId::IRON, 16}),
           Workshops::Item::fromType(ItemType::IronBoots{}, 12, {CollectiveResourceId::IRON, 24}),
           Workshops::Item::fromType(ItemType::WarHammer{}, 16, {CollectiveResourceId::IRON, 40})
                   .setTechId(TechId::TWO_H_WEAP),
           Workshops::Item::fromType(ItemType::BattleAxe{}, 22, {CollectiveResourceId::IRON, 50})
                   .setTechId(TechId::TWO_H_WEAP),
-          Workshops::Item::fromType(ItemType::AdaBattleAxe{}, 22, {CollectiveResourceId::ADA, 50}),
-         Workshops::Item::fromType(ItemType::IronStaff{}, 20, {CollectiveResourceId::IRON, 40})
+          Workshops::Item::fromType(ItemType::IronStaff{}, 20, {CollectiveResourceId::IRON, 40})
                  .setTechId(TechId::MAGICAL_WEAPONS),
+          Workshops::Item::fromType(ItemType::AdaSword{}, 20, {CollectiveResourceId::ADA, 20}),
+          Workshops::Item::fromType(ItemType::AdaArmor{}, 30, {CollectiveResourceId::ADA, 40}),
+          Workshops::Item::fromType(ItemType::AdaBattleAxe{}, 22, {CollectiveResourceId::ADA, 50})
+	         .setTechId(TechId::TWO_H_WEAP),
       }},
       {WorkshopType::LABORATORY, {
           Workshops::Item::fromType(ItemType::Potion{Effect::Lasting{LastingEffect::SLOWED}}, 2,

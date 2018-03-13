@@ -86,7 +86,7 @@ bool MinionActivityMap::isAvailable(WConstCollective col, WConstCreature c, Mini
     case MinionActivity::COPULATE:
       return c->getAttributes().getSkills().hasDiscrete(SkillId::COPULATION);
     case MinionActivity::RITUAL:
-      return c->getBody().isHumanoid();
+      return c->getBody().isHumanoid() && !col->hasTrait(c, MinionTrait::WORKER);
     case MinionActivity::CROPS:
       return c->getAttributes().getSkills().hasDiscrete(SkillId::CROPS);
     case MinionActivity::SPIDER:

@@ -918,6 +918,13 @@ CreatureAction Creature::execute(WCreature c) const {
   });
 }
 
+int Creature::getDefaultWeaponDamage() const {
+  if (auto weapon = getWeapon())
+    return getAttr(weapon->getWeaponInfo().meleeAttackAttr);
+  else
+    return 0;
+}
+
 CreatureAction Creature::attack(WCreature other, optional<AttackParams> attackParams) const {
   CHECK(!other->isDead());
   if (!position.isSameLevel(other->getPosition()))
@@ -1010,11 +1017,17 @@ bool Creature::takeDamage(const Attack& attack) {
   double damage = getDamage((double) attack.strength / defense);
   if (auto sound = attributes->getAttackSound(attack.type, damage > 0))
     addSound(*sound);
+  bool returnValue = damage > 0;
   if (damage > 0) {
     bool canCapture = capture && attack.attacker;
-    if ((canCapture && captureDamage(damage, attack.attacker)) ||
-        (!canCapture && attributes->getBody().takeDamage(attack, this, damage)))
+    if (canCapture && captureDamage(damage, attack.attacker))
       return true;
+    if (!canCapture) {
+      auto res = attributes->getBody().takeDamage(attack, this, damage);
+      returnValue = (res != Body::NOT_HURT);
+      if (res == Body::KILLED)
+        return true;
+    }
   } else
     you(MsgType::GET_HIT_NODAMAGE);
   if (attack.effect)
@@ -1022,7 +1035,7 @@ bool Creature::takeDamage(const Attack& attack) {
   for (LastingEffect effect : ENUM_ALL(LastingEffect))
     if (isAffected(effect))
       LastingEffects::afterCreatureDamage(this, effect);
-  return damage > 0;
+  return returnValue;
 }
 
 static vector<string> extractNames(const vector<AdjectiveInfo>& adjectives) {
@@ -1574,42 +1587,46 @@ bool Creature::canNavigateTo(Position pos) const {
 }
 
 CreatureAction Creature::moveTowards(Position pos, bool away, NavigationFlags flags) {
+  PROFILE;
   CHECK(pos.isSameLevel(position));
   if (flags.stepOnTile && !pos.canEnterEmpty(this))
     return CreatureAction();
   if (!away && !canNavigateTo(pos))
     return CreatureAction();
   optional<LevelShortestPath> currentPath = *shortestPath;
-  auto constructPath = [&] {
-    if (!away)
-      currentPath = LevelShortestPath(this, pos, position);
-    else
-      currentPath = LevelShortestPath(this, pos, position, -1.5);
-  };
-  if (!currentPath || currentPath->isReversed() != away ||
-      currentPath->getTarget().dist8(pos) > getPosition().dist8(pos) / 10)
-    constructPath();
-  CHECK(!!currentPath);
-  /*if (currentPath->isReachable(position))
-    if (auto action = move(currentPath->getNextMove(position), currentPath->getNextNextMove(position)))
-      return action.append(rememberPath);
-  INFO << "Reconstructing shortest path.";
-  constructPath();*/
-  if (currentPath->isReachable(position)) {
-    Position pos2 = currentPath->getNextMove(position);
-    if (auto action = move(pos2, currentPath->getNextNextMove(position)))
-      return action.append([path = *currentPath](WCreature c) { c->shortestPath = path; });
-    else {
-      if (!pos2.canEnterEmpty(this) && flags.destroy)
-        if (auto destroyAction = pos2.getBestDestroyAction(getMovementType()))
-            if (auto action = destroy(getPosition().getDir(pos2), *destroyAction))
-              return action.append([path = *currentPath](WCreature c) { c->shortestPath = path; });
-      return CreatureAction();
+  for (int i : Range(2)) {
+    bool wasNew = false;
+    INFO << identify() << (away ? " retreating " : " navigating ") << position.getCoord() << " to " << pos.getCoord();
+    if (!currentPath || Random.roll(10) || currentPath->isReversed() != away ||
+        currentPath->getTarget().dist8(pos) > getPosition().dist8(pos) / 10) {
+      INFO << "Calculating new path";
+      currentPath = LevelShortestPath(this, pos, position, away ? -1.5 : 0);
+      wasNew = true;
     }
-  } else {
+    if (currentPath->isReachable(position)) {
+      INFO << "Position reachable";
+      Position pos2 = currentPath->getNextMove(position);
+      if (auto action = move(pos2, currentPath->getNextNextMove(position))) {
+        INFO << "Can move";
+        return action.append([path = *currentPath](WCreature c) { c->shortestPath = path; });
+      } else {
+        INFO << "Trying to destroy";
+        if (!pos2.canEnterEmpty(this) && flags.destroy)
+          if (auto destroyAction = pos2.getBestDestroyAction(getMovementType()))
+              if (auto action = destroy(getPosition().getDir(pos2), *destroyAction)) {
+                INFO << "Destroying";
+                return action.append([path = *currentPath](WCreature c) { c->shortestPath = path; });
+              }
+      }
+    } else
+      INFO << "Position unreachable";
     shortestPath = none;
-    return CreatureAction();
+    if (wasNew)
+      break;
+    else
+      continue;
   }
+  return CreatureAction();
 }
 
 CreatureAction Creature::moveAway(Position pos, bool pathfinding) {

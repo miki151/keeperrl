@@ -1,5 +1,7 @@
 #pragma once
 
+#include "util.h"
+
 RICH_ENUM(
     AttackType,
     CUT,
