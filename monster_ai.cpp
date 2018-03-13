@@ -337,12 +337,9 @@ class Fighter : public Behaviour {
 
   virtual MoveInfo getMove() override {
     if (WCreature other = getClosestEnemy()) {
-      double myDamage = creature->getAttr(AttrType::DAMAGE);
-      WItem weapon = getBestWeapon();
-      if (!creature->getWeapon() && weapon)
-        myDamage += weapon->getModifier(AttrType::DAMAGE);
-      double powerRatio = myDamage / (other->getAttr(AttrType::DAMAGE) + 1);
-      bool significantEnemy = myDamage < 5 * other->getAttr(AttrType::DAMAGE);
+      double myDamage = creature->getDefaultWeaponDamage();
+      double powerRatio = myDamage / (other->getDefaultWeaponDamage() + 1);
+      bool significantEnemy = myDamage < 5 * other->getDefaultWeaponDamage();
       double panicWeight = 0;
       if (powerRatio < maxPowerRatio)
         panicWeight += 2 - powerRatio * 2;

@@ -148,6 +148,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
     optional<AttackLevel> level;
   };
   CreatureAction attack(WCreature, optional<AttackParams> = none) const;
+  int getDefaultWeaponDamage() const;
   CreatureAction execute(WCreature) const;
   CreatureAction applyItem(WItem item) const;
   CreatureAction equip(WItem item) const;

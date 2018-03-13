@@ -918,6 +918,13 @@ CreatureAction Creature::execute(WCreature c) const {
   });
 }
 
+int Creature::getDefaultWeaponDamage() const {
+  if (auto weapon = getWeapon())
+    return getAttr(weapon->getWeaponInfo().meleeAttackAttr);
+  else
+    return 0;
+}
+
 CreatureAction Creature::attack(WCreature other, optional<AttackParams> attackParams) const {
   CHECK(!other->isDead());
   if (!position.isSameLevel(other->getPosition()))
