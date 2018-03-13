@@ -73,6 +73,11 @@ ItemType ItemType::fangs(int damage, Effect effect) {
   return fangsBase(damage, effect);
 }
 
+ItemType ItemType::spellHit(int damage) {
+  return ItemType::Intrinsic{ViewId::FIST_ATTACK, "spell", damage,
+      WeaponInfo{false, AttackType::HIT, AttrType::SPELL_DAMAGE, none, AttackMsg::SPELL}};
+}
+
 ItemType::ItemType() {}
 
 ItemType& ItemType::operator = (const ItemType&) = default;
@@ -472,7 +477,7 @@ ItemAttributes ItemType::Intrinsic::getAttributes() const {
       i.itemClass = ItemClass::WEAPON;
       i.equipmentSlot = EquipmentSlot::WEAPON;
       i.weight = 0.3;
-      i.modifiers[AttrType::DAMAGE] = damage;
+      i.modifiers[weaponInfo.meleeAttackAttr] = damage;
       i.price = 1;
       i.weaponInfo = weaponInfo;
   );

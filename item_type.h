@@ -74,6 +74,7 @@ class ItemType {
   static ItemType fists(int damage, Effect);
   static ItemType fangs(int damage);
   static ItemType fangs(int damage, Effect);
+  static ItemType spellHit(int damage);
   struct Scroll {
     Effect SERIAL(effect);
     SERIALIZE_ALL(effect)

@@ -498,5 +498,8 @@ void Item::getAttackMsg(const Creature* c, const string& enemyName) const {
     case AttackMsg::CLAW:
       biteMsg("claw", "claws");
       break;
+    case AttackMsg::SPELL:
+      biteMsg("curse", "curses");
+      break;
   }
 }
