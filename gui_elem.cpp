@@ -2605,7 +2605,7 @@ SGuiElem GuiFactory::miniWindow(SGuiElem content, function<void()> onExitButton,
         stopMouseMovement(),
         rectangle(Color::BLACK),
         background(background1),
-        std::move(content),
+        margins(std::move(content), 1),
         miniBorder()
 	);
   if (onExitButton)
