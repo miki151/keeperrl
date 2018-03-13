@@ -33,6 +33,7 @@ class DistanceTable {
   DistanceTable(Rectangle bounds) : ddist(bounds), dirty(bounds, 0) {} 
 
   double getDistance(Vec2 v) const {
+    PROFILE;
     return dirty[v] < counter ? ShortestPath::infinity : ddist[v];
   }
 
@@ -52,18 +53,34 @@ class DistanceTable {
 };
 
 static DistanceTable distanceTable(Level::getMaxBounds());
+static DirtyTable<double> navigationCostCache(Level::getMaxBounds(), 0);
+
+static function<double(Vec2)> getCached(function<double(Vec2)> fun) {
+  return [fun] (Vec2 v) {
+    if (navigationCostCache.isDirty(v))
+      return navigationCostCache.getDirtyValue(v);
+    else {
+      auto res = fun(v);
+      navigationCostCache.setValue(v, res);
+      return res;
+    }
+  };
+}
 
 const int margin = 15;
 
 ShortestPath::ShortestPath(Rectangle a, function<double(Vec2)> entryFun, function<int(Vec2)> lengthFun,
     vector<Vec2> dir, Vec2 to, Vec2 from, double mult) : target(to), directions(dir), bounds(a) {
+  PROFILE;
   CHECK(Level::getMaxBounds().contains(a));
+  navigationCostCache.clear();
   if (mult == 0)
-    init(entryFun, lengthFun, target, from);
+    init(getCached(entryFun), lengthFun, target, from);
   else {
-    init(entryFun, lengthFun, target, none, revShortestLimit);
+    init(getCached(entryFun), lengthFun, target, none, revShortestLimit);
     distanceTable.setDistance(target, infinity);
-    reverse(entryFun, lengthFun, mult, from, revShortestLimit);
+    navigationCostCache.clear();
+    reverse(getCached(entryFun), lengthFun, mult, from, revShortestLimit);
   }
 }
 
@@ -78,6 +95,7 @@ bool inline operator < (const QueueElem& e1, const QueueElem& e2) {
 
 void ShortestPath::init(function<double(Vec2)> entryFun, function<double(Vec2)> lengthFun, Vec2 target,
     optional<Vec2> from, optional<int> limit) {
+  PROFILE;
   reversed = false;
   distanceTable.clear();
   function<QueueElem(Vec2)> makeElem;
@@ -92,6 +110,7 @@ void ShortestPath::init(function<double(Vec2)> entryFun, function<double(Vec2)> 
   while (!q.empty()) {
     ++numPopped;
     Vec2 pos = q.top().pos;
+    double posDist = distanceTable.getDistance(pos);
    // INFO << "Popping " << pos << " " << distance[pos]  << " " << (from ? (*from - pos).length4() : 0);
     if (from == pos || (limit && distanceTable.getDistance(pos) >= *limit)) {
       INFO << "Shortest path from " << (from ? *from : Vec2(-1, -1)) << " to " << target << " " << numPopped
@@ -100,17 +119,19 @@ void ShortestPath::init(function<double(Vec2)> entryFun, function<double(Vec2)> 
       return;
     }
     q.pop();
-    for (Vec2 dir : directions) {
-      Vec2 next = pos + dir;
-      if (next.inRectangle(bounds)) {
-        double cdist = distanceTable.getDistance(pos);
-        double ndist = distanceTable.getDistance(next);
-        if (cdist < ndist) {
-          double dist = cdist + entryFun(next);
-          CHECK(dist > cdist) << "Entry fun non positive " << dist - cdist;
-          if (dist < ndist) {
-            distanceTable.setDistance(next, dist);
-            q.push(makeElem(next));
+    {
+      PROFILE_BLOCK("Process neighbors");
+      for (Vec2 dir : directions) {
+        Vec2 next = pos + dir;
+        if (next.inRectangle(bounds)) {
+          double nextDist = distanceTable.getDistance(next);
+          if (posDist < nextDist) {
+            double dist = posDist + entryFun(next);
+            //CHECK(dist > cdist) << "Entry fun non positive " << dist - cdist;
+            if (dist < nextDist) {
+              distanceTable.setDistance(next, dist);
+              q.push(makeElem(next));
+            }
           }
         }
       }
@@ -121,6 +142,7 @@ void ShortestPath::init(function<double(Vec2)> entryFun, function<double(Vec2)> 
 
 void ShortestPath::reverse(function<double(Vec2)> entryFun, function<double(Vec2)> lengthFun, double mult, Vec2 from,
     int limit) {
+  PROFILE;
   reversed = true;
   function<QueueElem(Vec2)> makeElem = [&](Vec2 pos)->QueueElem { return {pos, distanceTable.getDistance(pos)
       + lengthFun(from - pos)};};
@@ -211,14 +233,15 @@ Vec2 ShortestPath::getTarget() const {
 }
 
 ShortestPath LevelShortestPath::makeShortestPath(WConstCreature creature, Position to, Position from, double mult) {
+  PROFILE;
   WLevel level = from.getLevel();
   Rectangle bounds = level->getBounds();
   CHECK(to.isSameLevel(from));
-  auto entryFun = [=](Vec2 v) { 
+  auto entryFun = [=, movementType = creature->getMovementType()](Vec2 v) {
     Position pos(v, level);
     if (creature->getPosition() == pos)
       return 1.0;
-    else if (auto cost = pos.getNavigationCost(creature->getMovementType()))
+    else if (auto cost = pos.getNavigationCost(movementType))
       return *cost;
     else
       return ShortestPath::infinity;
