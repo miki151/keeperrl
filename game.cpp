@@ -685,7 +685,8 @@ void Game::addEvent(const GameEvent& event) {
               uploadEvent("retiredConquered", {
                   {"retiredId", getGameId(retired->fileInfo)},
                   {"playerName", getPlayerName()}});
-            campaign->setDefeated(coords);
+            if (coords != campaign->getPlayerPos())
+              campaign->setDefeated(coords);
           }
         }
         if (col->getVillainType() == VillainType::MAIN && gameWon()) {
