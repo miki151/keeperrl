@@ -324,6 +324,8 @@ bool Collective::isActivityGood(WConstCreature c, MinionActivity activity, bool 
       FALLTHROUGH;
     case MinionActivity::EXPLORE_NOCTURNAL:
       return getGame()->getSunlightInfo().getState() == SunlightState::NIGHT;
+    case MinionActivity::BE_TORTURED:
+      return getMaxPopulation() > getPopulationSize();
     default: return true;
   }
 }
@@ -689,6 +691,7 @@ void Collective::onEvent(const GameEvent& event) {
             } else {
               control->addMessage("A prisoner is converted to your side");
               removeTrait(victim, MinionTrait::PRISONER);
+              removeTrait(victim, MinionTrait::WORKER);
               removeTrait(victim, MinionTrait::NO_LIMIT);
               setTrait(victim, MinionTrait::FIGHTER);
               victim->removeEffect(LastingEffect::TIED_UP);
