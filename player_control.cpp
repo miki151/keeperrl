@@ -1024,14 +1024,14 @@ vector<PlayerControl::StunnedInfo> PlayerControl::getPrisonerImmigrantStack() co
   vector<WCreature> outside;
   unordered_map<WCollective, vector<WCreature>, CustomHash<WCollective>> inside;
   for (auto stunned : stunnedCreatures)
-    if (stunned.first->isAffected(LastingEffect::STUNNED)) {
+    if (stunned.first->isAffected(LastingEffect::STUNNED) && !stunned.first->isDead()) {
       if (auto villain = stunned.second) {
-	if (villain->isConquered() || !villain->getTerritory().contains(stunned.first->getPosition()))
-	  outside.push_back(stunned.first);
-	else
-	  inside[villain].push_back(stunned.first);
+        if (villain->isConquered() || !villain->getTerritory().contains(stunned.first->getPosition()))
+          outside.push_back(stunned.first);
+        else
+          inside[villain].push_back(stunned.first);
       } else
-	outside.push_back(stunned.first);
+        outside.push_back(stunned.first);
     }
   for (auto& elem : inside)
     for (auto& stack : Creature::stack(elem.second))
