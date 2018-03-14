@@ -98,7 +98,8 @@ const vector<BuildInfo>& BuildInfo::get() {
           "Train your minions here. Adds up to " +
           toString(*CollectiveConfig::getTrainingMaxLevel(ExperienceType::MELEE, FurnitureType::TRAINING_IRON)) + " melee levels.",
           0, "Training room"),
-      BuildInfo({FurnitureType::TRAINING_ADA, {ResourceId::ADA, 12}}, "Adamantine dummy", {},
+      BuildInfo({FurnitureType::TRAINING_ADA, {ResourceId::ADA, 12}}, "Adamantine dummy",
+          {{RequirementId::TECHNOLOGY, TechId::IRON_WORKING}},
           "Train your minions here. Adds up to " +
           toString(*CollectiveConfig::getTrainingMaxLevel(ExperienceType::MELEE, FurnitureType::TRAINING_ADA)) + " melee levels.",
           0, "Training room"),
