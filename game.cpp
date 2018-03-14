@@ -503,8 +503,8 @@ void Game::conquered(const string& title, int numKills, int points) {
 
 void Game::retired(const string& title, int numKills, int points) {
   int turns = getGlobalTime().getVisibleInt();
-  int dungeonTurns = campaign->getPlayerRole() == PlayerRole::ADVENTURER? 0 : getPlayerCollective()->getLocalTime().getVisibleInt() - 2;
-  int scoredTurns = campaign->getType()==CampaignType::ENDLESS? dungeonTurns : turns;
+  int dungeonTurns = campaign->getPlayerRole() == PlayerRole::ADVENTURER ? 0 : getPlayerCollective()->getLocalTime().getVisibleInt() - initialModelUpdate;
+  int scoredTurns = campaign->getType() == CampaignType::ENDLESS ? dungeonTurns : turns;
   string text = "You have survived in this land for " + toString(turns) + " turns. You killed " + toString(numKills) +
       " enemies.\n";
   if (dungeonTurns > 0) {
@@ -536,8 +536,8 @@ bool Game::isGameOver() const {
 
 void Game::gameOver(WConstCreature creature, int numKills, const string& enemiesString, int points) {
   int turns = getGlobalTime().getVisibleInt();
-  int dungeonTurns = campaign->getPlayerRole() == PlayerRole::ADVENTURER? 0 : getPlayerCollective()->getLocalTime().getVisibleInt() - 2;
-  int scoredTurns = campaign->getType()==CampaignType::ENDLESS? dungeonTurns : turns;
+  int dungeonTurns = campaign->getPlayerRole() == PlayerRole::ADVENTURER ? 0 : getPlayerCollective()->getLocalTime().getVisibleInt() - initialModelUpdate;
+  int scoredTurns = campaign->getType() == CampaignType::ENDLESS ? dungeonTurns : turns;
   string text = "And so dies " + creature->getName().title();
   if (auto reason = creature->getDeathReason()) {
     text += ", " + *reason;
