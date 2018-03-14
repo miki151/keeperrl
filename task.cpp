@@ -720,6 +720,10 @@ class Kill : public Task {
     }
   }
 
+  virtual bool canTransfer() override {
+    return true;
+  }
+
   virtual bool canPerform(WConstCreature c) override {
     return c != creature;
   }
