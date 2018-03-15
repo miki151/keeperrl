@@ -503,8 +503,15 @@ void Game::conquered(const string& title, int numKills, int points) {
 
 void Game::retired(const string& title, int numKills, int points) {
   int turns = getGlobalTime().getVisibleInt();
+  int dungeonTurns = campaign->getPlayerRole() == PlayerRole::ADVENTURER ? 0 : getPlayerCollective()->getLocalTime().getVisibleInt() - initialModelUpdate;
+  int scoredTurns = campaign->getType() == CampaignType::ENDLESS ? dungeonTurns : turns;
   string text = "You have survived in this land for " + toString(turns) + " turns. You killed " + toString(numKills) +
-      " enemies. Thank you for playing KeeperRL!\n \n";
+      " enemies.\n";
+  if (dungeonTurns > 0) {
+    text += toString(dungeonTurns) + " turns defending the base.\n";
+    text += toString(turns - dungeonTurns) + " turns spent adventuring and attacking.\n";
+  }
+  text += " Thank you for playing KeeperRL!\n \n";
   for (string stat : statistics->getText())
     text += stat + "\n";
   view->presentText("Survived", text);
@@ -515,7 +522,7 @@ void Game::retired(const string& title, int numKills, int points) {
         c.playerName = title;
         c.gameResult = "retired";
         c.gameWon = false;
-        c.turns = turns;
+        c.turns = scoredTurns;
         c.campaignType = campaign->getType();
         c.playerRole = campaign->getPlayerRole();
   );
@@ -528,12 +535,18 @@ bool Game::isGameOver() const {
 }
 
 void Game::gameOver(WConstCreature creature, int numKills, const string& enemiesString, int points) {
+  int turns = getGlobalTime().getVisibleInt();
+  int dungeonTurns = campaign->getPlayerRole() == PlayerRole::ADVENTURER ? 0 : getPlayerCollective()->getLocalTime().getVisibleInt() - initialModelUpdate;
+  int scoredTurns = campaign->getType() == CampaignType::ENDLESS ? dungeonTurns : turns;
   string text = "And so dies " + creature->getName().title();
   if (auto reason = creature->getDeathReason()) {
     text += ", " + *reason;
   }
-  text += ". " + creature->getAttributes().getGender().he() + " killed " + toString(numKills)
-      + " " + enemiesString + " and scored " + toString(points) + " points.\n \n";
+  text += ". You killed " + toString(numKills) + " " + enemiesString + " and scored " + toString(points) + " points.\n";
+  if (dungeonTurns > 0) {
+    text += toString(dungeonTurns) + " turns defending the base.\n";
+    text += toString(turns - dungeonTurns) + " turns spent adventuring and attacking.\n";
+  }
   for (string stat : statistics->getText())
     text += stat + "\n";
   view->presentText("Game over", text);
@@ -544,7 +557,7 @@ void Game::gameOver(WConstCreature creature, int numKills, const string& enemies
         c.playerName = *creature->getName().first();
         c.gameResult = creature->getDeathReason().value_or("");
         c.gameWon = false;
-        c.turns = getGlobalTime().getVisibleInt();
+        c.turns = scoredTurns;
         c.campaignType = campaign->getType();
         c.playerRole = campaign->getPlayerRole();
   );
