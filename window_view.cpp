@@ -74,7 +74,7 @@ Rectangle WindowView::getMapGuiBounds() const {
 Rectangle WindowView::getMinimapBounds() const {
   Vec2 offset(-20, 70);
   Vec2 size(Vec2(renderer.getSize().x, renderer.getSize().x) / 11);
-  return Rectangle(Vec2(renderer.getSize().x - size.x, 0), Vec2(renderer.getSize().x, size.y)).translate(offset);
+  return Rectangle(Vec2(renderer.getSize().x - size.x, 0), Vec2(renderer.getSize().x, size.y + 42)).translate(offset);
 }
 
 void WindowView::resetMapBounds() {
@@ -145,8 +145,11 @@ void WindowView::initialize() {
       options,
       &gui));
   minimapGui.reset(new MinimapGui([this]() { inputQueue.push(UserInput(UserInputId::DRAW_LEVEL_MAP)); }));
-  minimapDecoration = gui.stack(gui.rectangle(Color::BLACK), gui.miniWindow(),
-      gui.margins(gui.renderInBounds(SGuiElem(minimapGui)), 6));
+  auto icons = gui.centerHoriz(guiBuilder.drawMinimapIcons());
+  auto iconsHeight = *icons->getPreferredHeight();
+  minimapDecoration = gui.margin(std::move(icons),
+      gui.stack(gui.rectangle(Color::BLACK), gui.miniWindow(),
+      gui.margins(gui.renderInBounds(SGuiElem(minimapGui)), 6)), iconsHeight, GuiFactory::MarginType::BOTTOM);
   resetMapBounds();
   guiBuilder.setMapGui(mapGui);
 }
@@ -513,7 +516,7 @@ vector<SGuiElem> WindowView::getClickableGuiElems() {
   vector<SGuiElem> ret = concat(tempGuiElems, blockingElems);
   std::reverse(ret.begin(), ret.end());
   if (gameReady) {
-    ret.push_back(minimapGui);
+    ret.push_back(minimapDecoration);
     ret.push_back(mapGui);
   }
   return ret;

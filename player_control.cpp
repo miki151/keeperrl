@@ -2152,7 +2152,11 @@ void PlayerControl::processInput(View* view, UserInput input) {
     case UserInputId::DISMISS_WARNING_WINDOW:
       lastWarningDismiss = getModel()->getLocalTime();
       break;
-    default: break;
+    case UserInputId::SCROLL_TO_HOME:
+      getView()->setScrollPos(getPosition());
+      break;
+    default:
+      break;
   }
 }
 

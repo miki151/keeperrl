@@ -456,12 +456,6 @@ SGuiElem GuiBuilder::drawRightBandInfo(GameInfo& info) {
                 [this] { return collectiveTab != CollectiveTab::MINIONS;}),
             buttons[1]);
     }
-    if (!info.singleModel)
-      buttons.push_back(gui.stack(
-            gui.conditional(gui.icon(gui.HIGHLIGHT, GuiFactory::Alignment::CENTER, Color::GREEN),
-              [] { return false;}),
-            gui.icon(gui.WORLD_MAP),
-            gui.button(getButtonCallback(UserInputId::DRAW_WORLD_MAP))));
     vector<pair<CollectiveTab, SGuiElem>> elems = makeVec(
         make_pair(CollectiveTab::MINIONS, drawMinions(collectiveInfo, info.tutorial)),
         make_pair(CollectiveTab::BUILDINGS, cache->get(bindMethod(
@@ -3167,6 +3161,22 @@ SGuiElem GuiBuilder::drawHighscores(const vector<HighscoreList>& list, Semaphore
             gui.margins(gui.stack(std::move(pages)), 25, 60, 0, 30), legendLineHeight, GuiFactory::TOP)), legendLineHeight, GuiFactory::TOP),
         [&] { sem.v(); }))));
 
+}
+
+SGuiElem GuiBuilder::drawMinimapIcons() {
+  const int iconWidth = 42;
+  return gui.setHeight(iconWidth, gui.getListBuilder()
+      .addElem(gui.stack(
+          gui.icon(GuiFactory::IconId::WORLD_MAP),
+          gui.stopMouseMovement(),
+          gui.button(getButtonCallback(UserInputId::DRAW_WORLD_MAP), gui.getKey(SDL::SDLK_t))
+          ), iconWidth)
+      .addElem(gui.stack(
+          gui.icon(GuiFactory::IconId::HIGHLIGHT),
+          gui.stopMouseMovement(),
+          gui.button(getButtonCallback(UserInputId::SCROLL_TO_HOME), gui.getKey(SDL::SDLK_k))
+          ), iconWidth)
+      .buildHorizontalList());
 }
 
 Rectangle GuiBuilder::getTextInputPosition() {

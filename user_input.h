@@ -33,6 +33,7 @@ enum class UserInputId {
     REFRESH,
     DRAW_LEVEL_MAP,
     DRAW_WORLD_MAP,
+    SCROLL_TO_HOME,
     EXIT,
     MESSAGE_INFO,
     CHEAT_ATTRIBUTES,

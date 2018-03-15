@@ -91,7 +91,7 @@ const vector<BuildInfo>& BuildInfo::get() {
       BuildInfo({FurnitureType::TRAINING_WOOD, {ResourceId::WOOD, 12}}, "Wooden dummy", {},
           "Train your minions here. Adds up to " +
           toString(*CollectiveConfig::getTrainingMaxLevel(ExperienceType::MELEE, FurnitureType::TRAINING_WOOD)) + " melee levels.",
-          't', "Training room", true)
+          'r', "Training room", true)
              .setTutorialHighlight(TutorialHighlight::TRAINING_ROOM),
       BuildInfo({FurnitureType::TRAINING_IRON, {ResourceId::IRON, 12}}, "Iron dummy",
           {{RequirementId::TECHNOLOGY, TechId::IRON_WORKING}},
