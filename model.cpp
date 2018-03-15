@@ -66,6 +66,11 @@ SERIALIZATION_CONSTRUCTOR_IMPL(Model)
 
 SERIALIZABLE(Model)
 
+Vec2 Model::keeperPosition() {
+  if (getGame()->isTurnBased()) return Vec2(0,0);
+  return getGame()->getPlayerControl()->getKeeper()->getPosition().getCoord();
+}
+
 void Model::discardForRetirement() {
   serializationLocked = true;
   deadCreatures.clear();

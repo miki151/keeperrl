@@ -202,7 +202,7 @@ string Tutorial::getMessage() const {
           "Press SPACE to pause and continue the game. You can still give orders and use all controls while the game "
           "is paused.";
     case State::CONTROLS2:
-      return "Try zooming in and out of the map using the 'z' key or mouse wheel.";
+      return "Try zooming in and out of the map using the 'z' key or mouse wheel. Press 'k' to find the keeper again if you get lost.";
     case State::GET_200_WOOD:
       return "Cut some more trees until you have gathered at least 200 wood.\n \n";
           //"You can mark things in bulk by dragging the mouse or by holding SHIFT and selecting a rectangle. Try it!";
