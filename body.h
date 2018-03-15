@@ -86,6 +86,7 @@ class Body {
   bool needsToEat() const;
   bool needsToSleep() const;
   bool canPush(const Body& other);
+  bool canPerformRituals() const;
   vector<PItem> getCorpseItems(const string& name, UniqueEntity<Creature>::Id, bool instantlyRotten) const;
 
   vector<AttackLevel> getAttackLevels() const;
