@@ -1359,18 +1359,19 @@ void PlayerControl::onEvent(const GameEvent& event) {
           getView()->presentText("", "Item won't be permanently assigned to creature because the equipment slot is locked.");
       },
       [&](const WonGame&) {
-        CHECK(!getKeeper()->isDead());
-        getGame()->conquered(*getKeeper()->getName().first(), collective->getKills().getSize(),
-            (int) collective->getDangerLevel() + collective->getPoints());
-        getView()->presentText("", "When you are ready, retire your dungeon and share it online. "
-          "Other players will be able to invade it as adventurers. To do this, press Escape and choose \'retire\'.");
+        if (auto keeper = getKeeper()) { // Check if keeper is alive just in case. If he's not then game over has already happened
+          getGame()->conquered(*keeper->getName().first(), collective->getKills().getSize(),
+              (int) collective->getDangerLevel() + collective->getPoints());
+          getView()->presentText("", "When you are ready, retire your dungeon and share it online. "
+            "Other players will be able to invade it as adventurers. To do this, press Escape and choose \'retire\'.");
+        }
       },
       [&](const RetiredGame&) {
-        CHECK(!getKeeper()->isDead());
-        // No victory condition in this game, so we generate a highscore when retiring.
-        if (getGame()->getVillains(VillainType::MAIN).empty())
-          getGame()->retired(*getKeeper()->getName().first(), collective->getKills().getSize(),
-              (int) collective->getDangerLevel() + collective->getPoints());
+        if (auto keeper = getKeeper()) // Check if keeper is alive just in case. If he's not then game over has already happened
+          if (getGame()->getVillains(VillainType::MAIN).empty())
+            // No victory condition in this game, so we generate a highscore when retiring.
+            getGame()->retired(*keeper->getName().first(), collective->getKills().getSize(),
+                (int) collective->getDangerLevel() + collective->getPoints());
       },
       [&](const TechbookRead& info) {
         Technology* tech = info.technology;
@@ -2308,34 +2309,34 @@ void PlayerControl::addToMemory(Position pos) {
 void PlayerControl::checkKeeperDanger() {
   PROFILE;
   auto controlled = getControlled();
-  WCreature keeper = getKeeper();
-  auto prompt = [&] (const string& reason) {
-      return getView()->yesOrNoPrompt(reason + ". Do you want to control " +
-          keeper->getAttributes().getGender().him() + "?");
-  };
-  if (!getKeeper()->isDead() && !controlled.contains(getKeeper()) &&
-      lastControlKeeperQuestion < collective->getGlobalTime() - 50_visible) {
-    if (auto lastCombatIntent = getKeeper()->getLastCombatIntent())
-      if (lastCombatIntent->time > getGame()->getGlobalTime() - 5_visible) {
+  if (auto keeper = getKeeper()) {
+    auto prompt = [&] (const string& reason) {
+        return getView()->yesOrNoPrompt(reason + ". Do you want to control " +
+            keeper->getAttributes().getGender().him() + "?");
+    };
+    if (!keeper->isDead() && !controlled.contains(keeper) &&
+        lastControlKeeperQuestion < collective->getGlobalTime() - 50_visible) {
+      if (auto lastCombatIntent = keeper->getLastCombatIntent())
+        if (lastCombatIntent->time > getGame()->getGlobalTime() - 5_visible) {
+          lastControlKeeperQuestion = collective->getGlobalTime();
+          if (prompt("The Keeper is engaged in a fight with " + lastCombatIntent->attacker)) {
+            controlSingle(keeper);
+            return;
+          }
+        }
+      auto prompt2 = [&](const string& reason) {
         lastControlKeeperQuestion = collective->getGlobalTime();
-        if (prompt("The Keeper is engaged in a fight with " + lastCombatIntent->attacker)) {
-          controlSingle(getKeeper());
+        if (prompt(reason)) {
+          controlSingle(keeper);
           return;
         }
-      }
-    if (getKeeper()->isAffected(LastingEffect::POISON)) {
-      lastControlKeeperQuestion = collective->getGlobalTime();
-      if (prompt("The Keeper is suffering from poisoning")) {
-        controlSingle(getKeeper());
-        return;
-      }
-    }
-    if (getKeeper()->getBody().isWounded()) {
-      lastControlKeeperQuestion = collective->getGlobalTime();
-      if (prompt("The Keeper is wounded")) {
-        controlSingle(getKeeper());
-        return;
-      }
+      };
+      if (keeper->isAffected(LastingEffect::POISON))
+        prompt2("The Keeper is suffering from poisoning");
+      else if (keeper->isAffected(LastingEffect::BLEEDING))
+        prompt2("The Keeper is bleeding");
+      else if (keeper->getBody().isWounded())
+        prompt2("The Keeper is wounded");
     }
   }
 }
@@ -2466,7 +2467,8 @@ TribeId PlayerControl::getTribeId() const {
 }
 
 bool PlayerControl::isEnemy(WConstCreature c) const {
-  return getKeeper() && getKeeper()->isEnemy(c);
+  auto keeper = getKeeper();
+  return keeper && keeper->isEnemy(c);
 }
 
 void PlayerControl::onMemberKilled(WConstCreature victim, WConstCreature killer) {
