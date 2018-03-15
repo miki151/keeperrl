@@ -153,10 +153,7 @@ bool Tutorial::canContinue(WConstGame game) const {
     case State::DISCOVER_VILLAGE:
       return collective->isKnownVillain(villain);
     case State::KILL_VILLAGE:
-      for (auto c : villain->getCreatures())
-        if (c->getBody().isHumanoid())
-          return false;
-      return true;
+      return villain->isConquered();
     case State::LOOT_VILLAGE:
       for (auto pos : villain->getTerritory().getAll())
         if (!pos.getItems(ItemIndex::GOLD).empty())
@@ -278,8 +275,8 @@ string Tutorial::getMessage() const {
           "mouse button.\n \n"
           "Notice the rest of your team following you.";
     case State::FULL_CONTROL:
-      return "You can take control over all team members in a tactical situation. To do this click on the appropriate "
-          "command in the upper left corner or press [G]. Clicking again will go back to controlling only the team "
+      return "You can take control over all team members in a tactical situation. To do this click on the [Control mode] "
+          "button in the upper left corner or press [G]. Clicking again will go back to controlling only the team "
           "leader.";
     case State::DISCOVER_VILLAGE:
       return "It's time to discover the whereabouts of the nearby human village. Click on the minimap in the upper "
@@ -292,13 +289,13 @@ string Tutorial::getMessage() const {
       return "There is a nice pile of treasure in one of the houses. Pick it all up by entering the tiles containing "
           "the loot, and clicking in the menu in the upper left corner.";
     case State::LEAVE_CONTROL:
-      return "To relinquish control of your team, choose the appropriate command in the upper left corner.";
+      return "To relinquish control of your team, click the [Exit control mode] button in the upper left corner.";
     case State::SUMMARY1:
       return "You are back in the real-time mode. Your minions will now return to base and resume their normal routine. "
           "Once they are back, they will drop all the loot for the imps to take care of.";
     case State::RESEARCH:
       return "You have received 100 mana for your conquest. Mana is the main source of progress in the game and allows "
-          "you to research new technologies or increase your population by building statues or a throne.\n \n"
+          "you to research new technologies or increase your population by building a throne.\n \n"
           "Go ahead and research something in your library.";
     case State::SUMMARY2:
       return "Thank you for completing the tutorial! We hope that we have made it a bit easier for you to get into "
