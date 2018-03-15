@@ -84,6 +84,7 @@ enum class UserInputId {
     IGNORE_RANSOM,
     SHOW_HISTORY,
     DISMISS_NEXT_WAVE,
+    DISMISS_WARNING_WINDOW,
 // turn-based actions
     MOVE,
     TRAVEL,

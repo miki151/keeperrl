@@ -1007,6 +1007,9 @@ void PlayerControl::acceptPrisoner(int index) {
     skills.erase(SkillId::NAVIGATION_DIGGING);
     collective->addCreature(victim, {MinionTrait::WORKER, MinionTrait::PRISONER, MinionTrait::NO_LIMIT});
     addMessage(PlayerMessage("You enslave " + victim->getName().a()).setPosition(victim->getPosition()));
+    for (auto& elem : copyOf(stunnedCreatures))
+      if (elem.first == victim)
+        stunnedCreatures.removeElement(elem);
   }
 }
 
@@ -1212,6 +1215,16 @@ void PlayerControl::fillImmigrationHelp(CollectiveInfo& info) const {
   }
 }
 
+static optional<CollectiveInfo::RebellionChance> getRebellionChance(double prob) {
+  if (prob > 0.6)
+    return CollectiveInfo::RebellionChance::HIGH;
+  if (prob > 0.2)
+    return CollectiveInfo::RebellionChance::MEDIUM;
+  if (prob > 0)
+    return CollectiveInfo::RebellionChance::LOW;
+  return none;
+}
+
 void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   if (tutorial)
     tutorial->refreshInfo(getGame(), gameInfo.tutorial);
@@ -1304,6 +1317,9 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
           };
       }
     }
+  if (auto rebellionWarning = getRebellionChance(collective->getRebellionProbability()))
+    if (!lastWarningDismiss || getModel()->getLocalTime() > *lastWarningDismiss + 1000_visible)
+      info.rebellionChance = *rebellionWarning;
   info.allQuarters = collective->getQuarters().getAllQuarters().transform(
       [](const auto& info) { return info.viewId; });
 }
@@ -2114,6 +2130,9 @@ void PlayerControl::processInput(View* view, UserInput input) {
       if (auto& enemies = getModel()->getExternalEnemies())
         if (auto nextWave = enemies->getNextWave())
           dismissedNextWaves.insert(enemies->getNextWaveIndex());
+      break;
+    case UserInputId::DISMISS_WARNING_WINDOW:
+      lastWarningDismiss = getModel()->getLocalTime();
       break;
     default: break;
   }

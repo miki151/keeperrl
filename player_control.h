@@ -240,5 +240,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   string getMinionGroupName(WCreature) const;
   ViewId getMinionGroupViewId(WCreature) const;
   SUnknownLocations SERIAL(unknownLocations);
+  optional<LocalTime> lastWarningDismiss;
 };
 

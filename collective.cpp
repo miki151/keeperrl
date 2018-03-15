@@ -143,6 +143,7 @@ void Collective::addCreature(PCreature creature, Position pos, EnumSet<MinionTra
 
 void Collective::updateCreatureStatus(WCreature c) {
   c->getStatus().set(CreatureStatus::CIVILIAN,
+      getCreatures().contains(c) &&
       c->getBody().isHumanoid() &&
       !c->isAffected(LastingEffect::STUNNED) &&
       !hasTrait(c, MinionTrait::FIGHTER) &&
@@ -195,6 +196,7 @@ void Collective::removeCreature(WCreature c) {
   for (MinionTrait t : ENUM_ALL(MinionTrait))
     if (byTrait[t].contains(c))
       byTrait[t].removeElement(c);
+  updateCreatureStatus(c);
 }
 
 void Collective::banishCreature(WCreature c) {
@@ -578,8 +580,41 @@ void Collective::considerTransferingLostMinions() {
       getGame()->transferCreature(c, getModel());
 }
 
+double Collective::getRebellionProbability() const {
+  const double allowedPrisonerRatio = 0.5;
+  const double maxPrisonerRatio = 1.5;
+  const int numPrisoners = getCreatures(MinionTrait::PRISONER).size();
+  const int numFighters = getCreatures(MinionTrait::FIGHTER).size();
+  const int numFreePrisoners = 3;
+  if (numPrisoners <= numFreePrisoners)
+    return 0;
+  if (numFighters == 0)
+    return 1;
+  double ratio = double(numPrisoners - numFreePrisoners) / double(numFighters);
+  return min(1.0, max(0.0, (ratio - allowedPrisonerRatio) / (maxPrisonerRatio - allowedPrisonerRatio)));
+}
+
+void Collective::considerRebellion() {
+  if (Random.chance(getRebellionProbability() / 1000)) {
+    Position escapeTarget = getLevel()->getLandingSquare(StairKey::transferLanding(),
+        Random.choose(Vec2::directions8()));
+    for (auto c : copyOf(getCreatures(MinionTrait::PRISONER))) {
+      removeCreature(c);
+      c->setController(makeOwner<Monster>(c, MonsterAIFactory::singleTask(
+          Task::chain(Task::goToTryForever(escapeTarget), Task::disappear()))));
+      c->setTribe(TribeId::getMonster());
+      c->removeEffect(LastingEffect::SLEEP);
+      c->removeEffect(LastingEffect::ENTANGLED);
+      c->removeEffect(LastingEffect::TIED_UP);
+      c->toggleCaptureOrder();
+    }
+    control->addMessage(PlayerMessage("Prisoners escaping!", MessagePriority::CRITICAL));
+  }
+}
+
 void Collective::tick() {
   considerTransferingLostMinions();
+  considerRebellion();
   dangerLevelCache = none;
   control->tick();
   zones->tick();

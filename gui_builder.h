@@ -268,6 +268,9 @@ class GuiBuilder {
   SGuiElem getExpIncreaseLine(const PlayerInfo::LevelInfo&, ExperienceType);
   optional<int> highlightedTeamMember;
   SGuiElem drawQuartersButton(const PlayerInfo&, const CollectiveInfo&);
+  SGuiElem drawWarningWindow(const optional<CollectiveInfo::RebellionChance>&,
+      const optional<CollectiveInfo::NextWave>&);
+  SGuiElem drawRebellionChanceText(CollectiveInfo::RebellionChance);
 };
 
 RICH_ENUM(GuiBuilder::GameSpeed,

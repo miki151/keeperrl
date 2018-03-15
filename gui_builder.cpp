@@ -1607,6 +1607,39 @@ SGuiElem GuiBuilder::drawRansomOverlay(const optional<CollectiveInfo::Ransom>& r
   return gui.setWidth(600, gui.miniWindow(gui.margins(lines.buildVerticalList(), 20)));
 }
 
+SGuiElem GuiBuilder::drawRebellionChanceText(CollectiveInfo::RebellionChance chance) {
+  switch (chance) {
+    case CollectiveInfo::RebellionChance::HIGH:
+      return gui.label("high", Color::RED);
+    case CollectiveInfo::RebellionChance::MEDIUM:
+      return gui.label("medium", Color::ORANGE);
+    case CollectiveInfo::RebellionChance::LOW:
+      return gui.label("low", Color::YELLOW);
+  }
+}
+
+SGuiElem GuiBuilder::drawWarningWindow(const optional<CollectiveInfo::RebellionChance>& rebellionChance,
+    const optional<CollectiveInfo::NextWave>& wave) {
+  SGuiElem window = gui.empty();
+  if (rebellionChance) {
+    GuiFactory::ListBuilder lines(gui, legendLineHeight);
+    lines.addElem(gui.getListBuilder()
+        .addElemAuto(gui.label("Chance of prisoner escape: "))
+        .addElemAuto(drawRebellionChanceText(*rebellionChance))
+        .buildHorizontalList());
+    lines.addElem(gui.label("Remove prisoners or increase armed forces."));
+    window = gui.setWidth(400, gui.translucentBackgroundWithBorder(gui.stack(
+        gui.margins(lines.buildVerticalList(), 10),
+        gui.alignment(GuiFactory::Alignment::TOP_RIGHT, gui.preferredSize(40, 40, gui.stack(
+            gui.leftMargin(22, gui.label("x")),
+            gui.button(getButtonCallback(UserInputId::DISMISS_WARNING_WINDOW)))))
+      )));
+  }
+  return gui.getListBuilder().addElemAuto(std::move(window))
+      .addSpace(10)
+      .addElemAuto(drawNextWaveOverlay(wave)).buildVerticalList();
+}
+
 SGuiElem GuiBuilder::drawNextWaveOverlay(const optional<CollectiveInfo::NextWave>& wave) {
   if (!wave)
     return gui.empty();
@@ -1911,8 +1944,8 @@ void GuiBuilder::drawOverlays(vector<OverlayInfo>& ret, GameInfo& info) {
            collectiveInfo, info.tutorial), OverlayInfo::IMMIGRATION});
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawRansomOverlay, this), THIS_LINE,
            collectiveInfo.ransom), OverlayInfo::TOP_LEFT});
-      ret.push_back({cache->get(bindMethod(&GuiBuilder::drawNextWaveOverlay, this), THIS_LINE,
-           collectiveInfo.nextWave), OverlayInfo::TOP_LEFT});
+      ret.push_back({cache->get(bindMethod(&GuiBuilder::drawWarningWindow, this), THIS_LINE,
+           collectiveInfo.rebellionChance, collectiveInfo.nextWave), OverlayInfo::TOP_LEFT});
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawMinionsOverlay, this), THIS_LINE,
            collectiveInfo, info.tutorial), OverlayInfo::TOP_LEFT});
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawWorkshopsOverlay, this), THIS_LINE,

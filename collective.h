@@ -213,6 +213,8 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
 
   CurrentActivity getCurrentActivity(WConstCreature) const;
 
+  double getRebellionProbability() const;
+
   private:
   struct Private {};
 
@@ -308,6 +310,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   void setDiscoverable();
   bool SERIAL(discoverable) = false;
   void considerTransferingLostMinions();
+  void considerRebellion();
   void updateCreatureStatus(WCreature);
   HeapAllocated<Quarters> SERIAL(quarters);
   PPositionMatching SERIAL(positionMatching);
