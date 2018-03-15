@@ -25,6 +25,7 @@ class Game : public OwnedObject<Game> {
   public:
   static PGame campaignGame(Table<PModel>&&, CampaignSetup&);
   static PGame splashScreen(PModel&&, const CampaignSetup&);
+  static const int initialModelUpdate = 2;
 
   optional<ExitInfo> update(double timeDiff);
   Options* getOptions();
