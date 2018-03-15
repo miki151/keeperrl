@@ -1230,9 +1230,12 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
     tutorial->refreshInfo(getGame(), gameInfo.tutorial);
   gameInfo.singleModel = getGame()->isSingleModel();
   gameInfo.villageInfo.villages.clear();
+  gameInfo.villageInfo.numTotalVillains = 0;
   for (WConstCollective col : getKnownVillains())
-    if (col->getName() && col->isDiscoverable())
+    if (col->getName() && col->isDiscoverable()) {
       gameInfo.villageInfo.villages[col->getVillainType()].push_back(getVillageInfo(col));
+      ++gameInfo.villageInfo.numTotalVillains;
+    }
   SunlightInfo sunlightInfo = getGame()->getSunlightInfo();
   gameInfo.sunlightInfo = { sunlightInfo.getText(), sunlightInfo.getTimeRemaining() };
   gameInfo.infoType = GameInfo::InfoType::BAND;
