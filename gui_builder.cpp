@@ -686,7 +686,7 @@ SGuiElem GuiBuilder::drawImmigrationOverlay(const CollectiveInfo& info, const op
 }
 
 SGuiElem GuiBuilder::getImmigrationHelpText() {
-  return gui.labelMultiLine("Welcome to the new immigration system! The icons immediately to the left represent "
+  return gui.labelMultiLine("Welcome to the immigration system! The icons immediately to the left represent "
                             "creatures that would "
                             "like to join your dungeon. Left-click accepts, right-click rejects a candidate. "
                             "Some creatures have requirements that you need to fulfill before "
@@ -2506,6 +2506,8 @@ SGuiElem GuiBuilder::drawActivityButton(const PlayerInfo& minion) {
 }
 
 SGuiElem GuiBuilder::drawAttributesOnPage(vector<SGuiElem>&& attrs) {
+  if (attrs.empty())
+    return gui.empty();
   vector<SGuiElem> lines[2];
   for (int i : All(attrs))
     lines[i % 2].push_back(std::move(attrs[i]));

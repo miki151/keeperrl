@@ -1213,6 +1213,17 @@ void PlayerControl::fillImmigrationHelp(CollectiveInfo& info) const {
         collective->getImmigration().getAutoState(elem.index())
     });
   }
+  info.allImmigration.push_back(ImmigrantDataInfo {
+      {"Requires 2 prison tiles", "Requires knocking out a hostile creature"},
+      {"Supplies your imp force", "Can be converted to your side using torture"},
+      none,
+      "prisoner",
+      ViewId::PRISONER,
+      {},
+      0,
+      none,
+      -1,
+  });
 }
 
 static optional<CollectiveInfo::RebellionChance> getRebellionChance(double prob) {
@@ -2041,18 +2052,22 @@ void PlayerControl::processInput(View* view, UserInput input) {
     }
     case UserInputId::IMMIGRANT_AUTO_ACCEPT: {
       int id = input.get<int>();
-      if (!!collective->getImmigration().getAutoState(id))
-        collective->getImmigration().setAutoState(id, none);
-      else
-        collective->getImmigration().setAutoState(id, ImmigrantAutoState::AUTO_ACCEPT);
+      if (id >= 0) { // Otherwise the player has clicked the dummy prisoner element
+        if (!!collective->getImmigration().getAutoState(id))
+          collective->getImmigration().setAutoState(id, none);
+        else
+          collective->getImmigration().setAutoState(id, ImmigrantAutoState::AUTO_ACCEPT);
+      }
       break;
     }
     case UserInputId::IMMIGRANT_AUTO_REJECT: {
       int id = input.get<int>();
-      if (!!collective->getImmigration().getAutoState(id))
-        collective->getImmigration().setAutoState(id, none);
-      else
-        collective->getImmigration().setAutoState(id, ImmigrantAutoState::AUTO_REJECT);
+      if (id >= 0) { // Otherwise the player has clicked the dummy prisoner element
+        if (!!collective->getImmigration().getAutoState(id))
+          collective->getImmigration().setAutoState(id, none);
+        else
+          collective->getImmigration().setAutoState(id, ImmigrantAutoState::AUTO_REJECT);
+      }
       break;
     }
     case UserInputId::RECT_SELECTION: {
