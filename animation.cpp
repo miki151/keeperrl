@@ -80,18 +80,18 @@ class Particle {
     color.a = 128;
   }
 
-  void update() {
+  void update(double deltaState) {
     // custom particle effect logic
-    position += speed;
+    position += speed * deltaState;
 
     if (size > 1) {
-      size--;
+      size -= 10 * deltaState;
     }
 
-    color.r -= 10;
-    color.g -= 10;
-    color.b -= 10;
-    color.a -= 10;
+    color.r -= 100 * deltaState;
+    color.g -= 100 * deltaState;
+    color.b -= 100 * deltaState;  
+    color.a -= 100 * deltaState;
   }
 
   void draw(Renderer& renderer) {
@@ -102,7 +102,7 @@ class Particle {
   Vec2 position;
   Vec2 origin;
   Color color;
-  Vec2 speed;
+  Vec2 speed; 
   int size;
 
   friend class ParticleEffect;
@@ -111,26 +111,29 @@ class Particle {
 class ParticleEffect : public Animation {
   public:
   ParticleEffect(milliseconds duration, unsigned int particleNum, Vec2 origin)
-      : Animation(duration), particleNum(particleNum), origin(origin) {
+      : Animation(duration), origin(origin), lastState(0.0) {
     // custom particle effect setup
-    this->particleNum = 8;
-    particles.reserve(this->particleNum);
+    particles.reserve(8);
     int size = 15;
     
-    particles.push_back(Particle(Vec2(1,1), origin, Color::LIGHT_RED, Vec2(3,3), size));
-    particles.push_back(Particle(Vec2(1,1), origin, Color::LIGHT_RED, Vec2(3,-3), size));
-    particles.push_back(Particle(Vec2(1,1), origin, Color::LIGHT_RED, Vec2(-3,3), size));
-    particles.push_back(Particle(Vec2(1,1), origin, Color::LIGHT_RED, Vec2(-3,-3), size));
-    particles.push_back(Particle(Vec2(1,1), origin, Color::YELLOW, Vec2(0,7), size));
-    particles.push_back(Particle(Vec2(1,1), origin, Color::YELLOW, Vec2(7,0), size));
-    particles.push_back(Particle(Vec2(1,1), origin, Color::YELLOW, Vec2(-7,0), size));
-    particles.push_back(Particle(Vec2(1,1), origin, Color::YELLOW, Vec2(0,-7), size));
+    particles.push_back(Particle(Vec2(1,1), origin, Color::LIGHT_RED, Vec2(30,30), size));
+    particles.push_back(Particle(Vec2(1,1), origin, Color::LIGHT_RED, Vec2(30,-30), size));
+    particles.push_back(Particle(Vec2(1,1), origin, Color::LIGHT_RED, Vec2(-30,30), size));
+    particles.push_back(Particle(Vec2(1,1), origin, Color::LIGHT_RED, Vec2(-30,-30), size));
+    particles.push_back(Particle(Vec2(1,1), origin, Color::YELLOW, Vec2(0,70), size));
+    particles.push_back(Particle(Vec2(1,1), origin, Color::YELLOW, Vec2(70,0), size));
+    particles.push_back(Particle(Vec2(1,1), origin, Color::YELLOW, Vec2(-70,0), size));
+    particles.push_back(Particle(Vec2(1,1), origin, Color::YELLOW, Vec2(0,-70), size));
   }
 
   virtual void renderSpec(Renderer& renderer, Rectangle bounds, Vec2 origin, double state) {
+
+    double deltaState = state - lastState;
+    lastState = state;
+
     // update particles
     for (auto& particle : particles) {
-      particle.update();
+      particle.update(deltaState);
     }
     // render particles
     for (auto& particle : particles) {
@@ -139,9 +142,9 @@ class ParticleEffect : public Animation {
   } 
 
   private:
-  unsigned int particleNum;
   Vec2 origin;
   vector<Particle> particles;
+  double lastState;
 };
 
 PAnimation Animation::perticleEffect(int id, milliseconds duration, unsigned int particleNum, Vec2 origin) {
