@@ -228,6 +228,8 @@ optional<ExitInfo> Game::updateInput() {
   return none;
 }
 
+static const TimeInterval initialModelUpdate = 2_visible;
+
 void Game::initializeModels() {
   // Give every model a couple of turns so that things like shopkeepers can initialize.
   for (Vec2 v : models.getBounds())
@@ -235,7 +237,7 @@ void Game::initializeModels() {
       // Use top level's id as unique id of the model.
       auto id = models[v]->getTopLevel()->getUniqueId();
       if (!localTime.count(id)) {
-        localTime[id] = models[v]->getLocalTime().getDouble() + 2;
+        localTime[id] = (models[v]->getLocalTime() + initialModelUpdate).getDouble();
         updateModel(models[v].get(), localTime[id]);
       }
   }
@@ -503,10 +505,11 @@ void Game::conquered(const string& title, int numKills, int points) {
 
 void Game::retired(const string& title, int numKills, int points) {
   int turns = getGlobalTime().getVisibleInt();
-  int dungeonTurns = campaign->getPlayerRole() == PlayerRole::ADVENTURER ? 0 : getPlayerCollective()->getLocalTime().getVisibleInt() - initialModelUpdate;
+  int dungeonTurns = campaign->getPlayerRole() == PlayerRole::ADVENTURER ? 0 :
+      (getPlayerCollective()->getLocalTime() - initialModelUpdate).getVisibleInt();
   int scoredTurns = campaign->getType() == CampaignType::ENDLESS ? dungeonTurns : turns;
-  string text = "You have survived in this land for " + toString(turns) + " turns. You killed " + toString(numKills) +
-      " enemies.\n";
+  string text = "You have survived in this land for " + toString(turns) + " turns. You killed " +
+      toString(numKills) + " enemies.\n";
   if (dungeonTurns > 0) {
     text += toString(dungeonTurns) + " turns defending the base.\n";
     text += toString(turns - dungeonTurns) + " turns spent adventuring and attacking.\n";
@@ -536,7 +539,8 @@ bool Game::isGameOver() const {
 
 void Game::gameOver(WConstCreature creature, int numKills, const string& enemiesString, int points) {
   int turns = getGlobalTime().getVisibleInt();
-  int dungeonTurns = campaign->getPlayerRole() == PlayerRole::ADVENTURER ? 0 : getPlayerCollective()->getLocalTime().getVisibleInt() - initialModelUpdate;
+  int dungeonTurns = campaign->getPlayerRole() == PlayerRole::ADVENTURER ? 0 :
+      (getPlayerCollective()->getLocalTime() - initialModelUpdate).getVisibleInt();
   int scoredTurns = campaign->getType() == CampaignType::ENDLESS ? dungeonTurns : turns;
   string text = "And so dies " + creature->getName().title();
   if (auto reason = creature->getDeathReason()) {

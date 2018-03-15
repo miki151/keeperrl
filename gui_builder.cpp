@@ -2666,7 +2666,7 @@ static Color getHighlightColor(VillainType type) {
 SGuiElem GuiBuilder::drawCampaignGrid(const Campaign& c, optional<Vec2>* marked, function<bool(Vec2)> activeFun,
     function<void(Vec2)> clickFun){
   int iconScale = 2;
-  int iconSize = 24 * iconScale;;
+  int iconSize = 24 * iconScale;
   auto rows = gui.getListBuilder(iconSize);
   auto& sites = c.getSites();
   for (int y : sites.getBounds().getYRange()) {
