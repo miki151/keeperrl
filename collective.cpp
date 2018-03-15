@@ -367,19 +367,6 @@ bool Collective::isConquered() const {
   return getCreatures(MinionTrait::FIGHTER).empty() && !getLeader();
 }
 
-vector<WCreature> Collective::getConsumptionTargets(WCreature consumer) const {
-  vector<WCreature> ret;
-  for (WCreature c : getCreatures())
-    if (consumer->canConsume(c) && c != getLeader())
-      ret.push_back(c);
-  return ret;
-}
-
-void Collective::orderConsumption(WCreature consumer, WCreature who) {
-  CHECK(getConsumptionTargets(consumer).contains(who));
-  setTask(consumer, Task::consume(this, who));
-}
-
 PTask Collective::getEquipmentTask(WCreature c) {
   if (!usesEquipment(c))
     return nullptr;

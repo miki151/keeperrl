@@ -176,7 +176,6 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   int getPopulationSize() const;
   int getMaxPopulation() const;
 
-  void orderConsumption(WCreature consumer, WCreature who);
   vector<WCreature> getConsumptionTargets(WCreature consumer) const;
   void addAttack(const CollectiveAttack&);
   void onRansomPaid();

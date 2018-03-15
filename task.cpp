@@ -1127,7 +1127,7 @@ PTask Task::copulate(WTaskCallback c, WCreature target, int numTurns) {
 namespace {
 class Consume : public Task {
   public:
-  Consume(WTaskCallback c, WCreature t) : target(t), callback(c) {}
+  Consume(WCreature t) : target(t) {}
 
   virtual MoveInfo getMove(WCreature c) override {
     if (target->isDead()) {
@@ -1149,17 +1149,16 @@ class Consume : public Task {
     return "Absorb " + target->getName().bare();
   }
 
-  SERIALIZE_ALL(SUBCLASS(Task), target, callback); 
+  SERIALIZE_ALL(SUBCLASS(Task), target);
   SERIALIZATION_CONSTRUCTOR(Consume);
 
   protected:
   WCreature SERIAL(target);
-  WTaskCallback SERIAL(callback);
 };
 }
 
-PTask Task::consume(WTaskCallback c, WCreature target) {
-  return makeOwner<Consume>(c, target);
+PTask Task::consume(WCreature target) {
+  return makeOwner<Consume>(target);
 }
 
 namespace {

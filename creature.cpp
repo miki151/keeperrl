@@ -1392,7 +1392,10 @@ bool Creature::canCopulateWith(WConstCreature c) const {
 }
 
 bool Creature::canConsume(WConstCreature c) const {
-  return c->getBody().canConsume() && attributes->getSkills().hasDiscrete(SkillId::CONSUMPTION) && isFriend(c);
+  return c != this &&
+      c->getBody().canConsume() &&
+      attributes->getSkills().hasDiscrete(SkillId::CONSUMPTION) &&
+      isFriend(c);
 }
 
 CreatureAction Creature::copulate(Vec2 direction) const {

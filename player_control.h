@@ -75,6 +75,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   bool canControlSingle(WConstCreature) const;
   void addToCurrentTeam(WCreature c);
   void updateUnknownLocations();
+  vector<WCreature> getConsumptionTargets(WCreature consumer) const;
 
   void onEvent(const GameEvent&);
   const vector<WCreature>& getControlled() const;

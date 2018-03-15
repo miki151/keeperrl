@@ -74,7 +74,7 @@ class MinionController : public Player {
   }
 
   void consumeAction() {
-    vector<WCreature> targets = control->collective->getConsumptionTargets(creature);
+    vector<WCreature> targets = control->getConsumptionTargets(creature);
     vector<WCreature> actions;
     for (auto target : targets)
       if (auto action = creature->consume(target))

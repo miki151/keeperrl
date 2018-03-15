@@ -1949,10 +1949,10 @@ void PlayerControl::processInput(View* view, UserInput input) {
     case UserInputId::CREATURE_CONSUME:
       if (WCreature c = getCreature(input.get<Creature::Id>())) {
         if (auto creatureId = getView()->chooseCreature("Choose minion to absorb",
-            collective->getConsumptionTargets(c).transform(
+            getConsumptionTargets(c).transform(
                 [] (WConstCreature c) { return CreatureInfo(c);}), "cancel"))
           if (WCreature consumed = getCreature(*creatureId))
-            collective->orderConsumption(c, consumed);
+            collective->setTask(c, Task::consume(consumed));
       }
       break;
     case UserInputId::CREATURE_BANISH:
@@ -2136,6 +2136,14 @@ void PlayerControl::processInput(View* view, UserInput input) {
       break;
     default: break;
   }
+}
+
+vector<WCreature> PlayerControl::getConsumptionTargets(WCreature consumer) const {
+  vector<WCreature> ret;
+  for (WCreature c : getCreatures())
+    if (consumer->canConsume(c) && c != collective->getLeader())
+      ret.push_back(c);
+  return ret;
 }
 
 void PlayerControl::updateSelectionSquares() {
