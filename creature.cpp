@@ -1726,8 +1726,6 @@ const char* getMoraleText(double morale) {
 vector<AdjectiveInfo> Creature::getGoodAdjectives() const {
   PROFILE;
   vector<AdjectiveInfo> ret;
-  if (!!attributes->getMoraleSpeedIncrease())
-    ret.push_back({"Morale affects speed", ""});
   if (auto time = getGlobalTime()) {
     for (LastingEffect effect : ENUM_ALL(LastingEffect))
       if (attributes->isAffected(effect, *time))

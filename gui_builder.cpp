@@ -452,7 +452,7 @@ SGuiElem GuiBuilder::drawRightBandInfo(GameInfo& info) {
       if (!info.tutorial->highlights.intersection(minionHighlights).isEmpty())
         buttons[1] = gui.stack(
             gui.conditional(
-                gui.blink(gui.icon(gui.HIGHLIGHT, GuiFactory::Alignment::CENTER, Color::YELLOW)),
+                gui.blink(getIconHighlight(Color::YELLOW)),
                 [this] { return collectiveTab != CollectiveTab::MINIONS;}),
             buttons[1]);
     }

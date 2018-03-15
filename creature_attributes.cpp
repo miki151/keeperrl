@@ -44,7 +44,7 @@ template <class Archive>
 void CreatureAttributes::serialize(Archive& ar, const unsigned int version) {
   ar(viewId, retiredViewId, illusionViewObject, name, attr, chatReactionFriendly);
   ar(chatReactionHostile, passiveAttack, gender);
-  ar(body, moraleSpeedIncrease, deathDescription);
+  ar(body, deathDescription);
   ar(animal, cantEquip, courage, canJoinCollective);
   ar(boulder, noChase, isSpecial, skills, spells);
   ar(permanentEffects, lastingEffects, minionActivities, expLevel);
@@ -367,8 +367,4 @@ bool CreatureAttributes::getCanJoinCollective() const {
 
 optional<ViewId> CreatureAttributes::getRetiredViewId() {
   return retiredViewId;
-}
-
-optional<double> CreatureAttributes::getMoraleSpeedIncrease() const {
-  return moraleSpeedIncrease;
 }

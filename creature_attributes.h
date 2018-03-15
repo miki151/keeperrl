@@ -102,7 +102,6 @@ class CreatureAttributes {
   bool getCanJoinCollective() const;
   optional<ViewId> getRetiredViewId();
   void increaseExpFromCombat(double attackDiff);
-  optional<double> getMoraleSpeedIncrease() const;
 
   friend class CreatureFactory;
 
@@ -133,7 +132,6 @@ class CreatureAttributes {
   EnumMap<ExperienceType, int> SERIAL(maxLevelIncrease);
   bool SERIAL(noAttackSound) = false;
   optional<CreatureId> SERIAL(creatureId);
-  optional<double> SERIAL(moraleSpeedIncrease);
   string SERIAL(deathDescription) = "killed"_s;
   bool SERIAL(canJoinCollective) = true;
 };
