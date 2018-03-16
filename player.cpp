@@ -478,7 +478,7 @@ vector<Player::OtherCreatureCommand> Player::getOtherCreatureCommands(WCreature 
   }
   if (creature->isEnemy(c)) {
     genAction(1, "Attack", true, creature->attack(c));
-    if (c->canCapture())
+    if (c->canBeCaptured())
       ret.push_back({2, c->isCaptureOrdered() ? "Cancel capture order" : "Order capture", true,
           [c](Player*) { c->toggleCaptureOrder();}});
     auto equipped = creature->getEquipment().getSlotItems(EquipmentSlot::WEAPON);

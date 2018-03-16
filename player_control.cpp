@@ -1497,7 +1497,7 @@ void PlayerControl::getSquareViewIndex(Position pos, bool canSee, ViewIndex& ind
       auto& object = index.getObject(ViewLayer::CREATURE);
       if (isEnemy(c)) {
         object.setModifier(ViewObject::Modifier::HOSTILE);
-        if (c->canCapture())
+        if (c->canBeCaptured())
           object.setClickAction(c->isCaptureOrdered() ? "Cancel capture order" : "Order capture");
       } else
         object.getCreatureStatus().intersectWith(getDisplayedOnMinions());

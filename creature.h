@@ -283,7 +283,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
 
   void toggleCaptureOrder();
   bool isCaptureOrdered() const;
-  bool canCapture() const;
+  bool canBeCaptured() const;
   void removePrivateEnemy(WConstCreature);
 
   private:
