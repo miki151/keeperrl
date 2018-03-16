@@ -17,14 +17,14 @@
 
 #include "util.h"
 #include "item.h"
-#define MAX_RANGED_DISTANCE 10
 
 class RangedWeapon {
   public:
-  RangedWeapon(AttrType damageAttr, const string& projectileName, ViewId projectileViewId);
+  RangedWeapon(AttrType damageAttr, const string& projectileName, ViewId projectileViewId, int maxDistance);
 
   void fire(WCreature c, Vec2 dir) const;
   AttrType getDamageAttr() const;
+  int getMaxDistance() const;
 
   SERIALIZATION_DECL(RangedWeapon);
 
@@ -32,4 +32,5 @@ class RangedWeapon {
   AttrType SERIAL(damageAttr);
   string SERIAL(projectileName);
   ViewId SERIAL(projectileViewId);
+  int SERIAL(maxDistance);
 };

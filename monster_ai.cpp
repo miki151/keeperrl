@@ -37,7 +37,6 @@
 #include "furniture.h"
 #include "furniture_factory.h"
 #include "file_path.h"
-#include "ranged_weapon.h"
 
 class Behaviour {
   public:
@@ -582,7 +581,7 @@ class Fighter : public Behaviour {
       if (auto move = considerBuffs())
         return move;
     if (distance > 1) {
-      if (distance <= MAX_RANGED_DISTANCE) {
+      if (distance <= creature->getMaximumRange()) {
         if (MoveInfo move = getFireMove(enemyDir, other))
           return move;
         if (MoveInfo move = getThrowMove(enemyDir, other))
