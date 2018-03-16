@@ -298,6 +298,7 @@ void PlayerControl::addConsumableItem(WCreature creature) {
             && !it->canEquip()
             && collective->getMinionEquipment().needsItem(creature, it, true); }, &scrollPos);
     if (chosenItem) {
+      creature->removeEffect(LastingEffect::SLEEP);
       CHECK(collective->getMinionEquipment().tryToOwn(creature, chosenItem));
     } else
       break;
@@ -313,6 +314,7 @@ void PlayerControl::addEquipment(WCreature creature, EquipmentSlot slot) {
     if (auto creatureId = collective->getMinionEquipment().getOwner(chosenItem))
       if (WCreature c = getCreature(*creatureId))
         c->removeEffect(LastingEffect::SLEEP);
+    creature->removeEffect(LastingEffect::SLEEP);
     CHECK(collective->getMinionEquipment().tryToOwn(creature, chosenItem));
   }
 }
