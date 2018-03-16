@@ -77,6 +77,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   Position getPosition() const;
   bool dodgeAttack(const Attack&);
   bool takeDamage(const Attack&);
+  void sufferFromTorture();
   void onAttackedBy(WCreature);
   void heal(double amount = 1);
   /** Morale is in the range [-1:1] **/

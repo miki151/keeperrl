@@ -1000,6 +1000,28 @@ bool Creature::captureDamage(double damage, WCreature attacker) {
     return false;
 }
 
+void Creature::sufferFromTorture() {
+  int injuryType = Random.get(1,30);
+  if (injuryType < 15) return;    
+  if (injuryType < 29) {
+    AttrType ability = Random.choose (
+      AttrType::DAMAGE,
+      AttrType::DEFENSE,
+      AttrType::SPELL_DAMAGE,
+      AttrType::RANGED_DAMAGE);
+      attributes->sufferScar(ability);
+      return;
+    }
+    BodyPart bp = Random.choose({
+      BodyPart::LEG,
+      BodyPart::ARM}, {1, 1});
+    if (Random.roll(2)) {
+      attributes->getBody().looseBodyPart(bp);
+    } else {
+      attributes->getBody().injureBodyPart(bp);
+    }
+}
+
 bool Creature::takeDamage(const Attack& attack) {
   PROFILE;
   if (WCreature attacker = attack.attacker) {
