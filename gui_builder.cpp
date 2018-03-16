@@ -1144,10 +1144,12 @@ SGuiElem GuiBuilder::drawSpellsList(const PlayerInfo& info, bool active) {
 
 vector<SGuiElem> GuiBuilder::drawEffectsList(const PlayerInfo& info) {
   vector<SGuiElem> lines;
-  for (auto effect : info.effects)
+  for (int i : All(info.effects)) {
+    auto& effect = info.effects[i];
     lines.push_back(gui.stack(
-          getTooltip({effect.help}, THIS_LINE),
+          getTooltip({effect.help}, THIS_LINE + i),
           gui.label(effect.name, effect.bad ? Color::RED : Color::WHITE)));
+  }
   return lines;
 }
 
