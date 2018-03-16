@@ -536,8 +536,8 @@ vector<Player::CommandInfo> Player::getCommands() const {
     {PlayerInfo::CommandInfo{"Wait", 'w', "Wait until all other team members make their moves (doesn't skip turn).",
         getGame()->getPlayerCreatures().size() > 1},
       [] (Player* player) { player->getModel()->getTimeQueue().postponeMove(player->creature); }, false},
-    {PlayerInfo::CommandInfo{"Travel", 't', "Travel to another site.", !getGame()->isSingleModel()},
-      [] (Player* player) { player->getGame()->transferAction(player->getTeam()); }, false},
+    /*{PlayerInfo::CommandInfo{"Travel", 't', "Travel to another site.", !getGame()->isSingleModel()},
+      [] (Player* player) { player->getGame()->transferAction(player->getTeam()); }, false},*/
     {PlayerInfo::CommandInfo{"Chat", 'c', "Chat with someone.", canChat},
       [] (Player* player) { player->chatAction(); }, false},
     {PlayerInfo::CommandInfo{"Hide", 'h', "Hide behind or under a terrain feature or piece of furniture.",
@@ -697,6 +697,12 @@ void Player::makeMove() {
       case UserInputId::TUTORIAL_GO_BACK:
         if (tutorial)
           tutorial->goBack();
+        break;
+      case UserInputId::SCROLL_TO_HOME:
+        getView()->setScrollPos(getPosition());
+        break;
+      case UserInputId::DRAW_WORLD_MAP:
+        getGame()->transferAction(getTeam());
         break;
   #ifndef RELEASE
       case UserInputId::CHEAT_ATTRIBUTES:

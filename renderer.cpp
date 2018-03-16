@@ -437,6 +437,14 @@ void Renderer::drawFilledRectangle(int px, int py, int kx, int ky, Color color, 
   drawFilledRectangle(Rectangle(px, py, kx, ky), color, outline);
 }
 
+void Renderer::drawPoint(Vec2 pos, Color color, int size) {
+  SDL::glPointSize(size);
+  SDL::glBegin(GL_POINTS);
+  color.applyGl();
+  SDL::glVertex2f(pos.x, pos.y);
+  SDL::glEnd();
+}
+
 void Renderer::addQuad(const Rectangle& r, Color color) {
   drawFilledRectangle(r.left(), r.top(), r.right(), r.bottom(), color);
 }

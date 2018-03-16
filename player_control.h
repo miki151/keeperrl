@@ -75,6 +75,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   bool canControlSingle(WConstCreature) const;
   void addToCurrentTeam(WCreature c);
   void updateUnknownLocations();
+  vector<WCreature> getConsumptionTargets(WCreature consumer) const;
 
   void onEvent(const GameEvent&);
   const vector<WCreature>& getControlled() const;
@@ -240,5 +241,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   string getMinionGroupName(WCreature) const;
   ViewId getMinionGroupViewId(WCreature) const;
   SUnknownLocations SERIAL(unknownLocations);
+  optional<LocalTime> lastWarningDismiss;
 };
 

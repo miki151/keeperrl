@@ -33,6 +33,7 @@ enum class UserInputId {
     REFRESH,
     DRAW_LEVEL_MAP,
     DRAW_WORLD_MAP,
+    SCROLL_TO_HOME,
     EXIT,
     MESSAGE_INFO,
     CHEAT_ATTRIBUTES,
@@ -84,6 +85,7 @@ enum class UserInputId {
     IGNORE_RANSOM,
     SHOW_HISTORY,
     DISMISS_NEXT_WAVE,
+    DISMISS_WARNING_WINDOW,
 // turn-based actions
     MOVE,
     TRAVEL,

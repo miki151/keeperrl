@@ -12,6 +12,7 @@ class Animation {
   void setBegin(milliseconds time);
   static PAnimation thrownObject(Vec2 direction, ViewId, bool useSprite, Vec2 squareSize);
   static PAnimation fromId(AnimationId);
+  static PAnimation perticleEffect(int id, milliseconds duration, unsigned int particleNum, Vec2 origin);
 
   protected:
   Animation(milliseconds duration);

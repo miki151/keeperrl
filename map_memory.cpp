@@ -41,7 +41,6 @@ optional<const ViewIndex&> MapMemory::getViewIndex(Position pos) const {
 }
 
 void MapMemory::update(Position pos, const ViewIndex& index1) {
-  CHECK(pos.isValid());
   auto& index = table->getOrInit(pos);
   index = index1;
   index.setHighlight(HighlightType::MEMORY);

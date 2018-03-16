@@ -887,6 +887,16 @@ bool Body::canPush(const Body& other) {
   return int(size) > int(other.size) || other.canAlwaysPush;
 }
 
+bool Body::canPerformRituals() const {
+  switch (material) {
+    case Material::FIRE:
+    case Material::SPIRIT:
+      return true;
+    default:
+      return false;
+  }
+}
+
 bool Body::fallsApartFromDamage() const {
   return !hasHealth();
 }

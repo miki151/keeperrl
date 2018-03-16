@@ -105,6 +105,7 @@ class GuiBuilder {
   SGuiElem drawCost(pair<ViewId, int>, Color = Color::WHITE);
   SGuiElem drawHighscores(const vector<HighscoreList>&, Semaphore&, int& tabNum, vector<ScrollPosition>& scrollPos,
       bool& online);
+  SGuiElem drawMinimapIcons();
 
   void setCollectiveTab(CollectiveTab t);
   CollectiveTab getCollectiveTab() const;
@@ -268,6 +269,9 @@ class GuiBuilder {
   SGuiElem getExpIncreaseLine(const PlayerInfo::LevelInfo&, ExperienceType);
   optional<int> highlightedTeamMember;
   SGuiElem drawQuartersButton(const PlayerInfo&, const CollectiveInfo&);
+  SGuiElem drawWarningWindow(const optional<CollectiveInfo::RebellionChance>&,
+      const optional<CollectiveInfo::NextWave>&);
+  SGuiElem drawRebellionChanceText(CollectiveInfo::RebellionChance);
 };
 
 RICH_ENUM(GuiBuilder::GameSpeed,

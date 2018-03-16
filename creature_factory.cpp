@@ -1536,7 +1536,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.chatReactionHostile = "\"Die!\""_s;
           c.permanentEffects[LastingEffect::POISON_RESISTANT] = 1;
           c.permanentEffects[LastingEffect::SPEED] = 1;
-          c.moraleSpeedIncrease = 1.3;
           c.name = "imp";
       );
     case CreatureId::OGRE: 

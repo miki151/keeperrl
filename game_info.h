@@ -303,8 +303,14 @@ class CollectiveInfo {
     HASH_ALL(viewId, attacker, numTurns)
   };
   optional<NextWave> HASH(nextWave);
+  enum class RebellionChance {
+    LOW,
+    MEDIUM,
+    HIGH,
+  };
+  optional<RebellionChance> HASH(rebellionChance);
   vector<ViewId> HASH(allQuarters);
-  HASH_ALL(warning, buildings, minionCount, minionLimit, monsterHeader, minions, minionGroups, enemyGroups, chosenCreature, numResource, teams, nextPayout, payoutTimeRemaining, techButtons, taskMap, ransom, nextWave, chosenWorkshop, workshopButtons, immigration, allImmigration, libraryInfo, allQuarters)
+  HASH_ALL(warning, buildings, minionCount, minionLimit, monsterHeader, minions, minionGroups, enemyGroups, chosenCreature, numResource, teams, nextPayout, payoutTimeRemaining, techButtons, taskMap, ransom, nextWave, chosenWorkshop, workshopButtons, immigration, allImmigration, libraryInfo, allQuarters, rebellionChance)
 };
 
 class VillageInfo {

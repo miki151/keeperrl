@@ -1007,6 +1007,9 @@ void PlayerControl::acceptPrisoner(int index) {
     skills.erase(SkillId::NAVIGATION_DIGGING);
     collective->addCreature(victim, {MinionTrait::WORKER, MinionTrait::PRISONER, MinionTrait::NO_LIMIT});
     addMessage(PlayerMessage("You enslave " + victim->getName().a()).setPosition(victim->getPosition()));
+    for (auto& elem : copyOf(stunnedCreatures))
+      if (elem.first == victim)
+        stunnedCreatures.removeElement(elem);
   }
 }
 
@@ -1024,14 +1027,14 @@ vector<PlayerControl::StunnedInfo> PlayerControl::getPrisonerImmigrantStack() co
   vector<WCreature> outside;
   unordered_map<WCollective, vector<WCreature>, CustomHash<WCollective>> inside;
   for (auto stunned : stunnedCreatures)
-    if (stunned.first->isAffected(LastingEffect::STUNNED)) {
+    if (stunned.first->isAffected(LastingEffect::STUNNED) && !stunned.first->isDead()) {
       if (auto villain = stunned.second) {
-	if (villain->isConquered() || !villain->getTerritory().contains(stunned.first->getPosition()))
-	  outside.push_back(stunned.first);
-	else
-	  inside[villain].push_back(stunned.first);
+        if (villain->isConquered() || !villain->getTerritory().contains(stunned.first->getPosition()))
+          outside.push_back(stunned.first);
+        else
+          inside[villain].push_back(stunned.first);
       } else
-	outside.push_back(stunned.first);
+        outside.push_back(stunned.first);
     }
   for (auto& elem : inside)
     for (auto& stack : Creature::stack(elem.second))
@@ -1210,6 +1213,27 @@ void PlayerControl::fillImmigrationHelp(CollectiveInfo& info) const {
         collective->getImmigration().getAutoState(elem.index())
     });
   }
+  info.allImmigration.push_back(ImmigrantDataInfo {
+      {"Requires 2 prison tiles", "Requires knocking out a hostile creature"},
+      {"Supplies your imp force", "Can be converted to your side using torture"},
+      none,
+      "prisoner",
+      ViewId::PRISONER,
+      {},
+      0,
+      none,
+      -1,
+  });
+}
+
+static optional<CollectiveInfo::RebellionChance> getRebellionChance(double prob) {
+  if (prob > 0.6)
+    return CollectiveInfo::RebellionChance::HIGH;
+  if (prob > 0.2)
+    return CollectiveInfo::RebellionChance::MEDIUM;
+  if (prob > 0)
+    return CollectiveInfo::RebellionChance::LOW;
+  return none;
 }
 
 void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
@@ -1217,9 +1241,12 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
     tutorial->refreshInfo(getGame(), gameInfo.tutorial);
   gameInfo.singleModel = getGame()->isSingleModel();
   gameInfo.villageInfo.villages.clear();
+  gameInfo.villageInfo.numTotalVillains = 0;
   for (WConstCollective col : getKnownVillains())
-    if (col->getName() && col->isDiscoverable())
+    if (col->getName() && col->isDiscoverable()) {
       gameInfo.villageInfo.villages[col->getVillainType()].push_back(getVillageInfo(col));
+      ++gameInfo.villageInfo.numTotalVillains;
+    }
   SunlightInfo sunlightInfo = getGame()->getSunlightInfo();
   gameInfo.sunlightInfo = { sunlightInfo.getText(), sunlightInfo.getTimeRemaining() };
   gameInfo.infoType = GameInfo::InfoType::BAND;
@@ -1304,6 +1331,9 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
           };
       }
     }
+  if (auto rebellionWarning = getRebellionChance(collective->getRebellionProbability()))
+    if (!lastWarningDismiss || getModel()->getLocalTime() > *lastWarningDismiss + 1000_visible)
+      info.rebellionChance = *rebellionWarning;
   info.allQuarters = collective->getQuarters().getAllQuarters().transform(
       [](const auto& info) { return info.viewId; });
 }
@@ -1359,18 +1389,19 @@ void PlayerControl::onEvent(const GameEvent& event) {
           getView()->presentText("", "Item won't be permanently assigned to creature because the equipment slot is locked.");
       },
       [&](const WonGame&) {
-        CHECK(!getKeeper()->isDead());
-        getGame()->conquered(*getKeeper()->getName().first(), collective->getKills().getSize(),
-            (int) collective->getDangerLevel() + collective->getPoints());
-        getView()->presentText("", "When you are ready, retire your dungeon and share it online. "
-          "Other players will be able to invade it as adventurers. To do this, press Escape and choose \'retire\'.");
+        if (auto keeper = getKeeper()) { // Check if keeper is alive just in case. If he's not then game over has already happened
+          getGame()->conquered(*keeper->getName().first(), collective->getKills().getSize(),
+              (int) collective->getDangerLevel() + collective->getPoints());
+          getView()->presentText("", "When you are ready, retire your dungeon and share it online. "
+            "Other players will be able to invade it as adventurers. To do this, press Escape and choose \'retire\'.");
+        }
       },
       [&](const RetiredGame&) {
-        CHECK(!getKeeper()->isDead());
-        // No victory condition in this game, so we generate a highscore when retiring.
-        if (getGame()->getVillains(VillainType::MAIN).empty())
-          getGame()->retired(*getKeeper()->getName().first(), collective->getKills().getSize(),
-              (int) collective->getDangerLevel() + collective->getPoints());
+        if (auto keeper = getKeeper()) // Check if keeper is alive just in case. If he's not then game over has already happened
+          if (getGame()->getVillains(VillainType::MAIN).empty())
+            // No victory condition in this game, so we generate a highscore when retiring.
+            getGame()->retired(*keeper->getName().first(), collective->getKills().getSize(),
+                (int) collective->getDangerLevel() + collective->getPoints());
       },
       [&](const TechbookRead& info) {
         Technology* tech = info.technology;
@@ -1933,10 +1964,10 @@ void PlayerControl::processInput(View* view, UserInput input) {
     case UserInputId::CREATURE_CONSUME:
       if (WCreature c = getCreature(input.get<Creature::Id>())) {
         if (auto creatureId = getView()->chooseCreature("Choose minion to absorb",
-            collective->getConsumptionTargets(c).transform(
+            getConsumptionTargets(c).transform(
                 [] (WConstCreature c) { return CreatureInfo(c);}), "cancel"))
           if (WCreature consumed = getCreature(*creatureId))
-            collective->orderConsumption(c, consumed);
+            collective->setTask(c, Task::consume(consumed));
       }
       break;
     case UserInputId::CREATURE_BANISH:
@@ -2022,18 +2053,22 @@ void PlayerControl::processInput(View* view, UserInput input) {
     }
     case UserInputId::IMMIGRANT_AUTO_ACCEPT: {
       int id = input.get<int>();
-      if (!!collective->getImmigration().getAutoState(id))
-        collective->getImmigration().setAutoState(id, none);
-      else
-        collective->getImmigration().setAutoState(id, ImmigrantAutoState::AUTO_ACCEPT);
+      if (id >= 0) { // Otherwise the player has clicked the dummy prisoner element
+        if (!!collective->getImmigration().getAutoState(id))
+          collective->getImmigration().setAutoState(id, none);
+        else
+          collective->getImmigration().setAutoState(id, ImmigrantAutoState::AUTO_ACCEPT);
+      }
       break;
     }
     case UserInputId::IMMIGRANT_AUTO_REJECT: {
       int id = input.get<int>();
-      if (!!collective->getImmigration().getAutoState(id))
-        collective->getImmigration().setAutoState(id, none);
-      else
-        collective->getImmigration().setAutoState(id, ImmigrantAutoState::AUTO_REJECT);
+      if (id >= 0) { // Otherwise the player has clicked the dummy prisoner element
+        if (!!collective->getImmigration().getAutoState(id))
+          collective->getImmigration().setAutoState(id, none);
+        else
+          collective->getImmigration().setAutoState(id, ImmigrantAutoState::AUTO_REJECT);
+      }
       break;
     }
     case UserInputId::RECT_SELECTION: {
@@ -2115,8 +2150,23 @@ void PlayerControl::processInput(View* view, UserInput input) {
         if (auto nextWave = enemies->getNextWave())
           dismissedNextWaves.insert(enemies->getNextWaveIndex());
       break;
-    default: break;
+    case UserInputId::DISMISS_WARNING_WINDOW:
+      lastWarningDismiss = getModel()->getLocalTime();
+      break;
+    case UserInputId::SCROLL_TO_HOME:
+      getView()->setScrollPos(getPosition());
+      break;
+    default:
+      break;
   }
+}
+
+vector<WCreature> PlayerControl::getConsumptionTargets(WCreature consumer) const {
+  vector<WCreature> ret;
+  for (WCreature c : getCreatures())
+    if (consumer->canConsume(c) && c != collective->getLeader())
+      ret.push_back(c);
+  return ret;
 }
 
 void PlayerControl::updateSelectionSquares() {
@@ -2308,34 +2358,34 @@ void PlayerControl::addToMemory(Position pos) {
 void PlayerControl::checkKeeperDanger() {
   PROFILE;
   auto controlled = getControlled();
-  WCreature keeper = getKeeper();
-  auto prompt = [&] (const string& reason) {
-      return getView()->yesOrNoPrompt(reason + ". Do you want to control " +
-          keeper->getAttributes().getGender().him() + "?");
-  };
-  if (!getKeeper()->isDead() && !controlled.contains(getKeeper()) &&
-      lastControlKeeperQuestion < collective->getGlobalTime() - 50_visible) {
-    if (auto lastCombatIntent = getKeeper()->getLastCombatIntent())
-      if (lastCombatIntent->time > getGame()->getGlobalTime() - 5_visible) {
+  if (auto keeper = getKeeper()) {
+    auto prompt = [&] (const string& reason) {
+        return getView()->yesOrNoPrompt(reason + ". Do you want to control " +
+            keeper->getAttributes().getGender().him() + "?");
+    };
+    if (!keeper->isDead() && !controlled.contains(keeper) &&
+        lastControlKeeperQuestion < collective->getGlobalTime() - 50_visible) {
+      if (auto lastCombatIntent = keeper->getLastCombatIntent())
+        if (lastCombatIntent->time > getGame()->getGlobalTime() - 5_visible) {
+          lastControlKeeperQuestion = collective->getGlobalTime();
+          if (prompt("The Keeper is engaged in a fight with " + lastCombatIntent->attacker)) {
+            controlSingle(keeper);
+            return;
+          }
+        }
+      auto prompt2 = [&](const string& reason) {
         lastControlKeeperQuestion = collective->getGlobalTime();
-        if (prompt("The Keeper is engaged in a fight with " + lastCombatIntent->attacker)) {
-          controlSingle(getKeeper());
+        if (prompt(reason)) {
+          controlSingle(keeper);
           return;
         }
-      }
-    if (getKeeper()->isAffected(LastingEffect::POISON)) {
-      lastControlKeeperQuestion = collective->getGlobalTime();
-      if (prompt("The Keeper is suffering from poisoning")) {
-        controlSingle(getKeeper());
-        return;
-      }
-    }
-    if (getKeeper()->getBody().isWounded()) {
-      lastControlKeeperQuestion = collective->getGlobalTime();
-      if (prompt("The Keeper is wounded")) {
-        controlSingle(getKeeper());
-        return;
-      }
+      };
+      if (keeper->isAffected(LastingEffect::POISON))
+        prompt2("The Keeper is suffering from poisoning");
+      else if (keeper->isAffected(LastingEffect::BLEEDING))
+        prompt2("The Keeper is bleeding");
+      else if (keeper->getBody().isWounded())
+        prompt2("The Keeper is wounded");
     }
   }
 }
@@ -2466,7 +2516,8 @@ TribeId PlayerControl::getTribeId() const {
 }
 
 bool PlayerControl::isEnemy(WConstCreature c) const {
-  return getKeeper() && getKeeper()->isEnemy(c);
+  auto keeper = getKeeper();
+  return keeper && keeper->isEnemy(c);
 }
 
 void PlayerControl::onMemberKilled(WConstCreature victim, WConstCreature killer) {

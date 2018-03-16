@@ -156,6 +156,7 @@ class Renderer {
   void drawSprite(Vec2 pos, Vec2 stretchSize, const Texture&);
   void drawFilledRectangle(const Rectangle&, Color, optional<Color> outline = none);
   void drawFilledRectangle(int px, int py, int kx, int ky, Color color, optional<Color> outline = none);
+  void drawPoint(Vec2 pos, Color color, int size);
   void drawViewObject(Vec2 pos, const ViewObject&, bool useSprite, Vec2 size);
   void drawViewObject(Vec2 pos, const ViewObject&, bool useSprite, double scale = 1, Color = Color::WHITE);
   void drawViewObject(Vec2 pos, const ViewObject&);

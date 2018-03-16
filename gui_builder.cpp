@@ -452,16 +452,10 @@ SGuiElem GuiBuilder::drawRightBandInfo(GameInfo& info) {
       if (!info.tutorial->highlights.intersection(minionHighlights).isEmpty())
         buttons[1] = gui.stack(
             gui.conditional(
-                gui.blink(gui.icon(gui.HIGHLIGHT, GuiFactory::Alignment::CENTER, Color::YELLOW)),
+                gui.blink(getIconHighlight(Color::YELLOW)),
                 [this] { return collectiveTab != CollectiveTab::MINIONS;}),
             buttons[1]);
     }
-    if (!info.singleModel)
-      buttons.push_back(gui.stack(
-            gui.conditional(gui.icon(gui.HIGHLIGHT, GuiFactory::Alignment::CENTER, Color::GREEN),
-              [] { return false;}),
-            gui.icon(gui.WORLD_MAP),
-            gui.button(getButtonCallback(UserInputId::DRAW_WORLD_MAP))));
     vector<pair<CollectiveTab, SGuiElem>> elems = makeVec(
         make_pair(CollectiveTab::MINIONS, drawMinions(collectiveInfo, info.tutorial)),
         make_pair(CollectiveTab::BUILDINGS, cache->get(bindMethod(
@@ -686,7 +680,7 @@ SGuiElem GuiBuilder::drawImmigrationOverlay(const CollectiveInfo& info, const op
 }
 
 SGuiElem GuiBuilder::getImmigrationHelpText() {
-  return gui.labelMultiLine("Welcome to the new immigration system! The icons immediately to the left represent "
+  return gui.labelMultiLine("Welcome to the immigration system! The icons immediately to the left represent "
                             "creatures that would "
                             "like to join your dungeon. Left-click accepts, right-click rejects a candidate. "
                             "Some creatures have requirements that you need to fulfill before "
@@ -1607,6 +1601,39 @@ SGuiElem GuiBuilder::drawRansomOverlay(const optional<CollectiveInfo::Ransom>& r
   return gui.setWidth(600, gui.miniWindow(gui.margins(lines.buildVerticalList(), 20)));
 }
 
+SGuiElem GuiBuilder::drawRebellionChanceText(CollectiveInfo::RebellionChance chance) {
+  switch (chance) {
+    case CollectiveInfo::RebellionChance::HIGH:
+      return gui.label("high", Color::RED);
+    case CollectiveInfo::RebellionChance::MEDIUM:
+      return gui.label("medium", Color::ORANGE);
+    case CollectiveInfo::RebellionChance::LOW:
+      return gui.label("low", Color::YELLOW);
+  }
+}
+
+SGuiElem GuiBuilder::drawWarningWindow(const optional<CollectiveInfo::RebellionChance>& rebellionChance,
+    const optional<CollectiveInfo::NextWave>& wave) {
+  SGuiElem window = gui.empty();
+  if (rebellionChance) {
+    GuiFactory::ListBuilder lines(gui, legendLineHeight);
+    lines.addElem(gui.getListBuilder()
+        .addElemAuto(gui.label("Chance of prisoner escape: "))
+        .addElemAuto(drawRebellionChanceText(*rebellionChance))
+        .buildHorizontalList());
+    lines.addElem(gui.label("Remove prisoners or increase armed forces."));
+    window = gui.setWidth(400, gui.translucentBackgroundWithBorder(gui.stack(
+        gui.margins(lines.buildVerticalList(), 10),
+        gui.alignment(GuiFactory::Alignment::TOP_RIGHT, gui.preferredSize(40, 40, gui.stack(
+            gui.leftMargin(22, gui.label("x")),
+            gui.button(getButtonCallback(UserInputId::DISMISS_WARNING_WINDOW)))))
+      )));
+  }
+  return gui.getListBuilder().addElemAuto(std::move(window))
+      .addSpace(10)
+      .addElemAuto(drawNextWaveOverlay(wave)).buildVerticalList();
+}
+
 SGuiElem GuiBuilder::drawNextWaveOverlay(const optional<CollectiveInfo::NextWave>& wave) {
   if (!wave)
     return gui.empty();
@@ -1911,8 +1938,8 @@ void GuiBuilder::drawOverlays(vector<OverlayInfo>& ret, GameInfo& info) {
            collectiveInfo, info.tutorial), OverlayInfo::IMMIGRATION});
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawRansomOverlay, this), THIS_LINE,
            collectiveInfo.ransom), OverlayInfo::TOP_LEFT});
-      ret.push_back({cache->get(bindMethod(&GuiBuilder::drawNextWaveOverlay, this), THIS_LINE,
-           collectiveInfo.nextWave), OverlayInfo::TOP_LEFT});
+      ret.push_back({cache->get(bindMethod(&GuiBuilder::drawWarningWindow, this), THIS_LINE,
+           collectiveInfo.rebellionChance, collectiveInfo.nextWave), OverlayInfo::TOP_LEFT});
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawMinionsOverlay, this), THIS_LINE,
            collectiveInfo, info.tutorial), OverlayInfo::TOP_LEFT});
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawWorkshopsOverlay, this), THIS_LINE,
@@ -2473,6 +2500,8 @@ SGuiElem GuiBuilder::drawActivityButton(const PlayerInfo& minion) {
 }
 
 SGuiElem GuiBuilder::drawAttributesOnPage(vector<SGuiElem>&& attrs) {
+  if (attrs.empty())
+    return gui.empty();
   vector<SGuiElem> lines[2];
   for (int i : All(attrs))
     lines[i % 2].push_back(std::move(attrs[i]));
@@ -2633,7 +2662,7 @@ static Color getHighlightColor(VillainType type) {
 SGuiElem GuiBuilder::drawCampaignGrid(const Campaign& c, optional<Vec2>* marked, function<bool(Vec2)> activeFun,
     function<void(Vec2)> clickFun){
   int iconScale = 2;
-  int iconSize = 24 * iconScale;;
+  int iconSize = 24 * iconScale;
   auto rows = gui.getListBuilder(iconSize);
   auto& sites = c.getSites();
   for (int y : sites.getBounds().getYRange()) {
@@ -3132,6 +3161,22 @@ SGuiElem GuiBuilder::drawHighscores(const vector<HighscoreList>& list, Semaphore
             gui.margins(gui.stack(std::move(pages)), 25, 60, 0, 30), legendLineHeight, GuiFactory::TOP)), legendLineHeight, GuiFactory::TOP),
         [&] { sem.v(); }))));
 
+}
+
+SGuiElem GuiBuilder::drawMinimapIcons() {
+  const int iconWidth = 42;
+  return gui.setHeight(iconWidth, gui.getListBuilder()
+      .addElem(gui.stack(
+          gui.icon(GuiFactory::IconId::WORLD_MAP),
+          gui.stopMouseMovement(),
+          gui.button(getButtonCallback(UserInputId::DRAW_WORLD_MAP), gui.getKey(SDL::SDLK_t))
+          ), iconWidth)
+      .addElem(gui.stack(
+          gui.icon(GuiFactory::IconId::HIGHLIGHT),
+          gui.stopMouseMovement(),
+          gui.button(getButtonCallback(UserInputId::SCROLL_TO_HOME), gui.getKey(SDL::SDLK_k))
+          ), iconWidth)
+      .buildHorizontalList());
 }
 
 Rectangle GuiBuilder::getTextInputPosition() {
