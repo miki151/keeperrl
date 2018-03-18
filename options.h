@@ -87,6 +87,7 @@ class Options {
   void setChoices(OptionId, const vector<string>&);
   void setChoices(OptionId, const vector<CreatureId>&);
   optional<string> getHint(OptionId);
+  bool prisonersDefaultSetting = false;
 
   private:
   optional<Value> readValue(OptionId, const string&);

@@ -1492,6 +1492,9 @@ vector<SGuiElem> GuiBuilder::getSettingsButtons() {
       makeSetting(mapGui->highlightEnemies, "Highlight enemies", ""),
       makeSetting(mapGui->displayAllHealthBars, "Display health bars", ""),
       makeSetting(mapGui->hideFullHealthBars, "Hide full health bars", ""),
+      makeSetting(options->prisonersDefaultSetting,
+        "Prisoner default setting",
+        "Toggle the default setting for whether minions are to capture prisoners or not."),  
       makeSetting(mapGui->colorWoundedRed, "Color wounded creatures", "")
     );
 }

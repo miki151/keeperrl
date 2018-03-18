@@ -214,6 +214,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   bool atTarget() const;
 
   enum class DropType { NOTHING, ONLY_INVENTORY, EVERYTHING };
+  enum class CaptureSetting { DEFAULT, CAPTURE, DONT_CAPTURE };
   void dieWithAttacker(WCreature attacker, DropType = DropType::EVERYTHING);
   void dieWithLastAttacker(DropType = DropType::EVERYTHING);
   void dieNoReason(DropType = DropType::EVERYTHING);
@@ -325,7 +326,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   double SERIAL(highestAttackValueEver) = 0;
   int SERIAL(lastMoveCounter) = 0;
   EnumSet<CreatureStatus> SERIAL(statuses);
-  bool SERIAL(capture) = 0;
+  CaptureSetting SERIAL(capture) = CaptureSetting::DEFAULT;
   double SERIAL(captureHealth) = 1;
   bool captureDamage(double damage, WCreature attacker);
   mutable Game* gameCache = nullptr;
