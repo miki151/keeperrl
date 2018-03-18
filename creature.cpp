@@ -226,14 +226,21 @@ bool Creature::canCapture() const {
 
 void Creature::toggleCaptureOrder() {
   if (canCapture()) {
-    capture = !capture;
+    if (isCaptureOrdered()) capture = CaptureSetting::DONT_CAPTURE;
+    else capture = CaptureSetting::CAPTURE;
     updateViewObject();
     position.setNeedsRenderUpdate(true);
   }
 }
 
 bool Creature::isCaptureOrdered() const {
-  return capture;
+    if (capture == CaptureSetting::DONT_CAPTURE) return false;
+    if (capture == CaptureSetting::CAPTURE) return true;
+    if (getTribeId() == TribeId::getKeeper()) return false;
+    if (!getGame()->getOptions()->prisonersDefaultSetting) return false;
+    if (!canCapture()) return false;
+    if (!getGame()->getTribe(TribeId::getKeeper())->isEnemy(this)) return false;
+    return true;
 }
 
 EnumSet<CreatureStatus>& Creature::getStatus() {
@@ -1019,7 +1026,7 @@ bool Creature::takeDamage(const Attack& attack) {
     addSound(*sound);
   bool returnValue = damage > 0;
   if (damage > 0) {
-    bool canCapture = capture && attack.attacker;
+    bool canCapture = isCaptureOrdered() && attack.attacker;
     if (canCapture && captureDamage(damage, attack.attacker))
       return true;
     if (!canCapture) {
@@ -1053,8 +1060,8 @@ void Creature::updateViewObject() {
   object.setGoodAdjectives(combine(extractNames(getGoodAdjectives()), true));
   object.setBadAdjectives(combine(extractNames(getBadAdjectives()), true));
   getBody().updateViewObject(object);
-  object.setModifier(ViewObject::Modifier::CAPTURE_ORDERED, capture);
-  if (capture)
+  object.setModifier(ViewObject::Modifier::CAPTURE_ORDERED, isCaptureOrdered());
+  if (isCaptureOrdered())
     object.setAttribute(ViewObject::Attribute::HEALTH, captureHealth);
   object.setDescription(getName().title());
   getPosition().setNeedsRenderUpdate(true);
