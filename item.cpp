@@ -156,7 +156,7 @@ void Item::onHitCreature(WCreature c, const Attack& attack, int numItems) {
   if (attributes->effect && getClass() == ItemClass::POTION)
     attributes->effect->applyToCreature(c, attack.attacker);
   c->takeDamage(attack);
-  if (attributes->ownedEffect == LastingEffect::LIGHT_SOURCE)
+  if (!c->isDead() && attributes->ownedEffect == LastingEffect::LIGHT_SOURCE)
     c->affectByFire(1);
 }
 
