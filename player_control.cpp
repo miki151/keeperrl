@@ -1487,10 +1487,17 @@ ViewObject PlayerControl::getTrapObject(TrapType type, bool armed) {
 }
 
 void PlayerControl::getSquareViewIndex(Position pos, bool canSee, ViewIndex& index) const {
+  // use the leader as a generic viewer
   auto leader = collective->getLeader();
-  CHECK(leader);
+  if (!leader) { // if no leader try any creature, else bail out
+    auto& creatures = collective->getCreatures();
+    if (!creatures.empty())
+      leader = creatures[0];
+    else
+      return;
+  }
   if (canSee)
-    pos.getViewIndex(index, leader); // use the leader as a generic viewer
+    pos.getViewIndex(index, leader);
   else
     index.setHiddenId(pos.getViewObject().id());
   if (WConstCreature c = pos.getCreature())
