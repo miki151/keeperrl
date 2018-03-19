@@ -897,6 +897,10 @@ bool Body::canPerformRituals() const {
   }
 }
 
+bool Body::canBeCaptured() const {
+  return xhumanoid && !isImmuneTo(LastingEffect::TIED_UP);
+}
+
 bool Body::fallsApartFromDamage() const {
   return !hasHealth();
 }

@@ -219,13 +219,13 @@ const EnumSet<CreatureStatus>& Creature::getStatus() const {
   return statuses;
 }
 
-bool Creature::canCapture() const {
+bool Creature::canBeCaptured() const {
   PROFILE;
-  return getBody().isHumanoid() && !isAffected(LastingEffect::STUNNED);
+  return getBody().canBeCaptured() && !isAffected(LastingEffect::STUNNED);
 }
 
 void Creature::toggleCaptureOrder() {
-  if (canCapture()) {
+  if (canBeCaptured()) {
     capture = !capture;
     updateViewObject();
     position.setNeedsRenderUpdate(true);
@@ -1418,8 +1418,8 @@ CreatureAction Creature::consume(WCreature other) const {
   if (!other || !canConsume(other) || other->getPosition().dist8(getPosition()) > 1)
     return CreatureAction();
   return CreatureAction(this, [=] (WCreature self) {
-    self->attributes->consume(self, *other->attributes);
     other->dieWithAttacker(self, Creature::DropType::ONLY_INVENTORY);
+    self->attributes->consume(self, *other->attributes);
     self->spendTime(2_visible);
   });
 }

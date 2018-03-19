@@ -145,7 +145,7 @@ void LevelBuilder::setLandingLink(Vec2 posT, StairKey key) {
 
 bool LevelBuilder::canPutCreature(Vec2 posT, WCreature c) {
   Vec2 pos = transform(posT);
-  if (!canNavigate(posT, c->getMovementType()))
+  if (!canNavigate(posT, c->getMovementType().setForced(false)))
     return false;
   for (pair<PCreature, Vec2>& c : creatures) {
     if (c.second == pos)
@@ -159,6 +159,7 @@ void LevelBuilder::setNoDiagonalPassing() {
 }
 
 PLevel LevelBuilder::build(WModel m, LevelMaker* maker, LevelId levelId) {
+  PROFILE;
   CHECK(!!m);
   CHECK(mapStack.empty());
   maker->make(this, squares.getBounds());

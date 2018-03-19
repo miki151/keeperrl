@@ -298,6 +298,7 @@ void PlayerControl::addConsumableItem(WCreature creature) {
             && !it->canEquip()
             && collective->getMinionEquipment().needsItem(creature, it, true); }, &scrollPos);
     if (chosenItem) {
+      creature->removeEffect(LastingEffect::SLEEP);
       CHECK(collective->getMinionEquipment().tryToOwn(creature, chosenItem));
     } else
       break;
@@ -313,6 +314,7 @@ void PlayerControl::addEquipment(WCreature creature, EquipmentSlot slot) {
     if (auto creatureId = collective->getMinionEquipment().getOwner(chosenItem))
       if (WCreature c = getCreature(*creatureId))
         c->removeEffect(LastingEffect::SLEEP);
+    creature->removeEffect(LastingEffect::SLEEP);
     CHECK(collective->getMinionEquipment().tryToOwn(creature, chosenItem));
   }
 }
@@ -1485,10 +1487,17 @@ ViewObject PlayerControl::getTrapObject(TrapType type, bool armed) {
 }
 
 void PlayerControl::getSquareViewIndex(Position pos, bool canSee, ViewIndex& index) const {
+  // use the leader as a generic viewer
   auto leader = collective->getLeader();
-  CHECK(leader);
+  if (!leader) { // if no leader try any creature, else bail out
+    auto& creatures = collective->getCreatures();
+    if (!creatures.empty())
+      leader = creatures[0];
+    else
+      return;
+  }
   if (canSee)
-    pos.getViewIndex(index, leader); // use the leader as a generic viewer
+    pos.getViewIndex(index, leader);
   else
     index.setHiddenId(pos.getViewObject().id());
   if (WConstCreature c = pos.getCreature())
@@ -1497,7 +1506,7 @@ void PlayerControl::getSquareViewIndex(Position pos, bool canSee, ViewIndex& ind
       auto& object = index.getObject(ViewLayer::CREATURE);
       if (isEnemy(c)) {
         object.setModifier(ViewObject::Modifier::HOSTILE);
-        if (c->canCapture())
+        if (c->canBeCaptured())
           object.setClickAction(c->isCaptureOrdered() ? "Cancel capture order" : "Order capture");
       } else
         object.getCreatureStatus().intersectWith(getDisplayedOnMinions());
