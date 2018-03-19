@@ -24,12 +24,12 @@ bool KnownTiles::isKnown(Position pos) const {
   return known.count(pos);
 };
 
-static PositionSet limitToModel(const PositionSet& s, WConstModel m) {
+static void limitToModel(PositionSet& s, WConstModel m) {
   PositionSet copy;
   for (Position p : s)
     if (p.getModel() == m)
       copy.insert(p);
-  return copy;
+  s = copy;
 }
 
 void KnownTiles::limitToModel(WConstModel m) {
