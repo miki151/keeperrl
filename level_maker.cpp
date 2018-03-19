@@ -1084,71 +1084,97 @@ class RandomLocations : public LevelMaker {
     return insideMakers.back().get();
   }
 
+
   virtual void make(LevelBuilder* builder, Rectangle area) override {
-    vector<LocationPredicate::Precomputed> precomputed;
-    for (int i : All(insideMakers))
-      precomputed.push_back(predicate[i].precompute(builder, area));
-    for (int i : Range(3000))
-      if (tryMake(builder, precomputed, area))
-        return;
-    failGen(); // "Failed to find free space for " << (int)sizes.size() << " areas";
+    PROFILE;
+    vector<vector<Vec2>> allowedPositions;
+    vector<LevelBuilder::Rot> rotations;
+    {
+      PROFILE_BLOCK("precomputing");
+      for (int i : All(insideMakers)) {
+        rotations.push_back(builder->getRandom().choose(
+              LevelBuilder::CW0, LevelBuilder::CW1, LevelBuilder::CW2, LevelBuilder::CW3));
+        auto maker = insideMakers[i].get();
+        auto precomputed = predicate[i].precompute(builder, area);
+        vector<Vec2> pos;
+        const int margin = getValueMaybe(minMargin, maker).value_or(0);
+        int width = sizes[i].first;
+        int height = sizes[i].second;
+        if (contains({LevelBuilder::CW1, LevelBuilder::CW3}, rotations[i]))
+          std::swap(width, height);
+        for (int x : Range(area.left() + margin, area.right() - margin - width))
+          for (int y : Range(area.top() + margin, area.bottom() - margin - height))
+            if (precomputed.apply(Rectangle(x, y, x + width, y + height)))
+              pos.push_back(Vec2(x, y));
+        allowedPositions.push_back(pos);
+      }
+    }
+    {
+      PROFILE_BLOCK("generating positions");
+      for (int i : Range(300))
+        if (tryMake(builder, allowedPositions, rotations))
+          return;
+      failGen(); // "Failed to find free space for " << (int)sizes.size() << " areas";
+    }
   }
 
-  bool tryMake(LevelBuilder* builder, const vector<LocationPredicate::Precomputed>& precomputed, Rectangle area) {
+  bool checkDistances(int makerIndex, Rectangle area, const vector<Rectangle>& occupied,
+      const vector<optional<double>>& minDist, const vector<optional<double>>& maxDist) {
+    for (int j : Range(makerIndex)) {
+      auto distance = area.getDistance(occupied[j]);
+      if ((maxDist[j] && *maxDist[j] < distance) || (minDist[j] && *minDist[j] > distance))
+        return false;
+    }
+    return true;
+  }
+
+  bool checkIntersections(Rectangle area, const vector<Rectangle>& occupied) {
+    for (Rectangle r : occupied)
+      if (r.intersects(area))
+        return false;
+    return true;
+  }
+
+  bool tryMake(LevelBuilder* builder, const vector<vector<Vec2>>& allowedPositions,
+      const vector<LevelBuilder::Rot>& rotations) {
+    PROFILE;
     vector<Rectangle> occupied;
     vector<Rectangle> makerBounds;
-    vector<LevelBuilder::Rot> maps;
-    for (int i : All(insideMakers))
-      maps.push_back(builder->getRandom().choose(
-            LevelBuilder::CW0, LevelBuilder::CW1, LevelBuilder::CW2, LevelBuilder::CW3));
-    for (int i : All(insideMakers)) {
-      auto maker = insideMakers[i].get();
+    for (int makerIndex : All(insideMakers)) {
+      PROFILE_BLOCK("maker");
+      auto maker = insideMakers[makerIndex].get();
       bool canOverlap = overlapping.count(maker);
-      int width = sizes[i].first;
-      int height = sizes[i].second;
-      if (contains({LevelBuilder::CW1, LevelBuilder::CW3}, maps[i]))
+      int width = sizes[makerIndex].first;
+      int height = sizes[makerIndex].second;
+      if (contains({LevelBuilder::CW1, LevelBuilder::CW3}, rotations[makerIndex]))
         std::swap(width, height);
-      CHECK(width <= area.width() && height <= area.height());
-      int px;
-      int py;
-      int cnt = 1000;
-      bool ok;
-      do {
-        Progress::checkIfInterrupted();
-        ok = true;
-        int margin = minMargin.count(maker) ? minMargin.at(maker) : 0;
-        CHECK(width + 2 * margin < area.width()) << "Couldn't fit maker width inside area.";
-        CHECK(height + 2 * margin < area.height())  << "Couldn't fit maker height inside area.";
-        px = area.left() + margin + builder->getRandom().get(area.width() - width - 2 * margin);
-        py = area.top() + margin + builder->getRandom().get(area.height() - height - 2 * margin);
-        Rectangle area(px, py, px + width, py + height);
-        for (int j : Range(i)) {
-          auto distance = area.getDistance(occupied[j]);
-          auto maxDist = getValueMaybe(maxDistance, make_pair(insideMakers[j].get(), maker));
-          auto minDist = getValueMaybe(minDistance, make_pair(insideMakers[j].get(), maker));
-          if ((maxDist && *maxDist < distance) || (minDist && *minDist > distance)) {
-            ok = false;
-            break;
+      vector<optional<double>> maxDist(makerIndex);
+      vector<optional<double>> minDist(makerIndex);
+      for (int j : Range(makerIndex)) {
+        maxDist[j] = getValueMaybe(maxDistance, make_pair(insideMakers[j].get(), maker));
+        minDist[j] = getValueMaybe(minDistance, make_pair(insideMakers[j].get(), maker));
+      }
+      auto findGoodPosition = [&] () -> optional<Vec2> {
+        for (auto& pos : builder->getRandom().permutation(allowedPositions[makerIndex])) {
+          Progress::checkIfInterrupted();
+          Rectangle area(pos, pos + Vec2(width, height));
+          if ((canOverlap || checkIntersections(area, occupied)) &&
+              checkDistances(makerIndex, area, occupied, minDist, maxDist)) {
+            return pos;
           }
         }
-        if (!precomputed[i].apply(area))
-          ok = false;
-        else
-          if (!canOverlap)
-            for (Rectangle r : occupied)
-              if (r.intersects(area)) {
-                ok = false;
-                break;
-              }
-      } while (!ok && --cnt > 0);
-      if (cnt == 0)
+        return none;
+      };
+      if (auto pos = findGoodPosition()) {
+        occupied.push_back(Rectangle(*pos, *pos + Vec2(width, height)));
+        makerBounds.push_back(Rectangle(*pos, *pos + Vec2(sizes[makerIndex].first, sizes[makerIndex].second)));
+      } else
         return false;
-      occupied.push_back(Rectangle(px, py, px + width, py + height));
-      makerBounds.push_back(Rectangle(px, py, px + sizes[i].first, py + sizes[i].second));
     }
     CHECK(insideMakers.size() == occupied.size());
     for (int i : All(insideMakers)) {
-      builder->pushMap(makerBounds[i], maps[i]);
+      PROFILE_BLOCK("insider makers");
+      builder->pushMap(makerBounds[i], rotations[i]);
       insideMakers[i]->make(builder, makerBounds[i]);
       builder->popMap();
     }

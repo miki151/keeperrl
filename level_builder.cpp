@@ -159,6 +159,7 @@ void LevelBuilder::setNoDiagonalPassing() {
 }
 
 PLevel LevelBuilder::build(WModel m, LevelMaker* maker, LevelId levelId) {
+  PROFILE;
   CHECK(!!m);
   CHECK(mapStack.empty());
   maker->make(this, squares.getBounds());
