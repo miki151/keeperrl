@@ -40,20 +40,14 @@ static void useChest(Position pos, WConstFurniture furniture, WCreature c, const
   pos.replaceFurniture(furniture, FurnitureFactory::get(chestInfo.openedType, furniture->getTribe()));
   if (auto creatureInfo = chestInfo.creatureInfo)
     if (creatureInfo->creatureChance > 0 && Random.roll(creatureInfo->creatureChance)) {
-      int numR = creatureInfo->numCreatures;
-      CreatureFactory factory(*creatureInfo->creature);
-      for (Position v : c->getPosition().neighbors8(Random)) {
-        PCreature rat = factory.random();
-        if (v.canEnter(rat.get())) {
-          v.addCreature(std::move(rat));
-          if (--numR == 0)
-            break;
-        }
-      }
-    if (numR < creatureInfo->numCreatures)
-      c->message(creatureInfo->msgCreature);
-    return;
-  }
+      int numSpawned = 0;
+      for (int i : Range(creatureInfo->numCreatures))
+        if (pos.getLevel()->landCreature({pos}, CreatureFactory(*creatureInfo->creature).random()))
+          ++numSpawned;
+      if (numSpawned > 0)
+        c->message(creatureInfo->msgCreature);
+      return;
+    }
   if (auto itemInfo = chestInfo.itemInfo) {
     c->message(itemInfo->msgItem);
     ItemFactory itemFactory(itemInfo->items);
