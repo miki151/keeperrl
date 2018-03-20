@@ -505,7 +505,7 @@ int PlayerControl::getNumMinions() const {
 }
 
 int PlayerControl::getMinLibrarySize() const {
-  return (int) collective->getTechnologies().size();
+  return 0; //(int) collective->getTechnologies().size();
 }
 
 typedef CollectiveInfo::Button Button;
