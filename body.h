@@ -152,5 +152,6 @@ class Body {
   EnumMap<BodyPart, optional<IntrinsicAttack>> SERIAL(intrinsicAttacks);
   bool SERIAL(canAlwaysPush) = false;
   optional<BodyPart> getAnyGoodBodyPart() const;
+  double getBodyPartHealth() const;
 };
 
