@@ -918,7 +918,7 @@ optional<FurnitureUsageType> Player::getUsableUsageType() const {
   if (auto furniture = creature->getPosition().getFurniture(FurnitureLayer::MIDDLE))
     if (furniture->canUse(creature))
       if (auto usageType = furniture->getUsageType())
-        if (!FurnitureUsage::getUsageQuestion(*usageType, creature->getPosition().getName()).empty())
+        if (!FurnitureUsage::getUsageQuestion(*usageType, furniture->getName()).empty())
           return usageType;
   return none;
 }
@@ -957,8 +957,12 @@ void Player::refreshGameInfo(GameInfo& gameInfo) const {
   }
   info.lyingItems.clear();
   if (auto usageType = getUsableUsageType()) {
-    string question = FurnitureUsage::getUsageQuestion(*usageType, creature->getPosition().getName());
-    info.lyingItems.push_back(getFurnitureUsageInfo(question, creature->getPosition().getViewObject().id()));
+    auto furniture = creature->getPosition().getFurniture(FurnitureLayer::MIDDLE);
+    string question = FurnitureUsage::getUsageQuestion(*usageType, furniture->getName());
+    ViewId questionViewId = ViewId::EMPTY;
+    if (auto& obj = furniture->getViewObject())
+      questionViewId = obj->id();
+    info.lyingItems.push_back(getFurnitureUsageInfo(question, questionViewId));
   }
   for (auto stack : creature->stackItems(creature->getPickUpOptions()))
     info.lyingItems.push_back(ItemInfo::get(creature, stack));
