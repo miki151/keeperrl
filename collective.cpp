@@ -309,7 +309,7 @@ Collective::CurrentActivity Collective::getCurrentActivity(WConstCreature c) con
     return CurrentActivity{MinionActivity::IDLE, none};
 }
 
-bool Collective::isActivityGood(WConstCreature c, MinionActivity activity, bool ignoreTaskLock) {
+bool Collective::isActivityGood(WCreature c, MinionActivity activity, bool ignoreTaskLock) {
   PROFILE;
   if (!c->getAttributes().getMinionActivities().isAvailable(this, c, activity, ignoreTaskLock) ||
       (!MinionActivities::generate(this, c, activity) && !MinionActivities::getExisting(this, c, activity)))
@@ -332,7 +332,7 @@ bool Collective::isActivityGood(WConstCreature c, MinionActivity activity, bool 
   }
 }
 
-void Collective::setRandomTask(WConstCreature c) {
+void Collective::setRandomTask(WCreature c) {
   vector<MinionActivity> goodTasks;
   for (MinionActivity t : ENUM_ALL(MinionActivity))
     if (isActivityGood(c, t) && c->getAttributes().getMinionActivities().canChooseRandomly(c, t))

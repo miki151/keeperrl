@@ -34,7 +34,7 @@ class Position;
 class MinionActivities {
   public:
   static WTask getExisting(WCollective, WConstCreature, MinionActivity);
-  static PTask generate(WCollective, WConstCreature, MinionActivity);
+  static PTask generate(WCollective, WCreature, MinionActivity);
   static optional<TimeInterval> getDuration(WConstCreature, MinionActivity);
   static vector<Position> getAllPositions(WConstCollective, WConstCreature, MinionActivity);
   static const vector<FurnitureType>& getAllFurniture(MinionActivity);

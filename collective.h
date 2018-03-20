@@ -125,7 +125,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   const ConstructionMap& getConstructions() const;
 
   void setMinionActivity(WConstCreature c, MinionActivity task);
-  bool isActivityGood(WConstCreature, MinionActivity, bool ignoreTaskLock = false);
+  bool isActivityGood(WCreature, MinionActivity, bool ignoreTaskLock = false);
 
   vector<WItem> getAllItems(bool includeMinions = true) const;
   vector<WItem> getAllItems(ItemPredicate predicate, bool includeMinions = true) const;
@@ -260,7 +260,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   WTask getStandardTask(WCreature c);
   PTask getEquipmentTask(WCreature c);
   void considerHealingTask(WCreature c);
-  void setRandomTask(WConstCreature);
+  void setRandomTask(WCreature);
 
   void handleSurprise(Position);
   int getTaskDuration(WConstCreature, MinionActivity) const;

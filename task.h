@@ -27,6 +27,18 @@ class CreatureFactory;
 
 using WTaskCallback = WeakPointer<TaskCallback>;
 
+class TaskPredicate : public OwnedObject<TaskPredicate> {
+  public:
+  virtual bool apply() const = 0;
+  virtual ~TaskPredicate() {}
+
+  static PTaskPredicate outsidePositions(WCreature, PositionSet);
+  static PTaskPredicate always();
+
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version);
+};
+
 class Task : public UniqueEntity<Task>, public OwnedObject<Task> {
   public:
 
@@ -78,6 +90,7 @@ class Task : public UniqueEntity<Task>, public OwnedObject<Task> {
   static PTask stayIn(vector<Position>);
   static PTask idle();
   static PTask alwaysDone(PTask);
+  static PTask doneWhen(PTask, PTaskPredicate);
   static PTask follow(WCreature);
   static PTask goToTryForever(Position);
   static PTask transferTo(WModel);
