@@ -142,14 +142,29 @@ class Heal : public Behaviour {
     return 0;
   }
 
-  virtual MoveInfo getMove() {
+  MoveInfo tryHealingOther() {
     if (creature->getAttributes().getSpellMap().contains(SpellId::HEAL_OTHER)) {
+      MoveInfo healAction = NoMove;
       for (Vec2 v : Vec2::directions8(Random))
         if (WConstCreature other = creature->getPosition().plus(v).getCreature())
           if (creature->isFriend(other) && other->getBody().canHeal())
-            if (auto action = creature->castSpell(Spell::get(SpellId::HEAL_OTHER), v))
-              return MoveInfo(0.5, action);
+            if (auto action = creature->castSpell(Spell::get(SpellId::HEAL_OTHER), v)) {
+              healAction = MoveInfo(0.5, action);
+              // Prioritize the action if there is an enemy next to the healed creature.
+              for (auto pos : other->getPosition().neighbors8())
+                if (auto enemy = pos.getCreature())
+                  if (other->isEnemy(enemy))
+                    return healAction;
+            }
+      if (healAction)
+        return healAction;
     }
+    return NoMove;
+  }
+
+  virtual MoveInfo getMove() {
+    if (auto move = tryHealingOther())
+      return move;
     if (!creature->getBody().isHumanoid())
       return NoMove;
     if (creature->isAffected(LastingEffect::POISON)) {
