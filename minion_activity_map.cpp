@@ -82,7 +82,7 @@ bool MinionActivityMap::isAvailable(WConstCollective col, WConstCreature c, Mini
     case MinionActivity::SLEEP:
       return c->getBody().needsToSleep();
     case MinionActivity::EAT:
-      return c->getBody().needsToEat();
+      return c->getBody().needsToEat() && !col->hasTrait(c, MinionTrait::PRISONER);
     case MinionActivity::COPULATE:
       return c->getAttributes().getSkills().hasDiscrete(SkillId::COPULATION);
     case MinionActivity::RITUAL:
