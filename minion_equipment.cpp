@@ -41,6 +41,9 @@ static bool isCombatConsumable(Effect type) {
           case LastingEffect::DAM_BONUS:
           case LastingEffect::DEF_BONUS:
           case LastingEffect::POISON_RESISTANT:
+          case LastingEffect::MELEE_RESISTANCE:
+          case LastingEffect::RANGED_RESISTANCE:
+          case LastingEffect::MAGIC_RESISTANCE:
           case LastingEffect::REGENERATION:
             return true;
           default:
