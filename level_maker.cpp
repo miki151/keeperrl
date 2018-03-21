@@ -2347,7 +2347,7 @@ static void generateResources(RandomGen& random, LevelMaker* startingPos, Random
   };
   const int closeDist = 0;
   for (auto& info : resourceInfo)
-    addResources(info.countStartingPos, Range(5, 10), 30, info.type, startingPos, nullptr);
+    addResources(info.countStartingPos, Range(5, 10), 20, info.type, startingPos, nullptr);
   for (auto enemy : surroundWithResources)
     for (int i : Range(enemy.info.surroundWithResources))
       if (auto type = enemy.info.extraResources)
@@ -2464,8 +2464,8 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, optional<CreatureFactory> fo
     else {
       if (keeperSpawn) {
         if (settlement.closeToPlayer) {
-          locations->setMinDistance(startingPos, queue.get(), 25);
-          locations->setMaxDistance(startingPos, queue.get(), 60);
+          locations->setMinDistance(startingPos, queue.get(), 40);
+          locations->setMaxDistance(startingPos, queue.get(), 55);
         } else
           locations->setMinDistance(startingPos, queue.get(), 70);
       }
