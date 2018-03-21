@@ -63,17 +63,24 @@ static EnemyInfo getVault(SettlementType type, CreatureId creature, TribeId trib
     .setNonDiscoverable();
 }
 
-struct FriendlyVault {
+namespace {
+struct VaultInfo {
   CreatureId id;
   int min;
   int max;
 };
+}
 
-static vector<FriendlyVault> friendlyVaults {
- // {CreatureId::SPECIAL_HUMANOID, 1, 2},
-  {CreatureId::ORC, 3, 8},
-  {CreatureId::OGRE, 2, 5},
-  {CreatureId::VAMPIRE, 2, 5},
+static vector<VaultInfo> friendlyVaults {
+  {CreatureId::ORC, 3, 5},
+  {CreatureId::OGRE, 2, 4},
+  {CreatureId::VAMPIRE, 2, 4},
+};
+
+static vector<VaultInfo> hostileVaults {
+  {CreatureId::SPIDER, 3, 8},
+  {CreatureId::SNAKE, 3, 8},
+  {CreatureId::BAT, 3, 8},
 };
 
 vector<EnemyInfo> EnemyFactory::getVaults() {
@@ -83,9 +90,13 @@ vector<EnemyInfo> EnemyFactory::getVaults() {
     getVault(SettlementType::VAULT, CreatureId::RAT, TribeId::getPest(), random.get(3, 8),
         ItemFactory::armory()),
   };
-  for (int i : Range(random.get(1, 3))) {
-    FriendlyVault v = random.choose(friendlyVaults);
+  for (int i : Range(1)) {
+    VaultInfo v = random.choose(friendlyVaults);
     ret.push_back(getVault(SettlementType::VAULT, v.id, TribeId::getKeeper(), random.get(v.min, v.max)));
+  }
+  for (int i : Range(1)) {
+    VaultInfo v = random.choose(hostileVaults);
+    ret.push_back(getVault(SettlementType::VAULT, v.id, TribeId::getMonster(), random.get(v.min, v.max)));
   }
   return ret;
 }
@@ -137,6 +148,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.tribe = TribeId::getAnt();
             c.race = "ants"_s;
             c.dontConnectCave = true;
+            c.closeToPlayer = true;
             c.surroundWithResources = 6;
             c.buildingId = BuildingId::DUNGEON;),
           CollectiveConfig::noImmigrants(),

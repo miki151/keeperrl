@@ -336,11 +336,12 @@ void ModelBuilder::addMapVillains(vector<EnemyInfo>& enemyInfo, BiomeId biomeId)
 PModel ModelBuilder::tryCampaignBaseModel(const string& siteName, bool addExternalEnemies) {
   vector<EnemyInfo> enemyInfo;
   BiomeId biome = BiomeId::MOUNTAIN;
-  enemyInfo.push_back(random.choose(enemyFactory->get(EnemyId::DWARF_CAVE),
-      enemyFactory->get(EnemyId::ANTS_CLOSED_SMALL)));
+  enemyInfo.push_back(enemyFactory->get(EnemyId::DWARF_CAVE));
   enemyInfo.push_back(enemyFactory->get(EnemyId::BANDITS));
+  enemyInfo.push_back(enemyFactory->get(EnemyId::ANTS_CLOSED_SMALL));
   enemyInfo.push_back(enemyFactory->get(EnemyId::ADA_GOLEMS));
   enemyInfo.push_back(enemyFactory->get(EnemyId::TUTORIAL_VILLAGE).setVillainType(VillainType::LESSER));
+  append(enemyInfo, enemyFactory->getVaults());
   if (random.chance(0.3))
     enemyInfo.push_back(enemyFactory->get(EnemyId::KRAKEN));
   optional<ExternalEnemies> externalEnemies;
