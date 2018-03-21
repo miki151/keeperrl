@@ -1483,7 +1483,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::KOBOLD: 
       return CATTR(
           c.viewId = ViewId::KOBOLD;
-          c.attr = LIST(12_dam, 13_def );
+          c.attr = LIST(14_dam, 16_def );
           c.body = Body::humanoid(Body::Size::MEDIUM);
           c.skills.insert(SkillId::SWIMMING);
           c.chatReactionFriendly = "talks about digging"_s;
@@ -2288,7 +2288,10 @@ static vector<ItemType> getDefaultInventory(CreatureId id) {
     case CreatureId::DEATH:
       return ItemList()
         .add(ItemType::Scythe{});
-    case CreatureId::GOBLIN: 
+    case CreatureId::KOBOLD:
+      return ItemList()
+        .add(ItemType::Spear{});
+    case CreatureId::GOBLIN:
       return ItemList()
         .add(ItemType::Club{})
         .maybe(0.3, ItemType::LeatherBoots{});
