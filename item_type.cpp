@@ -523,7 +523,7 @@ ItemAttributes ItemType::Spear::getAttributes() const {
       i.itemClass = ItemClass::WEAPON;
       i.equipmentSlot = EquipmentSlot::WEAPON;
       i.weight = 1.5;
-      i.modifiers[AttrType::DAMAGE] = 10 + maybePlusMinusOne(4);
+      i.modifiers[AttrType::DAMAGE] = 6 + maybePlusMinusOne(4);
       i.price = 4;
       i.weaponInfo.attackType = AttackType::STAB;
       i.weaponInfo.attackMsg = AttackMsg::THRUST;
