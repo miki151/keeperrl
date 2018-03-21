@@ -300,10 +300,8 @@ void Collective::setMinionActivity(WCreature c, MinionActivity activity) {
   if (current.task != activity) {
     cancelTask(c);
     c->removeEffect(LastingEffect::SLEEP);
-    if (auto duration = MinionActivities::getDuration(c, activity))
-      currentActivity.set(c, {activity, getLocalTime() + *duration});
-    else
-      currentActivity.set(c, {activity, none});
+    currentActivity.set(c, {activity, getLocalTime() +
+        MinionActivities::getDuration(c, activity).value_or(-1_visible)});
   }
 }
 
@@ -311,7 +309,7 @@ Collective::CurrentActivity Collective::getCurrentActivity(WConstCreature c) con
   if (auto current = currentActivity.getMaybe(c))
     return *current;
   else
-    return CurrentActivity{MinionActivity::IDLE, none};
+    return CurrentActivity{MinionActivity::IDLE, getLocalTime() - 1_visible};
 }
 
 bool Collective::isActivityGood(WCreature c, MinionActivity activity, bool ignoreTaskLock) {
@@ -349,22 +347,22 @@ void Collective::setRandomTask(WCreature c) {
 WTask Collective::getStandardTask(WCreature c) {
   PROFILE;
   auto current = currentActivity.getMaybe(c);
-  if (!current || (current->finishTime && *current->finishTime < getLocalTime()) || !isActivityGood(c, current->task)) {
+  if (!current || !isActivityGood(c, current->task)) {
     currentActivity.erase(c);
     setRandomTask(c);
   }
   current = getCurrentActivity(c);
   CHECK(current) << "No minion task found for " << c->getName().bare();
   MinionActivity task = current->task;
-  if (!current->finishTime) // see comment in header
-    currentActivity.getOrFail(c).finishTime = LocalTime(-1000);
+  if (current->finishTime < getLocalTime())
+    currentActivity.erase(c);
   if (PTask ret = MinionActivities::generate(this, c, task))
     return taskMap->addTaskFor(std::move(ret), c);
   if (WTask ret = MinionActivities::getExisting(this, c, task)) {
     taskMap->takeTask(c, ret);
     return ret;
   }
-  FATAL << "No task generated for minion task " << EnumInfo<MinionActivity>::getString(task);
+  FATAL << "No task generated for activity " << EnumInfo<MinionActivity>::getString(task);
   return {};
 }
 

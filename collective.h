@@ -203,10 +203,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
 
   struct CurrentActivity {
     MinionActivity SERIAL(task);
-    // If none then it's a one-time task. Upon allocating the task, the variable is set to a negative value,
-    // so the job immediately times out after finishing the task.
-    optional<LocalTime> SERIAL(finishTime);
-
+    LocalTime SERIAL(finishTime);
     SERIALIZE_ALL(task, finishTime)
   };
 
@@ -257,9 +254,9 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
 
   EntityMap<Creature, CurrentActivity> SERIAL(currentActivity);
   optional<Position> getTileToExplore(WConstCreature, MinionActivity) const;
-  WTask getStandardTask(WCreature c);
-  PTask getEquipmentTask(WCreature c);
-  void considerHealingTask(WCreature c);
+  WTask getStandardTask(WCreature);
+  PTask getEquipmentTask(WCreature);
+  void considerHealingTask(WCreature);
   void setRandomTask(WCreature);
 
   void handleSurprise(Position);
