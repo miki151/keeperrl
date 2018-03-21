@@ -152,7 +152,7 @@ ImmigrantInfo& ImmigrantInfo::setNoAuto() {
   return *this;
 }
 
-ImmigrantInfo&ImmigrantInfo::setLimit(int num) {
+ImmigrantInfo& ImmigrantInfo::setLimit(int num) {
   consumeIds = true;
   ids = vector<CreatureId>(num, ids[0]);
   return *this;

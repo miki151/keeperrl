@@ -124,7 +124,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
 
   const ConstructionMap& getConstructions() const;
 
-  void setMinionActivity(WConstCreature c, MinionActivity task);
+  void setMinionActivity(WCreature c, MinionActivity task);
   bool isActivityGood(WCreature, MinionActivity, bool ignoreTaskLock = false);
 
   vector<WItem> getAllItems(bool includeMinions = true) const;

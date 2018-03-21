@@ -295,11 +295,16 @@ const vector<WCreature>& Collective::getCreatures() const {
   return creatures;
 }
 
-void Collective::setMinionActivity(WConstCreature c, MinionActivity activity) {
-  if (auto duration = MinionActivities::getDuration(c, activity))
-    currentActivity.set(c, {activity, getLocalTime() + *duration});
-  else
-    currentActivity.set(c, {activity, none});
+void Collective::setMinionActivity(WCreature c, MinionActivity activity) {
+  auto current = getCurrentActivity(c);
+  if (current.task != activity) {
+    cancelTask(c);
+    c->removeEffect(LastingEffect::SLEEP);
+    if (auto duration = MinionActivities::getDuration(c, activity))
+      currentActivity.set(c, {activity, getLocalTime() + *duration});
+    else
+      currentActivity.set(c, {activity, none});
+  }
 }
 
 Collective::CurrentActivity Collective::getCurrentActivity(WConstCreature c) const {
