@@ -1036,10 +1036,11 @@ bool Collective::canAddFurniture(Position position, FurnitureType type) const {
 }
 
 void Collective::removeFurniture(Position pos, FurnitureLayer layer) {
-  auto f = constructions->getFurniture(pos, layer);
-  if (f->hasTask())
-    returnResource(taskMap->removeTask(f->getTask()));
-  constructions->removeFurniture(pos, layer);
+  if (auto f = constructions->getFurniture(pos, layer)) {
+    if (f->hasTask())
+      returnResource(taskMap->removeTask(f->getTask()));
+    constructions->removeFurniture(pos, layer);
+  }
 }
 
 void Collective::destroyOrder(Position pos, FurnitureLayer layer) {
@@ -1101,6 +1102,7 @@ static HighlightType getHighlight(const DestroyAction& action) {
 }
 
 void Collective::orderDestruction(Position pos, const DestroyAction& action) {
+  removeFurniture(pos, FurnitureLayer::MIDDLE);
   auto f = NOTNULL(pos.getFurniture(FurnitureLayer::MIDDLE));
   CHECK(f->canDestroy(action));
   taskMap->markSquare(pos, getHighlight(action), Task::destruction(this, pos, f, action,
