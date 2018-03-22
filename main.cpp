@@ -375,10 +375,10 @@ static int keeperMain(po::parser& commandLineFlags) {
       freeDataPath.file("images/mouse_cursor2.png"));
   FatalLog.addOutput(DebugOutput::toString([&renderer](const string& s) { renderer.showError(s);}));
   UserErrorLog.addOutput(DebugOutput::toString([&renderer](const string& s) { renderer.showError(s);}));
-  GuiFactory guiFactory(renderer, &clock, &options, &keybindingMap);
-  guiFactory.loadFreeImages(freeDataPath.subdirectory("images"));
+  GuiFactory guiFactory(renderer, &clock, &options, &keybindingMap, freeDataPath.subdirectory("images"),
+      tilesPresent ? optional<DirectoryPath>(paidDataPath.subdirectory("images")) : none);
+  guiFactory.loadImages();
   if (tilesPresent) {
-    guiFactory.loadNonFreeImages(paidDataPath.subdirectory("images"));
     if (!audioError)
       soundLibrary = new SoundLibrary(&options, audioDevice, paidDataPath.subdirectory("sound"));
   }
