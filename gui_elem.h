@@ -243,7 +243,7 @@ class GuiFactory {
     MINION,
     BUILDING,
     DEITIES,
-    HIGHLIGHT,
+    KEEPER,
     MORALE_1,
     MORALE_2,
     MORALE_3,
