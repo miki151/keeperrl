@@ -1409,7 +1409,7 @@ void WindowView::keyboardAction(const SDL_Keysym& key) {
     case SDL::SDLK_F8:
       //renderer.startMonkey();
       renderer.loadTiles();
-      guiFactory.loadImages();
+      gui.loadImages();
       break;
     case SDL::SDLK_TAB:
     {
