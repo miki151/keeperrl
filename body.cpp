@@ -610,6 +610,7 @@ Body::DamageResult Body::takeDamage(const Attack& attack, WCreature creature, do
       creature->addEffect(LastingEffect::BLEEDING, 50_visible);
       if (health <= 0)
         health = 0.1;
+      creature->updateViewObject();
       return Body::HURT;
     }
   if (health <= 0) {
