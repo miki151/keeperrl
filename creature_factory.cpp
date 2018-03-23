@@ -74,7 +74,7 @@ class BoulderController : public Monster {
           nextPos.globalMessage(creature->getName().the() + " crashes on " + c->getName().the());
           nextPos.unseenMessage("You hear a crash");
           creature->dieNoReason();
-          c->takeDamage(Attack(creature, AttackLevel::MIDDLE, AttackType::HIT, 1000, AttrType::DAMAGE));
+          //c->takeDamage(Attack(creature, AttackLevel::MIDDLE, AttackType::HIT, 1000, AttrType::DAMAGE));
           return;
         } else {
           c->you(MsgType::KILLED_BY, creature->getName().the());
