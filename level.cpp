@@ -226,6 +226,9 @@ bool Level::landCreature(StairKey key, WCreature creature) {
 }
 
 bool Level::landCreature(StairKey key, PCreature creature) {
+  // Creature may trigger traps when being placed, which can cause a crash
+  // if it has no global time.
+  creature->setGlobalTime(model->getGame()->getGlobalTime());
   if (landCreature(key, creature.get())) {
     model->addCreature(std::move(creature));
     return true;
@@ -234,6 +237,7 @@ bool Level::landCreature(StairKey key, PCreature creature) {
 }
 
 bool Level::landCreature(StairKey key, PCreature creature, Vec2 travelDir) {
+  creature->setGlobalTime(model->getGame()->getGlobalTime());
   if (landCreature(key, creature.get(), travelDir)) {
     model->addCreature(std::move(creature));
     return true;
@@ -272,6 +276,7 @@ bool Level::landCreature(StairKey key, WCreature creature, Vec2 travelDir) {
 }
 
 bool Level::landCreature(vector<Position> landing, PCreature creature) {
+  creature->setGlobalTime(model->getGame()->getGlobalTime());
   if (landCreature(landing, creature.get())) {
     model->addCreature(std::move(creature));
     return true;
