@@ -1304,7 +1304,9 @@ SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info) {
 static const char* getControlModeName(PlayerInfo::ControlMode m) {
   switch (m) {
     case PlayerInfo::FULL: return "full";
-    case PlayerInfo::LEADER: return "leader";
+    case PlayerInfo::LEADER: return "chase with leader";
+    case PlayerInfo::STAND_GROUND: return "stand ground";
+    case PlayerInfo::FOLLOW_ONLY: return "follow not chase";
   }
 }
 

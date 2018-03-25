@@ -470,7 +470,7 @@ MoveInfo Collective::getMove(WCreature c) {
         WConstCreature leader = teams->getLeader(team);
         if (c != leader) {
           if (leader->getPosition().dist8(c->getPosition()) > 1)
-            return c->moveTowards(leader->getPosition());
+            return c->standGroundOrMoveTowards(leader->getPosition());
           else
             return c->wait();
         } else

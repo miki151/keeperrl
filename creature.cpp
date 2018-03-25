@@ -1566,6 +1566,19 @@ CreatureAction Creature::stayIn(WLevel level, Rectangle area) {
   return CreatureAction();
 }
 
+bool Creature::orderedToStandGround() {
+  return getGame()->getHasOrderedToStandGround() && getTribeId()==TribeId::getKeeper();
+}
+
+bool Creature::orderedToFollowOnly() {
+  return getGame()->getHasOrderedToFollowOnly() && getTribeId()==TribeId::getKeeper();
+}
+
+CreatureAction Creature::standGroundOrMoveTowards(Position pos, NavigationFlags flags) {
+  if (orderedToStandGround()) return wait();
+  return moveTowards(pos,flags);  
+}
+
 CreatureAction Creature::moveTowards(Position pos, NavigationFlags flags) {
   if (!pos.isValid())
     return CreatureAction();

@@ -599,9 +599,9 @@ class Fighter : public Behaviour {
         if (MoveInfo move = getThrowMove(enemyDir, other))
           return move;
       }
-      if (chase && !other->getAttributes().dontChase() && !isChaseFrozen(other)) {
+      if (chase && !other->getAttributes().dontChase() && !isChaseFrozen(other) && !creature->orderedToFollowOnly()) {
         lastSeen = none;
-        if (auto action = creature->moveTowards(other->getPosition()))
+        if (auto action = creature->standGroundOrMoveTowards(other->getPosition()))
           return {max(0., 1.0 - double(distance) / 20), action.prepend([=](WCreature creature) {
             setLastCombatIntent(other);
             lastSeen = LastSeen{other->getPosition(), *creature->getGlobalTime(), LastSeen::ATTACK, other->getUniqueId()};
@@ -613,7 +613,7 @@ class Fighter : public Behaviour {
               chaseFreeze.set(other, make_pair(time + startChaseFreeze, time + endChaseFreeze));
           })};
       }
-      if (distance == 2)
+      if (distance == 2 && !creature->orderedToStandGround())
         if (auto move = considerBreakingChokePoint(other))
           return move;
     }

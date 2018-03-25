@@ -290,6 +290,14 @@ bool PlayerControl::isTurnBased() {
   return !getControlled().empty();
 }
 
+bool PlayerControl::getHasOrderedToStandGround() {
+  return hasOrderedToStandGround;
+}
+
+bool PlayerControl::getHasOrderedToFollowOnly() {
+  return hasOrderedToFollowOnly;
+}
+
 void PlayerControl::addConsumableItem(WCreature creature) {
   ScrollPosition scrollPos;
   while (1) {
@@ -1628,14 +1636,27 @@ void PlayerControl::toggleControlAllTeamMembers() {
   if (auto teamId = getCurrentTeam()) {
     auto members = getTeams().getMembers(*teamId);
     if (members.size() > 1) {
+      if (!hasOrderedToStandGround && !hasOrderedToFollowOnly && getControlled().size() == 1) {
+          hasOrderedToStandGround = true;
+          hasOrderedToFollowOnly = false;
+          return;
+      }
+      else if (hasOrderedToStandGround && getControlled().size() == 1) {
+          hasOrderedToStandGround = false;
+          hasOrderedToFollowOnly = true;
+          return;
+      }
       if (getControlled().size() == 1) {
         for (auto c : members)
           if (!c->isPlayer() && canControlInTeam(c))
             c->pushController(createMinionController(c));
-      } else
+      } else {
         for (auto c : members)
           if (c->isPlayer() && c != getTeams().getLeader(*teamId))
             c->popController();
+        hasOrderedToStandGround = false;
+        hasOrderedToFollowOnly = false;
+        }
     }
   }
 }
