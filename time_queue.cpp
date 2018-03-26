@@ -99,11 +99,11 @@ void TimeQueue::Queue::erase(WCreature c) {
     for (int i : All(queue))
       if (queue[i] == c) {
         queue[i] = nullptr;
-        break;
+        return true;
       }
+    return false;
   };
-  eraseFrom(players);
-  eraseFrom(nonPlayers);
+  CHECK(eraseFrom(players) || eraseFrom(nonPlayers));
 }
 
 void TimeQueue::increaseTime(WCreature c, TimeInterval diff) {
