@@ -442,9 +442,11 @@ SGuiElem GuiFactory::label(const string& s, Color c, char hotkey) {
   auto width = [=] { return renderer.getTextLength(s) + 1; };
   return SGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
+          //r.setScissor(bounds);
           r.drawTextWithHotkey(Color::BLACK.transparency(100),
             bounds.topLeft() + Vec2(1, 2), s, 0);
           r.drawTextWithHotkey(c, bounds.topLeft(), s, hotkey);
+          //r.setScissor(none);
         }, width));
 }
 

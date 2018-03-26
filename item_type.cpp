@@ -441,7 +441,6 @@ vector<PItem> ItemType::get(int num) const {
 ItemAttributes ItemType::AutomatonItem::getAttributes() const {
   return ITATTR(
       i.viewId = ViewId::TRAP_ITEM;
-      i.shortName = "automaton"_s;
       i.name = "automaton";
       i.applyMsgFirstPerson = "assemble the automaton"_s;
       i.applyMsgThirdPerson = "assembles an automaton"_s;
@@ -789,7 +788,6 @@ ItemAttributes ItemType::Robe::getAttributes() const {
   return ITATTR(
       i.viewId = ViewId::ROBE;
       i.name = "robe";
-      i.shortName = "robe"_s;
       i.itemClass = ItemClass::ARMOR;
       i.equipmentSlot = EquipmentSlot::BODY_ARMOR;
       i.weight = 2;
