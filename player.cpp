@@ -109,7 +109,7 @@ void Player::onEvent(const GameEvent& event) {
         }
       },
       [&](const ConqueredEnemy& info) {
-        if (adventurer) {
+        if (adventurer && info.collective->isDiscoverable()) {
           if (auto& name = info.collective->getName())
             privateMessage(PlayerMessage("The tribe of " + name->full + " is destroyed.",
                   MessagePriority::CRITICAL));
