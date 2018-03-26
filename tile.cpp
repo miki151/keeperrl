@@ -307,8 +307,8 @@ class TileCoordLookup {
     Tile::addTile(ViewId::DESTROY_BUTTON, sprite("remove"));
     Tile::addTile(ViewId::EMPTY, empty());
     Tile::addTile(ViewId::BORDER_GUARD, empty());
-    Tile::addTile(ViewId::DEMON_DWELLER, sprite("special_hmgw"));
-    Tile::addTile(ViewId::DEMON_LORD, sprite("special_hmgn"));    
+    Tile::addTile(ViewId::DEMON_DWELLER, sprite("demon_dweller"));
+    Tile::addTile(ViewId::DEMON_LORD, sprite("demon_lord"));
     Tile::addTile(ViewId::VAMPIRE, sprite("vampire"));
     Tile::addTile(ViewId::FALLEN_TREE, sprite("treecut"));
     Tile::addTile(ViewId::DECID_TREE, sprite("tree2").addHighlight(byName("tree2_mark"))
