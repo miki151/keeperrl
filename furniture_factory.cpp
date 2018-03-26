@@ -321,7 +321,8 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setEntryType(FurnitureEntry(FurnitureEntry::Sokoban{}));
     case FurnitureType::BRIDGE:
       return Furniture("bridge", ViewObject(ViewId::BRIDGE, ViewLayer::FLOOR), type, tribe)
-          .setOverrideMovement();
+          .setOverrideMovement()
+          .setRealTimeModeDestroy(false);
     case FurnitureType::ROAD:
       return Furniture("road", ViewObject(ViewId::ROAD, ViewLayer::FLOOR), type, tribe);
     case FurnitureType::MOUNTAIN:

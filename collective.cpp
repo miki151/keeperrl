@@ -1045,12 +1045,14 @@ void Collective::removeFurniture(Position pos, FurnitureLayer layer) {
 
 void Collective::destroyOrder(Position pos, FurnitureLayer layer) {
   if (constructions->containsFurniture(pos, layer)) {
-    if (auto furniture = pos.modFurniture(layer))
-      if (furniture->getTribe() == getTribeId()) {
+    auto furniture = pos.modFurniture(layer);
+    if (!furniture || furniture->canDestroyInRealTimeMode()) {
+      if (furniture && furniture->getTribe() == getTribeId()) {
         furniture->destroy(pos, DestroyAction::Type::BASH);
         tileEfficiency->update(pos);
       }
-    removeFurniture(pos, layer);
+      removeFurniture(pos, layer);
+    }
   }
   if (layer != FurnitureLayer::FLOOR) {
     zones->onDestroyOrder(pos);

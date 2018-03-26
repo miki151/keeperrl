@@ -61,6 +61,7 @@ class Furniture : public OwnedObject<Furniture> {
   double getLightEmission() const;
   bool canHide() const;
   bool emitsWarning(WConstCreature) const;
+  bool canDestroyInRealTimeMode() const;
   WCreature getCreator() const;
   optional<LocalTime> getCreatedTime() const;
   optional<CreatureId> getSummonedElement() const;
@@ -102,6 +103,7 @@ class Furniture : public OwnedObject<Furniture> {
   Furniture& setCanBuildBridgeOver();
   Furniture& setStopProjectiles();
   Furniture& setClearFogOfWar();
+  Furniture& setRealTimeModeDestroy(bool state);
   MovementSet& modMovementSet();
 
   SERIALIZATION_DECL(Furniture)
@@ -128,6 +130,7 @@ class Furniture : public OwnedObject<Furniture> {
   HeapAllocated<optional<FurnitureDroppedItems>> SERIAL(droppedItems);
   TimeInterval SERIAL(usageTime) = 1_visible;
   bool SERIAL(overrideMovement) = false;
+  bool SERIAL(realTimeDestroy) = true;
   bool SERIAL(wall) = false;
   optional<ConstructMessage> SERIAL(constructMessage) = BUILD;
   double SERIAL(lightEmission) = 0;
