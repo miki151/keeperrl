@@ -159,16 +159,20 @@ WTask MinionActivities::getExisting(WCollective collective, WConstCreature c, Mi
   }
 }
 
-PTask MinionActivities::generate(WCollective collective, WConstCreature c, MinionActivity task) {
+PTask MinionActivities::generate(WCollective collective, WCreature c, MinionActivity task) {
   PROFILE;
   auto& info = CollectiveConfig::getActivityInfo(task);
   switch (info.type) {
     case MinionActivityInfo::IDLE: {
       PROFILE_BLOCK("Idle");
+      auto myTerritory = tryInQuarters(collective->getTerritory().getAll(), collective, c);
+      auto& pigstyPos = collective->getConstructions().getBuiltPositions(FurnitureType::PIGSTY);
+      if (pigstyPos.count(c->getPosition()))
+        return Task::doneWhen(Task::goTo(Random.choose(myTerritory)),
+            TaskPredicate::outsidePositions(c, pigstyPos));
       if (collective->getConfig().stayInTerritory() || collective->getQuarters().getAssigned(c->getUniqueId()) ||
           (!collective->getTerritory().getStandardExtended().contains(c->getPosition()) &&
            !collective->getTerritory().getAll().contains(c->getPosition()))) {
-        auto myTerritory = tryInQuarters(collective->getTerritory().getAll(), collective, c);
         auto leader = collective->getLeader();
         if (!myTerritory.empty())
           return Task::stayIn(myTerritory);

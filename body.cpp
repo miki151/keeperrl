@@ -353,13 +353,12 @@ void consumeBodyAttr(T& mine, const T& his, vector<string>& adjectives, const st
 
 void Body::consumeBodyParts(WCreature c, Body& other, vector<string>& adjectives) {
   for (BodyPart part : ENUM_ALL(BodyPart)) {
-    if (other.bodyParts[part] > bodyParts[part]) {
-      if (bodyParts[part] + 1 == other.bodyParts[part])
-        c->verb("grow", "grows", "a "_s + getName(part));
-      else
-        c->verb("grow", "grows", toString(other.bodyParts[part] - bodyParts[part]) + " " + getName(part) + "s");
+    int cnt = other.bodyParts[part] - bodyParts[part];
+    if (cnt > 0) {
+      string what = getPlural(getName(part), cnt);
+      c->verb("grow", "grows", what);
+      c->addPersonalEvent(c->getName().the() + " grows "_s + what);
       bodyParts[part] = other.bodyParts[part];
-      c->addPersonalEvent(c->getName().the() + " grows a "_s + getName(part));
     }
     if (auto& attack = other.intrinsicAttacks[part]) {
       c->verb("develop", "develops",  "a " + attack->item->getNameAndModifiers() + " attack");
@@ -611,6 +610,7 @@ Body::DamageResult Body::takeDamage(const Attack& attack, WCreature creature, do
       creature->addEffect(LastingEffect::BLEEDING, 50_visible);
       if (health <= 0)
         health = 0.1;
+      creature->updateViewObject();
       return Body::HURT;
     }
   if (health <= 0) {
@@ -680,8 +680,21 @@ bool Body::tick(WConstCreature c) {
   return false;
 }
 
+double Body::getBodyPartHealth() const {
+  int gone = 0;
+  int total = 0;
+  for (auto part : ENUM_ALL(BodyPart)) {
+    gone += injuredBodyParts[part] + lostBodyParts[part];
+    total += bodyParts[part] + lostBodyParts[part];
+  }
+  return 1 - double(gone) / double(total);
+}
+
 void Body::updateViewObject(ViewObject& obj) const {
-  obj.setAttribute(ViewObject::Attribute::HEALTH, health);
+  if (hasHealth())
+    obj.setAttribute(ViewObject::Attribute::HEALTH, health);
+  else
+    obj.setAttribute(ViewObject::Attribute::HEALTH, getBodyPartHealth());
   switch (material) {
     case Material::SPIRIT:
     case Material::FIRE:

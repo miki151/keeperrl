@@ -74,7 +74,7 @@ class BoulderController : public Monster {
           nextPos.globalMessage(creature->getName().the() + " crashes on " + c->getName().the());
           nextPos.unseenMessage("You hear a crash");
           creature->dieNoReason();
-          c->takeDamage(Attack(creature, AttackLevel::MIDDLE, AttackType::HIT, 1000, AttrType::DAMAGE));
+          //c->takeDamage(Attack(creature, AttackLevel::MIDDLE, AttackType::HIT, 1000, AttrType::DAMAGE));
           return;
         } else {
           c->you(MsgType::KILLED_BY, creature->getName().the());
@@ -825,11 +825,13 @@ PCreature CreatureFactory::getSpecial(TribeId tribe, bool humanoid, bool large, 
         c.body = std::move(body);
         c.attr[AttrType::DAMAGE] = Random.get(18, 24);
         c.attr[AttrType::DEFENSE] = Random.get(18, 24);
+        c.attr[AttrType::SPELL_DAMAGE] = Random.get(18, 24);
         for (auto effect : getResistanceAndVulnerability(Random))
           c.permanentEffects[effect] = 1;
         if (large) {
           c.attr[AttrType::DAMAGE] += 6;
           c.attr[AttrType::DEFENSE] += 2;
+          c.attr[AttrType::SPELL_DAMAGE] -= 6;
         }
         if (humanoid) {
           c.skills.setValue(SkillId::SORCERY, Random.getDouble(0, 1));
@@ -1481,7 +1483,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::KOBOLD: 
       return CATTR(
           c.viewId = ViewId::KOBOLD;
-          c.attr = LIST(12_dam, 13_def );
+          c.attr = LIST(14_dam, 16_def );
           c.body = Body::humanoid(Body::Size::MEDIUM);
           c.skills.insert(SkillId::SWIMMING);
           c.chatReactionFriendly = "talks about digging"_s;
@@ -2286,7 +2288,10 @@ static vector<ItemType> getDefaultInventory(CreatureId id) {
     case CreatureId::DEATH:
       return ItemList()
         .add(ItemType::Scythe{});
-    case CreatureId::GOBLIN: 
+    case CreatureId::KOBOLD:
+      return ItemList()
+        .add(ItemType::Spear{});
+    case CreatureId::GOBLIN:
       return ItemList()
         .add(ItemType::Club{})
         .maybe(0.3, ItemType::LeatherBoots{});

@@ -264,6 +264,7 @@ DEF_OWNER_PTR(Furniture);
 DEF_UNIQUE_PTR(MonsterAI);
 DEF_UNIQUE_PTR(Behaviour);
 DEF_OWNER_PTR(Task);
+DEF_OWNER_PTR(TaskPredicate);
 DEF_OWNER_PTR(Controller);
 DEF_OWNER_PTR(Level);
 DEF_OWNER_PTR(VillageControl);

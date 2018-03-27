@@ -411,7 +411,7 @@ string Item::getShortName(WConstCreature owner, bool plural) const {
     return getBlindName(plural);
   if (attributes->artifactName)
     return *attributes->artifactName + " " + getModifiers(true);
-  string name = getVisibleName(plural);
+  string name = attributes->shortName.value_or(getVisibleName(plural));
   appendWithSpace(name, getSuffix());
   appendWithSpace(name, getModifiers(true));
   return name;

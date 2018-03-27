@@ -505,7 +505,7 @@ int PlayerControl::getNumMinions() const {
 }
 
 int PlayerControl::getMinLibrarySize() const {
-  return (int) collective->getTechnologies().size();
+  return 0; //(int) collective->getTechnologies().size();
 }
 
 typedef CollectiveInfo::Button Button;
@@ -1552,7 +1552,7 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
       if (draggedCreature)
         if (WCreature c = getCreature(*draggedCreature))
           if (auto task = MinionActivities::getActivityFor(collective, c, furniture->getType()))
-            if (c->getAttributes().getMinionActivities().isAvailable(collective, c, *task))
+            if (collective->isActivityGood(c, *task, true))
               index.setHighlight(HighlightType::CREATURE_DROP);
       if (showEfficiency(furniture->getType()) && index.hasObject(ViewLayer::FLOOR))
         index.getObject(ViewLayer::FLOOR).setAttribute(ViewObject::Attribute::EFFICIENCY,

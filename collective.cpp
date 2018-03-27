@@ -295,21 +295,24 @@ const vector<WCreature>& Collective::getCreatures() const {
   return creatures;
 }
 
-void Collective::setMinionActivity(WConstCreature c, MinionActivity activity) {
-  if (auto duration = MinionActivities::getDuration(c, activity))
-    currentActivity.set(c, {activity, getLocalTime() + *duration});
-  else
-    currentActivity.set(c, {activity, none});
+void Collective::setMinionActivity(WCreature c, MinionActivity activity) {
+  auto current = getCurrentActivity(c);
+  if (current.task != activity) {
+    cancelTask(c);
+    c->removeEffect(LastingEffect::SLEEP);
+    currentActivity.set(c, {activity, getLocalTime() +
+        MinionActivities::getDuration(c, activity).value_or(-1_visible)});
+  }
 }
 
 Collective::CurrentActivity Collective::getCurrentActivity(WConstCreature c) const {
   if (auto current = currentActivity.getMaybe(c))
     return *current;
   else
-    return CurrentActivity{MinionActivity::IDLE, none};
+    return CurrentActivity{MinionActivity::IDLE, getLocalTime() - 1_visible};
 }
 
-bool Collective::isActivityGood(WConstCreature c, MinionActivity activity, bool ignoreTaskLock) {
+bool Collective::isActivityGood(WCreature c, MinionActivity activity, bool ignoreTaskLock) {
   PROFILE;
   if (!c->getAttributes().getMinionActivities().isAvailable(this, c, activity, ignoreTaskLock) ||
       (!MinionActivities::generate(this, c, activity) && !MinionActivities::getExisting(this, c, activity)))
@@ -332,7 +335,7 @@ bool Collective::isActivityGood(WConstCreature c, MinionActivity activity, bool 
   }
 }
 
-void Collective::setRandomTask(WConstCreature c) {
+void Collective::setRandomTask(WCreature c) {
   vector<MinionActivity> goodTasks;
   for (MinionActivity t : ENUM_ALL(MinionActivity))
     if (isActivityGood(c, t) && c->getAttributes().getMinionActivities().canChooseRandomly(c, t))
@@ -344,22 +347,22 @@ void Collective::setRandomTask(WConstCreature c) {
 WTask Collective::getStandardTask(WCreature c) {
   PROFILE;
   auto current = currentActivity.getMaybe(c);
-  if (!current || (current->finishTime && *current->finishTime < getLocalTime()) || !isActivityGood(c, current->task)) {
+  if (!current || !isActivityGood(c, current->task)) {
     currentActivity.erase(c);
     setRandomTask(c);
   }
   current = getCurrentActivity(c);
   CHECK(current) << "No minion task found for " << c->getName().bare();
   MinionActivity task = current->task;
-  if (!current->finishTime) // see comment in header
-    currentActivity.getOrFail(c).finishTime = LocalTime(-1000);
+  if (current->finishTime < getLocalTime())
+    currentActivity.erase(c);
   if (PTask ret = MinionActivities::generate(this, c, task))
     return taskMap->addTaskFor(std::move(ret), c);
   if (WTask ret = MinionActivities::getExisting(this, c, task)) {
     taskMap->takeTask(c, ret);
     return ret;
   }
-  FATAL << "No task generated for minion task " << EnumInfo<MinionActivity>::getString(task);
+  FATAL << "No task generated for activity " << EnumInfo<MinionActivity>::getString(task);
   return {};
 }
 
@@ -1033,20 +1036,23 @@ bool Collective::canAddFurniture(Position position, FurnitureType type) const {
 }
 
 void Collective::removeFurniture(Position pos, FurnitureLayer layer) {
-  auto f = constructions->getFurniture(pos, layer);
-  if (f->hasTask())
-    returnResource(taskMap->removeTask(f->getTask()));
-  constructions->removeFurniture(pos, layer);
+  if (auto f = constructions->getFurniture(pos, layer)) {
+    if (f->hasTask())
+      returnResource(taskMap->removeTask(f->getTask()));
+    constructions->removeFurniture(pos, layer);
+  }
 }
 
 void Collective::destroyOrder(Position pos, FurnitureLayer layer) {
   if (constructions->containsFurniture(pos, layer)) {
-    if (auto furniture = pos.modFurniture(layer))
-      if (furniture->getTribe() == getTribeId()) {
+    auto furniture = pos.modFurniture(layer);
+    if (!furniture || furniture->canDestroyInRealTimeMode()) {
+      if (furniture && furniture->getTribe() == getTribeId()) {
         furniture->destroy(pos, DestroyAction::Type::BASH);
         tileEfficiency->update(pos);
       }
-    removeFurniture(pos, layer);
+      removeFurniture(pos, layer);
+    }
   }
   if (layer != FurnitureLayer::FLOOR) {
     zones->onDestroyOrder(pos);
@@ -1098,6 +1104,7 @@ static HighlightType getHighlight(const DestroyAction& action) {
 }
 
 void Collective::orderDestruction(Position pos, const DestroyAction& action) {
+  removeFurniture(pos, FurnitureLayer::MIDDLE);
   auto f = NOTNULL(pos.getFurniture(FurnitureLayer::MIDDLE));
   CHECK(f->canDestroy(action));
   taskMap->markSquare(pos, getHighlight(action), Task::destruction(this, pos, f, action,
@@ -1344,7 +1351,7 @@ void Collective::onAppliedSquare(WCreature c, Position pos) {
     switch (furniture->getType()) {
       case FurnitureType::THRONE:
         if (config->getRegenerateMana())
-          addMana(0.2 * efficiency);
+          addMana(0.08 * efficiency);
         break;
       case FurnitureType::WHIPPING_POST:
         taskMap->addTask(Task::whipping(pos, c), pos, MinionActivity::WORKING);

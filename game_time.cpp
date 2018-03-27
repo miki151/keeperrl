@@ -113,8 +113,12 @@ bool TimeInterval::operator == (TimeInterval i) const {
   return cnt == i.cnt;
 }
 
-TimeInterval TimeInterval::operator -(TimeInterval i) const {
+TimeInterval TimeInterval::operator - (TimeInterval i) const {
   return TimeInterval(cnt - i.cnt);
+}
+
+TimeInterval TimeInterval::operator - () const {
+  return TimeInterval(-cnt);
 }
 
 TimeInterval TimeInterval::operator +(TimeInterval i) const {

@@ -83,7 +83,7 @@ const char* CollectiveWarnings::getText(Warning w) {
     case Warning::LARGER_PRISON: return "You need a larger prison.";
     case Warning::TORTURE_ROOM: return "You need to build a torture room.";
     case Warning::MORE_CHESTS: return "You need a larger treasure room.";
-    case Warning::MANA: return "Conquer an enemy tribe or torture some innocent beings for more mana.";
+    case Warning::MANA: return "Conquer an enemy tribe for more mana.";
     case Warning::MORE_LIGHTS: return "Place some torches to light up your dungeon.";
   }
   return "";

@@ -3054,19 +3054,21 @@ SGuiElem GuiBuilder::drawChooseCreatureMenu(SyncQueue<optional<UniqueEntity<Crea
   const int windowWidth = 450;
   auto line = gui.getListBuilder(60);
   for (auto& elem : team) {
-    line.addElem(gui.stack(
-          gui.mouseHighlight2(gui.bottomMargin(22, gui.rightMargin(6,
-                gui.icon(gui.HIGHLIGHT, GuiFactory::Alignment::CENTER_STRETCHED, Color::GREEN)))),
+    line.addElemAuto(gui.stack(
+          gui.mouseHighlight2(gui.uiHighlight()),
           gui.button([&queue, elem] { queue.push(elem.uniqueId); }),
-          gui.viewObject(elem.viewId, 2),
-          gui.label(toString((int) elem.bestAttack.value), 20)));
-    if (line.getSize() >= windowWidth - 50) {
-      lines.addElem(gui.centerHoriz(line.buildHorizontalList()), 70);
+          gui.margins(gui.stack(gui.viewObject(elem.viewId, 2),
+              gui.label(toString((int) elem.bestAttack.value), 20)), 5, 5, 5, 5)));
+    if (line.getLength() > 6) {
+      lines.addElemAuto(gui.centerHoriz(line.buildHorizontalList()));
+      lines.addSpace(20);
       line.clear();
     }
   }
-  if (!line.isEmpty())
-      lines.addElem(gui.centerHoriz(line.buildHorizontalList()), 70);
+  if (!line.isEmpty()) {
+    lines.addElemAuto(gui.centerHoriz(line.buildHorizontalList()));
+    lines.addSpace(20);
+  }
   if (!cancelText.empty())
     lines.addElem(gui.centerHoriz(gui.stack(
           gui.labelHighlight("[" + cancelText + "]", Color::LIGHT_BLUE),
@@ -3174,7 +3176,7 @@ SGuiElem GuiBuilder::drawMinimapIcons() {
           gui.button(getButtonCallback(UserInputId::DRAW_WORLD_MAP), gui.getKey(SDL::SDLK_t))
           ), iconWidth)
       .addElem(gui.stack(
-          gui.icon(GuiFactory::IconId::HIGHLIGHT),
+          gui.icon(GuiFactory::IconId::KEEPER),
           gui.stopMouseMovement(),
           gui.button(getButtonCallback(UserInputId::SCROLL_TO_HOME), gui.getKey(SDL::SDLK_k))
           ), iconWidth)

@@ -441,7 +441,6 @@ vector<PItem> ItemType::get(int num) const {
 ItemAttributes ItemType::AutomatonItem::getAttributes() const {
   return ITATTR(
       i.viewId = ViewId::TRAP_ITEM;
-      i.shortName = "automaton"_s;
       i.name = "automaton";
       i.applyMsgFirstPerson = "assemble the automaton"_s;
       i.applyMsgThirdPerson = "assembles an automaton"_s;
@@ -523,7 +522,7 @@ ItemAttributes ItemType::Spear::getAttributes() const {
       i.itemClass = ItemClass::WEAPON;
       i.equipmentSlot = EquipmentSlot::WEAPON;
       i.weight = 1.5;
-      i.modifiers[AttrType::DAMAGE] = 10 + maybePlusMinusOne(4);
+      i.modifiers[AttrType::DAMAGE] = 6 + maybePlusMinusOne(4);
       i.price = 4;
       i.weaponInfo.attackType = AttackType::STAB;
       i.weaponInfo.attackMsg = AttackMsg::THRUST;
@@ -750,7 +749,7 @@ ItemAttributes ItemType::ElvenBow::getAttributes() const {
       i.viewId = ViewId::ELVEN_BOW;
       i.itemClass = ItemClass::RANGED_WEAPON;
       i.equipmentSlot = EquipmentSlot::RANGED_WEAPON;
-      i.rangedWeapon = RangedWeapon(AttrType::RANGED_DAMAGE, "arrow", ViewId::ARROW);
+      i.rangedWeapon = RangedWeapon(AttrType::RANGED_DAMAGE, "arrow", ViewId::ARROW, 12);
       i.weaponInfo.twoHanded = true;
       i.weight = 1;
       i.modifiers[AttrType::RANGED_DAMAGE] = 16;
@@ -765,7 +764,7 @@ ItemAttributes ItemType::Bow::getAttributes() const {
       i.name = "short bow";
       i.itemClass = ItemClass::RANGED_WEAPON;
       i.equipmentSlot = EquipmentSlot::RANGED_WEAPON;
-      i.rangedWeapon = RangedWeapon(AttrType::RANGED_DAMAGE, "arrow", ViewId::ARROW);
+      i.rangedWeapon = RangedWeapon(AttrType::RANGED_DAMAGE, "arrow", ViewId::ARROW, 10);
       i.weaponInfo.twoHanded = true;
       i.weight = 1;
       i.modifiers[AttrType::RANGED_DAMAGE] = 10 + maybePlusMinusOne(4);
@@ -789,7 +788,6 @@ ItemAttributes ItemType::Robe::getAttributes() const {
   return ITATTR(
       i.viewId = ViewId::ROBE;
       i.name = "robe";
-      i.shortName = "robe"_s;
       i.itemClass = ItemClass::ARMOR;
       i.equipmentSlot = EquipmentSlot::BODY_ARMOR;
       i.weight = 2;

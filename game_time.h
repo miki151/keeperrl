@@ -15,6 +15,7 @@ class TimeInterval {
   bool operator == (TimeInterval) const;
   TimeInterval operator + (TimeInterval) const;
   TimeInterval operator - (TimeInterval) const;
+  TimeInterval operator - () const;
   TimeInterval& operator *= (int);
   TimeInterval operator * (int) const;
 

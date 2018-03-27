@@ -1180,7 +1180,7 @@ class Eat : public Task {
   }
 
   virtual MoveInfo getMove(WCreature c) override {
-  PROFILE;
+    PROFILE;
     if (!position) {
       for (Position v : Random.permutation(positions))
         if (!rejectedPosition.count(v) && (!position ||
@@ -1209,6 +1209,10 @@ class Eat : public Task {
             return move.append([this, ch, pos] (WCreature) { if (ch->isDead()) position = pos; });
       }
     }
+    for (auto chicken : c->getVisibleCreatures())
+      if (chicken->getBody().isMinionFood())
+        if (auto move = c->moveTowards(chicken->getPosition()))
+          return move;
     if (c->getPosition() != *position)
       return c->moveTowards(*position);
     else
@@ -1348,10 +1352,12 @@ PTask Task::idle() {
 namespace {
 class AlwaysDone : public Task {
   public:
-  AlwaysDone(PTask t) : task(std::move(t)) {}
+  AlwaysDone(PTask t, PTaskPredicate predicate) : task(std::move(t)),
+      donePredicate(std::move(predicate)) {}
 
   virtual MoveInfo getMove(WCreature c) override {
-    setDone();
+    if (donePredicate->apply())
+      setDone();
     return task->getMove(c);
   }
 
@@ -1383,17 +1389,21 @@ class AlwaysDone : public Task {
     return task->getPosition();
   }
 
-  SERIALIZE_ALL(SUBCLASS(Task), task)
+  SERIALIZE_ALL(SUBCLASS(Task), task, donePredicate)
   SERIALIZATION_CONSTRUCTOR(AlwaysDone);
 
   private:
   PTask SERIAL(task);
-
+  PTaskPredicate SERIAL(donePredicate);
 };
 }
 
 PTask Task::alwaysDone(PTask t) {
-  return makeOwner<AlwaysDone>(std::move(t));
+  return doneWhen(std::move(t), TaskPredicate::always());
+}
+
+PTask Task::doneWhen(PTask task, PTaskPredicate predicate) {
+  return makeOwner<AlwaysDone>(std::move(task), std::move(predicate));
 }
 
 namespace {
@@ -1631,6 +1641,52 @@ PTask Task::spider(Position origin, const vector<Position>& posClose) {
   return makeOwner<Spider>(origin, posClose);
 }
 
+namespace {
+class OutsidePredicate : public TaskPredicate {
+  public:
+  OutsidePredicate(WCreature c, PositionSet pos) : creature(c), positions(pos) {}
+
+  virtual bool apply() const override {
+    return !positions.count(creature->getPosition());
+  }
+
+  SERIALIZE_ALL(SUBCLASS(TaskPredicate), creature, positions)
+  SERIALIZATION_CONSTRUCTOR(OutsidePredicate)
+
+  private:
+  WCreature SERIAL(creature);
+  PositionSet SERIAL(positions);
+};
+}
+
+PTaskPredicate TaskPredicate::outsidePositions(WCreature c, PositionSet pos) {
+  return makeOwner<OutsidePredicate>(c, std::move(pos));
+}
+
+namespace {
+class AlwaysPredicate : public TaskPredicate {
+  public:
+  AlwaysPredicate() {}
+
+  virtual bool apply() const override {
+    return true;
+  }
+
+  SERIALIZE_ALL(SUBCLASS(TaskPredicate))
+};
+}
+
+PTaskPredicate TaskPredicate::always() {
+  return makeOwner<AlwaysPredicate>();
+}
+
+
+
+template<class Archive>
+void TaskPredicate::serialize(Archive& ar, const unsigned int version) {
+
+}
+
 REGISTER_TYPE(Construction)
 REGISTER_TYPE(Destruction)
 REGISTER_TYPE(PickItem)
@@ -1661,3 +1717,5 @@ REGISTER_TYPE(DropItems)
 REGISTER_TYPE(CampAndSpawn)
 REGISTER_TYPE(Spider)
 REGISTER_TYPE(ArcheryRange)
+REGISTER_TYPE(OutsidePredicate)
+REGISTER_TYPE(AlwaysPredicate)

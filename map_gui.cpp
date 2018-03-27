@@ -897,12 +897,12 @@ void MapGui::renderMapObjects(Renderer& renderer, Vec2 size, milliseconds curren
           drawSquareHighlight(renderer, topLeftCorner + (*lastHighlighted.tilePos - allTiles.topLeft()).mult(size),
               size);
       }
+      if (spriteMode && layer == ViewLayer::FLOOR_BACKGROUND)
+        renderExtraBorders(renderer, currentTimeReal);
       if (layer == ViewLayer::FLOOR_BACKGROUND)
         renderHighlights(renderer, size, currentTimeReal, true);
       if (!spriteMode)
         break;
-      if (layer == ViewLayer::FLOOR_BACKGROUND)
-        renderExtraBorders(renderer, currentTimeReal);
     }
   for (ViewLayer layer : layout->getLayers())
     if ((int)layer >= (int)ViewLayer::CREATURE) {

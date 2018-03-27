@@ -37,6 +37,7 @@
 #include "furniture.h"
 #include "furniture_factory.h"
 #include "file_path.h"
+#include "ranged_weapon.h"
 
 class Behaviour {
   public:
@@ -142,14 +143,29 @@ class Heal : public Behaviour {
     return 0;
   }
 
-  virtual MoveInfo getMove() {
+  MoveInfo tryHealingOther() {
     if (creature->getAttributes().getSpellMap().contains(SpellId::HEAL_OTHER)) {
+      MoveInfo healAction = NoMove;
       for (Vec2 v : Vec2::directions8(Random))
         if (WConstCreature other = creature->getPosition().plus(v).getCreature())
           if (creature->isFriend(other) && other->getBody().canHeal())
-            if (auto action = creature->castSpell(Spell::get(SpellId::HEAL_OTHER), v))
-              return MoveInfo(0.5, action);
+            if (auto action = creature->castSpell(Spell::get(SpellId::HEAL_OTHER), v)) {
+              healAction = MoveInfo(0.5, action);
+              // Prioritize the action if there is an enemy next to the healed creature.
+              for (auto pos : other->getPosition().neighbors8())
+                if (auto enemy = pos.getCreature())
+                  if (other->isEnemy(enemy))
+                    return healAction;
+            }
+      if (healAction)
+        return healAction;
     }
+    return NoMove;
+  }
+
+  virtual MoveInfo getMove() {
+    if (auto move = tryHealingOther())
+      return move;
     if (!creature->getBody().isHumanoid())
       return NoMove;
     if (creature->isAffected(LastingEffect::POISON)) {
@@ -418,7 +434,7 @@ class Fighter : public Behaviour {
     return false;
   }
 
-  double getThrowValue(WItem it) {
+  int getThrowValue(WItem it) {
     if (auto& effect = it->getEffect())
       if (contains<Effect>({
             Effect::Lasting{LastingEffect::POISON},
@@ -562,6 +578,13 @@ class Fighter : public Behaviour {
       return NoMove;
   }
 
+  int getFiringRange(WConstCreature c) {
+    auto weapon = c->getEquipment().getSlotItems(EquipmentSlot::RANGED_WEAPON);
+    if (weapon.empty())
+      return 0;
+    return weapon.getOnlyElement()->getRangedWeapon()->getMaxDistance();
+  }
+
   MoveInfo getAttackMove(WCreature other, bool chase) {
     CHECK(other);
     if (other->getAttributes().isBoulder())
@@ -577,13 +600,13 @@ class Fighter : public Behaviour {
     if (distance <= 5)
       if (auto move = considerBuffs())
         return move;
-    if (distance > 1) {
-      if (distance < 10) {
+    if (distance > 1 && distance <= getFiringRange(creature))
         if (MoveInfo move = getFireMove(enemyDir, other))
           return move;
+    if (distance > 1 && distance <= 10)
         if (MoveInfo move = getThrowMove(enemyDir, other))
           return move;
-      }
+    if (distance > 1) {
       if (chase && !other->getAttributes().dontChase() && !isChaseFrozen(other)) {
         lastSeen = none;
         if (auto action = creature->moveTowards(other->getPosition()))

@@ -78,6 +78,7 @@ struct sth_stash;
 
 class Texture {
   public:
+  Texture();
   Texture(const Texture&) = delete;
   Texture(Texture&&);
   Texture& operator = (Texture&&);
@@ -92,7 +93,6 @@ class Texture {
   ~Texture();
 
   private:
-  Texture();
   friend class Renderer;
   void addTexCoord(int x, int y) const;
   optional<SDL::GLuint> texId;

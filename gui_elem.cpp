@@ -187,8 +187,10 @@ static optional<SDL_Keycode> getKey(char c) {
   return none;
 }
 
-GuiFactory::GuiFactory(Renderer& r, Clock* c, Options* o, KeybindingMap* k)
-    : clock(c), renderer(r), options(o), keybindingMap(k) {
+GuiFactory::GuiFactory(Renderer& r, Clock* c, Options* o, KeybindingMap* k,
+    const DirectoryPath& freeImages, const optional<DirectoryPath>& nonFreeImages)
+    : clock(c), renderer(r), options(o), keybindingMap(k), freeImagesPath(freeImages),
+      nonFreeImagesPath(nonFreeImages) {
 }
 
 DragContainer& GuiFactory::getDragContainer() {
@@ -440,9 +442,11 @@ SGuiElem GuiFactory::label(const string& s, Color c, char hotkey) {
   auto width = [=] { return renderer.getTextLength(s) + 1; };
   return SGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
+          //r.setScissor(bounds);
           r.drawTextWithHotkey(Color::BLACK.transparency(100),
             bounds.topLeft() + Vec2(1, 2), s, 0);
           r.drawTextWithHotkey(c, bounds.topLeft(), s, hotkey);
+          //r.setScissor(none);
         }, width));
 }
 
@@ -2329,57 +2333,64 @@ const int borderHeight = 11;
 const int backgroundSize = 128;
 
 Texture& GuiFactory::get(TexId id) {
-  return textures.at(id);
+  return textures[id];
+}
+
+void GuiFactory::loadImages() {
+  iconTextures.clear();
+  loadFreeImages(freeImagesPath);
+  if (nonFreeImagesPath)
+    loadNonFreeImages(*nonFreeImagesPath);
 }
 
 void GuiFactory::loadFreeImages(const DirectoryPath& path) {
-  textures.emplace(TexId::SCROLLBAR, path.file("ui/scrollbar.png"));
-  textures.emplace(TexId::SCROLL_BUTTON, path.file("ui/scrollmark.png"));
-  textures.emplace(TexId::BACKGROUND_PATTERN, path.file("window_bg.png"));
+  textures[TexId::SCROLLBAR] = Texture(path.file("ui/scrollbar.png"));
+  textures[TexId::SCROLL_BUTTON] = Texture(path.file("ui/scrollmark.png"));
+  textures[TexId::BACKGROUND_PATTERN] = Texture(path.file("window_bg.png"));
   text = Color::WHITE;
   titleText = Color::YELLOW;
   inactiveText = Color::LIGHT_GRAY;
-  textures.emplace(TexId::HORI_CORNER1, path.file("ui/horicorner1.png"));
-  textures.emplace(TexId::HORI_CORNER2, path.file("ui/horicorner2.png"));
-  textures.emplace(TexId::HORI_LINE, path.file("ui/horiline.png"));
-  textures.emplace(TexId::HORI_MIDDLE, path.file("ui/horimiddle.png"));
-  textures.emplace(TexId::VERT_BAR, path.file("ui/vertbar.png"));
-  textures.emplace(TexId::HORI_BAR, path.file("ui/horibar.png"));
-  textures.emplace(TexId::CORNER_TOP_LEFT, path.file("ui/cornerTOPL.png"));
-  textures.emplace(TexId::CORNER_TOP_RIGHT, path.file("ui/cornerTOPR.png"));
-  textures.emplace(TexId::CORNER_BOTTOM_RIGHT, path.file("ui/cornerBOTTOMR.png"));
+  textures[TexId::HORI_CORNER1] = Texture(path.file("ui/horicorner1.png"));
+  textures[TexId::HORI_CORNER2] = Texture(path.file("ui/horicorner2.png"));
+  textures[TexId::HORI_LINE] = Texture(path.file("ui/horiline.png"));
+  textures[TexId::HORI_MIDDLE] = Texture(path.file("ui/horimiddle.png"));
+  textures[TexId::VERT_BAR] = Texture(path.file("ui/vertbar.png"));
+  textures[TexId::HORI_BAR] = Texture(path.file("ui/horibar.png"));
+  textures[TexId::CORNER_TOP_LEFT] = Texture(path.file("ui/cornerTOPL.png"));
+  textures[TexId::CORNER_TOP_RIGHT] = Texture(path.file("ui/cornerTOPR.png"));
+  textures[TexId::CORNER_BOTTOM_RIGHT] = Texture(path.file("ui/cornerBOTTOMR.png"));
 
-  textures.emplace(TexId::HORI_BAR_MINI, path.file("ui/horibarmini.png"));
-  textures.emplace(TexId::VERT_BAR_MINI, path.file("ui/vertbarmini.png"));
-  textures.emplace(TexId::CORNER_MINI, path.file("ui/cornermini.png"));
+  textures[TexId::HORI_BAR_MINI] = Texture(path.file("ui/horibarmini.png"));
+  textures[TexId::VERT_BAR_MINI] = Texture(path.file("ui/vertbarmini.png"));
+  textures[TexId::CORNER_MINI] = Texture(path.file("ui/cornermini.png"));
 
-  textures.emplace(TexId::HORI_BAR_MINI2, path.file("ui/horibarmini2.png"));
-  textures.emplace(TexId::VERT_BAR_MINI2, path.file("ui/vertbarmini2.png"));
-  textures.emplace(TexId::CORNER_MINI2, path.file("ui/cornermini2.png"));
-  textures.emplace(TexId::IMMIGRANT_BG, path.file("ui/immigrantbg.png"));
-  textures.emplace(TexId::IMMIGRANT2_BG, path.file("ui/immigrant2bg.png"));
-  textures.emplace(TexId::SCROLL_UP, path.file("ui/up.png"));
-  textures.emplace(TexId::SCROLL_DOWN, path.file("ui/down.png"));
-  textures.emplace(TexId::WINDOW_CORNER, path.file("ui/corner1.png"));
-  textures.emplace(TexId::WINDOW_CORNER_EXIT, path.file("ui/corner2X.png"));
-  textures.emplace(TexId::WINDOW_CORNER_EXIT_HIGHLIGHT, path.file("ui/corner2X_highlight.png"));
-  textures.emplace(TexId::WINDOW_VERT_BAR, path.file("ui/vertibarmsg1.png"));
-  textures.emplace(TexId::MAIN_MENU_HIGHLIGHT, path.file("ui/menu_highlight.png"));
-  textures.emplace(TexId::SPLASH1, path.file("splash2f.png"));
-  textures.emplace(TexId::SPLASH2, path.file("splash2e.png"));
-  textures.emplace(TexId::LOADING_SPLASH, path.file(Random.choose(
+  textures[TexId::HORI_BAR_MINI2] = Texture(path.file("ui/horibarmini2.png"));
+  textures[TexId::VERT_BAR_MINI2] = Texture(path.file("ui/vertbarmini2.png"));
+  textures[TexId::CORNER_MINI2] = Texture(path.file("ui/cornermini2.png"));
+  textures[TexId::IMMIGRANT_BG] = Texture(path.file("ui/immigrantbg.png"));
+  textures[TexId::IMMIGRANT2_BG] = Texture(path.file("ui/immigrant2bg.png"));
+  textures[TexId::SCROLL_UP] = Texture(path.file("ui/up.png"));
+  textures[TexId::SCROLL_DOWN] = Texture(path.file("ui/down.png"));
+  textures[TexId::WINDOW_CORNER] = Texture(path.file("ui/corner1.png"));
+  textures[TexId::WINDOW_CORNER_EXIT] = Texture(path.file("ui/corner2X.png"));
+  textures[TexId::WINDOW_CORNER_EXIT_HIGHLIGHT] = Texture(path.file("ui/corner2X_highlight.png"));
+  textures[TexId::WINDOW_VERT_BAR] = Texture(path.file("ui/vertibarmsg1.png"));
+  textures[TexId::MAIN_MENU_HIGHLIGHT] = Texture(path.file("ui/menu_highlight.png"));
+  textures[TexId::SPLASH1] = Texture(path.file("splash2f.png"));
+  textures[TexId::SPLASH2] = Texture(path.file("splash2e.png"));
+  textures[TexId::LOADING_SPLASH] = Texture(path.file(Random.choose(
             "splash2a.png"_s,
             "splash2b.png"_s,
             "splash2c.png"_s,
             "splash2d.png"_s)));
-  textures.emplace(TexId::UI_HIGHLIGHT, path.file("ui/ui_highlight.png"));
+  textures[TexId::UI_HIGHLIGHT] = Texture(path.file("ui/ui_highlight.png"));
   const int tabIconWidth = 42;
   for (int i = 0; i < 8; ++i)
     iconTextures.push_back(Texture(path.file("icons.png"), 0, i * tabIconWidth, tabIconWidth, tabIconWidth));
   auto addAttr = [&](AttrType attr, Vec2 pos) {
     const int width = 18;
-    attrTextures.emplace(make_pair(attr,
-        Texture(path.file("stat_icons.png"), pos.x * width, pos.y * width, width, width)));
+    attrTextures[attr] =
+        Texture(path.file("stat_icons.png"), pos.x * width, pos.y * width, width, width);
   };
   auto getAttrCoord = [&] (AttrType attr) {
     switch (attr) {
@@ -2405,8 +2416,8 @@ void GuiFactory::loadFreeImages(const DirectoryPath& path) {
           0, i * teamIconWidth, teamIconWidth, teamIconWidth));
   auto addSpell = [&](SpellId id, Vec2 pos) {
     const int width = 40;
-    spellTextures.emplace(make_pair(id,
-        Texture(path.file("spells.png"), pos.x * width, pos.y * width, width, width)));
+    spellTextures[id] =
+        Texture(path.file("spells.png"), pos.x * width, pos.y * width, width, width);
   };
   auto getSpellCoord = [&] (SpellId id) {
     switch (id) {
@@ -2453,18 +2464,18 @@ void GuiFactory::loadFreeImages(const DirectoryPath& path) {
 }
 
 void GuiFactory::loadNonFreeImages(const DirectoryPath& path) {
-  textures.emplace(TexId::KEEPER_CHOICE, path.file("keeper_choice.png"));
-  textures.emplace(TexId::ADVENTURER_CHOICE, path.file("adventurer_choice.png"));
-  textures.emplace(TexId::KEEPER_HIGHLIGHT, path.file("keeper_highlight.png"));
-  textures.emplace(TexId::ADVENTURER_HIGHLIGHT, path.file("adventurer_highlight.png"));
-  textures.emplace(TexId::MENU_ITEM, path.file("barmid.png"));
+  textures[TexId::KEEPER_CHOICE] = Texture(path.file("keeper_choice.png"));
+  textures[TexId::ADVENTURER_CHOICE] = Texture(path.file("adventurer_choice.png"));
+  textures[TexId::KEEPER_HIGHLIGHT] = Texture(path.file("keeper_highlight.png"));
+  textures[TexId::ADVENTURER_HIGHLIGHT] = Texture(path.file("adventurer_highlight.png"));
+  textures[TexId::MENU_ITEM] = Texture(path.file("barmid.png"));
   // If menu_core fails to load, try the lower resolution versions
   if (auto tex = Texture::loadMaybe(path.file("menu_core.png"))) {
-    textures.emplace(TexId::MENU_CORE, std::move(*tex));
-    textures.emplace(TexId::MENU_MOUTH, path.file("menu_mouth.png"));
+    textures[TexId::MENU_CORE] = std::move(*tex);
+    textures[TexId::MENU_MOUTH] = Texture(path.file("menu_mouth.png"));
   } else {
-    textures.emplace(TexId::MENU_CORE, path.file("menu_core_sm.png"));
-    textures.emplace(TexId::MENU_MOUTH, path.file("menu_mouth_sm.png"));
+    textures[TexId::MENU_CORE] = Texture(path.file("menu_core_sm.png"));
+    textures[TexId::MENU_MOUTH] = Texture(path.file("menu_mouth_sm.png"));
   }
 }
 
@@ -2701,11 +2712,11 @@ SGuiElem GuiFactory::icon(IconId id, Alignment alignment, Color color) {
 }
 
 SGuiElem GuiFactory::icon(AttrType attr) {
-  return sprite(attrTextures.at(attr), Alignment::CENTER, Color::WHITE);
+  return sprite(attrTextures[attr], Alignment::CENTER, Color::WHITE);
 }
 
 SGuiElem GuiFactory::spellIcon(SpellId id) {
-  return sprite(spellTextures.at(id), Alignment::CENTER);
+  return sprite(spellTextures[id], Alignment::CENTER);
 }
 
 static int trans1 = 1094;

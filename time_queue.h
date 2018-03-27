@@ -57,7 +57,7 @@ class TimeQueue {
     SERIALIZE_ALL(players, nonPlayers, orderMap)
 
     private:
-      void clearNull();
+    void clearNull();
   };
   struct ExtendedTime {
     ExtendedTime();

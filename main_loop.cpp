@@ -58,7 +58,7 @@ static string getDateString(time_t t) {
   return buf;
 }
 
-static const int saveVersion = 2300;
+static const int saveVersion = 2500;
 
 static bool isCompatible(int loadedVersion) {
   return loadedVersion > 2 && loadedVersion <= saveVersion && loadedVersion / 100 == saveVersion / 100;
@@ -645,8 +645,8 @@ PModel MainLoop::getBaseModel(ModelBuilder& modelBuilder, CampaignSetup& setup) 
     switch (setup.campaign.getType()) {
       case CampaignType::SINGLE_KEEPER:
         return modelBuilder.singleMapModel(setup.campaign.getWorldName());
-      case CampaignType::QUICK_MAP:
-        return modelBuilder.tutorialModel("Campaign base site");
+      /*case CampaignType::QUICK_MAP:
+        return modelBuilder.tutorialModel("Campaign base site");*/
       default:
         return modelBuilder.campaignBaseModel("Campaign base site", setup.campaign.getType() == CampaignType::ENDLESS);
     }

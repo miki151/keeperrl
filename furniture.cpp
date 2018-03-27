@@ -51,7 +51,7 @@ void Furniture::serialize(Archive& ar, const unsigned) {
   ar(name, pluralName, type, movementSet, fire, burntRemains, destroyedRemains, destroyActions, itemDrop);
   ar(blockVision, usageType, clickType, tickType, usageTime, overrideMovement, wall, creator, createdTime);
   ar(constructMessage, layer, entryType, lightEmission, canHideHere, warning, summonedElement, droppedItems);
-  ar(canBuildBridge, noProjectiles, clearFogOfWar);
+  ar(canBuildBridge, noProjectiles, clearFogOfWar, realTimeDestroy);
 }
 
 SERIALIZABLE(Furniture)
@@ -275,6 +275,10 @@ bool Furniture::emitsWarning(WConstCreature) const {
   return warning;
 }
 
+bool Furniture::canDestroyInRealTimeMode() const {
+  return realTimeDestroy;
+}
+
 WCreature Furniture::getCreator() const {
   return creator;
 }
@@ -426,6 +430,11 @@ Furniture& Furniture::setIsWall() {
 
 Furniture& Furniture::setOverrideMovement() {
   overrideMovement = true;
+  return *this;
+}
+
+Furniture& Furniture::setRealTimeModeDestroy(bool s) {
+  realTimeDestroy = s;
   return *this;
 }
 

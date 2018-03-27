@@ -847,6 +847,8 @@ void Creature::setPosition(Position pos) {
   if (shortestPath && shortestPath->getLevel() != pos.getLevel())
     shortestPath = none;
   position = pos;
+  if (nextPosIntent && !position.isSameLevel(*nextPosIntent))
+    nextPosIntent = none;
 }
 
 optional<LocalTime> Creature::getLocalTime() const {

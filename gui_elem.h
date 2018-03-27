@@ -20,6 +20,9 @@
 #include "renderer.h"
 #include "drag_and_drop.h"
 #include "player_role_choice.h"
+#include "texture_id.h"
+#include "attr_type.h"
+#include "spell_id.h"
 
 class ViewObject;
 class Clock;
@@ -55,9 +58,9 @@ class GuiElem {
 
 class GuiFactory {
   public:
-  GuiFactory(Renderer&, Clock*, Options*, KeybindingMap*);
-  void loadFreeImages(const DirectoryPath&);
-  void loadNonFreeImages(const DirectoryPath&);
+  GuiFactory(Renderer&, Clock*, Options*, KeybindingMap*, const DirectoryPath& freeImages,
+      const optional<DirectoryPath>& nonFreeImages);
+  void loadImages();
 
   vector<string> breakText(const string& text, int maxWidth);
 
@@ -190,10 +193,6 @@ class GuiFactory {
   enum class Alignment { TOP, LEFT, BOTTOM, RIGHT, TOP_LEFT, TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT, CENTER,
       TOP_CENTER, LEFT_CENTER, BOTTOM_CENTER, RIGHT_CENTER, VERTICAL_CENTER, LEFT_STRETCHED, RIGHT_STRETCHED,
       CENTER_STRETCHED};
-  SGuiElem sprite(Texture&, Alignment, bool vFlip = false, bool hFlip = false,
-      Vec2 offset = Vec2(0, 0), optional<Color> = none);
-  SGuiElem sprite(Texture&, Alignment, Color);
-  SGuiElem sprite(Texture&, double scale);
   SGuiElem tooltip(const vector<string>&, milliseconds delay = milliseconds{700});
   typedef function<Vec2(const Rectangle&)> PositionFun;
   SGuiElem tooltip2(SGuiElem, PositionFun);
@@ -208,47 +207,7 @@ class GuiFactory {
   using CustomDrawFun = function<void(Renderer&, Rectangle)>;
   SGuiElem drawCustom(CustomDrawFun);
 
-  enum class TexId {
-    SCROLLBAR,
-    SCROLL_BUTTON,
-    BACKGROUND_PATTERN,
-    HORI_CORNER1,
-    HORI_CORNER2,
-    HORI_LINE,
-    HORI_MIDDLE,
-    VERT_BAR,
-    HORI_BAR,
-    HORI_BAR_MINI,
-    VERT_BAR_MINI,
-    CORNER_MINI,
-    HORI_BAR_MINI2,
-    VERT_BAR_MINI2,
-    CORNER_MINI2,
-    CORNER_TOP_LEFT,
-    CORNER_TOP_RIGHT,
-    CORNER_BOTTOM_RIGHT,
-    IMMIGRANT_BG,
-    IMMIGRANT2_BG,
-    SCROLL_UP,
-    SCROLL_DOWN,
-    WINDOW_CORNER,
-    WINDOW_CORNER_EXIT,
-    WINDOW_CORNER_EXIT_HIGHLIGHT,
-    WINDOW_VERT_BAR,
-    UI_HIGHLIGHT,
-    MAIN_MENU_HIGHLIGHT,
-    KEEPER_CHOICE,
-    ADVENTURER_CHOICE,
-    KEEPER_HIGHLIGHT,
-    ADVENTURER_HIGHLIGHT,
-    MENU_ITEM,
-    MENU_CORE,
-    MENU_MOUTH,
-    SPLASH1,
-    SPLASH2,
-    LOADING_SPLASH,
-  };
-
+  using TexId = TextureId;
   SGuiElem sprite(TexId, Alignment, optional<Color> = none);
   SGuiElem repeatedPattern(Texture& tex);
   SGuiElem background(Color);
@@ -284,7 +243,7 @@ class GuiFactory {
     MINION,
     BUILDING,
     DEITIES,
-    HIGHLIGHT,
+    KEEPER,
     MORALE_1,
     MORALE_2,
     MORALE_3,
@@ -308,17 +267,25 @@ class GuiFactory {
 
   private:
 
+  SGuiElem sprite(Texture&, Alignment, bool vFlip = false, bool hFlip = false,
+      Vec2 offset = Vec2(0, 0), optional<Color> = none);
+  SGuiElem sprite(Texture&, Alignment, Color);
+  SGuiElem sprite(Texture&, double scale);
   SGuiElem getScrollbar();
   Vec2 getScrollButtonSize();
   SDL::SDL_Keysym getHotkeyEvent(char) ;
 
-  map<TexId, Texture> textures;
+  EnumMap<TexId, Texture> textures;
   vector<Texture> iconTextures;
-  map<AttrType, Texture> attrTextures;
-  map<SpellId, Texture> spellTextures;
+  EnumMap<AttrType, Texture> attrTextures;
+  EnumMap<SpellId, Texture> spellTextures;
   Clock* clock;
   Renderer& renderer;
   Options* options;
   DragContainer dragContainer;
   KeybindingMap* keybindingMap;
+  DirectoryPath freeImagesPath;
+  optional<DirectoryPath> nonFreeImagesPath;
+  void loadNonFreeImages(const DirectoryPath&);
+  void loadFreeImages(const DirectoryPath&);
 };
