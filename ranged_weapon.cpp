@@ -31,11 +31,11 @@
 #include "event_listener.h"
 #include "vision.h"
 
-SERIALIZE_DEF(RangedWeapon, damageAttr, projectileName, projectileViewId)
+SERIALIZE_DEF(RangedWeapon, damageAttr, projectileName, projectileViewId, maxDistance)
 SERIALIZATION_CONSTRUCTOR_IMPL(RangedWeapon)
 
-RangedWeapon::RangedWeapon(AttrType attr, const string& name, ViewId id)
-    : damageAttr(attr), projectileName(name), projectileViewId(id) {}
+RangedWeapon::RangedWeapon(AttrType attr, const string& name, ViewId id, int dist)
+    : damageAttr(attr), projectileName(name), projectileViewId(id), maxDistance(dist) {}
 
 void RangedWeapon::fire(WCreature c, Vec2 dir) const {
   CHECK(dir.length8() == 1);
@@ -57,6 +57,10 @@ void RangedWeapon::fire(WCreature c, Vec2 dir) const {
       pos.globalMessage("the " + projectileName + " hits the " + pos.getName());
       break;
     }
+    if (pos.dist8(position) >= maxDistance) {
+      pos.globalMessage("the " + projectileName + " falls short.");
+      break;
+    }
   }
   c->getGame()->addEvent(EventInfo::Projectile{projectileViewId, position, lastPos});
 }
@@ -64,3 +68,8 @@ void RangedWeapon::fire(WCreature c, Vec2 dir) const {
 AttrType RangedWeapon::getDamageAttr() const {
   return damageAttr;
 }
+
+int RangedWeapon::getMaxDistance() const {
+  return maxDistance;
+}
+

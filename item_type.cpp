@@ -749,7 +749,7 @@ ItemAttributes ItemType::ElvenBow::getAttributes() const {
       i.viewId = ViewId::ELVEN_BOW;
       i.itemClass = ItemClass::RANGED_WEAPON;
       i.equipmentSlot = EquipmentSlot::RANGED_WEAPON;
-      i.rangedWeapon = RangedWeapon(AttrType::RANGED_DAMAGE, "arrow", ViewId::ARROW);
+      i.rangedWeapon = RangedWeapon(AttrType::RANGED_DAMAGE, "arrow", ViewId::ARROW, 12);
       i.weaponInfo.twoHanded = true;
       i.weight = 1;
       i.modifiers[AttrType::RANGED_DAMAGE] = 16;
@@ -764,7 +764,7 @@ ItemAttributes ItemType::Bow::getAttributes() const {
       i.name = "short bow";
       i.itemClass = ItemClass::RANGED_WEAPON;
       i.equipmentSlot = EquipmentSlot::RANGED_WEAPON;
-      i.rangedWeapon = RangedWeapon(AttrType::RANGED_DAMAGE, "arrow", ViewId::ARROW);
+      i.rangedWeapon = RangedWeapon(AttrType::RANGED_DAMAGE, "arrow", ViewId::ARROW, 10);
       i.weaponInfo.twoHanded = true;
       i.weight = 1;
       i.modifiers[AttrType::RANGED_DAMAGE] = 10 + maybePlusMinusOne(4);
