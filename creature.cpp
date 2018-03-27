@@ -246,6 +246,7 @@ optional<MovementInfo> Creature::spendTime(TimeInterval t) {
     MovementInfo ret(Vec2(0, 0), *getLocalTime(), *getLocalTime() + t, 0, MovementInfo::MOVE);
     lastMoveCounter = ret.moveCounter = position.getModel()->getMoveCounter();
     if (!isDead()) {
+      collectAmmunition();
       if (isAffected(LastingEffect::SPEED) && t == 1_visible) {
         if (m->getTimeQueue().hasExtraMove(this))
           ret.tBegin += 0.5;
@@ -1282,7 +1283,7 @@ CreatureAction Creature::payFor(const vector<WItem>& items) const {
       .append([=](WCreature) { for (auto it : items) it->setShopkeeper(nullptr); });
 }
 
-CreatureAction Creature::fire(Vec2 direction) const {
+CreatureAction Creature::fire(Vec2 direction) {
   CHECK(direction.length8() == 1);
   if (getEquipment().getItems(ItemIndex::RANGED_WEAPON).empty())
     return CreatureAction("You need a ranged weapon.");
@@ -1294,6 +1295,7 @@ CreatureAction Creature::fire(Vec2 direction) const {
     auto& weapon = *self->getEquipment().getSlotItems(EquipmentSlot::RANGED_WEAPON).getOnlyElement()
         ->getRangedWeapon();
     weapon.fire(self, direction);
+    useAmmunition();
     self->spendTime();
   });
 }
@@ -1787,3 +1789,19 @@ optional<Creature::CombatIntentInfo> Creature::getLastCombatIntent() const {
   return lastCombatIntent;
 }
 
+void Creature::collectAmmunition() {
+  if (ammoHeld > 140) return;
+  ammoHeld++;
+}
+
+void Creature::useAmmunition(){
+  if (ammoHeld < 10) {
+    ammoHeld = -1;
+    return;
+  }
+  ammoHeld = ammoHeld - 10;
+}
+
+int Creature::getAmmoHeld() const {
+  return ammoHeld;
+}

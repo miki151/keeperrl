@@ -94,6 +94,9 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   bool canSee(Vec2) const;
   bool isEnemy(WConstCreature) const;
   void tick();
+  int getAmmoHeld() const;
+  void collectAmmunition();
+  void useAmmunition();
 
   const CreatureName& getName() const;
   CreatureName& getName();
@@ -167,7 +170,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   CreatureAction stealFrom(Vec2 direction, const vector<WItem>&) const;
   CreatureAction give(WCreature whom, vector<WItem> items) const;
   CreatureAction payFor(const vector<WItem>&) const;
-  CreatureAction fire(Vec2 direction) const;
+  CreatureAction fire(Vec2 direction);
   CreatureAction construct(Vec2 direction, FurnitureType) const;
   CreatureAction whip(const Position&) const;
   bool canConstruct(FurnitureType) const;
@@ -182,7 +185,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
 
   void displace(Vec2);
   void retire();
-  
+
   void increaseExpLevel(ExperienceType, double increase);
 
   BestAttack getBestAttack() const;
@@ -297,6 +300,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
 
   HeapAllocated<CreatureAttributes> SERIAL(attributes);
   Position SERIAL(position);
+  int SERIAL(ammoHeld);
   HeapAllocated<Equipment> SERIAL(equipment);
   HeapAllocated<optional<LevelShortestPath>> SERIAL(shortestPath);
   EntitySet<Creature> SERIAL(knownHiding);
