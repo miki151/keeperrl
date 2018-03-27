@@ -38,6 +38,9 @@
 #include "furniture_factory.h"
 #include "file_path.h"
 
+//Note below, a strong monster may be able to throw it's best item further than 10 squares, if it were more clever!
+#define MAX_THROWING_DISTANCE_CONSIDERED 10
+
 class Behaviour {
   public:
   Behaviour(WCreature);
@@ -592,13 +595,13 @@ class Fighter : public Behaviour {
     if (distance <= 5)
       if (auto move = considerBuffs())
         return move;
-    if (distance > 1) {
-      if (distance < 10) {
+    if (distance > 1 && distance <= creature->getMaximumRange())
         if (MoveInfo move = getFireMove(enemyDir, other))
           return move;
+    if (distance > 1 && distance <= MAX_THROWING_DISTANCE_CONSIDERED)
         if (MoveInfo move = getThrowMove(enemyDir, other))
           return move;
-      }
+    if (distance > 1) {
       if (chase && !other->getAttributes().dontChase() && !isChaseFrozen(other)) {
         lastSeen = none;
         if (auto action = creature->moveTowards(other->getPosition()))

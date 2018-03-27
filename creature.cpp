@@ -1282,6 +1282,12 @@ CreatureAction Creature::payFor(const vector<WItem>& items) const {
       .append([=](WCreature) { for (auto it : items) it->setShopkeeper(nullptr); });
 }
 
+int Creature::getMaximumRange() const {
+    auto weapon = getEquipment().getSlotItems(EquipmentSlot::RANGED_WEAPON);
+    if (weapon.empty()) return 0;
+    return weapon.getOnlyElement()->getRangedWeapon()->getMaxDistance();
+}
+
 CreatureAction Creature::fire(Vec2 direction) const {
   CHECK(direction.length8() == 1);
   if (getEquipment().getItems(ItemIndex::RANGED_WEAPON).empty())
