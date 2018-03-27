@@ -37,9 +37,7 @@
 #include "furniture.h"
 #include "furniture_factory.h"
 #include "file_path.h"
-
-//Note below, a strong monster may be able to throw it's best item further than 10 squares, if it were more clever!
-#define MAX_THROWING_DISTANCE_CONSIDERED 10
+#include "ranged_weapon.h"
 
 class Behaviour {
   public:
@@ -436,7 +434,7 @@ class Fighter : public Behaviour {
     return false;
   }
 
-  double getThrowValue(WItem it) {
+  int getThrowValue(WItem it) {
     if (auto& effect = it->getEffect())
       if (contains<Effect>({
             Effect::Lasting{LastingEffect::POISON},
@@ -580,6 +578,13 @@ class Fighter : public Behaviour {
       return NoMove;
   }
 
+  int getFiringRange(WConstCreature c) {
+    auto weapon = c->getEquipment().getSlotItems(EquipmentSlot::RANGED_WEAPON);
+    if (weapon.empty())
+      return 0;
+    return weapon.getOnlyElement()->getRangedWeapon()->getMaxDistance();
+  }
+
   MoveInfo getAttackMove(WCreature other, bool chase) {
     CHECK(other);
     if (other->getAttributes().isBoulder())
@@ -595,10 +600,10 @@ class Fighter : public Behaviour {
     if (distance <= 5)
       if (auto move = considerBuffs())
         return move;
-    if (distance > 1 && distance <= creature->getMaximumRange())
+    if (distance > 1 && distance <= getFiringRange(creature))
         if (MoveInfo move = getFireMove(enemyDir, other))
           return move;
-    if (distance > 1 && distance <= MAX_THROWING_DISTANCE_CONSIDERED)
+    if (distance > 1 && distance <= 10)
         if (MoveInfo move = getThrowMove(enemyDir, other))
           return move;
     if (distance > 1) {

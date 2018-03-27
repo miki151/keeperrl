@@ -46,10 +46,8 @@ void RangedWeapon::fire(WCreature c, Vec2 dir) const {
   const auto position = c->getPosition();
   auto vision = c->getVision().getId();
   Position lastPos;
-  int distance = 0;
   for (Position pos = position.plus(dir);; pos = pos.plus(dir)) {
     lastPos = pos;
-    distance++;
     if (auto c = pos.getCreature()) {
       c->you(MsgType::HIT_THROWN_ITEM, "the " + projectileName);
       c->takeDamage(attack);
@@ -59,9 +57,9 @@ void RangedWeapon::fire(WCreature c, Vec2 dir) const {
       pos.globalMessage("the " + projectileName + " hits the " + pos.getName());
       break;
     }
-    if (distance >= maxDistance) {
-        pos.globalMessage("the " + projectileName + " falls short.");
-        break;
+    if (pos.dist8(position) >= maxDistance) {
+      pos.globalMessage("the " + projectileName + " falls short.");
+      break;
     }
   }
   c->getGame()->addEvent(EventInfo::Projectile{projectileViewId, position, lastPos});

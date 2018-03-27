@@ -93,7 +93,6 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   bool canSee(Position) const;
   bool canSee(Vec2) const;
   bool isEnemy(WConstCreature) const;
-  int getMaximumRange() const;  
   void tick();
 
   const CreatureName& getName() const;
