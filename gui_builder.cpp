@@ -3168,19 +3168,18 @@ SGuiElem GuiBuilder::drawHighscores(const vector<HighscoreList>& list, Semaphore
 }
 
 SGuiElem GuiBuilder::drawMinimapIcons() {
-  const int iconWidth = 42;
-  return gui.setHeight(iconWidth, gui.getListBuilder()
-      .addElem(gui.stack(
-          gui.icon(GuiFactory::IconId::WORLD_MAP),
-          gui.stopMouseMovement(),
+  return gui.minimapBar(
+      gui.preferredSize(48, 48, gui.stack(
+          getHintCallback({"Open world map. You can also press 't'."}),
+          gui.mouseHighlight2(gui.icon(GuiFactory::IconId::MINIMAP_WORLD2), gui.icon(GuiFactory::IconId::MINIMAP_WORLD1)),
           gui.button(getButtonCallback(UserInputId::DRAW_WORLD_MAP), gui.getKey(SDL::SDLK_t))
-          ), iconWidth)
-      .addElem(gui.stack(
-          gui.icon(GuiFactory::IconId::KEEPER),
-          gui.stopMouseMovement(),
+      )),
+      gui.preferredSize(48, 48, gui.stack(
+          getHintCallback({"Scroll to your character. You can also press 'k'."}),
+          gui.mouseHighlight2(gui.icon(GuiFactory::IconId::MINIMAP_CENTER2), gui.icon(GuiFactory::IconId::MINIMAP_CENTER1)),
           gui.button(getButtonCallback(UserInputId::SCROLL_TO_HOME), gui.getKey(SDL::SDLK_k))
-          ), iconWidth)
-      .buildHorizontalList());
+          ))
+  );
 }
 
 Rectangle GuiBuilder::getTextInputPosition() {

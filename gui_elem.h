@@ -250,8 +250,15 @@ class GuiFactory {
     MORALE_4,
     TEAM_BUTTON,
     TEAM_BUTTON_HIGHLIGHT,
+    MINIMAP_WORLD1,
+    MINIMAP_WORLD2,
+    MINIMAP_WORLD3,
+    MINIMAP_CENTER1,
+    MINIMAP_CENTER2,
+    MINIMAP_CENTER3,
   };
 
+  SGuiElem minimapBar(SGuiElem icon1, SGuiElem icon2);
   SGuiElem icon(IconId, Alignment = Alignment::CENTER, Color = Color::WHITE);
   SGuiElem icon(AttrType);
   Texture& get(TexId);

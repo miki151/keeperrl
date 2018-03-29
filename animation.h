@@ -13,6 +13,7 @@ class Animation {
   static PAnimation thrownObject(Vec2 direction, ViewId, bool useSprite, Vec2 squareSize);
   static PAnimation fromId(AnimationId);
   static PAnimation perticleEffect(int id, milliseconds duration, unsigned int particleNum, Vec2 origin);
+  virtual ~Animation() {}
 
   protected:
   Animation(milliseconds duration);

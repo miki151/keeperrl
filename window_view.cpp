@@ -73,8 +73,8 @@ Rectangle WindowView::getMapGuiBounds() const {
 
 Rectangle WindowView::getMinimapBounds() const {
   Vec2 offset(-20, 70);
-  Vec2 size(Vec2(renderer.getSize().x, renderer.getSize().x) / 11);
-  return Rectangle(Vec2(renderer.getSize().x - size.x, 0), Vec2(renderer.getSize().x, size.y + 42)).translate(offset);
+  int width = max(149, renderer.getSize().x / 11);
+  return Rectangle(Vec2(renderer.getSize().x - width, 0), Vec2(renderer.getSize().x, width + 42)).translate(offset);
 }
 
 void WindowView::resetMapBounds() {

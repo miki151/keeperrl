@@ -2384,6 +2384,7 @@ void GuiFactory::loadFreeImages(const DirectoryPath& path) {
             "splash2c.png"_s,
             "splash2d.png"_s)));
   textures[TexId::UI_HIGHLIGHT] = Texture(path.file("ui/ui_highlight.png"));
+  textures[TexId::MINIMAP_BAR] = Texture(path.file("minimap_bar.png"));
   const int tabIconWidth = 42;
   for (int i = 0; i < 8; ++i)
     iconTextures.push_back(Texture(path.file("icons.png"), 0, i * tabIconWidth, tabIconWidth, tabIconWidth));
@@ -2406,14 +2407,13 @@ void GuiFactory::loadFreeImages(const DirectoryPath& path) {
   };
   for (auto attr : ENUM_ALL(AttrType))
     addAttr(attr, getAttrCoord(attr));
-  const int moraleIconWidth = 16;
-  for (int i = 0; i < 4; ++i)
-    iconTextures.push_back(Texture(path.file("morale_icons.png"),
-          0, i * moraleIconWidth, moraleIconWidth, moraleIconWidth));
-  const int teamIconWidth = 16;
-  for (int i = 0; i < 2; ++i)
-    iconTextures.push_back(Texture(path.file("team_icons.png"),
-          0, i * teamIconWidth, teamIconWidth, teamIconWidth));
+  auto loadIcons = [&] (int width, int count, const char* file) {
+    for (int i = 0; i < count; ++i)
+      iconTextures.push_back(Texture(path.file(file), 0, i * width, width, width));
+  };
+  loadIcons(16, 4, "morale_icons.png");
+  loadIcons(16, 2, "team_icons.png");
+  loadIcons(48, 6, "minimap_icons.png");
   auto addSpell = [&](SpellId id, Vec2 pos) {
     const int width = 40;
     spellTextures[id] =
@@ -2700,7 +2700,18 @@ SGuiElem GuiFactory::translucentBackgroundWithBorder(SGuiElem content) {
 SGuiElem GuiFactory::translucentBackground() {
   return stack(
       stopMouseMovement(),
-      rectangle(translucentBgColor));
+        rectangle(translucentBgColor));
+}
+
+SGuiElem GuiFactory::minimapBar(SGuiElem icon1, SGuiElem icon2) {
+  auto& tex = textures[TexId::MINIMAP_BAR];
+  return preferredSize(tex.getSize(),
+      stack(
+          stopMouseMovement(),
+          sprite(tex, Alignment::CENTER, Color::WHITE),
+          translate(std::move(icon1), Vec2(21, 0)),
+          translate(std::move(icon2), Vec2(83, 0))
+      ));
 }
 
 SGuiElem GuiFactory::background(SGuiElem content, Color color) {
