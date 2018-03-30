@@ -121,7 +121,7 @@ PlayerControl::PlayerControl(Private, WCollective col) : CollectiveControl(col),
       hotkeys[int(info.hotkey)] = true;
     }
   }
-  for (TechInfo info : getTechInfo()) {
+  for (auto& info : getTechInfo()) {
     if (info.button.hotkey) {
       CHECK(!hotkeys[int(info.button.hotkey)]);
       hotkeys[int(info.button.hotkey)] = true;
@@ -417,8 +417,6 @@ void PlayerControl::fillEquipment(WCreature creature, PlayerInfo& info) const {
   info.inventory.clear();
   if (!creature->getBody().isHumanoid())
     return;
-  int index = 0;
-  double scrollPos = 0;
   vector<EquipmentSlot> slots;
   for (auto slot : Equipment::slotTitles)
     slots.push_back(slot.first);

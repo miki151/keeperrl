@@ -1026,12 +1026,13 @@ void Collective::removeTrap(Position pos) {
 }
 
 bool Collective::canAddFurniture(Position position, FurnitureType type) const {
+  auto layer = Furniture::getLayer(type);
   return knownTiles->isKnown(position)
       && (territory->contains(position) ||
           canClaimSquare(position) ||
           CollectiveConfig::canBuildOutsideTerritory(type))
-      && !getConstructions().getTrap(position)
-      && !getConstructions().containsFurniture(position, Furniture::getLayer(type))
+      && (!getConstructions().getTrap(position) || layer != FurnitureLayer::MIDDLE)
+      && !getConstructions().containsFurniture(position, layer)
       && position.canConstruct(type);
 }
 
@@ -1044,17 +1045,15 @@ void Collective::removeFurniture(Position pos, FurnitureLayer layer) {
 }
 
 void Collective::destroyOrder(Position pos, FurnitureLayer layer) {
-  if (constructions->containsFurniture(pos, layer)) {
-    auto furniture = pos.modFurniture(layer);
-    if (!furniture || furniture->canDestroyInRealTimeMode()) {
-      if (furniture && furniture->getTribe() == getTribeId()) {
-        furniture->destroy(pos, DestroyAction::Type::BASH);
-        tileEfficiency->update(pos);
-      }
-      removeFurniture(pos, layer);
+  auto furniture = pos.modFurniture(layer);
+  if (!furniture || furniture->canDestroyInRealTimeMode()) {
+    if (furniture && furniture->getTribe() == getTribeId()) {
+      furniture->destroy(pos, DestroyAction::Type::BASH);
+      tileEfficiency->update(pos);
     }
+    removeFurniture(pos, layer);
   }
-  if (layer != FurnitureLayer::FLOOR) {
+  if (layer == FurnitureLayer::MIDDLE) {
     zones->onDestroyOrder(pos);
     if (constructions->getTrap(pos))
       removeTrap(pos);
