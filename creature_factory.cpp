@@ -194,7 +194,7 @@ class KrakenController : public Monster {
     father = f;
   }
 
-  virtual bool dontReplaceInCollective() {
+  virtual bool dontReplaceInCollective() override {
     return true;
   }
 
