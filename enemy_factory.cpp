@@ -153,8 +153,8 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.buildingId = BuildingId::DUNGEON;),
           CollectiveConfig::noImmigrants(),
           CONSTRUCT(VillageBehaviour,
-            c.minPopulation = 1;
-            c.minTeamSize = 4;
+            c.minPopulation = 0;
+            c.minTeamSize = 2;
             c.triggers = LIST(AttackTriggerId::MINING_IN_PROXIMITY);
             c.attackBehaviour = AttackBehaviour(AttackBehaviourId::KILL_LEADER);));
     case EnemyId::ANTS_OPEN: {
