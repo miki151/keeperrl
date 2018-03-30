@@ -194,6 +194,10 @@ class KrakenController : public Monster {
     father = f;
   }
 
+  virtual bool dontReplaceInCollective() {
+    return true;
+  }
+
   int getMaxSpawns() {
     if (father)
       return 1;

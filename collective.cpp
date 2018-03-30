@@ -162,7 +162,7 @@ void Collective::addCreature(WCreature c, EnumSet<MinionTrait> traits) {
     traits.insert(MinionTrait::NO_LIMIT);
     traits.insert(MinionTrait::SUMMONED);
   }
-  if (!traits.contains(MinionTrait::FARM_ANIMAL))
+  if (!traits.contains(MinionTrait::FARM_ANIMAL) && !c->getController()->dontReplaceInCollective())
     c->setController(makeOwner<Monster>(c, MonsterAIFactory::collective(this)));
   if (traits.contains(MinionTrait::LEADER)) {
     CHECK(!getLeader());
