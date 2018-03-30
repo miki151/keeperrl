@@ -145,7 +145,7 @@ void WindowView::initialize() {
       options,
       &gui));
   minimapGui.reset(new MinimapGui([this]() { inputQueue.push(UserInput(UserInputId::DRAW_LEVEL_MAP)); }));
-  auto icons = gui.centerHoriz(guiBuilder.drawMinimapIcons());
+  auto icons = gui.centerHoriz(guiBuilder.drawMinimapIcons(gameInfo.tutorial));
   auto iconsHeight = *icons->getPreferredHeight();
   minimapDecoration = gui.margin(std::move(icons),
       gui.stack(gui.rectangle(Color::BLACK), gui.miniWindow(),

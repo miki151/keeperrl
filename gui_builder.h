@@ -105,7 +105,7 @@ class GuiBuilder {
   SGuiElem drawCost(pair<ViewId, int>, Color = Color::WHITE);
   SGuiElem drawHighscores(const vector<HighscoreList>&, Semaphore&, int& tabNum, vector<ScrollPosition>& scrollPos,
       bool& online);
-  SGuiElem drawMinimapIcons();
+  SGuiElem drawMinimapIcons(const optional<TutorialInfo>&);
 
   void setCollectiveTab(CollectiveTab t);
   CollectiveTab getCollectiveTab() const;
