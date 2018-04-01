@@ -434,7 +434,7 @@ vector<Vec2> Tutorial::getHighlightedSquaresLow(WConstGame game) const {
   }
 }
 
-Tutorial::Tutorial() : state(State::MINIMAP_BUTTONS) {
+Tutorial::Tutorial() : state(State::WELCOME) {
 
 }
 
