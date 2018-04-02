@@ -197,14 +197,6 @@ bool Position::operator != (const Position& o) const {
   return !(o == *this);
 }
 
-Position& Position::operator = (const Position& o) {
-  PROFILE;
-  coord = o.coord;
-  level = o.level;
-  valid = o.valid;
-  return *this;
-}
-
 const static int hearingRange = 30;
 
 void Position::unseenMessage(const PlayerMessage& msg) const {

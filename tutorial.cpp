@@ -65,6 +65,7 @@ enum class Tutorial::State {
   LEAVE_CONTROL,
   SUMMARY1,
   RESEARCH,
+  MINIMAP_BUTTONS,
   SUMMARY2,
   FINISHED,
 };
@@ -161,6 +162,8 @@ bool Tutorial::canContinue(WConstGame game) const {
       return true;
     case State::LEAVE_CONTROL:
       return game->getPlayerControl()->getControlled().empty();
+    case State::MINIMAP_BUTTONS:
+      return true;
     case State::SUMMARY1:
       return true;
     case State::RESEARCH:
@@ -297,6 +300,10 @@ string Tutorial::getMessage() const {
       return "You have received 100 mana for your conquest. Mana is the main source of progress in the game and allows "
           "you to research new technologies or increase your population by building a throne.\n \n"
           "Go ahead and research something in your library.";
+    case State::MINIMAP_BUTTONS:
+      return "As the last objective, familiarize yourself with the two buttons under the minimap in the top-right corner. "
+          "The first one opens the world map window, which you can use to travel to other sites when in control mode.\n \n"
+          "The second one centers the map on your Keeper.";
     case State::SUMMARY2:
       return "Thank you for completing the tutorial! We hope that we have made it a bit easier for you to get into "
           "KeeperRL. We would love to hear your comments, so please drop by on the forums on Steam or at keeperrl.com "
@@ -344,6 +351,8 @@ EnumSet<TutorialHighlight> Tutorial::getHighlights(WConstGame game) const {
       return {TutorialHighlight::CONTROL_TEAM};
     case State::LEAVE_CONTROL:
       return {TutorialHighlight::LEAVE_CONTROL};
+    case State::MINIMAP_BUTTONS:
+      return {TutorialHighlight::MINIMAP_BUTTONS};
     default:
       return {};
   }

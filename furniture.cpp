@@ -276,7 +276,7 @@ bool Furniture::emitsWarning(WConstCreature) const {
 }
 
 bool Furniture::canDestroyInRealTimeMode() const {
-  return realTimeDestroy;
+  return realTimeDestroy && !wall;
 }
 
 WCreature Furniture::getCreator() const {

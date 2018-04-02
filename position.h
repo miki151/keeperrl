@@ -43,7 +43,6 @@ class Position {
   bool isValid() const;
   bool operator == (const Position&) const;
   bool operator != (const Position&) const;
-  Position& operator = (const Position&);
   Position plus(Vec2) const;
   Position minus(Vec2) const;
   void unseenMessage(const PlayerMessage&) const;

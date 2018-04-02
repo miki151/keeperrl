@@ -40,6 +40,8 @@ class Controller : public OwnedObject<Controller> {
   virtual void onKilled(WConstCreature attacker) {}
   virtual void onItemsGiven(vector<WItem> items, WCreature from) { }
 
+  virtual bool dontReplaceInCollective() { return false; }
+
   virtual void makeMove() = 0;
   virtual void sleeping() {}
 

@@ -162,7 +162,7 @@ void Collective::addCreature(WCreature c, EnumSet<MinionTrait> traits) {
     traits.insert(MinionTrait::NO_LIMIT);
     traits.insert(MinionTrait::SUMMONED);
   }
-  if (!traits.contains(MinionTrait::FARM_ANIMAL))
+  if (!traits.contains(MinionTrait::FARM_ANIMAL) && !c->getController()->dontReplaceInCollective())
     c->setController(makeOwner<Monster>(c, MonsterAIFactory::collective(this)));
   if (traits.contains(MinionTrait::LEADER)) {
     CHECK(!getLeader());
@@ -1026,12 +1026,13 @@ void Collective::removeTrap(Position pos) {
 }
 
 bool Collective::canAddFurniture(Position position, FurnitureType type) const {
+  auto layer = Furniture::getLayer(type);
   return knownTiles->isKnown(position)
       && (territory->contains(position) ||
           canClaimSquare(position) ||
           CollectiveConfig::canBuildOutsideTerritory(type))
-      && !getConstructions().getTrap(position)
-      && !getConstructions().containsFurniture(position, Furniture::getLayer(type))
+      && (!getConstructions().getTrap(position) || layer != FurnitureLayer::MIDDLE)
+      && !getConstructions().containsFurniture(position, layer)
       && position.canConstruct(type);
 }
 
@@ -1044,17 +1045,15 @@ void Collective::removeFurniture(Position pos, FurnitureLayer layer) {
 }
 
 void Collective::destroyOrder(Position pos, FurnitureLayer layer) {
-  if (constructions->containsFurniture(pos, layer)) {
-    auto furniture = pos.modFurniture(layer);
-    if (!furniture || furniture->canDestroyInRealTimeMode()) {
-      if (furniture && furniture->getTribe() == getTribeId()) {
-        furniture->destroy(pos, DestroyAction::Type::BASH);
-        tileEfficiency->update(pos);
-      }
-      removeFurniture(pos, layer);
+  auto furniture = pos.modFurniture(layer);
+  if (!furniture || furniture->canDestroyInRealTimeMode()) {
+    if (furniture && furniture->getTribe() == getTribeId()) {
+      furniture->destroy(pos, DestroyAction::Type::BASH);
+      tileEfficiency->update(pos);
     }
+    removeFurniture(pos, layer);
   }
-  if (layer != FurnitureLayer::FLOOR) {
+  if (layer == FurnitureLayer::MIDDLE) {
     zones->onDestroyOrder(pos);
     if (constructions->getTrap(pos))
       removeTrap(pos);
@@ -1351,7 +1350,7 @@ void Collective::onAppliedSquare(WCreature c, Position pos) {
     switch (furniture->getType()) {
       case FurnitureType::THRONE:
         if (config->getRegenerateMana())
-          addMana(0.08 * efficiency);
+          addMana(0.01 * efficiency);
         break;
       case FurnitureType::WHIPPING_POST:
         taskMap->addTask(Task::whipping(pos, c), pos, MinionActivity::WORKING);
@@ -1465,7 +1464,7 @@ void Collective::onExternalEnemyKilled(const std::string& name) {
   int mana = 100;
   addMana(mana);
   control->addMessage(PlayerMessage("You feel a surge of power (+" + toString(mana) + " mana)",
-                                    MessagePriority::CRITICAL));
+      MessagePriority::CRITICAL));
 }
 
 void Collective::onCopulated(WCreature who, WCreature with) {
