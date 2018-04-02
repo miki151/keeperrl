@@ -1464,7 +1464,7 @@ void Collective::onExternalEnemyKilled(const std::string& name) {
   int mana = 100;
   addMana(mana);
   control->addMessage(PlayerMessage("You feel a surge of power (+" + toString(mana) + " mana)",
-                                    MessagePriority::CRITICAL));
+      MessagePriority::CRITICAL));
 }
 
 void Collective::onCopulated(WCreature who, WCreature with) {

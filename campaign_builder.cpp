@@ -422,20 +422,15 @@ static bool autoConfirm(CampaignType type) {
 
 static vector<string> getIntroMessages(CampaignType type, string worldName) {
   vector<string> ret = {
-    "Welcome to KeeperRL Alpha23! A lot of gameplay changes have arrived with this update. Below is a very short "
-    "summary, and we encourage you to check out the full change log at www.keeperrl.com.\n \n"
-    "Mana is no longer generated at the library, and instead you only receive it for defeating enemies. "
-    "Many features, including construction and crafting costs, have been rebalanced to accommodate this change. "
-    "You will only need mana to research new technology, and increase the population limit.\n \n"
-    "If you miss the old ways, you can enable mana regeneration when playing the 'free play' game mode.\n \n"
-    "When commanding a team, you can choose to control every team member directly. "
-    "We encourage you to use this feature during combat, as it's extremely useful. You can toggle it using the "
-    "shortcut [G] or by going into the [Commands] menu.\n \n"
-    "From now on the vampire lord will be hostile when you wake him up, so be careful!"
+    "Welcome to KeeperRL Alpha24! This patch was released on April 2, 2018. "
+    "Many new gameplay features have arrived, "
+    "so if you are a returning player, we encourage you to check out the "
+    "change log at www.keeperrl.com.\n \n"
+    "If this is your first time playing KeeperRL, remember to start with the tutorial!"
   };
   if (type == CampaignType::ENDLESS)
     ret.push_back(
-        "Welcome to the new endless mode! Your task here is to survive as long as possible, while "
+        "Welcome to the endless mode! Your task here is to survive as long as possible, while "
         "defending your dungeon from incoming enemy waves. The enemies don't come from any specific place and "
         "will just appear at the edge of the map. You will get mana for defeating each wave. "
         "Note that there are also traditional enemy villages scattered around and they may also attack you.\n \n"
