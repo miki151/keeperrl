@@ -552,7 +552,7 @@ vector<Player::CommandInfo> Player::getCommands() const {
 void Player::updateUnknownLocations() {
   vector<Position> locations;
   for (auto col : getModel()->getCollectives())
-    if (col->getLevel() == getLevel())
+    if (col->getLevel() == getLevel() && !col->isConquered())
       if (auto& pos = col->getTerritory().getCentralPoint())
         if (!getMemory().getViewIndex(*pos))
           locations.push_back(*pos);

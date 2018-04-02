@@ -2465,7 +2465,7 @@ const double messageTimeout = 80;
 void PlayerControl::updateUnknownLocations() {
   vector<Position> locations;
   for (auto col : getGame()->getCollectives())
-    if (!collective->isKnownVillainLocation(col))
+    if (!collective->isKnownVillainLocation(col) && !col->isConquered())
       if (auto& pos = col->getTerritory().getCentralPoint())
         locations.push_back(*pos);
   unknownLocations->update(locations);
