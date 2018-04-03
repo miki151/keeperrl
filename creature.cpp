@@ -638,7 +638,8 @@ CreatureAction Creature::push(WCreature other) {
     return CreatureAction("You can't push " + other->getName().the());
   return CreatureAction(this, [=](WCreature self) {
     other->displace(goDir);
-    self->move(goDir).perform(self);
+    if (auto m = self->move(goDir))
+      m.perform(self);
   });
 }
 
