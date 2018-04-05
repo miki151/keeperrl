@@ -156,7 +156,19 @@ optional<TeamId> PlayerControl::getCurrentTeam() const {
 }
 
 void PlayerControl::onControlledKilled(WConstCreature victim) {
-  TeamId currentTeam = *getCurrentTeam();
+  auto curTeamDebug = getCurrentTeam();
+  if (!curTeamDebug) {
+    auto activeTeams = getTeams().getAllActive();
+    auto allTeams = getTeams().getAll();
+    bool activeHasVictim = false;
+    bool anyHasVictim = false;
+    for (auto& team : activeTeams)
+      activeHasVictim |= getTeams().getMembers(team).contains(victim);
+    for (auto& team : allTeams)
+      anyHasVictim |= getTeams().getMembers(team).contains(victim);
+    FATAL << victim->identify() <<  " " << activeTeams.size() << " " << allTeams.size() << " " << activeHasVictim << " " << anyHasVictim;
+  }
+  TeamId currentTeam = *curTeamDebug;
   if (getTeams().getLeader(currentTeam) == victim && getGame()->getPlayerCreatures().size() == 1) {
     vector<CreatureInfo> team;
     for (auto c : getTeams().getMembers(currentTeam))
