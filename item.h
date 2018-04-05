@@ -80,8 +80,6 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
   void onUnequip(WCreature);
   void onOwned(WCreature);
   void onDropped(WCreature);
-  virtual void onEquipSpecial(WCreature) {}
-  virtual void onUnequipSpecial(WCreature) {}
   virtual void fireDamage(double amount, Position);
   double getFireSize() const;
 

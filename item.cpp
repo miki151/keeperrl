@@ -97,13 +97,11 @@ void Item::onDropped(WCreature c) {
 }
 
 void Item::onEquip(WCreature c) {
-  onEquipSpecial(c);
   if (attributes->equipedEffect)
     c->addPermanentEffect(*attributes->equipedEffect);
 }
 
 void Item::onUnequip(WCreature c) {
-  onUnequipSpecial(c);
   if (attributes->equipedEffect)
     c->removePermanentEffect(*attributes->equipedEffect);
 }
