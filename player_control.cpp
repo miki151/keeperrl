@@ -162,11 +162,18 @@ void PlayerControl::onControlledKilled(WConstCreature victim) {
     auto allTeams = getTeams().getAll();
     bool activeHasVictim = false;
     bool anyHasVictim = false;
-    for (auto& team : activeTeams)
+    bool activeIsLeader = false;
+    bool anyIsLeader = false;
+    for (auto& team : activeTeams) {
       activeHasVictim |= getTeams().getMembers(team).contains(victim);
-    for (auto& team : allTeams)
+      activeIsLeader |= (getTeams().getLeader(team) == victim);
+    }
+    for (auto& team : allTeams) {
       anyHasVictim |= getTeams().getMembers(team).contains(victim);
-    FATAL << victim->identify() <<  " " << activeTeams.size() << " " << allTeams.size() << " " << activeHasVictim << " " << anyHasVictim;
+      anyIsLeader |= (getTeams().getLeader(team) == victim);
+    }
+    FATAL << victim->identify() << " " << victim->isPlayer() <<  " " << activeTeams.size() <<
+        " " << allTeams.size() << " " << activeHasVictim << " " << anyHasVictim << " " << " " << activeIsLeader << " " << anyIsLeader;
   }
   TeamId currentTeam = *curTeamDebug;
   if (getTeams().getLeader(currentTeam) == victim && getGame()->getPlayerCreatures().size() == 1) {
