@@ -187,7 +187,6 @@ void Square::setOnFire(bool state) {
 void Square::removeCreature(Position pos) {
   setDirty(pos);
   CHECK(creature);
-  WCreature tmp = creature;
   creature = nullptr;
 }
 
