@@ -43,6 +43,8 @@ class TimeQueue {
   void serialize(Archive& ar, const unsigned int version);
 
   private:
+  bool contains(WCreature) const;
+
   vector<PCreature> SERIAL(creatures);
   struct Queue {
     void push(WCreature);

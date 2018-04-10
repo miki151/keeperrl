@@ -131,12 +131,14 @@ bool TimeQueue::hasExtraMove(WCreature c) {
 }
 
 void TimeQueue::postponeMove(WCreature c) {
+  CHECK(contains(c));
   auto time = timeMap.getOrFail(c);
   queue.at(time).erase(c);
   queue.at(time).push(c);
 }
 
 void TimeQueue::moveNow(WCreature c) {
+  CHECK(contains(c));
   auto time = timeMap.getOrFail(c);
   queue.at(time).erase(c);
   queue.at(time).pushFront(c);
@@ -163,6 +165,13 @@ bool TimeQueue::compareOrder(WConstCreature c1, WConstCreature c2) {
     return false;
   auto& orderMap = queue.at(time1).orderMap;
   return orderMap.getOrFail(c1) < orderMap.getOrFail(c2);
+}
+
+bool TimeQueue::contains(WCreature c) const {
+  for (auto& creature : creatures)
+    if (creature.get() == c)
+      return true;
+  return false;
 }
 
 TimeQueue::TimeQueue() {}
