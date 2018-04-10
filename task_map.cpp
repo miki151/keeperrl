@@ -78,6 +78,8 @@ CostInfo TaskMap::removeTask(WTask task) {
   }
   CHECK(taskByCreature.getSize() == creatureByTask.getSize());
   if (auto pos = positionMap.getMaybe(task)) {
+    CHECK(reversePositions.contains(*pos)) << "Task position not found: " <<
+        task->getDescription() << " " << pos->getCoord();
     reversePositions.getOrFail(*pos).removeElement(task);
     positionMap.erase(task);
   }
