@@ -156,26 +156,7 @@ optional<TeamId> PlayerControl::getCurrentTeam() const {
 }
 
 void PlayerControl::onControlledKilled(WConstCreature victim) {
-  auto curTeamDebug = getCurrentTeam();
-  if (!curTeamDebug) {
-    auto activeTeams = getTeams().getAllActive();
-    auto allTeams = getTeams().getAll();
-    bool activeHasVictim = false;
-    bool anyHasVictim = false;
-    bool activeIsLeader = false;
-    bool anyIsLeader = false;
-    for (auto& team : activeTeams) {
-      activeHasVictim |= getTeams().getMembers(team).contains(victim);
-      activeIsLeader |= (getTeams().getLeader(team) == victim);
-    }
-    for (auto& team : allTeams) {
-      anyHasVictim |= getTeams().getMembers(team).contains(victim);
-      anyIsLeader |= (getTeams().getLeader(team) == victim);
-    }
-    FATAL << victim->identify() << " " << victim->isPlayer() <<  " " << activeTeams.size() <<
-        " " << allTeams.size() << " " << activeHasVictim << " " << anyHasVictim << " " << " " << activeIsLeader << " " << anyIsLeader;
-  }
-  TeamId currentTeam = *curTeamDebug;
+  TeamId currentTeam = *getCurrentTeam();
   if (getTeams().getLeader(currentTeam) == victim && getGame()->getPlayerCreatures().size() == 1) {
     vector<CreatureInfo> team;
     for (auto c : getTeams().getMembers(currentTeam))
@@ -2453,9 +2434,10 @@ void PlayerControl::update(bool currentlyActive) {
           for (auto controlled : getControlled())
             if ((collective->hasTrait(controlled, MinionTrait::FIGHTER)
                   || controlled == collective->getLeader())
-                && c->getPosition().isSameLevel(controlled->getPosition())) {
+                && c->getPosition().isSameLevel(controlled->getPosition())
+                && canControlInTeam(c)) {
               for (auto team : getTeams().getActive(controlled)) {
-                getTeams().add(team, c);
+                addToCurrentTeam(c);
                 controlled->privateMessage(PlayerMessage(c->getName().a() + " joins your team.",
                       MessagePriority::HIGH));
                 break;
