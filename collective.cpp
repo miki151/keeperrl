@@ -565,7 +565,7 @@ void Collective::update(bool currentlyActive) {
 }
 
 void Collective::considerTransferingLostMinions() {
-  for (auto c : getCreatures())
+  for (auto c : copyOf(getCreatures()))
     if (c->getPosition().getModel() != getGame()->getCurrentModel())
       getGame()->transferCreature(c, getModel());
 }
