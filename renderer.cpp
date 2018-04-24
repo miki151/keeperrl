@@ -726,7 +726,7 @@ void Renderer::loadTilesFromDir(const DirectoryPath& path, vector<Texture>& tile
     SDL::SDL_Surface* im = SDL::IMG_Load(files[i].getPath());
     SDL::SDL_SetSurfaceBlendMode(im, SDL::SDL_BLENDMODE_NONE);
     CHECK(im) << files[i] << ": "<< SDL::IMG_GetError();
-    CHECK(im->w == size.x && im->h == size.y) << files[i] << " has wrong size " << im->w << " " << im->h;
+    USER_CHECK(im->w == size.x && im->h == size.y) << files[i] << " has wrong size " << im->w << " " << im->h;
     SDL::SDL_Rect offset;
     offset.x = size.x * (i % rowLength);
     offset.y = size.y * (i / rowLength);
