@@ -1003,7 +1003,6 @@ class ByCollective : public Behaviour {
         bindMethod(&ByCollective::followTeamLeader, this),
         bindMethod(&ByCollective::dropLoot, this),
         bindMethod(&ByCollective::goToAlarm, this),
-        bindMethod(&ByCollective::priorityTask, this),
         bindMethod(&ByCollective::normalTask, this),
         bindMethod(&ByCollective::newEquipmentTask, this),
         bindMethod(&ByCollective::newStandardTask, this)
