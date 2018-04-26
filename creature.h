@@ -138,7 +138,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   CreatureAction move(Vec2) const;
   CreatureAction forceMove(Position) const;
   CreatureAction forceMove(Vec2) const;
-  CreatureAction wait() const;
+  static CreatureAction wait();
   vector<WItem> getPickUpOptions() const;
   CreatureAction pickUp(const vector<WItem>& item) const;
   CreatureAction drop(const vector<WItem>& item) const;

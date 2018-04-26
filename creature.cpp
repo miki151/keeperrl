@@ -426,11 +426,11 @@ void Creature::makeMove() {
   vision->update(this);
 }
 
-CreatureAction Creature::wait() const {
-  return CreatureAction(this, [=](WCreature self) {
+CreatureAction Creature::wait() {
+  return CreatureAction([=](WCreature self) {
     self->nextPosIntent = none;
-    INFO << getName().the() << " waiting";
-    bool keepHiding = hidden;
+    INFO << self->getName().the() << " waiting";
+    bool keepHiding = self->hidden;
     self->spendTime();
     self->hidden = keepHiding;
   });

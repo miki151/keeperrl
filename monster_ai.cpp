@@ -38,6 +38,12 @@
 #include "furniture_factory.h"
 #include "file_path.h"
 #include "ranged_weapon.h"
+#include "task_map.h"
+#include "collective_teams.h"
+#include "collective_config.h"
+#include "territory.h"
+#include "minion_equipment.h"
+#include "zones.h"
 
 class Behaviour {
   public:
@@ -832,8 +838,176 @@ class ByCollective : public Behaviour {
   public:
   ByCollective(WCreature c, WCollective col) : Behaviour(c), collective(col) {}
 
+  MoveInfo priorityTask() {
+    auto& taskMap = collective->getTaskMap();
+    if (auto task = taskMap.getTask(creature))
+      if (taskMap.isPriorityTask(task))
+        return task->getMove(creature).orWait();
+    for (auto activity : ENUM_ALL(MinionActivity))
+      if (creature->getAttributes().getMinionActivities().isAvailable(collective, creature, activity))
+        if (auto task = taskMap.getClosestTask(creature, activity, true)) {
+          taskMap.freeFromTask(creature);
+          taskMap.takeTask(creature, task);
+          return task->getMove(creature).orWait();
+        }
+    return NoMove;
+  };
+
+  MoveInfo followTeamLeader() {
+    auto& teams = collective->getTeams();
+    for (auto team : teams.getContaining(creature))
+      if (teams.isActive(team)) {
+        WConstCreature leader = teams.getLeader(team);
+        if (creature != leader) {
+          if (leader->getPosition().dist8(creature->getPosition()) > 1)
+            return creature->moveTowards(leader->getPosition());
+          else
+            return creature->wait();
+        } else
+          if (creature == leader && !teams.isPersistent(team))
+            return creature->wait();
+      }
+    return NoMove;
+  };
+
+  MoveInfo dropLoot() {
+    auto& config = collective->getConfig();
+    if (config.getFetchItems() && collective->getTerritory().contains(creature->getPosition())) {
+      vector<WItem> items = creature->getEquipment().getItems().filter([this](WConstItem item) {
+          return !collective->isItemMarked(item) && !collective->getMinionEquipment().isOwner(item, creature); });
+      if (!items.empty())
+        return creature->drop(items);
+    }
+    return NoMove;
+  };
+
+  PTask getEquipmentTask() {
+    if (!collective->usesEquipment(creature))
+      return nullptr;
+    auto& minionEquipment = collective->getMinionEquipment();
+    if (!collective->hasTrait(creature, MinionTrait::NO_AUTO_EQUIPMENT) && Random.roll(40))
+      minionEquipment.autoAssign(creature, collective->getAllItems(ItemIndex::MINION_EQUIPMENT, false));
+    vector<PTask> tasks;
+    for (WItem it : creature->getEquipment().getItems())
+      if (!creature->getEquipment().isEquipped(it) && creature->getEquipment().canEquip(it))
+        tasks.push_back(Task::equipItem(it));
+    for (Position v : collective->getZones().getPositions(ZoneId::STORAGE_EQUIPMENT)) {
+      vector<WItem> allItems = v.getItems(ItemIndex::MINION_EQUIPMENT).filter(
+          [&minionEquipment, this] (WConstItem it) { return minionEquipment.isOwner(it, creature);});
+      vector<WItem> consumables;
+      for (auto item : allItems)
+        if (item->canEquip())
+          tasks.push_back(Task::pickAndEquipItem(collective, v, item));
+        else
+          consumables.push_back(item);
+      if (!consumables.empty())
+        tasks.push_back(Task::pickItem(collective, v, consumables));
+    }
+    if (!tasks.empty())
+      return Task::chain(std::move(tasks));
+    return nullptr;
+  }
+
+  void setRandomTask() {
+    vector<MinionActivity> goodTasks;
+    for (MinionActivity t : ENUM_ALL(MinionActivity))
+      if (collective->isActivityGood(creature, t) && creature->getAttributes().getMinionActivities().canChooseRandomly(creature, t))
+        goodTasks.push_back(t);
+    if (!goodTasks.empty())
+      collective->setMinionActivity(creature, Random.choose(goodTasks));
+  }
+
+  WTask getStandardTask() {
+    PROFILE;
+    auto current = collective->getCurrentActivity(creature);
+    if (current.task == MinionActivity::IDLE || !collective->isActivityGood(creature, current.task)) {
+      collective->setMinionActivity(creature, MinionActivity::IDLE);
+      setRandomTask();
+    }
+    current = collective->getCurrentActivity(creature);
+    MinionActivity task = current.task;
+    auto& taskMap = collective->getTaskMap();
+    if (current.finishTime < collective->getLocalTime())
+      collective->setMinionActivity(creature, MinionActivity::IDLE);
+    if (PTask ret = MinionActivities::generate(collective, creature, task))
+      return taskMap.addTaskFor(std::move(ret), creature);
+    if (WTask ret = MinionActivities::getExisting(collective, creature, task)) {
+      taskMap.takeTask(creature, ret);
+      return ret;
+    }
+    FATAL << "No task generated for activity " << EnumInfo<MinionActivity>::getString(task);
+    return {};
+  }
+
+  MoveInfo goToAlarm() {
+    auto& alarmInfo = collective->getAlarmInfo();
+    if (collective->hasTrait(creature, MinionTrait::FIGHTER) && alarmInfo && alarmInfo->finishTime > collective->getGlobalTime())
+      if (auto action = creature->moveTowards(alarmInfo->position))
+        return {1.0, action};
+    return NoMove;
+  };
+
+  MoveInfo normalTask() {
+    if (WTask task = collective->getTaskMap().getTask(creature))
+      return task->getMove(creature).orWait();
+    return NoMove;
+  };
+
+  MoveInfo newEquipmentTask() {
+    if (PTask t = getEquipmentTask())
+      if (auto move = t->getMove(creature)) {
+        collective->getTaskMap().addTaskFor(std::move(t), creature);
+        return move;
+      }
+    return NoMove;
+  };
+
+  MoveInfo newStandardTask() {
+    WTask t = getStandardTask();
+    return t->getMove(creature).orWait();
+  };
+
+  void considerHealingTask() {
+    const static EnumSet<MinionActivity> healingTasks {MinionActivity::SLEEP};
+    PROFILE;
+    if (creature->getBody().canHeal() && !creature->isAffected(LastingEffect::POISON))
+      for (MinionActivity t : healingTasks) {
+        auto currentTask = collective->getCurrentActivity(creature).task;
+        if (creature->getAttributes().getMinionActivities().isAvailable(collective, creature, t) &&
+            !healingTasks.contains(currentTask)) {
+          collective->cancelTask(creature);
+          collective->setMinionActivity(creature, t);
+          return;
+        }
+      }
+  }
+
+  static MoveInfo getFirstGoodMove() {
+    return NoMove;
+  }
+
+  template <typename MoveFun1, typename... MoveFuns>
+  static MoveInfo getFirstGoodMove(MoveFun1&& f1, MoveFuns&&... funs) {
+    if (auto move = std::forward<MoveFun1>(f1)())
+      return move;
+    else
+      return getFirstGoodMove(std::forward<MoveFuns>(funs)...);
+  }
+
+
   virtual MoveInfo getMove() override {
-    return collective->getMove(creature);
+    if (collective->getConfig().allowHealingTaskOutsideTerritory() || collective->getTerritory().contains(creature->getPosition()))
+      considerHealingTask();
+    return getFirstGoodMove(
+        bindMethod(&ByCollective::priorityTask, this),
+        bindMethod(&ByCollective::followTeamLeader, this),
+        bindMethod(&ByCollective::dropLoot, this),
+        bindMethod(&ByCollective::goToAlarm, this),
+        bindMethod(&ByCollective::priorityTask, this),
+        bindMethod(&ByCollective::normalTask, this),
+        bindMethod(&ByCollective::newEquipmentTask, this),
+        bindMethod(&ByCollective::newStandardTask, this)
+    );
   }
 
   SERIALIZATION_CONSTRUCTOR(ByCollective);
