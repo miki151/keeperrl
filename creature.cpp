@@ -426,11 +426,11 @@ void Creature::makeMove() {
   vision->update(this);
 }
 
-CreatureAction Creature::wait() const {
-  return CreatureAction(this, [=](WCreature self) {
+CreatureAction Creature::wait() {
+  return CreatureAction([=](WCreature self) {
     self->nextPosIntent = none;
-    INFO << getName().the() << " waiting";
-    bool keepHiding = hidden;
+    INFO << self->getName().the() << " waiting";
+    bool keepHiding = self->hidden;
     self->spendTime();
     self->hidden = keepHiding;
   });
@@ -638,7 +638,8 @@ CreatureAction Creature::push(WCreature other) {
     return CreatureAction("You can't push " + other->getName().the());
   return CreatureAction(this, [=](WCreature self) {
     other->displace(goDir);
-    self->move(goDir).perform(self);
+    if (auto m = self->move(goDir))
+      m.perform(self);
   });
 }
 
@@ -881,14 +882,13 @@ void Creature::tick() {
   vision->update(this);
   if (Random.roll(5))
     getDifficultyPoints();
-  vector<WItem> discarded;
-  for (auto item : equipment->getItems()) {
+  for (auto item : copyOf(equipment->getItems())) {
     item->tick(position);
     if (item->isDiscarded())
-      discarded.push_back(item);
+      equipment->removeItem(item, this);
+    if (isDead())
+      return;
   }
-  for (auto item : discarded)
-    equipment->removeItem(item, this);
   for (LastingEffect effect : ENUM_ALL(LastingEffect)) {
     if (attributes->considerTimeout(effect, *getGlobalTime()))
       LastingEffects::onTimedOut(this, effect, true);

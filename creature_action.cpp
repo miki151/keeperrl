@@ -4,13 +4,16 @@
 CreatureAction::CreatureAction(WConstCreature c, ActionFun f) : action(f), performer(c) {
 }
 
+CreatureAction::CreatureAction(CreatureAction::ActionFun f) : action(f) {
+}
+
 CreatureAction::CreatureAction(const string& msg)
     : action(nullptr), failedMessage(msg) {
 }
 
 void CreatureAction::perform(WCreature c) {
   CHECK(action);
-  CHECK(c == performer);
+  CHECK(!performer || c == performer);
   action(c);
 }
 

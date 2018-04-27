@@ -57,7 +57,6 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   void acquireInitialTech();
   void addCreature(WCreature, EnumSet<MinionTrait>);
   void addCreature(PCreature, Position, EnumSet<MinionTrait>);
-  MoveInfo getMove(WCreature);
   void setControl(PCollectiveControl);
   void tick();
   void update(bool currentlyActive);
@@ -208,6 +207,12 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   };
 
   CurrentActivity getCurrentActivity(WConstCreature) const;
+  struct AlarmInfo {
+    GlobalTime SERIAL(finishTime);
+    Position SERIAL(position);
+    SERIALIZE_ALL(finishTime, position)
+  };
+  const optional<AlarmInfo>& getAlarmInfo() const;
 
   double getRebellionProbability() const;
 
@@ -254,10 +259,6 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
 
   EntityMap<Creature, CurrentActivity> SERIAL(currentActivity);
   optional<Position> getTileToExplore(WConstCreature, MinionActivity) const;
-  WTask getStandardTask(WCreature);
-  PTask getEquipmentTask(WCreature);
-  void considerHealingTask(WCreature);
-  void setRandomTask(WCreature);
 
   void handleSurprise(Position);
   int getTaskDuration(WConstCreature, MinionActivity) const;
@@ -268,11 +269,6 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   HeapAllocated<TribeId> SERIAL(tribe);
   WLevel SERIAL(level) = nullptr;
   HeapAllocated<Territory> SERIAL(territory);
-  struct AlarmInfo {
-    GlobalTime SERIAL(finishTime);
-    Position SERIAL(position);
-    SERIALIZE_ALL(finishTime, position)
-  };
   optional<AlarmInfo> SERIAL(alarmInfo);
   HeapAllocated<ConstructionMap> SERIAL(constructions);
   EntityMap<Item, WConstTask> SERIAL(markedItems);

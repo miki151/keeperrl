@@ -17,6 +17,7 @@
 #include "game_time.h"
 #include "intrinsic_attack.h"
 #include "team_member_action.h"
+#include "team_order.h"
 
 enum class SpellId;
 
@@ -148,12 +149,13 @@ class PlayerInfo {
     BANISH,
     CONSUME
   };
+  optional<EnumSet<TeamOrder>> HASH(teamOrders);
   vector<Action> HASH(actions);
   vector<TeamMemberAction> HASH(teamMemberActions);
   optional<double> HASH(carryLimit);
   optional<ViewId> HASH(quarters);
   bool HASH(canAssignQuarters);
-  HASH_ALL(attributes, skills, firstName, name, title, levelInfo, positionHash, effects, spells, lyingItems, inventory, minionTasks, creatureId, morale, viewId, actions, commands, debt, bestAttack, carryLimit, intrinsicAttacks, teamInfos, moveCounter, willMoveThisTurn, isPlayerControlled, controlMode, teamMemberActions, quarters, canAssignQuarters)
+  HASH_ALL(attributes, skills, firstName, name, title, levelInfo, positionHash, effects, spells, lyingItems, inventory, minionTasks, creatureId, morale, viewId, actions, commands, debt, bestAttack, carryLimit, intrinsicAttacks, teamInfos, moveCounter, willMoveThisTurn, isPlayerControlled, controlMode, teamMemberActions, quarters, canAssignQuarters, teamOrders)
 };
 
 struct ImmigrantDataInfo {

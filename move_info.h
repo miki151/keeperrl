@@ -10,6 +10,7 @@ struct MoveInfo {
 
   void setValue(double v);
   MoveInfo withValue(double v) const;
+  MoveInfo orWait() const;
 
   CreatureAction getMove() const;
   double getValue() const;

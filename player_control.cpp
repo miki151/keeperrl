@@ -212,34 +212,34 @@ void PlayerControl::addToCurrentTeam(WCreature c) {
 
 void PlayerControl::teamMemberAction(TeamMemberAction action, Creature::Id id) {
   if (WCreature c = getCreature(id))
-  switch (action) {
-    case TeamMemberAction::MOVE_NOW:
-      getModel()->getTimeQueue().moveNow(c);
-      break;
-    case TeamMemberAction::CHANGE_LEADER:
-      if (auto teamId = getCurrentTeam())
-        if (getTeams().getMembers(*teamId).size() > 1 && canControlInTeam(c)) {
-          auto controlled = getControlled();
-          if (controlled.size() == 1) {
-            getTeams().getLeader(*teamId)->popController();
-            getTeams().setLeader(*teamId, c);
-            c->pushController(createMinionController(c));
+    switch (action) {
+      case TeamMemberAction::MOVE_NOW:
+        c->getPosition().getModel()->getTimeQueue().moveNow(c);
+        break;
+      case TeamMemberAction::CHANGE_LEADER:
+        if (auto teamId = getCurrentTeam())
+          if (getTeams().getMembers(*teamId).size() > 1 && canControlInTeam(c)) {
+            auto controlled = getControlled();
+            if (controlled.size() == 1) {
+              getTeams().getLeader(*teamId)->popController();
+              getTeams().setLeader(*teamId, c);
+              c->pushController(createMinionController(c));
+            }
           }
-        }
-      break;
-    case TeamMemberAction::REMOVE_MEMBER:
-      if (auto teamId = getCurrentTeam())
-        if (getTeams().getMembers(*teamId).size() > 1) {
-          getTeams().remove(*teamId, c);
-          if (c->isPlayer()) {
-            c->popController();
-            auto newLeader = getTeams().getLeader(*teamId);
-            if (!newLeader->isPlayer())
-              newLeader->pushController(createMinionController(newLeader));
+        break;
+      case TeamMemberAction::REMOVE_MEMBER:
+        if (auto teamId = getCurrentTeam())
+          if (getTeams().getMembers(*teamId).size() > 1) {
+            getTeams().remove(*teamId, c);
+            if (c->isPlayer()) {
+              c->popController();
+              auto newLeader = getTeams().getLeader(*teamId);
+              if (!newLeader->isPlayer())
+                newLeader->pushController(createMinionController(newLeader));
+            }
           }
-        }
-      break;
-  }
+        break;
+    }
 }
 
 void PlayerControl::leaveControl() {
@@ -2434,9 +2434,10 @@ void PlayerControl::update(bool currentlyActive) {
           for (auto controlled : getControlled())
             if ((collective->hasTrait(controlled, MinionTrait::FIGHTER)
                   || controlled == collective->getLeader())
-                && c->getPosition().isSameLevel(controlled->getPosition())) {
+                && c->getPosition().isSameLevel(controlled->getPosition())
+                && canControlInTeam(c)) {
               for (auto team : getTeams().getActive(controlled)) {
-                getTeams().add(team, c);
+                addToCurrentTeam(c);
                 controlled->privateMessage(PlayerMessage(c->getName().a() + " joins your team.",
                       MessagePriority::HIGH));
                 break;

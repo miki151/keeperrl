@@ -9,6 +9,7 @@ class NODISCARD CreatureAction {
   typedef function<void(WCreature)> ActionFun;
 
   CreatureAction(WConstCreature, ActionFun);
+  CreatureAction(ActionFun);
   CreatureAction(const string& failedReason = "");
   CreatureAction prepend(ActionFun);
   CreatureAction append(ActionFun);

@@ -94,3 +94,4 @@ enum class MessagePriority;
 enum class WorkshopType;
 enum class PlayerType;
 enum class CreatureStatus;
+enum class TeamOrder;
