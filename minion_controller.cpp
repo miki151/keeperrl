@@ -11,6 +11,8 @@
 #include "message_generator.h"
 #include "time_queue.h"
 #include "unknown_locations.h"
+#include "team_order.h"
+#include "collective_teams.h"
 
 class MinionController : public Player {
   public:
@@ -41,6 +43,20 @@ class MinionController : public Player {
     return ret;
   }
 
+  virtual void refreshGameInfo(GameInfo& gameInfo) const override {
+    Player::refreshGameInfo(gameInfo);
+    auto& info = *gameInfo.playerInfo.getReferenceMaybe<PlayerInfo>();
+    if (auto team = control->getCurrentTeam()) {
+      info.teamOrders.emplace();
+      for (auto order : ENUM_ALL(TeamOrder))
+        if (control->getTeams().hasTeamOrder(*team, creature, order))
+          info.teamOrders->insert(order);
+        else
+          info.teamOrders->erase(order);
+    } else
+      info.teamOrders.reset();
+  }
+
   virtual vector<OtherCreatureCommand> getOtherCreatureCommands(WCreature c) const override {
     vector<OtherCreatureCommand> ret = Player::getOtherCreatureCommands(c);
     if (creature->isEnemy(c) && c->canBeCaptured())
@@ -69,6 +85,14 @@ class MinionController : public Player {
       case UserInputId::TEAM_MEMBER_ACTION: {
         auto& info = input.get<TeamMemberActionInfo>();
         control->teamMemberAction(info.action, info.memberId);
+        return true;
+      }
+      case UserInputId::TOGGLE_TEAM_ORDER: {
+        if (auto team = control->getCurrentTeam()) {
+          auto order = input.get<TeamOrder>();
+          bool was = control->getTeams().hasTeamOrder(*team, creature, order);
+          control->getTeams().setTeamOrder(*team, creature, order, !was);
+        }
         return true;
       }
       default:

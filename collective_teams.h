@@ -16,6 +16,7 @@
 
 #include "util.h"
 #include "enums.h"
+#include "unique_entity.h"
 
 class Creature;
 
@@ -41,6 +42,8 @@ class CollectiveTeams {
   void cancel(TeamId);
   bool exists(TeamId) const;
   bool isPersistent(TeamId) const;
+  bool hasTeamOrder(TeamId, WConstCreature, TeamOrder) const;
+  void setTeamOrder(TeamId, WConstCreature, TeamOrder, bool);
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);
@@ -48,11 +51,11 @@ class CollectiveTeams {
   private:
   struct TeamInfo {
     vector<WCreature> SERIAL(creatures);
+    set<TeamOrder> SERIAL(teamOrders);
     bool SERIAL(active);
     bool SERIAL(persistent);
-    SERIALIZE_ALL(creatures, active, persistent);
+    SERIALIZE_ALL(creatures, teamOrders, active, persistent);
   };
   map<TeamId, TeamInfo> SERIAL(teamInfo);
   TeamId SERIAL(nextId) = 1;
 };
-

@@ -80,6 +80,10 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void onEvent(const GameEvent&);
   const vector<WCreature>& getControlled() const;
 
+  optional<TeamId> getCurrentTeam() const;
+  CollectiveTeams& getTeams();
+  const CollectiveTeams& getTeams() const;
+
   private:
   struct Private {};
 
@@ -183,9 +187,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void addToMemory(Position);
   void getSquareViewIndex(Position, bool canSee, ViewIndex&) const;
   void onSquareClick(Position);
-  optional<TeamId> getCurrentTeam() const;
-  CollectiveTeams& getTeams();
-  const CollectiveTeams& getTeams() const;
   WModel getModel() const;
   WGame getGame() const;
   View* getView() const;

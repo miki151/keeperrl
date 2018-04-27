@@ -95,6 +95,7 @@ enum class UserInputId {
     PLAYER_COMMAND,
     TOGGLE_CONTROL_MODE,
     EXIT_CONTROL_MODE,
+    TOGGLE_TEAM_ORDER,
     TEAM_MEMBER_ACTION,
     CAST_SPELL,
     INVENTORY_ITEM,
@@ -185,7 +186,7 @@ enum class SpellId;
 class UserInput : public EnumVariant<UserInputId, TYPES(BuildingInfo, int, UniqueEntity<Creature>::Id,
     UniqueEntity<PlayerMessage>::Id, InventoryItemInfo, Vec2, TeamCreatureInfo, SpellId, VillageActionInfo,
     TaskActionInfo, EquipmentActionInfo, RenameActionInfo, WorkshopQueuedActionInfo, CreatureDropInfo, TeamDropInfo,
-    UniqueEntity<Collective>::Id, string, TeamMemberActionInfo, AssignQuartersInfo),
+    UniqueEntity<Collective>::Id, string, TeamMemberActionInfo, AssignQuartersInfo, TeamOrder),
         ASSIGN(BuildingInfo,
             UserInputId::BUILD,
             UserInputId::RECT_SELECTION,
@@ -263,6 +264,9 @@ class UserInput : public EnumVariant<UserInputId, TYPES(BuildingInfo, int, Uniqu
             UserInputId::CREATE_ITEM,
             UserInputId::APPLY_EFFECT,
             UserInputId::SUMMON_ENEMY
+        ),
+        ASSIGN(TeamOrder,
+            UserInputId::TOGGLE_TEAM_ORDER
         )
         > {
   using EnumVariant::EnumVariant;

@@ -35,6 +35,7 @@
 #include "creature_view.h"
 #include "level.h"
 #include "quarters.h"
+#include "team_order.h"
 
 using SDL::SDL_Keysym;
 using SDL::SDL_Keycode;
@@ -1368,11 +1369,24 @@ SGuiElem GuiBuilder::drawRightPlayerInfo(const PlayerInfo& info) {
   if (!teamList.isEmpty())
     vList.addElemAuto(gui.margins(teamList.buildHorizontalList(), 0, 25, 0, 20));
   vList.addSpace(10);
+  if (info.teamOrders) {
+    auto orderList = gui.getListBuilder();
+    for (auto order : ENUM_ALL(TeamOrder)) {
+      orderList.addElemAuto(gui.stack(
+          gui.button(getButtonCallback({UserInputId::TOGGLE_TEAM_ORDER, order})),
+          getTooltip({getDescription(order)}, THIS_LINE),
+          info.teamOrders->contains(order) ? gui.uiHighlightLine() : gui.empty(),
+          gui.label(getName(order))
+      ));
+      orderList.addSpace(15);
+    }
+    vList.addElem(orderList.buildHorizontalList());
+  }
   if (info.teamInfos.size() > 1)
-  vList.addElem(gui.stack(
-      gui.labelHighlight("[Control mode: "_s + getControlModeName(info.controlMode) + "]", Color::LIGHT_BLUE),
-      gui.button(getButtonCallback(UserInputId::TOGGLE_CONTROL_MODE), gui.getKey(SDL::SDLK_g))
-  ));
+    vList.addElem(gui.stack(
+        gui.labelHighlight("[Control mode: "_s + getControlModeName(info.controlMode) + "]", Color::LIGHT_BLUE),
+        gui.button(getButtonCallback(UserInputId::TOGGLE_CONTROL_MODE), gui.getKey(SDL::SDLK_g))
+    ));
   vList.addElem(gui.stack(
       gui.labelHighlight("[Exit control mode]", Color::LIGHT_BLUE),
       gui.button(getButtonCallback(UserInputId::EXIT_CONTROL_MODE), gui.getKey(SDL::SDLK_u))

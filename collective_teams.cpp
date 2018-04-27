@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "collective_teams.h"
 #include "creature.h"
+#include "team_order.h"
 
 bool CollectiveTeams::contains(TeamId team, WConstCreature c) const {
   return teamInfo.at(team).creatures.contains(c);
@@ -99,6 +100,22 @@ TeamId CollectiveTeams::createPersistent(vector<WCreature> c) {
 bool CollectiveTeams::isPersistent(TeamId id) const {
   CHECK(exists(id));
   return teamInfo.at(id).persistent;
+}
+
+bool CollectiveTeams::hasTeamOrder(TeamId id, WConstCreature c, TeamOrder order) const {
+  CHECK(exists(id));
+  return teamInfo.at(id).teamOrders.count(order);
+}
+
+void CollectiveTeams::setTeamOrder(TeamId id, WConstCreature c, TeamOrder order, bool state) {
+  CHECK(exists(id));
+  if (state) {
+    teamInfo.at(id).teamOrders.insert(order);
+    for (auto order2 : ENUM_ALL(TeamOrder))
+      if (order != order2 && conflict(order, order2))
+        teamInfo.at(id).teamOrders.erase(order2);
+  } else
+    teamInfo.at(id).teamOrders.erase(order);
 }
 
 bool CollectiveTeams::exists(TeamId id) const {
