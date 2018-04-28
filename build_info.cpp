@@ -150,7 +150,7 @@ const vector<BuildInfo>& BuildInfo::get() {
         "Makes the area around it visible.", 0, "Installations"),
       BuildInfo({FurnitureType::PORTAL, {ResourceId::STONE, 60}}, "Portal", {},
         "Opens a connection if another portal is present.", 0, "Installations"),
-      BuildInfo({FurnitureType::MINION_STATUE, {ResourceId::GOLD, 50}}, "Statue", {},
+      BuildInfo({FurnitureType::MINION_STATUE, {ResourceId::GOLD, 50}}, "Golden Statue", {},
         "Increases minion population limit by " +
               toString(ModelBuilder::getStatuePopulationIncrease()) + ".", 0, "Installations"),
       BuildInfo({FurnitureType::STONE_MINION_STATUE, {ResourceId::STONE, 250}}, "Stone Statue", {},
