@@ -69,6 +69,10 @@ static CollectiveConfig getKeeperConfig(RandomGen& random, bool fastImmigration,
         c.increasePerSquare = ModelBuilder::getStatuePopulationIncrease();
         c.maxIncrease = 1000;),
       CONSTRUCT(PopulationIncrease,
+        c.type = FurnitureType::STONE_MINION_STATUE;
+        c.increasePerSquare = ModelBuilder::getStatuePopulationIncrease();
+        c.maxIncrease = c.increasePerSquare * 4;),
+      CONSTRUCT(PopulationIncrease,
         c.type = FurnitureType::THRONE;
         c.increasePerSquare = ModelBuilder::getThronePopulationIncrease();
         c.maxIncrease = c.increasePerSquare;),
