@@ -490,6 +490,8 @@ PItem Body::getBodyPartItem(const string& name, BodyPart part) {
       return ItemType(ItemType::IronOre{}).get();
     case Material::WOOD:
       return ItemType(ItemType::WoodPlank{}).get();
+    case Material::ADA:
+      return ItemType(ItemType::AdaOre{}).get();
     default: return nullptr;
   }
 }
@@ -511,6 +513,8 @@ vector<PItem> Body::getCorpseItems(const string& name, Creature::Id id, bool ins
       return ItemType(ItemType::IronOre{}).get(numCorpseItems(size));
     case Material::WOOD:
       return ItemType(ItemType::WoodPlank{}).get(numCorpseItems(size));
+    case Material::ADA:
+      return ItemType(ItemType::AdaOre{}).get(numCorpseItems(size));
     default: return {};
   }
 }

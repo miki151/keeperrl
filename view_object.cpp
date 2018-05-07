@@ -221,6 +221,7 @@ const char* ViewObject::getDefaultDescription() const {
     case ViewId::JEWELER: return "Jeweler";
     case ViewId::FURNACE: return "Furnace";
     case ViewId::MINION_STATUE: return "Statue";
+    case ViewId::STONE_MINION_STATUE: return "Stone Statue";
     case ViewId::CREATURE_ALTAR: return "Shrine";
     case ViewId::FOUNTAIN: return "Fountain";
     case ViewId::TREASURE_CHEST:
@@ -412,7 +413,8 @@ static vector<ViewId> itemIds {
   ViewId::MUSHROOM3,
   ViewId::MUSHROOM4,
   ViewId::MUSHROOM5,
-  ViewId::MUSHROOM6 
+  ViewId::MUSHROOM6, 
+  ViewId::MUSHROOM7 
 };
 
 static bool hallu = false;
