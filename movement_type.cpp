@@ -2,7 +2,7 @@
 #include "movement_type.h"
 #include "tribe.h"
 
-SERIALIZE_DEF(MovementType, traits, tribeSet, sunlightVulnerable, fireResistant, forced, destroyActions)
+SERIALIZE_DEF(MovementType, traits, tribeSet, sunlightVulnerable, fireResistant, forced, destroyActions, buildBridge)
 
 MovementType::MovementType(EnumSet<MovementTrait> t) : traits(t) {
 }
@@ -66,6 +66,11 @@ MovementType& MovementType::setDestroyActions(EnumSet<DestroyAction::Type> d) {
   return *this;
 }
 
+MovementType& MovementType::setCanBuildBridge(bool can) {
+  buildBridge = can;
+  return *this;
+}
+
 const EnumSet<DestroyAction::Type>& MovementType::getDestroyActions() const {
   return destroyActions;
 }
@@ -80,6 +85,10 @@ bool MovementType::isFireResistant() const {
 
 bool MovementType::isForced() const {
   return forced;
+}
+
+bool MovementType::canBuildBridge() const {
+  return buildBridge;
 }
 
 

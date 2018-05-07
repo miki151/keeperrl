@@ -51,6 +51,7 @@
 #include "weapon_info.h"
 #include "time_queue.h"
 #include "profiler.h"
+#include "furniture_type.h"
 
 template <class Archive>
 void Creature::serialize(Archive& ar, const unsigned int version) {
@@ -1358,8 +1359,9 @@ CreatureAction Creature::construct(Vec2 direction, FurnitureType type) const {
   return CreatureAction();
 }
 
-bool Creature::canConstruct(FurnitureType) const {
-  return attributes->getSkills().hasDiscrete(SkillId::CONSTRUCTION);
+bool Creature::canConstruct(FurnitureType type) const {
+  return attributes->getSkills().hasDiscrete(SkillId::CONSTRUCTION) ||
+      (getBody().isHumanoid() && type == FurnitureType::BRIDGE);
 }
 
 CreatureAction Creature::eat(WItem item) const {
@@ -1552,7 +1554,8 @@ MovementType Creature::getMovementType() const {
     .setForced(isAffected(LastingEffect::BLIND) || getHoldingCreature() || forceMovement)
     .setFireResistant(isAffected(LastingEffect::FIRE_RESISTANT))
     .setSunlightVulnerable(isAffected(LastingEffect::SUNLIGHT_VULNERABLE) && !isAffected(LastingEffect::DARKNESS_SOURCE)
-        && (!getGame() || getGame()->getSunlightInfo().getState() == SunlightState::DAY));
+        && (!getGame() || getGame()->getSunlightInfo().getState() == SunlightState::DAY))
+    .setCanBuildBridge(getBody().isHumanoid());
 }
 
 int Creature::getDifficultyPoints() const {
@@ -1630,12 +1633,15 @@ CreatureAction Creature::moveTowards(Position pos, bool away, NavigationFlags fl
         return action.append([path = *currentPath](WCreature c) { c->shortestPath = path; });
       } else {
         INFO << "Trying to destroy";
-        if (!pos2.canEnterEmpty(this) && flags.destroy)
+        if (!pos2.canEnterEmpty(this) && flags.destroy) {
           if (auto destroyAction = pos2.getBestDestroyAction(getMovementType()))
-              if (auto action = destroy(getPosition().getDir(pos2), *destroyAction)) {
-                INFO << "Destroying";
-                return action.append([path = *currentPath](WCreature c) { c->shortestPath = path; });
-              }
+            if (auto action = destroy(getPosition().getDir(pos2), *destroyAction)) {
+              INFO << "Destroying";
+              return action.append([path = *currentPath](WCreature c) { c->shortestPath = path; });
+            }
+          if (auto bridgeAction = construct(getPosition().getDir(pos2), FurnitureType::BRIDGE))
+            return bridgeAction.append([path = *currentPath](WCreature c) { c->shortestPath = path; });
+        }
       }
     } else
       INFO << "Position unreachable";

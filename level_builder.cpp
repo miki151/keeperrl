@@ -110,6 +110,12 @@ void LevelBuilder::resetFurniture(Vec2 posT, FurnitureType type, optional<Square
   putFurniture(posT, type, attrib);
 }
 
+void LevelBuilder::resetFurniture(Vec2 posT, FurnitureParams params, optional<SquareAttrib> attrib) {
+  CHECK(Furniture::getLayer(params.type) == FurnitureLayer::GROUND);
+  removeAllFurniture(posT);
+  putFurniture(posT, params, attrib);
+}
+
 bool LevelBuilder::canPutFurniture(Vec2 posT, FurnitureLayer layer) {
   return !getFurniture(posT, layer);
 }
