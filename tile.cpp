@@ -413,8 +413,7 @@ class TileCoordLookup {
         .setRoundShadow());
     Tile::addTile(ViewId::MINION_STATUE, sprite("statue")
         .setRoundShadow());
-    //TODO: Give stone minion statue a unique sprite.
-    Tile::addTile(ViewId::STONE_MINION_STATUE, sprite("statue")
+    Tile::addTile(ViewId::STONE_MINION_STATUE, sprite("statue_stone")
         .setRoundShadow());
     Tile::addTile(ViewId::THRONE, sprite("throne").setRoundShadow());
     Tile::addTile(ViewId::ORC, sprite("orc"));
