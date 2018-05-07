@@ -585,6 +585,12 @@ unique_ptr<Workshops> CollectiveConfig::getWorkshops() const {
               Effect::Lasting{LastingEffect::MELEE_RESISTANCE}}, 6, {CollectiveResourceId::GOLD, 20})
                   .setTechId(TechId::ALCHEMY_ADV),
           Workshops::Item::fromType(ItemType::Potion{
+              Effect::Lasting{LastingEffect::MELEE_VULNERABILITY}}, 6, {CollectiveResourceId::GOLD, 40})
+                  .setTechId(TechId::ALCHEMY_ADV),
+          Workshops::Item::fromType(ItemType::Potion{
+              Effect::Lasting{LastingEffect::MAGIC_VULNERABILITY}}, 6, {CollectiveResourceId::GOLD, 40})
+                  .setTechId(TechId::ALCHEMY_ADV),
+          Workshops::Item::fromType(ItemType::Potion{
               Effect::Lasting{LastingEffect::INVISIBLE}}, 6, {CollectiveResourceId::GOLD, 20})
                   .setTechId(TechId::ALCHEMY_ADV),
           //Alchemical conversion to and from gold
