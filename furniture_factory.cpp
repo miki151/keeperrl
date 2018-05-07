@@ -161,7 +161,12 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setFireInfo(Fire(300, 0.5))
           .setDestroyable(30);
     case FurnitureType::MINION_STATUE:
-      return Furniture("statue", ViewObject(ViewId::MINION_STATUE, ViewLayer::FLOOR), type, tribe)
+      return Furniture("gold statue", ViewObject(ViewId::MINION_STATUE, ViewLayer::FLOOR), type, tribe)
+          .setBlocking()
+          .setCanHide()
+          .setDestroyable(50);
+    case FurnitureType::STONE_MINION_STATUE:
+      return Furniture("stone statue", ViewObject(ViewId::STONE_MINION_STATUE, ViewLayer::FLOOR), type, tribe)
           .setBlocking()
           .setCanHide()
           .setDestroyable(50);

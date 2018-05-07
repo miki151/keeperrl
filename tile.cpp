@@ -413,6 +413,9 @@ class TileCoordLookup {
         .setRoundShadow());
     Tile::addTile(ViewId::MINION_STATUE, sprite("statue")
         .setRoundShadow());
+    //TODO: Give stone minion statue a unique sprite.
+    Tile::addTile(ViewId::STONE_MINION_STATUE, sprite("statue")
+        .setRoundShadow());
     Tile::addTile(ViewId::THRONE, sprite("throne").setRoundShadow());
     Tile::addTile(ViewId::ORC, sprite("orc"));
     Tile::addTile(ViewId::ORC_CAPTAIN, sprite("orc_captain"));
@@ -755,6 +758,7 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::UP_STAIRCASE, symbol(u8"➚", Color::ALMOST_WHITE, true));
     Tile::addSymbol(ViewId::WELL, symbol(u8"0", Color::BLUE));
     Tile::addSymbol(ViewId::MINION_STATUE, symbol(u8"&", Color::LIGHT_GRAY));
+    Tile::addSymbol(ViewId::STONE_MINION_STATUE, symbol(u8"&", Color::ALMOST_WHITE));
     Tile::addSymbol(ViewId::THRONE, symbol(u8"Ω", Color::YELLOW, true));
     Tile::addSymbol(ViewId::ORC, symbol(u8"o", Color::DARK_BLUE));
     Tile::addSymbol(ViewId::ORC_CAPTAIN, symbol(u8"o", Color::PURPLE));
