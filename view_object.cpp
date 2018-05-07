@@ -413,7 +413,8 @@ static vector<ViewId> itemIds {
   ViewId::MUSHROOM3,
   ViewId::MUSHROOM4,
   ViewId::MUSHROOM5,
-  ViewId::MUSHROOM6 
+  ViewId::MUSHROOM6, 
+  ViewId::MUSHROOM7 
 };
 
 static bool hallu = false;
