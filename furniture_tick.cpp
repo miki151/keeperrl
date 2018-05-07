@@ -15,6 +15,8 @@
 #include "item_type.h"
 #include "attack.h"
 #include "tribe.h"
+#include "furniture_type.h"
+#include "furniture_factory.h"
 
 static void handleBed(Position pos) {
   PROFILE;
@@ -95,6 +97,18 @@ static void meteorShower(Position position, WFurniture furniture) {
   }
 }
 
+static void pit(Position position, WFurniture self) {
+  if (Random.roll(10))
+    for (auto neighborPos : position.neighbors8(Random))
+      if (auto water = neighborPos.getFurniture(FurnitureLayer::GROUND))
+        if (water->canBuildBridgeOver()) {
+          self->destroy(position, DestroyAction::Type::BOULDER);
+          position.replaceFurniture(position.getFurniture(FurnitureLayer::GROUND),
+              FurnitureFactory::get(water->getType(), water->getTribe()));
+          return;
+        }
+}
+
 void FurnitureTick::handle(FurnitureTickType type, Position pos, WFurniture furniture) {
   switch (type) {
     case FurnitureTickType::BED:
@@ -111,6 +125,9 @@ void FurnitureTick::handle(FurnitureTickType type, Position pos, WFurniture furn
       break;
     case FurnitureTickType::METEOR_SHOWER:
       meteorShower(pos, furniture);
+      break;
+    case FurnitureTickType::PIT:
+      pit(pos, furniture);
       break;
   }
 }

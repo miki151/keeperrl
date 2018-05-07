@@ -51,7 +51,7 @@ void Furniture::serialize(Archive& ar, const unsigned) {
   ar(name, pluralName, type, movementSet, fire, burntRemains, destroyedRemains, destroyActions, itemDrop);
   ar(blockVision, usageType, clickType, tickType, usageTime, overrideMovement, wall, creator, createdTime);
   ar(constructMessage, layer, entryType, lightEmission, canHideHere, warning, summonedElement, droppedItems);
-  ar(canBuildBridge, noProjectiles, clearFogOfWar, realTimeDestroy);
+  ar(canBuildBridge, noProjectiles, clearFogOfWar, realTimeDestroy, xForgetAfterBuilding);
 }
 
 SERIALIZABLE(Furniture)
@@ -295,6 +295,10 @@ bool Furniture::isClearFogOfWar() const {
   return clearFogOfWar;
 }
 
+bool Furniture::forgetAfterBuilding() const {
+  return isWall() || xForgetAfterBuilding;
+}
+
 vector<PItem> Furniture::dropItems(Position pos, vector<PItem> v) const {
   if (droppedItems) {
     return droppedItems->handle(pos, this, std::move(v));
@@ -435,6 +439,11 @@ Furniture& Furniture::setOverrideMovement() {
 
 Furniture& Furniture::setRealTimeModeDestroy(bool s) {
   realTimeDestroy = s;
+  return *this;
+}
+
+Furniture& Furniture::setForgetAfterBuilding() {
+  xForgetAfterBuilding = true;
   return *this;
 }
 

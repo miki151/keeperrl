@@ -411,6 +411,11 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setDestroyable(100, DestroyAction::Type::DIG)
           .setDestroyable(1900, DestroyAction::Type::HOSTILE_DIG)
           .setDestroyable(2000, DestroyAction::Type::HOSTILE_DIG_NO_SKILL);
+    case FurnitureType::PIT:
+      return Furniture("pit", ViewObject(ViewId::SOKOBAN_HOLE, ViewLayer::FLOOR), type, tribe)
+          .setBlocking()
+          .setForgetAfterBuilding()
+          .setTickType(FurnitureTickType::PIT);
     case FurnitureType::CASTLE_WALL:
       return Furniture("wall", ViewObject(ViewId::CASTLE_WALL, ViewLayer::FLOOR), type, tribe)
           .setBlocking()

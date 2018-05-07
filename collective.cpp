@@ -963,7 +963,7 @@ bool Collective::isConstructionReachable(Position pos) {
 
 void Collective::onConstructed(Position pos, FurnitureType type) {
   tileEfficiency->update(pos);
-  if (pos.getFurniture(type)->isWall()) {
+  if (pos.getFurniture(type)->forgetAfterBuilding()) {
     constructions->removeFurniture(pos, Furniture::getLayer(type));
     if (territory->contains(pos))
       territory->remove(pos);

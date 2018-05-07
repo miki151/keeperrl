@@ -66,6 +66,7 @@ class Furniture : public OwnedObject<Furniture> {
   optional<LocalTime> getCreatedTime() const;
   optional<CreatureId> getSummonedElement() const;
   bool isClearFogOfWar() const;
+  bool forgetAfterBuilding() const;
   /**
    * @brief Calls special functionality to handle dropped items, if any.
    * @return possibly empty subset of the items that weren't consumned and can be dropped normally.
@@ -104,6 +105,7 @@ class Furniture : public OwnedObject<Furniture> {
   Furniture& setStopProjectiles();
   Furniture& setClearFogOfWar();
   Furniture& setRealTimeModeDestroy(bool state);
+  Furniture& setForgetAfterBuilding();
   MovementSet& modMovementSet();
 
   SERIALIZATION_DECL(Furniture)
@@ -142,4 +144,5 @@ class Furniture : public OwnedObject<Furniture> {
   bool SERIAL(canBuildBridge) = false;
   bool SERIAL(noProjectiles) = false;
   bool SERIAL(clearFogOfWar) = false;
+  bool SERIAL(xForgetAfterBuilding) = false;
 };

@@ -27,6 +27,8 @@ const vector<BuildInfo>& BuildInfo::get() {
       BuildInfo({{FurnitureType::DUNGEON_WALL, FurnitureType::DUNGEON_WALL2}, {ResourceId::STONE, 2}}, "Reinforce wall", {},
           "Reinforce wall. +" + toString<int>(100 * CollectiveConfig::getEfficiencyBonus(FurnitureType::DUNGEON_WALL)) +
           " efficiency to surrounding tiles.", 0, "Structure"),
+      BuildInfo({FurnitureType::PIT}, "Dig a pit", {},
+          "Dig a pit in the ground. Building next to water or lava will cause it to fill up.", 0, "Structure"),
       BuildInfo({FurnitureType::WOOD_DOOR, {ResourceId::WOOD, 5}}, "Wooden door", {},
           "Click on a built door to lock it.", 'o', "Doors", true)
              .setTutorialHighlight(TutorialHighlight::BUILD_DOOR),
