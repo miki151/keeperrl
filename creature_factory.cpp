@@ -851,7 +851,7 @@ PCreature CreatureFactory::getSpecial(TribeId tribe, bool humanoid, bool large, 
           c.chatReactionFriendly = "\"I am the mighty " + name + "\"";
           c.chatReactionHostile = "\"I am the mighty " + name + ". Die!\"";
         } else {
-          c.chatReactionFriendly = c.chatReactionHostile = "The " + name + " snarls.";
+          c.chatReactionFriendly = c.chatReactionHostile = c.petReaction = "snarls."_s;
         }
         c.name = name;
         c.name->setStack(humanoid ? "legendary humanoid" : "legendary beast");
@@ -973,6 +973,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
         c.spells->add(SpellId::SUMMON_SPIRIT);
         c.chatReactionFriendly = "\"mhhhhhrrrr!\""_s;
         c.chatReactionHostile = "\"mhhhhhrrrr!\""_s;
+        c.petReaction = "neighs"_s;
         c.name = "unicorn";
         //Pet names like dogs would have.
         c.name->setFirst(NameGenerator::get(NameGeneratorId::DOG)->getNext());
@@ -1772,6 +1773,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body->setHorseBodyParts(2);
           c.animal = true;
           c.noChase = true;
+          c.petReaction = "neighs"_s;
           c.name = "horse";);
     case CreatureId::COW: 
       return CATTR(
@@ -1782,6 +1784,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body->setHorseBodyParts(2);
           c.animal = true;
           c.noChase = true;
+          c.petReaction = "\"Mooooooooooooooooooooooooooo!\""_s;
           c.name = "cow";);
     case CreatureId::DONKEY: 
       return CATTR(
@@ -1814,6 +1817,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body = Body::nonHumanoid(Body::Size::MEDIUM);
           c.body->setHorseBodyParts(2);
           c.body->setMinionFood();
+          c.petReaction = "\"Meh-eh-eh!\""_s;
           c.noChase = true;
           c.animal = true;
           c.name = "goat";);
@@ -2025,6 +2029,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.animal = true;
           c.name = "dog";
           c.name->setGroup("pack");
+          c.petReaction = "\"WOOF!\""_s;
           c.name->setFirst(NameGenerator::get(NameGeneratorId::DOG)->getNext());
           );
     case CreatureId::FIRE_SPHERE: 

@@ -488,8 +488,10 @@ vector<Player::OtherCreatureCommand> Player::getOtherCreatureCommands(WCreature 
       if (auto& attack = creature->getBody().getIntrinsicAttacks()[part])
         genAction(4, "Attack using " + attack->item->getName(), true, creature->attack(c,
             CONSTRUCT(Creature::AttackParams, c.weapon = attack->item.get();)));
-  } else
+  } else {
     genAction(1, "Attack", false, creature->attack(c));
+    genAction(1, "Pet", false, creature->pet(c));
+  }
   if (creature == c)
     genAction(0, "Skip turn", true, creature->wait());
   if (c->getPosition().dist8(creature->getPosition()) == 1)

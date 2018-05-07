@@ -699,6 +699,19 @@ CreatureAction Creature::chatTo(WCreature other) const {
     return CreatureAction("Move closer to chat to " + other->getName().the());
 }
 
+CreatureAction Creature::pet(WCreature other) const {
+  CHECK(other);
+  if (other->getPosition().dist8(getPosition()) == 1 && other->getAttributes().getPetReaction(other) && isFriend(other))
+    return CreatureAction(this, [=](WCreature self) {
+        secondPerson("You pet " + other->getName().the());
+        thirdPerson(getName().the() + " pets " + other->getName().the());
+        self->privateMessage(*other->getAttributes().getPetReaction(other));
+        self->spendTime();
+    });
+  else
+    return CreatureAction("Move closer to chat to " + other->getName().the());
+}
+
 CreatureAction Creature::stealFrom(Vec2 direction, const vector<WItem>& items) const {
   if (getPosition().plus(direction).getCreature())
     return CreatureAction(this, [=](WCreature self) {

@@ -82,6 +82,7 @@ class CreatureAttributes {
   optional<ViewObject>& getIllusionViewObject();
   bool canEquip() const;
   void chatReaction(WCreature me, WCreature other);
+  optional<string> getPetReaction(WConstCreature me) const;
   string getDescription() const;
   bool isAffected(LastingEffect, GlobalTime) const;
   bool isAffectedPermanently(LastingEffect) const;
@@ -134,4 +135,5 @@ class CreatureAttributes {
   optional<CreatureId> SERIAL(creatureId);
   string SERIAL(deathDescription) = "killed"_s;
   bool SERIAL(canJoinCollective) = true;
+  optional<string> SERIAL(petReaction);
 };

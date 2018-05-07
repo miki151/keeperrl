@@ -164,6 +164,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   CreatureAction disappear() const;
   CreatureAction torture(WCreature) const;
   CreatureAction chatTo(WCreature) const;
+  CreatureAction pet(WCreature) const;
   CreatureAction stealFrom(Vec2 direction, const vector<WItem>&) const;
   CreatureAction give(WCreature whom, vector<WItem> items) const;
   CreatureAction payFor(const vector<WItem>&) const;

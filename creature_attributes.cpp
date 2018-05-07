@@ -48,7 +48,7 @@ void CreatureAttributes::serialize(Archive& ar, const unsigned int version) {
   ar(animal, cantEquip, courage, canJoinCollective);
   ar(boulder, noChase, isSpecial, skills, spells);
   ar(permanentEffects, lastingEffects, minionActivities, expLevel);
-  ar(noAttackSound, maxLevelIncrease, creatureId);
+  ar(noAttackSound, maxLevelIncrease, creatureId, petReaction);
 }
 
 SERIALIZABLE(CreatureAttributes);
@@ -165,6 +165,15 @@ string CreatureAttributes::getDescription() const {
     return "";
   string attack;
   return body->getDescription() + ". " + attack;
+}
+
+optional<string> CreatureAttributes::getPetReaction(WConstCreature me) const {
+  if (!petReaction)
+    return none;
+  if (petReaction->front() == '\"')
+    return *petReaction;
+  else
+    return me->getName().the() + " " + *petReaction;
 }
 
 void CreatureAttributes::chatReaction(WCreature me, WCreature other) {
