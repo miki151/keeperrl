@@ -649,13 +649,13 @@ class MountainRiver : public LevelMaker {
     }
   }
 
-  FurnitureType getWaterType(LevelBuilder* builder, Vec2 pos, int numLayer) {
+  FurnitureParams getWaterType(LevelBuilder* builder, Vec2 pos, int numLayer) {
     if (builder->hasAttrib(pos, SquareAttrib::MOUNTAIN))
-      return FurnitureFactory::getWaterType(100);
+      return FurnitureParams{FurnitureFactory::getWaterType(100), TribeId::getKeeper()};
     else if (numLayer == 0)
-      return FurnitureType::SAND;
+      return FurnitureParams{FurnitureType::SAND, TribeId::getKeeper()};
     else
-      return FurnitureFactory::getWaterType(1.1 * (numLayer - 1));
+      return FurnitureParams{FurnitureFactory::getWaterType(1.1 * (numLayer - 1)), TribeId::getKeeper()};
   }
 
   private:
@@ -756,7 +756,8 @@ class Lake : public Blob {
     if (sand && edgeDist == 1 && !builder->isFurnitureType(pos, FurnitureType::WATER))
       builder->resetFurniture(pos, FurnitureType::SAND);
     else
-      builder->resetFurniture(pos, FurnitureFactory::getWaterType(double(edgeDist) / 2));
+      builder->resetFurniture(pos,
+          FurnitureParams{FurnitureFactory::getWaterType(double(edgeDist) / 2), TribeId::getKeeper()});
   }
 
   private:
@@ -2233,7 +2234,7 @@ static PMakerQueue islandVaultMaker(RandomGen& random, SettlementInfo info, bool
   if (door)
     buildingMaker->addMaker(unique<LevelExit>(FurnitureFactory(TribeId::getMonster(), FurnitureType::WOOD_DOOR)));
   return unique<MakerQueue>(
-        unique<Empty>(SquareChange::reset(FurnitureType::WATER)),
+        unique<Empty>(SquareChange::reset(FurnitureParams{FurnitureType::WATER, TribeId::getKeeper()})),
         unique<Margin>(1, std::move(buildingMaker)));
 }
 
@@ -2274,7 +2275,8 @@ static PMakerQueue swamp(SettlementInfo info) {
 
 static PMakerQueue mountainLake(SettlementInfo info) {
   auto queue = unique<MakerQueue>(
-      unique<UniformBlob>(SquareChange::reset(FurnitureType::WATER, SquareAttrib::LAKE), none),
+      unique<UniformBlob>(SquareChange::reset(FurnitureParams{FurnitureType::WATER, TribeId::getKeeper()},
+          SquareAttrib::LAKE), none),
       unique<PlaceCollective>(info.collective)
   );
   queue->addMaker(unique<Inhabitants>(info.inhabitants, info.collective));
@@ -2493,7 +2495,8 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, optional<CreatureFactory> fo
       locations->add(unique<Lake>(), {random.get(20, 30), random.get(20, 30)}, Predicate::attrib(SquareAttrib::LOWLAND));
   if (biomeId == BiomeId::MOUNTAIN)
     for (int i : Range(random.get(3, 6))) {
-      locations->add(unique<UniformBlob>(SquareChange::reset(FurnitureParams{FurnitureType::WATER, TribeId::getKeeper()}, SquareAttrib::LAKE), none),
+      locations->add(unique<UniformBlob>(
+              SquareChange::reset(FurnitureParams{FurnitureType::WATER, TribeId::getKeeper()}, SquareAttrib::LAKE), none),
           {random.get(10, 30), random.get(10, 30)}, Predicate::attrib(SquareAttrib::MOUNTAIN));
     //  locations->setMaxDistanceLast(startingPos, i == 0 ? 25 : 60);
   }

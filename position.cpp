@@ -770,7 +770,8 @@ optional<double> Position::getNavigationCost(const MovementType& movement) const
   if (auto furniture = getFurniture(FurnitureLayer::MIDDLE))
     if (auto destroyAction = getBestDestroyAction(movement))
       return *furniture->getStrength(*destroyAction) / 10;
-  if (movement.canBuildBridge() && canConstruct(FurnitureType::BRIDGE))
+  if (movement.canBuildBridge() && canConstruct(FurnitureType::BRIDGE) &&
+      !movement.isCompatible(getFurniture(FurnitureLayer::GROUND)->getTribe()))
     return 10;
   return none;
 }
