@@ -257,8 +257,8 @@ void Renderer::renderDeferredSprites() {
     add(elem.d, elem.p.x, elem.k.y, elem);
   }
   if (!vertices.empty()) {
-    SDL::glEnable(GL_TEXTURE_2D);
     SDL::glBindTexture(GL_TEXTURE_2D, *currentTexture);
+    SDL::glEnable(GL_TEXTURE_2D);
     checkOpenglError();
     SDL::glEnableClientState(GL_VERTEX_ARRAY);
     SDL::glEnableClientState(GL_TEXTURE_COORD_ARRAY);

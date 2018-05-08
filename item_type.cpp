@@ -89,6 +89,7 @@ class FireScrollItem : public Item {
   FireScrollItem(const ItemAttributes& attr) : Item(attr) {}
 
   virtual void applySpecial(WCreature c) override {
+    fireDamage(0.03, c->getPosition());
     set = true;
   }
 
