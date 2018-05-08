@@ -589,9 +589,8 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
     if (object.hasModifier(ViewObject::Modifier::LOCKED))
       renderer.drawTile(pos + move, Tile::getTile(ViewId::KEY, spriteMode).getSpriteCoord(), size);
   } else {
-    Vec2 movement = getMovementOffset(object, size, currentTimeGame, curTimeReal, true);
     Vec2 tilePos = pos + movement + Vec2(size.x / 2, -3);
-    drawCreatureHighlights(renderer, object, pos, size, curTimeReal);
+    drawCreatureHighlights(renderer, object, pos + movement, size, curTimeReal);
     renderer.drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TILE_FONT, size.y, Tile::getColor(object),
         tilePos, tile.text, Renderer::HOR);
     if (auto burningVal = object.getAttribute(ViewObject::Attribute::BURNING))
