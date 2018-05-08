@@ -1168,6 +1168,10 @@ static vector<string> help = {
     "Fire arrows: alt + arrow.",
 };
 
+static string toStringRounded(double value, double precision) {
+  return toString(precision * round(value / precision));
+}
+
 SGuiElem GuiBuilder::getExpIncreaseLine(const PlayerInfo::LevelInfo& info, ExperienceType type) {
   if (info.limit[type] == 0)
     return nullptr;
@@ -1180,7 +1184,7 @@ SGuiElem GuiBuilder::getExpIncreaseLine(const PlayerInfo::LevelInfo& info, Exper
     attrNames.push_back(getName(attr));
   }
   line.addElem(attrIcons.buildHorizontalList(), 80);
-  line.addElem(gui.label("+" + toString(0.01 * round(100 * info.level[type])),
+  line.addElem(gui.label("+" + toStringRounded(info.level[type], 0.01),
       info.warning[type] ? Color::RED : Color::WHITE), 60);
   string limit = toString(info.limit[type]);
   line.addElemAuto(gui.label("  (limit " + limit + ")"));
@@ -1205,6 +1209,10 @@ SGuiElem GuiBuilder::drawTrainingInfo(const PlayerInfo& info) {
       empty = false;
     }
   }
+  lines.addElem(gui.getListBuilder()
+      .addElemAuto(gui.label("Combat experience: ", Color::YELLOW))
+      .addElemAuto(gui.label(toStringRounded(info.levelInfo.combatExperience, 0.01)))
+      .buildHorizontalList());
   if (!empty)
     return lines.buildVerticalList();
   else

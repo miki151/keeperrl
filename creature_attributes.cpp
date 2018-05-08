@@ -48,7 +48,7 @@ void CreatureAttributes::serialize(Archive& ar, const unsigned int version) {
   ar(animal, cantEquip, courage, canJoinCollective);
   ar(boulder, noChase, isSpecial, skills, spells);
   ar(permanentEffects, lastingEffects, minionActivities, expLevel);
-  ar(noAttackSound, maxLevelIncrease, creatureId, petReaction);
+  ar(noAttackSound, maxLevelIncrease, creatureId, petReaction, combatExperience);
 }
 
 SERIALIZABLE(CreatureAttributes);
@@ -100,8 +100,10 @@ const Gender& CreatureAttributes::getGender() const {
 
 int CreatureAttributes::getRawAttr(AttrType type) const {
   int ret = attr[type];
-  if (auto expType = getExperienceType(type))
+  if (auto expType = getExperienceType(type)) {
     ret += (int) expLevel[*expType];
+    ret += min((int) combatExperience, maxLevelIncrease[*expType]);
+  }
   return ret;
 }
 
@@ -120,6 +122,19 @@ const EnumMap<ExperienceType, int>& CreatureAttributes::getMaxExpLevel() const {
 void CreatureAttributes::increaseExpLevel(ExperienceType type, double increase) {
   increase = max(0.0, min(increase, (double) maxLevelIncrease[type] - expLevel[type]));
   expLevel[type] += increase;
+}
+
+void CreatureAttributes::addCombatExperience(double v) {
+  combatExperience += v;
+  int maxExp = 0;
+  for (auto expType : ENUM_ALL(ExperienceType))
+    maxExp = max(maxExp, maxLevelIncrease[expType]);
+  if (combatExperience > maxExp)
+    combatExperience = maxExp;
+}
+
+double CreatureAttributes::getCombatExperience() const {
+  return combatExperience;
 }
 
 bool CreatureAttributes::isTrainingMaxedOut(ExperienceType type) const {

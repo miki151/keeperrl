@@ -811,7 +811,13 @@ void Creature::onKilled(WCreature victim, optional<ExperienceType> lastDamage) {
   constexpr double maxLevelDiff = 10;
   double expIncrease = max(minLevelGain, min(maxLevelGain,
       (maxLevelGain - equalLevelGain) * attackDiff / maxLevelDiff + equalLevelGain));
-  increaseExpLevel(lastDamage.value_or(ExperienceType::MELEE), expIncrease);
+  int curLevel = (int)getAttributes().getCombatExperience();
+  getAttributes().addCombatExperience(expIncrease);
+  int newLevel = (int)getAttributes().getCombatExperience();
+  if (curLevel != newLevel) {
+    you(MsgType::ARE, "more experienced");
+    addPersonalEvent(getName().a() + " reaches combat experience level " + toString(newLevel));
+  }
   int difficulty = victim->getDifficultyPoints();
   CHECK(difficulty >=0 && difficulty < 100000) << difficulty << " " << victim->getName().bare();
   points += difficulty;
@@ -1263,7 +1269,7 @@ void Creature::increaseExpLevel(ExperienceType type, double increase) {
   getAttributes().increaseExpLevel(type, increase);
   int newLevel = (int)getAttributes().getExpLevel(type);
   if (curLevel != newLevel) {
-    you(MsgType::ARE, "more experienced");
+    you(MsgType::ARE, "more skilled");
     addPersonalEvent(getName().a() + " reaches " + ::getNameLowerCase(type) + " training level " + toString(newLevel));
   }
   if (type == ExperienceType::SPELL)
