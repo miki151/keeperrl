@@ -350,7 +350,7 @@ void Creature::displace(Vec2 dir) {
 }
 
 bool Creature::canTakeItems(const vector<WItem>& items) const {
-  return getBody().isHumanoid() && canCarry(items);
+  return getBody().isHumanoid() && canCarry(items) == items.size();
 }
 
 void Creature::takeItems(vector<PItem> items, WCreature from) {
@@ -507,20 +507,25 @@ string Creature::getPluralAName(WItem item, int num) const {
     return toString(num) + " " + item->getAName(true, this);
 }
 
-bool Creature::canCarry(const vector<WItem>& items) const {
+int Creature::canCarry(const vector<WItem>& items) const {
+  int ret = 0;
   if (auto& limit = getBody().getCarryLimit()) {
     double weight = equipment->getTotalWeight();
-    for (WItem it : items)
+    for (const WItem& it : items) {
       weight += it->getWeight();
-    return weight <= *limit;
+      if (weight <= *limit)
+        ++ret;
+    }
+    return ret;
   } else
-    return true;
+    return items.size();
 }
 
-CreatureAction Creature::pickUp(const vector<WItem>& items) const {
+CreatureAction Creature::pickUp(const vector<WItem>& itemsAll) const {
   if (!getBody().isHumanoid())
     return CreatureAction("You can't pick up anything!");
-  if (!canCarry(items))
+  auto items = getPrefix(itemsAll, canCarry(itemsAll));
+  if (items.empty())
     return CreatureAction("You are carrying too much to pick this up.");
   return CreatureAction(this, [=](WCreature self) {
     INFO << getName().the() << " pickup ";

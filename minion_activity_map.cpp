@@ -102,7 +102,7 @@ bool MinionActivityMap::isAvailable(WConstCollective col, WConstCreature c, Mini
     case MinionActivity::WORKING:
       return c->getBody().isHumanoid() && col->hasTrait(c, MinionTrait::WORKER);
     case MinionActivity::HAULING:
-      return !c->getBody().getCarryLimit() && col->hasTrait(c, MinionTrait::WORKER);
+      return col->hasTrait(c, MinionTrait::WORKER);
     case MinionActivity::DIGGING:
       return c->getAttributes().getSkills().getValue(SkillId::DIGGING) > 0 && col->hasTrait(c, MinionTrait::WORKER);
   }
