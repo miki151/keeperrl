@@ -12,7 +12,6 @@ class TaskCallback : public OwnedObject<TaskCallback> {
   virtual void onAppliedItem(Position, WItem item) {}
   virtual void onAppliedSquare(WCreature, Position) {}
   virtual void onAppliedItemCancel(Position) {}
-  virtual void onBrought(Position, EntitySet<Item>) {}
   virtual void onCopulated(WCreature who, WCreature with) {}
 
   template <class Archive> 
