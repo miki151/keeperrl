@@ -1,6 +1,7 @@
 #pragma once
 
 #include "campaign.h"
+#include "avatar_info.h"
 
 struct CampaignSetup;
 struct VillainPlacement;
@@ -26,8 +27,8 @@ class CampaignBuilder {
   vector<Campaign::VillainInfo> getLesserVillains();
   vector<Campaign::VillainInfo> getAllies();
   const char* getIntroText() const;
-  void setPlayerPos(Campaign&, Vec2, WConstCreature player);
-  PCreature getPlayerCreature();
+  void setPlayerPos(Campaign&, Vec2, ViewId playerViewId);
+  AvatarInfo getAvatarInfo();
   vector<CampaignType> getAvailableTypes() const;
   VillainPlacement getVillainPlacement(const Campaign&, VillainType);
   void placeVillains(Campaign&, vector<Campaign::SiteInfo::Dweller>, const VillainPlacement&, int count);
@@ -39,9 +40,13 @@ class CampaignBuilder {
 
 struct CampaignSetup {
   Campaign campaign;
-  PCreature player;
+  AvatarInfo avatarInfo;
   string gameIdentifier;
   string gameDisplayName;
   bool regenerateMana;
   vector<string> introMessages;
+  enum ImpVariant {
+    IMPS,
+    GOBLINS,
+  };
 };

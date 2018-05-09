@@ -1087,6 +1087,8 @@ void PlayerControl::fillImmigration(CollectiveInfo& info) const {
   info.immigration.append(getPrisonerImmigrantData());
   for (auto& elem : immigration.getAvailable()) {
     const auto& candidate = elem.second.get();
+    if (candidate.getInfo().isInvisible())
+      continue;
     const int count = (int) candidate.getCreatures().size();
     optional<TimeInterval> timeRemaining;
     if (auto time = candidate.getEndTime())

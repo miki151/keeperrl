@@ -8,7 +8,7 @@
 #include "creature_attributes.h"
 #include "tutorial.h"
 
-SERIALIZE_DEF(ImmigrantInfo, ids, frequency, requirements, traits, spawnLocation, groupSize, autoTeam, initialRecruitment, consumeIds, keybinding, sound, noAuto, tutorialHighlight, hiddenInHelp)
+SERIALIZE_DEF(ImmigrantInfo, ids, frequency, requirements, traits, spawnLocation, groupSize, autoTeam, initialRecruitment, consumeIds, keybinding, sound, noAuto, tutorialHighlight, hiddenInHelp, invisible)
 SERIALIZATION_CONSTRUCTOR_IMPL(ImmigrantInfo)
 
 AttractionInfo::AttractionInfo(int cl,  AttractionType a)
@@ -69,6 +69,10 @@ double ImmigrantInfo::getFrequency() const {
 
 bool ImmigrantInfo::isPersistent() const {
   return !frequency;
+}
+
+bool ImmigrantInfo::isInvisible() const {
+  return invisible;
 }
 
 const EnumSet<MinionTrait>&ImmigrantInfo::getTraits() const {
@@ -149,6 +153,11 @@ ImmigrantInfo& ImmigrantInfo::setSound(Sound s) {
 
 ImmigrantInfo& ImmigrantInfo::setNoAuto() {
   noAuto = true;
+  return *this;
+}
+
+ImmigrantInfo& ImmigrantInfo::setInvisible() {
+  invisible = true;
   return *this;
 }
 

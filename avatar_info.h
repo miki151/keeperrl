@@ -1,4 +1,11 @@
-#ifndef AVATAR_INFO_H
-#define AVATAR_INFO_H
+#pragma once
 
-#endif // AVATAR_INFO_H
+#include "util.h"
+
+struct AvatarInfo {
+  PCreature playerCreature;
+  enum ImpVariant {
+    IMPS,
+    GOBLINS,
+  } impVariant;
+};
