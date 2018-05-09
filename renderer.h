@@ -168,7 +168,6 @@ class Renderer {
   void drawTile(Vec2 pos, TileCoord coord, Vec2 size, Color = Color::WHITE, SpriteOrientation orientation = {});
   void setScissor(optional<Rectangle>);
   void addQuad(const Rectangle&, Color);
-  static Color getBleedingColor(const ViewObject&);
   Vec2 getSize();
 
   void drawAndClearBuffer();

@@ -545,7 +545,7 @@ class TileCoordLookup {
     Tile::addTile(ViewId::MUSHROOM4, sprite("mushroom4").setRoundShadow());
     Tile::addTile(ViewId::MUSHROOM5, sprite("mushroom5").setRoundShadow());
     Tile::addTile(ViewId::MUSHROOM6, sprite("mushroom6").setRoundShadow());
-    Tile::addTile(ViewId::MUSHROOM7, sprite("mushroom2").setColor(Color::LIGHT_BLUE)); //For now.
+    Tile::addTile(ViewId::MUSHROOM7, sprite("mushroom2").setRoundShadow().setColor(Color::LIGHT_BLUE));
     Tile::addTile(ViewId::KEY, sprite("key"));
     Tile::addTile(ViewId::FOUNTAIN, sprite("fountain").setRoundShadow());
     Tile::addTile(ViewId::GOLD, sprite("gold"));
@@ -1048,17 +1048,8 @@ Color Tile::getColor(const ViewObject& object) {
   if (object.hasModifier(ViewObject::Modifier::HIDDEN))
     return Color::LIGHT_GRAY;
   Color color = symbols[object.id()]->color;
-  if (object.hasModifier(ViewObject::Modifier::PLANNED)) {
+  if (object.hasModifier(ViewObject::Modifier::PLANNED))
     return Color(color.r / 2, color.g / 2, color.b / 2);
-  }
-  if (auto bleeding = object.getAttribute(ViewObject::Attribute::HEALTH))
-    if (*bleeding < 1) {
-      *bleeding = 0.5 + *bleeding / 2;
-      return Color(
-          *bleeding * color.r + *bleeding * 255,
-          *bleeding * color.g,
-          *bleeding * color.b);
-  }
   return color;
 }
 

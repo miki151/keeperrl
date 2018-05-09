@@ -73,7 +73,6 @@ class MapGui : public GuiElem {
   bool highlightEnemies = true;
   bool displayAllHealthBars = true;
   bool hideFullHealthBars = true;
-  bool colorWoundedRed = false;
   struct HighlightedInfo {
     optional<Vec2> creaturePos;
     optional<Vec2> tilePos;

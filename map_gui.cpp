@@ -531,7 +531,7 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
   PROFILE;
   auto id = object.id();
   const Tile& tile = Tile::getTile(id, spriteMode);
-  Color color = colorWoundedRed ? Renderer::getBleedingColor(object) : Color::WHITE;
+  Color color = tile.color;
   considerWoundedAnimation(object, color, curTimeReal);
   if (object.hasModifier(ViewObject::Modifier::INVISIBLE) || object.hasModifier(ViewObject::Modifier::HIDDEN))
     color = color.transparency(70);

@@ -1515,8 +1515,7 @@ vector<SGuiElem> GuiBuilder::getSettingsButtons() {
           "Morale affects minion's productivity and chances of fleeing from battle."),
       makeSetting(mapGui->highlightEnemies, "Highlight enemies", ""),
       makeSetting(mapGui->displayAllHealthBars, "Display health bars", ""),
-      makeSetting(mapGui->hideFullHealthBars, "Hide full health bars", ""),
-      makeSetting(mapGui->colorWoundedRed, "Color wounded creatures", "")
+      makeSetting(mapGui->hideFullHealthBars, "Hide full health bars", "")
     );
 }
 
