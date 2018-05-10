@@ -68,6 +68,8 @@ class CreatureAttributes {
   const EnumMap<ExperienceType, double>& getExpLevel() const;
   const EnumMap<ExperienceType, int>& getMaxExpLevel() const;
   void increaseExpLevel(ExperienceType, double increase);
+  void addCombatExperience(double);
+  double getCombatExperience() const;
   bool isTrainingMaxedOut(ExperienceType) const;
   void increaseBaseExpLevel(ExperienceType type, double increase);
   string bodyDescription() const;
@@ -82,6 +84,7 @@ class CreatureAttributes {
   optional<ViewObject>& getIllusionViewObject();
   bool canEquip() const;
   void chatReaction(WCreature me, WCreature other);
+  optional<string> getPetReaction(WConstCreature me) const;
   string getDescription() const;
   bool isAffected(LastingEffect, GlobalTime) const;
   bool isAffectedPermanently(LastingEffect) const;
@@ -130,8 +133,10 @@ class CreatureAttributes {
   MinionActivityMap SERIAL(minionActivities);
   EnumMap<ExperienceType, double> SERIAL(expLevel);
   EnumMap<ExperienceType, int> SERIAL(maxLevelIncrease);
+  double SERIAL(combatExperience) = 0;
   bool SERIAL(noAttackSound) = false;
   optional<CreatureId> SERIAL(creatureId);
   string SERIAL(deathDescription) = "killed"_s;
   bool SERIAL(canJoinCollective) = true;
+  optional<string> SERIAL(petReaction);
 };

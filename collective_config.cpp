@@ -95,19 +95,20 @@ static optional<FurnitureType> getBedType(WConstCreature c) {
 void CollectiveConfig::addBedRequirementToImmigrants() {
   for (auto& info : immigrantInfo) {
     PCreature c = CreatureFactory::fromId(info.getId(0), TribeId::getKeeper());
-    if (auto bedType = getBedType(c.get())) {
-      bool hasBed = false;
-      info.visitRequirements(makeVisitor(
-          [&](const AttractionInfo& attraction) -> void {
-            for (auto& type : attraction.types)
-              if (type == *bedType)
-                hasBed = true;
-          },
-          [&](const auto&) {}
-      ));
-      if (!hasBed)
-        info.addRequirement(AttractionInfo(1, *bedType));
-    }
+    if (info.getInitialRecruitment() == 0)
+      if (auto bedType = getBedType(c.get())) {
+        bool hasBed = false;
+        info.visitRequirements(makeVisitor(
+            [&](const AttractionInfo& attraction) -> void {
+              for (auto& type : attraction.types)
+                if (type == *bedType)
+                  hasBed = true;
+            },
+            [&](const auto&) {}
+        ));
+        if (!hasBed)
+          info.addRequirement(AttractionInfo(1, *bedType));
+      }
   }
 }
 
@@ -583,6 +584,12 @@ unique_ptr<Workshops> CollectiveConfig::getWorkshops() const {
                   .setTechId(TechId::ALCHEMY_ADV),
           Workshops::Item::fromType(ItemType::Potion{
               Effect::Lasting{LastingEffect::MELEE_RESISTANCE}}, 6, {CollectiveResourceId::GOLD, 20})
+                  .setTechId(TechId::ALCHEMY_ADV),
+          Workshops::Item::fromType(ItemType::Potion{
+              Effect::Lasting{LastingEffect::MELEE_VULNERABILITY}}, 6, {CollectiveResourceId::GOLD, 40})
+                  .setTechId(TechId::ALCHEMY_ADV),
+          Workshops::Item::fromType(ItemType::Potion{
+              Effect::Lasting{LastingEffect::MAGIC_VULNERABILITY}}, 6, {CollectiveResourceId::GOLD, 40})
                   .setTechId(TechId::ALCHEMY_ADV),
           Workshops::Item::fromType(ItemType::Potion{
               Effect::Lasting{LastingEffect::INVISIBLE}}, 6, {CollectiveResourceId::GOLD, 20})

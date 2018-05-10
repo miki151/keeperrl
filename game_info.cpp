@@ -136,6 +136,7 @@ PlayerInfo::PlayerInfo(WConstCreature c) : bestAttack(c) {
   attributes = AttributeInfo::fromCreature(c);
   levelInfo.level = c->getAttributes().getExpLevel();
   levelInfo.limit = c->getAttributes().getMaxExpLevel();
+  levelInfo.combatExperience = c->getAttributes().getCombatExperience();
   intrinsicAttacks = fillIntrinsicAttacks(c);
   skills = getSkillNames(c);
   willMoveThisTurn = c->getPosition().getModel()->getTimeQueue().willMoveThisTurn(c);

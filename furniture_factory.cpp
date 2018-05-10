@@ -161,7 +161,12 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setFireInfo(Fire(300, 0.5))
           .setDestroyable(30);
     case FurnitureType::MINION_STATUE:
-      return Furniture("statue", ViewObject(ViewId::MINION_STATUE, ViewLayer::FLOOR), type, tribe)
+      return Furniture("gold statue", ViewObject(ViewId::MINION_STATUE, ViewLayer::FLOOR), type, tribe)
+          .setBlocking()
+          .setCanHide()
+          .setDestroyable(50);
+    case FurnitureType::STONE_MINION_STATUE:
+      return Furniture("stone statue", ViewObject(ViewId::STONE_MINION_STATUE, ViewLayer::FLOOR), type, tribe)
           .setBlocking()
           .setCanHide()
           .setDestroyable(50);
@@ -322,7 +327,8 @@ static Furniture get(FurnitureType type, TribeId tribe) {
     case FurnitureType::BRIDGE:
       return Furniture("bridge", ViewObject(ViewId::BRIDGE, ViewLayer::FLOOR), type, tribe)
           .setOverrideMovement()
-          .setRealTimeModeDestroy(false);
+          .setCanRemoveNonFriendly(true)
+          .setCanRemoveWithCreaturePresent(false);
     case FurnitureType::ROAD:
       return Furniture("road", ViewObject(ViewId::ROAD, ViewLayer::FLOOR), type, tribe);
     case FurnitureType::MOUNTAIN:
@@ -411,6 +417,11 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setDestroyable(100, DestroyAction::Type::DIG)
           .setDestroyable(1900, DestroyAction::Type::HOSTILE_DIG)
           .setDestroyable(2000, DestroyAction::Type::HOSTILE_DIG_NO_SKILL);
+    case FurnitureType::PIT:
+      return Furniture("pit", ViewObject(ViewId::SOKOBAN_HOLE, ViewLayer::FLOOR), type, tribe)
+          .setBlocking()
+          .setForgetAfterBuilding()
+          .setTickType(FurnitureTickType::PIT);
     case FurnitureType::CASTLE_WALL:
       return Furniture("wall", ViewObject(ViewId::CASTLE_WALL, ViewLayer::FLOOR), type, tribe)
           .setBlocking()

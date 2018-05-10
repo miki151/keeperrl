@@ -149,9 +149,15 @@ class SquareChange {
     builder->putFurniture(pos, f1);
     builder->putFurniture(pos, f2); }) {}
 
-  static SquareChange reset(FurnitureType f1) {
+  static SquareChange reset(FurnitureType f1, optional<SquareAttrib> attrib = ::none) {
     return SquareChange([=](LevelBuilder* builder, Vec2 pos) {
-      builder->resetFurniture(pos, f1);
+      builder->resetFurniture(pos, f1, attrib);
+    });
+  }
+
+  static SquareChange reset(FurnitureParams params, optional<SquareAttrib> attrib = ::none) {
+    return SquareChange([=](LevelBuilder* builder, Vec2 pos) {
+      builder->resetFurniture(pos, params, attrib);
     });
   }
 
@@ -643,13 +649,13 @@ class MountainRiver : public LevelMaker {
     }
   }
 
-  FurnitureType getWaterType(LevelBuilder* builder, Vec2 pos, int numLayer) {
+  FurnitureParams getWaterType(LevelBuilder* builder, Vec2 pos, int numLayer) {
     if (builder->hasAttrib(pos, SquareAttrib::MOUNTAIN))
-      return FurnitureFactory::getWaterType(100);
+      return FurnitureParams{FurnitureFactory::getWaterType(100), TribeId::getKeeper()};
     else if (numLayer == 0)
-      return FurnitureType::SAND;
+      return FurnitureParams{FurnitureType::SAND, TribeId::getKeeper()};
     else
-      return FurnitureFactory::getWaterType(1.1 * (numLayer - 1));
+      return FurnitureParams{FurnitureFactory::getWaterType(1.1 * (numLayer - 1)), TribeId::getKeeper()};
   }
 
   private:
@@ -714,21 +720,20 @@ class Blob : public LevelMaker {
 
 class UniformBlob : public Blob {
   public:
-  UniformBlob(FurnitureType insideSquare, optional<FurnitureType> borderSquare = none,
-      optional<SquareAttrib> _attrib = none, double insideRatio = 0.3333) : Blob(insideRatio),
-      inside(insideSquare), border(borderSquare), attrib(_attrib) {}
+  UniformBlob(SquareChange insideSquare, optional<SquareChange> borderSquare = none,
+      double insideRatio = 0.3333) : Blob(insideRatio),
+      inside(insideSquare), border(borderSquare) {}
 
   virtual void addSquare(LevelBuilder* builder, Vec2 pos, int edgeDist) override {
     if (edgeDist == 1 && border)
-      builder->resetFurniture(pos, *border, attrib);
+      border->apply(builder, pos);
     else
-      builder->resetFurniture(pos, inside, attrib);
+      inside.apply(builder, pos);
   }
 
   private:
-  FurnitureType inside;
-  optional<FurnitureType> border;
-  optional<SquareAttrib> attrib;
+  SquareChange inside;
+  optional<SquareChange> border;
 };
 
 class FurnitureBlob : public Blob {
@@ -751,7 +756,8 @@ class Lake : public Blob {
     if (sand && edgeDist == 1 && !builder->isFurnitureType(pos, FurnitureType::WATER))
       builder->resetFurniture(pos, FurnitureType::SAND);
     else
-      builder->resetFurniture(pos, FurnitureFactory::getWaterType(double(edgeDist) / 2));
+      builder->resetFurniture(pos,
+          FurnitureParams{FurnitureFactory::getWaterType(double(edgeDist) / 2), TribeId::getKeeper()});
   }
 
   private:
@@ -1905,7 +1911,7 @@ static PMakerQueue village(RandomGen& random, SettlementInfo info, int minRooms,
   BuildingType building = getBuildingInfo(info);
   auto queue = unique<MakerQueue>();
   queue->addMaker(unique<PlaceCollective>(info.collective));
-  queue->addMaker(unique<UniformBlob>(building.floorOutside, none, none, 0.6));
+  queue->addMaker(unique<UniformBlob>(building.floorOutside, none, 0.6));
   vector<PLevelMaker> insideMakers = makeVec<PLevelMaker>(
  //     hatchery(CreatureFactory::singleType(info.tribe, CreatureId::PIG), random.get(2, 5)),
       getElderRoom(info));
@@ -2179,9 +2185,9 @@ static PMakerQueue vaultMaker(SettlementInfo info) {
   auto queue = unique<MakerQueue>();
   BuildingType building = getBuildingInfo(info);
   if (!info.dontConnectCave)
-    queue->addMaker(unique<UniformBlob>(building.floorOutside, none, SquareAttrib::CONNECT_CORRIDOR));
+    queue->addMaker(unique<UniformBlob>(SquareChange::reset(building.floorOutside, SquareAttrib::CONNECT_CORRIDOR), none));
   else
-    queue->addMaker(unique<UniformBlob>(building.floorOutside));
+    queue->addMaker(unique<UniformBlob>(SquareChange::reset(building.floorOutside)));
   auto insidePredicate = Predicate::type(building.floorOutside) && Predicate::canEnter(MovementTrait::WALK);
   queue->addMaker(unique<Inhabitants>(info.inhabitants, info.collective, insidePredicate));
   if (info.shopFactory)
@@ -2196,7 +2202,7 @@ static PMakerQueue spiderCaveMaker(SettlementInfo info) {
   auto queue = unique<MakerQueue>();
   BuildingType building = getBuildingInfo(info);
   auto inside = unique<MakerQueue>();
-  inside->addMaker(unique<UniformBlob>(building.floorOutside, none, SquareAttrib::CONNECT_CORRIDOR));
+  inside->addMaker(unique<UniformBlob>(SquareChange::reset(building.floorOutside, SquareAttrib::CONNECT_CORRIDOR), none));
   queue->addMaker(unique<Inhabitants>(info.inhabitants, info.collective));
   if (info.shopFactory)
     inside->addMaker(unique<Items>(*info.shopFactory, 5, 10));
@@ -2228,7 +2234,7 @@ static PMakerQueue islandVaultMaker(RandomGen& random, SettlementInfo info, bool
   if (door)
     buildingMaker->addMaker(unique<LevelExit>(FurnitureFactory(TribeId::getMonster(), FurnitureType::WOOD_DOOR)));
   return unique<MakerQueue>(
-        unique<Empty>(SquareChange::reset(FurnitureType::WATER)),
+        unique<Empty>(SquareChange::reset(FurnitureParams{FurnitureType::WATER, TribeId::getKeeper()})),
         unique<Margin>(1, std::move(buildingMaker)));
 }
 
@@ -2269,7 +2275,8 @@ static PMakerQueue swamp(SettlementInfo info) {
 
 static PMakerQueue mountainLake(SettlementInfo info) {
   auto queue = unique<MakerQueue>(
-      unique<UniformBlob>(FurnitureType::WATER, none, SquareAttrib::LAKE),
+      unique<UniformBlob>(SquareChange::reset(FurnitureParams{FurnitureType::WATER, TribeId::getKeeper()},
+          SquareAttrib::LAKE), none),
       unique<PlaceCollective>(info.collective)
   );
   queue->addMaker(unique<Inhabitants>(info.inhabitants, info.collective));
@@ -2488,9 +2495,10 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, optional<CreatureFactory> fo
       locations->add(unique<Lake>(), {random.get(20, 30), random.get(20, 30)}, Predicate::attrib(SquareAttrib::LOWLAND));
   if (biomeId == BiomeId::MOUNTAIN)
     for (int i : Range(random.get(3, 6))) {
-      locations->add(unique<UniformBlob>(FurnitureType::WATER, none, SquareAttrib::LAKE),
+      locations->add(unique<UniformBlob>(
+              SquareChange::reset(FurnitureParams{FurnitureType::WATER, TribeId::getKeeper()}, SquareAttrib::LAKE), none),
           {random.get(10, 30), random.get(10, 30)}, Predicate::attrib(SquareAttrib::MOUNTAIN));
-  //  locations->setMaxDistanceLast(startingPos, i == 0 ? 25 : 60);
+    //  locations->setMaxDistanceLast(startingPos, i == 0 ? 25 : 60);
   }
 /*  for (int i : Range(random.get(3, 5))) {
     locations->add(unique<UniformBlob>(FurnitureType::FLOOR, none),
@@ -2598,7 +2606,7 @@ static PLevelMaker underground(RandomGen& random, CreatureFactory waterFactory, 
       auto caverns = unique<RandomLocations>();
       for (int i : Range(numLakes)) {
         int size = random.get(6, 20);
-        caverns->add(unique<UniformBlob>(lakeType, none, SquareAttrib::LAKE), Vec2(size, size), Predicate::alwaysTrue());
+        caverns->add(unique<UniformBlob>(SquareChange::reset(lakeType, SquareAttrib::LAKE), none), Vec2(size, size), Predicate::alwaysTrue());
         caverns->setCanOverlap(caverns->getLast());
       }
       queue->addMaker(std::move(caverns));

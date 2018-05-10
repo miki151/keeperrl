@@ -413,6 +413,8 @@ class TileCoordLookup {
         .setRoundShadow());
     Tile::addTile(ViewId::MINION_STATUE, sprite("statue")
         .setRoundShadow());
+    Tile::addTile(ViewId::STONE_MINION_STATUE, sprite("statue_stone")
+        .setRoundShadow());
     Tile::addTile(ViewId::THRONE, sprite("throne").setRoundShadow());
     Tile::addTile(ViewId::ORC, sprite("orc"));
     Tile::addTile(ViewId::ORC_CAPTAIN, sprite("orc_captain"));
@@ -543,6 +545,7 @@ class TileCoordLookup {
     Tile::addTile(ViewId::MUSHROOM4, sprite("mushroom4").setRoundShadow());
     Tile::addTile(ViewId::MUSHROOM5, sprite("mushroom5").setRoundShadow());
     Tile::addTile(ViewId::MUSHROOM6, sprite("mushroom6").setRoundShadow());
+    Tile::addTile(ViewId::MUSHROOM7, sprite("mushroom2").setRoundShadow().setColor(Color::LIGHT_BLUE));
     Tile::addTile(ViewId::KEY, sprite("key"));
     Tile::addTile(ViewId::FOUNTAIN, sprite("fountain").setRoundShadow());
     Tile::addTile(ViewId::GOLD, sprite("gold"));
@@ -755,6 +758,7 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::UP_STAIRCASE, symbol(u8"➚", Color::ALMOST_WHITE, true));
     Tile::addSymbol(ViewId::WELL, symbol(u8"0", Color::BLUE));
     Tile::addSymbol(ViewId::MINION_STATUE, symbol(u8"&", Color::LIGHT_GRAY));
+    Tile::addSymbol(ViewId::STONE_MINION_STATUE, symbol(u8"&", Color::ALMOST_WHITE));
     Tile::addSymbol(ViewId::THRONE, symbol(u8"Ω", Color::YELLOW, true));
     Tile::addSymbol(ViewId::ORC, symbol(u8"o", Color::DARK_BLUE));
     Tile::addSymbol(ViewId::ORC_CAPTAIN, symbol(u8"o", Color::PURPLE));
@@ -890,6 +894,7 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::MUSHROOM4, symbol(u8"⋆", Color::BROWN, true));
     Tile::addSymbol(ViewId::MUSHROOM5, symbol(u8"⋆", Color::LIGHT_GRAY, true));
     Tile::addSymbol(ViewId::MUSHROOM6, symbol(u8"⋆", Color::ORANGE, true));
+    Tile::addSymbol(ViewId::MUSHROOM7, symbol(u8"⋆", Color::LIGHT_BLUE, true));
     Tile::addSymbol(ViewId::KEY, symbol(u8"*", Color::YELLOW));
     Tile::addSymbol(ViewId::FOUNTAIN, symbol(u8"0", Color::LIGHT_BLUE));
     Tile::addSymbol(ViewId::GOLD, symbol(u8"$", Color::YELLOW));
@@ -1043,17 +1048,8 @@ Color Tile::getColor(const ViewObject& object) {
   if (object.hasModifier(ViewObject::Modifier::HIDDEN))
     return Color::LIGHT_GRAY;
   Color color = symbols[object.id()]->color;
-  if (object.hasModifier(ViewObject::Modifier::PLANNED)) {
+  if (object.hasModifier(ViewObject::Modifier::PLANNED))
     return Color(color.r / 2, color.g / 2, color.b / 2);
-  }
-  if (auto bleeding = object.getAttribute(ViewObject::Attribute::HEALTH))
-    if (*bleeding < 1) {
-      *bleeding = 0.5 + *bleeding / 2;
-      return Color(
-          *bleeding * color.r + *bleeding * 255,
-          *bleeding * color.g,
-          *bleeding * color.b);
-  }
   return color;
 }
 

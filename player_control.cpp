@@ -1087,6 +1087,8 @@ void PlayerControl::fillImmigration(CollectiveInfo& info) const {
   info.immigration.append(getPrisonerImmigrantData());
   for (auto& elem : immigration.getAvailable()) {
     const auto& candidate = elem.second.get();
+    if (candidate.getInfo().isInvisible())
+      continue;
     const int count = (int) candidate.getCreatures().size();
     optional<TimeInterval> timeRemaining;
     if (auto time = candidate.getEndTime())
@@ -1114,6 +1116,8 @@ void PlayerControl::fillImmigration(CollectiveInfo& info) const {
     string name = c->getName().groupOf(count);
     if (auto& s = c->getName().stackOnly())
       name += " (" + *s + ")";
+    if (count > 1)
+      infoLines.push_back("The entire group takes up one population spot");
     info.immigration.push_back(ImmigrantDataInfo {
         immigration.getMissingRequirements(candidate),
         infoLines,

@@ -87,7 +87,7 @@ PGame Game::campaignGame(Table<PModel>&& models, CampaignSetup& setup) {
   for (auto model : ret->getAllModels())
     model->setGame(ret.get());
   if (setup.campaign.getPlayerRole() == PlayerRole::ADVENTURER)
-    ret->getMainModel()->landHeroPlayer(std::move(setup.player));
+    ret->getMainModel()->landHeroPlayer(std::move(setup.avatarInfo.playerCreature));
   return ret;
 }
 

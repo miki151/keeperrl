@@ -90,7 +90,8 @@ class PlayerInfo {
     EnumMap<ExperienceType, double> HASH(level);
     EnumMap<ExperienceType, int> HASH(limit);
     EnumMap<ExperienceType, optional<string>> HASH(warning);
-    HASH_ALL(level, limit, warning)
+    double HASH(combatExperience);
+    HASH_ALL(level, limit, warning, combatExperience)
   };
   LevelInfo HASH(levelInfo);
   string description;

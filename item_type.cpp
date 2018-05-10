@@ -89,6 +89,7 @@ class FireScrollItem : public Item {
   FireScrollItem(const ItemAttributes& attr) : Item(attr) {}
 
   virtual void applySpecial(WCreature c) override {
+    fireDamage(0.03, c->getPosition());
     set = true;
   }
 
@@ -1111,6 +1112,8 @@ static ViewId getMushroomViewId(Effect e) {
           case LastingEffect::PANIC: return ViewId::MUSHROOM3;
           case LastingEffect::HALLU: return ViewId::MUSHROOM4;
           case LastingEffect::RAGE: return ViewId::MUSHROOM5;
+          case LastingEffect::REGENERATION: return ViewId::MUSHROOM6;
+          case LastingEffect::NIGHT_VISION: return ViewId::MUSHROOM7;
           default: return ViewId::MUSHROOM6;
         }
       },

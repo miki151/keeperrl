@@ -228,6 +228,10 @@ class MoveRandomly : public Behaviour {
     if (Random.roll(2))
       return {val, creature->wait()};
     for (Position pos : creature->getPosition().neighbors8(Random)) {
+      if (Random.roll(10))
+        if (auto other = pos.getCreature())
+          if (auto petAction = creature->pet(other))
+            return petAction;
       if (!visited(pos) && creature->move(pos)) {
         target = pos;
         break;

@@ -410,9 +410,7 @@ class BringItem : public PickItem {
       : PickItem(c, position, items), target(t), allTargets({t}) {}
 
   virtual CreatureAction getBroughtAction(WCreature c, vector<WItem> it) {
-    return c->drop(it).append([=](WCreature c) {
-        callback->onBrought(c->getPosition(), it);
-    });
+    return c->drop(it);
   }
 
   virtual string getDescription() const override {

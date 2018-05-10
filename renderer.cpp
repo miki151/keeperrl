@@ -257,8 +257,8 @@ void Renderer::renderDeferredSprites() {
     add(elem.d, elem.p.x, elem.k.y, elem);
   }
   if (!vertices.empty()) {
-    SDL::glEnable(GL_TEXTURE_2D);
     SDL::glBindTexture(GL_TEXTURE_2D, *currentTexture);
+    SDL::glEnable(GL_TEXTURE_2D);
     checkOpenglError();
     SDL::glEnableClientState(GL_VERTEX_ARRAY);
     SDL::glEnableClientState(GL_TEXTURE_COORD_ARRAY);
@@ -624,16 +624,6 @@ Vec2 getOffset(Vec2 sizeDiff, double scale) {
   return Vec2(round(sizeDiff.x * scale * 0.5), round(sizeDiff.y * scale * 0.5));
 }
 
-Color Renderer::getBleedingColor(const ViewObject& object) {
-  double bleeding = 1 - object.getAttribute(ViewObject::Attribute::HEALTH).value_or(0);
-  if (bleeding > 0)
-    bleeding = 0.3 + bleeding * 0.7;
-  if (object.hasModifier(ViewObject::Modifier::SPIRIT_DAMAGE))
-    return Color(255, 255, 255, (Uint8)(80 + max(0., (1 - bleeding) * (255 - 80))));
-  else
-    return Color::f(1, max(0., 1 - bleeding), max(0., 1 - bleeding));
-}
-
 void Renderer::drawTile(Vec2 pos, TileCoord coord, Vec2 size, Color color, SpriteOrientation orientation) {
   CHECK(coord.texNum >= 0 && coord.texNum < Renderer::tiles.size());
   Texture* tex = &tiles[coord.texNum];
@@ -682,15 +672,15 @@ void Renderer::drawViewObject(Vec2 pos, ViewId id, bool useSprite, Vec2 size, Co
 }
 
 void Renderer::drawViewObject(Vec2 pos, const ViewObject& object, bool useSprite, Vec2 size) {
-  drawViewObject(pos, object.id(), useSprite, size, getBleedingColor(object));
+  drawViewObject(pos, object.id(), useSprite, size, Color::WHITE);
 }
 
 void Renderer::drawViewObject(Vec2 pos, const ViewObject& object, bool useSprite, double scale, Color color) {
-  drawViewObject(pos, object.id(), useSprite, scale, getBleedingColor(object) * color);
+  drawViewObject(pos, object.id(), useSprite, scale, color);
 }
 
 void Renderer::drawViewObject(Vec2 pos, const ViewObject& object) {
-  drawViewObject(pos, object.id(), getBleedingColor(object));
+  drawViewObject(pos, object.id(), Color::WHITE);
 }
 
 void Renderer::drawAsciiBackground(ViewId id, Rectangle bounds) {

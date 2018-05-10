@@ -84,6 +84,7 @@ class ImmigrantInfo {
   bool isAutoTeam() const;
   double getFrequency() const;
   bool isPersistent() const;
+  bool isInvisible() const;
   const EnumSet<MinionTrait>& getTraits() const;
   optional<int> getLimit() const;
   optional<Keybinding> getKeybinding() const;
@@ -102,6 +103,7 @@ class ImmigrantInfo {
   ImmigrantInfo& setKeybinding(Keybinding);
   ImmigrantInfo& setSound(Sound);
   ImmigrantInfo& setNoAuto();
+  ImmigrantInfo& setInvisible();
   ImmigrantInfo& setLimit(int);
   ImmigrantInfo& setTutorialHighlight(TutorialHighlight);
   ImmigrantInfo& setHiddenInHelp();
@@ -153,6 +155,7 @@ class ImmigrantInfo {
   optional<Keybinding> SERIAL(keybinding);
   optional<Sound> SERIAL(sound);
   bool SERIAL(noAuto) = false;
+  bool SERIAL(invisible) = false;
   optional<TutorialHighlight> SERIAL(tutorialHighlight);
   bool SERIAL(hiddenInHelp) = false;
 };

@@ -61,11 +61,13 @@ class Furniture : public OwnedObject<Furniture> {
   double getLightEmission() const;
   bool canHide() const;
   bool emitsWarning(WConstCreature) const;
-  bool canDestroyInRealTimeMode() const;
+  bool canRemoveWithCreaturePresent() const;
+  bool canRemoveNonFriendly() const;
   WCreature getCreator() const;
   optional<LocalTime> getCreatedTime() const;
   optional<CreatureId> getSummonedElement() const;
   bool isClearFogOfWar() const;
+  bool forgetAfterBuilding() const;
   /**
    * @brief Calls special functionality to handle dropped items, if any.
    * @return possibly empty subset of the items that weren't consumned and can be dropped normally.
@@ -103,7 +105,9 @@ class Furniture : public OwnedObject<Furniture> {
   Furniture& setCanBuildBridgeOver();
   Furniture& setStopProjectiles();
   Furniture& setClearFogOfWar();
-  Furniture& setRealTimeModeDestroy(bool state);
+  Furniture& setCanRemoveWithCreaturePresent(bool state);
+  Furniture& setCanRemoveNonFriendly(bool state);
+  Furniture& setForgetAfterBuilding();
   MovementSet& modMovementSet();
 
   SERIALIZATION_DECL(Furniture)
@@ -130,7 +134,8 @@ class Furniture : public OwnedObject<Furniture> {
   HeapAllocated<optional<FurnitureDroppedItems>> SERIAL(droppedItems);
   TimeInterval SERIAL(usageTime) = 1_visible;
   bool SERIAL(overrideMovement) = false;
-  bool SERIAL(realTimeDestroy) = true;
+  bool SERIAL(removeWithCreaturePresent) = true;
+  bool SERIAL(removeNonFriendly) = true;
   bool SERIAL(wall) = false;
   optional<ConstructMessage> SERIAL(constructMessage) = BUILD;
   double SERIAL(lightEmission) = 0;
@@ -142,4 +147,5 @@ class Furniture : public OwnedObject<Furniture> {
   bool SERIAL(canBuildBridge) = false;
   bool SERIAL(noProjectiles) = false;
   bool SERIAL(clearFogOfWar) = false;
+  bool SERIAL(xForgetAfterBuilding) = false;
 };

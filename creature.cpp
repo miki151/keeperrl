@@ -51,6 +51,7 @@
 #include "weapon_info.h"
 #include "time_queue.h"
 #include "profiler.h"
+#include "furniture_type.h"
 
 template <class Archive>
 void Creature::serialize(Archive& ar, const unsigned int version) {
@@ -349,7 +350,7 @@ void Creature::displace(Vec2 dir) {
 }
 
 bool Creature::canTakeItems(const vector<WItem>& items) const {
-  return getBody().isHumanoid() && canCarry(items);
+  return getBody().isHumanoid() && canCarry(items) == items.size();
 }
 
 void Creature::takeItems(vector<PItem> items, WCreature from) {
@@ -506,20 +507,25 @@ string Creature::getPluralAName(WItem item, int num) const {
     return toString(num) + " " + item->getAName(true, this);
 }
 
-bool Creature::canCarry(const vector<WItem>& items) const {
+int Creature::canCarry(const vector<WItem>& items) const {
+  int ret = 0;
   if (auto& limit = getBody().getCarryLimit()) {
     double weight = equipment->getTotalWeight();
-    for (WItem it : items)
+    for (const WItem& it : items) {
       weight += it->getWeight();
-    return weight <= *limit;
+      if (weight <= *limit)
+        ++ret;
+    }
+    return ret;
   } else
-    return true;
+    return items.size();
 }
 
-CreatureAction Creature::pickUp(const vector<WItem>& items) const {
+CreatureAction Creature::pickUp(const vector<WItem>& itemsAll) const {
   if (!getBody().isHumanoid())
     return CreatureAction("You can't pick up anything!");
-  if (!canCarry(items))
+  auto items = getPrefix(itemsAll, canCarry(itemsAll));
+  if (items.empty())
     return CreatureAction("You are carrying too much to pick this up.");
   return CreatureAction(this, [=](WCreature self) {
     INFO << getName().the() << " pickup ";
@@ -688,7 +694,7 @@ CreatureAction Creature::hide() const {
 
 CreatureAction Creature::chatTo(WCreature other) const {
   CHECK(other);
-  if (other->getPosition().dist8(getPosition()) == 1)
+  if (other->getPosition().dist8(getPosition()) == 1 && getBody().isHumanoid())
     return CreatureAction(this, [=](WCreature self) {
         secondPerson("You chat with " + other->getName().the());
         thirdPerson(getName().the() + " chats with " + other->getName().the());
@@ -696,7 +702,21 @@ CreatureAction Creature::chatTo(WCreature other) const {
         self->spendTime();
     });
   else
-    return CreatureAction("Move closer to chat to " + other->getName().the());
+    return CreatureAction();
+}
+
+CreatureAction Creature::pet(WCreature other) const {
+  CHECK(other);
+  if (other->getPosition().dist8(getPosition()) == 1 && other->getAttributes().getPetReaction(other) &&
+      isFriend(other) && getBody().isHumanoid())
+    return CreatureAction(this, [=](WCreature self) {
+        secondPerson("You pet " + other->getName().the());
+        thirdPerson(getName().the() + " pets " + other->getName().the());
+        self->message(*other->getAttributes().getPetReaction(other));
+        self->spendTime();
+    });
+  else
+    return CreatureAction();
 }
 
 CreatureAction Creature::stealFrom(Vec2 direction, const vector<WItem>& items) const {
@@ -796,7 +816,13 @@ void Creature::onKilled(WCreature victim, optional<ExperienceType> lastDamage) {
   constexpr double maxLevelDiff = 10;
   double expIncrease = max(minLevelGain, min(maxLevelGain,
       (maxLevelGain - equalLevelGain) * attackDiff / maxLevelDiff + equalLevelGain));
-  increaseExpLevel(lastDamage.value_or(ExperienceType::MELEE), expIncrease);
+  int curLevel = (int)getAttributes().getCombatExperience();
+  getAttributes().addCombatExperience(expIncrease);
+  int newLevel = (int)getAttributes().getCombatExperience();
+  if (curLevel != newLevel) {
+    you(MsgType::ARE, "more experienced");
+    addPersonalEvent(getName().a() + " reaches combat experience level " + toString(newLevel));
+  }
   int difficulty = victim->getDifficultyPoints();
   CHECK(difficulty >=0 && difficulty < 100000) << difficulty << " " << victim->getName().bare();
   points += difficulty;
@@ -1248,7 +1274,7 @@ void Creature::increaseExpLevel(ExperienceType type, double increase) {
   getAttributes().increaseExpLevel(type, increase);
   int newLevel = (int)getAttributes().getExpLevel(type);
   if (curLevel != newLevel) {
-    you(MsgType::ARE, "more experienced");
+    you(MsgType::ARE, "more skilled");
     addPersonalEvent(getName().a() + " reaches " + ::getNameLowerCase(type) + " training level " + toString(newLevel));
   }
   if (type == ExperienceType::SPELL)
@@ -1344,8 +1370,9 @@ CreatureAction Creature::construct(Vec2 direction, FurnitureType type) const {
   return CreatureAction();
 }
 
-bool Creature::canConstruct(FurnitureType) const {
-  return attributes->getSkills().hasDiscrete(SkillId::CONSTRUCTION);
+bool Creature::canConstruct(FurnitureType type) const {
+  return attributes->getSkills().hasDiscrete(SkillId::CONSTRUCTION) ||
+      (getBody().isHumanoid() && type == FurnitureType::BRIDGE);
 }
 
 CreatureAction Creature::eat(WItem item) const {
@@ -1538,7 +1565,8 @@ MovementType Creature::getMovementType() const {
     .setForced(isAffected(LastingEffect::BLIND) || getHoldingCreature() || forceMovement)
     .setFireResistant(isAffected(LastingEffect::FIRE_RESISTANT))
     .setSunlightVulnerable(isAffected(LastingEffect::SUNLIGHT_VULNERABLE) && !isAffected(LastingEffect::DARKNESS_SOURCE)
-        && (!getGame() || getGame()->getSunlightInfo().getState() == SunlightState::DAY));
+        && (!getGame() || getGame()->getSunlightInfo().getState() == SunlightState::DAY))
+    .setCanBuildBridge(getBody().isHumanoid());
 }
 
 int Creature::getDifficultyPoints() const {
@@ -1616,12 +1644,15 @@ CreatureAction Creature::moveTowards(Position pos, bool away, NavigationFlags fl
         return action.append([path = *currentPath](WCreature c) { c->shortestPath = path; });
       } else {
         INFO << "Trying to destroy";
-        if (!pos2.canEnterEmpty(this) && flags.destroy)
+        if (!pos2.canEnterEmpty(this) && flags.destroy) {
           if (auto destroyAction = pos2.getBestDestroyAction(getMovementType()))
-              if (auto action = destroy(getPosition().getDir(pos2), *destroyAction)) {
-                INFO << "Destroying";
-                return action.append([path = *currentPath](WCreature c) { c->shortestPath = path; });
-              }
+            if (auto action = destroy(getPosition().getDir(pos2), *destroyAction)) {
+              INFO << "Destroying";
+              return action.append([path = *currentPath](WCreature c) { c->shortestPath = path; });
+            }
+          if (auto bridgeAction = construct(getPosition().getDir(pos2), FurnitureType::BRIDGE))
+            return bridgeAction.append([path = *currentPath](WCreature c) { c->shortestPath = path; });
+        }
       }
     } else
       INFO << "Position unreachable";

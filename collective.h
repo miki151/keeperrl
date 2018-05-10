@@ -57,6 +57,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   void acquireInitialTech();
   void addCreature(WCreature, EnumSet<MinionTrait>);
   void addCreature(PCreature, Position, EnumSet<MinionTrait>);
+  void setPopulationGroup(const vector<WCreature>&);
   void setControl(PCollectiveControl);
   void tick();
   void update(bool currentlyActive);
@@ -264,6 +265,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   int getTaskDuration(WConstCreature, MinionActivity) const;
   void decayMorale();
   vector<WCreature> SERIAL(creatures);
+  vector<vector<WCreature>> SERIAL(populationGroups);
   EnumMap<MinionTrait, vector<WCreature>> SERIAL(byTrait);
   PCollectiveControl SERIAL(control);
   HeapAllocated<TribeId> SERIAL(tribe);

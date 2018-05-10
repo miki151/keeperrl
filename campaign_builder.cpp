@@ -243,14 +243,14 @@ const char* CampaignBuilder::getIntroText() const {
    }
 }
 
-void CampaignBuilder::setPlayerPos(Campaign& campaign, Vec2 pos, WConstCreature player) {
+void CampaignBuilder::setPlayerPos(Campaign& campaign, Vec2 pos, ViewId playerViewId) {
   switch (playerRole) {
     case PlayerRole::KEEPER:
       if (campaign.playerPos)
         campaign.clearSite(*campaign.playerPos);
       campaign.playerPos = pos;
       campaign.sites[*campaign.playerPos].dweller =
-          Campaign::SiteInfo::Dweller(Campaign::KeeperInfo{player->getViewObject().id()});
+          Campaign::SiteInfo::Dweller(Campaign::KeeperInfo{playerViewId});
       break;
     case PlayerRole:: ADVENTURER:
       campaign.playerPos = pos;
@@ -259,13 +259,24 @@ void CampaignBuilder::setPlayerPos(Campaign& campaign, Vec2 pos, WConstCreature 
 
 }
 
-PCreature CampaignBuilder::getPlayerCreature() {
-  PCreature ret = CreatureFactory::fromId(options->getCreatureId(getPlayerTypeOptionId()), getPlayerTribeId());
+static AvatarInfo::ImpVariant getImpVariant(CreatureId id) {
+  switch (id) {
+    case CreatureId::KEEPER_KNIGHT:
+    case CreatureId::KEEPER_KNIGHT_F:
+      return AvatarInfo::GOBLINS;
+    default:
+      return AvatarInfo::IMPS;
+  }
+}
+
+AvatarInfo CampaignBuilder::getAvatarInfo() {
+  auto id = options->getCreatureId(getPlayerTypeOptionId());
+  PCreature ret = CreatureFactory::fromId(id, getPlayerTribeId());
   auto name = options->getStringValue(getPlayerNameOptionId());
   if (!name.empty())
     ret->getName().setFirst(name);
   ret->getName().useFullTitle();
-  return ret;
+  return {std::move(ret), getImpVariant(id)};
 }
 
 
@@ -449,14 +460,19 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(function<optional<Retir
   auto retired = genRetired(type);
   View::CampaignMenuState menuState { true, false};
   setCountLimits(options);
-  options->setChoices(OptionId::KEEPER_TYPE, {CreatureId::KEEPER, CreatureId::KEEPER_F});
+  options->setChoices(OptionId::KEEPER_TYPE, {
+      CreatureId::KEEPER_MAGE,
+      CreatureId::KEEPER_MAGE_F,
+      CreatureId::KEEPER_KNIGHT,
+      CreatureId::KEEPER_KNIGHT_F
+  });
   options->setChoices(OptionId::ADVENTURER_TYPE, {CreatureId::ADVENTURER, CreatureId::ADVENTURER_F});
   while (1) {
-    PCreature player = getPlayerCreature();
+    AvatarInfo avatarInfo = getAvatarInfo();
     Campaign campaign(terrain, type, playerRole, NameGenerator::get(NameGeneratorId::WORLD)->getNext());
     if (auto pos = considerStaticPlayerPos(campaign)) {
       campaign.clearSite(*pos);
-      setPlayerPos(campaign, *pos, player.get());
+      setPlayerPos(campaign, *pos, avatarInfo.playerCreature->getViewObject().id());
     }
     placeVillains(campaign, getVillainCounts(type, options), retired);
     while (1) {
@@ -467,7 +483,7 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(function<optional<Retir
           : view->prepareCampaign({
               campaign,
               (retired && type == CampaignType::FREE_PLAY) ? optional<RetiredGames&>(*retired) : none,
-              player.get(),
+              avatarInfo.playerCreature.get(),
               getPrimaryOptions(),
               getSecondaryOptions(type),
               getSiteChoiceTitle(type),
@@ -495,9 +511,9 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(function<optional<Retir
               case OptionId::ADVENTURER_NAME:
               case OptionId::KEEPER_TYPE:
               case OptionId::ADVENTURER_TYPE:
-                player = getPlayerCreature();
+                avatarInfo = getAvatarInfo();
                 if (campaign.playerPos) {
-                  setPlayerPos(campaign, *campaign.playerPos, player.get());
+                  setPlayerPos(campaign, *campaign.playerPos, avatarInfo.playerCreature->getViewObject().id());
                 }
                 break;
               case OptionId::GENERATE_MANA:
@@ -509,16 +525,16 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(function<optional<Retir
             return none;
         case CampaignActionId::CHOOSE_SITE:
             if (!considerStaticPlayerPos(campaign))
-              setPlayerPos(campaign, action.get<Vec2>(), player.get());
+              setPlayerPos(campaign, action.get<Vec2>(), avatarInfo.playerCreature->getViewObject().id());
             break;
         case CampaignActionId::CONFIRM:
             if (!retired || retired->getNumActive() > 0 || playerRole != PlayerRole::KEEPER ||
                 retired->getAllGames().empty() ||
                 view->yesOrNoPrompt("The imps are going to be sad if you don't add any retired dungeons. Continue?")) {
-              string name = *player->getName().first();
+              string name = *avatarInfo.playerCreature->getName().first();
               string gameIdentifier = name + "_" + campaign.worldName + getNewIdSuffix();
               string gameDisplayName = name + " of " + campaign.worldName;
-              return CampaignSetup{campaign, std::move(player), gameIdentifier, gameDisplayName,
+              return CampaignSetup{campaign, std::move(avatarInfo), gameIdentifier, gameDisplayName,
                   options->getBoolValue(OptionId::GENERATE_MANA) &&
                   getSecondaryOptions(type).contains(OptionId::GENERATE_MANA),
                   getIntroMessages(type, campaign.getWorldName())};
@@ -532,5 +548,5 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(function<optional<Retir
 
 CampaignSetup CampaignBuilder::getEmptyCampaign() {
   Campaign ret(Table<Campaign::SiteInfo>(1, 1), CampaignType::SINGLE_KEEPER, PlayerRole::KEEPER, "");
-  return CampaignSetup{ret, PCreature(nullptr), "", ""};
+  return CampaignSetup{ret, {PCreature(nullptr), AvatarInfo::IMPS}, "", "", false, {}};
 }

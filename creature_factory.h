@@ -28,8 +28,10 @@ class ControllerFactory;
 class Gender;
 
 RICH_ENUM(CreatureId,
-    KEEPER,
-    KEEPER_F,
+    KEEPER_MAGE,
+    KEEPER_MAGE_F,
+    KEEPER_KNIGHT,
+    KEEPER_KNIGHT_F,
     ADVENTURER,
     ADVENTURER_F,
 

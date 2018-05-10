@@ -24,11 +24,13 @@ class MovementType {
   MovementType& setFireResistant(bool = true);
   MovementType& setForced(bool = true);
   MovementType& setDestroyActions(EnumSet<DestroyAction::Type>);
+  MovementType& setCanBuildBridge(bool = true);
   const EnumSet<DestroyAction::Type>& getDestroyActions() const;
 
   bool isSunlightVulnerable() const;
   bool isFireResistant() const;
   bool isForced() const;
+  bool canBuildBridge() const;
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);
@@ -40,6 +42,7 @@ class MovementType {
   bool SERIAL(sunlightVulnerable) = false;
   bool SERIAL(fireResistant) = false;
   bool SERIAL(forced) = false;
+  bool SERIAL(buildBridge) = false;
   EnumSet<MovementTrait> SERIAL(traits);
   EnumSet<DestroyAction::Type> SERIAL(destroyActions);
   optional<TribeSet> SERIAL(tribeSet);

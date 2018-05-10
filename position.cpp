@@ -730,6 +730,9 @@ bool Position::canNavigate(const MovementType& type) const {
     for (DestroyAction action : type.getDestroyActions())
       if (furniture->canDestroy(type, action))
         ignore = FurnitureLayer::MIDDLE;
+  if (type.canBuildBridge() && canConstruct(FurnitureType::BRIDGE) &&
+      !type.isCompatible(getFurniture(FurnitureLayer::GROUND)->getTribe()))
+    return true;
   return canEnterEmpty(type, ignore);
 }
 
@@ -767,6 +770,9 @@ optional<double> Position::getNavigationCost(const MovementType& movement) const
   if (auto furniture = getFurniture(FurnitureLayer::MIDDLE))
     if (auto destroyAction = getBestDestroyAction(movement))
       return *furniture->getStrength(*destroyAction) / 10;
+  if (movement.canBuildBridge() && canConstruct(FurnitureType::BRIDGE) &&
+      !movement.isCompatible(getFurniture(FurnitureLayer::GROUND)->getTribe()))
+    return 10;
   return none;
 }
 

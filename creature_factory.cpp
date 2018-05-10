@@ -851,7 +851,7 @@ PCreature CreatureFactory::getSpecial(TribeId tribe, bool humanoid, bool large, 
           c.chatReactionFriendly = "\"I am the mighty " + name + "\"";
           c.chatReactionHostile = "\"I am the mighty " + name + ". Die!\"";
         } else {
-          c.chatReactionFriendly = c.chatReactionHostile = "The " + name + " snarls.";
+          c.chatReactionFriendly = c.chatReactionHostile = c.petReaction = "snarls."_s;
         }
         c.name = name;
         c.name->setStack(humanoid ? "legendary humanoid" : "legendary beast");
@@ -898,7 +898,7 @@ CREATE_LITERAL(RANGED_DAMAGE, ranged_dam)
 
 CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
   switch (id) {
-    case CreatureId::KEEPER: 
+    case CreatureId::KEEPER_MAGE:
       return CATTR(
           c.viewId = ViewId::KEEPER;
           c.retiredViewId = ViewId::RETIRED_KEEPER;
@@ -913,7 +913,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.maxLevelIncrease[ExperienceType::SPELL] = 12;
           c.spells->add(SpellId::HEAL_SELF);
       );
-    case CreatureId::KEEPER_F:
+    case CreatureId::KEEPER_MAGE_F:
       return CATTR(
           c.viewId = ViewId::KEEPER_F;
           c.retiredViewId = ViewId::RETIRED_KEEPER_F;
@@ -928,6 +928,32 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.maxLevelIncrease[ExperienceType::MELEE] = 7;
           c.maxLevelIncrease[ExperienceType::SPELL] = 12;
           c.spells->add(SpellId::HEAL_SELF);
+      );
+    case CreatureId::KEEPER_KNIGHT:
+      return CATTR(
+          c.viewId = ViewId::KNIGHT;
+          c.retiredViewId = ViewId::RETIRED_KEEPER;
+          c.attr = LIST(20_dam, 16_def);
+          c.body = Body::humanoid(Body::Size::LARGE);
+          c.name = "Keeper";
+          c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_MALE)->getNext());
+          c.name->useFullTitle();
+          c.skills.setValue(SkillId::FORGE, 0.2);
+          c.maxLevelIncrease[ExperienceType::MELEE] = 12;
+          c.maxLevelIncrease[ExperienceType::SPELL] = 3;
+      );
+    case CreatureId::KEEPER_KNIGHT_F:
+      return CATTR(
+          c.viewId = ViewId::KNIGHT;
+          c.retiredViewId = ViewId::RETIRED_KEEPER;
+          c.attr = LIST(20_dam, 16_def);
+          c.body = Body::humanoid(Body::Size::LARGE);
+          c.name = "Keeper";
+          c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_FEMALE)->getNext());
+          c.name->useFullTitle();
+          c.skills.setValue(SkillId::FORGE, 0.2);
+          c.maxLevelIncrease[ExperienceType::MELEE] = 12;
+          c.maxLevelIncrease[ExperienceType::SPELL] = 3;
       );
     case CreatureId::ADVENTURER:
       return CATTR(
@@ -973,6 +999,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
         c.spells->add(SpellId::SUMMON_SPIRIT);
         c.chatReactionFriendly = "\"mhhhhhrrrr!\""_s;
         c.chatReactionHostile = "\"mhhhhhrrrr!\""_s;
+        c.petReaction = "neighs"_s;
         c.name = "unicorn";
         //Pet names like dogs would have.
         c.name->setFirst(NameGenerator::get(NameGeneratorId::DOG)->getNext());
@@ -1524,6 +1551,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.skills.setValue(SkillId::FORGE, 0.9);
           c.skills.setValue(SkillId::JEWELER, 0.9);
           c.skills.setValue(SkillId::FURNACE, 0.9);
+          c.skills.insert(SkillId::CONSTRUCTION);
+          c.skills.setValue(SkillId::DIGGING, 0.4);
           c.name = "goblin";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::ORC)->getNext());
           );
@@ -1772,6 +1801,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body->setHorseBodyParts(2);
           c.animal = true;
           c.noChase = true;
+          c.petReaction = "neighs"_s;
           c.name = "horse";);
     case CreatureId::COW: 
       return CATTR(
@@ -1782,6 +1812,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body->setHorseBodyParts(2);
           c.animal = true;
           c.noChase = true;
+          c.petReaction = "\"Mooooooooooooooooooooooooooo!\""_s;
           c.name = "cow";);
     case CreatureId::DONKEY: 
       return CATTR(
@@ -1814,6 +1845,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body = Body::nonHumanoid(Body::Size::MEDIUM);
           c.body->setHorseBodyParts(2);
           c.body->setMinionFood();
+          c.petReaction = "\"Meh-eh-eh!\""_s;
           c.noChase = true;
           c.animal = true;
           c.name = "goat";);
@@ -2025,6 +2057,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.animal = true;
           c.name = "dog";
           c.name->setGroup("pack");
+          c.petReaction = "\"WOOF!\""_s;
           c.name->setFirst(NameGenerator::get(NameGeneratorId::DOG)->getNext());
           );
     case CreatureId::FIRE_SPHERE: 
@@ -2258,10 +2291,16 @@ class ItemList {
 
 static vector<ItemType> getDefaultInventory(CreatureId id) {
   switch (id) {
-    case CreatureId::KEEPER_F:
-    case CreatureId::KEEPER:
+    case CreatureId::KEEPER_MAGE_F:
+    case CreatureId::KEEPER_MAGE:
       return ItemList()
         .add(ItemType::Robe{});
+    case CreatureId::KEEPER_KNIGHT_F:
+    case CreatureId::KEEPER_KNIGHT:
+      return ItemList()
+        .add(ItemType::LeatherArmor{})
+        .add(ItemType::LeatherHelm{})
+        .add(ItemType::Sword{});
     case CreatureId::CYCLOPS:
       return ItemList()
         .add(ItemType::HeavyClub{})

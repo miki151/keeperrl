@@ -2,6 +2,7 @@
 
 #include "village_control.h"
 #include "stair_key.h"
+#include "avatar_info.h"
 
 class Level;
 class Model;
@@ -30,7 +31,7 @@ class ModelBuilder {
   PModel splashModel(const FilePath& splashPath);
   PModel battleModel(const FilePath& levelPath, CreatureList allies, CreatureList enemies);
 
-  WCollective spawnKeeper(WModel, PCreature, bool regenerateMana, vector<string> introText);
+  WCollective spawnKeeper(WModel, AvatarInfo, bool regenerateMana, vector<string> introText);
 
   static int getPigstyPopulationIncrease();
   static int getStatuePopulationIncrease();

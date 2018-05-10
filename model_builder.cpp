@@ -54,7 +54,126 @@ int ModelBuilder::getThronePopulationIncrease() {
   return 10;
 }
 
-static CollectiveConfig getKeeperConfig(RandomGen& random, bool fastImmigration, bool regenerateMana) {
+static CollectiveConfig getKeeperConfig(RandomGen& random, bool fastImmigration, bool regenerateMana, AvatarInfo::ImpVariant impVariant) {
+  vector<ImmigrantInfo> immigrants;
+  switch (impVariant) {
+    case AvatarInfo::IMPS:
+      immigrants.push_back(
+          ImmigrantInfo(CreatureId::IMP, {MinionTrait::WORKER, MinionTrait::NO_LIMIT, MinionTrait::NO_EQUIPMENT})
+             .setSpawnLocation(NearLeader{})
+             .setKeybinding(Keybinding::CREATE_IMP)
+             .setSound(Sound(SoundId::CREATE_IMP).setPitch(2))
+             .setNoAuto()
+             .setInitialRecruitment(4)
+             .addRequirement(ExponentialCost{ CostInfo(CollectiveResourceId::GOLD, 30), 5, 4 }));
+      break;
+    case AvatarInfo::GOBLINS:
+      immigrants.push_back(
+          ImmigrantInfo(CreatureId::GOBLIN, {MinionTrait::WORKER, MinionTrait::NO_LIMIT, MinionTrait::NO_EQUIPMENT})
+             .setSpawnLocation(NearLeader{})
+             .setNoAuto()
+             .setInvisible()
+             .setInitialRecruitment(4));
+      break;
+  }
+  append(immigrants, {
+       ImmigrantInfo(CreatureId::GOBLIN, {MinionTrait::FIGHTER, MinionTrait::NO_EQUIPMENT})
+           .setFrequency(0.7)
+           .addRequirement(0.1, AttractionInfo{1, vector<AttractionType>(
+                {FurnitureType::FORGE, FurnitureType::WORKSHOP, FurnitureType::JEWELER})}),
+       ImmigrantInfo(CreatureId::ORC, {MinionTrait::FIGHTER})
+           .setFrequency(0.7)
+           .addRequirement(0.1, AttractionInfo{1, FurnitureType::TRAINING_WOOD}),
+       ImmigrantInfo(CreatureId::ORC_SHAMAN, {MinionTrait::FIGHTER})
+           .setFrequency(0.6)
+           .addRequirement(0.0, MinTurnRequirement{500_global})
+           .addRequirement(0.1, AttractionInfo{1, {FurnitureType::BOOKCASE_WOOD, FurnitureType::LABORATORY}}),
+       ImmigrantInfo(CreatureId::OGRE, {MinionTrait::FIGHTER})
+           .setFrequency(0.3)
+           .addRequirement(0.0, MinTurnRequirement{2000_global})
+           .addRequirement(0.1, AttractionInfo{1, FurnitureType::TRAINING_IRON}),
+       ImmigrantInfo(CreatureId::HARPY, {MinionTrait::FIGHTER})
+           .setFrequency(0.3)
+           .addRequirement(0.0, MinTurnRequirement{2000_global})
+           .addRequirement(0.1, AttractionInfo{1, FurnitureType::TRAINING_WOOD})
+           .addRequirement(0.3, AttractionInfo{1, ItemIndex::RANGED_WEAPON}),
+       ImmigrantInfo(CreatureId::ZOMBIE, {MinionTrait::FIGHTER})
+           .setFrequency(0.5)
+           .addRequirement(0.0, MinTurnRequirement{1000_global})
+           .setSpawnLocation(FurnitureType::GRAVE)
+           .addRequirement(0.0, CostInfo(CollectiveResourceId::CORPSE, 1)),
+       ImmigrantInfo(CreatureId::SKELETON, {MinionTrait::FIGHTER})
+           .setFrequency(0.5)
+           .addRequirement(0.0, MinTurnRequirement{1000_global})
+           .setSpawnLocation(FurnitureType::GRAVE)
+           .addRequirement(0.1, AttractionInfo{1, FurnitureType::TRAINING_IRON})
+           .addRequirement(0.0, CostInfo(CollectiveResourceId::CORPSE, 1)),
+       ImmigrantInfo(CreatureId::VAMPIRE, {MinionTrait::FIGHTER})
+           .setFrequency(0.2)
+           .setSpawnLocation(FurnitureType::GRAVE)
+           .addRequirement(0.1, AttractionInfo{1, FurnitureType::TRAINING_IRON})
+           .addRequirement(0.0, CostInfo(CollectiveResourceId::CORPSE, 1)),
+       ImmigrantInfo(CreatureId::LOST_SOUL, {MinionTrait::FIGHTER})
+           .setFrequency(0.3)
+           .setSpawnLocation(FurnitureType::DEMON_SHRINE)
+           .addRequirement(0.3, AttractionInfo{1, FurnitureType::DEMON_SHRINE})
+           .addRequirement(0.0, FurnitureType::DEMON_SHRINE),
+       ImmigrantInfo(CreatureId::SUCCUBUS, {MinionTrait::FIGHTER, MinionTrait::NO_EQUIPMENT})
+           .setFrequency(0.3)
+           .setSpawnLocation(FurnitureType::DEMON_SHRINE)
+           .addRequirement(0.3, AttractionInfo{2, FurnitureType::DEMON_SHRINE})
+           .addRequirement(0.0, FurnitureType::DEMON_SHRINE),
+       ImmigrantInfo(CreatureId::DOPPLEGANGER, {MinionTrait::FIGHTER})
+           .setFrequency(0.3)
+           .setSpawnLocation(FurnitureType::DEMON_SHRINE)
+           .addRequirement(0.3, AttractionInfo{3, FurnitureType::DEMON_SHRINE})
+           .addRequirement(0.0, FurnitureType::DEMON_SHRINE),
+       ImmigrantInfo(CreatureId::RAVEN, {MinionTrait::FIGHTER})
+           .setFrequency(0.5)
+           .addRequirement(0.0, FurnitureType::BEAST_CAGE)
+           .addRequirement(0.0, SunlightState::DAY),
+       ImmigrantInfo(CreatureId::BAT, {MinionTrait::FIGHTER})
+           .setFrequency(0.5)
+           .addRequirement(0.0, FurnitureType::BEAST_CAGE)
+           .addRequirement(0.0, SunlightState::NIGHT),
+       ImmigrantInfo(CreatureId::WOLF, {MinionTrait::FIGHTER})
+           .setFrequency(0.15)
+           .addRequirement(0.0, FurnitureType::BEAST_CAGE)
+           .setGroupSize(Range(3, 9))
+           .setAutoTeam()
+           .addRequirement(0.0, SunlightState::NIGHT),
+       ImmigrantInfo(CreatureId::CAVE_BEAR, {MinionTrait::FIGHTER})
+           .addRequirement(0.0, FurnitureType::BEAST_CAGE)
+           .setFrequency(0.1),
+       ImmigrantInfo(CreatureId::WEREWOLF, {MinionTrait::FIGHTER})
+           .setFrequency(0.1)
+           .addRequirement(0.0, MinTurnRequirement{2000_global})
+           .addRequirement(0.1, AttractionInfo{2, FurnitureType::TRAINING_IRON}),
+       ImmigrantInfo(CreatureId::DARK_ELF_WARRIOR, {MinionTrait::FIGHTER})
+           .addRequirement(0.0, RecruitmentInfo{{EnemyId::DARK_ELVES}, 3, MinionTrait::FIGHTER})
+           .addRequirement(CostInfo(CollectiveResourceId::GOLD, 20)),
+       ImmigrantInfo(CreatureId::ORC, {MinionTrait::FIGHTER})
+           .addRequirement(0.0, RecruitmentInfo{{EnemyId::ORC_VILLAGE}, 3, MinionTrait::FIGHTER})
+           .addRequirement(CostInfo(CollectiveResourceId::GOLD, 5)),
+       ImmigrantInfo(CreatureId::HARPY, {MinionTrait::FIGHTER})
+           .addRequirement(0.0, RecruitmentInfo{{EnemyId::HARPY_CAVE}, 3, MinionTrait::FIGHTER})
+           .addRequirement(CostInfo(CollectiveResourceId::GOLD, 12)),
+       ImmigrantInfo(CreatureId::OGRE, {MinionTrait::FIGHTER})
+           .addRequirement(0.0, RecruitmentInfo{{EnemyId::OGRE_CAVE, EnemyId::ORC_VILLAGE}, 3, MinionTrait::FIGHTER})
+           .addRequirement(CostInfo(CollectiveResourceId::GOLD, 12)),
+       ImmigrantInfo(random.permutation({CreatureId::SPECIAL_HMBN, CreatureId::SPECIAL_HMBW,
+               CreatureId::SPECIAL_HMGN, CreatureId::SPECIAL_HMGW}), {MinionTrait::FIGHTER})
+           .addRequirement(0.0, TechId::HUMANOID_MUT)
+           .addRequirement(0.0, Pregnancy {})
+           .addRequirement(CostInfo(CollectiveResourceId::GOLD, 100))
+           .setSpawnLocation(Pregnancy {}),
+       ImmigrantInfo(random.permutation({CreatureId::SPECIAL_BMBN, CreatureId::SPECIAL_BMBW,
+               CreatureId::SPECIAL_BMGN, CreatureId::SPECIAL_BMGW}), {MinionTrait::FIGHTER})
+           .addRequirement(0.0, TechId::BEAST_MUT)
+           .addRequirement(0.0, Pregnancy {})
+           .addRequirement(CostInfo(CollectiveResourceId::GOLD, 100))
+           .setSpawnLocation(Pregnancy {})
+   });
   return CollectiveConfig::keeper(
       TimeInterval(fastImmigration ? 10 : 140),
       10,
@@ -67,117 +186,17 @@ static CollectiveConfig getKeeperConfig(RandomGen& random, bool fastImmigration,
       CONSTRUCT(PopulationIncrease,
         c.type = FurnitureType::MINION_STATUE;
         c.increasePerSquare = ModelBuilder::getStatuePopulationIncrease();
-        c.maxIncrease = 1000;),
+        c.maxIncrease = 200;),
+      CONSTRUCT(PopulationIncrease,
+        c.type = FurnitureType::STONE_MINION_STATUE;
+        c.increasePerSquare = ModelBuilder::getStatuePopulationIncrease();
+        c.maxIncrease = c.increasePerSquare * 4;),
       CONSTRUCT(PopulationIncrease,
         c.type = FurnitureType::THRONE;
         c.increasePerSquare = ModelBuilder::getThronePopulationIncrease();
         c.maxIncrease = c.increasePerSquare;),
       },
-      {
-      ImmigrantInfo(CreatureId::IMP, {MinionTrait::WORKER, MinionTrait::NO_LIMIT, MinionTrait::NO_EQUIPMENT})
-          .setSpawnLocation(NearLeader{})
-          .setKeybinding(Keybinding::CREATE_IMP)
-          .setSound(Sound(SoundId::CREATE_IMP).setPitch(2))
-          .setNoAuto()
-          .setInitialRecruitment(4)
-          .addRequirement(ExponentialCost{ CostInfo(CollectiveResourceId::GOLD, 30), 5, 4 }),
-      ImmigrantInfo(CreatureId::GOBLIN, {MinionTrait::FIGHTER, MinionTrait::NO_EQUIPMENT})
-          .setFrequency(0.7)
-          .addRequirement(0.1, AttractionInfo{1, vector<AttractionType>(
-               {FurnitureType::FORGE, FurnitureType::WORKSHOP, FurnitureType::JEWELER})}),
-      ImmigrantInfo(CreatureId::ORC, {MinionTrait::FIGHTER})
-          .setFrequency(0.7)
-          .addRequirement(0.1, AttractionInfo{1, FurnitureType::TRAINING_WOOD}),
-      ImmigrantInfo(CreatureId::ORC_SHAMAN, {MinionTrait::FIGHTER})
-          .setFrequency(0.6)
-          .addRequirement(0.0, MinTurnRequirement{500_global})
-          .addRequirement(0.1, AttractionInfo{1, {FurnitureType::BOOKCASE_WOOD, FurnitureType::LABORATORY}}),
-      ImmigrantInfo(CreatureId::OGRE, {MinionTrait::FIGHTER})
-          .setFrequency(0.3)
-          .addRequirement(0.0, MinTurnRequirement{2000_global})
-          .addRequirement(0.1, AttractionInfo{1, FurnitureType::TRAINING_IRON}),
-      ImmigrantInfo(CreatureId::HARPY, {MinionTrait::FIGHTER})
-          .setFrequency(0.3)
-          .addRequirement(0.0, MinTurnRequirement{2000_global})
-          .addRequirement(0.1, AttractionInfo{1, FurnitureType::TRAINING_WOOD})
-          .addRequirement(0.3, AttractionInfo{1, ItemIndex::RANGED_WEAPON}),
-      ImmigrantInfo(CreatureId::ZOMBIE, {MinionTrait::FIGHTER})
-          .setFrequency(0.5)
-          .addRequirement(0.0, MinTurnRequirement{1000_global})
-          .setSpawnLocation(FurnitureType::GRAVE)
-          .addRequirement(0.0, CostInfo(CollectiveResourceId::CORPSE, 1)),
-      ImmigrantInfo(CreatureId::SKELETON, {MinionTrait::FIGHTER})
-          .setFrequency(0.5)
-          .addRequirement(0.0, MinTurnRequirement{1000_global})
-          .setSpawnLocation(FurnitureType::GRAVE)
-          .addRequirement(0.1, AttractionInfo{1, FurnitureType::TRAINING_IRON})
-          .addRequirement(0.0, CostInfo(CollectiveResourceId::CORPSE, 1)),
-      ImmigrantInfo(CreatureId::VAMPIRE, {MinionTrait::FIGHTER})
-          .setFrequency(0.2)
-          .setSpawnLocation(FurnitureType::GRAVE)
-          .addRequirement(0.1, AttractionInfo{1, FurnitureType::TRAINING_IRON})
-          .addRequirement(0.0, CostInfo(CollectiveResourceId::CORPSE, 1)),
-      ImmigrantInfo(CreatureId::LOST_SOUL, {MinionTrait::FIGHTER})
-          .setFrequency(0.3)
-          .setSpawnLocation(FurnitureType::DEMON_SHRINE)
-          .addRequirement(0.3, AttractionInfo{1, FurnitureType::DEMON_SHRINE})
-          .addRequirement(0.0, FurnitureType::DEMON_SHRINE),
-      ImmigrantInfo(CreatureId::SUCCUBUS, {MinionTrait::FIGHTER, MinionTrait::NO_EQUIPMENT})
-          .setFrequency(0.3)
-          .setSpawnLocation(FurnitureType::DEMON_SHRINE)
-          .addRequirement(0.3, AttractionInfo{2, FurnitureType::DEMON_SHRINE})
-          .addRequirement(0.0, FurnitureType::DEMON_SHRINE),
-      ImmigrantInfo(CreatureId::DOPPLEGANGER, {MinionTrait::FIGHTER})
-          .setFrequency(0.3)
-          .setSpawnLocation(FurnitureType::DEMON_SHRINE)
-          .addRequirement(0.3, AttractionInfo{3, FurnitureType::DEMON_SHRINE})
-          .addRequirement(0.0, FurnitureType::DEMON_SHRINE),
-      ImmigrantInfo(CreatureId::RAVEN, {MinionTrait::FIGHTER, MinionTrait::NO_RETURNING})
-          .setFrequency(0.5)
-          .addRequirement(0.0, FurnitureType::BEAST_CAGE)
-          .addRequirement(0.0, SunlightState::DAY),
-      ImmigrantInfo(CreatureId::BAT, {MinionTrait::FIGHTER, MinionTrait::NO_RETURNING})
-          .setFrequency(0.5)
-          .addRequirement(0.0, FurnitureType::BEAST_CAGE)
-          .addRequirement(0.0, SunlightState::NIGHT),
-      ImmigrantInfo(CreatureId::WOLF, {MinionTrait::FIGHTER, MinionTrait::NO_RETURNING})
-          .setFrequency(0.15)
-          .addRequirement(0.0, FurnitureType::BEAST_CAGE)
-          .setGroupSize(Range(3, 9))
-          .setAutoTeam()
-          .addRequirement(0.0, SunlightState::NIGHT),
-      ImmigrantInfo(CreatureId::CAVE_BEAR, {MinionTrait::FIGHTER, MinionTrait::NO_RETURNING})
-          .addRequirement(0.0, FurnitureType::BEAST_CAGE)
-          .setFrequency(0.1),
-      ImmigrantInfo(CreatureId::WEREWOLF, {MinionTrait::FIGHTER, MinionTrait::NO_RETURNING})
-          .setFrequency(0.1)
-          .addRequirement(0.0, MinTurnRequirement{2000_global})
-          .addRequirement(0.1, AttractionInfo{2, FurnitureType::TRAINING_IRON}),
-      ImmigrantInfo(CreatureId::DARK_ELF_WARRIOR, {MinionTrait::FIGHTER})
-          .addRequirement(0.0, RecruitmentInfo{{EnemyId::DARK_ELVES}, 3, MinionTrait::FIGHTER})
-          .addRequirement(CostInfo(CollectiveResourceId::GOLD, 20)),
-      ImmigrantInfo(CreatureId::ORC, {MinionTrait::FIGHTER})
-          .addRequirement(0.0, RecruitmentInfo{{EnemyId::ORC_VILLAGE}, 3, MinionTrait::FIGHTER})
-          .addRequirement(CostInfo(CollectiveResourceId::GOLD, 5)),
-      ImmigrantInfo(CreatureId::HARPY, {MinionTrait::FIGHTER})
-          .addRequirement(0.0, RecruitmentInfo{{EnemyId::HARPY_CAVE}, 3, MinionTrait::FIGHTER})
-          .addRequirement(CostInfo(CollectiveResourceId::GOLD, 12)),
-      ImmigrantInfo(CreatureId::OGRE, {MinionTrait::FIGHTER})
-          .addRequirement(0.0, RecruitmentInfo{{EnemyId::OGRE_CAVE, EnemyId::ORC_VILLAGE}, 3, MinionTrait::FIGHTER})
-          .addRequirement(CostInfo(CollectiveResourceId::GOLD, 12)),
-      ImmigrantInfo(random.permutation({CreatureId::SPECIAL_HMBN, CreatureId::SPECIAL_HMBW,
-              CreatureId::SPECIAL_HMGN, CreatureId::SPECIAL_HMGW}), {MinionTrait::FIGHTER})
-          .addRequirement(0.0, TechId::HUMANOID_MUT)
-          .addRequirement(0.0, Pregnancy {})
-          .addRequirement(CostInfo(CollectiveResourceId::GOLD, 100))
-          .setSpawnLocation(Pregnancy {}),
-      ImmigrantInfo(random.permutation({CreatureId::SPECIAL_BMBN, CreatureId::SPECIAL_BMBW,
-              CreatureId::SPECIAL_BMGN, CreatureId::SPECIAL_BMGW}), {MinionTrait::FIGHTER})
-          .addRequirement(0.0, TechId::BEAST_MUT)
-          .addRequirement(0.0, Pregnancy {})
-          .addRequirement(CostInfo(CollectiveResourceId::GOLD, 100))
-          .setSpawnLocation(Pregnancy {})
-  });
+      std::move(immigrants));
 }
 
 SettlementInfo& ModelBuilder::makeExtraLevel(WModel model, EnemyInfo& enemy) {
@@ -477,13 +496,13 @@ void ModelBuilder::measureModelGen(const string& name, int numTries, function<vo
     minT << ". MaxT: " << maxT << ". AvgT: " << sumT / numTries << std::endl;
 }
 
-WCollective ModelBuilder::spawnKeeper(WModel m, PCreature keeper, bool regenerateMana, vector<string> introText) {
+WCollective ModelBuilder::spawnKeeper(WModel m, AvatarInfo avatarInfo, bool regenerateMana, vector<string> introText) {
   WLevel level = m->getTopLevel();
-  WCreature keeperRef = keeper.get();
+  WCreature keeperRef = avatarInfo.playerCreature.get();
   CHECK(level->landCreature(StairKey::keeperSpawn(), keeperRef)) << "Couldn't place keeper on level.";
-  m->addCreature(std::move(keeper));
+  m->addCreature(std::move(avatarInfo.playerCreature));
   m->collectives.push_back(CollectiveBuilder(
-        getKeeperConfig(random, options->getBoolValue(OptionId::FAST_IMMIGRATION), regenerateMana), TribeId::getKeeper())
+        getKeeperConfig(random, options->getBoolValue(OptionId::FAST_IMMIGRATION), regenerateMana, avatarInfo.impVariant), TribeId::getKeeper())
       .setLevel(level)
       .addCreature(keeperRef, {MinionTrait::LEADER})
       .build());
