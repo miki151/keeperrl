@@ -57,7 +57,7 @@
 template <class Archive>
 void Collective::serialize(Archive& ar, const unsigned int version) {
   ar(SUBCLASS(TaskCallback), SUBCLASS(UniqueEntity<Collective>), SUBCLASS(EventListener));
-  ar(creatures, taskMap, tribe, control, byTrait);
+  ar(creatures, taskMap, tribe, control, byTrait, populationGroups);
   ar(territory, alarmInfo, markedItems, constructions, minionEquipment);
   ar(delayedPos, knownTiles, technologies, kills, points, currentActivity);
   ar(credit, level, immigration, teams, name, conqueredVillains);
@@ -133,6 +133,13 @@ void Collective::addCreatureInTerritory(PCreature creature, EnumSet<MinionTrait>
     }
 }
 
+void Collective::setPopulationGroup(const vector<WCreature>& creatures) {
+  for (auto c : copyOf(populationGroups))
+    if (c.size() == 1 && creatures.contains(c[0]))
+      populationGroups.removeElement(c);
+  populationGroups.push_back(creatures);
+}
+
 void Collective::addCreature(PCreature creature, Position pos, EnumSet<MinionTrait> traits) {
   if (config->getStripSpawns())
     creature->getEquipment().removeAllItems(creature.get());
@@ -176,12 +183,13 @@ void Collective::addCreature(WCreature c, EnumSet<MinionTrait> traits) {
       if (col->getCreatures().contains(c))
         col->removeCreature(c);
   creatures.push_back(c);
+  populationGroups.push_back({c});
   for (MinionTrait t : traits)
     byTrait[t].push_back(c);
   updateCreatureStatus(c);
   for (WItem item : c->getEquipment().getItems())
     CHECK(minionEquipment->tryToOwn(c, item));
-  for (auto minion : creatures) {
+  for (auto minion : getCreatures()) {
     c->removePrivateEnemy(minion);
     minion->removePrivateEnemy(c);
   }
@@ -190,6 +198,11 @@ void Collective::addCreature(WCreature c, EnumSet<MinionTrait> traits) {
 
 void Collective::removeCreature(WCreature c) {
   creatures.removeElement(c);
+  for (auto& group : populationGroups)
+    group.removeElementMaybe(c);
+  for (auto& group : copyOf(populationGroups))
+    if (group.size() == 0)
+      populationGroups.removeElement(group);
   returnResource(taskMap->freeFromTask(c));
   for (auto team : teams->getContaining(c))
     teams->remove(team, c);
@@ -459,7 +472,7 @@ void Collective::tick() {
     minionEquipment->updateItems(getAllItems(ItemIndex::MINION_EQUIPMENT, true));
   }
   workshops->scheduleItems(this);
-  for (auto c : creatures)
+  for (auto c : getCreatures())
     if (!usesEquipment(c))
       for (auto it : minionEquipment->getItemsOwnedBy(c))
         minionEquipment->discard(it);
@@ -528,14 +541,14 @@ void Collective::onEvent(const GameEvent& event) {
         }
       },
       [&](const CreatureKilled& info) {
-        if (creatures.contains(info.victim))
+        if (getCreatures().contains(info.victim))
           onMinionKilled(info.victim, info.attacker);
-        if (creatures.contains(info.attacker))
+        if (getCreatures().contains(info.attacker))
           onKilledSomeone(info.attacker, info.victim);
       },
       [&](const CreatureTortured& info) {
         auto victim = info.victim;
-        if (creatures.contains(victim)) {
+        if (getCreatures().contains(victim)) {
           if (Random.roll(30)) {
             if (Random.roll(2)) {
               victim->dieWithReason("killed by torture");
@@ -1377,7 +1390,7 @@ TaskMap& Collective::getTaskMap() {
 }
 
 int Collective::getPopulationSize() const {
-  return getCreatures().size() - getCreatures(MinionTrait::NO_LIMIT).size();
+  return populationGroups.size() - getCreatures(MinionTrait::NO_LIMIT).size();
 }
 
 int Collective::getMaxPopulation() const {
