@@ -128,24 +128,24 @@ static CollectiveConfig getKeeperConfig(RandomGen& random, bool fastImmigration,
            .setSpawnLocation(FurnitureType::DEMON_SHRINE)
            .addRequirement(0.3, AttractionInfo{3, FurnitureType::DEMON_SHRINE})
            .addRequirement(0.0, FurnitureType::DEMON_SHRINE),
-       ImmigrantInfo(CreatureId::RAVEN, {MinionTrait::FIGHTER, MinionTrait::NO_RETURNING})
+       ImmigrantInfo(CreatureId::RAVEN, {MinionTrait::FIGHTER})
            .setFrequency(0.5)
            .addRequirement(0.0, FurnitureType::BEAST_CAGE)
            .addRequirement(0.0, SunlightState::DAY),
-       ImmigrantInfo(CreatureId::BAT, {MinionTrait::FIGHTER, MinionTrait::NO_RETURNING})
+       ImmigrantInfo(CreatureId::BAT, {MinionTrait::FIGHTER})
            .setFrequency(0.5)
            .addRequirement(0.0, FurnitureType::BEAST_CAGE)
            .addRequirement(0.0, SunlightState::NIGHT),
-       ImmigrantInfo(CreatureId::WOLF, {MinionTrait::FIGHTER, MinionTrait::NO_RETURNING})
+       ImmigrantInfo(CreatureId::WOLF, {MinionTrait::FIGHTER})
            .setFrequency(0.15)
            .addRequirement(0.0, FurnitureType::BEAST_CAGE)
            .setGroupSize(Range(3, 9))
            .setAutoTeam()
            .addRequirement(0.0, SunlightState::NIGHT),
-       ImmigrantInfo(CreatureId::CAVE_BEAR, {MinionTrait::FIGHTER, MinionTrait::NO_RETURNING})
+       ImmigrantInfo(CreatureId::CAVE_BEAR, {MinionTrait::FIGHTER})
            .addRequirement(0.0, FurnitureType::BEAST_CAGE)
            .setFrequency(0.1),
-       ImmigrantInfo(CreatureId::WEREWOLF, {MinionTrait::FIGHTER, MinionTrait::NO_RETURNING})
+       ImmigrantInfo(CreatureId::WEREWOLF, {MinionTrait::FIGHTER})
            .setFrequency(0.1)
            .addRequirement(0.0, MinTurnRequirement{2000_global})
            .addRequirement(0.1, AttractionInfo{2, FurnitureType::TRAINING_IRON}),
