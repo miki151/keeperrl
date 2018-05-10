@@ -47,11 +47,11 @@ Furniture::~Furniture() {}
 
 template<typename Archive>
 void Furniture::serialize(Archive& ar, const unsigned) {
-  ar(SUBCLASS(OwnedObject<Furniture>), viewObject);
+  ar(SUBCLASS(OwnedObject<Furniture>), viewObject, removeNonFriendly);
   ar(name, pluralName, type, movementSet, fire, burntRemains, destroyedRemains, destroyActions, itemDrop);
   ar(blockVision, usageType, clickType, tickType, usageTime, overrideMovement, wall, creator, createdTime);
   ar(constructMessage, layer, entryType, lightEmission, canHideHere, warning, summonedElement, droppedItems);
-  ar(canBuildBridge, noProjectiles, clearFogOfWar, realTimeDestroy, xForgetAfterBuilding);
+  ar(canBuildBridge, noProjectiles, clearFogOfWar, removeWithCreaturePresent, xForgetAfterBuilding);
 }
 
 SERIALIZABLE(Furniture)
@@ -275,8 +275,12 @@ bool Furniture::emitsWarning(WConstCreature) const {
   return warning;
 }
 
-bool Furniture::canDestroyInRealTimeMode() const {
-  return realTimeDestroy && !wall;
+bool Furniture::canRemoveWithCreaturePresent() const {
+  return removeWithCreaturePresent && !wall;
+}
+
+bool Furniture::canRemoveNonFriendly() const {
+  return removeNonFriendly;
 }
 
 WCreature Furniture::getCreator() const {
@@ -437,8 +441,13 @@ Furniture& Furniture::setOverrideMovement() {
   return *this;
 }
 
-Furniture& Furniture::setRealTimeModeDestroy(bool s) {
-  realTimeDestroy = s;
+Furniture& Furniture::setCanRemoveWithCreaturePresent(bool s) {
+  removeWithCreaturePresent = s;
+  return *this;
+}
+
+Furniture& Furniture::setCanRemoveNonFriendly(bool s) {
+  removeNonFriendly = s;
   return *this;
 }
 

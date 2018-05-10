@@ -327,7 +327,8 @@ static Furniture get(FurnitureType type, TribeId tribe) {
     case FurnitureType::BRIDGE:
       return Furniture("bridge", ViewObject(ViewId::BRIDGE, ViewLayer::FLOOR), type, tribe)
           .setOverrideMovement()
-          .setRealTimeModeDestroy(false);
+          .setCanRemoveNonFriendly(true)
+          .setCanRemoveWithCreaturePresent(false);
     case FurnitureType::ROAD:
       return Furniture("road", ViewObject(ViewId::ROAD, ViewLayer::FLOOR), type, tribe);
     case FurnitureType::MOUNTAIN:

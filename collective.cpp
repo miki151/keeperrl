@@ -885,8 +885,9 @@ void Collective::removeFurniture(Position pos, FurnitureLayer layer) {
 
 void Collective::destroyOrder(Position pos, FurnitureLayer layer) {
   auto furniture = pos.modFurniture(layer);
-  if (!furniture || furniture->canDestroyInRealTimeMode()) {
-    if (furniture && furniture->getTribe() == getTribeId()) {
+  if (!furniture || furniture->canRemoveWithCreaturePresent() || !pos.getCreature()) {
+    if (furniture && !furniture->isWall() &&
+        (furniture->getTribe() == getTribeId() || furniture->canRemoveNonFriendly())) {
       furniture->destroy(pos, DestroyAction::Type::BASH);
       tileEfficiency->update(pos);
     }
