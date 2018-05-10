@@ -154,10 +154,12 @@ const vector<BuildInfo>& BuildInfo::get() {
         "Opens a connection if another portal is present.", 0, "Installations"),
       BuildInfo({FurnitureType::MINION_STATUE, {ResourceId::GOLD, 50}}, "Golden Statue", {},
         "Increases minion population limit by " +
-              toString(ModelBuilder::getStatuePopulationIncrease()) + ".", 0, "Installations"),
+              toString(ModelBuilder::getStatuePopulationIncrease()) + ". (Up to " +
+              toString(ModelBuilder::getStatuePopulationIncrease() * 200) + ")", 0, "Installations"),
       BuildInfo({FurnitureType::STONE_MINION_STATUE, {ResourceId::STONE, 250}}, "Stone Statue", {},
         "Increases minion population limit by " +
-              toString(ModelBuilder::getStatuePopulationIncrease()) + ".", 0, "Installations"),
+              toString(ModelBuilder::getStatuePopulationIncrease()) + ". (Up to " +
+              toString(ModelBuilder::getStatuePopulationIncrease() * 4) + ")", 0, "Installations"),
       BuildInfo({FurnitureType::WHIPPING_POST, {ResourceId::WOOD, 20}}, "Whipping post", {},
           "A place to whip your minions if they need a morale boost.", 0, "Installations"),
       BuildInfo({FurnitureType::GALLOWS, {ResourceId::WOOD, 20}}, "Gallows", {},
