@@ -70,6 +70,7 @@ class LastingEffects {
   static bool modifyIsEnemyResult(WConstCreature, WConstCreature, bool);
   static int getPrice(LastingEffect);
   static double getMoraleIncrease(WConstCreature);
+  static bool canConsume(LastingEffect);
 };
 
 

@@ -698,3 +698,22 @@ double LastingEffects::getMoraleIncrease(WConstCreature c) {
     ret += 0.2;
   return ret;
 }
+
+bool LastingEffects::canConsume(LastingEffect effect) {
+  switch (effect) {
+    case LastingEffect::COLLAPSED:
+    case LastingEffect::STUNNED:
+    case LastingEffect::SLEEP:
+    case LastingEffect::ENTANGLED:
+    case LastingEffect::TIED_UP:
+    case LastingEffect::BLEEDING:
+    case LastingEffect::SATIATED:
+    case LastingEffect::RESTED:
+    case LastingEffect::SUMMONED:
+    case LastingEffect::LIGHT_SOURCE:
+    case LastingEffect::PREGNANT:
+      return false;
+    default:
+      return true;
+  }
+}

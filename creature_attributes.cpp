@@ -301,7 +301,8 @@ void consumeAttr(Skillset& mine, const Skillset& his, vector<string>& adjectives
 
 void CreatureAttributes::consumeEffects(const EnumMap<LastingEffect, int>& permanentEffects) {
   for (LastingEffect effect : ENUM_ALL(LastingEffect))
-    if (permanentEffects[effect] > 0 && !isAffectedPermanently(effect) && consumeProb()) {
+    if (permanentEffects[effect] > 0 && !isAffectedPermanently(effect) && consumeProb() &&
+        LastingEffects::canConsume(effect)) {
       addPermanentEffect(effect, 1);
     }
 }
