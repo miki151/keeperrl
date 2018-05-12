@@ -76,6 +76,10 @@ void CreatureAttributes::setBaseAttr(AttrType type, int v) {
   attr[type] = v;
 }
 
+void CreatureAttributes::sufferScar(AttrType type) {
+  if (attr[type] > 5) attr[type] -= 1;
+}
+
 double CreatureAttributes::getCourage() const {
   if (!body->hasBrain())
     return 1;

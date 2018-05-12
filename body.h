@@ -114,6 +114,8 @@ class Body {
   void updateViewObject(ViewObject&) const;
   const optional<double>& getCarryLimit() const;
   void bleed(WCreature, double amount);
+  void looseBodyPart(BodyPart);
+  void injureBodyPart(BodyPart);
   WItem chooseWeapon(WItem realWeapon) const;
   const EnumMap<BodyPart, optional<IntrinsicAttack>>& getIntrinsicAttacks() const;
   EnumMap<BodyPart, optional<IntrinsicAttack>>& getIntrinsicAttacks();
@@ -130,8 +132,6 @@ class Body {
   int numInjured(BodyPart) const;
   void clearInjured(BodyPart);
   void clearLost(BodyPart);
-  void looseBodyPart(BodyPart);
-  void injureBodyPart(BodyPart);
   void decreaseHealth(double amount);
   bool isPartDamaged(BodyPart, double damage) const;
   bool isCritical(BodyPart) const;

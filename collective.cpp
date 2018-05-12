@@ -560,7 +560,7 @@ void Collective::onEvent(const GameEvent& event) {
               setTrait(victim, MinionTrait::FIGHTER);
               victim->removeEffect(LastingEffect::TIED_UP);
             }
-          }
+          } else victim->sufferFromTorture();
         }
       },
       [&](const CreatureStunned& info) {
