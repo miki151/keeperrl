@@ -40,6 +40,10 @@ class ItemAttributes {
 
   SERIALIZATION_DECL(ItemAttributes);
 
+  void enableSharpWeapons(int percent);
+  void enableHardenedWeapons(int percent);
+  void enableHardenedArmours(int percent);
+  
   MustInitialize<ViewId> SERIAL(viewId);
   MustInitialize<string> SERIAL(name);
   string SERIAL(description);

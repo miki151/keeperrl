@@ -27,3 +27,30 @@ void ItemAttributes::serialize(Archive& ar, const unsigned int version) {
 
 SERIALIZABLE(ItemAttributes);
 SERIALIZATION_CONSTRUCTOR_IMPL(ItemAttributes);
+
+void ItemAttributes::enableSharpWeapons(int percent) {
+    //Make occasional sharp weapons with extra cut.
+    //Most common with basic swords, but possible with elven swords and axes
+    int spin = rand() % 100 + 1;
+    if (spin > percent) return;
+    modifiers[AttrType::DAMAGE] = modifiers[AttrType::DAMAGE] + 2;
+    name = "sharp " + *name;
+}
+
+void ItemAttributes::enableHardenedWeapons(int percent) {
+    //Make occasional blunt weapons with extra whack.
+    //Most common with clubs but possible with iron hammers.
+    int spin = rand() % 100 + 1;
+    if (spin > percent) return;
+    modifiers[AttrType::DAMAGE] = modifiers[AttrType::DAMAGE] + 2;
+    name = "hardened " + *name;
+}
+
+void ItemAttributes::enableHardenedArmours(int percent) {
+    //Make occasional hardened armour
+    //Much more common with leather but possible with iron.
+    int spin = rand() % 100 + 1;
+    if (spin > percent) return;
+    modifiers[AttrType::DEFENSE] = modifiers[AttrType::DEFENSE] + 2;
+    name = "hardened " + *name;
+}
