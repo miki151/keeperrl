@@ -39,6 +39,10 @@ RangedWeapon::RangedWeapon(AttrType attr, const string& name, ViewId id, int dis
 
 void RangedWeapon::fire(WCreature c, Vec2 dir) const {
   CHECK(dir.length8() == 1);
+  if (c->getAmmoHeld() < 1) {
+    c->getPosition().globalMessage("Searching for ammunition.");
+    return;
+  }
   c->getGame()->getView()->addSound(SoundId::SHOOT_BOW);
   int damage = c->getAttr(damageAttr);
   Attack attack(c, Random.choose(AttackLevel::LOW, AttackLevel::MIDDLE, AttackLevel::HIGH),
