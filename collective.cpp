@@ -90,7 +90,7 @@ void Collective::init(CollectiveConfig&& cfg, Immigration&& im) {
 }
 
 void Collective::acquireInitialTech() {
-  for (auto tech : config->getInitialTech())
+  for (auto tech : config->getInitialTech(getLeader()))
     acquireTech(tech);
 }
 

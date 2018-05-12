@@ -167,7 +167,7 @@ bool Tutorial::canContinue(WConstGame game) const {
     case State::SUMMARY1:
       return true;
     case State::RESEARCH:
-      return collective->getTechnologies().size() > collective->getConfig().getInitialTech().size();
+      return collective->getTechnologies().size() > collective->getConfig().getInitialTech(collective->getLeader()).size();
     case State::SUMMARY2:
       return true;
     case State::FINISHED:

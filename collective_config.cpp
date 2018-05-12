@@ -624,11 +624,24 @@ unique_ptr<Workshops> CollectiveConfig::getWorkshops() const {
   }));
 }
 
-vector<Technology*> CollectiveConfig::getInitialTech() const {
-  if (type == KEEPER)
-    return {
-      Technology::get(TechId::SPELLS),
-    };
+vector<Technology*> CollectiveConfig::getInitialTech(WConstCreature avatar) const {
+  if (type == KEEPER) {
+    CreatureId Id = avatar->getAttributes().getCreatureId().value();
+    switch (Id) {
+      case CreatureId::KEEPER_MAGE:
+      case CreatureId::KEEPER_MAGE_F:
+        return {
+          Technology::get(TechId::SPELLS),
+        };
+      case CreatureId::KEEPER_KNIGHT:
+      case CreatureId::KEEPER_KNIGHT_F:
+        return {
+          Technology::get(TechId::IRON_WORKING),
+        };
+      default:
+        return {};
+    }
+  }
   else
     return {};
 }

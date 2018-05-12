@@ -109,7 +109,7 @@ class CollectiveConfig {
   const vector<PopulationIncrease>& getPopulationIncreases() const;
   const optional<GuardianInfo>& getGuardianInfo() const;
   unique_ptr<Workshops> getWorkshops() const;
-  vector<Technology*> getInitialTech() const;
+  vector<Technology*> getInitialTech(WConstCreature c) const;
 
   static const WorkshopInfo& getWorkshopInfo(WorkshopType);
   static optional<WorkshopType> getWorkshopType(FurnitureType);
