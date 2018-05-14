@@ -273,7 +273,7 @@ ItemAttributes ItemType::getAttributes() const {
 
 PItem ItemType::get() const {
   auto attributes = getAttributes();
-  if (Random.chance(prefixChance))
+  if (!attributes.prefixes.empty() && Random.chance(prefixChance))
     applyPrefix(Random.choose(attributes.prefixes), attributes);
   return type.visit(
       [&](const FireScroll&) {
