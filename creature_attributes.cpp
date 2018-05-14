@@ -220,7 +220,7 @@ GlobalTime CreatureAttributes::getTimeOut(LastingEffect effect) const {
 
 bool CreatureAttributes::considerTimeout(LastingEffect effect, GlobalTime current) {
   if (lastingEffects[effect] > GlobalTime(0) && lastingEffects[effect] <= current) {
-    clearLastingEffect(effect, current);
+    clearLastingEffect(effect);
     if (!isAffected(effect, current))
       return true;
   }
@@ -362,7 +362,7 @@ bool CreatureAttributes::isAffectedPermanently(LastingEffect effect) const {
   return permanentEffects[effect] > 0;
 }
 
-void CreatureAttributes::clearLastingEffect(LastingEffect effect, GlobalTime t) {
+void CreatureAttributes::clearLastingEffect(LastingEffect effect) {
   lastingEffects[effect] = GlobalTime(0);
 }
 

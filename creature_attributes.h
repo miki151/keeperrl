@@ -90,7 +90,7 @@ class CreatureAttributes {
   bool isAffectedPermanently(LastingEffect) const;
   GlobalTime getTimeOut(LastingEffect) const;
   string getRemainingString(LastingEffect, GlobalTime) const;
-  void clearLastingEffect(LastingEffect, GlobalTime);
+  void clearLastingEffect(LastingEffect);
   void addPermanentEffect(LastingEffect, int count);
   void removePermanentEffect(LastingEffect, int count);
   bool considerTimeout(LastingEffect, GlobalTime current);
