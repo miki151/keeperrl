@@ -80,6 +80,11 @@ ItemType ItemType::spellHit(int damage) {
 
 ItemType::ItemType() {}
 
+ItemType& ItemType::setPrefixChance(double chance) {
+  prefixChance = chance;
+  return *this;
+}
+
 ItemType& ItemType::operator = (const ItemType&) = default;
 ItemType& ItemType::operator = (ItemType&&) = default;
 
@@ -267,21 +272,24 @@ ItemAttributes ItemType::getAttributes() const {
 }
 
 PItem ItemType::get() const {
+  auto attributes = getAttributes();
+  if (Random.chance(prefixChance))
+    applyPrefix(Random.choose(attributes.prefixes), attributes);
   return type.visit(
       [&](const FireScroll&) {
-        return makeOwner<FireScrollItem>(getAttributes());
+        return makeOwner<FireScrollItem>(std::move(attributes));
       },
       [&](const RandomTechBook&) {
-        return makeOwner<TechBookItem>(getAttributes(), none);
+        return makeOwner<TechBookItem>(std::move(attributes), none);
       },
       [&](const TechBook& t) {
-        return makeOwner<TechBookItem>(getAttributes(), t.techId);
+        return makeOwner<TechBookItem>(std::move(attributes), t.techId);
       },
       [&](const Potion& t) {
-        return makeOwner<PotionItem>(getAttributes());
+        return makeOwner<PotionItem>(std::move(attributes));
       },
       [&](const auto&) {
-        return makeOwner<Item>(this->getAttributes());
+        return makeOwner<Item>(std::move(attributes));
       }
   );
 }
@@ -392,7 +400,7 @@ static const vector<pair<string, vector<string>>> badArtifactNames {
   {"battle axe", {"crush", "tooth", "razor", "fist", "bite", "bolt", "sword"}},
   {"war hammer", {"blade", "tooth", "bite", "bolt", "sword", "steel"}}};
 
-static void makeArtifact(ItemAttributes& i) {
+/*static void makeArtifact(ItemAttributes& i) {
   bool good;
   do {
     good = true;
@@ -407,30 +415,7 @@ static void makeArtifact(ItemAttributes& i) {
   INFO << "Making artifact " << *i.name << " " << *i.artifactName;
   i.modifiers[AttrType::DAMAGE] += Random.get(1, 4);
   i.price *= 15;
-}
-
-enum class WeaponPrefix { SILVER, FLAMING, POISONOUS, GREAT, LEAD_FILLED };
-
-static void addPrefix(ItemAttributes& i, WeaponPrefix prefix) {
-  i.price *= 7;
-  switch (prefix) {
-    case WeaponPrefix::SILVER:
-      i.weaponInfo.attackEffect = Effect(Effect::SilverDamage{});
-      break;
-    case WeaponPrefix::FLAMING:
-      i.weaponInfo.attackEffect = Effect(Effect::Fire{});
-      break;
-    case WeaponPrefix::POISONOUS:
-      i.weaponInfo.attackEffect = Effect(Effect::Lasting{LastingEffect::POISON});
-      break;
-    case WeaponPrefix::GREAT:
-      i.weaponInfo.attackEffect = Effect(Effect::Lasting{LastingEffect::BLEEDING});
-      break;
-    case WeaponPrefix::LEAD_FILLED:
-      i.weaponInfo.attackEffect = Effect(Effect::Lasting{LastingEffect::COLLAPSED});
-      break;
-  }
-}
+}*/
 
 vector<PItem> ItemType::get(int num) const {
   vector<PItem> ret;
@@ -467,6 +452,7 @@ ItemAttributes ItemType::Knife::getAttributes() const {
       i.price = 1;
       i.weaponInfo.attackType = AttackType::STAB;
       i.weaponInfo.attackMsg = AttackMsg::THRUST;
+      i.prefixes.push_back({1, Effect(Effect::Lasting{LastingEffect::POISON})});
   );
 }
 
@@ -499,23 +485,6 @@ ItemAttributes ItemType::UnicornHorn::getAttributes() const {
   );
 }
 
-ItemAttributes ItemType::SpecialKnife::getAttributes() const {
-  return ITATTR(
-      i.viewId = ViewId::KNIFE;
-      i.name = "knife";
-      i.plural = "knives"_s;
-      i.itemClass = ItemClass::WEAPON;
-      i.equipmentSlot = EquipmentSlot::WEAPON;
-      i.weight = 0.3;
-      i.modifiers[AttrType::DAMAGE] = 5 + maybePlusMinusOne(4);
-      i.price = 1;
-      i.weaponInfo.attackType = AttackType::STAB;
-      i.weaponInfo.attackMsg = AttackMsg::THRUST;
-      addPrefix(i, WeaponPrefix::POISONOUS);
-      makeArtifact(i);
-  );
-}
-
 ItemAttributes ItemType::Spear::getAttributes() const {
   return ITATTR(
       i.viewId = ViewId::SPEAR;
@@ -540,21 +509,7 @@ ItemAttributes ItemType::Sword::getAttributes() const {
       i.modifiers[AttrType::DAMAGE] = 8 + maybePlusMinusOne(4);
       i.price = 4;
       i.weaponInfo.attackType = AttackType::CUT;
-  );
-}
-
-ItemAttributes ItemType::SpecialSword::getAttributes() const {
-  return ITATTR(
-      i.viewId = ViewId::SPECIAL_SWORD;
-      i.name = "sword";
-      i.itemClass = ItemClass::WEAPON;
-      i.equipmentSlot = EquipmentSlot::WEAPON;
-      i.weight = 1.5;
-      i.modifiers[AttrType::DAMAGE] = 8 + maybePlusMinusOne(4);
-      i.price = 4;
-      i.weaponInfo.attackType = AttackType::CUT;
-      addPrefix(i, WeaponPrefix::FLAMING);
-      makeArtifact(i);
+      i.prefixes.push_back({1, Effect(Effect::Fire{})});
   );
 }
 
@@ -568,6 +523,8 @@ ItemAttributes ItemType::AdaSword::getAttributes() const {
       i.modifiers[AttrType::DAMAGE] = 11 + maybePlusMinusOne(4);
       i.price = 20;
       i.weaponInfo.attackType = AttackType::CUT;
+      i.prefixes.push_back({1, Effect(Effect::Acid{})});
+      i.prefixes.push_back({1, Effect(Effect::Fire{})});
   );
 }
 
@@ -581,21 +538,7 @@ ItemAttributes ItemType::ElvenSword::getAttributes() const {
       i.modifiers[AttrType::DAMAGE] = 9 + maybePlusMinusOne(4);
       i.price = 8;
       i.weaponInfo.attackType = AttackType::CUT;
-  );
-}
-
-ItemAttributes ItemType::SpecialElvenSword::getAttributes() const {
-  return ITATTR(
-      i.viewId = ViewId::SPECIAL_SWORD;
-      i.name = "elven sword";
-      i.itemClass = ItemClass::WEAPON;
-      i.equipmentSlot = EquipmentSlot::WEAPON;
-      i.weight = 1;
-      i.modifiers[AttrType::DAMAGE] = 9 + maybePlusMinusOne(4);
-      i.price = 8;
-      i.weaponInfo.attackType = AttackType::CUT;
-      addPrefix(i, WeaponPrefix::SILVER);
-      makeArtifact(i);
+      i.prefixes.push_back({1, Effect(Effect::SilverDamage{})});
   );
 }
 
@@ -610,22 +553,7 @@ ItemAttributes ItemType::BattleAxe::getAttributes() const {
       i.weaponInfo.twoHanded = true;
       i.price = 30;
       i.weaponInfo.attackType = AttackType::CUT;
-  );
-}
-
-ItemAttributes ItemType::SpecialBattleAxe::getAttributes() const {
-  return ITATTR(
-      i.viewId = ViewId::SPECIAL_BATTLE_AXE;
-      i.name = "battle axe";
-      i.itemClass = ItemClass::WEAPON;
-      i.equipmentSlot = EquipmentSlot::WEAPON;
-      i.weight = 8;
-      i.modifiers[AttrType::DAMAGE] = 14 + maybePlusMinusOne(4);
-      i.weaponInfo.twoHanded = true;
-      i.price = 30;
-      i.weaponInfo.attackType = AttackType::CUT;
-      addPrefix(i, WeaponPrefix::GREAT);
-      makeArtifact(i);
+      i.prefixes.push_back({1, Effect(Effect::Lasting{LastingEffect::BLEEDING})});
   );
 }
 
@@ -641,6 +569,7 @@ ItemAttributes ItemType::AdaBattleAxe::getAttributes() const {
       i.weaponInfo.twoHanded = true;
       i.price = 150;
       i.weaponInfo.attackType = AttackType::CUT;
+      i.prefixes.push_back({1, Effect(Effect::Lasting{LastingEffect::BLEEDING})});
   );
 }
 
@@ -655,22 +584,7 @@ ItemAttributes ItemType::WarHammer::getAttributes() const {
       i.weaponInfo.twoHanded = true;
       i.price = 20;
       i.weaponInfo.attackType = AttackType::CRUSH;
-  );
-}
-
-ItemAttributes ItemType::SpecialWarHammer::getAttributes() const {
-  return ITATTR(
-      i.viewId = ViewId::SPECIAL_WAR_HAMMER;
-      i.name = "war hammer";
-      i.itemClass = ItemClass::WEAPON;
-      i.equipmentSlot = EquipmentSlot::WEAPON;
-      i.weight = 8;
-      i.modifiers[AttrType::DAMAGE] = 12 + maybePlusMinusOne(4);
-      i.weaponInfo.twoHanded = true;
-      i.price = 20;
-      i.weaponInfo.attackType = AttackType::CRUSH;
-      addPrefix(i, WeaponPrefix::LEAD_FILLED);
-      makeArtifact(i);
+      i.prefixes.push_back({1, Effect(Effect::Lasting{LastingEffect::COLLAPSED})});
   );
 }
 
@@ -713,6 +627,7 @@ ItemAttributes ItemType::WoodenStaff::getAttributes() const {
       i.price = 30;
       i.weaponInfo.attackType = AttackType::SPELL;
       i.weaponInfo.attackMsg = AttackMsg::WAVE;
+      i.prefixes.push_back({1, Effect(Effect::Teleport{})});
   );
 }
 
@@ -728,6 +643,7 @@ ItemAttributes ItemType::IronStaff::getAttributes() const {
       i.price = 60;
       i.weaponInfo.attackType = AttackType::SPELL;
       i.weaponInfo.attackMsg = AttackMsg::WAVE;
+      i.prefixes.push_back({1, Effect(Effect::Teleport{})});
   );
 }
 
@@ -793,8 +709,8 @@ ItemAttributes ItemType::Robe::getAttributes() const {
       i.equipmentSlot = EquipmentSlot::BODY_ARMOR;
       i.weight = 2;
       i.price = 10;
-      i.equipedEffect = LastingEffect::MAGIC_RESISTANCE;
       i.modifiers[AttrType::DEFENSE] = 1 + maybePlusMinusOne(4);
+      i.prefixes.push_back({1, LastingEffect::MAGIC_RESISTANCE});
   );
 }
 
@@ -829,115 +745,95 @@ ItemAttributes ItemType::BagOfCandies::getAttributes() const {
 ItemAttributes ItemType::LeatherGloves::getAttributes() const {
   return ITATTR(
       i.viewId = ViewId::LEATHER_GLOVES;
-      i.shortName = "leather"_s;
+      i.shortName = "gloves"_s;
       i.name = "pair of leather gloves";
       i.itemClass = ItemClass::ARMOR;
       i.equipmentSlot = EquipmentSlot::GLOVES;
       i.weight = 0.3;
       i.price = 2;
       i.modifiers[AttrType::DEFENSE] = 1 + maybePlusMinusOne(4);
-  );
-}
-
-ItemAttributes ItemType::StrengthGloves::getAttributes() const {
-  return ITATTR(
-      i.viewId = ViewId::STRENGTH_GLOVES;
-      i.shortName = "strength"_s;
-      i.name = "gloves of " + *i.shortName;
-      i.plural = "pairs of " + *i.name;
-      i.itemClass = ItemClass::ARMOR;
-      i.equipmentSlot = EquipmentSlot::GLOVES;
-      i.weight = 0.3;
-      i.price = 25;
-      i.modifiers[AttrType::DAMAGE] = 2 + maybePlusMinusOne(4);;
-      i.modifiers[AttrType::DEFENSE] = 1 + maybePlusMinusOne(4);
+      i.prefixes.push_back({1, ItemAttrBonus{AttrType::DAMAGE, Random.get(2, 5)}});
   );
 }
 
 ItemAttributes ItemType::LeatherArmor::getAttributes() const {
   return ITATTR(
       i.viewId = ViewId::LEATHER_ARMOR;
-      i.shortName = "leather"_s;
+      i.shortName = "armor"_s;
       i.name = "leather armor";
       i.itemClass = ItemClass::ARMOR;
       i.equipmentSlot = EquipmentSlot::BODY_ARMOR;
       i.weight = 7;
       i.price = 4;
       i.modifiers[AttrType::DEFENSE] = 3 + maybePlusMinusOne(4);
+      i.prefixes.push_back({1, ItemAttrBonus{AttrType::DEFENSE, Random.get(2, 5)}});
   );
 }
 
 ItemAttributes ItemType::LeatherHelm::getAttributes() const {
   return ITATTR(
       i.viewId = ViewId::LEATHER_HELM;
-      i.shortName = "leather"_s;
+      i.shortName = "helm"_s;
       i.name = "leather helm";
       i.itemClass = ItemClass::ARMOR;
       i.equipmentSlot = EquipmentSlot::HELMET;
       i.weight = 1.5;
       i.price = 1;
       i.modifiers[AttrType::DEFENSE] = 1 + maybePlusMinusOne(4);
+      i.prefixes.push_back({1, LastingEffect::TELEPATHY});
+      i.prefixes.push_back({1, LastingEffect::SLEEP_RESISTANT});
+      i.prefixes.push_back({2, ItemAttrBonus{AttrType::DEFENSE, Random.get(2, 5)}});
   );
 }
 
 ItemAttributes ItemType::ChainArmor::getAttributes() const {
   return ITATTR(
       i.viewId = ViewId::CHAIN_ARMOR;
-      i.shortName = "chain"_s;
+      i.shortName = "armor"_s;
       i.name = "chain armor";
       i.itemClass = ItemClass::ARMOR;
       i.equipmentSlot = EquipmentSlot::BODY_ARMOR;
       i.weight = 15;
       i.price = 25;
       i.modifiers[AttrType::DEFENSE] = 5 + maybePlusMinusOne(4);
+      i.prefixes.push_back({1, ItemAttrBonus{AttrType::DEFENSE, Random.get(2, 5)}});
   );
 }
 
 ItemAttributes ItemType::AdaArmor::getAttributes() const {
   return ITATTR(
       i.viewId = ViewId::ADA_ARMOR;
-      i.shortName = "adamantine"_s;
+      i.shortName = "armor"_s;
       i.name = "adamantine armor";
       i.itemClass = ItemClass::ARMOR;
       i.equipmentSlot = EquipmentSlot::BODY_ARMOR;
       i.weight = 13;
       i.price = 160;
       i.modifiers[AttrType::DEFENSE] = 8 + maybePlusMinusOne(4);
+      i.prefixes.push_back({1, ItemAttrBonus{AttrType::DEFENSE, Random.get(2, 5)}});
   );
 }
 
 ItemAttributes ItemType::IronHelm::getAttributes() const {
   return ITATTR(
       i.viewId = ViewId::IRON_HELM;
-      i.shortName = "iron"_s;
+      i.shortName = "helm"_s;
       i.name = "iron helm";
       i.itemClass = ItemClass::ARMOR;
       i.equipmentSlot = EquipmentSlot::HELMET;
       i.weight = 4;
       i.price = 8;
       i.modifiers[AttrType::DEFENSE]= 2 + maybePlusMinusOne(4);
-  );
-}
-
-ItemAttributes ItemType::TelepathyHelm::getAttributes() const {
-  return ITATTR(
-      i.viewId = ViewId::TELEPATHY_HELM;
-      i.shortName = "telepathy"_s;
-      i.name = "helm of " + *i.shortName;
-      i.plural = "helms of " + *i.shortName;
-      i.itemClass = ItemClass::ARMOR;
-      i.equipmentSlot = EquipmentSlot::HELMET;
-      i.equipedEffect = LastingEffect::TELEPATHY;
-      i.weight = 1.5;
-      i.price = 70;
-      i.modifiers[AttrType::DEFENSE]= 1 + maybePlusMinusOne(4);
+      i.prefixes.push_back({1, LastingEffect::TELEPATHY});
+      i.prefixes.push_back({1, LastingEffect::SLEEP_RESISTANT});
+      i.prefixes.push_back({3, ItemAttrBonus{AttrType::DEFENSE, Random.get(2, 5)}});
   );
 }
 
 ItemAttributes ItemType::LeatherBoots::getAttributes() const {
   return ITATTR(
       i.viewId = ViewId::LEATHER_BOOTS;
-      i.shortName = "leather"_s;
+      i.shortName = "boots"_s;
       i.name = "pair of leather boots";
       i.plural = "pairs of leather boots"_s;
       i.itemClass = ItemClass::ARMOR;
@@ -945,13 +841,16 @@ ItemAttributes ItemType::LeatherBoots::getAttributes() const {
       i.weight = 2;
       i.price = 2;
       i.modifiers[AttrType::DEFENSE] = 1 + maybePlusMinusOne(4);
+      i.prefixes.push_back({1, LastingEffect::FLYING});
+      i.prefixes.push_back({1, LastingEffect::SPEED});
+      i.prefixes.push_back({2, ItemAttrBonus{AttrType::DEFENSE, Random.get(2, 5)}});
   );
 }
 
 ItemAttributes ItemType::IronBoots::getAttributes() const {
   return ITATTR(
       i.viewId = ViewId::IRON_BOOTS;
-      i.shortName = "iron"_s;
+      i.shortName = "boots"_s;
       i.name = "pair of iron boots";
       i.plural = "pairs of iron boots"_s;
       i.itemClass = ItemClass::ARMOR;
@@ -959,36 +858,9 @@ ItemAttributes ItemType::IronBoots::getAttributes() const {
       i.weight = 4;
       i.price = 8;
       i.modifiers[AttrType::DEFENSE] = 2 + maybePlusMinusOne(4);
-  );
-}
-
-ItemAttributes ItemType::SpeedBoots::getAttributes() const {
-  return ITATTR(
-      i.viewId = ViewId::SPEED_BOOTS;
-      i.shortName = "speed"_s;
-      i.name = "boots of " + *i.shortName;
-      i.plural = "pairs of boots of " + *i.shortName;
-      i.itemClass = ItemClass::ARMOR;
-      i.equipmentSlot = EquipmentSlot::BOOTS;
-      i.weight = 2;
-      i.price = 70;
-      i.equipedEffect = LastingEffect::SPEED;
-      i.modifiers[AttrType::DEFENSE] = 1 + maybePlusMinusOne(4);
-  );
-}
-
-ItemAttributes ItemType::LevitationBoots::getAttributes() const {
-  return ITATTR(
-      i.viewId = ViewId::LEVITATION_BOOTS;
-      i.shortName = "levitation"_s;
-      i.equipedEffect = LastingEffect::FLYING;
-      i.name = "boots of " + *i.shortName;
-      i.plural = "pairs of boots of " + *i.shortName;
-      i.itemClass = ItemClass::ARMOR;
-      i.equipmentSlot = EquipmentSlot::BOOTS;
-      i.weight = 2;
-      i.price = 70;
-      i.modifiers[AttrType::DEFENSE] = 1 + maybePlusMinusOne(4);
+      i.prefixes.push_back({1, LastingEffect::FLYING});
+      i.prefixes.push_back({1, LastingEffect::SPEED});
+      i.prefixes.push_back({3, ItemAttrBonus{AttrType::DEFENSE, Random.get(2, 5)}});
   );
 }
 
@@ -1262,7 +1134,7 @@ ItemAttributes ItemType::GoldPiece::getAttributes() const {
   );
 }
 
-SERIALIZE_DEF(ItemType, type)
+SERIALIZE_DEF(ItemType, type, prefixChance)
 
 #include "pretty_archive.h"
 template void ItemType::serialize(PrettyInputArchive&, unsigned);

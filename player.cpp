@@ -664,7 +664,7 @@ void Player::makeMove() {
         break;
       case UserInputId::CREATE_ITEM:
         if (auto itemType = PrettyPrinting::parseObject<ItemType>(action.get<string>()))
-          creature->take(itemType->get());
+          creature->take(itemType->setPrefixChance(1).get());
         else
           getView()->presentText("Sorry", "Couldn't parse \"" + action.get<string>() + "\"");
         break;

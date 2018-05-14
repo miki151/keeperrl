@@ -4,6 +4,7 @@
 #include "effect.h"
 #include "util.h"
 #include "weapon_info.h"
+#include "item_prefix.h"
 
 class ItemAttributes;
 
@@ -19,20 +20,15 @@ class ItemAttributes;
 
 class ItemType {
   public:
-  SIMPLE_ITEM(SpecialKnife);
   SIMPLE_ITEM(Knife);
   SIMPLE_ITEM(UnicornHorn);
   SIMPLE_ITEM(Spear);
   SIMPLE_ITEM(Sword);
   SIMPLE_ITEM(AdaSword);
-  SIMPLE_ITEM(SpecialSword);
   SIMPLE_ITEM(ElvenSword);
-  SIMPLE_ITEM(SpecialElvenSword);
   SIMPLE_ITEM(BattleAxe);
   SIMPLE_ITEM(AdaBattleAxe);
-  SIMPLE_ITEM(SpecialBattleAxe);
   SIMPLE_ITEM(WarHammer);
-  SIMPLE_ITEM(SpecialWarHammer);
   SIMPLE_ITEM(Club);
   SIMPLE_ITEM(HeavyClub);
   SIMPLE_ITEM(WoodenStaff);
@@ -44,16 +40,12 @@ class ItemType {
 
   SIMPLE_ITEM(LeatherArmor);
   SIMPLE_ITEM(LeatherHelm);
-  SIMPLE_ITEM(TelepathyHelm);
   SIMPLE_ITEM(ChainArmor);
   SIMPLE_ITEM(AdaArmor);
   SIMPLE_ITEM(IronHelm);
   SIMPLE_ITEM(LeatherBoots);
   SIMPLE_ITEM(IronBoots);
-  SIMPLE_ITEM(SpeedBoots);
-  SIMPLE_ITEM(LevitationBoots);
   SIMPLE_ITEM(LeatherGloves);
-  SIMPLE_ITEM(StrengthGloves);
   SIMPLE_ITEM(Robe);
   SIMPLE_ITEM(HalloweenCostume);
   SIMPLE_ITEM(BagOfCandies);
@@ -123,10 +115,10 @@ class ItemType {
   };
   SIMPLE_ITEM(AutomatonItem);
 
-  MAKE_VARIANT(Type, SpecialKnife, Knife, Spear, Sword, AdaSword, SpecialSword, ElvenSword, SpecialElvenSword,
-      BattleAxe, AdaBattleAxe, SpecialBattleAxe, WarHammer, SpecialWarHammer, Club, HeavyClub, WoodenStaff, IronStaff,
-      Scythe, Bow, ElvenBow, LeatherArmor, LeatherHelm, TelepathyHelm, ChainArmor, AdaArmor, IronHelm, LeatherBoots,
-      IronBoots, SpeedBoots, LevitationBoots, LeatherGloves, StrengthGloves, Robe, Scroll, FireScroll, Potion,
+  MAKE_VARIANT(Type, Knife, Spear, Sword, AdaSword, ElvenSword,
+      BattleAxe, AdaBattleAxe, WarHammer, Club, HeavyClub, WoodenStaff, IronStaff,
+      Scythe, Bow, ElvenBow, LeatherArmor, LeatherHelm, ChainArmor, AdaArmor, IronHelm, LeatherBoots,
+      IronBoots, LeatherGloves, Robe, Scroll, FireScroll, Potion,
       Mushroom, Amulet, DefenseAmulet, Ring, FirstAidKit, Rock, IronOre, AdaOre, GoldPiece,
       WoodPlank, Bone, RandomTechBook, TechBook, TrapItem, AutomatonItem, BagOfCandies, HalloweenCostume,
       UnicornHorn, Intrinsic, Torch);
@@ -139,6 +131,8 @@ class ItemType {
   ItemType();
   ItemType& operator = (const ItemType&);
   ItemType& operator = (ItemType&&);
+
+  ItemType& setPrefixChance(double chance);
 
   template <typename T>
   bool isType() const {
@@ -155,4 +149,5 @@ class ItemType {
   private:
   Type SERIAL(type);
   ItemAttributes getAttributes() const;
+  double SERIAL(prefixChance) = 0.0;
 };

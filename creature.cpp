@@ -749,7 +749,7 @@ void Creature::addEffect(LastingEffect effect, TimeInterval time, bool msg) {
 void Creature::removeEffect(LastingEffect effect, bool msg) {
   PROFILE;
   bool was = isAffected(effect);
-  attributes->clearLastingEffect(effect, *getGlobalTime());
+  attributes->clearLastingEffect(effect);
   if (was && !isAffected(effect))
     LastingEffects::onRemoved(this, effect, msg);
 }

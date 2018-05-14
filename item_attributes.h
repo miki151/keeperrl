@@ -27,6 +27,7 @@
 #include "item_type.h"
 #include "game_time.h"
 #include "weapon_info.h"
+#include "item_prefix.h"
 
 #define ITATTR(X) ItemAttributes([&](ItemAttributes& i) { X })
 
@@ -69,5 +70,7 @@ class ItemAttributes {
   optional<SoundId> SERIAL(applySound);
   optional<RangedWeapon> SERIAL(rangedWeapon);
   WeaponInfo SERIAL(weaponInfo);
+  vector<pair<int, ItemPrefix>> SERIAL(prefixes);
+  optional<string> SERIAL(prefix);
 };
 

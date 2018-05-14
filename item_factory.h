@@ -44,7 +44,6 @@ class ItemFactory {
   static ItemFactory amulets();
   static ItemFactory villageShop();
   static ItemFactory dwarfShop();
-  static ItemFactory orcShop();
   static ItemFactory gnomeShop();
   static ItemFactory dragonCave();
   static ItemFactory minerals();
@@ -65,6 +64,7 @@ class ItemFactory {
   static ItemAttributes getAttributes(ItemType);
   ItemFactory& addItem(ItemInfo);
   ItemFactory& addUniqueItem(ItemType, Range count = Range::singleElem(1));
+  ItemFactory& setRandomPrefixes(double chance);
   vector<ItemType> SERIAL(items);
   vector<double> SERIAL(weights);
   vector<Range> SERIAL(count);
