@@ -115,7 +115,7 @@ class ItemType {
   };
   SIMPLE_ITEM(AutomatonItem);
 
-  MAKE_VARIANT(Type, Knife, Spear, Sword, AdaSword, Sword, ElvenSword,
+  MAKE_VARIANT(Type, Knife, Spear, Sword, AdaSword, ElvenSword,
       BattleAxe, AdaBattleAxe, WarHammer, Club, HeavyClub, WoodenStaff, IronStaff,
       Scythe, Bow, ElvenBow, LeatherArmor, LeatherHelm, ChainArmor, AdaArmor, IronHelm, LeatherBoots,
       IronBoots, LeatherGloves, Robe, Scroll, FireScroll, Potion,
