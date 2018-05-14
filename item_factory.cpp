@@ -52,6 +52,12 @@ ItemFactory& ItemFactory::addUniqueItem(ItemType id, Range count) {
   return *this;
 }
 
+ItemFactory& ItemFactory::setRandomPrefixes(double chance) {
+  for (auto& item : items)
+    item.setPrefixChance(chance);
+  return *this;
+}
+
 vector<PItem> ItemFactory::random() {
   if (uniqueCounts.size() > 0) {
     ItemType id = uniqueCounts.back().first;
@@ -84,10 +90,8 @@ ItemFactory ItemFactory::villageShop() {
       {ItemType::Amulet{LastingEffect::REGENERATION}, 0.5 },
       {ItemType::DefenseAmulet{}, 0.5 },
       {ItemType::Ring{LastingEffect::POISON_RESISTANT}, 0.5},
-      {ItemType::Ring{LastingEffect::FIRE_RESISTANT}, 0.5},
-      {ItemType::SpeedBoots{}, 2},
-      {ItemType::LevitationBoots{}, 2},
-      {ItemType::TelepathyHelm{}, 2}});
+      {ItemType::Ring{LastingEffect::FIRE_RESISTANT}, 0.5}})
+      .setRandomPrefixes(0.03);
 }
 
 ItemFactory ItemFactory::dwarfShop() {
@@ -104,39 +108,12 @@ ItemFactory ItemFactory::armory() {
       {ItemType::LeatherArmor{}, 2 },
       {ItemType::ChainArmor{}, 1 },
       {ItemType::LeatherHelm{}, 2 },
-      {ItemType::TelepathyHelm{}, 0.1 },
       {ItemType::IronHelm{}, 1},
       {ItemType::LeatherBoots{}, 2 },
-      {ItemType::SpeedBoots{}, 0.5 },
-      {ItemType::LevitationBoots{}, 0.5 },
       {ItemType::LeatherGloves{}, 2 },
-      {ItemType::StrengthGloves{}, 0.5 },
       {ItemType::IronBoots{}, 1} })
-      .addUniqueItem(ItemType::Bow{});
-}
-
-ItemFactory ItemFactory::orcShop() {
-  return ItemFactory({
-      {ItemType::Knife{}, 5 },
-      {ItemType::Sword{}, 2 },
-      {ItemType::BattleAxe{}, 1 },
-      {ItemType::WarHammer{}, 2 },
-      {ItemType::LeatherArmor{}, 2 },
-      {ItemType::ChainArmor{}, 1 },
-      {ItemType::LeatherHelm{}, 2 },
-      {ItemType::IronHelm{}, 1 },
-      {ItemType::TelepathyHelm{}, 0.1 },
-      {ItemType::LeatherBoots{}, 2 },
-      {ItemType::IronBoots{}, 1 },
-      {ItemType::Torch{}, 10 },
-      {ItemType::SpeedBoots{}, 0.3 },
-      {ItemType::LevitationBoots{}, 0.3 },
-      {ItemType::LeatherGloves{}, 2 },
-      {ItemType::StrengthGloves{}, 0.5 },
-      {ItemType::Mushroom{Effect::Lasting{LastingEffect::PANIC}}, 1 },
-      {ItemType::Mushroom{Effect::Lasting{LastingEffect::RAGE}}, 1 },
-      {ItemType::Mushroom{Effect::Lasting{LastingEffect::DAM_BONUS}}, 1 },
-      {ItemType::Mushroom{Effect::Lasting{LastingEffect::DEF_BONUS}}, 1} });
+      .addUniqueItem(ItemType::Bow{})
+      .setRandomPrefixes(0.03);
 }
 
 ItemFactory ItemFactory::gnomeShop() {
@@ -149,23 +126,21 @@ ItemFactory ItemFactory::gnomeShop() {
       {ItemType::ChainArmor{}, 1 },
       {ItemType::LeatherHelm{}, 2 },
       {ItemType::IronHelm{}, 1 },
-      {ItemType::TelepathyHelm{}, 0.1 },
       {ItemType::LeatherBoots{}, 2 },
       {ItemType::IronBoots{}, 1 },
-      {ItemType::SpeedBoots{}, 0.3 },
-      {ItemType::LevitationBoots{}, 0.3 },
       {ItemType::LeatherGloves{}, 2 },
-      {ItemType::Torch{}, 10 },
-      {ItemType::StrengthGloves{}, 0.5 } })
-      .addUniqueItem({ItemType::AutomatonItem{}});
+      {ItemType::Torch{}, 10 }})
+      .addUniqueItem({ItemType::AutomatonItem{}})
+      .setRandomPrefixes(0.03);
 }
 
 ItemFactory ItemFactory::dragonCave() {
   return ItemFactory({
       {ItemType::GoldPiece{}, 10, Range(30, 100) },
-      {ItemType::SpecialSword{}, 1 },
-      {ItemType::SpecialBattleAxe{}, 1 },
-      {ItemType::SpecialWarHammer{}, 1 }});
+      {ItemType::Sword{}, 1 },
+      {ItemType::BattleAxe{}, 1 },
+      {ItemType::WarHammer{}, 1 }})
+      .setRandomPrefixes(1);
 }
 
 ItemFactory ItemFactory::minerals() {
@@ -222,23 +197,16 @@ ItemFactory ItemFactory::dungeon() {
   return ItemFactory({
       {ItemType::Knife{}, 50 },
       {ItemType::Sword{}, 50 },
-      {ItemType::SpecialSword{}, 1 },
       {ItemType::BattleAxe{}, 10 },
-      {ItemType::SpecialBattleAxe{}, 1 },
       {ItemType::WarHammer{}, 20 },
-      {ItemType::SpecialWarHammer{}, 1 },
       {ItemType::LeatherArmor{}, 20 },
       {ItemType::ChainArmor{}, 1 },
       {ItemType::LeatherHelm{}, 20 },
       {ItemType::IronHelm{}, 5 },
-      {ItemType::TelepathyHelm{}, 1 },
       {ItemType::LeatherBoots{}, 20 },
       {ItemType::IronBoots{}, 7 },
       {ItemType::Torch{}, 7 },
-      {ItemType::SpeedBoots{}, 3 },
-      {ItemType::LevitationBoots{}, 3 },
       {ItemType::LeatherGloves{}, 30 },
-      {ItemType::StrengthGloves{}, 3 },
       {ItemType::Scroll{Effect::Teleport{}}, 30 },
       {ItemType::Scroll{Effect::EnhanceArmor{}}, 30 },
       {ItemType::Scroll{Effect::EnhanceWeapon{}}, 30 },
@@ -260,7 +228,8 @@ ItemFactory ItemFactory::dungeon() {
       {ItemType::Amulet{LastingEffect::REGENERATION}, 3 },
       {ItemType::DefenseAmulet{}, 3 },
       {ItemType::Ring{LastingEffect::POISON_RESISTANT}, 3},
-      {ItemType::Ring{LastingEffect::FIRE_RESISTANT}, 3}});
+      {ItemType::Ring{LastingEffect::FIRE_RESISTANT}, 3}})
+      .setRandomPrefixes(0.03);
 }
 
 ItemFactory ItemFactory::chest() {

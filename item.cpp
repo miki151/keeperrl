@@ -364,8 +364,8 @@ static void appendWithSpace(string& s, const string& suf) {
 
 string Item::getSuffix() const {
   string artStr;
-  if (auto& effect = getWeaponInfo().attackEffect)
-    artStr += "of " + effect->getName();
+  if (attributes->prefix)
+    artStr += "of " + *attributes->prefix;
   if (attributes->artifactName)
     appendWithSpace(artStr, "named " + *attributes->artifactName);
   if (fire->isBurning())

@@ -46,6 +46,7 @@
 #include "furniture.h"
 #include "experience_type.h"
 #include "creature_debt.h"
+#include "effect.h"
 
 SERIALIZE_DEF(CreatureFactory, tribe, creatures, weights, unique, tribeOverrides, levelIncrease, baseLevelIncrease, inventory)
 SERIALIZATION_CONSTRUCTOR_IMPL(CreatureFactory)
@@ -870,9 +871,9 @@ PCreature CreatureFactory::getSpecial(TribeId tribe, bool humanoid, bool large, 
     if (Random.roll(4))
       c->take(ItemType(ItemType::Bow{}).get());
     c->take(Random.choose(
-          ItemType(ItemType::SpecialSword{}),
-          ItemType(ItemType::SpecialBattleAxe{}),
-          ItemType(ItemType::SpecialWarHammer{}))
+          ItemType(ItemType::Sword{}).setPrefixChance(1),
+          ItemType(ItemType::BattleAxe{}).setPrefixChance(1),
+          ItemType(ItemType::WarHammer{}).setPrefixChance(1))
         .get());
   }
   return c;
@@ -2294,7 +2295,7 @@ static vector<ItemType> getDefaultInventory(CreatureId id) {
     case CreatureId::KEEPER_MAGE_F:
     case CreatureId::KEEPER_MAGE:
       return ItemList()
-        .add(ItemType::Robe{});
+        .add(ItemType(ItemType::Robe{}).setPrefixChance(1));
     case CreatureId::KEEPER_KNIGHT_F:
     case CreatureId::KEEPER_KNIGHT:
       return ItemList()
@@ -2313,7 +2314,7 @@ static vector<ItemType> getDefaultInventory(CreatureId id) {
       return ItemList().add(ItemType::GoldPiece{}, Random.get(120, 200));
     case CreatureId::DEMON_LORD:
     case CreatureId::ANGEL:
-      return ItemList().add(ItemType::SpecialSword{});
+      return ItemList().add(ItemType(ItemType::Sword{}).setPrefixChance(1));
     case CreatureId::ADVENTURER_F:
     case CreatureId::ADVENTURER:
       return ItemList()
@@ -2377,9 +2378,9 @@ static vector<ItemType> getDefaultInventory(CreatureId id) {
         .add(ItemType::GoldPiece{}, Random.get(60, 80));
     case CreatureId::PRIEST:
       return ItemList()
-          .add(ItemType::IronStaff{})
-          .add(ItemType::LeatherBoots{})
-          .add(ItemType::Robe{});
+        .add(ItemType::IronStaff{})
+        .add(ItemType::LeatherBoots{})
+        .add(ItemType(ItemType::Robe{}).setPrefixChance(1));
     case CreatureId::KNIGHT:
       return ItemList()
         .add(ItemType::Sword{})
@@ -2393,7 +2394,7 @@ static vector<ItemType> getDefaultInventory(CreatureId id) {
         .add(ItemType::BattleAxe{});
     case CreatureId::AVATAR: 
       return ItemList()
-        .add(ItemType::SpecialBattleAxe{})
+        .add(ItemType(ItemType::BattleAxe{}).setPrefixChance(1))
         .add(ItemType::ChainArmor{})
         .add(ItemType::IronHelm{})
         .add(ItemType::IronBoots{})
@@ -2419,7 +2420,9 @@ static vector<ItemType> getDefaultInventory(CreatureId id) {
         .add(ItemType::GoldPiece{}, Random.get(2, 6));
     case CreatureId::DWARF_BARON: 
       return ItemList()
-        .add(Random.choose({ItemType(ItemType::SpecialBattleAxe{}), ItemType(ItemType::SpecialWarHammer{})}, {1, 1}))
+        .add(Random.choose(
+            ItemType(ItemType::BattleAxe{}).setPrefixChance(1),
+            ItemType(ItemType::WarHammer{}).setPrefixChance(1)))
         .add(randomBackup())
         .add(randomHealing())
         .add(ItemType::ChainArmor{})
@@ -2437,7 +2440,7 @@ static vector<ItemType> getDefaultInventory(CreatureId id) {
     case CreatureId::DARK_ELF_LORD: 
     case CreatureId::ELF_LORD: 
       return ItemList()
-        .add(ItemType::SpecialElvenSword{})
+        .add(ItemType(ItemType::ElvenSword{}).setPrefixChance(1))
         .add(ItemType::LeatherArmor{})
         .add(ItemType::ElvenBow{})
         .add(ItemType::GoldPiece{}, Random.get(80, 120))
