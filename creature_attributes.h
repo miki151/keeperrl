@@ -67,6 +67,7 @@ class CreatureAttributes {
   double getExpLevel(ExperienceType type) const;
   const EnumMap<ExperienceType, double>& getExpLevel() const;
   const EnumMap<ExperienceType, int>& getMaxExpLevel() const;
+  void increaseMaxExpLevel(ExperienceType, int increase);
   void increaseExpLevel(ExperienceType, double increase);
   void addCombatExperience(double);
   double getCombatExperience() const;

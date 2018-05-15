@@ -6,6 +6,7 @@
 #include "minion_trait.h"
 #include "enemy_factory.h"
 #include "sound.h"
+#include "special_trait.h"
 
 using AttractionType = variant<FurnitureType, ItemIndex>;
 
@@ -92,6 +93,7 @@ class ImmigrantInfo {
   bool isNoAuto() const;
   optional<TutorialHighlight> getTutorialHighlight() const;
   bool isHiddenInHelp() const;
+  const vector<pair<double, SpecialTrait>>& getSpecialTraits() const;
 
   ImmigrantInfo& addRequirement(double candidateProb, ImmigrantRequirement);
   ImmigrantInfo& addRequirement(ImmigrantRequirement);
@@ -107,6 +109,7 @@ class ImmigrantInfo {
   ImmigrantInfo& setLimit(int);
   ImmigrantInfo& setTutorialHighlight(TutorialHighlight);
   ImmigrantInfo& setHiddenInHelp();
+  ImmigrantInfo& addSpecialTrait(double chance, SpecialTrait);
 
   template <typename Visitor>
   struct RequirementVisitor {
@@ -158,4 +161,5 @@ class ImmigrantInfo {
   bool SERIAL(invisible) = false;
   optional<TutorialHighlight> SERIAL(tutorialHighlight);
   bool SERIAL(hiddenInHelp) = false;
+  vector<pair<double, SpecialTrait>> SERIAL(specialTraits);
 };

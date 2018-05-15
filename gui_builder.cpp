@@ -36,6 +36,8 @@
 #include "level.h"
 #include "quarters.h"
 #include "team_order.h"
+#include "lasting_effect.h"
+#include "skill.h"
 
 using SDL::SDL_Keysym;
 using SDL::SDL_Keycode;
@@ -561,6 +563,25 @@ SGuiElem GuiBuilder::drawGameSpeedDialog() {
       gui.preferredSize(size, gui.conditional(std::move(dialog), [this] { return gameSpeedDialogOpen; })));
 }
 
+SGuiElem GuiBuilder::drawSpecialTrait(const SpecialTrait& trait) {
+  return trait.visit(
+      [&] (const ExtraTraining& t) {
+        return gui.label("Extra "_s + toLower(getName(t.type)) + " training potential", Color::GREEN);
+      },
+      [&] (LastingEffect effect) {
+        if (auto adj = LastingEffects::getGoodAdjective(effect))
+          return gui.label("Permanent trait: "_s + adj, Color::GREEN);
+        if (auto adj = LastingEffects::getBadAdjective(effect))
+          return gui.label("Permanent trait: "_s + adj, Color::RED);
+        FATAL << "No adjective found: "_s + LastingEffects::getName(effect);
+        return gui.empty();
+      },
+      [&] (SkillId skill) {
+        return gui.label("Extra skill: " + Skill::get(skill)->getName(), Color::GREEN);
+      }
+  );
+}
+
 SGuiElem GuiBuilder::drawImmigrantInfo(const ImmigrantDataInfo& info) {
   auto lines = gui.getListBuilder(legendLineHeight);
   if (info.autoState)
@@ -581,6 +602,8 @@ SGuiElem GuiBuilder::drawImmigrantInfo(const ImmigrantDataInfo& info) {
   lines.addElemAuto(drawAttributesOnPage(drawPlayerAttributes(info.attributes)));
   if (info.timeLeft)
     lines.addElem(gui.label("Turns left: " + toString(info.timeLeft)));
+  for (auto& req : info.specialTraits)
+    lines.addElem(drawSpecialTrait(req));
   for (auto& req : info.info)
     lines.addElem(gui.label(req, Color::WHITE));
   for (auto& req : info.requirements)
@@ -656,6 +679,11 @@ SGuiElem GuiBuilder::drawImmigrationOverlay(const CollectiveInfo& info, const op
           gui.sprite(GuiFactory::TexId::IMMIGRANT2_BG, GuiFactory::Alignment::CENTER),
           cache->get(getRejectButton, THIS_LINE, elem.id)
       ));
+    if (!elem.specialTraits.empty())
+      button = gui.stack(
+          std::move(button),
+          gui.translate(gui.label("*", Color::YELLOW), Vec2(3, 1))
+      );
     if (tutorial && elem.tutorialHighlight && tutorial->highlights.contains(*elem.tutorialHighlight))
         button = gui.stack(std::move(button), gui.blink(makeHighlight(Color(255, 255, 0, 100))));
     auto initTime = elem.generatedTime;

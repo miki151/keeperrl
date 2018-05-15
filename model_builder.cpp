@@ -32,6 +32,8 @@
 #include "settlement_info.h"
 #include "enemy_info.h"
 #include "game_time.h"
+#include "lasting_effect.h"
+#include "skill.h"
 
 using namespace std::chrono;
 
@@ -80,28 +82,48 @@ static CollectiveConfig getKeeperConfig(RandomGen& random, bool fastImmigration,
        ImmigrantInfo(CreatureId::GOBLIN, {MinionTrait::FIGHTER, MinionTrait::NO_EQUIPMENT})
            .setFrequency(0.7)
            .addRequirement(0.1, AttractionInfo{1, vector<AttractionType>(
-                {FurnitureType::FORGE, FurnitureType::WORKSHOP, FurnitureType::JEWELER})}),
+                {FurnitureType::FORGE, FurnitureType::WORKSHOP, FurnitureType::JEWELER})})
+           .addSpecialTrait(0.05, SkillId::WORKSHOP)
+           .addSpecialTrait(0.05, SkillId::FORGE)
+           .addSpecialTrait(0.05, SkillId::JEWELER),
        ImmigrantInfo(CreatureId::ORC, {MinionTrait::FIGHTER})
            .setFrequency(0.7)
-           .addRequirement(0.1, AttractionInfo{1, FurnitureType::TRAINING_WOOD}),
+           .addRequirement(0.1, AttractionInfo{1, FurnitureType::TRAINING_WOOD})
+           .addSpecialTrait(0.05, ExtraTraining { ExperienceType::ARCHERY, 2 })
+           .addSpecialTrait(0.05, ExtraTraining { ExperienceType::MELEE, 2 })
+           .addSpecialTrait(0.05, LastingEffect::NIGHT_VISION)
+           .addSpecialTrait(0.05, SkillId::DISARM_TRAPS)
+           .addSpecialTrait(0.05, SkillId::SWIMMING)
+           .addSpecialTrait(0.05, LastingEffect::MAGIC_VULNERABILITY),
        ImmigrantInfo(CreatureId::ORC_SHAMAN, {MinionTrait::FIGHTER})
            .setFrequency(0.6)
            .addRequirement(0.0, MinTurnRequirement{500_global})
-           .addRequirement(0.1, AttractionInfo{1, {FurnitureType::BOOKCASE_WOOD, FurnitureType::LABORATORY}}),
+           .addRequirement(0.1, AttractionInfo{1, {FurnitureType::BOOKCASE_WOOD, FurnitureType::LABORATORY}})
+           .addSpecialTrait(0.1, ExtraTraining { ExperienceType::SPELL, 4 })
+           .addSpecialTrait(0.05, SkillId::SORCERY)
+           .addSpecialTrait(0.05, SkillId::LABORATORY)
+           .addSpecialTrait(0.1, LastingEffect::MAGIC_RESISTANCE),
        ImmigrantInfo(CreatureId::OGRE, {MinionTrait::FIGHTER})
            .setFrequency(0.3)
            .addRequirement(0.0, MinTurnRequirement{2000_global})
-           .addRequirement(0.1, AttractionInfo{1, FurnitureType::TRAINING_IRON}),
+           .addRequirement(0.1, AttractionInfo{1, FurnitureType::TRAINING_IRON})
+           .addSpecialTrait(0.1, LastingEffect::RANGED_VULNERABILITY)
+           .addSpecialTrait(0.1, ExtraTraining { ExperienceType::ARCHERY, 2 }),
        ImmigrantInfo(CreatureId::HARPY, {MinionTrait::FIGHTER})
            .setFrequency(0.3)
            .addRequirement(0.0, MinTurnRequirement{2000_global})
            .addRequirement(0.1, AttractionInfo{1, FurnitureType::TRAINING_WOOD})
-           .addRequirement(0.3, AttractionInfo{1, ItemIndex::RANGED_WEAPON}),
+           .addRequirement(0.3, AttractionInfo{1, ItemIndex::RANGED_WEAPON})
+           .addSpecialTrait(0.05, LastingEffect::INSANITY)
+           .addSpecialTrait(0.2, LastingEffect::NIGHT_VISION)
+           .addSpecialTrait(0.1, ExtraTraining { ExperienceType::ARCHERY, 3 }),
        ImmigrantInfo(CreatureId::ZOMBIE, {MinionTrait::FIGHTER})
            .setFrequency(0.5)
            .addRequirement(0.0, MinTurnRequirement{1000_global})
            .setSpawnLocation(FurnitureType::GRAVE)
-           .addRequirement(0.0, CostInfo(CollectiveResourceId::CORPSE, 1)),
+           .addRequirement(0.0, CostInfo(CollectiveResourceId::CORPSE, 1))
+           .addSpecialTrait(0.3, LastingEffect::BLIND)
+           .addSpecialTrait(0.3, LastingEffect::COLLAPSED),
        ImmigrantInfo(CreatureId::SKELETON, {MinionTrait::FIGHTER})
            .setFrequency(0.5)
            .addRequirement(0.0, MinTurnRequirement{1000_global})
@@ -112,7 +134,10 @@ static CollectiveConfig getKeeperConfig(RandomGen& random, bool fastImmigration,
            .setFrequency(0.2)
            .setSpawnLocation(FurnitureType::GRAVE)
            .addRequirement(0.1, AttractionInfo{1, FurnitureType::TRAINING_IRON})
-           .addRequirement(0.0, CostInfo(CollectiveResourceId::CORPSE, 1)),
+           .addRequirement(0.0, CostInfo(CollectiveResourceId::CORPSE, 1))
+           .addSpecialTrait(0.3, LastingEffect::TELEPATHY)
+           .addSpecialTrait(0.3, LastingEffect::FIRE_RESISTANT)
+           .addSpecialTrait(0.3, LastingEffect::FLYING),
        ImmigrantInfo(CreatureId::LOST_SOUL, {MinionTrait::FIGHTER})
            .setFrequency(0.3)
            .setSpawnLocation(FurnitureType::DEMON_SHRINE)
@@ -148,7 +173,9 @@ static CollectiveConfig getKeeperConfig(RandomGen& random, bool fastImmigration,
        ImmigrantInfo(CreatureId::WEREWOLF, {MinionTrait::FIGHTER})
            .setFrequency(0.1)
            .addRequirement(0.0, MinTurnRequirement{2000_global})
-           .addRequirement(0.1, AttractionInfo{2, FurnitureType::TRAINING_IRON}),
+           .addRequirement(0.1, AttractionInfo{2, FurnitureType::TRAINING_IRON})
+           .addSpecialTrait(0.1, LastingEffect::INSANITY)
+           .addSpecialTrait(0.3, SkillId::AMBUSH),
        ImmigrantInfo(CreatureId::DARK_ELF_WARRIOR, {MinionTrait::FIGHTER})
            .addRequirement(0.0, RecruitmentInfo{{EnemyId::DARK_ELVES}, 3, MinionTrait::FIGHTER})
            .addRequirement(CostInfo(CollectiveResourceId::GOLD, 20)),
@@ -166,13 +193,15 @@ static CollectiveConfig getKeeperConfig(RandomGen& random, bool fastImmigration,
            .addRequirement(0.0, TechId::HUMANOID_MUT)
            .addRequirement(0.0, Pregnancy {})
            .addRequirement(CostInfo(CollectiveResourceId::GOLD, 100))
-           .setSpawnLocation(Pregnancy {}),
+           .setSpawnLocation(Pregnancy {})
+           .addSpecialTrait(0.2, LastingEffect::INSANITY),
        ImmigrantInfo(random.permutation({CreatureId::SPECIAL_BMBN, CreatureId::SPECIAL_BMBW,
                CreatureId::SPECIAL_BMGN, CreatureId::SPECIAL_BMGW}), {MinionTrait::FIGHTER})
            .addRequirement(0.0, TechId::BEAST_MUT)
            .addRequirement(0.0, Pregnancy {})
            .addRequirement(CostInfo(CollectiveResourceId::GOLD, 100))
            .setSpawnLocation(Pregnancy {})
+           .addSpecialTrait(0.2, LastingEffect::INSANITY),
    });
   return CollectiveConfig::keeper(
       TimeInterval(fastImmigration ? 10 : 140),

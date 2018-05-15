@@ -181,6 +181,7 @@ class GuiBuilder {
   SGuiElem drawOptionElem(Options*, OptionId, function<void()> onChanged, optional<string> defaultString);
   GuiFactory::ListBuilder drawRetiredGames(RetiredGames&, function<void()> reloadCampaign, optional<int> maxActive);
   SGuiElem drawImmigrantInfo(const ImmigrantDataInfo&);
+  SGuiElem drawSpecialTrait(const SpecialTrait&);
   SGuiElem minionsCache;
   int minionsHash = 0;
   SGuiElem technologyCache;

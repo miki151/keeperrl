@@ -72,6 +72,7 @@ class Skillset {
   bool hasDiscrete(SkillId) const;
   double getValue(SkillId) const;
   void setValue(SkillId, double);
+  void increaseValue(SkillId, double);
   const EnumSet<SkillId>& getAllDiscrete() const;
 
   template <class Archive>

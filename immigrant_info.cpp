@@ -8,7 +8,7 @@
 #include "creature_attributes.h"
 #include "tutorial.h"
 
-SERIALIZE_DEF(ImmigrantInfo, ids, frequency, requirements, traits, spawnLocation, groupSize, autoTeam, initialRecruitment, consumeIds, keybinding, sound, noAuto, tutorialHighlight, hiddenInHelp, invisible)
+SERIALIZE_DEF(ImmigrantInfo, ids, frequency, requirements, traits, spawnLocation, groupSize, autoTeam, initialRecruitment, consumeIds, keybinding, sound, noAuto, tutorialHighlight, hiddenInHelp, invisible, specialTraits)
 SERIALIZATION_CONSTRUCTOR_IMPL(ImmigrantInfo)
 
 AttractionInfo::AttractionInfo(int cl,  AttractionType a)
@@ -106,6 +106,10 @@ bool ImmigrantInfo::isHiddenInHelp() const {
   return hiddenInHelp;
 }
 
+const vector<pair<double, SpecialTrait>>& ImmigrantInfo::getSpecialTraits() const {
+  return specialTraits;
+}
+
 ImmigrantInfo& ImmigrantInfo::addRequirement(ImmigrantRequirement t) {
   requirements.push_back({t, 1});
   return *this;
@@ -174,6 +178,11 @@ ImmigrantInfo& ImmigrantInfo::setTutorialHighlight(TutorialHighlight h) {
 
 ImmigrantInfo& ImmigrantInfo::setHiddenInHelp() {
   hiddenInHelp = true;
+  return *this;
+}
+
+ImmigrantInfo& ImmigrantInfo::addSpecialTrait(double chance, SpecialTrait trait) {
+  specialTraits.push_back({chance, trait});
   return *this;
 }
 

@@ -382,8 +382,9 @@ CostInfo Immigration::calculateCost(int index, const ExponentialCost& cost) cons
   return info;
 }*/
 
-Immigration::Available::Available(WImmigration im, vector<PCreature> c, int ind, optional<GlobalTime> t)
-  : creatures(std::move(c)), immigrantIndex(ind), endTime(t), immigration(im) {
+Immigration::Available::Available(WImmigration im, vector<PCreature> c, int ind, optional<GlobalTime> t,
+    vector<SpecialTrait> specialTraits)
+  : creatures(std::move(c)), immigrantIndex(ind), endTime(t), immigration(im), specialTraits(std::move(specialTraits)) {
 }
 
 void Immigration::Available::addAllCreatures(const vector<Position>& spawnPositions) {
@@ -453,7 +454,7 @@ void Immigration::rejectIfNonPersistent(int id) {
       immigrant->endTime = GlobalTime(-1);
 }
 
-SERIALIZE_DEF(Immigration::Available, creatures, immigrantIndex, endTime, immigration)
+SERIALIZE_DEF(Immigration::Available, creatures, immigrantIndex, endTime, immigration, specialTraits)
 SERIALIZATION_CONSTRUCTOR_IMPL2(Immigration::Available, Available)
 
 Immigration::Available Immigration::Available::generate(WImmigration immigration, int index) {
@@ -474,11 +475,17 @@ Immigration::Available Immigration::Available::generate(WImmigration immigration
   const ImmigrantInfo& info = immigration->getImmigrants()[group.immigrantIndex];
   vector<PCreature> immigrants;
   int numGenerated = immigration->generated[group.immigrantIndex].getSize();
+  vector<SpecialTrait> specialTraits;
   for (int i : Range(group.count)) {
     immigrants.push_back(CreatureFactory::fromId(info.getId(numGenerated), immigration->collective->getTribeId(),
         MonsterAIFactory::collective(immigration->collective)));
     if (immigration->collective->getConfig().getStripSpawns())
       immigrants.back()->getEquipment().removeAllItems(immigrants.back().get());
+    for (auto& specialTrait : info.getSpecialTraits())
+      if (Random.chance(specialTrait.first)) {
+        applySpecialTrait(specialTrait.second, immigrants.back().get());
+        specialTraits.push_back(specialTrait.second);
+      }
   }
   return Available(
     immigration,
@@ -486,7 +493,8 @@ Immigration::Available Immigration::Available::generate(WImmigration immigration
     group.immigrantIndex,
     !info.isPersistent()
         ? immigration->collective->getGame()->getGlobalTime() + immigration->candidateTimeout
-        : optional<GlobalTime>(none)
+        : optional<GlobalTime>(none),
+    specialTraits
   );
 }
 
@@ -504,6 +512,10 @@ optional<milliseconds> Immigration::Available::getCreatedTime() const {
 
 int Immigration::Available::getImmigrantIndex() const {
   return immigrantIndex;
+}
+
+const vector<SpecialTrait>& Immigration::Available::getSpecialTraits() const {
+  return specialTraits;
 }
 
 void Immigration::initializePersistent() {
