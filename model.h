@@ -84,6 +84,7 @@ class Model : public OwnedObject<Model> {
   void updateSunlightMovement();
 
   optional<Position> getOtherPortal(Position) const;
+  optional<int> getPortalIndex(Position) const;
   void registerPortal(Position);
 
   PCreature extractCreature(WCreature);

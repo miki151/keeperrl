@@ -19,7 +19,7 @@
 #include "view_id.h"
 #include "experience_type.h"
 
-SERIALIZE_DEF(ViewObject, resource_id, viewLayer, description, modifiers, attributes, attachmentDir, creatureId, goodAdjectives, badAdjectives, creatureAttributes, status, clickAction, extendedActions)
+SERIALIZE_DEF(ViewObject, resource_id, viewLayer, description, modifiers, attributes, attachmentDir, creatureId, goodAdjectives, badAdjectives, creatureAttributes, status, clickAction, extendedActions, portalVersion)
 
 SERIALIZATION_CONSTRUCTOR_IMPL(ViewObject);
 
@@ -230,6 +230,7 @@ const char* ViewObject::getDefaultDescription() const {
     case ViewId::COFFIN: return "Coffin";
     case ViewId::CEMETERY: return "Cemetery";
     case ViewId::GRAVE: return "Grave";
+    case ViewId::PORTAL: return "Portal";
     case ViewId::WOOD_DOOR: return hasModifier(Modifier::LOCKED) ? "Wooden door (click to unlock)" : "Wooden door (click to lock)";
     case ViewId::IRON_DOOR: return hasModifier(Modifier::LOCKED) ? "Iron door (click to unlock)" : "Iron door (click to lock)";
     case ViewId::ADA_DOOR: return hasModifier(Modifier::LOCKED) ? "Adamantine door (click to unlock)" : "Adamantine door (click to lock)";
@@ -432,6 +433,14 @@ void ViewObject::setHallu(bool b) {
 
 void ViewObject::setId(ViewId id) {
   resource_id = id;
+}
+
+void ViewObject::setPortalVersion(optional<uint8_t> v) {
+  portalVersion = v;
+}
+
+optional<uint8_t> ViewObject::getPortalVersion() const {
+  return portalVersion;
 }
 
 void ViewObject::setGoodAdjectives(const string& v) {

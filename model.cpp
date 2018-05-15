@@ -320,6 +320,10 @@ void Model::addEvent(const GameEvent& e) {
   eventGenerator->addEvent(e);
 }
 
+optional<int> Model::getPortalIndex(Position position) const {
+  return portals.findElement(position).map([](int a) {return a / 2;});
+}
+
 optional<Position> Model::getOtherPortal(Position position) const {
   if (auto index = portals.findElement(position)) {
     if (*index % 2 == 1)
