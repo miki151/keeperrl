@@ -324,6 +324,12 @@ optional<int> Model::getPortalIndex(Position position) const {
   return portals.findElement(position).map([](int a) {return a / 2;});
 }
 
+void Model::removePortal(Position position) {
+  if (auto index = portals.findElement(position)) {
+    portals[*index] = none;
+  }
+}
+
 optional<Position> Model::getOtherPortal(Position position) const {
   if (auto index = portals.findElement(position)) {
     if (*index % 2 == 1)
@@ -335,6 +341,12 @@ optional<Position> Model::getOtherPortal(Position position) const {
 }
 
 void Model::registerPortal(Position pos) {
-  if (!portals.contains(pos))
+  if (!portals.contains(pos)) {
+    for (auto& elem : portals)
+      if (!elem) {
+        elem = pos;
+        return;
+      }
     portals.push_back(pos);
+  }
 }
