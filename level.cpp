@@ -37,6 +37,7 @@
 #include "field_of_view.h"
 #include "furniture.h"
 #include "furniture_array.h"
+#include "portals.h"
 
 template <class Archive> 
 void Level::serialize(Archive& ar, const unsigned int version) {
@@ -44,7 +45,7 @@ void Level::serialize(Archive& ar, const unsigned int version) {
   ar(squares, landingSquares, tickingSquares, creatures, model, fieldOfView);
   ar(name, sunlight, bucketMap, sectors, lightAmount, unavailable);
   ar(levelId, noDiagonalPassing, lightCapAmount, creatureIds, memoryUpdates);
-  ar(furniture, tickingFurniture, covered);
+  ar(furniture, tickingFurniture, covered, portals);
 }  
 
 SERIALIZABLE(Level);
@@ -59,7 +60,7 @@ Level::Level(Private, SquareArray s, FurnitureArray f, WModel m, const string& n
       memoryUpdates(squares->getBounds(), true), model(m),
       name(n), sunlight(sun), covered(cover), bucketMap(squares->getBounds().width(), squares->getBounds().height(),
       FieldOfView::sightRange), lightAmount(squares->getBounds(), 0), lightCapAmount(squares->getBounds(), 1),
-      levelId(id) {
+      levelId(id), portals(squares->getBounds()) {
 }
 
 PLevel Level::create(SquareArray s, FurnitureArray f, WModel m, const string& n,

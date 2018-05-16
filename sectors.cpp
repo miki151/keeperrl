@@ -17,15 +17,10 @@
 #include "sectors.h"
 #include "level.h"
 
-template <class Archive> 
-void Sectors::serialize(Archive& ar, const unsigned int) {
-  ar(sectors, bounds, sizes);
-}
-
-SERIALIZABLE(Sectors)
+SERIALIZE_DEF(Sectors, bounds, sectors, sizes, extraConnections)
 SERIALIZATION_CONSTRUCTOR_IMPL(Sectors)
 
-Sectors::Sectors(Rectangle b) : bounds(b), sectors(bounds, -1) {
+Sectors::Sectors(Rectangle b) : bounds(b), sectors(bounds, -1), extraConnections(bounds) {
 }
 
 bool Sectors::same(Vec2 v, Vec2 w) const {
@@ -40,7 +35,7 @@ bool Sectors::add(Vec2 pos) {
   if (contains(pos))
     return false;
   set<int> neighbors;
-  for (Vec2 v : pos.neighbors8())
+  for (Vec2 v : getNeighbors(pos))
     if (v.inRectangle(bounds) && contains(v))
       neighbors.insert(sectors[v]);
   if (neighbors.size() == 0)
@@ -86,7 +81,7 @@ void Sectors::join(Vec2 pos1, int sector) {
   while (!q.empty()) {
     Vec2 pos = q.front();
     q.pop();
-    for (Vec2 v : pos.neighbors8())
+    for (Vec2 v : getNeighbors(pos))
       if (v.inRectangle(bounds) && sectors[v] > -1 && sectors[v] != sector) {
         setSector(v, sector);
         q.push(v);
@@ -100,7 +95,7 @@ vector<Vec2> Sectors::getDisjoint(Vec2 pos) const {
   vector<queue<Vec2>> queues;
   bfsTable.clear();
   int numNeighbor = 0;
-  for (Vec2 v : pos.neighbors8())
+  for (Vec2 v : getNeighbors(pos))
     if (v.inRectangle(bounds) && contains(v) && !bfsTable.isDirty(v)) {
         bfsTable.setValue(v, numNeighbor++);
         queues.emplace_back();
@@ -119,7 +114,7 @@ vector<Vec2> Sectors::getDisjoint(Vec2 pos) const {
         activeQueues.push_back(myNum);
         lastNeighbor = myNum;
         q.pop();
-        for (Vec2 w : v.neighbors8())
+        for (Vec2 w : getNeighbors(v))
           if (w.inRectangle(bounds) && contains(w) && w != pos) {
             if (!bfsTable.isDirty(w)) {
               bfsTable.setValue(w, myNum);
@@ -134,7 +129,7 @@ vector<Vec2> Sectors::getDisjoint(Vec2 pos) const {
   }
   int maxSector = sizes.size() - 1;
   vector<Vec2> ret;
-  for (Vec2 v : pos.neighbors8())
+  for (Vec2 v : getNeighbors(pos))
     if (v.inRectangle(bounds) && sectors[v] <= maxSector && contains(v) &&
           !sets.same(bfsTable.getDirtyValue(v), lastNeighbor))
       ret.push_back(v);
@@ -143,6 +138,31 @@ vector<Vec2> Sectors::getDisjoint(Vec2 pos) const {
 
 bool Sectors::isChokePoint(Vec2 pos) const {
   return !getDisjoint(pos).empty();
+}
+
+vector<Vec2> Sectors::getNeighbors(Vec2 pos) const {
+  return concat(pos.neighbors8(), extraConnections[pos]);
+}
+
+void Sectors::addExtraConnection(Vec2 pos1, Vec2 pos2) {
+  if (contains(pos1) && contains(pos2)) {
+    auto sector1 = sectors[pos1];
+    auto sector2 = sectors[pos2];
+    if (sector1 != sector2) {
+      if (sizes[sector1] > sizes[sector2])
+        join(pos2, sector1);
+      else
+        join(pos1, sector2);
+    }
+  }
+  extraConnections[pos1].push_back(pos2);
+  extraConnections[pos2].push_back(pos1);
+}
+
+void Sectors::removeExtraConnection(Vec2 pos1, Vec2 pos2) {
+  extraConnections[pos1].removeElement(pos2);
+  extraConnections[pos2].removeElement(pos1);
+  join(pos1, getNewSector());
 }
 
 bool Sectors::remove(Vec2 pos) {

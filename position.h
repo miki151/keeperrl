@@ -126,6 +126,11 @@ class Position {
   WFurniture modFurniture(FurnitureLayer) const;
   WFurniture modFurniture(FurnitureType) const;
   vector<WFurniture> modFurniture() const;
+  optional<int> getDistanceToNearestPortal() const;
+  optional<Position> getOtherPortal() const;
+  void registerPortal();
+  void removePortal();
+  optional<int> getPortalIndex() const;
 
   SERIALIZATION_DECL(Position)
   int getHash() const;

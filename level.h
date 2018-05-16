@@ -42,6 +42,7 @@ class SquareArray;
 class FurnitureArray;
 class Vision;
 class FieldOfView;
+class Portals;
 
 /** A class representing a single level of the dungeon or the overworld. All events occuring on the level are performed by this class.*/
 class Level : public OwnedObject<Level> {
@@ -229,5 +230,6 @@ class Level : public OwnedObject<Level> {
   LevelId SERIAL(levelId) = 0;
   bool SERIAL(noDiagonalPassing) = false;
   void updateCreatureLight(Vec2, int diff);
+  HeapAllocated<Portals> SERIAL(portals);
 };
 

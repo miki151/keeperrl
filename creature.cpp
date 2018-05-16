@@ -52,6 +52,7 @@
 #include "time_queue.h"
 #include "profiler.h"
 #include "furniture_type.h"
+#include "furniture_usage.h"
 
 template <class Archive>
 void Creature::serialize(Archive& ar, const unsigned int version) {
@@ -1639,6 +1640,10 @@ CreatureAction Creature::moveTowards(Position pos, bool away, NavigationFlags fl
     if (currentPath->isReachable(position)) {
       INFO << "Position reachable";
       Position pos2 = currentPath->getNextMove(position);
+      if (pos2.dist8(position) > 1)
+        if (auto f = position.getFurniture(FurnitureLayer::MIDDLE))
+          if (f->getUsageType() == FurnitureUsageType::PORTAL)
+            return applySquare(position);
       if (auto action = move(pos2, currentPath->getNextNextMove(position))) {
         INFO << "Can move";
         return action.append([path = *currentPath](WCreature c) { c->shortestPath = path; });
