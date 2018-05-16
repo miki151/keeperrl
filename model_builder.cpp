@@ -107,101 +107,129 @@ static CollectiveConfig getKeeperConfig(RandomGen& random, bool fastImmigration,
            .setFrequency(0.3)
            .addRequirement(0.0, MinTurnRequirement{2000_global})
            .addRequirement(0.1, AttractionInfo{1, FurnitureType::TRAINING_IRON})
-           .addSpecialTrait(0.1, LastingEffect::RANGED_VULNERABILITY)
-           .addSpecialTrait(0.1, ExtraTraining { ExperienceType::ARCHERY, 2 }),
+           .addSpecialTrait(0.05, LastingEffect::RANGED_VULNERABILITY)
+           .addSpecialTrait(0.05, ExtraTraining { ExperienceType::ARCHERY, 2 }),
        ImmigrantInfo(CreatureId::HARPY, {MinionTrait::FIGHTER})
            .setFrequency(0.3)
            .addRequirement(0.0, MinTurnRequirement{2000_global})
            .addRequirement(0.1, AttractionInfo{1, FurnitureType::TRAINING_WOOD})
            .addRequirement(0.3, AttractionInfo{1, ItemIndex::RANGED_WEAPON})
            .addSpecialTrait(0.05, LastingEffect::INSANITY)
-           .addSpecialTrait(0.2, LastingEffect::NIGHT_VISION)
-           .addSpecialTrait(0.1, ExtraTraining { ExperienceType::ARCHERY, 3 }),
+           .addSpecialTrait(0.1, LastingEffect::NIGHT_VISION)
+           .addSpecialTrait(0.05, SkillId::EXPLORE)
+           .addSpecialTrait(0.05, LastingEffect::RAGE)           
+           .addSpecialTrait(0.05, ExtraTraining { ExperienceType::ARCHERY, 3 }),
        ImmigrantInfo(CreatureId::ZOMBIE, {MinionTrait::FIGHTER})
            .setFrequency(0.5)
            .addRequirement(0.0, MinTurnRequirement{1000_global})
            .setSpawnLocation(FurnitureType::GRAVE)
            .addRequirement(0.0, CostInfo(CollectiveResourceId::CORPSE, 1))
-           .addSpecialTrait(0.3, LastingEffect::BLIND)
-           .addSpecialTrait(0.3, LastingEffect::COLLAPSED),
+           .addSpecialTrait(0.1, LastingEffect::BLIND)
+           .addSpecialTrait(0.05, LastingEffect::REGENERATION)           
+           .addSpecialTrait(0.05, LastingEffect::DAM_BONUS)           
+           .addSpecialTrait(0.05, LastingEffect::DEF_BONUS)           
+           .addSpecialTrait(0.1, LastingEffect::COLLAPSED),
        ImmigrantInfo(CreatureId::SKELETON, {MinionTrait::FIGHTER})
            .setFrequency(0.5)
            .addRequirement(0.0, MinTurnRequirement{1000_global})
            .setSpawnLocation(FurnitureType::GRAVE)
            .addRequirement(0.1, AttractionInfo{1, FurnitureType::TRAINING_IRON})
-           .addRequirement(0.0, CostInfo(CollectiveResourceId::CORPSE, 1)),
+           .addRequirement(0.0, CostInfo(CollectiveResourceId::CORPSE, 1))
+           .addSpecialTrait(0.05, SkillId::AMBUSH)
+           .addSpecialTrait(0.05, LastingEffect::REGENERATION), 
        ImmigrantInfo(CreatureId::VAMPIRE, {MinionTrait::FIGHTER})
            .setFrequency(0.2)
            .setSpawnLocation(FurnitureType::GRAVE)
            .addRequirement(0.1, AttractionInfo{1, FurnitureType::TRAINING_IRON})
            .addRequirement(0.0, CostInfo(CollectiveResourceId::CORPSE, 1))
-           .addSpecialTrait(0.3, LastingEffect::TELEPATHY)
-           .addSpecialTrait(0.3, LastingEffect::FIRE_RESISTANT)
-           .addSpecialTrait(0.3, LastingEffect::FLYING),
+           .addSpecialTrait(0.15, LastingEffect::TELEPATHY)
+           .addSpecialTrait(0.15, LastingEffect::FIRE_RESISTANT)
+           .addSpecialTrait(0.05, LastingEffect::HALLU)
+           .addSpecialTrait(0.05, LastingEffect::DARKNESS_SOURCE)
+           .addSpecialTrait(0.15, LastingEffect::FLYING),
        ImmigrantInfo(CreatureId::LOST_SOUL, {MinionTrait::FIGHTER})
            .setFrequency(0.3)
            .setSpawnLocation(FurnitureType::DEMON_SHRINE)
            .addRequirement(0.3, AttractionInfo{1, FurnitureType::DEMON_SHRINE})
-           .addRequirement(0.0, FurnitureType::DEMON_SHRINE),
+           .addRequirement(0.0, FurnitureType::DEMON_SHRINE)
+           .addSpecialTrait(0.15, LastingEffect::DARKNESS_SOURCE)
+           .addSpecialTrait(0.05, LastingEffect::TELEPATHY),
        ImmigrantInfo(CreatureId::SUCCUBUS, {MinionTrait::FIGHTER, MinionTrait::NO_EQUIPMENT})
            .setFrequency(0.3)
            .setSpawnLocation(FurnitureType::DEMON_SHRINE)
            .addRequirement(0.3, AttractionInfo{2, FurnitureType::DEMON_SHRINE})
-           .addRequirement(0.0, FurnitureType::DEMON_SHRINE),
+           .addRequirement(0.0, FurnitureType::DEMON_SHRINE)
+           .addSpecialTrait(0.15, SkillId::AMBUSH),
        ImmigrantInfo(CreatureId::DOPPLEGANGER, {MinionTrait::FIGHTER})
            .setFrequency(0.3)
            .setSpawnLocation(FurnitureType::DEMON_SHRINE)
            .addRequirement(0.3, AttractionInfo{3, FurnitureType::DEMON_SHRINE})
-           .addRequirement(0.0, FurnitureType::DEMON_SHRINE),
+           .addRequirement(0.0, FurnitureType::DEMON_SHRINE)
+           .addSpecialTrait(0.1, LastingEffect::RAGE),
        ImmigrantInfo(CreatureId::RAVEN, {MinionTrait::FIGHTER})
            .setFrequency(0.5)
            .addRequirement(0.0, FurnitureType::BEAST_CAGE)
-           .addRequirement(0.0, SunlightState::DAY),
-       ImmigrantInfo(CreatureId::BAT, {MinionTrait::FIGHTER})
+           .addRequirement(0.0, SunlightState::DAY)           
+           .addSpecialTrait(0.1, LastingEffect::SATIATED)
+           .addSpecialTrait(0.1, LastingEffect::RESTED),
+           ImmigrantInfo(CreatureId::BAT, {MinionTrait::FIGHTER})
            .setFrequency(0.5)
            .addRequirement(0.0, FurnitureType::BEAST_CAGE)
-           .addRequirement(0.0, SunlightState::NIGHT),
+           .addRequirement(0.0, SunlightState::NIGHT)
+           .addSpecialTrait(0.1, LastingEffect::SPEED),
        ImmigrantInfo(CreatureId::WOLF, {MinionTrait::FIGHTER})
            .setFrequency(0.15)
            .addRequirement(0.0, FurnitureType::BEAST_CAGE)
            .setGroupSize(Range(3, 9))
            .setAutoTeam()
-           .addRequirement(0.0, SunlightState::NIGHT),
+           .addRequirement(0.0, SunlightState::NIGHT)
+           .addSpecialTrait(0.05, LastingEffect::SPEED)
+           .addSpecialTrait(0.05, LastingEffect::RAGE),
        ImmigrantInfo(CreatureId::CAVE_BEAR, {MinionTrait::FIGHTER})
            .addRequirement(0.0, FurnitureType::BEAST_CAGE)
+           .addSpecialTrait(0.1, LastingEffect::DAM_BONUS)           
+           .addSpecialTrait(0.1, LastingEffect::DEF_BONUS)           
            .setFrequency(0.1),
        ImmigrantInfo(CreatureId::WEREWOLF, {MinionTrait::FIGHTER})
            .setFrequency(0.1)
            .addRequirement(0.0, MinTurnRequirement{2000_global})
            .addRequirement(0.1, AttractionInfo{2, FurnitureType::TRAINING_IRON})
-           .addSpecialTrait(0.1, LastingEffect::INSANITY)
-           .addSpecialTrait(0.3, SkillId::AMBUSH),
+           .addSpecialTrait(0.05, LastingEffect::INSANITY)
+           .addSpecialTrait(0.1, LastingEffect::RAGE)           
+           .addSpecialTrait(0.15, SkillId::AMBUSH),
        ImmigrantInfo(CreatureId::DARK_ELF_WARRIOR, {MinionTrait::FIGHTER})
            .addRequirement(0.0, RecruitmentInfo{{EnemyId::DARK_ELVES}, 3, MinionTrait::FIGHTER})
-           .addRequirement(CostInfo(CollectiveResourceId::GOLD, 20)),
+           .addRequirement(CostInfo(CollectiveResourceId::GOLD, 20))
+           .addSpecialTrait(0.15, SkillId::STEALTH),
        ImmigrantInfo(CreatureId::ORC, {MinionTrait::FIGHTER})
            .addRequirement(0.0, RecruitmentInfo{{EnemyId::ORC_VILLAGE}, 3, MinionTrait::FIGHTER})
-           .addRequirement(CostInfo(CollectiveResourceId::GOLD, 5)),
+           .addRequirement(CostInfo(CollectiveResourceId::GOLD, 5))
+           .addSpecialTrait(0.05, LastingEffect::DAM_BONUS)           
+           .addSpecialTrait(0.05, LastingEffect::DEF_BONUS)           
+           .addSpecialTrait(0.05, LastingEffect::RAGE),           
        ImmigrantInfo(CreatureId::HARPY, {MinionTrait::FIGHTER})
            .addRequirement(0.0, RecruitmentInfo{{EnemyId::HARPY_CAVE}, 3, MinionTrait::FIGHTER})
-           .addRequirement(CostInfo(CollectiveResourceId::GOLD, 12)),
+           .addRequirement(CostInfo(CollectiveResourceId::GOLD, 12))
+           .addSpecialTrait(0.05, LastingEffect::SPEED),           
        ImmigrantInfo(CreatureId::OGRE, {MinionTrait::FIGHTER})
            .addRequirement(0.0, RecruitmentInfo{{EnemyId::OGRE_CAVE, EnemyId::ORC_VILLAGE}, 3, MinionTrait::FIGHTER})
-           .addRequirement(CostInfo(CollectiveResourceId::GOLD, 12)),
+           .addRequirement(CostInfo(CollectiveResourceId::GOLD, 12))
+           .addSpecialTrait(0.1, LastingEffect::DAM_BONUS)           
+           .addSpecialTrait(0.1, LastingEffect::DEF_BONUS),           
        ImmigrantInfo(random.permutation({CreatureId::SPECIAL_HMBN, CreatureId::SPECIAL_HMBW,
                CreatureId::SPECIAL_HMGN, CreatureId::SPECIAL_HMGW}), {MinionTrait::FIGHTER})
            .addRequirement(0.0, TechId::HUMANOID_MUT)
            .addRequirement(0.0, Pregnancy {})
            .addRequirement(CostInfo(CollectiveResourceId::GOLD, 100))
            .setSpawnLocation(Pregnancy {})
-           .addSpecialTrait(0.2, LastingEffect::INSANITY),
+           .addSpecialTrait(0.1, LastingEffect::INSANITY),
        ImmigrantInfo(random.permutation({CreatureId::SPECIAL_BMBN, CreatureId::SPECIAL_BMBW,
                CreatureId::SPECIAL_BMGN, CreatureId::SPECIAL_BMGW}), {MinionTrait::FIGHTER})
            .addRequirement(0.0, TechId::BEAST_MUT)
            .addRequirement(0.0, Pregnancy {})
            .addRequirement(CostInfo(CollectiveResourceId::GOLD, 100))
            .setSpawnLocation(Pregnancy {})
-           .addSpecialTrait(0.2, LastingEffect::INSANITY),
+           .addSpecialTrait(0.1, LastingEffect::HALLU),
    });
   return CollectiveConfig::keeper(
       TimeInterval(fastImmigration ? 10 : 140),
