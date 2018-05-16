@@ -1063,6 +1063,7 @@ vector<ImmigrantDataInfo> PlayerControl::getPrisonerImmigrantData() const {
     ret.push_back(ImmigrantDataInfo {
         requirements,
         {},
+        {},
         none,
         c->getName().bare() + " (prisoner)",
         c->getViewObject().id(),
@@ -1121,6 +1122,7 @@ void PlayerControl::fillImmigration(CollectiveInfo& info) const {
     info.immigration.push_back(ImmigrantDataInfo {
         immigration.getMissingRequirements(candidate),
         infoLines,
+        candidate.getSpecialTraits(),
         getCostObj(candidate.getCost()),
         name,
         c->getViewObject().id(),
@@ -1207,6 +1209,7 @@ void PlayerControl::fillImmigrationHelp(CollectiveInfo& info) const {
     info.allImmigration.push_back(ImmigrantDataInfo {
         requirements,
         infoLines,
+        {},
         costObj,
         c->getName().stack(),
         c->getViewObject().id(),
@@ -1220,6 +1223,7 @@ void PlayerControl::fillImmigrationHelp(CollectiveInfo& info) const {
   info.allImmigration.push_back(ImmigrantDataInfo {
       {"Requires 2 prison tiles", "Requires knocking out a hostile creature"},
       {"Supplies your imp force", "Can be converted to your side using torture"},
+      {},
       none,
       "prisoner",
       ViewId::PRISONER,

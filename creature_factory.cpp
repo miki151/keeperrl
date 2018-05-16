@@ -1548,10 +1548,10 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.chatReactionHostile = "\"Die!\""_s;
           c.skills.insert(SkillId::DISARM_TRAPS);
           c.skills.setValue(SkillId::LABORATORY, 0.3);
-          c.skills.setValue(SkillId::WORKSHOP, 0.9);
-          c.skills.setValue(SkillId::FORGE, 0.9);
-          c.skills.setValue(SkillId::JEWELER, 0.9);
-          c.skills.setValue(SkillId::FURNACE, 0.9);
+          c.skills.setValue(SkillId::WORKSHOP, 0.6);
+          c.skills.setValue(SkillId::FORGE, 0.6);
+          c.skills.setValue(SkillId::JEWELER, 0.6);
+          c.skills.setValue(SkillId::FURNACE, 0.6);
           c.skills.insert(SkillId::CONSTRUCTION);
           c.skills.setValue(SkillId::DIGGING, 0.4);
           c.name = "goblin";

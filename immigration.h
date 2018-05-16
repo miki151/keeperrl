@@ -31,6 +31,7 @@ class Immigration : public OwnedObject<Immigration> {
     bool isUnavailable() const;
     optional<milliseconds> getCreatedTime() const;
     int getImmigrantIndex() const;
+    const vector<SpecialTrait>& getSpecialTraits() const;
 
     SERIALIZATION_DECL(Available)
 
@@ -38,13 +39,14 @@ class Immigration : public OwnedObject<Immigration> {
     static Available generate(WImmigration, const Group& group);
     static Available generate(WImmigration, int index);
     vector<Position> getSpawnPositions() const;
-    Available(WImmigration, vector<PCreature>, int immigrantIndex, optional<GlobalTime> endTime);
+    Available(WImmigration, vector<PCreature>, int immigrantIndex, optional<GlobalTime> endTime, vector<SpecialTrait>);
     void addAllCreatures(const vector<Position>& spawnPositions);
     friend class Immigration;
     vector<PCreature> SERIAL(creatures);
     int SERIAL(immigrantIndex);
     optional<GlobalTime> SERIAL(endTime);
     WImmigration SERIAL(immigration);
+    vector<SpecialTrait> SERIAL(specialTraits);
     optional<milliseconds> createdTime;
   };
 
