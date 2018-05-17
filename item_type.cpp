@@ -453,6 +453,11 @@ ItemAttributes ItemType::Knife::getAttributes() const {
       i.weaponInfo.attackType = AttackType::STAB;
       i.weaponInfo.attackMsg = AttackMsg::THRUST;
       i.prefixes.push_back({1, Effect(Effect::Lasting{LastingEffect::POISON})});
+      i.prefixes.push_back({1, Effect(Effect::Lasting{LastingEffect::BLEEDING})});
+      i.prefixes.push_back({1, Effect(Effect::Lasting{LastingEffect::PANIC})});
+      i.prefixes.push_back({1, Effect(Effect::SilverDamage{})});
+      i.prefixes.push_back({1, Effect(Effect::Fire{})});
+      i.prefixes.push_back({1, ItemAttrBonus{AttrType::DEFENSE, Random.get(3, 6)}});
   );
 }
 
@@ -496,6 +501,8 @@ ItemAttributes ItemType::Spear::getAttributes() const {
       i.price = 4;
       i.weaponInfo.attackType = AttackType::STAB;
       i.weaponInfo.attackMsg = AttackMsg::THRUST;
+      i.prefixes.push_back({1, Effect(Effect::Lasting{LastingEffect::INSANITY})});
+      i.prefixes.push_back({1, Effect(Effect::Lasting{LastingEffect::SLOWED})});
   );
 }
 
@@ -510,6 +517,7 @@ ItemAttributes ItemType::Sword::getAttributes() const {
       i.price = 4;
       i.weaponInfo.attackType = AttackType::CUT;
       i.prefixes.push_back({1, Effect(Effect::Fire{})});
+      i.prefixes.push_back({1, Effect(Effect::Lasting{LastingEffect::POISON})});
   );
 }
 
@@ -598,6 +606,10 @@ ItemAttributes ItemType::Club::getAttributes() const {
       i.modifiers[AttrType::DAMAGE] = 4 + maybePlusMinusOne(4);
       i.price = 2;
       i.weaponInfo.attackType = AttackType::CRUSH;
+      i.prefixes.push_back({1, Effect(Effect::Lasting{LastingEffect::SLOWED})});
+      i.prefixes.push_back({1, Effect(Effect::Lasting{LastingEffect::ENTANGLED})});
+      i.prefixes.push_back({1, Effect(Effect::Lasting{LastingEffect::MAGIC_VULNERABILITY})});
+      i.prefixes.push_back({1, Effect(Effect::Lasting{LastingEffect::INSANITY})});
   );
 }
 
@@ -612,6 +624,7 @@ ItemAttributes ItemType::HeavyClub::getAttributes() const {
       i.weaponInfo.twoHanded = true;
       i.price = 4;
       i.weaponInfo.attackType = AttackType::CRUSH;
+      i.prefixes.push_back({1, Effect(Effect::Lasting{LastingEffect::COLLAPSED})});
   );
 }
 
@@ -627,6 +640,7 @@ ItemAttributes ItemType::WoodenStaff::getAttributes() const {
       i.price = 30;
       i.weaponInfo.attackType = AttackType::SPELL;
       i.weaponInfo.attackMsg = AttackMsg::WAVE;
+      i.prefixes.push_back({1, ItemAttrBonus{AttrType::SPELL_DAMAGE, Random.get(2, 5)}});
       i.prefixes.push_back({1, Effect(Effect::Teleport{})});
   );
 }
@@ -643,6 +657,7 @@ ItemAttributes ItemType::IronStaff::getAttributes() const {
       i.price = 60;
       i.weaponInfo.attackType = AttackType::SPELL;
       i.weaponInfo.attackMsg = AttackMsg::WAVE;
+      i.prefixes.push_back({1, ItemAttrBonus{AttrType::SPELL_DAMAGE, Random.get(2, 5)}});
       i.prefixes.push_back({1, Effect(Effect::Teleport{})});
   );
 }
@@ -658,6 +673,7 @@ ItemAttributes ItemType::Scythe::getAttributes() const {
       i.weaponInfo.twoHanded = true;
       i.price = 20;
       i.weaponInfo.attackType = AttackType::CUT;
+      i.prefixes.push_back({1, Effect(Effect::Lasting{LastingEffect::RAGE})});
   );
 }
 
@@ -685,6 +701,7 @@ ItemAttributes ItemType::Bow::getAttributes() const {
       i.weaponInfo.twoHanded = true;
       i.weight = 1;
       i.modifiers[AttrType::RANGED_DAMAGE] = 10 + maybePlusMinusOne(4);
+      i.prefixes.push_back({1, ItemAttrBonus{AttrType::RANGED_DAMAGE, Random.get(3, 5)}});
       i.price = 12;
   );
 }
@@ -752,6 +769,7 @@ ItemAttributes ItemType::LeatherGloves::getAttributes() const {
       i.weight = 0.3;
       i.price = 2;
       i.modifiers[AttrType::DEFENSE] = 1 + maybePlusMinusOne(4);
+      i.prefixes.push_back({1, ItemAttrBonus{AttrType::SPELL_DAMAGE, Random.get(2, 5)}});
       i.prefixes.push_back({1, ItemAttrBonus{AttrType::DAMAGE, Random.get(2, 5)}});
   );
 }
@@ -767,6 +785,15 @@ ItemAttributes ItemType::LeatherArmor::getAttributes() const {
       i.price = 4;
       i.modifiers[AttrType::DEFENSE] = 3 + maybePlusMinusOne(4);
       i.prefixes.push_back({1, ItemAttrBonus{AttrType::DEFENSE, Random.get(2, 5)}});
+      i.prefixes.push_back({1, LastingEffect::POISON_RESISTANT});
+      i.prefixes.push_back({1, LastingEffect::FIRE_RESISTANT});
+      i.prefixes.push_back({1, LastingEffect::MAGIC_RESISTANCE});
+      i.prefixes.push_back({1, LastingEffect::RANGED_RESISTANCE});
+      i.prefixes.push_back({1, LastingEffect::MELEE_RESISTANCE});
+      i.prefixes.push_back({1, LastingEffect::REGENERATION});
+      i.prefixes.push_back({1, LastingEffect::SATIATED});
+      i.prefixes.push_back({1, LastingEffect::RESTED});      
+      i.prefixes.push_back({1, LastingEffect::INVISIBLE});      
   );
 }
 
@@ -782,6 +809,12 @@ ItemAttributes ItemType::LeatherHelm::getAttributes() const {
       i.modifiers[AttrType::DEFENSE] = 1 + maybePlusMinusOne(4);
       i.prefixes.push_back({1, LastingEffect::TELEPATHY});
       i.prefixes.push_back({1, LastingEffect::SLEEP_RESISTANT});
+      i.prefixes.push_back({1, LastingEffect::RAGE});
+      i.prefixes.push_back({1, LastingEffect::LIGHT_SOURCE});
+      i.prefixes.push_back({1, LastingEffect::DARKNESS_SOURCE});
+      i.prefixes.push_back({1, LastingEffect::ELF_VISION});
+      i.prefixes.push_back({1, LastingEffect::NIGHT_VISION});
+      i.prefixes.push_back({1, LastingEffect::WARNING});
       i.prefixes.push_back({2, ItemAttrBonus{AttrType::DEFENSE, Random.get(2, 5)}});
   );
 }
@@ -797,6 +830,11 @@ ItemAttributes ItemType::ChainArmor::getAttributes() const {
       i.price = 25;
       i.modifiers[AttrType::DEFENSE] = 5 + maybePlusMinusOne(4);
       i.prefixes.push_back({1, ItemAttrBonus{AttrType::DEFENSE, Random.get(2, 5)}});
+      i.prefixes.push_back({1, LastingEffect::POISON_RESISTANT});
+      i.prefixes.push_back({1, LastingEffect::FIRE_RESISTANT});
+      i.prefixes.push_back({1, LastingEffect::MAGIC_RESISTANCE});
+      i.prefixes.push_back({1, LastingEffect::MELEE_RESISTANCE});
+      i.prefixes.push_back({1, LastingEffect::RANGED_RESISTANCE});
   );
 }
 
@@ -824,8 +862,14 @@ ItemAttributes ItemType::IronHelm::getAttributes() const {
       i.weight = 4;
       i.price = 8;
       i.modifiers[AttrType::DEFENSE]= 2 + maybePlusMinusOne(4);
+      i.prefixes.push_back({1, LastingEffect::WARNING});
       i.prefixes.push_back({1, LastingEffect::TELEPATHY});
+      i.prefixes.push_back({1, LastingEffect::RAGE});
+      i.prefixes.push_back({1, LastingEffect::LIGHT_SOURCE});
+      i.prefixes.push_back({1, LastingEffect::DARKNESS_SOURCE});
       i.prefixes.push_back({1, LastingEffect::SLEEP_RESISTANT});
+      i.prefixes.push_back({1, LastingEffect::ELF_VISION});
+      i.prefixes.push_back({1, LastingEffect::NIGHT_VISION});
       i.prefixes.push_back({3, ItemAttrBonus{AttrType::DEFENSE, Random.get(2, 5)}});
   );
 }
@@ -843,6 +887,7 @@ ItemAttributes ItemType::LeatherBoots::getAttributes() const {
       i.modifiers[AttrType::DEFENSE] = 1 + maybePlusMinusOne(4);
       i.prefixes.push_back({1, LastingEffect::FLYING});
       i.prefixes.push_back({1, LastingEffect::SPEED});
+      i.prefixes.push_back({1, LastingEffect::DAM_BONUS});
       i.prefixes.push_back({2, ItemAttrBonus{AttrType::DEFENSE, Random.get(2, 5)}});
   );
 }
