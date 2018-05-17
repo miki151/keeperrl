@@ -39,7 +39,7 @@
 template <class Archive>
 void CollectiveConfig::serialize(Archive& ar, const unsigned int version) {
   ar(immigrantInterval, maxPopulation, populationIncreases, immigrantInfo);
-  ar(type, leaderAsFighter, spawnGhosts, ghostProb, guardianInfo, regenerateMana);
+  ar(type, leaderAsFighter, spawnGhosts, ghostProb, guardianInfo, regenerateMana, hellishMode);
 }
 
 SERIALIZABLE(CollectiveConfig);
@@ -120,10 +120,11 @@ CollectiveConfig::CollectiveConfig(TimeInterval interval, const vector<Immigrant
     addBedRequirementToImmigrants();
 }
 
-CollectiveConfig CollectiveConfig::keeper(TimeInterval immigrantInterval, int maxPopulation, bool regenerateMana,
+CollectiveConfig CollectiveConfig::keeper(TimeInterval immigrantInterval, int maxPopulation, bool regenerateMana, bool hellishMode, 
     vector<PopulationIncrease> increases, const vector<ImmigrantInfo>& im) {
   auto ret = CollectiveConfig(immigrantInterval, im, KEEPER, maxPopulation, increases);
   ret.regenerateMana = regenerateMana;
+  ret.hellishMode = hellishMode;
   return ret;
 }
 
@@ -180,6 +181,10 @@ bool CollectiveConfig::hasVillainSleepingTask() const {
 
 bool CollectiveConfig::getRegenerateMana() const {
   return regenerateMana;
+}
+
+bool CollectiveConfig::getHellishMode() const {
+  return hellishMode;
 }
 
 bool CollectiveConfig::allowHealingTaskOutsideTerritory() const {

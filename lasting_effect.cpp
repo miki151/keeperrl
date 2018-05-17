@@ -115,6 +115,8 @@ void LastingEffects::onAffected(WCreature c, LastingEffect effect, bool msg) {
         c->you(MsgType::FEEL, "more dangerous"); break;
       case LastingEffect::DEF_BONUS:
         c->you(MsgType::FEEL, "more protected"); break;
+      case LastingEffect::CURSED:
+        c->you(MsgType::FEEL, "cursed"); break;
       case LastingEffect::SPEED:
         c->you(MsgType::ARE, "moving faster"); break;
       case LastingEffect::SLOWED:
@@ -226,6 +228,8 @@ void LastingEffects::onTimedOut(WCreature c, LastingEffect effect, bool msg) {
         c->you(MsgType::ARE, "less dangerous again"); break;
       case LastingEffect::DEF_BONUS:
         c->you(MsgType::ARE, "less protected again"); break;
+      case LastingEffect::CURSED:
+        c->you(MsgType::ARE, "free from a curse again"); break;
       case LastingEffect::PANIC:
       case LastingEffect::RAGE:
       case LastingEffect::HALLU:
@@ -299,6 +303,7 @@ void LastingEffects::onTimedOut(WCreature c, LastingEffect effect, bool msg) {
 }
 
 static const int attrBonus = 3;
+static const int cursePower = 5;
 
 int LastingEffects::getAttrBonus(WConstCreature c, AttrType type) {
   int value = 0;
@@ -327,6 +332,8 @@ int LastingEffects::getAttrBonus(WConstCreature c, AttrType type) {
       break;
     default: break;
   }
+  if (c->isAffected(LastingEffect::CURSED))
+    value -= cursePower;
   return value;
 }
 
@@ -383,6 +390,7 @@ static optional<Adjective> getAdjective(LastingEffect effect) {
     case LastingEffect::BLIND: return "Blind"_bad;
     case LastingEffect::STUNNED: return "Unconscious"_bad;
     case LastingEffect::COLLAPSED: return "Collapsed"_bad;
+    case LastingEffect::CURSED: return "Cursed"_bad;
     case LastingEffect::MAGIC_VULNERABILITY: return "Vulnerable to magical attacks"_bad;
     case LastingEffect::MELEE_VULNERABILITY: return "Vulnerable to melee attacks"_bad;
     case LastingEffect::RANGED_VULNERABILITY: return "Vulnerable to ranged attacks"_bad;
@@ -540,6 +548,7 @@ const char* LastingEffects::getName(LastingEffect type) {
     case LastingEffect::COLLAPSED: return "collapse";
     case LastingEffect::PANIC: return "panic";
     case LastingEffect::RAGE: return "rage";
+    case LastingEffect::CURSED: return "curse";
     case LastingEffect::HALLU: return "magic";
     case LastingEffect::SLEEP_RESISTANT: return "sleep resistance";
     case LastingEffect::DAM_BONUS: return "damage";
@@ -582,6 +591,7 @@ const char* LastingEffects::getDescription(LastingEffect type) {
     case LastingEffect::POISON: return "Decreases health every turn by a little bit.";
     case LastingEffect::POISON_RESISTANT: return "Gives poison resistance.";
     case LastingEffect::FLYING: return "Causes levitation.";
+    case LastingEffect::CURSED: return "Lowers abilities.";
     case LastingEffect::COLLAPSED: return "Moving across tiles takes three times longer.";
     case LastingEffect::PANIC: return "Increases defense and lowers damage.";
     case LastingEffect::RAGE: return "Increases damage and lowers defense.";
@@ -661,6 +671,7 @@ int LastingEffects::getPrice(LastingEffect e) {
     case LastingEffect::NIGHT_VISION:
     case LastingEffect::ELF_VISION:
     case LastingEffect::REGENERATION:
+    case LastingEffect::CURSED:
       return 12;
     case LastingEffect::BLIND:
       return 16;

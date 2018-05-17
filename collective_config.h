@@ -78,7 +78,7 @@ struct FloorInfo {
 
 class CollectiveConfig {
   public:
-  static CollectiveConfig keeper(TimeInterval immigrantInterval, int maxPopulation, bool regenerateMana,
+  static CollectiveConfig keeper(TimeInterval immigrantInterval, int maxPopulation, bool regenerateMana, bool hellishMode, 
       vector<PopulationIncrease>, const vector<ImmigrantInfo>&);
   static CollectiveConfig withImmigrants(TimeInterval immigrantInterval, int maxPopulation, const vector<ImmigrantInfo>&);
   static CollectiveConfig noImmigrants();
@@ -104,6 +104,7 @@ class CollectiveConfig {
   double getGhostProb() const;
   bool hasVillainSleepingTask() const;
   bool getRegenerateMana() const;
+  bool getHellishMode() const;
   bool allowHealingTaskOutsideTerritory() const;
   const vector<ImmigrantInfo>& getImmigrantInfo() const;
   const vector<PopulationIncrease>& getPopulationIncreases() const;
@@ -148,4 +149,5 @@ class CollectiveConfig {
   optional<GuardianInfo> SERIAL(guardianInfo);
   void addBedRequirementToImmigrants();
   bool SERIAL(regenerateMana) = false;
+  bool SERIAL(hellishMode) = false;
 };

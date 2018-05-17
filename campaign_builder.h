@@ -44,6 +44,7 @@ struct CampaignSetup {
   string gameIdentifier;
   string gameDisplayName;
   bool regenerateMana;
+  bool hellishMode;
   vector<string> introMessages;
   enum ImpVariant {
     IMPS,

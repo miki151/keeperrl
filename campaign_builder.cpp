@@ -81,7 +81,13 @@ TribeId CampaignBuilder::getPlayerTribeId() const {
 }
 
 vector<OptionId> CampaignBuilder::getPrimaryOptions() const {
-  return {getPlayerTypeOptionId(), getPlayerNameOptionId()};
+  switch (playerRole) {
+    case PlayerRole::KEEPER:
+      return {getPlayerTypeOptionId(), getPlayerNameOptionId(), 
+        OptionId::HELLISH_MODE};
+    case PlayerRole::ADVENTURER:
+      return {getPlayerTypeOptionId(), getPlayerNameOptionId()};
+  }
 }
 
 static vector<string> getCampaignTypeDescription(CampaignType type) {
@@ -517,6 +523,7 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(function<optional<Retir
                 }
                 break;
               case OptionId::GENERATE_MANA:
+              case OptionId::HELLISH_MODE:
               case OptionId::INFLUENCE_SIZE: break;
               default: updateMap = true; break;
             }
@@ -537,6 +544,7 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(function<optional<Retir
               return CampaignSetup{campaign, std::move(avatarInfo), gameIdentifier, gameDisplayName,
                   options->getBoolValue(OptionId::GENERATE_MANA) &&
                   getSecondaryOptions(type).contains(OptionId::GENERATE_MANA),
+                  options->getBoolValue(OptionId::HELLISH_MODE),
                   getIntroMessages(type, campaign.getWorldName())};
             }
       }

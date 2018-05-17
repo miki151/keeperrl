@@ -438,6 +438,8 @@ void Immigration::accept(int id, bool withMessage) {
     WCreature c = creatures[i];
     if (i == 0 && groupSize > 1) // group leader
       c->getAttributes().increaseBaseExpLevel(ExperienceType::MELEE, 2);
+    if (collective->getConfig().getHellishMode())
+        c->addPermanentEffect(LastingEffect::CURSED);
     occupyRequirements(c, candidate.immigrantIndex);
     generated[candidate.immigrantIndex].insert(c);
   }

@@ -42,7 +42,8 @@ RICH_ENUM(LastingEffect,
     SUNLIGHT_VULNERABLE,
     SATIATED,
     RESTED,
-    SUMMONED
+    SUMMONED,
+    CURSED
 );
 
 RICH_ENUM(CreatureCondition,

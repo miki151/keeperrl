@@ -56,7 +56,7 @@ int ModelBuilder::getThronePopulationIncrease() {
   return 10;
 }
 
-static CollectiveConfig getKeeperConfig(RandomGen& random, bool fastImmigration, bool regenerateMana, AvatarInfo::ImpVariant impVariant) {
+static CollectiveConfig getKeeperConfig(RandomGen& random, bool fastImmigration, bool regenerateMana, bool hellishMode, AvatarInfo::ImpVariant impVariant) {
   vector<ImmigrantInfo> immigrants;
   switch (impVariant) {
     case AvatarInfo::IMPS:
@@ -207,6 +207,7 @@ static CollectiveConfig getKeeperConfig(RandomGen& random, bool fastImmigration,
       TimeInterval(fastImmigration ? 10 : 140),
       10,
       regenerateMana,
+      hellishMode,
       {
       CONSTRUCT(PopulationIncrease,
         c.type = FurnitureType::PIGSTY;
@@ -525,13 +526,13 @@ void ModelBuilder::measureModelGen(const string& name, int numTries, function<vo
     minT << ". MaxT: " << maxT << ". AvgT: " << sumT / numTries << std::endl;
 }
 
-WCollective ModelBuilder::spawnKeeper(WModel m, AvatarInfo avatarInfo, bool regenerateMana, vector<string> introText) {
+WCollective ModelBuilder::spawnKeeper(WModel m, AvatarInfo avatarInfo, bool regenerateMana, bool hellishMode, vector<string> introText) {
   WLevel level = m->getTopLevel();
   WCreature keeperRef = avatarInfo.playerCreature.get();
   CHECK(level->landCreature(StairKey::keeperSpawn(), keeperRef)) << "Couldn't place keeper on level.";
   m->addCreature(std::move(avatarInfo.playerCreature));
   m->collectives.push_back(CollectiveBuilder(
-        getKeeperConfig(random, options->getBoolValue(OptionId::FAST_IMMIGRATION), regenerateMana, avatarInfo.impVariant), TribeId::getKeeper())
+        getKeeperConfig(random, options->getBoolValue(OptionId::FAST_IMMIGRATION), regenerateMana, hellishMode, avatarInfo.impVariant), TribeId::getKeeper())
       .setLevel(level)
       .addCreature(keeperRef, {MinionTrait::LEADER})
       .build());

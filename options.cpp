@@ -49,6 +49,7 @@ const EnumMap<OptionId, Options::Value> defaults {
   {OptionId::ALLIES, 2},
   {OptionId::INFLUENCE_SIZE, 3},
   {OptionId::GENERATE_MANA, 0},
+  {OptionId::HELLISH_MODE, 0},
 };
 
 const map<OptionId, string> names {
@@ -82,6 +83,7 @@ const map<OptionId, string> names {
   {OptionId::ALLIES, "Allies"},
   {OptionId::INFLUENCE_SIZE, "Min. tribes in influence zone"},
   {OptionId::GENERATE_MANA, "Generate mana in library"},
+  {OptionId::HELLISH_MODE, "Nerf your dungeon"},
 };
 
 const map<OptionId, string> hints {
@@ -99,7 +101,8 @@ const map<OptionId, string> hints {
     "The save file will be used to recover in case of a crash."},
   {OptionId::WASD_SCROLLING, "Scroll the map using W-A-S-D keys. In this mode building shortcuts are accessed "
     "using alt + letter."},
-  {OptionId::GENERATE_MANA, "Your minions will generate mana while working in the library."}
+  {OptionId::GENERATE_MANA, "Your minions will generate mana while working in the library."},
+  {OptionId::HELLISH_MODE, "Hellish mode, all your minions will be cursed on arrival."}
 };
 
 const map<OptionSet, vector<OptionId>> optionSets {
@@ -158,6 +161,7 @@ Options::Type Options::getType(OptionId id) {
     case OptionId::KEEPER_TYPE:
       return Options::PLAYER_TYPE;
     case OptionId::GENERATE_MANA:
+    case OptionId::HELLISH_MODE:
       return Options::BOOL;
     default:
       return Options::INT;
@@ -256,6 +260,7 @@ string Options::getValueString(OptionId id) {
     case OptionId::DISABLE_MOUSE_WHEEL:
     case OptionId::DISABLE_CURSOR:
     case OptionId::GENERATE_MANA:
+    case OptionId::HELLISH_MODE:
     case OptionId::START_WITH_NIGHT:
       return getYesNo(value);
     case OptionId::ADVENTURER_NAME:
