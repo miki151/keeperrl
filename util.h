@@ -145,6 +145,7 @@ class Vec2 {
   int length8() const;
   int length4() const;
   int dist8(Vec2) const;
+  int dist4(Vec2) const;
   double distD(Vec2) const;
   double lengthD() const;
   Vec2 shorten() const;

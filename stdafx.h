@@ -121,6 +121,7 @@ using std::uniform_real_distribution;
 using std::make_tuple;
 using std::hash;
 using std::array;
+using std::uint8_t;
 
 using std::recursive_mutex;
 typedef std::unique_lock<recursive_mutex> RecursiveLock;

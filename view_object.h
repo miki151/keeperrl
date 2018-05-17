@@ -59,6 +59,8 @@ class ViewObject {
   ViewLayer layer() const;
   ViewId id() const;
   void setId(ViewId);
+  void setPortalVersion(optional<uint8_t>);
+  optional<uint8_t> getPortalVersion() const;
 
   void setGoodAdjectives(const string&);
   void setBadAdjectives(const string&);
@@ -103,6 +105,7 @@ class ViewObject {
   optional<CreatureAttributes> SERIAL(creatureAttributes);
   string SERIAL(clickAction);
   vector<string> SERIAL(extendedActions);
+  optional<uint8_t> SERIAL(portalVersion);
 
   class MovementQueue {
     public:

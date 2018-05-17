@@ -59,7 +59,7 @@ static void useChest(Position pos, WConstFurniture furniture, WCreature c, const
 
 static void usePortal(Position pos, WCreature c) {
   c->you(MsgType::ENTER_PORTAL, "");
-  if (auto otherPos = pos.getModel()->getOtherPortal(pos))
+  if (auto otherPos = pos.getOtherPortal())
     for (auto f : otherPos->getFurniture())
       if (f->getUsageType() == FurnitureUsageType::PORTAL) {
         if (pos.canMoveCreature(*otherPos)) {

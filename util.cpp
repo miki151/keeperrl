@@ -403,6 +403,10 @@ int Vec2::dist8(Vec2 v) const {
   return (v - *this).length8();
 }
 
+int Vec2::dist4(Vec2 v) const {
+  return (v - *this).length4();
+}
+
 double Vec2::distD(Vec2 v) const {
   return (v - *this).lengthD();
 }

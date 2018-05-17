@@ -102,7 +102,7 @@ void Skillset::setValue(SkillId s, double v) {
 
 void Skillset::increaseValue(SkillId s, double v) {
   CHECK(!Skill::get(s)->isDiscrete());
-  gradable[s] += v;
+  gradable[s] = max(0.0, min(1.0, gradable[s] + v));
 }
 
 const EnumSet<SkillId>& Skillset::getAllDiscrete() const {

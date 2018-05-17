@@ -555,7 +555,7 @@ class TileCoordLookup {
     Tile::addTile(ViewId::COFFIN, sprite("coffin").setRoundShadow());
     Tile::addTile(ViewId::OPENED_COFFIN, sprite("coffin_opened").setRoundShadow());
     Tile::addTile(ViewId::BOULDER, sprite("boulder").setRoundShadow());
-    Tile::addTile(ViewId::PORTAL, sprite("surprise"));
+    Tile::addTile(ViewId::PORTAL, sprite("surprise").setRoundShadow());
     Tile::addTile(ViewId::GAS_TRAP, sprite("gas_trap"));
     Tile::addTile(ViewId::ALARM_TRAP, sprite("alarm_trap"));
     Tile::addTile(ViewId::WEB_TRAP, sprite("web_trap"));
@@ -904,7 +904,7 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::OPENED_COFFIN, symbol(u8"⚰", Color::DARK_GRAY, true));
     Tile::addSymbol(ViewId::COFFIN, symbol(u8"⚰", Color::DARK_GRAY, true));
     Tile::addSymbol(ViewId::BOULDER, symbol(u8"●", Color::LIGHT_GRAY, true));
-    Tile::addSymbol(ViewId::PORTAL, symbol(u8"𝚯", Color::LIGHT_GREEN, true));
+    Tile::addSymbol(ViewId::PORTAL, symbol(u8"𝚯", Color::WHITE, true));
     Tile::addSymbol(ViewId::GAS_TRAP, symbol(u8"☠", Color::GREEN, true));
     Tile::addSymbol(ViewId::ALARM_TRAP, symbol(u8"^", Color::RED, true));
     Tile::addSymbol(ViewId::WEB_TRAP, symbol(u8"#", Color::WHITE, true));

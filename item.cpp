@@ -134,6 +134,11 @@ void Item::tick(Position position) {
   specialTick(position);
 }
 
+void Item::applyRandomPrefix() {
+  if (!attributes->prefixes.empty())
+    applyPrefix(Random.choose(attributes->prefixes), *attributes);
+}
+
 void Item::onHitSquareMessage(Position pos, int numItems) {
   if (attributes->fragile) {
     pos.globalMessage(getPluralTheNameAndVerb(numItems, "crashes", "crash") + " on the " + pos.getName());
@@ -330,15 +335,24 @@ string Item::getPluralTheNameAndVerb(int count, const string& verbSingle, const 
   return getPluralTheName(count) + " " + (count > 1 ? verbPlural : verbSingle);
 }
 
+static void appendWithSpace(string& s, const string& suf) {
+  if (!s.empty() && !suf.empty())
+    s += " ";
+  s += suf;
+}
+
 string Item::getVisibleName(bool getPlural) const {
+  string ret;
   if (!getPlural)
-    return *attributes->name;
+    ret = *attributes->name;
   else {
     if (attributes->plural)
-      return *attributes->plural;
+      ret = *attributes->plural;
     else
-      return *attributes->name + "s";
+      ret = *attributes->name + "s";
   }
+  appendWithSpace(ret, getSuffix());
+  return ret;
 }
 
 static string withSign(int a) {
@@ -354,12 +368,6 @@ const optional<string>& Item::getArtifactName() const {
 
 void Item::setArtifactName(const string& s) {
   attributes->artifactName = s;
-}
-
-static void appendWithSpace(string& s, const string& suf) {
-  if (!s.empty() && !suf.empty())
-    s += " ";
-  s += suf;
 }
 
 string Item::getSuffix() const {
@@ -409,8 +417,12 @@ string Item::getShortName(WConstCreature owner, bool plural) const {
     return getBlindName(plural);
   if (attributes->artifactName)
     return *attributes->artifactName + " " + getModifiers(true);
-  string name = attributes->shortName.value_or(getVisibleName(plural));
-  appendWithSpace(name, getSuffix());
+  string name;
+  if (attributes->shortName) {
+    name = *attributes->shortName;
+    appendWithSpace(name, getSuffix());
+  } else
+    name = getVisibleName(plural);
   appendWithSpace(name, getModifiers(true));
   return name;
 }

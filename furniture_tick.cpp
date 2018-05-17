@@ -17,6 +17,8 @@
 #include "tribe.h"
 #include "furniture_type.h"
 #include "furniture_factory.h"
+#include "view_object.h"
+#include "furniture_usage.h"
 
 static void handleBed(Position pos) {
   PROFILE;
@@ -121,7 +123,17 @@ void FurnitureTick::handle(FurnitureTickType type, Position pos, WFurniture furn
       handleBoulder(pos, furniture);
       break;
     case FurnitureTickType::PORTAL:
-      pos.getModel()->registerPortal(pos);
+      pos.registerPortal();
+      furniture->getViewObject()->setPortalVersion(none);
+      if (auto otherPos = pos.getOtherPortal())
+        for (auto f : otherPos->modFurniture())
+          if (f->getUsageType() == FurnitureUsageType::PORTAL) {
+            auto color = *pos.getPortalIndex();
+            furniture->getViewObject()->setPortalVersion(uint8_t(color));
+            f->getViewObject()->setPortalVersion(uint8_t(color));
+            pos.setNeedsRenderUpdate(true);
+            otherPos->setNeedsRenderUpdate(true);
+          }
       break;
     case FurnitureTickType::METEOR_SHOWER:
       meteorShower(pos, furniture);

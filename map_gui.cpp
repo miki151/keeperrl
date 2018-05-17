@@ -526,6 +526,12 @@ void MapGui::considerWoundedAnimation(const ViewObject& object, Color& color, mi
         color = Color::RED;
 }
 
+static Color getPortalColor(int index) {
+  CHECK(index >= 0);
+  index += 1 + 2 * (index / 6);
+  return Color(255 * (index % 2), 255 * ((index / 2) % 2), 255 * ((index / 4) % 2));
+}
+
 void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& object, Vec2 size, Vec2 movement,
     Vec2 tilePos, milliseconds curTimeReal) {
   PROFILE;
@@ -567,6 +573,8 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
           Renderer::SpriteOrientation((bool) (tilePos.getHash() % 2), (bool) (tilePos.getHash() % 4 > 1)));
     else
       renderer.drawTile(pos + move, tile.getSpriteCoord(dirs), size, color);
+    if (auto version = object.getPortalVersion())
+      renderer.drawTile(pos + move, renderer.getTileCoord("portal_inside"), size, getPortalColor(*version));
     if (tile.hasAnyCorners()) {
       for (auto coord : tile.getCornerCoords(dirs))
         renderer.drawTile(pos + move, coord, size, color);
@@ -591,6 +599,7 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
   } else {
     Vec2 tilePos = pos + movement + Vec2(size.x / 2, -3);
     drawCreatureHighlights(renderer, object, pos + movement, size, curTimeReal);
+    if (!object.getPortalVersion())
     renderer.drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TILE_FONT, size.y, Tile::getColor(object),
         tilePos, tile.text, Renderer::HOR);
     if (auto burningVal = object.getAttribute(ViewObject::Attribute::BURNING))
@@ -603,6 +612,8 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
       }
     if (object.hasModifier(ViewObject::Modifier::LOCKED))
       renderer.drawText(Color::YELLOW, pos + size / 2, "*", Renderer::CenterType::HOR_VER, size.y);
+    if (auto version = object.getPortalVersion())
+      renderer.drawText(Renderer::SYMBOL_FONT, size.y, getPortalColor(*version), tilePos, tile.text, Renderer::HOR);
   }
 }
 

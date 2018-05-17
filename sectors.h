@@ -28,10 +28,13 @@ class Sectors {
   bool contains(Vec2) const;
   int getNumSectors() const;
   bool isChokePoint(Vec2) const;
+  void addExtraConnection(Vec2, Vec2);
+  void removeExtraConnection(Vec2, Vec2);
 
   SERIALIZATION_DECL(Sectors);
 
   private:
+  vector<Vec2> getNeighbors(Vec2) const;
   void setSector(Vec2, int);
   int getNewSector();
   void join(Vec2, int);
@@ -39,5 +42,6 @@ class Sectors {
   Rectangle SERIAL(bounds);
   Table<int> SERIAL(sectors);
   vector<int> SERIAL(sizes);
+  Table<vector<Vec2>> SERIAL(extraConnections);
 };
 

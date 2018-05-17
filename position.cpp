@@ -21,6 +21,7 @@
 #include "furniture_array.h"
 #include "inventory.h"
 #include "profiler.h"
+#include "portals.h"
 
 template <class Archive>
 void Position::serialize(Archive& ar, const unsigned int) {
@@ -171,6 +172,45 @@ vector<WFurniture> Position::modFurniture() const {
     if (auto f = modFurniture(layer))
       ret.push_back(f);
   return ret;
+}
+
+optional<int> Position::getDistanceToNearestPortal() const {
+  if (level)
+    return level->portals->getDistanceToNearest(coord);
+  else
+    return none;
+}
+
+optional<Position> Position::getOtherPortal() const {
+  if (level)
+    if (auto v = level->portals->getOtherPortal(coord))
+      return Position(*v, level);
+  return none;
+}
+
+void Position::registerPortal() {
+  if (isValid()) {
+    if (level->portals->registerPortal(*this))
+      if (auto other = level->portals->getOtherPortal(coord))
+        for (auto& sectors : level->sectors)
+          sectors.second.addExtraConnection(coord, *other);
+  }
+}
+
+void Position::removePortal() {
+  if (isValid()) {
+    if (auto other = level->portals->getOtherPortal(coord))
+      for (auto& sectors : level->sectors)
+        sectors.second.removeExtraConnection(coord, *other);
+    level->portals->removePortal(*this);
+  }
+}
+
+optional<int> Position::getPortalIndex() const {
+  if (isValid())
+    return level->portals->getPortalIndex(coord);
+  else
+    return none;
 }
 
 WCreature Position::getCreature() const {
