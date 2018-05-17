@@ -1232,8 +1232,8 @@ void Collective::onAppliedSquare(WCreature c, Position pos) {
     }
     if (auto workshopType = config->getWorkshopType(furniture->getType())) {
       auto& info = config->getWorkshopInfo(*workshopType);
-      vector<PItem> items =
-          workshops->get(*workshopType).addWork(efficiency * c->getAttributes().getSkills().getValue(info.skill));
+      auto craftingSkill = c->getAttributes().getSkills().getValue(info.skill);
+      vector<PItem> items = workshops->get(*workshopType).addWork(efficiency * craftingSkill);
       if (!items.empty()) {
         if (items[0]->getClass() == ItemClass::WEAPON)
           getGame()->getStatistics().add(StatId::WEAPON_PRODUCED);
@@ -1241,7 +1241,17 @@ void Collective::onAppliedSquare(WCreature c, Position pos) {
           getGame()->getStatistics().add(StatId::ARMOR_PRODUCED);
         if (items[0]->getClass() == ItemClass::POTION)
           getGame()->getStatistics().add(StatId::POTION_PRODUCED);
+        bool wasAddedPrefix = false;
+        if (craftingSkill > 0.9 && Random.chance(c->getMorale())) {
+          wasAddedPrefix = true;
+          for (auto& item : items)
+            item->applyRandomPrefix();
+        }
         addProducesMessage(c, items);
+        if (wasAddedPrefix) {
+          control->addMessage(PlayerMessage(c->getName().the() + " is depressed after crafting his masterpiece.", MessagePriority::HIGH));
+          c->addMorale(-2);
+        }
         c->getPosition().dropItems(std::move(items));
       }
     }
