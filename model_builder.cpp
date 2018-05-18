@@ -42,16 +42,28 @@ ModelBuilder::ModelBuilder(ProgressMeter* m, RandomGen& r, Options* o, SokobanIn
 ModelBuilder::~ModelBuilder() {
 }
 
-int ModelBuilder::getPigstyPopulationIncrease() {
-  return 4;
+double ModelBuilder::getPigstyPopulationIncrease() {
+  return 0.25;
 }
 
-int ModelBuilder::getStatuePopulationIncrease() {
+double ModelBuilder::getStatuePopulationIncrease() {
   return 1;
 }
 
-int ModelBuilder::getThronePopulationIncrease() {
+double ModelBuilder::getThronePopulationIncrease() {
   return 10;
+}
+
+int ModelBuilder::getMaxUsefulStoneStatues() {
+  return 4;
+}
+
+int ModelBuilder::getMaxUsefulGoldStatues() {
+  return 200;
+}
+
+int ModelBuilder::getMaxUsefulPigsty() {
+  return 16;
 }
 
 static CollectiveConfig getKeeperConfig(RandomGen& random, bool fastImmigration, bool regenerateMana, AvatarInfo::ImpVariant impVariant) {
@@ -181,16 +193,16 @@ static CollectiveConfig getKeeperConfig(RandomGen& random, bool fastImmigration,
       {
       CONSTRUCT(PopulationIncrease,
         c.type = FurnitureType::PIGSTY;
-        c.increasePerSquare = 0.25;
-        c.maxIncrease = ModelBuilder::getPigstyPopulationIncrease();),
+        c.increasePerSquare = ModelBuilder::getPigstyPopulationIncrease();
+        c.maxIncrease = c.increasePerSquare * ModelBuilder::getMaxUsefulPigsty();),
       CONSTRUCT(PopulationIncrease,
         c.type = FurnitureType::MINION_STATUE;
         c.increasePerSquare = ModelBuilder::getStatuePopulationIncrease();
-        c.maxIncrease = 200;),
+        c.maxIncrease = c.increasePerSquare * ModelBuilder::getMaxUsefulGoldStatues();),
       CONSTRUCT(PopulationIncrease,
         c.type = FurnitureType::STONE_MINION_STATUE;
         c.increasePerSquare = ModelBuilder::getStatuePopulationIncrease();
-        c.maxIncrease = c.increasePerSquare * 4;),
+        c.maxIncrease = c.increasePerSquare * ModelBuilder::getMaxUsefulStoneStatues();),
       CONSTRUCT(PopulationIncrease,
         c.type = FurnitureType::THRONE;
         c.increasePerSquare = ModelBuilder::getThronePopulationIncrease();
