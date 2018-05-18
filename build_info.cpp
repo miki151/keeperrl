@@ -91,7 +91,7 @@ const vector<BuildInfo>& BuildInfo::get() {
       BuildInfo({FurnitureType::PIGSTY, {ResourceId::WOOD, 5}}, "Pigsty",
           {{RequirementId::TECHNOLOGY, TechId::PIGSTY}},
           "Increases minion population limit by up to " +
-          toString(ModelBuilder::getPigstyPopulationIncrease()) + ".", 0, "Living"),
+          toString(ModelBuilder::getPigstyPopulationIncrease() * ModelBuilder::getMaxUsefulPigsty()) + ".", 0, "Living"),
       BuildInfo({FurnitureType::TRAINING_WOOD, {ResourceId::WOOD, 12}}, "Wooden dummy", {},
           "Train your minions here. Adds up to " +
           toString(*CollectiveConfig::getTrainingMaxLevel(ExperienceType::MELEE, FurnitureType::TRAINING_WOOD)) + " melee levels.",
@@ -154,10 +154,14 @@ const vector<BuildInfo>& BuildInfo::get() {
         "Opens a connection if another portal is present.", 0, "Installations"),
       BuildInfo({FurnitureType::MINION_STATUE, {ResourceId::GOLD, 50}}, "Golden Statue", {},
         "Increases minion population limit by " +
-              toString(ModelBuilder::getStatuePopulationIncrease()) + ".", 0, "Installations"),
+              toString(ModelBuilder::getStatuePopulationIncrease()) + ". (Up to " +
+              toString(ModelBuilder::getStatuePopulationIncrease() * 
+              ModelBuilder::getMaxUsefulGoldStatues()) + ")", 0, "Installations"),
       BuildInfo({FurnitureType::STONE_MINION_STATUE, {ResourceId::STONE, 250}}, "Stone Statue", {},
         "Increases minion population limit by " +
-              toString(ModelBuilder::getStatuePopulationIncrease()) + ".", 0, "Installations"),
+              toString(ModelBuilder::getStatuePopulationIncrease()) + ". (Up to " +
+              toString(ModelBuilder::getStatuePopulationIncrease() * 
+              ModelBuilder::getMaxUsefulStoneStatues()) + ")", 0, "Installations"),
       BuildInfo({FurnitureType::WHIPPING_POST, {ResourceId::WOOD, 20}}, "Whipping post", {},
           "A place to whip your minions if they need a morale boost.", 0, "Installations"),
       BuildInfo({FurnitureType::GALLOWS, {ResourceId::WOOD, 20}}, "Gallows", {},
