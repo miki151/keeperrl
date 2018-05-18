@@ -944,9 +944,14 @@ void PlayerControl::fillLibraryInfo(CollectiveInfo& collectiveInfo) const {
     int libraryCount = 0;
     for (auto f : CollectiveConfig::getTrainingFurniture(ExperienceType::SPELL))
       libraryCount += collective->getConstructions().getBuiltPositions(f).size();
-    if (libraryCount == 0)
-      info.warning = "You need to build a library to start research."_s;
-    else if (libraryCount <= getMinLibrarySize())
+    
+    //This only works if you start the game with sorcery technology
+    //Without sorcery, you can't build a library....
+    //...but you need a library to research sorcery! (Chicken-and-egg)
+    //if (libraryCount == 0)
+    //  info.warning = "You need to build a library to start research."_s;
+
+    if (libraryCount < getMinLibrarySize())
       info.warning = "You need a larger library to continue research."_s;
     info.resource = *getCostObjWithZero(Technology::getAvailableResource(collective));
     auto techs = Technology::getNextTechs(collective->getTechnologies()).filter(
