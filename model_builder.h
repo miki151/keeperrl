@@ -33,9 +33,12 @@ class ModelBuilder {
 
   WCollective spawnKeeper(WModel, AvatarInfo, bool regenerateMana, vector<string> introText);
 
-  static int getPigstyPopulationIncrease();
-  static int getStatuePopulationIncrease();
-  static int getThronePopulationIncrease();
+  static double getPigstyPopulationIncrease();
+  static double getStatuePopulationIncrease();
+  static double getThronePopulationIncrease();
+  static int getMaxUsefulPigsty();
+  static int getMaxUsefulStoneStatues();
+  static int getMaxUsefulGoldStatues();
 
   ~ModelBuilder();
 
