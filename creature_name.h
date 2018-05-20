@@ -23,6 +23,8 @@ class CreatureName {
   CreatureName(const string& name, const string& plural);
   CreatureName(const char* name);
   void setFirst(const string&);
+  void setAdjective(const string&);
+  void setJobDescription(const string&);
   void setStack(const string&);
   void setGroup(const string&);
   void useFullTitle();
@@ -30,6 +32,8 @@ class CreatureName {
   const char* identify() const;
   const optional<string>& stackOnly() const;
   optional<string> first() const;
+  optional<string> getAdjective() const;
+  optional<string> getJobDescription() const;
   string bare() const;
   string the() const;
   string a() const;
@@ -45,6 +49,8 @@ class CreatureName {
   string SERIAL(pluralName);
   optional<string> SERIAL(stackName);
   optional<string> SERIAL(firstName);
+  optional<string> SERIAL(adjective);
+  optional<string> SERIAL(jobDescription);
   string SERIAL(groupName) = "group";
   bool SERIAL(fullTitle) = false;
 };
