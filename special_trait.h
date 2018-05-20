@@ -12,7 +12,4 @@ struct ExtraTraining {
 
 using SpecialTrait = variant<ExtraTraining, LastingEffect, SkillId>;
 
-string getSpecialTraitAdjective(LastingEffect effect);
-string getSpecialTraitAdjective(ExperienceType type);
-string getSpecialTraitJobName(SkillId skill);
 extern void applySpecialTrait(SpecialTrait, WCreature);

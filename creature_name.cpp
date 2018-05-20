@@ -58,28 +58,14 @@ string CreatureName::groupOf(int count) const {
 }
 
 string CreatureName::title() const {
-  string text = name;
-  if (jobDescription) text += " " + *jobDescription;
-  if (firstName && adjective)
-    return *firstName + " the " + *adjective + " " + text;
-  else if (firstName)
-    return *firstName + " the " + text;
-  else if (adjective && !fullTitle)
-    return capitalFirst(*adjective) + " " + text;
+  if (firstName)
+    return *firstName + " the " + name;
   else
     return capitalFirst(bare());
 }
 
 void CreatureName::setFirst(const string& s) {
   firstName = s;
-}
-
-void CreatureName::setAdjective(const string& s) {
-  adjective = s;
-}
-
-void CreatureName::setJobDescription(const string& s) {
-  jobDescription = s;
 }
 
 void CreatureName::setStack(const string& s) {
@@ -105,21 +91,13 @@ optional<string> CreatureName::first() const {
   return firstName;
 }
 
-optional<string> CreatureName::getAdjective() const {
-  return adjective;
-}
-
-optional<string> CreatureName::getJobDescription() const {
-  return jobDescription;
-}
-
 void CreatureName::useFullTitle() {
   fullTitle = true;
 }
 
 template <class Archive>
 void CreatureName::serialize(Archive& ar, const unsigned int version) {
-  ar(name, pluralName, stackName, firstName, adjective, jobDescription, groupName, fullTitle);
+  ar(name, pluralName, stackName, firstName, groupName, fullTitle);
 }
 
 SERIALIZABLE(CreatureName);
