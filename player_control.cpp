@@ -831,7 +831,7 @@ vector<PlayerInfo> PlayerControl::getPlayerInfos(vector<WCreature> creatures, Un
         if (c->getAttributes().getMinionActivities().isAvailable(collective, c, t, true)) {
           minionInfo.minionTasks.push_back({t,
               !collective->isActivityGood(c, t, true),
-              collective->getCurrentActivity(c).task == t,
+              collective->getCurrentActivity(c).activity == t,
               c->getAttributes().getMinionActivities().isLocked(t)});
         }
       if (collective->usesEquipment(c))

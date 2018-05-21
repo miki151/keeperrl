@@ -119,7 +119,7 @@ class CollectiveConfig {
   bool hasImmigrantion(bool currentlyActiveModel) const;
   const vector<FurnitureType>& getRoomsNeedingLight() const;
   static const ResourceInfo& getResourceInfo(CollectiveResourceId);
-  static const vector<ItemFetchInfo>& getFetchInfo();
+  const vector<ItemFetchInfo>& getFetchInfo() const;
   static optional<int> getTrainingMaxLevel(ExperienceType, FurnitureType);
   static const vector<FurnitureType>& getTrainingFurniture(ExperienceType);
   static const MinionActivityInfo& getActivityInfo(MinionActivity);

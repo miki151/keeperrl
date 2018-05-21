@@ -62,15 +62,11 @@ bool Task::isBogus() const {
   return false;
 }
 
-bool Task::isBlocked(WConstCreature) const {
-  return false;
-}
-
 bool Task::canTransfer() {
   return transfer;
 }
 
-bool Task::canPerform(WConstCreature c) {
+bool Task::canPerform(WConstCreature c) const {
   return true;
 }
 
@@ -166,8 +162,8 @@ class Destruction : public Task {
     return true;
   }
 
-  virtual bool isBlocked(WConstCreature) const override {
-    return !callback->isConstructionReachable(position) || (matching && !matching->getMatch(position));
+  virtual bool canPerform(WConstCreature) const override {
+    return callback->isConstructionReachable(position) && (!matching || matching->getMatch(position));
   }
 
   virtual string getDescription() const override {
@@ -175,7 +171,7 @@ class Destruction : public Task {
   }
 
   virtual MoveInfo getMove(WCreature c) override {
-    if (isBlocked(c))
+    if (!canPerform(c))
       return NoMove;
     if (matching) {
       auto match = *matching->getMatch(position);
@@ -229,16 +225,15 @@ namespace {
 class PickItem : public Task {
   public:
   PickItem(WTaskCallback c, Position pos, vector<WItem> _items, int retries = 10)
-      : items(_items), position(pos), callback(c), tries(retries) {
+      : Task(true), items(_items), position(pos), callback(c), tries(retries) {
     CHECK(!items.empty());
+    lightestItem = 10000000;
+    for (auto& item : _items)
+      lightestItem = min(lightestItem, item->getWeight());
   }
 
   virtual void onPickedUp() {
     setDone();
-  }
-
-  virtual bool isBlocked(WConstCreature c) const override {
-    return !c->isSameSector(position);
   }
 
   bool itemsExist(Position target) {
@@ -287,7 +282,11 @@ class PickItem : public Task {
     return NoMove;
   }
 
-  SERIALIZE_ALL(SUBCLASS(Task), items, pickedUp, position, tries, callback)
+  virtual bool canPerform(WConstCreature c) const override {
+    return c->canCarryMoreWeight(lightestItem) && c->isSameSector(position);
+  }
+
+  SERIALIZE_ALL(SUBCLASS(Task), items, pickedUp, position, tries, callback, lightestItem)
   SERIALIZATION_CONSTRUCTOR(PickItem)
 
   protected:
@@ -296,6 +295,7 @@ class PickItem : public Task {
   Position SERIAL(position);
   WTaskCallback SERIAL(callback);
   int SERIAL(tries);
+  double SERIAL(lightestItem);
 };
 }
 
@@ -420,13 +420,13 @@ class BringItem : public PickItem {
   virtual void onPickedUp() override {
   }
 
-  virtual bool isBlocked(WConstCreature c) const override {
+  virtual bool canPerform(WConstCreature c) const override {
     if (!c->isSameSector(position))
-      return true;
+      return false;
     for (auto& pos : allTargets)
       if (c->isSameSector(pos))
-        return false;
-    return true;
+        return true;
+    return false;
   }
 
   optional<Position> getBestTarget(WCreature c, const vector<Position>& pos) const {
@@ -722,7 +722,7 @@ class Kill : public Task {
     return true;
   }
 
-  virtual bool canPerform(WConstCreature c) override {
+  virtual bool canPerform(WConstCreature c) const override {
     return c != creature;
   }
 
@@ -1367,10 +1367,6 @@ class AlwaysDone : public Task {
     return task->isBogus();
   }
 
-  virtual bool isBlocked(WConstCreature c) const override {
-    return task->isBlocked(c);
-  }
-
   virtual bool canTransfer() override {
     return task->canTransfer();
   }
@@ -1379,7 +1375,7 @@ class AlwaysDone : public Task {
     task->cancel();
   }
 
-  virtual bool canPerform(WConstCreature c) override {
+  virtual bool canPerform(WConstCreature c) const override {
     return task->canPerform(c);
   }
 
@@ -1538,7 +1534,7 @@ class Whipping : public Task {
   public:
   Whipping(Position pos, WCreature w) : position(pos), whipped(w) {}
 
-  virtual bool canPerform(WConstCreature c) override {
+  virtual bool canPerform(WConstCreature c) const override {
     return c != whipped;
   }
 
@@ -1571,28 +1567,81 @@ PTask Task::whipping(Position pos, WCreature whipped) {
 }
 
 namespace {
-class DropItems : public Task {
+class DropItemsAnywhere : public Task {
   public:
-  DropItems(EntitySet<Item> it) : items(it) {}
+  DropItemsAnywhere(EntitySet<Item> it) : items(it) {}
 
   virtual MoveInfo getMove(WCreature c) override {
     return c->drop(c->getEquipment().getItems().filter(items.containsPredicate())).append([=] (WCreature) { setDone(); });
   }
 
   virtual string getDescription() const override {
-    return "Drop items";
+    return "Drop items anywhere";
   }
 
   SERIALIZE_ALL(SUBCLASS(Task), items); 
-  SERIALIZATION_CONSTRUCTOR(DropItems);
+  SERIALIZATION_CONSTRUCTOR(DropItemsAnywhere);
 
   protected:
   EntitySet<Item> SERIAL(items);
 };
 }
 
-PTask Task::dropItems(vector<WItem> items) {
-  return makeOwner<DropItems>(items);
+PTask Task::dropItemsAnywhere(vector<WItem> items) {
+  return makeOwner<DropItemsAnywhere>(items);
+}
+
+namespace {
+class DropItems : public Task {
+  public:
+  DropItems(EntitySet<Item> it, vector<Position> pos) : items(it), positions(pos) {}
+
+
+  virtual string getDescription() const override {
+    return "Drop items";
+  }
+
+  optional<Position> getBestTarget(WCreature c, const vector<Position>& pos) const {
+    return chooseRandomClose(c, pos, LAZY);
+  }
+
+  virtual MoveInfo getMove(WCreature c) override {
+    if (!target || !c->isSameSector(*target))
+      target = getBestTarget(c, positions);
+    if (!target)
+      return c->drop(c->getEquipment().getItems().filter(items.containsPredicate())).append(
+          [this] (WCreature) {
+            setDone();
+          });
+    if (c->getPosition() == target) {
+      vector<WItem> myItems = c->getEquipment().getItems().filter(items.containsPredicate());
+      if (auto action = c->drop(myItems).append([=] (WCreature) { setDone(); }))
+        return {1.0, action.append([=](WCreature) {setDone();})};
+      else {
+        setDone();
+        return NoMove;
+      }
+    } else {
+      if (c->getPosition().dist8(*target) == 1)
+        if (WCreature other = target->getCreature())
+          if (other->isAffected(LastingEffect::SLEEP))
+            other->removeEffect(LastingEffect::SLEEP);
+      return c->moveTowards(*target);
+    }
+  }
+
+  SERIALIZE_ALL(SUBCLASS(Task), items, positions, target);
+  SERIALIZATION_CONSTRUCTOR(DropItems);
+
+  protected:
+  EntitySet<Item> SERIAL(items);
+  vector<Position> SERIAL(positions);
+  optional<Position> SERIAL(target);
+};
+}
+
+PTask Task::dropItems(vector<WItem> items, vector<Position> positions) {
+  return makeOwner<DropItems>(items, positions);
 }
 
 namespace {
@@ -1712,6 +1761,7 @@ REGISTER_TYPE(TransferTo)
 REGISTER_TYPE(Whipping)
 REGISTER_TYPE(GoToAndWait)
 REGISTER_TYPE(DropItems)
+REGISTER_TYPE(DropItemsAnywhere)
 REGISTER_TYPE(CampAndSpawn)
 REGISTER_TYPE(Spider)
 REGISTER_TYPE(ArcheryRange)

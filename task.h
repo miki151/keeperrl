@@ -47,11 +47,10 @@ class Task : public UniqueEntity<Task>, public OwnedObject<Task> {
 
   virtual MoveInfo getMove(WCreature) = 0;
   virtual bool isBogus() const;
-  virtual bool isBlocked(WConstCreature) const;
   virtual bool canTransfer();
   virtual void cancel() {}
   virtual string getDescription() const = 0;
-  virtual bool canPerform(WConstCreature c);
+  virtual bool canPerform(WConstCreature c) const;
   virtual optional<Position> getPosition() const;
   optional<ViewId> getViewId() const;
   bool isDone();
@@ -96,7 +95,8 @@ class Task : public UniqueEntity<Task>, public OwnedObject<Task> {
   static PTask transferTo(WModel);
   static PTask goToAndWait(Position, TimeInterval waitTime);
   static PTask whipping(Position, WCreature whipped);
-  static PTask dropItems(vector<WItem>);
+  static PTask dropItemsAnywhere(vector<WItem>);
+  static PTask dropItems(vector<WItem>, vector<Position>);
   static PTask spider(Position origin, const vector<Position>& posClose);
 
   template <class Archive>

@@ -219,7 +219,7 @@ void Collective::banishCreature(WCreature c) {
   vector<PTask> tasks;
   vector<WItem> items = c->getEquipment().getItems();
   if (!items.empty())
-    tasks.push_back(Task::dropItems(items));
+    tasks.push_back(Task::dropItemsAnywhere(items));
   if (!exitTiles.empty())
     tasks.push_back(Task::goToTryForever(Random.choose(exitTiles)));
   tasks.push_back(Task::disappear());
@@ -310,7 +310,7 @@ const vector<WCreature>& Collective::getCreatures() const {
 
 void Collective::setMinionActivity(WCreature c, MinionActivity activity) {
   auto current = getCurrentActivity(c);
-  if (current.task != activity) {
+  if (current.activity != activity) {
     cancelTask(c);
     c->removeEffect(LastingEffect::SLEEP);
     currentActivity.set(c, {activity, getLocalTime() +
@@ -458,8 +458,8 @@ void Collective::tick() {
   }
   if (config->getConstructions())
     updateConstructions();
-  if (config->getFetchItems() && Random.roll(5))
-    for (const ItemFetchInfo& elem : CollectiveConfig::getFetchInfo()) {
+  if (Random.roll(5))
+    for (const ItemFetchInfo& elem : config->getFetchInfo()) {
       for (Position pos : territory->getAll())
         fetchItems(pos, elem);
       for (Position pos : zones->getPositions(ZoneId::FETCH_ITEMS))
@@ -1116,9 +1116,7 @@ void Collective::fetchItems(Position pos, const ItemFetchInfo& elem) {
     const auto& destination = elem.destinationFun(this);
     if (!destination.empty()) {
       warnings->setWarning(elem.warning, false);
-      if (elem.oneAtATime)
-        equipment = {equipment[0]};
-      auto task = taskMap->addTask(Task::bringItem(this, pos, equipment, destination), pos, MinionActivity::HAULING);
+      auto task = taskMap->addTask(Task::pickItem(this, pos, equipment), pos, MinionActivity::HAULING);
       for (WItem it : equipment)
         markItem(it, task);
     } else

@@ -13,6 +13,9 @@
 #include "task_map.h"
 #include "quarters.h"
 #include "zones.h"
+#include "resource_info.h"
+#include "equipment.h"
+#include "minion_equipment.h"
 
 static bool betterPos(Position from, Position current, Position candidate) {
   double maxDiff = 0.3;
@@ -147,14 +150,25 @@ vector<Position> MinionActivities::getAllPositions(WConstCollective collective, 
   return ret;
 }
 
+PTask MinionActivities::getDropItemsTask(WCollective collective, WConstCreature creature) {
+  auto& config = collective->getConfig();
+  for (const ItemFetchInfo& elem : config.getFetchInfo()) {
+    vector<WItem> items = creature->getEquipment().getItems(elem.index).filter([&elem, &collective, &creature](WConstItem item) {
+        return elem.predicate(collective, item) && !collective->getMinionEquipment().isOwner(item, creature); });
+    const auto& destination = elem.destinationFun(collective);
+    if (!items.empty() && !destination.empty())
+      return Task::dropItems(items, vector<Position>(destination.begin(), destination.end()));
+  }
+  return nullptr;
+};
 
 
-WTask MinionActivities::getExisting(WCollective collective, WConstCreature c, MinionActivity activity) {
+WTask MinionActivities::getExisting(WCollective collective, WCreature c, MinionActivity activity) {
   auto& info = CollectiveConfig::getActivityInfo(activity);
   switch (info.type) {
-    case MinionActivityInfo::WORKER:
+    case MinionActivityInfo::WORKER: {
       return collective->getTaskMap().getClosestTask(c, activity, false);
-    default:
+    } default:
       return nullptr;
   }
 }
@@ -220,8 +234,12 @@ PTask MinionActivities::generate(WCollective collective, WCreature c, MinionActi
       auto& territory = collective->getTerritory();
       return Task::spider(territory.getAll().front(), territory.getExtended(3));
     }
-    default:
+    case MinionActivityInfo::WORKER: {
+      if (task == MinionActivity::HAULING)
+        if (PTask ret = getDropItemsTask(collective, c))
+          return ret;
       return nullptr;
+    }
   }
   return nullptr;
 }

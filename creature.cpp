@@ -508,6 +508,13 @@ string Creature::getPluralAName(WItem item, int num) const {
     return toString(num) + " " + item->getAName(true, this);
 }
 
+bool Creature::canCarryMoreWeight(double weight) const {
+  if (auto& limit = getBody().getCarryLimit())
+    return weight <= *limit - equipment->getTotalWeight();
+  else
+    return true;
+}
+
 int Creature::canCarry(const vector<WItem>& items) const {
   int ret = 0;
   if (auto& limit = getBody().getCarryLimit()) {

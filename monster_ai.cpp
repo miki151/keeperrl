@@ -911,16 +911,12 @@ class ByCollective : public Behaviour {
     return NoMove;
   };
 
-  MoveInfo dropLoot() {
-    auto& config = collective->getConfig();
-    if (config.getFetchItems() && collective->getTerritory().contains(creature->getPosition())) {
-      vector<WItem> items = creature->getEquipment().getItems().filter([this](WConstItem item) {
-          return !collective->isItemMarked(item) && !collective->getMinionEquipment().isOwner(item, creature); });
-      if (!items.empty())
-        return creature->drop(items);
-    }
-    return NoMove;
-  };
+  PTask dropLoot() {
+    if (!collective->hasTrait(creature, MinionTrait::WORKER))
+      return MinionActivities::getDropItemsTask(collective, creature);
+    else
+      return nullptr;
+  }
 
   PTask getEquipmentTask() {
     if (!collective->usesEquipment(creature))
@@ -960,23 +956,25 @@ class ByCollective : public Behaviour {
 
   WTask getStandardTask() {
     PROFILE;
+    auto& taskMap = collective->getTaskMap();
+    if (PTask ret = dropLoot())
+      return taskMap.addTaskFor(std::move(ret), creature);
     auto current = collective->getCurrentActivity(creature);
-    if (current.task == MinionActivity::IDLE || !collective->isActivityGood(creature, current.task)) {
+    if (current.activity == MinionActivity::IDLE || !collective->isActivityGood(creature, current.activity)) {
       collective->setMinionActivity(creature, MinionActivity::IDLE);
       setRandomTask();
     }
     current = collective->getCurrentActivity(creature);
-    MinionActivity task = current.task;
-    auto& taskMap = collective->getTaskMap();
+    MinionActivity activity = current.activity;
     if (current.finishTime < collective->getLocalTime())
       collective->setMinionActivity(creature, MinionActivity::IDLE);
-    if (PTask ret = MinionActivities::generate(collective, creature, task))
-      return taskMap.addTaskFor(std::move(ret), creature);
-    if (WTask ret = MinionActivities::getExisting(collective, creature, task)) {
+    if (WTask ret = MinionActivities::getExisting(collective, creature, activity)) {
       taskMap.takeTask(creature, ret);
       return ret;
     }
-    FATAL << "No task generated for activity " << EnumInfo<MinionActivity>::getString(task);
+    if (PTask ret = MinionActivities::generate(collective, creature, activity))
+      return taskMap.addTaskFor(std::move(ret), creature);
+    FATAL << "No task generated for activity " << EnumInfo<MinionActivity>::getString(activity);
     return {};
   }
 
@@ -1013,9 +1011,9 @@ class ByCollective : public Behaviour {
     PROFILE;
     if (creature->getBody().canHeal() && !creature->isAffected(LastingEffect::POISON))
       for (MinionActivity t : healingTasks) {
-        auto currentTask = collective->getCurrentActivity(creature).task;
+        auto currentActivity = collective->getCurrentActivity(creature).activity;
         if (creature->getAttributes().getMinionActivities().isAvailable(collective, creature, t) &&
-            !healingTasks.contains(currentTask)) {
+            !healingTasks.contains(currentActivity)) {
           collective->cancelTask(creature);
           collective->setMinionActivity(creature, t);
           return;
@@ -1042,7 +1040,6 @@ class ByCollective : public Behaviour {
         bindMethod(&ByCollective::getFighterMove, this),
         bindMethod(&ByCollective::priorityTask, this),
         bindMethod(&ByCollective::followTeamLeader, this),
-        bindMethod(&ByCollective::dropLoot, this),
         bindMethod(&ByCollective::goToAlarm, this),
         bindMethod(&ByCollective::normalTask, this),
         bindMethod(&ByCollective::newEquipmentTask, this),

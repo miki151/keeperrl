@@ -202,9 +202,9 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   void onPositionDiscovered(Position);
 
   struct CurrentActivity {
-    MinionActivity SERIAL(task);
+    MinionActivity SERIAL(activity);
     LocalTime SERIAL(finishTime);
-    SERIALIZE_ALL(task, finishTime)
+    SERIALIZE_ALL(activity, finishTime)
   };
 
   CurrentActivity getCurrentActivity(WConstCreature) const;

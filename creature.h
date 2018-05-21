@@ -141,6 +141,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   static CreatureAction wait();
   vector<WItem> getPickUpOptions() const;
   CreatureAction pickUp(const vector<WItem>& item) const;
+  bool canCarryMoreWeight(double) const;
   CreatureAction drop(const vector<WItem>& item) const;
   void drop(vector<PItem> item);
   struct AttackParams {

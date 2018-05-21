@@ -36,7 +36,7 @@ WTask TaskMap::getClosestTask(WConstCreature c, MinionActivity activity, bool pr
         if (!task->isDone() &&
             (!owner || (task->canTransfer() && pos->dist8(owner->getPosition()) > dist && dist <= 6)) &&
             isBetter(task, dist) &&
-            c->canNavigateTo(*pos) && !task->isBlocked(c) &&
+            c->canNavigateTo(*pos) &&
             (!delayed || *delayed < c->getLocalTime())) {
           closest = task;
         }
@@ -159,7 +159,8 @@ const vector<WTask>& TaskMap::getTasks(Position pos) const {
 }
 
 WTask TaskMap::addTaskFor(PTask task, WCreature c) {
-  CHECK(!hasTask(c)) << c->getName().bare() << " already has a task";
+  auto previousTask = getTask(c);
+  CHECK(!previousTask) << c->getName().bare() << " already has a task " << previousTask->getDescription();
   CHECK(!taskByCreature.getMaybe(c));
   CHECK(!creatureByTask.getMaybe(task.get()));
   taskByCreature.set(c, task.get());

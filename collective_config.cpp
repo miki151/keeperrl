@@ -334,24 +334,28 @@ static CollectiveItemPredicate unMarkedItems() {
 }
 
 
-const vector<ItemFetchInfo>& CollectiveConfig::getFetchInfo() {
-  static vector<ItemFetchInfo> ret {
-      {ItemIndex::CORPSE, unMarkedItems(), getFurnitureStorage(FurnitureType::GRAVE), true, CollectiveWarning::GRAVES},
-      {ItemIndex::GOLD, unMarkedItems(), getFurnitureStorage(FurnitureType::TREASURE_CHEST), false,
-          CollectiveWarning::CHESTS},
-      {ItemIndex::MINION_EQUIPMENT, [](WConstCollective col, WConstItem it)
-          { return it->getClass() != ItemClass::GOLD && !col->isItemMarked(it);},
-          getZoneStorage(ZoneId::STORAGE_EQUIPMENT), false, CollectiveWarning::EQUIPMENT_STORAGE},
-      {ItemIndex::WOOD, unMarkedItems(), getZoneStorage(ZoneId::STORAGE_RESOURCES), false,
-          CollectiveWarning::RESOURCE_STORAGE},
-      {ItemIndex::IRON, unMarkedItems(), getZoneStorage(ZoneId::STORAGE_RESOURCES), false,
-          CollectiveWarning::RESOURCE_STORAGE},
-      {ItemIndex::ADA, unMarkedItems(), getZoneStorage(ZoneId::STORAGE_RESOURCES), false,
-          CollectiveWarning::RESOURCE_STORAGE},
-      {ItemIndex::STONE, unMarkedItems(), getZoneStorage(ZoneId::STORAGE_RESOURCES), false,
-          CollectiveWarning::RESOURCE_STORAGE},
-  };
-  return ret;
+const vector<ItemFetchInfo>& CollectiveConfig::getFetchInfo() const {
+  if (type == KEEPER) {
+    static vector<ItemFetchInfo> ret {
+        {ItemIndex::CORPSE, unMarkedItems(), getFurnitureStorage(FurnitureType::GRAVE), CollectiveWarning::GRAVES},
+        {ItemIndex::GOLD, unMarkedItems(), getFurnitureStorage(FurnitureType::TREASURE_CHEST), CollectiveWarning::CHESTS},
+        {ItemIndex::MINION_EQUIPMENT, [](WConstCollective col, WConstItem it)
+            { return it->getClass() != ItemClass::GOLD && !col->isItemMarked(it);},
+            getZoneStorage(ZoneId::STORAGE_EQUIPMENT), CollectiveWarning::EQUIPMENT_STORAGE},
+        {ItemIndex::WOOD, unMarkedItems(), getZoneStorage(ZoneId::STORAGE_RESOURCES),
+            CollectiveWarning::RESOURCE_STORAGE},
+        {ItemIndex::IRON, unMarkedItems(), getZoneStorage(ZoneId::STORAGE_RESOURCES),
+            CollectiveWarning::RESOURCE_STORAGE},
+        {ItemIndex::ADA, unMarkedItems(), getZoneStorage(ZoneId::STORAGE_RESOURCES),
+            CollectiveWarning::RESOURCE_STORAGE},
+        {ItemIndex::STONE, unMarkedItems(), getZoneStorage(ZoneId::STORAGE_RESOURCES),
+            CollectiveWarning::RESOURCE_STORAGE},
+    };
+    return ret;
+  } else {
+    static vector<ItemFetchInfo> empty;
+    return empty;
+  }
 }
 
 MinionActivityInfo::MinionActivityInfo(Type t, const string& desc) : type(t), description(desc) {
