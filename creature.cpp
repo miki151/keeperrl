@@ -546,7 +546,7 @@ CreatureAction Creature::pickUp(const vector<WItem>& itemsAll) const {
       if (equipment->getTotalWeight() > *limit / 2)
         you(MsgType::ARE, "overloaded");
     getGame()->addEvent(EventInfo::ItemsPickedUp{self, items});
-    self->spendTime();
+    //self->spendTime();
   });
 }
 
@@ -567,7 +567,7 @@ CreatureAction Creature::drop(const vector<WItem>& items) const {
     }
     getGame()->addEvent(EventInfo::ItemsDropped{self, items});
     self->getPosition().dropItems(self->equipment->removeItems(items, self));
-    self->spendTime();
+    //self->spendTime();
   });
 }
 
@@ -621,7 +621,7 @@ CreatureAction Creature::equip(WItem item) const {
     self->equipment->equip(item, slot, self);
     if (auto game = getGame())
       game->addEvent(EventInfo::ItemsEquipped{self, {item}});
-    self->spendTime();
+    //self->spendTime();
   });
 }
 
@@ -641,7 +641,7 @@ CreatureAction Creature::unequip(WItem item) const {
     thirdPerson(getName().the() + (slot == EquipmentSlot::WEAPON ? " sheathes " : " removes ") +
         item->getAName());
     self->equipment->unequip(item, self);
-    self->spendTime();
+    //self->spendTime();
   });
 }
 
