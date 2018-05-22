@@ -1007,15 +1007,16 @@ class ByCollective : public Behaviour {
   };
 
   void considerHealingTask() {
-    const static EnumSet<MinionActivity> healingTasks {MinionActivity::SLEEP};
     PROFILE;
-    if (creature->getBody().canHeal() && !creature->isAffected(LastingEffect::POISON))
-      for (MinionActivity t : healingTasks) {
-        auto currentActivity = collective->getCurrentActivity(creature).activity;
-        if (creature->getAttributes().getMinionActivities().isAvailable(collective, creature, t) &&
-            !healingTasks.contains(currentActivity)) {
+    const static EnumSet<MinionActivity> healingActivities {MinionActivity::SLEEP};
+    auto currentActivity = collective->getCurrentActivity(creature).activity;
+    if (creature->getBody().canHeal() && !creature->isAffected(LastingEffect::POISON) &&
+        !healingActivities.contains(currentActivity))
+      for (MinionActivity activity : healingActivities) {
+        if (creature->getAttributes().getMinionActivities().isAvailable(collective, creature, activity) &&
+            collective->isActivityGood(creature, activity)) {
           collective->cancelTask(creature);
-          collective->setMinionActivity(creature, t);
+          collective->setMinionActivity(creature, activity);
           return;
         }
       }
