@@ -623,18 +623,16 @@ vector<PlayerControl::TechInfo> PlayerControl::getTechInfo() const {
   return ret;
 }
 
-static string getTriggerLabel(const AttackTrigger& trigger) {
+string PlayerControl::getTriggerLabel(const AttackTrigger& trigger) const {
   switch (trigger.getId()) {
     case AttackTriggerId::SELF_VICTIMS: return "Killed tribe members";
     case AttackTriggerId::GOLD: return "Your gold";
     case AttackTriggerId::STOLEN_ITEMS: return "Item theft";
-    case AttackTriggerId::ROOM_BUILT:
-      switch (trigger.get<FurnitureType>()) {
-        case FurnitureType::THRONE: return "Your throne";
-        case FurnitureType::DEMON_SHRINE: return "Your lack of demon shrines";
-        case FurnitureType::IMPALED_HEAD: return "Impaled heads";
-        default: FATAL << "Unsupported ROOM_BUILT type"; return "";
-      }
+    case AttackTriggerId::ROOM_BUILT: {
+      auto type = trigger.get<RoomTriggerInfo>().type;
+      auto myCount = collective->getConstructions().getBuiltCount(type);
+      return "Your " + Furniture::getName(type, myCount);
+    }
     case AttackTriggerId::POWER: return "Your power";
     case AttackTriggerId::FINISH_OFF: return "Finishing you off";
     case AttackTriggerId::ENEMY_POPULATION: return "Dungeon population";

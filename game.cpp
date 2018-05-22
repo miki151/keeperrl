@@ -173,7 +173,7 @@ void Game::prepareSiteRetirement() {
           c.minPopulation = 24;
           c.minTeamSize = 5;
           c.triggers = LIST(
-              {AttackTriggerId::ROOM_BUILT, FurnitureType::THRONE},
+              {AttackTriggerId::ROOM_BUILT, RoomTriggerInfo{FurnitureType::THRONE, 0.0003}},
               {AttackTriggerId::SELF_VICTIMS},
               AttackTriggerId::STOLEN_ITEMS,
           );

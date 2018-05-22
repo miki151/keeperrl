@@ -4,6 +4,12 @@
 #include "furniture_type.h"
 #include "enum_variant.h"
 
+struct RoomTriggerInfo {
+  FurnitureType type;
+  double probPerSquare;
+  COMPARE_ALL(type, probPerSquare)
+};
+
 RICH_ENUM(AttackTriggerId,
   POWER,
   SELF_VICTIMS,
@@ -18,14 +24,14 @@ RICH_ENUM(AttackTriggerId,
   PROXIMITY
 );
 
-class AttackTrigger : public EnumVariant<AttackTriggerId, TYPES(int, FurnitureType),
+class AttackTrigger : public EnumVariant<AttackTriggerId, TYPES(int, RoomTriggerInfo),
         ASSIGN(int,
             AttackTriggerId::ENEMY_POPULATION,
             AttackTriggerId::GOLD,
             AttackTriggerId::TIMER,
             AttackTriggerId::NUM_CONQUERED
         ),
-        ASSIGN(FurnitureType,
+        ASSIGN(RoomTriggerInfo,
             AttackTriggerId::ROOM_BUILT
         )> {
   using EnumVariant::EnumVariant;

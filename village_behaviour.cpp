@@ -110,15 +110,6 @@ static double stolenItemsFun(int numStolen) {
     return 1.0;
 }
 
-static double getRoomProb(FurnitureType id) {
-  switch (id) {
-    case FurnitureType::THRONE: return 0.001;
-    case FurnitureType::DEMON_SHRINE: return 0.001;
-    case FurnitureType::IMPALED_HEAD: return 0.000125;
-    default: FATAL << "Unsupported ROOM_BUILT type"; return 0;
-  }
-}
-
 static double getFinishOffProb(double maxPower, double currentPower, double selfPower) {
   if (maxPower < selfPower || currentPower * 2 >= maxPower)
     return 0;
@@ -153,16 +144,11 @@ double VillageBehaviour::getTriggerValue(const Trigger& trigger, const VillageCo
     switch (trigger.getId()) {
       case AttackTriggerId::TIMER: 
         return enemy->getGlobalTime().getVisibleInt() >= trigger.get<int>() ? timerProb : 0;
-      case AttackTriggerId::ROOM_BUILT:
-        if (trigger.get<FurnitureType>() ==FurnitureType::DEMON_SHRINE)
-          {//Demon shrines actually decrease probability of demon attacks, not increase it
-            double numShrines = enemy->getConstructions().getBuiltCount(trigger.get<FurnitureType>());
-            if (numShrines>4) return 0;
-            return getRoomProb(trigger.get<FurnitureType>()) / (numShrines+1);}   
-        //Not a demon shrine. These items increase attack chance.
-        return enemy->getConstructions().getBuiltCount(trigger.get<FurnitureType>()) *
-          getRoomProb(trigger.get<FurnitureType>());
-      case AttackTriggerId::POWER: 
+      case AttackTriggerId::ROOM_BUILT: {
+        auto& info = trigger.get<RoomTriggerInfo>();
+        return info.probPerSquare * enemy->getConstructions().getBuiltCount(info.type);
+      }
+      case AttackTriggerId::POWER:
         return powerMaxProb *
             powerClosenessFun(self->collective->getDangerLevel(), enemy->getDangerLevel());
       case AttackTriggerId::FINISH_OFF:
