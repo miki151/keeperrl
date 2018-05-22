@@ -4,6 +4,7 @@
 #include "tribe.h"
 #include "furniture.h"
 #include "furniture_factory.h"
+#include "task.h"
 
 SERIALIZATION_CONSTRUCTOR_IMPL2(ConstructionMap::FurnitureInfo, FurnitureInfo);
 
@@ -169,19 +170,19 @@ const vector<Position>& ConstructionMap::getAllTraps() const {
 
 void ConstructionMap::TrapInfo::setArmed() {
   armed = true;
-  marked = false;
+  task = nullptr;
 }
 
 void ConstructionMap::TrapInfo::reset() {
   armed = false;
-  marked = false;
+  task = nullptr;
 }
 
 ConstructionMap::TrapInfo::TrapInfo(TrapType t) : type(t) {
 }
 
 bool ConstructionMap::TrapInfo::isMarked() const {
-  return marked;
+  return !!task;
 }
 
 bool ConstructionMap::TrapInfo::isArmed() const {
@@ -192,8 +193,8 @@ TrapType ConstructionMap::TrapInfo::getType() const {
   return type;
 }
 
-void ConstructionMap::TrapInfo::setMarked() {
-  marked = true;
+void ConstructionMap::TrapInfo::setTask(WConstTask t) {
+  task = t;
 }
 
 int ConstructionMap::getDebt(CollectiveResourceId id) const {
@@ -202,7 +203,7 @@ int ConstructionMap::getDebt(CollectiveResourceId id) const {
 
 template <class Archive>
 void ConstructionMap::TrapInfo::serialize(Archive& ar, const unsigned int version) {
-  ar(type, armed, marked);
+  ar(type, armed, task);
 }
 
 SERIALIZABLE(ConstructionMap::TrapInfo);

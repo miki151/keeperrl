@@ -934,11 +934,11 @@ class ByCollective : public Behaviour {
       vector<WItem> consumables;
       for (auto item : allItems)
         if (item->canEquip())
-          tasks.push_back(Task::pickAndEquipItem(collective, v, item));
+          tasks.push_back(Task::pickAndEquipItem(v, item));
         else
           consumables.push_back(item);
       if (!consumables.empty())
-        tasks.push_back(Task::pickItem(collective, v, consumables));
+        tasks.push_back(Task::pickItem(v, consumables));
     }
     if (!tasks.empty())
       return Task::chain(std::move(tasks));
@@ -1195,8 +1195,6 @@ class SplashItems {
     return ret;
   }
 
-  OwnerPointer<TaskCallback> callbackDummy = makeOwner<TaskCallback>();
-
   PTask getNextTask(Vec2 position, WLevel level) {
     if (items.empty())
       return nullptr;
@@ -1215,7 +1213,7 @@ class SplashItems {
       return nullptr;
     Vec2 target = Random.choose(targets);
     targets.removeElement(target);
-    return Task::bringItem(callbackDummy.get(), Position(pos, level), it, {Position(target, level)}, 100);
+    return Task::bringItem(Position(pos, level), it, {Position(target, level)});
   }
 
   void setInitialized(const FilePath& splashPath) {

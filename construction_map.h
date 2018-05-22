@@ -42,7 +42,7 @@ class ConstructionMap {
     bool isArmed() const;
     TrapType getType() const;
     void setArmed();
-    void setMarked();
+    void setTask(WConstTask);
     void reset();
 
     SERIALIZATION_DECL(TrapInfo);
@@ -50,7 +50,7 @@ class ConstructionMap {
     private:
     TrapType SERIAL(type);
     bool SERIAL(armed) = false;
-    bool SERIAL(marked) = false;
+    WConstTask SERIAL(task);
   };
 
   optional<const FurnitureInfo&> getFurniture(Position, FurnitureLayer) const;

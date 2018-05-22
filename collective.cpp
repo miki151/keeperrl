@@ -964,11 +964,6 @@ void Collective::onAppliedItem(Position pos, WItem item) {
     trap->setArmed();
 }
 
-void Collective::onAppliedItemCancel(Position pos) {
-  if (auto trap = constructions->getTrap(pos))
-    trap->reset();
-}
-
 bool Collective::isConstructionReachable(Position pos) {
   PROFILE;
   for (Position v : pos.neighbors8())
@@ -1016,11 +1011,12 @@ void Collective::handleTrapPlacementAndProduction() {
       vector<pair<WItem, Position>>& items = trapItems[trap.getType()];
       if (!items.empty()) {
         Position pos = items.back().second;
-        auto task = taskMap->addTask(Task::applyItem(this, pos, items.back().first, trapPos), pos,
+        auto item = items.back().first;
+        auto task = taskMap->addTask(Task::chain(Task::pickItem(pos, {item}), Task::applyItem(this, trapPos, {item})), pos,
             MinionActivity::CONSTRUCTION);
         markItem(items.back().first, task);
         items.pop_back();
-        trap.setMarked();
+        trap.setTask(task);
       } else
         ++missingTraps[trap.getType()];
     }
@@ -1116,7 +1112,7 @@ void Collective::fetchItems(Position pos, const ItemFetchInfo& elem) {
     const auto& destination = elem.destinationFun(this);
     if (!destination.empty()) {
       warnings->setWarning(elem.warning, false);
-      auto task = taskMap->addTask(Task::pickItem(this, pos, equipment), pos, MinionActivity::HAULING);
+      auto task = taskMap->addTask(Task::pickItem(pos, equipment), pos, MinionActivity::HAULING);
       for (WItem it : equipment)
         markItem(it, task);
     } else

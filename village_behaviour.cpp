@@ -32,7 +32,7 @@ PTask VillageBehaviour::getAttackTask(VillageControl* self) const {
     case AttackBehaviourId::KILL_MEMBERS:
       return Task::killFighters(enemy, attackBehaviour->get<int>());
     case AttackBehaviourId::STEAL_GOLD:
-      if (auto ret = Task::stealFrom(enemy, self->collective))
+      if (auto ret = Task::stealFrom(enemy))
         return ret;
       else if (auto leader = enemy->getLeader())
         return Task::attackCreatures({leader});

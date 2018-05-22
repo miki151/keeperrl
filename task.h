@@ -58,16 +58,15 @@ class Task : public UniqueEntity<Task>, public OwnedObject<Task> {
 
   static PTask construction(WTaskCallback, Position, FurnitureType);
   static PTask destruction(WTaskCallback, Position, WConstFurniture, DestroyAction, WPositionMatching);
-  static PTask bringItem(WTaskCallback, Position position, vector<WItem>, const PositionSet& target,
-      int numRetries = 10);
-  static PTask applyItem(WTaskCallback, Position, WItem, Position target);
+  static PTask bringItem(Position position, vector<WItem>, const PositionSet& target);
+  static PTask applyItem(WTaskCallback, Position target, WItem);
   enum SearchType { LAZY, RANDOM_CLOSE };
   enum ActionType { APPLY, NONE };
   static PTask applySquare(WTaskCallback, vector<Position>, SearchType, ActionType);
   static PTask archeryRange(WTaskCallback, vector<Position>);
-  static PTask pickAndEquipItem(WTaskCallback, Position, WItem);
+  static PTask pickAndEquipItem(Position, WItem item);
   static PTask equipItem(WItem);
-  static PTask pickItem(WTaskCallback, Position, vector<WItem>);
+  static PTask pickItem(Position, vector<WItem>);
   static PTask kill(WTaskCallback, WCreature);
   static PTask torture(WTaskCallback, WCreature);
   static PTask sacrifice(WTaskCallback, WCreature);
@@ -80,7 +79,7 @@ class Task : public UniqueEntity<Task>, public OwnedObject<Task> {
   static PTask campAndSpawn(WCollective target, const CreatureFactory&, int defenseSize,
       Range attackSize, int numAttacks);
   static PTask killFighters(WCollective, int numFighters);
-  static PTask stealFrom(WCollective, WTaskCallback);
+  static PTask stealFrom(WCollective);
   static PTask consumeItem(WTaskCallback, vector<WItem> items);
   static PTask copulate(WTaskCallback, WCreature target, int numTurns);
   static PTask consume(WCreature target);

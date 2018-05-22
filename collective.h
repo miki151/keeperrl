@@ -226,7 +226,6 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   protected:
   // From Task::Callback
   virtual void onAppliedItem(Position, WItem item) override;
-  virtual void onAppliedItemCancel(Position) override;
   virtual void onConstructed(Position, FurnitureType) override;
   virtual void onDestructed(Position, FurnitureType, const DestroyAction&) override;
   virtual void onAppliedSquare(WCreature, Position) override;
