@@ -311,7 +311,7 @@ const vector<WCreature>& Collective::getCreatures() const {
 void Collective::setMinionActivity(WCreature c, MinionActivity activity) {
   auto current = getCurrentActivity(c);
   if (current.activity != activity) {
-    cancelTask(c);
+    freeFromTask(c);
     c->removeEffect(LastingEffect::SLEEP);
     currentActivity.set(c, {activity, getLocalTime() +
         MinionActivities::getDuration(c, activity).value_or(-1_visible)});
@@ -359,9 +359,8 @@ bool Collective::hasTask(WConstCreature c) const {
   return taskMap->hasTask(c);
 }
 
-void Collective::cancelTask(WConstCreature c) {
-  if (WTask task = taskMap->getTask(c))
-    taskMap->removeTask(task);
+void Collective::freeFromTask(WConstCreature c) {
+  taskMap->freeFromTask(c);
 }
 
 void Collective::setControl(PCollectiveControl c) {

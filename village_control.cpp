@@ -138,7 +138,7 @@ void VillageControl::considerCancellingAttack() {
     if (members.size() < (attackSizes[team] + 1) / 2 || (members.size() == 1 &&
           members[0]->getBody().isSeriouslyWounded())) {
       for (WCreature c : members)
-        collective->cancelTask(c);
+        collective->freeFromTask(c);
       collective->getTeams().cancel(team);
     }
   }
@@ -148,7 +148,7 @@ void VillageControl::onRansomPaid() {
   for (auto team : collective->getTeams().getAll()) {
     vector<WCreature> members = collective->getTeams().getMembers(team);
     for (WCreature c : members)
-      collective->cancelTask(c);
+      collective->freeFromTask(c);
     collective->getTeams().cancel(team);
   }
 }

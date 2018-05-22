@@ -69,7 +69,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   void addNewCreatureMessage(const vector<WCreature>&);
   void setTask(WCreature, PTask);
   bool hasTask(WConstCreature) const;
-  void cancelTask(WConstCreature);
+  void freeFromTask(WConstCreature);
   void banishCreature(WCreature);
   bool wasBanished(WConstCreature) const;
   void setVillainType(VillainType);

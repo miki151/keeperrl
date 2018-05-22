@@ -1015,7 +1015,7 @@ class ByCollective : public Behaviour {
       for (MinionActivity activity : healingActivities) {
         if (creature->getAttributes().getMinionActivities().isAvailable(collective, creature, activity) &&
             collective->isActivityGood(creature, activity)) {
-          collective->cancelTask(creature);
+          collective->freeFromTask(creature);
           collective->setMinionActivity(creature, activity);
           return;
         }
