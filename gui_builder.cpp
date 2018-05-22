@@ -1959,6 +1959,8 @@ SGuiElem GuiBuilder::drawMapHintOverlay() {
       }
       if (auto& attributes = viewObject->getCreatureAttributes())
         lines.addElemAuto(drawAttributesOnPage(drawPlayerAttributes(*attributes)));
+      if (auto health = viewObject->getAttribute(ViewObjectAttribute::HEALTH))
+        lines.addElem(gui.label("Health: " + toString((int) (100.0f * *health)) + "%"));
       if (auto efficiency = viewObject->getAttribute(ViewObjectAttribute::EFFICIENCY))
         lines.addElem(gui.label("Efficiency: " + toString((int) (100.0f * *efficiency))));
       if (viewObject->hasModifier(ViewObjectModifier::PLANNED))
