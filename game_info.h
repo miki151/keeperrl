@@ -323,6 +323,8 @@ class VillageInfo {
   struct Village {
     string HASH(name);
     string HASH(tribeName);
+    ViewId HASH(viewId);
+    VillainType HASH(type);
     enum Access { ACTIVE, INACTIVE, LOCATION, NO_LOCATION };
     Access HASH(access);
     enum State { FRIENDLY, HOSTILE, CONQUERED } HASH(state);
@@ -339,9 +341,9 @@ class VillageInfo {
     vector<ActionInfo> HASH(actions);
     vector<TriggerInfo> HASH(triggers);
     UniqueEntity<Collective>::Id HASH(id);
-    HASH_ALL(name, tribeName, access, state, actions, triggers, id)
+    HASH_ALL(name, tribeName, access, state, actions, triggers, id, viewId, type)
   };
-  EnumMap<VillainType, vector<Village>> HASH(villages);
+  vector<Village> HASH(villages);
   int HASH(numTotalVillains);
   HASH_ALL(villages, numTotalVillains)
 };

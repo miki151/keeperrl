@@ -648,21 +648,28 @@ VillageInfo::Village PlayerControl::getVillageInfo(WConstCollective col) const {
   info.name = col->getName()->shortened;
   info.id = col->getUniqueId();
   info.tribeName = col->getName()->race;
+  info.viewId = col->getName()->viewId;
   info.triggers.clear();
+  info.type = col->getVillainType();
+  auto addTriggers = [&] {
+    for (auto& trigger : col->getTriggers(collective))
+#ifndef RELEASE
+      if (trigger.value > 0)
+#endif
+        info.triggers.push_back({getTriggerLabel(trigger.trigger), trigger.value});
+  };
   if (col->getModel() == getModel()) {
     if (!collective->isKnownVillainLocation(col) && !getGame()->getOptions()->getBoolValue(OptionId::SHOW_MAP))
       info.access = VillageInfo::Village::NO_LOCATION;
     else {
       info.access = VillageInfo::Village::LOCATION;
-      for (auto& trigger : col->getTriggers(collective))
-        info.triggers.push_back({getTriggerLabel(trigger.trigger), trigger.value});
+      addTriggers();
     }
   } else if (!getGame()->isVillainActive(col))
     info.access = VillageInfo::Village::INACTIVE;
   else {
     info.access = VillageInfo::Village::ACTIVE;
-    for (auto& trigger : col->getTriggers(collective))
-      info.triggers.push_back({getTriggerLabel(trigger.trigger), trigger.value});
+    addTriggers();
   }
   bool hostile = col->getTribe()->isEnemy(collective->getTribe());
   if (col->isConquered()) {
@@ -1250,9 +1257,11 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   gameInfo.villageInfo.numTotalVillains = 0;
   for (WConstCollective col : getKnownVillains())
     if (col->getName() && col->isDiscoverable()) {
-      gameInfo.villageInfo.villages[col->getVillainType()].push_back(getVillageInfo(col));
+      gameInfo.villageInfo.villages.push_back(getVillageInfo(col));
       ++gameInfo.villageInfo.numTotalVillains;
     }
+  std::stable_sort(gameInfo.villageInfo.villages.begin(), gameInfo.villageInfo.villages.end(),
+       [](const auto& v1, const auto& v2) { return (int) v1.type < (int) v2.type; });
   SunlightInfo sunlightInfo = getGame()->getSunlightInfo();
   gameInfo.sunlightInfo = { sunlightInfo.getText(), sunlightInfo.getTimeRemaining() };
   gameInfo.infoType = GameInfo::InfoType::BAND;

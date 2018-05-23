@@ -76,7 +76,7 @@ class GuiBuilder {
 
   struct OverlayInfo {
     SGuiElem elem;
-    enum Alignment { LEFT, TOP_LEFT, BOTTOM_LEFT, MESSAGES, GAME_SPEED, MINIONS, IMMIGRATION, TUTORIAL, MAP_HINT } alignment;
+    enum Alignment { LEFT, TOP_LEFT, BOTTOM_LEFT, MESSAGES, GAME_SPEED, MINIONS, IMMIGRATION, VILLAINS, TUTORIAL, MAP_HINT } alignment;
   };
   SGuiElem drawPlayerOverlay(const PlayerInfo&);
   void drawOverlays(vector<OverlayInfo>&, GameInfo&);
@@ -159,7 +159,6 @@ class GuiBuilder {
   int minionButtonsHash = 0;
   SGuiElem drawMinionPage(const PlayerInfo&, const CollectiveInfo&, const optional<TutorialInfo>&);
   SGuiElem drawActivityButton(const PlayerInfo&);
-  SGuiElem drawVillages(VillageInfo&);
   SGuiElem villagesCache;
   int villagesHash = 0;
   SGuiElem drawAttributesOnPage(vector<SGuiElem>&&);
@@ -273,6 +272,9 @@ class GuiBuilder {
   SGuiElem drawWarningWindow(const optional<CollectiveInfo::RebellionChance>&,
       const optional<CollectiveInfo::NextWave>&);
   SGuiElem drawRebellionChanceText(CollectiveInfo::RebellionChance);
+  SGuiElem drawVillainsOverlay(const VillageInfo&);
+  SGuiElem drawVillainInfoOverlay(const VillageInfo::Village&);
+  SGuiElem drawVillainType(VillainType);
 };
 
 RICH_ENUM(GuiBuilder::GameSpeed,

@@ -464,8 +464,8 @@ SGuiElem GuiBuilder::drawRightBandInfo(GameInfo& info) {
         make_pair(CollectiveTab::BUILDINGS, cache->get(bindMethod(
             &GuiBuilder::drawBuildings, this), THIS_LINE, collectiveInfo, info.tutorial)),
         make_pair(CollectiveTab::KEY_MAPPING, drawKeeperHelp()),
-        make_pair(CollectiveTab::TECHNOLOGY, drawTechnology(collectiveInfo)),
-        make_pair(CollectiveTab::VILLAGES, drawVillages(villageInfo)));
+        make_pair(CollectiveTab::TECHNOLOGY, drawTechnology(collectiveInfo))
+    );
     vector<SGuiElem> tabs;
     for (auto& elem : elems) {
       auto tab = elem.first;
@@ -649,6 +649,61 @@ SGuiElem GuiBuilder::drawTutorialOverlay(const TutorialInfo& info) {
         gui.alignment(GuiFactory::Alignment::BOTTOM_RIGHT, info.canContinue ? continueButton : gui.empty()),
         gui.alignment(GuiFactory::Alignment::BOTTOM_LEFT, info.canGoBack ? backButton : gui.empty())
       ), 20)));
+}
+
+static Color getTriggerColor(double value) {
+  return Color::f(1, max(0.0, 1 - value * 500), max(0.0, 1 - value * 500));
+}
+
+SGuiElem GuiBuilder::drawVillainInfoOverlay(const VillageInfo::Village& info) {
+  auto lines = gui.getListBuilder(legendLineHeight);
+  lines.addElem(
+      gui.getListBuilder()
+          .addElemAuto(gui.label(capitalFirst(info.name + ", " + info.tribeName)))
+          .addSpace(100)
+          .buildHorizontalList());
+  lines.addElem(drawVillainType(info.type));
+  for (auto& t : info.triggers) {
+    auto name = t.name;
+#ifndef RELEASE
+    name += " " + toString(t.value);
+#endif
+    lines.addElem(gui.label(name, getTriggerColor(t.value)));
+  }
+  return gui.miniWindow(gui.margins(lines.buildVerticalList(), 15));
+}
+
+SGuiElem GuiBuilder::drawVillainsOverlay(const VillageInfo& info) {
+  const int elemWidth = getImmigrationBarWidth();
+  auto makeHighlight = [=] (Color c) { return gui.margins(gui.rectangle(c), 4); };
+  auto lines = gui.getListBuilder(elemWidth);
+  lines.addSpace(90);
+  vector<VillageInfo::Village> villages;
+  for (int i : All(info.villages)) {
+    auto& elem = info.villages[i];
+    SGuiElem button;
+    button = //gui.stack(makeVec(
+        gui.empty();
+    //));
+    auto infoOverlay = drawVillainInfoOverlay(elem);
+    int infoOverlayHeight = *infoOverlay->getPreferredHeight();
+    button = gui.stack(
+        std::move(button),
+        gui.tooltip2(std::move(infoOverlay), [=](const Rectangle& r) { return r.topLeft() - Vec2(0, infoOverlayHeight);}),
+        gui.setWidth(elemWidth, gui.centerVert(gui.centerHoriz(gui.bottomMargin(-3,
+            gui.viewObject(ViewId::ROUND_SHADOW, 1, Color(255, 255, 255, 160)))))),
+        gui.setWidth(elemWidth, gui.centerVert(gui.centerHoriz(gui.bottomMargin(5,
+            gui.viewObject(elem.viewId))))));
+    if (!elem.triggers.empty())
+      button = gui.stack(
+          std::move(button),
+          gui.translate(gui.label("!", 25, Color::RED), Vec2(3, 1))
+      );
+    lines.addElem(std::move(button));
+  }
+  return gui.setHeight(elemWidth, gui.stack(
+        gui.stopMouseMovement(),
+        gui.translucentBackground(gui.topMargin(7, lines.buildHorizontalList()))));
 }
 
 SGuiElem GuiBuilder::drawImmigrationOverlay(const CollectiveInfo& info, const optional<TutorialInfo>& tutorial) {
@@ -1983,10 +2038,11 @@ void GuiBuilder::drawOverlays(vector<OverlayInfo>& ret, GameInfo& info) {
   if (info.tutorial)
     ret.push_back({cache->get(bindMethod(&GuiBuilder::drawTutorialOverlay, this), THIS_LINE,
          *info.tutorial), OverlayInfo::TUTORIAL});
-  ret.push_back({drawMapHintOverlay(), OverlayInfo::MAP_HINT});
   switch (info.infoType) {
     case GameInfo::InfoType::BAND: {
       auto& collectiveInfo = *info.playerInfo.getReferenceMaybe<CollectiveInfo>();
+      ret.push_back({cache->get(bindMethod(&GuiBuilder::drawVillainsOverlay, this), THIS_LINE,
+           info.villageInfo), OverlayInfo::VILLAINS});
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawImmigrationOverlay, this), THIS_LINE,
            collectiveInfo, info.tutorial), OverlayInfo::IMMIGRATION});
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawRansomOverlay, this), THIS_LINE,
@@ -2019,6 +2075,7 @@ void GuiBuilder::drawOverlays(vector<OverlayInfo>& ret, GameInfo& info) {
     default:
       break;
   }
+  ret.push_back({drawMapHintOverlay(), OverlayInfo::MAP_HINT});
 }
 
 int GuiBuilder::getNumMessageLines() const {
@@ -2155,10 +2212,6 @@ SGuiElem GuiBuilder::getVillageActionButton(UniqueEntity<Collective>::Id id, Vil
             VillageActionInfo{id, action.action}})));
 }
 
-static Color getTriggerColor(double value) {
-  return Color::f(1, max(0.0, 1 - value * 500), max(0.0, 1 - value * 500));
-}
-
 void GuiBuilder::showAttackTriggers(const vector<VillageInfo::Village::TriggerInfo>& triggers, Vec2 pos) {
   vector<SGuiElem> elems;
   for (auto& trigger : triggers)
@@ -2180,17 +2233,17 @@ void GuiBuilder::showAttackTriggers(const vector<VillageInfo::Village::TriggerIn
   }
 }
 
-static const char* getHeader(VillainType type) {
+SGuiElem GuiBuilder::drawVillainType(VillainType type) {
   switch (type) {
-    case VillainType::MAIN: return "Main villains:";
-    case VillainType::LESSER: return "Lesser villains:";
-    case VillainType::ALLY: return "Allies:";
-    case VillainType::NONE: return "Other:";
-    case VillainType::PLAYER: return "Player:";
+    case VillainType::MAIN: return gui.label("Main villain");
+    case VillainType::LESSER: return gui.label("Lesser villain");
+    case VillainType::ALLY: return gui.label("Ally");
+    case VillainType::NONE: return gui.label("Other");
+    case VillainType::PLAYER: return gui.label("Player");
   }
 }
 
-SGuiElem GuiBuilder::drawVillages(VillageInfo& info) {
+/*SGuiElem GuiBuilder::drawVillages(VillageInfo& info) {
   int currentHash = combineHash(info);
   if (currentHash != villagesHash) {
     villagesHash = currentHash;
@@ -2254,7 +2307,7 @@ SGuiElem GuiBuilder::drawVillages(VillageInfo& info) {
       gui.scrollable(lines.buildVerticalList(), &villagesScroll, &scrollbarsHeld));
   }
   return gui.external(villagesCache.get());
-}
+}*/
 
 const double menuLabelVPadding = 0.15;
 

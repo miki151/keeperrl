@@ -459,31 +459,25 @@ Vec2 WindowView::getOverlayPosition(GuiBuilder::OverlayInfo::Alignment alignment
   switch (alignment) {
     case GuiBuilder::OverlayInfo::MINIONS:
       return Vec2(rightBarWidth - 20, rightWindowHeight - 6);
-      break;
     case GuiBuilder::OverlayInfo::TOP_LEFT:
       return Vec2(rightBarWidth + sideOffset, rightWindowHeight);
-      break;
     case GuiBuilder::OverlayInfo::IMMIGRATION:
       return Vec2(rightBarWidth, renderer.getSize().y - bottomBarHeight - 21 - height);
-      break;
+    case GuiBuilder::OverlayInfo::VILLAINS:
+      return Vec2(rightBarWidth, renderer.getSize().y - bottomBarHeight - height);
     case GuiBuilder::OverlayInfo::BOTTOM_LEFT:
       return Vec2(rightBarWidth + guiBuilder.getImmigrationBarWidth(),
                  renderer.getSize().y - bottomBarHeight - 21 - height);
-      break;
     case GuiBuilder::OverlayInfo::LEFT:
       return Vec2(sideOffset,
           renderer.getSize().y - bottomBarHeight - bottomOffset - height);
-      break;
     case GuiBuilder::OverlayInfo::MESSAGES:
       return Vec2(rightBarWidth, 0);
-      break;
     case GuiBuilder::OverlayInfo::GAME_SPEED:
       return Vec2(26, renderer.getSize().y - height - 50);
-      break;
     case GuiBuilder::OverlayInfo::TUTORIAL:
       return Vec2(rightBarWidth + guiBuilder.getImmigrationBarWidth(),
           renderer.getSize().y - bottomBarHeight - height);
-      break;
     case GuiBuilder::OverlayInfo::MAP_HINT:
       return Vec2(renderer.getSize().x - width, renderer.getSize().y - bottomBarHeight - height);
   }
