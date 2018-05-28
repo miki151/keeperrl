@@ -323,9 +323,11 @@ class VillageInfo {
   struct Village {
     string HASH(name);
     string HASH(tribeName);
+    ViewId HASH(viewId);
+    VillainType HASH(type);
     enum Access { ACTIVE, INACTIVE, LOCATION, NO_LOCATION };
     Access HASH(access);
-    enum State { FRIENDLY, HOSTILE, CONQUERED } HASH(state);
+    bool HASH(isConquered);
     struct ActionInfo {
       VillageAction HASH(action);
       optional<string> HASH(disabledReason);
@@ -339,11 +341,13 @@ class VillageInfo {
     vector<ActionInfo> HASH(actions);
     vector<TriggerInfo> HASH(triggers);
     UniqueEntity<Collective>::Id HASH(id);
-    HASH_ALL(name, tribeName, access, state, actions, triggers, id)
+    bool HASH(attacking);
+    HASH_ALL(name, tribeName, access, isConquered, actions, triggers, id, viewId, type, attacking)
   };
-  EnumMap<VillainType, vector<Village>> HASH(villages);
-  int HASH(numTotalVillains);
-  HASH_ALL(villages, numTotalVillains)
+  int HASH(numMainVillains);
+  int HASH(numConqueredMainVillains);
+  vector<Village> HASH(villages);
+  HASH_ALL(villages, numMainVillains, numConqueredMainVillains)
 };
 
 class GameSunlightInfo {

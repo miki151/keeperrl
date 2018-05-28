@@ -119,15 +119,20 @@ void VillageControl::launchAttack(vector<WCreature> attackers) {
     if (villain->ransom && hisGold >= villain->ransom->second)
       ransom = max<int>(villain->ransom->second,
           (Random.getDouble(villain->ransom->first * 0.6, villain->ransom->first * 1.5)) * hisGold);
-    enemy->addAttack(CollectiveAttack(collective, attackers, ransom));
     TeamId team = collective->getTeams().createPersistent(attackers);
     collective->getTeams().activate(team);
     collective->freeTeamMembers(team);
-    for (WCreature c : attackers)
+    vector<WConstTask> attackTasks;
+    for (WCreature c : attackers) {
+      PTask task;
       if (c != collective->getTeams().getLeader(team))
-        collective->setTask(c, Task::chain(Task::follow(c), villain->getAttackTask(this)));
+        task = Task::chain(Task::follow(c), villain->getAttackTask(this));
       else
-        collective->setTask(c, villain->getAttackTask(this));
+        task = villain->getAttackTask(this);
+      attackTasks.push_back(task.get());
+      collective->setTask(c, std::move(task));
+    }
+    enemy->addAttack(CollectiveAttack(std::move(attackTasks), collective, attackers, ransom));
     attackSizes[team] = attackers.size();
   }
 }

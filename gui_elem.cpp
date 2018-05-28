@@ -74,7 +74,6 @@ class ReleaseButton : public GuiElem {
 
   virtual void onMouseRelease(Vec2 pos) override {
     if (clicked && pos.inRectangle(getBounds())) {
-      std::cout << "Released " << (button == 0 ? "left" : "right") << std::endl;
       fun();
     }
     clicked = false;
@@ -83,7 +82,6 @@ class ReleaseButton : public GuiElem {
   virtual bool onLeftClick(Vec2 pos) override {
     if (button == 0 && pos.inRectangle(getBounds())) {
       clicked = true;
-      std::cout << "Clicked left" << std::endl;
       return true;
     } else
       return false;
@@ -92,7 +90,6 @@ class ReleaseButton : public GuiElem {
   virtual bool onRightClick(Vec2 pos) override {
     if (button == 1 && pos.inRectangle(getBounds())) {
       clicked = true;
-      std::cout << "Clicked right" << std::endl;
       return true;
     } else
       return false;
@@ -2414,6 +2411,7 @@ void GuiFactory::loadFreeImages(const DirectoryPath& path) {
   loadIcons(16, 4, "morale_icons.png");
   loadIcons(16, 2, "team_icons.png");
   loadIcons(48, 6, "minimap_icons.png");
+  loadIcons(32, 1, "expand_up.png");
   auto addSpell = [&](SpellId id, Vec2 pos) {
     const int width = 40;
     spellTextures[id] =
