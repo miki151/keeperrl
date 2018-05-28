@@ -89,7 +89,7 @@ template <class Archive>
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
   ar& SUBCLASS(CollectiveControl) & SUBCLASS(EventListener);
   ar(memory, introText, lastControlKeeperQuestion);
-  ar(newAttacks, ransomAttacks, messages, hints, visibleEnemies);
+  ar(newAttacks, ransomAttacks, notifiedAttacks, messages, hints, visibleEnemies);
   ar(visibilityMap, unknownLocations);
   ar(messageHistory, tutorial, controlModeMessages, stunnedCreatures);
 }
@@ -625,21 +625,21 @@ vector<PlayerControl::TechInfo> PlayerControl::getTechInfo() const {
 
 string PlayerControl::getTriggerLabel(const AttackTrigger& trigger) const {
   switch (trigger.getId()) {
-    case AttackTriggerId::SELF_VICTIMS: return "Killed tribe members";
-    case AttackTriggerId::GOLD: return "Your gold";
-    case AttackTriggerId::STOLEN_ITEMS: return "Item theft";
+    case AttackTriggerId::SELF_VICTIMS: return "killed tribe members";
+    case AttackTriggerId::GOLD: return "gold";
+    case AttackTriggerId::STOLEN_ITEMS: return "item theft";
     case AttackTriggerId::ROOM_BUILT: {
       auto type = trigger.get<RoomTriggerInfo>().type;
       auto myCount = collective->getConstructions().getBuiltCount(type);
-      return "Your " + Furniture::getName(type, myCount);
+      return Furniture::getName(type, myCount);
     }
-    case AttackTriggerId::POWER: return "Your power";
-    case AttackTriggerId::FINISH_OFF: return "Finishing you off";
-    case AttackTriggerId::ENEMY_POPULATION: return "Dungeon population";
-    case AttackTriggerId::TIMER: return "Your evilness";
-    case AttackTriggerId::NUM_CONQUERED: return "Your aggression";
-    case AttackTriggerId::MINING_IN_PROXIMITY: return "Breach of territory";
-    case AttackTriggerId::PROXIMITY: return "Proximity";
+    case AttackTriggerId::POWER: return "your power";
+    case AttackTriggerId::FINISH_OFF: return "finishing you off";
+    case AttackTriggerId::ENEMY_POPULATION: return "population";
+    case AttackTriggerId::TIMER: return "your evil";
+    case AttackTriggerId::NUM_CONQUERED: return "your aggression";
+    case AttackTriggerId::MINING_IN_PROXIMITY: return "breach of territory";
+    case AttackTriggerId::PROXIMITY: return "proximity";
   }
 }
 
@@ -651,11 +651,15 @@ VillageInfo::Village PlayerControl::getVillageInfo(WConstCollective col) const {
   info.viewId = col->getName()->viewId;
   info.triggers.clear();
   info.type = col->getVillainType();
+  info.attacking = false;
+  for (auto& attack : notifiedAttacks)
+    if (attack.getAttacker() == col && attack.isOngoing())
+        info.attacking = true;
   auto addTriggers = [&] {
     for (auto& trigger : col->getTriggers(collective))
-#ifndef RELEASE
+//#ifdef RELEASE
       if (trigger.value > 0)
-#endif
+//#endif
         info.triggers.push_back({getTriggerLabel(trigger.trigger), trigger.value});
   };
   if (col->getModel() == getModel()) {
@@ -671,22 +675,17 @@ VillageInfo::Village PlayerControl::getVillageInfo(WConstCollective col) const {
     info.access = VillageInfo::Village::ACTIVE;
     addTriggers();
   }
-  bool hostile = col->getTribe()->isEnemy(collective->getTribe());
-  if (col->isConquered()) {
-    info.state = info.CONQUERED;
+  if ((info.isConquered = col->isConquered())) {
     info.triggers.clear();
     if (col->canPillage())
       info.actions.push_back({VillageAction::PILLAGE, none});
-  } else if (hostile)
-    info.state = info.HOSTILE;
-  else {
-    info.state = info.FRIENDLY;
+  } else if (!col->getTribe()->isEnemy(collective->getTribe())) {
     if (collective->isKnownVillainLocation(col)) {
       if (col->hasTradeItems())
         info.actions.push_back({VillageAction::TRADE, none});
     } else if (getGame()->isVillainActive(col)) {
       if (col->hasTradeItems())
-        info.actions.push_back({VillageAction::TRADE, string("You must discover the location of the ally first.")});
+        info.actions.push_back({VillageAction::TRADE, string("You must discover the location of the ally in order to trade.")});
     }
   }
   return info;
@@ -1254,12 +1253,15 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
     tutorial->refreshInfo(getGame(), gameInfo.tutorial);
   gameInfo.singleModel = getGame()->isSingleModel();
   gameInfo.villageInfo.villages.clear();
-  gameInfo.villageInfo.numTotalVillains = 0;
-  for (WConstCollective col : getKnownVillains())
-    if (col->getName() && col->isDiscoverable()) {
+  gameInfo.villageInfo.numMainVillains = gameInfo.villageInfo.numConqueredMainVillains = 0;
+  for (auto& col : getGame()->getVillains(VillainType::MAIN)) {
+    ++gameInfo.villageInfo.numMainVillains;
+    if (col->isConquered())
+      ++gameInfo.villageInfo.numConqueredMainVillains;
+  }
+  for (auto& col : getKnownVillains())
+    if (col->getName() && col->isDiscoverable())
       gameInfo.villageInfo.villages.push_back(getVillageInfo(col));
-      ++gameInfo.villageInfo.numTotalVillains;
-    }
   std::stable_sort(gameInfo.villageInfo.villages.begin(), gameInfo.villageInfo.villages.end(),
        [](const auto& v1, const auto& v2) { return (int) v1.type < (int) v2.type; });
   SunlightInfo sunlightInfo = getGame()->getSunlightInfo();
@@ -2512,6 +2514,7 @@ void PlayerControl::tick() {
         newAttacks.removeElement(attack);
         if (auto attacker = attack.getAttacker())
           collective->addKnownVillain(attacker);
+        notifiedAttacks.push_back(attack);
         if (attack.getRansom())
           ransomAttacks.push_back(attack);
         break;

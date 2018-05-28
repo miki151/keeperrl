@@ -2411,6 +2411,7 @@ void GuiFactory::loadFreeImages(const DirectoryPath& path) {
   loadIcons(16, 4, "morale_icons.png");
   loadIcons(16, 2, "team_icons.png");
   loadIcons(48, 6, "minimap_icons.png");
+  loadIcons(32, 1, "expand_up.png");
   auto addSpell = [&](SpellId id, Vec2 pos) {
     const int width = 40;
     spellTextures[id] =

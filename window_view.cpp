@@ -51,8 +51,8 @@ View* WindowView::createReplayView(InputArchive& ifs, ViewParams params) {
   //return new ReplayView(ifs, new WindowView(params));
 }
 
-constexpr int rightBarWidthCollective = 344;
-constexpr int rightBarWidthPlayer = 344;
+constexpr int rightBarWidthCollective = 300;
+constexpr int rightBarWidthPlayer = 300;
 constexpr int bottomBarHeightCollective = 62;
 constexpr int bottomBarHeightPlayer = 62;
 
@@ -435,7 +435,8 @@ void WindowView::rebuildGui() {
             default:
               break;
           }
-          *height = min(*height, renderer.getSize().y - pos.y);
+          if (overlay.alignment != GuiBuilder::OverlayInfo::GAME_SPEED)
+            *height = min(*height, renderer.getSize().y - pos.y - bottomBarHeight);
           tempGuiElems.back()->setBounds(Rectangle(pos, pos + Vec2(*width, *height)));
         }
     }
@@ -467,7 +468,7 @@ Vec2 WindowView::getOverlayPosition(GuiBuilder::OverlayInfo::Alignment alignment
       return Vec2(rightBarWidth, renderer.getSize().y - bottomBarHeight - height);
     case GuiBuilder::OverlayInfo::BOTTOM_LEFT:
       return Vec2(rightBarWidth + guiBuilder.getImmigrationBarWidth(),
-                 renderer.getSize().y - bottomBarHeight - 21 - height);
+                 max(70, renderer.getSize().y - bottomBarHeight - 27 - height));
     case GuiBuilder::OverlayInfo::LEFT:
       return Vec2(sideOffset,
           renderer.getSize().y - bottomBarHeight - bottomOffset - height);
@@ -838,14 +839,20 @@ optional<int> WindowView::chooseItem(const vector<ItemInfo>& items, ScrollPositi
 optional<UniqueEntity<Item>::Id> WindowView::chooseTradeItem(const string& title, pair<ViewId, int> budget,
     const vector<ItemInfo>& items, ScrollPosition* scrollPos) {
   SyncQueue<optional<UniqueEntity<Item>::Id>> returnQueue;
-  return getBlockingGui(returnQueue, guiBuilder.drawTradeItemMenu(returnQueue, title, budget, items, scrollPos),
-      Vec2(rightBarWidthCollective + 30, 80));
+  auto menu = guiBuilder.drawTradeItemMenu(returnQueue, title, budget, items, scrollPos);
+  int width = *menu->getPreferredWidth();
+  int height = *menu->getPreferredHeight();
+  return getBlockingGui(returnQueue, std::move(menu),
+      getOverlayPosition(GuiBuilder::OverlayInfo::BOTTOM_LEFT, height, width, rightBarWidthCollective, bottomBarHeightCollective));
 }
 
 optional<int> WindowView::choosePillageItem(const string& title, const vector<ItemInfo>& items, ScrollPosition* scrollPos) {
   SyncQueue<optional<int>> returnQueue;
-  return getBlockingGui(returnQueue, guiBuilder.drawPillageItemMenu(returnQueue, title, items, scrollPos),
-      Vec2(rightBarWidthCollective + 30, 80));
+  auto menu = guiBuilder.drawPillageItemMenu(returnQueue, title, items, scrollPos);
+  int width = *menu->getPreferredWidth();
+  int height = *menu->getPreferredHeight();
+  return getBlockingGui(returnQueue, std::move(menu),
+      getOverlayPosition(GuiBuilder::OverlayInfo::BOTTOM_LEFT, height, width, rightBarWidthCollective, bottomBarHeightCollective));
 }
 
 optional<Vec2> WindowView::chooseSite(const string& message, const Campaign& campaign, optional<Vec2> current) {

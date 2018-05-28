@@ -43,7 +43,6 @@ RICH_ENUM(CollectiveTab,
   BUILDINGS,
   MINIONS,
   TECHNOLOGY,
-  VILLAGES,
   KEY_MAPPING
 );
 
@@ -159,8 +158,6 @@ class GuiBuilder {
   int minionButtonsHash = 0;
   SGuiElem drawMinionPage(const PlayerInfo&, const CollectiveInfo&, const optional<TutorialInfo>&);
   SGuiElem drawActivityButton(const PlayerInfo&);
-  SGuiElem villagesCache;
-  int villagesHash = 0;
   SGuiElem drawAttributesOnPage(vector<SGuiElem>&&);
   SGuiElem drawEquipmentAndConsumables(const PlayerInfo&);
   vector<SGuiElem> drawSkillsList(const PlayerInfo&);
@@ -173,7 +170,6 @@ class GuiBuilder {
   void showAttackTriggers(const vector<VillageInfo::Village::TriggerInfo>&, Vec2 pos);
   SGuiElem getTextContent(const string& title, const string& value, const string& hint);
   SGuiElem getVillageActionButton(UniqueEntity<Collective>::Id, VillageInfo::Village::ActionInfo);
-  SGuiElem getVillageStateLabel(VillageInfo::Village::State);
   SGuiElem drawHighscorePage(const HighscoreList&, ScrollPosition* scrollPos);
   SGuiElem drawTeams(CollectiveInfo&, const optional<TutorialInfo>&);
   SGuiElem drawPlusMinus(function<void(int)> callback, bool canIncrease, bool canDecrease);
@@ -197,7 +193,6 @@ class GuiBuilder {
     int num;
   };
   optional<ActiveButton> activeButton;
-  bool showTasks = false;
   ScrollPosition inventoryScroll;
   ScrollPosition playerStatsScroll;
   ScrollPosition buildingsScroll;
@@ -211,7 +206,6 @@ class GuiBuilder {
   ScrollPosition libraryScroll;
   ScrollPosition minionPageScroll;
   optional<int> itemIndex;
-  int numSeenVillains = 0;
   bool playerOverlayFocused = false;
   optional<int> lastPlayerPositionHash;
   int scrollbarsHeld = GuiFactory::getHeldInitValue();
@@ -220,7 +214,13 @@ class GuiBuilder {
   CollectiveTab collectiveTab = CollectiveTab::BUILDINGS;
   MinionTab minionTab = MinionTab::INVENTORY;
   bool gameSpeedDialogOpen = false;
-  bool immigrantHelpOpen = false;
+  enum BottomWindowId {
+    IMMIGRATION_HELP,
+    ALL_VILLAINS,
+    TASKS
+  };
+  optional<BottomWindowId> bottomWindow;
+  void toggleBottomWindow(BottomWindowId);
   atomic<GameSpeed> gameSpeed;
   const char* getGameSpeedName(GameSpeed) const;
   const char* getCurrentGameSpeedName() const;
@@ -273,6 +273,7 @@ class GuiBuilder {
       const optional<CollectiveInfo::NextWave>&);
   SGuiElem drawRebellionChanceText(CollectiveInfo::RebellionChance);
   SGuiElem drawVillainsOverlay(const VillageInfo&);
+  SGuiElem drawAllVillainsOverlay(const VillageInfo&);
   SGuiElem drawVillainInfoOverlay(const VillageInfo::Village&);
   SGuiElem drawVillainType(VillainType);
 };

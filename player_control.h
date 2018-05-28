@@ -217,6 +217,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   vector<PlayerMessage> SERIAL(messages);
   vector<PlayerMessage> SERIAL(messageHistory);
   vector<CollectiveAttack> SERIAL(newAttacks);
+  vector<CollectiveAttack> SERIAL(notifiedAttacks);
   vector<CollectiveAttack> SERIAL(ransomAttacks);
   vector<string> SERIAL(hints);
   optional<PlayerMessage> findMessage(PlayerMessage::Id);
