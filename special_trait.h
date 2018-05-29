@@ -10,6 +10,13 @@ struct ExtraTraining {
   HASH_ALL(type, increase)
 };
 
-using SpecialTrait = variant<ExtraTraining, LastingEffect, SkillId>;
+struct AttrBonus {
+  AttrType SERIAL(attr); // HASH(attr)
+  int SERIAL(increase); // HASH(increase)
+  SERIALIZE_ALL(attr, increase)
+  HASH_ALL(attr, increase)
+};
+
+using SpecialTrait = variant<ExtraTraining, LastingEffect, SkillId, AttrBonus>;
 
 extern void applySpecialTrait(SpecialTrait, WCreature);

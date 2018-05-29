@@ -705,9 +705,9 @@ void Player::makeMove() {
         break;
   #ifndef RELEASE
       case UserInputId::CHEAT_ATTRIBUTES:
-        creature->getAttributes().setBaseAttr(AttrType::DAMAGE, 80);
-        creature->getAttributes().setBaseAttr(AttrType::DEFENSE, 80);
-        creature->getAttributes().setBaseAttr(AttrType::SPELL_DAMAGE, 80);
+        creature->getAttributes().increaseBaseAttr(AttrType::DAMAGE, 80);
+        creature->getAttributes().increaseBaseAttr(AttrType::DEFENSE, 80);
+        creature->getAttributes().increaseBaseAttr(AttrType::SPELL_DAMAGE, 80);
         creature->addPermanentEffect(LastingEffect::SPEED, true);
         creature->addPermanentEffect(LastingEffect::FLYING, true);
         break;

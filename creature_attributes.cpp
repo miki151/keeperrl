@@ -72,8 +72,8 @@ const CreatureName& CreatureAttributes::getName() const {
   return *name;
 }
 
-void CreatureAttributes::setBaseAttr(AttrType type, int v) {
-  attr[type] = v;
+void CreatureAttributes::increaseBaseAttr(AttrType type, int v) {
+  attr[type] += v;
 }
 
 double CreatureAttributes::getCourage() const {

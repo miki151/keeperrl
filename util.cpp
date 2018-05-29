@@ -1006,3 +1006,7 @@ string combineWithOr(const vector<string>& elems) {
   }
   return ret;
 }
+
+string toStringWithSign(int v) {
+  return (v > 0 ? "+" : "") + toString(v);
+}

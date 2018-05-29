@@ -95,14 +95,15 @@ static CollectiveConfig getKeeperConfig(RandomGen& random, bool fastImmigration,
            .setFrequency(0.7)
            .addRequirement(0.1, AttractionInfo{1, vector<AttractionType>(
                 {FurnitureType::FORGE, FurnitureType::WORKSHOP, FurnitureType::JEWELER})})
-           .addSpecialTrait(0.05, SkillId::WORKSHOP)
-           .addSpecialTrait(0.05, SkillId::FORGE)
-           .addSpecialTrait(0.05, SkillId::JEWELER),
+           .addSpecialTrait(0.03, {SkillId::WORKSHOP, LastingEffect::INSANITY})
+           .addSpecialTrait(0.03, {SkillId::FORGE, LastingEffect::INSANITY})
+           .addSpecialTrait(0.03, {SkillId::JEWELER, LastingEffect::INSANITY}),
        ImmigrantInfo(CreatureId::ORC, {MinionTrait::FIGHTER})
            .setFrequency(0.7)
            .addRequirement(0.1, AttractionInfo{1, FurnitureType::TRAINING_WOOD})
            .addSpecialTrait(0.05, ExtraTraining { ExperienceType::ARCHERY, 2 })
            .addSpecialTrait(0.05, ExtraTraining { ExperienceType::MELEE, 2 })
+           .addSpecialTrait(0.03, {AttrBonus { AttrType::DAMAGE, 5 }, LastingEffect::INSANITY})
            .addSpecialTrait(0.05, LastingEffect::NIGHT_VISION)
            .addSpecialTrait(0.05, SkillId::DISARM_TRAPS)
            .addSpecialTrait(0.05, SkillId::SWIMMING)
@@ -111,6 +112,7 @@ static CollectiveConfig getKeeperConfig(RandomGen& random, bool fastImmigration,
            .setFrequency(0.6)
            .addRequirement(0.0, MinTurnRequirement{500_global})
            .addRequirement(0.1, AttractionInfo{1, {FurnitureType::BOOKCASE_WOOD, FurnitureType::LABORATORY}})
+           .addSpecialTrait(0.03, {AttrBonus { AttrType::SPELL_DAMAGE, 5 }, LastingEffect::INSANITY})
            .addSpecialTrait(0.1, ExtraTraining { ExperienceType::SPELL, 4 })
            .addSpecialTrait(0.05, SkillId::SORCERY)
            .addSpecialTrait(0.05, SkillId::LABORATORY)
@@ -119,6 +121,8 @@ static CollectiveConfig getKeeperConfig(RandomGen& random, bool fastImmigration,
            .setFrequency(0.3)
            .addRequirement(0.0, MinTurnRequirement{2000_global})
            .addRequirement(0.1, AttractionInfo{1, FurnitureType::TRAINING_IRON})
+           .addSpecialTrait(0.03, {AttrBonus { AttrType::DAMAGE, 5 }, LastingEffect::INSANITY})
+           .addSpecialTrait(0.05, {AttrBonus { AttrType::DEFENSE, 5 }, LastingEffect::SLOWED})
            .addSpecialTrait(0.1, LastingEffect::RANGED_VULNERABILITY)
            .addSpecialTrait(0.1, ExtraTraining { ExperienceType::ARCHERY, 2 }),
        ImmigrantInfo(CreatureId::HARPY, {MinionTrait::FIGHTER})
@@ -126,7 +130,8 @@ static CollectiveConfig getKeeperConfig(RandomGen& random, bool fastImmigration,
            .addRequirement(0.0, MinTurnRequirement{2000_global})
            .addRequirement(0.1, AttractionInfo{1, FurnitureType::TRAINING_WOOD})
            .addRequirement(0.3, AttractionInfo{1, ItemIndex::RANGED_WEAPON})
-           .addSpecialTrait(0.05, LastingEffect::INSANITY)
+           .addSpecialTrait(0.03, {AttrBonus { AttrType::RANGED_DAMAGE, 5 }, LastingEffect::INSANITY})
+           .addSpecialTrait(0.02, LastingEffect::INSANITY)
            .addSpecialTrait(0.2, LastingEffect::NIGHT_VISION)
            .addSpecialTrait(0.1, ExtraTraining { ExperienceType::ARCHERY, 3 }),
        ImmigrantInfo(CreatureId::ZOMBIE, {MinionTrait::FIGHTER})
@@ -186,7 +191,8 @@ static CollectiveConfig getKeeperConfig(RandomGen& random, bool fastImmigration,
            .setFrequency(0.1)
            .addRequirement(0.0, MinTurnRequirement{2000_global})
            .addRequirement(0.1, AttractionInfo{2, FurnitureType::TRAINING_IRON})
-           .addSpecialTrait(0.1, LastingEffect::INSANITY)
+           .addSpecialTrait(0.1, {AttrBonus { AttrType::DAMAGE, 5 }, LastingEffect::INSANITY})
+           .addSpecialTrait(0.03, LastingEffect::INSANITY)
            .addSpecialTrait(0.3, SkillId::AMBUSH),
        ImmigrantInfo(CreatureId::DARK_ELF_WARRIOR, {MinionTrait::FIGHTER})
            .addRequirement(0.0, RecruitmentInfo{{EnemyId::DARK_ELVES}, 3, MinionTrait::FIGHTER})

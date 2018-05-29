@@ -482,10 +482,11 @@ Immigration::Available Immigration::Available::generate(WImmigration immigration
     if (immigration->collective->getConfig().getStripSpawns())
       immigrants.back()->getEquipment().removeAllItems(immigrants.back().get());
     for (auto& specialTrait : info.getSpecialTraits())
-      if (Random.chance(specialTrait.first)) {
-        applySpecialTrait(specialTrait.second, immigrants.back().get());
-        specialTraits.push_back(specialTrait.second);
-      }
+      if (Random.chance(specialTrait.first))
+        for (auto& trait : specialTrait.second) {
+          applySpecialTrait(trait, immigrants.back().get());
+          specialTraits.push_back(trait);
+        }
   }
   return Available(
     immigration,

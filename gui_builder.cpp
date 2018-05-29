@@ -563,6 +563,9 @@ SGuiElem GuiBuilder::drawSpecialTrait(const SpecialTrait& trait) {
       [&] (const ExtraTraining& t) {
         return gui.label("Extra "_s + toLower(getName(t.type)) + " training potential", Color::GREEN);
       },
+      [&] (const AttrBonus& t) {
+        return gui.label(toStringWithSign(t.increase) + " " + getName(t.attr), t.increase > 0 ? Color::GREEN : Color::RED);
+      },
       [&] (LastingEffect effect) {
         if (auto adj = LastingEffects::getGoodAdjective(effect))
           return gui.label("Permanent trait: "_s + adj, Color::GREEN);
@@ -956,7 +959,7 @@ vector<SGuiElem> GuiBuilder::drawPlayerAttributes(const vector<AttributeInfo>& a
   for (auto& elem : attr) {
     auto attrText = toString(elem.value);
     if (elem.bonus != 0)
-      attrText += (elem.bonus > 0 ? "+" : "") + toString(elem.bonus);
+      attrText += toStringWithSign(elem.bonus);
     ret.push_back(gui.stack(getTooltip({elem.name, elem.help}, THIS_LINE),
         gui.horizontalList(makeVec(
           gui.icon(elem.attr),
