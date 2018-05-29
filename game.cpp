@@ -193,7 +193,7 @@ void Game::prepareSiteRetirement() {
             transferCreature(c, models[v].get());
   // So we don't have references to creatures in another model.
   for (WCreature c : mainModel->getAllCreatures())
-    c->clearLastAttacker();
+    c->clearInfoForRetiring();
   mainModel->clearExternalEnemies();
   TribeId::switchForSerialization(TribeId::getKeeper(), TribeId::getRetiredKeeper());
   UniqueEntity<Item>::offsetForSerialization(Random.getLL());

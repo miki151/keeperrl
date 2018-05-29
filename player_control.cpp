@@ -2398,7 +2398,7 @@ void PlayerControl::checkKeeperDanger() {
       if (auto lastCombatIntent = keeper->getLastCombatIntent())
         if (lastCombatIntent->time > getGame()->getGlobalTime() - 5_visible) {
           lastControlKeeperQuestion = collective->getGlobalTime();
-          if (prompt("The Keeper is engaged in a fight with " + lastCombatIntent->attacker)) {
+          if (prompt("The Keeper is engaged in a fight with " + lastCombatIntent->attacker->getName().a())) {
             controlSingle(keeper);
             return;
           }

@@ -399,10 +399,10 @@ class Fighter : public Behaviour {
       return NoMove;
   }
 
-  void setLastCombatIntent(WCreature attacked) {
+  void addCombatIntent(WCreature attacked, bool immediateAttack) {
     if (attacked->canSee(creature))
-      attacked->setLastCombatIntent({creature->getName().a(), *creature->getGlobalTime()});
-    creature->setLastCombatIntent({attacked->getName().a(), *creature->getGlobalTime()});
+      attacked->addCombatIntent(creature, immediateAttack);
+    creature->addCombatIntent(attacked, immediateAttack);
   }
 
   MoveInfo getPanicMove(WCreature other, double weight) {
@@ -475,7 +475,7 @@ class Fighter : public Behaviour {
       }
     if (best)
       if (auto action = creature->throwItem(best, dir))
-        return {1.0, action.append([=](WCreature) { setLastCombatIntent(other); }) };
+        return {1.0, action.append([=](WCreature) { addCombatIntent(other, true); }) };
     return NoMove;
   }
 
@@ -498,8 +498,8 @@ class Fighter : public Behaviour {
       if (auto action = tryEffect(effect, dir.shorten()))
         return action;
     if (auto action = creature->fire(dir.shorten()))
-      return {1.0, action.append([=](WCreature creature) {
-          setLastCombatIntent(other);
+      return {1.0, action.append([=](WCreature) {
+          addCombatIntent(other, true);
       })};
     return NoMove;
   }
@@ -541,8 +541,8 @@ class Fighter : public Behaviour {
     if (creature->getBody().isHumanoid() && !creature->getWeapon()) {
       if (WItem weapon = getBestWeapon())
         if (auto action = creature->equip(weapon))
-          return {3.0 / (2.0 + distance), action.prepend([=](WCreature creature) {
-            setLastCombatIntent(other);
+          return {3.0 / (2.0 + distance), action.prepend([=](WCreature) {
+            addCombatIntent(other, false);
         })};
     }
     return NoMove;
@@ -625,7 +625,7 @@ class Fighter : public Behaviour {
         lastSeen = none;
         if (auto action = creature->moveTowards(other->getPosition()))
           return {max(0., 1.0 - double(distance) / 20), action.prepend([=](WCreature creature) {
-            setLastCombatIntent(other);
+            addCombatIntent(other, false);
             lastSeen = LastSeen{other->getPosition(), *creature->getGlobalTime(), LastSeen::ATTACK, other->getUniqueId()};
             auto chaseInfo = chaseFreeze.getMaybe(other);
             auto startChaseFreeze = 20_visible;
@@ -642,7 +642,7 @@ class Fighter : public Behaviour {
     if (distance == 1)
       if (auto action = creature->attack(other, getAttackParams(other)))
         return {1.0, action.prepend([=](WCreature) {
-            setLastCombatIntent(other);
+            addCombatIntent(other, true);
         })};
     return NoMove;
   }

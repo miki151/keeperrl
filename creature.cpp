@@ -63,7 +63,7 @@ void Creature::serialize(Archive& ar, const unsigned int version) {
   ar(unknownAttackers, privateEnemies, holding);
   ar(controllerStack, kills, statuses);
   ar(difficultyPoints, points, capture);
-  ar(vision, lastCombatIntent, debt, lastDamageType, highestAttackValueEver);
+  ar(vision, debt, lastDamageType, highestAttackValueEver);
 }
 
 SERIALIZABLE(Creature)
@@ -197,7 +197,7 @@ GlobalTime Creature::getDeathTime() const {
   return *deathTime;
 }
 
-void Creature::clearLastAttacker() {
+void Creature::clearInfoForRetiring() {
   lastAttacker = nullptr;
 }
 
@@ -974,6 +974,7 @@ CreatureAction Creature::attack(WCreature other, optional<AttackParams> attackPa
   if (!weapon)
     return CreatureAction("No available weapon or intrinsic attack");
   return CreatureAction(this, [=] (WCreature self) {
+    other->addCombatIntent(self, true);
     INFO << getName().the() << " attacking " << other->getName().the();
     auto damageAttr = weapon->getWeaponInfo().meleeAttackAttr;
     int damage = getAttr(damageAttr, false) + weapon->getModifier(damageAttr);
@@ -1000,6 +1001,8 @@ void Creature::onAttackedBy(WCreature attacker) {
   if (!canSee(attacker))
     unknownAttackers.insert(attacker);
   if (attacker->tribe != tribe)
+    // This attack may be accidental, so only do this for creatures from another tribe.
+    // To handle intended attacks within one tribe, private enemy will be added in addCombatIntent
     privateEnemies.insert(attacker);
   lastAttacker = attacker;
 }
@@ -1129,7 +1132,7 @@ string attrStr(bool strong, bool agile, bool fast) {
 
 void Creature::heal(double amount) {
   if (getBody().heal(this, amount))
-    clearLastAttacker();
+    lastAttacker = nullptr;
   updateViewObject();
 }
 
@@ -1822,11 +1825,16 @@ bool Creature::isSameSector(Position pos) const {
   return pos.isConnectedTo(position, getMovementType());
 }
 
-void Creature::setLastCombatIntent(CombatIntentInfo info) {
-  lastCombatIntent = info;
+void Creature::addCombatIntent(WCreature attacker, bool immediateAttack) {
+  lastCombatIntent = CombatIntentInfo{attacker, *getGlobalTime()};
+  if (immediateAttack)
+    privateEnemies.insert(attacker);
 }
 
 optional<Creature::CombatIntentInfo> Creature::getLastCombatIntent() const {
-  return lastCombatIntent;
+  if (lastCombatIntent && lastCombatIntent->attacker && !lastCombatIntent->attacker->isDead())
+    return lastCombatIntent;
+  else
+    return none;
 }
 
