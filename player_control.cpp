@@ -90,7 +90,7 @@ void PlayerControl::serialize(Archive& ar, const unsigned int version) {
   ar& SUBCLASS(CollectiveControl) & SUBCLASS(EventListener);
   ar(memory, introText, lastControlKeeperQuestion);
   ar(newAttacks, ransomAttacks, notifiedAttacks, messages, hints, visibleEnemies);
-  ar(visibilityMap, unknownLocations);
+  ar(visibilityMap, unknownLocations, dismissedVillageInfos);
   ar(messageHistory, tutorial, controlModeMessages, stunnedCreatures);
 }
 
@@ -1262,6 +1262,7 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   for (auto& col : getKnownVillains())
     if (col->getName() && col->isDiscoverable())
       gameInfo.villageInfo.villages.push_back(getVillageInfo(col));
+  gameInfo.villageInfo.dismissedInfos = dismissedVillageInfos;
   std::stable_sort(gameInfo.villageInfo.villages.begin(), gameInfo.villageInfo.villages.end(),
        [](const auto& v1, const auto& v2) { return (int) v1.type < (int) v2.type; });
   SunlightInfo sunlightInfo = getGame()->getSunlightInfo();
@@ -1802,6 +1803,11 @@ void PlayerControl::processInput(View* view, UserInput input) {
           scrollToMiddle(col->getTerritory().getAll());
       }
       break;
+    case UserInputId::DISMISS_VILLAGE_INFO: {
+      auto& info = input.get<DismissVillageInfo>();
+      dismissedVillageInfos.insert({info.collectiveId, info.infoText});
+      break;
+    }
     case UserInputId::CREATE_TEAM:
       if (WCreature c = getCreature(input.get<Creature::Id>()))
         if (collective->hasTrait(c, MinionTrait::FIGHTER) || c == collective->getLeader())

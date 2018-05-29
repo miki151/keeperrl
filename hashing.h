@@ -49,6 +49,11 @@ size_t combineHash(const vector<T>& v) {
   return combineHashIter(v.begin(), v.end());
 }
 
+template <typename T>
+size_t combineHash(const set<T>& v) {
+  return combineHashIter(v.begin(), v.end());
+}
+
 template <typename Arg1, typename... Args>
 size_t combineHash(const Arg1& arg1, const Args&... args) {
   size_t hash = combineHash(args...);

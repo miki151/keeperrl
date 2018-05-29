@@ -667,7 +667,7 @@ SGuiElem GuiBuilder::drawVillainType(VillainType type) {
   }
 }
 
-SGuiElem GuiBuilder::drawVillainInfoOverlay(const VillageInfo::Village& info) {
+SGuiElem GuiBuilder::drawVillainInfoOverlay(const VillageInfo::Village& info, bool showDismissHint) {
   auto lines = gui.getListBuilder(legendLineHeight);
   lines.addElem(
       gui.getListBuilder()
@@ -706,6 +706,8 @@ SGuiElem GuiBuilder::drawVillainInfoOverlay(const VillageInfo::Village& info) {
   for (auto action : info.actions)
     if (action.disabledReason)
       lines.addElem(gui.label(*action.disabledReason, Color::ORANGE));
+  if (showDismissHint)
+    lines.addElem(gui.label("Right click to dismiss", Renderer::smallTextSize, Color::WHITE), legendLineHeight * 2 / 3);
   return gui.miniWindow(gui.margins(lines.buildVerticalList(), 15));
 }
 
@@ -727,34 +729,43 @@ SGuiElem GuiBuilder::drawVillainsOverlay(const VillageInfo& info) {
           gui.getListBuilder()
               .addElem(gui.icon(GuiFactory::EXPAND_UP), 12)
               .addElemAuto(gui.translate(gui.label("All villains"), Vec2(0, labelOffsetY)))
+              .addSpace(10)
               .buildHorizontalList(),
-          gui.conditional(gui.margins(gui.rectangle(Color(0, 255, 0, 100)), -7, 2, -2, 0),
+          gui.conditional(gui.margins(gui.rectangle(Color(0, 255, 0, 100)), -7, 2, 2, 2),
               [this] { return bottomWindow == ALL_VILLAINS; }),
           gui.button([this] { toggleBottomWindow(ALL_VILLAINS); })
     ));
   for (int i : All(info.villages)) {
     SGuiElem label;
+    string labelText;
     SGuiElem button = gui.empty();
     auto& elem = info.villages[i];
-    if (elem.attacking)
-      label = gui.label("attacking", Color::RED);
-    else if (!elem.triggers.empty())
-      label = gui.label("triggered", Color::ORANGE);
-    else
+    if (elem.attacking) {
+      labelText = "attacking";
+      label = gui.label(labelText, Color::RED);
+    }
+    else if (!elem.triggers.empty()) {
+      labelText = "triggered";
+      label = gui.label(labelText, Color::ORANGE);
+    } else
       for (auto& action : elem.actions)
         if (!action.disabledReason) {
-          label = gui.label(getVillageActionText(action.action), Color::GREEN);
+          labelText = getVillageActionText(action.action);
+          label = gui.label(labelText, Color::GREEN);
           button = gui.button(getButtonCallback({UserInputId::VILLAGE_ACTION,
-                    VillageActionInfo{elem.id, action.action}}));
+              VillageActionInfo{elem.id, action.action}}));
           break;
         }
-    if (!label)
+    if (!label || info.dismissedInfos.count({elem.id, labelText}))
       continue;
     label = gui.translate(std::move(label), Vec2(0, labelOffsetY));
-    auto infoOverlay = drawVillainInfoOverlay(elem);
+    auto infoOverlay = drawVillainInfoOverlay(elem, true);
     int infoOverlayHeight = *infoOverlay->getPreferredHeight();
-    lines.addElemAuto(gui.stack(
+    lines.addElemAuto(gui.stack(makeVec(
         std::move(button),
+        gui.releaseRightButton(getButtonCallback({UserInputId::DISMISS_VILLAGE_INFO,
+            DismissVillageInfo{elem.id, labelText}})),
+        gui.onMouseRightButtonHeld(gui.margins(gui.rectangle(Color(255, 0, 0, 100)), 0, 2, 2, 2)),
         gui.getListBuilder()
             .addElemAuto(gui.stack(
                  gui.setWidth(34, gui.centerVert(gui.centerHoriz(gui.bottomMargin(-3,
@@ -765,7 +776,7 @@ SGuiElem GuiBuilder::drawVillainsOverlay(const VillageInfo& info) {
             .buildHorizontalList(),
         gui.conditional(gui.tooltip2(std::move(infoOverlay), [=](const Rectangle& r) { return r.topLeft() - Vec2(0, 0 + infoOverlayHeight);}),
             [this]{return !bottomWindow;})
-    ));
+    )));
   }
   return gui.setHeight(29, gui.stack(
         gui.stopMouseMovement(),
@@ -781,7 +792,7 @@ SGuiElem GuiBuilder::drawAllVillainsOverlay(const VillageInfo& info) {
   }
   for (int i : All(info.villages)) {
     auto& elem = info.villages[i];
-    auto infoOverlay = drawVillainInfoOverlay(elem);
+    auto infoOverlay = drawVillainInfoOverlay(elem, false);
     auto labelColor = Color::WHITE;
     if (elem.access == elem.INACTIVE)
       labelColor = Color::GRAY;

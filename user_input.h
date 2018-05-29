@@ -81,6 +81,7 @@ enum class UserInputId {
     LIBRARY_CLOSE,
     VILLAGE_ACTION,
     GO_TO_VILLAGE,
+    DISMISS_VILLAGE_INFO,
     PAY_RANSOM,
     IGNORE_RANSOM,
     SHOW_HISTORY,
@@ -181,12 +182,18 @@ struct AssignQuartersInfo {
   SERIALIZE_ALL(index, minionId)
 };
 
+struct DismissVillageInfo {
+  UniqueEntity<Collective>::Id SERIAL(collectiveId);
+  string SERIAL(infoText);
+  SERIALIZE_ALL(collectiveId, infoText)
+};
+
 enum class SpellId;
 
 class UserInput : public EnumVariant<UserInputId, TYPES(BuildingInfo, int, UniqueEntity<Creature>::Id,
     UniqueEntity<PlayerMessage>::Id, InventoryItemInfo, Vec2, TeamCreatureInfo, SpellId, VillageActionInfo,
     TaskActionInfo, EquipmentActionInfo, RenameActionInfo, WorkshopQueuedActionInfo, CreatureDropInfo, TeamDropInfo,
-    UniqueEntity<Collective>::Id, string, TeamMemberActionInfo, AssignQuartersInfo, TeamOrder),
+    UniqueEntity<Collective>::Id, string, TeamMemberActionInfo, AssignQuartersInfo, TeamOrder, DismissVillageInfo),
         ASSIGN(BuildingInfo,
             UserInputId::BUILD,
             UserInputId::RECT_SELECTION,
@@ -260,6 +267,8 @@ class UserInput : public EnumVariant<UserInputId, TYPES(BuildingInfo, int, Uniqu
             UserInputId::TEAM_MEMBER_ACTION),
         ASSIGN(AssignQuartersInfo,
             UserInputId::ASSIGN_QUARTERS),
+        ASSIGN(DismissVillageInfo,
+            UserInputId::DISMISS_VILLAGE_INFO),
         ASSIGN(string,
             UserInputId::CREATE_ITEM,
             UserInputId::APPLY_EFFECT,

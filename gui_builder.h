@@ -274,7 +274,7 @@ class GuiBuilder {
   SGuiElem drawRebellionChanceText(CollectiveInfo::RebellionChance);
   SGuiElem drawVillainsOverlay(const VillageInfo&);
   SGuiElem drawAllVillainsOverlay(const VillageInfo&);
-  SGuiElem drawVillainInfoOverlay(const VillageInfo::Village&);
+  SGuiElem drawVillainInfoOverlay(const VillageInfo::Village&, bool showDismissHint);
   SGuiElem drawVillainType(VillainType);
 };
 

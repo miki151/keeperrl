@@ -246,5 +246,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   ViewId getMinionGroupViewId(WCreature) const;
   SUnknownLocations SERIAL(unknownLocations);
   optional<LocalTime> lastWarningDismiss;
+  set<pair<UniqueEntity<Collective>::Id, string>> SERIAL(dismissedVillageInfos);
 };
 
