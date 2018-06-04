@@ -252,7 +252,12 @@ static int keeperMain(po::parser& commandLineFlags) {
     std::cout << commandLineFlags << endl;
     return 0;
   }
-  bool useSingleThread = commandLineFlags["single_thread"].was_set();
+  bool useSingleThread =
+#ifndef RELEASE
+      true;
+#else
+      commandLineFlags["single_thread"].was_set();
+#endif
   FatalLog.addOutput(DebugOutput::crash());
   FatalLog.addOutput(DebugOutput::toStream(std::cerr));
   UserErrorLog.addOutput(DebugOutput::exitProgram());
