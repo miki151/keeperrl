@@ -256,7 +256,8 @@ class GuiFactory {
     MINIMAP_CENTER1,
     MINIMAP_CENTER2,
     MINIMAP_CENTER3,
-    EXPAND_UP
+    EXPAND_UP,
+    SPECIAL_IMMIGRANT
   };
 
   SGuiElem minimapBar(SGuiElem icon1, SGuiElem icon2);

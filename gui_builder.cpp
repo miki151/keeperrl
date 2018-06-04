@@ -863,7 +863,7 @@ SGuiElem GuiBuilder::drawImmigrationOverlay(const CollectiveInfo& info, const op
     if (!elem.specialTraits.empty())
       button = gui.stack(
           std::move(button),
-          gui.translate(gui.label("*", Color::YELLOW), Vec2(3, 1))
+          gui.icon(GuiFactory::IconId::SPECIAL_IMMIGRANT)
       );
     if (tutorial && elem.tutorialHighlight && tutorial->highlights.contains(*elem.tutorialHighlight))
         button = gui.stack(std::move(button), gui.blink(makeHighlight(Color(255, 255, 0, 100))));
@@ -1577,15 +1577,14 @@ SGuiElem GuiBuilder::drawRightPlayerInfo(const PlayerInfo& info) {
         }));
     }
     teamList.addElemAuto(std::move(icon));
-    if (teamList.getLength() >= 6) {
-      int bottomMargin = i == info.teamInfos.size() - 1 ? -5 : 15;
-      vList.addElemAuto(gui.margins(teamList.buildHorizontalList(), 0, 25, 0, bottomMargin));
+    if (teamList.getLength() >= 5) {
+      vList.addElemAuto(gui.margins(teamList.buildHorizontalList(), 0, 25, 0, 0));
       teamList.clear();
     }
   }
   if (!teamList.isEmpty())
-    vList.addElemAuto(gui.margins(teamList.buildHorizontalList(), 0, 25, 0, 20));
-  vList.addSpace(10);
+    vList.addElemAuto(gui.margins(teamList.buildHorizontalList(), 0, 25, 0, 3));
+  vList.addSpace(22);
   if (info.teamOrders) {
     auto orderList = gui.getListBuilder();
     for (auto order : ENUM_ALL(TeamOrder)) {
@@ -1642,7 +1641,7 @@ SGuiElem GuiBuilder::drawTeams(CollectiveInfo& info, const optional<TutorialInfo
   auto lines = gui.getListBuilder(legendLineHeight);
   for (int i : All(info.teams)) {
     auto& team = info.teams[i];
-    const int numPerLine = 8;
+    const int numPerLine = 7;
     auto teamLine = gui.getListBuilder(legendLineHeight);
     vector<SGuiElem> currentLine;
     for (auto member : team.members) {
