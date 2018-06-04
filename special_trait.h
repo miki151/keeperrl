@@ -4,16 +4,16 @@
 #include "experience_type.h"
 
 struct ExtraTraining {
-  ExperienceType SERIAL(type); // HASH(type)
-  int SERIAL(increase); // HASH(increase)
-  SERIALIZE_ALL(type, increase)
+  ExperienceType HASH(type);
+  int HASH(increase);
+  COMPARE_ALL(type, increase)
   HASH_ALL(type, increase)
 };
 
 struct AttrBonus {
-  AttrType SERIAL(attr); // HASH(attr)
-  int SERIAL(increase); // HASH(increase)
-  SERIALIZE_ALL(attr, increase)
+  AttrType HASH(attr);
+  int HASH(increase);
+  COMPARE_ALL(attr, increase)
   HASH_ALL(attr, increase)
 };
 
