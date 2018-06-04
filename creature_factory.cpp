@@ -1445,7 +1445,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::VAMPIRE_LORD: 
       return CATTR(
           c.viewId = ViewId::VAMPIRE_LORD;
-          c.attr = LIST(17_dam, 17_def, 27_spell_dam );
+          c.attr = LIST(17_dam, 23_def, 27_spell_dam );
           c.body = Body::humanoid(Body::Material::UNDEAD_FLESH, Body::Size::LARGE);
           c.permanentEffects[LastingEffect::NIGHT_VISION] = 1;
           c.skills.setValue(SkillId::SORCERY, 0.5);
@@ -2436,6 +2436,8 @@ static vector<ItemType> getDefaultInventory(CreatureId id) {
         .add(randomBackup());
     case CreatureId::VAMPIRE_LORD:
       return ItemList()
+        .add(ItemType(ItemType::Robe{}).setPrefixChance(0.3))
+        .add(ItemType(ItemType::IronStaff{}).setPrefixChance(0.3))
         .add(ItemType::Scroll{Effect::Permanent{LastingEffect::DARKNESS_SOURCE}});
     case CreatureId::DARK_ELF_LORD: 
     case CreatureId::ELF_LORD: 
