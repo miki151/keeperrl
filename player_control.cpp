@@ -203,6 +203,7 @@ bool PlayerControl::canControlInTeam(WConstCreature c) const {
 }
 
 void PlayerControl::addToCurrentTeam(WCreature c) {
+  collective->freeTeamMembers({c});
   if (auto teamId = getCurrentTeam()) {
     getTeams().add(*teamId, c);
     if (getGame()->getPlayerCreatures().size() > 1)
@@ -1636,7 +1637,7 @@ void PlayerControl::commandTeam(TeamId team) {
   auto c = getTeams().getLeader(team);
   c->pushController(createMinionController(c));
   getTeams().activate(team);
-  collective->freeTeamMembers(team);
+  collective->freeTeamMembers(getTeams().getMembers(team));
   getView()->resetCenter();
 }
 

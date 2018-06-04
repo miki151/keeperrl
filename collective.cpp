@@ -1363,9 +1363,9 @@ const CollectiveTeams& Collective::getTeams() const {
   return *teams;
 }
 
-void Collective::freeTeamMembers(TeamId id) {
+void Collective::freeTeamMembers(const vector<WCreature>& members) {
   PROFILE;
-  for (WCreature c : teams->getMembers(id)) {
+  for (WCreature c : members) {
     if (c->isAffected(LastingEffect::SLEEP))
       c->removeEffect(LastingEffect::SLEEP);
   }

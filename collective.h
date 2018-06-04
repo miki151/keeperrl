@@ -183,7 +183,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
 
   CollectiveTeams& getTeams();
   const CollectiveTeams& getTeams() const;
-  void freeTeamMembers(TeamId);
+  void freeTeamMembers(const vector<WCreature>& members);
 
   const optional<CollectiveName>& getName() const;
   const TaskMap& getTaskMap() const;

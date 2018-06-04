@@ -121,7 +121,7 @@ void VillageControl::launchAttack(vector<WCreature> attackers) {
           (Random.getDouble(villain->ransom->first * 0.6, villain->ransom->first * 1.5)) * hisGold);
     TeamId team = collective->getTeams().createPersistent(attackers);
     collective->getTeams().activate(team);
-    collective->freeTeamMembers(team);
+    collective->freeTeamMembers(attackers);
     vector<WConstTask> attackTasks;
     for (WCreature c : attackers) {
       PTask task;
