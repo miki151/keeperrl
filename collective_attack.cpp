@@ -41,8 +41,12 @@ optional<int> CollectiveAttack::getRansom() const {
 
 bool CollectiveAttack::isOngoing() const {
   for (auto& task : attackTasks)
-    if (!!task)
-      return true;
+    if (!!task) {
+      for (auto& c : creatures)
+        if (!c->isDead())
+          return true;
+      break;
+    }
   return false;
 }
 
