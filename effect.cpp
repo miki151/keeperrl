@@ -499,9 +499,12 @@ string Effect::EnhanceWeapon::getDescription() const {
 }
 
 void Effect::DestroyEquipment::applyToCreature(WCreature c, WCreature attacker) const {
-  WItem dest = Random.choose(c->getEquipment().getAllEquipped());
-  c->you(MsgType::YOUR, dest->getName() + " crumbles to dust.");
-  c->steal({dest});
+  auto equipped = c->getEquipment().getAllEquipped();
+  if (!equipped.empty()) {
+    WItem dest = Random.choose(equipped);
+    c->you(MsgType::YOUR, dest->getName() + " crumbles to dust.");
+    c->steal({dest});
+  }
 }
 
 string Effect::DestroyEquipment::getName() const {
