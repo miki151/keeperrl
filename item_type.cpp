@@ -644,6 +644,7 @@ ItemAttributes ItemType::IronStaff::getAttributes() const {
       i.weaponInfo.attackType = AttackType::SPELL;
       i.weaponInfo.attackMsg = AttackMsg::WAVE;
       i.prefixes.push_back({1, Effect(Effect::Teleport{})});
+      i.prefixes.push_back({1, Effect(Effect::DestroyEquipment{})});
   );
 }
 
