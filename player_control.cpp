@@ -707,7 +707,7 @@ void PlayerControl::handleTrading(WCollective ally) {
     int budget = collective->numResource(ResourceId::GOLD);
     vector<ItemInfo> itemInfo = items.transform(
         [budget] (const vector<WItem>& it) { return getTradeItemInfo(it, budget); });
-    auto index = getView()->chooseTradeItem("Trade with " + ally->getName()->shortened,
+    auto index = getView()->chooseTradeItem("Trade with " + ally->getName()->full,
         {ViewId::GOLD, collective->numResource(ResourceId::GOLD)}, itemInfo, &scrollPos);
     if (!index)
       break;
@@ -762,7 +762,7 @@ void PlayerControl::handlePillage(WCollective col) {
       return;
     vector<ItemInfo> itemInfo = options.transform([] (const PillageOption& it) {
             return getPillageItemInfo(it.items, it.storage.empty());});
-    auto index = getView()->choosePillageItem("Pillage " + col->getName()->shortened, itemInfo, &scrollPos);
+    auto index = getView()->choosePillageItem("Pillage " + col->getName()->full, itemInfo, &scrollPos);
     if (!index)
       break;
     CHECK(!options[*index].storage.empty());

@@ -73,8 +73,8 @@ optional<CollectiveName> CollectiveBuilder::generateName() {
       ret.full = leader->getName().title();
     if (locationName)
       ret.shortened = *locationName;
-    else
-      ret.shortened = leader->getName().first().value_or(leader->getName().bare());
+    else if (auto leaderName = leader->getName().first())
+      ret.shortened = *leaderName;
     if (raceName)
       ret.race = *raceName;
     else

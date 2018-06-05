@@ -321,7 +321,7 @@ class CollectiveInfo {
 class VillageInfo {
   public:
   struct Village {
-    string HASH(name);
+    optional<string> HASH(name);
     string HASH(tribeName);
     ViewId HASH(viewId);
     VillainType HASH(type);

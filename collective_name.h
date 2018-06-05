@@ -3,7 +3,7 @@
 #include "util.h"
 
 struct CollectiveName {
-  string SERIAL(shortened);
+  optional<string> SERIAL(shortened);
   string SERIAL(full);
   string SERIAL(race);
   ViewId SERIAL(viewId);

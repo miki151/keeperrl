@@ -1087,7 +1087,7 @@ class ElemList : public GuiLayout {
     if (num >= heights.size() - numAlignBack)
       return getBackPosition(num, bounds);
     int height = accuHeights[num];
-    return Range(bounds.getStart() + height, bounds.getStart() + height + heights[num]);
+    return Range(bounds.getStart() + height, min(bounds.getEnd(), bounds.getStart() + height + heights[num]));
   }
 
   int getLastTopElem(int myHeight) {

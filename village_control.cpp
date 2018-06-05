@@ -228,9 +228,9 @@ void VillageControl::update(bool currentlyActive) {
         /*if (getCollective()->getGame()->isSingleModel())
           fighters = filter(fighters, [this] (WConstCreature c) {
               return contains(getCollective()->getTerritory().getAll(), c->getPosition()); });*/
-        if (auto& name = collective->getName())
+        /*if (auto& name = collective->getName())
           INFO << name->shortened << " fighters: " << int(fighters.size())
-            << (!collective->getTeams().getAll().empty() ? " attacking " : "");
+            << (!collective->getTeams().getAll().empty() ? " attacking " : "");*/
         if (fighters.size() >= villain->minTeamSize && 
             allMembers.size() >= villain->minPopulation + villain->minTeamSize)
         launchAttack(getPrefix(Random.permutation(fighters),

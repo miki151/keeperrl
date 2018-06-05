@@ -672,9 +672,12 @@ SGuiElem GuiBuilder::drawVillainType(VillainType type) {
 
 SGuiElem GuiBuilder::drawVillainInfoOverlay(const VillageInfo::Village& info, bool showDismissHint) {
   auto lines = gui.getListBuilder(legendLineHeight);
+  string name = info.tribeName;
+  if (info.name)
+    name  = *info.name + ", " + name;
   lines.addElem(
       gui.getListBuilder()
-          .addElemAuto(gui.label(capitalFirst(info.name + ", " + info.tribeName)))
+          .addElemAuto(gui.label(capitalFirst(name)))
           .addSpace(100)
           .addElemAuto(drawVillainType(info.type))
           .buildHorizontalList());
@@ -803,13 +806,16 @@ SGuiElem GuiBuilder::drawAllVillainsOverlay(const VillageInfo& info) {
       labelColor = Color::RED;
     else if (!elem.triggers.empty())
       labelColor = Color::ORANGE;
-    auto label = gui.label(capitalFirst(elem.name + ", " + elem.tribeName), labelColor);
+    string name = elem.tribeName;
+    if (elem.name)
+      name  = *elem.name + ", " + name;
+    auto label = gui.label(capitalFirst(name), labelColor);
     for (auto& action : elem.actions)
       if (!action.disabledReason) {
         label = gui.stack(
             gui.getListBuilder()
                 .addElemAuto(std::move(label))
-                .addElemAuto(gui.label(" ["_s + getVillageActionText(action.action) + "]", Color::GREEN))
+                .addBackElemAuto(gui.label(" ["_s + getVillageActionText(action.action) + "]", Color::GREEN))
                 .buildHorizontalList(),
             gui.button(getButtonCallback({UserInputId::VILLAGE_ACTION,
                   VillageActionInfo{elem.id, action.action}}))
@@ -823,7 +829,7 @@ SGuiElem GuiBuilder::drawAllVillainsOverlay(const VillageInfo& info) {
                      gui.viewObject(ViewId::ROUND_SHADOW, 1, Color(255, 255, 255, 160)))))),
                  gui.setWidth(34, gui.centerVert(gui.centerHoriz(gui.bottomMargin(5,
                      gui.viewObject(elem.viewId)))))))
-            .addElemAuto(gui.rightMargin(5, gui.translate(std::move(label), Vec2(0, 0))))
+            .addElemAuto(gui.rightMargin(5, gui.translate(gui.renderInBounds(std::move(label)), Vec2(0, 0))))
             .buildHorizontalList(),
         gui.tooltip2(std::move(infoOverlay), [=](const Rectangle& r) { return r.topRight();})));
   }
@@ -1063,10 +1069,11 @@ SGuiElem GuiBuilder::getItemLine(const ItemInfo& item, function<void(Rectangle)>
   line.addMiddleElem(gui.label(item.name, color));
   auto mainLine = gui.stack(
       gui.buttonRect(onClick),
-      line.buildHorizontalList(),
+      gui.renderInBounds(line.buildHorizontalList()),
       getTooltip(getItemHint(item), (int) item.ids.getHash()));
   line.clear();
   line.addMiddleElem(std::move(mainLine));
+  line.addBackSpace(5);
   if (item.owner) {
     line.addBackElem(gui.viewObject(item.owner->viewId), viewObjectWidth);
     line.addBackElem(drawBestAttack(item.owner->bestAttack), getItemLineOwnerMargin() - viewObjectWidth);
