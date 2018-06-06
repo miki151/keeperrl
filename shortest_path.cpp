@@ -272,7 +272,7 @@ ShortestPath LevelShortestPath::makeShortestPath(WConstCreature creature, Positi
       auto dist1 = Position(from, level).getDistanceToNearestPortal().value_or(10000);
       auto dist2 = Position(to, level).getDistanceToNearestPortal().value_or(10000);
       // Use a suboptimal, but faster pathfinding.
-      return 2 * min(from.dist8(to), dist1 + dist2);
+      return 2 * min<double>(from.dist8(to) + 0.1 * from.distD(to), dist1 + dist2);
     };
     return ShortestPath(bounds, entryFun, lengthFun, directionsFun, to.getCoord(), from.getCoord(), mult);
   } else {

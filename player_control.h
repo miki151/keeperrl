@@ -44,6 +44,7 @@ class Tutorial;
 struct BuildInfo;
 class MoveInfo;
 class UnknownLocations;
+class AttackTrigger;
 
 class PlayerControl : public CreatureView, public CollectiveControl, public EventListener<PlayerControl> {
   public:
@@ -145,6 +146,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void handleSelection(Vec2 pos, const BuildInfo&, bool rectangle, bool deselectOnly = false);
   vector<CollectiveInfo::Button> fillButtons(const vector<BuildInfo>& buildInfo) const;
   VillageInfo::Village getVillageInfo(WConstCollective enemy) const;
+  string getTriggerLabel(const AttackTrigger&) const;
   void fillWorkshopInfo(CollectiveInfo&) const;
   void fillImmigration(CollectiveInfo&) const;
   void fillImmigrationHelp(CollectiveInfo&) const;
@@ -215,6 +217,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   vector<PlayerMessage> SERIAL(messages);
   vector<PlayerMessage> SERIAL(messageHistory);
   vector<CollectiveAttack> SERIAL(newAttacks);
+  vector<CollectiveAttack> SERIAL(notifiedAttacks);
   vector<CollectiveAttack> SERIAL(ransomAttacks);
   vector<string> SERIAL(hints);
   optional<PlayerMessage> findMessage(PlayerMessage::Id);
@@ -243,5 +246,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   ViewId getMinionGroupViewId(WCreature) const;
   SUnknownLocations SERIAL(unknownLocations);
   optional<LocalTime> lastWarningDismiss;
+  set<pair<UniqueEntity<Collective>::Id, string>> SERIAL(dismissedVillageInfos);
 };
 

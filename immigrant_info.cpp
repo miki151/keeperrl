@@ -106,7 +106,7 @@ bool ImmigrantInfo::isHiddenInHelp() const {
   return hiddenInHelp;
 }
 
-const vector<pair<double, SpecialTrait>>& ImmigrantInfo::getSpecialTraits() const {
+const vector<pair<double, vector<SpecialTrait>>>& ImmigrantInfo::getSpecialTraits() const {
   return specialTraits;
 }
 
@@ -182,7 +182,12 @@ ImmigrantInfo& ImmigrantInfo::setHiddenInHelp() {
 }
 
 ImmigrantInfo& ImmigrantInfo::addSpecialTrait(double chance, SpecialTrait trait) {
-  specialTraits.push_back({chance, trait});
+  specialTraits.push_back({chance, {trait}});
+  return *this;
+}
+
+ImmigrantInfo& ImmigrantInfo::addSpecialTrait(double chance, vector<SpecialTrait> traits) {
+  specialTraits.push_back({chance, traits});
   return *this;
 }
 

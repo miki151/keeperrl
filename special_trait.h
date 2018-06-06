@@ -4,12 +4,19 @@
 #include "experience_type.h"
 
 struct ExtraTraining {
-  ExperienceType SERIAL(type); // HASH(type)
-  int SERIAL(increase); // HASH(increase)
-  SERIALIZE_ALL(type, increase)
+  ExperienceType HASH(type);
+  int HASH(increase);
+  COMPARE_ALL(type, increase)
   HASH_ALL(type, increase)
 };
 
-using SpecialTrait = variant<ExtraTraining, LastingEffect, SkillId>;
+struct AttrBonus {
+  AttrType HASH(attr);
+  int HASH(increase);
+  COMPARE_ALL(attr, increase)
+  HASH_ALL(attr, increase)
+};
+
+using SpecialTrait = variant<ExtraTraining, LastingEffect, SkillId, AttrBonus>;
 
 extern void applySpecialTrait(SpecialTrait, WCreature);

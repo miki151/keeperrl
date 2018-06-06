@@ -119,15 +119,20 @@ void VillageControl::launchAttack(vector<WCreature> attackers) {
     if (villain->ransom && hisGold >= villain->ransom->second)
       ransom = max<int>(villain->ransom->second,
           (Random.getDouble(villain->ransom->first * 0.6, villain->ransom->first * 1.5)) * hisGold);
-    enemy->addAttack(CollectiveAttack(collective, attackers, ransom));
     TeamId team = collective->getTeams().createPersistent(attackers);
     collective->getTeams().activate(team);
-    collective->freeTeamMembers(team);
-    for (WCreature c : attackers)
+    collective->freeTeamMembers(attackers);
+    vector<WConstTask> attackTasks;
+    for (WCreature c : attackers) {
+      PTask task;
       if (c != collective->getTeams().getLeader(team))
-        collective->setTask(c, Task::chain(Task::follow(c), villain->getAttackTask(this)));
+        task = Task::chain(Task::follow(c), villain->getAttackTask(this));
       else
-        collective->setTask(c, villain->getAttackTask(this));
+        task = villain->getAttackTask(this);
+      attackTasks.push_back(task.get());
+      collective->setTask(c, std::move(task));
+    }
+    enemy->addAttack(CollectiveAttack(std::move(attackTasks), collective, attackers, ransom));
     attackSizes[team] = attackers.size();
   }
 }
@@ -138,7 +143,7 @@ void VillageControl::considerCancellingAttack() {
     if (members.size() < (attackSizes[team] + 1) / 2 || (members.size() == 1 &&
           members[0]->getBody().isSeriouslyWounded())) {
       for (WCreature c : members)
-        collective->cancelTask(c);
+        collective->freeFromTask(c);
       collective->getTeams().cancel(team);
     }
   }
@@ -148,7 +153,7 @@ void VillageControl::onRansomPaid() {
   for (auto team : collective->getTeams().getAll()) {
     vector<WCreature> members = collective->getTeams().getMembers(team);
     for (WCreature c : members)
-      collective->cancelTask(c);
+      collective->freeFromTask(c);
     collective->getTeams().cancel(team);
   }
 }
@@ -223,9 +228,9 @@ void VillageControl::update(bool currentlyActive) {
         /*if (getCollective()->getGame()->isSingleModel())
           fighters = filter(fighters, [this] (WConstCreature c) {
               return contains(getCollective()->getTerritory().getAll(), c->getPosition()); });*/
-        if (auto& name = collective->getName())
+        /*if (auto& name = collective->getName())
           INFO << name->shortened << " fighters: " << int(fighters.size())
-            << (!collective->getTeams().getAll().empty() ? " attacking " : "");
+            << (!collective->getTeams().getAll().empty() ? " attacking " : "");*/
         if (fighters.size() >= villain->minTeamSize && 
             allMembers.size() >= villain->minPopulation + villain->minTeamSize)
         launchAttack(getPrefix(Random.permutation(fighters),

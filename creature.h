@@ -121,7 +121,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   const Body& getBody() const;
   Body& getBody();
   bool isDead() const;
-  void clearLastAttacker();
+  void clearInfoForRetiring();
   optional<string> getDeathReason() const;
   GlobalTime getDeathTime() const;
   const EntitySet<Creature>& getKills() const;
@@ -141,6 +141,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   static CreatureAction wait();
   vector<WItem> getPickUpOptions() const;
   CreatureAction pickUp(const vector<WItem>& item) const;
+  bool canCarryMoreWeight(double) const;
   CreatureAction drop(const vector<WItem>& item) const;
   void drop(vector<PItem> item);
   struct AttackParams {
@@ -265,11 +266,10 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   vector<string> popPersonalEvents();
   void addPersonalEvent(const string&);
   struct CombatIntentInfo {
-    string SERIAL(attacker);
-    GlobalTime SERIAL(time);
-    SERIALIZE_ALL(attacker, time)
+    WCreature attacker;
+    GlobalTime time;
   };
-  void setLastCombatIntent(CombatIntentInfo);
+  void addCombatIntent(WCreature attacker, bool immediateAttack);
   optional<CombatIntentInfo> getLastCombatIntent() const;
   void onKilled(WCreature victim, optional<ExperienceType> lastDamage);
 
@@ -321,7 +321,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   vector<Position> visibleCreatures;
   HeapAllocated<Vision> SERIAL(vision);
   bool forceMovement = false;
-  optional<CombatIntentInfo> SERIAL(lastCombatIntent);
+  optional<CombatIntentInfo> lastCombatIntent;
   HeapAllocated<CreatureDebt> SERIAL(debt);
   double SERIAL(highestAttackValueEver) = 0;
   int SERIAL(lastMoveCounter) = 0;

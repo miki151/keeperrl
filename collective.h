@@ -69,7 +69,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   void addNewCreatureMessage(const vector<WCreature>&);
   void setTask(WCreature, PTask);
   bool hasTask(WConstCreature) const;
-  void cancelTask(WConstCreature);
+  void freeFromTask(WConstCreature);
   void banishCreature(WCreature);
   bool wasBanished(WConstCreature) const;
   void setVillainType(VillainType);
@@ -183,7 +183,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
 
   CollectiveTeams& getTeams();
   const CollectiveTeams& getTeams() const;
-  void freeTeamMembers(TeamId);
+  void freeTeamMembers(const vector<WCreature>& members);
 
   const optional<CollectiveName>& getName() const;
   const TaskMap& getTaskMap() const;
@@ -202,9 +202,9 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   void onPositionDiscovered(Position);
 
   struct CurrentActivity {
-    MinionActivity SERIAL(task);
+    MinionActivity SERIAL(activity);
     LocalTime SERIAL(finishTime);
-    SERIALIZE_ALL(task, finishTime)
+    SERIALIZE_ALL(activity, finishTime)
   };
 
   CurrentActivity getCurrentActivity(WConstCreature) const;
@@ -226,7 +226,6 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   protected:
   // From Task::Callback
   virtual void onAppliedItem(Position, WItem item) override;
-  virtual void onAppliedItemCancel(Position) override;
   virtual void onConstructed(Position, FurnitureType) override;
   virtual void onDestructed(Position, FurnitureType, const DestroyAction&) override;
   virtual void onAppliedSquare(WCreature, Position) override;

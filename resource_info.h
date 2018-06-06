@@ -10,7 +10,6 @@ struct ItemFetchInfo {
   ItemIndex index;
   CollectiveItemPredicate predicate;
   StorageDestinationFun destinationFun;
-  bool oneAtATime;
   CollectiveWarning warning;
 };
 

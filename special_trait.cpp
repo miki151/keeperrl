@@ -9,6 +9,9 @@ void applySpecialTrait(SpecialTrait trait, WCreature c) {
       [&] (const ExtraTraining& t) {
         c->getAttributes().increaseMaxExpLevel(t.type, t.increase);
       },
+      [&] (const AttrBonus& t) {
+        c->getAttributes().increaseBaseAttr(t.attr, t.increase);
+      },
       [&] (LastingEffect effect) {
         c->addPermanentEffect(effect);
       },

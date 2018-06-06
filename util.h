@@ -36,6 +36,8 @@ string toString(const T& t) {
   return ss.str();
 }
 
+string toStringWithSign(int);
+
 template <class T>
 string toString(const optional<T>& t) {
   if (t)

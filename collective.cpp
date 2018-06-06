@@ -219,7 +219,7 @@ void Collective::banishCreature(WCreature c) {
   vector<PTask> tasks;
   vector<WItem> items = c->getEquipment().getItems();
   if (!items.empty())
-    tasks.push_back(Task::dropItems(items));
+    tasks.push_back(Task::dropItemsAnywhere(items));
   if (!exitTiles.empty())
     tasks.push_back(Task::goToTryForever(Random.choose(exitTiles)));
   tasks.push_back(Task::disappear());
@@ -310,8 +310,8 @@ const vector<WCreature>& Collective::getCreatures() const {
 
 void Collective::setMinionActivity(WCreature c, MinionActivity activity) {
   auto current = getCurrentActivity(c);
-  if (current.task != activity) {
-    cancelTask(c);
+  if (current.activity != activity) {
+    freeFromTask(c);
     c->removeEffect(LastingEffect::SLEEP);
     currentActivity.set(c, {activity, getLocalTime() +
         MinionActivities::getDuration(c, activity).value_or(-1_visible)});
@@ -359,9 +359,8 @@ bool Collective::hasTask(WConstCreature c) const {
   return taskMap->hasTask(c);
 }
 
-void Collective::cancelTask(WConstCreature c) {
-  if (WTask task = taskMap->getTask(c))
-    taskMap->removeTask(task);
+void Collective::freeFromTask(WConstCreature c) {
+  taskMap->freeFromTask(c);
 }
 
 void Collective::setControl(PCollectiveControl c) {
@@ -458,8 +457,8 @@ void Collective::tick() {
   }
   if (config->getConstructions())
     updateConstructions();
-  if (config->getFetchItems() && Random.roll(5))
-    for (const ItemFetchInfo& elem : CollectiveConfig::getFetchInfo()) {
+  if (Random.roll(5))
+    for (const ItemFetchInfo& elem : config->getFetchInfo()) {
       for (Position pos : territory->getAll())
         fetchItems(pos, elem);
       for (Position pos : zones->getPositions(ZoneId::FETCH_ITEMS))
@@ -964,11 +963,6 @@ void Collective::onAppliedItem(Position pos, WItem item) {
     trap->setArmed();
 }
 
-void Collective::onAppliedItemCancel(Position pos) {
-  if (auto trap = constructions->getTrap(pos))
-    trap->reset();
-}
-
 bool Collective::isConstructionReachable(Position pos) {
   PROFILE;
   for (Position v : pos.neighbors8())
@@ -1016,11 +1010,12 @@ void Collective::handleTrapPlacementAndProduction() {
       vector<pair<WItem, Position>>& items = trapItems[trap.getType()];
       if (!items.empty()) {
         Position pos = items.back().second;
-        auto task = taskMap->addTask(Task::applyItem(this, pos, items.back().first, trapPos), pos,
+        auto item = items.back().first;
+        auto task = taskMap->addTask(Task::chain(Task::pickItem(pos, {item}), Task::applyItem(this, trapPos, {item})), pos,
             MinionActivity::CONSTRUCTION);
         markItem(items.back().first, task);
         items.pop_back();
-        trap.setMarked();
+        trap.setTask(task);
       } else
         ++missingTraps[trap.getType()];
     }
@@ -1116,9 +1111,7 @@ void Collective::fetchItems(Position pos, const ItemFetchInfo& elem) {
     const auto& destination = elem.destinationFun(this);
     if (!destination.empty()) {
       warnings->setWarning(elem.warning, false);
-      if (elem.oneAtATime)
-        equipment = {equipment[0]};
-      auto task = taskMap->addTask(Task::bringItem(this, pos, equipment, destination), pos, MinionActivity::HAULING);
+      auto task = taskMap->addTask(Task::pickItem(pos, equipment), pos, MinionActivity::HAULING);
       for (WItem it : equipment)
         markItem(it, task);
     } else
@@ -1370,9 +1363,9 @@ const CollectiveTeams& Collective::getTeams() const {
   return *teams;
 }
 
-void Collective::freeTeamMembers(TeamId id) {
+void Collective::freeTeamMembers(const vector<WCreature>& members) {
   PROFILE;
-  for (WCreature c : teams->getMembers(id)) {
+  for (WCreature c : members) {
     if (c->isAffected(LastingEffect::SLEEP))
       c->removeEffect(LastingEffect::SLEEP);
   }

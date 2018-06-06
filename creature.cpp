@@ -63,7 +63,7 @@ void Creature::serialize(Archive& ar, const unsigned int version) {
   ar(unknownAttackers, privateEnemies, holding);
   ar(controllerStack, kills, statuses);
   ar(difficultyPoints, points, capture);
-  ar(vision, lastCombatIntent, debt, lastDamageType, highestAttackValueEver);
+  ar(vision, debt, lastDamageType, highestAttackValueEver);
 }
 
 SERIALIZABLE(Creature)
@@ -197,7 +197,7 @@ GlobalTime Creature::getDeathTime() const {
   return *deathTime;
 }
 
-void Creature::clearLastAttacker() {
+void Creature::clearInfoForRetiring() {
   lastAttacker = nullptr;
 }
 
@@ -508,6 +508,13 @@ string Creature::getPluralAName(WItem item, int num) const {
     return toString(num) + " " + item->getAName(true, this);
 }
 
+bool Creature::canCarryMoreWeight(double weight) const {
+  if (auto& limit = getBody().getCarryLimit())
+    return weight <= *limit - equipment->getTotalWeight();
+  else
+    return true;
+}
+
 int Creature::canCarry(const vector<WItem>& items) const {
   int ret = 0;
   if (auto& limit = getBody().getCarryLimit()) {
@@ -539,7 +546,7 @@ CreatureAction Creature::pickUp(const vector<WItem>& itemsAll) const {
       if (equipment->getTotalWeight() > *limit / 2)
         you(MsgType::ARE, "overloaded");
     getGame()->addEvent(EventInfo::ItemsPickedUp{self, items});
-    self->spendTime();
+    //self->spendTime();
   });
 }
 
@@ -560,7 +567,7 @@ CreatureAction Creature::drop(const vector<WItem>& items) const {
     }
     getGame()->addEvent(EventInfo::ItemsDropped{self, items});
     self->getPosition().dropItems(self->equipment->removeItems(items, self));
-    self->spendTime();
+    //self->spendTime();
   });
 }
 
@@ -614,7 +621,7 @@ CreatureAction Creature::equip(WItem item) const {
     self->equipment->equip(item, slot, self);
     if (auto game = getGame())
       game->addEvent(EventInfo::ItemsEquipped{self, {item}});
-    self->spendTime();
+    //self->spendTime();
   });
 }
 
@@ -634,7 +641,7 @@ CreatureAction Creature::unequip(WItem item) const {
     thirdPerson(getName().the() + (slot == EquipmentSlot::WEAPON ? " sheathes " : " removes ") +
         item->getAName());
     self->equipment->unequip(item, self);
-    self->spendTime();
+    //self->spendTime();
   });
 }
 
@@ -811,9 +818,9 @@ int Creature::getPoints() const {
 
 void Creature::onKilled(WCreature victim, optional<ExperienceType> lastDamage) {
   double attackDiff = victim->highestAttackValueEver - highestAttackValueEver;
-  constexpr double maxLevelGain = 1.0;
+  constexpr double maxLevelGain = 3.0;
   constexpr double minLevelGain = 0.02;
-  constexpr double equalLevelGain = 0.2;
+  constexpr double equalLevelGain = 0.5;
   constexpr double maxLevelDiff = 10;
   double expIncrease = max(minLevelGain, min(maxLevelGain,
       (maxLevelGain - equalLevelGain) * attackDiff / maxLevelDiff + equalLevelGain));
@@ -967,6 +974,7 @@ CreatureAction Creature::attack(WCreature other, optional<AttackParams> attackPa
   if (!weapon)
     return CreatureAction("No available weapon or intrinsic attack");
   return CreatureAction(this, [=] (WCreature self) {
+    other->addCombatIntent(self, true);
     INFO << getName().the() << " attacking " << other->getName().the();
     auto damageAttr = weapon->getWeaponInfo().meleeAttackAttr;
     int damage = getAttr(damageAttr, false) + weapon->getModifier(damageAttr);
@@ -993,6 +1001,8 @@ void Creature::onAttackedBy(WCreature attacker) {
   if (!canSee(attacker))
     unknownAttackers.insert(attacker);
   if (attacker->tribe != tribe)
+    // This attack may be accidental, so only do this for creatures from another tribe.
+    // To handle intended attacks within one tribe, private enemy will be added in addCombatIntent
     privateEnemies.insert(attacker);
   lastAttacker = attacker;
 }
@@ -1122,7 +1132,7 @@ string attrStr(bool strong, bool agile, bool fast) {
 
 void Creature::heal(double amount) {
   if (getBody().heal(this, amount))
-    clearLastAttacker();
+    lastAttacker = nullptr;
   updateViewObject();
 }
 
@@ -1815,11 +1825,16 @@ bool Creature::isSameSector(Position pos) const {
   return pos.isConnectedTo(position, getMovementType());
 }
 
-void Creature::setLastCombatIntent(CombatIntentInfo info) {
-  lastCombatIntent = info;
+void Creature::addCombatIntent(WCreature attacker, bool immediateAttack) {
+  lastCombatIntent = CombatIntentInfo{attacker, *getGlobalTime()};
+  if (immediateAttack)
+    privateEnemies.insert(attacker);
 }
 
 optional<Creature::CombatIntentInfo> Creature::getLastCombatIntent() const {
-  return lastCombatIntent;
+  if (lastCombatIntent && lastCombatIntent->attacker && !lastCombatIntent->attacker->isDead())
+    return lastCombatIntent;
+  else
+    return none;
 }
 

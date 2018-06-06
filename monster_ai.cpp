@@ -399,10 +399,10 @@ class Fighter : public Behaviour {
       return NoMove;
   }
 
-  void setLastCombatIntent(WCreature attacked) {
+  void addCombatIntent(WCreature attacked, bool immediateAttack) {
     if (attacked->canSee(creature))
-      attacked->setLastCombatIntent({creature->getName().a(), *creature->getGlobalTime()});
-    creature->setLastCombatIntent({attacked->getName().a(), *creature->getGlobalTime()});
+      attacked->addCombatIntent(creature, immediateAttack);
+    creature->addCombatIntent(attacked, immediateAttack);
   }
 
   MoveInfo getPanicMove(WCreature other, double weight) {
@@ -475,7 +475,7 @@ class Fighter : public Behaviour {
       }
     if (best)
       if (auto action = creature->throwItem(best, dir))
-        return {1.0, action.append([=](WCreature) { setLastCombatIntent(other); }) };
+        return {1.0, action.append([=](WCreature) { addCombatIntent(other, true); }) };
     return NoMove;
   }
 
@@ -498,8 +498,8 @@ class Fighter : public Behaviour {
       if (auto action = tryEffect(effect, dir.shorten()))
         return action;
     if (auto action = creature->fire(dir.shorten()))
-      return {1.0, action.append([=](WCreature creature) {
-          setLastCombatIntent(other);
+      return {1.0, action.append([=](WCreature) {
+          addCombatIntent(other, true);
       })};
     return NoMove;
   }
@@ -541,8 +541,8 @@ class Fighter : public Behaviour {
     if (creature->getBody().isHumanoid() && !creature->getWeapon()) {
       if (WItem weapon = getBestWeapon())
         if (auto action = creature->equip(weapon))
-          return {3.0 / (2.0 + distance), action.prepend([=](WCreature creature) {
-            setLastCombatIntent(other);
+          return {3.0 / (2.0 + distance), action.prepend([=](WCreature) {
+            addCombatIntent(other, false);
         })};
     }
     return NoMove;
@@ -625,7 +625,7 @@ class Fighter : public Behaviour {
         lastSeen = none;
         if (auto action = creature->moveTowards(other->getPosition()))
           return {max(0., 1.0 - double(distance) / 20), action.prepend([=](WCreature creature) {
-            setLastCombatIntent(other);
+            addCombatIntent(other, false);
             lastSeen = LastSeen{other->getPosition(), *creature->getGlobalTime(), LastSeen::ATTACK, other->getUniqueId()};
             auto chaseInfo = chaseFreeze.getMaybe(other);
             auto startChaseFreeze = 20_visible;
@@ -642,7 +642,7 @@ class Fighter : public Behaviour {
     if (distance == 1)
       if (auto action = creature->attack(other, getAttackParams(other)))
         return {1.0, action.prepend([=](WCreature) {
-            setLastCombatIntent(other);
+            addCombatIntent(other, true);
         })};
     return NoMove;
   }
@@ -911,16 +911,12 @@ class ByCollective : public Behaviour {
     return NoMove;
   };
 
-  MoveInfo dropLoot() {
-    auto& config = collective->getConfig();
-    if (config.getFetchItems() && collective->getTerritory().contains(creature->getPosition())) {
-      vector<WItem> items = creature->getEquipment().getItems().filter([this](WConstItem item) {
-          return !collective->isItemMarked(item) && !collective->getMinionEquipment().isOwner(item, creature); });
-      if (!items.empty())
-        return creature->drop(items);
-    }
-    return NoMove;
-  };
+  PTask dropLoot() {
+    if (!collective->hasTrait(creature, MinionTrait::WORKER))
+      return MinionActivities::getDropItemsTask(collective, creature);
+    else
+      return nullptr;
+  }
 
   PTask getEquipmentTask() {
     if (!collective->usesEquipment(creature))
@@ -938,11 +934,11 @@ class ByCollective : public Behaviour {
       vector<WItem> consumables;
       for (auto item : allItems)
         if (item->canEquip())
-          tasks.push_back(Task::pickAndEquipItem(collective, v, item));
+          tasks.push_back(Task::pickAndEquipItem(v, item));
         else
           consumables.push_back(item);
       if (!consumables.empty())
-        tasks.push_back(Task::pickItem(collective, v, consumables));
+        tasks.push_back(Task::pickItem(v, consumables));
     }
     if (!tasks.empty())
       return Task::chain(std::move(tasks));
@@ -960,23 +956,25 @@ class ByCollective : public Behaviour {
 
   WTask getStandardTask() {
     PROFILE;
+    auto& taskMap = collective->getTaskMap();
+    if (PTask ret = dropLoot())
+      return taskMap.addTaskFor(std::move(ret), creature);
     auto current = collective->getCurrentActivity(creature);
-    if (current.task == MinionActivity::IDLE || !collective->isActivityGood(creature, current.task)) {
+    if (current.activity == MinionActivity::IDLE || !collective->isActivityGood(creature, current.activity)) {
       collective->setMinionActivity(creature, MinionActivity::IDLE);
       setRandomTask();
     }
     current = collective->getCurrentActivity(creature);
-    MinionActivity task = current.task;
-    auto& taskMap = collective->getTaskMap();
+    MinionActivity activity = current.activity;
     if (current.finishTime < collective->getLocalTime())
       collective->setMinionActivity(creature, MinionActivity::IDLE);
-    if (PTask ret = MinionActivities::generate(collective, creature, task))
-      return taskMap.addTaskFor(std::move(ret), creature);
-    if (WTask ret = MinionActivities::getExisting(collective, creature, task)) {
+    if (WTask ret = MinionActivities::getExisting(collective, creature, activity)) {
       taskMap.takeTask(creature, ret);
       return ret;
     }
-    FATAL << "No task generated for activity " << EnumInfo<MinionActivity>::getString(task);
+    if (PTask ret = MinionActivities::generate(collective, creature, activity))
+      return taskMap.addTaskFor(std::move(ret), creature);
+    FATAL << "No task generated for activity " << EnumInfo<MinionActivity>::getString(activity);
     return {};
   }
 
@@ -1009,15 +1007,16 @@ class ByCollective : public Behaviour {
   };
 
   void considerHealingTask() {
-    const static EnumSet<MinionActivity> healingTasks {MinionActivity::SLEEP};
     PROFILE;
-    if (creature->getBody().canHeal() && !creature->isAffected(LastingEffect::POISON))
-      for (MinionActivity t : healingTasks) {
-        auto currentTask = collective->getCurrentActivity(creature).task;
-        if (creature->getAttributes().getMinionActivities().isAvailable(collective, creature, t) &&
-            !healingTasks.contains(currentTask)) {
-          collective->cancelTask(creature);
-          collective->setMinionActivity(creature, t);
+    const static EnumSet<MinionActivity> healingActivities {MinionActivity::SLEEP};
+    auto currentActivity = collective->getCurrentActivity(creature).activity;
+    if (creature->getBody().canHeal() && !creature->isAffected(LastingEffect::POISON) &&
+        !healingActivities.contains(currentActivity))
+      for (MinionActivity activity : healingActivities) {
+        if (creature->getAttributes().getMinionActivities().isAvailable(collective, creature, activity) &&
+            collective->isActivityGood(creature, activity)) {
+          collective->freeFromTask(creature);
+          collective->setMinionActivity(creature, activity);
           return;
         }
       }
@@ -1042,7 +1041,6 @@ class ByCollective : public Behaviour {
         bindMethod(&ByCollective::getFighterMove, this),
         bindMethod(&ByCollective::priorityTask, this),
         bindMethod(&ByCollective::followTeamLeader, this),
-        bindMethod(&ByCollective::dropLoot, this),
         bindMethod(&ByCollective::goToAlarm, this),
         bindMethod(&ByCollective::normalTask, this),
         bindMethod(&ByCollective::newEquipmentTask, this),
@@ -1198,8 +1196,6 @@ class SplashItems {
     return ret;
   }
 
-  OwnerPointer<TaskCallback> callbackDummy = makeOwner<TaskCallback>();
-
   PTask getNextTask(Vec2 position, WLevel level) {
     if (items.empty())
       return nullptr;
@@ -1218,7 +1214,7 @@ class SplashItems {
       return nullptr;
     Vec2 target = Random.choose(targets);
     targets.removeElement(target);
-    return Task::bringItem(callbackDummy.get(), Position(pos, level), it, {Position(target, level)}, 100);
+    return Task::bringItem(Position(pos, level), it, {Position(target, level)});
   }
 
   void setInitialized(const FilePath& splashPath) {

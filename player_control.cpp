@@ -89,8 +89,8 @@ template <class Archive>
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
   ar& SUBCLASS(CollectiveControl) & SUBCLASS(EventListener);
   ar(memory, introText, lastControlKeeperQuestion);
-  ar(newAttacks, ransomAttacks, messages, hints, visibleEnemies);
-  ar(visibilityMap, unknownLocations);
+  ar(newAttacks, ransomAttacks, notifiedAttacks, messages, hints, visibleEnemies);
+  ar(visibilityMap, unknownLocations, dismissedVillageInfos);
   ar(messageHistory, tutorial, controlModeMessages, stunnedCreatures);
 }
 
@@ -203,6 +203,7 @@ bool PlayerControl::canControlInTeam(WConstCreature c) const {
 }
 
 void PlayerControl::addToCurrentTeam(WCreature c) {
+  collective->freeTeamMembers({c});
   if (auto teamId = getCurrentTeam()) {
     getTeams().add(*teamId, c);
     if (getGame()->getPlayerCreatures().size() > 1)
@@ -623,25 +624,23 @@ vector<PlayerControl::TechInfo> PlayerControl::getTechInfo() const {
   return ret;
 }
 
-static string getTriggerLabel(const AttackTrigger& trigger) {
+string PlayerControl::getTriggerLabel(const AttackTrigger& trigger) const {
   switch (trigger.getId()) {
-    case AttackTriggerId::SELF_VICTIMS: return "Killed tribe members";
-    case AttackTriggerId::GOLD: return "Your gold";
-    case AttackTriggerId::STOLEN_ITEMS: return "Item theft";
-    case AttackTriggerId::ROOM_BUILT:
-      switch (trigger.get<FurnitureType>()) {
-        case FurnitureType::THRONE: return "Your throne";
-        case FurnitureType::DEMON_SHRINE: return "Your lack of demon shrines";
-        case FurnitureType::IMPALED_HEAD: return "Impaled heads";
-        default: FATAL << "Unsupported ROOM_BUILT type"; return "";
-      }
-    case AttackTriggerId::POWER: return "Your power";
-    case AttackTriggerId::FINISH_OFF: return "Finishing you off";
-    case AttackTriggerId::ENEMY_POPULATION: return "Dungeon population";
-    case AttackTriggerId::TIMER: return "Your evilness";
-    case AttackTriggerId::NUM_CONQUERED: return "Your aggression";
-    case AttackTriggerId::MINING_IN_PROXIMITY: return "Breach of territory";
-    case AttackTriggerId::PROXIMITY: return "Proximity";
+    case AttackTriggerId::SELF_VICTIMS: return "killed tribe members";
+    case AttackTriggerId::GOLD: return "gold";
+    case AttackTriggerId::STOLEN_ITEMS: return "item theft";
+    case AttackTriggerId::ROOM_BUILT: {
+      auto type = trigger.get<RoomTriggerInfo>().type;
+      auto myCount = collective->getConstructions().getBuiltCount(type);
+      return Furniture::getName(type, myCount);
+    }
+    case AttackTriggerId::POWER: return "your power";
+    case AttackTriggerId::FINISH_OFF: return "finishing you off";
+    case AttackTriggerId::ENEMY_POPULATION: return "population";
+    case AttackTriggerId::TIMER: return "your evil";
+    case AttackTriggerId::NUM_CONQUERED: return "your aggression";
+    case AttackTriggerId::MINING_IN_PROXIMITY: return "breach of territory";
+    case AttackTriggerId::PROXIMITY: return "proximity";
   }
 }
 
@@ -650,38 +649,44 @@ VillageInfo::Village PlayerControl::getVillageInfo(WConstCollective col) const {
   info.name = col->getName()->shortened;
   info.id = col->getUniqueId();
   info.tribeName = col->getName()->race;
+  info.viewId = col->getName()->viewId;
   info.triggers.clear();
+  info.type = col->getVillainType();
+  info.attacking = false;
+  for (auto& attack : notifiedAttacks)
+    if (attack.getAttacker() == col && attack.isOngoing())
+        info.attacking = true;
+  auto addTriggers = [&] {
+    for (auto& trigger : col->getTriggers(collective))
+//#ifdef RELEASE
+      if (trigger.value > 0)
+//#endif
+        info.triggers.push_back({getTriggerLabel(trigger.trigger), trigger.value});
+  };
   if (col->getModel() == getModel()) {
     if (!collective->isKnownVillainLocation(col) && !getGame()->getOptions()->getBoolValue(OptionId::SHOW_MAP))
       info.access = VillageInfo::Village::NO_LOCATION;
     else {
       info.access = VillageInfo::Village::LOCATION;
-      for (auto& trigger : col->getTriggers(collective))
-        info.triggers.push_back({getTriggerLabel(trigger.trigger), trigger.value});
+      addTriggers();
     }
   } else if (!getGame()->isVillainActive(col))
     info.access = VillageInfo::Village::INACTIVE;
   else {
     info.access = VillageInfo::Village::ACTIVE;
-    for (auto& trigger : col->getTriggers(collective))
-      info.triggers.push_back({getTriggerLabel(trigger.trigger), trigger.value});
+    addTriggers();
   }
-  bool hostile = col->getTribe()->isEnemy(collective->getTribe());
-  if (col->isConquered()) {
-    info.state = info.CONQUERED;
+  if ((info.isConquered = col->isConquered())) {
     info.triggers.clear();
     if (col->canPillage())
       info.actions.push_back({VillageAction::PILLAGE, none});
-  } else if (hostile)
-    info.state = info.HOSTILE;
-  else {
-    info.state = info.FRIENDLY;
+  } else if (!col->getTribe()->isEnemy(collective->getTribe())) {
     if (collective->isKnownVillainLocation(col)) {
       if (col->hasTradeItems())
         info.actions.push_back({VillageAction::TRADE, none});
     } else if (getGame()->isVillainActive(col)) {
       if (col->hasTradeItems())
-        info.actions.push_back({VillageAction::TRADE, string("You must discover the location of the ally first.")});
+        info.actions.push_back({VillageAction::TRADE, string("You must discover the location of the ally in order to trade.")});
     }
   }
   return info;
@@ -702,7 +707,7 @@ void PlayerControl::handleTrading(WCollective ally) {
     int budget = collective->numResource(ResourceId::GOLD);
     vector<ItemInfo> itemInfo = items.transform(
         [budget] (const vector<WItem>& it) { return getTradeItemInfo(it, budget); });
-    auto index = getView()->chooseTradeItem("Trade with " + ally->getName()->shortened,
+    auto index = getView()->chooseTradeItem("Trade with " + ally->getName()->full,
         {ViewId::GOLD, collective->numResource(ResourceId::GOLD)}, itemInfo, &scrollPos);
     if (!index)
       break;
@@ -757,7 +762,7 @@ void PlayerControl::handlePillage(WCollective col) {
       return;
     vector<ItemInfo> itemInfo = options.transform([] (const PillageOption& it) {
             return getPillageItemInfo(it.items, it.storage.empty());});
-    auto index = getView()->choosePillageItem("Pillage " + col->getName()->shortened, itemInfo, &scrollPos);
+    auto index = getView()->choosePillageItem("Pillage " + col->getName()->full, itemInfo, &scrollPos);
     if (!index)
       break;
     CHECK(!options[*index].storage.empty());
@@ -831,7 +836,7 @@ vector<PlayerInfo> PlayerControl::getPlayerInfos(vector<WCreature> creatures, Un
         if (c->getAttributes().getMinionActivities().isAvailable(collective, c, t, true)) {
           minionInfo.minionTasks.push_back({t,
               !collective->isActivityGood(c, t, true),
-              collective->getCurrentActivity(c).task == t,
+              collective->getCurrentActivity(c).activity == t,
               c->getAttributes().getMinionActivities().isLocked(t)});
         }
       if (collective->usesEquipment(c))
@@ -1249,12 +1254,18 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
     tutorial->refreshInfo(getGame(), gameInfo.tutorial);
   gameInfo.singleModel = getGame()->isSingleModel();
   gameInfo.villageInfo.villages.clear();
-  gameInfo.villageInfo.numTotalVillains = 0;
-  for (WConstCollective col : getKnownVillains())
-    if (col->getName() && col->isDiscoverable()) {
-      gameInfo.villageInfo.villages[col->getVillainType()].push_back(getVillageInfo(col));
-      ++gameInfo.villageInfo.numTotalVillains;
-    }
+  gameInfo.villageInfo.numMainVillains = gameInfo.villageInfo.numConqueredMainVillains = 0;
+  for (auto& col : getGame()->getVillains(VillainType::MAIN)) {
+    ++gameInfo.villageInfo.numMainVillains;
+    if (col->isConquered())
+      ++gameInfo.villageInfo.numConqueredMainVillains;
+  }
+  for (auto& col : getKnownVillains())
+    if (col->getName() && col->isDiscoverable())
+      gameInfo.villageInfo.villages.push_back(getVillageInfo(col));
+  gameInfo.villageInfo.dismissedInfos = dismissedVillageInfos;
+  std::stable_sort(gameInfo.villageInfo.villages.begin(), gameInfo.villageInfo.villages.end(),
+       [](const auto& v1, const auto& v2) { return (int) v1.type < (int) v2.type; });
   SunlightInfo sunlightInfo = getGame()->getSunlightInfo();
   gameInfo.sunlightInfo = { sunlightInfo.getText(), sunlightInfo.getTimeRemaining() };
   gameInfo.infoType = GameInfo::InfoType::BAND;
@@ -1626,7 +1637,7 @@ void PlayerControl::commandTeam(TeamId team) {
   auto c = getTeams().getLeader(team);
   c->pushController(createMinionController(c));
   getTeams().activate(team);
-  collective->freeTeamMembers(team);
+  collective->freeTeamMembers(getTeams().getMembers(team));
   getView()->resetCenter();
 }
 
@@ -1793,6 +1804,11 @@ void PlayerControl::processInput(View* view, UserInput input) {
           scrollToMiddle(col->getTerritory().getAll());
       }
       break;
+    case UserInputId::DISMISS_VILLAGE_INFO: {
+      auto& info = input.get<DismissVillageInfo>();
+      dismissedVillageInfos.insert({info.collectiveId, info.infoText});
+      break;
+    }
     case UserInputId::CREATE_TEAM:
       if (WCreature c = getCreature(input.get<Creature::Id>()))
         if (collective->hasTrait(c, MinionTrait::FIGHTER) || c == collective->getLeader())
@@ -2383,7 +2399,7 @@ void PlayerControl::checkKeeperDanger() {
       if (auto lastCombatIntent = keeper->getLastCombatIntent())
         if (lastCombatIntent->time > getGame()->getGlobalTime() - 5_visible) {
           lastControlKeeperQuestion = collective->getGlobalTime();
-          if (prompt("The Keeper is engaged in a fight with " + lastCombatIntent->attacker)) {
+          if (prompt("The Keeper is engaged in a fight with " + lastCombatIntent->attacker->getName().a())) {
             controlSingle(keeper);
             return;
           }
@@ -2505,6 +2521,7 @@ void PlayerControl::tick() {
         newAttacks.removeElement(attack);
         if (auto attacker = attack.getAttacker())
           collective->addKnownVillain(attacker);
+        notifiedAttacks.push_back(attack);
         if (attack.getRansom())
           ransomAttacks.push_back(attack);
         break;

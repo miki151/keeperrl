@@ -173,7 +173,7 @@ void Game::prepareSiteRetirement() {
           c.minPopulation = 24;
           c.minTeamSize = 5;
           c.triggers = LIST(
-              {AttackTriggerId::ROOM_BUILT, FurnitureType::THRONE},
+              {AttackTriggerId::ROOM_BUILT, RoomTriggerInfo{FurnitureType::THRONE, 0.0003}},
               {AttackTriggerId::SELF_VICTIMS},
               AttackTriggerId::STOLEN_ITEMS,
           );
@@ -193,7 +193,7 @@ void Game::prepareSiteRetirement() {
             transferCreature(c, models[v].get());
   // So we don't have references to creatures in another model.
   for (WCreature c : mainModel->getAllCreatures())
-    c->clearLastAttacker();
+    c->clearInfoForRetiring();
   mainModel->clearExternalEnemies();
   TribeId::switchForSerialization(TribeId::getKeeper(), TribeId::getRetiredKeeper());
   UniqueEntity<Item>::offsetForSerialization(Random.getLL());

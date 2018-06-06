@@ -225,7 +225,8 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
               c.minPopulation = 0;
               c.minTeamSize = 3;
               c.triggers = LIST(
-                  {AttackTriggerId::ROOM_BUILT, FurnitureType::DEMON_SHRINE});
+                  {AttackTriggerId::ROOM_BUILT, RoomTriggerInfo{FurnitureType::DEMON_SHRINE, 0.0001}},
+              );
               c.attackBehaviour = AttackBehaviour(AttackBehaviourId::KILL_LEADER);
               c.ransom = make_pair(0.5, random.get(50, 100));),
           LevelConnection{LevelConnection::CRYPT, get(EnemyId::DEMON_DEN_ABOVE)});
@@ -268,11 +269,11 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
               c.minPopulation = 3;
               c.minTeamSize = 5;
               c.triggers = LIST(
-                  {AttackTriggerId::ROOM_BUILT, FurnitureType::THRONE},
+                  {AttackTriggerId::ROOM_BUILT, RoomTriggerInfo{FurnitureType::THRONE, 0.0003}},
+                  {AttackTriggerId::ROOM_BUILT, RoomTriggerInfo{FurnitureType::IMPALED_HEAD, 0.0001}},
                   AttackTriggerId::SELF_VICTIMS,
                   {AttackTriggerId::NUM_CONQUERED, 2},
                   AttackTriggerId::STOLEN_ITEMS,
-                  {AttackTriggerId::ROOM_BUILT, FurnitureType::IMPALED_HEAD},
                   AttackTriggerId::FINISH_OFF,
                   AttackTriggerId::PROXIMITY);
               c.attackBehaviour = AttackBehaviour(AttackBehaviourId::KILL_LEADER);
@@ -307,11 +308,11 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
               c.minPopulation = 12;
               c.minTeamSize = 10;
               c.triggers = LIST(
-                  {AttackTriggerId::ROOM_BUILT, FurnitureType::THRONE},
+                  {AttackTriggerId::ROOM_BUILT, RoomTriggerInfo{FurnitureType::THRONE, 0.0003}},
+                  {AttackTriggerId::ROOM_BUILT, RoomTriggerInfo{FurnitureType::IMPALED_HEAD, 0.0001}},
                   AttackTriggerId::SELF_VICTIMS,
                   {AttackTriggerId::NUM_CONQUERED, 3},
                   AttackTriggerId::STOLEN_ITEMS,
-                  {AttackTriggerId::ROOM_BUILT, FurnitureType::IMPALED_HEAD},
                   AttackTriggerId::FINISH_OFF,
                   AttackTriggerId::PROXIMITY);
               c.attackBehaviour = AttackBehaviour(AttackBehaviourId::KILL_LEADER);
@@ -393,10 +394,10 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.minPopulation = 3;
             c.minTeamSize = 4;
             c.triggers = LIST(
-                {AttackTriggerId::ROOM_BUILT, FurnitureType::THRONE},
+                {AttackTriggerId::ROOM_BUILT, RoomTriggerInfo{FurnitureType::THRONE, 0.0003}},
+                {AttackTriggerId::ROOM_BUILT, RoomTriggerInfo{FurnitureType::IMPALED_HEAD, 0.0001}},
                 AttackTriggerId::SELF_VICTIMS,
                 AttackTriggerId::STOLEN_ITEMS,
-                {AttackTriggerId::ROOM_BUILT, FurnitureType::IMPALED_HEAD},
                 {AttackTriggerId::NUM_CONQUERED, 3},
                 AttackTriggerId::FINISH_OFF,
                 AttackTriggerId::PROXIMITY);
@@ -444,9 +445,9 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
               c.minPopulation = 0;
               c.minTeamSize = 1;
               c.triggers = LIST(
-                  {AttackTriggerId::ROOM_BUILT, FurnitureType::THRONE},
+                  {AttackTriggerId::ROOM_BUILT, RoomTriggerInfo{FurnitureType::THRONE, 0.0003}},
+                  {AttackTriggerId::ROOM_BUILT, RoomTriggerInfo{FurnitureType::IMPALED_HEAD, 0.0001}},
                   AttackTriggerId::PROXIMITY,
-                  {AttackTriggerId::ROOM_BUILT, FurnitureType::IMPALED_HEAD},
                   AttackTriggerId::FINISH_OFF,
                   {AttackTriggerId::NUM_CONQUERED, 3});
               c.attackBehaviour = AttackBehaviour(AttackBehaviourId::CAMP_AND_SPAWN,
@@ -507,7 +508,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
                   AttackTriggerId::POWER,
                   AttackTriggerId::SELF_VICTIMS,
                   AttackTriggerId::STOLEN_ITEMS,
-                  {AttackTriggerId::ROOM_BUILT, FurnitureType::IMPALED_HEAD},
+                  {AttackTriggerId::ROOM_BUILT, RoomTriggerInfo{FurnitureType::IMPALED_HEAD, 0.0001}},
                   {AttackTriggerId::NUM_CONQUERED, 2},
                   AttackTriggerId::FINISH_OFF,
                   AttackTriggerId::PROXIMITY);

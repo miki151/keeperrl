@@ -418,7 +418,9 @@ string Item::getShortName(WConstCreature owner, bool plural) const {
   if (attributes->artifactName)
     return *attributes->artifactName + " " + getModifiers(true);
   string name;
-  if (attributes->shortName) {
+  if (!!attributes->prefix)
+    name = *attributes->prefix;
+  else if (attributes->shortName) {
     name = *attributes->shortName;
     appendWithSpace(name, getSuffix());
   } else
@@ -429,7 +431,6 @@ string Item::getShortName(WConstCreature owner, bool plural) const {
 
 string Item::getNameAndModifiers(bool getPlural, WConstCreature owner) const {
   auto ret = getName(getPlural, owner);
-  appendWithSpace(ret, getSuffix());
   appendWithSpace(ret, getModifiers());
   return ret;
 }

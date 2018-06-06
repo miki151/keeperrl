@@ -3,9 +3,10 @@
 #include "util.h"
 
 struct CollectiveName {
-  string SERIAL(shortened);
+  optional<string> SERIAL(shortened);
   string SERIAL(full);
   string SERIAL(race);
-  SERIALIZE_ALL(shortened, full, race)
+  ViewId SERIAL(viewId);
+  SERIALIZE_ALL(shortened, full, race, viewId)
 };
 

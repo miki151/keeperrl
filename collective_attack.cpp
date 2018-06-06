@@ -3,8 +3,9 @@
 #include "collective.h"
 #include "creature.h"
 #include "collective_name.h"
+#include "task.h"
 
-SERIALIZE_DEF(CollectiveAttack, attacker, ransom, creatures, attackerName)
+SERIALIZE_DEF(CollectiveAttack, attacker, ransom, creatures, attackerName, attackTasks)
 SERIALIZATION_CONSTRUCTOR_IMPL(CollectiveAttack);
 
 static string generateAttackerName(WConstCollective attacker) {
@@ -14,11 +15,11 @@ static string generateAttackerName(WConstCollective attacker) {
     return "an unnamed attacker";
 }
 
-CollectiveAttack::CollectiveAttack(WCollective att, const vector<WCreature>& c, optional<int> r)
-  : ransom(r), creatures(c), attacker(att), attackerName(generateAttackerName(att)) {}
+CollectiveAttack::CollectiveAttack(vector<WConstTask> attackTasks, WCollective att, const vector<WCreature>& c, optional<int> r)
+    : ransom(r), creatures(c), attacker(att), attackerName(generateAttackerName(att)), attackTasks(attackTasks) {}
 
-CollectiveAttack::CollectiveAttack(const string& name, const vector<WCreature>& c) : creatures(c), attackerName(name) {
-
+CollectiveAttack::CollectiveAttack(vector<WConstTask> attackTasks, const string& name, const vector<WCreature>& c)
+    : creatures(c), attackerName(name), attackTasks(attackTasks) {
 }
 
 
@@ -36,6 +37,17 @@ const vector<WCreature>& CollectiveAttack::getCreatures() const {
 
 optional<int> CollectiveAttack::getRansom() const {
   return ransom;
+}
+
+bool CollectiveAttack::isOngoing() const {
+  for (auto& task : attackTasks)
+    if (!!task) {
+      for (auto& c : creatures)
+        if (!c->isDead())
+          return true;
+      break;
+    }
+  return false;
 }
 
 bool CollectiveAttack::operator == (const CollectiveAttack& o) const {

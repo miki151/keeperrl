@@ -54,7 +54,7 @@ PTask ExternalEnemies::getAttackTask(WCollective enemy, AttackBehaviour behaviou
     case AttackBehaviourId::KILL_MEMBERS:
       return Task::killFighters(enemy, behaviour.get<int>());
     case AttackBehaviourId::STEAL_GOLD:
-      return Task::stealFrom(enemy, callbackDummy.get());
+      return Task::stealFrom(enemy);
     case AttackBehaviourId::CAMP_AND_SPAWN:
       return Task::campAndSpawn(enemy,
             behaviour.get<CreatureFactory>(), Random.get(3, 7), Range(3, 7), Random.get(3, 7));
@@ -92,8 +92,10 @@ void ExternalEnemies::update(WLevel level, LocalTime localTime) {
   if (auto nextWave = popNextWave(localTime)) {
     vector<WCreature> attackers;
     Vec2 landingDir(Random.choose<Dir>());
+    auto attackTask = getAttackTask(target, nextWave->enemy.behaviour);
+    auto attackTaskRef = attackTask.get();
     auto creatures = nextWave->enemy.creatures.generate(Random, TribeId::getHuman(),
-        MonsterAIFactory::singleTask(getAttackTask(target, nextWave->enemy.behaviour),
+        MonsterAIFactory::singleTask(std::move(attackTask),
             nextWave->enemy.behaviour.getId() != AttackBehaviourId::HALLOWEEN_KIDS));
     for (auto& c : creatures) {
       c->getAttributes().setCourage(1);
@@ -102,7 +104,7 @@ void ExternalEnemies::update(WLevel level, LocalTime localTime) {
         attackers.push_back(ref);
     }
     if (nextWave->enemy.behaviour.getId() != AttackBehaviourId::HALLOWEEN_KIDS) {
-      target->addAttack(CollectiveAttack(nextWave->enemy.name, attackers));
+      target->addAttack(CollectiveAttack({attackTaskRef}, nextWave->enemy.name, attackers));
       currentWaves.push_back(CurrentWave{nextWave->enemy.name, attackers});
     }
   }

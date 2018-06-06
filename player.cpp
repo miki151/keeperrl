@@ -310,7 +310,7 @@ bool Player::interruptedByEnemy() {
   if (auto combatIntent = creature->getLastCombatIntent())
     if (combatIntent->time > lastEnemyInterruption && combatIntent->time > getGame()->getGlobalTime() - 5_visible) {
       lastEnemyInterruption = combatIntent->time;
-      privateMessage("You are being attacked by " + combatIntent->attacker);
+      privateMessage("You are being attacked by " + combatIntent->attacker->getName().a());
       return true;
     }
   return false;
@@ -705,9 +705,9 @@ void Player::makeMove() {
         break;
   #ifndef RELEASE
       case UserInputId::CHEAT_ATTRIBUTES:
-        creature->getAttributes().setBaseAttr(AttrType::DAMAGE, 80);
-        creature->getAttributes().setBaseAttr(AttrType::DEFENSE, 80);
-        creature->getAttributes().setBaseAttr(AttrType::SPELL_DAMAGE, 80);
+        creature->getAttributes().increaseBaseAttr(AttrType::DAMAGE, 80);
+        creature->getAttributes().increaseBaseAttr(AttrType::DEFENSE, 80);
+        creature->getAttributes().increaseBaseAttr(AttrType::SPELL_DAMAGE, 80);
         creature->addPermanentEffect(LastingEffect::SPEED, true);
         creature->addPermanentEffect(LastingEffect::FLYING, true);
         break;
