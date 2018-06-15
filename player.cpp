@@ -856,6 +856,10 @@ void Player::getViewIndex(Vec2 pos, ViewIndex& index) const {
       index.mergeFromMemory(*memIndex);
   if (position.isTribeForbidden(creature->getTribeId()))
     index.setHighlight(HighlightType::FORBIDDEN_ZONE);
+  if (getGame()->getOptions()->getBoolValue(OptionId::SHOW_MAP))
+    for (auto col : getGame()->getCollectives())
+      if (col->getTerritory().contains(position))
+        index.setHighlight(HighlightType::RECT_SELECTION);
   if (WCreature c = position.getCreature()) {
     if ((canSee && creature->canSeeInPosition(c)) || c == creature ||
         creature->canSeeOutsidePosition(c)) {
