@@ -2165,7 +2165,7 @@ static PMakerQueue genericMineTownMaker(RandomGen& random, SettlementInfo info, 
   if (info.outsideFeatures)
     queue->addMaker(unique<Furnitures>(Predicate::type(building.floorInside), 0.09, *info.outsideFeatures));
   queue->addMaker(unique<Inhabitants>(info.inhabitants, info.collective));
-  queue->addMaker(unique<PlaceCollective>(info.collective));
+  queue->addMaker(unique<PlaceCollective>(info.collective, Predicate::canEnter(MovementTrait::WALK)));
   return queue;
 }
 
