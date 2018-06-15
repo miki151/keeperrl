@@ -451,15 +451,26 @@ void Renderer::addQuad(const Rectangle& r, Color color) {
 
 void Renderer::setScissor(optional<Rectangle> s) {
   renderDeferredSprites();
-  if (s) {
+  auto applyScissor = [&] (Rectangle rect) {
     int zoom = getZoom();
-    SDL::glScissor(s->left() * zoom, (getSize().y - s->bottom()) * zoom, s->width() * zoom, s->height() * zoom);
+    SDL::glScissor(rect.left() * zoom, (getSize().y - rect.bottom()) * zoom,
+        rect.width() * zoom, rect.height() * zoom);
     SDL::glEnable(GL_SCISSOR_TEST);
-    isScissor = true;
+  };
+  if (s) {
+    Rectangle rect = *s;
+    if (!scissorStack.empty())
+      rect = rect.intersection(scissorStack.back());
+    applyScissor(rect);
+    scissorStack.push_back(rect);
   }
   else {
-    SDL::glDisable(GL_SCISSOR_TEST);
-    isScissor = false;
+    if (!scissorStack.empty())
+      scissorStack.pop_back();
+    if (!scissorStack.empty())
+      applyScissor(scissorStack.back());
+    else
+      SDL::glDisable(GL_SCISSOR_TEST);
   }
 }
 
@@ -476,7 +487,7 @@ void Renderer::popLayer() {
   renderDeferredSprites();
   SDL::glPopMatrix();
   checkOpenglError();
-  if (isScissor)
+  if (!scissorStack.empty())
     SDL::glEnable(GL_SCISSOR_TEST);
 }
 

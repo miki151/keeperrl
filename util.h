@@ -64,8 +64,8 @@ T fromString(const string& s) {
 template <class T>
 optional<T> fromStringSafe(const string& s);
 
-template <typename T>
-T lambdaConstruct(function<void(T&)> fun) {
+template <typename T, typename Fun>
+T lambdaConstruct(Fun fun) {
   T ret {};
   fun(ret);
   return ret;

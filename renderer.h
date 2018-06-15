@@ -243,7 +243,7 @@ class Renderer {
   };
   vector<DeferredSprite> deferredSprites;
   void renderDeferredSprites();
-  bool isScissor = false;
+  vector<Rectangle> scissorStack;
   void loadTilesFromDir(const DirectoryPath&, vector<Texture>&, Vec2 size, int setWidth);
   struct TileDirectory {
     DirectoryPath path;
