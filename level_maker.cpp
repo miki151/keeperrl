@@ -121,7 +121,7 @@ class SquareChange {
   }
 
   SquareChange& add(SquareChange added) {
-    auto funCopy = changeFun; // copy just the function because storing this leads to a crash
+    auto funCopy = changeFun; // copy just the function because storing "this" leads to a crash
     changeFun = [added, funCopy] (LevelBuilder* builder, Vec2 pos) {
         funCopy(builder, pos); added.changeFun(builder, pos); };
     return *this;
@@ -158,6 +158,12 @@ class SquareChange {
   static SquareChange reset(FurnitureParams params, optional<SquareAttrib> attrib = ::none) {
     return SquareChange([=](LevelBuilder* builder, Vec2 pos) {
       builder->resetFurniture(pos, params, attrib);
+    });
+  }
+
+  static SquareChange addTerritory(CollectiveBuilder* collective) {
+    return SquareChange([=](LevelBuilder* builder, Vec2 pos) {
+      collective->addArea(builder->toGlobalCoordinates({pos}));
     });
   }
 
@@ -2334,9 +2340,10 @@ static void generateResources(RandomGen& random, LevelMaker* startingPos, Random
   auto addResources = [&](int count, Range size, int maxDist, FurnitureType type, LevelMaker* center,
       CollectiveBuilder* collective) {
     for (int i : Range(count)) {
-      auto queue = unique<MakerQueue>(unique<FurnitureBlob>(SquareChange(FurnitureParams{type, TribeId::getKeeper()})));
+      SquareChange change(FurnitureParams{type, TribeId::getKeeper()});
       if (collective)
-        queue->addMaker(unique<PlaceCollective>(collective));
+        change.add(SquareChange::addTerritory(collective));
+      auto queue = unique<MakerQueue>(unique<FurnitureBlob>(std::move(change)));
       locations->add(std::move(queue), {random.get(size), random.get(size)},
           Predicate::type(FurnitureType::MOUNTAIN2));
       locations->setMaxDistanceLast(center, maxDist);
