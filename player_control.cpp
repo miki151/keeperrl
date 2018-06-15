@@ -666,10 +666,9 @@ VillageInfo::Village PlayerControl::getVillageInfo(WConstCollective col) const {
   if (col->getModel() == getModel()) {
     if (!collective->isKnownVillainLocation(col) && !getGame()->getOptions()->getBoolValue(OptionId::SHOW_MAP))
       info.access = VillageInfo::Village::NO_LOCATION;
-    else {
+    else
       info.access = VillageInfo::Village::LOCATION;
-      addTriggers();
-    }
+    addTriggers();
   } else if (!getGame()->isVillainActive(col))
     info.access = VillageInfo::Village::INACTIVE;
   else {
@@ -786,7 +785,7 @@ void PlayerControl::handleRansom(bool pay) {
 vector<WCollective> PlayerControl::getKnownVillains() const {
   auto showAll = getGame()->getOptions()->getBoolValue(OptionId::SHOW_MAP);
   return getGame()->getCollectives().filter([&](WCollective c) {
-      return showAll || collective->isKnownVillain(c);});
+      return showAll || collective->isKnownVillain(c) || !c->getTriggers(collective).empty();});
 }
 
 string PlayerControl::getMinionGroupName(WCreature c) const {

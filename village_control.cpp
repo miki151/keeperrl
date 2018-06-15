@@ -161,8 +161,11 @@ void VillageControl::onRansomPaid() {
 vector<TriggerInfo> VillageControl::getTriggers(WConstCollective against) const {
   vector<TriggerInfo> ret;
   if (villain && against == getEnemyCollective())
-    for (auto& elem : villain->triggers)
-      ret.push_back({elem, villain->getTriggerValue(elem, this)});
+    for (auto& elem : villain->triggers) {
+      auto value = villain->getTriggerValue(elem, this);
+      if (value > 0)
+        ret.push_back({elem, value});
+    }
   return ret;
 }
 
