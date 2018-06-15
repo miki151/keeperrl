@@ -275,12 +275,17 @@ void Effect::Teleport::applyToCreature(WCreature c, WCreature attacker) const {
   int infinity = 10000;
   PositionMap<int> weight;
   queue<Position> q;
-  for (Position v : c->getPosition().getRectangle(area))
-    if (auto other = v.getCreature())
-      if (other->isEnemy(c)) {
-        q.push(v);
-        weight.set(v, 0);
-      }
+  auto addDanger = [&] (Position pos) {
+    q.push(pos);
+    weight.set(pos, 0);
+  };
+  for (Position v : c->getPosition().getRectangle(area)) {
+    if (v.isBurning())
+      addDanger(v);
+    else if (auto other = v.getCreature())
+      if (other->isEnemy(c))
+        addDanger(v);
+  }
   while (!q.empty()) {
     Position v = q.front();
     q.pop();
