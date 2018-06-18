@@ -327,7 +327,7 @@ class EquipItem : public Task {
     return NoMove;
   }
 
-  SERIALIZE_ALL(item, itemName);
+  SERIALIZE_ALL(SUBCLASS(Task), item, itemName);
   SERIALIZATION_CONSTRUCTOR(EquipItem);
 
   private:
