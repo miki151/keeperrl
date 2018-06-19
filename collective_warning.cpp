@@ -25,6 +25,7 @@ void CollectiveWarnings::disable() {
 }
 
 void CollectiveWarnings::considerWarnings(WCollective col) {
+  PROFILE;
   setWarning(Warning::MANA, col->numResource(CollectiveResourceId::MANA) < 100);
   setWarning(Warning::DIGGING, col->getTerritory().isEmpty());
   considerMoraleWarning(col);

@@ -82,7 +82,7 @@ bool Zones::canSet(Position pos, ZoneId id, WConstCollective col) const {
 }
 
 void Zones::tick() {
-  PROFILE;
+  PROFILE_BLOCK("Zones::tick");
   for (auto pos : copyOf(zones[ZoneId::FETCH_ITEMS]))
     if (pos.getItems().empty())
       eraseZone(pos, ZoneId::FETCH_ITEMS);
