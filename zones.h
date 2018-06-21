@@ -18,7 +18,7 @@ class ViewIndex;
 
 class Zones {
   public:
-
+  Zones(Rectangle bounds);
   bool isZone(Position, ZoneId) const;
   bool isAnyZone(Position, EnumSet<ZoneId>) const;
   void setZone(Position, ZoneId);
@@ -29,8 +29,7 @@ class Zones {
   bool canSet(Position, ZoneId, WConstCollective) const;
   void tick();
 
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version);
+  SERIALIZATION_DECL(Zones)
 
   private:
   EnumMap<ZoneId, PositionSet> SERIAL(positions);

@@ -70,7 +70,7 @@ SERIALIZABLE(Collective)
 SERIALIZATION_CONSTRUCTOR_IMPL(Collective)
 
 Collective::Collective(Private, WLevel l, TribeId t, const optional<CollectiveName>& n)
-    : tribe(t), level(NOTNULL(l)), name(n), villainType(VillainType::NONE),
+    : tribe(t), level(NOTNULL(l)), name(n), villainType(VillainType::NONE), zones(level->getBounds()),
       positionMatching(makeOwner<PositionMatching>()) {
 }
 

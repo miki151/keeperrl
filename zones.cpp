@@ -7,6 +7,10 @@
 #include "territory.h"
 
 SERIALIZE_DEF(Zones, positions, zones)
+SERIALIZATION_CONSTRUCTOR_IMPL(Zones)
+
+Zones::Zones(Rectangle bounds) : zones(bounds) {
+}
 
 bool Zones::isZone(Position pos, ZoneId id) const {
   //PROFILE;
