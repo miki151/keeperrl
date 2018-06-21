@@ -6,22 +6,38 @@
 #include "collective.h"
 #include "territory.h"
 
-SERIALIZE_DEF(Zones, zones)
+template <class Archive>
+void Zones::serialize(Archive& ar1, const unsigned int) {
+  ar1(positions);
+  zones = Table<EnumSet<ZoneId>>(400, 400);
+  for (auto zone : ENUM_ALL(ZoneId))
+    for (auto& pos : positions[zone])
+      zones[pos.getCoord()].insert(zone);
+}
+
+SERIALIZABLE(Zones)
 
 bool Zones::isZone(Position pos, ZoneId id) const {
-  PROFILE;
-  return zones[id].count(pos);
+  //PROFILE;
+  return zones[pos.getCoord()].contains(id);
+}
+
+bool Zones::isAnyZone(Position pos, EnumSet<ZoneId> id) const {
+  //PROFILE;
+  return !zones[pos.getCoord()].intersection(id).isEmpty();
 }
 
 void Zones::setZone(Position pos, ZoneId id) {
   PROFILE;
-  zones[id].insert(pos);
+  zones[pos.getCoord()].insert(id);
+  positions[id].insert(pos);
   pos.setNeedsRenderUpdate(true);
 }
 
 void Zones::eraseZone(Position pos, ZoneId id) {
   PROFILE;
-  zones[id].erase(pos);
+  zones[pos.getCoord()].erase(id);
+  positions[id].erase(pos);
   pos.setNeedsRenderUpdate(true);
 }
 
@@ -38,7 +54,7 @@ void Zones::onDestroyOrder(Position pos) {
 }
 
 const PositionSet& Zones::getPositions(ZoneId id) const {
-  return zones[id];
+  return positions[id];
 }
 
 static HighlightType getHighlight(ZoneId id) {
@@ -83,7 +99,7 @@ bool Zones::canSet(Position pos, ZoneId id, WConstCollective col) const {
 
 void Zones::tick() {
   PROFILE_BLOCK("Zones::tick");
-  for (auto pos : copyOf(zones[ZoneId::FETCH_ITEMS]))
+  for (auto pos : copyOf(positions[ZoneId::FETCH_ITEMS]))
     if (pos.getItems().empty())
       eraseZone(pos, ZoneId::FETCH_ITEMS);
 }

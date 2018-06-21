@@ -116,16 +116,17 @@ static vector<Position> tryInQuarters(vector<Position> pos, WConstCollective col
   if (!hasAnyQuarters)
     return pos;
   auto index = quarters.getAssigned(c->getUniqueId());
-  auto inQuarters = pos.filter([&](Position pos) {
-    if (index)
-      return zones.isZone(pos, quarters.getAllQuarters()[*index].zone);
-    else {
-      for (auto& q : quarters.getAllQuarters())
-        if (zones.isZone(pos, q.zone))
-          return false;
-      return true;
-    }
-  });
+  vector<Position> inQuarters;
+  if (index) {
+    PROFILE_BLOCK("has quarters");
+    inQuarters = pos.filter([&](Position pos) {return zones.isZone(pos, quarters.getAllQuarters()[*index].zone);});
+  } else {
+    PROFILE_BLOCK("no quarters");
+    EnumSet<ZoneId> allZones;
+    for (auto& q : quarters.getAllQuarters())
+      allZones.insert(q.zone);
+    inQuarters = pos.filter([&](Position pos) { return !zones.isAnyZone(pos, allZones); });
+  }
   if (!inQuarters.empty())
     return inQuarters;
   else
@@ -141,7 +142,8 @@ vector<Position> MinionActivities::getAllPositions(WConstCollective collective, 
     if (info.furniturePredicate(collective, c, furnitureType))
       append(ret, collective->getConstructions().getBuiltPositions(furnitureType));
   if (c) {
-    ret = ret.filter([c](Position pos) { return c->canNavigateTo(pos); });
+    auto movement = c->getMovementType();
+    ret = ret.filter([&](Position pos) { return pos.canNavigateToOrNeighbor(c->getPosition(), movement); });
     ret = tryInQuarters(ret, collective, c);
   }
   return ret;
