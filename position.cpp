@@ -118,7 +118,7 @@ WSquare Position::modSquare() const {
 }
 
 WConstSquare Position::getSquare() const {
-  PROFILE;
+  //PROFILE;
   CHECK(isValid());
   return level->getSafeSquare(coord);
 }
@@ -174,7 +174,7 @@ vector<WFurniture> Position::modFurniture() const {
 }
 
 WCreature Position::getCreature() const {
-  PROFILE;
+  //PROFILE;
   if (isValid())
     return getSquare()->getCreature();
   else
@@ -188,12 +188,12 @@ void Position::removeCreature() {
 }
 
 bool Position::operator == (const Position& o) const {
-  PROFILE;
+  //PROFILE;
   return coord == o.coord && level == o.level;
 }
 
 bool Position::operator != (const Position& o) const {
-  PROFILE;
+  //PROFILE;
   return !(o == *this);
 }
 
@@ -224,7 +224,7 @@ void Position::globalMessage(const PlayerMessage& msg) const {
 }
 
 vector<Position> Position::neighbors8() const {
-  PROFILE;
+  //PROFILE;
   vector<Position> ret;
   for (Vec2 v : coord.neighbors8())
     ret.push_back(Position(v, level));
@@ -232,7 +232,7 @@ vector<Position> Position::neighbors8() const {
 }
 
 vector<Position> Position::neighbors4() const {
-  PROFILE;
+  //PROFILE;
   vector<Position> ret;
   for (Vec2 v : coord.neighbors4())
     ret.push_back(Position(v, level));
@@ -240,7 +240,7 @@ vector<Position> Position::neighbors4() const {
 }
 
 vector<Position> Position::neighbors8(RandomGen& random) const {
-  PROFILE;
+  //PROFILE;
   vector<Position> ret;
   for (Vec2 v : coord.neighbors8(random))
     ret.push_back(Position(v, level));
@@ -248,7 +248,7 @@ vector<Position> Position::neighbors8(RandomGen& random) const {
 }
 
 vector<Position> Position::neighbors4(RandomGen& random) const {
-  PROFILE;
+  //PROFILE;
   vector<Position> ret;
   for (Vec2 v : coord.neighbors4(random))
     ret.push_back(Position(v, level));
@@ -731,6 +731,15 @@ bool Position::canNavigate(const MovementType& type) const {
       if (furniture->canDestroy(type, action))
         ignore = FurnitureLayer::MIDDLE;
   return canEnterEmpty(type, ignore);
+}
+
+bool Position::canNavigateToOrNeighbor(Position from, const MovementType& type) const {
+  if (isConnectedTo(from, type))
+    return true;
+  for (Position v : neighbors8())
+    if (v.isConnectedTo(from, type))
+      return true;
+  return false;
 }
 
 optional<DestroyAction> Position::getBestDestroyAction(const MovementType& movement) const {
