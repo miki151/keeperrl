@@ -219,7 +219,7 @@ void TaskMap::setPosition(WTask task, Position position) {
 
 CostInfo TaskMap::freeFromTask(WConstCreature c) {
   if (WTask task = getTask(c)) {
-    if (!task->canTransfer())
+    if (task->isDone() || !task->canTransfer())
       return removeTask(task);
     else {
       freeTask(task);
