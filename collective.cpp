@@ -437,6 +437,7 @@ void Collective::considerRebellion() {
 }
 
 void Collective::tick() {
+  PROFILE_BLOCK("Collective::tick");
   considerTransferingLostMinions();
   considerRebellion();
   dangerLevelCache = none;
@@ -457,15 +458,23 @@ void Collective::tick() {
   }
   if (config->getConstructions())
     updateConstructions();
-  if (Random.roll(5))
-    for (const ItemFetchInfo& elem : config->getFetchInfo()) {
+  if (Random.roll(5)) {
+    auto& fetchInfo = getConfig().getFetchInfo();
+    if (!fetchInfo.empty()) {
       for (Position pos : territory->getAll())
-        fetchItems(pos, elem);
+        if (!isDelayed(pos) && pos.canEnterEmpty(MovementTrait::WALK) && !pos.getItems().empty())
+          for (const ItemFetchInfo& elem : fetchInfo)
+            fetchItems(pos, elem);
       for (Position pos : zones->getPositions(ZoneId::FETCH_ITEMS))
-        fetchItems(pos, elem);
+        if (!isDelayed(pos) && pos.canEnterEmpty(MovementTrait::WALK))
+          for (const ItemFetchInfo& elem : fetchInfo)
+            fetchItems(pos, elem);
       for (Position pos : zones->getPositions(ZoneId::PERMANENT_FETCH_ITEMS))
-        fetchItems(pos, elem);
+        if (!isDelayed(pos) && pos.canEnterEmpty(MovementTrait::WALK))
+          for (const ItemFetchInfo& elem : fetchInfo)
+            fetchItems(pos, elem);
     }
+  }
   if (config->getManageEquipment() && Random.roll(40)) {
     minionEquipment->updateOwners(getCreatures());
     minionEquipment->updateItems(getAllItems(ItemIndex::MINION_EQUIPMENT, true));
@@ -766,11 +775,12 @@ void Collective::returnResource(const CostInfo& amount) {
   credit[amount.id] += amount.value;
 }
 
-vector<pair<WItem, Position>> Collective::getTrapItems(TrapType type, const vector<Position>& squares) const {
+vector<pair<WItem, Position>> Collective::getTrapItems(const vector<Position>& squares) const {
+  PROFILE;
   vector<pair<WItem, Position>> ret;
   for (Position pos : squares)
     for (auto it : pos.getItems(ItemIndex::TRAP))
-      if (it->getTrapType() == type && !isItemMarked(it))
+      if (!isItemMarked(it))
         ret.emplace_back(it, pos);
   return ret;
 }
@@ -1001,8 +1011,10 @@ void Collective::onDestructed(Position pos, FurnitureType type, const DestroyAct
 }
 
 void Collective::handleTrapPlacementAndProduction() {
-  EnumMap<TrapType, vector<pair<WItem, Position>>> trapItems(
-      [this] (TrapType type) { return getTrapItems(type, territory->getAll());});
+  PROFILE;
+  EnumMap<TrapType, vector<pair<WItem, Position>>> trapItems;
+  for (auto& elem : getTrapItems(territory->getAll()))
+    trapItems[*elem.first->getTrapType()].push_back(elem);
   EnumMap<TrapType, int> missingTraps;
   for (auto trapPos : constructions->getAllTraps()) {
     auto& trap = *constructions->getTrap(trapPos);
@@ -1054,6 +1066,7 @@ void Collective::updateResourceProduction() {
 }
 
 void Collective::updateConstructions() {
+  PROFILE;
   handleTrapPlacementAndProduction();
   for (auto& pos : constructions->getAllFurniture()) {
     auto& construction = *constructions->getFurniture(pos.first, pos.second);
@@ -1070,6 +1083,7 @@ void Collective::updateConstructions() {
 }
 
 void Collective::delayDangerousTasks(const vector<Position>& enemyPos1, LocalTime delayTime) {
+  PROFILE;
   vector<Vec2> enemyPos = enemyPos1
       .filter([=] (const Position& p) { return p.isSameLevel(level); })
       .transform([] (const Position& p) { return p.getCoord();});
@@ -1098,12 +1112,13 @@ void Collective::delayDangerousTasks(const vector<Position>& enemyPos1, LocalTim
 }
 
 bool Collective::isDelayed(Position pos) {
+  PROFILE
   return delayedPos.count(pos) && delayedPos.at(pos) > getLocalTime();
 }
 
 void Collective::fetchItems(Position pos, const ItemFetchInfo& elem) {
   PROFILE;
-  if (isDelayed(pos) || !pos.canEnterEmpty(MovementTrait::WALK) || elem.destinationFun(this).count(pos))
+  if (elem.destinationFun(this).count(pos))
     return;
   vector<WItem> equipment = pos.getItems(elem.index).filter(
       [this, &elem] (WConstItem item) { return elem.predicate(this, item); });

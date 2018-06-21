@@ -94,6 +94,7 @@ bool MinionEquipment::isItemUseful(WConstItem it) {
 }
 
 bool MinionEquipment::needsItem(WConstCreature c, WConstItem it, bool noLimit) const {
+  PROFILE;
   if (optional<EquipmentType> type = getEquipmentType(it)) {
     if (!noLimit) {
       auto itemValue = getItemValue(c, it);
@@ -167,6 +168,7 @@ void MinionEquipment::updateItems(const vector<WItem>& items) {
 }
 
 vector<WItem> MinionEquipment::getItemsOwnedBy(WConstCreature c, ItemPredicate predicate) const {
+  PROFILE;
   vector<WItem> ret;
   for (auto& item : myItems.getOrElse(c, emptyItems))
     if (item)
@@ -194,10 +196,17 @@ void MinionEquipment::discard(UniqueEntity<Item>::Id id) {
 }
 
 void MinionEquipment::sortByEquipmentValue(WConstCreature c, vector<WItem>& items) const {
-  sort(items.begin(), items.end(), [this, c](WConstItem it1, WConstItem it2) {
-      int diff = getItemValue(c, it1) - getItemValue(c, it2);
+  PROFILE;
+  vector<int> values;
+  vector<int> indexes;
+  for (auto& item : items) {
+    values.push_back(getItemValue(c, item));
+    indexes.push_back(indexes.size());
+  }
+  sort(indexes.begin(), indexes.end(), [&](int index1, int index2) {
+      int diff = values[index1] - values[index2];
       if (diff == 0)
-        return it1->getUniqueId() < it2->getUniqueId();
+        return items[index1]->getUniqueId() < items[index2]->getUniqueId();
       else
         return diff > 0;
     });
@@ -229,6 +238,7 @@ bool MinionEquipment::tryToOwn(WConstCreature c, WItem it) {
 }
 
 WItem MinionEquipment::getWorstItem(WConstCreature c, vector<WItem> items) const {
+  PROFILE;
   WItem ret = nullptr;
   for (WItem it : items)
     if (!isLocked(c, it->getUniqueId()) &&
@@ -238,6 +248,7 @@ WItem MinionEquipment::getWorstItem(WConstCreature c, vector<WItem> items) const
 }
 
 void MinionEquipment::autoAssign(WConstCreature creature, vector<WItem> possibleItems) {
+  PROFILE;
   map<EquipmentSlot, vector<WItem>> slots;
   for (WItem it : getItemsOwnedBy(creature))
     if (it->canEquip()) {
@@ -268,6 +279,7 @@ void MinionEquipment::autoAssign(WConstCreature creature, vector<WItem> possible
 }
 
 int MinionEquipment::getItemValue(WConstCreature c, WConstItem it) const {
+  PROFILE;
   int sum = 0;
   for (auto attr : ENUM_ALL(AttrType))
     switch (attr) {

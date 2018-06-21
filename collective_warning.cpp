@@ -25,6 +25,7 @@ void CollectiveWarnings::disable() {
 }
 
 void CollectiveWarnings::considerWarnings(WCollective col) {
+  PROFILE;
   setWarning(Warning::MANA, col->numResource(CollectiveResourceId::MANA) < 100);
   setWarning(Warning::DIGGING, col->getTerritory().isEmpty());
   considerMoraleWarning(col);
@@ -78,11 +79,11 @@ const char* CollectiveWarnings::getText(Warning w) {
     case Warning::NO_WEAPONS: return "You need weapons for your minions.";
     case Warning::LOW_MORALE: return "Kill some enemies or summon a succubus to increase morale of your minions.";
     case Warning::GRAVES: return "You need a graveyard to collect corpses";
-    case Warning::CHESTS: return "You need to build a treasure room.";
+    case Warning::CHESTS: return "You need to build treasure chests.";
     case Warning::NO_PRISON: return "You need to build a prison.";
     case Warning::LARGER_PRISON: return "You need a larger prison.";
     case Warning::TORTURE_ROOM: return "You need to build a torture room.";
-    case Warning::MORE_CHESTS: return "You need a larger treasure room.";
+    case Warning::MORE_CHESTS: return "You need more treasure chests.";
     case Warning::MANA: return "Conquer an enemy tribe for more mana.";
     case Warning::MORE_LIGHTS: return "Place some torches to light up your dungeon.";
   }

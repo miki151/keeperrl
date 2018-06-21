@@ -131,7 +131,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   vector<WItem> getAllItems(ItemPredicate predicate, bool includeMinions = true) const;
   vector<WItem> getAllItems(ItemIndex, bool includeMinions = true) const;
 
-  vector<pair<WItem, Position>> getTrapItems(TrapType, const vector<Position>&) const;
+  vector<pair<WItem, Position>> getTrapItems(const vector<Position>&) const;
 
   void addTrap(Position, TrapType);
   void removeTrap(Position);

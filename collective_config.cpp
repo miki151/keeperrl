@@ -198,10 +198,6 @@ bool CollectiveConfig::getStripSpawns() const {
   return type == KEEPER;
 }
 
-bool CollectiveConfig::getFetchItems() const {
-  return type == KEEPER;
-}
-
 bool CollectiveConfig::getEnemyPositions() const {
   return type == KEEPER;
 }

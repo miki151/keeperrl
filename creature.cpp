@@ -1622,12 +1622,8 @@ CreatureAction Creature::moveTowards(Position pos, NavigationFlags flags) {
 }
 
 bool Creature::canNavigateTo(Position pos) const {
-  PROFILE;
-  MovementType movement = getMovementType();
-  for (Position v : pos.neighbors8())
-    if (v.isConnectedTo(position, movement))
-      return true;
-  return false;
+//  PROFILE;
+  return pos.canNavigateToOrNeighbor(position, getMovementType());
 }
 
 CreatureAction Creature::moveTowards(Position pos, bool away, NavigationFlags flags) {

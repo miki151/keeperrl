@@ -93,7 +93,6 @@ class CollectiveConfig {
   bool stayInTerritory() const;
   TimeInterval getImmigrantInterval() const;
   bool getStripSpawns() const;
-  bool getFetchItems() const;
   bool getEnemyPositions() const;
   bool getWarnings() const;
   bool getConstructions() const;

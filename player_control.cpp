@@ -2500,6 +2500,7 @@ void PlayerControl::updateUnknownLocations() {
 }
 
 void PlayerControl::tick() {
+  PROFILE_BLOCK("PlayerControl::tick");
   updateUnknownLocations();
   for (auto& elem : messages)
     elem.setFreshness(max(0.0, elem.getFreshness() - 1.0 / messageTimeout));
