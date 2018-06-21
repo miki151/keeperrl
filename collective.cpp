@@ -371,6 +371,7 @@ bool Collective::isConquered() const {
 }
 
 PTask Collective::getEquipmentTask(WCreature c) {
+  PROFILE;
   if (!usesEquipment(c))
     return nullptr;
   if (!hasTrait(c, MinionTrait::NO_AUTO_EQUIPMENT) && Random.roll(40))
@@ -379,20 +380,23 @@ PTask Collective::getEquipmentTask(WCreature c) {
   for (WItem it : c->getEquipment().getItems())
     if (!c->getEquipment().isEquipped(it) && c->getEquipment().canEquip(it))
       tasks.push_back(Task::equipItem(it));
-  for (Position v : zones->getPositions(ZoneId::STORAGE_EQUIPMENT)) {
-    vector<WItem> allItems = v.getItems(ItemIndex::MINION_EQUIPMENT).filter(
-        [this, c] (WConstItem it) { return minionEquipment->isOwner(it, c);});
-    vector<WItem> consumables;
-    for (auto item : allItems)
-      if (item->canEquip())
-        tasks.push_back(Task::pickAndEquipItem(this, v, item));
-      else
-        consumables.push_back(item);
-    if (!consumables.empty())
-      tasks.push_back(Task::pickItem(this, v, consumables));
+  {
+    PROFILE_BLOCK("tasks assignment");
+    for (Position v : zones->getPositions(ZoneId::STORAGE_EQUIPMENT)) {
+      vector<WItem> consumables;
+      for (auto item : v.getItems(ItemIndex::MINION_EQUIPMENT))
+        if (minionEquipment->isOwner(item, c)) {
+          if (item->canEquip())
+            tasks.push_back(Task::pickAndEquipItem(this, v, item));
+          else
+            consumables.push_back(item);
+        }
+      if (!consumables.empty())
+        tasks.push_back(Task::pickItem(this, v, consumables));
+    }
+    if (!tasks.empty())
+      return Task::chain(std::move(tasks));
   }
-  if (!tasks.empty())
-    return Task::chain(std::move(tasks));
   return nullptr;
 }
 
@@ -626,7 +630,7 @@ void Collective::tick() {
     updateConstructions();
   if (config->getFetchItems() && Random.roll(5)) {
     for (Position pos : territory->getAll())
-      if (!isDelayed(pos) && pos.canEnterEmpty(MovementTrait::WALK))
+      if (!isDelayed(pos) && pos.canEnterEmpty(MovementTrait::WALK) && !pos.getItems().empty())
         for (const ItemFetchInfo& elem : CollectiveConfig::getFetchInfo())
           fetchItems(pos, elem);
     for (Position pos : zones->getPositions(ZoneId::FETCH_ITEMS))
