@@ -33,7 +33,7 @@ void Inventory::addItem(PItem item) {
   CHECK(!!item) << "Null item dropped";
   itemsCache.insert(item.get());
   for (ItemIndex ind : ENUM_ALL(ItemIndex))
-    if (indexes[ind] && getIndexPredicate(ind)(item.get()))
+    if (indexes[ind] && hasIndex(ind, item.get()))
       indexes[ind]->insert(item.get());
   weight += item->getWeight();
   items.insert(std::move(item));
@@ -49,7 +49,7 @@ PItem Inventory::removeItem(WItem itemRef) {
   weight -= item->getWeight();
   itemsCache.remove(itemRef->getUniqueId());
   for (ItemIndex ind : ENUM_ALL(ItemIndex))
-    if (indexes[ind] && getIndexPredicate(ind)(item.get()))
+    if (indexes[ind] && hasIndex(ind, item.get()))
       indexes[ind]->remove(itemRef->getUniqueId());
   return item;
 }
@@ -87,8 +87,12 @@ const vector<WItem>& Inventory::getItems(ItemIndex index) const {
     return empty;
   }
   auto& elems = indexes[index];
-  if (!elems)
-    elems = ItemVector(getItems().filter(getIndexPredicate(index)));
+  if (!elems) {
+    elems.emplace();
+    for (auto& item : getItems())
+      if (hasIndex(index, item))
+        elems->insert(item);
+  }
   return elems->getElems();
 }
 

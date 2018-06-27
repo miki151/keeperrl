@@ -15,30 +15,35 @@ const char* getName(ItemIndex index, int count) {
   return "";
 }
 
-function<bool(WConstItem)> getIndexPredicate(ItemIndex index) {
+bool hasIndex(ItemIndex index, WConstItem item) {
   switch (index) {
-    case ItemIndex::GOLD: return Item::classPredicate(ItemClass::GOLD);
-    case ItemIndex::WOOD: return [](WConstItem it) {
-        return it->getResourceId() == CollectiveResourceId::WOOD; };
-    case ItemIndex::IRON: return [](WConstItem it) {
-        return it->getResourceId() == CollectiveResourceId::IRON; };
-    case ItemIndex::ADA: return [](WConstItem it) {
-        return it->getResourceId() == CollectiveResourceId::ADA; };
-    case ItemIndex::STONE: return [](WConstItem it) {
-        return it->getResourceId() == CollectiveResourceId::STONE; };
-    case ItemIndex::REVIVABLE_CORPSE: return [](WConstItem it) {
-        return it->getClass() == ItemClass::CORPSE && it->getCorpseInfo()->canBeRevived; };
-    case ItemIndex::WEAPON: return [](WConstItem it) {
-        return it->getClass() == ItemClass::WEAPON; };
-    case ItemIndex::TRAP: return [](WConstItem it) { return !!it->getTrapType(); };
-    case ItemIndex::CORPSE: return [](WConstItem it) {
-        return it->getClass() == ItemClass::CORPSE; };
-    case ItemIndex::MINION_EQUIPMENT: return [](WConstItem it) {
-        return MinionEquipment::isItemUseful(it);};
-    case ItemIndex::RANGED_WEAPON: return [](WConstItem it) {
-        return it->getClass() == ItemClass::RANGED_WEAPON;};
-    case ItemIndex::CAN_EQUIP: return [](WConstItem it) {return it->canEquip();};
-    case ItemIndex::FOR_SALE: return [](WConstItem it) {return it->isOrWasForSale();};
-    case ItemIndex::HEALING_ITEM: return [](WConstItem it) {return it->getEffect() == Effect(Effect::Heal{});};
+    case ItemIndex::GOLD:
+      return item->getClass() == ItemClass::GOLD;
+    case ItemIndex::WOOD:
+      return item->getResourceId() == CollectiveResourceId::WOOD;
+    case ItemIndex::IRON:
+      return item->getResourceId() == CollectiveResourceId::IRON;
+    case ItemIndex::ADA:
+      return item->getResourceId() == CollectiveResourceId::ADA;
+    case ItemIndex::STONE:
+      return item->getResourceId() == CollectiveResourceId::STONE;
+    case ItemIndex::REVIVABLE_CORPSE:
+      return item->getClass() == ItemClass::CORPSE && item->getCorpseInfo()->canBeRevived;
+    case ItemIndex::WEAPON:
+      return item->getClass() == ItemClass::WEAPON;
+    case ItemIndex::TRAP:
+      return !!item->getTrapType();
+    case ItemIndex::CORPSE:
+      return item->getClass() == ItemClass::CORPSE;
+    case ItemIndex::MINION_EQUIPMENT:
+      return MinionEquipment::isItemUseful(item);
+    case ItemIndex::RANGED_WEAPON:
+      return item->getClass() == ItemClass::RANGED_WEAPON;
+    case ItemIndex::CAN_EQUIP:
+      return item->canEquip();
+    case ItemIndex::FOR_SALE:
+      return item->isOrWasForSale();
+    case ItemIndex::HEALING_ITEM:
+      return item->getEffect() == Effect(Effect::Heal{});
   }
 }

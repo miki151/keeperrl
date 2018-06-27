@@ -840,7 +840,7 @@ int Collective::getNumItems(ItemIndex index, bool includeMinions) const {
 
 optional<PositionSet> Collective::getStorageFor(WConstItem item) const {
   for (auto& info : config->getFetchInfo())
-    if (getIndexPredicate(info.index)(item))
+    if (hasIndex(info.index, item))
       return info.destinationFun(this);
   return none;
 }
