@@ -549,7 +549,7 @@ string Effect::Heal::getName() const {
 }
 
 string Effect::Heal::getDescription() const {
-  return "Fully restores your health";
+  return "Fully restores your health.";
 }
 
 void Effect::Fire::applyToCreature(WCreature c, WCreature attacker) const {
@@ -585,7 +585,7 @@ string Effect::SilverDamage::getName() const {
 }
 
 string Effect::SilverDamage::getDescription() const {
-  return "Hurts the undead";
+  return "Hurts the undead.";
 }
 
 void Effect::CurePoison::applyToCreature(WCreature c, WCreature attacker) const {
@@ -597,7 +597,7 @@ string Effect::CurePoison::getName() const {
 }
 
 string Effect::CurePoison::getDescription() const {
-  return "Cures poisoning";
+  return "Cures poisoning.";
 }
 
 void Effect::PlaceFurniture::applyToCreature(WCreature c, WCreature attacker) const {
@@ -627,7 +627,7 @@ string Effect::PlaceFurniture::getName() const {
 }
 
 string Effect::PlaceFurniture::getDescription() const {
-  return "Creates a " + Furniture::getName(furniture);
+  return "Creates a " + Furniture::getName(furniture) + ".";
 }
 
 void Effect::Damage::applyToCreature(WCreature c, WCreature attacker) const {
@@ -676,7 +676,48 @@ string Effect::RegrowBodyPart::getName() const {
 }
 
 string Effect::RegrowBodyPart::getDescription() const {
-  return "Causes lost body parts to regrow";
+  return "Causes lost body parts to regrow.";
+}
+
+void Effect::Chain::applyToCreature(WCreature c, WCreature attacker) const {
+  for (auto& elem : effects)
+    elem.applyToCreature(c, attacker);
+}
+
+string Effect::Chain::getName() const {
+  string ret;
+  for (auto& elem : effects) {
+    if (!ret.empty())
+      ret += " and ";
+    ret += elem.getName();
+  }
+  return ret;
+}
+
+string Effect::Chain::getDescription() const {
+  string ret;
+  for (auto& elem : effects) {
+    if (!ret.empty()) {
+      if (ret.back() != '.')
+        ret += '.';
+      ret += ' ';
+    }
+    ret += elem.getDescription();
+  }
+  return ret;
+}
+
+void Effect::Suicide::applyToCreature(WCreature c, WCreature attacker) const {
+  if (attacker)
+    attacker->dieNoReason();
+}
+
+string Effect::Suicide::getName() const {
+  return "suicide";
+}
+
+string Effect::Suicide::getDescription() const {
+  return "Causes *attacker* to die.";
 }
 
 #define FORWARD_CALL(Var, Name, ...)\

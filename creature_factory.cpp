@@ -1041,12 +1041,12 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::LOST_SOUL:
       return CATTR(
           c.body = Body::nonHumanoidSpirit(Body::Size::LARGE);
+          c.body->setDeathSound(none);
           c.viewId = ViewId::GHOST;
           c.attr = LIST(25_def, 5_spell_dam );
-          c.courage = 1;
-          c.spells->add(SpellId::INVISIBILITY);
+          c.courage = 100;
           c.body->setIntrinsicAttack(BodyPart::TORSO, IntrinsicAttack(
-              ItemType::touch(Effect::Lasting{LastingEffect::INSANITY})));
+              ItemType::touch(Effect::Chain{{Effect::Lasting{LastingEffect::INSANITY}, Effect::Suicide{}}})));
           c.permanentEffects[LastingEffect::FLYING] = 1;
           c.chatReactionFriendly = "\"Wouuuouuu!!!\""_s;
           c.chatReactionHostile = "\"Wouuuouuu!!!\""_s;

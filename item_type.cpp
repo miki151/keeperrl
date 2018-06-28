@@ -307,6 +307,9 @@ static int getEffectPrice(Effect type) {
       [&](const Effect::Acid&) {
         return 8;
       },
+      [&](const Effect::Suicide&) {
+        return 8;
+      },
       [&](const Effect::Heal&) {
         return 8;
       },
@@ -369,6 +372,9 @@ static int getEffectPrice(Effect type) {
       },
       [&](const Effect::RegrowBodyPart&) {
         return 30;
+      },
+      [&](const Effect::Chain& c) {
+        return getEffectPrice(c.effects[0]);
       }
   );
 }
@@ -460,6 +466,8 @@ ItemAttributes ItemType::Intrinsic::getAttributes() const {
   return ITATTR(
       i.viewId = viewId;
       i.name = name;
+      if (auto& effect = weaponInfo.attackEffect)
+        i.prefix = effect->getName();
       i.itemClass = ItemClass::WEAPON;
       i.equipmentSlot = EquipmentSlot::WEAPON;
       i.weight = 0.3;
