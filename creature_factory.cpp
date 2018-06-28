@@ -1344,6 +1344,20 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.chatReactionHostile = "\"End my torture!\""_s;
           c.deathDescription = "dead, released from unthinkable agony"_s;
           c.name = CreatureName("child", "children"););
+    case CreatureId::PESEANT_PRISONER:
+      return CATTR(
+          if (Random.roll(2)) {
+            c.viewId = ViewId::PESEANT_WOMAN;
+            c.gender = Gender::female;
+          } else
+            c.viewId = ViewId::PESEANT;
+          c.attr = LIST(14_dam, 12_def );
+          c.body = Body::humanoid(Body::Size::LARGE);
+          c.chatReactionFriendly = "curses all dungeons"_s;
+          c.chatReactionHostile = "\"Heeelp!\""_s;
+          c.skills.setValue(SkillId::DIGGING, 0.3);
+          c.maxLevelIncrease[ExperienceType::MELEE] = 3;
+          c.name = "peasant";);
     case CreatureId::HALLOWEEN_KID:
       return CATTR(
           c.viewId = Random.choose(ViewId::HALLOWEEN_KID1,
@@ -1552,8 +1566,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.skills.setValue(SkillId::FORGE, 0.6);
           c.skills.setValue(SkillId::JEWELER, 0.6);
           c.skills.setValue(SkillId::FURNACE, 0.6);
-          c.skills.insert(SkillId::CONSTRUCTION);
-          c.skills.setValue(SkillId::DIGGING, 0.4);
           c.name = "goblin";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::ORC)->getNext());
           );

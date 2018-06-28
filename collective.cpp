@@ -409,7 +409,7 @@ double Collective::getRebellionProbability() const {
   const double maxPrisonerRatio = 1.5;
   const int numPrisoners = getCreatures(MinionTrait::PRISONER).size();
   const int numFighters = getCreatures(MinionTrait::FIGHTER).size();
-  const int numFreePrisoners = 3;
+  const int numFreePrisoners = 4;
   if (numPrisoners <= numFreePrisoners)
     return 0;
   if (numFighters == 0)

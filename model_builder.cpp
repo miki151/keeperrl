@@ -83,7 +83,8 @@ static CollectiveConfig getKeeperConfig(RandomGen& random, bool fastImmigration,
       break;
     case AvatarInfo::GOBLINS:
       immigrants.push_back(
-          ImmigrantInfo(CreatureId::GOBLIN, {MinionTrait::WORKER, MinionTrait::NO_EQUIPMENT})
+          ImmigrantInfo(CreatureId::PESEANT_PRISONER,
+              {MinionTrait::WORKER, MinionTrait::PRISONER, MinionTrait::NO_LIMIT})
              .setSpawnLocation(NearLeader{})
              .setNoAuto()
              .setInvisible()
@@ -91,7 +92,7 @@ static CollectiveConfig getKeeperConfig(RandomGen& random, bool fastImmigration,
       break;
   }
   append(immigrants, {
-       ImmigrantInfo(CreatureId::GOBLIN, {MinionTrait::WORKER, MinionTrait::NO_EQUIPMENT})
+       ImmigrantInfo(CreatureId::GOBLIN, {MinionTrait::FIGHTER, MinionTrait::NO_EQUIPMENT})
            .setFrequency(0.7)
            .addRequirement(0.1, AttractionInfo{1, vector<AttractionType>(
                 {FurnitureType::FORGE, FurnitureType::WORKSHOP, FurnitureType::JEWELER})})
