@@ -1554,6 +1554,13 @@ class DropItems : public Task {
     }
   }
 
+  virtual bool canPerform(WConstCreature c) const override {
+    for (auto item : c->getEquipment().getItems())
+      if (items.contains(item))
+        return true;
+    return false;
+  }
+
   SERIALIZE_ALL(SUBCLASS(Task), items, positions, target);
   SERIALIZATION_CONSTRUCTOR(DropItems);
 

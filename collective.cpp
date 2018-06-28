@@ -1116,6 +1116,14 @@ bool Collective::isDelayed(Position pos) {
   return delayedPos.count(pos) && delayedPos.at(pos) > getLocalTime();
 }
 
+static Position chooseClosest(Position pos, const vector<Position>& squares) {
+  Position ret = squares[0];
+  for (auto& p : squares)
+    if (pos.dist8(p) < pos.dist8(ret))
+      ret = p;
+  return ret;
+}
+
 void Collective::fetchItems(Position pos, const ItemFetchInfo& elem) {
   PROFILE;
   if (elem.destinationFun(this).count(pos))
@@ -1129,6 +1137,9 @@ void Collective::fetchItems(Position pos, const ItemFetchInfo& elem) {
       auto task = taskMap->addTask(Task::pickItem(pos, equipment), pos, MinionActivity::HAULING);
       for (WItem it : equipment)
         markItem(it, task);
+      auto destinationVec = vector<Position>(destination.begin(), destination.end());
+      taskMap->addTask(Task::dropItems(equipment, destinationVec), chooseClosest(pos, destinationVec),
+          MinionActivity::HAULING);
     } else
       warnings->setWarning(elem.warning, true);
   }
