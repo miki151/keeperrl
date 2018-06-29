@@ -942,6 +942,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.skills.setValue(SkillId::FORGE, 0.2);
           c.maxLevelIncrease[ExperienceType::MELEE] = 12;
           c.maxLevelIncrease[ExperienceType::SPELL] = 3;
+          c.spells->add(SpellId::HEAL_SELF);
       );
     case CreatureId::KEEPER_KNIGHT_F:
       return CATTR(
@@ -955,6 +956,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.skills.setValue(SkillId::FORGE, 0.2);
           c.maxLevelIncrease[ExperienceType::MELEE] = 12;
           c.maxLevelIncrease[ExperienceType::SPELL] = 3;
+          c.spells->add(SpellId::HEAL_SELF);
       );
     case CreatureId::ADVENTURER:
       return CATTR(
