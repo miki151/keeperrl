@@ -1556,6 +1556,8 @@ static bool showEfficiency(FurnitureType type) {
 void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
   PROFILE;
   Position position(pos, collective->getLevel());
+  if (!position.isValid())
+    return;
   bool canSeePos = canSee(position);
   getSquareViewIndex(position, canSeePos, index);
   if (!canSeePos)
