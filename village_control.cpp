@@ -61,7 +61,7 @@ WCollective VillageControl::getEnemyCollective() const {
 
 bool VillageControl::isEnemy(WConstCreature c) {
   if (WCollective col = getEnemyCollective())
-    return col->getCreatures().contains(c);
+    return col->getCreatures().contains(c) && !col->hasTrait(c, MinionTrait::DOESNT_TRIGGER);
   else
     return false;
 }

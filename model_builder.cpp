@@ -171,21 +171,21 @@ static CollectiveConfig getKeeperConfig(RandomGen& random, bool fastImmigration,
            .setSpawnLocation(FurnitureType::DEMON_SHRINE)
            .addRequirement(0.3, AttractionInfo{3, FurnitureType::DEMON_SHRINE})
            .addRequirement(0.0, FurnitureType::DEMON_SHRINE),
-       ImmigrantInfo(CreatureId::RAVEN, {MinionTrait::FIGHTER})
+       ImmigrantInfo(CreatureId::RAVEN, {MinionTrait::FIGHTER, MinionTrait::DOESNT_TRIGGER})
            .setFrequency(0.5)
            .addRequirement(0.0, FurnitureType::BEAST_CAGE)
            .addRequirement(0.0, SunlightState::DAY),
-       ImmigrantInfo(CreatureId::BAT, {MinionTrait::FIGHTER})
+       ImmigrantInfo(CreatureId::BAT, {MinionTrait::FIGHTER, MinionTrait::DOESNT_TRIGGER})
            .setFrequency(0.5)
            .addRequirement(0.0, FurnitureType::BEAST_CAGE)
            .addRequirement(0.0, SunlightState::NIGHT),
-       ImmigrantInfo(CreatureId::WOLF, {MinionTrait::FIGHTER})
+       ImmigrantInfo(CreatureId::WOLF, {MinionTrait::FIGHTER, MinionTrait::DOESNT_TRIGGER})
            .setFrequency(0.15)
            .addRequirement(0.0, FurnitureType::BEAST_CAGE)
            .setGroupSize(Range(3, 9))
            .setAutoTeam()
            .addRequirement(0.0, SunlightState::NIGHT),
-       ImmigrantInfo(CreatureId::CAVE_BEAR, {MinionTrait::FIGHTER})
+       ImmigrantInfo(CreatureId::CAVE_BEAR, {MinionTrait::FIGHTER, MinionTrait::DOESNT_TRIGGER})
            .addRequirement(0.0, FurnitureType::BEAST_CAGE)
            .setFrequency(0.1),
        ImmigrantInfo(CreatureId::WEREWOLF, {MinionTrait::FIGHTER})
@@ -214,8 +214,8 @@ static CollectiveConfig getKeeperConfig(RandomGen& random, bool fastImmigration,
            .addRequirement(CostInfo(CollectiveResourceId::GOLD, 100))
            .setSpawnLocation(Pregnancy {})
            .addSpecialTrait(0.2, LastingEffect::INSANITY),
-       ImmigrantInfo(random.permutation({CreatureId::SPECIAL_BMBN, CreatureId::SPECIAL_BMBW,
-               CreatureId::SPECIAL_BMGN, CreatureId::SPECIAL_BMGW}), {MinionTrait::FIGHTER})
+       ImmigrantInfo(random.permutation({CreatureId::SPECIAL_BMBN, CreatureId::SPECIAL_BMBW, CreatureId::SPECIAL_BMGN,
+             CreatureId::SPECIAL_BMGW}), {MinionTrait::FIGHTER, MinionTrait::DOESNT_TRIGGER})
            .addRequirement(0.0, TechId::BEAST_MUT)
            .addRequirement(0.0, Pregnancy {})
            .addRequirement(CostInfo(CollectiveResourceId::GOLD, 100))

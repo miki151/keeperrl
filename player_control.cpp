@@ -1123,6 +1123,9 @@ void PlayerControl::fillImmigration(CollectiveInfo& info) const {
       name += " (" + *s + ")";
     if (count > 1)
       infoLines.push_back("The entire group takes up one population spot");
+    for (auto trait : candidate.getInfo().getTraits())
+      if (auto desc = getImmigrantDescription(trait))
+        infoLines.push_back(desc);
     info.immigration.push_back(ImmigrantDataInfo {
         immigration.getMissingRequirements(candidate),
         infoLines,
