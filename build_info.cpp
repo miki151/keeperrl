@@ -83,7 +83,7 @@ const vector<BuildInfo>& BuildInfo::get() {
           {{RequirementId::VILLAGE_CONQUERED}},
           "Increases population limit by " + toString(ModelBuilder::getThronePopulationIncrease())),
       BuildInfo({FurnitureType::BED, {ResourceId::WOOD, 12}}, "Bed", {},
-          "Humanoid minions sleep here.", 'b', "Living", true)
+          "Humanoid minions sleep here.", 'v', "Living", true)
              .setTutorialHighlight(TutorialHighlight::BUILD_BED),
       BuildInfo({FurnitureType::GRAVE, {ResourceId::STONE, 15}}, "Graveyard", {},
           "Spot for hauling dead bodies and for undead creatures to sleep in.", 0, "Living"),
