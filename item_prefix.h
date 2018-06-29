@@ -9,7 +9,27 @@ struct ItemAttrBonus {
   COMPARE_ALL(attr, value)
 };
 
-using ItemPrefix = variant<LastingEffect, Effect, ItemAttrBonus>;
+class ItemPrefix;
+
+struct JoinPrefixes {
+  vector<ItemPrefix> prefixes;
+  COMPARE_ALL(prefixes);
+};
+
+struct VictimEffect {
+  Effect effect;
+  COMPARE_ALL(effect);
+};
+
+struct AttackerEffect {
+  Effect effect;
+  COMPARE_ALL(effect);
+};
+
+class ItemPrefix : public variant<LastingEffect, VictimEffect, AttackerEffect, ItemAttrBonus, JoinPrefixes> {
+  public:
+  using variant::variant;
+};
 
 class ItemAttributes;
 extern void applyPrefix(ItemPrefix, ItemAttributes&);

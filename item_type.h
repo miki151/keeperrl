@@ -58,7 +58,7 @@ class ItemType {
     SERIALIZE_ALL(viewId, name, damage, weaponInfo)
     ITEM_TYPE_INTERFACE;
   };
-  static ItemType touch(Effect);
+  static ItemType touch(Effect victimEffect, optional<Effect> attackerEffect = none);
   static ItemType legs(int damage);
   static ItemType claws(int damage);
   static ItemType beak(int damage);

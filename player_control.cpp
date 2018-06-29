@@ -2463,13 +2463,9 @@ void PlayerControl::update(bool currentlyActive) {
                   || controlled == collective->getLeader())
                 && c->getPosition().isSameLevel(controlled->getPosition())
                 && canControlInTeam(c)) {
-              for (auto team : getTeams().getActive(controlled)) {
-                addToCurrentTeam(c);
-                controlled->privateMessage(PlayerMessage(c->getName().a() + " joins your team.",
-                      MessagePriority::HIGH));
-                break;
-              }
-              break;
+              addToCurrentTeam(c);
+              controlled->privateMessage(PlayerMessage(c->getName().a() + " joins your team.",
+                  MessagePriority::HIGH));
             }
         } else
           if (c->getBody().isMinionFood())

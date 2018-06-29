@@ -679,7 +679,7 @@ string Effect::RegrowBodyPart::getDescription() const {
   return "Causes lost body parts to regrow.";
 }
 
-void Effect::Chain::applyToCreature(WCreature c, WCreature attacker) const {
+/*void Effect::Chain::applyToCreature(WCreature c, WCreature attacker) const {
   for (auto& elem : effects)
     elem.applyToCreature(c, attacker);
 }
@@ -705,11 +705,11 @@ string Effect::Chain::getDescription() const {
     ret += elem.getDescription();
   }
   return ret;
-}
+}*/
 
 void Effect::Suicide::applyToCreature(WCreature c, WCreature attacker) const {
-  if (attacker)
-    attacker->dieNoReason();
+  c->you(MsgType::DIE, "");
+  c->dieNoReason();
 }
 
 string Effect::Suicide::getName() const {
@@ -717,7 +717,7 @@ string Effect::Suicide::getName() const {
 }
 
 string Effect::Suicide::getDescription() const {
-  return "Causes *attacker* to die.";
+  return "Causes the *attacker* to die.";
 }
 
 #define FORWARD_CALL(Var, Name, ...)\

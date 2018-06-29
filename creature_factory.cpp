@@ -1046,7 +1046,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.attr = LIST(25_def, 5_spell_dam );
           c.courage = 100;
           c.body->setIntrinsicAttack(BodyPart::TORSO, IntrinsicAttack(
-              ItemType::touch(Effect::Chain{{Effect::Lasting{LastingEffect::INSANITY}, Effect::Suicide{}}})));
+              ItemType::touch(Effect(Effect::Lasting{LastingEffect::INSANITY}), Effect(Effect::Suicide{}))));
           c.permanentEffects[LastingEffect::FLYING] = 1;
           c.chatReactionFriendly = "\"Wouuuouuu!!!\""_s;
           c.chatReactionHostile = "\"Wouuuouuu!!!\""_s;

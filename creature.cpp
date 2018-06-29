@@ -976,13 +976,13 @@ CreatureAction Creature::attack(WCreature other, optional<AttackParams> attackPa
   return CreatureAction(this, [=] (WCreature self) {
     other->addCombatIntent(self, true);
     INFO << getName().the() << " attacking " << other->getName().the();
-    auto damageAttr = weapon->getWeaponInfo().meleeAttackAttr;
+    auto& weaponInfo = weapon->getWeaponInfo();
+    auto damageAttr = weaponInfo.meleeAttackAttr;
     int damage = getAttr(damageAttr, false) + weapon->getModifier(damageAttr);
     AttackLevel attackLevel = Random.choose(getBody().getAttackLevels());
     if (attackParams && attackParams->level)
       attackLevel = *attackParams->level;
-    Attack attack(self, attackLevel, weapon->getWeaponInfo().attackType, damage, damageAttr,
-        weapon->getWeaponInfo().attackEffect);
+    Attack attack(self, attackLevel, weaponInfo.attackType, damage, damageAttr, weaponInfo.victimEffect);
     string enemyName = other->getController()->getMessageGenerator().getEnemyName(other);
     if (!canSee(other))
       enemyName = "something";
@@ -993,6 +993,8 @@ CreatureAction Creature::attack(WCreature other, optional<AttackParams> attackPa
         .setType(MovementInfo::ATTACK);
     if (wasDamaged)
       movementInfo.setVictim(other->getUniqueId());
+    if (weaponInfo.attackerEffect)
+      weaponInfo.attackerEffect->applyToCreature(self);
     self->addMovementInfo(movementInfo);
   });
 }

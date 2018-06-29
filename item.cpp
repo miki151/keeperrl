@@ -176,7 +176,9 @@ string Item::getDescription() const {
     return attributes->description;
   else if (auto& effect = attributes->effect)
     return effect->getDescription();
-  else if (auto& effect = getWeaponInfo().attackEffect)
+  else if (auto& effect = getWeaponInfo().victimEffect)
+    return effect->getDescription();
+  else if (auto& effect = getWeaponInfo().attackerEffect)
     return effect->getDescription();
   else if (auto& effect = attributes->equipedEffect)
     return LastingEffects::getDescription(*effect);
