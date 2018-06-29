@@ -2462,7 +2462,8 @@ void PlayerControl::update(bool currentlyActive) {
             if ((collective->hasTrait(controlled, MinionTrait::FIGHTER)
                   || controlled == collective->getLeader())
                 && c->getPosition().isSameLevel(controlled->getPosition())
-                && canControlInTeam(c)) {
+                && canControlInTeam(c)
+                && !collective->hasTrait(c, MinionTrait::SUMMONED)) {
               addToCurrentTeam(c);
               controlled->privateMessage(PlayerMessage(c->getName().a() + " joins your team.",
                   MessagePriority::HIGH));
