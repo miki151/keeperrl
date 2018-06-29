@@ -124,10 +124,7 @@ void Furniture::destroy(Position pos, const DestroyAction& action) {
   auto myType = type;
   if (itemDrop)
     pos.dropItems(itemDrop->random());
-  if (destroyedRemains)
-    pos.replaceFurniture(this, FurnitureFactory::get(*destroyedRemains, getTribe()));
-  else
-    pos.removeFurniture(this);
+  pos.removeFurniture(this, destroyedRemains ? FurnitureFactory::get(*destroyedRemains, getTribe()) : nullptr);
   pos.getGame()->addEvent(EventInfo::FurnitureDestroyed{pos, myType, myLayer});
 }
 
@@ -163,14 +160,11 @@ void Furniture::tick(Position pos) {
     fire->tick();
     if (fire->isBurntOut()) {
       pos.globalMessage("The " + getName() + " burns down");
-      pos.updateMovement();
+      pos.updateMovementDueToFire();
       pos.removeCreatureLight(false);
       auto myLayer = layer;
       auto myType = type;
-      if (burntRemains)
-        pos.replaceFurniture(this, FurnitureFactory::get(*burntRemains, getTribe()));
-      else
-        pos.removeFurniture(this);
+      pos.removeFurniture(this, burntRemains ? FurnitureFactory::get(*burntRemains, getTribe()) : nullptr);
       pos.getGame()->addEvent(EventInfo::FurnitureDestroyed{pos, myType, myLayer});
       return;
     }
@@ -355,7 +349,7 @@ void Furniture::fireDamage(Position pos, double amount) {
       pos.globalMessage("The " + getName() + " catches fire");
       if (viewObject)
         viewObject->setAttribute(ViewObject::Attribute::BURNING, fire->getSize());
-      pos.updateMovement();
+      pos.updateMovementDueToFire();
       pos.getLevel()->addTickingFurniture(pos.getCoord());
       pos.addCreatureLight(false);
     }

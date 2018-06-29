@@ -37,7 +37,7 @@ struct ChestInfo {
 static void useChest(Position pos, WConstFurniture furniture, WCreature c, const ChestInfo& chestInfo) {
   c->secondPerson("You open the " + furniture->getName());
   c->thirdPerson(c->getName().the() + " opens the " + furniture->getName());
-  pos.replaceFurniture(furniture, FurnitureFactory::get(chestInfo.openedType, furniture->getTribe()));
+  pos.removeFurniture(furniture, FurnitureFactory::get(chestInfo.openedType, furniture->getTribe()));
   if (auto creatureInfo = chestInfo.creatureInfo)
     if (creatureInfo->creatureChance > 0 && Random.roll(creatureInfo->creatureChance)) {
       int numSpawned = 0;

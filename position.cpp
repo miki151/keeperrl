@@ -488,20 +488,6 @@ void Position::dropItems(vector<PItem> v) {
   }
 }
 
-void Position::removeFurniture(WConstFurniture f) const {
-  PROFILE;
-  level->removeLightSource(coord, f->getLightEmission());
-  auto layer = f->getLayer();
-  CHECK(layer != FurnitureLayer::GROUND);
-  CHECK(getFurniture(layer) == f);
-  level->furniture->getBuilt(layer).clearElem(coord);
-  level->furniture->getConstruction(coord, layer).reset();
-  updateConnectivity();
-  updateVisibility();
-  updateSupport();
-  setNeedsRenderUpdate(true);
-}
-
 void Position::addFurniture(PFurniture f) const {
   PROFILE;
   auto furniture = f.get();
@@ -532,18 +518,25 @@ void Position::removeCreatureLight(bool darkness) {
   }
 }
 
-void Position::replaceFurniture(WConstFurniture prev, PFurniture next) const {
+void Position::removeFurniture(WConstFurniture f, PFurniture replace) const {
   PROFILE;
-  level->removeLightSource(coord, prev->getLightEmission());
-  auto furniture = next.get();
-  auto layer = next->getLayer();
-  CHECK(prev->getLayer() == layer);
-  CHECK(getFurniture(layer) == prev);
-  level->setFurniture(coord, std::move(next));
+  level->removeLightSource(coord, f->getLightEmission());
+  auto replacePtr = replace.get();
+  auto layer = f->getLayer();
+  CHECK(layer != FurnitureLayer::GROUND);
+  CHECK(getFurniture(layer) == f);
+  if (replace)
+    level->setFurniture(coord, std::move(replace));
+  else {
+    level->furniture->getBuilt(layer).clearElem(coord);
+    level->furniture->getConstruction(coord, layer).reset();
+  }
+  updateMovementDueToFire();
   updateConnectivity();
   updateVisibility();
   updateSupport();
-  level->addLightSource(coord, furniture->getLightEmission());
+  if (replacePtr)
+    level->addLightSource(coord, replacePtr->getLightEmission());
   setNeedsRenderUpdate(true);
 }
 
@@ -593,7 +586,7 @@ bool Position::isBurning() const {
   return false;
 }
 
-void Position::updateMovement() {
+void Position::updateMovementDueToFire() const {
   PROFILE;
   if (isValid()) {
     if (isBurning()) {
