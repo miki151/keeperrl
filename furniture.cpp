@@ -264,7 +264,10 @@ FurnitureLayer Furniture::getLayer() const {
 }
 
 double Furniture::getLightEmission() const {
-  return lightEmission;
+  if (fire && fire->isBurning())
+    return Level::getCreatureLightRadius();
+  else
+    return lightEmission;
 }
 
 bool Furniture::canHide() const {
