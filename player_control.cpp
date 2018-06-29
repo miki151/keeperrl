@@ -1118,7 +1118,7 @@ void PlayerControl::fillImmigration(CollectiveInfo& info) const {
         [&](const auto&) {}
     ));
     WCreature c = candidate.getCreatures()[0];
-    string name = c->getName().groupOf(count);
+    string name = count > 1 ? c->getName().groupOf(count) : c->getName().title();
     if (auto& s = c->getName().stackOnly())
       name += " (" + *s + ")";
     if (count > 1)
