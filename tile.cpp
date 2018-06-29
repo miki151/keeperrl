@@ -517,6 +517,7 @@ class TileCoordLookup {
     Tile::addTile(ViewId::WOODEN_STAFF, sprite("staff_wooden"));
     Tile::addTile(ViewId::IRON_STAFF, sprite("staff_iron"));
     Tile::addTile(ViewId::FORCE_BOLT, sprite("force_bolt"));
+    Tile::addTile(ViewId::FIREBALL, sprite("fireball"));
     Tile::addTile(ViewId::AIR_BLAST, sprite("air_blast"));
     Tile::addTile(ViewId::STUN_RAY, sprite("stun_ray"));
     Tile::addTile(ViewId::CLUB, sprite("club"));
@@ -868,6 +869,7 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::HEAVY_CLUB, symbol(u8")", Color::BROWN));
     Tile::addSymbol(ViewId::ARROW, symbol(u8"/", Color::BROWN));
     Tile::addSymbol(ViewId::FORCE_BOLT, symbol(u8"*", Color::LIGHT_BLUE));
+    Tile::addSymbol(ViewId::FIREBALL, symbol(u8"*", Color::ORANGE));
     Tile::addSymbol(ViewId::AIR_BLAST, symbol(u8"*", Color::WHITE));
     Tile::addSymbol(ViewId::STUN_RAY, symbol(u8"*", Color::LIGHT_GREEN));
     Tile::addSymbol(ViewId::SCROLL, symbol(u8"?", Color::WHITE));

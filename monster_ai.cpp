@@ -482,7 +482,7 @@ class Fighter : public Behaviour {
   vector<DirEffectType> getOffensiveEffects() {
     static vector<DirEffectType> effects = [] {
       vector<DirEffectType> ret;
-      for (auto id : {SpellId::BLAST, SpellId::MAGIC_MISSILE})
+      for (auto id : {SpellId::BLAST, SpellId::MAGIC_MISSILE, SpellId::FIREBALL})
         ret.push_back(Spell::get(id)->getDirEffectType());
       return ret;
     }();

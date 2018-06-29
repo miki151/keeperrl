@@ -133,6 +133,7 @@ class Effect {
   void serialize(Archive&, const unsigned int);
 
   void applyToCreature(WCreature, WCreature attacker = nullptr) const;
+  void applyToPosition(Position) const;
   string getName() const;
   string getDescription() const;
 
@@ -169,6 +170,7 @@ class Effect {
 
 enum class DirEffectId {
   BLAST,
+  FIREBALL,
   CREATURE_EFFECT,
 };
 

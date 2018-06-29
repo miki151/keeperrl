@@ -93,6 +93,7 @@ void Spell::init() {
   set(SpellId::BLAST, new Spell("blast", DirEffectType(4, DirEffectId::BLAST), 100, SoundId::SPELL_BLAST));
   set(SpellId::MAGIC_MISSILE, new Spell("magic missile", DirEffectType(4, DirEffectId::CREATURE_EFFECT,
       Effect::Damage{AttrType::SPELL_DAMAGE, AttackType::SPELL}), 3, SoundId::SPELL_BLAST));
+  set(SpellId::FIREBALL, new Spell("fireball", DirEffectType(4, DirEffectId::FIREBALL), 3, SoundId::SPELL_BLAST));
   set(SpellId::CIRCULAR_BLAST, new Spell("circular blast", Effect::CircularBlast{}, 150, SoundId::SPELL_AIR_BLAST,
         CastMessageType::AIR_BLAST));
   set(SpellId::SUMMON_SPIRIT, new Spell("summon spirits", Effect::Summon{CreatureId::SPIRIT}, 150,
@@ -115,8 +116,9 @@ optional<int> Spell::getLearningExpLevel() const {
     case SpellId::SPEED_SELF: return 5;
     //case SpellId::STUN_RAY: return 6;
     case SpellId::CURE_POISON: return 6;
-    case SpellId::BLAST: return 7;
+    case SpellId::BLAST: return 6;
     case SpellId::CIRCULAR_BLAST: return 7;
+    case SpellId::FIREBALL: return 7;
     case SpellId::DEF_BONUS: return 8;
     case SpellId::SUMMON_ELEMENT: return 8;
     case SpellId::DAM_BONUS: return 9;
