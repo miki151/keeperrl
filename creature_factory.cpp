@@ -1578,7 +1578,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.courage = -1;
           c.noChase = true;
           c.cantEquip = true;
-          c.skills.insert(SkillId::CONSTRUCTION);
           c.skills.setValue(SkillId::DIGGING, 0.4);
           c.chatReactionFriendly = "talks about digging"_s;
           c.chatReactionHostile = "\"Die!\""_s;

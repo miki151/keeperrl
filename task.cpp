@@ -110,7 +110,6 @@ class Construction : public Task {
       return NoMove;
     if (c->getPosition().dist8(position) > 1)
       return c->moveTowards(position);
-    CHECK(c->getAttributes().getSkills().hasDiscrete(SkillId::CONSTRUCTION));
     Vec2 dir = c->getPosition().getDir(position);
     if (auto action = c->construct(dir, furnitureType))
       return {1.0, action.append([=](WCreature c) {

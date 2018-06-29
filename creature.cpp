@@ -1374,18 +1374,13 @@ void Creature::addSound(const Sound& sound1) const {
 }
 
 CreatureAction Creature::construct(Vec2 direction, FurnitureType type) const {
-  if (getPosition().plus(direction).canConstruct(type) && canConstruct(type))
+  if (getPosition().plus(direction).canConstruct(type))
     return CreatureAction(this, [=](WCreature self) {
         addSound(Sound(SoundId::DIGGING).setPitch(0.5));
         getPosition().plus(direction).construct(type, self);
         self->spendTime();
       });
   return CreatureAction();
-}
-
-bool Creature::canConstruct(FurnitureType type) const {
-  return attributes->getSkills().hasDiscrete(SkillId::CONSTRUCTION) ||
-      (getBody().isHumanoid() && type == FurnitureType::BRIDGE);
 }
 
 CreatureAction Creature::eat(WItem item) const {
