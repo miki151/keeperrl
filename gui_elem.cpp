@@ -617,12 +617,13 @@ static Vec2 getTextPos(Rectangle bounds, Renderer::CenterType center) {
 }
 
 SGuiElem GuiFactory::centeredLabel(Renderer::CenterType center, const string& s, int size, Color c) {
+  auto width = [=] { return renderer.getTextLength(s, size) + 1; };
   return SGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
           Vec2 pos = getTextPos(bounds, center);
           r.drawText(Color::BLACK.transparency(100), pos + Vec2(1, 2), s, center, size);
           r.drawText(c, pos, s, center, size);
-        }));
+        }, width));
 }
 
 SGuiElem GuiFactory::centeredLabel(Renderer::CenterType center, const string& s, Color c) {
@@ -1809,13 +1810,28 @@ SGuiElem GuiFactory::dragListener(function<void(DragContent)> fun) {
 
 class TranslateGui : public GuiLayout {
   public:
-  TranslateGui(SGuiElem e, Vec2 p, optional<Vec2> s)
-      : GuiLayout(makeVec(std::move(e))), pos(p), size(s) {
+  using Corner = GuiFactory::TranslateCorner;
+  TranslateGui(SGuiElem e, Vec2 p, optional<Vec2> s, Corner corner)
+      : GuiLayout(makeVec(std::move(e))), pos(p), size(s), corner(corner) {
+  }
+
+  Vec2 getCorner() {
+    switch (corner) {
+      case Corner::TOP_LEFT:
+        return getBounds().topLeft();
+      case Corner::TOP_RIGHT:
+        return getBounds().topRight();
+      case Corner::BOTTOM_LEFT:
+        return getBounds().bottomLeft();
+      case Corner::BOTTOM_RIGHT:
+        return getBounds().bottomRight();
+    }
   }
 
   virtual Rectangle getElemBounds(int num) override {
     Vec2 sz = size ? *size : getBounds().getSize();
-    return Rectangle(getBounds().topLeft() + pos, getBounds().topLeft() + pos + sz);
+    auto corner = getCorner();
+    return Rectangle(corner + pos, corner + pos + sz);
   }
 
   virtual optional<int> getPreferredWidth() override {
@@ -1829,10 +1845,11 @@ class TranslateGui : public GuiLayout {
   private:
   Vec2 pos;
   optional<Vec2> size;
+  GuiFactory::TranslateCorner corner;
 };
 
-SGuiElem GuiFactory::translate(SGuiElem e, Vec2 pos, optional<Vec2> size) {
-  return SGuiElem(new TranslateGui(std::move(e), pos, size));
+SGuiElem GuiFactory::translate(SGuiElem e, Vec2 pos, optional<Vec2> size, TranslateCorner corner) {
+  return SGuiElem(new TranslateGui(std::move(e), pos, size, corner));
 }
 
 class TranslateGui2 : public GuiLayout {
@@ -2322,12 +2339,95 @@ class Scrollable : public GuiElem {
   Clock* clock;
 };
 
-const int border2Width = 6;
+class Slider : public GuiLayout {
+  public:
 
-const int scrollbarWidth = 22;
-const int borderWidth = 8;
-const int borderHeight = 11;
-const int backgroundSize = 128;
+  Slider(SGuiElem button, shared_ptr<int> position, Range range)
+      : GuiLayout(std::move(button)), position(std::move(position)), range(range),
+        buttonSize(*elems[0]->getPreferredWidth(), *elems[0]->getPreferredHeight()) {}
+
+  virtual Rectangle getElemBounds(int num) override {
+    Vec2 center(calcButHeight(), getBounds().middle().y);
+    return Rectangle(center - buttonSize / 2, center + buttonSize / 2);
+  }
+
+  virtual void render(Renderer& r) override {
+    onRefreshBounds();
+    GuiLayout::render(r);
+  }
+
+  double calcPos(int mouseHeight) {
+    return max(0.0, min(1.0,
+          double(mouseHeight - getBounds().left()) / (getBounds().height())));
+  }
+
+  int scrollLength() {
+    return getBounds().width();
+  }
+
+  int calcButHeight() {
+    auto bounds = getBounds();
+    return (int)(bounds.left() + getScrollPos() * bounds.width());
+  }
+
+  double getScrollPos() {
+    return double(*position - range.getStart()) / double(range.getLength());
+  }
+
+  void setPosition(int pos) {
+    *position = min(range.getEnd(), max(range.getStart(), pos));
+  }
+
+  void addScrollPos(int amount) {
+    setPosition(*position + amount);
+  }
+
+  virtual bool onMouseWheel(Vec2 v, bool up) override {
+    if (up)
+      addScrollPos(-1);
+    else
+      addScrollPos(1);
+    return true;
+  }
+
+  void setPositionFromClick(Vec2 v) {
+    setPosition(range.getStart() + (int) round((double)(v.x - getBounds().left()) * range.getLength() / scrollLength()));
+  }
+
+  virtual bool onLeftClick(Vec2 v) override {
+    if (v.inRectangle(getBounds())) {
+      held = true;
+      setPositionFromClick(v);
+      return true;
+    }
+    return false;
+  }
+
+  virtual bool onMouseMove(Vec2 v) override {
+    if (held)
+      setPositionFromClick(v);
+    return false;
+  }
+
+  virtual void onMouseRelease(Vec2) override {
+    held = false;
+  }
+
+  virtual bool isVisible(int) override {
+    return true;
+  }
+
+  private:
+  SGuiElem button;
+  shared_ptr<int> position;
+  Range range;
+  Vec2 buttonSize;
+  bool held = false;
+};
+
+SGuiElem GuiFactory::slider(SGuiElem button, shared_ptr<int> position, Range range) {
+  return make_shared<Slider>(std::move(button), std::move(position), range);
+}
 
 Texture& GuiFactory::get(TexId id) {
   return textures[id];
@@ -2544,6 +2644,8 @@ class GuiContainScrollPos : public GuiElem {
   public:
   ScrollPosition pos;
 };
+
+const int scrollbarWidth = 22;
 
 SGuiElem GuiFactory::scrollable(SGuiElem content, ScrollPosition* scrollPos, int* held) {
   if (!scrollPos) {

@@ -171,7 +171,13 @@ class GuiFactory {
   SGuiElem viewObject(const ViewObject&, double scale = 1, Color = Color::WHITE);
   SGuiElem viewObject(ViewId, double scale = 1, Color = Color::WHITE);
   SGuiElem asciiBackground(ViewId);
-  SGuiElem translate(SGuiElem, Vec2 pos, optional<Vec2> size = none);
+  enum class TranslateCorner {
+    TOP_LEFT,
+    TOP_RIGHT,
+    BOTTOM_LEFT,
+    BOTTOM_RIGHT
+  };
+  SGuiElem translate(SGuiElem, Vec2 pos, optional<Vec2> size = none, TranslateCorner = TranslateCorner::TOP_LEFT);
   SGuiElem translate(function<Vec2()>, SGuiElem);
   SGuiElem centerHoriz(SGuiElem, optional<int> width = none);
   SGuiElem centerVert(SGuiElem, optional<int> height = none);
@@ -206,6 +212,7 @@ class GuiFactory {
   SGuiElem renderInBounds(SGuiElem);
   using CustomDrawFun = function<void(Renderer&, Rectangle)>;
   SGuiElem drawCustom(CustomDrawFun);
+  SGuiElem slider(SGuiElem button, shared_ptr<int> position, Range);
 
   using TexId = TextureId;
   SGuiElem sprite(TexId, Alignment, optional<Color> = none);

@@ -105,6 +105,7 @@ class GuiBuilder {
   SGuiElem drawHighscores(const vector<HighscoreList>&, Semaphore&, int& tabNum, vector<ScrollPosition>& scrollPos,
       bool& online);
   SGuiElem drawMinimapIcons(const optional<TutorialInfo>&);
+  SGuiElem drawChooseNumberMenu(SyncQueue<optional<int>>&, const string& title, Range range, int increments);
 
   void setCollectiveTab(CollectiveTab t);
   CollectiveTab getCollectiveTab() const;

@@ -2758,6 +2758,42 @@ SGuiElem GuiBuilder::drawPillageItemMenu(SyncQueue<optional<int>>& queue, const 
                      [&queue] { queue.push(none); }));
 }
 
+SGuiElem GuiBuilder::drawChooseNumberMenu(SyncQueue<optional<int>>& queue, const string& title,
+    Range range, int increments) {
+  auto lines = gui.getListBuilder(legendLineHeight);
+  lines.addElem(gui.centerHoriz(gui.label(title)));
+  lines.addSpace(legendLineHeight / 2);
+  auto currentChoice = make_shared<int>(range.getStart());
+  auto getCurrent = [range, currentChoice, increments] {
+    return range.getStart() + (*currentChoice - range.getStart()) * increments;
+  };
+  const int sideMargin = 50;
+  lines.addElem(gui.leftMargin(sideMargin, gui.rightMargin(sideMargin, gui.stack(
+      gui.margins(gui.rectangle(Color::ALMOST_DARK_GRAY), 0, legendLineHeight / 3, 0, legendLineHeight / 3),
+      gui.slider(gui.preferredSize(10, 25, gui.rectangle(Color::WHITE)), currentChoice,
+          Range(range.getStart(), range.getStart() + range.getLength() / increments)))
+  )));
+  const int width = 380;
+  lines.addElem(gui.stack(
+      gui.centerHoriz(gui.labelFun([getCurrent]{ return toString(getCurrent()); })),
+      gui.translate(gui.centeredLabel(Renderer::HOR, toString(range.getStart())), Vec2(sideMargin, 0), Vec2(1, 0)),
+      gui.translate(gui.centeredLabel(Renderer::HOR, toString(range.getEnd())), Vec2(-sideMargin, 0), Vec2(1, 0),
+          GuiFactory::TranslateCorner::TOP_RIGHT)
+  ));
+  lines.addElem(gui.centerHoriz(gui.getListBuilder()
+      .addElemAuto(gui.stack(
+          gui.labelHighlight("[Confirm]", Color::LIGHT_BLUE),
+          gui.button([&queue, getCurrent] { queue.push(getCurrent());})))
+      .addSpace(10)
+      .addElemAuto(gui.stack(
+          gui.labelHighlight("[Cancel]", Color::LIGHT_BLUE),
+          gui.button([&queue] { queue.push(none);})))
+      .buildHorizontalList()
+  ));
+  return gui.setWidth(width,
+      gui.miniWindow(gui.margins(lines.buildVerticalList(), 15), [&queue] { queue.push(none); }));
+}
+
 static Color getHighlightColor(VillainType type) {
   switch (type) {
     case VillainType::MAIN:
@@ -3361,6 +3397,8 @@ optional<string> GuiBuilder::getTextInput(const string& title, const string& val
     }
   }
 }
+
+
 
 SGuiElem GuiBuilder::drawLevelMap(Semaphore& sem, const CreatureView* view) {
   auto miniMap = make_shared<MinimapGui>([]{});

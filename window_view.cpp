@@ -757,17 +757,8 @@ bool WindowView::yesOrNoPrompt(const string& message, bool defaultNo) {
 
 optional<int> WindowView::getNumber(const string& title, int min, int max, int increments) {
   CHECK(min < max);
-  vector<ListElem> options;
-  vector<int> numbers;
-  for (int i = min; i <= max; i += increments) {
-    options.push_back(toString(i));
-    numbers.push_back(i);
-  }
-  optional<int> res = WindowView::chooseFromList(title, options);
-  if (!res)
-    return none;
-  else
-    return numbers[*res];
+  SyncQueue<optional<int>> returnQueue;
+  return getBlockingGui(returnQueue, guiBuilder.drawChooseNumberMenu(returnQueue, title, Range(min, max), increments));
 }
 
 optional<int> WindowView::chooseFromList(const string& title, const vector<ListElem>& options, int index,
