@@ -156,7 +156,7 @@ void SoundSource::destroy() {
 const int streamingBufferSize = 1 * 2 * 2 * 44100;
 
 SoundStream::SoundStream(const FilePath& path, double volume) : startedPlaying(false),
-      streamer([path, this]{ init(path);}, [volume, this]{loop(volume);}) {
+      streamer([path, this]{ init(path);}, [this]{loop();}), volume(volume) {
 }
 
 bool SoundStream::isPlaying() const {
@@ -169,12 +169,11 @@ bool SoundStream::isPlaying() const {
 
 void SoundStream::setVolume(double v) {
   alSourcef(source.getId(), AL_GAIN, v);
+  volume = v;
 }
 
 double SoundStream::getVolume() const {
-  float ret = 0;
-  AL(alGetSourcef(source.getId(), AL_GAIN, &ret));
-  return ret;
+  return volume;
 }
 
 void SoundStream::init(const FilePath& path) {
@@ -184,7 +183,7 @@ void SoundStream::init(const FilePath& path) {
   AL(alGenBuffers(2, buffers));
 }
 
-void SoundStream::loop(double volume) {
+void SoundStream::loop() {
   int numQueued = 0;
   AL(alGetSourcei(source.getId(), AL_BUFFERS_QUEUED, &numQueued));
   if (numQueued == 0) { /*fill and queue initial buffers*/

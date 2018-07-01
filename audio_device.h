@@ -44,7 +44,7 @@ class SoundStream {
   double getVolume() const;
 
   private:
-  void loop(double volume);
+  void loop();
   void init(const FilePath&);
   SoundSource source;
   OpenalId buffers[2];
@@ -52,6 +52,7 @@ class SoundStream {
   vorbis_info *info;
   atomic<bool> startedPlaying;
   AsyncLoop streamer;
+  atomic<double> volume;
 };
 
 class AudioDevice {

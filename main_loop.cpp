@@ -411,8 +411,6 @@ void MainLoop::launchQuickGame() {
 }
 
 void MainLoop::start(bool tilesPresent, bool quickGame) {
-  if (options->getBoolValue(OptionId::MUSIC))
-    jukebox->toggle(true);
   NameGenerator::init(dataFreePath.subdirectory("names"));
   if (quickGame)
     launchQuickGame();

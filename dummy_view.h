@@ -38,7 +38,7 @@ class DummyView : public View {
   virtual void presentText(const string&, const string&) {}
   virtual void presentList(const string&, const vector<ListElem>&, bool = false,
       MenuType = MenuType::NORMAL, optional<UserInputId> = none) {}
-  virtual optional<int> getNumber(const string& title, int min, int max, int increments = 1) {
+  virtual optional<int> getNumber(const string& title, Range range, int initial, int increments = 1) {
     return none;
   }
   virtual optional<string> getText(const string& title, const string& value, int maxLength,

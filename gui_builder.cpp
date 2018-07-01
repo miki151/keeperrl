@@ -2759,19 +2759,19 @@ SGuiElem GuiBuilder::drawPillageItemMenu(SyncQueue<optional<int>>& queue, const 
 }
 
 SGuiElem GuiBuilder::drawChooseNumberMenu(SyncQueue<optional<int>>& queue, const string& title,
-    Range range, int increments) {
+    Range range, int initial, int increments) {
   auto lines = gui.getListBuilder(legendLineHeight);
   lines.addElem(gui.centerHoriz(gui.label(title)));
   lines.addSpace(legendLineHeight / 2);
-  auto currentChoice = make_shared<int>(range.getStart());
+  auto currentChoice = make_shared<int>((initial - range.getStart()) / increments);
   auto getCurrent = [range, currentChoice, increments] {
-    return range.getStart() + (*currentChoice - range.getStart()) * increments;
+    return range.getStart() + *currentChoice * increments;
   };
   const int sideMargin = 50;
   lines.addElem(gui.leftMargin(sideMargin, gui.rightMargin(sideMargin, gui.stack(
       gui.margins(gui.rectangle(Color::ALMOST_DARK_GRAY), 0, legendLineHeight / 3, 0, legendLineHeight / 3),
       gui.slider(gui.preferredSize(10, 25, gui.rectangle(Color::WHITE)), currentChoice,
-          Range(range.getStart(), range.getStart() + range.getLength() / increments)))
+          range.getLength() / increments))
   )));
   const int width = 380;
   lines.addElem(gui.stack(

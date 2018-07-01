@@ -755,10 +755,9 @@ bool WindowView::yesOrNoPrompt(const string& message, bool defaultNo) {
       MenuType::YES_NO, nullptr) == 0;
 }
 
-optional<int> WindowView::getNumber(const string& title, int min, int max, int increments) {
-  CHECK(min < max);
+optional<int> WindowView::getNumber(const string& title, Range range, int initial, int increments) {
   SyncQueue<optional<int>> returnQueue;
-  return getBlockingGui(returnQueue, guiBuilder.drawChooseNumberMenu(returnQueue, title, Range(min, max), increments));
+  return getBlockingGui(returnQueue, guiBuilder.drawChooseNumberMenu(returnQueue, title, range, initial, increments));
 }
 
 optional<int> WindowView::chooseFromList(const string& title, const vector<ListElem>& options, int index,

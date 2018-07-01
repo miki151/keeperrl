@@ -47,6 +47,7 @@
 #include "player_role.h"
 #include "campaign_type.h"
 #include "dummy_view.h"
+#include "sound.h"
 
 #ifndef VSTUDIO
 #include "stack_printer.h"
@@ -71,12 +72,8 @@ static void initializeRendererTiles(Renderer& r, const DirectoryPath& path) {
   r.loadTiles();
 }
 
-static float getMaxVolume() {
+static double getMaxVolume() {
   return 0.7;
-}
-
-static map<MusicType, float> getMaxVolumes() {
-  return {{MusicType::ADV_BATTLE, 0.4}, {MusicType::ADV_PEACEFUL, 0.4}};
 }
 
 vector<pair<MusicType, FilePath>> getMusicTracks(const DirectoryPath& path, bool present) {
@@ -332,11 +329,11 @@ static int keeperMain(po::parser& commandLineFlags) {
   Clock clock;
   KeybindingMap keybindingMap(userPath.file("keybindings.txt"));
   Jukebox jukebox(
-      &options,
       audioDevice,
       getMusicTracks(paidDataPath.subdirectory("music"), tilesPresent && !audioError),
-      getMaxVolume(),
-      getMaxVolumes());
+      getMaxVolume());
+  options.addTrigger(OptionId::MUSIC, [&jukebox](int volume) { jukebox.setCurrentVolume(volume); });
+  jukebox.setCurrentVolume(options.getIntValue(OptionId::MUSIC));
   FileSharing fileSharing(uploadUrl, options, installId);
   Highscores highscores(userPath.file("highscores.dat"), fileSharing, &options);
   SokobanInput sokobanInput(freeDataPath.file("sokoban_input.txt"), userPath.file("sokoban_state.txt"));
@@ -384,8 +381,14 @@ static int keeperMain(po::parser& commandLineFlags) {
       tilesPresent ? optional<DirectoryPath>(paidDataPath.subdirectory("images")) : none);
   guiFactory.loadImages();
   if (tilesPresent) {
-    if (!audioError)
-      soundLibrary = new SoundLibrary(&options, audioDevice, paidDataPath.subdirectory("sound"));
+    if (!audioError) {
+      soundLibrary = new SoundLibrary(audioDevice, paidDataPath.subdirectory("sound"));
+      options.addTrigger(OptionId::SOUND, [soundLibrary](int volume) {
+        soundLibrary->setVolume(volume);
+        soundLibrary->playSound(SoundId::SPELL_DECEPTION);
+      });
+      soundLibrary->setVolume(options.getIntValue(OptionId::SOUND));
+    }
   }
   if (tilesPresent)
     initializeRendererTiles(renderer, paidDataPath.subdirectory("images"));

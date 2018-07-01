@@ -1927,7 +1927,8 @@ void PlayerControl::processInput(View* view, UserInput input) {
               break;
             case ItemAction::CHANGE_NUMBER: {
               int batchSize = workshop.getQueued()[info.itemIndex].batchSize;
-              if (auto number = getView()->getNumber("Change the number of items:", 0, 50 * batchSize, batchSize)) {
+              if (auto number = getView()->getNumber("Change the number of items:",
+                  Range(0, 50 * batchSize), batchSize, batchSize)) {
                 if (*number > 0)
                   workshop.changeNumber(info.itemIndex, *number / batchSize);
                 else

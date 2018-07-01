@@ -166,7 +166,8 @@ void Player::pickUpItemAction(int numStack, bool multi) {
   if (numStack < stacks.size()) {
     vector<WItem> items = stacks[numStack];
     if (multi && items.size() > 1) {
-      auto num = getView()->getNumber("Pick up how many " + items[0]->getName(true) + "?", 1, items.size());
+      auto num = getView()->getNumber("Pick up how many " + items[0]->getName(true) + "?",
+          Range(1, items.size()), 1);
       if (!num)
         return;
       items = getPrefix(items, *num);
@@ -284,7 +285,8 @@ void Player::handleItems(const EntitySet<Item>& itemIds, ItemAction action) {
   switch (action) {
     case ItemAction::DROP: tryToPerform(creature->drop(items)); break;
     case ItemAction::DROP_MULTI:
-      if (auto num = getView()->getNumber("Drop how many " + items[0]->getName(true) + "?", 1, items.size()))
+      if (auto num = getView()->getNumber("Drop how many " + items[0]->getName(true) + "?",
+          Range(1, items.size()), 1))
         tryToPerform(creature->drop(getPrefix(items, *num)));
       break;
     case ItemAction::THROW: throwItem(items); break;
@@ -395,7 +397,7 @@ void Player::payForAllItemsAction() {
 void Player::giveAction(vector<WItem> items) {
   PROFILE;
   if (items.size() > 1) {
-    if (auto num = getView()->getNumber("Give how many " + items[0]->getName(true) + "?", 1, items.size()))
+    if (auto num = getView()->getNumber("Give how many " + items[0]->getName(true) + "?", Range(1, items.size()), 1))
       items = getPrefix(items, *num);
     else
       return;

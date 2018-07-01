@@ -2342,8 +2342,8 @@ class Scrollable : public GuiElem {
 class Slider : public GuiLayout {
   public:
 
-  Slider(SGuiElem button, shared_ptr<int> position, Range range)
-      : GuiLayout(std::move(button)), position(std::move(position)), range(range),
+  Slider(SGuiElem button, shared_ptr<int> position, int maxValue)
+      : GuiLayout(std::move(button)), position(std::move(position)), maxValue(maxValue),
         buttonSize(*elems[0]->getPreferredWidth(), *elems[0]->getPreferredHeight()) {}
 
   virtual Rectangle getElemBounds(int num) override {
@@ -2371,11 +2371,11 @@ class Slider : public GuiLayout {
   }
 
   double getScrollPos() {
-    return double(*position - range.getStart()) / double(range.getLength());
+    return double(*position) / double(maxValue);
   }
 
   void setPosition(int pos) {
-    *position = min(range.getEnd(), max(range.getStart(), pos));
+    *position = min(maxValue, max(0, pos));
   }
 
   void addScrollPos(int amount) {
@@ -2391,7 +2391,7 @@ class Slider : public GuiLayout {
   }
 
   void setPositionFromClick(Vec2 v) {
-    setPosition(range.getStart() + (int) round((double)(v.x - getBounds().left()) * range.getLength() / scrollLength()));
+    setPosition((int) round((double)(v.x - getBounds().left()) * maxValue / scrollLength()));
   }
 
   virtual bool onLeftClick(Vec2 v) override {
@@ -2420,13 +2420,13 @@ class Slider : public GuiLayout {
   private:
   SGuiElem button;
   shared_ptr<int> position;
-  Range range;
+  int maxValue;
   Vec2 buttonSize;
   bool held = false;
 };
 
-SGuiElem GuiFactory::slider(SGuiElem button, shared_ptr<int> position, Range range) {
-  return make_shared<Slider>(std::move(button), std::move(position), range);
+SGuiElem GuiFactory::slider(SGuiElem button, shared_ptr<int> position, int max) {
+  return make_shared<Slider>(std::move(button), std::move(position), max);
 }
 
 Texture& GuiFactory::get(TexId id) {
