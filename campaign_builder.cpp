@@ -230,7 +230,7 @@ const char* CampaignBuilder::getIntroText() const {
         "You can travel to other sites by creating a team and using the travel command.\n\n"
         "The highlighted tribes are in your influence zone, which means that you can currently interact with them "
         "(trade, recruit, attack or be attacked). "
-        "As you conquer more enemies, your influence zone grows.\n\n";
+        "As you conquer more enemies, your influence zone will increase.\n\n";
     case PlayerRole::ADVENTURER:
       return
         "Welcome to the campaign mode! "
@@ -239,7 +239,7 @@ const char* CampaignBuilder::getIntroText() const {
         "to win the game."
         "You can travel to other sites by using the travel command.\n\n"
         "The highlighted tribes are in your influence zone, which means that you can currently travel there. "
-        "As you conquer more enemies, your influence zone grows.\n\n";
+        "As you conquer more enemies, your influence zone will increase.\n\n";
    }
 }
 
