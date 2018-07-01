@@ -311,6 +311,7 @@ static Furniture get(FurnitureType type, TribeId tribe) {
       return Furniture("message board", ViewObject(ViewId::NOTICE_BOARD, ViewLayer::FLOOR), type, tribe)
           .setCanHide()
           .setUsageType(FurnitureUsageType::KEEPER_BOARD)
+          .setClickType(FurnitureClickType::KEEPER_BOARD)
           .setFireInfo(Fire(500, 0.5))
           .setDestroyable(50);
     case FurnitureType::UP_STAIRS:

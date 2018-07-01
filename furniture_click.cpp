@@ -7,6 +7,8 @@
 #include "tribe.h"
 #include "view_object.h"
 #include "movement_set.h"
+#include "game.h"
+#include "collective.h"
 
 void FurnitureClick::handle(FurnitureClickType type, Position pos, WConstFurniture furniture) {
   auto layer = furniture->getLayer();
@@ -24,5 +26,8 @@ void FurnitureClick::handle(FurnitureClickType type, Position pos, WConstFurnitu
       pos.updateConnectivity();
       break;
     }
+    case FurnitureClickType::KEEPER_BOARD:
+      pos.getGame()->handleMessageBoard(pos, pos.getGame()->getPlayerCollective()->getLeader());
+      break;
   }
 }

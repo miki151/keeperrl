@@ -5,7 +5,7 @@ class Position;
 
 #include "util.h"
 
-enum class FurnitureClickType { LOCK };
+enum class FurnitureClickType { LOCK, KEEPER_BOARD };
 
 class FurnitureClick {
   public:
