@@ -31,3 +31,16 @@ void FurnitureClick::handle(FurnitureClickType type, Position pos, WConstFurnitu
       break;
   }
 }
+
+const char* FurnitureClick::getText(FurnitureClickType type, Position, WConstFurniture furniture) {
+  switch (type) {
+    case FurnitureClickType::LOCK: {
+      if (furniture->getMovementSet().hasTrait(MovementTrait::WALK))
+        return "Lock door";
+      else
+        return "Unlock door";
+    }
+    case FurnitureClickType::KEEPER_BOARD:
+      return "Write on board";
+  }
+}

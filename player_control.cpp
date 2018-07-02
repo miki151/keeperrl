@@ -84,6 +84,7 @@
 #include "time_queue.h"
 #include "quarters.h"
 #include "unknown_locations.h"
+#include "furniture_click.h"
 
 template <class Archive>
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
@@ -1566,6 +1567,9 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
       index.mergeFromMemory(*memIndex);
   if (collective->getTerritory().contains(position))
     if (auto furniture = position.getFurniture(FurnitureLayer::MIDDLE)) {
+      if (auto clickType = furniture->getClickType())
+        if (auto& obj = furniture->getViewObject())
+          index.getObject(obj->layer()).setClickAction(FurnitureClick::getText(*clickType, position, furniture));
       if (furniture->getUsageType() == FurnitureUsageType::STUDY || CollectiveConfig::getWorkshopType(furniture->getType()))
         index.setHighlight(HighlightType::CLICKABLE_FURNITURE);
       if ((chosenWorkshop && chosenWorkshop == CollectiveConfig::getWorkshopType(furniture->getType())) ||
@@ -2354,7 +2358,7 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
 void PlayerControl::onSquareClick(Position pos) {
   if (collective->getTerritory().contains(pos))
     if (auto furniture = pos.getFurniture(FurnitureLayer::MIDDLE)) {
-      if (furniture->isClickable()) {
+      if (furniture->getClickType()) {
         furniture->click(pos); // this can remove the furniture
         updateSquareMemory(pos);
       } else {

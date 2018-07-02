@@ -77,6 +77,7 @@ class MapGui : public GuiElem {
   struct HighlightedInfo {
     optional<Vec2> creaturePos;
     optional<Vec2> tilePos;
+    optional<Vec2> tileScreenPos;
     optional<ViewObject> object;
     ItemCounts itemCounts;
     ItemCounts equipmentCounts;

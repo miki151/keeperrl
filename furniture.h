@@ -47,7 +47,6 @@ class Furniture : public OwnedObject<Furniture> {
   bool canSeeThru(VisionId) const;
   bool stopsProjectiles(VisionId) const;
   void click(Position) const;
-  bool isClickable() const;
   bool overridesMovement() const;
   void use(Position, WCreature) const;
   bool canUse(WConstCreature) const;

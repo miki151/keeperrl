@@ -182,10 +182,6 @@ bool Furniture::stopsProjectiles(VisionId id) const {
   return !canSeeThru(id) || noProjectiles;
 }
 
-bool Furniture::isClickable() const {
-  return !!clickType;
-}
-
 bool Furniture::overridesMovement() const {
   return overrideMovement;
 }

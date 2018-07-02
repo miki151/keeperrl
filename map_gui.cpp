@@ -839,6 +839,7 @@ MapGui::HighlightedInfo MapGui::getHighlightedInfo(Vec2 size, milliseconds curre
   if (auto mousePos = getMousePos())
     if (mouseUI) {
       ret.tilePos = layout->projectOnMap(getBounds(), getScreenPos(), *mousePos);
+      ret.tileScreenPos = topLeftCorner + (*ret.tilePos - allTiles.topLeft()).mult(size);
       if (auto& index = objects[*ret.tilePos])
         ret.itemCounts = index->itemCounts;
       if (!buttonViewId && ret.tilePos->inRectangle(objects.getBounds()))

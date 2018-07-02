@@ -2158,10 +2158,10 @@ SGuiElem GuiBuilder::drawMapHintOverlay() {
       }
       lines.addElemAuto(drawLyingItemsList("Inventory: ", highlighted.equipmentCounts, 250));
       if (auto actions = getClickActions(*viewObject))
-        if (highlighted.creaturePos)
+        if (highlighted.tileScreenPos)
           allElems.push_back(gui.absolutePosition(gui.translucentBackgroundWithBorderPassMouse(gui.margins(
               gui.setHeight(*actions->getPreferredHeight(), actions), 5, 1, 5, -2)),
-              *highlighted.creaturePos + Vec2(60, 60)));
+              highlighted.creaturePos.value_or(*highlighted.tileScreenPos) + Vec2(60, 60)));
       if (!viewObject->getBadAdjectives().empty()) {
         lines.addElemAuto(gui.labelMultiLineWidth(viewObject->getBadAdjectives(), legendLineHeight * 2 / 3, 300,
             Renderer::textSize, Color::RED, ','));
