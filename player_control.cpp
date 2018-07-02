@@ -1521,6 +1521,7 @@ void PlayerControl::getSquareViewIndex(Position pos, bool canSee, ViewIndex& ind
     index.setHiddenId(pos.getViewObject().id());
   if (WConstCreature c = pos.getCreature())
     if (canSee) {
+      index.equipmentCounts = c->getEquipment().getCounts();
       index.insert(c->getViewObject());
       auto& object = index.getObject(ViewLayer::CREATURE);
       if (isEnemy(c)) {

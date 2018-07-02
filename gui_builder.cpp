@@ -2108,13 +2108,17 @@ SGuiElem GuiBuilder::getClickActions(const ViewObject& object) {
     return nullptr;
 }
 
-SGuiElem GuiBuilder::drawLyingItemsList(const ItemCounts& itemCounts, int maxWidth) {
+SGuiElem GuiBuilder::drawLyingItemsList(const string& title, const ItemCounts& itemCounts, int maxWidth) {
   auto lines = gui.getListBuilder(legendLineHeight);
   auto line = gui.getListBuilder();
   int currentWidth = 0;
   for (auto& elemPair : itemCounts) {
     auto cnt = elemPair.second;
     auto id = elemPair.first;
+    if (line.isEmpty() && lines.isEmpty() && !title.empty()) {
+      line.addElemAuto(gui.label(title));
+      currentWidth = line.getSize();
+    }
     auto elem = cnt > 1
         ? drawMinionAndLevel(id, cnt, 1)
         : gui.viewObject(id);
@@ -2152,6 +2156,7 @@ SGuiElem GuiBuilder::drawMapHintOverlay() {
         lines.addElem(gui.label(getDescription(status), getColor(status)));
         break;
       }
+      lines.addElemAuto(drawLyingItemsList("Inventory: ", highlighted.equipmentCounts, 250));
       if (auto actions = getClickActions(*viewObject))
         if (highlighted.creaturePos)
           allElems.push_back(gui.absolutePosition(gui.translucentBackgroundWithBorderPassMouse(gui.margins(
@@ -2182,7 +2187,7 @@ SGuiElem GuiBuilder::drawMapHintOverlay() {
     }
     if (highlighted.tilePos)
       lines.addElem(gui.label("Position: " + toString(*highlighted.tilePos)));
-    lines.addElemAuto(drawLyingItemsList(highlighted.itemCounts, 250));
+    lines.addElemAuto(drawLyingItemsList("Lying here: ", highlighted.itemCounts, 250));
   }
   if (!lines.isEmpty())
     allElems.push_back(gui.margins(gui.translucentBackgroundWithBorderPassMouse(

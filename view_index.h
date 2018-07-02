@@ -74,6 +74,7 @@ class ViewIndex {
   void serialize(Archive& ar, const unsigned int version);
 
   ItemCounts SERIAL(itemCounts);
+  ItemCounts SERIAL(equipmentCounts);
 
   private:
   std::array<char, EnumInfo<ViewLayer>::size> SERIAL(objIndex);

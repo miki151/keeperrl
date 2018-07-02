@@ -845,15 +845,17 @@ MapGui::HighlightedInfo MapGui::getHighlightedInfo(Vec2 size, milliseconds curre
         for (Vec2 wpos : Rectangle(*ret.tilePos - Vec2(2, 2), *ret.tilePos + Vec2(2, 2))
             .intersection(objects.getBounds())) {
           Vec2 pos = topLeftCorner + (wpos - allTiles.topLeft()).mult(size);
-          if (objects[wpos] && objects[wpos]->hasObject(ViewLayer::CREATURE)) {
-            const ViewObject& object = objects[wpos]->getObject(ViewLayer::CREATURE);
-            Vec2 movement = getMovementOffset(object, size, currentTimeGame, currentTimeReal, true);
-            if (mousePos->inRectangle(Rectangle(pos + movement, pos + movement + size))) {
-              ret.tilePos = wpos;
-              ret.object = object;
-              ret.creaturePos = pos + movement;
-              break;
-            }
+          if (auto& index = objects[wpos])
+            if (objects[wpos]->hasObject(ViewLayer::CREATURE)) {
+              const ViewObject& object = objects[wpos]->getObject(ViewLayer::CREATURE);
+              Vec2 movement = getMovementOffset(object, size, currentTimeGame, currentTimeReal, true);
+              if (mousePos->inRectangle(Rectangle(pos + movement, pos + movement + size))) {
+                ret.tilePos = wpos;
+                ret.object = object;
+                ret.creaturePos = pos + movement;
+                ret.equipmentCounts = index->equipmentCounts;
+                break;
+              }
           }
         }
     }

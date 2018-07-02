@@ -18,7 +18,7 @@
 #include "view_index.h"
 #include "view_object.h"
 
-SERIALIZE_DEF(ViewIndex, objIndex, highlight, objects, anyHighlight, itemCounts)
+SERIALIZE_DEF(ViewIndex, objIndex, highlight, objects, anyHighlight, itemCounts, equipmentCounts)
 
 ViewIndex::ViewIndex() {
   for (auto& elem : objIndex)

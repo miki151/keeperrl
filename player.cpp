@@ -866,6 +866,7 @@ void Player::getViewIndex(Vec2 pos, ViewIndex& index) const {
     if ((canSee && creature->canSeeInPosition(c)) || c == creature ||
         creature->canSeeOutsidePosition(c)) {
       index.insert(c->getViewObjectFor(creature->getTribe()));
+      index.equipmentCounts = c->getEquipment().getCounts();
       auto& object = index.getObject(ViewLayer::CREATURE);
       if (c == creature)
         object.setModifier(ViewObject::Modifier::PLAYER);

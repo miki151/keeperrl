@@ -278,7 +278,7 @@ class GuiBuilder {
   SGuiElem drawAllVillainsOverlay(const VillageInfo&);
   SGuiElem drawVillainInfoOverlay(const VillageInfo::Village&, bool showDismissHint);
   SGuiElem drawVillainType(VillainType);
-  SGuiElem drawLyingItemsList(const ItemCounts&, int maxWidth);
+  SGuiElem drawLyingItemsList(const string& title, const ItemCounts&, int maxWidth);
 };
 
 RICH_ENUM(GuiBuilder::GameSpeed,

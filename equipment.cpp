@@ -122,3 +122,7 @@ bool Equipment::isEmpty() const {
   return inventory.isEmpty();
 }
 
+const ItemCounts& Equipment::getCounts() const {
+  return inventory.getCounts();
+}
+

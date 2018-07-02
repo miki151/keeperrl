@@ -79,6 +79,7 @@ class MapGui : public GuiElem {
     optional<Vec2> tilePos;
     optional<ViewObject> object;
     ItemCounts itemCounts;
+    ItemCounts equipmentCounts;
   };
   const HighlightedInfo& getLastHighlighted();
   bool isCreatureHighlighted(UniqueEntity<Creature>::Id);
