@@ -2112,19 +2112,20 @@ SGuiElem GuiBuilder::drawLyingItemsList(const ItemCounts& itemCounts, int maxWid
   auto lines = gui.getListBuilder(legendLineHeight);
   auto line = gui.getListBuilder();
   int currentWidth = 0;
-  for (auto id : ENUM_ALL(ViewId))
-    if (auto cnt = itemCounts[id]) {
-      auto elem = cnt > 1
-          ? drawMinionAndLevel(id, cnt, 1)
-          : gui.viewObject(id);
-      if (currentWidth + *elem->getPreferredWidth() > maxWidth) {
-        lines.addElem(line.buildHorizontalList());
-        currentWidth = 0;
-        line.clear();
-      }
-      currentWidth += *elem->getPreferredWidth();
-      line.addElemAuto(std::move(elem));
+  for (auto& elemPair : itemCounts) {
+    auto cnt = elemPair.second;
+    auto id = elemPair.first;
+    auto elem = cnt > 1
+        ? drawMinionAndLevel(id, cnt, 1)
+        : gui.viewObject(id);
+    if (currentWidth + *elem->getPreferredWidth() > maxWidth) {
+      lines.addElem(line.buildHorizontalList());
+      currentWidth = 0;
+      line.clear();
     }
+    currentWidth += *elem->getPreferredWidth();
+    line.addElemAuto(std::move(elem));
+  }
   if (line.getLength() > 0)
     lines.addElem(line.buildHorizontalList());
   return lines.buildVerticalList();

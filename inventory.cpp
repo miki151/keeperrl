@@ -29,7 +29,8 @@ void Inventory::addViewId(ViewId id, int count) {
     ++cur;
   else if (count < 0) {
     CHECK(cur > 0);
-    --cur;
+    if (--cur == 0)
+      counts.erase(id);
   }
 }
 
