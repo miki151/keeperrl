@@ -2108,6 +2108,28 @@ SGuiElem GuiBuilder::getClickActions(const ViewObject& object) {
     return nullptr;
 }
 
+SGuiElem GuiBuilder::drawLyingItemsList(const ItemCounts& itemCounts, int maxWidth) {
+  auto lines = gui.getListBuilder(legendLineHeight);
+  auto line = gui.getListBuilder();
+  int currentWidth = 0;
+  for (auto id : ENUM_ALL(ViewId))
+    if (auto cnt = itemCounts[id]) {
+      auto elem = cnt > 1
+          ? drawMinionAndLevel(id, cnt, 1)
+          : gui.viewObject(id);
+      if (currentWidth + *elem->getPreferredWidth() > maxWidth) {
+        lines.addElem(line.buildHorizontalList());
+        currentWidth = 0;
+        line.clear();
+      }
+      currentWidth += *elem->getPreferredWidth();
+      line.addElemAuto(std::move(elem));
+    }
+  if (line.getLength() > 0)
+    lines.addElem(line.buildHorizontalList());
+  return lines.buildVerticalList();
+}
+
 SGuiElem GuiBuilder::drawMapHintOverlay() {
   auto lines = gui.getListBuilder(legendLineHeight);
   vector<SGuiElem> allElems;
@@ -2159,6 +2181,7 @@ SGuiElem GuiBuilder::drawMapHintOverlay() {
     }
     if (highlighted.tilePos)
       lines.addElem(gui.label("Position: " + toString(*highlighted.tilePos)));
+    lines.addElemAuto(drawLyingItemsList(highlighted.itemCounts, 250));
   }
   if (!lines.isEmpty())
     allElems.push_back(gui.margins(gui.translucentBackgroundWithBorderPassMouse(

@@ -17,21 +17,26 @@
 
 #include "inventory.h"
 #include "item.h"
+#include "view_object.h"
 
-template <class Archive> 
-void Inventory::serialize(Archive& ar, const unsigned int version) {
-  ar(items, itemsCache, weight);
-}
 
-Inventory::~Inventory() {}
-
-SERIALIZABLE(Inventory);
-
+SERIALIZE_DEF(Inventory, items, itemsCache, weight, counts)
 SERIALIZATION_CONSTRUCTOR_IMPL(Inventory);
+
+void Inventory::addViewId(ViewId id, int count) {
+  auto& cur = counts[id];
+  if (count > 0 && cur < UINT16_MAX)
+    ++cur;
+  else if (count < 0) {
+    CHECK(cur > 0);
+    --cur;
+  }
+}
 
 void Inventory::addItem(PItem item) {
   CHECK(!!item) << "Null item dropped";
   itemsCache.insert(item.get());
+  addViewId(item->getViewObject().id(), 1);
   for (ItemIndex ind : ENUM_ALL(ItemIndex))
     if (indexes[ind] && hasIndex(ind, item.get()))
       indexes[ind]->insert(item.get());
@@ -48,6 +53,7 @@ PItem Inventory::removeItem(WItem itemRef) {
   PItem item = items.remove(itemRef->getUniqueId());
   weight -= item->getWeight();
   itemsCache.remove(itemRef->getUniqueId());
+  addViewId(item->getViewObject().id(), -1);
   for (ItemIndex ind : ENUM_ALL(ItemIndex))
     if (indexes[ind] && hasIndex(ind, item.get()))
       indexes[ind]->remove(itemRef->getUniqueId());
@@ -67,6 +73,7 @@ void Inventory::clearIndex(ItemIndex ind) {
 
 vector<PItem> Inventory::removeAllItems() {
   itemsCache.removeAll();
+  counts.clear();
   for (ItemIndex ind : ENUM_ALL(ItemIndex))
     indexes[ind] = none;
   weight = 0;
@@ -94,6 +101,10 @@ const vector<WItem>& Inventory::getItems(ItemIndex index) const {
         elems->insert(item);
   }
   return elems->getElems();
+}
+
+const ItemCounts&Inventory::getCounts() const {
+  return counts;
 }
 
 const vector<WItem>& Inventory::getItems() const {

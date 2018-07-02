@@ -21,6 +21,7 @@
 #include "unique_entity.h"
 #include "indexed_vector.h"
 #include "item_index.h"
+#include "item_counts.h"
 
 class Item;
 
@@ -37,6 +38,7 @@ class Inventory {
   const vector<WItem>& getItems() const;
   vector<WItem> getItems(function<bool (WConstItem)> predicate) const;
   const vector<WItem>& getItems(ItemIndex) const;
+  const ItemCounts& getCounts() const;
 
   bool hasItem(WConstItem) const;
   WItem getItemById(UniqueEntity<Item>::Id) const;
@@ -45,9 +47,6 @@ class Inventory {
 
   bool isEmpty() const;
 
-  Inventory(Inventory&&) = default;
-  ~Inventory();
-
   SERIALIZATION_DECL(Inventory);
 
   private:
@@ -55,8 +54,10 @@ class Inventory {
   typedef IndexedVector<WItem, UniqueEntity<Item>::Id> ItemVector;
   typedef IndexedVector<PItem, UniqueEntity<Item>::Id> PItemVector;
 
+  ItemCounts SERIAL(counts);
   PItemVector SERIAL(items);
   ItemVector SERIAL(itemsCache);
   double SERIAL(weight) = 0;
   mutable EnumMap<ItemIndex, optional<ItemVector>> indexes;
+  void addViewId(ViewId, int count);
 };

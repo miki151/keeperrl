@@ -25,6 +25,7 @@
 #include "scroll_position.h"
 #include "fps_counter.h"
 #include "view_object.h"
+#include "item_counts.h"
 
 class Clock;
 class MinionAction;
@@ -277,6 +278,7 @@ class GuiBuilder {
   SGuiElem drawAllVillainsOverlay(const VillageInfo&);
   SGuiElem drawVillainInfoOverlay(const VillageInfo::Village&, bool showDismissHint);
   SGuiElem drawVillainType(VillainType);
+  SGuiElem drawLyingItemsList(const ItemCounts&, int maxWidth);
 };
 
 RICH_ENUM(GuiBuilder::GameSpeed,

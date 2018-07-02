@@ -839,6 +839,8 @@ MapGui::HighlightedInfo MapGui::getHighlightedInfo(Vec2 size, milliseconds curre
   if (auto mousePos = getMousePos())
     if (mouseUI) {
       ret.tilePos = layout->projectOnMap(getBounds(), getScreenPos(), *mousePos);
+      if (auto& index = objects[*ret.tilePos])
+        ret.itemCounts = index->itemCounts;
       if (!buttonViewId && ret.tilePos->inRectangle(objects.getBounds()))
         for (Vec2 wpos : Rectangle(*ret.tilePos - Vec2(2, 2), *ret.tilePos + Vec2(2, 2))
             .intersection(objects.getBounds())) {
@@ -885,7 +887,8 @@ void MapGui::renderMapObjects(Renderer& renderer, Vec2 size, milliseconds curren
         if (object) {
           Vec2 movement = getMovementOffset(*object, size, currentTimeGame, currentTimeReal, true);
           drawObjectAbs(renderer, pos, *object, size, movement, wpos, currentTimeReal);
-          if (lastHighlighted.tilePos == wpos && !lastHighlighted.creaturePos && object->layer() != ViewLayer::CREATURE)
+          if (lastHighlighted.tilePos == wpos && !lastHighlighted.creaturePos &&
+              object->layer() != ViewLayer::CREATURE && object->layer() != ViewLayer::ITEM)
             lastHighlighted.object = *object;
         }
         if (spriteMode && layer == ViewLayer::TORCH1)

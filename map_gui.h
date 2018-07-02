@@ -22,6 +22,7 @@
 #include "view_index.h"
 #include "entity_map.h"
 #include "view_object.h"
+#include "item_counts.h"
 
 class MapMemory;
 class MapLayout;
@@ -77,6 +78,7 @@ class MapGui : public GuiElem {
     optional<Vec2> creaturePos;
     optional<Vec2> tilePos;
     optional<ViewObject> object;
+    ItemCounts itemCounts;
   };
   const HighlightedInfo& getLastHighlighted();
   bool isCreatureHighlighted(UniqueEntity<Creature>::Id);

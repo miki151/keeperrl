@@ -18,6 +18,7 @@
 #include "enums.h"
 #include "util.h"
 #include "view_layer.h"
+#include "item_counts.h"
 
 class ViewObject;
 
@@ -71,6 +72,8 @@ class ViewIndex {
 
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version);
+
+  ItemCounts SERIAL(itemCounts);
 
   private:
   std::array<char, EnumInfo<ViewLayer>::size> SERIAL(objIndex);

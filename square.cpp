@@ -144,9 +144,9 @@ void Square::getViewIndex(ViewIndex& ret, WConstCreature viewer) const {
   // viewer is null only in Spectator mode, so setting a random id to lastViewer is ok
   lastViewer = viewer ? viewer->getUniqueId() : Creature::Id();
   double fireSize = 0;
-  if (!inventory->isEmpty())
-    for (WItem it : getInventory().getItems())
-      fireSize = max(fireSize, it->getFireSize());
+  for (WItem it : getInventory().getItems())
+    fireSize = max(fireSize, it->getFireSize());
+  ret.itemCounts = inventory->getCounts();
   if (WItem it = getTopItem())
     ret.insert(copyOf(it->getViewObject()).setAttribute(ViewObject::Attribute::BURNING, fireSize));
   if (poisonGas->getAmount() > 0)
