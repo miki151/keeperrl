@@ -163,7 +163,7 @@ class SquareChange {
 
   static SquareChange addTerritory(CollectiveBuilder* collective) {
     return SquareChange([=](LevelBuilder* builder, Vec2 pos) {
-      collective->addArea(builder->toGlobalCoordinates({pos}));
+      collective->addArea(builder->toGlobalCoordinates(vector<Vec2>({pos})));
     });
   }
 
