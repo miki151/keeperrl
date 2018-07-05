@@ -210,6 +210,10 @@ void MinionEquipment::sortByEquipmentValue(WConstCreature c, vector<WItem>& item
       else
         return diff > 0;
     });
+  vector<WItem> ret;
+  for (auto& index : indexes)
+    ret.push_back(items[index]);
+  items = ret;
 }
 
 bool MinionEquipment::tryToOwn(WConstCreature c, WItem it) {
