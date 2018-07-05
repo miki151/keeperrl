@@ -143,8 +143,23 @@ vector<string> split(const string& s, const set<char>& delim) {
   vector<string> ret;
   for (int i : Range(s.size() + 1))
     if (i == s.size() || delim.count(s[i])) {
-      string tmp = s.substr(begin, i - begin);
-      ret.push_back(tmp);
+      ret.push_back(s.substr(begin, i - begin));
+      begin = i + 1;
+    }
+  return ret;
+}
+
+vector<string> splitIncludeDelim(const string& s, const set<char>& delim) {
+  if (s.empty())
+    return {};
+  int begin = 0;
+  vector<string> ret;
+  for (int i : Range(s.size() + 1))
+    if (i == s.size() || delim.count(s[i])) {
+      if (i > begin)
+        ret.push_back(s.substr(begin, i - begin));
+      if (i < s.size() && delim.count(s[i]))
+        ret.push_back(string(1, s[i]));
       begin = i + 1;
     }
   return ret;

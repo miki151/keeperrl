@@ -107,6 +107,12 @@ class GuiBuilder {
       bool& online);
   SGuiElem drawMinimapIcons(const optional<TutorialInfo>&);
   SGuiElem drawChooseNumberMenu(SyncQueue<optional<int>>&, const string& title, Range range, int initial, int increments);
+  struct BugReportInfo {
+    string text;
+    bool includeSave;
+    bool includeScreenshot;
+  };
+  SGuiElem drawBugreportMenu(bool withSaveFile, function<void(optional<BugReportInfo>)>);
 
   void setCollectiveTab(CollectiveTab t);
   CollectiveTab getCollectiveTab() const;
@@ -279,6 +285,7 @@ class GuiBuilder {
   SGuiElem drawVillainInfoOverlay(const VillageInfo::Village&, bool showDismissHint);
   SGuiElem drawVillainType(VillainType);
   SGuiElem drawLyingItemsList(const string& title, const ItemCounts&, int maxWidth);
+  SGuiElem drawTickBox(shared_ptr<bool> value, const string& title);
 };
 
 RICH_ENUM(GuiBuilder::GameSpeed,

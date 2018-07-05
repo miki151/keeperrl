@@ -144,8 +144,6 @@ FilePath MainLoop::getSavePath(const PGame& game, GameSaveType gameType) {
   return userPath.file(stripFilename(game->getGameIdentifier()) + getSaveSuffix(gameType));
 }
 
-const int singleModelGameSaveTime = 100000;
-
 void MainLoop::saveUI(PGame& game, GameSaveType type, SplashType splashType) {
   auto path = getSavePath(game, type);
   if (type == GameSaveType::RETIRED_SITE) {
@@ -156,7 +154,7 @@ void MainLoop::saveUI(PGame& game, GameSaveType type, SplashType splashType) {
         MEASURE(saveMainModel(game, path), "saving time")});
   } else {
     int saveTime = game->getSaveProgressCount();
-    doWithSplash(splashType, "Saving game...", saveTime,
+    doWithSplash(splashType, type == GameSaveType::AUTOSAVE ? "Autosaving" : "Saving game...", saveTime,
         [&] (ProgressMeter& meter) {
         Square::progressMeter = &meter;
         MEASURE(saveGame(game, path), "saving time")});
@@ -210,9 +208,21 @@ enum class MainLoop::ExitCondition {
   UNKNOWN
 };
 
-MainLoop::ExitCondition MainLoop::playGame(PGame&& game, bool withMusic, bool noAutoSave,
+void MainLoop::bugReportSave(PGame& game, string fileName) {
+  int saveTime = game->getSaveProgressCount();
+  doWithSplash(SplashType::AUTOSAVING, "Saving game...", saveTime,
+      [&] (ProgressMeter& meter) {
+      Square::progressMeter = &meter;
+      MEASURE(saveGame(game, userPath.file(fileName)), "saving time")});
+  Square::progressMeter = nullptr;
+}
+
+MainLoop::ExitCondition MainLoop::playGame(PGame game, bool withMusic, bool noAutoSave,
     function<optional<ExitCondition>(WGame)> exitCondition) {
   view->reset();
+  if (!noAutoSave)
+    view->setBugReportSaveCallback([&] (string fileName) { bugReportSave(game, fileName); });
+  DestructorFunction removeCallback([&] { view->setBugReportSaveCallback(nullptr); });
   game->initialize(options, highscores, view, fileSharing);
   const milliseconds stepTimeMilli {3};
   Intervalometer meter(stepTimeMilli);

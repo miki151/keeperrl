@@ -97,6 +97,7 @@ class WindowView: public View {
   //virtual vector<UniqueEntity<Creature>::Id> chooseTeamLeader(const string& title, const vector<CreatureInfo>&) override;
   virtual bool creatureInfo(const string& title, bool prompt, const vector<CreatureInfo>&) override;
   virtual void logMessage(const string&) override;
+  virtual void setBugReportSaveCallback(BugReportSaveCallback) override;
 
   private:
 
@@ -125,7 +126,7 @@ class WindowView: public View {
   void drawList(const string& title, const vector<ListElem>& options, int hightlight, int setMousePos = -1);
   void refreshScreen(bool flipBuffer = true);
   void drawAndClearBuffer();
-  void getAutosaveSplash(const ProgressMeter&);
+  void getAutosaveSplash(const ProgressMeter&, const string& text);
   void getBigSplash(const ProgressMeter&, const string& text, function<void()> cancelFun);
   void getSmallSplash(const string& text, function<void()> cancelFun);
 
@@ -136,7 +137,7 @@ class WindowView: public View {
   void resetMapBounds();
   void switchTiles();
 
-  bool considerResizeEvent(Event&);
+  bool considerResizeEvent(Event&, bool withBugReportEvent = true);
 
   int messageInd = 0;
   std::deque<string> currentMessage = std::deque<string>(3, "");
@@ -170,15 +171,12 @@ class WindowView: public View {
 
   function<void()> getButtonCallback(UserInput);
 
-  recursive_mutex renderMutex;
   recursive_mutex logMutex;
 
   bool lockKeyboard = false;
 
   thread::id renderThreadId;
   stack<function<void()>> renderDialog;
-
-  void addVoidDialog(function<void()>);
 
   template <class T>
   void addReturnDialog(SyncQueue<T>& q, function<T()> fun) {
@@ -213,7 +211,6 @@ class WindowView: public View {
 
   template<typename T>
   T getBlockingGui(SyncQueue<T>& queue, SGuiElem elem, optional<Vec2> origin = none) {
-    RecursiveLock lock(renderMutex);
     TempClockPause pause(clock);
     if (blockingElems.empty()) {
       blockingElems.push_back(gui.darken());
@@ -231,9 +228,7 @@ class WindowView: public View {
       blockingElems.clear();
       return *queue.popAsync();
     }
-    lock.unlock();
     T ret = queue.pop();
-    lock.lock();
     blockingElems.clear();
     return ret;
   }
@@ -252,4 +247,6 @@ class WindowView: public View {
   void propagateMousePosition(const vector<SGuiElem>&);
   Rectangle getEquipmentMenuPosition(int height);
   Vec2 getOverlayPosition(GuiBuilder::OverlayInfo::Alignment, int height, int width, int rightBarWidth, int bottomBarHeight);
+  bool considerBugReportEvent(Event&);
+  BugReportSaveCallback bugReportSaveCallback;
 };

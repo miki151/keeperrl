@@ -2823,6 +2823,46 @@ SGuiElem GuiBuilder::drawChooseNumberMenu(SyncQueue<optional<int>>& queue, const
       gui.miniWindow(gui.margins(lines.buildVerticalList(), 15), [&queue] { queue.push(none); }));
 }
 
+SGuiElem GuiBuilder::drawTickBox(shared_ptr<bool> value, const string& title) {
+  return gui.stack(
+      gui.button([value]{ *value = !*value; }),
+      gui.getListBuilder()
+          .addElemAuto(
+              gui.conditional(gui.labelUnicode(u8"✓", Color::GREEN), [value] { return *value; }))
+          .addElemAuto(gui.label(title))
+          .buildHorizontalList());
+}
+
+SGuiElem GuiBuilder::drawBugreportMenu(bool saveFile, function<void(optional<BugReportInfo>)> callback) {
+  auto lines = gui.getListBuilder(legendLineHeight);
+  const int width = 300;
+  const int windowMargin = 15;
+  lines.addElem(gui.centerHoriz(gui.label("Submit bug report")));
+  auto text = make_shared<string>();
+  auto withScreenshot = make_shared<bool>(true);
+  auto withSavefile = make_shared<bool>(saveFile);
+  lines.addElem(gui.label("Enter desciption:"));
+  lines.addElemAuto(gui.stack(
+        gui.rectangle(Color::GRAY),
+        gui.margins(gui.textInput(width - 10, 2, text), 5)));
+  lines.addSpace();
+  lines.addElem(drawTickBox(withScreenshot, "Include screenshot"));
+  if (saveFile)
+    lines.addElem(drawTickBox(withSavefile, "Include save file"));
+  lines.addElem(gui.centerHoriz(gui.getListBuilder()
+      .addElemAuto(gui.stack(
+          gui.labelHighlight("[Confirm]", Color::LIGHT_BLUE),
+          gui.button([=] { callback(BugReportInfo{*text, *withSavefile, *withScreenshot});})))
+      .addSpace(10)
+      .addElemAuto(gui.stack(
+          gui.labelHighlight("[Cancel]", Color::LIGHT_BLUE),
+          gui.button([callback] { callback(none);})))
+      .buildHorizontalList()
+  ));
+  return gui.setWidth(width + 2 * windowMargin,
+      gui.miniWindow(gui.margins(lines.buildVerticalList(), windowMargin), [callback]{ callback(none); }));
+}
+
 static Color getHighlightColor(VillainType type) {
   switch (type) {
     case VillainType::MAIN:

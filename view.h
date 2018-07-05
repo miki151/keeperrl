@@ -188,6 +188,8 @@ class View {
   virtual optional<int> chooseAtMouse(const vector<string>& elems) = 0;
 
   virtual void presentHighscores(const vector<HighscoreList>&) = 0;
+  using BugReportSaveCallback = function<void(string)>;
+  virtual void setBugReportSaveCallback(BugReportSaveCallback) = 0;
 
   struct CampaignMenuState {
     bool helpText;

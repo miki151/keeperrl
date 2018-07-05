@@ -251,7 +251,7 @@ static int keeperMain(po::parser& commandLineFlags) {
   }
   bool useSingleThread =
 #ifndef RELEASE
-      true;
+      false;
 #else
       commandLineFlags["single_thread"].was_set();
 #endif

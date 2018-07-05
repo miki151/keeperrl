@@ -55,7 +55,7 @@ class MainLoop {
 
   PGame prepareCampaign(RandomGen&);
   enum class ExitCondition;
-  ExitCondition playGame(PGame&&, bool withMusic, bool noAutoSave, function<optional<ExitCondition> (WGame)> = nullptr);
+  ExitCondition playGame(PGame, bool withMusic, bool noAutoSave, function<optional<ExitCondition> (WGame)> = nullptr);
   void splashScreen();
   void showCredits(const FilePath& path, View*);
 
@@ -86,6 +86,7 @@ class MainLoop {
   void eraseAllSavesExcept(const PGame&, optional<GameSaveType>);
   PGame prepareTutorial();
   void launchQuickGame();
+  void bugReportSave(PGame&, string fileName);
 };
 
 

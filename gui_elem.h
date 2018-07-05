@@ -43,6 +43,7 @@ class GuiElem {
   virtual void renderPart(Renderer& r, Rectangle) { render(r); }
   virtual bool onKeyPressed2(SDL::SDL_Keysym) { return false;}
   virtual bool onMouseWheel(Vec2 mousePos, bool up) { return false;}
+  virtual bool onTextInput(const char*) { return false; }
   virtual optional<int> getPreferredWidth() { return none; }
   virtual optional<int> getPreferredHeight() { return none; }
 
@@ -235,6 +236,7 @@ class GuiFactory {
   SGuiElem translucentBackgroundWithBorder(SGuiElem content);
   SGuiElem translucentBackgroundWithBorderPassMouse(SGuiElem content);
   SGuiElem translucentBackground();
+  SGuiElem textInput(int width, int maxLines, shared_ptr<string> text);
   Color translucentBgColor = Color(0, 0, 0, 150);
   Color foreground1 = Color(0x20, 0x5c, 0x4a, 150);
   Color text = Color::WHITE;

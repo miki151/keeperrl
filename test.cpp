@@ -142,6 +142,13 @@ class Test {
     CHECK(split("pok;pokpok;;pok;", {'k'}) == w) << split("pok;pokpok;;pok;", {'k'});
   }
 
+  void testSplitIncludeDelim() {
+    vector<string> v = { "pok", ";", "pokpok", ";", ";", "pok", ";" };
+    vector<string> w = { "po", "k", ";po", "k", "po", "k", ";;po","k", ";" };
+    CHECK(splitIncludeDelim("pok;pokpok;;pok;", {';'}) == v) << splitIncludeDelim("pok;pokpok;;pok;", {';'});
+    CHECK(splitIncludeDelim("pok;pokpok;;pok;", {'k'}) == w) << splitIncludeDelim("pok;pokpok;;pok;", {'k'});
+  }
+
   void testShortestPath() {
     vector<vector<double> > table { { 2, 1, 2, 18, 1}, { 1, 1, 18, 1, 2}, {2, 6, 10, 1,1}, {1, 2, 1, 8, 1}, {5, 3, 1, 1, 2}};
     ShortestPath path(Rectangle(5, 5),
@@ -977,6 +984,7 @@ void testAll() {
   Test().testRectangleIterator();
   Test().testValueCheck();
   Test().testSplit();
+  Test().testSplitIncludeDelim();
   Test().testShortestPath();
   Test().testAStar();
   Test().testShortestPath2();

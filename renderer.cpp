@@ -23,6 +23,8 @@
 #include "fontstash.h"
 #include "sdl_event_generator.h"
 #include "clock.h"
+#include "gzstream.h"
+
 
 Color Color::WHITE(255, 255, 255);
 Color Color::YELLOW(250, 255, 0);
@@ -866,4 +868,37 @@ void Renderer::startMonkey() {
 
 bool Renderer::isMonkey() {
   return monkey;
+}
+
+SDL::SDL_Surface* flipVert(SDL::SDL_Surface* sfc) {
+   auto result = SDL::SDL_CreateRGBSurface(sfc->flags, sfc->w, sfc->h,
+     sfc->format->BytesPerPixel * 8, sfc->format->Rmask, sfc->format->Gmask,
+     sfc->format->Bmask, sfc->format->Amask);
+   CHECK(result);
+   std::uint8_t* pixels = (std::uint8_t*) sfc->pixels;
+   std::uint8_t* rpixels = (std::uint8_t*) result->pixels;
+   uint pitch = sfc->pitch;
+   uint pxlength = pitch*sfc->h;
+   for(uint line = 0; line < sfc->h; ++line) {
+     uint pos = line * pitch;
+     memcpy(rpixels + pos, pixels + pxlength - pos - pitch, pitch);
+   }
+   return result;
+}
+
+void Renderer::makeScreenshot(const string& path) {
+  auto image = SDL::SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, 24, 0x000000FF, 0x0000FF00, 0x00FF0000, 0);
+  SDL::glReadBuffer(GL_FRONT);
+  SDL::glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, image->pixels);
+  auto inverted = flipVert(image);
+  int bmpSize = width * height * 3 + 1000;
+  unique_ptr<char[]> bitmap(new char[bmpSize]);
+  auto *rw = SDL::SDL_RWFromMem(bitmap.get(), bmpSize);
+  CHECK(SDL::SDL_SaveBMP_RW(inverted, rw, 1) == 0)
+      << SDL::SDL_GetError();
+  SDL_FreeSurface(image);
+  SDL_FreeSurface(inverted);
+  ogzstream output(path.data());
+  for (int i : Range(bmpSize))
+    output << bitmap[i];
 }

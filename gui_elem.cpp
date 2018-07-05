@@ -468,15 +468,13 @@ static vector<string> breakText(Renderer& renderer, const string& text, int maxW
   vector<string> rows;
   for (string line : split(text, {'\n'})) {
     rows.push_back("");
-    for (string word : split(line, {delim})) {
-      if (!rows.back().empty())
-        rows.back() += delim;
+    for (string word : splitIncludeDelim(line, {delim})) {
       for (string subword : breakWord(renderer, word, maxWidth, size))
-        if (renderer.getTextLength(rows.back() + ' ' + subword, size) <= maxWidth)
+        if (rows.back().empty() || renderer.getTextLength(rows.back() + subword, size) <= maxWidth)
           rows.back() += subword;
         else
           rows.push_back(subword);
-      trim(rows.back());
+      //trim(rows.back());
     }
   }
   return rows;
@@ -687,6 +685,14 @@ class GuiLayout : public GuiElem {
     for (int i : AllReverse(elems))
       if (isVisible(i))
         if (elems[i]->onLeftClick(pos))
+          return true;
+    return false;
+  }
+
+  virtual bool onTextInput(const char* c) override {
+    for (int i : AllReverse(elems))
+      if (isVisible(i))
+        if (elems[i]->onTextInput(c))
           return true;
     return false;
   }
@@ -2806,6 +2812,65 @@ SGuiElem GuiFactory::translucentBackground() {
         rectangle(translucentBgColor));
 }
 
+namespace {
+
+constexpr int lineHeight = 20;
+
+class TextInput : public GuiElem {
+  public:
+  TextInput(int width, int maxLines, shared_ptr<string> text)
+      : width(width), maxLines(maxLines), text(std::move(text)) {}
+
+
+  void render(Renderer& r) override {
+    auto lines = breakText(r, *text, width);
+    while (lines.size() > maxLines) {
+      text->pop_back();
+      lines = breakText(r, *text, width);
+    }
+    Vec2 origin = getBounds().topLeft();
+    Vec2 cursorPos;
+    for (auto& line : lines) {
+      r.drawText(Color::WHITE, origin, line);
+      cursorPos = origin + Vec2(r.getTextLength(line), 0);
+      origin += Vec2(0, lineHeight);
+    }
+    r.drawFilledRectangle(Rectangle(cursorPos, cursorPos + Vec2(3, lineHeight)), Color::WHITE);
+  }
+
+  virtual optional<int> getPreferredWidth() override {
+    return width;
+  }
+
+  virtual optional<int> getPreferredHeight() override {
+    return maxLines * lineHeight;
+  }
+
+  virtual bool onTextInput(const char* c) override {
+    *text += c;
+    return true;
+  }
+
+  virtual bool onKeyPressed2(SDL::SDL_Keysym key) override {
+    if (key.sym == SDL::SDLK_BACKSPACE) {
+      if (!text->empty())
+      text->pop_back();
+      return true;
+    } else
+      return false;
+  }
+
+  int width;
+  int maxLines;
+  shared_ptr<string> text;
+};
+
+}
+
+SGuiElem GuiFactory::textInput(int width, int maxLines, shared_ptr<string> text) {
+  return make_shared<TextInput>(width, maxLines, text);
+}
+
 SGuiElem GuiFactory::minimapBar(SGuiElem icon1, SGuiElem icon2) {
   auto& tex = textures[TexId::MINIMAP_BAR];
   return preferredSize(tex.getSize(),
@@ -2912,6 +2977,11 @@ void GuiFactory::propagateEvent(const Event& event, vector<SGuiElem> guiElems) {
             break;
       }
       }
+      break;
+    case SDL::SDL_TEXTINPUT:
+      for (auto elem : guiElems)
+        if (elem->onTextInput(event.text.text))
+          break;
       break;
     case SDL::SDL_KEYDOWN:
       for (auto elem : guiElems)

@@ -193,6 +193,7 @@ class Renderer {
   static void putPixel(SDL::SDL_Surface*, Vec2, Color);
   void addTilesDirectory(const DirectoryPath& path, Vec2 size);
   void loadTiles();
+  void makeScreenshot(const string& path);
 
   private:
   friend class Texture;
