@@ -1412,6 +1412,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.viewId = ViewId::ADA_GOLEM;
           c.attr = LIST(36_dam, 36_def );
           c.permanentEffects[LastingEffect::MELEE_RESISTANCE] = 1;
+          c.permanentEffects[LastingEffect::MAGIC_VULNERABILITY] = 1;
           c.permanentEffects[LastingEffect::SLOWED] = 1;
           c.body = Body::nonHumanoid(Body::Material::ADA, Body::Size::LARGE);
           c.body->setHumanoidBodyParts(8);
