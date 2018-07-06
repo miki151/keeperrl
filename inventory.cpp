@@ -124,6 +124,22 @@ double Inventory::getTotalWeight() const {
   return weight;
 }
 
+void Inventory::tick(Position pos) {
+  for (auto item : copyOf(getItems()))
+    if (item && hasItem(item)) {
+      // items might be destroyed or removed from inventory in tick()
+      auto oldViewId = item->getViewObject().id();
+      item->tick(pos);
+      auto newViewId = item->getViewObject().id();
+      if (newViewId != oldViewId) {
+        addViewId(oldViewId, -1);
+        addViewId(newViewId, 1);
+      }
+      if (item->isDiscarded() && hasItem(item))
+        removeItem(item);
+    }
+}
+
 bool Inventory::isEmpty() const {
   return items.getElems().empty();
 }

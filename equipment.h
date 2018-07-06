@@ -50,6 +50,7 @@ class Equipment {
   double getTotalWeight() const;
   bool isEmpty() const;
   const ItemCounts& getCounts() const;
+  void tick(Position);
 
   SERIALIZATION_DECL(Equipment);
 

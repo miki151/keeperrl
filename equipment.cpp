@@ -126,3 +126,7 @@ const ItemCounts& Equipment::getCounts() const {
   return inventory.getCounts();
 }
 
+void Equipment::tick(Position pos) {
+  inventory.tick(pos);
+}
+

@@ -24,6 +24,7 @@
 #include "item_counts.h"
 
 class Item;
+class Position;
 
 
 class Inventory {
@@ -44,6 +45,7 @@ class Inventory {
   WItem getItemById(UniqueEntity<Item>::Id) const;
   int size() const;
   double getTotalWeight() const;
+  void tick(Position);
 
   bool isEmpty() const;
 
