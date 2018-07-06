@@ -29,6 +29,8 @@ const vector<BuildInfo>& BuildInfo::get() {
           " efficiency to surrounding tiles.", 0, "Structure"),
       BuildInfo({FurnitureType::PIT}, "Dig a pit", {},
           "Dig a pit in the ground. Building next to water or lava will cause it to fill up.", 0, "Structure"),
+      BuildInfo({FurnitureType::BRIDGE, {ResourceId::WOOD, 5}}, "Bridge", {},
+        "Build it to pass over water or lava.", 0, "Structure"),
       BuildInfo({FurnitureType::WOOD_DOOR, {ResourceId::WOOD, 5}}, "Wooden door", {},
           "Click on a built door to lock it.", 'o', "Doors", true)
              .setTutorialHighlight(TutorialHighlight::BUILD_DOOR),
@@ -136,8 +138,6 @@ const vector<BuildInfo>& BuildInfo::get() {
       BuildInfo({FurnitureLayer::CEILING, FurnitureLayer::MIDDLE}, "Remove construction", "", 'e', "Orders")
           .setTutorialHighlight(TutorialHighlight::REMOVE_CONSTRUCTION),
       BuildInfo(BuildInfo::FORBID_ZONE, "Forbid zone", "Mark tiles to keep minions from entering.", 0, "Orders"),
-      BuildInfo({FurnitureType::BRIDGE, {ResourceId::WOOD, 5}}, "Bridge", {},
-        "Build it to pass over water or lava.", 0, "Installations"),
       BuildInfo({FurnitureType::BARRICADE, {ResourceId::WOOD, 5}}, "Barricade", {}, "", 0, "Installations"),
       BuildInfo(BuildInfo::FurnitureInfo(
              {FurnitureType::TORCH_N, FurnitureType::TORCH_E, FurnitureType::TORCH_S, FurnitureType::TORCH_W}),
