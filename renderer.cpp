@@ -886,7 +886,7 @@ SDL::SDL_Surface* flipVert(SDL::SDL_Surface* sfc) {
    return result;
 }
 
-void Renderer::makeScreenshot(const string& path) {
+void Renderer::makeScreenshot(const FilePath& path) {
   auto image = SDL::SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, 24, 0x000000FF, 0x0000FF00, 0x00FF0000, 0);
   SDL::glReadBuffer(GL_FRONT);
   SDL::glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, image->pixels);
@@ -898,7 +898,7 @@ void Renderer::makeScreenshot(const string& path) {
       << SDL::SDL_GetError();
   SDL_FreeSurface(image);
   SDL_FreeSurface(inverted);
-  ogzstream output(path.data());
+  ogzstream output(path.getPath());
   for (int i : Range(bmpSize))
     output << bitmap[i];
 }

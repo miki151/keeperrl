@@ -25,6 +25,8 @@ class FileSharing {
   typedef map<string, string> GameEvent;
   bool uploadGameEvent(const GameEvent&, bool requireGameEventsPermission = true);
   void uploadHighscores(const FilePath&);
+  optional<string> uploadBugReport(const string& text, optional<FilePath> savefile, optional<FilePath> screenshot,
+      ProgressMeter&);
 
   struct BoardMessage {
     string text;

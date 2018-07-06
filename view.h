@@ -32,6 +32,7 @@ class Campaign;
 class Options;
 class RetiredGames;
 class ScrollPosition;
+class FilePath;
 
 enum class SplashType { BIG, AUTOSAVING, SMALL };
 
@@ -188,7 +189,7 @@ class View {
   virtual optional<int> chooseAtMouse(const vector<string>& elems) = 0;
 
   virtual void presentHighscores(const vector<HighscoreList>&) = 0;
-  using BugReportSaveCallback = function<void(string)>;
+  using BugReportSaveCallback = function<void(FilePath)>;
   virtual void setBugReportSaveCallback(BugReportSaveCallback) = 0;
 
   struct CampaignMenuState {

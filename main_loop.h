@@ -86,7 +86,7 @@ class MainLoop {
   void eraseAllSavesExcept(const PGame&, optional<GameSaveType>);
   PGame prepareTutorial();
   void launchQuickGame();
-  void bugReportSave(PGame&, string fileName);
+  void bugReportSave(PGame&, FilePath);
 };
 
 

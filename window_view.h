@@ -30,6 +30,7 @@ class Options;
 class Clock;
 class MinimapGui;
 class MapGui;
+class FileSharing;
 
 /** See view.h for documentation.*/
 class WindowView: public View {
@@ -41,6 +42,8 @@ class WindowView: public View {
     Options* options;
     Clock* clock;
     SoundLibrary* soundLibrary;
+    FileSharing* bugreportSharing;
+    DirectoryPath bugreportDir;
   };
   static View* createDefaultView(ViewParams);
   static View* createLoggingView(OutputArchive& of, ViewParams);
@@ -249,4 +252,6 @@ class WindowView: public View {
   Vec2 getOverlayPosition(GuiBuilder::OverlayInfo::Alignment, int height, int width, int rightBarWidth, int bottomBarHeight);
   bool considerBugReportEvent(Event&);
   BugReportSaveCallback bugReportSaveCallback;
+  FileSharing* bugreportSharing;
+  DirectoryPath bugreportDir;
 };

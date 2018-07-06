@@ -208,12 +208,12 @@ enum class MainLoop::ExitCondition {
   UNKNOWN
 };
 
-void MainLoop::bugReportSave(PGame& game, string fileName) {
+void MainLoop::bugReportSave(PGame& game, FilePath path) {
   int saveTime = game->getSaveProgressCount();
   doWithSplash(SplashType::AUTOSAVING, "Saving game...", saveTime,
       [&] (ProgressMeter& meter) {
       Square::progressMeter = &meter;
-      MEASURE(saveGame(game, userPath.file(fileName)), "saving time")});
+      MEASURE(saveGame(game, path), "saving time")});
   Square::progressMeter = nullptr;
 }
 
@@ -221,7 +221,7 @@ MainLoop::ExitCondition MainLoop::playGame(PGame game, bool withMusic, bool noAu
     function<optional<ExitCondition>(WGame)> exitCondition) {
   view->reset();
   if (!noAutoSave)
-    view->setBugReportSaveCallback([&] (string fileName) { bugReportSave(game, fileName); });
+    view->setBugReportSaveCallback([&] (FilePath path) { bugReportSave(game, path); });
   DestructorFunction removeCallback([&] { view->setBugReportSaveCallback(nullptr); });
   game->initialize(options, highscores, view, fileSharing);
   const milliseconds stepTimeMilli {3};

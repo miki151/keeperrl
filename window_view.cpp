@@ -33,6 +33,7 @@
 #include "position.h"
 #include "sound_library.h"
 #include "player_role.h"
+#include "file_sharing.h"
 
 using SDL::SDL_Keysym;
 using SDL::SDL_Keycode;
@@ -89,7 +90,7 @@ WindowView::WindowView(ViewParams params) : renderer(params.renderer), gui(param
         [this]() { refreshScreen(false);},
         [this](const string& s) { presentText("", s); },
         }), zoomUI(-1),
-    soundLibrary(params.soundLibrary) {}
+    soundLibrary(params.soundLibrary), bugreportSharing(params.bugreportSharing), bugreportDir(params.bugreportDir) {}
 
 void WindowView::initialize() {
   renderer.setFullscreen(options->getBoolValue(OptionId::FULLSCREEN));
@@ -1302,10 +1303,33 @@ bool WindowView::considerBugReportEvent(Event& event) {
       renderer.drawAndClearBuffer();
     } while (!exit);
     if (bugreportInfo) {
-      if (bugreportInfo->includeSave)
-        bugReportSaveCallback("bugreport.sav");
-      if (bugreportInfo->includeScreenshot)
-        renderer.makeScreenshot("bugreport.bmp.gz");
+      optional<FilePath> savefile;
+      optional<FilePath> screenshot;
+      if (bugreportInfo->includeSave) {
+        savefile = bugreportDir.file("bugreport.sav");
+        bugReportSaveCallback(*savefile);
+      }
+      if (bugreportInfo->includeScreenshot) {
+        screenshot = bugreportDir.file("bugreport.bmp.gz");
+        renderer.makeScreenshot(*screenshot);
+      }
+      if (!savefile && !screenshot && bugreportInfo->text.size() < 5)
+        return true;
+      ProgressMeter meter(1.0);
+      optional<string> result;
+      displaySplash(&meter, "Uploading bug report", SplashType::AUTOSAVING, [this]{bugreportSharing->cancel();});
+      thread t([&] {
+        result = bugreportSharing->uploadBugReport(bugreportInfo->text, savefile, screenshot, meter);
+        clearSplash();
+      });
+      refreshView();
+      t.join();
+      if (result)
+        presentText("Error", "There was an error while sending the bug report: " + *result);
+      if (savefile)
+        remove(savefile->getPath());
+      if (screenshot)
+        remove(screenshot->getPath());
     }
     return true;
   }

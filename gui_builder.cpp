@@ -2841,17 +2841,17 @@ SGuiElem GuiBuilder::drawBugreportMenu(bool saveFile, function<void(optional<Bug
   auto text = make_shared<string>();
   auto withScreenshot = make_shared<bool>(true);
   auto withSavefile = make_shared<bool>(saveFile);
-  lines.addElem(gui.label("Enter desciption:"));
+  lines.addElem(gui.label("Enter bug desciption:"));
   lines.addElemAuto(gui.stack(
         gui.rectangle(Color::GRAY),
-        gui.margins(gui.textInput(width - 10, 2, text), 5)));
+        gui.margins(gui.textInput(width - 10, 5, text), 5)));
   lines.addSpace();
   lines.addElem(drawTickBox(withScreenshot, "Include screenshot"));
   if (saveFile)
     lines.addElem(drawTickBox(withSavefile, "Include save file"));
   lines.addElem(gui.centerHoriz(gui.getListBuilder()
       .addElemAuto(gui.stack(
-          gui.labelHighlight("[Confirm]", Color::LIGHT_BLUE),
+          gui.labelHighlight("[Upload]", Color::LIGHT_BLUE),
           gui.button([=] { callback(BugReportInfo{*text, *withSavefile, *withScreenshot});})))
       .addSpace(10)
       .addElemAuto(gui.stack(

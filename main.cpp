@@ -393,9 +393,10 @@ static int keeperMain(po::parser& commandLineFlags) {
   if (tilesPresent)
     initializeRendererTiles(renderer, paidDataPath.subdirectory("images"));
   Tile::initialize(renderer, tilesPresent);
+  FileSharing bugreportSharing("http://retired.keeperrl.com/~bugreports", options, installId);
   unique_ptr<View> view;
   view.reset(WindowView::createDefaultView(
-      {renderer, guiFactory, tilesPresent, &options, &clock, soundLibrary}));
+      {renderer, guiFactory, tilesPresent, &options, &clock, soundLibrary, &bugreportSharing, userPath}));
 #ifndef RELEASE
   InfoLog.addOutput(DebugOutput::toString([&view](const string& s) { view->logMessage(s);}));
 #endif
