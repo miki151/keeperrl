@@ -2819,7 +2819,13 @@ constexpr int lineHeight = 20;
 class TextInput : public GuiElem {
   public:
   TextInput(int width, int maxLines, shared_ptr<string> text)
-      : width(width), maxLines(maxLines), text(std::move(text)) {}
+      : width(width), maxLines(maxLines), text(std::move(text)) {
+    SDL::SDL_StartTextInput();
+  }
+
+  ~TextInput() {
+    SDL::SDL_StopTextInput();
+  }
 
 
   void render(Renderer& r) override {
