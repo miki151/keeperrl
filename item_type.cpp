@@ -710,8 +710,8 @@ ItemAttributes ItemType::Torch::getAttributes() const {
       i.itemClass = ItemClass::TOOL;
       i.weight = 1;
       i.ownedEffect = LastingEffect::LIGHT_SOURCE;
-      i.name = "torch";
-      i.plural = "torches"_s;
+      i.name = "hand torch";
+      i.plural = "hand torches"_s;
       i.price = 2;
   );
 }
