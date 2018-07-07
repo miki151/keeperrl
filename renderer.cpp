@@ -877,10 +877,10 @@ SDL::SDL_Surface* flipVert(SDL::SDL_Surface* sfc) {
    CHECK(result);
    std::uint8_t* pixels = (std::uint8_t*) sfc->pixels;
    std::uint8_t* rpixels = (std::uint8_t*) result->pixels;
-   uint pitch = sfc->pitch;
-   uint pxlength = pitch*sfc->h;
-   for(uint line = 0; line < sfc->h; ++line) {
-     uint pos = line * pitch;
+   std::uint32_t pitch = sfc->pitch;
+   std::uint32_t pxlength = pitch*sfc->h;
+   for(auto line = 0; line < sfc->h; ++line) {
+     std::uint32_t pos = line * pitch;
      memcpy(rpixels + pos, pixels + pxlength - pos - pitch, pitch);
    }
    return result;
