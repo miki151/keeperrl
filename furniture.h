@@ -67,6 +67,7 @@ class Furniture : public OwnedObject<Furniture> {
   optional<CreatureId> getSummonedElement() const;
   bool isClearFogOfWar() const;
   bool forgetAfterBuilding() const;
+  bool isShowEfficiency() const;
   /**
    * @brief Calls special functionality to handle dropped items, if any.
    * @return possibly empty subset of the items that weren't consumned and can be dropped normally.
@@ -107,6 +108,7 @@ class Furniture : public OwnedObject<Furniture> {
   Furniture& setCanRemoveWithCreaturePresent(bool state);
   Furniture& setCanRemoveNonFriendly(bool state);
   Furniture& setForgetAfterBuilding();
+  Furniture& setShowEfficiency();
   MovementSet& modMovementSet();
 
   SERIALIZATION_DECL(Furniture)
@@ -147,4 +149,5 @@ class Furniture : public OwnedObject<Furniture> {
   bool SERIAL(noProjectiles) = false;
   bool SERIAL(clearFogOfWar) = false;
   bool SERIAL(xForgetAfterBuilding) = false;
+  bool SERIAL(showEfficiency) = false;
 };

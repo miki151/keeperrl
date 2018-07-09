@@ -51,7 +51,7 @@ void Furniture::serialize(Archive& ar, const unsigned) {
   ar(name, pluralName, type, movementSet, fire, burntRemains, destroyedRemains, destroyActions, itemDrop);
   ar(blockVision, usageType, clickType, tickType, usageTime, overrideMovement, wall, creator, createdTime);
   ar(constructMessage, layer, entryType, lightEmission, canHideHere, warning, summonedElement, droppedItems);
-  ar(canBuildBridge, noProjectiles, clearFogOfWar, removeWithCreaturePresent, xForgetAfterBuilding);
+  ar(canBuildBridge, noProjectiles, clearFogOfWar, removeWithCreaturePresent, xForgetAfterBuilding, showEfficiency);
 }
 
 SERIALIZABLE(Furniture)
@@ -296,6 +296,10 @@ bool Furniture::forgetAfterBuilding() const {
   return isWall() || xForgetAfterBuilding;
 }
 
+bool Furniture::isShowEfficiency() const {
+  return showEfficiency;
+}
+
 vector<PItem> Furniture::dropItems(Position pos, vector<PItem> v) const {
   if (droppedItems) {
     return droppedItems->handle(pos, this, std::move(v));
@@ -446,6 +450,11 @@ Furniture& Furniture::setCanRemoveNonFriendly(bool s) {
 
 Furniture& Furniture::setForgetAfterBuilding() {
   xForgetAfterBuilding = true;
+  return *this;
+}
+
+Furniture& Furniture::setShowEfficiency() {
+  showEfficiency = true;
   return *this;
 }
 

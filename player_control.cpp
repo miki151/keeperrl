@@ -1537,27 +1537,6 @@ void PlayerControl::getSquareViewIndex(Position pos, bool canSee, ViewIndex& ind
     }
 }
 
-static bool showEfficiency(FurnitureType type) {
-  switch (type) {
-    case FurnitureType::BOOKCASE_WOOD:
-    case FurnitureType::BOOKCASE_IRON:
-    case FurnitureType::BOOKCASE_GOLD:
-    case FurnitureType::DEMON_SHRINE:
-    case FurnitureType::WORKSHOP:
-    case FurnitureType::TRAINING_WOOD:
-    case FurnitureType::TRAINING_IRON:
-    case FurnitureType::TRAINING_ADA:
-    case FurnitureType::LABORATORY:
-    case FurnitureType::JEWELER:
-    case FurnitureType::THRONE:
-    case FurnitureType::FORGE:
-    case FurnitureType::ARCHERY_RANGE:
-      return true;
-    default:
-      return false;
-  }
-}
-
 void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
   PROFILE;
   Position position(pos, collective->getLevel());
@@ -1583,7 +1562,7 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
           if (auto task = MinionActivities::getActivityFor(collective, c, furniture->getType()))
             if (collective->isActivityGood(c, *task, true))
               index.setHighlight(HighlightType::CREATURE_DROP);
-      if (showEfficiency(furniture->getType()) && index.hasObject(ViewLayer::FLOOR))
+      if (furniture->isShowEfficiency() && index.hasObject(ViewLayer::FLOOR))
         index.getObject(ViewLayer::FLOOR).setAttribute(ViewObject::Attribute::EFFICIENCY,
             collective->getTileEfficiency().getEfficiency(position));
     }
