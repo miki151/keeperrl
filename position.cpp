@@ -523,7 +523,7 @@ void Position::removeFurniture(WConstFurniture f, PFurniture replace) const {
   level->removeLightSource(coord, f->getLightEmission());
   auto replacePtr = replace.get();
   auto layer = f->getLayer();
-  CHECK(layer != FurnitureLayer::GROUND);
+  CHECK(layer != FurnitureLayer::GROUND || !!replace);
   CHECK(getFurniture(layer) == f);
   if (replace)
     level->setFurniture(coord, std::move(replace));
