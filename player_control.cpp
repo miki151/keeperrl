@@ -1054,15 +1054,18 @@ vector<ImmigrantDataInfo> PlayerControl::getPrisonerImmigrantData() const {
   int index = -1;
   for (auto stack : getPrisonerImmigrantStack()) {
     auto c = stack.creatures[0];
-    int numPrisoners = collective->getCreatures(MinionTrait::PRISONER).size();
-    int prisonSize = collective->getConstructions().getBuiltCount(FurnitureType::PRISON);
-    int requiredPrisonSize = 2;
+    const int numFreePrisoners = 4;
+    const int requiredPrisonSize = 2;
+    const int numPrisoners = collective->getCreatures(MinionTrait::PRISONER).size() - numFreePrisoners;
+    const int prisonSize = collective->getConstructions().getBuiltCount(FurnitureType::PRISON);
     vector<string> requirements;
-    int missingSize = (numPrisoners + 1) * requiredPrisonSize - prisonSize;
-    if (prisonSize == 0)
-      requirements.push_back("Requires a prison.");
-    else if (missingSize > 0)
-      requirements.push_back("Requires " + toString(missingSize) + " more prison tiles.");
+    const int missingSize = (numPrisoners + 1) * requiredPrisonSize - prisonSize;
+    if (missingSize > 0) {
+      if (prisonSize == 0)
+        requirements.push_back("Requires a prison.");
+      else
+        requirements.push_back("Requires " + toString(missingSize) + " more prison tiles.");
+    }
     if (stack.collective)
       requirements.push_back("Requires conquering " + stack.collective->getName()->full);
     ret.push_back(ImmigrantDataInfo {
