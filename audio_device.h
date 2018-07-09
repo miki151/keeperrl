@@ -52,7 +52,7 @@ class SoundStream {
   vorbis_info *info;
   atomic<bool> startedPlaying;
   AsyncLoop streamer;
-  atomic<double> volume;
+  atomic<float> volume;
 };
 
 class AudioDevice {
