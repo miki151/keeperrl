@@ -277,9 +277,10 @@ string Options::getValueString(OptionId id) {
     case OptionId::RETIRED_VILLAINS:
     case OptionId::INFLUENCE_SIZE:
     case OptionId::ALLIES:
+      return toString(getIntValue(id));
     case OptionId::SOUND:
     case OptionId::MUSIC:
-      return toString(getIntValue(id));
+      return toString(getIntValue(id)) + "%";
     case OptionId::KEEPER_TYPE:
     case OptionId::ADVENTURER_TYPE:
       return toString((int)getCreatureId(id));
@@ -406,8 +407,11 @@ void Options::readValues() {
         optionId = *id;
       else
         continue;
-      if (auto val = readValue(optionId, p[1]))
+      if (auto val = readValue(optionId, p[1])) {
+        if ((optionId == OptionId::SOUND || optionId == OptionId::MUSIC) && *val == 1)
+          *val = 100;
         (*values)[optionId] = *val;
+      }
     }
   }
 }
