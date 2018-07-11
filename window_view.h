@@ -44,6 +44,7 @@ class WindowView: public View {
     SoundLibrary* soundLibrary;
     FileSharing* bugreportSharing;
     DirectoryPath bugreportDir;
+    string installId;
   };
   static View* createDefaultView(ViewParams);
   static View* createLoggingView(OutputArchive& of, ViewParams);
@@ -254,4 +255,5 @@ class WindowView: public View {
   BugReportSaveCallback bugReportSaveCallback;
   FileSharing* bugreportSharing;
   DirectoryPath bugreportDir;
+  string installId;
 };

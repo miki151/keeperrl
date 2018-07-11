@@ -8,7 +8,7 @@
 
 #include <curl/curl.h>
 
-FileSharing::FileSharing(const string& url, Options& o, long long id) : uploadUrl(url), options(o),
+FileSharing::FileSharing(const string& url, Options& o, string id) : uploadUrl(url), options(o),
     uploadLoop(bindMethod(&FileSharing::uploadingLoop, this)), installId(id), wasCancelled(false) {
   curl_global_init(CURL_GLOBAL_ALL);
 }
@@ -153,7 +153,7 @@ optional<string> FileSharing::uploadBugReport(const string& text, optional<FileP
   curl_formadd(&formpost,
       &lastptr,
       CURLFORM_COPYNAME, "installId",
-      CURLFORM_COPYCONTENTS, toString(installId).data(),
+      CURLFORM_COPYCONTENTS, installId.data(),
       CURLFORM_END);
   if (CURL* curl = curl_easy_init()) {
     string ret;
@@ -184,7 +184,7 @@ void FileSharing::uploadingLoop() {
 
 bool FileSharing::uploadGameEvent(const GameEvent& data1, bool requireGameEventsPermission) {
   GameEvent data(data1);
-  data.emplace("installId", toString(installId));
+  data.emplace("installId", installId);
   if (options.getBoolValue(OptionId::ONLINE) &&
       (!requireGameEventsPermission || options.getBoolValue(OptionId::GAME_EVENTS))) {
     uploadGameEventImpl(data, 5);

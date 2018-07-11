@@ -90,7 +90,8 @@ WindowView::WindowView(ViewParams params) : renderer(params.renderer), gui(param
         [this]() { refreshScreen(false);},
         [this](const string& s) { presentText("", s); },
         }), zoomUI(-1),
-    soundLibrary(params.soundLibrary), bugreportSharing(params.bugreportSharing), bugreportDir(params.bugreportDir) {}
+    soundLibrary(params.soundLibrary), bugreportSharing(params.bugreportSharing), bugreportDir(params.bugreportDir),
+    installId(params.installId) {}
 
 void WindowView::initialize() {
   renderer.setFullscreen(options->getBoolValue(OptionId::FULLSCREEN));
@@ -244,6 +245,8 @@ void WindowView::drawMenuBackground(double barState, double mouthState) {
   renderer.drawImage((renderer.getSize().x - width) / 2, 0, menuCore, scale);
   renderer.drawImage(mouthX, scale * (mouthPos1 * (1 - mouthState) + mouthPos2 * mouthState), menuMouth, scale);
   renderer.drawText(Color::WHITE, Vec2(30, renderer.getSize().y - 40), "Version " BUILD_DATE " " BUILD_VERSION,
+      Renderer::NONE, 16);
+  renderer.drawText(Color::WHITE, Vec2(30, renderer.getSize().y - 21), "Install id: " + installId,
       Renderer::NONE, 16);
 }
 

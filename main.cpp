@@ -229,19 +229,36 @@ int main(int argc, char* argv[]) {
 }
 #endif
 
-static long long getInstallId(const FilePath& path, RandomGen& random) {
-  long long ret;
+static string getRandomInstallId(RandomGen& random) {
+  string ret;
+  for (int i : Range(4)) {
+    ret += random.choose('e', 'u', 'i', 'o', 'a');
+    ret += random.choose('q', 'w', 'r', 't', 'y', 'p', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'z', 'x', 'c', 'v', 'b',
+        'n', 'm');
+  }
+  return ret;
+}
+
+static string getInstallId(const FilePath& path, RandomGen& random) {
+  string ret;
   ifstream in(path.getPath());
   if (in)
     in >> ret;
   else {
-    ret = random.getLL();
+    ret = getRandomInstallId(random);
     ofstream(path.getPath()) << ret;
   }
   return ret;
 }
 
 const static string serverVersion = "22";
+
+static int readSaveVersion(FilePath file) {
+  ifstream input(file.getPath());
+  int version;
+  input >> version;
+  return version;
+}
 
 static int keeperMain(po::parser& commandLineFlags) {
   ENABLE_PROFILER;
@@ -322,7 +339,7 @@ static int keeperMain(po::parser& commandLineFlags) {
   Options options(settingsPath);
   int seed = commandLineFlags["seed"].was_set() ? commandLineFlags["seed"].get().i32 : int(time(0));
   Random.init(seed);
-  long long installId = getInstallId(userPath.file("installId.txt"), Random);
+  auto installId = getInstallId(userPath.file("installId.txt"), Random);
   SoundLibrary* soundLibrary = nullptr;
   AudioDevice audioDevice;
   optional<string> audioError = audioDevice.initialize();
@@ -339,7 +356,7 @@ static int keeperMain(po::parser& commandLineFlags) {
   SokobanInput sokobanInput(freeDataPath.file("sokoban_input.txt"), userPath.file("sokoban_state.txt"));
   if (commandLineFlags["worldgen_test"].was_set()) {
     MainLoop loop(nullptr, &highscores, &fileSharing, freeDataPath, userPath, &options, &jukebox, &sokobanInput,
-        useSingleThread);
+        useSingleThread, 0);
     vector<string> types;
     if (commandLineFlags["worldgen_maps"].was_set())
       types = split(commandLineFlags["worldgen_maps"].get().string, {','});
@@ -348,7 +365,7 @@ static int keeperMain(po::parser& commandLineFlags) {
   }
   auto battleTest = [&] (View* view) {
     MainLoop loop(view, &highscores, &fileSharing, freeDataPath, userPath, &options, &jukebox, &sokobanInput,
-        useSingleThread);
+        useSingleThread, 0);
     auto level = commandLineFlags["battle_level"].get().string;
     auto info = commandLineFlags["battle_info"].get().string;
     auto numRounds = commandLineFlags["battle_rounds"].get().i32;
@@ -396,7 +413,7 @@ static int keeperMain(po::parser& commandLineFlags) {
   FileSharing bugreportSharing("http://retired.keeperrl.com/~bugreports", options, installId);
   unique_ptr<View> view;
   view.reset(WindowView::createDefaultView(
-      {renderer, guiFactory, tilesPresent, &options, &clock, soundLibrary, &bugreportSharing, userPath}));
+      {renderer, guiFactory, tilesPresent, &options, &clock, soundLibrary, &bugreportSharing, userPath, installId}));
 #ifndef RELEASE
   InfoLog.addOutput(DebugOutput::toString([&view](const string& s) { view->logMessage(s);}));
 #endif
@@ -406,7 +423,7 @@ static int keeperMain(po::parser& commandLineFlags) {
     return 0;
   }
   MainLoop loop(view.get(), &highscores, &fileSharing, freeDataPath, userPath, &options, &jukebox, &sokobanInput,
-      useSingleThread);
+      useSingleThread, readSaveVersion(freeDataPath.file("save_version.txt")));
   try {
     if (audioError)
       view->presentText("Failed to initialize audio. The game will be started without sound.", *audioError);

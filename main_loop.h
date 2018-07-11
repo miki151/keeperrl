@@ -26,7 +26,7 @@ class CreatureList;
 class MainLoop {
   public:
   MainLoop(View*, Highscores*, FileSharing*, const DirectoryPath& dataFreePath, const DirectoryPath& userPath,
-      Options*, Jukebox*, SokobanInput*, bool useSingleThread);
+      Options*, Jukebox*, SokobanInput*, bool useSingleThread, int saveVersion);
 
   void start(bool tilesPresent, bool quickGame);
   void modelGenTest(int numTries, const vector<std::string>& types, RandomGen&, Options*);
@@ -70,6 +70,7 @@ class MainLoop {
   bool downloadGame(const string& filename);
   bool eraseSave();
   static vector<SaveFileInfo> getSaveFiles(const DirectoryPath& path, const string& suffix);
+  bool isCompatible(int loadedVersion);
 
   View* view;
   DirectoryPath dataFreePath;
@@ -87,6 +88,9 @@ class MainLoop {
   PGame prepareTutorial();
   void launchQuickGame();
   void bugReportSave(PGame&, FilePath);
+  int saveVersion;
+  void saveGame(PGame&, const FilePath&);
+  void saveMainModel(PGame&, const FilePath&);
 };
 
 

@@ -35,9 +35,9 @@
 #include "external_enemies.h"
 
 MainLoop::MainLoop(View* v, Highscores* h, FileSharing* fSharing, const DirectoryPath& freePath,
-    const DirectoryPath& uPath, Options* o, Jukebox* j, SokobanInput* soko, bool singleThread)
+    const DirectoryPath& uPath, Options* o, Jukebox* j, SokobanInput* soko, bool singleThread, int sv)
       : view(v), dataFreePath(freePath), userPath(uPath), options(o), jukebox(j),
-        highscores(h), fileSharing(fSharing), useSingleThread(singleThread), sokobanInput(soko) {
+        highscores(h), fileSharing(fSharing), useSingleThread(singleThread), sokobanInput(soko), saveVersion(sv) {
 }
 
 vector<SaveFileInfo> MainLoop::getSaveFiles(const DirectoryPath& path, const string& suffix) {
@@ -58,9 +58,7 @@ static string getDateString(time_t t) {
   return buf;
 }
 
-static const int saveVersion = 2500;
-
-static bool isCompatible(int loadedVersion) {
+bool MainLoop::isCompatible(int loadedVersion) {
   return loadedVersion > 2 && loadedVersion <= saveVersion && loadedVersion / 100 == saveVersion / 100;
 }
 
@@ -102,7 +100,7 @@ static string stripFilename(string s) {
   return s;
 }
 
-static void saveGame(PGame& game, const FilePath& path) {
+void MainLoop::saveGame(PGame& game, const FilePath& path) {
   CompressedOutput out(path.getPath());
   string name = game->getGameDisplayName();
   SavedGameInfo savedInfo = game->getSavedGameInfo();
@@ -110,7 +108,7 @@ static void saveGame(PGame& game, const FilePath& path) {
   out.getArchive() << game;
 }
 
-static void saveMainModel(PGame& game, const FilePath& path) {
+void MainLoop::saveMainModel(PGame& game, const FilePath& path) {
   CompressedOutput out(path.getPath());
   string name = game->getGameDisplayName();
   SavedGameInfo savedInfo = game->getSavedGameInfo();
