@@ -2421,12 +2421,6 @@ void PlayerControl::onNoEnemies() {
   getGame()->setCurrentMusic(MusicType::PEACEFUL, false);
 }
 
-void PlayerControl::onPositionDiscovered(Position pos) {
-  if (collective->addKnownTile(pos))
-    updateKnownLocations(pos);
-  addToMemory(pos);
-}
-
 void PlayerControl::considerNightfallMessage() {
   /*if (getGame()->getSunlightInfo().getState() == SunlightState::NIGHT) {
     if (!isNight) {

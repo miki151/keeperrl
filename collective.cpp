@@ -62,7 +62,7 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
   ar(delayedPos, knownTiles, technologies, kills, points, currentActivity);
   ar(credit, level, immigration, teams, name, conqueredVillains);
   ar(config, warnings, knownVillains, knownVillainLocations, banished, positionMatching);
-  ar(villainType, enemyId, workshops, zones, tileEfficiency, discoverable, quarters);
+  ar(villainType, enemyId, workshops, zones, tileEfficiency, discoverable, quarters, populationIncrease);
 }
 
 SERIALIZABLE(Collective)
@@ -602,8 +602,12 @@ void Collective::onEvent(const GameEvent& event) {
         positionMatching->updateMovement(info.pos);
       },
       [&](const FurnitureDestroyed& info) {
-        constructions->onFurnitureDestroyed(info.position, info.layer);
-        tileEfficiency->update(info.position);
+        if (info.position.isSameLevel(getLevel())) {
+          populationIncrease -= Furniture::getPopulationIncrease(info.type, constructions->getBuiltCount(info.type));
+          constructions->onFurnitureDestroyed(info.position, info.layer);
+          populationIncrease += Furniture::getPopulationIncrease(info.type, constructions->getBuiltCount(info.type));
+          tileEfficiency->update(info.position);
+        }
       },
       [&](const ConqueredEnemy& info) {
         auto col = info.collective;
@@ -621,10 +625,6 @@ void Collective::onEvent(const GameEvent& event) {
       },
       [&](const auto&) {}
   );
-}
-
-void Collective::onPositionDiscovered(Position pos) {
-  control->onPositionDiscovered(pos);
 }
 
 void Collective::onMinionKilled(WCreature victim, WCreature killer) {
@@ -989,14 +989,15 @@ void Collective::onConstructed(Position pos, FurnitureType type) {
       territory->remove(pos);
     return;
   }
+  populationIncrease -= Furniture::getPopulationIncrease(type, constructions->getBuiltCount(type));
   constructions->onConstructed(pos, type);
+  populationIncrease += Furniture::getPopulationIncrease(type, constructions->getBuiltCount(type));
   control->onConstructed(pos, type);
   if (WTask task = taskMap->getMarked(pos))
     taskMap->removeTask(task);
 }
 
 void Collective::onDestructed(Position pos, FurnitureType type, const DestroyAction& action) {
-  tileEfficiency->update(pos);
   switch (action.getType()) {
     case DestroyAction::Type::CUT:
       zones->setZone(pos, ZoneId::FETCH_ITEMS);
@@ -1426,12 +1427,7 @@ int Collective::getPopulationSize() const {
 }
 
 int Collective::getMaxPopulation() const {
-  int ret = config->getMaxPopulation();
-  for (auto& elem : config->getPopulationIncreases()) {
-    int sz = getConstructions().getBuiltPositions(elem.type).size();
-    ret += min<int>(elem.maxIncrease, elem.increasePerSquare * sz);
-  }
-  return ret;
+  return populationIncrease + config->getMaxPopulation();
 }
 
 REGISTER_TYPE(Collective)

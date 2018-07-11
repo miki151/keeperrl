@@ -3,7 +3,6 @@
 #include "util.h"
 #include "event_generator.h"
 #include "position.h"
-#include "enum_variant.h"
 #include "model.h"
 
 class Model;

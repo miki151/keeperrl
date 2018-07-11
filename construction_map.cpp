@@ -72,7 +72,6 @@ void ConstructionMap::removeFurniture(Position pos, FurnitureLayer layer) {
     --unbuiltCounts[type];
     addDebt(-info.getCost());
   }
-  furniturePositions[type].erase(pos);
   furniture[layer].erase(pos);
   allFurniture.removeElement({pos, layer});
   pos.setNeedsRenderUpdate(true);
@@ -87,6 +86,7 @@ void ConstructionMap::onFurnitureDestroyed(Position pos, FurnitureLayer layer) {
   if (auto info = furniture[layer].getReferenceMaybe(pos)) {
     if (info->isBuilt())
       addDebt(info->getCost());
+    furniturePositions[info->getFurnitureType()].erase(pos);
     info->reset();
   }
   for (auto pos2 : pos.neighbors8())

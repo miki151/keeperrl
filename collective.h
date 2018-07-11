@@ -199,7 +199,6 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   bool isKnownVillainLocation(WConstCollective) const;
 
   void onEvent(const GameEvent&);
-  void onPositionDiscovered(Position);
 
   struct CurrentActivity {
     MinionActivity SERIAL(activity);
@@ -307,4 +306,5 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   void updateCreatureStatus(WCreature);
   HeapAllocated<Quarters> SERIAL(quarters);
   PPositionMatching SERIAL(positionMatching);
+  int SERIAL(populationIncrease) = 0;
 };

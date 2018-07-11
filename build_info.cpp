@@ -13,6 +13,7 @@
 #include "model_builder.h"
 #include "trap_type.h"
 #include "quarters.h"
+#include "furniture.h"
 
 using ResourceId = Collective::ResourceId;
 
@@ -82,8 +83,7 @@ const vector<BuildInfo>& BuildInfo::get() {
           toString(*CollectiveConfig::getTrainingMaxLevel(ExperienceType::SPELL, FurnitureType::BOOKCASE_GOLD)) + " spell levels.",
           0, "Library"),
       BuildInfo({FurnitureType::THRONE, {ResourceId::MANA, 300}, false, 1}, "Throne",
-          {{RequirementId::VILLAGE_CONQUERED}},
-          "Increases population limit by " + toString(ModelBuilder::getThronePopulationIncrease())),
+          {{RequirementId::VILLAGE_CONQUERED}}, *Furniture::getPopulationIncreaseDescription(FurnitureType::THRONE)),
       BuildInfo({FurnitureType::BED, {ResourceId::WOOD, 12}}, "Bed", {},
           "Humanoid minions sleep here.", 'v', "Living", true)
              .setTutorialHighlight(TutorialHighlight::BUILD_BED),
@@ -92,8 +92,7 @@ const vector<BuildInfo>& BuildInfo::get() {
       BuildInfo({FurnitureType::BEAST_CAGE, {ResourceId::WOOD, 8}}, "Beast cage", {}, "Beasts sleep here.", 0, "Living"),
       BuildInfo({FurnitureType::PIGSTY, {ResourceId::WOOD, 5}}, "Pigsty",
           {{RequirementId::TECHNOLOGY, TechId::PIGSTY}},
-          "Increases minion population limit by up to " +
-          toString(ModelBuilder::getPigstyPopulationIncrease() * ModelBuilder::getMaxUsefulPigsty()) + ".", 0, "Living"),
+          *Furniture::getPopulationIncreaseDescription(FurnitureType::PIGSTY), 0, "Living"),
       BuildInfo({FurnitureType::TRAINING_WOOD, {ResourceId::WOOD, 12}}, "Wooden dummy", {},
           "Train your minions here. Adds up to " +
           toString(*CollectiveConfig::getTrainingMaxLevel(ExperienceType::MELEE, FurnitureType::TRAINING_WOOD)) + " melee levels.",
@@ -153,15 +152,9 @@ const vector<BuildInfo>& BuildInfo::get() {
       BuildInfo({FurnitureType::PORTAL, {ResourceId::STONE, 60}}, "Portal", {},
         "Opens a connection if another portal is present.", 0, "Installations"),
       BuildInfo({FurnitureType::MINION_STATUE, {ResourceId::GOLD, 50}}, "Golden Statue", {},
-        "Increases minion population limit by " +
-              toString(ModelBuilder::getStatuePopulationIncrease()) + ". (Up to " +
-              toString(ModelBuilder::getStatuePopulationIncrease() * 
-              ModelBuilder::getMaxUsefulGoldStatues()) + ")", 0, "Installations"),
+          *Furniture::getPopulationIncreaseDescription(FurnitureType::MINION_STATUE), 0, "Installations"),
       BuildInfo({FurnitureType::STONE_MINION_STATUE, {ResourceId::STONE, 250}}, "Stone Statue", {},
-        "Increases minion population limit by " +
-              toString(ModelBuilder::getStatuePopulationIncrease()) + ". (Up to " +
-              toString(ModelBuilder::getStatuePopulationIncrease() * 
-              ModelBuilder::getMaxUsefulStoneStatues()) + ")", 0, "Installations"),
+        *Furniture::getPopulationIncreaseDescription(FurnitureType::STONE_MINION_STATUE), 0, "Installations"),
       BuildInfo({FurnitureType::WHIPPING_POST, {ResourceId::WOOD, 20}}, "Whipping post", {},
           "A place to whip your minions if they need a morale boost.", 0, "Installations"),
       BuildInfo({FurnitureType::GALLOWS, {ResourceId::WOOD, 20}}, "Gallows", {},

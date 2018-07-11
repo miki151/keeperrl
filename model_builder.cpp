@@ -44,30 +44,6 @@ ModelBuilder::ModelBuilder(ProgressMeter* m, RandomGen& r, Options* o, SokobanIn
 ModelBuilder::~ModelBuilder() {
 }
 
-double ModelBuilder::getPigstyPopulationIncrease() {
-  return 0.25;
-}
-
-double ModelBuilder::getStatuePopulationIncrease() {
-  return 1;
-}
-
-double ModelBuilder::getThronePopulationIncrease() {
-  return 10;
-}
-
-int ModelBuilder::getMaxUsefulStoneStatues() {
-  return 4;
-}
-
-int ModelBuilder::getMaxUsefulGoldStatues() {
-  return 200;
-}
-
-int ModelBuilder::getMaxUsefulPigsty() {
-  return 16;
-}
-
 static CollectiveConfig getKeeperConfig(RandomGen& random, bool fastImmigration, bool regenerateMana, AvatarInfo::ImpVariant impVariant) {
   vector<ImmigrantInfo> immigrants;
   switch (impVariant) {
@@ -226,24 +202,6 @@ static CollectiveConfig getKeeperConfig(RandomGen& random, bool fastImmigration,
       TimeInterval(fastImmigration ? 10 : 140),
       10,
       regenerateMana,
-      {
-      CONSTRUCT(PopulationIncrease,
-        c.type = FurnitureType::PIGSTY;
-        c.increasePerSquare = ModelBuilder::getPigstyPopulationIncrease();
-        c.maxIncrease = c.increasePerSquare * ModelBuilder::getMaxUsefulPigsty();),
-      CONSTRUCT(PopulationIncrease,
-        c.type = FurnitureType::MINION_STATUE;
-        c.increasePerSquare = ModelBuilder::getStatuePopulationIncrease();
-        c.maxIncrease = c.increasePerSquare * ModelBuilder::getMaxUsefulGoldStatues();),
-      CONSTRUCT(PopulationIncrease,
-        c.type = FurnitureType::STONE_MINION_STATUE;
-        c.increasePerSquare = ModelBuilder::getStatuePopulationIncrease();
-        c.maxIncrease = c.increasePerSquare * ModelBuilder::getMaxUsefulStoneStatues();),
-      CONSTRUCT(PopulationIncrease,
-        c.type = FurnitureType::THRONE;
-        c.increasePerSquare = ModelBuilder::getThronePopulationIncrease();
-        c.maxIncrease = c.increasePerSquare;),
-      },
       std::move(immigrants));
 }
 

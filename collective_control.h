@@ -23,7 +23,6 @@ class CollectiveControl : public OwnedObject<CollectiveControl> {
   virtual void onDestructed(Position, FurnitureType, const DestroyAction&) {}
   virtual void onNoEnemies() {}
   virtual void onRansomPaid() {}
-  virtual void onPositionDiscovered(Position) {}
   virtual vector<TriggerInfo> getTriggers(WConstCollective against) const;
 
   SERIALIZATION_DECL(CollectiveControl)

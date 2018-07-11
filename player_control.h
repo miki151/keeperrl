@@ -109,10 +109,9 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   virtual void onMemberKilled(WConstCreature victim, WConstCreature killer) override;
   virtual void onMemberAdded(WCreature) override;
   virtual void onConstructed(Position, FurnitureType) override;
-  virtual void onClaimedSquare(Position) override;
   virtual void onDestructed(Position, FurnitureType, const DestroyAction&) override;
+  virtual void onClaimedSquare(Position) override;
   virtual void onNoEnemies() override;
-  virtual void onPositionDiscovered(Position) override;
   virtual void tick() override;
   virtual void update(bool currentlyActive) override;
 

@@ -95,6 +95,38 @@ bool Furniture::isWall(FurnitureType type) {
   return layers[type];
 }
 
+pair<double, optional<int>> getPopulationIncreaseInfo(FurnitureType type) {
+  switch (type) {
+    case FurnitureType::PIGSTY:
+      return {0.25, 4};
+    case FurnitureType::MINION_STATUE:
+      return {1, none};
+    case FurnitureType::STONE_MINION_STATUE:
+      return {1, 4};
+    case FurnitureType::THRONE:
+      return {10, none};
+    default:
+      return {0, none};
+  }
+}
+
+optional<string> Furniture::getPopulationIncreaseDescription(FurnitureType type) {
+  auto info = getPopulationIncreaseInfo(type);
+  if (info.first > 0) {
+    auto ret = "Increases population limit by " + toString(info.first);
+    if (auto limit = info.second)
+      ret += ", up to " + toString(*limit);
+    ret += ".";
+    return ret;
+  }
+  return none;
+}
+
+int Furniture::getPopulationIncrease(FurnitureType type, int numBuilt) {
+  auto info = getPopulationIncreaseInfo(type);
+  return min(int(numBuilt * info.first), info.second.value_or(1000000));
+}
+
 FurnitureType Furniture::getType() const {
   return type;
 }
