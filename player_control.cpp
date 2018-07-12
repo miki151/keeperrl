@@ -1551,7 +1551,8 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
     if (auto furniture = position.getFurniture(FurnitureLayer::MIDDLE)) {
       if (auto clickType = furniture->getClickType())
         if (auto& obj = furniture->getViewObject())
-          index.getObject(obj->layer()).setClickAction(FurnitureClick::getText(*clickType, position, furniture));
+          if (index.hasObject(obj->layer()))
+            index.getObject(obj->layer()).setClickAction(FurnitureClick::getText(*clickType, position, furniture));
       if (furniture->getUsageType() == FurnitureUsageType::STUDY || CollectiveConfig::getWorkshopType(furniture->getType()))
         index.setHighlight(HighlightType::CLICKABLE_FURNITURE);
       if ((chosenWorkshop && chosenWorkshop == CollectiveConfig::getWorkshopType(furniture->getType())) ||
