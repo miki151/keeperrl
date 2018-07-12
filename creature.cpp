@@ -816,7 +816,7 @@ int Creature::getPoints() const {
   return points;
 }
 
-void Creature::onKilled(WCreature victim, optional<ExperienceType> lastDamage) {
+void Creature::onKilledOrCaptured(WCreature victim) {
   double attackDiff = victim->highestAttackValueEver - highestAttackValueEver;
   constexpr double maxLevelGain = 3.0;
   constexpr double minLevelGain = 0.02;
@@ -1055,8 +1055,11 @@ bool Creature::takeDamage(const Attack& attack) {
   bool returnValue = damage > 0;
   if (damage > 0) {
     bool canCapture = capture && attack.attacker;
-    if (canCapture && captureDamage(damage, attack.attacker))
+    if (canCapture && captureDamage(damage, attack.attacker)) {
+      if (attack.attacker)
+        attack.attacker->onKilledOrCaptured(this);
       return true;
+    }
     if (!canCapture) {
       auto res = attributes->getBody().takeDamage(attack, this, damage);
       returnValue = (res != Body::NOT_HURT);
@@ -1220,7 +1223,7 @@ void Creature::dieWithAttacker(WCreature attacker, DropType drops) {
     getGame()->getStatistics().add(StatId::INNOCENT_KILLED);
   getGame()->getStatistics().add(StatId::DEATH);
   if (attacker)
-    attacker->onKilled(this, lastDamageType);
+    attacker->onKilledOrCaptured(this);
   getGame()->addEvent(EventInfo::CreatureKilled{this, attacker});
   getTribe()->onMemberKilled(this, attacker);
   getLevel()->killCreature(this);

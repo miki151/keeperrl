@@ -31,7 +31,9 @@ bool DirectoryPath::exists() const {
 #include <sys/stat.h>
 #include <sys/types.h>
 void DirectoryPath::createIfDoesntExist() const {
-  USER_CHECK(!mkdir(path.data(), 0750)) << "Unable to create directory \"" + path + "\": " + strerror(errno);
+  if (!exists()) {
+    USER_CHECK(!mkdir(path.data(), 0750)) << "Unable to create directory \"" + path + "\": " + strerror(errno);
+  }
 }
 #else
 
