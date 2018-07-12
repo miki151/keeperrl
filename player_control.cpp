@@ -2587,6 +2587,7 @@ void PlayerControl::updateSquareMemory(Position pos) {
 }
 
 void PlayerControl::onConstructed(Position pos, FurnitureType type) {
+  addToMemory(pos);
   if (type == FurnitureType::EYEBALL)
     visibilityMap->updateEyeball(pos);
 }
