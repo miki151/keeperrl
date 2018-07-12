@@ -182,6 +182,8 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void handleEquipment(View* view, WCreature creature);
   void fillEquipment(WCreature, PlayerInfo&) const;
   void handleTrading(WCollective ally);
+  vector<WItem> getPillagedItems(WCollective) const;
+  bool canPillage(WConstCollective) const;
   void handlePillage(WCollective enemy);
   void handleRansom(bool pay);
   static ViewObject getTrapObject(TrapType, bool built);

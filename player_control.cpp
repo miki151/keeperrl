@@ -678,7 +678,7 @@ VillageInfo::Village PlayerControl::getVillageInfo(WConstCollective col) const {
   }
   if ((info.isConquered = col->isConquered())) {
     info.triggers.clear();
-    if (col->canPillage())
+    if (canPillage(col))
       info.actions.push_back({VillageAction::PILLAGE, none});
   } else if (!col->getTribe()->isEnemy(collective->getTribe())) {
     if (collective->isKnownVillainLocation(col)) {
@@ -745,6 +745,21 @@ static vector<PItem> retrieveItems(WCollective col, vector<WItem> items) {
   return ret;
 }
 
+vector<WItem> PlayerControl::getPillagedItems(WCollective col) const {
+  vector<WItem> ret;
+  for (Position v : col->getTerritory().getAll())
+    if (!collective->getTerritory().contains(v))
+      append(ret, v.getItems());
+  return ret;
+}
+
+bool PlayerControl::canPillage(WConstCollective col) const {
+  for (Position v : col->getTerritory().getAll())
+    if (!collective->getTerritory().contains(v) && !v.getItems().empty())
+      return true;
+  return false;
+}
+
 void PlayerControl::handlePillage(WCollective col) {
   ScrollPosition scrollPos;
   while (1) {
@@ -753,7 +768,7 @@ void PlayerControl::handlePillage(WCollective col) {
       PositionSet storage;
     };
     vector<PillageOption> options;
-    for (auto& elem : Item::stackItems(col->getAllItems(false)))
+    for (auto& elem : Item::stackItems(getPillagedItems(col)))
       if (auto storage = collective->getStorageFor(elem.front()))
         options.push_back({elem, *storage});
       else

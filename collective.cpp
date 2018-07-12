@@ -821,13 +821,6 @@ vector<WItem> Collective::getAllItems(ItemIndex index, bool includeMinions) cons
   return allItems;
 }
 
-bool Collective::canPillage() const {
-  for (auto pos : territory->getAll())
-    if (!pos.getItems().empty())
-      return true;
-  return false;
-}
-
 int Collective::getNumItems(ItemIndex index, bool includeMinions) const {
   int ret = 0;
   for (Position v : territory->getAll())

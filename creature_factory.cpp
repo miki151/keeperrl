@@ -1143,7 +1143,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.spells->add(SpellId::BLAST);
           c.chatReactionFriendly = "\"Kneel before us!\""_s;
           c.chatReactionHostile = "\"Face your death!\""_s;
-          c.name = "demon Lord";
+          c.name = "Demon Lord";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::DEMON)->getNext());
           c.name->setGroup("pack");
           c.maxLevelIncrease[ExperienceType::SPELL] = 7;

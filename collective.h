@@ -93,7 +93,6 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   void setTrait(WCreature c, MinionTrait);
   void removeTrait(WCreature c, MinionTrait);
 
-  bool canPillage() const;
   bool hasTradeItems() const;
   vector<WItem> getTradeItems() const;
   PItem buyItem(WItem);
