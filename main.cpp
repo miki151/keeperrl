@@ -331,8 +331,15 @@ static int keeperMain(po::parser& commandLineFlags) {
 #else
     uploadUrl = "http://localhost/~michal/" + serverVersion;
 #endif
-  //userPath.createIfDoesntExist();
-  CHECK(userPath.exists()) << "User directory \"" << userPath << "\" doesn't exist.";
+  Renderer renderer(
+      "KeeperRL",
+      Vec2(24, 24),
+      contribDataPath,
+      freeDataPath.file("images/mouse_cursor.png"),
+      freeDataPath.file("images/mouse_cursor2.png"));
+  FatalLog.addOutput(DebugOutput::toString([&renderer](const string& s) { renderer.showError(s);}));
+  UserErrorLog.addOutput(DebugOutput::toString([&renderer](const string& s) { renderer.showError(s);}));
+  userPath.createIfDoesntExist();
   auto settingsPath = userPath.file("options.txt");
   if (commandLineFlags["restore_settings"].was_set())
     remove(settingsPath.getPath());
@@ -386,14 +393,6 @@ static int keeperMain(po::parser& commandLineFlags) {
     battleTest(new DummyView(&clock));
     return 0;
   }
-  Renderer renderer(
-      "KeeperRL",
-      Vec2(24, 24),
-      contribDataPath,
-      freeDataPath.file("images/mouse_cursor.png"),
-      freeDataPath.file("images/mouse_cursor2.png"));
-  FatalLog.addOutput(DebugOutput::toString([&renderer](const string& s) { renderer.showError(s);}));
-  UserErrorLog.addOutput(DebugOutput::toString([&renderer](const string& s) { renderer.showError(s);}));
   GuiFactory guiFactory(renderer, &clock, &options, &keybindingMap, freeDataPath.subdirectory("images"),
       tilesPresent ? optional<DirectoryPath>(paidDataPath.subdirectory("images")) : none);
   guiFactory.loadImages();

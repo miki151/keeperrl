@@ -27,6 +27,19 @@ bool DirectoryPath::exists() const {
   return isDirectory(get());
 }
 
+#ifndef WINDOWS
+#include <sys/stat.h>
+#include <sys/types.h>
+void DirectoryPath::createIfDoesntExist() const {
+  USER_CHECK(!mkdir(path.data(), 0750)) << "Unable to create directory \"" + path + "\": " + strerror(errno);
+}
+#else
+
+implement
+
+#endif
+
+
 static bool isRegularFile(const string& path) {
   struct stat path_stat;
   if (stat(path.c_str(), &path_stat))
@@ -37,7 +50,7 @@ static bool isRegularFile(const string& path) {
 
 vector<FilePath> DirectoryPath::getFiles() const {
   vector<FilePath> ret;
-  if (DIR* dir = opendir(path.c_str())) {
+  if (DIR* dir = opendir(path.data())) {
     while (dirent* ent = readdir(dir))
       if (isRegularFile(path + "/" + ent->d_name))
         ret.push_back(FilePath(*this, ent->d_name));
@@ -47,7 +60,7 @@ vector<FilePath> DirectoryPath::getFiles() const {
 }
 
 const char* DirectoryPath::get() const {
-  return path.c_str();
+  return path.data();
 }
 
 std::ostream& operator <<(std::ostream& d, const DirectoryPath& path) {
