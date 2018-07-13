@@ -27,20 +27,15 @@ bool DirectoryPath::exists() const {
   return isDirectory(get());
 }
 
-#ifndef WINDOWS
-#include <sys/stat.h>
-#include <sys/types.h>
 void DirectoryPath::createIfDoesntExist() const {
   if (!exists()) {
+#ifndef WINDOWS
     USER_CHECK(!mkdir(path.data(), 0750)) << "Unable to create directory \"" + path + "\": " + strerror(errno);
+#else
+    USER_CHECK(!mkdir(path.data())) << "Unable to create directory \"" + path + "\": " + strerror(errno);
+#endif
   }
 }
-#else
-
-implement
-
-#endif
-
 
 static bool isRegularFile(const string& path) {
   struct stat path_stat;
