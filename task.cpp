@@ -625,7 +625,7 @@ namespace {
 class Kill : public Task {
   public:
   enum Type { ATTACK, TORTURE };
-  Kill(WTaskCallback call, WCreature c, Type t) : creature(c), type(t), callback(call) {}
+  Kill(WTaskCallback call, WCreature c, Type t) : Task(true), creature(c), type(t), callback(call) {}
 
   CreatureAction getAction(WCreature c) {
     switch (type) {
@@ -639,10 +639,6 @@ class Kill : public Task {
       case ATTACK: return "Kill " + creature->getName().bare();
       case TORTURE: return "Torture " + creature->getName().bare();
     }
-  }
-
-  virtual bool canTransfer() override {
-    return true;
   }
 
   virtual bool canPerform(WConstCreature c) const override {
@@ -1088,10 +1084,6 @@ class Eat : public Task {
   public:
   Eat(vector<Position> pos) : positions(pos) {}
 
-  virtual bool canTransfer() override {
-    return false;
-  }
-
   WItem getDeadChicken(Position pos) {
     vector<WItem> chickens = pos.getItems().filter(Item::classPredicate(ItemClass::FOOD));
     if (chickens.empty())
@@ -1225,9 +1217,13 @@ class StayIn : public Task {
         else
           currentTarget = none;
       }
-    if (currentTarget)
+    if (currentTarget) {
+      if (!currentTarget->isSameModel(c->getPosition())) {
+        setDone();
+        return NoMove;
+      }
       return c->moveTowards(*currentTarget);
-    else
+    } else
       return c->wait();
   }
 
@@ -1329,7 +1325,9 @@ class Follow : public Task {
   Follow(WCreature t) : target(t) {}
 
   virtual MoveInfo getMove(WCreature c) override {
-    if (!target->isDead()) {
+    // target == c if an attacking party team leader is killed and c becomes the new team leader.
+    // In this case make the task finish
+    if (target != c && !target->isDead()) {
       Position targetPos = target->getPosition();
       if (targetPos.dist8(c->getPosition()) < 3) {
         if (Random.roll(15))

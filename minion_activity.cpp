@@ -191,7 +191,7 @@ PTask MinionActivities::generate(WCollective collective, WCreature c, MinionActi
            !collective->getTerritory().getAll().contains(c->getPosition()))) {
         auto leader = collective->getLeader();
         if (!myTerritory.empty())
-          return Task::stayIn(myTerritory);
+          return Task::chain(Task::transferTo(collective->getModel()), Task::stayIn(myTerritory));
         else if (collective->getConfig().getFollowLeaderIfNoTerritory() && leader)
           return Task::alwaysDone(Task::follow(leader));
       }
