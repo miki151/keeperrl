@@ -169,6 +169,7 @@ class GuiFactory {
       Renderer::FontId = Renderer::SYMBOL_FONT);
   SGuiElem labelUnicode(const string&, function<Color()>, int size = Renderer::textSize,
       Renderer::FontId = Renderer::SYMBOL_FONT);
+  SGuiElem crossOutText(Color);
   SGuiElem viewObject(const ViewObject&, double scale = 1, Color = Color::WHITE);
   SGuiElem viewObject(ViewId, double scale = 1, Color = Color::WHITE);
   SGuiElem asciiBackground(ViewId);

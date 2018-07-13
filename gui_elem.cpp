@@ -644,7 +644,15 @@ SGuiElem GuiFactory::labelUnicode(const string& s, function<Color()> color, int 
           if (r.getMousePos().inRectangle(bounds))
             lighten(c);
           r.drawText(fontId, size, c, bounds.topLeft(), s);
-        }, width));
+  }, width));
+}
+
+SGuiElem GuiFactory::crossOutText(Color color) {
+  return SGuiElem(new DrawCustom([=] (Renderer& r, Rectangle bounds) {
+      Rectangle pos(bounds.left(), bounds.middle().y - 3, bounds.right(), bounds.middle().y - 1);
+      r.drawFilledRectangle(pos.translate(Vec2(1, 2)), Color::BLACK.transparency(100));
+      r.drawFilledRectangle(pos, color);
+  }));
 }
 
 class MainMenuLabel : public GuiElem {

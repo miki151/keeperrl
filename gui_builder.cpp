@@ -810,6 +810,8 @@ SGuiElem GuiBuilder::drawAllVillainsOverlay(const VillageInfo& info) {
     if (elem.name)
       name  = *elem.name + ", " + name;
     auto label = gui.label(capitalFirst(name), labelColor);
+    if (elem.isConquered)
+      label = gui.stack(std::move(label), gui.crossOutText(Color::RED));
     for (auto& action : elem.actions)
       if (!action.disabledReason) {
         label = gui.stack(
@@ -824,11 +826,10 @@ SGuiElem GuiBuilder::drawAllVillainsOverlay(const VillageInfo& info) {
       }
     lines.addElem(gui.stack(
         gui.getListBuilder()
-            .addElemAuto(gui.stack(
-                 gui.setWidth(34, gui.centerVert(gui.centerHoriz(gui.bottomMargin(-3,
-                     gui.viewObject(ViewId::ROUND_SHADOW, 1, Color(255, 255, 255, 160)))))),
-                 gui.setWidth(34, gui.centerVert(gui.centerHoriz(gui.bottomMargin(5,
-                     gui.viewObject(elem.viewId)))))))
+            .addElemAuto(gui.setWidth(34, gui.centerVert(gui.centerHoriz(gui.stack(
+                 gui.bottomMargin(-3, gui.viewObject(ViewId::ROUND_SHADOW, 1, Color(255, 255, 255, 160))),
+                 gui.bottomMargin(5, gui.viewObject(elem.viewId))
+            )))))
             .addElemAuto(gui.rightMargin(5, gui.translate(gui.renderInBounds(std::move(label)), Vec2(0, 0))))
             .buildHorizontalList(),
         gui.tooltip2(std::move(infoOverlay), [=](const Rectangle& r) { return r.topRight();})));
