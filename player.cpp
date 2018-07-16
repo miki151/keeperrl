@@ -498,7 +498,13 @@ vector<Player::OtherCreatureCommand> Player::getOtherCreatureCommands(WCreature 
     genAction(0, "Skip turn", true, creature->wait());
   if (c->getPosition().dist8(creature->getPosition()) == 1)
     genAction(10, "Chat", false, creature->chatTo(c));
-  std::stable_sort(ret.begin(), ret.end(), [](const auto& c1, const auto& c2) { return c1.priority < c2.priority; });
+  std::stable_sort(ret.begin(), ret.end(), [](const auto& c1, const auto& c2) {
+    if (c1.allowAuto && !c2.allowAuto)
+      return true;
+    if (c2.allowAuto && !c1.allowAuto)
+      return false;
+    return c1.priority < c2.priority;
+  });
   return ret;
 }
 
