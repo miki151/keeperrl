@@ -200,6 +200,7 @@ void WindowView::mapRightClickFun(Vec2 pos) {
   switch (gameInfo.infoType) {
     case GameInfo::InfoType::SPECTATOR:
     case GameInfo::InfoType::BAND:
+      guiBuilder.closeOverlayWindows();
       guiBuilder.clearActiveButton();
       break;
     default:
@@ -1366,8 +1367,6 @@ void WindowView::processEvents() {
           renderer.flushEvents(SDL::SDL_KEYDOWN);
         break;
       case SDL::SDL_MOUSEBUTTONDOWN:
-        if (event.button.button == SDL_BUTTON_RIGHT)
-          guiBuilder.closeOverlayWindows();
         if (event.button.button == SDL_BUTTON_MIDDLE)
           inputQueue.push(UserInput(UserInputId::DRAW_LEVEL_MAP));
         break;
