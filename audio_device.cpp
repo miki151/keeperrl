@@ -41,7 +41,7 @@ const int maxSources = 12;
 
 static void checkError(const char* file, int line, const char* functionName) {
   ALenum error = alGetError();
-  CHECK(!error) << file << ":" << line << " " << alGetString(error);
+  CHECK(!error) << file << ":" << line << " " << " " << functionName << ": " << alGetString(error);
 }
 
 optional<OpenalId> AudioDevice::getFreeSource() {
@@ -194,7 +194,9 @@ void SoundStream::loop() {
     AL(alBufferData(buffers[1], (info->channels > 1) ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16, data.data(),
         data.size(), info->rate));
     AL(alSourceQueueBuffers(source.getId(), 2, buffers));
-    AL(alSourcef(source.getId(), AL_GAIN, volume));
+    alSourcef(source.getId(), AL_GAIN, volume);
+    ALenum error = alGetError();
+    CHECK(!error) << "volume error " << volume;
     AL(alSourcePlay(source.getId()));
     startedPlaying = true;
     //CHECK(isPlaying()); fails if I unplug/plug the speaker cable...?
