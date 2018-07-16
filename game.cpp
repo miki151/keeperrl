@@ -153,6 +153,8 @@ void Game::prepareSiteRetirement() {
   for (Vec2 v : models.getBounds())
     if (models[v] && v != baseModel)
       models[v]->discardForRetirement();
+  for (WCollective col : models[baseModel]->getCollectives())
+    col->setVillainType(VillainType::NONE);
   playerCollective->setVillainType(VillainType::MAIN);
   playerCollective->retire();
   vector<Position> locationPos;

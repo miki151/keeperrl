@@ -270,7 +270,10 @@ PItem Collective::buyItem(WItem item) {
 }
 
 vector<TriggerInfo> Collective::getTriggers(WConstCollective against) const {
-  return control->getTriggers(against);
+  if (!isConquered())
+    return control->getTriggers(against);
+  else
+    return {};
 }
 
 WCreature Collective::getLeader() const {
