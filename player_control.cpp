@@ -2500,9 +2500,17 @@ void PlayerControl::updateUnknownLocations() {
   unknownLocations->update(locations);
 }
 
+void PlayerControl::considerTransferingLostMinions() {
+  if (getGame()->getCurrentModel() == getModel())
+    for (auto c : copyOf(getCreatures()))
+      if (c->getPosition().getModel() != getModel())
+        getGame()->transferCreature(c, getModel());
+}
+
 void PlayerControl::tick() {
   PROFILE_BLOCK("PlayerControl::tick");
   updateUnknownLocations();
+  considerTransferingLostMinions();
   for (auto& elem : messages)
     elem.setFreshness(max(0.0, elem.getFreshness() - 1.0 / messageTimeout));
   messages = messages.filter([&] (const PlayerMessage& msg) {

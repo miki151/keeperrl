@@ -300,7 +300,6 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   set<EnemyId> SERIAL(conqueredVillains); // OBSOLETE
   void setDiscoverable();
   bool SERIAL(discoverable) = false;
-  void considerTransferingLostMinions();
   void considerRebellion();
   void updateCreatureStatus(WCreature);
   HeapAllocated<Quarters> SERIAL(quarters);

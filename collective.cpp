@@ -401,12 +401,6 @@ void Collective::update(bool currentlyActive) {
     immigration->update();
 }
 
-void Collective::considerTransferingLostMinions() {
-  for (auto c : copyOf(getCreatures()))
-    if (c->getPosition().getModel() != getGame()->getCurrentModel())
-      getGame()->transferCreature(c, getModel());
-}
-
 double Collective::getRebellionProbability() const {
   const double allowedPrisonerRatio = 0.5;
   const double maxPrisonerRatio = 1.5;
@@ -441,7 +435,6 @@ void Collective::considerRebellion() {
 
 void Collective::tick() {
   PROFILE_BLOCK("Collective::tick");
-  considerTransferingLostMinions();
   considerRebellion();
   dangerLevelCache = none;
   control->tick();

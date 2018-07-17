@@ -248,5 +248,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   SUnknownLocations SERIAL(unknownLocations);
   optional<LocalTime> lastWarningDismiss;
   set<pair<UniqueEntity<Collective>::Id, string>> SERIAL(dismissedVillageInfos);
+  void considerTransferingLostMinions();
 };
 
