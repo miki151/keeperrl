@@ -160,7 +160,6 @@ optional<string> FileSharing::uploadBugReport(const string& text, optional<FileP
     string url = uploadUrl + "/upload.php";
     curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
     curl_easy_setopt(curl, CURLOPT_HTTPPOST, formpost);
-    curl_easy_setopt(curl, CURLOPT_TIMEOUT, 10);
     auto callback = getCallbackData(this, meter);
     curl_easy_setopt(curl, CURLOPT_NOPROGRESS, false);
     curl_easy_setopt(curl, CURLOPT_PROGRESSDATA, &callback);
