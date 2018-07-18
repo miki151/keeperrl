@@ -795,7 +795,7 @@ class Summoned : public GuardTarget {
   }
 
   virtual MoveInfo getMove() override {
-    if (target->isDead()) {
+    if (target->isDead() || target->isAffected(LastingEffect::STUNNED)) {
       return {1.0, CreatureAction(creature, [=](WCreature creature) {
         creature->dieNoReason(Creature::DropType::NOTHING);
       })};
