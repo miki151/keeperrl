@@ -23,8 +23,8 @@ const vector<BuildInfo>& BuildInfo::get() {
   if (!buildInfo) {
     buildInfo = vector<BuildInfo>({
       BuildInfo(BuildInfo::DIG, "Dig or cut tree", "", 'd').setTutorialHighlight(TutorialHighlight::DIG_OR_CUT_TREES),
-      BuildInfo({FurnitureType::MOUNTAIN, {ResourceId::STONE, 10}}, "Fill up tunnel", {},
-          "Fill up one tile at a time. Cutting off an area is not allowed.", 0, "Structure"),
+      BuildInfo({FurnitureType::MOUNTAIN, {ResourceId::STONE, 5}}, "Soft rock", {}, "", 0, "Structure"),
+      BuildInfo({FurnitureType::MOUNTAIN2, {ResourceId::STONE, 10}}, "Hard rock", {}, "", 0, "Structure"),
       BuildInfo({{FurnitureType::DUNGEON_WALL, FurnitureType::DUNGEON_WALL2}, {ResourceId::STONE, 2}}, "Reinforce wall", {},
           "Reinforce wall. +" + toString<int>(100 * CollectiveConfig::getEfficiencyBonus(FurnitureType::DUNGEON_WALL)) +
           " efficiency to surrounding tiles.", 0, "Structure"),
