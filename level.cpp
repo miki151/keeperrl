@@ -43,9 +43,11 @@ template <class Archive>
 void Level::serialize(Archive& ar, const unsigned int version) {
   ar & SUBCLASS(OwnedObject<Level>);
   ar(squares, landingSquares, tickingSquares, creatures, model, fieldOfView);
-  ar(name, sunlight, bucketMap, sectors, lightAmount, unavailable);
+  ar(name, sunlight, bucketMap, lightAmount, unavailable);
   ar(levelId, noDiagonalPassing, lightCapAmount, creatureIds, memoryUpdates);
   ar(furniture, tickingFurniture, covered, portals);
+  if (Archive::is_loading::value) // some code requires these Sectors to be always initialized
+    getSectors({MovementTrait::WALK});
 }  
 
 SERIALIZABLE(Level);
@@ -516,9 +518,17 @@ Sectors& Level::getSectorsDontCreate(const MovementType& movement) const {
   return sectors.at(movement);
 }
 
+static Sectors::ExtraConnections getOrCreateExtraConnections(Rectangle bounds,
+    const unordered_map<MovementType, Sectors>& sectors) {
+  if (sectors.empty())
+    return Sectors::ExtraConnections(bounds);
+  else
+    return sectors.begin()->second.getExtraConnections();
+}
+
 Sectors& Level::getSectors(const MovementType& movement) const {
   if (!sectors.count(movement)) {
-    sectors[movement] = Sectors(getBounds());
+    sectors.insert(make_pair(movement, Sectors(getBounds(), getOrCreateExtraConnections(getBounds(), sectors))));
     Sectors& newSectors = sectors.at(movement);
     for (Position pos : getAllPositions())
       if (pos.canNavigate(movement))

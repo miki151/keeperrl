@@ -19,7 +19,8 @@
 
 class Sectors {
   public:
-  Sectors(Rectangle bounds);
+  using ExtraConnections = Table<optional<Vec2>>;
+  Sectors(Rectangle bounds, ExtraConnections);
 
   bool same(Vec2, Vec2) const;
   bool add(Vec2);
@@ -30,8 +31,7 @@ class Sectors {
   bool isChokePoint(Vec2) const;
   void addExtraConnection(Vec2, Vec2);
   void removeExtraConnection(Vec2, Vec2);
-
-  SERIALIZATION_DECL(Sectors);
+  const ExtraConnections getExtraConnections() const;
 
   private:
   vector<Vec2> getNeighbors(Vec2) const;
@@ -39,9 +39,9 @@ class Sectors {
   int getNewSector();
   void join(Vec2, int);
   vector<Vec2> getDisjoint(Vec2) const;
-  Rectangle SERIAL(bounds);
-  Table<int> SERIAL(sectors);
-  vector<int> SERIAL(sizes);
-  Table<vector<Vec2>> SERIAL(extraConnections);
+  Rectangle bounds;
+  Table<int> sectors;
+  vector<int> sizes;
+  ExtraConnections extraConnections;
 };
 

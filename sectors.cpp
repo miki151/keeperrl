@@ -17,10 +17,8 @@
 #include "sectors.h"
 #include "level.h"
 
-SERIALIZE_DEF(Sectors, bounds, sectors, sizes, extraConnections)
-SERIALIZATION_CONSTRUCTOR_IMPL(Sectors)
 
-Sectors::Sectors(Rectangle b) : bounds(b), sectors(bounds, -1), extraConnections(bounds) {
+Sectors::Sectors(Rectangle b, ExtraConnections con) : bounds(b), sectors(bounds, -1), extraConnections(std::move(con)) {
 }
 
 bool Sectors::same(Vec2 v, Vec2 w) const {
@@ -141,7 +139,10 @@ bool Sectors::isChokePoint(Vec2 pos) const {
 }
 
 vector<Vec2> Sectors::getNeighbors(Vec2 pos) const {
-  return concat(pos.neighbors8(), extraConnections[pos]);
+  auto ret = pos.neighbors8();
+  if (auto con = extraConnections[pos])
+    ret.push_back(*con);
+  return ret;
 }
 
 void Sectors::addExtraConnection(Vec2 pos1, Vec2 pos2) {
@@ -155,14 +156,20 @@ void Sectors::addExtraConnection(Vec2 pos1, Vec2 pos2) {
         join(pos1, sector2);
     }
   }
-  extraConnections[pos1].push_back(pos2);
-  extraConnections[pos2].push_back(pos1);
+  CHECK(!extraConnections[pos1]);
+  CHECK(!extraConnections[pos2]);
+  extraConnections[pos1] = pos2;
+  extraConnections[pos2] = pos1;
 }
 
 void Sectors::removeExtraConnection(Vec2 pos1, Vec2 pos2) {
-  extraConnections[pos1].removeElement(pos2);
-  extraConnections[pos2].removeElement(pos1);
+  extraConnections[pos1] = none;
+  extraConnections[pos2] = none;
   join(pos1, getNewSector());
+}
+
+const Sectors::ExtraConnections Sectors::getExtraConnections() const {
+  return extraConnections;
 }
 
 bool Sectors::remove(Vec2 pos) {

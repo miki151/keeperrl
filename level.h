@@ -207,7 +207,7 @@ class Level : public OwnedObject<Level> {
   HeapAllocated<CreatureBucketMap> SERIAL(bucketMap);
   Table<double> SERIAL(lightAmount);
   Table<double> SERIAL(lightCapAmount);
-  mutable unordered_map<MovementType, Sectors> SERIAL(sectors);
+  mutable unordered_map<MovementType, Sectors> sectors;
   Sectors& getSectors(const MovementType&) const;
   Sectors& getSectorsDontCreate(const MovementType&) const;
 

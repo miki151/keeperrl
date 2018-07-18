@@ -416,7 +416,7 @@ class Test {
   }
 
   void testSectors1() {
-    Sectors sectors(Rectangle(7, 7));
+    Sectors sectors(Rectangle(7, 7), Table<optional<Vec2>>(7, 7));
     sectors.add(Vec2(0, 0));
     CHECK(!sectors.same(Vec2(0, 0), Vec2(0, 2)));
     sectors.add(Vec2(0, 2));
@@ -433,7 +433,7 @@ class Test {
   }
 
   void testSectors2() {
-    Sectors s(Rectangle(5, 4));
+    Sectors s(Rectangle(5, 4), Table<optional<Vec2>>(5, 4));
     s.add(Vec2(2, 0));
     s.add(Vec2(3, 0));
     s.add(Vec2(4, 0));
@@ -456,7 +456,7 @@ class Test {
 
   void testSectors3() {
     Rectangle bounds(250, 250);
-    Sectors s(bounds);
+    Sectors s(bounds, Table<optional<Vec2>>(bounds));
     Table<bool> t(bounds, true);
     Rectangle bounds2(15, 15);
     Rectangle bounds3(3, 3);
@@ -494,7 +494,7 @@ class Test {
   }
 
   void testSectorsWithPortals() {
-    Sectors s(Rectangle(7, 7));
+    Sectors s(Rectangle(7, 7), Table<optional<Vec2>>(7, 7));
     s.add(Vec2(2, 1));
     s.add(Vec2(3, 1));
     s.add(Vec2(2, 4));
