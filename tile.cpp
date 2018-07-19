@@ -88,7 +88,7 @@ Tile Tile::addExtraBorder(DirSet dir, TileCoord coord) {
 }
 
 Tile Tile::addExtraBorderId(ViewId id) {
-  extraBorderIds.push_back(id);
+  extraBorderIds.insert(id);
   anyExtraBorders = true;
   return *this;
 }
@@ -102,7 +102,7 @@ optional<Tile::TileCoord> Tile::getHighlightCoord() const {
   return highlightCoord;
 }
 
-const vector<ViewId>& Tile::getExtraBorderIds() const {
+const EnumSet<ViewId>& Tile::getExtraBorderIds() const {
   return extraBorderIds;
 }
 
@@ -224,7 +224,6 @@ class TileCoordLookup {
   }
 
   Tile getWallTile(const string& prefix) {
-    int tex = 1;
     return sprite(prefix)
       .addConnection({Dir::E}, byName(prefix + "e"))
       .addConnection({Dir::E, Dir::W}, byName(prefix + "ew"))
@@ -279,7 +278,8 @@ class TileCoordLookup {
       .addConnection({Dir::W}, byName(prefix + "w"))
       .addConnection({Dir::E}, byName(prefix + "e"))
       .addConnection({Dir::N, Dir::S}, byName(prefix + "ns"))
-      .addConnection({Dir::E, Dir::W}, byName(prefix + "ew"));
+      .addConnection({Dir::E, Dir::W}, byName(prefix + "ew"))
+      .addConnection({}, byName(prefix));
   }
 
   Tile getExtraBorderTile(const string& prefix) {
@@ -402,6 +402,8 @@ class TileCoordLookup {
           .addBackground(byName("mountain_ted2")).setWallShadow(), "mountain"));
     Tile::addTile(ViewId::HILL, getExtraBorderTile("hill")
         .addExtraBorderId(ViewId::SAND)
+        .addExtraBorderId(ViewId::FLOOR)
+        .addExtraBorderId(ViewId::KEEPER_FLOOR)
         .addExtraBorderId(ViewId::WATER));
     Tile::addTile(ViewId::WOOD_WALL, getWallTile("wood_wall").setWallShadow());
     Tile::addTile(ViewId::BLACK_WALL, getWallTile("wall").setWallShadow());
@@ -621,6 +623,7 @@ class TileCoordLookup {
     Tile::addTile(ViewId::FETCH_ICON, sprite("leather_gloves"));
     Tile::addTile(ViewId::EYEBALL, sprite("eyeball2").setRoundShadow());
     Tile::addTile(ViewId::FOG_OF_WAR, getWaterTile("empty", "fogofwar"));
+    Tile::addTile(ViewId::PIT, sprite("hole"));
     Tile::addTile(ViewId::CREATURE_HIGHLIGHT, sprite("creature_highlight"));
     Tile::addTile(ViewId::SQUARE_HIGHLIGHT, sprite("square_highlight"));
     Tile::addTile(ViewId::ROUND_SHADOW, sprite("round_shadow"));
@@ -975,6 +978,7 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::EYEBALL, symbol(u8"e", Color::BLUE));
     Tile::addSymbol(ViewId::FETCH_ICON, symbol(u8"👋", Color::LIGHT_BROWN, true));
     Tile::addSymbol(ViewId::FOG_OF_WAR, symbol(u8" ", Color::WHITE));
+    Tile::addSymbol(ViewId::PIT, symbol(u8"^", Color::WHITE));
     Tile::addSymbol(ViewId::CREATURE_HIGHLIGHT, symbol(u8" ", Color::WHITE));
     Tile::addSymbol(ViewId::SQUARE_HIGHLIGHT, symbol(u8"⛶", Color::WHITE, true));
     Tile::addSymbol(ViewId::ROUND_SHADOW, symbol(u8" ", Color::WHITE));

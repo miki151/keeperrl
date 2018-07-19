@@ -17,6 +17,7 @@
 
 #include "renderer.h"
 #include "util.h"
+#include "view_id.h"
 
 enum class ViewId;
 class ViewObject;
@@ -60,7 +61,7 @@ class Tile {
   Tile setWallShadow();
   optional<TileCoord> getHighlightCoord() const;
 
-  const vector<ViewId>& getExtraBorderIds() const;
+  const EnumSet<ViewId>& getExtraBorderIds() const;
   bool hasExtraBorders() const;
   bool hasAnyConnections() const;
   optional<TileCoord> getExtraBorderCoord(DirSet) const;
@@ -92,7 +93,7 @@ class Tile {
   bool anyConnections = false;
   bool anyCorners = false;
   DirSet connectionsMask = DirSet{Dir::N, Dir::E, Dir::S, Dir::W};
-  vector<ViewId> extraBorderIds;
+  EnumSet<ViewId> extraBorderIds;
   static void addTile(ViewId, Tile);
   static void addSymbol(ViewId, Tile);
 };

@@ -690,17 +690,16 @@ void MapGui::renderExtraBorders(Renderer& renderer, milliseconds currentTimeReal
   for (Vec2 wpos : layout->getAllTiles(getBounds(), levelBounds, getScreenPos()))
     for (ViewId id : extraBorderPos.getValue(wpos)) {
       const Tile& tile = Tile::getTile(id, true);
-      for (ViewId underId : tile.getExtraBorderIds())
-        if (connectionMap[wpos].contains(underId)) {
-          DirSet dirs = 0;
-          for (Vec2 v : Vec2::directions4())
-            if ((wpos + v).inRectangle(levelBounds) && connectionMap[wpos + v].contains(id))
-              dirs.insert(v.getCardinalDir());
-          if (auto coord = tile.getExtraBorderCoord(dirs)) {
-            Vec2 pos = projectOnScreen(wpos);
-            renderer.drawTile(pos, *coord, layout->getSquareSize());
-          }
+      if (!connectionMap[wpos].intersection(tile.getExtraBorderIds()).isEmpty()) {
+        DirSet dirs = 0;
+        for (Vec2 v : Vec2::directions4())
+          if ((wpos + v).inRectangle(levelBounds) && connectionMap[wpos + v].contains(id))
+            dirs.insert(v.getCardinalDir());
+        if (auto coord = tile.getExtraBorderCoord(dirs)) {
+          Vec2 pos = projectOnScreen(wpos);
+          renderer.drawTile(pos, *coord, layout->getSquareSize());
         }
+      }
     }
 }
 
@@ -1063,20 +1062,14 @@ void MapGui::updateObject(Vec2 pos, CreatureView* view, milliseconds currentTime
     if (tile.wallShadow) {
       shadowed.insert(pos + Vec2(0, 1));
     }
-    if (tile.hasAnyConnections() || tile.hasExtraBorders() || tile.hasAnyCorners())
-      connectionMap[pos].insert(getConnectionId(object.id()));
+    connectionMap[pos].insert(getConnectionId(object.id()));
   }
   if (index.hasObject(ViewLayer::FLOOR_BACKGROUND)) {
     auto& object = index.getObject(ViewLayer::FLOOR_BACKGROUND);
-    auto& tile = Tile::getTile(object.id());
-    if (tile.hasAnyConnections() || tile.hasExtraBorders() || tile.hasAnyCorners())
-      connectionMap[pos].insert(getConnectionId(object.id()));
+    connectionMap[pos].insert(getConnectionId(object.id()));
   }
-  if (auto viewId = index.getHiddenId()) {
-    auto& tile = Tile::getTile(*viewId);
-    if (tile.hasAnyConnections() || tile.hasExtraBorders() || tile.hasAnyCorners())
-      connectionMap[pos].insert(getConnectionId(*viewId));
-  }
+  if (auto viewId = index.getHiddenId())
+    connectionMap[pos].insert(getConnectionId(*viewId));
 }
 
 double MapGui::getDistanceToEdgeRatio(Vec2 pos) {
