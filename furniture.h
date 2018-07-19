@@ -138,7 +138,7 @@ class Furniture : public OwnedObject<Furniture> {
   TimeInterval SERIAL(usageTime) = 1_visible;
   bool SERIAL(overrideMovement) = false;
   bool SERIAL(removeWithCreaturePresent) = true;
-  bool SERIAL(removeNonFriendly) = true;
+  bool SERIAL(removeNonFriendly) = false;
   bool SERIAL(wall) = false;
   optional<ConstructMessage> SERIAL(constructMessage) = BUILD;
   double SERIAL(lightEmission) = 0;
