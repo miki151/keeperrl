@@ -177,3 +177,13 @@ string FurnitureUsage::getUsageQuestion(FurnitureUsageType type, string furnitur
   }
   return "";
 }
+
+void FurnitureUsage::beforeRemoved(FurnitureUsageType type, Position pos) {
+  switch (type) {
+    case FurnitureUsageType::PORTAL:
+      pos.removePortal();
+      break;
+    default:
+      break;
+  }
+}

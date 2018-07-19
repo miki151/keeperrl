@@ -156,6 +156,8 @@ void Furniture::destroy(Position pos, const DestroyAction& action) {
   auto myType = type;
   if (itemDrop)
     pos.dropItems(itemDrop->random());
+  if (usageType)
+    FurnitureUsage::beforeRemoved(*usageType, pos);
   pos.removeFurniture(this, destroyedRemains ? FurnitureFactory::get(*destroyedRemains, getTribe()) : nullptr);
   pos.getGame()->addEvent(EventInfo::FurnitureDestroyed{pos, myType, myLayer});
 }
