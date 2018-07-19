@@ -642,30 +642,30 @@ void MapGui::setCenter(Vec2 v) {
   setCenter(v.x, v.y);
 }
 
-void MapGui::drawFoWSprite(Renderer& renderer, Vec2 pos, Vec2 size, DirSet dirs) {
+const static EnumMap<Dir, DirSet> adjacentDirs(
+    [](Dir dir) {
+      switch (dir) {
+        case Dir::NE:
+          return DirSet({Dir::N, Dir::E});
+        case Dir::SE:
+          return DirSet({Dir::S, Dir::E});
+        case Dir::SW:
+          return DirSet({Dir::S, Dir::W});
+        case Dir::NW:
+          return DirSet({Dir::N, Dir::W});
+        default:
+          return DirSet();
+      }
+    });
+
+void MapGui::drawFoWSprite(Renderer& renderer, Vec2 pos, Vec2 size, DirSet dirs, DirSet diagonalDirs) {
   const Tile& tile = Tile::getTile(ViewId::FOG_OF_WAR, true);
   const Tile& tile2 = Tile::getTile(ViewId::FOG_OF_WAR_CORNER, true);
-  static DirSet fourDirs = DirSet({Dir::N, Dir::S, Dir::E, Dir::W});
-  auto coord = tile.getSpriteCoord(dirs & fourDirs);
+  auto coord = tile.getSpriteCoord(dirs);
   renderer.drawTile(pos, coord, size);
-  for (Dir dir : dirs.intersection(fourDirs.complement())) {
-    static DirSet ne({Dir::N, Dir::E});
-    static DirSet se({Dir::S, Dir::E});
-    static DirSet nw({Dir::N, Dir::W});
-    static DirSet sw({Dir::S, Dir::W});
-    switch (dir) {
-      case Dir::NE: if (!dirs.contains(ne)) continue;
-        FALLTHROUGH;
-      case Dir::SE: if (!dirs.contains(se)) continue;
-        FALLTHROUGH;
-      case Dir::NW: if (!dirs.contains(nw)) continue;
-        FALLTHROUGH;
-      case Dir::SW: if (!dirs.contains(sw)) continue;
-        FALLTHROUGH;
-      default: break;
-    }
-    renderer.drawTile(pos, tile2.getSpriteCoord(DirSet::oneElement(dir)), size);
-  }
+  for (Dir dir : diagonalDirs)
+    if ((~dirs & adjacentDirs[dir]) == 0)
+      renderer.drawTile(pos, tile2.getSpriteCoord(DirSet::oneElement(dir)), size);
 }
 
 bool MapGui::isFoW(Vec2 pos) const {
@@ -897,15 +897,17 @@ void MapGui::renderMapObjects(Renderer& renderer, Vec2 size, milliseconds curren
         }
         if (spriteMode && layer == ViewLayer::TORCH1)
           if (!isFoW(wpos))
-            drawFoWSprite(renderer, pos, size, DirSet(
-                !isFoW(wpos + Vec2(Dir::N)),
-                !isFoW(wpos + Vec2(Dir::S)),
-                !isFoW(wpos + Vec2(Dir::E)),
-                !isFoW(wpos + Vec2(Dir::W)),
-                isFoW(wpos + Vec2(Dir::NE)),
-                isFoW(wpos + Vec2(Dir::NW)),
-                isFoW(wpos + Vec2(Dir::SE)),
-                isFoW(wpos + Vec2(Dir::SW))));
+            drawFoWSprite(renderer, pos, size,
+                DirSet(
+                  !isFoW(wpos + Vec2(Dir::N)),
+                  !isFoW(wpos + Vec2(Dir::S)),
+                  !isFoW(wpos + Vec2(Dir::E)),
+                  !isFoW(wpos + Vec2(Dir::W)), false, false, false, false),
+                DirSet(false, false, false, false,
+                  isFoW(wpos + Vec2(Dir::NE)),
+                  isFoW(wpos + Vec2(Dir::NW)),
+                  isFoW(wpos + Vec2(Dir::SE)),
+                  isFoW(wpos + Vec2(Dir::SW))));
       }
       if (layer == ViewLayer::FLOOR || !spriteMode) {
         if (!buttonViewId && lastHighlighted.creaturePos)

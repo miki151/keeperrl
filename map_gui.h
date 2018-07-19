@@ -93,7 +93,7 @@ class MapGui : public GuiElem {
   void drawSquareHighlight(Renderer&, Vec2 pos, Vec2 size);
   void considerRedrawingSquareHighlight(Renderer&, milliseconds currentTimeReal, Vec2 pos, Vec2 size);
  // void drawFloorBorders(Renderer& r, DirSet borders, int x, int y);
-  void drawFoWSprite(Renderer&, Vec2 pos, Vec2 size, DirSet dirs);
+  void drawFoWSprite(Renderer&, Vec2 pos, Vec2 size, DirSet dirs, DirSet diagonalDirs);
   void renderExtraBorders(Renderer&, milliseconds currentTimeReal);
   void renderHighlights(Renderer&, Vec2 size, milliseconds currentTimeReal, bool lowHighlights);
   optional<Vec2> getMousePos();
