@@ -510,7 +510,7 @@ string Creature::getPluralAName(WItem item, int num) const {
 
 bool Creature::canCarryMoreWeight(double weight) const {
   if (auto& limit = getBody().getCarryLimit())
-    return weight <= *limit - equipment->getTotalWeight();
+    return *limit >= equipment->getTotalWeight();
   else
     return true;
 }
@@ -519,10 +519,13 @@ int Creature::canCarry(const vector<WItem>& items) const {
   int ret = 0;
   if (auto& limit = getBody().getCarryLimit()) {
     double weight = equipment->getTotalWeight();
+    if (weight > *limit)
+      return 0;
     for (const WItem& it : items) {
       weight += it->getWeight();
-      if (weight <= *limit)
-        ++ret;
+      ++ret;
+      if (weight > *limit)
+        break;
     }
     return ret;
   } else
@@ -543,7 +546,7 @@ CreatureAction Creature::pickUp(const vector<WItem>& itemsAll) const {
     }
     self->equipment->addItems(self->getPosition().removeItems(items), self);
     if (auto& limit = getBody().getCarryLimit())
-      if (equipment->getTotalWeight() > *limit / 2)
+      if (equipment->getTotalWeight() > *limit)
         you(MsgType::ARE, "overloaded");
     getGame()->addEvent(EventInfo::ItemsPickedUp{self, items});
     //self->spendTime();
