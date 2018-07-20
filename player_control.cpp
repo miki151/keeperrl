@@ -734,13 +734,18 @@ static ItemInfo getPillageItemInfo(const vector<WItem>& stack, bool noStorage) {
   );
 }
 
-static vector<PItem> retrieveItems(WCollective col, vector<WItem> items) {
+vector<PItem> PlayerControl::retrievePillageItems(WCollective col, vector<WItem> items) {
   vector<PItem> ret;
   EntitySet<Item> index(items);
   for (auto pos : col->getTerritory().getAll()) {
+    bool update = false;
     for (auto item : copyOf(pos.getInventory().getItems()))
-      if (index.contains(item))
-        ret.push_back(pos.modInventory().removeItem(item));
+      if (index.contains(item)) {
+        ret.push_back(pos.removeItem(item));
+        update = true;
+      }
+    if (update)
+      addToMemory(pos);
   }
   return ret;
 }
@@ -781,7 +786,7 @@ void PlayerControl::handlePillage(WCollective col) {
     if (!index)
       break;
     CHECK(!options[*index].storage.empty());
-    Random.choose(options[*index].storage).dropItems(retrieveItems(col, options[*index].items));
+    Random.choose(options[*index].storage).dropItems(retrievePillageItems(col, options[*index].items));
     getView()->updateView(this, true);
   }
 }

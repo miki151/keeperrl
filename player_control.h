@@ -249,5 +249,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   optional<LocalTime> lastWarningDismiss;
   set<pair<UniqueEntity<Collective>::Id, string>> SERIAL(dismissedVillageInfos);
   void considerTransferingLostMinions();
+  vector<PItem> retrievePillageItems(WCollective, vector<WItem> items);
 };
 
