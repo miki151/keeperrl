@@ -804,9 +804,13 @@ int simulAttackPen(int attackers) {
 
 int Creature::getAttrBonus(AttrType type, bool includeWeapon) const {
   int def = getBody().getAttrBonus(type);
-  for (WItem item : equipment->getAllEquipped())
-    if (includeWeapon || item->getClass() != ItemClass::WEAPON || type != item->getWeaponInfo().meleeAttackAttr)
+  for (auto& item : equipment->getAllEquipped())
+    if (item->getClass() != ItemClass::WEAPON || type != item->getWeaponInfo().meleeAttackAttr)
       def += item->getModifier(type);
+  if (includeWeapon)
+    if (auto item = getFirstWeapon())
+      if (type == item->getWeaponInfo().meleeAttackAttr)
+        def += item->getModifier(type);
   def += LastingEffects::getAttrBonus(this, type);
   return def;
 }
@@ -902,7 +906,7 @@ optional<GlobalTime> Creature::getGlobalTime() const {
 }
 
 void Creature::considerMovingFromInaccessibleSquare() {
-  auto movement = getMovementType().setForced();
+  auto movement = getMovementType();
   if (!position.canEnterEmpty(movement))
     for (auto neighbor : position.neighbors8(Random))
       if (neighbor.canEnter(movement)) {
@@ -934,11 +938,11 @@ void Creature::tick() {
 }
 
 void Creature::dropWeapon() {
-  if (auto weapon = getWeapon())
-    if (equipment->hasItem(weapon)) {
-      you(MsgType::DROP_WEAPON, weapon->getName());
-      getPosition().dropItem(equipment->removeItem(weapon, this));
-    }
+  for (auto weapon : equipment->getSlotItems(EquipmentSlot::WEAPON)) {
+    you(MsgType::DROP_WEAPON, weapon->getName());
+    getPosition().dropItem(equipment->removeItem(weapon, this));
+    break;
+  }
 }
 
 CreatureAction Creature::execute(WCreature c) const {
@@ -952,7 +956,7 @@ CreatureAction Creature::execute(WCreature c) const {
 }
 
 int Creature::getDefaultWeaponDamage() const {
-  if (auto weapon = getWeapon())
+  if (auto weapon = getFirstWeapon())
     return getAttr(weapon->getWeaponInfo().meleeAttackAttr);
   else
     return 0;
@@ -965,7 +969,7 @@ CreatureAction Creature::attack(WCreature other, optional<AttackParams> attackPa
   Vec2 dir = getPosition().getDir(other->getPosition());
   if (dir.length8() != 1)
     return CreatureAction();
-  auto weapon = getWeapon();
+  auto weapon = getRandomWeapon();
   if (attackParams && attackParams->weapon)
     weapon = attackParams->weapon;
   if (!weapon)
@@ -1461,12 +1465,19 @@ CreatureAction Creature::consume(WCreature other) const {
   });
 }
 
-WItem Creature::getWeapon() const {
+WItem Creature::getRandomWeapon() const {
   vector<WItem> it = equipment->getSlotItems(EquipmentSlot::WEAPON);
   WItem weapon;
   if (!it.empty())
     weapon = it[0];
-  return getBody().chooseWeapon(weapon);
+  return getBody().chooseRandomWeapon(weapon);
+}
+
+WItem Creature::getFirstWeapon() const {
+  vector<WItem> it = equipment->getSlotItems(EquipmentSlot::WEAPON);
+  if (!it.empty())
+    return it[0];
+  return getBody().chooseFirstWeapon();
 }
 
 CreatureAction Creature::applyItem(WItem item) const {

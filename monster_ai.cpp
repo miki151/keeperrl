@@ -538,7 +538,7 @@ class Fighter : public Behaviour {
   }
 
   MoveInfo considerEquippingWeapon(WCreature other, int distance) {
-    if (creature->getBody().isHumanoid() && !creature->getWeapon()) {
+    if (creature->getBody().isHumanoid() && !creature->getFirstWeapon()) {
       if (WItem weapon = getBestWeapon())
         if (auto action = creature->equip(weapon))
           return {3.0 / (2.0 + distance), action.prepend([=](WCreature) {

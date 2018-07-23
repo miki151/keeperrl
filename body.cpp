@@ -105,7 +105,7 @@ void Body::setCanAlwaysPush() {
   canAlwaysPush = true;
 }
 
-WItem Body::chooseWeapon(WItem weapon) const {
+WItem Body::chooseRandomWeapon(WItem weapon) const {
   // choose one of the available weapons with equal probability
   bool hasRealWeapon = !!weapon;
   double numOptions = !!weapon ? 1 : 0;
@@ -119,6 +119,15 @@ WItem Body::chooseWeapon(WItem weapon) const {
     }
   }
   return weapon;
+}
+
+WItem Body::chooseFirstWeapon() const {
+  for (auto part : ENUM_ALL(BodyPart)) {
+    auto& attack = intrinsicAttacks[part];
+    if (numGood(part) > 0 && attack && attack->active != attack->NEVER)
+      return intrinsicAttacks[part]->item.get();
+  }
+  return nullptr;
 }
 
 EnumMap<BodyPart, optional<IntrinsicAttack>>& Body::getIntrinsicAttacks() {

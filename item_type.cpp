@@ -126,7 +126,7 @@ class Corpse : public Item {
   }
 
   virtual void applySpecial(WCreature c) override {
-    auto it = c->getWeapon();
+    auto it = c->getFirstWeapon();
     if (it && it->getWeaponInfo().attackType == AttackType::CUT) {
       c->you(MsgType::DECAPITATE, getTheName());
       setName("decapitated " + getName());

@@ -128,7 +128,7 @@ static void enhanceArmor(WCreature c, int mod, const string& msg) {
 }
 
 static void enhanceWeapon(WCreature c, int mod, const string& msg) {
-  if (auto item = c->getWeapon()) {
+  if (auto item = c->getFirstWeapon()) {
     c->you(MsgType::YOUR, item->getName() + " " + msg);
     item->addModifier(item->getWeaponInfo().meleeAttackAttr, mod);
   }

@@ -99,7 +99,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   CreatureName& getName();
   const char* identify() const;
   int getAttr(AttrType, bool includeWeapon = true) const;
-  int getAttrBonus(AttrType, bool includeWeapon = true) const;
+  int getAttrBonus(AttrType, bool includeWeapon) const;
 
   int getPoints() const;
   const Vision& getVision() const;
@@ -188,7 +188,8 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
 
   BestAttack getBestAttack() const;
 
-  WItem getWeapon() const;
+  WItem getRandomWeapon() const;
+  WItem getFirstWeapon() const;
   void dropWeapon();
   vector<vector<WItem>> stackItems(vector<WItem>) const;
   struct NavigationFlags {

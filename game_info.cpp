@@ -180,7 +180,7 @@ vector<AttributeInfo> AttributeInfo::fromCreature(WConstCreature c) {
         getName(type),
         type,
         c->getAttributes().getRawAttr(type),
-        c->getAttrBonus(type),
+        c->getAttrBonus(type, true),
         help
     };
   };
