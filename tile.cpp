@@ -326,9 +326,9 @@ class TileCoordLookup {
     Tile::addTile(ViewId::RETIRED_KEEPER, sprite("retired_keeper"));
     Tile::addTile(ViewId::RETIRED_KEEPER_F, sprite("retired_keeper_female"));
     Tile::addTile(ViewId::KEEPER_KNIGHT, sprite("keeper_knight"));
-    Tile::addTile(ViewId::KEEPER_KNIGHT_F, sprite("keeper_knight"));
-    Tile::addTile(ViewId::RETIRED_KEEPER_KNIGHT, sprite("keeper_knight"));
-    Tile::addTile(ViewId::RETIRED_KEEPER_KNIGHT_F, sprite("keeper_knight"));
+    Tile::addTile(ViewId::KEEPER_KNIGHT_F, sprite("keeper_knight_female"));
+    Tile::addTile(ViewId::RETIRED_KEEPER_KNIGHT, sprite("retired_keeper_knight"));
+    Tile::addTile(ViewId::RETIRED_KEEPER_KNIGHT_F, sprite("retired_keeper_knight_female"));
     Tile::addTile(ViewId::ELF, sprite("elf male"));
     Tile::addTile(ViewId::ELF_WOMAN, sprite("elf female"));
     Tile::addTile(ViewId::ELF_ARCHER, sprite("elf archer"));

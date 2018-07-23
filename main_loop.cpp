@@ -116,6 +116,15 @@ void MainLoop::saveMainModel(PGame& game, const FilePath& path) {
   out.getArchive() << game->getMainModel();
 }
 
+void MainLoop::reloadModel(const FilePath& path) {
+  PModel model;
+  string name;
+  SavedGameInfo info;
+  int version;
+  CompressedInput(path.getPath()).getArchive() >> version >> name >> info >> model;
+  CompressedOutput(path.getPath()).getArchive() << version << name << info << model;
+}
+
 int MainLoop::getSaveVersion(const SaveFileInfo& save) {
   if (auto info = getNameAndVersion(userPath.file(save.filename)))
     return info->second;

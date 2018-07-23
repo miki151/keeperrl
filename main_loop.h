@@ -35,6 +35,7 @@ class MainLoop {
   void endlessTest(int numTries, const FilePath& levelPath, const FilePath& battleInfoPath, RandomGen&, optional<int> numEnemy);
 
   static TimeInterval getAutosaveFreq();
+  static void reloadModel(const FilePath& path);
 
   private:
 
