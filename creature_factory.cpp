@@ -932,8 +932,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
       );
     case CreatureId::KEEPER_KNIGHT:
       return CATTR(
-          c.viewId = ViewId::KNIGHT;
-          c.retiredViewId = ViewId::RETIRED_KEEPER;
+          c.viewId = ViewId::KEEPER_KNIGHT;
+          c.retiredViewId = ViewId::RETIRED_KEEPER_KNIGHT;
           c.attr = LIST(20_dam, 16_def);
           c.body = Body::humanoid(Body::Size::LARGE);
           c.name = "Keeper";
@@ -946,8 +946,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
       );
     case CreatureId::KEEPER_KNIGHT_F:
       return CATTR(
-          c.viewId = ViewId::KNIGHT;
-          c.retiredViewId = ViewId::RETIRED_KEEPER;
+          c.viewId = ViewId::KEEPER_KNIGHT_F;
+          c.retiredViewId = ViewId::RETIRED_KEEPER_KNIGHT_F;
           c.attr = LIST(20_dam, 16_def);
           c.body = Body::humanoid(Body::Size::LARGE);
           c.name = "Keeper";

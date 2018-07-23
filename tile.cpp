@@ -325,6 +325,10 @@ class TileCoordLookup {
     Tile::addTile(ViewId::KEEPER_F, sprite("keeper_female"));
     Tile::addTile(ViewId::RETIRED_KEEPER, sprite("retired_keeper"));
     Tile::addTile(ViewId::RETIRED_KEEPER_F, sprite("retired_keeper_female"));
+    Tile::addTile(ViewId::KEEPER_KNIGHT, sprite("keeper_knight"));
+    Tile::addTile(ViewId::KEEPER_KNIGHT_F, sprite("keeper_knight"));
+    Tile::addTile(ViewId::RETIRED_KEEPER_KNIGHT, sprite("keeper_knight"));
+    Tile::addTile(ViewId::RETIRED_KEEPER_KNIGHT_F, sprite("keeper_knight"));
     Tile::addTile(ViewId::ELF, sprite("elf male"));
     Tile::addTile(ViewId::ELF_WOMAN, sprite("elf female"));
     Tile::addTile(ViewId::ELF_ARCHER, sprite("elf archer"));
@@ -688,6 +692,10 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::KEEPER_F, symbol(u8"@", Color::PINK));
     Tile::addSymbol(ViewId::RETIRED_KEEPER, symbol(u8"@", Color::BLUE));
     Tile::addSymbol(ViewId::RETIRED_KEEPER_F, symbol(u8"@", Color::LIGHT_BLUE));
+    Tile::addSymbol(ViewId::KEEPER_KNIGHT, symbol(u8"@", Color::YELLOW));
+    Tile::addSymbol(ViewId::KEEPER_KNIGHT_F, symbol(u8"@", Color::YELLOW));
+    Tile::addSymbol(ViewId::RETIRED_KEEPER_KNIGHT, symbol(u8"@", Color::ORANGE));
+    Tile::addSymbol(ViewId::RETIRED_KEEPER_KNIGHT_F, symbol(u8"@", Color::ORANGE));
     Tile::addSymbol(ViewId::UNKNOWN_MONSTER, symbol(u8"?", Color::LIGHT_GREEN));
     Tile::addSymbol(ViewId::ELF, symbol(u8"@", Color::LIGHT_GREEN));
     Tile::addSymbol(ViewId::ELF_WOMAN, symbol(u8"@", Color::LIGHT_GREEN));
