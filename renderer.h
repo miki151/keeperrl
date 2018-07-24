@@ -73,6 +73,7 @@ enum class SpriteId {
 };
 
 class ViewObject;
+class Clock;
 
 struct sth_stash;
 
@@ -115,7 +116,7 @@ class Renderer {
     int texNum;
   };
 
-  Renderer(const string& windowTile, Vec2 nominalTileSize, const DirectoryPath& fontPath, const FilePath& cursorPath,
+  Renderer(Clock*, const string& windowTile, Vec2 nominalTileSize, const DirectoryPath& fontPath, const FilePath& cursorPath,
       const FilePath& clickedCursorPath);
   void setFullscreen(bool);
   void setFullscreenMode(int);
@@ -164,8 +165,8 @@ class Renderer {
   void drawViewObject(Vec2 pos, ViewId, bool useSprite, Vec2 size, Color = Color::WHITE, SpriteOrientation = {});
   void drawViewObject(Vec2 pos, ViewId, Color = Color::WHITE);
   void drawAsciiBackground(ViewId, Rectangle bounds);
-  void drawTile(Vec2 pos, TileCoord coord, double scale = 1, Color = Color::WHITE);
-  void drawTile(Vec2 pos, TileCoord coord, Vec2 size, Color = Color::WHITE, SpriteOrientation orientation = {});
+  void drawTile(Vec2 pos, const vector<TileCoord>&, double scale = 1, Color = Color::WHITE);
+  void drawTile(Vec2 pos, const vector<TileCoord>&, Vec2 size, Color = Color::WHITE, SpriteOrientation orientation = {});
   void setScissor(optional<Rectangle>);
   void addQuad(const Rectangle&, Color);
   Vec2 getSize();
@@ -186,7 +187,7 @@ class Renderer {
 
   void printSystemInfo(ostream&);
 
-  TileCoord getTileCoord(const string&);
+  const vector<TileCoord>& getTileCoord(const string&);
   Vec2 getNominalSize() const;
   vector<Texture> tiles;
 
@@ -200,7 +201,7 @@ class Renderer {
   optional<Texture> textTexture;
   Renderer(const Renderer&);
   Vec2 nominalSize;
-  map<string, TileCoord> tileCoords;
+  map<string, vector<TileCoord>> tileCoords;
   bool pollEventOrFromQueue(Event&);
   void considerMouseMoveEvent(Event&);
   void considerMouseCursorAnim(Event&);
@@ -251,5 +252,6 @@ class Renderer {
     Vec2 size;
   };
   vector<TileDirectory> tileDirectories;
+  Clock* clock;
 };
 

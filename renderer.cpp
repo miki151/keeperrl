@@ -617,8 +617,9 @@ void Renderer::setVsync(bool on) {
   SDL::SDL_GL_SetSwapInterval(on ? 1 : 0);
 }
 
-Renderer::Renderer(const string& title, Vec2 nominal, const DirectoryPath& fontPath, const FilePath& cursorP,
-    const FilePath& clickedCursorP) : nominalSize(nominal), cursorPath(cursorP), clickedCursorPath(clickedCursorP) {
+Renderer::Renderer(Clock* clock, const string& title, Vec2 nominal, const DirectoryPath& fontPath,
+    const FilePath& cursorP, const FilePath& clickedCursorP)
+    : nominalSize(nominal), cursorPath(cursorP), clickedCursorPath(clickedCursorP), clock(clock) {
   CHECK(SDL::SDL_Init(SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_EVENTS) >= 0) << SDL::SDL_GetError();
   SDL::SDL_GL_SetAttribute(SDL::SDL_GL_CONTEXT_MAJOR_VERSION, 2 );
   SDL::SDL_GL_SetAttribute(SDL::SDL_GL_CONTEXT_MINOR_VERSION, 1 );
@@ -637,7 +638,11 @@ Vec2 getOffset(Vec2 sizeDiff, double scale) {
   return Vec2(round(sizeDiff.x * scale * 0.5), round(sizeDiff.y * scale * 0.5));
 }
 
-void Renderer::drawTile(Vec2 pos, TileCoord coord, Vec2 size, Color color, SpriteOrientation orientation) {
+void Renderer::drawTile(Vec2 pos, const vector<TileCoord>& coords, Vec2 size, Color color, SpriteOrientation orientation) {
+  if (coords.empty())
+    return;
+  auto frame = clock->getRealMillis().count() / 60;
+  auto& coord = coords[frame % coords.size()];
   CHECK(coord.texNum >= 0 && coord.texNum < Renderer::tiles.size());
   Texture* tex = &tiles[coord.texNum];
   Vec2 sz = tileDirectories[coord.texNum].size;
@@ -649,7 +654,11 @@ void Renderer::drawTile(Vec2 pos, TileCoord coord, Vec2 size, Color color, Sprit
   drawSprite(pos + off, coordPos, sz, *tex, tileSize, color, orientation);
 }
 
-void Renderer::drawTile(Vec2 pos, TileCoord coord, double scale, Color color) {
+void Renderer::drawTile(Vec2 pos, const vector<TileCoord>& coords, double scale, Color color) {
+  if (coords.empty())
+    return;
+  auto frame = clock->getRealMillis().count() / 60;
+  auto& coord = coords[frame % coords.size()];
   CHECK(coord.texNum >= 0 && coord.texNum < Renderer::tiles.size());
   Vec2 sz = tileDirectories[coord.texNum].size;
   Vec2 off = getOffset(Renderer::nominalSize - sz, scale);
@@ -725,26 +734,35 @@ void Renderer::loadTilesFromDir(const DirectoryPath& path, vector<Texture>& tile
   SDL::SDL_Surface* image = createSurface(setWidth, ((files.size() + rowLength - 1) / rowLength) * size.y);
   SDL::SDL_SetSurfaceBlendMode(image, SDL::SDL_BLENDMODE_NONE);
   CHECK(image) << SDL::SDL_GetError();
+  int frameCount = 0;
   for (int i : All(files)) {
     SDL::SDL_Surface* im = SDL::IMG_Load(files[i].getPath());
     SDL::SDL_SetSurfaceBlendMode(im, SDL::SDL_BLENDMODE_NONE);
     CHECK(im) << files[i] << ": "<< SDL::IMG_GetError();
-    USER_CHECK(im->w == size.x && im->h == size.y) << files[i] << " has wrong size " << im->w << " " << im->h;
-    SDL::SDL_Rect offset;
-    offset.x = size.x * (i % rowLength);
-    offset.y = size.y * (i / rowLength);
-    SDL_BlitSurface(im, nullptr, image, &offset);
+    USER_CHECK((im->w % size.x == 0) && im->h == size.y) << files[i] << " has wrong size " << im->w << " " << im->h;
     string fileName = files[i].getFileName();
     string spriteName = fileName.substr(0, fileName.size() - imageSuf.size());
     CHECK(!tileCoords.count(spriteName)) << "Duplicate name " << spriteName;
-    tileCoords[spriteName] = {{i % rowLength, i / rowLength}, int(tiles.size())};
+    for (int frame : Range(im->w / size.x)) {
+      SDL::SDL_Rect dest;
+      dest.x = size.x * (frameCount % rowLength);
+      dest.y = size.y * (frameCount / rowLength);
+      SDL::SDL_Rect src;
+      src.x = frame * size.x;
+      src.y = 0;
+      src.w = size.x;
+      src.h = size.y;
+      SDL_BlitSurface(im, &src, image, &dest);
+      tileCoords[spriteName].push_back({{frameCount % rowLength, frameCount / rowLength}, int(tiles.size())});
+      ++frameCount;
+    }
     SDL::SDL_FreeSurface(im);
   }
   tiles.push_back(Texture(image));
   SDL::SDL_FreeSurface(image);
 }
 
-Renderer::TileCoord Renderer::getTileCoord(const string& name) {
+const vector<Renderer::TileCoord>& Renderer::getTileCoord(const string& name) {
   USER_CHECK(tileCoords.count(name)) << "Tile not found: '" << name << "'. Please make sure all game data is in place.";
   return tileCoords.at(name);
 }

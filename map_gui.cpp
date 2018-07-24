@@ -565,8 +565,7 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
     }
     if (object.layer() == ViewLayer::CREATURE || tile.moveUp)
       move.y = -4* size.y / renderer.getNominalSize().y;
-    if (auto background = tile.getBackgroundCoord())
-      renderer.drawTile(pos, *background, size, color);
+    renderer.drawTile(pos, tile.getBackgroundCoord(), size, color);
     move += movement;
     if (mirrorSprite(id))
       renderer.drawTile(pos + move, tile.getSpriteCoord(dirs), size, color,
@@ -577,7 +576,7 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
       renderer.drawTile(pos + move, renderer.getTileCoord("portal_inside"), size, getPortalColor(*version));
     if (tile.hasAnyCorners()) {
       for (auto coord : tile.getCornerCoords(dirs))
-        renderer.drawTile(pos + move, coord, size, color);
+        renderer.drawTile(pos + move, {coord}, size, color);
     }
     static auto shortShadow = renderer.getTileCoord("short_shadow");
     if (object.layer() == ViewLayer::FLOOR_BACKGROUND && shadowed.count(tilePos))
@@ -695,10 +694,8 @@ void MapGui::renderExtraBorders(Renderer& renderer, milliseconds currentTimeReal
         for (Vec2 v : Vec2::directions4())
           if ((wpos + v).inRectangle(levelBounds) && connectionMap[wpos + v].contains(id))
             dirs.insert(v.getCardinalDir());
-        if (auto coord = tile.getExtraBorderCoord(dirs)) {
-          Vec2 pos = projectOnScreen(wpos);
-          renderer.drawTile(pos, *coord, layout->getSquareSize());
-        }
+        Vec2 pos = projectOnScreen(wpos);
+        renderer.drawTile(pos, tile.getExtraBorderCoord(dirs), layout->getSquareSize());
       }
     }
 }

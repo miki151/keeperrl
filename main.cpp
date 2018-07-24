@@ -331,7 +331,9 @@ static int keeperMain(po::parser& commandLineFlags) {
 #else
     uploadUrl = "http://localhost/~michal/" + serverVersion;
 #endif
+  Clock clock;
   Renderer renderer(
+      &clock,
       "KeeperRL",
       Vec2(24, 24),
       contribDataPath,
@@ -350,7 +352,6 @@ static int keeperMain(po::parser& commandLineFlags) {
   SoundLibrary* soundLibrary = nullptr;
   AudioDevice audioDevice;
   optional<string> audioError = audioDevice.initialize();
-  Clock clock;
   KeybindingMap keybindingMap(userPath.file("keybindings.txt"));
   Jukebox jukebox(
       audioDevice,

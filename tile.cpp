@@ -30,7 +30,7 @@ Tile Tile::fromString(const string& ch, Color color, bool symbol) {
   return ret;
 }
 
-Tile::Tile(TileCoord c) : color{255, 255, 255}, tileCoord(c) {
+Tile::Tile(const vector<TileCoord>& c) : color{255, 255, 255}, tileCoord(c) {
 }
 
 Tile Tile::setRoundShadow() {
@@ -49,7 +49,7 @@ Tile Tile::setWallShadow() {
   return *this;
 }
 
-Tile Tile::byCoord(TileCoord c) {
+Tile Tile::byCoord(const vector<TileCoord>& c) {
   return Tile(c);
 }
 
@@ -58,7 +58,7 @@ Tile Tile::setFloorBorders() {
   return *this;
 }
 
-Tile Tile::addConnection(DirSet dirs, TileCoord coord) {
+Tile Tile::addConnection(DirSet dirs, vector<TileCoord> coord) {
   connections[dirs] = coord;
   if (dirs & (~connectionsMask))
     connectionsMask = DirSet::fullSet();
@@ -66,13 +66,13 @@ Tile Tile::addConnection(DirSet dirs, TileCoord coord) {
   return *this;
 }
 
-Tile Tile::addOption(Dir d, TileCoord coord) {
+Tile Tile::addOption(Dir d, vector<TileCoord> coord) {
   connectionOption = make_pair(d, coord);
   anyConnections = true;
   return *this;
 }
 
-Tile Tile::addBackground(TileCoord coord) {
+Tile Tile::addBackground(vector<TileCoord> coord) {
   backgroundCoord = coord;
   return *this;
 }
@@ -82,7 +82,7 @@ Tile Tile::setColor(Color col) {
   return *this;
 }
 
-Tile Tile::addExtraBorder(DirSet dir, TileCoord coord) {
+Tile Tile::addExtraBorder(DirSet dir, const vector<TileCoord>& coord) {
   extraBorders[dir] = coord;
   return *this;
 }
@@ -93,15 +93,6 @@ Tile Tile::addExtraBorderId(ViewId id) {
   return *this;
 }
 
-Tile Tile::addHighlight(TileCoord coord) {
-  highlightCoord = coord;
-  return *this;
-}
-
-optional<Tile::TileCoord> Tile::getHighlightCoord() const {
-  return highlightCoord;
-}
-
 const EnumSet<ViewId>& Tile::getExtraBorderIds() const {
   return extraBorderIds;
 }
@@ -110,7 +101,7 @@ bool Tile::hasExtraBorders() const {
   return anyExtraBorders;
 }
 
-optional<Tile::TileCoord> Tile::getExtraBorderCoord(DirSet c) const {
+const vector<Tile::TileCoord>& Tile::getExtraBorderCoord(DirSet c) const {
   return extraBorders[c];
 }
 
@@ -120,15 +111,15 @@ Tile Tile::setTranslucent(double v) {
 }
 
 bool Tile::hasSpriteCoord() const {
-  return !!tileCoord;
+  return !tileCoord.empty();
 }
 
-Tile::TileCoord Tile::getSpriteCoord() const {
-  CHECK(tileCoord);
-  return *tileCoord;
+const vector<Tile::TileCoord>& Tile::getSpriteCoord() const {
+  CHECK(!tileCoord.empty());
+  return tileCoord;
 }
 
-optional<Tile::TileCoord> Tile::getBackgroundCoord() const {
+const vector<Tile::TileCoord>& Tile::getBackgroundCoord() const {
   return backgroundCoord;
 }
 
@@ -136,21 +127,21 @@ bool Tile::hasAnyConnections() const {
   return anyConnections;
 }
 
-Tile::TileCoord Tile::getSpriteCoord(DirSet c) const {
+const vector<Tile::TileCoord>& Tile::getSpriteCoord(DirSet c) const {
   if (connectionOption) {
     if (c.has(connectionOption->first))
       return connectionOption->second;
     else {
-      CHECK(tileCoord);
-      return *tileCoord;
+      CHECK(!tileCoord.empty());
+      return tileCoord;
     }
   }
   c = c & connectionsMask;
-  if (connections[c])
-    return *connections[c];
+  if (!connections[c].empty())
+    return connections[c];
   else {
-    CHECK(tileCoord);
-    return *tileCoord;
+    CHECK(!tileCoord.empty());
+    return tileCoord;
   }
 }
 
@@ -171,7 +162,11 @@ class TileCoordLookup {
   TileCoordLookup(Renderer& r) : renderer(r) {}
 
   void loadTiles() {
-    genTiles();
+    genTiles1();
+    genTiles2();
+    genTiles3();
+    genTiles4();
+    genTiles5();
     bool bad = false;
     for (ViewId id : ENUM_ALL(ViewId))
       if (!tiles[id]) {
@@ -182,7 +177,11 @@ class TileCoordLookup {
   }
 
   void loadUnicode() {
-    genSymbols();
+    genSymbols1();
+    genSymbols2();
+    genSymbols3();
+    genSymbols4();
+    genSymbols5();
     bool bad = false;
     for (ViewId id : ENUM_ALL(ViewId))
       if (!symbols[id]) {
@@ -192,7 +191,7 @@ class TileCoordLookup {
     CHECK(!bad);
   }
 
-  Tile::TileCoord byName(const string& s) {
+  const vector<Tile::TileCoord>& byName(const string& s) {
     return renderer.getTileCoord(s);
   }
 
@@ -299,7 +298,7 @@ class TileCoordLookup {
       .addExtraBorder({Dir::W}, byName(prefix + "w"));
   }
 
-  void genTiles() {
+  void genTiles1() {
     Tile::addTile(ViewId::UNKNOWN_MONSTER, sprite("unknown"));
     Tile::addTile(ViewId::DIG_MARK, sprite("dig_mark"));
     Tile::addTile(ViewId::DIG_MARK2, sprite("dig_mark2"));
@@ -311,10 +310,8 @@ class TileCoordLookup {
     Tile::addTile(ViewId::DEMON_LORD, sprite("demon_lord"));
     Tile::addTile(ViewId::VAMPIRE, sprite("vampire"));
     Tile::addTile(ViewId::FALLEN_TREE, sprite("treecut"));
-    Tile::addTile(ViewId::DECID_TREE, sprite("tree2").addHighlight(byName("tree2_mark"))
-        .setRoundShadow());
-    Tile::addTile(ViewId::CANIF_TREE, sprite("tree1").addHighlight(byName("tree1_mark"))
-        .setRoundShadow());
+    Tile::addTile(ViewId::DECID_TREE, sprite("tree2").setRoundShadow());
+    Tile::addTile(ViewId::CANIF_TREE, sprite("tree1").setRoundShadow());
     Tile::addTile(ViewId::TREE_TRUNK, sprite("treecut"));
     Tile::addTile(ViewId::UNICORN, sprite("unicorn"));
     Tile::addTile(ViewId::BURNT_TREE, sprite("treeburnt")
@@ -347,6 +344,8 @@ class TileCoordLookup {
     Tile::addTile(ViewId::PRISONER, sprite("prisoner"));
     Tile::addTile(ViewId::OGRE, sprite("troll"));
     Tile::addTile(ViewId::CHICKEN, sprite("hen"));
+  }
+  void genTiles2() {
     Tile::addTile(ViewId::GNOME, sprite("gnome"));
     Tile::addTile(ViewId::GNOME_BOSS, sprite("gnomeboss"));
     Tile::addTile(ViewId::DWARF, sprite("dwarf"));
@@ -396,6 +395,8 @@ class TileCoordLookup {
     Tile::addTile(ViewId::MAP_MOUNTAIN1, sprite("map_mountain1"));
     Tile::addTile(ViewId::MAP_MOUNTAIN2, sprite("map_mountain2"));
     Tile::addTile(ViewId::MAP_MOUNTAIN3, sprite("map_mountain3"));
+  }
+  void genTiles3() {
     Tile::addTile(ViewId::GOLD_ORE, getMountainTile(sprite("gold_ore")
           .addBackground(byName("mountain_ted2")).setWallShadow(), "mountain"));
     Tile::addTile(ViewId::IRON_ORE, getMountainTile(sprite("iron_ore")
@@ -494,13 +495,15 @@ class TileCoordLookup {
     Tile::addTile(ViewId::ANT_SOLDIER, sprite("antw"));
     Tile::addTile(ViewId::ANT_QUEEN, sprite("antq"));
     Tile::addTile(ViewId::SNAKE, sprite("snake"));
+  }
+  void genTiles4() {
     Tile::addTile(ViewId::VULTURE, sprite("vulture"));
     Tile::addTile(ViewId::RAVEN, sprite("raven"));
     Tile::addTile(ViewId::BODY_PART, sprite("corpse4"));
     Tile::addTile(ViewId::BONE, sprite("bone"));
-    Tile::addTile(ViewId::BUSH, sprite("bush").addHighlight(byName("bush_mark")));
-    Tile::addTile(ViewId::WATER, getWaterTile("waternesw", "water"));
-    Tile::addTile(ViewId::MAGMA, getWaterTile("magmanesw", "magma"));
+    Tile::addTile(ViewId::BUSH, sprite("bush"));
+    Tile::addTile(ViewId::WATER, getWaterTile("wateranim", "water"));
+    Tile::addTile(ViewId::MAGMA, getWaterTile("magmaanim", "magma"));
     Tile::addTile(ViewId::WOOD_DOOR, sprite("door_wood").setWallShadow());
     Tile::addTile(ViewId::IRON_DOOR, sprite("door_iron").setWallShadow());
     Tile::addTile(ViewId::ADA_DOOR, sprite("door_steel").setWallShadow());
@@ -583,6 +586,8 @@ class TileCoordLookup {
     Tile::addTile(ViewId::TORCH, sprite("torch"));
     Tile::addTile(ViewId::STANDING_TORCH, sprite("standing_torch").setMoveUp());
     Tile::addTile(ViewId::ALTAR, sprite("altar").setRoundShadow());
+  }
+  void genTiles5() {
     Tile::addTile(ViewId::CREATURE_ALTAR, sprite("altar2").setRoundShadow());
     Tile::addTile(ViewId::TORTURE_TABLE, sprite("torturedeco").setRoundShadow());
     Tile::addTile(ViewId::IMPALED_HEAD, sprite("impaledhead").setRoundShadow());
@@ -673,14 +678,13 @@ class TileCoordLookup {
 #else
     Tile::addTile(ViewId::TUTORIAL_ENTRANCE, sprite("empty"));
 #endif
-
   }
 
   Tile symbol(const string& s, Color id, bool symbol = false) {
     return Tile::fromString(s, id, symbol);
   }
 
-  void genSymbols() {
+  void genSymbols1() {
     Tile::addSymbol(ViewId::DEMON_DWELLER, symbol(u8"U", Color::PURPLE));
     Tile::addSymbol(ViewId::DEMON_LORD, symbol(u8"U", Color::YELLOW));
     Tile::addSymbol(ViewId::EMPTY, symbol(u8" ", Color::BLACK));
@@ -747,6 +751,8 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::SAND, symbol(u8".", Color::YELLOW));
     Tile::addSymbol(ViewId::MUD, symbol(u8"𝃰", Color::BROWN, true));
     Tile::addSymbol(ViewId::GRASS, symbol(u8"𝃰", Color::GREEN, true));
+  }
+  void genSymbols2() {
     Tile::addSymbol(ViewId::CROPS, symbol(u8"𝃰", Color::YELLOW, true));
     Tile::addSymbol(ViewId::CROPS2, symbol(u8"𝃰", Color::YELLOW, true));
     Tile::addSymbol(ViewId::CASTLE_WALL, symbol(u8"#", Color::LIGHT_GRAY));
@@ -818,6 +824,8 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::VAMPIRE, symbol(u8"V", Color::DARK_GRAY));
     Tile::addSymbol(ViewId::VAMPIRE_LORD, symbol(u8"V", Color::PURPLE));
     Tile::addSymbol(ViewId::MUMMY, symbol(u8"Z", Color::YELLOW));
+  }
+  void genSymbols3() {
     Tile::addSymbol(ViewId::JACKAL, symbol(u8"d", Color::LIGHT_BROWN));
     Tile::addSymbol(ViewId::DEER, symbol(u8"R", Color::DARK_BROWN));
     Tile::addSymbol(ViewId::HORSE, symbol(u8"H", Color::LIGHT_BROWN));
@@ -885,6 +893,8 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::STUN_RAY, symbol(u8"*", Color::LIGHT_GREEN));
     Tile::addSymbol(ViewId::SCROLL, symbol(u8"?", Color::WHITE));
     Tile::addSymbol(ViewId::AMULET1, symbol(u8"\"", Color::YELLOW));
+  }
+  void genSymbols4() {
     Tile::addSymbol(ViewId::AMULET2, symbol(u8"\"", Color::YELLOW));
     Tile::addSymbol(ViewId::AMULET3, symbol(u8"\"", Color::YELLOW));
     Tile::addSymbol(ViewId::AMULET4, symbol(u8"\"", Color::YELLOW));
@@ -949,6 +959,8 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::TRAINING_IRON, symbol(u8"‡", Color::LIGHT_GRAY, true));
     Tile::addSymbol(ViewId::TRAINING_ADA, symbol(u8"‡", Color::LIGHT_BLUE, true));
     Tile::addSymbol(ViewId::ARCHERY_RANGE, symbol(u8"⌾", Color::LIGHT_BLUE, true));
+  }
+  void genSymbols5() {
     Tile::addSymbol(ViewId::DEMON_SHRINE, symbol(u8"Ω", Color::PURPLE, true));
     Tile::addSymbol(ViewId::BOOKCASE_WOOD, symbol(u8"▤", Color::BROWN, true));
     Tile::addSymbol(ViewId::BOOKCASE_IRON, symbol(u8"▤", Color::LIGHT_GRAY, true));
@@ -1067,11 +1079,11 @@ Color Tile::getColor(const ViewObject& object) {
   return color;
 }
 
-Tile Tile::addCorner(DirSet corner, DirSet borders, TileCoord coord) {
+Tile Tile::addCorner(DirSet corner, DirSet borders, vector<TileCoord> coord) {
   anyCorners = true;
   for (DirSet dirs : Range(0, 255))
     if ((dirs & corner) == borders)
-      corners[dirs].push_back(coord);
+      corners[dirs].push_back(coord.getOnlyElement());
   return *this;
 }
 
