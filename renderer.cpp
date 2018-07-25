@@ -731,7 +731,7 @@ void Renderer::loadTilesFromDir(const DirectoryPath& path, vector<Texture>& tile
   const static string imageSuf = ".png";
   auto files = path.getFiles().filter([](const FilePath& f) { return f.hasSuffix(imageSuf);});
   int rowLength = setWidth / size.x;
-  SDL::SDL_Surface* image = createSurface(setWidth, ((files.size() + rowLength - 1) / rowLength) * size.y);
+  SDL::SDL_Surface* image = createSurface(setWidth, setWidth);
   SDL::SDL_SetSurfaceBlendMode(image, SDL::SDL_BLENDMODE_NONE);
   CHECK(image) << SDL::SDL_GetError();
   int frameCount = 0;
@@ -745,15 +745,19 @@ void Renderer::loadTilesFromDir(const DirectoryPath& path, vector<Texture>& tile
     CHECK(!tileCoords.count(spriteName)) << "Duplicate name " << spriteName;
     for (int frame : Range(im->w / size.x)) {
       SDL::SDL_Rect dest;
-      dest.x = size.x * (frameCount % rowLength);
-      dest.y = size.y * (frameCount / rowLength);
+      int posX = frameCount % rowLength;
+      int posY = frameCount / rowLength;
+      dest.x = size.x * posX;
+      dest.y = size.y * posY;
+      CHECK(dest.x < setWidth && dest.y < setWidth);
       SDL::SDL_Rect src;
       src.x = frame * size.x;
       src.y = 0;
       src.w = size.x;
       src.h = size.y;
       SDL_BlitSurface(im, &src, image, &dest);
-      tileCoords[spriteName].push_back({{frameCount % rowLength, frameCount / rowLength}, int(tiles.size())});
+      tileCoords[spriteName].push_back({{posX, posY}, int(tiles.size())});
+      INFO << "Loading tile sprite " << fileName << " at " << posX << "," << posY;
       ++frameCount;
     }
     SDL::SDL_FreeSurface(im);
