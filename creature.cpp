@@ -1284,6 +1284,10 @@ CreatureAction Creature::torture(WCreature other) const {
 void Creature::retire() {
   if (auto id = attributes->getRetiredViewId())
     modViewObject().setId(*id);
+  for (LastingEffect effect : ENUM_ALL(LastingEffect))
+    if (attributes->considerTimeout(effect, GlobalTime(1000000)))
+      LastingEffects::onTimedOut(this, effect, false);
+  getAttributes().getSpellMap().setAllReady();
 }
 
 void Creature::increaseExpLevel(ExperienceType type, double increase) {
