@@ -191,8 +191,16 @@ void VillageControl::considerWelcomeMessage() {
 }
 
 bool VillageControl::canPerformAttack(bool currentlyActive) {
-  return !currentlyActive ||
-      collective->getModel() == collective->getGame()->getMainModel().get();
+  // don't attack from remote site when player is currently here
+  if (currentlyActive && collective->getModel() != collective->getGame()->getMainModel().get())
+    return false;
+  // don't attack during the day when having undead minions
+  auto& sunlightInfo = collective->getGame()->getSunlightInfo();
+  if (sunlightInfo.getState() != SunlightState::NIGHT || sunlightInfo.getTimeRemaining() < 300_visible)
+    for (auto c : collective->getCreatures(MinionTrait::FIGHTER))
+      if (c->isAffected(LastingEffect::SUNLIGHT_VULNERABLE))
+        return false;
+  return true;
 }
 
 void VillageControl::acceptImmigration() {
