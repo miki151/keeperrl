@@ -459,10 +459,6 @@ const MapMemory& Player::getMemory() const {
 
 void Player::sleeping() {
   PROFILE;
-  if (creature->isAffected(LastingEffect::HALLU))
-    ViewObject::setHallu(true);
-  else
-    ViewObject::setHallu(false);
   MEASURE(
       getView()->updateView(this, false),
       "level render time");
@@ -576,10 +572,6 @@ void Player::makeMove() {
     subscribeTo(getModel());
   if (adventurer)
     considerAdventurerMusic();
-  if (creature->isAffected(LastingEffect::HALLU))
-    ViewObject::setHallu(true);
-  else
-    ViewObject::setHallu(false);
   //if (updateView) { Check disabled so that we update in every frame to avoid some square refreshing issues.
     updateView = false;
     for (Position pos : creature->getVisibleTiles()) {
@@ -897,9 +889,9 @@ void Player::getViewIndex(Vec2 pos, ViewIndex& index) const {
   }
   if (unknownLocations->contains(position))
     index.insert(ViewObject(ViewId::UNKNOWN_MONSTER, ViewLayer::TORCH2, "Surprise"));
- /* if (pos == creature->getPosition() && index.hasObject(ViewLayer::CREATURE))
-      index.getObject(ViewLayer::CREATURE).setModifier(ViewObject::Modifier::TEAM_LEADER_HIGHLIGHT);*/
-
+  if (position != creature->getPosition() && creature->isAffected(LastingEffect::HALLU))
+    for (auto& object : index.getAllObjects())
+      object.setId(ViewObject::shuffle(object.id(), Random));
 }
 
 void Player::onKilled(WConstCreature attacker) {

@@ -277,7 +277,6 @@ void PlayerControl::render(View* view) {
     initialize();
   }
   if (getControlled().empty()) {
-    ViewObject::setHallu(false);
     view->updateView(this, false);
   }
   if (!introText.empty() && getGame()->getOptions()->getBoolValue(OptionId::HINTS)) {

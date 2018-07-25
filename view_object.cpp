@@ -276,7 +276,7 @@ ViewLayer ViewObject::layer() const {
   return viewLayer;
 }
 
-static vector<ViewId> creatureIds {
+static EnumSet<ViewId> creatureIds {
   ViewId::PLAYER,
   ViewId::KEEPER,
   ViewId::RETIRED_KEEPER,
@@ -304,6 +304,7 @@ static vector<ViewId> creatureIds {
   ViewId::ARCHER,
   ViewId::UNICORN,
   ViewId::PESEANT,
+  ViewId::PESEANT_WOMAN,
   ViewId::CHILD,
   ViewId::SHAMAN,
   ViewId::WARRIOR,
@@ -361,9 +362,10 @@ static vector<ViewId> creatureIds {
   ViewId::SPECIAL_HMGW,
   ViewId::CANIF_TREE,
   ViewId::DECID_TREE,
+  ViewId::BUSH,
 };
 
-static vector<ViewId> itemIds {
+static EnumSet<ViewId> itemIds {
   ViewId::BODY_PART,
   ViewId::BONE,
   ViewId::SPEAR,
@@ -410,26 +412,21 @@ static vector<ViewId> itemIds {
   ViewId::ROCK,
   ViewId::IRON_ROCK,
   ViewId::WOOD_PLANK,
-  ViewId::MUSHROOM1, 
+  ViewId::MUSHROOM1,
   ViewId::MUSHROOM2,
   ViewId::MUSHROOM3,
   ViewId::MUSHROOM4,
   ViewId::MUSHROOM5,
-  ViewId::MUSHROOM6, 
-  ViewId::MUSHROOM7 
+  ViewId::MUSHROOM6,
+  ViewId::MUSHROOM7
 };
 
-static bool hallu = false;
-
-vector<ViewId> shuffledCreatures;
-vector<ViewId> shuffledItems;
-
-void ViewObject::setHallu(bool b) {
-  if (!hallu && b) {
-    shuffledCreatures = Random.permutation(creatureIds);
-    shuffledItems = Random.permutation(itemIds);
-  }
-  hallu = b;
+ViewId ViewObject::shuffle(ViewId id, RandomGen& random) {
+  if (itemIds.contains(id))
+    return random.choose(itemIds);
+  if (creatureIds.contains(id))
+    return random.choose(creatureIds);
+  return id;
 }
 
 void ViewObject::setId(ViewId id) {
@@ -461,12 +458,6 @@ const string& ViewObject::getBadAdjectives() const {
 }
 
 ViewId ViewObject::id() const {
-  if (hallu) {
-    if (auto elem = creatureIds.findElement(resource_id))
-      return shuffledCreatures[*elem];
-    if (auto elem = itemIds.findElement(resource_id))
-      return shuffledItems[*elem];
-  }
   return resource_id;
 }
 

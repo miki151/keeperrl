@@ -98,6 +98,10 @@ void ViewIndex::setHiddenId(ViewId id) {
   hiddenId = id;
 }
 
+vector<ViewObject>& ViewIndex::getAllObjects() {
+  return objects;
+}
+
 const EnumMap<HighlightType, double>& ViewIndex::getHighlightMap() const {
   return highlight;
 }

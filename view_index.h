@@ -64,6 +64,7 @@ class ViewIndex {
   // If the tile is not visible, we still need the id of the floor tile to render connections properly.
   optional<ViewId> getHiddenId() const;
   void setHiddenId(ViewId);
+  vector<ViewObject>& getAllObjects();
 
   void setHighlight(HighlightType, double amount = 1);
 

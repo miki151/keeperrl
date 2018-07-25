@@ -42,8 +42,8 @@ class ViewObject {
   EnumSet<CreatureStatus>& getCreatureStatus();
   const EnumSet<CreatureStatus>& getCreatureStatus() const;
 
-  static void setHallu(bool);
-  
+  static ViewId shuffle(ViewId, RandomGen&);
+
   ViewObject& setAttachmentDir(Dir);
   optional<Dir> getAttachmentDir() const;
 
