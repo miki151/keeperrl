@@ -56,6 +56,7 @@
 #include "creature_factory.h"
 #include "time_queue.h"
 #include "unknown_locations.h"
+#include "furniture_click.h"
 
 template <class Archive>
 void Player::serialize(Archive& ar, const unsigned int) {
@@ -514,7 +515,10 @@ void Player::creatureClickAction(Position pos, bool extended) {
     }
     else if (!commands.empty() && commands[0].allowAuto)
       commands[0].perform(this);
-  }
+  } else
+  if (auto furniture = pos.getFurniture(FurnitureLayer::MIDDLE))
+    if (furniture->getClickType() && furniture->getTribe() == creature->getTribeId())
+      furniture->click(pos);
 }
 
 void Player::retireMessages() {
@@ -758,22 +762,23 @@ static string getForceMovementQuestion(Position pos, WConstCreature creature) {
 }
 
 void Player::moveAction(Vec2 dir) {
+  auto dirPos = creature->getPosition().plus(dir);
   if (tryToPerform(creature->move(dir)))
     return;
   if (auto action = creature->forceMove(dir)) {
-    string nextQuestion = getForceMovementQuestion(creature->getPosition().plus(dir), creature);
+    string nextQuestion = getForceMovementQuestion(dirPos, creature);
     string hereQuestion = getForceMovementQuestion(creature->getPosition(), creature);
     if (hereQuestion == nextQuestion || getView()->yesOrNoPrompt(nextQuestion, true))
       action.perform(creature);
     return;
   }
-  if (auto other = creature->getPosition().plus(dir).getCreature()) {
+  if (auto other = dirPos.getCreature()) {
     auto actions = getOtherCreatureCommands(other);
     if (!actions.empty() && actions[0].allowAuto)
       actions[0].perform(this);
     return;
   }
-  if (!creature->getPosition().plus(dir).canEnterEmpty(creature))
+  if (!dirPos.canEnterEmpty(creature))
     tryToPerform(creature->destroy(dir, DestroyAction::Type::BASH));
 }
 
@@ -860,6 +865,13 @@ void Player::getViewIndex(Vec2 pos, ViewIndex& index) const {
     for (auto col : getGame()->getCollectives())
       if (col->getTerritory().contains(position))
         index.setHighlight(HighlightType::RECT_SELECTION);
+  if (auto furniture = position.getFurniture(FurnitureLayer::MIDDLE)) {
+    if (auto clickType = furniture->getClickType())
+      if (furniture->getTribe() == creature->getTribeId())
+        if (auto& obj = furniture->getViewObject())
+          if (index.hasObject(obj->layer()))
+            index.getObject(obj->layer()).setExtendedActions({FurnitureClick::getText(*clickType, position, furniture)});
+  }
   if (WCreature c = position.getCreature()) {
     if ((canSee && creature->canSeeInPosition(c)) || c == creature ||
         creature->canSeeOutsidePosition(c)) {

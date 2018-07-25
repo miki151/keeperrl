@@ -197,6 +197,7 @@ void WindowView::mapContinuousLeftClickFun(Vec2 pos) {
 }
 
 void WindowView::mapRightClickFun(Vec2 pos) {
+  inputQueue.push(UserInput(UserInputId::CREATURE_MAP_CLICK_EXTENDED, pos));
   switch (gameInfo.infoType) {
     case GameInfo::InfoType::SPECTATOR:
     case GameInfo::InfoType::BAND:
