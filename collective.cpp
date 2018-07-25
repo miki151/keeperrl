@@ -162,8 +162,8 @@ void Collective::updateCreatureStatus(WCreature c) {
 
 void Collective::addCreature(WCreature c, EnumSet<MinionTrait> traits) {
   if (c->getGlobalTime()) { // only do this if creature already exists on the map
-    c->addEffect(LastingEffect::RESTED, 500_visible);
-    c->addEffect(LastingEffect::SATIATED, 500_visible);
+    c->addEffect(LastingEffect::RESTED, 500_visible, false);
+    c->addEffect(LastingEffect::SATIATED, 500_visible, false);
   }
   if (c->isAffected(LastingEffect::SUMMONED)) {
     traits.insert(MinionTrait::NO_LIMIT);
