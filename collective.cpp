@@ -577,6 +577,7 @@ void Collective::onEvent(const GameEvent& event) {
               .setPosition(victim->getPosition()));
           if (isConquered() && fighterStunned)
             getGame()->addEvent(EventInfo::ConqueredEnemy{this});
+          freeFromTask(victim);
         }
       },
       [&](const TrapTriggered& info) {
