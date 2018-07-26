@@ -1477,6 +1477,12 @@ void PlayerControl::onEvent(const GameEvent& event) {
           }
         stunnedCreatures.push_back({info.victim, nullptr});
       },
+      [&](const CreatureKilled& info) {
+        auto pos = info.victim->getPosition();
+        if (canSee(pos))
+          if (auto anim = info.victim->getBody().getDeathAnimation())
+            getView()->animation(pos.getCoord(), *anim);
+      },
       [&](const FurnitureDestroyed& info) {
         if (info.type == FurnitureType::EYEBALL)
           visibilityMap->removeEyeball(info.position);

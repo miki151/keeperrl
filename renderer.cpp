@@ -390,6 +390,16 @@ static Vec2 rotate(Vec2 pos, Vec2 origin, double x, double y) {
   return origin + Vec2(v.x * x - v.y * y, v.x * y + v.y * x);
 }
 
+void Renderer::drawAnimation(AnimationId id, Vec2 pos, double state, Vec2 squareSize) {
+  if (auto& animInfo = animations[id]) {
+    int zoomLevel = squareSize.y / nominalSize.y;
+    int frame = int(animInfo->numFrames * state);
+    int width = animInfo->tex.getSize().x / animInfo->numFrames;
+    Vec2 size(width, animInfo->tex.getSize().y);
+    drawSprite(pos - size * zoomLevel / 2, Vec2(frame * width, 0), size, animInfo->tex, size * zoomLevel);
+  }
+}
+
 void Renderer::drawSprite(Vec2 pos, Vec2 source, Vec2 size, const Texture& t,
     optional<Vec2> targetSize, optional<Color> color, SpriteOrientation orientation) {
   Vec2 a = pos;
@@ -641,7 +651,7 @@ Vec2 getOffset(Vec2 sizeDiff, double scale) {
 void Renderer::drawTile(Vec2 pos, const vector<TileCoord>& coords, Vec2 size, Color color, SpriteOrientation orientation) {
   if (coords.empty())
     return;
-  auto frame = clock->getRealMillis().count() / 60;
+  auto frame = clock->getRealMillis().count() / 100;
   auto& coord = coords[frame % coords.size()];
   CHECK(coord.texNum >= 0 && coord.texNum < Renderer::tiles.size());
   Texture* tex = &tiles[coord.texNum];
@@ -657,7 +667,7 @@ void Renderer::drawTile(Vec2 pos, const vector<TileCoord>& coords, Vec2 size, Co
 void Renderer::drawTile(Vec2 pos, const vector<TileCoord>& coords, double scale, Color color) {
   if (coords.empty())
     return;
-  auto frame = clock->getRealMillis().count() / 60;
+  auto frame = clock->getRealMillis().count() / 100;
   auto& coord = coords[frame % coords.size()];
   CHECK(coord.texNum >= 0 && coord.texNum < Renderer::tiles.size());
   Vec2 sz = tileDirectories[coord.texNum].size;
@@ -714,11 +724,17 @@ void Renderer::loadTiles() {
   tiles.clear();
   tileCoords.clear();
   for (auto& dir : tileDirectories)
-    loadTilesFromDir(dir.path, tiles, dir.size, 720);
+    loadTilesFromDir(dir.path, dir.size, 720);
+  if (animationDirectory)
+    animations[AnimationId::DEATH] = AnimationInfo { Texture(animationDirectory->file("death.png")), 8};
 }
 
 void Renderer::addTilesDirectory(const DirectoryPath& path, Vec2 size) {
   tileDirectories.push_back({path, size});
+}
+
+void Renderer::setAnimationsDirectory(const DirectoryPath& path) {
+  animationDirectory = path;
 }
 
 SDL::SDL_Surface* Renderer::createSurface(int w, int h) {
@@ -727,7 +743,7 @@ SDL::SDL_Surface* Renderer::createSurface(int w, int h) {
   return ret;
 }
 
-void Renderer::loadTilesFromDir(const DirectoryPath& path, vector<Texture>& tiles, Vec2 size, int setWidth) {
+void Renderer::loadTilesFromDir(const DirectoryPath& path, Vec2 size, int setWidth) {
   const static string imageSuf = ".png";
   auto files = path.getFiles().filter([](const FilePath& f) { return f.hasSuffix(imageSuf);});
   int rowLength = setWidth / size.x;

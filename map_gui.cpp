@@ -823,7 +823,8 @@ void MapGui::renderAnimations(Renderer& renderer, milliseconds currentTimeReal) 
     elem.animation->render(
         renderer,
         getBounds(),
-        projectOnScreen(elem.position),
+        projectOnScreen(elem.position) + layout->getSquareSize() / 2,
+        layout->getSquareSize(),
         currentTimeReal);
 }
 

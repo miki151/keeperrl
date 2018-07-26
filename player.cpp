@@ -92,11 +92,14 @@ void Player::onEvent(const GameEvent& event) {
       },
       [&](const Explosion& info) {
         if (creature->getPosition().isSameLevel(info.pos)) {
-          if (creature->canSee(info.pos))
-            getView()->animation(info.pos.getCoord(), AnimationId::EXPLOSION);
-          else
-            privateMessage("BOOM!");
+          privateMessage("BOOM!");
         }
+      },
+      [&](const CreatureKilled& info) {
+        auto pos = info.victim->getPosition();
+        if (creature->canSee(pos))
+          if (auto anim = info.victim->getBody().getDeathAnimation())
+            getView()->animation(pos.getCoord(), *anim);
       },
       [&](const Alarm& info) {
         if (!info.silent) {

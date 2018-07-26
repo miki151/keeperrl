@@ -69,6 +69,7 @@ static void initializeRendererTiles(Renderer& r, const DirectoryPath& path) {
   r.addTilesDirectory(path.subdirectory("orig16"), Vec2(16, 16));
   r.addTilesDirectory(path.subdirectory("orig24"), Vec2(24, 24));
   r.addTilesDirectory(path.subdirectory("orig30"), Vec2(30, 30));
+  r.setAnimationsDirectory(path.subdirectory("animations"));
   r.loadTiles();
 }
 

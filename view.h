@@ -19,6 +19,7 @@
 #include "debug.h"
 #include "user_input.h"
 #include "player_role_choice.h"
+#include "animation_id.h"
 
 class CreatureView;
 class Level;
@@ -252,8 +253,3 @@ class View {
 
   virtual void logMessage(const string&) = 0;
 };
-
-enum class AnimationId {
-  EXPLOSION,
-};
-

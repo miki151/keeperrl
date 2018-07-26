@@ -99,6 +99,7 @@ class Body {
   int numBodyParts(BodyPart) const;
   void getBadAdjectives(vector<AdjectiveInfo>&) const;
   optional<Sound> getDeathSound() const;
+  optional<AnimationId> getDeathAnimation() const;
   void injureBodyPart(WCreature, BodyPart, bool drop);
 
   void healBodyParts(WCreature, bool regrow);

@@ -19,7 +19,7 @@
 #include "sdl.h"
 #include "util.h"
 #include "file_path.h"
-
+#include "animation_id.h"
 
 struct Color : public SDL::SDL_Color {
   Color(Uint8, Uint8, Uint8, Uint8 = 255);
@@ -169,6 +169,7 @@ class Renderer {
   void drawTile(Vec2 pos, const vector<TileCoord>&, Vec2 size, Color = Color::WHITE, SpriteOrientation orientation = {});
   void setScissor(optional<Rectangle>);
   void addQuad(const Rectangle&, Color);
+  void drawAnimation(AnimationId, Vec2, double state, Vec2 squareSize);
   Vec2 getSize();
 
   void drawAndClearBuffer();
@@ -192,7 +193,8 @@ class Renderer {
   vector<Texture> tiles;
 
   static void putPixel(SDL::SDL_Surface*, Vec2, Color);
-  void addTilesDirectory(const DirectoryPath& path, Vec2 size);
+  void addTilesDirectory(const DirectoryPath&, Vec2 size);
+  void setAnimationsDirectory(const DirectoryPath&);
   void loadTiles();
   void makeScreenshot(const FilePath&);
 
@@ -202,6 +204,11 @@ class Renderer {
   Renderer(const Renderer&);
   Vec2 nominalSize;
   map<string, vector<TileCoord>> tileCoords;
+  struct AnimationInfo {
+    Texture tex;
+    int numFrames;
+  };
+  EnumMap<AnimationId, optional<AnimationInfo>> animations;
   bool pollEventOrFromQueue(Event&);
   void considerMouseMoveEvent(Event&);
   void considerMouseCursorAnim(Event&);
@@ -246,12 +253,13 @@ class Renderer {
   vector<DeferredSprite> deferredSprites;
   void renderDeferredSprites();
   vector<Rectangle> scissorStack;
-  void loadTilesFromDir(const DirectoryPath&, vector<Texture>&, Vec2 size, int setWidth);
+  void loadTilesFromDir(const DirectoryPath&, Vec2 size, int setWidth);
   struct TileDirectory {
     DirectoryPath path;
     Vec2 size;
   };
   vector<TileDirectory> tileDirectories;
+  optional<DirectoryPath> animationDirectory;
   Clock* clock;
 };
 

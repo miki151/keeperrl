@@ -588,8 +588,7 @@ void WindowView::animateObject(Vec2 begin, Vec2 end, ViewId object) {
         Animation::thrownObject(
           (end - begin).mult(mapLayout->getSquareSize()),
           object,
-          currentTileLayout.sprites,
-          mapLayout->getSquareSize()),
+          currentTileLayout.sprites),
         begin);
 }
 

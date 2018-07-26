@@ -16,6 +16,7 @@
 #include "effect.h"
 #include "item.h"
 #include "game_time.h"
+#include "animation_id.h"
 
 static double getDefaultWeight(Body::Size size) {
   switch (size) {
@@ -960,6 +961,13 @@ optional<Sound> Body::getDeathSound() const {
     return none;
   else
     return Sound(*deathSound).setPitch(getDeathSoundPitch(size));
+}
+
+optional<AnimationId> Body::getDeathAnimation() const {
+  if (isHumanoid() && hasHealth())
+    return AnimationId::DEATH;
+  else
+    return none;
 }
 
 double Body::getBoulderDamage() const {
