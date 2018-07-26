@@ -72,7 +72,7 @@ const map<OptionId, string> names {
   {OptionId::STARTING_RESOURCE, "Resource bonus"},
   {OptionId::START_WITH_NIGHT, "Start with night"},
   {OptionId::KEEPER_NAME, "Keeper's name"},
-  {OptionId::KEEPER_TYPE, "Keeper's gender"},
+  {OptionId::KEEPER_TYPE, "Keeper's avatar"},
   {OptionId::KEEPER_SEED, "Level generation seed"},
   {OptionId::ADVENTURER_NAME, "Adventurer's name"},
   {OptionId::ADVENTURER_TYPE, "Adventurer's gender"},
