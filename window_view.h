@@ -70,7 +70,7 @@ class WindowView: public View {
   virtual optional<Vec2> chooseDirection(Vec2 playerPos, const string& message) override;
   virtual bool yesOrNoPrompt(const string& message, bool defaultNo) override;
   virtual void animateObject(Vec2 begin, Vec2 end, ViewId object) override;
-  virtual void animation(Vec2 pos, AnimationId) override;
+  virtual void animation(Vec2 pos, AnimationId, Dir orientation) override;
   virtual double getGameSpeed() override;
   virtual optional<int> chooseAtMouse(const vector<string>& elems) override;
 

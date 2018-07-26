@@ -11,7 +11,7 @@ class Animation {
   bool isDone(milliseconds time) const;
   void setBegin(milliseconds time);
   static PAnimation thrownObject(Vec2 direction, ViewId, bool useSprite);
-  static PAnimation fromId(AnimationId);
+  static PAnimation fromId(AnimationId, Dir orientation);
   static PAnimation perticleEffect(int id, milliseconds duration, unsigned int particleNum, Vec2 origin);
   virtual ~Animation() {}
 

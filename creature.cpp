@@ -989,6 +989,7 @@ CreatureAction Creature::attack(WCreature other, optional<AttackParams> attackPa
     if (!canSee(other))
       enemyName = "something";
     weapon->getAttackMsg(this, enemyName);
+    getGame()->addEvent(EventInfo::CreatureAttacked{other, self});
     bool wasDamaged = other->takeDamage(attack);
     auto movementInfo = (*self->spendTime())
         .setDirection(dir)

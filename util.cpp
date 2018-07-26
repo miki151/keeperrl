@@ -1025,3 +1025,24 @@ string combineWithOr(const vector<string>& elems) {
 string toStringWithSign(int v) {
   return (v > 0 ? "+" : "") + toString(v);
 }
+
+Dir rotate(Dir dir) {
+  switch (dir) {
+    case Dir::N:
+      return Dir::NE;
+    case Dir::NE:
+      return Dir::E;
+    case Dir::E:
+      return Dir::SE;
+    case Dir::SE:
+      return Dir::S;
+    case Dir::S:
+      return Dir::SW;
+    case Dir::SW:
+      return Dir::W;
+    case Dir::W:
+      return Dir::NW;
+    case Dir::NW:
+      return Dir::N;
+  }
+}

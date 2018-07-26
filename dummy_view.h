@@ -74,7 +74,7 @@ class DummyView : public View {
   }
   virtual void presentWorldmap(const Campaign&) override {}
   virtual void animateObject(Vec2 begin, Vec2 end, ViewId object) override {}
-  virtual void animation(Vec2 pos, AnimationId) override {}
+  virtual void animation(Vec2 pos, AnimationId, Dir) override {}
   virtual milliseconds getTimeMilli() override { return clock->getMillis();}
   virtual milliseconds getTimeMilliAbsolute() override { return clock->getRealMillis();}
   virtual void stopClock() override {}

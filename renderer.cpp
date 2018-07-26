@@ -390,13 +390,14 @@ static Vec2 rotate(Vec2 pos, Vec2 origin, double x, double y) {
   return origin + Vec2(v.x * x - v.y * y, v.x * y + v.y * x);
 }
 
-void Renderer::drawAnimation(AnimationId id, Vec2 pos, double state, Vec2 squareSize) {
+void Renderer::drawAnimation(AnimationId id, Vec2 pos, double state, Vec2 squareSize, Dir orientation) {
   if (auto& animInfo = animations[id]) {
     int zoomLevel = squareSize.y / nominalSize.y;
     int frame = int(animInfo->numFrames * state);
     int width = animInfo->tex.getSize().x / animInfo->numFrames;
     Vec2 size(width, animInfo->tex.getSize().y);
-    drawSprite(pos - size * zoomLevel / 2, Vec2(frame * width, 0), size, animInfo->tex, size * zoomLevel);
+    drawSprite(pos - size * zoomLevel / 2, Vec2(frame * width, 0), size, animInfo->tex, size * zoomLevel, none,
+        SpriteOrientation(Vec2(rotate(rotate(orientation))), false));
   }
 }
 
@@ -725,8 +726,10 @@ void Renderer::loadTiles() {
   tileCoords.clear();
   for (auto& dir : tileDirectories)
     loadTilesFromDir(dir.path, dir.size, 720);
-  if (animationDirectory)
-    animations[AnimationId::DEATH] = AnimationInfo { Texture(animationDirectory->file("death.png")), 8};
+  if (animationDirectory) {
+    for (auto id : ENUM_ALL(AnimationId))
+      animations[id] = AnimationInfo { Texture(animationDirectory->file(getFileName(id))), getNumFrames(id)};
+  }
 }
 
 void Renderer::addTilesDirectory(const DirectoryPath& path, Vec2 size) {

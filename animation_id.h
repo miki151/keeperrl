@@ -3,5 +3,10 @@
 #include "util.h"
 
 RICH_ENUM(AnimationId,
-  DEATH
+  DEATH,
+  ATTACK
 );
+
+extern milliseconds getDuration(AnimationId);
+extern const char* getFileName(AnimationId);
+extern int getNumFrames(AnimationId);

@@ -101,6 +101,16 @@ void Player::onEvent(const GameEvent& event) {
           if (auto anim = info.victim->getBody().getDeathAnimation())
             getView()->animation(pos.getCoord(), *anim);
       },
+      [&](const CreatureAttacked& info) {
+        auto pos = info.victim->getPosition();
+        if (creature->canSee(pos)) {
+          auto dir = info.attacker->getPosition().getDir(pos);
+          if (dir.length8() == 1) {
+            auto orientation = dir.getCardinalDir();
+            getView()->animation(pos.getCoord(), AnimationId::ATTACK, orientation);
+          }
+        }
+      },
       [&](const Alarm& info) {
         if (!info.silent) {
           Position pos = info.pos;

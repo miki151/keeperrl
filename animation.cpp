@@ -47,18 +47,19 @@ PAnimation Animation::thrownObject(Vec2 direction, ViewId obj, bool useSprite) {
 class SpriteAnim : public Animation {
   public:
 
-  SpriteAnim(AnimationId id, milliseconds duration) : Animation(duration), id(id) {}
+  SpriteAnim(AnimationId id, milliseconds duration, Dir o) : Animation(duration), id(id), orientation(o) {}
 
   virtual void renderSpec(Renderer& renderer, Rectangle bounds, Vec2 origin, Vec2 squareSize, double state) override {
-    renderer.drawAnimation(id, origin, state, squareSize);
+    renderer.drawAnimation(id, origin, state, squareSize, orientation);
   }
 
   private:
   AnimationId id;
+  Dir orientation;
 };
  
-PAnimation Animation::fromId(AnimationId id) {
-  return unique<SpriteAnim>(id, milliseconds{800});
+PAnimation Animation::fromId(AnimationId id, Dir orientation) {
+  return unique<SpriteAnim>(id, getDuration(id), orientation);
 }
 
 class Particle {

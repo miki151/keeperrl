@@ -72,6 +72,11 @@ namespace EventInfo {
     WCreature attacker;
   };
 
+  struct CreatureAttacked {
+    WCreature victim;
+    WCreature attacker;
+  };
+
   struct TrapTriggered {
     Position pos;
   };
@@ -107,7 +112,8 @@ namespace EventInfo {
 
   class GameEvent : public variant<CreatureMoved, CreatureKilled, ItemsPickedUp, ItemsDropped, ItemsAppeared, Projectile,
       Explosion, ConqueredEnemy, WonGame, TechbookRead, Alarm, CreatureTortured, CreatureStunned, MovementChanged,
-      TrapTriggered, TrapDisarmed, FurnitureDestroyed, ItemsEquipped, CreatureEvent, VisibilityChanged, RetiredGame> {
+      TrapTriggered, TrapDisarmed, FurnitureDestroyed, ItemsEquipped, CreatureEvent, VisibilityChanged, RetiredGame,
+      CreatureAttacked> {
     using variant::variant;
   };
 

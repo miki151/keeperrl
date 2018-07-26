@@ -592,9 +592,9 @@ void WindowView::animateObject(Vec2 begin, Vec2 end, ViewId object) {
         begin);
 }
 
-void WindowView::animation(Vec2 pos, AnimationId id) {
+void WindowView::animation(Vec2 pos, AnimationId id, Dir orientation) {
   if (currentTileLayout.sprites)
-    mapGui->addAnimation(Animation::fromId(id), pos);
+    mapGui->addAnimation(Animation::fromId(id, orientation), pos);
 }
 
 void WindowView::refreshView() {

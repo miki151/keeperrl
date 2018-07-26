@@ -1254,6 +1254,8 @@ vector<T> asVector(const U& u) {
 
 RICH_ENUM(Dir, N, S, E, W, NE, NW, SE, SW );
 
+extern Dir rotate(Dir);
+
 class DirSet {
   public:
   DirSet();

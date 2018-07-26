@@ -231,7 +231,7 @@ class View {
   virtual void animateObject(Vec2 begin, Vec2 end, ViewId object) = 0;
 
   /** Draws an special animation on the map.*/
-  virtual void animation(Vec2 pos, AnimationId) = 0;
+  virtual void animation(Vec2 pos, AnimationId, Dir orientation = Dir::N) = 0;
 
   /** Returns the current real time in milliseconds. The clock is stopped on blocking keyboard input,
       so it can be used to sync game time in real-time mode.*/
