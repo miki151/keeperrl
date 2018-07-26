@@ -907,7 +907,8 @@ optional<GlobalTime> Creature::getGlobalTime() const {
 
 void Creature::considerMovingFromInaccessibleSquare() {
   auto movement = getMovementType();
-  if (!position.canEnterEmpty(movement))
+  auto forced = getMovementType().setForced();
+  if (!position.canEnterEmpty(forced))
     for (auto neighbor : position.neighbors8(Random))
       if (neighbor.canEnter(movement)) {
         displace(position.getDir(neighbor));
