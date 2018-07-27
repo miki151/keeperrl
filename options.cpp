@@ -75,7 +75,7 @@ const map<OptionId, string> names {
   {OptionId::KEEPER_TYPE, "Keeper's avatar"},
   {OptionId::KEEPER_SEED, "Level generation seed"},
   {OptionId::ADVENTURER_NAME, "Adventurer's name"},
-  {OptionId::ADVENTURER_TYPE, "Adventurer's gender"},
+  {OptionId::ADVENTURER_TYPE, "Adventurer's avatar"},
   {OptionId::MAIN_VILLAINS, "Main villains"},
   {OptionId::RETIRED_VILLAINS, "Retired villains"},
   {OptionId::LESSER_VILLAINS, "Lesser villains"},
