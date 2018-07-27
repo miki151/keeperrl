@@ -333,9 +333,10 @@ void Game::tick(GlobalTime time) {
 void Game::exitAction() {
   enum Action { SAVE, RETIRE, OPTIONS, ABANDON};
 #ifdef RELEASE
-  bool canRetire = playerControl && gameWon() && players.empty() && campaign->getType() != CampaignType::SINGLE_KEEPER;
+  bool canRetire = playerControl && !playerControl->getTutorial() && gameWon() && players.empty() &&
+      campaign->getType() != CampaignType::SINGLE_KEEPER;
 #else
-  bool canRetire = playerControl && players.empty();
+  bool canRetire = playerControl && !playerControl->getTutorial() && players.empty();
 #endif
   vector<ListElem> elems { "Save and exit the game",
     {"Retire", canRetire ? ListElem::NORMAL : ListElem::INACTIVE} , "Change options", "Abandon the game" };

@@ -647,13 +647,13 @@ SGuiElem GuiBuilder::drawTutorialOverlay(const TutorialInfo& info) {
   else
     warning = gui.label("Press [Space] to unpause the game.",
         [this]{ return clock->isPaused() ? Color::RED : Color::TRANSPARENT;});
-  return gui.preferredSize(520, 250, gui.stack(gui.darken(), gui.rectangleBorder(Color::GRAY),
+  return gui.preferredSize(520, 290, gui.stack(gui.darken(), gui.rectangleBorder(Color::GRAY),
       gui.margins(gui.stack(
         gui.labelMultiLine(info.message, legendLineHeight),
         gui.alignment(GuiFactory::Alignment::BOTTOM_CENTER, gui.setHeight(20, warning)),
         gui.alignment(GuiFactory::Alignment::BOTTOM_RIGHT, info.canContinue ? continueButton : gui.empty()),
         gui.alignment(GuiFactory::Alignment::BOTTOM_LEFT, info.canGoBack ? backButton : gui.empty())
-      ), 20)));
+      ), 20, 20, 20, 45)));
 }
 
 static Color getTriggerColor(double value) {
