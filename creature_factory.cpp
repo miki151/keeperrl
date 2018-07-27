@@ -171,9 +171,10 @@ CreatureAttributes CreatureFactory::getKrakenAttributes(ViewId id, const char* n
       c.viewId = id;
       c.body = Body::nonHumanoid(Body::Size::LARGE);
       c.body->setDeathSound(none);
-      c.attr[AttrType::DAMAGE] = 15;
-      c.attr[AttrType::DEFENSE] = 15;
+      c.attr[AttrType::DAMAGE] = 28;
+      c.attr[AttrType::DEFENSE] = 28;
       c.permanentEffects[LastingEffect::POISON_RESISTANT] = 1;
+      c.permanentEffects[LastingEffect::NIGHT_VISION] = 1;
       c.skills.insert(SkillId::SWIMMING);
       c.name = name;);
 }
@@ -242,9 +243,9 @@ class KrakenController : public Monster {
 
   WCreature getHeld() {
     for (auto pos : creature->getPosition().neighbors8())
-      if (auto creature = pos.getCreature())
-        if (creature->getHoldingCreature() == creature)
-          return creature;
+      if (auto other = pos.getCreature())
+        if (other->getHoldingCreature() == creature)
+          return other;
     return nullptr;
   }
 
@@ -276,7 +277,7 @@ class KrakenController : public Monster {
       if (creature->getPosition().plus(dirs.second).canEnter(
             {{MovementTrait::WALK, MovementTrait::SWIM}}))
         moves.push_back(dirs.second);
-      if (!moves.empty()) {
+      if (!moves.empty() && Random.roll(2)) {
         Vec2 move = Random.choose(moves);
         ViewId viewId = creature->getPosition().plus(move).canEnter({MovementTrait::SWIM})
           ? ViewId::KRAKEN_WATER : ViewId::KRAKEN_LAND;
