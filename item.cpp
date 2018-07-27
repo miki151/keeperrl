@@ -47,6 +47,8 @@ SERIALIZATION_CONSTRUCTOR_IMPL(Item)
 Item::Item(const ItemAttributes& attr) : Renderable(ViewObject(*attr.viewId, ViewLayer::ITEM, capitalFirst(*attr.name))),
     attributes(attr), fire(*attr.weight, attr.flamability), canEquipCache(!!attributes->equipmentSlot),
     classCache(*attributes->itemClass) {
+  if (!!attributes->prefix)
+    modViewObject().setModifier(ViewObject::Modifier::AURA);
 }
 
 Item::~Item() {

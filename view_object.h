@@ -24,9 +24,8 @@
 #include "game_time.h"
 #include "movement_info.h"
 #include "creature_status.h"
+#include "view_object_modifier.h"
 
-RICH_ENUM(ViewObjectModifier, PLAYER, HIDDEN, INVISIBLE, ILLUSION, PLANNED, CAPTURE_ORDERED, STUNNED, LOCKED,
-    TEAM_LEADER_HIGHLIGHT, TEAM_HIGHLIGHT, DRAW_MORALE, ROAD, NO_UP_MOVEMENT, REMEMBER, SPIRIT_DAMAGE, HOSTILE);
 RICH_ENUM(ViewObjectAttribute, HEALTH, BURNING, WATER_DEPTH, EFFICIENCY, MORALE);
 
 class ViewObject {
@@ -38,6 +37,7 @@ class ViewObject {
 
   ViewObject& setModifier(Modifier, bool state = true);
   bool hasModifier(Modifier) const;
+  EnumSet<Modifier> getAllModifiers() const;
 
   EnumSet<CreatureStatus>& getCreatureStatus();
   const EnumSet<CreatureStatus>& getCreatureStatus() const;

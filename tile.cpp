@@ -673,6 +673,7 @@ class TileCoordLookup {
     Tile::addTile(ViewId::CLAWS_ATTACK, sprite("claws_attack"));
     Tile::addTile(ViewId::LEG_ATTACK, sprite("leg_attack"));
     Tile::addTile(ViewId::FIST_ATTACK, sprite("fist_attack"));
+    Tile::addTile(ViewId::ITEM_AURA, sprite("aura"));
 #ifndef RELEASE
     Tile::addTile(ViewId::TUTORIAL_ENTRANCE, symbol(u8"?", Color::YELLOW));
 #else
@@ -1036,6 +1037,7 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::CLAWS_ATTACK, symbol(u8" ", Color::BROWN));
     Tile::addSymbol(ViewId::LEG_ATTACK, symbol(u8" ", Color::GRAY));
     Tile::addSymbol(ViewId::FIST_ATTACK, symbol(u8" ", Color::ORANGE));
+    Tile::addSymbol(ViewId::ITEM_AURA, symbol(u8" ", Color::ORANGE));
   }
  
   private:

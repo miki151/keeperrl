@@ -1060,7 +1060,10 @@ SGuiElem GuiBuilder::getItemLine(const ItemInfo& item, function<void(Rectangle)>
     line.addElem(gui.viewObject(ViewId::KEY), viewObjectWidth);
     leftMargin -= viewObjectWidth - 3;
   }
-  line.addElem(gui.viewObject(item.viewId), viewObjectWidth);
+  auto viewId = gui.viewObject(item.viewId);
+  if (item.viewIdModifiers.contains(ViewObjectModifier::AURA))
+    viewId = gui.stack(std::move(viewId), gui.viewObject(ViewId::ITEM_AURA));
+  line.addElem(std::move(viewId), viewObjectWidth);
   Color color = item.equiped ? Color::GREEN : (item.pending || item.unavailable) ?
       Color::GRAY : Color::WHITE;
   if (item.intrinsicState)

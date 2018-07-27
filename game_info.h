@@ -19,6 +19,7 @@
 #include "team_member_action.h"
 #include "team_order.h"
 #include "special_trait.h"
+#include "view_object_modifier.h"
 
 enum class SpellId;
 
@@ -43,6 +44,7 @@ struct ItemInfo {
   string HASH(description);
   int HASH(number);
   ViewId HASH(viewId);
+  EnumSet<ViewObjectModifier> HASH(viewIdModifiers);
   EntitySet<Item> HASH(ids);
   vector<ItemAction> HASH(actions);
   bool HASH(equiped);
@@ -58,7 +60,7 @@ struct ItemInfo {
   double HASH(productionState);
   optional<double> HASH(weight);
   bool HASH(tutorialHighlight);
-  HASH_ALL(name, fullName, description, number, viewId, ids, actions, equiped, locked, pending, unavailable, slot, owner, type, price, productionState, unavailableReason, weight, tutorialHighlight, intrinsicState)
+  HASH_ALL(name, fullName, description, number, viewId, ids, actions, equiped, locked, pending, unavailable, slot, owner, type, price, productionState, unavailableReason, weight, tutorialHighlight, intrinsicState, viewIdModifiers)
 };
 
 struct AttributeInfo {

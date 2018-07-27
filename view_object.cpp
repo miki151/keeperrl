@@ -132,6 +132,10 @@ bool ViewObject::hasModifier(Modifier mod) const {
   return modifiers.contains(mod);
 }
 
+EnumSet<ViewObject::Modifier> ViewObject::getAllModifiers() const {
+  return modifiers;
+}
+
 EnumSet<CreatureStatus>& ViewObject::getCreatureStatus() {
   return status;
 }
