@@ -156,7 +156,7 @@ void SoundSource::destroy() {
 const int streamingBufferSize = 1 * 2 * 2 * 44100;
 
 SoundStream::SoundStream(const FilePath& path, double volume) : startedPlaying(false),
-      streamer([path, this]{ init(path);}, [this]{loop();}), volume(volume) {
+      streamer([path, this]{ init(path);}, [this]{loop();}), volume((float) volume) {
 }
 
 bool SoundStream::isPlaying() const {
@@ -168,7 +168,7 @@ bool SoundStream::isPlaying() const {
 }
 
 void SoundStream::setVolume(double v) {
-  alSourcef(source.getId(), AL_GAIN, v);
+  alSourcef(source.getId(), AL_GAIN, min<float>(1, max<float>(0, (float) v)));
   volume = v;
 }
 
@@ -194,7 +194,7 @@ void SoundStream::loop() {
     AL(alBufferData(buffers[1], (info->channels > 1) ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16, data.data(),
         data.size(), info->rate));
     AL(alSourceQueueBuffers(source.getId(), 2, buffers));
-    alSourcef(source.getId(), AL_GAIN, volume);
+    alSourcef(source.getId(), AL_GAIN, min<float>(1, max<float>(0, volume)));
     ALenum error = alGetError();
     CHECK(!error) << "volume error " << volume;
     AL(alSourcePlay(source.getId()));
