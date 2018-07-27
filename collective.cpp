@@ -563,6 +563,8 @@ void Collective::onEvent(const GameEvent& event) {
               removeTrait(victim, MinionTrait::NO_LIMIT);
               setTrait(victim, MinionTrait::FIGHTER);
               victim->removeEffect(LastingEffect::TIED_UP);
+              // prisoner was made poison resistant when captured, so remove it now
+              victim->removePermanentEffect(LastingEffect::POISON_RESISTANT);
             }
           }
         }

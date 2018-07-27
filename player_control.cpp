@@ -1026,6 +1026,8 @@ void PlayerControl::acceptPrisoner(int index) {
   if (index < immigrants.size() && !immigrants[index].collective) {
     auto victim = immigrants[index].creatures[0];
     victim->removeEffect(LastingEffect::STUNNED);
+    // to make sure prisoners don't die around dead bodies
+    victim->addPermanentEffect(LastingEffect::POISON_RESISTANT);
     auto& skills = victim->getAttributes().getSkills();
     skills.setValue(SkillId::DIGGING, skills.hasDiscrete(SkillId::NAVIGATION_DIGGING) ? 1 : 0.2);
     skills.erase(SkillId::NAVIGATION_DIGGING);

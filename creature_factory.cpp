@@ -1358,6 +1358,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body = Body::humanoid(Body::Size::LARGE);
           c.chatReactionFriendly = "curses all dungeons"_s;
           c.chatReactionHostile = "\"Heeelp!\""_s;
+          c.permanentEffects[LastingEffect::POISON_RESISTANT] = 1;
           c.skills.setValue(SkillId::DIGGING, 0.3);
           c.maxLevelIncrease[ExperienceType::MELEE] = 3;
           c.name = "peasant";);
