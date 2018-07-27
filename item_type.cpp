@@ -520,6 +520,12 @@ ItemAttributes ItemType::Sword::getAttributes() const {
       i.price = 4;
       i.weaponInfo.attackType = AttackType::CUT;
       i.prefixes.push_back({1, VictimEffect{Effect::Fire{}}});
+      i.prefixes.push_back({1, VictimEffect{Effect::Lasting{LastingEffect::POISON}}});
+      i.prefixes.push_back({1, LastingEffect::RAGE});
+      i.prefixes.push_back({1, JoinPrefixes{{
+          ItemPrefix{ItemAttrBonus{AttrType::DAMAGE, 3}},
+          ItemPrefix{LastingEffect::HALLU},
+      }}});
   );
 }
 
@@ -535,6 +541,8 @@ ItemAttributes ItemType::AdaSword::getAttributes() const {
       i.weaponInfo.attackType = AttackType::CUT;
       i.prefixes.push_back({1, VictimEffect{Effect::Acid{}}});
       i.prefixes.push_back({1, VictimEffect{Effect::Fire{}}});
+      i.prefixes.push_back({1, VictimEffect{Effect::Lasting{LastingEffect::POISON}}});
+      i.prefixes.push_back({1, LastingEffect::RAGE});
   );
 }
 
@@ -564,6 +572,7 @@ ItemAttributes ItemType::BattleAxe::getAttributes() const {
       i.price = 30;
       i.weaponInfo.attackType = AttackType::CUT;
       i.prefixes.push_back({1, VictimEffect{Effect::Lasting{LastingEffect::BLEEDING}}});
+      i.prefixes.push_back({1, LastingEffect::RAGE});
   );
 }
 
@@ -768,6 +777,7 @@ ItemAttributes ItemType::LeatherGloves::getAttributes() const {
       i.price = 2;
       i.modifiers[AttrType::DEFENSE] = 1 + maybePlusMinusOne(4);
       i.prefixes.push_back({1, ItemAttrBonus{AttrType::DAMAGE, Random.get(2, 5)}});
+      i.prefixes.push_back({1, ItemAttrBonus{AttrType::SPELL_DAMAGE, Random.get(2, 5)}});
   );
 }
 
