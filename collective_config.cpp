@@ -485,6 +485,7 @@ const MinionActivityInfo& CollectiveConfig::getActivityInfo(MinionActivity task)
       case MinionActivity::BE_WHIPPED: return {FurnitureType::WHIPPING_POST, "being whipped"};
       case MinionActivity::BE_TORTURED: return {FurnitureType::TORTURE_TABLE, "being tortured"};
       case MinionActivity::BE_EXECUTED: return {FurnitureType::GALLOWS, "being executed"};
+      case MinionActivity::BE_RANSOMED: return {FurnitureType::TREASURE_CHEST, "being ransomed"};
       case MinionActivity::CRAFT: return {[](WConstCollective col, WConstCreature c, FurnitureType t) {
             if (auto type = getWorkshopType(t))
               return !c || !col || (c->getAttributes().getSkills().getValue(getWorkshopInfo(*type).skill) > 0 &&

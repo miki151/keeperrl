@@ -554,7 +554,8 @@ void Collective::onEvent(const GameEvent& event) {
         auto victim = info.victim;
         if (getCreatures().contains(victim)) {
           if (Random.roll(30)) {
-            if (Random.roll(2)) {
+            int resistance = victim->getAttributes().getSkills().getValue(SkillId::NOBILITY) * 10;  
+            if (!Random.roll(2 + resistance)) {
               victim->dieWithReason("killed by torture");
             } else {
               control->addMessage("A prisoner is converted to your side");
@@ -1210,6 +1211,12 @@ void Collective::onAppliedSquare(WCreature c, Position pos) {
       case FurnitureType::GALLOWS:
         taskMap->addTask(Task::kill(this, c), pos, MinionActivity::WORKING);
         break;
+      case FurnitureType::TREASURE_CHEST: {
+        int ransomValue = c->getAttributes().getSkills().getValue(SkillId::NOBILITY) * 300;
+        returnResource({ResourceId::GOLD, ransomValue});
+        banishCreature(c);
+        break;
+        }
       case FurnitureType::TORTURE_TABLE:
         taskMap->addTask(Task::torture(this, c), pos, MinionActivity::WORKING);
         break;

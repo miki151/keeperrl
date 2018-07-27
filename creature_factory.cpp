@@ -1134,6 +1134,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::DEMON_LORD:
       return CATTR(
           c.viewId = ViewId::DEMON_LORD;
+          c.skills.setValue(SkillId::NOBILITY, 0.1);          
           c.attr = LIST(40_dam, 45_def, 50_spell_dam );
           c.body = Body::humanoidSpirit(Body::Size::LARGE);
           c.body->addWings();
@@ -1233,6 +1234,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::KNIGHT: 
       return CATTR(
           c.viewId = ViewId::KNIGHT;
+          c.skills.setValue(SkillId::NOBILITY, 0.1);          
           c.attr = LIST(36_dam, 28_def );
           c.body = Body::humanoid(Body::Size::LARGE);
           c.maxLevelIncrease[ExperienceType::MELEE] = 4;
@@ -1252,6 +1254,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::AVATAR:
       return CATTR(
           c.viewId = ViewId::DUKE;
+          c.skills.setValue(SkillId::NOBILITY, 0.8);
           c.attr = LIST(43_dam, 32_def );
           c.body = Body::humanoid(Body::Size::LARGE);
           c.permanentEffects[LastingEffect::MELEE_RESISTANCE] = 1;
@@ -1553,6 +1556,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::GNOME_CHIEF:
       return CATTR(
           c.viewId = ViewId::GNOME_BOSS;
+          c.skills.setValue(SkillId::NOBILITY, 0.3);          
           c.attr = LIST(15_dam, 16_def );
           c.body = Body::humanoid(Body::Size::MEDIUM);
           c.skills.setValue(SkillId::JEWELER, 1);
@@ -1647,6 +1651,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::DWARF_BARON: 
       return CATTR(
           c.viewId = ViewId::DWARF_BARON;
+          c.skills.setValue(SkillId::NOBILITY, 0.8);          
           c.attr = LIST(28_dam, 32_def );
           c.body = Body::humanoid(Body::Size::MEDIUM);
           c.body->setWeight(120);
@@ -1675,6 +1680,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::LIZARDLORD: 
       return CATTR(
           c.viewId = ViewId::LIZARDLORD;
+          c.skills.setValue(SkillId::NOBILITY, 0.5);          
           c.attr = LIST(30_dam, 16_def );
           c.body = Body::humanoid(Body::Size::MEDIUM);
           c.permanentEffects[LastingEffect::POISON_RESISTANT] = 1;
@@ -1725,6 +1731,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::ELF_LORD: 
       return CATTR(
           c.viewId = ViewId::ELF_LORD;
+          c.skills.setValue(SkillId::NOBILITY, 0.6);
           c.attr = LIST(22_dam, 14_def, 16_spell_dam, 30_ranged_dam );
           c.body = Body::humanoid(Body::Size::MEDIUM);
           c.chatReactionFriendly = "curses all dwarves"_s;
@@ -1783,6 +1790,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::DARK_ELF_LORD:
       return CATTR(
           c.viewId = ViewId::DARK_ELF_LORD;
+          c.skills.setValue(SkillId::NOBILITY, 0.6);
           c.attr = LIST(22_dam, 14_def, 16_spell_dam );
           c.body = Body::humanoid(Body::Size::MEDIUM);
           c.chatReactionFriendly = "curses all dwarves"_s;
@@ -2090,6 +2098,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::ELEMENTALIST: 
       return CATTR(
           c.viewId = ViewId::ELEMENTALIST;
+          c.skills.setValue(SkillId::NOBILITY, 0.1);          
           c.attr = LIST(15_dam, 20_def, 15_spell_dam );
           c.body = Body::humanoid(Body::Size::LARGE);
           c.skills.setValue(SkillId::LABORATORY, 1);

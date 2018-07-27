@@ -69,6 +69,7 @@ class Task : public UniqueEntity<Task>, public OwnedObject<Task> {
   static PTask pickItem(Position, vector<WItem>);
   static PTask kill(WTaskCallback, WCreature);
   static PTask torture(WTaskCallback, WCreature);
+  static PTask ransom(WTaskCallback, WCreature);
   static PTask sacrifice(WTaskCallback, WCreature);
   static PTask disappear();
   static PTask chain(PTask, PTask);
