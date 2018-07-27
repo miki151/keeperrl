@@ -2261,7 +2261,6 @@ ItemType randomHealing() {
 
 ItemType randomBackup() {
   return Random.choose(
-      ItemType(ItemType::Scroll{Effect::Deception{}}),
       ItemType(ItemType::Scroll{Effect::Teleport{}}),
       randomHealing());
 }
