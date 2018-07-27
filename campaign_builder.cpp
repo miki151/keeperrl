@@ -461,10 +461,10 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(function<optional<Retir
   View::CampaignMenuState menuState { true, false};
   setCountLimits(options);
   options->setChoices(OptionId::KEEPER_TYPE, {
-      CreatureId::KEEPER_KNIGHT,
-      CreatureId::KEEPER_KNIGHT_F,
       CreatureId::KEEPER_MAGE,
-      CreatureId::KEEPER_MAGE_F
+      CreatureId::KEEPER_MAGE_F,
+      CreatureId::KEEPER_KNIGHT,
+      CreatureId::KEEPER_KNIGHT_F
   });
   options->setChoices(OptionId::ADVENTURER_TYPE, {CreatureId::ADVENTURER, CreatureId::ADVENTURER_F});
   while (1) {
