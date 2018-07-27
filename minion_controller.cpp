@@ -59,7 +59,7 @@ class MinionController : public Player {
 
   virtual vector<OtherCreatureCommand> getOtherCreatureCommands(WCreature c) const override {
     vector<OtherCreatureCommand> ret = Player::getOtherCreatureCommands(c);
-    if (creature->isEnemy(c) && c->canBeCaptured())
+    if (control->isEnemy(c) && c->canBeCaptured())
       ret.push_back({2, c->isCaptureOrdered() ? "Cancel capture order" : "Order capture", true,
           [c](Player*) { c->toggleCaptureOrder();}});
     if (getTeam().contains(c)) {

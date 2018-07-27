@@ -2587,7 +2587,7 @@ TribeId PlayerControl::getTribeId() const {
 
 bool PlayerControl::isEnemy(WConstCreature c) const {
   auto keeper = getKeeper();
-  return keeper && keeper->isEnemy(c);
+  return c->getTribeId() != getTribeId() && keeper && keeper->isEnemy(c);
 }
 
 void PlayerControl::onMemberKilled(WConstCreature victim, WConstCreature killer) {

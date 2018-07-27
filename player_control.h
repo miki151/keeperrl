@@ -67,6 +67,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void onSunlightVisibilityChanged();
   void setTutorial(STutorial);
   STutorial getTutorial() const;
+  bool isEnemy(WConstCreature) const;
 
   SERIALIZATION_DECL(PlayerControl)
 
@@ -130,7 +131,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   static string getWarningText(CollectiveWarning);
   void updateSquareMemory(Position);
   void updateKnownLocations(const Position&);
-  bool isEnemy(WConstCreature) const;
   vector<WCollective> getKnownVillains() const;
   WCollective getVillain(UniqueEntity<Collective>::Id num);
   void scrollToMiddle(const vector<Position>&);
