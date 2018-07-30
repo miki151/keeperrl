@@ -49,6 +49,9 @@
 #include "dummy_view.h"
 #include "sound.h"
 
+#include "fx_manager.h"
+#include "fx_renderer.h"
+
 #ifndef VSTUDIO
 #include "stack_printer.h"
 #endif
@@ -342,6 +345,17 @@ static int keeperMain(po::parser& commandLineFlags) {
       freeDataPath.file("images/mouse_cursor2.png"));
   FatalLog.addOutput(DebugOutput::toString([&renderer](const string& s) { renderer.showError(s);}));
   UserErrorLog.addOutput(DebugOutput::toString([&renderer](const string& s) { renderer.showError(s);}));
+
+#ifdef ENABLE_PARTICLE_FX
+  unique_ptr<fx::FXManager> fx_manager;
+  unique_ptr<fx::FXRenderer> fx_renderer;
+
+  if(paidDataPath.exists()) {
+	  fx_manager = std::make_unique<fx::FXManager>();
+	  fx_renderer = std::make_unique<fx::FXRenderer>(paidDataPath, *fx_manager);
+  }
+#endif
+
   userPath.createIfDoesntExist();
   auto settingsPath = userPath.file("options.txt");
   if (commandLineFlags["restore_settings"].was_set())

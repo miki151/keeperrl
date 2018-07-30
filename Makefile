@@ -11,11 +11,13 @@ GCC = g++
 endif
 LD = $(GCC)
 
-ifndef RELEASE
-CFLAGS += -Werror -Wimplicit-fallthrough
+ifdef LLD
 LDFLAGS += -fuse-ld=lld
 endif
 
+ifndef RELEASE
+CFLAGS += -Werror -Wimplicit-fallthrough -Wno-unused-private-field -Wno-unused-function
+endif
 
 ifdef OSX
 LDFLAGS += -Wl -L/usr/local/opt/openal-soft/lib
@@ -35,6 +37,10 @@ endif
 
 ifdef ENABLE_LOCAL_USER_DIR
 CFLAGS += -DENABLE_LOCAL_USER_DIR
+endif
+
+ifdef ENABLE_PARTICLE_FX
+CFLAGS += -DENABLE_PARTICLE_FX
 endif
 
 ifdef RELEASE

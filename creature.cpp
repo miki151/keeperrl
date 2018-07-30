@@ -54,6 +54,9 @@
 #include "furniture_type.h"
 #include "furniture_usage.h"
 
+#include "fx_manager.h"
+#include "fx_particle_system.h"
+
 template <class Archive>
 void Creature::serialize(Archive& ar, const unsigned int version) {
   ar & SUBCLASS(OwnedObject<Creature>) & SUBCLASS(Renderable) & SUBCLASS(UniqueEntity);
@@ -1381,6 +1384,22 @@ void Creature::addSound(const Sound& sound1) const {
   Sound sound(sound1);
   sound.setPosition(getPosition());
   getGame()->getView()->addSound(sound);
+}
+
+void Creature::addFX(const char *name) const {
+	if(auto *inst = fx::FXManager::getInstance()) {
+		// TODO: add function in fx manager
+		int def_id = 0;
+		for(auto &sdef : inst->systemDefs()) {
+			if(sdef.name == name)
+				break;
+			def_id++;
+		}
+
+		auto pos = getPosition().getCoord(); // TODO: tile_size
+		auto fpos = (fx::FVec2(pos.x, pos.y) + fx::FVec2(0.5)) * 24.0f;
+		auto id = inst->addSystem(fx::ParticleSystemDefId(def_id), fpos);
+	}
 }
 
 CreatureAction Creature::construct(Vec2 direction, FurnitureType type) const {

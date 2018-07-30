@@ -20,6 +20,9 @@
 #include "furniture_tick.h"
 #include "movement_set.h"
 
+#include "fx_manager.h"
+#include "fx_particle_system.h"
+
 static string makePlural(const string& s) {
   if (s.empty())
     return "";
@@ -162,9 +165,28 @@ void Furniture::destroy(Position pos, const DestroyAction& action) {
   pos.getGame()->addEvent(EventInfo::FurnitureDestroyed{pos, myType, myLayer});
 }
 
+void Furniture::addFX(Position pos, const char *name) const {
+	if(auto *inst = fx::FXManager::getInstance()) {
+		// TODO: add function in fx manager
+		int def_id = 0;
+		for(auto &sdef : inst->systemDefs()) {
+			if(sdef.name == name)
+				break;
+			def_id++;
+		}
+
+		auto coord = pos.getCoord(); // TODO: tile_size
+		auto fpos = (fx::FVec2(coord.x, coord.y) + fx::FVec2(0.5)) * 24.0f;
+		auto id = inst->addSystem(fx::ParticleSystemDefId(def_id), fpos);
+	}
+}
+
+
 void Furniture::tryToDestroyBy(Position pos, WCreature c, const DestroyAction& action) {
   if (auto& strength = destroyActions[action.getType()]) {
     c->addSound(action.getSound());
+	addFX(pos, "wood_splinters");
+
     double damage = c->getAttr(AttrType::DAMAGE);
     if (auto skill = action.getDestroyingSkillMultiplier())
       damage = damage * c->getAttributes().getSkills().getValue(*skill);

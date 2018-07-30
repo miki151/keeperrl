@@ -21,6 +21,8 @@
 #include "file_path.h"
 #include "animation_id.h"
 
+namespace fx { class FXRenderer; }
+
 struct Color : public SDL::SDL_Color {
   Color(Uint8, Uint8, Uint8, Uint8 = 255);
   Color transparency(int);
@@ -95,6 +97,8 @@ class Texture {
 
   private:
   friend class Renderer;
+  friend class fx::FXRenderer;
+
   void addTexCoord(int x, int y) const;
   optional<SDL::GLuint> texId;
   Vec2 size;
