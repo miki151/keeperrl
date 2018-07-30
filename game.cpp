@@ -199,11 +199,13 @@ void Game::prepareSiteRetirement() {
   mainModel->clearExternalEnemies();
   TribeId::switchForSerialization(TribeId::getKeeper(), TribeId::getRetiredKeeper());
   UniqueEntity<Item>::offsetForSerialization(Random.getLL());
+  UniqueEntity<Creature>::offsetForSerialization(Random.getLL());
 }
 
 void Game::doneRetirement() {
   TribeId::clearSwitch();
   UniqueEntity<Item>::clearOffset();
+  UniqueEntity<Creature>::clearOffset();
 }
 
 optional<ExitInfo> Game::updateInput() {
