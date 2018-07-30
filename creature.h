@@ -274,7 +274,6 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   void onKilledOrCaptured(WCreature victim);
 
   void addSound(const Sound&) const;
-  void addFX(const char *name) const;
   void updateViewObject();
   void swapPosition(Vec2 direction);
   vector<PItem> generateCorpse(bool instantlyRotten = false) const;

@@ -2,6 +2,9 @@
 
 #include "fx_base.h"
 
+// TODO: this is only for optional
+#include "util.h"
+
 namespace fx {
 
 class FXManager {
@@ -28,6 +31,8 @@ public:
   const auto &particleDefs() const { return m_particle_defs; }
   const auto &emitterDefs() const { return m_emitter_defs; }
   const auto &systemDefs() const { return m_system_defs; }
+
+  optional<ParticleSystemDefId> findSystem(const char *) const;
 
   bool valid(ParticleDefId) const;
   bool valid(EmitterDefId) const;

@@ -39,6 +39,14 @@ const ParticleSystemDef &FXManager::operator[](ParticleSystemDefId id) const {
   return m_system_defs[id];
 }
 
+optional<ParticleSystemDefId> FXManager::findSystem(const char *name) const {
+  PASSERT(name);
+  for(int n = 0; n < (int)m_system_defs.size(); n++)
+    if(m_system_defs[n].name == name)
+      return ParticleSystemDefId(n);
+  return none;
+}
+
 SubSystemContext FXManager::ssctx(ParticleSystem &ps, int ssid) {
   const auto &psdef = (*this)[ps.def_id];
   const auto &pdef = (*this)[psdef[ssid].particle_id];
