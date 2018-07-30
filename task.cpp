@@ -708,6 +708,8 @@ class Chain : public Task {
   }
 
   virtual bool canTransfer() override {
+    if (current >= tasks.size())
+      return false;
     return tasks[current]->canTransfer();
   }
 
