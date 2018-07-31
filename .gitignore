@@ -9,6 +9,13 @@ data
 sound_wav
 stdafx.h.*
 installid.txt
+installId.txt
+options.txt
+sokoban_state.txt
+system_info.txt
 KeeperRL.config
 KeeperRL.files
 KeeperRL.includes
+keeper
+gen_version
+log.gz
