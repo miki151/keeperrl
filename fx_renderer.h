@@ -21,6 +21,7 @@ public:
 private:
   FXManager &m_mgr;
   vector<Texture> m_textures;
+  vector<FVec2> m_texture_scales;
 
   struct Element {
     int first_vertex;

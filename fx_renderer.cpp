@@ -16,8 +16,12 @@ FXRenderer::FXRenderer(DirectoryPath data_path, FXManager &mgr) : m_mgr(mgr) {
   auto pdir = data_path.subdirectory("images").subdirectory("particles");
 
   // TODO: error handling
-  for(auto &pdef : m_mgr.particleDefs())
+  for(auto &pdef : m_mgr.particleDefs()) {
     m_textures.emplace_back(pdir.file(pdef.texture_name));
+    auto tsize = m_textures.back().size, rsize = m_textures.back().realSize;
+    FVec2 scale(float(tsize.x) / float(rsize.x), float(tsize.y) / float(rsize.y));
+    m_texture_scales.emplace_back(scale);
+  }
   CHECK(s_instance == nullptr && "There can be only one!");
   s_instance = this;
 }
@@ -38,10 +42,12 @@ void FXRenderer::draw(float zoom, Vec2 offset) {
   m_elements.clear();
 
   FVec2 foffset(offset.x, offset.y);
+  FVec2 tex_scale(1);
 
   for(auto &quad : particles) {
     if(m_elements.empty() || m_elements.back().texture_id != quad.particle_def_id) {
       Element new_elem{(int)m_positions.size(), 0, quad.particle_def_id};
+      tex_scale = m_texture_scales[quad.particle_def_id];
       m_elements.emplace_back(new_elem);
     }
     m_elements.back().num_vertices += 4;
@@ -51,7 +57,7 @@ void FXRenderer::draw(float zoom, Vec2 offset) {
       pos = foffset + pos;
 
       m_positions.emplace_back(pos);
-      m_tex_coords.emplace_back(quad.tex_coords[n].x, quad.tex_coords[n].y);
+      m_tex_coords.emplace_back(quad.tex_coords[n].x * tex_scale.x, quad.tex_coords[n].y * tex_scale.y);
       union {
         struct {
           unsigned char r, g, b, a;

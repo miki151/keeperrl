@@ -68,7 +68,7 @@ int AnimationContext::randomSeed() { return rand.getLL() % 1973257861; }
 
 SVec2 AnimationContext::randomTexTile() {
   if(!(pdef.texture_tiles == IVec2(1, 1))) {
-    IVec2 tex_tile(rand.get(pdef.texture_tiles.x - 1), rand.get(pdef.texture_tiles.y - 1));
+    IVec2 tex_tile(rand.get(pdef.texture_tiles.x), rand.get(pdef.texture_tiles.y));
     return SVec2(tex_tile);
   }
 
