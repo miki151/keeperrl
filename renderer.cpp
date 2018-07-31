@@ -119,6 +119,7 @@ SDL::SDL_Surface* Renderer::createPowerOfTwoSurface(SDL::SDL_Surface* image) {
     return image;
   auto ret = createSurface(w, h);
   SDL::SDL_Rect dst {0, 0, image->w, image->h };
+  SDL::SDL_SetSurfaceBlendMode(image, SDL::SDL_BLENDMODE_NONE);
   SDL_BlitSurface(image, nullptr, ret, &dst);
   // fill the rest of the texture as well, which 'kind-of' solves the problem with repeating textures.
   dst = {image->w, 0, 0, 0};
