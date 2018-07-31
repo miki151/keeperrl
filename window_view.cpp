@@ -1435,15 +1435,9 @@ void WindowView::keyboardAction(const SDL_Keysym& key) {
       gui.loadImages();
       break;
     case SDL::SDLK_TAB:
-    {
-      // TODO: spawn random spell effect for selected character ?
-      if (currentTileLayout.sprites) {
-        Vec2 origin;
-        SDL::SDL_GetMouseState(&origin.x, &origin.y);
-        mapGui->addAnimation(Animation::perticleEffect(1, milliseconds(1000), 1, origin), Vec2(10, 10));
-      }
+	  // TODO: put it under different shortcut?
+	  inputQueue.push(UserInputId::CHEAT_SPELLS);
       break;
-    }
 #endif
     case SDL::SDLK_F7:
       presentList("", ListElem::convert(vector<string>(messageLog.begin(), messageLog.end())), true);

@@ -31,6 +31,7 @@
 #include "game_info.h"
 #include "equipment.h"
 #include "spell.h"
+#include "spell_map.h"
 #include "creature_name.h"
 #include "view.h"
 #include "view_index.h"
@@ -728,7 +729,14 @@ void Player::makeMove() {
         creature->addPermanentEffect(LastingEffect::SPEED, true);
         creature->addPermanentEffect(LastingEffect::FLYING, true);
         break;
-  #endif
+      case UserInputId::CHEAT_SPELLS: {
+        auto &spell_map = creature->getAttributes().getSpellMap();
+        for(auto spell : EnumAll<SpellId>())
+          spell_map.add(spell);
+        spell_map.setAllReady();
+        break;
+      }
+#endif
       default: break;
     }
   if (creature->isAffected(LastingEffect::SLEEP)) {
