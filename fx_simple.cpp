@@ -7,6 +7,7 @@
 namespace fx {
 
 pair<int, int> spawnEffect(const char *name, Vec2 pos) {
+  printf("FX: Spawning %s at: %d %d\n", name, pos.x, pos.y);
   if(auto *inst = FXManager::getInstance())
     if(auto id = inst->findSystem(name)) {
       auto fpos = (FVec2(pos.x, pos.y) + fx::FVec2(0.5)) * 24.0f;
@@ -37,7 +38,6 @@ void setColor(pair<int, int> tid, Color col, int param_index) {
       PASSERT(param_index >= 0 && param_index < ParticleSystem::Params::max_colors);
       system.params.color[param_index] = FColor(col).rgb();
     }
-    inst->kill(id);
   }
 }
 void setScalar(pair<int, int> tid, float value, int param_index) {
@@ -48,7 +48,6 @@ void setScalar(pair<int, int> tid, float value, int param_index) {
       PASSERT(param_index >= 0 && param_index < ParticleSystem::Params::max_scalars);
       system.params.scalar[param_index] = value;
     }
-    inst->kill(id);
   }
 }
 
@@ -60,7 +59,6 @@ void setDir(pair<int, int> tid, Dir dir, int param_index) {
       PASSERT(param_index >= 0 && param_index < ParticleSystem::Params::max_dirs);
       system.params.dir[param_index] = dir;
     }
-    inst->kill(id);
   }
 }
 }

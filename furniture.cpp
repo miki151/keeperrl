@@ -167,23 +167,20 @@ void Furniture::tryToDestroyBy(Position pos, WCreature c, const DestroyAction& a
   if (auto& strength = destroyActions[action.getType()]) {
     c->addSound(action.getSound());
 
-    switch(action.getType()) {
-    case DestroyAction::Type::CUT:
-      fx::spawnEffect("wood_splinters", pos.getCoord());
-      break;
-    case DestroyAction::Type::DIG:
-      fx::spawnEffect("rock_splinters", pos.getCoord());
-      break;
-    default:
-      break;
-    }
-
     double damage = c->getAttr(AttrType::DAMAGE);
     if (auto skill = action.getDestroyingSkillMultiplier())
       damage = damage * c->getAttributes().getSkills().getValue(*skill);
     *strength -= damage;
-    if (*strength <= 0)
+    if(*strength <= 0) {
       destroy(pos, action);
+      if(action.getType() == DestroyAction::Type::DIG)
+        fx::spawnEffect("rock_clouds", pos.getCoord());
+    } else {
+      if(action.getType() == DestroyAction::Type::CUT)
+        fx::spawnEffect("wood_splinters", pos.getCoord());
+      else if(action.getType() == DestroyAction::Type::DIG)
+        fx::spawnEffect("rock_splinters", pos.getCoord());
+    }
   }
 }
 

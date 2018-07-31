@@ -1436,6 +1436,7 @@ void WindowView::keyboardAction(const SDL_Keysym& key) {
       break;
     case SDL::SDLK_TAB:
     {
+      // TODO: spawn random spell effect for selected character ?
       if (currentTileLayout.sprites) {
         Vec2 origin;
         SDL::SDL_GetMouseState(&origin.x, &origin.y);

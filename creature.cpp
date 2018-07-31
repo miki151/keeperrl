@@ -1352,6 +1352,17 @@ CreatureAction Creature::fire(Vec2 direction) const {
 void Creature::addMovementInfo(MovementInfo info) {
   modViewObject().addMovementInfo(info);
   getPosition().setNeedsRenderUpdate(true);
+
+  // We're assuming here that position has already been updated
+  Vec2 old_coord = position.getCoord() - info.direction;
+  Position old_pos(old_coord, position.getLevel());
+  if(auto ground = old_pos.getFurniture(FurnitureLayer::GROUND)) {
+    if(ground->getType() == FurnitureType::SAND) {
+      // TODO: spawn only for visible creatures
+      auto id = fx::spawnEffect("feet_dust", old_coord);
+      fx::setDir(id, info.direction.getCardinalDir());
+    }
+  }
 }
 
 CreatureAction Creature::whip(const Position& pos) const {
