@@ -65,10 +65,10 @@ static void addWoodSplinters(FXManager &mgr) {
   edef.frequency = 999.0f;
 
   ParticleDef pdef;
-  pdef.life = 5.0f;
+  pdef.life = 1.0f;
   pdef.size = 4.0f;
   pdef.slowdown = {{0.0f, 0.1f}, {5.0f, 1000.0f}};
-  pdef.alpha = {{0.0f, 0.8f, 1.0f}, {1.0, 1.0, 0.0}};
+  pdef.alpha = {{0.0f, 0.3f, 1.0f}, {1.0, 1.0, 0.0}, InterpType::cosine};
 
   auto animate_func = [](AnimationContext &ctx, Particle &pinst) {
     defaultAnimateParticle(ctx, pinst);
@@ -83,12 +83,12 @@ static void addWoodSplinters(FXManager &mgr) {
   FColor brown(IColor(120, 87, 46));
   // Kiedy cząsteczki opadną pod drzewo, robią się w zasięgu cienia
   // TODO: lepiej rysować je po prostu pod cieniem
-  pdef.color = {{0.0f, 0.04f, 0.06}, {brown.rgb(), brown.rgb(), brown.rgb() * 0.6f}};
+  pdef.color = {{0.0f, 0.15f, 0.17}, {brown.rgb(), brown.rgb(), brown.rgb() * 0.6f}};
   pdef.texture_name = "flakes_4x4_borders.png";
   pdef.texture_tiles = {4, 4};
 
   SubSystemDef ssdef(mgr.addDef(pdef), mgr.addDef(edef), 0.0f, 0.1f);
-  ssdef.max_total_particles = 4;
+  ssdef.max_total_particles = 7;
   ssdef.animate_func = animate_func;
 
   ParticleSystemDef psdef;
@@ -114,10 +114,10 @@ static void addRockSplinters(FXManager &mgr) {
   edef.frequency = 999.0f;
 
   ParticleDef pdef;
-  pdef.life = 5.0f;
+  pdef.life = 1.0f;
   pdef.size = 4.0f;
   pdef.slowdown = {{0.0f, 0.1f}, {5.0f, 1000.0f}};
-  pdef.alpha = {{0.0f, 0.8f, 1.0f}, {1.0, 1.0, 0.0}};
+  pdef.alpha = {{0.0f, 0.4f, 1.0f}, {1.0, 1.0, 0.0}, InterpType::cosine};
 
   pdef.color = FVec3(0.4, 0.4, 0.4);
   pdef.texture_name = "flakes_4x4_borders.png";
@@ -140,7 +140,7 @@ static void addRockCloud(FXManager &mgr) {
   // czy zostawiają po sobie jakieś ślady?
   // może niech zostają ślady po splinterach, ale po chmurach nie?
   EmitterDef edef;
-  edef.source = FRect(-7.0f, -7.0f, 7.0f, 7.0f);
+  edef.source = FRect(-5.0f, -5.0f, 5.0f, 5.0f);
   edef.strength_min = 5.0f;
   edef.strength_max = 8.0f;
   edef.frequency = 60.0f;
@@ -297,9 +297,9 @@ static void addFeetDustEffect(FXManager &mgr) {
   // drugim parametrem jest kolor (choć chyba będzie uzywany tylko na piasku?)
 
   EmitterDef edef;
-  edef.source = FVec2(-5, 5);
+  edef.source = FRect(-3, 3, 3, 4);
   edef.strength_min = 15.0f;
-  edef.strength_max = 25.0f;
+  edef.strength_max = 20.0f;
   edef.frequency = 60.0f;
 
   ParticleDef pdef;
@@ -318,7 +318,9 @@ static void addFeetDustEffect(FXManager &mgr) {
   ssdef.max_total_particles = 3;
 
   ssdef.emit_func = [](AnimationContext &ctx, EmissionState &em, Particle &pinst) {
+    auto dvec = dirToVec(ctx.ps.params.dir[0]);
     defaultEmitParticle(ctx, em, pinst);
+    pinst.pos -= dvec * 4.0f;
     pinst.rot = 0.0f;
     pinst.size = FVec2(1.2f, 0.6f);
   };
