@@ -12,9 +12,7 @@ namespace fx {
 class ParticleSystemId {
 public:
   ParticleSystemId() : m_index(-1) {}
-  ParticleSystemId(int index, int spawn_time) : m_index(index), m_spawn_time(spawn_time) {
-    PASSERT(index >= 0 && spawn_time >= 0);
-  }
+  ParticleSystemId(int index, int spawn_time) : m_index(index), m_spawn_time(spawn_time) {}
 
   bool validIndex() const { return m_index >= 0; }
   explicit operator bool() const { return validIndex(); }
