@@ -13,6 +13,7 @@ installId.txt
 options.txt
 sokoban_state.txt
 system_info.txt
+stacktrace.out
 KeeperRL.config
 KeeperRL.files
 KeeperRL.includes
