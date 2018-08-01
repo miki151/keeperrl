@@ -13,6 +13,6 @@ AllowShortBlocksOnASingleLine: false
 AllowShortFunctionsOnASingleLine: All
 
 NamespaceIndentation: Inner
-SpaceBeforeParens: Never
+SpaceBeforeParens: ControlStatements
 FixNamespaceComments: false
 Standard: Cpp11
