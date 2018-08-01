@@ -17,6 +17,11 @@ FXRenderer::FXRenderer(DirectoryPath data_path, FXManager &mgr) : m_mgr(mgr) {
 
   // TODO: error handling
   for(auto &pdef : m_mgr.particleDefs()) {
+    if(pdef.texture_name.empty()) {
+      m_textures.emplace_back(Color::PINK, 2, 2);
+      continue;
+    }
+
     m_textures.emplace_back(pdir.file(pdef.texture_name));
     auto tsize = m_textures.back().size, rsize = m_textures.back().realSize;
     FVec2 scale(float(tsize.x) / float(rsize.x), float(tsize.y) / float(rsize.y));
