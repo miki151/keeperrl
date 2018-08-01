@@ -188,6 +188,17 @@ Texture::Texture(const FilePath& filename, int px, int py, int w, int h) : path(
   SDL::SDL_FreeSurface(sub);
 }
 
+Texture::Texture(Color color, int width, int height) {
+  vector<Color> colors(width * height, color);
+  texId = 0;
+  SDL::glGenTextures(1, &(*texId));
+  checkOpenglError();
+  SDL::glBindTexture(GL_TEXTURE_2D, (*texId));
+  SDL::glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, colors.data());
+  realSize = size = Vec2(width, height);
+  SDL::glBindTexture(GL_TEXTURE_2D, 0);
+}
+
 Texture::Texture(SDL::SDL_Surface* surface) {
   CHECK(!loadFromMaybe(surface));
 }

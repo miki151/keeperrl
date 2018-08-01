@@ -85,6 +85,8 @@ class Texture {
   Texture& operator = (Texture&&);
   Texture(const FilePath& path);
   Texture(const FilePath& path, int px, int py, int kx, int ky);
+  Texture(Color, int width, int height);
+
   explicit Texture(SDL::SDL_Surface*);
   static optional<Texture> loadMaybe(const FilePath&);
 
