@@ -101,14 +101,14 @@ struct ParticleSystem {
   };
 
   struct Params {
-    static constexpr int max_scalars = 4, max_colors = 2, max_dirs = 2;
+    static constexpr int max_scalars = 2, max_colors = 2, max_dirs = 2;
 
-    float scalar[max_scalars] = {0.0f, 0.0f, 0.0f, 0.0f};
+    float scalar[max_scalars] = {0.0f, 0.0f};
     FVec3 color[max_colors] = {FVec3(1.0), FVec3(1.0)};
     Dir dir[max_dirs] = {Dir::N, Dir::N};
   };
 
-  ParticleSystem(FVec2 pos, ParticleSystemDefId, int spawn_time, int num_subsystems);
+  ParticleSystem(FVec2 pos, FVec2 target_off, ParticleSystemDefId, int spawn_time, int num_subsystems);
 
   int numActiveParticles() const;
   int numTotalParticles() const;
@@ -120,7 +120,7 @@ struct ParticleSystem {
 
   vector<SubSystem> subsystems;
   Params params;
-  FVec2 pos;
+  FVec2 pos, target_off;
 
   ParticleSystemDefId def_id;
   int spawn_time;

@@ -52,6 +52,7 @@ public:
   const ParticleSystem &get(ParticleSystemId) const;
 
   ParticleSystemId addSystem(ParticleSystemDefId, FVec2 pos);
+  ParticleSystemId addSystem(ParticleSystemDefId, FVec2 pos, FVec2 target_off);
 
   ParticleDefId addDef(ParticleDef);
   EmitterDefId addDef(EmitterDef);

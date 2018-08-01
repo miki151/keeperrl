@@ -80,8 +80,6 @@ void FXManager::simulateStable(double time_delta, int desired_fps) {
   } else {
     m_accum_frame_time = time_delta;
   }
-
-  //print("steps: %\n", num_steps);
 }
 
 void FXManager::simulate(ParticleSystem &ps, float time_delta) {
@@ -226,7 +224,9 @@ const ParticleSystem &FXManager::get(ParticleSystemId id) const {
   return m_systems[id];
 }
 
-ParticleSystemId FXManager::addSystem(ParticleSystemDefId def_id, FVec2 pos) {
+ParticleSystemId FXManager::addSystem(ParticleSystemDefId def_id, FVec2 pos) { return addSystem(def_id, pos, {}); }
+
+ParticleSystemId FXManager::addSystem(ParticleSystemDefId def_id, FVec2 pos, FVec2 target_off) {
   auto &def = (*this)[def_id];
 
   for(int n = 0; n < (int)m_systems.size(); n++)
@@ -234,12 +234,12 @@ ParticleSystemId FXManager::addSystem(ParticleSystemDefId def_id, FVec2 pos) {
       if(m_systems[n].spawn_time == m_spawn_clock)
         m_spawn_clock++;
 
-      m_systems[n] = {pos, def_id, m_spawn_clock, (int)def.subsystems.size()};
+      m_systems[n] = {pos, target_off, def_id, m_spawn_clock, (int)def.subsystems.size()};
       initialize(def, m_systems[n]);
       return ParticleSystemId(n, m_spawn_clock);
     }
 
-  m_systems.emplace_back(pos, def_id, m_spawn_clock, (int)def.subsystems.size());
+  m_systems.emplace_back(pos, target_off, def_id, m_spawn_clock, (int)def.subsystems.size());
   initialize(def, m_systems.back());
   return ParticleSystemId(m_systems.size() - 1, m_spawn_clock);
 }

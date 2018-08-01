@@ -8,7 +8,8 @@ namespace fx {
 
 // This interface is not very efficient, but it's simple to use
 
-pair<int, int> spawnEffect(const char *name, Vec2);
+pair<int, int> spawnEffect(const char *name, Vec2 pos);
+pair<int, int> spawnEffect(const char *name, Vec2 pos, Vec2 dir);
 bool isAlive(pair<int, int>);
 void kill(pair<int, int>);
 

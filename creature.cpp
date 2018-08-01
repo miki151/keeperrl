@@ -157,9 +157,13 @@ CreatureAction Creature::castSpell(Spell* spell, Vec2 dir) const {
     return CreatureAction("You can't cast this spell yet.");
   return CreatureAction(this, [=] (WCreature c) {
     c->addSound(spell->getSound());
+    auto coord = c->getPosition().getCoord();
+    auto dir_effect_type = spell->getDirEffectType();
+
+    fx::spawnEffect("magic_missile", coord, dir * dir_effect_type.getRange());
     thirdPerson(getName().the() + " casts a spell");
     secondPerson("You cast " + spell->getName());
-    applyDirected(c, dir, spell->getDirEffectType());
+    applyDirected(c, dir, dir_effect_type);
     getGame()->getStatistics().add(StatId::SPELL_CAST);
     c->attributes->getSpellMap().setReadyTime(spell, *getGlobalTime() + TimeInterval(
         int(spell->getDifficulty() * getWillpowerMult(attributes->getSkills().getValue(SkillId::SORCERY)))));

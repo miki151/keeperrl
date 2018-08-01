@@ -6,14 +6,20 @@
 
 namespace fx {
 
-pair<int, int> spawnEffect(const char *name, Vec2 pos) {
-  printf("FX: Spawning %s at: %d %d\n", name, pos.x, pos.y);
-  if(auto *inst = FXManager::getInstance())
+pair<int, int> spawnEffect(const char *name, Vec2 pos) { return spawnEffect(name, pos, Vec2(0, 0)); }
+
+pair<int, int> spawnEffect(const char *name, Vec2 pos, Vec2 dir) {
+  if(auto *inst = FXManager::getInstance()) {
     if(auto id = inst->findSystem(name)) {
       auto fpos = (FVec2(pos.x, pos.y) + fx::FVec2(0.5)) * 24.0f;
-      auto inst_id = inst->addSystem(*id, fpos);
+      auto ftarget_off = FVec2(dir.x, dir.y) * 24.0f;
+      auto inst_id = inst->addSystem(*id, fpos, ftarget_off);
+      INFO << "FX spawn: " << name << " at:" << pos << " dir:" << dir;
       return {inst_id.index(), inst_id.spawnTime()};
     }
+    INFO << "FX spawn: couldn't find fx: " << name;
+  }
+
   return {-1, -1};
 }
 

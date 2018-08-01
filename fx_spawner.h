@@ -12,13 +12,17 @@ struct Spawner {
   using Type = SpawnerType;
   using Params = ParticleSystem::Params;
 
-  // TODO: dodatkowe parametry
-  Spawner(Type type, IVec2 tile_pos, ParticleSystemDefId);
+  static FVec2 tileCenter(IVec2 tile_pos) { return FVec2(tile_pos) + FVec2(0.5f); }
+
+  Spawner(Type type, IVec2 tile_pos, ParticleSystemDefId id) : Spawner(type, tile_pos, FVec2(), id) {}
+  Spawner(Type, IVec2 tile_pos, FVec2 target_offset, ParticleSystemDefId);
 
   void update(FXManager &);
   void kill(FXManager &);
 
   IVec2 tile_pos;
+  FVec2 pos, target_offset;
+
   ParticleSystemDefId def_id;
   ParticleSystemId instance_id;
   int spawn_count = 0;

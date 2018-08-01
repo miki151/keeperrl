@@ -4,8 +4,8 @@
 
 namespace fx {
 
-Spawner::Spawner(Type type, IVec2 tile_pos, ParticleSystemDefId def_id)
-    :  tile_pos(tile_pos), def_id(def_id), type(type) {}
+Spawner::Spawner(Type type, IVec2 tile_pos, FVec2 target_offset, ParticleSystemDefId def_id)
+    : tile_pos(tile_pos), pos(tileCenter(tile_pos)), target_offset(target_offset), def_id(def_id), type(type) {}
 
 void Spawner::update(FXManager &manager) {
   if(is_dead)
@@ -18,8 +18,8 @@ void Spawner::update(FXManager &manager) {
     }
 
     spawn_count++;
-    auto spawn_pos = (FVec2(tile_pos) + FVec2(0.5f)) * default_tile_size;
-    instance_id = manager.addSystem(def_id, {spawn_pos.x, spawn_pos.y});
+    float scale(default_tile_size);
+    instance_id = manager.addSystem(def_id, pos * scale, target_offset * scale);
   }
 
   if(!manager.dead(instance_id))

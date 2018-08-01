@@ -338,6 +338,82 @@ static void addFeetDustEffect(FXManager &mgr) {
   mgr.addDef(psdef);
 }
 
+static void addMagicMissleEffect(FXManager &mgr) {
+  // Każda cząsteczka z czasem z grubsza liniowo przechodzi od źródła do celu
+  // dodatkowo może być delikatnie przesunięta z głównego toru
+
+  ParticleSystemDef psdef;
+  { // Base system, not visible, only a source for other particles
+    EmitterDef edef;
+    edef.strength_min = edef.strength_max = 100.0f;
+    edef.frequency = 60.0f;
+    edef.angle_spread = fconstant::pi;
+
+    ParticleDef pdef;
+    pdef.life = .45f;
+    pdef.size = {{15.0f, 20.0f}};
+    pdef.alpha = 0.0f; // TODO: don't draw invisible particles
+    pdef.slowdown = 1.0f;
+
+    SubSystemDef ssdef_base(mgr.addDef(pdef), mgr.addDef(edef), 0.0f, 0.5f);
+    ssdef_base.max_total_particles = 1;
+
+    ssdef_base.animate_func = [](AnimationContext &ctx, Particle &pinst) {
+      defaultAnimateParticle(ctx, pinst);
+      float attract_value = max(0.0001f, std::pow(min(1.0f, 1.0f - pinst.particleTime()), 5.0f));
+      float mul = std::pow(0.001f * attract_value, ctx.time_delta);
+      pinst.pos *= mul;
+    };
+
+    ssdef_base.draw_func = [](DrawContext &ctx, const Particle &pinst, DrawParticle &out) {
+      Particle temp(pinst);
+      temp.pos += temp.particleTime() * ctx.ps.target_off;
+      defaultDrawParticle(ctx, temp, out);
+    };
+    psdef.subsystems.emplace_back(ssdef_base);
+  }
+
+  { // Secondary system
+    EmitterDef edef;
+    edef.strength_min = edef.strength_max = 40.0f;
+    edef.frequency = 50.0f;
+    edef.angle_spread = fconstant::pi;
+
+    ParticleDef pdef;
+    pdef.life = .3f;
+    pdef.size = {{20.0f, 25.0f}};
+    pdef.alpha = {{0.0f, 0.5f, 1.0f}, {0.0, 1.0, 0.0}};
+    pdef.slowdown = 1.0f;
+    IColor color(155, 244, 228);
+    pdef.color = {{FColor(color).rgb(), FColor(0.2f, 0.2f, 0.8f).rgb()}};
+    pdef.texture_name = "circular.png";
+
+    SubSystemDef ssdef(mgr.addDef(pdef), mgr.addDef(edef), 0.0f, 0.5f);
+
+    ssdef.prepare_func = [](AnimationContext &ctx, EmissionState &em) {
+      auto ret = defaultPrepareEmission(ctx, em);
+      auto &parts = ctx.ps.subsystems[0].particles;
+      if(parts.empty())
+        return 0.0f;
+      em.strength_min = em.strength_max = em.strength_max * (1.2f - parts.front().particleTime());
+      return ret;
+    };
+
+    ssdef.emit_func = [](AnimationContext &ctx, EmissionState &em, Particle &pinst) {
+      defaultEmitParticle(ctx, em, pinst);
+      auto &parts = ctx.ps.subsystems[0].particles;
+      if(!parts.empty()) {
+        auto &gpart = parts.front();
+        pinst.pos += gpart.pos + gpart.particleTime() * ctx.ps.target_off;
+      }
+    };
+    psdef.subsystems.emplace_back(ssdef);
+  }
+
+  psdef.name = "magic_missile";
+  mgr.addDef(psdef);
+}
+
 void FXManager::addDefaultDefs() {
   addTestSimpleEffect(*this);
   addTestMultiEffect(*this);
@@ -348,5 +424,6 @@ void FXManager::addDefaultDefs() {
   addRippleEffect(*this);
   addCircularBlast(*this);
   addFeetDustEffect(*this);
+  addMagicMissleEffect(*this);
 };
 }

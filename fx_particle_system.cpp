@@ -6,8 +6,9 @@
 
 namespace fx {
 
-ParticleSystem::ParticleSystem(FVec2 pos, ParticleSystemDefId def_id, int spawn_time, int num_subsystems)
-    : subsystems(num_subsystems), pos(pos), def_id(def_id), spawn_time(spawn_time) {}
+ParticleSystem::ParticleSystem(FVec2 pos, FVec2 target_off, ParticleSystemDefId def_id, int spawn_time,
+                               int num_subsystems)
+    : subsystems(num_subsystems), pos(pos), target_off(target_off), def_id(def_id), spawn_time(spawn_time) {}
 
 void ParticleSystem::kill() {
   subsystems.clear();
@@ -116,8 +117,8 @@ void defaultDrawParticle(DrawContext &ctx, const Particle &pinst, DrawParticle &
   FVec2 size(pdef.size.sample(ptime) * pinst.size);
   float alpha = pdef.alpha.sample(ptime);
 
-  FColor color(pdef.color.sample(ptime) * ctx.ps.params.color[0],
-               alpha); // TODO: by default params dont apply ?
+  // TODO: by default params dont apply ?
+  FColor color(pdef.color.sample(ptime) * ctx.ps.params.color[0], alpha);
   out.positions = ctx.quadCorners(pos, size, pinst.rot);
   out.tex_coords = ctx.texQuadCorners(pinst.tex_tile);
   out.color = IColor(color);
