@@ -109,7 +109,9 @@ class Texture {
 };
 
 class Renderer {
-  public: 
+  public:
+    static constexpr int nominalSize = 24;
+
   class TileCoord {
     public:
     TileCoord();
@@ -122,7 +124,7 @@ class Renderer {
     int texNum;
   };
 
-  Renderer(Clock*, const string& windowTile, Vec2 nominalTileSize, const DirectoryPath& fontPath, const FilePath& cursorPath,
+  Renderer(Clock*, const string& windowTile, const DirectoryPath& fontPath, const FilePath& cursorPath,
       const FilePath& clickedCursorPath);
   void setFullscreen(bool);
   void setFullscreenMode(int);
@@ -195,7 +197,6 @@ class Renderer {
   void printSystemInfo(ostream&);
 
   const vector<TileCoord>& getTileCoord(const string&);
-  Vec2 getNominalSize() const;
   vector<Texture> tiles;
 
   static void putPixel(SDL::SDL_Surface*, Vec2, Color);
@@ -208,7 +209,6 @@ class Renderer {
   friend class Texture;
   optional<Texture> textTexture;
   Renderer(const Renderer&);
-  Vec2 nominalSize;
   map<string, vector<TileCoord>> tileCoords;
   struct AnimationInfo {
     Texture tex;

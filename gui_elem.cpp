@@ -1770,11 +1770,11 @@ class ViewObjectGui : public GuiElem {
 };
 
 SGuiElem GuiFactory::viewObject(const ViewObject& object, double scale, Color color) {
-  return SGuiElem(new ViewObjectGui(object, renderer.getNominalSize() * scale, scale, color));
+  return SGuiElem(new ViewObjectGui(object, Vec2(1, 1) * Renderer::nominalSize * scale, scale, color));
 }
 
 SGuiElem GuiFactory::viewObject(ViewId id, double scale, Color color) {
-  return SGuiElem(new ViewObjectGui(id, renderer.getNominalSize() * scale, scale, color));
+  return SGuiElem(new ViewObjectGui(id, Vec2(1, 1) * Renderer::nominalSize * scale, scale, color));
 }
 
 SGuiElem GuiFactory::asciiBackground(ViewId id) {
