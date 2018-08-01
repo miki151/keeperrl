@@ -38,6 +38,7 @@ enum class UserInputId {
     MESSAGE_INFO,
     CHEAT_ATTRIBUTES,
     CHEAT_SPELLS,
+    CHEAT_POTIONS,
     TUTORIAL_CONTINUE,
     TUTORIAL_GO_BACK,
 // real-time actions
