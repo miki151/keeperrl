@@ -49,6 +49,9 @@
 #include "dummy_view.h"
 #include "sound.h"
 
+#include "fx_manager.h"
+#include "fx_renderer.h"
+
 #ifndef VSTUDIO
 #include "stack_printer.h"
 #endif
@@ -336,12 +339,24 @@ static int keeperMain(po::parser& commandLineFlags) {
   Renderer renderer(
       &clock,
       "KeeperRL",
-      Vec2(24, 24),
       contribDataPath,
       freeDataPath.file("images/mouse_cursor.png"),
       freeDataPath.file("images/mouse_cursor2.png"));
   FatalLog.addOutput(DebugOutput::toString([&renderer](const string& s) { renderer.showError(s);}));
   UserErrorLog.addOutput(DebugOutput::toString([&renderer](const string& s) { renderer.showError(s);}));
+
+  unique_ptr<fx::FXManager> fx_manager;
+  unique_ptr<fx::FXRenderer> fx_renderer;
+
+  if (paidDataPath.exists()) {
+    auto particlesPath = paidDataPath.subdirectory("images").subdirectory("particles");
+    if (particlesPath.exists()) {
+      INFO << "FX: initialization";
+      fx_manager = std::make_unique<fx::FXManager>();
+      fx_renderer = std::make_unique<fx::FXRenderer>(particlesPath, *fx_manager);
+    }
+  }
+
   userPath.createIfDoesntExist();
   auto settingsPath = userPath.file("options.txt");
   if (commandLineFlags["restore_settings"].was_set())

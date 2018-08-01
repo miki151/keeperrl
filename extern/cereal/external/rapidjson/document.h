@@ -589,7 +589,7 @@ public:
         \param type Type of the value.
         \note Default content for number is zero.
     */
-    explicit GenericValue(Type type) CEREAL_RAPIDJSON_NOEXCEPT : data_() {
+    explicit GenericValue(Type type) /*CEREAL_RAPIDJSON_NOEXCEPT*/ : data_() {
         static const uint16_t defaultFlags[7] = {
             kNullFlag, kFalseFlag, kTrueFlag, kObjectFlag, kArrayFlag, kShortStringFlag,
             kNumberAnyFlag
@@ -752,7 +752,7 @@ public:
     //! Assignment with move semantics.
     /*! \param rhs Source of the assignment. It will become a null value after assignment.
     */
-    GenericValue& operator=(GenericValue& rhs) CEREAL_RAPIDJSON_NOEXCEPT {
+    GenericValue& operator=(GenericValue& rhs) /*CEREAL_RAPIDJSON_NOEXCEPT*/ {
         CEREAL_RAPIDJSON_ASSERT(this != &rhs);
         this->~GenericValue();
         RawAssign(rhs);

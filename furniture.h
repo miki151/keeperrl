@@ -70,6 +70,7 @@ class Furniture : public OwnedObject<Furniture> {
   bool isClearFogOfWar() const;
   bool forgetAfterBuilding() const;
   bool isShowEfficiency() const;
+
   /**
    * @brief Calls special functionality to handle dropped items, if any.
    * @return possibly empty subset of the items that weren't consumned and can be dropped normally.
