@@ -564,7 +564,7 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
       renderer.drawTile(pos + movement, coord, size, Color(255, 255, 255, 160));
     }
     if (object.layer() == ViewLayer::CREATURE || tile.moveUp)
-      move.y = -4* size.y / renderer.getNominalSize().y;
+      move.y = -4 * size.y / Renderer::nominalSize;
     renderer.drawTile(pos, tile.getBackgroundCoord(), size, color);
     move += movement;
     if (mirrorSprite(id))
@@ -587,7 +587,7 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
       if (*burningVal > 0) {
         static auto fire1 = renderer.getTileCoord("fire1");
         static auto fire2 = renderer.getTileCoord("fire2");
-        renderer.drawTile(pos - Vec2(0, 4 * size.y / renderer.getNominalSize().y),
+        renderer.drawTile(pos - Vec2(0, 4 * size.y / Renderer::nominalSize),
             (curTimeReal.count() + pos.getHash()) % 500 < 250 ? fire1 : fire2, size);
       }
     if (displayAllHealthBars || lastHighlighted.creaturePos == pos + movement ||

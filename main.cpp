@@ -336,7 +336,6 @@ static int keeperMain(po::parser& commandLineFlags) {
   Renderer renderer(
       &clock,
       "KeeperRL",
-      Vec2(24, 24),
       contribDataPath,
       freeDataPath.file("images/mouse_cursor.png"),
       freeDataPath.file("images/mouse_cursor2.png"));

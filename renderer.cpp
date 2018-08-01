@@ -392,7 +392,7 @@ static Vec2 rotate(Vec2 pos, Vec2 origin, double x, double y) {
 
 void Renderer::drawAnimation(AnimationId id, Vec2 pos, double state, Vec2 squareSize, Dir orientation) {
   if (auto& animInfo = animations[id]) {
-    int zoomLevel = squareSize.y / nominalSize.y;
+    int zoomLevel = squareSize.y / nominalSize;
     int frame = int(animInfo->numFrames * state);
     int width = animInfo->tex.getSize().x / animInfo->numFrames;
     Vec2 size(width, animInfo->tex.getSize().y);
@@ -628,9 +628,9 @@ void Renderer::setVsync(bool on) {
   SDL::SDL_GL_SetSwapInterval(on ? 1 : 0);
 }
 
-Renderer::Renderer(Clock* clock, const string& title, Vec2 nominal, const DirectoryPath& fontPath,
+Renderer::Renderer(Clock* clock, const string& title, const DirectoryPath& fontPath,
     const FilePath& cursorP, const FilePath& clickedCursorP)
-    : nominalSize(nominal), cursorPath(cursorP), clickedCursorPath(clickedCursorP), clock(clock) {
+    : cursorPath(cursorP), clickedCursorPath(clickedCursorP), clock(clock) {
   CHECK(SDL::SDL_Init(SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_EVENTS) >= 0) << SDL::SDL_GetError();
   SDL::SDL_GL_SetAttribute(SDL::SDL_GL_CONTEXT_MAJOR_VERSION, 2 );
   SDL::SDL_GL_SetAttribute(SDL::SDL_GL_CONTEXT_MINOR_VERSION, 1 );
@@ -657,9 +657,9 @@ void Renderer::drawTile(Vec2 pos, const vector<TileCoord>& coords, Vec2 size, Co
   CHECK(coord.texNum >= 0 && coord.texNum < Renderer::tiles.size());
   Texture* tex = &tiles[coord.texNum];
   Vec2 sz = tileDirectories[coord.texNum].size;
-  Vec2 off = (nominalSize -  sz).mult(size).div(Renderer::nominalSize * 2);
-  Vec2 tileSize = sz.mult(size).div(nominalSize);
-  if (sz.y > nominalSize.y)
+  Vec2 off = (Vec2(nominalSize, nominalSize) - sz).mult(size) / (nominalSize * 2);
+  Vec2 tileSize = sz.mult(size) / nominalSize;
+  if (sz.y > nominalSize)
     off.y *= 2;
   Vec2 coordPos = coord.pos.mult(sz);
   drawSprite(pos + off, coordPos, sz, *tex, tileSize, color, orientation);
@@ -672,8 +672,8 @@ void Renderer::drawTile(Vec2 pos, const vector<TileCoord>& coords, double scale,
   auto& coord = coords[frame % coords.size()];
   CHECK(coord.texNum >= 0 && coord.texNum < Renderer::tiles.size());
   Vec2 sz = tileDirectories[coord.texNum].size;
-  Vec2 off = getOffset(Renderer::nominalSize - sz, scale);
-  if (sz.y > nominalSize.y)
+  Vec2 off = getOffset(Vec2(nominalSize, nominalSize) - sz, scale);
+  if (sz.y > nominalSize)
     off.y *= 2;
   drawSprite(pos + off, coord.pos.mult(sz), sz, tiles[coord.texNum], sz * scale, color);
 }
@@ -684,7 +684,7 @@ void Renderer::drawViewObject(Vec2 pos, ViewId id, Color color) {
     drawTile(pos, tile.getSpriteCoord(DirSet::fullSet()), 1, color * tile.color);
   else
     drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TEXT_FONT, 20, tile.color,
-        pos + Vec2(nominalSize.x / 2, 0), tile.text, HOR);
+        pos + Vec2(nominalSize / 2, 0), tile.text, HOR);
 }
 
 void Renderer::drawViewObject(Vec2 pos, ViewId id, bool useSprite, double scale, Color color) {
@@ -693,7 +693,7 @@ void Renderer::drawViewObject(Vec2 pos, ViewId id, bool useSprite, double scale,
     drawTile(pos, tile.getSpriteCoord(DirSet::fullSet()), scale, color * tile.color);
   else
     drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TEXT_FONT, 20 * scale, color * tile.color,
-        pos + Vec2(scale * nominalSize.x / 2, 0), tile.text, HOR);
+        pos + Vec2(scale * nominalSize / 2, 0), tile.text, HOR);
 }
 
 void Renderer::drawViewObject(Vec2 pos, ViewId id, bool useSprite, Vec2 size, Color color, SpriteOrientation orient) {
@@ -788,10 +788,6 @@ void Renderer::loadTilesFromDir(const DirectoryPath& path, Vec2 size, int setWid
 const vector<Renderer::TileCoord>& Renderer::getTileCoord(const string& name) {
   USER_CHECK(tileCoords.count(name)) << "Tile not found: '" << name << "'. Please make sure all game data is in place.";
   return tileCoords.at(name);
-}
-
-Vec2 Renderer::getNominalSize() const {
-  return nominalSize;
 }
 
 void Renderer::drawAndClearBuffer() {
