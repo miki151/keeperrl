@@ -414,6 +414,41 @@ static void addMagicMissleEffect(FXManager &mgr) {
   mgr.addDef(psdef);
 }
 
+static void addSleepEffect(FXManager &mgr) {
+  // TODO: tutaj trzeba zrobić tak, żeby cząsteczki które spawnują się później
+  // zaczynały z innym kolorem
+  EmitterDef edef;
+  edef.strength_min = edef.strength_max = 20.0f;
+  edef.angle = -fconstant::pi * 0.5f;
+  edef.angle_spread = 0.2f;
+  edef.frequency = 3.0f;
+  edef.source = FRect(-2, -8, 2, -5);
+
+  ParticleDef pdef;
+  pdef.life = 2.0f;
+  pdef.size = 10.0f;
+  pdef.alpha = {{0.0f, 0.5f, 1.0f}, {0.0, 1.0, 0.0}, InterpType::cosine};
+
+  pdef.color = FVec3(1.0f);
+  pdef.texture_name = "special_4x1.png";
+  pdef.texture_tiles = {4, 1};
+
+  SubSystemDef ssdef(mgr.addDef(pdef), mgr.addDef(edef), 0.0f, 1.0f);
+  ssdef.emit_func = [](AnimationContext &ctx, EmissionState &em, Particle &pinst) {
+	defaultEmitParticle(ctx, em, pinst);
+	pinst.tex_tile = {0,0};
+	pinst.rot = ctx.rand.getDouble(-0.2f, 0.2f);
+  };
+
+  ParticleSystemDef psdef;
+  psdef.subsystems = {ssdef};
+  psdef.name = "sleep";
+  psdef.is_looped = true;
+  psdef.anim_length = 1.0f;
+  mgr.addDef(psdef);
+}
+
+
 void FXManager::addDefaultDefs() {
   addTestSimpleEffect(*this);
   addTestMultiEffect(*this);
@@ -425,5 +460,6 @@ void FXManager::addDefaultDefs() {
   addCircularBlast(*this);
   addFeetDustEffect(*this);
   addMagicMissleEffect(*this);
+  addSleepEffect(*this);
 };
 }
