@@ -32,6 +32,9 @@
 #include "model.h"
 #include "creature_status.h"
 
+#include "fx_renderer.h"
+#include "fx_manager.h"
+
 using SDL::SDL_Keysym;
 using SDL::SDL_Keycode;
 
@@ -1037,6 +1040,11 @@ void MapGui::render(Renderer& renderer) {
   auto currentTimeReal = clock->getRealMillis();
   lastHighlighted = getHighlightedInfo(size, currentTimeReal);
   renderMapObjects(renderer, size, currentTimeReal);
+  if (auto *rinst = fx::FXRenderer::getInstance()) {
+    float zoom = float(layout->getSquareSize().x) / float(Renderer::nominalSize);
+    rinst->draw(zoom, projectOnScreen(Vec2(0, 0)));
+  }
+
   renderAnimations(renderer, currentTimeReal);
   if (lastHighlighted.tilePos)
     considerRedrawingSquareHighlight(renderer, currentTimeReal, *lastHighlighted.tilePos, size);
@@ -1099,6 +1107,10 @@ void MapGui::updateObjects(CreatureView* view, MapLayout* mapLayout, bool smooth
   mouseUI = ui;
   layout = mapLayout;
   auto currentTimeReal = clock->getRealMillis();
+
+  if (auto *inst = fx::FXManager::getInstance())
+    inst->simulateStableTime(double(currentTimeReal.count()) * 0.001);
+
   if (view != previousView || level != previousLevel)
     for (Vec2 pos : level->getBounds())
       level->setNeedsRenderUpdate(pos, true);
