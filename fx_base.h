@@ -41,8 +41,6 @@ template <class T> using NVP = cereal::NameValuePair<T>;
 using IArchive = cereal::JSONInputArchive;
 using OArchive = cereal::JSONOutputArchive;
 
-static constexpr int default_tile_size = 24;
-
 class FXManager;
 
 template <class T> class Rect;

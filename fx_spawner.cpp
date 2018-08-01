@@ -1,6 +1,7 @@
 #include "fx_spawner.h"
 
 #include "fx_manager.h"
+#include "renderer.h"
 
 namespace fx {
 
@@ -18,7 +19,7 @@ void Spawner::update(FXManager &manager) {
     }
 
     spawn_count++;
-    float scale(default_tile_size);
+    float scale(Renderer::nominalSize);
     instance_id = manager.addSystem(def_id, pos * scale, target_offset * scale);
   }
 
