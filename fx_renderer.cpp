@@ -13,8 +13,6 @@ static FXRenderer *s_instance = nullptr;
 FXRenderer *FXRenderer::getInstance() { return s_instance; }
 
 FXRenderer::FXRenderer(DirectoryPath data_path, FXManager &mgr) : m_mgr(mgr) {
-  auto pdir = data_path.subdirectory("images").subdirectory("particles");
-
   // TODO: error handling
   for(auto &pdef : m_mgr.particleDefs()) {
     if(pdef.texture_name.empty()) {
@@ -22,7 +20,7 @@ FXRenderer::FXRenderer(DirectoryPath data_path, FXManager &mgr) : m_mgr(mgr) {
       continue;
     }
 
-    m_textures.emplace_back(pdir.file(pdef.texture_name));
+    m_textures.emplace_back(data_path.file(pdef.texture_name));
     auto tsize = m_textures.back().size, rsize = m_textures.back().realSize;
     FVec2 scale(float(tsize.x) / float(rsize.x), float(tsize.y) / float(rsize.y));
     m_texture_scales.emplace_back(scale);

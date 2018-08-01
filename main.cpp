@@ -346,15 +346,17 @@ static int keeperMain(po::parser& commandLineFlags) {
   FatalLog.addOutput(DebugOutput::toString([&renderer](const string& s) { renderer.showError(s);}));
   UserErrorLog.addOutput(DebugOutput::toString([&renderer](const string& s) { renderer.showError(s);}));
 
-#ifdef ENABLE_PARTICLE_FX
   unique_ptr<fx::FXManager> fx_manager;
   unique_ptr<fx::FXRenderer> fx_renderer;
 
-  if(paidDataPath.exists()) {
-	  fx_manager = std::make_unique<fx::FXManager>();
-	  fx_renderer = std::make_unique<fx::FXRenderer>(paidDataPath, *fx_manager);
+  if (paidDataPath.exists()) {
+    auto particlesPath = paidDataPath.subdirectory("images").subdirectory("particles");
+    if (particlesPath.exists()) {
+      INFO << "FX: initialization";
+      fx_manager = std::make_unique<fx::FXManager>();
+      fx_renderer = std::make_unique<fx::FXRenderer>(particlesPath, *fx_manager);
+    }
   }
-#endif
 
   userPath.createIfDoesntExist();
   auto settingsPath = userPath.file("options.txt");
