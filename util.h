@@ -208,8 +208,8 @@ class Range {
 
     private:
     int ind;
-    int min;
-    int max;
+    //int min;
+    //int max;
     int increment;
   };
 
@@ -284,7 +284,7 @@ class Rectangle {
 
     private:
     Vec2 pos;
-    int px, py, kx, ky;
+    int /*px, */py, /*kx, */ky;
   };
 
   Iter begin() const;

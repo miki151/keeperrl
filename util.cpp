@@ -517,7 +517,7 @@ Rectangle::Rectangle(Range xRange, Range yRange)
     : Rectangle(xRange.getStart(), yRange.getStart(), xRange.getEnd(), yRange.getEnd()) {
 }
 
-Rectangle::Iter::Iter(int x1, int y1, int px1, int py1, int kx1, int ky1) : pos(x1, y1), px(px1), py(py1), kx(kx1), ky(ky1) {}
+Rectangle::Iter::Iter(int x1, int y1, int px1, int py1, int kx1, int ky1) : pos(x1, y1), py(py1), ky(ky1) {}
 
 Vec2 Rectangle::randomVec2() const {
   return Vec2(Random.get(px, kx), Random.get(py, ky));
@@ -703,7 +703,7 @@ Range::Iter Range::end() {
   return Iter(finish, start, finish, increment);
 }
 
-Range::Iter::Iter(int i, int a, int b, int inc) : ind(i), min(a), max(b), increment(inc) {}
+Range::Iter::Iter(int i, int a, int b, int inc) : ind(i), /*min(a), max(b), */increment(inc) {}
 
 int Range::Iter::operator* () const {
   return ind;
