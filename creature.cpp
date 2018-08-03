@@ -53,6 +53,7 @@
 #include "profiler.h"
 #include "furniture_type.h"
 #include "furniture_usage.h"
+#include "fx_simple.h"
 
 template <class Archive>
 void Creature::serialize(Archive& ar, const unsigned int version) {
@@ -138,6 +139,7 @@ CreatureAction Creature::castSpell(Spell* spell) const {
     return CreatureAction("You can't cast this spell yet.");
   return CreatureAction(this, [=] (WCreature c) {
     c->addSound(spell->getSound());
+    fx::spawnEffect("circular_blast", c->getPosition().getCoord());
     spell->addMessage(c);
     spell->getEffect().applyToCreature(c);
     getGame()->getStatistics().add(StatId::SPELL_CAST);
@@ -155,9 +157,13 @@ CreatureAction Creature::castSpell(Spell* spell, Vec2 dir) const {
     return CreatureAction("You can't cast this spell yet.");
   return CreatureAction(this, [=] (WCreature c) {
     c->addSound(spell->getSound());
+    auto coord = c->getPosition().getCoord();
+    auto dirEffectType = spell->getDirEffectType();
+
+    fx::spawnEffect("magic_missile", coord, dir * dirEffectType.getRange());
     thirdPerson(getName().the() + " casts a spell");
     secondPerson("You cast " + spell->getName());
-    applyDirected(c, dir, spell->getDirEffectType());
+    applyDirected(c, dir, dirEffectType);
     getGame()->getStatistics().add(StatId::SPELL_CAST);
     c->attributes->getSpellMap().setReadyTime(spell, *getGlobalTime() + TimeInterval(
         int(spell->getDifficulty() * getWillpowerMult(attributes->getSkills().getValue(SkillId::SORCERY)))));
@@ -1350,6 +1356,17 @@ CreatureAction Creature::fire(Vec2 direction) const {
 void Creature::addMovementInfo(MovementInfo info) {
   modViewObject().addMovementInfo(info);
   getPosition().setNeedsRenderUpdate(true);
+
+  // We're assuming here that position has already been updated
+  Vec2 oldCoord = position.getCoord() - info.direction;
+  Position oldPos(oldCoord, position.getLevel());
+  if (auto ground = oldPos.getFurniture(FurnitureLayer::GROUND)) {
+    if (ground->getType() == FurnitureType::SAND) {
+      // TODO: spawn only for visible creatures
+      auto id = fx::spawnEffect("feet_dust", oldCoord);
+      fx::setDir(id, info.direction.getCardinalDir());
+    }
+  }
 }
 
 CreatureAction Creature::whip(const Position& pos) const {
