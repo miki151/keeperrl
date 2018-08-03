@@ -652,7 +652,7 @@ Vec2 getOffset(Vec2 sizeDiff, double scale) {
 void Renderer::drawTile(Vec2 pos, const vector<TileCoord>& coords, Vec2 size, Color color, SpriteOrientation orientation) {
   if (coords.empty())
     return;
-  auto frame = clock->getRealMillis().count() / 100;
+  auto frame = clock->getRealMillis().count() / 200;
   auto& coord = coords[frame % coords.size()];
   CHECK(coord.texNum >= 0 && coord.texNum < Renderer::tiles.size());
   Texture* tex = &tiles[coord.texNum];
@@ -668,7 +668,7 @@ void Renderer::drawTile(Vec2 pos, const vector<TileCoord>& coords, Vec2 size, Co
 void Renderer::drawTile(Vec2 pos, const vector<TileCoord>& coords, double scale, Color color) {
   if (coords.empty())
     return;
-  auto frame = clock->getRealMillis().count() / 100;
+  auto frame = clock->getRealMillis().count() / 200;
   auto& coord = coords[frame % coords.size()];
   CHECK(coord.texNum >= 0 && coord.texNum < Renderer::tiles.size());
   Vec2 sz = tileDirectories[coord.texNum].size;
