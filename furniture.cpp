@@ -19,6 +19,7 @@
 #include "furniture_click.h"
 #include "furniture_tick.h"
 #include "movement_set.h"
+#include "fx_simple.h"
 
 static string makePlural(const string& s) {
   if (s.empty())
@@ -165,12 +166,21 @@ void Furniture::destroy(Position pos, const DestroyAction& action) {
 void Furniture::tryToDestroyBy(Position pos, WCreature c, const DestroyAction& action) {
   if (auto& strength = destroyActions[action.getType()]) {
     c->addSound(action.getSound());
+
     double damage = c->getAttr(AttrType::DAMAGE);
     if (auto skill = action.getDestroyingSkillMultiplier())
       damage = damage * c->getAttributes().getSkills().getValue(*skill);
     *strength -= damage;
-    if (*strength <= 0)
+    if (*strength <= 0) {
       destroy(pos, action);
+      if (action.getType() == DestroyAction::Type::DIG)
+        fx::spawnEffect("rock_clouds", pos.getCoord());
+    } else {
+      if (action.getType() == DestroyAction::Type::CUT)
+        fx::spawnEffect("wood_splinters", pos.getCoord());
+      else if (action.getType() == DestroyAction::Type::DIG)
+        fx::spawnEffect("rock_splinters", pos.getCoord());
+    }
   }
 }
 
