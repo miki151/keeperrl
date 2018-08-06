@@ -111,7 +111,7 @@ struct ParticleSystem {
   int numActiveParticles() const;
   int numTotalParticles() const;
 
-  void kill();
+  void kill(bool immediate);
 
   const SubSystem &operator[](int ssid) const { return subSystems[ssid]; }
   SubSystem &operator[](int ssid) { return subSystems[ssid]; }
@@ -125,6 +125,7 @@ struct ParticleSystem {
 
   float animTime = 0.0f;
   bool isDead = false;
+  bool isDying = false;
 };
 
 struct SubSystemContext {

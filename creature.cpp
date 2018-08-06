@@ -171,6 +171,78 @@ CreatureAction Creature::castSpell(Spell* spell, Vec2 dir) const {
   });
 }
 
+struct Creature::LastingFX {
+  LastingEffect effect;
+  pair<int, int> instance;
+  bool inactive = false;
+};
+
+pair<int, int> Creature::spawnLastingFX(LastingEffect effect) {
+  auto coord = position.getCoord();
+
+  switch (effect) {
+  case LastingEffect::PEACEFULNESS:
+    return fx::spawnEffect("peacefulness", coord);
+  case LastingEffect::SLEEP:
+    return fx::spawnEffect("sleep", coord);
+  case LastingEffect::BLIND:
+    return fx::spawnEffect("blind", coord);
+  case LastingEffect::INSANITY:
+    return fx::spawnEffect("insanity", coord);
+  default:
+    break;
+  }
+
+  return {-1, -1};
+}
+
+void Creature::updateLastingFX() {
+  EnumSet<LastingEffect> active;
+
+  // TODO: when creature dies, effects should die with it?
+
+  for (auto &lfx : m_lastingFXes) {
+    if (lfx.inactive)
+      continue;
+
+    if (isAffected(lfx.effect)) {
+      active.insert(lfx.effect);
+    } else {
+      fx::kill(lfx.instance, false);
+      lfx.inactive = true;
+    }
+  }
+
+  // Removing dead instances
+  for (int n = 0; n < (int)m_lastingFXes.size(); n++) {
+    auto &lfx = m_lastingFXes[n];
+    if (lfx.inactive && !fx::isAlive(lfx.instance)) {
+      lfx = m_lastingFXes.back();
+      m_lastingFXes.pop_back();
+      n--;
+    }
+  }
+
+  // TODO: what if we have multiple effects ?
+  // TODO: sometimes effects are drawn behind the character
+  // TODO: sleep is visible when mouse cursor is over character
+
+  auto coord = position.getCoord();
+  for (auto &lfx : m_lastingFXes) {
+    fx::setPos(lfx.instance, coord);
+    // TODO: take into consideration getMovementOffset...
+    // TODO: control FXes with parameters
+  }
+
+  for (auto le : ENUM_ALL(LastingEffect)) {
+    if (!active.contains(le) && isAffected(le)) {
+      auto inst = spawnLastingFX(le);
+      if (inst != make_pair(-1, -1))
+        m_lastingFXes.emplace_back(LastingFX{le, inst});
+    }
+  }
+}
+
 void Creature::pushController(PController ctrl) {
   if (auto controller = getController())
     controller->onEndedControl();
@@ -1111,6 +1183,7 @@ void Creature::updateViewObject() {
     object.setAttribute(ViewObject::Attribute::HEALTH, captureHealth);
   object.setDescription(getName().title());
   getPosition().setNeedsRenderUpdate(true);
+  updateLastingFX();
 }
 
 double Creature::getMorale() const {

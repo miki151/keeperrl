@@ -9,9 +9,13 @@ namespace fx {
 ParticleSystem::ParticleSystem(FVec2 pos, FVec2 targetOff, ParticleSystemDefId defId, int spawnTime, int numSubSystems)
     : subSystems(numSubSystems), pos(pos), targetOff(targetOff), defId(defId), spawnTime(spawnTime) {}
 
-void ParticleSystem::kill() {
-  subSystems.clear();
-  isDead = true;
+void ParticleSystem::kill(bool immediate) {
+  if (immediate) {
+    isDead = true;
+    subSystems.clear();
+  } else {
+    isDying = true;
+  }
 }
 
 int ParticleSystem::numActiveParticles() const {

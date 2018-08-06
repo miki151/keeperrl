@@ -28,7 +28,7 @@ void Spawner::update(FXManager &manager) {
 }
 
 void Spawner::kill(FXManager &manager) {
-  manager.kill(instanceId);
+  manager.kill(instanceId, false);
   isDead = true;
 }
 }

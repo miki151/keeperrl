@@ -43,7 +43,7 @@ public:
   bool valid(ParticleSystemId) const;
   bool alive(ParticleSystemId) const;
   bool dead(ParticleSystemId) const; // invalid ids will be dead
-  void kill(ParticleSystemId);
+  void kill(ParticleSystemId, bool immediate);
 
   // id cannot be invalid
   ParticleSystem &get(ParticleSystemId);

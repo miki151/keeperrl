@@ -114,12 +114,16 @@ void FXManager::simulate(ParticleSystem &ps, float timeDelta) {
   for (int ssid = 0; ssid < (int)psdef.subSystems.size(); ssid++) {
     const auto &ssdef = psdef[ssid];
 
+    if (ps.isDying)
+      break;
+
     float emissionTimeSpan = ssdef.emissionEnd - ssdef.emissionStart;
     float emissionTime = (ps.animTime - ssdef.emissionStart) / emissionTimeSpan;
+    auto &ss = ps[ssid];
+
     if (emissionTime < 0.0f || emissionTime > 1.0f)
       continue;
 
-    auto &ss = ps[ssid];
     AnimationContext ctx(ssctx(ps, ssid), ps.animTime, timeDelta);
     ctx.rand.init(ss.randomSeed);
     EmissionState em{emissionTime};
@@ -141,6 +145,13 @@ void FXManager::simulate(ParticleSystem &ps, float timeDelta) {
     ss.randomSeed = ctx.randomSeed(); // TODO: save random state properly?
   }
 
+  int numActive = 0;
+  for (auto &ss : ps.subSystems)
+    numActive += (int)ss.particles.size();
+
+  if (ps.isDying && numActive == 0)
+    ps.kill(true);
+
   ps.animTime += timeDelta;
 
   bool finishedAnim = false;
@@ -149,14 +160,8 @@ void FXManager::simulate(ParticleSystem &ps, float timeDelta) {
     finishedAnim = ps.animTime >= *psdef.animLength;
   } else {
     float endEmissionTime = 0.0f;
-    int numActive = 0;
-
-    for (int ssid = 0; ssid < (int)psdef.subSystems.size(); ssid++) {
-      auto &ss = ps[ssid];
-      numActive += (int)ps[ssid].particles.size();
+    for (int ssid = 0; ssid < (int)psdef.subSystems.size(); ssid++)
       endEmissionTime = max(endEmissionTime, psdef[ssid].emissionEnd);
-    }
-
     finishedAnim = numActive == 0 && ps.animTime >= endEmissionTime;
   }
 
@@ -165,7 +170,7 @@ void FXManager::simulate(ParticleSystem &ps, float timeDelta) {
     if (psdef.isLooped)
       ps.animTime = 0.0f;
     else
-      ps.kill();
+      ps.kill(true);
   }
 }
 
@@ -209,9 +214,9 @@ bool FXManager::valid(ParticleSystemId id) const {
 bool FXManager::dead(ParticleSystemId id) const { return !valid(id) || m_systems[id].isDead; }
 bool FXManager::alive(ParticleSystemId id) const { return valid(id) && !m_systems[id].isDead; }
 
-void FXManager::kill(ParticleSystemId id) {
+void FXManager::kill(ParticleSystemId id, bool immediate) {
   if (!dead(id))
-    m_systems[id].kill();
+    m_systems[id].kill(immediate);
 }
 
 ParticleSystem &FXManager::get(ParticleSystemId id) {
