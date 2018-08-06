@@ -23,7 +23,7 @@ FVec2 EmissionSource::sample(RandomGen &rand) const {
   case Type::point:
     return m_pos;
   case Type::rect:
-    return m_pos + FVec2(rand.getDouble(-m_param.x, m_param.x), rand.getDouble(-m_param.x, m_param.x));
+    return m_pos + FVec2(rand.getDouble(-m_param.x, m_param.x), rand.getDouble(-m_param.y, m_param.y));
   case Type::sphere: {
     FVec2 spoint(rand.getDouble(-1.0f, 1.0f), rand.getDouble(-1.0f, 1.0f));
     while(spoint.x * spoint.x + spoint.y * spoint.y > 1.0f)
