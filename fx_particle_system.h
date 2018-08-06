@@ -79,6 +79,7 @@ struct Particle {
   float life = 0.0f, maxLife = 1.0f;
   float rot = 0.0f, rotSpeed = 0.0f;
   SVec2 texTile;
+  int randomSeed;
 };
 
 struct DrawParticle {

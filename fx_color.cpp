@@ -21,4 +21,7 @@ FColor::operator Color() const {
 
 IColor::IColor(Color col) : r(col.r), g(col.g), b(col.b), a(col.a) {}
 IColor::operator Color() const { return {r, g, b, a}; }
+
+FVec3 IColor::rgb() const { return FColor(*this).rgb(); }
+void IColor::setRGB(IColor col) { r = col.r, g = col.g, b = col.b; }
 }

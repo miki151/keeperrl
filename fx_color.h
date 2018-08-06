@@ -39,6 +39,9 @@ struct IColor {
   IColor(Color);
   explicit operator Color() const;
 
+  FVec3 rgb() const;
+  void setRGB(IColor);
+
   unsigned char r, g, b, a;
 };
 

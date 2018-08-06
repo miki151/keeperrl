@@ -415,8 +415,6 @@ static void addMagicMissleEffect(FXManager &mgr) {
 }
 
 static void addSleepEffect(FXManager &mgr) {
-  // TODO: tutaj trzeba zrobić tak, żeby cząsteczki które spawnują się później
-  // zaczynały z innym kolorem
   EmitterDef edef;
   edef.strengthMin = edef.strengthMax = 20.0f;
   edef.angle = -fconstant::pi * 0.5f;
@@ -430,8 +428,8 @@ static void addSleepEffect(FXManager &mgr) {
   pdef.alpha = {{0.0f, 0.5f, 1.0f}, {0.0, 1.0, 0.0}, InterpType::cosine};
 
   pdef.color = FVec3(1.0f);
-  pdef.textureName = "special_4x1.png";
-  pdef.textureTiles = {4, 1};
+  pdef.textureName = "special_4x2.png";
+  pdef.textureTiles = {4, 2};
 
   SubSystemDef ssdef(mgr.addDef(pdef), mgr.addDef(edef), 0.0f, 1.0f);
   ssdef.emitFunc = [](AnimationContext &ctx, EmissionState &em, Particle &pinst) {
@@ -443,6 +441,135 @@ static void addSleepEffect(FXManager &mgr) {
   ParticleSystemDef psdef;
   psdef.subSystems = {ssdef};
   psdef.name = "sleep";
+  psdef.isLooped = true;
+  psdef.animLength = 1.0f;
+  mgr.addDef(psdef);
+}
+
+template <class T, int size> constexpr int arraySize(T (&)[size]) { return size; }
+
+static IColor insanityColors[] = {
+    {244, 255, 190}, {255, 189, 230}, {190, 214, 220}, {242, 124, 161}, {230, 240, 240}, {220, 200, 220},
+};
+
+static void addInsanityEffect(FXManager &mgr) {
+  EmitterDef edef;
+  edef.frequency = 4.0f;
+  edef.source = FRect(-10, -12, 10, -4);
+
+  ParticleDef pdef;
+  pdef.life = 0.7f;
+  pdef.size = {{5.0f, 8.0f, 12.0f}, InterpType::quadratic};
+  pdef.alpha = {{0.0f, 0.2, 0.8f, 1.0f}, {0.0, 0.8, 0.8, 0.0}, InterpType::cosine};
+
+  // TODO: zestaw losowych kolorów ?
+  pdef.color = FVec3(1.0);
+  pdef.textureName = "special_4x2.png";
+  pdef.textureTiles = {4, 2};
+
+  SubSystemDef ssdef(mgr.addDef(pdef), mgr.addDef(edef), 0.0f, 1.0f);
+  ssdef.emitFunc = [](AnimationContext &ctx, EmissionState &em, Particle &pinst) {
+    defaultEmitParticle(ctx, em, pinst);
+    pinst.texTile = {0, 1};
+    pinst.rot = ctx.rand.getDouble(-0.2f, 0.2f);
+  };
+
+  ssdef.drawFunc = [](DrawContext &ctx, const Particle &pinst, DrawParticle &out) {
+    Particle temp(pinst);
+    temp.size += FVec2(std::cos(pinst.life * 80.0f)) * 0.15;
+    defaultDrawParticle(ctx, temp, out);
+    int idx = pinst.randomSeed % arraySize(insanityColors);
+    out.color.setRGB(insanityColors[idx]);
+  };
+
+  ParticleSystemDef psdef;
+  psdef.subSystems = {ssdef};
+  psdef.name = "insanity";
+  psdef.isLooped = true;
+  psdef.animLength = 1.0f;
+  mgr.addDef(psdef);
+}
+
+static void addBlindEffect(FXManager &mgr) {
+  EmitterDef edef;
+  edef.strengthMin = edef.strengthMax = 0.0f;
+  edef.frequency = 2.0f;
+  edef.initialSpawnCount = 1.0f;
+  edef.source = FRect(-8, -12, 8, -6);
+
+  // TODO: cząsteczki które nie giną ?
+  // TODO: może dodać tutaj jeszcze poświatę pod spód ?
+  ParticleDef pdef;
+  pdef.life = 2.0f;
+  pdef.size = {{0.0f, 0.3f, 0.8f, 1.0f}, {8.0f, 10.0f, 10.0f, 25.0f}};
+  pdef.alpha = {{0.0f, 0.3f, 0.8f, 1.0f}, {0.0f, 1.0, 0.5, 0.0}, InterpType::cosine};
+
+  pdef.color = IColor(253, 247, 172).rgb();
+  pdef.textureName = "special_4x2.png";
+  pdef.textureTiles = {4, 2};
+
+  SubSystemDef ssdef(mgr.addDef(pdef), mgr.addDef(edef), 0.0f, 1.0f);
+  ssdef.emitFunc = [](AnimationContext &ctx, EmissionState &em, Particle &pinst) {
+    defaultEmitParticle(ctx, em, pinst);
+    pinst.texTile = {1, 0};
+    pinst.rot = ctx.rand.getDouble(-0.2f, 0.2f);
+
+    auto distFunc = [&](FVec2 pos) {
+      float dist = fconstant::inf;
+      for (auto &p : ctx.ss.particles)
+        dist = min(dist, distanceSq(p.pos, pos));
+      return dist;
+    };
+
+    float bestDist = distFunc(pinst.pos);
+
+    // We're trying to make sure that particles are far away from each other
+    for (int n = 0; n < 10; n++) {
+      FVec2 newPos = ctx.edef.source.sample(ctx.rand);
+      float dist = distFunc(newPos);
+      if (dist > bestDist) {
+        bestDist = dist;
+        pinst.pos = newPos;
+      }
+    }
+  };
+
+  ParticleSystemDef psdef;
+  psdef.subSystems = {ssdef};
+  psdef.name = "blind";
+  psdef.isLooped = true;
+  psdef.animLength = 1.0f;
+  mgr.addDef(psdef);
+}
+
+static void addPeacefulnessEffect(FXManager &mgr) {
+  EmitterDef edef;
+  edef.strengthMin = edef.strengthMax = 8.0f;
+  edef.angle = -fconstant::pi * 0.5f;
+  edef.angleSpread = 0.3f;
+  edef.frequency = 1.6f;
+  edef.source = FRect(-8.0f, 0.0f, 8.0f, 8.0f);
+
+  ParticleDef pdef;
+  pdef.life = 2.0f;
+  pdef.size = {{7.0f, 14.0f}};
+  pdef.alpha = {{0.0f, 0.2f, 0.8f, 1.0f}, {0.0, 0.3f, 0.2, 0.0}, InterpType::cosine};
+
+  pdef.color = IColor(255, 110, 209).rgb();
+  pdef.textureName = "special_4x2.png";
+  pdef.textureTiles = {4, 2};
+
+  SubSystemDef ssdef(mgr.addDef(pdef), mgr.addDef(edef), 0.0f, 1.0f);
+  ssdef.emitFunc = [](AnimationContext &ctx, EmissionState &em, Particle &pinst) {
+    defaultEmitParticle(ctx, em, pinst);
+    pinst.texTile = {3, 0};
+    pinst.life = min(em.maxLife, float(ctx.ss.particles.size()) * 0.1f);
+    pinst.rot = ctx.rand.getDouble(-0.2f, 0.2f);
+  };
+
+  ParticleSystemDef psdef;
+  psdef.subSystems = {ssdef};
+  psdef.name = "peacefulness";
   psdef.isLooped = true;
   psdef.animLength = 1.0f;
   mgr.addDef(psdef);
@@ -460,5 +587,8 @@ void FXManager::addDefaultDefs() {
   addFeetDustEffect(*this);
   addMagicMissleEffect(*this);
   addSleepEffect(*this);
+  addInsanityEffect(*this);
+  addBlindEffect(*this);
+  addPeacefulnessEffect(*this);
 };
 }
