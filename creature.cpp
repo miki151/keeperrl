@@ -180,6 +180,10 @@ struct Creature::LastingFX {
 pair<int, int> Creature::spawnLastingFX(LastingEffect effect) {
   auto coord = position.getCoord();
 
+  // FXes are only visible for temporary effects
+  if (attributes->isAffectedPermanently(effect))
+    return {-1, -1};
+
   switch (effect) {
   case LastingEffect::PEACEFULNESS:
     return fx::spawnEffect("peacefulness", coord);
@@ -189,6 +193,12 @@ pair<int, int> Creature::spawnLastingFX(LastingEffect effect) {
     return fx::spawnEffect("blind", coord);
   case LastingEffect::INSANITY:
     return fx::spawnEffect("insanity", coord);
+  case LastingEffect::SPEED:
+    return fx::spawnEffect("speed", coord);
+  case LastingEffect::SLOWED:
+    return fx::spawnEffect("slow", coord);
+  case LastingEffect::FLYING:
+    return fx::spawnEffect("flying", coord);
   default:
     break;
   }
