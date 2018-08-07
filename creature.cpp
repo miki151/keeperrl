@@ -223,9 +223,7 @@ void Creature::updateLastingFX() {
     }
   }
 
-  // TODO: what if we have multiple effects ?
-  // TODO: sometimes effects are drawn behind the character
-  // TODO: sleep is visible when mouse cursor is over character
+  // TODO: what if we have multiple effects at once ?
 
   auto coord = position.getCoord();
   for (auto &lfx : m_lastingFXes) {

@@ -207,6 +207,8 @@ class Renderer {
   void loadTiles();
   void makeScreenshot(const FilePath&);
 
+  void flushSprites() { renderDeferredSprites(); }
+
   private:
   friend class Texture;
   optional<Texture> textTexture;

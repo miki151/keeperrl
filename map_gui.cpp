@@ -1040,6 +1040,8 @@ void MapGui::render(Renderer& renderer) {
   auto currentTimeReal = clock->getRealMillis();
   lastHighlighted = getHighlightedInfo(size, currentTimeReal);
   renderMapObjects(renderer, size, currentTimeReal);
+
+  renderer.flushSprites();
   if (auto *rinst = fx::FXRenderer::getInstance()) {
     float zoom = float(layout->getSquareSize().x) / float(Renderer::nominalSize);
     rinst->draw(zoom, projectOnScreen(Vec2(0, 0)));
