@@ -171,20 +171,20 @@ static void addExplosionEffect(FXManager &mgr) {
   // TODO: tutaj trzeba zrobić tak, żeby cząsteczki które spawnują się później
   // zaczynały z innym kolorem
   EmitterDef edef;
-  edef.strengthMin = edef.strengthMax = 15.0f;
-  edef.frequency = 60.0f;
+  edef.strengthMin = edef.strengthMax = 5.0f;
+  edef.frequency = 30.0f;
 
   ParticleDef pdef;
-  pdef.life = 0.5f;
+  pdef.life = 0.8f;
   pdef.size = {{5.0f, 30.0f}};
-  pdef.alpha = {{0.0f, 0.5f, 1.0f}, {0.3, 0.4, 0.0}};
 
-  IColor start_color(255, 244, 88), end_color(225, 92, 19);
-  pdef.color = {{FColor(start_color).rgb(), FColor(end_color).rgb()}};
-  pdef.textureName = "clouds_soft_borders_4x4.png";
+  IColor color(137, 106, 40);
+  pdef.color = {{0.0f, 0.1f, 1.0f}, {FVec3(0.0f), color.rgb(), FVec3(0.0f)}};
+  pdef.textureName = "clouds_grayscale_4x4.png";
   pdef.textureTiles = {4, 4};
+  pdef.blendMode = BlendMode::additive;
 
-  SubSystemDef ssdef(mgr.addDef(pdef), mgr.addDef(edef), 0.0f, 0.5f);
+  SubSystemDef ssdef(mgr.addDef(pdef), mgr.addDef(edef), 0.0f, 0.3f);
   ssdef.maxTotalParticles = 20;
 
   ParticleSystemDef psdef;
@@ -415,27 +415,80 @@ static void addMagicMissleEffect(FXManager &mgr) {
 }
 
 static void addFireEffect(FXManager& mgr) {
-  EmitterDef edef;
-  edef.strengthMin = edef.strengthMax = 30.0f;
-  edef.angle = -fconstant::pi * 0.5f;
-  edef.angleSpread = 0.4f;
-  edef.frequency = 40.0f;
-  edef.source = FRect(-4, 6, 4, 12);
-  edef.rotationSpeedMax = edef.rotationSpeedMin = 0.05f;
-
-  ParticleDef pdef;
-  pdef.life = 0.7f;
-  pdef.size = 10.0f;
-  pdef.alpha = {{0.0f, 0.5f, 1.0f}, {0.0, 1.0, 0.0}, InterpType::cosine};
-
-  pdef.color = {{0.0f, 0.2f, 1.0f}, {FVec3(0.0f), IColor(255, 115, 60).rgb(), FVec3(0.0f)}};
-  pdef.textureName = "flames_4x4.png";
-  pdef.textureTiles = {4, 4};
-  pdef.blendMode = BlendMode::additive;
-
-  SubSystemDef ssdef(mgr.addDef(pdef), mgr.addDef(edef), 0.0f, 1.0f);
   ParticleSystemDef psdef;
-  psdef.subSystems = {ssdef};
+
+  { // Fire
+    EmitterDef edef;
+    edef.strengthMin = edef.strengthMax = 20.0f;
+    edef.angle = -fconstant::pi * 0.5f;
+    edef.angleSpread = 0.2f;
+    edef.frequency = 20.0f;
+    edef.source = FRect(-4, 6, 4, 12);
+    edef.rotationSpeedMax = edef.rotationSpeedMin = 0.05f;
+
+    ParticleDef pdef;
+    pdef.life = 0.7f;
+    pdef.size = 8.0f;
+
+    pdef.color = {{0.0f, 0.2f, 0.8f, 1.0f},
+                  {FVec3(0.0f), IColor(155, 85, 30).rgb(), IColor(45, 35, 60).rgb(), FVec3(0.0f)}};
+    pdef.textureName = "flames_4x4.png";
+    pdef.textureTiles = {4, 4};
+    pdef.blendMode = BlendMode::additive;
+
+    SubSystemDef ssdef(mgr.addDef(pdef), mgr.addDef(edef), 0.0f, 1.0f);
+    ssdef.prepareFunc = [](AnimationContext& ctx, EmissionState& em) {
+      float freq = defaultPrepareEmission(ctx, em);
+      float mod = ctx.ps.params.scalar[0];
+      return freq * (1.0f + mod * 2.0f);
+    };
+
+    ssdef.emitFunc = [](AnimationContext& ctx, EmissionState& em, Particle& pinst) {
+      defaultEmitParticle(ctx, em, pinst);
+      float mod = ctx.ps.params.scalar[0];
+      pinst.pos.x *= (1.0f + mod);
+      pinst.movement *= (1.0f + mod);
+      pinst.size *= (1.0f + mod * 0.25f);
+    };
+
+    psdef.subSystems.emplace_back(ssdef);
+  }
+
+  { // Smoke
+    EmitterDef edef;
+    edef.strengthMin = edef.strengthMax = 20.0f;
+    edef.angle = -fconstant::pi * 0.5f;
+    edef.angleSpread = 0.2f;
+    edef.frequency = 20.0f;
+    edef.source = FRect(-4, -10, 4, -4);
+    edef.rotationSpeedMax = edef.rotationSpeedMin = 0.05f;
+
+    ParticleDef pdef;
+    pdef.life = 0.7f;
+    pdef.size = 12.0f;
+    pdef.alpha = {{0.0f, 0.5f, 1.0f}, {0.0, 0.15, 0.0}, InterpType::cosine};
+
+    pdef.color = {{0.0f, 0.5f, 1.0f}, {FVec3(0.0f), FVec3(0.3f), FVec3(0.0f)}};
+    pdef.textureName = "clouds_soft_borders_4x4.png";
+    pdef.textureTiles = {4, 4};
+
+    SubSystemDef ssdef(mgr.addDef(pdef), mgr.addDef(edef), 0.0f, 1.0f);
+    ssdef.prepareFunc = [](AnimationContext& ctx, EmissionState& em) {
+      float freq = defaultPrepareEmission(ctx, em);
+      float mod = ctx.ps.params.scalar[0];
+      return freq * (1.0f + mod * 2.0f);
+    };
+
+    ssdef.emitFunc = [](AnimationContext& ctx, EmissionState& em, Particle& pinst) {
+      defaultEmitParticle(ctx, em, pinst);
+      float mod = ctx.ps.params.scalar[0];
+      pinst.pos.x *= (1.0f + mod);
+      pinst.pos.y -= mod * 6.0f;
+      pinst.movement *= (1.0f + mod);
+    };
+    psdef.subSystems.emplace_back(ssdef);
+  }
+
   psdef.name = "fire";
   psdef.isLooped = true;
   psdef.animLength = 1.0f;
