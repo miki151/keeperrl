@@ -31,7 +31,7 @@ FXRenderer::FXRenderer(DirectoryPath dataPath, FXManager &mgr) : m_mgr(mgr) {
     auto path = dataPath.file(pdef.textureName);
     int id = -1;
     for (int n = 0; n < (int)m_textures.size(); n++)
-      if (m_textures[n].path == path) {
+      if (m_textures[n].getPath() == path) {
         id = n;
         break;
       }
@@ -39,7 +39,7 @@ FXRenderer::FXRenderer(DirectoryPath dataPath, FXManager &mgr) : m_mgr(mgr) {
     if (id == -1) {
       id = m_textures.size();
       m_textures.emplace_back(path);
-      auto tsize = m_textures.back().size, rsize = m_textures.back().realSize;
+      auto tsize = m_textures.back().getSize(), rsize = m_textures.back().getRealSize();
       FVec2 scale(float(tsize.x) / float(rsize.x), float(tsize.y) / float(rsize.y));
       m_textureScales.emplace_back(scale);
     }
@@ -110,9 +110,7 @@ void FXRenderer::draw(float zoom, Vec2 offset) {
 
   for (auto &elem : m_elements) {
     auto &tex = m_textures[elem.textureId];
-    PASSERT(tex.texId);
-
-    SDL::glBindTexture(GL_TEXTURE_2D, *tex.texId);
+    SDL::glBindTexture(GL_TEXTURE_2D, tex.getTexId());
     SDL::glDrawArrays(GL_QUADS, elem.firstVertex, elem.numVertices);
   }
 

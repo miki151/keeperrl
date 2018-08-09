@@ -1,7 +1,7 @@
 #pragma once
 
 #include "fx_base.h"
-#include "renderer.h"
+#include "texture.h"
 
 namespace fx {
 

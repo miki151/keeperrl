@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "creature_status.h"
-#include "renderer.h"
+#include "color.h"
 
 Color getColor(CreatureStatus status) {
   switch (status) {

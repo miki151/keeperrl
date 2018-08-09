@@ -76,7 +76,7 @@ static Vec2 getMapBufferSize() {
 
 MinimapGui::MinimapGui(function<void()> f) : clickFun(f) {
   auto size = getMapBufferSize();
-  mapBuffer = Renderer::createSurface(size.x, size.y);
+  mapBuffer = Texture::createSurface(size.x, size.y);
 }
 
 void MinimapGui::clear() {
