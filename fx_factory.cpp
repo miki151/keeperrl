@@ -414,7 +414,35 @@ static void addMagicMissleEffect(FXManager &mgr) {
   mgr.addDef(psdef);
 }
 
-static void addSleepEffect(FXManager &mgr) {
+static void addFireEffect(FXManager& mgr) {
+  EmitterDef edef;
+  edef.strengthMin = edef.strengthMax = 30.0f;
+  edef.angle = -fconstant::pi * 0.5f;
+  edef.angleSpread = 0.4f;
+  edef.frequency = 40.0f;
+  edef.source = FRect(-4, 6, 4, 12);
+  edef.rotationSpeedMax = edef.rotationSpeedMin = 0.05f;
+
+  ParticleDef pdef;
+  pdef.life = 0.7f;
+  pdef.size = 10.0f;
+  pdef.alpha = {{0.0f, 0.5f, 1.0f}, {0.0, 1.0, 0.0}, InterpType::cosine};
+
+  pdef.color = {{0.0f, 0.2f, 1.0f}, {FVec3(0.0f), IColor(255, 115, 60).rgb(), FVec3(0.0f)}};
+  pdef.textureName = "flames_4x4.png";
+  pdef.textureTiles = {4, 4};
+  pdef.blendMode = BlendMode::additive;
+
+  SubSystemDef ssdef(mgr.addDef(pdef), mgr.addDef(edef), 0.0f, 1.0f);
+  ParticleSystemDef psdef;
+  psdef.subSystems = {ssdef};
+  psdef.name = "fire";
+  psdef.isLooped = true;
+  psdef.animLength = 1.0f;
+  mgr.addDef(psdef);
+}
+
+static void addSleepEffect(FXManager& mgr) {
   EmitterDef edef;
   edef.strengthMin = edef.strengthMax = 20.0f;
   edef.angle = -fconstant::pi * 0.5f;
@@ -731,6 +759,7 @@ void FXManager::addDefaultDefs() {
   addCircularBlast(*this);
   addFeetDustEffect(*this);
   addMagicMissleEffect(*this);
+  addFireEffect(*this);
 
   addSleepEffect(*this);
   addInsanityEffect(*this);
