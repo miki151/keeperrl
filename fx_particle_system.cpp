@@ -128,9 +128,13 @@ void defaultDrawParticle(DrawContext &ctx, const Particle &pinst, DrawParticle &
   FVec2 pos = pinst.pos + ctx.ps.pos;
   FVec2 size(pdef.size.sample(ptime) * pinst.size);
   float alpha = pdef.alpha.sample(ptime);
+  FVec3 colorMul = ctx.ps.params.color[0];
+  if (ctx.pdef.blendMode == BlendMode::additive) {
+    colorMul *= alpha;
+    alpha = 1.0f;
+  }
 
-  // TODO: by default params dont apply ?
-  FColor color(pdef.color.sample(ptime) * ctx.ps.params.color[0], alpha);
+  FColor color(pdef.color.sample(ptime) * colorMul, alpha);
   out.positions = ctx.quadCorners(pos, size, pinst.rot);
   out.texCoords = ctx.texQuadCorners(pinst.texTile);
   out.color = IColor(color);
