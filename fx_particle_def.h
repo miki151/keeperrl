@@ -21,7 +21,6 @@ struct ParticleDef {
 
   IVec2 textureTiles = IVec2(1, 1);
   string textureName;
-  string name;
   BlendMode blendMode = BlendMode::normal;
 };
 }

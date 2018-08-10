@@ -8,15 +8,15 @@
 
 namespace fx {
 
-static const FVec2 dir_vecs[8] = {{0.0, -1.0}, {0.0, 1.0},   {1.0, 0.0}, {-1.0, 0.0},
+static const FVec2 dirVecs[8] = {{0.0, -1.0}, {0.0, 1.0},   {1.0, 0.0}, {-1.0, 0.0},
                                   {1.0, -1.0}, {-1.0, -1.0}, {1.0, 1.0}, {-1.0, 1.0}};
-FVec2 dirToVec(Dir dir) { return dir_vecs[(int)dir]; }
+FVec2 dirToVec(Dir dir) { return dirVecs[(int)dir]; }
 
 using SubSystemDef = ParticleSystemDef::SubSystem;
 
 static void addTestSimpleEffect(FXManager &mgr) {
   EmitterDef edef;
-  edef.strengthMin = edef.strengthMax = 30.0f;
+  edef.strength = 30.0f;
   edef.frequency = {{10.0f, 55.0f, 0.0f, 0.0}, InterpType::cosine};
 
   ParticleDef pdef;
@@ -35,7 +35,7 @@ static void addTestSimpleEffect(FXManager &mgr) {
 
 static void addTestMultiEffect(FXManager &mgr) {
   EmitterDef edef;
-  edef.strengthMin = edef.strengthMax = 30.0f;
+  edef.strength = 30.0f;
   edef.frequency = {{10.0f, 55.0f, 0.0f, 0.0}, InterpType::cosine};
 
   FVec3 colors[5] = {{0.7f, 0.2, 0.2f}, {0.2f, 0.7f, 0.2f}, {0.2f, 0.2f, 0.7f}, {0.9f, 0.2, 0.9f}, {0.3f, 0.9f, 0.4f}};
@@ -58,10 +58,8 @@ static void addTestMultiEffect(FXManager &mgr) {
 
 static void addWoodSplinters(FXManager &mgr) {
   EmitterDef edef;
-  edef.strengthMin = 20.0f;
-  edef.strengthMax = 60.0f;
-  edef.rotationSpeedMin = -0.5f;
-  edef.rotationSpeedMax = 0.5f;
+  edef.setStrengthSpread(40.0f, 20.0f);
+  edef.rotSpeed = 0.5f;
   edef.frequency = 999.0f;
 
   ParticleDef pdef;
@@ -107,10 +105,8 @@ static void addRockSplinters(FXManager &mgr) {
   // Chyba prościej jest po prostu wyświetlać te particle na kaflu z rozwalanym
   // murem; Zresztą jest to bardziej spójne z particlami dla drzew
   EmitterDef edef;
-  edef.strengthMin = 20.0f;
-  edef.strengthMax = 60.0f;
-  edef.rotationSpeedMin = -0.5f;
-  edef.rotationSpeedMax = 0.5f;
+  edef.setStrengthSpread(40.0f, 20.0f);
+  edef.rotSpeed = 0.5f;
   edef.frequency = 999.0f;
 
   ParticleDef pdef;
@@ -141,8 +137,7 @@ static void addRockCloud(FXManager &mgr) {
   // może niech zostają ślady po splinterach, ale po chmurach nie?
   EmitterDef edef;
   edef.source = FRect(-5.0f, -5.0f, 5.0f, 5.0f);
-  edef.strengthMin = 5.0f;
-  edef.strengthMax = 8.0f;
+  edef.setStrengthSpread(6.5f, 1.5f);
   edef.frequency = 60.0f;
 
   ParticleDef pdef;
@@ -171,7 +166,7 @@ static void addExplosionEffect(FXManager &mgr) {
   // TODO: tutaj trzeba zrobić tak, żeby cząsteczki które spawnują się później
   // zaczynały z innym kolorem
   EmitterDef edef;
-  edef.strengthMin = edef.strengthMax = 5.0f;
+  edef.strength = 5.0f;
   edef.frequency = 30.0f;
 
   ParticleDef pdef;
@@ -298,8 +293,7 @@ static void addFeetDustEffect(FXManager &mgr) {
 
   EmitterDef edef;
   edef.source = FRect(-3, 3, 3, 4);
-  edef.strengthMin = 15.0f;
-  edef.strengthMax = 20.0f;
+  edef.setStrengthSpread(17.5f, 2.5f);
   edef.frequency = 60.0f;
 
   ParticleDef pdef;
@@ -327,8 +321,8 @@ static void addFeetDustEffect(FXManager &mgr) {
   ssdef.prepareFunc = [](AnimationContext &ctx, EmissionState &em) {
     auto ret = defaultPrepareEmission(ctx, em);
     auto vec = normalize(dirToVec(ctx.ps.params.dir[0]));
-    em.angle = vectorToAngle(vec);
-    em.angleSpread = 0.0f;
+    em.direction = vectorToAngle(vec);
+    em.directionSpread = 0.0f;
     return ret;
   };
 
@@ -338,16 +332,15 @@ static void addFeetDustEffect(FXManager &mgr) {
   mgr.addDef(psdef);
 }
 
-static void addMagicMissleEffect(FXManager &mgr) {
+static void addMagicMissileEffect(FXManager& mgr) {
   // Każda cząsteczka z czasem z grubsza liniowo przechodzi od źródła do celu
   // dodatkowo może być delikatnie przesunięta z głównego toru
 
   ParticleSystemDef psdef;
   { // Base system, not visible, only a source for other particles
     EmitterDef edef;
-    edef.strengthMin = edef.strengthMax = 100.0f;
+    edef.strength = 100.0f;
     edef.frequency = 60.0f;
-    edef.angleSpread = fconstant::pi;
 
     ParticleDef pdef;
     pdef.life = .45f;
@@ -375,9 +368,9 @@ static void addMagicMissleEffect(FXManager &mgr) {
 
   { // Secondary system
     EmitterDef edef;
-    edef.strengthMin = edef.strengthMax = 40.0f;
+    edef.strength = 40.0f;
     edef.frequency = 50.0f;
-    edef.angleSpread = fconstant::pi;
+    edef.directionSpread = fconstant::pi;
 
     ParticleDef pdef;
     pdef.life = .3f;
@@ -395,7 +388,7 @@ static void addMagicMissleEffect(FXManager &mgr) {
       auto &parts = ctx.ps.subSystems[0].particles;
       if (parts.empty())
         return 0.0f;
-      em.strengthMin = em.strengthMax = em.strengthMax * (1.2f - parts.front().particleTime());
+      em.strength *= 1.2f - parts.front().particleTime();
       return ret;
     };
 
@@ -419,12 +412,11 @@ static void addFireEffect(FXManager& mgr) {
 
   { // Fire
     EmitterDef edef;
-    edef.strengthMin = edef.strengthMax = 20.0f;
-    edef.angle = -fconstant::pi * 0.5f;
-    edef.angleSpread = 0.2f;
+    edef.strength = 20.0f;
+    edef.setDirectionSpread(-fconstant::pi * 0.5f, 0.2f);
     edef.frequency = 20.0f;
     edef.source = FRect(-4, 6, 4, 12);
-    edef.rotationSpeedMax = edef.rotationSpeedMin = 0.05f;
+    edef.rotSpeed = 0.05f;
 
     ParticleDef pdef;
     pdef.life = 0.7f;
@@ -456,12 +448,11 @@ static void addFireEffect(FXManager& mgr) {
 
   { // Smoke
     EmitterDef edef;
-    edef.strengthMin = edef.strengthMax = 20.0f;
-    edef.angle = -fconstant::pi * 0.5f;
-    edef.angleSpread = 0.2f;
+    edef.strength = 20.0f;
+    edef.setDirectionSpread(-fconstant::pi * 0.5f, 0.2f);
     edef.frequency = 20.0f;
     edef.source = FRect(-4, -10, 4, -4);
-    edef.rotationSpeedMax = edef.rotationSpeedMin = 0.05f;
+    edef.rotSpeed = 0.05f;
 
     ParticleDef pdef;
     pdef.life = 0.7f;
@@ -497,9 +488,8 @@ static void addFireEffect(FXManager& mgr) {
 
 static void addSleepEffect(FXManager& mgr) {
   EmitterDef edef;
-  edef.strengthMin = edef.strengthMax = 20.0f;
-  edef.angle = -fconstant::pi * 0.5f;
-  edef.angleSpread = 0.2f;
+  edef.strength = 20.0f;
+  edef.setDirectionSpread(-fconstant::pi * 0.5f, 0.2f);
   edef.frequency = 3.0f;
   edef.source = FRect(-2, -8, 2, -5);
 
@@ -573,7 +563,7 @@ static void addInsanityEffect(FXManager &mgr) {
 
 static void addBlindEffect(FXManager &mgr) {
   EmitterDef edef;
-  edef.strengthMin = edef.strengthMax = 0.0f;
+  edef.strength = 0.0f;
   edef.frequency = 2.0f;
   edef.initialSpawnCount = 1.0f;
   edef.source = FRect(-8, -12, 8, -6);
@@ -625,9 +615,8 @@ static void addBlindEffect(FXManager &mgr) {
 
 static void addPeacefulnessEffect(FXManager &mgr) {
   EmitterDef edef;
-  edef.strengthMin = edef.strengthMax = 8.0f;
-  edef.angle = -fconstant::pi * 0.5f;
-  edef.angleSpread = 0.3f;
+  edef.strength = 8.0f;
+  edef.setDirectionSpread(-fconstant::pi * 0.5f, 0.3f);
   edef.frequency = 1.6f;
   edef.source = FRect(-8.0f, 0.0f, 8.0f, 8.0f);
 
@@ -660,9 +649,8 @@ static void addSlowEffect(FXManager &mgr) {
   EmitterDef edef;
   edef.frequency = 10.0f;
   edef.initialSpawnCount = 1.0f;
-  edef.angle = fconstant::pi * 0.5f;
-  edef.angleSpread = 0.0f;
-  edef.strengthMax = edef.strengthMin = 2.5f;
+  edef.setDirectionSpread(fconstant::pi * 0.5f, 0.0f);
+  edef.strength = 2.5f;
   edef.source = FVec2(0.0f, -4.0f);
 
   ParticleDef pdef;
@@ -700,9 +688,8 @@ static void addSpeedEffect(FXManager &mgr) {
   EmitterDef edef;
   edef.frequency = 10.0f;
   edef.initialSpawnCount = 1.0f;
-  edef.angle = -fconstant::pi * 0.5f;
-  edef.angleSpread = 0.0f;
-  edef.strengthMax = edef.strengthMin = 5.0f;
+  edef.setDirectionSpread(-fconstant::pi * 0.5f, 0.0f);
+  edef.strength = 5.0f;
   edef.source = FVec2(0.0f, 10.0f);
 
   ParticleDef pdef;
@@ -743,10 +730,8 @@ static void addFlyingEffect(FXManager &mgr) {
     EmitterDef edef;
     edef.frequency = 12.0f;
     edef.initialSpawnCount = 2.0f;
-    edef.strengthMin = 1.0f;
-    edef.strengthMin = 3.0f;
-    edef.angle = -fconstant::pi * 0.5f;
-    edef.angleSpread = 0.1f;
+    edef.setStrengthSpread(2.0f, 1.0f);
+    edef.setDirectionSpread(-fconstant::pi * 0.5f, 0.1f);
     edef.source = FRect(-8.0f, 8.0f, 8.0f, 12.0f);
 
     ParticleDef pdef;
@@ -771,10 +756,8 @@ static void addFlyingEffect(FXManager &mgr) {
     EmitterDef edef;
     edef.frequency = 12.0f;
     edef.initialSpawnCount = 2.0f;
-    edef.strengthMin = 15.0f;
-    edef.strengthMin = 20.0f;
-    edef.angle = -fconstant::pi * 0.5f;
-    edef.angleSpread = 0.1f;
+    edef.setStrengthSpread(17.5f, 2.5f);
+    edef.setDirectionSpread(-fconstant::pi * 0.5f, 0.1f);
     edef.source = FRect(-8.0f, 8.0f, 8.0f, 12.0f);
 
     ParticleDef pdef;
@@ -811,7 +794,7 @@ void FXManager::addDefaultDefs() {
   addRippleEffect(*this);
   addCircularBlast(*this);
   addFeetDustEffect(*this);
-  addMagicMissleEffect(*this);
+  addMagicMissileEffect(*this);
   addFireEffect(*this);
 
   addSleepEffect(*this);
