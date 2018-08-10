@@ -15,8 +15,6 @@ FXManager *FXManager::getInstance() { return s_instance; }
 
 FXManager::FXManager() {
   addDefaultDefs();
-  //saveDefs();
-
   CHECK(s_instance == nullptr && "There can be only one!");
   s_instance = this;
 }
@@ -66,7 +64,7 @@ void FXManager::simulateStable(double timeDelta, int desiredFps) {
   double desiredDelta = 1.0 / desiredFps;
   int numSteps = 0;
 
-  // TODO: czy chcemy jakoś przewidywać klatki?
+  // TODO: limit number of steps?
   while (timeDelta > desiredDelta) {
     simulate(desiredDelta);
     timeDelta -= desiredDelta;
