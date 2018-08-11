@@ -3,6 +3,7 @@
 #include "fx_manager.h"
 #include "fx_particle_def.h"
 #include "fx_particle_system.h"
+#include "fx_draw_buffers.h"
 
 #include "sdl.h"
 
@@ -20,6 +21,8 @@ FXRenderer::FXRenderer(DirectoryPath dataPath, FXManager &mgr) : m_mgr(mgr) {
   // First texture: invalid
   m_textures.emplace_back(Color::PINK, 2, 2);
   m_textureScales.emplace_back(FVec2(1.0f));
+
+  m_drawBuffers = std::make_unique<DrawBuffers>();
 
   // TODO: error handling
   for (auto &pdef : m_mgr.particleDefs()) {
@@ -56,60 +59,57 @@ static void checkOpenglError() {
   CHECK(error == GL_NO_ERROR) << (int)error;
 }
 
-void FXRenderer::draw(float zoom, Vec2 offset) {
-  auto particles = m_mgr.genQuads();
+void FXRenderer::applyTexScale() {
+  auto& elements = m_drawBuffers->elements;
+  auto& texCoords = m_drawBuffers->texCoords;
 
-  m_positions.clear();
-  m_texCoords.clear();
-  m_colors.clear();
-  m_elements.clear();
+  for (auto& elem : elements) {
+    int texId = m_textureIds[elem.particleDefId];
+    auto scale = m_textureScales[texId];
+    if (scale == FVec2(1.0f))
+      continue;
 
-  FVec2 foffset(offset.x, offset.y);
-  FVec2 texScale(1);
-
-  for (auto &quad : particles) {
-    int texId = m_textureIds[quad.particleDefId];
-    if (m_elements.empty() || m_elements.back().textureId != texId) {
-      Element new_elem{(int)m_positions.size(), 0, texId};
-      texScale = m_textureScales[texId];
-      m_elements.emplace_back(new_elem);
-    }
-    m_elements.back().numVertices += 4;
-
-    for (int n = 0; n < 4; n++) {
-      FVec2 pos(quad.positions[n].x * zoom, quad.positions[n].y * zoom);
-      pos = foffset + pos;
-
-      m_positions.emplace_back(pos);
-      m_texCoords.emplace_back(quad.texCoords[n].x * texScale.x, quad.texCoords[n].y * texScale.y);
-      union {
-        struct {
-          unsigned char r, g, b, a;
-        };
-        unsigned int ivalue;
-      };
-
-      r = quad.color.r, g = quad.color.g, b = quad.color.b, a = quad.color.a;
-      m_colors.emplace_back(ivalue);
-    }
+    int end = elem.firstVertex + elem.numVertices;
+    for (int i = elem.firstVertex; i < end; i++)
+      texCoords[i] *= scale;
   }
+}
+
+void FXRenderer::draw(float zoom, float offsetX, float offsetY) {
+  m_drawBuffers->fill(m_mgr.genQuads());
+  applyTexScale();
+
+  SDL::glPushMatrix();
+
+  SDL::glTranslatef(offsetX, offsetY, 0.0f);
+  SDL::glScalef(zoom, zoom, 1.0f);
 
   SDL::glPushAttrib(GL_ENABLE_BIT);
   SDL::glEnableClientState(GL_VERTEX_ARRAY);
   SDL::glEnableClientState(GL_TEXTURE_COORD_ARRAY);
   SDL::glEnableClientState(GL_COLOR_ARRAY);
 
-  SDL::glVertexPointer(2, GL_FLOAT, 0, m_positions.data());
-  SDL::glTexCoordPointer(2, GL_FLOAT, 0, m_texCoords.data());
-  SDL::glColorPointer(4, GL_UNSIGNED_BYTE, 0, m_colors.data());
+  SDL::glVertexPointer(2, GL_FLOAT, 0, m_drawBuffers->positions.data());
+  SDL::glTexCoordPointer(2, GL_FLOAT, 0, m_drawBuffers->texCoords.data());
+  SDL::glColorPointer(4, GL_UNSIGNED_BYTE, 0, m_drawBuffers->colors.data());
   checkOpenglError();
 
   SDL::glEnable(GL_TEXTURE_2D);
   SDL::glDisable(GL_CULL_FACE);
   SDL::glDisable(GL_DEPTH_TEST);
 
-  for (auto &elem : m_elements) {
-    auto &tex = m_textures[elem.textureId];
+  auto bm = BlendMode::normal;
+
+  for (auto& elem : m_drawBuffers->elements) {
+    int texId = m_textureIds[elem.particleDefId];
+    auto& tex = m_textures[texId];
+    if (elem.blendMode != bm) {
+      bm = elem.blendMode;
+      if (bm == BlendMode::normal)
+        SDL::glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+      else
+        SDL::glBlendFunc(GL_ONE, GL_ONE);
+    }
     SDL::glBindTexture(GL_TEXTURE_2D, *tex.getTexId());
     SDL::glDrawArrays(GL_QUADS, elem.firstVertex, elem.numVertices);
   }
@@ -121,5 +121,7 @@ void FXRenderer::draw(float zoom, Vec2 offset) {
   SDL::glDisableClientState(GL_TEXTURE_COORD_ARRAY);
   SDL::glDisableClientState(GL_COLOR_ARRAY);
   SDL::glPopAttrib();
+  SDL::glPopMatrix();
+  SDL::glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 }
