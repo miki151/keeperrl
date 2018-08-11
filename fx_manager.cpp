@@ -199,6 +199,7 @@ vector<DrawParticle> FXManager::genQuads() {
         DrawParticle dparticle;
         ctx.ssdef.drawFunc(ctx, pinst, dparticle);
         dparticle.particleDefId = ssdef.particleId;
+        dparticle.blendMode = pdef.blendMode;
         out.emplace_back(dparticle);
       }
     }

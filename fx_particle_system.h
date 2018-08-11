@@ -88,6 +88,7 @@ struct DrawParticle {
   std::array<FVec2, 4> texCoords;
   IColor color;
   int particleDefId;
+  BlendMode blendMode;
 };
 
 struct ParticleSystem {
