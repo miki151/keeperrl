@@ -11,7 +11,7 @@ pair<int, int> spawnEffect(const char *name, Vec2 pos) { return spawnEffect(name
 pair<int, int> spawnEffect(const char *name, Vec2 pos, Vec2 dir) {
   if(auto *inst = FXManager::getInstance()) {
     if(auto id = inst->findSystem(name)) {
-      auto fpos = (FVec2(pos.x, pos.y) + fx::FVec2(0.5)) * 24.0f;
+      auto fpos = (FVec2(pos.x, pos.y) + FVec2(0.5f)) * 24.0f;
       auto ftargetOff = FVec2(dir.x, dir.y) * 24.0f;
       auto instId = inst->addSystem(*id, fpos, ftargetOff);
       INFO << "FX spawn: " << name << " at:" << pos << " dir:" << dir;
@@ -23,6 +23,16 @@ pair<int, int> spawnEffect(const char *name, Vec2 pos, Vec2 dir) {
   return {-1, -1};
 }
 
+void setPos(pair<int, int> tid, Vec2 pos) {
+  ParticleSystemId id(tid.first, tid.second);
+  if (auto *inst = FXManager::getInstance()) {
+    if (inst->valid(id)) {
+      auto &system = inst->get(id);
+      system.pos = (FVec2(pos.x, pos.y) + FVec2(0.5f)) * 24.0f;
+    }
+  }
+}
+
 bool isAlive(pair<int, int> tid) {
   ParticleSystemId id(tid.first, tid.second);
   if(auto *inst = FXManager::getInstance())
@@ -30,10 +40,10 @@ bool isAlive(pair<int, int> tid) {
   return false;
 }
 
-void kill(pair<int, int> tid) {
+void kill(pair<int, int> tid, bool immediate) {
   ParticleSystemId id(tid.first, tid.second);
   if(auto *inst = FXManager::getInstance())
-    inst->kill(id);
+    inst->kill(id, immediate);
 }
 
 void setColor(pair<int, int> tid, Color col, int paramIndex) {

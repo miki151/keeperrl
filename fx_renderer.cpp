@@ -13,17 +13,37 @@ static FXRenderer *s_instance = nullptr;
 FXRenderer *FXRenderer::getInstance() { return s_instance; }
 
 FXRenderer::FXRenderer(DirectoryPath dataPath, FXManager &mgr) : m_mgr(mgr) {
+  m_textures.reserve(m_mgr.particleDefs().size() + 1);
+  m_textureScales.reserve(m_mgr.particleDefs().size() + 1);
+  m_textureIds.reserve(m_mgr.particleDefs().size());
+
+  // First texture: invalid
+  m_textures.emplace_back(Color::PINK, 2, 2);
+  m_textureScales.emplace_back(FVec2(1.0f));
+
   // TODO: error handling
   for (auto &pdef : m_mgr.particleDefs()) {
     if (pdef.textureName.empty()) {
-      m_textures.emplace_back(Color::PINK, 2, 2);
+      m_textureIds.emplace_back(0);
       continue;
     }
 
-    m_textures.emplace_back(dataPath.file(pdef.textureName));
-    auto tsize = m_textures.back().size, rsize = m_textures.back().realSize;
-    FVec2 scale(float(tsize.x) / float(rsize.x), float(tsize.y) / float(rsize.y));
-    m_textureScales.emplace_back(scale);
+    auto path = dataPath.file(pdef.textureName);
+    int id = -1;
+    for (int n = 0; n < (int)m_textures.size(); n++)
+      if (m_textures[n].path == path) {
+        id = n;
+        break;
+      }
+
+    if (id == -1) {
+      id = m_textures.size();
+      m_textures.emplace_back(path);
+      auto tsize = m_textures.back().size, rsize = m_textures.back().realSize;
+      FVec2 scale(float(tsize.x) / float(rsize.x), float(tsize.y) / float(rsize.y));
+      m_textureScales.emplace_back(scale);
+    }
+    m_textureIds.emplace_back(id);
   }
   CHECK(s_instance == nullptr && "There can be only one!");
   s_instance = this;
@@ -48,9 +68,10 @@ void FXRenderer::draw(float zoom, Vec2 offset) {
   FVec2 texScale(1);
 
   for (auto &quad : particles) {
-    if (m_elements.empty() || m_elements.back().textureId != quad.particleDefId) {
-      Element new_elem{(int)m_positions.size(), 0, quad.particleDefId};
-      texScale = m_textureScales[quad.particleDefId];
+    int texId = m_textureIds[quad.particleDefId];
+    if (m_elements.empty() || m_elements.back().textureId != texId) {
+      Element new_elem{(int)m_positions.size(), 0, texId};
+      texScale = m_textureScales[texId];
       m_elements.emplace_back(new_elem);
     }
     m_elements.back().numVertices += 4;
@@ -73,6 +94,7 @@ void FXRenderer::draw(float zoom, Vec2 offset) {
     }
   }
 
+  SDL::glPushAttrib(GL_ENABLE_BIT);
   SDL::glEnableClientState(GL_VERTEX_ARRAY);
   SDL::glEnableClientState(GL_TEXTURE_COORD_ARRAY);
   SDL::glEnableClientState(GL_COLOR_ARRAY);
@@ -84,6 +106,7 @@ void FXRenderer::draw(float zoom, Vec2 offset) {
 
   SDL::glEnable(GL_TEXTURE_2D);
   SDL::glDisable(GL_CULL_FACE);
+  SDL::glDisable(GL_DEPTH_TEST);
 
   for (auto &elem : m_elements) {
     auto &tex = m_textures[elem.textureId];
@@ -99,6 +122,6 @@ void FXRenderer::draw(float zoom, Vec2 offset) {
   SDL::glDisableClientState(GL_VERTEX_ARRAY);
   SDL::glDisableClientState(GL_TEXTURE_COORD_ARRAY);
   SDL::glDisableClientState(GL_COLOR_ARRAY);
-  SDL::glDisable(GL_TEXTURE_2D);
+  SDL::glPopAttrib();
 }
 }

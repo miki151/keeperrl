@@ -296,6 +296,11 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   void addMovementInfo(MovementInfo);
   bool canSwapPositionInMovement(WCreature other, optional<Position> nextPos) const;
 
+  pair<int, int> spawnLastingFX(LastingEffect);
+  void updateLastingFX();
+  struct LastingFX;
+  vector<LastingFX> m_lastingFXes;
+
   HeapAllocated<CreatureAttributes> SERIAL(attributes);
   Position SERIAL(position);
   HeapAllocated<Equipment> SERIAL(equipment);

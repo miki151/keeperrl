@@ -79,6 +79,7 @@ struct Particle {
   float life = 0.0f, maxLife = 1.0f;
   float rot = 0.0f, rotSpeed = 0.0f;
   SVec2 texTile;
+  int randomSeed;
 };
 
 struct DrawParticle {
@@ -110,7 +111,7 @@ struct ParticleSystem {
   int numActiveParticles() const;
   int numTotalParticles() const;
 
-  void kill();
+  void kill(bool immediate);
 
   const SubSystem &operator[](int ssid) const { return subSystems[ssid]; }
   SubSystem &operator[](int ssid) { return subSystems[ssid]; }
@@ -124,6 +125,7 @@ struct ParticleSystem {
 
   float animTime = 0.0f;
   bool isDead = false;
+  bool isDying = false;
 };
 
 struct SubSystemContext {

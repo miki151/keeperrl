@@ -173,6 +173,8 @@ void Furniture::tryToDestroyBy(Position pos, WCreature c, const DestroyAction& a
     *strength -= damage;
     if (*strength <= 0) {
       destroy(pos, action);
+
+	  // TODO: move fx spawning to ViewObject ?
       if (action.getType() == DestroyAction::Type::DIG)
         fx::spawnEffect("rock_clouds", pos.getCoord());
     } else {

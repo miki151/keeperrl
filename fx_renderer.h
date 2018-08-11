@@ -23,6 +23,9 @@ private:
   vector<Texture> m_textures;
   vector<FVec2> m_textureScales;
 
+  // Maps particleDefId to textureId
+  vector<int> m_textureIds;
+
   struct Element {
     int firstVertex;
     int numVertices;
