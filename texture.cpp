@@ -49,9 +49,10 @@ Texture::Texture(const FilePath& filename, int px, int py, int w, int h) : path(
 
 Texture::Texture(Color color, int width, int height) {
   vector<Color> colors(width * height, color);
-  SDL::glGenTextures(1, &texId);
+  texId = 0;
+  SDL::glGenTextures(1, &*texId);
   checkOpenglError();
-  SDL::glBindTexture(GL_TEXTURE_2D, texId);
+  SDL::glBindTexture(GL_TEXTURE_2D, *texId);
   SDL::glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, colors.data());
   realSize = size = Vec2(width, height);
   SDL::glBindTexture(GL_TEXTURE_2D, 0);
@@ -67,23 +68,25 @@ Texture::Texture(Texture&& tex) {
 
 Texture::~Texture() {
   if (texId)
-    SDL::glDeleteTextures(1, &texId);
+    SDL::glDeleteTextures(1, &*texId);
 }
 
 Texture& Texture::operator=(Texture&& tex) {
   size = tex.size;
   realSize = tex.realSize;
-  texId = tex.texId;
+  texId = std::move(tex.texId);
   path = tex.path;
-  tex.texId = 0;
+  tex.texId = none;
   return *this;
 }
 
 optional<SDL::GLenum> Texture::loadFromMaybe(SDL::SDL_Surface* imageOrig) {
-  if (!texId)
-    SDL::glGenTextures(1, &texId);
+  if (!texId) {
+    texId = 0;
+    SDL::glGenTextures(1, &*texId);
+  }
   checkOpenglError();
-  SDL::glBindTexture(GL_TEXTURE_2D, texId);
+  SDL::glBindTexture(GL_TEXTURE_2D, *texId);
   checkOpenglError();
   SDL::glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   SDL::glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);

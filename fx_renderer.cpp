@@ -110,7 +110,7 @@ void FXRenderer::draw(float zoom, Vec2 offset) {
 
   for (auto &elem : m_elements) {
     auto &tex = m_textures[elem.textureId];
-    SDL::glBindTexture(GL_TEXTURE_2D, tex.getTexId());
+    SDL::glBindTexture(GL_TEXTURE_2D, *tex.getTexId());
     SDL::glDrawArrays(GL_QUADS, elem.firstVertex, elem.numVertices);
   }
 

@@ -41,7 +41,7 @@ class Texture {
   Vec2 getRealSize() const {
     return realSize;
   }
-  unsigned getTexId() const {
+  const optional<SDL::GLuint>& getTexId() const {
     return texId;
   }
   const optional<FilePath>& getPath() const {
@@ -54,9 +54,8 @@ class Texture {
   private:
   void addTexCoord(int x, int y) const;
 
-  // Note: it's better to use 0 instead of optional:
-  // OpenGL object id's are always > 0
-  SDL::GLuint texId = 0;
+  // When texId != none, it's always > 0
+  optional<SDL::GLuint> texId;
   Vec2 size;
   Vec2 realSize;
   optional<FilePath> path;
