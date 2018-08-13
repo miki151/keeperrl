@@ -88,6 +88,7 @@ struct DrawParticle {
   std::array<FVec2, 4> texCoords;
   IColor color;
   int particleDefId;
+  BlendMode blendMode;
 };
 
 struct ParticleSystem {
@@ -170,10 +171,10 @@ struct EmissionState {
   EmissionState(float time) : time(time) {}
   const float time;
 
-  float strengthMin, strengthMax;
   float maxLife;
-  float angle, angleSpread;
-  float rotSpeedMin, rotSpeedMax; // TODO: change to value, value_var or valueSpread
+  float strength, strengthSpread;
+  float direction, directionSpread;
+  float rotSpeed, rotSpeedSpread;
 
   float var[128];
 };

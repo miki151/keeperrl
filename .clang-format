@@ -6,11 +6,13 @@ UseTab: Never
 ColumnLimit: 120
 
 #AlignAfterOpenBracket: false
+AccessModifierOffset: 0
 AlignTrailingComments: false
 ReflowComments: false
 SortIncludes: false
 AllowShortBlocksOnASingleLine: false
-AllowShortFunctionsOnASingleLine: All
+AllowShortFunctionsOnASingleLine: false
+PointerAlignment: Left
 
 NamespaceIndentation: Inner
 SpaceBeforeParens: ControlStatements

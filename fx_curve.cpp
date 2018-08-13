@@ -2,6 +2,8 @@
 
 namespace fx {
 
+// TODO: there is a lot of potential for optimization
+
 template <class T> Curve<T>::Curve() = default;
 template <class T> Curve<T>::~Curve() = default;
 

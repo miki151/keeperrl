@@ -54,14 +54,14 @@ float defaultPrepareEmission(AnimationContext &ctx, EmissionState &em) {
 
   em.maxLife = pdef.life.sample(em.time);
 
-  em.angle = edef.angle.sample(em.time);
-  em.angleSpread = edef.angleSpread.sample(em.time);
+  em.direction = edef.direction.sample(em.time);
+  em.directionSpread = edef.directionSpread.sample(em.time);
 
-  em.strengthMin = edef.strengthMin.sample(em.time);
-  em.strengthMax = edef.strengthMax.sample(em.time);
+  em.strength = edef.strength.sample(em.time);
+  em.strengthSpread = edef.strengthSpread.sample(em.time);
 
-  em.rotSpeedMin = edef.rotationSpeedMin.sample(em.time);
-  em.rotSpeedMax = edef.rotationSpeedMax.sample(em.time);
+  em.rotSpeed = edef.rotSpeed.sample(em.time);
+  em.rotSpeedSpread = edef.rotSpeedSpread.sample(em.time);
 
   return edef.frequency.sample(em.time) * ctx.timeDelta;
 }
@@ -82,17 +82,25 @@ SVec2 AnimationContext::randomTexTile() {
 void defaultEmitParticle(AnimationContext &ctx, EmissionState &em, Particle &newInst) {
   newInst.pos = ctx.edef.source.sample(ctx.rand);
   float pangle;
-  if (em.angleSpread < fconstant::pi)
-    pangle = em.angle + ctx.uniformSpread(em.angleSpread);
+  if (em.directionSpread < fconstant::pi)
+    pangle = em.direction + ctx.uniformSpread(em.directionSpread);
   else
     pangle = ctx.uniform(0.0f, fconstant::pi * 2.0f);
 
   FVec2 pdir = angleToVector(pangle);
-  float strength = ctx.uniform(em.strengthMin, em.strengthMax);
-  float rotSpeed = ctx.uniform(em.rotSpeedMin, em.rotSpeedMax);
+  float strength = em.strength;
+  float rotSpeed = em.rotSpeed;
+
+  if (em.strengthSpread > 0.0f)
+    strength += ctx.uniformSpread(em.strengthSpread);
+  if (em.rotSpeedSpread > 0.0f)
+    rotSpeed += ctx.uniformSpread(em.rotSpeedSpread);
+  if (rotSpeed > 0.0f && ctx.rand.chance(0.5))
+    rotSpeed = -rotSpeed;
+
   newInst.movement = pdir * strength;
   newInst.rot = ctx.uniform(0.0f, fconstant::pi * 2.0f);
-  newInst.rotSpeed = rotSpeed * strength;
+  newInst.rotSpeed = rotSpeed * strength; // TODO: is this necessary ?
   newInst.life = 0.0f;
   newInst.maxLife = em.maxLife;
   newInst.texTile = ctx.randomTexTile();
@@ -120,9 +128,13 @@ void defaultDrawParticle(DrawContext &ctx, const Particle &pinst, DrawParticle &
   FVec2 pos = pinst.pos + ctx.ps.pos;
   FVec2 size(pdef.size.sample(ptime) * pinst.size);
   float alpha = pdef.alpha.sample(ptime);
+  FVec3 colorMul = ctx.ps.params.color[0];
+  if (ctx.pdef.blendMode == BlendMode::additive) {
+    colorMul *= alpha;
+    alpha = 1.0f;
+  }
 
-  // TODO: by default params dont apply ?
-  FColor color(pdef.color.sample(ptime) * ctx.ps.params.color[0], alpha);
+  FColor color(pdef.color.sample(ptime) * colorMul, alpha);
   out.positions = ctx.quadCorners(pos, size, pinst.rot);
   out.texCoords = ctx.texQuadCorners(pinst.texTile);
   out.color = IColor(color);
