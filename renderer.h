@@ -176,7 +176,7 @@ class Renderer {
   SDL::SDL_Cursor* cursor;
   SDL::SDL_Cursor* cursorClicked;
   SDL::SDL_Surface* loadScaledSurface(const FilePath& path, double scale);
-  SDL::GLuint currentTexture = 0;
+  optional<SDL::GLuint> currentTexture;
   void drawSprite(const Texture& t, Vec2 a, Vec2 b, Vec2 c, Vec2 d, Vec2 p, Vec2 k, optional<Color> color);
   void drawSprite(const Texture& t, Vec2 topLeft, Vec2 bottomRight, Vec2 p, Vec2 k, optional<Color> color);
   struct DeferredSprite {

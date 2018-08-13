@@ -54,7 +54,6 @@ void Renderer::renderDeferredSprites() {
     colors.push_back(((float) color.b) / 255);
     colors.push_back(((float) color.a) / 255);
   };
-  SDL::GLuint currentTex = 0;
   for (auto& elem : deferredSprites) {
     auto add = [&](Vec2 v, int texX, int texY, const DeferredSprite& draw) {
       addVertex(v, texX, texY, draw.realSize, draw.color.value_or(Color::WHITE));
@@ -67,7 +66,7 @@ void Renderer::renderDeferredSprites() {
     add(elem.d, elem.p.x, elem.k.y, elem);
   }
   if (!vertices.empty()) {
-    SDL::glBindTexture(GL_TEXTURE_2D, currentTexture);
+    SDL::glBindTexture(GL_TEXTURE_2D, *currentTexture);
     SDL::glEnable(GL_TEXTURE_2D);
     checkOpenglError();
     SDL::glEnableClientState(GL_VERTEX_ARRAY);
@@ -101,7 +100,7 @@ void Renderer::drawSprite(const Texture& t, Vec2 topLeft, Vec2 bottomRight, Vec2
 void Renderer::drawSprite(const Texture& t, Vec2 a, Vec2 b, Vec2 c, Vec2 d, Vec2 p, Vec2 k, optional<Color> color) {
   if (currentTexture && currentTexture != t.getTexId())
     renderDeferredSprites();
-  currentTexture = *t.getTexId();
+  currentTexture = t.getTexId();
   deferredSprites.push_back({a, b, c, d, p, k, t.getRealSize(), color});
 }
 
