@@ -7,3 +7,7 @@ void checkOpenglError();
 bool installOpenglDebugHandler();
 
 bool isOpenglExtensionAvailable(const char*);
+
+void setupOpenglView(int width, int height, float zoom);
+void pushOpenglView();
+void popOpenglView();

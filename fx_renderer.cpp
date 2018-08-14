@@ -8,8 +8,11 @@
 
 #include "opengl.h"
 #include "framebuffer.h"
+#include "renderer.h"
 
 namespace fx {
+
+static constexpr int nominalSize = Renderer::nominalSize;
 
 struct FXRenderer::View {
   float zoom;
@@ -62,11 +65,13 @@ FXRenderer::FXRenderer(DirectoryPath dataPath, FXManager &mgr) : m_mgr(mgr) {
 
 FXRenderer::~FXRenderer() { s_instance = nullptr; }
 
-void FXRenderer::initFramebuffer(int w, int h) {
+void FXRenderer::initFramebuffer(IVec2 size) {
   if (!Framebuffer::isExtensionAvailable())
     return;
-  if (!m_framebuffer || m_framebuffer->width != w || m_framebuffer->height != h)
-    m_framebuffer = std::make_unique<Framebuffer>(w, h);
+  if (!m_framebuffer || m_framebuffer->width != size.x || m_framebuffer->height != size.y) {
+    INFO << "FX: creating FBO (" << size.x << ", " << size.y << ")";
+    m_framebuffer = std::make_unique<Framebuffer>(size.x, size.y);
+  }
 }
 
 void FXRenderer::applyTexScale() {
@@ -89,21 +94,31 @@ void FXRenderer::applyTexScale() {
 // - na początku wszystkie efekty do jednego bufora (zaczymamy z czarnym tłem?)
 // - Problem: jak blendować cząsteczki z czarnym tłem ?texturew
 
-IRect FXRenderer::framebufferView(const View& view) {
-  return {};
+IRect FXRenderer::visibleTiles(const View& view) {
+  float scale = 1.0f / (view.zoom * nominalSize);
+
+  FVec2 topLeft = -view.offset * scale;
+  FVec2 size = FVec2(view.size) * scale;
+
+  IVec2 iTopLeft(floor(topLeft.x), floor(topLeft.y));
+  IVec2 iSize(ceil(size.x), ceil(size.y));
+
+  return IRect(iTopLeft - IVec2(1, 1), iTopLeft + iSize + IVec2(1, 1));
 }
 
 void FXRenderer::draw(float zoom, float offsetX, float offsetY, int w, int h) {
   View view{zoom, {offsetX, offsetY}, {w, h}};
-  auto fboView = framebufferView(view);
-  //print("FBO: %\n", fboView);
 
+  auto fboView = visibleTiles(view);
+  auto fboScreenSize = fboView.size() * nominalSize;
+
+  //print("FBO: (% % - % %)\n", fboView.x(), fboView.y(), fboView.ex(), fboView.ey());
   m_drawBuffers->fill(m_mgr.genQuads());
   applyTexScale();
 
   if (o_useFramebuffer) {
     // TODO: make it pixel perfect
-    initFramebuffer(w / zoom, h / zoom);
+    initFramebuffer(fboScreenSize);
   }
 
   SDL::glPushAttrib(GL_ENABLE_BIT);
@@ -114,37 +129,42 @@ void FXRenderer::draw(float zoom, float offsetX, float offsetY, int w, int h) {
   if (m_framebuffer && o_useFramebuffer) {
     m_framebuffer->bind();
 
-    SDL::glPushAttrib(GL_VIEWPORT_BIT | GL_ENABLE_BIT);
-    SDL::glViewport(0, 0, m_framebuffer->width, m_framebuffer->height);
+    pushOpenglView();
+    SDL::glPushAttrib(GL_ENABLE_BIT);
     SDL::glDisable(GL_SCISSOR_TEST);
+    setupOpenglView(fboScreenSize.x, fboScreenSize.y, 1.0f);
 
-    SDL::glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    SDL::glClearColor(0.0f, 0.0f, 0.0f, 0.f);
     SDL::glClear(GL_COLOR_BUFFER_BIT);
 
-    drawParticles(view);
+    FVec2 fboOffset = -FVec2(fboView.min() * nominalSize);
+    drawParticles({1.0f, fboOffset, fboScreenSize});
+
+    // TODO: positioning is wrong for non-integral zoom values
+    FVec2 c1 = FVec2(fboView.min() * nominalSize * zoom) + view.offset;
+    FVec2 c2 = FVec2(fboView.max() * nominalSize * zoom) + view.offset;
+    //print("fbo: % - %\n", fboView.min(), fboView.max());
+    //print("c1: %   c2: %\n", c1, c2);
+
     Framebuffer::unbind();
     SDL::glPopAttrib();
+    popOpenglView();
 
     SDL::glBlendFunc(GL_ONE, GL_ONE);
-
     SDL::glBindTexture(GL_TEXTURE_2D, m_framebuffer->texId);
     SDL::glBegin(GL_QUADS);
     SDL::glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-    SDL::glTexCoord2f(0.0f, 0.0f);
-    SDL::glVertex2i(50, h);
-    SDL::glTexCoord2f(1.0f, 0.0f);
-    SDL::glVertex2i(w - 50, h);
-    SDL::glTexCoord2f(1.0f, 1.0f);
-    SDL::glVertex2i(w - 50, 0);
-    SDL::glTexCoord2f(0.0f, 1.0f);
-    SDL::glVertex2i(50, 0);
+    SDL::glTexCoord2f(0.0f, 0.0f), SDL::glVertex2f(c1.x, c2.y);
+    SDL::glTexCoord2f(1.0f, 0.0f), SDL::glVertex2f(c2.x, c2.y);
+    SDL::glTexCoord2f(1.0f, 1.0f), SDL::glVertex2f(c2.x, c1.y);
+    SDL::glTexCoord2f(0.0f, 1.0f), SDL::glVertex2f(c1.x, c1.y);
     SDL::glEnd();
-    checkOpenglError();
   } else {
     drawParticles(view);
   }
 
   SDL::glPopAttrib();
+  SDL::glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
 void FXRenderer::setBlendingMode(BlendMode bm) {
@@ -152,7 +172,7 @@ void FXRenderer::setBlendingMode(BlendMode bm) {
     if (bm == BlendMode::normal)
       SDL::glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     else
-      SDL::glBlendFunc(GL_ONE, GL_DST_ALPHA);
+      SDL::glBlendFunc(GL_ONE, GL_ONE);
     return;
   }
 
@@ -200,6 +220,5 @@ void FXRenderer::drawParticles(const View& view) {
   SDL::glDisableClientState(GL_COLOR_ARRAY);
   SDL::glPopAttrib();
   SDL::glPopMatrix();
-  SDL::glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 }

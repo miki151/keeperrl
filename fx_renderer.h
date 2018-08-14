@@ -20,15 +20,15 @@ public:
   // TODO: better way to communicate with FXRenderer ?
   static FXRenderer *getInstance();
 
-  bool o_useFramebuffer = false;
+  bool o_useFramebuffer = true;
 
   private:
   struct View;
+  IRect visibleTiles(const View&);
 
-  void initFramebuffer(int w, int h);
+  void initFramebuffer(IVec2);
   void drawParticles(const View&);
   void setBlendingMode(BlendMode);
-  IRect framebufferView(const View&);
 
   // TODO: remove m_
   FXManager& m_mgr;

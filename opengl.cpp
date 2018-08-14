@@ -1,6 +1,5 @@
-#include <string.h>
-#include "opengl.h"
 #include "debug.h"
+#include "opengl.h"
 
 using SDL::GLenum;
 using SDL::GLuint;
@@ -104,4 +103,31 @@ bool isOpenglExtensionAvailable(const char* text) {
 void checkOpenglError() {
   auto error = SDL::glGetError();
   CHECK(error == GL_NO_ERROR) << (int)error;
+}
+
+void setupOpenglView(int width, int height, float zoom) {
+  SDL::glMatrixMode(GL_PROJECTION);
+  SDL::glLoadIdentity();
+  SDL::glViewport(0, 0, width, height);
+  SDL::glOrtho(0.0, double(width) / zoom, double(height) / zoom, 0.0, -1.0, 1.0);
+  CHECK(SDL::glGetError() == GL_NO_ERROR);
+  //Initialize Modelview Matrix
+  SDL::glMatrixMode(GL_MODELVIEW);
+  SDL::glLoadIdentity();
+}
+
+void pushOpenglView() {
+  SDL::glPushAttrib(GL_VIEWPORT_BIT);
+  SDL::glMatrixMode(GL_PROJECTION);
+  SDL::glPushMatrix();
+  SDL::glMatrixMode(GL_MODELVIEW);
+  SDL::glPushMatrix();
+}
+
+void popOpenglView() {
+  SDL::glPopAttrib();
+  SDL::glMatrixMode(GL_PROJECTION);
+  SDL::glPopMatrix();
+  SDL::glMatrixMode(GL_MODELVIEW);
+  SDL::glPopMatrix();
 }

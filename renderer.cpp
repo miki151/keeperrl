@@ -349,15 +349,7 @@ void Renderer::enableCustomCursor(bool state) {
 }
 
 void Renderer::initOpenGL() {
-  //Initialize Projection Matrix
-  SDL::glMatrixMode( GL_PROJECTION );
-  SDL::glLoadIdentity();
-  SDL::glViewport(0, 0, width, height);
-  SDL::glOrtho(0.0, width / getZoom(), height / getZoom(), 0.0, -1.0, 1.0);
-  CHECK(SDL::glGetError() == GL_NO_ERROR);
-  //Initialize Modelview Matrix
-  SDL::glMatrixMode( GL_MODELVIEW );
-  SDL::glLoadIdentity();
+  setupOpenglView(width, height, getZoom());
   SDL::glEnable(GL_BLEND);
   SDL::glEnable(GL_TEXTURE_2D);
   SDL::glEnable(GL_DEPTH_TEST);
