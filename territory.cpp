@@ -37,6 +37,10 @@ const vector<Position>& Territory::getAll() const {
   return allSquaresVec;
 }
 
+const PositionSet& Territory::getAllAsSet() const {
+  return allSquares;
+}
+
 vector<Position> Territory::calculateExtended(int minRadius, int maxRadius) const {
   PROFILE;
   PositionMap<int> extendedTiles;

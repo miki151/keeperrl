@@ -34,6 +34,7 @@
 #include "body.h"
 #include "view_id.h"
 #include "view_object.h"
+#include "territory.h"
 
 
 template <class Archive>
@@ -332,6 +333,9 @@ const vector<ItemFetchInfo>& CollectiveConfig::getFetchInfo() const {
         {ItemIndex::ADA, unMarkedItems(), getZoneStorage(ZoneId::STORAGE_RESOURCES),
             CollectiveWarning::RESOURCE_STORAGE},
         {ItemIndex::STONE, unMarkedItems(), getZoneStorage(ZoneId::STORAGE_RESOURCES),
+            CollectiveWarning::RESOURCE_STORAGE},
+        {ItemIndex::TRAP, unMarkedItems(), [](WConstCollective col) -> const PositionSet& {
+                return col->getTerritory().getAllAsSet(); },
             CollectiveWarning::RESOURCE_STORAGE},
     };
     return ret;

@@ -11,6 +11,7 @@ class Territory {
 
   bool contains(Position) const;
   const vector<Position>& getAll() const;
+  const PositionSet& getAllAsSet() const;
   const vector<Position>& getExtended(int min, int max) const;
   const vector<Position>& getExtended(int max) const;
   const vector<Position>& getStandardExtended() const;
