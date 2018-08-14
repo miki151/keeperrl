@@ -49,6 +49,8 @@ Texture::Texture(Color color, int width, int height) {
   SDL::glGenTextures(1, &*texId);
   checkOpenglError();
   SDL::glBindTexture(GL_TEXTURE_2D, *texId);
+  SDL::glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  SDL::glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   SDL::glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, colors.data());
   realSize = size = Vec2(width, height);
   SDL::glBindTexture(GL_TEXTURE_2D, 0);
