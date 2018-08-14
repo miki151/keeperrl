@@ -428,7 +428,7 @@ class ApplyItem : public Task {
           setDone();
         });
     return c->wait().prepend([=](WCreature) {
-       cancel();
+       setDone();
     });
   }
 
