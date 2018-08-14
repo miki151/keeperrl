@@ -6,15 +6,15 @@
 
 namespace fx {
 
-pair<int, int> spawnEffect(const char *name, Vec2 pos) { return spawnEffect(name, pos, Vec2(0, 0)); }
+pair<int, int> spawnEffect(const char *name, double x, double y) { return spawnEffect(name, x, y, Vec2(0, 0)); }
 
-pair<int, int> spawnEffect(const char *name, Vec2 pos, Vec2 dir) {
+pair<int, int> spawnEffect(const char *name, double x, double y, Vec2 dir) {
   if(auto *inst = FXManager::getInstance()) {
     if(auto id = inst->findSystem(name)) {
-      auto fpos = (FVec2(pos.x, pos.y) + FVec2(0.5f)) * 24.0f;
-      auto ftargetOff = FVec2(dir.x, dir.y) * 24.0f;
+      auto fpos = (FVec2(x, y) + FVec2(0.5f)) * Renderer::nominalSize;
+      auto ftargetOff = FVec2(dir.x, dir.y) * Renderer::nominalSize;
       auto instId = inst->addSystem(*id, fpos, ftargetOff);
-      INFO << "FX spawn: " << name << " at:" << pos << " dir:" << dir;
+      INFO << "FX spawn: " << name << " at:" << x << ", " << y << " dir:" << dir;
       return {instId.index(), instId.spawnTime()};
     }
     INFO << "FX spawn: couldn't find fx: " << name;
@@ -23,12 +23,12 @@ pair<int, int> spawnEffect(const char *name, Vec2 pos, Vec2 dir) {
   return {-1, -1};
 }
 
-void setPos(pair<int, int> tid, Vec2 pos) {
+void setPos(pair<int, int> tid, double x, double y) {
   ParticleSystemId id(tid.first, tid.second);
   if (auto *inst = FXManager::getInstance()) {
     if (inst->valid(id)) {
       auto &system = inst->get(id);
-      system.pos = (FVec2(pos.x, pos.y) + FVec2(0.5f)) * 24.0f;
+      system.pos = (FVec2(x, y) + FVec2(0.5f)) * Renderer::nominalSize;
     }
   }
 }

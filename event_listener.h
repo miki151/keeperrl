@@ -92,6 +92,12 @@ namespace EventInfo {
     FurnitureLayer layer;
   };
 
+  struct OtherEffect {
+    Position position;
+    const char* effect;
+    optional<Vec2> targetOffset = none;
+  };
+
   struct ItemsEquipped {
     WCreature creature;
     vector<WItem> items;
@@ -113,7 +119,7 @@ namespace EventInfo {
   class GameEvent : public variant<CreatureMoved, CreatureKilled, ItemsPickedUp, ItemsDropped, ItemsAppeared, Projectile,
       Explosion, ConqueredEnemy, WonGame, TechbookRead, Alarm, CreatureTortured, CreatureStunned, MovementChanged,
       TrapTriggered, TrapDisarmed, FurnitureDestroyed, ItemsEquipped, CreatureEvent, VisibilityChanged, RetiredGame,
-      CreatureAttacked> {
+      CreatureAttacked, OtherEffect> {
     using variant::variant;
   };
 

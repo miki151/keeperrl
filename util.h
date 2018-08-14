@@ -1608,8 +1608,8 @@ optional<typename Map::mapped_type&> getReferenceMaybe(Map& m, const Key& key) {
     return none;
 }
 
-template <typename Key, typename Map>
-optional<typename Map::mapped_type> getValueMaybe(const Map& m, const Key& key) {
+template <typename Map>
+optional<typename Map::mapped_type> getValueMaybe(const Map& m, const typename Map::key_type& key) {
   auto it = m.find(key);
   if (it != m.end())
     return it->second;

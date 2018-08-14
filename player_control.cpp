@@ -1501,6 +1501,10 @@ void PlayerControl::onEvent(const GameEvent& event) {
         if (info.type == FurnitureType::PIT && collective->getKnownTiles().isKnown(info.position))
           addToMemory(info.position);
       },
+      [&](const OtherEffect& info) {
+        if (canSee(info.position))
+          getView()->animation(info.position.getCoord(), info.effect, info.targetOffset);
+      },
       [&](const auto&) {}
   );
 }

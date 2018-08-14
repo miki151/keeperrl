@@ -132,6 +132,10 @@ void Player::onEvent(const GameEvent& event) {
             privateMessage(PlayerMessage("An unnamed tribe is destroyed.", MessagePriority::CRITICAL));
         }
       },
+      [&](const OtherEffect& info) {
+        if (creature->canSee(info.position))
+          getView()->animation(info.position.getCoord(), info.effect, info.targetOffset);
+      },
       [&](const WonGame&) {
         if (adventurer)
           getGame()->conquered(*creature->getName().first(), creature->getKills().getSize(), creature->getPoints());

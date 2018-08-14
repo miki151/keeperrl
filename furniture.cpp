@@ -19,7 +19,6 @@
 #include "furniture_click.h"
 #include "furniture_tick.h"
 #include "movement_set.h"
-#include "fx_simple.h"
 
 static string makePlural(const string& s) {
   if (s.empty())
@@ -48,7 +47,7 @@ Furniture::~Furniture() {}
 
 template<typename Archive>
 void Furniture::serialize(Archive& ar, const unsigned) {
-  ar(SUBCLASS(OwnedObject<Furniture>), viewObject, removeNonFriendly);
+  ar(SUBCLASS(OwnedObject<Furniture>), viewObject, removeNonFriendly, destroyFX, tryDestroyFX);
   ar(name, pluralName, type, movementSet, fire, burntRemains, destroyedRemains, destroyActions, itemDrop);
   ar(blockVision, usageType, clickType, tickType, usageTime, overrideMovement, wall, creator, createdTime);
   ar(constructMessage, layer, entryType, lightEmission, canHideHere, warning, summonedElement, droppedItems);
@@ -159,6 +158,8 @@ void Furniture::destroy(Position pos, const DestroyAction& action) {
     pos.dropItems(itemDrop->random());
   if (usageType)
     FurnitureUsage::beforeRemoved(*usageType, pos);
+  if (!destroyFX.empty())
+    pos.getGame()->addEvent(EventInfo::OtherEffect{pos, destroyFX.c_str()});
   pos.removeFurniture(this, destroyedRemains ? FurnitureFactory::get(*destroyedRemains, getTribe()) : nullptr);
   pos.getGame()->addEvent(EventInfo::FurnitureDestroyed{pos, myType, myLayer});
 }
@@ -166,23 +167,14 @@ void Furniture::destroy(Position pos, const DestroyAction& action) {
 void Furniture::tryToDestroyBy(Position pos, WCreature c, const DestroyAction& action) {
   if (auto& strength = destroyActions[action.getType()]) {
     c->addSound(action.getSound());
-
     double damage = c->getAttr(AttrType::DAMAGE);
     if (auto skill = action.getDestroyingSkillMultiplier())
       damage = damage * c->getAttributes().getSkills().getValue(*skill);
     *strength -= damage;
-    if (*strength <= 0) {
+    if (!tryDestroyFX.empty())
+      pos.getGame()->addEvent(EventInfo::OtherEffect{pos, tryDestroyFX.c_str()});
+    if (*strength <= 0)
       destroy(pos, action);
-
-	  // TODO: move fx spawning to ViewObject ?
-      if (action.getType() == DestroyAction::Type::DIG)
-        fx::spawnEffect("rock_clouds", pos.getCoord());
-    } else {
-      if (action.getType() == DestroyAction::Type::CUT)
-        fx::spawnEffect("wood_splinters", pos.getCoord());
-      else if (action.getType() == DestroyAction::Type::DIG)
-        fx::spawnEffect("rock_splinters", pos.getCoord());
-    }
   }
 }
 
@@ -501,6 +493,16 @@ Furniture& Furniture::setForgetAfterBuilding() {
 
 Furniture& Furniture::setShowEfficiency() {
   showEfficiency = true;
+  return *this;
+}
+
+Furniture& Furniture::setDestroyFX(string s) {
+  destroyFX = std::move(s);
+  return *this;
+}
+
+Furniture& Furniture::setTryDestroyFX(string s) {
+  tryDestroyFX = std::move(s);
   return *this;
 }
 

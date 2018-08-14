@@ -597,6 +597,10 @@ void WindowView::animation(Vec2 pos, AnimationId id, Dir orientation) {
     mapGui->addAnimation(Animation::fromId(id, orientation), pos);
 }
 
+void WindowView::animation(Vec2 pos, const char* particleEffect, optional<Vec2> targetOffset) {
+  mapGui->addAnimation(particleEffect, pos, targetOffset);
+}
+
 void WindowView::refreshView() {
 /*    if (!wasRendered && gameReady)
       rebuildGui();*/

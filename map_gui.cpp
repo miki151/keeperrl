@@ -34,6 +34,7 @@
 
 #include "fx_renderer.h"
 #include "fx_manager.h"
+#include "fx_simple.h"
 
 using SDL::SDL_Keysym;
 using SDL::SDL_Keycode;
@@ -85,6 +86,10 @@ void MapGui::setSpriteMode(bool s) {
 void MapGui::addAnimation(PAnimation animation, Vec2 pos) {
   animation->setBegin(clock->getRealMillis());
   animations.push_back({std::move(animation), pos});
+}
+
+void MapGui::addAnimation(const char* particleEffect, Vec2 position, optional<Vec2> targetOffset) {
+  fx::spawnEffect(particleEffect, position.x, position.y, targetOffset.value_or(Vec2(0, 0)));
 }
 
 optional<Vec2> MapGui::getMousePos() {
@@ -535,6 +540,23 @@ static Color getPortalColor(int index) {
   return Color(255 * (index % 2), 255 * ((index / 2) % 2), 255 * ((index / 4) % 2));
 }
 
+void MapGui::updateEffects(map<string, pair<int, int>>& effectsMap, const unordered_set<string>& effects, double x, double y) {
+  set<string> existingEffects;
+  for (auto effectName : effects) {
+    existingEffects.insert(effectName);
+    if (auto effectId = getValueMaybe(effectsMap, effectName))
+      fx::setPos(*effectId, x, y);
+    else
+      effectsMap.insert({effectName,
+          fx::spawnEffect(effectName.c_str(), x, y)});
+  }
+  for (auto& elem : copyOf(effectsMap))
+    if (!existingEffects.count(elem.first)) {
+      fx::kill(elem.second, false);
+      effectsMap.erase(elem.first);
+    }
+}
+
 void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& object, Vec2 size, Vec2 movement,
     Vec2 tilePos, milliseconds curTimeReal) {
   PROFILE;
@@ -600,6 +622,13 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
       renderer.drawText(Color::WHITE, pos + move + size / 2, "S", Renderer::CenterType::HOR_VER, size.x * 2 / 3);
     if (object.hasModifier(ViewObject::Modifier::LOCKED))
       renderer.drawTile(pos + move, Tile::getTile(ViewId::KEY, spriteMode).getSpriteCoord(), size);
+    if (auto creatureId = object.getCreatureId()) {
+      auto& effects = creatureFX.getOrInit(*creatureId);
+      updateEffects(effects, object.particleEffects,
+          tilePos.x + move.x / (double)size.x, tilePos.y + move.y / (double)size.y);
+      if (effects.empty())
+        creatureFX.erase(*creatureId);
+    }
   } else {
     Vec2 tilePos = pos + movement + Vec2(size.x / 2, -3);
     drawCreatureHighlights(renderer, object, pos + movement, size, curTimeReal);

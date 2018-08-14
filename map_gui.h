@@ -59,6 +59,7 @@ class MapGui : public GuiElem {
   void setSpriteMode(bool);
   optional<Vec2> getHighlightedTile(Renderer& renderer);
   void addAnimation(PAnimation animation, Vec2 position);
+  void addAnimation(const char* particleEffect, Vec2 position, optional<Vec2> targetOffset);
   void setCenter(double x, double y);
   void setCenter(Vec2 pos);
   void clearCenter();
@@ -186,4 +187,7 @@ class MapGui : public GuiElem {
   DirSet getConnectionSet(Vec2 tilePos, ViewId);
   EntityMap<Creature, milliseconds> woundedInfo;
   void considerWoundedAnimation(const ViewObject&, Color&, milliseconds curTimeReal);
+  EntityMap<Creature, map<string, pair<int, int>>> creatureFX;
+  unordered_map<Vec2, map<string, pair<int, int>>, CustomHash<Vec2>> staticFX;
+  void updateEffects(map<string, pair<int, int> >& effectsMap, const unordered_set<std::string>& effects, double x, double y);
 };

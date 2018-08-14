@@ -89,6 +89,8 @@ class ViewObject {
 
   SERIALIZATION_DECL(ViewObject);
 
+  unordered_set<string> particleEffects;
+
   private:
   string getAttributeString(Attribute) const;
   const char* getDefaultDescription() const;

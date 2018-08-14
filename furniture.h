@@ -111,6 +111,8 @@ class Furniture : public OwnedObject<Furniture> {
   Furniture& setCanRemoveNonFriendly(bool state);
   Furniture& setForgetAfterBuilding();
   Furniture& setShowEfficiency();
+  Furniture& setDestroyFX(string);
+  Furniture& setTryDestroyFX(string);
   MovementSet& modMovementSet();
 
   SERIALIZATION_DECL(Furniture)
@@ -152,4 +154,6 @@ class Furniture : public OwnedObject<Furniture> {
   bool SERIAL(clearFogOfWar) = false;
   bool SERIAL(xForgetAfterBuilding) = false;
   bool SERIAL(showEfficiency) = false;
+  string SERIAL(destroyFX);
+  string SERIAL(tryDestroyFX);
 };

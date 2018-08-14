@@ -53,7 +53,6 @@
 #include "profiler.h"
 #include "furniture_type.h"
 #include "furniture_usage.h"
-#include "fx_simple.h"
 
 template <class Archive>
 void Creature::serialize(Archive& ar, const unsigned int version) {
@@ -139,7 +138,7 @@ CreatureAction Creature::castSpell(Spell* spell) const {
     return CreatureAction("You can't cast this spell yet.");
   return CreatureAction(this, [=] (WCreature c) {
     c->addSound(spell->getSound());
-    fx::spawnEffect("circular_blast", c->getPosition().getCoord());
+    getGame()->addEvent(EventInfo::OtherEffect{c->getPosition(), "circular_blast"});
     spell->addMessage(c);
     spell->getEffect().applyToCreature(c);
     getGame()->getStatistics().add(StatId::SPELL_CAST);
@@ -157,10 +156,8 @@ CreatureAction Creature::castSpell(Spell* spell, Vec2 dir) const {
     return CreatureAction("You can't cast this spell yet.");
   return CreatureAction(this, [=] (WCreature c) {
     c->addSound(spell->getSound());
-    auto coord = c->getPosition().getCoord();
     auto dirEffectType = spell->getDirEffectType();
-
-    fx::spawnEffect("magic_missile", coord, dir * dirEffectType.getRange());
+    getGame()->addEvent(EventInfo::OtherEffect{c->getPosition(), "magic_missile", dir * dirEffectType.getRange()});
     thirdPerson(getName().the() + " casts a spell");
     secondPerson("You cast " + spell->getName());
     applyDirected(c, dir, dirEffectType);
@@ -171,85 +168,23 @@ CreatureAction Creature::castSpell(Spell* spell, Vec2 dir) const {
   });
 }
 
-struct Creature::LastingFX {
-  LastingEffect effect;
-  pair<int, int> instance;
-  bool inactive = false;
-};
-
-pair<int, int> Creature::spawnLastingFX(LastingEffect effect) {
-  auto coord = position.getCoord();
-
-  // FXes are only visible for temporary effects
-  if (attributes->isAffectedPermanently(effect))
-    return {-1, -1};
-
-  switch (effect) {
-  case LastingEffect::PEACEFULNESS:
-    return fx::spawnEffect("peacefulness", coord);
-  case LastingEffect::SLEEP:
-    return fx::spawnEffect("sleep", coord);
-  case LastingEffect::BLIND:
-    return fx::spawnEffect("blind", coord);
-  case LastingEffect::INSANITY:
-    return fx::spawnEffect("insanity", coord);
-  case LastingEffect::SPEED:
-    return fx::spawnEffect("speed", coord);
-  case LastingEffect::SLOWED:
-    return fx::spawnEffect("slow", coord);
-  case LastingEffect::FLYING:
-    return fx::spawnEffect("flying", coord);
-  default:
-    break;
-  }
-
-  return {-1, -1};
+void Creature::updateLastingFX(ViewObject& object) {
+  if (isAffected(LastingEffect::PEACEFULNESS))
+    object.particleEffects.insert("peacefulness");
+  if (isAffected(LastingEffect::SLEEP))
+    object.particleEffects.insert("sleep");
+  if (isAffected(LastingEffect::BLIND))
+    object.particleEffects.insert("blind");
+  if (isAffected(LastingEffect::INSANITY))
+    object.particleEffects.insert("insanity");
+  if (isAffected(LastingEffect::SPEED))
+    object.particleEffects.insert("speed");
+  if (isAffected(LastingEffect::SLOWED))
+    object.particleEffects.insert("slow");
+  if (isAffected(LastingEffect::FLYING))
+    object.particleEffects.insert("flying");
 }
 
-void Creature::updateLastingFX() {
-  EnumSet<LastingEffect> active;
-
-  // TODO: when creature dies, effects should die with it?
-
-  for (auto &lfx : m_lastingFXes) {
-    if (lfx.inactive)
-      continue;
-
-    if (isAffected(lfx.effect)) {
-      active.insert(lfx.effect);
-    } else {
-      fx::kill(lfx.instance, false);
-      lfx.inactive = true;
-    }
-  }
-
-  // Removing dead instances
-  for (int n = 0; n < (int)m_lastingFXes.size(); n++) {
-    auto &lfx = m_lastingFXes[n];
-    if (lfx.inactive && !fx::isAlive(lfx.instance)) {
-      lfx = m_lastingFXes.back();
-      m_lastingFXes.pop_back();
-      n--;
-    }
-  }
-
-  // TODO: what if we have multiple effects at once ?
-
-  auto coord = position.getCoord();
-  for (auto &lfx : m_lastingFXes) {
-    fx::setPos(lfx.instance, coord);
-    // TODO: take into consideration getMovementOffset...
-    // TODO: control FXes with parameters
-  }
-
-  for (auto le : ENUM_ALL(LastingEffect)) {
-    if (!active.contains(le) && isAffected(le)) {
-      auto inst = spawnLastingFX(le);
-      if (inst != make_pair(-1, -1))
-        m_lastingFXes.emplace_back(LastingFX{le, inst});
-    }
-  }
-}
 
 void Creature::pushController(PController ctrl) {
   if (auto controller = getController())
@@ -1191,7 +1126,7 @@ void Creature::updateViewObject() {
     object.setAttribute(ViewObject::Attribute::HEALTH, captureHealth);
   object.setDescription(getName().title());
   getPosition().setNeedsRenderUpdate(true);
-  updateLastingFX();
+  updateLastingFX(object);
 }
 
 double Creature::getMorale() const {
@@ -1439,14 +1374,10 @@ void Creature::addMovementInfo(MovementInfo info) {
   getPosition().setNeedsRenderUpdate(true);
 
   // We're assuming here that position has already been updated
-  Vec2 oldCoord = position.getCoord() - info.direction;
-  Position oldPos(oldCoord, position.getLevel());
+  Position oldPos = position.minus(info.direction);
   if (auto ground = oldPos.getFurniture(FurnitureLayer::GROUND)) {
-    if (ground->getType() == FurnitureType::SAND) {
-      // TODO: spawn only for visible creatures
-      auto id = fx::spawnEffect("feet_dust", oldCoord);
-      fx::setDir(id, info.direction.getCardinalDir());
-    }
+    if (ground->getType() == FurnitureType::SAND)
+      getGame()->addEvent(EventInfo::OtherEffect{oldPos, "feet_dust", info.direction});
   }
 }
 
