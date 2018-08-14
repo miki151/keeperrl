@@ -68,6 +68,8 @@
 #define DATA_DIR "."
 #endif
 
+bool installOpenglDebugHandler();
+
 static void initializeRendererTiles(Renderer& r, const DirectoryPath& path) {
   r.addTilesDirectory(path.subdirectory("orig16"), Vec2(16, 16));
   r.addTilesDirectory(path.subdirectory("orig24"), Vec2(24, 24));
@@ -209,6 +211,7 @@ static po::parser getCommandLineFlags() {
   flags["free_mode"].description("Run in free ascii mode");
 #ifndef RELEASE
   flags["quick_game"].description("Skip main menu and load the last save file or start a single map game");
+  flags["opengl_debug"].description("Enable OpenGL debug output (if available)");
 #endif
   flags["seed"].type(po::i32).description("Use given seed");
   flags["record"].type(po::string).description("Record game to file");
@@ -344,6 +347,9 @@ static int keeperMain(po::parser& commandLineFlags) {
       freeDataPath.file("images/mouse_cursor2.png"));
   FatalLog.addOutput(DebugOutput::toString([&renderer](const string& s) { renderer.showError(s);}));
   UserErrorLog.addOutput(DebugOutput::toString([&renderer](const string& s) { renderer.showError(s);}));
+
+  if(commandLineFlags["opengl_debug"].was_set())
+	  installOpenglDebugHandler();
 
   unique_ptr<fx::FXManager> fxManager;
   unique_ptr<fx::FXRenderer> fxRenderer;

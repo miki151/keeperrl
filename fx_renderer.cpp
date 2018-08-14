@@ -5,7 +5,7 @@
 #include "fx_particle_system.h"
 #include "fx_draw_buffers.h"
 
-#include "sdl.h"
+#include "opengl.h"
 
 namespace fx {
 
@@ -53,11 +53,6 @@ FXRenderer::FXRenderer(DirectoryPath dataPath, FXManager &mgr) : m_mgr(mgr) {
 }
 
 FXRenderer::~FXRenderer() { s_instance = nullptr; }
-
-static void checkOpenglError() {
-  auto error = SDL::glGetError();
-  CHECK(error == GL_NO_ERROR) << (int)error;
-}
 
 void FXRenderer::applyTexScale() {
   auto& elements = m_drawBuffers->elements;

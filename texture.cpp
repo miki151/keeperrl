@@ -15,11 +15,7 @@
 
 #include "stdafx.h"
 #include "texture.h"
-
-static void checkOpenglError() {
-  auto error = SDL::glGetError();
-  CHECK(error == GL_NO_ERROR) << (int)error;
-}
+#include "opengl.h"
 
 Texture::Texture() = default;
 
