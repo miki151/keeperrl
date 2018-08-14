@@ -24,17 +24,12 @@
 #include "sdl_event_generator.h"
 #include "clock.h"
 #include "gzstream.h"
-
+#include "opengl.h"
 
 Renderer::TileCoord::TileCoord(Vec2 p, int t) : pos(p), texNum(t) {
 }
 
 Renderer::TileCoord::TileCoord() : TileCoord(Vec2(0, 0), -1) {
-}
-
-static void checkOpenglError() {
-  auto error = SDL::glGetError();
-  CHECK(error == GL_NO_ERROR) << (int)error;
 }
 
 void Renderer::renderDeferredSprites() {
