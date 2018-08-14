@@ -162,6 +162,7 @@ class Destruction : public Task {
   }
 
   virtual bool canPerform(WConstCreature) const override {
+    PROFILE_BLOCK("Destruction::canPerform");
     return callback->isConstructionReachable(position) && (!matching || matching->getMatch(position));
   }
 
@@ -286,6 +287,7 @@ class PickItem : public Task {
   }
 
   virtual bool canPerform(WConstCreature c) const override {
+    PROFILE_BLOCK("PickItem::canPerform");
     return c->canCarryMoreWeight(lightestItem) && c->isSameSector(position);
   }
 
@@ -1554,9 +1556,16 @@ class DropItems : public Task {
   }
 
   virtual bool canPerform(WConstCreature c) const override {
-    for (auto item : c->getEquipment().getItems())
-      if (items.contains(item))
-        return true;
+    PROFILE_BLOCK("DropItems::canPerform");
+    if (items.getSize() > c->getEquipment().getItems().size()) {
+      for (auto item : c->getEquipment().getItems())
+        if (items.contains(item))
+          return true;
+    } else {
+      for (auto item : items)
+        if (!!c->getEquipment().getItemById(item))
+          return true;
+    }
     return false;
   }
 

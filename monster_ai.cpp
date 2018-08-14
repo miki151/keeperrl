@@ -949,6 +949,7 @@ class ByCollective : public Behaviour {
   }
 
   void setRandomTask() {
+    PROFILE;
     vector<MinionActivity> goodTasks;
     for (MinionActivity t : ENUM_ALL(MinionActivity))
       if (collective->isActivityGood(creature, t) && creature->getAttributes().getMinionActivities().canChooseRandomly(creature, t))

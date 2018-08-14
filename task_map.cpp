@@ -15,8 +15,10 @@ void TaskMap::clearFinishedTasks() {
 }
 
 WTask TaskMap::getClosestTask(WConstCreature c, MinionActivity activity, bool priorityOnly) const {
+  PROFILE;
   WTask closest = nullptr;
   auto isBetter = [&](WTask task, double dist) {
+    PROFILE_BLOCK("isBetter");
     if (!closest)
       return true;
     bool pTask = isPriorityTask(task);
@@ -30,6 +32,7 @@ WTask TaskMap::getClosestTask(WConstCreature c, MinionActivity activity, bool pr
   for (auto task : taskByActivity[activity])
     if (task->canPerform(c) && (!priorityOnly || isPriorityTask(task)))
       if (auto pos = getPosition(task)) {
+        PROFILE_BLOCK("Task check");
         double dist = pos->dist8(c->getPosition());
         WConstCreature owner = getOwner(task);
         auto delayed = delayedTasks.getMaybe(task);
@@ -105,6 +108,7 @@ CostInfo TaskMap::removeTask(UniqueEntity<Task>::Id id) {
 }
 
 bool TaskMap::isPriorityTask(WConstTask t) const {
+  PROFILE;
   return priorityTasks.contains(t);
 }
 
@@ -193,6 +197,7 @@ void TaskMap::takeTask(WCreature c, WTask task) {
 }
 
 optional<Position> TaskMap::getPosition(WTask task) const {
+  PROFILE;
   return positionMap.getMaybe(task);
 }
 
