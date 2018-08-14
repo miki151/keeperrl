@@ -134,6 +134,9 @@ class Renderer {
 
   void flushSprites() { renderDeferredSprites(); }
 
+  int getWidth() const;
+  int getHeight() const;
+
   private:
   friend class Texture;
   optional<Texture> textTexture;

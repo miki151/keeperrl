@@ -3,6 +3,8 @@
 #include "fx_base.h"
 #include "texture.h"
 
+class Framebuffer;
+
 namespace fx {
 
 class FXRenderer {
@@ -13,12 +15,21 @@ public:
   FXRenderer(const FXRenderer &) = delete;
   void operator=(const FXRenderer &) = delete;
 
-  void draw(float zoom, float offsetX, float offsetY);
+  void draw(float zoom, float offsetX, float offsetY, int w, int h);
 
   // TODO: better way to communicate with FXRenderer ?
   static FXRenderer *getInstance();
 
+  bool o_useFramebuffer = false;
+
   private:
+  struct View;
+
+  void initFramebuffer(int w, int h);
+  void drawParticles(const View&);
+  void setBlendingMode(BlendMode);
+  IRect framebufferView(const View&);
+
   // TODO: remove m_
   FXManager& m_mgr;
   vector<Texture> m_textures;
@@ -29,5 +40,6 @@ public:
   void applyTexScale();
 
   unique_ptr<DrawBuffers> m_drawBuffers;
+  unique_ptr<Framebuffer> m_framebuffer;
 };
 }
