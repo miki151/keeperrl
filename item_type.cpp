@@ -1142,7 +1142,7 @@ ItemAttributes ItemType::Bone::getAttributes() const {
   return ITATTR(
       i.viewId = ViewId::BONE;
       i.name = "bone";
-      i.itemClass = ItemClass::OTHER;
+      i.itemClass = ItemClass::CORPSE;
       i.price = 0;
       i.weight = 5;
   );
