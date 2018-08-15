@@ -135,14 +135,9 @@ void WindowView::initialize() {
           }
       },
       bindMethod(&WindowView::mapRightClickFun, this),
-      bindMethod(&WindowView::mapCreatureClickFun, this),
       [this] { refreshInput = true;},
-      bindMethod(&WindowView::mapCreatureDragFun, this),
-      [this] (UniqueEntity<Creature>::Id id, Vec2 pos) {
-          inputQueue.push(UserInput(UserInputId::CREATURE_DRAG_DROP, CreatureDropInfo{pos, id})); },
-      [this] (TeamId id, Vec2 pos) {
-          inputQueue.push(UserInput(UserInputId::TEAM_DRAG_DROP, TeamDropInfo{pos, id})); },
       },
+      inputQueue,
       clock,
       options,
       &gui));
@@ -156,20 +151,8 @@ void WindowView::initialize() {
   guiBuilder.setMapGui(mapGui);
 }
 
-void WindowView::mapCreatureDragFun(UniqueEntity<Creature>::Id id, ViewId viewId, Vec2 origin) {
-  inputQueue.push(UserInput(UserInputId::CREATURE_DRAG, id));
-}
-
 bool WindowView::isKeyPressed(SDL::SDL_Scancode code) {
   return SDL::SDL_GetKeyboardState(nullptr)[code];
-}
-
-void WindowView::mapCreatureClickFun(UniqueEntity<Creature>::Id id, Vec2 position, bool rightClick) {
-  if (rightClick) {
-    inputQueue.push(UserInput(UserInputId::CREATURE_MAP_CLICK_EXTENDED, position));
-  } else {
-    inputQueue.push(UserInput(UserInputId::CREATURE_MAP_CLICK, position));
-  }
 }
 
 void WindowView::mapContinuousLeftClickFun(Vec2 pos) {
@@ -1365,10 +1348,6 @@ void WindowView::processEvents() {
       case SDL::SDL_KEYDOWN:
         if (gameInfo.infoType == GameInfo::InfoType::PLAYER)
           renderer.flushEvents(SDL::SDL_KEYDOWN);
-        break;
-      case SDL::SDL_MOUSEBUTTONDOWN:
-        if (event.button.button == SDL_BUTTON_MIDDLE)
-          inputQueue.push(UserInput(UserInputId::DRAW_LEVEL_MAP));
         break;
       case SDL::SDL_MOUSEBUTTONUP:
         if (event.button.button == SDL_BUTTON_LEFT) {

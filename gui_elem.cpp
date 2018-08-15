@@ -305,6 +305,10 @@ class StopMouseMovement : public GuiElem {
     return pos.inRectangle(getBounds());
   }
 
+  virtual bool onMiddleClick(Vec2 pos) override {
+    return pos.inRectangle(getBounds());
+  }
+
   virtual bool onMouseWheel(Vec2 pos, bool up) override {
     return pos.inRectangle(getBounds());
   }
@@ -689,26 +693,30 @@ class GuiLayout : public GuiElem {
   GuiLayout(vector<SGuiElem> e) : elems(std::move(e)) {}
   GuiLayout(SGuiElem e) { elems.push_back(std::move(e)); }
 
-  virtual bool onLeftClick(Vec2 pos) override {
+  virtual bool onTextInput(const char* c) override {
     for (int i : AllReverse(elems))
-      if (isVisible(i))
-        if (elems[i]->onLeftClick(pos))
+      if (isVisible(i) && elems[i]->onTextInput(c))
           return true;
     return false;
   }
 
-  virtual bool onTextInput(const char* c) override {
+  virtual bool onLeftClick(Vec2 pos) override {
     for (int i : AllReverse(elems))
-      if (isVisible(i))
-        if (elems[i]->onTextInput(c))
-          return true;
+      if (isVisible(i) && elems[i]->onLeftClick(pos))
+        return true;
     return false;
   }
 
   virtual bool onRightClick(Vec2 pos) override {
     for (int i : AllReverse(elems))
-      if (isVisible(i))
-        if (elems[i]->onRightClick(pos))
+      if (isVisible(i) && elems[i]->onRightClick(pos))
+          return true;
+    return false;
+  }
+
+  virtual bool onMiddleClick(Vec2 pos) override {
+    for (int i : AllReverse(elems))
+      if (isVisible(i) && elems[i]->onMiddleClick(pos))
           return true;
     return false;
   }
@@ -832,8 +840,13 @@ class External : public GuiElem {
   virtual bool onLeftClick(Vec2 v) override {
     return elem->onLeftClick(v);
   }
+
   virtual bool onRightClick(Vec2 v) override {
     return elem->onRightClick(v); 
+  }
+
+  virtual bool onMiddleClick(Vec2 v) override {
+    return elem->onMiddleClick(v);
   }
 
   virtual bool onMouseMove(Vec2 v) override {
@@ -2983,15 +2996,15 @@ void GuiFactory::propagateEvent(const Event& event, vector<SGuiElem> guiElems) {
     case SDL::SDL_MOUSEBUTTONDOWN: {
       Vec2 clickPos(event.button.x, event.button.y);
       for (auto elem : guiElems) {
-        if (event.button.button == SDL_BUTTON_RIGHT)
-          if (elem->onRightClick(clickPos))
-            break;
-        if (event.button.button == SDL_BUTTON_LEFT)
-          if (elem->onLeftClick(clickPos))
-            break;
-      }
+        if (event.button.button == SDL_BUTTON_RIGHT && elem->onRightClick(clickPos))
+          break;
+        if (event.button.button == SDL_BUTTON_LEFT && elem->onLeftClick(clickPos))
+          break;
+        if (event.button.button == SDL_BUTTON_MIDDLE && elem->onMiddleClick(clickPos))
+          break;
       }
       break;
+    }
     case SDL::SDL_TEXTINPUT:
       for (auto elem : guiElems)
         if (elem->onTextInput(event.text.text))

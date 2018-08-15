@@ -32,6 +32,7 @@ class Clock;
 class Creature;
 class Options;
 class TutorialInfo;
+class UserInput;
 
 class MapGui : public GuiElem {
   public:
@@ -39,17 +40,14 @@ class MapGui : public GuiElem {
     function<void(Vec2)> continuousLeftClickFun;
     function<void(Vec2)> leftClickFun;
     function<void(Vec2)> rightClickFun;
-    function<void(UniqueEntity<Creature>::Id, Vec2, bool)> creatureClickFun;
     function<void()> refreshFun;
-    function<void(UniqueEntity<Creature>::Id, ViewId, Vec2)> creatureDragFun;
-    function<void(UniqueEntity<Creature>::Id, Vec2)> creatureDroppedFun;
-    function<void(TeamId, Vec2)> teamDroppedFun;
   };
-  MapGui(Callbacks, Clock*, Options*, GuiFactory*);
+  MapGui(Callbacks, SyncQueue<UserInput>&, Clock*, Options*, GuiFactory*);
 
   virtual void render(Renderer&) override;
   virtual bool onLeftClick(Vec2) override;
   virtual bool onRightClick(Vec2) override;
+  virtual bool onMiddleClick(Vec2) override;
   virtual bool onMouseMove(Vec2) override;
   virtual void onMouseGone() override;
   virtual void onMouseRelease(Vec2) override;
@@ -120,6 +118,7 @@ class MapGui : public GuiElem {
   bool spriteMode;
   Rectangle levelBounds = Rectangle(1, 1);
   Callbacks callbacks;
+  SyncQueue<UserInput>& inputQueue;
   optional<milliseconds> lastScrollUpdate;
   Clock* clock;
   optional<Vec2> mouseHeldPos;
