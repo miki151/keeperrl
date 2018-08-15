@@ -244,19 +244,21 @@ class PickItem : public Task {
     return "Pick up item " + toString(position);
   }
 
-  bool itemsExist(Position target) {
-    for (WItem it : target.getItems())
-      if (items.contains(it))
-        return true;
-    return false;
+  virtual bool isBogus() const override {
+    if (position.getItems().size() > items.getSize()) {
+      for (auto& item : items)
+        if (!!position.getInventory().getItemById(item))
+          return false;
+    } else {
+      for (WItem it : position.getItems())
+        if (items.contains(it))
+          return false;
+    }
+    return true;
   }
 
   virtual MoveInfo getMove(WCreature c) override {
     CHECK(!pickedUp);
-    if (!itemsExist(position)) {
-      setDone();
-      return NoMove;
-    }
     if (c->getPosition() == position) {
       vector<WItem> hereItems;
       for (WItem it : c->getPickUpOptions())
@@ -711,6 +713,12 @@ class Chain : public Task {
   public:
   Chain(vector<PTask> t) : tasks(std::move(t)) {
     CHECK(!tasks.empty());
+  }
+
+  virtual bool isBogus() const override {
+    if (current >= tasks.size())
+      return true;
+    return tasks[current]->isBogus();
   }
 
   virtual bool canPerform(WConstCreature c) const override {
