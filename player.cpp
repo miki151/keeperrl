@@ -530,8 +530,10 @@ void Player::creatureClickAction(Position pos, bool extended) {
       commands[0].perform(this);
   } else
   if (auto furniture = pos.getFurniture(FurnitureLayer::MIDDLE))
-    if (furniture->getClickType() && furniture->getTribe() == creature->getTribeId())
+    if (furniture->getClickType() && furniture->getTribe() == creature->getTribeId()) {
       furniture->click(pos);
+      updateSquareMemory(pos);
+    }
 }
 
 void Player::retireMessages() {
@@ -582,6 +584,12 @@ void Player::updateUnknownLocations() {
   unknownLocations->update(locations);
 }
 
+void Player::updateSquareMemory(Position pos) {
+  ViewIndex index;
+  pos.getViewIndex(index, creature);
+  levelMemory->update(pos, index);
+}
+
 void Player::makeMove() {
   PROFILE;
   updateUnknownLocations();
@@ -591,11 +599,8 @@ void Player::makeMove() {
     considerAdventurerMusic();
   //if (updateView) { Check disabled so that we update in every frame to avoid some square refreshing issues.
     updateView = false;
-    for (Position pos : creature->getVisibleTiles()) {
-      ViewIndex index;
-      pos.getViewIndex(index, creature);
-      levelMemory->update(pos, index);
-    }
+    for (Position pos : creature->getVisibleTiles())
+      updateSquareMemory(pos);
     MEASURE(
         getView()->updateView(this, false),
         "level render time");

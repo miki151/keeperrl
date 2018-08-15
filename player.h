@@ -147,5 +147,6 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   vector<TeamMemberAction> getTeamMemberActions(WConstCreature) const;
   optional<GlobalTime> lastEnemyInterruption;
   SUnknownLocations SERIAL(unknownLocations);
+  void updateSquareMemory(Position);
 };
 
