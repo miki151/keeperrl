@@ -334,9 +334,9 @@ const vector<ItemFetchInfo>& CollectiveConfig::getFetchInfo() const {
             CollectiveWarning::RESOURCE_STORAGE},
         {ItemIndex::STONE, unMarkedItems(), getZoneStorage(ZoneId::STORAGE_RESOURCES),
             CollectiveWarning::RESOURCE_STORAGE},
-        {ItemIndex::TRAP, unMarkedItems(), [](WConstCollective col) -> const PositionSet& {
+        /*{ItemIndex::TRAP, unMarkedItems(), [](WConstCollective col) -> const PositionSet& {
                 return col->getTerritory().getAllAsSet(); },
-            CollectiveWarning::RESOURCE_STORAGE},
+            CollectiveWarning::RESOURCE_STORAGE},*/
     };
     return ret;
   } else {

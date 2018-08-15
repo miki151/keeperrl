@@ -716,9 +716,7 @@ class Chain : public Task {
   }
 
   virtual bool isBogus() const override {
-    if (current >= tasks.size())
-      return true;
-    return tasks[current]->isBogus();
+    return current >= tasks.size();
   }
 
   virtual bool canPerform(WConstCreature c) const override {
