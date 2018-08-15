@@ -420,6 +420,10 @@ class ApplyItem : public Task {
     return "Set up " + itemName + " trap";
   }
 
+  virtual bool canPerform(WConstCreature c) const override {
+    return !!c->getEquipment().getItemById(itemId);
+  }
+
   virtual MoveInfo getMove(WCreature c) override {
     if (auto item = c->getEquipment().getItemById(itemId))
       if (auto action = c->applyItem(item))
@@ -707,6 +711,12 @@ class Chain : public Task {
   public:
   Chain(vector<PTask> t) : tasks(std::move(t)) {
     CHECK(!tasks.empty());
+  }
+
+  virtual bool canPerform(WConstCreature c) const override {
+    if (current >= tasks.size())
+      return false;
+    return tasks[current]->canPerform(c);
   }
 
   virtual bool canTransfer() override {
