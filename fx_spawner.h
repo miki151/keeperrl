@@ -14,8 +14,8 @@ struct Spawner {
 
   static FVec2 tileCenter(IVec2 tilePos) { return FVec2(tilePos) + FVec2(0.5f); }
 
-  Spawner(Type type, IVec2 tilePos, ParticleSystemDefId id) : Spawner(type, tilePos, FVec2(), id) {}
-  Spawner(Type, IVec2 tilePos, FVec2 targetOff, ParticleSystemDefId);
+  Spawner(Type type, IVec2 tilePos, FXName id) : Spawner(type, tilePos, FVec2(), id) {}
+  Spawner(Type, IVec2 tilePos, FVec2 targetOff, FXName);
 
   void update(FXManager &);
   void kill(FXManager &);
@@ -23,7 +23,7 @@ struct Spawner {
   IVec2 tilePos;
   FVec2 pos, targetOff;
 
-  ParticleSystemDefId defId;
+  FXName defId;
   ParticleSystemId instanceId;
   int spawnCount = 0;
   bool isDead = false;

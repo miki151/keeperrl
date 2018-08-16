@@ -6,6 +6,7 @@
 #include "vision_id.h"
 #include "event_listener.h"
 #include "furniture_layer.h"
+#include "fx_simple.h"
 
 class TribeId;
 class Creature;
@@ -111,8 +112,8 @@ class Furniture : public OwnedObject<Furniture> {
   Furniture& setCanRemoveNonFriendly(bool state);
   Furniture& setForgetAfterBuilding();
   Furniture& setShowEfficiency();
-  Furniture& setDestroyFX(string);
-  Furniture& setTryDestroyFX(string);
+  Furniture& setDestroyFX(FXName);
+  Furniture& setTryDestroyFX(FXName);
   MovementSet& modMovementSet();
 
   SERIALIZATION_DECL(Furniture)
@@ -154,6 +155,6 @@ class Furniture : public OwnedObject<Furniture> {
   bool SERIAL(clearFogOfWar) = false;
   bool SERIAL(xForgetAfterBuilding) = false;
   bool SERIAL(showEfficiency) = false;
-  string SERIAL(destroyFX);
-  string SERIAL(tryDestroyFX);
+  optional<FXName> SERIAL(destroyFX);
+  optional<FXName> SERIAL(tryDestroyFX);
 };

@@ -36,8 +36,7 @@ static void addTestSimpleEffect(FXManager &mgr) {
 
   ParticleSystemDef psdef;
   psdef.subSystems.emplace_back(mgr.addDef(pdef), mgr.addDef(edef), 0.0f, 5.0f);
-  psdef.name = "test_simple";
-  mgr.addDef(psdef);
+  mgr.addDef(FXName::TEST_SIMPLE, psdef);
 }
 
 static void addTestMultiEffect(FXManager &mgr) {
@@ -57,10 +56,9 @@ static void addTestMultiEffect(FXManager &mgr) {
   }
 
   ParticleSystemDef psdef;
-  psdef.name = "test_multi";
   for (int n = 0; n < 5; n++)
     psdef.subSystems.emplace_back(mgr.addDef(pdefs[n]), mgr.addDef(edef), float(n) * 0.5f, float(n) * 1.5f + 2.0f);
-  mgr.addDef(psdef);
+  mgr.addDef(FXName::TEST_MULTI, psdef);
 }
 
 static void addWoodSplinters(FXManager &mgr) {
@@ -97,8 +95,7 @@ static void addWoodSplinters(FXManager &mgr) {
 
   ParticleSystemDef psdef;
   psdef.subSystems = {ssdef};
-  psdef.name = "wood_splinters";
-  mgr.addDef(psdef);
+  mgr.addDef(FXName::WOOD_SPLINTERS, psdef);
 }
 
 static void addRockSplinters(FXManager &mgr) {
@@ -130,8 +127,7 @@ static void addRockSplinters(FXManager &mgr) {
   ParticleSystemDef psdef;
   psdef.subSystems = {ssdef};
   // TODO: cząsteczki mogą mieć różny czas życia
-  psdef.name = "rock_splinters";
-  mgr.addDef(psdef);
+  mgr.addDef(FXName::ROCK_SPLINTERS, psdef);
 }
 
 static void addRockCloud(FXManager &mgr) {
@@ -162,8 +158,7 @@ static void addRockCloud(FXManager &mgr) {
 
   ParticleSystemDef psdef;
   psdef.subSystems = {ssdef};
-  psdef.name = "rock_clouds";
-  mgr.addDef(psdef);
+  mgr.addDef(FXName::ROCK_CLOUD, psdef);
 }
 
 static void addExplosionEffect(FXManager &mgr) {
@@ -187,8 +182,7 @@ static void addExplosionEffect(FXManager &mgr) {
 
   ParticleSystemDef psdef;
   psdef.subSystems = {ssdef};
-  psdef.name = "explosion";
-  mgr.addDef(psdef);
+  mgr.addDef(FXName::EXPLSION, psdef);
 }
 
 static void addRippleEffect(FXManager &mgr) {
@@ -235,9 +229,8 @@ static void addRippleEffect(FXManager &mgr) {
   psdef.subSystems = {ssdef};
   psdef.animLength = 1.0f;
   psdef.isLooped = true;
-  psdef.name = "ripple";
 
-  mgr.addDef(psdef);
+  mgr.addDef(FXName::RIPPLE, psdef);
 }
 
 static void addCircularBlast(FXManager &mgr) {
@@ -280,9 +273,8 @@ static void addCircularBlast(FXManager &mgr) {
 
   ParticleSystemDef psdef;
   psdef.subSystems = {ssdef};
-  psdef.name = "circular_blast";
 
-  mgr.addDef(psdef);
+  mgr.addDef(FXName::CIRCULAR_BLAST, psdef);
 }
 
 static void addFeetDustEffect(FXManager &mgr) {
@@ -330,8 +322,7 @@ static void addFeetDustEffect(FXManager &mgr) {
 
   ParticleSystemDef psdef;
   psdef.subSystems = {ssdef};
-  psdef.name = "feet_dust";
-  mgr.addDef(psdef);
+  mgr.addDef(FXName::FEET_DUST, psdef);
 }
 
 static const array<FColor, 6> magicMissileColors {{
@@ -488,8 +479,7 @@ static void addMagicMissileEffect(FXManager& mgr) {
     psdef.subSystems.emplace_back(ssdef);
   }
 
-  psdef.name = "magic_missile";
-  mgr.addDef(psdef);
+  mgr.addDef(FXName::MAGIC_MISSILE, psdef);
 }
 
 static void addFireEffect(FXManager& mgr) {
@@ -563,10 +553,9 @@ static void addFireEffect(FXManager& mgr) {
     psdef.subSystems.emplace_back(ssdef);
   }
 
-  psdef.name = "fire";
   psdef.isLooped = true;
   psdef.animLength = 1.0f;
-  mgr.addDef(psdef);
+  mgr.addDef(FXName::FIRE, psdef);
 }
 
 static void addFireballEffect(FXManager& mgr) {
@@ -653,8 +642,7 @@ static void addFireballEffect(FXManager& mgr) {
     psdef.subSystems.emplace_back(ssdef);
   }
 
-  psdef.name = "fireball";
-  mgr.addDef(psdef);
+  mgr.addDef(FXName::FIREBALL, psdef);
 }
 
 static void addSleepEffect(FXManager& mgr) {
@@ -681,10 +669,9 @@ static void addSleepEffect(FXManager& mgr) {
 
   ParticleSystemDef psdef;
   psdef.subSystems = {ssdef};
-  psdef.name = "sleep";
   psdef.isLooped = true;
   psdef.animLength = 1.0f;
-  mgr.addDef(psdef);
+  mgr.addDef(FXName::SLEEP, psdef);
 }
 
 static const array<IColor, 6> insanityColors = {{
@@ -722,10 +709,9 @@ static void addInsanityEffect(FXManager &mgr) {
 
   ParticleSystemDef psdef;
   psdef.subSystems = {ssdef};
-  psdef.name = "insanity";
   psdef.isLooped = true;
   psdef.animLength = 1.0f;
-  mgr.addDef(psdef);
+  mgr.addDef(FXName::INSANITY, psdef);
 }
 
 static void addBlindEffect(FXManager &mgr) {
@@ -773,10 +759,9 @@ static void addBlindEffect(FXManager &mgr) {
 
   ParticleSystemDef psdef;
   psdef.subSystems = {ssdef};
-  psdef.name = "blind";
   psdef.isLooped = true;
   psdef.animLength = 1.0f;
-  mgr.addDef(psdef);
+  mgr.addDef(FXName::BLIND, psdef);
 }
 
 static void addPeacefulnessEffect(FXManager &mgr) {
@@ -804,10 +789,9 @@ static void addPeacefulnessEffect(FXManager &mgr) {
 
   ParticleSystemDef psdef;
   psdef.subSystems = {ssdef};
-  psdef.name = "peacefulness";
   psdef.isLooped = true;
   psdef.animLength = 1.0f;
-  mgr.addDef(psdef);
+  mgr.addDef(FXName::PEACEFULNESS, psdef);
 }
 
 static void addSlowEffect(FXManager &mgr) {
@@ -843,10 +827,9 @@ static void addSlowEffect(FXManager &mgr) {
 
   ParticleSystemDef psdef;
   psdef.subSystems = {ssdef};
-  psdef.name = "slow";
   psdef.isLooped = true;
   psdef.animLength = 1.0f;
-  mgr.addDef(psdef);
+  mgr.addDef(FXName::SLOW, psdef);
 }
 
 static void addSpeedEffect(FXManager &mgr) {
@@ -882,10 +865,9 @@ static void addSpeedEffect(FXManager &mgr) {
 
   ParticleSystemDef psdef;
   psdef.subSystems = {ssdef};
-  psdef.name = "speed";
   psdef.isLooped = true;
   psdef.animLength = 1.0f;
-  mgr.addDef(psdef);
+  mgr.addDef(FXName::SPEED, psdef);
 }
 
 static void addFlyingEffect(FXManager &mgr) {
@@ -941,13 +923,12 @@ static void addFlyingEffect(FXManager &mgr) {
     psdef.subSystems.emplace_back(ssdef);
   }
 
-  psdef.name = "flying";
   psdef.isLooped = true;
   psdef.animLength = 1.0f;
-  mgr.addDef(psdef);
+  mgr.addDef(FXName::FLYING, psdef);
 }
 
-void FXManager::addDefaultDefs() {
+void FXManager::initializeDefs() {
   addTestSimpleEffect(*this);
   addTestMultiEffect(*this);
   addWoodSplinters(*this);

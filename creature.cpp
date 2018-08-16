@@ -138,7 +138,7 @@ CreatureAction Creature::castSpell(Spell* spell) const {
     return CreatureAction("You can't cast this spell yet.");
   return CreatureAction(this, [=] (WCreature c) {
     c->addSound(spell->getSound());
-    getGame()->addEvent(EventInfo::OtherEffect{c->getPosition(), "circular_blast"});
+    getGame()->addEvent(EventInfo::OtherEffect{c->getPosition(), FXName::CIRCULAR_BLAST});
     spell->addMessage(c);
     spell->getEffect().applyToCreature(c);
     getGame()->getStatistics().add(StatId::SPELL_CAST);
@@ -157,7 +157,7 @@ CreatureAction Creature::castSpell(Spell* spell, Vec2 dir) const {
   return CreatureAction(this, [=] (WCreature c) {
     c->addSound(spell->getSound());
     auto dirEffectType = spell->getDirEffectType();
-    auto fxName = spell->getId() == SpellId::FIREBALL ? "fireball" : "magic_missile";
+    auto fxName = spell->getId() == SpellId::FIREBALL ? FXName::FIREBALL : FXName::MAGIC_MISSILE;
     getGame()->addEvent(EventInfo::OtherEffect{c->getPosition(), fxName, dir * dirEffectType.getRange()});
     thirdPerson(getName().the() + " casts a spell");
     secondPerson("You cast " + spell->getName());
@@ -170,20 +170,22 @@ CreatureAction Creature::castSpell(Spell* spell, Vec2 dir) const {
 }
 
 void Creature::updateLastingFX(ViewObject& object) {
+  object.particleEffects.clear();
+
   if (isAffected(LastingEffect::PEACEFULNESS))
-    object.particleEffects.insert("peacefulness");
+    object.particleEffects.insert(FXName::PEACEFULNESS);
   if (isAffected(LastingEffect::SLEEP))
-    object.particleEffects.insert("sleep");
+    object.particleEffects.insert(FXName::SLEEP);
   if (isAffected(LastingEffect::BLIND))
-    object.particleEffects.insert("blind");
+    object.particleEffects.insert(FXName::BLIND);
   if (isAffected(LastingEffect::INSANITY))
-    object.particleEffects.insert("insanity");
+    object.particleEffects.insert(FXName::INSANITY);
   if (isAffected(LastingEffect::SPEED))
-    object.particleEffects.insert("speed");
+    object.particleEffects.insert(FXName::SPEED);
   if (isAffected(LastingEffect::SLOWED))
-    object.particleEffects.insert("slow");
+    object.particleEffects.insert(FXName::SLOW);
   if (isAffected(LastingEffect::FLYING))
-    object.particleEffects.insert("flying");
+    object.particleEffects.insert(FXName::FLYING);
 }
 
 
@@ -1378,7 +1380,7 @@ void Creature::addMovementInfo(MovementInfo info) {
   Position oldPos = position.minus(info.direction);
   if (auto ground = oldPos.getFurniture(FurnitureLayer::GROUND)) {
     if (ground->getType() == FurnitureType::SAND)
-      getGame()->addEvent(EventInfo::OtherEffect{oldPos, "feet_dust", info.direction});
+      getGame()->addEvent(EventInfo::OtherEffect{oldPos, FXName::FEET_DUST, info.direction});
   }
 }
 

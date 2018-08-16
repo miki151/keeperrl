@@ -5,7 +5,7 @@
 
 namespace fx {
 
-Spawner::Spawner(Type type, IVec2 tilePos, FVec2 targetOff, ParticleSystemDefId defId)
+Spawner::Spawner(Type type, IVec2 tilePos, FVec2 targetOff, FXName defId)
     : tilePos(tilePos), pos(tileCenter(tilePos)), targetOff(targetOff), defId(defId), type(type) {}
 
 void Spawner::update(FXManager &manager) {

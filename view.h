@@ -232,7 +232,7 @@ class View {
 
   /** Draws an special animation on the map.*/
   virtual void animation(Vec2 pos, AnimationId, Dir orientation = Dir::N) = 0;
-  virtual void animation(Vec2 pos, const char* particleEffect, optional<Vec2> targetOffset = none) = 0;
+  virtual void animation(Vec2 pos, FXName particleEffect, optional<Vec2> targetOffset = none) = 0;
 
   /** Returns the current real time in milliseconds. The clock is stopped on blocking keyboard input,
       so it can be used to sync game time in real-time mode.*/

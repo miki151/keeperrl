@@ -158,8 +158,8 @@ void Furniture::destroy(Position pos, const DestroyAction& action) {
     pos.dropItems(itemDrop->random());
   if (usageType)
     FurnitureUsage::beforeRemoved(*usageType, pos);
-  if (!destroyFX.empty())
-    pos.getGame()->addEvent(EventInfo::OtherEffect{pos, destroyFX.c_str()});
+  if (destroyFX)
+    pos.getGame()->addEvent(EventInfo::OtherEffect{pos, *destroyFX});
   pos.removeFurniture(this, destroyedRemains ? FurnitureFactory::get(*destroyedRemains, getTribe()) : nullptr);
   pos.getGame()->addEvent(EventInfo::FurnitureDestroyed{pos, myType, myLayer});
 }
@@ -171,8 +171,8 @@ void Furniture::tryToDestroyBy(Position pos, WCreature c, const DestroyAction& a
     if (auto skill = action.getDestroyingSkillMultiplier())
       damage = damage * c->getAttributes().getSkills().getValue(*skill);
     *strength -= damage;
-    if (!tryDestroyFX.empty())
-      pos.getGame()->addEvent(EventInfo::OtherEffect{pos, tryDestroyFX.c_str()});
+    if (tryDestroyFX)
+      pos.getGame()->addEvent(EventInfo::OtherEffect{pos, *tryDestroyFX});
     if (*strength <= 0)
       destroy(pos, action);
   }
@@ -496,13 +496,13 @@ Furniture& Furniture::setShowEfficiency() {
   return *this;
 }
 
-Furniture& Furniture::setDestroyFX(string s) {
-  destroyFX = std::move(s);
+Furniture& Furniture::setDestroyFX(FXName name) {
+  destroyFX = name;
   return *this;
 }
 
-Furniture& Furniture::setTryDestroyFX(string s) {
-  tryDestroyFX = std::move(s);
+Furniture& Furniture::setTryDestroyFX(FXName name) {
+  tryDestroyFX = name;
   return *this;
 }
 

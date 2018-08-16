@@ -6,7 +6,7 @@
 
 namespace fx {
 
-ParticleSystem::ParticleSystem(FVec2 pos, FVec2 targetOff, ParticleSystemDefId defId, int spawnTime, int numSubSystems)
+ParticleSystem::ParticleSystem(FVec2 pos, FVec2 targetOff, FXName defId, int spawnTime, int numSubSystems)
     : subSystems(numSubSystems), pos(pos), targetOff(targetOff), defId(defId), spawnTime(spawnTime) {}
 
 void ParticleSystem::kill(bool immediate) {
