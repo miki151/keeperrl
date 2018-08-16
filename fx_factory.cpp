@@ -343,19 +343,24 @@ static void addMagicMissileEffect(FXManager& mgr) {
   // Każda cząsteczka z czasem z grubsza liniowo przechodzi od źródła do celu
   // dodatkowo może być delikatnie przesunięta z głównego toru
 
-  const float flightTime = 0.45f;
+  constexpr float flightTime = 0.45f;
+  constexpr float maxBaseAlpha = 0.4f;
+  constexpr float maxFrequency = 200.0f;
 
   ParticleSystemDef psdef;
-  { // Base system, not visible, only a source for other particles
+  { // Base system, also a source for other particles
     EmitterDef edef;
     edef.strength = 200.0f;
-    edef.frequency = 60.0f;
+    edef.initialSpawnCount = 1.0f;
     edef.rotSpeed = 0.5f;
 
     ParticleDef pdef;
     pdef.life = flightTime;
     pdef.slowdown = 1.0f;
-    pdef.alpha = 0.0f;
+    pdef.alpha = {{0.0f, 0.2f}, {0.0f, maxBaseAlpha}};
+    pdef.size = {{0.0f, 0.2f, 0.8f, 1.0f}, {5.0f, 20.0f, 30.0f, 20.0f}};
+    pdef.texture = {"magic_missile_4x4.png", 4, 4};
+    pdef.blendMode = BlendMode::additive;
 
     SubSystemDef ssdef(mgr.addDef(pdef), mgr.addDef(edef), 0.0f, 0.5f);
     ssdef.maxTotalParticles = 1;
@@ -372,18 +377,26 @@ static void addMagicMissileEffect(FXManager& mgr) {
       pinst.movement *= mul;
       pinst.pos *= mul;
     };
+
+    ssdef.drawFunc = [](DrawContext& ctx, const Particle& pinst, DrawParticle& out) {
+      auto temp = pinst;
+      temp.pos += temp.particleTime() * ctx.ps.targetOff;
+      defaultDrawParticle(ctx, temp, out);
+      out.color = (IColor)(FColor(out.color) * FColor(ctx.ps.params.color[1]));
+    };
     psdef.subSystems.emplace_back(ssdef);
   }
 
   { // Trace particles
     EmitterDef edef;
     edef.strength = 20.0f;
-    edef.frequency = 250.0f;
+    edef.frequency = maxFrequency;
     edef.directionSpread = fconstant::pi;
+    edef.rotSpeed = .1f;
 
     ParticleDef pdef;
     pdef.life = 0.5f;
-    pdef.size = {{8.0f, 12.0f}};
+    pdef.size = {{6.0f, 8.0f}};
     pdef.alpha = {{0.0f, 0.1f, 0.7f, 1.0f}, {0.0, 1.0f, 1.0f, 0.0}};
     pdef.slowdown = 1.0f;
     pdef.texture = {"magic_missile_4x4.png", 4, 4};
@@ -420,8 +433,8 @@ static void addMagicMissileEffect(FXManager& mgr) {
 
   { // Final explosion
     EmitterDef edef;
-    edef.strength = 50.0f;
-    edef.frequency = 250.0f;
+    edef.strength = 40.0f;
+    edef.frequency = maxFrequency * 0.6f;
     edef.directionSpread = fconstant::pi;
 
     ParticleDef pdef;
@@ -443,6 +456,34 @@ static void addMagicMissileEffect(FXManager& mgr) {
       defaultDrawParticle(ctx, pinst, out);
       out.color = IColor(FColor(out.color) * choose(magicMissileColors, pinst.randomSeed));
     };
+
+    psdef.subSystems.emplace_back(ssdef);
+  }
+
+  { // Final explosion background
+    EmitterDef edef;
+    edef.strength = 0.0f;
+    edef.initialSpawnCount = 1.0f;
+
+    ParticleDef pdef;
+    pdef.life = .4f;
+    pdef.size = {{20.0f, 30.0f}};
+    pdef.alpha = {{0.5f, 1.0f}, {maxBaseAlpha, 0.0}};
+    pdef.texture = {"magic_missile_4x4.png", 4, 4};
+    pdef.blendMode = BlendMode::additive;
+
+    SubSystemDef ssdef(mgr.addDef(pdef), mgr.addDef(edef), flightTime, flightTime + 0.25f);
+    ssdef.emitFunc = [](AnimationContext& ctx, EmissionState& em, Particle& pinst) {
+      defaultEmitParticle(ctx, em, pinst);
+      pinst.pos += ctx.ps.targetOff;
+      pinst.texTile = {0, 0};
+    };
+    ssdef.drawFunc = [](DrawContext& ctx, const Particle& pinst, DrawParticle& out) {
+      defaultDrawParticle(ctx, pinst, out);
+      out.color = (IColor)(FColor(out.color) * FColor(ctx.ps.params.color[1]));
+    };
+
+    ssdef.maxTotalParticles = 1;
 
     psdef.subSystems.emplace_back(ssdef);
   }

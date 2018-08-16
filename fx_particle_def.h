@@ -10,6 +10,7 @@ struct TextureDef {
   TextureDef(string name) : name(name), tiles(1, 1) { }
   TextureDef(string name, int xTiles, int yTiles) : name(name), tiles(xTiles, yTiles) { }
 
+  // TODO: option to select subRect for randomization
   string name;
   IVec2 tiles;
 };
