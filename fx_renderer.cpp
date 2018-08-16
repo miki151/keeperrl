@@ -25,24 +25,13 @@ static FXRenderer *s_instance = nullptr;
 FXRenderer *FXRenderer::getInstance() { return s_instance; }
 
 FXRenderer::FXRenderer(DirectoryPath dataPath, FXManager& mgr) : mgr(mgr) {
-  textures.reserve(mgr.particleDefs().size() + 1);
-  textureScales.reserve(mgr.particleDefs().size() + 1);
+  textures.reserve(mgr.particleDefs().size());
+  textureScales.reserve(mgr.particleDefs().size());
   textureIds.reserve(mgr.particleDefs().size());
-
-  // First texture: invalid
-  textures.emplace_back(Color::PINK, 2, 2);
-  textureScales.emplace_back(FVec2(1.0f));
-
   drawBuffers = std::make_unique<DrawBuffers>();
 
-  // TODO: error handling
   for (auto& pdef : mgr.particleDefs()) {
-    if (pdef.textureName.empty()) {
-      textureIds.emplace_back(0);
-      continue;
-    }
-
-    auto path = dataPath.file(pdef.textureName);
+    auto path = dataPath.file(pdef.texture.name);
     int id = -1;
     for (int n = 0; n < (int)textures.size(); n++)
       if (textures[n].getPath() == path) {
