@@ -14,7 +14,7 @@ static FXManager *s_instance = nullptr;
 FXManager *FXManager::getInstance() { return s_instance; }
 
 FXManager::FXManager() {
-  addDefaultDefs();
+  initializeDefs();
   CHECK(s_instance == nullptr && "There can be only one!");
   s_instance = this;
 }
@@ -22,27 +22,19 @@ FXManager::~FXManager() { s_instance = nullptr; }
 
 bool FXManager::valid(ParticleDefId id) const { return id < (int)m_particleDefs.size(); }
 bool FXManager::valid(EmitterDefId id) const { return id < (int)m_emitterDefs.size(); }
-bool FXManager::valid(ParticleSystemDefId id) const { return id < (int)m_systemDefs.size(); }
 
 const ParticleDef &FXManager::operator[](ParticleDefId id) const {
   DASSERT(valid(id));
   return m_particleDefs[id];
 }
+
 const EmitterDef &FXManager::operator[](EmitterDefId id) const {
   DASSERT(valid(id));
   return m_emitterDefs[id];
 }
-const ParticleSystemDef &FXManager::operator[](ParticleSystemDefId id) const {
-  DASSERT(valid(id));
-  return m_systemDefs[id];
-}
 
-optional<ParticleSystemDefId> FXManager::findSystem(const char *name) const {
-  PASSERT(name);
-  for (int n = 0; n < (int)m_systemDefs.size(); n++)
-    if (m_systemDefs[n].name == name)
-      return ParticleSystemDefId(n);
-  return none;
+const ParticleSystemDef& FXManager::operator[](FXName name) const {
+  return m_systemDefs[name];
 }
 
 SubSystemContext FXManager::ssctx(ParticleSystem &ps, int ssid) {
@@ -228,22 +220,27 @@ const ParticleSystem &FXManager::get(ParticleSystemId id) const {
   return m_systems[id];
 }
 
-ParticleSystemId FXManager::addSystem(ParticleSystemDefId defId, FVec2 pos) { return addSystem(defId, pos, {}); }
+ParticleSystemId FXManager::addSystem(FXName name, FVec2 pos) {
+  return addSystem(name, pos, {});
+}
 
-ParticleSystemId FXManager::addSystem(ParticleSystemDefId defId, FVec2 pos, FVec2 targetOff) {
-  auto &def = (*this)[defId];
+ParticleSystemId FXManager::addSystem(FXName name, FVec2 pos, FVec2 targetOff) {
+  auto& def = (*this)[name];
 
   for (int n = 0; n < (int)m_systems.size(); n++)
     if (m_systems[n].isDead) {
-      if (m_systems[n].spawnTime == m_spawnClock)
+      if (m_systems[n].spawnTime == m_spawnClock) {
         m_spawnClock++;
+        if (m_spawnClock == INT_MAX)
+          m_spawnClock = 1;
+      }
 
-      m_systems[n] = {pos, targetOff, defId, m_spawnClock, (int)def.subSystems.size()};
+      m_systems[n] = {pos, targetOff, name, m_spawnClock, (int)def.subSystems.size()};
       initialize(def, m_systems[n]);
       return ParticleSystemId(n, m_spawnClock);
     }
 
-  m_systems.emplace_back(pos, targetOff, defId, m_spawnClock, (int)def.subSystems.size());
+  m_systems.emplace_back(pos, targetOff, name, m_spawnClock, (int)def.subSystems.size());
   initialize(def, m_systems.back());
   return ParticleSystemId(m_systems.size() - 1, m_spawnClock);
 }
@@ -278,8 +275,7 @@ EmitterDefId FXManager::addDef(EmitterDef def) {
   return EmitterDefId(m_emitterDefs.size() - 1);
 }
 
-ParticleSystemDefId FXManager::addDef(ParticleSystemDef def) {
-  m_systemDefs.emplace_back(std::move(def));
-  return ParticleSystemDefId(m_systemDefs.size() - 1);
+void FXManager::addDef(FXName name, ParticleSystemDef def) {
+  m_systemDefs[name] = std::move(def);
 }
 }

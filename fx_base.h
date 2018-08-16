@@ -73,6 +73,5 @@ template <class T, class Base = unsigned> class TagId;
 
 using ParticleDefId = TagId<ParticleDef>;
 using EmitterDefId = TagId<EmitterDef>;
-using ParticleSystemDefId = TagId<ParticleSystemDef>;
 class ParticleSystemId;
 }

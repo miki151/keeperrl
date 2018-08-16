@@ -4,17 +4,29 @@
 
 class Color;
 
+RICH_ENUM(FXName, TEST_SIMPLE, TEST_MULTI, WOOD_SPLINTERS, ROCK_SPLINTERS, ROCK_CLOUD, EXPLSION, RIPPLE, FEET_DUST,
+          FIRE, CIRCULAR_BLAST, MAGIC_MISSILE, FIREBALL, SLEEP, INSANITY, BLIND, PEACEFULNESS, SLOW, SPEED, FLYING);
+
+// FXID() will always be invalid
+using FXId = pair<int, int>;
+
 namespace fx {
+
+// Simple validity check; given FX can still be dead even if ID is valid
+inline bool valid(FXId id) {
+  return id.first >= 0 && id.second > 0;
+}
 
 // This interface is not very efficient, but it's simple to use
 
-pair<int, int> spawnEffect(const char *name, double x, double y);
-pair<int, int> spawnEffect(const char *name, double x, double y, Vec2 dir);
-bool isAlive(pair<int, int>);
-void kill(pair<int, int>, bool immediate = true);
+FXId spawnEffect(FXName, double x, double y);
+FXId spawnEffect(FXName, double x, double y, Vec2 dir);
+bool isAlive(FXId);
+void kill(FXId, bool immediate = true);
+optional<FXName> name(FXId);
 
-void setColor(pair<int, int>, Color, int paramIndex = 0);
-void setScalar(pair<int, int>, float, int paramIndex = 0);
-void setDir(pair<int, int>, Dir, int paramIndex = 0);
-void setPos(pair<int, int>, double, double);
+void setColor(FXId, Color, int paramIndex = 0);
+void setScalar(FXId, float, int paramIndex = 0);
+void setDir(FXId, Dir, int paramIndex = 0);
+void setPos(FXId, double, double);
 }

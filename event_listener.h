@@ -94,7 +94,7 @@ namespace EventInfo {
 
   struct OtherEffect {
     Position position;
-    const char* effect;
+    FXName effect;
     optional<Vec2> targetOffset = none;
   };
 

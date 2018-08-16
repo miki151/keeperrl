@@ -62,13 +62,13 @@ struct ParticleSystemDef {
     int maxTotalParticles = INT_MAX; // TODO: how should we treat it in looped animations?
   };
 
+  explicit operator bool () const { return !subSystems.empty(); }
   const SubSystem &operator[](int ssid) const { return subSystems[ssid]; }
   SubSystem &operator[](int ssid) { return subSystems[ssid]; }
 
   vector<SubSystem> subSystems;
   optional<float> animLength;
   bool isLooped = false;
-  string name;
 };
 
 struct Particle {
@@ -107,7 +107,7 @@ struct ParticleSystem {
     Dir dir[maxDirs] = {Dir::N, Dir::N};
   };
 
-  ParticleSystem(FVec2 pos, FVec2 targetOff, ParticleSystemDefId, int spawnTime, int numSubSystems);
+  ParticleSystem(FVec2 pos, FVec2 targetOff, FXName, int spawnTime, int numSubSystems);
 
   int numActiveParticles() const;
   int numTotalParticles() const;
@@ -121,7 +121,7 @@ struct ParticleSystem {
   Params params;
   FVec2 pos, targetOff;
 
-  ParticleSystemDefId defId;
+  FXName defId;
   int spawnTime;
 
   float animTime = 0.0f;

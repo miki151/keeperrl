@@ -6,24 +6,23 @@
 
 namespace fx {
 
-pair<int, int> spawnEffect(const char *name, double x, double y) { return spawnEffect(name, x, y, Vec2(0, 0)); }
+FXId spawnEffect(FXName name, double x, double y) {
+  return spawnEffect(name, x, y, Vec2(0, 0));
+}
 
-pair<int, int> spawnEffect(const char *name, double x, double y, Vec2 dir) {
+FXId spawnEffect(FXName name, double x, double y, Vec2 dir) {
   if(auto *inst = FXManager::getInstance()) {
-    if(auto id = inst->findSystem(name)) {
-      auto fpos = (FVec2(x, y) + FVec2(0.5f)) * Renderer::nominalSize;
-      auto ftargetOff = FVec2(dir.x, dir.y) * Renderer::nominalSize;
-      auto instId = inst->addSystem(*id, fpos, ftargetOff);
-      INFO << "FX spawn: " << name << " at:" << x << ", " << y << " dir:" << dir;
-      return {instId.index(), instId.spawnTime()};
-    }
-    INFO << "FX spawn: couldn't find fx: " << name;
+    auto fpos = (FVec2(x, y) + FVec2(0.5f)) * Renderer::nominalSize;
+    auto ftargetOff = FVec2(dir.x, dir.y) * Renderer::nominalSize;
+    auto instId = inst->addSystem(name, fpos, ftargetOff);
+    INFO << "FX spawn: " << EnumInfo<FXName>::getString(name) << " at:" << x << ", " << y << " dir:" << dir;
+    return {instId.index(), instId.spawnTime()};
   }
 
   return {-1, -1};
 }
 
-void setPos(pair<int, int> tid, double x, double y) {
+void setPos(FXId tid, double x, double y) {
   ParticleSystemId id(tid.first, tid.second);
   if (auto *inst = FXManager::getInstance()) {
     if (inst->valid(id)) {
@@ -33,20 +32,31 @@ void setPos(pair<int, int> tid, double x, double y) {
   }
 }
 
-bool isAlive(pair<int, int> tid) {
+bool isAlive(FXId tid) {
   ParticleSystemId id(tid.first, tid.second);
   if(auto *inst = FXManager::getInstance())
     return inst->alive(id);
   return false;
 }
 
-void kill(pair<int, int> tid, bool immediate) {
+optional<FXName> name(FXId tid) {
+  ParticleSystemId id(tid.first, tid.second);
+  if (auto* inst = FXManager::getInstance())
+    if (inst->valid(id)) {
+      auto& system = inst->get(id);
+      return system.defId;
+    }
+
+  return none;
+}
+
+void kill(FXId tid, bool immediate) {
   ParticleSystemId id(tid.first, tid.second);
   if(auto *inst = FXManager::getInstance())
     inst->kill(id, immediate);
 }
 
-void setColor(pair<int, int> tid, Color col, int paramIndex) {
+void setColor(FXId tid, Color col, int paramIndex) {
   ParticleSystemId id(tid.first, tid.second);
   if(auto *inst = FXManager::getInstance()) {
     if(inst->valid(id)) {
@@ -56,7 +66,7 @@ void setColor(pair<int, int> tid, Color col, int paramIndex) {
     }
   }
 }
-void setScalar(pair<int, int> tid, float value, int paramIndex) {
+void setScalar(FXId tid, float value, int paramIndex) {
   ParticleSystemId id(tid.first, tid.second);
   if(auto *inst = FXManager::getInstance()) {
     if(inst->valid(id)) {
@@ -67,7 +77,7 @@ void setScalar(pair<int, int> tid, float value, int paramIndex) {
   }
 }
 
-void setDir(pair<int, int> tid, Dir dir, int paramIndex) {
+void setDir(FXId tid, Dir dir, int paramIndex) {
   ParticleSystemId id(tid.first, tid.second);
   if(auto *inst = FXManager::getInstance()) {
     if(inst->valid(id)) {

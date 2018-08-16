@@ -25,6 +25,7 @@
 #include "movement_info.h"
 #include "creature_status.h"
 #include "view_object_modifier.h"
+#include "fx_simple.h"
 
 RICH_ENUM(ViewObjectAttribute, HEALTH, BURNING, WATER_DEPTH, EFFICIENCY, MORALE);
 
@@ -89,7 +90,7 @@ class ViewObject {
 
   SERIALIZATION_DECL(ViewObject);
 
-  unordered_set<string> particleEffects;
+  EnumSet<FXName> particleEffects;
 
   private:
   string getAttributeString(Attribute) const;

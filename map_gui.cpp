@@ -88,7 +88,7 @@ void MapGui::addAnimation(PAnimation animation, Vec2 pos) {
   animations.push_back({std::move(animation), pos});
 }
 
-void MapGui::addAnimation(const char* particleEffect, Vec2 position, optional<Vec2> targetOffset) {
+void MapGui::addAnimation(FXName particleEffect, Vec2 position, optional<Vec2> targetOffset) {
   fx::spawnEffect(particleEffect, position.x, position.y, targetOffset.value_or(Vec2(0, 0)));
 }
 
@@ -540,21 +540,23 @@ static Color getPortalColor(int index) {
   return Color(255 * (index % 2), 255 * ((index / 2) % 2), 255 * ((index / 4) % 2));
 }
 
-void MapGui::updateEffects(map<string, pair<int, int>>& effectsMap, const unordered_set<string>& effects, double x, double y) {
-  set<string> existingEffects;
-  for (auto effectName : effects) {
-    existingEffects.insert(effectName);
-    if (auto effectId = getValueMaybe(effectsMap, effectName))
-      fx::setPos(*effectId, x, y);
-    else
-      effectsMap.insert({effectName,
-          fx::spawnEffect(effectName.c_str(), x, y)});
+#define ENUM_STRING(val) EnumInfo<decltype(val)>::getString(val)
+
+void MapGui::updateEffects(FXVector& effectsList, const EnumSet<FXName>& effects, double x, double y) {
+  EnumSet<FXName> existing;
+  for (auto& pair : effectsList) {
+    existing.insert(pair.first);
+    fx::setPos(pair.second, x, y);
+    if (!effects.contains(pair.first))
+      fx::kill(pair.second, false);
   }
-  for (auto& elem : copyOf(effectsMap))
-    if (!existingEffects.count(elem.first)) {
-      fx::kill(elem.second, false);
-      effectsMap.erase(elem.first);
-    }
+
+  auto deadEffects = [](const pair<FXName, FXId>& pair) { return !fx::isAlive(pair.second); };
+  effectsList.resize(std::remove_if(begin(effectsList), end(effectsList), deadEffects) - begin(effectsList));
+
+  for (auto effectName : effects)
+    if (!existing.contains(effectName))
+      effectsList.emplace_back(effectName, fx::spawnEffect(effectName, x, y));
 }
 
 void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& object, Vec2 size, Vec2 movement,
