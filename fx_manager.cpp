@@ -191,7 +191,7 @@ vector<DrawParticle> FXManager::genQuads() {
       auto &ss = ps[ssid];
       auto &ssdef = psdef[ssid];
       auto &pdef = m_particleDefs[ssdef.particleId];
-      DrawContext ctx{ssctx(ps, ssid), vinv(FVec2(pdef.textureTiles))};
+      DrawContext ctx{ssctx(ps, ssid), vinv(FVec2(pdef.texture.tiles))};
 
       for (auto &pinst : ss.particles) {
         DrawParticle dparticle;

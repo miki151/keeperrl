@@ -5,6 +5,16 @@
 
 namespace fx {
 
+struct TextureDef {
+  TextureDef(const char* name = "circular.png") : name(name), tiles(1, 1) { }
+  TextureDef(string name) : name(name), tiles(1, 1) { }
+  TextureDef(string name, int xTiles, int yTiles) : name(name), tiles(xTiles, yTiles) { }
+
+  string name;
+  IVec2 tiles;
+};
+
+// Defines behavious and looks of a single particle.
 struct ParticleDef {
   // Defines spawned particle life in seconds for given AT
   Curve<float> life = 1.0f;
@@ -16,11 +26,11 @@ struct ParticleDef {
   Curve<float> slowdown;
   Curve<FVec3> color = FVec3(1.0f);
 
+  TextureDef texture;
+  BlendMode blendMode = BlendMode::normal;
+
+  // Additional curves, which may be used for complex particles
   vector<Curve<float>> scalarCurves;
   vector<Curve<FVec3>> colorCurves;
-
-  IVec2 textureTiles = IVec2(1, 1);
-  string textureName;
-  BlendMode blendMode = BlendMode::normal;
 };
 }

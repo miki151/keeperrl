@@ -73,8 +73,8 @@ uint AnimationContext::randomSeed() {
 }
 
 SVec2 AnimationContext::randomTexTile() {
-  if (!(pdef.textureTiles == IVec2(1, 1))) {
-    IVec2 texTile(rand.get(pdef.textureTiles.x), rand.get(pdef.textureTiles.y));
+  if (!(pdef.texture.tiles == IVec2(1, 1))) {
+    IVec2 texTile(rand.get(pdef.texture.tiles.x), rand.get(pdef.texture.tiles.y));
     return SVec2(texTile);
   }
 
@@ -118,7 +118,7 @@ array<FVec2, 4> DrawContext::quadCorners(FVec2 pos, FVec2 size, float rotation) 
 
 array<FVec2, 4> DrawContext::texQuadCorners(SVec2 texTile) const {
   FRect tex_rect(FVec2(1));
-  if (!(pdef.textureTiles == IVec2(1, 1)))
+  if (!(pdef.texture.tiles == IVec2(1, 1)))
     tex_rect = (tex_rect + FVec2(texTile)) * invTexTile;
   return tex_rect.corners();
 }
