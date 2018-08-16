@@ -79,7 +79,7 @@ struct Particle {
   float life = 0.0f, maxLife = 1.0f;
   float rot = 0.0f, rotSpeed = 0.0f;
   SVec2 texTile;
-  int randomSeed;
+  uint randomSeed;
 };
 
 struct DrawParticle {
@@ -95,7 +95,7 @@ struct ParticleSystem {
   struct SubSystem {
     vector<Particle> particles;
     float emissionFract = 0.0f;
-    int randomSeed = 123;
+    uint randomSeed = 123;
     int totalParticles = 0;
   };
 
@@ -150,7 +150,7 @@ struct AnimationContext : public SubSystemContext {
 
   float uniformSpread(float spread);
   float uniform(float min, float max);
-  int randomSeed();
+  uint randomSeed();
   SVec2 randomTexTile();
 
   RandomGen rand;

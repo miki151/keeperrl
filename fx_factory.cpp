@@ -8,14 +8,15 @@
 
 namespace fx {
 
-static const FVec2 dirVecs[8] = {{0.0, -1.0}, {0.0, 1.0},   {1.0, 0.0}, {-1.0, 0.0},
-                                 {1.0, -1.0}, {-1.0, -1.0}, {1.0, 1.0}, {-1.0, 1.0}};
+static const FVec2 dirVecs[8] = {
+  {0.0, -1.0}, {0.0, 1.0},   {1.0, 0.0}, {-1.0, 0.0},
+  {1.0, -1.0}, {-1.0, -1.0}, {1.0, 1.0}, {-1.0, 1.0}};
 FVec2 dirToVec(Dir dir) {
   return dirVecs[(int)dir];
 }
 
-template <class T, int size> constexpr int arraySize(T (&)[size]) {
-  return size;
+template <class T, size_t N> const T& choose(const array<T, N>& values, uint randomSeed) {
+  return values[randomSeed % N];
 }
 
 using SubSystemDef = ParticleSystemDef::SubSystem;
@@ -338,8 +339,10 @@ static void addFeetDustEffect(FXManager &mgr) {
   mgr.addDef(psdef);
 }
 
-static const FColor magicMissileColors[6] = {{0.3f, 0.5, 0.9f}, {0.9f, 0.7f, 0.2f}, {0.2f, 0.8f, 0.9f},
-                                             {0.2f, 0.4, 0.3f}, {0.6f, 0.2f, 1.0f}, {0.2f, 0.1f, 0.5f}};
+static const array<FColor, 6> magicMissileColors {{
+  {0.3f, 0.5f, 0.9f}, {0.9f, 0.7f, 0.2f}, {0.2f, 0.8f, 0.9f},
+  {0.2f, 0.4, 0.3f}, {0.6f, 0.2f, 1.0f}, {0.2f, 0.1f, 0.5f}
+}};
 
 static void addMagicMissileEffect(FXManager& mgr) {
   // Każda cząsteczka z czasem z grubsza liniowo przechodzi od źródła do celu
@@ -415,8 +418,7 @@ static void addMagicMissileEffect(FXManager& mgr) {
     };
     ssdef.drawFunc = [](DrawContext& ctx, const Particle& pinst, DrawParticle& out) {
       defaultDrawParticle(ctx, pinst, out);
-      int idx = pinst.randomSeed % arraySize(magicMissileColors);
-      out.color = IColor(FColor(out.color) * magicMissileColors[idx]);
+      out.color = IColor(FColor(out.color) * choose(magicMissileColors, pinst.randomSeed));
     };
 
     psdef.subSystems.emplace_back(ssdef);
@@ -446,8 +448,7 @@ static void addMagicMissileEffect(FXManager& mgr) {
     };
     ssdef.drawFunc = [](DrawContext& ctx, const Particle& pinst, DrawParticle& out) {
       defaultDrawParticle(ctx, pinst, out);
-      int idx = pinst.randomSeed % arraySize(magicMissileColors);
-      out.color = IColor(FColor(out.color) * magicMissileColors[idx]);
+      out.color = IColor(FColor(out.color) * choose(magicMissileColors, pinst.randomSeed));
     };
 
     psdef.subSystems.emplace_back(ssdef);
@@ -567,10 +568,10 @@ static void addSleepEffect(FXManager& mgr) {
   mgr.addDef(psdef);
 }
 
-
-static IColor insanityColors[] = {
-    {244, 255, 190}, {255, 189, 230}, {190, 214, 220}, {242, 124, 161}, {230, 240, 240}, {220, 200, 220},
-};
+static const array<IColor, 6> insanityColors = {{
+  {244, 255, 190}, {255, 189, 230}, {190, 214, 220},
+  {242, 124, 161}, {230, 240, 240}, {220, 200, 220},
+}};
 
 static void addInsanityEffect(FXManager &mgr) {
   EmitterDef edef;
@@ -598,8 +599,7 @@ static void addInsanityEffect(FXManager &mgr) {
     Particle temp(pinst);
     temp.size += FVec2(std::cos(pinst.life * 80.0f)) * 0.15;
     defaultDrawParticle(ctx, temp, out);
-    int idx = pinst.randomSeed % arraySize(insanityColors);
-    out.color.setRGB(insanityColors[idx]);
+    out.color.setRGB(choose(insanityColors, pinst.randomSeed));
   };
 
   ParticleSystemDef psdef;

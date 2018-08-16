@@ -68,7 +68,9 @@ float defaultPrepareEmission(AnimationContext &ctx, EmissionState &em) {
 
 float AnimationContext::uniformSpread(float spread) { return rand.getDouble(-spread, spread); }
 float AnimationContext::uniform(float min, float max) { return rand.getDouble(min, max); }
-int AnimationContext::randomSeed() { return rand.getLL() % 1973257861; }
+uint AnimationContext::randomSeed() {
+  return rand.get(INT_MAX);
+}
 
 SVec2 AnimationContext::randomTexTile() {
   if (!(pdef.textureTiles == IVec2(1, 1))) {
@@ -104,7 +106,7 @@ void defaultEmitParticle(AnimationContext &ctx, EmissionState &em, Particle &new
   newInst.life = 0.0f;
   newInst.maxLife = em.maxLife;
   newInst.texTile = ctx.randomTexTile();
-  newInst.randomSeed = ctx.rand.get(INT_MAX);
+  newInst.randomSeed = ctx.randomSeed();
 }
 
 array<FVec2, 4> DrawContext::quadCorners(FVec2 pos, FVec2 size, float rotation) const {
