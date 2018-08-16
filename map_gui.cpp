@@ -1074,7 +1074,8 @@ void MapGui::render(Renderer& renderer) {
   if (auto *rinst = fx::FXRenderer::getInstance()) {
     float zoom = float(layout->getSquareSize().x) / float(Renderer::nominalSize);
     auto offset = projectOnScreen(Vec2(0, 0));
-    rinst->draw(zoom, offset.x, offset.y, renderer.getWidth(), renderer.getHeight());
+    auto size = renderer.getSize();
+    rinst->draw(zoom, offset.x, offset.y, size.x, size.y);
   }
 
   renderAnimations(renderer, currentTimeReal);

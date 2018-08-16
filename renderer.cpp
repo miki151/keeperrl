@@ -727,10 +727,3 @@ void Renderer::makeScreenshot(const FilePath& path) {
   for (int i : Range(bmpSize))
     output << bitmap[i];
 }
-
-int Renderer::getWidth() const {
-  return width;
-}
-int Renderer::getHeight() const {
-  return height;
-}
