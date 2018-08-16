@@ -391,8 +391,8 @@ void MapGui::onMouseRelease(Vec2 v) {
 
 static Vec2 getAttachmentOffset(Dir dir, Vec2 size) {
   switch (dir) {
-    case Dir::N: return Vec2(0, -size.y * 2 / 3);
-    case Dir::S: return Vec2(0, size.y / 4);
+    case Dir::N: return Vec2(0, -size.y * 3 / 4);
+    case Dir::S: return Vec2(0, size.y / 3);
     case Dir::E:
     case Dir::W: return Vec2(dir) * size.x / 2;
     default: FATAL << "Bad attachment dir " << int(dir);
