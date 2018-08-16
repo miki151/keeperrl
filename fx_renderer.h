@@ -30,16 +30,15 @@ public:
   void drawParticles(const View&, BlendMode);
   void setBlendingMode(BlendMode);
 
-  // TODO: remove m_
-  FXManager& m_mgr;
-  vector<Texture> m_textures;
-  vector<FVec2> m_textureScales;
+  FXManager& mgr;
+  vector<Texture> textures;
+  vector<FVec2> textureScales;
   // Maps particleDefId to textureId
-  vector<int> m_textureIds;
+  vector<int> textureIds;
 
   void applyTexScale();
 
-  unique_ptr<DrawBuffers> m_drawBuffers;
-  unique_ptr<Framebuffer> m_framebuffer;
+  unique_ptr<DrawBuffers> drawBuffers;
+  unique_ptr<Framebuffer> framebuffer;
 };
 }
