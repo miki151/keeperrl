@@ -24,40 +24,40 @@ static FXRenderer *s_instance = nullptr;
 
 FXRenderer *FXRenderer::getInstance() { return s_instance; }
 
-FXRenderer::FXRenderer(DirectoryPath dataPath, FXManager &mgr) : m_mgr(mgr) {
-  m_textures.reserve(m_mgr.particleDefs().size() + 1);
-  m_textureScales.reserve(m_mgr.particleDefs().size() + 1);
-  m_textureIds.reserve(m_mgr.particleDefs().size());
+FXRenderer::FXRenderer(DirectoryPath dataPath, FXManager& mgr) : mgr(mgr) {
+  textures.reserve(mgr.particleDefs().size() + 1);
+  textureScales.reserve(mgr.particleDefs().size() + 1);
+  textureIds.reserve(mgr.particleDefs().size());
 
   // First texture: invalid
-  m_textures.emplace_back(Color::PINK, 2, 2);
-  m_textureScales.emplace_back(FVec2(1.0f));
+  textures.emplace_back(Color::PINK, 2, 2);
+  textureScales.emplace_back(FVec2(1.0f));
 
-  m_drawBuffers = std::make_unique<DrawBuffers>();
+  drawBuffers = std::make_unique<DrawBuffers>();
 
   // TODO: error handling
-  for (auto &pdef : m_mgr.particleDefs()) {
+  for (auto& pdef : mgr.particleDefs()) {
     if (pdef.textureName.empty()) {
-      m_textureIds.emplace_back(0);
+      textureIds.emplace_back(0);
       continue;
     }
 
     auto path = dataPath.file(pdef.textureName);
     int id = -1;
-    for (int n = 0; n < (int)m_textures.size(); n++)
-      if (m_textures[n].getPath() == path) {
+    for (int n = 0; n < (int)textures.size(); n++)
+      if (textures[n].getPath() == path) {
         id = n;
         break;
       }
 
     if (id == -1) {
-      id = m_textures.size();
-      m_textures.emplace_back(path);
-      auto tsize = m_textures.back().getSize(), rsize = m_textures.back().getRealSize();
+      id = textures.size();
+      textures.emplace_back(path);
+      auto tsize = textures.back().getSize(), rsize = textures.back().getRealSize();
       FVec2 scale(float(tsize.x) / float(rsize.x), float(tsize.y) / float(rsize.y));
-      m_textureScales.emplace_back(scale);
+      textureScales.emplace_back(scale);
     }
-    m_textureIds.emplace_back(id);
+    textureIds.emplace_back(id);
   }
   CHECK(s_instance == nullptr && "There can be only one!");
   s_instance = this;
@@ -68,19 +68,19 @@ FXRenderer::~FXRenderer() { s_instance = nullptr; }
 void FXRenderer::initFramebuffer(IVec2 size) {
   if (!Framebuffer::isExtensionAvailable())
     return;
-  if (!m_framebuffer || m_framebuffer->width != size.x || m_framebuffer->height != size.y) {
+  if (!framebuffer || framebuffer->width != size.x || framebuffer->height != size.y) {
     INFO << "FX: creating FBO (" << size.x << ", " << size.y << ")";
-    m_framebuffer = std::make_unique<Framebuffer>(size.x, size.y);
+    framebuffer = std::make_unique<Framebuffer>(size.x, size.y);
   }
 }
 
 void FXRenderer::applyTexScale() {
-  auto& elements = m_drawBuffers->elements;
-  auto& texCoords = m_drawBuffers->texCoords;
+  auto& elements = drawBuffers->elements;
+  auto& texCoords = drawBuffers->texCoords;
 
   for (auto& elem : elements) {
-    int texId = m_textureIds[elem.particleDefId];
-    auto scale = m_textureScales[texId];
+    int texId = textureIds[elem.particleDefId];
+    auto scale = textureScales[texId];
     if (scale == FVec2(1.0f))
       continue;
 
@@ -89,10 +89,6 @@ void FXRenderer::applyTexScale() {
       texCoords[i] *= scale;
   }
 }
-
-// Rendering do framebuffera:
-// - na początku wszystkie efekty do jednego bufora (zaczymamy z czarnym tłem?)
-// - Problem: jak blendować cząsteczki z czarnym tłem ?texturew
 
 IRect FXRenderer::visibleTiles(const View& view) {
   float scale = 1.0f / (view.zoom * nominalSize);
@@ -112,7 +108,7 @@ void FXRenderer::draw(float zoom, float offsetX, float offsetY, int w, int h) {
   auto fboView = visibleTiles(view);
   auto fboScreenSize = fboView.size() * nominalSize;
 
-  m_drawBuffers->fill(m_mgr.genQuads());
+  drawBuffers->fill(mgr.genQuads());
   applyTexScale();
 
   if (useFramebuffer)
@@ -124,8 +120,8 @@ void FXRenderer::draw(float zoom, float offsetX, float offsetY, int w, int h) {
   SDL::glEnable(GL_TEXTURE_2D);
 
   // Problem: FBO mode doesn't work well for particles blender normally
-  if (m_framebuffer && useFramebuffer) {
-    m_framebuffer->bind();
+  if (framebuffer && useFramebuffer) {
+    framebuffer->bind();
 
     pushOpenglView();
     SDL::glPushAttrib(GL_ENABLE_BIT);
@@ -147,7 +143,7 @@ void FXRenderer::draw(float zoom, float offsetX, float offsetY, int w, int h) {
     popOpenglView();
 
     SDL::glBlendFunc(GL_ONE, GL_ONE);
-    SDL::glBindTexture(GL_TEXTURE_2D, m_framebuffer->texId);
+    SDL::glBindTexture(GL_TEXTURE_2D, framebuffer->texId);
     SDL::glBegin(GL_QUADS);
     SDL::glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
     SDL::glTexCoord2f(0.0f, 0.0f), SDL::glVertex2f(c1.x, c2.y);
@@ -166,7 +162,7 @@ void FXRenderer::draw(float zoom, float offsetX, float offsetY, int w, int h) {
 }
 
 void FXRenderer::setBlendingMode(BlendMode bm) {
-  if (m_framebuffer) {
+  if (framebuffer) {
     if (bm == BlendMode::normal)
       SDL::glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     else
@@ -191,17 +187,17 @@ void FXRenderer::drawParticles(const View& view, BlendMode blendMode) {
   SDL::glEnableClientState(GL_TEXTURE_COORD_ARRAY);
   SDL::glEnableClientState(GL_COLOR_ARRAY);
 
-  SDL::glVertexPointer(2, GL_FLOAT, 0, m_drawBuffers->positions.data());
-  SDL::glTexCoordPointer(2, GL_FLOAT, 0, m_drawBuffers->texCoords.data());
-  SDL::glColorPointer(4, GL_UNSIGNED_BYTE, 0, m_drawBuffers->colors.data());
+  SDL::glVertexPointer(2, GL_FLOAT, 0, drawBuffers->positions.data());
+  SDL::glTexCoordPointer(2, GL_FLOAT, 0, drawBuffers->texCoords.data());
+  SDL::glColorPointer(4, GL_UNSIGNED_BYTE, 0, drawBuffers->colors.data());
   checkOpenglError();
 
   setBlendingMode(blendMode);
-  for (auto& elem : m_drawBuffers->elements) {
+  for (auto& elem : drawBuffers->elements) {
     if (elem.blendMode != blendMode)
       continue;
-    int texId = m_textureIds[elem.particleDefId];
-    auto& tex = m_textures[texId];
+    int texId = textureIds[elem.particleDefId];
+    auto& tex = textures[texId];
     SDL::glBindTexture(GL_TEXTURE_2D, *tex.getTexId());
     SDL::glDrawArrays(GL_QUADS, elem.firstVertex, elem.numVertices);
   }
