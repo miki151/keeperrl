@@ -4,7 +4,8 @@
 #include "opengl.h"
 
 bool Framebuffer::isExtensionAvailable() {
-  return isOpenglExtensionAvailable("GL_ARB_framebuffer_object");
+  static bool isAvailable = isOpenglExtensionAvailable("GL_ARB_framebuffer_object");
+  return isAvailable;
 }
 
 static unsigned allocFramebuffer() {
