@@ -569,6 +569,94 @@ static void addFireEffect(FXManager& mgr) {
   mgr.addDef(psdef);
 }
 
+static void addFireballEffect(FXManager& mgr) {
+  ParticleSystemDef psdef;
+
+  // TODO: this should depend on vector length ?
+  static constexpr float flightTime = 0.4f;
+
+  { // Flying ball of fire
+    EmitterDef edef;
+    edef.strength = 15.0f;
+    edef.frequency = 30.0f;
+    edef.source = FVec2(0.0f);
+    edef.rotSpeed = {{0.3f, 0.1f}};
+
+    ParticleDef pdef;
+    pdef.life = 0.7f;
+    pdef.size = 12.0f;
+    pdef.alpha = 0.7f;
+
+    pdef.color = {{0.0f, 0.2f, 0.8f, 1.0f},
+                  {FVec3(0.0f), IColor(155, 85, 30).rgb(), IColor(45, 35, 30).rgb(), FVec3(0.0f)}};
+    pdef.texture = {"flames_blurred_4x4.png", 4, 4};
+    pdef.blendMode = BlendMode::additive;
+
+    SubSystemDef ssdef(mgr.addDef(pdef), mgr.addDef(edef), 0.0f, flightTime);
+    ssdef.prepareFunc = [](AnimationContext& ctx, EmissionState& em) {
+      float freq = defaultPrepareEmission(ctx, em);
+      float mod = ctx.ps.params.scalar[0];
+      return freq * (1.0f + mod * 2.0f);
+    };
+
+    ssdef.emitFunc = [](AnimationContext& ctx, EmissionState& em, Particle& pinst) {
+      defaultEmitParticle(ctx, em, pinst);
+      float mod = ctx.ps.params.scalar[0];
+      pinst.pos.x *= (1.0f + mod);
+      pinst.movement *= (1.0f + mod);
+      pinst.size *= (1.0f + mod * 0.25f);
+    };
+
+    ssdef.drawFunc = [](DrawContext& ctx, const Particle& pinst, DrawParticle& out) {
+      auto temp = pinst;
+      // TODO: add curve that lerps toward goal ?
+      temp.pos += min<float>(pow(ctx.ps.animTime / flightTime, 1.5f), 1.0f) * ctx.ps.targetOff;
+      defaultDrawParticle(ctx, temp, out);
+    };
+
+    psdef.subSystems.emplace_back(ssdef);
+  }
+
+  { // Final explosion
+    EmitterDef edef;
+    edef.strength = 35.0f;
+    edef.frequency = 100.0f;
+    edef.source = FVec2(0.0f);
+    edef.rotSpeed = 0.05f;
+
+    ParticleDef pdef;
+    pdef.life = 0.5f;
+    pdef.size = 12.0f;
+    pdef.alpha = 0.7f;
+
+    pdef.color = {{0.0f, 0.2f, 0.8f, 1.0f},
+                  {FVec3(0.0f), IColor(155, 85, 30).rgb(), IColor(45, 35, 30).rgb(), FVec3(0.0f)}};
+    pdef.texture = {"flames_blurred_4x4.png", 4, 4};
+    pdef.blendMode = BlendMode::additive;
+
+    SubSystemDef ssdef(mgr.addDef(pdef), mgr.addDef(edef), flightTime - 0.05f, flightTime + 0.3f);
+    ssdef.prepareFunc = [](AnimationContext& ctx, EmissionState& em) {
+      float freq = defaultPrepareEmission(ctx, em);
+      float mod = ctx.ps.params.scalar[0];
+      return freq * (1.0f + mod * 2.0f);
+    };
+
+    ssdef.emitFunc = [](AnimationContext& ctx, EmissionState& em, Particle& pinst) {
+      defaultEmitParticle(ctx, em, pinst);
+      float mod = ctx.ps.params.scalar[0];
+      pinst.pos.x *= (1.0f + mod);
+      pinst.movement *= (1.0f + mod);
+      pinst.size *= (1.0f + mod * 0.25f);
+      pinst.pos += ctx.ps.targetOff;
+    };
+
+    psdef.subSystems.emplace_back(ssdef);
+  }
+
+  psdef.name = "fireball";
+  mgr.addDef(psdef);
+}
+
 static void addSleepEffect(FXManager& mgr) {
   EmitterDef edef;
   edef.strength = 20.0f;
@@ -867,10 +955,12 @@ void FXManager::addDefaultDefs() {
   addRockCloud(*this);
   addExplosionEffect(*this);
   addRippleEffect(*this);
-  addCircularBlast(*this);
   addFeetDustEffect(*this);
-  addMagicMissileEffect(*this);
   addFireEffect(*this);
+
+  addCircularBlast(*this);
+  addMagicMissileEffect(*this);
+  addFireballEffect(*this);
 
   addSleepEffect(*this);
   addInsanityEffect(*this);
