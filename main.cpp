@@ -48,6 +48,7 @@
 #include "campaign_type.h"
 #include "dummy_view.h"
 #include "sound.h"
+#include "opengl.h"
 
 #include "fx_manager.h"
 #include "fx_renderer.h"
@@ -67,8 +68,6 @@
 #ifndef DATA_DIR
 #define DATA_DIR "."
 #endif
-
-bool installOpenglDebugHandler();
 
 static void initializeRendererTiles(Renderer& r, const DirectoryPath& path) {
   r.addTilesDirectory(path.subdirectory("orig16"), Vec2(16, 16));
