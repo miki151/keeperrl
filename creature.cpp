@@ -157,7 +157,8 @@ CreatureAction Creature::castSpell(Spell* spell, Vec2 dir) const {
   return CreatureAction(this, [=] (WCreature c) {
     c->addSound(spell->getSound());
     auto dirEffectType = spell->getDirEffectType();
-    getGame()->addEvent(EventInfo::OtherEffect{c->getPosition(), "magic_missile", dir * dirEffectType.getRange()});
+    auto fxName = spell->getId() == SpellId::FIREBALL ? "fireball" : "magic_missile";
+    getGame()->addEvent(EventInfo::OtherEffect{c->getPosition(), fxName, dir * dirEffectType.getRange()});
     thirdPerson(getName().the() + " casts a spell");
     secondPerson("You cast " + spell->getName());
     applyDirected(c, dir, dirEffectType);
