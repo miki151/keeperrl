@@ -1,8 +1,7 @@
 #include "fx_manager.h"
 
 #include "fx_color.h"
-#include "fx_emitter_def.h"
-#include "fx_particle_def.h"
+#include "fx_defs.h"
 #include "fx_particle_system.h"
 #include "fx_rect.h"
 
@@ -18,8 +17,6 @@ FVec2 dirToVec(Dir dir) {
 template <class T, size_t N> const T& choose(const array<T, N>& values, uint randomSeed) {
   return values[randomSeed % N];
 }
-
-using SubSystemDef = ParticleSystemDef::SubSystem;
 
 static void addTestSimpleEffect(FXManager &mgr) {
   EmitterDef edef;

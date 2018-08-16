@@ -4,6 +4,7 @@
 #include "util.h"
 #include "fx_simple.h"
 #include "fx_particle_system.h"
+#include "fx_defs.h"
 
 namespace fx {
 

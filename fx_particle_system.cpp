@@ -1,7 +1,6 @@
 #include "fx_particle_system.h"
 
-#include "fx_emitter_def.h"
-#include "fx_particle_def.h"
+#include "fx_defs.h"
 #include "fx_rect.h"
 
 namespace fx {

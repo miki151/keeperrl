@@ -26,51 +26,6 @@ private:
   int m_spawnTime;
 };
 
-using AnimateParticleFunc = void (*)(AnimationContext &, Particle &);
-using DrawParticleFunc = void (*)(DrawContext &, const Particle &, DrawParticle &);
-
-// Returns number of particles to emit
-// Fractionals will be accumulated over time
-using PrepareEmissionFunc = float (*)(AnimationContext &, EmissionState &);
-using EmitParticleFunc = void (*)(AnimationContext &, EmissionState &, Particle &);
-
-void defaultAnimateParticle(AnimationContext &, Particle &);
-float defaultPrepareEmission(AnimationContext &, EmissionState &);
-void defaultEmitParticle(AnimationContext &, EmissionState &, Particle &);
-void defaultDrawParticle(DrawContext &, const Particle &, DrawParticle &);
-
-// Defines behaviour of a whole particle system
-struct ParticleSystemDef {
-  // TODO: is it really useful to separate particle, emitter & system definitions?
-  // maybe let's just merge it into single structure? We're not reusing anything anyways...
-
-  struct SubSystem {
-    SubSystem(ParticleDefId pdef, EmitterDefId edef, float estart, float eend)
-        : particleId(pdef), emitterId(edef), emissionStart(estart), emissionEnd(eend) {}
-
-    ParticleDefId particleId;
-    EmitterDefId emitterId;
-
-    float emissionStart, emissionEnd;
-
-    AnimateParticleFunc animateFunc = defaultAnimateParticle;
-    PrepareEmissionFunc prepareFunc = defaultPrepareEmission;
-    EmitParticleFunc emitFunc = defaultEmitParticle;
-    DrawParticleFunc drawFunc = defaultDrawParticle;
-
-    int maxActiveParticles = INT_MAX;
-    int maxTotalParticles = INT_MAX; // TODO: how should we treat it in looped animations?
-  };
-
-  explicit operator bool () const { return !subSystems.empty(); }
-  const SubSystem &operator[](int ssid) const { return subSystems[ssid]; }
-  SubSystem &operator[](int ssid) { return subSystems[ssid]; }
-
-  vector<SubSystem> subSystems;
-  optional<float> animLength;
-  bool isLooped = false;
-};
-
 struct Particle {
   float particleTime() const { return life / maxLife; }
 
@@ -137,7 +92,7 @@ struct SubSystemContext {
   const ParticleSystem::SubSystem &ss;
 
   const ParticleSystemDef &psdef;
-  const ParticleSystemDef::SubSystem &ssdef;
+  const SubSystemDef& ssdef;
 
   const ParticleDef &pdef;
   const EmitterDef &edef;

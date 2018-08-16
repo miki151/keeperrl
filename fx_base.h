@@ -62,6 +62,7 @@ struct ParticleSystem;
 
 struct ParticleDef;
 struct EmitterDef;
+struct SubSystemDef;
 struct ParticleSystemDef;
 
 struct SubSystemContext;
