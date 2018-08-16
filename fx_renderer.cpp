@@ -1,7 +1,7 @@
 #include "fx_renderer.h"
 
 #include "fx_manager.h"
-#include "fx_particle_def.h"
+#include "fx_defs.h"
 #include "fx_particle_system.h"
 #include "fx_draw_buffers.h"
 #include "fx_rect.h"
