@@ -4,6 +4,33 @@
 using SDL::GLenum;
 using SDL::GLuint;
 
+const char* openglErrorCode(int code) {
+  const char* err_code = "unknown";
+  switch (code) {
+#define CASE(e)                                                                                                        \
+  case GL_##e:                                                                                                         \
+    return #e;
+    CASE(INVALID_ENUM)
+    CASE(INVALID_VALUE)
+    CASE(INVALID_OPERATION)
+    CASE(INVALID_FRAMEBUFFER_OPERATION)
+    CASE(STACK_OVERFLOW)
+    CASE(STACK_UNDERFLOW)
+    CASE(OUT_OF_MEMORY)
+  default:
+    break;
+#undef CASE
+  }
+  return "UNKNOWN";
+}
+
+void checkOpenglError(const char* file, int line) {
+  auto error = SDL::glGetError();
+  if (error != GL_NO_ERROR)
+    FatalLog.get() << "FATAL " << file << ":" << line << " "
+                   << "OpenGL error: " << openglErrorCode(error) << " (" << error << ")";
+}
+
 static const char* debugSourceText(GLenum source) {
   switch (source) {
 #define CASE(suffix, text)                                                                                             \
@@ -100,18 +127,13 @@ bool isOpenglExtensionAvailable(const char* text) {
   return strstr(exts, text) != nullptr;
 }
 
-void checkOpenglError() {
-  auto error = SDL::glGetError();
-  CHECK(error == GL_NO_ERROR) << (int)error;
-}
-
 void setupOpenglView(int width, int height, float zoom) {
   SDL::glMatrixMode(GL_PROJECTION);
   SDL::glLoadIdentity();
   SDL::glViewport(0, 0, width, height);
   SDL::glOrtho(0.0, double(width) / zoom, double(height) / zoom, 0.0, -1.0, 1.0);
-  CHECK(SDL::glGetError() == GL_NO_ERROR);
-  //Initialize Modelview Matrix
+  CHECK_OPENGL_ERROR();
+
   SDL::glMatrixMode(GL_MODELVIEW);
   SDL::glLoadIdentity();
 }
