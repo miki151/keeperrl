@@ -7,6 +7,7 @@
 #include "body.h"
 #include "furniture.h"
 #include "level.h"
+#include "fx_name.h"
 
 static optional<LastingEffect> getCancelledOneWay(LastingEffect effect) {
   switch (effect) {
@@ -710,5 +711,26 @@ bool LastingEffects::canConsume(LastingEffect effect) {
       return false;
     default:
       return true;
+  }
+}
+
+optional<FXName> LastingEffects::getFXName(LastingEffect effect) {
+  switch (effect) {
+    case LastingEffect::PEACEFULNESS:
+      return FXName::PEACEFULNESS;
+    case LastingEffect::SLEEP:
+      return FXName::SLEEP;
+    case LastingEffect::BLIND:
+      return FXName::BLIND;
+    case LastingEffect::INSANITY:
+      return FXName::INSANITY;
+    case LastingEffect::SPEED:
+      return FXName::SPEED;
+    case LastingEffect::SLOWED:
+      return FXName::SLOW;
+    case LastingEffect::FLYING:
+      return FXName::FLYING;
+    default:
+      return none;
   }
 }

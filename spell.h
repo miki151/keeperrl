@@ -41,17 +41,21 @@ class Spell : public Singleton<Spell, SpellId> {
   void addMessage(WCreature);
   SoundId getSound() const;
   optional<int> getLearningExpLevel() const;
+  optional<FXName> getFXName() const;
 
   static void init();
 
   private:
-  Spell(const string&, Effect, int difficulty, SoundId, CastMessageType = CastMessageType::STANDARD);
-  Spell(const string&, DirEffectType, int difficulty, SoundId, CastMessageType = CastMessageType::STANDARD);
+  Spell(const string&, Effect, int difficulty, SoundId, optional<FXName> = none,
+      CastMessageType = CastMessageType::STANDARD);
+  Spell(const string&, DirEffectType, int difficulty, SoundId, optional<FXName> = none,
+      CastMessageType = CastMessageType::STANDARD);
 
   const string name;
   const HeapAllocated<variant<Effect, DirEffectType>> effect;
   const int difficulty;
   const CastMessageType castMessageType;
   const SoundId sound;
+  const optional<FXName> fxName;
 };
 

@@ -157,8 +157,8 @@ CreatureAction Creature::castSpell(Spell* spell, Vec2 dir) const {
   return CreatureAction(this, [=] (WCreature c) {
     c->addSound(spell->getSound());
     auto dirEffectType = spell->getDirEffectType();
-    auto fxName = spell->getId() == SpellId::FIREBALL ? FXName::FIREBALL : FXName::MAGIC_MISSILE;
-    getGame()->addEvent(EventInfo::OtherEffect{c->getPosition(), fxName, dir * dirEffectType.getRange()});
+    if (auto fxName = spell->getFXName())
+      getGame()->addEvent(EventInfo::OtherEffect{c->getPosition(), *fxName, dir * dirEffectType.getRange()});
     thirdPerson(getName().the() + " casts a spell");
     secondPerson("You cast " + spell->getName());
     applyDirected(c, dir, dirEffectType);
@@ -171,21 +171,10 @@ CreatureAction Creature::castSpell(Spell* spell, Vec2 dir) const {
 
 void Creature::updateLastingFX(ViewObject& object) {
   object.particleEffects.clear();
-
-  if (isAffected(LastingEffect::PEACEFULNESS))
-    object.particleEffects.insert(FXName::PEACEFULNESS);
-  if (isAffected(LastingEffect::SLEEP))
-    object.particleEffects.insert(FXName::SLEEP);
-  if (isAffected(LastingEffect::BLIND))
-    object.particleEffects.insert(FXName::BLIND);
-  if (isAffected(LastingEffect::INSANITY))
-    object.particleEffects.insert(FXName::INSANITY);
-  if (isAffected(LastingEffect::SPEED))
-    object.particleEffects.insert(FXName::SPEED);
-  if (isAffected(LastingEffect::SLOWED))
-    object.particleEffects.insert(FXName::SLOW);
-  if (isAffected(LastingEffect::FLYING))
-    object.particleEffects.insert(FXName::FLYING);
+  for (auto effect : ENUM_ALL(LastingEffect))
+    if (isAffected(effect))
+      if (auto fx = LastingEffects::getFXName(effect))
+        object.particleEffects.insert(*fx);
 }
 
 
@@ -1378,10 +1367,8 @@ void Creature::addMovementInfo(MovementInfo info) {
 
   // We're assuming here that position has already been updated
   Position oldPos = position.minus(info.direction);
-  if (auto ground = oldPos.getFurniture(FurnitureLayer::GROUND)) {
-    if (ground->getType() == FurnitureType::SAND)
-      getGame()->addEvent(EventInfo::OtherEffect{oldPos, FXName::FEET_DUST, info.direction});
-  }
+  if (auto ground = oldPos.getFurniture(FurnitureLayer::GROUND))
+    ground->onCreatureWalkedOver(oldPos, info.direction);
 }
 
 CreatureAction Creature::whip(const Position& pos) const {

@@ -6,7 +6,6 @@
 #include "vision_id.h"
 #include "event_listener.h"
 #include "furniture_layer.h"
-#include "fx_simple.h"
 
 class TribeId;
 class Creature;
@@ -71,6 +70,7 @@ class Furniture : public OwnedObject<Furniture> {
   bool isClearFogOfWar() const;
   bool forgetAfterBuilding() const;
   bool isShowEfficiency() const;
+  void onCreatureWalkedOver(Position, Vec2 direction) const;
   /**
    * @brief Calls special functionality to handle dropped items, if any.
    * @return possibly empty subset of the items that weren't consumned and can be dropped normally.
@@ -114,6 +114,7 @@ class Furniture : public OwnedObject<Furniture> {
   Furniture& setShowEfficiency();
   Furniture& setDestroyFX(FXName);
   Furniture& setTryDestroyFX(FXName);
+  Furniture& setWalkOverFX(FXName);
   MovementSet& modMovementSet();
 
   SERIALIZATION_DECL(Furniture)
@@ -157,4 +158,5 @@ class Furniture : public OwnedObject<Furniture> {
   bool SERIAL(showEfficiency) = false;
   optional<FXName> SERIAL(destroyFX);
   optional<FXName> SERIAL(tryDestroyFX);
+  optional<FXName> SERIAL(walkOverFX);
 };

@@ -25,7 +25,7 @@
 #include "movement_info.h"
 #include "creature_status.h"
 #include "view_object_modifier.h"
-#include "fx_simple.h"
+#include "fx_name.h"
 
 RICH_ENUM(ViewObjectAttribute, HEALTH, BURNING, WATER_DEPTH, EFFICIENCY, MORALE);
 

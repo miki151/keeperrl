@@ -71,6 +71,7 @@ class LastingEffects {
   static int getPrice(LastingEffect);
   static double getMoraleIncrease(WConstCreature);
   static bool canConsume(LastingEffect);
+  static optional<FXName> getFXName(LastingEffect);
 };
 
 
