@@ -216,79 +216,113 @@ void LastingEffects::onTimedOut(WCreature c, LastingEffect effect, bool msg) {
   if (msg)
     switch (effect) {
       case LastingEffect::SLOWED:
-        c->you(MsgType::ARE, "moving faster again"); break;
+        c->you(MsgType::ARE, "moving faster again");
+        break;
       case LastingEffect::SLEEP:
         c->you(MsgType::WAKE_UP, "");
         c->addEffect(LastingEffect::RESTED, 1000_visible);
         break;
       case LastingEffect::SPEED:
-        c->you(MsgType::ARE, "moving more slowly again"); break;
+        c->you(MsgType::ARE, "moving more slowly again");
+        break;
       case LastingEffect::DAM_BONUS:
-        c->you(MsgType::ARE, "less dangerous again"); break;
+        c->you(MsgType::ARE, "less dangerous again");
+        break;
       case LastingEffect::DEF_BONUS:
-        c->you(MsgType::ARE, "less protected again"); break;
+        c->you(MsgType::ARE, "less protected again");
+        break;
       case LastingEffect::PANIC:
       case LastingEffect::RAGE:
       case LastingEffect::HALLU:
-        c->you(MsgType::YOUR, "mind is clear again"); break;
+        c->you(MsgType::YOUR, "mind is clear again");
+        break;
       case LastingEffect::ENTANGLED:
-        c->you(MsgType::BREAK_FREE, "the web"); break;
+        c->you(MsgType::BREAK_FREE, "the web");
+        break;
       case LastingEffect::TIED_UP:
-        c->you(MsgType::BREAK_FREE, ""); break;
+        c->you(MsgType::BREAK_FREE, "");
+        break;
       case LastingEffect::BLEEDING:
-        c->you(MsgType::YOUR, "bleeding stops"); break;
+        c->you(MsgType::YOUR, "bleeding stops");
+        break;
       case LastingEffect::BLIND:
-        c->you("can see again"); break;
+        c->you("can see again");
+        break;
       case LastingEffect::INVISIBLE:
-        c->you(MsgType::TURN_VISIBLE, ""); break;
+        c->you(MsgType::TURN_VISIBLE, "");
+        break;
       case LastingEffect::SLEEP_RESISTANT:
-        c->you(MsgType::ARE, "no longer sleep resistant"); break;
+        c->you(MsgType::ARE, "no longer sleep resistant");
+        break;
       case LastingEffect::POISON:
-        c->you(MsgType::ARE, "no longer poisoned"); break;
+        c->you(MsgType::ARE, "no longer poisoned");
+        break;
       case LastingEffect::POISON_RESISTANT:
-        c->you(MsgType::ARE, "no longer poison resistant"); break;
+        c->you(MsgType::ARE, "no longer poison resistant");
+        break;
       case LastingEffect::FIRE_RESISTANT:
-        c->you(MsgType::ARE, "no longer fire resistant"); break;
+        c->you(MsgType::ARE, "no longer fire resistant");
+        break;
       case LastingEffect::FLYING:
-        c->you(MsgType::FALL, "on the " + c->getPosition().getName()); break;
+        c->you(MsgType::FALL, "on the " + c->getPosition().getName());
+        break;
       case LastingEffect::COLLAPSED:
-        c->you(MsgType::STAND_UP); break;
+        c->you(MsgType::STAND_UP);
+        break;
       case LastingEffect::INSANITY:
-        c->you(MsgType::BECOME, "sane again"); break;
+        c->you(MsgType::BECOME, "sane again");
+        break;
       case LastingEffect::PEACEFULNESS:
-        c->you(MsgType::BECOME, "less peaceful"); break;
+        c->you(MsgType::BECOME, "less peaceful");
+        break;
       case LastingEffect::MAGIC_RESISTANCE:
-        c->you(MsgType::FEEL, "less resistant to magical attacks"); break;
+        c->you(MsgType::FEEL, "less resistant to magical attacks");
+        break;
       case LastingEffect::MELEE_RESISTANCE:
-        c->you(MsgType::FEEL, "less resistant to melee attacks"); break;
+        c->you(MsgType::FEEL, "less resistant to melee attacks");
+        break;
       case LastingEffect::RANGED_RESISTANCE:
-        c->you(MsgType::FEEL, "less resistant to ranged attacks"); break;
+        c->you(MsgType::FEEL, "less resistant to ranged attacks");
+        break;
       case LastingEffect::MAGIC_VULNERABILITY:
-        c->you(MsgType::FEEL, "less vulnerable to magical attacks"); break;
+        c->you(MsgType::FEEL, "less vulnerable to magical attacks");
+        break;
       case LastingEffect::MELEE_VULNERABILITY:
-        c->you(MsgType::FEEL, "less vulnerable to melee attacks"); break;
+        c->you(MsgType::FEEL, "less vulnerable to melee attacks");
+        break;
       case LastingEffect::RANGED_VULNERABILITY:
-        c->you(MsgType::FEEL, "less vulnerable to ranged attacks"); break;
+        c->you(MsgType::FEEL, "less vulnerable to ranged attacks");
+        break;
       case LastingEffect::ELF_VISION:
-        c->you("can't see through trees anymore"); break;
+        c->you("can't see through trees anymore");
+        break;
       case LastingEffect::NIGHT_VISION:
-        c->you("can't see in the dark anymore"); break;
+        c->you("can't see in the dark anymore");
+        break;
       case LastingEffect::REGENERATION:
-        c->you(MsgType::ARE, "no longer regenerating"); break;
+        c->you(MsgType::ARE, "no longer regenerating");
+        break;
       case LastingEffect::WARNING:
-        c->you(MsgType::FEEL, "less aware of danger"); break;
+        c->you(MsgType::FEEL, "less aware of danger");
+        break;
       case LastingEffect::TELEPATHY:
-        c->you(MsgType::ARE, "no longer telepathic"); break;
+        c->you(MsgType::ARE, "no longer telepathic");
+        break;
       case LastingEffect::SUNLIGHT_VULNERABLE:
-        c->you(MsgType::ARE, "no longer vulnerable to sunlight"); break;
+        c->you(MsgType::ARE, "no longer vulnerable to sunlight");
+        break;
       case LastingEffect::SATIATED:
-        c->you(MsgType::ARE, "no longer satiated"); break;
+        c->you(MsgType::ARE, "no longer satiated");
+        break;
       case LastingEffect::RESTED:
-        c->you(MsgType::ARE, "no longer rested"); break;
+        c->you(MsgType::ARE, "no longer rested");
+        break;
       case LastingEffect::SUMMONED:
-        c->dieNoReason(Creature::DropType::ONLY_INVENTORY); break;
+        c->dieNoReason(Creature::DropType::ONLY_INVENTORY);
+        break;
       case LastingEffect::STUNNED:
-        c->dieWithLastAttacker(); break;
+        c->dieWithLastAttacker();
+        break;
       case LastingEffect::LIGHT_SOURCE:
         c->getPosition().removeCreatureLight(false);
         break;

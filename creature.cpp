@@ -938,9 +938,13 @@ void Creature::tick() {
   if (Random.roll(5))
     getDifficultyPoints();
   equipment->tick(position);
+  if (isDead())
+    return;
   for (LastingEffect effect : ENUM_ALL(LastingEffect)) {
     if (attributes->considerTimeout(effect, *getGlobalTime()))
       LastingEffects::onTimedOut(this, effect, true);
+    if (isDead())
+      return;
     if (isAffected(effect) && LastingEffects::tick(this, effect))
       return;
   }
@@ -1216,6 +1220,7 @@ void Creature::take(PItem item) {
 }
 
 void Creature::dieWithReason(const string& reason, DropType drops) {
+  CHECK(!isDead()) << getName().bare() << " is already dead. " << getDeathReason().value_or("");
   deathReason = reason;
   dieNoReason(drops);
 }
