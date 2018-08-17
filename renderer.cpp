@@ -428,6 +428,7 @@ Renderer::Renderer(Clock* clock, const string& title, const DirectoryPath& fontP
   CHECK(SDL::SDL_GL_CreateContext(window)) << SDL::SDL_GetError();
   SDL_SetWindowMinimumSize(window, minResolution.x, minResolution.y);
   SDL_GetWindowSize(window, &width, &height);
+  installOpenglDebugHandler();
   setVsync(true);
   originalCursor = SDL::SDL_GetCursor();
   initOpenGL();
