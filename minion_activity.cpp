@@ -176,6 +176,14 @@ WTask MinionActivities::getExisting(WCollective collective, WCreature c, MinionA
   }
 }
 
+PTask MinionActivities::generateDropTask(WCollective collective, WCreature c, MinionActivity task) {
+  if (CollectiveConfig::getActivityInfo(task).type == MinionActivityInfo::WORKER &&
+      task != MinionActivity::HAULING)
+    if (PTask ret = getDropItemsTask(collective, c))
+      return ret;
+  return nullptr;
+}
+
 PTask MinionActivities::generate(WCollective collective, WCreature c, MinionActivity task) {
   PROFILE;
   auto& info = CollectiveConfig::getActivityInfo(task);

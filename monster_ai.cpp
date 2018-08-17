@@ -972,6 +972,8 @@ class ByCollective : public Behaviour {
     MinionActivity activity = current.activity;
     if (current.finishTime < collective->getLocalTime())
       collective->setMinionActivity(creature, MinionActivity::IDLE);
+    if (PTask ret = MinionActivities::generateDropTask(collective, creature, activity))
+      return taskMap.addTaskFor(std::move(ret), creature);
     if (WTask ret = MinionActivities::getExisting(collective, creature, activity)) {
       taskMap.takeTask(creature, ret);
       return ret;
