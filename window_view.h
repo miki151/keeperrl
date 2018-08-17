@@ -113,8 +113,6 @@ class WindowView: public View {
   void displayOldSplash();
   void updateMinimap(const CreatureView*);
   void mapContinuousLeftClickFun(Vec2);
-  void mapCreatureClickFun(UniqueEntity<Creature>::Id, Vec2 position, bool rightClick);
-  void mapCreatureDragFun(UniqueEntity<Creature>::Id, ViewId, Vec2 origin);
   void mapRightClickFun(Vec2);
   Rectangle getTextInputPosition();
   optional<int> chooseFromListInternal(const string& title, const vector<ListElem>& options, optional<int> index,

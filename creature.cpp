@@ -919,6 +919,7 @@ optional<GlobalTime> Creature::getGlobalTime() const {
 }
 
 void Creature::considerMovingFromInaccessibleSquare() {
+  PROFILE;
   auto movement = getMovementType();
   auto forced = getMovementType().setForced();
   if (!position.canEnterEmpty(forced))
@@ -1660,7 +1661,7 @@ CreatureAction Creature::moveTowards(Position pos, NavigationFlags flags) {
 }
 
 bool Creature::canNavigateTo(Position pos) const {
-//  PROFILE;
+  PROFILE;
   return pos.canNavigateToOrNeighbor(position, getMovementType());
 }
 
@@ -1856,6 +1857,7 @@ vector<AdjectiveInfo> Creature::getBadAdjectives() const {
 }
 
 bool Creature::isSameSector(Position pos) const {
+  PROFILE;
   return pos.isConnectedTo(position, getMovementType());
 }
 

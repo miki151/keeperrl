@@ -39,7 +39,8 @@
 using SDL::SDL_Keysym;
 using SDL::SDL_Keycode;
 
-MapGui::MapGui(Callbacks call, Clock* c, Options* o, GuiFactory* f) : objects(Level::getMaxBounds()), callbacks(call),
+MapGui::MapGui(Callbacks call, SyncQueue<UserInput>& inputQueue, Clock* c, Options* o, GuiFactory* f)
+    : objects(Level::getMaxBounds()), callbacks(call), inputQueue(inputQueue),
     clock(c), options(o), fogOfWar(Level::getMaxBounds(), false), extraBorderPos(Level::getMaxBounds(), {}),
     lastSquareUpdate(Level::getMaxBounds()), connectionMap(Level::getMaxBounds()), guiFactory(f) {
   clearCenter();
@@ -280,6 +281,14 @@ bool MapGui::onRightClick(Vec2 pos) {
   return false;
 }
 
+bool MapGui::onMiddleClick(Vec2 pos) {
+  if (pos.inRectangle(getBounds())) {
+    inputQueue.push(UserInput(UserInputId::DRAW_LEVEL_MAP));
+    return true;
+  } else
+    return false;
+}
+
 void MapGui::onMouseGone() {
   lastMouseMove = none;
 }
@@ -298,7 +307,7 @@ bool MapGui::onMouseMove(Vec2 v) {
   if (v.inRectangle(getBounds()) && mouseHeldPos && !draggedCreature)
     considerContinuousLeftClick(v);
   if (!draggedCreature && draggedCandidate && mouseHeldPos && mouseHeldPos->distD(v) > 30) {
-    callbacks.creatureDragFun(draggedCandidate->id, draggedCandidate->viewId, v);
+    inputQueue.push(UserInput(UserInputId::CREATURE_DRAG, draggedCandidate->id));
     setDraggedCreature(draggedCandidate->id, draggedCandidate->viewId, v);
   }
   if (isScrollingNow) {
@@ -321,7 +330,7 @@ void MapGui::onMouseRelease(Vec2 v) {
   if (isScrollingNow) {
     if (fabs(mouseOffset.x) + fabs(mouseOffset.y) < 1) {
       if (auto c = getCreature(lastMousePos))
-        callbacks.creatureClickFun(c->id, c->position, true);
+        inputQueue.push(UserInput(UserInputId::CREATURE_MAP_CLICK_EXTENDED, c->position));
       else
         callbacks.rightClickFun(layout->projectOnMap(getBounds(), getScreenPos(), lastMousePos));
     } else {
@@ -337,12 +346,13 @@ void MapGui::onMouseRelease(Vec2 v) {
     if (v.inRectangle(getBounds()) && guiFactory->getDragContainer().getOrigin().distD(v) > 10) {
       switch (draggedElem->getId()) {
         case DragContentId::CREATURE:
-          callbacks.creatureDroppedFun(draggedElem->get<UniqueEntity<Creature>::Id>(),
-              layout->projectOnMap(getBounds(), getScreenPos(), v));
+          inputQueue.push(UserInput(UserInputId::CREATURE_DRAG_DROP,
+             CreatureDropInfo{layout->projectOnMap(getBounds(), getScreenPos(), v),
+                 draggedElem->get<UniqueEntity<Creature>::Id>()}));
           break;
         case DragContentId::TEAM:
-          callbacks.teamDroppedFun(draggedElem->get<TeamId>(),
-              layout->projectOnMap(getBounds(), getScreenPos(), v));
+          inputQueue.push(UserInput(UserInputId::TEAM_DRAG_DROP,
+              TeamDropInfo{layout->projectOnMap(getBounds(), getScreenPos(), v), draggedElem->get<TeamId>()}));
           break;
         default:
           break;
@@ -354,7 +364,7 @@ void MapGui::onMouseRelease(Vec2 v) {
         considerContinuousLeftClick(v);
     } else {
       if (auto c = getCreature(*mouseHeldPos))
-        callbacks.creatureClickFun(c->id, c->position, false);
+        inputQueue.push(UserInput(UserInputId::CREATURE_MAP_CLICK, c->position));
       else {
         callbacks.leftClickFun(layout->projectOnMap(getBounds(), getScreenPos(), v));
         considerContinuousLeftClick(v);
@@ -389,8 +399,8 @@ void MapGui::onMouseRelease(Vec2 v) {
 
 static Vec2 getAttachmentOffset(Dir dir, Vec2 size) {
   switch (dir) {
-    case Dir::N: return Vec2(0, -size.y * 2 / 3);
-    case Dir::S: return Vec2(0, size.y / 4);
+    case Dir::N: return Vec2(0, -size.y * 3 / 4);
+    case Dir::S: return Vec2(0, size.y / 3);
     case Dir::E:
     case Dir::W: return Vec2(dir) * size.x / 2;
     default: FATAL << "Bad attachment dir " << int(dir);

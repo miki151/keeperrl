@@ -236,9 +236,9 @@ const char* ViewObject::getDefaultDescription() const {
     case ViewId::CEMETERY: return "Cemetery";
     case ViewId::GRAVE: return "Grave";
     case ViewId::PORTAL: return "Portal";
-    case ViewId::WOOD_DOOR: return hasModifier(Modifier::LOCKED) ? "Wooden door (click to unlock)" : "Wooden door (click to lock)";
-    case ViewId::IRON_DOOR: return hasModifier(Modifier::LOCKED) ? "Iron door (click to unlock)" : "Iron door (click to lock)";
-    case ViewId::ADA_DOOR: return hasModifier(Modifier::LOCKED) ? "Adamantine door (click to unlock)" : "Adamantine door (click to lock)";
+    case ViewId::WOOD_DOOR: return "Wooden door";
+    case ViewId::IRON_DOOR: return "Iron door";
+    case ViewId::ADA_DOOR: return "Adamantine door";
     case ViewId::BARRICADE: return "Barricade";
     case ViewId::WOOD_FLOOR1:
     case ViewId::WOOD_FLOOR2:

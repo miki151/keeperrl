@@ -162,6 +162,7 @@ class Destruction : public Task {
   }
 
   virtual bool canPerform(WConstCreature) const override {
+    PROFILE_BLOCK("Destruction::canPerform");
     return callback->isConstructionReachable(position) && (!matching || matching->getMatch(position));
   }
 
@@ -243,19 +244,21 @@ class PickItem : public Task {
     return "Pick up item " + toString(position);
   }
 
-  bool itemsExist(Position target) {
-    for (WItem it : target.getItems())
-      if (items.contains(it))
-        return true;
-    return false;
+  virtual bool isBogus() const override {
+    if (position.getItems().size() > items.getSize()) {
+      for (auto& item : items)
+        if (!!position.getInventory().getItemById(item))
+          return false;
+    } else {
+      for (WItem it : position.getItems())
+        if (items.contains(it))
+          return false;
+    }
+    return true;
   }
 
   virtual MoveInfo getMove(WCreature c) override {
     CHECK(!pickedUp);
-    if (!itemsExist(position)) {
-      setDone();
-      return NoMove;
-    }
     if (c->getPosition() == position) {
       vector<WItem> hereItems;
       for (WItem it : c->getPickUpOptions())
@@ -286,6 +289,7 @@ class PickItem : public Task {
   }
 
   virtual bool canPerform(WConstCreature c) const override {
+    PROFILE_BLOCK("PickItem::canPerform");
     return c->canCarryMoreWeight(lightestItem) && c->isSameSector(position);
   }
 
@@ -418,6 +422,10 @@ class ApplyItem : public Task {
     return "Set up " + itemName + " trap";
   }
 
+  virtual bool canPerform(WConstCreature c) const override {
+    return !!c->getEquipment().getItemById(itemId);
+  }
+
   virtual MoveInfo getMove(WCreature c) override {
     if (auto item = c->getEquipment().getItemById(itemId))
       if (auto action = c->applyItem(item))
@@ -426,7 +434,7 @@ class ApplyItem : public Task {
           setDone();
         });
     return c->wait().prepend([=](WCreature) {
-       cancel();
+       setDone();
     });
   }
 
@@ -705,6 +713,16 @@ class Chain : public Task {
   public:
   Chain(vector<PTask> t) : tasks(std::move(t)) {
     CHECK(!tasks.empty());
+  }
+
+  virtual bool isBogus() const override {
+    return current >= tasks.size();
+  }
+
+  virtual bool canPerform(WConstCreature c) const override {
+    if (current >= tasks.size())
+      return false;
+    return tasks[current]->canPerform(c);
   }
 
   virtual bool canTransfer() override {
@@ -1554,9 +1572,16 @@ class DropItems : public Task {
   }
 
   virtual bool canPerform(WConstCreature c) const override {
-    for (auto item : c->getEquipment().getItems())
-      if (items.contains(item))
-        return true;
+    PROFILE_BLOCK("DropItems::canPerform");
+    if (items.getSize() > c->getEquipment().getItems().size()) {
+      for (auto item : c->getEquipment().getItems())
+        if (items.contains(item))
+          return true;
+    } else {
+      for (auto item : items)
+        if (!!c->getEquipment().getItemById(item))
+          return true;
+    }
     return false;
   }
 

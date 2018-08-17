@@ -949,6 +949,7 @@ class ByCollective : public Behaviour {
   }
 
   void setRandomTask() {
+    PROFILE;
     vector<MinionActivity> goodTasks;
     for (MinionActivity t : ENUM_ALL(MinionActivity))
       if (collective->isActivityGood(creature, t) && creature->getAttributes().getMinionActivities().canChooseRandomly(creature, t))
@@ -971,6 +972,8 @@ class ByCollective : public Behaviour {
     MinionActivity activity = current.activity;
     if (current.finishTime < collective->getLocalTime())
       collective->setMinionActivity(creature, MinionActivity::IDLE);
+    if (PTask ret = MinionActivities::generateDropTask(collective, creature, activity))
+      return taskMap.addTaskFor(std::move(ret), creature);
     if (WTask ret = MinionActivities::getExisting(collective, creature, activity)) {
       taskMap.takeTask(creature, ret);
       return ret;
