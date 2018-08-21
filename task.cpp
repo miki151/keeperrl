@@ -1399,7 +1399,12 @@ class TransferTo : public Task {
     return "Go to site";
   }
 
-  SERIALIZE_ALL(SUBCLASS(Task), target, model); 
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int) {
+    target = none;
+    ar(SUBCLASS(Task), target, model);
+  }
+
   SERIALIZATION_CONSTRUCTOR(TransferTo);
 
   protected:
