@@ -61,29 +61,25 @@ void Renderer::renderDeferredSprites() {
     add(elem.d, elem.p.x, elem.k.y, elem);
   }
   if (!vertices.empty()) {
+    CHECK_OPENGL_ERROR();
     SDL::glBindTexture(GL_TEXTURE_2D, *currentTexture);
     SDL::glEnable(GL_TEXTURE_2D);
-    checkOpenglError();
     SDL::glEnableClientState(GL_VERTEX_ARRAY);
     SDL::glEnableClientState(GL_TEXTURE_COORD_ARRAY);
     SDL::glEnableClientState(GL_COLOR_ARRAY);
-    checkOpenglError();
     SDL::glColorPointer(4, GL_FLOAT, 0, colors.data());
-    checkOpenglError();
     SDL::glVertexPointer(2, GL_FLOAT, 0, vertices.data());
-    checkOpenglError();
     SDL::glTexCoordPointer(2, GL_FLOAT, 0, texCoords.data());
-    checkOpenglError();
     SDL::glDrawArrays(GL_TRIANGLES, 0, vertices.size() / 2);
-    checkOpenglError();
-    checkOpenglError();
     vertices.clear();
     texCoords.clear();
     colors.clear();
+
     SDL::glDisableClientState(GL_VERTEX_ARRAY);
     SDL::glDisableClientState(GL_TEXTURE_COORD_ARRAY);
     SDL::glDisableClientState(GL_COLOR_ARRAY);
     SDL::glDisable(GL_TEXTURE_2D);
+    CHECK_OPENGL_ERROR();
   }
   deferredSprites.clear();
 }
@@ -292,18 +288,17 @@ void Renderer::setScissor(optional<Rectangle> s) {
 void Renderer::setTopLayer() {
   renderDeferredSprites();
   SDL::glPushMatrix();
-  checkOpenglError();
   SDL::glTranslated(0, 0, 1);
-  checkOpenglError();
   SDL::glDisable(GL_SCISSOR_TEST);
+  CHECK_OPENGL_ERROR();
 }
 
 void Renderer::popLayer() {
   renderDeferredSprites();
   SDL::glPopMatrix();
-  checkOpenglError();
   if (!scissorStack.empty())
     SDL::glEnable(GL_SCISSOR_TEST);
+  CHECK_OPENGL_ERROR();
 }
 
 Vec2 Renderer::getSize() {
@@ -433,6 +428,7 @@ Renderer::Renderer(Clock* clock, const string& title, const DirectoryPath& fontP
   CHECK(SDL::SDL_GL_CreateContext(window)) << SDL::SDL_GetError();
   SDL_SetWindowMinimumSize(window, minResolution.x, minResolution.y);
   SDL_GetWindowSize(window, &width, &height);
+  installOpenglDebugHandler();
   setVsync(true);
   originalCursor = SDL::SDL_GetCursor();
   initOpenGL();

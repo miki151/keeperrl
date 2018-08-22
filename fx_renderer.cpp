@@ -92,6 +92,7 @@ IRect FXRenderer::visibleTiles(const View& view) {
 }
 
 void FXRenderer::draw(float zoom, float offsetX, float offsetY, int w, int h) {
+  CHECK_OPENGL_ERROR();
   View view{zoom, {offsetX, offsetY}, {w, h}};
 
   auto fboView = visibleTiles(view);
@@ -148,6 +149,7 @@ void FXRenderer::draw(float zoom, float offsetX, float offsetY, int w, int h) {
 
   SDL::glPopAttrib();
   SDL::glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  CHECK_OPENGL_ERROR();
 }
 
 void FXRenderer::setBlendingMode(BlendMode bm) {
@@ -179,7 +181,6 @@ void FXRenderer::drawParticles(const View& view, BlendMode blendMode) {
   SDL::glVertexPointer(2, GL_FLOAT, 0, drawBuffers->positions.data());
   SDL::glTexCoordPointer(2, GL_FLOAT, 0, drawBuffers->texCoords.data());
   SDL::glColorPointer(4, GL_UNSIGNED_BYTE, 0, drawBuffers->colors.data());
-  checkOpenglError();
 
   setBlendingMode(blendMode);
   for (auto& elem : drawBuffers->elements) {
@@ -190,8 +191,6 @@ void FXRenderer::drawParticles(const View& view, BlendMode blendMode) {
     SDL::glBindTexture(GL_TEXTURE_2D, *tex.getTexId());
     SDL::glDrawArrays(GL_QUADS, elem.firstVertex, elem.numVertices);
   }
-
-  checkOpenglError();
 
   // TODO: check OpenGL errors ?
   SDL::glDisableClientState(GL_VERTEX_ARRAY);
