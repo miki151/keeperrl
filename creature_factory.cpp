@@ -733,7 +733,7 @@ static ViewId getSpecialViewId(bool humanoid, bool large, bool body, bool wings)
   return specialViewIds[humanoid * 8 + (!large) * 4 + (!body) * 2 + wings];
 }
 
-static string getSpeciesName(bool humanoid, bool large, bool body, bool wings) {
+static string getSpeciesName(bool humanoid, bool large, bool living, bool wings) {
   static vector<string> names {
     "devitablex",
     "owlbeast",
@@ -752,21 +752,21 @@ static string getSpeciesName(bool humanoid, bool large, bool body, bool wings) {
     "dire spawn",
     "shamander",
   };
-  return names[humanoid * 8 + (!large) * 4 + (!body) * 2 + wings];
+  return names[humanoid * 8 + (!large) * 4 + (!living) * 2 + wings];
 }
 
-static optional<ItemType> getSpecialBeastAttack(bool large, bool body, bool wings) {
+static optional<ItemType> getSpecialBeastAttack(bool large, bool living, bool wings) {
   static vector<optional<ItemType>> attacks {
-    none,
+    ItemType(ItemType::fangs(7)),
     ItemType(ItemType::fangs(7, Effect::Fire{})),
     ItemType(ItemType::fangs(7, Effect::Fire{})),
-    none,
+    ItemType(ItemType::fists(7)),
     ItemType(ItemType::fangs(7, Effect::Lasting{LastingEffect::POISON})),
-    none,
+    ItemType(ItemType::fangs(7)),
     ItemType(ItemType::fangs(7, Effect::Lasting{LastingEffect::POISON})),
-    none,
+    ItemType(ItemType::fists(7)),
   };
-  return attacks[(!large) * 4 + (!body) * 2 + wings];
+  return attacks[(!large) * 4 + (!living) * 2 + wings];
 }
 
 static EnumMap<BodyPart, int> getSpecialBeastBody(bool large, bool living, bool wings) {
@@ -2116,6 +2116,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
       return CATTR(
           c.viewId = ViewId::AIR_ELEMENTAL;
           c.body = Body::nonHumanoid(Body::Material::SPIRIT, Body::Size::LARGE);
+          c.body->setIntrinsicAttack(BodyPart::TORSO, IntrinsicAttack(ItemType::fists(5)));
           c.body->setDeathSound(none);
           c.attr = LIST(25_dam, 35_def );
           c.permanentEffects[LastingEffect::FLYING] = 1;
