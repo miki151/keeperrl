@@ -433,7 +433,7 @@ static bool autoConfirm(CampaignType type) {
 
 static vector<string> getIntroMessages(CampaignType type, string worldName) {
   vector<string> ret = {
-    "Welcome to KeeperRL Alpha24! This patch was released on April 2, 2018. "
+    "Welcome to KeeperRL Alpha 25 hotfix 1! This patch was released on August 23, 2018. "
     "Many new gameplay features have arrived, "
     "so if you are a returning player, we encourage you to check out the "
     "change log at www.keeperrl.com.\n \n"
