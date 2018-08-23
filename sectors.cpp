@@ -156,8 +156,8 @@ void Sectors::addExtraConnection(Vec2 pos1, Vec2 pos2) {
         join(pos1, sector2);
     }
   }
-  CHECK(!extraConnections[pos1]);
-  CHECK(!extraConnections[pos2]);
+  CHECK(!extraConnections[pos1] || extraConnections[pos1] == pos2);
+  CHECK(!extraConnections[pos2] || extraConnections[pos2] == pos1);
   extraConnections[pos1] = pos2;
   extraConnections[pos2] = pos1;
 }

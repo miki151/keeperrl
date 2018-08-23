@@ -190,10 +190,10 @@ optional<Position> Position::getOtherPortal() const {
 
 void Position::registerPortal() {
   if (isValid()) {
-    if (level->portals->registerPortal(*this))
-      if (auto other = level->portals->getOtherPortal(coord))
-        for (auto& sectors : level->sectors)
-          sectors.second.addExtraConnection(coord, *other);
+    level->portals->registerPortal(*this);
+    if (auto other = level->portals->getOtherPortal(coord))
+      for (auto& sectors : level->sectors)
+        sectors.second.addExtraConnection(coord, *other);
   }
 }
 
