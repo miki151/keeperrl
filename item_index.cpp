@@ -27,8 +27,10 @@ bool hasIndex(ItemIndex index, WConstItem item) {
       return item->getResourceId() == CollectiveResourceId::ADA;
     case ItemIndex::STONE:
       return item->getResourceId() == CollectiveResourceId::STONE;
-    case ItemIndex::REVIVABLE_CORPSE:
-      return item->getClass() == ItemClass::CORPSE && item->getCorpseInfo()->canBeRevived;
+    case ItemIndex::REVIVABLE_CORPSE: {
+      auto corpseInfo = item->getCorpseInfo();
+      return item->getClass() == ItemClass::CORPSE && corpseInfo && corpseInfo->canBeRevived;
+    }
     case ItemIndex::WEAPON:
       return item->getClass() == ItemClass::WEAPON;
     case ItemIndex::TRAP:
