@@ -13,6 +13,7 @@
 #include "model_builder.h"
 #include "trap_type.h"
 #include "quarters.h"
+#include "furniture.h"
 
 using ResourceId = Collective::ResourceId;
 
@@ -22,13 +23,15 @@ const vector<BuildInfo>& BuildInfo::get() {
   if (!buildInfo) {
     buildInfo = vector<BuildInfo>({
       BuildInfo(BuildInfo::DIG, "Dig or cut tree", "", 'd').setTutorialHighlight(TutorialHighlight::DIG_OR_CUT_TREES),
-      BuildInfo({FurnitureType::MOUNTAIN, {ResourceId::STONE, 10}}, "Fill up tunnel", {},
-          "Fill up one tile at a time. Cutting off an area is not allowed.", 0, "Structure"),
+      BuildInfo({FurnitureType::MOUNTAIN, {ResourceId::STONE, 5}}, "Soft rock", {}, "", 0, "Structure"),
+      BuildInfo({FurnitureType::MOUNTAIN2, {ResourceId::STONE, 10}}, "Hard rock", {}, "", 0, "Structure"),
       BuildInfo({{FurnitureType::DUNGEON_WALL, FurnitureType::DUNGEON_WALL2}, {ResourceId::STONE, 2}}, "Reinforce wall", {},
           "Reinforce wall. +" + toString<int>(100 * CollectiveConfig::getEfficiencyBonus(FurnitureType::DUNGEON_WALL)) +
           " efficiency to surrounding tiles.", 0, "Structure"),
       BuildInfo({FurnitureType::PIT}, "Dig a pit", {},
           "Dig a pit in the ground. Building next to water or lava will cause it to fill up.", 0, "Structure"),
+      BuildInfo({FurnitureType::BRIDGE, {ResourceId::WOOD, 5}}, "Bridge", {},
+        "Build it to pass over water or lava.", 0, "Structure"),
       BuildInfo({FurnitureType::WOOD_DOOR, {ResourceId::WOOD, 5}}, "Wooden door", {},
           "Click on a built door to lock it.", 'o', "Doors", true)
              .setTutorialHighlight(TutorialHighlight::BUILD_DOOR),
@@ -80,18 +83,16 @@ const vector<BuildInfo>& BuildInfo::get() {
           toString(*CollectiveConfig::getTrainingMaxLevel(ExperienceType::SPELL, FurnitureType::BOOKCASE_GOLD)) + " spell levels.",
           0, "Library"),
       BuildInfo({FurnitureType::THRONE, {ResourceId::MANA, 300}, false, 1}, "Throne",
-          {{RequirementId::VILLAGE_CONQUERED}},
-          "Increases population limit by " + toString(ModelBuilder::getThronePopulationIncrease())),
+          {{RequirementId::VILLAGE_CONQUERED}}, *Furniture::getPopulationIncreaseDescription(FurnitureType::THRONE)),
       BuildInfo({FurnitureType::BED, {ResourceId::WOOD, 12}}, "Bed", {},
-          "Humanoid minions sleep here.", 'b', "Living", true)
+          "Humanoid minions sleep here.", 'v', "Living", true)
              .setTutorialHighlight(TutorialHighlight::BUILD_BED),
       BuildInfo({FurnitureType::GRAVE, {ResourceId::STONE, 15}}, "Graveyard", {},
           "Spot for hauling dead bodies and for undead creatures to sleep in.", 0, "Living"),
       BuildInfo({FurnitureType::BEAST_CAGE, {ResourceId::WOOD, 8}}, "Beast cage", {}, "Beasts sleep here.", 0, "Living"),
       BuildInfo({FurnitureType::PIGSTY, {ResourceId::WOOD, 5}}, "Pigsty",
           {{RequirementId::TECHNOLOGY, TechId::PIGSTY}},
-          "Increases minion population limit by up to " +
-          toString(ModelBuilder::getPigstyPopulationIncrease() * ModelBuilder::getMaxUsefulPigsty()) + ".", 0, "Living"),
+          *Furniture::getPopulationIncreaseDescription(FurnitureType::PIGSTY), 0, "Living"),
       BuildInfo({FurnitureType::TRAINING_WOOD, {ResourceId::WOOD, 12}}, "Wooden dummy", {},
           "Train your minions here. Adds up to " +
           toString(*CollectiveConfig::getTrainingMaxLevel(ExperienceType::MELEE, FurnitureType::TRAINING_WOOD)) + " melee levels.",
@@ -136,8 +137,6 @@ const vector<BuildInfo>& BuildInfo::get() {
       BuildInfo({FurnitureLayer::CEILING, FurnitureLayer::MIDDLE}, "Remove construction", "", 'e', "Orders")
           .setTutorialHighlight(TutorialHighlight::REMOVE_CONSTRUCTION),
       BuildInfo(BuildInfo::FORBID_ZONE, "Forbid zone", "Mark tiles to keep minions from entering.", 0, "Orders"),
-      BuildInfo({FurnitureType::BRIDGE, {ResourceId::WOOD, 5}}, "Bridge", {},
-        "Build it to pass over water or lava.", 0, "Installations"),
       BuildInfo({FurnitureType::BARRICADE, {ResourceId::WOOD, 5}}, "Barricade", {}, "", 0, "Installations"),
       BuildInfo(BuildInfo::FurnitureInfo(
              {FurnitureType::TORCH_N, FurnitureType::TORCH_E, FurnitureType::TORCH_S, FurnitureType::TORCH_W}),
@@ -153,15 +152,10 @@ const vector<BuildInfo>& BuildInfo::get() {
       BuildInfo({FurnitureType::PORTAL, {ResourceId::STONE, 60}}, "Portal", {},
         "Opens a connection if another portal is present.", 0, "Installations"),
       BuildInfo({FurnitureType::MINION_STATUE, {ResourceId::GOLD, 50}}, "Golden Statue", {},
-        "Increases minion population limit by " +
-              toString(ModelBuilder::getStatuePopulationIncrease()) + ". (Up to " +
-              toString(ModelBuilder::getStatuePopulationIncrease() * 
-              ModelBuilder::getMaxUsefulGoldStatues()) + ")", 0, "Installations"),
+          *Furniture::getPopulationIncreaseDescription(FurnitureType::MINION_STATUE), 0, "Installations"),
       BuildInfo({FurnitureType::STONE_MINION_STATUE, {ResourceId::STONE, 250}}, "Stone Statue", {},
-        "Increases minion population limit by " +
-              toString(ModelBuilder::getStatuePopulationIncrease()) + ". (Up to " +
-              toString(ModelBuilder::getStatuePopulationIncrease() * 
-              ModelBuilder::getMaxUsefulStoneStatues()) + ")", 0, "Installations"),
+        *Furniture::getPopulationIncreaseDescription(FurnitureType::STONE_MINION_STATUE), 0, "Installations"),
+      BuildInfo({FurnitureType::FOUNTAIN, {ResourceId::STONE, 30}}, "Fountain", {}, "", 0, "Installations"),
       BuildInfo({FurnitureType::WHIPPING_POST, {ResourceId::WOOD, 20}}, "Whipping post", {},
           "A place to whip your minions if they need a morale boost.", 0, "Installations"),
       BuildInfo({FurnitureType::GALLOWS, {ResourceId::WOOD, 20}}, "Gallows", {},

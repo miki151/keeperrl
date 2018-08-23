@@ -27,4 +27,5 @@ class FurnitureUsage {
   static void handle(FurnitureUsageType, Position, WConstFurniture, WCreature);
   static bool canHandle(FurnitureUsageType, WConstCreature);
   static string getUsageQuestion(FurnitureUsageType, string furnitureName);
+  static void beforeRemoved(FurnitureUsageType, Position);
 };

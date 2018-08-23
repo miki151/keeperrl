@@ -3,7 +3,6 @@
 #include "util.h"
 #include "event_generator.h"
 #include "position.h"
-#include "enum_variant.h"
 #include "model.h"
 
 class Model;
@@ -73,6 +72,11 @@ namespace EventInfo {
     WCreature attacker;
   };
 
+  struct CreatureAttacked {
+    WCreature victim;
+    WCreature attacker;
+  };
+
   struct TrapTriggered {
     Position pos;
   };
@@ -86,6 +90,12 @@ namespace EventInfo {
     Position position;
     FurnitureType type;
     FurnitureLayer layer;
+  };
+
+  struct OtherEffect {
+    Position position;
+    FXName effect;
+    optional<Vec2> targetOffset = none;
   };
 
   struct ItemsEquipped {
@@ -108,7 +118,8 @@ namespace EventInfo {
 
   class GameEvent : public variant<CreatureMoved, CreatureKilled, ItemsPickedUp, ItemsDropped, ItemsAppeared, Projectile,
       Explosion, ConqueredEnemy, WonGame, TechbookRead, Alarm, CreatureTortured, CreatureStunned, MovementChanged,
-      TrapTriggered, TrapDisarmed, FurnitureDestroyed, ItemsEquipped, CreatureEvent, VisibilityChanged, RetiredGame> {
+      TrapTriggered, TrapDisarmed, FurnitureDestroyed, ItemsEquipped, CreatureEvent, VisibilityChanged, RetiredGame,
+      CreatureAttacked, OtherEffect> {
     using variant::variant;
   };
 

@@ -647,13 +647,13 @@ SGuiElem GuiBuilder::drawTutorialOverlay(const TutorialInfo& info) {
   else
     warning = gui.label("Press [Space] to unpause the game.",
         [this]{ return clock->isPaused() ? Color::RED : Color::TRANSPARENT;});
-  return gui.preferredSize(520, 250, gui.stack(gui.darken(), gui.rectangleBorder(Color::GRAY),
+  return gui.preferredSize(520, 290, gui.stack(gui.darken(), gui.rectangleBorder(Color::GRAY),
       gui.margins(gui.stack(
         gui.labelMultiLine(info.message, legendLineHeight),
         gui.alignment(GuiFactory::Alignment::BOTTOM_CENTER, gui.setHeight(20, warning)),
         gui.alignment(GuiFactory::Alignment::BOTTOM_RIGHT, info.canContinue ? continueButton : gui.empty()),
         gui.alignment(GuiFactory::Alignment::BOTTOM_LEFT, info.canGoBack ? backButton : gui.empty())
-      ), 20)));
+      ), 20, 20, 20, 45)));
 }
 
 static Color getTriggerColor(double value) {
@@ -810,6 +810,8 @@ SGuiElem GuiBuilder::drawAllVillainsOverlay(const VillageInfo& info) {
     if (elem.name)
       name  = *elem.name + ", " + name;
     auto label = gui.label(capitalFirst(name), labelColor);
+    if (elem.isConquered)
+      label = gui.stack(std::move(label), gui.crossOutText(Color::RED));
     for (auto& action : elem.actions)
       if (!action.disabledReason) {
         label = gui.stack(
@@ -824,11 +826,10 @@ SGuiElem GuiBuilder::drawAllVillainsOverlay(const VillageInfo& info) {
       }
     lines.addElem(gui.stack(
         gui.getListBuilder()
-            .addElemAuto(gui.stack(
-                 gui.setWidth(34, gui.centerVert(gui.centerHoriz(gui.bottomMargin(-3,
-                     gui.viewObject(ViewId::ROUND_SHADOW, 1, Color(255, 255, 255, 160)))))),
-                 gui.setWidth(34, gui.centerVert(gui.centerHoriz(gui.bottomMargin(5,
-                     gui.viewObject(elem.viewId)))))))
+            .addElemAuto(gui.setWidth(34, gui.centerVert(gui.centerHoriz(gui.stack(
+                 gui.bottomMargin(-3, gui.viewObject(ViewId::ROUND_SHADOW, 1, Color(255, 255, 255, 160))),
+                 gui.bottomMargin(5, gui.viewObject(elem.viewId))
+            )))))
             .addElemAuto(gui.rightMargin(5, gui.translate(gui.renderInBounds(std::move(label)), Vec2(0, 0))))
             .buildHorizontalList(),
         gui.tooltip2(std::move(infoOverlay), [=](const Rectangle& r) { return r.topRight();})));
@@ -1059,7 +1060,10 @@ SGuiElem GuiBuilder::getItemLine(const ItemInfo& item, function<void(Rectangle)>
     line.addElem(gui.viewObject(ViewId::KEY), viewObjectWidth);
     leftMargin -= viewObjectWidth - 3;
   }
-  line.addElem(gui.viewObject(item.viewId), viewObjectWidth);
+  auto viewId = gui.viewObject(item.viewId);
+  if (item.viewIdModifiers.contains(ViewObjectModifier::AURA))
+    viewId = gui.stack(std::move(viewId), gui.viewObject(ViewId::ITEM_AURA));
+  line.addElem(std::move(viewId), viewObjectWidth);
   Color color = item.equiped ? Color::GREEN : (item.pending || item.unavailable) ?
       Color::GRAY : Color::WHITE;
   if (item.intrinsicState)
@@ -2108,6 +2112,33 @@ SGuiElem GuiBuilder::getClickActions(const ViewObject& object) {
     return nullptr;
 }
 
+SGuiElem GuiBuilder::drawLyingItemsList(const string& title, const ItemCounts& itemCounts, int maxWidth) {
+  auto lines = gui.getListBuilder(legendLineHeight);
+  auto line = gui.getListBuilder();
+  int currentWidth = 0;
+  for (auto& elemPair : itemCounts) {
+    auto cnt = elemPair.second;
+    auto id = elemPair.first;
+    if (line.isEmpty() && lines.isEmpty() && !title.empty()) {
+      line.addElemAuto(gui.label(title));
+      currentWidth = line.getSize();
+    }
+    auto elem = cnt > 1
+        ? drawMinionAndLevel(id, cnt, 1)
+        : gui.viewObject(id);
+    if (currentWidth + *elem->getPreferredWidth() > maxWidth) {
+      lines.addElem(line.buildHorizontalList());
+      currentWidth = 0;
+      line.clear();
+    }
+    currentWidth += *elem->getPreferredWidth();
+    line.addElemAuto(std::move(elem));
+  }
+  if (line.getLength() > 0)
+    lines.addElem(line.buildHorizontalList());
+  return lines.buildVerticalList();
+}
+
 SGuiElem GuiBuilder::drawMapHintOverlay() {
   auto lines = gui.getListBuilder(legendLineHeight);
   vector<SGuiElem> allElems;
@@ -2129,11 +2160,12 @@ SGuiElem GuiBuilder::drawMapHintOverlay() {
         lines.addElem(gui.label(getDescription(status), getColor(status)));
         break;
       }
+      lines.addElemAuto(drawLyingItemsList("Inventory: ", highlighted.equipmentCounts, 250));
       if (auto actions = getClickActions(*viewObject))
-        if (highlighted.creaturePos)
+        if (highlighted.tileScreenPos)
           allElems.push_back(gui.absolutePosition(gui.translucentBackgroundWithBorderPassMouse(gui.margins(
               gui.setHeight(*actions->getPreferredHeight(), actions), 5, 1, 5, -2)),
-              *highlighted.creaturePos + Vec2(60, 60)));
+              highlighted.creaturePos.value_or(*highlighted.tileScreenPos) + Vec2(60, 60)));
       if (!viewObject->getBadAdjectives().empty()) {
         lines.addElemAuto(gui.labelMultiLineWidth(viewObject->getBadAdjectives(), legendLineHeight * 2 / 3, 300,
             Renderer::textSize, Color::RED, ','));
@@ -2159,6 +2191,7 @@ SGuiElem GuiBuilder::drawMapHintOverlay() {
     }
     if (highlighted.tilePos)
       lines.addElem(gui.label("Position: " + toString(*highlighted.tilePos)));
+    lines.addElemAuto(drawLyingItemsList("Lying here: ", highlighted.itemCounts, 250));
   }
   if (!lines.isEmpty())
     allElems.push_back(gui.margins(gui.translucentBackgroundWithBorderPassMouse(
@@ -2756,6 +2789,82 @@ SGuiElem GuiBuilder::drawPillageItemMenu(SyncQueue<optional<int>>& queue, const 
   return gui.setWidth(380,
       gui.miniWindow(gui.margins(gui.scrollable(lines.buildVerticalList(), scrollPos), 15),
                      [&queue] { queue.push(none); }));
+}
+
+SGuiElem GuiBuilder::drawChooseNumberMenu(SyncQueue<optional<int>>& queue, const string& title,
+    Range range, int initial, int increments) {
+  auto lines = gui.getListBuilder(legendLineHeight);
+  lines.addElem(gui.centerHoriz(gui.label(title)));
+  lines.addSpace(legendLineHeight / 2);
+  auto currentChoice = make_shared<int>((initial - range.getStart()) / increments);
+  auto getCurrent = [range, currentChoice, increments] {
+    return range.getStart() + *currentChoice * increments;
+  };
+  const int sideMargin = 50;
+  lines.addElem(gui.leftMargin(sideMargin, gui.rightMargin(sideMargin, gui.stack(
+      gui.margins(gui.rectangle(Color::ALMOST_DARK_GRAY), 0, legendLineHeight / 3, 0, legendLineHeight / 3),
+      gui.slider(gui.preferredSize(10, 25, gui.rectangle(Color::WHITE)), currentChoice,
+          range.getLength() / increments))
+  )));
+  const int width = 380;
+  lines.addElem(gui.stack(
+      gui.centerHoriz(gui.labelFun([getCurrent]{ return toString(getCurrent()); })),
+      gui.translate(gui.centeredLabel(Renderer::HOR, toString(range.getStart())), Vec2(sideMargin, 0), Vec2(1, 0)),
+      gui.translate(gui.centeredLabel(Renderer::HOR, toString(range.getEnd())), Vec2(-sideMargin, 0), Vec2(1, 0),
+          GuiFactory::TranslateCorner::TOP_RIGHT)
+  ));
+  lines.addElem(gui.centerHoriz(gui.getListBuilder()
+      .addElemAuto(gui.stack(
+          gui.labelHighlight("[Confirm]", Color::LIGHT_BLUE),
+          gui.button([&queue, getCurrent] { queue.push(getCurrent());})))
+      .addSpace(10)
+      .addElemAuto(gui.stack(
+          gui.labelHighlight("[Cancel]", Color::LIGHT_BLUE),
+          gui.button([&queue] { queue.push(none);})))
+      .buildHorizontalList()
+  ));
+  return gui.setWidth(width,
+      gui.miniWindow(gui.margins(lines.buildVerticalList(), 15), [&queue] { queue.push(none); }));
+}
+
+SGuiElem GuiBuilder::drawTickBox(shared_ptr<bool> value, const string& title) {
+  return gui.stack(
+      gui.button([value]{ *value = !*value; }),
+      gui.getListBuilder()
+          .addElemAuto(
+              gui.conditional(gui.labelUnicode(u8"✓", Color::GREEN), [value] { return *value; }))
+          .addElemAuto(gui.label(title))
+          .buildHorizontalList());
+}
+
+SGuiElem GuiBuilder::drawBugreportMenu(bool saveFile, function<void(optional<BugReportInfo>)> callback) {
+  auto lines = gui.getListBuilder(legendLineHeight);
+  const int width = 300;
+  const int windowMargin = 15;
+  lines.addElem(gui.centerHoriz(gui.label("Submit bug report")));
+  auto text = make_shared<string>();
+  auto withScreenshot = make_shared<bool>(true);
+  auto withSavefile = make_shared<bool>(saveFile);
+  lines.addElem(gui.label("Enter bug desciption:"));
+  lines.addElemAuto(gui.stack(
+        gui.rectangle(Color::GRAY),
+        gui.margins(gui.textInput(width - 10, 5, text), 5)));
+  lines.addSpace();
+  lines.addElem(drawTickBox(withScreenshot, "Include screenshot"));
+  if (saveFile)
+    lines.addElem(drawTickBox(withSavefile, "Include save file"));
+  lines.addElem(gui.centerHoriz(gui.getListBuilder()
+      .addElemAuto(gui.stack(
+          gui.labelHighlight("[Upload]", Color::LIGHT_BLUE),
+          gui.button([=] { callback(BugReportInfo{*text, *withSavefile, *withScreenshot});})))
+      .addSpace(10)
+      .addElemAuto(gui.stack(
+          gui.labelHighlight("[Cancel]", Color::LIGHT_BLUE),
+          gui.button([callback] { callback(none);})))
+      .buildHorizontalList()
+  ));
+  return gui.setWidth(width + 2 * windowMargin,
+      gui.miniWindow(gui.margins(lines.buildVerticalList(), windowMargin), [callback]{ callback(none); }));
 }
 
 static Color getHighlightColor(VillainType type) {
@@ -3361,6 +3470,8 @@ optional<string> GuiBuilder::getTextInput(const string& title, const string& val
     }
   }
 }
+
+
 
 SGuiElem GuiBuilder::drawLevelMap(Semaphore& sem, const CreatureView* view) {
   auto miniMap = make_shared<MinimapGui>([]{});

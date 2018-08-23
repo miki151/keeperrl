@@ -61,7 +61,7 @@ WCollective VillageControl::getEnemyCollective() const {
 
 bool VillageControl::isEnemy(WConstCreature c) {
   if (WCollective col = getEnemyCollective())
-    return col->getCreatures().contains(c);
+    return col->getCreatures().contains(c) && !col->hasTrait(c, MinionTrait::DOESNT_TRIGGER);
   else
     return false;
 }
@@ -161,8 +161,11 @@ void VillageControl::onRansomPaid() {
 vector<TriggerInfo> VillageControl::getTriggers(WConstCollective against) const {
   vector<TriggerInfo> ret;
   if (villain && against == getEnemyCollective())
-    for (auto& elem : villain->triggers)
-      ret.push_back({elem, villain->getTriggerValue(elem, this)});
+    for (auto& elem : villain->triggers) {
+      auto value = villain->getTriggerValue(elem, this);
+      if (value > 0)
+        ret.push_back({elem, value});
+    }
   return ret;
 }
 
@@ -188,8 +191,16 @@ void VillageControl::considerWelcomeMessage() {
 }
 
 bool VillageControl::canPerformAttack(bool currentlyActive) {
-  return !currentlyActive ||
-      collective->getModel() == collective->getGame()->getMainModel().get();
+  // don't attack from remote site when player is currently here
+  if (currentlyActive && collective->getModel() != collective->getGame()->getMainModel().get())
+    return false;
+  // don't attack during the day when having undead minions
+  auto& sunlightInfo = collective->getGame()->getSunlightInfo();
+  if (sunlightInfo.getState() != SunlightState::NIGHT || sunlightInfo.getTimeRemaining() < 300_visible)
+    for (auto c : collective->getCreatures(MinionTrait::FIGHTER))
+      if (c->isAffected(LastingEffect::SUNLIGHT_VULNERABLE))
+        return false;
+  return true;
 }
 
 void VillageControl::acceptImmigration() {

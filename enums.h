@@ -95,3 +95,5 @@ enum class WorkshopType;
 enum class PlayerType;
 enum class CreatureStatus;
 enum class TeamOrder;
+
+enum class FXName;

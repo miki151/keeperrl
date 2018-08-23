@@ -30,6 +30,7 @@ class Options;
 class Clock;
 class MinimapGui;
 class MapGui;
+class FileSharing;
 
 /** See view.h for documentation.*/
 class WindowView: public View {
@@ -41,6 +42,9 @@ class WindowView: public View {
     Options* options;
     Clock* clock;
     SoundLibrary* soundLibrary;
+    FileSharing* bugreportSharing;
+    DirectoryPath bugreportDir;
+    string installId;
   };
   static View* createDefaultView(ViewParams);
   static View* createLoggingView(OutputArchive& of, ViewParams);
@@ -66,14 +70,15 @@ class WindowView: public View {
   virtual optional<Vec2> chooseDirection(Vec2 playerPos, const string& message) override;
   virtual bool yesOrNoPrompt(const string& message, bool defaultNo) override;
   virtual void animateObject(Vec2 begin, Vec2 end, ViewId object) override;
-  virtual void animation(Vec2 pos, AnimationId) override;
+  virtual void animation(Vec2 pos, AnimationId, Dir orientation) override;
+  virtual void animation(Vec2 pos, FXName particleEffect, optional<Vec2> targetOffset) override;
   virtual double getGameSpeed() override;
   virtual optional<int> chooseAtMouse(const vector<string>& elems) override;
 
   virtual void presentText(const string& title, const string& text) override;
   virtual void presentList(const string& title, const vector<ListElem>& options, bool scrollDown = false,
       MenuType = MenuType::NORMAL, optional<UserInputId> exitAction = none) override;
-  virtual optional<int> getNumber(const string& title, int min, int max, int increments = 1) override;
+  virtual optional<int> getNumber(const string& title, Range range, int initial, int increments = 1) override;
   virtual optional<string> getText(const string& title, const string& value, int maxLength,
       const string& hint) override;
   virtual optional<int> chooseItem(const vector<ItemInfo>& items, ScrollPosition* scrollpos) override;
@@ -97,6 +102,7 @@ class WindowView: public View {
   //virtual vector<UniqueEntity<Creature>::Id> chooseTeamLeader(const string& title, const vector<CreatureInfo>&) override;
   virtual bool creatureInfo(const string& title, bool prompt, const vector<CreatureInfo>&) override;
   virtual void logMessage(const string&) override;
+  virtual void setBugReportSaveCallback(BugReportSaveCallback) override;
 
   private:
 
@@ -107,8 +113,6 @@ class WindowView: public View {
   void displayOldSplash();
   void updateMinimap(const CreatureView*);
   void mapContinuousLeftClickFun(Vec2);
-  void mapCreatureClickFun(UniqueEntity<Creature>::Id, Vec2 position, bool rightClick);
-  void mapCreatureDragFun(UniqueEntity<Creature>::Id, ViewId, Vec2 origin);
   void mapRightClickFun(Vec2);
   Rectangle getTextInputPosition();
   optional<int> chooseFromListInternal(const string& title, const vector<ListElem>& options, optional<int> index,
@@ -125,7 +129,7 @@ class WindowView: public View {
   void drawList(const string& title, const vector<ListElem>& options, int hightlight, int setMousePos = -1);
   void refreshScreen(bool flipBuffer = true);
   void drawAndClearBuffer();
-  void getAutosaveSplash(const ProgressMeter&);
+  void getAutosaveSplash(const ProgressMeter&, const string& text);
   void getBigSplash(const ProgressMeter&, const string& text, function<void()> cancelFun);
   void getSmallSplash(const string& text, function<void()> cancelFun);
 
@@ -136,7 +140,7 @@ class WindowView: public View {
   void resetMapBounds();
   void switchTiles();
 
-  bool considerResizeEvent(Event&);
+  bool considerResizeEvent(Event&, bool withBugReportEvent = true);
 
   int messageInd = 0;
   std::deque<string> currentMessage = std::deque<string>(3, "");
@@ -170,15 +174,12 @@ class WindowView: public View {
 
   function<void()> getButtonCallback(UserInput);
 
-  recursive_mutex renderMutex;
   recursive_mutex logMutex;
 
   bool lockKeyboard = false;
 
   thread::id renderThreadId;
   stack<function<void()>> renderDialog;
-
-  void addVoidDialog(function<void()>);
 
   template <class T>
   void addReturnDialog(SyncQueue<T>& q, function<T()> fun) {
@@ -213,7 +214,6 @@ class WindowView: public View {
 
   template<typename T>
   T getBlockingGui(SyncQueue<T>& queue, SGuiElem elem, optional<Vec2> origin = none) {
-    RecursiveLock lock(renderMutex);
     TempClockPause pause(clock);
     if (blockingElems.empty()) {
       blockingElems.push_back(gui.darken());
@@ -231,9 +231,7 @@ class WindowView: public View {
       blockingElems.clear();
       return *queue.popAsync();
     }
-    lock.unlock();
     T ret = queue.pop();
-    lock.lock();
     blockingElems.clear();
     return ret;
   }
@@ -252,4 +250,9 @@ class WindowView: public View {
   void propagateMousePosition(const vector<SGuiElem>&);
   Rectangle getEquipmentMenuPosition(int height);
   Vec2 getOverlayPosition(GuiBuilder::OverlayInfo::Alignment, int height, int width, int rightBarWidth, int bottomBarHeight);
+  bool considerBugReportEvent(Event&);
+  BugReportSaveCallback bugReportSaveCallback;
+  FileSharing* bugreportSharing;
+  DirectoryPath bugreportDir;
+  string installId;
 };

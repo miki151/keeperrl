@@ -110,7 +110,6 @@ class Construction : public Task {
       return NoMove;
     if (c->getPosition().dist8(position) > 1)
       return c->moveTowards(position);
-    CHECK(c->getAttributes().getSkills().hasDiscrete(SkillId::CONSTRUCTION));
     Vec2 dir = c->getPosition().getDir(position);
     if (auto action = c->construct(dir, furnitureType))
       return {1.0, action.append([=](WCreature c) {
@@ -163,6 +162,7 @@ class Destruction : public Task {
   }
 
   virtual bool canPerform(WConstCreature) const override {
+    PROFILE_BLOCK("Destruction::canPerform");
     return callback->isConstructionReachable(position) && (!matching || matching->getMatch(position));
   }
 
@@ -244,19 +244,21 @@ class PickItem : public Task {
     return "Pick up item " + toString(position);
   }
 
-  bool itemsExist(Position target) {
-    for (WItem it : target.getItems())
-      if (items.contains(it))
-        return true;
-    return false;
+  virtual bool isBogus() const override {
+    if (position.getItems().size() > items.getSize()) {
+      for (auto& item : items)
+        if (!!position.getInventory().getItemById(item))
+          return false;
+    } else {
+      for (WItem it : position.getItems())
+        if (items.contains(it))
+          return false;
+    }
+    return true;
   }
 
   virtual MoveInfo getMove(WCreature c) override {
     CHECK(!pickedUp);
-    if (!itemsExist(position)) {
-      setDone();
-      return NoMove;
-    }
     if (c->getPosition() == position) {
       vector<WItem> hereItems;
       for (WItem it : c->getPickUpOptions())
@@ -287,6 +289,7 @@ class PickItem : public Task {
   }
 
   virtual bool canPerform(WConstCreature c) const override {
+    PROFILE_BLOCK("PickItem::canPerform");
     return c->canCarryMoreWeight(lightestItem) && c->isSameSector(position);
   }
 
@@ -327,7 +330,7 @@ class EquipItem : public Task {
     return NoMove;
   }
 
-  SERIALIZE_ALL(item, itemName);
+  SERIALIZE_ALL(SUBCLASS(Task), item, itemName);
   SERIALIZATION_CONSTRUCTOR(EquipItem);
 
   private:
@@ -419,6 +422,10 @@ class ApplyItem : public Task {
     return "Set up " + itemName + " trap";
   }
 
+  virtual bool canPerform(WConstCreature c) const override {
+    return !!c->getEquipment().getItemById(itemId);
+  }
+
   virtual MoveInfo getMove(WCreature c) override {
     if (auto item = c->getEquipment().getItemById(itemId))
       if (auto action = c->applyItem(item))
@@ -427,7 +434,7 @@ class ApplyItem : public Task {
           setDone();
         });
     return c->wait().prepend([=](WCreature) {
-       cancel();
+       setDone();
     });
   }
 
@@ -626,7 +633,7 @@ namespace {
 class Kill : public Task {
   public:
   enum Type { ATTACK, TORTURE };
-  Kill(WTaskCallback call, WCreature c, Type t) : creature(c), type(t), callback(call) {}
+  Kill(WTaskCallback call, WCreature c, Type t) : Task(true), creature(c), type(t), callback(call) {}
 
   CreatureAction getAction(WCreature c) {
     switch (type) {
@@ -640,10 +647,6 @@ class Kill : public Task {
       case ATTACK: return "Kill " + creature->getName().bare();
       case TORTURE: return "Torture " + creature->getName().bare();
     }
-  }
-
-  virtual bool canTransfer() override {
-    return true;
   }
 
   virtual bool canPerform(WConstCreature c) const override {
@@ -712,7 +715,19 @@ class Chain : public Task {
     CHECK(!tasks.empty());
   }
 
+  virtual bool isBogus() const override {
+    return current >= tasks.size();
+  }
+
+  virtual bool canPerform(WConstCreature c) const override {
+    if (current >= tasks.size())
+      return false;
+    return tasks[current]->canPerform(c);
+  }
+
   virtual bool canTransfer() override {
+    if (current >= tasks.size())
+      return false;
     return tasks[current]->canTransfer();
   }
 
@@ -1089,10 +1104,6 @@ class Eat : public Task {
   public:
   Eat(vector<Position> pos) : positions(pos) {}
 
-  virtual bool canTransfer() override {
-    return false;
-  }
-
   WItem getDeadChicken(Position pos) {
     vector<WItem> chickens = pos.getItems().filter(Item::classPredicate(ItemClass::FOOD));
     if (chickens.empty())
@@ -1226,9 +1237,13 @@ class StayIn : public Task {
         else
           currentTarget = none;
       }
-    if (currentTarget)
+    if (currentTarget) {
+      if (!currentTarget->isSameModel(c->getPosition())) {
+        setDone();
+        return NoMove;
+      }
       return c->moveTowards(*currentTarget);
-    else
+    } else
       return c->wait();
   }
 
@@ -1330,7 +1345,9 @@ class Follow : public Task {
   Follow(WCreature t) : target(t) {}
 
   virtual MoveInfo getMove(WCreature c) override {
-    if (!target->isDead()) {
+    // target == c if an attacking party team leader is killed and c becomes the new team leader.
+    // In this case make the task finish
+    if (target != c && !target->isDead()) {
       Position targetPos = target->getPosition();
       if (targetPos.dist8(c->getPosition()) < 3) {
         if (Random.roll(15))
@@ -1382,7 +1399,12 @@ class TransferTo : public Task {
     return "Go to site";
   }
 
-  SERIALIZE_ALL(SUBCLASS(Task), target, model); 
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int) {
+    target = none;
+    ar(SUBCLASS(Task), target, model);
+  }
+
   SERIALIZATION_CONSTRUCTOR(TransferTo);
 
   protected:
@@ -1552,6 +1574,20 @@ class DropItems : public Task {
             other->removeEffect(LastingEffect::SLEEP);
       return c->moveTowards(*target);
     }
+  }
+
+  virtual bool canPerform(WConstCreature c) const override {
+    PROFILE_BLOCK("DropItems::canPerform");
+    if (items.getSize() > c->getEquipment().getItems().size()) {
+      for (auto item : c->getEquipment().getItems())
+        if (items.contains(item))
+          return true;
+    } else {
+      for (auto item : items)
+        if (!!c->getEquipment().getItemById(item))
+          return true;
+    }
+    return false;
   }
 
   SERIALIZE_ALL(SUBCLASS(Task), items, positions, target);

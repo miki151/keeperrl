@@ -70,9 +70,8 @@ class Position {
   vector<PItem> removeItems(vector<WItem>);
   bool canConstruct(FurnitureType) const;
   bool isWall() const;
-  void removeFurniture(WConstFurniture) const;
+  void removeFurniture(WConstFurniture, PFurniture replace = nullptr) const;
   void addFurniture(PFurniture) const;
-  void replaceFurniture(WConstFurniture, PFurniture) const;
   bool isUnavailable() const;
   void dropItem(PItem);
   void dropItems(vector<PItem>);
@@ -100,6 +99,7 @@ class Position {
   void throwItem(PItem item, const Attack& attack, int maxDist, Vec2 direction, VisionId);
   void throwItem(vector<PItem> item, const Attack& attack, int maxDist, Vec2 direction, VisionId);
   bool canNavigate(const MovementType&) const;
+  bool canNavigateToOrNeighbor(Position from, const MovementType&) const;
   optional<double> getNavigationCost(const MovementType&) const;
   optional<DestroyAction> getBestDestroyAction(const MovementType&) const;
   vector<Position> getVisibleTiles(const Vision&);
@@ -111,7 +111,7 @@ class Position {
   void clearItemIndex(ItemIndex) const;
   bool isChokePoint(const MovementType&) const;
   bool isConnectedTo(Position, const MovementType&) const;
-  void updateMovement();
+  void updateMovementDueToFire() const;
   vector<WCreature> getAllCreatures(int range) const;
   void moveCreature(Vec2 direction);
   void moveCreature(Position);

@@ -45,7 +45,6 @@ void Skill::init() {
   Skill::set(SkillId::STEALING,
       new Skill("stealing", "Steal from other monsters. Not available for player ATM.", true));
   Skill::set(SkillId::SWIMMING, new Skill("swimming", "Cross water without drowning.", true));
-  Skill::set(SkillId::CONSTRUCTION, new Skill("construction", "Mine and construct rooms.", true, false));
   Skill::set(SkillId::DIGGING, new Skill("digging", "Dig.", false));
   Skill::set(SkillId::NAVIGATION_DIGGING, new Skill("digging to navigate",
       "Creature will try to dig when travelling somewhere.", true));

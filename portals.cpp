@@ -45,12 +45,15 @@ void Portals::recalculateDistances(WLevel level) {
 Portals::Portals(Rectangle bounds) : distanceToNearest(bounds) {
 }
 
+int getOtherIndex(int index) {
+  return index - index % 2 + (index + 1) % 2;
+}
+
 optional<Vec2> Portals::getOtherPortal(Vec2 position) const {
   if (auto index = matchings.findElement(position)) {
-    if (*index % 2 == 1)
-      return matchings[*index - 1];
-    if (*index < matchings.size() - 1)
-      return matchings[*index + 1];
+    auto otherIndex = getOtherIndex(*index);
+    if (otherIndex < matchings.size())
+      return matchings[otherIndex];
   }
   return none;
 }
@@ -58,12 +61,14 @@ optional<Vec2> Portals::getOtherPortal(Vec2 position) const {
 bool Portals::registerPortal(Position pos) {
   if (!matchings.contains(pos.getCoord())) {
     bool foundInactive = false;
-    for (auto& elem : matchings)
-      if (!elem) {
-        elem = pos.getCoord();
+    for (int i : All(matchings)) {
+      int other = getOtherIndex(i);
+      if (!matchings[i] && other < matchings.size() && matchings[other]) {
+        matchings[i] = pos.getCoord();
         foundInactive = true;
         break;
       }
+    }
     if (!foundInactive)
       matchings.push_back(pos.getCoord());
     recalculateDistances(pos.getLevel());

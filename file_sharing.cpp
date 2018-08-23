@@ -8,7 +8,7 @@
 
 #include <curl/curl.h>
 
-FileSharing::FileSharing(const string& url, Options& o, long long id) : uploadUrl(url), options(o),
+FileSharing::FileSharing(const string& url, Options& o, string id) : uploadUrl(url), options(o),
     uploadLoop(bindMethod(&FileSharing::uploadingLoop, this)), installId(id), wasCancelled(false) {
   curl_global_init(CURL_GLOBAL_ALL);
 }
@@ -23,7 +23,7 @@ struct CallbackData {
   FileSharing* fileSharing;
 };
 
-int progressFunction(void* ptr, double totalDown, double nowDown, double totalUp, double nowUp) {
+static int progressFunction(void* ptr, double totalDown, double nowDown, double totalUp, double nowUp) {
   auto callbackData = static_cast<CallbackData*>(ptr);
   if (totalUp > 0)
     callbackData->progressCallback(nowUp / totalUp);
@@ -66,8 +66,8 @@ static string unescapeEverything(const string& s) {
 }
 
 static optional<string> curlUpload(const char* path, const char* url, const CallbackData& callback, int timeout) {
-  struct curl_httppost *formpost=NULL;
-  struct curl_httppost *lastptr=NULL;
+  curl_httppost* formpost = nullptr;
+  curl_httppost* lastptr = nullptr;
 
   curl_formadd(&formpost,
       &lastptr,
@@ -127,6 +127,52 @@ void FileSharing::uploadHighscores(const FilePath& path) {
     });
 }
 
+optional<string> FileSharing::uploadBugReport(const string& text, optional<FilePath> savefile,
+    optional<FilePath> screenshot, ProgressMeter& meter) {
+  string params = "description=" + escapeEverything(text);
+  curl_httppost* formpost = nullptr;
+  curl_httppost* lastptr = nullptr;
+
+  auto addFile = [&] (const char* type, const char* path) {
+    curl_formadd(&formpost,
+        &lastptr,
+        CURLFORM_COPYNAME, type,
+        CURLFORM_FILE, path,
+        CURLFORM_END);
+  };
+  if (savefile)
+    addFile("savefile", savefile->getPath());
+  if (screenshot)
+    addFile("screenshot", screenshot->getPath());
+
+  curl_formadd(&formpost,
+      &lastptr,
+      CURLFORM_COPYNAME, "description",
+      CURLFORM_COPYCONTENTS, text.data(),
+      CURLFORM_END);
+  curl_formadd(&formpost,
+      &lastptr,
+      CURLFORM_COPYNAME, "installId",
+      CURLFORM_COPYCONTENTS, installId.data(),
+      CURLFORM_END);
+  if (CURL* curl = curl_easy_init()) {
+    string ret;
+    string url = uploadUrl + "/upload.php";
+    curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+    curl_easy_setopt(curl, CURLOPT_HTTPPOST, formpost);
+    auto callback = getCallbackData(this, meter);
+    curl_easy_setopt(curl, CURLOPT_NOPROGRESS, false);
+    curl_easy_setopt(curl, CURLOPT_PROGRESSDATA, &callback);
+    curl_easy_setopt(curl, CURLOPT_PROGRESSFUNCTION, progressFunction);
+    CURLcode res = curl_easy_perform(curl);
+    curl_easy_cleanup(curl);
+    curl_formfree(formpost);
+    if (res != CURLE_OK)
+      return "Upload failed: "_s + curl_easy_strerror(res);
+  }
+  return none;
+}
+
 void FileSharing::uploadingLoop() {
   function<void()> uploadFun = uploadQueue.pop();
   if (uploadFun)
@@ -137,7 +183,7 @@ void FileSharing::uploadingLoop() {
 
 bool FileSharing::uploadGameEvent(const GameEvent& data1, bool requireGameEventsPermission) {
   GameEvent data(data1);
-  data.emplace("installId", toString(installId));
+  data.emplace("installId", installId);
   if (options.getBoolValue(OptionId::ONLINE) &&
       (!requireGameEventsPermission || options.getBoolValue(OptionId::GAME_EVENTS))) {
     uploadGameEventImpl(data, 5);

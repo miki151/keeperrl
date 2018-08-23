@@ -612,9 +612,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
           CONSTRUCT(VillageBehaviour,
             c.minPopulation = 0;
             c.minTeamSize = 1;
-            c.triggers = LIST(
-                {AttackTriggerId::ENEMY_POPULATION, 13},
-                AttackTriggerId::PROXIMITY);
+            c.triggers = LIST({AttackTriggerId::ENEMY_POPULATION, 13});
             c.attackBehaviour = AttackBehaviour(AttackBehaviourId::KILL_MEMBERS, 4);));
     case EnemyId::HYDRA:
       return EnemyInfo(CONSTRUCT(SettlementInfo,

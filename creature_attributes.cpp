@@ -78,7 +78,7 @@ void CreatureAttributes::increaseBaseAttr(AttrType type, int v) {
 
 double CreatureAttributes::getCourage() const {
   if (!body->hasBrain())
-    return 1;
+    return 100;
   return courage;
 }
 

@@ -16,6 +16,7 @@
 #include "effect.h"
 #include "item.h"
 #include "game_time.h"
+#include "animation_id.h"
 
 static double getDefaultWeight(Body::Size size) {
   switch (size) {
@@ -105,7 +106,7 @@ void Body::setCanAlwaysPush() {
   canAlwaysPush = true;
 }
 
-WItem Body::chooseWeapon(WItem weapon) const {
+WItem Body::chooseRandomWeapon(WItem weapon) const {
   // choose one of the available weapons with equal probability
   bool hasRealWeapon = !!weapon;
   double numOptions = !!weapon ? 1 : 0;
@@ -119,6 +120,15 @@ WItem Body::chooseWeapon(WItem weapon) const {
     }
   }
   return weapon;
+}
+
+WItem Body::chooseFirstWeapon() const {
+  for (auto part : ENUM_ALL(BodyPart)) {
+    auto& attack = intrinsicAttacks[part];
+    if (numGood(part) > 0 && attack && attack->active != attack->NEVER)
+      return intrinsicAttacks[part]->item.get();
+  }
+  return nullptr;
 }
 
 EnumMap<BodyPart, optional<IntrinsicAttack>>& Body::getIntrinsicAttacks() {
@@ -951,6 +961,13 @@ optional<Sound> Body::getDeathSound() const {
     return none;
   else
     return Sound(*deathSound).setPitch(getDeathSoundPitch(size));
+}
+
+optional<AnimationId> Body::getDeathAnimation() const {
+  if (isHumanoid() && hasHealth())
+    return AnimationId::DEATH;
+  else
+    return none;
 }
 
 double Body::getBoulderDamage() const {

@@ -79,14 +79,7 @@ void Square::onAddedToLevel(Position pos) const {
 void Square::tick(Position pos) {
   setDirty(pos);
   if (!inventory->isEmpty()) {
-    vector<WItem> discarded;
-    for (auto item : copyOf(inventory->getItems())) {
-      item->tick(pos);
-      if (item->isDiscarded())
-        discarded.push_back(item);
-    }
-    for (auto item : discarded)
-      inventory->removeItem(item);
+    inventory->tick(pos);
     if (!pos.canEnterEmpty({MovementTrait::WALK}))
       for (auto neighbor : pos.neighbors8(Random))
         if (neighbor.canEnterEmpty({MovementTrait::WALK})) {
@@ -144,9 +137,9 @@ void Square::getViewIndex(ViewIndex& ret, WConstCreature viewer) const {
   // viewer is null only in Spectator mode, so setting a random id to lastViewer is ok
   lastViewer = viewer ? viewer->getUniqueId() : Creature::Id();
   double fireSize = 0;
-  if (!inventory->isEmpty())
-    for (WItem it : getInventory().getItems())
-      fireSize = max(fireSize, it->getFireSize());
+  for (WItem it : getInventory().getItems())
+    fireSize = max(fireSize, it->getFireSize());
+  ret.itemCounts = inventory->getCounts();
   if (WItem it = getTopItem())
     ret.insert(copyOf(it->getViewObject()).setAttribute(ViewObject::Attribute::BURNING, fireSize));
   if (poisonGas->getAmount() > 0)

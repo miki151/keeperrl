@@ -49,6 +49,8 @@ class Equipment {
   vector<PItem> removeAllItems(WCreature);
   double getTotalWeight() const;
   bool isEmpty() const;
+  const ItemCounts& getCounts() const;
+  void tick(Position);
 
   SERIALIZATION_DECL(Equipment);
 

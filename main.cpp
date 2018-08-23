@@ -47,6 +47,10 @@
 #include "player_role.h"
 #include "campaign_type.h"
 #include "dummy_view.h"
+#include "sound.h"
+
+#include "fx_manager.h"
+#include "fx_renderer.h"
 
 #ifndef VSTUDIO
 #include "stack_printer.h"
@@ -68,15 +72,12 @@ static void initializeRendererTiles(Renderer& r, const DirectoryPath& path) {
   r.addTilesDirectory(path.subdirectory("orig16"), Vec2(16, 16));
   r.addTilesDirectory(path.subdirectory("orig24"), Vec2(24, 24));
   r.addTilesDirectory(path.subdirectory("orig30"), Vec2(30, 30));
+  r.setAnimationsDirectory(path.subdirectory("animations"));
   r.loadTiles();
 }
 
-static float getMaxVolume() {
+static double getMaxVolume() {
   return 0.7;
-}
-
-static map<MusicType, float> getMaxVolumes() {
-  return {{MusicType::ADV_BATTLE, 0.4}, {MusicType::ADV_PEACEFUL, 0.4}};
 }
 
 vector<pair<MusicType, FilePath>> getMusicTracks(const DirectoryPath& path, bool present) {
@@ -232,19 +233,36 @@ int main(int argc, char* argv[]) {
 }
 #endif
 
-static long long getInstallId(const FilePath& path, RandomGen& random) {
-  long long ret;
+static string getRandomInstallId(RandomGen& random) {
+  string ret;
+  for (int i : Range(4)) {
+    ret += random.choose('e', 'u', 'i', 'o', 'a');
+    ret += random.choose('q', 'w', 'r', 't', 'y', 'p', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'z', 'x', 'c', 'v', 'b',
+        'n', 'm');
+  }
+  return ret;
+}
+
+static string getInstallId(const FilePath& path, RandomGen& random) {
+  string ret;
   ifstream in(path.getPath());
   if (in)
     in >> ret;
   else {
-    ret = random.getLL();
+    ret = getRandomInstallId(random);
     ofstream(path.getPath()) << ret;
   }
   return ret;
 }
 
 const static string serverVersion = "22";
+
+static int readSaveVersion(FilePath file) {
+  ifstream input(file.getPath());
+  int version;
+  input >> version;
+  return version;
+}
 
 static int keeperMain(po::parser& commandLineFlags) {
   ENABLE_PROFILER;
@@ -317,32 +335,52 @@ static int keeperMain(po::parser& commandLineFlags) {
 #else
     uploadUrl = "http://localhost/~michal/" + serverVersion;
 #endif
-  //userPath.createIfDoesntExist();
-  CHECK(userPath.exists()) << "User directory \"" << userPath << "\" doesn't exist.";
+  Clock clock;
+  Renderer renderer(
+      &clock,
+      "KeeperRL",
+      contribDataPath,
+      freeDataPath.file("images/mouse_cursor.png"),
+      freeDataPath.file("images/mouse_cursor2.png"));
+  FatalLog.addOutput(DebugOutput::toString([&renderer](const string& s) { renderer.showError(s);}));
+  UserErrorLog.addOutput(DebugOutput::toString([&renderer](const string& s) { renderer.showError(s);}));
+
+  unique_ptr<fx::FXManager> fxManager;
+  unique_ptr<fx::FXRenderer> fxRenderer;
+
+  if (paidDataPath.exists()) {
+    auto particlesPath = paidDataPath.subdirectory("images").subdirectory("particles");
+    if (particlesPath.exists()) {
+      INFO << "FX: initialization";
+      fxManager = std::make_unique<fx::FXManager>();
+      fxRenderer = std::make_unique<fx::FXRenderer>(particlesPath, *fxManager);
+    }
+  }
+
+  userPath.createIfDoesntExist();
   auto settingsPath = userPath.file("options.txt");
   if (commandLineFlags["restore_settings"].was_set())
     remove(settingsPath.getPath());
   Options options(settingsPath);
   int seed = commandLineFlags["seed"].was_set() ? commandLineFlags["seed"].get().i32 : int(time(0));
   Random.init(seed);
-  long long installId = getInstallId(userPath.file("installId.txt"), Random);
+  auto installId = getInstallId(userPath.file("installId.txt"), Random);
   SoundLibrary* soundLibrary = nullptr;
   AudioDevice audioDevice;
   optional<string> audioError = audioDevice.initialize();
-  Clock clock;
   KeybindingMap keybindingMap(userPath.file("keybindings.txt"));
   Jukebox jukebox(
-      &options,
       audioDevice,
       getMusicTracks(paidDataPath.subdirectory("music"), tilesPresent && !audioError),
-      getMaxVolume(),
-      getMaxVolumes());
+      getMaxVolume());
+  options.addTrigger(OptionId::MUSIC, [&jukebox](int volume) { jukebox.setCurrentVolume(volume); });
+  jukebox.setCurrentVolume(options.getIntValue(OptionId::MUSIC));
   FileSharing fileSharing(uploadUrl, options, installId);
   Highscores highscores(userPath.file("highscores.dat"), fileSharing, &options);
   SokobanInput sokobanInput(freeDataPath.file("sokoban_input.txt"), userPath.file("sokoban_state.txt"));
   if (commandLineFlags["worldgen_test"].was_set()) {
     MainLoop loop(nullptr, &highscores, &fileSharing, freeDataPath, userPath, &options, &jukebox, &sokobanInput,
-        useSingleThread);
+        useSingleThread, 0);
     vector<string> types;
     if (commandLineFlags["worldgen_maps"].was_set())
       types = split(commandLineFlags["worldgen_maps"].get().string, {','});
@@ -351,7 +389,7 @@ static int keeperMain(po::parser& commandLineFlags) {
   }
   auto battleTest = [&] (View* view) {
     MainLoop loop(view, &highscores, &fileSharing, freeDataPath, userPath, &options, &jukebox, &sokobanInput,
-        useSingleThread);
+        useSingleThread, 0);
     auto level = commandLineFlags["battle_level"].get().string;
     auto info = commandLineFlags["battle_info"].get().string;
     auto numRounds = commandLineFlags["battle_rounds"].get().i32;
@@ -372,27 +410,26 @@ static int keeperMain(po::parser& commandLineFlags) {
     battleTest(new DummyView(&clock));
     return 0;
   }
-  Renderer renderer(
-      "KeeperRL",
-      Vec2(24, 24),
-      contribDataPath,
-      freeDataPath.file("images/mouse_cursor.png"),
-      freeDataPath.file("images/mouse_cursor2.png"));
-  FatalLog.addOutput(DebugOutput::toString([&renderer](const string& s) { renderer.showError(s);}));
-  UserErrorLog.addOutput(DebugOutput::toString([&renderer](const string& s) { renderer.showError(s);}));
   GuiFactory guiFactory(renderer, &clock, &options, &keybindingMap, freeDataPath.subdirectory("images"),
       tilesPresent ? optional<DirectoryPath>(paidDataPath.subdirectory("images")) : none);
   guiFactory.loadImages();
   if (tilesPresent) {
-    if (!audioError)
-      soundLibrary = new SoundLibrary(&options, audioDevice, paidDataPath.subdirectory("sound"));
+    if (!audioError) {
+      soundLibrary = new SoundLibrary(audioDevice, paidDataPath.subdirectory("sound"));
+      options.addTrigger(OptionId::SOUND, [soundLibrary](int volume) {
+        soundLibrary->setVolume(volume);
+        soundLibrary->playSound(SoundId::SPELL_DECEPTION);
+      });
+      soundLibrary->setVolume(options.getIntValue(OptionId::SOUND));
+    }
   }
   if (tilesPresent)
     initializeRendererTiles(renderer, paidDataPath.subdirectory("images"));
   Tile::initialize(renderer, tilesPresent);
+  FileSharing bugreportSharing("http://retired.keeperrl.com/~bugreports", options, installId);
   unique_ptr<View> view;
   view.reset(WindowView::createDefaultView(
-      {renderer, guiFactory, tilesPresent, &options, &clock, soundLibrary}));
+      {renderer, guiFactory, tilesPresent, &options, &clock, soundLibrary, &bugreportSharing, userPath, installId}));
 #ifndef RELEASE
   InfoLog.addOutput(DebugOutput::toString([&view](const string& s) { view->logMessage(s);}));
 #endif
@@ -402,7 +439,7 @@ static int keeperMain(po::parser& commandLineFlags) {
     return 0;
   }
   MainLoop loop(view.get(), &highscores, &fileSharing, freeDataPath, userPath, &options, &jukebox, &sokobanInput,
-      useSingleThread);
+      useSingleThread, readSaveVersion(freeDataPath.file("save_version.txt")));
   try {
     if (audioError)
       view->presentText("Failed to initialize audio. The game will be started without sound.", *audioError);

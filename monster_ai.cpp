@@ -482,7 +482,7 @@ class Fighter : public Behaviour {
   vector<DirEffectType> getOffensiveEffects() {
     static vector<DirEffectType> effects = [] {
       vector<DirEffectType> ret;
-      for (auto id : {SpellId::BLAST, SpellId::MAGIC_MISSILE})
+      for (auto id : {SpellId::BLAST, SpellId::MAGIC_MISSILE, SpellId::FIREBALL})
         ret.push_back(Spell::get(id)->getDirEffectType());
       return ret;
     }();
@@ -538,7 +538,7 @@ class Fighter : public Behaviour {
   }
 
   MoveInfo considerEquippingWeapon(WCreature other, int distance) {
-    if (creature->getBody().isHumanoid() && !creature->getWeapon()) {
+    if (creature->getBody().isHumanoid() && !creature->getFirstWeapon()) {
       if (WItem weapon = getBestWeapon())
         if (auto action = creature->equip(weapon))
           return {3.0 / (2.0 + distance), action.prepend([=](WCreature) {
@@ -795,7 +795,7 @@ class Summoned : public GuardTarget {
   }
 
   virtual MoveInfo getMove() override {
-    if (target->isDead()) {
+    if (target->isDead() || target->isAffected(LastingEffect::STUNNED)) {
       return {1.0, CreatureAction(creature, [=](WCreature creature) {
         creature->dieNoReason(Creature::DropType::NOTHING);
       })};
@@ -817,7 +817,7 @@ class Summoned : public GuardTarget {
 class Thief : public Behaviour {
   public:
   Thief(WCreature c) : Behaviour(c) {}
- 
+
   virtual MoveInfo getMove() override {
     if (!creature->getAttributes().getSkills().hasDiscrete(SkillId::STEALING))
       return NoMove;
@@ -928,24 +928,28 @@ class ByCollective : public Behaviour {
     for (WItem it : creature->getEquipment().getItems())
       if (!creature->getEquipment().isEquipped(it) && creature->getEquipment().canEquip(it))
         tasks.push_back(Task::equipItem(it));
-    for (Position v : collective->getZones().getPositions(ZoneId::STORAGE_EQUIPMENT)) {
-      vector<WItem> allItems = v.getItems(ItemIndex::MINION_EQUIPMENT).filter(
-          [&minionEquipment, this] (WConstItem it) { return minionEquipment.isOwner(it, creature);});
-      vector<WItem> consumables;
-      for (auto item : allItems)
-        if (item->canEquip())
-          tasks.push_back(Task::pickAndEquipItem(v, item));
-        else
-          consumables.push_back(item);
-      if (!consumables.empty())
-        tasks.push_back(Task::pickItem(v, consumables));
+    {
+      PROFILE_BLOCK("tasks assignment");
+      for (Position v : collective->getZones().getPositions(ZoneId::STORAGE_EQUIPMENT)) {
+        vector<WItem> consumables;
+        for (auto item : v.getItems(ItemIndex::MINION_EQUIPMENT))
+          if (minionEquipment.isOwner(item, creature)) {
+            if (item->canEquip())
+              tasks.push_back(Task::pickAndEquipItem(v, item));
+            else
+              consumables.push_back(item);
+          }
+        if (!consumables.empty())
+          tasks.push_back(Task::pickItem(v, consumables));
+      }
+      if (!tasks.empty())
+        return Task::chain(std::move(tasks));
     }
-    if (!tasks.empty())
-      return Task::chain(std::move(tasks));
     return nullptr;
   }
 
   void setRandomTask() {
+    PROFILE;
     vector<MinionActivity> goodTasks;
     for (MinionActivity t : ENUM_ALL(MinionActivity))
       if (collective->isActivityGood(creature, t) && creature->getAttributes().getMinionActivities().canChooseRandomly(creature, t))
@@ -968,6 +972,8 @@ class ByCollective : public Behaviour {
     MinionActivity activity = current.activity;
     if (current.finishTime < collective->getLocalTime())
       collective->setMinionActivity(creature, MinionActivity::IDLE);
+    if (PTask ret = MinionActivities::generateDropTask(collective, creature, activity))
+      return taskMap.addTaskFor(std::move(ret), creature);
     if (WTask ret = MinionActivities::getExisting(collective, creature, activity)) {
       taskMap.takeTask(creature, ret);
       return ret;
@@ -1424,7 +1430,7 @@ MonsterAIFactory MonsterAIFactory::collective(WCollective col) {
 
 MonsterAIFactory MonsterAIFactory::stayInLocation(Rectangle rect, bool moveRandomly) {
   return MonsterAIFactory([=](WCreature c) {
-      vector<Behaviour*> actors { 
+      vector<Behaviour*> actors {
           new AvoidFire(c),
           new Heal(c),
           new Thief(c),

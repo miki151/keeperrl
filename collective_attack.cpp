@@ -4,6 +4,7 @@
 #include "creature.h"
 #include "collective_name.h"
 #include "task.h"
+#include "task_map.h"
 
 SERIALIZE_DEF(CollectiveAttack, attacker, ransom, creatures, attackerName, attackTasks)
 SERIALIZATION_CONSTRUCTOR_IMPL(CollectiveAttack);
@@ -41,12 +42,8 @@ optional<int> CollectiveAttack::getRansom() const {
 
 bool CollectiveAttack::isOngoing() const {
   for (auto& task : attackTasks)
-    if (!!task) {
-      for (auto& c : creatures)
-        if (!c->isDead())
-          return true;
-      break;
-    }
+    if (!!task && attacker->getTaskMap().getOwner(task))
+      return true;
   return false;
 }
 

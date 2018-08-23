@@ -36,6 +36,7 @@ class GuiElem {
   virtual void render(Renderer&) {}
   virtual bool onLeftClick(Vec2) { return false; }
   virtual bool onRightClick(Vec2) { return false; }
+  virtual bool onMiddleClick(Vec2) { return false; }
   virtual bool onMouseMove(Vec2) { return false;}
   virtual void onMouseGone() {}
   virtual void onMouseRelease(Vec2) {}
@@ -43,6 +44,7 @@ class GuiElem {
   virtual void renderPart(Renderer& r, Rectangle) { render(r); }
   virtual bool onKeyPressed2(SDL::SDL_Keysym) { return false;}
   virtual bool onMouseWheel(Vec2 mousePos, bool up) { return false;}
+  virtual bool onTextInput(const char*) { return false; }
   virtual optional<int> getPreferredWidth() { return none; }
   virtual optional<int> getPreferredHeight() { return none; }
 
@@ -168,10 +170,17 @@ class GuiFactory {
       Renderer::FontId = Renderer::SYMBOL_FONT);
   SGuiElem labelUnicode(const string&, function<Color()>, int size = Renderer::textSize,
       Renderer::FontId = Renderer::SYMBOL_FONT);
+  SGuiElem crossOutText(Color);
   SGuiElem viewObject(const ViewObject&, double scale = 1, Color = Color::WHITE);
   SGuiElem viewObject(ViewId, double scale = 1, Color = Color::WHITE);
   SGuiElem asciiBackground(ViewId);
-  SGuiElem translate(SGuiElem, Vec2 pos, optional<Vec2> size = none);
+  enum class TranslateCorner {
+    TOP_LEFT,
+    TOP_RIGHT,
+    BOTTOM_LEFT,
+    BOTTOM_RIGHT
+  };
+  SGuiElem translate(SGuiElem, Vec2 pos, optional<Vec2> size = none, TranslateCorner = TranslateCorner::TOP_LEFT);
   SGuiElem translate(function<Vec2()>, SGuiElem);
   SGuiElem centerHoriz(SGuiElem, optional<int> width = none);
   SGuiElem centerVert(SGuiElem, optional<int> height = none);
@@ -206,6 +215,7 @@ class GuiFactory {
   SGuiElem renderInBounds(SGuiElem);
   using CustomDrawFun = function<void(Renderer&, Rectangle)>;
   SGuiElem drawCustom(CustomDrawFun);
+  SGuiElem slider(SGuiElem button, shared_ptr<int> position, int max);
 
   using TexId = TextureId;
   SGuiElem sprite(TexId, Alignment, optional<Color> = none);
@@ -228,6 +238,7 @@ class GuiFactory {
   SGuiElem translucentBackgroundWithBorder(SGuiElem content);
   SGuiElem translucentBackgroundWithBorderPassMouse(SGuiElem content);
   SGuiElem translucentBackground();
+  SGuiElem textInput(int width, int maxLines, shared_ptr<string> text);
   Color translucentBgColor = Color(0, 0, 0, 150);
   Color foreground1 = Color(0x20, 0x5c, 0x4a, 150);
   Color text = Color::WHITE;

@@ -171,9 +171,10 @@ CreatureAttributes CreatureFactory::getKrakenAttributes(ViewId id, const char* n
       c.viewId = id;
       c.body = Body::nonHumanoid(Body::Size::LARGE);
       c.body->setDeathSound(none);
-      c.attr[AttrType::DAMAGE] = 15;
-      c.attr[AttrType::DEFENSE] = 15;
+      c.attr[AttrType::DAMAGE] = 28;
+      c.attr[AttrType::DEFENSE] = 28;
       c.permanentEffects[LastingEffect::POISON_RESISTANT] = 1;
+      c.permanentEffects[LastingEffect::NIGHT_VISION] = 1;
       c.skills.insert(SkillId::SWIMMING);
       c.name = name;);
 }
@@ -242,9 +243,9 @@ class KrakenController : public Monster {
 
   WCreature getHeld() {
     for (auto pos : creature->getPosition().neighbors8())
-      if (auto creature = pos.getCreature())
-        if (creature->getHoldingCreature() == creature)
-          return creature;
+      if (auto other = pos.getCreature())
+        if (other->getHoldingCreature() == creature)
+          return other;
     return nullptr;
   }
 
@@ -276,7 +277,7 @@ class KrakenController : public Monster {
       if (creature->getPosition().plus(dirs.second).canEnter(
             {{MovementTrait::WALK, MovementTrait::SWIM}}))
         moves.push_back(dirs.second);
-      if (!moves.empty()) {
+      if (!moves.empty() && Random.roll(2)) {
         Vec2 move = Random.choose(moves);
         ViewId viewId = creature->getPosition().plus(move).canEnter({MovementTrait::SWIM})
           ? ViewId::KRAKEN_WATER : ViewId::KRAKEN_LAND;
@@ -932,8 +933,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
       );
     case CreatureId::KEEPER_KNIGHT:
       return CATTR(
-          c.viewId = ViewId::KNIGHT;
-          c.retiredViewId = ViewId::RETIRED_KEEPER;
+          c.viewId = ViewId::KEEPER_KNIGHT;
+          c.retiredViewId = ViewId::RETIRED_KEEPER_KNIGHT;
           c.attr = LIST(20_dam, 16_def);
           c.body = Body::humanoid(Body::Size::LARGE);
           c.name = "Keeper";
@@ -942,11 +943,12 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.skills.setValue(SkillId::FORGE, 0.2);
           c.maxLevelIncrease[ExperienceType::MELEE] = 12;
           c.maxLevelIncrease[ExperienceType::SPELL] = 3;
+          c.spells->add(SpellId::HEAL_SELF);
       );
     case CreatureId::KEEPER_KNIGHT_F:
       return CATTR(
-          c.viewId = ViewId::KNIGHT;
-          c.retiredViewId = ViewId::RETIRED_KEEPER;
+          c.viewId = ViewId::KEEPER_KNIGHT_F;
+          c.retiredViewId = ViewId::RETIRED_KEEPER_KNIGHT_F;
           c.attr = LIST(20_dam, 16_def);
           c.body = Body::humanoid(Body::Size::LARGE);
           c.name = "Keeper";
@@ -955,6 +957,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.skills.setValue(SkillId::FORGE, 0.2);
           c.maxLevelIncrease[ExperienceType::MELEE] = 12;
           c.maxLevelIncrease[ExperienceType::SPELL] = 3;
+          c.spells->add(SpellId::HEAL_SELF);
       );
     case CreatureId::ADVENTURER:
       return CATTR(
@@ -1041,12 +1044,12 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::LOST_SOUL:
       return CATTR(
           c.body = Body::nonHumanoidSpirit(Body::Size::LARGE);
+          c.body->setDeathSound(none);
           c.viewId = ViewId::GHOST;
           c.attr = LIST(25_def, 5_spell_dam );
-          c.courage = 1;
-          c.spells->add(SpellId::INVISIBILITY);
+          c.courage = 100;
           c.body->setIntrinsicAttack(BodyPart::TORSO, IntrinsicAttack(
-              ItemType::touch(Effect::Lasting{LastingEffect::INSANITY})));
+              ItemType::touch(Effect(Effect::Lasting{LastingEffect::INSANITY}), Effect(Effect::Suicide{}))));
           c.permanentEffects[LastingEffect::FLYING] = 1;
           c.chatReactionFriendly = "\"Wouuuouuu!!!\""_s;
           c.chatReactionHostile = "\"Wouuuouuu!!!\""_s;
@@ -1141,7 +1144,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.spells->add(SpellId::BLAST);
           c.chatReactionFriendly = "\"Kneel before us!\""_s;
           c.chatReactionHostile = "\"Face your death!\""_s;
-          c.name = "demon Lord";
+          c.name = "Demon Lord";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::DEMON)->getNext());
           c.name->setGroup("pack");
           c.maxLevelIncrease[ExperienceType::SPELL] = 7;
@@ -1344,6 +1347,21 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.chatReactionHostile = "\"End my torture!\""_s;
           c.deathDescription = "dead, released from unthinkable agony"_s;
           c.name = CreatureName("child", "children"););
+    case CreatureId::PESEANT_PRISONER:
+      return CATTR(
+          if (Random.roll(2)) {
+            c.viewId = ViewId::PESEANT_WOMAN;
+            c.gender = Gender::female;
+          } else
+            c.viewId = ViewId::PESEANT;
+          c.attr = LIST(14_dam, 12_def );
+          c.body = Body::humanoid(Body::Size::LARGE);
+          c.chatReactionFriendly = "curses all dungeons"_s;
+          c.chatReactionHostile = "\"Heeelp!\""_s;
+          c.permanentEffects[LastingEffect::POISON_RESISTANT] = 1;
+          c.skills.setValue(SkillId::DIGGING, 0.3);
+          c.maxLevelIncrease[ExperienceType::MELEE] = 3;
+          c.name = "peasant";);
     case CreatureId::HALLOWEEN_KID:
       return CATTR(
           c.viewId = Random.choose(ViewId::HALLOWEEN_KID1,
@@ -1396,6 +1414,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.viewId = ViewId::ADA_GOLEM;
           c.attr = LIST(36_dam, 36_def );
           c.permanentEffects[LastingEffect::MELEE_RESISTANCE] = 1;
+          c.permanentEffects[LastingEffect::MAGIC_VULNERABILITY] = 1;
           c.permanentEffects[LastingEffect::SLOWED] = 1;
           c.body = Body::nonHumanoid(Body::Material::ADA, Body::Size::LARGE);
           c.body->setHumanoidBodyParts(8);
@@ -1456,6 +1475,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.permanentEffects[LastingEffect::FLYING] = 1;
           c.permanentEffects[LastingEffect::RANGED_RESISTANCE] = 1;
           c.permanentEffects[LastingEffect::FIRE_RESISTANT] = 1;
+          c.permanentEffects[LastingEffect::DARKNESS_SOURCE] = 1;
           for (SpellId id : Random.chooseN(Random.get(3, 6), {SpellId::CIRCULAR_BLAST, SpellId::DEF_BONUS,
               SpellId::DAM_BONUS, SpellId::DECEPTION, SpellId::DECEPTION, SpellId::TELEPORT}))
             c.spells->add(id);
@@ -1552,8 +1572,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.skills.setValue(SkillId::FORGE, 0.6);
           c.skills.setValue(SkillId::JEWELER, 0.6);
           c.skills.setValue(SkillId::FURNACE, 0.6);
-          c.skills.insert(SkillId::CONSTRUCTION);
-          c.skills.setValue(SkillId::DIGGING, 0.4);
           c.name = "goblin";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::ORC)->getNext());
           );
@@ -1566,7 +1584,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.courage = -1;
           c.noChase = true;
           c.cantEquip = true;
-          c.skills.insert(SkillId::CONSTRUCTION);
           c.skills.setValue(SkillId::DIGGING, 0.4);
           c.chatReactionFriendly = "talks about digging"_s;
           c.chatReactionHostile = "\"Die!\""_s;
@@ -2246,7 +2263,6 @@ ItemType randomHealing() {
 
 ItemType randomBackup() {
   return Random.choose(
-      ItemType(ItemType::Scroll{Effect::Deception{}}),
       ItemType(ItemType::Scroll{Effect::Teleport{}}),
       randomHealing());
 }
@@ -2437,8 +2453,7 @@ static vector<ItemType> getDefaultInventory(CreatureId id) {
     case CreatureId::VAMPIRE_LORD:
       return ItemList()
         .add(ItemType(ItemType::Robe{}).setPrefixChance(0.3))
-        .add(ItemType(ItemType::IronStaff{}).setPrefixChance(0.3))
-        .add(ItemType::Scroll{Effect::Permanent{LastingEffect::DARKNESS_SOURCE}});
+        .add(ItemType(ItemType::IronStaff{}).setPrefixChance(0.3));
     case CreatureId::DARK_ELF_LORD: 
     case CreatureId::ELF_LORD: 
       return ItemList()

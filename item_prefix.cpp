@@ -10,13 +10,21 @@ void applyPrefix(ItemPrefix prefix, ItemAttributes& attr) {
         attr.equipedEffect = effect;
         attr.prefix = string(LastingEffects::getName(effect));
       },
-      [&](const Effect& effect) {
-        attr.weaponInfo.attackEffect = effect;
-        attr.prefix = effect.getName();
+      [&](const AttackerEffect& e) {
+        attr.weaponInfo.attackerEffect = e.effect;
+        attr.prefix = e.effect.getName();
+      },
+      [&](const VictimEffect& e) {
+        attr.weaponInfo.victimEffect = e.effect;
+        attr.prefix = e.effect.getName();
       },
       [&](ItemAttrBonus bonus) {
         attr.modifiers[bonus.attr] += bonus.value;
         attr.prefix = getName(bonus.attr);
+      },
+      [&](const JoinPrefixes& join) {
+        for (auto& elem : join.prefixes)
+          applyPrefix(elem, attr);
       }
   );
 }

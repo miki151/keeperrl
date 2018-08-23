@@ -7,6 +7,8 @@
 #include "tribe.h"
 #include "view_object.h"
 #include "movement_set.h"
+#include "game.h"
+#include "collective.h"
 
 void FurnitureClick::handle(FurnitureClickType type, Position pos, WConstFurniture furniture) {
   auto layer = furniture->getLayer();
@@ -24,5 +26,21 @@ void FurnitureClick::handle(FurnitureClickType type, Position pos, WConstFurnitu
       pos.updateConnectivity();
       break;
     }
+    case FurnitureClickType::KEEPER_BOARD:
+      pos.getGame()->handleMessageBoard(pos, pos.getGame()->getPlayerCollective()->getLeader());
+      break;
+  }
+}
+
+const char* FurnitureClick::getText(FurnitureClickType type, Position, WConstFurniture furniture) {
+  switch (type) {
+    case FurnitureClickType::LOCK: {
+      if (furniture->getMovementSet().hasTrait(MovementTrait::WALK))
+        return "Lock door";
+      else
+        return "Unlock door";
+    }
+    case FurnitureClickType::KEEPER_BOARD:
+      return "Write on board";
   }
 }

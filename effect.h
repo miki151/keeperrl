@@ -108,8 +108,13 @@ class Effect {
     COMPARE_ALL(part)
   };
   SIMPLE_EFFECT(RegrowBodyPart);
-
-  MAKE_VARIANT(EffectType, Teleport, Heal, Fire, DestroyEquipment, EnhanceArmor, EnhanceWeapon,
+  SIMPLE_EFFECT(Suicide);
+/*  struct Chain {
+    EFFECT_TYPE_INTERFACE;
+    vector<Effect> effects;
+    COMPARE_ALL(effects)
+  };*/
+  MAKE_VARIANT(EffectType, Teleport, Heal, Fire, DestroyEquipment, EnhanceArmor, EnhanceWeapon, Suicide,// Chain,
       EmitPoisonGas, CircularBlast, Deception, Summon, SummonElement, Acid, Alarm, TeleEnemies, SilverDamage,
       CurePoison, Lasting, Permanent, PlaceFurniture, Damage, InjureBodyPart, LooseBodyPart, RegrowBodyPart, DestroyWalls);
 
@@ -128,6 +133,7 @@ class Effect {
   void serialize(Archive&, const unsigned int);
 
   void applyToCreature(WCreature, WCreature attacker = nullptr) const;
+  void applyToPosition(Position) const;
   string getName() const;
   string getDescription() const;
 
@@ -164,6 +170,7 @@ class Effect {
 
 enum class DirEffectId {
   BLAST,
+  FIREBALL,
   CREATURE_EFFECT,
 };
 

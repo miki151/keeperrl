@@ -83,6 +83,7 @@ ItemInfo ItemInfo::get(WConstCreature creature, const vector<WItem>& stack) {
     c.description = creature->isAffected(LastingEffect::BLIND) ? "" : stack[0]->getDescription();
     c.number = stack.size();
     c.viewId = stack[0]->getViewObject().id();
+    c.viewIdModifiers = stack[0]->getViewObject().getAllModifiers();
     for (auto it : stack)
       c.ids.insert(it->getUniqueId());
     c.actions = getItemActions(creature, stack);
@@ -180,7 +181,7 @@ vector<AttributeInfo> AttributeInfo::fromCreature(WConstCreature c) {
         getName(type),
         type,
         c->getAttributes().getRawAttr(type),
-        c->getAttrBonus(type),
+        c->getAttrBonus(type, true),
         help
     };
   };

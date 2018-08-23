@@ -67,6 +67,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void onSunlightVisibilityChanged();
   void setTutorial(STutorial);
   STutorial getTutorial() const;
+  bool isEnemy(WConstCreature) const;
 
   SERIALIZATION_DECL(PlayerControl)
 
@@ -109,10 +110,9 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   virtual void onMemberKilled(WConstCreature victim, WConstCreature killer) override;
   virtual void onMemberAdded(WCreature) override;
   virtual void onConstructed(Position, FurnitureType) override;
-  virtual void onClaimedSquare(Position) override;
   virtual void onDestructed(Position, FurnitureType, const DestroyAction&) override;
+  virtual void onClaimedSquare(Position) override;
   virtual void onNoEnemies() override;
-  virtual void onPositionDiscovered(Position) override;
   virtual void tick() override;
   virtual void update(bool currentlyActive) override;
 
@@ -131,7 +131,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   static string getWarningText(CollectiveWarning);
   void updateSquareMemory(Position);
   void updateKnownLocations(const Position&);
-  bool isEnemy(WConstCreature) const;
   vector<WCollective> getKnownVillains() const;
   WCollective getVillain(UniqueEntity<Collective>::Id num);
   void scrollToMiddle(const vector<Position>&);
@@ -183,6 +182,8 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void handleEquipment(View* view, WCreature creature);
   void fillEquipment(WCreature, PlayerInfo&) const;
   void handleTrading(WCollective ally);
+  vector<WItem> getPillagedItems(WCollective) const;
+  bool canPillage(WConstCollective) const;
   void handlePillage(WCollective enemy);
   void handleRansom(bool pay);
   static ViewObject getTrapObject(TrapType, bool built);
@@ -247,5 +248,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   SUnknownLocations SERIAL(unknownLocations);
   optional<LocalTime> lastWarningDismiss;
   set<pair<UniqueEntity<Collective>::Id, string>> SERIAL(dismissedVillageInfos);
+  void considerTransferingLostMinions();
+  vector<PItem> retrievePillageItems(WCollective, vector<WItem> items);
 };
 

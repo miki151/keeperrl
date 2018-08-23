@@ -11,6 +11,7 @@
 #include "furniture_type.h"
 #include "attr_type.h"
 #include "attack_type.h"
+#include "fx_name.h"
 
 const string& Spell::getName() const {
   return name;
@@ -40,12 +41,12 @@ int Spell::getDifficulty() const {
   return difficulty;
 }
 
-Spell::Spell(const string& n, Effect e, int diff, SoundId s, CastMessageType msg)
-    : name(n), effect(e), difficulty(diff), castMessageType(msg), sound(s) {
+Spell::Spell(const string& n, Effect e, int diff, SoundId s, optional<FXName> fxName, CastMessageType msg)
+    : name(n), effect(e), difficulty(diff), castMessageType(msg), sound(s), fxName(fxName) {
 }
 
-Spell::Spell(const string& n, DirEffectType e, int diff, SoundId s, CastMessageType msg)
-    : name(n), effect(e), difficulty(diff), castMessageType(msg), sound(s) {
+Spell::Spell(const string& n, DirEffectType e, int diff, SoundId s, optional<FXName> fxName, CastMessageType msg)
+    : name(n), effect(e), difficulty(diff), castMessageType(msg), sound(s), fxName(fxName) {
 }
 
 SoundId Spell::getSound() const {
@@ -92,9 +93,11 @@ void Spell::init() {
         SoundId::SPELL_INVISIBILITY));
   set(SpellId::BLAST, new Spell("blast", DirEffectType(4, DirEffectId::BLAST), 100, SoundId::SPELL_BLAST));
   set(SpellId::MAGIC_MISSILE, new Spell("magic missile", DirEffectType(4, DirEffectId::CREATURE_EFFECT,
-      Effect::Damage{AttrType::SPELL_DAMAGE, AttackType::SPELL}), 3, SoundId::SPELL_BLAST));
+      Effect::Damage{AttrType::SPELL_DAMAGE, AttackType::SPELL}), 3, SoundId::SPELL_BLAST, FXName::MAGIC_MISSILE));
+  set(SpellId::FIREBALL, new Spell("fireball", DirEffectType(4, DirEffectId::FIREBALL), 3, SoundId::SPELL_BLAST,
+      FXName::FIREBALL));
   set(SpellId::CIRCULAR_BLAST, new Spell("circular blast", Effect::CircularBlast{}, 150, SoundId::SPELL_AIR_BLAST,
-        CastMessageType::AIR_BLAST));
+        none, CastMessageType::AIR_BLAST));
   set(SpellId::SUMMON_SPIRIT, new Spell("summon spirits", Effect::Summon{CreatureId::SPIRIT}, 150,
         SoundId::SPELL_SUMMON_SPIRIT));
   set(SpellId::CURE_POISON, new Spell("cure poisoning", Effect::CurePoison{}, 150, SoundId::SPELL_CURE_POISON));
@@ -115,8 +118,9 @@ optional<int> Spell::getLearningExpLevel() const {
     case SpellId::SPEED_SELF: return 5;
     //case SpellId::STUN_RAY: return 6;
     case SpellId::CURE_POISON: return 6;
-    case SpellId::BLAST: return 7;
+    case SpellId::BLAST: return 6;
     case SpellId::CIRCULAR_BLAST: return 7;
+    case SpellId::FIREBALL: return 7;
     case SpellId::DEF_BONUS: return 8;
     case SpellId::SUMMON_ELEMENT: return 8;
     case SpellId::DAM_BONUS: return 9;
@@ -126,5 +130,9 @@ optional<int> Spell::getLearningExpLevel() const {
     default:
       return none;
   }
+}
+
+optional<FXName> Spell::getFXName() const {
+  return fxName;
 };
 

@@ -31,6 +31,7 @@ class SpellMap {
   bool contains(SpellId) const;
   void clear();
   void onExpLevelReached(WCreature, double level);
+  void setAllReady();
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);

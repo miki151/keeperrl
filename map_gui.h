@@ -22,6 +22,8 @@
 #include "view_index.h"
 #include "entity_map.h"
 #include "view_object.h"
+#include "item_counts.h"
+#include "fx_simple.h"
 
 class MapMemory;
 class MapLayout;
@@ -31,6 +33,7 @@ class Clock;
 class Creature;
 class Options;
 class TutorialInfo;
+class UserInput;
 
 class MapGui : public GuiElem {
   public:
@@ -38,17 +41,14 @@ class MapGui : public GuiElem {
     function<void(Vec2)> continuousLeftClickFun;
     function<void(Vec2)> leftClickFun;
     function<void(Vec2)> rightClickFun;
-    function<void(UniqueEntity<Creature>::Id, Vec2, bool)> creatureClickFun;
     function<void()> refreshFun;
-    function<void(UniqueEntity<Creature>::Id, ViewId, Vec2)> creatureDragFun;
-    function<void(UniqueEntity<Creature>::Id, Vec2)> creatureDroppedFun;
-    function<void(TeamId, Vec2)> teamDroppedFun;
   };
-  MapGui(Callbacks, Clock*, Options*, GuiFactory*);
+  MapGui(Callbacks, SyncQueue<UserInput>&, Clock*, Options*, GuiFactory*);
 
   virtual void render(Renderer&) override;
   virtual bool onLeftClick(Vec2) override;
   virtual bool onRightClick(Vec2) override;
+  virtual bool onMiddleClick(Vec2) override;
   virtual bool onMouseMove(Vec2) override;
   virtual void onMouseGone() override;
   virtual void onMouseRelease(Vec2) override;
@@ -58,6 +58,7 @@ class MapGui : public GuiElem {
   void setSpriteMode(bool);
   optional<Vec2> getHighlightedTile(Renderer& renderer);
   void addAnimation(PAnimation animation, Vec2 position);
+  void addAnimation(FXName particleEffect, Vec2 position, optional<Vec2> targetOffset);
   void setCenter(double x, double y);
   void setCenter(Vec2 pos);
   void clearCenter();
@@ -76,7 +77,10 @@ class MapGui : public GuiElem {
   struct HighlightedInfo {
     optional<Vec2> creaturePos;
     optional<Vec2> tilePos;
+    optional<Vec2> tileScreenPos;
     optional<ViewObject> object;
+    ItemCounts itemCounts;
+    ItemCounts equipmentCounts;
   };
   const HighlightedInfo& getLastHighlighted();
   bool isCreatureHighlighted(UniqueEntity<Creature>::Id);
@@ -89,7 +93,7 @@ class MapGui : public GuiElem {
   void drawSquareHighlight(Renderer&, Vec2 pos, Vec2 size);
   void considerRedrawingSquareHighlight(Renderer&, milliseconds currentTimeReal, Vec2 pos, Vec2 size);
  // void drawFloorBorders(Renderer& r, DirSet borders, int x, int y);
-  void drawFoWSprite(Renderer&, Vec2 pos, Vec2 size, DirSet dirs);
+  void drawFoWSprite(Renderer&, Vec2 pos, Vec2 size, DirSet dirs, DirSet diagonalDirs);
   void renderExtraBorders(Renderer&, milliseconds currentTimeReal);
   void renderHighlights(Renderer&, Vec2 size, milliseconds currentTimeReal, bool lowHighlights);
   optional<Vec2> getMousePos();
@@ -116,6 +120,7 @@ class MapGui : public GuiElem {
   bool spriteMode;
   Rectangle levelBounds = Rectangle(1, 1);
   Callbacks callbacks;
+  SyncQueue<UserInput>& inputQueue;
   optional<milliseconds> lastScrollUpdate;
   Clock* clock;
   optional<Vec2> mouseHeldPos;
@@ -182,4 +187,8 @@ class MapGui : public GuiElem {
   DirSet getConnectionSet(Vec2 tilePos, ViewId);
   EntityMap<Creature, milliseconds> woundedInfo;
   void considerWoundedAnimation(const ViewObject&, Color&, milliseconds curTimeReal);
+  using FXVector = vector<pair<FXName, FXId>>;
+  EntityMap<Creature, FXVector> creatureFX;
+  unordered_map<Vec2, FXVector, CustomHash<Vec2>> staticFX;
+  void updateEffects(FXVector& effectsList, const EnumSet<FXName>& effects, double x, double y);
 };

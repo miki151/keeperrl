@@ -119,7 +119,7 @@ WSquare Position::modSquare() const {
 }
 
 WConstSquare Position::getSquare() const {
-  PROFILE;
+  //PROFILE;
   CHECK(isValid());
   return level->getSafeSquare(coord);
 }
@@ -214,7 +214,7 @@ optional<int> Position::getPortalIndex() const {
 }
 
 WCreature Position::getCreature() const {
-  PROFILE;
+  //PROFILE;
   if (isValid())
     return getSquare()->getCreature();
   else
@@ -228,12 +228,12 @@ void Position::removeCreature() {
 }
 
 bool Position::operator == (const Position& o) const {
-  PROFILE;
+  //PROFILE;
   return coord == o.coord && level == o.level;
 }
 
 bool Position::operator != (const Position& o) const {
-  PROFILE;
+  //PROFILE;
   return !(o == *this);
 }
 
@@ -264,7 +264,7 @@ void Position::globalMessage(const PlayerMessage& msg) const {
 }
 
 vector<Position> Position::neighbors8() const {
-  PROFILE;
+  //PROFILE;
   vector<Position> ret;
   for (Vec2 v : coord.neighbors8())
     ret.push_back(Position(v, level));
@@ -272,7 +272,7 @@ vector<Position> Position::neighbors8() const {
 }
 
 vector<Position> Position::neighbors4() const {
-  PROFILE;
+  //PROFILE;
   vector<Position> ret;
   for (Vec2 v : coord.neighbors4())
     ret.push_back(Position(v, level));
@@ -280,7 +280,7 @@ vector<Position> Position::neighbors4() const {
 }
 
 vector<Position> Position::neighbors8(RandomGen& random) const {
-  PROFILE;
+  //PROFILE;
   vector<Position> ret;
   for (Vec2 v : coord.neighbors8(random))
     ret.push_back(Position(v, level));
@@ -288,7 +288,7 @@ vector<Position> Position::neighbors8(RandomGen& random) const {
 }
 
 vector<Position> Position::neighbors4(RandomGen& random) const {
-  PROFILE;
+  //PROFILE;
   vector<Position> ret;
   for (Vec2 v : coord.neighbors4(random))
     ret.push_back(Position(v, level));
@@ -488,20 +488,6 @@ void Position::dropItems(vector<PItem> v) {
   }
 }
 
-void Position::removeFurniture(WConstFurniture f) const {
-  PROFILE;
-  level->removeLightSource(coord, f->getLightEmission());
-  auto layer = f->getLayer();
-  CHECK(layer != FurnitureLayer::GROUND);
-  CHECK(getFurniture(layer) == f);
-  level->furniture->getBuilt(layer).clearElem(coord);
-  level->furniture->getConstruction(coord, layer).reset();
-  updateConnectivity();
-  updateVisibility();
-  updateSupport();
-  setNeedsRenderUpdate(true);
-}
-
 void Position::addFurniture(PFurniture f) const {
   PROFILE;
   auto furniture = f.get();
@@ -532,18 +518,25 @@ void Position::removeCreatureLight(bool darkness) {
   }
 }
 
-void Position::replaceFurniture(WConstFurniture prev, PFurniture next) const {
+void Position::removeFurniture(WConstFurniture f, PFurniture replace) const {
   PROFILE;
-  level->removeLightSource(coord, prev->getLightEmission());
-  auto furniture = next.get();
-  auto layer = next->getLayer();
-  CHECK(prev->getLayer() == layer);
-  CHECK(getFurniture(layer) == prev);
-  level->setFurniture(coord, std::move(next));
+  level->removeLightSource(coord, f->getLightEmission());
+  auto replacePtr = replace.get();
+  auto layer = f->getLayer();
+  CHECK(layer != FurnitureLayer::GROUND || !!replace);
+  CHECK(getFurniture(layer) == f);
+  if (replace)
+    level->setFurniture(coord, std::move(replace));
+  else {
+    level->furniture->getBuilt(layer).clearElem(coord);
+    level->furniture->getConstruction(coord, layer).reset();
+  }
+  updateMovementDueToFire();
   updateConnectivity();
   updateVisibility();
   updateSupport();
-  level->addLightSource(coord, furniture->getLightEmission());
+  if (replacePtr)
+    level->addLightSource(coord, replacePtr->getLightEmission());
   setNeedsRenderUpdate(true);
 }
 
@@ -593,7 +586,7 @@ bool Position::isBurning() const {
   return false;
 }
 
-void Position::updateMovement() {
+void Position::updateMovementDueToFire() const {
   PROFILE;
   if (isValid()) {
     if (isBurning()) {
@@ -774,6 +767,15 @@ bool Position::canNavigate(const MovementType& type) const {
       !type.isCompatible(getFurniture(FurnitureLayer::GROUND)->getTribe()))
     return true;
   return canEnterEmpty(type, ignore);
+}
+
+bool Position::canNavigateToOrNeighbor(Position from, const MovementType& type) const {
+  if (isConnectedTo(from, type))
+    return true;
+  for (Position v : neighbors8())
+    if (v.isConnectedTo(from, type))
+      return true;
+  return false;
 }
 
 optional<DestroyAction> Position::getBestDestroyAction(const MovementType& movement) const {

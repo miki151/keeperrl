@@ -34,11 +34,12 @@
 #include "body.h"
 #include "view_id.h"
 #include "view_object.h"
+#include "territory.h"
 
 
 template <class Archive>
 void CollectiveConfig::serialize(Archive& ar, const unsigned int version) {
-  ar(immigrantInterval, maxPopulation, populationIncreases, immigrantInfo);
+  ar(immigrantInterval, maxPopulation, immigrantInfo);
   ar(type, leaderAsFighter, spawnGhosts, ghostProb, guardianInfo, regenerateMana);
 }
 
@@ -52,13 +53,6 @@ void AttractionInfo::serialize(Archive& ar, const unsigned int version) {
 
 SERIALIZABLE(AttractionInfo);
 SERIALIZATION_CONSTRUCTOR_IMPL(AttractionInfo);
-
-template <class Archive>
-void PopulationIncrease::serialize(Archive& ar, const unsigned int version) {
-  ar(type, increasePerSquare, maxIncrease);
-}
-
-SERIALIZABLE(PopulationIncrease);
 
 template <class Archive>
 void GuardianInfo::serialize(Archive& ar, const unsigned int version) {
@@ -112,27 +106,25 @@ void CollectiveConfig::addBedRequirementToImmigrants() {
   }
 }
 
-CollectiveConfig::CollectiveConfig(TimeInterval interval, const vector<ImmigrantInfo>& im,
-    CollectiveType t, int maxPop, vector<PopulationIncrease> popInc)
-    : immigrantInterval(interval),
-    maxPopulation(maxPop), populationIncreases(popInc), immigrantInfo(im), type(t) {
+CollectiveConfig::CollectiveConfig(TimeInterval interval, const vector<ImmigrantInfo>& im, CollectiveType t, int maxPop)
+    : immigrantInterval(interval), maxPopulation(maxPop), immigrantInfo(im), type(t) {
   if (type == KEEPER)
     addBedRequirementToImmigrants();
 }
 
 CollectiveConfig CollectiveConfig::keeper(TimeInterval immigrantInterval, int maxPopulation, bool regenerateMana,
-    vector<PopulationIncrease> increases, const vector<ImmigrantInfo>& im) {
-  auto ret = CollectiveConfig(immigrantInterval, im, KEEPER, maxPopulation, increases);
+    const vector<ImmigrantInfo>& im) {
+  auto ret = CollectiveConfig(immigrantInterval, im, KEEPER, maxPopulation);
   ret.regenerateMana = regenerateMana;
   return ret;
 }
 
 CollectiveConfig CollectiveConfig::withImmigrants(TimeInterval interval, int maxPopulation, const vector<ImmigrantInfo>& im) {
-  return CollectiveConfig(interval, im, VILLAGE, maxPopulation, {});
+  return CollectiveConfig(interval, im, VILLAGE, maxPopulation);
 }
 
 CollectiveConfig CollectiveConfig::noImmigrants() {
-  return CollectiveConfig(TimeInterval {}, {}, VILLAGE, 10000, {});
+  return CollectiveConfig(TimeInterval {}, {}, VILLAGE, 10000);
 }
 
 CollectiveConfig& CollectiveConfig::setLeaderAsFighter() {
@@ -198,10 +190,6 @@ bool CollectiveConfig::getStripSpawns() const {
   return type == KEEPER;
 }
 
-bool CollectiveConfig::getFetchItems() const {
-  return type == KEEPER;
-}
-
 bool CollectiveConfig::getEnemyPositions() const {
   return type == KEEPER;
 }
@@ -224,10 +212,6 @@ int CollectiveConfig::getMaxPopulation() const {
 
 const vector<ImmigrantInfo>& CollectiveConfig::getImmigrantInfo() const {
   return immigrantInfo;
-}
-
-const vector<PopulationIncrease>& CollectiveConfig::getPopulationIncreases() const {
-  return populationIncreases;
 }
 
 CollectiveConfig& CollectiveConfig::setGuardian(GuardianInfo info) {
@@ -350,6 +334,9 @@ const vector<ItemFetchInfo>& CollectiveConfig::getFetchInfo() const {
             CollectiveWarning::RESOURCE_STORAGE},
         {ItemIndex::STONE, unMarkedItems(), getZoneStorage(ZoneId::STORAGE_RESOURCES),
             CollectiveWarning::RESOURCE_STORAGE},
+        /*{ItemIndex::TRAP, unMarkedItems(), [](WConstCollective col) -> const PositionSet& {
+                return col->getTerritory().getAllAsSet(); },
+            CollectiveWarning::RESOURCE_STORAGE},*/
     };
     return ret;
   } else {

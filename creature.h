@@ -99,7 +99,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   CreatureName& getName();
   const char* identify() const;
   int getAttr(AttrType, bool includeWeapon = true) const;
-  int getAttrBonus(AttrType, bool includeWeapon = true) const;
+  int getAttrBonus(AttrType, bool includeWeapon) const;
 
   int getPoints() const;
   const Vision& getVision() const;
@@ -172,7 +172,6 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   CreatureAction fire(Vec2 direction) const;
   CreatureAction construct(Vec2 direction, FurnitureType) const;
   CreatureAction whip(const Position&) const;
-  bool canConstruct(FurnitureType) const;
   CreatureAction eat(WItem) const;
   CreatureAction destroy(Vec2 direction, const DestroyAction&) const;
   void destroyImpl(Vec2 direction, const DestroyAction& action);
@@ -189,7 +188,8 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
 
   BestAttack getBestAttack() const;
 
-  WItem getWeapon() const;
+  WItem getRandomWeapon() const;
+  WItem getFirstWeapon() const;
   void dropWeapon();
   vector<vector<WItem>> stackItems(vector<WItem>) const;
   struct NavigationFlags {
@@ -271,7 +271,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   };
   void addCombatIntent(WCreature attacker, bool immediateAttack);
   optional<CombatIntentInfo> getLastCombatIntent() const;
-  void onKilled(WCreature victim, optional<ExperienceType> lastDamage);
+  void onKilledOrCaptured(WCreature victim);
 
   void addSound(const Sound&) const;
   void updateViewObject();
@@ -306,7 +306,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   optional<GlobalTime> SERIAL(deathTime);
   bool SERIAL(hidden) = false;
   WCreature lastAttacker;
-  optional<ExperienceType> SERIAL(lastDamageType);
+  optional<ExperienceType> SERIAL(lastDamageType); // remove
   optional<string> SERIAL(deathReason);
   optional<Position> SERIAL(nextPosIntent);
   EntitySet<Creature> SERIAL(unknownAttackers);
@@ -332,6 +332,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   mutable Game* gameCache = nullptr;
   optional<GlobalTime> SERIAL(globalTime);
   void considerMovingFromInaccessibleSquare();
+  void updateLastingFX(ViewObject&);
 };
 
 struct AdjectiveInfo {

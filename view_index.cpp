@@ -18,7 +18,7 @@
 #include "view_index.h"
 #include "view_object.h"
 
-SERIALIZE_DEF(ViewIndex, objIndex, highlight, objects, anyHighlight)
+SERIALIZE_DEF(ViewIndex, objIndex, highlight, objects, anyHighlight, itemCounts, equipmentCounts)
 
 ViewIndex::ViewIndex() {
   for (auto& elem : objIndex)
@@ -96,6 +96,10 @@ optional<ViewId> ViewIndex::getHiddenId() const {
 
 void ViewIndex::setHiddenId(ViewId id) {
   hiddenId = id;
+}
+
+vector<ViewObject>& ViewIndex::getAllObjects() {
+  return objects;
 }
 
 const EnumMap<HighlightType, double>& ViewIndex::getHighlightMap() const {

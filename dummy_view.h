@@ -8,78 +8,80 @@ class DummyView : public View {
   public:
   DummyView(Clock* c) : clock(c) {}
   Clock* clock;
-  virtual ~DummyView() {}
-  virtual void initialize() {}
-  virtual void reset() {}
-  virtual void displaySplash(const ProgressMeter*, const string&, SplashType, function<void()> = nullptr) {}
-  virtual void clearSplash() {}
-  virtual void close() {}
-  virtual void refreshView() {}
-  virtual double getGameSpeed() { return 20; }
-  virtual void updateView(CreatureView*, bool noRefresh) {}
-  virtual void drawLevelMap(const CreatureView*) {}
-  virtual void setScrollPos(Vec2) {}
-  virtual void resetCenter() {}
-  virtual UserInput getAction() { return UserInputId::IDLE; }
-  virtual bool travelInterrupt() { return false; }
+  virtual ~DummyView() override {}
+  virtual void initialize() override {}
+  virtual void reset() override {}
+  virtual void displaySplash(const ProgressMeter*, const string&, SplashType, function<void()> = nullptr) override {}
+  virtual void clearSplash() override {}
+  virtual void close() override {}
+  virtual void refreshView() override {}
+  virtual double getGameSpeed() override { return 20; }
+  virtual void updateView(CreatureView*, bool noRefresh) override {}
+  virtual void drawLevelMap(const CreatureView*) override {}
+  virtual void setScrollPos(Vec2) override {}
+  virtual void resetCenter() override {}
+  virtual UserInput getAction() override { return UserInputId::IDLE; }
+  virtual bool travelInterrupt() override { return false; }
   virtual optional<int> chooseFromList(const string&, const vector<ListElem>&, int = 0,
-      MenuType = MenuType::NORMAL, ScrollPosition* = nullptr, optional<UserInputId> = none) {
+      MenuType = MenuType::NORMAL, ScrollPosition* = nullptr, optional<UserInputId> = none) override {
     return none;
   }
-  virtual PlayerRoleChoice getPlayerRoleChoice(optional<PlayerRoleChoice> initial) {
+  virtual PlayerRoleChoice getPlayerRoleChoice(optional<PlayerRoleChoice> initial) override {
     return PlayerRole::KEEPER;
   }
-  virtual optional<Vec2> chooseDirection(Vec2 playerPos, const string& message) {
+  virtual optional<Vec2> chooseDirection(Vec2 playerPos, const string& message) override {
     return none;
   }
-  virtual bool yesOrNoPrompt(const string& message, bool defaultNo = false) {
+  virtual bool yesOrNoPrompt(const string& message, bool defaultNo = false) override {
     return false;
   }
-  virtual void presentText(const string&, const string&) {}
+  virtual void presentText(const string&, const string&) override {}
   virtual void presentList(const string&, const vector<ListElem>&, bool = false,
-      MenuType = MenuType::NORMAL, optional<UserInputId> = none) {}
-  virtual optional<int> getNumber(const string& title, int min, int max, int increments = 1) {
+      MenuType = MenuType::NORMAL, optional<UserInputId> = none) override {}
+  virtual optional<int> getNumber(const string& title, Range range, int initial, int increments = 1) override {
     return none;
   }
   virtual optional<string> getText(const string& title, const string& value, int maxLength,
-      const string& hint = "") {
+      const string& hint = "") override {
     return none;
   }
   virtual optional<UniqueEntity<Item>::Id> chooseTradeItem(const string& title, pair<ViewId, int> budget,
-      const vector<ItemInfo>&, ScrollPosition* scrollPos) {
+      const vector<ItemInfo>&, ScrollPosition* scrollPos) override {
     return none;
   }
-  virtual optional<int> choosePillageItem(const string& title, const vector<ItemInfo>&, ScrollPosition* scrollPos) {
+  virtual optional<int> choosePillageItem(const string& title, const vector<ItemInfo>&, ScrollPosition* scrollPos) override {
     return none;
   }
-  virtual optional<int> chooseItem(const vector<ItemInfo>& items, ScrollPosition* scrollpos) {
+  virtual optional<int> chooseItem(const vector<ItemInfo>& items, ScrollPosition* scrollpos) override {
     return none;
   }
-  virtual void presentHighscores(const vector<HighscoreList>&) {}
-  virtual CampaignAction prepareCampaign(CampaignOptions, Options*, CampaignMenuState&) {
+  virtual void presentHighscores(const vector<HighscoreList>&) override {}
+  virtual CampaignAction prepareCampaign(CampaignOptions, Options*, CampaignMenuState&) override {
     return CampaignActionId::CANCEL;
   }
   virtual optional<UniqueEntity<Creature>::Id> chooseCreature(const string&, const vector<CreatureInfo>&,
-      const string& cancelText) {
+      const string& cancelText) override {
     return none;
   }
-  virtual bool creatureInfo(const string& title, bool prompt, const vector<CreatureInfo>&) {
+  virtual bool creatureInfo(const string& title, bool prompt, const vector<CreatureInfo>&) override {
     return false;
   }
-  virtual optional<Vec2> chooseSite(const string& message, const Campaign&, optional<Vec2> current = none) {
+  virtual optional<Vec2> chooseSite(const string& message, const Campaign&, optional<Vec2> current = none) override {
     return none;
   }
-  virtual optional<int> chooseAtMouse(const vector<string>& elems) {
+  virtual optional<int> chooseAtMouse(const vector<string>& elems) override {
     return none;
   }
-  virtual void presentWorldmap(const Campaign&) {}
-  virtual void animateObject(Vec2 begin, Vec2 end, ViewId object) {}
-  virtual void animation(Vec2 pos, AnimationId) {}
-  virtual milliseconds getTimeMilli() { return clock->getMillis();}
-  virtual milliseconds getTimeMilliAbsolute() { return clock->getRealMillis();}
-  virtual void stopClock() {}
-  virtual void continueClock() {}
-  virtual bool isClockStopped() { return false; }
-  virtual void addSound(const Sound&) {}
-  virtual void logMessage(const string&) {}
+  virtual void presentWorldmap(const Campaign&) override {}
+  virtual void animateObject(Vec2 begin, Vec2 end, ViewId object) override {}
+  virtual void animation(Vec2 pos, AnimationId, Dir) override {}
+  virtual void animation(Vec2 pos, FXName particleEffect, optional<Vec2>) override{};
+  virtual milliseconds getTimeMilli() override { return clock->getMillis();}
+  virtual milliseconds getTimeMilliAbsolute() override { return clock->getRealMillis();}
+  virtual void stopClock() override {}
+  virtual void continueClock() override {}
+  virtual bool isClockStopped() override { return false; }
+  virtual void addSound(const Sound&) override {}
+  virtual void logMessage(const string&) override {}
+  virtual void setBugReportSaveCallback(BugReportSaveCallback) override {};
 };

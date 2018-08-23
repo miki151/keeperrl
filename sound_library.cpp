@@ -6,13 +6,7 @@
 
 #include "audio_device.h"
 
-SoundLibrary::SoundLibrary(Options* options, AudioDevice& audio, const DirectoryPath& path) : audioDevice(audio) {
-#ifdef DISABLE_SFX
-  on = false;
-#else
-  on = options->getBoolValue(OptionId::SOUND);
-#endif
-  options->addTrigger(OptionId::SOUND, [this](bool turnOn) { on = turnOn; });
+SoundLibrary::SoundLibrary(AudioDevice& audio, const DirectoryPath& path) : audioDevice(audio) {
   for (SoundId id : ENUM_ALL(SoundId))
     addSounds(id, path.subdirectory(toLower(EnumInfo<SoundId>::getString(id))));
 }
@@ -24,10 +18,14 @@ void SoundLibrary::addSounds(SoundId id, const DirectoryPath& path) {
 }
 
 void SoundLibrary::playSound(const Sound& s) {
-  if (!on)
+  if (volume < 0.0001)
     return;
   if (int numSounds = sounds[s.getId()].size()) {
     int ind = Random.get(numSounds);
-    audioDevice.play(sounds[s.getId()][ind], 1.0, s.getPitch());
+    audioDevice.play(sounds[s.getId()][ind], volume, s.getPitch());
   }
+}
+
+void SoundLibrary::setVolume(int v) {
+  volume = double(v) / 100;
 }

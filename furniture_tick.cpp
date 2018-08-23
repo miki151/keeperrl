@@ -100,13 +100,13 @@ static void meteorShower(Position position, WFurniture furniture) {
 }
 
 static void pit(Position position, WFurniture self) {
-  if (Random.roll(10))
+  if (!position.getCreature() && Random.roll(10))
     for (auto neighborPos : position.neighbors8(Random))
       if (auto water = neighborPos.getFurniture(FurnitureLayer::GROUND))
         if (water->canBuildBridgeOver()) {
-          self->destroy(position, DestroyAction::Type::BOULDER);
-          position.replaceFurniture(position.getFurniture(FurnitureLayer::GROUND),
+          position.removeFurniture(position.getFurniture(FurnitureLayer::GROUND),
               FurnitureFactory::get(water->getType(), water->getTribe()));
+          self->destroy(position, DestroyAction::Type::BOULDER);
           return;
         }
 }

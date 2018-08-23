@@ -32,10 +32,15 @@
 #include "model.h"
 #include "creature_status.h"
 
+#include "fx_renderer.h"
+#include "fx_manager.h"
+#include "fx_simple.h"
+
 using SDL::SDL_Keysym;
 using SDL::SDL_Keycode;
 
-MapGui::MapGui(Callbacks call, Clock* c, Options* o, GuiFactory* f) : objects(Level::getMaxBounds()), callbacks(call),
+MapGui::MapGui(Callbacks call, SyncQueue<UserInput>& inputQueue, Clock* c, Options* o, GuiFactory* f)
+    : objects(Level::getMaxBounds()), callbacks(call), inputQueue(inputQueue),
     clock(c), options(o), fogOfWar(Level::getMaxBounds(), false), extraBorderPos(Level::getMaxBounds(), {}),
     lastSquareUpdate(Level::getMaxBounds()), connectionMap(Level::getMaxBounds()), guiFactory(f) {
   clearCenter();
@@ -82,6 +87,10 @@ void MapGui::setSpriteMode(bool s) {
 void MapGui::addAnimation(PAnimation animation, Vec2 pos) {
   animation->setBegin(clock->getRealMillis());
   animations.push_back({std::move(animation), pos});
+}
+
+void MapGui::addAnimation(FXName particleEffect, Vec2 position, optional<Vec2> targetOffset) {
+  fx::spawnEffect(particleEffect, position.x, position.y, targetOffset.value_or(Vec2(0, 0)));
 }
 
 optional<Vec2> MapGui::getMousePos() {
@@ -272,6 +281,14 @@ bool MapGui::onRightClick(Vec2 pos) {
   return false;
 }
 
+bool MapGui::onMiddleClick(Vec2 pos) {
+  if (pos.inRectangle(getBounds())) {
+    inputQueue.push(UserInput(UserInputId::DRAW_LEVEL_MAP));
+    return true;
+  } else
+    return false;
+}
+
 void MapGui::onMouseGone() {
   lastMouseMove = none;
 }
@@ -290,7 +307,7 @@ bool MapGui::onMouseMove(Vec2 v) {
   if (v.inRectangle(getBounds()) && mouseHeldPos && !draggedCreature)
     considerContinuousLeftClick(v);
   if (!draggedCreature && draggedCandidate && mouseHeldPos && mouseHeldPos->distD(v) > 30) {
-    callbacks.creatureDragFun(draggedCandidate->id, draggedCandidate->viewId, v);
+    inputQueue.push(UserInput(UserInputId::CREATURE_DRAG, draggedCandidate->id));
     setDraggedCreature(draggedCandidate->id, draggedCandidate->viewId, v);
   }
   if (isScrollingNow) {
@@ -313,7 +330,7 @@ void MapGui::onMouseRelease(Vec2 v) {
   if (isScrollingNow) {
     if (fabs(mouseOffset.x) + fabs(mouseOffset.y) < 1) {
       if (auto c = getCreature(lastMousePos))
-        callbacks.creatureClickFun(c->id, c->position, true);
+        inputQueue.push(UserInput(UserInputId::CREATURE_MAP_CLICK_EXTENDED, c->position));
       else
         callbacks.rightClickFun(layout->projectOnMap(getBounds(), getScreenPos(), lastMousePos));
     } else {
@@ -329,12 +346,13 @@ void MapGui::onMouseRelease(Vec2 v) {
     if (v.inRectangle(getBounds()) && guiFactory->getDragContainer().getOrigin().distD(v) > 10) {
       switch (draggedElem->getId()) {
         case DragContentId::CREATURE:
-          callbacks.creatureDroppedFun(draggedElem->get<UniqueEntity<Creature>::Id>(),
-              layout->projectOnMap(getBounds(), getScreenPos(), v));
+          inputQueue.push(UserInput(UserInputId::CREATURE_DRAG_DROP,
+             CreatureDropInfo{layout->projectOnMap(getBounds(), getScreenPos(), v),
+                 draggedElem->get<UniqueEntity<Creature>::Id>()}));
           break;
         case DragContentId::TEAM:
-          callbacks.teamDroppedFun(draggedElem->get<TeamId>(),
-              layout->projectOnMap(getBounds(), getScreenPos(), v));
+          inputQueue.push(UserInput(UserInputId::TEAM_DRAG_DROP,
+              TeamDropInfo{layout->projectOnMap(getBounds(), getScreenPos(), v), draggedElem->get<TeamId>()}));
           break;
         default:
           break;
@@ -346,7 +364,7 @@ void MapGui::onMouseRelease(Vec2 v) {
         considerContinuousLeftClick(v);
     } else {
       if (auto c = getCreature(*mouseHeldPos))
-        callbacks.creatureClickFun(c->id, c->position, false);
+        inputQueue.push(UserInput(UserInputId::CREATURE_MAP_CLICK, c->position));
       else {
         callbacks.leftClickFun(layout->projectOnMap(getBounds(), getScreenPos(), v));
         considerContinuousLeftClick(v);
@@ -381,8 +399,8 @@ void MapGui::onMouseRelease(Vec2 v) {
 
 static Vec2 getAttachmentOffset(Dir dir, Vec2 size) {
   switch (dir) {
-    case Dir::N: return Vec2(0, -size.y * 2 / 3);
-    case Dir::S: return Vec2(0, size.y / 4);
+    case Dir::N: return Vec2(0, -size.y * 3 / 4);
+    case Dir::S: return Vec2(0, size.y / 3);
     case Dir::E:
     case Dir::W: return Vec2(dir) * size.x / 2;
     default: FATAL << "Bad attachment dir " << int(dir);
@@ -532,6 +550,25 @@ static Color getPortalColor(int index) {
   return Color(255 * (index % 2), 255 * ((index / 2) % 2), 255 * ((index / 4) % 2));
 }
 
+#define ENUM_STRING(val) EnumInfo<decltype(val)>::getString(val)
+
+void MapGui::updateEffects(FXVector& effectsList, const EnumSet<FXName>& effects, double x, double y) {
+  EnumSet<FXName> existing;
+  for (auto& pair : effectsList) {
+    existing.insert(pair.first);
+    fx::setPos(pair.second, x, y);
+    if (!effects.contains(pair.first))
+      fx::kill(pair.second, false);
+  }
+
+  auto deadEffects = [](const pair<FXName, FXId>& pair) { return !fx::isAlive(pair.second); };
+  effectsList.resize(std::remove_if(begin(effectsList), end(effectsList), deadEffects) - begin(effectsList));
+
+  for (auto effectName : effects)
+    if (!existing.contains(effectName))
+      effectsList.emplace_back(effectName, fx::spawnEffect(effectName, x, y));
+}
+
 void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& object, Vec2 size, Vec2 movement,
     Vec2 tilePos, milliseconds curTimeReal) {
   PROFILE;
@@ -564,9 +601,8 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
       renderer.drawTile(pos + movement, coord, size, Color(255, 255, 255, 160));
     }
     if (object.layer() == ViewLayer::CREATURE || tile.moveUp)
-      move.y = -4* size.y / renderer.getNominalSize().y;
-    if (auto background = tile.getBackgroundCoord())
-      renderer.drawTile(pos, *background, size, color);
+      move.y = -4 * size.y / Renderer::nominalSize;
+    renderer.drawTile(pos, tile.getBackgroundCoord(), size, color);
     move += movement;
     if (mirrorSprite(id))
       renderer.drawTile(pos + move, tile.getSpriteCoord(dirs), size, color,
@@ -577,8 +613,10 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
       renderer.drawTile(pos + move, renderer.getTileCoord("portal_inside"), size, getPortalColor(*version));
     if (tile.hasAnyCorners()) {
       for (auto coord : tile.getCornerCoords(dirs))
-        renderer.drawTile(pos + move, coord, size, color);
+        renderer.drawTile(pos + move, {coord}, size, color);
     }
+    if (object.hasModifier(ViewObject::Modifier::AURA))
+      renderer.drawTile(pos + move, renderer.getTileCoord("aura"), size);
     static auto shortShadow = renderer.getTileCoord("short_shadow");
     if (object.layer() == ViewLayer::FLOOR_BACKGROUND && shadowed.count(tilePos))
       renderer.drawTile(pos, shortShadow, size, Color(255, 255, 255, 170));
@@ -586,7 +624,7 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
       if (*burningVal > 0) {
         static auto fire1 = renderer.getTileCoord("fire1");
         static auto fire2 = renderer.getTileCoord("fire2");
-        renderer.drawTile(pos - Vec2(0, 4 * size.y / renderer.getNominalSize().y),
+        renderer.drawTile(pos - Vec2(0, 4 * size.y / Renderer::nominalSize),
             (curTimeReal.count() + pos.getHash()) % 500 < 250 ? fire1 : fire2, size);
       }
     if (displayAllHealthBars || lastHighlighted.creaturePos == pos + movement ||
@@ -596,6 +634,13 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
       renderer.drawText(Color::WHITE, pos + move + size / 2, "S", Renderer::CenterType::HOR_VER, size.x * 2 / 3);
     if (object.hasModifier(ViewObject::Modifier::LOCKED))
       renderer.drawTile(pos + move, Tile::getTile(ViewId::KEY, spriteMode).getSpriteCoord(), size);
+    if (auto creatureId = object.getCreatureId()) {
+      auto& effects = creatureFX.getOrInit(*creatureId);
+      updateEffects(effects, object.particleEffects,
+          tilePos.x + move.x / (double)size.x, tilePos.y + move.y / (double)size.y);
+      if (effects.empty())
+        creatureFX.erase(*creatureId);
+    }
   } else {
     Vec2 tilePos = pos + movement + Vec2(size.x / 2, -3);
     drawCreatureHighlights(renderer, object, pos + movement, size, curTimeReal);
@@ -642,30 +687,30 @@ void MapGui::setCenter(Vec2 v) {
   setCenter(v.x, v.y);
 }
 
-void MapGui::drawFoWSprite(Renderer& renderer, Vec2 pos, Vec2 size, DirSet dirs) {
+const static EnumMap<Dir, DirSet> adjacentDirs(
+    [](Dir dir) {
+      switch (dir) {
+        case Dir::NE:
+          return DirSet({Dir::N, Dir::E});
+        case Dir::SE:
+          return DirSet({Dir::S, Dir::E});
+        case Dir::SW:
+          return DirSet({Dir::S, Dir::W});
+        case Dir::NW:
+          return DirSet({Dir::N, Dir::W});
+        default:
+          return DirSet();
+      }
+    });
+
+void MapGui::drawFoWSprite(Renderer& renderer, Vec2 pos, Vec2 size, DirSet dirs, DirSet diagonalDirs) {
   const Tile& tile = Tile::getTile(ViewId::FOG_OF_WAR, true);
   const Tile& tile2 = Tile::getTile(ViewId::FOG_OF_WAR_CORNER, true);
-  static DirSet fourDirs = DirSet({Dir::N, Dir::S, Dir::E, Dir::W});
-  auto coord = tile.getSpriteCoord(dirs & fourDirs);
+  auto coord = tile.getSpriteCoord(dirs);
   renderer.drawTile(pos, coord, size);
-  for (Dir dir : dirs.intersection(fourDirs.complement())) {
-    static DirSet ne({Dir::N, Dir::E});
-    static DirSet se({Dir::S, Dir::E});
-    static DirSet nw({Dir::N, Dir::W});
-    static DirSet sw({Dir::S, Dir::W});
-    switch (dir) {
-      case Dir::NE: if (!dirs.contains(ne)) continue;
-        FALLTHROUGH;
-      case Dir::SE: if (!dirs.contains(se)) continue;
-        FALLTHROUGH;
-      case Dir::NW: if (!dirs.contains(nw)) continue;
-        FALLTHROUGH;
-      case Dir::SW: if (!dirs.contains(sw)) continue;
-        FALLTHROUGH;
-      default: break;
-    }
-    renderer.drawTile(pos, tile2.getSpriteCoord(DirSet::oneElement(dir)), size);
-  }
+  for (Dir dir : diagonalDirs)
+    if ((~dirs & adjacentDirs[dir]) == 0)
+      renderer.drawTile(pos, tile2.getSpriteCoord(DirSet::oneElement(dir)), size);
 }
 
 bool MapGui::isFoW(Vec2 pos) const {
@@ -690,17 +735,14 @@ void MapGui::renderExtraBorders(Renderer& renderer, milliseconds currentTimeReal
   for (Vec2 wpos : layout->getAllTiles(getBounds(), levelBounds, getScreenPos()))
     for (ViewId id : extraBorderPos.getValue(wpos)) {
       const Tile& tile = Tile::getTile(id, true);
-      for (ViewId underId : tile.getExtraBorderIds())
-        if (connectionMap[wpos].contains(underId)) {
-          DirSet dirs = 0;
-          for (Vec2 v : Vec2::directions4())
-            if ((wpos + v).inRectangle(levelBounds) && connectionMap[wpos + v].contains(id))
-              dirs.insert(v.getCardinalDir());
-          if (auto coord = tile.getExtraBorderCoord(dirs)) {
-            Vec2 pos = projectOnScreen(wpos);
-            renderer.drawTile(pos, *coord, layout->getSquareSize());
-          }
-        }
+      if (!connectionMap[wpos].intersection(tile.getExtraBorderIds()).isEmpty()) {
+        DirSet dirs = 0;
+        for (Vec2 v : Vec2::directions4())
+          if ((wpos + v).inRectangle(levelBounds) && connectionMap[wpos + v].contains(id))
+            dirs.insert(v.getCardinalDir());
+        Vec2 pos = projectOnScreen(wpos);
+        renderer.drawTile(pos, tile.getExtraBorderCoord(dirs), layout->getSquareSize());
+      }
     }
 }
 
@@ -827,7 +869,8 @@ void MapGui::renderAnimations(Renderer& renderer, milliseconds currentTimeReal) 
     elem.animation->render(
         renderer,
         getBounds(),
-        projectOnScreen(elem.position),
+        projectOnScreen(elem.position) + layout->getSquareSize() / 2,
+        layout->getSquareSize(),
         currentTimeReal);
 }
 
@@ -839,19 +882,25 @@ MapGui::HighlightedInfo MapGui::getHighlightedInfo(Vec2 size, milliseconds curre
   if (auto mousePos = getMousePos())
     if (mouseUI) {
       ret.tilePos = layout->projectOnMap(getBounds(), getScreenPos(), *mousePos);
+      ret.tileScreenPos = topLeftCorner + (*ret.tilePos - allTiles.topLeft()).mult(size);
+      if (ret.tilePos->inRectangle(objects.getBounds()))
+        if (auto& index = objects[*ret.tilePos])
+          ret.itemCounts = index->itemCounts;
       if (!buttonViewId && ret.tilePos->inRectangle(objects.getBounds()))
         for (Vec2 wpos : Rectangle(*ret.tilePos - Vec2(2, 2), *ret.tilePos + Vec2(2, 2))
             .intersection(objects.getBounds())) {
           Vec2 pos = topLeftCorner + (wpos - allTiles.topLeft()).mult(size);
-          if (objects[wpos] && objects[wpos]->hasObject(ViewLayer::CREATURE)) {
-            const ViewObject& object = objects[wpos]->getObject(ViewLayer::CREATURE);
-            Vec2 movement = getMovementOffset(object, size, currentTimeGame, currentTimeReal, true);
-            if (mousePos->inRectangle(Rectangle(pos + movement, pos + movement + size))) {
-              ret.tilePos = wpos;
-              ret.object = object;
-              ret.creaturePos = pos + movement;
-              break;
-            }
+          if (auto& index = objects[wpos])
+            if (objects[wpos]->hasObject(ViewLayer::CREATURE)) {
+              const ViewObject& object = objects[wpos]->getObject(ViewLayer::CREATURE);
+              Vec2 movement = getMovementOffset(object, size, currentTimeGame, currentTimeReal, true);
+              if (mousePos->inRectangle(Rectangle(pos + movement, pos + movement + size))) {
+                ret.tilePos = wpos;
+                ret.object = object;
+                ret.creaturePos = pos + movement;
+                ret.equipmentCounts = index->equipmentCounts;
+                break;
+              }
           }
         }
     }
@@ -885,20 +934,23 @@ void MapGui::renderMapObjects(Renderer& renderer, Vec2 size, milliseconds curren
         if (object) {
           Vec2 movement = getMovementOffset(*object, size, currentTimeGame, currentTimeReal, true);
           drawObjectAbs(renderer, pos, *object, size, movement, wpos, currentTimeReal);
-          if (lastHighlighted.tilePos == wpos && !lastHighlighted.creaturePos && object->layer() != ViewLayer::CREATURE)
+          if (lastHighlighted.tilePos == wpos && !lastHighlighted.creaturePos &&
+              object->layer() != ViewLayer::CREATURE && object->layer() != ViewLayer::ITEM)
             lastHighlighted.object = *object;
         }
         if (spriteMode && layer == ViewLayer::TORCH1)
           if (!isFoW(wpos))
-            drawFoWSprite(renderer, pos, size, DirSet(
-                !isFoW(wpos + Vec2(Dir::N)),
-                !isFoW(wpos + Vec2(Dir::S)),
-                !isFoW(wpos + Vec2(Dir::E)),
-                !isFoW(wpos + Vec2(Dir::W)),
-                isFoW(wpos + Vec2(Dir::NE)),
-                isFoW(wpos + Vec2(Dir::NW)),
-                isFoW(wpos + Vec2(Dir::SE)),
-                isFoW(wpos + Vec2(Dir::SW))));
+            drawFoWSprite(renderer, pos, size,
+                DirSet(
+                  !isFoW(wpos + Vec2(Dir::N)),
+                  !isFoW(wpos + Vec2(Dir::S)),
+                  !isFoW(wpos + Vec2(Dir::E)),
+                  !isFoW(wpos + Vec2(Dir::W)), false, false, false, false),
+                DirSet(false, false, false, false,
+                  isFoW(wpos + Vec2(Dir::NE)),
+                  isFoW(wpos + Vec2(Dir::NW)),
+                  isFoW(wpos + Vec2(Dir::SE)),
+                  isFoW(wpos + Vec2(Dir::SW))));
       }
       if (layer == ViewLayer::FLOOR || !spriteMode) {
         if (!buttonViewId && lastHighlighted.creaturePos)
@@ -1029,6 +1081,15 @@ void MapGui::render(Renderer& renderer) {
   auto currentTimeReal = clock->getRealMillis();
   lastHighlighted = getHighlightedInfo(size, currentTimeReal);
   renderMapObjects(renderer, size, currentTimeReal);
+
+  renderer.flushSprites();
+  if (auto *rinst = fx::FXRenderer::getInstance()) {
+    float zoom = float(layout->getSquareSize().x) / float(Renderer::nominalSize);
+    auto offset = projectOnScreen(Vec2(0, 0));
+    auto size = renderer.getSize();
+    rinst->draw(zoom, offset.x, offset.y, size.x, size.y);
+  }
+
   renderAnimations(renderer, currentTimeReal);
   if (lastHighlighted.tilePos)
     considerRedrawingSquareHighlight(renderer, currentTimeReal, *lastHighlighted.tilePos, size);
@@ -1054,20 +1115,14 @@ void MapGui::updateObject(Vec2 pos, CreatureView* view, milliseconds currentTime
     if (tile.wallShadow) {
       shadowed.insert(pos + Vec2(0, 1));
     }
-    if (tile.hasAnyConnections() || tile.hasExtraBorders() || tile.hasAnyCorners())
-      connectionMap[pos].insert(getConnectionId(object.id()));
+    connectionMap[pos].insert(getConnectionId(object.id()));
   }
   if (index.hasObject(ViewLayer::FLOOR_BACKGROUND)) {
     auto& object = index.getObject(ViewLayer::FLOOR_BACKGROUND);
-    auto& tile = Tile::getTile(object.id());
-    if (tile.hasAnyConnections() || tile.hasExtraBorders() || tile.hasAnyCorners())
-      connectionMap[pos].insert(getConnectionId(object.id()));
+    connectionMap[pos].insert(getConnectionId(object.id()));
   }
-  if (auto viewId = index.getHiddenId()) {
-    auto& tile = Tile::getTile(*viewId);
-    if (tile.hasAnyConnections() || tile.hasExtraBorders() || tile.hasAnyCorners())
-      connectionMap[pos].insert(getConnectionId(*viewId));
-  }
+  if (auto viewId = index.getHiddenId())
+    connectionMap[pos].insert(getConnectionId(*viewId));
 }
 
 double MapGui::getDistanceToEdgeRatio(Vec2 pos) {
@@ -1097,6 +1152,10 @@ void MapGui::updateObjects(CreatureView* view, MapLayout* mapLayout, bool smooth
   mouseUI = ui;
   layout = mapLayout;
   auto currentTimeReal = clock->getRealMillis();
+
+  if (auto *inst = fx::FXManager::getInstance())
+    inst->simulateStableTime(double(currentTimeReal.count()) * 0.001);
+
   if (view != previousView || level != previousLevel)
     for (Vec2 pos : level->getBounds())
       level->setNeedsRenderUpdate(pos, true);

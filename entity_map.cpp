@@ -9,6 +9,7 @@
 #include "cost_info.h"
 #include "time_queue.h"
 #include "game_time.h"
+#include "fx_simple.h"
 
 template <typename Key, typename Value>
 EntityMap<Key, Value>::EntityMap() {
@@ -186,6 +187,7 @@ SERIALIZABLE_TMPL(EntityMap, Creature, WCreature);
 SERIALIZABLE_TMPL(EntityMap, Creature, pair<GlobalTime, GlobalTime>);
 SERIALIZABLE_TMPL(EntityMap, Creature, ExperienceType);
 SERIALIZABLE_TMPL(EntityMap, Creature, ZoneId);
+SERIALIZABLE_TMPL(EntityMap, Creature, vector<pair<FXName, FXId>>);
 SERIALIZABLE_TMPL(EntityMap, Task, LocalTime);
 SERIALIZABLE_TMPL(EntityMap, Task, MinionActivity);
 SERIALIZABLE_TMPL(EntityMap, Task, WTask);

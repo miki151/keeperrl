@@ -93,7 +93,6 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   void setTrait(WCreature c, MinionTrait);
   void removeTrait(WCreature c, MinionTrait);
 
-  bool canPillage() const;
   bool hasTradeItems() const;
   vector<WItem> getTradeItems() const;
   PItem buyItem(WItem);
@@ -131,7 +130,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   vector<WItem> getAllItems(ItemPredicate predicate, bool includeMinions = true) const;
   vector<WItem> getAllItems(ItemIndex, bool includeMinions = true) const;
 
-  vector<pair<WItem, Position>> getTrapItems(TrapType, const vector<Position>&) const;
+  vector<pair<WItem, Position>> getTrapItems(const vector<Position>&) const;
 
   void addTrap(Position, TrapType);
   void removeTrap(Position);
@@ -199,7 +198,6 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   bool isKnownVillainLocation(WConstCollective) const;
 
   void onEvent(const GameEvent&);
-  void onPositionDiscovered(Position);
 
   struct CurrentActivity {
     MinionActivity SERIAL(activity);
@@ -302,9 +300,9 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   set<EnemyId> SERIAL(conqueredVillains); // OBSOLETE
   void setDiscoverable();
   bool SERIAL(discoverable) = false;
-  void considerTransferingLostMinions();
   void considerRebellion();
   void updateCreatureStatus(WCreature);
   HeapAllocated<Quarters> SERIAL(quarters);
   PPositionMatching SERIAL(positionMatching);
+  int SERIAL(populationIncrease) = 0;
 };

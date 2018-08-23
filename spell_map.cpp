@@ -13,6 +13,12 @@ void SpellMap::add(SpellId id) {
     elems[id] = GlobalTime(-10000);
 }
 
+void SpellMap::setAllReady() {
+  for (auto id : ENUM_ALL(SpellId))
+    if (!!elems[id])
+      elems[id] = GlobalTime(-10000);
+}
+
 GlobalTime SpellMap::getReadyTime(Spell* spell) const {
   CHECK(contains(spell));
   return *elems[spell->getId()];

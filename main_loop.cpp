@@ -35,9 +35,9 @@
 #include "external_enemies.h"
 
 MainLoop::MainLoop(View* v, Highscores* h, FileSharing* fSharing, const DirectoryPath& freePath,
-    const DirectoryPath& uPath, Options* o, Jukebox* j, SokobanInput* soko, bool singleThread)
+    const DirectoryPath& uPath, Options* o, Jukebox* j, SokobanInput* soko, bool singleThread, int sv)
       : view(v), dataFreePath(freePath), userPath(uPath), options(o), jukebox(j),
-        highscores(h), fileSharing(fSharing), useSingleThread(singleThread), sokobanInput(soko) {
+        highscores(h), fileSharing(fSharing), useSingleThread(singleThread), sokobanInput(soko), saveVersion(sv) {
 }
 
 vector<SaveFileInfo> MainLoop::getSaveFiles(const DirectoryPath& path, const string& suffix) {
@@ -58,9 +58,7 @@ static string getDateString(time_t t) {
   return buf;
 }
 
-static const int saveVersion = 2500;
-
-static bool isCompatible(int loadedVersion) {
+bool MainLoop::isCompatible(int loadedVersion) {
   return loadedVersion > 2 && loadedVersion <= saveVersion && loadedVersion / 100 == saveVersion / 100;
 }
 
@@ -102,7 +100,7 @@ static string stripFilename(string s) {
   return s;
 }
 
-static void saveGame(PGame& game, const FilePath& path) {
+void MainLoop::saveGame(PGame& game, const FilePath& path) {
   CompressedOutput out(path.getPath());
   string name = game->getGameDisplayName();
   SavedGameInfo savedInfo = game->getSavedGameInfo();
@@ -110,12 +108,21 @@ static void saveGame(PGame& game, const FilePath& path) {
   out.getArchive() << game;
 }
 
-static void saveMainModel(PGame& game, const FilePath& path) {
+void MainLoop::saveMainModel(PGame& game, const FilePath& path) {
   CompressedOutput out(path.getPath());
   string name = game->getGameDisplayName();
   SavedGameInfo savedInfo = game->getSavedGameInfo();
   out.getArchive() << saveVersion << name << savedInfo;
   out.getArchive() << game->getMainModel();
+}
+
+void MainLoop::reloadModel(const FilePath& path) {
+  PModel model;
+  string name;
+  SavedGameInfo info;
+  int version;
+  CompressedInput(path.getPath()).getArchive() >> version >> name >> info >> model;
+  CompressedOutput(path.getPath()).getArchive() << version << name << info << model;
 }
 
 int MainLoop::getSaveVersion(const SaveFileInfo& save) {
@@ -144,8 +151,6 @@ FilePath MainLoop::getSavePath(const PGame& game, GameSaveType gameType) {
   return userPath.file(stripFilename(game->getGameIdentifier()) + getSaveSuffix(gameType));
 }
 
-const int singleModelGameSaveTime = 100000;
-
 void MainLoop::saveUI(PGame& game, GameSaveType type, SplashType splashType) {
   auto path = getSavePath(game, type);
   if (type == GameSaveType::RETIRED_SITE) {
@@ -156,7 +161,7 @@ void MainLoop::saveUI(PGame& game, GameSaveType type, SplashType splashType) {
         MEASURE(saveMainModel(game, path), "saving time")});
   } else {
     int saveTime = game->getSaveProgressCount();
-    doWithSplash(splashType, "Saving game...", saveTime,
+    doWithSplash(splashType, type == GameSaveType::AUTOSAVE ? "Autosaving" : "Saving game...", saveTime,
         [&] (ProgressMeter& meter) {
         Square::progressMeter = &meter;
         MEASURE(saveGame(game, path), "saving time")});
@@ -210,9 +215,21 @@ enum class MainLoop::ExitCondition {
   UNKNOWN
 };
 
-MainLoop::ExitCondition MainLoop::playGame(PGame&& game, bool withMusic, bool noAutoSave,
+void MainLoop::bugReportSave(PGame& game, FilePath path) {
+  int saveTime = game->getSaveProgressCount();
+  doWithSplash(SplashType::AUTOSAVING, "Saving game...", saveTime,
+      [&] (ProgressMeter& meter) {
+      Square::progressMeter = &meter;
+      MEASURE(saveGame(game, path), "saving time")});
+  Square::progressMeter = nullptr;
+}
+
+MainLoop::ExitCondition MainLoop::playGame(PGame game, bool withMusic, bool noAutoSave,
     function<optional<ExitCondition>(WGame)> exitCondition) {
   view->reset();
+  if (!noAutoSave)
+    view->setBugReportSaveCallback([&] (FilePath path) { bugReportSave(game, path); });
+  DestructorFunction removeCallback([&] { view->setBugReportSaveCallback(nullptr); });
   game->initialize(options, highscores, view, fileSharing);
   const milliseconds stepTimeMilli {3};
   Intervalometer meter(stepTimeMilli);
@@ -411,8 +428,6 @@ void MainLoop::launchQuickGame() {
 }
 
 void MainLoop::start(bool tilesPresent, bool quickGame) {
-  if (options->getBoolValue(OptionId::MUSIC))
-    jukebox->toggle(true);
   NameGenerator::init(dataFreePath.subdirectory("names"));
   if (quickGame)
     launchQuickGame();

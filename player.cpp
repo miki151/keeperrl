@@ -31,6 +31,7 @@
 #include "game_info.h"
 #include "equipment.h"
 #include "spell.h"
+#include "spell_map.h"
 #include "creature_name.h"
 #include "view.h"
 #include "view_index.h"
@@ -56,6 +57,7 @@
 #include "creature_factory.h"
 #include "time_queue.h"
 #include "unknown_locations.h"
+#include "furniture_click.h"
 
 template <class Archive>
 void Player::serialize(Archive& ar, const unsigned int) {
@@ -91,10 +93,23 @@ void Player::onEvent(const GameEvent& event) {
       },
       [&](const Explosion& info) {
         if (creature->getPosition().isSameLevel(info.pos)) {
-          if (creature->canSee(info.pos))
-            getView()->animation(info.pos.getCoord(), AnimationId::EXPLOSION);
-          else
-            privateMessage("BOOM!");
+          privateMessage("BOOM!");
+        }
+      },
+      [&](const CreatureKilled& info) {
+        auto pos = info.victim->getPosition();
+        if (creature->canSee(pos))
+          if (auto anim = info.victim->getBody().getDeathAnimation())
+            getView()->animation(pos.getCoord(), *anim);
+      },
+      [&](const CreatureAttacked& info) {
+        auto pos = info.victim->getPosition();
+        if (creature->canSee(pos)) {
+          auto dir = info.attacker->getPosition().getDir(pos);
+          if (dir.length8() == 1) {
+            auto orientation = dir.getCardinalDir();
+            getView()->animation(pos.getCoord(), AnimationId::ATTACK, orientation);
+          }
         }
       },
       [&](const Alarm& info) {
@@ -116,6 +131,10 @@ void Player::onEvent(const GameEvent& event) {
           else
             privateMessage(PlayerMessage("An unnamed tribe is destroyed.", MessagePriority::CRITICAL));
         }
+      },
+      [&](const OtherEffect& info) {
+        if (creature->canSee(info.position))
+          getView()->animation(info.position.getCoord(), info.effect, info.targetOffset);
       },
       [&](const WonGame&) {
         if (adventurer)
@@ -166,7 +185,8 @@ void Player::pickUpItemAction(int numStack, bool multi) {
   if (numStack < stacks.size()) {
     vector<WItem> items = stacks[numStack];
     if (multi && items.size() > 1) {
-      auto num = getView()->getNumber("Pick up how many " + items[0]->getName(true) + "?", 1, items.size());
+      auto num = getView()->getNumber("Pick up how many " + items[0]->getName(true) + "?",
+          Range(1, items.size()), 1);
       if (!num)
         return;
       items = getPrefix(items, *num);
@@ -284,7 +304,8 @@ void Player::handleItems(const EntitySet<Item>& itemIds, ItemAction action) {
   switch (action) {
     case ItemAction::DROP: tryToPerform(creature->drop(items)); break;
     case ItemAction::DROP_MULTI:
-      if (auto num = getView()->getNumber("Drop how many " + items[0]->getName(true) + "?", 1, items.size()))
+      if (auto num = getView()->getNumber("Drop how many " + items[0]->getName(true) + "?",
+          Range(1, items.size()), 1))
         tryToPerform(creature->drop(getPrefix(items, *num)));
       break;
     case ItemAction::THROW: throwItem(items); break;
@@ -395,7 +416,7 @@ void Player::payForAllItemsAction() {
 void Player::giveAction(vector<WItem> items) {
   PROFILE;
   if (items.size() > 1) {
-    if (auto num = getView()->getNumber("Give how many " + items[0]->getName(true) + "?", 1, items.size()))
+    if (auto num = getView()->getNumber("Give how many " + items[0]->getName(true) + "?", Range(1, items.size()), 1))
       items = getPrefix(items, *num);
     else
       return;
@@ -457,10 +478,6 @@ const MapMemory& Player::getMemory() const {
 
 void Player::sleeping() {
   PROFILE;
-  if (creature->isAffected(LastingEffect::HALLU))
-    ViewObject::setHallu(true);
-  else
-    ViewObject::setHallu(false);
   MEASURE(
       getView()->updateView(this, false),
       "level render time");
@@ -496,7 +513,13 @@ vector<Player::OtherCreatureCommand> Player::getOtherCreatureCommands(WCreature 
     genAction(0, "Skip turn", true, creature->wait());
   if (c->getPosition().dist8(creature->getPosition()) == 1)
     genAction(10, "Chat", false, creature->chatTo(c));
-  std::stable_sort(ret.begin(), ret.end(), [](const auto& c1, const auto& c2) { return c1.priority < c2.priority; });
+  std::stable_sort(ret.begin(), ret.end(), [](const auto& c1, const auto& c2) {
+    if (c1.allowAuto && !c2.allowAuto)
+      return true;
+    if (c2.allowAuto && !c1.allowAuto)
+      return false;
+    return c1.priority < c2.priority;
+  });
   return ret;
 }
 
@@ -510,7 +533,12 @@ void Player::creatureClickAction(Position pos, bool extended) {
     }
     else if (!commands.empty() && commands[0].allowAuto)
       commands[0].perform(this);
-  }
+  } else
+  if (auto furniture = pos.getFurniture(FurnitureLayer::MIDDLE))
+    if (furniture->getClickType() && furniture->getTribe() == creature->getTribeId()) {
+      furniture->click(pos);
+      updateSquareMemory(pos);
+    }
 }
 
 void Player::retireMessages() {
@@ -561,6 +589,12 @@ void Player::updateUnknownLocations() {
   unknownLocations->update(locations);
 }
 
+void Player::updateSquareMemory(Position pos) {
+  ViewIndex index;
+  pos.getViewIndex(index, creature);
+  levelMemory->update(pos, index);
+}
+
 void Player::makeMove() {
   PROFILE;
   updateUnknownLocations();
@@ -568,17 +602,10 @@ void Player::makeMove() {
     subscribeTo(getModel());
   if (adventurer)
     considerAdventurerMusic();
-  if (creature->isAffected(LastingEffect::HALLU))
-    ViewObject::setHallu(true);
-  else
-    ViewObject::setHallu(false);
   //if (updateView) { Check disabled so that we update in every frame to avoid some square refreshing issues.
     updateView = false;
-    for (Position pos : creature->getVisibleTiles()) {
-      ViewIndex index;
-      pos.getViewIndex(index, creature);
-      levelMemory->update(pos, index);
-    }
+    for (Position pos : creature->getVisibleTiles())
+      updateSquareMemory(pos);
     MEASURE(
         getView()->updateView(this, false),
         "level render time");
@@ -711,6 +738,31 @@ void Player::makeMove() {
         creature->addPermanentEffect(LastingEffect::SPEED, true);
         creature->addPermanentEffect(LastingEffect::FLYING, true);
         break;
+      case UserInputId::CHEAT_SPELLS: {
+        auto &spellMap = creature->getAttributes().getSpellMap();
+        for (auto spell : EnumAll<SpellId>())
+          spellMap.add(spell);
+        spellMap.setAllReady();
+        break;
+      }
+      case UserInputId::CHEAT_POTIONS: {
+        auto &items = creature->getEquipment().getItems();
+        for (auto leType : ENUM_ALL(LastingEffect)) {
+          bool found = false;
+          for (auto &item : items)
+            if (auto &eff = item->getEffect())
+              if (auto le = eff->getValueMaybe<Effect::Lasting>())
+                if (le->lastingEffect == leType) {
+                  found = true;
+                  break;
+                }
+          if (!found) {
+            ItemType itemType{ItemType::Potion{Effect::Lasting{leType}}};
+            creature->take(itemType.get());
+          }
+        }
+        break;
+      }
   #endif
       default: break;
     }
@@ -758,22 +810,23 @@ static string getForceMovementQuestion(Position pos, WConstCreature creature) {
 }
 
 void Player::moveAction(Vec2 dir) {
+  auto dirPos = creature->getPosition().plus(dir);
   if (tryToPerform(creature->move(dir)))
     return;
   if (auto action = creature->forceMove(dir)) {
-    string nextQuestion = getForceMovementQuestion(creature->getPosition().plus(dir), creature);
+    string nextQuestion = getForceMovementQuestion(dirPos, creature);
     string hereQuestion = getForceMovementQuestion(creature->getPosition(), creature);
     if (hereQuestion == nextQuestion || getView()->yesOrNoPrompt(nextQuestion, true))
       action.perform(creature);
     return;
   }
-  if (auto other = creature->getPosition().plus(dir).getCreature()) {
+  if (auto other = dirPos.getCreature()) {
     auto actions = getOtherCreatureCommands(other);
     if (!actions.empty() && actions[0].allowAuto)
       actions[0].perform(this);
     return;
   }
-  if (!creature->getPosition().plus(dir).canEnterEmpty(creature))
+  if (!dirPos.canEnterEmpty(creature))
     tryToPerform(creature->destroy(dir, DestroyAction::Type::BASH));
 }
 
@@ -856,10 +909,22 @@ void Player::getViewIndex(Vec2 pos, ViewIndex& index) const {
       index.mergeFromMemory(*memIndex);
   if (position.isTribeForbidden(creature->getTribeId()))
     index.setHighlight(HighlightType::FORBIDDEN_ZONE);
+  if (getGame()->getOptions()->getBoolValue(OptionId::SHOW_MAP))
+    for (auto col : getGame()->getCollectives())
+      if (col->getTerritory().contains(position))
+        index.setHighlight(HighlightType::RECT_SELECTION);
+  if (auto furniture = position.getFurniture(FurnitureLayer::MIDDLE)) {
+    if (auto clickType = furniture->getClickType())
+      if (furniture->getTribe() == creature->getTribeId())
+        if (auto& obj = furniture->getViewObject())
+          if (index.hasObject(obj->layer()))
+            index.getObject(obj->layer()).setExtendedActions({FurnitureClick::getText(*clickType, position, furniture)});
+  }
   if (WCreature c = position.getCreature()) {
     if ((canSee && creature->canSeeInPosition(c)) || c == creature ||
         creature->canSeeOutsidePosition(c)) {
       index.insert(c->getViewObjectFor(creature->getTribe()));
+      index.equipmentCounts = c->getEquipment().getCounts();
       auto& object = index.getObject(ViewLayer::CREATURE);
       if (c == creature)
         object.setModifier(ViewObject::Modifier::PLAYER);
@@ -884,9 +949,9 @@ void Player::getViewIndex(Vec2 pos, ViewIndex& index) const {
   }
   if (unknownLocations->contains(position))
     index.insert(ViewObject(ViewId::UNKNOWN_MONSTER, ViewLayer::TORCH2, "Surprise"));
- /* if (pos == creature->getPosition() && index.hasObject(ViewLayer::CREATURE))
-      index.getObject(ViewLayer::CREATURE).setModifier(ViewObject::Modifier::TEAM_LEADER_HIGHLIGHT);*/
-
+  if (position != creature->getPosition() && creature->isAffected(LastingEffect::HALLU))
+    for (auto& object : index.getAllObjects())
+      object.setId(ViewObject::shuffle(object.id(), Random));
 }
 
 void Player::onKilled(WConstCreature attacker) {

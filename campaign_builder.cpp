@@ -230,7 +230,7 @@ const char* CampaignBuilder::getIntroText() const {
         "You can travel to other sites by creating a team and using the travel command.\n\n"
         "The highlighted tribes are in your influence zone, which means that you can currently interact with them "
         "(trade, recruit, attack or be attacked). "
-        "As you conquer more enemies, your influence zone grows.\n\n";
+        "As you conquer more enemies, your influence zone will increase.\n\n";
     case PlayerRole::ADVENTURER:
       return
         "Welcome to the campaign mode! "
@@ -239,7 +239,7 @@ const char* CampaignBuilder::getIntroText() const {
         "to win the game."
         "You can travel to other sites by using the travel command.\n\n"
         "The highlighted tribes are in your influence zone, which means that you can currently travel there. "
-        "As you conquer more enemies, your influence zone grows.\n\n";
+        "As you conquer more enemies, your influence zone will increase.\n\n";
    }
 }
 
@@ -433,7 +433,7 @@ static bool autoConfirm(CampaignType type) {
 
 static vector<string> getIntroMessages(CampaignType type, string worldName) {
   vector<string> ret = {
-    "Welcome to KeeperRL Alpha24! This patch was released on April 2, 2018. "
+    "Welcome to KeeperRL Alpha25! This patch was released on July 30, 2018. "
     "Many new gameplay features have arrived, "
     "so if you are a returning player, we encourage you to check out the "
     "change log at www.keeperrl.com.\n \n"

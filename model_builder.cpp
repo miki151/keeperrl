@@ -44,30 +44,6 @@ ModelBuilder::ModelBuilder(ProgressMeter* m, RandomGen& r, Options* o, SokobanIn
 ModelBuilder::~ModelBuilder() {
 }
 
-double ModelBuilder::getPigstyPopulationIncrease() {
-  return 0.25;
-}
-
-double ModelBuilder::getStatuePopulationIncrease() {
-  return 1;
-}
-
-double ModelBuilder::getThronePopulationIncrease() {
-  return 10;
-}
-
-int ModelBuilder::getMaxUsefulStoneStatues() {
-  return 4;
-}
-
-int ModelBuilder::getMaxUsefulGoldStatues() {
-  return 200;
-}
-
-int ModelBuilder::getMaxUsefulPigsty() {
-  return 16;
-}
-
 static CollectiveConfig getKeeperConfig(RandomGen& random, bool fastImmigration, bool regenerateMana, AvatarInfo::ImpVariant impVariant) {
   vector<ImmigrantInfo> immigrants;
   switch (impVariant) {
@@ -83,7 +59,8 @@ static CollectiveConfig getKeeperConfig(RandomGen& random, bool fastImmigration,
       break;
     case AvatarInfo::GOBLINS:
       immigrants.push_back(
-          ImmigrantInfo(CreatureId::GOBLIN, {MinionTrait::WORKER, MinionTrait::NO_EQUIPMENT})
+          ImmigrantInfo(CreatureId::PESEANT_PRISONER,
+              {MinionTrait::WORKER, MinionTrait::PRISONER, MinionTrait::NO_LIMIT})
              .setSpawnLocation(NearLeader{})
              .setNoAuto()
              .setInvisible()
@@ -91,7 +68,7 @@ static CollectiveConfig getKeeperConfig(RandomGen& random, bool fastImmigration,
       break;
   }
   append(immigrants, {
-       ImmigrantInfo(CreatureId::GOBLIN, {MinionTrait::WORKER, MinionTrait::NO_EQUIPMENT})
+       ImmigrantInfo(CreatureId::GOBLIN, {MinionTrait::FIGHTER, MinionTrait::NO_EQUIPMENT})
            .setFrequency(0.7)
            .addRequirement(0.1, AttractionInfo{1, vector<AttractionType>(
                 {FurnitureType::FORGE, FurnitureType::WORKSHOP, FurnitureType::JEWELER})})
@@ -103,7 +80,7 @@ static CollectiveConfig getKeeperConfig(RandomGen& random, bool fastImmigration,
            .addRequirement(0.1, AttractionInfo{1, FurnitureType::TRAINING_WOOD})
            .addSpecialTrait(0.05, ExtraTraining { ExperienceType::ARCHERY, 2 })
            .addSpecialTrait(0.05, ExtraTraining { ExperienceType::MELEE, 2 })
-           .addSpecialTrait(0.03, {AttrBonus { AttrType::DAMAGE, 5 }, LastingEffect::INSANITY})
+           .addSpecialTrait(0.03, {AttrBonus { AttrType::DAMAGE, 7 }, LastingEffect::INSANITY})
            .addSpecialTrait(0.05, LastingEffect::NIGHT_VISION)
            .addSpecialTrait(0.05, SkillId::DISARM_TRAPS)
            .addSpecialTrait(0.05, SkillId::SWIMMING)
@@ -112,7 +89,7 @@ static CollectiveConfig getKeeperConfig(RandomGen& random, bool fastImmigration,
            .setFrequency(0.6)
            .addRequirement(0.0, MinTurnRequirement{500_global})
            .addRequirement(0.1, AttractionInfo{1, {FurnitureType::BOOKCASE_WOOD, FurnitureType::LABORATORY}})
-           .addSpecialTrait(0.03, {AttrBonus { AttrType::SPELL_DAMAGE, 5 }, LastingEffect::INSANITY})
+           .addSpecialTrait(0.03, {AttrBonus { AttrType::SPELL_DAMAGE, 7 }, LastingEffect::INSANITY})
            .addSpecialTrait(0.1, ExtraTraining { ExperienceType::SPELL, 4 })
            .addSpecialTrait(0.05, SkillId::SORCERY)
            .addSpecialTrait(0.05, SkillId::LABORATORY)
@@ -170,21 +147,21 @@ static CollectiveConfig getKeeperConfig(RandomGen& random, bool fastImmigration,
            .setSpawnLocation(FurnitureType::DEMON_SHRINE)
            .addRequirement(0.3, AttractionInfo{3, FurnitureType::DEMON_SHRINE})
            .addRequirement(0.0, FurnitureType::DEMON_SHRINE),
-       ImmigrantInfo(CreatureId::RAVEN, {MinionTrait::FIGHTER})
+       ImmigrantInfo(CreatureId::RAVEN, {MinionTrait::FIGHTER, MinionTrait::DOESNT_TRIGGER})
            .setFrequency(0.5)
            .addRequirement(0.0, FurnitureType::BEAST_CAGE)
            .addRequirement(0.0, SunlightState::DAY),
-       ImmigrantInfo(CreatureId::BAT, {MinionTrait::FIGHTER})
+       ImmigrantInfo(CreatureId::BAT, {MinionTrait::FIGHTER, MinionTrait::DOESNT_TRIGGER})
            .setFrequency(0.5)
            .addRequirement(0.0, FurnitureType::BEAST_CAGE)
            .addRequirement(0.0, SunlightState::NIGHT),
-       ImmigrantInfo(CreatureId::WOLF, {MinionTrait::FIGHTER})
+       ImmigrantInfo(CreatureId::WOLF, {MinionTrait::FIGHTER, MinionTrait::DOESNT_TRIGGER})
            .setFrequency(0.15)
            .addRequirement(0.0, FurnitureType::BEAST_CAGE)
            .setGroupSize(Range(3, 9))
            .setAutoTeam()
            .addRequirement(0.0, SunlightState::NIGHT),
-       ImmigrantInfo(CreatureId::CAVE_BEAR, {MinionTrait::FIGHTER})
+       ImmigrantInfo(CreatureId::CAVE_BEAR, {MinionTrait::FIGHTER, MinionTrait::DOESNT_TRIGGER})
            .addRequirement(0.0, FurnitureType::BEAST_CAGE)
            .setFrequency(0.1),
        ImmigrantInfo(CreatureId::WEREWOLF, {MinionTrait::FIGHTER})
@@ -213,8 +190,8 @@ static CollectiveConfig getKeeperConfig(RandomGen& random, bool fastImmigration,
            .addRequirement(CostInfo(CollectiveResourceId::GOLD, 100))
            .setSpawnLocation(Pregnancy {})
            .addSpecialTrait(0.2, LastingEffect::INSANITY),
-       ImmigrantInfo(random.permutation({CreatureId::SPECIAL_BMBN, CreatureId::SPECIAL_BMBW,
-               CreatureId::SPECIAL_BMGN, CreatureId::SPECIAL_BMGW}), {MinionTrait::FIGHTER})
+       ImmigrantInfo(random.permutation({CreatureId::SPECIAL_BMBN, CreatureId::SPECIAL_BMBW, CreatureId::SPECIAL_BMGN,
+             CreatureId::SPECIAL_BMGW}), {MinionTrait::FIGHTER, MinionTrait::DOESNT_TRIGGER})
            .addRequirement(0.0, TechId::BEAST_MUT)
            .addRequirement(0.0, Pregnancy {})
            .addRequirement(CostInfo(CollectiveResourceId::GOLD, 100))
@@ -225,24 +202,6 @@ static CollectiveConfig getKeeperConfig(RandomGen& random, bool fastImmigration,
       TimeInterval(fastImmigration ? 10 : 140),
       10,
       regenerateMana,
-      {
-      CONSTRUCT(PopulationIncrease,
-        c.type = FurnitureType::PIGSTY;
-        c.increasePerSquare = ModelBuilder::getPigstyPopulationIncrease();
-        c.maxIncrease = c.increasePerSquare * ModelBuilder::getMaxUsefulPigsty();),
-      CONSTRUCT(PopulationIncrease,
-        c.type = FurnitureType::MINION_STATUE;
-        c.increasePerSquare = ModelBuilder::getStatuePopulationIncrease();
-        c.maxIncrease = c.increasePerSquare * ModelBuilder::getMaxUsefulGoldStatues();),
-      CONSTRUCT(PopulationIncrease,
-        c.type = FurnitureType::STONE_MINION_STATUE;
-        c.increasePerSquare = ModelBuilder::getStatuePopulationIncrease();
-        c.maxIncrease = c.increasePerSquare * ModelBuilder::getMaxUsefulStoneStatues();),
-      CONSTRUCT(PopulationIncrease,
-        c.type = FurnitureType::THRONE;
-        c.increasePerSquare = ModelBuilder::getThronePopulationIncrease();
-        c.maxIncrease = c.increasePerSquare;),
-      },
       std::move(immigrants));
 }
 

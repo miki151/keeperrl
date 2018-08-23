@@ -9,7 +9,7 @@ class ProgressMeter;
 
 class FileSharing {
   public:
-  FileSharing(const string& uploadUrl, Options&, long long installId);
+  FileSharing(const string& uploadUrl, Options&, string installId);
 
   optional<string> uploadSite(const FilePath& path, ProgressMeter&);
   struct SiteInfo {
@@ -25,6 +25,8 @@ class FileSharing {
   typedef map<string, string> GameEvent;
   bool uploadGameEvent(const GameEvent&, bool requireGameEventsPermission = true);
   void uploadHighscores(const FilePath&);
+  optional<string> uploadBugReport(const string& text, optional<FilePath> savefile, optional<FilePath> screenshot,
+      ProgressMeter&);
 
   struct BoardMessage {
     string text;
@@ -47,7 +49,7 @@ class FileSharing {
   void uploadingLoop();
   void uploadGameEventImpl(const GameEvent&, int tries);
   optional<string> downloadContent(const string& url);
-  long long installId;
+  string installId;
   atomic<bool> wasCancelled;
 };
 

@@ -32,15 +32,6 @@ class Technology;
 struct ResourceInfo;
 struct ItemFetchInfo;
 
-struct PopulationIncrease {
-  FurnitureType SERIAL(type);
-  double SERIAL(increasePerSquare);
-  int SERIAL(maxIncrease);
-
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version);
-};
-
 struct GuardianInfo {
   CreatureId SERIAL(creature);
   double SERIAL(probability);
@@ -78,8 +69,7 @@ struct FloorInfo {
 
 class CollectiveConfig {
   public:
-  static CollectiveConfig keeper(TimeInterval immigrantInterval, int maxPopulation, bool regenerateMana,
-      vector<PopulationIncrease>, const vector<ImmigrantInfo>&);
+  static CollectiveConfig keeper(TimeInterval immigrantInterval, int maxPopulation, bool regenerateMana, const vector<ImmigrantInfo>&);
   static CollectiveConfig withImmigrants(TimeInterval immigrantInterval, int maxPopulation, const vector<ImmigrantInfo>&);
   static CollectiveConfig noImmigrants();
 
@@ -93,7 +83,6 @@ class CollectiveConfig {
   bool stayInTerritory() const;
   TimeInterval getImmigrantInterval() const;
   bool getStripSpawns() const;
-  bool getFetchItems() const;
   bool getEnemyPositions() const;
   bool getWarnings() const;
   bool getConstructions() const;
@@ -106,7 +95,6 @@ class CollectiveConfig {
   bool getRegenerateMana() const;
   bool allowHealingTaskOutsideTerritory() const;
   const vector<ImmigrantInfo>& getImmigrantInfo() const;
-  const vector<PopulationIncrease>& getPopulationIncreases() const;
   const optional<GuardianInfo>& getGuardianInfo() const;
   unique_ptr<Workshops> getWorkshops() const;
   vector<Technology*> getInitialTech() const;
@@ -134,12 +122,10 @@ class CollectiveConfig {
 
   private:
   enum CollectiveType { KEEPER, VILLAGE };
-  CollectiveConfig(TimeInterval immigrantInterval, const vector<ImmigrantInfo>&, CollectiveType, int maxPopulation,
-      vector<PopulationIncrease>);
+  CollectiveConfig(TimeInterval immigrantInterval, const vector<ImmigrantInfo>&, CollectiveType, int maxPopulation);
 
   TimeInterval SERIAL(immigrantInterval);
   int SERIAL(maxPopulation);
-  vector<PopulationIncrease> SERIAL(populationIncreases);
   vector<ImmigrantInfo> SERIAL(immigrantInfo);
   CollectiveType SERIAL(type);
   bool SERIAL(leaderAsFighter) = false;

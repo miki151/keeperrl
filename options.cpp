@@ -21,8 +21,8 @@
 const EnumMap<OptionId, Options::Value> defaults {
   {OptionId::HINTS, 1},
   {OptionId::ASCII, 0},
-  {OptionId::MUSIC, 1},
-  {OptionId::SOUND, 1},
+  {OptionId::MUSIC, 100},
+  {OptionId::SOUND, 100},
   {OptionId::KEEP_SAVEFILES, 0},
   {OptionId::SHOW_MAP, 0},
   {OptionId::FULLSCREEN, 0},
@@ -54,8 +54,8 @@ const EnumMap<OptionId, Options::Value> defaults {
 const map<OptionId, string> names {
   {OptionId::HINTS, "In-game hints"},
   {OptionId::ASCII, "Unicode graphics"},
-  {OptionId::MUSIC, "Music"},
-  {OptionId::SOUND, "Sound effects"},
+  {OptionId::MUSIC, "Music volume"},
+  {OptionId::SOUND, "SFX volume"},
   {OptionId::KEEP_SAVEFILES, "Keep save files"},
   {OptionId::SHOW_MAP, "Show map"},
   {OptionId::FULLSCREEN, "Fullscreen"},
@@ -72,7 +72,7 @@ const map<OptionId, string> names {
   {OptionId::STARTING_RESOURCE, "Resource bonus"},
   {OptionId::START_WITH_NIGHT, "Start with night"},
   {OptionId::KEEPER_NAME, "Keeper's name"},
-  {OptionId::KEEPER_TYPE, "Keeper's gender"},
+  {OptionId::KEEPER_TYPE, "Keeper's avatar"},
   {OptionId::KEEPER_SEED, "Level generation seed"},
   {OptionId::ADVENTURER_NAME, "Adventurer's name"},
   {OptionId::ADVENTURER_TYPE, "Adventurer's gender"},
@@ -243,8 +243,6 @@ string Options::getValueString(OptionId id) {
     case OptionId::VSYNC:
     case OptionId::AUTOSAVE:
     case OptionId::WASD_SCROLLING:
-    case OptionId::SOUND:
-    case OptionId::MUSIC:
       return getOnOff(value);
     case OptionId::KEEP_SAVEFILES:
     case OptionId::SHOW_MAP:
@@ -280,6 +278,9 @@ string Options::getValueString(OptionId id) {
     case OptionId::INFLUENCE_SIZE:
     case OptionId::ALLIES:
       return toString(getIntValue(id));
+    case OptionId::SOUND:
+    case OptionId::MUSIC:
+      return toString(getIntValue(id)) + "%";
     case OptionId::KEEPER_TYPE:
     case OptionId::ADVENTURER_TYPE:
       return toString((int)getCreatureId(id));
@@ -309,21 +310,27 @@ void Options::changeValue(OptionId id, const Options::Value& value, View* view) 
   switch (id) {
     case OptionId::KEEPER_NAME:
     case OptionId::ADVENTURER_NAME:
-        if (auto val = view->getText("Enter " + names.at(id), *value.getValueMaybe<string>(), 23,
-              "Leave blank to use a random name."))
-          setValue(id, *val);
-        break;
+      if (auto val = view->getText("Enter " + names.at(id), *value.getValueMaybe<string>(), 23,
+            "Leave blank to use a random name."))
+        setValue(id, *val);
+      break;
     case OptionId::KEEPER_SEED:
-        if (auto val = view->getText("Enter " + names.at(id), *value.getValueMaybe<string>(), 23,
-              "Leave blank to use a random seed."))
-          setValue(id, *val);
-        break;
+      if (auto val = view->getText("Enter " + names.at(id), *value.getValueMaybe<string>(), 23,
+            "Leave blank to use a random seed."))
+        setValue(id, *val);
+      break;
+    case OptionId::MUSIC:
+    case OptionId::SOUND:
+      if (auto val = view->getNumber("Change " + getName(id), Range(0, 100), *value.getValueMaybe<int>(), 5))
+        setValue(id, *val);
+      break;
     case OptionId::FULLSCREEN_RESOLUTION:
-        if (auto index = view->chooseFromList("Choose resolution.", ListElem::convert(choices[id])))
-          setValue(id, *index);
-        break;
+      if (auto index = view->chooseFromList("Choose resolution.", ListElem::convert(choices[id])))
+        setValue(id, *index);
+      break;
     default:
-        setValue(id, (int) !*value.getValueMaybe<int>());
+      setValue(id, (int) !*value.getValueMaybe<int>());
+      break;
   }
 }
 
@@ -400,8 +407,11 @@ void Options::readValues() {
         optionId = *id;
       else
         continue;
-      if (auto val = readValue(optionId, p[1]))
+      if (auto val = readValue(optionId, p[1])) {
+        if ((optionId == OptionId::SOUND || optionId == OptionId::MUSIC) && *val == 1)
+          *val = 100;
         (*values)[optionId] = *val;
+      }
     }
   }
 }

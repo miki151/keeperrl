@@ -26,7 +26,7 @@ class CreatureList;
 class MainLoop {
   public:
   MainLoop(View*, Highscores*, FileSharing*, const DirectoryPath& dataFreePath, const DirectoryPath& userPath,
-      Options*, Jukebox*, SokobanInput*, bool useSingleThread);
+      Options*, Jukebox*, SokobanInput*, bool useSingleThread, int saveVersion);
 
   void start(bool tilesPresent, bool quickGame);
   void modelGenTest(int numTries, const vector<std::string>& types, RandomGen&, Options*);
@@ -35,6 +35,7 @@ class MainLoop {
   void endlessTest(int numTries, const FilePath& levelPath, const FilePath& battleInfoPath, RandomGen&, optional<int> numEnemy);
 
   static TimeInterval getAutosaveFreq();
+  static void reloadModel(const FilePath& path);
 
   private:
 
@@ -55,7 +56,7 @@ class MainLoop {
 
   PGame prepareCampaign(RandomGen&);
   enum class ExitCondition;
-  ExitCondition playGame(PGame&&, bool withMusic, bool noAutoSave, function<optional<ExitCondition> (WGame)> = nullptr);
+  ExitCondition playGame(PGame, bool withMusic, bool noAutoSave, function<optional<ExitCondition> (WGame)> = nullptr);
   void splashScreen();
   void showCredits(const FilePath& path, View*);
 
@@ -70,6 +71,7 @@ class MainLoop {
   bool downloadGame(const string& filename);
   bool eraseSave();
   static vector<SaveFileInfo> getSaveFiles(const DirectoryPath& path, const string& suffix);
+  bool isCompatible(int loadedVersion);
 
   View* view;
   DirectoryPath dataFreePath;
@@ -86,6 +88,10 @@ class MainLoop {
   void eraseAllSavesExcept(const PGame&, optional<GameSaveType>);
   PGame prepareTutorial();
   void launchQuickGame();
+  void bugReportSave(PGame&, FilePath);
+  int saveVersion;
+  void saveGame(PGame&, const FilePath&);
+  void saveMainModel(PGame&, const FilePath&);
 };
 
 

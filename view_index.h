@@ -18,6 +18,7 @@
 #include "enums.h"
 #include "util.h"
 #include "view_layer.h"
+#include "item_counts.h"
 
 class ViewObject;
 
@@ -63,6 +64,7 @@ class ViewIndex {
   // If the tile is not visible, we still need the id of the floor tile to render connections properly.
   optional<ViewId> getHiddenId() const;
   void setHiddenId(ViewId);
+  vector<ViewObject>& getAllObjects();
 
   void setHighlight(HighlightType, double amount = 1);
 
@@ -71,6 +73,9 @@ class ViewIndex {
 
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version);
+
+  ItemCounts SERIAL(itemCounts);
+  ItemCounts SERIAL(equipmentCounts);
 
   private:
   std::array<char, EnumInfo<ViewLayer>::size> SERIAL(objIndex);

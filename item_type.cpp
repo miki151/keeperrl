@@ -27,29 +27,29 @@ ItemType::ItemType(const ItemType&) = default;
 ItemType::ItemType(ItemType&) = default;
 ItemType::ItemType(ItemType&&) = default;
 
-ItemType ItemType::touch(Effect effect) {
+ItemType ItemType::touch(Effect victimEffect, optional<Effect> attackerEffect) {
   return ItemType::Intrinsic{ViewId::TOUCH_ATTACK, "touch", 0,
-      WeaponInfo{false, AttackType::HIT, AttrType::DAMAGE, effect, AttackMsg::TOUCH}};
+      WeaponInfo{false, AttackType::HIT, AttrType::DAMAGE, victimEffect, attackerEffect, AttackMsg::TOUCH}};
 }
 
 ItemType ItemType::legs(int damage) {
   return ItemType::Intrinsic{ViewId::LEG_ATTACK, "legs", damage,
-        WeaponInfo{false, AttackType::HIT, AttrType::DAMAGE, none, AttackMsg::KICK}};
+        WeaponInfo{false, AttackType::HIT, AttrType::DAMAGE, none, none, AttackMsg::KICK}};
 }
 
 ItemType ItemType::claws(int damage) {
   return ItemType::Intrinsic{ViewId::CLAWS_ATTACK, "claws", damage,
-        WeaponInfo{false, AttackType::HIT, AttrType::DAMAGE, none, AttackMsg::CLAW}};
+        WeaponInfo{false, AttackType::HIT, AttrType::DAMAGE, none, none, AttackMsg::CLAW}};
 }
 
 ItemType ItemType::beak(int damage) {
   return ItemType::Intrinsic{ViewId::BEAK_ATTACK, "beak", damage,
-        WeaponInfo{false, AttackType::HIT, AttrType::DAMAGE, none, AttackMsg::BITE}};
+        WeaponInfo{false, AttackType::HIT, AttrType::DAMAGE, none, none, AttackMsg::BITE}};
 }
 
 static ItemType fistsBase(int damage, optional<Effect> effect) {
   return ItemType::Intrinsic{ViewId::FIST_ATTACK, "fists", damage,
-      WeaponInfo{false, AttackType::HIT, AttrType::DAMAGE, effect, AttackMsg::SWING}};
+      WeaponInfo{false, AttackType::HIT, AttrType::DAMAGE, effect, none, AttackMsg::SWING}};
 }
 
 ItemType ItemType::fists(int damage) {
@@ -62,7 +62,7 @@ ItemType ItemType::fists(int damage, Effect effect) {
 
 static ItemType fangsBase(int damage, optional<Effect> effect) {
   return ItemType::Intrinsic{ViewId::BITE_ATTACK, "fangs", damage,
-      WeaponInfo{false, AttackType::BITE, AttrType::DAMAGE, effect, AttackMsg::BITE}};
+      WeaponInfo{false, AttackType::BITE, AttrType::DAMAGE, effect, none, AttackMsg::BITE}};
 }
 
 ItemType ItemType::fangs(int damage) {
@@ -75,7 +75,7 @@ ItemType ItemType::fangs(int damage, Effect effect) {
 
 ItemType ItemType::spellHit(int damage) {
   return ItemType::Intrinsic{ViewId::FIST_ATTACK, "spell", damage,
-      WeaponInfo{false, AttackType::HIT, AttrType::SPELL_DAMAGE, none, AttackMsg::SPELL}};
+      WeaponInfo{false, AttackType::HIT, AttrType::SPELL_DAMAGE, none, none, AttackMsg::SPELL}};
 }
 
 ItemType::ItemType() {}
@@ -126,7 +126,7 @@ class Corpse : public Item {
   }
 
   virtual void applySpecial(WCreature c) override {
-    auto it = c->getWeapon();
+    auto it = c->getFirstWeapon();
     if (it && it->getWeaponInfo().attackType == AttackType::CUT) {
       c->you(MsgType::DECAPITATE, getTheName());
       setName("decapitated " + getName());
@@ -307,6 +307,9 @@ static int getEffectPrice(Effect type) {
       [&](const Effect::Acid&) {
         return 8;
       },
+      [&](const Effect::Suicide&) {
+        return 8;
+      },
       [&](const Effect::Heal&) {
         return 8;
       },
@@ -370,6 +373,9 @@ static int getEffectPrice(Effect type) {
       [&](const Effect::RegrowBodyPart&) {
         return 30;
       }
+      /*[&](const Effect::Chain& c) {
+        return getEffectPrice(c.effects[0]);
+      }*/
   );
 }
 
@@ -452,7 +458,7 @@ ItemAttributes ItemType::Knife::getAttributes() const {
       i.price = 1;
       i.weaponInfo.attackType = AttackType::STAB;
       i.weaponInfo.attackMsg = AttackMsg::THRUST;
-      i.prefixes.push_back({1, Effect(Effect::Lasting{LastingEffect::POISON})});
+      i.prefixes.push_back({1, VictimEffect{Effect::Lasting{LastingEffect::POISON}}});
   );
 }
 
@@ -460,6 +466,10 @@ ItemAttributes ItemType::Intrinsic::getAttributes() const {
   return ITATTR(
       i.viewId = viewId;
       i.name = name;
+      if (auto& effect = weaponInfo.victimEffect)
+        i.prefix = effect->getName();
+      else if (auto& effect = weaponInfo.attackerEffect)
+        i.prefix = effect->getName();
       i.itemClass = ItemClass::WEAPON;
       i.equipmentSlot = EquipmentSlot::WEAPON;
       i.weight = 0.3;
@@ -478,7 +488,7 @@ ItemAttributes ItemType::UnicornHorn::getAttributes() const {
       i.equipmentSlot = EquipmentSlot::WEAPON;
       i.weight = 0.3;
       i.modifiers[AttrType::DAMAGE] = 5 + maybePlusMinusOne(4);
-      i.weaponInfo.attackEffect = Effect(Effect::Lasting{LastingEffect::POISON});
+      i.weaponInfo.victimEffect = Effect(Effect::Lasting{LastingEffect::POISON});
       i.price = 1;
       i.weaponInfo.attackType = AttackType::STAB;
       i.weaponInfo.attackMsg = AttackMsg::THRUST;
@@ -509,7 +519,13 @@ ItemAttributes ItemType::Sword::getAttributes() const {
       i.modifiers[AttrType::DAMAGE] = 8 + maybePlusMinusOne(4);
       i.price = 4;
       i.weaponInfo.attackType = AttackType::CUT;
-      i.prefixes.push_back({1, Effect(Effect::Fire{})});
+      i.prefixes.push_back({1, VictimEffect{Effect::Fire{}}});
+      i.prefixes.push_back({1, VictimEffect{Effect::Lasting{LastingEffect::POISON}}});
+      i.prefixes.push_back({1, LastingEffect::RAGE});
+      i.prefixes.push_back({1, JoinPrefixes{{
+          ItemPrefix{ItemAttrBonus{AttrType::DAMAGE, 3}},
+          ItemPrefix{LastingEffect::HALLU},
+      }}});
   );
 }
 
@@ -523,8 +539,10 @@ ItemAttributes ItemType::AdaSword::getAttributes() const {
       i.modifiers[AttrType::DAMAGE] = 11 + maybePlusMinusOne(4);
       i.price = 20;
       i.weaponInfo.attackType = AttackType::CUT;
-      i.prefixes.push_back({1, Effect(Effect::Acid{})});
-      i.prefixes.push_back({1, Effect(Effect::Fire{})});
+      i.prefixes.push_back({1, VictimEffect{Effect::Acid{}}});
+      i.prefixes.push_back({1, VictimEffect{Effect::Fire{}}});
+      i.prefixes.push_back({1, VictimEffect{Effect::Lasting{LastingEffect::POISON}}});
+      i.prefixes.push_back({1, LastingEffect::RAGE});
   );
 }
 
@@ -538,7 +556,7 @@ ItemAttributes ItemType::ElvenSword::getAttributes() const {
       i.modifiers[AttrType::DAMAGE] = 9 + maybePlusMinusOne(4);
       i.price = 8;
       i.weaponInfo.attackType = AttackType::CUT;
-      i.prefixes.push_back({1, Effect(Effect::SilverDamage{})});
+      i.prefixes.push_back({1, VictimEffect{Effect::SilverDamage{}}});
   );
 }
 
@@ -553,7 +571,8 @@ ItemAttributes ItemType::BattleAxe::getAttributes() const {
       i.weaponInfo.twoHanded = true;
       i.price = 30;
       i.weaponInfo.attackType = AttackType::CUT;
-      i.prefixes.push_back({1, Effect(Effect::Lasting{LastingEffect::BLEEDING})});
+      i.prefixes.push_back({1, VictimEffect{Effect::Lasting{LastingEffect::BLEEDING}}});
+      i.prefixes.push_back({1, LastingEffect::RAGE});
   );
 }
 
@@ -569,7 +588,7 @@ ItemAttributes ItemType::AdaBattleAxe::getAttributes() const {
       i.weaponInfo.twoHanded = true;
       i.price = 150;
       i.weaponInfo.attackType = AttackType::CUT;
-      i.prefixes.push_back({1, Effect(Effect::Lasting{LastingEffect::BLEEDING})});
+      i.prefixes.push_back({1, VictimEffect{Effect::Lasting{LastingEffect::BLEEDING}}});
   );
 }
 
@@ -584,7 +603,7 @@ ItemAttributes ItemType::WarHammer::getAttributes() const {
       i.weaponInfo.twoHanded = true;
       i.price = 20;
       i.weaponInfo.attackType = AttackType::CRUSH;
-      i.prefixes.push_back({1, Effect(Effect::Lasting{LastingEffect::COLLAPSED})});
+      i.prefixes.push_back({1, VictimEffect{Effect::Lasting{LastingEffect::COLLAPSED}}});
   );
 }
 
@@ -627,7 +646,7 @@ ItemAttributes ItemType::WoodenStaff::getAttributes() const {
       i.price = 30;
       i.weaponInfo.attackType = AttackType::SPELL;
       i.weaponInfo.attackMsg = AttackMsg::WAVE;
-      i.prefixes.push_back({1, Effect(Effect::Teleport{})});
+      i.prefixes.push_back({1, VictimEffect{Effect::Teleport{}}});
   );
 }
 
@@ -643,8 +662,12 @@ ItemAttributes ItemType::IronStaff::getAttributes() const {
       i.price = 60;
       i.weaponInfo.attackType = AttackType::SPELL;
       i.weaponInfo.attackMsg = AttackMsg::WAVE;
-      i.prefixes.push_back({1, Effect(Effect::Teleport{})});
-      i.prefixes.push_back({1, Effect(Effect::DestroyEquipment{})});
+      i.prefixes.push_back({1, VictimEffect{Effect::Teleport{}}});
+      i.prefixes.push_back({1, VictimEffect{Effect::DestroyEquipment{}}});
+      i.prefixes.push_back({1, JoinPrefixes{{
+          ItemPrefix{ItemAttrBonus{AttrType::SPELL_DAMAGE, 20}},
+          ItemPrefix{AttackerEffect{Effect::Suicide{}}}
+      }}});
   );
 }
 
@@ -696,8 +719,8 @@ ItemAttributes ItemType::Torch::getAttributes() const {
       i.itemClass = ItemClass::TOOL;
       i.weight = 1;
       i.ownedEffect = LastingEffect::LIGHT_SOURCE;
-      i.name = "torch";
-      i.plural = "torches"_s;
+      i.name = "hand torch";
+      i.plural = "hand torches"_s;
       i.price = 2;
   );
 }
@@ -754,6 +777,7 @@ ItemAttributes ItemType::LeatherGloves::getAttributes() const {
       i.price = 2;
       i.modifiers[AttrType::DEFENSE] = 1 + maybePlusMinusOne(4);
       i.prefixes.push_back({1, ItemAttrBonus{AttrType::DAMAGE, Random.get(2, 5)}});
+      i.prefixes.push_back({1, ItemAttrBonus{AttrType::SPELL_DAMAGE, Random.get(2, 5)}});
   );
 }
 
@@ -1118,7 +1142,7 @@ ItemAttributes ItemType::Bone::getAttributes() const {
   return ITATTR(
       i.viewId = ViewId::BONE;
       i.name = "bone";
-      i.itemClass = ItemClass::OTHER;
+      i.itemClass = ItemClass::CORPSE;
       i.price = 0;
       i.weight = 5;
   );

@@ -24,6 +24,8 @@ class Furniture : public OwnedObject<Furniture> {
   static const string& getName(FurnitureType, int count = 1);
   static FurnitureLayer getLayer(FurnitureType);
   static bool isWall(FurnitureType);
+  static int getPopulationIncrease(FurnitureType, int numBuilt);
+  static optional<std::string> getPopulationIncreaseDescription(FurnitureType);
 
   Furniture(const string& name, const optional<ViewObject>&, FurnitureType, TribeId);
   Furniture(const Furniture&);
@@ -47,7 +49,6 @@ class Furniture : public OwnedObject<Furniture> {
   bool canSeeThru(VisionId) const;
   bool stopsProjectiles(VisionId) const;
   void click(Position) const;
-  bool isClickable() const;
   bool overridesMovement() const;
   void use(Position, WCreature) const;
   bool canUse(WConstCreature) const;
@@ -68,6 +69,8 @@ class Furniture : public OwnedObject<Furniture> {
   optional<CreatureId> getSummonedElement() const;
   bool isClearFogOfWar() const;
   bool forgetAfterBuilding() const;
+  bool isShowEfficiency() const;
+  void onCreatureWalkedOver(Position, Vec2 direction) const;
   /**
    * @brief Calls special functionality to handle dropped items, if any.
    * @return possibly empty subset of the items that weren't consumned and can be dropped normally.
@@ -108,6 +111,10 @@ class Furniture : public OwnedObject<Furniture> {
   Furniture& setCanRemoveWithCreaturePresent(bool state);
   Furniture& setCanRemoveNonFriendly(bool state);
   Furniture& setForgetAfterBuilding();
+  Furniture& setShowEfficiency();
+  Furniture& setDestroyFX(FXName);
+  Furniture& setTryDestroyFX(FXName);
+  Furniture& setWalkOverFX(FXName);
   MovementSet& modMovementSet();
 
   SERIALIZATION_DECL(Furniture)
@@ -135,7 +142,7 @@ class Furniture : public OwnedObject<Furniture> {
   TimeInterval SERIAL(usageTime) = 1_visible;
   bool SERIAL(overrideMovement) = false;
   bool SERIAL(removeWithCreaturePresent) = true;
-  bool SERIAL(removeNonFriendly) = true;
+  bool SERIAL(removeNonFriendly) = false;
   bool SERIAL(wall) = false;
   optional<ConstructMessage> SERIAL(constructMessage) = BUILD;
   double SERIAL(lightEmission) = 0;
@@ -148,4 +155,8 @@ class Furniture : public OwnedObject<Furniture> {
   bool SERIAL(noProjectiles) = false;
   bool SERIAL(clearFogOfWar) = false;
   bool SERIAL(xForgetAfterBuilding) = false;
+  bool SERIAL(showEfficiency) = false;
+  optional<FXName> SERIAL(destroyFX);
+  optional<FXName> SERIAL(tryDestroyFX);
+  optional<FXName> SERIAL(walkOverFX);
 };

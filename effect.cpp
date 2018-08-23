@@ -128,7 +128,7 @@ static void enhanceArmor(WCreature c, int mod, const string& msg) {
 }
 
 static void enhanceWeapon(WCreature c, int mod, const string& msg) {
-  if (auto item = c->getWeapon()) {
+  if (auto item = c->getFirstWeapon()) {
     c->you(MsgType::YOUR, item->getName() + " " + msg);
     item->addModifier(item->getWeaponInfo().meleeAttackAttr, mod);
   }
@@ -275,12 +275,17 @@ void Effect::Teleport::applyToCreature(WCreature c, WCreature attacker) const {
   int infinity = 10000;
   PositionMap<int> weight;
   queue<Position> q;
-  for (Position v : c->getPosition().getRectangle(area))
-    if (auto other = v.getCreature())
-      if (other->isEnemy(c)) {
-        q.push(v);
-        weight.set(v, 0);
-      }
+  auto addDanger = [&] (Position pos) {
+    q.push(pos);
+    weight.set(pos, 0);
+  };
+  for (Position v : c->getPosition().getRectangle(area)) {
+    if (v.isBurning())
+      addDanger(v);
+    else if (auto other = v.getCreature())
+      if (other->isEnemy(c))
+        addDanger(v);
+  }
   while (!q.empty()) {
     Position v = q.front();
     q.pop();
@@ -544,7 +549,7 @@ string Effect::Heal::getName() const {
 }
 
 string Effect::Heal::getDescription() const {
-  return "Fully restores your health";
+  return "Fully restores your health.";
 }
 
 void Effect::Fire::applyToCreature(WCreature c, WCreature attacker) const {
@@ -580,7 +585,7 @@ string Effect::SilverDamage::getName() const {
 }
 
 string Effect::SilverDamage::getDescription() const {
-  return "Hurts the undead";
+  return "Hurts the undead.";
 }
 
 void Effect::CurePoison::applyToCreature(WCreature c, WCreature attacker) const {
@@ -592,7 +597,7 @@ string Effect::CurePoison::getName() const {
 }
 
 string Effect::CurePoison::getDescription() const {
-  return "Cures poisoning";
+  return "Cures poisoning.";
 }
 
 void Effect::PlaceFurniture::applyToCreature(WCreature c, WCreature attacker) const {
@@ -622,7 +627,7 @@ string Effect::PlaceFurniture::getName() const {
 }
 
 string Effect::PlaceFurniture::getDescription() const {
-  return "Creates a " + Furniture::getName(furniture);
+  return "Creates a " + Furniture::getName(furniture) + ".";
 }
 
 void Effect::Damage::applyToCreature(WCreature c, WCreature attacker) const {
@@ -671,7 +676,48 @@ string Effect::RegrowBodyPart::getName() const {
 }
 
 string Effect::RegrowBodyPart::getDescription() const {
-  return "Causes lost body parts to regrow";
+  return "Causes lost body parts to regrow.";
+}
+
+/*void Effect::Chain::applyToCreature(WCreature c, WCreature attacker) const {
+  for (auto& elem : effects)
+    elem.applyToCreature(c, attacker);
+}
+
+string Effect::Chain::getName() const {
+  string ret;
+  for (auto& elem : effects) {
+    if (!ret.empty())
+      ret += " and ";
+    ret += elem.getName();
+  }
+  return ret;
+}
+
+string Effect::Chain::getDescription() const {
+  string ret;
+  for (auto& elem : effects) {
+    if (!ret.empty()) {
+      if (ret.back() != '.')
+        ret += '.';
+      ret += ' ';
+    }
+    ret += elem.getDescription();
+  }
+  return ret;
+}*/
+
+void Effect::Suicide::applyToCreature(WCreature c, WCreature attacker) const {
+  c->you(MsgType::DIE, "");
+  c->dieNoReason();
+}
+
+string Effect::Suicide::getName() const {
+  return "suicide";
+}
+
+string Effect::Suicide::getDescription() const {
+  return "Causes the *attacker* to die.";
 }
 
 #define FORWARD_CALL(Var, Name, ...)\
@@ -723,6 +769,8 @@ static optional<ViewId> getProjectile(const DirEffectType& effect) {
   switch (effect.getId()) {
     case DirEffectId::BLAST:
       return ViewId::AIR_BLAST;
+    case DirEffectId::FIREBALL:
+      return ViewId::FIREBALL;
     case DirEffectId::CREATURE_EFFECT:
       return getProjectile(effect.get<Effect>());
   }
@@ -731,12 +779,21 @@ static optional<ViewId> getProjectile(const DirEffectType& effect) {
 void applyDirected(WCreature c, Vec2 direction, const DirEffectType& type) {
   auto begin = c->getPosition();
   int range = type.getRange();
+  for (Vec2 v = direction; v.length8() <= range; v += direction)
+    if (!c->getPosition().plus(v).canEnterEmpty(MovementType({MovementTrait::FLY, MovementTrait::WALK}))) {
+      range = v.length8();
+      break;
+    }
   if (auto projectile = getProjectile(type))
     c->getGame()->addEvent(EventInfo::Projectile{*projectile, begin, begin.plus(direction * range)});
   switch (type.getId()) {
     case DirEffectId::BLAST:
       for (Vec2 v = direction * range; v.length4() >= 1; v -= direction)
         airBlast(c, c->getPosition().plus(v), direction);
+      break;
+    case DirEffectId::FIREBALL:
+      for (Vec2 v = direction; v.length4() <= range; v += direction)
+        c->getPosition().plus(v).fireDamage(1);
       break;
     case DirEffectId::CREATURE_EFFECT:
       for (Vec2 v = direction * range; v.length4() >= 1; v -= direction)
@@ -748,11 +805,13 @@ void applyDirected(WCreature c, Vec2 direction, const DirEffectType& type) {
 
 string getDescription(const DirEffectType& type) {
   switch (type.getId()) {
-    case DirEffectId::BLAST: return "Creates a directed blast of air that throws back creatures and items.";
+    case DirEffectId::BLAST:
+      return "Creates a directed blast of air that throws back creatures and items.";
+    case DirEffectId::FIREBALL:
+      return "Creates a directed fireball.";
     case DirEffectId::CREATURE_EFFECT:
-        return "Creates a directed ray of range " + toString(type.getRange()) + " that " +
-            noCapitalFirst(type.get<Effect>().getDescription());
-        break;
+      return "Creates a directed ray of range " + toString(type.getRange()) + " that " +
+          noCapitalFirst(type.get<Effect>().getDescription());
   }
 }
 

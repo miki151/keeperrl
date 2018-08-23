@@ -153,6 +153,8 @@ void Game::prepareSiteRetirement() {
   for (Vec2 v : models.getBounds())
     if (models[v] && v != baseModel)
       models[v]->discardForRetirement();
+  for (WCollective col : models[baseModel]->getCollectives())
+    col->setVillainType(VillainType::NONE);
   playerCollective->setVillainType(VillainType::MAIN);
   playerCollective->retire();
   vector<Position> locationPos;
@@ -197,11 +199,13 @@ void Game::prepareSiteRetirement() {
   mainModel->clearExternalEnemies();
   TribeId::switchForSerialization(TribeId::getKeeper(), TribeId::getRetiredKeeper());
   UniqueEntity<Item>::offsetForSerialization(Random.getLL());
+  UniqueEntity<Creature>::offsetForSerialization(Random.getLL());
 }
 
 void Game::doneRetirement() {
   TribeId::clearSwitch();
   UniqueEntity<Item>::clearOffset();
+  UniqueEntity<Creature>::clearOffset();
 }
 
 optional<ExitInfo> Game::updateInput() {
@@ -331,9 +335,10 @@ void Game::tick(GlobalTime time) {
 void Game::exitAction() {
   enum Action { SAVE, RETIRE, OPTIONS, ABANDON};
 #ifdef RELEASE
-  bool canRetire = playerControl && gameWon() && players.empty() && campaign->getType() != CampaignType::SINGLE_KEEPER;
+  bool canRetire = playerControl && !playerControl->getTutorial() && gameWon() && players.empty() &&
+      campaign->getType() != CampaignType::SINGLE_KEEPER;
 #else
-  bool canRetire = playerControl && players.empty();
+  bool canRetire = playerControl && !playerControl->getTutorial() && players.empty();
 #endif
   vector<ListElem> elems { "Save and exit the game",
     {"Retire", canRetire ? ListElem::NORMAL : ListElem::INACTIVE} , "Change options", "Abandon the game" };

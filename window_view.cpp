@@ -33,6 +33,7 @@
 #include "position.h"
 #include "sound_library.h"
 #include "player_role.h"
+#include "file_sharing.h"
 
 using SDL::SDL_Keysym;
 using SDL::SDL_Keycode;
@@ -89,7 +90,8 @@ WindowView::WindowView(ViewParams params) : renderer(params.renderer), gui(param
         [this]() { refreshScreen(false);},
         [this](const string& s) { presentText("", s); },
         }), zoomUI(-1),
-    soundLibrary(params.soundLibrary) {}
+    soundLibrary(params.soundLibrary), bugreportSharing(params.bugreportSharing), bugreportDir(params.bugreportDir),
+    installId(params.installId) {}
 
 void WindowView::initialize() {
   renderer.setFullscreen(options->getBoolValue(OptionId::FULLSCREEN));
@@ -133,14 +135,9 @@ void WindowView::initialize() {
           }
       },
       bindMethod(&WindowView::mapRightClickFun, this),
-      bindMethod(&WindowView::mapCreatureClickFun, this),
       [this] { refreshInput = true;},
-      bindMethod(&WindowView::mapCreatureDragFun, this),
-      [this] (UniqueEntity<Creature>::Id id, Vec2 pos) {
-          inputQueue.push(UserInput(UserInputId::CREATURE_DRAG_DROP, CreatureDropInfo{pos, id})); },
-      [this] (TeamId id, Vec2 pos) {
-          inputQueue.push(UserInput(UserInputId::TEAM_DRAG_DROP, TeamDropInfo{pos, id})); },
       },
+      inputQueue,
       clock,
       options,
       &gui));
@@ -154,20 +151,8 @@ void WindowView::initialize() {
   guiBuilder.setMapGui(mapGui);
 }
 
-void WindowView::mapCreatureDragFun(UniqueEntity<Creature>::Id id, ViewId viewId, Vec2 origin) {
-  inputQueue.push(UserInput(UserInputId::CREATURE_DRAG, id));
-}
-
 bool WindowView::isKeyPressed(SDL::SDL_Scancode code) {
   return SDL::SDL_GetKeyboardState(nullptr)[code];
-}
-
-void WindowView::mapCreatureClickFun(UniqueEntity<Creature>::Id id, Vec2 position, bool rightClick) {
-  if (rightClick) {
-    inputQueue.push(UserInput(UserInputId::CREATURE_MAP_CLICK_EXTENDED, position));
-  } else {
-    inputQueue.push(UserInput(UserInputId::CREATURE_MAP_CLICK, position));
-  }
 }
 
 void WindowView::mapContinuousLeftClickFun(Vec2 pos) {
@@ -195,9 +180,11 @@ void WindowView::mapContinuousLeftClickFun(Vec2 pos) {
 }
 
 void WindowView::mapRightClickFun(Vec2 pos) {
+  inputQueue.push(UserInput(UserInputId::CREATURE_MAP_CLICK_EXTENDED, pos));
   switch (gameInfo.infoType) {
     case GameInfo::InfoType::SPECTATOR:
     case GameInfo::InfoType::BAND:
+      guiBuilder.closeOverlayWindows();
       guiBuilder.clearActiveButton();
       break;
     default:
@@ -206,7 +193,6 @@ void WindowView::mapRightClickFun(Vec2 pos) {
 }
 
 void WindowView::reset() {
-  RecursiveLock lock(renderMutex);
   mapLayout = &currentTileLayout.layouts[0];
   gameReady = false;
   wasRendered = false;
@@ -245,9 +231,11 @@ void WindowView::drawMenuBackground(double barState, double mouthState) {
   renderer.drawImage(mouthX, scale * (mouthPos1 * (1 - mouthState) + mouthPos2 * mouthState), menuMouth, scale);
   renderer.drawText(Color::WHITE, Vec2(30, renderer.getSize().y - 40), "Version " BUILD_DATE " " BUILD_VERSION,
       Renderer::NONE, 16);
+  renderer.drawText(Color::WHITE, Vec2(30, renderer.getSize().y - 21), "Install id: " + installId,
+      Renderer::NONE, 16);
 }
 
-void WindowView::getAutosaveSplash(const ProgressMeter& meter) {
+void WindowView::getAutosaveSplash(const ProgressMeter& meter, const string& text) {
   SGuiElem window = gui.miniWindow(gui.empty(), []{});
   Vec2 windowSize(440, 70);
   Rectangle bounds((renderer.getSize() - windowSize) / 2, (renderer.getSize() + windowSize) / 2);
@@ -260,7 +248,7 @@ void WindowView::getAutosaveSplash(const ProgressMeter& meter) {
     Rectangle bar(progressBar.topLeft(), Vec2(1 + progressBar.left() * (1.0 - progress) +
           progressBar.right() * progress, progressBar.bottom()));
     renderer.drawFilledRectangle(bar, Color::DARK_GREEN.transparency(50));
-    renderer.drawText(Color::WHITE, Vec2(bounds.middle().x, bounds.top() + 20), "Autosaving", Renderer::HOR);
+    renderer.drawText(Color::WHITE, Vec2(bounds.middle().x, bounds.top() + 20), text, Renderer::HOR);
     renderer.drawAndClearBuffer();
     sleep_for(milliseconds(30));
     Event event;
@@ -333,12 +321,11 @@ void WindowView::getBigSplash(const ProgressMeter& meter, const string& text, fu
 
 void WindowView::displaySplash(const ProgressMeter* meter, const string& text, SplashType type,
     function<void()> cancelFun) {
-  RecursiveLock lock(renderMutex);
   splashDone = false;
   renderDialog.push([=] {
     switch (type) {
       case SplashType::BIG: getBigSplash(*meter, text, cancelFun); break;
-      case SplashType::AUTOSAVING: getAutosaveSplash(*meter); break;
+      case SplashType::AUTOSAVING: getAutosaveSplash(*meter, text); break;
       case SplashType::SMALL: getSmallSplash(text, cancelFun); break;
     }
     splashDone = false;
@@ -525,20 +512,6 @@ void WindowView::resetCenter() {
   mapGui->resetScrolling();
 }
 
-void WindowView::addVoidDialog(function<void()> fun) {
-  RecursiveLock lock(renderMutex);
-  Semaphore sem;
-  renderDialog.push([this, &sem, fun] {
-    fun();
-    sem.v();
-    renderDialog.pop();
-  });
-  if (currentThreadId() == renderThreadId)
-    renderDialog.top()();
-  lock.unlock();
-  sem.p();
-}
-
 void WindowView::drawLevelMap(const CreatureView* creature) {
   Semaphore sem;
   auto gui = guiBuilder.drawLevelMap(sem, creature);
@@ -558,7 +531,6 @@ void WindowView::updateView(CreatureView* view, bool noRefresh) {
   ScopeTimer timer("UpdateView timer");
   if (!wasRendered && currentThreadId() != renderThreadId)
     return;
-  RecursiveLock lock(renderMutex);
   gameInfo = {};
   view->refreshGameInfo(gameInfo);
   wasRendered = false;
@@ -594,40 +566,35 @@ void WindowView::playSounds(const CreatureView* view) {
 }
 
 void WindowView::animateObject(Vec2 begin, Vec2 end, ViewId object) {
-  RecursiveLock lock(renderMutex);
   if (begin != end)
     mapGui->addAnimation(
         Animation::thrownObject(
           (end - begin).mult(mapLayout->getSquareSize()),
           object,
-          currentTileLayout.sprites,
-          mapLayout->getSquareSize()),
+          currentTileLayout.sprites),
         begin);
 }
 
-void WindowView::animation(Vec2 pos, AnimationId id) {
-  RecursiveLock lock(renderMutex);
+void WindowView::animation(Vec2 pos, AnimationId id, Dir orientation) {
   if (currentTileLayout.sprites)
-    mapGui->addAnimation(Animation::fromId(id), pos);
+    mapGui->addAnimation(Animation::fromId(id, orientation), pos);
+}
+
+void WindowView::animation(Vec2 pos, FXName particleEffect, optional<Vec2> targetOffset) {
+  mapGui->addAnimation(particleEffect, pos, targetOffset);
 }
 
 void WindowView::refreshView() {
-
-  if (currentThreadId() != renderThreadId)
-    return;
-  {
-    RecursiveLock lock(renderMutex);
 /*    if (!wasRendered && gameReady)
       rebuildGui();*/
-    wasRendered = true;
-    CHECK(currentThreadId() == renderThreadId);
-    if (gameReady || !blockingElems.empty())
-      processEvents();
-    if (!renderDialog.empty())
-      renderDialog.top()();
-    if (uiLock && renderDialog.empty() && blockingElems.empty())
-      return;
-  }
+  wasRendered = true;
+  CHECK(currentThreadId() == renderThreadId);
+  if (gameReady || !blockingElems.empty())
+    processEvents();
+  if (!renderDialog.empty())
+    renderDialog.top()();
+  if (uiLock && renderDialog.empty() && blockingElems.empty())
+    return;
   if ((renderDialog.empty() && gameReady) || !blockingElems.empty())
     refreshScreen(true);
 }
@@ -644,9 +611,12 @@ void WindowView::drawMap() {
   guiBuilder.addFpsCounterTick();
 }
 
+static Rectangle getBugReportPos(Renderer& renderer) {
+  return Rectangle(renderer.getSize() - Vec2(100, 23), renderer.getSize());
+}
+
 void WindowView::refreshScreen(bool flipBuffer) {
   {
-    RecursiveLock lock(renderMutex);
     if (zoomUI > -1) {
       renderer.setZoom(zoomUI ? 2 : 1);
       zoomUI = -1;
@@ -659,6 +629,9 @@ void WindowView::refreshScreen(bool flipBuffer) {
     }
     drawMap();
   }
+  auto bugReportPos = getBugReportPos(renderer);
+  renderer.drawFilledRectangle(bugReportPos, Color::TRANSPARENT, Color::RED);
+  renderer.drawText(Color::RED, bugReportPos.middle() - Vec2(0, 2), "report bug", Renderer::CenterType::HOR_VER);
   if (flipBuffer)
     renderer.drawAndClearBuffer();
 }
@@ -684,7 +657,6 @@ optional<int> reverseIndexHeight(const vector<ListElem>& options, int height) {
 }
 
 optional<Vec2> WindowView::chooseDirection(Vec2 playerPos, const string& message) {
-  RecursiveLock lock(renderMutex);
   TempClockPause pause(clock);
   gameInfo.messageBuffer = { PlayerMessage(message) };
   SyncQueue<optional<Vec2>> returnQueue;
@@ -707,8 +679,8 @@ optional<Vec2> WindowView::chooseDirection(Vec2 playerPos, const string& message
           static vector<Renderer::TileCoord> coords;
           if (coords.empty())
             for (int i = 0; i < 8; ++i)
-              coords.push_back(renderer.getTileCoord("arrow" + toString(i)));
-          renderer.drawTile(wpos, coords[int(dir.getCardinalDir())], mapLayout->getSquareSize());
+              coords.push_back(renderer.getTileCoord("arrow" + toString(i)).getOnlyElement());
+          renderer.drawTile(wpos, {coords[int(dir.getCardinalDir())]}, mapLayout->getSquareSize());
         } else {
           int numArrow = int(dir.getCardinalDir());
           static string arrows[] = { u8"⇑", u8"⇓", u8"⇒", u8"⇐", u8"⇗", u8"⇖", u8"⇘", u8"⇙"};
@@ -745,7 +717,6 @@ optional<Vec2> WindowView::chooseDirection(Vec2 playerPos, const string& message
       }
   } while (1);
   });
-  lock.unlock();
   return returnQueue.pop();
 }
 
@@ -755,19 +726,9 @@ bool WindowView::yesOrNoPrompt(const string& message, bool defaultNo) {
       MenuType::YES_NO, nullptr) == 0;
 }
 
-optional<int> WindowView::getNumber(const string& title, int min, int max, int increments) {
-  CHECK(min < max);
-  vector<ListElem> options;
-  vector<int> numbers;
-  for (int i = min; i <= max; i += increments) {
-    options.push_back(toString(i));
-    numbers.push_back(i);
-  }
-  optional<int> res = WindowView::chooseFromList(title, options);
-  if (!res)
-    return none;
-  else
-    return numbers[*res];
+optional<int> WindowView::getNumber(const string& title, Range range, int initial, int increments) {
+  SyncQueue<optional<int>> returnQueue;
+  return getBlockingGui(returnQueue, guiBuilder.drawChooseNumberMenu(returnQueue, title, range, initial, increments));
 }
 
 optional<int> WindowView::chooseFromList(const string& title, const vector<ListElem>& options, int index,
@@ -776,13 +737,11 @@ optional<int> WindowView::chooseFromList(const string& title, const vector<ListE
 }
 
 optional<string> WindowView::getText(const string& title, const string& value, int maxLength, const string& hint) {
-  RecursiveLock lock(renderMutex);
   TempClockPause pause(clock);
   SyncQueue<optional<string>> returnQueue;
   addReturnDialog<optional<string>>(returnQueue, [=] ()-> optional<string> {
     return guiBuilder.getTextInput(title, value, maxLength, hint);
   });
-  lock.unlock();
   return returnQueue.pop();
 }
 
@@ -794,7 +753,6 @@ Rectangle WindowView::getEquipmentMenuPosition(int height) {
 }
 
 optional<int> WindowView::chooseItem(const vector<ItemInfo>& items, ScrollPosition* scrollPos1) {
-  RecursiveLock lock(renderMutex);
   uiLock = true;
   TempClockPause pause(clock);
   SyncQueue<optional<int>> returnQueue;
@@ -824,6 +782,7 @@ optional<int> WindowView::chooseItem(const vector<ItemInfo>& items, ScrollPositi
       renderer.drawAndClearBuffer();
       Event event;
       while (renderer.pollEvent(event)) {
+        considerResizeEvent(event);
         propagateEvent(event, {menu});
         if (retVal)
           return *retVal;
@@ -832,7 +791,6 @@ optional<int> WindowView::chooseItem(const vector<ItemInfo>& items, ScrollPositi
       }
     }
   });
-  lock.unlock();
   return returnQueue.pop();
 }
 
@@ -896,7 +854,6 @@ void WindowView::logMessage(const std::string& message) {
 }
 
 void WindowView::getBlockingGui(Semaphore& sem, SGuiElem elem, optional<Vec2> origin) {
-  RecursiveLock lock(renderMutex);
   TempClockPause pause(clock);
   if (!origin)
     origin = (renderer.getSize() - Vec2(*elem->getPreferredWidth(), *elem->getPreferredHeight())) / 2;
@@ -908,13 +865,11 @@ void WindowView::getBlockingGui(Semaphore& sem, SGuiElem elem, optional<Vec2> or
   elem->setBounds(Rectangle(*origin, *origin + size));
   propagateMousePosition({elem});
   blockingElems.push_back(std::move(elem));
-  lock.unlock();
   if (currentThreadId() == renderThreadId)
     while (!sem.get())
       refreshView();
   else
     sem.p();
-  lock.lock();
   blockingElems.clear();
 }
 
@@ -1009,7 +964,6 @@ PlayerRoleChoice WindowView::getPlayerRoleChoice(optional<PlayerRoleChoice> inde
     } else
       return NonRoleChoice::GO_BACK;
   }
-  RecursiveLock lock(renderMutex);
   uiLock = true;
   TempClockPause pause(clock);
   SyncQueue<PlayerRoleChoice> returnQueue;
@@ -1106,7 +1060,6 @@ PlayerRoleChoice WindowView::getPlayerRoleChoice(optional<PlayerRoleChoice> inde
     }
   }
   });
-  lock.unlock();
   return returnQueue.pop();
 }
 
@@ -1117,7 +1070,6 @@ optional<int> WindowView::chooseFromListInternal(const string& title, const vect
     menuType = MenuType::MAIN_NO_TILES;
   if (options.size() == 0)
     return none;
-  RecursiveLock lock(renderMutex);
   uiLock = true;
   inputQueue.push(UserInputId::REFRESH);
   TempClockPause pause(clock);
@@ -1232,7 +1184,6 @@ optional<int> WindowView::chooseFromListInternal(const string& title, const vect
     }
   }
   });
-  lock.unlock();
   return returnQueue.pop();
 }
 
@@ -1304,7 +1255,9 @@ bool WindowView::isClockStopped() {
   return clock->isPaused();
 }
 
-bool WindowView::considerResizeEvent(Event& event) {
+bool WindowView::considerResizeEvent(Event& event, bool withBugReportEvent) {
+  if (withBugReportEvent && considerBugReportEvent(event))
+    return true;
   if (event.type == SDL::SDL_QUIT)
     throw GameExitException();
   if (event.type == SDL::SDL_WINDOWEVENT && event.window.event == SDL::SDL_WINDOWEVENT_RESIZED) {
@@ -1314,7 +1267,65 @@ bool WindowView::considerResizeEvent(Event& event) {
   return false;
 }
 
-Vec2 lastGoTo(-1, -1);
+void WindowView::setBugReportSaveCallback(BugReportSaveCallback f) {
+  bugReportSaveCallback = f;
+}
+
+bool WindowView::considerBugReportEvent(Event& event) {
+  if (event.type == SDL::SDL_MOUSEBUTTONDOWN && event.button.button == SDL_BUTTON_LEFT &&
+      Vec2(event.button.x, event.button.y).inRectangle(getBugReportPos(renderer))) {
+    bool exit = false;
+    optional<GuiBuilder::BugReportInfo> bugreportInfo;
+    auto elem = guiBuilder.drawBugreportMenu(!!bugReportSaveCallback,
+        [&exit, &bugreportInfo] (optional<GuiBuilder::BugReportInfo> info) {
+      bugreportInfo = info;
+      exit = true;
+    });
+    Vec2 size(*elem->getPreferredWidth(), *elem->getPreferredHeight());
+    do {
+      Event event;
+      while (renderer.pollEvent(event)) {
+        considerResizeEvent(event, false);
+        gui.propagateEvent(event, {elem});
+      }
+      elem->setBounds(Rectangle((renderer.getSize() - size) / 2, (renderer.getSize() + size) / 2));
+      refreshScreen(false);
+      elem->render(renderer);
+      renderer.drawAndClearBuffer();
+    } while (!exit);
+    if (bugreportInfo) {
+      optional<FilePath> savefile;
+      optional<FilePath> screenshot;
+      if (bugreportInfo->includeSave) {
+        savefile = bugreportDir.file("bugreport.sav");
+        bugReportSaveCallback(*savefile);
+      }
+      if (bugreportInfo->includeScreenshot) {
+        screenshot = bugreportDir.file("bugreport.bmp.gz");
+        renderer.makeScreenshot(*screenshot);
+      }
+      if (!savefile && !screenshot && bugreportInfo->text.size() < 5)
+        return true;
+      ProgressMeter meter(1.0);
+      optional<string> result;
+      displaySplash(&meter, "Uploading bug report", SplashType::AUTOSAVING, [this]{bugreportSharing->cancel();});
+      thread t([&] {
+        result = bugreportSharing->uploadBugReport(bugreportInfo->text, savefile, screenshot, meter);
+        clearSplash();
+      });
+      refreshView();
+      t.join();
+      if (result)
+        presentText("Error", "There was an error while sending the bug report: " + *result);
+      if (savefile)
+        remove(savefile->getPath());
+      if (screenshot)
+        remove(screenshot->getPath());
+    }
+    return true;
+  }
+  return false;
+}
 
 void WindowView::processEvents() {
   Event event;
@@ -1341,12 +1352,6 @@ void WindowView::processEvents() {
       case SDL::SDL_KEYDOWN:
         if (gameInfo.infoType == GameInfo::InfoType::PLAYER)
           renderer.flushEvents(SDL::SDL_KEYDOWN);
-        break;
-      case SDL::SDL_MOUSEBUTTONDOWN:
-        if (event.button.button == SDL_BUTTON_RIGHT)
-          guiBuilder.closeOverlayWindows();
-        if (event.button.button == SDL_BUTTON_MIDDLE)
-          inputQueue.push(UserInput(UserInputId::DRAW_LEVEL_MAP));
         break;
       case SDL::SDL_MOUSEBUTTONUP:
         if (event.button.button == SDL_BUTTON_LEFT) {
@@ -1413,15 +1418,10 @@ void WindowView::keyboardAction(const SDL_Keysym& key) {
       gui.loadImages();
       break;
     case SDL::SDLK_TAB:
-    {
-      RecursiveLock lock(renderMutex);
-      if (currentTileLayout.sprites) {
-        Vec2 origin;
-        SDL::SDL_GetMouseState(&origin.x, &origin.y);
-        mapGui->addAnimation(Animation::perticleEffect(1, milliseconds(1000), 1, origin), Vec2(10, 10));
-      }
+      // TODO: put it under different shortcut?
+      inputQueue.push(UserInputId::CHEAT_SPELLS);
+      inputQueue.push(UserInputId::CHEAT_POTIONS);
       break;
-    }
 #endif
     case SDL::SDLK_F7:
       presentList("", ListElem::convert(vector<string>(messageLog.begin(), messageLog.end())), true);

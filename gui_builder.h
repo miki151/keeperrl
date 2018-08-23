@@ -25,6 +25,7 @@
 #include "scroll_position.h"
 #include "fps_counter.h"
 #include "view_object.h"
+#include "item_counts.h"
 
 class Clock;
 class MinionAction;
@@ -105,6 +106,13 @@ class GuiBuilder {
   SGuiElem drawHighscores(const vector<HighscoreList>&, Semaphore&, int& tabNum, vector<ScrollPosition>& scrollPos,
       bool& online);
   SGuiElem drawMinimapIcons(const optional<TutorialInfo>&);
+  SGuiElem drawChooseNumberMenu(SyncQueue<optional<int>>&, const string& title, Range range, int initial, int increments);
+  struct BugReportInfo {
+    string text;
+    bool includeSave;
+    bool includeScreenshot;
+  };
+  SGuiElem drawBugreportMenu(bool withSaveFile, function<void(optional<BugReportInfo>)>);
 
   void setCollectiveTab(CollectiveTab t);
   CollectiveTab getCollectiveTab() const;
@@ -276,6 +284,8 @@ class GuiBuilder {
   SGuiElem drawAllVillainsOverlay(const VillageInfo&);
   SGuiElem drawVillainInfoOverlay(const VillageInfo::Village&, bool showDismissHint);
   SGuiElem drawVillainType(VillainType);
+  SGuiElem drawLyingItemsList(const string& title, const ItemCounts&, int maxWidth);
+  SGuiElem drawTickBox(shared_ptr<bool> value, const string& title);
 };
 
 RICH_ENUM(GuiBuilder::GameSpeed,

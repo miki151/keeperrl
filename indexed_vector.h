@@ -28,7 +28,7 @@ class IndexedVector {
     return elems;
   }
 
-  void insert(T&& t) {
+  void insert(T t) {
     CHECK(!contains(t));
     indexes.emplace(t->getUniqueId(), elems.size());
     elems.push_back(std::move(t));

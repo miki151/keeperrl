@@ -59,7 +59,7 @@ class MinionController : public Player {
 
   virtual vector<OtherCreatureCommand> getOtherCreatureCommands(WCreature c) const override {
     vector<OtherCreatureCommand> ret = Player::getOtherCreatureCommands(c);
-    if (creature->isEnemy(c) && c->canBeCaptured())
+    if (control->isEnemy(c) && c->canBeCaptured())
       ret.push_back({2, c->isCaptureOrdered() ? "Cancel capture order" : "Order capture", true,
           [c](Player*) { c->toggleCaptureOrder();}});
     if (getTeam().contains(c)) {
@@ -135,7 +135,7 @@ class MinionController : public Player {
   }
 
   virtual void onFellAsleep() override {
-    getGame()->getView()->presentText("Important!", "You fall asleep. You loose control of your minion.");
+    getGame()->getView()->presentText("Important!", "You fall asleep. You lose control of your minion.");
     unpossess();
   }
 

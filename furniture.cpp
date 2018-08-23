@@ -47,11 +47,11 @@ Furniture::~Furniture() {}
 
 template<typename Archive>
 void Furniture::serialize(Archive& ar, const unsigned) {
-  ar(SUBCLASS(OwnedObject<Furniture>), viewObject, removeNonFriendly);
+  ar(SUBCLASS(OwnedObject<Furniture>), viewObject, removeNonFriendly, destroyFX, tryDestroyFX, walkOverFX);
   ar(name, pluralName, type, movementSet, fire, burntRemains, destroyedRemains, destroyActions, itemDrop);
   ar(blockVision, usageType, clickType, tickType, usageTime, overrideMovement, wall, creator, createdTime);
   ar(constructMessage, layer, entryType, lightEmission, canHideHere, warning, summonedElement, droppedItems);
-  ar(canBuildBridge, noProjectiles, clearFogOfWar, removeWithCreaturePresent, xForgetAfterBuilding);
+  ar(canBuildBridge, noProjectiles, clearFogOfWar, removeWithCreaturePresent, xForgetAfterBuilding, showEfficiency);
 }
 
 SERIALIZABLE(Furniture)
@@ -95,6 +95,38 @@ bool Furniture::isWall(FurnitureType type) {
   return layers[type];
 }
 
+pair<double, optional<int>> getPopulationIncreaseInfo(FurnitureType type) {
+  switch (type) {
+    case FurnitureType::PIGSTY:
+      return {0.25, 4};
+    case FurnitureType::MINION_STATUE:
+      return {1, none};
+    case FurnitureType::STONE_MINION_STATUE:
+      return {1, 4};
+    case FurnitureType::THRONE:
+      return {10, none};
+    default:
+      return {0, none};
+  }
+}
+
+optional<string> Furniture::getPopulationIncreaseDescription(FurnitureType type) {
+  auto info = getPopulationIncreaseInfo(type);
+  if (info.first > 0) {
+    auto ret = "Increases population limit by " + toString(info.first);
+    if (auto limit = info.second)
+      ret += ", up to " + toString(*limit);
+    ret += ".";
+    return ret;
+  }
+  return none;
+}
+
+int Furniture::getPopulationIncrease(FurnitureType type, int numBuilt) {
+  auto info = getPopulationIncreaseInfo(type);
+  return min(int(numBuilt * info.first), info.second.value_or(1000000));
+}
+
 FurnitureType Furniture::getType() const {
   return type;
 }
@@ -124,10 +156,11 @@ void Furniture::destroy(Position pos, const DestroyAction& action) {
   auto myType = type;
   if (itemDrop)
     pos.dropItems(itemDrop->random());
-  if (destroyedRemains)
-    pos.replaceFurniture(this, FurnitureFactory::get(*destroyedRemains, getTribe()));
-  else
-    pos.removeFurniture(this);
+  if (usageType)
+    FurnitureUsage::beforeRemoved(*usageType, pos);
+  if (destroyFX)
+    pos.getGame()->addEvent(EventInfo::OtherEffect{pos, *destroyFX});
+  pos.removeFurniture(this, destroyedRemains ? FurnitureFactory::get(*destroyedRemains, getTribe()) : nullptr);
   pos.getGame()->addEvent(EventInfo::FurnitureDestroyed{pos, myType, myLayer});
 }
 
@@ -138,6 +171,8 @@ void Furniture::tryToDestroyBy(Position pos, WCreature c, const DestroyAction& a
     if (auto skill = action.getDestroyingSkillMultiplier())
       damage = damage * c->getAttributes().getSkills().getValue(*skill);
     *strength -= damage;
+    if (tryDestroyFX)
+      pos.getGame()->addEvent(EventInfo::OtherEffect{pos, *tryDestroyFX});
     if (*strength <= 0)
       destroy(pos, action);
   }
@@ -163,14 +198,11 @@ void Furniture::tick(Position pos) {
     fire->tick();
     if (fire->isBurntOut()) {
       pos.globalMessage("The " + getName() + " burns down");
-      pos.updateMovement();
+      pos.updateMovementDueToFire();
       pos.removeCreatureLight(false);
       auto myLayer = layer;
       auto myType = type;
-      if (burntRemains)
-        pos.replaceFurniture(this, FurnitureFactory::get(*burntRemains, getTribe()));
-      else
-        pos.removeFurniture(this);
+      pos.removeFurniture(this, burntRemains ? FurnitureFactory::get(*burntRemains, getTribe()) : nullptr);
       pos.getGame()->addEvent(EventInfo::FurnitureDestroyed{pos, myType, myLayer});
       return;
     }
@@ -186,10 +218,6 @@ bool Furniture::canSeeThru(VisionId id) const {
 
 bool Furniture::stopsProjectiles(VisionId id) const {
   return !canSeeThru(id) || noProjectiles;
-}
-
-bool Furniture::isClickable() const {
-  return !!clickType;
 }
 
 bool Furniture::overridesMovement() const {
@@ -264,7 +292,10 @@ FurnitureLayer Furniture::getLayer() const {
 }
 
 double Furniture::getLightEmission() const {
-  return lightEmission;
+  if (fire && fire->isBurning())
+    return Level::getCreatureLightRadius();
+  else
+    return lightEmission;
 }
 
 bool Furniture::canHide() const {
@@ -301,6 +332,15 @@ bool Furniture::isClearFogOfWar() const {
 
 bool Furniture::forgetAfterBuilding() const {
   return isWall() || xForgetAfterBuilding;
+}
+
+bool Furniture::isShowEfficiency() const {
+  return showEfficiency;
+}
+
+void Furniture::onCreatureWalkedOver(Position pos, Vec2 direction) const {
+  if (walkOverFX)
+    pos.getGame()->addEvent(EventInfo::OtherEffect{pos, *walkOverFX, direction});
 }
 
 vector<PItem> Furniture::dropItems(Position pos, vector<PItem> v) const {
@@ -352,7 +392,7 @@ void Furniture::fireDamage(Position pos, double amount) {
       pos.globalMessage("The " + getName() + " catches fire");
       if (viewObject)
         viewObject->setAttribute(ViewObject::Attribute::BURNING, fire->getSize());
-      pos.updateMovement();
+      pos.updateMovementDueToFire();
       pos.getLevel()->addTickingFurniture(pos.getCoord());
       pos.addCreatureLight(false);
     }
@@ -453,6 +493,26 @@ Furniture& Furniture::setCanRemoveNonFriendly(bool s) {
 
 Furniture& Furniture::setForgetAfterBuilding() {
   xForgetAfterBuilding = true;
+  return *this;
+}
+
+Furniture& Furniture::setShowEfficiency() {
+  showEfficiency = true;
+  return *this;
+}
+
+Furniture& Furniture::setDestroyFX(FXName name) {
+  destroyFX = name;
+  return *this;
+}
+
+Furniture& Furniture::setTryDestroyFX(FXName name) {
+  tryDestroyFX = name;
+  return *this;
+}
+
+Furniture& Furniture::setWalkOverFX(FXName name) {
+  walkOverFX = name;
   return *this;
 }
 

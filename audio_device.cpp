@@ -41,7 +41,7 @@ const int maxSources = 12;
 
 static void checkError(const char* file, int line, const char* functionName) {
   ALenum error = alGetError();
-  CHECK(!error) << file << ":" << line << " " << alGetString(error);
+  CHECK(!error) << file << ":" << line << " " << " " << functionName << ": " << alGetString(error);
 }
 
 optional<OpenalId> AudioDevice::getFreeSource() {
@@ -156,7 +156,7 @@ void SoundSource::destroy() {
 const int streamingBufferSize = 1 * 2 * 2 * 44100;
 
 SoundStream::SoundStream(const FilePath& path, double volume) : startedPlaying(false),
-      streamer([path, this]{ init(path);}, [volume, this]{loop(volume);}) {
+      streamer([path, this]{ init(path);}, [this]{loop();}), volume((float) volume) {
 }
 
 bool SoundStream::isPlaying() const {
@@ -168,13 +168,12 @@ bool SoundStream::isPlaying() const {
 }
 
 void SoundStream::setVolume(double v) {
-  alSourcef(source.getId(), AL_GAIN, v);
+  alSourcef(source.getId(), AL_GAIN, min<float>(1, max<float>(0, (float) v)));
+  volume = v;
 }
 
 double SoundStream::getVolume() const {
-  float ret = 0;
-  AL(alGetSourcef(source.getId(), AL_GAIN, &ret));
-  return ret;
+  return volume;
 }
 
 void SoundStream::init(const FilePath& path) {
@@ -184,7 +183,7 @@ void SoundStream::init(const FilePath& path) {
   AL(alGenBuffers(2, buffers));
 }
 
-void SoundStream::loop(double volume) {
+void SoundStream::loop() {
   int numQueued = 0;
   AL(alGetSourcei(source.getId(), AL_BUFFERS_QUEUED, &numQueued));
   if (numQueued == 0) { /*fill and queue initial buffers*/
@@ -195,7 +194,9 @@ void SoundStream::loop(double volume) {
     AL(alBufferData(buffers[1], (info->channels > 1) ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16, data.data(),
         data.size(), info->rate));
     AL(alSourceQueueBuffers(source.getId(), 2, buffers));
-    AL(alSourcef(source.getId(), AL_GAIN, volume));
+    alSourcef(source.getId(), AL_GAIN, min<float>(1, max<float>(0, volume)));
+    ALenum error = alGetError();
+    CHECK(!error) << "volume error " << volume;
     AL(alSourcePlay(source.getId()));
     startedPlaying = true;
     //CHECK(isPlaying()); fails if I unplug/plug the speaker cable...?

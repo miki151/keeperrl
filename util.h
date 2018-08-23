@@ -64,8 +64,8 @@ T fromString(const string& s) {
 template <class T>
 optional<T> fromStringSafe(const string& s);
 
-template <typename T>
-T lambdaConstruct(function<void(T&)> fun) {
+template <typename T, typename Fun>
+T lambdaConstruct(Fun fun) {
   T ret {};
   fun(ret);
   return ret;
@@ -112,6 +112,7 @@ string toLower(const string& s);
 bool endsWith(const string&, const string& suffix);
 
 vector<string> split(const string& s, const set<char>& delim);
+vector<string> splitIncludeDelim(const string& s, const set<char>& delim);
 string combineWithOr(const vector<string>&);
 
 
@@ -207,8 +208,8 @@ class Range {
 
     private:
     int ind;
-    int min;
-    int max;
+    //int min;
+    //int max;
     int increment;
   };
 
@@ -283,7 +284,7 @@ class Rectangle {
 
     private:
     Vec2 pos;
-    int px, py, kx, ky;
+    int /*px, */py, /*kx, */ky;
   };
 
   Iter begin() const;
@@ -472,6 +473,160 @@ class EnumMap {
   std::array<U, EnumInfo<T>::size> elems;
 };
 
+template<class T>
+class EnumSet {
+  public:
+  EnumSet() {}
+
+  template <typename Fun>
+  explicit EnumSet(Fun f) {
+    for (T t : EnumAll<T>())
+      if (f(t))
+        insert(t);
+  }
+
+  EnumSet(initializer_list<T> il) {
+    for (auto elem : il)
+      insert(elem);
+  }
+
+  EnumSet(initializer_list<char> il) {
+    CHECK(il.size() == EnumInfo<T>::size);
+    int cnt = 0;
+    for (int i : il) {
+      if (i)
+        insert(T(cnt));
+      ++cnt;
+    }
+  }
+
+  bool contains(T elem) const {
+    return elems.test(size_t(elem));
+  }
+
+  bool isEmpty() const {
+    return elems.none();
+  }
+
+  int getSize() const {
+    return elems.count();
+  }
+
+  void insert(T elem) {
+    elems.set(size_t(elem));
+  }
+
+  void toggle(T elem) {
+    elems.flip(size_t(elem));
+  }
+
+  void erase(T elem) {
+    elems.reset(size_t(elem));
+  }
+
+  void set(T elem, bool state) {
+    elems.set(size_t(elem), state);
+  }
+
+  void clear() {
+    elems.reset();
+  }
+
+  bool operator == (const EnumSet& o) const {
+    return elems == o.elems;
+  }
+
+  bool operator != (const EnumSet& o) const {
+    return elems != o.elems;
+  }
+
+  typedef std::bitset<EnumInfo<T>::size> Bitset;
+
+  EnumSet sum(const EnumSet& other) const {
+    EnumSet<T> ret(other);
+    ret.elems |= elems;
+    return ret;
+  }
+
+  EnumSet intersection(const EnumSet& other) const {
+    EnumSet<T> ret(other);
+    ret.elems &= elems;
+    return ret;
+  }
+
+  void sumWith(const EnumSet& other) {
+    elems |= other.elems;
+  }
+
+  void intersectWith(const EnumSet& other) {
+    elems &= other.elems;
+  }
+
+  static EnumSet<T> fullSet() {
+    EnumSet<T> ret;
+    ret.elems.flip();
+    return ret;
+  }
+
+  class Iter {
+    public:
+    Iter(const EnumSet& s, int num) : set(s), ind(num) {
+      goForward();
+    }
+
+    void goForward() {
+      while (ind < EnumInfo<T>::size && !set.contains(T(ind)))
+        ++ind;
+    }
+
+    T operator* () const {
+      return T(ind);
+    }
+
+    bool operator != (const Iter& other) const {
+      return ind != other.ind;
+    }
+
+    const Iter& operator++ () {
+      ++ind;
+      goForward();
+      return *this;
+    }
+
+    private:
+    const EnumSet& set;
+    int ind;
+  };
+
+  Iter begin() const {
+    return Iter(*this, 0);
+  }
+
+  Iter end() const {
+    return Iter(*this, EnumInfo<T>::size);
+  }
+
+  int getHash() const {
+    return hash<Bitset>()(elems);
+  }
+
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version) {
+    vector<T> SERIAL(tmp);
+    for (T elem : *this)
+      tmp.push_back(elem);
+    ar(tmp);
+    for (T elem : tmp) {
+      if (int(elem) < 0 || int(elem) >= EnumInfo<T>::size)
+        throw ::cereal::Exception("EnumSet element outside of legal enum range");
+      insert(elem);
+    }
+  }
+
+  private:
+  Bitset elems;
+};
+
 std::string operator "" _s(const char* str, size_t);
 
 class RandomGen {
@@ -525,6 +680,14 @@ class RandomGen {
     for (T t : ENUM_ALL(T))
       weights[(int)t] = map[t];
     return (T) get(weights);
+  }
+
+  template <typename T>
+  T choose(const EnumSet<T>& set) {
+    auto it = set.begin();
+    for (int i : Range(get(set.getSize())))
+      ++it;
+    return *it;
   }
 
   template <typename T, typename... Args>
@@ -1091,6 +1254,8 @@ vector<T> asVector(const U& u) {
 
 RICH_ENUM(Dir, N, S, E, W, NE, NW, SE, SW );
 
+extern Dir rotate(Dir);
+
 class DirSet {
   public:
   DirSet();
@@ -1139,155 +1304,6 @@ class DirSet {
   ContentType content = 0;
 };
 
-template<class T>
-class EnumSet {
-  public:
-  EnumSet() {}
-
-  template <typename Fun>
-  explicit EnumSet(Fun f) {
-    for (T t : EnumAll<T>())
-      if (f(t))
-        insert(t);
-  }
-
-  EnumSet(initializer_list<T> il) {
-    for (auto elem : il)
-      insert(elem);
-  }
-
-  EnumSet(initializer_list<char> il) {
-    CHECK(il.size() == EnumInfo<T>::size);
-    int cnt = 0;
-    for (int i : il) {
-      if (i)
-        insert(T(cnt));
-      ++cnt;
-    }
-  }
-
-  bool contains(T elem) const {
-    return elems.test(size_t(elem));
-  }
-
-  bool isEmpty() const {
-    return elems.none();
-  }
-
-  void insert(T elem) {
-    elems.set(size_t(elem));
-  }
-
-  void toggle(T elem) {
-    elems.flip(size_t(elem));
-  }
-
-  void erase(T elem) {
-    elems.reset(size_t(elem));
-  }
-
-  void set(T elem, bool state) {
-    elems.set(size_t(elem), state);
-  }
-
-  void clear() {
-    elems.reset();
-  }
-
-  bool operator == (const EnumSet& o) const {
-    return elems == o.elems;
-  }
-
-  bool operator != (const EnumSet& o) const {
-    return elems != o.elems;
-  }
-
-  typedef std::bitset<EnumInfo<T>::size> Bitset;
-
-  EnumSet sum(const EnumSet& other) const {
-    EnumSet<T> ret(other);
-    ret.elems |= elems;
-    return ret;
-  }
-
-  EnumSet intersection(const EnumSet& other) const {
-    EnumSet<T> ret(other);
-    ret.elems &= elems;
-    return ret;
-  }
-
-  void sumWith(const EnumSet& other) {
-    elems |= other.elems;
-  }
-
-  void intersectWith(const EnumSet& other) {
-    elems &= other.elems;
-  }
-
-  static EnumSet<T> fullSet() {
-    EnumSet<T> ret;
-    ret.elems.flip();
-    return ret;
-  }
-
-  class Iter {
-    public:
-    Iter(const EnumSet& s, int num) : set(s), ind(num) {
-      goForward();
-    }
-
-    void goForward() {
-      while (ind < EnumInfo<T>::size && !set.contains(T(ind)))
-        ++ind;
-    }
-
-    T operator* () const {
-      return T(ind);
-    }
-
-    bool operator != (const Iter& other) const {
-      return ind != other.ind;
-    }
-
-    const Iter& operator++ () {
-      ++ind;
-      goForward();
-      return *this;
-    }
-
-    private:
-    const EnumSet& set;
-    int ind;
-  };
-
-  Iter begin() const {
-    return Iter(*this, 0);
-  }
-
-  Iter end() const {
-    return Iter(*this, EnumInfo<T>::size);
-  }
-
-  int getHash() const {
-    return hash<Bitset>()(elems);
-  }
-
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
-    vector<T> SERIAL(tmp);
-    for (T elem : *this)
-      tmp.push_back(elem);
-    ar(tmp);
-    for (T elem : tmp) {
-      if (int(elem) < 0 || int(elem) >= EnumInfo<T>::size)
-        throw ::cereal::Exception("EnumSet element outside of legal enum range");
-      insert(elem);
-    }
-  }
-
-  private:
-  Bitset elems;
-};
 
 template <typename U, typename V>
 class BiMap {
@@ -1592,8 +1608,8 @@ optional<typename Map::mapped_type&> getReferenceMaybe(Map& m, const Key& key) {
     return none;
 }
 
-template <typename Key, typename Map>
-optional<typename Map::mapped_type> getValueMaybe(const Map& m, const Key& key) {
+template <typename Map>
+optional<typename Map::mapped_type> getValueMaybe(const Map& m, const typename Map::key_type& key) {
   auto it = m.find(key);
   if (it != m.end())
     return it->second;

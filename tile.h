@@ -17,6 +17,7 @@
 
 #include "renderer.h"
 #include "util.h"
+#include "view_id.h"
 
 enum class ViewId;
 class ViewObject;
@@ -30,7 +31,7 @@ class Tile {
 
   static Tile empty();
   static Tile fromString(const string&, Color, bool symbol = false);
-  static Tile byCoord(TileCoord);
+  static Tile byCoord(const vector<TileCoord>&);
 
   static void initialize(Renderer&, bool useTiles);
 
@@ -43,15 +44,15 @@ class Tile {
   bool floorBorders = false;
   bool wallShadow = false;
 
-  Tile addConnection(DirSet, TileCoord);
-  Tile addOption(Dir, TileCoord);
+  Tile addConnection(DirSet, vector<TileCoord>);
+  Tile addOption(Dir, vector<TileCoord>);
   Tile setFloorBorders();
 
-  Tile addBackground(TileCoord);
+  Tile addBackground(vector<TileCoord>);
 
-  Tile addExtraBorder(DirSet, TileCoord);
+  Tile addExtraBorder(DirSet, const vector<TileCoord>&);
   Tile addExtraBorderId(ViewId);
-  Tile addCorner(DirSet cornerDef, DirSet borders, TileCoord);
+  Tile addCorner(DirSet cornerDef, DirSet borders, vector<TileCoord>);
   Tile setTranslucent(double v);
   Tile addHighlight(TileCoord);
   Tile setColor(Color);
@@ -60,16 +61,16 @@ class Tile {
   Tile setWallShadow();
   optional<TileCoord> getHighlightCoord() const;
 
-  const vector<ViewId>& getExtraBorderIds() const;
+  const EnumSet<ViewId>& getExtraBorderIds() const;
   bool hasExtraBorders() const;
   bool hasAnyConnections() const;
-  optional<TileCoord> getExtraBorderCoord(DirSet) const;
+  const vector<TileCoord>& getExtraBorderCoord(DirSet) const;
 
   bool hasSpriteCoord() const;
 
-  TileCoord getSpriteCoord() const;
-  TileCoord getSpriteCoord(DirSet) const;
-  optional<TileCoord> getBackgroundCoord() const;
+  const vector<TileCoord>& getSpriteCoord() const;
+  const vector<TileCoord>& getSpriteCoord(DirSet) const;
+  const vector<TileCoord>& getBackgroundCoord() const;
 
   bool hasAnyCorners() const;
   const vector<TileCoord>& getCornerCoords(DirSet) const;
@@ -79,20 +80,19 @@ class Tile {
   static void loadUnicode();
   friend class TileCoordLookup;
   Tile();
-  Tile(TileCoord);
+  Tile(const vector<TileCoord>&);
  // Tile(const Tile&) = default;
-  optional<TileCoord> tileCoord;
-  optional<TileCoord> backgroundCoord;
-  optional<TileCoord> highlightCoord;
-  array<optional<TileCoord>, 256> connections;
-  optional<pair<Dir, TileCoord>> connectionOption;
+  vector<TileCoord> tileCoord;
+  vector<TileCoord> backgroundCoord;
+  array<vector<TileCoord>, 256> connections;
+  optional<pair<Dir, vector<TileCoord>>> connectionOption;
   array<vector<TileCoord>, 256> corners;
-  array<optional<TileCoord>, 256> extraBorders;
+  array<vector<TileCoord>, 256> extraBorders;
   bool anyExtraBorders = false;
   bool anyConnections = false;
   bool anyCorners = false;
   DirSet connectionsMask = DirSet{Dir::N, Dir::E, Dir::S, Dir::W};
-  vector<ViewId> extraBorderIds;
+  EnumSet<ViewId> extraBorderIds;
   static void addTile(ViewId, Tile);
   static void addSymbol(ViewId, Tile);
 };

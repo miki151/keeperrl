@@ -19,6 +19,7 @@
 #include "debug.h"
 #include "user_input.h"
 #include "player_role_choice.h"
+#include "animation_id.h"
 
 class CreatureView;
 class Level;
@@ -32,6 +33,7 @@ class Campaign;
 class Options;
 class RetiredGames;
 class ScrollPosition;
+class FilePath;
 
 enum class SplashType { BIG, AUTOSAVING, SMALL };
 
@@ -172,7 +174,7 @@ class View {
       MenuType = MenuType::NORMAL, optional<UserInputId> exitAction = none) = 0;
 
   /** Lets the player choose a number. Returns none if the player cancelled the choice.*/
-  virtual optional<int> getNumber(const string& title, int min, int max, int increments = 1) = 0;
+  virtual optional<int> getNumber(const string& title, Range range, int initial, int increments = 1) = 0;
 
   /** Lets the player input a string. Returns none if the player cancelled the choice.*/
   virtual optional<string> getText(const string& title, const string& value, int maxLength,
@@ -188,6 +190,8 @@ class View {
   virtual optional<int> chooseAtMouse(const vector<string>& elems) = 0;
 
   virtual void presentHighscores(const vector<HighscoreList>&) = 0;
+  using BugReportSaveCallback = function<void(FilePath)>;
+  virtual void setBugReportSaveCallback(BugReportSaveCallback) = 0;
 
   struct CampaignMenuState {
     bool helpText;
@@ -227,7 +231,8 @@ class View {
   virtual void animateObject(Vec2 begin, Vec2 end, ViewId object) = 0;
 
   /** Draws an special animation on the map.*/
-  virtual void animation(Vec2 pos, AnimationId) = 0;
+  virtual void animation(Vec2 pos, AnimationId, Dir orientation = Dir::N) = 0;
+  virtual void animation(Vec2 pos, FXName particleEffect, optional<Vec2> targetOffset = none) = 0;
 
   /** Returns the current real time in milliseconds. The clock is stopped on blocking keyboard input,
       so it can be used to sync game time in real-time mode.*/
@@ -249,8 +254,3 @@ class View {
 
   virtual void logMessage(const string&) = 0;
 };
-
-enum class AnimationId {
-  EXPLOSION,
-};
-

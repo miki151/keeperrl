@@ -10,12 +10,13 @@ class DirectoryPath;
 
 class SoundLibrary {
   public:
-  SoundLibrary(Options*, AudioDevice&, const DirectoryPath&);
+  SoundLibrary(AudioDevice&, const DirectoryPath&);
   void playSound(const Sound&);
+  void setVolume(int); // between 1..100
 
   private:
   void addSounds(SoundId, const DirectoryPath&);
   EnumMap<SoundId, vector<SoundBuffer>> sounds;
-  bool on;
+  double volume;
   AudioDevice& audioDevice;
 };

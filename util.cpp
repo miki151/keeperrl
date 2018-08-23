@@ -143,8 +143,23 @@ vector<string> split(const string& s, const set<char>& delim) {
   vector<string> ret;
   for (int i : Range(s.size() + 1))
     if (i == s.size() || delim.count(s[i])) {
-      string tmp = s.substr(begin, i - begin);
-      ret.push_back(tmp);
+      ret.push_back(s.substr(begin, i - begin));
+      begin = i + 1;
+    }
+  return ret;
+}
+
+vector<string> splitIncludeDelim(const string& s, const set<char>& delim) {
+  if (s.empty())
+    return {};
+  int begin = 0;
+  vector<string> ret;
+  for (int i : Range(s.size() + 1))
+    if (i == s.size() || delim.count(s[i])) {
+      if (i > begin)
+        ret.push_back(s.substr(begin, i - begin));
+      if (i < s.size() && delim.count(s[i]))
+        ret.push_back(string(1, s[i]));
       begin = i + 1;
     }
   return ret;
@@ -502,7 +517,7 @@ Rectangle::Rectangle(Range xRange, Range yRange)
     : Rectangle(xRange.getStart(), yRange.getStart(), xRange.getEnd(), yRange.getEnd()) {
 }
 
-Rectangle::Iter::Iter(int x1, int y1, int px1, int py1, int kx1, int ky1) : pos(x1, y1), px(px1), py(py1), kx(kx1), ky(ky1) {}
+Rectangle::Iter::Iter(int x1, int y1, int px1, int py1, int kx1, int ky1) : pos(x1, y1), py(py1), ky(ky1) {}
 
 Vec2 Rectangle::randomVec2() const {
   return Vec2(Random.get(px, kx), Random.get(py, ky));
@@ -688,7 +703,7 @@ Range::Iter Range::end() {
   return Iter(finish, start, finish, increment);
 }
 
-Range::Iter::Iter(int i, int a, int b, int inc) : ind(i), min(a), max(b), increment(inc) {}
+Range::Iter::Iter(int i, int a, int b, int inc) : ind(i), /*min(a), max(b), */increment(inc) {}
 
 int Range::Iter::operator* () const {
   return ind;
@@ -1009,4 +1024,25 @@ string combineWithOr(const vector<string>& elems) {
 
 string toStringWithSign(int v) {
   return (v > 0 ? "+" : "") + toString(v);
+}
+
+Dir rotate(Dir dir) {
+  switch (dir) {
+    case Dir::N:
+      return Dir::NE;
+    case Dir::NE:
+      return Dir::E;
+    case Dir::E:
+      return Dir::SE;
+    case Dir::SE:
+      return Dir::S;
+    case Dir::S:
+      return Dir::SW;
+    case Dir::SW:
+      return Dir::W;
+    case Dir::W:
+      return Dir::NW;
+    case Dir::NW:
+      return Dir::N;
+  }
 }
