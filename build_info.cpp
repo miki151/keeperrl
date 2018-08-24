@@ -84,9 +84,10 @@ const vector<BuildInfo>& BuildInfo::get() {
           0, "Library"),
       BuildInfo({FurnitureType::THRONE, {ResourceId::MANA, 300}, false, 1}, "Throne",
           {{RequirementId::VILLAGE_CONQUERED}}, *Furniture::getPopulationIncreaseDescription(FurnitureType::THRONE)),
-      BuildInfo({FurnitureType::BED, {ResourceId::WOOD, 12}}, "Bed", {},
-          "Humanoid minions sleep here.", 'v', "Living", true)
+      BuildInfo({FurnitureType::BED1, {ResourceId::WOOD, 12}}, "Basic bed", {}, "Humanoid minions sleep here.", 'v', "Living", true)
              .setTutorialHighlight(TutorialHighlight::BUILD_BED),
+      BuildInfo({FurnitureType::BED2, {ResourceId::IRON, 12}}, "Fine bed", {}, "Humanoid minions sleep here.", 0, "Living", true),
+      BuildInfo({FurnitureType::BED3, {ResourceId::GOLD, 12}}, "Luxurious bed", {}, "Humanoid minions sleep here.", 0, "Living", true),
       BuildInfo({FurnitureType::GRAVE, {ResourceId::STONE, 15}}, "Graveyard", {},
           "Spot for hauling dead bodies and for undead creatures to sleep in.", 0, "Living"),
       BuildInfo({FurnitureType::BEAST_CAGE, {ResourceId::WOOD, 8}}, "Beast cage", {}, "Beasts sleep here.", 0, "Living"),

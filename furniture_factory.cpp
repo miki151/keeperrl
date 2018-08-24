@@ -128,8 +128,22 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setCanHide()
           .setFireInfo(Fire(500, 0.5))
           .setDestroyable(40);
-    case FurnitureType::BED:
-      return Furniture("bed", ViewObject(ViewId::BED, ViewLayer::FLOOR), type, tribe)
+    case FurnitureType::BED1:
+      return Furniture("basic bed", ViewObject(ViewId::BED1, ViewLayer::FLOOR), type, tribe)
+          .setUsageType(FurnitureUsageType::SLEEP)
+          .setTickType(FurnitureTickType::BED)
+          .setCanHide()
+          .setFireInfo(Fire(500, 0.7))
+          .setDestroyable(40);
+    case FurnitureType::BED2:
+      return Furniture("fine bed", ViewObject(ViewId::BED2, ViewLayer::FLOOR), type, tribe)
+          .setUsageType(FurnitureUsageType::SLEEP)
+          .setTickType(FurnitureTickType::BED)
+          .setCanHide()
+          .setFireInfo(Fire(500, 0.7))
+          .setDestroyable(40);
+    case FurnitureType::BED3:
+      return Furniture("luxurious bed", ViewObject(ViewId::BED3, ViewLayer::FLOOR), type, tribe)
           .setUsageType(FurnitureUsageType::SLEEP)
           .setTickType(FurnitureTickType::BED)
           .setCanHide()
@@ -685,6 +699,10 @@ bool FurnitureFactory::isUpgrade(FurnitureType base, FurnitureType upgraded) {
       return upgraded == FurnitureType::BOOKCASE_IRON || upgraded == FurnitureType::BOOKCASE_GOLD;
     case FurnitureType::BOOKCASE_IRON:
       return upgraded == FurnitureType::BOOKCASE_GOLD;
+    case FurnitureType::BED1:
+      return upgraded == FurnitureType::BED2 || upgraded == FurnitureType::BED3;
+    case FurnitureType::BED2:
+      return upgraded == FurnitureType::BED3;
     default:
       return false;
   }
@@ -715,7 +733,7 @@ PFurniture FurnitureFactory::get(FurnitureType type, TribeId tribe) {
 
 FurnitureFactory FurnitureFactory::roomFurniture(TribeId tribe) {
   return FurnitureFactory(tribe, {
-      {FurnitureType::BED, 2},
+      {FurnitureType::BED1, 2},
       {FurnitureType::GROUND_TORCH, 1},
       {FurnitureType::CHEST, 2}
   });
@@ -723,7 +741,7 @@ FurnitureFactory FurnitureFactory::roomFurniture(TribeId tribe) {
 
 FurnitureFactory FurnitureFactory::castleFurniture(TribeId tribe) {
   return FurnitureFactory(tribe, {
-      {FurnitureType::BED, 2},
+      {FurnitureType::BED1, 2},
       {FurnitureType::GROUND_TORCH, 1},
       {FurnitureType::FOUNTAIN, 1},
       {FurnitureType::CHEST, 2}

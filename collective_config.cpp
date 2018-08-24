@@ -63,7 +63,9 @@ SERIALIZABLE(GuardianInfo);
 
 static bool isSleepingFurniture(FurnitureType t) {
   switch (t) {
-    case FurnitureType::BED:
+    case FurnitureType::BED1:
+    case FurnitureType::BED2:
+    case FurnitureType::BED3:
     case FurnitureType::BEAST_CAGE:
     case FurnitureType::GRAVE:
     case FurnitureType::PRISON:
@@ -81,7 +83,7 @@ static optional<FurnitureType> getBedType(WConstCreature c) {
   if (c->getBody().isUndead())
     return FurnitureType::GRAVE;
   if (c->getBody().isHumanoid())
-    return FurnitureType::BED;
+    return FurnitureType::BED1;
   else
     return FurnitureType::BEAST_CAGE;
 }

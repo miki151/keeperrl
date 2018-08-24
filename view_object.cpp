@@ -198,7 +198,9 @@ const char* ViewObject::getDefaultDescription() const {
     case ViewId::BUSH: return "Bush";
     case ViewId::TREE_TRUNK: return "Tree trunk";
     case ViewId::BURNT_TREE: return "Burnt tree";
-    case ViewId::BED: return "Bed";
+    case ViewId::BED1: return "Basic bed";
+    case ViewId::BED2: return "Fine bed";
+    case ViewId::BED3: return "Luxurious bed";
     case ViewId::DORM: return "Dormitory";
     case ViewId::TORCH: return "Torch";
     case ViewId::STANDING_TORCH: return "Standing torch";
