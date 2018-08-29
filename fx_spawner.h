@@ -14,8 +14,9 @@ struct Spawner {
 
   static FVec2 tileCenter(IVec2 tilePos) { return FVec2(tilePos) + FVec2(0.5f); }
 
-  Spawner(Type type, IVec2 tilePos, FXName id) : Spawner(type, tilePos, FVec2(), id) {}
-  Spawner(Type, IVec2 tilePos, FVec2 targetOff, FXName);
+  // TODO: use InitConfig here as well
+  Spawner(Type type, IVec2 tilePos, FXName id, SnapshotKey key = {}) : Spawner(type, tilePos, FVec2(), id, key) {}
+  Spawner(Type, IVec2 tilePos, FVec2 targetOff, FXName, SnapshotKey = {});
 
   void update(FXManager &);
   void kill(FXManager &);
@@ -29,6 +30,7 @@ struct Spawner {
   bool isDead = false;
   Type type;
 
+  SnapshotKey snapshotKey;
   Params params;
 };
 }

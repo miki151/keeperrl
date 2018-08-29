@@ -14,7 +14,7 @@ FXId spawnEffect(FXName name, double x, double y, Vec2 dir) {
   if(auto *inst = FXManager::getInstance()) {
     auto fpos = (FVec2(x, y) + FVec2(0.5f)) * Renderer::nominalSize;
     auto ftargetOff = FVec2(dir.x, dir.y) * Renderer::nominalSize;
-    auto instId = inst->addSystem(name, fpos, ftargetOff);
+    auto instId = inst->addSystem(name, {fpos, ftargetOff});
     INFO << "FX spawn: " << EnumInfo<FXName>::getString(name) << " at:" << x << ", " << y << " dir:" << dir;
     return {instId.index(), instId.spawnTime()};
   }

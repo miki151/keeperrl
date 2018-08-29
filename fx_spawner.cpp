@@ -5,8 +5,11 @@
 
 namespace fx {
 
-Spawner::Spawner(Type type, IVec2 tilePos, FVec2 targetOff, FXName defId)
-    : tilePos(tilePos), pos(tileCenter(tilePos)), targetOff(targetOff), defId(defId), type(type) {}
+Spawner::Spawner(Type type, IVec2 tilePos, FVec2 targetOff, FXName defId, SnapshotKey key)
+    : tilePos(tilePos), pos(tileCenter(tilePos)), targetOff(targetOff), defId(defId), type(type), snapshotKey(key) {
+  if (snapshotKey)
+    params.set(snapshotKey);
+}
 
 void Spawner::update(FXManager &manager) {
   if (isDead)
@@ -20,7 +23,10 @@ void Spawner::update(FXManager &manager) {
 
     spawnCount++;
     float scale(Renderer::nominalSize);
-    instanceId = manager.addSystem(defId, pos * scale, targetOff * scale);
+    if (snapshotKey)
+      instanceId = manager.addSystem(defId, {pos * scale, snapshotKey});
+    else
+      instanceId = manager.addSystem(defId, {pos * scale, targetOff * scale});
   }
 
   if (!manager.dead(instanceId))

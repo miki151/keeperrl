@@ -5,8 +5,30 @@
 
 namespace fx {
 
-ParticleSystem::ParticleSystem(FVec2 pos, FVec2 targetOff, FXName defId, int spawnTime, int numSubSystems)
-    : subSystems(numSubSystems), pos(pos), targetOff(targetOff), defId(defId), spawnTime(spawnTime) {}
+float SnapshotKey::distance(const SnapshotKey& rhs) const {
+  float timeDiff = animTime - rhs.animTime;
+  float paramDiff = param0 - rhs.param0;
+  return std::sqrt(timeDiff * timeDiff + paramDiff * paramDiff);
+}
+
+void ParticleSystem::Params::set(const SnapshotKey& key) {
+  scalar[0] = key.param0;
+}
+
+ParticleSystem::ParticleSystem(FXName defId, const InitConfig& config, int spawnTime, int numSubSystems)
+    : subSystems(numSubSystems), pos(config.pos), targetOff(config.targetOff), defId(defId), spawnTime(spawnTime) {
+}
+
+ParticleSystem::ParticleSystem(FXName defId, const InitConfig& config, int spawnTime, vector<SubSystem> snapshot)
+    : subSystems(std::move(snapshot)), pos(config.pos), targetOff(config.targetOff), defId(defId),
+      spawnTime(spawnTime) {
+  params.set(config.snapshotKey);
+}
+
+void ParticleSystem::randomize(RandomGen& random) {
+  for (auto& ss : subSystems)
+    ss.randomSeed = random.get(INT_MAX);
+}
 
 void ParticleSystem::kill(bool immediate) {
   if (immediate) {
