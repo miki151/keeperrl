@@ -35,7 +35,7 @@
 #include "view_id.h"
 #include "view_object.h"
 #include "territory.h"
-
+#include "furniture_factory.h"
 
 template <class Archive>
 void CollectiveConfig::serialize(Archive& ar, const unsigned int version) {
@@ -474,7 +474,10 @@ const MinionActivityInfo& CollectiveConfig::getActivityInfo(MinionActivity task)
       case MinionActivity::DIGGING: return {MinionActivityInfo::WORKER, "digging"};
       case MinionActivity::TRAIN: return {getTrainingPredicate(ExperienceType::MELEE), "training"};
       case MinionActivity::SLEEP: return {[](WConstCollective, WConstCreature c, FurnitureType t) {
-            return (!c && isSleepingFurniture(t)) || (c && (t == getBedType(c) || FurnitureFactory::isUpgrade(getBedType(c), t)));
+            if (!c)
+              return isSleepingFurniture(t);
+            auto bedType = getBedType(c);
+            return t == bedType || (bedType && FurnitureFactory::isUpgrade(*bedType, t));
           }, "sleeping"};
       case MinionActivity::EAT: return {MinionActivityInfo::EAT, "eating"};
       case MinionActivity::THRONE: return {FurnitureType::THRONE, "throne"};
