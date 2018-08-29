@@ -474,7 +474,7 @@ const MinionActivityInfo& CollectiveConfig::getActivityInfo(MinionActivity task)
       case MinionActivity::DIGGING: return {MinionActivityInfo::WORKER, "digging"};
       case MinionActivity::TRAIN: return {getTrainingPredicate(ExperienceType::MELEE), "training"};
       case MinionActivity::SLEEP: return {[](WConstCollective, WConstCreature c, FurnitureType t) {
-            return (!c && isSleepingFurniture(t)) || (c && t == getBedType(c));
+            return (!c && isSleepingFurniture(t)) || (c && (t == getBedType(c) || FurnitureFactory::isUpgrade(getBedType(c), t)));
           }, "sleeping"};
       case MinionActivity::EAT: return {MinionActivityInfo::EAT, "eating"};
       case MinionActivity::THRONE: return {FurnitureType::THRONE, "throne"};
