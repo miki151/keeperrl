@@ -390,11 +390,6 @@ void Collective::addNewCreatureMessage(const vector<WCreature>& immigrants) {
   }
 }
 
-void Collective::decayMorale() {
-  for (WCreature c : getCreatures(MinionTrait::FIGHTER))
-    c->addMorale(-c->getMorale() * 0.0008);
-}
-
 void Collective::update(bool currentlyActive) {
   control->update(currentlyActive);
   if (config->hasImmigrantion(currentlyActive) && getLeader())
@@ -439,7 +434,6 @@ void Collective::tick() {
   dangerLevelCache = none;
   control->tick();
   zones->tick();
-  decayMorale();
   taskMap->clearFinishedTasks();
   if (config->getWarnings() && Random.roll(5))
     warnings->considerWarnings(this);

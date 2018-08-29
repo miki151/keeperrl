@@ -260,7 +260,6 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
 
   void handleSurprise(Position);
   int getTaskDuration(WConstCreature, MinionActivity) const;
-  void decayMorale();
   vector<WCreature> SERIAL(creatures);
   vector<vector<WCreature>> SERIAL(populationGroups);
   EnumMap<MinionTrait, vector<WCreature>> SERIAL(byTrait);

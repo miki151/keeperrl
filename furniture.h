@@ -6,6 +6,7 @@
 #include "vision_id.h"
 #include "event_listener.h"
 #include "furniture_layer.h"
+#include "luxury_info.h"
 
 class TribeId;
 class Creature;
@@ -77,6 +78,7 @@ class Furniture : public OwnedObject<Furniture> {
    */
   vector<PItem> dropItems(Position, vector<PItem>) const;
   bool canBuildBridgeOver() const;
+  const LuxuryInfo& getLuxuryInfo() const;
 
   enum ConstructMessage { /*default*/BUILD, FILL_UP, REINFORCE, SET_UP };
 
@@ -115,6 +117,7 @@ class Furniture : public OwnedObject<Furniture> {
   Furniture& setDestroyFX(FXName);
   Furniture& setTryDestroyFX(FXName);
   Furniture& setWalkOverFX(FXName);
+  Furniture& setLuxury(double luxury);
   MovementSet& modMovementSet();
 
   SERIALIZATION_DECL(Furniture)
@@ -159,4 +162,5 @@ class Furniture : public OwnedObject<Furniture> {
   optional<FXName> SERIAL(destroyFX);
   optional<FXName> SERIAL(tryDestroyFX);
   optional<FXName> SERIAL(walkOverFX);
+  LuxuryInfo SERIAL(luxuryInfo);
 };

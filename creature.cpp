@@ -933,6 +933,17 @@ void Creature::considerMovingFromInaccessibleSquare() {
 
 void Creature::tick() {
   PROFILE;
+  addMorale(-morale * 0.0008);
+  auto updateMorale = [this](Position pos, double mult) {
+    for (auto f : pos.getFurniture()) {
+      auto& luxury = f->getLuxuryInfo();
+      if (luxury.luxury > morale)
+        addMorale((luxury.luxury - morale) * mult);
+    }
+  };
+  for (auto pos : position.neighbors8())
+    updateMorale(pos, 0.0004);
+  updateMorale(position, 0.001);
   considerMovingFromInaccessibleSquare();
   captureHealth = min(1.0, captureHealth + 0.02);
   vision->update(this);

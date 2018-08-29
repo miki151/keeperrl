@@ -52,6 +52,7 @@ void Furniture::serialize(Archive& ar, const unsigned) {
   ar(blockVision, usageType, clickType, tickType, usageTime, overrideMovement, wall, creator, createdTime);
   ar(constructMessage, layer, entryType, lightEmission, canHideHere, warning, summonedElement, droppedItems);
   ar(canBuildBridge, noProjectiles, clearFogOfWar, removeWithCreaturePresent, xForgetAfterBuilding, showEfficiency);
+  ar(luxuryInfo);
 }
 
 SERIALIZABLE(Furniture)
@@ -354,6 +355,10 @@ bool Furniture::canBuildBridgeOver() const {
   return canBuildBridge;
 }
 
+const LuxuryInfo&Furniture::getLuxuryInfo() const {
+  return luxuryInfo;
+}
+
 Furniture& Furniture::setBlocking() {
   movementSet->clearTraits();
   return *this;
@@ -513,6 +518,11 @@ Furniture& Furniture::setTryDestroyFX(FXName name) {
 
 Furniture& Furniture::setWalkOverFX(FXName name) {
   walkOverFX = name;
+  return *this;
+}
+
+Furniture& Furniture::setLuxury(double luxury) {
+  luxuryInfo.luxury = luxury;
   return *this;
 }
 
