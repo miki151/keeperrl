@@ -266,6 +266,7 @@ void Position::globalMessage(const PlayerMessage& msg) const {
 vector<Position> Position::neighbors8() const {
   //PROFILE;
   vector<Position> ret;
+  ret.reserve(8);
   for (Vec2 v : coord.neighbors8())
     ret.push_back(Position(v, level));
   return ret;
@@ -274,6 +275,7 @@ vector<Position> Position::neighbors8() const {
 vector<Position> Position::neighbors4() const {
   //PROFILE;
   vector<Position> ret;
+  ret.reserve(4);
   for (Vec2 v : coord.neighbors4())
     ret.push_back(Position(v, level));
   return ret;
@@ -282,6 +284,7 @@ vector<Position> Position::neighbors4() const {
 vector<Position> Position::neighbors8(RandomGen& random) const {
   //PROFILE;
   vector<Position> ret;
+  ret.reserve(8);
   for (Vec2 v : coord.neighbors8(random))
     ret.push_back(Position(v, level));
   return ret;
@@ -290,6 +293,7 @@ vector<Position> Position::neighbors8(RandomGen& random) const {
 vector<Position> Position::neighbors4(RandomGen& random) const {
   //PROFILE;
   vector<Position> ret;
+  ret.reserve(4);
   for (Vec2 v : coord.neighbors4(random))
     ret.push_back(Position(v, level));
   return ret;
@@ -298,6 +302,7 @@ vector<Position> Position::neighbors4(RandomGen& random) const {
 vector<Position> Position::getRectangle(Rectangle rect) const {
   PROFILE;
   vector<Position> ret;
+  ret.reserve(rect.width() * rect.height());
   for (Vec2 v : rect.translate(coord))
     ret.emplace_back(v, level);
   return ret;
