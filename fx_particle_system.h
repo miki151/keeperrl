@@ -8,6 +8,28 @@
 
 namespace fx {
 
+struct SnapshotKey {
+  SnapshotKey(float animTime = 0.0f, float param0 = 0.0f) : animTime(animTime), param0(param0) {}
+
+  float distance(const SnapshotKey&) const;
+  explicit operator bool() const {
+    return animTime > 0.0f;
+  }
+
+  float animTime;
+  float param0;
+  // Add more parameters only if necessary
+};
+
+// Initial configuration of spawned particle system
+struct InitConfig {
+  InitConfig(FVec2 pos = {}, FVec2 targetOff = {}) : pos(pos), targetOff(targetOff) {}
+  InitConfig(FVec2 pos, SnapshotKey key) : pos(pos), snapshotKey(key) {}
+
+  FVec2 pos, targetOff;
+  SnapshotKey snapshotKey;
+};
+
 // Identifies a particluar particle system instance
 class ParticleSystemId {
 public:
@@ -57,12 +79,16 @@ struct ParticleSystem {
   struct Params {
     static constexpr int maxScalars = 2, maxColors = 2, maxDirs = 2;
 
+    void set(const SnapshotKey&);
+
     float scalar[maxScalars] = {0.0f, 0.0f};
     FVec3 color[maxColors] = {FVec3(1.0), FVec3(1.0)};
     Dir dir[maxDirs] = {Dir::N, Dir::N};
   };
 
-  ParticleSystem(FVec2 pos, FVec2 targetOff, FXName, int spawnTime, int numSubSystems);
+  ParticleSystem(FXName, const InitConfig&, int spawnTime, int numSubSystems);
+  ParticleSystem(FXName, const InitConfig&, int spawnTime, vector<SubSystem> snapshot);
+  void randomize(RandomGen&);
 
   int numActiveParticles() const;
   int numTotalParticles() const;

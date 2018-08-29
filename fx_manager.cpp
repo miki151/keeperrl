@@ -168,6 +168,73 @@ void FXManager::simulate(float delta) {
       simulate(inst, delta);
 }
 
+// TODO: jak odróżnić animTime od animTime w particlesystemie ?
+void FXManager::addSnapshot(float animTime, const ParticleSystem& ps) {
+  SnapshotKey key{animTime, ps.params.scalar[0]};
+  Snapshot newSnapshot{key, ps.subSystems};
+  m_snapshots[ps.defId].emplace_back(std::move(newSnapshot));
+}
+
+auto FXManager::findBestSnapshot(FXName name, SnapshotKey key) const -> const Snapshot* {
+  const Snapshot* best = nullptr;
+  float bestDist = fconstant::inf;
+
+  // TODO: there can be multiple with different random seeds
+
+  for (auto& ss : m_snapshots[name]) {
+    float dist = key.distance(ss.key);
+    if (dist < bestDist) {
+      bestDist = dist;
+      best = &ss;
+    }
+  }
+
+  if (best)
+    INFO << "FX: using snapshot: " << EnumInfo<FXName>::getString(name) << " Time: " << best->key.animTime
+         << " Param0: " << best->key.param0;
+  else
+    INFO << "FX: snapshot not found: " << EnumInfo<FXName>::getString(name);
+
+  return best;
+}
+
+void FXManager::genSnapshots(FXName name, vector<float> animTimes, vector<float> params, int randomVariants) {
+  if (params.empty())
+    params = {0.0f};
+
+  int numOptions = animTimes.size() * params.size() * randomVariants; // Try to keep this number low
+  INFO << "FX: generating " << numOptions << " snapshots for: " << EnumInfo<FXName>::getString(name);
+
+  std::sort(begin(animTimes), end(animTimes));
+
+  // TODO: simplify this loop
+  RandomGen random;
+  for (float param0 : params) {
+    random.init(int(name));
+
+    for (int r = 0; r < randomVariants; r++) {
+      auto ps = makeSystem(name, 0, {});
+
+      ps.randomize(random);
+      ps.params.scalar[0] = param0;
+
+      float curTime = 0.0f;
+      for (auto time : animTimes) {
+        if (time <= curTime)
+          continue;
+        float simTime = time - curTime;
+        while (simTime > 0.0001f) {
+          float stepTime = min(1.0f / 60.0f, simTime);
+          simulate(ps, stepTime);
+          simTime -= stepTime;
+        }
+        curTime = time;
+        addSnapshot(curTime, ps);
+      }
+    }
+  }
+}
+
 vector<DrawParticle> FXManager::genQuads() {
   vector<DrawParticle> out;
   // TODO(opt): reserve
@@ -218,13 +285,29 @@ const ParticleSystem &FXManager::get(ParticleSystemId id) const {
   return m_systems[id];
 }
 
-ParticleSystemId FXManager::addSystem(FXName name, FVec2 pos) {
-  return addSystem(name, pos, {});
+ParticleSystem FXManager::makeSystem(FXName name, int spawnTime, InitConfig config) {
+  if (config.snapshotKey) {
+    auto snapshot = findBestSnapshot(name, config.snapshotKey);
+    if (snapshot)
+      return {name, config, spawnTime, snapshot->subSystems};
+  }
+
+  auto& def = (*this)[name];
+  ParticleSystem out{name, config, spawnTime, (int)def.subSystems.size()};
+  for (int ssid = 0; ssid < (int)out.subSystems.size(); ssid++) {
+    auto& ss = out.subSystems[ssid];
+    ss.randomSeed = m_randomSeed++;
+    ss.emissionFract = (*this)[def.subSystems[ssid].emitterId].initialSpawnCount;
+  }
+
+  // TODO: initial particles
+  return out;
 }
 
-ParticleSystemId FXManager::addSystem(FXName name, FVec2 pos, FVec2 targetOff) {
+ParticleSystemId FXManager::addSystem(FXName name, InitConfig config) {
   auto& def = (*this)[name];
 
+  int new_slot = -1;
   for (int n = 0; n < (int)m_systems.size(); n++)
     if (m_systems[n].isDead) {
       if (m_systems[n].spawnTime == m_spawnClock) {
@@ -233,23 +316,12 @@ ParticleSystemId FXManager::addSystem(FXName name, FVec2 pos, FVec2 targetOff) {
           m_spawnClock = 1;
       }
 
-      m_systems[n] = {pos, targetOff, name, m_spawnClock, (int)def.subSystems.size()};
-      initialize(def, m_systems[n]);
+      m_systems[n] = makeSystem(name, m_spawnClock, config);
       return ParticleSystemId(n, m_spawnClock);
     }
 
-  m_systems.emplace_back(pos, targetOff, name, m_spawnClock, (int)def.subSystems.size());
-  initialize(def, m_systems.back());
+  m_systems.emplace_back(makeSystem(name, m_spawnClock, config));
   return ParticleSystemId(m_systems.size() - 1, m_spawnClock);
-}
-
-void FXManager::initialize(const ParticleSystemDef &def, ParticleSystem &ps) {
-  for (int ssid = 0; ssid < (int)ps.subSystems.size(); ssid++) {
-    auto &ss = ps.subSystems[ssid];
-    ss.randomSeed = m_randomSeed++;
-    ss.emissionFract = (*this)[def.subSystems[ssid].emitterId].initialSpawnCount;
-  }
-  // TODO: initial particles
 }
 
 vector<ParticleSystemId> FXManager::aliveSystems() const {

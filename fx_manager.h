@@ -48,8 +48,7 @@ public:
   ParticleSystem &get(ParticleSystemId);
   const ParticleSystem &get(ParticleSystemId) const;
 
-  ParticleSystemId addSystem(FXName, FVec2 pos);
-  ParticleSystemId addSystem(FXName, FVec2 pos, FVec2 targetOff);
+  ParticleSystemId addSystem(FXName, InitConfig);
 
   vector<ParticleSystemId> aliveSystems() const;
   const auto &systems() const { return m_systems; }
@@ -62,16 +61,26 @@ public:
   EmitterDefId addDef(EmitterDef);
   void addDef(FXName, ParticleSystemDef);
 
+  struct Snapshot {
+    SnapshotKey key;
+    vector<ParticleSystem::SubSystem> subSystems;
+  };
+
+  void addSnapshot(float animTime, const ParticleSystem&);
+  const Snapshot* findBestSnapshot(FXName, SnapshotKey) const;
+  void genSnapshots(FXName, vector<float>, vector<float> params = {}, int randomVariants = 1);
+
   private:
+  ParticleSystem makeSystem(FXName, int spawnTime, InitConfig);
   void initializeDefs();
 
   void simulate(ParticleSystem &, float timeDelta);
-  void initialize(const ParticleSystemDef &, ParticleSystem &);
   SubSystemContext ssctx(ParticleSystem &, int);
 
   vector<ParticleDef> m_particleDefs;
   vector<EmitterDef> m_emitterDefs;
   EnumMap<FXName, ParticleSystemDef> m_systemDefs;
+  EnumMap<FXName, vector<Snapshot>> m_snapshots;
 
   // TODO: add simple statistics: num particles, instances, etc.
   vector<ParticleSystem> m_systems;

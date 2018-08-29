@@ -35,6 +35,7 @@ enum class BlendMode : unsigned char { normal, additive };
 
 class FXManager;
 class FXRenderer;
+class SnapshotManager;
 
 template <class T> class Rect;
 template <class T> struct vec2;
@@ -69,6 +70,7 @@ struct SubSystemContext;
 struct DrawContext;
 struct AnimationContext;
 struct EmissionState;
+struct SnapshotKey;
 
 template <class T, class Base = unsigned> class TagId;
 

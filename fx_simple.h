@@ -18,6 +18,8 @@ inline bool valid(FXId id) {
 
 FXId spawnEffect(FXName, double x, double y);
 FXId spawnEffect(FXName, double x, double y, Vec2 dir);
+FXId spawnSnapshotEffect(FXName, float x, float y, float startSnimTime, float param0 = 0.0f);
+
 bool isAlive(FXId);
 void kill(FXId, bool immediate = true);
 optional<FXName> name(FXId);

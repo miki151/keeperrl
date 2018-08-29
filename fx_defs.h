@@ -17,7 +17,7 @@ struct TextureDef {
   IVec2 tiles;
 };
 
-// Defines behavious and looks of a single particle.
+// Defines behaviour and looks of a single particle.
 struct ParticleDef {
   // Defines spawned particle life in seconds for given AT
   Curve<float> life = 1.0f;
