@@ -180,7 +180,7 @@ static void addExplosionEffect(FXManager &mgr) {
 
   ParticleSystemDef psdef;
   psdef.subSystems = {ssdef};
-  mgr.addDef(FXName::EXPLSION, psdef);
+  mgr.addDef(FXName::EXPLOSION, psdef);
 }
 
 static void addRippleEffect(FXManager &mgr) {
