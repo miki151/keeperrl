@@ -265,8 +265,7 @@ vector<DrawParticle> FXManager::genQuads() {
       for (auto &pinst : ss.particles) {
         DrawParticle dparticle;
         ctx.ssdef.drawFunc(ctx, pinst, dparticle);
-        dparticle.particleDefId = ssdef.particleId;
-        dparticle.blendMode = tdef.blendMode;
+        dparticle.texName = pdef.textureName;
         out.emplace_back(dparticle);
       }
     }
