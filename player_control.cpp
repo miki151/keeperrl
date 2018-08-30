@@ -62,7 +62,6 @@
 #include "furniture_type.h"
 #include "furniture_factory.h"
 #include "known_tiles.h"
-#include "tile_efficiency.h"
 #include "zones.h"
 #include "inventory.h"
 #include "immigration.h"
@@ -1590,7 +1589,7 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
   if (!canSeePos)
     if (auto memIndex = getMemory().getViewIndex(position))
       index.mergeFromMemory(*memIndex);
-  if (collective->getTerritory().contains(position))
+  if (collective->getTerritory().contains(position)) {
     if (auto furniture = position.getFurniture(FurnitureLayer::MIDDLE)) {
       if (auto clickType = furniture->getClickType())
         if (auto& obj = furniture->getViewObject())
@@ -1606,10 +1605,17 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
           if (auto task = MinionActivities::getActivityFor(collective, c, furniture->getType()))
             if (collective->isActivityGood(c, *task, true))
               index.setHighlight(HighlightType::CREATURE_DROP);
-      if (furniture->isShowEfficiency() && index.hasObject(ViewLayer::FLOOR))
-        index.getObject(ViewLayer::FLOOR).setAttribute(ViewObject::Attribute::EFFICIENCY,
-            collective->getTileEfficiency().getEfficiency(position));
+      if (CollectiveConfig::requiresLighting(furniture->getType()) && position.getLightingEfficiency() < 0.99)
+        if (auto& obj = furniture->getViewObject())
+          if (index.hasObject(obj->layer()))
+            index.getObject(obj->layer()).setModifier(ViewObject::Modifier::INSUFFICIENT_LIGHT);
     }
+    for (auto furniture : position.getFurniture())
+      if (furniture->getLuxuryInfo().luxury > 0)
+        if (auto obj = furniture->getViewObject())
+          if (index.hasObject(obj->layer()))
+            index.getObject(obj->layer()).setAttribute(ViewObject::Attribute::LUXURY, furniture->getLuxuryInfo().luxury);
+  }
   if (collective->isMarked(position))
     index.setHighlight(collective->getMarkHighlight(position));
   if (collective->hasPriorityTasks(position))

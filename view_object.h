@@ -27,7 +27,7 @@
 #include "view_object_modifier.h"
 #include "fx_name.h"
 
-RICH_ENUM(ViewObjectAttribute, HEALTH, BURNING, WATER_DEPTH, EFFICIENCY, MORALE);
+RICH_ENUM(ViewObjectAttribute, HEALTH, BURNING, WATER_DEPTH, LUXURY, MORALE);
 
 class ViewObject {
   public:
@@ -93,7 +93,6 @@ class ViewObject {
   EnumSet<FXName> particleEffects;
 
   private:
-  string getAttributeString(Attribute) const;
   const char* getDefaultDescription() const;
   EnumSet<Modifier> SERIAL(modifiers);
   EnumSet<CreatureStatus> SERIAL(status);

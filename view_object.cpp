@@ -271,13 +271,6 @@ optional<Dir> ViewObject::getAttachmentDir() const {
   return attachmentDir;
 }
 
-string ViewObject::getAttributeString(Attribute attr) const {
-  if (attr == Attribute::EFFICIENCY)
-    return toString<int>(*getAttribute(attr) * 100);
-  else
-    return toString(*getAttribute(attr));
-}
-
 ViewLayer ViewObject::layer() const {
   return viewLayer;
 }

@@ -25,6 +25,7 @@ class Furniture : public OwnedObject<Furniture> {
   static const string& getName(FurnitureType, int count = 1);
   static FurnitureLayer getLayer(FurnitureType);
   static bool isWall(FurnitureType);
+  static LuxuryInfo getLuxuryInfo(FurnitureType);
   static int getPopulationIncrease(FurnitureType, int numBuilt);
   static optional<std::string> getPopulationIncreaseDescription(FurnitureType);
 
@@ -70,7 +71,6 @@ class Furniture : public OwnedObject<Furniture> {
   optional<CreatureId> getSummonedElement() const;
   bool isClearFogOfWar() const;
   bool forgetAfterBuilding() const;
-  bool isShowEfficiency() const;
   void onCreatureWalkedOver(Position, Vec2 direction) const;
   /**
    * @brief Calls special functionality to handle dropped items, if any.
@@ -113,7 +113,6 @@ class Furniture : public OwnedObject<Furniture> {
   Furniture& setCanRemoveWithCreaturePresent(bool state);
   Furniture& setCanRemoveNonFriendly(bool state);
   Furniture& setForgetAfterBuilding();
-  Furniture& setShowEfficiency();
   Furniture& setDestroyFX(FXName);
   Furniture& setTryDestroyFX(FXName);
   Furniture& setWalkOverFX(FXName);
@@ -158,7 +157,6 @@ class Furniture : public OwnedObject<Furniture> {
   bool SERIAL(noProjectiles) = false;
   bool SERIAL(clearFogOfWar) = false;
   bool SERIAL(xForgetAfterBuilding) = false;
-  bool SERIAL(showEfficiency) = false;
   optional<FXName> SERIAL(destroyFX);
   optional<FXName> SERIAL(tryDestroyFX);
   optional<FXName> SERIAL(walkOverFX);

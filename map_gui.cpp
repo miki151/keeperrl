@@ -134,7 +134,6 @@ Color MapGui::getHighlightColor(const ViewIndex& index, HighlightType type) {
     case HighlightType::POISON_GAS: return Color(0, min<Uint8>(255., Uint8(amount * 500)), 0, (Uint8)(amount * 140));
     case HighlightType::MEMORY: return Color::BLACK.transparency(80);
     case HighlightType::NIGHT: return Color::NIGHT_BLUE.transparency(int(amount * 160));
-    case HighlightType::EFFICIENCY: return Color(255, 0, 0, Uint8(120 * (1 - amount)));
     case HighlightType::PRIORITY_TASK: return Color(0, 255, 0, 200);
     case HighlightType::CREATURE_DROP:
       if (index.hasObject(ViewLayer::FLOOR) && getHighlightedFurniture() == index.getObject(ViewLayer::FLOOR).id())
@@ -512,6 +511,10 @@ static bool mirrorSprite(ViewId id) {
   }
 }
 
+Color MapGui::getHealthBarColor(double health) {
+  return Color::f(min<double>(1.0, 2 - health * 2), min<double>(1.0, 2 * health), 0);
+}
+
 void MapGui::drawHealthBar(Renderer& renderer, Vec2 pos, Vec2 size, const ViewObject& object) {
   bool capture = object.hasModifier(ViewObject::Modifier::CAPTURE_ORDERED);
   auto health = object.getAttribute(ViewObject::Attribute::HEALTH);
@@ -526,7 +529,7 @@ void MapGui::drawHealthBar(Renderer& renderer, Vec2 pos, Vec2 size, const ViewOb
     return Rectangle((int) (pos.x + size.x * (1 - barLength) / 2), pos.y,
         (int) (pos.x + size.x * state * (1 + barLength) / 2), (int) (pos.y + size.y * barWidth));
   };
-  auto color = capture ? Color::WHITE : Color::f(min<double>(1.0, 2 - *health * 2), min<double>(1.0, 2 * *health), 0);
+  auto color = capture ? Color::WHITE : getHealthBarColor(*health);
   auto fullRect = getBar(1);
   renderer.drawFilledRectangle(fullRect.minusMargin(-1), Color::TRANSPARENT, Color::BLACK.transparency(100));
   renderer.drawFilledRectangle(fullRect, color.transparency(100));

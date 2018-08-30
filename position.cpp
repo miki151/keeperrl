@@ -213,6 +213,12 @@ optional<int> Position::getPortalIndex() const {
     return none;
 }
 
+double Position::getLightingEfficiency() const {
+  const double lightBase = 0.5;
+  const double flattenVal = 0.9;
+  return min(1.0, (lightBase + getLight() * (1 - lightBase)) / flattenVal);
+}
+
 WCreature Position::getCreature() const {
   //PROFILE;
   if (isValid())

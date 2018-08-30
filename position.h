@@ -131,6 +131,7 @@ class Position {
   void registerPortal();
   void removePortal();
   optional<int> getPortalIndex() const;
+  double getLightingEfficiency() const;
 
   SERIALIZATION_DECL(Position)
   int getHash() const;

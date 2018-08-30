@@ -16,7 +16,6 @@
 #include "immigrant_info.h"
 #include "keybinding.h"
 #include "immigration.h"
-#include "tile_efficiency.h"
 #include "container_range.h"
 #include "technology.h"
 #include "workshops.h"
@@ -113,7 +112,7 @@ bool Tutorial::canContinue(WConstGame game) const {
     case State::TORCHES:
       for (auto furniture : {FurnitureType::BOOKCASE_WOOD, FurnitureType::TRAINING_WOOD})
         for (auto pos : collective->getConstructions().getBuiltPositions(furniture))
-          if (collective->getTileEfficiency().getEfficiency(pos) < 0.99)
+          if (pos.getLightingEfficiency() < 0.99)
             return false;
       return true;
     case State::FLOORS:
@@ -235,7 +234,7 @@ string Tutorial::getMessage() const {
     case State::TORCHES:
       return "We need to make sure that your minions have good working conditions when studying and training. Place some "
           "torches in your rooms to light them up. Hover your mouse over the book shelves and training dummies "
-          "and look in the lower right corner to make sure that their efficiency is at least 100.";
+          "and look in the lower right corner to check if they have enough light.";
     case State::FLOORS:
       return "Minions are also more efficient if there is a nice floor where they are working. For now you can only "
           "afford wooden floors, but it should do.\n \n"

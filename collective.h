@@ -42,7 +42,6 @@ struct TriggerInfo;
 class Territory;
 struct CollectiveName;
 class Workshops;
-class TileEfficiency;
 class Zones;
 struct ItemFetchInfo;
 class CollectiveWarnings;
@@ -106,7 +105,6 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   bool canClaimSquare(Position pos) const;
   void claimSquare(Position);
   const KnownTiles& getKnownTiles() const;
-  const TileEfficiency& getTileEfficiency() const;
   void retire();
   CollectiveWarnings& getWarnings();
   const CollectiveConfig& getConfig() const;
@@ -290,7 +288,6 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   optional<EnemyId> SERIAL(enemyId);
   unique_ptr<Workshops> SERIAL(workshops);
   HeapAllocated<Zones> SERIAL(zones);
-  HeapAllocated<TileEfficiency> SERIAL(tileEfficiency);
   HeapAllocated<CollectiveWarnings> SERIAL(warnings);
   PImmigration SERIAL(immigration);
   mutable optional<double> dangerLevelCache;

@@ -2139,6 +2139,14 @@ SGuiElem GuiBuilder::drawLyingItemsList(const string& title, const ItemCounts& i
   return lines.buildVerticalList();
 }
 
+static string getMoraleNumber(double morale) {
+#ifndef RELEASE
+  return toString(morale);
+#else
+  return toString((int)(10.0f * morale) / 10)
+#endif
+}
+
 SGuiElem GuiBuilder::drawMapHintOverlay() {
   auto lines = gui.getListBuilder(legendLineHeight);
   vector<SGuiElem> allElems;
@@ -2179,15 +2187,21 @@ SGuiElem GuiBuilder::drawMapHintOverlay() {
       if (auto& attributes = viewObject->getCreatureAttributes())
         lines.addElemAuto(drawAttributesOnPage(drawPlayerAttributes(*attributes)));
       if (auto health = viewObject->getAttribute(ViewObjectAttribute::HEALTH))
-        lines.addElem(gui.label("Health: " + toString((int) (100.0f * *health)) + "%"));
-      if (auto efficiency = viewObject->getAttribute(ViewObjectAttribute::EFFICIENCY))
-        lines.addElem(gui.label("Efficiency: " + toString((int) (100.0f * *efficiency))));
+        lines.addElem(gui.stack(
+              gui.margins(gui.progressBar(MapGui::getHealthBarColor(*health).transparency(70), *health), -2, 0, 0, 3),
+              gui.label("Health: " + toString((int) (100.0f * *health)) + "%")));
+      if (auto morale = viewObject->getAttribute(ViewObjectAttribute::MORALE))
+        lines.addElem(gui.stack(
+              gui.margins(gui.progressBar((*morale >= 0 ? Color::GREEN : Color::RED).transparency(70), fabs(*morale)), -2, 0, 0, 3),
+              gui.label("Morale: " + getMoraleNumber(*morale))));
+      if (auto luxury = viewObject->getAttribute(ViewObjectAttribute::LUXURY))
+        lines.addElem(gui.stack(
+              gui.margins(gui.progressBar(Color::GREEN.transparency(70), fabs(*luxury)), -2, 0, 0, 3),
+              gui.label("Luxury: " + getMoraleNumber(*luxury))));
       if (viewObject->hasModifier(ViewObjectModifier::PLANNED))
         lines.addElem(gui.label("Planned"));
-      //if (indoors)
-      //  ret.push_back(*indoors ? "Indoors" : "Outdoors");
-      if (auto morale = viewObject->getAttribute(ViewObjectAttribute::MORALE))
-        lines.addElem(gui.label("Morale: " + toString(*morale)));
+      if (viewObject->hasModifier(ViewObjectModifier::INSUFFICIENT_LIGHT))
+        lines.addElem(gui.label("Insufficient light", Color::RED));
     }
     if (highlighted.tilePos)
       lines.addElem(gui.label("Position: " + toString(*highlighted.tilePos)));

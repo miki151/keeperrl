@@ -241,31 +241,6 @@ const vector<FurnitureType>& CollectiveConfig::getRoomsNeedingLight() const {
   return ret;
 };
 
-const vector<FloorInfo>& CollectiveConfig::getFloors() {
-  static vector<FloorInfo> ret = {
-    {FurnitureType::FLOOR_WOOD1, {CollectiveResourceId::WOOD, 2}, "Wooden", 0.02},
-    {FurnitureType::FLOOR_WOOD2, {CollectiveResourceId::WOOD, 2}, "Wooden", 0.02},
-    {FurnitureType::FLOOR_STONE1, {CollectiveResourceId::STONE, 2}, "Stone", 0.04},
-    {FurnitureType::FLOOR_STONE2, {CollectiveResourceId::STONE, 2}, "Stone", 0.04},
-    {FurnitureType::FLOOR_CARPET1, {CollectiveResourceId::GOLD, 2}, "Carpet", 0.06},
-    {FurnitureType::FLOOR_CARPET2, {CollectiveResourceId::GOLD, 2}, "Carpet", 0.06},
-  };
-  return ret;
-}
-
-double CollectiveConfig::getEfficiencyBonus(FurnitureType type) {
-  for (auto& info : getFloors())
-    if (info.type == type)
-      return info.efficiencyBonus;
-  switch (type) {
-    case FurnitureType::DUNGEON_WALL:
-    case FurnitureType::DUNGEON_WALL2:
-      return 0.04;
-    default:
-      return 0;
-  }
-}
-
 bool CollectiveConfig::canBuildOutsideTerritory(FurnitureType type) {
   switch (type) {
     case FurnitureType::EYEBALL:
@@ -353,13 +328,15 @@ MinionActivityInfo::MinionActivityInfo(Type t, const string& desc) : type(t), de
 
 MinionActivityInfo::MinionActivityInfo() {}
 
-MinionActivityInfo::MinionActivityInfo(FurnitureType type, const string& desc) : type(FURNITURE),
-  furniturePredicate([type](WConstCollective, WConstCreature, FurnitureType t) { return t == type;}),
-    description(desc) {
+MinionActivityInfo::MinionActivityInfo(FurnitureType type, const string& desc, bool requiresLighting)
+    : type(FURNITURE),
+      furniturePredicate([type](WConstCollective, WConstCreature, FurnitureType t) { return t == type;}),
+      description(desc),
+      requiresLighting(requiresLighting) {
 }
 
-MinionActivityInfo::MinionActivityInfo(UsagePredicate pred, const string& desc) : type(FURNITURE),
-  furniturePredicate(pred), description(desc) {
+MinionActivityInfo::MinionActivityInfo(UsagePredicate pred, const string& desc, bool requiresLighting)
+    : type(FURNITURE), furniturePredicate(pred), description(desc), requiresLighting(requiresLighting) {
 }
 
 static EnumMap<WorkshopType, WorkshopInfo> workshops([](WorkshopType type)->WorkshopInfo {
@@ -464,6 +441,19 @@ static auto addManaGenerationPredicate(Pred p) {
   };
 }
 
+bool CollectiveConfig::requiresLighting(FurnitureType type) {
+  static EnumMap<FurnitureType, bool> result([] (FurnitureType type) {
+    for (auto activity : ENUM_ALL(MinionActivity)) {
+      auto& info = getActivityInfo(activity);
+      if (info.type == MinionActivityInfo::FURNITURE && info.requiresLighting &&
+          info.furniturePredicate(nullptr, nullptr, type))
+        return true;
+    }
+    return false;
+  });
+  return result[type];
+}
+
 const MinionActivityInfo& CollectiveConfig::getActivityInfo(MinionActivity task) {
   static EnumMap<MinionActivity, MinionActivityInfo> map([](MinionActivity task) -> MinionActivityInfo {
     switch (task) {
@@ -472,28 +462,28 @@ const MinionActivityInfo& CollectiveConfig::getActivityInfo(MinionActivity task)
       case MinionActivity::HAULING: return {MinionActivityInfo::WORKER, "hauling"};
       case MinionActivity::WORKING: return {MinionActivityInfo::WORKER, "labour"};
       case MinionActivity::DIGGING: return {MinionActivityInfo::WORKER, "digging"};
-      case MinionActivity::TRAIN: return {getTrainingPredicate(ExperienceType::MELEE), "training"};
+      case MinionActivity::TRAIN: return {getTrainingPredicate(ExperienceType::MELEE), "training", true};
       case MinionActivity::SLEEP: return {[](WConstCollective, WConstCreature c, FurnitureType t) {
             if (!c)
               return isSleepingFurniture(t);
             auto bedType = getBedType(c);
             return t == bedType || (bedType && FurnitureFactory::isUpgrade(*bedType, t));
-          }, "sleeping"};
+          }, "sleeping", false};
       case MinionActivity::EAT: return {MinionActivityInfo::EAT, "eating"};
-      case MinionActivity::THRONE: return {FurnitureType::THRONE, "throne"};
+      case MinionActivity::THRONE: return {FurnitureType::THRONE, "throne", true};
       case MinionActivity::STUDY: return {addManaGenerationPredicate(getTrainingPredicate(ExperienceType::SPELL)),
-           "studying"};
-      case MinionActivity::CROPS: return {FurnitureType::CROPS, "crops"};
-      case MinionActivity::RITUAL: return {FurnitureType::DEMON_SHRINE, "rituals"};
+           "studying", true};
+      case MinionActivity::CROPS: return {FurnitureType::CROPS, "crops", false};
+      case MinionActivity::RITUAL: return {FurnitureType::DEMON_SHRINE, "rituals", false};
       case MinionActivity::ARCHERY: return {MinionActivityInfo::ARCHERY, "archery range"};
       case MinionActivity::COPULATE: return {MinionActivityInfo::COPULATE, "copulation"};
       case MinionActivity::EXPLORE: return {MinionActivityInfo::EXPLORE, "spying"};
       case MinionActivity::SPIDER: return {MinionActivityInfo::SPIDER, "spider"};
       case MinionActivity::EXPLORE_NOCTURNAL: return {MinionActivityInfo::EXPLORE, "spying"};
       case MinionActivity::EXPLORE_CAVES: return {MinionActivityInfo::EXPLORE, "spying"};
-      case MinionActivity::BE_WHIPPED: return {FurnitureType::WHIPPING_POST, "being whipped"};
-      case MinionActivity::BE_TORTURED: return {FurnitureType::TORTURE_TABLE, "being tortured"};
-      case MinionActivity::BE_EXECUTED: return {FurnitureType::GALLOWS, "being executed"};
+      case MinionActivity::BE_WHIPPED: return {FurnitureType::WHIPPING_POST, "being whipped", false};
+      case MinionActivity::BE_TORTURED: return {FurnitureType::TORTURE_TABLE, "being tortured", false};
+      case MinionActivity::BE_EXECUTED: return {FurnitureType::GALLOWS, "being executed", false};
       case MinionActivity::CRAFT: return {[](WConstCollective col, WConstCreature c, FurnitureType t) {
             if (auto type = getWorkshopType(t))
               return !c || !col || (c->getAttributes().getSkills().getValue(getWorkshopInfo(*type).skill) > 0 &&
@@ -501,7 +491,7 @@ const MinionActivityInfo& CollectiveConfig::getActivityInfo(MinionActivity task)
             else
               return false;
           },
-          "crafting"};
+          "crafting", true};
     }
   });
   return map[task];

@@ -40,7 +40,6 @@
 #include "body.h"
 #include "furniture.h"
 #include "furniture_factory.h"
-#include "tile_efficiency.h"
 #include "zones.h"
 #include "experience_type.h"
 #include "furniture_usage.h"
@@ -62,7 +61,7 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
   ar(delayedPos, knownTiles, technologies, kills, points, currentActivity);
   ar(credit, level, immigration, teams, name, conqueredVillains);
   ar(config, warnings, knownVillains, knownVillainLocations, banished, positionMatching);
-  ar(villainType, enemyId, workshops, zones, tileEfficiency, discoverable, quarters, populationIncrease);
+  ar(villainType, enemyId, workshops, zones, discoverable, quarters, populationIncrease);
 }
 
 SERIALIZABLE(Collective)
@@ -599,7 +598,6 @@ void Collective::onEvent(const GameEvent& event) {
           populationIncrease -= Furniture::getPopulationIncrease(info.type, constructions->getBuiltCount(info.type));
           constructions->onFurnitureDestroyed(info.position, info.layer);
           populationIncrease += Furniture::getPopulationIncrease(info.type, constructions->getBuiltCount(info.type));
-          tileEfficiency->update(info.position);
         }
       },
       [&](const ConqueredEnemy& info) {
@@ -687,10 +685,6 @@ void Collective::claimSquare(Position pos) {
 
 const KnownTiles& Collective::getKnownTiles() const {
   return *knownTiles;
-}
-
-const TileEfficiency& Collective::getTileEfficiency() const {
-  return *tileEfficiency;
 }
 
 LocalTime Collective::getLocalTime() const {
@@ -884,7 +878,6 @@ void Collective::destroyOrder(Position pos, FurnitureLayer layer) {
     if (furniture && !furniture->isWall() &&
         (furniture->getTribe() == getTribeId() || furniture->canRemoveNonFriendly())) {
       furniture->destroy(pos, DestroyAction::Type::BASH);
-      tileEfficiency->update(pos);
     }
     removeFurniture(pos, layer);
   }
@@ -966,7 +959,6 @@ bool Collective::isConstructionReachable(Position pos) {
 }
 
 void Collective::onConstructed(Position pos, FurnitureType type) {
-  tileEfficiency->update(pos);
   if (pos.getFurniture(type)->forgetAfterBuilding()) {
     constructions->removeFurniture(pos, Furniture::getLayer(type));
     if (territory->contains(pos))
@@ -1191,8 +1183,7 @@ void Collective::addProducesMessage(WConstCreature c, const vector<PItem>& items
 void Collective::onAppliedSquare(WCreature c, Position pos) {
   if (auto furniture = pos.getFurniture(FurnitureLayer::MIDDLE)) {
     // Furniture have variable usage time, so just multiply by it to be independent of changes.
-    double efficiency = tileEfficiency->getEfficiency(pos) * furniture->getUsageTime().getVisibleDouble()
-        * getEfficiency(c);
+    double efficiency = furniture->getUsageTime().getVisibleDouble() * getEfficiency(c) * pos.getLightingEfficiency();
     switch (furniture->getType()) {
       case FurnitureType::THRONE:
         if (config->getRegenerateMana())

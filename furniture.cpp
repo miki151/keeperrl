@@ -51,7 +51,7 @@ void Furniture::serialize(Archive& ar, const unsigned) {
   ar(name, pluralName, type, movementSet, fire, burntRemains, destroyedRemains, destroyActions, itemDrop);
   ar(blockVision, usageType, clickType, tickType, usageTime, overrideMovement, wall, creator, createdTime);
   ar(constructMessage, layer, entryType, lightEmission, canHideHere, warning, summonedElement, droppedItems);
-  ar(canBuildBridge, noProjectiles, clearFogOfWar, removeWithCreaturePresent, xForgetAfterBuilding, showEfficiency);
+  ar(canBuildBridge, noProjectiles, clearFogOfWar, removeWithCreaturePresent, xForgetAfterBuilding);
   ar(luxuryInfo);
 }
 
@@ -94,6 +94,12 @@ bool Furniture::isWall(FurnitureType type) {
   static EnumMap<FurnitureType, bool> layers(
       [] (FurnitureType type) { return FurnitureFactory::get(type, TribeId::getHostile())->isWall(); });
   return layers[type];
+}
+
+LuxuryInfo Furniture::getLuxuryInfo(FurnitureType type) {
+  static EnumMap<FurnitureType, LuxuryInfo> luxury(
+      [] (FurnitureType type) { return FurnitureFactory::get(type, TribeId::getHostile())->getLuxuryInfo(); });
+  return luxury[type];
 }
 
 pair<double, optional<int>> getPopulationIncreaseInfo(FurnitureType type) {
@@ -335,10 +341,6 @@ bool Furniture::forgetAfterBuilding() const {
   return isWall() || xForgetAfterBuilding;
 }
 
-bool Furniture::isShowEfficiency() const {
-  return showEfficiency;
-}
-
 void Furniture::onCreatureWalkedOver(Position pos, Vec2 direction) const {
   if (walkOverFX)
     pos.getGame()->addEvent(EventInfo::OtherEffect{pos, *walkOverFX, direction});
@@ -498,11 +500,6 @@ Furniture& Furniture::setCanRemoveNonFriendly(bool s) {
 
 Furniture& Furniture::setForgetAfterBuilding() {
   xForgetAfterBuilding = true;
-  return *this;
-}
-
-Furniture& Furniture::setShowEfficiency() {
-  showEfficiency = true;
   return *this;
 }
 
