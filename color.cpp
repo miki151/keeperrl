@@ -70,3 +70,7 @@ void Color::applyGl() const {
 Color Color::operator*(Color c2) {
   return Color(r * c2.r / 255, g * c2.g / 255, b * c2.b / 255, a * c2.a / 255);
 }
+
+bool Color::operator==(const Color& rhs) const {
+  return r == rhs.r && g == rhs.g && b == rhs.b && a == rhs.a;
+}
