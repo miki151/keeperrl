@@ -14,11 +14,9 @@ inline bool valid(FXId id) {
   return id.first >= 0 && id.second > 0;
 }
 
-// This interface is not very efficient, but it's simple to use
-
-FXId spawnEffect(FXName, double x, double y);
-FXId spawnEffect(FXName, double x, double y, Vec2 dir);
-FXId spawnSnapshotEffect(FXName, float x, float y, float startSnimTime, float param0 = 0.0f);
+FXId spawnEffect(FXName, float x, float y);
+FXId spawnEffect(FXName, float x, float y, Vec2 dir);
+FXId spawnSnapshotEffect(FXName, float x, float y, float scalar0 = 0.0f, float scalar1 = 0.0f);
 
 bool isAlive(FXId);
 void kill(FXId, bool immediate = true);
@@ -27,5 +25,5 @@ optional<FXName> name(FXId);
 void setColor(FXId, Color, int paramIndex = 0);
 void setScalar(FXId, float, int paramIndex = 0);
 void setDir(FXId, Dir, int paramIndex = 0);
-void setPos(FXId, double, double);
+void setPos(FXId, float, float);
 }

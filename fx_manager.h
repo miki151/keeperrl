@@ -61,13 +61,14 @@ public:
   EmitterDefId addDef(EmitterDef);
   void addDef(FXName, ParticleSystemDef);
 
-  struct Snapshot {
+  using Snapshot = vector<ParticleSystem::SubSystem>;
+  struct SnapshotGroup {
     SnapshotKey key;
-    vector<ParticleSystem::SubSystem> subSystems;
+    vector<Snapshot> snapshots;
   };
 
   void addSnapshot(float animTime, const ParticleSystem&);
-  const Snapshot* findBestSnapshot(FXName, SnapshotKey) const;
+  const SnapshotGroup* findSnapshotGroup(FXName, SnapshotKey) const;
   void genSnapshots(FXName, vector<float>, vector<float> params = {}, int randomVariants = 1);
 
   private:
@@ -80,11 +81,12 @@ public:
   vector<ParticleDef> m_particleDefs;
   vector<EmitterDef> m_emitterDefs;
   EnumMap<FXName, ParticleSystemDef> m_systemDefs;
-  EnumMap<FXName, vector<Snapshot>> m_snapshots;
+  EnumMap<FXName, vector<SnapshotGroup>> m_snapshotGroups;
 
   // TODO: add simple statistics: num particles, instances, etc.
   vector<ParticleSystem> m_systems;
-  uint m_spawnClock = 1, m_randomSeed = 0;
+  unique_ptr<RandomGen> m_randomGen;
+  uint m_spawnClock = 1;
   double m_accumFrameTime = 0.0f;
   double m_oldTime = -1.0;
 };

@@ -8,17 +8,32 @@
 
 namespace fx {
 
+struct SystemParams {
+  static constexpr int maxScalars = 2, maxColors = 2, maxDirs = 2;
+
+  // These attributes can affect system behaviour in any way
+  float scalar[maxScalars] = {0.0f, 0.0f};
+
+  // These params shouldn't affect system behaviour
+  // Otherwise snapshots won't work as expected
+  FVec3 color[maxColors] = {FVec3(1.0), FVec3(1.0)};
+  Dir dir[maxDirs] = {Dir::N, Dir::N};
+};
+
+// Snapshots allow to start animation in the middle
+// Snapshots are selected based on some of the system's parameters
 struct SnapshotKey {
-  SnapshotKey(float animTime = 0.0f, float param0 = 0.0f) : animTime(animTime), param0(param0) {}
-
-  float distance(const SnapshotKey&) const;
-  explicit operator bool() const {
-    return animTime > 0.0f;
+  SnapshotKey(float s0 = 0.0f, float s1 = 0.0f) : scalar{s0, s1} {
   }
+  SnapshotKey(const SystemParams&);
 
-  float animTime;
-  float param0;
-  // Add more parameters only if necessary
+  static constexpr int maxScalars = SystemParams::maxScalars;
+
+  void apply(SystemParams&) const;
+  float distanceSq(const SnapshotKey&) const;
+  bool operator==(const SnapshotKey& rhs) const;
+
+  float scalar[maxScalars] = {0.0f, 0.0f};
 };
 
 // Initial configuration of spawned particle system
@@ -27,7 +42,7 @@ struct InitConfig {
   InitConfig(FVec2 pos, SnapshotKey key) : pos(pos), snapshotKey(key) {}
 
   FVec2 pos, targetOff;
-  SnapshotKey snapshotKey;
+  optional<SnapshotKey> snapshotKey;
 };
 
 // Identifies a particluar particle system instance
@@ -76,15 +91,6 @@ struct ParticleSystem {
     int totalParticles = 0;
   };
 
-  struct Params {
-    static constexpr int maxScalars = 2, maxColors = 2, maxDirs = 2;
-
-    void set(const SnapshotKey&);
-
-    float scalar[maxScalars] = {0.0f, 0.0f};
-    FVec3 color[maxColors] = {FVec3(1.0), FVec3(1.0)};
-    Dir dir[maxDirs] = {Dir::N, Dir::N};
-  };
 
   ParticleSystem(FXName, const InitConfig&, uint spawnTime, int numSubSystems);
   ParticleSystem(FXName, const InitConfig&, uint spawnTime, vector<SubSystem> snapshot);
@@ -99,7 +105,7 @@ struct ParticleSystem {
   SubSystem &operator[](int ssid) { return subSystems[ssid]; }
 
   vector<SubSystem> subSystems;
-  Params params;
+  SystemParams params;
   FVec2 pos, targetOff;
 
   FXName defId;

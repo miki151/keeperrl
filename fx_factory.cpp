@@ -553,7 +553,7 @@ static void addFireEffect(FXManager& mgr) {
   psdef.animLength = 1.0f;
   mgr.addDef(FXName::FIRE, psdef);
 
-  mgr.genSnapshots(FXName::FIRE, {1.0f, 1.2f, 1.4f, 1.6f, 1.8f}, {0.0f, 0.2f, 0.4f, 0.6f, 0.8f, 1.0f});
+  mgr.genSnapshots(FXName::FIRE, {1.0f, 1.2f, 1.4f}, {0.0f, 0.2f, 0.4f, 0.6f, 0.8f, 1.0f}, 2);
 }
 
 static void addFireballEffect(FXManager& mgr) {
@@ -829,9 +829,6 @@ static void addSlowEffect(FXManager &mgr) {
   psdef.animLength = 1.0f;
   mgr.addDef(FXName::SLOW, psdef);
 
-  // TODO: how user should know which position for animation start to choose ?
-  // TODO: think about interface for snapshots
-  // TODO: measure time
   mgr.genSnapshots(FXName::SLOW, {4.0f, 4.2f, 4.4f, 4.6f, 4.8f});
 }
 
@@ -871,6 +868,8 @@ static void addSpeedEffect(FXManager &mgr) {
   psdef.isLooped = true;
   psdef.animLength = 1.0f;
   mgr.addDef(FXName::SPEED, psdef);
+
+  mgr.genSnapshots(FXName::SPEED, {2.0f, 2.2f, 2.4f, 2.6f, 2.8f});
 }
 
 static void addFlyingEffect(FXManager &mgr) {
@@ -929,6 +928,8 @@ static void addFlyingEffect(FXManager &mgr) {
   psdef.isLooped = true;
   psdef.animLength = 1.0f;
   mgr.addDef(FXName::FLYING, psdef);
+
+  mgr.genSnapshots(FXName::FLYING, {1.0f, 1.4f, 1.8f}, {}, 4);
 }
 
 void FXManager::initializeDefs() {

@@ -5,14 +5,28 @@
 
 namespace fx {
 
-float SnapshotKey::distance(const SnapshotKey& rhs) const {
-  float timeDiff = animTime - rhs.animTime;
-  float paramDiff = param0 - rhs.param0;
-  return std::sqrt(timeDiff * timeDiff + paramDiff * paramDiff);
+float SnapshotKey::distanceSq(const SnapshotKey& rhs) const {
+  float sum = 0.0f;
+  for (int n = 0; n < maxScalars; n++)
+    sum += (scalar[n] - rhs.scalar[n]) * (scalar[n] - rhs.scalar[n]);
+  return sum;
 }
 
-void ParticleSystem::Params::set(const SnapshotKey& key) {
-  scalar[0] = key.param0;
+SnapshotKey::SnapshotKey(const SystemParams& params) {
+  for (int n = 0; n < maxScalars; n++)
+    scalar[n] = params.scalar[n];
+}
+
+void SnapshotKey::apply(SystemParams& out) const {
+  for (int n = 0; n < maxScalars; n++)
+    out.scalar[n] = scalar[n];
+}
+
+bool SnapshotKey::operator==(const SnapshotKey& rhs) const {
+  for (int n = 0; n < maxScalars; n++)
+    if (scalar[n] != rhs.scalar[n])
+      return false;
+  return true;
 }
 
 ParticleSystem::ParticleSystem(FXName defId, const InitConfig& config, uint spawnTime, int numSubSystems)
@@ -22,7 +36,8 @@ ParticleSystem::ParticleSystem(FXName defId, const InitConfig& config, uint spaw
 ParticleSystem::ParticleSystem(FXName defId, const InitConfig& config, uint spawnTime, vector<SubSystem> snapshot)
     : subSystems(std::move(snapshot)), pos(config.pos), targetOff(config.targetOff), defId(defId),
       spawnTime(spawnTime) {
-  params.set(config.snapshotKey);
+  if (config.snapshotKey)
+    config.snapshotKey->apply(params);
 }
 
 void ParticleSystem::randomize(RandomGen& random) {

@@ -6,11 +6,11 @@
 
 namespace fx {
 
-FXId spawnEffect(FXName name, double x, double y) {
+FXId spawnEffect(FXName name, float x, float y) {
   return spawnEffect(name, x, y, Vec2(0, 0));
 }
 
-FXId spawnEffect(FXName name, double x, double y, Vec2 dir) {
+FXId spawnEffect(FXName name, float x, float y, Vec2 dir) {
   if(auto *inst = FXManager::getInstance()) {
     auto fpos = (FVec2(x, y) + FVec2(0.5f)) * Renderer::nominalSize;
     auto ftargetOff = FVec2(dir.x, dir.y) * Renderer::nominalSize;
@@ -22,7 +22,18 @@ FXId spawnEffect(FXName name, double x, double y, Vec2 dir) {
   return {-1, -1};
 }
 
-void setPos(FXId tid, double x, double y) {
+FXId spawnSnapshotEffect(FXName name, float x, float y, float scalar0, float scalar1) {
+  if (auto* inst = FXManager::getInstance()) {
+    auto fpos = (FVec2(x, y) + FVec2(0.5f)) * Renderer::nominalSize;
+    auto instId = inst->addSystem(name, {fpos, SnapshotKey{scalar0, scalar1}});
+    INFO << "FX spawn: " << EnumInfo<FXName>::getString(name) << " at:" << x << ", " << y;
+    return {instId.index(), instId.spawnTime()};
+  }
+
+  return {-1, -1};
+}
+
+void setPos(FXId tid, float x, float y) {
   ParticleSystemId id(tid.first, tid.second);
   if (auto *inst = FXManager::getInstance()) {
     if (inst->valid(id)) {
@@ -61,7 +72,7 @@ void setColor(FXId tid, Color col, int paramIndex) {
   if(auto *inst = FXManager::getInstance()) {
     if(inst->valid(id)) {
       auto &system = inst->get(id);
-      PASSERT(paramIndex >= 0 && paramIndex < ParticleSystem::Params::maxColors);
+      PASSERT(paramIndex >= 0 && paramIndex < SystemParams::maxColors);
       system.params.color[paramIndex] = FColor(col).rgb();
     }
   }
@@ -71,7 +82,7 @@ void setScalar(FXId tid, float value, int paramIndex) {
   if(auto *inst = FXManager::getInstance()) {
     if(inst->valid(id)) {
       auto &system = inst->get(id);
-      PASSERT(paramIndex >= 0 && paramIndex < ParticleSystem::Params::maxScalars);
+      PASSERT(paramIndex >= 0 && paramIndex < SystemParams::maxScalars);
       system.params.scalar[paramIndex] = value;
     }
   }
@@ -82,7 +93,7 @@ void setDir(FXId tid, Dir dir, int paramIndex) {
   if(auto *inst = FXManager::getInstance()) {
     if(inst->valid(id)) {
       auto &system = inst->get(id);
-      PASSERT(paramIndex >= 0 && paramIndex < ParticleSystem::Params::maxDirs);
+      PASSERT(paramIndex >= 0 && paramIndex < SystemParams::maxDirs);
       system.params.dir[paramIndex] = dir;
     }
   }
