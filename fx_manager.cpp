@@ -285,7 +285,7 @@ const ParticleSystem &FXManager::get(ParticleSystemId id) const {
   return m_systems[id];
 }
 
-ParticleSystem FXManager::makeSystem(FXName name, int spawnTime, InitConfig config) {
+ParticleSystem FXManager::makeSystem(FXName name, uint spawnTime, InitConfig config) {
   if (config.snapshotKey) {
     auto snapshot = findBestSnapshot(name, config.snapshotKey);
     if (snapshot)

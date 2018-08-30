@@ -34,18 +34,18 @@ struct InitConfig {
 class ParticleSystemId {
 public:
   ParticleSystemId() : m_index(-1) {}
-  ParticleSystemId(int index, int spawnTime) : m_index(index), m_spawnTime(spawnTime) {}
+  ParticleSystemId(int index, uint spawnTime) : m_index(index), m_spawnTime(spawnTime) {}
 
   bool validIndex() const { return m_index >= 0; }
   explicit operator bool() const { return validIndex(); }
 
   operator int() const { return m_index; }
   int index() const { return m_index; }
-  int spawnTime() const { return m_spawnTime; }
+  uint spawnTime() const { return m_spawnTime; }
 
 private:
   int m_index;
-  int m_spawnTime;
+  uint m_spawnTime;
 };
 
 struct Particle {
@@ -86,8 +86,8 @@ struct ParticleSystem {
     Dir dir[maxDirs] = {Dir::N, Dir::N};
   };
 
-  ParticleSystem(FXName, const InitConfig&, int spawnTime, int numSubSystems);
-  ParticleSystem(FXName, const InitConfig&, int spawnTime, vector<SubSystem> snapshot);
+  ParticleSystem(FXName, const InitConfig&, uint spawnTime, int numSubSystems);
+  ParticleSystem(FXName, const InitConfig&, uint spawnTime, vector<SubSystem> snapshot);
   void randomize(RandomGen&);
 
   int numActiveParticles() const;
@@ -103,7 +103,7 @@ struct ParticleSystem {
   FVec2 pos, targetOff;
 
   FXName defId;
-  int spawnTime;
+  uint spawnTime;
 
   float animTime = 0.0f;
   bool isDead = false;
