@@ -1,5 +1,6 @@
 #include "debug.h"
 #include "opengl.h"
+#include "util.h"
 
 using SDL::GLenum;
 using SDL::GLuint;
@@ -95,12 +96,12 @@ static void APIENTRY debugOutputCallback(GLenum source, GLenum type, GLuint id, 
 			return;
 	}*/
 
-  INFO << "Opengl " << debugTypeText(type) << " [" << debugSeverityText(severity) << "] ID:" << id
-       << "	Source: " << debugSourceText(source) << "\n"
-       << message;
+  bool isSevere = severity == GL_DEBUG_SEVERITY_HIGH && type != GL_DEBUG_TYPE_OTHER;
 
-  if (severity == GL_DEBUG_SEVERITY_HIGH && type != GL_DEBUG_TYPE_OTHER)
-    FATAL;
+  char header[1024];
+  snprintf(header, sizeof(header), "%sOpengl %s [%s] id:%d source:%s\n", isSevere ? "FATAL: " : "", debugTypeText(type),
+           debugSeverityText(severity), id, debugSourceText(source));
+  (isSevere ? FatalLog : InfoLog).get() << header << message;
 }
 
 bool installOpenglDebugHandler() {

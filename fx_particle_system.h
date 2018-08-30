@@ -2,28 +2,64 @@
 
 #include "fx_base.h"
 #include "fx_color.h"
-#include "fx_tag_id.h"
 #include "util.h"
 #include <limits.h>
 
 namespace fx {
 
+struct SystemParams {
+  static constexpr int maxScalars = 2, maxColors = 2, maxDirs = 2;
+
+  // These attributes can affect system behaviour in any way
+  float scalar[maxScalars] = {0.0f, 0.0f};
+
+  // These params shouldn't affect system behaviour
+  // Otherwise snapshots won't work as expected
+  FVec3 color[maxColors] = {FVec3(1.0), FVec3(1.0)};
+  Dir dir[maxDirs] = {Dir::N, Dir::N};
+};
+
+// Snapshots allow to start animation in the middle
+// Snapshots are selected based on some of the system's parameters
+struct SnapshotKey {
+  SnapshotKey(float s0 = 0.0f, float s1 = 0.0f) : scalar{s0, s1} {
+  }
+  SnapshotKey(const SystemParams&);
+
+  static constexpr int maxScalars = SystemParams::maxScalars;
+
+  void apply(SystemParams&) const;
+  float distanceSq(const SnapshotKey&) const;
+  bool operator==(const SnapshotKey& rhs) const;
+
+  float scalar[maxScalars] = {0.0f, 0.0f};
+};
+
+// Initial configuration of spawned particle system
+struct InitConfig {
+  InitConfig(FVec2 pos = {}, FVec2 targetOff = {}) : pos(pos), targetOff(targetOff) {}
+  InitConfig(FVec2 pos, SnapshotKey key) : pos(pos), snapshotKey(key) {}
+
+  FVec2 pos, targetOff;
+  optional<SnapshotKey> snapshotKey;
+};
+
 // Identifies a particluar particle system instance
 class ParticleSystemId {
 public:
   ParticleSystemId() : m_index(-1) {}
-  ParticleSystemId(int index, int spawnTime) : m_index(index), m_spawnTime(spawnTime) {}
+  ParticleSystemId(int index, uint spawnTime) : m_index(index), m_spawnTime(spawnTime) {}
 
   bool validIndex() const { return m_index >= 0; }
   explicit operator bool() const { return validIndex(); }
 
   operator int() const { return m_index; }
   int index() const { return m_index; }
-  int spawnTime() const { return m_spawnTime; }
+  uint spawnTime() const { return m_spawnTime; }
 
 private:
   int m_index;
-  int m_spawnTime;
+  uint m_spawnTime;
 };
 
 struct Particle {
@@ -42,8 +78,7 @@ struct DrawParticle {
   std::array<FVec2, 4> positions;
   std::array<FVec2, 4> texCoords;
   IColor color;
-  int particleDefId;
-  BlendMode blendMode;
+  TextureName texName;
 };
 
 struct ParticleSystem {
@@ -54,15 +89,10 @@ struct ParticleSystem {
     int totalParticles = 0;
   };
 
-  struct Params {
-    static constexpr int maxScalars = 2, maxColors = 2, maxDirs = 2;
 
-    float scalar[maxScalars] = {0.0f, 0.0f};
-    FVec3 color[maxColors] = {FVec3(1.0), FVec3(1.0)};
-    Dir dir[maxDirs] = {Dir::N, Dir::N};
-  };
-
-  ParticleSystem(FVec2 pos, FVec2 targetOff, FXName, int spawnTime, int numSubSystems);
+  ParticleSystem(FXName, const InitConfig&, uint spawnTime, int numSubSystems);
+  ParticleSystem(FXName, const InitConfig&, uint spawnTime, vector<SubSystem> snapshot);
+  void randomize(RandomGen&);
 
   int numActiveParticles() const;
   int numTotalParticles() const;
@@ -73,11 +103,11 @@ struct ParticleSystem {
   SubSystem &operator[](int ssid) { return subSystems[ssid]; }
 
   vector<SubSystem> subSystems;
-  Params params;
+  SystemParams params;
   FVec2 pos, targetOff;
 
   FXName defId;
-  int spawnTime;
+  uint spawnTime;
 
   float animTime = 0.0f;
   bool isDead = false;
@@ -85,8 +115,8 @@ struct ParticleSystem {
 };
 
 struct SubSystemContext {
-  SubSystemContext(const ParticleSystem &ps, const ParticleSystemDef &, const ParticleDef &, const EmitterDef &,
-                   int ssid);
+  SubSystemContext(const ParticleSystem& ps, const ParticleSystemDef&, const ParticleDef&, const EmitterDef&,
+                   const TextureDef&, int ssid);
 
   const ParticleSystem &ps;
   const ParticleSystem::SubSystem &ss;
@@ -96,6 +126,7 @@ struct SubSystemContext {
 
   const ParticleDef &pdef;
   const EmitterDef &edef;
+  const TextureDef& tdef;
 
   const int ssid;
 };

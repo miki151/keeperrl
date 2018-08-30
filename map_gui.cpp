@@ -34,7 +34,8 @@
 
 #include "fx_renderer.h"
 #include "fx_manager.h"
-#include "fx_simple.h"
+#include "fx_interface.h"
+#include "fx_view_manager.h"
 
 using SDL::SDL_Keysym;
 using SDL::SDL_Keycode;
@@ -44,7 +45,10 @@ MapGui::MapGui(Callbacks call, SyncQueue<UserInput>& inputQueue, Clock* c, Optio
     clock(c), options(o), fogOfWar(Level::getMaxBounds(), false), extraBorderPos(Level::getMaxBounds(), {}),
     lastSquareUpdate(Level::getMaxBounds()), connectionMap(Level::getMaxBounds()), guiFactory(f) {
   clearCenter();
+  fxViewManager = std::make_unique<FXViewManager>();
 }
+
+MapGui::~MapGui() = default;
 
 static int fireVar = 50;
 
@@ -553,25 +557,6 @@ static Color getPortalColor(int index) {
   return Color(255 * (index % 2), 255 * ((index / 2) % 2), 255 * ((index / 4) % 2));
 }
 
-#define ENUM_STRING(val) EnumInfo<decltype(val)>::getString(val)
-
-void MapGui::updateEffects(FXVector& effectsList, const EnumSet<FXName>& effects, double x, double y) {
-  EnumSet<FXName> existing;
-  for (auto& pair : effectsList) {
-    existing.insert(pair.first);
-    fx::setPos(pair.second, x, y);
-    if (!effects.contains(pair.first))
-      fx::kill(pair.second, false);
-  }
-
-  auto deadEffects = [](const pair<FXName, FXId>& pair) { return !fx::isAlive(pair.second); };
-  effectsList.resize(std::remove_if(begin(effectsList), end(effectsList), deadEffects) - begin(effectsList));
-
-  for (auto effectName : effects)
-    if (!existing.contains(effectName))
-      effectsList.emplace_back(effectName, fx::spawnEffect(effectName, x, y));
-}
-
 void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& object, Vec2 size, Vec2 movement,
     Vec2 tilePos, milliseconds curTimeReal) {
   PROFILE;
@@ -607,6 +592,9 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
       move.y = -4 * size.y / Renderer::nominalSize;
     renderer.drawTile(pos, tile.getBackgroundCoord(), size, color);
     move += movement;
+
+    bool fxesAvailable = fx::FXRenderer::getInstance() != nullptr;
+
     if (mirrorSprite(id))
       renderer.drawTile(pos + move, tile.getSpriteCoord(dirs), size, color,
           Renderer::SpriteOrientation((bool) (tilePos.getHash() % 2), (bool) (tilePos.getHash() % 4 > 1)));
@@ -623,13 +611,14 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
     static auto shortShadow = renderer.getTileCoord("short_shadow");
     if (object.layer() == ViewLayer::FLOOR_BACKGROUND && shadowed.count(tilePos))
       renderer.drawTile(pos, shortShadow, size, Color(255, 255, 255, 170));
-    if (auto burningVal = object.getAttribute(ViewObject::Attribute::BURNING))
-      if (*burningVal > 0) {
-        static auto fire1 = renderer.getTileCoord("fire1");
-        static auto fire2 = renderer.getTileCoord("fire2");
-        renderer.drawTile(pos - Vec2(0, 4 * size.y / Renderer::nominalSize),
-            (curTimeReal.count() + pos.getHash()) % 500 < 250 ? fire1 : fire2, size);
-      }
+    auto burningVal = object.getAttribute(ViewObject::Attribute::BURNING).value_or(0.0f);
+    if (burningVal > 0.0f && !fxesAvailable) {
+      static auto fire1 = renderer.getTileCoord("fire1");
+      static auto fire2 = renderer.getTileCoord("fire2");
+      renderer.drawTile(pos - Vec2(0, 4 * size.y / Renderer::nominalSize),
+                        (curTimeReal.count() + pos.getHash()) % 500 < 250 ? fire1 : fire2, size);
+    }
+
     if (displayAllHealthBars || lastHighlighted.creaturePos == pos + movement ||
         object.hasModifier(ViewObject::Modifier::CAPTURE_ORDERED))
       drawHealthBar(renderer, pos + move, size, object);
@@ -637,12 +626,22 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
       renderer.drawText(Color::WHITE, pos + move + size / 2, "S", Renderer::CenterType::HOR_VER, size.x * 2 / 3);
     if (object.hasModifier(ViewObject::Modifier::LOCKED))
       renderer.drawTile(pos + move, Tile::getTile(ViewId::KEY, spriteMode).getSpriteCoord(), size);
-    if (auto creatureId = object.getCreatureId()) {
-      auto& effects = creatureFX.getOrInit(*creatureId);
-      updateEffects(effects, object.particleEffects,
-          tilePos.x + move.x / (double)size.x, tilePos.y + move.y / (double)size.y);
-      if (effects.empty())
-        creatureFX.erase(*creatureId);
+
+    if (fxesAvailable) {
+      float fxPosX = tilePos.x + move.x / (float)size.x;
+      float fxPosY = tilePos.y + move.y / (float)size.y;
+      auto viewObjId = FXViewManager::makeId(object);
+      fxViewManager->addEntity(viewObjId, fxPosX, fxPosY);
+
+      if (burningVal > 0.0f)
+        fxViewManager->addFX(viewObjId, FXDef{FXName::FIRE, Color::WHITE, min(1.0f, burningVal * 0.05f)});
+      if (auto creatureId = object.getCreatureId()) {
+        auto gid = FXViewManager::makeId(*creatureId);
+
+        fxViewManager->addEntity(gid, fxPosX, fxPosY);
+        for (auto fx : object.particleEffects)
+          fxViewManager->addFX(gid, FXDef{fx});
+      }
     }
   } else {
     Vec2 tilePos = pos + movement + Vec2(size.x / 2, -3);
@@ -1083,7 +1082,10 @@ void MapGui::render(Renderer& renderer) {
   Vec2 size = layout->getSquareSize();
   auto currentTimeReal = clock->getRealMillis();
   lastHighlighted = getHighlightedInfo(size, currentTimeReal);
+
+  fxViewManager->beginFrame();
   renderMapObjects(renderer, size, currentTimeReal);
+  fxViewManager->finishFrame();
 
   renderer.flushSprites();
   if (auto *rinst = fx::FXRenderer::getInstance()) {

@@ -17,6 +17,7 @@
 
 #include "util.h"
 #include "position.h"
+#include <time.h>
 
 void RandomGen::init(int seed) {
   generator.seed(seed);

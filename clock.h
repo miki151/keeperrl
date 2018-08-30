@@ -11,6 +11,7 @@ class Clock {
   void cont();
   bool isPaused();
   static milliseconds getRealMillis();
+  static microseconds getRealMicros();
 
   private:
   steady_clock::time_point getCurrent();
