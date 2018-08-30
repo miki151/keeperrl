@@ -25,6 +25,8 @@ struct Color : public SDL::SDL_Color {
   Color();
   void applyGl() const;
 
+  bool operator==(const Color&) const;
+
   static Color WHITE;
   static Color MAIN_MENU_ON;
   static Color MAIN_MENU_OFF;
