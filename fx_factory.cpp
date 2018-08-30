@@ -7,6 +7,7 @@
 
 namespace fx {
 
+// TODO: normalize it ?
 static const FVec2 dirVecs[8] = {
   {0.0, -1.0}, {0.0, 1.0},   {1.0, 0.0}, {-1.0, 0.0},
   {1.0, -1.0}, {-1.0, -1.0}, {1.0, 1.0}, {-1.0, 1.0}};
@@ -284,8 +285,9 @@ static void addFeetDustEffect(FXManager &mgr) {
   // drugim parametrem jest kolor (choć chyba będzie uzywany tylko na piasku?)
 
   EmitterDef edef;
-  edef.source = FRect(-3, 3, 3, 4);
+  edef.source = FRect(-3, -0.5f, 3, 0.5f);
   edef.setStrengthSpread(17.5f, 2.5f);
+  edef.setDirectionSpread(0.0f, 0.0f);
   edef.frequency = 60.0f;
 
   ParticleDef pdef;
@@ -302,20 +304,17 @@ static void addFeetDustEffect(FXManager &mgr) {
   // TODO: różna liczba początkowych cząsteczek
   ssdef.maxTotalParticles = 3;
 
-  ssdef.emitFunc = [](AnimationContext &ctx, EmissionState &em, Particle &pinst) {
-    auto dvec = dirToVec(ctx.ps.params.dir[0]);
-    defaultEmitParticle(ctx, em, pinst);
-    pinst.pos -= dvec * 4.0f;
-    pinst.rot = 0.0f;
-    pinst.size = FVec2(1.2f, 0.6f);
-  };
-  ssdef.prepareFunc = [](AnimationContext &ctx, EmissionState &em) {
-    auto ret = defaultPrepareEmission(ctx, em);
-    auto vec = normalize(dirToVec(ctx.ps.params.dir[0]));
-    em.direction = vectorToAngle(vec);
-    em.directionSpread = 0.0f;
-    return ret;
-  };
+  ssdef.drawFunc = [](DrawContext& ctx, const Particle& pinst, DrawParticle& out) {
+      auto temp = pinst;
+	  // TODO: optimize this...
+	  float angle = vectorToAngle(normalize(dirToVec(ctx.ps.params.dir[0])));
+      temp.pos = rotateVector(temp.pos, angle) - dirToVec(ctx.ps.params.dir[0]);
+	  temp.pos.y += 3.5f;
+	  temp.size = FVec2(1.2f, 0.6f);
+	  temp.rot = 0.0f;
+      defaultDrawParticle(ctx, temp, out);
+      out.color = (IColor)(FColor(out.color) * FColor(ctx.ps.params.color[1]));
+    };
 
   ParticleSystemDef psdef;
   psdef.subSystems = {ssdef};
