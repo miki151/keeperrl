@@ -589,6 +589,9 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
       move.y = -4 * size.y / Renderer::nominalSize;
     renderer.drawTile(pos, tile.getBackgroundCoord(), size, color);
     move += movement;
+
+    bool fxesAvailable = fx::FXRenderer::getInstance() != nullptr;
+
     if (mirrorSprite(id))
       renderer.drawTile(pos + move, tile.getSpriteCoord(dirs), size, color,
           Renderer::SpriteOrientation((bool) (tilePos.getHash() % 2), (bool) (tilePos.getHash() % 4 > 1)));
@@ -605,13 +608,14 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
     static auto shortShadow = renderer.getTileCoord("short_shadow");
     if (object.layer() == ViewLayer::FLOOR_BACKGROUND && shadowed.count(tilePos))
       renderer.drawTile(pos, shortShadow, size, Color(255, 255, 255, 170));
-    if (auto burningVal = object.getAttribute(ViewObject::Attribute::BURNING))
-      if (*burningVal > 0) {
-        static auto fire1 = renderer.getTileCoord("fire1");
-        static auto fire2 = renderer.getTileCoord("fire2");
-        renderer.drawTile(pos - Vec2(0, 4 * size.y / Renderer::nominalSize),
-            (curTimeReal.count() + pos.getHash()) % 500 < 250 ? fire1 : fire2, size);
-      }
+    auto burningVal = object.getAttribute(ViewObject::Attribute::BURNING).value_or(0.0f);
+    if (burningVal > 0.0f && !fxesAvailable) {
+      static auto fire1 = renderer.getTileCoord("fire1");
+      static auto fire2 = renderer.getTileCoord("fire2");
+      renderer.drawTile(pos - Vec2(0, 4 * size.y / Renderer::nominalSize),
+                        (curTimeReal.count() + pos.getHash()) % 500 < 250 ? fire1 : fire2, size);
+    }
+
     if (displayAllHealthBars || lastHighlighted.creaturePos == pos + movement ||
         object.hasModifier(ViewObject::Modifier::CAPTURE_ORDERED))
       drawHealthBar(renderer, pos + move, size, object);
@@ -620,12 +624,21 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
     if (object.hasModifier(ViewObject::Modifier::LOCKED))
       renderer.drawTile(pos + move, Tile::getTile(ViewId::KEY, spriteMode).getSpriteCoord(), size);
 
-    if (auto creatureId = object.getCreatureId()) {
-      float x = tilePos.x + move.x / (float)size.x;
-      float y = tilePos.y + move.y / (float)size.y;
-      fxViewManager->addEntity(*creatureId, x, y);
-      for (auto fx : object.particleEffects)
-        fxViewManager->addFX(*creatureId, FXDef{fx});
+    if (fxesAvailable) {
+      float fxPosX = tilePos.x + move.x / (float)size.x;
+      float fxPosY = tilePos.y + move.y / (float)size.y;
+      auto viewObjId = FXViewManager::makeId(object);
+      fxViewManager->addEntity(viewObjId, fxPosX, fxPosY);
+
+      if (burningVal > 0.0f)
+        fxViewManager->addFX(viewObjId, FXDef{FXName::FIRE, Color::WHITE, min(1.0f, burningVal * 0.05f)});
+      if (auto creatureId = object.getCreatureId()) {
+        auto gid = FXViewManager::makeId(*creatureId);
+
+        fxViewManager->addEntity(gid, fxPosX, fxPosY);
+        for (auto fx : object.particleEffects)
+          fxViewManager->addFX(gid, FXDef{fx});
+      }
     }
   } else {
     Vec2 tilePos = pos + movement + Vec2(size.x / 2, -3);

@@ -15,15 +15,15 @@ struct FXDef {
 
 class FXViewManager {
   public:
-  // TODO: proper identifiers for objects
-  using GenericId = long long;
-  using UniqueId = UniqueEntity<Creature>::Id;
+  using GenericId = unsigned long long;
+  static GenericId makeId(UniqueEntity<Creature>::Id);
+  static GenericId makeId(const ViewObject&);
 
   void beginFrame();
-  void addEntity(UniqueId, float x, float y);
+  void addEntity(GenericId, float x, float y);
 
   // Entity identified with given id must be present!
-  void addFX(UniqueId, const FXDef&);
+  void addFX(GenericId, const FXDef&);
   void finishFrame();
 
   private:
