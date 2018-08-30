@@ -33,6 +33,10 @@ milliseconds Clock::getRealMillis() {
   return duration_cast<milliseconds>(steady_clock::now().time_since_epoch());
 }
 
+microseconds Clock::getRealMicros() {
+  return duration_cast<microseconds>(high_resolution_clock::now().time_since_epoch());
+}
+
 steady_clock::time_point Clock::getCurrent() {
   return steady_clock::time_point(steady_clock::now() - initTime);
 }
