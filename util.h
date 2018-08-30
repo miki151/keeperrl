@@ -28,6 +28,9 @@
 #include "extern/optional.h"
 #include "profiler.h"
 
+// In seconds
+double getProgramTime();
+
 template <class T>
 string toString(const T& t) {
   PROFILE;
