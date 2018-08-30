@@ -34,7 +34,7 @@
 
 #include "fx_renderer.h"
 #include "fx_manager.h"
-#include "fx_simple.h"
+#include "fx_interface.h"
 #include "fx_view_manager.h"
 
 using SDL::SDL_Keysym;

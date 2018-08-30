@@ -1,4 +1,4 @@
-#include "fx_simple.h"
+#include "fx_interface.h"
 
 #include "fx_manager.h"
 #include "fx_particle_system.h"

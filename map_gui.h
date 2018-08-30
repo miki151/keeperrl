@@ -23,7 +23,6 @@
 #include "entity_map.h"
 #include "view_object.h"
 #include "item_counts.h"
-#include "fx_simple.h"
 
 class MapMemory;
 class MapLayout;
