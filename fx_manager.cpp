@@ -12,6 +12,7 @@ static FXManager *s_instance = nullptr;
 FXManager *FXManager::getInstance() { return s_instance; }
 
 FXManager::FXManager() {
+  m_randomGen = std::make_unique<RandomGen>();
   initializeDefs();
   CHECK(s_instance == nullptr && "There can be only one!");
   s_instance = this;
@@ -168,54 +169,47 @@ void FXManager::simulate(float delta) {
       simulate(inst, delta);
 }
 
-// TODO: jak odróżnić animTime od animTime w particlesystemie ?
 void FXManager::addSnapshot(float animTime, const ParticleSystem& ps) {
-  SnapshotKey key{animTime, ps.params.scalar[0]};
-  Snapshot newSnapshot{key, ps.subSystems};
-  m_snapshots[ps.defId].emplace_back(std::move(newSnapshot));
+  SnapshotKey key(ps.params);
+  for (auto& group : m_snapshotGroups[ps.defId])
+    if (group.key == key) {
+      group.snapshots.emplace_back(ps.subSystems);
+      return;
+    }
+  m_snapshotGroups[ps.defId].emplace_back(SnapshotGroup{key, {ps.subSystems}});
 }
 
-auto FXManager::findBestSnapshot(FXName name, SnapshotKey key) const -> const Snapshot* {
-  const Snapshot* best = nullptr;
+auto FXManager::findSnapshotGroup(FXName name, SnapshotKey key) const -> const SnapshotGroup* {
+  const SnapshotGroup* best = nullptr;
   float bestDist = fconstant::inf;
 
-  // TODO: there can be multiple with different random seeds
-
-  for (auto& ss : m_snapshots[name]) {
-    float dist = key.distance(ss.key);
+  for (auto& ssGroup : m_snapshotGroups[name]) {
+    float dist = key.distanceSq(ssGroup.key);
     if (dist < bestDist) {
       bestDist = dist;
-      best = &ss;
+      best = &ssGroup;
     }
   }
-
-  if (best)
-    INFO << "FX: using snapshot: " << EnumInfo<FXName>::getString(name) << " Time: " << best->key.animTime
-         << " Param0: " << best->key.param0;
-  else
-    INFO << "FX: snapshot not found: " << EnumInfo<FXName>::getString(name);
 
   return best;
 }
 
 void FXManager::genSnapshots(FXName name, vector<float> animTimes, vector<float> params, int randomVariants) {
+  auto startTime = getProgramTime();
   if (params.empty())
     params = {0.0f};
+  if (animTimes.empty())
+    return;
 
-  int numOptions = animTimes.size() * params.size() * randomVariants; // Try to keep this number low
-  INFO << "FX: generating " << numOptions << " snapshots for: " << EnumInfo<FXName>::getString(name);
-
+  static constexpr float fps = 60.0f;
   std::sort(begin(animTimes), end(animTimes));
 
-  // TODO: simplify this loop
-  RandomGen random;
+  int numSnapshots = 0;
   for (float param0 : params) {
-    random.init(int(name));
-
     for (int r = 0; r < randomVariants; r++) {
       auto ps = makeSystem(name, 0, {});
 
-      ps.randomize(random);
+      ps.randomize(*m_randomGen);
       ps.params.scalar[0] = param0;
 
       float curTime = 0.0f;
@@ -224,15 +218,26 @@ void FXManager::genSnapshots(FXName name, vector<float> animTimes, vector<float>
           continue;
         float simTime = time - curTime;
         while (simTime > 0.0001f) {
-          float stepTime = min(1.0f / 60.0f, simTime);
+          float stepTime = min(1.0f / fps, simTime);
           simulate(ps, stepTime);
           simTime -= stepTime;
         }
         curTime = time;
         addSnapshot(curTime, ps);
+        numSnapshots++;
       }
     }
   }
+
+  auto time = (getProgramTime() - startTime) * 1000.0;
+  float maxTime = animTimes.back();
+  int numFrames = maxTime * fps;
+
+  // Try to keep this number low
+  int numFramesTotal = numFrames * params.size() * randomVariants;
+
+  INFO << "FX: generated " << numSnapshots << " snapshots for: " << EnumInfo<FXName>::getString(name) << " In: " << time
+       << " msec" << " (total frames: " << numFramesTotal << ")";
 }
 
 vector<DrawParticle> FXManager::genQuads() {
@@ -286,17 +291,20 @@ const ParticleSystem &FXManager::get(ParticleSystemId id) const {
 }
 
 ParticleSystem FXManager::makeSystem(FXName name, uint spawnTime, InitConfig config) {
-  if (config.snapshotKey) {
-    auto snapshot = findBestSnapshot(name, config.snapshotKey);
-    if (snapshot)
-      return {name, config, spawnTime, snapshot->subSystems};
-  }
+  if (config.snapshotKey)
+    if (auto* ssGroup = findSnapshotGroup(name, *config.snapshotKey)) {
+      int index = m_randomGen->get(ssGroup->snapshots.size());
+      auto& key = ssGroup->key;
+      INFO << "FX: using snapshot: " << EnumInfo<FXName>::getString(name) << " (" << key.scalar[0] << ", "
+           << key.scalar[1] << ")";
+      return {name, config, spawnTime, ssGroup->snapshots[index]};
+    }
 
   auto& def = (*this)[name];
   ParticleSystem out{name, config, spawnTime, (int)def.subSystems.size()};
   for (int ssid = 0; ssid < (int)out.subSystems.size(); ssid++) {
     auto& ss = out.subSystems[ssid];
-    ss.randomSeed = m_randomSeed++;
+    ss.randomSeed = m_randomGen->get(INT_MAX);
     ss.emissionFract = (*this)[def.subSystems[ssid].emitterId].initialSpawnCount;
   }
 
