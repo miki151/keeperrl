@@ -2,7 +2,7 @@
 
 #include "unique_entity.h"
 #include "util.h"
-#include "fx_simple.h"
+#include "fx_interface.h"
 #include "color.h"
 #include <unordered_map>
 
