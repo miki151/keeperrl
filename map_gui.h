@@ -34,6 +34,7 @@ class Creature;
 class Options;
 class TutorialInfo;
 class UserInput;
+class FXViewManager;
 
 class MapGui : public GuiElem {
   public:
@@ -44,6 +45,7 @@ class MapGui : public GuiElem {
     function<void()> refreshFun;
   };
   MapGui(Callbacks, SyncQueue<UserInput>&, Clock*, Options*, GuiFactory*);
+  ~MapGui();
 
   virtual void render(Renderer&) override;
   virtual bool onLeftClick(Vec2) override;
@@ -187,8 +189,6 @@ class MapGui : public GuiElem {
   DirSet getConnectionSet(Vec2 tilePos, ViewId);
   EntityMap<Creature, milliseconds> woundedInfo;
   void considerWoundedAnimation(const ViewObject&, Color&, milliseconds curTimeReal);
-  using FXVector = vector<pair<FXName, FXId>>;
-  EntityMap<Creature, FXVector> creatureFX;
-  unordered_map<Vec2, FXVector, CustomHash<Vec2>> staticFX;
-  void updateEffects(FXVector& effectsList, const EnumSet<FXName>& effects, double x, double y);
+
+  unique_ptr<FXViewManager> fxViewManager;
 };
