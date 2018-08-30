@@ -30,8 +30,7 @@ bool SnapshotKey::operator==(const SnapshotKey& rhs) const {
 }
 
 ParticleSystem::ParticleSystem(FXName defId, const InitConfig& config, uint spawnTime, int numSubSystems)
-    : subSystems(numSubSystems), pos(config.pos), targetOff(config.targetOff), defId(defId), spawnTime(spawnTime) {
-}
+    : subSystems(numSubSystems), pos(config.pos), targetOff(config.targetOff), defId(defId), spawnTime(spawnTime) {}
 
 ParticleSystem::ParticleSystem(FXName defId, const InitConfig& config, uint spawnTime, vector<SubSystem> snapshot)
     : subSystems(std::move(snapshot)), pos(config.pos), targetOff(config.targetOff), defId(defId),
@@ -109,8 +108,8 @@ uint AnimationContext::randomSeed() {
 }
 
 SVec2 AnimationContext::randomTexTile() {
-  if (!(pdef.texture.tiles == IVec2(1, 1))) {
-    IVec2 texTile(rand.get(pdef.texture.tiles.x), rand.get(pdef.texture.tiles.y));
+  if (!(tdef.tiles == IVec2(1, 1))) {
+    IVec2 texTile(rand.get(tdef.tiles.x), rand.get(tdef.tiles.y));
     return SVec2(texTile);
   }
 
@@ -154,7 +153,7 @@ array<FVec2, 4> DrawContext::quadCorners(FVec2 pos, FVec2 size, float rotation) 
 
 array<FVec2, 4> DrawContext::texQuadCorners(SVec2 texTile) const {
   FRect tex_rect(FVec2(1));
-  if (!(pdef.texture.tiles == IVec2(1, 1)))
+  if (!(tdef.tiles == IVec2(1, 1)))
     tex_rect = (tex_rect + FVec2(texTile)) * invTexTile;
   return tex_rect.corners();
 }
@@ -167,7 +166,7 @@ void defaultDrawParticle(DrawContext &ctx, const Particle &pinst, DrawParticle &
   FVec2 size(pdef.size.sample(ptime) * pinst.size);
   float alpha = pdef.alpha.sample(ptime);
   FVec3 colorMul = ctx.ps.params.color[0];
-  if (ctx.pdef.blendMode == BlendMode::additive) {
+  if (ctx.tdef.blendMode == BlendMode::additive) {
     colorMul *= alpha;
     alpha = 1.0f;
   }
@@ -178,9 +177,10 @@ void defaultDrawParticle(DrawContext &ctx, const Particle &pinst, DrawParticle &
   out.color = IColor(color);
 }
 
-SubSystemContext::SubSystemContext(const ParticleSystem &ps, const ParticleSystemDef &psdef, const ParticleDef &pdef,
-                                   const EmitterDef &edef, int ssid)
-    : ps(ps), ss(ps.subSystems[ssid]), psdef(psdef), ssdef(psdef[ssid]), pdef(pdef), edef(edef), ssid(ssid) {}
+SubSystemContext::SubSystemContext(const ParticleSystem& ps, const ParticleSystemDef& psdef, const ParticleDef& pdef,
+                                   const EmitterDef& edef, const TextureDef& tdef, int ssid)
+    : ps(ps), ss(ps.subSystems[ssid]), psdef(psdef), ssdef(psdef[ssid]), pdef(pdef), edef(edef), tdef(tdef),
+      ssid(ssid) {}
 
 AnimationContext::AnimationContext(const SubSystemContext &ssctx, float animTime, float timeDelta)
     : SubSystemContext(ssctx), animTime(animTime), timeDelta(timeDelta), invTimeDelta(1.0f / timeDelta) {}

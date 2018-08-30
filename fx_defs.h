@@ -8,13 +8,13 @@
 namespace fx {
 
 struct TextureDef {
-  TextureDef(const char* name = "circular.png") : name(name), tiles(1, 1) { }
-  TextureDef(string name) : name(name), tiles(1, 1) { }
-  TextureDef(string name, int xTiles, int yTiles) : name(name), tiles(xTiles, yTiles) { }
+  void validate() const {
+    CHECK(fileName != nullptr);
+  }
 
-  // TODO: option to select subRect for randomization
-  string name;
-  IVec2 tiles;
+  const char* fileName = nullptr;
+  IVec2 tiles = {1, 1};
+  BlendMode blendMode = BlendMode::normal;
 };
 
 // Defines behaviour and looks of a single particle.
@@ -29,12 +29,12 @@ struct ParticleDef {
   Curve<float> slowdown;
   Curve<FVec3> color = FVec3(1.0f);
 
-  TextureDef texture;
-  BlendMode blendMode = BlendMode::normal;
-
   // Additional curves, which may be used for complex particles
   vector<Curve<float>> scalarCurves;
   vector<Curve<FVec3>> colorCurves;
+
+  // TODO: option to select subRect for randomization
+  TextureName textureName;
 };
 
 // Defines behaviour of a particle system emitter.

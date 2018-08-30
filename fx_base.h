@@ -32,6 +32,7 @@ template <class T> using vector = std::vector<T>;
 namespace fx {
 
 enum class BlendMode : unsigned char { normal, additive };
+enum class TextureName;
 
 class FXManager;
 class FXRenderer;
@@ -61,6 +62,7 @@ struct DrawParticle;
 struct Particle;
 struct ParticleSystem;
 
+struct TextureDef;
 struct ParticleDef;
 struct EmitterDef;
 struct SubSystemDef;
