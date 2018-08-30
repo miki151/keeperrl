@@ -21,19 +21,6 @@ FXManager::FXManager() {
 }
 FXManager::~FXManager() { s_instance = nullptr; }
 
-bool FXManager::valid(ParticleDefId id) const { return id < (int)m_particleDefs.size(); }
-bool FXManager::valid(EmitterDefId id) const { return id < (int)m_emitterDefs.size(); }
-
-const ParticleDef &FXManager::operator[](ParticleDefId id) const {
-  DASSERT(valid(id));
-  return m_particleDefs[id];
-}
-
-const EmitterDef &FXManager::operator[](EmitterDefId id) const {
-  DASSERT(valid(id));
-  return m_emitterDefs[id];
-}
-
 const ParticleSystemDef& FXManager::operator[](FXName name) const {
   return m_systemDefs[name];
 }
@@ -44,8 +31,8 @@ const TextureDef& FXManager::operator[](TextureName name) const {
 
 SubSystemContext FXManager::ssctx(ParticleSystem &ps, int ssid) {
   const auto &psdef = (*this)[ps.defId];
-  const auto &pdef = (*this)[psdef[ssid].particleId];
-  const auto &edef = (*this)[psdef[ssid].emitterId];
+  const auto& pdef = psdef[ssid].particle;
+  const auto& edef = psdef[ssid].emitter;
   return {ps, psdef, pdef, edef, m_textureDefs[pdef.textureName], ssid};
 }
 
@@ -258,7 +245,7 @@ vector<DrawParticle> FXManager::genQuads() {
     for (int ssid = 0; ssid < (int)psdef.subSystems.size(); ssid++) {
       auto &ss = ps[ssid];
       auto &ssdef = psdef[ssid];
-      auto &pdef = m_particleDefs[ssdef.particleId];
+      auto& pdef = ssdef.particle;
       auto& tdef = m_textureDefs[pdef.textureName];
       DrawContext ctx{ssctx(ps, ssid), vinv(FVec2(tdef.tiles))};
 
@@ -311,7 +298,7 @@ ParticleSystem FXManager::makeSystem(FXName name, uint spawnTime, InitConfig con
   for (int ssid = 0; ssid < (int)out.subSystems.size(); ssid++) {
     auto& ss = out.subSystems[ssid];
     ss.randomSeed = m_randomGen->get(INT_MAX);
-    ss.emissionFract = (*this)[def.subSystems[ssid].emitterId].initialSpawnCount;
+    ss.emissionFract = def.subSystems[ssid].emitter.initialSpawnCount;
   }
 
   // TODO: initial particles
@@ -347,16 +334,6 @@ vector<ParticleSystemId> FXManager::aliveSystems() const {
       out.emplace_back(ParticleSystemId(n, m_systems[n].spawnTime));
 
   return out;
-}
-
-ParticleDefId FXManager::addDef(ParticleDef def) {
-  m_particleDefs.emplace_back(std::move(def));
-  return ParticleDefId(m_particleDefs.size() - 1);
-}
-
-EmitterDefId FXManager::addDef(EmitterDef def) {
-  m_emitterDefs.emplace_back(std::move(def));
-  return EmitterDefId(m_emitterDefs.size() - 1);
 }
 
 void FXManager::addDef(FXName name, ParticleSystemDef def) {

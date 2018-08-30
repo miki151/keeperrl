@@ -30,15 +30,8 @@ public:
   void simulate(float timeDelta);
 
   const auto& textureDefs() const { return m_textureDefs; }
-  const auto &particleDefs() const { return m_particleDefs; }
-  const auto &emitterDefs() const { return m_emitterDefs; }
   const auto &systemDefs() const { return m_systemDefs; }
 
-  bool valid(ParticleDefId) const;
-  bool valid(EmitterDefId) const;
-
-  const ParticleDef &operator[](ParticleDefId) const;
-  const EmitterDef &operator[](EmitterDefId) const;
   const ParticleSystemDef& operator[](FXName) const;
   const TextureDef& operator[](TextureName) const;
 
@@ -59,11 +52,6 @@ public:
 
   vector<DrawParticle> genQuads();
 
-  // These can be used only during initialization
-  ParticleDefId addDef(ParticleDef);
-  EmitterDefId addDef(EmitterDef);
-  void addDef(FXName, ParticleSystemDef);
-
   using Snapshot = vector<ParticleSystem::SubSystem>;
   struct SnapshotGroup {
     SnapshotKey key;
@@ -73,6 +61,8 @@ public:
   void addSnapshot(float animTime, const ParticleSystem&);
   const SnapshotGroup* findSnapshotGroup(FXName, SnapshotKey) const;
   void genSnapshots(FXName, vector<float>, vector<float> params = {}, int randomVariants = 1);
+
+  void addDef(FXName, ParticleSystemDef);
 
   private:
   ParticleSystem makeSystem(FXName, uint spawnTime, InitConfig);
@@ -86,8 +76,6 @@ public:
   SubSystemContext ssctx(ParticleSystem &, int);
 
   // TODO: remove m_
-  vector<ParticleDef> m_particleDefs;
-  vector<EmitterDef> m_emitterDefs;
   EnumMap<FXName, ParticleSystemDef> m_systemDefs;
   EnumMap<FXName, vector<SnapshotGroup>> m_snapshotGroups;
   EnumMap<TextureName, TextureDef> m_textureDefs;
