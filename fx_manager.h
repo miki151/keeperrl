@@ -71,7 +71,7 @@ public:
   void genSnapshots(FXName, vector<float>, vector<float> params = {}, int randomVariants = 1);
 
   private:
-  ParticleSystem makeSystem(FXName, int spawnTime, InitConfig);
+  ParticleSystem makeSystem(FXName, uint spawnTime, InitConfig);
   void initializeDefs();
 
   void simulate(ParticleSystem &, float timeDelta);
@@ -84,7 +84,7 @@ public:
 
   // TODO: add simple statistics: num particles, instances, etc.
   vector<ParticleSystem> m_systems;
-  int m_spawnClock = 1, m_randomSeed = 0;
+  uint m_spawnClock = 1, m_randomSeed = 0;
   double m_accumFrameTime = 0.0f;
   double m_oldTime = -1.0;
 };

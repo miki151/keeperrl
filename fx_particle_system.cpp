@@ -15,11 +15,11 @@ void ParticleSystem::Params::set(const SnapshotKey& key) {
   scalar[0] = key.param0;
 }
 
-ParticleSystem::ParticleSystem(FXName defId, const InitConfig& config, int spawnTime, int numSubSystems)
+ParticleSystem::ParticleSystem(FXName defId, const InitConfig& config, uint spawnTime, int numSubSystems)
     : subSystems(numSubSystems), pos(config.pos), targetOff(config.targetOff), defId(defId), spawnTime(spawnTime) {
 }
 
-ParticleSystem::ParticleSystem(FXName defId, const InitConfig& config, int spawnTime, vector<SubSystem> snapshot)
+ParticleSystem::ParticleSystem(FXName defId, const InitConfig& config, uint spawnTime, vector<SubSystem> snapshot)
     : subSystems(std::move(snapshot)), pos(config.pos), targetOff(config.targetOff), defId(defId),
       spawnTime(spawnTime) {
   params.set(config.snapshotKey);
