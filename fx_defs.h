@@ -3,7 +3,6 @@
 #include "fx_base.h"
 #include "fx_curve.h"
 #include "fx_emission_source.h"
-#include "fx_tag_id.h"
 
 namespace fx {
 
@@ -91,11 +90,11 @@ void defaultEmitParticle(AnimationContext&, EmissionState&, Particle&);
 void defaultDrawParticle(DrawContext&, const Particle&, DrawParticle&);
 
 struct SubSystemDef {
-  SubSystemDef(ParticleDefId pdef, EmitterDefId edef, float estart, float eend)
-      : particleId(pdef), emitterId(edef), emissionStart(estart), emissionEnd(eend) {}
+  SubSystemDef(ParticleDef pdef, EmitterDef edef, float estart, float eend)
+      : particle(pdef), emitter(edef), emissionStart(estart), emissionEnd(eend) {}
 
-  ParticleDefId particleId;
-  EmitterDefId emitterId;
+  ParticleDef particle;
+  EmitterDef emitter;
 
   float emissionStart, emissionEnd;
 

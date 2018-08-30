@@ -74,9 +74,5 @@ struct AnimationContext;
 struct EmissionState;
 struct SnapshotKey;
 
-template <class T, class Base = unsigned> class TagId;
-
-using ParticleDefId = TagId<ParticleDef>;
-using EmitterDefId = TagId<EmitterDef>;
 class ParticleSystemId;
 }

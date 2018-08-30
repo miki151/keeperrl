@@ -25,8 +25,8 @@ static FXRenderer *s_instance = nullptr;
 FXRenderer *FXRenderer::getInstance() { return s_instance; }
 
 FXRenderer::FXRenderer(DirectoryPath dataPath, FXManager& mgr) : mgr(mgr) {
-  textures.reserve(mgr.particleDefs().size());
-  textureScales.reserve(mgr.particleDefs().size());
+  textures.reserve(EnumInfo<TextureName>::size);
+  textureScales.reserve(textures.size());
   drawBuffers = std::make_unique<DrawBuffers>();
 
   for (auto texName : ENUM_ALL(TextureName)) {
