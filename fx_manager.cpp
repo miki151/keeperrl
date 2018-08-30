@@ -4,6 +4,7 @@
 #include "fx_math.h"
 #include "fx_particle_system.h"
 #include "fx_rect.h"
+#include "clock.h"
 
 namespace fx {
 
@@ -195,7 +196,7 @@ auto FXManager::findSnapshotGroup(FXName name, SnapshotKey key) const -> const S
 }
 
 void FXManager::genSnapshots(FXName name, vector<float> animTimes, vector<float> params, int randomVariants) {
-  auto startTime = getProgramTime();
+  auto startTime = Clock::getRealMicros().count();
   if (params.empty())
     params = {0.0f};
   if (animTimes.empty())
@@ -229,7 +230,7 @@ void FXManager::genSnapshots(FXName name, vector<float> animTimes, vector<float>
     }
   }
 
-  auto time = (getProgramTime() - startTime) * 1000.0;
+  auto time = double(Clock::getRealMicros().count() - startTime) / 1000.0;
   float maxTime = animTimes.back();
   int numFrames = maxTime * fps;
 

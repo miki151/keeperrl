@@ -19,12 +19,6 @@
 #include "position.h"
 #include <time.h>
 
-double getProgramTime() {
-  struct timespec ts;
-  clock_gettime(CLOCK_MONOTONIC, &ts);
-  return ts.tv_nsec / 1.0e9 + ts.tv_sec;
-}
-
 void RandomGen::init(int seed) {
   generator.seed(seed);
 }
