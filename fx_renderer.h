@@ -1,6 +1,7 @@
 #pragma once
 
 #include "fx_base.h"
+#include "fx_texture_name.h"
 #include "texture.h"
 
 class Framebuffer;
@@ -33,8 +34,7 @@ public:
   FXManager& mgr;
   vector<Texture> textures;
   vector<FVec2> textureScales;
-  // Maps particleDefId to textureId
-  vector<int> textureIds;
+  EnumMap<TextureName, int> textureIds;
 
   void applyTexScale();
 

@@ -29,6 +29,7 @@ public:
   void simulateStable(double timeDelta, int desiredFps = 60);
   void simulate(float timeDelta);
 
+  const auto& textureDefs() const { return m_textureDefs; }
   const auto &particleDefs() const { return m_particleDefs; }
   const auto &emitterDefs() const { return m_emitterDefs; }
   const auto &systemDefs() const { return m_systemDefs; }

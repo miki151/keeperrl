@@ -27,11 +27,10 @@ FXRenderer *FXRenderer::getInstance() { return s_instance; }
 FXRenderer::FXRenderer(DirectoryPath dataPath, FXManager& mgr) : mgr(mgr) {
   textures.reserve(mgr.particleDefs().size());
   textureScales.reserve(mgr.particleDefs().size());
-  textureIds.reserve(mgr.particleDefs().size());
   drawBuffers = std::make_unique<DrawBuffers>();
 
-  for (auto& pdef : mgr.particleDefs()) {
-    auto& tdef = mgr[pdef.textureName];
+  for (auto texName : ENUM_ALL(TextureName)) {
+    auto& tdef = mgr[texName];
     auto path = dataPath.file(tdef.fileName);
     int id = -1;
     for (int n = 0; n < (int)textures.size(); n++)
@@ -47,7 +46,7 @@ FXRenderer::FXRenderer(DirectoryPath dataPath, FXManager& mgr) : mgr(mgr) {
       FVec2 scale(float(tsize.x) / float(rsize.x), float(tsize.y) / float(rsize.y));
       textureScales.emplace_back(scale);
     }
-    textureIds.emplace_back(id);
+    textureIds[texName] = id;
   }
   CHECK(s_instance == nullptr && "There can be only one!");
   s_instance = this;
@@ -69,8 +68,7 @@ void FXRenderer::applyTexScale() {
   auto& texCoords = drawBuffers->texCoords;
 
   for (auto& elem : elements) {
-    int texId = textureIds[elem.particleDefId];
-    auto scale = textureScales[texId];
+    auto scale = textureScales[textureIds[elem.texName]];
     if (scale == FVec2(1.0f))
       continue;
 
@@ -185,10 +183,10 @@ void FXRenderer::drawParticles(const View& view, BlendMode blendMode) {
 
   setBlendingMode(blendMode);
   for (auto& elem : drawBuffers->elements) {
-    if (elem.blendMode != blendMode)
+    auto& tdef = mgr[elem.texName];
+    if (tdef.blendMode != blendMode)
       continue;
-    int texId = textureIds[elem.particleDefId];
-    auto& tex = textures[texId];
+    auto& tex = textures[textureIds[elem.texName]];
     SDL::glBindTexture(GL_TEXTURE_2D, *tex.getTexId());
     SDL::glDrawArrays(GL_QUADS, elem.firstVertex, elem.numVertices);
   }
