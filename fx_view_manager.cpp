@@ -3,6 +3,17 @@
 #include "fx_base.h"
 #include "fx_name.h"
 
+// TODO: generate proper IDs for objects
+auto FXViewManager::makeId(UniqueEntity<Creature>::Id id) -> GenericId {
+  GenericId out(id.getHash());
+  out |= 0x1ull << 63;
+  return out;
+}
+
+auto FXViewManager::makeId(const ViewObject& object) -> GenericId {
+  return (GenericId)&object & ~(0x1ull << 63);
+}
+
 void FXViewManager::EntityInfo::clearVisibility() {
   isVisible = false;
   for (int n = 0; n < numEffects; n++)
@@ -75,9 +86,7 @@ void FXViewManager::beginFrame() {
     pair.second.clearVisibility();
 }
 
-void FXViewManager::addEntity(UniqueId id, float x, float y) {
-  GenericId gid(id.getHash());
-
+void FXViewManager::addEntity(GenericId gid, float x, float y) {
   auto it = entities.find(gid);
   if (it == entities.end()) {
     EntityInfo newInfo;
@@ -91,8 +100,7 @@ void FXViewManager::addEntity(UniqueId id, float x, float y) {
   }
 }
 
-void FXViewManager::addFX(UniqueId id, const FXDef& def) {
-  GenericId gid(id.getHash());
+void FXViewManager::addFX(GenericId gid, const FXDef& def) {
   auto it = entities.find(gid);
   PASSERT(it != entities.end());
   it->second.addFX(gid, def);
@@ -106,7 +114,7 @@ void FXViewManager::finishFrame() {
     it->second.justShown = false;
     it->second.updateFX(it->first);
     if (!it->second.isVisible) {
-      INFO << "FX view: clear: " << it->first;
+      //INFO << "FX view: clear: " << it->first;
       entities.erase(it);
     }
     it = next;
