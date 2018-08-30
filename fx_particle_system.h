@@ -117,8 +117,8 @@ struct ParticleSystem {
 };
 
 struct SubSystemContext {
-  SubSystemContext(const ParticleSystem &ps, const ParticleSystemDef &, const ParticleDef &, const EmitterDef &,
-                   int ssid);
+  SubSystemContext(const ParticleSystem& ps, const ParticleSystemDef&, const ParticleDef&, const EmitterDef&,
+                   const TextureDef&, int ssid);
 
   const ParticleSystem &ps;
   const ParticleSystem::SubSystem &ss;
@@ -128,6 +128,7 @@ struct SubSystemContext {
 
   const ParticleDef &pdef;
   const EmitterDef &edef;
+  const TextureDef& tdef;
 
   const int ssid;
 };

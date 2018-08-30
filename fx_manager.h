@@ -6,6 +6,7 @@
 #include "fx_particle_system.h"
 #include "fx_defs.h"
 #include "fx_name.h"
+#include "fx_texture_name.h"
 
 namespace fx {
 
@@ -38,6 +39,7 @@ public:
   const ParticleDef &operator[](ParticleDefId) const;
   const EmitterDef &operator[](EmitterDefId) const;
   const ParticleSystemDef& operator[](FXName) const;
+  const TextureDef& operator[](TextureName) const;
 
   bool valid(ParticleSystemId) const;
   bool alive(ParticleSystemId) const;
@@ -73,15 +75,21 @@ public:
 
   private:
   ParticleSystem makeSystem(FXName, uint spawnTime, InitConfig);
+
+  // Implemented in fx_factory.cpp:
   void initializeDefs();
+  void initializeTextureDefs();
+  void initializeTextureDef(TextureName, TextureDef&);
 
   void simulate(ParticleSystem &, float timeDelta);
   SubSystemContext ssctx(ParticleSystem &, int);
 
+  // TODO: remove m_
   vector<ParticleDef> m_particleDefs;
   vector<EmitterDef> m_emitterDefs;
   EnumMap<FXName, ParticleSystemDef> m_systemDefs;
   EnumMap<FXName, vector<SnapshotGroup>> m_snapshotGroups;
+  EnumMap<TextureName, TextureDef> m_textureDefs;
 
   // TODO: add simple statistics: num particles, instances, etc.
   vector<ParticleSystem> m_systems;

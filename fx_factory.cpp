@@ -30,7 +30,7 @@ static void addTestSimpleEffect(FXManager &mgr) {
   pdef.alpha = {{0.0f, 0.1, 0.8f, 1.0f}, {0.0, 1.0, 1.0, 0.0}, InterpType::linear};
 
   pdef.color = {{{1.0f, 1.0f, 0.0f}, {0.5f, 1.0f, 0.5f}, {0.2f, 0.5f, 1.0f}}, InterpType::linear};
-  pdef.texture = "circular.png";
+  pdef.textureName = TextureName::CIRCULAR;
 
   ParticleSystemDef psdef;
   psdef.subSystems.emplace_back(mgr.addDef(pdef), mgr.addDef(edef), 0.0f, 5.0f);
@@ -50,7 +50,7 @@ static void addTestMultiEffect(FXManager &mgr) {
     pdefs[n].size = 32.0f;
     pdefs[n].alpha = {{0.0f, 0.1, 0.8f, 1.0f}, {0.0, 1.0, 1.0, 0.0}, InterpType::linear};
     pdefs[n].color = {colors[n]};
-    pdefs[n].texture = "circular.png";
+    pdefs[n].textureName = TextureName::CIRCULAR;
   }
 
   ParticleSystemDef psdef;
@@ -85,7 +85,7 @@ static void addWoodSplinters(FXManager &mgr) {
   // Kiedy cząsteczki opadną pod drzewo, robią się w zasięgu cienia
   // TODO: lepiej rysować je po prostu pod cieniem
   pdef.color = {{0.0f, 0.15f, 0.17}, {brown.rgb(), brown.rgb(), brown.rgb() * 0.6f}};
-  pdef.texture = {"flakes_4x4_borders.png", 4, 4};
+  pdef.textureName = TextureName::FLAKES_BORDERS;
 
   SubSystemDef ssdef(mgr.addDef(pdef), mgr.addDef(edef), 0.0f, 0.1f);
   ssdef.maxTotalParticles = 7;
@@ -117,7 +117,7 @@ static void addRockSplinters(FXManager &mgr) {
   pdef.alpha = {{0.0f, 0.4f, 1.0f}, {1.0, 1.0, 0.0}, InterpType::cosine};
 
   pdef.color = FVec3(0.4, 0.4, 0.4);
-  pdef.texture = {"flakes_4x4_borders.png", 4, 4};
+  pdef.textureName = TextureName::FLAKES_BORDERS;
 
   SubSystemDef ssdef(mgr.addDef(pdef), mgr.addDef(edef), 0.0f, 0.1f);
   ssdef.maxTotalParticles = 5;
@@ -147,7 +147,7 @@ static void addRockCloud(FXManager &mgr) {
 
   FVec3 start_color(0.6), end_color(0.4);
   pdef.color = {{start_color, end_color}};
-  pdef.texture = {"clouds_soft_4x4.png", 4, 4};
+  pdef.textureName = TextureName::CLOUDS_SOFT;
 
   SubSystemDef ssdef(mgr.addDef(pdef), mgr.addDef(edef), 0.0f, 0.1f);
 
@@ -172,8 +172,7 @@ static void addExplosionEffect(FXManager &mgr) {
 
   IColor color(137, 106, 40);
   pdef.color = {{0.0f, 0.1f, 1.0f}, {FVec3(0.0f), color.rgb(), FVec3(0.0f)}};
-  pdef.texture = {"clouds_grayscale_4x4.png", 4, 4};
-  pdef.blendMode = BlendMode::additive;
+  pdef.textureName = TextureName::CLOUDS_ADD;
 
   SubSystemDef ssdef(mgr.addDef(pdef), mgr.addDef(edef), 0.0f, 0.3f);
   ssdef.maxTotalParticles = 20;
@@ -215,7 +214,7 @@ static void addRippleEffect(FXManager &mgr) {
   pdef.alpha = {{0.0f, 0.3f, 0.6f, 1.0f}, {0.0f, 0.3f, 0.5f, 0.0f}};
 
   pdef.color = FVec3(1.0f, 1.0f, 1.0f);
-  pdef.texture = "torus.png";
+  pdef.textureName = TextureName::TORUS;
 
   // TODO: możliwośc nie podawania czasu emisji (etedy emituje przez całą długośc animacji)?
   SubSystemDef ssdef(mgr.addDef(pdef), mgr.addDef(edef), 0.0f, 1.0f);
@@ -261,7 +260,7 @@ static void addCircularBlast(FXManager &mgr) {
   pdef.alpha = {{0.0f, 0.03f, 0.2f, 1.0f}, {0.0f, 0.15f, 0.15f, 0.0f}, InterpType::cosine};
 
   pdef.color = {{0.5f, 0.8f}, {{1.0f, 1.0f, 1.0f}, {0.5f, 0.5f, 1.0f}}};
-  pdef.texture = "torus.png";
+  pdef.textureName = TextureName::TORUS;
 
   SubSystemDef ssdef(mgr.addDef(pdef), mgr.addDef(edef), 0.0f, 0.1f);
   ssdef.maxActiveParticles = 20;
@@ -298,7 +297,7 @@ static void addFeetDustEffect(FXManager &mgr) {
 
   FVec3 start_color(0.9), end_color(0.7);
   pdef.color = {{start_color, end_color}};
-  pdef.texture = {"clouds_soft_4x4.png", 4, 4};
+  pdef.textureName = TextureName::CLOUDS_SOFT;
 
   SubSystemDef ssdef(mgr.addDef(pdef), mgr.addDef(edef), 0.0f, 0.2f);
   // TODO: różna liczba początkowych cząsteczek
@@ -346,8 +345,7 @@ static void addMagicMissileEffect(FXManager& mgr) {
     pdef.slowdown = 1.0f;
     pdef.alpha = {{0.0f, 0.2f}, {0.0f, maxBaseAlpha}};
     pdef.size = {{0.0f, 0.2f, 0.8f, 1.0f}, {5.0f, 20.0f, 30.0f, 20.0f}};
-    pdef.texture = {"magic_missile_4x4.png", 4, 4};
-    pdef.blendMode = BlendMode::additive;
+    pdef.textureName = TextureName::MAGIC_MISSILE;
 
     SubSystemDef ssdef(mgr.addDef(pdef), mgr.addDef(edef), 0.0f, 0.5f);
     ssdef.maxTotalParticles = 1;
@@ -386,8 +384,7 @@ static void addMagicMissileEffect(FXManager& mgr) {
     pdef.size = {{6.0f, 8.0f}};
     pdef.alpha = {{0.0f, 0.1f, 0.7f, 1.0f}, {0.0, 1.0f, 1.0f, 0.0}};
     pdef.slowdown = 1.0f;
-    pdef.texture = {"magic_missile_4x4.png", 4, 4};
-    pdef.blendMode = BlendMode::additive;
+    pdef.textureName = TextureName::MAGIC_MISSILE;
 
     SubSystemDef ssdef(mgr.addDef(pdef), mgr.addDef(edef), 0.0f, 0.5f);
 
@@ -429,8 +426,7 @@ static void addMagicMissileEffect(FXManager& mgr) {
     pdef.size = {{8.0f, 16.0f}};
     pdef.alpha = {{0.0f, 0.2f, 0.8f, 1.0f}, {0.0, 1.0f, 1.0f, 0.0}};
     pdef.slowdown = 1.0f;
-    pdef.texture = {"magic_missile_4x4.png", 4, 4};
-    pdef.blendMode = BlendMode::additive;
+    pdef.textureName = TextureName::MAGIC_MISSILE;
 
     SubSystemDef ssdef(mgr.addDef(pdef), mgr.addDef(edef), flightTime, flightTime + 0.25f);
     ssdef.emitFunc = [](AnimationContext& ctx, EmissionState& em, Particle& pinst) {
@@ -456,8 +452,7 @@ static void addMagicMissileEffect(FXManager& mgr) {
     pdef.life = .4f;
     pdef.size = {{20.0f, 30.0f}};
     pdef.alpha = {{0.5f, 1.0f}, {maxBaseAlpha, 0.0}};
-    pdef.texture = {"magic_missile_4x4.png", 4, 4};
-    pdef.blendMode = BlendMode::additive;
+    pdef.textureName = TextureName::MAGIC_MISSILE;
 
     SubSystemDef ssdef(mgr.addDef(pdef), mgr.addDef(edef), flightTime, flightTime + 0.25f);
     ssdef.emitFunc = [](AnimationContext& ctx, EmissionState& em, Particle& pinst) {
@@ -495,8 +490,7 @@ static void addFireEffect(FXManager& mgr) {
 
     pdef.color = {{0.0f, 0.2f, 0.8f, 1.0f},
                   {FVec3(0.0f), IColor(155, 85, 30).rgb(), IColor(45, 35, 60).rgb(), FVec3(0.0f)}};
-    pdef.texture = {"flames_4x4.png", 4, 4};
-    pdef.blendMode = BlendMode::additive;
+    pdef.textureName = TextureName::FLAMES;
 
     SubSystemDef ssdef(mgr.addDef(pdef), mgr.addDef(edef), 0.0f, 1.0f);
     ssdef.prepareFunc = [](AnimationContext& ctx, EmissionState& em) {
@@ -530,7 +524,7 @@ static void addFireEffect(FXManager& mgr) {
     pdef.alpha = {{0.0f, 0.5f, 1.0f}, {0.0, 0.15, 0.0}, InterpType::cosine};
 
     pdef.color = {{0.0f, 0.5f, 1.0f}, {FVec3(0.0f), FVec3(0.3f), FVec3(0.0f)}};
-    pdef.texture = {"clouds_soft_borders_4x4.png", 4, 4};
+    pdef.textureName = TextureName::CLOUDS_SOFT_BORDERS;
 
     SubSystemDef ssdef(mgr.addDef(pdef), mgr.addDef(edef), 0.0f, 1.0f);
     ssdef.prepareFunc = [](AnimationContext& ctx, EmissionState& em) {
@@ -576,8 +570,7 @@ static void addFireballEffect(FXManager& mgr) {
 
     pdef.color = {{0.0f, 0.2f, 0.8f, 1.0f},
                   {FVec3(0.0f), IColor(155, 85, 30).rgb(), IColor(45, 35, 30).rgb(), FVec3(0.0f)}};
-    pdef.texture = {"flames_blurred_4x4.png", 4, 4};
-    pdef.blendMode = BlendMode::additive;
+    pdef.textureName = TextureName::FLAMES_BLURRED;
 
     SubSystemDef ssdef(mgr.addDef(pdef), mgr.addDef(edef), 0.0f, flightTime);
     ssdef.prepareFunc = [](AnimationContext& ctx, EmissionState& em) {
@@ -618,8 +611,7 @@ static void addFireballEffect(FXManager& mgr) {
 
     pdef.color = {{0.0f, 0.2f, 0.8f, 1.0f},
                   {FVec3(0.0f), IColor(155, 85, 30).rgb(), IColor(45, 35, 30).rgb(), FVec3(0.0f)}};
-    pdef.texture = {"flames_blurred_4x4.png", 4, 4};
-    pdef.blendMode = BlendMode::additive;
+    pdef.textureName = TextureName::FLAMES_BLURRED;
 
     SubSystemDef ssdef(mgr.addDef(pdef), mgr.addDef(edef), flightTime - 0.05f, flightTime + 0.3f);
     ssdef.prepareFunc = [](AnimationContext& ctx, EmissionState& em) {
@@ -656,7 +648,7 @@ static void addSleepEffect(FXManager& mgr) {
   pdef.alpha = {{0.0f, 0.5f, 1.0f}, {0.0, 1.0, 0.0}, InterpType::cosine};
 
   pdef.color = FVec3(1.0f);
-  pdef.texture = {"special_4x2.png", 4, 4};
+  pdef.textureName = TextureName::SPECIAL;
 
   SubSystemDef ssdef(mgr.addDef(pdef), mgr.addDef(edef), 0.0f, 1.0f);
   ssdef.emitFunc = [](AnimationContext &ctx, EmissionState &em, Particle &pinst) {
@@ -689,7 +681,7 @@ static void addInsanityEffect(FXManager &mgr) {
 
   // TODO: zestaw losowych kolorów ?
   pdef.color = FVec3(1.0);
-  pdef.texture = {"special_4x2.png", 4, 2};
+  pdef.textureName = TextureName::SPECIAL;
 
   SubSystemDef ssdef(mgr.addDef(pdef), mgr.addDef(edef), 0.0f, 1.0f);
   ssdef.emitFunc = [](AnimationContext &ctx, EmissionState &em, Particle &pinst) {
@@ -727,7 +719,7 @@ static void addBlindEffect(FXManager &mgr) {
   pdef.alpha = {{0.0f, 0.3f, 0.8f, 1.0f}, {0.0f, 1.0, 0.5, 0.0}, InterpType::cosine};
 
   pdef.color = IColor(253, 247, 172).rgb();
-  pdef.texture = {"special_4x2.png", 4, 2};
+  pdef.textureName = TextureName::SPECIAL;
 
   SubSystemDef ssdef(mgr.addDef(pdef), mgr.addDef(edef), 0.0f, 1.0f);
   ssdef.emitFunc = [](AnimationContext &ctx, EmissionState &em, Particle &pinst) {
@@ -775,7 +767,7 @@ static void addPeacefulnessEffect(FXManager &mgr) {
   pdef.alpha = {{0.0f, 0.2f, 0.8f, 1.0f}, {0.0, 0.3f, 0.2, 0.0}, InterpType::cosine};
 
   pdef.color = IColor(255, 110, 209).rgb();
-  pdef.texture = {"special_4x2.png", 4, 2};
+  pdef.textureName = TextureName::SPECIAL;
 
   SubSystemDef ssdef(mgr.addDef(pdef), mgr.addDef(edef), 0.0f, 1.0f);
   ssdef.emitFunc = [](AnimationContext &ctx, EmissionState &em, Particle &pinst) {
@@ -806,7 +798,7 @@ static void addSlowEffect(FXManager &mgr) {
   pdef.alpha = {{0.0f, 0.1f, 0.8f, 1.0f}, {0.0, 0.7f, 0.7f, 0.0}};
 
   pdef.color = FVec3(0.7f, 1.0f, 0.6f);
-  pdef.texture = "circular.png";
+  pdef.textureName = TextureName::CIRCULAR;
 
   SubSystemDef ssdef(mgr.addDef(pdef), mgr.addDef(edef), 0.0f, 1.0f);
   ssdef.emitFunc = [](AnimationContext &ctx, EmissionState &em, Particle &pinst) {
@@ -846,7 +838,7 @@ static void addSpeedEffect(FXManager &mgr) {
   pdef.alpha = {{0.0f, 0.1f, 0.8f, 1.0f}, {0.0, 0.7f, 0.7f, 0.0}};
 
   pdef.color = FVec3(1.0f);
-  pdef.texture = "circular.png";
+  pdef.textureName = TextureName::CIRCULAR;
 
   SubSystemDef ssdef(mgr.addDef(pdef), mgr.addDef(edef), 0.0f, 1.0f);
   ssdef.emitFunc = [](AnimationContext &ctx, EmissionState &em, Particle &pinst) {
@@ -889,7 +881,7 @@ static void addFlyingEffect(FXManager &mgr) {
     pdef.alpha = {{0.0f, 0.5, 1.0f}, {0.0, 0.4, 0.0}, InterpType::cosine};
 
     pdef.color = FVec3(1.0f);
-    pdef.texture = {"clouds_soft_4x4.png", 4, 4};
+    pdef.textureName = TextureName::CLOUDS_SOFT;
 
     SubSystemDef ssdef(mgr.addDef(pdef), mgr.addDef(edef), 0.0f, 1.0f);
     ssdef.emitFunc = [](AnimationContext &ctx, EmissionState &em, Particle &pinst) {
@@ -914,7 +906,7 @@ static void addFlyingEffect(FXManager &mgr) {
     pdef.alpha = {{0.0f, 0.5, 1.0f}, {0.0, 0.5, 0.0}, InterpType::cosine};
 
     pdef.color = IColor(253, 247, 122).rgb();
-    pdef.texture = {"special_4x2.png", 4, 2};
+    pdef.textureName = TextureName::SPECIAL;
 
     SubSystemDef ssdef(mgr.addDef(pdef), mgr.addDef(edef), 0.0f, 1.0f);
     ssdef.emitFunc = [](AnimationContext &ctx, EmissionState &em, Particle &pinst) {

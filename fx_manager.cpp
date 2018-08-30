@@ -14,6 +14,7 @@ FXManager *FXManager::getInstance() { return s_instance; }
 
 FXManager::FXManager() {
   m_randomGen = std::make_unique<RandomGen>();
+  initializeTextureDefs();
   initializeDefs();
   CHECK(s_instance == nullptr && "There can be only one!");
   s_instance = this;
@@ -37,11 +38,15 @@ const ParticleSystemDef& FXManager::operator[](FXName name) const {
   return m_systemDefs[name];
 }
 
+const TextureDef& FXManager::operator[](TextureName name) const {
+  return m_textureDefs[name];
+}
+
 SubSystemContext FXManager::ssctx(ParticleSystem &ps, int ssid) {
   const auto &psdef = (*this)[ps.defId];
   const auto &pdef = (*this)[psdef[ssid].particleId];
   const auto &edef = (*this)[psdef[ssid].emitterId];
-  return {ps, psdef, pdef, edef, ssid};
+  return {ps, psdef, pdef, edef, m_textureDefs[pdef.textureName], ssid};
 }
 
 void FXManager::simulateStableTime(double time, int desiredFps) {
@@ -254,13 +259,14 @@ vector<DrawParticle> FXManager::genQuads() {
       auto &ss = ps[ssid];
       auto &ssdef = psdef[ssid];
       auto &pdef = m_particleDefs[ssdef.particleId];
-      DrawContext ctx{ssctx(ps, ssid), vinv(FVec2(pdef.texture.tiles))};
+      auto& tdef = m_textureDefs[pdef.textureName];
+      DrawContext ctx{ssctx(ps, ssid), vinv(FVec2(tdef.tiles))};
 
       for (auto &pinst : ss.particles) {
         DrawParticle dparticle;
         ctx.ssdef.drawFunc(ctx, pinst, dparticle);
         dparticle.particleDefId = ssdef.particleId;
-        dparticle.blendMode = pdef.blendMode;
+        dparticle.blendMode = tdef.blendMode;
         out.emplace_back(dparticle);
       }
     }

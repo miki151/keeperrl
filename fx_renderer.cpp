@@ -31,7 +31,8 @@ FXRenderer::FXRenderer(DirectoryPath dataPath, FXManager& mgr) : mgr(mgr) {
   drawBuffers = std::make_unique<DrawBuffers>();
 
   for (auto& pdef : mgr.particleDefs()) {
-    auto path = dataPath.file(pdef.texture.name);
+    auto& tdef = mgr[pdef.textureName];
+    auto path = dataPath.file(tdef.fileName);
     int id = -1;
     for (int n = 0; n < (int)textures.size(); n++)
       if (textures[n].getPath() == path) {
