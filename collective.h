@@ -21,6 +21,7 @@
 #include "event_listener.h"
 #include "entity_map.h"
 #include "minion_trait.h"
+#include "dungeon_level.h"
 
 class CollectiveAttack;
 class Creature;
@@ -153,7 +154,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   bool hasPriorityTasks(Position) const;
 
   bool hasTech(TechId id) const;
-  void acquireTech(Technology*);
+  void acquireTech(Technology*, bool throughLevelling);
   vector<Technology*> getTechnologies() const;
   bool addKnownTile(Position);
 
@@ -172,6 +173,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
 
   int getPopulationSize() const;
   int getMaxPopulation() const;
+  const DungeonLevel& getDungeonLevel() const;
 
   vector<WCreature> getConsumptionTargets(WCreature consumer) const;
   void addAttack(const CollectiveAttack&);
@@ -275,9 +277,6 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   bool isDelayed(Position);
   unordered_map<Position, LocalTime, CustomHash<Position>> SERIAL(delayedPos);
   vector<Position> getEnemyPositions() const;
-  double manaRemainder = 0;
-  double getKillManaScore(WConstCreature) const;
-  void addMana(double);
   EntitySet<Creature> SERIAL(kills);
   int SERIAL(points) = 0;
   HeapAllocated<CollectiveTeams> SERIAL(teams);
@@ -301,4 +300,5 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   HeapAllocated<Quarters> SERIAL(quarters);
   PPositionMatching SERIAL(positionMatching);
   int SERIAL(populationIncrease) = 0;
+  DungeonLevel SERIAL(dungeonLevel);
 };

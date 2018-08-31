@@ -152,15 +152,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void fillLibraryInfo(CollectiveInfo&) const;
   static const vector<BuildInfo>& getBuildInfo();
 
-  typedef CollectiveInfo::TechButton TechButton;
-
   int getMinLibrarySize() const;
-
-  struct TechInfo {
-    TechButton button;
-    function<void(PlayerControl*, View*)> butFun;
-  };
-  vector<TechInfo> getTechInfo() const;
 
   void getEquipmentItem(View* view, ItemPredicate predicate);
   ItemInfo getWorkshopItem(const WorkshopItem&) const;

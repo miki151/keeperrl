@@ -76,7 +76,7 @@ const vector<BuildInfo>& BuildInfo::get() {
           {{RequirementId::TECHNOLOGY, TechId::SPELLS_MAS}}, "Train your minions here. Adds up to " +
           toString(*CollectiveConfig::getTrainingMaxLevel(ExperienceType::SPELL, FurnitureType::BOOKCASE_GOLD)) + " spell levels.",
           0, "Library"),
-      BuildInfo({FurnitureType::THRONE, {ResourceId::MANA, 300}, false, 1}, "Throne",
+      BuildInfo({FurnitureType::THRONE, {ResourceId::GOLD, 500}, false, 1}, "Throne",
           {{RequirementId::VILLAGE_CONQUERED}}, *Furniture::getPopulationIncreaseDescription(FurnitureType::THRONE)),
       BuildInfo({FurnitureType::BED1, {ResourceId::WOOD, 12}}, "Basic bed", {}, "Humanoid minions sleep here.", 'v', "Living", true)
              .setTutorialHighlight(TutorialHighlight::BUILD_BED),

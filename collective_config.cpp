@@ -268,8 +268,6 @@ static StorageDestinationFun getZoneStorage(ZoneId zone) {
 const ResourceInfo& CollectiveConfig::getResourceInfo(CollectiveResourceId id) {
   static EnumMap<CollectiveResourceId, ResourceInfo> resourceInfo([](CollectiveResourceId id)->ResourceInfo {
     switch (id) {
-      case CollectiveResourceId::MANA:
-        return { nullptr, none, ItemType::GoldPiece{}, "mana", ViewId::MANA};
       case CollectiveResourceId::PRISONER_HEAD:
         return { nullptr, none, ItemType::GoldPiece{}, "", ViewId::IMPALED_HEAD, true};
       case CollectiveResourceId::GOLD:

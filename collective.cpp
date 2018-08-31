@@ -61,7 +61,7 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
   ar(delayedPos, knownTiles, technologies, kills, points, currentActivity);
   ar(credit, level, immigration, teams, name, conqueredVillains);
   ar(config, warnings, knownVillains, knownVillainLocations, banished, positionMatching);
-  ar(villainType, enemyId, workshops, zones, discoverable, quarters, populationIncrease);
+  ar(villainType, enemyId, workshops, zones, discoverable, quarters, populationIncrease, dungeonLevel);
 }
 
 SERIALIZABLE(Collective)
@@ -90,7 +90,7 @@ void Collective::init(CollectiveConfig&& cfg, Immigration&& im) {
 
 void Collective::acquireInitialTech() {
   for (auto tech : config->getInitialTech())
-    acquireTech(tech);
+    acquireTech(tech, false);
 }
 
 const optional<CollectiveName>& Collective::getName() const {
@@ -495,14 +495,6 @@ void Collective::removeTrait(WCreature c, MinionTrait t) {
     updateCreatureStatus(c);
 }
 
-double Collective::getKillManaScore(WConstCreature victim) const {
-  return 0;
-/*  int ret = victim->getDifficultyPoints() / 3;
-  if (victim->isAffected(LastingEffect::SLEEP))
-    ret *= 2;
-  return ret;*/
-}
-
 void Collective::addMoraleForKill(WConstCreature killer, WConstCreature victim) {
   for (WCreature c : getCreatures(MinionTrait::FIGHTER))
     c->addMorale(c == killer ? 0.25 : 0.015);
@@ -608,10 +600,7 @@ void Collective::onEvent(const GameEvent& event) {
                 MessagePriority::CRITICAL));
           else
             control->addMessage(PlayerMessage("An unnamed tribe is destroyed.", MessagePriority::CRITICAL));
-          auto mana = config->getManaForConquering(col->getVillainType());
-          addMana(mana);
-          control->addMessage(PlayerMessage("You feel a surge of power (+" + toString(mana) + " mana)",
-              MessagePriority::CRITICAL));
+          dungeonLevel.onKilledVillain(col->getVillainType());
         }
       },
       [&](const auto&) {}
@@ -641,7 +630,6 @@ void Collective::onMinionKilled(WCreature victim, WCreature killer) {
 void Collective::onKilledSomeone(WCreature killer, WCreature victim) {
   string deathDescription=victim->getAttributes().getDeathDescription();
   if (victim->getTribe() != getTribe()) {
-    addMana(getKillManaScore(victim));
     addMoraleForKill(killer, victim);
     kills.insert(victim);
     int difficulty = victim->getDifficultyPoints();
@@ -1165,13 +1153,6 @@ bool Collective::addKnownTile(Position pos) {
     return false;
 }
 
-void Collective::addMana(double value) {
-  if ((manaRemainder += value) >= 1) {
-    returnResource({ResourceId::MANA, int(manaRemainder)});
-    manaRemainder -= int(manaRemainder);
-  }
-}
-
 void Collective::addProducesMessage(WConstCreature c, const vector<PItem>& items) {
   if (items.size() > 1)
     control->addMessage(c->getName().a() + " produces " + toString(items.size())
@@ -1187,7 +1168,7 @@ void Collective::onAppliedSquare(WCreature c, Position pos) {
     switch (furniture->getType()) {
       case FurnitureType::THRONE:
         if (config->getRegenerateMana())
-          addMana(0.01 * efficiency);
+          dungeonLevel.onLibraryWork(efficiency);
         break;
       case FurnitureType::WHIPPING_POST:
         taskMap->addTask(Task::whipping(pos, c), pos, MinionActivity::WORKING);
@@ -1216,7 +1197,7 @@ void Collective::onAppliedSquare(WCreature c, Position pos) {
         case FurnitureUsageType::STUDY:
           increaseLevel(ExperienceType::SPELL);
           if (config->getRegenerateMana())
-            addMana(0.1 * efficiency);
+            dungeonLevel.onLibraryWork(efficiency);
           break;
         case FurnitureUsageType::ARCHERY_RANGE:
           increaseLevel(ExperienceType::ARCHERY);
@@ -1284,9 +1265,11 @@ bool Collective::hasTech(TechId id) const {
   return technologies.contains(id);
 }
 
-void Collective::acquireTech(Technology* tech) {
+void Collective::acquireTech(Technology* tech, bool throughLevelling) {
   technologies.push_back(tech->getId());
   Technology::onAcquired(tech->getId(), this);
+  if (throughLevelling)
+    ++dungeonLevel.consumedLevels;
 }
 
 vector<Technology*> Collective::getTechnologies() const {
@@ -1308,10 +1291,7 @@ void Collective::onRansomPaid() {
 void Collective::onExternalEnemyKilled(const std::string& name) {
   control->addMessage(PlayerMessage("You resisted the attack of " + name + ".",
       MessagePriority::CRITICAL));
-  int mana = 100;
-  addMana(mana);
-  control->addMessage(PlayerMessage("You feel a surge of power (+" + toString(mana) + " mana)",
-      MessagePriority::CRITICAL));
+  dungeonLevel.onKilledWave();
 }
 
 void Collective::onCopulated(WCreature who, WCreature with) {
@@ -1403,6 +1383,10 @@ int Collective::getPopulationSize() const {
 
 int Collective::getMaxPopulation() const {
   return populationIncrease + config->getMaxPopulation();
+}
+
+const DungeonLevel& Collective::getDungeonLevel() const {
+  return dungeonLevel;
 }
 
 REGISTER_TYPE(Collective)

@@ -296,9 +296,9 @@ string Tutorial::getMessage() const {
       return "You are back in the real-time mode. Your minions will now return to base and resume their normal routine. "
           "Once they are back, they will drop all the loot for the imps to take care of.";
     case State::RESEARCH:
-      return "You have received 100 mana for your conquest. Mana is the main source of progress in the game and allows "
-          "you to research new technologies or increase your population by building a throne.\n \n"
-          "Go ahead and research something in your library.";
+      return "You have increased your malevolence level. This is the main meter of your progress in the game and allows "
+          "you to research new technologies.\n \n"
+          "Click on the malevolence level button and research something.";
     case State::MINIMAP_BUTTONS:
       return "As the last objective, familiarize yourself with the two buttons under the minimap in the top-right corner. "
           "The first one opens the world map window, which you can use to travel to other sites when in control mode.\n \n"

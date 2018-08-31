@@ -290,22 +290,19 @@ SGuiElem GuiBuilder::drawBuildings(const CollectiveInfo& info, const optional<Tu
 }
 
 SGuiElem GuiBuilder::drawTechnology(CollectiveInfo& info) {
-  int hash = combineHash(info.techButtons, info.workshopButtons);
+  int hash = combineHash(info.workshopButtons);
   if (hash != technologyHash) {
     technologyHash = hash;
     auto lines = gui.getListBuilder(legendLineHeight);
     lines.addSpace(legendLineHeight / 2);
-    for (int i : All(info.techButtons)) {
-      auto line = gui.getListBuilder();
-      line.addElem(gui.viewObject(info.techButtons[i].viewId), 35);
-      line.addElemAuto(gui.label(info.techButtons[i].name, Color::WHITE, info.techButtons[i].hotkey));
-      lines.addElem(gui.stack(
-            gui.buttonChar([this, i] {
-              closeOverlayWindowsAndClearButton();
-              getButtonCallback(UserInput(UserInputId::TECHNOLOGY, i))();
-            }, info.techButtons[i].hotkey, true, true),
-            line.buildHorizontalList()));
-    }
+    lines.addElem(gui.stack(
+        gui.getListBuilder()
+            .addElem(gui.viewObject(ViewId::BOOK), 35)
+            .addElemAuto(gui.label("Keeperopedia", Color::WHITE))
+            .buildHorizontalList(),
+        gui.button(getButtonCallback(UserInputId::KEEPEROPEDIA))
+    ));
+    lines.addSpace(legendLineHeight / 2);
     lines.addSpace(legendLineHeight / 2);
     for (int i : All(info.workshopButtons)) {
       auto& button = info.workshopButtons[i];
@@ -371,7 +368,7 @@ const int resourceSpace = 110;
 SGuiElem GuiBuilder::drawBottomBandInfo(GameInfo& gameInfo) {
   auto& info = *gameInfo.playerInfo.getReferenceMaybe<CollectiveInfo>();
   GameSunlightInfo& sunlightInfo = gameInfo.sunlightInfo;
-  if (!bottomBandCache) {
+//  if (!bottomBandCache) {
     auto topLine = gui.getListBuilder(resourceSpace);
     for (int i : All(info.numResource)) {
       auto res = gui.getListBuilder();
@@ -387,18 +384,28 @@ SGuiElem GuiBuilder::drawBottomBandInfo(GameInfo& gameInfo) {
           getHintCallback({info.numResource[i].name}),
           res.buildHorizontalList()));
     }
-    auto bottomLine = gui.getListBuilder(140);
-    bottomLine.addElem(getTurnInfoGui(gameInfo.time));
-    bottomLine.addElem(getSunlightInfoGui(sunlightInfo));
-    bottomLine.addElem(gui.labelFun([&info] {
+    auto bottomLine = gui.getListBuilder();
+    const int space = 55;
+    bottomLine.addElemAuto(getTurnInfoGui(gameInfo.time));
+    bottomLine.addSpace(space);
+    bottomLine.addElemAuto(getSunlightInfoGui(sunlightInfo));
+    bottomLine.addSpace(space);
+    bottomLine.addElemAuto(gui.labelFun([&info] {
           return "population: " + toString(info.minionCount) + " / " +
           toString(info.minionLimit); }));
-    bottomBandCache = gui.getListBuilder(28)
+    bottomLine.addSpace(space);
+    bottomLine.addElemAuto(gui.stack(
+        gui.margins(gui.progressBar(Color::DARK_GREEN, info.dungeonLevelProgress), -6, -1, 0, -2),
+        gui.uiHighlightConditional([&]{ return info.blinkDungeonLevel; }),
+        gui.label("Malevolence lvl: " + toString(info.dungeonLevel)),
+        gui.button(getButtonCallback(UserInputId::TECHNOLOGY))
+    ));
+    return gui.getListBuilder(28)
           .addElem(gui.centerHoriz(topLine.buildHorizontalList()))
           .addElem(gui.centerHoriz(bottomLine.buildHorizontalList()))
           .buildVerticalList();
-  }
-  return gui.external(bottomBandCache.get());
+  /*}
+  return gui.external(bottomBandCache.get());*/
 }
 
 const char* GuiBuilder::getGameSpeedName(GuiBuilder::GameSpeed gameSpeed) const {
@@ -1986,7 +1993,7 @@ SGuiElem GuiBuilder::drawLibraryOverlay(const CollectiveInfo& collectiveInfo, co
   int margin = 20;
   int rightElemMargin = 10;
   auto lines = gui.getListBuilder(legendLineHeight);
-  lines.addElem(gui.rightMargin(rightElemMargin, gui.alignment(GuiFactory::Alignment::RIGHT, drawCost(info.resource))));
+  //lines.addElem(gui.rightMargin(rightElemMargin, gui.alignment(GuiFactory::Alignment::RIGHT, drawCost(info.resource))));
   if (info.warning)
     lines.addElem(gui.label(*info.warning, Color::RED));
   lines.addElem(gui.label("Available technology:", Color::YELLOW));
@@ -1994,7 +2001,6 @@ SGuiElem GuiBuilder::drawLibraryOverlay(const CollectiveInfo& collectiveInfo, co
     auto& elem = info.available[i];
     auto line = gui.getListBuilder()
         .addElem(gui.label(elem.name, elem.active ? Color::WHITE : Color::GRAY), 10)
-        .addBackElem(gui.alignment(GuiFactory::Alignment::RIGHT, drawCost(elem.cost)), 80)
         .buildHorizontalList();
     line = gui.stack(std::move(line), getTooltip({elem.description}, THIS_LINE));
     if (elem.tutorialHighlight && tutorial && tutorial->highlights.contains(*elem.tutorialHighlight))
@@ -2013,7 +2019,6 @@ SGuiElem GuiBuilder::drawLibraryOverlay(const CollectiveInfo& collectiveInfo, co
     auto& elem = info.researched[i];
     auto line = gui.getListBuilder()
         .addElem(gui.label(elem.name, Color::GRAY), 10)
-        .addBackElem(gui.alignment(GuiFactory::Alignment::RIGHT, drawCost(elem.cost)), 80)
         .buildHorizontalList();
     line = gui.stack(std::move(line), getTooltip({elem.description}, THIS_LINE));
     lines.addElem(gui.rightMargin(rightElemMargin, std::move(line)));
