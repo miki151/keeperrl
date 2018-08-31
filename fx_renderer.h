@@ -22,11 +22,12 @@ public:
   static FXRenderer *getInstance();
 
   bool useFramebuffer = true;
+  pair<unsigned, unsigned> fboIds() const;
+  IVec2 fboSize() const;
 
   private:
   struct View;
   IRect visibleTiles(const View&);
-  void drawQuad(FVec2, FVec2);
 
   void initFramebuffer(IVec2);
   void drawParticles(const View&, BlendMode);

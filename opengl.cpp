@@ -159,3 +159,12 @@ void popOpenglView() {
 void glColor(const Color& col) {
   SDL::glColor4f((float)col.r / 255, (float)col.g / 255, (float)col.b / 255, (float)col.a / 255);
 }
+
+void glQuad(float x, float y, float ex, float ey) {
+  SDL::glBegin(GL_QUADS);
+  SDL::glTexCoord2f(0.0f, 0.0f), SDL::glVertex2f(x, ey);
+  SDL::glTexCoord2f(1.0f, 0.0f), SDL::glVertex2f(ex, ey);
+  SDL::glTexCoord2f(1.0f, 1.0f), SDL::glVertex2f(ex, y);
+  SDL::glTexCoord2f(0.0f, 1.0f), SDL::glVertex2f(x, y);
+  SDL::glEnd();
+}

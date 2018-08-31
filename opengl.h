@@ -30,3 +30,4 @@ void setupOpenglView(int width, int height, float zoom);
 void pushOpenglView();
 void popOpenglView();
 void glColor(const Color&);
+void glQuad(float x, float y, float ex, float ey);

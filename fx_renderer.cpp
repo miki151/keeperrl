@@ -139,11 +139,12 @@ void FXRenderer::draw(float zoom, float offsetX, float offsetY, int w, int h) {
 
     SDL::glBlendFunc(GL_ONE, GL_ONE);
     SDL::glBindTexture(GL_TEXTURE_2D, addFBO->texId);
-    drawQuad(c1, c2);
+    glColor(Color::WHITE);
+    glQuad(c1.x, c1.y, c2.x, c2.y);
 
     SDL::glBlendFunc(GL_ONE, GL_SRC_ALPHA);
     SDL::glBindTexture(GL_TEXTURE_2D, blendFBO->texId);
-    drawQuad(c1, c2);
+    glQuad(c1.x, c1.y, c2.x, c2.y);
   } else {
     SDL::glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     drawParticles(view, BlendMode::normal);
@@ -156,14 +157,14 @@ void FXRenderer::draw(float zoom, float offsetX, float offsetY, int w, int h) {
   CHECK_OPENGL_ERROR();
 }
 
-void FXRenderer::drawQuad(FVec2 min, FVec2 max) {
-  SDL::glBegin(GL_QUADS);
-  SDL::glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-  SDL::glTexCoord2f(0.0f, 0.0f), SDL::glVertex2f(min.x, max.y);
-  SDL::glTexCoord2f(1.0f, 0.0f), SDL::glVertex2f(max.x, max.y);
-  SDL::glTexCoord2f(1.0f, 1.0f), SDL::glVertex2f(max.x, min.y);
-  SDL::glTexCoord2f(0.0f, 1.0f), SDL::glVertex2f(min.x, min.y);
-  SDL::glEnd();
+pair<unsigned, unsigned> FXRenderer::fboIds() const {
+  if (blendFBO && addFBO)
+    return make_pair(blendFBO->texId, addFBO->texId);
+  return make_pair(0u, 0u);
+}
+
+IVec2 FXRenderer::fboSize() const {
+  return blendFBO ? IVec2(blendFBO->width, blendFBO->height) : IVec2();
 }
 
 void FXRenderer::drawParticles(const View& view, BlendMode blendMode) {
