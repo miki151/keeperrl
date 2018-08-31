@@ -33,7 +33,7 @@ struct ParticleDef {
   vector<Curve<FVec3>> colorCurves;
 
   // TODO: option to select subRect for randomization
-  TextureName textureName;
+  TextureName textureName = TextureName(0);
 };
 
 // Defines behaviour of a particle system emitter.
