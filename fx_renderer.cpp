@@ -57,9 +57,10 @@ FXRenderer::~FXRenderer() { s_instance = nullptr; }
 void FXRenderer::initFramebuffer(IVec2 size) {
   if (!Framebuffer::isExtensionAvailable())
     return;
-  if (!framebuffer || framebuffer->width != size.x || framebuffer->height != size.y) {
+  if (!blendFBO || blendFBO->width != size.x || blendFBO->height != size.y) {
     INFO << "FX: creating FBO (" << size.x << ", " << size.y << ")";
-    framebuffer = std::make_unique<Framebuffer>(size.x, size.y);
+    blendFBO = std::make_unique<Framebuffer>(size.x, size.y);
+    addFBO = std::make_unique<Framebuffer>(size.x, size.y);
   }
 }
 
@@ -108,62 +109,61 @@ void FXRenderer::draw(float zoom, float offsetX, float offsetY, int w, int h) {
   SDL::glDisable(GL_CULL_FACE);
   SDL::glEnable(GL_TEXTURE_2D);
 
-  // Problem: FBO mode doesn't work well for particles blender normally
-  if (framebuffer && useFramebuffer) {
-    framebuffer->bind();
-
+  if (blendFBO && addFBO && useFramebuffer) {
     pushOpenglView();
+    FVec2 fboOffset = -FVec2(fboView.min() * nominalSize);
+
+    blendFBO->bind();
     SDL::glPushAttrib(GL_ENABLE_BIT);
     SDL::glDisable(GL_SCISSOR_TEST);
-    setupOpenglView(fboScreenSize.x, fboScreenSize.y, 1.0f);
+    setupOpenglView(blendFBO->width, blendFBO->height, 1.0f);
 
-    SDL::glClearColor(0.0f, 0.0f, 0.0f, 0.f);
+    SDL::glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     SDL::glClear(GL_COLOR_BUFFER_BIT);
+    SDL::glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ZERO, GL_ONE_MINUS_SRC_ALPHA);
+    drawParticles({1.0f, fboOffset, fboScreenSize}, BlendMode::normal);
 
-    FVec2 fboOffset = -FVec2(fboView.min() * nominalSize);
+    addFBO->bind();
+    SDL::glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    SDL::glClear(GL_COLOR_BUFFER_BIT);
+    SDL::glBlendFunc(GL_ONE, GL_ONE);
     drawParticles({1.0f, fboOffset, fboScreenSize}, BlendMode::additive);
-
-    // TODO: positioning is wrong for non-integral zoom values
-    FVec2 c1 = FVec2(fboView.min() * nominalSize * zoom) + view.offset;
-    FVec2 c2 = FVec2(fboView.max() * nominalSize * zoom) + view.offset;
 
     Framebuffer::unbind();
     SDL::glPopAttrib();
     popOpenglView();
 
+    // TODO: positioning is wrong for non-integral zoom values
+    FVec2 c1 = FVec2(fboView.min() * nominalSize * zoom) + view.offset;
+    FVec2 c2 = FVec2(fboView.max() * nominalSize * zoom) + view.offset;
+
     SDL::glBlendFunc(GL_ONE, GL_ONE);
-    SDL::glBindTexture(GL_TEXTURE_2D, framebuffer->texId);
-    SDL::glBegin(GL_QUADS);
-    SDL::glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-    SDL::glTexCoord2f(0.0f, 0.0f), SDL::glVertex2f(c1.x, c2.y);
-    SDL::glTexCoord2f(1.0f, 0.0f), SDL::glVertex2f(c2.x, c2.y);
-    SDL::glTexCoord2f(1.0f, 1.0f), SDL::glVertex2f(c2.x, c1.y);
-    SDL::glTexCoord2f(0.0f, 1.0f), SDL::glVertex2f(c1.x, c1.y);
-    SDL::glEnd();
+    SDL::glBindTexture(GL_TEXTURE_2D, addFBO->texId);
+    drawQuad(c1, c2);
+
+    SDL::glBlendFunc(GL_ONE, GL_SRC_ALPHA);
+    SDL::glBindTexture(GL_TEXTURE_2D, blendFBO->texId);
+    drawQuad(c1, c2);
   } else {
+    SDL::glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    drawParticles(view, BlendMode::normal);
+    SDL::glBlendFunc(GL_ONE, GL_ONE);
     drawParticles(view, BlendMode::additive);
   }
-
-  drawParticles(view, BlendMode::normal);
 
   SDL::glPopAttrib();
   SDL::glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   CHECK_OPENGL_ERROR();
 }
 
-void FXRenderer::setBlendingMode(BlendMode bm) {
-  if (framebuffer) {
-    if (bm == BlendMode::normal)
-      SDL::glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    else
-      SDL::glBlendFunc(GL_ONE, GL_ONE);
-    return;
-  }
-
-  if (bm == BlendMode::normal)
-    SDL::glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  else
-    SDL::glBlendFunc(GL_ONE, GL_ONE);
+void FXRenderer::drawQuad(FVec2 min, FVec2 max) {
+  SDL::glBegin(GL_QUADS);
+  SDL::glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+  SDL::glTexCoord2f(0.0f, 0.0f), SDL::glVertex2f(min.x, max.y);
+  SDL::glTexCoord2f(1.0f, 0.0f), SDL::glVertex2f(max.x, max.y);
+  SDL::glTexCoord2f(1.0f, 1.0f), SDL::glVertex2f(max.x, min.y);
+  SDL::glTexCoord2f(0.0f, 1.0f), SDL::glVertex2f(min.x, min.y);
+  SDL::glEnd();
 }
 
 void FXRenderer::drawParticles(const View& view, BlendMode blendMode) {
@@ -181,7 +181,6 @@ void FXRenderer::drawParticles(const View& view, BlendMode blendMode) {
   SDL::glTexCoordPointer(2, GL_FLOAT, 0, drawBuffers->texCoords.data());
   SDL::glColorPointer(4, GL_UNSIGNED_BYTE, 0, drawBuffers->colors.data());
 
-  setBlendingMode(blendMode);
   for (auto& elem : drawBuffers->elements) {
     auto& tdef = mgr[elem.texName];
     if (tdef.blendMode != blendMode)
@@ -191,7 +190,6 @@ void FXRenderer::drawParticles(const View& view, BlendMode blendMode) {
     SDL::glDrawArrays(GL_QUADS, elem.firstVertex, elem.numVertices);
   }
 
-  // TODO: check OpenGL errors ?
   SDL::glDisableClientState(GL_VERTEX_ARRAY);
   SDL::glDisableClientState(GL_TEXTURE_COORD_ARRAY);
   SDL::glDisableClientState(GL_COLOR_ARRAY);

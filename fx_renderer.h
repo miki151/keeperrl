@@ -26,10 +26,10 @@ public:
   private:
   struct View;
   IRect visibleTiles(const View&);
+  void drawQuad(FVec2, FVec2);
 
   void initFramebuffer(IVec2);
   void drawParticles(const View&, BlendMode);
-  void setBlendingMode(BlendMode);
 
   FXManager& mgr;
   vector<Texture> textures;
@@ -39,6 +39,6 @@ public:
   void applyTexScale();
 
   unique_ptr<DrawBuffers> drawBuffers;
-  unique_ptr<Framebuffer> framebuffer;
+  unique_ptr<Framebuffer> blendFBO, addFBO;
 };
 }
