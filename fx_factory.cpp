@@ -163,18 +163,21 @@ static void addExplosionEffect(FXManager &mgr) {
   // TODO: tutaj trzeba zrobić tak, żeby cząsteczki które spawnują się później
   // zaczynały z innym kolorem
   EmitterDef edef;
-  edef.strength = 5.0f;
-  edef.frequency = 30.0f;
+  edef.strength = 15.0f;
+  edef.frequency = 40.0f;
 
   ParticleDef pdef;
-  pdef.life = 0.8f;
-  pdef.size = {{5.0f, 30.0f}};
+  pdef.life = 0.6f;
+  pdef.size = {{15.0f, 20.0f}};
 
-  IColor color(137, 106, 40);
-  pdef.color = {{0.0f, 0.1f, 1.0f}, {FVec3(0.0f), color.rgb(), FVec3(0.0f)}};
-  pdef.textureName = TextureName::CLOUDS_ADD;
+  // TODO: something's wrong with color interpolation here
+  // (try setting color2 to (200, 20, 20) and use only keys: 0.7 & 1.0)
+  IColor color1(137, 76, 25), color2(200, 0, 0);
+  pdef.color = {{0.0f, 0.7f, 1.0f}, {color1.rgb(), color1.rgb(), color2.rgb()}};
+  pdef.alpha = {{0.0f, 0.2f, 0.8f, 1.0f}, {0.0f, 1.0f, 1.0f, 0.0f}};
+  pdef.textureName = TextureName::FLAMES;
 
-  SubSystemDef ssdef(pdef, edef, 0.0f, 0.3f);
+  SubSystemDef ssdef(pdef, edef, 0.0f, 0.35f);
   ssdef.maxTotalParticles = 20;
 
   ParticleSystemDef psdef;
@@ -488,8 +491,8 @@ static void addFireEffect(FXManager& mgr) {
     pdef.life = 0.7f;
     pdef.size = 8.0f;
 
-    pdef.color = {{0.0f, 0.2f, 0.8f, 1.0f},
-                  {FVec3(0.0f), IColor(155, 85, 30).rgb(), IColor(45, 35, 60).rgb(), FVec3(0.0f)}};
+    pdef.color = {{IColor(155, 85, 30).rgb(), IColor(45, 35, 60).rgb()}};
+    pdef.alpha = {{0.0f, 0.2f, 0.8f, 1.0f}, {0.0f, 1.0f, 1.0f, 0.0f}};
     pdef.textureName = TextureName::FLAMES;
 
     SubSystemDef ssdef(pdef, edef, 0.0f, 1.0f);
@@ -555,22 +558,23 @@ static void addFireballEffect(FXManager& mgr) {
 
   // TODO: this should depend on vector length ?
   static constexpr float flightTime = 0.4f;
+  Curve<float> movementCurve = {{0.0f, 0.0f, 0.2f, 0.6f, 1.0f}, InterpType::cubic};
 
   { // Flying ball of fire
     EmitterDef edef;
     edef.strength = 15.0f;
-    edef.frequency = 30.0f;
+    edef.frequency = 80.0f;
     edef.source = FVec2(0.0f);
     edef.rotSpeed = {{0.3f, 0.1f}};
+    edef.initialSpawnCount = 5;
 
     ParticleDef pdef;
     pdef.life = 0.7f;
     pdef.size = 12.0f;
-    pdef.alpha = 0.7f;
-
-    pdef.color = {{0.0f, 0.2f, 0.8f, 1.0f},
-                  {FVec3(0.0f), IColor(155, 85, 30).rgb(), IColor(45, 35, 30).rgb(), FVec3(0.0f)}};
+    pdef.color = {{IColor(155, 85, 30).rgb(), IColor(45, 35, 30).rgb()}};
+    pdef.alpha = {{0.0f, 0.2f, 0.8f, 1.0f}, {0.0f, 1.0f, 1.0f, 0.0f}};
     pdef.textureName = TextureName::FLAMES_BLURRED;
+    pdef.scalarCurves.emplace_back(movementCurve);
 
     SubSystemDef ssdef(pdef, edef, 0.0f, flightTime);
     ssdef.prepareFunc = [](AnimationContext& ctx, EmissionState& em) {
@@ -590,7 +594,8 @@ static void addFireballEffect(FXManager& mgr) {
     ssdef.drawFunc = [](DrawContext& ctx, const Particle& pinst, DrawParticle& out) {
       auto temp = pinst;
       // TODO: add curve that lerps toward goal ?
-      temp.pos += min<float>(pow(ctx.ps.animTime / flightTime, 1.5f), 1.0f) * ctx.ps.targetOff;
+      float flightPos = min(ctx.ps.animTime / flightTime, 1.0f);
+      temp.pos += ctx.pdef.scalarCurves[0].sample(flightPos) * ctx.ps.targetOff;
       defaultDrawParticle(ctx, temp, out);
     };
 
@@ -609,8 +614,8 @@ static void addFireballEffect(FXManager& mgr) {
     pdef.size = 12.0f;
     pdef.alpha = 0.7f;
 
-    pdef.color = {{0.0f, 0.2f, 0.8f, 1.0f},
-                  {FVec3(0.0f), IColor(155, 85, 30).rgb(), IColor(45, 35, 30).rgb(), FVec3(0.0f)}};
+    pdef.color = {{IColor(155, 85, 30).rgb(), IColor(45, 35, 30).rgb()}};
+    pdef.alpha = {{0.0f, 0.2f, 0.8f, 1.0f}, {0.0f, 1.0f, 1.0f, 0.0f}};
     pdef.textureName = TextureName::FLAMES_BLURRED;
 
     SubSystemDef ssdef(pdef, edef, flightTime - 0.05f, flightTime + 0.3f);
@@ -629,6 +634,43 @@ static void addFireballEffect(FXManager& mgr) {
       pinst.pos += ctx.ps.targetOff;
     };
 
+    psdef.subSystems.emplace_back(ssdef);
+  }
+
+  { // Smoke
+    EmitterDef edef;
+    edef.strength = 10.0f;
+    edef.setDirectionSpread(-fconstant::pi * 0.5f, 0.2f);
+    edef.frequency = 30.0f;
+    edef.source = FRect(-3, 2, -1, 3);
+    edef.rotSpeed = 0.05f;
+
+    ParticleDef pdef;
+    pdef.life = 0.7f;
+    pdef.size = {{12.0f, 30.0f}};
+    pdef.alpha = {{0.0f, 0.1f, 1.0f}, {0.0f, 0.3f, 0.0f}, InterpType::cosine};
+
+    pdef.color = {{0.0f, 0.5f, 1.0f}, {FVec3(0.0f), FVec3(0.3f), FVec3(0.0f)}};
+    pdef.textureName = TextureName::CLOUDS_SOFT_BORDERS;
+    pdef.scalarCurves.emplace_back(movementCurve);
+
+    SubSystemDef ssdef(pdef, edef, 0.0f, flightTime);
+    ssdef.prepareFunc = [](AnimationContext& ctx, EmissionState& em) {
+      float freq = defaultPrepareEmission(ctx, em);
+      float mod = ctx.ps.params.scalar[0];
+      return freq * (1.0f + mod * 2.0f);
+    };
+
+    ssdef.emitFunc = [](AnimationContext& ctx, EmissionState& em, Particle& pinst) {
+      defaultEmitParticle(ctx, em, pinst);
+      float flightPos = min(ctx.ps.animTime / flightTime, 1.0f);
+      pinst.pos += ctx.pdef.scalarCurves[0].sample(flightPos) * ctx.ps.targetOff;
+
+      float mod = ctx.ps.params.scalar[0];
+      pinst.pos.x *= (1.0f + mod);
+      pinst.pos.y -= mod * 6.0f;
+      pinst.movement *= (1.0f + mod);
+    };
     psdef.subSystems.emplace_back(ssdef);
   }
 
