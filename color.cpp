@@ -63,10 +63,6 @@ Color Color::f(double r, double g, double b, double a) {
   return Color(r * 255, g * 255, b * 255, a * 255);
 }
 
-void Color::applyGl() const {
-  SDL::glColor4f((float)r / 255, (float)g / 255, (float)b / 255, (float)a / 255);
-}
-
 Color Color::operator*(Color c2) {
   return Color(r * c2.r / 255, g * c2.g / 255, b * c2.b / 255, a * c2.a / 255);
 }

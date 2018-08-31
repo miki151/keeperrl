@@ -23,7 +23,6 @@ struct Color : public SDL::SDL_Color {
   static Color f(double, double, double, double = 1.0);
   Color operator*(Color);
   Color();
-  void applyGl() const;
 
   bool operator==(const Color&) const;
 

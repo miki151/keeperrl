@@ -1,6 +1,7 @@
 #include "debug.h"
 #include "opengl.h"
 #include "util.h"
+#include "color.h"
 
 using SDL::GLenum;
 using SDL::GLuint;
@@ -153,4 +154,8 @@ void popOpenglView() {
   SDL::glPopMatrix();
   SDL::glMatrixMode(GL_MODELVIEW);
   SDL::glPopMatrix();
+}
+
+void glColor(const Color& col) {
+  SDL::glColor4f((float)col.r / 255, (float)col.g / 255, (float)col.b / 255, (float)col.a / 255);
 }
