@@ -16,6 +16,7 @@
 #pragma once
 
 #include "util.h"
+#include "opengl.h"
 #include "sdl.h"
 #include "color.h"
 #include "file_path.h"
