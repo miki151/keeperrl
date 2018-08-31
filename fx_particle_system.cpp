@@ -166,10 +166,8 @@ void defaultDrawParticle(DrawContext &ctx, const Particle &pinst, DrawParticle &
   FVec2 size(pdef.size.sample(ptime) * pinst.size);
   float alpha = pdef.alpha.sample(ptime);
   FVec3 colorMul = ctx.ps.params.color[0];
-  if (ctx.tdef.blendMode == BlendMode::additive) {
+  if (ctx.tdef.blendMode == BlendMode::additive)
     colorMul *= alpha;
-    alpha = 1.0f;
-  }
 
   FColor color(pdef.color.sample(ptime) * colorMul, alpha);
   out.positions = ctx.quadCorners(pos, size, pinst.rot);

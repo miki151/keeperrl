@@ -126,25 +126,59 @@ void FXRenderer::draw(float zoom, float offsetX, float offsetY, int w, int h) {
     addFBO->bind();
     SDL::glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     SDL::glClear(GL_COLOR_BUFFER_BIT);
-    SDL::glBlendFunc(GL_ONE, GL_ONE);
+
+    /* // Mode toggler; useful for testing
+	static bool mode0 = false;
+	static double time = fwk::getTime();
+	if(fwk::getTime() - time > 4.0) {
+		time = fwk::getTime();
+		mode0 ^= 1;
+	}*/
+
+    // TODO: Each effect could control how alpha builds up
+    SDL::glBlendFuncSeparate(GL_ONE, GL_ONE, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
     drawParticles({1.0f, fboOffset, fboScreenSize}, BlendMode::additive);
 
     Framebuffer::unbind();
     SDL::glPopAttrib();
     popOpenglView();
 
+    glColor(Color::WHITE);
+
+    int defaultMode = 0, defaultCombine = 0;
+    SDL::glGetTexEnviv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, &defaultMode);
+    SDL::glGetTexEnviv(GL_TEXTURE_ENV, GL_COMBINE_RGB, &defaultCombine);
+
     // TODO: positioning is wrong for non-integral zoom values
     FVec2 c1 = FVec2(fboView.min() * nominalSize * zoom) + view.offset;
     FVec2 c2 = FVec2(fboView.max() * nominalSize * zoom) + view.offset;
 
-    SDL::glBlendFunc(GL_ONE, GL_ONE);
-    SDL::glBindTexture(GL_TEXTURE_2D, addFBO->texId);
-    glColor(Color::WHITE);
-    glQuad(c1.x, c1.y, c2.x, c2.y);
-
     SDL::glBlendFunc(GL_ONE, GL_SRC_ALPHA);
     SDL::glBindTexture(GL_TEXTURE_2D, blendFBO->texId);
     glQuad(c1.x, c1.y, c2.x, c2.y);
+
+    // Here we're performing blend-add:
+    // - for high alpha values we're blending
+    // - for low alpha values we're adding
+    // For this to work nicely, additive textures need properly prepared alpha channel
+    SDL::glBindTexture(GL_TEXTURE_2D, addFBO->texId);
+    SDL::glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    // These states multiply alpha by itself
+    SDL::glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
+    SDL::glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA, GL_MODULATE);
+    SDL::glTexEnvi(GL_TEXTURE_ENV, GL_SRC0_ALPHA, GL_TEXTURE);
+    SDL::glTexEnvi(GL_TEXTURE_ENV, GL_SRC1_ALPHA, GL_TEXTURE);
+    SDL::glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA, GL_SRC_ALPHA);
+    SDL::glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_ALPHA, GL_SRC_ALPHA);
+    glQuad(c1.x, c1.y, c2.x, c2.y);
+
+    // Here we should really multiply by (1 - a), not (1 - a^2), but it looks better
+    SDL::glBlendFunc(GL_ONE_MINUS_SRC_ALPHA, GL_ONE);
+    glQuad(c1.x, c1.y, c2.x, c2.y);
+
+    SDL::glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, defaultMode);
+    SDL::glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB, defaultCombine);
   } else {
     SDL::glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     drawParticles(view, BlendMode::normal);
