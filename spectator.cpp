@@ -8,6 +8,7 @@
 #include "creature.h"
 #include "view_index.h"
 #include "game.h"
+#include "view_object.h"
 
 Spectator::Spectator(WLevel l) : level(l) {
 }

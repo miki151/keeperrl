@@ -323,8 +323,8 @@ bool MapGui::onMouseMove(Vec2 v) {
 
 optional<MapGui::CreatureInfo> MapGui::getCreature(Vec2 mousePos) {
   auto info = getHighlightedInfo(layout->getSquareSize(), clock->getRealMillis());
-  if (info.tilePos && info.creaturePos && info.object && info.object->getCreatureId())
-    return CreatureInfo {*info.object->getCreatureId(), info.object->id(), *info.tilePos};
+  if (info.tilePos && info.creaturePos && info.object && info.object->hasModifier(ViewObject::Modifier::CREATURE))
+    return CreatureInfo {UniqueEntity<Creature>::Id(*info.object->getGenericId()), info.object->id(), *info.tilePos};
   else
     return none;
 }
@@ -455,9 +455,9 @@ Vec2 MapGui::getMovementOffset(const ViewObject& object, Vec2 size, double time,
     state = (time - movementInfo.tBegin) / (movementInfo.tEnd - movementInfo.tBegin);
     const double stopTime = movementInfo.type == MovementInfo::Type::MOVE ? 0.0 : 0.3;
     double stopTime1 = stopTime / 2;
-    if (auto id = object.getCreatureId())
+    if (auto id = object.getGenericId())
       // randomize the animation time frame a bit so creatures don't move synchronously
-      stopTime1 += -stopTime / 2 + (abs(id->getHash()) % 100) * 0.01 * stopTime;
+      stopTime1 += -stopTime / 2 + (std::abs(*id) % 100) * 0.01 * stopTime;
     double stopTime2 = stopTime - stopTime1;
     state = min(1.0, max(0.0, (state - stopTime1) / (1.0 - stopTime1 - stopTime2)));
     INFO << "Anim time b: " << movementInfo.tBegin << " e: " << movementInfo.tEnd << " t: " << time;
@@ -496,8 +496,8 @@ void MapGui::drawCreatureHighlights(Renderer& renderer, const ViewObject& object
   } else
   if (object.hasModifier(ViewObject::Modifier::TEAM_HIGHLIGHT))
     drawCreatureHighlight(renderer, pos, sz, getHighlight(Color::YELLOW));
-  if (auto id = object.getCreatureId())
-    if (isCreatureHighlighted(*id))
+  if (object.hasModifier(ViewObject::Modifier::CREATURE))
+    if (isCreatureHighlighted(*object.getGenericId()))
       drawCreatureHighlight(renderer, pos, sz, getHighlight(Color::YELLOW));
 }
 
@@ -545,8 +545,8 @@ void MapGui::drawHealthBar(Renderer& renderer, Vec2 pos, Vec2 size, const ViewOb
 
 void MapGui::considerWoundedAnimation(const ViewObject& object, Color& color, milliseconds curTimeReal) {
   const auto woundedAnimLength = milliseconds{40};
-  if (auto id = object.getCreatureId())
-    if (auto time = woundedInfo.getMaybe(*id))
+  if (object.hasModifier(ViewObject::Modifier::CREATURE))
+    if (auto time = woundedInfo.getMaybe(*object.getGenericId()))
       if (*time > curTimeReal - woundedAnimLength)
         color = Color::RED;
 }
@@ -627,21 +627,15 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
     if (object.hasModifier(ViewObject::Modifier::LOCKED))
       renderer.drawTile(pos + move, Tile::getTile(ViewId::KEY, spriteMode).getSpriteCoord(), size);
 
-    if (fxesAvailable) {
-      float fxPosX = tilePos.x + move.x / (float)size.x;
-      float fxPosY = tilePos.y + move.y / (float)size.y;
-      auto viewObjId = FXViewManager::makeId(object);
-      fxViewManager->addEntity(viewObjId, fxPosX, fxPosY);
-
-      if (burningVal > 0.0f)
-        fxViewManager->addFX(viewObjId, FXDef{FXName::FIRE, Color::WHITE, min(1.0f, burningVal * 0.05f)});
-      if (auto creatureId = object.getCreatureId()) {
-        auto gid = FXViewManager::makeId(*creatureId);
-
-        fxViewManager->addEntity(gid, fxPosX, fxPosY);
+    if (fxesAvailable)
+      if (auto genericId = object.getGenericId()) {
+        float fxPosX = tilePos.x + move.x / (float)size.x;
+        float fxPosY = tilePos.y + move.y / (float)size.y;
+        fxViewManager->addEntity(*genericId, fxPosX, fxPosY);
+        if (burningVal > 0.0f)
+          fxViewManager->addFX(*genericId, FXDef{FXName::FIRE, Color::WHITE, min(1.0f, burningVal * 0.05f)});
         for (auto fx : object.particleEffects)
-          fxViewManager->addFX(gid, FXDef{fx});
-      }
+          fxViewManager->addFX(*genericId, FXDef{fx});
     }
   } else {
     Vec2 tilePos = pos + movement + Vec2(size.x / 2, -3);

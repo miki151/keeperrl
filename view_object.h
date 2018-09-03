@@ -76,17 +76,13 @@ class ViewObject {
   const MovementInfo& getLastMovementInfo() const;
   Vec2 getMovementInfo(int moveCounter) const;
 
-  void setCreatureId(UniqueEntity<Creature>::Id);
-  optional<UniqueEntity<Creature>::Id> getCreatureId() const;
+  void setGenericId(GenericId);
+  optional<GenericId> getGenericId() const;
 
   void setClickAction(const string&);
   const string& getClickAction() const;
   void setExtendedActions(const vector<string>&);
   const vector<string>& getExtendedActions() const;
-
-  const static ViewObject& unknownMonster();
-  const static ViewObject& empty();
-  const static ViewObject& mana();
 
   SERIALIZATION_DECL(ViewObject);
 
@@ -101,7 +97,7 @@ class ViewObject {
   ViewLayer SERIAL(viewLayer);
   optional<string> SERIAL(description);
   optional<Dir> SERIAL(attachmentDir);
-  optional<UniqueEntity<Creature>::Id> SERIAL(creatureId);
+  optional<GenericId> SERIAL(genericId);
   string SERIAL(goodAdjectives);
   string SERIAL(badAdjectives);
   optional<CreatureAttributes> SERIAL(creatureAttributes);

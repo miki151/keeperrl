@@ -28,14 +28,14 @@ ViewIndex::ViewIndex() {
 ViewIndex::~ViewIndex() {
 }
 
-void ViewIndex::insert(const ViewObject& obj) {
+void ViewIndex::insert(ViewObject obj) {
   PROFILE;
   int ind = objIndex[int(obj.layer())];
   if (ind < 100)
-    objects[ind] = obj;
+    objects[ind] = std::move(obj);
   else {
     objIndex[int(obj.layer())] = objects.size();
-    objects.push_back(obj);
+    objects.push_back(std::move(obj));
   }
 }
 

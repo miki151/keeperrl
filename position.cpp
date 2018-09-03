@@ -372,8 +372,11 @@ void Position::getViewIndex(ViewIndex& index, WConstCreature viewer) const {
     if (isUnavailable())
       index.setHighlight(HighlightType::UNAVAILABLE);
     for (auto furniture : getFurniture())
-      if (furniture->isVisibleTo(viewer) && furniture->getViewObject())
-        index.insert(*furniture->getViewObject());
+      if (furniture->isVisibleTo(viewer) && furniture->getViewObject()) {
+        auto obj = *furniture->getViewObject();
+        obj.setGenericId(level->getUniqueId() + coord.x * 2000 + coord.y);
+        index.insert(std::move(obj));
+      }
     if (index.noObjects())
       index.insert(ViewObject(ViewId::EMPTY, ViewLayer::FLOOR_BACKGROUND));
   }
@@ -645,13 +648,13 @@ void Position::setNeedsRenderUpdate(bool s) const {
     level->setNeedsRenderUpdate(getCoord(), s);
 }
 
-const ViewObject& Position::getViewObject() const {
+ViewId Position::getTopViewId() const {
   PROFILE;
   for (auto layer : ENUM_ALL_REVERSE(FurnitureLayer))
     if (auto furniture = getFurniture(layer))
       if (auto& obj = furniture->getViewObject())
-        return *obj;
-  return ViewObject::empty();
+        return obj->id();
+  return ViewId::EMPTY;
 }
 
 void Position::forbidMovementForTribe(TribeId t) {

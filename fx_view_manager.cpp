@@ -3,16 +3,6 @@
 #include "fx_base.h"
 #include "fx_name.h"
 
-// TODO: generate proper IDs for objects
-auto FXViewManager::makeId(UniqueEntity<Creature>::Id id) -> GenericId {
-  GenericId out(id.getHash());
-  out |= 0x1ull << 63;
-  return out;
-}
-
-auto FXViewManager::makeId(const ViewObject& object) -> GenericId {
-  return (GenericId)&object & ~(0x1ull << 63);
-}
 
 void FXViewManager::EntityInfo::clearVisibility() {
   isVisible = false;
@@ -64,7 +54,7 @@ void FXViewManager::EntityInfo::updateFX(GenericId gid) {
     auto& effect = effects[n];
     bool removeDead = effect.isDying && !fx::isAlive(effect.id);
 
-	if(effect.isDying)
+    if (effect.isDying)
       fx::setPos(effects[n].id, x, y);
 
     if ((!effect.isDying && !effect.isVisible) || (effect.isDying && immediateKill)) {
@@ -74,7 +64,7 @@ void FXViewManager::EntityInfo::updateFX(GenericId gid) {
     }
 
     if (immediateKill || removeDead) {
-	  if(removeDead)
+      if (removeDead)
         INFO << "FX view: remove: " << EnumInfo<FXName>::getString(effect.name) << " for: " << gid;
       effects[n--] = effects[--numEffects];
     }

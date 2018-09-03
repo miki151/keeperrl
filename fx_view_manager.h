@@ -15,10 +15,6 @@ struct FXDef {
 
 class FXViewManager {
   public:
-  using GenericId = unsigned long long;
-  static GenericId makeId(UniqueEntity<Creature>::Id);
-  static GenericId makeId(const ViewObject&);
-
   void beginFrame();
   void addEntity(GenericId, float x, float y);
 

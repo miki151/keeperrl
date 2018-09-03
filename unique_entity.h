@@ -18,22 +18,26 @@
 #include "enums.h"
 #include "serialization.h"
 
+using GenericId = long long;
+
 template<typename T>
 class UniqueEntity {
   public:
   class Id {
     public:
     Id();
+    Id(GenericId);
     bool operator == (const Id&) const;
     bool operator != (const Id&) const;
     bool operator < (const Id&) const;
     bool operator > (const Id&) const;
     int getHash() const;
+    GenericId getGenericId() const;
     template <class Archive> 
     void serialize(Archive& ar, const unsigned int version);
 
     private:
-    long long SERIAL(key);
+    GenericId SERIAL(key);
     int SERIAL(hash);
   };
   Id getUniqueId() const;
@@ -41,11 +45,11 @@ class UniqueEntity {
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version);
 
-  static void offsetForSerialization(long long offset);
+  static void offsetForSerialization(GenericId offset);
   static void clearOffset();
 
   private:
   Id SERIAL(id);
-  static long long offset;
+  static GenericId offset;
 };
 

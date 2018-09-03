@@ -19,7 +19,7 @@
 #include "view_id.h"
 #include "experience_type.h"
 
-SERIALIZE_DEF(ViewObject, resource_id, viewLayer, description, modifiers, attributes, attachmentDir, creatureId, goodAdjectives, badAdjectives, creatureAttributes, status, clickAction, extendedActions, portalVersion)
+SERIALIZE_DEF(ViewObject, resource_id, viewLayer, description, modifiers, attributes, attachmentDir, genericId, goodAdjectives, badAdjectives, creatureAttributes, status, clickAction, extendedActions, portalVersion)
 
 SERIALIZATION_CONSTRUCTOR_IMPL(ViewObject);
 
@@ -31,12 +31,12 @@ ViewObject::ViewObject(ViewId id, ViewLayer l)
     : resource_id(id), viewLayer(l) {
 }
 
-void ViewObject::setCreatureId(UniqueEntity<Creature>::Id id) {
-  creatureId = id;
+void ViewObject::setGenericId(GenericId id) {
+  genericId = id;
 }
 
-optional<UniqueEntity<Creature>::Id> ViewObject::getCreatureId() const {
-  return creatureId;
+optional<GenericId> ViewObject::getGenericId() const {
+  return genericId;
 }
 
 void ViewObject::setClickAction(const string& s) {
@@ -70,7 +70,7 @@ const MovementInfo& ViewObject::getLastMovementInfo() const {
 Vec2 ViewObject::getMovementInfo(int moveCounter) const {
   if (!movementQueue.hasAny())
     return Vec2(0, 0);
-  CHECK(creatureId);
+  CHECK(genericId);
   return movementQueue.getTotalMovement(moveCounter);
 }
 
@@ -458,14 +458,4 @@ const string& ViewObject::getBadAdjectives() const {
 
 ViewId ViewObject::id() const {
   return resource_id;
-}
-
-const ViewObject& ViewObject::unknownMonster() {
-  static ViewObject ret(ViewId::UNKNOWN_MONSTER, ViewLayer::CREATURE);
-  return ret;
-}
-
-const ViewObject& ViewObject::empty() {
-  static ViewObject ret(ViewId::BORDER_GUARD, ViewLayer::FLOOR);
-  return ret;
 }

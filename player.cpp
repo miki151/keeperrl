@@ -903,7 +903,7 @@ void Player::getViewIndex(Vec2 pos, ViewIndex& index) const {
   if (canSee)
     position.getViewIndex(index, creature);
   else
-    index.setHiddenId(position.getViewObject().id());
+    index.setHiddenId(position.getTopViewId());
   if (!canSee)
     if (auto memIndex = getMemory().getViewIndex(position))
       index.mergeFromMemory(*memIndex);
@@ -945,7 +945,7 @@ void Player::getViewIndex(Vec2 pos, ViewIndex& index) const {
         object.setExtendedActions(extended);
       }
     } else if (creature->isUnknownAttacker(c))
-      index.insert(copyOf(ViewObject::unknownMonster()));
+      index.insert(ViewObject(ViewId::UNKNOWN_MONSTER, ViewLayer::CREATURE));
   }
   if (unknownLocations->contains(position))
     index.insert(ViewObject(ViewId::UNKNOWN_MONSTER, ViewLayer::TORCH2, "Surprise"));

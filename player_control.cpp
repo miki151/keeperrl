@@ -1541,7 +1541,7 @@ void PlayerControl::getSquareViewIndex(Position pos, bool canSee, ViewIndex& ind
   if (canSee)
     pos.getViewIndex(index, leader);
   else
-    index.setHiddenId(pos.getViewObject().id());
+    index.setHiddenId(pos.getTopViewId());
   if (WConstCreature c = pos.getCreature())
     if (canSee) {
       index.equipmentCounts = c->getEquipment().getCounts();
