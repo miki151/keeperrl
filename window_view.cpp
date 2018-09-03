@@ -142,11 +142,7 @@ void WindowView::initialize() {
       options,
       &gui));
   minimapGui.reset(new MinimapGui([this]() { inputQueue.push(UserInput(UserInputId::DRAW_LEVEL_MAP)); }));
-  auto icons = gui.centerHoriz(guiBuilder.drawMinimapIcons(gameInfo.tutorial));
-  auto iconsHeight = *icons->getPreferredHeight();
-  minimapDecoration = gui.margin(std::move(icons),
-      gui.stack(gui.rectangle(Color::BLACK), gui.miniWindow(),
-      gui.margins(gui.renderInBounds(SGuiElem(minimapGui)), 6)), iconsHeight, GuiFactory::MarginType::BOTTOM);
+  rebuildMinimapGui();
   resetMapBounds();
   guiBuilder.setMapGui(mapGui);
 }
@@ -356,8 +352,18 @@ Color getSpeedColor(int value) {
     return Color(255, max(0, 255 + (value - 100) * 4), max(0, 255 + (value - 100) * 4));
 }
 
+void WindowView::rebuildMinimapGui() {
+  auto icons = gui.centerHoriz(guiBuilder.drawMinimapIcons(gameInfo));
+  auto iconsHeight = *icons->getPreferredHeight();
+  minimapDecoration = gui.margin(std::move(icons),
+      gui.stack(gui.rectangle(Color::BLACK), gui.miniWindow(),
+      gui.margins(gui.renderInBounds(SGuiElem(minimapGui)), 6)), iconsHeight, GuiFactory::MarginType::BOTTOM);
+  resetMapBounds();
+}
+
 void WindowView::rebuildGui() {
   INFO << "Rebuilding UI";
+  rebuildMinimapGui();
   SGuiElem bottom, right;
   vector<GuiBuilder::OverlayInfo> overlays;
   int rightBarWidth = 0;

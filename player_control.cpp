@@ -2174,6 +2174,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
     case UserInputId::CHEAT_ATTRIBUTES:
       for (auto resource : ENUM_ALL(CollectiveResourceId))
         collective->returnResource(CostInfo(resource, 1000));
+      collective->getDungeonLevel().increaseLevel();
       break;
     case UserInputId::TUTORIAL_CONTINUE:
       if (tutorial)

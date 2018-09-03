@@ -174,6 +174,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   int getPopulationSize() const;
   int getMaxPopulation() const;
   const DungeonLevel& getDungeonLevel() const;
+  DungeonLevel& getDungeonLevel();
 
   vector<WCreature> getConsumptionTargets(WCreature consumer) const;
   void addAttack(const CollectiveAttack&);

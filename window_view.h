@@ -255,4 +255,5 @@ class WindowView: public View {
   FileSharing* bugreportSharing;
   DirectoryPath bugreportDir;
   string installId;
+  void rebuildMinimapGui();
 };

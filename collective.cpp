@@ -1389,5 +1389,9 @@ const DungeonLevel& Collective::getDungeonLevel() const {
   return dungeonLevel;
 }
 
+DungeonLevel& Collective::getDungeonLevel() {
+  return dungeonLevel;
+}
+
 REGISTER_TYPE(Collective)
 REGISTER_TYPE(ListenerTemplate<Collective>)

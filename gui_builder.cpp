@@ -394,12 +394,6 @@ SGuiElem GuiBuilder::drawBottomBandInfo(GameInfo& gameInfo) {
           return "population: " + toString(info.minionCount) + " / " +
           toString(info.minionLimit); }));
     bottomLine.addSpace(space);
-    bottomLine.addElemAuto(gui.stack(
-        gui.margins(gui.progressBar(Color::DARK_GREEN, info.dungeonLevelProgress), -6, -1, 0, -2),
-        gui.uiHighlightConditional([&]{ return info.blinkDungeonLevel; }),
-        gui.label("Malevolence lvl: " + toString(info.dungeonLevel)),
-        gui.button(getButtonCallback(UserInputId::TECHNOLOGY))
-    ));
     return gui.getListBuilder(28)
           .addElem(gui.centerHoriz(topLine.buildHorizontalList()))
           .addElem(gui.centerHoriz(bottomLine.buildHorizontalList()))
@@ -3408,24 +3402,35 @@ SGuiElem GuiBuilder::drawHighscores(const vector<HighscoreList>& list, Semaphore
 
 }
 
-SGuiElem GuiBuilder::drawMinimapIcons(const optional<TutorialInfo>& tutorialInfo) {
-  auto tutorialPredicate = [&tutorialInfo] {
+SGuiElem GuiBuilder::drawMinimapIcons(const GameInfo& gameInfo) {
+  auto tutorialPredicate = [&tutorialInfo = gameInfo.tutorial] {
     return tutorialInfo && tutorialInfo->highlights.contains(TutorialHighlight::MINIMAP_BUTTONS);
   };
-  return gui.minimapBar(
-      gui.preferredSize(48, 48, gui.stack(
-          getHintCallback({"Open world map. You can also press 't'."}),
-          gui.mouseHighlight2(gui.icon(GuiFactory::IconId::MINIMAP_WORLD2), gui.icon(GuiFactory::IconId::MINIMAP_WORLD1)),
-          gui.conditional(gui.blink(gui.icon(GuiFactory::IconId::MINIMAP_WORLD2)), tutorialPredicate),
-          gui.button(getButtonCallback(UserInputId::DRAW_WORLD_MAP), gui.getKey(SDL::SDLK_t))
-      )),
-      gui.preferredSize(48, 48, gui.stack(
-          getHintCallback({"Scroll to your character. You can also press 'k'."}),
-          gui.mouseHighlight2(gui.icon(GuiFactory::IconId::MINIMAP_CENTER2), gui.icon(GuiFactory::IconId::MINIMAP_CENTER1)),
-          gui.conditional(gui.blink(gui.icon(GuiFactory::IconId::MINIMAP_CENTER2)), tutorialPredicate),
-          gui.button(getButtonCallback(UserInputId::SCROLL_TO_HOME), gui.getKey(SDL::SDLK_k))
-          ))
-  );
+  auto lines = gui.getListBuilder(legendLineHeight);
+  if (gameInfo.infoType == GameInfo::InfoType::BAND) {
+    auto& info = *gameInfo.playerInfo.getReferenceMaybe<CollectiveInfo>();
+    lines.addElem(gui.translucentBackgroundWithBorder(gui.stack(
+        gui.margins(gui.progressBar(Color::DARK_GREEN, info.dungeonLevelProgress), -6, -1, 0, -2),
+        gui.uiHighlightConditional([&]{ return info.blinkDungeonLevel; }),
+        gui.centerHoriz(gui.label("Level " + toString(info.dungeonLevel + 1))),
+        gui.button(getButtonCallback(UserInputId::TECHNOLOGY))
+    )));
+  }
+  return lines.addElemAuto(
+      gui.minimapBar(
+        gui.preferredSize(48, 48, gui.stack(
+            getHintCallback({"Open world map. You can also press 't'."}),
+            gui.mouseHighlight2(gui.icon(GuiFactory::IconId::MINIMAP_WORLD2), gui.icon(GuiFactory::IconId::MINIMAP_WORLD1)),
+            gui.conditional(gui.blink(gui.icon(GuiFactory::IconId::MINIMAP_WORLD2)), tutorialPredicate),
+            gui.button(getButtonCallback(UserInputId::DRAW_WORLD_MAP), gui.getKey(SDL::SDLK_t))
+        )),
+        gui.preferredSize(48, 48, gui.stack(
+            getHintCallback({"Scroll to your character. You can also press 'k'."}),
+            gui.mouseHighlight2(gui.icon(GuiFactory::IconId::MINIMAP_CENTER2), gui.icon(GuiFactory::IconId::MINIMAP_CENTER1)),
+            gui.conditional(gui.blink(gui.icon(GuiFactory::IconId::MINIMAP_CENTER2)), tutorialPredicate),
+            gui.button(getButtonCallback(UserInputId::SCROLL_TO_HOME), gui.getKey(SDL::SDLK_k))
+            ))
+  )).buildVerticalList();
 }
 
 Rectangle GuiBuilder::getTextInputPosition() {
