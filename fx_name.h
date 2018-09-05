@@ -22,5 +22,6 @@ RICH_ENUM(FXName,
   SLOW,
   SLOW2,
   SPEED,
-  FLYING
+  FLYING,
+  FLYING2
 );
