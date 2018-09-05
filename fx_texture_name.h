@@ -8,6 +8,7 @@ enum class TextureName;
 
 RICH_ENUM(fx::TextureName,
   CIRCULAR,
+  CIRCULAR_STRONG,
   FLAKES_BORDERS,
   CLOUDS_SOFT,
   CLOUDS_SOFT_BORDERS,

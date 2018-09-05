@@ -833,43 +833,53 @@ static void addPeacefulnessEffect(FXManager &mgr) {
 }
 
 static void addSlowEffect(FXManager &mgr) {
-  EmitterDef edef;
-  edef.frequency = 10.0f;
-  edef.initialSpawnCount = 1.0f;
-  edef.setDirectionSpread(fconstant::pi * 0.5f, 0.0f);
-  edef.strength = 2.5f;
-  edef.source = FVec2(0.0f, -4.0f);
-
-  ParticleDef pdef;
-  pdef.life = 4.0f;
-  pdef.size = 10.0f;
-  pdef.alpha = {{0.0f, 0.1f, 0.8f, 1.0f}, {0.0, 0.7f, 0.7f, 0.0}};
-
-  pdef.color = FVec3(0.7f, 1.0f, 0.6f);
-  pdef.textureName = TextureName::CIRCULAR;
-
-  SubSystemDef ssdef(pdef, edef, 0.0f, 1.0f);
-  ssdef.emitFunc = [](AnimationContext &ctx, EmissionState &em, Particle &pinst) {
-    defaultEmitParticle(ctx, em, pinst);
-    pinst.rot = 0.0f;
-  };
-  ssdef.drawFunc = [](DrawContext &ctx, const Particle &pinst, DrawParticle &out) {
-    Particle temp(pinst);
-    FVec2 circlePos = angleToVector(12.0f - pinst.life * 3.0f);
-    temp.pos += circlePos * FVec2(10.0f, 4.0f);
-    defaultDrawParticle(ctx, temp, out);
-    float alphaMul = dot(circlePos, FVec2(0.0f, 1.0f));
-    float alpha = float(out.color.a) * clamp(alphaMul + 0.3f, 0.0f, 1.0f);
-    out.color.a = (unsigned char)(alpha);
-  };
-
   ParticleSystemDef psdef;
-  psdef.subSystems = {ssdef};
   psdef.isLooped = true;
   psdef.animLength = 1.0f;
 
-  mgr.addDef(FXName::SLOW, psdef);
+  {
+    EmitterDef edef;
+    edef.frequency = 10.0f;
+    edef.initialSpawnCount = 1.0f;
+    edef.setDirectionSpread(fconstant::pi * 0.5f, 0.0f);
+    edef.strength = 2.5f;
+    edef.source = FVec2(0.0f, -4.0f);
+
+    ParticleDef pdef;
+    pdef.life = 4.0f;
+    pdef.size = 10.0f;
+    pdef.alpha = {{0.0f, 0.1f, 0.8f, 1.0f}, {0.0, 0.7f, 0.7f, 0.0}};
+
+    pdef.color = FVec3(0.7f, 1.0f, 0.6f);
+    pdef.textureName = TextureName::CIRCULAR;
+
+    SubSystemDef ssdef(pdef, edef, 0.0f, 1.0f);
+    ssdef.emitFunc = [](AnimationContext& ctx, EmissionState& em, Particle& pinst) {
+      defaultEmitParticle(ctx, em, pinst);
+      pinst.rot = 0.0f;
+    };
+    ssdef.drawFunc = [](DrawContext& ctx, const Particle& pinst, DrawParticle& out) {
+      Particle temp(pinst);
+      FVec2 circlePos = angleToVector(10.0f - pinst.life * 3.0f);
+      temp.pos += circlePos * FVec2(10.0f, 4.0f);
+      defaultDrawParticle(ctx, temp, out);
+      float alphaMul = dot(circlePos, FVec2(0.0f, 1.0f));
+      float alpha = float(out.color.a) * clamp(alphaMul + 0.3f, 0.0f, 1.0f);
+      out.color.a = (unsigned char)(alpha);
+    };
+
+    psdef.subSystems = {ssdef};
+    mgr.addDef(FXName::SLOW, psdef);
+
+    ssdef.particle.textureName = TextureName::CIRCULAR_STRONG;
+    ssdef.particle.size = 5.0f;
+    ssdef.emitter.frequency = 5.0f;
+    psdef.subSystems = {ssdef};
+    mgr.addDef(FXName::SLOW2, psdef);
+  }
+
   mgr.genSnapshots(FXName::SLOW, {4.0f, 4.2f, 4.4f, 4.6f, 4.8f});
+  mgr.genSnapshots(FXName::SLOW2, {4.0f, 4.2f, 4.4f, 4.6f, 4.8f});
 }
 
 static void addSpeedEffect(FXManager &mgr) {
