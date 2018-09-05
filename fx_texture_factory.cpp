@@ -11,6 +11,10 @@ void FXManager::initializeTextureDef(TextureName name, TextureDef& def) {
     def.fileName = "circular.png";
     break;
 
+  case TextureName::CIRCULAR_STRONG:
+    def.fileName = "circular_strong.png";
+    break;
+
   case TextureName::FLAKES_BORDERS:
     def.fileName = "flakes_4x4_borders.png";
     def.tiles = {4, 4};
