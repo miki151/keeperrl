@@ -37,7 +37,14 @@ void FXManager::initializeTextureDef(TextureName name, TextureDef& def) {
 
   case TextureName::TORUS:
     def.fileName = "torus.png";
-    def.tiles = {1, 1};
+    break;
+
+  case TextureName::TORUS_BOTTOM:
+    def.fileName = "torus_bottom.png";
+    break;
+
+  case TextureName::TORUS_BOTTOM_BLURRED:
+    def.fileName = "torus_bottom_blurred.png";
     break;
 
   case TextureName::MAGIC_MISSILE:

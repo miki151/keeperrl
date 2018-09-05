@@ -982,6 +982,65 @@ static void addFlyingEffect(FXManager &mgr) {
   mgr.genSnapshots(FXName::FLYING, {1.0f, 1.4f, 1.8f}, {}, 4);
 }
 
+static void addFlying2Effect(FXManager& mgr) {
+  ParticleSystemDef psdef;
+  {
+    EmitterDef edef;
+    edef.frequency = 2.0f;
+    edef.strength = 24.0f;
+    edef.setDirectionSpread(-fconstant::pi * 0.5f, 0.f);
+    edef.source = FVec2(0.0f, 10.0f);
+
+    ParticleDef pdef;
+    pdef.life = 0.8f;
+    pdef.size = {{0.0f, 1.0f}, {32.0f, 24.0f}, InterpType::cosine};
+    pdef.alpha = {{0.0f, 0.25f, 0.7, 1.0f}, {0.0, 0.6, 0.2, 0.0}, InterpType::cosine};
+    pdef.color = FVec3(1.0f);
+    pdef.textureName = TextureName::TORUS_BOTTOM;
+
+    SubSystemDef ssdef(pdef, edef, 0.0f, 1.0f);
+    ssdef.emitFunc = [](AnimationContext& ctx, EmissionState& em, Particle& pinst) {
+      defaultEmitParticle(ctx, em, pinst);
+      pinst.rot = 0.0f;
+    };
+    psdef.subSystems.emplace_back(ssdef);
+  }
+
+  {
+    EmitterDef edef;
+    edef.frequency = 1.0f;
+    edef.source = FVec2(0.0f, 4.0f);
+    edef.initialSpawnCount = 1.0f;
+
+    ParticleDef pdef;
+    pdef.life = 1.5f;
+    pdef.size = 24.0f;
+    pdef.alpha = {{0.0f, 0.33333f, 0.6666f, 1.0f}, {0.0, 1.0, 1.0, 0.0}, InterpType::cosine};
+    pdef.color = FVec3(0.6f, 0.8f, 1.0f);
+    pdef.textureName = TextureName::TORUS_BOTTOM_BLURRED;
+
+    SubSystemDef ssdef(pdef, edef, 0.0f, 1.0f);
+    ssdef.emitFunc = [](AnimationContext& ctx, EmissionState& em, Particle& pinst) {
+      defaultEmitParticle(ctx, em, pinst);
+      pinst.rot = 0.0f;
+    };
+
+    ssdef.animateFunc = [](AnimationContext& ctx, Particle& pinst) {
+      defaultAnimateParticle(ctx, pinst);
+      if (!ctx.ps.isDying)
+        pinst.life = min(pinst.life, 1.0f);
+    };
+    ssdef.maxTotalParticles = 1;
+    psdef.subSystems.emplace_back(ssdef);
+  }
+
+  psdef.isLooped = true;
+  psdef.animLength = 1.0f;
+
+  mgr.addDef(FXName::FLYING2, psdef);
+  mgr.genSnapshots(FXName::FLYING2, {1.0f, 1.4f, 1.8f}, {}, 4);
+}
+
 void FXManager::initializeDefs() {
   addTestSimpleEffect(*this);
   addTestMultiEffect(*this);
@@ -1005,5 +1064,6 @@ void FXManager::initializeDefs() {
   addSlowEffect(*this);
   addSpeedEffect(*this);
   addFlyingEffect(*this);
+  addFlying2Effect(*this);
 };
 }
