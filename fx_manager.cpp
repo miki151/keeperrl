@@ -262,7 +262,7 @@ vector<DrawParticle> FXManager::genQuads() {
 }
 
 bool FXManager::valid(ParticleSystemId id) const {
-  return id >= 0 && id < (int)m_systems.size() && m_systems[id].spawnTime == id.spawnTime();
+  return id >= 0 && id < (int)m_systems.size() && m_systems[id].spawnTime == id.getSpawnTime();
 }
 
 bool FXManager::dead(ParticleSystemId id) const { return !valid(id) || m_systems[id].isDead; }
