@@ -28,8 +28,8 @@ public:
   void simulateStable(double timeDelta, int desiredFps = 60);
   void simulate(float timeDelta);
 
-  const auto& textureDefs() const { return m_textureDefs; }
-  const auto &systemDefs() const { return m_systemDefs; }
+  const auto& getTextureDefs() const { return textureDefs; }
+  const auto& getSystemDefs() const { return systemDefs; }
 
   const ParticleSystemDef& operator[](FXName) const;
   const TextureDef& operator[](TextureName) const;
@@ -46,8 +46,8 @@ public:
   ParticleSystemId addSystem(FXName, InitConfig);
 
   vector<ParticleSystemId> aliveSystems() const;
-  const auto &systems() const { return m_systems; }
-  auto &systems() { return m_systems; }
+  const auto& getSystems() const { return systems; }
+  auto& getSystems() { return systems; }
 
   vector<DrawParticle> genQuads();
 
@@ -74,16 +74,15 @@ public:
   void simulate(ParticleSystem &, float timeDelta);
   SubSystemContext ssctx(ParticleSystem &, int);
 
-  // TODO: remove m_
-  EnumMap<FXName, ParticleSystemDef> m_systemDefs;
-  EnumMap<FXName, vector<SnapshotGroup>> m_snapshotGroups;
-  EnumMap<TextureName, TextureDef> m_textureDefs;
+  EnumMap<FXName, ParticleSystemDef> systemDefs;
+  EnumMap<FXName, vector<SnapshotGroup>> snapshotGroups;
+  EnumMap<TextureName, TextureDef> textureDefs;
 
   // TODO: add simple statistics: num particles, instances, etc.
-  vector<ParticleSystem> m_systems;
-  unique_ptr<RandomGen> m_randomGen;
-  uint m_spawnClock = 1;
-  double m_accumFrameTime = 0.0f;
-  double m_oldTime = -1.0;
+  vector<ParticleSystem> systems;
+  unique_ptr<RandomGen> randomGen;
+  uint spawnClock = 1;
+  double accumFrameTime = 0.0f;
+  double oldTime = -1.0;
 };
 }

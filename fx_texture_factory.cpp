@@ -63,8 +63,8 @@ void FXManager::initializeTextureDef(TextureName name, TextureDef& def) {
 
 void FXManager::initializeTextureDefs() {
   for (auto name : ENUM_ALL(TextureName)) {
-    initializeTextureDef(name, m_textureDefs[name]);
-    m_textureDefs[name].validate();
+    initializeTextureDef(name, textureDefs[name]);
+    textureDefs[name].validate();
   }
 }
 
