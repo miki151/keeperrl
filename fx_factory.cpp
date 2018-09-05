@@ -287,30 +287,27 @@ static void addFeetDustEffect(FXManager &mgr) {
   // drugim parametrem jest kolor (choć chyba będzie uzywany tylko na piasku?)
 
   EmitterDef edef;
-  edef.source = FRect(-3, -0.5f, 3, 0.5f);
+  edef.source = FRect(-6, -6, 6, 6);
   edef.setStrengthSpread(17.5f, 2.5f);
   edef.setDirectionSpread(0.0f, 0.0f);
-  edef.frequency = 60.0f;
+  edef.frequency = 30.0f;
 
   ParticleDef pdef;
-  pdef.life = 1.25f;
-  pdef.size = {{0.0f, 0.1f, 1.0f}, {5.0f, 14.0f, 20.0f}, InterpType::quadratic};
+  pdef.life = 0.4f;
+  pdef.size = {{0.0f, 0.1f, 1.0f}, {5.0f, 10.0f, 14.0f}, InterpType::quadratic};
   pdef.alpha = {{0.0f, 0.05f, 0.2f, 1.0f}, {0.0f, 0.2f, 0.3f, 0.0f}};
   pdef.slowdown = {{0.0f, 0.2f}, {0.0f, 10.0f}};
-
-  FVec3 start_color(0.9), end_color(0.7);
-  pdef.color = {{start_color, end_color}};
+  pdef.color = FVec3(1, 0.9, 0.7);
   pdef.textureName = TextureName::CLOUDS_SOFT;
 
   SubSystemDef ssdef(pdef, edef, 0.0f, 0.2f);
-  // TODO: różna liczba początkowych cząsteczek
-  ssdef.maxTotalParticles = 3;
+  ssdef.maxTotalParticles = 6;
 
   ssdef.drawFunc = [](DrawContext& ctx, const Particle& pinst, DrawParticle& out) {
       auto temp = pinst;
-	  // TODO: optimize this...
-	  float angle = vectorToAngle(normalize(dirToVec(ctx.ps.params.dir[0])));
-      temp.pos = rotateVector(temp.pos, angle) - dirToVec(ctx.ps.params.dir[0]);
+	  auto dirVec = ctx.ps.targetOff == FVec2()? FVec2(0.0f, 1.0f) : normalize(ctx.ps.targetOff);
+	  float angle = vectorToAngle(dirVec);
+      temp.pos = rotateVector(temp.pos, angle) - dirVec;
 	  temp.pos.y += 3.5f;
 	  temp.size = FVec2(1.2f, 0.6f);
 	  temp.rot = 0.0f;

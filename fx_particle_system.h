@@ -16,6 +16,8 @@ struct SystemParams {
   // These params shouldn't affect system behaviour
   // Otherwise snapshots won't work as expected
   FVec3 color[maxColors] = {FVec3(1.0), FVec3(1.0)};
+
+  // TODO: remove these, use InitConfig::targetOff instead
   Dir dir[maxDirs] = {Dir::N, Dir::N};
 };
 
