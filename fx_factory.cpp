@@ -320,6 +320,7 @@ static void addFeetDustEffect(FXManager &mgr) {
 
   ParticleSystemDef psdef;
   psdef.subSystems = {ssdef};
+
   mgr.addDef(FXName::FEET_DUST, psdef);
 }
 
@@ -548,8 +549,8 @@ static void addFireEffect(FXManager& mgr) {
 
   psdef.isLooped = true;
   psdef.animLength = 1.0f;
-  mgr.addDef(FXName::FIRE, psdef);
 
+  mgr.addDef(FXName::FIRE, psdef);
   mgr.genSnapshots(FXName::FIRE, {1.0f, 1.2f, 1.4f}, {0.0f, 0.2f, 0.4f, 0.6f, 0.8f, 1.0f}, 2);
 }
 
@@ -703,7 +704,9 @@ static void addSleepEffect(FXManager& mgr) {
   psdef.subSystems = {ssdef};
   psdef.isLooped = true;
   psdef.animLength = 1.0f;
+
   mgr.addDef(FXName::SLEEP, psdef);
+  mgr.genSnapshots(FXName::SLEEP, {2.0f, 2.2f, 2.4f, 2.6f, 2.8f});
 }
 
 static const array<IColor, 6> insanityColors = {{
@@ -743,7 +746,9 @@ static void addInsanityEffect(FXManager &mgr) {
   psdef.subSystems = {ssdef};
   psdef.isLooped = true;
   psdef.animLength = 1.0f;
+
   mgr.addDef(FXName::INSANITY, psdef);
+  mgr.genSnapshots(FXName::INSANITY, {1.0f, 1.2f, 1.4f, 1.6f, 1.8f});
 }
 
 static void addBlindEffect(FXManager &mgr) {
@@ -793,7 +798,9 @@ static void addBlindEffect(FXManager &mgr) {
   psdef.subSystems = {ssdef};
   psdef.isLooped = true;
   psdef.animLength = 1.0f;
+
   mgr.addDef(FXName::BLIND, psdef);
+  mgr.genSnapshots(FXName::BLIND, {2.0f, 2.2f, 2.4f, 2.6f, 2.8f});
 }
 
 static void addPeacefulnessEffect(FXManager &mgr) {
@@ -823,7 +830,9 @@ static void addPeacefulnessEffect(FXManager &mgr) {
   psdef.subSystems = {ssdef};
   psdef.isLooped = true;
   psdef.animLength = 1.0f;
+
   mgr.addDef(FXName::PEACEFULNESS, psdef);
+  mgr.genSnapshots(FXName::PEACEFULNESS, {2.0f, 2.2f, 2.4f, 2.6f, 2.8f});
 }
 
 static void addSlowEffect(FXManager &mgr) {
@@ -861,8 +870,8 @@ static void addSlowEffect(FXManager &mgr) {
   psdef.subSystems = {ssdef};
   psdef.isLooped = true;
   psdef.animLength = 1.0f;
-  mgr.addDef(FXName::SLOW, psdef);
 
+  mgr.addDef(FXName::SLOW, psdef);
   mgr.genSnapshots(FXName::SLOW, {4.0f, 4.2f, 4.4f, 4.6f, 4.8f});
 }
 
@@ -901,8 +910,8 @@ static void addSpeedEffect(FXManager &mgr) {
   psdef.subSystems = {ssdef};
   psdef.isLooped = true;
   psdef.animLength = 1.0f;
-  mgr.addDef(FXName::SPEED, psdef);
 
+  mgr.addDef(FXName::SPEED, psdef);
   mgr.genSnapshots(FXName::SPEED, {2.0f, 2.2f, 2.4f, 2.6f, 2.8f});
 }
 
@@ -961,8 +970,8 @@ static void addFlyingEffect(FXManager &mgr) {
 
   psdef.isLooped = true;
   psdef.animLength = 1.0f;
-  mgr.addDef(FXName::FLYING, psdef);
 
+  mgr.addDef(FXName::FLYING, psdef);
   mgr.genSnapshots(FXName::FLYING, {1.0f, 1.4f, 1.8f}, {}, 4);
 }
 
