@@ -47,7 +47,7 @@ Furniture::~Furniture() {}
 
 template<typename Archive>
 void Furniture::serialize(Archive& ar, const unsigned) {
-  ar(SUBCLASS(OwnedObject<Furniture>), viewObject, removeNonFriendly, destroyFX, tryDestroyFX, walkOverFX);
+  ar(SUBCLASS(OwnedObject<Furniture>), viewObject, removeNonFriendly, destroyFX, tryDestroyFX, walkOverFX, walkIntoFX);
   ar(name, pluralName, type, movementSet, fire, burntRemains, destroyedRemains, destroyActions, itemDrop);
   ar(blockVision, usageType, clickType, tickType, usageTime, overrideMovement, wall, creator, createdTime);
   ar(constructMessage, layer, entryType, lightEmission, canHideHere, warning, summonedElement, droppedItems);
@@ -346,6 +346,11 @@ void Furniture::onCreatureWalkedOver(Position pos, Vec2 direction) const {
     pos.getGame()->addEvent(EventInfo::OtherEffect{pos, *walkOverFX, direction});
 }
 
+void Furniture::onCreatureWalkedInto(Position pos, Vec2 direction) const {
+  if (walkIntoFX)
+    pos.getGame()->addEvent(EventInfo::OtherEffect{pos, *walkIntoFX, direction});
+}
+
 vector<PItem> Furniture::dropItems(Position pos, vector<PItem> v) const {
   if (droppedItems) {
     return droppedItems->handle(pos, this, std::move(v));
@@ -515,6 +520,11 @@ Furniture& Furniture::setTryDestroyFX(FXName name) {
 
 Furniture& Furniture::setWalkOverFX(FXName name) {
   walkOverFX = name;
+  return *this;
+}
+
+Furniture& Furniture::setWalkIntoFX(FXName name) {
+  walkIntoFX = name;
   return *this;
 }
 

@@ -72,6 +72,7 @@ class Furniture : public OwnedObject<Furniture> {
   bool isClearFogOfWar() const;
   bool forgetAfterBuilding() const;
   void onCreatureWalkedOver(Position, Vec2 direction) const;
+  void onCreatureWalkedInto(Position, Vec2 direction) const;
   /**
    * @brief Calls special functionality to handle dropped items, if any.
    * @return possibly empty subset of the items that weren't consumned and can be dropped normally.
@@ -116,6 +117,7 @@ class Furniture : public OwnedObject<Furniture> {
   Furniture& setDestroyFX(FXName);
   Furniture& setTryDestroyFX(FXName);
   Furniture& setWalkOverFX(FXName);
+  Furniture& setWalkIntoFX(FXName);
   Furniture& setLuxury(double luxury);
   MovementSet& modMovementSet();
 
@@ -160,5 +162,6 @@ class Furniture : public OwnedObject<Furniture> {
   optional<FXName> SERIAL(destroyFX);
   optional<FXName> SERIAL(tryDestroyFX);
   optional<FXName> SERIAL(walkOverFX);
+  optional<FXName> SERIAL(walkIntoFX);
   LuxuryInfo SERIAL(luxuryInfo);
 };

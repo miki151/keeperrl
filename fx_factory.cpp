@@ -321,6 +321,34 @@ static void addFeetDustEffect(FXManager &mgr) {
   mgr.addDef(FXName::FEET_DUST, psdef);
 }
 
+static void addWaterSplashEffect(FXManager &mgr) {
+  // TODO: this effect shouldn't cover the creature too much; it should mostly be visible around it
+  EmitterDef edef;
+  edef.setStrengthSpread(20.0f, 5.0f);
+  edef.frequency = 400.0f;
+  edef.source = FRect(-6, 4, 6, 12);
+
+  ParticleDef pdef;
+  pdef.life = 0.4f;
+  pdef.size = {{0.0f, 0.5f, 1.0f}, {3.0f, 4.0f, 5.0f}, InterpType::quadratic};
+  pdef.alpha = {{0.0f, 0.25f, 0.75f, 1.0f}, {0.0f, 0.2f, 0.2f, 0.0f}};
+  pdef.color = FVec3(0.4, 0.7, 1.0);
+  pdef.textureName = TextureName::WATER_DROPS;
+
+  SubSystemDef ssdef(pdef, edef, 0.0f, 0.2f);
+  ssdef.maxTotalParticles = 50;
+
+  ssdef.animateFunc = [](AnimationContext& ctx, Particle& pinst) {
+    defaultAnimateParticle(ctx, pinst);
+    pinst.pos += FVec2(0.0f, -cos(pinst.life * 6.0f) * 30.0f * ctx.timeDelta);
+  };
+
+  ParticleSystemDef psdef;
+  psdef.subSystems = {ssdef};
+  mgr.addDef(FXName::WATER_SPLASH, psdef);
+}
+
+
 static const array<FColor, 6> magicMissileColors {{
   {0.3f, 0.5f, 0.9f}, {0.9f, 0.7f, 0.2f}, {0.2f, 0.8f, 0.9f},
   {0.2f, 0.4, 0.3f}, {0.6f, 0.2f, 1.0f}, {0.2f, 0.1f, 0.5f}
@@ -1049,8 +1077,10 @@ void FXManager::initializeDefs() {
   addRockCloud(*this);
   addExplosionEffect(*this);
   addRippleEffect(*this);
-  addFeetDustEffect(*this);
   addFireEffect(*this);
+  
+  addFeetDustEffect(*this);
+  addWaterSplashEffect(*this);
 
   addCircularBlast(*this);
   addMagicMissileEffect(*this);
