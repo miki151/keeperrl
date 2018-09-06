@@ -586,8 +586,8 @@ void WindowView::animation(Vec2 pos, AnimationId id, Dir orientation) {
     mapGui->addAnimation(Animation::fromId(id, orientation), pos);
 }
 
-void WindowView::animation(Vec2 pos, FXName particleEffect, optional<Vec2> targetOffset) {
-  mapGui->addAnimation(particleEffect, pos, targetOffset);
+void WindowView::animation(FXName name, Vec2 pos, Vec2 targetOffset, const Color& color) {
+  mapGui->addAnimation(name, pos, targetOffset, color);
 }
 
 void WindowView::refreshView() {

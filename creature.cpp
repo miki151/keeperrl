@@ -161,7 +161,8 @@ CreatureAction Creature::castSpell(Spell* spell, Vec2 dir) const {
     c->addSound(spell->getSound());
     auto dirEffectType = spell->getDirEffectType();
     if (auto fxName = spell->getFXName())
-      getGame()->addEvent(EventInfo::OtherEffect{c->getPosition(), *fxName, dir * dirEffectType.getRange()});
+      getGame()->addEvent(
+          EventInfo::OtherEffect{c->getPosition(), *fxName, Color::WHITE, dir * dirEffectType.getRange()});
     thirdPerson(getName().the() + " casts a spell");
     secondPerson("You cast " + spell->getName());
     applyDirected(c, dir, dirEffectType);

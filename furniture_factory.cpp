@@ -207,7 +207,6 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setDestroyable(70, DestroyAction::Type::CUT)
           .setFireInfo(Fire(1000, 0.7))
           .setItemDrop(ItemFactory::singleType(ItemType::WoodPlank{}, Range(8, 14)))
-          .setTryDestroyFX(FXName::WOOD_SPLINTERS)
           .setSummonedElement(CreatureId::ENT);
     case FurnitureType::DECID_TREE:
       return Furniture("tree", ViewObject(ViewId::DECID_TREE, ViewLayer::FLOOR), type, tribe)
@@ -220,7 +219,6 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setDestroyable(100, DestroyAction::Type::BOULDER)
           .setDestroyable(70, DestroyAction::Type::CUT)
           .setItemDrop(ItemFactory::singleType(ItemType::WoodPlank{}, Range(8, 14)))
-          .setTryDestroyFX(FXName::WOOD_SPLINTERS)
           .setSummonedElement(CreatureId::ENT);
     case FurnitureType::TREE_TRUNK:
       return Furniture("tree trunk", ViewObject(ViewId::TREE_TRUNK, ViewLayer::FLOOR), type, tribe);
@@ -234,7 +232,6 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setDestroyable(10, DestroyAction::Type::CUT)
           .setCanHide()
           .setFireInfo(Fire(100, 0.8))
-          .setTryDestroyFX(FXName::WOOD_SPLINTERS)
           .setItemDrop(ItemFactory::singleType(ItemType::WoodPlank{}, Range(2, 4)));
     case FurnitureType::CROPS:
       return Furniture("wheat", ViewObject(Random.choose(ViewId::CROPS, ViewId::CROPS2), ViewLayer::FLOOR), type, tribe)
@@ -368,8 +365,6 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setDestroyable(30, DestroyAction::Type::DIG)
           .setDestroyable(200, DestroyAction::Type::HOSTILE_DIG)
           .setDestroyable(2000, DestroyAction::Type::HOSTILE_DIG_NO_SKILL)
-          .setTryDestroyFX(FXName::ROCK_SPLINTERS)
-          .setDestroyFX(FXName::ROCK_CLOUD)
           .setSummonedElement(CreatureId::EARTH_ELEMENTAL);
     case FurnitureType::MOUNTAIN2:
       return Furniture("hard rock", ViewObject(ViewId::MOUNTAIN2, ViewLayer::FLOOR), type, tribe)
@@ -381,8 +376,6 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setDestroyable(70, DestroyAction::Type::DIG)
           .setDestroyable(500, DestroyAction::Type::HOSTILE_DIG)
           .setDestroyable(2000, DestroyAction::Type::HOSTILE_DIG_NO_SKILL)
-          .setTryDestroyFX(FXName::ROCK_SPLINTERS)
-          .setDestroyFX(FXName::ROCK_CLOUD)
           .setSummonedElement(CreatureId::EARTH_ELEMENTAL);
     case FurnitureType::ADAMANTIUM_ORE:
       return Furniture("adamantium ore", ViewObject(ViewId::ADAMANTIUM_ORE, ViewLayer::FLOOR), type, tribe)
@@ -394,9 +387,7 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setDestroyable(500, DestroyAction::Type::BOULDER)
           .setDestroyable(500, DestroyAction::Type::DIG)
           .setDestroyable(500, DestroyAction::Type::HOSTILE_DIG)
-          .setDestroyable(2000, DestroyAction::Type::HOSTILE_DIG_NO_SKILL)
-          .setDestroyFX(FXName::ROCK_CLOUD)
-          .setTryDestroyFX(FXName::ROCK_SPLINTERS);
+          .setDestroyable(2000, DestroyAction::Type::HOSTILE_DIG_NO_SKILL);
     case FurnitureType::IRON_ORE:
       return Furniture("iron ore", ViewObject(ViewId::IRON_ORE, ViewLayer::FLOOR), type, tribe)
           .setBlocking()
@@ -407,9 +398,7 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setDestroyable(200, DestroyAction::Type::BOULDER)
           .setDestroyable(220, DestroyAction::Type::DIG)
           .setDestroyable(200, DestroyAction::Type::HOSTILE_DIG)
-          .setDestroyable(2000, DestroyAction::Type::HOSTILE_DIG_NO_SKILL)
-          .setDestroyFX(FXName::ROCK_CLOUD)
-          .setTryDestroyFX(FXName::ROCK_SPLINTERS);
+          .setDestroyable(2000, DestroyAction::Type::HOSTILE_DIG_NO_SKILL);
     case FurnitureType::STONE:
       return Furniture("granite", ViewObject(ViewId::STONE, ViewLayer::FLOOR), type, tribe)
           .setBlocking()
@@ -420,9 +409,7 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setDestroyable(200, DestroyAction::Type::BOULDER)
           .setDestroyable(250, DestroyAction::Type::DIG)
           .setDestroyable(200, DestroyAction::Type::HOSTILE_DIG)
-          .setDestroyable(2000, DestroyAction::Type::HOSTILE_DIG_NO_SKILL)
-          .setDestroyFX(FXName::ROCK_CLOUD)
-          .setTryDestroyFX(FXName::ROCK_SPLINTERS);
+          .setDestroyable(2000, DestroyAction::Type::HOSTILE_DIG_NO_SKILL);
     case FurnitureType::GOLD_ORE:
       return Furniture("gold ore", ViewObject(ViewId::GOLD_ORE, ViewLayer::FLOOR), type, tribe)
           .setBlocking()
@@ -433,9 +420,7 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setDestroyable(200, DestroyAction::Type::BOULDER)
           .setDestroyable(220, DestroyAction::Type::DIG)
           .setDestroyable(200, DestroyAction::Type::HOSTILE_DIG)
-          .setDestroyable(2000, DestroyAction::Type::HOSTILE_DIG_NO_SKILL)
-          .setDestroyFX(FXName::ROCK_CLOUD)
-          .setTryDestroyFX(FXName::ROCK_SPLINTERS);
+          .setDestroyable(2000, DestroyAction::Type::HOSTILE_DIG_NO_SKILL);
     case FurnitureType::DUNGEON_WALL:
       return Furniture("wall", ViewObject(ViewId::DUNGEON_WALL, ViewLayer::FLOOR), type, tribe)
           .setBlocking()
@@ -446,9 +431,7 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setDestroyable(300, DestroyAction::Type::BOULDER)
           .setDestroyable(100, DestroyAction::Type::DIG)
           .setDestroyable(1900, DestroyAction::Type::HOSTILE_DIG)
-          .setDestroyable(2000, DestroyAction::Type::HOSTILE_DIG_NO_SKILL)
-          .setDestroyFX(FXName::ROCK_CLOUD)
-          .setTryDestroyFX(FXName::ROCK_SPLINTERS);
+          .setDestroyable(2000, DestroyAction::Type::HOSTILE_DIG_NO_SKILL);
     case FurnitureType::DUNGEON_WALL2:
       return Furniture("wall", ViewObject(ViewId::DUNGEON_WALL2, ViewLayer::FLOOR), type, tribe)
           .setBlocking()
@@ -459,9 +442,7 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setDestroyable(300, DestroyAction::Type::BOULDER)
           .setDestroyable(100, DestroyAction::Type::DIG)
           .setDestroyable(1900, DestroyAction::Type::HOSTILE_DIG)
-          .setDestroyable(2000, DestroyAction::Type::HOSTILE_DIG_NO_SKILL)
-          .setDestroyFX(FXName::ROCK_CLOUD)
-          .setTryDestroyFX(FXName::ROCK_SPLINTERS);
+          .setDestroyable(2000, DestroyAction::Type::HOSTILE_DIG_NO_SKILL);
     case FurnitureType::PIT:
       return Furniture("pit", ViewObject(ViewId::PIT, ViewLayer::FLOOR), type, tribe)
           .setBlocking()
@@ -570,8 +551,7 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setEntryType(FurnitureEntry::Water{})
           .setDroppedItems(FurnitureDroppedItems::Water{"sinks", "sink", "You hear a splash."_s})
           .setCanBuildBridgeOver()
-          .setSummonedElement(CreatureId::WATER_ELEMENTAL)
-          .setWalkIntoFX(FXName::WATER_SPLASH);
+          .setSummonedElement(CreatureId::WATER_ELEMENTAL);
       ret.modMovementSet()
           .clearTraits()
           .addTrait(MovementTrait::FLY)
@@ -585,8 +565,7 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setLayer(FurnitureLayer::GROUND)
           .setEntryType(FurnitureEntry::Water{})
           .setCanBuildBridgeOver()
-          .setSummonedElement(CreatureId::WATER_ELEMENTAL)
-          .setWalkIntoFX(FXName::WATER_SPLASH);
+          .setSummonedElement(CreatureId::WATER_ELEMENTAL);
       ret.modMovementSet()
           .clearTraits()
           .addForcibleTrait(MovementTrait::WALK)
@@ -601,8 +580,7 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setLayer(FurnitureLayer::GROUND)
           .setEntryType(FurnitureEntry::Water{})
           .setCanBuildBridgeOver()
-          .setSummonedElement(CreatureId::WATER_ELEMENTAL)
-          .setWalkIntoFX(FXName::WATER_SPLASH);
+          .setSummonedElement(CreatureId::WATER_ELEMENTAL);
       ret.modMovementSet()
           .clearTraits()
           .addForcibleTrait(MovementTrait::WALK)
@@ -627,8 +605,7 @@ static Furniture get(FurnitureType type, TribeId tribe) {
     }
     case FurnitureType::SAND:
       return Furniture("sand", ViewObject(ViewId::SAND, ViewLayer::FLOOR_BACKGROUND), type, tribe)
-          .setLayer(FurnitureLayer::GROUND)
-          .setWalkOverFX(FXName::SAND_DUST);
+          .setLayer(FurnitureLayer::GROUND);
     case FurnitureType::GRASS:
       return Furniture("grass", ViewObject(ViewId::GRASS, ViewLayer::FLOOR_BACKGROUND), type, tribe)
           .setLayer(FurnitureLayer::GROUND);

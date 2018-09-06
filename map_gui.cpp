@@ -95,8 +95,10 @@ void MapGui::addAnimation(PAnimation animation, Vec2 pos) {
   animations.push_back({std::move(animation), pos});
 }
 
-void MapGui::addAnimation(FXName particleEffect, Vec2 position, optional<Vec2> targetOffset) {
-  fx::spawnEffect(particleEffect, position.x, position.y, targetOffset.value_or(Vec2(0, 0)));
+void MapGui::addAnimation(FXName name, Vec2 pos, Vec2 targetOffset, Color color) {
+  auto id = fx::spawnEffect(name, pos.x, pos.y, targetOffset);
+  if (!(color == Color::WHITE))
+    fx::setColor(id, color);
 }
 
 optional<Vec2> MapGui::getMousePos() {

@@ -18,6 +18,7 @@
 #include "furniture_dropped_items.h"
 #include "furniture_click.h"
 #include "furniture_tick.h"
+#include "furniture_fx.h"
 #include "movement_set.h"
 
 static string makePlural(const string& s) {
@@ -47,7 +48,7 @@ Furniture::~Furniture() {}
 
 template<typename Archive>
 void Furniture::serialize(Archive& ar, const unsigned) {
-  ar(SUBCLASS(OwnedObject<Furniture>), viewObject, removeNonFriendly, destroyFX, tryDestroyFX, walkOverFX, walkIntoFX);
+  ar(SUBCLASS(OwnedObject<Furniture>), viewObject, removeNonFriendly);
   ar(name, pluralName, type, movementSet, fire, burntRemains, destroyedRemains, destroyActions, itemDrop);
   ar(blockVision, usageType, clickType, tickType, usageTime, overrideMovement, wall, creator, createdTime);
   ar(constructMessage, layer, entryType, lightEmission, canHideHere, warning, summonedElement, droppedItems);
@@ -165,8 +166,8 @@ void Furniture::destroy(Position pos, const DestroyAction& action) {
     pos.dropItems(itemDrop->random());
   if (usageType)
     FurnitureUsage::beforeRemoved(*usageType, pos);
-  if (destroyFX)
-    pos.getGame()->addEvent(EventInfo::OtherEffect{pos, *destroyFX});
+  if (auto info = destroyFXInfo(type))
+    pos.getGame()->addEvent(EventInfo::OtherEffect{pos, info->name, info->color});
   pos.removeFurniture(this, destroyedRemains ? FurnitureFactory::get(*destroyedRemains, getTribe()) : nullptr);
   pos.getGame()->addEvent(EventInfo::FurnitureDestroyed{pos, myType, myLayer});
 }
@@ -178,8 +179,8 @@ void Furniture::tryToDestroyBy(Position pos, WCreature c, const DestroyAction& a
     if (auto skill = action.getDestroyingSkillMultiplier())
       damage = damage * c->getAttributes().getSkills().getValue(*skill);
     *strength -= damage;
-    if (tryDestroyFX)
-      pos.getGame()->addEvent(EventInfo::OtherEffect{pos, *tryDestroyFX});
+    if (auto info = tryDestroyFXInfo(type))
+      pos.getGame()->addEvent(EventInfo::OtherEffect{pos, info->name, info->color});
     if (*strength <= 0)
       destroy(pos, action);
   }
@@ -342,13 +343,13 @@ bool Furniture::forgetAfterBuilding() const {
 }
 
 void Furniture::onCreatureWalkedOver(Position pos, Vec2 direction) const {
-  if (walkOverFX)
-    pos.getGame()->addEvent(EventInfo::OtherEffect{pos, *walkOverFX, direction});
+  if (auto info = walkOverFXInfo(type))
+    pos.getGame()->addEvent(EventInfo::OtherEffect{pos, info->name, info->color, direction});
 }
 
 void Furniture::onCreatureWalkedInto(Position pos, Vec2 direction) const {
-  if (walkIntoFX)
-    pos.getGame()->addEvent(EventInfo::OtherEffect{pos, *walkIntoFX, direction});
+  if (auto info = walkIntoFXInfo(type))
+    pos.getGame()->addEvent(EventInfo::OtherEffect{pos, info->name, info->color, direction});
 }
 
 vector<PItem> Furniture::dropItems(Position pos, vector<PItem> v) const {
@@ -505,26 +506,6 @@ Furniture& Furniture::setCanRemoveNonFriendly(bool s) {
 
 Furniture& Furniture::setForgetAfterBuilding() {
   xForgetAfterBuilding = true;
-  return *this;
-}
-
-Furniture& Furniture::setDestroyFX(FXName name) {
-  destroyFX = name;
-  return *this;
-}
-
-Furniture& Furniture::setTryDestroyFX(FXName name) {
-  tryDestroyFX = name;
-  return *this;
-}
-
-Furniture& Furniture::setWalkOverFX(FXName name) {
-  walkOverFX = name;
-  return *this;
-}
-
-Furniture& Furniture::setWalkIntoFX(FXName name) {
-  walkIntoFX = name;
   return *this;
 }
 
