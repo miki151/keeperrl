@@ -570,7 +570,8 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setEntryType(FurnitureEntry::Water{})
           .setDroppedItems(FurnitureDroppedItems::Water{"sinks", "sink", "You hear a splash."_s})
           .setCanBuildBridgeOver()
-          .setSummonedElement(CreatureId::WATER_ELEMENTAL);
+          .setSummonedElement(CreatureId::WATER_ELEMENTAL)
+          .setWalkIntoFX(FXName::WATER_SPLASH);
       ret.modMovementSet()
           .clearTraits()
           .addTrait(MovementTrait::FLY)
@@ -584,7 +585,8 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setLayer(FurnitureLayer::GROUND)
           .setEntryType(FurnitureEntry::Water{})
           .setCanBuildBridgeOver()
-          .setSummonedElement(CreatureId::WATER_ELEMENTAL);
+          .setSummonedElement(CreatureId::WATER_ELEMENTAL)
+          .setWalkIntoFX(FXName::WATER_SPLASH);
       ret.modMovementSet()
           .clearTraits()
           .addForcibleTrait(MovementTrait::WALK)
@@ -599,7 +601,8 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setLayer(FurnitureLayer::GROUND)
           .setEntryType(FurnitureEntry::Water{})
           .setCanBuildBridgeOver()
-          .setSummonedElement(CreatureId::WATER_ELEMENTAL);
+          .setSummonedElement(CreatureId::WATER_ELEMENTAL)
+          .setWalkIntoFX(FXName::WATER_SPLASH);
       ret.modMovementSet()
           .clearTraits()
           .addForcibleTrait(MovementTrait::WALK)

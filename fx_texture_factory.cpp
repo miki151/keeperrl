@@ -13,6 +13,7 @@ static const char* texFileName(TextureName name) {
     CASE(CIRCULAR, "circular.png")
     CASE(CIRCULAR_STRONG, "circular_strong.png")
     CASE(FLAKES_BORDERS, "flakes_4x4_borders.png")
+    CASE(WATER_DROPS, "water_drops_4x4.png")
     CASE(CLOUDS_SOFT, "clouds_soft_4x4.png")
     CASE(CLOUDS_SOFT_BORDERS, "clouds_soft_borders_4x4.png")
     CASE(CLOUDS_ADD, "clouds_grayscale_4x4.png")
