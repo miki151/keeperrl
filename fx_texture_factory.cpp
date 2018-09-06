@@ -5,71 +5,38 @@
 
 namespace fx {
 
-void FXManager::initializeTextureDef(TextureName name, TextureDef& def) {
+static const char* texFileName(TextureName name) {
   switch (name) {
-  case TextureName::CIRCULAR:
-    def.fileName = "circular.png";
-    break;
-
-  case TextureName::CIRCULAR_STRONG:
-    def.fileName = "circular_strong.png";
-    break;
-
-  case TextureName::FLAKES_BORDERS:
-    def.fileName = "flakes_4x4_borders.png";
-    def.tiles = {4, 4};
-    break;
-
-  case TextureName::CLOUDS_SOFT:
-    def.fileName = "clouds_soft_4x4.png";
-    def.tiles = {4, 4};
-    break;
-  case TextureName::CLOUDS_SOFT_BORDERS:
-    def.fileName = "clouds_soft_borders_4x4.png";
-    def.tiles = {4, 4};
-    break;
-
-  case TextureName::CLOUDS_ADD:
-    def.fileName = "clouds_grayscale_4x4.png";
-    def.tiles = {4, 4};
-    def.blendMode = BlendMode::additive;
-    break;
-
-  case TextureName::TORUS:
-    def.fileName = "torus.png";
-    break;
-
-  case TextureName::TORUS_BOTTOM:
-    def.fileName = "torus_bottom.png";
-    break;
-
-  case TextureName::TORUS_BOTTOM_BLURRED:
-    def.fileName = "torus_bottom_blurred.png";
-    break;
-
-  case TextureName::MAGIC_MISSILE:
-    def.fileName = "magic_missile_4x4.png";
-    def.tiles = {4, 4};
-    def.blendMode = BlendMode::additive;
-    break;
-
-  case TextureName::FLAMES:
-    def.fileName = "flames_4x4.png";
-    def.tiles = {4, 4};
-    def.blendMode = BlendMode::additive;
-    break;
-
-  case TextureName::FLAMES_BLURRED:
-    def.fileName = "flames_blurred_4x4.png";
-    def.tiles = {4, 4};
-    def.blendMode = BlendMode::additive;
-    break;
-
-  case TextureName::SPECIAL:
-    def.fileName = "special_4x2.png";
-    def.tiles = {4, 2};
-    break;
+#define CASE(id, fileName)                                                                                             \
+  case TextureName::id:                                                                                                \
+    return fileName;
+    CASE(CIRCULAR, "circular.png")
+    CASE(CIRCULAR_STRONG, "circular_strong.png")
+    CASE(FLAKES_BORDERS, "flakes_4x4_borders.png")
+    CASE(CLOUDS_SOFT, "clouds_soft_4x4.png")
+    CASE(CLOUDS_SOFT_BORDERS, "clouds_soft_borders_4x4.png")
+    CASE(CLOUDS_ADD, "clouds_grayscale_4x4.png")
+    CASE(TORUS, "torus.png")
+    CASE(TORUS_BOTTOM, "torus_bottom.png")
+    CASE(TORUS_BOTTOM_BLURRED, "torus_bottom_blurred.png")
+    CASE(MAGIC_MISSILE, "magic_missile_4x4.png")
+    CASE(FLAMES, "flames_4x4.png")
+    CASE(FLAMES_BLURRED, "flames_blurred_4x4.png")
+    CASE(SPECIAL, "special_4x2.png")
+#undef CASE
   }
+  return nullptr;
+}
+
+void FXManager::initializeTextureDef(TextureName name, TextureDef& def) {
+  def.fileName = texFileName(name);
+  if (strstr(def.fileName, "4x4"))
+    def.tiles = {4, 4};
+  if (strstr(def.fileName, "4x2"))
+    def.tiles = {4, 2};
+  if (name == TextureName::CLOUDS_ADD || name == TextureName::FLAMES || name == TextureName::FLAMES_BLURRED ||
+      name == TextureName::MAGIC_MISSILE)
+    def.blendMode = BlendMode::additive;
 }
 
 void FXManager::initializeTextureDefs() {
