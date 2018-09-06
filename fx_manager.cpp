@@ -229,8 +229,8 @@ void FXManager::genSnapshots(FXName name, vector<float> animTimes, vector<float>
   // Try to keep this number low
   int numFramesTotal = numFrames * params.size() * randomVariants;
 
-  INFO << "FX: generated " << numSnapshots << " snapshots for: " << EnumInfo<FXName>::getString(name) << " In: " << time
-       << " msec" << " (total frames: " << numFramesTotal << ")";
+  INFO << "FX: generated " << numSnapshots << " snapshots for: " << ENUM_STRING(name) << " In: " << time << " msec"
+       << " (total frames: " << numFramesTotal << ")";
 }
 
 vector<DrawParticle> FXManager::genQuads() {
@@ -292,8 +292,7 @@ ParticleSystem FXManager::makeSystem(FXName name, uint spawnTime, InitConfig con
     if (auto* ssGroup = findSnapshotGroup(name, *config.snapshotKey)) {
       int index = randomGen->get(ssGroup->snapshots.size());
       auto& key = ssGroup->key;
-      INFO << "FX: using snapshot: " << EnumInfo<FXName>::getString(name) << " (" << key.scalar[0] << ", "
-           << key.scalar[1] << ")";
+      INFO << "FX: using snapshot: " << ENUM_STRING(name) << " (" << key.scalar[0] << ", " << key.scalar[1] << ")";
       return {name, config, spawnTime, ssGroup->snapshots[index]};
     }
 

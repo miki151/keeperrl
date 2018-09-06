@@ -24,7 +24,7 @@ void FXViewManager::EntityInfo::addFX(GenericId id, const FXDef& def) {
 
   if (numEffects < maxEffects) {
     auto& newEffect = effects[numEffects++];
-    INFO << "FX view: spawn: " << EnumInfo<FXName>::getString(def.name) << " for: " << id;
+    INFO << "FX view: spawn: " << ENUM_STRING(def.name) << " for: " << id;
 
     if (justShown)
       newEffect.id = fx::spawnSnapshotEffect(def.name, x, y, def.scalar0, def.scalar1);
@@ -58,14 +58,14 @@ void FXViewManager::EntityInfo::updateFX(GenericId gid) {
       fx::setPos(effects[n].id, x, y);
 
     if ((!effect.isDying && !effect.isVisible) || (effect.isDying && immediateKill)) {
-      INFO << "FX view: kill: " << EnumInfo<FXName>::getString(effect.name) << " for: " << gid;
+      INFO << "FX view: kill: " << ENUM_STRING(effect.name) << " for: " << gid;
       fx::kill(effect.id, immediateKill);
       effect.isDying = true;
     }
 
     if (immediateKill || removeDead) {
       if (removeDead)
-        INFO << "FX view: remove: " << EnumInfo<FXName>::getString(effect.name) << " for: " << gid;
+        INFO << "FX view: remove: " << ENUM_STRING(effect.name) << " for: " << gid;
       effects[n--] = effects[--numEffects];
     }
   }

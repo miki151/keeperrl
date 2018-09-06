@@ -12,7 +12,7 @@ static double getProgress(VillainType type) {
     case VillainType::MAIN:
       return 25;
     default:
-      FATAL << "Villain type not handled: " + EnumInfo<VillainType>::getString(type);
+      FATAL << "Villain type not handled: " + ENUM_STRING(type);
       return 0;
   }
 }
