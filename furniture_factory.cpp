@@ -628,7 +628,7 @@ static Furniture get(FurnitureType type, TribeId tribe) {
     case FurnitureType::SAND:
       return Furniture("sand", ViewObject(ViewId::SAND, ViewLayer::FLOOR_BACKGROUND), type, tribe)
           .setLayer(FurnitureLayer::GROUND)
-          .setWalkOverFX(FXName::FEET_DUST);
+          .setWalkOverFX(FXName::SAND_DUST);
     case FurnitureType::GRASS:
       return Furniture("grass", ViewObject(ViewId::GRASS, ViewLayer::FLOOR_BACKGROUND), type, tribe)
           .setLayer(FurnitureLayer::GROUND);
