@@ -175,7 +175,7 @@ CreatureAction Creature::castSpell(Spell* spell, Vec2 dir) const {
 void Creature::updateLastingFX(ViewObject& object) {
   object.particleEffects.clear();
   for (auto effect : ENUM_ALL(LastingEffect))
-    if (isAffected(effect))
+    if (isSpeciallyAffected(effect))
       if (auto fx = LastingEffects::getFXName(effect))
         object.particleEffects.insert(*fx);
 }
@@ -803,6 +803,10 @@ bool Creature::isAffected(LastingEffect effect) const {
     return attributes->isAffected(effect, *time);
   else
     return attributes->isAffectedPermanently(effect);
+}
+
+bool Creature::isSpeciallyAffected(LastingEffect effect) const {
+  return isAffected(effect) && !attributes->isAffectedNaturally(effect);
 }
 
 optional<TimeInterval> Creature::getTimeRemaining(LastingEffect effect) const {

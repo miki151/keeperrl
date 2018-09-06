@@ -203,6 +203,8 @@ class CreatureFactory {
   static ViewId getViewId(CreatureId);
   static const Gender& getGender(CreatureId);
 
+  static CreatureAttributes getDefaultAttributes(CreatureId);
+
   ~CreatureFactory();
   CreatureFactory& operator = (const CreatureFactory&);
   CreatureFactory(const CreatureFactory&);
@@ -220,7 +222,8 @@ class CreatureFactory {
   static PCreature get(CreatureId, TribeId, MonsterAIFactory);
   static PCreature get(CreatureAttributes, TribeId, const ControllerFactory&);
   static CreatureAttributes getAttributesFromId(CreatureId);
-  static CreatureAttributes getAttributes(CreatureId id);
+  static CreatureAttributes getAttributes(CreatureId);
+
   TribeId getTribeFor(CreatureId);
   optional<TribeId> SERIAL(tribe);
   vector<CreatureId> SERIAL(creatures);
