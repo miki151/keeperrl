@@ -114,10 +114,6 @@ class Furniture : public OwnedObject<Furniture> {
   Furniture& setCanRemoveWithCreaturePresent(bool state);
   Furniture& setCanRemoveNonFriendly(bool state);
   Furniture& setForgetAfterBuilding();
-  Furniture& setDestroyFX(FXName);
-  Furniture& setTryDestroyFX(FXName);
-  Furniture& setWalkOverFX(FXName);
-  Furniture& setWalkIntoFX(FXName);
   Furniture& setLuxury(double luxury);
   MovementSet& modMovementSet();
 
@@ -159,9 +155,5 @@ class Furniture : public OwnedObject<Furniture> {
   bool SERIAL(noProjectiles) = false;
   bool SERIAL(clearFogOfWar) = false;
   bool SERIAL(xForgetAfterBuilding) = false;
-  optional<FXName> SERIAL(destroyFX);
-  optional<FXName> SERIAL(tryDestroyFX);
-  optional<FXName> SERIAL(walkOverFX);
-  optional<FXName> SERIAL(walkIntoFX);
   LuxuryInfo SERIAL(luxuryInfo);
 };

@@ -1671,3 +1671,11 @@ struct EmptyStruct {
 #define EMPTY_STRUCT(Name) \
 struct _Tag123##Name {};\
 using Name = EmptyStruct<_Tag123##Name>
+
+template <class T> constexpr bool isOneOf(const T& value) {
+  return false;
+}
+template <class T, class Arg1, class... Args>
+constexpr bool isOneOf(const T& value, const Arg1& arg1, const Args&... args) {
+  return value == arg1 || isOneOf(value, args...);
+}

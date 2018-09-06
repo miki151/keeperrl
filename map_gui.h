@@ -59,7 +59,7 @@ class MapGui : public GuiElem {
   void setSpriteMode(bool);
   optional<Vec2> getHighlightedTile(Renderer& renderer);
   void addAnimation(PAnimation animation, Vec2 position);
-  void addAnimation(FXName particleEffect, Vec2 position, optional<Vec2> targetOffset);
+  void addAnimation(FXName, Vec2, Vec2, Color);
   void setCenter(double x, double y);
   void setCenter(Vec2 pos);
   void clearCenter();

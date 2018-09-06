@@ -4,6 +4,7 @@
 #include "event_generator.h"
 #include "position.h"
 #include "model.h"
+#include "color.h"
 
 class Model;
 class Technology;
@@ -95,7 +96,8 @@ namespace EventInfo {
   struct OtherEffect {
     Position position;
     FXName effect;
-    optional<Vec2> targetOffset = none;
+    Color color = Color::WHITE;
+    Vec2 targetOffset = Vec2(0, 0);
   };
 
   struct ItemsEquipped {
