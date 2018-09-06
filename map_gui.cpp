@@ -45,7 +45,9 @@ MapGui::MapGui(Callbacks call, SyncQueue<UserInput>& inputQueue, Clock* c, Optio
     clock(c), options(o), fogOfWar(Level::getMaxBounds(), false), extraBorderPos(Level::getMaxBounds(), {}),
     lastSquareUpdate(Level::getMaxBounds()), connectionMap(Level::getMaxBounds()), guiFactory(f) {
   clearCenter();
-  fxViewManager = std::make_unique<FXViewManager>();
+
+  if (fx::FXRenderer::getInstance() != nullptr)
+    fxViewManager = std::make_unique<FXViewManager>();
 }
 
 MapGui::~MapGui() = default;
@@ -593,8 +595,6 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
     renderer.drawTile(pos, tile.getBackgroundCoord(), size, color);
     move += movement;
 
-    bool fxesAvailable = fx::FXRenderer::getInstance() != nullptr;
-
     if (mirrorSprite(id))
       renderer.drawTile(pos + move, tile.getSpriteCoord(dirs), size, color,
           Renderer::SpriteOrientation((bool) (tilePos.getHash() % 2), (bool) (tilePos.getHash() % 4 > 1)));
@@ -612,7 +612,7 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
     if (object.layer() == ViewLayer::FLOOR_BACKGROUND && shadowed.count(tilePos))
       renderer.drawTile(pos, shortShadow, size, Color(255, 255, 255, 170));
     auto burningVal = object.getAttribute(ViewObject::Attribute::BURNING).value_or(0.0f);
-    if (burningVal > 0.0f && !fxesAvailable) {
+    if (burningVal > 0.0f && !fxViewManager) {
       static auto fire1 = renderer.getTileCoord("fire1");
       static auto fire2 = renderer.getTileCoord("fire2");
       renderer.drawTile(pos - Vec2(0, 4 * size.y / Renderer::nominalSize),
@@ -627,7 +627,7 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
     if (object.hasModifier(ViewObject::Modifier::LOCKED))
       renderer.drawTile(pos + move, Tile::getTile(ViewId::KEY, spriteMode).getSpriteCoord(), size);
 
-    if (fxesAvailable)
+    if (fxViewManager)
       if (auto genericId = object.getGenericId()) {
         float fxPosX = tilePos.x + move.x / (float)size.x;
         float fxPosY = tilePos.y + move.y / (float)size.y;
@@ -908,6 +908,9 @@ void MapGui::renderMapObjects(Renderer& renderer, Vec2 size, milliseconds curren
   Rectangle allTiles = layout->getAllTiles(getBounds(), levelBounds, getScreenPos());
   Vec2 topLeftCorner = projectOnScreen(allTiles.topLeft());
   fogOfWar.clear();
+
+  if (fxViewManager)
+    fxViewManager->beginFrame();
   for (ViewLayer layer : layout->getLayers())
     if ((int)layer < (int)ViewLayer::CREATURE) {
       for (Vec2 wpos : allTiles) {
@@ -983,8 +986,17 @@ void MapGui::renderMapObjects(Renderer& renderer, Vec2 size, milliseconds curren
             lastHighlighted.object = *object;
         }
       }
-
     }
+
+  if (fxViewManager) {
+    fxViewManager->finishFrame();
+    renderer.flushSprites();
+    float zoom = float(layout->getSquareSize().x) / float(Renderer::nominalSize);
+    auto offset = projectOnScreen(Vec2(0, 0));
+    auto size = renderer.getSize();
+    fx::FXRenderer::getInstance()->draw(zoom, offset.x, offset.y, size.x, size.y);
+  }
+
   renderHighlights(renderer, size, currentTimeReal, false);
 }
 
@@ -1077,17 +1089,7 @@ void MapGui::render(Renderer& renderer) {
   auto currentTimeReal = clock->getRealMillis();
   lastHighlighted = getHighlightedInfo(size, currentTimeReal);
 
-  fxViewManager->beginFrame();
   renderMapObjects(renderer, size, currentTimeReal);
-  fxViewManager->finishFrame();
-
-  renderer.flushSprites();
-  if (auto *rinst = fx::FXRenderer::getInstance()) {
-    float zoom = float(layout->getSquareSize().x) / float(Renderer::nominalSize);
-    auto offset = projectOnScreen(Vec2(0, 0));
-    auto size = renderer.getSize();
-    rinst->draw(zoom, offset.x, offset.y, size.x, size.y);
-  }
 
   renderAnimations(renderer, currentTimeReal);
   if (lastHighlighted.tilePos)
