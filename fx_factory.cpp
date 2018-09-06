@@ -289,7 +289,6 @@ static void addSandDustEffect(FXManager& mgr) {
   pdef.size = {{0.0f, 0.1f, 1.0f}, {5.0f, 10.0f, 14.0f}, InterpType::quadratic};
   pdef.alpha = {{0.0f, 0.05f, 0.2f, 1.0f}, {0.0f, 0.2f, 0.3f, 0.0f}};
   pdef.slowdown = {{0.0f, 0.2f}, {0.0f, 10.0f}};
-  pdef.color = FVec3(1, 0.9, 0.7);
   pdef.textureName = TextureName::CLOUDS_SOFT;
 
   SubSystemDef ssdef(pdef, edef, 0.0f, 0.2f);
@@ -304,7 +303,6 @@ static void addSandDustEffect(FXManager& mgr) {
       temp.size = FVec2(1.2f, 0.6f);
       temp.rot = 0.0f;
       defaultDrawParticle(ctx, temp, out);
-      out.color = (IColor)(FColor(out.color) * FColor(ctx.ps.params.color[1]));
     };
 
   ParticleSystemDef psdef;
@@ -324,7 +322,6 @@ static void addWaterSplashEffect(FXManager &mgr) {
   pdef.life = 0.4f;
   pdef.size = {{0.0f, 0.5f, 1.0f}, {3.0f, 4.0f, 5.0f}, InterpType::quadratic};
   pdef.alpha = {{0.0f, 0.25f, 0.75f, 1.0f}, {0.0f, 0.2f, 0.2f, 0.0f}};
-  pdef.color = FVec3(0.4, 0.7, 1.0);
   pdef.textureName = TextureName::WATER_DROPS;
 
   SubSystemDef ssdef(pdef, edef, 0.0f, 0.2f);
