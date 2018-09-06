@@ -277,15 +277,7 @@ static void addCircularBlast(FXManager &mgr) {
   mgr.addDef(FXName::CIRCULAR_BLAST, psdef);
 }
 
-static void addFeetDustEffect(FXManager &mgr) {
-  // Ten efekt musi zaznaczać fakt, że postać się porusza w jakimś kierunku
-  // To musi byc kontrolowalne za pomocą parametru
-  // FX jest odpalany w momencie gdy postać wychodzi z kafla ?
-  //
-  // TODO: Parametrem efektu powinien być enum: kierunek ruchu
-  // zależnie od tego mamy różne kierunki generacji i inny punkt startowy
-  // drugim parametrem jest kolor (choć chyba będzie uzywany tylko na piasku?)
-
+static void addSandDustEffect(FXManager& mgr) {
   EmitterDef edef;
   edef.source = FRect(-6, -6, 6, 6);
   edef.setStrengthSpread(17.5f, 2.5f);
@@ -305,12 +297,12 @@ static void addFeetDustEffect(FXManager &mgr) {
 
   ssdef.drawFunc = [](DrawContext& ctx, const Particle& pinst, DrawParticle& out) {
       auto temp = pinst;
-	  auto dirVec = ctx.ps.targetOff == FVec2()? FVec2(0.0f, 1.0f) : normalize(ctx.ps.targetOff);
-	  float angle = vectorToAngle(dirVec);
+      auto dirVec = ctx.ps.targetOff == FVec2() ? FVec2(0.0f, 1.0f) : normalize(ctx.ps.targetOff);
+      float angle = vectorToAngle(dirVec);
       temp.pos = rotateVector(temp.pos, angle) - dirVec;
-	  temp.pos.y += 3.5f;
-	  temp.size = FVec2(1.2f, 0.6f);
-	  temp.rot = 0.0f;
+      temp.pos.y += 3.5f;
+      temp.size = FVec2(1.2f, 0.6f);
+      temp.rot = 0.0f;
       defaultDrawParticle(ctx, temp, out);
       out.color = (IColor)(FColor(out.color) * FColor(ctx.ps.params.color[1]));
     };
@@ -318,7 +310,7 @@ static void addFeetDustEffect(FXManager &mgr) {
   ParticleSystemDef psdef;
   psdef.subSystems = {ssdef};
 
-  mgr.addDef(FXName::FEET_DUST, psdef);
+  mgr.addDef(FXName::SAND_DUST, psdef);
 }
 
 static void addWaterSplashEffect(FXManager &mgr) {
@@ -1078,8 +1070,8 @@ void FXManager::initializeDefs() {
   addExplosionEffect(*this);
   addRippleEffect(*this);
   addFireEffect(*this);
-  
-  addFeetDustEffect(*this);
+
+  addSandDustEffect(*this);
   addWaterSplashEffect(*this);
 
   addCircularBlast(*this);
