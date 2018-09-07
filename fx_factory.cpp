@@ -277,6 +277,36 @@ static void addCircularBlast(FXManager &mgr) {
   mgr.addDef(FXName::CIRCULAR_BLAST, psdef);
 }
 
+static void addAirBlast(FXManager &mgr) {
+  EmitterDef edef;
+  edef.frequency = 50.0f;
+  edef.setDirectionSpread(0.0f, 0.1f);
+  edef.setStrengthSpread(100.0f, 5.0f);
+  edef.source = FRect(-4, -4, 4, 4);
+
+  ParticleDef pdef;
+  pdef.life = 0.3f;
+  pdef.size = 24.0f;
+  pdef.alpha = {{0.0f, 0.1f, 0.6f, 1.0f}, {0.0f, 0.5f, 0.5f, 0.0f}, InterpType::cosine};
+  pdef.textureName = TextureName::AIR_BLAST;
+
+  SubSystemDef ssdef(pdef, edef, 0.0f, 0.1f);
+  ssdef.maxActiveParticles = 20;
+  ssdef.emitFunc = [](AnimationContext& ctx, EmissionState& em, Particle& pinst) {
+	  defaultEmitParticle(ctx, em, pinst);
+	  float angle = ctx.ps.targetDirAngle;
+      pinst.movement = rotateVector(pinst.movement, angle) * ctx.ps.targetTileDist;
+	  pinst.pos = rotateVector(pinst.pos, angle);
+	  pinst.rot = ctx.uniform(-0.1f, 0.1f) + angle;
+  };
+
+  ParticleSystemDef psdef;
+  psdef.subSystems = {ssdef};
+
+  mgr.addDef(FXName::AIR_BLAST, psdef);
+}
+
+
 static void addSandDustEffect(FXManager& mgr) {
   EmitterDef edef;
   edef.source = FRect(-6, -6, 6, 6);
@@ -1069,6 +1099,7 @@ void FXManager::initializeDefs() {
   addWaterSplashEffect(*this);
 
   addCircularBlast(*this);
+  addAirBlast(*this);
   addMagicMissileEffect(*this);
   addFireballEffect(*this);
 
