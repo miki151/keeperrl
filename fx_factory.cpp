@@ -279,13 +279,13 @@ static void addCircularBlast(FXManager &mgr) {
 
 static void addAirBlast(FXManager &mgr) {
   EmitterDef edef;
-  edef.frequency = 50.0f;
+  edef.frequency = 30.0f;
   edef.setDirectionSpread(0.0f, 0.1f);
-  edef.setStrengthSpread(100.0f, 5.0f);
+  edef.setStrengthSpread(133.0f, 10.0f);
   edef.source = FRect(-4, -4, 4, 4);
 
   ParticleDef pdef;
-  pdef.life = 0.3f;
+  pdef.life = 0.2f;
   pdef.size = 24.0f;
   pdef.alpha = {{0.0f, 0.1f, 0.6f, 1.0f}, {0.0f, 0.5f, 0.5f, 0.0f}, InterpType::cosine};
   pdef.textureName = TextureName::AIR_BLAST;
@@ -293,11 +293,19 @@ static void addAirBlast(FXManager &mgr) {
   SubSystemDef ssdef(pdef, edef, 0.0f, 0.1f);
   ssdef.maxActiveParticles = 20;
   ssdef.emitFunc = [](AnimationContext& ctx, EmissionState& em, Particle& pinst) {
-	  defaultEmitParticle(ctx, em, pinst);
-	  float angle = ctx.ps.targetDirAngle;
-      pinst.movement = rotateVector(pinst.movement, angle) * ctx.ps.targetTileDist;
-	  pinst.pos = rotateVector(pinst.pos, angle);
-	  pinst.rot = ctx.uniform(-0.1f, 0.1f) + angle;
+    defaultEmitParticle(ctx, em, pinst);
+    float speed = sqrtf(ctx.ps.targetTileDist);
+    float angle = ctx.ps.targetDirAngle;
+    pinst.movement = rotateVector(pinst.movement, angle) * speed;
+    pinst.pos = rotateVector(pinst.pos, angle);
+    pinst.rot = ctx.uniform(-0.1f, 0.1f) + angle;
+    pinst.maxLife *= max(0.1f, speed);
+  };
+
+  ssdef.drawFunc = [](DrawContext& ctx, const Particle& pinst, DrawParticle& out) {
+    defaultDrawParticle(ctx, pinst, out);
+    float maxAlpha = clamp(pinst.life * 10.0f - 0.2f, 0.0f, 1.0f);
+    out.color.a = (unsigned char)(out.color.a * maxAlpha);
   };
 
   ParticleSystemDef psdef;
