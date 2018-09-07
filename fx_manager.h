@@ -22,9 +22,6 @@ public:
 
   // Animations will look correct even when FPS is low
   // The downside is that more simulation steps are required
-  //
-  // TODO: make sure that it works correctly with animation slowdown or pause
-  void simulateStableTime(double time, int desiredFps = 60);
   void simulateStable(double timeDelta, int desiredFps = 60);
   void simulate(float timeDelta);
 
@@ -83,6 +80,5 @@ public:
   unique_ptr<RandomGen> randomGen;
   uint spawnClock = 1;
   double accumFrameTime = 0.0f;
-  double oldTime = -1.0;
 };
 }
