@@ -292,7 +292,7 @@ ParticleSystem FXManager::makeSystem(FXName name, uint spawnTime, InitConfig con
     }
 
   auto& def = (*this)[name];
-  ParticleSystem out{name, config, spawnTime, (int)def.subSystems.size()};
+  ParticleSystem out{name, config, spawnTime, vector<ParticleSystem::SubSystem>((int)def.subSystems.size())};
   for (int ssid = 0; ssid < (int)out.subSystems.size(); ssid++) {
     auto& ss = out.subSystems[ssid];
     ss.randomSeed = randomGen->get(INT_MAX);
