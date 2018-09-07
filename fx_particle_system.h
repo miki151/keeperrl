@@ -39,10 +39,10 @@ struct SnapshotKey {
 
 // Initial configuration of spawned particle system
 struct InitConfig {
-  InitConfig(FVec2 pos = {}, FVec2 targetOff = {}) : pos(pos), targetOff(targetOff) {}
+  InitConfig(FVec2 pos = {}, FVec2 targetOffset = {}) : pos(pos), targetOffset(targetOffset) {}
   InitConfig(FVec2 pos, SnapshotKey key) : pos(pos), snapshotKey(key) {}
 
-  FVec2 pos, targetOff;
+  FVec2 pos, targetOffset;
   optional<SnapshotKey> snapshotKey;
 };
 
@@ -91,8 +91,7 @@ struct ParticleSystem {
     int totalParticles = 0;
   };
 
-  ParticleSystem(FXName, const InitConfig&, uint spawnTime, int numSubSystems);
-  ParticleSystem(FXName, const InitConfig&, uint spawnTime, vector<SubSystem> snapshot);
+  ParticleSystem(FXName, const InitConfig&, uint spawnTime, vector<SubSystem>);
   void randomize(RandomGen&);
 
   int numActiveParticles() const;
@@ -105,7 +104,8 @@ struct ParticleSystem {
 
   vector<SubSystem> subSystems;
   SystemParams params;
-  FVec2 pos, targetOff;
+  FVec2 pos, targetOffset, targetDir;
+  float targetDirAngle, targetTileDist;
 
   FXName defId;
   uint spawnTime;

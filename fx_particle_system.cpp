@@ -2,6 +2,7 @@
 
 #include "fx_defs.h"
 #include "fx_rect.h"
+#include "renderer.h"
 
 namespace fx {
 
@@ -29,12 +30,13 @@ bool SnapshotKey::operator==(const SnapshotKey& rhs) const {
   return true;
 }
 
-ParticleSystem::ParticleSystem(FXName defId, const InitConfig& config, uint spawnTime, int numSubSystems)
-    : subSystems(numSubSystems), pos(config.pos), targetOff(config.targetOff), defId(defId), spawnTime(spawnTime) {}
-
 ParticleSystem::ParticleSystem(FXName defId, const InitConfig& config, uint spawnTime, vector<SubSystem> snapshot)
-    : subSystems(std::move(snapshot)), pos(config.pos), targetOff(config.targetOff), defId(defId),
+    : subSystems(std::move(snapshot)), pos(config.pos), targetOffset(config.targetOffset), defId(defId),
       spawnTime(spawnTime) {
+  float dist = length(targetOffset);
+  targetDir = dist < 0.00001f ? FVec2(1, 0) : targetOffset / dist;
+  targetTileDist = dist / float(Renderer::nominalSize);
+  targetDirAngle = vectorToAngle(targetDir);
   if (config.snapshotKey)
     config.snapshotKey->apply(params);
 }

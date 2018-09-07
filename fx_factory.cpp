@@ -296,10 +296,7 @@ static void addSandDustEffect(FXManager& mgr) {
 
   ssdef.drawFunc = [](DrawContext& ctx, const Particle& pinst, DrawParticle& out) {
       auto temp = pinst;
-      auto dirVec = ctx.ps.targetOff == FVec2() ? FVec2(0.0f, 1.0f) : normalize(ctx.ps.targetOff);
-      float angle = vectorToAngle(dirVec);
-      temp.pos = rotateVector(temp.pos, angle) - dirVec;
-      temp.pos.y += 3.5f;
+      temp.pos = rotateVector(temp.pos, ctx.ps.targetDirAngle) + FVec2(0, 3.5f);
       temp.size = FVec2(1.2f, 0.6f);
       temp.rot = 0.0f;
       defaultDrawParticle(ctx, temp, out);
@@ -383,7 +380,7 @@ static void addMagicMissileEffect(FXManager& mgr) {
 
     ssdef.drawFunc = [](DrawContext& ctx, const Particle& pinst, DrawParticle& out) {
       auto temp = pinst;
-      temp.pos += temp.particleTime() * ctx.ps.targetOff;
+      temp.pos += temp.particleTime() * ctx.ps.targetOffset;
       defaultDrawParticle(ctx, temp, out);
       out.color = (IColor)(FColor(out.color) * FColor(ctx.ps.params.color[1]));
     };
@@ -417,10 +414,10 @@ static void addMagicMissileEffect(FXManager& mgr) {
 
     ssdef.emitFunc = [](AnimationContext& ctx, EmissionState& em, Particle& pinst) {
       defaultEmitParticle(ctx, em, pinst);
-      auto &parts = ctx.ps.subSystems[0].particles;
+      auto& parts = ctx.ps.subSystems[0].particles;
       if (!parts.empty()) {
         auto &gpart = parts.front();
-        pinst.pos += gpart.pos + gpart.particleTime() * ctx.ps.targetOff;
+        pinst.pos += gpart.pos + gpart.particleTime() * ctx.ps.targetOffset;
       }
       if (pinst.texTile.y < 2)
         pinst.texTile.y += 2;
@@ -451,7 +448,7 @@ static void addMagicMissileEffect(FXManager& mgr) {
       defaultEmitParticle(ctx, em, pinst);
       if (pinst.texTile.y < 2)
         pinst.texTile.y += 2;
-      pinst.pos += ctx.ps.targetOff;
+      pinst.pos += ctx.ps.targetOffset;
     };
     ssdef.drawFunc = [](DrawContext& ctx, const Particle& pinst, DrawParticle& out) {
       defaultDrawParticle(ctx, pinst, out);
@@ -475,7 +472,7 @@ static void addMagicMissileEffect(FXManager& mgr) {
     SubSystemDef ssdef(pdef, edef, flightTime, flightTime + 0.25f);
     ssdef.emitFunc = [](AnimationContext& ctx, EmissionState& em, Particle& pinst) {
       defaultEmitParticle(ctx, em, pinst);
-      pinst.pos += ctx.ps.targetOff;
+      pinst.pos += ctx.ps.targetOffset;
       pinst.texTile = {0, 0};
     };
     ssdef.drawFunc = [](DrawContext& ctx, const Particle& pinst, DrawParticle& out) {
@@ -610,7 +607,7 @@ static void addFireballEffect(FXManager& mgr) {
       auto temp = pinst;
       // TODO: add curve that lerps toward goal ?
       float flightPos = min(ctx.ps.animTime / flightTime, 1.0f);
-      temp.pos += ctx.pdef.scalarCurves[0].sample(flightPos) * ctx.ps.targetOff;
+      temp.pos += ctx.pdef.scalarCurves[0].sample(flightPos) * ctx.ps.targetOffset;
       defaultDrawParticle(ctx, temp, out);
     };
 
@@ -646,7 +643,7 @@ static void addFireballEffect(FXManager& mgr) {
       pinst.pos.x *= (1.0f + mod);
       pinst.movement *= (1.0f + mod);
       pinst.size *= (1.0f + mod * 0.25f);
-      pinst.pos += ctx.ps.targetOff;
+      pinst.pos += ctx.ps.targetOffset;
     };
 
     psdef.subSystems.emplace_back(ssdef);
@@ -679,7 +676,7 @@ static void addFireballEffect(FXManager& mgr) {
     ssdef.emitFunc = [](AnimationContext& ctx, EmissionState& em, Particle& pinst) {
       defaultEmitParticle(ctx, em, pinst);
       float flightPos = min(ctx.ps.animTime / flightTime, 1.0f);
-      pinst.pos += ctx.pdef.scalarCurves[0].sample(flightPos) * ctx.ps.targetOff;
+      pinst.pos += ctx.pdef.scalarCurves[0].sample(flightPos) * ctx.ps.targetOffset;
 
       float mod = ctx.ps.params.scalar[0];
       pinst.pos.x *= (1.0f + mod);
