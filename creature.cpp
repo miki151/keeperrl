@@ -141,7 +141,8 @@ CreatureAction Creature::castSpell(Spell* spell) const {
     return CreatureAction("You can't cast this spell yet.");
   return CreatureAction(this, [=] (WCreature c) {
     c->addSound(spell->getSound());
-    getGame()->addEvent(EventInfo::OtherEffect{c->getPosition(), FXName::CIRCULAR_BLAST});
+    if (auto fxName = spell->getFXName())
+      getGame()->addEvent(EventInfo::OtherEffect{c->getPosition(), *fxName});
     spell->addMessage(c);
     spell->getEffect().applyToCreature(c);
     getGame()->getStatistics().add(StatId::SPELL_CAST);
@@ -160,12 +161,9 @@ CreatureAction Creature::castSpell(Spell* spell, Vec2 dir) const {
   return CreatureAction(this, [=] (WCreature c) {
     c->addSound(spell->getSound());
     auto dirEffectType = spell->getDirEffectType();
-    if (auto fxName = spell->getFXName())
-      getGame()->addEvent(
-          EventInfo::OtherEffect{c->getPosition(), *fxName, Color::WHITE, dir * dirEffectType.getRange()});
     thirdPerson(getName().the() + " casts a spell");
     secondPerson("You cast " + spell->getName());
-    applyDirected(c, dir, dirEffectType);
+    applyDirected(c, dir, dirEffectType, spell->getFXName());
     getGame()->getStatistics().add(StatId::SPELL_CAST);
     c->attributes->getSpellMap().setReadyTime(spell, *getGlobalTime() + TimeInterval(
         int(spell->getDifficulty() * getWillpowerMult(attributes->getSkills().getValue(SkillId::SORCERY)))));

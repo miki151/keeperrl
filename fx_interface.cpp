@@ -99,3 +99,7 @@ void setDir(FXId tid, Dir dir, int paramIndex) {
   }
 }
 }
+
+bool fxesAvailable() {
+  return fx::FXManager::getInstance() != nullptr;
+}

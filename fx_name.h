@@ -27,3 +27,5 @@ RICH_ENUM(FXName,
   FLYING,
   FLYING2
 );
+
+bool fxesAvailable();
