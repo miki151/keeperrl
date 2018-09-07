@@ -190,5 +190,7 @@ class MapGui : public GuiElem {
   EntityMap<Creature, milliseconds> woundedInfo;
   void considerWoundedAnimation(const ViewObject&, Color&, milliseconds curTimeReal);
 
+  bool lastFxTurnBased = false;
+  double lastFxTimeReal = -1.0, lastFxTimeTurn = -1.0;
   unique_ptr<FXViewManager> fxViewManager;
 };
