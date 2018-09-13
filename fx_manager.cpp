@@ -104,6 +104,7 @@ void FXManager::simulate(ParticleSystem &ps, float timeDelta) {
     AnimationContext ctx(ssctx(ps, ssid), ps.animTime, timeDelta);
     ctx.rand.init(ss.randomSeed);
     EmissionState em{emissionTime};
+    memcpy(em.animationVars, ss.animationVars, sizeof(em.animationVars));
 
     float emission = ssdef.prepareFunc(ctx, em) + ss.emissionFract;
     int numParticles = int(emission);
@@ -119,7 +120,9 @@ void FXManager::simulate(ParticleSystem &ps, float timeDelta) {
       ss.particles.emplace_back(newInst);
       ss.totalParticles++;
     }
+
     ss.randomSeed = ctx.randomSeed(); // TODO: save random state properly?
+    memcpy(ss.animationVars, em.animationVars, sizeof(em.animationVars));
   }
 
   int numActive = 0;

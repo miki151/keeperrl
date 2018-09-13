@@ -30,6 +30,11 @@ bool SnapshotKey::operator==(const SnapshotKey& rhs) const {
   return true;
 }
 
+ParticleSystem::SubSystem::SubSystem() {
+  for (auto& animVar : animationVars)
+    animVar = 0.0f;
+}
+
 ParticleSystem::ParticleSystem(FXName defId, const InitConfig& config, uint spawnTime, vector<SubSystem> snapshot)
     : subSystems(std::move(snapshot)), pos(config.pos), targetOffset(config.targetOffset), defId(defId),
       spawnTime(spawnTime) {

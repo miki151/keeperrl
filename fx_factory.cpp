@@ -314,6 +314,45 @@ static void addAirBlast(FXManager &mgr) {
   mgr.addDef(FXName::AIR_BLAST, psdef);
 }
 
+static void addAirBlast2(FXManager& mgr) {
+  ParticleSystemDef psdef;
+
+  {
+    EmitterDef edef;
+    edef.frequency = {{400.0f, 0.0f}};
+
+    ParticleDef pdef;
+    pdef.life = 0.2f;
+    pdef.size = {{20.0f, 30.0f}};
+    pdef.alpha = {{0.0f, 0.2f, 1.0f}, {0.0f, 0.3f, 0.0f}, InterpType::cosine};
+    pdef.slowdown = 1.0f;
+    pdef.textureName = TextureName::BLAST;
+
+    SubSystemDef ssdef(pdef, edef, 0.0f, 0.3f);
+    ssdef.prepareFunc = [](AnimationContext& ctx, EmissionState& em) -> float {
+      auto freq = defaultPrepareEmission(ctx, em);
+      em.direction = ctx.ps.targetDirAngle;
+      em.directionSpread = 0.0f;
+      return freq;
+    };
+    ssdef.emitFunc = [](AnimationContext& ctx, EmissionState& em, Particle& pinst) {
+      defaultEmitParticle(ctx, em, pinst);
+      float posMax = min(1.0f, ctx.animTime * 10.0f);
+      float posMin = clamp(ctx.animTime * 10.0f - 0.5f, 0.0f, posMax * 0.5f);
+      float& pos = em.animationVars[0];
+      pinst.pos += ctx.ps.targetDir * 12.0f + ctx.ps.targetOffset * pos;
+      pos += 0.02f;
+      pinst.rot = ctx.ps.targetDirAngle;
+      pinst.size *= (0.8f + pos * 0.4f);
+      if (pos > 1.0f)
+        pinst.life = pinst.maxLife;
+    };
+
+    psdef.subSystems.emplace_back(ssdef);
+  }
+
+  mgr.addDef(FXName::AIR_BLAST2, psdef);
+}
 
 static void addSandDustEffect(FXManager& mgr) {
   EmitterDef edef;
@@ -1108,6 +1147,7 @@ void FXManager::initializeDefs() {
 
   addCircularBlast(*this);
   addAirBlast(*this);
+  addAirBlast2(*this);
   addMagicMissileEffect(*this);
   addFireballEffect(*this);
 

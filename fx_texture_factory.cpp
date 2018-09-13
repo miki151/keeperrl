@@ -24,6 +24,7 @@ static const char* texFileName(TextureName name) {
     CASE(FLAMES, "flames_4x4.png")
     CASE(FLAMES_BLURRED, "flames_blurred_4x4.png")
     CASE(AIR_BLAST, "air_blast.png")
+    CASE(BLAST, "blast.png")
     CASE(SPECIAL, "special_4x2.png")
 #undef CASE
   }

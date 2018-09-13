@@ -91,8 +91,8 @@ void Spell::init() {
   set(SpellId::TELEPORT, new Spell("escape", Effect::Teleport{}, 80, SoundId::SPELL_TELEPORT));
   set(SpellId::INVISIBILITY, new Spell("invisibility", Effect::Lasting{LastingEffect::INVISIBLE}, 150,
         SoundId::SPELL_INVISIBILITY, FXName::CIRCULAR_BLAST));
-  set(SpellId::BLAST, new Spell("blast", DirEffectType(4, DirEffectId::BLAST), 100, SoundId::SPELL_BLAST,
-      FXName::AIR_BLAST));
+  set(SpellId::BLAST,
+      new Spell("blast", DirEffectType(4, DirEffectId::BLAST), 100, SoundId::SPELL_BLAST, FXName::AIR_BLAST2));
   set(SpellId::MAGIC_MISSILE, new Spell("magic missile", DirEffectType(4, DirEffectId::CREATURE_EFFECT,
       Effect::Damage{AttrType::SPELL_DAMAGE, AttackType::SPELL}), 3, SoundId::SPELL_BLAST, FXName::MAGIC_MISSILE));
   set(SpellId::FIREBALL, new Spell("fireball", DirEffectType(4, DirEffectId::FIREBALL), 3, SoundId::SPELL_BLAST,

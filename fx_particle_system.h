@@ -84,8 +84,13 @@ struct DrawParticle {
 };
 
 struct ParticleSystem {
+  static constexpr int maxAnimVars = 8;
+
   struct SubSystem {
+    SubSystem();
+
     vector<Particle> particles;
+    float animationVars[maxAnimVars];
     float emissionFract = 0.0f;
     uint randomSeed = 123;
     int totalParticles = 0;
@@ -162,7 +167,6 @@ struct EmissionState {
   float strength, strengthSpread;
   float direction, directionSpread;
   float rotSpeed, rotSpeedSpread;
-
-  float var[128];
+  float animationVars[ParticleSystem::maxAnimVars];
 };
 }
