@@ -233,7 +233,7 @@ static void addRippleEffect(FXManager &mgr) {
   mgr.addDef(FXName::RIPPLE, psdef);
 }
 
-static void addCircularBlast(FXManager &mgr) {
+static void addCircularSpell(FXManager& mgr) {
   EmitterDef edef;
   edef.frequency = 50.0f;
   edef.initialSpawnCount = 10.0;
@@ -259,10 +259,10 @@ static void addCircularBlast(FXManager &mgr) {
 
   ParticleDef pdef;
   pdef.life = 0.5f;
-  pdef.size = {{10.0f, 80.0f}, InterpType::cosine};
+  pdef.size = {{10.0f, 60.0f}, InterpType::cosine};
   pdef.alpha = {{0.0f, 0.03f, 0.2f, 1.0f}, {0.0f, 0.15f, 0.15f, 0.0f}, InterpType::cosine};
 
-  pdef.color = {{0.5f, 0.8f}, {{1.0f, 1.0f, 1.0f}, {0.5f, 0.5f, 1.0f}}};
+  pdef.color = {{0.5f, 0.8f}, {{1.0f, 1.0f, 1.0f}, {0.5f, 0.5f, 0.5f}}};
   pdef.textureName = TextureName::TORUS;
 
   SubSystemDef ssdef(pdef, edef, 0.0f, 0.1f);
@@ -274,10 +274,10 @@ static void addCircularBlast(FXManager &mgr) {
   ParticleSystemDef psdef;
   psdef.subSystems = {ssdef};
 
-  mgr.addDef(FXName::CIRCULAR_BLAST, psdef);
+  mgr.addDef(FXName::CIRCULAR_SPELL, psdef);
 }
 
-static void addCircularBlast2(FXManager& mgr) {
+static void addCircularBlast(FXManager& mgr) {
   ParticleSystemDef psdef;
 
   {
@@ -323,7 +323,7 @@ static void addCircularBlast2(FXManager& mgr) {
     psdef.subSystems.emplace_back(ssdef);
   }
 
-  mgr.addDef(FXName::CIRCULAR_BLAST2, psdef);
+  mgr.addDef(FXName::CIRCULAR_BLAST, psdef);
 }
 
 static void addAirBlast(FXManager &mgr) {
@@ -1247,10 +1247,10 @@ void FXManager::initializeDefs() {
   addSandDustEffect(*this);
   addWaterSplashEffect(*this);
 
-  addCircularBlast(*this);
+  addCircularSpell(*this);
   addAirBlast(*this);
   addAirBlast2(*this);
-  addCircularBlast2(*this);
+  addCircularBlast(*this);
   addMagicMissileEffect(*this);
   addFireballEffect(*this);
 
