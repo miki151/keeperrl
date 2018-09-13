@@ -78,6 +78,7 @@ struct EmitterDef {
 
 using AnimateParticleFunc = void (*)(AnimationContext&, Particle&);
 using DrawParticleFunc = void (*)(DrawContext&, const Particle&, DrawParticle&);
+using DrawParticlesFunc = void (*)(DrawContext&, const Particle&, vector<DrawParticle>&);
 
 // Returns number of particles to emit
 // Fractionals will be accumulated over time
@@ -102,6 +103,7 @@ struct SubSystemDef {
   PrepareEmissionFunc prepareFunc = defaultPrepareEmission;
   EmitParticleFunc emitFunc = defaultEmitParticle;
   DrawParticleFunc drawFunc = defaultDrawParticle;
+  DrawParticlesFunc multiDrawFunc = nullptr;
 
   int maxActiveParticles = INT_MAX;
   int maxTotalParticles = INT_MAX; // TODO: how should we treat it in looped animations?

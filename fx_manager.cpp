@@ -247,12 +247,20 @@ vector<DrawParticle> FXManager::genQuads() {
       auto& tdef = textureDefs[pdef.textureName];
       DrawContext ctx{ssctx(ps, ssid), vinv(FVec2(tdef.tiles))};
 
-      for (auto &pinst : ss.particles) {
-        DrawParticle dparticle;
-        ctx.ssdef.drawFunc(ctx, pinst, dparticle);
-        dparticle.texName = pdef.textureName;
-        out.emplace_back(dparticle);
-      }
+      if (ctx.ssdef.multiDrawFunc)
+        for (auto& pinst : ss.particles) {
+          int num = out.size();
+          ctx.ssdef.multiDrawFunc(ctx, pinst, out);
+          for (int n = num; n < out.size(); n++)
+            out[n].texName = pdef.textureName;
+        }
+      else
+        for (auto& pinst : ss.particles) {
+          DrawParticle dparticle;
+          ctx.ssdef.drawFunc(ctx, pinst, dparticle);
+          dparticle.texName = pdef.textureName;
+          out.emplace_back(dparticle);
+        }
     }
   }
 
