@@ -78,6 +78,7 @@ Creature::Creature(const ViewObject& object, TribeId t, CreatureAttributes attr)
     obj->setGenericId(getUniqueId().getGenericId());
     obj->setModifier(ViewObject::Modifier::CREATURE);
   }
+  updateLastingFX(modViewObject());
 }
 
 Creature::Creature(TribeId t, CreatureAttributes attr)
@@ -177,6 +178,12 @@ void Creature::updateLastingFX(ViewObject& object) {
     if (isSpeciallyAffected(effect))
       if (auto fx = LastingEffects::getFXName(effect))
         object.particleEffects.insert(*fx);
+
+  // TODO: better way to do this? Replace view_id with FX in map_gui ?
+  if (object.id() == ViewId::FIRE_SPHERE && fxesAvailable()) {
+    object.setModifier(ViewObject::Modifier::HIDDEN);
+    object.particleEffects.insert(FXName::FIRE_SPHERE);
+  }
 }
 
 
