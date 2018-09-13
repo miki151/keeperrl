@@ -691,6 +691,58 @@ static void addFireEffect(FXManager& mgr) {
   mgr.genSnapshots(FXName::FIRE, {1.0f, 1.2f, 1.4f}, {0.0f, 0.2f, 0.4f, 0.6f, 0.8f, 1.0f}, 2);
 }
 
+static void addFireSphereEffect(FXManager& mgr) {
+  ParticleSystemDef psdef;
+
+  { // Fire
+    EmitterDef edef;
+    edef.strength = 20.0f;
+    edef.setDirectionSpread(-fconstant::pi * 0.5f, 0.2f);
+    edef.frequency = 40.0f;
+    edef.source = FRect(-4, 6, 4, 12);
+    edef.rotSpeed = 0.05f;
+
+    ParticleDef pdef;
+    pdef.life = 0.7f;
+    pdef.size = 8.0f;
+
+    pdef.color = {{IColor(185, 85, 30).rgb(), IColor(95, 35, 60).rgb()}};
+    pdef.alpha = {{0.0f, 0.2f, 0.8f, 1.0f}, {0.0f, 1.0f, 1.0f, 0.0f}};
+    pdef.textureName = TextureName::FLAMES;
+
+    SubSystemDef ssdef(pdef, edef, 0.0f, 1.0f);
+    psdef.subSystems.emplace_back(ssdef);
+  }
+
+  { // Glow
+    EmitterDef edef;
+    edef.frequency = 10.0f;
+    edef.source = FVec2(0, 2);
+
+    ParticleDef pdef;
+    pdef.life = 0.7f;
+    pdef.size = 26.0f;
+
+    pdef.color = {{IColor(185, 85, 30).rgb(), IColor(95, 35, 60).rgb()}};
+    pdef.alpha = {{0.0f, 0.2f, 0.8f, 1.0f}, {0.0f, 0.3f, 0.3f, 0.0f}};
+    pdef.textureName = TextureName::CIRCULAR_STRONG;
+
+    SubSystemDef ssdef(pdef, edef, 0.0f, 1.0f);
+    ssdef.emitFunc = [](AnimationContext& ctx, EmissionState& em, Particle& pinst) {
+      defaultEmitParticle(ctx, em, pinst);
+      pinst.size = FVec2(1.0f, 1.3f);
+      pinst.rot = 0.0f;
+    };
+    psdef.subSystems.emplace_back(ssdef);
+  }
+
+  psdef.isLooped = true;
+  psdef.animLength = 1.0f;
+
+  mgr.addDef(FXName::FIRE_SPHERE, psdef);
+  mgr.genSnapshots(FXName::FIRE_SPHERE, {1.0f, 1.2f, 1.4f}, {0.0f, 0.2f, 0.4f, 0.6f, 0.8f, 1.0f}, 2);
+}
+
 static void addFireballEffect(FXManager& mgr) {
   ParticleSystemDef psdef;
 
@@ -1190,6 +1242,7 @@ void FXManager::initializeDefs() {
   addExplosionEffect(*this);
   addRippleEffect(*this);
   addFireEffect(*this);
+  addFireSphereEffect(*this);
 
   addSandDustEffect(*this);
   addWaterSplashEffect(*this);
