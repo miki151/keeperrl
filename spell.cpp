@@ -98,7 +98,7 @@ void Spell::init() {
   set(SpellId::FIREBALL, new Spell("fireball", DirEffectType(4, DirEffectId::FIREBALL), 3, SoundId::SPELL_BLAST,
       FXName::FIREBALL));
   set(SpellId::CIRCULAR_BLAST, new Spell("circular blast", Effect::CircularBlast{}, 150, SoundId::SPELL_AIR_BLAST,
-        FXName::AIR_BLAST, CastMessageType::AIR_BLAST));
+        FXName::CIRCULAR_BLAST2, CastMessageType::AIR_BLAST));
   set(SpellId::SUMMON_SPIRIT, new Spell("summon spirits", Effect::Summon{CreatureId::SPIRIT}, 150,
         SoundId::SPELL_SUMMON_SPIRIT));
   set(SpellId::CURE_POISON, new Spell("cure poisoning", Effect::CurePoison{}, 150, SoundId::SPELL_CURE_POISON,

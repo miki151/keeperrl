@@ -24,8 +24,7 @@ struct SystemParams {
 // Snapshots allow to start animation in the middle
 // Snapshots are selected based on some of the system's parameters
 struct SnapshotKey {
-  SnapshotKey(float s0 = 0.0f, float s1 = 0.0f) : scalar{s0, s1} {
-  }
+  SnapshotKey(float s0 = 0.0f, float s1 = 0.0f) : scalar{s0, s1} {}
   SnapshotKey(const SystemParams&);
 
   static constexpr int maxScalars = SystemParams::maxScalars;

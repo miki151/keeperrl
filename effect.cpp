@@ -468,7 +468,7 @@ string Effect::Deception::getDescription() const {
 
 void Effect::CircularBlast::applyToCreature(WCreature c, WCreature attacker) const {
   for (Vec2 v : Vec2::directions8(Random))
-    applyDirected(c, v, DirEffectType(1, DirEffectId::BLAST), FXName::AIR_BLAST);
+    applyDirected(c, v, DirEffectType(1, DirEffectId::BLAST), FXName::DUMMY);
 }
 
 string Effect::CircularBlast::getName() const {
@@ -785,9 +785,10 @@ void applyDirected(WCreature c, Vec2 direction, const DirEffectType& type, optio
       break;
     }
 
-  if (fxesAvailable() && fx)
-    c->getGame()->addEvent(EventInfo::OtherEffect{begin, *fx, Color::WHITE, direction * range});
-  else if (auto projectile = getProjectile(type))
+  if (fxesAvailable() && fx) {
+    if (fx != FXName::DUMMY)
+      c->getGame()->addEvent(EventInfo::OtherEffect{begin, *fx, Color::WHITE, direction * range});
+  } else if (auto projectile = getProjectile(type))
     c->getGame()->addEvent(EventInfo::Projectile{*projectile, begin, begin.plus(direction * range)});
 
   switch (type.getId()) {
