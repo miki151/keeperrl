@@ -389,8 +389,8 @@ class EnumAll {
   Iter e;
 };
 
-#define ENUM_STRING(e) (EnumInfo<decltype(e)>::getString(e))
-#define ENUM_CSTRING(e) (EnumInfo<decltype(e)>::getString(e).c_str())
+#define ENUM_STRING(e) (EnumInfo<std::remove_cv<std::remove_reference<decltype(e)>::type>::type>::getString(e))
+#define ENUM_CSTRING(e) (EnumInfo<std::remove_cv<std::remove_reference<decltype(e)>::type>::type>::getString(e).c_str())
 
 #define ENUM_ALL(X) EnumAll<X>()
 #define ENUM_ALL_REVERSE(X) EnumAll<X>(EnumAll<X>::Reverse{})
