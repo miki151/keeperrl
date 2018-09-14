@@ -37,6 +37,7 @@
 #include "fx_manager.h"
 #include "fx_interface.h"
 #include "fx_view_manager.h"
+#include "furniture_fx.h"
 
 using SDL::SDL_Keysym;
 using SDL::SDL_Keycode;
@@ -562,9 +563,18 @@ static Color getPortalColor(int index) {
   return Color(255 * (index % 2), 255 * ((index / 2) % 2), 255 * ((index / 4) % 2));
 }
 
+optional<pair<FXName, Color>> overlayFX(ViewId id) {
+  if (isOneOf(id, ViewId::GOLD_ORE, ViewId::GOLD))
+    return make_pair(FXName::GLITTERING, Color::YELLOW);
+  if (id == ViewId::ADAMANTIUM_ORE)
+    return make_pair(FXName::GLITTERING, Color::LIGHT_BLUE);
+  return none;
+}
+
 void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& object, Vec2 size, Vec2 movement,
     Vec2 tilePos, milliseconds curTimeReal) {
   PROFILE;
+
   auto id = object.id();
   const Tile& tile = Tile::getTile(id, spriteMode);
   Color color = tile.color;
@@ -634,7 +644,10 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
       if (auto genericId = object.getGenericId()) {
         float fxPosX = tilePos.x + move.x / (float)size.x;
         float fxPosY = tilePos.y + move.y / (float)size.y;
+
         fxViewManager->addEntity(*genericId, fxPosX, fxPosY);
+        if (auto overlay = overlayFX(id))
+          fxViewManager->addFX(*genericId, FXDef{overlay->first, overlay->second});
         if (burningVal > 0.0f)
           fxViewManager->addFX(*genericId, FXDef{FXName::FIRE, Color::WHITE, min(1.0f, burningVal * 0.05f)});
         for (auto fx : object.particleEffects)
