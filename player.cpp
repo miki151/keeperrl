@@ -133,8 +133,9 @@ void Player::onEvent(const GameEvent& event) {
         }
       },
       [&](const OtherEffect& info) {
-        if (creature->canSee(info.position))
-          getView()->animation(info.effect, info.position.getCoord(), info.targetOffset, info.color);
+        // Effects were spawned twice: once from Player, once from PlayerControl
+        //if (creature->canSee(info.position))
+        //  getView()->animation(info.effect, info.position.getCoord(), info.targetOffset, info.color);
       },
       [&](const WonGame&) {
         if (adventurer)
