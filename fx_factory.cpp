@@ -1177,6 +1177,50 @@ static void addFlying2Effect(FXManager& mgr) {
   mgr.genSnapshots(FXName::FLYING2, {1.0f, 1.4f, 1.8f}, {}, 4);
 }
 
+static void addGlitteringEffect(FXManager& mgr) {
+  EmitterDef edef;
+  edef.strength = 0.0f;
+  edef.frequency = 0.15f;
+  edef.source = FRect(-10, -10, 10, 10);
+
+  // TODO: cząsteczki które nie giną ?
+  // TODO: może dodać tutaj jeszcze poświatę pod spód ?
+  ParticleDef pdef;
+  pdef.life = 0.5f;
+  pdef.size = 5.0f;
+  pdef.alpha = {{0.0f, 0.3f, 0.8f, 1.0f}, {0.0f, 1.0, 0.7, 0.0}, InterpType::cosine};
+
+  pdef.color = IColor(253, 247, 172).rgb();
+  pdef.textureName = TextureName::SPARKS_LIGHT;
+
+  SubSystemDef ssdef(pdef, edef, 0.0f, 1.0f);
+
+  ssdef.prepareFunc = [](AnimationContext& ctx, EmissionState& em) {
+    float freq = defaultPrepareEmission(ctx, em);
+    if (ctx.animTime == 0.0f)
+      em.animationVars[0] = ctx.uniform(0.0f, 0.99f);
+    freq += em.animationVars[0];
+    em.animationVars[0] = 0.0f;
+    return freq;
+  };
+
+  ssdef.emitFunc = [](AnimationContext& ctx, EmissionState& em, Particle& pinst) {
+    defaultEmitParticle(ctx, em, pinst);
+    pinst.rotSpeed = 1.5f;
+    float rand = ctx.uniform(0.0f, 0.5f);
+    if (rand > 0.47f)
+      rand += ctx.uniform(0.0f, 0.4f);
+    em.animationVars[0] += rand * rand * rand;
+  };
+
+  ParticleSystemDef psdef;
+  psdef.subSystems = {ssdef};
+  psdef.isLooped = true;
+  psdef.animLength = 1.0f;
+
+  mgr.addDef(FXName::GLITTERING, psdef);
+}
+
 void FXManager::initializeDefs() {
   addTestSimpleEffect(*this);
   addTestMultiEffect(*this);
@@ -1202,6 +1246,7 @@ void FXManager::initializeDefs() {
   addInsanityEffect(*this);
   addBlindEffect(*this);
   addPeacefulnessEffect(*this);
+  addGlitteringEffect(*this);
 
   addSlowEffect(*this);
   addSpeedEffect(*this);
