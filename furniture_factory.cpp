@@ -142,7 +142,6 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setDestroyable(40);
     case FurnitureType::GRAVE:
       return Furniture("grave", ViewObject(ViewId::GRAVE, ViewLayer::FLOOR), type, tribe)
-          .setUsageType(FurnitureUsageType::SLEEP)
           .setCanHide()
           .setTickType(FurnitureTickType::BED)
           .setDestroyable(40);
@@ -288,14 +287,34 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setCanHide()
           .setFireInfo(Fire(500, 0.5))
           .setDestroyable(30);
-    case FurnitureType::COFFIN:
-      return Furniture("coffin", ViewObject(ViewId::COFFIN, ViewLayer::FLOOR), type, tribe)
+    case FurnitureType::COFFIN1:
+      return Furniture("basic coffin", ViewObject(ViewId::COFFIN1, ViewLayer::FLOOR), type, tribe)
+          .setCanHide()
+          .setUsageType(FurnitureUsageType::SLEEP)
+          .setFireInfo(Fire(500, 0.5))
+          .setDestroyable(40);
+    case FurnitureType::COFFIN2:
+      return Furniture("fine coffin", ViewObject(ViewId::COFFIN2, ViewLayer::FLOOR), type, tribe)
+          .setCanHide()
+          .setUsageType(FurnitureUsageType::SLEEP)
+          .setLuxury(0.3)
+          .setFireInfo(Fire(500, 0.5))
+          .setDestroyable(40);
+    case FurnitureType::COFFIN3:
+      return Furniture("luxurious coffin", ViewObject(ViewId::COFFIN3, ViewLayer::FLOOR), type, tribe)
+          .setCanHide()
+          .setUsageType(FurnitureUsageType::SLEEP)
+          .setLuxury(0.7)
+          .setFireInfo(Fire(500, 0.5))
+          .setDestroyable(40);
+    case FurnitureType::LOOT_COFFIN:
+      return Furniture("coffin", ViewObject(ViewId::COFFIN1, ViewLayer::FLOOR), type, tribe)
           .setCanHide()
           .setUsageType(FurnitureUsageType::COFFIN)
           .setFireInfo(Fire(500, 0.5))
           .setDestroyable(40);
     case FurnitureType::VAMPIRE_COFFIN:
-      return Furniture("coffin", ViewObject(ViewId::COFFIN, ViewLayer::FLOOR), type, tribe)
+      return Furniture("coffin", ViewObject(ViewId::COFFIN1, ViewLayer::FLOOR), type, tribe)
           .setCanHide()
           .setUsageType(FurnitureUsageType::VAMPIRE_COFFIN)
           .setFireInfo(Fire(500, 0.5))
@@ -303,6 +322,7 @@ static Furniture get(FurnitureType type, TribeId tribe) {
     case FurnitureType::OPENED_COFFIN:
       return Furniture("opened coffin", ViewObject(ViewId::OPENED_COFFIN, ViewLayer::FLOOR), type, tribe)
           .setCanHide()
+          .setUsageType(FurnitureUsageType::SLEEP)
           .setFireInfo(Fire(500, 0.5))
           .setDestroyable(40);
     case FurnitureType::WOOD_DOOR:
@@ -707,6 +727,10 @@ bool FurnitureFactory::isUpgrade(FurnitureType base, FurnitureType upgraded) {
       return upgraded == FurnitureType::BED2 || upgraded == FurnitureType::BED3;
     case FurnitureType::BED2:
       return upgraded == FurnitureType::BED3;
+    case FurnitureType::COFFIN1:
+      return upgraded == FurnitureType::COFFIN2 || upgraded == FurnitureType::COFFIN3;
+    case FurnitureType::COFFIN2:
+      return upgraded == FurnitureType::COFFIN3;
     default:
       return false;
   }
@@ -775,7 +799,7 @@ FurnitureFactory FurnitureFactory::villageOutside(TribeId tribe) {
 
 FurnitureFactory FurnitureFactory::cryptCoffins(TribeId tribe) {
   return FurnitureFactory(tribe, {
-      {FurnitureType::COFFIN, 1},
+      {FurnitureType::LOOT_COFFIN, 1},
   }, {
       FurnitureType::VAMPIRE_COFFIN
   });

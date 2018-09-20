@@ -234,8 +234,11 @@ const char* ViewObject::getDefaultDescription() const {
     case ViewId::TREASURE_CHEST:
     case ViewId::CHEST: return "Chest";
     case ViewId::OPENED_CHEST: return "Opened chest";
-    case ViewId::COFFIN: return "Coffin";
-    case ViewId::CEMETERY: return "Cemetery";
+    case ViewId::OPENED_COFFIN: return "Opened coffin";
+    case ViewId::LOOT_COFFIN: return "Coffin";
+    case ViewId::COFFIN1: return "Basic coffin";
+    case ViewId::COFFIN2: return "Fine coffin";
+    case ViewId::COFFIN3: return "Luxurious coffin";
     case ViewId::GRAVE: return "Grave";
     case ViewId::PORTAL: return "Portal";
     case ViewId::WOOD_DOOR: return "Wooden door";

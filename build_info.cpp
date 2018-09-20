@@ -57,6 +57,8 @@ const vector<BuildInfo>& BuildInfo::get() {
              .setTutorialHighlight(TutorialHighlight::EQUIPMENT_STORAGE),
       BuildInfo({FurnitureType::TREASURE_CHEST, {ResourceId::WOOD, 5}}, "Treasure chest", {},
           "Stores gold.", 0, "Storage"),
+      BuildInfo({FurnitureType::GRAVE, {ResourceId::STONE, 5}}, "Grave", {},
+          "Spot for hauling dead bodies.", 0, "Storage"),
     });
     auto& quarters = Quarters::getAllQuarters();
     for (int i : All(quarters))
@@ -82,8 +84,12 @@ const vector<BuildInfo>& BuildInfo::get() {
              .setTutorialHighlight(TutorialHighlight::BUILD_BED),
       BuildInfo({FurnitureType::BED2, {ResourceId::IRON, 12}}, "Fine bed", {}, "Humanoid minions sleep here.", 0, "Living", true),
       BuildInfo({FurnitureType::BED3, {ResourceId::GOLD, 12}}, "Luxurious bed", {}, "Humanoid minions sleep here.", 0, "Living", true),
-      BuildInfo({FurnitureType::GRAVE, {ResourceId::STONE, 15}}, "Graveyard", {},
-          "Spot for hauling dead bodies and for undead creatures to sleep in.", 0, "Living"),
+      BuildInfo({FurnitureType::COFFIN1, {ResourceId::WOOD, 15}}, "Basic coffin", {},
+          "Undead creatures sleep here.", 0, "Living"),
+      BuildInfo({FurnitureType::COFFIN2, {ResourceId::STONE, 15}}, "Fine coffin", {},
+          "Undead creatures sleep here.", 0, "Living"),
+      BuildInfo({FurnitureType::COFFIN3, {ResourceId::GOLD, 15}}, "Luxurious coffin", {},
+          "Undead creatures sleep here.", 0, "Living"),
       BuildInfo({FurnitureType::BEAST_CAGE, {ResourceId::WOOD, 8}}, "Beast cage", {}, "Beasts sleep here.", 0, "Living"),
       BuildInfo({FurnitureType::PIGSTY, {ResourceId::WOOD, 5}}, "Pigsty",
           {{RequirementId::TECHNOLOGY, TechId::PIGSTY}},

@@ -170,7 +170,7 @@ string FurnitureUsage::getUsageQuestion(FurnitureUsageType type, string furnitur
     case FurnitureUsageType::VAMPIRE_COFFIN:
     case FurnitureUsageType::CHEST: return "open " + furnitureName;
     case FurnitureUsageType::FOUNTAIN: return "drink from " + furnitureName;
-    case FurnitureUsageType::SLEEP: return "sleep on " + furnitureName;
+    case FurnitureUsageType::SLEEP: return "sleep in " + furnitureName;
     case FurnitureUsageType::KEEPER_BOARD: return "view " + furnitureName;
     case FurnitureUsageType::PORTAL: return "enter " + furnitureName;
     default: break;

@@ -67,7 +67,9 @@ static bool isSleepingFurniture(FurnitureType t) {
     case FurnitureType::BED2:
     case FurnitureType::BED3:
     case FurnitureType::BEAST_CAGE:
-    case FurnitureType::GRAVE:
+    case FurnitureType::COFFIN1:
+    case FurnitureType::COFFIN2:
+    case FurnitureType::COFFIN3:
     case FurnitureType::PRISON:
       return true;
     default:
@@ -81,7 +83,7 @@ static optional<FurnitureType> getBedType(WConstCreature c) {
   if (c->getStatus().contains(CreatureStatus::PRISONER))
     return FurnitureType::PRISON;
   if (c->getBody().isUndead())
-    return FurnitureType::GRAVE;
+    return FurnitureType::COFFIN1;
   if (c->getBody().isHumanoid())
     return FurnitureType::BED1;
   else
