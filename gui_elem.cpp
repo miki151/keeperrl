@@ -2823,8 +2823,9 @@ SGuiElem GuiFactory::translucentBackgroundWithBorderPassMouse(SGuiElem content) 
 
 SGuiElem GuiFactory::translucentBackgroundWithBorder(SGuiElem content) {
   return stack(
-      rectangleBorder(Color::GRAY),
-      translucentBackground(std::move(content)));
+      translucentBackground(std::move(content)),
+      rectangleBorder(Color::GRAY)
+  );
 }
 
 SGuiElem GuiFactory::translucentBackground() {

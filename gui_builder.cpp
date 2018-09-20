@@ -386,14 +386,20 @@ SGuiElem GuiBuilder::drawBottomBandInfo(GameInfo& gameInfo) {
     }
     auto bottomLine = gui.getListBuilder();
     const int space = 55;
-    bottomLine.addElemAuto(getTurnInfoGui(gameInfo.time));
-    bottomLine.addSpace(space);
-    bottomLine.addElemAuto(getSunlightInfoGui(sunlightInfo));
+    bottomLine.addElemAuto(gui.stack(
+        gui.margins(gui.progressBar(Color::DARK_GREEN, info.dungeonLevelProgress), -6, -1, 0, -2),
+        gui.uiHighlightConditional([&]{ return info.blinkDungeonLevel; }),
+        gui.label("Level: " + toString(info.dungeonLevel)),
+        gui.button(getButtonCallback(UserInputId::TECHNOLOGY))
+    ));
     bottomLine.addSpace(space);
     bottomLine.addElemAuto(gui.labelFun([&info] {
           return "population: " + toString(info.minionCount) + " / " +
           toString(info.minionLimit); }));
     bottomLine.addSpace(space);
+    bottomLine.addElemAuto(getTurnInfoGui(gameInfo.time));
+    bottomLine.addSpace(space);
+    bottomLine.addElemAuto(getSunlightInfoGui(sunlightInfo));
     return gui.getListBuilder(28)
           .addElem(gui.centerHoriz(topLine.buildHorizontalList()))
           .addElem(gui.centerHoriz(bottomLine.buildHorizontalList()))
@@ -3407,15 +3413,6 @@ SGuiElem GuiBuilder::drawMinimapIcons(const GameInfo& gameInfo) {
     return tutorialInfo && tutorialInfo->highlights.contains(TutorialHighlight::MINIMAP_BUTTONS);
   };
   auto lines = gui.getListBuilder(legendLineHeight);
-  if (gameInfo.infoType == GameInfo::InfoType::BAND) {
-    auto& info = *gameInfo.playerInfo.getReferenceMaybe<CollectiveInfo>();
-    lines.addElem(gui.translucentBackgroundWithBorder(gui.stack(
-        gui.margins(gui.progressBar(Color::DARK_GREEN, info.dungeonLevelProgress), -6, -1, 0, -2),
-        gui.uiHighlightConditional([&]{ return info.blinkDungeonLevel; }),
-        gui.centerHoriz(gui.label("Level " + toString(info.dungeonLevel + 1))),
-        gui.button(getButtonCallback(UserInputId::TECHNOLOGY))
-    )));
-  }
   return lines.addElemAuto(
       gui.minimapBar(
         gui.preferredSize(48, 48, gui.stack(

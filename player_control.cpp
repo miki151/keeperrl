@@ -949,7 +949,7 @@ void PlayerControl::fillLibraryInfo(CollectiveInfo& collectiveInfo) const {
     auto& info = *collectiveInfo.libraryInfo;
     auto& dungeonLevel = collective->getDungeonLevel();
     if (!dungeonLevel.canConsumeLevel())
-      info.warning = "Conquer some villains to increase your malevolence level."_s;
+      info.warning = "Conquer some villains to advance your level."_s;
     info.dungeonLevel = collective->getDungeonLevel().level;
     auto techs = Technology::getNextTechs(collective->getTechnologies()).filter(
         [](const Technology* tech) { return tech->canResearch(); });
