@@ -203,8 +203,6 @@ class CreatureFactory {
   static ViewId getViewId(CreatureId);
   static const Gender& getGender(CreatureId);
 
-  static CreatureAttributes getDefaultAttributes(CreatureId);
-
   ~CreatureFactory();
   CreatureFactory& operator = (const CreatureFactory&);
   CreatureFactory(const CreatureFactory&);
