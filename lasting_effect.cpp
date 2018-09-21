@@ -752,22 +752,24 @@ bool LastingEffects::canConsume(LastingEffect effect) {
   }
 }
 
-optional<FXName> LastingEffects::getFXName(LastingEffect effect) {
+optional<FXVariantName> LastingEffects::getFX(LastingEffect effect) {
   switch (effect) {
     case LastingEffect::PEACEFULNESS:
-      return FXName::PEACEFULNESS;
+      return FXVariantName::PEACEFULNESS;
     case LastingEffect::SLEEP:
-      return FXName::SLEEP;
+      return FXVariantName::SLEEP;
     case LastingEffect::BLIND:
-      return FXName::BLIND;
+      return FXVariantName::BLIND;
     case LastingEffect::INSANITY:
-      return FXName::INSANITY;
+      return FXVariantName::INSANITY;
     case LastingEffect::SPEED:
-      return FXName::SPEED;
+      return FXVariantName::SPEED;
     case LastingEffect::SLOWED:
-      return FXName::DEBUFF;
+      return FXVariantName::DEBUFF_RED;
     case LastingEffect::FLYING:
-      return FXName::FLYING2;
+      return FXVariantName::FLYING;
+    case LastingEffect::POISON:
+      return FXVariantName::DEBUFF_GREEN;
     default:
       return none;
   }

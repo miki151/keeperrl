@@ -86,7 +86,7 @@ class ViewObject {
 
   SERIALIZATION_DECL(ViewObject);
 
-  EnumSet<FXName> particleEffects;
+  EnumSet<FXVariantName> particleEffects;
 
   private:
   const char* getDefaultDescription() const;
