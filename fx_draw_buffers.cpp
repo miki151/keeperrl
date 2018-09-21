@@ -32,11 +32,14 @@ void DrawBuffers::fill(const vector<DrawParticle>& particles) {
       union {
         struct {
           unsigned char r, g, b, a;
-        };
+        } channels;
         unsigned int ivalue;
       };
 
-      r = quad.color.r, g = quad.color.g, b = quad.color.b, a = quad.color.a;
+      channels.r = quad.color.r;
+      channels.g = quad.color.g;
+      channels.b = quad.color.b;
+      channels.a = quad.color.a;
       colors.emplace_back(ivalue);
     }
   }

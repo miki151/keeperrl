@@ -2148,7 +2148,7 @@ static string getMoraleNumber(double morale) {
 #ifndef RELEASE
   return toString(morale);
 #else
-  return toString((int)(10.0f * morale) / 10)
+  return toString((int)(10.0f * morale) / 10);
 #endif
 }
 
@@ -3409,8 +3409,8 @@ SGuiElem GuiBuilder::drawHighscores(const vector<HighscoreList>& list, Semaphore
 }
 
 SGuiElem GuiBuilder::drawMinimapIcons(const GameInfo& gameInfo) {
-  auto tutorialPredicate = [&tutorialInfo = gameInfo.tutorial] {
-    return tutorialInfo && tutorialInfo->highlights.contains(TutorialHighlight::MINIMAP_BUTTONS);
+  auto tutorialPredicate = [&gameInfo] {
+    return gameInfo.tutorial && gameInfo.tutorial->highlights.contains(TutorialHighlight::MINIMAP_BUTTONS);
   };
   auto lines = gui.getListBuilder(legendLineHeight);
   return lines.addElemAuto(
