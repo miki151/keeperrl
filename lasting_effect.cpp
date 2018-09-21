@@ -770,6 +770,9 @@ optional<FXVariantName> LastingEffects::getFX(LastingEffect effect) {
       return FXVariantName::FLYING;
     case LastingEffect::POISON:
       return FXVariantName::DEBUFF_GREEN;
+    case LastingEffect::TIED_UP:
+    case LastingEffect::ENTANGLED:
+      return FXVariantName::SPIRAL_BLUE;
     default:
       return none;
   }
