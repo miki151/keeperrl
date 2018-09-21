@@ -1293,7 +1293,7 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   info.enemyGroups = getEnemyGroups();
   info.numResource.clear();
   const auto dungeonLevel = collective->getDungeonLevel();
-  info.dungeonLevel = dungeonLevel.level;
+  info.dungeonLevel = dungeonLevel.level + 1;
   info.dungeonLevelProgress = dungeonLevel.progress;
   info.blinkDungeonLevel = dungeonLevel.canConsumeLevel();
   for (auto resourceId : ENUM_ALL(CollectiveResourceId)) {

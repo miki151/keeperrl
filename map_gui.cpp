@@ -1098,11 +1098,35 @@ void MapGui::considerScrollingToCreature() {
   }
 }
 
+void MapGui::updateFX(milliseconds currentTimeReal) {
+  if (auto *inst = fx::FXManager::getInstance())
+    inst->simulateStableTime(double(currentTimeReal.count()) * 0.001);
+/* // Advanced FX time control (to be reviewed before use)
+if (auto* inst = fx::FXManager::getInstance()) {
+  // FXes animation speed depends on game speed in real-time mode
+  // In turn based mode though animations are always running at constant speed
+  // (it would look bad otherwise)
+  bool isTurnBased = level->getGame()->isTurnBased();
+  double realTime = view->getAnimationTime() * 0.5, turnTime = double(currentTimeReal.count()) * 0.001;
+  double refTime = isTurnBased ? lastFxTimeTurn : lastFxTimeReal;
+  double maxTimeDiff = isTurnBased ? 0.1f : 0.25f;
+  double timeDiff = min((isTurnBased ? turnTime : realTime) - refTime, maxTimeDiff);
+  if (refTime < 0.0 || timeDiff < 0.0 || isTurnBased != lastFxTurnBased) {
+    timeDiff = 1.0 / 30.0;
+    lastFxTurnBased = isTurnBased;
+  }
+  inst->simulateStable(timeDiff);
+  lastFxTimeReal = realTime;
+  lastFxTimeTurn = turnTime;
+}*/
+}
+
 void MapGui::render(Renderer& renderer) {
   PROFILE;
+  auto currentTimeReal = clock->getRealMillis();
+  updateFX(currentTimeReal);
   considerScrollingToCreature();
   Vec2 size = layout->getSquareSize();
-  auto currentTimeReal = clock->getRealMillis();
   lastHighlighted = getHighlightedInfo(size, currentTimeReal);
 
   renderMapObjects(renderer, size, currentTimeReal);
@@ -1169,28 +1193,6 @@ void MapGui::updateObjects(CreatureView* view, MapLayout* mapLayout, bool smooth
   mouseUI = ui;
   layout = mapLayout;
   auto currentTimeReal = clock->getRealMillis();
-
-  if (auto* inst = fx::FXManager::getInstance())
-    inst->simulateStableTime(double(currentTimeReal.count()) * 0.001);
-
-  /* // Advanced FX time control (to be reviewed before use)
-  if (auto* inst = fx::FXManager::getInstance()) {
-    // FXes animation speed depends on game speed in real-time mode
-    // In turn based mode though animations are always running at constant speed
-    // (it would look bad otherwise)
-    bool isTurnBased = level->getGame()->isTurnBased();
-    double realTime = view->getAnimationTime() * 0.5, turnTime = double(currentTimeReal.count()) * 0.001;
-    double refTime = isTurnBased ? lastFxTimeTurn : lastFxTimeReal;
-    double maxTimeDiff = isTurnBased ? 0.1f : 0.25f;
-    double timeDiff = min((isTurnBased ? turnTime : realTime) - refTime, maxTimeDiff);
-    if (refTime < 0.0 || timeDiff < 0.0 || isTurnBased != lastFxTurnBased) {
-      timeDiff = 1.0 / 30.0;
-      lastFxTurnBased = isTurnBased;
-    }
-    inst->simulateStable(timeDiff);
-    lastFxTimeReal = realTime;
-    lastFxTimeTurn = turnTime;
-  }*/
 
   if (view != previousView || level != previousLevel)
     for (Vec2 pos : level->getBounds())
