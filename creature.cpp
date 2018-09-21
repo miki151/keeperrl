@@ -1388,16 +1388,6 @@ CreatureAction Creature::fire(Vec2 direction) const {
   });
 }
 
-static bool hasBridge(const Position& pos) {
-  if (auto floor = pos.getFurniture(FurnitureLayer::GROUND))
-    if (floor->getType() == FurnitureType::BRIDGE)
-      return true;
-  if (auto middle = pos.getFurniture(FurnitureLayer::MIDDLE))
-    if (middle->getType() == FurnitureType::BRIDGE)
-      return true;
-  return false;
-}
-
 void Creature::addMovementInfo(MovementInfo info) {
   modViewObject().addMovementInfo(info);
   getPosition().setNeedsRenderUpdate(true);
@@ -1408,10 +1398,10 @@ void Creature::addMovementInfo(MovementInfo info) {
   // We're assuming here that position has already been updated
   Position oldPos = position.minus(info.direction);
   if (auto ground = oldPos.getFurniture(FurnitureLayer::GROUND))
-    if (!hasBridge(oldPos))
+    if(!oldPos.getFurniture(FurnitureLayer::MIDDLE))
       ground->onCreatureWalkedOver(oldPos, info.direction);
   if (auto ground = position.getFurniture(FurnitureLayer::GROUND))
-    if (!hasBridge(position))
+    if(!oldPos.getFurniture(FurnitureLayer::MIDDLE))
       ground->onCreatureWalkedInto(position, info.direction);
 }
 
