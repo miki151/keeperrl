@@ -1177,6 +1177,44 @@ static void addFlying2Effect(FXManager& mgr) {
   mgr.genSnapshots(FXName::FLYING2, {1.0f, 1.4f, 1.8f}, {}, 4);
 }
 
+static void addDebuffEffect(FXManager& mgr) {
+  ParticleSystemDef psdef;
+  {
+    EmitterDef edef;
+    edef.initialSpawnCount = 1;
+
+    ParticleDef pdef;
+    pdef.life = 1.2f;
+    pdef.size = 28.0f;
+    pdef.alpha = {{0.0f, 0.25f, 0.7, 1.0f}, {0.0, 0.6, 0.2, 0.0}, InterpType::cosine};
+    pdef.textureName = TextureName::TORUS_BOTTOM;
+
+    SubSystemDef ssdef(pdef, edef, 0.0f, 1.0f);
+    ssdef.emitFunc = [](AnimationContext& ctx, EmissionState& em, Particle& pinst) {
+      defaultEmitParticle(ctx, em, pinst);
+      pinst.rot = 0.0f;
+    };
+    ssdef.maxActiveParticles = 1;
+
+    ssdef.animateFunc = [](AnimationContext& ctx, Particle& pinst) {
+      defaultAnimateParticle(ctx, pinst);
+
+      float pos = std::cos(ctx.animTime * 5.0f);
+      // Faster movement in the middle, slower on the edges:
+      pos = (pos < 0.0f ? -1.0f : 1.0f) * std::pow(std::abs(pos), 0.7);
+
+      pinst.pos = FVec2(0.0f, pos * 4.0f - 3.0f);
+      if (!ctx.ps.isDying)
+        pinst.life = min(pinst.life, 0.25f);
+    };
+
+    psdef.subSystems.emplace_back(ssdef);
+  }
+
+  mgr.addDef(FXName::DEBUFF, psdef);
+  mgr.genSnapshots(FXName::DEBUFF, {1.0f, 1.4f, 1.8f}, {}, 4);
+}
+
 static void addGlitteringEffect(FXManager& mgr) {
   EmitterDef edef;
   edef.strength = 0.0f;
@@ -1252,5 +1290,6 @@ void FXManager::initializeDefs() {
   addSpeedEffect(*this);
   addFlyingEffect(*this);
   addFlying2Effect(*this);
+  addDebuffEffect(*this);
 };
 }

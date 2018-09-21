@@ -30,7 +30,8 @@ RICH_ENUM(FXName,
   SLOW2,
   SPEED,
   FLYING,
-  FLYING2
+  FLYING2,
+  DEBUFF
 );
 
 bool fxesAvailable();
