@@ -968,7 +968,7 @@ static void addPeacefulnessEffect(FXManager &mgr) {
   mgr.genSnapshots(FXName::PEACEFULNESS, {2.0f, 2.2f, 2.4f, 2.6f, 2.8f});
 }
 
-static void addSlowEffect(FXManager &mgr) {
+static void addSpiralEffects(FXManager& mgr) {
   ParticleSystemDef psdef;
   psdef.isLooped = true;
   psdef.animLength = 1.0f;
@@ -1005,17 +1005,17 @@ static void addSlowEffect(FXManager &mgr) {
     };
 
     psdef.subSystems = {ssdef};
-    mgr.addDef(FXName::SLOW, psdef);
+    mgr.addDef(FXName::SPIRAL, psdef);
 
     ssdef.particle.textureName = TextureName::CIRCULAR_STRONG;
     ssdef.particle.size = 5.0f;
     ssdef.emitter.frequency = 5.0f;
     psdef.subSystems = {ssdef};
-    mgr.addDef(FXName::SLOW2, psdef);
+    mgr.addDef(FXName::SPIRAL2, psdef);
   }
 
-  mgr.genSnapshots(FXName::SLOW, {4.0f, 4.2f, 4.4f, 4.6f, 4.8f});
-  mgr.genSnapshots(FXName::SLOW2, {4.0f, 4.2f, 4.4f, 4.6f, 4.8f});
+  mgr.genSnapshots(FXName::SPIRAL, {4.0f, 4.2f, 4.4f, 4.6f, 4.8f});
+  mgr.genSnapshots(FXName::SPIRAL2, {4.0f, 4.2f, 4.4f, 4.6f, 4.8f});
 }
 
 static void addSpeedEffect(FXManager &mgr) {
@@ -1058,67 +1058,7 @@ static void addSpeedEffect(FXManager &mgr) {
   mgr.genSnapshots(FXName::SPEED, {2.0f, 2.2f, 2.4f, 2.6f, 2.8f});
 }
 
-static void addFlyingEffect(FXManager &mgr) {
-  ParticleSystemDef psdef;
-
-  { // clouds
-    EmitterDef edef;
-    edef.frequency = 12.0f;
-    edef.initialSpawnCount = 2.0f;
-    edef.setStrengthSpread(2.0f, 1.0f);
-    edef.setDirectionSpread(-fconstant::pi * 0.5f, 0.1f);
-    edef.source = FRect(-8.0f, 8.0f, 8.0f, 12.0f);
-
-    ParticleDef pdef;
-    pdef.life = 1.0f;
-    pdef.size = 16.0f;
-    pdef.alpha = {{0.0f, 0.5, 1.0f}, {0.0, 0.4, 0.0}, InterpType::cosine};
-
-    pdef.color = FVec3(1.0f);
-    pdef.textureName = TextureName::CLOUDS_SOFT;
-
-    SubSystemDef ssdef(pdef, edef, 0.0f, 1.0f);
-    ssdef.emitFunc = [](AnimationContext &ctx, EmissionState &em, Particle &pinst) {
-      defaultEmitParticle(ctx, em, pinst);
-      pinst.rot = 0.0f;
-      pinst.size = FVec2(1.2f, 0.6f);
-    };
-    psdef.subSystems.emplace_back(ssdef);
-  }
-
-  { // sparkles
-    EmitterDef edef;
-    edef.frequency = 12.0f;
-    edef.initialSpawnCount = 2.0f;
-    edef.setStrengthSpread(17.5f, 2.5f);
-    edef.setDirectionSpread(-fconstant::pi * 0.5f, 0.1f);
-    edef.source = FRect(-8.0f, 8.0f, 8.0f, 12.0f);
-
-    ParticleDef pdef;
-    pdef.life = 1.0f;
-    pdef.size = 6.0f;
-    pdef.alpha = {{0.0f, 0.5, 1.0f}, {0.0, 0.5, 0.0}, InterpType::cosine};
-
-    pdef.color = IColor(253, 247, 122).rgb();
-    pdef.textureName = TextureName::SPECIAL;
-
-    SubSystemDef ssdef(pdef, edef, 0.0f, 1.0f);
-    ssdef.emitFunc = [](AnimationContext &ctx, EmissionState &em, Particle &pinst) {
-      defaultEmitParticle(ctx, em, pinst);
-      pinst.texTile = {0, 1};
-    };
-
-    psdef.subSystems.emplace_back(ssdef);
-  }
-
-  psdef.isLooped = true;
-  psdef.animLength = 1.0f;
-
-  mgr.addDef(FXName::FLYING, psdef);
-  mgr.genSnapshots(FXName::FLYING, {1.0f, 1.4f, 1.8f}, {}, 4);
-}
-
-static void addFlying2Effect(FXManager& mgr) {
+static void addFlyingEffect(FXManager& mgr) {
   ParticleSystemDef psdef;
   {
     EmitterDef edef;
@@ -1173,8 +1113,8 @@ static void addFlying2Effect(FXManager& mgr) {
   psdef.isLooped = true;
   psdef.animLength = 1.0f;
 
-  mgr.addDef(FXName::FLYING2, psdef);
-  mgr.genSnapshots(FXName::FLYING2, {1.0f, 1.4f, 1.8f}, {}, 4);
+  mgr.addDef(FXName::FLYING, psdef);
+  mgr.genSnapshots(FXName::FLYING, {1.0f, 1.4f, 1.8f}, {}, 4);
 }
 
 static void addDebuffEffect(FXManager& mgr) {
@@ -1286,10 +1226,9 @@ void FXManager::initializeDefs() {
   addPeacefulnessEffect(*this);
   addGlitteringEffect(*this);
 
-  addSlowEffect(*this);
+  addSpiralEffects(*this);
   addSpeedEffect(*this);
   addFlyingEffect(*this);
-  addFlying2Effect(*this);
   addDebuffEffect(*this);
 };
 }

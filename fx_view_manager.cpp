@@ -17,7 +17,7 @@ FXDef getDef(FXVariantName var) {
   case Name::SLEEP:
     return {FXName::SLEEP};
   case Name::FLYING:
-    return {FXName::FLYING2};
+    return {FXName::FLYING};
   case Name::FIRE_SPHERE:
     return {FXName::FIRE_SPHERE};
   case Name::DEBUFF_RED:
