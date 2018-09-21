@@ -880,12 +880,6 @@ PCreature CreatureFactory::getSpecial(TribeId tribe, bool humanoid, bool large, 
   return c;
 }
 
-CreatureAttributes CreatureFactory::getDefaultAttributes(CreatureId id) {
-  if ((id >= CreatureId::SPECIAL_BLBN && id <= CreatureId::SPECIAL_HMGW) || id == CreatureId::SOKOBAN_BOULDER)
-    return {};
-  return getAttributesFromId(id);
-}
-
 CreatureAttributes CreatureFactory::getAttributes(CreatureId id) {
   auto ret = getAttributesFromId(id);
   ret.setCreatureId(id);

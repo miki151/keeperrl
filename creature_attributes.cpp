@@ -21,7 +21,6 @@
 #include "player_message.h"
 #include "item.h"
 #include "item_factory.h"
-#include "creature_factory.h"
 #include "body.h"
 #include "attack_level.h"
 #include "attack_type.h"
@@ -361,29 +360,6 @@ optional<ViewObject>& CreatureAttributes::getIllusionViewObject() {
 
 bool CreatureAttributes::canEquip() const {
   return !cantEquip;
-}
-
-static bool isInnateEffect(LastingEffect effect, CreatureId creatureId) {
-  static bool isMapInitialized = false;
-  static EnumMap<CreatureId, EnumSet<LastingEffect>> innateEffects;
-
-  if (!isMapInitialized) {
-    for (auto id : ENUM_ALL(CreatureId)) {
-      auto attribs = CreatureFactory::getDefaultAttributes(id);
-      EnumSet<LastingEffect> set;
-      for (auto effect : ENUM_ALL(LastingEffect))
-        if (attribs.isAffectedPermanently(effect))
-          set.insert(effect);
-      innateEffects[id] = set;
-    }
-    isMapInitialized = true;
-  }
-
-  return innateEffects[creatureId].contains(effect);
-}
-
-bool CreatureAttributes::isAffectedNaturally(LastingEffect effect) const {
-  return creatureId && isInnateEffect(effect, *creatureId);
 }
 
 bool CreatureAttributes::isAffectedPermanently(LastingEffect effect) const {
