@@ -11,6 +11,10 @@ void FXManager::initializeTextureDef(TextureName name, TextureDef& def) {
     def.fileName = "circular.png";
     break;
 
+  case TextureName::CIRCULAR_STRONG:
+    def.fileName = "circular_strong.png";
+    break;
+
   case TextureName::FLAKES_BORDERS:
     def.fileName = "flakes_4x4_borders.png";
     def.tiles = {4, 4};
@@ -33,7 +37,14 @@ void FXManager::initializeTextureDef(TextureName name, TextureDef& def) {
 
   case TextureName::TORUS:
     def.fileName = "torus.png";
-    def.tiles = {1, 1};
+    break;
+
+  case TextureName::TORUS_BOTTOM:
+    def.fileName = "torus_bottom.png";
+    break;
+
+  case TextureName::TORUS_BOTTOM_BLURRED:
+    def.fileName = "torus_bottom_blurred.png";
     break;
 
   case TextureName::MAGIC_MISSILE:
@@ -63,8 +74,8 @@ void FXManager::initializeTextureDef(TextureName name, TextureDef& def) {
 
 void FXManager::initializeTextureDefs() {
   for (auto name : ENUM_ALL(TextureName)) {
-    initializeTextureDef(name, m_textureDefs[name]);
-    m_textureDefs[name].validate();
+    initializeTextureDef(name, textureDefs[name]);
+    textureDefs[name].validate();
   }
 }
 

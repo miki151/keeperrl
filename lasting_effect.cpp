@@ -765,9 +765,9 @@ optional<FXName> LastingEffects::getFXName(LastingEffect effect) {
     case LastingEffect::SPEED:
       return FXName::SPEED;
     case LastingEffect::SLOWED:
-      return FXName::SLOW;
+      return FXName::SLOW2;
     case LastingEffect::FLYING:
-      return FXName::FLYING;
+      return FXName::FLYING2;
     default:
       return none;
   }

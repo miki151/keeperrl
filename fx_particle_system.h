@@ -16,6 +16,8 @@ struct SystemParams {
   // These params shouldn't affect system behaviour
   // Otherwise snapshots won't work as expected
   FVec3 color[maxColors] = {FVec3(1.0), FVec3(1.0)};
+
+  // TODO: remove these, use InitConfig::targetOff instead
   Dir dir[maxDirs] = {Dir::N, Dir::N};
 };
 
@@ -47,19 +49,19 @@ struct InitConfig {
 // Identifies a particluar particle system instance
 class ParticleSystemId {
 public:
-  ParticleSystemId() : m_index(-1) {}
-  ParticleSystemId(int index, uint spawnTime) : m_index(index), m_spawnTime(spawnTime) {}
+  ParticleSystemId() : index(-1) {}
+  ParticleSystemId(int index, uint spawnTime) : index(index), spawnTime(spawnTime) {}
 
-  bool validIndex() const { return m_index >= 0; }
+  bool validIndex() const { return index >= 0; }
   explicit operator bool() const { return validIndex(); }
 
-  operator int() const { return m_index; }
-  int index() const { return m_index; }
-  uint spawnTime() const { return m_spawnTime; }
+  operator int() const { return index; }
+  int getIndex() const { return index; }
+  uint getSpawnTime() const { return spawnTime; }
 
 private:
-  int m_index;
-  uint m_spawnTime;
+  int index;
+  uint spawnTime;
 };
 
 struct Particle {
@@ -88,7 +90,6 @@ struct ParticleSystem {
     uint randomSeed = 123;
     int totalParticles = 0;
   };
-
 
   ParticleSystem(FXName, const InitConfig&, uint spawnTime, int numSubSystems);
   ParticleSystem(FXName, const InitConfig&, uint spawnTime, vector<SubSystem> snapshot);

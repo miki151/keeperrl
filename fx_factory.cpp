@@ -287,30 +287,27 @@ static void addFeetDustEffect(FXManager &mgr) {
   // drugim parametrem jest kolor (choć chyba będzie uzywany tylko na piasku?)
 
   EmitterDef edef;
-  edef.source = FRect(-3, -0.5f, 3, 0.5f);
+  edef.source = FRect(-6, -6, 6, 6);
   edef.setStrengthSpread(17.5f, 2.5f);
   edef.setDirectionSpread(0.0f, 0.0f);
-  edef.frequency = 60.0f;
+  edef.frequency = 30.0f;
 
   ParticleDef pdef;
-  pdef.life = 1.25f;
-  pdef.size = {{0.0f, 0.1f, 1.0f}, {5.0f, 14.0f, 20.0f}, InterpType::quadratic};
+  pdef.life = 0.4f;
+  pdef.size = {{0.0f, 0.1f, 1.0f}, {5.0f, 10.0f, 14.0f}, InterpType::quadratic};
   pdef.alpha = {{0.0f, 0.05f, 0.2f, 1.0f}, {0.0f, 0.2f, 0.3f, 0.0f}};
   pdef.slowdown = {{0.0f, 0.2f}, {0.0f, 10.0f}};
-
-  FVec3 start_color(0.9), end_color(0.7);
-  pdef.color = {{start_color, end_color}};
+  pdef.color = FVec3(1, 0.9, 0.7);
   pdef.textureName = TextureName::CLOUDS_SOFT;
 
   SubSystemDef ssdef(pdef, edef, 0.0f, 0.2f);
-  // TODO: różna liczba początkowych cząsteczek
-  ssdef.maxTotalParticles = 3;
+  ssdef.maxTotalParticles = 6;
 
   ssdef.drawFunc = [](DrawContext& ctx, const Particle& pinst, DrawParticle& out) {
       auto temp = pinst;
-	  // TODO: optimize this...
-	  float angle = vectorToAngle(normalize(dirToVec(ctx.ps.params.dir[0])));
-      temp.pos = rotateVector(temp.pos, angle) - dirToVec(ctx.ps.params.dir[0]);
+	  auto dirVec = ctx.ps.targetOff == FVec2()? FVec2(0.0f, 1.0f) : normalize(ctx.ps.targetOff);
+	  float angle = vectorToAngle(dirVec);
+      temp.pos = rotateVector(temp.pos, angle) - dirVec;
 	  temp.pos.y += 3.5f;
 	  temp.size = FVec2(1.2f, 0.6f);
 	  temp.rot = 0.0f;
@@ -320,6 +317,7 @@ static void addFeetDustEffect(FXManager &mgr) {
 
   ParticleSystemDef psdef;
   psdef.subSystems = {ssdef};
+
   mgr.addDef(FXName::FEET_DUST, psdef);
 }
 
@@ -548,8 +546,8 @@ static void addFireEffect(FXManager& mgr) {
 
   psdef.isLooped = true;
   psdef.animLength = 1.0f;
-  mgr.addDef(FXName::FIRE, psdef);
 
+  mgr.addDef(FXName::FIRE, psdef);
   mgr.genSnapshots(FXName::FIRE, {1.0f, 1.2f, 1.4f}, {0.0f, 0.2f, 0.4f, 0.6f, 0.8f, 1.0f}, 2);
 }
 
@@ -703,7 +701,9 @@ static void addSleepEffect(FXManager& mgr) {
   psdef.subSystems = {ssdef};
   psdef.isLooped = true;
   psdef.animLength = 1.0f;
+
   mgr.addDef(FXName::SLEEP, psdef);
+  mgr.genSnapshots(FXName::SLEEP, {2.0f, 2.2f, 2.4f, 2.6f, 2.8f});
 }
 
 static const array<IColor, 6> insanityColors = {{
@@ -743,7 +743,9 @@ static void addInsanityEffect(FXManager &mgr) {
   psdef.subSystems = {ssdef};
   psdef.isLooped = true;
   psdef.animLength = 1.0f;
+
   mgr.addDef(FXName::INSANITY, psdef);
+  mgr.genSnapshots(FXName::INSANITY, {1.0f, 1.2f, 1.4f, 1.6f, 1.8f});
 }
 
 static void addBlindEffect(FXManager &mgr) {
@@ -793,7 +795,9 @@ static void addBlindEffect(FXManager &mgr) {
   psdef.subSystems = {ssdef};
   psdef.isLooped = true;
   psdef.animLength = 1.0f;
+
   mgr.addDef(FXName::BLIND, psdef);
+  mgr.genSnapshots(FXName::BLIND, {2.0f, 2.2f, 2.4f, 2.6f, 2.8f});
 }
 
 static void addPeacefulnessEffect(FXManager &mgr) {
@@ -823,47 +827,59 @@ static void addPeacefulnessEffect(FXManager &mgr) {
   psdef.subSystems = {ssdef};
   psdef.isLooped = true;
   psdef.animLength = 1.0f;
+
   mgr.addDef(FXName::PEACEFULNESS, psdef);
+  mgr.genSnapshots(FXName::PEACEFULNESS, {2.0f, 2.2f, 2.4f, 2.6f, 2.8f});
 }
 
 static void addSlowEffect(FXManager &mgr) {
-  EmitterDef edef;
-  edef.frequency = 10.0f;
-  edef.initialSpawnCount = 1.0f;
-  edef.setDirectionSpread(fconstant::pi * 0.5f, 0.0f);
-  edef.strength = 2.5f;
-  edef.source = FVec2(0.0f, -4.0f);
-
-  ParticleDef pdef;
-  pdef.life = 4.0f;
-  pdef.size = 10.0f;
-  pdef.alpha = {{0.0f, 0.1f, 0.8f, 1.0f}, {0.0, 0.7f, 0.7f, 0.0}};
-
-  pdef.color = FVec3(0.7f, 1.0f, 0.6f);
-  pdef.textureName = TextureName::CIRCULAR;
-
-  SubSystemDef ssdef(pdef, edef, 0.0f, 1.0f);
-  ssdef.emitFunc = [](AnimationContext &ctx, EmissionState &em, Particle &pinst) {
-    defaultEmitParticle(ctx, em, pinst);
-    pinst.rot = 0.0f;
-  };
-  ssdef.drawFunc = [](DrawContext &ctx, const Particle &pinst, DrawParticle &out) {
-    Particle temp(pinst);
-    FVec2 circlePos = angleToVector(12.0f - pinst.life * 3.0f);
-    temp.pos += circlePos * FVec2(10.0f, 4.0f);
-    defaultDrawParticle(ctx, temp, out);
-    float alphaMul = dot(circlePos, FVec2(0.0f, 1.0f));
-    float alpha = float(out.color.a) * clamp(alphaMul + 0.3f, 0.0f, 1.0f);
-    out.color.a = (unsigned char)(alpha);
-  };
-
   ParticleSystemDef psdef;
-  psdef.subSystems = {ssdef};
   psdef.isLooped = true;
   psdef.animLength = 1.0f;
-  mgr.addDef(FXName::SLOW, psdef);
+
+  {
+    EmitterDef edef;
+    edef.frequency = 10.0f;
+    edef.initialSpawnCount = 1.0f;
+    edef.setDirectionSpread(fconstant::pi * 0.5f, 0.0f);
+    edef.strength = 2.5f;
+    edef.source = FVec2(0.0f, -4.0f);
+
+    ParticleDef pdef;
+    pdef.life = 4.0f;
+    pdef.size = 10.0f;
+    pdef.alpha = {{0.0f, 0.1f, 0.8f, 1.0f}, {0.0, 0.7f, 0.7f, 0.0}};
+
+    pdef.color = FVec3(0.7f, 1.0f, 0.6f);
+    pdef.textureName = TextureName::CIRCULAR;
+
+    SubSystemDef ssdef(pdef, edef, 0.0f, 1.0f);
+    ssdef.emitFunc = [](AnimationContext& ctx, EmissionState& em, Particle& pinst) {
+      defaultEmitParticle(ctx, em, pinst);
+      pinst.rot = 0.0f;
+    };
+    ssdef.drawFunc = [](DrawContext& ctx, const Particle& pinst, DrawParticle& out) {
+      Particle temp(pinst);
+      FVec2 circlePos = angleToVector(10.0f - pinst.life * 3.0f);
+      temp.pos += circlePos * FVec2(10.0f, 4.0f);
+      defaultDrawParticle(ctx, temp, out);
+      float alphaMul = dot(circlePos, FVec2(0.0f, 1.0f));
+      float alpha = float(out.color.a) * clamp(alphaMul + 0.3f, 0.0f, 1.0f);
+      out.color.a = (unsigned char)(alpha);
+    };
+
+    psdef.subSystems = {ssdef};
+    mgr.addDef(FXName::SLOW, psdef);
+
+    ssdef.particle.textureName = TextureName::CIRCULAR_STRONG;
+    ssdef.particle.size = 5.0f;
+    ssdef.emitter.frequency = 5.0f;
+    psdef.subSystems = {ssdef};
+    mgr.addDef(FXName::SLOW2, psdef);
+  }
 
   mgr.genSnapshots(FXName::SLOW, {4.0f, 4.2f, 4.4f, 4.6f, 4.8f});
+  mgr.genSnapshots(FXName::SLOW2, {4.0f, 4.2f, 4.4f, 4.6f, 4.8f});
 }
 
 static void addSpeedEffect(FXManager &mgr) {
@@ -901,8 +917,8 @@ static void addSpeedEffect(FXManager &mgr) {
   psdef.subSystems = {ssdef};
   psdef.isLooped = true;
   psdef.animLength = 1.0f;
-  mgr.addDef(FXName::SPEED, psdef);
 
+  mgr.addDef(FXName::SPEED, psdef);
   mgr.genSnapshots(FXName::SPEED, {2.0f, 2.2f, 2.4f, 2.6f, 2.8f});
 }
 
@@ -961,9 +977,68 @@ static void addFlyingEffect(FXManager &mgr) {
 
   psdef.isLooped = true;
   psdef.animLength = 1.0f;
-  mgr.addDef(FXName::FLYING, psdef);
 
+  mgr.addDef(FXName::FLYING, psdef);
   mgr.genSnapshots(FXName::FLYING, {1.0f, 1.4f, 1.8f}, {}, 4);
+}
+
+static void addFlying2Effect(FXManager& mgr) {
+  ParticleSystemDef psdef;
+  {
+    EmitterDef edef;
+    edef.frequency = 2.0f;
+    edef.strength = 24.0f;
+    edef.setDirectionSpread(-fconstant::pi * 0.5f, 0.f);
+    edef.source = FVec2(0.0f, 10.0f);
+
+    ParticleDef pdef;
+    pdef.life = 0.8f;
+    pdef.size = {{0.0f, 1.0f}, {32.0f, 24.0f}, InterpType::cosine};
+    pdef.alpha = {{0.0f, 0.25f, 0.7, 1.0f}, {0.0, 0.6, 0.2, 0.0}, InterpType::cosine};
+    pdef.color = FVec3(1.0f);
+    pdef.textureName = TextureName::TORUS_BOTTOM;
+
+    SubSystemDef ssdef(pdef, edef, 0.0f, 1.0f);
+    ssdef.emitFunc = [](AnimationContext& ctx, EmissionState& em, Particle& pinst) {
+      defaultEmitParticle(ctx, em, pinst);
+      pinst.rot = 0.0f;
+    };
+    psdef.subSystems.emplace_back(ssdef);
+  }
+
+  {
+    EmitterDef edef;
+    edef.frequency = 1.0f;
+    edef.source = FVec2(0.0f, 4.0f);
+    edef.initialSpawnCount = 1.0f;
+
+    ParticleDef pdef;
+    pdef.life = 1.5f;
+    pdef.size = 24.0f;
+    pdef.alpha = {{0.0f, 0.33333f, 0.6666f, 1.0f}, {0.0, 1.0, 1.0, 0.0}, InterpType::cosine};
+    pdef.color = FVec3(0.6f, 0.8f, 1.0f);
+    pdef.textureName = TextureName::TORUS_BOTTOM_BLURRED;
+
+    SubSystemDef ssdef(pdef, edef, 0.0f, 1.0f);
+    ssdef.emitFunc = [](AnimationContext& ctx, EmissionState& em, Particle& pinst) {
+      defaultEmitParticle(ctx, em, pinst);
+      pinst.rot = 0.0f;
+    };
+
+    ssdef.animateFunc = [](AnimationContext& ctx, Particle& pinst) {
+      defaultAnimateParticle(ctx, pinst);
+      if (!ctx.ps.isDying)
+        pinst.life = min(pinst.life, 1.0f);
+    };
+    ssdef.maxTotalParticles = 1;
+    psdef.subSystems.emplace_back(ssdef);
+  }
+
+  psdef.isLooped = true;
+  psdef.animLength = 1.0f;
+
+  mgr.addDef(FXName::FLYING2, psdef);
+  mgr.genSnapshots(FXName::FLYING2, {1.0f, 1.4f, 1.8f}, {}, 4);
 }
 
 void FXManager::initializeDefs() {
@@ -989,5 +1064,6 @@ void FXManager::initializeDefs() {
   addSlowEffect(*this);
   addSpeedEffect(*this);
   addFlyingEffect(*this);
+  addFlying2Effect(*this);
 };
 }

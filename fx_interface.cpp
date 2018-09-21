@@ -16,7 +16,7 @@ FXId spawnEffect(FXName name, float x, float y, Vec2 dir) {
     auto ftargetOff = FVec2(dir.x, dir.y) * Renderer::nominalSize;
     auto instId = inst->addSystem(name, {fpos, ftargetOff});
     INFO << "FX spawn: " << EnumInfo<FXName>::getString(name) << " at:" << x << ", " << y << " dir:" << dir;
-    return {instId.index(), instId.spawnTime()};
+    return {instId.getIndex(), instId.getSpawnTime()};
   }
 
   return {-1, -1};
@@ -27,7 +27,7 @@ FXId spawnSnapshotEffect(FXName name, float x, float y, float scalar0, float sca
     auto fpos = (FVec2(x, y) + FVec2(0.5f)) * Renderer::nominalSize;
     auto instId = inst->addSystem(name, {fpos, SnapshotKey{scalar0, scalar1}});
     INFO << "FX spawn: " << EnumInfo<FXName>::getString(name) << " at:" << x << ", " << y;
-    return {instId.index(), instId.spawnTime()};
+    return {instId.getIndex(), instId.getSpawnTime()};
   }
 
   return {-1, -1};
