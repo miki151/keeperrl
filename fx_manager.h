@@ -20,6 +20,9 @@ public:
   // TODO: better way to communicate with FXManager ?
   static FXManager *getInstance();
 
+  // TODO: make sure that it works correctly with animation slowdown or pause
+  void simulateStableTime(double time, int desiredFps = 60);
+
   // Animations will look correct even when FPS is low
   // The downside is that more simulation steps are required
   void simulateStable(double timeDelta, int desiredFps = 60);
@@ -80,5 +83,6 @@ public:
   unique_ptr<RandomGen> randomGen;
   uint spawnClock = 1;
   double accumFrameTime = 0.0f;
+  double oldTime = -1.0;
 };
 }

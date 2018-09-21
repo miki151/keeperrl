@@ -36,6 +36,12 @@ SubSystemContext FXManager::ssctx(ParticleSystem &ps, int ssid) {
   return {ps, psdef, pdef, edef, textureDefs[pdef.textureName], ssid};
 }
 
+void FXManager::simulateStableTime(double time, int desiredFps) {
+  double diff = oldTime < 0 ? 1.0 / 60.0 : time - oldTime;
+  simulateStable(diff, desiredFps);
+  oldTime = time;
+}
+
 void FXManager::simulateStable(double timeDelta, int desiredFps) {
   PASSERT(timeDelta >= 0.0);
   timeDelta += accumFrameTime;
