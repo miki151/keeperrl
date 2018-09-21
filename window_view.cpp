@@ -34,6 +34,7 @@
 #include "sound_library.h"
 #include "player_role.h"
 #include "file_sharing.h"
+#include "fx_manager.h"
 
 using SDL::SDL_Keysym;
 using SDL::SDL_Keycode;
@@ -142,11 +143,7 @@ void WindowView::initialize() {
       options,
       &gui));
   minimapGui.reset(new MinimapGui([this]() { inputQueue.push(UserInput(UserInputId::DRAW_LEVEL_MAP)); }));
-  auto icons = gui.centerHoriz(guiBuilder.drawMinimapIcons(gameInfo.tutorial));
-  auto iconsHeight = *icons->getPreferredHeight();
-  minimapDecoration = gui.margin(std::move(icons),
-      gui.stack(gui.rectangle(Color::BLACK), gui.miniWindow(),
-      gui.margins(gui.renderInBounds(SGuiElem(minimapGui)), 6)), iconsHeight, GuiFactory::MarginType::BOTTOM);
+  rebuildMinimapGui();
   resetMapBounds();
   guiBuilder.setMapGui(mapGui);
 }
@@ -356,8 +353,18 @@ Color getSpeedColor(int value) {
     return Color(255, max(0, 255 + (value - 100) * 4), max(0, 255 + (value - 100) * 4));
 }
 
+void WindowView::rebuildMinimapGui() {
+  auto icons = gui.centerHoriz(guiBuilder.drawMinimapIcons(gameInfo));
+  auto iconsHeight = *icons->getPreferredHeight();
+  minimapDecoration = gui.margin(std::move(icons),
+      gui.stack(gui.rectangle(Color::BLACK), gui.miniWindow(),
+      gui.margins(gui.renderInBounds(SGuiElem(minimapGui)), 6)), iconsHeight, GuiFactory::MarginType::BOTTOM);
+  resetMapBounds();
+}
+
 void WindowView::rebuildGui() {
   INFO << "Rebuilding UI";
+  rebuildMinimapGui();
   SGuiElem bottom, right;
   vector<GuiBuilder::OverlayInfo> overlays;
   int rightBarWidth = 0;
@@ -580,8 +587,8 @@ void WindowView::animation(Vec2 pos, AnimationId id, Dir orientation) {
     mapGui->addAnimation(Animation::fromId(id, orientation), pos);
 }
 
-void WindowView::animation(Vec2 pos, FXName particleEffect, optional<Vec2> targetOffset) {
-  mapGui->addAnimation(particleEffect, pos, targetOffset);
+void WindowView::animation(FXName name, Vec2 pos, Vec2 targetOffset, const Color& color) {
+  mapGui->addAnimation(name, pos, targetOffset, color);
 }
 
 void WindowView::refreshView() {
@@ -664,57 +671,56 @@ optional<Vec2> WindowView::chooseDirection(Vec2 playerPos, const string& message
   rebuildGui();
   refreshScreen();
   do {
+    auto pos = mapGui->projectOnMap(renderer.getMousePos());
     Event event;
-    renderer.waitEvent(event);
-    considerResizeEvent(event);
-    if (event.type == SDL::SDL_MOUSEMOTION || event.type == SDL::SDL_MOUSEBUTTONDOWN) {
-      if (auto pos = mapGui->projectOnMap(renderer.getMousePos())) {
-        refreshScreen(false);
-        if (pos == playerPos)
-          continue;
-        Vec2 dir = (*pos - playerPos).getBearing();
-        Vec2 wpos = mapLayout->projectOnScreen(getMapGuiBounds(), mapGui->getScreenPos(),
-            playerPos.x + dir.x, playerPos.y + dir.y);
-        if (currentTileLayout.sprites) {
-          static vector<Renderer::TileCoord> coords;
-          if (coords.empty())
-            for (int i = 0; i < 8; ++i)
-              coords.push_back(renderer.getTileCoord("arrow" + toString(i)).getOnlyElement());
-          renderer.drawTile(wpos, {coords[int(dir.getCardinalDir())]}, mapLayout->getSquareSize());
-        } else {
-          int numArrow = int(dir.getCardinalDir());
-          static string arrows[] = { u8"⇑", u8"⇓", u8"⇒", u8"⇐", u8"⇗", u8"⇖", u8"⇘", u8"⇙"};
-          renderer.drawText(Renderer::SYMBOL_FONT, mapLayout->getSquareSize().y, Color::WHITE,
-              wpos + Vec2(mapLayout->getSquareSize().x / 2, 0), arrows[numArrow], Renderer::HOR);
+    if (renderer.pollEvent(event)) {
+      considerResizeEvent(event);
+      if (event.type == SDL::SDL_KEYDOWN)
+        switch (event.key.keysym.sym) {
+          case SDL::SDLK_UP:
+          case SDL::SDLK_KP_8: refreshScreen(); return Vec2(0, -1);
+          case SDL::SDLK_KP_9: refreshScreen(); return Vec2(1, -1);
+          case SDL::SDLK_RIGHT:
+          case SDL::SDLK_KP_6: refreshScreen(); return Vec2(1, 0);
+          case SDL::SDLK_KP_3: refreshScreen(); return Vec2(1, 1);
+          case SDL::SDLK_DOWN:
+          case SDL::SDLK_KP_2: refreshScreen(); return Vec2(0, 1);
+          case SDL::SDLK_KP_1: refreshScreen(); return Vec2(-1, 1);
+          case SDL::SDLK_LEFT:
+          case SDL::SDLK_KP_4: refreshScreen(); return Vec2(-1, 0);
+          case SDL::SDLK_KP_7: refreshScreen(); return Vec2(-1, -1);
+          case SDL::SDLK_ESCAPE: refreshScreen(); return none;
+          default: break;
         }
-        renderer.drawAndClearBuffer();
-        if (event.type == SDL::SDL_MOUSEBUTTONDOWN) {
-          if (event.button.button == SDL_BUTTON_LEFT)
-            return dir;
-          else
-            return none;
-        }
+      if (pos && event.type == SDL::SDL_MOUSEBUTTONDOWN) {
+        if (event.button.button == SDL_BUTTON_LEFT)
+          return (*pos - playerPos).getBearing();
+        else
+          return none;
       }
-      renderer.flushEvents(SDL::SDL_MOUSEMOTION);
-    } else
-    refreshScreen();
-    if (event.type == SDL::SDL_KEYDOWN)
-      switch (event.key.keysym.sym) {
-        case SDL::SDLK_UP:
-        case SDL::SDLK_KP_8: refreshScreen(); return Vec2(0, -1);
-        case SDL::SDLK_KP_9: refreshScreen(); return Vec2(1, -1);
-        case SDL::SDLK_RIGHT:
-        case SDL::SDLK_KP_6: refreshScreen(); return Vec2(1, 0);
-        case SDL::SDLK_KP_3: refreshScreen(); return Vec2(1, 1);
-        case SDL::SDLK_DOWN:
-        case SDL::SDLK_KP_2: refreshScreen(); return Vec2(0, 1);
-        case SDL::SDLK_KP_1: refreshScreen(); return Vec2(-1, 1);
-        case SDL::SDLK_LEFT:
-        case SDL::SDLK_KP_4: refreshScreen(); return Vec2(-1, 0);
-        case SDL::SDLK_KP_7: refreshScreen(); return Vec2(-1, -1);
-        case SDL::SDLK_ESCAPE: refreshScreen(); return none;
-        default: break;
+    }
+    refreshScreen(false);
+    if (pos && pos != playerPos) {
+      Vec2 dir = (*pos - playerPos).getBearing();
+      Vec2 wpos = mapLayout->projectOnScreen(getMapGuiBounds(), mapGui->getScreenPos(),
+          playerPos.x + dir.x, playerPos.y + dir.y);
+      if (currentTileLayout.sprites) {
+        static vector<Renderer::TileCoord> coords;
+        if (coords.empty())
+          for (int i = 0; i < 8; ++i)
+            coords.push_back(renderer.getTileCoord("arrow" + toString(i)).getOnlyElement());
+        renderer.drawTile(wpos, {coords[int(dir.getCardinalDir())]}, mapLayout->getSquareSize());
+      } else {
+        int numArrow = int(dir.getCardinalDir());
+        static string arrows[] = { u8"⇑", u8"⇓", u8"⇒", u8"⇐", u8"⇗", u8"⇖", u8"⇘", u8"⇙"};
+        renderer.drawText(Renderer::SYMBOL_FONT, mapLayout->getSquareSize().y, Color::WHITE,
+            wpos + Vec2(mapLayout->getSquareSize().x / 2, 0), arrows[numArrow], Renderer::HOR);
       }
+    }
+    /*if (auto *inst = fx::FXManager::getInstance())
+      inst->simulateStableTime(double(clock->getRealMillis().count()) * 0.001);*/
+    renderer.drawAndClearBuffer();
+    renderer.flushEvents(SDL::SDL_MOUSEMOTION);
   } while (1);
   });
   return returnQueue.pop();

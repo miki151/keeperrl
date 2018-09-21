@@ -145,7 +145,7 @@ void Renderer::drawText(FontId id, int size, Color color, Vec2 pos, const string
         break;
     }
     sth_begin_draw(fontStash);
-    color.applyGl();
+    glColor(color);
     sth_draw_text(fontStash, getFont(id), sizeConv(size), ox + pos.x, oy + pos.y + (dim.y * 0.9), s.c_str(), nullptr);
     sth_end_draw(fontStash);
   }
@@ -226,7 +226,7 @@ void Renderer::drawFilledRectangle(const Rectangle& t, Color color, optional<Col
   if (outline) {
     SDL::glLineWidth(2);
     SDL::glBegin(GL_LINE_LOOP);
-    outline->applyGl();
+    glColor(*outline);
     SDL::glVertex2f(a.x + 1.5f, a.y + 1.5f);
     SDL::glVertex2f(b.x - 0.5f, a.y + 1.5f);
     SDL::glVertex2f(b.x - 0.5f, b.y - 0.5f);
@@ -236,7 +236,7 @@ void Renderer::drawFilledRectangle(const Rectangle& t, Color color, optional<Col
     b -= Vec2(2, 2);
   }
   SDL::glBegin(GL_QUADS);
-  color.applyGl();
+  glColor(color);
   SDL::glVertex2f(a.x, a.y);
   SDL::glVertex2f(b.x, a.y);
   SDL::glVertex2f(b.x, b.y);
@@ -251,7 +251,7 @@ void Renderer::drawFilledRectangle(int px, int py, int kx, int ky, Color color, 
 void Renderer::drawPoint(Vec2 pos, Color color, int size) {
   SDL::glPointSize(size);
   SDL::glBegin(GL_POINTS);
-  color.applyGl();
+  glColor(color);
   SDL::glVertex2f(pos.x, pos.y);
   SDL::glEnd();
 }

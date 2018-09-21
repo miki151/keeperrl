@@ -562,8 +562,11 @@ class TileCoordLookup {
     Tile::addTile(ViewId::TREASURE_CHEST, sprite("treasurydeco"));
     Tile::addTile(ViewId::CHEST, sprite("chest").setRoundShadow());
     Tile::addTile(ViewId::OPENED_CHEST, sprite("chest_opened").setRoundShadow());
-    Tile::addTile(ViewId::COFFIN, sprite("coffin").setRoundShadow());
-    Tile::addTile(ViewId::OPENED_COFFIN, sprite("coffin_opened").setRoundShadow());
+    Tile::addTile(ViewId::COFFIN1, sprite("coffin"));
+    Tile::addTile(ViewId::COFFIN2, sprite("coffin2"));
+    Tile::addTile(ViewId::COFFIN3, sprite("coffin3"));
+    Tile::addTile(ViewId::LOOT_COFFIN, sprite("coffin"));
+    Tile::addTile(ViewId::OPENED_COFFIN, sprite("coffin_opened"));
     Tile::addTile(ViewId::BOULDER, sprite("boulder").setRoundShadow());
     Tile::addTile(ViewId::PORTAL, sprite("surprise").setRoundShadow());
     Tile::addTile(ViewId::GAS_TRAP, sprite("gas_trap"));
@@ -581,7 +584,9 @@ class TileCoordLookup {
     Tile::addTile(ViewId::QUARTERS2, sprite("dig_mark2").setColor(Color::SKY_BLUE.transparency(120)));
     Tile::addTile(ViewId::QUARTERS3, sprite("dig_mark2").setColor(Color::ORANGE.transparency(120)));
     Tile::addTile(ViewId::PRISON, sprite("prison"));
-    Tile::addTile(ViewId::BED, sprite("sleepdeco").setRoundShadow());
+    Tile::addTile(ViewId::BED1, sprite("bed1").setRoundShadow());
+    Tile::addTile(ViewId::BED2, sprite("bed2").setRoundShadow());
+    Tile::addTile(ViewId::BED3, sprite("bed3").setRoundShadow());
     Tile::addTile(ViewId::DORM, sprite("sleep").setFloorBorders());
     Tile::addTile(ViewId::TORCH, sprite("torch"));
     Tile::addTile(ViewId::STANDING_TORCH, sprite("standing_torch").setMoveUp());
@@ -611,7 +616,6 @@ class TileCoordLookup {
     Tile::addTile(ViewId::WORKSHOP, sprite("workshopdeco").setRoundShadow());
     Tile::addTile(ViewId::JEWELER, sprite("jewelerdeco").setRoundShadow());
     Tile::addTile(ViewId::FURNACE, sprite("steel_furnace").setRoundShadow());
-    Tile::addTile(ViewId::CEMETERY, sprite("graveyard").setFloorBorders());
     Tile::addTile(ViewId::GRAVE, sprite("RIP").setRoundShadow());
     Tile::addTile(ViewId::ROBE, sprite("robe"));
     Tile::addTile(ViewId::LEATHER_GLOVES, sprite("leather_gloves"));
@@ -925,8 +929,11 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::TREASURE_CHEST, symbol(u8"=", Color::BROWN));
     Tile::addSymbol(ViewId::OPENED_CHEST, symbol(u8"=", Color::BROWN));
     Tile::addSymbol(ViewId::CHEST, symbol(u8"=", Color::BROWN));
-    Tile::addSymbol(ViewId::OPENED_COFFIN, symbol(u8"⚰", Color::DARK_GRAY, true));
-    Tile::addSymbol(ViewId::COFFIN, symbol(u8"⚰", Color::DARK_GRAY, true));
+    Tile::addSymbol(ViewId::OPENED_COFFIN, symbol(u8"⚰", Color::DARK_BROWN, true));
+    Tile::addSymbol(ViewId::LOOT_COFFIN, symbol(u8"⚰", Color::BROWN, true));
+    Tile::addSymbol(ViewId::COFFIN1, symbol(u8"⚰", Color::BROWN, true));
+    Tile::addSymbol(ViewId::COFFIN2, symbol(u8"⚰", Color::GRAY, true));
+    Tile::addSymbol(ViewId::COFFIN3, symbol(u8"⚰", Color::YELLOW, true));
     Tile::addSymbol(ViewId::BOULDER, symbol(u8"●", Color::LIGHT_GRAY, true));
     Tile::addSymbol(ViewId::PORTAL, symbol(u8"𝚯", Color::WHITE, true));
     Tile::addSymbol(ViewId::GAS_TRAP, symbol(u8"☠", Color::GREEN, true));
@@ -945,7 +952,9 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::QUARTERS3, symbol(u8".", Color::ORANGE));
     Tile::addSymbol(ViewId::PRISON, symbol(u8".", Color::BLUE));
     Tile::addSymbol(ViewId::DORM, symbol(u8".", Color::BROWN));
-    Tile::addSymbol(ViewId::BED, symbol(u8"=", Color::WHITE));
+    Tile::addSymbol(ViewId::BED1, symbol(u8"=", Color::WHITE));
+    Tile::addSymbol(ViewId::BED2, symbol(u8"=", Color::YELLOW));
+    Tile::addSymbol(ViewId::BED3, symbol(u8"=", Color::PURPLE));
     Tile::addSymbol(ViewId::TORCH, symbol(u8"*", Color::YELLOW));
     Tile::addSymbol(ViewId::STANDING_TORCH, symbol(u8"*", Color::YELLOW));
     Tile::addSymbol(ViewId::ALTAR, symbol(u8"Ω", Color::WHITE, true));
@@ -974,7 +983,6 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::FORGE, symbol(u8"&", Color::LIGHT_BLUE));
     Tile::addSymbol(ViewId::JEWELER, symbol(u8"&", Color::YELLOW));
     Tile::addSymbol(ViewId::FURNACE, symbol(u8"&", Color::PINK));
-    Tile::addSymbol(ViewId::CEMETERY, symbol(u8".", Color::DARK_BLUE));
     Tile::addSymbol(ViewId::GRAVE, symbol(u8"☗", Color::GRAY, true));
     Tile::addSymbol(ViewId::BORDER_GUARD, symbol(u8" ", Color::BLACK));
     Tile::addSymbol(ViewId::ROBE, symbol(u8"[", Color::LIGHT_BROWN));

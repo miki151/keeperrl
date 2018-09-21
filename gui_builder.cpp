@@ -290,22 +290,19 @@ SGuiElem GuiBuilder::drawBuildings(const CollectiveInfo& info, const optional<Tu
 }
 
 SGuiElem GuiBuilder::drawTechnology(CollectiveInfo& info) {
-  int hash = combineHash(info.techButtons, info.workshopButtons);
+  int hash = combineHash(info.workshopButtons);
   if (hash != technologyHash) {
     technologyHash = hash;
     auto lines = gui.getListBuilder(legendLineHeight);
     lines.addSpace(legendLineHeight / 2);
-    for (int i : All(info.techButtons)) {
-      auto line = gui.getListBuilder();
-      line.addElem(gui.viewObject(info.techButtons[i].viewId), 35);
-      line.addElemAuto(gui.label(info.techButtons[i].name, Color::WHITE, info.techButtons[i].hotkey));
-      lines.addElem(gui.stack(
-            gui.buttonChar([this, i] {
-              closeOverlayWindowsAndClearButton();
-              getButtonCallback(UserInput(UserInputId::TECHNOLOGY, i))();
-            }, info.techButtons[i].hotkey, true, true),
-            line.buildHorizontalList()));
-    }
+    lines.addElem(gui.stack(
+        gui.getListBuilder()
+            .addElem(gui.viewObject(ViewId::BOOK), 35)
+            .addElemAuto(gui.label("Keeperopedia", Color::WHITE))
+            .buildHorizontalList(),
+        gui.button(getButtonCallback(UserInputId::KEEPEROPEDIA))
+    ));
+    lines.addSpace(legendLineHeight / 2);
     lines.addSpace(legendLineHeight / 2);
     for (int i : All(info.workshopButtons)) {
       auto& button = info.workshopButtons[i];
@@ -371,7 +368,7 @@ const int resourceSpace = 110;
 SGuiElem GuiBuilder::drawBottomBandInfo(GameInfo& gameInfo) {
   auto& info = *gameInfo.playerInfo.getReferenceMaybe<CollectiveInfo>();
   GameSunlightInfo& sunlightInfo = gameInfo.sunlightInfo;
-  if (!bottomBandCache) {
+//  if (!bottomBandCache) {
     auto topLine = gui.getListBuilder(resourceSpace);
     for (int i : All(info.numResource)) {
       auto res = gui.getListBuilder();
@@ -387,18 +384,28 @@ SGuiElem GuiBuilder::drawBottomBandInfo(GameInfo& gameInfo) {
           getHintCallback({info.numResource[i].name}),
           res.buildHorizontalList()));
     }
-    auto bottomLine = gui.getListBuilder(140);
-    bottomLine.addElem(getTurnInfoGui(gameInfo.time));
-    bottomLine.addElem(getSunlightInfoGui(sunlightInfo));
-    bottomLine.addElem(gui.labelFun([&info] {
+    auto bottomLine = gui.getListBuilder();
+    const int space = 55;
+    bottomLine.addElemAuto(gui.stack(
+        gui.margins(gui.progressBar(Color::DARK_GREEN, info.dungeonLevelProgress), -6, -1, 0, -2),
+        gui.uiHighlightConditional([&]{ return info.blinkDungeonLevel; }),
+        gui.label("Level: " + toString(info.dungeonLevel)),
+        gui.button(getButtonCallback(UserInputId::TECHNOLOGY))
+    ));
+    bottomLine.addSpace(space);
+    bottomLine.addElemAuto(gui.labelFun([&info] {
           return "population: " + toString(info.minionCount) + " / " +
           toString(info.minionLimit); }));
-    bottomBandCache = gui.getListBuilder(28)
+    bottomLine.addSpace(space);
+    bottomLine.addElemAuto(getTurnInfoGui(gameInfo.time));
+    bottomLine.addSpace(space);
+    bottomLine.addElemAuto(getSunlightInfoGui(sunlightInfo));
+    return gui.getListBuilder(28)
           .addElem(gui.centerHoriz(topLine.buildHorizontalList()))
           .addElem(gui.centerHoriz(bottomLine.buildHorizontalList()))
           .buildVerticalList();
-  }
-  return gui.external(bottomBandCache.get());
+  /*}
+  return gui.external(bottomBandCache.get());*/
 }
 
 const char* GuiBuilder::getGameSpeedName(GuiBuilder::GameSpeed gameSpeed) const {
@@ -1986,7 +1993,8 @@ SGuiElem GuiBuilder::drawLibraryOverlay(const CollectiveInfo& collectiveInfo, co
   int margin = 20;
   int rightElemMargin = 10;
   auto lines = gui.getListBuilder(legendLineHeight);
-  lines.addElem(gui.rightMargin(rightElemMargin, gui.alignment(GuiFactory::Alignment::RIGHT, drawCost(info.resource))));
+  lines.addElem(gui.centerHoriz(gui.label("Level " + toString(info.dungeonLevel))));
+  //lines.addElem(gui.rightMargin(rightElemMargin, gui.alignment(GuiFactory::Alignment::RIGHT, drawCost(info.resource))));
   if (info.warning)
     lines.addElem(gui.label(*info.warning, Color::RED));
   lines.addElem(gui.label("Available technology:", Color::YELLOW));
@@ -1994,7 +2002,6 @@ SGuiElem GuiBuilder::drawLibraryOverlay(const CollectiveInfo& collectiveInfo, co
     auto& elem = info.available[i];
     auto line = gui.getListBuilder()
         .addElem(gui.label(elem.name, elem.active ? Color::WHITE : Color::GRAY), 10)
-        .addBackElem(gui.alignment(GuiFactory::Alignment::RIGHT, drawCost(elem.cost)), 80)
         .buildHorizontalList();
     line = gui.stack(std::move(line), getTooltip({elem.description}, THIS_LINE));
     if (elem.tutorialHighlight && tutorial && tutorial->highlights.contains(*elem.tutorialHighlight))
@@ -2013,7 +2020,6 @@ SGuiElem GuiBuilder::drawLibraryOverlay(const CollectiveInfo& collectiveInfo, co
     auto& elem = info.researched[i];
     auto line = gui.getListBuilder()
         .addElem(gui.label(elem.name, Color::GRAY), 10)
-        .addBackElem(gui.alignment(GuiFactory::Alignment::RIGHT, drawCost(elem.cost)), 80)
         .buildHorizontalList();
     line = gui.stack(std::move(line), getTooltip({elem.description}, THIS_LINE));
     lines.addElem(gui.rightMargin(rightElemMargin, std::move(line)));
@@ -2139,6 +2145,14 @@ SGuiElem GuiBuilder::drawLyingItemsList(const string& title, const ItemCounts& i
   return lines.buildVerticalList();
 }
 
+static string getMoraleNumber(double morale) {
+#ifndef RELEASE
+  return toString(morale);
+#else
+  return toString((int)(10.0f * morale) / 10);
+#endif
+}
+
 SGuiElem GuiBuilder::drawMapHintOverlay() {
   auto lines = gui.getListBuilder(legendLineHeight);
   vector<SGuiElem> allElems;
@@ -2179,15 +2193,21 @@ SGuiElem GuiBuilder::drawMapHintOverlay() {
       if (auto& attributes = viewObject->getCreatureAttributes())
         lines.addElemAuto(drawAttributesOnPage(drawPlayerAttributes(*attributes)));
       if (auto health = viewObject->getAttribute(ViewObjectAttribute::HEALTH))
-        lines.addElem(gui.label("Health: " + toString((int) (100.0f * *health)) + "%"));
-      if (auto efficiency = viewObject->getAttribute(ViewObjectAttribute::EFFICIENCY))
-        lines.addElem(gui.label("Efficiency: " + toString((int) (100.0f * *efficiency))));
+        lines.addElem(gui.stack(
+              gui.margins(gui.progressBar(MapGui::getHealthBarColor(*health).transparency(70), *health), -2, 0, 0, 3),
+              gui.label("Health: " + toString((int) (100.0f * *health)) + "%")));
+      if (auto morale = viewObject->getAttribute(ViewObjectAttribute::MORALE))
+        lines.addElem(gui.stack(
+              gui.margins(gui.progressBar((*morale >= 0 ? Color::GREEN : Color::RED).transparency(70), fabs(*morale)), -2, 0, 0, 3),
+              gui.label("Morale: " + getMoraleNumber(*morale))));
+      if (auto luxury = viewObject->getAttribute(ViewObjectAttribute::LUXURY))
+        lines.addElem(gui.stack(
+              gui.margins(gui.progressBar(Color::GREEN.transparency(70), fabs(*luxury)), -2, 0, 0, 3),
+              gui.label("Luxury: " + getMoraleNumber(*luxury))));
       if (viewObject->hasModifier(ViewObjectModifier::PLANNED))
         lines.addElem(gui.label("Planned"));
-      //if (indoors)
-      //  ret.push_back(*indoors ? "Indoors" : "Outdoors");
-      if (auto morale = viewObject->getAttribute(ViewObjectAttribute::MORALE))
-        lines.addElem(gui.label("Morale: " + toString(*morale)));
+      if (viewObject->hasModifier(ViewObjectModifier::INSUFFICIENT_LIGHT))
+        lines.addElem(gui.label("Insufficient light", Color::RED));
     }
     if (highlighted.tilePos)
       lines.addElem(gui.label("Position: " + toString(*highlighted.tilePos)));
@@ -3389,24 +3409,26 @@ SGuiElem GuiBuilder::drawHighscores(const vector<HighscoreList>& list, Semaphore
 
 }
 
-SGuiElem GuiBuilder::drawMinimapIcons(const optional<TutorialInfo>& tutorialInfo) {
-  auto tutorialPredicate = [&tutorialInfo] {
-    return tutorialInfo && tutorialInfo->highlights.contains(TutorialHighlight::MINIMAP_BUTTONS);
+SGuiElem GuiBuilder::drawMinimapIcons(const GameInfo& gameInfo) {
+  auto tutorialPredicate = [&gameInfo] {
+    return gameInfo.tutorial && gameInfo.tutorial->highlights.contains(TutorialHighlight::MINIMAP_BUTTONS);
   };
-  return gui.minimapBar(
-      gui.preferredSize(48, 48, gui.stack(
-          getHintCallback({"Open world map. You can also press 't'."}),
-          gui.mouseHighlight2(gui.icon(GuiFactory::IconId::MINIMAP_WORLD2), gui.icon(GuiFactory::IconId::MINIMAP_WORLD1)),
-          gui.conditional(gui.blink(gui.icon(GuiFactory::IconId::MINIMAP_WORLD2)), tutorialPredicate),
-          gui.button(getButtonCallback(UserInputId::DRAW_WORLD_MAP), gui.getKey(SDL::SDLK_t))
-      )),
-      gui.preferredSize(48, 48, gui.stack(
-          getHintCallback({"Scroll to your character. You can also press 'k'."}),
-          gui.mouseHighlight2(gui.icon(GuiFactory::IconId::MINIMAP_CENTER2), gui.icon(GuiFactory::IconId::MINIMAP_CENTER1)),
-          gui.conditional(gui.blink(gui.icon(GuiFactory::IconId::MINIMAP_CENTER2)), tutorialPredicate),
-          gui.button(getButtonCallback(UserInputId::SCROLL_TO_HOME), gui.getKey(SDL::SDLK_k))
-          ))
-  );
+  auto lines = gui.getListBuilder(legendLineHeight);
+  return lines.addElemAuto(
+      gui.minimapBar(
+        gui.preferredSize(48, 48, gui.stack(
+            getHintCallback({"Open world map. You can also press 't'."}),
+            gui.mouseHighlight2(gui.icon(GuiFactory::IconId::MINIMAP_WORLD2), gui.icon(GuiFactory::IconId::MINIMAP_WORLD1)),
+            gui.conditional(gui.blink(gui.icon(GuiFactory::IconId::MINIMAP_WORLD2)), tutorialPredicate),
+            gui.button(getButtonCallback(UserInputId::DRAW_WORLD_MAP), gui.getKey(SDL::SDLK_t))
+        )),
+        gui.preferredSize(48, 48, gui.stack(
+            getHintCallback({"Scroll to your character. You can also press 'k'."}),
+            gui.mouseHighlight2(gui.icon(GuiFactory::IconId::MINIMAP_CENTER2), gui.icon(GuiFactory::IconId::MINIMAP_CENTER1)),
+            gui.conditional(gui.blink(gui.icon(GuiFactory::IconId::MINIMAP_CENTER2)), tutorialPredicate),
+            gui.button(getButtonCallback(UserInputId::SCROLL_TO_HOME), gui.getKey(SDL::SDLK_k))
+            ))
+  )).buildVerticalList();
 }
 
 Rectangle GuiBuilder::getTextInputPosition() {

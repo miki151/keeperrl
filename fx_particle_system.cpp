@@ -2,11 +2,54 @@
 
 #include "fx_defs.h"
 #include "fx_rect.h"
+#include "renderer.h"
 
 namespace fx {
 
-ParticleSystem::ParticleSystem(FVec2 pos, FVec2 targetOff, FXName defId, int spawnTime, int numSubSystems)
-    : subSystems(numSubSystems), pos(pos), targetOff(targetOff), defId(defId), spawnTime(spawnTime) {}
+float SnapshotKey::distanceSq(const SnapshotKey& rhs) const {
+  float sum = 0.0f;
+  for (int n = 0; n < maxScalars; n++)
+    sum += (scalar[n] - rhs.scalar[n]) * (scalar[n] - rhs.scalar[n]);
+  return sum;
+}
+
+SnapshotKey::SnapshotKey(const SystemParams& params) {
+  for (int n = 0; n < maxScalars; n++)
+    scalar[n] = params.scalar[n];
+}
+
+void SnapshotKey::apply(SystemParams& out) const {
+  for (int n = 0; n < maxScalars; n++)
+    out.scalar[n] = scalar[n];
+}
+
+bool SnapshotKey::operator==(const SnapshotKey& rhs) const {
+  for (int n = 0; n < maxScalars; n++)
+    if (scalar[n] != rhs.scalar[n])
+      return false;
+  return true;
+}
+
+ParticleSystem::SubSystem::SubSystem() {
+  for (auto& animVar : animationVars)
+    animVar = 0.0f;
+}
+
+ParticleSystem::ParticleSystem(FXName defId, const InitConfig& config, uint spawnTime, vector<SubSystem> snapshot)
+    : subSystems(std::move(snapshot)), pos(config.pos), targetOffset(config.targetOffset), defId(defId),
+      spawnTime(spawnTime) {
+  float dist = length(targetOffset);
+  targetDir = dist < 0.00001f ? FVec2(1, 0) : targetOffset / dist;
+  targetTileDist = dist / float(Renderer::nominalSize);
+  targetDirAngle = vectorToAngle(targetDir);
+  if (config.snapshotKey)
+    config.snapshotKey->apply(params);
+}
+
+void ParticleSystem::randomize(RandomGen& random) {
+  for (auto& ss : subSystems)
+    ss.randomSeed = random.get(INT_MAX);
+}
 
 void ParticleSystem::kill(bool immediate) {
   if (immediate) {
@@ -72,8 +115,8 @@ uint AnimationContext::randomSeed() {
 }
 
 SVec2 AnimationContext::randomTexTile() {
-  if (!(pdef.texture.tiles == IVec2(1, 1))) {
-    IVec2 texTile(rand.get(pdef.texture.tiles.x), rand.get(pdef.texture.tiles.y));
+  if (!(tdef.tiles == IVec2(1, 1))) {
+    IVec2 texTile(rand.get(tdef.tiles.x), rand.get(tdef.tiles.y));
     return SVec2(texTile);
   }
 
@@ -117,7 +160,7 @@ array<FVec2, 4> DrawContext::quadCorners(FVec2 pos, FVec2 size, float rotation) 
 
 array<FVec2, 4> DrawContext::texQuadCorners(SVec2 texTile) const {
   FRect tex_rect(FVec2(1));
-  if (!(pdef.texture.tiles == IVec2(1, 1)))
+  if (!(tdef.tiles == IVec2(1, 1)))
     tex_rect = (tex_rect + FVec2(texTile)) * invTexTile;
   return tex_rect.corners();
 }
@@ -130,10 +173,8 @@ void defaultDrawParticle(DrawContext &ctx, const Particle &pinst, DrawParticle &
   FVec2 size(pdef.size.sample(ptime) * pinst.size);
   float alpha = pdef.alpha.sample(ptime);
   FVec3 colorMul = ctx.ps.params.color[0];
-  if (ctx.pdef.blendMode == BlendMode::additive) {
+  if (ctx.tdef.blendMode == BlendMode::additive)
     colorMul *= alpha;
-    alpha = 1.0f;
-  }
 
   FColor color(pdef.color.sample(ptime) * colorMul, alpha);
   out.positions = ctx.quadCorners(pos, size, pinst.rot);
@@ -141,9 +182,10 @@ void defaultDrawParticle(DrawContext &ctx, const Particle &pinst, DrawParticle &
   out.color = IColor(color);
 }
 
-SubSystemContext::SubSystemContext(const ParticleSystem &ps, const ParticleSystemDef &psdef, const ParticleDef &pdef,
-                                   const EmitterDef &edef, int ssid)
-    : ps(ps), ss(ps.subSystems[ssid]), psdef(psdef), ssdef(psdef[ssid]), pdef(pdef), edef(edef), ssid(ssid) {}
+SubSystemContext::SubSystemContext(const ParticleSystem& ps, const ParticleSystemDef& psdef, const ParticleDef& pdef,
+                                   const EmitterDef& edef, const TextureDef& tdef, int ssid)
+    : ps(ps), ss(ps.subSystems[ssid]), psdef(psdef), ssdef(psdef[ssid]), pdef(pdef), edef(edef), tdef(tdef),
+      ssid(ssid) {}
 
 AnimationContext::AnimationContext(const SubSystemContext &ssctx, float animTime, float timeDelta)
     : SubSystemContext(ssctx), animTime(animTime), timeDelta(timeDelta), invTimeDelta(1.0f / timeDelta) {}

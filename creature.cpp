@@ -72,9 +72,13 @@ SERIALIZATION_CONSTRUCTOR_IMPL(Creature)
 
 Creature::Creature(const ViewObject& object, TribeId t, CreatureAttributes attr)
     : Renderable(object), attributes(std::move(attr)), tribe(t) {
-  modViewObject().setCreatureId(getUniqueId());
-  if (auto& obj = attributes->getIllusionViewObject())
-    obj->setCreatureId(getUniqueId());
+  modViewObject().setGenericId(getUniqueId().getGenericId());
+  modViewObject().setModifier(ViewObject::Modifier::CREATURE);
+  if (auto& obj = attributes->getIllusionViewObject()) {
+    obj->setGenericId(getUniqueId().getGenericId());
+    obj->setModifier(ViewObject::Modifier::CREATURE);
+  }
+  updateLastingFX(modViewObject());
 }
 
 Creature::Creature(TribeId t, CreatureAttributes attr)
@@ -138,7 +142,8 @@ CreatureAction Creature::castSpell(Spell* spell) const {
     return CreatureAction("You can't cast this spell yet.");
   return CreatureAction(this, [=] (WCreature c) {
     c->addSound(spell->getSound());
-    getGame()->addEvent(EventInfo::OtherEffect{c->getPosition(), FXName::CIRCULAR_BLAST});
+    if (auto fx = spell->getFX())
+      getGame()->addEvent(EventInfo::OtherEffect{c->getPosition(), fx->name, fx->color});
     spell->addMessage(c);
     spell->getEffect().applyToCreature(c);
     getGame()->getStatistics().add(StatId::SPELL_CAST);
@@ -157,11 +162,10 @@ CreatureAction Creature::castSpell(Spell* spell, Vec2 dir) const {
   return CreatureAction(this, [=] (WCreature c) {
     c->addSound(spell->getSound());
     auto dirEffectType = spell->getDirEffectType();
-    if (auto fxName = spell->getFXName())
-      getGame()->addEvent(EventInfo::OtherEffect{c->getPosition(), *fxName, dir * dirEffectType.getRange()});
     thirdPerson(getName().the() + " casts a spell");
     secondPerson("You cast " + spell->getName());
-    applyDirected(c, dir, dirEffectType);
+    auto fx = spell->getFX();
+    applyDirected(c, dir, dirEffectType, fx ? fx->name : optional<FXName>());
     getGame()->getStatistics().add(StatId::SPELL_CAST);
     c->attributes->getSpellMap().setReadyTime(spell, *getGlobalTime() + TimeInterval(
         int(spell->getDifficulty() * getWillpowerMult(attributes->getSkills().getValue(SkillId::SORCERY)))));
@@ -175,6 +179,12 @@ void Creature::updateLastingFX(ViewObject& object) {
     if (isAffected(effect))
       if (auto fx = LastingEffects::getFXName(effect))
         object.particleEffects.insert(*fx);
+
+  // TODO: better way to do this? Replace view_id with FX in map_gui ?
+  if (object.id() == ViewId::FIRE_SPHERE && fxesAvailable()) {
+    object.setModifier(ViewObject::Modifier::HIDDEN);
+    object.particleEffects.insert(FXName::FIRE_SPHERE);
+  }
 }
 
 
@@ -933,6 +943,17 @@ void Creature::considerMovingFromInaccessibleSquare() {
 
 void Creature::tick() {
   PROFILE;
+  addMorale(-morale * 0.0008);
+  auto updateMorale = [this](Position pos, double mult) {
+    for (auto f : pos.getFurniture()) {
+      auto& luxury = f->getLuxuryInfo();
+      if (luxury.luxury > morale)
+        addMorale((luxury.luxury - morale) * mult);
+    }
+  };
+  for (auto pos : position.neighbors8())
+    updateMorale(pos, 0.0004);
+  updateMorale(position, 0.001);
   considerMovingFromInaccessibleSquare();
   captureHealth = min(1.0, captureHealth + 0.02);
   vision->update(this);
@@ -1371,10 +1392,17 @@ void Creature::addMovementInfo(MovementInfo info) {
   modViewObject().addMovementInfo(info);
   getPosition().setNeedsRenderUpdate(true);
 
+  if (isAffected(LastingEffect::FLYING))
+    return;
+
   // We're assuming here that position has already been updated
   Position oldPos = position.minus(info.direction);
   if (auto ground = oldPos.getFurniture(FurnitureLayer::GROUND))
-    ground->onCreatureWalkedOver(oldPos, info.direction);
+    if(!oldPos.getFurniture(FurnitureLayer::MIDDLE))
+      ground->onCreatureWalkedOver(oldPos, info.direction);
+  if (auto ground = position.getFurniture(FurnitureLayer::GROUND))
+    if(!oldPos.getFurniture(FurnitureLayer::MIDDLE))
+      ground->onCreatureWalkedInto(position, info.direction);
 }
 
 CreatureAction Creature::whip(const Position& pos) const {

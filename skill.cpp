@@ -53,7 +53,7 @@ void Skill::init() {
   Skill::set(SkillId::CONSUMPTION, new Skill("absorbtion",
         "Absorb other creatures and retain their attributes.", true, false));
   Skill::set(SkillId::COPULATION, new Skill("copulation",
-        "Copulate with other creatures and give birth to hideus spawns.", true, false));
+        "Copulate with other creatures and give birth to hideous spawns.", true, false));
   Skill::set(SkillId::SPIDER, new Skill("spin spider webs", "Spin spider webs.", true));
   Skill::set(SkillId::CROPS, new Skill("tend crops", "Tend crops.", true, false));
   Skill::set(SkillId::EXPLORE, new Skill("exploring", "Explore all surroundings.", true));

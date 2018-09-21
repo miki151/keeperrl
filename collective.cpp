@@ -40,7 +40,6 @@
 #include "body.h"
 #include "furniture.h"
 #include "furniture_factory.h"
-#include "tile_efficiency.h"
 #include "zones.h"
 #include "experience_type.h"
 #include "furniture_usage.h"
@@ -62,7 +61,7 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
   ar(delayedPos, knownTiles, technologies, kills, points, currentActivity);
   ar(credit, level, immigration, teams, name, conqueredVillains);
   ar(config, warnings, knownVillains, knownVillainLocations, banished, positionMatching);
-  ar(villainType, enemyId, workshops, zones, tileEfficiency, discoverable, quarters, populationIncrease);
+  ar(villainType, enemyId, workshops, zones, discoverable, quarters, populationIncrease, dungeonLevel);
 }
 
 SERIALIZABLE(Collective)
@@ -91,7 +90,7 @@ void Collective::init(CollectiveConfig&& cfg, Immigration&& im) {
 
 void Collective::acquireInitialTech() {
   for (auto tech : config->getInitialTech())
-    acquireTech(tech);
+    acquireTech(tech, false);
 }
 
 const optional<CollectiveName>& Collective::getName() const {
@@ -390,11 +389,6 @@ void Collective::addNewCreatureMessage(const vector<WCreature>& immigrants) {
   }
 }
 
-void Collective::decayMorale() {
-  for (WCreature c : getCreatures(MinionTrait::FIGHTER))
-    c->addMorale(-c->getMorale() * 0.0008);
-}
-
 void Collective::update(bool currentlyActive) {
   control->update(currentlyActive);
   if (config->hasImmigrantion(currentlyActive) && getLeader())
@@ -439,7 +433,6 @@ void Collective::tick() {
   dangerLevelCache = none;
   control->tick();
   zones->tick();
-  decayMorale();
   taskMap->clearFinishedTasks();
   if (config->getWarnings() && Random.roll(5))
     warnings->considerWarnings(this);
@@ -500,14 +493,6 @@ void Collective::setTrait(WCreature c, MinionTrait t) {
 void Collective::removeTrait(WCreature c, MinionTrait t) {
   if (byTrait[t].removeElementMaybe(c))
     updateCreatureStatus(c);
-}
-
-double Collective::getKillManaScore(WConstCreature victim) const {
-  return 0;
-/*  int ret = victim->getDifficultyPoints() / 3;
-  if (victim->isAffected(LastingEffect::SLEEP))
-    ret *= 2;
-  return ret;*/
 }
 
 void Collective::addMoraleForKill(WConstCreature killer, WConstCreature victim) {
@@ -605,7 +590,6 @@ void Collective::onEvent(const GameEvent& event) {
           populationIncrease -= Furniture::getPopulationIncrease(info.type, constructions->getBuiltCount(info.type));
           constructions->onFurnitureDestroyed(info.position, info.layer);
           populationIncrease += Furniture::getPopulationIncrease(info.type, constructions->getBuiltCount(info.type));
-          tileEfficiency->update(info.position);
         }
       },
       [&](const ConqueredEnemy& info) {
@@ -616,10 +600,7 @@ void Collective::onEvent(const GameEvent& event) {
                 MessagePriority::CRITICAL));
           else
             control->addMessage(PlayerMessage("An unnamed tribe is destroyed.", MessagePriority::CRITICAL));
-          auto mana = config->getManaForConquering(col->getVillainType());
-          addMana(mana);
-          control->addMessage(PlayerMessage("You feel a surge of power (+" + toString(mana) + " mana)",
-              MessagePriority::CRITICAL));
+          dungeonLevel.onKilledVillain(col->getVillainType());
         }
       },
       [&](const auto&) {}
@@ -649,7 +630,6 @@ void Collective::onMinionKilled(WCreature victim, WCreature killer) {
 void Collective::onKilledSomeone(WCreature killer, WCreature victim) {
   string deathDescription=victim->getAttributes().getDeathDescription();
   if (victim->getTribe() != getTribe()) {
-    addMana(getKillManaScore(victim));
     addMoraleForKill(killer, victim);
     kills.insert(victim);
     int difficulty = victim->getDifficultyPoints();
@@ -693,10 +673,6 @@ void Collective::claimSquare(Position pos) {
 
 const KnownTiles& Collective::getKnownTiles() const {
   return *knownTiles;
-}
-
-const TileEfficiency& Collective::getTileEfficiency() const {
-  return *tileEfficiency;
 }
 
 LocalTime Collective::getLocalTime() const {
@@ -890,7 +866,6 @@ void Collective::destroyOrder(Position pos, FurnitureLayer layer) {
     if (furniture && !furniture->isWall() &&
         (furniture->getTribe() == getTribeId() || furniture->canRemoveNonFriendly())) {
       furniture->destroy(pos, DestroyAction::Type::BASH);
-      tileEfficiency->update(pos);
     }
     removeFurniture(pos, layer);
   }
@@ -972,7 +947,6 @@ bool Collective::isConstructionReachable(Position pos) {
 }
 
 void Collective::onConstructed(Position pos, FurnitureType type) {
-  tileEfficiency->update(pos);
   if (pos.getFurniture(type)->forgetAfterBuilding()) {
     constructions->removeFurniture(pos, Furniture::getLayer(type));
     if (territory->contains(pos))
@@ -1179,13 +1153,6 @@ bool Collective::addKnownTile(Position pos) {
     return false;
 }
 
-void Collective::addMana(double value) {
-  if ((manaRemainder += value) >= 1) {
-    returnResource({ResourceId::MANA, int(manaRemainder)});
-    manaRemainder -= int(manaRemainder);
-  }
-}
-
 void Collective::addProducesMessage(WConstCreature c, const vector<PItem>& items) {
   if (items.size() > 1)
     control->addMessage(c->getName().a() + " produces " + toString(items.size())
@@ -1197,12 +1164,11 @@ void Collective::addProducesMessage(WConstCreature c, const vector<PItem>& items
 void Collective::onAppliedSquare(WCreature c, Position pos) {
   if (auto furniture = pos.getFurniture(FurnitureLayer::MIDDLE)) {
     // Furniture have variable usage time, so just multiply by it to be independent of changes.
-    double efficiency = tileEfficiency->getEfficiency(pos) * furniture->getUsageTime().getVisibleDouble()
-        * getEfficiency(c);
+    double efficiency = furniture->getUsageTime().getVisibleDouble() * getEfficiency(c) * pos.getLightingEfficiency();
     switch (furniture->getType()) {
       case FurnitureType::THRONE:
         if (config->getRegenerateMana())
-          addMana(0.01 * efficiency);
+          dungeonLevel.onLibraryWork(efficiency);
         break;
       case FurnitureType::WHIPPING_POST:
         taskMap->addTask(Task::whipping(pos, c), pos, MinionActivity::WORKING);
@@ -1231,7 +1197,7 @@ void Collective::onAppliedSquare(WCreature c, Position pos) {
         case FurnitureUsageType::STUDY:
           increaseLevel(ExperienceType::SPELL);
           if (config->getRegenerateMana())
-            addMana(0.1 * efficiency);
+            dungeonLevel.onLibraryWork(efficiency);
           break;
         case FurnitureUsageType::ARCHERY_RANGE:
           increaseLevel(ExperienceType::ARCHERY);
@@ -1299,9 +1265,11 @@ bool Collective::hasTech(TechId id) const {
   return technologies.contains(id);
 }
 
-void Collective::acquireTech(Technology* tech) {
+void Collective::acquireTech(Technology* tech, bool throughLevelling) {
   technologies.push_back(tech->getId());
   Technology::onAcquired(tech->getId(), this);
+  if (throughLevelling)
+    ++dungeonLevel.consumedLevels;
 }
 
 vector<Technology*> Collective::getTechnologies() const {
@@ -1323,10 +1291,7 @@ void Collective::onRansomPaid() {
 void Collective::onExternalEnemyKilled(const std::string& name) {
   control->addMessage(PlayerMessage("You resisted the attack of " + name + ".",
       MessagePriority::CRITICAL));
-  int mana = 100;
-  addMana(mana);
-  control->addMessage(PlayerMessage("You feel a surge of power (+" + toString(mana) + " mana)",
-      MessagePriority::CRITICAL));
+  dungeonLevel.onKilledWave();
 }
 
 void Collective::onCopulated(WCreature who, WCreature with) {
@@ -1418,6 +1383,14 @@ int Collective::getPopulationSize() const {
 
 int Collective::getMaxPopulation() const {
   return populationIncrease + config->getMaxPopulation();
+}
+
+const DungeonLevel& Collective::getDungeonLevel() const {
+  return dungeonLevel;
+}
+
+DungeonLevel& Collective::getDungeonLevel() {
+  return dungeonLevel;
 }
 
 REGISTER_TYPE(Collective)

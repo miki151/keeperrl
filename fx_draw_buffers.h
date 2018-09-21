@@ -8,8 +8,7 @@ struct DrawBuffers {
   struct Element {
     int firstVertex;
     int numVertices;
-    int particleDefId;
-    BlendMode blendMode;
+    TextureName texName;
   };
 
   void fill(const vector<DrawParticle>&);

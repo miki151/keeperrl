@@ -15,15 +15,20 @@
 
 #pragma once
 
-#include "sdl.h"
+namespace SDL {
+struct SDL_Color;
+};
 
-struct Color : public SDL::SDL_Color {
-  Color(Uint8, Uint8, Uint8, Uint8 = 255);
+struct Color {
+  Color(const SDL::SDL_Color&);
+  Color(unsigned char, unsigned char, unsigned char, unsigned char = 255);
   Color transparency(int);
   static Color f(double, double, double, double = 1.0);
   Color operator*(Color);
   Color();
-  void applyGl() const;
+
+  bool operator==(const Color&) const;
+  operator SDL::SDL_Color() const;
 
   static Color WHITE;
   static Color MAIN_MENU_ON;
@@ -57,4 +62,6 @@ struct Color : public SDL::SDL_Color {
   static Color VIOLET;
   static Color TRANSLUCENT_BLACK;
   static Color TRANSPARENT;
+
+  unsigned char r, g, b, a;
 };

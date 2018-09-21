@@ -1,6 +1,7 @@
 #pragma once
 
 #include "fx_base.h"
+#include "fx_texture_name.h"
 #include "texture.h"
 
 class Framebuffer;
@@ -21,6 +22,8 @@ public:
   static FXRenderer *getInstance();
 
   bool useFramebuffer = true;
+  pair<unsigned, unsigned> fboIds() const;
+  IVec2 fboSize() const;
 
   private:
   struct View;
@@ -28,17 +31,15 @@ public:
 
   void initFramebuffer(IVec2);
   void drawParticles(const View&, BlendMode);
-  void setBlendingMode(BlendMode);
 
   FXManager& mgr;
   vector<Texture> textures;
   vector<FVec2> textureScales;
-  // Maps particleDefId to textureId
-  vector<int> textureIds;
+  EnumMap<TextureName, int> textureIds;
 
   void applyTexScale();
 
   unique_ptr<DrawBuffers> drawBuffers;
-  unique_ptr<Framebuffer> framebuffer;
+  unique_ptr<Framebuffer> blendFBO, addFBO;
 };
 }

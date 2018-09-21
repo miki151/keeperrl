@@ -15,12 +15,12 @@ void DrawBuffers::fill(const vector<DrawParticle>& particles) {
     return;
 
   auto& first = particles.front();
-  elements.emplace_back(Element{0, 0, first.particleDefId, first.blendMode});
+  elements.emplace_back(Element{0, 0, first.texName});
 
   for (auto& quad : particles) {
     auto* last = &elements.back();
-    if (last->particleDefId != quad.particleDefId || last->blendMode != quad.blendMode) {
-      Element new_elem{(int)positions.size(), 0, quad.particleDefId, quad.blendMode};
+    if (last->texName != quad.texName) {
+      Element new_elem{(int)positions.size(), 0, quad.texName};
       elements.emplace_back(new_elem);
       last = &elements.back();
     }
@@ -32,11 +32,14 @@ void DrawBuffers::fill(const vector<DrawParticle>& particles) {
       union {
         struct {
           unsigned char r, g, b, a;
-        };
+        } channels;
         unsigned int ivalue;
       };
 
-      r = quad.color.r, g = quad.color.g, b = quad.color.b, a = quad.color.a;
+      channels.r = quad.color.r;
+      channels.g = quad.color.g;
+      channels.b = quad.color.b;
+      channels.a = quad.color.a;
       colors.emplace_back(ivalue);
     }
   }

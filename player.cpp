@@ -133,8 +133,9 @@ void Player::onEvent(const GameEvent& event) {
         }
       },
       [&](const OtherEffect& info) {
+        // TODO: in Keeper mode effects are spawned twice: once from Player, once from PlayerControl
         if (creature->canSee(info.position))
-          getView()->animation(info.position.getCoord(), info.effect, info.targetOffset);
+          getView()->animation(info.effect, info.position.getCoord(), info.targetOffset, info.color);
       },
       [&](const WonGame&) {
         if (adventurer)
@@ -903,7 +904,7 @@ void Player::getViewIndex(Vec2 pos, ViewIndex& index) const {
   if (canSee)
     position.getViewIndex(index, creature);
   else
-    index.setHiddenId(position.getViewObject().id());
+    index.setHiddenId(position.getTopViewId());
   if (!canSee)
     if (auto memIndex = getMemory().getViewIndex(position))
       index.mergeFromMemory(*memIndex);
@@ -945,7 +946,7 @@ void Player::getViewIndex(Vec2 pos, ViewIndex& index) const {
         object.setExtendedActions(extended);
       }
     } else if (creature->isUnknownAttacker(c))
-      index.insert(copyOf(ViewObject::unknownMonster()));
+      index.insert(ViewObject(ViewId::UNKNOWN_MONSTER, ViewLayer::CREATURE));
   }
   if (unknownLocations->contains(position))
     index.insert(ViewObject(ViewId::UNKNOWN_MONSTER, ViewLayer::TORCH2, "Surprise"));

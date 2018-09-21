@@ -15,7 +15,6 @@
 
 #include "stdafx.h"
 #include "texture.h"
-#include "opengl.h"
 
 Texture::Texture() = default;
 

@@ -76,6 +76,7 @@ enum class UserInputId {
     SELECT_TEAM,
     ACTIVATE_TEAM,
     TECHNOLOGY,
+    KEEPEROPEDIA,
     WORKSHOP,
     WORKSHOP_ADD,
     WORKSHOP_ITEM_ACTION,
@@ -218,7 +219,6 @@ class UserInput : public EnumVariant<UserInputId, TYPES(BuildingInfo, int, Uniqu
             UserInputId::GO_TO_VILLAGE
             ),
         ASSIGN(int,
-            UserInputId::TECHNOLOGY,
             UserInputId::WORKSHOP,
             UserInputId::WORKSHOP_ADD,
             UserInputId::LIBRARY_ADD,

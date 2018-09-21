@@ -25,13 +25,13 @@ static FXRenderer *s_instance = nullptr;
 FXRenderer *FXRenderer::getInstance() { return s_instance; }
 
 FXRenderer::FXRenderer(DirectoryPath dataPath, FXManager& mgr) : mgr(mgr) {
-  textures.reserve(mgr.particleDefs().size());
-  textureScales.reserve(mgr.particleDefs().size());
-  textureIds.reserve(mgr.particleDefs().size());
+  textures.reserve(EnumInfo<TextureName>::size);
+  textureScales.reserve(textures.size());
   drawBuffers = std::make_unique<DrawBuffers>();
 
-  for (auto& pdef : mgr.particleDefs()) {
-    auto path = dataPath.file(pdef.texture.name);
+  for (auto texName : ENUM_ALL(TextureName)) {
+    auto& tdef = mgr[texName];
+    auto path = dataPath.file(tdef.fileName);
     int id = -1;
     for (int n = 0; n < (int)textures.size(); n++)
       if (textures[n].getPath() == path) {
@@ -46,7 +46,7 @@ FXRenderer::FXRenderer(DirectoryPath dataPath, FXManager& mgr) : mgr(mgr) {
       FVec2 scale(float(tsize.x) / float(rsize.x), float(tsize.y) / float(rsize.y));
       textureScales.emplace_back(scale);
     }
-    textureIds.emplace_back(id);
+    textureIds[texName] = id;
   }
   CHECK(s_instance == nullptr && "There can be only one!");
   s_instance = this;
@@ -57,9 +57,10 @@ FXRenderer::~FXRenderer() { s_instance = nullptr; }
 void FXRenderer::initFramebuffer(IVec2 size) {
   if (!Framebuffer::isExtensionAvailable())
     return;
-  if (!framebuffer || framebuffer->width != size.x || framebuffer->height != size.y) {
+  if (!blendFBO || blendFBO->width != size.x || blendFBO->height != size.y) {
     INFO << "FX: creating FBO (" << size.x << ", " << size.y << ")";
-    framebuffer = std::make_unique<Framebuffer>(size.x, size.y);
+    blendFBO = std::make_unique<Framebuffer>(size.x, size.y);
+    addFBO = std::make_unique<Framebuffer>(size.x, size.y);
   }
 }
 
@@ -68,8 +69,7 @@ void FXRenderer::applyTexScale() {
   auto& texCoords = drawBuffers->texCoords;
 
   for (auto& elem : elements) {
-    int texId = textureIds[elem.particleDefId];
-    auto scale = textureScales[texId];
+    auto scale = textureScales[textureIds[elem.texName]];
     if (scale == FVec2(1.0f))
       continue;
 
@@ -109,62 +109,96 @@ void FXRenderer::draw(float zoom, float offsetX, float offsetY, int w, int h) {
   SDL::glDisable(GL_CULL_FACE);
   SDL::glEnable(GL_TEXTURE_2D);
 
-  // Problem: FBO mode doesn't work well for particles blender normally
-  if (framebuffer && useFramebuffer) {
-    framebuffer->bind();
-
+  if (blendFBO && addFBO && useFramebuffer) {
     pushOpenglView();
+    FVec2 fboOffset = -FVec2(fboView.min() * nominalSize);
+
+    blendFBO->bind();
     SDL::glPushAttrib(GL_ENABLE_BIT);
     SDL::glDisable(GL_SCISSOR_TEST);
-    setupOpenglView(fboScreenSize.x, fboScreenSize.y, 1.0f);
+    setupOpenglView(blendFBO->width, blendFBO->height, 1.0f);
 
-    SDL::glClearColor(0.0f, 0.0f, 0.0f, 0.f);
+    SDL::glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    SDL::glClear(GL_COLOR_BUFFER_BIT);
+    SDL::glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ZERO, GL_ONE_MINUS_SRC_ALPHA);
+    drawParticles({1.0f, fboOffset, fboScreenSize}, BlendMode::normal);
+
+    addFBO->bind();
+    SDL::glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     SDL::glClear(GL_COLOR_BUFFER_BIT);
 
-    FVec2 fboOffset = -FVec2(fboView.min() * nominalSize);
-    drawParticles({1.0f, fboOffset, fboScreenSize}, BlendMode::additive);
+    /* // Mode toggler; useful for testing
+	static bool mode0 = false;
+	static double time = fwk::getTime();
+	if(fwk::getTime() - time > 4.0) {
+		time = fwk::getTime();
+		mode0 ^= 1;
+	}*/
 
-    // TODO: positioning is wrong for non-integral zoom values
-    FVec2 c1 = FVec2(fboView.min() * nominalSize * zoom) + view.offset;
-    FVec2 c2 = FVec2(fboView.max() * nominalSize * zoom) + view.offset;
+    // TODO: Each effect could control how alpha builds up
+    SDL::glBlendFuncSeparate(GL_ONE, GL_ONE, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+    drawParticles({1.0f, fboOffset, fboScreenSize}, BlendMode::additive);
 
     Framebuffer::unbind();
     SDL::glPopAttrib();
     popOpenglView();
 
-    SDL::glBlendFunc(GL_ONE, GL_ONE);
-    SDL::glBindTexture(GL_TEXTURE_2D, framebuffer->texId);
-    SDL::glBegin(GL_QUADS);
-    SDL::glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-    SDL::glTexCoord2f(0.0f, 0.0f), SDL::glVertex2f(c1.x, c2.y);
-    SDL::glTexCoord2f(1.0f, 0.0f), SDL::glVertex2f(c2.x, c2.y);
-    SDL::glTexCoord2f(1.0f, 1.0f), SDL::glVertex2f(c2.x, c1.y);
-    SDL::glTexCoord2f(0.0f, 1.0f), SDL::glVertex2f(c1.x, c1.y);
-    SDL::glEnd();
+    glColor(Color::WHITE);
+
+    int defaultMode = 0, defaultCombine = 0;
+    SDL::glGetTexEnviv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, &defaultMode);
+    SDL::glGetTexEnviv(GL_TEXTURE_ENV, GL_COMBINE_RGB, &defaultCombine);
+
+    // TODO: positioning is wrong for non-integral zoom values
+    FVec2 c1 = FVec2(fboView.min() * nominalSize * zoom) + view.offset;
+    FVec2 c2 = FVec2(fboView.max() * nominalSize * zoom) + view.offset;
+
+    SDL::glBlendFunc(GL_ONE, GL_SRC_ALPHA);
+    SDL::glBindTexture(GL_TEXTURE_2D, blendFBO->texId);
+    glQuad(c1.x, c1.y, c2.x, c2.y);
+
+    // Here we're performing blend-add:
+    // - for high alpha values we're blending
+    // - for low alpha values we're adding
+    // For this to work nicely, additive textures need properly prepared alpha channel
+    SDL::glBindTexture(GL_TEXTURE_2D, addFBO->texId);
+    SDL::glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    // These states multiply alpha by itself
+    SDL::glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
+    SDL::glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA, GL_MODULATE);
+    SDL::glTexEnvi(GL_TEXTURE_ENV, GL_SRC0_ALPHA, GL_TEXTURE);
+    SDL::glTexEnvi(GL_TEXTURE_ENV, GL_SRC1_ALPHA, GL_TEXTURE);
+    SDL::glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA, GL_SRC_ALPHA);
+    SDL::glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_ALPHA, GL_SRC_ALPHA);
+    glQuad(c1.x, c1.y, c2.x, c2.y);
+
+    // Here we should really multiply by (1 - a), not (1 - a^2), but it looks better
+    SDL::glBlendFunc(GL_ONE_MINUS_SRC_ALPHA, GL_ONE);
+    glQuad(c1.x, c1.y, c2.x, c2.y);
+
+    SDL::glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, defaultMode);
+    SDL::glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB, defaultCombine);
   } else {
+    SDL::glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    drawParticles(view, BlendMode::normal);
+    SDL::glBlendFunc(GL_ONE, GL_ONE);
     drawParticles(view, BlendMode::additive);
   }
-
-  drawParticles(view, BlendMode::normal);
 
   SDL::glPopAttrib();
   SDL::glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   CHECK_OPENGL_ERROR();
 }
 
-void FXRenderer::setBlendingMode(BlendMode bm) {
-  if (framebuffer) {
-    if (bm == BlendMode::normal)
-      SDL::glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    else
-      SDL::glBlendFunc(GL_ONE, GL_ONE);
-    return;
-  }
+pair<unsigned, unsigned> FXRenderer::fboIds() const {
+  if (blendFBO && addFBO)
+    return make_pair(blendFBO->texId, addFBO->texId);
+  return make_pair(0u, 0u);
+}
 
-  if (bm == BlendMode::normal)
-    SDL::glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  else
-    SDL::glBlendFunc(GL_ONE, GL_ONE);
+IVec2 FXRenderer::fboSize() const {
+  return blendFBO ? IVec2(blendFBO->width, blendFBO->height) : IVec2();
 }
 
 void FXRenderer::drawParticles(const View& view, BlendMode blendMode) {
@@ -182,17 +216,15 @@ void FXRenderer::drawParticles(const View& view, BlendMode blendMode) {
   SDL::glTexCoordPointer(2, GL_FLOAT, 0, drawBuffers->texCoords.data());
   SDL::glColorPointer(4, GL_UNSIGNED_BYTE, 0, drawBuffers->colors.data());
 
-  setBlendingMode(blendMode);
   for (auto& elem : drawBuffers->elements) {
-    if (elem.blendMode != blendMode)
+    auto& tdef = mgr[elem.texName];
+    if (tdef.blendMode != blendMode)
       continue;
-    int texId = textureIds[elem.particleDefId];
-    auto& tex = textures[texId];
+    auto& tex = textures[textureIds[elem.texName]];
     SDL::glBindTexture(GL_TEXTURE_2D, *tex.getTexId());
     SDL::glDrawArrays(GL_QUADS, elem.firstVertex, elem.numVertices);
   }
 
-  // TODO: check OpenGL errors ?
   SDL::glDisableClientState(GL_VERTEX_ARRAY);
   SDL::glDisableClientState(GL_TEXTURE_COORD_ARRAY);
   SDL::glDisableClientState(GL_COLOR_ARRAY);

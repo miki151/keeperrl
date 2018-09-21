@@ -213,6 +213,12 @@ optional<int> Position::getPortalIndex() const {
     return none;
 }
 
+double Position::getLightingEfficiency() const {
+  const double lightBase = 0.5;
+  const double flattenVal = 0.9;
+  return min(1.0, (lightBase + getLight() * (1 - lightBase)) / flattenVal);
+}
+
 WCreature Position::getCreature() const {
   //PROFILE;
   if (isValid())
@@ -266,6 +272,7 @@ void Position::globalMessage(const PlayerMessage& msg) const {
 vector<Position> Position::neighbors8() const {
   //PROFILE;
   vector<Position> ret;
+  ret.reserve(8);
   for (Vec2 v : coord.neighbors8())
     ret.push_back(Position(v, level));
   return ret;
@@ -274,6 +281,7 @@ vector<Position> Position::neighbors8() const {
 vector<Position> Position::neighbors4() const {
   //PROFILE;
   vector<Position> ret;
+  ret.reserve(4);
   for (Vec2 v : coord.neighbors4())
     ret.push_back(Position(v, level));
   return ret;
@@ -282,6 +290,7 @@ vector<Position> Position::neighbors4() const {
 vector<Position> Position::neighbors8(RandomGen& random) const {
   //PROFILE;
   vector<Position> ret;
+  ret.reserve(8);
   for (Vec2 v : coord.neighbors8(random))
     ret.push_back(Position(v, level));
   return ret;
@@ -290,6 +299,7 @@ vector<Position> Position::neighbors8(RandomGen& random) const {
 vector<Position> Position::neighbors4(RandomGen& random) const {
   //PROFILE;
   vector<Position> ret;
+  ret.reserve(4);
   for (Vec2 v : coord.neighbors4(random))
     ret.push_back(Position(v, level));
   return ret;
@@ -298,6 +308,7 @@ vector<Position> Position::neighbors4(RandomGen& random) const {
 vector<Position> Position::getRectangle(Rectangle rect) const {
   PROFILE;
   vector<Position> ret;
+  ret.reserve(rect.width() * rect.height());
   for (Vec2 v : rect.translate(coord))
     ret.emplace_back(v, level);
   return ret;
@@ -361,8 +372,11 @@ void Position::getViewIndex(ViewIndex& index, WConstCreature viewer) const {
     if (isUnavailable())
       index.setHighlight(HighlightType::UNAVAILABLE);
     for (auto furniture : getFurniture())
-      if (furniture->isVisibleTo(viewer) && furniture->getViewObject())
-        index.insert(*furniture->getViewObject());
+      if (furniture->isVisibleTo(viewer) && furniture->getViewObject()) {
+        auto obj = *furniture->getViewObject();
+        obj.setGenericId(level->getUniqueId() + coord.x * 2000 + coord.y);
+        index.insert(std::move(obj));
+      }
     if (index.noObjects())
       index.insert(ViewObject(ViewId::EMPTY, ViewLayer::FLOOR_BACKGROUND));
   }
@@ -634,13 +648,13 @@ void Position::setNeedsRenderUpdate(bool s) const {
     level->setNeedsRenderUpdate(getCoord(), s);
 }
 
-const ViewObject& Position::getViewObject() const {
+ViewId Position::getTopViewId() const {
   PROFILE;
   for (auto layer : ENUM_ALL_REVERSE(FurnitureLayer))
     if (auto furniture = getFurniture(layer))
       if (auto& obj = furniture->getViewObject())
-        return *obj;
-  return ViewObject::empty();
+        return obj->id();
+  return ViewId::EMPTY;
 }
 
 void Position::forbidMovementForTribe(TribeId t) {

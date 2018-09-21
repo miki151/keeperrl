@@ -36,6 +36,8 @@
 #include "level_builder.h"
 #include "model.h"
 #include "position_matching.h"
+#include "dungeon_level.h"
+#include "villain_type.h"
 
 class Test {
   public:
@@ -976,6 +978,25 @@ class Test {
     for (auto v : Rectangle(10, 10))
       t.matching.addTarget(t.get(v.x, v.y));
   }
+
+  void testDungeonLevel() {
+    DungeonLevel level;
+    CHECKEQ(level.level, 0);
+    CHECKEQ(level.progress, 0);
+    level.onKilledVillain(VillainType::NONE);
+    CHECKEQ(level.level, 1);
+    CHECKEQ(level.progress, 0.5 / 3);
+    for (int i = 0; i < 2; ++i)
+      level.onKilledVillain(VillainType::NONE);
+    CHECKEQ(level.level, 2);
+    CHECKEQ(level.progress, 0.5 / 5);
+    level.onKilledVillain(VillainType::LESSER);
+    CHECKEQ(level.level, 3);
+    CHECKEQ(level.progress, 6.5 / 7);
+    level.onKilledVillain(VillainType::MAIN);
+    CHECKEQ(level.level, 6);
+    CHECKEQ(level.progress, 4.5 / 13);
+  }
 };
 
 void testAll() {
@@ -1034,5 +1055,6 @@ void testAll() {
   Test().testPositionMatching2();
   Test().testPositionMatching3();
   Test().testPositionMatching4();
+  Test().testDungeonLevel();
   INFO << "-----===== OK =====-----";
 }

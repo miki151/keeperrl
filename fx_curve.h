@@ -49,9 +49,9 @@ public:
   void print(float step = 0.05f) const;
 
   // TODO: keys can be optional, then we're treating it as a regular curve
-  vector<float> m_keys;
-  vector<T> m_values;
-  InterpType m_interp; // TODO: this doesn't have to be here
+  vector<float> keys;
+  vector<T> values;
+  InterpType interp; // TODO: this doesn't have to be here
 };
 
 extern template struct Curve<float>;

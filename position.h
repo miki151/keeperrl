@@ -84,7 +84,7 @@ class Position {
   void setNeedsRenderUpdate(bool) const;
   bool needsMemoryUpdate() const;
   void setNeedsMemoryUpdate(bool) const;
-  const ViewObject& getViewObject() const;
+  ViewId getTopViewId() const;
   void forbidMovementForTribe(TribeId);
   void allowMovementForTribe(TribeId);
   bool isTribeForbidden(TribeId) const;
@@ -131,6 +131,7 @@ class Position {
   void registerPortal();
   void removePortal();
   optional<int> getPortalIndex() const;
+  double getLightingEfficiency() const;
 
   SERIALIZATION_DECL(Position)
   int getHash() const;

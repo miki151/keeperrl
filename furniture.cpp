@@ -18,6 +18,7 @@
 #include "furniture_dropped_items.h"
 #include "furniture_click.h"
 #include "furniture_tick.h"
+#include "furniture_fx.h"
 #include "movement_set.h"
 
 static string makePlural(const string& s) {
@@ -47,11 +48,12 @@ Furniture::~Furniture() {}
 
 template<typename Archive>
 void Furniture::serialize(Archive& ar, const unsigned) {
-  ar(SUBCLASS(OwnedObject<Furniture>), viewObject, removeNonFriendly, destroyFX, tryDestroyFX, walkOverFX);
+  ar(SUBCLASS(OwnedObject<Furniture>), viewObject, removeNonFriendly);
   ar(name, pluralName, type, movementSet, fire, burntRemains, destroyedRemains, destroyActions, itemDrop);
   ar(blockVision, usageType, clickType, tickType, usageTime, overrideMovement, wall, creator, createdTime);
   ar(constructMessage, layer, entryType, lightEmission, canHideHere, warning, summonedElement, droppedItems);
-  ar(canBuildBridge, noProjectiles, clearFogOfWar, removeWithCreaturePresent, xForgetAfterBuilding, showEfficiency);
+  ar(canBuildBridge, noProjectiles, clearFogOfWar, removeWithCreaturePresent, xForgetAfterBuilding);
+  ar(luxuryInfo);
 }
 
 SERIALIZABLE(Furniture)
@@ -93,6 +95,12 @@ bool Furniture::isWall(FurnitureType type) {
   static EnumMap<FurnitureType, bool> layers(
       [] (FurnitureType type) { return FurnitureFactory::get(type, TribeId::getHostile())->isWall(); });
   return layers[type];
+}
+
+LuxuryInfo Furniture::getLuxuryInfo(FurnitureType type) {
+  static EnumMap<FurnitureType, LuxuryInfo> luxury(
+      [] (FurnitureType type) { return FurnitureFactory::get(type, TribeId::getHostile())->getLuxuryInfo(); });
+  return luxury[type];
 }
 
 pair<double, optional<int>> getPopulationIncreaseInfo(FurnitureType type) {
@@ -158,8 +166,8 @@ void Furniture::destroy(Position pos, const DestroyAction& action) {
     pos.dropItems(itemDrop->random());
   if (usageType)
     FurnitureUsage::beforeRemoved(*usageType, pos);
-  if (destroyFX)
-    pos.getGame()->addEvent(EventInfo::OtherEffect{pos, *destroyFX});
+  if (auto info = destroyFXInfo(type))
+    pos.getGame()->addEvent(EventInfo::OtherEffect{pos, info->name, info->color});
   pos.removeFurniture(this, destroyedRemains ? FurnitureFactory::get(*destroyedRemains, getTribe()) : nullptr);
   pos.getGame()->addEvent(EventInfo::FurnitureDestroyed{pos, myType, myLayer});
 }
@@ -171,8 +179,8 @@ void Furniture::tryToDestroyBy(Position pos, WCreature c, const DestroyAction& a
     if (auto skill = action.getDestroyingSkillMultiplier())
       damage = damage * c->getAttributes().getSkills().getValue(*skill);
     *strength -= damage;
-    if (tryDestroyFX)
-      pos.getGame()->addEvent(EventInfo::OtherEffect{pos, *tryDestroyFX});
+    if (auto info = tryDestroyFXInfo(type))
+      pos.getGame()->addEvent(EventInfo::OtherEffect{pos, info->name, info->color});
     if (*strength <= 0)
       destroy(pos, action);
   }
@@ -334,13 +342,14 @@ bool Furniture::forgetAfterBuilding() const {
   return isWall() || xForgetAfterBuilding;
 }
 
-bool Furniture::isShowEfficiency() const {
-  return showEfficiency;
+void Furniture::onCreatureWalkedOver(Position pos, Vec2 direction) const {
+  if (auto info = walkOverFXInfo(type))
+    pos.getGame()->addEvent(EventInfo::OtherEffect{pos, info->name, info->color, direction});
 }
 
-void Furniture::onCreatureWalkedOver(Position pos, Vec2 direction) const {
-  if (walkOverFX)
-    pos.getGame()->addEvent(EventInfo::OtherEffect{pos, *walkOverFX, direction});
+void Furniture::onCreatureWalkedInto(Position pos, Vec2 direction) const {
+  if (auto info = walkIntoFXInfo(type))
+    pos.getGame()->addEvent(EventInfo::OtherEffect{pos, info->name, info->color, direction});
 }
 
 vector<PItem> Furniture::dropItems(Position pos, vector<PItem> v) const {
@@ -352,6 +361,10 @@ vector<PItem> Furniture::dropItems(Position pos, vector<PItem> v) const {
 
 bool Furniture::canBuildBridgeOver() const {
   return canBuildBridge;
+}
+
+const LuxuryInfo&Furniture::getLuxuryInfo() const {
+  return luxuryInfo;
 }
 
 Furniture& Furniture::setBlocking() {
@@ -496,23 +509,8 @@ Furniture& Furniture::setForgetAfterBuilding() {
   return *this;
 }
 
-Furniture& Furniture::setShowEfficiency() {
-  showEfficiency = true;
-  return *this;
-}
-
-Furniture& Furniture::setDestroyFX(FXName name) {
-  destroyFX = name;
-  return *this;
-}
-
-Furniture& Furniture::setTryDestroyFX(FXName name) {
-  tryDestroyFX = name;
-  return *this;
-}
-
-Furniture& Furniture::setWalkOverFX(FXName name) {
-  walkOverFX = name;
+Furniture& Furniture::setLuxury(double luxury) {
+  luxuryInfo.luxury = luxury;
   return *this;
 }
 

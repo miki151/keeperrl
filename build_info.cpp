@@ -26,8 +26,7 @@ const vector<BuildInfo>& BuildInfo::get() {
       BuildInfo({FurnitureType::MOUNTAIN, {ResourceId::STONE, 5}}, "Soft rock", {}, "", 0, "Structure"),
       BuildInfo({FurnitureType::MOUNTAIN2, {ResourceId::STONE, 10}}, "Hard rock", {}, "", 0, "Structure"),
       BuildInfo({{FurnitureType::DUNGEON_WALL, FurnitureType::DUNGEON_WALL2}, {ResourceId::STONE, 2}}, "Reinforce wall", {},
-          "Reinforce wall. +" + toString<int>(100 * CollectiveConfig::getEfficiencyBonus(FurnitureType::DUNGEON_WALL)) +
-          " efficiency to surrounding tiles.", 0, "Structure"),
+          "Reinforce wall.", 0, "Structure"),
       BuildInfo({FurnitureType::PIT}, "Dig a pit", {},
           "Dig a pit in the ground. Building next to water or lava will cause it to fill up.", 0, "Structure"),
       BuildInfo({FurnitureType::BRIDGE, {ResourceId::WOOD, 5}}, "Bridge", {},
@@ -41,20 +40,15 @@ const vector<BuildInfo>& BuildInfo::get() {
       BuildInfo({FurnitureType::ADA_DOOR, {ResourceId::ADA, 5}}, "Adamantine door",
           {{RequirementId::TECHNOLOGY, TechId::IRON_WORKING}},
           "Click on a built door to lock it.", 0, "Doors"),
-    });
-    for (int i : All(CollectiveConfig::getFloors())) {
-      auto& floor = CollectiveConfig::getFloors()[i];
-      string efficiency = toString<int>(floor.efficiencyBonus * 100);
-      buildInfo->push_back(
-            BuildInfo({floor.type, floor.cost},
-                floor.name + "  (+" + efficiency + ")",
-                {}, floor.name + " floor. +" + efficiency + " efficiency to surrounding tiles.", i == 0 ? 'f' : 0,
-                      "Floors", i == 0));
-      if (floor.type == FurnitureType::FLOOR_WOOD1 || floor.type == FurnitureType::FLOOR_WOOD2)
-        buildInfo->back().setTutorialHighlight(TutorialHighlight::BUILD_FLOOR);
-    }
-    append(*buildInfo, {
-             BuildInfo({FurnitureLayer::FLOOR}, "Remove floor", "", 0, "Floors"),
+      BuildInfo({FurnitureType::FLOOR_WOOD1, {CollectiveResourceId::WOOD, 2}}, "Wooden", {}, "", 'f', "Floors", true)
+          .setTutorialHighlight(TutorialHighlight::BUILD_FLOOR),
+      BuildInfo({FurnitureType::FLOOR_WOOD2, {CollectiveResourceId::WOOD, 2}}, "Wooden", {}, "", 0, "Floors")
+          .setTutorialHighlight(TutorialHighlight::BUILD_FLOOR),
+      BuildInfo({FurnitureType::FLOOR_STONE1, {CollectiveResourceId::STONE, 2}}, "Stone", {}, "", 0, "Floors"),
+      BuildInfo({FurnitureType::FLOOR_STONE2, {CollectiveResourceId::STONE, 2}}, "Stone", {}, "", 0, "Floors"),
+      BuildInfo({FurnitureType::FLOOR_CARPET1, {CollectiveResourceId::GOLD, 2}}, "Carpet", {}, "", 0, "Floors"),
+      BuildInfo({FurnitureType::FLOOR_CARPET2, {CollectiveResourceId::GOLD, 2}}, "Carpet", {}, "", 0, "Floors"),
+      BuildInfo({FurnitureLayer::FLOOR}, "Remove floor", "", 0, "Floors"),
       BuildInfo(ZoneId::STORAGE_RESOURCES, ViewId::STORAGE_RESOURCES, "Resources",
           "Only wood, iron and granite can be stored here.", 's', "Storage", true)
              .setTutorialHighlight(TutorialHighlight::RESOURCE_STORAGE),
@@ -63,6 +57,8 @@ const vector<BuildInfo>& BuildInfo::get() {
              .setTutorialHighlight(TutorialHighlight::EQUIPMENT_STORAGE),
       BuildInfo({FurnitureType::TREASURE_CHEST, {ResourceId::WOOD, 5}}, "Treasure chest", {},
           "Stores gold.", 0, "Storage"),
+      BuildInfo({FurnitureType::GRAVE, {ResourceId::STONE, 5}}, "Grave", {},
+          "Spot for hauling dead bodies.", 0, "Storage"),
     });
     auto& quarters = Quarters::getAllQuarters();
     for (int i : All(quarters))
@@ -82,13 +78,18 @@ const vector<BuildInfo>& BuildInfo::get() {
           {{RequirementId::TECHNOLOGY, TechId::SPELLS_MAS}}, "Train your minions here. Adds up to " +
           toString(*CollectiveConfig::getTrainingMaxLevel(ExperienceType::SPELL, FurnitureType::BOOKCASE_GOLD)) + " spell levels.",
           0, "Library"),
-      BuildInfo({FurnitureType::THRONE, {ResourceId::MANA, 300}, false, 1}, "Throne",
+      BuildInfo({FurnitureType::THRONE, {ResourceId::GOLD, 500}, false, 1}, "Throne",
           {{RequirementId::VILLAGE_CONQUERED}}, *Furniture::getPopulationIncreaseDescription(FurnitureType::THRONE)),
-      BuildInfo({FurnitureType::BED, {ResourceId::WOOD, 12}}, "Bed", {},
-          "Humanoid minions sleep here.", 'v', "Living", true)
+      BuildInfo({FurnitureType::BED1, {ResourceId::WOOD, 12}}, "Basic bed", {}, "Humanoid minions sleep here.", 'v', "Living", true)
              .setTutorialHighlight(TutorialHighlight::BUILD_BED),
-      BuildInfo({FurnitureType::GRAVE, {ResourceId::STONE, 15}}, "Graveyard", {},
-          "Spot for hauling dead bodies and for undead creatures to sleep in.", 0, "Living"),
+      BuildInfo({FurnitureType::BED2, {ResourceId::IRON, 12}}, "Fine bed", {}, "Humanoid minions sleep here.", 0, "Living", true),
+      BuildInfo({FurnitureType::BED3, {ResourceId::GOLD, 12}}, "Luxurious bed", {}, "Humanoid minions sleep here.", 0, "Living", true),
+      BuildInfo({FurnitureType::COFFIN1, {ResourceId::WOOD, 15}}, "Basic coffin", {},
+          "Undead creatures sleep here.", 0, "Living"),
+      BuildInfo({FurnitureType::COFFIN2, {ResourceId::STONE, 15}}, "Fine coffin", {},
+          "Undead creatures sleep here.", 0, "Living"),
+      BuildInfo({FurnitureType::COFFIN3, {ResourceId::GOLD, 15}}, "Luxurious coffin", {},
+          "Undead creatures sleep here.", 0, "Living"),
       BuildInfo({FurnitureType::BEAST_CAGE, {ResourceId::WOOD, 8}}, "Beast cage", {}, "Beasts sleep here.", 0, "Living"),
       BuildInfo({FurnitureType::PIGSTY, {ResourceId::WOOD, 5}}, "Pigsty",
           {{RequirementId::TECHNOLOGY, TechId::PIGSTY}},
@@ -179,6 +180,15 @@ const vector<BuildInfo>& BuildInfo::get() {
           {{RequirementId::TECHNOLOGY, TechId::TRAPS}},
           "Teleports nearby minions to deal with the trespasser.", 0, "Traps"),
     });
+    for (auto& info : *buildInfo)
+      if (info.buildType == BuildInfo::FURNITURE)
+        for (auto type : info.furnitureInfo.types) {
+          double luxury = Furniture::getLuxuryInfo(type).luxury;
+          if (luxury > 0) {
+            info.help += " Increases luxury by " + toString(luxury) + ".";
+            break;
+          }
+    }
   }
   return *buildInfo;
 }

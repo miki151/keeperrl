@@ -41,12 +41,12 @@ int Spell::getDifficulty() const {
   return difficulty;
 }
 
-Spell::Spell(const string& n, Effect e, int diff, SoundId s, optional<FXName> fxName, CastMessageType msg)
-    : name(n), effect(e), difficulty(diff), castMessageType(msg), sound(s), fxName(fxName) {
+Spell::Spell(const string& n, Effect e, int diff, SoundId s, optional<SpellFX> fx, CastMessageType msg)
+    : name(n), effect(e), difficulty(diff), castMessageType(msg), sound(s), fx(fx) {
 }
 
-Spell::Spell(const string& n, DirEffectType e, int diff, SoundId s, optional<FXName> fxName, CastMessageType msg)
-    : name(n), effect(e), difficulty(diff), castMessageType(msg), sound(s), fxName(fxName) {
+Spell::Spell(const string& n, DirEffectType e, int diff, SoundId s, optional<SpellFX> fx, CastMessageType msg)
+    : name(n), effect(e), difficulty(diff), castMessageType(msg), sound(s), fx(fx) {
 }
 
 SoundId Spell::getSound() const {
@@ -74,33 +74,36 @@ void Spell::addMessage(WCreature c) {
 }
 
 void Spell::init() {
-  set(SpellId::HEAL_SELF, new Spell("heal self", Effect::Heal{}, 30, SoundId::SPELL_HEALING));
+  set(SpellId::HEAL_SELF, new Spell("heal self", Effect::Heal{}, 30, SoundId::SPELL_HEALING,
+        SpellFX(FXName::CIRCULAR_SPELL, Color::LIGHT_GREEN)));
   set(SpellId::SUMMON_INSECTS, new Spell("summon insects", Effect::Summon{CreatureId::FLY}, 30,
         SoundId::SPELL_SUMMON_INSECTS));
   set(SpellId::DECEPTION, new Spell("deception", Effect::Deception{}, 60, SoundId::SPELL_DECEPTION));
   set(SpellId::SPEED_SELF, new Spell("haste self", Effect::Lasting{LastingEffect::SPEED}, 60,
-        SoundId::SPELL_SPEED_SELF));
+        SoundId::SPELL_SPEED_SELF, SpellFX(FXName::CIRCULAR_SPELL, Color::LIGHT_BLUE)));
   set(SpellId::DAM_BONUS, new Spell("damage", Effect::Lasting{LastingEffect::DAM_BONUS}, 90,
-        SoundId::SPELL_STR_BONUS));
+        SoundId::SPELL_STR_BONUS, SpellFX(FXName::CIRCULAR_SPELL, Color::LIGHT_RED)));
   set(SpellId::DEF_BONUS, new Spell("defense", Effect::Lasting{LastingEffect::DEF_BONUS}, 90,
-        SoundId::SPELL_DEX_BONUS));
+        SoundId::SPELL_DEX_BONUS, SpellFX(FXName::CIRCULAR_SPELL, Color::LIGHT_BROWN)));
   set(SpellId::HEAL_OTHER, new Spell("heal other",  DirEffectType(1, DirEffectId::CREATURE_EFFECT,
       Effect::Heal{}) , 6, SoundId::SPELL_HEALING));
   set(SpellId::FIRE_SPHERE_PET, new Spell("fire sphere", Effect::Summon{CreatureId::FIRE_SPHERE}, 20,
         SoundId::SPELL_FIRE_SPHERE_PET));
   set(SpellId::TELEPORT, new Spell("escape", Effect::Teleport{}, 80, SoundId::SPELL_TELEPORT));
   set(SpellId::INVISIBILITY, new Spell("invisibility", Effect::Lasting{LastingEffect::INVISIBLE}, 150,
-        SoundId::SPELL_INVISIBILITY));
-  set(SpellId::BLAST, new Spell("blast", DirEffectType(4, DirEffectId::BLAST), 100, SoundId::SPELL_BLAST));
+        SoundId::SPELL_INVISIBILITY, SpellFX(FXName::CIRCULAR_SPELL, Color::WHITE)));
+  set(SpellId::BLAST,
+      new Spell("blast", DirEffectType(4, DirEffectId::BLAST), 100, SoundId::SPELL_BLAST, {FXName::AIR_BLAST2}));
   set(SpellId::MAGIC_MISSILE, new Spell("magic missile", DirEffectType(4, DirEffectId::CREATURE_EFFECT,
-      Effect::Damage{AttrType::SPELL_DAMAGE, AttackType::SPELL}), 3, SoundId::SPELL_BLAST, FXName::MAGIC_MISSILE));
+      Effect::Damage{AttrType::SPELL_DAMAGE, AttackType::SPELL}), 3, SoundId::SPELL_BLAST, {FXName::MAGIC_MISSILE}));
   set(SpellId::FIREBALL, new Spell("fireball", DirEffectType(4, DirEffectId::FIREBALL), 3, SoundId::SPELL_BLAST,
-      FXName::FIREBALL));
+              {FXName::FIREBALL}));
   set(SpellId::CIRCULAR_BLAST, new Spell("circular blast", Effect::CircularBlast{}, 150, SoundId::SPELL_AIR_BLAST,
-        none, CastMessageType::AIR_BLAST));
+              {FXName::CIRCULAR_BLAST}, CastMessageType::AIR_BLAST));
   set(SpellId::SUMMON_SPIRIT, new Spell("summon spirits", Effect::Summon{CreatureId::SPIRIT}, 150,
         SoundId::SPELL_SUMMON_SPIRIT));
-  set(SpellId::CURE_POISON, new Spell("cure poisoning", Effect::CurePoison{}, 150, SoundId::SPELL_CURE_POISON));
+  set(SpellId::CURE_POISON, new Spell("cure poisoning", Effect::CurePoison{}, 150, SoundId::SPELL_CURE_POISON,
+              SpellFX(FXName::CIRCULAR_SPELL, Color::LIGHT_GREEN)));
   set(SpellId::METEOR_SHOWER, new Spell("meteor shower", Effect::PlaceFurniture{FurnitureType::METEOR_SHOWER}, 150,
         SoundId::SPELL_METEOR_SHOWER));
   set(SpellId::PORTAL, new Spell("portal", Effect::PlaceFurniture{FurnitureType::PORTAL}, 150, SoundId::SPELL_PORTAL));
@@ -132,7 +135,7 @@ optional<int> Spell::getLearningExpLevel() const {
   }
 }
 
-optional<FXName> Spell::getFXName() const {
-  return fxName;
+optional<SpellFX> Spell::getFX() const {
+  return fx;
 };
 

@@ -23,7 +23,6 @@
 #include "entity_map.h"
 #include "view_object.h"
 #include "item_counts.h"
-#include "fx_simple.h"
 
 class MapMemory;
 class MapLayout;
@@ -34,6 +33,7 @@ class Creature;
 class Options;
 class TutorialInfo;
 class UserInput;
+class FXViewManager;
 
 class MapGui : public GuiElem {
   public:
@@ -44,6 +44,7 @@ class MapGui : public GuiElem {
     function<void()> refreshFun;
   };
   MapGui(Callbacks, SyncQueue<UserInput>&, Clock*, Options*, GuiFactory*);
+  ~MapGui();
 
   virtual void render(Renderer&) override;
   virtual bool onLeftClick(Vec2) override;
@@ -58,7 +59,7 @@ class MapGui : public GuiElem {
   void setSpriteMode(bool);
   optional<Vec2> getHighlightedTile(Renderer& renderer);
   void addAnimation(PAnimation animation, Vec2 position);
-  void addAnimation(FXName particleEffect, Vec2 position, optional<Vec2> targetOffset);
+  void addAnimation(FXName, Vec2, Vec2, Color);
   void setCenter(double x, double y);
   void setCenter(Vec2 pos);
   void clearCenter();
@@ -69,6 +70,7 @@ class MapGui : public GuiElem {
   void highlightTeam(const vector<UniqueEntity<Creature>::Id>&);
   void unhighlightTeam(const vector<UniqueEntity<Creature>::Id>&);
   void setButtonViewId(ViewId);
+  static Color getHealthBarColor(double health);
   void clearButtonViewId();
   bool highlightMorale = true;
   bool highlightEnemies = true;
@@ -187,8 +189,10 @@ class MapGui : public GuiElem {
   DirSet getConnectionSet(Vec2 tilePos, ViewId);
   EntityMap<Creature, milliseconds> woundedInfo;
   void considerWoundedAnimation(const ViewObject&, Color&, milliseconds curTimeReal);
-  using FXVector = vector<pair<FXName, FXId>>;
-  EntityMap<Creature, FXVector> creatureFX;
-  unordered_map<Vec2, FXVector, CustomHash<Vec2>> staticFX;
-  void updateEffects(FXVector& effectsList, const EnumSet<FXName>& effects, double x, double y);
+
+  // For advanced FX time control:
+  //bool lastFxTurnBased = false;
+  //double lastFxTimeReal = -1.0, lastFxTimeTurn = -1.0;
+  unique_ptr<FXViewManager> fxViewManager;
+  void updateFX(milliseconds currentTimeReal);
 };

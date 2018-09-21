@@ -220,7 +220,8 @@ class CreatureFactory {
   static PCreature get(CreatureId, TribeId, MonsterAIFactory);
   static PCreature get(CreatureAttributes, TribeId, const ControllerFactory&);
   static CreatureAttributes getAttributesFromId(CreatureId);
-  static CreatureAttributes getAttributes(CreatureId id);
+  static CreatureAttributes getAttributes(CreatureId);
+
   TribeId getTribeFor(CreatureId);
   optional<TribeId> SERIAL(tribe);
   vector<CreatureId> SERIAL(creatures);

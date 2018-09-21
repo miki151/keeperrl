@@ -62,7 +62,6 @@
 #include "furniture_type.h"
 #include "furniture_factory.h"
 #include "known_tiles.h"
-#include "tile_efficiency.h"
 #include "zones.h"
 #include "inventory.h"
 #include "immigration.h"
@@ -120,12 +119,6 @@ PlayerControl::PlayerControl(Private, WCollective col) : CollectiveControl(col),
     if (info.hotkey) {
       CHECK(!hotkeys[int(info.hotkey)]);
       hotkeys[int(info.hotkey)] = true;
-    }
-  }
-  for (auto& info : getTechInfo()) {
-    if (info.button.hotkey) {
-      CHECK(!hotkeys[int(info.button.hotkey)]);
-      hotkeys[int(info.button.hotkey)] = true;
     }
   }
   memory.reset(new MapMemory());
@@ -615,15 +608,6 @@ vector<Button> PlayerControl::fillButtons(const vector<BuildInfo>& buildInfo) co
   return buttons;
 }
 
-vector<PlayerControl::TechInfo> PlayerControl::getTechInfo() const {
-  vector<TechInfo> ret;
-  ret.push_back({{ViewId::BOOKCASE_GOLD, "Library", 'l'},
-      [](PlayerControl* c, View* view) { c->setChosenLibrary(!c->chosenLibrary); }});
-  ret.push_back({{ViewId::BOOK, "Keeperopedia"},
-      [](PlayerControl* c, View* view) { Encyclopedia().present(view); }});
-  return ret;
-}
-
 string PlayerControl::getTriggerLabel(const AttackTrigger& trigger) const {
   switch (trigger.getId()) {
     case AttackTriggerId::SELF_VICTIMS: return "killed tribe members";
@@ -953,10 +937,8 @@ void PlayerControl::acquireTech(int index) {
       [](const Technology* tech) { return tech->canResearch(); });
   if (index < techs.size()) {
     Technology* tech = techs[index];
-    auto cost = tech->getCost();
-    if (collective->hasResource(cost)) {
-      collective->takeResource(cost);
-      collective->acquireTech(tech);
+    if (collective->getDungeonLevel().canConsumeLevel()) {
+      collective->acquireTech(tech, true);
     }
   }
 }
@@ -965,31 +947,24 @@ void PlayerControl::fillLibraryInfo(CollectiveInfo& collectiveInfo) const {
   if (chosenLibrary) {
     collectiveInfo.libraryInfo.emplace();
     auto& info = *collectiveInfo.libraryInfo;
-    int libraryCount = 0;
-    for (auto f : CollectiveConfig::getTrainingFurniture(ExperienceType::SPELL))
-      libraryCount += collective->getConstructions().getBuiltPositions(f).size();
-    if (libraryCount == 0)
-      info.warning = "You need to build a library to start research."_s;
-    else if (libraryCount <= getMinLibrarySize())
-      info.warning = "You need a larger library to continue research."_s;
-    info.resource = *getCostObjWithZero(Technology::getAvailableResource(collective));
+    auto& dungeonLevel = collective->getDungeonLevel();
+    if (!dungeonLevel.canConsumeLevel())
+      info.warning = "Conquer some villains to advance your level."_s;
+    info.dungeonLevel = collective->getDungeonLevel().level;
     auto techs = Technology::getNextTechs(collective->getTechnologies()).filter(
         [](const Technology* tech) { return tech->canResearch(); });
     for (Technology* tech : techs) {
       info.available.emplace_back();
       auto& techInfo = info.available.back();
       techInfo.name = tech->getName();
-      auto cost = tech->getCost();
-      techInfo.cost = *getCostObj(cost);
       techInfo.tutorialHighlight = tech->getTutorialHighlight();
-      techInfo.active = !info.warning && collective->hasResource(cost);
+      techInfo.active = !info.warning && dungeonLevel.canConsumeLevel();
       techInfo.description = tech->getDescription();
     }
     for (Technology* tech : collective->getTechnologies()) {
       info.researched.emplace_back();
       auto& techInfo = info.researched.back();
       techInfo.name = tech->getName();
-      techInfo.cost = *getCostObj(tech->getCost());
       techInfo.description = tech->getDescription();
     }
   }
@@ -1317,6 +1292,10 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   info.monsterHeader = "Minions: " + toString(info.minionCount) + " / " + toString(info.minionLimit);
   info.enemyGroups = getEnemyGroups();
   info.numResource.clear();
+  const auto dungeonLevel = collective->getDungeonLevel();
+  info.dungeonLevel = dungeonLevel.level + 1;
+  info.dungeonLevelProgress = dungeonLevel.progress;
+  info.blinkDungeonLevel = dungeonLevel.canConsumeLevel();
   for (auto resourceId : ENUM_ALL(CollectiveResourceId)) {
     auto& elem = CollectiveConfig::getResourceInfo(resourceId);
     if (!elem.dontDisplay)
@@ -1341,9 +1320,6 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
     if (getChosenTeam() == team)
       info.teams.back().highlight = true;
   }
-  info.techButtons.clear();
-  for (TechInfo tech : getTechInfo())
-    info.techButtons.push_back(tech.button);
   gameInfo.messageBuffer = messages;
   info.taskMap.clear();
   for (WConstTask task : collective->getTaskMap().getAllTasks()) {
@@ -1464,7 +1440,7 @@ void PlayerControl::onEvent(const GameEvent& event) {
                 + ", but you do not comprehend it.");
           else {
             getView()->presentText("Information", "You have acquired the knowledge of " + tech->getName());
-            collective->acquireTech(tech);
+            collective->acquireTech(tech, false);
           }
         } else {
           getView()->presentText("Information", "The tome describes the knowledge of " + tech->getName()
@@ -1502,8 +1478,9 @@ void PlayerControl::onEvent(const GameEvent& event) {
           addToMemory(info.position);
       },
       [&](const OtherEffect& info) {
+        // TODO: in Keeper mode effects are spawned twice: once from Player, once from PlayerControl
         if (canSee(info.position))
-          getView()->animation(info.position.getCoord(), info.effect, info.targetOffset);
+          getView()->animation(info.effect, info.position.getCoord(), info.targetOffset, info.color);
       },
       [&](const auto&) {}
   );
@@ -1565,7 +1542,7 @@ void PlayerControl::getSquareViewIndex(Position pos, bool canSee, ViewIndex& ind
   if (canSee)
     pos.getViewIndex(index, leader);
   else
-    index.setHiddenId(pos.getViewObject().id());
+    index.setHiddenId(pos.getTopViewId());
   if (WConstCreature c = pos.getCreature())
     if (canSee) {
       index.equipmentCounts = c->getEquipment().getCounts();
@@ -1590,7 +1567,7 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
   if (!canSeePos)
     if (auto memIndex = getMemory().getViewIndex(position))
       index.mergeFromMemory(*memIndex);
-  if (collective->getTerritory().contains(position))
+  if (collective->getTerritory().contains(position)) {
     if (auto furniture = position.getFurniture(FurnitureLayer::MIDDLE)) {
       if (auto clickType = furniture->getClickType())
         if (auto& obj = furniture->getViewObject())
@@ -1606,10 +1583,17 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
           if (auto task = MinionActivities::getActivityFor(collective, c, furniture->getType()))
             if (collective->isActivityGood(c, *task, true))
               index.setHighlight(HighlightType::CREATURE_DROP);
-      if (furniture->isShowEfficiency() && index.hasObject(ViewLayer::FLOOR))
-        index.getObject(ViewLayer::FLOOR).setAttribute(ViewObject::Attribute::EFFICIENCY,
-            collective->getTileEfficiency().getEfficiency(position));
+      if (CollectiveConfig::requiresLighting(furniture->getType()) && position.getLightingEfficiency() < 0.99)
+        if (auto& obj = furniture->getViewObject())
+          if (index.hasObject(obj->layer()))
+            index.getObject(obj->layer()).setModifier(ViewObject::Modifier::INSUFFICIENT_LIGHT);
     }
+    for (auto furniture : position.getFurniture())
+      if (furniture->getLuxuryInfo().luxury > 0)
+        if (auto obj = furniture->getViewObject())
+          if (index.hasObject(obj->layer()))
+            index.getObject(obj->layer()).setAttribute(ViewObject::Attribute::LUXURY, furniture->getLuxuryInfo().luxury);
+  }
   if (collective->isMarked(position))
     index.setHighlight(collective->getMarkHighlight(position));
   if (collective->hasPriorityTasks(position))
@@ -1760,9 +1744,6 @@ void PlayerControl::clearChosenInfo() {
 }
 
 void PlayerControl::setChosenLibrary(bool state) {
-  for (auto f : CollectiveConfig::getTrainingFurniture(ExperienceType::SPELL))
-    for (auto pos : collective->getConstructions().getBuiltPositions(f))
-      pos.setNeedsRenderUpdate(true);
   if (state)
     clearChosenInfo();
   chosenLibrary = state;
@@ -1920,7 +1901,8 @@ void PlayerControl::processInput(View* view, UserInput input) {
     }
     case UserInputId::DRAW_LEVEL_MAP: view->drawLevelMap(this); break;
     case UserInputId::DRAW_WORLD_MAP: getGame()->presentWorldmap(); break;
-    case UserInputId::TECHNOLOGY: getTechInfo()[input.get<int>()].butFun(this, view); break;
+    case UserInputId::TECHNOLOGY: setChosenLibrary(!chosenLibrary); break;
+    case UserInputId::KEEPEROPEDIA: Encyclopedia().present(view); break;
     case UserInputId::WORKSHOP: {
       int index = input.get<int>();
       if (index < 0 || index >= EnumInfo<WorkshopType>::size)
@@ -2193,6 +2175,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
     case UserInputId::CHEAT_ATTRIBUTES:
       for (auto resource : ENUM_ALL(CollectiveResourceId))
         collective->returnResource(CostInfo(resource, 1000));
+      collective->getDungeonLevel().increaseLevel();
       break;
     case UserInputId::TUTORIAL_CONTINUE:
       if (tutorial)

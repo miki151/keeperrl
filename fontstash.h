@@ -29,7 +29,7 @@
 // not enough memory
 #define STH_ENOMEM -4
 
-#include "sdl.h"
+#include "opengl.h"
 
 struct sth_stash* sth_create(int cachew, int cacheh);
 

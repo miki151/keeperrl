@@ -14,6 +14,7 @@
    If not, see http://www.gnu.org/licenses/ . */
 
 #include "stdafx.h"
+#include "sdl.h"
 #include "color.h"
 
 Color Color::WHITE(255, 255, 255);
@@ -49,24 +50,24 @@ Color Color::VIOLET(120, 0, 255);
 Color Color::TRANSLUCENT_BLACK(0, 0, 0);
 Color Color::TRANSPARENT(0, 0, 0, 0);
 
-Color::Color(Uint8 r, Uint8 g, Uint8 b, Uint8 a) : SDL_Color{r, g, b, a} {
-}
+Color::Color(unsigned char r, unsigned char g, unsigned char b, unsigned char a) : r(r), g(g), b(b), a(a) {}
+Color::Color(const SDL::SDL_Color& col) :r(col.r), g(col.g), b(col.b), a(col.a) {}
+Color::operator SDL::SDL_Color() const { return {r, g, b, a}; }
 
 Color Color::transparency(int trans) {
   return Color(r, g, b, (Uint8)trans);
 }
 
-Color::Color() : Color(0, 0, 0) {
-}
+Color::Color() : Color(0, 0, 0) {}
 
 Color Color::f(double r, double g, double b, double a) {
   return Color(r * 255, g * 255, b * 255, a * 255);
 }
 
-void Color::applyGl() const {
-  SDL::glColor4f((float)r / 255, (float)g / 255, (float)b / 255, (float)a / 255);
-}
-
 Color Color::operator*(Color c2) {
   return Color(r * c2.r / 255, g * c2.g / 255, b * c2.b / 255, a * c2.a / 255);
+}
+
+bool Color::operator==(const Color& rhs) const {
+  return r == rhs.r && g == rhs.g && b == rhs.b && a == rhs.a;
 }

@@ -6,6 +6,7 @@
 #include "vision_id.h"
 #include "event_listener.h"
 #include "furniture_layer.h"
+#include "luxury_info.h"
 
 class TribeId;
 class Creature;
@@ -24,6 +25,7 @@ class Furniture : public OwnedObject<Furniture> {
   static const string& getName(FurnitureType, int count = 1);
   static FurnitureLayer getLayer(FurnitureType);
   static bool isWall(FurnitureType);
+  static LuxuryInfo getLuxuryInfo(FurnitureType);
   static int getPopulationIncrease(FurnitureType, int numBuilt);
   static optional<std::string> getPopulationIncreaseDescription(FurnitureType);
 
@@ -69,14 +71,15 @@ class Furniture : public OwnedObject<Furniture> {
   optional<CreatureId> getSummonedElement() const;
   bool isClearFogOfWar() const;
   bool forgetAfterBuilding() const;
-  bool isShowEfficiency() const;
   void onCreatureWalkedOver(Position, Vec2 direction) const;
+  void onCreatureWalkedInto(Position, Vec2 direction) const;
   /**
    * @brief Calls special functionality to handle dropped items, if any.
    * @return possibly empty subset of the items that weren't consumned and can be dropped normally.
    */
   vector<PItem> dropItems(Position, vector<PItem>) const;
   bool canBuildBridgeOver() const;
+  const LuxuryInfo& getLuxuryInfo() const;
 
   enum ConstructMessage { /*default*/BUILD, FILL_UP, REINFORCE, SET_UP };
 
@@ -111,10 +114,7 @@ class Furniture : public OwnedObject<Furniture> {
   Furniture& setCanRemoveWithCreaturePresent(bool state);
   Furniture& setCanRemoveNonFriendly(bool state);
   Furniture& setForgetAfterBuilding();
-  Furniture& setShowEfficiency();
-  Furniture& setDestroyFX(FXName);
-  Furniture& setTryDestroyFX(FXName);
-  Furniture& setWalkOverFX(FXName);
+  Furniture& setLuxury(double luxury);
   MovementSet& modMovementSet();
 
   SERIALIZATION_DECL(Furniture)
@@ -155,8 +155,5 @@ class Furniture : public OwnedObject<Furniture> {
   bool SERIAL(noProjectiles) = false;
   bool SERIAL(clearFogOfWar) = false;
   bool SERIAL(xForgetAfterBuilding) = false;
-  bool SERIAL(showEfficiency) = false;
-  optional<FXName> SERIAL(destroyFX);
-  optional<FXName> SERIAL(tryDestroyFX);
-  optional<FXName> SERIAL(walkOverFX);
+  LuxuryInfo SERIAL(luxuryInfo);
 };

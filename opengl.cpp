@@ -1,5 +1,7 @@
 #include "debug.h"
 #include "opengl.h"
+#include "util.h"
+#include "color.h"
 
 using SDL::GLenum;
 using SDL::GLuint;
@@ -95,12 +97,12 @@ static void APIENTRY debugOutputCallback(GLenum source, GLenum type, GLuint id, 
 			return;
 	}*/
 
-  INFO << "Opengl " << debugTypeText(type) << " [" << debugSeverityText(severity) << "] ID:" << id
-       << "	Source: " << debugSourceText(source) << "\n"
-       << message;
+  bool isSevere = severity == GL_DEBUG_SEVERITY_HIGH && type != GL_DEBUG_TYPE_OTHER;
 
-  if (severity == GL_DEBUG_SEVERITY_HIGH && type != GL_DEBUG_TYPE_OTHER)
-    FATAL;
+  char header[1024];
+  snprintf(header, sizeof(header), "%sOpengl %s [%s] id:%d source:%s\n", isSevere ? "FATAL: " : "", debugTypeText(type),
+           debugSeverityText(severity), id, debugSourceText(source));
+  (isSevere ? FatalLog : InfoLog).get() << header << message;
 }
 
 bool installOpenglDebugHandler() {
@@ -152,4 +154,17 @@ void popOpenglView() {
   SDL::glPopMatrix();
   SDL::glMatrixMode(GL_MODELVIEW);
   SDL::glPopMatrix();
+}
+
+void glColor(const Color& col) {
+  SDL::glColor4f((float)col.r / 255, (float)col.g / 255, (float)col.b / 255, (float)col.a / 255);
+}
+
+void glQuad(float x, float y, float ex, float ey) {
+  SDL::glBegin(GL_QUADS);
+  SDL::glTexCoord2f(0.0f, 0.0f), SDL::glVertex2f(x, ey);
+  SDL::glTexCoord2f(1.0f, 0.0f), SDL::glVertex2f(ex, ey);
+  SDL::glTexCoord2f(1.0f, 1.0f), SDL::glVertex2f(ex, y);
+  SDL::glTexCoord2f(0.0f, 1.0f), SDL::glVertex2f(x, y);
+  SDL::glEnd();
 }

@@ -33,7 +33,6 @@ RICH_ENUM(HighlightType,
   FOG,
   MEMORY,
   NIGHT,
-  EFFICIENCY,
   PRIORITY_TASK,
   FORBIDDEN_ZONE,
   UNAVAILABLE,
@@ -50,7 +49,7 @@ RICH_ENUM(HighlightType,
 class ViewIndex {
   public:
   ViewIndex();
-  void insert(const ViewObject& obj);
+  void insert(ViewObject);
   bool hasObject(ViewLayer) const;
   void removeObject(ViewLayer);
   const ViewObject& getObject(ViewLayer) const;

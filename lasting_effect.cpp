@@ -723,9 +723,13 @@ double LastingEffects::getMoraleIncrease(WConstCreature c) {
   PROFILE;
   double ret = 0;
   if (c->isAffected(LastingEffect::RESTED))
-    ret += 0.2;
+    ret += 0.1;
+  else
+    ret -= 0.1;
   if (c->isAffected(LastingEffect::SATIATED))
-    ret += 0.2;
+    ret += 0.1;
+  else
+    ret -= 0.1;
   return ret;
 }
 
@@ -761,9 +765,9 @@ optional<FXName> LastingEffects::getFXName(LastingEffect effect) {
     case LastingEffect::SPEED:
       return FXName::SPEED;
     case LastingEffect::SLOWED:
-      return FXName::SLOW;
+      return FXName::SLOW2;
     case LastingEffect::FLYING:
-      return FXName::FLYING;
+      return FXName::FLYING2;
     default:
       return none;
   }
