@@ -1170,6 +1170,10 @@ void MapGui::updateObjects(CreatureView* view, MapLayout* mapLayout, bool smooth
   layout = mapLayout;
   auto currentTimeReal = clock->getRealMillis();
 
+  if (auto* inst = fx::FXManager::getInstance())
+    inst->simulateStableTime(double(currentTimeReal.count()) * 0.001);
+
+  /* // Advanced FX time control (to be reviewed before use)
   if (auto* inst = fx::FXManager::getInstance()) {
     // FXes animation speed depends on game speed in real-time mode
     // In turn based mode though animations are always running at constant speed
@@ -1186,7 +1190,7 @@ void MapGui::updateObjects(CreatureView* view, MapLayout* mapLayout, bool smooth
     inst->simulateStable(timeDiff);
     lastFxTimeReal = realTime;
     lastFxTimeTurn = turnTime;
-  }
+  }*/
 
   if (view != previousView || level != previousLevel)
     for (Vec2 pos : level->getBounds())
