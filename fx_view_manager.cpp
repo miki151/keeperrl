@@ -24,6 +24,10 @@ FXDef getDef(FXVariantName var) {
     return {FXName::DEBUFF, Color::RED};
   case Name::DEBUFF_GREEN:
     return {FXName::DEBUFF, Color::GREEN};
+  case Name::SPIRAL_BLUE:
+    return {FXName::SPIRAL, Color::f(0.7, 0.6, 1.0)};
+  case Name::SPIRAL_GREEN:
+    return {FXName::SPIRAL, Color::f(0.7, 1.0, 0.6)};
   }
 
   return {};

@@ -986,7 +986,6 @@ static void addSpiralEffects(FXManager& mgr) {
     pdef.size = 10.0f;
     pdef.alpha = {{0.0f, 0.1f, 0.8f, 1.0f}, {0.0, 0.7f, 0.7f, 0.0}};
 
-    pdef.color = FVec3(0.7f, 1.0f, 0.6f);
     pdef.textureName = TextureName::CIRCULAR;
 
     SubSystemDef ssdef(pdef, edef, 0.0f, 1.0f);
