@@ -97,3 +97,4 @@ enum class CreatureStatus;
 enum class TeamOrder;
 
 enum class FXName;
+enum class FXVariantName;

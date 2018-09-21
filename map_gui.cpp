@@ -651,7 +651,7 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
         if (burningVal > 0.0f)
           fxViewManager->addFX(*genericId, FXDef{FXName::FIRE, Color::WHITE, min(1.0f, burningVal * 0.05f)});
         for (auto fx : object.particleEffects)
-          fxViewManager->addFX(*genericId, FXDef{fx});
+          fxViewManager->addFX(*genericId, fx);
     }
   } else {
     Vec2 tilePos = pos + movement + Vec2(size.x / 2, -3);

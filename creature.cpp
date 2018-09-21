@@ -177,13 +177,13 @@ void Creature::updateLastingFX(ViewObject& object) {
   object.particleEffects.clear();
   for (auto effect : ENUM_ALL(LastingEffect))
     if (isAffected(effect))
-      if (auto fx = LastingEffects::getFXName(effect))
+      if (auto fx = LastingEffects::getFX(effect))
         object.particleEffects.insert(*fx);
 
   // TODO: better way to do this? Replace view_id with FX in map_gui ?
   if (object.id() == ViewId::FIRE_SPHERE && fxesAvailable()) {
     object.setModifier(ViewObject::Modifier::HIDDEN);
-    object.particleEffects.insert(FXName::FIRE_SPHERE);
+    object.particleEffects.insert(FXVariantName::FIRE_SPHERE);
   }
 }
 

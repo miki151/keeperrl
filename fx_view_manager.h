@@ -3,15 +3,18 @@
 #include "unique_entity.h"
 #include "util.h"
 #include "fx_interface.h"
+#include "fx_name.h"
 #include "color.h"
 #include <unordered_map>
 
 struct FXDef {
-  FXName name;
+  FXName name = FXName::DUMMY;
   Color color = Color::WHITE;
   float scalar0 = 0.0f;
   float scalar1 = 0.0f;
 };
+
+FXDef getDef(FXVariantName);
 
 class FXViewManager {
   public:
@@ -20,6 +23,7 @@ class FXViewManager {
 
   // Entity identified with given id must be present!
   void addFX(GenericId, const FXDef&);
+  void addFX(GenericId, FXVariantName);
   void finishFrame();
 
   private:

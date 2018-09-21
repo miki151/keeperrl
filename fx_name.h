@@ -34,4 +34,18 @@ RICH_ENUM(FXName,
   DEBUFF
 );
 
+// TODO: better name?
+RICH_ENUM(FXVariantName,
+  PEACEFULNESS,
+  BLIND,
+  INSANITY,
+  SPEED,
+  SLEEP,
+  FLYING,
+  FIRE_SPHERE,
+
+  DEBUFF_RED,
+  DEBUFF_GREEN
+);
+
 bool fxesAvailable();
