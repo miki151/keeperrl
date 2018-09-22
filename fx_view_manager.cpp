@@ -3,35 +3,6 @@
 #include "fx_base.h"
 #include "fx_name.h"
 
-FXDef getDef(FXVariantName var) {
-  using Name = FXVariantName;
-  switch (var) {
-  case Name::PEACEFULNESS:
-    return {FXName::PEACEFULNESS};
-  case Name::BLIND:
-    return {FXName::BLIND};
-  case Name::INSANITY:
-    return {FXName::INSANITY};
-  case Name::SPEED:
-    return {FXName::SPEED};
-  case Name::SLEEP:
-    return {FXName::SLEEP};
-  case Name::FLYING:
-    return {FXName::FLYING};
-  case Name::FIRE_SPHERE:
-    return {FXName::FIRE_SPHERE};
-  case Name::DEBUFF_RED:
-    return {FXName::DEBUFF, Color::RED};
-  case Name::DEBUFF_GREEN:
-    return {FXName::DEBUFF, Color::GREEN};
-  case Name::SPIRAL_BLUE:
-    return {FXName::SPIRAL, Color::f(0.7, 0.6, 1.0)};
-  case Name::SPIRAL_GREEN:
-    return {FXName::SPIRAL, Color::f(0.7, 1.0, 0.6)};
-  }
-
-  return {};
-}
 
 void FXViewManager::EntityInfo::clearVisibility() {
   isVisible = false;

@@ -7,7 +7,7 @@
 #include "body.h"
 #include "furniture.h"
 #include "level.h"
-#include "fx_name.h"
+#include "fx_variant_name.h"
 
 static optional<LastingEffect> getCancelledOneWay(LastingEffect effect) {
   switch (effect) {
@@ -758,19 +758,25 @@ optional<FXVariantName> LastingEffects::getFX(LastingEffect effect) {
       return FXVariantName::PEACEFULNESS;
     case LastingEffect::SLEEP:
       return FXVariantName::SLEEP;
-    case LastingEffect::BLIND:
-      return FXVariantName::BLIND;
-    case LastingEffect::INSANITY:
-      return FXVariantName::INSANITY;
     case LastingEffect::SPEED:
       return FXVariantName::SPEED;
     case LastingEffect::SLOWED:
-      return FXVariantName::DEBUFF_RED;
+      return FXVariantName::DEBUFF_GRAY;
     case LastingEffect::POISON:
       return FXVariantName::DEBUFF_GREEN;
+    case LastingEffect::INSANITY:
+      return FXVariantName::DEBUFF_PINK;
+    case LastingEffect::BLIND:
+      return FXVariantName::DEBUFF_BLACK;
+    case LastingEffect::BLEEDING:
+      return FXVariantName::DEBUFF_RED;
+    case LastingEffect::MAGIC_VULNERABILITY:
+    case LastingEffect::MELEE_VULNERABILITY:
+    case LastingEffect::RANGED_VULNERABILITY:
+      return FXVariantName::DEBUFF_ORANGE;
     case LastingEffect::TIED_UP:
     case LastingEffect::ENTANGLED:
-      return FXVariantName::SPIRAL_BLUE;
+      return FXVariantName::DEBUFF_WHITE;
     default:
       return none;
   }

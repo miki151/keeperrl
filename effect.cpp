@@ -41,6 +41,7 @@
 #include "furniture.h"
 #include "movement_set.h"
 #include "weapon_info.h"
+#include "fx_name.h"
 
 
 vector<WCreature> Effect::summonCreatures(Position pos, int radius, vector<PCreature> creatures, TimeInterval delay) {

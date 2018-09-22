@@ -53,6 +53,7 @@
 #include "profiler.h"
 #include "furniture_type.h"
 #include "furniture_usage.h"
+#include "fx_name.h"
 
 template <class Archive>
 void Creature::serialize(Archive& ar, const unsigned int version) {
