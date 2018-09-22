@@ -57,7 +57,7 @@ class LastingEffects {
   static optional<LastingEffect> getSuppressor(LastingEffect);
   static void onRemoved(WCreature, LastingEffect, bool msg);
   static void onTimedOut(WCreature, LastingEffect, bool msg);
-  static int getAttrBonus(WConstCreature, AttrType);
+  static int getAttrBonus(const Creature*, AttrType);
   static void afterCreatureDamage(WCreature, LastingEffect);
   static bool tick(WCreature, LastingEffect);
   static const char* getGoodAdjective(LastingEffect);
@@ -69,7 +69,7 @@ class LastingEffects {
   static bool canSee(WConstCreature, WConstCreature);
   static bool modifyIsEnemyResult(WConstCreature, WConstCreature, bool);
   static int getPrice(LastingEffect);
-  static double getMoraleIncrease(WConstCreature);
+  static double getMoraleIncrease(const Creature*);
   static bool canConsume(LastingEffect);
   static optional<FXVariantName> getFX(LastingEffect);
 };

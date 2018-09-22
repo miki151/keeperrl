@@ -469,7 +469,8 @@ Vec2 MapGui::getMovementOffset(const ViewObject& object, Vec2 size, double time,
     INFO << "Anim time b: " << movementInfo.tBegin << " e: " << movementInfo.tEnd << " t: " << time;
   } else
     return Vec2(0, 0);
-  double vertical = verticalMovement ? getJumpOffset(object, state) : 0;
+  double vertical = (verticalMovement && !object.hasModifier(ViewObject::Modifier::FLYING))
+      ? getJumpOffset(object, state) : 0;
   if (dir.length8() == 1) {
     if (movementInfo.victim && state >= 0.5 && state < 1.0)
       woundedInfo.getOrInit(*movementInfo.victim) = curTimeReal;
@@ -571,6 +572,12 @@ optional<pair<FXName, Color>> overlayFX(ViewId id) {
   return none;
 }
 
+static double getFlyingMovement(Vec2 size, milliseconds curTimeReal) {
+  double range = 0.08;
+  double freq = 700;
+  return -range * size.y * (3 + (sin(3.1415 / freq * curTimeReal.count()) + 1) / 2);
+}
+
 void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& object, Vec2 size, Vec2 movement,
     Vec2 tilePos, milliseconds curTimeReal) {
   PROFILE;
@@ -607,7 +614,8 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
       move.y = -4 * size.y / Renderer::nominalSize;
     renderer.drawTile(pos, tile.getBackgroundCoord(), size, color);
     move += movement;
-
+    if (object.hasModifier(ViewObject::Modifier::FLYING))
+      move.y += getFlyingMovement(size, curTimeReal);
     if (mirrorSprite(id))
       renderer.drawTile(pos + move, tile.getSpriteCoord(dirs), size, color,
           Renderer::SpriteOrientation((bool) (tilePos.getHash() % 2), (bool) (tilePos.getHash() % 4 > 1)));

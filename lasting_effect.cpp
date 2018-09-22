@@ -335,7 +335,7 @@ void LastingEffects::onTimedOut(WCreature c, LastingEffect effect, bool msg) {
 
 static const int attrBonus = 3;
 
-int LastingEffects::getAttrBonus(WConstCreature c, AttrType type) {
+int LastingEffects::getAttrBonus(const Creature* c, AttrType type) {
   int value = 0;
   switch (type) {
     case AttrType::DAMAGE:
@@ -719,7 +719,7 @@ int LastingEffects::getPrice(LastingEffect e) {
   }
 }
 
-double LastingEffects::getMoraleIncrease(WConstCreature c) {
+double LastingEffects::getMoraleIncrease(const Creature* c) {
   PROFILE;
   double ret = 0;
   if (c->isAffected(LastingEffect::RESTED))
@@ -766,8 +766,6 @@ optional<FXVariantName> LastingEffects::getFX(LastingEffect effect) {
       return FXVariantName::SPEED;
     case LastingEffect::SLOWED:
       return FXVariantName::DEBUFF_RED;
-    case LastingEffect::FLYING:
-      return FXVariantName::FLYING;
     case LastingEffect::POISON:
       return FXVariantName::DEBUFF_GREEN;
     case LastingEffect::TIED_UP:

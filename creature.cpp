@@ -78,7 +78,7 @@ Creature::Creature(const ViewObject& object, TribeId t, CreatureAttributes attr)
     obj->setGenericId(getUniqueId().getGenericId());
     obj->setModifier(ViewObject::Modifier::CREATURE);
   }
-  updateLastingFX(modViewObject());
+  updateViewObject();
 }
 
 Creature::Creature(TribeId t, CreatureAttributes attr)
@@ -674,8 +674,10 @@ CreatureAction Creature::unequip(WItem item) const {
 CreatureAction Creature::push(WCreature other) {
   Vec2 goDir = position.getDir(other->position);
   if (!goDir.isCardinal4() || !other->position.plus(goDir).canEnter(
-      other->getMovementType()) || !getBody().canPush(other->getBody()))
+      other->getMovementType()))
     return CreatureAction("You can't push " + other->getName().the());
+  if (!getBody().canPush(other->getBody()))
+    return CreatureAction("You are too small to push " + other->getName().the());
   return CreatureAction(this, [=](WCreature self) {
     other->displace(goDir);
     if (auto m = self->move(goDir))
@@ -1135,6 +1137,7 @@ void Creature::updateViewObject() {
   object.setAttribute(ViewObject::Attribute::MORALE, getMorale());
   object.setModifier(ViewObject::Modifier::DRAW_MORALE);
   object.setModifier(ViewObject::Modifier::STUNNED, isAffected(LastingEffect::STUNNED));
+  object.setModifier(ViewObject::Modifier::FLYING, isAffected(LastingEffect::FLYING));
   object.getCreatureStatus() = getStatus();
   object.setGoodAdjectives(combine(extractNames(getGoodAdjectives()), true));
   object.setBadAdjectives(combine(extractNames(getBadAdjectives()), true));

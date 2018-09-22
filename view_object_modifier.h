@@ -21,5 +21,6 @@ RICH_ENUM(ViewObjectModifier,
     HOSTILE,
     AURA,
     INSUFFICIENT_LIGHT,
-    CREATURE
+    CREATURE,
+    FLYING
 );
