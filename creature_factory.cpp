@@ -187,13 +187,15 @@ ViewId CreatureFactory::getViewId(CreatureId id) {
   return idMap[id];
 }
 
+constexpr int maxKrakenLength = 15;
+
 class KrakenController : public Monster {
   public:
   KrakenController(WCreature c) : Monster(c, MonsterAIFactory::monster()) {
   }
 
-  KrakenController(WCreature c, WeakPointer<KrakenController> f) : KrakenController(c) {
-    father = f;
+  KrakenController(WCreature c, WeakPointer<KrakenController> father, int length)
+      : Monster(c, MonsterAIFactory::monster()), length(length), father(father) {
   }
 
   virtual bool dontReplaceInCollective() override {
@@ -229,15 +231,17 @@ class KrakenController : public Monster {
   }
 
   void pullEnemy(WCreature held) {
-    held->you(MsgType::HAPPENS_TO, creature->getName().the() + " pulls");
-    if (father) {
-      held->setHeld(father->creature);
-      Vec2 pullDir = held->getPosition().getDir(creature->getPosition());
-      creature->dieNoReason(Creature::DropType::NOTHING);
-      held->displace(pullDir);
-    } else {
-      held->you(MsgType::ARE, "eaten by " + creature->getName().the());
-      held->dieNoReason();
+    if (Random.roll(3)) {
+      held->you(MsgType::HAPPENS_TO, creature->getName().the() + " pulls");
+      if (father) {
+        held->setHeld(father->creature);
+        Vec2 pullDir = held->getPosition().getDir(creature->getPosition());
+        creature->dieNoReason(Creature::DropType::NOTHING);
+        held->displace(pullDir);
+      } else {
+        held->you(MsgType::ARE, "eaten by " + creature->getName().the());
+        held->dieNoReason();
+      }
     }
   }
 
@@ -268,7 +272,7 @@ class KrakenController : public Monster {
     if (v.length8() == 1) {
       c->you(MsgType::HAPPENS_TO, creature->getName().the() + " swings itself around");
       c->setHeld(creature);
-    } else {
+    } else if (length < maxKrakenLength && Random.roll(2)) {
       pair<Vec2, Vec2> dirs = v.approxL1();
       vector<Vec2> moves;
       if (creature->getPosition().plus(dirs.first).canEnter(
@@ -277,13 +281,14 @@ class KrakenController : public Monster {
       if (creature->getPosition().plus(dirs.second).canEnter(
             {{MovementTrait::WALK, MovementTrait::SWIM}}))
         moves.push_back(dirs.second);
-      if (!moves.empty() && Random.roll(2)) {
+      if (!moves.empty()) {
         Vec2 move = Random.choose(moves);
         ViewId viewId = creature->getPosition().plus(move).canEnter({MovementTrait::SWIM})
           ? ViewId::KRAKEN_WATER : ViewId::KRAKEN_LAND;
         auto spawn = makeOwner<Creature>(creature->getTribeId(),
               CreatureFactory::getKrakenAttributes(viewId, "kraken tentacle"));
-        spawn->setController(makeOwner<KrakenController>(spawn.get(), getThis().dynamicCast<KrakenController>()));
+        spawn->setController(makeOwner<KrakenController>(spawn.get(), getThis().dynamicCast<KrakenController>(),
+            length + 1));
         spawns.push_back(spawn.get());
         creature->getPosition().plus(move).addCreature(std::move(spawn));
       }
@@ -299,7 +304,6 @@ class KrakenController : public Monster {
     if (spawns.empty()) {
       if (auto held = getHeld()) {
         pullEnemy(held);
-        return;
       } else if (auto c = getVisibleEnemy()) {
         considerAttacking(c);
       } else if (father && Random.roll(5)) {
@@ -310,10 +314,11 @@ class KrakenController : public Monster {
     creature->wait().perform(creature);
   }
 
-  SERIALIZE_ALL(SUBCLASS(Monster), ready, spawns, father);
+  SERIALIZE_ALL(SUBCLASS(Monster), ready, spawns, father, length);
   SERIALIZATION_CONSTRUCTOR(KrakenController);
 
   private:
+  int SERIAL(length) = 0;
   bool SERIAL(ready) = false;
   vector<WCreature> SERIAL(spawns);
   WeakPointer<KrakenController> SERIAL(father);
