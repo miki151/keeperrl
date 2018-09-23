@@ -105,6 +105,7 @@ static Furniture get(FurnitureType type, TribeId tribe) {
     case FurnitureType::THRONE:
       return Furniture("throne", ViewObject(ViewId::THRONE, ViewLayer::FLOOR), type, tribe)
           .setCanHide()
+          .setUsageType(FurnitureUsageType::SIT_ON_THRONE)
           .setLuxury(1.0)
           .setDestroyable(80);
     case FurnitureType::IMPALED_HEAD:

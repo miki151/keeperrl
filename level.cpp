@@ -300,7 +300,10 @@ bool Level::landCreature(vector<Position> landing, WCreature creature) {
     Position v = q.front();
     q.pop();
     if (v.canEnter(creature)) {
-      v.putCreature(creature);
+      if (creature->getPosition().getLevel() == this)
+        moveCreature(creature, creature->getPosition().getDir(v));
+      else
+        v.putCreature(creature);
       return true;
     } else
       for (Position next : v.neighbors8(Random))

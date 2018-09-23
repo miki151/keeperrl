@@ -47,7 +47,7 @@ Vec2 Position::getCoord() const {
   return coord;
 }
 
-WLevel Position::getLevel() const {
+Level* Position::getLevel() const {
   return level;
 }
 

@@ -37,7 +37,7 @@ class Position {
   string getName() const;
   Position withCoord(Vec2 newCoord) const;
   Vec2 getCoord() const;
-  WLevel getLevel() const;
+  Level* getLevel() const;
   optional<StairKey> getLandingLink() const;
  
   bool isValid() const;

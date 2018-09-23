@@ -380,6 +380,7 @@ PModel ModelBuilder::tryTutorialModel(const string& siteName) {
   BiomeId biome = BiomeId::MOUNTAIN;
   /*enemyInfo.push_back(enemyFactory->get(EnemyId::BANDITS));
   enemyInfo.push_back(enemyFactory->get(EnemyId::ADA_GOLEMS));*/
+  enemyInfo.push_back(enemyFactory->get(EnemyId::KRAKEN));
   enemyInfo.push_back(enemyFactory->get(EnemyId::TUTORIAL_VILLAGE).setVillainType(VillainType::LESSER));
   return tryModel(174, siteName, enemyInfo, true, biome, {}, false);
 }
