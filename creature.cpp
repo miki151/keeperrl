@@ -1402,10 +1402,10 @@ void Creature::addMovementInfo(MovementInfo info) {
   // We're assuming here that position has already been updated
   Position oldPos = position.minus(info.direction);
   if (auto ground = oldPos.getFurniture(FurnitureLayer::GROUND))
-    if(!oldPos.getFurniture(FurnitureLayer::MIDDLE))
+    if (!oldPos.getFurniture(FurnitureLayer::MIDDLE))
       ground->onCreatureWalkedOver(oldPos, info.direction);
   if (auto ground = position.getFurniture(FurnitureLayer::GROUND))
-    if(!oldPos.getFurniture(FurnitureLayer::MIDDLE))
+    if (!position.getFurniture(FurnitureLayer::MIDDLE))
       ground->onCreatureWalkedInto(position, info.direction);
 }
 
