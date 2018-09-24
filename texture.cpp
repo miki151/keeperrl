@@ -46,14 +46,26 @@ Texture::Texture(Color color, int width, int height) {
   vector<Color> colors(width * height, color);
   texId = 0;
   SDL::glGenTextures(1, &*texId);
+  setParams(Filter::nearest, Wrapping::repeat);
   SDL::glBindTexture(GL_TEXTURE_2D, *texId);
-  SDL::glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  SDL::glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   SDL::glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, colors.data());
   CHECK_OPENGL_ERROR();
 
   realSize = size = Vec2(width, height);
   SDL::glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+void Texture::setParams(Filter filter, Wrapping wrap) {
+  if (*texId) {
+    auto glFilter = filter == Filter::nearest ? GL_NEAREST : GL_LINEAR;
+    auto glWrap = wrap == Wrapping::clamp ? GL_CLAMP : GL_REPEAT;
+
+    SDL::glBindTexture(GL_TEXTURE_2D, *texId);
+    SDL::glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, glFilter);
+    SDL::glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, glFilter);
+    SDL::glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, glWrap);
+    SDL::glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, glWrap);
+  }
 }
 
 Texture::Texture(SDL::SDL_Surface* surface) {
@@ -83,11 +95,7 @@ optional<SDL::GLenum> Texture::loadFromMaybe(SDL::SDL_Surface* imageOrig) {
     texId = 0;
     SDL::glGenTextures(1, &*texId);
   }
-  SDL::glBindTexture(GL_TEXTURE_2D, *texId);
-  SDL::glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  SDL::glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  SDL::glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-  SDL::glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+  setParams(Filter::nearest, Wrapping::repeat);
   CHECK_OPENGL_ERROR();
   int mode = GL_RGB;
   auto image = createPowerOfTwoSurface(imageOrig);
@@ -107,6 +115,7 @@ optional<SDL::GLenum> Texture::loadFromMaybe(SDL::SDL_Surface* imageOrig) {
   SDL::glPixelStorei(GL_UNPACK_SKIP_PIXELS, 0);
   SDL::glPixelStorei(GL_UNPACK_SKIP_ROWS, 0);
   CHECK_OPENGL_ERROR();
+  SDL::glBindTexture(GL_TEXTURE_2D, *texId);
   SDL::glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image->w, image->h, 0, mode, GL_UNSIGNED_BYTE, image->pixels);
   size = Vec2(imageOrig->w, imageOrig->h);
   realSize = Vec2(image->w, image->h);
