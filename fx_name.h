@@ -30,7 +30,8 @@ RICH_ENUM(FXName,
   FLYING,
   DEBUFF,
   TELEPORT_OUT,
-  TELEPORT_IN
+  TELEPORT_IN,
+  SPAWN
 );
 
 bool fxesAvailable();

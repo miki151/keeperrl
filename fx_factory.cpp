@@ -1188,6 +1188,9 @@ static void addTeleportEffects(FXManager& mgr) {
   };
 
   mgr.addDef(FXName::TELEPORT_IN, psdef);
+  psdef.subSystems[0].particle.textureName = TextureName::TELEPORT_BLEND;
+  psdef.subSystems.pop_back();
+  mgr.addDef(FXName::SPAWN, psdef);
 }
 
 void FXManager::initializeDefs() {
