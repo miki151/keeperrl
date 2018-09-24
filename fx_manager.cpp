@@ -36,33 +36,32 @@ SubSystemContext FXManager::ssctx(ParticleSystem &ps, int ssid) {
   return {ps, psdef, pdef, edef, textureDefs[pdef.textureName], ssid};
 }
 
-void FXManager::simulateStableTime(double time, int desiredFps) {
+void FXManager::simulateStableTime(double time, int visibleFps, int simulateFps) {
   double diff = oldTime < 0 ? 1.0 / 60.0 : time - oldTime;
-  simulateStable(diff, desiredFps);
+  simulateStable(diff, visibleFps, simulateFps);
   oldTime = time;
 }
 
-void FXManager::simulateStable(double timeDelta, int desiredFps) {
+void FXManager::simulateStable(double timeDelta, int visibleFps, int simulateFps) {
   PASSERT(timeDelta >= 0.0);
+  PASSERT(visibleFps <= simulateFps);
+  PASSERT(simulateFps % visibleFps == 0);
   timeDelta += accumFrameTime;
 
-  double desiredDelta = 1.0 / desiredFps;
+  double drawDelta = 1.0 / visibleFps;
+  double simulationDelta = 1.0 / simulateFps;
+  int numSimSteps = simulateFps / visibleFps;
   int numSteps = 0;
 
   // TODO: limit number of steps?
-  while (timeDelta > desiredDelta) {
-    simulate(desiredDelta);
-    timeDelta -= desiredDelta;
+  while (timeDelta > drawDelta) {
+    for (int n = 0; n < numSimSteps; n++)
+      simulate(simulationDelta);
+    timeDelta -= drawDelta;
     numSteps++;
   }
 
-  if (timeDelta > desiredDelta * 0.1) {
-    numSteps++;
-    simulate(timeDelta);
-    accumFrameTime = 0.0;
-  } else {
-    accumFrameTime = timeDelta;
-  }
+  accumFrameTime = timeDelta;
 }
 
 void FXManager::simulate(ParticleSystem &ps, float timeDelta) {
