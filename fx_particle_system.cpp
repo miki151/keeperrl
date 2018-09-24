@@ -165,6 +165,12 @@ array<FVec2, 4> DrawContext::texQuadCorners(SVec2 texTile) const {
   return tex_rect.corners();
 }
 
+array<FVec2, 4> DrawContext::texQuadCorners(SVec2 texTile, FVec2 customInvTexTile) const {
+  FRect tex_rect(FVec2(1));
+  tex_rect = (tex_rect + FVec2(texTile)) * customInvTexTile;
+  return tex_rect.corners();
+}
+
 void defaultDrawParticle(DrawContext &ctx, const Particle &pinst, DrawParticle &out) {
   float ptime = pinst.particleTime();
   const auto &pdef = ctx.pdef;

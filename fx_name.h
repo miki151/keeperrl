@@ -28,7 +28,9 @@ RICH_ENUM(FXName,
   SPIRAL2,
   SPEED,
   FLYING,
-  DEBUFF
+  DEBUFF,
+  TELEPORT_OUT,
+  TELEPORT_IN
 );
 
 bool fxesAvailable();
