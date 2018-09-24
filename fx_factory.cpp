@@ -1119,6 +1119,77 @@ static void addGlitteringEffect(FXManager& mgr) {
   mgr.addDef(FXName::GLITTERING, psdef);
 }
 
+static void addTeleportEffects(FXManager& mgr) {
+  ParticleSystemDef psdef;
+
+  static constexpr float numParts = 40.0f;
+  {
+    EmitterDef edef;
+    edef.initialSpawnCount = numParts;
+    edef.source = FVec2(0, -24);
+
+    ParticleDef pdef;
+    pdef.life = 0.5f;
+    pdef.size = 40.0f;
+
+    pdef.alpha = {{0.9f, 1.0f}, {1.0f, 0.0f}};
+    pdef.textureName = TextureName::TELEPORT;
+
+    SubSystemDef ssdef(pdef, edef, 0.0f, 1.0f);
+    ssdef.emitFunc = [](AnimationContext& ctx, EmissionState& em, Particle& pinst) {
+      defaultEmitParticle(ctx, em, pinst);
+      int index = em.animationVars[0]++;
+      pinst.texTile = {0, short(index)};
+      pinst.pos += float(index) * FVec2(0.0, 40.0f / numParts);
+      pinst.size = FVec2(0.9f, 1.0f / numParts);
+      pinst.rot = 0.0f;
+      pinst.life += float(float(index) / numParts) * 0.3f;
+    };
+
+    ssdef.drawFunc = [](DrawContext& ctx, const Particle& pinst, DrawParticle& out) {
+      defaultDrawParticle(ctx, pinst, out);
+      out.texCoords = ctx.texQuadCorners(pinst.texTile, FVec2(1.0f, 1.0f / numParts));
+    };
+
+    ssdef.maxActiveParticles = numParts;
+    psdef.subSystems.emplace_back(ssdef);
+  }
+
+  { // Glow
+    EmitterDef edef;
+    edef.initialSpawnCount = 1;
+    edef.source = FVec2(0, -6);
+
+    ParticleDef pdef;
+    pdef.life = 0.4f;
+    pdef.size = 62.0f;
+
+    pdef.alpha = {{0.0f, 0.3f, 1.0f}, {1.0f, 0.8f, 0.0f}};
+    pdef.textureName = TextureName::BEAMS;
+
+    SubSystemDef ssdef(pdef, edef, 0.0f, 1.0f);
+    ssdef.emitFunc = [](AnimationContext& ctx, EmissionState& em, Particle& pinst) {
+      defaultEmitParticle(ctx, em, pinst);
+      pinst.rot = 0.0f;
+    };
+    psdef.subSystems.emplace_back(ssdef);
+  }
+
+  mgr.addDef(FXName::TELEPORT_OUT, psdef);
+
+  psdef.subSystems[0].emitFunc = [](AnimationContext& ctx, EmissionState& em, Particle& pinst) {
+    defaultEmitParticle(ctx, em, pinst);
+    int index = em.animationVars[0]++;
+    pinst.texTile = {0, short(index)};
+    pinst.pos += float(index) * FVec2(0.0, 40.0f / numParts);
+    pinst.size = FVec2(0.9f, 1.0f / numParts);
+    pinst.rot = 0.0f;
+    pinst.life += float(float(numParts - index) / numParts) * 0.3f;
+  };
+
+  mgr.addDef(FXName::TELEPORT_IN, psdef);
+}
+
 void FXManager::initializeDefs() {
   addTestSimpleEffect(*this);
   addTestMultiEffect(*this);
@@ -1143,6 +1214,7 @@ void FXManager::initializeDefs() {
   addBlindEffect(*this);
   addPeacefulnessEffect(*this);
   addGlitteringEffect(*this);
+  addTeleportEffects(*this);
 
   addSpiralEffects(*this);
   addSpeedEffect(*this);

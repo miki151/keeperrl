@@ -156,6 +156,7 @@ struct DrawContext : public SubSystemContext {
 
   array<FVec2, 4> quadCorners(FVec2 pos, FVec2 size, float rotation) const;
   array<FVec2, 4> texQuadCorners(SVec2 texTile) const;
+  array<FVec2, 4> texQuadCorners(SVec2 texTile, FVec2 customInvTexTile) const;
 };
 
 struct EmissionState {

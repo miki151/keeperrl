@@ -20,6 +20,8 @@ static const char* texFileName(TextureName name) {
     CASE(TORUS, "torus.png")
     CASE(TORUS_BOTTOM, "torus_bottom.png")
     CASE(TORUS_BOTTOM_BLURRED, "torus_bottom_blurred.png")
+    CASE(TELEPORT, "teleport.png")
+    CASE(BEAMS, "beams.png")
     CASE(SPARKS, "sparks_4x2.png")
     CASE(SPARKS_LIGHT, "sparks_light_4x2.png")
     CASE(MISSILE_CORE, "missile_core.png")
