@@ -316,7 +316,13 @@ void Effect::Teleport::applyToCreature(WCreature c, WCreature attacker) const {
   }
   CHECK(!good.empty());
   c->you(MsgType::TELE_DISAPPEAR, "");
-  c->getPosition().moveCreature(Random.choose(good));
+
+  auto pos = c->getPosition();
+  auto targetPos = Random.choose(good);
+
+  c->getGame()->addEvent(EventInfo::OtherEffect{pos, FXName::TELEPORT_OUT});
+  c->getGame()->addEvent(EventInfo::OtherEffect{targetPos, FXName::TELEPORT_IN});
+  pos.moveCreature(targetPos);
   c->you(MsgType::TELE_APPEAR, "");
 }
 
