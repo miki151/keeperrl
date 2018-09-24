@@ -85,17 +85,19 @@ static const char* debugSeverityText(GLenum severity) {
   return "unknown";
 }
 
+enum class OpenglVendor { nvidia, amd, intel, unknown };
+
+static OpenglVendor s_vendor = OpenglVendor::unknown;
+
 static void APIENTRY debugOutputCallback(GLenum source, GLenum type, GLuint id, GLenum severity, SDL::GLsizei length,
                                          const SDL::GLchar* message, const void* userParam) {
   // TODO: ignore non-significant error/warning codes
-  /*if(s_info.vendor == OpenglVendor::nvidia) {
-		if(id == 131169 || id == 131185 || id == 131218 || id == 131204)
-			return;
-	} else if(s_info.vendor == OpenglVendor::intel) {
-		Str msg((const char *)message);
-		if(msg.find("warning: extension") != -1 && msg.find("unsupported in") != -1)
-			return;
-	}*/
+  if (s_vendor == OpenglVendor::nvidia) {
+    // Description of messages:
+    // https://github.com/tksuoran/RenderStack/blob/master/libraries/renderstack_graphics/source/configuration.cpp#L90
+    if (isOneOf(id, 0x00020071, 0x00020084, 0x00020061, 0x00020004, 0x00020072, 0x00020074, 0x00020092))
+      return;
+  }
 
   bool isSevere = severity == GL_DEBUG_SEVERITY_HIGH && type != GL_DEBUG_TYPE_OTHER;
 
@@ -110,6 +112,14 @@ bool installOpenglDebugHandler() {
   if (isInitialized)
     return properlyInitialized;
   isInitialized = true;
+
+  auto vendor = toLower((const char*)SDL::glGetString(GL_VENDOR));
+  if (vendor.find("intel") != string::npos)
+    s_vendor = OpenglVendor::intel;
+  else if (vendor.find("nvidia") != string::npos)
+    s_vendor = OpenglVendor::nvidia;
+  else if (vendor.find("amd") != string::npos)
+    s_vendor = OpenglVendor::amd;
 
   if (isOpenglExtensionAvailable("KHR_debug")) {
     SDL::glEnable(GL_DEBUG_OUTPUT);
