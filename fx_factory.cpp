@@ -400,8 +400,8 @@ static void addSandDustEffect(FXManager& mgr) {
 static void addWaterSplashEffect(FXManager &mgr) {
   // TODO: this effect shouldn't cover the creature too much; it should mostly be visible around it
   EmitterDef edef;
-  edef.setStrengthSpread(20.0f, 5.0f);
-  edef.frequency = 400.0f;
+  edef.setStrengthSpread(10.0f, 5.0f);
+  edef.frequency = 200.0f;
   edef.source = FRect(-6, 4, 6, 12);
 
   ParticleDef pdef;
@@ -410,8 +410,8 @@ static void addWaterSplashEffect(FXManager &mgr) {
   pdef.alpha = {{0.0f, 0.25f, 0.75f, 1.0f}, {0.0f, 0.2f, 0.2f, 0.0f}};
   pdef.textureName = TextureName::WATER_DROPS;
 
-  SubSystemDef ssdef(pdef, edef, 0.0f, 0.2f);
-  ssdef.maxTotalParticles = 50;
+  SubSystemDef ssdef(pdef, edef, 0.07f, 0.27f);
+  ssdef.maxTotalParticles = 30;
 
   ssdef.animateFunc = [](AnimationContext& ctx, Particle& pinst) {
     defaultAnimateParticle(ctx, pinst);
