@@ -42,6 +42,7 @@ FXRenderer::FXRenderer(DirectoryPath dataPath, FXManager& mgr) : mgr(mgr) {
     if (id == -1) {
       id = textures.size();
       textures.emplace_back(path);
+      textures.back().setParams(Texture::Filter::linear, Texture::Wrapping::clamp);
       auto tsize = textures.back().getSize(), rsize = textures.back().getRealSize();
       FVec2 scale(float(tsize.x) / float(rsize.x), float(tsize.y) / float(rsize.y));
       textureScales.emplace_back(scale);

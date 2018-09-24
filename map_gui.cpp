@@ -1108,7 +1108,7 @@ void MapGui::considerScrollingToCreature() {
 
 void MapGui::updateFX(milliseconds currentTimeReal) {
   if (auto *inst = fx::FXManager::getInstance())
-    inst->simulateStableTime(double(currentTimeReal.count()) * 0.001);
+    inst->simulateStableTime(double(currentTimeReal.count()) * 0.001, 60, 60);
 /* // Advanced FX time control (to be reviewed before use)
 if (auto* inst = fx::FXManager::getInstance()) {
   // FXes animation speed depends on game speed in real-time mode
