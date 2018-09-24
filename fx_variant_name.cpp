@@ -11,8 +11,6 @@ FXDef getDef(FXVariantName var) {
       return {FXName::PEACEFULNESS};
     case Name::BLIND:
       return {FXName::BLIND};
-    case Name::INSANITY:
-      return {FXName::INSANITY};
     case Name::SPEED:
       return {FXName::SPEED};
     case Name::SLEEP:

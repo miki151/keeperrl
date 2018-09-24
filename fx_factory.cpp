@@ -326,44 +326,7 @@ static void addCircularBlast(FXManager& mgr) {
   mgr.addDef(FXName::CIRCULAR_BLAST, psdef);
 }
 
-static void addAirBlast(FXManager &mgr) {
-  EmitterDef edef;
-  edef.frequency = 30.0f;
-  edef.setDirectionSpread(0.0f, 0.1f);
-  edef.setStrengthSpread(133.0f, 10.0f);
-  edef.source = FRect(-4, -4, 4, 4);
-
-  ParticleDef pdef;
-  pdef.life = 0.2f;
-  pdef.size = 24.0f;
-  pdef.alpha = {{0.0f, 0.1f, 0.6f, 1.0f}, {0.0f, 0.5f, 0.5f, 0.0f}, InterpType::cosine};
-  pdef.textureName = TextureName::AIR_BLAST;
-
-  SubSystemDef ssdef(pdef, edef, 0.0f, 0.1f);
-  ssdef.maxActiveParticles = 20;
-  ssdef.emitFunc = [](AnimationContext& ctx, EmissionState& em, Particle& pinst) {
-    defaultEmitParticle(ctx, em, pinst);
-    float speed = sqrtf(ctx.ps.targetTileDist);
-    float angle = ctx.ps.targetDirAngle;
-    pinst.movement = rotateVector(pinst.movement, angle) * speed;
-    pinst.pos = rotateVector(pinst.pos, angle);
-    pinst.rot = ctx.uniform(-0.1f, 0.1f) + angle;
-    pinst.maxLife *= max(0.1f, speed);
-  };
-
-  ssdef.drawFunc = [](DrawContext& ctx, const Particle& pinst, DrawParticle& out) {
-    defaultDrawParticle(ctx, pinst, out);
-    float maxAlpha = clamp(pinst.life * 10.0f - 0.2f, 0.0f, 1.0f);
-    out.color.a = (unsigned char)(out.color.a * maxAlpha);
-  };
-
-  ParticleSystemDef psdef;
-  psdef.subSystems = {ssdef};
-
-  mgr.addDef(FXName::AIR_BLAST, psdef);
-}
-
-static void addAirBlast2(FXManager& mgr) {
+static void addAirBlast(FXManager& mgr) {
   ParticleSystemDef psdef;
 
   {
@@ -400,7 +363,7 @@ static void addAirBlast2(FXManager& mgr) {
     psdef.subSystems.emplace_back(ssdef);
   }
 
-  mgr.addDef(FXName::AIR_BLAST2, psdef);
+  mgr.addDef(FXName::AIR_BLAST, psdef);
 }
 
 static void addSandDustEffect(FXManager& mgr) {
@@ -842,48 +805,6 @@ static void addSleepEffect(FXManager& mgr) {
   mgr.genSnapshots(FXName::SLEEP, {2.0f, 2.2f, 2.4f, 2.6f, 2.8f});
 }
 
-static const array<IColor, 6> insanityColors = {{
-  {244, 255, 190}, {255, 189, 230}, {190, 214, 220},
-  {242, 124, 161}, {230, 240, 240}, {220, 200, 220},
-}};
-
-static void addInsanityEffect(FXManager &mgr) {
-  EmitterDef edef;
-  edef.frequency = 4.0f;
-  edef.source = FRect(-10, -12, 10, -4);
-
-  ParticleDef pdef;
-  pdef.life = 0.7f;
-  pdef.size = {{5.0f, 8.0f, 12.0f}, InterpType::quadratic};
-  pdef.alpha = {{0.0f, 0.2, 0.8f, 1.0f}, {0.0, 0.8, 0.8, 0.0}, InterpType::cosine};
-
-  // TODO: zestaw losowych kolorów ?
-  pdef.color = FVec3(1.0);
-  pdef.textureName = TextureName::SPECIAL;
-
-  SubSystemDef ssdef(pdef, edef, 0.0f, 1.0f);
-  ssdef.emitFunc = [](AnimationContext &ctx, EmissionState &em, Particle &pinst) {
-    defaultEmitParticle(ctx, em, pinst);
-    pinst.texTile = {0, 1};
-    pinst.rot = ctx.rand.getDouble(-0.2f, 0.2f);
-  };
-
-  ssdef.drawFunc = [](DrawContext &ctx, const Particle &pinst, DrawParticle &out) {
-    Particle temp(pinst);
-    temp.size += FVec2(std::cos(pinst.life * 80.0f)) * 0.15;
-    defaultDrawParticle(ctx, temp, out);
-    out.color.setRGB(choose(insanityColors, pinst.randomSeed));
-  };
-
-  ParticleSystemDef psdef;
-  psdef.subSystems = {ssdef};
-  psdef.isLooped = true;
-  psdef.animLength = 1.0f;
-
-  mgr.addDef(FXName::INSANITY, psdef);
-  mgr.genSnapshots(FXName::INSANITY, {1.0f, 1.2f, 1.4f, 1.6f, 1.8f});
-}
-
 static void addBlindEffect(FXManager &mgr) {
   EmitterDef edef;
   edef.strength = 0.0f;
@@ -1214,13 +1135,11 @@ void FXManager::initializeDefs() {
 
   addCircularSpell(*this);
   addAirBlast(*this);
-  addAirBlast2(*this);
   addCircularBlast(*this);
   addMagicMissileEffect(*this);
   addFireballEffect(*this);
 
   addSleepEffect(*this);
-  addInsanityEffect(*this);
   addBlindEffect(*this);
   addPeacefulnessEffect(*this);
   addGlitteringEffect(*this);
