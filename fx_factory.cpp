@@ -1158,8 +1158,9 @@ static void addTeleportEffects(FXManager& mgr) {
     pdef.life = 0.5f;
     pdef.size = 40.0f;
 
+    pdef.color = FVec3(0.5f, 0.5f, 0.75f);
     pdef.alpha = {{0.9f, 1.0f}, {1.0f, 0.0f}};
-    pdef.textureName = TextureName::TELEPORT;
+    pdef.textureName = TextureName::TELEPORT_BLEND;
 
     SubSystemDef ssdef(pdef, edef, 0.0f, 1.0f);
     ssdef.emitFunc = [](AnimationContext& ctx, EmissionState& em, Particle& pinst) {
@@ -1183,14 +1184,14 @@ static void addTeleportEffects(FXManager& mgr) {
 
   { // Glow
     EmitterDef edef;
-    edef.initialSpawnCount = 1;
+    edef.initialSpawnCount = 2;
     edef.source = FVec2(0, -6);
 
     ParticleDef pdef;
     pdef.life = 0.4f;
     pdef.size = 62.0f;
 
-    pdef.alpha = {{0.0f, 0.3f, 1.0f}, {1.0f, 0.8f, 0.0f}};
+    pdef.alpha = {{0.0f, 0.3f, 1.0f}, {0.8f, 0.6f, 0.0f}};
     pdef.textureName = TextureName::BEAMS;
 
     SubSystemDef ssdef(pdef, edef, 0.0f, 1.0f);
@@ -1214,7 +1215,8 @@ static void addTeleportEffects(FXManager& mgr) {
   };
 
   mgr.addDef(FXName::TELEPORT_IN, psdef);
-  psdef.subSystems[0].particle.textureName = TextureName::TELEPORT_BLEND;
+
+  psdef.subSystems[0].particle.color = FVec3(1.0);
   psdef.subSystems.pop_back();
   mgr.addDef(FXName::SPAWN, psdef);
 }
