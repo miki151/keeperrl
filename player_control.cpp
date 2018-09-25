@@ -1478,8 +1478,7 @@ void PlayerControl::onEvent(const GameEvent& event) {
           addToMemory(info.position);
       },
       [&](const OtherEffect& info) {
-        // TODO: in Keeper mode effects are spawned twice: once from Player, once from PlayerControl
-        if (canSee(info.position))
+        if (getControlled().empty() && canSee(info.position))
           getView()->animation(info.effect, info.position.getCoord(), info.targetOffset, info.color);
       },
       [&](const auto&) {}
