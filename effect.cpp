@@ -332,7 +332,7 @@ void Effect::Teleport::applyToCreature(WCreature c, WCreature attacker) const {
   auto targetPos = Random.choose(good);
 
   c->getGame()->addEvent(EventInfo::OtherEffect{pos, FXName::TELEPORT_OUT});
-  c->getGame()->addEvent(EventInfo::OtherEffect{targetPos, FXName::TELEPORT_IN});
+  c->getGame()->addEvent(EventInfo::OtherEffect{targetPos, FXName::TELEPORT_IN, Color::WHITE, {}, true});
   pos.moveCreature(targetPos);
   c->you(MsgType::TELE_APPEAR, "");
 }
