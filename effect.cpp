@@ -282,7 +282,7 @@ static bool isConsideredHostile(const Effect& effect) {
 }
 
 void Effect::Teleport::applyToCreature(WCreature c, WCreature attacker) const {
-  PROFILE;
+  PROFILE_BLOCK("Teleport::applyToCreature");
   Rectangle area = Rectangle::centered(Vec2(0, 0), 12);
   int infinity = 10000;
   PositionMap<int> weight;
@@ -327,13 +327,7 @@ void Effect::Teleport::applyToCreature(WCreature c, WCreature attacker) const {
   }
   CHECK(!good.empty());
   c->you(MsgType::TELE_DISAPPEAR, "");
-
-  auto pos = c->getPosition();
-  auto targetPos = Random.choose(good);
-
-  c->getGame()->addEvent(EventInfo::OtherEffect{pos, FXName::TELEPORT_OUT});
-  c->getGame()->addEvent(EventInfo::OtherEffect{targetPos, FXName::TELEPORT_IN});
-  pos.moveCreature(targetPos);
+  c->getPosition().moveCreature(Random.choose(good), true);
   c->you(MsgType::TELE_APPEAR, "");
 }
 

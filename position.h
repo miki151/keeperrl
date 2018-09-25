@@ -114,7 +114,7 @@ class Position {
   void updateMovementDueToFire() const;
   vector<WCreature> getAllCreatures(int range) const;
   void moveCreature(Vec2 direction);
-  void moveCreature(Position);
+  void moveCreature(Position, bool teleportEffect = false);
   bool canMoveCreature(Vec2 direction) const;
   bool canMoveCreature(Position) const;
   void swapCreatures(WCreature);

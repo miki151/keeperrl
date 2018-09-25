@@ -22,6 +22,7 @@
 #include "inventory.h"
 #include "profiler.h"
 #include "portals.h"
+#include "fx_name.h"
 
 template <class Archive>
 void Position::serialize(Archive& ar, const unsigned int) {
@@ -879,14 +880,18 @@ vector<WCreature> Position::getAllCreatures(int range) const {
     return {};
 }
 
-void Position::moveCreature(Position pos) {
+void Position::moveCreature(Position pos, bool teleportEffect) {
   PROFILE;
   CHECK(isValid());
+  if (teleportEffect)
+    getGame()->addEvent(EventInfo::OtherEffect{*this, FXName::TELEPORT_OUT});
   if (isSameLevel(pos))
     level->moveCreature(getCreature(), getDir(pos));
   else if (isSameModel(pos))
     level->changeLevel(pos, getCreature());
   else pos.getLevel()->landCreature({pos}, getModel()->extractCreature(getCreature()));
+  if (teleportEffect)
+    getGame()->addEvent(EventInfo::OtherEffect{pos, FXName::TELEPORT_IN});
 }
 
 void Position::moveCreature(Vec2 direction) {

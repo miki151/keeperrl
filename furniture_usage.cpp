@@ -67,12 +67,12 @@ static void usePortal(Position pos, WCreature c) {
     for (auto f : otherPos->getFurniture())
       if (f->getUsageType() == FurnitureUsageType::PORTAL) {
         if (pos.canMoveCreature(*otherPos)) {
-          pos.moveCreature(*otherPos);
+          pos.moveCreature(*otherPos, true);
           return;
         }
         for (Position v : otherPos->neighbors8(Random))
           if (pos.canMoveCreature(v)) {
-            pos.moveCreature(v);
+            pos.moveCreature(v, true);
             return;
           }
       }
@@ -95,8 +95,11 @@ static void sitOnThrone(Position pos, WConstFurniture furniture, WCreature c) {
       return;
     bool wasTeleported = false;
     auto tryTeleporting = [&] (WCreature enemy) {
-      if ((enemy->getPosition().dist8(pos) > 3 || !c->canSee(enemy)) && pos.getLevel()->landCreature({pos}, enemy))
-        wasTeleported = true;
+      if (enemy->getPosition().dist8(pos) > 3 || !c->canSee(enemy))
+        if (auto landing = pos.getLevel()->getClosestLanding({pos}, enemy)) {
+          enemy->getPosition().moveCreature(*landing, true);
+          wasTeleported = true;
+        }
     };
     for (auto enemy : collective->getCreatures(MinionTrait::FIGHTER))
       tryTeleporting(enemy);

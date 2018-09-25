@@ -940,7 +940,7 @@ class ByCollective : public Behaviour {
               consumables.push_back(item);
           }
         if (!consumables.empty())
-          tasks.push_back(Task::pickItem(v, consumables));
+          tasks.push_back(Task::pickUpItem(v, consumables));
       }
       if (!tasks.empty())
         return Task::chain(std::move(tasks));

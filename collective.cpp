@@ -988,7 +988,7 @@ void Collective::handleTrapPlacementAndProduction() {
       if (!items.empty()) {
         Position pos = items.back().second;
         auto item = items.back().first;
-        auto task = taskMap->addTask(Task::chain(Task::pickItem(pos, {item}), Task::applyItem(this, trapPos, {item})), pos,
+        auto task = taskMap->addTask(Task::chain(Task::pickUpItem(pos, {item}), Task::applyItem(this, trapPos, {item})), pos,
             MinionActivity::CONSTRUCTION);
         markItem(items.back().first, task);
         items.pop_back();
@@ -1099,7 +1099,7 @@ void Collective::fetchItems(Position pos, const ItemFetchInfo& elem) {
     const auto& destination = elem.destinationFun(this);
     if (!destination.empty()) {
       warnings->setWarning(elem.warning, false);
-      auto task = taskMap->addTask(Task::pickItem(pos, equipment), pos, MinionActivity::HAULING);
+      auto task = taskMap->addTask(Task::pickUpItem(pos, equipment), pos, MinionActivity::HAULING);
       for (WItem it : equipment)
         markItem(it, task);
       auto destinationVec = vector<Position>(destination.begin(), destination.end());
@@ -1118,7 +1118,7 @@ void Collective::handleSurprise(Position pos) {
       if (hasTrait(other, MinionTrait::FIGHTER) && other->getPosition().dist8(pos) > 1) {
         for (Position dest : pos.neighbors8(Random))
           if (other->getPosition().canMoveCreature(dest)) {
-            other->getPosition().moveCreature(dest);
+            other->getPosition().moveCreature(dest, true);
             break;
           }
       }
