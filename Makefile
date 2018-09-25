@@ -116,7 +116,7 @@ compile: gen_version $(NAME)
 $(OBJDIR)/stdafx.h.gch: stdafx.h
 	$(GCC) -x c++-header $< -MMD $(CFLAGS) -o $@
 
-ifndef OPT
+ifndef RELEASE
 PCH = $(OBJDIR)/stdafx.h.gch
 PCHINC = -include-pch $(OBJDIR)/stdafx.h.gch
 endif

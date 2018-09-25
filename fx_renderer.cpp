@@ -92,14 +92,17 @@ IRect FXRenderer::visibleTiles(const View& view) {
   return IRect(iTopLeft - IVec2(1, 1), iTopLeft + iSize + IVec2(1, 1));
 }
 
-void FXRenderer::draw(float zoom, float offsetX, float offsetY, int w, int h) {
+void FXRenderer::draw(float zoom, float offsetX, float offsetY, int w, int h, optional<Layer> layer) {
   CHECK_OPENGL_ERROR();
   View view{zoom, {offsetX, offsetY}, {w, h}};
 
   auto fboView = visibleTiles(view);
   auto fboScreenSize = fboView.size() * nominalSize;
 
-  drawBuffers->fill(mgr.genQuads());
+  drawBuffers->fill(mgr.genQuads(layer));
+  if (drawBuffers->empty())
+    return;
+
   applyTexScale();
 
   if (useFramebuffer)

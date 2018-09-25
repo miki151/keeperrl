@@ -49,7 +49,7 @@ public:
   const auto& getSystems() const { return systems; }
   auto& getSystems() { return systems; }
 
-  vector<DrawParticle> genQuads();
+  vector<DrawParticle> genQuads(optional<Layer> = none);
 
   using Snapshot = vector<ParticleSystem::SubSystem>;
   struct SnapshotGroup {
@@ -84,5 +84,6 @@ public:
   uint spawnClock = 1;
   double accumFrameTime = 0.0f;
   double oldTime = -1.0;
+  double globalSimTime = 0.0;
 };
 }

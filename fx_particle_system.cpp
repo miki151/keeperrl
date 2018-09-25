@@ -193,8 +193,10 @@ SubSystemContext::SubSystemContext(const ParticleSystem& ps, const ParticleSyste
     : ps(ps), ss(ps.subSystems[ssid]), psdef(psdef), ssdef(psdef[ssid]), pdef(pdef), edef(edef), tdef(tdef),
       ssid(ssid) {}
 
-AnimationContext::AnimationContext(const SubSystemContext &ssctx, float animTime, float timeDelta)
-    : SubSystemContext(ssctx), animTime(animTime), timeDelta(timeDelta), invTimeDelta(1.0f / timeDelta) {}
+AnimationContext::AnimationContext(const SubSystemContext& ssctx, double globalTime, float animTime, float timeDelta)
+    : SubSystemContext(ssctx), globalTime(globalTime), animTime(animTime), timeDelta(timeDelta),
+      invTimeDelta(1.0f / timeDelta) {
+}
 
 DrawContext::DrawContext(const SubSystemContext &ssctx, FVec2 invTexTile)
     : SubSystemContext(ssctx), invTexTile(invTexTile) {}

@@ -98,7 +98,7 @@ void Effect::emitPoisonGas(Position pos, double amount, bool msg) {
 }
 
 static void summonFX(WCreature c) {
-  auto color = Color(90, 76, 104);
+  auto color = Color(240, 146, 184);
   // TODO: color depending on creature type ?
 
   c->getGame()->addEvent(EventInfo::OtherEffect{c->getPosition(), FXName::SPAWN, color});

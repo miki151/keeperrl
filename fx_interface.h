@@ -24,6 +24,5 @@ optional<FXName> name(FXId);
 
 void setColor(FXId, Color, int paramIndex = 0);
 void setScalar(FXId, float, int paramIndex = 0);
-void setDir(FXId, Dir, int paramIndex = 0);
 void setPos(FXId, float, float);
 }

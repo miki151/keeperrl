@@ -16,7 +16,7 @@ public:
   FXRenderer(const FXRenderer &) = delete;
   void operator=(const FXRenderer &) = delete;
 
-  void draw(float zoom, float offsetX, float offsetY, int w, int h);
+  void draw(float zoom, float offsetX, float offsetY, int w, int h, optional<Layer> = none);
 
   // TODO: better way to communicate with FXRenderer ?
   static FXRenderer *getInstance();

@@ -524,6 +524,30 @@ static void addMagicMissileEffect(FXManager& mgr) {
 static void addFireEffect(FXManager& mgr) {
   ParticleSystemDef psdef;
 
+  { // Glow
+    EmitterDef edef;
+    edef.frequency = 2.0f;
+    edef.initialSpawnCount = 1.0f;
+    edef.source = FVec2(0, 2);
+
+    ParticleDef pdef;
+    pdef.life = 0.7f;
+    pdef.size = 32.0f;
+
+    pdef.color = {{IColor(185, 155, 100).rgb(), IColor(195, 135, 90).rgb()}};
+    pdef.alpha = {{0.0f, 0.2f, 0.8f, 1.0f}, {0.0f, 0.3f, 0.3f, 0.0f}};
+    pdef.textureName = TextureName::CIRCULAR_STRONG;
+
+    SubSystemDef ssdef(pdef, edef, 0.0f, 1.0f);
+    ssdef.emitFunc = [](AnimationContext& ctx, EmissionState& em, Particle& pinst) {
+      defaultEmitParticle(ctx, em, pinst);
+      pinst.size = FVec2(1.0f + 0.5 * ctx.ps.params.scalar[0]);
+      pinst.rot = 0.0f;
+    };
+    ssdef.layer = Layer::back;
+    psdef.subSystems.emplace_back(ssdef);
+  }
+
   { // Fire
     EmitterDef edef;
     edef.strength = 20.0f;
@@ -1034,7 +1058,7 @@ static void addFlyingEffect(FXManager& mgr) {
   psdef.animLength = 1.0f;
 
   mgr.addDef(FXName::FLYING, psdef);
-  mgr.genSnapshots(FXName::FLYING, {1.0f, 1.4f, 1.8f}, {}, 4);
+  mgr.genSnapshots(FXName::FLYING, {1.0f, 1.4f, 1.8f}, {}, 1);
 }
 
 static void addDebuffEffect(FXManager& mgr) {
@@ -1059,11 +1083,13 @@ static void addDebuffEffect(FXManager& mgr) {
     ssdef.animateFunc = [](AnimationContext& ctx, Particle& pinst) {
       defaultAnimateParticle(ctx, pinst);
 
-      float pos = std::cos(ctx.animTime * 5.0f);
+      float pos = std::cos((ctx.globalTime + ctx.ps.params.scalar[1]) * 5.0f);
       // Faster movement in the middle, slower on the edges:
       pos = (pos < 0.0f ? -1.0f : 1.0f) * std::pow(std::abs(pos), 0.7);
+      // Constant offset:
+      //pos +=  (ctx.ps.params.scalar[1] - 0.5f) * 3.0f;
 
-      pinst.pos = FVec2(0.0f, pos * 4.0f - 3.0f);
+      pinst.pos = FVec2(0.0f, pos * 5.0f - 3.0f);
       if (!ctx.ps.isDying)
         pinst.life = min(pinst.life, 0.25f);
     };
@@ -1072,7 +1098,7 @@ static void addDebuffEffect(FXManager& mgr) {
   }
 
   mgr.addDef(FXName::DEBUFF, psdef);
-  mgr.genSnapshots(FXName::DEBUFF, {1.0f, 1.4f, 1.8f}, {}, 4);
+  mgr.genSnapshots(FXName::DEBUFF, {1.0f, 1.4f, 1.8f}, {}, 1);
 }
 
 static void addGlitteringEffect(FXManager& mgr) {
@@ -1132,8 +1158,9 @@ static void addTeleportEffects(FXManager& mgr) {
     pdef.life = 0.5f;
     pdef.size = 40.0f;
 
+    pdef.color = FVec3(0.5f, 0.5f, 0.75f);
     pdef.alpha = {{0.9f, 1.0f}, {1.0f, 0.0f}};
-    pdef.textureName = TextureName::TELEPORT;
+    pdef.textureName = TextureName::TELEPORT_BLEND;
 
     SubSystemDef ssdef(pdef, edef, 0.0f, 1.0f);
     ssdef.emitFunc = [](AnimationContext& ctx, EmissionState& em, Particle& pinst) {
@@ -1157,14 +1184,14 @@ static void addTeleportEffects(FXManager& mgr) {
 
   { // Glow
     EmitterDef edef;
-    edef.initialSpawnCount = 1;
+    edef.initialSpawnCount = 2;
     edef.source = FVec2(0, -6);
 
     ParticleDef pdef;
     pdef.life = 0.4f;
     pdef.size = 62.0f;
 
-    pdef.alpha = {{0.0f, 0.3f, 1.0f}, {1.0f, 0.8f, 0.0f}};
+    pdef.alpha = {{0.0f, 0.3f, 1.0f}, {0.8f, 0.6f, 0.0f}};
     pdef.textureName = TextureName::BEAMS;
 
     SubSystemDef ssdef(pdef, edef, 0.0f, 1.0f);
@@ -1188,7 +1215,8 @@ static void addTeleportEffects(FXManager& mgr) {
   };
 
   mgr.addDef(FXName::TELEPORT_IN, psdef);
-  psdef.subSystems[0].particle.textureName = TextureName::TELEPORT_BLEND;
+
+  psdef.subSystems[0].particle.color = FVec3(1.0);
   psdef.subSystems.pop_back();
   mgr.addDef(FXName::SPAWN, psdef);
 }
