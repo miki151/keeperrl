@@ -137,7 +137,7 @@ struct SubSystemContext {
 };
 
 struct AnimationContext : public SubSystemContext {
-  AnimationContext(const SubSystemContext &, float animTime, float timeDelta);
+  AnimationContext(const SubSystemContext&, double globalTime, float animTime, float timeDelta);
 
   float uniformSpread(float spread);
   float uniform(float min, float max);
@@ -145,6 +145,7 @@ struct AnimationContext : public SubSystemContext {
   SVec2 randomTexTile();
 
   RandomGen rand;
+  const double globalTime;
   const float animTime;
   const float timeDelta, invTimeDelta;
 };
