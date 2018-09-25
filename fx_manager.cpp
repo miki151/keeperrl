@@ -237,9 +237,9 @@ void FXManager::genSnapshots(FXName name, vector<float> animTimes, vector<float>
        << " (total frames: " << numFramesTotal << ")";
 }
 
-vector<DrawParticle> FXManager::genQuads() {
+vector<DrawParticle> FXManager::genQuads(optional<Layer> layer) {
+  // TODO(opt): keep a cache of draw particles; return reference to vector
   vector<DrawParticle> out;
-  // TODO(opt): reserve
 
   for (auto& ps : systems) {
     if (ps.isDead)
@@ -249,6 +249,9 @@ vector<DrawParticle> FXManager::genQuads() {
     for (int ssid = 0; ssid < (int)psdef.subSystems.size(); ssid++) {
       auto &ss = ps[ssid];
       auto &ssdef = psdef[ssid];
+      if (layer && ssdef.layer != layer)
+        continue;
+
       auto& pdef = ssdef.particle;
       auto& tdef = textureDefs[pdef.textureName];
       DrawContext ctx{ssctx(ps, ssid), vinv(FVec2(tdef.tiles))};

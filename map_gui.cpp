@@ -986,9 +986,12 @@ void MapGui::renderMapObjects(Renderer& renderer, Vec2 size, milliseconds curren
         renderExtraBorders(renderer, currentTimeReal);
       if (layer == ViewLayer::FLOOR_BACKGROUND)
         renderHighlights(renderer, size, currentTimeReal, true);
+      if (layer == ViewLayer::FLOOR && fxViewManager)
+        drawFX(renderer, false);
       if (!spriteMode)
         break;
     }
+
   for (ViewLayer layer : layout->getLayers())
     if ((int)layer >= (int)ViewLayer::CREATURE) {
       for (Vec2 wpos : allTiles) {
@@ -1014,11 +1017,7 @@ void MapGui::renderMapObjects(Renderer& renderer, Vec2 size, milliseconds curren
 
   if (fxViewManager) {
     fxViewManager->finishFrame();
-    renderer.flushSprites();
-    float zoom = float(layout->getSquareSize().x) / float(Renderer::nominalSize);
-    auto offset = projectOnScreen(Vec2(0, 0));
-    auto size = renderer.getSize();
-    fx::FXRenderer::getInstance()->draw(zoom, offset.x, offset.y, size.x, size.y);
+    drawFX(renderer, true);
   }
 
   renderHighlights(renderer, size, currentTimeReal, false);
@@ -1104,6 +1103,15 @@ void MapGui::considerScrollingToCreature() {
     if (fabs(center.x - targetx) + fabs(center.y - targety) < 0.01)
       info->softScroll = false;
   }
+}
+
+void MapGui::drawFX(Renderer& renderer, bool front_layer) {
+  renderer.flushSprites();
+  float zoom = float(layout->getSquareSize().x) / float(Renderer::nominalSize);
+  auto offset = projectOnScreen(Vec2(0, 0));
+  auto size = renderer.getSize();
+  auto layer = front_layer ? fx::Layer::front : fx::Layer::back;
+  fx::FXRenderer::getInstance()->draw(zoom, offset.x, offset.y, size.x, size.y, layer);
 }
 
 void MapGui::updateFX(milliseconds currentTimeReal) {

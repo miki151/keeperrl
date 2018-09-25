@@ -107,6 +107,7 @@ struct SubSystemDef {
 
   int maxActiveParticles = INT_MAX;
   int maxTotalParticles = INT_MAX; // TODO: how should we treat it in looped animations?
+  Layer layer = Layer::front;
 };
 
 // Defines behaviour of a whole particle system

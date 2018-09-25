@@ -31,6 +31,7 @@ template <class T> using vector = std::vector<T>;
 
 namespace fx {
 
+enum class Layer : unsigned char { front, back };
 enum class BlendMode : unsigned char { normal, additive };
 enum class TextureName;
 
