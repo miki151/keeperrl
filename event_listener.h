@@ -98,7 +98,6 @@ namespace EventInfo {
     FXName effect;
     Color color = Color::WHITE;
     Vec2 targetOffset = Vec2(0, 0);
-    bool alwaysShow = false;
   };
 
   struct ItemsEquipped {
