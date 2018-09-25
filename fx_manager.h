@@ -49,7 +49,7 @@ public:
   const auto& getSystems() const { return systems; }
   auto& getSystems() { return systems; }
 
-  vector<DrawParticle> genQuads();
+  vector<DrawParticle> genQuads(optional<Layer> = none);
 
   using Snapshot = vector<ParticleSystem::SubSystem>;
   struct SnapshotGroup {

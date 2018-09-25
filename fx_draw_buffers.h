@@ -12,6 +12,9 @@ struct DrawBuffers {
   };
 
   void fill(const vector<DrawParticle>&);
+  bool empty() const {
+    return elements.empty();
+  }
 
   vector<FVec2> positions;
   vector<FVec2> texCoords;

@@ -524,6 +524,30 @@ static void addMagicMissileEffect(FXManager& mgr) {
 static void addFireEffect(FXManager& mgr) {
   ParticleSystemDef psdef;
 
+  { // Glow
+    EmitterDef edef;
+    edef.frequency = 2.0f;
+    edef.initialSpawnCount = 1.0f;
+    edef.source = FVec2(0, 2);
+
+    ParticleDef pdef;
+    pdef.life = 0.7f;
+    pdef.size = 32.0f;
+
+    pdef.color = {{IColor(185, 155, 100).rgb(), IColor(195, 135, 90).rgb()}};
+    pdef.alpha = {{0.0f, 0.2f, 0.8f, 1.0f}, {0.0f, 0.3f, 0.3f, 0.0f}};
+    pdef.textureName = TextureName::CIRCULAR_STRONG;
+
+    SubSystemDef ssdef(pdef, edef, 0.0f, 1.0f);
+    ssdef.emitFunc = [](AnimationContext& ctx, EmissionState& em, Particle& pinst) {
+      defaultEmitParticle(ctx, em, pinst);
+      pinst.size = FVec2(1.0f + 0.5 * ctx.ps.params.scalar[0]);
+      pinst.rot = 0.0f;
+    };
+    ssdef.layer = Layer::back;
+    psdef.subSystems.emplace_back(ssdef);
+  }
+
   { // Fire
     EmitterDef edef;
     edef.strength = 20.0f;
