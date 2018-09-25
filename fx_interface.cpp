@@ -87,17 +87,6 @@ void setScalar(FXId tid, float value, int paramIndex) {
     }
   }
 }
-
-void setDir(FXId tid, Dir dir, int paramIndex) {
-  ParticleSystemId id(tid.first, tid.second);
-  if(auto *inst = FXManager::getInstance()) {
-    if(inst->valid(id)) {
-      auto &system = inst->get(id);
-      PASSERT(paramIndex >= 0 && paramIndex < SystemParams::maxDirs);
-      system.params.dir[paramIndex] = dir;
-    }
-  }
-}
 }
 
 bool fxesAvailable() {

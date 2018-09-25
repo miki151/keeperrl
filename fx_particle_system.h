@@ -8,17 +8,17 @@
 namespace fx {
 
 struct SystemParams {
-  static constexpr int maxScalars = 2, maxColors = 2, maxDirs = 2;
+  static constexpr int maxScalars = 2, maxColors = 2;
 
   // These attributes can affect system behaviour in any way
+  // Typical use:
+  // First parameter: strength of the effect
+  // Second parameter: position in stack of stacked effects
   float scalar[maxScalars] = {0.0f, 0.0f};
 
   // These params shouldn't affect system behaviour
   // Otherwise snapshots won't work as expected
   FVec3 color[maxColors] = {FVec3(1.0), FVec3(1.0)};
-
-  // TODO: remove these, use InitConfig::targetOff instead
-  Dir dir[maxDirs] = {Dir::N, Dir::N};
 };
 
 // Snapshots allow to start animation in the middle
