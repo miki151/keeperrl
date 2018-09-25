@@ -46,7 +46,7 @@ template <class T> T Curve<T>::sample(float position) const {
     ids[3] = id + 1;
 
   float key1 = keys[ids[1]], key2 = keys[ids[2]];
-  float t = key1 == key2 ? 0.0 : (position - key1) / (key2 - key1);
+  float t = position < key1 || key1 == key2 ? 0.0 : (position - key1) / (key2 - key1);
 
   switch (interp) {
   case InterpType::linear:
