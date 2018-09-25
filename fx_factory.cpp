@@ -1034,7 +1034,7 @@ static void addFlyingEffect(FXManager& mgr) {
   psdef.animLength = 1.0f;
 
   mgr.addDef(FXName::FLYING, psdef);
-  mgr.genSnapshots(FXName::FLYING, {1.0f, 1.4f, 1.8f}, {}, 4);
+  mgr.genSnapshots(FXName::FLYING, {1.0f, 1.4f, 1.8f}, {}, 1);
 }
 
 static void addDebuffEffect(FXManager& mgr) {
@@ -1072,7 +1072,7 @@ static void addDebuffEffect(FXManager& mgr) {
   }
 
   mgr.addDef(FXName::DEBUFF, psdef);
-  mgr.genSnapshots(FXName::DEBUFF, {1.0f, 1.4f, 1.8f}, {}, 4);
+  mgr.genSnapshots(FXName::DEBUFF, {1.0f, 1.4f, 1.8f}, {}, 1);
 }
 
 static void addGlitteringEffect(FXManager& mgr) {
