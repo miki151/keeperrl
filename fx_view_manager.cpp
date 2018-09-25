@@ -2,7 +2,8 @@
 
 #include "fx_base.h"
 #include "fx_name.h"
-
+#include "fx_variant_name.h"
+#include "variant.h"
 
 void FXViewManager::EntityInfo::clearVisibility() {
   isVisible = false;
@@ -10,16 +11,13 @@ void FXViewManager::EntityInfo::clearVisibility() {
     effects[n].isVisible = false;
 }
 
-void FXViewManager::addFX(GenericId id, FXVariantName var) {
-  addFX(id, getDef(var));
-}
-
-void FXViewManager::EntityInfo::addFX(GenericId id, const FXDef& def) {
+void FXViewManager::EntityInfo::addFX(GenericId id, TypeId typeId, const FXDef& def) {
   PASSERT(isVisible); // Effects shouldn't be added if creature itself isn't visible
 
   for (int n = 0; n < numEffects; n++) {
-    if (effects[n].name == def.name && !effects[n].isDying) {
+    if (effects[n].typeId == typeId && !effects[n].isDying) {
       effects[n].isVisible = true;
+      effects[n].stackId = def.stackId;
       fx::setPos(effects[n].id, x, y);
       updateParams(def, effects[n].id);
       return;
@@ -31,12 +29,13 @@ void FXViewManager::EntityInfo::addFX(GenericId id, const FXDef& def) {
     INFO << "FX view: spawn: " << ENUM_STRING(def.name) << " for: " << id;
 
     if (justShown)
-      newEffect.id = fx::spawnSnapshotEffect(def.name, x, y, def.scalar0, def.scalar1);
+      newEffect.id = fx::spawnSnapshotEffect(def.name, x, y, def.strength, 0.0f);
     else
       newEffect.id = fx::spawnEffect(def.name, x, y);
+    newEffect.typeId = typeId;
     newEffect.isVisible = true;
-    newEffect.name = def.name;
     newEffect.isDying = false;
+    newEffect.stackId = def.stackId;
 
     updateParams(def, newEffect.id);
   }
@@ -45,10 +44,13 @@ void FXViewManager::EntityInfo::addFX(GenericId id, const FXDef& def) {
 void FXViewManager::EntityInfo::updateParams(const FXDef& def, FXId id) {
   if (!(def.color == Color::WHITE))
     fx::setColor(id, def.color);
-  if (def.scalar0 != 0.0f)
-    fx::setScalar(id, def.scalar0, 0);
-  if (def.scalar1 != 0.0f)
-    fx::setScalar(id, def.scalar1, 1);
+  if (def.strength != 0.0f)
+    fx::setScalar(id, def.strength, 0);
+}
+
+string FXViewManager::EffectInfo::name() const {
+  return typeId.visit([](FXName name) { return ENUM_STRING(name); },
+                      [](FXVariantName name) { return ENUM_STRING(name); });
 }
 
 void FXViewManager::EntityInfo::updateFX(GenericId gid) {
@@ -62,17 +64,35 @@ void FXViewManager::EntityInfo::updateFX(GenericId gid) {
       fx::setPos(effects[n].id, x, y);
 
     if ((!effect.isDying && !effect.isVisible) || (effect.isDying && immediateKill)) {
-      INFO << "FX view: kill: " << ENUM_STRING(effect.name) << " for: " << gid;
+      INFO << "FX view: kill: " << effect.name() << " for: " << gid;
       fx::kill(effect.id, immediateKill);
       effect.isDying = true;
     }
 
     if (immediateKill || removeDead) {
       if (removeDead)
-        INFO << "FX view: remove: " << ENUM_STRING(effect.name) << " for: " << gid;
+        INFO << "FX view: remove: " << effect.name() << " for: " << gid;
       effects[n--] = effects[--numEffects];
     }
   }
+
+  // Updating stack position of stacked effects:
+  if (numEffects >= 2)
+    for (auto stackId : ENUM_ALL(FXStackId)) {
+      if (stackId == FXStackId::generic)
+        continue;
+
+      int count = 0;
+      for (int n = 0; n < numEffects; n++)
+        if (effects[n].stackId == stackId)
+          count++;
+      if (count > 1) {
+        int id = 0;
+        for (int n = 0; n < numEffects; n++)
+          if (effects[n].stackId == stackId)
+            fx::setScalar(effects[n].id, float(id++) / float(count - 1), 1);
+      }
+    }
 }
 
 void FXViewManager::beginFrame() {
@@ -97,7 +117,13 @@ void FXViewManager::addEntity(GenericId gid, float x, float y) {
 void FXViewManager::addFX(GenericId gid, const FXDef& def) {
   auto it = entities.find(gid);
   PASSERT(it != entities.end());
-  it->second.addFX(gid, def);
+  it->second.addFX(gid, def.name, def);
+}
+
+void FXViewManager::addFX(GenericId gid, FXVariantName var) {
+  auto it = entities.find(gid);
+  PASSERT(it != entities.end());
+  it->second.addFX(gid, var, getDef(var));
 }
 
 void FXViewManager::finishFrame() {

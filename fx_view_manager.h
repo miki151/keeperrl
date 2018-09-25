@@ -7,11 +7,13 @@
 #include "color.h"
 #include <unordered_map>
 
+RICH_ENUM(FXStackId, debuff, buff, generic);
+
 struct FXDef {
   FXName name = FXName::DUMMY;
   Color color = Color::WHITE;
-  float scalar0 = 0.0f;
-  float scalar1 = 0.0f;
+  float strength = 0.0f;
+  FXStackId stackId = FXStackId::generic;
 };
 
 FXDef getDef(FXVariantName);
@@ -27,18 +29,23 @@ class FXViewManager {
   void finishFrame();
 
   private:
+  using TypeId = variant<FXName, FXVariantName>;
+
   struct EffectInfo {
+    string name() const;
+
     FXId id;
-    FXName name;
+    TypeId typeId;
+    FXStackId stackId;
     bool isVisible;
     bool isDying;
   };
 
   struct EntityInfo {
-    static constexpr int maxEffects = 4;
+    static constexpr int maxEffects = 8;
 
     void clearVisibility();
-    void addFX(GenericId, const FXDef&);
+    void addFX(GenericId, TypeId, const FXDef&);
     void updateFX(GenericId);
     void updateParams(const FXDef&, FXId);
 

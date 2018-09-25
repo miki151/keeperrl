@@ -84,5 +84,6 @@ public:
   uint spawnClock = 1;
   double accumFrameTime = 0.0f;
   double oldTime = -1.0;
+  double globalSimTime = 0.0;
 };
 }

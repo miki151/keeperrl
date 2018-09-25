@@ -1059,11 +1059,13 @@ static void addDebuffEffect(FXManager& mgr) {
     ssdef.animateFunc = [](AnimationContext& ctx, Particle& pinst) {
       defaultAnimateParticle(ctx, pinst);
 
-      float pos = std::cos(ctx.animTime * 5.0f);
+      float pos = std::cos((ctx.globalTime + ctx.ps.params.scalar[1]) * 5.0f);
       // Faster movement in the middle, slower on the edges:
       pos = (pos < 0.0f ? -1.0f : 1.0f) * std::pow(std::abs(pos), 0.7);
+      // Constant offset:
+      //pos +=  (ctx.ps.params.scalar[1] - 0.5f) * 3.0f;
 
-      pinst.pos = FVec2(0.0f, pos * 4.0f - 3.0f);
+      pinst.pos = FVec2(0.0f, pos * 5.0f - 3.0f);
       if (!ctx.ps.isDying)
         pinst.life = min(pinst.life, 0.25f);
     };
