@@ -51,7 +51,8 @@
 #include "workshop_item.h"
 #include "quarters.h"
 #include "position_matching.h"
-
+#include "fx_variant_name.h"
+#include "fx_view_manager.h"
 
 template <class Archive>
 void Collective::serialize(Archive& ar, const unsigned int version) {
@@ -1161,6 +1162,22 @@ void Collective::addProducesMessage(WConstCreature c, const vector<PItem>& items
     control->addMessage(c->getName().a() + " produces " + items[0]->getAName());
 }
 
+// TODO: better place to store information about FX colors
+// TODO: add more effects for workshops and more colors for different item types
+// TODO: don't assign new effect if old one is still playing
+// TODO: how FXes are going to look in fast mode ?
+static optional<FXVariantName> getFX(WorkshopType type, const WorkshopItem& item) {
+  if (type == WorkshopType::LABORATORY) {
+    if (item.type.isType<ItemType::Potion>()) {
+      if (auto eff = item.type.get()->getEffect()) {
+      }
+    }
+    return FXVariantName::LABORATORY_GREEN;
+  }
+
+  return none;
+}
+
 void Collective::onAppliedSquare(WCreature c, Position pos) {
   if (auto furniture = pos.getFurniture(FurnitureLayer::MIDDLE)) {
     // Furniture have variable usage time, so just multiply by it to be independent of changes.
@@ -1207,9 +1224,20 @@ void Collective::onAppliedSquare(WCreature c, Position pos) {
       }
     }
     if (auto workshopType = config->getWorkshopType(furniture->getType())) {
+      auto& workshop = workshops->get(*workshopType);
+      optional<FXVariantName> fxName;
+      auto& queued = workshop.getQueued();
+      if (!queued.empty()) {
+        fxName = getFX(*workshopType, queued.front());
+        if (fxName) {
+          auto def = getDef(*fxName);
+          getGame()->addEvent(EventInfo::OtherEffect{pos, def.name, def.color});
+        }
+      }
+
       auto& info = config->getWorkshopInfo(*workshopType);
       auto craftingSkill = c->getAttributes().getSkills().getValue(info.skill);
-      vector<PItem> items = workshops->get(*workshopType).addWork(efficiency * craftingSkill);
+      vector<PItem> items = workshop.addWork(efficiency * craftingSkill);
       if (!items.empty()) {
         if (items[0]->getClass() == ItemClass::WEAPON)
           getGame()->getStatistics().add(StatId::WEAPON_PRODUCED);

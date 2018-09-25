@@ -754,8 +754,6 @@ bool LastingEffects::canConsume(LastingEffect effect) {
 
 optional<FXVariantName> LastingEffects::getFX(LastingEffect effect) {
   switch (effect) {
-    case LastingEffect::PEACEFULNESS:
-      return FXVariantName::PEACEFULNESS;
     case LastingEffect::SLEEP:
       return FXVariantName::SLEEP;
     case LastingEffect::SPEED:

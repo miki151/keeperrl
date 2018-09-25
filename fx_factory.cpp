@@ -881,36 +881,29 @@ static void addBlindEffect(FXManager &mgr) {
   mgr.genSnapshots(FXName::BLIND, {2.0f, 2.2f, 2.4f, 2.6f, 2.8f});
 }
 
-static void addPeacefulnessEffect(FXManager &mgr) {
+static void addLaboratoryEffect(FXManager& mgr) {
   EmitterDef edef;
   edef.strength = 8.0f;
-  edef.setDirectionSpread(-fconstant::pi * 0.5f, 0.3f);
-  edef.frequency = 1.6f;
-  edef.source = FRect(-8.0f, 0.0f, 8.0f, 8.0f);
+  edef.setDirectionSpread(-fconstant::pi * 0.5f, 0.5f);
+  edef.frequency = 8.0f;
+  edef.source = FRect(-4.0f, -8.0f, 4.0f, -6.0f);
 
   ParticleDef pdef;
   pdef.life = 2.0f;
-  pdef.size = {{7.0f, 14.0f}};
-  pdef.alpha = {{0.0f, 0.2f, 0.8f, 1.0f}, {0.0, 0.3f, 0.2, 0.0}, InterpType::cosine};
+  pdef.size = {{12.0f, 12.0f, 30.0f}};
+  pdef.alpha = {{0.0f, 0.2f, 0.6f, 1.0f}, {0.0, 0.5f, 0.2, 0.0}, InterpType::cosine};
+  pdef.textureName = TextureName::FLAKES_BORDERS;
 
-  pdef.color = IColor(255, 110, 209).rgb();
-  pdef.textureName = TextureName::SPECIAL;
-
-  SubSystemDef ssdef(pdef, edef, 0.0f, 1.0f);
+  SubSystemDef ssdef(pdef, edef, 0.0f, 5.0f);
   ssdef.emitFunc = [](AnimationContext &ctx, EmissionState &em, Particle &pinst) {
     defaultEmitParticle(ctx, em, pinst);
-    pinst.texTile = {3, 0};
-    pinst.life = min(em.maxLife, float(ctx.ss.particles.size()) * 0.1f);
-    pinst.rot = ctx.rand.getDouble(-0.2f, 0.2f);
   };
 
   ParticleSystemDef psdef;
   psdef.subSystems = {ssdef};
-  psdef.isLooped = true;
-  psdef.animLength = 1.0f;
 
-  mgr.addDef(FXName::PEACEFULNESS, psdef);
-  mgr.genSnapshots(FXName::PEACEFULNESS, {2.0f, 2.2f, 2.4f, 2.6f, 2.8f});
+  mgr.addDef(FXName::LABORATORY, psdef);
+  mgr.genSnapshots(FXName::LABORATORY, {2.0f, 2.2f, 2.4f, 2.6f, 2.8f});
 }
 
 static void addSpiralEffects(FXManager& mgr) {
@@ -1243,7 +1236,7 @@ void FXManager::initializeDefs() {
 
   addSleepEffect(*this);
   addBlindEffect(*this);
-  addPeacefulnessEffect(*this);
+  addLaboratoryEffect(*this);
   addGlitteringEffect(*this);
   addTeleportEffects(*this);
 
