@@ -7,8 +7,6 @@
 FXDef getDef(FXVariantName var) {
   using Name = FXVariantName;
   switch (var) {
-    case Name::PEACEFULNESS:
-      return {FXName::PEACEFULNESS};
     case Name::BLIND:
       return {FXName::BLIND};
     case Name::SPEED:
@@ -37,5 +35,13 @@ FXDef getDef(FXVariantName var) {
       return {FXName::SPIRAL, Color::BLUE};
     case Name::SPIRAL_GREEN:
       return {FXName::SPIRAL, Color::f(0.7, 1.0, 0.6)};
+    case Name::LABORATORY_GREEN:
+      return {FXName::LABORATORY, Color::GREEN};
+    case Name::LABORATORY_BLUE:
+      return {FXName::LABORATORY, Color::BLUE};
+    case Name::LABORATORY_RED:
+      return {FXName::LABORATORY, Color::RED};
+    case Name::LABORATORY_BLACK:
+      return {FXName::LABORATORY, Color::BLACK};
   }
 }
