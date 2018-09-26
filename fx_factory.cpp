@@ -952,11 +952,11 @@ static void addForgeEffect(FXManager& mgr) {
     edef.setStrengthSpread(40.0f, 20.0f);
     edef.setDirectionSpread(-fconstant::pi * 0.5f, 1.0f);
     edef.source = FRect(-4.0f, -4.0f, 4.0f, -2.0f);
-    edef.initialSpawnCount = 8.0f;
+    edef.initialSpawnCount = 12.0f;
 
     ParticleDef pdef;
     pdef.life = 0.6f;
-    pdef.size = 2.5f;
+    pdef.size = 1.5f;
     pdef.alpha = {{0.0f, 0.4f, 1.0f}, {1.0, 1.0, 0.0}, InterpType::cosine};
 
     pdef.textureName = TextureName::SPARKS_LIGHT;
