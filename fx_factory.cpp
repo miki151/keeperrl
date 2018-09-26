@@ -1020,33 +1020,23 @@ static void addJewelerEffect(FXManager& mgr) {
     ssdef.emitFunc = [](AnimationContext& ctx, EmissionState& em, Particle& pinst) {
       defaultEmitParticle(ctx, em, pinst);
       pinst.rotSpeed = 1.5f;
-      float rand = ctx.uniform(0.0f, 0.5f);
-      if (rand > 0.47f)
-        rand += ctx.uniform(0.0f, 0.4f);
-      em.animationVars[0] += rand * rand * rand;
     };
-    psdef.subSystems.emplace_back(ssdef);
-  }
 
-  { // Glow
-    EmitterDef edef;
-    edef.source = FVec2(0, -6.0f);
-    edef.frequency = 2.0f;
+    ssdef.multiDrawFunc = [](DrawContext& ctx, const Particle& pinst, vector<DrawParticle>& out) {
+      DrawParticle dpart;
+      defaultDrawParticle(ctx, pinst, dpart);
+      out.emplace_back(dpart);
 
-    ParticleDef pdef;
-    pdef.life = 0.5f;
-    pdef.size = 32.0f;
-    pdef.alpha = {{0.0f, 0.5f, 1.0f}, {0.0f, 0.4f, 0.0f}};
-    pdef.textureName = TextureName::CIRCULAR;
-
-    SubSystemDef ssdef(pdef, edef, 0.0f, 1.5f);
-    ssdef.layer = Layer::back;
-    ssdef.emitFunc = [](AnimationContext& ctx, EmissionState& em, Particle& pinst) {
-      defaultEmitParticle(ctx, em, pinst);
-      auto& sparks = ctx.ps.subSystems[0].particles;
-      if (!sparks.empty())
-        pinst.pos = sparks.front().pos;
+      // Glow particles:
+      dpart.texName = TextureName::CIRCULAR;
+      dpart.texCoords = ctx.texQuadCorners({}, FVec2(1));
+      dpart.color.a /= 4;
+      auto center = pinst.pos + ctx.ps.pos;
+      for (auto& pos : dpart.positions)
+        pos = (pos - center) * 12.0f + center;
+      out.emplace_back(dpart);
     };
+
     psdef.subSystems.emplace_back(ssdef);
   }
 
@@ -1243,38 +1233,48 @@ static void addDebuffEffect(FXManager& mgr) {
 
 static void addGlitteringEffect(FXManager& mgr) {
   EmitterDef edef;
-  edef.strength = 0.0f;
-  edef.frequency = 0.15f;
   edef.source = FRect(-10, -10, 10, 10);
 
-  // TODO: cząsteczki które nie giną ?
-  // TODO: może dodać tutaj jeszcze poświatę pod spód ?
   ParticleDef pdef;
   pdef.life = 0.5f;
-  pdef.size = 5.0f;
+  pdef.size = 3.5f;
   pdef.alpha = {{0.0f, 0.3f, 0.8f, 1.0f}, {0.0f, 1.0, 0.7, 0.0}, InterpType::cosine};
-
-  pdef.color = IColor(253, 247, 172).rgb();
   pdef.textureName = TextureName::SPARKS_LIGHT;
 
   SubSystemDef ssdef(pdef, edef, 0.0f, 1.0f);
-
   ssdef.prepareFunc = [](AnimationContext& ctx, EmissionState& em) {
-    float freq = defaultPrepareEmission(ctx, em);
-    if (ctx.animTime == 0.0f)
-      em.animationVars[0] = ctx.uniform(0.0f, 0.99f);
-    freq += em.animationVars[0];
-    em.animationVars[0] = 0.0f;
-    return freq;
+    defaultPrepareEmission(ctx, em);
+    auto& var = em.animationVars[0];
+
+    // Randomizing time until next particle
+    if (ctx.animTime == 0.0f || var < 0.0)
+      var = ctx.globalTime + ctx.uniform(0.5, 2.0);
+    if (ctx.globalTime > var && var > 0.0) {
+      var = -1.0;
+      return 1.0f;
+    }
+
+    return 0.0f;
   };
 
   ssdef.emitFunc = [](AnimationContext& ctx, EmissionState& em, Particle& pinst) {
     defaultEmitParticle(ctx, em, pinst);
     pinst.rotSpeed = 1.5f;
-    float rand = ctx.uniform(0.0f, 0.5f);
-    if (rand > 0.47f)
-      rand += ctx.uniform(0.0f, 0.4f);
-    em.animationVars[0] += rand * rand * rand;
+  };
+
+  ssdef.multiDrawFunc = [](DrawContext& ctx, const Particle& pinst, vector<DrawParticle>& out) {
+    DrawParticle dpart;
+    defaultDrawParticle(ctx, pinst, dpart);
+    out.emplace_back(dpart);
+
+    // Glow particles:
+    dpart.texName = TextureName::CIRCULAR;
+    dpart.texCoords = ctx.texQuadCorners({}, FVec2(1));
+    dpart.color.a /= 4;
+    auto center = pinst.pos + ctx.ps.pos;
+    for (auto& pos : dpart.positions)
+      pos = (pos - center) * 10.0f + center;
+    out.emplace_back(dpart);
   };
 
   ParticleSystemDef psdef;
