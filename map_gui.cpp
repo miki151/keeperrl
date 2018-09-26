@@ -562,9 +562,10 @@ static Color getPortalColor(int index) {
   return Color(255 * (index % 2), 255 * ((index / 2) % 2), 255 * ((index / 4) % 2));
 }
 
+// TODO: better place for this code
 optional<pair<FXName, Color>> overlayFX(ViewId id) {
-  if (isOneOf(id, ViewId::GOLD_ORE, ViewId::GOLD))
-    return make_pair(FXName::GLITTERING, Color::YELLOW);
+  if (isOneOf(id, ViewId::GOLD_ORE, ViewId::GOLD, ViewId::THRONE, ViewId::MINION_STATUE))
+    return make_pair(FXName::GLITTERING, Color(253, 247, 172));
   if (id == ViewId::ADAMANTIUM_ORE)
     return make_pair(FXName::GLITTERING, Color::LIGHT_BLUE);
   return none;
