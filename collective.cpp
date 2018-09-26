@@ -1162,23 +1162,6 @@ void Collective::addProducesMessage(WConstCreature c, const vector<PItem>& items
     control->addMessage(c->getName().a() + " produces " + items[0]->getAName());
 }
 
-// TODO: better place to store information about FX colors
-// TODO: add more effects for workshops and more colors for different item types
-// TODO: don't assign new effect if old one is still playing
-// TODO: how FXes are going to look in fast mode ?
-static optional<FXVariantName> getFX(WorkshopType type, const WorkshopItem& item) {
-  switch (type) {
-  case WorkshopType::LABORATORY:
-    return FXVariantName::LABORATORY_GREEN;
-  case WorkshopType::FORGE:
-    return FXVariantName::FORGE_ORANGE;
-  case WorkshopType::WORKSHOP:
-    return FXVariantName::WORKSHOP;
-  case WorkshopType::JEWELER:
-    return FXVariantName::JEWELER_ORANGE;
-  }
-}
-
 void Collective::onAppliedSquare(WCreature c, Position pos) {
   if (auto furniture = pos.getFurniture(FurnitureLayer::MIDDLE)) {
     // Furniture have variable usage time, so just multiply by it to be independent of changes.
@@ -1226,15 +1209,9 @@ void Collective::onAppliedSquare(WCreature c, Position pos) {
     }
     if (auto workshopType = config->getWorkshopType(furniture->getType())) {
       auto& workshop = workshops->get(*workshopType);
-      optional<FXVariantName> fxName;
-      auto& queued = workshop.getQueued();
-      if (!queued.empty()) {
-        fxName = getFX(*workshopType, queued.front());
-        if (fxName) {
-          auto def = getDef(*fxName);
-          getGame()->addEvent(EventInfo::OtherEffect{pos, def.name, def.color});
-        }
-      }
+      // TODO: FX color could be affected by item types
+      auto fxInfo = getFXInfo(*workshopType);
+      getGame()->addEvent(FXSpawnInfo{fxInfo, pos});
 
       auto& info = config->getWorkshopInfo(*workshopType);
       auto craftingSkill = c->getAttributes().getSkills().getValue(info.skill);

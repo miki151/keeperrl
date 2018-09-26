@@ -36,7 +36,6 @@
 #include "fx_renderer.h"
 #include "fx_manager.h"
 #include "fx_view_manager.h"
-#include "furniture_fx.h"
 
 using SDL::SDL_Keysym;
 using SDL::SDL_Keycode;
@@ -96,9 +95,9 @@ void MapGui::addAnimation(PAnimation animation, Vec2 pos) {
   animations.push_back({std::move(animation), pos});
 }
 
-void MapGui::addAnimation(FXName name, Vec2 pos, Vec2 targetOffset, Color color) {
+void MapGui::addAnimation(const FXSpawnInfo& spawnInfo) {
   if (fxViewManager)
-    fxViewManager->addSingleFX({name, color}, pos, targetOffset);
+    fxViewManager->addUnmanagedFX(spawnInfo);
 }
 
 optional<Vec2> MapGui::getMousePos() {
@@ -562,15 +561,6 @@ static Color getPortalColor(int index) {
   return Color(255 * (index % 2), 255 * ((index / 2) % 2), 255 * ((index / 4) % 2));
 }
 
-// TODO: better place for this code
-optional<pair<FXName, Color>> overlayFX(ViewId id) {
-  if (isOneOf(id, ViewId::GOLD_ORE, ViewId::GOLD, ViewId::THRONE, ViewId::MINION_STATUE))
-    return make_pair(FXName::GLITTERING, Color(253, 247, 172));
-  if (id == ViewId::ADAMANTIUM_ORE)
-    return make_pair(FXName::GLITTERING, Color::LIGHT_BLUE);
-  return none;
-}
-
 static double getFlyingMovement(Vec2 size, milliseconds curTimeReal) {
   double range = 0.08;
   double freq = 700;
@@ -653,10 +643,10 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
         float fxPosY = tilePos.y + move.y / (float)size.y;
 
         fxViewManager->addEntity(*genericId, fxPosX, fxPosY);
-        if (auto overlay = overlayFX(id))
-          fxViewManager->addFX(*genericId, FXDef{overlay->first, overlay->second});
+        if (auto fxInfo = getOverlayFXInfo(id))
+          fxViewManager->addFX(*genericId, *fxInfo);
         if (burningVal > 0.0f)
-          fxViewManager->addFX(*genericId, FXDef{FXName::FIRE, Color::WHITE, min(1.0f, burningVal * 0.05f)});
+          fxViewManager->addFX(*genericId, FXInfo{FXName::FIRE, Color::WHITE, min(1.0f, burningVal * 0.05f)});
         for (auto fx : object.particleEffects)
           fxViewManager->addFX(*genericId, fx);
     }

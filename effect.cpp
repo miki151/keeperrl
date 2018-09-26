@@ -101,7 +101,7 @@ static void summonFX(WCreature c) {
   auto color = Color(240, 146, 184);
   // TODO: color depending on creature type ?
 
-  c->getGame()->addEvent(EventInfo::OtherEffect{c->getPosition(), FXName::SPAWN, color});
+  c->getGame()->addEvent(FXSpawnInfo{{FXName::SPAWN, color}, c->getPosition()});
 }
 
 vector<WCreature> Effect::summon(WCreature c, CreatureId id, int num, TimeInterval ttl, TimeInterval delay) {
@@ -799,7 +799,7 @@ void applyDirected(WCreature c, Vec2 direction, const DirEffectType& type, optio
 
   if (fxesAvailable() && fx) {
     if (fx != FXName::DUMMY)
-      c->getGame()->addEvent(EventInfo::OtherEffect{begin, *fx, Color::WHITE, direction * range});
+      c->getGame()->addEvent(FXSpawnInfo{*fx, begin, direction * range});
   } else if (auto projectile = getProjectile(type))
     c->getGame()->addEvent(EventInfo::Projectile{*projectile, begin, begin.plus(direction * range)});
 

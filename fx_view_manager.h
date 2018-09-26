@@ -2,21 +2,9 @@
 
 #include "unique_entity.h"
 #include "util.h"
-#include "fx_interface.h"
-#include "fx_name.h"
+#include "fx_info.h"
 #include "color.h"
 #include <unordered_map>
-
-RICH_ENUM(FXStackId, debuff, buff, generic);
-
-struct FXDef {
-  FXName name = FXName::DUMMY;
-  Color color = Color::WHITE;
-  float strength = 0.0f;
-  FXStackId stackId = FXStackId::generic;
-};
-
-FXDef getDef(FXVariantName);
 
 // TODO: fx_interface is not really needed, all fx spawning goes through FXViewManager
 class FXViewManager {
@@ -24,20 +12,20 @@ class FXViewManager {
   void beginFrame();
   void addEntity(GenericId, float x, float y);
   // Entity identified with given id must be present!
-  void addFX(GenericId, const FXDef&);
+  void addFX(GenericId, const FXInfo&);
   void addFX(GenericId, FXVariantName);
   void finishFrame();
 
-  void addSingleFX(const FXDef&, Vec2, Vec2);
+  void addUnmanagedFX(const FXSpawnInfo&);
 
   private:
   using TypeId = variant<FXName, FXVariantName>;
-  static void updateParams(const FXDef&, FXId);
+  static void updateParams(const FXInfo&, pair<int, int>);
 
   struct EffectInfo {
     string name() const;
 
-    FXId id;
+    pair<int, int> id;
     TypeId typeId;
     FXStackId stackId;
     bool isVisible;
@@ -48,7 +36,7 @@ class FXViewManager {
     static constexpr int maxEffects = 8;
 
     void clearVisibility();
-    void addFX(GenericId, TypeId, const FXDef&);
+    void addFX(GenericId, TypeId, const FXInfo&);
     void updateFX(GenericId);
 
     float x, y;

@@ -71,7 +71,7 @@ class WindowView: public View {
   virtual bool yesOrNoPrompt(const string& message, bool defaultNo) override;
   virtual void animateObject(Vec2 begin, Vec2 end, ViewId object) override;
   virtual void animation(Vec2 pos, AnimationId, Dir orientation) override;
-  virtual void animation(FXName, Vec2 pos, Vec2, const Color&) override;
+  virtual void animation(const FXSpawnInfo&) override;
   virtual double getGameSpeed() override;
   virtual optional<int> chooseAtMouse(const vector<string>& elems) override;
 
