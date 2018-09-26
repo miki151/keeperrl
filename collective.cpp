@@ -1167,17 +1167,16 @@ void Collective::addProducesMessage(WConstCreature c, const vector<PItem>& items
 // TODO: don't assign new effect if old one is still playing
 // TODO: how FXes are going to look in fast mode ?
 static optional<FXVariantName> getFX(WorkshopType type, const WorkshopItem& item) {
-  if (type == WorkshopType::LABORATORY) {
-    if (item.type.isType<ItemType::Potion>()) {
-      if (auto eff = item.type.get()->getEffect()) {
-      }
-    }
+  switch (type) {
+  case WorkshopType::LABORATORY:
     return FXVariantName::LABORATORY_GREEN;
-  } else if (type == WorkshopType::FORGE) {
+  case WorkshopType::FORGE:
     return FXVariantName::FORGE_ORANGE;
+  case WorkshopType::WORKSHOP:
+    return FXVariantName::WORKSHOP;
+  case WorkshopType::JEWELER:
+    return none;
   }
-
-  return none;
 }
 
 void Collective::onAppliedSquare(WCreature c, Position pos) {
