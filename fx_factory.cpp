@@ -994,6 +994,33 @@ static void addForgeEffect(FXManager& mgr) {
   mgr.addDef(FXName::FORGE, psdef);
 }
 
+static void addWorkshopEffect(FXManager& mgr) {
+  EmitterDef edef;
+  edef.setStrengthSpread(50.0f, 20.0f);
+  edef.rotSpeed = 0.5f;
+  edef.frequency = 999.0f;
+  edef.source = FRect(-2.0f, -6.0f, 2.0f, -4.0f);
+
+  ParticleDef pdef;
+  pdef.life = 0.7f;
+  pdef.size = 5.0f;
+  pdef.slowdown = {{0.0f, 0.1f}, {5.0f, 1000.0f}};
+  pdef.alpha = {{0.0f, 0.6f, 1.0f}, {1.0, 1.0, 0.0}, InterpType::cosine};
+
+  FColor brown(IColor(120, 87, 46));
+  // Kiedy cząsteczki opadną pod drzewo, robią się w zasięgu cienia
+  // TODO: lepiej rysować je po prostu pod cieniem
+  pdef.color = {{0.0f, 0.3f, 0.4}, {brown.rgb(), brown.rgb(), brown.rgb() * 0.8f}};
+  pdef.textureName = TextureName::FLAKES_BORDERS;
+
+  SubSystemDef ssdef(pdef, edef, 0.0f, 0.1f);
+  ssdef.maxTotalParticles = 7;
+
+  ParticleSystemDef psdef;
+  psdef.subSystems = {ssdef};
+  mgr.addDef(FXName::WORKSHOP, psdef);
+}
+
 static void addSpiralEffects(FXManager& mgr) {
   ParticleSystemDef psdef;
   psdef.isLooped = true;
@@ -1329,6 +1356,7 @@ void FXManager::initializeDefs() {
 
   addLaboratoryEffect(*this);
   addForgeEffect(*this);
+  addWorkshopEffect(*this);
 
   addSpiralEffects(*this);
   addSpeedEffect(*this);
