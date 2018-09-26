@@ -896,7 +896,6 @@ static void addLaboratoryEffect(FXManager& mgr) {
     pdef.textureName = TextureName::CIRCULAR_STRONG;
 
     SubSystemDef ssdef(pdef, edef, 0.0f, 1.0f);
-    ssdef.layer = Layer::back;
     psdef.subSystems.emplace_back(ssdef);
   }
 
@@ -935,33 +934,30 @@ static void addLaboratoryEffect(FXManager& mgr) {
 
 static void addForgeEffect(FXManager& mgr) {
   ParticleSystemDef psdef;
-  {
+  { // Glow
+    EmitterDef edef;
+    edef.initialSpawnCount = 1.0f;
+    edef.source = FVec2(0, -6.0f);
+
+    ParticleDef pdef;
+    pdef.life = 0.3f;
+    pdef.size = 40.0f;
+    pdef.alpha = {{0.0f, 1.0f}, {0.3f, 0.0f}};
+    pdef.textureName = TextureName::CIRCULAR_STRONG;
+
+    SubSystemDef ssdef(pdef, edef, 0.0f, 1.0f);
+    psdef.subSystems.emplace_back(ssdef);
+  }
+  { // Sparks
     EmitterDef edef;
     edef.setStrengthSpread(40.0f, 20.0f);
     edef.setDirectionSpread(-fconstant::pi * 0.5f, 1.0f);
     edef.source = FRect(-4.0f, -4.0f, 4.0f, -2.0f);
-    // TODO: add saw inteprolation?
-
-    /* 
-    vector<float> keys, values;
-    for(int n = 0; n < 5; n++) {
-	  float pos = float(n) / float(5);
-	  keys.emplace_back(pos);
-	  keys.emplace_back(pos + 0.0159f);
-	  keys.emplace_back(pos + 0.016f);
-	  keys.emplace_back(pos + 0.1499f);
-	  values.emplace_back(200.0f);
-	  values.emplace_back(200.0f);
-	  values.emplace_back(0.0f);
-	  values.emplace_back(0.0f);
-    }
-    edef.frequency = {keys, values};*/
     edef.initialSpawnCount = 8.0f;
 
     ParticleDef pdef;
     pdef.life = 0.6f;
     pdef.size = 2.5f;
-    //pdef.slowdown = {{0.0f, 0.5f}, {0.0f, 5.0f}};
     pdef.alpha = {{0.0f, 0.4f, 1.0f}, {1.0, 1.0, 0.0}, InterpType::cosine};
 
     pdef.textureName = TextureName::SPARKS_LIGHT;
@@ -975,21 +971,6 @@ static void addForgeEffect(FXManager& mgr) {
     psdef.subSystems.emplace_back(ssdef);
   }
 
-  { // Glow
-    EmitterDef edef;
-    edef.initialSpawnCount = 1.0f;
-    edef.source = FVec2(0, -6.0f);
-
-    ParticleDef pdef;
-    pdef.life = 0.3f;
-    pdef.size = 40.0f;
-    pdef.alpha = {{0.0f, 1.0f}, {0.3f, 0.0f}};
-    pdef.textureName = TextureName::CIRCULAR_STRONG;
-
-    SubSystemDef ssdef(pdef, edef, 0.0f, 1.0f);
-    ssdef.layer = Layer::back;
-    psdef.subSystems.emplace_back(ssdef);
-  }
 
   mgr.addDef(FXName::FORGE, psdef);
 }
