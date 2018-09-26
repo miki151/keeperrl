@@ -18,18 +18,21 @@ struct FXDef {
 
 FXDef getDef(FXVariantName);
 
+// TODO: fx_interface is not really needed, all fx spawning goes through FXViewManager
 class FXViewManager {
   public:
   void beginFrame();
   void addEntity(GenericId, float x, float y);
-
   // Entity identified with given id must be present!
   void addFX(GenericId, const FXDef&);
   void addFX(GenericId, FXVariantName);
   void finishFrame();
 
+  void addSingleFX(const FXDef&, Vec2, Vec2);
+
   private:
   using TypeId = variant<FXName, FXVariantName>;
+  static void updateParams(const FXDef&, FXId);
 
   struct EffectInfo {
     string name() const;
@@ -47,7 +50,6 @@ class FXViewManager {
     void clearVisibility();
     void addFX(GenericId, TypeId, const FXDef&);
     void updateFX(GenericId);
-    void updateParams(const FXDef&, FXId);
 
     float x, y;
     EffectInfo effects[maxEffects];
