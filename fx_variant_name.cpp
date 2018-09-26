@@ -43,5 +43,7 @@ FXDef getDef(FXVariantName var) {
       return {FXName::LABORATORY, Color::RED};
     case Name::LABORATORY_BLACK:
       return {FXName::LABORATORY, Color::BLACK};
+    case Name::FORGE_ORANGE:
+      return {FXName::FORGE, Color(252, 142, 30)};
   }
 }
