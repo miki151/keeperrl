@@ -882,25 +882,52 @@ static void addBlindEffect(FXManager &mgr) {
 }
 
 static void addLaboratoryEffect(FXManager& mgr) {
-  EmitterDef edef;
-  edef.strength = 8.0f;
-  edef.setDirectionSpread(-fconstant::pi * 0.5f, 0.5f);
-  edef.frequency = 8.0f;
-  edef.source = FRect(-4.0f, -8.0f, 4.0f, -6.0f);
-
-  ParticleDef pdef;
-  pdef.life = 2.0f;
-  pdef.size = {{12.0f, 12.0f, 30.0f}};
-  pdef.alpha = {{0.0f, 0.2f, 0.6f, 1.0f}, {0.0, 0.5f, 0.2, 0.0}, InterpType::cosine};
-  pdef.textureName = TextureName::FLAKES_BORDERS;
-
-  SubSystemDef ssdef(pdef, edef, 0.0f, 5.0f);
-  ssdef.emitFunc = [](AnimationContext &ctx, EmissionState &em, Particle &pinst) {
-    defaultEmitParticle(ctx, em, pinst);
-  };
-
   ParticleSystemDef psdef;
-  psdef.subSystems = {ssdef};
+
+  { // Glow
+    EmitterDef edef;
+    edef.initialSpawnCount = 1.0f;
+    edef.source = FVec2(0, -6.0f);
+
+    ParticleDef pdef;
+    pdef.life = 6.5f;
+    pdef.size = 40.0f;
+    pdef.alpha = {{0.0f, 0.3f, 0.7f, 1.0f}, {0.0f, 0.25f, 0.25f, 0.0f}};
+    pdef.textureName = TextureName::CIRCULAR_STRONG;
+
+    SubSystemDef ssdef(pdef, edef, 0.0f, 1.0f);
+    ssdef.layer = Layer::back;
+    psdef.subSystems.emplace_back(ssdef);
+  }
+
+  { // Smoke & bubbles
+    EmitterDef edef;
+    edef.strength = 8.0f;
+    edef.setDirectionSpread(-fconstant::pi * 0.5f, 0.5f);
+    edef.frequency = 4.0f;
+    edef.source = FRect(-3.0f, -9.0f, 3.0f, -5.0f);
+
+    ParticleDef pdef;
+    pdef.life = 2.5f;
+    pdef.size = {{12.0f, 12.0f, 30.0f}};
+    pdef.alpha = {{0.0f, 0.2f, 0.6f, 1.0f}, {0.0, 0.5f, 0.2, 0.0}, InterpType::cosine};
+    pdef.color = FVec3(0.5);
+    pdef.textureName = TextureName::FLAKES_BORDERS;
+
+    SubSystemDef ssdef(pdef, edef, 0.0f, 5.0f);
+    ssdef.emitFunc = [](AnimationContext& ctx, EmissionState& em, Particle& pinst) {
+      defaultEmitParticle(ctx, em, pinst);
+    };
+
+    psdef.subSystems.emplace_back(ssdef);
+
+    ssdef.particle.alpha = {{0.0f, 0.2f, 0.6f, 1.0f}, {0.0, 1.0f, 0.5, 0.0}, InterpType::cosine};
+    ssdef.particle.textureName = TextureName::BUBBLES;
+    ssdef.particle.size = {{5.0f, 10.0f, 12.0f}};
+    ssdef.particle.color = FVec3(1.0);
+    ssdef.emitter.frequency = 12.0f;
+    psdef.subSystems.emplace_back(ssdef);
+  }
 
   mgr.addDef(FXName::LABORATORY, psdef);
   mgr.genSnapshots(FXName::LABORATORY, {2.0f, 2.2f, 2.4f, 2.6f, 2.8f});
