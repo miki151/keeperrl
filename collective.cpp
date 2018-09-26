@@ -1175,7 +1175,7 @@ static optional<FXVariantName> getFX(WorkshopType type, const WorkshopItem& item
   case WorkshopType::WORKSHOP:
     return FXVariantName::WORKSHOP;
   case WorkshopType::JEWELER:
-    return none;
+    return FXVariantName::JEWELER_ORANGE;
   }
 }
 

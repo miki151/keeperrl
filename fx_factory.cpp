@@ -1021,6 +1021,58 @@ static void addWorkshopEffect(FXManager& mgr) {
   mgr.addDef(FXName::WORKSHOP, psdef);
 }
 
+static void addJewelerEffect(FXManager& mgr) {
+  ParticleSystemDef psdef;
+  { // Sparks
+    EmitterDef edef;
+    edef.strength = 0.0f;
+    edef.frequency = 2.0f;
+    edef.source = FRect(-8, -11, 8, -3);
+
+    ParticleDef pdef;
+    pdef.life = 0.5f;
+    pdef.size = 3.5f;
+    pdef.alpha = {{0.0f, 0.3f, 0.8f, 1.0f}, {0.0f, 1.0, 0.7, 0.0}, InterpType::cosine};
+    pdef.textureName = TextureName::SPARKS_LIGHT;
+
+    SubSystemDef ssdef(pdef, edef, 0.0f, 1.5f);
+
+    ssdef.emitFunc = [](AnimationContext& ctx, EmissionState& em, Particle& pinst) {
+      defaultEmitParticle(ctx, em, pinst);
+      pinst.rotSpeed = 1.5f;
+      float rand = ctx.uniform(0.0f, 0.5f);
+      if (rand > 0.47f)
+        rand += ctx.uniform(0.0f, 0.4f);
+      em.animationVars[0] += rand * rand * rand;
+    };
+    psdef.subSystems.emplace_back(ssdef);
+  }
+
+  { // Glow
+    EmitterDef edef;
+    edef.source = FVec2(0, -6.0f);
+    edef.frequency = 2.0f;
+
+    ParticleDef pdef;
+    pdef.life = 0.5f;
+    pdef.size = 32.0f;
+    pdef.alpha = {{0.0f, 0.5f, 1.0f}, {0.0f, 0.4f, 0.0f}};
+    pdef.textureName = TextureName::CIRCULAR;
+
+    SubSystemDef ssdef(pdef, edef, 0.0f, 1.5f);
+    ssdef.layer = Layer::back;
+    ssdef.emitFunc = [](AnimationContext& ctx, EmissionState& em, Particle& pinst) {
+      defaultEmitParticle(ctx, em, pinst);
+      auto& sparks = ctx.ps.subSystems[0].particles;
+      if (!sparks.empty())
+        pinst.pos = sparks.front().pos;
+    };
+    psdef.subSystems.emplace_back(ssdef);
+  }
+
+  mgr.addDef(FXName::JEWELER, psdef);
+}
+
 static void addSpiralEffects(FXManager& mgr) {
   ParticleSystemDef psdef;
   psdef.isLooped = true;
@@ -1357,6 +1409,7 @@ void FXManager::initializeDefs() {
   addLaboratoryEffect(*this);
   addForgeEffect(*this);
   addWorkshopEffect(*this);
+  addJewelerEffect(*this);
 
   addSpiralEffects(*this);
   addSpeedEffect(*this);
