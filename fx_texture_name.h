@@ -26,5 +26,6 @@ RICH_ENUM(fx::TextureName,
   FLAMES,
   FLAMES_BLURRED,
   BLAST,
+  BUBBLES,
   SPECIAL
 );
