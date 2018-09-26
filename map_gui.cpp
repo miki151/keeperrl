@@ -35,7 +35,6 @@
 
 #include "fx_renderer.h"
 #include "fx_manager.h"
-#include "fx_interface.h"
 #include "fx_view_manager.h"
 #include "furniture_fx.h"
 
@@ -98,9 +97,8 @@ void MapGui::addAnimation(PAnimation animation, Vec2 pos) {
 }
 
 void MapGui::addAnimation(FXName name, Vec2 pos, Vec2 targetOffset, Color color) {
-  auto id = fx::spawnEffect(name, pos.x, pos.y, targetOffset);
-  if (!(color == Color::WHITE))
-    fx::setColor(id, color);
+  if (fxViewManager)
+    fxViewManager->addSingleFX({name, color}, pos, targetOffset);
 }
 
 optional<Vec2> MapGui::getMousePos() {

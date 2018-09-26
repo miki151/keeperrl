@@ -41,7 +41,7 @@ void FXViewManager::EntityInfo::addFX(GenericId id, TypeId typeId, const FXDef& 
   }
 }
 
-void FXViewManager::EntityInfo::updateParams(const FXDef& def, FXId id) {
+void FXViewManager::updateParams(const FXDef& def, FXId id) {
   if (!(def.color == Color::WHITE))
     fx::setColor(id, def.color);
   if (def.strength != 0.0f)
@@ -139,4 +139,9 @@ void FXViewManager::finishFrame() {
     }
     it = next;
   }
+}
+
+void FXViewManager::addSingleFX(const FXDef& def, Vec2 pos, Vec2 targetOffset) {
+  auto id = fx::spawnEffect(def.name, pos.x, pos.y, targetOffset);
+  updateParams(def, id);
 }
