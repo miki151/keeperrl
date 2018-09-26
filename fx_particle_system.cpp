@@ -165,6 +165,12 @@ array<FVec2, 4> DrawContext::texQuadCorners(SVec2 texTile) const {
   return tex_rect.corners();
 }
 
+array<FVec2, 4> DrawContext::texQuadCorners(SVec2 texTile, FVec2 customInvTexTile) const {
+  FRect tex_rect(FVec2(1));
+  tex_rect = (tex_rect + FVec2(texTile)) * customInvTexTile;
+  return tex_rect.corners();
+}
+
 void defaultDrawParticle(DrawContext &ctx, const Particle &pinst, DrawParticle &out) {
   float ptime = pinst.particleTime();
   const auto &pdef = ctx.pdef;
@@ -187,8 +193,10 @@ SubSystemContext::SubSystemContext(const ParticleSystem& ps, const ParticleSyste
     : ps(ps), ss(ps.subSystems[ssid]), psdef(psdef), ssdef(psdef[ssid]), pdef(pdef), edef(edef), tdef(tdef),
       ssid(ssid) {}
 
-AnimationContext::AnimationContext(const SubSystemContext &ssctx, float animTime, float timeDelta)
-    : SubSystemContext(ssctx), animTime(animTime), timeDelta(timeDelta), invTimeDelta(1.0f / timeDelta) {}
+AnimationContext::AnimationContext(const SubSystemContext& ssctx, double globalTime, float animTime, float timeDelta)
+    : SubSystemContext(ssctx), globalTime(globalTime), animTime(animTime), timeDelta(timeDelta),
+      invTimeDelta(1.0f / timeDelta) {
+}
 
 DrawContext::DrawContext(const SubSystemContext &ssctx, FVec2 invTexTile)
     : SubSystemContext(ssctx), invTexTile(invTexTile) {}

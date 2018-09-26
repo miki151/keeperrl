@@ -37,7 +37,7 @@ class Position {
   string getName() const;
   Position withCoord(Vec2 newCoord) const;
   Vec2 getCoord() const;
-  WLevel getLevel() const;
+  Level* getLevel() const;
   optional<StairKey> getLandingLink() const;
  
   bool isValid() const;
@@ -114,7 +114,7 @@ class Position {
   void updateMovementDueToFire() const;
   vector<WCreature> getAllCreatures(int range) const;
   void moveCreature(Vec2 direction);
-  void moveCreature(Position);
+  void moveCreature(Position, bool teleportEffect = false);
   bool canMoveCreature(Vec2 direction) const;
   bool canMoveCreature(Position) const;
   void swapCreatures(WCreature);

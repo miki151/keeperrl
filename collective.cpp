@@ -51,7 +51,8 @@
 #include "workshop_item.h"
 #include "quarters.h"
 #include "position_matching.h"
-
+#include "fx_variant_name.h"
+#include "fx_view_manager.h"
 
 template <class Archive>
 void Collective::serialize(Archive& ar, const unsigned int version) {
@@ -988,7 +989,7 @@ void Collective::handleTrapPlacementAndProduction() {
       if (!items.empty()) {
         Position pos = items.back().second;
         auto item = items.back().first;
-        auto task = taskMap->addTask(Task::chain(Task::pickItem(pos, {item}), Task::applyItem(this, trapPos, {item})), pos,
+        auto task = taskMap->addTask(Task::chain(Task::pickUpItem(pos, {item}), Task::applyItem(this, trapPos, {item})), pos,
             MinionActivity::CONSTRUCTION);
         markItem(items.back().first, task);
         items.pop_back();
@@ -1099,7 +1100,7 @@ void Collective::fetchItems(Position pos, const ItemFetchInfo& elem) {
     const auto& destination = elem.destinationFun(this);
     if (!destination.empty()) {
       warnings->setWarning(elem.warning, false);
-      auto task = taskMap->addTask(Task::pickItem(pos, equipment), pos, MinionActivity::HAULING);
+      auto task = taskMap->addTask(Task::pickUpItem(pos, equipment), pos, MinionActivity::HAULING);
       for (WItem it : equipment)
         markItem(it, task);
       auto destinationVec = vector<Position>(destination.begin(), destination.end());
@@ -1118,7 +1119,7 @@ void Collective::handleSurprise(Position pos) {
       if (hasTrait(other, MinionTrait::FIGHTER) && other->getPosition().dist8(pos) > 1) {
         for (Position dest : pos.neighbors8(Random))
           if (other->getPosition().canMoveCreature(dest)) {
-            other->getPosition().moveCreature(dest);
+            other->getPosition().moveCreature(dest, true);
             break;
           }
       }
@@ -1159,6 +1160,23 @@ void Collective::addProducesMessage(WConstCreature c, const vector<PItem>& items
         + " " + items[0]->getName(true));
   else
     control->addMessage(c->getName().a() + " produces " + items[0]->getAName());
+}
+
+// TODO: better place to store information about FX colors
+// TODO: add more effects for workshops and more colors for different item types
+// TODO: don't assign new effect if old one is still playing
+// TODO: how FXes are going to look in fast mode ?
+static optional<FXVariantName> getFX(WorkshopType type, const WorkshopItem& item) {
+  switch (type) {
+  case WorkshopType::LABORATORY:
+    return FXVariantName::LABORATORY_GREEN;
+  case WorkshopType::FORGE:
+    return FXVariantName::FORGE_ORANGE;
+  case WorkshopType::WORKSHOP:
+    return FXVariantName::WORKSHOP;
+  case WorkshopType::JEWELER:
+    return FXVariantName::JEWELER_ORANGE;
+  }
 }
 
 void Collective::onAppliedSquare(WCreature c, Position pos) {
@@ -1207,9 +1225,20 @@ void Collective::onAppliedSquare(WCreature c, Position pos) {
       }
     }
     if (auto workshopType = config->getWorkshopType(furniture->getType())) {
+      auto& workshop = workshops->get(*workshopType);
+      optional<FXVariantName> fxName;
+      auto& queued = workshop.getQueued();
+      if (!queued.empty()) {
+        fxName = getFX(*workshopType, queued.front());
+        if (fxName) {
+          auto def = getDef(*fxName);
+          getGame()->addEvent(EventInfo::OtherEffect{pos, def.name, def.color});
+        }
+      }
+
       auto& info = config->getWorkshopInfo(*workshopType);
       auto craftingSkill = c->getAttributes().getSkills().getValue(info.skill);
-      vector<PItem> items = workshops->get(*workshopType).addWork(efficiency * craftingSkill);
+      vector<PItem> items = workshop.addWork(efficiency * craftingSkill);
       if (!items.empty()) {
         if (items[0]->getClass() == ItemClass::WEAPON)
           getGame()->getStatistics().add(StatId::WEAPON_PRODUCED);

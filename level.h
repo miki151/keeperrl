@@ -78,6 +78,8 @@ class Level : public OwnedObject<Level> {
   bool landCreature(vector<Position> landing, PCreature);
   bool landCreature(vector<Position> landing, WCreature);
 
+  optional<Position> getClosestLanding(vector<Position> landing, WCreature) const;
+
   /** Returns the landing squares for given direction and stair key. See Square::getLandingLink() */
   vector<Position> getLandingSquares(StairKey) const;
   Position getLandingSquare(StairKey, Vec2 travelDir) const;
@@ -220,8 +222,7 @@ class Level : public OwnedObject<Level> {
   public:
   Level(Private, SquareArray, FurnitureArray, WModel, const string& name, Table<double> sunlight, LevelId, Table<bool> cover);
 
-
-  private:
+    private:
   void addLightSource(Vec2 pos, double radius, int numLight);
   void addDarknessSource(Vec2 pos, double radius, int numLight);
   FieldOfView& getFieldOfView(VisionId vision) const;

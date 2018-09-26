@@ -35,7 +35,6 @@
 
 #include "fx_renderer.h"
 #include "fx_manager.h"
-#include "fx_interface.h"
 #include "fx_view_manager.h"
 #include "furniture_fx.h"
 
@@ -98,9 +97,8 @@ void MapGui::addAnimation(PAnimation animation, Vec2 pos) {
 }
 
 void MapGui::addAnimation(FXName name, Vec2 pos, Vec2 targetOffset, Color color) {
-  auto id = fx::spawnEffect(name, pos.x, pos.y, targetOffset);
-  if (!(color == Color::WHITE))
-    fx::setColor(id, color);
+  if (fxViewManager)
+    fxViewManager->addSingleFX({name, color}, pos, targetOffset);
 }
 
 optional<Vec2> MapGui::getMousePos() {
@@ -469,7 +467,8 @@ Vec2 MapGui::getMovementOffset(const ViewObject& object, Vec2 size, double time,
     INFO << "Anim time b: " << movementInfo.tBegin << " e: " << movementInfo.tEnd << " t: " << time;
   } else
     return Vec2(0, 0);
-  double vertical = verticalMovement ? getJumpOffset(object, state) : 0;
+  double vertical = (verticalMovement && !object.hasModifier(ViewObject::Modifier::FLYING))
+      ? getJumpOffset(object, state) : 0;
   if (dir.length8() == 1) {
     if (movementInfo.victim && state >= 0.5 && state < 1.0)
       woundedInfo.getOrInit(*movementInfo.victim) = curTimeReal;
@@ -571,6 +570,12 @@ optional<pair<FXName, Color>> overlayFX(ViewId id) {
   return none;
 }
 
+static double getFlyingMovement(Vec2 size, milliseconds curTimeReal) {
+  double range = 0.08;
+  double freq = 700;
+  return -range * size.y * (3 + (sin(3.1415 / freq * curTimeReal.count()) + 1) / 2);
+}
+
 void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& object, Vec2 size, Vec2 movement,
     Vec2 tilePos, milliseconds curTimeReal) {
   PROFILE;
@@ -607,7 +612,8 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
       move.y = -4 * size.y / Renderer::nominalSize;
     renderer.drawTile(pos, tile.getBackgroundCoord(), size, color);
     move += movement;
-
+    if (object.hasModifier(ViewObject::Modifier::FLYING))
+      move.y += getFlyingMovement(size, curTimeReal);
     if (mirrorSprite(id))
       renderer.drawTile(pos + move, tile.getSpriteCoord(dirs), size, color,
           Renderer::SpriteOrientation((bool) (tilePos.getHash() % 2), (bool) (tilePos.getHash() % 4 > 1)));
@@ -651,7 +657,7 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
         if (burningVal > 0.0f)
           fxViewManager->addFX(*genericId, FXDef{FXName::FIRE, Color::WHITE, min(1.0f, burningVal * 0.05f)});
         for (auto fx : object.particleEffects)
-          fxViewManager->addFX(*genericId, FXDef{fx});
+          fxViewManager->addFX(*genericId, fx);
     }
   } else {
     Vec2 tilePos = pos + movement + Vec2(size.x / 2, -3);
@@ -978,9 +984,12 @@ void MapGui::renderMapObjects(Renderer& renderer, Vec2 size, milliseconds curren
         renderExtraBorders(renderer, currentTimeReal);
       if (layer == ViewLayer::FLOOR_BACKGROUND)
         renderHighlights(renderer, size, currentTimeReal, true);
+      if (layer == ViewLayer::FLOOR && fxViewManager)
+        drawFX(renderer, false);
       if (!spriteMode)
         break;
     }
+
   for (ViewLayer layer : layout->getLayers())
     if ((int)layer >= (int)ViewLayer::CREATURE) {
       for (Vec2 wpos : allTiles) {
@@ -1006,11 +1015,7 @@ void MapGui::renderMapObjects(Renderer& renderer, Vec2 size, milliseconds curren
 
   if (fxViewManager) {
     fxViewManager->finishFrame();
-    renderer.flushSprites();
-    float zoom = float(layout->getSquareSize().x) / float(Renderer::nominalSize);
-    auto offset = projectOnScreen(Vec2(0, 0));
-    auto size = renderer.getSize();
-    fx::FXRenderer::getInstance()->draw(zoom, offset.x, offset.y, size.x, size.y);
+    drawFX(renderer, true);
   }
 
   renderHighlights(renderer, size, currentTimeReal, false);
@@ -1098,9 +1103,18 @@ void MapGui::considerScrollingToCreature() {
   }
 }
 
+void MapGui::drawFX(Renderer& renderer, bool front_layer) {
+  renderer.flushSprites();
+  float zoom = float(layout->getSquareSize().x) / float(Renderer::nominalSize);
+  auto offset = projectOnScreen(Vec2(0, 0));
+  auto size = renderer.getSize();
+  auto layer = front_layer ? fx::Layer::front : fx::Layer::back;
+  fx::FXRenderer::getInstance()->draw(zoom, offset.x, offset.y, size.x, size.y, layer);
+}
+
 void MapGui::updateFX(milliseconds currentTimeReal) {
   if (auto *inst = fx::FXManager::getInstance())
-    inst->simulateStableTime(double(currentTimeReal.count()) * 0.001);
+    inst->simulateStableTime(double(currentTimeReal.count()) * 0.001, 60, 60);
 /* // Advanced FX time control (to be reviewed before use)
 if (auto* inst = fx::FXManager::getInstance()) {
   // FXes animation speed depends on game speed in real-time mode

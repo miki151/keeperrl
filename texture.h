@@ -52,6 +52,10 @@ class Texture {
   static SDL::SDL_Surface* createSurface(int w, int h);
   static SDL::SDL_Surface* createPowerOfTwoSurface(SDL::SDL_Surface*);
 
+  enum class Filter { nearest, linear };
+  enum class Wrapping { repeat, clamp };
+  void setParams(Filter, Wrapping);
+
   private:
   void addTexCoord(int x, int y) const;
 

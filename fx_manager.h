@@ -21,11 +21,11 @@ public:
   static FXManager *getInstance();
 
   // TODO: make sure that it works correctly with animation slowdown or pause
-  void simulateStableTime(double time, int desiredFps = 60);
+  void simulateStableTime(double time, int visibleFps = 60, int simulateFps = 60);
 
   // Animations will look correct even when FPS is low
   // The downside is that more simulation steps are required
-  void simulateStable(double timeDelta, int desiredFps = 60);
+  void simulateStable(double timeDelta, int visibleFps = 60, int simulateFps = 60);
   void simulate(float timeDelta);
 
   const auto& getTextureDefs() const { return textureDefs; }
@@ -49,7 +49,7 @@ public:
   const auto& getSystems() const { return systems; }
   auto& getSystems() { return systems; }
 
-  vector<DrawParticle> genQuads();
+  vector<DrawParticle> genQuads(optional<Layer> = none);
 
   using Snapshot = vector<ParticleSystem::SubSystem>;
   struct SnapshotGroup {
@@ -84,5 +84,6 @@ public:
   uint spawnClock = 1;
   double accumFrameTime = 0.0f;
   double oldTime = -1.0;
+  double globalSimTime = 0.0;
 };
 }

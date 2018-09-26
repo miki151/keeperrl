@@ -53,6 +53,7 @@
 #include "profiler.h"
 #include "furniture_type.h"
 #include "furniture_usage.h"
+#include "fx_name.h"
 
 template <class Archive>
 void Creature::serialize(Archive& ar, const unsigned int version) {
@@ -78,7 +79,7 @@ Creature::Creature(const ViewObject& object, TribeId t, CreatureAttributes attr)
     obj->setGenericId(getUniqueId().getGenericId());
     obj->setModifier(ViewObject::Modifier::CREATURE);
   }
-  updateLastingFX(modViewObject());
+  updateViewObject();
 }
 
 Creature::Creature(TribeId t, CreatureAttributes attr)
@@ -177,13 +178,13 @@ void Creature::updateLastingFX(ViewObject& object) {
   object.particleEffects.clear();
   for (auto effect : ENUM_ALL(LastingEffect))
     if (isAffected(effect))
-      if (auto fx = LastingEffects::getFXName(effect))
+      if (auto fx = LastingEffects::getFX(effect))
         object.particleEffects.insert(*fx);
 
   // TODO: better way to do this? Replace view_id with FX in map_gui ?
   if (object.id() == ViewId::FIRE_SPHERE && fxesAvailable()) {
     object.setModifier(ViewObject::Modifier::HIDDEN);
-    object.particleEffects.insert(FXName::FIRE_SPHERE);
+    object.particleEffects.insert(FXVariantName::FIRE_SPHERE);
   }
 }
 
@@ -674,8 +675,10 @@ CreatureAction Creature::unequip(WItem item) const {
 CreatureAction Creature::push(WCreature other) {
   Vec2 goDir = position.getDir(other->position);
   if (!goDir.isCardinal4() || !other->position.plus(goDir).canEnter(
-      other->getMovementType()) || !getBody().canPush(other->getBody()))
+      other->getMovementType()))
     return CreatureAction("You can't push " + other->getName().the());
+  if (!getBody().canPush(other->getBody()))
+    return CreatureAction("You are too small to push " + other->getName().the());
   return CreatureAction(this, [=](WCreature self) {
     other->displace(goDir);
     if (auto m = self->move(goDir))
@@ -1135,6 +1138,7 @@ void Creature::updateViewObject() {
   object.setAttribute(ViewObject::Attribute::MORALE, getMorale());
   object.setModifier(ViewObject::Modifier::DRAW_MORALE);
   object.setModifier(ViewObject::Modifier::STUNNED, isAffected(LastingEffect::STUNNED));
+  object.setModifier(ViewObject::Modifier::FLYING, isAffected(LastingEffect::FLYING));
   object.getCreatureStatus() = getStatus();
   object.setGoodAdjectives(combine(extractNames(getGoodAdjectives()), true));
   object.setBadAdjectives(combine(extractNames(getBadAdjectives()), true));
@@ -1398,10 +1402,10 @@ void Creature::addMovementInfo(MovementInfo info) {
   // We're assuming here that position has already been updated
   Position oldPos = position.minus(info.direction);
   if (auto ground = oldPos.getFurniture(FurnitureLayer::GROUND))
-    if(!oldPos.getFurniture(FurnitureLayer::MIDDLE))
+    if (!oldPos.getFurniture(FurnitureLayer::MIDDLE))
       ground->onCreatureWalkedOver(oldPos, info.direction);
   if (auto ground = position.getFurniture(FurnitureLayer::GROUND))
-    if(!oldPos.getFurniture(FurnitureLayer::MIDDLE))
+    if (!position.getFurniture(FurnitureLayer::MIDDLE))
       ground->onCreatureWalkedInto(position, info.direction);
 }
 

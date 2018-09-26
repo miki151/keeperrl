@@ -36,7 +36,7 @@ optional<Info> tryDestroyFXInfo(Type type) {
 optional<Info> walkIntoFXInfo(Type type) {
   if (isOneOf(type, Type::WATER, Type::SHALLOW_WATER1, Type::SHALLOW_WATER2))
     // TODO: color should depend on depth ?
-    return Info{FXName::WATER_SPLASH, Color(102, 178, 255)};
+    return Info{FXName::WATER_SPLASH, Color(82, 148, 225)};
   return none;
 }
 

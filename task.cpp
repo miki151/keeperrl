@@ -221,7 +221,7 @@ PTask Task::destruction(WTaskCallback c, Position target, WConstFurniture furnit
 }
 
 PTask Task::bringItem(Position position, vector<WItem> items, const PositionSet& target) {
-  return chain(Task::pickItem(position, items), dropItems(items, vector<Position>(target.begin(), target.end())));
+  return chain(Task::pickUpItem(position, items), dropItems(items, vector<Position>(target.begin(), target.end())));
 }
 
 namespace {
@@ -305,7 +305,7 @@ class PickItem : public Task {
 };
 }
 
-PTask Task::pickItem(Position position, vector<WItem> items) {
+PTask Task::pickUpItem(Position position, vector<WItem> items) {
   return makeOwner<PickItem>(position, items);
 }
 
@@ -341,7 +341,7 @@ class EquipItem : public Task {
 }
 
 PTask Task::pickAndEquipItem(Position position, WItem item) {
-  return chain(pickItem(position, {item}), equipItem(item));
+  return chain(pickUpItem(position, {item}), equipItem(item));
 }
 
 PTask Task::equipItem(WItem item) {
@@ -854,7 +854,7 @@ PTask Task::stealFrom(WCollective collective) {
   for (Position pos : collective->getConstructions().getBuiltPositions(FurnitureType::TREASURE_CHEST)) {
     vector<WItem> gold = pos.getItems().filter(Item::classPredicate(ItemClass::GOLD));
     if (!gold.empty())
-      tasks.push_back(pickItem(pos, gold));
+      tasks.push_back(pickUpItem(pos, gold));
   }
   if (!tasks.empty())
     return chain(std::move(tasks));

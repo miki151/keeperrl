@@ -7,7 +7,7 @@
 #include "body.h"
 #include "furniture.h"
 #include "level.h"
-#include "fx_name.h"
+#include "fx_variant_name.h"
 
 static optional<LastingEffect> getCancelledOneWay(LastingEffect effect) {
   switch (effect) {
@@ -335,7 +335,7 @@ void LastingEffects::onTimedOut(WCreature c, LastingEffect effect, bool msg) {
 
 static const int attrBonus = 3;
 
-int LastingEffects::getAttrBonus(WConstCreature c, AttrType type) {
+int LastingEffects::getAttrBonus(const Creature* c, AttrType type) {
   int value = 0;
   switch (type) {
     case AttrType::DAMAGE:
@@ -719,7 +719,7 @@ int LastingEffects::getPrice(LastingEffect e) {
   }
 }
 
-double LastingEffects::getMoraleIncrease(WConstCreature c) {
+double LastingEffects::getMoraleIncrease(const Creature* c) {
   PROFILE;
   double ret = 0;
   if (c->isAffected(LastingEffect::RESTED))
@@ -752,22 +752,29 @@ bool LastingEffects::canConsume(LastingEffect effect) {
   }
 }
 
-optional<FXName> LastingEffects::getFXName(LastingEffect effect) {
+optional<FXVariantName> LastingEffects::getFX(LastingEffect effect) {
   switch (effect) {
-    case LastingEffect::PEACEFULNESS:
-      return FXName::PEACEFULNESS;
     case LastingEffect::SLEEP:
-      return FXName::SLEEP;
-    case LastingEffect::BLIND:
-      return FXName::BLIND;
-    case LastingEffect::INSANITY:
-      return FXName::INSANITY;
+      return FXVariantName::SLEEP;
     case LastingEffect::SPEED:
-      return FXName::SPEED;
+      return FXVariantName::SPEED;
     case LastingEffect::SLOWED:
-      return FXName::SLOW2;
-    case LastingEffect::FLYING:
-      return FXName::FLYING2;
+      return FXVariantName::DEBUFF_GRAY;
+    case LastingEffect::POISON:
+      return FXVariantName::DEBUFF_GREEN;
+    case LastingEffect::INSANITY:
+      return FXVariantName::DEBUFF_PINK;
+    case LastingEffect::BLIND:
+      return FXVariantName::DEBUFF_BLACK;
+    case LastingEffect::BLEEDING:
+      return FXVariantName::DEBUFF_RED;
+    case LastingEffect::MAGIC_VULNERABILITY:
+    case LastingEffect::MELEE_VULNERABILITY:
+    case LastingEffect::RANGED_VULNERABILITY:
+      return FXVariantName::DEBUFF_ORANGE;
+    case LastingEffect::TIED_UP:
+    case LastingEffect::ENTANGLED:
+      return FXVariantName::DEBUFF_WHITE;
     default:
       return none;
   }

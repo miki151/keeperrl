@@ -42,6 +42,7 @@ FXRenderer::FXRenderer(DirectoryPath dataPath, FXManager& mgr) : mgr(mgr) {
     if (id == -1) {
       id = textures.size();
       textures.emplace_back(path);
+      textures.back().setParams(Texture::Filter::linear, Texture::Wrapping::clamp);
       auto tsize = textures.back().getSize(), rsize = textures.back().getRealSize();
       FVec2 scale(float(tsize.x) / float(rsize.x), float(tsize.y) / float(rsize.y));
       textureScales.emplace_back(scale);
@@ -91,14 +92,17 @@ IRect FXRenderer::visibleTiles(const View& view) {
   return IRect(iTopLeft - IVec2(1, 1), iTopLeft + iSize + IVec2(1, 1));
 }
 
-void FXRenderer::draw(float zoom, float offsetX, float offsetY, int w, int h) {
+void FXRenderer::draw(float zoom, float offsetX, float offsetY, int w, int h, optional<Layer> layer) {
   CHECK_OPENGL_ERROR();
   View view{zoom, {offsetX, offsetY}, {w, h}};
 
   auto fboView = visibleTiles(view);
   auto fboScreenSize = fboView.size() * nominalSize;
 
-  drawBuffers->fill(mgr.genQuads());
+  drawBuffers->fill(mgr.genQuads(layer));
+  if (drawBuffers->empty())
+    return;
+
   applyTexScale();
 
   if (useFramebuffer)

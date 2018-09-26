@@ -66,7 +66,7 @@ class Task : public UniqueEntity<Task>, public OwnedObject<Task> {
   static PTask archeryRange(WTaskCallback, vector<Position>);
   static PTask pickAndEquipItem(Position, WItem item);
   static PTask equipItem(WItem);
-  static PTask pickItem(Position, vector<WItem>);
+  static PTask pickUpItem(Position, vector<WItem>);
   static PTask kill(WTaskCallback, WCreature);
   static PTask torture(WTaskCallback, WCreature);
   static PTask sacrifice(WTaskCallback, WCreature);

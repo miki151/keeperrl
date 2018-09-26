@@ -326,44 +326,7 @@ static void addCircularBlast(FXManager& mgr) {
   mgr.addDef(FXName::CIRCULAR_BLAST, psdef);
 }
 
-static void addAirBlast(FXManager &mgr) {
-  EmitterDef edef;
-  edef.frequency = 30.0f;
-  edef.setDirectionSpread(0.0f, 0.1f);
-  edef.setStrengthSpread(133.0f, 10.0f);
-  edef.source = FRect(-4, -4, 4, 4);
-
-  ParticleDef pdef;
-  pdef.life = 0.2f;
-  pdef.size = 24.0f;
-  pdef.alpha = {{0.0f, 0.1f, 0.6f, 1.0f}, {0.0f, 0.5f, 0.5f, 0.0f}, InterpType::cosine};
-  pdef.textureName = TextureName::AIR_BLAST;
-
-  SubSystemDef ssdef(pdef, edef, 0.0f, 0.1f);
-  ssdef.maxActiveParticles = 20;
-  ssdef.emitFunc = [](AnimationContext& ctx, EmissionState& em, Particle& pinst) {
-    defaultEmitParticle(ctx, em, pinst);
-    float speed = sqrtf(ctx.ps.targetTileDist);
-    float angle = ctx.ps.targetDirAngle;
-    pinst.movement = rotateVector(pinst.movement, angle) * speed;
-    pinst.pos = rotateVector(pinst.pos, angle);
-    pinst.rot = ctx.uniform(-0.1f, 0.1f) + angle;
-    pinst.maxLife *= max(0.1f, speed);
-  };
-
-  ssdef.drawFunc = [](DrawContext& ctx, const Particle& pinst, DrawParticle& out) {
-    defaultDrawParticle(ctx, pinst, out);
-    float maxAlpha = clamp(pinst.life * 10.0f - 0.2f, 0.0f, 1.0f);
-    out.color.a = (unsigned char)(out.color.a * maxAlpha);
-  };
-
-  ParticleSystemDef psdef;
-  psdef.subSystems = {ssdef};
-
-  mgr.addDef(FXName::AIR_BLAST, psdef);
-}
-
-static void addAirBlast2(FXManager& mgr) {
+static void addAirBlast(FXManager& mgr) {
   ParticleSystemDef psdef;
 
   {
@@ -400,7 +363,7 @@ static void addAirBlast2(FXManager& mgr) {
     psdef.subSystems.emplace_back(ssdef);
   }
 
-  mgr.addDef(FXName::AIR_BLAST2, psdef);
+  mgr.addDef(FXName::AIR_BLAST, psdef);
 }
 
 static void addSandDustEffect(FXManager& mgr) {
@@ -437,8 +400,8 @@ static void addSandDustEffect(FXManager& mgr) {
 static void addWaterSplashEffect(FXManager &mgr) {
   // TODO: this effect shouldn't cover the creature too much; it should mostly be visible around it
   EmitterDef edef;
-  edef.setStrengthSpread(20.0f, 5.0f);
-  edef.frequency = 400.0f;
+  edef.setStrengthSpread(10.0f, 5.0f);
+  edef.frequency = 200.0f;
   edef.source = FRect(-6, 4, 6, 12);
 
   ParticleDef pdef;
@@ -447,8 +410,8 @@ static void addWaterSplashEffect(FXManager &mgr) {
   pdef.alpha = {{0.0f, 0.25f, 0.75f, 1.0f}, {0.0f, 0.2f, 0.2f, 0.0f}};
   pdef.textureName = TextureName::WATER_DROPS;
 
-  SubSystemDef ssdef(pdef, edef, 0.0f, 0.2f);
-  ssdef.maxTotalParticles = 50;
+  SubSystemDef ssdef(pdef, edef, 0.07f, 0.27f);
+  ssdef.maxTotalParticles = 30;
 
   ssdef.animateFunc = [](AnimationContext& ctx, Particle& pinst) {
     defaultAnimateParticle(ctx, pinst);
@@ -560,6 +523,30 @@ static void addMagicMissileEffect(FXManager& mgr) {
 
 static void addFireEffect(FXManager& mgr) {
   ParticleSystemDef psdef;
+
+  { // Glow
+    EmitterDef edef;
+    edef.frequency = 2.0f;
+    edef.initialSpawnCount = 1.0f;
+    edef.source = FVec2(0, 2);
+
+    ParticleDef pdef;
+    pdef.life = 0.7f;
+    pdef.size = 32.0f;
+
+    pdef.color = {{IColor(185, 155, 100).rgb(), IColor(195, 135, 90).rgb()}};
+    pdef.alpha = {{0.0f, 0.2f, 0.8f, 1.0f}, {0.0f, 0.3f, 0.3f, 0.0f}};
+    pdef.textureName = TextureName::CIRCULAR_STRONG;
+
+    SubSystemDef ssdef(pdef, edef, 0.0f, 1.0f);
+    ssdef.emitFunc = [](AnimationContext& ctx, EmissionState& em, Particle& pinst) {
+      defaultEmitParticle(ctx, em, pinst);
+      pinst.size = FVec2(1.0f + 0.5 * ctx.ps.params.scalar[0]);
+      pinst.rot = 0.0f;
+    };
+    ssdef.layer = Layer::back;
+    psdef.subSystems.emplace_back(ssdef);
+  }
 
   { // Fire
     EmitterDef edef;
@@ -842,48 +829,6 @@ static void addSleepEffect(FXManager& mgr) {
   mgr.genSnapshots(FXName::SLEEP, {2.0f, 2.2f, 2.4f, 2.6f, 2.8f});
 }
 
-static const array<IColor, 6> insanityColors = {{
-  {244, 255, 190}, {255, 189, 230}, {190, 214, 220},
-  {242, 124, 161}, {230, 240, 240}, {220, 200, 220},
-}};
-
-static void addInsanityEffect(FXManager &mgr) {
-  EmitterDef edef;
-  edef.frequency = 4.0f;
-  edef.source = FRect(-10, -12, 10, -4);
-
-  ParticleDef pdef;
-  pdef.life = 0.7f;
-  pdef.size = {{5.0f, 8.0f, 12.0f}, InterpType::quadratic};
-  pdef.alpha = {{0.0f, 0.2, 0.8f, 1.0f}, {0.0, 0.8, 0.8, 0.0}, InterpType::cosine};
-
-  // TODO: zestaw losowych kolorów ?
-  pdef.color = FVec3(1.0);
-  pdef.textureName = TextureName::SPECIAL;
-
-  SubSystemDef ssdef(pdef, edef, 0.0f, 1.0f);
-  ssdef.emitFunc = [](AnimationContext &ctx, EmissionState &em, Particle &pinst) {
-    defaultEmitParticle(ctx, em, pinst);
-    pinst.texTile = {0, 1};
-    pinst.rot = ctx.rand.getDouble(-0.2f, 0.2f);
-  };
-
-  ssdef.drawFunc = [](DrawContext &ctx, const Particle &pinst, DrawParticle &out) {
-    Particle temp(pinst);
-    temp.size += FVec2(std::cos(pinst.life * 80.0f)) * 0.15;
-    defaultDrawParticle(ctx, temp, out);
-    out.color.setRGB(choose(insanityColors, pinst.randomSeed));
-  };
-
-  ParticleSystemDef psdef;
-  psdef.subSystems = {ssdef};
-  psdef.isLooped = true;
-  psdef.animLength = 1.0f;
-
-  mgr.addDef(FXName::INSANITY, psdef);
-  mgr.genSnapshots(FXName::INSANITY, {1.0f, 1.2f, 1.4f, 1.6f, 1.8f});
-}
-
 static void addBlindEffect(FXManager &mgr) {
   EmitterDef edef;
   edef.strength = 0.0f;
@@ -936,39 +881,179 @@ static void addBlindEffect(FXManager &mgr) {
   mgr.genSnapshots(FXName::BLIND, {2.0f, 2.2f, 2.4f, 2.6f, 2.8f});
 }
 
-static void addPeacefulnessEffect(FXManager &mgr) {
+static void addLaboratoryEffect(FXManager& mgr) {
+  ParticleSystemDef psdef;
+
+  { // Glow
+    EmitterDef edef;
+    edef.initialSpawnCount = 1.0f;
+    edef.source = FVec2(0, -10.0f);
+
+    ParticleDef pdef;
+    pdef.life = 2.0f;
+    pdef.size = 40.0f;
+    pdef.alpha = {{0.0f, 0.3f, 0.7f, 1.0f}, {0.0f, 0.3f, 0.3f, 0.0f}};
+    pdef.textureName = TextureName::CIRCULAR;
+
+    SubSystemDef ssdef(pdef, edef, 0.0f, 1.0f);
+    psdef.subSystems.emplace_back(ssdef);
+  }
+
+  { // Smoke & bubbles
+    EmitterDef edef;
+    edef.strength = 10.0f;
+    edef.setDirectionSpread(-fconstant::pi * 0.5f, 0.5f);
+    edef.frequency = 4.0f;
+    edef.source = FRect(-3.0f, -9.0f, 3.0f, -7.0f);
+
+    ParticleDef pdef;
+    pdef.life = 1.5f;
+    pdef.size = {{12.0f, 12.0f, 30.0f}};
+    pdef.alpha = {{0.0f, 0.2f, 0.6f, 1.0f}, {0.0, 0.5f, 0.2, 0.0}, InterpType::cosine};
+    pdef.color = FVec3(0.5);
+    pdef.textureName = TextureName::FLAKES_BORDERS;
+
+    SubSystemDef ssdef(pdef, edef, 0.0f, 1.6f);
+    ssdef.emitFunc = [](AnimationContext& ctx, EmissionState& em, Particle& pinst) {
+      defaultEmitParticle(ctx, em, pinst);
+    };
+
+    psdef.subSystems.emplace_back(ssdef);
+
+    ssdef.particle.alpha = {{0.0f, 0.2f, 0.6f, 1.0f}, {0.0, 1.0f, 0.5, 0.0}, InterpType::cosine};
+    ssdef.particle.textureName = TextureName::BUBBLES;
+    ssdef.particle.size = {{5.0f, 10.0f, 12.0f}};
+    ssdef.particle.color = FVec3(1.0);
+    ssdef.emitter.frequency = 12.0f;
+    psdef.subSystems.emplace_back(ssdef);
+  }
+
+  mgr.addDef(FXName::LABORATORY, psdef);
+}
+
+static void addForgeEffect(FXManager& mgr) {
+  ParticleSystemDef psdef;
+  { // Glow
+    EmitterDef edef;
+    edef.initialSpawnCount = 1.0f;
+    edef.source = FVec2(0, -6.0f);
+
+    ParticleDef pdef;
+    pdef.life = 0.3f;
+    pdef.size = 40.0f;
+    pdef.alpha = {{0.0f, 1.0f}, {0.3f, 0.0f}};
+    pdef.textureName = TextureName::CIRCULAR_STRONG;
+
+    SubSystemDef ssdef(pdef, edef, 0.0f, 1.0f);
+    psdef.subSystems.emplace_back(ssdef);
+  }
+  { // Sparks
+    EmitterDef edef;
+    edef.setStrengthSpread(40.0f, 20.0f);
+    edef.setDirectionSpread(-fconstant::pi * 0.5f, 1.0f);
+    edef.source = FRect(-4.0f, -4.0f, 4.0f, -2.0f);
+    edef.initialSpawnCount = 12.0f;
+
+    ParticleDef pdef;
+    pdef.life = 0.6f;
+    pdef.size = 1.5f;
+    pdef.alpha = {{0.0f, 0.4f, 1.0f}, {1.0, 1.0, 0.0}, InterpType::cosine};
+
+    pdef.textureName = TextureName::SPARKS_LIGHT;
+
+    SubSystemDef ssdef(pdef, edef, 0.0f, 0.03f);
+
+    ssdef.animateFunc = [](AnimationContext& ctx, Particle& pinst) {
+      defaultAnimateParticle(ctx, pinst);
+      pinst.movement += FVec2(0.0f, 100.0f) * ctx.timeDelta;
+    };
+    psdef.subSystems.emplace_back(ssdef);
+  }
+
+
+  mgr.addDef(FXName::FORGE, psdef);
+}
+
+static void addWorkshopEffect(FXManager& mgr) {
   EmitterDef edef;
-  edef.strength = 8.0f;
-  edef.setDirectionSpread(-fconstant::pi * 0.5f, 0.3f);
-  edef.frequency = 1.6f;
-  edef.source = FRect(-8.0f, 0.0f, 8.0f, 8.0f);
+  edef.setStrengthSpread(50.0f, 20.0f);
+  edef.rotSpeed = 0.5f;
+  edef.frequency = 999.0f;
+  edef.source = FRect(-2.0f, -6.0f, 2.0f, -4.0f);
 
   ParticleDef pdef;
-  pdef.life = 2.0f;
-  pdef.size = {{7.0f, 14.0f}};
-  pdef.alpha = {{0.0f, 0.2f, 0.8f, 1.0f}, {0.0, 0.3f, 0.2, 0.0}, InterpType::cosine};
+  pdef.life = 0.7f;
+  pdef.size = 5.0f;
+  pdef.slowdown = {{0.0f, 0.1f}, {5.0f, 1000.0f}};
+  pdef.alpha = {{0.0f, 0.6f, 1.0f}, {1.0, 1.0, 0.0}, InterpType::cosine};
 
-  pdef.color = IColor(255, 110, 209).rgb();
-  pdef.textureName = TextureName::SPECIAL;
+  FColor brown(IColor(120, 87, 46));
+  // Kiedy cząsteczki opadną pod drzewo, robią się w zasięgu cienia
+  // TODO: lepiej rysować je po prostu pod cieniem
+  pdef.color = {{0.0f, 0.3f, 0.4}, {brown.rgb(), brown.rgb(), brown.rgb() * 0.8f}};
+  pdef.textureName = TextureName::FLAKES_BORDERS;
 
-  SubSystemDef ssdef(pdef, edef, 0.0f, 1.0f);
-  ssdef.emitFunc = [](AnimationContext &ctx, EmissionState &em, Particle &pinst) {
-    defaultEmitParticle(ctx, em, pinst);
-    pinst.texTile = {3, 0};
-    pinst.life = min(em.maxLife, float(ctx.ss.particles.size()) * 0.1f);
-    pinst.rot = ctx.rand.getDouble(-0.2f, 0.2f);
-  };
+  SubSystemDef ssdef(pdef, edef, 0.0f, 0.1f);
+  ssdef.maxTotalParticles = 7;
 
   ParticleSystemDef psdef;
   psdef.subSystems = {ssdef};
-  psdef.isLooped = true;
-  psdef.animLength = 1.0f;
-
-  mgr.addDef(FXName::PEACEFULNESS, psdef);
-  mgr.genSnapshots(FXName::PEACEFULNESS, {2.0f, 2.2f, 2.4f, 2.6f, 2.8f});
+  mgr.addDef(FXName::WORKSHOP, psdef);
 }
 
-static void addSlowEffect(FXManager &mgr) {
+static void addJewelerEffect(FXManager& mgr) {
+  ParticleSystemDef psdef;
+  { // Sparks
+    EmitterDef edef;
+    edef.strength = 0.0f;
+    edef.frequency = 2.0f;
+    edef.source = FRect(-8, -11, 8, -3);
+
+    ParticleDef pdef;
+    pdef.life = 0.5f;
+    pdef.size = 3.5f;
+    pdef.alpha = {{0.0f, 0.3f, 0.8f, 1.0f}, {0.0f, 1.0, 0.7, 0.0}, InterpType::cosine};
+    pdef.textureName = TextureName::SPARKS_LIGHT;
+
+    SubSystemDef ssdef(pdef, edef, 0.0f, 1.5f);
+
+    ssdef.emitFunc = [](AnimationContext& ctx, EmissionState& em, Particle& pinst) {
+      defaultEmitParticle(ctx, em, pinst);
+      pinst.rotSpeed = 1.5f;
+      float rand = ctx.uniform(0.0f, 0.5f);
+      if (rand > 0.47f)
+        rand += ctx.uniform(0.0f, 0.4f);
+      em.animationVars[0] += rand * rand * rand;
+    };
+    psdef.subSystems.emplace_back(ssdef);
+  }
+
+  { // Glow
+    EmitterDef edef;
+    edef.source = FVec2(0, -6.0f);
+    edef.frequency = 2.0f;
+
+    ParticleDef pdef;
+    pdef.life = 0.5f;
+    pdef.size = 32.0f;
+    pdef.alpha = {{0.0f, 0.5f, 1.0f}, {0.0f, 0.4f, 0.0f}};
+    pdef.textureName = TextureName::CIRCULAR;
+
+    SubSystemDef ssdef(pdef, edef, 0.0f, 1.5f);
+    ssdef.layer = Layer::back;
+    ssdef.emitFunc = [](AnimationContext& ctx, EmissionState& em, Particle& pinst) {
+      defaultEmitParticle(ctx, em, pinst);
+      auto& sparks = ctx.ps.subSystems[0].particles;
+      if (!sparks.empty())
+        pinst.pos = sparks.front().pos;
+    };
+    psdef.subSystems.emplace_back(ssdef);
+  }
+
+  mgr.addDef(FXName::JEWELER, psdef);
+}
+
+static void addSpiralEffects(FXManager& mgr) {
   ParticleSystemDef psdef;
   psdef.isLooped = true;
   psdef.animLength = 1.0f;
@@ -986,7 +1071,6 @@ static void addSlowEffect(FXManager &mgr) {
     pdef.size = 10.0f;
     pdef.alpha = {{0.0f, 0.1f, 0.8f, 1.0f}, {0.0, 0.7f, 0.7f, 0.0}};
 
-    pdef.color = FVec3(0.7f, 1.0f, 0.6f);
     pdef.textureName = TextureName::CIRCULAR;
 
     SubSystemDef ssdef(pdef, edef, 0.0f, 1.0f);
@@ -1005,17 +1089,17 @@ static void addSlowEffect(FXManager &mgr) {
     };
 
     psdef.subSystems = {ssdef};
-    mgr.addDef(FXName::SLOW, psdef);
+    mgr.addDef(FXName::SPIRAL, psdef);
 
     ssdef.particle.textureName = TextureName::CIRCULAR_STRONG;
     ssdef.particle.size = 5.0f;
     ssdef.emitter.frequency = 5.0f;
     psdef.subSystems = {ssdef};
-    mgr.addDef(FXName::SLOW2, psdef);
+    mgr.addDef(FXName::SPIRAL2, psdef);
   }
 
-  mgr.genSnapshots(FXName::SLOW, {4.0f, 4.2f, 4.4f, 4.6f, 4.8f});
-  mgr.genSnapshots(FXName::SLOW2, {4.0f, 4.2f, 4.4f, 4.6f, 4.8f});
+  mgr.genSnapshots(FXName::SPIRAL, {4.0f, 4.2f, 4.4f, 4.6f, 4.8f});
+  mgr.genSnapshots(FXName::SPIRAL2, {4.0f, 4.2f, 4.4f, 4.6f, 4.8f});
 }
 
 static void addSpeedEffect(FXManager &mgr) {
@@ -1058,67 +1142,7 @@ static void addSpeedEffect(FXManager &mgr) {
   mgr.genSnapshots(FXName::SPEED, {2.0f, 2.2f, 2.4f, 2.6f, 2.8f});
 }
 
-static void addFlyingEffect(FXManager &mgr) {
-  ParticleSystemDef psdef;
-
-  { // clouds
-    EmitterDef edef;
-    edef.frequency = 12.0f;
-    edef.initialSpawnCount = 2.0f;
-    edef.setStrengthSpread(2.0f, 1.0f);
-    edef.setDirectionSpread(-fconstant::pi * 0.5f, 0.1f);
-    edef.source = FRect(-8.0f, 8.0f, 8.0f, 12.0f);
-
-    ParticleDef pdef;
-    pdef.life = 1.0f;
-    pdef.size = 16.0f;
-    pdef.alpha = {{0.0f, 0.5, 1.0f}, {0.0, 0.4, 0.0}, InterpType::cosine};
-
-    pdef.color = FVec3(1.0f);
-    pdef.textureName = TextureName::CLOUDS_SOFT;
-
-    SubSystemDef ssdef(pdef, edef, 0.0f, 1.0f);
-    ssdef.emitFunc = [](AnimationContext &ctx, EmissionState &em, Particle &pinst) {
-      defaultEmitParticle(ctx, em, pinst);
-      pinst.rot = 0.0f;
-      pinst.size = FVec2(1.2f, 0.6f);
-    };
-    psdef.subSystems.emplace_back(ssdef);
-  }
-
-  { // sparkles
-    EmitterDef edef;
-    edef.frequency = 12.0f;
-    edef.initialSpawnCount = 2.0f;
-    edef.setStrengthSpread(17.5f, 2.5f);
-    edef.setDirectionSpread(-fconstant::pi * 0.5f, 0.1f);
-    edef.source = FRect(-8.0f, 8.0f, 8.0f, 12.0f);
-
-    ParticleDef pdef;
-    pdef.life = 1.0f;
-    pdef.size = 6.0f;
-    pdef.alpha = {{0.0f, 0.5, 1.0f}, {0.0, 0.5, 0.0}, InterpType::cosine};
-
-    pdef.color = IColor(253, 247, 122).rgb();
-    pdef.textureName = TextureName::SPECIAL;
-
-    SubSystemDef ssdef(pdef, edef, 0.0f, 1.0f);
-    ssdef.emitFunc = [](AnimationContext &ctx, EmissionState &em, Particle &pinst) {
-      defaultEmitParticle(ctx, em, pinst);
-      pinst.texTile = {0, 1};
-    };
-
-    psdef.subSystems.emplace_back(ssdef);
-  }
-
-  psdef.isLooped = true;
-  psdef.animLength = 1.0f;
-
-  mgr.addDef(FXName::FLYING, psdef);
-  mgr.genSnapshots(FXName::FLYING, {1.0f, 1.4f, 1.8f}, {}, 4);
-}
-
-static void addFlying2Effect(FXManager& mgr) {
+static void addFlyingEffect(FXManager& mgr) {
   ParticleSystemDef psdef;
   {
     EmitterDef edef;
@@ -1173,8 +1197,48 @@ static void addFlying2Effect(FXManager& mgr) {
   psdef.isLooped = true;
   psdef.animLength = 1.0f;
 
-  mgr.addDef(FXName::FLYING2, psdef);
-  mgr.genSnapshots(FXName::FLYING2, {1.0f, 1.4f, 1.8f}, {}, 4);
+  mgr.addDef(FXName::FLYING, psdef);
+  mgr.genSnapshots(FXName::FLYING, {1.0f, 1.4f, 1.8f}, {}, 1);
+}
+
+static void addDebuffEffect(FXManager& mgr) {
+  ParticleSystemDef psdef;
+  {
+    EmitterDef edef;
+    edef.initialSpawnCount = 1;
+
+    ParticleDef pdef;
+    pdef.life = 1.2f;
+    pdef.size = 28.0f;
+    pdef.alpha = {{0.0f, 0.25f, 0.7, 1.0f}, {0.0, 0.6, 0.2, 0.0}, InterpType::cosine};
+    pdef.textureName = TextureName::TORUS_BOTTOM;
+
+    SubSystemDef ssdef(pdef, edef, 0.0f, 1.0f);
+    ssdef.emitFunc = [](AnimationContext& ctx, EmissionState& em, Particle& pinst) {
+      defaultEmitParticle(ctx, em, pinst);
+      pinst.rot = 0.0f;
+    };
+    ssdef.maxActiveParticles = 1;
+
+    ssdef.animateFunc = [](AnimationContext& ctx, Particle& pinst) {
+      defaultAnimateParticle(ctx, pinst);
+
+      float pos = std::cos((ctx.globalTime + ctx.ps.params.scalar[1]) * 5.0f);
+      // Faster movement in the middle, slower on the edges:
+      pos = (pos < 0.0f ? -1.0f : 1.0f) * std::pow(std::abs(pos), 0.7);
+      // Constant offset:
+      //pos +=  (ctx.ps.params.scalar[1] - 0.5f) * 3.0f;
+
+      pinst.pos = FVec2(0.0f, pos * 5.0f - 3.0f);
+      if (!ctx.ps.isDying)
+        pinst.life = min(pinst.life, 0.25f);
+    };
+
+    psdef.subSystems.emplace_back(ssdef);
+  }
+
+  mgr.addDef(FXName::DEBUFF, psdef);
+  mgr.genSnapshots(FXName::DEBUFF, {1.0f, 1.4f, 1.8f}, {}, 1);
 }
 
 static void addGlitteringEffect(FXManager& mgr) {
@@ -1221,6 +1285,82 @@ static void addGlitteringEffect(FXManager& mgr) {
   mgr.addDef(FXName::GLITTERING, psdef);
 }
 
+static void addTeleportEffects(FXManager& mgr) {
+  ParticleSystemDef psdef;
+
+  static constexpr float numParts = 40.0f;
+  {
+    EmitterDef edef;
+    edef.initialSpawnCount = numParts;
+    edef.source = FVec2(0, -24);
+
+    ParticleDef pdef;
+    pdef.life = 0.5f;
+    pdef.size = 40.0f;
+
+    pdef.color = FVec3(0.5f, 0.5f, 0.75f);
+    pdef.alpha = {{0.9f, 1.0f}, {1.0f, 0.0f}};
+    pdef.textureName = TextureName::TELEPORT_BLEND;
+
+    SubSystemDef ssdef(pdef, edef, 0.0f, 1.0f);
+    ssdef.emitFunc = [](AnimationContext& ctx, EmissionState& em, Particle& pinst) {
+      defaultEmitParticle(ctx, em, pinst);
+      int index = em.animationVars[0]++;
+      pinst.texTile = {0, short(index)};
+      pinst.pos += float(index) * FVec2(0.0, 40.0f / numParts);
+      pinst.size = FVec2(0.9f, 1.0f / numParts);
+      pinst.rot = 0.0f;
+      pinst.life += float(float(index) / numParts) * 0.3f;
+    };
+
+    ssdef.drawFunc = [](DrawContext& ctx, const Particle& pinst, DrawParticle& out) {
+      defaultDrawParticle(ctx, pinst, out);
+      out.texCoords = ctx.texQuadCorners(pinst.texTile, FVec2(1.0f, 1.0f / numParts));
+    };
+
+    ssdef.maxActiveParticles = numParts;
+    psdef.subSystems.emplace_back(ssdef);
+  }
+
+  { // Glow
+    EmitterDef edef;
+    edef.initialSpawnCount = 2;
+    edef.source = FVec2(0, -6);
+
+    ParticleDef pdef;
+    pdef.life = 0.4f;
+    pdef.size = 62.0f;
+
+    pdef.alpha = {{0.0f, 0.3f, 1.0f}, {0.8f, 0.6f, 0.0f}};
+    pdef.textureName = TextureName::BEAMS;
+
+    SubSystemDef ssdef(pdef, edef, 0.0f, 1.0f);
+    ssdef.emitFunc = [](AnimationContext& ctx, EmissionState& em, Particle& pinst) {
+      defaultEmitParticle(ctx, em, pinst);
+      pinst.rot = 0.0f;
+    };
+    psdef.subSystems.emplace_back(ssdef);
+  }
+
+  mgr.addDef(FXName::TELEPORT_OUT, psdef);
+
+  psdef.subSystems[0].emitFunc = [](AnimationContext& ctx, EmissionState& em, Particle& pinst) {
+    defaultEmitParticle(ctx, em, pinst);
+    int index = em.animationVars[0]++;
+    pinst.texTile = {0, short(index)};
+    pinst.pos += float(index) * FVec2(0.0, 40.0f / numParts);
+    pinst.size = FVec2(0.9f, 1.0f / numParts);
+    pinst.rot = 0.0f;
+    pinst.life += float(float(numParts - index) / numParts) * 0.3f;
+  };
+
+  mgr.addDef(FXName::TELEPORT_IN, psdef);
+
+  psdef.subSystems[0].particle.color = FVec3(1.0);
+  psdef.subSystems.pop_back();
+  mgr.addDef(FXName::SPAWN, psdef);
+}
+
 void FXManager::initializeDefs() {
   addTestSimpleEffect(*this);
   addTestMultiEffect(*this);
@@ -1237,20 +1377,23 @@ void FXManager::initializeDefs() {
 
   addCircularSpell(*this);
   addAirBlast(*this);
-  addAirBlast2(*this);
   addCircularBlast(*this);
   addMagicMissileEffect(*this);
   addFireballEffect(*this);
 
   addSleepEffect(*this);
-  addInsanityEffect(*this);
   addBlindEffect(*this);
-  addPeacefulnessEffect(*this);
   addGlitteringEffect(*this);
+  addTeleportEffects(*this);
 
-  addSlowEffect(*this);
+  addLaboratoryEffect(*this);
+  addForgeEffect(*this);
+  addWorkshopEffect(*this);
+  addJewelerEffect(*this);
+
+  addSpiralEffects(*this);
   addSpeedEffect(*this);
   addFlyingEffect(*this);
-  addFlying2Effect(*this);
+  addDebuffEffect(*this);
 };
 }

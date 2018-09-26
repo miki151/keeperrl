@@ -36,33 +36,32 @@ SubSystemContext FXManager::ssctx(ParticleSystem &ps, int ssid) {
   return {ps, psdef, pdef, edef, textureDefs[pdef.textureName], ssid};
 }
 
-void FXManager::simulateStableTime(double time, int desiredFps) {
+void FXManager::simulateStableTime(double time, int visibleFps, int simulateFps) {
   double diff = oldTime < 0 ? 1.0 / 60.0 : time - oldTime;
-  simulateStable(diff, desiredFps);
+  simulateStable(diff, visibleFps, simulateFps);
   oldTime = time;
 }
 
-void FXManager::simulateStable(double timeDelta, int desiredFps) {
+void FXManager::simulateStable(double timeDelta, int visibleFps, int simulateFps) {
   PASSERT(timeDelta >= 0.0);
+  PASSERT(visibleFps <= simulateFps);
+  PASSERT(simulateFps % visibleFps == 0);
   timeDelta += accumFrameTime;
 
-  double desiredDelta = 1.0 / desiredFps;
+  double drawDelta = 1.0 / visibleFps;
+  double simulationDelta = 1.0 / simulateFps;
+  int numSimSteps = simulateFps / visibleFps;
   int numSteps = 0;
 
   // TODO: limit number of steps?
-  while (timeDelta > desiredDelta) {
-    simulate(desiredDelta);
-    timeDelta -= desiredDelta;
+  while (timeDelta > drawDelta) {
+    for (int n = 0; n < numSimSteps; n++)
+      simulate(simulationDelta);
+    timeDelta -= drawDelta;
     numSteps++;
   }
 
-  if (timeDelta > desiredDelta * 0.1) {
-    numSteps++;
-    simulate(timeDelta);
-    accumFrameTime = 0.0;
-  } else {
-    accumFrameTime = timeDelta;
-  }
+  accumFrameTime = timeDelta;
 }
 
 void FXManager::simulate(ParticleSystem &ps, float timeDelta) {
@@ -73,7 +72,7 @@ void FXManager::simulate(ParticleSystem &ps, float timeDelta) {
     auto &ss = ps[ssid];
     auto &ssdef = psdef[ssid];
 
-    AnimationContext ctx(ssctx(ps, ssid), ps.animTime, timeDelta);
+    AnimationContext ctx(ssctx(ps, ssid), globalSimTime, ps.animTime, timeDelta);
     ctx.rand.init(ss.randomSeed);
 
     for (auto &pinst : ss.particles)
@@ -107,7 +106,7 @@ void FXManager::simulate(ParticleSystem &ps, float timeDelta) {
     if (emissionTime < 0.0f || emissionTime > 1.0f)
       continue;
 
-    AnimationContext ctx(ssctx(ps, ssid), ps.animTime, timeDelta);
+    AnimationContext ctx(ssctx(ps, ssid), globalSimTime, ps.animTime, timeDelta);
     ctx.rand.init(ss.randomSeed);
     EmissionState em{emissionTime};
     memcpy(em.animationVars, ss.animationVars, sizeof(em.animationVars));
@@ -164,6 +163,7 @@ void FXManager::simulate(float delta) {
   for (auto& inst : systems)
     if (!inst.isDead)
       simulate(inst, delta);
+  globalSimTime += delta;
 }
 
 void FXManager::addSnapshot(float animTime, const ParticleSystem& ps) {
@@ -237,9 +237,9 @@ void FXManager::genSnapshots(FXName name, vector<float> animTimes, vector<float>
        << " (total frames: " << numFramesTotal << ")";
 }
 
-vector<DrawParticle> FXManager::genQuads() {
+vector<DrawParticle> FXManager::genQuads(optional<Layer> layer) {
+  // TODO(opt): keep a cache of draw particles; return reference to vector
   vector<DrawParticle> out;
-  // TODO(opt): reserve
 
   for (auto& ps : systems) {
     if (ps.isDead)
@@ -249,6 +249,9 @@ vector<DrawParticle> FXManager::genQuads() {
     for (int ssid = 0; ssid < (int)psdef.subSystems.size(); ssid++) {
       auto &ss = ps[ssid];
       auto &ssdef = psdef[ssid];
+      if (layer && ssdef.layer != layer)
+        continue;
+
       auto& pdef = ssdef.particle;
       auto& tdef = textureDefs[pdef.textureName];
       DrawContext ctx{ssctx(ps, ssid), vinv(FVec2(tdef.tiles))};

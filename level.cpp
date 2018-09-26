@@ -287,7 +287,7 @@ bool Level::landCreature(vector<Position> landing, PCreature creature) {
     return false;
 }
 
-bool Level::landCreature(vector<Position> landing, WCreature creature) {
+optional<Position> Level::getClosestLanding(vector<Position> landing, WCreature creature) const {
   PROFILE;
   CHECK(creature);
   queue<Position> q;
@@ -299,17 +299,25 @@ bool Level::landCreature(vector<Position> landing, WCreature creature) {
   while (!q.empty()) {
     Position v = q.front();
     q.pop();
-    if (v.canEnter(creature)) {
-      v.putCreature(creature);
-      return true;
-    } else
+    if (v.canEnter(creature))
+      return v;
+    else
       for (Position next : v.neighbors8(Random))
         if (!marked.count(next) && next.canEnterEmpty(creature)) {
           q.push(next);
           marked.insert(next);
         }
   }
-  return false;
+  return none;
+}
+
+bool Level::landCreature(vector<Position> landing, WCreature creature) {
+  PROFILE;
+  if (auto pos = getClosestLanding(std::move(landing), creature)) {
+    pos->putCreature(creature);
+    return true;
+  } else
+    return false;
 }
 
 void Level::throwItem(PItem item, const Attack& attack, int maxDist, Vec2 position, Vec2 direction, VisionId vision) {

@@ -24,10 +24,12 @@ class Gender {
   const static Gender female;
   static void initialize();
 
-  string he() const;
-  string his() const;
-  string him() const;
-  string god() const;
+  const char* he() const;
+  const char* his() const;
+  const char* him() const;
+  const char* god() const;
+  const char* sireOrDame() const;
+
 
   SERIALIZATION_DECL(Gender);
 
