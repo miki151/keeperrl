@@ -4,7 +4,7 @@
 #include "event_generator.h"
 #include "position.h"
 #include "model.h"
-#include "color.h"
+#include "fx_info.h"
 
 class Model;
 class Technology;
@@ -93,12 +93,7 @@ namespace EventInfo {
     FurnitureLayer layer;
   };
 
-  struct OtherEffect {
-    Position position;
-    FXName effect;
-    Color color = Color::WHITE;
-    Vec2 targetOffset = Vec2(0, 0);
-  };
+  using OtherEffect = FXSpawnInfo;
 
   struct ItemsEquipped {
     WCreature creature;

@@ -18,8 +18,8 @@
 #include "furniture_dropped_items.h"
 #include "furniture_click.h"
 #include "furniture_tick.h"
-#include "furniture_fx.h"
 #include "movement_set.h"
+#include "fx_info.h"
 
 static string makePlural(const string& s) {
   if (s.empty())
@@ -166,8 +166,8 @@ void Furniture::destroy(Position pos, const DestroyAction& action) {
     pos.dropItems(itemDrop->random());
   if (usageType)
     FurnitureUsage::beforeRemoved(*usageType, pos);
-  if (auto info = destroyFXInfo(type))
-    pos.getGame()->addEvent(EventInfo::OtherEffect{pos, info->name, info->color});
+  if (auto fxInfo = destroyFXInfo(type))
+    pos.getGame()->addEvent(FXSpawnInfo(*fxInfo, pos));
   pos.removeFurniture(this, destroyedRemains ? FurnitureFactory::get(*destroyedRemains, getTribe()) : nullptr);
   pos.getGame()->addEvent(EventInfo::FurnitureDestroyed{pos, myType, myLayer});
 }
@@ -179,8 +179,8 @@ void Furniture::tryToDestroyBy(Position pos, WCreature c, const DestroyAction& a
     if (auto skill = action.getDestroyingSkillMultiplier())
       damage = damage * c->getAttributes().getSkills().getValue(*skill);
     *strength -= damage;
-    if (auto info = tryDestroyFXInfo(type))
-      pos.getGame()->addEvent(EventInfo::OtherEffect{pos, info->name, info->color});
+    if (auto fxInfo = tryDestroyFXInfo(type))
+      pos.getGame()->addEvent(FXSpawnInfo(*fxInfo, pos));
     if (*strength <= 0)
       destroy(pos, action);
   }
@@ -343,13 +343,13 @@ bool Furniture::forgetAfterBuilding() const {
 }
 
 void Furniture::onCreatureWalkedOver(Position pos, Vec2 direction) const {
-  if (auto info = walkOverFXInfo(type))
-    pos.getGame()->addEvent(EventInfo::OtherEffect{pos, info->name, info->color, direction});
+  if (auto fxInfo = walkOverFXInfo(type))
+    pos.getGame()->addEvent(FXSpawnInfo(*fxInfo, pos, direction));
 }
 
 void Furniture::onCreatureWalkedInto(Position pos, Vec2 direction) const {
-  if (auto info = walkIntoFXInfo(type))
-    pos.getGame()->addEvent(EventInfo::OtherEffect{pos, info->name, info->color, direction});
+  if (auto fxInfo = walkIntoFXInfo(type))
+    pos.getGame()->addEvent(FXSpawnInfo(*fxInfo, pos, direction));
 }
 
 vector<PItem> Furniture::dropItems(Position pos, vector<PItem> v) const {

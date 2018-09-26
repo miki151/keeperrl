@@ -143,8 +143,10 @@ CreatureAction Creature::castSpell(Spell* spell) const {
     return CreatureAction("You can't cast this spell yet.");
   return CreatureAction(this, [=] (WCreature c) {
     c->addSound(spell->getSound());
-    if (auto fx = spell->getFX())
-      getGame()->addEvent(EventInfo::OtherEffect{c->getPosition(), fx->name, fx->color});
+    if (auto fx = spell->getFX()) {
+      auto gid = c->getUniqueId().getGenericId();
+      getGame()->addEvent(FXSpawnInfo{{fx->name, fx->color}, c->getPosition(), gid});
+    }
     spell->addMessage(c);
     spell->getEffect().applyToCreature(c);
     getGame()->getStatistics().add(StatId::SPELL_CAST);
