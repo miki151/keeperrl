@@ -1173,6 +1173,8 @@ static optional<FXVariantName> getFX(WorkshopType type, const WorkshopItem& item
       }
     }
     return FXVariantName::LABORATORY_GREEN;
+  } else if (type == WorkshopType::FORGE) {
+    return FXVariantName::FORGE_ORANGE;
   }
 
   return none;
