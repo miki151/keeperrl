@@ -30,6 +30,9 @@ static const char* texFileName(TextureName name) {
     CASE(FLAMES_BLURRED, "flames_blurred_4x4.png")
     CASE(BLAST, "blast.png")
     CASE(BUBBLES, "bubbles_4x2.png")
+    CASE(FLASH1, "flashes_4x2.png")
+    CASE(FLASH1_GLOW, "flashes_glowing_4x2.png")
+    CASE(FLASH2, "flashes_2x2.png")
     CASE(SPECIAL, "special_4x2.png")
 #undef CASE
   }
@@ -42,8 +45,11 @@ void FXManager::initializeTextureDef(TextureName name, TextureDef& def) {
     def.tiles = {4, 4};
   if (strstr(def.fileName, "4x2"))
     def.tiles = {4, 2};
-  if (isOneOf(name, TextureName::CLOUDS_ADD, TextureName::FLAMES, TextureName::FLAMES_BLURRED, TextureName::SPARKS,
-              TextureName::SPARKS_LIGHT, TextureName::TELEPORT_BLEND))
+  if (strstr(def.fileName, "2x2"))
+    def.tiles = {2, 2};
+  using TName = TextureName;
+  if (isOneOf(name, TName::CLOUDS_ADD, TName::FLAMES, TName::FLAMES_BLURRED, TName::SPARKS, TName::SPARKS_LIGHT,
+              TName::TELEPORT_BLEND, TName::MISSILE_CORE, TName::FLASH1, TName::FLASH2, TName::FLASH1_GLOW))
     def.blendMode = BlendMode::additive;
 }
 
