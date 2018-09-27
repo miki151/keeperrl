@@ -804,8 +804,17 @@ static void addFireballEffect(FXManager& mgr) {
   ParticleSystemDef psdef;
 
   // TODO: this should depend on vector length ?
-  static constexpr float flightTime = 0.4f;
+  static constexpr float flightTime = 0.3f;
   Curve<float> movementCurve = {{0.0f, 0.0f, 0.2f, 0.6f, 1.0f}, InterpType::cubic};
+
+  // This function is only responsible for proper positioning
+  auto drawFunc = [](DrawContext& ctx, const Particle& pinst, DrawParticle& out) {
+    auto temp = pinst;
+    float flightPos = min(ctx.ps.animTime / flightTime, 1.0f);
+    auto& movementCurve = ctx.psdef.subSystems[0].particle.scalarCurves[0];
+    temp.pos += movementCurve.sample(flightPos) * ctx.ps.targetOffset;
+    defaultDrawParticle(ctx, temp, out);
+  };
 
   { // Flying ball of fire
     EmitterDef edef;
@@ -816,7 +825,7 @@ static void addFireballEffect(FXManager& mgr) {
     edef.initialSpawnCount = 5;
 
     ParticleDef pdef;
-    pdef.life = 0.7f;
+    pdef.life = 0.5f;
     pdef.size = 12.0f;
     pdef.color = {{IColor(155, 85, 30).rgb(), IColor(45, 35, 30).rgb()}};
     pdef.alpha = {{0.0f, 0.2f, 0.8f, 1.0f}, {0.0f, 1.0f, 1.0f, 0.0f}};
@@ -838,49 +847,31 @@ static void addFireballEffect(FXManager& mgr) {
       pinst.size *= (1.0f + mod * 0.25f);
     };
 
-    ssdef.drawFunc = [](DrawContext& ctx, const Particle& pinst, DrawParticle& out) {
-      auto temp = pinst;
-      // TODO: add curve that lerps toward goal ?
-      float flightPos = min(ctx.ps.animTime / flightTime, 1.0f);
-      temp.pos += ctx.pdef.scalarCurves[0].sample(flightPos) * ctx.ps.targetOffset;
-      defaultDrawParticle(ctx, temp, out);
-    };
-
+    ssdef.drawFunc = drawFunc;
     psdef.subSystems.emplace_back(ssdef);
   }
 
-  { // Final explosion
+  { // Glow
     EmitterDef edef;
-    edef.strength = 35.0f;
-    edef.frequency = 100.0f;
-    edef.source = FVec2(0.0f);
-    edef.rotSpeed = 0.05f;
+    edef.initialSpawnCount = 1.0f;
+    edef.source = FVec2(0, 2);
 
     ParticleDef pdef;
-    pdef.life = 0.5f;
-    pdef.size = 12.0f;
-    pdef.alpha = 0.7f;
+    pdef.life = flightTime + 0.3f;
+    pdef.size = 70.0f;
 
-    pdef.color = {{IColor(155, 85, 30).rgb(), IColor(45, 35, 30).rgb()}};
-    pdef.alpha = {{0.0f, 0.2f, 0.8f, 1.0f}, {0.0f, 1.0f, 1.0f, 0.0f}};
-    pdef.textureName = TextureName::FLAMES_BLURRED;
+    pdef.color = {{IColor(185, 155, 100).rgb(), IColor(195, 135, 90).rgb()}};
+    pdef.alpha = {{0.0f, 0.2f, 0.7f, 1.0f}, {0.0f, 0.8f, 0.8f, 0.0f}};
+    pdef.textureName = TextureName::CIRCULAR;
 
-    SubSystemDef ssdef(pdef, edef, flightTime - 0.05f, flightTime + 0.3f);
-    ssdef.prepareFunc = [](AnimationContext& ctx, EmissionState& em) {
-      float freq = defaultPrepareEmission(ctx, em);
-      float mod = ctx.ps.params.scalar[0];
-      return freq * (1.0f + mod * 2.0f);
-    };
-
+    SubSystemDef ssdef(pdef, edef, 0.0f, 1.0f);
     ssdef.emitFunc = [](AnimationContext& ctx, EmissionState& em, Particle& pinst) {
       defaultEmitParticle(ctx, em, pinst);
-      float mod = ctx.ps.params.scalar[0];
-      pinst.pos.x *= (1.0f + mod);
-      pinst.movement *= (1.0f + mod);
-      pinst.size *= (1.0f + mod * 0.25f);
-      pinst.pos += ctx.ps.targetOffset;
+      pinst.size = FVec2(1.0f + 0.5 * ctx.ps.params.scalar[0]);
     };
 
+    ssdef.drawFunc = drawFunc;
+    ssdef.layer = Layer::back;
     psdef.subSystems.emplace_back(ssdef);
   }
 
@@ -889,12 +880,12 @@ static void addFireballEffect(FXManager& mgr) {
     edef.strength = 10.0f;
     edef.setDirectionSpread(-fconstant::pi * 0.5f, 0.2f);
     edef.frequency = 30.0f;
-    edef.source = FRect(-3, 2, -1, 3);
+    edef.source = FRect(-3, 2, 3, 6);
     edef.rotSpeed = 0.05f;
 
     ParticleDef pdef;
     pdef.life = 0.7f;
-    pdef.size = {{12.0f, 30.0f}};
+    pdef.size = {{15.0f, 30.0f}};
     pdef.alpha = {{0.0f, 0.1f, 1.0f}, {0.0f, 0.3f, 0.0f}, InterpType::cosine};
 
     pdef.color = {{0.0f, 0.5f, 1.0f}, {FVec3(0.0f), FVec3(0.3f), FVec3(0.0f)}};
@@ -911,11 +902,8 @@ static void addFireballEffect(FXManager& mgr) {
     ssdef.emitFunc = [](AnimationContext& ctx, EmissionState& em, Particle& pinst) {
       defaultEmitParticle(ctx, em, pinst);
       float flightPos = min(ctx.ps.animTime / flightTime, 1.0f);
-      pinst.pos += ctx.pdef.scalarCurves[0].sample(flightPos) * ctx.ps.targetOffset;
-
       float mod = ctx.ps.params.scalar[0];
-      pinst.pos.x *= (1.0f + mod);
-      pinst.pos.y -= mod * 6.0f;
+      pinst.pos += ctx.pdef.scalarCurves[0].sample(flightPos) * ctx.ps.targetOffset;
       pinst.movement *= (1.0f + mod);
     };
     psdef.subSystems.emplace_back(ssdef);
