@@ -911,13 +911,6 @@ class ByCollective : public Behaviour {
     return NoMove;
   };
 
-  PTask dropLoot() {
-    if (!collective->hasTrait(creature, MinionTrait::WORKER))
-      return MinionActivities::getDropItemsTask(collective, creature);
-    else
-      return nullptr;
-  }
-
   PTask getEquipmentTask() {
     if (!collective->usesEquipment(creature))
       return nullptr;
@@ -961,8 +954,6 @@ class ByCollective : public Behaviour {
   WTask getStandardTask() {
     PROFILE;
     auto& taskMap = collective->getTaskMap();
-    if (PTask ret = dropLoot())
-      return taskMap.addTaskFor(std::move(ret), creature);
     auto current = collective->getCurrentActivity(creature);
     if (current.activity == MinionActivity::IDLE || !collective->isActivityGood(creature, current.activity)) {
       collective->setMinionActivity(creature, MinionActivity::IDLE);
