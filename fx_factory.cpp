@@ -613,6 +613,40 @@ static void addMagicMissileEffect(FXManager& mgr) {
   mgr.addDef(FXName::MAGIC_MISSILE, psdef);
 }
 
+static void addMagicMissileSplashEffect(FXManager& mgr) {
+  // TODO: spell power should affect size
+  FColor color = IColor(184, 224, 80);
+
+  ParticleSystemDef psdef;
+  {
+    EmitterDef edef;
+    edef.initialSpawnCount = 3.0f;
+
+    ParticleDef pdef;
+    pdef.life = 0.3f;
+    pdef.alpha = {{0.0f, 0.2f, 0.6f, 1.0f}, {0.0f, 1.0f, 1.0f, 0.0f}};
+    pdef.size = 35.0f;
+    pdef.color = color.rgb();
+    pdef.textureName = TextureName::FLASH1;
+
+    SubSystemDef ssdef(pdef, edef, 0.0f, 0.1f);
+
+    ssdef.multiDrawFunc = [](DrawContext& ctx, const Particle& pinst, vector<DrawParticle>& out) {
+      DrawParticle dpart;
+      defaultDrawParticle(ctx, pinst, dpart);
+      out.emplace_back(dpart);
+
+      dpart.texName = TextureName::FLASH1_GLOW;
+      dpart.color = (IColor)FColor(FColor(dpart.color).rgb() + FVec3(0.3f));
+      out.emplace_back(dpart);
+    };
+
+    psdef.subSystems.emplace_back(ssdef);
+  }
+
+  mgr.addDef(FXName::MAGIC_MISSILE_SPLASH, psdef);
+}
+
 static void addFireEffect(FXManager& mgr) {
   ParticleSystemDef psdef;
 
@@ -1472,6 +1506,7 @@ void FXManager::initializeDefs() {
   addCircularBlast(*this);
   addOldMagicMissileEffect(*this);
   addMagicMissileEffect(*this);
+  addMagicMissileSplashEffect(*this);
   addFireballEffect(*this);
 
   addSleepEffect(*this);

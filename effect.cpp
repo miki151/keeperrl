@@ -480,7 +480,7 @@ string Effect::Deception::getDescription() const {
 
 void Effect::CircularBlast::applyToCreature(WCreature c, WCreature attacker) const {
   for (Vec2 v : Vec2::directions8(Random))
-    applyDirected(c, v, DirEffectType(1, DirEffectId::BLAST), FXName::DUMMY);
+    applyDirected(c, v, DirEffectType(1, DirEffectId::BLAST), {FXName::NO_EFFECT}, none);
 }
 
 string Effect::CircularBlast::getName() const {
@@ -788,7 +788,8 @@ static optional<ViewId> getProjectile(const DirEffectType& effect) {
   }
 }
 
-void applyDirected(WCreature c, Vec2 direction, const DirEffectType& type, optional<FXName> fx) {
+void applyDirected(WCreature c, Vec2 direction, const DirEffectType& type, optional<FXInfo> fx,
+                   optional<FXInfo> splashFX) {
   auto begin = c->getPosition();
   int range = type.getRange();
   for (Vec2 v = direction; v.length8() <= range; v += direction)
@@ -798,7 +799,7 @@ void applyDirected(WCreature c, Vec2 direction, const DirEffectType& type, optio
     }
 
   if (fxesAvailable() && fx) {
-    if (fx != FXName::DUMMY)
+    if (!fx->empty())
       c->getGame()->addEvent(FXSpawnInfo{*fx, begin, direction * range});
   } else if (auto projectile = getProjectile(type))
     c->getGame()->addEvent(EventInfo::Projectile{*projectile, begin, begin.plus(direction * range)});
@@ -814,8 +815,14 @@ void applyDirected(WCreature c, Vec2 direction, const DirEffectType& type, optio
       break;
     case DirEffectId::CREATURE_EFFECT:
       for (Vec2 v = direction * range; v.length4() >= 1; v -= direction)
-        if (WCreature victim = c->getPosition().plus(v).getCreature())
+        if (WCreature victim = c->getPosition().plus(v).getCreature()) {
           type.get<Effect>().applyToCreature(victim, c);
+          if (splashFX) {
+            auto pos = victim->getPosition();
+            auto gid = victim->getUniqueId().getGenericId();
+            c->getGame()->addEvent(FXSpawnInfo{*splashFX, pos, gid});
+          }
+        }
       break;
   }
 }
