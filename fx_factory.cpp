@@ -159,7 +159,7 @@ static void addRockCloud(FXManager &mgr) {
   mgr.addDef(FXName::ROCK_CLOUD, psdef);
 }
 
-static void addExplosionEffect(FXManager &mgr) {
+static void addFireballSplashEffect(FXManager& mgr) {
   // TODO: tutaj trzeba zrobić tak, żeby cząsteczki które spawnują się później
   // zaczynały z innym kolorem
   EmitterDef edef;
@@ -167,8 +167,8 @@ static void addExplosionEffect(FXManager &mgr) {
   edef.frequency = 40.0f;
 
   ParticleDef pdef;
-  pdef.life = 0.6f;
-  pdef.size = {{15.0f, 20.0f}};
+  pdef.life = 0.3f;
+  pdef.size = {{12.0f, 15.0f}};
 
   // TODO: something's wrong with color interpolation here
   // (try setting color2 to (200, 20, 20) and use only keys: 0.7 & 1.0)
@@ -182,7 +182,7 @@ static void addExplosionEffect(FXManager &mgr) {
 
   ParticleSystemDef psdef;
   psdef.subSystems = {ssdef};
-  mgr.addDef(FXName::EXPLOSION, psdef);
+  mgr.addDef(FXName::FIREBALL_SPLASH, psdef);
 }
 
 static void addRippleEffect(FXManager &mgr) {
@@ -1493,7 +1493,6 @@ void FXManager::initializeDefs() {
   addWoodSplinters(*this);
   addRockSplinters(*this);
   addRockCloud(*this);
-  addExplosionEffect(*this);
   addRippleEffect(*this);
   addFireEffect(*this);
   addFireSphereEffect(*this);
@@ -1508,6 +1507,7 @@ void FXManager::initializeDefs() {
   addMagicMissileEffect(*this);
   addMagicMissileSplashEffect(*this);
   addFireballEffect(*this);
+  addFireballSplashEffect(*this);
 
   addSleepEffect(*this);
   addBlindEffect(*this);
