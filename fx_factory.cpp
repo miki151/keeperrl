@@ -428,7 +428,7 @@ static const array<FColor, 3> magicMissileColors {{
   {0.3f, 0.5f, 0.7f}, {0.3f, 0.5f, 0.6f}, {0.3f, 0.5f, 0.7f},
 }};
 
-static void addMagicMissileEffect(FXManager& mgr) {
+static void addOldMagicMissileEffect(FXManager& mgr) {
   // Każda cząsteczka z czasem z grubsza liniowo przechodzi od źródła do celu
   // dodatkowo może być delikatnie przesunięta z głównego toru
 
@@ -513,6 +513,98 @@ static void addMagicMissileEffect(FXManager& mgr) {
     ssdef.drawFunc = [](DrawContext& ctx, const Particle& pinst, DrawParticle& out) {
       defaultDrawParticle(ctx, pinst, out);
       out.color = IColor(FColor(out.color) * choose(magicMissileColors, pinst.randomSeed));
+    };
+
+    psdef.subSystems.emplace_back(ssdef);
+  }
+
+  mgr.addDef(FXName::MAGIC_MISSILE_OLD, psdef);
+}
+
+static FVec2 missileBasePos(AnimationContext& ctx, float offset = 0.3f) {
+  auto& baseParts = ctx.ps.subSystems[0].particles;
+  if (!baseParts.empty()) {
+    auto& pinst = baseParts[0];
+    auto& pdef = ctx.psdef.subSystems[0].particle;
+    float pos = clamp(pinst.particleTime(), 0.0f, 1.0f);
+    float size = pdef.size.sample(pos) * pinst.size.y;
+    FVec2 vec = angleToVector(pinst.rot + fconstant::pi * 0.5f);
+    return pinst.pos + vec * size * offset;
+  }
+  return FVec2();
+};
+
+static void addMagicMissileEffect(FXManager& mgr) {
+  constexpr float flightTime = 0.25f;
+  // TODO: spell power should affect missile size
+  //
+  FColor color = IColor(184, 234, 50);
+
+  ParticleSystemDef psdef;
+  { // Blurred trail
+    EmitterDef edef;
+    edef.initialSpawnCount = 1.0f;
+
+    ParticleDef pdef;
+    pdef.life = flightTime;
+    pdef.alpha = {{0.0f, 0.2f, 0.8f, 1.0f}, {0.0f, 0.5f, 0.5f, 0.0f}};
+    pdef.size = 20.0f;
+    pdef.color = color.rgb() * FVec3(0.5f, 1.0f, 3.0f);
+    pdef.textureName = TextureName::MISSILE_CORE;
+
+    SubSystemDef ssdef(pdef, edef, 0.0f, 0.1f);
+    ssdef.emitFunc = [](AnimationContext& ctx, EmissionState& em, Particle& pinst) {
+      em.direction = ctx.ps.targetDirAngle;
+      em.directionSpread = 0.0f;
+      em.strength = ctx.ps.targetTileDist * 24.0f / flightTime;
+      defaultEmitParticle(ctx, em, pinst);
+      pinst.rot = ctx.ps.targetDirAngle - fconstant::pi * 0.5f;
+      pinst.size = FVec2(1.0f, 0.0f);
+    };
+
+    ssdef.animateFunc = [](AnimationContext& ctx, Particle& pinst) {
+      defaultAnimateParticle(ctx, pinst);
+      float ptime = pinst.particleTime();
+      float max_width = ctx.ps.targetTileDist;
+      float shear = ptime < 0.25f ? ptime * 4.0f : ptime > 0.75f ? (1.0f - ptime) * 4.0f : 1.0f;
+      pinst.size = FVec2(1.0f, max_width * shear);
+    };
+    psdef.subSystems.emplace_back(ssdef);
+  }
+  { // Missile core
+    EmitterDef edef;
+    edef.initialSpawnCount = 3.0f;
+
+    ParticleDef pdef;
+    pdef.life = flightTime;
+    pdef.alpha = {{0.0f, 0.2f, 0.9f, 1.0f}, {0.0f, 1.0f, 1.0f, 0.0f}};
+    pdef.size = {{0.0f, 0.7f, 1.0f}, {30.0f, 30.0f, 50.0f}};
+    pdef.color = color.rgb();
+    pdef.textureName = TextureName::FLASH1;
+
+    SubSystemDef ssdef(pdef, edef, 0.0f, 0.1f);
+
+    ssdef.emitFunc = [](AnimationContext& ctx, EmissionState& em, Particle& pinst) {
+      em.direction = ctx.ps.targetDirAngle;
+      em.directionSpread = 0.0f;
+      defaultEmitParticle(ctx, em, pinst);
+      pinst.rotSpeed = ctx.uniform(5.0f, 10.0f);
+      pinst.pos = missileBasePos(ctx);
+    };
+
+    ssdef.animateFunc = [](AnimationContext& ctx, Particle& pinst) {
+      defaultAnimateParticle(ctx, pinst);
+      pinst.pos = missileBasePos(ctx);
+    };
+
+    ssdef.multiDrawFunc = [](DrawContext& ctx, const Particle& pinst, vector<DrawParticle>& out) {
+      DrawParticle dpart;
+      defaultDrawParticle(ctx, pinst, dpart);
+      out.emplace_back(dpart);
+
+      dpart.texName = TextureName::FLASH1_GLOW;
+      dpart.color = (IColor)FColor(FColor(dpart.color).rgb() + FVec3(0.3f));
+      out.emplace_back(dpart);
     };
 
     psdef.subSystems.emplace_back(ssdef);
@@ -1378,6 +1470,7 @@ void FXManager::initializeDefs() {
   addCircularSpell(*this);
   addAirBlast(*this);
   addCircularBlast(*this);
+  addOldMagicMissileEffect(*this);
   addMagicMissileEffect(*this);
   addFireballEffect(*this);
 
