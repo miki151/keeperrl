@@ -167,8 +167,7 @@ CreatureAction Creature::castSpell(Spell* spell, Vec2 dir) const {
     auto dirEffectType = spell->getDirEffectType();
     thirdPerson(getName().the() + " casts a spell");
     secondPerson("You cast " + spell->getName());
-    auto fx = spell->getFX();
-    applyDirected(c, dir, dirEffectType, fx ? fx->name : optional<FXName>());
+    applyDirected(c, dir, dirEffectType, spell->getFX(), spell->getSplashFX());
     getGame()->getStatistics().add(StatId::SPELL_CAST);
     c->attributes->getSpellMap().setReadyTime(spell, *getGlobalTime() + TimeInterval(
         int(spell->getDifficulty() * getWillpowerMult(attributes->getSkills().getValue(SkillId::SORCERY)))));
