@@ -29,7 +29,10 @@ public:
   // TODO: back layers could always be rendered as unordered (glows)
   // they usually take more space
   void prepareOrdered(optional<Layer>);
-  void drawOrdered(int systemIdx);
+
+  // TODO: span<> would be very useful
+  // TODO: pass proper ids
+  void drawOrdered(const int* systemIds, int count);
   void drawAllOrdered();
 
   void drawUnordered(optional<Layer> = none);
@@ -63,6 +66,7 @@ public:
   struct SystemDrawInfo;
   vector<SystemDrawInfo> systemDraws;
   vector<DrawParticle> tempParticles;
+  vector<FRect> tempRects;
 
   void applyTexScale();
 
