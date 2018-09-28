@@ -5,6 +5,7 @@
 #include "fx_variant_name.h"
 #include "fx_info.h"
 #include "fx_interface.h"
+#include "fx_renderer.h"
 #include "variant.h"
 
 void FXViewManager::EntityInfo::clearVisibility() {
@@ -135,14 +136,25 @@ void FXViewManager::finishFrame() {
 
     it->second.justShown = false;
     it->second.updateFX(it->first);
-    if (!it->second.isVisible) {
-      //INFO << "FX view: clear: " << it->first;
+    if (!it->second.isVisible)
       entities.erase(it);
-    }
     it = next;
   }
 }
 
+void FXViewManager::drawFX(GenericId id) {
+  auto it = entities.find(id);
+  PASSERT(it != entities.end());
+  auto& entity = it->second;
+
+  for (int n = 0; n < entity.numEffects; n++) {
+    auto& effect = entity.effects[n];
+    if (effect.isVisible)
+      fx::FXRenderer::getInstance()->drawOrdered(effect.id.first);
+  }
+}
+
+// TODO: unmanaged are automatically unordered; make it the same ?
 void FXViewManager::addUnmanagedFX(const FXSpawnInfo& spawnInfo) {
   auto coord = spawnInfo.position.getCoord();
   float x = coord.x, y = coord.y;

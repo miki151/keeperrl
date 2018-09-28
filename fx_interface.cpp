@@ -10,7 +10,7 @@ FXId spawnEffect(FXName name, float x, float y) {
   if (auto* inst = FXManager::getInstance()) {
     auto fpos = (FVec2(x, y) + FVec2(0.5f)) * Renderer::nominalSize;
     InitConfig conf{fpos};
-    //conf.orderedDraw = true; // TODO: enable
+    conf.orderedDraw = true;
     auto instId = inst->addSystem(name, conf);
     INFO << "FX spawn: " << ENUM_STRING(name) << " at:" << x << ", " << y;
     return {instId.getIndex(), instId.getSpawnTime()};
@@ -35,7 +35,7 @@ FXId spawnSnapshotEffect(FXName name, float x, float y, float scalar0, float sca
   if (auto* inst = FXManager::getInstance()) {
     auto fpos = (FVec2(x, y) + FVec2(0.5f)) * Renderer::nominalSize;
     InitConfig config{fpos, SnapshotKey{scalar0, scalar1}};
-    //config.orderedDraw = true; // TODO: enable
+    config.orderedDraw = true;
     auto instId = inst->addSystem(name, config);
     INFO << "FX spawn: " << ENUM_STRING(name) << " at:" << x << ", " << y;
     return {instId.getIndex(), instId.getSpawnTime()};
