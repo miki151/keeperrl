@@ -237,45 +237,30 @@ void FXManager::genSnapshots(FXName name, vector<float> animTimes, vector<float>
        << " (total frames: " << numFramesTotal << ")";
 }
 
-void FXManager::genQuads(vector<DrawParticle>& out, int systemIdx, Layer layer) {
-  auto& ps = systems[systemIdx];
+void FXManager::genQuads(vector<DrawParticle>& out, int id, int ssid) {
+  auto& ps = systems[id];
   if (ps.isDead)
     return;
 
   auto& psdef = (*this)[ps.defId];
-  for (int ssid = 0; ssid < (int)psdef.subSystems.size(); ssid++) {
-    auto& ss = ps[ssid];
-    auto& ssdef = psdef[ssid];
-    if (ssdef.layer != layer)
-      continue;
+  auto& ss = ps[ssid];
+  auto& ssdef = psdef[ssid];
 
-    auto& pdef = ssdef.particle;
-    auto& tdef = textureDefs[pdef.textureName];
-    DrawContext ctx{ssctx(ps, ssid), vinv(FVec2(tdef.tiles))};
+  auto& pdef = ssdef.particle;
+  auto& tdef = textureDefs[pdef.textureName];
+  DrawContext ctx{ssctx(ps, ssid), vinv(FVec2(tdef.tiles))};
 
-    if (ctx.ssdef.multiDrawFunc)
-      for (auto& pinst : ss.particles) {
-        int num = out.size();
-        ctx.ssdef.multiDrawFunc(ctx, pinst, out);
-      }
-    else
-      for (auto& pinst : ss.particles) {
-        DrawParticle dparticle;
-        ctx.ssdef.drawFunc(ctx, pinst, dparticle);
-        out.emplace_back(dparticle);
-      }
-  }
-}
-
-void FXManager::genQuadsUnordered(vector<DrawParticle>& out, optional<Layer> layer) {
-  for (int n = 0; n < systems.size(); n++) {
-    if (systems[n].orderedDraw)
-      continue;
-    if (!layer || layer == Layer::back)
-      genQuads(out, n, Layer::back);
-    if (!layer || layer == Layer::front)
-      genQuads(out, n, Layer::front);
-  }
+  if (ctx.ssdef.multiDrawFunc)
+    for (auto& pinst : ss.particles) {
+      int num = out.size();
+      ctx.ssdef.multiDrawFunc(ctx, pinst, out);
+    }
+  else
+    for (auto& pinst : ss.particles) {
+      DrawParticle dparticle;
+      ctx.ssdef.drawFunc(ctx, pinst, dparticle);
+      out.emplace_back(dparticle);
+    }
 }
 
 bool FXManager::valid(ParticleSystemId id) const {
@@ -343,17 +328,6 @@ ParticleSystemId FXManager::addSystem(FXName name, InitConfig config) {
 
   systems.emplace_back(makeSystem(name, spawnClock, config));
   return ParticleSystemId(systems.size() - 1, spawnClock);
-}
-
-vector<ParticleSystemId> FXManager::aliveSystems() const {
-  vector<ParticleSystemId> out;
-  out.reserve(systems.size());
-
-  for (int n = 0; n < (int)systems.size(); n++)
-    if (!systems[n].isDead)
-      out.emplace_back(ParticleSystemId(n, systems[n].spawnTime));
-
-  return out;
 }
 
 void FXManager::addDef(FXName name, ParticleSystemDef def) {

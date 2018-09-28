@@ -9,6 +9,13 @@
 #include "variant.h"
 #include "renderer.h"
 
+static fx::FXRenderer* fxRenderer = nullptr;
+
+FXViewManager::FXViewManager() {
+  fxRenderer = fx::FXRenderer::getInstance();
+}
+FXViewManager::~FXViewManager() = default;
+
 void FXViewManager::EntityInfo::clearVisibility() {
   isVisible = false;
   for (int n = 0; n < numEffects; n++)
@@ -99,9 +106,13 @@ void FXViewManager::EntityInfo::updateFX(GenericId gid) {
     }
 }
 
-void FXViewManager::beginFrame() {
+void FXViewManager::beginFrame(Renderer& renderer, float zoom, float ox, float oy) {
   for (auto& pair : entities)
     pair.second.clearVisibility();
+
+  auto size = renderer.getSize();
+  fxRenderer->setView(zoom, ox, oy, size.x, size.y);
+  fxRenderer->prepareOrdered();
 }
 
 void FXViewManager::addEntity(GenericId gid, float x, float y) {
@@ -159,8 +170,18 @@ void FXViewManager::drawFX(Renderer& renderer, GenericId id) {
 
   if (num > 0) {
     renderer.flushSprites();
-    fx::FXRenderer::getInstance()->drawOrdered(ids, num);
+    fxRenderer->drawOrdered(ids, num);
   }
+}
+
+void FXViewManager::drawUnorderedBackFX(Renderer& renderer) {
+  renderer.flushSprites();
+  fxRenderer->drawUnordered(fx::Layer::back);
+}
+
+void FXViewManager::drawUnorderedFrontFX(Renderer& renderer) {
+  renderer.flushSprites();
+  fxRenderer->drawUnordered(fx::Layer::front);
 }
 
 // TODO: unmanaged are automatically unordered; make it the same ?

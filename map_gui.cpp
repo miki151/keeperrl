@@ -33,7 +33,6 @@
 #include "creature_status.h"
 #include "game.h"
 
-#include "fx_renderer.h"
 #include "fx_manager.h"
 #include "fx_view_manager.h"
 
@@ -46,7 +45,7 @@ MapGui::MapGui(Callbacks call, SyncQueue<UserInput>& inputQueue, Clock* c, Optio
     lastSquareUpdate(Level::getMaxBounds()), connectionMap(Level::getMaxBounds()), guiFactory(f) {
   clearCenter();
 
-  if (fx::FXRenderer::getInstance() != nullptr)
+  if (fxesAvailable())
     fxViewManager = std::make_unique<FXViewManager>();
 }
 
@@ -927,9 +926,11 @@ void MapGui::renderMapObjects(Renderer& renderer, Vec2 size, milliseconds curren
   // then order them properly and draw all together
 
   if (fxViewManager) {
-    fxViewManager->beginFrame();
-    fx::FXRenderer::getInstance()->prepareOrdered(none);
+    float zoom = float(layout->getSquareSize().x) / float(Renderer::nominalSize);
+    auto offset = projectOnScreen(Vec2(0, 0));
+    fxViewManager->beginFrame(renderer, zoom, offset.x, offset.y);
   }
+
   for (ViewLayer layer : layout->getLayers())
     if ((int)layer < (int)ViewLayer::CREATURE) {
       for (Vec2 wpos : allTiles) {
@@ -982,7 +983,7 @@ void MapGui::renderMapObjects(Renderer& renderer, Vec2 size, milliseconds curren
       if (layer == ViewLayer::FLOOR_BACKGROUND)
         renderHighlights(renderer, size, currentTimeReal, true);
       if (layer == ViewLayer::FLOOR && fxViewManager)
-        drawFX(renderer, false);
+        fxViewManager->drawUnorderedBackFX(renderer);
       if (!spriteMode)
         break;
     }
@@ -1012,7 +1013,7 @@ void MapGui::renderMapObjects(Renderer& renderer, Vec2 size, milliseconds curren
 
   if (fxViewManager) {
     fxViewManager->finishFrame();
-    drawFX(renderer, true);
+    fxViewManager->drawUnorderedFrontFX(renderer);
   }
 
   renderHighlights(renderer, size, currentTimeReal, false);
@@ -1098,16 +1099,6 @@ void MapGui::considerScrollingToCreature() {
     if (fabs(center.x - targetx) + fabs(center.y - targety) < 0.01)
       info->softScroll = false;
   }
-}
-
-void MapGui::drawFX(Renderer& renderer, bool front_layer) {
-  renderer.flushSprites();
-  float zoom = float(layout->getSquareSize().x) / float(Renderer::nominalSize);
-  auto offset = projectOnScreen(Vec2(0, 0));
-  auto size = renderer.getSize();
-  auto layer = front_layer ? fx::Layer::front : fx::Layer::back;
-  fx::FXRenderer::getInstance()->setView(zoom, offset.x, offset.y, size.x, size.y);
-  fx::FXRenderer::getInstance()->drawUnordered(layer);
 }
 
 void MapGui::updateFX(milliseconds currentTimeReal) {

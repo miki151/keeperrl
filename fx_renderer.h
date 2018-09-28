@@ -14,7 +14,9 @@ namespace fx {
 //   composed properly with game objects;
 // - Unordered effects are drawn together into screen-sized framebuffer and are
 //   drawn to screen together
-// Effects also have layers which allow additional separation
+//
+// Effects also have layers which allow additional separation; back layer is
+// always drawn as unordered;
 class FXRenderer {
 public:
   FXRenderer(DirectoryPath, FXManager &);
@@ -24,18 +26,14 @@ public:
   void operator=(const FXRenderer &) = delete;
 
   void setView(float zoom, float offsetX, float offsetY, int w, int h);
-
-  // TODO: proper layer support for ordered effects
-  // TODO: back layers could always be rendered as unordered (glows)
-  // they usually take more space
-  void prepareOrdered(optional<Layer>);
+  void prepareOrdered();
 
   // TODO: span<> would be very useful
   // TODO: pass proper ids
   void drawOrdered(const int* systemIds, int count);
   void drawAllOrdered();
 
-  void drawUnordered(optional<Layer> = none);
+  void drawUnordered(Layer);
 
   static FXRenderer *getInstance();
 
