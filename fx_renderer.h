@@ -2,12 +2,19 @@
 
 #include "fx_base.h"
 #include "fx_texture_name.h"
+#include "fx_rect.h"
 #include "texture.h"
 
 class Framebuffer;
 
 namespace fx {
 
+// FXRenderer can draw effects in two different ways: ordered & unordered
+// - Ordered effects are rendered to framebuffers separately so that they can be
+//   composed properly with game objects;
+// - Unordered effects are drawn together into screen-sized framebuffer and are
+//   drawn to screen together
+// Effects also have layers which allow additional separation
 class FXRenderer {
 public:
   FXRenderer(DirectoryPath, FXManager &);
@@ -16,37 +23,51 @@ public:
   FXRenderer(const FXRenderer &) = delete;
   void operator=(const FXRenderer &) = delete;
 
-  void prepareRendering(optional<Layer>);
-  void draw(float zoom, float offsetX, float offsetY, int w, int h, optional<Layer> = none);
+  void setView(float zoom, float offsetX, float offsetY, int w, int h);
 
-  // TODO: better way to communicate with FXRenderer ?
+  // TODO: proper layer support for ordered effects
+  void prepareOrdered(optional<Layer>);
+  void drawOrdered(int systemIdx);
+  void drawAllOrdered();
+
+  void drawUnordered(optional<Layer> = none);
+
   static FXRenderer *getInstance();
 
   bool useFramebuffer = true;
-  pair<unsigned, unsigned> fboIds() const;
+  pair<unsigned, unsigned> fboIds(bool ordered) const;
   IVec2 fboSize() const;
 
   private:
-  struct View;
-  IRect visibleTiles(const View&);
+  struct View {
+    float zoom;
+    FVec2 offset;
+    IVec2 size;
+  };
 
-  void initFramebuffer(IVec2);
+  IRect visibleTiles(const View&);
   void drawParticles(const View&, BlendMode);
-  static FRect boundingBox(const DrawParticle*, int count);
-  void printSystemsInfo();
+  void drawParticles(FVec2 offset, Framebuffer&, Framebuffer&);
+
+  static IRect boundingBox(const DrawParticle*, int count);
+  void printSystemDrawsInfo() const;
+  IVec2 allocateFboSpace();
 
   FXManager& mgr;
   vector<Texture> textures;
   vector<FVec2> textureScales;
   EnumMap<TextureName, int> textureIds;
 
-  struct SystemInfo;
-  vector<SystemInfo> systems;
+  struct SystemDrawInfo;
+  vector<SystemDrawInfo> systemDraws;
   vector<DrawParticle> tempParticles;
 
   void applyTexScale();
 
+  View worldView;
+  IRect fboView;
   unique_ptr<DrawBuffers> drawBuffers;
+  unique_ptr<Framebuffer> orderedBlendFBO, orderedAddFBO;
   unique_ptr<Framebuffer> blendFBO, addFBO;
 };
 }

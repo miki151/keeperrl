@@ -267,13 +267,15 @@ void FXManager::genQuads(vector<DrawParticle>& out, int systemIdx, Layer layer) 
   }
 }
 
-vector<DrawParticle> FXManager::genQuads(optional<Layer> layer) {
-  vector<DrawParticle> out;
+void FXManager::genQuadsUnordered(vector<DrawParticle>& out, optional<Layer> layer) {
   for (int n = 0; n < systems.size(); n++) {
-    genQuads(out, n, Layer::back);
-    genQuads(out, n, Layer::front);
+    if (systems[n].orderedDraw)
+      continue;
+    if (!layer || layer == Layer::back)
+      genQuads(out, n, Layer::back);
+    if (!layer || layer == Layer::front)
+      genQuads(out, n, Layer::front);
   }
-  return out;
 }
 
 bool FXManager::valid(ParticleSystemId id) const {

@@ -15,8 +15,9 @@ inline bool valid(FXId id) {
 }
 
 FXId spawnEffect(FXName, float x, float y);
-FXId spawnEffect(FXName, float x, float y, Vec2 dir);
 FXId spawnSnapshotEffect(FXName, float x, float y, float scalar0 = 0.0f, float scalar1 = 0.0f);
+
+FXId spawnUnorderedEffect(FXName, float x, float y, Vec2 dir);
 
 bool isAlive(FXId);
 void kill(FXId, bool immediate = true);

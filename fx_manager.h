@@ -50,7 +50,7 @@ public:
   auto& getSystems() { return systems; }
 
   void genQuads(vector<DrawParticle>&, int systemIdx, Layer);
-  vector<DrawParticle> genQuads(optional<Layer> = none);
+  void genQuadsUnordered(vector<DrawParticle>&, optional<Layer> = none);
 
   using Snapshot = vector<ParticleSystem::SubSystem>;
   struct SnapshotGroup {
