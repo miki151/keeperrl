@@ -212,6 +212,8 @@ void FXRenderer::prepareOrdered(optional<Layer> layer) {
 
   drawBuffers->clear();
   drawBuffers->add(tempParticles);
+  applyTexScale();
+
   drawParticles(FVec2(), *orderedBlendFBO, *orderedAddFBO);
 }
 
@@ -249,6 +251,8 @@ void FXRenderer::drawParticles(FVec2 viewOffset, Framebuffer& blendFBO, Framebuf
   blendFBO.bind();
   SDL::glPushAttrib(GL_ENABLE_BIT);
   SDL::glDisable(GL_SCISSOR_TEST);
+  SDL::glEnable(GL_TEXTURE_2D);
+  glColor(Color::WHITE);
   setupOpenglView(blendFBO.width, blendFBO.height, 1.0f);
 
   SDL::glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -267,10 +271,13 @@ void FXRenderer::drawParticles(FVec2 viewOffset, Framebuffer& blendFBO, Framebuf
 
   Framebuffer::unbind();
   SDL::glPopAttrib();
+  SDL::glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   popOpenglView();
 }
 
 void FXRenderer::drawOrdered(int systemIdx) {
+  if (systemIdx < 0 || systemIdx >= systemDraws.size())
+    return;
   auto& draw = systemDraws[systemIdx];
   if (draw.empty())
     return;
@@ -291,10 +298,15 @@ void FXRenderer::drawOrdered(int systemIdx) {
     SDL::glEnd();
   };
 
+  SDL::glPushAttrib(GL_ENABLE_BIT);
+  SDL::glDisable(GL_DEPTH_TEST);
+  SDL::glDisable(GL_CULL_FACE);
+  SDL::glEnable(GL_TEXTURE_2D);
+  glColor(Color::WHITE);
+
   int defaultMode = 0, defaultCombine = 0;
   SDL::glGetTexEnviv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, &defaultMode);
   SDL::glGetTexEnviv(GL_TEXTURE_ENV, GL_COMBINE_RGB, &defaultCombine);
-  SDL::glEnable(GL_TEXTURE_2D);
 
   SDL::glBlendFunc(GL_ONE, GL_SRC_ALPHA);
   SDL::glBindTexture(GL_TEXTURE_2D, orderedBlendFBO->texId);
@@ -322,6 +334,9 @@ void FXRenderer::drawOrdered(int systemIdx) {
 
   SDL::glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, defaultMode);
   SDL::glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB, defaultCombine);
+
+  SDL::glPopAttrib();
+  SDL::glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
 void FXRenderer::drawAllOrdered() {
@@ -337,10 +352,9 @@ void FXRenderer::drawUnordered(optional<Layer> layer) {
   drawBuffers->add(tempParticles);
   if (drawBuffers->empty())
     return;
+  applyTexScale();
 
   CHECK_OPENGL_ERROR();
-
-  applyTexScale();
 
   SDL::glPushAttrib(GL_ENABLE_BIT);
   SDL::glDisable(GL_DEPTH_TEST);

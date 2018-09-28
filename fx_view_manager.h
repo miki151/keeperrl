@@ -16,6 +16,8 @@ class FXViewManager {
   void addFX(GenericId, FXVariantName);
   void finishFrame();
 
+  void drawFX(GenericId);
+
   void addUnmanagedFX(const FXSpawnInfo&);
 
   private:

@@ -26,6 +26,8 @@ public:
   void setView(float zoom, float offsetX, float offsetY, int w, int h);
 
   // TODO: proper layer support for ordered effects
+  // TODO: back layers could always be rendered as unordered (glows)
+  // they usually take more space
   void prepareOrdered(optional<Layer>);
   void drawOrdered(int systemIdx);
   void drawAllOrdered();

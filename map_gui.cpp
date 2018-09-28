@@ -649,6 +649,10 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
           fxViewManager->addFX(*genericId, FXInfo{FXName::FIRE, Color::WHITE, min(1.0f, burningVal * 0.05f)});
         for (auto fx : object.particleEffects)
           fxViewManager->addFX(*genericId, fx);
+
+        // TODO: optimize...
+        renderer.flushSprites();
+        fxViewManager->drawFX(*genericId);
     }
   } else {
     Vec2 tilePos = pos + movement + Vec2(size.x / 2, -3);
@@ -925,8 +929,10 @@ void MapGui::renderMapObjects(Renderer& renderer, Vec2 size, milliseconds curren
   // TODO: first iterate all tiles which have to be rendered
   // then order them properly and draw all together
 
-  if (fxViewManager)
+  if (fxViewManager) {
     fxViewManager->beginFrame();
+    fx::FXRenderer::getInstance()->prepareOrdered(none);
+  }
   for (ViewLayer layer : layout->getLayers())
     if ((int)layer < (int)ViewLayer::CREATURE) {
       for (Vec2 wpos : allTiles) {
