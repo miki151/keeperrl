@@ -7,6 +7,7 @@
 #include "fx_interface.h"
 #include "fx_renderer.h"
 #include "variant.h"
+#include "renderer.h"
 
 void FXViewManager::EntityInfo::clearVisibility() {
   isVisible = false;
@@ -142,15 +143,23 @@ void FXViewManager::finishFrame() {
   }
 }
 
-void FXViewManager::drawFX(GenericId id) {
+void FXViewManager::drawFX(Renderer& renderer, GenericId id) {
   auto it = entities.find(id);
   PASSERT(it != entities.end());
   auto& entity = it->second;
 
+  int ids[EntityInfo::maxEffects];
+  int num = 0;
+
   for (int n = 0; n < entity.numEffects; n++) {
     auto& effect = entity.effects[n];
     if (effect.isVisible)
-      fx::FXRenderer::getInstance()->drawOrdered(effect.id.first);
+      ids[num++] = effect.id.first;
+  }
+
+  if (num > 0) {
+    renderer.flushSprites();
+    fx::FXRenderer::getInstance()->drawOrdered(ids, num);
   }
 }
 

@@ -649,10 +649,7 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
           fxViewManager->addFX(*genericId, FXInfo{FXName::FIRE, Color::WHITE, min(1.0f, burningVal * 0.05f)});
         for (auto fx : object.particleEffects)
           fxViewManager->addFX(*genericId, fx);
-
-        // TODO: optimize...
-        renderer.flushSprites();
-        fxViewManager->drawFX(*genericId);
+        fxViewManager->drawFX(renderer, *genericId);
     }
   } else {
     Vec2 tilePos = pos + movement + Vec2(size.x / 2, -3);

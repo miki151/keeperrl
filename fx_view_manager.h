@@ -6,6 +6,8 @@
 #include "color.h"
 #include <unordered_map>
 
+class Renderer;
+
 // TODO: fx_interface is not really needed, all fx spawning goes through FXViewManager
 class FXViewManager {
   public:
@@ -16,7 +18,7 @@ class FXViewManager {
   void addFX(GenericId, FXVariantName);
   void finishFrame();
 
-  void drawFX(GenericId);
+  void drawFX(Renderer&, GenericId);
 
   void addUnmanagedFX(const FXSpawnInfo&);
 
