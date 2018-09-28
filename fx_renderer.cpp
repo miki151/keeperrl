@@ -105,7 +105,7 @@ IRect FXRenderer::boundingBox(const DrawParticle* particles, int count) {
 }
 
 IVec2 FXRenderer::allocateFboSpace() {
-  IVec2 size = blendFBO ? IVec2(orderedBlendFBO->width, orderedBlendFBO->height) : IVec2(256, 256);
+  IVec2 size = orderedBlendFBO ? IVec2(orderedBlendFBO->width, orderedBlendFBO->height) : IVec2(256, 256);
 
   // TODO: BIG PROBLEM: what about effects which are diagonal? They will take a lot more
   // space than necessary; Maybe these effects should be drawn just like before
@@ -160,30 +160,29 @@ IVec2 FXRenderer::allocateFboSpace() {
   return size;
 }
 
-void FXRenderer::prepareOrdered(optional<Layer> layer) {
-  auto ids = mgr.aliveSystems(); // TODO: alive ordered systems
-  int maxId = 0;
-  for (auto id : ids)
-    maxId = max(maxId, (int)id);
+void FXRenderer::prepareOrdered() {
+  auto& systems = mgr.getSystems();
   systemDraws.clear();
-  systemDraws.resize(maxId + 1);
+  systemDraws.resize(systems.size());
   tempParticles.clear();
 
-  for (auto id : ids) {
-    if (!mgr.get(id).orderedDraw)
+  for (int n = 0; n < systems.size(); n++) {
+    auto& system = systems[n];
+    if (system.isDead || !system.orderedDraw)
       continue;
 
-    // TODO: properly handle layers
+    auto& def = mgr[system.defId];
     int first = (int)tempParticles.size();
-    if (!layer || layer == Layer::back)
-      mgr.genQuads(tempParticles, id, Layer::back);
-    if (!layer || layer == Layer::front)
-      mgr.genQuads(tempParticles, id, Layer::front);
+    for (int ssid = 0; ssid < system.subSystems.size(); ssid++) {
+      if (def[ssid].layer == Layer::back)
+        continue;
+      mgr.genQuads(tempParticles, n, ssid);
+    }
     int count = (int)tempParticles.size() - first;
 
     if (count > 0) {
       auto rect = boundingBox(&tempParticles[first], count);
-      systemDraws[id] = {rect, IVec2(), first, count};
+      systemDraws[n] = {rect, IVec2(), first, count};
     }
   }
 
@@ -358,17 +357,32 @@ void FXRenderer::drawOrdered(const int* ids, int count) {
 
 void FXRenderer::drawAllOrdered() {
   vector<int> ids;
-  ids.reserve(systemDraws.size());
-  for (int n = 0; n < systemDraws.size(); n++)
-    if (!systemDraws[n].empty())
+  auto& systems = mgr.getSystems();
+  ids.reserve(systems.size());
+  for (int n = 0; n < systems.size(); n++)
+    if (!systems[n].isDead && systems[n].orderedDraw)
       ids.emplace_back(n);
   drawOrdered(ids.data(), ids.size());
 }
 
-void FXRenderer::drawUnordered(optional<Layer> layer) {
+void FXRenderer::drawUnordered(Layer layer) {
   tempParticles.clear();
   drawBuffers->clear();
-  mgr.genQuadsUnordered(tempParticles, layer);
+
+  auto& systems = mgr.getSystems();
+  for (int n = 0; n < systems.size(); n++) {
+    if (systems[n].isDead)
+      continue;
+    auto& system = systems[n];
+    auto& ssdef = mgr[system.defId];
+    if (system.orderedDraw && layer == Layer::front)
+      continue;
+
+    for (int ssid = 0; ssid < system.subSystems.size(); ssid++)
+      if (ssdef[ssid].layer == layer)
+        mgr.genQuads(tempParticles, n, ssid);
+  }
+
   drawBuffers->add(tempParticles);
   if (drawBuffers->empty())
     return;

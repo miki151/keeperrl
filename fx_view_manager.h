@@ -11,16 +11,22 @@ class Renderer;
 // TODO: fx_interface is not really needed, all fx spawning goes through FXViewManager
 class FXViewManager {
   public:
-  void beginFrame();
+  FXViewManager();
+  ~FXViewManager();
+
+  void beginFrame(Renderer&, float zoom, float ox, float oy);
+  void finishFrame();
+
   void addEntity(GenericId, float x, float y);
   // Entity identified with given id must be present!
   void addFX(GenericId, const FXInfo&);
   void addFX(GenericId, FXVariantName);
-  void finishFrame();
-
-  void drawFX(Renderer&, GenericId);
 
   void addUnmanagedFX(const FXSpawnInfo&);
+
+  void drawFX(Renderer&, GenericId);
+  void drawUnorderedBackFX(Renderer&);
+  void drawUnorderedFrontFX(Renderer&);
 
   private:
   using TypeId = variant<FXName, FXVariantName>;

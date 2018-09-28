@@ -195,5 +195,4 @@ class MapGui : public GuiElem {
   //double lastFxTimeReal = -1.0, lastFxTimeTurn = -1.0;
   unique_ptr<FXViewManager> fxViewManager;
   void updateFX(milliseconds currentTimeReal);
-  void drawFX(Renderer&, bool front_layer);
 };
