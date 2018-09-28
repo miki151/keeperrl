@@ -154,6 +154,6 @@ void FXViewManager::addUnmanagedFX(const FXSpawnInfo& spawnInfo) {
       y = it->second.y;
     }
   }
-  auto id = fx::spawnEffect(spawnInfo.info.name, x, y, spawnInfo.targetOffset);
+  auto id = fx::spawnUnorderedEffect(spawnInfo.info.name, x, y, spawnInfo.targetOffset);
   updateParams(spawnInfo.info, id);
 }

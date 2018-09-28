@@ -43,6 +43,7 @@ struct InitConfig {
 
   FVec2 pos, targetOffset;
   optional<SnapshotKey> snapshotKey;
+  bool orderedDraw = false;
 };
 
 // Identifies a particluar particle system instance
@@ -75,6 +76,8 @@ struct Particle {
 };
 
 struct DrawParticle {
+  bool isReasonable() const;
+
   // TODO: compress it somehow?
   std::array<FVec2, 4> positions;
   std::array<FVec2, 4> texCoords;
@@ -117,6 +120,7 @@ struct ParticleSystem {
   float animTime = 0.0f;
   bool isDead = false;
   bool isDying = false;
+  bool orderedDraw = false;
 };
 
 struct SubSystemContext {

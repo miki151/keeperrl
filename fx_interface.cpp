@@ -7,15 +7,24 @@
 namespace fx {
 
 FXId spawnEffect(FXName name, float x, float y) {
-  return spawnEffect(name, x, y, Vec2(0, 0));
+  if (auto* inst = FXManager::getInstance()) {
+    auto fpos = (FVec2(x, y) + FVec2(0.5f)) * Renderer::nominalSize;
+    InitConfig conf{fpos};
+    //conf.orderedDraw = true; // TODO: enable
+    auto instId = inst->addSystem(name, conf);
+    INFO << "FX spawn: " << ENUM_STRING(name) << " at:" << x << ", " << y;
+    return {instId.getIndex(), instId.getSpawnTime()};
+  }
+
+  return {-1, -1};
 }
 
-FXId spawnEffect(FXName name, float x, float y, Vec2 dir) {
+FXId spawnUnorderedEffect(FXName name, float x, float y, Vec2 dir) {
   if(auto *inst = FXManager::getInstance()) {
     auto fpos = (FVec2(x, y) + FVec2(0.5f)) * Renderer::nominalSize;
     auto ftargetOff = FVec2(dir.x, dir.y) * Renderer::nominalSize;
     auto instId = inst->addSystem(name, {fpos, ftargetOff});
-    INFO << "FX spawn: " << ENUM_STRING(name) << " at:" << x << ", " << y << " dir:" << dir;
+    INFO << "FX spawn unordered: " << ENUM_STRING(name) << " at:" << x << ", " << y << " dir:" << dir;
     return {instId.getIndex(), instId.getSpawnTime()};
   }
 
@@ -25,7 +34,9 @@ FXId spawnEffect(FXName name, float x, float y, Vec2 dir) {
 FXId spawnSnapshotEffect(FXName name, float x, float y, float scalar0, float scalar1) {
   if (auto* inst = FXManager::getInstance()) {
     auto fpos = (FVec2(x, y) + FVec2(0.5f)) * Renderer::nominalSize;
-    auto instId = inst->addSystem(name, {fpos, SnapshotKey{scalar0, scalar1}});
+    InitConfig config{fpos, SnapshotKey{scalar0, scalar1}};
+    //config.orderedDraw = true; // TODO: enable
+    auto instId = inst->addSystem(name, config);
     INFO << "FX spawn: " << ENUM_STRING(name) << " at:" << x << ", " << y;
     return {instId.getIndex(), instId.getSpawnTime()};
   }

@@ -922,6 +922,9 @@ void MapGui::renderMapObjects(Renderer& renderer, Vec2 size, milliseconds curren
   Vec2 topLeftCorner = projectOnScreen(allTiles.topLeft());
   fogOfWar.clear();
 
+  // TODO: first iterate all tiles which have to be rendered
+  // then order them properly and draw all together
+
   if (fxViewManager)
     fxViewManager->beginFrame();
   for (ViewLayer layer : layout->getLayers())
@@ -1100,7 +1103,8 @@ void MapGui::drawFX(Renderer& renderer, bool front_layer) {
   auto offset = projectOnScreen(Vec2(0, 0));
   auto size = renderer.getSize();
   auto layer = front_layer ? fx::Layer::front : fx::Layer::back;
-  fx::FXRenderer::getInstance()->draw(zoom, offset.x, offset.y, size.x, size.y, layer);
+  fx::FXRenderer::getInstance()->setView(zoom, offset.x, offset.y, size.x, size.y);
+  fx::FXRenderer::getInstance()->drawUnordered(layer);
 }
 
 void MapGui::updateFX(milliseconds currentTimeReal) {
