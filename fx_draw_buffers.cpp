@@ -5,12 +5,14 @@
 
 namespace fx {
 
-void DrawBuffers::fill(const vector<DrawParticle>& particles) {
+void DrawBuffers::clear() {
   positions.clear();
   texCoords.clear();
   colors.clear();
   elements.clear();
+}
 
+void DrawBuffers::add(const vector<DrawParticle>& particles) {
   if (particles.empty())
     return;
 

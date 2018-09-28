@@ -49,6 +49,7 @@ public:
   const auto& getSystems() const { return systems; }
   auto& getSystems() { return systems; }
 
+  void genQuads(vector<DrawParticle>&, int systemIdx, Layer);
   vector<DrawParticle> genQuads(optional<Layer> = none);
 
   using Snapshot = vector<ParticleSystem::SubSystem>;

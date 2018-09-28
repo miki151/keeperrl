@@ -92,6 +92,72 @@ IRect FXRenderer::visibleTiles(const View& view) {
   return IRect(iTopLeft - IVec2(1, 1), iTopLeft + iSize + IVec2(1, 1));
 }
 
+struct FXRenderer::SystemInfo {
+  bool empty() const {
+    return numParticles == 0;
+  }
+
+  FRect worldRect;
+  FVec2 fboOffset;
+  int firstParticle = 0, numParticles = 0;
+};
+
+FRect FXRenderer::boundingBox(const DrawParticle* particles, int count) {
+  if (count == 0)
+    return FRect();
+
+  FVec2 min = particles[0].positions[0];
+  FVec2 max = min;
+
+  for (int n = 0; n < count; n++) {
+    auto& particle = particles[count];
+    for (auto& pt : particle.positions) {
+      min = vmin(min, pt);
+      max = vmax(max, pt);
+    }
+  }
+
+  return FRect(min, max);
+}
+
+void FXRenderer::prepareRendering(optional<Layer> layer) {
+  auto ids = mgr.aliveSystems();
+  int maxId = 0;
+  for (auto id : ids)
+    maxId = max(maxId, (int)id);
+  systems.clear();
+  systems.resize(maxId + 1);
+  tempParticles.clear();
+
+  for (auto id : ids) {
+    // TODO: properly handle layers
+    int first = (int)tempParticles.size();
+    if (!layer || layer == Layer::back)
+      mgr.genQuads(tempParticles, id, Layer::back);
+    if (!layer || layer == Layer::front)
+      mgr.genQuads(tempParticles, id, Layer::front);
+    int count = (int)tempParticles.size() - first;
+
+    auto rect = boundingBox(&tempParticles[first], count);
+    systems[id] = {rect, FVec2(), first, count};
+  }
+
+  drawBuffers->clear();
+  drawBuffers->add(tempParticles);
+}
+
+void FXRenderer::printSystemsInfo() {
+  for (int n = 0; n < (int)systems.size(); n++) {
+    auto& sys = systems[n];
+    if (sys.empty())
+      continue;
+
+    INFO << "FX System #" << n << ": " << " rect:(" << sys.worldRect.x() << ", "
+         << sys.worldRect.y() << ") - (" << sys.worldRect.ex() << ", "
+         << sys.worldRect.ey() << ")";
+  }
+}
+
 void FXRenderer::draw(float zoom, float offsetX, float offsetY, int w, int h, optional<Layer> layer) {
   CHECK_OPENGL_ERROR();
   View view{zoom, {offsetX, offsetY}, {w, h}};
@@ -99,7 +165,9 @@ void FXRenderer::draw(float zoom, float offsetX, float offsetY, int w, int h, op
   auto fboView = visibleTiles(view);
   auto fboScreenSize = fboView.size() * nominalSize;
 
-  drawBuffers->fill(mgr.genQuads(layer));
+  prepareRendering(layer);
+  //printSystemsInfo();
+
   if (drawBuffers->empty())
     return;
 
@@ -130,14 +198,6 @@ void FXRenderer::draw(float zoom, float offsetX, float offsetY, int w, int h, op
     addFBO->bind();
     SDL::glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     SDL::glClear(GL_COLOR_BUFFER_BIT);
-
-    /* // Mode toggler; useful for testing
-	static bool mode0 = false;
-	static double time = fwk::getTime();
-	if(fwk::getTime() - time > 4.0) {
-		time = fwk::getTime();
-		mode0 ^= 1;
-	}*/
 
     // TODO: Each effect could control how alpha builds up
     SDL::glBlendFuncSeparate(GL_ONE, GL_ONE, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
