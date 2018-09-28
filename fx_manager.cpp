@@ -237,39 +237,42 @@ void FXManager::genSnapshots(FXName name, vector<float> animTimes, vector<float>
        << " (total frames: " << numFramesTotal << ")";
 }
 
-vector<DrawParticle> FXManager::genQuads(optional<Layer> layer) {
-  // TODO(opt): keep a cache of draw particles; return reference to vector
-  vector<DrawParticle> out;
+void FXManager::genQuads(vector<DrawParticle>& out, int systemIdx, Layer layer) {
+  auto& ps = systems[systemIdx];
+  if (ps.isDead)
+    return;
 
-  for (auto& ps : systems) {
-    if (ps.isDead)
+  auto& psdef = (*this)[ps.defId];
+  for (int ssid = 0; ssid < (int)psdef.subSystems.size(); ssid++) {
+    auto& ss = ps[ssid];
+    auto& ssdef = psdef[ssid];
+    if (ssdef.layer != layer)
       continue;
-    auto &psdef = (*this)[ps.defId];
 
-    for (int ssid = 0; ssid < (int)psdef.subSystems.size(); ssid++) {
-      auto &ss = ps[ssid];
-      auto &ssdef = psdef[ssid];
-      if (layer && ssdef.layer != layer)
-        continue;
+    auto& pdef = ssdef.particle;
+    auto& tdef = textureDefs[pdef.textureName];
+    DrawContext ctx{ssctx(ps, ssid), vinv(FVec2(tdef.tiles))};
 
-      auto& pdef = ssdef.particle;
-      auto& tdef = textureDefs[pdef.textureName];
-      DrawContext ctx{ssctx(ps, ssid), vinv(FVec2(tdef.tiles))};
-
-      if (ctx.ssdef.multiDrawFunc)
-        for (auto& pinst : ss.particles) {
-          int num = out.size();
-          ctx.ssdef.multiDrawFunc(ctx, pinst, out);
-        }
-      else
-        for (auto& pinst : ss.particles) {
-          DrawParticle dparticle;
-          ctx.ssdef.drawFunc(ctx, pinst, dparticle);
-          out.emplace_back(dparticle);
-        }
-    }
+    if (ctx.ssdef.multiDrawFunc)
+      for (auto& pinst : ss.particles) {
+        int num = out.size();
+        ctx.ssdef.multiDrawFunc(ctx, pinst, out);
+      }
+    else
+      for (auto& pinst : ss.particles) {
+        DrawParticle dparticle;
+        ctx.ssdef.drawFunc(ctx, pinst, dparticle);
+        out.emplace_back(dparticle);
+      }
   }
+}
 
+vector<DrawParticle> FXManager::genQuads(optional<Layer> layer) {
+  vector<DrawParticle> out;
+  for (int n = 0; n < systems.size(); n++) {
+    genQuads(out, n, Layer::back);
+    genQuads(out, n, Layer::front);
+  }
   return out;
 }
 
