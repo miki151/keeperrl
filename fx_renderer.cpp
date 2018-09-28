@@ -105,10 +105,8 @@ IRect FXRenderer::boundingBox(const DrawParticle* particles, int count) {
 }
 
 IVec2 FXRenderer::allocateFboSpace() {
-  IVec2 size = orderedBlendFBO ? IVec2(orderedBlendFBO->width, orderedBlendFBO->height) : IVec2(256, 256);
+  IVec2 size = orderedBlendFBO ? IVec2(orderedBlendFBO->width, orderedBlendFBO->height) : IVec2(512, 256);
 
-  // TODO: BIG PROBLEM: what about effects which are diagonal? They will take a lot more
-  // space than necessary; Maybe these effects should be drawn just like before
   vector<pair<int, int>> ids;
   ids.reserve(systemDraws.size());
 
@@ -130,12 +128,15 @@ IVec2 FXRenderer::allocateFboSpace() {
 
   std::sort(begin(ids), end(ids));
 
+  const IVec2 maxSize(2048);
+
   bool doesntFit = true;
   while (doesntFit) {
     IVec2 pos;
     int maxHeight = 0;
 
     doesntFit = false;
+
     for (auto idPair : ids) {
       int id = idPair.second;
       auto& draw = systemDraws[id];
@@ -143,19 +144,26 @@ IVec2 FXRenderer::allocateFboSpace() {
 
       if (pos.x + w > size.x)
         pos = {0, pos.y + maxHeight};
+
       if (pos.y + h > size.y) {
-        size.y *= 2;
-        doesntFit = true;
-        break;
+        if (size == maxSize) { // not enought space in FBO, dropping FXes...
+          draw.numParticles = 0;
+        } else {
+          if (h > size.y || size.x >= size.y)
+            size.y *= 2;
+          else
+            size.x *= 2;
+          size = vmin(size, maxSize);
+          doesntFit = true;
+          break;
+        }
       }
+
       draw.fboPos = pos;
       pos.x += w;
       maxHeight = max(maxHeight, h);
     }
   }
-
-  // TODO: properly handle such situation
-  DASSERT(size.x <= 2048 && size.y <= 2048);
 
   return size;
 }
