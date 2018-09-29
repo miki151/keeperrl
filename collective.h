@@ -80,6 +80,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   WCollectiveControl getControl() const;
   LocalTime getLocalTime() const;
   GlobalTime getGlobalTime() const;
+  const PositionSet& getStoragePositions(StorageId) const;
 
   typedef CollectiveResourceId ResourceId;
 
@@ -191,7 +192,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   void updateResourceProduction();
   bool isItemMarked(WConstItem) const;
   int getNumItems(ItemIndex, bool includeMinions = true) const;
-  optional<PositionSet> getStorageFor(WConstItem) const;
+  const PositionSet& getStorageForPillagedItem(WConstItem) const;
 
   void addKnownVillain(WConstCollective);
   bool isKnownVillain(WConstCollective) const;

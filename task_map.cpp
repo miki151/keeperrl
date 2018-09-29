@@ -29,8 +29,16 @@ WTask TaskMap::getClosestTask(WConstCreature c, MinionActivity activity, bool pr
       return false;
     return dist < getPosition(closest)->dist8(c->getPosition());
   };
-  for (auto task : taskByActivity[activity])
-    if (task->canPerform(c) && (!priorityOnly || isPriorityTask(task)))
+  optional<StorageId> storageDropTask;
+  for (auto& task : taskByActivity[activity])
+    if (auto id = task->getStorageId(true))
+      if (task->canPerform(c)) {
+        storageDropTask = *id;
+        break;
+      }
+  for (auto& task : taskByActivity[activity])
+    if (task->canPerform(c) && (!priorityOnly || isPriorityTask(task)) &&
+        (!storageDropTask || storageDropTask == task->getStorageId(false)))
       if (auto pos = getPosition(task)) {
         PROFILE_BLOCK("Task check");
         double dist = pos->dist8(c->getPosition());

@@ -53,6 +53,7 @@
 #include "position_matching.h"
 #include "fx_variant_name.h"
 #include "fx_view_manager.h"
+#include "storage_id.h"
 
 template <class Archive>
 void Collective::serialize(Archive& ar, const unsigned int version) {
@@ -687,8 +688,8 @@ GlobalTime Collective::getGlobalTime() const {
 int Collective::numResource(ResourceId id) const {
   int ret = credit[id];
   if (auto itemIndex = config->getResourceInfo(id).itemIndex)
-    if (auto storageType = config->getResourceInfo(id).storageDestination)
-      for (Position pos : storageType(this))
+    if (auto storage = config->getResourceInfo(id).storageId)
+      for (auto& pos : getStoragePositions(*storage))
         ret += pos.getItems(*itemIndex).size();
   return ret;
 }
@@ -725,8 +726,8 @@ void Collective::takeResource(const CostInfo& cost) {
     }
   }
   if (auto itemIndex = config->getResourceInfo(cost.id).itemIndex)
-    if (auto storageType = config->getResourceInfo(cost.id).storageDestination)
-      for (Position pos : storageType(this)) {
+    if (auto storage = config->getResourceInfo(cost.id).storageId)
+      for (auto& pos : getStoragePositions(*storage)) {
         vector<WItem> goldHere = pos.getItems(*itemIndex);
         for (WItem it : goldHere) {
           pos.removeItem(it);
@@ -741,8 +742,8 @@ void Collective::returnResource(const CostInfo& amount) {
   if (amount.value == 0)
     return;
   CHECK(amount.value > 0);
-  if (auto storageType = config->getResourceInfo(amount.id).storageDestination) {
-    const auto& destination = storageType(this);
+  if (auto storage = config->getResourceInfo(amount.id).storageId) {
+    const auto& destination = getStoragePositions(*storage);
     if (!destination.empty()) {
       Random.choose(destination).dropItems(config->getResourceInfo(amount.id).itemId.get(amount.value));
       return;
@@ -807,11 +808,11 @@ int Collective::getNumItems(ItemIndex index, bool includeMinions) const {
   return ret;
 }
 
-optional<PositionSet> Collective::getStorageFor(WConstItem item) const {
+const PositionSet& Collective::getStorageForPillagedItem(WConstItem item) const {
   for (auto& info : config->getFetchInfo())
     if (hasIndex(info.index, item))
-      return info.destinationFun(this);
-  return none;
+      return getStoragePositions(info.storageId);
+  return zones->getPositions(ZoneId::STORAGE_EQUIPMENT);
 }
 
 void Collective::addKnownVillain(WConstCollective col) {
@@ -1082,29 +1083,41 @@ bool Collective::isDelayed(Position pos) {
   return delayedPos.count(pos) && delayedPos.at(pos) > getLocalTime();
 }
 
-static Position chooseClosest(Position pos, const vector<Position>& squares) {
-  Position ret = squares[0];
+static Position chooseClosest(Position pos, const PositionSet& squares) {
+  optional<Position> ret;
   for (auto& p : squares)
-    if (pos.dist8(p) < pos.dist8(ret))
+    if (!ret || pos.dist8(p) < pos.dist8(*ret))
       ret = p;
-  return ret;
+  return *ret;
+}
+
+const PositionSet& Collective::getStoragePositions(StorageId storage) const {
+  switch (storage) {
+    case StorageId::RESOURCE:
+      return zones->getPositions(ZoneId::STORAGE_RESOURCES);
+    case StorageId::EQUIPMENT:
+      return zones->getPositions(ZoneId::STORAGE_EQUIPMENT);
+    case StorageId::GOLD:
+      return constructions->getBuiltPositions(FurnitureType::TREASURE_CHEST);
+    case StorageId::CORPSES:
+      return constructions->getBuiltPositions(FurnitureType::GRAVE);
+  }
 }
 
 void Collective::fetchItems(Position pos, const ItemFetchInfo& elem) {
   PROFILE;
-  if (elem.destinationFun(this).count(pos))
+  const auto& destination = getStoragePositions(elem.storageId);
+  if (destination.count(pos))
     return;
   vector<WItem> equipment = pos.getItems(elem.index).filter(
       [this, &elem] (WConstItem item) { return elem.predicate(this, item); });
   if (!equipment.empty()) {
-    const auto& destination = elem.destinationFun(this);
     if (!destination.empty()) {
       warnings->setWarning(elem.warning, false);
-      auto task = taskMap->addTask(Task::pickUpItem(pos, equipment), pos, MinionActivity::HAULING);
+      auto task = taskMap->addTask(Task::pickUpItem(pos, equipment, elem.storageId), pos, MinionActivity::HAULING);
       for (WItem it : equipment)
         markItem(it, task);
-      auto destinationVec = vector<Position>(destination.begin(), destination.end());
-      taskMap->addTask(Task::dropItems(equipment, destinationVec), chooseClosest(pos, destinationVec),
+      taskMap->addTask(Task::dropItems(equipment, elem.storageId, this), chooseClosest(pos, destination),
           MinionActivity::HAULING);
     } else
       warnings->setWarning(elem.warning, true);

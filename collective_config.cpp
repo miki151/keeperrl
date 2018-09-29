@@ -36,6 +36,7 @@
 #include "view_object.h"
 #include "territory.h"
 #include "furniture_factory.h"
+#include "storage_id.h"
 
 template <class Archive>
 void CollectiveConfig::serialize(Archive& ar, const unsigned int version) {
@@ -259,32 +260,24 @@ bool CollectiveConfig::canBuildOutsideTerritory(FurnitureType type) {
   }
 }
 
-static StorageDestinationFun getFurnitureStorage(FurnitureType t) {
-  return [t](WConstCollective col)->const PositionSet& { return col->getConstructions().getBuiltPositions(t); };
-}
-
-static StorageDestinationFun getZoneStorage(ZoneId zone) {
-  return [zone](WConstCollective col)->const PositionSet& { return col->getZones().getPositions(zone); };
-}
-
 const ResourceInfo& CollectiveConfig::getResourceInfo(CollectiveResourceId id) {
   static EnumMap<CollectiveResourceId, ResourceInfo> resourceInfo([](CollectiveResourceId id)->ResourceInfo {
     switch (id) {
       case CollectiveResourceId::PRISONER_HEAD:
-        return { nullptr, none, ItemType::GoldPiece{}, "", ViewId::IMPALED_HEAD, true};
+        return { none, none, ItemType::GoldPiece{}, "", ViewId::IMPALED_HEAD, true};
       case CollectiveResourceId::GOLD:
-        return {getFurnitureStorage(FurnitureType::TREASURE_CHEST), ItemIndex::GOLD, ItemType::GoldPiece{}, "gold", ViewId::GOLD};
+        return {StorageId::GOLD, ItemIndex::GOLD, ItemType::GoldPiece{}, "gold", ViewId::GOLD};
       case CollectiveResourceId::WOOD:
-        return { getZoneStorage(ZoneId::STORAGE_RESOURCES), ItemIndex::WOOD, ItemType::WoodPlank{}, "wood", ViewId::WOOD_PLANK,
+        return { StorageId::RESOURCE, ItemIndex::WOOD, ItemType::WoodPlank{}, "wood", ViewId::WOOD_PLANK,
             false, TutorialHighlight::WOOD_RESOURCE};
       case CollectiveResourceId::IRON:
-        return { getZoneStorage(ZoneId::STORAGE_RESOURCES), ItemIndex::IRON, ItemType::IronOre{}, "iron", ViewId::IRON_ROCK};
+        return { StorageId::RESOURCE, ItemIndex::IRON, ItemType::IronOre{}, "iron", ViewId::IRON_ROCK};
       case CollectiveResourceId::ADA:
-        return { getZoneStorage(ZoneId::STORAGE_RESOURCES), ItemIndex::ADA, ItemType::AdaOre{}, "adamantium", ViewId::ADA_ORE};
+        return { StorageId::RESOURCE, ItemIndex::ADA, ItemType::AdaOre{}, "adamantium", ViewId::ADA_ORE};
       case CollectiveResourceId::STONE:
-        return { getZoneStorage(ZoneId::STORAGE_RESOURCES), ItemIndex::STONE, ItemType::Rock{}, "granite", ViewId::ROCK};
+        return { StorageId::RESOURCE, ItemIndex::STONE, ItemType::Rock{}, "granite", ViewId::ROCK};
       case CollectiveResourceId::CORPSE:
-        return { getFurnitureStorage(FurnitureType::GRAVE), ItemIndex::REVIVABLE_CORPSE, ItemType::GoldPiece{}, "corpses", ViewId::BODY_PART, true};
+        return { StorageId::CORPSES, ItemIndex::REVIVABLE_CORPSE, ItemType::GoldPiece{}, "corpses", ViewId::BODY_PART, true};
     }
   });
   return resourceInfo[id];
@@ -298,18 +291,18 @@ static CollectiveItemPredicate unMarkedItems() {
 const vector<ItemFetchInfo>& CollectiveConfig::getFetchInfo() const {
   if (type == KEEPER) {
     static vector<ItemFetchInfo> ret {
-        {ItemIndex::CORPSE, unMarkedItems(), getFurnitureStorage(FurnitureType::GRAVE), CollectiveWarning::GRAVES},
-        {ItemIndex::GOLD, unMarkedItems(), getFurnitureStorage(FurnitureType::TREASURE_CHEST), CollectiveWarning::CHESTS},
+        {ItemIndex::CORPSE, unMarkedItems(), StorageId::CORPSES, CollectiveWarning::GRAVES},
+        {ItemIndex::GOLD, unMarkedItems(), StorageId::GOLD, CollectiveWarning::CHESTS},
         {ItemIndex::MINION_EQUIPMENT, [](WConstCollective col, WConstItem it)
             { return it->getClass() != ItemClass::GOLD && !col->isItemMarked(it);},
-            getZoneStorage(ZoneId::STORAGE_EQUIPMENT), CollectiveWarning::EQUIPMENT_STORAGE},
-        {ItemIndex::WOOD, unMarkedItems(), getZoneStorage(ZoneId::STORAGE_RESOURCES),
+            StorageId::EQUIPMENT, CollectiveWarning::EQUIPMENT_STORAGE},
+        {ItemIndex::WOOD, unMarkedItems(), StorageId::RESOURCE,
             CollectiveWarning::RESOURCE_STORAGE},
-        {ItemIndex::IRON, unMarkedItems(), getZoneStorage(ZoneId::STORAGE_RESOURCES),
+        {ItemIndex::IRON, unMarkedItems(), StorageId::RESOURCE,
             CollectiveWarning::RESOURCE_STORAGE},
-        {ItemIndex::ADA, unMarkedItems(), getZoneStorage(ZoneId::STORAGE_RESOURCES),
+        {ItemIndex::ADA, unMarkedItems(), StorageId::RESOURCE,
             CollectiveWarning::RESOURCE_STORAGE},
-        {ItemIndex::STONE, unMarkedItems(), getZoneStorage(ZoneId::STORAGE_RESOURCES),
+        {ItemIndex::STONE, unMarkedItems(), StorageId::RESOURCE,
             CollectiveWarning::RESOURCE_STORAGE},
         /*{ItemIndex::TRAP, unMarkedItems(), [](WConstCollective col) -> const PositionSet& {
                 return col->getTerritory().getAllAsSet(); },

@@ -403,7 +403,7 @@ const vector<WItem>& Position::getItems(ItemIndex index) const {
   }
 }
 
-PItem Position::removeItem(WItem it) {
+PItem Position::removeItem(WItem it) const {
   CHECK(isValid());
   return modSquare()->removeItem(*this, it);
 }

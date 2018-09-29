@@ -64,7 +64,7 @@ class Position {
   void getViewIndex(ViewIndex&, WConstCreature viewer) const;
   const vector<WItem>& getItems() const;
   const vector<WItem>& getItems(ItemIndex) const;
-  PItem removeItem(WItem);
+  PItem removeItem(WItem) const;
   Inventory& modInventory() const;
   const Inventory& getInventory() const;
   vector<PItem> removeItems(vector<WItem>);

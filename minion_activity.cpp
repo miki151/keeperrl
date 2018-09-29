@@ -157,9 +157,8 @@ static PTask getDropItemsTask(WCollective collective, WConstCreature creature) {
   for (const ItemFetchInfo& elem : config.getFetchInfo()) {
     vector<WItem> items = creature->getEquipment().getItems(elem.index).filter([&elem, &collective, &creature](WConstItem item) {
         return elem.predicate(collective, item) && !collective->getMinionEquipment().isOwner(item, creature); });
-    const auto& destination = elem.destinationFun(collective);
-    if (!items.empty() && !destination.empty())
-      return Task::dropItems(items, vector<Position>(destination.begin(), destination.end()));
+    if (!items.empty() && !collective->getStoragePositions(elem.storageId).empty())
+      return Task::dropItems(items, elem.storageId, collective);
   }
   return nullptr;
 };

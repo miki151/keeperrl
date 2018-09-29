@@ -52,6 +52,7 @@ class Task : public UniqueEntity<Task>, public OwnedObject<Task> {
   virtual string getDescription() const = 0;
   virtual bool canPerform(WConstCreature c) const;
   virtual optional<Position> getPosition() const;
+  virtual optional<StorageId> getStorageId(bool dropOnly) const;
   optional<ViewId> getViewId() const;
   bool isDone();
   void setViewId(ViewId);
@@ -66,7 +67,7 @@ class Task : public UniqueEntity<Task>, public OwnedObject<Task> {
   static PTask archeryRange(WTaskCallback, vector<Position>);
   static PTask pickAndEquipItem(Position, WItem item);
   static PTask equipItem(WItem);
-  static PTask pickUpItem(Position, vector<WItem>);
+  static PTask pickUpItem(Position, vector<WItem>, optional<StorageId> = none);
   static PTask kill(WTaskCallback, WCreature);
   static PTask torture(WTaskCallback, WCreature);
   static PTask sacrifice(WTaskCallback, WCreature);
@@ -96,6 +97,7 @@ class Task : public UniqueEntity<Task>, public OwnedObject<Task> {
   static PTask whipping(Position, WCreature whipped);
   static PTask dropItemsAnywhere(vector<WItem>);
   static PTask dropItems(vector<WItem>, vector<Position>);
+  static PTask dropItems(vector<WItem>, StorageId, WCollective);
   static PTask spider(Position origin, const vector<Position>& posClose);
 
   template <class Archive>

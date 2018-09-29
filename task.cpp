@@ -74,6 +74,10 @@ optional<Position> Task::getPosition() const {
   return none;
 }
 
+optional<StorageId> Task::getStorageId(bool dropOnly) const {
+  return none;
+}
+
 optional<ViewId> Task::getViewId() const {
   return viewId;
 }
@@ -228,16 +232,23 @@ namespace {
 
 class PickItem : public Task {
   public:
-  PickItem(Position pos, vector<WItem> _items, int retries = 10)
-      : Task(true), items(_items), position(pos), tries(retries) {
+  PickItem(Position position, vector<WItem> items, optional<StorageId> storage)
+      : Task(true), items(std::move(items)), position(position), tries(10), storage(storage) {
     CHECK(!items.empty());
     lightestItem = 10000000;
-    for (auto& item : _items)
+    for (auto& item : items)
       lightestItem = min(lightestItem, item->getWeight());
   }
 
   virtual void onPickedUp() {
     setDone();
+  }
+
+  virtual optional<StorageId> getStorageId(bool dropOnly) const override {
+    if (dropOnly)
+      return none;
+    else
+      return storage;
   }
 
   virtual string getDescription() const override {
@@ -293,7 +304,7 @@ class PickItem : public Task {
     return c->canCarryMoreWeight(lightestItem) && c->isSameSector(position);
   }
 
-  SERIALIZE_ALL(SUBCLASS(Task), items, pickedUp, position, tries, lightestItem)
+  SERIALIZE_ALL(SUBCLASS(Task), items, pickedUp, position, tries, lightestItem, storage)
   SERIALIZATION_CONSTRUCTOR(PickItem)
 
   protected:
@@ -302,11 +313,12 @@ class PickItem : public Task {
   Position SERIAL(position);
   int SERIAL(tries);
   double SERIAL(lightestItem);
+  optional<StorageId> SERIAL(storage);
 };
 }
 
-PTask Task::pickUpItem(Position position, vector<WItem> items) {
-  return makeOwner<PickItem>(position, items);
+PTask Task::pickUpItem(Position position, vector<WItem> items, optional<StorageId> storage) {
+  return makeOwner<PickItem>(position, items, storage);
 }
 
 namespace {
@@ -348,26 +360,22 @@ PTask Task::equipItem(WItem item) {
   return makeOwner<EquipItem>(item);
 }
 
-static optional<Position> chooseRandomClose(WCreature c, const vector<Position>& squares, Task::SearchType type) {
+template <typename PositionContainer>
+static optional<Position> chooseRandomClose(WCreature c, const PositionContainer& squares, Task::SearchType type) {
   int minD = 10000;
   int margin = type == Task::LAZY ? 0 : 3;
   vector<Position> close;
   auto start = c->getPosition();
-  for (Position v : squares)
+  for (auto& v : squares)
     if (c->canNavigateTo(v))
       minD = min(minD, v.dist8(start));
-  for (Position v : squares)
+  for (auto& v : squares)
     if (c->canNavigateTo(v) && v.dist8(start) <= minD + margin)
       close.push_back(v);
   if (!close.empty())
     return Random.choose(close);
-  else {
-    auto all = squares.filter([&](auto pos) { return c->canNavigateTo(pos); });
-    if (!all.empty())
-      return Random.choose(all);
-    else
-      return none;
-  }
+  else
+    return none;
 }
 
 namespace {
@@ -1540,20 +1548,35 @@ PTask Task::dropItemsAnywhere(vector<WItem> items) {
 namespace {
 class DropItems : public Task {
   public:
-  DropItems(EntitySet<Item> it, vector<Position> pos) : items(it), positions(pos) {}
+  DropItems(EntitySet<Item> it, StorageId storage, WCollective collective)
+      : items(it), positions(StorageInfo{storage, collective}) {}
 
+  DropItems(EntitySet<Item> it, vector<Position> positions)
+      : items(it), positions(std::move(positions)) {}
 
   virtual string getDescription() const override {
     return "Drop items";
   }
 
-  optional<Position> getBestTarget(WCreature c, const vector<Position>& pos) const {
-    return chooseRandomClose(c, pos, LAZY);
+  optional<Position> chooseTarget(WCreature c) const {
+    return positions.visit(
+        [&](const vector<Position>& v) { return chooseRandomClose(c, v, LAZY); },
+        [&](const StorageInfo& info) {
+          return chooseRandomClose(c, info.collective->getStoragePositions(info.storage), LAZY);
+        }
+    );
+  }
+
+  virtual optional<StorageId> getStorageId(bool) const override {
+    if (auto info = positions.getReferenceMaybe<StorageInfo>())
+      return info->storage;
+    else
+      return none;
   }
 
   virtual MoveInfo getMove(WCreature c) override {
     if (!target || !c->isSameSector(*target))
-      target = getBestTarget(c, positions);
+      target = chooseTarget(c);
     if (!target)
       return c->drop(c->getEquipment().getItems().filter(items.containsPredicate())).append(
           [this] (WCreature) {
@@ -1595,13 +1618,22 @@ class DropItems : public Task {
 
   protected:
   EntitySet<Item> SERIAL(items);
-  vector<Position> SERIAL(positions);
+  struct StorageInfo {
+    StorageId SERIAL(storage);
+    WCollective SERIAL(collective);
+    SERIALIZE_ALL(storage, collective);
+  };
+  variant<StorageInfo, vector<Position>> SERIAL(positions);
   optional<Position> SERIAL(target);
 };
 }
 
+PTask Task::dropItems(vector<WItem> items, StorageId storage, WCollective collective) {
+  return makeOwner<DropItems>(items, storage, collective);
+}
+
 PTask Task::dropItems(vector<WItem> items, vector<Position> positions) {
-  return makeOwner<DropItems>(items, positions);
+  return makeOwner<DropItems>(items, std::move(positions));
 }
 
 namespace {

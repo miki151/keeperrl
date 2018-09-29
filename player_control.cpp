@@ -757,10 +757,7 @@ void PlayerControl::handlePillage(WCollective col) {
     };
     vector<PillageOption> options;
     for (auto& elem : Item::stackItems(getPillagedItems(col)))
-      if (auto storage = collective->getStorageFor(elem.front()))
-        options.push_back({elem, *storage});
-      else
-        options.push_back({elem, collective->getZones().getPositions(ZoneId::STORAGE_EQUIPMENT)});
+      options.push_back({elem, collective->getStorageForPillagedItem(elem.front())});
     if (options.empty())
       return;
     vector<ItemInfo> itemInfo = options.transform([] (const PillageOption& it) {

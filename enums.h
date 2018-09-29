@@ -98,3 +98,4 @@ enum class TeamOrder;
 
 enum class FXName;
 enum class FXVariantName;
+enum class StorageId;
