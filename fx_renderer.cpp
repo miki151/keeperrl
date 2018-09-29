@@ -20,10 +20,6 @@ struct FXRenderer::View {
   IVec2 size;
 };
 
-static FXRenderer *s_instance = nullptr;
-
-FXRenderer *FXRenderer::getInstance() { return s_instance; }
-
 FXRenderer::FXRenderer(DirectoryPath dataPath, FXManager& mgr) : mgr(mgr) {
   textures.reserve(EnumInfo<TextureName>::size);
   textureScales.reserve(textures.size());
@@ -49,11 +45,9 @@ FXRenderer::FXRenderer(DirectoryPath dataPath, FXManager& mgr) : mgr(mgr) {
     }
     textureIds[texName] = id;
   }
-  CHECK(s_instance == nullptr && "There can be only one!");
-  s_instance = this;
 }
 
-FXRenderer::~FXRenderer() { s_instance = nullptr; }
+FXRenderer::~FXRenderer() {}
 
 void FXRenderer::initFramebuffer(IVec2 size) {
   if (!Framebuffer::isExtensionAvailable())

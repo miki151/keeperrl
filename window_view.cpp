@@ -35,6 +35,7 @@
 #include "player_role.h"
 #include "file_sharing.h"
 #include "fx_manager.h"
+#include "fx_renderer.h"
 
 using SDL::SDL_Keysym;
 using SDL::SDL_Keycode;
@@ -94,7 +95,7 @@ WindowView::WindowView(ViewParams params) : renderer(params.renderer), gui(param
     soundLibrary(params.soundLibrary), bugreportSharing(params.bugreportSharing), bugreportDir(params.bugreportDir),
     installId(params.installId) {}
 
-void WindowView::initialize() {
+void WindowView::initialize(unique_ptr<fx::FXRenderer> fxRenderer) {
   renderer.setFullscreen(options->getBoolValue(OptionId::FULLSCREEN));
   renderer.setVsync(options->getBoolValue(OptionId::VSYNC));
   renderer.enableCustomCursor(!options->getBoolValue(OptionId::DISABLE_CURSOR));
@@ -141,7 +142,8 @@ void WindowView::initialize() {
       inputQueue,
       clock,
       options,
-      &gui));
+      &gui,
+      std::move(fxRenderer)));
   minimapGui.reset(new MinimapGui([this]() { inputQueue.push(UserInput(UserInputId::DRAW_LEVEL_MAP)); }));
   rebuildMinimapGui();
   resetMapBounds();

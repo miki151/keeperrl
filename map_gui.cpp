@@ -40,13 +40,15 @@
 using SDL::SDL_Keysym;
 using SDL::SDL_Keycode;
 
-MapGui::MapGui(Callbacks call, SyncQueue<UserInput>& inputQueue, Clock* c, Options* o, GuiFactory* f)
+MapGui::MapGui(Callbacks call, SyncQueue<UserInput>& inputQueue, Clock* c, Options* o, GuiFactory* f,
+    unique_ptr<fx::FXRenderer> fx)
     : objects(Level::getMaxBounds()), callbacks(call), inputQueue(inputQueue),
     clock(c), options(o), fogOfWar(Level::getMaxBounds(), false), extraBorderPos(Level::getMaxBounds(), {}),
-    lastSquareUpdate(Level::getMaxBounds()), connectionMap(Level::getMaxBounds()), guiFactory(f) {
+    lastSquareUpdate(Level::getMaxBounds()), connectionMap(Level::getMaxBounds()), guiFactory(f),
+    fxRenderer(std::move(fx)) {
   clearCenter();
 
-  if (fx::FXRenderer::getInstance() != nullptr)
+  if (fxRenderer)
     fxViewManager = std::make_unique<FXViewManager>();
 }
 
@@ -1100,7 +1102,7 @@ void MapGui::drawFX(Renderer& renderer, bool front_layer) {
   auto offset = projectOnScreen(Vec2(0, 0));
   auto size = renderer.getSize();
   auto layer = front_layer ? fx::Layer::front : fx::Layer::back;
-  fx::FXRenderer::getInstance()->draw(zoom, offset.x, offset.y, size.x, size.y, layer);
+  fxRenderer->draw(zoom, offset.x, offset.y, size.x, size.y, layer);
 }
 
 void MapGui::updateFX(milliseconds currentTimeReal) {

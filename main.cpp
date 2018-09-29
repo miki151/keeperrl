@@ -433,7 +433,7 @@ static int keeperMain(po::parser& commandLineFlags) {
 #ifndef RELEASE
   InfoLog.addOutput(DebugOutput::toString([&view](const string& s) { view->logMessage(s);}));
 #endif
-  view->initialize();
+  view->initialize(std::move(fxRenderer));
   if (commandLineFlags["battle_level"].was_set() && commandLineFlags["battle_view"].was_set()) {
     battleTest(view.get());
     return 0;

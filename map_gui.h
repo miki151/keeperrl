@@ -34,6 +34,9 @@ class Options;
 class TutorialInfo;
 class UserInput;
 class FXViewManager;
+namespace fx {
+  class FXRenderer;
+}
 
 class MapGui : public GuiElem {
   public:
@@ -43,8 +46,8 @@ class MapGui : public GuiElem {
     function<void(Vec2)> rightClickFun;
     function<void()> refreshFun;
   };
-  MapGui(Callbacks, SyncQueue<UserInput>&, Clock*, Options*, GuiFactory*);
-  ~MapGui();
+  MapGui(Callbacks, SyncQueue<UserInput>&, Clock*, Options*, GuiFactory*, unique_ptr<fx::FXRenderer>);
+  ~MapGui() override;
 
   virtual void render(Renderer&) override;
   virtual bool onLeftClick(Vec2) override;
@@ -193,6 +196,7 @@ class MapGui : public GuiElem {
   // For advanced FX time control:
   //bool lastFxTurnBased = false;
   //double lastFxTimeReal = -1.0, lastFxTimeTurn = -1.0;
+  unique_ptr<fx::FXRenderer> fxRenderer;
   unique_ptr<FXViewManager> fxViewManager;
   void updateFX(milliseconds currentTimeReal);
   void drawFX(Renderer&, bool front_layer);

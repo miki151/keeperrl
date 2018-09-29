@@ -18,9 +18,6 @@ public:
 
   void draw(float zoom, float offsetX, float offsetY, int w, int h, optional<Layer> = none);
 
-  // TODO: better way to communicate with FXRenderer ?
-  static FXRenderer *getInstance();
-
   bool useFramebuffer = true;
   pair<unsigned, unsigned> fboIds() const;
   IVec2 fboSize() const;

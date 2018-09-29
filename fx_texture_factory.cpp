@@ -7,8 +7,8 @@ namespace fx {
 
 static const char* texFileName(TextureName name) {
   switch (name) {
-#define CASE(id, fileName)                                                                                             \
-  case TextureName::id:                                                                                                \
+#define CASE(id, fileName) \
+  case TextureName::id: \
     return fileName;
     CASE(CIRCULAR, "circular.png")
     CASE(CIRCULAR_STRONG, "circular_strong.png")

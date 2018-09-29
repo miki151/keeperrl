@@ -35,6 +35,9 @@ class RetiredGames;
 class ScrollPosition;
 class FilePath;
 struct Color;
+namespace fx {
+  class FXRenderer;
+}
 
 enum class SplashType { BIG, AUTOSAVING, SMALL };
 
@@ -116,7 +119,7 @@ class View {
   virtual ~View();
 
   /** Does all the library specific init.*/
-  virtual void initialize() = 0;
+  virtual void initialize(unique_ptr<fx::FXRenderer>) = 0;
 
   /** Resets the view before a new game.*/
   virtual void reset() = 0;

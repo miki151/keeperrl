@@ -51,7 +51,7 @@ class WindowView: public View {
   static View* createReplayView(InputArchive& ifs, ViewParams);
 
   WindowView(ViewParams); 
-  virtual void initialize() override;
+  virtual void initialize(unique_ptr<fx::FXRenderer>) override;
   virtual void reset() override;
   virtual void displaySplash(const ProgressMeter*, const string&, SplashType, function<void()> cancelFun) override;
   virtual void clearSplash() override;

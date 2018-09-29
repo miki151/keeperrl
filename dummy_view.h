@@ -9,7 +9,7 @@ class DummyView : public View {
   DummyView(Clock* c) : clock(c) {}
   Clock* clock;
   virtual ~DummyView() override {}
-  virtual void initialize() override {}
+  virtual void initialize(unique_ptr<fx::FXRenderer>) override {}
   virtual void reset() override {}
   virtual void displaySplash(const ProgressMeter*, const string&, SplashType, function<void()> = nullptr) override {}
   virtual void clearSplash() override {}
