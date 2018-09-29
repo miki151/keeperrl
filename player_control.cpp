@@ -1476,7 +1476,7 @@ void PlayerControl::onEvent(const GameEvent& event) {
       },
       [&](const OtherEffect& info) {
         if (getControlled().empty() && canSee(info.position))
-          getView()->animation(info.effect, info.position.getCoord(), info.targetOffset, info.color);
+          getView()->animation(info);
       },
       [&](const auto&) {}
   );

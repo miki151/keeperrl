@@ -20,6 +20,7 @@
 #include "singleton.h"
 #include "spell_id.h"
 #include "color.h"
+#include "fx_info.h"
 
 enum class CastMessageType {
   STANDARD,
@@ -28,13 +29,6 @@ enum class CastMessageType {
 
 class Effect;
 class DirEffectType;
-
-struct SpellFX {
-  SpellFX(FXName name, Color color = Color::WHITE) : name(name), color(color) {}
-
-  FXName name;
-  Color color;
-};
 
 class Spell : public Singleton<Spell, SpellId> {
   public:
@@ -49,21 +43,25 @@ class Spell : public Singleton<Spell, SpellId> {
   void addMessage(WCreature);
   SoundId getSound() const;
   optional<int> getLearningExpLevel() const;
-  optional<SpellFX> getFX() const;
+  optional<FXInfo> getFX() const;
+  optional<FXInfo> getSplashFX() const;
 
   static void init();
 
+  // TODO: why keep const members private? there is no danger of misuse
+  // Also gettters wouldn't be necessary
   private:
-  Spell(const string&, Effect, int difficulty, SoundId, optional<SpellFX> = none,
+  Spell(const string&, Effect, int difficulty, SoundId, optional<FXInfo> fx = none, optional<FXInfo> splashFx = none,
         CastMessageType = CastMessageType::STANDARD);
-  Spell(const string&, DirEffectType, int difficulty, SoundId, optional<SpellFX> = none,
-        CastMessageType = CastMessageType::STANDARD);
+  Spell(const string&, DirEffectType, int difficulty, SoundId, optional<FXInfo> fx = none,
+        optional<FXInfo> splashFx = none, CastMessageType = CastMessageType::STANDARD);
 
   const string name;
   const HeapAllocated<variant<Effect, DirEffectType>> effect;
   const int difficulty;
   const CastMessageType castMessageType;
   const SoundId sound;
-  const optional<SpellFX> fx;
+  const optional<FXInfo> fx;
+  const optional<FXInfo> splashFx;
 };
 

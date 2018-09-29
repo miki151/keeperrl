@@ -3,6 +3,8 @@
 #include "fx_base.h"
 #include "fx_name.h"
 #include "fx_variant_name.h"
+#include "fx_info.h"
+#include "fx_interface.h"
 #include "variant.h"
 
 void FXViewManager::EntityInfo::clearVisibility() {
@@ -11,41 +13,41 @@ void FXViewManager::EntityInfo::clearVisibility() {
     effects[n].isVisible = false;
 }
 
-void FXViewManager::EntityInfo::addFX(GenericId id, TypeId typeId, const FXDef& def) {
+void FXViewManager::EntityInfo::addFX(GenericId id, TypeId typeId, const FXInfo& info) {
   PASSERT(isVisible); // Effects shouldn't be added if creature itself isn't visible
 
   for (int n = 0; n < numEffects; n++) {
     if (effects[n].typeId == typeId && !effects[n].isDying) {
       effects[n].isVisible = true;
-      effects[n].stackId = def.stackId;
+      effects[n].stackId = info.stackId;
       fx::setPos(effects[n].id, x, y);
-      updateParams(def, effects[n].id);
+      updateParams(info, effects[n].id);
       return;
     }
   }
 
   if (numEffects < maxEffects) {
     auto& newEffect = effects[numEffects++];
-    INFO << "FX view: spawn: " << ENUM_STRING(def.name) << " for: " << id;
+    INFO << "FX view: spawn: " << ENUM_STRING(info.name) << " for: " << id;
 
     if (justShown)
-      newEffect.id = fx::spawnSnapshotEffect(def.name, x, y, def.strength, 0.0f);
+      newEffect.id = fx::spawnSnapshotEffect(info.name, x, y, info.strength, 0.0f);
     else
-      newEffect.id = fx::spawnEffect(def.name, x, y);
+      newEffect.id = fx::spawnEffect(info.name, x, y);
     newEffect.typeId = typeId;
     newEffect.isVisible = true;
     newEffect.isDying = false;
-    newEffect.stackId = def.stackId;
+    newEffect.stackId = info.stackId;
 
-    updateParams(def, newEffect.id);
+    updateParams(info, newEffect.id);
   }
 }
 
-void FXViewManager::updateParams(const FXDef& def, FXId id) {
-  if (!(def.color == Color::WHITE))
-    fx::setColor(id, def.color);
-  if (def.strength != 0.0f)
-    fx::setScalar(id, def.strength, 0);
+void FXViewManager::updateParams(const FXInfo& info, FXId id) {
+  if (!(info.color == Color::WHITE))
+    fx::setColor(id, info.color);
+  if (info.strength != 0.0f)
+    fx::setScalar(id, info.strength, 0);
 }
 
 string FXViewManager::EffectInfo::name() const {
@@ -114,16 +116,16 @@ void FXViewManager::addEntity(GenericId gid, float x, float y) {
   }
 }
 
-void FXViewManager::addFX(GenericId gid, const FXDef& def) {
+void FXViewManager::addFX(GenericId gid, const FXInfo& info) {
   auto it = entities.find(gid);
   PASSERT(it != entities.end());
-  it->second.addFX(gid, def.name, def);
+  it->second.addFX(gid, info.name, info);
 }
 
 void FXViewManager::addFX(GenericId gid, FXVariantName var) {
   auto it = entities.find(gid);
   PASSERT(it != entities.end());
-  it->second.addFX(gid, var, getDef(var));
+  it->second.addFX(gid, var, getFXInfo(var));
 }
 
 void FXViewManager::finishFrame() {
@@ -141,7 +143,17 @@ void FXViewManager::finishFrame() {
   }
 }
 
-void FXViewManager::addSingleFX(const FXDef& def, Vec2 pos, Vec2 targetOffset) {
-  auto id = fx::spawnEffect(def.name, pos.x, pos.y, targetOffset);
-  updateParams(def, id);
+void FXViewManager::addUnmanagedFX(const FXSpawnInfo& spawnInfo) {
+  auto coord = spawnInfo.position.getCoord();
+  float x = coord.x, y = coord.y;
+  if (spawnInfo.genericId) {
+    // TODO: delay until end of frame? Increases chance that entity info will be available
+    auto it = entities.find(spawnInfo.genericId);
+    if (it != entities.end()) {
+      x = it->second.x;
+      y = it->second.y;
+    }
+  }
+  auto id = fx::spawnEffect(spawnInfo.info.name, x, y, spawnInfo.targetOffset);
+  updateParams(spawnInfo.info, id);
 }

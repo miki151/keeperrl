@@ -15,8 +15,9 @@
 
 #pragma once
 
-typedef int TeamId;
-typedef long long LevelId;
+using TeamId = int;
+using LevelId = long long;
+using GenericId = long long;
 
 enum class MusicType;
 enum class SunlightState;
@@ -99,3 +100,6 @@ enum class TeamOrder;
 enum class FXName;
 enum class FXVariantName;
 enum class StorageId;
+
+struct FXInfo;
+struct FXSpawnInfo;

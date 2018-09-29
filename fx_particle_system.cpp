@@ -186,6 +186,7 @@ void defaultDrawParticle(DrawContext &ctx, const Particle &pinst, DrawParticle &
   out.positions = ctx.quadCorners(pos, size, pinst.rot);
   out.texCoords = ctx.texQuadCorners(pinst.texTile);
   out.color = IColor(color);
+  out.texName = ctx.pdef.textureName;
 }
 
 SubSystemContext::SubSystemContext(const ParticleSystem& ps, const ParticleSystemDef& psdef, const ParticleDef& pdef,

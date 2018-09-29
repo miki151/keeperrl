@@ -143,8 +143,10 @@ CreatureAction Creature::castSpell(Spell* spell) const {
     return CreatureAction("You can't cast this spell yet.");
   return CreatureAction(this, [=] (WCreature c) {
     c->addSound(spell->getSound());
-    if (auto fx = spell->getFX())
-      getGame()->addEvent(EventInfo::OtherEffect{c->getPosition(), fx->name, fx->color});
+    if (auto fx = spell->getFX()) {
+      auto gid = c->getUniqueId().getGenericId();
+      getGame()->addEvent(FXSpawnInfo{{fx->name, fx->color}, c->getPosition(), gid});
+    }
     spell->addMessage(c);
     spell->getEffect().applyToCreature(c);
     getGame()->getStatistics().add(StatId::SPELL_CAST);
@@ -165,8 +167,7 @@ CreatureAction Creature::castSpell(Spell* spell, Vec2 dir) const {
     auto dirEffectType = spell->getDirEffectType();
     thirdPerson(getName().the() + " casts a spell");
     secondPerson("You cast " + spell->getName());
-    auto fx = spell->getFX();
-    applyDirected(c, dir, dirEffectType, fx ? fx->name : optional<FXName>());
+    applyDirected(c, dir, dirEffectType, spell->getFX(), spell->getSplashFX());
     getGame()->getStatistics().add(StatId::SPELL_CAST);
     c->attributes->getSpellMap().setReadyTime(spell, *getGlobalTime() + TimeInterval(
         int(spell->getDifficulty() * getWillpowerMult(attributes->getSkills().getValue(SkillId::SORCERY)))));
