@@ -59,6 +59,7 @@ class Tile {
   Tile setRoundShadow();
   Tile setMoveUp();
   Tile setWallShadow();
+  Tile setFX(FXVariantName);
   optional<TileCoord> getHighlightCoord() const;
 
   const EnumSet<ViewId>& getExtraBorderIds() const;
@@ -74,6 +75,7 @@ class Tile {
 
   bool hasAnyCorners() const;
   const vector<TileCoord>& getCornerCoords(DirSet) const;
+  const optional<FXVariantName> getFX() const;
 
   private:
   static void loadTiles();
@@ -91,6 +93,7 @@ class Tile {
   bool anyExtraBorders = false;
   bool anyConnections = false;
   bool anyCorners = false;
+  optional<FXVariantName> fx;
   DirSet connectionsMask = DirSet{Dir::N, Dir::E, Dir::S, Dir::W};
   EnumSet<ViewId> extraBorderIds;
   static void addTile(ViewId, Tile);

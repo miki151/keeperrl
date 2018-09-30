@@ -9,7 +9,7 @@ class DummyView : public View {
   DummyView(Clock* c) : clock(c) {}
   Clock* clock;
   virtual ~DummyView() override {}
-  virtual void initialize(unique_ptr<fx::FXRenderer>) override {}
+  virtual void initialize(unique_ptr<fx::FXRenderer>, unique_ptr<FXViewManager>) override {}
   virtual void reset() override {}
   virtual void displaySplash(const ProgressMeter*, const string&, SplashType, function<void()> = nullptr) override {}
   virtual void clearSplash() override {}
@@ -73,7 +73,7 @@ class DummyView : public View {
     return none;
   }
   virtual void presentWorldmap(const Campaign&) override {}
-  virtual void animateObject(Vec2 begin, Vec2 end, ViewId object) override {}
+  virtual void animateObject(Vec2 begin, Vec2 end, optional<ViewId>, optional<FXInfo>) override {}
   virtual void animation(Vec2 pos, AnimationId, Dir) override {}
   virtual void animation(const FXSpawnInfo&) override{};
   virtual milliseconds getTimeMilli() override { return clock->getMillis();}

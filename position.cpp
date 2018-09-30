@@ -884,14 +884,14 @@ void Position::moveCreature(Position pos, bool teleportEffect) {
   PROFILE;
   CHECK(isValid());
   if (teleportEffect)
-    getGame()->addEvent(EventInfo::OtherEffect{FXName::TELEPORT_OUT, *this});
+    getGame()->addEvent(EventInfo::FX{*this, FXName::TELEPORT_OUT});
   if (isSameLevel(pos))
     level->moveCreature(getCreature(), getDir(pos));
   else if (isSameModel(pos))
     level->changeLevel(pos, getCreature());
   else pos.getLevel()->landCreature({pos}, getModel()->extractCreature(getCreature()));
   if (teleportEffect)
-    getGame()->addEvent(EventInfo::OtherEffect{FXName::TELEPORT_IN, pos});
+    getGame()->addEvent(EventInfo::FX{*this, FXName::TELEPORT_IN});
 }
 
 void Position::moveCreature(Vec2 direction) {

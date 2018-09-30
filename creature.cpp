@@ -145,7 +145,7 @@ CreatureAction Creature::castSpell(Spell* spell) const {
     c->addSound(spell->getSound());
     if (auto fx = spell->getFX()) {
       auto gid = c->getUniqueId().getGenericId();
-      getGame()->addEvent(FXSpawnInfo{{fx->name, fx->color}, c->getPosition(), gid});
+      getGame()->addEvent(EventInfo::FX{position, *fx});
     }
     spell->addMessage(c);
     spell->getEffect().applyToCreature(c);
@@ -181,12 +181,6 @@ void Creature::updateLastingFX(ViewObject& object) {
     if (isAffected(effect))
       if (auto fx = LastingEffects::getFX(effect))
         object.particleEffects.insert(*fx);
-
-  // TODO: better way to do this? Replace view_id with FX in map_gui ?
-  if (object.id() == ViewId::FIRE_SPHERE && fxesAvailable()) {
-    object.setModifier(ViewObject::Modifier::HIDDEN);
-    object.particleEffects.insert(FXVariantName::FIRE_SPHERE);
-  }
 }
 
 

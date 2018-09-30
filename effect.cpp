@@ -101,7 +101,7 @@ static void summonFX(WCreature c) {
   auto color = Color(240, 146, 184);
   // TODO: color depending on creature type ?
 
-  c->getGame()->addEvent(FXSpawnInfo{{FXName::SPAWN, color}, c->getPosition()});
+  c->getGame()->addEvent(EventInfo::FX{c->getPosition(), {FXName::SPAWN, color}});
 }
 
 vector<WCreature> Effect::summon(WCreature c, CreatureId id, int num, TimeInterval ttl, TimeInterval delay) {
@@ -790,12 +790,11 @@ static optional<ViewId> getProjectile(const DirEffectType& effect) {
 
 static void addSplashFX(WCreature victim, const FXInfo& splashFX) {
   auto pos = victim->getPosition();
-  auto gid = victim->getUniqueId().getGenericId();
-  victim->getGame()->addEvent(FXSpawnInfo{splashFX, pos, gid});
+  victim->getGame()->addEvent(EventInfo::FX{pos, splashFX});
 }
 
 void applyDirected(WCreature c, Vec2 direction, const DirEffectType& type, optional<FXInfo> fx,
-                   optional<FXInfo> splashFX) {
+    optional<FXInfo> splashFX) {
   auto begin = c->getPosition();
   int range = type.getRange();
   for (Vec2 v = direction; v.length8() <= range; v += direction)
@@ -804,11 +803,8 @@ void applyDirected(WCreature c, Vec2 direction, const DirEffectType& type, optio
       break;
     }
 
-  if (fxesAvailable() && fx) {
-    if (!fx->empty())
-      c->getGame()->addEvent(FXSpawnInfo{*fx, begin, direction * range});
-  } else if (auto projectile = getProjectile(type))
-    c->getGame()->addEvent(EventInfo::Projectile{*projectile, begin, begin.plus(direction * range)});
+  c->getGame()->addEvent(
+      EventInfo::Projectile{fx, getProjectile(type), begin, begin.plus(direction * range)});
 
   switch (type.getId()) {
     case DirEffectId::BLAST:

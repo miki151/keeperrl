@@ -46,7 +46,8 @@ class MapGui : public GuiElem {
     function<void(Vec2)> rightClickFun;
     function<void()> refreshFun;
   };
-  MapGui(Callbacks, SyncQueue<UserInput>&, Clock*, Options*, GuiFactory*, unique_ptr<fx::FXRenderer>);
+  MapGui(Callbacks, SyncQueue<UserInput>&, Clock*, Options*, GuiFactory*, unique_ptr<fx::FXRenderer>,
+      unique_ptr<FXViewManager>);
   ~MapGui() override;
 
   virtual void render(Renderer&) override;
@@ -89,6 +90,7 @@ class MapGui : public GuiElem {
   };
   const HighlightedInfo& getLastHighlighted();
   bool isCreatureHighlighted(UniqueEntity<Creature>::Id);
+  bool fxesAvailable() const;
 
   private:
   void updateObject(Vec2, CreatureView*, milliseconds currentTime);

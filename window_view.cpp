@@ -36,6 +36,8 @@
 #include "file_sharing.h"
 #include "fx_manager.h"
 #include "fx_renderer.h"
+#include "fx_info.h"
+#include "fx_view_manager.h"
 
 using SDL::SDL_Keysym;
 using SDL::SDL_Keycode;
@@ -95,7 +97,7 @@ WindowView::WindowView(ViewParams params) : renderer(params.renderer), gui(param
     soundLibrary(params.soundLibrary), bugreportSharing(params.bugreportSharing), bugreportDir(params.bugreportDir),
     installId(params.installId) {}
 
-void WindowView::initialize(unique_ptr<fx::FXRenderer> fxRenderer) {
+void WindowView::initialize(unique_ptr<fx::FXRenderer> fxRenderer, unique_ptr<FXViewManager> fxViewManager) {
   renderer.setFullscreen(options->getBoolValue(OptionId::FULLSCREEN));
   renderer.setVsync(options->getBoolValue(OptionId::VSYNC));
   renderer.enableCustomCursor(!options->getBoolValue(OptionId::DISABLE_CURSOR));
@@ -143,7 +145,8 @@ void WindowView::initialize(unique_ptr<fx::FXRenderer> fxRenderer) {
       clock,
       options,
       &gui,
-      std::move(fxRenderer)));
+      std::move(fxRenderer),
+      std::move(fxViewManager)));
   minimapGui.reset(new MinimapGui([this]() { inputQueue.push(UserInput(UserInputId::DRAW_LEVEL_MAP)); }));
   rebuildMinimapGui();
   resetMapBounds();
@@ -574,12 +577,15 @@ void WindowView::playSounds(const CreatureView* view) {
   soundQueue.clear();
 }
 
-void WindowView::animateObject(Vec2 begin, Vec2 end, ViewId object) {
-  if (begin != end)
+void WindowView::animateObject(Vec2 begin, Vec2 end, optional<ViewId> object, optional<FXInfo> fx) {
+  if (fx && mapGui->fxesAvailable())
+    mapGui->addAnimation(FXSpawnInfo(*fx, begin, end-begin));
+  else
+  if (object && begin != end)
     mapGui->addAnimation(
         Animation::thrownObject(
           (end - begin).mult(mapLayout->getSquareSize()),
-          object,
+          *object,
           currentTileLayout.sprites),
         begin);
 }

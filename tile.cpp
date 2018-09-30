@@ -49,6 +49,11 @@ Tile Tile::setWallShadow() {
   return *this;
 }
 
+Tile Tile::setFX(FXVariantName f) {
+  fx = f;
+  return *this;
+}
+
 Tile Tile::byCoord(const vector<TileCoord>& c) {
   return Tile(c);
 }
@@ -484,7 +489,7 @@ class TileCoordLookup {
     Tile::addTile(ViewId::KRAKEN_LAND, sprite("krakenland1"));
     Tile::addTile(ViewId::KRAKEN_WATER, sprite("krakenwater2"));
     Tile::addTile(ViewId::DEATH, sprite("death"));
-    Tile::addTile(ViewId::FIRE_SPHERE, sprite("fire_sphere"));
+    Tile::addTile(ViewId::FIRE_SPHERE, sprite("fire_sphere").setFX(FXVariantName::FIRE_SPHERE));
     Tile::addTile(ViewId::BEAR, sprite("bear"));
     Tile::addTile(ViewId::BAT, sprite("bat"));
     Tile::addTile(ViewId::GOBLIN, sprite("goblin"));
@@ -1103,5 +1108,9 @@ bool Tile::hasAnyCorners() const {
 
 const vector<Tile::TileCoord>& Tile::getCornerCoords(DirSet c) const {
   return corners[c];
+}
+
+const optional<FXVariantName> Tile::getFX() const {
+  return fx;
 }
 

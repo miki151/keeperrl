@@ -38,6 +38,7 @@ struct Color;
 namespace fx {
   class FXRenderer;
 }
+class FXViewManager;
 
 enum class SplashType { BIG, AUTOSAVING, SMALL };
 
@@ -119,7 +120,7 @@ class View {
   virtual ~View();
 
   /** Does all the library specific init.*/
-  virtual void initialize(unique_ptr<fx::FXRenderer>) = 0;
+  virtual void initialize(unique_ptr<fx::FXRenderer>, unique_ptr<FXViewManager>) = 0;
 
   /** Resets the view before a new game.*/
   virtual void reset() = 0;
@@ -232,7 +233,7 @@ class View {
   virtual void presentWorldmap(const Campaign&) = 0;
 
   /** Draws an animation of an object between two locations on a map.*/
-  virtual void animateObject(Vec2 begin, Vec2 end, ViewId object) = 0;
+  virtual void animateObject(Vec2 begin, Vec2 end, optional<ViewId> object, optional<FXInfo> fx) = 0;
 
   /** Draws an special animation on the map.*/
   virtual void animation(Vec2 pos, AnimationId, Dir orientation = Dir::N) = 0;

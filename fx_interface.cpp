@@ -6,89 +6,57 @@
 
 namespace fx {
 
-FXId spawnEffect(FXName name, float x, float y) {
-  return spawnEffect(name, x, y, Vec2(0, 0));
+FXId spawnEffect(FXManager* manager, FXName name, float x, float y) {
+  return spawnEffect(manager, name, x, y, Vec2(0, 0));
 }
 
-FXId spawnEffect(FXName name, float x, float y, Vec2 dir) {
-  if(auto *inst = FXManager::getInstance()) {
-    auto fpos = (FVec2(x, y) + FVec2(0.5f)) * Renderer::nominalSize;
-    auto ftargetOff = FVec2(dir.x, dir.y) * Renderer::nominalSize;
-    auto instId = inst->addSystem(name, {fpos, ftargetOff});
-    INFO << "FX spawn: " << ENUM_STRING(name) << " at:" << x << ", " << y << " dir:" << dir;
-    return {instId.getIndex(), instId.getSpawnTime()};
-  }
-
-  return {-1, -1};
+FXId spawnEffect(FXManager* manager, FXName name, float x, float y, Vec2 dir) {
+  auto fpos = (FVec2(x, y) + FVec2(0.5f)) * Renderer::nominalSize;
+  auto ftargetOff = FVec2(dir.x, dir.y) * Renderer::nominalSize;
+  auto instId = manager->addSystem(name, {fpos, ftargetOff});
+  INFO << "FX spawn: " << ENUM_STRING(name) << " at:" << x << ", " << y << " dir:" << dir;
+  return {instId.getIndex(), instId.getSpawnTime()};
 }
 
-FXId spawnSnapshotEffect(FXName name, float x, float y, float scalar0, float scalar1) {
-  if (auto* inst = FXManager::getInstance()) {
-    auto fpos = (FVec2(x, y) + FVec2(0.5f)) * Renderer::nominalSize;
-    auto instId = inst->addSystem(name, {fpos, SnapshotKey{scalar0, scalar1}});
-    INFO << "FX spawn: " << ENUM_STRING(name) << " at:" << x << ", " << y;
-    return {instId.getIndex(), instId.getSpawnTime()};
-  }
-
-  return {-1, -1};
+FXId spawnSnapshotEffect(FXManager* manager, FXName name, float x, float y, float scalar0, float scalar1) {
+  auto fpos = (FVec2(x, y) + FVec2(0.5f)) * Renderer::nominalSize;
+  auto instId = manager->addSystem(name, {fpos, SnapshotKey{scalar0, scalar1}});
+  INFO << "FX spawn: " << ENUM_STRING(name) << " at:" << x << ", " << y;
+  return {instId.getIndex(), instId.getSpawnTime()};
 }
 
-void setPos(FXId tid, float x, float y) {
+void setPos(FXManager* manager, FXId tid, float x, float y) {
   ParticleSystemId id(tid.first, tid.second);
-  if (auto *inst = FXManager::getInstance()) {
-    if (inst->valid(id)) {
-      auto &system = inst->get(id);
-      system.pos = (FVec2(x, y) + FVec2(0.5f)) * Renderer::nominalSize;
-    }
+  if (manager->valid(id)) {
+    auto &system = manager->get(id);
+    system.pos = (FVec2(x, y) + FVec2(0.5f)) * Renderer::nominalSize;
   }
 }
 
-bool isAlive(FXId tid) {
+optional<FXName> name(FXManager* manager, FXId tid) {
   ParticleSystemId id(tid.first, tid.second);
-  if(auto *inst = FXManager::getInstance())
-    return inst->alive(id);
-  return false;
-}
-
-optional<FXName> name(FXId tid) {
-  ParticleSystemId id(tid.first, tid.second);
-  if (auto* inst = FXManager::getInstance())
-    if (inst->valid(id)) {
-      auto& system = inst->get(id);
-      return system.defId;
-    }
-
+  if (manager->valid(id)) {
+    auto& system = manager->get(id);
+    return system.defId;
+  }
   return none;
 }
 
-void kill(FXId tid, bool immediate) {
+void setColor(FXManager* manager, FXId tid, Color col, int paramIndex) {
   ParticleSystemId id(tid.first, tid.second);
-  if(auto *inst = FXManager::getInstance())
-    inst->kill(id, immediate);
-}
-
-void setColor(FXId tid, Color col, int paramIndex) {
-  ParticleSystemId id(tid.first, tid.second);
-  if(auto *inst = FXManager::getInstance()) {
-    if(inst->valid(id)) {
-      auto &system = inst->get(id);
-      PASSERT(paramIndex >= 0 && paramIndex < SystemParams::maxColors);
-      system.params.color[paramIndex] = FColor(col).rgb();
-    }
+  if (manager->valid(id)) {
+    auto &system = manager->get(id);
+    PASSERT(paramIndex >= 0 && paramIndex < SystemParams::maxColors);
+    system.params.color[paramIndex] = FColor(col).rgb();
   }
 }
-void setScalar(FXId tid, float value, int paramIndex) {
+
+void setScalar(FXManager* manager, FXId tid, float value, int paramIndex) {
   ParticleSystemId id(tid.first, tid.second);
-  if(auto *inst = FXManager::getInstance()) {
-    if(inst->valid(id)) {
-      auto &system = inst->get(id);
-      PASSERT(paramIndex >= 0 && paramIndex < SystemParams::maxScalars);
-      system.params.scalar[paramIndex] = value;
-    }
+  if (manager->valid(id)) {
+    auto &system = manager->get(id);
+    PASSERT(paramIndex >= 0 && paramIndex < SystemParams::maxScalars);
+    system.params.scalar[paramIndex] = value;
   }
 }
-}
-
-bool fxesAvailable() {
-  return fx::FXManager::getInstance() != nullptr;
 }

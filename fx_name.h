@@ -38,5 +38,3 @@ RICH_ENUM(FXName,
   TELEPORT_IN,
   SPAWN
 );
-
-bool fxesAvailable();

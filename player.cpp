@@ -89,12 +89,7 @@ void Player::onEvent(const GameEvent& event) {
       },
       [&](const Projectile& info) {
         if (creature->canSee(info.begin) || creature->canSee(info.end))
-          getView()->animateObject(info.begin.getCoord(), info.end.getCoord(), info.viewId);
-      },
-      [&](const Explosion& info) {
-        if (creature->getPosition().isSameLevel(info.pos)) {
-          privateMessage("BOOM!");
-        }
+          getView()->animateObject(info.begin.getCoord(), info.end.getCoord(), info.viewId, info.fx);
       },
       [&](const CreatureKilled& info) {
         auto pos = info.victim->getPosition();
@@ -132,9 +127,9 @@ void Player::onEvent(const GameEvent& event) {
             privateMessage(PlayerMessage("An unnamed tribe is destroyed.", MessagePriority::CRITICAL));
         }
       },
-      [&](const OtherEffect& info) {
+      [&](const FX& info) {
         if (creature->canSee(info.position))
-          getView()->animation(info);
+          getView()->animation(FXSpawnInfo(info.fx, info.position.getCoord(), info.direction.value_or(Vec2(0, 0))));
       },
       [&](const WonGame&) {
         if (adventurer)

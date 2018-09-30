@@ -1388,8 +1388,8 @@ void PlayerControl::onEvent(const GameEvent& event) {
   using namespace EventInfo;
   event.visit(
       [&](const Projectile& info) {
-        if (canSee(info.begin) || canSee(info.end))
-          getView()->animateObject(info.begin.getCoord(), info.end.getCoord(), info.viewId);
+        if (getControlled().empty() && (canSee(info.begin) || canSee(info.end)))
+          getView()->animateObject(info.begin.getCoord(), info.end.getCoord(), info.viewId, info.fx);
       },
       [&](const CreatureEvent& info) {
         if (collective->getCreatures().contains(info.creature))
@@ -1474,9 +1474,9 @@ void PlayerControl::onEvent(const GameEvent& event) {
         if (info.type == FurnitureType::PIT && collective->getKnownTiles().isKnown(info.position))
           addToMemory(info.position);
       },
-      [&](const OtherEffect& info) {
+      [&](const FX& info) {
         if (getControlled().empty() && canSee(info.position))
-          getView()->animation(info);
+          getView()->animation(FXSpawnInfo(info.fx, info.position.getCoord(), info.direction.value_or(Vec2(0, 0))));
       },
       [&](const auto&) {}
   );

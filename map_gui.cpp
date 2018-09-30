@@ -41,15 +41,12 @@ using SDL::SDL_Keysym;
 using SDL::SDL_Keycode;
 
 MapGui::MapGui(Callbacks call, SyncQueue<UserInput>& inputQueue, Clock* c, Options* o, GuiFactory* f,
-    unique_ptr<fx::FXRenderer> fx)
+    unique_ptr<fx::FXRenderer> fxRenderer, unique_ptr<FXViewManager> fxViewManager)
     : objects(Level::getMaxBounds()), callbacks(call), inputQueue(inputQueue),
     clock(c), options(o), fogOfWar(Level::getMaxBounds(), false), extraBorderPos(Level::getMaxBounds(), {}),
     lastSquareUpdate(Level::getMaxBounds()), connectionMap(Level::getMaxBounds()), guiFactory(f),
-    fxRenderer(std::move(fx)) {
+    fxRenderer(std::move(fxRenderer)), fxViewManager(std::move(fxViewManager)) {
   clearCenter();
-
-  if (fxRenderer)
-    fxViewManager = std::make_unique<FXViewManager>();
 }
 
 MapGui::~MapGui() = default;
@@ -511,6 +508,10 @@ bool MapGui::isCreatureHighlighted(UniqueEntity<Creature>::Id creature) {
   return teamHighlight.getMaybe(creature).value_or(0) > 0;
 }
 
+bool MapGui::fxesAvailable() const {
+  return !!fxRenderer && spriteMode;
+}
+
 static bool mirrorSprite(ViewId id) {
   switch (id) {
     case ViewId::GRASS:
@@ -572,7 +573,6 @@ static double getFlyingMovement(Vec2 size, milliseconds curTimeReal) {
 void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& object, Vec2 size, Vec2 movement,
     Vec2 tilePos, milliseconds curTimeReal) {
   PROFILE;
-
   auto id = object.id();
   const Tile& tile = Tile::getTile(id, spriteMode);
   Color color = tile.color;
@@ -607,11 +607,13 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
     move += movement;
     if (object.hasModifier(ViewObject::Modifier::FLYING))
       move.y += getFlyingMovement(size, curTimeReal);
-    if (mirrorSprite(id))
-      renderer.drawTile(pos + move, tile.getSpriteCoord(dirs), size, color,
-          Renderer::SpriteOrientation((bool) (tilePos.getHash() % 2), (bool) (tilePos.getHash() % 4 > 1)));
-    else
-      renderer.drawTile(pos + move, tile.getSpriteCoord(dirs), size, color);
+    if (!fxesAvailable() || !tile.getFX()) {
+      if (mirrorSprite(id))
+        renderer.drawTile(pos + move, tile.getSpriteCoord(dirs), size, color,
+            Renderer::SpriteOrientation((bool) (tilePos.getHash() % 2), (bool) (tilePos.getHash() % 4 > 1)));
+      else
+        renderer.drawTile(pos + move, tile.getSpriteCoord(dirs), size, color);
+    }
     if (auto version = object.getPortalVersion())
       renderer.drawTile(pos + move, renderer.getTileCoord("portal_inside"), size, getPortalColor(*version));
     if (tile.hasAnyCorners()) {
@@ -638,7 +640,6 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
       renderer.drawText(Color::WHITE, pos + move + size / 2, "S", Renderer::CenterType::HOR_VER, size.x * 2 / 3);
     if (object.hasModifier(ViewObject::Modifier::LOCKED))
       renderer.drawTile(pos + move, Tile::getTile(ViewId::KEY, spriteMode).getSpriteCoord(), size);
-
     if (fxViewManager)
       if (auto genericId = object.getGenericId()) {
         float fxPosX = tilePos.x + move.x / (float)size.x;
@@ -649,7 +650,10 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
           fxViewManager->addFX(*genericId, *fxInfo);
         if (burningVal > 0.0f)
           fxViewManager->addFX(*genericId, FXInfo{FXName::FIRE, Color::WHITE, min(1.0f, burningVal * 0.05f)});
-        for (auto fx : object.particleEffects)
+        auto effects = object.particleEffects;
+        if (auto fx = tile.getFX())
+          effects.insert(*fx);
+        for (auto fx : effects)
           fxViewManager->addFX(*genericId, fx);
     }
   } else {

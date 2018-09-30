@@ -167,7 +167,7 @@ void Furniture::destroy(Position pos, const DestroyAction& action) {
   if (usageType)
     FurnitureUsage::beforeRemoved(*usageType, pos);
   if (auto fxInfo = destroyFXInfo(type))
-    pos.getGame()->addEvent(FXSpawnInfo(*fxInfo, pos));
+    pos.getGame()->addEvent(EventInfo::FX{pos, *fxInfo});
   pos.removeFurniture(this, destroyedRemains ? FurnitureFactory::get(*destroyedRemains, getTribe()) : nullptr);
   pos.getGame()->addEvent(EventInfo::FurnitureDestroyed{pos, myType, myLayer});
 }
@@ -180,7 +180,7 @@ void Furniture::tryToDestroyBy(Position pos, WCreature c, const DestroyAction& a
       damage = damage * c->getAttributes().getSkills().getValue(*skill);
     *strength -= damage;
     if (auto fxInfo = tryDestroyFXInfo(type))
-      pos.getGame()->addEvent(FXSpawnInfo(*fxInfo, pos));
+      pos.getGame()->addEvent(EventInfo::FX{pos, *fxInfo});
     if (*strength <= 0)
       destroy(pos, action);
   }
@@ -344,12 +344,12 @@ bool Furniture::forgetAfterBuilding() const {
 
 void Furniture::onCreatureWalkedOver(Position pos, Vec2 direction) const {
   if (auto fxInfo = walkOverFXInfo(type))
-    pos.getGame()->addEvent(FXSpawnInfo(*fxInfo, pos, direction));
+    pos.getGame()->addEvent((EventInfo::FX{pos, *fxInfo, direction}));
 }
 
 void Furniture::onCreatureWalkedInto(Position pos, Vec2 direction) const {
   if (auto fxInfo = walkIntoFXInfo(type))
-    pos.getGame()->addEvent(FXSpawnInfo(*fxInfo, pos, direction));
+    pos.getGame()->addEvent((EventInfo::FX{pos, *fxInfo, direction}));
 }
 
 vector<PItem> Furniture::dropItems(Position pos, vector<PItem> v) const {

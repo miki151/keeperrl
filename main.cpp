@@ -51,6 +51,7 @@
 
 #include "fx_manager.h"
 #include "fx_renderer.h"
+#include "fx_view_manager.h"
 
 #ifndef VSTUDIO
 #include "stack_printer.h"
@@ -347,6 +348,7 @@ static int keeperMain(po::parser& commandLineFlags) {
 
   unique_ptr<fx::FXManager> fxManager;
   unique_ptr<fx::FXRenderer> fxRenderer;
+  unique_ptr<FXViewManager> fxViewManager;
 
   if (paidDataPath.exists()) {
     auto particlesPath = paidDataPath.subdirectory("images").subdirectory("particles");
@@ -354,6 +356,7 @@ static int keeperMain(po::parser& commandLineFlags) {
       INFO << "FX: initialization";
       fxManager = std::make_unique<fx::FXManager>();
       fxRenderer = std::make_unique<fx::FXRenderer>(particlesPath, *fxManager);
+      fxViewManager = std::make_unique<FXViewManager>(fxManager.get());
     }
   }
 
@@ -433,7 +436,7 @@ static int keeperMain(po::parser& commandLineFlags) {
 #ifndef RELEASE
   InfoLog.addOutput(DebugOutput::toString([&view](const string& s) { view->logMessage(s);}));
 #endif
-  view->initialize(std::move(fxRenderer));
+  view->initialize(std::move(fxRenderer), std::move(fxViewManager));
   if (commandLineFlags["battle_level"].was_set() && commandLineFlags["battle_view"].was_set()) {
     battleTest(view.get());
     return 0;

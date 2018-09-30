@@ -6,9 +6,14 @@
 #include "color.h"
 #include <unordered_map>
 
+namespace fx {
+  class FXManager;
+}
+
 // TODO: fx_interface is not really needed, all fx spawning goes through FXViewManager
 class FXViewManager {
   public:
+  FXViewManager(fx::FXManager*);
   void beginFrame();
   void addEntity(GenericId, float x, float y);
   // Entity identified with given id must be present!
@@ -20,7 +25,7 @@ class FXViewManager {
 
   private:
   using TypeId = variant<FXName, FXVariantName>;
-  static void updateParams(const FXInfo&, pair<int, int>);
+  static void updateParams(fx::FXManager*, const FXInfo&, pair<int, int>);
 
   struct EffectInfo {
     string name() const;
@@ -36,8 +41,8 @@ class FXViewManager {
     static constexpr int maxEffects = 8;
 
     void clearVisibility();
-    void addFX(GenericId, TypeId, const FXInfo&);
-    void updateFX(GenericId);
+    void addFX(fx::FXManager*, GenericId, TypeId, const FXInfo&);
+    void updateFX(fx::FXManager*, GenericId);
 
     float x, y;
     EffectInfo effects[maxEffects];
@@ -47,4 +52,5 @@ class FXViewManager {
   };
 
   std::unordered_map<GenericId, EntityInfo> entities;
+  fx::FXManager* fxManager;
 };

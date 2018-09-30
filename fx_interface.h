@@ -9,20 +9,20 @@ using FXId = pair<int, int>;
 
 namespace fx {
 
+class FXManager;
+
 // Simple validity check; given FX can still be dead even if ID is valid
 inline bool valid(FXId id) {
   return id.first >= 0 && id.second > 0;
 }
 
-FXId spawnEffect(FXName, float x, float y);
-FXId spawnEffect(FXName, float x, float y, Vec2 dir);
-FXId spawnSnapshotEffect(FXName, float x, float y, float scalar0 = 0.0f, float scalar1 = 0.0f);
+FXId spawnEffect(FXManager*, FXName, float x, float y);
+FXId spawnEffect(FXManager*, FXName, float x, float y, Vec2 dir);
+FXId spawnSnapshotEffect(FXManager*, FXName, float x, float y, float scalar0 = 0.0f, float scalar1 = 0.0f);
 
-bool isAlive(FXId);
-void kill(FXId, bool immediate = true);
-optional<FXName> name(FXId);
+optional<FXName> name(FXManager*, FXId);
 
-void setColor(FXId, Color, int paramIndex = 0);
-void setScalar(FXId, float, int paramIndex = 0);
-void setPos(FXId, float, float);
+void setColor(FXManager*, FXId, Color, int paramIndex = 0);
+void setScalar(FXManager*, FXId, float, int paramIndex = 0);
+void setPos(FXManager*, FXId, float, float);
 }
