@@ -11,7 +11,8 @@ struct DrawBuffers {
     TextureName texName;
   };
 
-  void fill(const vector<DrawParticle>&);
+  void clear();
+  void add(const vector<DrawParticle>&);
   bool empty() const {
     return elements.empty();
   }
@@ -19,6 +20,8 @@ struct DrawBuffers {
   vector<FVec2> positions;
   vector<FVec2> texCoords;
   vector<unsigned int> colors;
+
+  // TODO: group elements by TextureName
   vector<Element> elements;
 };
 }

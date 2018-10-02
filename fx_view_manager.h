@@ -8,20 +8,29 @@
 
 namespace fx {
   class FXManager;
+  class FXRenderer;
 }
+class Renderer;
 
 // TODO: fx_interface is not really needed, all fx spawning goes through FXViewManager
 class FXViewManager {
   public:
-  FXViewManager(fx::FXManager*);
-  void beginFrame();
+  FXViewManager(fx::FXManager*, fx::FXRenderer*);
+  ~FXViewManager();
+
+  void beginFrame(Renderer&, float zoom, float ox, float oy);
+  void finishFrame();
+
   void addEntity(GenericId, float x, float y);
   // Entity identified with given id must be present!
   void addFX(GenericId, const FXInfo&);
   void addFX(GenericId, FXVariantName);
-  void finishFrame();
 
   void addUnmanagedFX(const FXSpawnInfo&);
+
+  void drawFX(Renderer&, GenericId);
+  void drawUnorderedBackFX(Renderer&);
+  void drawUnorderedFrontFX(Renderer&);
 
   private:
   using TypeId = variant<FXName, FXVariantName>;
@@ -53,4 +62,5 @@ class FXViewManager {
 
   std::unordered_map<GenericId, EntityInfo> entities;
   fx::FXManager* fxManager;
+  fx::FXRenderer* fxRenderer;
 };

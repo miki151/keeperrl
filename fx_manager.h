@@ -39,17 +39,16 @@ public:
   bool dead(ParticleSystemId) const; // invalid ids will be dead
   void kill(ParticleSystemId, bool immediate);
 
+  // TODO: this interface may be too fancy...
   // id cannot be invalid
   ParticleSystem &get(ParticleSystemId);
   const ParticleSystem &get(ParticleSystemId) const;
 
   ParticleSystemId addSystem(FXName, InitConfig);
 
-  vector<ParticleSystemId> aliveSystems() const;
   const auto& getSystems() const { return systems; }
   auto& getSystems() { return systems; }
-
-  vector<DrawParticle> genQuads(optional<Layer> = none);
+  void genQuads(vector<DrawParticle>&, int id, int ssid);
 
   using Snapshot = vector<ParticleSystem::SubSystem>;
   struct SnapshotGroup {

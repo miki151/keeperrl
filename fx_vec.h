@@ -103,19 +103,19 @@ template <class T> vec2<T> operator*(T s, const vec2<T> &v) { return v * s; }
 template <class T> vec3<T> operator*(T s, const vec3<T> &v) { return v * s; }
 
 template <class T> vec2<T> vmin(const vec2<T> &lhs, const vec2<T> &rhs) {
-  return T(min(lhs[0], rhs[0]), min(lhs[1], rhs[1]));
+  return {min(lhs[0], rhs[0]), min(lhs[1], rhs[1])};
 }
 
 template <class T> vec3<T> vmin(const vec3<T> &lhs, const vec3<T> &rhs) {
-  return T(min(lhs[0], rhs[0]), min(lhs[1], rhs[1]), min(lhs[2], rhs[2]));
+  return {min(lhs[0], rhs[0]), min(lhs[1], rhs[1]), min(lhs[2], rhs[2])};
 }
 
 template <class T> vec2<T> vmax(const vec2<T> &lhs, const vec2<T> &rhs) {
-  return T(max(lhs[0], rhs[0]), max(lhs[1], rhs[1]));
+  return {max(lhs[0], rhs[0]), max(lhs[1], rhs[1])};
 }
 
 template <class T> vec3<T> vmax(const vec3<T> &lhs, const vec3<T> &rhs) {
-  return T(max(lhs[0], rhs[0]), max(lhs[1], rhs[1]), max(lhs[2], rhs[2]));
+  return {max(lhs[0], rhs[0]), max(lhs[1], rhs[1]), max(lhs[2], rhs[2])};
 }
 
 template <class T> auto dot(const vec2<T> &lhs, const vec2<T> &rhs) { return lhs[0] * rhs[0] + lhs[1] * rhs[1]; }

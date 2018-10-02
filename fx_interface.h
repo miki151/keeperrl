@@ -17,7 +17,7 @@ inline bool valid(FXId id) {
 }
 
 FXId spawnEffect(FXManager*, FXName, float x, float y);
-FXId spawnEffect(FXManager*, FXName, float x, float y, Vec2 dir);
+FXId spawnUnorderedEffect(FXManager*, FXName, float x, float y, Vec2 dir);
 FXId spawnSnapshotEffect(FXManager*, FXName, float x, float y, float scalar0 = 0.0f, float scalar1 = 0.0f);
 
 optional<FXName> name(FXManager*, FXId);

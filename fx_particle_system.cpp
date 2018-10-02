@@ -30,6 +30,14 @@ bool SnapshotKey::operator==(const SnapshotKey& rhs) const {
   return true;
 }
 
+bool DrawParticle::isReasonable() const {
+  FRect borders(-10000.0f, -10000.0f, 10000.0f, 10000.0f);
+  for (auto& pos : positions)
+    if (!borders.contains(pos))
+      return false;
+  return true;
+}
+
 ParticleSystem::SubSystem::SubSystem() {
   for (auto& animVar : animationVars)
     animVar = 0.0f;
@@ -37,7 +45,7 @@ ParticleSystem::SubSystem::SubSystem() {
 
 ParticleSystem::ParticleSystem(FXName defId, const InitConfig& config, uint spawnTime, vector<SubSystem> snapshot)
     : subSystems(std::move(snapshot)), pos(config.pos), targetOffset(config.targetOffset), defId(defId),
-      spawnTime(spawnTime) {
+      spawnTime(spawnTime), orderedDraw(config.orderedDraw) {
   float dist = length(targetOffset);
   targetDir = dist < 0.00001f ? FVec2(1, 0) : targetOffset / dist;
   targetTileDist = dist / float(Renderer::nominalSize);

@@ -201,5 +201,4 @@ class MapGui : public GuiElem {
   unique_ptr<fx::FXRenderer> fxRenderer;
   unique_ptr<FXViewManager> fxViewManager;
   void updateFX(milliseconds currentTimeReal);
-  void drawFX(Renderer&, bool front_layer);
 };

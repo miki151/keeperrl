@@ -686,7 +686,7 @@ static void addFireEffect(FXManager& mgr) {
     pdef.life = 0.7f;
     pdef.size = 8.0f;
 
-    pdef.color = {{IColor(155, 85, 30).rgb(), IColor(45, 35, 60).rgb()}};
+    pdef.color = {{IColor(155, 85, 30).rgb(), IColor(155, 85, 30).rgb()}};
     pdef.alpha = {{0.0f, 0.2f, 0.8f, 1.0f}, {0.0f, 1.0f, 1.0f, 0.0f}};
     pdef.textureName = TextureName::FLAMES;
 
@@ -699,7 +699,7 @@ static void addFireEffect(FXManager& mgr) {
 
     ssdef.emitFunc = [](AnimationContext& ctx, EmissionState& em, Particle& pinst) {
       defaultEmitParticle(ctx, em, pinst);
-      float mod = ctx.ps.params.scalar[0];
+      float mod = 0;//ctx.ps.params.scalar[0];
       pinst.pos.x *= (1.0f + mod);
       pinst.movement *= (1.0f + mod);
       pinst.size *= (1.0f + mod * 0.25f);

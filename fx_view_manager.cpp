@@ -5,8 +5,15 @@
 #include "fx_variant_name.h"
 #include "fx_info.h"
 #include "fx_interface.h"
+#include "fx_renderer.h"
 #include "variant.h"
 #include "fx_manager.h"
+#include "renderer.h"
+
+FXViewManager::~FXViewManager() = default;
+FXViewManager::FXViewManager(fx::FXManager* manager, fx::FXRenderer* renderer)
+    : fxManager(manager), fxRenderer(renderer) {
+}
 
 void FXViewManager::EntityInfo::clearVisibility() {
   isVisible = false;
@@ -98,12 +105,13 @@ void FXViewManager::EntityInfo::updateFX(fx::FXManager* manager, GenericId gid) 
     }
 }
 
-FXViewManager::FXViewManager(fx::FXManager* manager) : fxManager(manager) {
-}
-
-void FXViewManager::beginFrame() {
+void FXViewManager::beginFrame(Renderer& renderer, float zoom, float ox, float oy) {
   for (auto& pair : entities)
     pair.second.clearVisibility();
+
+  auto size = renderer.getSize();
+  fxRenderer->setView(zoom, ox, oy, size.x, size.y);
+  fxRenderer->prepareOrdered();
 }
 
 void FXViewManager::addEntity(GenericId gid, float x, float y) {
@@ -139,14 +147,43 @@ void FXViewManager::finishFrame() {
 
     it->second.justShown = false;
     it->second.updateFX(fxManager, it->first);
-    if (!it->second.isVisible) {
-      //INFO << "FX view: clear: " << it->first;
+    if (!it->second.isVisible)
       entities.erase(it);
-    }
     it = next;
   }
 }
 
+void FXViewManager::drawFX(Renderer& renderer, GenericId id) {
+  auto it = entities.find(id);
+  PASSERT(it != entities.end());
+  auto& entity = it->second;
+
+  int ids[EntityInfo::maxEffects];
+  int num = 0;
+
+  for (int n = 0; n < entity.numEffects; n++) {
+    auto& effect = entity.effects[n];
+    if (effect.isVisible)
+      ids[num++] = effect.id.first;
+  }
+
+  if (num > 0) {
+    renderer.flushSprites();
+    fxRenderer->drawOrdered(ids, num);
+  }
+}
+
+void FXViewManager::drawUnorderedBackFX(Renderer& renderer) {
+  renderer.flushSprites();
+  fxRenderer->drawUnordered(fx::Layer::back);
+}
+
+void FXViewManager::drawUnorderedFrontFX(Renderer& renderer) {
+  renderer.flushSprites();
+  fxRenderer->drawUnordered(fx::Layer::front);
+}
+
+// TODO: unmanaged are automatically unordered; make it the same ?
 void FXViewManager::addUnmanagedFX(const FXSpawnInfo& spawnInfo) {
   auto coord = spawnInfo.position;
   float x = coord.x, y = coord.y;
@@ -158,6 +195,6 @@ void FXViewManager::addUnmanagedFX(const FXSpawnInfo& spawnInfo) {
       y = it->second.y;
     }
   }
-  auto id = fx::spawnEffect(fxManager, spawnInfo.info.name, x, y, spawnInfo.targetOffset);
+  auto id = fx::spawnUnorderedEffect(fxManager, spawnInfo.info.name, x, y, spawnInfo.targetOffset);
   updateParams(fxManager, spawnInfo.info, id);
 }
