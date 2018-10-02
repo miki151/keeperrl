@@ -39,19 +39,14 @@ FXInfo getFXInfo(FXVariantName var) {
       return {FXName::SPIRAL, Color::BLUE};
     case Name::SPIRAL_GREEN:
       return {FXName::SPIRAL, Color::f(0.7, 1.0, 0.6)};
-  }
-}
-
-FXInfo getFXInfo(WorkshopType type) {
-  switch (type) {
-  case WorkshopType::LABORATORY:
-    return FXInfo{FXName::LABORATORY, Color::GREEN};
-  case WorkshopType::FORGE:
-    return FXInfo{FXName::FORGE, Color(252, 142, 30)};
-  case WorkshopType::WORKSHOP:
-    return FXInfo{FXName::WORKSHOP};
-  case WorkshopType::JEWELER:
-    return FXInfo{FXName::JEWELER, Color(253, 247, 140)};
+    case Name::LABORATORY:
+      return {FXName::LABORATORY, Color::GREEN};
+    case Name::FORGE:
+      return {FXName::FORGE, Color(252, 142, 30)};
+    case Name::WORKSHOP:
+      return {FXName::WORKSHOP};
+    case Name::JEWELER:
+      return {FXName::JEWELER, Color(253, 247, 140)};
   }
 }
 
@@ -104,4 +99,19 @@ optional<FXInfo> walkOverFXInfo(FType type) {
   if (type == FType::SAND)
     return FXInfo{FXName::SAND_DUST, Color(255, 229, 178)};
   return none;
+}
+
+optional<FXVariantName> getFurnitureUsageFX(FurnitureType type) {
+  switch (type) {
+    case FurnitureType::JEWELER:
+      return FXVariantName::JEWELER;
+    case FurnitureType::LABORATORY:
+      return FXVariantName::LABORATORY;
+    case FurnitureType::WORKSHOP:
+      return FXVariantName::WORKSHOP;
+    case FurnitureType::FORGE:
+      return FXVariantName::FORGE;
+    default:
+      return none;
+  }
 }

@@ -435,7 +435,8 @@ static optional<double> getPartialMovement(MovementInfo::Type type) {
 }
 
 Vec2 MapGui::getMovementOffset(const ViewObject& object, Vec2 size, double time, milliseconds curTimeReal,
-    bool verticalMovement) {
+    bool verticalMovement, Vec2 pos) {
+  PROFILE;
   if (auto dir = object.getAttachmentDir())
     return getAttachmentOffset(*dir, size);
   if (!object.hasAnyMovementInfo())
@@ -443,6 +444,7 @@ Vec2 MapGui::getMovementOffset(const ViewObject& object, Vec2 size, double time,
   double state;
   Vec2 dir;
   auto& movementInfo = object.getLastMovementInfo();
+  auto gid = object.getGenericId();
   if (screenMovement &&
       curTimeReal >= screenMovement->startTimeReal &&
       curTimeReal <= screenMovement->endTimeReal) {
@@ -457,9 +459,9 @@ Vec2 MapGui::getMovementOffset(const ViewObject& object, Vec2 size, double time,
     state = (time - movementInfo.tBegin) / (movementInfo.tEnd - movementInfo.tBegin);
     const double stopTime = movementInfo.type == MovementInfo::Type::MOVE ? 0.0 : 0.3;
     double stopTime1 = stopTime / 2;
-    if (auto id = object.getGenericId())
+    if (gid)
       // randomize the animation time frame a bit so creatures don't move synchronously
-      stopTime1 += -stopTime / 2 + (std::abs(*id) % 100) * 0.01 * stopTime;
+      stopTime1 += -stopTime / 2 + (std::abs(*gid) % 100) * 0.01 * stopTime;
     double stopTime2 = stopTime - stopTime1;
     state = min(1.0, max(0.0, (state - stopTime1) / (1.0 - stopTime1 - stopTime2)));
     INFO << "Anim time b: " << movementInfo.tBegin << " e: " << movementInfo.tEnd << " t: " << time;
@@ -468,8 +470,14 @@ Vec2 MapGui::getMovementOffset(const ViewObject& object, Vec2 size, double time,
   double vertical = (verticalMovement && !object.hasModifier(ViewObject::Modifier::FLYING))
       ? getJumpOffset(object, state) : 0;
   if (dir.length8() == 1) {
-    if (movementInfo.victim && state >= 0.5 && state < 1.0)
-      woundedInfo.getOrInit(*movementInfo.victim) = curTimeReal;
+    if (state >= 0.5 && state < 1.0) {
+      if (movementInfo.victim)
+        woundedInfo.getOrInit(*movementInfo.victim) = curTimeReal;
+      if (movementInfo.fx && gid && furnitureUsageFX.getOrElse(*gid, -1) < movementInfo.moveCounter) {
+        furnitureUsageFX.getOrInit(*gid) = movementInfo.moveCounter;
+        addAnimation(FXSpawnInfo(getFXInfo(*movementInfo.fx), pos + dir));
+      }
+    }
     if (auto mult = getPartialMovement(movementInfo.type)) {
       if (verticalMovement)
         return Vec2(*mult * (state < 0.5 ? state : 1 - state) * dir.x * size.x,
@@ -909,7 +917,7 @@ MapGui::HighlightedInfo MapGui::getHighlightedInfo(Vec2 size, milliseconds curre
           if (auto& index = objects[wpos])
             if (objects[wpos]->hasObject(ViewLayer::CREATURE)) {
               const ViewObject& object = objects[wpos]->getObject(ViewLayer::CREATURE);
-              Vec2 movement = getMovementOffset(object, size, currentTimeGame, currentTimeReal, true);
+              Vec2 movement = getMovementOffset(object, size, currentTimeGame, currentTimeReal, true, wpos);
               if (mousePos->inRectangle(Rectangle(pos + movement, pos + movement + size))) {
                 ret.tilePos = wpos;
                 ret.object = object;
@@ -958,7 +966,7 @@ void MapGui::renderMapObjects(Renderer& renderer, Vec2 size, milliseconds curren
         } else
           object = index.getTopObject(layout->getLayers());
         if (object) {
-          Vec2 movement = getMovementOffset(*object, size, currentTimeGame, currentTimeReal, true);
+          Vec2 movement = getMovementOffset(*object, size, currentTimeGame, currentTimeReal, true, wpos);
           drawObjectAbs(renderer, pos, *object, size, movement, wpos, currentTimeReal);
           if (lastHighlighted.tilePos == wpos && !lastHighlighted.creaturePos &&
               object->layer() != ViewLayer::CREATURE && object->layer() != ViewLayer::ITEM)
@@ -1010,7 +1018,7 @@ void MapGui::renderMapObjects(Renderer& renderer, Vec2 size, milliseconds curren
         } else
           object = index.getTopObject(layout->getLayers());
         if (object) {
-          Vec2 movement = getMovementOffset(*object, size, currentTimeGame, currentTimeReal, true);
+          Vec2 movement = getMovementOffset(*object, size, currentTimeGame, currentTimeReal, true, wpos);
           drawObjectAbs(renderer, pos, *object, size, movement, wpos, currentTimeReal);
           if (lastHighlighted.tilePos == wpos && !lastHighlighted.creaturePos && object->layer() != ViewLayer::CREATURE)
             lastHighlighted.object = *object;
@@ -1095,7 +1103,7 @@ void MapGui::considerScrollingToCreature() {
     Vec2 offset;
     if (auto index = objects[info->pos])
       if (index->hasObject(ViewLayer::CREATURE) && !!screenMovement)
-        offset = getMovementOffset(index->getObject(ViewLayer::CREATURE), size, 0, clock->getRealMillis(), false);
+        offset = getMovementOffset(index->getObject(ViewLayer::CREATURE), size, 0, clock->getRealMillis(), false, info->pos);
     double targetx = info->pos.x + (double)offset.x / size.x;
     double targety = info->pos.y + (double)offset.y / size.y;
     if (info->softScroll)

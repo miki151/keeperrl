@@ -26,3 +26,8 @@ MovementInfo& MovementInfo::setVictim(UniqueEntity<Creature>::Id id) {
   victim = id;
   return *this;
 }
+
+MovementInfo&MovementInfo::setFX(optional<FXVariantName> v) {
+  fx = v;
+  return *this;
+}

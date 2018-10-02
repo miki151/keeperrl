@@ -112,7 +112,7 @@ class MapGui : public GuiElem {
   HighlightedInfo getHighlightedInfo(Vec2 size, milliseconds currentTimeReal);
   void renderAnimations(Renderer&, milliseconds currentTimeReal);
 
-  Vec2 getMovementOffset(const ViewObject&, Vec2 size, double time, milliseconds curTimeReal, bool verticalMovement);
+  Vec2 getMovementOffset(const ViewObject&, Vec2 size, double time, milliseconds curTimeReal, bool verticalMovement, Vec2 pos);
   Vec2 projectOnScreen(Vec2 wpos);
   bool considerCreatureClick(Vec2 mousePos);
   struct CreatureInfo {
@@ -193,6 +193,7 @@ class MapGui : public GuiElem {
   optional<CenteredCreatureInfo> centeredCreaturePosition;
   DirSet getConnectionSet(Vec2 tilePos, ViewId);
   EntityMap<Creature, milliseconds> woundedInfo;
+  EntityMap<Creature, int> furnitureUsageFX;
   void considerWoundedAnimation(const ViewObject&, Color&, milliseconds curTimeReal);
 
   // For advanced FX time control:

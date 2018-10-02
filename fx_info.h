@@ -21,13 +21,13 @@ struct FXInfo {
 };
 
 FXInfo getFXInfo(FXVariantName);
-FXInfo getFXInfo(WorkshopType);
 optional<FXInfo> getOverlayFXInfo(ViewId);
 
 optional<FXInfo> destroyFXInfo(FurnitureType);
 optional<FXInfo> tryDestroyFXInfo(FurnitureType);
 optional<FXInfo> walkIntoFXInfo(FurnitureType);
 optional<FXInfo> walkOverFXInfo(FurnitureType);
+optional<FXVariantName> getFurnitureUsageFX(FurnitureType);
 
 struct FXSpawnInfo {
   FXSpawnInfo(FXInfo info, Vec2 pos, GenericId gid, Vec2 offset = {})

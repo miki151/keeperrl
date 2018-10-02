@@ -1222,9 +1222,6 @@ void Collective::onAppliedSquare(WCreature c, Position pos) {
     }
     if (auto workshopType = config->getWorkshopType(furniture->getType())) {
       auto& workshop = workshops->get(*workshopType);
-      // TODO: FX color could be affected by item types
-      getGame()->addEvent(EventInfo::FX{pos, getFXInfo(*workshopType)});
-
       auto& info = config->getWorkshopInfo(*workshopType);
       auto craftingSkill = c->getAttributes().getSkills().getValue(info.skill);
       vector<PItem> items = workshop.addWork(efficiency * craftingSkill);
