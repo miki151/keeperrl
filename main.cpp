@@ -356,6 +356,7 @@ static int keeperMain(po::parser& commandLineFlags) {
       INFO << "FX: initialization";
       fxManager = std::make_unique<fx::FXManager>();
       fxRenderer = std::make_unique<fx::FXRenderer>(particlesPath, *fxManager);
+      fxRenderer->loadTextures();
       fxViewManager = std::make_unique<FXViewManager>(fxManager.get());
     }
   }

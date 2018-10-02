@@ -289,12 +289,12 @@ void FXManager::kill(ParticleSystemId id, bool immediate) {
     systems[id].kill(immediate);
 }
 
-ParticleSystem &FXManager::get(ParticleSystemId id) {
+ParticleSystem& FXManager::get(ParticleSystemId id) {
   DASSERT(valid(id));
   return systems[id];
 }
 
-const ParticleSystem &FXManager::get(ParticleSystemId id) const {
+const ParticleSystem& FXManager::get(ParticleSystemId id) const {
   DASSERT(valid(id));
   return systems[id];
 }

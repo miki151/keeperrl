@@ -20,14 +20,19 @@ struct FXRenderer::View {
   IVec2 size;
 };
 
-FXRenderer::FXRenderer(DirectoryPath dataPath, FXManager& mgr) : mgr(mgr) {
+FXRenderer::FXRenderer(DirectoryPath dataPath, FXManager& mgr) : mgr(mgr), texturesPath(dataPath) {
+}
+
+void FXRenderer::loadTextures() {
+  textures.clear();
+  textureScales.clear();
   textures.reserve(EnumInfo<TextureName>::size);
   textureScales.reserve(textures.size());
   drawBuffers = std::make_unique<DrawBuffers>();
 
   for (auto texName : ENUM_ALL(TextureName)) {
     auto& tdef = mgr[texName];
-    auto path = dataPath.file(tdef.fileName);
+    auto path = texturesPath.file(tdef.fileName);
     int id = -1;
     for (int n = 0; n < (int)textures.size(); n++)
       if (textures[n].getPath() == path) {

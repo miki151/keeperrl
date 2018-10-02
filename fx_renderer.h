@@ -21,6 +21,7 @@ public:
   bool useFramebuffer = true;
   pair<unsigned, unsigned> fboIds() const;
   IVec2 fboSize() const;
+  void loadTextures();
 
   private:
   struct View;
@@ -38,5 +39,6 @@ public:
 
   unique_ptr<DrawBuffers> drawBuffers;
   unique_ptr<Framebuffer> blendFBO, addFBO;
+  DirectoryPath texturesPath;
 };
 }

@@ -130,6 +130,7 @@ void WindowView::initialize(unique_ptr<fx::FXRenderer> fxRenderer, unique_ptr<FX
     currentTileLayout = spriteLayouts;
   else
     currentTileLayout = asciiLayouts;
+  this->fxRenderer = fxRenderer.get();
   mapGui.reset(new MapGui({
       bindMethod(&WindowView::mapContinuousLeftClickFun, this),
       [this] (Vec2 pos) {
@@ -1429,6 +1430,7 @@ void WindowView::keyboardAction(const SDL_Keysym& key) {
     case SDL::SDLK_F8:
       //renderer.startMonkey();
       renderer.loadTiles();
+      fxRenderer->loadTextures();
       gui.loadImages();
       break;
     case SDL::SDLK_TAB:

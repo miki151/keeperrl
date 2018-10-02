@@ -256,4 +256,5 @@ class WindowView: public View {
   DirectoryPath bugreportDir;
   string installId;
   void rebuildMinimapGui();
+  fx::FXRenderer* fxRenderer;
 };
