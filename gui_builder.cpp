@@ -390,7 +390,7 @@ SGuiElem GuiBuilder::drawBottomBandInfo(GameInfo& gameInfo) {
         gui.margins(gui.progressBar(Color::DARK_GREEN, info.dungeonLevelProgress), -6, -1, 0, -2),
         gui.uiHighlightConditional([&]{ return info.blinkDungeonLevel; }),
         gui.label("Level: " + toString(info.dungeonLevel)),
-        gui.button(getButtonCallback(UserInputId::TECHNOLOGY))
+        gui.button([this]() { closeOverlayWindowsAndClearButton(); callbacks.input(UserInputId::TECHNOLOGY);})
     ));
     bottomLine.addSpace(space);
     bottomLine.addElemAuto(gui.labelFun([&info] {
@@ -1993,7 +1993,7 @@ SGuiElem GuiBuilder::drawLibraryOverlay(const CollectiveInfo& collectiveInfo, co
   int margin = 20;
   int rightElemMargin = 10;
   auto lines = gui.getListBuilder(legendLineHeight);
-  lines.addElem(gui.centerHoriz(gui.label("Level " + toString(info.dungeonLevel))));
+  lines.addElem(gui.centerHoriz(gui.label("Level " + toString(info.dungeonLevel + 1))));
   //lines.addElem(gui.rightMargin(rightElemMargin, gui.alignment(GuiFactory::Alignment::RIGHT, drawCost(info.resource))));
   if (info.warning)
     lines.addElem(gui.label(*info.warning, Color::RED));
