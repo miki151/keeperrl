@@ -306,7 +306,6 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   optional<GlobalTime> SERIAL(deathTime);
   bool SERIAL(hidden) = false;
   WCreature lastAttacker;
-  optional<ExperienceType> SERIAL(lastDamageType); // remove
   optional<string> SERIAL(deathReason);
   optional<Position> SERIAL(nextPosIntent);
   EntitySet<Creature> SERIAL(unknownAttackers);

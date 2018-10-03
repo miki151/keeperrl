@@ -251,6 +251,13 @@ WItem MinionEquipment::getWorstItem(WConstCreature c, vector<WItem> items) const
   return ret;
 }
 
+static bool canAutoAssignItem(WConstItem item) {
+  if (auto effect = item->getWeaponInfo().attackerEffect)
+    if (effect->isType<Effect::Suicide>())
+      return false;
+  return true;
+}
+
 void MinionEquipment::autoAssign(WConstCreature creature, vector<WItem> possibleItems) {
   PROFILE;
   map<EquipmentSlot, vector<WItem>> slots;
@@ -261,7 +268,7 @@ void MinionEquipment::autoAssign(WConstCreature creature, vector<WItem> possible
     }
   sortByEquipmentValue(creature, possibleItems);
   for (WItem it : possibleItems)
-    if (!getOwner(it) && needsItem(creature, it)) {
+    if (!getOwner(it) && needsItem(creature, it) && canAutoAssignItem(it)) {
       if (!it->canEquip()) {
         CHECK(tryToOwn(creature, it));
         continue;

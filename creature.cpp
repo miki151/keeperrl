@@ -64,7 +64,7 @@ void Creature::serialize(Archive& ar, const unsigned int version) {
   ar(unknownAttackers, privateEnemies, holding);
   ar(controllerStack, kills, statuses);
   ar(difficultyPoints, points, capture);
-  ar(vision, debt, lastDamageType, highestAttackValueEver);
+  ar(vision, debt, highestAttackValueEver);
 }
 
 SERIALIZABLE(Creature)
@@ -1090,7 +1090,6 @@ bool Creature::takeDamage(const Attack& attack) {
       for (Position p : visibleCreatures)
         if (p.dist8(position) < 10 && p.getCreature() && !p.getCreature()->isDead())
           p.getCreature()->removeEffect(LastingEffect::SLEEP);
-    lastDamageType = getExperienceType(attack.damageType);
   }
   double defense = getAttr(AttrType::DEFENSE);
   for (LastingEffect effect : ENUM_ALL(LastingEffect))
