@@ -506,7 +506,7 @@ class TileCoordLookup {
     Tile::addTile(ViewId::RAVEN, sprite("raven"));
     Tile::addTile(ViewId::BODY_PART, sprite("corpse4"));
     Tile::addTile(ViewId::BONE, sprite("bone"));
-    Tile::addTile(ViewId::BUSH, sprite("bush"));
+    Tile::addTile(ViewId::BUSH, sprite("bush").setRoundShadow());
     Tile::addTile(ViewId::WATER, getWaterTile("wateranim", "water"));
     Tile::addTile(ViewId::MAGMA, getWaterTile("magmaanim", "magma"));
     Tile::addTile(ViewId::WOOD_DOOR, sprite("door_wood").setWallShadow());
