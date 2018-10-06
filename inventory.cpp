@@ -140,6 +140,19 @@ void Inventory::tick(Position pos) {
     }
 }
 
+bool Inventory::containsAnyOf(const EntitySet<Item>& items) const {
+  if (size() > items.getSize()) {
+    for (auto& item : items)
+      if (!!getItemById(item))
+        return true;
+  } else {
+    for (auto& it : getItems())
+      if (items.contains(it))
+        return true;
+  }
+  return false;
+}
+
 bool Inventory::isEmpty() const {
   return items.getElems().empty();
 }

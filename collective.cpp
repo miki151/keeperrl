@@ -1114,11 +1114,11 @@ void Collective::fetchItems(Position pos, const ItemFetchInfo& elem) {
   if (!equipment.empty()) {
     if (!destination.empty()) {
       warnings->setWarning(elem.warning, false);
-      auto task = taskMap->addTask(Task::pickUpItem(pos, equipment, elem.storageId), pos, MinionActivity::HAULING);
+      auto pickUpAndDrop = Task::pickUpAndDrop(pos, equipment, elem.storageId, this);
+      auto task = taskMap->addTask(std::move(pickUpAndDrop.pickUp), pos, MinionActivity::HAULING);
+      taskMap->addTask(std::move(pickUpAndDrop.drop), chooseClosest(pos, destination), MinionActivity::HAULING);
       for (WItem it : equipment)
         markItem(it, task);
-      taskMap->addTask(Task::dropItems(equipment, elem.storageId, this), chooseClosest(pos, destination),
-          MinionActivity::HAULING);
     } else
       warnings->setWarning(elem.warning, true);
   }

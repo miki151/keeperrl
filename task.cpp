@@ -230,99 +230,6 @@ PTask Task::bringItem(Position position, vector<WItem> items, const PositionSet&
 
 namespace {
 
-class PickItem : public Task {
-  public:
-  PickItem(Position position, vector<WItem> items, optional<StorageId> storage)
-      : Task(true), items(std::move(items)), position(position), tries(10), storage(storage) {
-    CHECK(!items.empty());
-    lightestItem = 10000000;
-    for (auto& item : items)
-      lightestItem = min(lightestItem, item->getWeight());
-  }
-
-  virtual void onPickedUp() {
-    setDone();
-  }
-
-  virtual optional<StorageId> getStorageId(bool dropOnly) const override {
-    if (dropOnly)
-      return none;
-    else
-      return storage;
-  }
-
-  virtual string getDescription() const override {
-    return "Pick up item " + toString(position);
-  }
-
-  virtual bool isBogus() const override {
-    if (position.getItems().size() > items.getSize()) {
-      for (auto& item : items)
-        if (!!position.getInventory().getItemById(item))
-          return false;
-    } else {
-      for (WItem it : position.getItems())
-        if (items.contains(it))
-          return false;
-    }
-    return true;
-  }
-
-  virtual MoveInfo getMove(WCreature c) override {
-    CHECK(!pickedUp);
-    if (c->getPosition() == position) {
-      vector<WItem> hereItems;
-      for (WItem it : c->getPickUpOptions())
-        if (items.contains(it)) {
-          hereItems.push_back(it);
-          items.erase(it);
-        }
-      if (hereItems.empty()) {
-        setDone();
-        return NoMove;
-      }
-      items = hereItems;
-      if (auto action = c->pickUp(hereItems))
-        return {1.0, action.append([=](WCreature c) {
-          pickedUp = true;
-          onPickedUp();
-        })}; 
-      else {
-        setDone();
-        return NoMove;
-      }
-    }
-    if (auto action = c->moveTowards(position, Creature::NavigationFlags().requireStepOnTile()))
-      return action;
-    else if (--tries == 0)
-      setDone();
-    return NoMove;
-  }
-
-  virtual bool canPerform(WConstCreature c) const override {
-    PROFILE_BLOCK("PickItem::canPerform");
-    return c->canCarryMoreWeight(lightestItem) && c->isSameSector(position);
-  }
-
-  SERIALIZE_ALL(SUBCLASS(Task), items, pickedUp, position, tries, lightestItem, storage)
-  SERIALIZATION_CONSTRUCTOR(PickItem)
-
-  protected:
-  EntitySet<Item> SERIAL(items);
-  bool SERIAL(pickedUp) = false;
-  Position SERIAL(position);
-  int SERIAL(tries);
-  double SERIAL(lightestItem);
-  optional<StorageId> SERIAL(storage);
-};
-}
-
-PTask Task::pickUpItem(Position position, vector<WItem> items, optional<StorageId> storage) {
-  return makeOwner<PickItem>(position, items, storage);
-}
-
-namespace {
-
 class EquipItem : public Task {
   public:
   EquipItem(WItem item) : item(item->getUniqueId()), itemName(item->getName()) {
@@ -1548,11 +1455,11 @@ PTask Task::dropItemsAnywhere(vector<WItem> items) {
 namespace {
 class DropItems : public Task {
   public:
-  DropItems(EntitySet<Item> it, StorageId storage, WCollective collective)
-      : items(it), positions(StorageInfo{storage, collective}) {}
+  DropItems(EntitySet<Item> items, StorageId storage, WCollective collective, optional<Position> origin)
+      : items(std::move(items)), positions(StorageInfo{storage, collective}), origin(origin) {}
 
-  DropItems(EntitySet<Item> it, vector<Position> positions)
-      : items(it), positions(std::move(positions)) {}
+  DropItems(EntitySet<Item> items, vector<Position> positions)
+      : items(std::move(items)), positions(std::move(positions)) {}
 
   virtual string getDescription() const override {
     return "Drop items";
@@ -1565,6 +1472,10 @@ class DropItems : public Task {
           return chooseRandomClose(c, info.collective->getStoragePositions(info.storage), LAZY);
         }
     );
+  }
+
+  void onPickedUp(WCreature c) {
+    pickedUpCreature = c;
   }
 
   virtual optional<StorageId> getStorageId(bool) const override {
@@ -1599,21 +1510,17 @@ class DropItems : public Task {
     }
   }
 
-  virtual bool canPerform(WConstCreature c) const override {
-    PROFILE_BLOCK("DropItems::canPerform");
-    if (items.getSize() > c->getEquipment().getItems().size()) {
-      for (auto item : c->getEquipment().getItems())
-        if (items.contains(item))
-          return true;
-    } else {
-      for (auto item : items)
-        if (!!c->getEquipment().getItemById(item))
-          return true;
-    }
-    return false;
+  virtual bool isBogus() const override {
+    return origin && !origin->getInventory().containsAnyOf(items) &&
+        (!pickedUpCreature || !pickedUpCreature->getEquipment().containsAnyOf(items));
   }
 
-  SERIALIZE_ALL(SUBCLASS(Task), items, positions, target);
+  virtual bool canPerform(WConstCreature c) const override {
+    PROFILE_BLOCK("DropItems::canPerform");
+    return (!origin || c == pickedUpCreature ) && c->getEquipment().containsAnyOf(items);
+  }
+
+  SERIALIZE_ALL(SUBCLASS(Task), items, positions, target, origin, pickedUpCreature);
   SERIALIZATION_CONSTRUCTOR(DropItems);
 
   protected:
@@ -1625,15 +1532,111 @@ class DropItems : public Task {
   };
   variant<StorageInfo, vector<Position>> SERIAL(positions);
   optional<Position> SERIAL(target);
+  optional<Position> SERIAL(origin);
+  WCreature SERIAL(pickedUpCreature);
 };
 }
 
 PTask Task::dropItems(vector<WItem> items, StorageId storage, WCollective collective) {
-  return makeOwner<DropItems>(items, storage, collective);
+  return makeOwner<DropItems>(items, storage, collective, none);
 }
 
 PTask Task::dropItems(vector<WItem> items, vector<Position> positions) {
   return makeOwner<DropItems>(items, std::move(positions));
+}
+
+namespace {
+
+class PickUpItem : public Task {
+  public:
+  PickUpItem(Position position, vector<WItem> items, optional<StorageId> storage, WeakPointer<DropItems> dropTask)
+      : Task(true), items(std::move(items)), position(position), tries(10), storage(storage),
+        dropTask(std::move(dropTask)) {
+    CHECK(!items.empty());
+    lightestItem = 10000000;
+    for (auto& item : items)
+      lightestItem = min(lightestItem, item->getWeight());
+  }
+
+  virtual void onPickedUp() {
+    setDone();
+  }
+
+  virtual optional<StorageId> getStorageId(bool dropOnly) const override {
+    if (dropOnly)
+      return none;
+    else
+      return storage;
+  }
+
+  virtual string getDescription() const override {
+    return "Pick up item " + toString(position);
+  }
+
+  virtual bool isBogus() const override {
+    return !position.getInventory().containsAnyOf(items);
+  }
+
+  virtual MoveInfo getMove(WCreature c) override {
+    CHECK(!pickedUp);
+    if (c->getPosition() == position) {
+      vector<WItem> hereItems;
+      for (WItem it : c->getPickUpOptions())
+        if (items.contains(it)) {
+          hereItems.push_back(it);
+          items.erase(it);
+        }
+      if (hereItems.empty()) {
+        setDone();
+        return NoMove;
+      }
+      items = hereItems;
+      if (auto action = c->pickUp(hereItems))
+        return {1.0, action.append([=](WCreature c) {
+          pickedUp = true;
+          onPickedUp();
+          if (dropTask)
+            dropTask->onPickedUp(c);
+        })};
+      else {
+        setDone();
+        return NoMove;
+      }
+    }
+    if (auto action = c->moveTowards(position, Creature::NavigationFlags().requireStepOnTile()))
+      return action;
+    else if (--tries == 0)
+      setDone();
+    return NoMove;
+  }
+
+  virtual bool canPerform(WConstCreature c) const override {
+    PROFILE_BLOCK("PickUpItem::canPerform");
+    return c->canCarryMoreWeight(lightestItem) && c->isSameSector(position);
+  }
+
+  SERIALIZE_ALL(SUBCLASS(Task), items, pickedUp, position, tries, lightestItem, storage, dropTask)
+  SERIALIZATION_CONSTRUCTOR(PickUpItem)
+
+  protected:
+  EntitySet<Item> SERIAL(items);
+  bool SERIAL(pickedUp) = false;
+  Position SERIAL(position);
+  int SERIAL(tries);
+  double SERIAL(lightestItem);
+  optional<StorageId> SERIAL(storage);
+  WeakPointer<DropItems> SERIAL(dropTask);
+};
+}
+
+PTask Task::pickUpItem(Position position, vector<WItem> items, optional<StorageId> storage) {
+  return makeOwner<PickUpItem>(position, items, storage, nullptr);
+}
+
+Task::PickUpAndDrop Task::pickUpAndDrop(Position origin, vector<WItem> items, StorageId storage, WCollective col) {
+  auto drop = makeOwner<DropItems>(items, storage, col, origin);
+  auto pickUp = makeOwner<PickUpItem>(origin, items, storage, drop.get());
+  return PickUpAndDrop { std::move(pickUp), std::move(drop)};
 }
 
 namespace {
@@ -1728,7 +1731,7 @@ void TaskPredicate::serialize(Archive& ar, const unsigned int version) {
 
 REGISTER_TYPE(Construction)
 REGISTER_TYPE(Destruction)
-REGISTER_TYPE(PickItem)
+REGISTER_TYPE(PickUpItem)
 REGISTER_TYPE(EquipItem)
 REGISTER_TYPE(ApplyItem)
 REGISTER_TYPE(ApplySquare)

@@ -98,6 +98,11 @@ class Task : public UniqueEntity<Task>, public OwnedObject<Task> {
   static PTask dropItemsAnywhere(vector<WItem>);
   static PTask dropItems(vector<WItem>, vector<Position>);
   static PTask dropItems(vector<WItem>, StorageId, WCollective);
+  struct PickUpAndDrop {
+    PTask pickUp;
+    PTask drop;
+  };
+  static PickUpAndDrop pickUpAndDrop(Position origin, vector<WItem>, StorageId, WCollective);
   static PTask spider(Position origin, const vector<Position>& posClose);
 
   template <class Archive>
