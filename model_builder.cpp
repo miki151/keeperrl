@@ -365,7 +365,7 @@ PModel ModelBuilder::tryCampaignBaseModel(const string& siteName, bool addExtern
   enemyInfo.push_back(enemyFactory->get(EnemyId::BANDITS));
   enemyInfo.push_back(enemyFactory->get(EnemyId::ANTS_CLOSED_SMALL));
   enemyInfo.push_back(enemyFactory->get(EnemyId::ADA_GOLEMS));
-  enemyInfo.push_back(enemyFactory->get(EnemyId::TUTORIAL_VILLAGE).setVillainType(VillainType::LESSER));
+  enemyInfo.push_back(enemyFactory->get(EnemyId::TUTORIAL_VILLAGE));
   append(enemyInfo, enemyFactory->getVaults());
   if (random.chance(0.3))
     enemyInfo.push_back(enemyFactory->get(EnemyId::KRAKEN));
