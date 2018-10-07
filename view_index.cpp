@@ -18,7 +18,7 @@
 #include "view_index.h"
 #include "view_object.h"
 
-SERIALIZE_DEF(ViewIndex, objIndex, highlight, objects, anyHighlight, itemCounts, equipmentCounts)
+SERIALIZE_DEF(ViewIndex, objIndex, highlights, gradients, objects, anyHighlight, itemCounts, equipmentCounts)
 
 ViewIndex::ViewIndex() {
   for (auto& elem : objIndex)
@@ -79,15 +79,25 @@ const ViewObject* ViewIndex::getTopObject(const vector<ViewLayer>& layers) const
   return nullptr;
 }
 
-void ViewIndex::setHighlight(HighlightType h, double amount) {
+void ViewIndex::setGradient(GradientType h, double amount) {
   CHECK(amount >= 0 && amount <= 1);
   if (amount > 0)
     anyHighlight = true;
-  highlight[h] = amount;
+  gradients[h] = amount;
 }
 
-double ViewIndex::getHighlight(HighlightType h) const {
-  return highlight[h];
+double ViewIndex::getGradient(GradientType h) const {
+  return gradients[h];
+}
+
+void ViewIndex::setHighlight(HighlightType h, bool state) {
+  if (state)
+    anyHighlight = true;
+  highlights.set(h, state);
+}
+
+bool ViewIndex::isHighlight(HighlightType h) const {
+  return highlights.contains(h);
 }
 
 optional<ViewId> ViewIndex::getHiddenId() const {
@@ -100,10 +110,6 @@ void ViewIndex::setHiddenId(ViewId id) {
 
 vector<ViewObject>& ViewIndex::getAllObjects() {
   return objects;
-}
-
-const EnumMap<HighlightType, double>& ViewIndex::getHighlightMap() const {
-  return highlight;
 }
 
 void ViewIndex::mergeFromMemory(const ViewIndex& memory) {

@@ -372,6 +372,8 @@ void Position::getViewIndex(ViewIndex& index, WConstCreature viewer) const {
     getSquare()->getViewIndex(index, viewer);
     if (isUnavailable())
       index.setHighlight(HighlightType::UNAVAILABLE);
+    if (level->covered[coord])
+      index.setHighlight(HighlightType::INDOORS);
     for (auto furniture : getFurniture())
       if (furniture->isVisibleTo(viewer) && furniture->getViewObject()) {
         auto obj = *furniture->getViewObject();
@@ -711,6 +713,11 @@ bool Position::isCovered() const {
     return level->covered[coord];
   else
     return false;
+}
+
+void Position::setCovered(bool value) const {
+  CHECK(isValid());
+  level->covered[coord] = value;
 }
 
 bool Position::sunlightBurns() const {

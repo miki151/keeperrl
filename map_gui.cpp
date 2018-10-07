@@ -121,7 +121,6 @@ optional<Vec2> MapGui::getHighlightedTile(Renderer&) {
 }
 
 Color MapGui::getHighlightColor(const ViewIndex& index, HighlightType type) {
-  double amount = index.getHighlight(type);
   bool quartersSelected = buttonViewId == ViewId::QUARTERS1 || buttonViewId == ViewId::QUARTERS2 ||
       buttonViewId == ViewId::QUARTERS3;
   switch (type) {
@@ -136,10 +135,7 @@ Color MapGui::getHighlightColor(const ViewIndex& index, HighlightType type) {
     case HighlightType::QUARTERS2: return Color::SKY_BLUE.transparency(quartersSelected ? 70 : 20);
     case HighlightType::QUARTERS3: return Color::ORANGE.transparency(quartersSelected ? 70 : 20);
     case HighlightType::RECT_SELECTION: return Color::YELLOW.transparency(100);
-    case HighlightType::FOG: return Color::WHITE.transparency(int(120 * amount));
-    case HighlightType::POISON_GAS: return Color(0, min<Uint8>(255., Uint8(amount * 500)), 0, (Uint8)(amount * 140));
     case HighlightType::MEMORY: return Color::BLACK.transparency(80);
-    case HighlightType::NIGHT: return Color::NIGHT_BLUE.transparency(int(amount * 160));
     case HighlightType::PRIORITY_TASK: return Color(0, 255, 0, 200);
     case HighlightType::CREATURE_DROP:
       if (index.hasObject(ViewLayer::FLOOR) && getHighlightedFurniture() == index.getObject(ViewLayer::FLOOR).id())
@@ -150,6 +146,15 @@ Color MapGui::getHighlightColor(const ViewIndex& index, HighlightType type) {
     case HighlightType::CLICKED_FURNITURE: return Color(255, 255, 0);
     case HighlightType::FORBIDDEN_ZONE: return Color(255, 0, 0, 120);
     case HighlightType::UNAVAILABLE: return Color(0, 0, 0, 120);
+    case HighlightType::INDOORS: return Color(0, 0, 255, 0);
+  }
+}
+
+Color MapGui::getGradientColor(const ViewIndex& index, GradientType type) {
+  double amount = index.getGradient(type);
+  switch (type) {
+    case GradientType::POISON_GAS: return Color(0, min<Uint8>(255., Uint8(amount * 500)), 0, (Uint8)(amount * 140));
+    case GradientType::NIGHT: return Color::NIGHT_BLUE.transparency(int(amount * 160));
   }
 }
 
@@ -790,15 +795,15 @@ optional<ViewId> MapGui::getHighlightedFurniture() {
     if (curPos.inRectangle(objects.getBounds()) &&
         objects[curPos] &&
         objects[curPos]->hasObject(ViewLayer::FLOOR) &&
-        (objects[curPos]->getHighlight(HighlightType::CLICKABLE_FURNITURE) > 0 ||
-         (objects[curPos]->getHighlight(HighlightType::CREATURE_DROP) > 0 && !!getDraggedCreature())))
+        (objects[curPos]->isHighlight(HighlightType::CLICKABLE_FURNITURE) ||
+         (objects[curPos]->isHighlight(HighlightType::CREATURE_DROP) && !!getDraggedCreature())))
       return objects[curPos]->getObject(ViewLayer::FLOOR).id();
   }
   return none;
 }
 
 bool MapGui::isRenderedHighlight(const ViewIndex& index, HighlightType type) {
-  if (index.getHighlight(type) > 0)
+  if (index.isHighlight(type))
     switch (type) {
       case HighlightType::CLICKABLE_FURNITURE:
         return
@@ -817,7 +822,7 @@ bool MapGui::isRenderedHighlight(const ViewIndex& index, HighlightType type) {
 bool MapGui::isRenderedHighlightLow(const ViewIndex& index, HighlightType type) {
   switch (type) {
     case HighlightType::PRIORITY_TASK:
-      return index.getHighlight(HighlightType::DIG) == 0;
+      return index.isHighlight(HighlightType::DIG);
     case HighlightType::CLICKABLE_FURNITURE:
     case HighlightType::CREATURE_DROP:
     case HighlightType::FORBIDDEN_ZONE:
@@ -846,14 +851,6 @@ void MapGui::renderHighlight(Renderer& renderer, Vec2 pos, Vec2 size, const View
   auto color = getHighlightColor(index, highlight);
   switch (highlight) {
     case HighlightType::MEMORY:
-    case HighlightType::POISON_GAS:
-    case HighlightType::NIGHT:
-      renderer.addQuad(Rectangle(pos, pos + size), color);
-      break;
-/*    case HighlightType::CUT_TREE:
-      if (spriteMode && index.hasObject(ViewLayer::FLOOR))
-        break;
-      FALLTHROUGH;*/
     case HighlightType::QUARTERS1:
     case HighlightType::QUARTERS2:
     case HighlightType::QUARTERS3:
@@ -862,6 +859,16 @@ void MapGui::renderHighlight(Renderer& renderer, Vec2 pos, Vec2 size, const View
       break;
     default:
       renderTexturedHighlight(renderer, pos, size, color, ViewId::DIG_MARK);
+      break;
+  }
+}
+
+void MapGui::renderGradient(Renderer& renderer, Vec2 pos, Vec2 size, const ViewIndex& index, GradientType gradient) {
+  auto color = getGradientColor(index, gradient);
+  switch (gradient) {
+    case GradientType::POISON_GAS:
+    case GradientType::NIGHT:
+      renderer.addQuad(Rectangle(pos, pos + size), color);
       break;
   }
 }
@@ -877,6 +884,9 @@ void MapGui::renderHighlights(Renderer& renderer, Vec2 size, milliseconds curren
         for (HighlightType highlight : ENUM_ALL_REVERSE(HighlightType))
           if (isRenderedHighlight(*index, highlight) && isRenderedHighlightLow(*index, highlight) == lowHighlights)
             renderHighlight(renderer, pos, size, *index, highlight);
+        if (!lowHighlights)
+          for (GradientType gradient : ENUM_ALL_REVERSE(GradientType))
+            renderGradient(renderer, pos, size, *index, gradient);
       }
   for (Vec2 wpos : lowHighlights ? tutorialHighlightLow : tutorialHighlightHigh) {
     Vec2 pos = topLeftCorner + (wpos - allTiles.topLeft()).mult(size);
@@ -1164,7 +1174,7 @@ void MapGui::updateObject(Vec2 pos, CreatureView* view, milliseconds currentTime
   view->getViewIndex(pos, index);
   level->setNeedsRenderUpdate(pos, false);
   if (index.hasObject(ViewLayer::FLOOR) || index.hasObject(ViewLayer::FLOOR_BACKGROUND))
-    index.setHighlight(HighlightType::NIGHT, 1.0 - view->getLevel()->getLight(pos));
+    index.setGradient(GradientType::NIGHT, 1.0 - view->getLevel()->getLight(pos));
   lastSquareUpdate[pos] = currentTime;
   connectionMap[pos].clear();
   shadowed.erase(pos + Vec2(0, 1));

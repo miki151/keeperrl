@@ -143,7 +143,7 @@ void Square::getViewIndex(ViewIndex& ret, WConstCreature viewer) const {
   if (WItem it = getTopItem())
     ret.insert(copyOf(it->getViewObject()).setAttribute(ViewObject::Attribute::BURNING, fireSize));
   if (poisonGas->getAmount() > 0)
-    ret.setHighlight(HighlightType::POISON_GAS, min(1.0, poisonGas->getAmount()));
+    ret.setGradient(GradientType::POISON_GAS, min(1.0, poisonGas->getAmount()));
   *viewIndex = ret;
 }
 

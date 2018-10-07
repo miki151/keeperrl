@@ -92,6 +92,7 @@ class Position {
   void addPoisonGas(double amount);
   double getPoisonGasAmount() const;
   bool isCovered() const;
+  void setCovered(bool value) const;
   bool sunlightBurns() const;
   double getLightEmission() const;
   void addCreatureLight(bool darkness);
