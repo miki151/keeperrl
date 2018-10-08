@@ -495,12 +495,14 @@ class Fighter : public Behaviour {
     if (checkFriendlyFire(dir))
       return NoMove;
     for (auto effect : getOffensiveEffects())
-      if (auto action = tryEffect(effect, dir.shorten()))
-        return action;
-    if (auto action = creature->fire(dir.shorten()))
-      return {1.0, action.append([=](WCreature) {
-          addCombatIntent(other, true);
-      })};
+      if (effect.getRange() >= dir.length8())
+        if (auto action = tryEffect(effect, dir.shorten()))
+          return action;
+    if (dir.length8() <= getFiringRange(creature))
+      if (auto action = creature->fire(dir.shorten()))
+        return {1.0, action.append([=](WCreature) {
+            addCombatIntent(other, true);
+        })};
     return NoMove;
   }
 
@@ -614,9 +616,9 @@ class Fighter : public Behaviour {
     if (distance <= 5)
       if (auto move = considerBuffs())
         return move;
-    if (distance > 1 && distance <= getFiringRange(creature))
-        if (MoveInfo move = getFireMove(enemyDir, other))
-          return move;
+    if (distance > 1)
+      if (MoveInfo move = getFireMove(enemyDir, other))
+        return move;
     if (distance > 1 && distance <= 10)
         if (MoveInfo move = getThrowMove(enemyDir, other))
           return move;
