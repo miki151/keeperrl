@@ -24,6 +24,7 @@ struct FXRenderer::SystemDrawInfo {
 };
 
 FXRenderer::FXRenderer(DirectoryPath dataPath, FXManager& mgr) : mgr(mgr), texturesPath(dataPath) {
+  drawBuffers = std::make_unique<DrawBuffers>();
 }
 
 void FXRenderer::loadTextures() {
@@ -31,7 +32,6 @@ void FXRenderer::loadTextures() {
   textureScales.clear();
   textures.reserve(EnumInfo<TextureName>::size);
   textureScales.reserve(textures.size());
-  drawBuffers = std::make_unique<DrawBuffers>();
 
   for (auto texName : ENUM_ALL(TextureName)) {
     auto& tdef = mgr[texName];
