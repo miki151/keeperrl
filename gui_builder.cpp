@@ -2174,7 +2174,7 @@ SGuiElem GuiBuilder::drawMapHintOverlay() {
         lines.addElem(gui.label(getDescription(status), getColor(status)));
         break;
       }
-      lines.addElemAuto(drawLyingItemsList("Inventory: ", highlighted.equipmentCounts, 250));
+      lines.addElemAuto(drawLyingItemsList("Inventory: ", highlighted.viewIndex.equipmentCounts, 250));
       if (auto actions = getClickActions(*viewObject))
         if (highlighted.tileScreenPos)
           allElems.push_back(gui.absolutePosition(gui.translucentBackgroundWithBorderPassMouse(gui.margins(
@@ -2206,12 +2206,16 @@ SGuiElem GuiBuilder::drawMapHintOverlay() {
               gui.label("Luxury: " + getMoraleNumber(*luxury))));
       if (viewObject->hasModifier(ViewObjectModifier::PLANNED))
         lines.addElem(gui.label("Planned"));
-      if (viewObject->hasModifier(ViewObjectModifier::INSUFFICIENT_LIGHT))
-        lines.addElem(gui.label("Insufficient light", Color::RED));
     }
+    if (highlighted.viewIndex.isHighlight(HighlightType::INSUFFICIENT_LIGHT))
+      lines.addElem(gui.label("Insufficient light", Color::RED));
+    if (highlighted.viewIndex.isHighlight(HighlightType::INDOORS))
+      lines.addElem(gui.label("Indoors"));
+    else
+      lines.addElem(gui.label("Outdoors"));
     if (highlighted.tilePos)
       lines.addElem(gui.label("Position: " + toString(*highlighted.tilePos)));
-    lines.addElemAuto(drawLyingItemsList("Lying here: ", highlighted.itemCounts, 250));
+    lines.addElemAuto(drawLyingItemsList("Lying here: ", highlighted.viewIndex.itemCounts, 250));
   }
   if (!lines.isEmpty())
     allElems.push_back(gui.margins(gui.translucentBackgroundWithBorderPassMouse(

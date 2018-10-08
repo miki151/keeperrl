@@ -148,6 +148,8 @@ Color MapGui::getHighlightColor(const ViewIndex& index, HighlightType type) {
     case HighlightType::FORBIDDEN_ZONE: return Color(255, 0, 0, 120);
     case HighlightType::UNAVAILABLE: return Color(0, 0, 0, 120);
     case HighlightType::INDOORS: return Color(0, 0, 255, buildingSelected ? 40 : 0);
+    default:
+      return Color::TRANSPARENT;
   }
 }
 
@@ -925,7 +927,7 @@ MapGui::HighlightedInfo MapGui::getHighlightedInfo(Vec2 size, milliseconds curre
       ret.tileScreenPos = topLeftCorner + (*ret.tilePos - allTiles.topLeft()).mult(size);
       if (ret.tilePos->inRectangle(objects.getBounds()))
         if (auto& index = objects[*ret.tilePos])
-          ret.itemCounts = index->itemCounts;
+          ret.viewIndex = *index;
       if (!buttonViewId && ret.tilePos->inRectangle(objects.getBounds()))
         for (Vec2 wpos : Rectangle(*ret.tilePos - Vec2(2, 2), *ret.tilePos + Vec2(2, 2))
             .intersection(objects.getBounds())) {
@@ -938,7 +940,7 @@ MapGui::HighlightedInfo MapGui::getHighlightedInfo(Vec2 size, milliseconds curre
                 ret.tilePos = wpos;
                 ret.object = object;
                 ret.creaturePos = pos + movement;
-                ret.equipmentCounts = index->equipmentCounts;
+                ret.viewIndex = *index;
                 break;
               }
           }

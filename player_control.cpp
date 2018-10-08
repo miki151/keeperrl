@@ -1580,9 +1580,7 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
             if (collective->isActivityGood(c, *task, true))
               index.setHighlight(HighlightType::CREATURE_DROP);
       if (CollectiveConfig::requiresLighting(furniture->getType()) && position.getLightingEfficiency() < 0.99)
-        if (auto& obj = furniture->getViewObject())
-          if (index.hasObject(obj->layer()))
-            index.getObject(obj->layer()).setModifier(ViewObject::Modifier::INSUFFICIENT_LIGHT);
+        index.setHighlight(HighlightType::INSUFFICIENT_LIGHT);
     }
     for (auto furniture : position.getFurniture())
       if (furniture->getLuxuryInfo().luxury > 0)
