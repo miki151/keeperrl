@@ -70,11 +70,45 @@ static bool isMountain(FType type) {
   return isOneOf(type, FType::MOUNTAIN, FType::DUNGEON_WALL);
 }
 
+static bool isTree(FType type) {
+  return isOneOf(type, FType::CANIF_TREE, FType::DECID_TREE, FType::BUSH);
+}
+
+// TODO: EnumMap mapping item to destruction effect ?
+static bool isWoodenFurniture(FType type) {
+  return isOneOf(type, FType::WOOD_DOOR, FType::WOOD_WALL, FType::BOOKCASE_WOOD, FType::TRAINING_WOOD, FType::WORKSHOP,
+                 FType::JEWELER, FType::BOOKCASE_GOLD, FType::BOOKCASE_IRON, FType::ARCHERY_RANGE, FType::BARRICADE,
+                 FType::KEEPER_BOARD, FType::EYEBALL, FType::WHIPPING_POST, FType::GALLOWS, FType::BED1, FType::BED2,
+                 FType::BED3, FType::COFFIN1, FType::BEAST_CAGE, FType::TREASURE_CHEST);
+}
+
+static bool isSmallWoodenFurniture(FType type) {
+  return isOneOf(type, FType::IMPALED_HEAD);
+}
+
+static bool isGrayFurniture(FType type) {
+  return isOneOf(type, FType::BOOKCASE_IRON, FType::TRAINING_IRON, FType::IRON_DOOR, FType::TRAINING_ADA,
+                 FType::ADA_DOOR, FType::LABORATORY, FType::FORGE, FType::STONE_MINION_STATUE, FType::FOUNTAIN,
+                 FType::PORTAL, FType::COFFIN2, FType::COFFIN3, FType::TORTURE_TABLE);
+}
+
+static bool isGoldFurniture(FType type) {
+  return isOneOf(type, FType::MINION_STATUE, FType::THRONE, FType::DEMON_SHRINE);
+}
+
 optional<FXInfo> destroyFXInfo(FType type) {
   if (isMountain(type))
     return FXInfo{FXName::ROCK_CLOUD, Color(220, 210, 180)};
-  else if (isMountain2(type))
+  else if (isMountain2(type) || type == FType::BOULDER_TRAP)
     return FXInfo{FXName::ROCK_CLOUD, Color(200, 200, 200)};
+  else if (isWoodenFurniture(type))
+    return FXInfo{FXName::DESTROY_FURNITURE, Color(120, 87, 46)};
+  else if (isGrayFurniture(type))
+    return FXInfo{FXName::DESTROY_FURNITURE, Color(120, 120, 120)};
+  else if (isGoldFurniture(type))
+    return FXInfo{FXName::DESTROY_FURNITURE, Color(190, 190, 40)};
+  else if (isSmallWoodenFurniture(type))
+    return FXInfo{FXName::WOOD_SPLINTERS, Color::WHITE};
   return none;
 }
 
@@ -83,7 +117,7 @@ optional<FXInfo> tryDestroyFXInfo(FType type) {
     return FXInfo{FXName::ROCK_SPLINTERS, Color(220, 210, 180)};
   else if (isMountain2(type))
     return FXInfo{FXName::ROCK_SPLINTERS, Color(200, 200, 200)};
-  else if (isOneOf(type, FType::CANIF_TREE, FType::DECID_TREE, FType::BUSH))
+  else if (isTree(type))
     return FXInfo{FXName::WOOD_SPLINTERS, Color::WHITE};
   return none;
 }

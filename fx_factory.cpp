@@ -159,6 +159,27 @@ static void addRockCloud(FXManager &mgr) {
   mgr.addDef(FXName::ROCK_CLOUD, psdef);
 }
 
+static void addDestroyFurnitureEffect(FXManager& mgr) {
+  EmitterDef edef;
+  edef.setStrengthSpread(70.0f, 20.0f);
+  edef.rotSpeed = 0.7f;
+  edef.initialSpawnCount = 30;
+  edef.source = FRect(-3, -3, 3, 3);
+
+  ParticleDef pdef;
+  pdef.life = 0.7f;
+  pdef.size = 6.0f;
+  pdef.slowdown = 20000.0f;
+  pdef.alpha = {{0.0f, 0.4f, 1.0f}, {1.0, 1.0, 0.0}, InterpType::cosine};
+  pdef.textureName = TextureName::FLAKES_BORDERS;
+  SubSystemDef ssdef(pdef, edef, 0.0f, 0.1f);
+
+  ParticleSystemDef psdef;
+  psdef.subSystems = {ssdef};
+  // TODO: cząsteczki mogą mieć różny czas życia
+  mgr.addDef(FXName::DESTROY_FURNITURE, psdef);
+}
+
 static void addFireballSplashEffect(FXManager& mgr) {
   // TODO: tutaj trzeba zrobić tak, żeby cząsteczki które spawnują się później
   // zaczynały z innym kolorem
@@ -1481,6 +1502,8 @@ void FXManager::initializeDefs() {
   addWoodSplinters(*this);
   addRockSplinters(*this);
   addRockCloud(*this);
+  addDestroyFurnitureEffect(*this);
+
   addRippleEffect(*this);
   addFireEffect(*this);
   addFireSphereEffect(*this);
