@@ -68,6 +68,7 @@ class ViewIndex {
   optional<ViewId> getHiddenId() const;
   void setHiddenId(ViewId);
   vector<ViewObject>& getAllObjects();
+  const vector<ViewObject>& getAllObjects() const;
 
   void setHighlight(HighlightType, bool = true);
   void setGradient(GradientType, double amount = 1);

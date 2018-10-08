@@ -2162,51 +2162,56 @@ SGuiElem GuiBuilder::drawMapHintOverlay() {
         lines.addElem(gui.label(line));
   } else {
     auto& highlighted = mapGui->getLastHighlighted();
-    if (auto& viewObject = highlighted.object) {
-      lines.addElem(gui.getListBuilder()
-            .addElem(gui.viewObject(viewObject->id()), 30)
-            .addElemAuto(gui.label(viewObject->getDescription()))
-            .buildHorizontalList());
-      if (viewObject->hasModifier(ViewObject::Modifier::HOSTILE))
-        lines.addElem(gui.label("Hostile", Color::ORANGE));
-      for (auto status : viewObject->getCreatureStatus()) {
-        lines.addElem(gui.label(getName(status), getColor(status)));
-        lines.addElem(gui.label(getDescription(status), getColor(status)));
-        break;
+    auto& index = highlighted.viewIndex;
+    for (auto layer : ENUM_ALL_REVERSE(ViewLayer))
+      if (index.hasObject(layer)) {
+        auto& viewObject = index.getObject(layer);
+        lines.addElem(gui.getListBuilder()
+              .addElem(gui.viewObject(viewObject.id()), 30)
+              .addElemAuto(gui.label(viewObject.getDescription()))
+              .buildHorizontalList());
+        if (layer == ViewLayer::CREATURE)
+          lines.addElemAuto(drawLyingItemsList("Inventory: ", highlighted.viewIndex.equipmentCounts, 250));
+        if (viewObject.hasModifier(ViewObject::Modifier::HOSTILE))
+          lines.addElem(gui.label("Hostile", Color::ORANGE));
+        for (auto status : viewObject.getCreatureStatus()) {
+          lines.addElem(gui.label(getName(status), getColor(status)));
+          lines.addElem(gui.label(getDescription(status), getColor(status)));
+          break;
+        }
+        if (auto actions = getClickActions(viewObject))
+          if (highlighted.tileScreenPos)
+            allElems.push_back(gui.absolutePosition(gui.translucentBackgroundWithBorderPassMouse(gui.margins(
+                gui.setHeight(*actions->getPreferredHeight(), actions), 5, 1, 5, -2)),
+                highlighted.creaturePos.value_or(*highlighted.tileScreenPos) + Vec2(60, 60)));
+        if (!viewObject.getBadAdjectives().empty()) {
+          lines.addElemAuto(gui.labelMultiLineWidth(viewObject.getBadAdjectives(), legendLineHeight * 2 / 3, 300,
+              Renderer::textSize, Color::RED, ','));
+          lines.addSpace(legendLineHeight / 3);
+        }
+        if (!viewObject.getGoodAdjectives().empty()) {
+          lines.addElemAuto(gui.labelMultiLineWidth(viewObject.getGoodAdjectives(), legendLineHeight * 2 / 3, 300,
+              Renderer::textSize, Color::GREEN, ','));
+          lines.addSpace(legendLineHeight / 3);
+        }
+        if (auto& attributes = viewObject.getCreatureAttributes())
+          lines.addElemAuto(drawAttributesOnPage(drawPlayerAttributes(*attributes)));
+        if (auto health = viewObject.getAttribute(ViewObjectAttribute::HEALTH))
+          lines.addElem(gui.stack(
+                gui.margins(gui.progressBar(MapGui::getHealthBarColor(*health).transparency(70), *health), -2, 0, 0, 3),
+                gui.label("Health: " + toString((int) (100.0f * *health)) + "%")));
+        if (auto morale = viewObject.getAttribute(ViewObjectAttribute::MORALE))
+          lines.addElem(gui.stack(
+                gui.margins(gui.progressBar((*morale >= 0 ? Color::GREEN : Color::RED).transparency(70), fabs(*morale)), -2, 0, 0, 3),
+                gui.label("Morale: " + getMoraleNumber(*morale))));
+        if (auto luxury = viewObject.getAttribute(ViewObjectAttribute::LUXURY))
+          lines.addElem(gui.stack(
+                gui.margins(gui.progressBar(Color::GREEN.transparency(70), fabs(*luxury)), -2, 0, 0, 3),
+                gui.label("Luxury: " + getMoraleNumber(*luxury))));
+        if (viewObject.hasModifier(ViewObjectModifier::PLANNED))
+          lines.addElem(gui.label("Planned"));
+        lines.addElem(gui.margins(gui.rectangle(Color::DARK_GRAY), -9, 2, -9, 8), 12);
       }
-      lines.addElemAuto(drawLyingItemsList("Inventory: ", highlighted.viewIndex.equipmentCounts, 250));
-      if (auto actions = getClickActions(*viewObject))
-        if (highlighted.tileScreenPos)
-          allElems.push_back(gui.absolutePosition(gui.translucentBackgroundWithBorderPassMouse(gui.margins(
-              gui.setHeight(*actions->getPreferredHeight(), actions), 5, 1, 5, -2)),
-              highlighted.creaturePos.value_or(*highlighted.tileScreenPos) + Vec2(60, 60)));
-      if (!viewObject->getBadAdjectives().empty()) {
-        lines.addElemAuto(gui.labelMultiLineWidth(viewObject->getBadAdjectives(), legendLineHeight * 2 / 3, 300,
-            Renderer::textSize, Color::RED, ','));
-        lines.addSpace(legendLineHeight / 3);
-      }
-      if (!viewObject->getGoodAdjectives().empty()) {
-        lines.addElemAuto(gui.labelMultiLineWidth(viewObject->getGoodAdjectives(), legendLineHeight * 2 / 3, 300,
-            Renderer::textSize, Color::GREEN, ','));
-        lines.addSpace(legendLineHeight / 3);
-      }
-      if (auto& attributes = viewObject->getCreatureAttributes())
-        lines.addElemAuto(drawAttributesOnPage(drawPlayerAttributes(*attributes)));
-      if (auto health = viewObject->getAttribute(ViewObjectAttribute::HEALTH))
-        lines.addElem(gui.stack(
-              gui.margins(gui.progressBar(MapGui::getHealthBarColor(*health).transparency(70), *health), -2, 0, 0, 3),
-              gui.label("Health: " + toString((int) (100.0f * *health)) + "%")));
-      if (auto morale = viewObject->getAttribute(ViewObjectAttribute::MORALE))
-        lines.addElem(gui.stack(
-              gui.margins(gui.progressBar((*morale >= 0 ? Color::GREEN : Color::RED).transparency(70), fabs(*morale)), -2, 0, 0, 3),
-              gui.label("Morale: " + getMoraleNumber(*morale))));
-      if (auto luxury = viewObject->getAttribute(ViewObjectAttribute::LUXURY))
-        lines.addElem(gui.stack(
-              gui.margins(gui.progressBar(Color::GREEN.transparency(70), fabs(*luxury)), -2, 0, 0, 3),
-              gui.label("Luxury: " + getMoraleNumber(*luxury))));
-      if (viewObject->hasModifier(ViewObjectModifier::PLANNED))
-        lines.addElem(gui.label("Planned"));
-    }
     if (highlighted.viewIndex.isHighlight(HighlightType::INSUFFICIENT_LIGHT))
       lines.addElem(gui.label("Insufficient light", Color::RED));
     if (highlighted.viewIndex.isHighlight(HighlightType::INDOORS))

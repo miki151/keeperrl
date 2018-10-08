@@ -112,6 +112,10 @@ vector<ViewObject>& ViewIndex::getAllObjects() {
   return objects;
 }
 
+const vector<ViewObject>& ViewIndex::getAllObjects() const {
+  return objects;
+}
+
 void ViewIndex::mergeFromMemory(const ViewIndex& memory) {
   if (isEmpty())
     *this = memory;
