@@ -382,6 +382,7 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setBlockVision()
           .setConstructMessage(Furniture::FILL_UP)
           .setIsWall()
+          .setForgetAfterBuilding()
           .setDestroyable(200, DestroyAction::Type::BOULDER)
           .setDestroyable(30, DestroyAction::Type::DIG)
           .setDestroyable(200, DestroyAction::Type::HOSTILE_DIG)
@@ -393,6 +394,7 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setBlockVision()
           .setConstructMessage(Furniture::FILL_UP)
           .setIsWall()
+          .setForgetAfterBuilding()
           .setDestroyable(500, DestroyAction::Type::BOULDER)
           .setDestroyable(70, DestroyAction::Type::DIG)
           .setDestroyable(500, DestroyAction::Type::HOSTILE_DIG)
@@ -447,6 +449,7 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setBlocking()
           .setBlockVision()
           .setIsWall()
+          .setForgetAfterBuilding()
           .setLuxury(0.2)
           .setConstructMessage(Furniture::REINFORCE)
           .setDestroyable(300, DestroyAction::Type::BOULDER)
@@ -458,6 +461,7 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setBlocking()
           .setBlockVision()
           .setIsWall()
+          .setForgetAfterBuilding()
           .setLuxury(0.2)
           .setConstructMessage(Furniture::REINFORCE)
           .setDestroyable(300, DestroyAction::Type::BOULDER)
@@ -473,14 +477,22 @@ static Furniture get(FurnitureType type, TribeId tribe) {
       return Furniture("wall", ViewObject(ViewId::CASTLE_WALL, ViewLayer::FLOOR), type, tribe)
           .setBlocking()
           .setBlockVision()
+          .setIsBuildingSupport()
           .setIsWall()
-          .setDestroyable(300, DestroyAction::Type::BOULDER);
+          .setDestroyable(300, DestroyAction::Type::BOULDER)
+          .setDestroyable(100, DestroyAction::Type::DIG)
+          .setDestroyable(1900, DestroyAction::Type::HOSTILE_DIG)
+          .setDestroyable(2000, DestroyAction::Type::HOSTILE_DIG_NO_SKILL);
     case FurnitureType::WOOD_WALL:
       return Furniture("wall", ViewObject(ViewId::WOOD_WALL, ViewLayer::FLOOR), type, tribe)
           .setBlocking()
           .setBlockVision()
           .setIsWall()
+          .setIsBuildingSupport()
           .setDestroyable(100, DestroyAction::Type::BOULDER)
+          .setDestroyable(100, DestroyAction::Type::DIG)
+          .setDestroyable(300, DestroyAction::Type::HOSTILE_DIG)
+          .setDestroyable(300, DestroyAction::Type::HOSTILE_DIG_NO_SKILL)
           .setSummonedElement(CreatureId::ENT)
           .setFireInfo(Fire(1000, 0.7));
     case FurnitureType::MUD_WALL:
@@ -488,6 +500,7 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setBlocking()
           .setBlockVision()
           .setIsWall()
+          .setIsBuildingSupport()
           .setDestroyable(100, DestroyAction::Type::BOULDER);
     case FurnitureType::FLOOR_WOOD1:
       return Furniture("floor", ViewObject(ViewId::WOOD_FLOOR2, ViewLayer::FLOOR_BACKGROUND), type, tribe)

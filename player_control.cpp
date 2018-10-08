@@ -2627,10 +2627,13 @@ PController PlayerControl::createMinionController(WCreature c) {
   return ::getMinionController(c, memory, this, controlModeMessages, visibilityMap, unknownLocations, tutorial);
 }
 
+static void considerAddingKeeperFloor(Position pos) {
+  if (NOTNULL(pos.getFurniture(FurnitureLayer::GROUND))->getViewObject()->id() == ViewId::FLOOR)
+    pos.modFurniture(FurnitureLayer::GROUND)->getViewObject()->setId(ViewId::KEEPER_FLOOR);
+}
+
 void PlayerControl::onClaimedSquare(Position position) {
-  auto ground = position.modFurniture(FurnitureLayer::GROUND);
-  CHECK(ground) << "No ground found at " << position.getCoord();
-  ground->getViewObject()->setId(ViewId::KEEPER_FLOOR);
+  considerAddingKeeperFloor(position);
   position.setNeedsRenderUpdate(true);
   updateSquareMemory(position);
 }
@@ -2642,7 +2645,7 @@ void PlayerControl::onDestructed(Position pos, FurnitureType type, const Destroy
       collective->addKnownTile(v);
       updateSquareMemory(v);
     }
-    pos.modFurniture(FurnitureLayer::GROUND)->getViewObject()->setId(ViewId::KEEPER_FLOOR);
+    considerAddingKeeperFloor(pos);
     pos.setNeedsRenderUpdate(true);
   }
 }

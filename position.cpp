@@ -372,7 +372,7 @@ void Position::getViewIndex(ViewIndex& index, WConstCreature viewer) const {
     getSquare()->getViewIndex(index, viewer);
     if (isUnavailable())
       index.setHighlight(HighlightType::UNAVAILABLE);
-    if (level->covered[coord])
+    if (isCovered() > 0)
       index.setHighlight(HighlightType::INDOORS);
     for (auto furniture : getFurniture())
       if (furniture->isVisibleTo(viewer) && furniture->getViewObject()) {
@@ -464,7 +464,7 @@ bool Position::canEnterEmpty(const MovementType& t, optional<FurnitureLayer> ign
     if (ignore == furniture->getLayer())
       continue;
     bool canEnter =
-        furniture->getMovementSet().canEnter(t, level->covered[coord], square->isOnFire(), square->getForbiddenTribe());
+        furniture->getMovementSet().canEnter(t, isCovered(), square->isOnFire(), square->getForbiddenTribe());
     if (furniture->overridesMovement())
       return canEnter;
     else
@@ -505,12 +505,38 @@ void Position::dropItems(vector<PItem> v) {
   }
 }
 
+constexpr int buildingSupportRadius = 5;
+
+void Position::updateBuildingSupport() const {
+  auto updatePosition = [](Position pos) {
+    if (pos.isBuildingSupport()) {
+      pos.setBuilding(true);
+      pos.setNeedsRenderUpdate(true);
+      return;
+    }
+    int numSupports = 0;
+    for (auto v2 : Vec2::directions4())
+      for (int i2 : Range(1, buildingSupportRadius))
+        if (pos.plus(v2 * i2).isBuildingSupport()) {
+          ++numSupports;
+          break;
+        }
+    pos.setBuilding(numSupports >= 2);
+    pos.setNeedsRenderUpdate(true);
+  };
+  for (auto v : Vec2::directions4())
+    for (int i : Range(1, buildingSupportRadius))
+      updatePosition(plus(v * i));
+  updatePosition(*this);
+}
+
 void Position::addFurniture(PFurniture f) const {
   PROFILE;
   auto furniture = f.get();
   level->setFurniture(coord, std::move(f));
   updateConnectivity();
   updateVisibility();
+  updateBuildingSupport();
   level->addLightSource(coord, furniture->getLightEmission());
   setNeedsRenderUpdate(true);
 }
@@ -552,6 +578,7 @@ void Position::removeFurniture(WConstFurniture f, PFurniture replace) const {
   updateConnectivity();
   updateVisibility();
   updateSupport();
+  updateBuildingSupport();
   if (replacePtr)
     level->addLightSource(coord, replacePtr->getLightEmission());
   setNeedsRenderUpdate(true);
@@ -566,6 +593,14 @@ bool Position::isWall() const {
   PROFILE;
   if (auto furniture = getFurniture(FurnitureLayer::MIDDLE))
     return furniture->isWall();
+  else
+    return false;
+}
+
+bool Position::isBuildingSupport() const {
+  PROFILE;
+  if (auto furniture = getFurniture(FurnitureLayer::MIDDLE))
+    return furniture->isBuildingSupport();
   else
     return false;
 }
@@ -710,14 +745,14 @@ double Position::getPoisonGasAmount() const {
 bool Position::isCovered() const {
   PROFILE;
   if (isValid())
-    return level->covered[coord];
+    return level->covered[coord] || level->building[coord];
   else
     return false;
 }
 
-void Position::setCovered(bool value) const {
+void Position::setBuilding(bool value) const {
   CHECK(isValid());
-  level->covered[coord] = value;
+  level->building[coord] = value;
 }
 
 bool Position::sunlightBurns() const {

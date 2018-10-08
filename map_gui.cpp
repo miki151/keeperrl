@@ -123,6 +123,7 @@ optional<Vec2> MapGui::getHighlightedTile(Renderer&) {
 Color MapGui::getHighlightColor(const ViewIndex& index, HighlightType type) {
   bool quartersSelected = buttonViewId == ViewId::QUARTERS1 || buttonViewId == ViewId::QUARTERS2 ||
       buttonViewId == ViewId::QUARTERS3;
+  bool buildingSelected = buttonViewId == ViewId::WOOD_WALL || buttonViewId == ViewId::CASTLE_WALL;
   switch (type) {
     case HighlightType::RECT_DESELECTION: return Color::RED.transparency(100);
     case HighlightType::DIG: return Color::YELLOW.transparency(100);
@@ -146,7 +147,7 @@ Color MapGui::getHighlightColor(const ViewIndex& index, HighlightType type) {
     case HighlightType::CLICKED_FURNITURE: return Color(255, 255, 0);
     case HighlightType::FORBIDDEN_ZONE: return Color(255, 0, 0, 120);
     case HighlightType::UNAVAILABLE: return Color(0, 0, 0, 120);
-    case HighlightType::INDOORS: return Color(0, 0, 255, 0);
+    case HighlightType::INDOORS: return Color(0, 0, 255, buildingSelected ? 40 : 0);
   }
 }
 
@@ -164,6 +165,8 @@ static ViewId getConnectionId(ViewId id) {
     case ViewId::WOOD_WALL:
     case ViewId::CASTLE_WALL:
     case ViewId::MUD_WALL:
+    case ViewId::WALL:
+      return ViewId::WALL;
     case ViewId::MOUNTAIN:
     case ViewId::MOUNTAIN2:
     case ViewId::DUNGEON_WALL:
@@ -172,7 +175,7 @@ static ViewId getConnectionId(ViewId id) {
     case ViewId::GOLD_ORE:
     case ViewId::IRON_ORE:
     case ViewId::STONE:
-    case ViewId::WALL: return ViewId::WALL;
+      return ViewId::MOUNTAIN;
     default: return id;
   }
 }
@@ -851,6 +854,9 @@ void MapGui::renderHighlight(Renderer& renderer, Vec2 pos, Vec2 size, const View
   auto color = getHighlightColor(index, highlight);
   switch (highlight) {
     case HighlightType::MEMORY:
+    case HighlightType::INDOORS:
+      renderer.addQuad(Rectangle(pos, pos + size), color);
+      break;
     case HighlightType::QUARTERS1:
     case HighlightType::QUARTERS2:
     case HighlightType::QUARTERS3:
@@ -1181,7 +1187,7 @@ void MapGui::updateObject(Vec2 pos, CreatureView* view, milliseconds currentTime
   if (index.hasObject(ViewLayer::FLOOR)) {
     auto& object = index.getObject(ViewLayer::FLOOR);
     auto& tile = Tile::getTile(object.id());
-    if (tile.wallShadow) {
+    if (tile.wallShadow && !object.hasModifier(ViewObjectModifier::PLANNED)) {
       shadowed.insert(pos + Vec2(0, 1));
     }
     connectionMap[pos].insert(getConnectionId(object.id()));

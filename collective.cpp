@@ -657,7 +657,7 @@ Territory& Collective::getTerritory() {
 bool Collective::canClaimSquare(Position pos) const {
   return getKnownTiles().isKnown(pos) &&
       pos.isCovered() &&
-      pos.canEnter({MovementTrait::WALK}) &&
+      pos.canEnterEmpty({MovementTrait::WALK}) &&
       !pos.isWall();
 }
 
@@ -882,8 +882,6 @@ void Collective::addFurniture(Position pos, FurnitureType type, const CostInfo& 
   if (!noCredit || hasResource(cost)) {
     constructions->addFurniture(pos, ConstructionMap::FurnitureInfo(type, cost));
     updateConstructions();
-    if (canClaimSquare(pos))
-      claimSquare(pos);
   }
 }
 
@@ -961,6 +959,8 @@ void Collective::onConstructed(Position pos, FurnitureType type) {
   control->onConstructed(pos, type);
   if (WTask task = taskMap->getMarked(pos))
     taskMap->removeTask(task);
+  if (canClaimSquare(pos))
+    claimSquare(pos);
 }
 
 void Collective::onDestructed(Position pos, FurnitureType type, const DestroyAction& action) {

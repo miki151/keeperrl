@@ -45,7 +45,7 @@ void Level::serialize(Archive& ar, const unsigned int version) {
   ar(squares, landingSquares, tickingSquares, creatures, model, fieldOfView);
   ar(name, sunlight, bucketMap, lightAmount, unavailable);
   ar(levelId, noDiagonalPassing, lightCapAmount, creatureIds, memoryUpdates);
-  ar(furniture, tickingFurniture, covered, portals);
+  ar(furniture, tickingFurniture, covered, building, portals);
   if (Archive::is_loading::value) // some code requires these Sectors to be always initialized
     getSectors({MovementTrait::WALK});
 }  
@@ -57,17 +57,17 @@ SERIALIZATION_CONSTRUCTOR_IMPL(Level);
 Level::~Level() {}
 
 Level::Level(Private, SquareArray s, FurnitureArray f, WModel m, const string& n,
-    Table<double> sun, LevelId id, Table<bool> cover)
+    Table<double> sun, LevelId id)
     : squares(std::move(s)), furniture(std::move(f)),
       memoryUpdates(squares->getBounds(), true), model(m),
-      name(n), sunlight(sun), covered(cover), bucketMap(squares->getBounds().width(), squares->getBounds().height(),
+      name(n), sunlight(sun), bucketMap(squares->getBounds().width(), squares->getBounds().height(),
       FieldOfView::sightRange), lightAmount(squares->getBounds(), 0), lightCapAmount(squares->getBounds(), 1),
       levelId(id), portals(squares->getBounds()) {
 }
 
 PLevel Level::create(SquareArray s, FurnitureArray f, WModel m, const string& n,
-    Table<double> sun, LevelId id, Table<bool> cover, Table<bool> unavailable) {
-  auto ret = makeOwner<Level>(Private{}, std::move(s), std::move(f), m, n, sun, id, cover);
+    Table<double> sun, LevelId id, Table<bool> covered, Table<bool> building, Table<bool> unavailable) {
+  auto ret = makeOwner<Level>(Private{}, std::move(s), std::move(f), m, n, sun, id);
   for (Vec2 pos : ret->squares->getBounds()) {
     auto square = ret->squares->getReadonly(pos);
     square->onAddedToLevel(Position(pos, ret.get()));
@@ -82,7 +82,9 @@ PLevel Level::create(SquareArray s, FurnitureArray f, WModel m, const string& n,
     (*ret->fieldOfView)[vision] = FieldOfView(ret.get(), vision);
   for (auto pos : ret->getAllPositions())
     ret->addLightSource(pos.getCoord(), pos.getLightEmission(), 1);
-  ret->unavailable = unavailable;
+  ret->unavailable = std::move(unavailable);
+  ret->covered = std::move(covered);
+  ret->building = std::move(building);
   ret->getSectors({MovementTrait::WALK});
   return ret;
 }
@@ -194,13 +196,17 @@ WGame Level::getGame() const {
   return model->getGame();
 }
 
+bool Level::isCovered(Vec2 pos) const {
+  return covered[pos] || building[pos];
+}
+
 bool Level::isInSunlight(Vec2 pos) const {
-  return !covered[pos] && lightCapAmount[pos] == 1 &&
+  return !isCovered(pos) && lightCapAmount[pos] >= 1 &&
       getGame()->getSunlightInfo().getState() == SunlightState::DAY;
 }
 
 double Level::getLight(Vec2 pos) const {
-  return max(0.0, min(covered[pos] ? 1 : lightCapAmount[pos], lightAmount[pos] +
+  return max(0.0, min(isCovered(pos) ? 1 : lightCapAmount[pos], lightAmount[pos] +
       sunlight[pos] * getGame()->getSunlightInfo().getLightAmount()));
 }
 

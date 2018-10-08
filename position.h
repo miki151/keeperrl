@@ -70,6 +70,7 @@ class Position {
   vector<PItem> removeItems(vector<WItem>);
   bool canConstruct(FurnitureType) const;
   bool isWall() const;
+  bool isBuildingSupport() const;
   void removeFurniture(WConstFurniture, PFurniture replace = nullptr) const;
   void addFurniture(PFurniture) const;
   bool isUnavailable() const;
@@ -92,7 +93,6 @@ class Position {
   void addPoisonGas(double amount);
   double getPoisonGasAmount() const;
   bool isCovered() const;
-  void setCovered(bool value) const;
   bool sunlightBurns() const;
   double getLightEmission() const;
   void addCreatureLight(bool darkness);
@@ -144,6 +144,8 @@ class Position {
   Level* level = nullptr;
   bool SERIAL(valid) = false;
   void updateSupport() const;
+  void updateBuildingSupport() const;
+  void setBuilding(bool value) const;
 };
 
 template <>

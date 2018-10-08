@@ -29,6 +29,8 @@ const vector<BuildInfo>& BuildInfo::get() {
           "Reinforce wall.", 0, "Structure"),
       BuildInfo({FurnitureType::PIT}, "Dig a pit", {},
           "Dig a pit in the ground. Building next to water or lava will cause it to fill up.", 0, "Structure"),
+      BuildInfo({FurnitureType::WOOD_WALL, {ResourceId::WOOD, 10}}, "Wooden building", {}, ".", 0, "Structure"),
+      BuildInfo({FurnitureType::CASTLE_WALL, {ResourceId::STONE, 10}}, "Stone building", {}, ".", 0, "Structure"),
       BuildInfo({FurnitureType::BRIDGE, {ResourceId::WOOD, 5}}, "Bridge", {},
         "Build it to pass over water or lava.", 0, "Structure"),
       BuildInfo({FurnitureType::WOOD_DOOR, {ResourceId::WOOD, 5}}, "Wooden door", {},

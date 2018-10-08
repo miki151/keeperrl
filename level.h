@@ -206,6 +206,7 @@ class Level : public OwnedObject<Level> {
   string SERIAL(name);
   Table<double> SERIAL(sunlight);
   Table<bool> SERIAL(covered);
+  Table<bool> SERIAL(building);
   HeapAllocated<CreatureBucketMap> SERIAL(bucketMap);
   Table<double> SERIAL(lightAmount);
   Table<double> SERIAL(lightCapAmount);
@@ -217,12 +218,12 @@ class Level : public OwnedObject<Level> {
   struct Private {};
 
   static PLevel create(SquareArray s, FurnitureArray f, WModel m, const string& n, Table<double> sun, LevelId id,
-      Table<bool> cover, Table<bool> unavailable);
+      Table<bool> cover, Table<bool> building, Table<bool> unavailable);
 
   public:
-  Level(Private, SquareArray, FurnitureArray, WModel, const string& name, Table<double> sunlight, LevelId, Table<bool> cover);
+  Level(Private, SquareArray, FurnitureArray, WModel, const string& name, Table<double> sunlight, LevelId);
 
-    private:
+  private:
   void addLightSource(Vec2 pos, double radius, int numLight);
   void addDarknessSource(Vec2 pos, double radius, int numLight);
   FieldOfView& getFieldOfView(VisionId vision) const;
@@ -232,5 +233,6 @@ class Level : public OwnedObject<Level> {
   bool SERIAL(noDiagonalPassing) = false;
   void updateCreatureLight(Vec2, int diff);
   HeapAllocated<Portals> SERIAL(portals);
+  bool isCovered(Vec2) const;
 };
 

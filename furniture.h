@@ -59,6 +59,7 @@ class Furniture : public OwnedObject<Furniture> {
   optional<FurnitureClickType> getClickType() const;
   bool isTicking() const;
   bool isWall() const;
+  bool isBuildingSupport() const;
   void onConstructedBy(WCreature);
   FurnitureLayer getLayer() const;
   double getLightEmission() const;
@@ -101,6 +102,7 @@ class Furniture : public OwnedObject<Furniture> {
   Furniture& setDroppedItems(FurnitureDroppedItems);
   Furniture& setFireInfo(const Fire&);
   Furniture& setIsWall();
+  Furniture& setIsBuildingSupport();
   Furniture& setOverrideMovement();
   Furniture& setLayer(FurnitureLayer);
   Furniture& setLightEmission(double);
@@ -144,6 +146,7 @@ class Furniture : public OwnedObject<Furniture> {
   bool SERIAL(removeWithCreaturePresent) = true;
   bool SERIAL(removeNonFriendly) = false;
   bool SERIAL(wall) = false;
+  bool SERIAL(buildingSupport) = false;
   optional<ConstructMessage> SERIAL(constructMessage) = BUILD;
   double SERIAL(lightEmission) = 0;
   bool SERIAL(canHideHere) = false;

@@ -53,7 +53,7 @@ void Furniture::serialize(Archive& ar, const unsigned) {
   ar(blockVision, usageType, clickType, tickType, usageTime, overrideMovement, wall, creator, createdTime);
   ar(constructMessage, layer, entryType, lightEmission, canHideHere, warning, summonedElement, droppedItems);
   ar(canBuildBridge, noProjectiles, clearFogOfWar, removeWithCreaturePresent, xForgetAfterBuilding);
-  ar(luxuryInfo);
+  ar(luxuryInfo, buildingSupport);
 }
 
 SERIALIZABLE(Furniture)
@@ -271,6 +271,10 @@ bool Furniture::isWall() const {
   return wall;
 }
 
+bool Furniture::isBuildingSupport() const {
+  return buildingSupport;
+}
+
 void Furniture::onConstructedBy(WCreature c) {
   creator = c;
   createdTime = c->getLocalTime();
@@ -339,7 +343,7 @@ bool Furniture::isClearFogOfWar() const {
 }
 
 bool Furniture::forgetAfterBuilding() const {
-  return isWall() || xForgetAfterBuilding;
+  return xForgetAfterBuilding;
 }
 
 void Furniture::onCreatureWalkedOver(Position pos, Vec2 direction) const {
@@ -486,6 +490,11 @@ Furniture& Furniture::setFireInfo(const Fire& f) {
 
 Furniture& Furniture::setIsWall() {
   wall = true;
+  return *this;
+}
+
+Furniture&Furniture::setIsBuildingSupport() {
+  buildingSupport = true;
   return *this;
 }
 
