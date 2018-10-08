@@ -23,7 +23,7 @@ LDFLAGS += -Wl -L/usr/local/opt/openal-soft/lib
 CFLAGS += -stdlib=libc++ -DOSX -mmacosx-version-min=10.7
 CFLAGS += -I/usr/local/opt/openal-soft/include
 else
-LDFLAGS += -Wl,-rpath=$(RPATH)
+LDFLAGS += -Wl,--gdb-index -Wl,-rpath=$(RPATH)
 endif
 
 ifdef DATA_DIR
