@@ -157,6 +157,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   bool canEquipIfEmptySlot(WConstItem item, string* reason = nullptr) const;
   bool canEquip(WConstItem item) const;
   CreatureAction throwItem(WItem, Vec2 direction) const;
+  optional<int> getThrowDistance(WConstItem) const;
   CreatureAction applySquare(Position) const;
   CreatureAction hide() const;
   bool isHidden() const;

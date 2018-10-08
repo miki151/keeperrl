@@ -1557,27 +1557,29 @@ CreatureAction Creature::applyItem(WItem item) const {
   });
 }
 
+optional<int> Creature::getThrowDistance(WConstItem item) const {
+  if (item->getWeight() <= 0.5)
+    return 15;
+  else if (item->getWeight() <= 5)
+    return 6;
+  else if (item->getWeight() <= 20)
+    return 2;
+  else
+    return none;
+}
+
 CreatureAction Creature::throwItem(WItem item, Vec2 direction) const {
   if (!getBody().numGood(BodyPart::ARM) || !getBody().isHumanoid())
     return CreatureAction("You can't throw anything!");
-  else if (item->getWeight() > 20)
+  auto dist = getThrowDistance(item);
+  if (!dist)
     return CreatureAction(item->getTheName() + " is too heavy!");
-  int dist = 0;
-  int str = 20;
-  if (item->getWeight() <= 0.5)
-    dist = 10 * str / 15;
-  else if (item->getWeight() <= 5)
-    dist = 5 * str / 15;
-  else if (item->getWeight() <= 20)
-    dist = 2 * str / 15;
-  else
-    FATAL << "Item too heavy.";
   int damage = getAttr(AttrType::RANGED_DAMAGE) + item->getModifier(AttrType::RANGED_DAMAGE);
   return CreatureAction(this, [=](WCreature self) {
     Attack attack(self, Random.choose(getBody().getAttackLevels()), item->getWeaponInfo().attackType, damage, AttrType::DAMAGE);
     secondPerson("You throw " + item->getAName(false, this));
     thirdPerson(getName().the() + " throws " + item->getAName());
-    self->getPosition().throwItem(self->equipment->removeItem(item, self), attack, dist, direction, getVision().getId());
+    self->getPosition().throwItem(self->equipment->removeItem(item, self), attack, *dist, direction, getVision().getId());
     self->spendTime();
   });
 }

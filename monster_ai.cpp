@@ -465,17 +465,17 @@ class Fighter : public Behaviour {
       return NoMove;
     if (checkFriendlyFire(enemyDir))
       return NoMove;
-    Vec2 dir = enemyDir.shorten();
     WItem best = nullptr;
     int damage = 0;
     for (WItem item : creature->getEquipment().getItems())
-      if (!creature->getEquipment().isEquipped(item) && getThrowValue(item) > damage) {
+      if (!creature->getEquipment().isEquipped(item) && getThrowValue(item) > damage &&
+          creature->getThrowDistance(item) >= enemyDir.length8()) {
         damage = getThrowValue(item);
         best = item;
       }
     if (best)
-      if (auto action = creature->throwItem(best, dir))
-        return {1.0, action.append([=](WCreature) { addCombatIntent(other, true); }) };
+      if (auto action = creature->throwItem(best, enemyDir.shorten()))
+        return action.append([=](WCreature) { addCombatIntent(other, true); });
     return NoMove;
   }
 
@@ -616,12 +616,12 @@ class Fighter : public Behaviour {
     if (distance <= 5)
       if (auto move = considerBuffs())
         return move;
-    if (distance > 1)
+    if (distance > 1) {
       if (MoveInfo move = getFireMove(enemyDir, other))
         return move;
-    if (distance > 1 && distance <= 10)
-        if (MoveInfo move = getThrowMove(enemyDir, other))
-          return move;
+      if (MoveInfo move = getThrowMove(enemyDir, other))
+        return move;
+    }
     if (distance > 1) {
       if (chase && !other->getAttributes().dontChase() && !isChaseFrozen(other)) {
         lastSeen = none;
