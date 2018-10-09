@@ -934,6 +934,48 @@ static void addFireballEffect(FXManager& mgr) {
   mgr.addDef(FXName::FIREBALL, psdef);
 }
 
+static void addFlamethrowerEffect(FXManager& mgr) {
+  ParticleSystemDef psdef;
+
+  { // Flames
+    EmitterDef edef;
+    edef.strength = 50.0f;
+    edef.setDirectionSpread(0.0f, 0.3f);
+    edef.frequency = 40.0f;
+    edef.source = FVec2(0.0f);
+
+    ParticleDef pdef;
+    pdef.life = 0.5f;
+    pdef.size = 12.0f;
+    pdef.color = {{IColor(155, 85, 30).rgb(), IColor(45, 35, 30).rgb()}};
+    pdef.alpha = {{0.0f, 0.2f, 0.8f, 1.0f}, {0.0f, 1.0f, 1.0f, 0.0f}};
+    pdef.textureName = TextureName::FLAMES_BLURRED;
+
+    SubSystemDef ssdef(pdef, edef, 0.0f, 0.7f);
+    ssdef.prepareFunc = [](AnimationContext& ctx, EmissionState& em) {
+      float freq = defaultPrepareEmission(ctx, em);
+      float mod = ctx.ps.params.scalar[0];
+      em.direction = ctx.ps.targetDirAngle;
+      em.directionSpread /= ctx.ps.targetTileDist;
+      em.strength *= ctx.ps.targetTileDist;
+      freq *= ctx.ps.targetTileDist;
+      return freq * (1.0f + mod * 2.0f);
+    };
+
+    ssdef.emitFunc = [](AnimationContext& ctx, EmissionState& em, Particle& pinst) {
+      defaultEmitParticle(ctx, em, pinst);
+      float mod = ctx.ps.params.scalar[0];
+      pinst.pos.x *= (1.0f + mod);
+      pinst.movement *= (1.0f + mod);
+      pinst.size *= (1.0f + mod * 0.25f);
+    };
+
+    psdef.subSystems.emplace_back(ssdef);
+  }
+
+  mgr.addDef(FXName::FLAMETHROWER, psdef);
+}
+
 static void addSleepEffect(FXManager& mgr) {
   EmitterDef edef;
   edef.strength = 20.0f;
@@ -1520,6 +1562,7 @@ void FXManager::initializeDefs() {
   addMagicMissileSplashEffect(*this);
   addFireballEffect(*this);
   addFireballSplashEffect(*this);
+  addFlamethrowerEffect(*this);
 
   addSleepEffect(*this);
   addBlindEffect(*this);

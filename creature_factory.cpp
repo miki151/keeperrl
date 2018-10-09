@@ -1233,7 +1233,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.spells->add(SpellId::CURE_POISON);
           c.spells->add(SpellId::DECEPTION);
           c.spells->add(SpellId::SPEED_SELF);
-          c.spells->add(SpellId::FIREBALL);
+          c.spells->add(SpellId::FIREBALL_DRAGON);
           c.name->setStack("dragon");
           );
     case CreatureId::KNIGHT: 

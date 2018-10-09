@@ -2565,6 +2565,8 @@ void GuiFactory::loadFreeImages(const DirectoryPath& path) {
         return Vec2(0, 7);
       case SpellId::FIREBALL:
         return Vec2(1, 7);
+      case SpellId::FIREBALL_DRAGON:
+        return Vec2(1, 7);
       case SpellId::INVISIBILITY:
         return Vec2(0, 8);
       case SpellId::CIRCULAR_BLAST:
