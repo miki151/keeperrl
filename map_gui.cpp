@@ -827,7 +827,7 @@ bool MapGui::isRenderedHighlight(const ViewIndex& index, HighlightType type) {
 bool MapGui::isRenderedHighlightLow(const ViewIndex& index, HighlightType type) {
   switch (type) {
     case HighlightType::PRIORITY_TASK:
-      return index.isHighlight(HighlightType::DIG);
+      return !index.isHighlight(HighlightType::DIG);
     case HighlightType::CLICKABLE_FURNITURE:
     case HighlightType::CREATURE_DROP:
     case HighlightType::FORBIDDEN_ZONE:
