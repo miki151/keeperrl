@@ -290,7 +290,7 @@ static void drawTexturedQuad(const FRect& rect, const FRect& trect) {
   SDL::glEnd();
 }
 
-void FXRenderer::drawOrdered(const int* ids, int count) {
+void FXRenderer::drawOrdered(const int* ids, int count, float offsetX, float offsetY) {
   tempRects.clear();
 
   FVec2 fboSize(orderedBlendFBO->width, orderedBlendFBO->height);
@@ -307,7 +307,7 @@ void FXRenderer::drawOrdered(const int* ids, int count) {
 
     // TODO: some rects are only additive or only blend; filter them
     FRect rect(draw.worldRect);
-    rect = rect * worldView.zoom + worldView.offset;
+    rect = rect * worldView.zoom + worldView.offset + FVec2(offsetX, offsetY);
     auto trect = FRect(IRect(draw.fboPos, draw.fboPos + draw.worldRect.size())) * invSize;
     tempRects.emplace_back(rect);
     tempRects.emplace_back(trect);
@@ -369,7 +369,7 @@ void FXRenderer::drawAllOrdered() {
   for (int n = 0; n < systems.size(); n++)
     if (!systems[n].isDead && systems[n].orderedDraw)
       ids.emplace_back(n);
-  drawOrdered(ids.data(), ids.size());
+  drawOrdered(ids.data(), ids.size(), 0.0f, 0.0f);
 }
 
 void FXRenderer::drawUnordered(Layer layer) {
