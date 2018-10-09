@@ -411,6 +411,7 @@ static void addSandDustEffect(FXManager& mgr) {
       temp.rot = 0.0f;
       defaultDrawParticle(ctx, temp, out);
     };
+  ssdef.layer = Layer::back;
 
   ParticleSystemDef psdef;
   psdef.subSystems = {ssdef};
