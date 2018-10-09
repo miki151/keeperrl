@@ -247,10 +247,19 @@ const char* ViewObject::getDefaultDescription() const {
     case ViewId::BARRICADE: return "Barricade";
     case ViewId::WOOD_FLOOR1:
     case ViewId::WOOD_FLOOR2:
+    case ViewId::WOOD_FLOOR3:
+    case ViewId::WOOD_FLOOR4:
+    case ViewId::WOOD_FLOOR5:
     case ViewId::STONE_FLOOR1:
     case ViewId::STONE_FLOOR2:
+    case ViewId::STONE_FLOOR3:
+    case ViewId::STONE_FLOOR4:
+    case ViewId::STONE_FLOOR5:
     case ViewId::CARPET_FLOOR1:
     case ViewId::CARPET_FLOOR2:
+    case ViewId::CARPET_FLOOR3:
+    case ViewId::CARPET_FLOOR4:
+    case ViewId::CARPET_FLOOR5:
     case ViewId::KEEPER_FLOOR:
     case ViewId::FLOOR: return "Floor";
     case ViewId::BORDER_GUARD: return "Wall";
