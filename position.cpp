@@ -933,7 +933,7 @@ void Position::moveCreature(Position pos, bool teleportEffect) {
     level->changeLevel(pos, getCreature());
   else pos.getLevel()->landCreature({pos}, getModel()->extractCreature(getCreature()));
   if (teleportEffect)
-    getGame()->addEvent(EventInfo::FX{*this, FXName::TELEPORT_IN});
+    getGame()->addEvent(EventInfo::FX{pos, FXName::TELEPORT_IN});
 }
 
 void Position::moveCreature(Vec2 direction) {
