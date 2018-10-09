@@ -30,7 +30,7 @@ public:
 
   // TODO: span<> would be very useful
   // TODO: pass proper ids
-  void drawOrdered(const int* systemIds, int count);
+  void drawOrdered(const int* systemIds, int count, float offsetX, float offsetY);
   void drawAllOrdered();
 
   void drawUnordered(Layer);

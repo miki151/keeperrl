@@ -52,7 +52,6 @@
 #include "quarters.h"
 #include "position_matching.h"
 #include "fx_variant_name.h"
-#include "fx_view_manager.h"
 #include "storage_id.h"
 
 template <class Archive>
