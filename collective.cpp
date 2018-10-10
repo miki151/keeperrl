@@ -51,7 +51,6 @@
 #include "workshop_item.h"
 #include "quarters.h"
 #include "position_matching.h"
-#include "fx_variant_name.h"
 #include "storage_id.h"
 
 template <class Archive>
