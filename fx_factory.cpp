@@ -1441,7 +1441,7 @@ static void addDebuffEffect(FXManager& mgr) {
       float offset = ctx.ps.params.scalar[1] * fconstant::pi * 2.0f;
       float pos = std::cos((ctx.globalTime) * 5.0f + offset);
       // Faster movement in the middle, slower on the edges:
-      pos = (pos < 0.0f ? -1.0f : 1.0f) * std::pow(std::abs(pos), 0.7);
+      pos = (pos < 0.0f ? -1.0f : 1.0f) * std::pow(std::abs(pos), 0.5);
       // Constant offset:
       //pos +=  (ctx.ps.params.scalar[1] - 0.5f) * 3.0f;
 
