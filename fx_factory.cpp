@@ -90,6 +90,7 @@ static void addWoodSplinters(FXManager &mgr) {
   SubSystemDef ssdef(pdef, edef, 0.0f, 0.1f);
   ssdef.maxTotalParticles = 7;
   ssdef.animateFunc = animateFunc;
+  ssdef.layer = Layer::back;
 
   ParticleSystemDef psdef;
   psdef.subSystems = {ssdef};
@@ -121,6 +122,7 @@ static void addRockSplinters(FXManager &mgr) {
 
   SubSystemDef ssdef(pdef, edef, 0.0f, 0.1f);
   ssdef.maxTotalParticles = 5;
+  ssdef.layer = Layer::back;
 
   ParticleSystemDef psdef;
   psdef.subSystems = {ssdef};
@@ -202,12 +204,13 @@ static void addDestroyFurnitureEffect(FXManager& mgr) {
   edef.source = FRect(-3, -3, 3, 3);
 
   ParticleDef pdef;
-  pdef.life = 0.7f;
+  pdef.life = 1.5f;
   pdef.size = 6.0f;
   pdef.slowdown = 20000.0f;
   pdef.alpha = {{0.0f, 0.4f, 1.0f}, {1.0, 1.0, 0.0}, InterpType::cosine};
   pdef.textureName = TextureName::FLAKES_BORDERS;
   SubSystemDef ssdef(pdef, edef, 0.0f, 0.1f);
+  ssdef.layer = Layer::back; // will be drawn underneath creatures
 
   ParticleSystemDef psdef;
   psdef.subSystems = {ssdef};
