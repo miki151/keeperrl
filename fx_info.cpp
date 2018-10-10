@@ -19,34 +19,6 @@ FXInfo getFXInfo(FXVariantName var) {
       return {FXName::FLYING};
     case Name::FIRE_SPHERE:
       return {FXName::FIRE_SPHERE};
-    case Name::BUFF_RED:
-      return {FXName::BUFF, Color::RED, 0.0f, FXStackId::buff};
-    case Name::BUFF_GREEN:
-      return {FXName::BUFF, Color::GREEN, 0.0f, FXStackId::buff};
-    case Name::BUFF_BLACK:
-      return {FXName::BUFF, Color::BLACK, 0.0f, FXStackId::buff};
-    case Name::BUFF_WHITE:
-      return {FXName::BUFF, Color::WHITE, 0.0f, FXStackId::buff};
-    case Name::BUFF_GRAY:
-      return {FXName::BUFF, Color::GRAY, 0.0f, FXStackId::buff};
-    case Name::BUFF_PINK:
-      return {FXName::BUFF, Color::PINK, 0.0f, FXStackId::buff};
-    case Name::BUFF_ORANGE:
-      return {FXName::BUFF, Color::ORANGE, 0.0f, FXStackId::buff};
-    case Name::DEBUFF_RED:
-      return {FXName::DEBUFF, Color::RED, 0.0f, FXStackId::debuff};
-    case Name::DEBUFF_GREEN:
-      return {FXName::DEBUFF, Color::GREEN, 0.0f, FXStackId::debuff};
-    case Name::DEBUFF_BLACK:
-      return {FXName::DEBUFF, Color::BLACK, 0.0f, FXStackId::debuff};
-    case Name::DEBUFF_WHITE:
-      return {FXName::DEBUFF, Color::WHITE, 0.0f, FXStackId::debuff};
-    case Name::DEBUFF_GRAY:
-      return {FXName::DEBUFF, Color::GRAY, 0.0f, FXStackId::debuff};
-    case Name::DEBUFF_PINK:
-      return {FXName::DEBUFF, Color::PINK, 0.0f, FXStackId::debuff};
-    case Name::DEBUFF_ORANGE:
-      return {FXName::DEBUFF, Color::ORANGE, 0.0f, FXStackId::debuff};
     case Name::SPIRAL_BLUE:
       return {FXName::SPIRAL, Color::BLUE};
     case Name::SPIRAL_GREEN:
@@ -59,6 +31,20 @@ FXInfo getFXInfo(FXVariantName var) {
       return {FXName::WORKSHOP};
     case Name::JEWELER:
       return {FXName::JEWELER, Color(253, 247, 140)};
+
+    // TODO: how many buffs / debuffs can we show at the same time?
+    case Name::BUFF_RED:     return {FXName::BUFF,   Color(250, 40, 40), 0.0f, FXStackId::buff};
+    case Name::BUFF_YELLOW:  return {FXName::BUFF,   Color(255, 255, 100), 0.0f, FXStackId::buff};
+    case Name::BUFF_BLUE:    return {FXName::BUFF,   Color(70, 130, 225), 0.0f, FXStackId::buff};
+    case Name::BUFF_PINK:    return {FXName::BUFF,   Color(255, 100, 255), 0.0f, FXStackId::buff};
+    case Name::BUFF_ORANGE:  return {FXName::BUFF,   Color(255, 200, 140), 0.0f, FXStackId::buff};
+
+    case Name::DEBUFF_RED:   return {FXName::DEBUFF, Color(190, 30, 30), 0.0f, FXStackId::debuff};
+    case Name::DEBUFF_BLUE:  return {FXName::DEBUFF, Color(30, 60, 230), 0.0f, FXStackId::debuff};
+    case Name::DEBUFF_GREEN1:return {FXName::DEBUFF, Color(0, 160, 30), 0.0f, FXStackId::debuff};
+    case Name::DEBUFF_GREEN2:return {FXName::DEBUFF, Color(80, 255, 120), 0.0f, FXStackId::debuff};
+    case Name::DEBUFF_PINK:  return {FXName::DEBUFF, Color(160, 10, 180), 0.0f, FXStackId::debuff};
+    case Name::DEBUFF_ORANGE:return {FXName::DEBUFF, Color(215, 144, 40), 0.0f, FXStackId::debuff};
   }
 }
 
