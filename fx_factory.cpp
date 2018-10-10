@@ -129,11 +129,6 @@ static void addRockSplinters(FXManager &mgr) {
 }
 
 static void addRockCloud(FXManager &mgr) {
-  // Spawnujemy kilka chmurek w ramach kafla;
-  // mogą być większe lub mniejsze
-  //
-  // czy zostawiają po sobie jakieś ślady?
-  // może niech zostają ślady po splinterach, ale po chmurach nie?
   EmitterDef edef;
   edef.source = FRect(-5.0f, -5.0f, 5.0f, 5.0f);
   edef.setStrengthSpread(6.5f, 1.5f);
@@ -150,13 +145,53 @@ static void addRockCloud(FXManager &mgr) {
   pdef.textureName = TextureName::CLOUDS_SOFT;
 
   SubSystemDef ssdef(pdef, edef, 0.0f, 0.1f);
-
-  // TODO: różna liczba początkowych cząsteczek
   ssdef.maxTotalParticles = 5;
 
   ParticleSystemDef psdef;
   psdef.subSystems = {ssdef};
   mgr.addDef(FXName::ROCK_CLOUD, psdef);
+}
+
+static void addPoisonCloud(FXManager& mgr) {
+  EmitterDef edef;
+  edef.source = FRect(-5.0f, -5.0f, 5.0f, 5.0f);
+  edef.setStrengthSpread(10.0f, 2.0f);
+  edef.frequency = 8.0f;
+
+  ParticleDef pdef;
+  pdef.life = 2.0f;
+  pdef.size = {{0.0f, 0.4f, 1.0f}, {15.0f, 30.0f, 38.0f}};
+  pdef.alpha = {{0.0f, 0.05f, 0.2f, 1.0f}, {0.0f, 0.3f, 0.4f, 0.0f}};
+  pdef.slowdown = {{0.0f, 0.2f}, {0.0f, 10.0f}};
+  pdef.color = IColor(100, 200, 50).rgb();
+  pdef.textureName = TextureName::CLOUDS_SOFT;
+
+  SubSystemDef ssdef1(pdef, edef, 0.0f, 1.0f);
+  auto ssdef2 = ssdef1;
+
+  // Smoke cloud
+  ssdef1.drawFunc = [](DrawContext& ctx, const Particle& pinst, DrawParticle& out) {
+    defaultDrawParticle(ctx, pinst, out);
+    float mod = 0.3f + ctx.ps.params.scalar[0] * 0.3f;
+    out.color.a = (out.color.a) * mod;
+  };
+
+  // Glowing cloud
+  ssdef2.particle.textureName = TextureName::CLOUDS_ADD;
+  ssdef2.emitter.frequency = 4.0f;
+  ssdef2.drawFunc = [](DrawContext& ctx, const Particle& pinst, DrawParticle& out) {
+    defaultDrawParticle(ctx, pinst, out);
+    float mod = max(0.0f, ctx.ps.params.scalar[0] * 0.3f - 0.1f);
+    out.color = IColor(FColor(out.color) * mod);
+  };
+
+  ParticleSystemDef psdef;
+  psdef.subSystems = {ssdef1, ssdef2};
+  psdef.isLooped = true;
+  psdef.animLength = 1.0f;
+
+  mgr.addDef(FXName::POISON_CLOUD, psdef);
+  mgr.genSnapshots(FXName::POISON_CLOUD, {1.0f, 1.2f, 1.4f}, {0.0f, 0.2f, 0.4f, 0.6f, 0.8f, 1.0f}, 2);
 }
 
 static void addDestroyFurnitureEffect(FXManager& mgr) {
@@ -1545,6 +1580,7 @@ void FXManager::initializeDefs() {
   addWoodSplinters(*this);
   addRockSplinters(*this);
   addRockCloud(*this);
+  addPoisonCloud(*this);
   addDestroyFurnitureEffect(*this);
 
   addRippleEffect(*this);
