@@ -96,7 +96,7 @@ void FXViewManager::EntityInfo::updateFX(fx::FXManager* manager, GenericId gid) 
         int id = 0;
         for (int n = 0; n < numEffects; n++)
           if (effects[n].stackId == stackId)
-            fx::setScalar(manager, effects[n].id, float(id++) / float(count - 1), 1);
+            fx::setScalar(manager, effects[n].id, float(id++) / float(count), 1);
       }
     }
 }
