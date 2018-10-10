@@ -71,6 +71,7 @@ struct Particle {
   FVec2 pos, movement, size = FVec2(1.0);
   float life = 0.0f, maxLife = 1.0f;
   float rot = 0.0f, rotSpeed = 0.0f;
+  float temp = 0.0f;
   SVec2 texTile;
   uint randomSeed;
 };

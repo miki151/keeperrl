@@ -13,14 +13,26 @@ FXInfo getFXInfo(FXVariantName var) {
   switch (var) {
     case Name::BLIND:
       return {FXName::BLIND};
-    case Name::SPEED:
-      return {FXName::SPEED};
     case Name::SLEEP:
       return {FXName::SLEEP};
     case Name::FLYING:
       return {FXName::FLYING};
     case Name::FIRE_SPHERE:
       return {FXName::FIRE_SPHERE};
+    case Name::BUFF_RED:
+      return {FXName::BUFF, Color::RED, 0.0f, FXStackId::buff};
+    case Name::BUFF_GREEN:
+      return {FXName::BUFF, Color::GREEN, 0.0f, FXStackId::buff};
+    case Name::BUFF_BLACK:
+      return {FXName::BUFF, Color::BLACK, 0.0f, FXStackId::buff};
+    case Name::BUFF_WHITE:
+      return {FXName::BUFF, Color::WHITE, 0.0f, FXStackId::buff};
+    case Name::BUFF_GRAY:
+      return {FXName::BUFF, Color::GRAY, 0.0f, FXStackId::buff};
+    case Name::BUFF_PINK:
+      return {FXName::BUFF, Color::PINK, 0.0f, FXStackId::buff};
+    case Name::BUFF_ORANGE:
+      return {FXName::BUFF, Color::ORANGE, 0.0f, FXStackId::buff};
     case Name::DEBUFF_RED:
       return {FXName::DEBUFF, Color::RED, 0.0f, FXStackId::debuff};
     case Name::DEBUFF_GREEN:

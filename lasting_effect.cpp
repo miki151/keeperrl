@@ -757,7 +757,24 @@ optional<FXVariantName> LastingEffects::getFX(LastingEffect effect) {
     case LastingEffect::SLEEP:
       return FXVariantName::SLEEP;
     case LastingEffect::SPEED:
-      return FXVariantName::SPEED;
+      return FXVariantName::BUFF_WHITE;
+    case LastingEffect::REGENERATION:
+      return FXVariantName::BUFF_RED;
+    case LastingEffect::DAM_BONUS:
+    case LastingEffect::DEF_BONUS:
+      return FXVariantName::BUFF_BLACK;
+    case LastingEffect::ELF_VISION:
+    case LastingEffect::NIGHT_VISION:
+      return FXVariantName::BUFF_PINK;
+    case LastingEffect::FIRE_RESISTANT:
+    case LastingEffect::MAGIC_RESISTANCE:
+    case LastingEffect::MELEE_RESISTANCE:
+    case LastingEffect::POISON_RESISTANT:
+    case LastingEffect::RANGED_RESISTANCE:
+      return FXVariantName::BUFF_ORANGE;
+      return FXVariantName::BUFF_PINK;
+    case LastingEffect::TELEPATHY:
+      return FXVariantName::BUFF_GRAY;
     case LastingEffect::SLOWED:
       return FXVariantName::DEBUFF_GRAY;
     case LastingEffect::POISON:

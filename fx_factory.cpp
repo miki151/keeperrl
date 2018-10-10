@@ -1305,16 +1305,13 @@ static void addSpiralEffects(FXManager& mgr) {
   mgr.genSnapshots(FXName::SPIRAL2, {4.0f, 4.2f, 4.4f, 4.6f, 4.8f});
 }
 
-static void addSpeedEffect(FXManager &mgr) {
+static void addBuffEffect(FXManager& mgr) {
+  static constexpr int numParticles = 6;
   EmitterDef edef;
-  edef.frequency = 10.0f;
-  edef.initialSpawnCount = 1.0f;
-  edef.setDirectionSpread(-fconstant::pi * 0.5f, 0.0f);
-  edef.strength = 5.0f;
-  edef.source = FVec2(0.0f, 10.0f);
+  edef.initialSpawnCount = numParticles;
 
   ParticleDef pdef;
-  pdef.life = 2.0f;
+  pdef.life = 1.0f;
   pdef.size = 10.0f;
   pdef.alpha = {{0.0f, 0.1f, 0.8f, 1.0f}, {0.0, 0.7f, 0.7f, 0.0}};
 
@@ -1322,17 +1319,30 @@ static void addSpeedEffect(FXManager &mgr) {
   pdef.textureName = TextureName::CIRCULAR;
 
   SubSystemDef ssdef(pdef, edef, 0.0f, 1.0f);
-  ssdef.emitFunc = [](AnimationContext &ctx, EmissionState &em, Particle &pinst) {
-    defaultEmitParticle(ctx, em, pinst);
-    pinst.rot = 0.0f;
+  ssdef.animateFunc = [](AnimationContext& ctx, Particle& pinst) {
+    defaultAnimateParticle(ctx, pinst);
+
+    int idx = &pinst - ctx.ss.particles.data();
+    float pos = ctx.globalTime * 2.0f + double(idx) * fconstant::pi * 2.0f / numParticles;
+
+    float voffset = ctx.ps.params.scalar[1];
+    float hoffset = 0.0f;
+    if (voffset >= 0.5f) {
+      voffset -= 0.5f;
+      hoffset = 0.5f;
+    }
+	hoffset += voffset * 0.5f;
+
+    auto vec = angleToVector(pos + hoffset);
+    pinst.temp = vec.y;
+    pinst.pos = vec * FVec2(10.0f, 6.0f) - FVec2(0.0f, voffset * 16.0f) + FVec2(0.0f, 2.0f);
+    if (!ctx.ps.isDying)
+      pinst.life = min(pinst.life, 0.5f);
   };
-  ssdef.drawFunc = [](DrawContext &ctx, const Particle &pinst, DrawParticle &out) {
-    Particle temp(pinst);
-    FVec2 circlePos = angleToVector(pinst.life * 6.0f);
-    temp.pos += circlePos * FVec2(10.0f, 4.0f);
-    defaultDrawParticle(ctx, temp, out);
-    float alphaMul = dot(circlePos, FVec2(0.0f, 1.0f));
-    float alpha = float(out.color.a) * clamp(alphaMul + 0.3f, 0.0f, 1.0f);
+
+  ssdef.drawFunc = [](DrawContext& ctx, const Particle& pinst, DrawParticle& out) {
+    defaultDrawParticle(ctx, pinst, out);
+    float alpha = float(out.color.a) * clamp(pinst.temp + 0.5f, 0.0f, 1.0f);
     out.color.a = (unsigned char)(alpha);
   };
 
@@ -1341,8 +1351,7 @@ static void addSpeedEffect(FXManager &mgr) {
   psdef.isLooped = true;
   psdef.animLength = 1.0f;
 
-  mgr.addDef(FXName::SPEED, psdef);
-  mgr.genSnapshots(FXName::SPEED, {2.0f, 2.2f, 2.4f, 2.6f, 2.8f});
+  mgr.addDef(FXName::BUFF, psdef);
 }
 
 static void addFlyingEffect(FXManager& mgr) {
@@ -1612,8 +1621,8 @@ void FXManager::initializeDefs() {
   addJewelerEffect(*this);
 
   addSpiralEffects(*this);
-  addSpeedEffect(*this);
   addFlyingEffect(*this);
   addDebuffEffect(*this);
+  addBuffEffect(*this);
 };
 }
