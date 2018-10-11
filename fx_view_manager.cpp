@@ -28,7 +28,6 @@ void FXViewManager::EntityInfo::addFX(fx::FXManager* manager, GenericId id, Type
     if (effects[n].typeId == typeId && !effects[n].isDying) {
       effects[n].isVisible = true;
       effects[n].stackId = info.stackId;
-      fx::setPos(manager, effects[n].id, x, y);
       updateParams(manager, info, effects[n].id);
       return;
     }
@@ -39,9 +38,9 @@ void FXViewManager::EntityInfo::addFX(fx::FXManager* manager, GenericId id, Type
     INFO << "FX view: spawn: " << ENUM_STRING(info.name) << " for: " << id;
 
     if (justShown)
-      newEffect.id = fx::spawnSnapshotEffect(manager, info.name, x, y, info.strength, 0.0f);
+      newEffect.id = fx::spawnSnapshotEffect(manager, info.name, 0.0f, 0.0f, info.strength, 0.0f);
     else
-      newEffect.id = fx::spawnEffect(manager, info.name, x, y);
+      newEffect.id = fx::spawnEffect(manager, info.name, 0.0f, 0.0f);
     newEffect.typeId = typeId;
     newEffect.isVisible = true;
     newEffect.isDying = false;
@@ -70,9 +69,6 @@ void FXViewManager::EntityInfo::updateFX(fx::FXManager* manager, GenericId gid) 
     auto& effect = effects[n];
     bool removeDead = effect.isDying && !manager->alive(fx::ParticleSystemId(effect.id.first, effect.id.second));
 
-    if (effect.isDying)
-      fx::setPos(manager, effects[n].id, x, y);
-
     if ((!effect.isDying && !effect.isVisible) || (effect.isDying && immediateKill)) {
       INFO << "FX view: kill: " << effect.name() << " for: " << gid;
       manager->kill(fx::ParticleSystemId(effect.id.first, effect.id.second), immediateKill);
@@ -100,7 +96,7 @@ void FXViewManager::EntityInfo::updateFX(fx::FXManager* manager, GenericId gid) 
         int id = 0;
         for (int n = 0; n < numEffects; n++)
           if (effects[n].stackId == stackId)
-            fx::setScalar(manager, effects[n].id, float(id++) / float(count - 1), 1);
+            fx::setScalar(manager, effects[n].id, float(id++) / float(count), 1);
       }
     }
 }
@@ -110,6 +106,7 @@ void FXViewManager::beginFrame(Renderer& renderer, float zoom, float ox, float o
     pair.second.clearVisibility();
 
   auto size = renderer.getSize();
+  m_zoom = zoom;
   fxRenderer->setView(zoom, ox, oy, size.x, size.y);
   fxRenderer->prepareOrdered();
 }
@@ -169,7 +166,9 @@ void FXViewManager::drawFX(Renderer& renderer, GenericId id) {
 
   if (num > 0) {
     renderer.flushSprites();
-    fxRenderer->drawOrdered(ids, num);
+    float px = (entity.x) * Renderer::nominalSize * m_zoom;
+    float py = (entity.y) * Renderer::nominalSize * m_zoom;
+    fxRenderer->drawOrdered(ids, num, px, py);
   }
 }
 

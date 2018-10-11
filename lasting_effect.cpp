@@ -756,25 +756,47 @@ optional<FXVariantName> LastingEffects::getFX(LastingEffect effect) {
   switch (effect) {
     case LastingEffect::SLEEP:
       return FXVariantName::SLEEP;
+
     case LastingEffect::SPEED:
-      return FXVariantName::SPEED;
+      return FXVariantName::BUFF_BLUE;
     case LastingEffect::SLOWED:
-      return FXVariantName::DEBUFF_GRAY;
-    case LastingEffect::POISON:
-      return FXVariantName::DEBUFF_GREEN;
-    case LastingEffect::INSANITY:
-      return FXVariantName::DEBUFF_PINK;
-    case LastingEffect::BLIND:
-      return FXVariantName::DEBUFF_BLACK;
+      return FXVariantName::DEBUFF_BLUE;
+
+    case LastingEffect::REGENERATION:
+      return FXVariantName::BUFF_RED;
     case LastingEffect::BLEEDING:
       return FXVariantName::DEBUFF_RED;
+
+    case LastingEffect::DAM_BONUS:
+    case LastingEffect::DEF_BONUS:
+      return FXVariantName::BUFF_YELLOW;
+
+    case LastingEffect::FIRE_RESISTANT:
+    case LastingEffect::MAGIC_RESISTANCE:
+    case LastingEffect::MELEE_RESISTANCE:
+    case LastingEffect::POISON_RESISTANT:
+    case LastingEffect::RANGED_RESISTANCE:
+      return FXVariantName::BUFF_ORANGE;
+
     case LastingEffect::MAGIC_VULNERABILITY:
     case LastingEffect::MELEE_VULNERABILITY:
     case LastingEffect::RANGED_VULNERABILITY:
       return FXVariantName::DEBUFF_ORANGE;
+
+    case LastingEffect::TELEPATHY:
+    case LastingEffect::ELF_VISION:
+    case LastingEffect::NIGHT_VISION:
+      return FXVariantName::BUFF_PINK;
+    case LastingEffect::BLIND:
+    case LastingEffect::INSANITY:
+      return FXVariantName::DEBUFF_PINK;
+
+    case LastingEffect::POISON:
+      return FXVariantName::DEBUFF_GREEN2;
+
     case LastingEffect::TIED_UP:
     case LastingEffect::ENTANGLED:
-      return FXVariantName::DEBUFF_WHITE;
+      return FXVariantName::DEBUFF_GREEN1;
     default:
       return none;
   }

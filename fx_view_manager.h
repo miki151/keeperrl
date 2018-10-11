@@ -61,6 +61,7 @@ class FXViewManager {
   };
 
   std::unordered_map<GenericId, EntityInfo> entities;
-  fx::FXManager* fxManager;
-  fx::FXRenderer* fxRenderer;
+  fx::FXManager* fxManager = nullptr;
+  fx::FXRenderer* fxRenderer = nullptr;
+  float m_zoom = 1.0f;
 };

@@ -13,28 +13,12 @@ FXInfo getFXInfo(FXVariantName var) {
   switch (var) {
     case Name::BLIND:
       return {FXName::BLIND};
-    case Name::SPEED:
-      return {FXName::SPEED};
     case Name::SLEEP:
       return {FXName::SLEEP};
     case Name::FLYING:
       return {FXName::FLYING};
     case Name::FIRE_SPHERE:
       return {FXName::FIRE_SPHERE};
-    case Name::DEBUFF_RED:
-      return {FXName::DEBUFF, Color::RED, 0.0f, FXStackId::debuff};
-    case Name::DEBUFF_GREEN:
-      return {FXName::DEBUFF, Color::GREEN, 0.0f, FXStackId::debuff};
-    case Name::DEBUFF_BLACK:
-      return {FXName::DEBUFF, Color::BLACK, 0.0f, FXStackId::debuff};
-    case Name::DEBUFF_WHITE:
-      return {FXName::DEBUFF, Color::WHITE, 0.0f, FXStackId::debuff};
-    case Name::DEBUFF_GRAY:
-      return {FXName::DEBUFF, Color::GRAY, 0.0f, FXStackId::debuff};
-    case Name::DEBUFF_PINK:
-      return {FXName::DEBUFF, Color::PINK, 0.0f, FXStackId::debuff};
-    case Name::DEBUFF_ORANGE:
-      return {FXName::DEBUFF, Color::ORANGE, 0.0f, FXStackId::debuff};
     case Name::SPIRAL_BLUE:
       return {FXName::SPIRAL, Color::BLUE};
     case Name::SPIRAL_GREEN:
@@ -47,11 +31,25 @@ FXInfo getFXInfo(FXVariantName var) {
       return {FXName::WORKSHOP};
     case Name::JEWELER:
       return {FXName::JEWELER, Color(253, 247, 140)};
+
+    // TODO: how many buffs / debuffs can we show at the same time?
+    case Name::BUFF_RED:     return {FXName::BUFF,   Color(250, 40, 40), 0.0f, FXStackId::buff};
+    case Name::BUFF_YELLOW:  return {FXName::BUFF,   Color(255, 255, 100), 0.0f, FXStackId::buff};
+    case Name::BUFF_BLUE:    return {FXName::BUFF,   Color(70, 130, 225), 0.0f, FXStackId::buff};
+    case Name::BUFF_PINK:    return {FXName::BUFF,   Color(255, 100, 255), 0.0f, FXStackId::buff};
+    case Name::BUFF_ORANGE:  return {FXName::BUFF,   Color(255, 200, 140), 0.0f, FXStackId::buff};
+
+    case Name::DEBUFF_RED:   return {FXName::DEBUFF, Color(190, 30, 30), 0.0f, FXStackId::debuff};
+    case Name::DEBUFF_BLUE:  return {FXName::DEBUFF, Color(30, 60, 230), 0.0f, FXStackId::debuff};
+    case Name::DEBUFF_GREEN1:return {FXName::DEBUFF, Color(0, 160, 30), 0.0f, FXStackId::debuff};
+    case Name::DEBUFF_GREEN2:return {FXName::DEBUFF, Color(80, 255, 120), 0.0f, FXStackId::debuff};
+    case Name::DEBUFF_PINK:  return {FXName::DEBUFF, Color(160, 10, 180), 0.0f, FXStackId::debuff};
+    case Name::DEBUFF_ORANGE:return {FXName::DEBUFF, Color(215, 144, 40), 0.0f, FXStackId::debuff};
   }
 }
 
 optional<FXInfo> getOverlayFXInfo(ViewId id) {
-  if (isOneOf(id, ViewId::GOLD_ORE, ViewId::GOLD, ViewId::THRONE, ViewId::MINION_STATUE))
+  if (isOneOf(id, ViewId::GOLD_ORE, ViewId::GOLD, ViewId::THRONE, ViewId::MINION_STATUE, ViewId::DEMON_SHRINE))
     return FXInfo{FXName::GLITTERING, Color(253, 247, 172)};
   if (id == ViewId::ADAMANTIUM_ORE)
     return FXInfo{FXName::GLITTERING, Color::LIGHT_BLUE};
@@ -77,9 +75,9 @@ static bool isTree(FType type) {
 // TODO: EnumMap mapping item to destruction effect ?
 static bool isWoodenFurniture(FType type) {
   return isOneOf(type, FType::WOOD_DOOR, FType::WOOD_WALL, FType::BOOKCASE_WOOD, FType::TRAINING_WOOD, FType::WORKSHOP,
-                 FType::JEWELER, FType::BOOKCASE_GOLD, FType::BOOKCASE_IRON, FType::ARCHERY_RANGE, FType::BARRICADE,
-                 FType::KEEPER_BOARD, FType::EYEBALL, FType::WHIPPING_POST, FType::GALLOWS, FType::BED1, FType::BED2,
-                 FType::BED3, FType::COFFIN1, FType::BEAST_CAGE, FType::TREASURE_CHEST);
+                 FType::JEWELER, FType::ARCHERY_RANGE, FType::BARRICADE, FType::KEEPER_BOARD, FType::EYEBALL,
+                 FType::WHIPPING_POST, FType::GALLOWS, FType::BED1, FType::BED2, FType::BED3, FType::COFFIN1,
+                 FType::BEAST_CAGE, FType::TREASURE_CHEST);
 }
 
 static bool isSmallWoodenFurniture(FType type) {
@@ -89,11 +87,11 @@ static bool isSmallWoodenFurniture(FType type) {
 static bool isGrayFurniture(FType type) {
   return isOneOf(type, FType::BOOKCASE_IRON, FType::TRAINING_IRON, FType::IRON_DOOR, FType::TRAINING_ADA,
                  FType::ADA_DOOR, FType::LABORATORY, FType::FORGE, FType::STONE_MINION_STATUE, FType::FOUNTAIN,
-                 FType::PORTAL, FType::COFFIN2, FType::COFFIN3, FType::TORTURE_TABLE);
+                 FType::PORTAL, FType::COFFIN2, FType::TORTURE_TABLE, FType::BOOKCASE_IRON, FType::GRAVE);
 }
 
 static bool isGoldFurniture(FType type) {
-  return isOneOf(type, FType::MINION_STATUE, FType::THRONE, FType::DEMON_SHRINE);
+  return isOneOf(type, FType::MINION_STATUE, FType::THRONE, FType::DEMON_SHRINE, FType::COFFIN3, FType::BOOKCASE_GOLD);
 }
 
 optional<FXInfo> destroyFXInfo(FType type) {
