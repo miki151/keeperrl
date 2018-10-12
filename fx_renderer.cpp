@@ -180,11 +180,8 @@ void FXRenderer::prepareOrdered() {
 
     auto& def = mgr[system.defId];
     int first = (int)tempParticles.size();
-    for (int ssid = 0; ssid < system.subSystems.size(); ssid++) {
-      if (def[ssid].layer == Layer::back)
-        continue;
+    for (int ssid = 0; ssid < system.subSystems.size(); ssid++)
       mgr.genQuads(tempParticles, n, ssid);
-    }
     int count = (int)tempParticles.size() - first;
 
     if (count > 0) {
@@ -382,7 +379,7 @@ void FXRenderer::drawUnordered(Layer layer) {
       continue;
     auto& system = systems[n];
     auto& ssdef = mgr[system.defId];
-    if (system.orderedDraw && layer == Layer::front)
+    if (system.orderedDraw)
       continue;
 
     for (int ssid = 0; ssid < system.subSystems.size(); ssid++)
