@@ -1260,8 +1260,6 @@ class Follow : public Task {
   Follow(WCreature t) : target(t) {}
 
   virtual MoveInfo getMove(WCreature c) override {
-    // target == c if an attacking party team leader is killed and c becomes the new team leader.
-    // In this case make the task finish
     if (target != c && !target->isDead()) {
       Position targetPos = target->getPosition();
       if (targetPos.dist8(c->getPosition()) < 3) {
@@ -1684,6 +1682,51 @@ PTask Task::spider(Position origin, const vector<Position>& posClose) {
 }
 
 namespace {
+class WithTeam : public Task {
+  public:
+  WithTeam(WCollective col, TeamId teamId, PTask task)
+      : collective(std::move(col)), teamId(teamId), task(std::move(task)) {}
+
+  virtual MoveInfo getMove(WCreature c) override {
+    if (task->isDone() || !collective->getTeams().exists(teamId)) {
+      setDone();
+      return NoMove;
+    }
+    auto leader = collective->getTeams().getLeader(teamId);
+    CHECK(!leader->isDead());
+    if (c == leader)
+      return task->getMove(c);
+    else {
+      Position targetPos = leader->getPosition();
+      if (targetPos.dist8(c->getPosition()) < 3) {
+        if (Random.roll(15))
+          if (auto move = c->move(c->getPosition().plus(Vec2(Random.choose<Dir>()))))
+            return move;
+        return NoMove;
+      }
+      return c->moveTowards(targetPos);
+    }
+  }
+
+  virtual string getDescription() const override {
+    return "Team task: " + task->getDescription();
+  }
+
+  SERIALIZE_ALL(SUBCLASS(Task), collective, teamId, task)
+  SERIALIZATION_CONSTRUCTOR(WithTeam)
+
+  private:
+  WCollective SERIAL(collective);
+  TeamId SERIAL(teamId);
+  PTask SERIAL(task);
+};
+}
+
+PTask Task::withTeam(WCollective col, TeamId teamId, PTask task) {
+  return makeOwner<WithTeam>(std::move(col), teamId, std::move(task));
+}
+
+namespace {
 class OutsidePredicate : public TaskPredicate {
   public:
   OutsidePredicate(WCreature c, PositionSet pos) : creature(c), positions(pos) {}
@@ -1758,6 +1801,7 @@ REGISTER_TYPE(DropItems)
 REGISTER_TYPE(DropItemsAnywhere)
 REGISTER_TYPE(CampAndSpawn)
 REGISTER_TYPE(Spider)
+REGISTER_TYPE(WithTeam)
 REGISTER_TYPE(ArcheryRange)
 REGISTER_TYPE(OutsidePredicate)
 REGISTER_TYPE(AlwaysPredicate)

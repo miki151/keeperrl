@@ -104,6 +104,7 @@ class Task : public UniqueEntity<Task>, public OwnedObject<Task> {
   };
   static PickUpAndDrop pickUpAndDrop(Position origin, vector<WItem>, StorageId, WCollective);
   static PTask spider(Position origin, const vector<Position>& posClose);
+  static PTask withTeam(WCollective, TeamId, PTask);
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);
