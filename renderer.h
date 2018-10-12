@@ -133,6 +133,7 @@ class Renderer {
   void makeScreenshot(const FilePath&);
 
   void flushSprites() { renderDeferredSprites(); }
+  Vec2 getTileSize(TileCoord coord) const { return tileDirectories[coord.texNum].size; }
 
   private:
   friend class Texture;
