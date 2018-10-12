@@ -30,7 +30,7 @@ class FXViewManager {
   void addEntity(GenericId, float x, float y);
   // Entity identified with given id must be present!
   void addFX(GenericId, const FXInfo&);
-  void addFX(GenericId, FXVariantName);
+  void addFX(GenericId, FXVariantName, bool bigSprite);
 
   // Unmanaged & unordered FXes are the same
   void addUnmanagedFX(const FXSpawnInfo&);

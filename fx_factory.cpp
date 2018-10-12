@@ -1346,6 +1346,7 @@ static void addBuffEffect(FXManager& mgr) {
     int idx = &pinst - ctx.ss.particles.data();
     float pos = ctx.globalTime * 2.0f + double(idx) * fconstant::pi * 2.0f / numParticles;
 
+    float width = 10.0f + 3.0f * ctx.ps.params.scalar[0];
     float voffset = ctx.ps.params.scalar[1];
     float hoffset = 0.0f;
     if (voffset >= 0.5f) {
@@ -1356,7 +1357,7 @@ static void addBuffEffect(FXManager& mgr) {
 
     auto vec = angleToVector(pos + hoffset);
     pinst.temp = vec.y;
-    pinst.pos = vec * FVec2(10.0f, 6.0f) - FVec2(0.0f, voffset * 16.0f) + FVec2(0.0f, 2.0f);
+    pinst.pos = vec * FVec2(width, 6.0f) - FVec2(0.0f, voffset * 16.0f) + FVec2(0.0f, 2.0f);
     if (!ctx.ps.isDying)
       pinst.life = min(pinst.life, 0.5f);
   };
@@ -1463,6 +1464,8 @@ static void addDebuffEffect(FXManager& mgr) {
       // Constant offset:
       //pos +=  (ctx.ps.params.scalar[1] - 0.5f) * 3.0f;
 
+      float width = 1.0f + 0.2f * ctx.ps.params.scalar[0];
+      pinst.size = FVec2(width, 1.0f);
       pinst.pos = FVec2(0.0f, pos * 5.0f - 3.0f);
       if (!ctx.ps.isDying)
         pinst.life = min(pinst.life, 0.25f);

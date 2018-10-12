@@ -173,10 +173,13 @@ void FXViewManager::addFX(GenericId gid, const FXInfo& info) {
   it->second.addFX(this, gid, info.name, info);
 }
 
-void FXViewManager::addFX(GenericId gid, FXVariantName var) {
+void FXViewManager::addFX(GenericId gid, FXVariantName var, bool bigSprite) {
   auto it = entities->find(gid);
   PASSERT(it != entities->end());
-  it->second.addFX(this, gid, var, getFXInfo(var));
+  auto info = getFXInfo(var);
+  if (bigSprite && isOneOf(info.name, FXName::BUFF, FXName::DEBUFF))
+    info.strength = 1.0f;
+  it->second.addFX(this, gid, var, info);
 }
 
 void FXViewManager::finishFrame() {
