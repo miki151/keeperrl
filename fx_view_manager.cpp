@@ -4,15 +4,58 @@
 #include "fx_name.h"
 #include "fx_variant_name.h"
 #include "fx_info.h"
-#include "fx_interface.h"
 #include "fx_renderer.h"
 #include "variant.h"
 #include "fx_manager.h"
 #include "renderer.h"
 
+using fx::FVec2;
+using fx::InitConfig;
+using FXId = FXViewManager::FXId;
+
+struct FXViewManager::EffectInfo {
+  string name() const;
+
+  FXId id;
+  TypeId typeId;
+  FXStackId stackId;
+  bool isVisible;
+  bool isDying;
+};
+
+struct FXViewManager::EntityInfo {
+  static constexpr int maxEffects = 8;
+
+  void clearVisibility();
+  void addFX(FXViewManager*, GenericId, TypeId, const FXInfo&);
+  void updateFX(FXViewManager*, GenericId);
+
+  float x, y;
+  EffectInfo effects[maxEffects];
+  int numEffects = 0;
+  bool isVisible = true;
+  bool justShown = true;
+};
+
 FXViewManager::~FXViewManager() = default;
 FXViewManager::FXViewManager(fx::FXManager* manager, fx::FXRenderer* renderer)
     : fxManager(manager), fxRenderer(renderer) {
+  entities = std::make_unique<EntityMap>();
+}
+
+FXId FXViewManager::spawnOrderedEffect(const FXInfo& info, bool snapshot) {
+  InitConfig config{FVec2(Renderer::nominalSize / 2)}; // position is passed when drawing
+  config.orderedDraw = true;
+  if (snapshot)
+    config.snapshotKey = fx::SnapshotKey{info.strength, 0.0f};
+  return fxManager->addSystem(info.name, config);
+}
+
+FXId FXViewManager::spawnUnorderedEffect(FXName name, float x, float y, Vec2 dir) {
+  auto fpos = (FVec2(x, y) + FVec2(0.5f)) * Renderer::nominalSize;
+  auto ftargetOff = FVec2(dir.x, dir.y) * Renderer::nominalSize;
+  INFO << "FX spawn unordered: " << ENUM_STRING(name) << " at:" << x << ", " << y << " dir:" << dir;
+  return fxManager->addSystem(name, {fpos, ftargetOff});
 }
 
 void FXViewManager::EntityInfo::clearVisibility() {
@@ -21,40 +64,12 @@ void FXViewManager::EntityInfo::clearVisibility() {
     effects[n].isVisible = false;
 }
 
-void FXViewManager::EntityInfo::addFX(fx::FXManager* manager, GenericId id, TypeId typeId, const FXInfo& info) {
-  PASSERT(isVisible); // Effects shouldn't be added if creature itself isn't visible
-
-  for (int n = 0; n < numEffects; n++) {
-    if (effects[n].typeId == typeId && !effects[n].isDying) {
-      effects[n].isVisible = true;
-      effects[n].stackId = info.stackId;
-      updateParams(manager, info, effects[n].id);
-      return;
-    }
+void FXViewManager::updateParams(const FXInfo& info, FXId id) {
+  if (fxManager->valid(id)) {
+    auto& system = fxManager->get(id);
+    system.params.color[0] = fx::FColor(info.color).rgb();
+    system.params.scalar[0] = info.strength;
   }
-
-  if (numEffects < maxEffects) {
-    auto& newEffect = effects[numEffects++];
-    INFO << "FX view: spawn: " << ENUM_STRING(info.name) << " for: " << id;
-
-    if (justShown)
-      newEffect.id = fx::spawnSnapshotEffect(manager, info.name, 0.0f, 0.0f, info.strength, 0.0f);
-    else
-      newEffect.id = fx::spawnEffect(manager, info.name, 0.0f, 0.0f);
-    newEffect.typeId = typeId;
-    newEffect.isVisible = true;
-    newEffect.isDying = false;
-    newEffect.stackId = info.stackId;
-
-    updateParams(manager, info, newEffect.id);
-  }
-}
-
-void FXViewManager::updateParams(fx::FXManager* manager, const FXInfo& info, FXId id) {
-  if (!(info.color == Color::WHITE))
-    fx::setColor(manager, id, info.color);
-  if (info.strength != 0.0f)
-    fx::setScalar(manager, id, info.strength, 0);
 }
 
 string FXViewManager::EffectInfo::name() const {
@@ -62,22 +77,49 @@ string FXViewManager::EffectInfo::name() const {
                       [](FXVariantName name) { return ENUM_STRING(name); });
 }
 
-void FXViewManager::EntityInfo::updateFX(fx::FXManager* manager, GenericId gid) {
+void FXViewManager::EntityInfo::addFX(FXViewManager* manager, GenericId id, TypeId typeId, const FXInfo& info) {
+  PASSERT(isVisible); // Effects shouldn't be added if creature itself isn't visible
+
+  for (int n = 0; n < numEffects; n++) {
+    if (effects[n].typeId == typeId && !effects[n].isDying) {
+      effects[n].isVisible = true;
+      effects[n].stackId = info.stackId;
+      manager->updateParams(info, effects[n].id);
+      return;
+    }
+  }
+
+  if (numEffects < maxEffects) {
+    auto& newEffect = effects[numEffects++];
+    INFO << "FX spawn ordered: " << ENUM_STRING(info.name) << " for: " << id << "at: " << x << ", " << y;
+
+    newEffect.id = manager->spawnOrderedEffect(info, justShown);
+    newEffect.typeId = typeId;
+    newEffect.isVisible = true;
+    newEffect.isDying = false;
+    newEffect.stackId = info.stackId;
+
+    manager->updateParams(info, newEffect.id);
+  }
+}
+
+void FXViewManager::EntityInfo::updateFX(FXViewManager* manager, GenericId gid) {
   bool immediateKill = !isVisible;
+  auto* fxManager = manager->fxManager;
 
   for (int n = 0; n < numEffects; n++) {
     auto& effect = effects[n];
-    bool removeDead = effect.isDying && !manager->alive(fx::ParticleSystemId(effect.id.first, effect.id.second));
+    bool removeDead = effect.isDying && !fxManager->alive(effect.id);
 
     if ((!effect.isDying && !effect.isVisible) || (effect.isDying && immediateKill)) {
-      INFO << "FX view: kill: " << effect.name() << " for: " << gid;
-      manager->kill(fx::ParticleSystemId(effect.id.first, effect.id.second), immediateKill);
+      INFO << "FX kill: " << effect.name() << " for: " << gid;
+      fxManager->kill(effect.id, immediateKill);
       effect.isDying = true;
     }
 
     if (immediateKill || removeDead) {
       if (removeDead)
-        INFO << "FX view: remove: " << effect.name() << " for: " << gid;
+        INFO << "FX remove: " << effect.name() << " for: " << gid;
       effects[n--] = effects[--numEffects];
     }
   }
@@ -93,16 +135,16 @@ void FXViewManager::EntityInfo::updateFX(fx::FXManager* manager, GenericId gid) 
         if (effects[n].stackId == stackId)
           count++;
       if (count > 1) {
-        int id = 0;
+        int stackPos = 0;
         for (int n = 0; n < numEffects; n++)
-          if (effects[n].stackId == stackId)
-            fx::setScalar(manager, effects[n].id, float(id++) / float(count), 1);
+          if (effects[n].stackId == stackId && fxManager->valid(effects[n].id))
+            fxManager->get(effects[n].id).params.scalar[1] = float(stackPos++) / float(count);
       }
     }
 }
 
 void FXViewManager::beginFrame(Renderer& renderer, float zoom, float ox, float oy) {
-  for (auto& pair : entities)
+  for (auto& pair : *entities)
     pair.second.clearVisibility();
 
   auto size = renderer.getSize();
@@ -112,12 +154,12 @@ void FXViewManager::beginFrame(Renderer& renderer, float zoom, float ox, float o
 }
 
 void FXViewManager::addEntity(GenericId gid, float x, float y) {
-  auto it = entities.find(gid);
-  if (it == entities.end()) {
+  auto it = entities->find(gid);
+  if (it == entities->end()) {
     EntityInfo newInfo;
     newInfo.x = x;
     newInfo.y = y;
-    entities[gid] = newInfo;
+    (*entities)[gid] = newInfo;
   } else {
     it->second.isVisible = true;
     it->second.x = x;
@@ -126,33 +168,33 @@ void FXViewManager::addEntity(GenericId gid, float x, float y) {
 }
 
 void FXViewManager::addFX(GenericId gid, const FXInfo& info) {
-  auto it = entities.find(gid);
-  PASSERT(it != entities.end());
-  it->second.addFX(fxManager, gid, info.name, info);
+  auto it = entities->find(gid);
+  PASSERT(it != entities->end());
+  it->second.addFX(this, gid, info.name, info);
 }
 
 void FXViewManager::addFX(GenericId gid, FXVariantName var) {
-  auto it = entities.find(gid);
-  PASSERT(it != entities.end());
-  it->second.addFX(fxManager, gid, var, getFXInfo(var));
+  auto it = entities->find(gid);
+  PASSERT(it != entities->end());
+  it->second.addFX(this, gid, var, getFXInfo(var));
 }
 
 void FXViewManager::finishFrame() {
-  for (auto it = begin(entities); it != end(entities);) {
+  for (auto it = begin(*entities); it != end(*entities);) {
     auto next = it;
     ++next;
 
     it->second.justShown = false;
-    it->second.updateFX(fxManager, it->first);
+    it->second.updateFX(this, it->first);
     if (!it->second.isVisible)
-      entities.erase(it);
+      entities->erase(it);
     it = next;
   }
 }
 
 void FXViewManager::drawFX(Renderer& renderer, GenericId id) {
-  auto it = entities.find(id);
-  PASSERT(it != entities.end());
+  auto it = entities->find(id);
+  PASSERT(it != entities->end());
   auto& entity = it->second;
 
   int ids[EntityInfo::maxEffects];
@@ -161,7 +203,7 @@ void FXViewManager::drawFX(Renderer& renderer, GenericId id) {
   for (int n = 0; n < entity.numEffects; n++) {
     auto& effect = entity.effects[n];
     if (effect.isVisible)
-      ids[num++] = effect.id.first;
+      ids[num++] = effect.id.getIndex();
   }
 
   if (num > 0) {
@@ -182,18 +224,18 @@ void FXViewManager::drawUnorderedFrontFX(Renderer& renderer) {
   fxRenderer->drawUnordered(fx::Layer::front);
 }
 
-// TODO: unmanaged are automatically unordered; make it the same ?
 void FXViewManager::addUnmanagedFX(const FXSpawnInfo& spawnInfo) {
   auto coord = spawnInfo.position;
   float x = coord.x, y = coord.y;
   if (spawnInfo.genericId) {
     // TODO: delay until end of frame? Increases chance that entity info will be available
-    auto it = entities.find(spawnInfo.genericId);
-    if (it != entities.end()) {
+    auto it = entities->find(spawnInfo.genericId);
+    if (it != entities->end()) {
       x = it->second.x;
       y = it->second.y;
     }
   }
-  auto id = fx::spawnUnorderedEffect(fxManager, spawnInfo.info.name, x, y, spawnInfo.targetOffset);
-  updateParams(fxManager, spawnInfo.info, id);
+
+  auto id = spawnUnorderedEffect(spawnInfo.info.name, x, y, spawnInfo.targetOffset);
+  updateParams(spawnInfo.info, id);
 }
