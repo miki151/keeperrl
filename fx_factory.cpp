@@ -779,7 +779,7 @@ static void addFireEffect(FXManager& mgr) {
     ParticleDef pdef;
     pdef.life = 0.7f;
     pdef.size = 12.0f;
-    pdef.alpha = {{0.0f, 0.5f, 1.0f}, {0.0, 0.15, 0.0}, InterpType::cosine};
+    pdef.alpha = {{0.0f, 0.5f, 1.0f}, {0.0, 0.15, 0.0}};
 
     pdef.color = {{0.0f, 0.5f, 1.0f}, {FVec3(0.0f), FVec3(0.3f), FVec3(0.0f)}};
     pdef.textureName = TextureName::CLOUDS_SOFT_BORDERS;
