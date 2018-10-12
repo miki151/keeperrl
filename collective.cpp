@@ -957,7 +957,7 @@ void Collective::onConstructed(Position pos, FurnitureType type) {
   control->onConstructed(pos, type);
   if (WTask task = taskMap->getMarked(pos))
     taskMap->removeTask(task);
-  if (canClaimSquare(pos))
+  //if (canClaimSquare(pos))
     claimSquare(pos);
 }
 
