@@ -257,6 +257,8 @@ bool CollectiveConfig::canBuildOutsideTerritory(FurnitureType type) {
     case FurnitureType::WOOD_WALL:
     case FurnitureType::CASTLE_WALL:
     case FurnitureType::TUTORIAL_ENTRANCE:
+    case FurnitureType::PIT:
+    case FurnitureType::GRAVE:
     case FurnitureType::BRIDGE: return true;
     default: return false;
   }
