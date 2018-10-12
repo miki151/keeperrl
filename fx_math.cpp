@@ -3,12 +3,6 @@
 
 namespace fx {
 
-std::pair<float, float> sincos(float radians) {
-  std::pair<float, float> out;
-  ::sincosf(radians, &out.first, &out.second);
-  return out;
-}
-
 float angleDistance(float a, float b) {
   float diff = fabsf(a - b);
   return std::min(diff, fconstant::pi * 2.0f - diff);
