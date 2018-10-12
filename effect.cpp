@@ -798,7 +798,8 @@ void applyDirected(WCreature c, Vec2 direction, const DirEffectType& type, optio
   auto begin = c->getPosition();
   int range = type.getRange();
   for (Vec2 v = direction; v.length8() <= range; v += direction)
-    if (!c->getPosition().plus(v).canEnterEmpty(MovementType({MovementTrait::FLY, MovementTrait::WALK}))) {
+    if (!c->getPosition().plus(v).canEnterEmpty(
+          MovementType({MovementTrait::FLY, MovementTrait::WALK}).setFireResistant())) {
       range = v.length8();
       break;
     }
@@ -812,7 +813,7 @@ void applyDirected(WCreature c, Vec2 direction, const DirEffectType& type, optio
         airBlast(c, c->getPosition().plus(v), direction);
       break;
     case DirEffectId::FIREBALL:
-      for (Vec2 v = direction; v.length4() <= range; v += direction) {
+      for (Vec2 v = direction; v.length8() <= range; v += direction) {
         auto newPos = c->getPosition().plus(v);
         newPos.fireDamage(1);
         if (splashFX)
@@ -821,7 +822,7 @@ void applyDirected(WCreature c, Vec2 direction, const DirEffectType& type, optio
       }
       break;
     case DirEffectId::CREATURE_EFFECT:
-      for (Vec2 v = direction * range; v.length4() >= 1; v -= direction)
+      for (Vec2 v = direction; v.length8() <= range; v += direction)
         if (WCreature victim = c->getPosition().plus(v).getCreature()) {
           type.get<Effect>().applyToCreature(victim, c);
           if (splashFX)
