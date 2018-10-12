@@ -9,14 +9,20 @@
 namespace fx {
   class FXManager;
   class FXRenderer;
+  class ParticleSystemId;
 }
 class Renderer;
 
-// TODO: fx_interface is not really needed, all fx spawning goes through FXViewManager
+// TODO: better name
 class FXViewManager {
   public:
+  using FXId = fx::ParticleSystemId;
+
   FXViewManager(fx::FXManager*, fx::FXRenderer*);
   ~FXViewManager();
+
+  FXViewManager(const FXViewManager&) = delete;
+  void operator=(const FXViewManager&) = delete;
 
   void beginFrame(Renderer&, float zoom, float ox, float oy);
   void finishFrame();
@@ -26,6 +32,7 @@ class FXViewManager {
   void addFX(GenericId, const FXInfo&);
   void addFX(GenericId, FXVariantName);
 
+  // Unmanaged & unordered FXes are the same
   void addUnmanagedFX(const FXSpawnInfo&);
 
   void drawFX(Renderer&, GenericId);
@@ -34,33 +41,15 @@ class FXViewManager {
 
   private:
   using TypeId = variant<FXName, FXVariantName>;
-  static void updateParams(fx::FXManager*, const FXInfo&, pair<int, int>);
+  void updateParams(const FXInfo&, FXId);
+  FXId spawnOrderedEffect(const FXInfo&, bool snapshot);
+  FXId spawnUnorderedEffect(FXName, float x, float y, Vec2 dir);
 
-  struct EffectInfo {
-    string name() const;
+  struct EffectInfo;
+  struct EntityInfo;
+  using EntityMap = std::unordered_map<GenericId, EntityInfo>;
 
-    pair<int, int> id;
-    TypeId typeId;
-    FXStackId stackId;
-    bool isVisible;
-    bool isDying;
-  };
-
-  struct EntityInfo {
-    static constexpr int maxEffects = 8;
-
-    void clearVisibility();
-    void addFX(fx::FXManager*, GenericId, TypeId, const FXInfo&);
-    void updateFX(fx::FXManager*, GenericId);
-
-    float x, y;
-    EffectInfo effects[maxEffects];
-    int numEffects = 0;
-    bool isVisible = true;
-    bool justShown = true;
-  };
-
-  std::unordered_map<GenericId, EntityInfo> entities;
+  std::unique_ptr<EntityMap> entities;
   fx::FXManager* fxManager = nullptr;
   fx::FXRenderer* fxRenderer = nullptr;
   float m_zoom = 1.0f;
