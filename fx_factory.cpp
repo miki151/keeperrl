@@ -730,7 +730,6 @@ static void addFireEffect(FXManager& mgr) {
       pinst.size = FVec2(1.0f + 0.5 * ctx.ps.params.scalar[0]);
       pinst.rot = 0.0f;
     };
-    ssdef.layer = Layer::back;
     psdef.subSystems.emplace_back(ssdef);
   }
 
@@ -931,7 +930,6 @@ static void addFireballEffect(FXManager& mgr) {
     };
 
     ssdef.drawFunc = drawFunc;
-    ssdef.layer = Layer::back;
     psdef.subSystems.emplace_back(ssdef);
   }
 
