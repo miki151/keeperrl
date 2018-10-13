@@ -249,11 +249,12 @@ class CollectiveInfo {
       optional<TutorialHighlight> HASH(tutorialHighlight);
       HASH_ALL(name, active, description, tutorialHighlight)
     };
+    int HASH(currentProgress);
+    int HASH(totalProgress);
     optional<string> HASH(warning);
-    int HASH(dungeonLevel);
     vector<TechInfo> HASH(available);
     vector<TechInfo> HASH(researched);
-    HASH_ALL(warning, dungeonLevel, available, researched)
+    HASH_ALL(currentProgress, totalProgress, warning, available, researched)
   };
   optional<LibraryInfo> HASH(libraryInfo);
   struct Resource {
@@ -266,7 +267,7 @@ class CollectiveInfo {
   vector<Resource> HASH(numResource);
   int HASH(dungeonLevel);
   double HASH(dungeonLevelProgress);
-  bool HASH(blinkDungeonLevel);
+  int HASH(numResearchAvailable);
   struct Team {
     TeamId HASH(id);
     vector<UniqueEntity<Creature>::Id> HASH(members);
@@ -310,7 +311,7 @@ class CollectiveInfo {
   };
   optional<RebellionChance> HASH(rebellionChance);
   vector<ViewId> HASH(allQuarters);
-  HASH_ALL(warning, buildings, minionCount, minionLimit, monsterHeader, minions, minionGroups, enemyGroups, chosenCreature, numResource, teams, nextPayout, payoutTimeRemaining, taskMap, ransom, nextWave, chosenWorkshop, workshopButtons, immigration, allImmigration, libraryInfo, allQuarters, rebellionChance, dungeonLevel, dungeonLevelProgress, blinkDungeonLevel)
+  HASH_ALL(warning, buildings, minionCount, minionLimit, monsterHeader, minions, minionGroups, enemyGroups, chosenCreature, numResource, teams, nextPayout, payoutTimeRemaining, taskMap, ransom, nextWave, chosenWorkshop, workshopButtons, immigration, allImmigration, libraryInfo, allQuarters, rebellionChance, dungeonLevel, dungeonLevelProgress, numResearchAvailable)
 };
 
 class VillageInfo {

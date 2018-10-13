@@ -934,7 +934,7 @@ void PlayerControl::acquireTech(int index) {
       [](const Technology* tech) { return tech->canResearch(); });
   if (index < techs.size()) {
     Technology* tech = techs[index];
-    if (collective->getDungeonLevel().canConsumeLevel()) {
+    if (collective->getDungeonLevel().numResearchAvailable() > 0) {
       collective->acquireTech(tech, true);
     }
   }
@@ -945,9 +945,10 @@ void PlayerControl::fillLibraryInfo(CollectiveInfo& collectiveInfo) const {
     collectiveInfo.libraryInfo.emplace();
     auto& info = *collectiveInfo.libraryInfo;
     auto& dungeonLevel = collective->getDungeonLevel();
-    if (!dungeonLevel.canConsumeLevel())
+    if (dungeonLevel.numResearchAvailable() == 0)
       info.warning = "Conquer some villains to advance your level."_s;
-    info.dungeonLevel = collective->getDungeonLevel().level;
+    info.totalProgress = 100 * dungeonLevel.getNecessaryProgress(dungeonLevel.level);
+    info.currentProgress = int(100 * dungeonLevel.progress);
     auto techs = Technology::getNextTechs(collective->getTechnologies()).filter(
         [](const Technology* tech) { return tech->canResearch(); });
     for (Technology* tech : techs) {
@@ -955,7 +956,7 @@ void PlayerControl::fillLibraryInfo(CollectiveInfo& collectiveInfo) const {
       auto& techInfo = info.available.back();
       techInfo.name = tech->getName();
       techInfo.tutorialHighlight = tech->getTutorialHighlight();
-      techInfo.active = !info.warning && dungeonLevel.canConsumeLevel();
+      techInfo.active = !info.warning && dungeonLevel.numResearchAvailable() > 0;
       techInfo.description = tech->getDescription();
     }
     for (Technology* tech : collective->getTechnologies()) {
@@ -1291,8 +1292,8 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   info.numResource.clear();
   const auto dungeonLevel = collective->getDungeonLevel();
   info.dungeonLevel = dungeonLevel.level + 1;
-  info.dungeonLevelProgress = dungeonLevel.progress;
-  info.blinkDungeonLevel = dungeonLevel.canConsumeLevel();
+  info.dungeonLevelProgress = dungeonLevel.progress / dungeonLevel.getNecessaryProgress(dungeonLevel.level);
+  info.numResearchAvailable = dungeonLevel.numResearchAvailable();
   for (auto resourceId : ENUM_ALL(CollectiveResourceId)) {
     auto& elem = CollectiveConfig::getResourceInfo(resourceId);
     if (!elem.dontDisplay)

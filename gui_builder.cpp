@@ -388,7 +388,7 @@ SGuiElem GuiBuilder::drawBottomBandInfo(GameInfo& gameInfo) {
     const int space = 55;
     bottomLine.addElemAuto(gui.stack(
         gui.margins(gui.progressBar(Color::DARK_GREEN, info.dungeonLevelProgress), -6, -1, 0, -2),
-        gui.uiHighlightConditional([&]{ return info.blinkDungeonLevel; }),
+        gui.uiHighlightConditional([&]{ return info.numResearchAvailable > 0; }),
         gui.label("Level: " + toString(info.dungeonLevel)),
         gui.button([this]() { closeOverlayWindowsAndClearButton(); callbacks.input(UserInputId::TECHNOLOGY);})
     ));
@@ -1993,11 +1993,14 @@ SGuiElem GuiBuilder::drawLibraryOverlay(const CollectiveInfo& collectiveInfo, co
   int margin = 20;
   int rightElemMargin = 10;
   auto lines = gui.getListBuilder(legendLineHeight);
-  lines.addElem(gui.centerHoriz(gui.label("Level " + toString(info.dungeonLevel + 1))));
+  lines.addElem(gui.centerHoriz(gui.label("Level " + toString(collectiveInfo.dungeonLevel + 1))));
+  lines.addElem(gui.centerHoriz(gui.label("Next level progress: " +
+      toString(info.currentProgress) + "/" + toString(info.totalProgress))));
   //lines.addElem(gui.rightMargin(rightElemMargin, gui.alignment(GuiFactory::Alignment::RIGHT, drawCost(info.resource))));
   if (info.warning)
     lines.addElem(gui.label(*info.warning, Color::RED));
-  lines.addElem(gui.label("Available technology:", Color::YELLOW));
+  lines.addElem(gui.label("Research:", Color::YELLOW));
+  lines.addElem(gui.label("(" + getPlural("item", collectiveInfo.numResearchAvailable) + " available)", Color::YELLOW));
   for (int i : All(info.available)) {
     auto& elem = info.available[i];
     auto line = gui.getListBuilder()
@@ -2015,7 +2018,7 @@ SGuiElem GuiBuilder::drawLibraryOverlay(const CollectiveInfo& collectiveInfo, co
   }
   lines.addSpace(legendLineHeight * 2 / 3);
   if (!info.researched.empty())
-  lines.addElem(gui.label("Researched technology:", Color::YELLOW));
+  lines.addElem(gui.label("Already researched:", Color::YELLOW));
   for (int i : All(info.researched)) {
     auto& elem = info.researched[i];
     auto line = gui.getListBuilder()
