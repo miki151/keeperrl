@@ -116,16 +116,18 @@ float defaultPrepareEmission(AnimationContext &ctx, EmissionState &em) {
   return edef.frequency.sample(em.time) * ctx.timeDelta;
 }
 
-float AnimationContext::uniformSpread(float spread) { return rand.getDouble(-spread, spread); }
-float AnimationContext::uniform(float min, float max) { return rand.getDouble(min, max); }
+float AnimationContext::uniformSpread(float spread) { return rand.getFloatFast(-spread, spread); }
+float AnimationContext::uniform(float min, float max) { return rand.getFloatFast(min, max); }
 uint AnimationContext::randomSeed() {
   return rand.get(INT_MAX);
 }
 
 SVec2 AnimationContext::randomTexTile() {
   if (!(tdef.tiles == IVec2(1, 1))) {
-    IVec2 texTile(rand.get(tdef.tiles.x), rand.get(tdef.tiles.y));
-    return SVec2(texTile);
+    int pos = rand.get(tdef.tiles.x * tdef.tiles.y);
+    int y = pos / tdef.tiles.x;
+    int x = pos - y * tdef.tiles.x;
+    return SVec2(x, y);
   }
 
   return SVec2(0, 0);
@@ -147,7 +149,7 @@ void defaultEmitParticle(AnimationContext &ctx, EmissionState &em, Particle &new
     strength += ctx.uniformSpread(em.strengthSpread);
   if (em.rotSpeedSpread > 0.0f)
     rotSpeed += ctx.uniformSpread(em.rotSpeedSpread);
-  if (rotSpeed > 0.0f && ctx.rand.chance(0.5))
+  if (rotSpeed > 0.0f && ctx.rand.get(10000) < 5000)
     rotSpeed = -rotSpeed;
 
   newInst.movement = pdir * strength;
@@ -161,8 +163,13 @@ void defaultEmitParticle(AnimationContext &ctx, EmissionState &em, Particle &new
 
 array<FVec2, 4> DrawContext::quadCorners(FVec2 pos, FVec2 size, float rotation) const {
   auto corners = FRect(pos - size * 0.5f, pos + size * 0.5f).corners();
-  for (auto &corner : corners)
-    corner = rotateVector(corner - pos, rotation) + pos;
+  if (rotation != 0.0f) {
+    auto sc = sincos(rotation);
+    for (auto& corner : corners) {
+      auto vec = corner - pos;
+      corner = FVec2(sc.second * vec.x - sc.first * vec.y, sc.second * vec.y + sc.first * vec.x) + pos;
+    }
+  }
   return corners;
 }
 

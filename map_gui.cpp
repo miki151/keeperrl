@@ -625,13 +625,15 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
     move += movement;
     if (object.hasModifier(ViewObject::Modifier::FLYING))
       move.y += getFlyingMovement(size, curTimeReal);
+    const auto& coord = tile.getSpriteCoord(dirs);
     if (!fxesAvailable() || !tile.getFX()) {
       if (mirrorSprite(id))
-        renderer.drawTile(pos + move, tile.getSpriteCoord(dirs), size, color,
-            Renderer::SpriteOrientation((bool) (tilePos.getHash() % 2), (bool) (tilePos.getHash() % 4 > 1)));
+        renderer.drawTile(pos + move, coord, size, color,
+            Renderer::SpriteOrientation((bool)(tilePos.getHash() % 2), (bool)(tilePos.getHash() % 4 > 1)));
       else
-        renderer.drawTile(pos + move, tile.getSpriteCoord(dirs), size, color);
+        renderer.drawTile(pos + move, coord, size, color);
     }
+
     if (auto version = object.getPortalVersion())
       renderer.drawTile(pos + move, renderer.getTileCoord("portal_inside"), size, getPortalColor(*version));
     if (tile.hasAnyCorners()) {
@@ -671,8 +673,10 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
         auto effects = object.particleEffects;
         if (auto fx = tile.getFX())
           effects.insert(*fx);
+
+        bool bigTile = renderer.getTileSize(coord.front()).x > Renderer::nominalSize;
         for (auto fx : effects)
-          fxViewManager->addFX(*genericId, fx);
+          fxViewManager->addFX(*genericId, fx, bigTile);
         fxViewManager->drawFX(renderer, *genericId);
     }
   } else {

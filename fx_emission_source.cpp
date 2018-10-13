@@ -18,16 +18,17 @@ float EmissionSource::sphereRadius() const {
 }
 
 FVec2 EmissionSource::sample(RandomGen &rand) const {
-  // TODO: random get float as well
   switch (type) {
   case Type::point:
     return pos;
-  case Type::rect:
-    return pos + FVec2(rand.getDouble(-param.x, param.x), rand.getDouble(-param.y, param.y));
+  case Type::rect: {
+    auto f2 = rand.getFloat2Fast();
+    return pos + FVec2((f2.first * 2.0f - 1.0f) * param.x, (f2.second * 2.0f - 1.0f) * param.y);
+  }
   case Type::sphere: {
-    FVec2 spoint(rand.getDouble(-1.0f, 1.0f), rand.getDouble(-1.0f, 1.0f));
+    FVec2 spoint(rand.getFloatFast(-1.0f, 1.0f), rand.getFloatFast(-1.0f, 1.0f));
     while(spoint.x * spoint.x + spoint.y * spoint.y > 1.0f)
-      spoint = FVec2(rand.getDouble(-1.0f, 1.0f), rand.getDouble(-1.0f, 1.0f));
+      spoint = FVec2(rand.getFloatFast(-1.0f, 1.0f), rand.getFloatFast(-1.0f, 1.0f));
     return pos + spoint * param.x;
   }
   }

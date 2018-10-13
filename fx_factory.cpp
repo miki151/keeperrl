@@ -730,7 +730,6 @@ static void addFireEffect(FXManager& mgr) {
       pinst.size = FVec2(1.0f + 0.5 * ctx.ps.params.scalar[0]);
       pinst.rot = 0.0f;
     };
-    ssdef.layer = Layer::back;
     psdef.subSystems.emplace_back(ssdef);
   }
 
@@ -779,7 +778,7 @@ static void addFireEffect(FXManager& mgr) {
     ParticleDef pdef;
     pdef.life = 0.7f;
     pdef.size = 12.0f;
-    pdef.alpha = {{0.0f, 0.5f, 1.0f}, {0.0, 0.15, 0.0}, InterpType::cosine};
+    pdef.alpha = {{0.0f, 0.5f, 1.0f}, {0.0, 0.15, 0.0}};
 
     pdef.color = {{0.0f, 0.5f, 1.0f}, {FVec3(0.0f), FVec3(0.3f), FVec3(0.0f)}};
     pdef.textureName = TextureName::CLOUDS_SOFT_BORDERS;
@@ -931,7 +930,6 @@ static void addFireballEffect(FXManager& mgr) {
     };
 
     ssdef.drawFunc = drawFunc;
-    ssdef.layer = Layer::back;
     psdef.subSystems.emplace_back(ssdef);
   }
 
@@ -975,6 +973,21 @@ static void addFireballEffect(FXManager& mgr) {
 static void addFlamethrowerEffect(FXManager& mgr) {
   ParticleSystemDef psdef;
 
+  auto emitFunc = [](AnimationContext& ctx, EmissionState& em, Particle& pinst) {
+    defaultEmitParticle(ctx, em, pinst);
+    float mod = ctx.ps.params.scalar[0];
+    pinst.size *= (1.0f + mod * 0.25f);
+  };
+
+  auto prepFunc = [](AnimationContext& ctx, EmissionState& em) {
+    float freq = defaultPrepareEmission(ctx, em);
+    em.direction = ctx.ps.targetDirAngle;
+    em.directionSpread /= ctx.ps.targetTileDist;
+    em.strength *= ctx.ps.targetTileDist;
+    freq *= ctx.ps.targetTileDist;
+    return freq;
+  };
+
   { // Flames
     EmitterDef edef;
     edef.strength = 50.0f;
@@ -990,24 +1003,29 @@ static void addFlamethrowerEffect(FXManager& mgr) {
     pdef.textureName = TextureName::FLAMES_BLURRED;
 
     SubSystemDef ssdef(pdef, edef, 0.0f, 0.7f);
-    ssdef.prepareFunc = [](AnimationContext& ctx, EmissionState& em) {
-      float freq = defaultPrepareEmission(ctx, em);
-      float mod = ctx.ps.params.scalar[0];
-      em.direction = ctx.ps.targetDirAngle;
-      em.directionSpread /= ctx.ps.targetTileDist;
-      em.strength *= ctx.ps.targetTileDist;
-      freq *= ctx.ps.targetTileDist;
-      return freq * (1.0f + mod * 2.0f);
-    };
+    ssdef.prepareFunc = prepFunc;
+    ssdef.emitFunc = emitFunc;
+    psdef.subSystems.emplace_back(ssdef);
+  }
+  { // Glow
+    EmitterDef edef;
+    edef.strength = 50.0f;
+    edef.setDirectionSpread(0.0f, 0.3f);
+    edef.frequency = 8.0f;
+    edef.source = FVec2(0.0f);
 
-    ssdef.emitFunc = [](AnimationContext& ctx, EmissionState& em, Particle& pinst) {
-      defaultEmitParticle(ctx, em, pinst);
-      float mod = ctx.ps.params.scalar[0];
-      pinst.pos.x *= (1.0f + mod);
-      pinst.movement *= (1.0f + mod);
-      pinst.size *= (1.0f + mod * 0.25f);
-    };
+    ParticleDef pdef;
+    pdef.life = 0.5f;
+    pdef.size = 55.0f;
 
+    pdef.color = IColor(185, 155, 100).rgb();
+    pdef.alpha = {{0.0f, 0.2f, 0.7f, 1.0f}, {0.0f, 0.5f, 0.5f, 0.0f}};
+    pdef.textureName = TextureName::CIRCULAR;
+
+    SubSystemDef ssdef(pdef, edef, 0.0f, 0.65f);
+    ssdef.prepareFunc = prepFunc;
+    ssdef.emitFunc = emitFunc;
+    ssdef.layer = Layer::back;
     psdef.subSystems.emplace_back(ssdef);
   }
 
@@ -1328,6 +1346,7 @@ static void addBuffEffect(FXManager& mgr) {
     int idx = &pinst - ctx.ss.particles.data();
     float pos = ctx.globalTime * 2.0f + double(idx) * fconstant::pi * 2.0f / numParticles;
 
+    float width = 10.0f + 3.0f * ctx.ps.params.scalar[0];
     float voffset = ctx.ps.params.scalar[1];
     float hoffset = 0.0f;
     if (voffset >= 0.5f) {
@@ -1338,7 +1357,7 @@ static void addBuffEffect(FXManager& mgr) {
 
     auto vec = angleToVector(pos + hoffset);
     pinst.temp = vec.y;
-    pinst.pos = vec * FVec2(10.0f, 6.0f) - FVec2(0.0f, voffset * 16.0f) + FVec2(0.0f, 2.0f);
+    pinst.pos = vec * FVec2(width, 6.0f) - FVec2(0.0f, voffset * 16.0f) + FVec2(0.0f, 2.0f);
     if (!ctx.ps.isDying)
       pinst.life = min(pinst.life, 0.5f);
   };
@@ -1445,6 +1464,8 @@ static void addDebuffEffect(FXManager& mgr) {
       // Constant offset:
       //pos +=  (ctx.ps.params.scalar[1] - 0.5f) * 3.0f;
 
+      float width = 1.0f + 0.2f * ctx.ps.params.scalar[0];
+      pinst.size = FVec2(width, 1.0f);
       pinst.pos = FVec2(0.0f, pos * 5.0f - 3.0f);
       if (!ctx.ps.isDying)
         pinst.life = min(pinst.life, 0.25f);
