@@ -1,5 +1,7 @@
 #pragma once
 
+#include "util.h"
+
 RICH_ENUM(VillainType,
   MAIN,
   LESSER,
@@ -7,3 +9,5 @@ RICH_ENUM(VillainType,
   PLAYER,
   NONE
 );
+
+extern const char* getName(VillainType);

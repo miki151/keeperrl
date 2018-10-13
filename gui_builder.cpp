@@ -668,13 +668,16 @@ static Color getTriggerColor(double value) {
 }
 
 SGuiElem GuiBuilder::drawVillainType(VillainType type) {
-  switch (type) {
-    case VillainType::MAIN: return gui.label("Main villain", Color::RED);
-    case VillainType::LESSER: return gui.label("Lesser villain", Color::ORANGE);
-    case VillainType::ALLY: return gui.label("Ally", Color::GREEN);
-    case VillainType::NONE: return gui.label("Other", Color::GRAY);
-    case VillainType::PLAYER: return gui.label("Player", Color::GREEN);
-  }
+  auto getColor = [] (VillainType type) {
+    switch (type) {
+      case VillainType::MAIN: return Color::RED;
+      case VillainType::LESSER: return Color::ORANGE;
+      case VillainType::ALLY: return Color::GREEN;
+      case VillainType::NONE: return Color::GRAY;
+      case VillainType::PLAYER: return Color::GREEN;
+    }
+  };
+  return gui.label(getName(type), getColor(type));
 }
 
 SGuiElem GuiBuilder::drawVillainInfoOverlay(const VillageInfo::Village& info, bool showDismissHint) {
