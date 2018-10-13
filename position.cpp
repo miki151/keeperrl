@@ -509,6 +509,8 @@ constexpr int buildingSupportRadius = 5;
 
 void Position::updateBuildingSupport() const {
   auto updatePosition = [](Position pos) {
+    if (!pos.isValid())
+      return;
     if (pos.isBuildingSupport()) {
       pos.setBuilding(true);
       pos.setNeedsRenderUpdate(true);
