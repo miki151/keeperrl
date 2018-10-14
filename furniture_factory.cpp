@@ -686,6 +686,15 @@ bool FurnitureFactory::hasSupport(FurnitureType type, Position pos) {
   }
 }
 
+static bool canSilentlyReplace(FurnitureType type) {
+  switch (type) {
+    case FurnitureType::TREE_TRUNK:
+      return true;
+    default:
+      return false;
+  }
+}
+
 bool FurnitureFactory::canBuild(FurnitureType type, Position pos) {
   switch (type) {
     case FurnitureType::BRIDGE:
@@ -700,10 +709,11 @@ bool FurnitureFactory::canBuild(FurnitureType type, Position pos) {
         return furniture->getType() == FurnitureType::MOUNTAIN2;
       else
         return false;
-    default:
+    default: {
+      auto original = pos.getFurniture(Furniture::getLayer(type));
       return pos.getFurniture(FurnitureLayer::GROUND)->getMovementSet().canEnter({MovementTrait::WALK}) &&
-          !pos.getFurniture(Furniture::getLayer(type)) &&
-          !pos.isWall();
+          (!original || canSilentlyReplace(original->getType())) && !pos.isWall();
+    }
   }
 }
 
