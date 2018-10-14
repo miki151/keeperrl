@@ -641,7 +641,7 @@ class TileCoordLookup {
     Tile::addTile(ViewId::FETCH_ICON, sprite("leather_gloves"));
     Tile::addTile(ViewId::EYEBALL, sprite("eyeball2").setRoundShadow());
     Tile::addTile(ViewId::FOG_OF_WAR, getWaterTile("empty", "fogofwar"));
-    Tile::addTile(ViewId::PIT, sprite("hole"));
+    Tile::addTile(ViewId::PIT, sprite("pit"));
     Tile::addTile(ViewId::CREATURE_HIGHLIGHT, sprite("creature_highlight"));
     Tile::addTile(ViewId::SQUARE_HIGHLIGHT, sprite("square_highlight"));
     Tile::addTile(ViewId::ROUND_SHADOW, sprite("round_shadow"));
