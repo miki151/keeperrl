@@ -1996,7 +1996,7 @@ SGuiElem GuiBuilder::drawLibraryOverlay(const CollectiveInfo& collectiveInfo, co
   int margin = 20;
   int rightElemMargin = 10;
   auto lines = gui.getListBuilder(legendLineHeight);
-  lines.addElem(gui.centerHoriz(gui.label("Level " + toString(collectiveInfo.dungeonLevel + 1))));
+  lines.addElem(gui.centerHoriz(gui.label("Level " + toString(collectiveInfo.dungeonLevel))));
   lines.addElem(gui.centerHoriz(gui.label("Next level progress: " +
       toString(info.currentProgress) + "/" + toString(info.totalProgress))));
   //lines.addElem(gui.rightMargin(rightElemMargin, gui.alignment(GuiFactory::Alignment::RIGHT, drawCost(info.resource))));
