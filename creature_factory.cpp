@@ -845,7 +845,6 @@ PCreature CreatureFactory::getSpecial(TribeId tribe, bool humanoid, bool large, 
           c.attr[AttrType::SPELL_DAMAGE] -= 6;
         }
         if (humanoid) {
-          c.skills.setValue(SkillId::SORCERY, Random.getDouble(0, 1));
           c.skills.setValue(SkillId::WORKSHOP, Random.getDouble(0, 1));
           c.skills.setValue(SkillId::FORGE, Random.getDouble(0, 1));
           c.skills.setValue(SkillId::LABORATORY, Random.getDouble(0, 1));
@@ -914,7 +913,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.name = "Keeper";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_MALE)->getNext());
           c.name->useFullTitle();
-          c.skills.setValue(SkillId::SORCERY, 0.2);
           c.skills.setValue(SkillId::LABORATORY, 0.2);
           c.maxLevelIncrease[ExperienceType::MELEE] = 7;
           c.maxLevelIncrease[ExperienceType::SPELL] = 12;
@@ -930,7 +928,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.name = "Keeper";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_FEMALE)->getNext());
           c.name->useFullTitle();
-          c.skills.setValue(SkillId::SORCERY, 0.2);
           c.skills.setValue(SkillId::LABORATORY, 0.2);
           c.maxLevelIncrease[ExperienceType::MELEE] = 7;
           c.maxLevelIncrease[ExperienceType::SPELL] = 12;
@@ -1315,7 +1312,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.spells->add(SpellId::SUMMON_SPIRIT);
           c.spells->add(SpellId::BLAST);
           c.spells->add(SpellId::HEAL_OTHER);
-          c.skills.setValue(SkillId::SORCERY, 1);
           c.maxLevelIncrease[ExperienceType::SPELL] = 5;
           c.name = "shaman";);
     case CreatureId::PESEANT: 
@@ -1459,7 +1455,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body = Body::humanoid(Body::Material::UNDEAD_FLESH, Body::Size::LARGE);
           c.chatReactionFriendly = "\"All men be cursed!\""_s;
           c.chatReactionHostile = "\"Die!\""_s;
-          c.skills.setValue(SkillId::SORCERY, 0.1);
           c.permanentEffects[LastingEffect::NIGHT_VISION] = 1;
           c.permanentEffects[LastingEffect::RANGED_RESISTANCE] = 1;
           c.maxLevelIncrease[ExperienceType::MELEE] = 7;
@@ -1473,7 +1468,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.attr = LIST(17_dam, 23_def, 27_spell_dam );
           c.body = Body::humanoid(Body::Material::UNDEAD_FLESH, Body::Size::LARGE);
           c.permanentEffects[LastingEffect::NIGHT_VISION] = 1;
-          c.skills.setValue(SkillId::SORCERY, 0.5);
           c.name = "vampire lord";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::VAMPIRE)->getNext());
           c.maxLevelIncrease[ExperienceType::MELEE] = 12;
@@ -1516,7 +1510,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.viewId = ViewId::ORC_SHAMAN;
           c.attr = LIST(12_dam, 8_def, 16_spell_dam );
           c.body = Body::humanoid(Body::Size::LARGE);
-          c.skills.setValue(SkillId::SORCERY, 0.7);
           c.skills.setValue(SkillId::LABORATORY, 0.7);
           c.chatReactionFriendly = "curses all elves"_s;
           c.chatReactionHostile = "\"Die!\""_s;
@@ -1737,7 +1730,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.chatReactionHostile = "\"Die!\""_s;
           c.permanentEffects[LastingEffect::MAGIC_RESISTANCE] = 1;
           c.spells->add(SpellId::HEAL_SELF);
-          c.skills.setValue(SkillId::SORCERY, 1);
           c.spells->add(SpellId::HEAL_OTHER);
           c.permanentEffects[LastingEffect::ELF_VISION] = 1;
           c.spells->add(SpellId::HEAL_SELF);
@@ -1770,7 +1762,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.permanentEffects[LastingEffect::MAGIC_RESISTANCE] = 1;
           c.spells->add(SpellId::HEAL_SELF);
           c.permanentEffects[LastingEffect::NIGHT_VISION] = 1;
-          c.skills.setValue(SkillId::SORCERY, 0.3);
           c.maxLevelIncrease[ExperienceType::MELEE] = 5;
           c.maxLevelIncrease[ExperienceType::SPELL] = 5;
           c.name = CreatureName("dark elf", "dark elves"););
@@ -1795,7 +1786,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.chatReactionHostile = "\"Die!\""_s;
           c.permanentEffects[LastingEffect::MAGIC_RESISTANCE] = 1;
           c.spells->add(SpellId::HEAL_SELF);
-          c.skills.setValue(SkillId::SORCERY, 1);
           c.spells->add(SpellId::HEAL_OTHER);
           c.permanentEffects[LastingEffect::NIGHT_VISION] = 1;
           c.spells->add(SpellId::HEAL_SELF);

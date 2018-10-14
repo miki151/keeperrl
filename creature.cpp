@@ -123,8 +123,10 @@ bool Creature::isReady(Spell* spell) const {
     return true;
 }
 
-static double getWillpowerMult(double sorcerySkill) {
-  return 2 * pow(0.25, sorcerySkill);
+static double getSpellTimeoutMult(int expLevel) {
+  double minMult = 0.3;
+  double maxLevel = 12;
+  return max(minMult, 1 - expLevel * (1 - minMult) / maxLevel);
 }
 
 const CreatureAttributes& Creature::getAttributes() const {
@@ -143,15 +145,13 @@ CreatureAction Creature::castSpell(Spell* spell) const {
     return CreatureAction("You can't cast this spell yet.");
   return CreatureAction(this, [=] (WCreature c) {
     c->addSound(spell->getSound());
-    if (auto fx = spell->getFX()) {
-      auto gid = c->getUniqueId().getGenericId();
+    if (auto fx = spell->getFX())
       getGame()->addEvent(EventInfo::FX{position, *fx});
-    }
     spell->addMessage(c);
     spell->getEffect().applyToCreature(c);
     getGame()->getStatistics().add(StatId::SPELL_CAST);
     c->attributes->getSpellMap().setReadyTime(spell, *getGlobalTime() + TimeInterval(
-        int(spell->getDifficulty() * getWillpowerMult(attributes->getSkills().getValue(SkillId::SORCERY)))));
+        int(spell->getDifficulty() * getSpellTimeoutMult((int) attributes->getExpLevel(ExperienceType::SPELL)))));
     c->spendTime();
   });
 }
@@ -170,7 +170,7 @@ CreatureAction Creature::castSpell(Spell* spell, Vec2 dir) const {
     applyDirected(c, dir, dirEffectType, spell->getFX(), spell->getSplashFX());
     getGame()->getStatistics().add(StatId::SPELL_CAST);
     c->attributes->getSpellMap().setReadyTime(spell, *getGlobalTime() + TimeInterval(
-        int(spell->getDifficulty() * getWillpowerMult(attributes->getSkills().getValue(SkillId::SORCERY)))));
+        int(spell->getDifficulty() * getSpellTimeoutMult((int) attributes->getExpLevel(ExperienceType::SPELL)))));
     c->spendTime();
   });
 }

@@ -49,7 +49,6 @@ void Skill::init() {
   Skill::set(SkillId::NAVIGATION_DIGGING, new Skill("digging to navigate",
       "Creature will try to dig when travelling somewhere.", true));
   Skill::set(SkillId::DISARM_TRAPS, new Skill("disarm traps", "Evade traps and disarm them.", true));
-  Skill::set(SkillId::SORCERY, new Skill("sorcery", "Affects the length of spell cooldowns.", false, false));
   Skill::set(SkillId::CONSUMPTION, new Skill("absorbtion",
         "Absorb other creatures and retain their attributes.", true, false));
   Skill::set(SkillId::COPULATION, new Skill("copulation",

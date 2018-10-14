@@ -91,7 +91,6 @@ static CollectiveConfig getKeeperConfig(RandomGen& random, bool fastImmigration,
            .addRequirement(0.1, AttractionInfo{1, {FurnitureType::BOOKCASE_WOOD, FurnitureType::LABORATORY}})
            .addSpecialTrait(0.03, {AttrBonus { AttrType::SPELL_DAMAGE, 7 }, LastingEffect::INSANITY})
            .addSpecialTrait(0.1, ExtraTraining { ExperienceType::SPELL, 4 })
-           .addSpecialTrait(0.05, SkillId::SORCERY)
            .addSpecialTrait(0.05, SkillId::LABORATORY)
            .addSpecialTrait(0.1, LastingEffect::MAGIC_RESISTANCE),
        ImmigrantInfo(CreatureId::OGRE, {MinionTrait::FIGHTER})
