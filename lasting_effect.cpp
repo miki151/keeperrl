@@ -774,10 +774,10 @@ optional<FXVariantName> LastingEffects::getFX(LastingEffect effect) {
     case LastingEffect::FIRE_RESISTANT:
     case LastingEffect::MAGIC_RESISTANCE:
     case LastingEffect::MELEE_RESISTANCE:
-    case LastingEffect::POISON_RESISTANT:
     case LastingEffect::RANGED_RESISTANCE:
-      return FXVariantName::BUFF_ORANGE;
-
+      return FXVariantName::BUFF_SKY_BLUE;
+    case LastingEffect::POISON_RESISTANT:
+      return FXVariantName::BUFF_GREEN2;
     case LastingEffect::MAGIC_VULNERABILITY:
     case LastingEffect::MELEE_VULNERABILITY:
     case LastingEffect::RANGED_VULNERABILITY:
