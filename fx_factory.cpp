@@ -1034,15 +1034,15 @@ static void addFlamethrowerEffect(FXManager& mgr) {
 
 static void addSleepEffect(FXManager& mgr) {
   EmitterDef edef;
-  edef.strength = 20.0f;
+  edef.strength = 10.0f;
   edef.setDirectionSpread(-fconstant::pi * 0.5f, 0.2f);
-  edef.frequency = 3.0f;
-  edef.source = FRect(-2, -8, 2, -5);
+  edef.frequency = 1.2f;
+  edef.source = FRect(-2, -12, 2, -9);
 
   ParticleDef pdef;
   pdef.life = 2.0f;
   pdef.size = 10.0f;
-  pdef.alpha = {{0.0f, 0.5f, 1.0f}, {0.0, 1.0, 0.0}, InterpType::cosine};
+  pdef.alpha = {{0.0f, 0.2f, 1.0f}, {0.0, 1.0, 0.0}, InterpType::linear};
 
   pdef.color = FVec3(1.0f);
   pdef.textureName = TextureName::SPECIAL;
@@ -1327,7 +1327,7 @@ static void addSpiralEffects(FXManager& mgr) {
 }
 
 static void addBuffEffect(FXManager& mgr) {
-  static constexpr int numParticles = 6;
+  static constexpr int numParticles = 2;
   EmitterDef edef;
   edef.initialSpawnCount = numParticles;
 
@@ -1347,13 +1347,14 @@ static void addBuffEffect(FXManager& mgr) {
     float pos = ctx.globalTime * 2.0f + double(idx) * fconstant::pi * 2.0f / numParticles;
 
     float width = 10.0f + 3.0f * ctx.ps.params.scalar[0];
-    float voffset = ctx.ps.params.scalar[1];
-    float hoffset = 0.0f;
+    float hoffset = 2 * fconstant::pi * ctx.ps.params.scalar[1] / numParticles;
+    float voffset = 0.25;
+    /*float hoffset = 0.0f;
     if (voffset >= 0.5f) {
       voffset -= 0.5f;
       hoffset = 0.5f;
     }
-	hoffset += voffset * 0.5f;
+    hoffset += voffset * 0.5f;*/
 
     auto vec = angleToVector(pos + hoffset);
     pinst.temp = vec.y;
@@ -1466,7 +1467,7 @@ static void addDebuffEffect(FXManager& mgr) {
 
       float width = 1.0f + 0.2f * ctx.ps.params.scalar[0];
       pinst.size = FVec2(width, 1.0f);
-      pinst.pos = FVec2(0.0f, pos * 5.0f - 3.0f);
+      pinst.pos = FVec2(0.0f, pos * 2.0f - 4.0f);
       if (!ctx.ps.isDying)
         pinst.life = min(pinst.life, 0.25f);
     };
