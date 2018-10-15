@@ -88,6 +88,7 @@ IRect FXRenderer::boundingBox(const DrawParticle* particles, int count) {
   if (count == 0)
     return IRect();
 
+  PROFILE;
   FVec2 min = particles[0].positions[0];
   FVec2 max = min;
 
@@ -168,6 +169,7 @@ IVec2 FXRenderer::allocateFboSpace() {
 }
 
 void FXRenderer::prepareOrdered() {
+  PROFILE;
   auto& systems = mgr.getSystems();
   systemDraws.clear();
   systemDraws.resize(systems.size());
@@ -248,6 +250,7 @@ void FXRenderer::setView(float zoom, float offsetX, float offsetY, int w, int h)
 }
 
 void FXRenderer::drawParticles(FVec2 viewOffset, Framebuffer& blendFBO, Framebuffer& addFBO) {
+  PROFILE;
   IVec2 viewSize(blendFBO.width, blendFBO.height);
   pushOpenglView();
 
@@ -288,6 +291,7 @@ static void drawTexturedQuad(const FRect& rect, const FRect& trect) {
 }
 
 void FXRenderer::drawOrdered(const int* ids, int count, float offsetX, float offsetY) {
+  PROFILE;
   tempRects.clear();
 
   FVec2 fboSize(orderedBlendFBO->width, orderedBlendFBO->height);
@@ -370,6 +374,7 @@ void FXRenderer::drawAllOrdered() {
 }
 
 void FXRenderer::drawUnordered(Layer layer) {
+  PROFILE;
   tempParticles.clear();
   drawBuffers->clear();
 
@@ -462,6 +467,7 @@ IVec2 FXRenderer::fboSize() const {
 }
 
 void FXRenderer::drawParticles(const View& view, BlendMode blendMode) {
+  PROFILE;
   SDL::glPushMatrix();
 
   SDL::glTranslatef(view.offset.x, view.offset.y, 0.0f);

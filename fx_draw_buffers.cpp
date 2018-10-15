@@ -16,6 +16,7 @@ void DrawBuffers::add(const vector<DrawParticle>& particles) {
   if (particles.empty())
     return;
 
+  PROFILE;
   auto& first = particles.front();
   elements.emplace_back(Element{0, 0, first.texName});
 
