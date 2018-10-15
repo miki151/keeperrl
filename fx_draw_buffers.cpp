@@ -19,6 +19,7 @@ void DrawBuffers::add(const vector<DrawParticle>& particles) {
   auto& first = particles.front();
   elements.emplace_back(Element{0, 0, first.texName});
 
+  // TODO: sort particles by texture ?
   for (auto& quad : particles) {
     auto* last = &elements.back();
     if (last->texName != quad.texName) {
@@ -28,22 +29,21 @@ void DrawBuffers::add(const vector<DrawParticle>& particles) {
     }
     last->numVertices += 4;
 
-    for (int n = 0; n < 4; n++) {
-      positions.emplace_back(quad.positions[n]);
-      texCoords.emplace_back(quad.texCoords[n]);
-      union {
-        struct {
-          unsigned char r, g, b, a;
-        } channels;
-        unsigned int ivalue;
+    positions.insert(positions.end(), begin(quad.positions), end(quad.positions));
+    texCoords.insert(texCoords.end(), begin(quad.texCoords), end(quad.texCoords));
+
+    union {
+      struct {
+        unsigned char r, g, b, a;
+      } channels;
+      unsigned int ivalue;
       };
 
       channels.r = quad.color.r;
       channels.g = quad.color.g;
       channels.b = quad.color.b;
       channels.a = quad.color.a;
-      colors.emplace_back(ivalue);
-    }
+      colors.resize(colors.size() + 4, ivalue);
   }
 }
 }
