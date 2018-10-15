@@ -48,7 +48,7 @@ template <class T> Curve<T>::Curve(vector<float> keys, vector<T> values, InterpT
     keys.insert(keys.begin(), 0.0f);
     values.insert(values.begin(), values[0]);
   }
-  if (keys[1] != 1.0f) {
+  if (keys.back() != 1.0f) {
     keys.emplace_back(1.0f);
     values.emplace_back(values.back());
   }
@@ -98,10 +98,20 @@ template <class T> T Curve<T>::sample(float position) const {
   return T();
 }
 
-template <class T> void Curve<T>::print(float step) const {
-  /*if constexpr(std::is_same<T, float>())
-    for(float t = 0.0f; t <= 1.0f; t += step)
+template <class T> void Curve<T>::print(int num_steps) const {
+  /*if constexpr (std::is_same<T, float>()) {
+    printf("Values: ");
+    for (int n = 0; n < num_keys; n++)
+      printf("%f ", values[n]);
+    printf("\nKeys: ");
+    for (int n = 0; n < num_keys; n++)
+      printf("%f ", keys[n]);
+    printf("\n");
+    for (int n = 0; n < num_steps; n++) {
+      float t = float(n) / float(num_steps - 1);
       printf("[%f -> %f] ", t, sample(t));
+    }
+  }
   printf("\n");*/
 }
 
