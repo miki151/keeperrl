@@ -259,13 +259,19 @@ void CampaignBuilder::setPlayerPos(Campaign& campaign, Vec2 pos, ViewId playerVi
 
 }
 
-static AvatarInfo::ImpVariant getImpVariant(CreatureId id) {
+static AvatarInfo::ImmigrationVariant getImmigrationVariant(CreatureId id) {
   switch (id) {
     case CreatureId::KEEPER_KNIGHT:
     case CreatureId::KEEPER_KNIGHT_F:
-      return AvatarInfo::GOBLINS;
+      return AvatarInfo::DARK_KNIGHT;
+    case CreatureId::KEEPER_MAGE:
+    case CreatureId::KEEPER_MAGE_F:
+      return AvatarInfo::DARK_MAGE;
+    case CreatureId::DUKE_PLAYER:
+      return AvatarInfo::WHITE_KNIGHT;
     default:
-      return AvatarInfo::IMPS;
+      FATAL << "Immigration variant not handled for CreatureId = " << EnumInfo<CreatureId>::getString(id);
+      return {};
   }
 }
 
@@ -276,7 +282,7 @@ AvatarInfo CampaignBuilder::getAvatarInfo() {
   if (!name.empty())
     ret->getName().setFirst(name);
   ret->getName().useFullTitle();
-  return {std::move(ret), getImpVariant(id)};
+  return {std::move(ret), getImmigrationVariant(id)};
 }
 
 
@@ -464,7 +470,8 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(function<optional<Retir
       CreatureId::KEEPER_MAGE,
       CreatureId::KEEPER_MAGE_F,
       CreatureId::KEEPER_KNIGHT,
-      CreatureId::KEEPER_KNIGHT_F
+      CreatureId::KEEPER_KNIGHT_F,
+      CreatureId::DUKE_PLAYER
   });
   options->setChoices(OptionId::ADVENTURER_TYPE, {CreatureId::ADVENTURER, CreatureId::ADVENTURER_F});
   while (1) {
@@ -548,5 +555,5 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(function<optional<Retir
 
 CampaignSetup CampaignBuilder::getEmptyCampaign() {
   Campaign ret(Table<Campaign::SiteInfo>(1, 1), CampaignType::SINGLE_KEEPER, PlayerRole::KEEPER, "");
-  return CampaignSetup{ret, {PCreature(nullptr), AvatarInfo::IMPS}, "", "", false, {}};
+  return CampaignSetup{ret, {PCreature(nullptr), AvatarInfo::DARK_MAGE}, "", "", false, {}};
 }

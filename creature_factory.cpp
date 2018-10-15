@@ -633,7 +633,7 @@ static optional<pair<CreatureFactory, CreatureFactory>> splashFactories;
 void CreatureFactory::initSplash(TribeId tribe) {
   splashFactories = Random.choose(
       make_pair(CreatureFactory(tribe, { CreatureId::KNIGHT, CreatureId::ARCHER}, { 1, 1}, {}),
-        CreatureFactory::singleType(tribe, CreatureId::AVATAR)),
+        CreatureFactory::singleType(tribe, CreatureId::DUKE)),
       make_pair(CreatureFactory(tribe, { CreatureId::WARRIOR}, { 1}, {}),
         CreatureFactory::singleType(tribe, CreatureId::SHAMAN)),
       make_pair(CreatureFactory(tribe, { CreatureId::ELF_ARCHER}, { 1}, {}),
@@ -1233,7 +1233,94 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.spells->add(SpellId::FIREBALL_DRAGON);
           c.name->setStack("dragon");
           );
-    case CreatureId::KNIGHT: 
+    case CreatureId::KNIGHT_PLAYER:
+      return CATTR(
+          c.viewId = ViewId::KNIGHT;
+          c.attr = LIST(16_dam, 14_def );
+          c.body = Body::humanoid(Body::Size::LARGE);
+          c.maxLevelIncrease[ExperienceType::MELEE] = 7;
+          c.chatReactionFriendly = "curses all dungeons"_s;
+          c.chatReactionHostile = "\"Die!\""_s;
+          c.skills.setValue(SkillId::WORKSHOP, 0.3);
+          c.skills.setValue(SkillId::FORGE, 0.3);
+          c.name = "knight";
+          c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_MALE)->getNext());
+      );
+    case CreatureId::JESTER_PLAYER:
+      return CATTR(
+          c.viewId = ViewId::JESTER;
+          c.attr = LIST(8_dam, 8_def );
+          c.body = Body::humanoid(Body::Size::LARGE);
+          c.permanentEffects[LastingEffect::MAGIC_RESISTANCE] = 1;
+          c.chatReactionFriendly = "curses all dungeons"_s;
+          c.chatReactionHostile = "\"Die!\""_s;
+          c.name = "jester";
+          c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_MALE)->getNext());
+      );
+    case CreatureId::DUKE_PLAYER:
+      return CATTR(
+          c.viewId = ViewId::DUKE;
+          c.attr = LIST(20_dam, 16_def);
+          c.body = Body::humanoid(Body::Size::LARGE);
+          c.name = "Keeper";
+          c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_MALE)->getNext());
+          c.name->useFullTitle();
+          c.skills.setValue(SkillId::FORGE, 0.2);
+          c.maxLevelIncrease[ExperienceType::MELEE] = 12;
+          c.maxLevelIncrease[ExperienceType::SPELL] = 1;
+      );
+    case CreatureId::ARCHER_PLAYER:
+      return CATTR(
+          c.viewId = ViewId::ARCHER;
+          c.attr = LIST(10_dam, 10_def, 10_ranged_dam );
+          c.body = Body::humanoid(Body::Size::LARGE);
+          c.chatReactionFriendly = "curses all dungeons"_s;
+          c.chatReactionHostile = "\"Die!\""_s;
+          c.maxLevelIncrease[ExperienceType::MELEE] = 4;
+          c.maxLevelIncrease[ExperienceType::ARCHERY] = 7;
+          c.name = "archer";
+          c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_MALE)->getNext());
+      );
+    case CreatureId::PRIEST_PLAYER:
+      return CATTR(
+          c.viewId = ViewId::PRIEST;
+          c.attr = LIST(12_dam, 8_def, 16_spell_dam );
+          c.body = Body::humanoid(Body::Size::LARGE);
+          c.chatReactionFriendly = "curses all dungeons"_s;
+          c.chatReactionHostile = "\"Die!\""_s;
+          c.maxLevelIncrease[ExperienceType::SPELL] = 9;
+          c.name = "priest";
+          c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_MALE)->getNext());
+      );
+    case CreatureId::GNOME_PLAYER:
+      return CATTR(
+          c.viewId = ViewId::GNOME;
+          c.attr = LIST(10_dam, 10_def );
+          c.body = Body::humanoid(Body::Size::MEDIUM);
+          c.chatReactionFriendly = "talks about crafting"_s;
+          c.chatReactionHostile = "\"Die!\""_s;
+          c.skills.setValue(SkillId::LABORATORY, 0.3);
+          c.skills.setValue(SkillId::WORKSHOP, 0.6);
+          c.skills.setValue(SkillId::FORGE, 0.6);
+          c.skills.setValue(SkillId::JEWELER, 0.6);
+          c.name = "gnome";
+          c.name->setFirst(NameGenerator::get(NameGeneratorId::DWARF)->getNext());
+      );
+    case CreatureId::PESEANT_PLAYER:
+      return CATTR(
+          if (Random.roll(2)) {
+            c.viewId = ViewId::PESEANT_WOMAN;
+            c.gender = Gender::female;
+          } else
+            c.viewId = ViewId::PESEANT;
+          c.attr = LIST(14_dam, 12_def );
+          c.body = Body::humanoid(Body::Size::LARGE);
+          c.chatReactionFriendly = "curses all dungeons"_s;
+          c.chatReactionHostile = "\"Heeelp!\""_s;
+          c.skills.setValue(SkillId::DIGGING, 0.1);
+          c.name = "peasant";
+      );
+    case CreatureId::KNIGHT:
       return CATTR(
           c.viewId = ViewId::KNIGHT;
           c.attr = LIST(36_dam, 28_def );
@@ -1252,7 +1339,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.chatReactionFriendly = "curses all dungeons"_s;
           c.chatReactionHostile = "\"Die!\""_s;
           c.name = "jester";);
-    case CreatureId::AVATAR:
+    case CreatureId::DUKE:
       return CATTR(
           c.viewId = ViewId::DUKE;
           c.attr = LIST(43_dam, 32_def );
@@ -1262,7 +1349,9 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.chatReactionHostile = "\"Die!\""_s;
           c.maxLevelIncrease[ExperienceType::MELEE] = 3;
           c.courage = 1;
-          c.name = "Duke of " + NameGenerator::get(NameGeneratorId::WORLD)->getNext(););
+          c.name = "Duke of " + NameGenerator::get(NameGeneratorId::WORLD)->getNext();
+          c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_MALE)->getNext());
+      );
     case CreatureId::ARCHER:
       return CATTR(
           c.viewId = ViewId::ARCHER;
@@ -1326,7 +1415,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.chatReactionFriendly = "curses all dungeons"_s;
           c.chatReactionHostile = "\"Heeelp!\""_s;
           c.skills.insert(SkillId::CROPS);
-          c.maxLevelIncrease[ExperienceType::MELEE] = 3;
+          c.skills.setValue(SkillId::DIGGING, 0.1);
           c.name = "peasant";);
     case CreatureId::CHILD: 
       return CATTR(
@@ -2404,7 +2493,7 @@ static vector<ItemType> getDefaultInventory(CreatureId id) {
     case CreatureId::MINOTAUR: 
       return ItemList()
         .add(ItemType::BattleAxe{});
-    case CreatureId::AVATAR: 
+    case CreatureId::DUKE: 
       return ItemList()
         .add(ItemType(ItemType::BattleAxe{}).setPrefixChance(1))
         .add(ItemType::ChainArmor{})
