@@ -725,11 +725,11 @@ static void addFireEffect(FXManager& mgr) {
     edef.source = FVec2(0, 2);
 
     ParticleDef pdef;
-    pdef.life = 0.7f;
+    pdef.life = 1.0f;
     pdef.size = 32.0f;
 
     pdef.color = {{IColor(185, 155, 100).rgb(), IColor(195, 135, 90).rgb()}};
-    pdef.alpha = {{0.0f, 0.2f, 0.8f, 1.0f}, {0.0f, 0.3f, 0.3f, 0.0f}};
+    pdef.alpha = {{0.0f, 0.5f, 1.0f}, {0.0f, 0.5f, 0.0f}};
     pdef.textureName = TextureName::CIRCULAR_STRONG;
 
     SubSystemDef ssdef(pdef, edef, 0.0f, 1.0f);
