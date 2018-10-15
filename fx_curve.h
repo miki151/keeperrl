@@ -21,7 +21,7 @@ template <class T> struct Curve {
   // Position is always within range: <0, 1>
   T sample(float position) const;
 
-  void print(float step = 0.05f) const;
+  void print(int num_steps = 20) const;
 
   private:
   void initialize(vector<float>&, vector<T>&);
