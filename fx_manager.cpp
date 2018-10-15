@@ -258,8 +258,8 @@ void FXManager::genQuads(vector<DrawParticle>& out, int id, int ssid) {
   else
     for (auto& pinst : ss.particles) {
       DrawParticle dparticle;
-      ctx.ssdef.drawFunc(ctx, pinst, dparticle);
-      out.emplace_back(dparticle);
+      if (ctx.ssdef.drawFunc(ctx, pinst, dparticle))
+        out.emplace_back(dparticle);
     }
 }
 
