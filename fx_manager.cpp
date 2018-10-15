@@ -43,6 +43,7 @@ void FXManager::simulateStableTime(double time, int visibleFps, int simulateFps)
 }
 
 void FXManager::simulateStable(double timeDelta, int visibleFps, int simulateFps) {
+  PROFILE;
   PASSERT(timeDelta >= 0.0);
   PASSERT(visibleFps <= simulateFps);
   PASSERT(simulateFps % visibleFps == 0);
@@ -65,6 +66,7 @@ void FXManager::simulateStable(double timeDelta, int visibleFps, int simulateFps
 }
 
 void FXManager::simulate(ParticleSystem &ps, float timeDelta) {
+  PROFILE;
   auto &psdef = (*this)[ps.defId];
 
   // Animating live particles
@@ -160,6 +162,7 @@ void FXManager::simulate(ParticleSystem &ps, float timeDelta) {
 }
 
 void FXManager::simulate(float delta) {
+  PROFILE;
   for (auto& inst : systems)
     if (!inst.isDead)
       simulate(inst, delta);
@@ -192,6 +195,7 @@ auto FXManager::findSnapshotGroup(FXName name, SnapshotKey key) const -> const S
 }
 
 void FXManager::genSnapshots(FXName name, vector<float> animTimes, vector<float> params, int randomVariants) {
+  PROFILE;
   auto startTime = Clock::getRealMicros().count();
   if (params.empty())
     params = {0.0f};
@@ -238,6 +242,7 @@ void FXManager::genSnapshots(FXName name, vector<float> animTimes, vector<float>
 }
 
 void FXManager::genQuads(vector<DrawParticle>& out, int id, int ssid) {
+  PROFILE;
   auto& ps = systems[id];
   if (ps.isDead)
     return;
