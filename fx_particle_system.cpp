@@ -186,13 +186,15 @@ array<FVec2, 4> DrawContext::texQuadCorners(SVec2 texTile, FVec2 customInvTexTil
   return tex_rect.corners();
 }
 
-void defaultDrawParticle(DrawContext &ctx, const Particle &pinst, DrawParticle &out) {
+bool defaultDrawParticle(DrawContext& ctx, const Particle& pinst, DrawParticle& out) {
   float ptime = pinst.particleTime();
   const auto &pdef = ctx.pdef;
+  float alpha = pdef.alpha.sample(ptime);
+  if (alpha < 1.0f / 255.0f)
+    return false;
 
   FVec2 pos = pinst.pos + ctx.ps.pos;
   FVec2 size(pdef.size.sample(ptime) * pinst.size);
-  float alpha = pdef.alpha.sample(ptime);
   FVec3 colorMul = ctx.ps.params.color[0];
   if (ctx.tdef.blendMode == BlendMode::additive)
     colorMul *= alpha;
@@ -202,6 +204,7 @@ void defaultDrawParticle(DrawContext &ctx, const Particle &pinst, DrawParticle &
   out.texCoords = ctx.texQuadCorners(pinst.texTile);
   out.color = IColor(color);
   out.texName = ctx.pdef.textureName;
+  return true;
 }
 
 SubSystemContext::SubSystemContext(const ParticleSystem& ps, const ParticleSystemDef& psdef, const ParticleDef& pdef,
