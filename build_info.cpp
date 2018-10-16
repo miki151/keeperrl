@@ -14,14 +14,14 @@
 #include "trap_type.h"
 #include "quarters.h"
 #include "furniture.h"
+#include "avatar_variant.h"
 
 using ResourceId = Collective::ResourceId;
 
-const vector<BuildInfo>& BuildInfo::get() {
-  const string workshop = "Manufactories";
-  static optional<vector<BuildInfo>> buildInfo;
-  if (!buildInfo) {
-    buildInfo = vector<BuildInfo>({
+const vector<BuildInfo>& BuildInfo::get(AvatarVariant avatarVariant) {
+  static EnumMap<AvatarVariant, vector<BuildInfo>> buildInfo([](AvatarVariant avatarVariant) {
+    const char* workshop = "Manufactories";
+    vector<BuildInfo> buildInfo {
       BuildInfo(BuildInfo::DIG, "Dig or cut tree", "", 'd').setTutorialHighlight(TutorialHighlight::DIG_OR_CUT_TREES),
       BuildInfo({FurnitureType::MOUNTAIN, {ResourceId::STONE, 5}}, "Soft rock", {}, "", 0, "Structure"),
       BuildInfo({FurnitureType::MOUNTAIN2, {ResourceId::STONE, 10}}, "Hard rock", {}, "", 0, "Structure"),
@@ -61,13 +61,13 @@ const vector<BuildInfo>& BuildInfo::get() {
           "Stores gold.", 0, "Storage"),
       BuildInfo({FurnitureType::GRAVE, {ResourceId::STONE, 5}}, "Grave", {},
           "Spot for hauling dead bodies.", 0, "Storage"),
-    });
+    };
     auto& quarters = Quarters::getAllQuarters();
     for (int i : All(quarters))
-      buildInfo->emplace_back(
+      buildInfo.emplace_back(
         quarters[i].zone, quarters[i].viewId, "Quarters "_s + toString(i),
             "Designate separate quarters for chosen minions.", i == 0 ? 'q' : '\0', "Quarters", true);
-    append(*buildInfo, {
+    append(buildInfo, {
       BuildInfo({FurnitureType::BOOKCASE_WOOD, {ResourceId::WOOD, 15}}, "Wooden bookcase",
           {{RequirementId::TECHNOLOGY, TechId::SPELLS}}, "Train your minions here. Adds up to " +
           toString(*CollectiveConfig::getTrainingMaxLevel(ExperienceType::SPELL, FurnitureType::BOOKCASE_WOOD)) + " spell levels.",
@@ -86,12 +86,17 @@ const vector<BuildInfo>& BuildInfo::get() {
              .setTutorialHighlight(TutorialHighlight::BUILD_BED),
       BuildInfo({FurnitureType::BED2, {ResourceId::IRON, 12}}, "Fine bed", {}, "Humanoid minions sleep here.", 0, "Living", true),
       BuildInfo({FurnitureType::BED3, {ResourceId::GOLD, 12}}, "Luxurious bed", {}, "Humanoid minions sleep here.", 0, "Living", true),
-      BuildInfo({FurnitureType::COFFIN1, {ResourceId::WOOD, 15}}, "Basic coffin", {},
-          "Undead creatures sleep here.", 0, "Living"),
-      BuildInfo({FurnitureType::COFFIN2, {ResourceId::STONE, 15}}, "Fine coffin", {},
-          "Undead creatures sleep here.", 0, "Living"),
-      BuildInfo({FurnitureType::COFFIN3, {ResourceId::GOLD, 15}}, "Luxurious coffin", {},
-          "Undead creatures sleep here.", 0, "Living"),
+    });
+    if (avatarVariant != AvatarVariant::WHITE_KNIGHT)
+      append(buildInfo, {
+        BuildInfo({FurnitureType::COFFIN1, {ResourceId::WOOD, 15}}, "Basic coffin", {},
+            "Undead creatures sleep here.", 0, "Living"),
+        BuildInfo({FurnitureType::COFFIN2, {ResourceId::STONE, 15}}, "Fine coffin", {},
+            "Undead creatures sleep here.", 0, "Living"),
+        BuildInfo({FurnitureType::COFFIN3, {ResourceId::GOLD, 15}}, "Luxurious coffin", {},
+            "Undead creatures sleep here.", 0, "Living"),
+      });
+    append(buildInfo, {
       BuildInfo({FurnitureType::BEAST_CAGE, {ResourceId::WOOD, 8}}, "Beast cage", {}, "Beasts sleep here.", 0, "Living"),
       BuildInfo({FurnitureType::PIGSTY, {ResourceId::WOOD, 5}}, "Pigsty",
           {{RequirementId::TECHNOLOGY, TechId::PIGSTY}},
@@ -123,8 +128,12 @@ const vector<BuildInfo>& BuildInfo::get() {
           {{RequirementId::TECHNOLOGY, TechId::ALCHEMY}}, "Produces magical potions.", 0, workshop),
       BuildInfo({FurnitureType::JEWELER, {ResourceId::WOOD, 12}}, "Jeweler",
           {{RequirementId::TECHNOLOGY, TechId::JEWELLERY}}, "Produces magical rings and amulets.", 0, workshop),
-      BuildInfo({FurnitureType::DEMON_SHRINE, {ResourceId::GOLD, 30}}, "Demon shrine", {{RequirementId::TECHNOLOGY, TechId::DEMONOLOGY}},
-          "Summons various demons to your dungeon."),
+    });
+    if (avatarVariant != AvatarVariant::WHITE_KNIGHT)
+      buildInfo.push_back(
+          BuildInfo({FurnitureType::DEMON_SHRINE, {ResourceId::GOLD, 30}}, "Demon shrine", {{RequirementId::TECHNOLOGY, TechId::DEMONOLOGY}},
+              "Summons various demons to your dungeon."));
+    append(buildInfo, {
       BuildInfo({FurnitureType::PRISON, {ResourceId::IRON, 15}}, "Prison", {}, "Captured enemies are kept here.",
           'p', "Prison", true),
       BuildInfo({FurnitureType::TORTURE_TABLE, {ResourceId::IRON, 20}}, "Torture table", {},
@@ -149,15 +158,20 @@ const vector<BuildInfo>& BuildInfo::get() {
              "Standing torch", {}, "", 0, "Installations")
           .setTutorialHighlight(TutorialHighlight::BUILD_TORCH),
       BuildInfo({FurnitureType::KEEPER_BOARD, {ResourceId::WOOD, 15}}, "Message board", {},
-          "A board where you can leave a message for other players.", 0, "Installations"),
-      BuildInfo({FurnitureType::EYEBALL, {ResourceId::WOOD, 30}}, "Eyeball", {},
-        "Makes the area around it visible.", 0, "Installations"),
-      BuildInfo({FurnitureType::PORTAL, {ResourceId::STONE, 60}}, "Portal", {},
-        "Opens a connection if another portal is present.", 0, "Installations"),
-      BuildInfo({FurnitureType::MINION_STATUE, {ResourceId::GOLD, 50}}, "Golden Statue", {},
-          *Furniture::getPopulationIncreaseDescription(FurnitureType::MINION_STATUE), 0, "Installations"),
-      BuildInfo({FurnitureType::STONE_MINION_STATUE, {ResourceId::STONE, 250}}, "Stone Statue", {},
-        *Furniture::getPopulationIncreaseDescription(FurnitureType::STONE_MINION_STATUE), 0, "Installations"),
+          "A board where you can leave a message for other players.", 0, "Installations")
+    });
+    if (avatarVariant != AvatarVariant::WHITE_KNIGHT)
+      append(buildInfo, {
+          BuildInfo({FurnitureType::EYEBALL, {ResourceId::WOOD, 30}}, "Eyeball", {},
+            "Makes the area around it visible.", 0, "Installations"),
+          BuildInfo({FurnitureType::PORTAL, {ResourceId::STONE, 60}}, "Portal", {},
+            "Opens a connection if another portal is present.", 0, "Installations"),
+          BuildInfo({FurnitureType::MINION_STATUE, {ResourceId::GOLD, 50}}, "Golden Statue", {},
+              *Furniture::getPopulationIncreaseDescription(FurnitureType::MINION_STATUE), 0, "Installations"),
+          BuildInfo({FurnitureType::STONE_MINION_STATUE, {ResourceId::STONE, 250}}, "Stone Statue", {},
+            *Furniture::getPopulationIncreaseDescription(FurnitureType::STONE_MINION_STATUE), 0, "Installations")
+      });
+    append(buildInfo, {
       BuildInfo({FurnitureType::FOUNTAIN, {ResourceId::STONE, 30}}, "Fountain", {}, "", 0, "Installations"),
       BuildInfo({FurnitureType::WHIPPING_POST, {ResourceId::WOOD, 20}}, "Whipping post", {},
           "A place to whip your minions if they need a morale boost.", 0, "Installations"),
@@ -168,21 +182,24 @@ const vector<BuildInfo>& BuildInfo::get() {
 #ifndef RELEASE
       BuildInfo({FurnitureType::TUTORIAL_ENTRANCE, {}}, "Tutorial entrance", {}, "", 0, "Installations"),
 #endif
-      BuildInfo({TrapType::TERROR, ViewId::TERROR_TRAP}, "Panic trap", {{RequirementId::TECHNOLOGY, TechId::TRAPS}},
-          "Causes the trespasser to panic.", 0, "Traps"),
-      BuildInfo({TrapType::POISON_GAS, ViewId::GAS_TRAP}, "Gas trap", {{RequirementId::TECHNOLOGY, TechId::TRAPS}},
-          "Releases a cloud of poisonous gas.", 0, "Traps"),
-      BuildInfo({TrapType::ALARM, ViewId::ALARM_TRAP}, "Alarm trap", {{RequirementId::TECHNOLOGY, TechId::TRAPS}},
-          "Summons all minions", 0, "Traps"),
-      BuildInfo({TrapType::WEB, ViewId::WEB_TRAP}, "Web trap", {{RequirementId::TECHNOLOGY, TechId::TRAPS}},
-          "Immobilises the trespasser for some time.", 0, "Traps"),
-      BuildInfo({TrapType::BOULDER, ViewId::BOULDER}, "Boulder trap", {{RequirementId::TECHNOLOGY, TechId::TRAPS}},
-          "Causes a huge boulder to roll towards the enemy.", 0, "Traps"),
-      BuildInfo({TrapType::SURPRISE, ViewId::SURPRISE_TRAP}, "Surprise trap",
-          {{RequirementId::TECHNOLOGY, TechId::TRAPS}},
-          "Teleports nearby minions to deal with the trespasser.", 0, "Traps"),
     });
-    for (auto& info : *buildInfo)
+    if (avatarVariant != AvatarVariant::WHITE_KNIGHT)
+      append(buildInfo, {
+        BuildInfo({TrapType::TERROR, ViewId::TERROR_TRAP}, "Panic trap", {{RequirementId::TECHNOLOGY, TechId::TRAPS}},
+            "Causes the trespasser to panic.", 0, "Traps"),
+        BuildInfo({TrapType::POISON_GAS, ViewId::GAS_TRAP}, "Gas trap", {{RequirementId::TECHNOLOGY, TechId::TRAPS}},
+            "Releases a cloud of poisonous gas.", 0, "Traps"),
+        BuildInfo({TrapType::ALARM, ViewId::ALARM_TRAP}, "Alarm trap", {{RequirementId::TECHNOLOGY, TechId::TRAPS}},
+            "Summons all minions", 0, "Traps"),
+        BuildInfo({TrapType::WEB, ViewId::WEB_TRAP}, "Web trap", {{RequirementId::TECHNOLOGY, TechId::TRAPS}},
+            "Immobilises the trespasser for some time.", 0, "Traps"),
+        BuildInfo({TrapType::BOULDER, ViewId::BOULDER}, "Boulder trap", {{RequirementId::TECHNOLOGY, TechId::TRAPS}},
+            "Causes a huge boulder to roll towards the enemy.", 0, "Traps"),
+        BuildInfo({TrapType::SURPRISE, ViewId::SURPRISE_TRAP}, "Surprise trap",
+            {{RequirementId::TECHNOLOGY, TechId::TRAPS}},
+            "Teleports nearby minions to deal with the trespasser.", 0, "Traps"),
+      });
+    for (auto& info : buildInfo)
       if (info.buildType == BuildInfo::FURNITURE)
         for (auto type : info.furnitureInfo.types) {
           double luxury = Furniture::getLuxuryInfo(type).luxury;
@@ -191,8 +208,9 @@ const vector<BuildInfo>& BuildInfo::get() {
             break;
           }
     }
-  }
-  return *buildInfo;
+    return buildInfo;
+  });
+  return buildInfo[avatarVariant];
 }
 
 BuildInfo::FurnitureInfo::FurnitureInfo(FurnitureType type, CostInfo cost, bool noCredit, optional<int> maxNumber)
@@ -252,7 +270,7 @@ string BuildInfo::getRequirementText(Requirement req) {
 
 vector<BuildInfo::RoomInfo> BuildInfo::getRoomInfo() {
   vector<RoomInfo> ret;
-  for (auto& bInfo : get())
+  for (auto& bInfo : get(AvatarVariant::DARK_MAGE))
     if (bInfo.buildType == BuildInfo::FURNITURE)
       ret.push_back({bInfo.name, bInfo.help, bInfo.requirements});
   return ret;

@@ -5,9 +5,10 @@
 #include "cost_info.h"
 #include "enum_variant.h"
 #include "zones.h"
+#include "avatar_info.h"
 
 struct BuildInfo {
-  static const vector<BuildInfo>& get();
+  static const vector<BuildInfo>& get(AvatarVariant);
 
   struct FurnitureInfo {
     FurnitureInfo(FurnitureType type, CostInfo cost = CostInfo::noCost(), bool noCredit = false, optional<int> maxNumber = none);

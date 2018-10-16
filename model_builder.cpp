@@ -209,10 +209,10 @@ static vector<ImmigrantInfo> getWhiteKeeperImmigration(RandomGen& random) {
 }
 
 static CollectiveConfig getKeeperConfig(RandomGen& random, bool fastImmigration, bool regenerateMana,
-    AvatarInfo::ImmigrationVariant immigrationVariant) {
+    AvatarVariant avatarVariant) {
   vector<ImmigrantInfo> immigrants;
-  switch (immigrationVariant) {
-    case AvatarInfo::DARK_MAGE:
+  switch (avatarVariant) {
+    case AvatarVariant::DARK_MAGE:
       immigrants.push_back(
           ImmigrantInfo(CreatureId::IMP, {MinionTrait::WORKER, MinionTrait::NO_LIMIT, MinionTrait::NO_EQUIPMENT})
              .setSpawnLocation(NearLeader{})
@@ -222,7 +222,7 @@ static CollectiveConfig getKeeperConfig(RandomGen& random, bool fastImmigration,
              .setInitialRecruitment(4)
              .addRequirement(ExponentialCost{ CostInfo(CollectiveResourceId::GOLD, 30), 5, 4 }));
       break;
-    case AvatarInfo::DARK_KNIGHT:
+    case AvatarVariant::DARK_KNIGHT:
       immigrants.push_back(
           ImmigrantInfo(CreatureId::PESEANT_PRISONER,
               {MinionTrait::WORKER, MinionTrait::PRISONER, MinionTrait::NO_LIMIT})
@@ -231,7 +231,7 @@ static CollectiveConfig getKeeperConfig(RandomGen& random, bool fastImmigration,
              .setInvisible()
              .setInitialRecruitment(4));
       break;
-    case AvatarInfo::WHITE_KNIGHT:
+    case AvatarVariant::WHITE_KNIGHT:
       immigrants.push_back(
           ImmigrantInfo(CreatureId::PESEANT_PLAYER, {MinionTrait::WORKER, MinionTrait::NO_LIMIT, MinionTrait::NO_EQUIPMENT})
              .setKeybinding(Keybinding::CREATE_IMP)
@@ -240,12 +240,12 @@ static CollectiveConfig getKeeperConfig(RandomGen& random, bool fastImmigration,
              .addRequirement(ExponentialCost{ CostInfo(CollectiveResourceId::GOLD, 30), 5, 4 }));
       break;
   }
-  switch (immigrationVariant) {
-    case AvatarInfo::DARK_MAGE:
-    case AvatarInfo::DARK_KNIGHT:
+  switch (avatarVariant) {
+    case AvatarVariant::DARK_MAGE:
+    case AvatarVariant::DARK_KNIGHT:
       append(immigrants, getDarkKeeperImmigration(random));
       break;
-    case AvatarInfo::WHITE_KNIGHT:
+    case AvatarVariant::WHITE_KNIGHT:
       append(immigrants, getWhiteKeeperImmigration(random));
       break;
   }
@@ -561,12 +561,12 @@ WCollective ModelBuilder::spawnKeeper(WModel m, AvatarInfo avatarInfo, bool rege
   m->addCreature(std::move(avatarInfo.playerCreature));
   m->collectives.push_back(CollectiveBuilder(
         getKeeperConfig(random, options->getBoolValue(OptionId::FAST_IMMIGRATION),
-            regenerateMana, avatarInfo.impVariant), TribeId::getKeeper())
+            regenerateMana, avatarInfo.avatarVariant), TribeId::getKeeper())
       .setLevel(level)
       .addCreature(keeperRef, {MinionTrait::LEADER})
       .build());
   WCollective playerCollective = m->collectives.back().get();
-  playerCollective->setControl(PlayerControl::create(playerCollective, introText));
+  playerCollective->setControl(PlayerControl::create(playerCollective, introText, avatarInfo.avatarVariant));
   playerCollective->setVillainType(VillainType::PLAYER);
   playerCollective->acquireInitialTech();
   return playerCollective;

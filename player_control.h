@@ -48,8 +48,8 @@ class AttackTrigger;
 
 class PlayerControl : public CreatureView, public CollectiveControl, public EventListener<PlayerControl> {
   public:
-  static PPlayerControl create(WCollective col, vector<string> introText);
-  ~PlayerControl();
+  static PPlayerControl create(WCollective col, vector<string> introText, AvatarVariant);
+  ~PlayerControl() override;
 
   void processInput(View* view, UserInput);
   MoveInfo getMove(WCreature c);
@@ -90,7 +90,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   struct Private {};
 
   public:
-  PlayerControl(Private, WCollective);
+  PlayerControl(Private, WCollective, AvatarVariant);
 
   protected:
   // from CreatureView
@@ -150,7 +150,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void fillImmigration(CollectiveInfo&) const;
   void fillImmigrationHelp(CollectiveInfo&) const;
   void fillLibraryInfo(CollectiveInfo&) const;
-  static const vector<BuildInfo>& getBuildInfo();
 
   int getMinLibrarySize() const;
 
@@ -178,7 +177,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   bool canPillage(WConstCollective) const;
   void handlePillage(WCollective enemy);
   void handleRansom(bool pay);
-  static ViewObject getTrapObject(TrapType, bool built);
+  ViewObject getTrapObject(TrapType, bool built) const;
   void addToMemory(Position);
   void getSquareViewIndex(Position, bool canSee, ViewIndex&) const;
   void onSquareClick(Position);
@@ -242,5 +241,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   set<pair<UniqueEntity<Collective>::Id, string>> SERIAL(dismissedVillageInfos);
   void considerTransferingLostMinions();
   vector<PItem> retrievePillageItems(WCollective, vector<WItem> items);
+  AvatarVariant SERIAL(avatarVariant);
+  const vector<BuildInfo>& getBuildInfo() const;
 };
 

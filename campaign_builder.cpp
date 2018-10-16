@@ -259,16 +259,16 @@ void CampaignBuilder::setPlayerPos(Campaign& campaign, Vec2 pos, ViewId playerVi
 
 }
 
-static AvatarInfo::ImmigrationVariant getImmigrationVariant(CreatureId id) {
+static AvatarVariant getAvatarVariant(CreatureId id) {
   switch (id) {
     case CreatureId::KEEPER_KNIGHT:
     case CreatureId::KEEPER_KNIGHT_F:
-      return AvatarInfo::DARK_KNIGHT;
+      return AvatarVariant::DARK_KNIGHT;
     case CreatureId::KEEPER_MAGE:
     case CreatureId::KEEPER_MAGE_F:
-      return AvatarInfo::DARK_MAGE;
+      return AvatarVariant::DARK_MAGE;
     case CreatureId::DUKE_PLAYER:
-      return AvatarInfo::WHITE_KNIGHT;
+      return AvatarVariant::WHITE_KNIGHT;
     default:
       FATAL << "Immigration variant not handled for CreatureId = " << EnumInfo<CreatureId>::getString(id);
       return {};
@@ -282,7 +282,7 @@ AvatarInfo CampaignBuilder::getAvatarInfo() {
   if (!name.empty())
     ret->getName().setFirst(name);
   ret->getName().useFullTitle();
-  return {std::move(ret), getImmigrationVariant(id)};
+  return {std::move(ret), getAvatarVariant(id)};
 }
 
 
@@ -555,5 +555,5 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(function<optional<Retir
 
 CampaignSetup CampaignBuilder::getEmptyCampaign() {
   Campaign ret(Table<Campaign::SiteInfo>(1, 1), CampaignType::SINGLE_KEEPER, PlayerRole::KEEPER, "");
-  return CampaignSetup{ret, {PCreature(nullptr), AvatarInfo::DARK_MAGE}, "", "", false, {}};
+  return CampaignSetup{ret, {PCreature(nullptr), AvatarVariant::DARK_MAGE}, "", "", false, {}};
 }
