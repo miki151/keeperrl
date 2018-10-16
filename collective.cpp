@@ -1395,7 +1395,7 @@ int Collective::getPopulationSize() const {
 }
 
 int Collective::getMaxPopulation() const {
-  return populationIncrease + config->getMaxPopulation();
+  return populationIncrease + config->getMaxPopulation() + getCreatures(MinionTrait::INCREASE_POPULATION).size();
 }
 
 const DungeonLevel& Collective::getDungeonLevel() const {

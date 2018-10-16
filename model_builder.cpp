@@ -162,6 +162,7 @@ static vector<ImmigrantInfo> getDarkKeeperImmigration(RandomGen& random) {
         .addRequirement(CostInfo(CollectiveResourceId::GOLD, 12)),
     ImmigrantInfo(random.permutation({CreatureId::SPECIAL_HMBN, CreatureId::SPECIAL_HMBW,
             CreatureId::SPECIAL_HMGN, CreatureId::SPECIAL_HMGW}), {MinionTrait::FIGHTER})
+        .setLimit(4)
         .addRequirement(0.0, TechId::HUMANOID_MUT)
         .addRequirement(0.0, Pregnancy {})
         .addRequirement(CostInfo(CollectiveResourceId::GOLD, 100))
@@ -169,6 +170,7 @@ static vector<ImmigrantInfo> getDarkKeeperImmigration(RandomGen& random) {
         .addSpecialTrait(0.2, LastingEffect::INSANITY),
     ImmigrantInfo(random.permutation({CreatureId::SPECIAL_BMBN, CreatureId::SPECIAL_BMBW, CreatureId::SPECIAL_BMGN,
           CreatureId::SPECIAL_BMGW}), {MinionTrait::FIGHTER, MinionTrait::DOESNT_TRIGGER})
+        .setLimit(4)
         .addRequirement(0.0, TechId::BEAST_MUT)
         .addRequirement(0.0, Pregnancy {})
         .addRequirement(CostInfo(CollectiveResourceId::GOLD, 100))
@@ -189,8 +191,8 @@ static vector<ImmigrantInfo> getWhiteKeeperImmigration(RandomGen& random) {
         .setFrequency(0.3)
         .addRequirement(0.1, AttractionInfo{1, vector<AttractionType>({FurnitureType::BOOKCASE_WOOD})}),
     ImmigrantInfo(CreatureId::JESTER_PLAYER, {MinionTrait::FIGHTER})
-        .setFrequency(0.3)
-        .addRequirement(0.1, AttractionInfo{1, vector<AttractionType>({FurnitureType::THRONE})}),
+        .setFrequency(0.1)
+        .addRequirement(0.0, AttractionInfo{1, vector<AttractionType>({FurnitureType::THRONE})}),
     ImmigrantInfo(CreatureId::GNOME_PLAYER, {MinionTrait::FIGHTER, MinionTrait::NO_EQUIPMENT})
         .setFrequency(0.7)
         .addRequirement(0.1, AttractionInfo{1, vector<AttractionType>(
@@ -199,8 +201,10 @@ static vector<ImmigrantInfo> getWhiteKeeperImmigration(RandomGen& random) {
         .addSpecialTrait(0.03, {SkillId::FORGE, LastingEffect::INSANITY})
         .addSpecialTrait(0.03, {SkillId::JEWELER, LastingEffect::INSANITY}),
     ImmigrantInfo(CreatureId::DOG, {MinionTrait::FIGHTER, MinionTrait::DOESNT_TRIGGER})
-        .setFrequency(0.5)
-        .addRequirement(0.0, FurnitureType::BEAST_CAGE)
+        .setFrequency(0.2),
+    ImmigrantInfo({CreatureId::DONKEY, CreatureId::COW, CreatureId::HORSE, CreatureId::GOAT},
+            {MinionTrait::NO_LIMIT, MinionTrait::INCREASE_POPULATION})
+        .addRequirement(CostInfo(CollectiveResourceId::GOLD, 50)),
   };
 }
 
