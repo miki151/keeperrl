@@ -22,6 +22,7 @@
 #include "indexed_vector.h"
 #include "item_index.h"
 #include "item_counts.h"
+#include "entity_set.h"
 
 class Item;
 class Position;
@@ -46,6 +47,7 @@ class Inventory {
   int size() const;
   double getTotalWeight() const;
   void tick(Position);
+  bool containsAnyOf(const EntitySet<Item>&) const;
 
   bool isEmpty() const;
 

@@ -8,7 +8,6 @@ RICH_ENUM(CollectiveResourceId,
   IRON,
   ADA,
   STONE,
-  MANA,
   PRISONER_HEAD,
   CORPSE
 );

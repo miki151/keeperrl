@@ -22,6 +22,7 @@
 #include "inventory.h"
 #include "profiler.h"
 #include "portals.h"
+#include "fx_name.h"
 
 template <class Archive>
 void Position::serialize(Archive& ar, const unsigned int) {
@@ -47,7 +48,7 @@ Vec2 Position::getCoord() const {
   return coord;
 }
 
-WLevel Position::getLevel() const {
+Level* Position::getLevel() const {
   return level;
 }
 
@@ -213,6 +214,12 @@ optional<int> Position::getPortalIndex() const {
     return none;
 }
 
+double Position::getLightingEfficiency() const {
+  const double lightBase = 0.5;
+  const double flattenVal = 0.9;
+  return min(1.0, (lightBase + getLight() * (1 - lightBase)) / flattenVal);
+}
+
 WCreature Position::getCreature() const {
   //PROFILE;
   if (isValid())
@@ -266,6 +273,7 @@ void Position::globalMessage(const PlayerMessage& msg) const {
 vector<Position> Position::neighbors8() const {
   //PROFILE;
   vector<Position> ret;
+  ret.reserve(8);
   for (Vec2 v : coord.neighbors8())
     ret.push_back(Position(v, level));
   return ret;
@@ -274,6 +282,7 @@ vector<Position> Position::neighbors8() const {
 vector<Position> Position::neighbors4() const {
   //PROFILE;
   vector<Position> ret;
+  ret.reserve(4);
   for (Vec2 v : coord.neighbors4())
     ret.push_back(Position(v, level));
   return ret;
@@ -282,6 +291,7 @@ vector<Position> Position::neighbors4() const {
 vector<Position> Position::neighbors8(RandomGen& random) const {
   //PROFILE;
   vector<Position> ret;
+  ret.reserve(8);
   for (Vec2 v : coord.neighbors8(random))
     ret.push_back(Position(v, level));
   return ret;
@@ -290,6 +300,7 @@ vector<Position> Position::neighbors8(RandomGen& random) const {
 vector<Position> Position::neighbors4(RandomGen& random) const {
   //PROFILE;
   vector<Position> ret;
+  ret.reserve(4);
   for (Vec2 v : coord.neighbors4(random))
     ret.push_back(Position(v, level));
   return ret;
@@ -298,6 +309,7 @@ vector<Position> Position::neighbors4(RandomGen& random) const {
 vector<Position> Position::getRectangle(Rectangle rect) const {
   PROFILE;
   vector<Position> ret;
+  ret.reserve(rect.width() * rect.height());
   for (Vec2 v : rect.translate(coord))
     ret.emplace_back(v, level);
   return ret;
@@ -360,9 +372,14 @@ void Position::getViewIndex(ViewIndex& index, WConstCreature viewer) const {
     getSquare()->getViewIndex(index, viewer);
     if (isUnavailable())
       index.setHighlight(HighlightType::UNAVAILABLE);
+    if (isCovered() > 0)
+      index.setHighlight(HighlightType::INDOORS);
     for (auto furniture : getFurniture())
-      if (furniture->isVisibleTo(viewer) && furniture->getViewObject())
-        index.insert(*furniture->getViewObject());
+      if (furniture->isVisibleTo(viewer) && furniture->getViewObject()) {
+        auto obj = *furniture->getViewObject();
+        obj.setGenericId(level->getUniqueId() + coord.x * 2000 + coord.y);
+        index.insert(std::move(obj));
+      }
     if (index.noObjects())
       index.insert(ViewObject(ViewId::EMPTY, ViewLayer::FLOOR_BACKGROUND));
   }
@@ -388,7 +405,7 @@ const vector<WItem>& Position::getItems(ItemIndex index) const {
   }
 }
 
-PItem Position::removeItem(WItem it) {
+PItem Position::removeItem(WItem it) const {
   CHECK(isValid());
   return modSquare()->removeItem(*this, it);
 }
@@ -447,7 +464,7 @@ bool Position::canEnterEmpty(const MovementType& t, optional<FurnitureLayer> ign
     if (ignore == furniture->getLayer())
       continue;
     bool canEnter =
-        furniture->getMovementSet().canEnter(t, level->covered[coord], square->isOnFire(), square->getForbiddenTribe());
+        furniture->getMovementSet().canEnter(t, isCovered(), square->isOnFire(), square->getForbiddenTribe());
     if (furniture->overridesMovement())
       return canEnter;
     else
@@ -488,12 +505,40 @@ void Position::dropItems(vector<PItem> v) {
   }
 }
 
+constexpr int buildingSupportRadius = 5;
+
+void Position::updateBuildingSupport() const {
+  auto updatePosition = [](Position pos) {
+    if (!pos.isValid())
+      return;
+    if (pos.isBuildingSupport()) {
+      pos.setBuilding(true);
+      pos.setNeedsRenderUpdate(true);
+      return;
+    }
+    int numSupports = 0;
+    for (auto v2 : Vec2::directions4())
+      for (int i2 : Range(1, buildingSupportRadius))
+        if (pos.plus(v2 * i2).isBuildingSupport()) {
+          ++numSupports;
+          break;
+        }
+    pos.setBuilding(numSupports >= 2);
+    pos.setNeedsRenderUpdate(true);
+  };
+  for (auto v : Vec2::directions4())
+    for (int i : Range(1, buildingSupportRadius))
+      updatePosition(plus(v * i));
+  updatePosition(*this);
+}
+
 void Position::addFurniture(PFurniture f) const {
   PROFILE;
   auto furniture = f.get();
   level->setFurniture(coord, std::move(f));
   updateConnectivity();
   updateVisibility();
+  updateBuildingSupport();
   level->addLightSource(coord, furniture->getLightEmission());
   setNeedsRenderUpdate(true);
 }
@@ -535,6 +580,7 @@ void Position::removeFurniture(WConstFurniture f, PFurniture replace) const {
   updateConnectivity();
   updateVisibility();
   updateSupport();
+  updateBuildingSupport();
   if (replacePtr)
     level->addLightSource(coord, replacePtr->getLightEmission());
   setNeedsRenderUpdate(true);
@@ -549,6 +595,14 @@ bool Position::isWall() const {
   PROFILE;
   if (auto furniture = getFurniture(FurnitureLayer::MIDDLE))
     return furniture->isWall();
+  else
+    return false;
+}
+
+bool Position::isBuildingSupport() const {
+  PROFILE;
+  if (auto furniture = getFurniture(FurnitureLayer::MIDDLE))
+    return furniture->isBuildingSupport();
   else
     return false;
 }
@@ -634,13 +688,13 @@ void Position::setNeedsRenderUpdate(bool s) const {
     level->setNeedsRenderUpdate(getCoord(), s);
 }
 
-const ViewObject& Position::getViewObject() const {
+ViewId Position::getTopViewId() const {
   PROFILE;
   for (auto layer : ENUM_ALL_REVERSE(FurnitureLayer))
     if (auto furniture = getFurniture(layer))
       if (auto& obj = furniture->getViewObject())
-        return *obj;
-  return ViewObject::empty();
+        return obj->id();
+  return ViewId::EMPTY;
 }
 
 void Position::forbidMovementForTribe(TribeId t) {
@@ -693,9 +747,14 @@ double Position::getPoisonGasAmount() const {
 bool Position::isCovered() const {
   PROFILE;
   if (isValid())
-    return level->covered[coord];
+    return level->covered[coord] || level->building[coord];
   else
     return false;
+}
+
+void Position::setBuilding(bool value) const {
+  CHECK(isValid());
+  level->building[coord] = value;
 }
 
 bool Position::sunlightBurns() const {
@@ -865,14 +924,18 @@ vector<WCreature> Position::getAllCreatures(int range) const {
     return {};
 }
 
-void Position::moveCreature(Position pos) {
+void Position::moveCreature(Position pos, bool teleportEffect) {
   PROFILE;
   CHECK(isValid());
+  if (teleportEffect)
+    getGame()->addEvent(EventInfo::FX{*this, FXName::TELEPORT_OUT});
   if (isSameLevel(pos))
     level->moveCreature(getCreature(), getDir(pos));
   else if (isSameModel(pos))
     level->changeLevel(pos, getCreature());
   else pos.getLevel()->landCreature({pos}, getModel()->extractCreature(getCreature()));
+  if (teleportEffect)
+    getGame()->addEvent(EventInfo::FX{pos, FXName::TELEPORT_IN});
 }
 
 void Position::moveCreature(Vec2 direction) {

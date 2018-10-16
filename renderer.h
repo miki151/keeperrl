@@ -20,48 +20,8 @@
 #include "util.h"
 #include "file_path.h"
 #include "animation_id.h"
-
-struct Color : public SDL::SDL_Color {
-  Color(Uint8, Uint8, Uint8, Uint8 = 255);
-  Color transparency(int);
-  static Color f(double, double, double, double = 1.0);
-  Color operator* (Color);
-  Color();
-  void applyGl() const;
-
-  static Color WHITE;
-  static Color MAIN_MENU_ON;
-  static Color MAIN_MENU_OFF;
-  static Color YELLOW;
-  static Color LIGHT_BROWN;
-  static Color ORANGE_BROWN;
-  static Color BROWN;
-  static Color DARK_BROWN;
-  static Color LIGHT_GRAY;
-  static Color GRAY;
-  static Color ALMOST_GRAY;
-  static Color DARK_GRAY;
-  static Color ALMOST_BLACK;
-  static Color ALMOST_DARK_GRAY;
-  static Color BLACK;
-  static Color ALMOST_WHITE;
-  static Color GREEN;
-  static Color LIGHT_GREEN;
-  static Color DARK_GREEN;
-  static Color RED;
-  static Color LIGHT_RED;
-  static Color PINK;
-  static Color ORANGE;
-  static Color BLUE;
-  static Color DARK_BLUE;
-  static Color NIGHT_BLUE;
-  static Color LIGHT_BLUE;
-  static Color SKY_BLUE;
-  static Color PURPLE;
-  static Color VIOLET;
-  static Color TRANSLUCENT_BLACK;
-  static Color TRANSPARENT;
-};
+#include "color.h"
+#include "texture.h"
 
 enum class SpriteId {
   BUILDINGS,
@@ -77,33 +37,10 @@ class Clock;
 
 struct sth_stash;
 
-class Texture {
-  public:
-  Texture();
-  Texture(const Texture&) = delete;
-  Texture(Texture&&);
-  Texture& operator = (Texture&&);
-  Texture(const FilePath& path);
-  Texture(const FilePath& path, int px, int py, int kx, int ky);
-  explicit Texture(SDL::SDL_Surface*);
-  static optional<Texture> loadMaybe(const FilePath&);
-
-  optional<SDL::GLenum> loadFromMaybe(SDL::SDL_Surface*);
-  const Vec2& getSize() const;
-
-  ~Texture();
-
-  private:
-  friend class Renderer;
-  void addTexCoord(int x, int y) const;
-  optional<SDL::GLuint> texId;
-  Vec2 size;
-  Vec2 realSize;
-  optional<FilePath> path;
-};
-
 class Renderer {
-  public: 
+  public:
+    static constexpr int nominalSize = 24;
+
   class TileCoord {
     public:
     TileCoord();
@@ -116,7 +53,7 @@ class Renderer {
     int texNum;
   };
 
-  Renderer(Clock*, const string& windowTile, Vec2 nominalTileSize, const DirectoryPath& fontPath, const FilePath& cursorPath,
+  Renderer(Clock*, const string& windowTile, const DirectoryPath& fontPath, const FilePath& cursorPath,
       const FilePath& clickedCursorPath);
   void setFullscreen(bool);
   void setFullscreenMode(int);
@@ -130,8 +67,6 @@ class Renderer {
   static vector<string> getFullscreenResolutions();
   const static int textSize = 19;
   const static int smallTextSize = 14;
-  static SDL::SDL_Surface* createSurface(int w, int h);
-  static SDL::SDL_Surface* createPowerOfTwoSurface(SDL::SDL_Surface*);
   enum FontId { TEXT_FONT, TILE_FONT, SYMBOL_FONT };
   int getTextLength(const string& s, int size = textSize, FontId = TEXT_FONT);
   Vec2 getTextSize(const string& s, int size = textSize, FontId = TEXT_FONT);
@@ -189,7 +124,6 @@ class Renderer {
   void printSystemInfo(ostream&);
 
   const vector<TileCoord>& getTileCoord(const string&);
-  Vec2 getNominalSize() const;
   vector<Texture> tiles;
 
   static void putPixel(SDL::SDL_Surface*, Vec2, Color);
@@ -198,11 +132,13 @@ class Renderer {
   void loadTiles();
   void makeScreenshot(const FilePath&);
 
+  void flushSprites() { renderDeferredSprites(); }
+  Vec2 getTileSize(TileCoord coord) const { return tileDirectories[coord.texNum].size; }
+
   private:
   friend class Texture;
   optional<Texture> textTexture;
   Renderer(const Renderer&);
-  Vec2 nominalSize;
   map<string, vector<TileCoord>> tileCoords;
   struct AnimationInfo {
     Texture tex;

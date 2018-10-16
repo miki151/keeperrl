@@ -4,6 +4,7 @@
 #include "event_generator.h"
 #include "position.h"
 #include "model.h"
+#include "fx_info.h"
 
 class Model;
 class Technology;
@@ -36,13 +37,10 @@ namespace EventInfo {
   };
 
   struct Projectile {
-    ViewId viewId;
+    optional<FXInfo> fx;
+    optional<ViewId> viewId;
     Position begin;
     Position end;
-  };
-
-  struct Explosion {
-    Position pos;
   };
 
   struct ConqueredEnemy {
@@ -92,6 +90,12 @@ namespace EventInfo {
     FurnitureLayer layer;
   };
 
+  struct FX {
+    Position position;
+    FXInfo fx;
+    optional<Vec2> direction = none;
+  };
+
   struct ItemsEquipped {
     WCreature creature;
     vector<WItem> items;
@@ -111,9 +115,9 @@ namespace EventInfo {
   };
 
   class GameEvent : public variant<CreatureMoved, CreatureKilled, ItemsPickedUp, ItemsDropped, ItemsAppeared, Projectile,
-      Explosion, ConqueredEnemy, WonGame, TechbookRead, Alarm, CreatureTortured, CreatureStunned, MovementChanged,
+      ConqueredEnemy, WonGame, TechbookRead, Alarm, CreatureTortured, CreatureStunned, MovementChanged,
       TrapTriggered, TrapDisarmed, FurnitureDestroyed, ItemsEquipped, CreatureEvent, VisibilityChanged, RetiredGame,
-      CreatureAttacked> {
+      CreatureAttacked, FX> {
     using variant::variant;
   };
 

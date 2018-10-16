@@ -49,6 +49,10 @@
 #include "dummy_view.h"
 #include "sound.h"
 
+#include "fx_manager.h"
+#include "fx_renderer.h"
+#include "fx_view_manager.h"
+
 #ifndef VSTUDIO
 #include "stack_printer.h"
 #endif
@@ -336,12 +340,27 @@ static int keeperMain(po::parser& commandLineFlags) {
   Renderer renderer(
       &clock,
       "KeeperRL",
-      Vec2(24, 24),
       contribDataPath,
       freeDataPath.file("images/mouse_cursor.png"),
       freeDataPath.file("images/mouse_cursor2.png"));
   FatalLog.addOutput(DebugOutput::toString([&renderer](const string& s) { renderer.showError(s);}));
   UserErrorLog.addOutput(DebugOutput::toString([&renderer](const string& s) { renderer.showError(s);}));
+
+  unique_ptr<fx::FXManager> fxManager;
+  unique_ptr<fx::FXRenderer> fxRenderer;
+  unique_ptr<FXViewManager> fxViewManager;
+
+  if (paidDataPath.exists()) {
+    auto particlesPath = paidDataPath.subdirectory("images").subdirectory("particles");
+    if (particlesPath.exists()) {
+      INFO << "FX: initialization";
+      fxManager = std::make_unique<fx::FXManager>();
+      fxRenderer = std::make_unique<fx::FXRenderer>(particlesPath, *fxManager);
+      fxRenderer->loadTextures();
+      fxViewManager = std::make_unique<FXViewManager>(fxManager.get(), fxRenderer.get());
+    }
+  }
+
   userPath.createIfDoesntExist();
   auto settingsPath = userPath.file("options.txt");
   if (commandLineFlags["restore_settings"].was_set())
@@ -418,7 +437,7 @@ static int keeperMain(po::parser& commandLineFlags) {
 #ifndef RELEASE
   InfoLog.addOutput(DebugOutput::toString([&view](const string& s) { view->logMessage(s);}));
 #endif
-  view->initialize();
+  view->initialize(std::move(fxRenderer), std::move(fxViewManager));
   if (commandLineFlags["battle_level"].was_set() && commandLineFlags["battle_view"].was_set()) {
     battleTest(view.get());
     return 0;

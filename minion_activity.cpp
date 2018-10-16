@@ -152,14 +152,13 @@ vector<Position> MinionActivities::getAllPositions(WConstCollective collective, 
   return ret;
 }
 
-PTask MinionActivities::getDropItemsTask(WCollective collective, WConstCreature creature) {
+static PTask getDropItemsTask(WCollective collective, WConstCreature creature) {
   auto& config = collective->getConfig();
   for (const ItemFetchInfo& elem : config.getFetchInfo()) {
     vector<WItem> items = creature->getEquipment().getItems(elem.index).filter([&elem, &collective, &creature](WConstItem item) {
         return elem.predicate(collective, item) && !collective->getMinionEquipment().isOwner(item, creature); });
-    const auto& destination = elem.destinationFun(collective);
-    if (!items.empty() && !destination.empty())
-      return Task::dropItems(items, vector<Position>(destination.begin(), destination.end()));
+    if (!items.empty() && !collective->getStoragePositions(elem.storageId).empty())
+      return Task::dropItems(items, elem.storageId, collective);
   }
   return nullptr;
 };
@@ -177,8 +176,7 @@ WTask MinionActivities::getExisting(WCollective collective, WCreature c, MinionA
 }
 
 PTask MinionActivities::generateDropTask(WCollective collective, WCreature c, MinionActivity task) {
-  if (CollectiveConfig::getActivityInfo(task).type == MinionActivityInfo::WORKER &&
-      task != MinionActivity::HAULING)
+  if (task != MinionActivity::HAULING)
     if (PTask ret = getDropItemsTask(collective, c))
       return ret;
   return nullptr;
@@ -246,9 +244,6 @@ PTask MinionActivities::generate(WCollective collective, WCreature c, MinionActi
       return Task::spider(territory.getAll().front(), territory.getExtended(3));
     }
     case MinionActivityInfo::WORKER: {
-      if (task == MinionActivity::HAULING)
-        if (PTask ret = getDropItemsTask(collective, c))
-          return ret;
       return nullptr;
     }
   }

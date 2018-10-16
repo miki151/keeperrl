@@ -51,7 +51,7 @@ class WindowView: public View {
   static View* createReplayView(InputArchive& ifs, ViewParams);
 
   WindowView(ViewParams); 
-  virtual void initialize() override;
+  virtual void initialize(unique_ptr<fx::FXRenderer>, unique_ptr<FXViewManager>) override;
   virtual void reset() override;
   virtual void displaySplash(const ProgressMeter*, const string&, SplashType, function<void()> cancelFun) override;
   virtual void clearSplash() override;
@@ -69,8 +69,9 @@ class WindowView: public View {
   virtual PlayerRoleChoice getPlayerRoleChoice(optional<PlayerRoleChoice> initial) override;
   virtual optional<Vec2> chooseDirection(Vec2 playerPos, const string& message) override;
   virtual bool yesOrNoPrompt(const string& message, bool defaultNo) override;
-  virtual void animateObject(Vec2 begin, Vec2 end, ViewId object) override;
+  virtual void animateObject(Vec2 begin, Vec2 end, optional<ViewId> object, optional<FXInfo> fx) override;
   virtual void animation(Vec2 pos, AnimationId, Dir orientation) override;
+  virtual void animation(const FXSpawnInfo&) override;
   virtual double getGameSpeed() override;
   virtual optional<int> chooseAtMouse(const vector<string>& elems) override;
 
@@ -254,4 +255,6 @@ class WindowView: public View {
   FileSharing* bugreportSharing;
   DirectoryPath bugreportDir;
   string installId;
+  void rebuildMinimapGui();
+  fx::FXRenderer* fxRenderer;
 };

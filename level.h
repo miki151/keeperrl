@@ -78,6 +78,8 @@ class Level : public OwnedObject<Level> {
   bool landCreature(vector<Position> landing, PCreature);
   bool landCreature(vector<Position> landing, WCreature);
 
+  optional<Position> getClosestLanding(vector<Position> landing, WCreature) const;
+
   /** Returns the landing squares for given direction and stair key. See Square::getLandingLink() */
   vector<Position> getLandingSquares(StairKey) const;
   Position getLandingSquare(StairKey, Vec2 travelDir) const;
@@ -204,6 +206,7 @@ class Level : public OwnedObject<Level> {
   string SERIAL(name);
   Table<double> SERIAL(sunlight);
   Table<bool> SERIAL(covered);
+  Table<bool> SERIAL(building);
   HeapAllocated<CreatureBucketMap> SERIAL(bucketMap);
   Table<double> SERIAL(lightAmount);
   Table<double> SERIAL(lightCapAmount);
@@ -215,11 +218,10 @@ class Level : public OwnedObject<Level> {
   struct Private {};
 
   static PLevel create(SquareArray s, FurnitureArray f, WModel m, const string& n, Table<double> sun, LevelId id,
-      Table<bool> cover, Table<bool> unavailable);
+      Table<bool> cover, Table<bool> building, Table<bool> unavailable);
 
   public:
-  Level(Private, SquareArray, FurnitureArray, WModel, const string& name, Table<double> sunlight, LevelId, Table<bool> cover);
-
+  Level(Private, SquareArray, FurnitureArray, WModel, const string& name, Table<double> sunlight, LevelId);
 
   private:
   void addLightSource(Vec2 pos, double radius, int numLight);
@@ -231,5 +233,6 @@ class Level : public OwnedObject<Level> {
   bool SERIAL(noDiagonalPassing) = false;
   void updateCreatureLight(Vec2, int diff);
   HeapAllocated<Portals> SERIAL(portals);
+  bool isCovered(Vec2) const;
 };
 

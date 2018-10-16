@@ -41,6 +41,7 @@
 #include "furniture.h"
 #include "movement_set.h"
 #include "weapon_info.h"
+#include "fx_name.h"
 
 
 vector<WCreature> Effect::summonCreatures(Position pos, int radius, vector<PCreature> creatures, TimeInterval delay) {
@@ -96,13 +97,22 @@ void Effect::emitPoisonGas(Position pos, double amount, bool msg) {
   }
 }
 
+static void summonFX(WCreature c) {
+  auto color = Color(240, 146, 184);
+  // TODO: color depending on creature type ?
+
+  c->getGame()->addEvent(EventInfo::FX{c->getPosition(), {FXName::SPAWN, color}});
+}
+
 vector<WCreature> Effect::summon(WCreature c, CreatureId id, int num, TimeInterval ttl, TimeInterval delay) {
   vector<PCreature> creatures;
   for (int i : Range(num))
     creatures.push_back(CreatureFactory::fromId(id, c->getTribeId(), MonsterAIFactory::summoned(c)));
   auto ret = summonCreatures(c, 2, std::move(creatures), delay);
-  for (auto c : ret)
+  for (auto c : ret) {
     c->addEffect(LastingEffect::SUMMONED, ttl, false);
+    summonFX(c);
+  }
   return ret;
 }
 
@@ -111,8 +121,10 @@ vector<WCreature> Effect::summon(Position pos, CreatureFactory& factory, int num
   for (int i : Range(num))
     creatures.push_back(factory.random(MonsterAIFactory::monster()));
   auto ret = summonCreatures(pos, 2, std::move(creatures), delay);
-  for (auto c : ret)
+  for (auto c : ret) {
     c->addEffect(LastingEffect::SUMMONED, ttl, false);
+    summonFX(c);
+  }
   return ret;
 }
 
@@ -270,7 +282,7 @@ static bool isConsideredHostile(const Effect& effect) {
 }
 
 void Effect::Teleport::applyToCreature(WCreature c, WCreature attacker) const {
-  PROFILE;
+  PROFILE_BLOCK("Teleport::applyToCreature");
   Rectangle area = Rectangle::centered(Vec2(0, 0), 12);
   int infinity = 10000;
   PositionMap<int> weight;
@@ -315,7 +327,7 @@ void Effect::Teleport::applyToCreature(WCreature c, WCreature attacker) const {
   }
   CHECK(!good.empty());
   c->you(MsgType::TELE_DISAPPEAR, "");
-  c->getPosition().moveCreature(Random.choose(good));
+  c->getPosition().moveCreature(Random.choose(good), true);
   c->you(MsgType::TELE_APPEAR, "");
 }
 
@@ -468,7 +480,7 @@ string Effect::Deception::getDescription() const {
 
 void Effect::CircularBlast::applyToCreature(WCreature c, WCreature attacker) const {
   for (Vec2 v : Vec2::directions8(Random))
-    applyDirected(c, v, DirEffectType(1, DirEffectId::BLAST));
+    applyDirected(c, v, DirEffectType(1, DirEffectId::BLAST), {FXName::NO_EFFECT}, none);
 }
 
 string Effect::CircularBlast::getName() const {
@@ -776,29 +788,46 @@ static optional<ViewId> getProjectile(const DirEffectType& effect) {
   }
 }
 
-void applyDirected(WCreature c, Vec2 direction, const DirEffectType& type) {
+static void addSplashFX(WCreature victim, const FXInfo& splashFX) {
+  auto pos = victim->getPosition();
+  victim->getGame()->addEvent(EventInfo::FX{pos, splashFX});
+}
+
+void applyDirected(WCreature c, Vec2 direction, const DirEffectType& type, optional<FXInfo> fx,
+    optional<FXInfo> splashFX) {
   auto begin = c->getPosition();
   int range = type.getRange();
   for (Vec2 v = direction; v.length8() <= range; v += direction)
-    if (!c->getPosition().plus(v).canEnterEmpty(MovementType({MovementTrait::FLY, MovementTrait::WALK}))) {
+    if (!c->getPosition().plus(v).canEnterEmpty(
+          MovementType({MovementTrait::FLY, MovementTrait::WALK}).setFireResistant())) {
       range = v.length8();
       break;
     }
-  if (auto projectile = getProjectile(type))
-    c->getGame()->addEvent(EventInfo::Projectile{*projectile, begin, begin.plus(direction * range)});
+
+  c->getGame()->addEvent(
+      EventInfo::Projectile{fx, getProjectile(type), begin, begin.plus(direction * range)});
+
   switch (type.getId()) {
     case DirEffectId::BLAST:
       for (Vec2 v = direction * range; v.length4() >= 1; v -= direction)
         airBlast(c, c->getPosition().plus(v), direction);
       break;
     case DirEffectId::FIREBALL:
-      for (Vec2 v = direction; v.length4() <= range; v += direction)
-        c->getPosition().plus(v).fireDamage(1);
+      for (Vec2 v = direction; v.length8() <= range; v += direction) {
+        auto newPos = c->getPosition().plus(v);
+        newPos.fireDamage(1);
+        if (splashFX)
+          if (WCreature victim = newPos.getCreature())
+            addSplashFX(victim, *splashFX);
+      }
       break;
     case DirEffectId::CREATURE_EFFECT:
-      for (Vec2 v = direction * range; v.length4() >= 1; v -= direction)
-        if (WCreature victim = c->getPosition().plus(v).getCreature())
+      for (Vec2 v = direction; v.length8() <= range; v += direction)
+        if (WCreature victim = c->getPosition().plus(v).getCreature()) {
           type.get<Effect>().applyToCreature(victim, c);
+          if (splashFX)
+            addSplashFX(victim, *splashFX);
+        }
       break;
   }
 }

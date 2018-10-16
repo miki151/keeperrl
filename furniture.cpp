@@ -19,6 +19,7 @@
 #include "furniture_click.h"
 #include "furniture_tick.h"
 #include "movement_set.h"
+#include "fx_info.h"
 
 static string makePlural(const string& s) {
   if (s.empty())
@@ -51,7 +52,8 @@ void Furniture::serialize(Archive& ar, const unsigned) {
   ar(name, pluralName, type, movementSet, fire, burntRemains, destroyedRemains, destroyActions, itemDrop);
   ar(blockVision, usageType, clickType, tickType, usageTime, overrideMovement, wall, creator, createdTime);
   ar(constructMessage, layer, entryType, lightEmission, canHideHere, warning, summonedElement, droppedItems);
-  ar(canBuildBridge, noProjectiles, clearFogOfWar, removeWithCreaturePresent, xForgetAfterBuilding, showEfficiency);
+  ar(canBuildBridge, noProjectiles, clearFogOfWar, removeWithCreaturePresent, xForgetAfterBuilding);
+  ar(luxuryInfo, buildingSupport);
 }
 
 SERIALIZABLE(Furniture)
@@ -93,6 +95,12 @@ bool Furniture::isWall(FurnitureType type) {
   static EnumMap<FurnitureType, bool> layers(
       [] (FurnitureType type) { return FurnitureFactory::get(type, TribeId::getHostile())->isWall(); });
   return layers[type];
+}
+
+LuxuryInfo Furniture::getLuxuryInfo(FurnitureType type) {
+  static EnumMap<FurnitureType, LuxuryInfo> luxury(
+      [] (FurnitureType type) { return FurnitureFactory::get(type, TribeId::getHostile())->getLuxuryInfo(); });
+  return luxury[type];
 }
 
 pair<double, optional<int>> getPopulationIncreaseInfo(FurnitureType type) {
@@ -158,6 +166,8 @@ void Furniture::destroy(Position pos, const DestroyAction& action) {
     pos.dropItems(itemDrop->random());
   if (usageType)
     FurnitureUsage::beforeRemoved(*usageType, pos);
+  if (auto fxInfo = destroyFXInfo(type))
+    pos.getGame()->addEvent(EventInfo::FX{pos, *fxInfo});
   pos.removeFurniture(this, destroyedRemains ? FurnitureFactory::get(*destroyedRemains, getTribe()) : nullptr);
   pos.getGame()->addEvent(EventInfo::FurnitureDestroyed{pos, myType, myLayer});
 }
@@ -169,6 +179,8 @@ void Furniture::tryToDestroyBy(Position pos, WCreature c, const DestroyAction& a
     if (auto skill = action.getDestroyingSkillMultiplier())
       damage = damage * c->getAttributes().getSkills().getValue(*skill);
     *strength -= damage;
+    if (auto fxInfo = tryDestroyFXInfo(type))
+      pos.getGame()->addEvent(EventInfo::FX{pos, *fxInfo});
     if (*strength <= 0)
       destroy(pos, action);
   }
@@ -259,6 +271,10 @@ bool Furniture::isWall() const {
   return wall;
 }
 
+bool Furniture::isBuildingSupport() const {
+  return buildingSupport;
+}
+
 void Furniture::onConstructedBy(WCreature c) {
   creator = c;
   createdTime = c->getLocalTime();
@@ -327,11 +343,17 @@ bool Furniture::isClearFogOfWar() const {
 }
 
 bool Furniture::forgetAfterBuilding() const {
-  return isWall() || xForgetAfterBuilding;
+  return xForgetAfterBuilding;
 }
 
-bool Furniture::isShowEfficiency() const {
-  return showEfficiency;
+void Furniture::onCreatureWalkedOver(Position pos, Vec2 direction) const {
+  if (auto fxInfo = walkOverFXInfo(type))
+    pos.getGame()->addEvent((EventInfo::FX{pos, *fxInfo, direction}));
+}
+
+void Furniture::onCreatureWalkedInto(Position pos, Vec2 direction) const {
+  if (auto fxInfo = walkIntoFXInfo(type))
+    pos.getGame()->addEvent((EventInfo::FX{pos, *fxInfo, direction}));
 }
 
 vector<PItem> Furniture::dropItems(Position pos, vector<PItem> v) const {
@@ -343,6 +365,10 @@ vector<PItem> Furniture::dropItems(Position pos, vector<PItem> v) const {
 
 bool Furniture::canBuildBridgeOver() const {
   return canBuildBridge;
+}
+
+const LuxuryInfo&Furniture::getLuxuryInfo() const {
+  return luxuryInfo;
 }
 
 Furniture& Furniture::setBlocking() {
@@ -467,6 +493,11 @@ Furniture& Furniture::setIsWall() {
   return *this;
 }
 
+Furniture&Furniture::setIsBuildingSupport() {
+  buildingSupport = true;
+  return *this;
+}
+
 Furniture& Furniture::setOverrideMovement() {
   overrideMovement = true;
   return *this;
@@ -487,8 +518,8 @@ Furniture& Furniture::setForgetAfterBuilding() {
   return *this;
 }
 
-Furniture& Furniture::setShowEfficiency() {
-  showEfficiency = true;
+Furniture& Furniture::setLuxury(double luxury) {
+  luxuryInfo.luxury = luxury;
   return *this;
 }
 

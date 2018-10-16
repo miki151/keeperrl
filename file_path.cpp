@@ -41,6 +41,8 @@ FilePath::FilePath(const std::string& name, const std::string& path) : filename(
 
 }
 
+bool FilePath::operator==(const FilePath &rhs) const { return fullPath == rhs.fullPath; }
+
 std::ostream&operator <<(std::ostream& d, const FilePath& path) {
   return d << path.getPath();
 }

@@ -31,6 +31,7 @@
 #include "game_info.h"
 #include "equipment.h"
 #include "spell.h"
+#include "spell_map.h"
 #include "creature_name.h"
 #include "view.h"
 #include "view_index.h"
@@ -88,12 +89,7 @@ void Player::onEvent(const GameEvent& event) {
       },
       [&](const Projectile& info) {
         if (creature->canSee(info.begin) || creature->canSee(info.end))
-          getView()->animateObject(info.begin.getCoord(), info.end.getCoord(), info.viewId);
-      },
-      [&](const Explosion& info) {
-        if (creature->getPosition().isSameLevel(info.pos)) {
-          privateMessage("BOOM!");
-        }
+          getView()->animateObject(info.begin.getCoord(), info.end.getCoord(), info.viewId, info.fx);
       },
       [&](const CreatureKilled& info) {
         auto pos = info.victim->getPosition();
@@ -130,6 +126,10 @@ void Player::onEvent(const GameEvent& event) {
           else
             privateMessage(PlayerMessage("An unnamed tribe is destroyed.", MessagePriority::CRITICAL));
         }
+      },
+      [&](const FX& info) {
+        if (creature->canSee(info.position))
+          getView()->animation(FXSpawnInfo(info.fx, info.position.getCoord(), info.direction.value_or(Vec2(0, 0))));
       },
       [&](const WonGame&) {
         if (adventurer)
@@ -733,6 +733,31 @@ void Player::makeMove() {
         creature->addPermanentEffect(LastingEffect::SPEED, true);
         creature->addPermanentEffect(LastingEffect::FLYING, true);
         break;
+      case UserInputId::CHEAT_SPELLS: {
+        auto &spellMap = creature->getAttributes().getSpellMap();
+        for (auto spell : EnumAll<SpellId>())
+          spellMap.add(spell);
+        spellMap.setAllReady();
+        break;
+      }
+      case UserInputId::CHEAT_POTIONS: {
+        auto &items = creature->getEquipment().getItems();
+        for (auto leType : ENUM_ALL(LastingEffect)) {
+          bool found = false;
+          for (auto &item : items)
+            if (auto &eff = item->getEffect())
+              if (auto le = eff->getValueMaybe<Effect::Lasting>())
+                if (le->lastingEffect == leType) {
+                  found = true;
+                  break;
+                }
+          if (!found) {
+            ItemType itemType{ItemType::Potion{Effect::Lasting{leType}}};
+            creature->take(itemType.get());
+          }
+        }
+        break;
+      }
   #endif
       default: break;
     }
@@ -873,7 +898,7 @@ void Player::getViewIndex(Vec2 pos, ViewIndex& index) const {
   if (canSee)
     position.getViewIndex(index, creature);
   else
-    index.setHiddenId(position.getViewObject().id());
+    index.setHiddenId(position.getTopViewId());
   if (!canSee)
     if (auto memIndex = getMemory().getViewIndex(position))
       index.mergeFromMemory(*memIndex);
@@ -915,7 +940,7 @@ void Player::getViewIndex(Vec2 pos, ViewIndex& index) const {
         object.setExtendedActions(extended);
       }
     } else if (creature->isUnknownAttacker(c))
-      index.insert(copyOf(ViewObject::unknownMonster()));
+      index.insert(ViewObject(ViewId::UNKNOWN_MONSTER, ViewLayer::CREATURE));
   }
   if (unknownLocations->contains(position))
     index.insert(ViewObject(ViewId::UNKNOWN_MONSTER, ViewLayer::TORCH2, "Surprise"));

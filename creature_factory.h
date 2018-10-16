@@ -108,10 +108,18 @@ RICH_ENUM(CreatureId,
     OGRE,
     CHICKEN,
 
+    PRIEST_PLAYER,
+    KNIGHT_PLAYER,
+    JESTER_PLAYER,
+    DUKE_PLAYER,
+    ARCHER_PLAYER,
+    GNOME_PLAYER,
+    PESEANT_PLAYER,
+
     PRIEST,
     KNIGHT,
     JESTER,
-    AVATAR,
+    DUKE,
     ARCHER,
     PESEANT,
     PESEANT_PRISONER,
@@ -220,7 +228,8 @@ class CreatureFactory {
   static PCreature get(CreatureId, TribeId, MonsterAIFactory);
   static PCreature get(CreatureAttributes, TribeId, const ControllerFactory&);
   static CreatureAttributes getAttributesFromId(CreatureId);
-  static CreatureAttributes getAttributes(CreatureId id);
+  static CreatureAttributes getAttributes(CreatureId);
+
   TribeId getTribeFor(CreatureId);
   optional<TribeId> SERIAL(tribe);
   vector<CreatureId> SERIAL(creatures);

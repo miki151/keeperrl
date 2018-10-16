@@ -11,18 +11,19 @@ GCC = g++
 endif
 LD = $(GCC)
 
-ifndef RELEASE
-CFLAGS += -Werror -Wimplicit-fallthrough
-LDFLAGS += -fuse-ld=lld
-endif
+DEBUG_LD=lld
 
+ifndef RELEASE
+CFLAGS += -Werror -Wimplicit-fallthrough -Wno-unused-function
+LDFLAGS += -fuse-ld=$(DEBUG_LD)
+endif
 
 ifdef OSX
 LDFLAGS += -Wl -L/usr/local/opt/openal-soft/lib
 CFLAGS += -stdlib=libc++ -DOSX -mmacosx-version-min=10.7
 CFLAGS += -I/usr/local/opt/openal-soft/include
 else
-LDFLAGS += -Wl,-rpath=$(RPATH)
+LDFLAGS += -Wl,--gdb-index -Wl,-rpath=$(RPATH)
 endif
 
 ifdef DATA_DIR
@@ -115,7 +116,7 @@ compile: gen_version $(NAME)
 $(OBJDIR)/stdafx.h.gch: stdafx.h
 	$(GCC) -x c++-header $< -MMD $(CFLAGS) -o $@
 
-ifndef OPT
+ifndef RELEASE
 PCH = $(OBJDIR)/stdafx.h.gch
 PCHINC = -include-pch $(OBJDIR)/stdafx.h.gch
 endif

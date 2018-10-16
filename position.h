@@ -37,7 +37,7 @@ class Position {
   string getName() const;
   Position withCoord(Vec2 newCoord) const;
   Vec2 getCoord() const;
-  WLevel getLevel() const;
+  Level* getLevel() const;
   optional<StairKey> getLandingLink() const;
  
   bool isValid() const;
@@ -64,12 +64,13 @@ class Position {
   void getViewIndex(ViewIndex&, WConstCreature viewer) const;
   const vector<WItem>& getItems() const;
   const vector<WItem>& getItems(ItemIndex) const;
-  PItem removeItem(WItem);
+  PItem removeItem(WItem) const;
   Inventory& modInventory() const;
   const Inventory& getInventory() const;
   vector<PItem> removeItems(vector<WItem>);
   bool canConstruct(FurnitureType) const;
   bool isWall() const;
+  bool isBuildingSupport() const;
   void removeFurniture(WConstFurniture, PFurniture replace = nullptr) const;
   void addFurniture(PFurniture) const;
   bool isUnavailable() const;
@@ -84,7 +85,7 @@ class Position {
   void setNeedsRenderUpdate(bool) const;
   bool needsMemoryUpdate() const;
   void setNeedsMemoryUpdate(bool) const;
-  const ViewObject& getViewObject() const;
+  ViewId getTopViewId() const;
   void forbidMovementForTribe(TribeId);
   void allowMovementForTribe(TribeId);
   bool isTribeForbidden(TribeId) const;
@@ -114,7 +115,7 @@ class Position {
   void updateMovementDueToFire() const;
   vector<WCreature> getAllCreatures(int range) const;
   void moveCreature(Vec2 direction);
-  void moveCreature(Position);
+  void moveCreature(Position, bool teleportEffect = false);
   bool canMoveCreature(Vec2 direction) const;
   bool canMoveCreature(Position) const;
   void swapCreatures(WCreature);
@@ -131,6 +132,7 @@ class Position {
   void registerPortal();
   void removePortal();
   optional<int> getPortalIndex() const;
+  double getLightingEfficiency() const;
 
   SERIALIZATION_DECL(Position)
   int getHash() const;
@@ -142,6 +144,8 @@ class Position {
   Level* level = nullptr;
   bool SERIAL(valid) = false;
   void updateSupport() const;
+  void updateBuildingSupport() const;
+  void setBuilding(bool value) const;
 };
 
 template <>

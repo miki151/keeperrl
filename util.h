@@ -208,8 +208,8 @@ class Range {
 
     private:
     int ind;
-    int min;
-    int max;
+    //int min;
+    //int max;
     int increment;
   };
 
@@ -284,7 +284,7 @@ class Rectangle {
 
     private:
     Vec2 pos;
-    int px, py, kx, ky;
+    int /*px, */py, /*kx, */ky;
   };
 
   Iter begin() const;
@@ -388,6 +388,9 @@ class EnumAll {
   Iter b;
   Iter e;
 };
+
+#define ENUM_STRING(e) (EnumInfo<std::remove_cv<std::remove_reference<decltype(e)>::type>::type>::getString(e))
+#define ENUM_CSTRING(e) (EnumInfo<std::remove_cv<std::remove_reference<decltype(e)>::type>::type>::getString(e).c_str())
 
 #define ENUM_ALL(X) EnumAll<X>()
 #define ENUM_ALL_REVERSE(X) EnumAll<X>(EnumAll<X>::Reverse{})
@@ -641,8 +644,12 @@ class RandomGen {
   int get(const vector<double>& weights);
   double getDouble();
   double getDouble(double a, double b);
+  pair<float, float> getFloat2Fast();
+  float getFloat(float a, float b);
+  float getFloatFast(float a, float b);
   bool roll(int chance);
   bool chance(double chance);
+  bool chance(float chance);
   template <typename T>
   T choose(const vector<T>& v, const vector<double>& p) {
     CHECK(v.size() == p.size());
@@ -1608,8 +1615,8 @@ optional<typename Map::mapped_type&> getReferenceMaybe(Map& m, const Key& key) {
     return none;
 }
 
-template <typename Key, typename Map>
-optional<typename Map::mapped_type> getValueMaybe(const Map& m, const Key& key) {
+template <typename Map>
+optional<typename Map::mapped_type> getValueMaybe(const Map& m, const typename Map::key_type& key) {
   auto it = m.find(key);
   if (it != m.end())
     return it->second;
@@ -1668,3 +1675,11 @@ struct EmptyStruct {
 #define EMPTY_STRUCT(Name) \
 struct _Tag123##Name {};\
 using Name = EmptyStruct<_Tag123##Name>
+
+template <class T> constexpr bool isOneOf(const T& value) {
+  return false;
+}
+template <class T, class Arg1, class... Args>
+constexpr bool isOneOf(const T& value, const Arg1& arg1, const Args&... args) {
+  return value == arg1 || isOneOf(value, args...);
+}

@@ -46,7 +46,6 @@ class Technology : public Singleton<Technology, TechId> {
   Technology(const string& name, const string& description, int cost, const vector<TechId>& prerequisites = {},
       bool canResearch = true);
   const string& getName() const;
-  CostInfo getCost() const;
   bool canResearch() const;
   Technology* setTutorialHighlight(TutorialHighlight);
   const string& getDescription() const;

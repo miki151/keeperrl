@@ -27,7 +27,7 @@ static double getDefaultWeight(Body::Size size) {
   }
 }
 
-SERIALIZE_DEF(Body, xhumanoid, size, weight, bodyParts, injuredBodyParts, lostBodyParts, material, health, minionFood, deathSound, carryLimit, intrinsicAttacks, canAlwaysPush)
+SERIALIZE_DEF(Body, xhumanoid, size, weight, bodyParts, injuredBodyParts, lostBodyParts, material, health, minionFood, deathSound, carryLimit, intrinsicAttacks, minPushSize)
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Body)
 
@@ -49,9 +49,10 @@ static int getDefaultIntrinsicDamage(Body::Size size) {
   }
 }
 
-Body::Body(bool humanoid, Material m, Size s) : xhumanoid(humanoid), size(s),
+Body::Body(bool humanoid, Material m, Size size) : xhumanoid(humanoid), size(size),
     weight(getDefaultWeight(size)), material(m),
-    deathSound(humanoid ? SoundId::HUMANOID_DEATH : SoundId::BEAST_DEATH), carryLimit(getDefaultCarryLimit(size)) {
+    deathSound(humanoid ? SoundId::HUMANOID_DEATH : SoundId::BEAST_DEATH), carryLimit(getDefaultCarryLimit(size)),
+    minPushSize(Size((int)size + 1)) {
   if (humanoid)
     setHumanoidBodyParts(getDefaultIntrinsicDamage(size));
 }
@@ -102,8 +103,8 @@ void Body::setIntrinsicAttack(BodyPart part, IntrinsicAttack attack) {
   intrinsicAttacks[part] = std::move(attack);
 }
 
-void Body::setCanAlwaysPush() {
-  canAlwaysPush = true;
+void Body::setMinPushSize(Body::Size size) {
+  minPushSize = size;
 }
 
 WItem Body::chooseRandomWeapon(WItem weapon) const {
@@ -911,7 +912,7 @@ bool Body::needsToSleep() const {
 }
 
 bool Body::canPush(const Body& other) {
-  return int(size) > int(other.size) || other.canAlwaysPush;
+  return int(size) >= int(other.minPushSize);
 }
 
 bool Body::canPerformRituals() const {

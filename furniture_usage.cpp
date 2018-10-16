@@ -17,6 +17,10 @@
 #include "level.h"
 #include "sound.h"
 #include "body.h"
+#include "creature_attributes.h"
+#include "gender.h"
+#include "collective.h"
+#include "territory.h"
 
 struct ChestInfo {
   FurnitureType openedType;
@@ -63,55 +67,92 @@ static void usePortal(Position pos, WCreature c) {
     for (auto f : otherPos->getFurniture())
       if (f->getUsageType() == FurnitureUsageType::PORTAL) {
         if (pos.canMoveCreature(*otherPos)) {
-          pos.moveCreature(*otherPos);
+          pos.moveCreature(*otherPos, true);
           return;
         }
         for (Position v : otherPos->neighbors8(Random))
           if (pos.canMoveCreature(v)) {
-            pos.moveCreature(v);
+            pos.moveCreature(v, true);
             return;
           }
       }
   c->privateMessage("The portal is inactive. Create another one to open a connection.");
 }
 
+static void sitOnThrone(Position pos, WConstFurniture furniture, WCreature c) {
+  c->thirdPerson(c->getName().the() + " sits on the " + furniture->getName());
+  c->secondPerson("You sit on the " + furniture->getName());
+  if (furniture->getTribe() == c->getTribeId())
+    c->privateMessage("Frankly, it's not as exciting as it sounds");
+  else {
+    auto collective = [&]() -> WCollective {
+      for (auto col : c->getGame()->getCollectives())
+        if (col->getTerritory().contains(pos))
+          return col;
+      return nullptr;
+    }();
+    if (!collective)
+      return;
+    bool wasTeleported = false;
+    auto tryTeleporting = [&] (WCreature enemy) {
+      if (enemy->getPosition().dist8(pos) > 3 || !c->canSee(enemy))
+        if (auto landing = pos.getLevel()->getClosestLanding({pos}, enemy)) {
+          enemy->getPosition().moveCreature(*landing, true);
+          wasTeleported = true;
+        }
+    };
+    for (auto enemy : collective->getCreatures(MinionTrait::FIGHTER))
+      tryTeleporting(enemy);
+    if (collective->getLeader())
+      tryTeleporting(collective->getLeader());
+    if (wasTeleported)
+      c->privateMessage(PlayerMessage("Thy audience hath been summoned, "_s + c->getAttributes().getGender().sireOrDame(),
+          MessagePriority::HIGH));
+    else
+      c->privateMessage("Nothing happens");
+  }
+}
+
 void FurnitureUsage::handle(FurnitureUsageType type, Position pos, WConstFurniture furniture, WCreature c) {
   CHECK(c != nullptr);
   switch (type) {
     case FurnitureUsageType::CHEST:
-      useChest(pos, furniture, c, ChestInfo {
-                 FurnitureType::OPENED_CHEST,
-                 ChestInfo::CreatureInfo {
-                   CreatureFactory::singleCreature(TribeId::getPest(), CreatureId::RAT),
-                   10,
-                   Random.get(3, 6),
-                   "It's full of rats!",
-                 },
-                 ChestInfo::ItemInfo {
-                   ItemFactory::chest(),
-                   "There is an item inside"
-                 }
-               });
+      useChest(pos, furniture, c,
+          ChestInfo {
+              FurnitureType::OPENED_CHEST,
+              ChestInfo::CreatureInfo {
+                  CreatureFactory::singleCreature(TribeId::getPest(), CreatureId::RAT),
+                  10,
+                  Random.get(3, 6),
+                  "It's full of rats!",
+              },
+              ChestInfo::ItemInfo {
+                  ItemFactory::chest(),
+                  "There is an item inside"
+              }
+          });
       break;
     case FurnitureUsageType::COFFIN:
-      useChest(pos, furniture, c, ChestInfo {
-                 FurnitureType::OPENED_COFFIN,
-                 none,
-                 ChestInfo::ItemInfo {
-                   ItemFactory::chest(),
-                   "There is a rotting corpse inside. You find an item."
-                 }
-               });
+      useChest(pos, furniture, c,
+          ChestInfo {
+              FurnitureType::OPENED_COFFIN,
+              none,
+              ChestInfo::ItemInfo {
+                  ItemFactory::chest(),
+                  "There is a rotting corpse inside. You find an item."
+              }
+          });
       break;
     case FurnitureUsageType::VAMPIRE_COFFIN:
-      useChest(pos, furniture, c, ChestInfo{
-                 FurnitureType::OPENED_COFFIN,
-                 ChestInfo::CreatureInfo {
-                   CreatureFactory::singleCreature(TribeId::getMonster(), CreatureId::VAMPIRE_LORD), 1, 1,
-                   "There is a rotting corpse inside. The corpse is alive!"
-                 },
-                 none
-               });
+      useChest(pos, furniture, c,
+          ChestInfo {
+              FurnitureType::OPENED_COFFIN,
+              ChestInfo::CreatureInfo {
+                  CreatureFactory::singleCreature(TribeId::getMonster(), CreatureId::VAMPIRE_LORD), 1, 1,
+                  "There is a rotting corpse inside. The corpse is alive!"
+              },
+              none
+          });
       break;
     case FurnitureUsageType::FOUNTAIN: {
       c->secondPerson("You drink from the fountain.");
@@ -144,6 +185,9 @@ void FurnitureUsage::handle(FurnitureUsageType type, Position pos, WConstFurnitu
     case FurnitureUsageType::PORTAL:
       usePortal(pos, c);
       break;
+    case FurnitureUsageType::SIT_ON_THRONE:
+      sitOnThrone(pos, furniture, c);
+      break;
     case FurnitureUsageType::STUDY:
     case FurnitureUsageType::ARCHERY_RANGE:
       break;
@@ -170,9 +214,10 @@ string FurnitureUsage::getUsageQuestion(FurnitureUsageType type, string furnitur
     case FurnitureUsageType::VAMPIRE_COFFIN:
     case FurnitureUsageType::CHEST: return "open " + furnitureName;
     case FurnitureUsageType::FOUNTAIN: return "drink from " + furnitureName;
-    case FurnitureUsageType::SLEEP: return "sleep on " + furnitureName;
+    case FurnitureUsageType::SLEEP: return "sleep in " + furnitureName;
     case FurnitureUsageType::KEEPER_BOARD: return "view " + furnitureName;
     case FurnitureUsageType::PORTAL: return "enter " + furnitureName;
+    case FurnitureUsageType::SIT_ON_THRONE: return "sit on " + furnitureName;
     default: break;
   }
   return "";

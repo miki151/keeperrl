@@ -7,6 +7,7 @@
 #include "body.h"
 #include "furniture.h"
 #include "level.h"
+#include "fx_variant_name.h"
 
 static optional<LastingEffect> getCancelledOneWay(LastingEffect effect) {
   switch (effect) {
@@ -334,7 +335,7 @@ void LastingEffects::onTimedOut(WCreature c, LastingEffect effect, bool msg) {
 
 static const int attrBonus = 3;
 
-int LastingEffects::getAttrBonus(WConstCreature c, AttrType type) {
+int LastingEffects::getAttrBonus(const Creature* c, AttrType type) {
   int value = 0;
   switch (type) {
     case AttrType::DAMAGE:
@@ -718,13 +719,17 @@ int LastingEffects::getPrice(LastingEffect e) {
   }
 }
 
-double LastingEffects::getMoraleIncrease(WConstCreature c) {
+double LastingEffects::getMoraleIncrease(const Creature* c) {
   PROFILE;
   double ret = 0;
   if (c->isAffected(LastingEffect::RESTED))
-    ret += 0.2;
+    ret += 0.1;
+  else
+    ret -= 0.1;
   if (c->isAffected(LastingEffect::SATIATED))
-    ret += 0.2;
+    ret += 0.1;
+  else
+    ret -= 0.1;
   return ret;
 }
 
@@ -744,5 +749,55 @@ bool LastingEffects::canConsume(LastingEffect effect) {
       return false;
     default:
       return true;
+  }
+}
+
+optional<FXVariantName> LastingEffects::getFX(LastingEffect effect) {
+  switch (effect) {
+    case LastingEffect::SLEEP:
+      return FXVariantName::SLEEP;
+
+    case LastingEffect::SPEED:
+      return FXVariantName::BUFF_BLUE;
+    case LastingEffect::SLOWED:
+      return FXVariantName::DEBUFF_BLUE;
+
+    case LastingEffect::REGENERATION:
+      return FXVariantName::BUFF_RED;
+    case LastingEffect::BLEEDING:
+      return FXVariantName::DEBUFF_RED;
+
+    case LastingEffect::DAM_BONUS:
+    case LastingEffect::DEF_BONUS:
+      return FXVariantName::BUFF_YELLOW;
+
+    case LastingEffect::FIRE_RESISTANT:
+    case LastingEffect::MAGIC_RESISTANCE:
+    case LastingEffect::MELEE_RESISTANCE:
+    case LastingEffect::RANGED_RESISTANCE:
+      return FXVariantName::BUFF_SKY_BLUE;
+    case LastingEffect::POISON_RESISTANT:
+      return FXVariantName::BUFF_GREEN2;
+    case LastingEffect::MAGIC_VULNERABILITY:
+    case LastingEffect::MELEE_VULNERABILITY:
+    case LastingEffect::RANGED_VULNERABILITY:
+      return FXVariantName::DEBUFF_ORANGE;
+
+    case LastingEffect::TELEPATHY:
+    case LastingEffect::ELF_VISION:
+    case LastingEffect::NIGHT_VISION:
+      return FXVariantName::BUFF_PINK;
+    case LastingEffect::BLIND:
+    case LastingEffect::INSANITY:
+      return FXVariantName::DEBUFF_PINK;
+
+    case LastingEffect::POISON:
+      return FXVariantName::DEBUFF_GREEN2;
+
+    case LastingEffect::TIED_UP:
+    case LastingEffect::ENTANGLED:
+      return FXVariantName::DEBUFF_GREEN1;
+    default:
+      return none;
   }
 }

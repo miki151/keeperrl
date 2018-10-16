@@ -53,6 +53,7 @@
 #include "profiler.h"
 #include "furniture_type.h"
 #include "furniture_usage.h"
+#include "fx_name.h"
 
 template <class Archive>
 void Creature::serialize(Archive& ar, const unsigned int version) {
@@ -63,7 +64,7 @@ void Creature::serialize(Archive& ar, const unsigned int version) {
   ar(unknownAttackers, privateEnemies, holding);
   ar(controllerStack, kills, statuses);
   ar(difficultyPoints, points, capture);
-  ar(vision, debt, lastDamageType, highestAttackValueEver);
+  ar(vision, debt, highestAttackValueEver);
 }
 
 SERIALIZABLE(Creature)
@@ -72,9 +73,13 @@ SERIALIZATION_CONSTRUCTOR_IMPL(Creature)
 
 Creature::Creature(const ViewObject& object, TribeId t, CreatureAttributes attr)
     : Renderable(object), attributes(std::move(attr)), tribe(t) {
-  modViewObject().setCreatureId(getUniqueId());
-  if (auto& obj = attributes->getIllusionViewObject())
-    obj->setCreatureId(getUniqueId());
+  modViewObject().setGenericId(getUniqueId().getGenericId());
+  modViewObject().setModifier(ViewObject::Modifier::CREATURE);
+  if (auto& obj = attributes->getIllusionViewObject()) {
+    obj->setGenericId(getUniqueId().getGenericId());
+    obj->setModifier(ViewObject::Modifier::CREATURE);
+  }
+  updateViewObject();
 }
 
 Creature::Creature(TribeId t, CreatureAttributes attr)
@@ -118,8 +123,10 @@ bool Creature::isReady(Spell* spell) const {
     return true;
 }
 
-static double getWillpowerMult(double sorcerySkill) {
-  return 2 * pow(0.25, sorcerySkill);
+static double getSpellTimeoutMult(int expLevel) {
+  double minMult = 0.3;
+  double maxLevel = 12;
+  return max(minMult, 1 - expLevel * (1 - minMult) / maxLevel);
 }
 
 const CreatureAttributes& Creature::getAttributes() const {
@@ -138,11 +145,13 @@ CreatureAction Creature::castSpell(Spell* spell) const {
     return CreatureAction("You can't cast this spell yet.");
   return CreatureAction(this, [=] (WCreature c) {
     c->addSound(spell->getSound());
+    if (auto fx = spell->getFX())
+      getGame()->addEvent(EventInfo::FX{position, *fx});
     spell->addMessage(c);
     spell->getEffect().applyToCreature(c);
     getGame()->getStatistics().add(StatId::SPELL_CAST);
     c->attributes->getSpellMap().setReadyTime(spell, *getGlobalTime() + TimeInterval(
-        int(spell->getDifficulty() * getWillpowerMult(attributes->getSkills().getValue(SkillId::SORCERY)))));
+        int(spell->getDifficulty() * getSpellTimeoutMult((int) attributes->getExpLevel(ExperienceType::SPELL)))));
     c->spendTime();
   });
 }
@@ -155,15 +164,25 @@ CreatureAction Creature::castSpell(Spell* spell, Vec2 dir) const {
     return CreatureAction("You can't cast this spell yet.");
   return CreatureAction(this, [=] (WCreature c) {
     c->addSound(spell->getSound());
+    auto dirEffectType = spell->getDirEffectType();
     thirdPerson(getName().the() + " casts a spell");
     secondPerson("You cast " + spell->getName());
-    applyDirected(c, dir, spell->getDirEffectType());
+    applyDirected(c, dir, dirEffectType, spell->getFX(), spell->getSplashFX());
     getGame()->getStatistics().add(StatId::SPELL_CAST);
     c->attributes->getSpellMap().setReadyTime(spell, *getGlobalTime() + TimeInterval(
-        int(spell->getDifficulty() * getWillpowerMult(attributes->getSkills().getValue(SkillId::SORCERY)))));
+        int(spell->getDifficulty() * getSpellTimeoutMult((int) attributes->getExpLevel(ExperienceType::SPELL)))));
     c->spendTime();
   });
 }
+
+void Creature::updateLastingFX(ViewObject& object) {
+  object.particleEffects.clear();
+  for (auto effect : ENUM_ALL(LastingEffect))
+    if (isAffected(effect))
+      if (auto fx = LastingEffects::getFX(effect))
+        object.particleEffects.insert(*fx);
+}
+
 
 void Creature::pushController(PController ctrl) {
   if (auto controller = getController())
@@ -651,8 +670,10 @@ CreatureAction Creature::unequip(WItem item) const {
 CreatureAction Creature::push(WCreature other) {
   Vec2 goDir = position.getDir(other->position);
   if (!goDir.isCardinal4() || !other->position.plus(goDir).canEnter(
-      other->getMovementType()) || !getBody().canPush(other->getBody()))
+      other->getMovementType()))
     return CreatureAction("You can't push " + other->getName().the());
+  if (!getBody().canPush(other->getBody()))
+    return CreatureAction("You are too small to push " + other->getName().the());
   return CreatureAction(this, [=](WCreature self) {
     other->displace(goDir);
     if (auto m = self->move(goDir))
@@ -675,7 +696,8 @@ CreatureAction Creature::applySquare(Position pos) const {
           self->addMovementInfo(movementInfo
               .setDirection(getPosition().getDir(pos))
               .setMaxLength(1_visible)
-              .setType(MovementInfo::WORK));
+              .setType(MovementInfo::WORK)
+              .setFX(getFurnitureUsageFX(furniture->getType())));
       });
   return CreatureAction();
 }
@@ -920,6 +942,17 @@ void Creature::considerMovingFromInaccessibleSquare() {
 
 void Creature::tick() {
   PROFILE;
+  addMorale(-morale * 0.0008);
+  auto updateMorale = [this](Position pos, double mult) {
+    for (auto f : pos.getFurniture()) {
+      auto& luxury = f->getLuxuryInfo();
+      if (luxury.luxury > morale)
+        addMorale((luxury.luxury - morale) * mult);
+    }
+  };
+  for (auto pos : position.neighbors8())
+    updateMorale(pos, 0.0004);
+  updateMorale(position, 0.001);
   considerMovingFromInaccessibleSquare();
   captureHealth = min(1.0, captureHealth + 0.02);
   vision->update(this);
@@ -1057,7 +1090,6 @@ bool Creature::takeDamage(const Attack& attack) {
       for (Position p : visibleCreatures)
         if (p.dist8(position) < 10 && p.getCreature() && !p.getCreature()->isDead())
           p.getCreature()->removeEffect(LastingEffect::SLEEP);
-    lastDamageType = getExperienceType(attack.damageType);
   }
   double defense = getAttr(AttrType::DEFENSE);
   for (LastingEffect effect : ENUM_ALL(LastingEffect))
@@ -1101,6 +1133,7 @@ void Creature::updateViewObject() {
   object.setAttribute(ViewObject::Attribute::MORALE, getMorale());
   object.setModifier(ViewObject::Modifier::DRAW_MORALE);
   object.setModifier(ViewObject::Modifier::STUNNED, isAffected(LastingEffect::STUNNED));
+  object.setModifier(ViewObject::Modifier::FLYING, isAffected(LastingEffect::FLYING));
   object.getCreatureStatus() = getStatus();
   object.setGoodAdjectives(combine(extractNames(getGoodAdjectives()), true));
   object.setBadAdjectives(combine(extractNames(getBadAdjectives()), true));
@@ -1110,6 +1143,7 @@ void Creature::updateViewObject() {
     object.setAttribute(ViewObject::Attribute::HEALTH, captureHealth);
   object.setDescription(getName().title());
   getPosition().setNeedsRenderUpdate(true);
+  updateLastingFX(object);
 }
 
 double Creature::getMorale() const {
@@ -1356,6 +1390,18 @@ CreatureAction Creature::fire(Vec2 direction) const {
 void Creature::addMovementInfo(MovementInfo info) {
   modViewObject().addMovementInfo(info);
   getPosition().setNeedsRenderUpdate(true);
+
+  if (isAffected(LastingEffect::FLYING))
+    return;
+
+  // We're assuming here that position has already been updated
+  Position oldPos = position.minus(info.direction);
+  if (auto ground = oldPos.getFurniture(FurnitureLayer::GROUND))
+    if (!oldPos.getFurniture(FurnitureLayer::MIDDLE))
+      ground->onCreatureWalkedOver(oldPos, info.direction);
+  if (auto ground = position.getFurniture(FurnitureLayer::GROUND))
+    if (!position.getFurniture(FurnitureLayer::MIDDLE))
+      ground->onCreatureWalkedInto(position, info.direction);
 }
 
 CreatureAction Creature::whip(const Position& pos) const {
@@ -1511,27 +1557,29 @@ CreatureAction Creature::applyItem(WItem item) const {
   });
 }
 
+optional<int> Creature::getThrowDistance(WConstItem item) const {
+  if (item->getWeight() <= 0.5)
+    return 15;
+  else if (item->getWeight() <= 5)
+    return 6;
+  else if (item->getWeight() <= 20)
+    return 2;
+  else
+    return none;
+}
+
 CreatureAction Creature::throwItem(WItem item, Vec2 direction) const {
   if (!getBody().numGood(BodyPart::ARM) || !getBody().isHumanoid())
     return CreatureAction("You can't throw anything!");
-  else if (item->getWeight() > 20)
+  auto dist = getThrowDistance(item);
+  if (!dist)
     return CreatureAction(item->getTheName() + " is too heavy!");
-  int dist = 0;
-  int str = 20;
-  if (item->getWeight() <= 0.5)
-    dist = 10 * str / 15;
-  else if (item->getWeight() <= 5)
-    dist = 5 * str / 15;
-  else if (item->getWeight() <= 20)
-    dist = 2 * str / 15;
-  else
-    FATAL << "Item too heavy.";
   int damage = getAttr(AttrType::RANGED_DAMAGE) + item->getModifier(AttrType::RANGED_DAMAGE);
   return CreatureAction(this, [=](WCreature self) {
     Attack attack(self, Random.choose(getBody().getAttackLevels()), item->getWeaponInfo().attackType, damage, AttrType::DAMAGE);
     secondPerson("You throw " + item->getAName(false, this));
     thirdPerson(getName().the() + " throws " + item->getAName());
-    self->getPosition().throwItem(self->equipment->removeItem(item, self), attack, dist, direction, getVision().getId());
+    self->getPosition().throwItem(self->equipment->removeItem(item, self), attack, *dist, direction, getVision().getId());
     self->spendTime();
   });
 }

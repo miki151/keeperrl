@@ -21,7 +21,7 @@ RICH_ENUM(CollectiveWarning,
     LARGER_PRISON,
     TORTURE_ROOM,
     MORE_CHESTS,
-    MANA,
+    DUNGEON_LEVEL,
     MORE_LIGHTS
 );
 

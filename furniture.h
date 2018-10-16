@@ -6,6 +6,7 @@
 #include "vision_id.h"
 #include "event_listener.h"
 #include "furniture_layer.h"
+#include "luxury_info.h"
 
 class TribeId;
 class Creature;
@@ -24,6 +25,7 @@ class Furniture : public OwnedObject<Furniture> {
   static const string& getName(FurnitureType, int count = 1);
   static FurnitureLayer getLayer(FurnitureType);
   static bool isWall(FurnitureType);
+  static LuxuryInfo getLuxuryInfo(FurnitureType);
   static int getPopulationIncrease(FurnitureType, int numBuilt);
   static optional<std::string> getPopulationIncreaseDescription(FurnitureType);
 
@@ -57,6 +59,7 @@ class Furniture : public OwnedObject<Furniture> {
   optional<FurnitureClickType> getClickType() const;
   bool isTicking() const;
   bool isWall() const;
+  bool isBuildingSupport() const;
   void onConstructedBy(WCreature);
   FurnitureLayer getLayer() const;
   double getLightEmission() const;
@@ -69,13 +72,15 @@ class Furniture : public OwnedObject<Furniture> {
   optional<CreatureId> getSummonedElement() const;
   bool isClearFogOfWar() const;
   bool forgetAfterBuilding() const;
-  bool isShowEfficiency() const;
+  void onCreatureWalkedOver(Position, Vec2 direction) const;
+  void onCreatureWalkedInto(Position, Vec2 direction) const;
   /**
    * @brief Calls special functionality to handle dropped items, if any.
    * @return possibly empty subset of the items that weren't consumned and can be dropped normally.
    */
   vector<PItem> dropItems(Position, vector<PItem>) const;
   bool canBuildBridgeOver() const;
+  const LuxuryInfo& getLuxuryInfo() const;
 
   enum ConstructMessage { /*default*/BUILD, FILL_UP, REINFORCE, SET_UP };
 
@@ -97,6 +102,7 @@ class Furniture : public OwnedObject<Furniture> {
   Furniture& setDroppedItems(FurnitureDroppedItems);
   Furniture& setFireInfo(const Fire&);
   Furniture& setIsWall();
+  Furniture& setIsBuildingSupport();
   Furniture& setOverrideMovement();
   Furniture& setLayer(FurnitureLayer);
   Furniture& setLightEmission(double);
@@ -110,7 +116,7 @@ class Furniture : public OwnedObject<Furniture> {
   Furniture& setCanRemoveWithCreaturePresent(bool state);
   Furniture& setCanRemoveNonFriendly(bool state);
   Furniture& setForgetAfterBuilding();
-  Furniture& setShowEfficiency();
+  Furniture& setLuxury(double luxury);
   MovementSet& modMovementSet();
 
   SERIALIZATION_DECL(Furniture)
@@ -140,6 +146,7 @@ class Furniture : public OwnedObject<Furniture> {
   bool SERIAL(removeWithCreaturePresent) = true;
   bool SERIAL(removeNonFriendly) = false;
   bool SERIAL(wall) = false;
+  bool SERIAL(buildingSupport) = false;
   optional<ConstructMessage> SERIAL(constructMessage) = BUILD;
   double SERIAL(lightEmission) = 0;
   bool SERIAL(canHideHere) = false;
@@ -151,5 +158,5 @@ class Furniture : public OwnedObject<Furniture> {
   bool SERIAL(noProjectiles) = false;
   bool SERIAL(clearFogOfWar) = false;
   bool SERIAL(xForgetAfterBuilding) = false;
-  bool SERIAL(showEfficiency) = false;
+  LuxuryInfo SERIAL(luxuryInfo);
 };

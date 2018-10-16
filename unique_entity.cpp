@@ -23,7 +23,7 @@
 #include "furniture.h"
 
 template<typename T>
-void UniqueEntity<T>::offsetForSerialization(long long o) {
+void UniqueEntity<T>::offsetForSerialization(GenericId o) {
   CHECK(o != 0);
   offset = o;
 }
@@ -39,6 +39,12 @@ long long UniqueEntity<T>::offset = 0;
 template<typename T>
 UniqueEntity<T>::Id::Id() {
   key = Random.getLL();
+  hash = int(key);
+}
+
+template<typename T>
+UniqueEntity<T>::Id::Id(GenericId id) {
+  key = id;
   hash = int(key);
 }
 
@@ -78,6 +84,11 @@ void UniqueEntity<T>::Id::serialize(Archive& ar, const unsigned int version) {
 template<typename T>
 auto UniqueEntity<T>::getUniqueId() const -> Id {
   return id;
+}
+
+template<typename T>
+GenericId UniqueEntity<T>::Id::getGenericId() const {
+  return key;
 }
 
 template<typename T>

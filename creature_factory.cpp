@@ -158,7 +158,7 @@ PCreature CreatureFactory::getSokobanBoulder(TribeId tribe) {
             c.attr[AttrType::DEFENSE] = 250;
             c.body = Body::nonHumanoid(Body::Material::ROCK, Body::Size::HUGE);
             c.body->setDeathSound(none);
-            c.body->setCanAlwaysPush();
+            c.body->setMinPushSize(Body::Size::LARGE);
             c.permanentEffects[LastingEffect::BLIND] = 1;
             c.boulder = true;
             c.name = "boulder";));
@@ -187,13 +187,15 @@ ViewId CreatureFactory::getViewId(CreatureId id) {
   return idMap[id];
 }
 
+constexpr int maxKrakenLength = 15;
+
 class KrakenController : public Monster {
   public:
   KrakenController(WCreature c) : Monster(c, MonsterAIFactory::monster()) {
   }
 
-  KrakenController(WCreature c, WeakPointer<KrakenController> f) : KrakenController(c) {
-    father = f;
+  KrakenController(WCreature c, WeakPointer<KrakenController> father, int length)
+      : Monster(c, MonsterAIFactory::monster()), length(length), father(father) {
   }
 
   virtual bool dontReplaceInCollective() override {
@@ -229,15 +231,17 @@ class KrakenController : public Monster {
   }
 
   void pullEnemy(WCreature held) {
-    held->you(MsgType::HAPPENS_TO, creature->getName().the() + " pulls");
-    if (father) {
-      held->setHeld(father->creature);
-      Vec2 pullDir = held->getPosition().getDir(creature->getPosition());
-      creature->dieNoReason(Creature::DropType::NOTHING);
-      held->displace(pullDir);
-    } else {
-      held->you(MsgType::ARE, "eaten by " + creature->getName().the());
-      held->dieNoReason();
+    if (Random.roll(3)) {
+      held->you(MsgType::HAPPENS_TO, creature->getName().the() + " pulls");
+      if (father) {
+        held->setHeld(father->creature);
+        Vec2 pullDir = held->getPosition().getDir(creature->getPosition());
+        creature->dieNoReason(Creature::DropType::NOTHING);
+        held->displace(pullDir);
+      } else {
+        held->you(MsgType::ARE, "eaten by " + creature->getName().the());
+        held->dieNoReason();
+      }
     }
   }
 
@@ -268,7 +272,7 @@ class KrakenController : public Monster {
     if (v.length8() == 1) {
       c->you(MsgType::HAPPENS_TO, creature->getName().the() + " swings itself around");
       c->setHeld(creature);
-    } else {
+    } else if (length < maxKrakenLength && Random.roll(2)) {
       pair<Vec2, Vec2> dirs = v.approxL1();
       vector<Vec2> moves;
       if (creature->getPosition().plus(dirs.first).canEnter(
@@ -277,13 +281,14 @@ class KrakenController : public Monster {
       if (creature->getPosition().plus(dirs.second).canEnter(
             {{MovementTrait::WALK, MovementTrait::SWIM}}))
         moves.push_back(dirs.second);
-      if (!moves.empty() && Random.roll(2)) {
+      if (!moves.empty()) {
         Vec2 move = Random.choose(moves);
         ViewId viewId = creature->getPosition().plus(move).canEnter({MovementTrait::SWIM})
           ? ViewId::KRAKEN_WATER : ViewId::KRAKEN_LAND;
         auto spawn = makeOwner<Creature>(creature->getTribeId(),
               CreatureFactory::getKrakenAttributes(viewId, "kraken tentacle"));
-        spawn->setController(makeOwner<KrakenController>(spawn.get(), getThis().dynamicCast<KrakenController>()));
+        spawn->setController(makeOwner<KrakenController>(spawn.get(), getThis().dynamicCast<KrakenController>(),
+            length + 1));
         spawns.push_back(spawn.get());
         creature->getPosition().plus(move).addCreature(std::move(spawn));
       }
@@ -299,7 +304,6 @@ class KrakenController : public Monster {
     if (spawns.empty()) {
       if (auto held = getHeld()) {
         pullEnemy(held);
-        return;
       } else if (auto c = getVisibleEnemy()) {
         considerAttacking(c);
       } else if (father && Random.roll(5)) {
@@ -310,10 +314,11 @@ class KrakenController : public Monster {
     creature->wait().perform(creature);
   }
 
-  SERIALIZE_ALL(SUBCLASS(Monster), ready, spawns, father);
+  SERIALIZE_ALL(SUBCLASS(Monster), ready, spawns, father, length);
   SERIALIZATION_CONSTRUCTOR(KrakenController);
 
   private:
+  int SERIAL(length) = 0;
   bool SERIAL(ready) = false;
   vector<WCreature> SERIAL(spawns);
   WeakPointer<KrakenController> SERIAL(father);
@@ -628,7 +633,7 @@ static optional<pair<CreatureFactory, CreatureFactory>> splashFactories;
 void CreatureFactory::initSplash(TribeId tribe) {
   splashFactories = Random.choose(
       make_pair(CreatureFactory(tribe, { CreatureId::KNIGHT, CreatureId::ARCHER}, { 1, 1}, {}),
-        CreatureFactory::singleType(tribe, CreatureId::AVATAR)),
+        CreatureFactory::singleType(tribe, CreatureId::DUKE)),
       make_pair(CreatureFactory(tribe, { CreatureId::WARRIOR}, { 1}, {}),
         CreatureFactory::singleType(tribe, CreatureId::SHAMAN)),
       make_pair(CreatureFactory(tribe, { CreatureId::ELF_ARCHER}, { 1}, {}),
@@ -840,7 +845,6 @@ PCreature CreatureFactory::getSpecial(TribeId tribe, bool humanoid, bool large, 
           c.attr[AttrType::SPELL_DAMAGE] -= 6;
         }
         if (humanoid) {
-          c.skills.setValue(SkillId::SORCERY, Random.getDouble(0, 1));
           c.skills.setValue(SkillId::WORKSHOP, Random.getDouble(0, 1));
           c.skills.setValue(SkillId::FORGE, Random.getDouble(0, 1));
           c.skills.setValue(SkillId::LABORATORY, Random.getDouble(0, 1));
@@ -909,7 +913,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.name = "Keeper";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_MALE)->getNext());
           c.name->useFullTitle();
-          c.skills.setValue(SkillId::SORCERY, 0.2);
           c.skills.setValue(SkillId::LABORATORY, 0.2);
           c.maxLevelIncrease[ExperienceType::MELEE] = 7;
           c.maxLevelIncrease[ExperienceType::SPELL] = 12;
@@ -925,7 +928,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.name = "Keeper";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_FEMALE)->getNext());
           c.name->useFullTitle();
-          c.skills.setValue(SkillId::SORCERY, 0.2);
           c.skills.setValue(SkillId::LABORATORY, 0.2);
           c.maxLevelIncrease[ExperienceType::MELEE] = 7;
           c.maxLevelIncrease[ExperienceType::SPELL] = 12;
@@ -1228,9 +1230,97 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.spells->add(SpellId::CURE_POISON);
           c.spells->add(SpellId::DECEPTION);
           c.spells->add(SpellId::SPEED_SELF);
+          c.spells->add(SpellId::FIREBALL_DRAGON);
           c.name->setStack("dragon");
           );
-    case CreatureId::KNIGHT: 
+    case CreatureId::KNIGHT_PLAYER:
+      return CATTR(
+          c.viewId = ViewId::KNIGHT;
+          c.attr = LIST(16_dam, 14_def );
+          c.body = Body::humanoid(Body::Size::LARGE);
+          c.maxLevelIncrease[ExperienceType::MELEE] = 7;
+          c.chatReactionFriendly = "curses all dungeons"_s;
+          c.chatReactionHostile = "\"Die!\""_s;
+          c.skills.setValue(SkillId::WORKSHOP, 0.3);
+          c.skills.setValue(SkillId::FORGE, 0.3);
+          c.name = "knight";
+          c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_MALE)->getNext());
+      );
+    case CreatureId::JESTER_PLAYER:
+      return CATTR(
+          c.viewId = ViewId::JESTER;
+          c.attr = LIST(8_dam, 8_def );
+          c.body = Body::humanoid(Body::Size::LARGE);
+          c.permanentEffects[LastingEffect::MAGIC_RESISTANCE] = 1;
+          c.chatReactionFriendly = "curses all dungeons"_s;
+          c.chatReactionHostile = "\"Die!\""_s;
+          c.name = "jester";
+          c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_MALE)->getNext());
+      );
+    case CreatureId::DUKE_PLAYER:
+      return CATTR(
+          c.viewId = ViewId::DUKE;
+          c.attr = LIST(20_dam, 16_def);
+          c.body = Body::humanoid(Body::Size::LARGE);
+          c.name = "Keeper";
+          c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_MALE)->getNext());
+          c.name->useFullTitle();
+          c.skills.setValue(SkillId::FORGE, 0.2);
+          c.maxLevelIncrease[ExperienceType::MELEE] = 12;
+          c.maxLevelIncrease[ExperienceType::SPELL] = 1;
+      );
+    case CreatureId::ARCHER_PLAYER:
+      return CATTR(
+          c.viewId = ViewId::ARCHER;
+          c.attr = LIST(10_dam, 10_def, 10_ranged_dam );
+          c.body = Body::humanoid(Body::Size::LARGE);
+          c.chatReactionFriendly = "curses all dungeons"_s;
+          c.chatReactionHostile = "\"Die!\""_s;
+          c.maxLevelIncrease[ExperienceType::MELEE] = 4;
+          c.maxLevelIncrease[ExperienceType::ARCHERY] = 7;
+          c.name = "archer";
+          c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_MALE)->getNext());
+      );
+    case CreatureId::PRIEST_PLAYER:
+      return CATTR(
+          c.viewId = ViewId::PRIEST;
+          c.attr = LIST(12_dam, 8_def, 16_spell_dam );
+          c.body = Body::humanoid(Body::Size::LARGE);
+          c.chatReactionFriendly = "curses all dungeons"_s;
+          c.chatReactionHostile = "\"Die!\""_s;
+          c.maxLevelIncrease[ExperienceType::SPELL] = 9;
+          c.name = "priest";
+          c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_MALE)->getNext());
+      );
+    case CreatureId::GNOME_PLAYER:
+      return CATTR(
+          c.viewId = ViewId::GNOME;
+          c.attr = LIST(10_dam, 10_def );
+          c.body = Body::humanoid(Body::Size::MEDIUM);
+          c.chatReactionFriendly = "talks about crafting"_s;
+          c.chatReactionHostile = "\"Die!\""_s;
+          c.skills.setValue(SkillId::LABORATORY, 0.3);
+          c.skills.setValue(SkillId::WORKSHOP, 0.6);
+          c.skills.setValue(SkillId::FORGE, 0.6);
+          c.skills.setValue(SkillId::JEWELER, 0.6);
+          c.name = "gnome";
+          c.name->setFirst(NameGenerator::get(NameGeneratorId::DWARF)->getNext());
+      );
+    case CreatureId::PESEANT_PLAYER:
+      return CATTR(
+          if (Random.roll(2)) {
+            c.viewId = ViewId::PESEANT_WOMAN;
+            c.gender = Gender::female;
+          } else
+            c.viewId = ViewId::PESEANT;
+          c.attr = LIST(14_dam, 12_def );
+          c.body = Body::humanoid(Body::Size::LARGE);
+          c.chatReactionFriendly = "curses all dungeons"_s;
+          c.chatReactionHostile = "\"Heeelp!\""_s;
+          c.skills.setValue(SkillId::DIGGING, 0.1);
+          c.name = "peasant";
+      );
+    case CreatureId::KNIGHT:
       return CATTR(
           c.viewId = ViewId::KNIGHT;
           c.attr = LIST(36_dam, 28_def );
@@ -1249,7 +1339,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.chatReactionFriendly = "curses all dungeons"_s;
           c.chatReactionHostile = "\"Die!\""_s;
           c.name = "jester";);
-    case CreatureId::AVATAR:
+    case CreatureId::DUKE:
       return CATTR(
           c.viewId = ViewId::DUKE;
           c.attr = LIST(43_dam, 32_def );
@@ -1259,7 +1349,9 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.chatReactionHostile = "\"Die!\""_s;
           c.maxLevelIncrease[ExperienceType::MELEE] = 3;
           c.courage = 1;
-          c.name = "Duke of " + NameGenerator::get(NameGeneratorId::WORLD)->getNext(););
+          c.name = "Duke of " + NameGenerator::get(NameGeneratorId::WORLD)->getNext();
+          c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_MALE)->getNext());
+      );
     case CreatureId::ARCHER:
       return CATTR(
           c.viewId = ViewId::ARCHER;
@@ -1309,7 +1401,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.spells->add(SpellId::SUMMON_SPIRIT);
           c.spells->add(SpellId::BLAST);
           c.spells->add(SpellId::HEAL_OTHER);
-          c.skills.setValue(SkillId::SORCERY, 1);
           c.maxLevelIncrease[ExperienceType::SPELL] = 5;
           c.name = "shaman";);
     case CreatureId::PESEANT: 
@@ -1324,7 +1415,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.chatReactionFriendly = "curses all dungeons"_s;
           c.chatReactionHostile = "\"Heeelp!\""_s;
           c.skills.insert(SkillId::CROPS);
-          c.maxLevelIncrease[ExperienceType::MELEE] = 3;
+          c.skills.setValue(SkillId::DIGGING, 0.1);
           c.name = "peasant";);
     case CreatureId::CHILD: 
       return CATTR(
@@ -1453,7 +1544,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body = Body::humanoid(Body::Material::UNDEAD_FLESH, Body::Size::LARGE);
           c.chatReactionFriendly = "\"All men be cursed!\""_s;
           c.chatReactionHostile = "\"Die!\""_s;
-          c.skills.setValue(SkillId::SORCERY, 0.1);
           c.permanentEffects[LastingEffect::NIGHT_VISION] = 1;
           c.permanentEffects[LastingEffect::RANGED_RESISTANCE] = 1;
           c.maxLevelIncrease[ExperienceType::MELEE] = 7;
@@ -1467,7 +1557,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.attr = LIST(17_dam, 23_def, 27_spell_dam );
           c.body = Body::humanoid(Body::Material::UNDEAD_FLESH, Body::Size::LARGE);
           c.permanentEffects[LastingEffect::NIGHT_VISION] = 1;
-          c.skills.setValue(SkillId::SORCERY, 0.5);
           c.name = "vampire lord";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::VAMPIRE)->getNext());
           c.maxLevelIncrease[ExperienceType::MELEE] = 12;
@@ -1510,7 +1599,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.viewId = ViewId::ORC_SHAMAN;
           c.attr = LIST(12_dam, 8_def, 16_spell_dam );
           c.body = Body::humanoid(Body::Size::LARGE);
-          c.skills.setValue(SkillId::SORCERY, 0.7);
           c.skills.setValue(SkillId::LABORATORY, 0.7);
           c.chatReactionFriendly = "curses all elves"_s;
           c.chatReactionHostile = "\"Die!\""_s;
@@ -1731,7 +1819,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.chatReactionHostile = "\"Die!\""_s;
           c.permanentEffects[LastingEffect::MAGIC_RESISTANCE] = 1;
           c.spells->add(SpellId::HEAL_SELF);
-          c.skills.setValue(SkillId::SORCERY, 1);
           c.spells->add(SpellId::HEAL_OTHER);
           c.permanentEffects[LastingEffect::ELF_VISION] = 1;
           c.spells->add(SpellId::HEAL_SELF);
@@ -1764,7 +1851,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.permanentEffects[LastingEffect::MAGIC_RESISTANCE] = 1;
           c.spells->add(SpellId::HEAL_SELF);
           c.permanentEffects[LastingEffect::NIGHT_VISION] = 1;
-          c.skills.setValue(SkillId::SORCERY, 0.3);
           c.maxLevelIncrease[ExperienceType::MELEE] = 5;
           c.maxLevelIncrease[ExperienceType::SPELL] = 5;
           c.name = CreatureName("dark elf", "dark elves"););
@@ -1789,7 +1875,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.chatReactionHostile = "\"Die!\""_s;
           c.permanentEffects[LastingEffect::MAGIC_RESISTANCE] = 1;
           c.spells->add(SpellId::HEAL_SELF);
-          c.skills.setValue(SkillId::SORCERY, 1);
           c.spells->add(SpellId::HEAL_OTHER);
           c.permanentEffects[LastingEffect::NIGHT_VISION] = 1;
           c.spells->add(SpellId::HEAL_SELF);
@@ -2409,7 +2494,7 @@ static vector<ItemType> getDefaultInventory(CreatureId id) {
     case CreatureId::MINOTAUR: 
       return ItemList()
         .add(ItemType::BattleAxe{});
-    case CreatureId::AVATAR: 
+    case CreatureId::DUKE: 
       return ItemList()
         .add(ItemType(ItemType::BattleAxe{}).setPrefixChance(1))
         .add(ItemType::ChainArmor{})

@@ -37,6 +37,8 @@ enum class UserInputId {
     EXIT,
     MESSAGE_INFO,
     CHEAT_ATTRIBUTES,
+    CHEAT_SPELLS,
+    CHEAT_POTIONS,
     TUTORIAL_CONTINUE,
     TUTORIAL_GO_BACK,
 // real-time actions
@@ -74,6 +76,7 @@ enum class UserInputId {
     SELECT_TEAM,
     ACTIVATE_TEAM,
     TECHNOLOGY,
+    KEEPEROPEDIA,
     WORKSHOP,
     WORKSHOP_ADD,
     WORKSHOP_ITEM_ACTION,
@@ -216,7 +219,6 @@ class UserInput : public EnumVariant<UserInputId, TYPES(BuildingInfo, int, Uniqu
             UserInputId::GO_TO_VILLAGE
             ),
         ASSIGN(int,
-            UserInputId::TECHNOLOGY,
             UserInputId::WORKSHOP,
             UserInputId::WORKSHOP_ADD,
             UserInputId::LIBRARY_ADD,

@@ -24,20 +24,24 @@ SERIALIZE_DEF(Gender, fem)
 
 Gender::Gender(bool f) : fem(f) {}
 
-string Gender::his() const {
+const char* Gender::his() const {
   return fem ? "her" : "his";
 }
 
-string Gender::him() const {
+const char* Gender::him() const {
   return fem ? "her" : "him";
 }
 
-string Gender::he() const {
+const char* Gender::he() const {
   return fem ? "she" : "he";
 }
 
-string Gender::god() const {
+const char* Gender::god() const {
   return fem ? "goddess" : "god";
+}
+
+const char* Gender::sireOrDame() const {
+  return fem ? "Dame" : "Sire";
 }
 
 bool Gender::operator == (const Gender& o) const {

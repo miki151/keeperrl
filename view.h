@@ -34,6 +34,11 @@ class Options;
 class RetiredGames;
 class ScrollPosition;
 class FilePath;
+struct Color;
+namespace fx {
+  class FXRenderer;
+}
+class FXViewManager;
 
 enum class SplashType { BIG, AUTOSAVING, SMALL };
 
@@ -115,7 +120,7 @@ class View {
   virtual ~View();
 
   /** Does all the library specific init.*/
-  virtual void initialize() = 0;
+  virtual void initialize(unique_ptr<fx::FXRenderer>, unique_ptr<FXViewManager>) = 0;
 
   /** Resets the view before a new game.*/
   virtual void reset() = 0;
@@ -228,10 +233,11 @@ class View {
   virtual void presentWorldmap(const Campaign&) = 0;
 
   /** Draws an animation of an object between two locations on a map.*/
-  virtual void animateObject(Vec2 begin, Vec2 end, ViewId object) = 0;
+  virtual void animateObject(Vec2 begin, Vec2 end, optional<ViewId> object, optional<FXInfo> fx) = 0;
 
   /** Draws an special animation on the map.*/
   virtual void animation(Vec2 pos, AnimationId, Dir orientation = Dir::N) = 0;
+  virtual void animation(const FXSpawnInfo&) = 0;
 
   /** Returns the current real time in milliseconds. The clock is stopped on blocking keyboard input,
       so it can be used to sync game time in real-time mode.*/

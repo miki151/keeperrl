@@ -1,6 +1,8 @@
 #pragma once
 
-#ifdef OSX
+#include <cstddef>
+
+#ifdef _LIBCPP_VERSION
 #include <iomanip>
 #else
 

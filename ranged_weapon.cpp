@@ -62,7 +62,7 @@ void RangedWeapon::fire(WCreature c, Vec2 dir) const {
       break;
     }
   }
-  c->getGame()->addEvent(EventInfo::Projectile{projectileViewId, position, lastPos});
+  c->getGame()->addEvent(EventInfo::Projectile{none, projectileViewId, position, lastPos});
 }
 
 AttrType RangedWeapon::getDamageAttr() const {
