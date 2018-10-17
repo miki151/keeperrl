@@ -97,7 +97,6 @@ class CollectiveConfig {
   const vector<ImmigrantInfo>& getImmigrantInfo() const;
   const optional<GuardianInfo>& getGuardianInfo() const;
   unique_ptr<Workshops> getWorkshops() const;
-  vector<Technology*> getInitialTech() const;
   static bool requiresLighting(FurnitureType);
 
   static const WorkshopInfo& getWorkshopInfo(WorkshopType);

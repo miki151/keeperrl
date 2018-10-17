@@ -54,7 +54,6 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   public:
   static PCollective create(WLevel, TribeId, const optional<CollectiveName>&, bool discoverable);
   void init(CollectiveConfig&&, Immigration&&);
-  void acquireInitialTech();
   void addCreature(WCreature, EnumSet<MinionTrait>);
   void addCreature(PCreature, Position, EnumSet<MinionTrait>);
   void setPopulationGroup(const vector<WCreature>&);

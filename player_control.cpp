@@ -931,7 +931,7 @@ static const ViewObject& getConstructionObject(FurnitureType type) {
 }
 
 void PlayerControl::acquireTech(int index) {
-  auto techs = Technology::getNextTechs(collective->getTechnologies()).filter(
+  auto techs = Technology::getNextTechs(collective->getTechnologies(), avatarVariant).filter(
       [](const Technology* tech) { return tech->canResearch(); });
   if (index < techs.size()) {
     Technology* tech = techs[index];
@@ -950,7 +950,7 @@ void PlayerControl::fillLibraryInfo(CollectiveInfo& collectiveInfo) const {
       info.warning = "Conquer some villains to advance your level."_s;
     info.totalProgress = 100 * dungeonLevel.getNecessaryProgress(dungeonLevel.level);
     info.currentProgress = int(100 * dungeonLevel.progress);
-    auto techs = Technology::getNextTechs(collective->getTechnologies()).filter(
+    auto techs = Technology::getNextTechs(collective->getTechnologies(), avatarVariant).filter(
         [](const Technology* tech) { return tech->canResearch(); });
     for (Technology* tech : techs) {
       info.available.emplace_back();
@@ -1429,7 +1429,7 @@ void PlayerControl::onEvent(const GameEvent& event) {
       },
       [&](const TechbookRead& info) {
         Technology* tech = info.technology;
-        vector<Technology*> nextTechs = Technology::getNextTechs(collective->getTechnologies());
+        vector<Technology*> nextTechs = Technology::getNextTechs(collective->getTechnologies(), avatarVariant);
         if (tech == nullptr) {
           if (!nextTechs.empty())
             tech = Random.choose(nextTechs);

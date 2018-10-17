@@ -568,7 +568,8 @@ WCollective ModelBuilder::spawnKeeper(WModel m, AvatarInfo avatarInfo, bool rege
   WCollective playerCollective = m->collectives.back().get();
   playerCollective->setControl(PlayerControl::create(playerCollective, introText, avatarInfo.avatarVariant));
   playerCollective->setVillainType(VillainType::PLAYER);
-  playerCollective->acquireInitialTech();
+  for (auto tech : Technology::getInitialTech(avatarInfo.avatarVariant))
+    playerCollective->acquireTech(tech, false);
   return playerCollective;
 }
 
