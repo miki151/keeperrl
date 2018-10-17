@@ -17,6 +17,7 @@
 
 #include "singleton.h"
 #include "enums.h"
+#include "avatar_variant.h"
 
 RICH_ENUM(TechId,
   ALCHEMY,
@@ -44,7 +45,7 @@ class CostInfo;
 class Technology : public Singleton<Technology, TechId> {
   public:
   Technology(const string& name, const string& description, int cost, const vector<TechId>& prerequisites = {},
-      bool canResearch = true);
+      bool canResearch = true, EnumSet<AvatarVariant> = EnumSet<AvatarVariant>::fullSet());
   const string& getName() const;
   bool canResearch() const;
   Technology* setTutorialHighlight(TutorialHighlight);
@@ -53,16 +54,10 @@ class Technology : public Singleton<Technology, TechId> {
   const vector<Technology*> getPrerequisites() const;
   const vector<Technology*> getAllowed() const;
 
-  static CostInfo getAvailableResource(WConstCollective);
-
+  static vector<Technology*> getInitialTech(AvatarVariant);
   static vector<Technology*> getSorted();
-  static vector<Technology*> getNextTechs(const vector<Technology*>& current);
-  static vector<Spell*> getSpellLearning(TechId tech);
-  static vector<Spell*> getAvailableSpells(WConstCollective);
-  static vector<Spell*> getAllKeeperSpells();
+  static vector<Technology*> getNextTechs(const vector<Technology*>& current, optional<AvatarVariant>);
   static TechId getNeededTech(Spell*);
-
-  static void onAcquired(TechId, WCollective);
 
   static void init();
 
@@ -74,5 +69,6 @@ class Technology : public Singleton<Technology, TechId> {
   vector<Technology*> prerequisites;
   bool research;
   optional<TutorialHighlight> tutorial;
+  EnumSet<AvatarVariant> inVariants;
 };
 

@@ -178,3 +178,42 @@ void glQuad(float x, float y, float ex, float ey) {
   SDL::glTexCoord2f(0.0f, 1.0f), SDL::glVertex2f(x, y);
   SDL::glEnd();
 }
+
+#ifdef WINDOWS
+void *winLoadFunction(const char *name) {
+  return NOTNULL(SDL::SDL_GL_GetProcAddress(name));
+}
+
+namespace SDL {
+  void(*glDeleteFramebuffers)(GLsizei n, const GLuint *framebuffers);
+  void(*glGenFramebuffers)(GLsizei n, GLuint *framebuffers);
+  void(*glBindFramebuffer)(GLenum target, GLuint framebuffer);
+  void(*glFramebufferTexture2D)(GLenum target, GLenum attachment, GLenum textarget,
+      GLuint texture, GLint level);
+  void(*glDrawBuffers)(GLsizei n, const GLenum *bufs);
+  void(*glBlendFuncSeparate)(GLenum, GLenum, GLenum, GLenum);
+  GLenum(*glCheckFramebufferStatus)(GLenum target);
+  void(*glDebugMessageCallback)(GLDEBUGPROC callback, const void *userParam);
+  void(*glDebugMessageControl)(GLenum source, GLenum type, GLenum severity,
+      GLsizei count, const GLuint *ids, GLboolean enabled);
+}
+
+#endif
+
+void initializeGLExtensions() {
+
+#ifdef WINDOWS
+#define LOAD(func) SDL::func = (decltype(SDL::func))winLoadFunction(#func);
+  LOAD(glBindFramebuffer);
+  LOAD(glDeleteFramebuffers);
+  LOAD(glGenFramebuffers);
+  LOAD(glCheckFramebufferStatus);
+  LOAD(glFramebufferTexture2D);
+  LOAD(glDrawBuffers);
+  LOAD(glBlendFuncSeparate);
+  LOAD(glDebugMessageCallback);
+  LOAD(glDebugMessageControl);
+#undef LOAD
+#endif
+}
+

@@ -42,9 +42,11 @@ void Technology::init() {
   Technology::set(TechId::ALCHEMY_CONV, new Technology(
         "alchemical conversion", "Convert resources to and from gold.", 100, {TechId::ALCHEMY}));
   Technology::set(TechId::HUMANOID_MUT, new Technology(
-        "humanoid mutation", "Breed new, very powerful humanoid species.", 400, {TechId::ALCHEMY}));
+        "humanoid mutation", "Breed new, very powerful humanoid species.", 400, {TechId::ALCHEMY}, true,
+            {AvatarVariant::DARK_MAGE, AvatarVariant::DARK_KNIGHT}));
   Technology::set(TechId::BEAST_MUT, new Technology(
-        "beast mutation", "Breed new, very powerful beast species.", 400, {TechId::ALCHEMY}));
+        "beast mutation", "Breed new, very powerful beast species.", 400, {TechId::ALCHEMY}, true,
+            {AvatarVariant::DARK_MAGE, AvatarVariant::DARK_KNIGHT}));
   Technology::set(TechId::PIGSTY, new Technology(
         "pig breeding", "Build a pigsty to feed your minions.", 120, {}));
   Technology::set(TechId::IRON_WORKING, new Technology(
@@ -54,7 +56,8 @@ void Technology::init() {
   Technology::set(TechId::TWO_H_WEAP, new Technology(
         "two-handed weapons", "Produce war hammers and battle axes.", 100, {TechId::IRON_WORKING}));
   Technology::set(TechId::TRAPS, new Technology(
-        "traps", "Produce traps in the workshop.", 100));
+        "traps", "Produce traps in the workshop.", 100, {}, true,
+            {AvatarVariant::DARK_MAGE, AvatarVariant::DARK_KNIGHT}));
   Technology::set(TechId::ARCHERY, new Technology(
         "archery", "Produce bows and arrows.", 100));
   Technology::set(TechId::SPELLS, new Technology(
@@ -66,7 +69,8 @@ void Technology::init() {
   Technology::set(TechId::SPELLS_MAS, new Technology(
         "master sorcery", "Learn the most powerful spells.", 350, {TechId::SPELLS_ADV}));
   Technology::set(TechId::DEMONOLOGY, new Technology(
-        "demonology", "Build demon shrines to summon demons.", 350, {TechId::SPELLS_ADV}));
+        "demonology", "Build demon shrines to summon demons.", 350, {TechId::SPELLS_ADV}, true,
+            {AvatarVariant::DARK_MAGE, AvatarVariant::DARK_KNIGHT}));
 }
 
 bool Technology::canResearch() const {
@@ -78,16 +82,17 @@ Technology* Technology::setTutorialHighlight(TutorialHighlight h) {
   return this;
 }
 
-vector<Technology*> Technology::getNextTechs(const vector<Technology*>& current) {
+vector<Technology*> Technology::getNextTechs(const vector<Technology*>& current, optional<AvatarVariant> avatarVariant) {
   vector<Technology*> ret;
   for (Technology* t : Technology::getAll())
-    if (t->canLearnFrom(current) && !current.contains(t))
+    if (t->canLearnFrom(current) && !current.contains(t) && (!avatarVariant || t->inVariants.contains(*avatarVariant)))
       ret.push_back(t);
   return ret;
 }
 
-Technology::Technology(const string& n, const string& d, int c, const vector<TechId>& pre, bool canR)
-    : name(n), description(d), cost(100), research(canR) {
+Technology::Technology(const string& n, const string& d, int c, const vector<TechId>& pre, bool canR,
+      EnumSet<AvatarVariant> inVariants)
+    : name(n), description(d), cost(100), research(canR), inVariants(inVariants) {
   for (TechId id : pre)
     prerequisites.push_back(Technology::get(id));
 }
@@ -114,7 +119,7 @@ const optional<TutorialHighlight> Technology::getTutorialHighlight() const {
 vector<Technology*> Technology::getSorted() {
   vector<Technology*> ret;
   while (ret.size() < getAll().size()) {
-    append(ret, getNextTechs(ret));
+    append(ret, getNextTechs(ret, none));
   }
   return ret;
 }
@@ -131,8 +136,11 @@ const vector<Technology*> Technology::getAllowed() const {
   return ret;
 }
 
-void Technology::onAcquired(TechId id, WCollective col) {
-  switch (id) {
-    default: break;
-  } 
+vector<Technology*> Technology::getInitialTech(AvatarVariant variant) {
+  switch (variant) {
+    case AvatarVariant::DARK_MAGE:
+      return {Technology::get(TechId::SPELLS)};
+    default:
+      return {};
+  }
 }

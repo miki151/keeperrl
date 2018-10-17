@@ -7,6 +7,8 @@
 
 namespace fx {
 
+using uint=std::uint32_t;
+
 struct SystemParams {
   static constexpr int maxScalars = 2, maxColors = 2;
 

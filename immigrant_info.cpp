@@ -29,7 +29,7 @@ AttractionInfo::AttractionInfo(int cl, vector<AttractionType> a)
   : types(a), amountClaimed(cl) {}
 
 ImmigrantInfo::ImmigrantInfo(CreatureId id, EnumSet<MinionTrait> t) : ids({id}), traits(t) {}
-ImmigrantInfo::ImmigrantInfo(vector<CreatureId> id, EnumSet<MinionTrait> t) : ids(id), traits(t), consumeIds(true) {
+ImmigrantInfo::ImmigrantInfo(vector<CreatureId> id, EnumSet<MinionTrait> t) : ids(id), traits(t) {
 }
 
 CreatureId ImmigrantInfo::getId(int numCreated) const {

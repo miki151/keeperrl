@@ -88,11 +88,6 @@ void Collective::init(CollectiveConfig&& cfg, Immigration&& im) {
   workshops = config->getWorkshops();
 }
 
-void Collective::acquireInitialTech() {
-  for (auto tech : config->getInitialTech())
-    acquireTech(tech, false);
-}
-
 const optional<CollectiveName>& Collective::getName() const {
   return *name;
 }
@@ -1280,7 +1275,6 @@ bool Collective::hasTech(TechId id) const {
 
 void Collective::acquireTech(Technology* tech, bool throughLevelling) {
   technologies.push_back(tech->getId());
-  Technology::onAcquired(tech->getId(), this);
   if (throughLevelling)
     ++dungeonLevel.consumedLevels;
 }
@@ -1395,7 +1389,7 @@ int Collective::getPopulationSize() const {
 }
 
 int Collective::getMaxPopulation() const {
-  return populationIncrease + config->getMaxPopulation();
+  return populationIncrease + config->getMaxPopulation() + getCreatures(MinionTrait::INCREASE_POPULATION).size();
 }
 
 const DungeonLevel& Collective::getDungeonLevel() const {

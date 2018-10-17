@@ -88,7 +88,7 @@
 template <class Archive>
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
   ar& SUBCLASS(CollectiveControl) & SUBCLASS(EventListener);
-  ar(memory, introText, lastControlKeeperQuestion);
+  ar(memory, introText, lastControlKeeperQuestion, avatarVariant);
   ar(newAttacks, ransomAttacks, notifiedAttacks, messages, hints, visibleEnemies);
   ar(visibilityMap, unknownLocations, dismissedVillageInfos);
   ar(messageHistory, tutorial, controlModeMessages, stunnedCreatures);
@@ -110,12 +110,13 @@ static vector<string> getHints() {
   };
 }
 
-PlayerControl::PlayerControl(Private, WCollective col) : CollectiveControl(col), hints(getHints()) {
+PlayerControl::PlayerControl(Private, WCollective col, AvatarVariant avatarVariant)
+      : CollectiveControl(col), hints(getHints()), avatarVariant(avatarVariant) {
   controlModeMessages = make_shared<MessageBuffer>();
   visibilityMap = make_shared<VisibilityMap>();
   unknownLocations = make_shared<UnknownLocations>();
   bool hotkeys[128] = {0};
-  for (auto& info : BuildInfo::get()) {
+  for (auto& info : BuildInfo::get(avatarVariant)) {
     if (info.hotkey) {
       CHECK(!hotkeys[int(info.hotkey)]);
       hotkeys[int(info.hotkey)] = true;
@@ -128,8 +129,8 @@ PlayerControl::PlayerControl(Private, WCollective col) : CollectiveControl(col),
         addToMemory(pos);
 }
 
-PPlayerControl PlayerControl::create(WCollective col, vector<string> introText) {
-  auto ret = makeOwner<PlayerControl>(Private{}, col);
+PPlayerControl PlayerControl::create(WCollective col, vector<string> introText, AvatarVariant avatarVariant) {
+  auto ret = makeOwner<PlayerControl>(Private{}, col, avatarVariant);
   ret->subscribeTo(col->getLevel()->getModel());
   ret->introText = introText;
   return ret;
@@ -930,7 +931,7 @@ static const ViewObject& getConstructionObject(FurnitureType type) {
 }
 
 void PlayerControl::acquireTech(int index) {
-  auto techs = Technology::getNextTechs(collective->getTechnologies()).filter(
+  auto techs = Technology::getNextTechs(collective->getTechnologies(), avatarVariant).filter(
       [](const Technology* tech) { return tech->canResearch(); });
   if (index < techs.size()) {
     Technology* tech = techs[index];
@@ -949,7 +950,7 @@ void PlayerControl::fillLibraryInfo(CollectiveInfo& collectiveInfo) const {
       info.warning = "Conquer some villains to advance your level."_s;
     info.totalProgress = 100 * dungeonLevel.getNecessaryProgress(dungeonLevel.level);
     info.currentProgress = int(100 * dungeonLevel.progress);
-    auto techs = Technology::getNextTechs(collective->getTechnologies()).filter(
+    auto techs = Technology::getNextTechs(collective->getTechnologies(), avatarVariant).filter(
         [](const Technology* tech) { return tech->canResearch(); });
     for (Technology* tech : techs) {
       info.available.emplace_back();
@@ -1211,6 +1212,9 @@ void PlayerControl::fillImmigrationHelp(CollectiveInfo& info) const {
     ));
     if (auto limit = elem->getLimit())
       infoLines.push_back("Limited to " + toString(*limit) + " creatures");
+    for (auto trait : elem->getTraits())
+      if (auto desc = getImmigrantDescription(trait))
+        infoLines.push_back(desc);
     info.allImmigration.push_back(ImmigrantDataInfo {
         requirements,
         infoLines,
@@ -1271,7 +1275,7 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   gameInfo.infoType = GameInfo::InfoType::BAND;
   gameInfo.playerInfo = CollectiveInfo();
   auto& info = *gameInfo.playerInfo.getReferenceMaybe<CollectiveInfo>();
-  info.buildings = fillButtons(BuildInfo::get());
+  info.buildings = fillButtons(getBuildInfo());
   fillMinions(info);
   fillImmigration(info);
   fillImmigrationHelp(info);
@@ -1425,7 +1429,7 @@ void PlayerControl::onEvent(const GameEvent& event) {
       },
       [&](const TechbookRead& info) {
         Technology* tech = info.technology;
-        vector<Technology*> nextTechs = Technology::getNextTechs(collective->getTechnologies());
+        vector<Technology*> nextTechs = Technology::getNextTechs(collective->getTechnologies(), avatarVariant);
         if (tech == nullptr) {
           if (!nextTechs.empty())
             tech = Random.choose(nextTechs);
@@ -1513,8 +1517,8 @@ const MapMemory& PlayerControl::getMemory() const {
   return *memory;
 }
 
-ViewObject PlayerControl::getTrapObject(TrapType type, bool armed) {
-  for (auto& info : BuildInfo::get())
+ViewObject PlayerControl::getTrapObject(TrapType type, bool armed) const {
+  for (auto& info : getBuildInfo())
     if (info.buildType == BuildInfo::TRAP && info.trapInfo.type == type) {
       if (!armed)
         return ViewObject(info.trapInfo.viewId, ViewLayer::FLOOR, "Unarmed " + getTrapName(type) + " trap")
@@ -2121,7 +2125,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
     }
     case UserInputId::RECT_SELECTION: {
       auto& info = input.get<BuildingInfo>();
-      if (canSelectRectangle(BuildInfo::get()[info.building])) {
+      if (canSelectRectangle(getBuildInfo()[info.building])) {
         updateSelectionSquares();
         if (rectSelection) {
           rectSelection->corner2 = info.pos;
@@ -2129,7 +2133,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
           rectSelection = CONSTRUCT(SelectionInfo, c.corner1 = c.corner2 = info.pos;);
         updateSelectionSquares();
       } else
-        handleSelection(info.pos, BuildInfo::get()[info.building], false);
+        handleSelection(info.pos, getBuildInfo()[info.building], false);
       break;
     }
     case UserInputId::RECT_DESELECTION:
@@ -2142,7 +2146,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
       break;
     case UserInputId::BUILD: {
       auto& info = input.get<BuildingInfo>();
-      handleSelection(info.pos, BuildInfo::get()[info.building], false);
+      handleSelection(info.pos, getBuildInfo()[info.building], false);
       break;
     }
     case UserInputId::VILLAGE_ACTION: {
@@ -2184,7 +2188,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
       if (rectSelection) {
         selection = rectSelection->deselect ? DESELECT : SELECT;
         for (Vec2 v : Rectangle::boundingBox({rectSelection->corner1, rectSelection->corner2}))
-          handleSelection(v, BuildInfo::get()[input.get<BuildingInfo>().building], true, rectSelection->deselect);
+          handleSelection(v, getBuildInfo()[input.get<BuildingInfo>().building], true, rectSelection->deselect);
       }
       FALLTHROUGH;
     case UserInputId::RECT_CANCEL:
@@ -2208,6 +2212,10 @@ void PlayerControl::processInput(View* view, UserInput input) {
     default:
       break;
   }
+}
+
+const vector<BuildInfo>& PlayerControl::getBuildInfo() const {
+  return BuildInfo::get(avatarVariant);
 }
 
 vector<WCreature> PlayerControl::getConsumptionTargets(WCreature consumer) const {
