@@ -158,7 +158,7 @@ double VillageBehaviour::getTriggerValue(const Trigger& trigger, const VillageCo
         return victimsMaxProb * victimsFun(self->victims, 0);
       case AttackTriggerId::ENEMY_POPULATION:
         return populationMaxProb * populationFun(
-            enemy->getCreatures(MinionTrait::FIGHTER).size(), trigger.get<int>());
+            enemy->getPopulationSize(), trigger.get<int>());
       case AttackTriggerId::GOLD:
         return goldMaxProb * goldFun(enemy->numResource(Collective::ResourceId::GOLD), trigger.get<int>());
       case AttackTriggerId::STOLEN_ITEMS:
