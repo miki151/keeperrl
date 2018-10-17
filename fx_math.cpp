@@ -1,6 +1,13 @@
 #include "fx_math.h"
 #include <algorithm>
 
+#ifdef OSX
+void sincosf(float a, float* sin, float* cos) {
+  __sincosf(a, sin, cos);
+}
+#endif
+
+
 namespace fx {
 
 float angleDistance(float a, float b) {

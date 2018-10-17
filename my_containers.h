@@ -260,6 +260,7 @@ class vector {
   class Iterator : public std::iterator<std::random_access_iterator_tag, T> {
     public:
     Iterator(const BaseIterator& i, const vector<T>* p) : it(i), parent(p), currentMod(p->modCounter) {}
+    Iterator() {}
 
     using value_type = T;
     using difference_type = long;

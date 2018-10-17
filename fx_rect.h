@@ -86,14 +86,14 @@ public:
     for (int n = 0; n < dim_size; n++)
       if (scale[n] < Scalar(0))
         swap(tmin[n], tmax[n]);
-    return {tmin, tmax, noAssertsTag};
+    return {tmin, tmax, NoAssertsTag{}};
   }
 
   Rect operator*(Scalar scale) const {
     auto tmin = m_min * scale, tmax = m_max * scale;
     if (scale < Scalar(0))
       swap(tmin, tmax);
-    return {tmin, tmax, noAssertsTag};
+    return {tmin, tmax, NoAssertsTag{}};
   }
 
   bool empty() const { return emptyRange(m_min, m_max); }
@@ -121,7 +121,7 @@ public:
     auto tmax = vmin(m_max, rhs.m_max);
 
     if (!emptyRange(tmin, tmax))
-      return Rect{tmin, tmax, noAssertsTag};
+      return Rect{tmin, tmax, NoAssertsTag{}};
     return Rect{};
   }
 
@@ -140,7 +140,7 @@ public:
 
   Rect inset(const T &valMin, const T &valMax) const {
     auto newMin = m_min + valMin, newMax = m_max - valMax;
-    return {vmin(newMin, newMax), vmax(newMin, newMax), noAssertsTag};
+    return {vmin(newMin, newMax), vmax(newMin, newMax), NoAssertsTag{}};
   }
   Rect inset(const T &value) const { return inset(value, value); }
   Rect inset(Scalar value) const { return inset(T(value)); }
