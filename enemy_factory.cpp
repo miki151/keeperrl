@@ -282,7 +282,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::CASTLE;
             c.tribe = TribeId::getHuman();
-            c.inhabitants.leader = CreatureId::AVATAR;
+            c.inhabitants.leader = CreatureId::DUKE;
             c.inhabitants.fighters = CreatureList(
                 random.get(12, 17),
                 makeVec(make_pair(1, CreatureId::PRIEST),
@@ -915,7 +915,7 @@ vector<ExternalEnemy> EnemyFactory::getExternalEnemies() {
     },
     ExternalEnemy{
         CreatureList(random.get(12, 16), {make_pair(2, CreatureId::KNIGHT), make_pair(1, CreatureId::ARCHER)})
-            .addUnique(CreatureId::AVATAR)
+            .addUnique(CreatureId::DUKE)
             //.increaseBaseLevel({{ExperienceType::MELEE, 4}})
             .addInventory({ItemType::Scroll{Effect::DestroyWalls{}}}),
         AttackBehaviourId::KILL_LEADER,

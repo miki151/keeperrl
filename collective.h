@@ -21,6 +21,7 @@
 #include "event_listener.h"
 #include "entity_map.h"
 #include "minion_trait.h"
+#include "dungeon_level.h"
 
 class CollectiveAttack;
 class Creature;
@@ -42,7 +43,6 @@ struct TriggerInfo;
 class Territory;
 struct CollectiveName;
 class Workshops;
-class TileEfficiency;
 class Zones;
 struct ItemFetchInfo;
 class CollectiveWarnings;
@@ -80,6 +80,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   WCollectiveControl getControl() const;
   LocalTime getLocalTime() const;
   GlobalTime getGlobalTime() const;
+  const PositionSet& getStoragePositions(StorageId) const;
 
   typedef CollectiveResourceId ResourceId;
 
@@ -106,7 +107,6 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   bool canClaimSquare(Position pos) const;
   void claimSquare(Position);
   const KnownTiles& getKnownTiles() const;
-  const TileEfficiency& getTileEfficiency() const;
   void retire();
   CollectiveWarnings& getWarnings();
   const CollectiveConfig& getConfig() const;
@@ -155,7 +155,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   bool hasPriorityTasks(Position) const;
 
   bool hasTech(TechId id) const;
-  void acquireTech(Technology*);
+  void acquireTech(Technology*, bool throughLevelling);
   vector<Technology*> getTechnologies() const;
   bool addKnownTile(Position);
 
@@ -174,6 +174,8 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
 
   int getPopulationSize() const;
   int getMaxPopulation() const;
+  const DungeonLevel& getDungeonLevel() const;
+  DungeonLevel& getDungeonLevel();
 
   vector<WCreature> getConsumptionTargets(WCreature consumer) const;
   void addAttack(const CollectiveAttack&);
@@ -190,7 +192,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   void updateResourceProduction();
   bool isItemMarked(WConstItem) const;
   int getNumItems(ItemIndex, bool includeMinions = true) const;
-  optional<PositionSet> getStorageFor(WConstItem) const;
+  const PositionSet& getStorageForPillagedItem(WConstItem) const;
 
   void addKnownVillain(WConstCollective);
   bool isKnownVillain(WConstCollective) const;
@@ -260,7 +262,6 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
 
   void handleSurprise(Position);
   int getTaskDuration(WConstCreature, MinionActivity) const;
-  void decayMorale();
   vector<WCreature> SERIAL(creatures);
   vector<vector<WCreature>> SERIAL(populationGroups);
   EnumMap<MinionTrait, vector<WCreature>> SERIAL(byTrait);
@@ -278,9 +279,6 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   bool isDelayed(Position);
   unordered_map<Position, LocalTime, CustomHash<Position>> SERIAL(delayedPos);
   vector<Position> getEnemyPositions() const;
-  double manaRemainder = 0;
-  double getKillManaScore(WConstCreature) const;
-  void addMana(double);
   EntitySet<Creature> SERIAL(kills);
   int SERIAL(points) = 0;
   HeapAllocated<CollectiveTeams> SERIAL(teams);
@@ -291,7 +289,6 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   optional<EnemyId> SERIAL(enemyId);
   unique_ptr<Workshops> SERIAL(workshops);
   HeapAllocated<Zones> SERIAL(zones);
-  HeapAllocated<TileEfficiency> SERIAL(tileEfficiency);
   HeapAllocated<CollectiveWarnings> SERIAL(warnings);
   PImmigration SERIAL(immigration);
   mutable optional<double> dangerLevelCache;
@@ -305,4 +302,5 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   HeapAllocated<Quarters> SERIAL(quarters);
   PPositionMatching SERIAL(positionMatching);
   int SERIAL(populationIncrease) = 0;
+  DungeonLevel SERIAL(dungeonLevel);
 };

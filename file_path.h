@@ -11,6 +11,8 @@ class FilePath {
   bool hasSuffix(const string&) const;
   FilePath changeSuffix(const string& current, const string& newSuf) const;
 
+  bool operator==(const FilePath &) const;
+
   private:
   friend class DirectoryPath;
   FilePath(const DirectoryPath& d, const string& f);

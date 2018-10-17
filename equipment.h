@@ -51,6 +51,7 @@ class Equipment {
   bool isEmpty() const;
   const ItemCounts& getCounts() const;
   void tick(Position);
+  bool containsAnyOf(const EntitySet<Item>&) const;
 
   SERIALIZATION_DECL(Equipment);
 

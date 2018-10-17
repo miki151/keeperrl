@@ -56,7 +56,7 @@ class Body {
   void setDeathSound(optional<SoundId>);
   void setNoCarryLimit();
   void setIntrinsicAttack(BodyPart, IntrinsicAttack);
-  void setCanAlwaysPush();
+  void setMinPushSize(Size);
 
   void affectPosition(Position);
 
@@ -152,7 +152,7 @@ class Body {
   optional<SoundId> SERIAL(deathSound);
   optional<double> SERIAL(carryLimit);
   EnumMap<BodyPart, optional<IntrinsicAttack>> SERIAL(intrinsicAttacks);
-  bool SERIAL(canAlwaysPush) = false;
+  Size SERIAL(minPushSize);
   optional<BodyPart> getAnyGoodBodyPart() const;
   double getBodyPartHealth() const;
 };

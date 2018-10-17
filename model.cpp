@@ -122,8 +122,10 @@ bool Model::update(double totalTime) {
     }
     CHECK(creature->getLevel() != nullptr) << "Creature misplaced before moving: " << creature->getName().bare() <<
         ". Any idea why this happened?";
-    if (!creature->isDead())
-       creature->makeMove();
+    if (!creature->isDead()) {
+      INFO << "Turn " << totalTime << " " << creature->getName().bare() << " moving now";
+      creature->makeMove();
+    }
     CHECK(creature->getLevel() != nullptr) << "Creature misplaced after moving: " << creature->getName().bare() <<
         ". Any idea why this happened?";
     if (!creature->isDead() && creature->getLevel()->getModel() == this)

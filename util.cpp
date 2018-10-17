@@ -17,6 +17,7 @@
 
 #include "util.h"
 #include "position.h"
+#include <time.h>
 
 void RandomGen::init(int seed) {
   generator.seed(seed);
@@ -79,12 +80,33 @@ bool RandomGen::chance(double v) {
   return getDouble(0, 1) <= v;
 }
 
+bool RandomGen::chance(float v) {
+  return getFloat(0, 1) <= v;
+}
+
 double RandomGen::getDouble() {
   return defaultDist(generator);
 }
 
 double RandomGen::getDouble(double a, double b) {
   return uniform_real_distribution<double>(a, b)(generator);
+}
+
+pair<float, float> RandomGen::getFloat2Fast() {
+  auto v = get(0, 1 << 30);
+  int v1 = v >> 15;
+  int v2 = v & 0x7fff;
+  const float mul = 1.0f / float(0x7fff);
+  return make_pair(float(v1) * mul, float(v2) * mul);
+}
+
+float RandomGen::getFloat(float a, float b) {
+  return uniform_real_distribution<float>(a, b)(generator);
+}
+
+float RandomGen::getFloatFast(float a, float b) {
+  auto v = get(0, INT_MAX);
+  return a + (b - a) * float(v) * (1.0f / float(INT_MAX - 1));
 }
 
 RandomGen Random;
@@ -517,7 +539,7 @@ Rectangle::Rectangle(Range xRange, Range yRange)
     : Rectangle(xRange.getStart(), yRange.getStart(), xRange.getEnd(), yRange.getEnd()) {
 }
 
-Rectangle::Iter::Iter(int x1, int y1, int px1, int py1, int kx1, int ky1) : pos(x1, y1), px(px1), py(py1), kx(kx1), ky(ky1) {}
+Rectangle::Iter::Iter(int x1, int y1, int px1, int py1, int kx1, int ky1) : pos(x1, y1), py(py1), ky(ky1) {}
 
 Vec2 Rectangle::randomVec2() const {
   return Vec2(Random.get(px, kx), Random.get(py, ky));
@@ -703,7 +725,7 @@ Range::Iter Range::end() {
   return Iter(finish, start, finish, increment);
 }
 
-Range::Iter::Iter(int i, int a, int b, int inc) : ind(i), min(a), max(b), increment(inc) {}
+Range::Iter::Iter(int i, int a, int b, int inc) : ind(i), /*min(a), max(b), */increment(inc) {}
 
 int Range::Iter::operator* () const {
   return ind;

@@ -24,6 +24,7 @@
 #include "spell.h"
 #include "skill.h"
 #include "build_info.h"
+#include "dungeon_level.h"
 
 namespace {
 
@@ -103,17 +104,28 @@ void spells(View* view) {
   view->presentList("List of spells and the spellcaster levels at which they are acquired.", options);
 }
 
+void villainPoints(View* view) {
+  vector<ListElem> options;
+  options.emplace_back("Villain type:", "Points:", ListElem::ElemMod::TITLE);
+  for (auto type : ENUM_ALL(VillainType))
+    if (type != VillainType::PLAYER) {
+    auto points = int(100 * DungeonLevel::getProgress(type));
+    options.emplace_back(getName(type), toString(points), ListElem::ElemMod::TEXT);
+  }
+  view->presentList("Experience points awarded for conquering each villain type.", options);
+}
+
 }
 
 void Encyclopedia::present(View* view, int lastInd) {
-  auto index = view->chooseFromList("Choose topic:", {"Technology", "Skills", "Spells"}, lastInd);
+  auto index = view->chooseFromList("Choose topic:", {"Technology", "Skills", "Spells", "Level increases"}, lastInd);
   if (!index)
     return;
   switch (*index) {
     case 0: advances(view); break;
-//    case 1: workshop(view); break;
     case 1: skills(view); break;
     case 2: spells(view); break;
+    case 3: villainPoints(view); break;
     default: FATAL << "wfepok";
   }
   present(view, *index);

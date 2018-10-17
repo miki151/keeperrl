@@ -19,7 +19,8 @@ enum class FurnitureUsageType {
   TRAIN,
   ARCHERY_RANGE,
   STUDY,
-  PORTAL
+  PORTAL,
+  SIT_ON_THRONE
 };
 
 class FurnitureUsage {

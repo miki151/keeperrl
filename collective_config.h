@@ -45,13 +45,13 @@ struct GuardianInfo {
 struct MinionActivityInfo {
   enum Type { FURNITURE, EXPLORE, COPULATE, EAT, SPIDER, WORKER, ARCHERY, IDLE } type;
   MinionActivityInfo();
-  MinionActivityInfo(FurnitureType, const string& description);
+  MinionActivityInfo(FurnitureType, const string& description, bool requiresLighting);
   typedef function<bool(WConstCollective, WConstCreature, FurnitureType)> UsagePredicate;
-  typedef function<bool(WConstCollective, FurnitureType)> ActivePredicate;
-  MinionActivityInfo(UsagePredicate, const string& description);
+  MinionActivityInfo(UsagePredicate, const string& description, bool requiresLighting);
   MinionActivityInfo(Type, const string& description);
   UsagePredicate furniturePredicate = [](WConstCollective, WConstCreature, FurnitureType) { return true; };
   string description;
+  bool requiresLighting = false;
 };
 
 struct WorkshopInfo {
@@ -98,6 +98,7 @@ class CollectiveConfig {
   const optional<GuardianInfo>& getGuardianInfo() const;
   unique_ptr<Workshops> getWorkshops() const;
   vector<Technology*> getInitialTech() const;
+  static bool requiresLighting(FurnitureType);
 
   static const WorkshopInfo& getWorkshopInfo(WorkshopType);
   static optional<WorkshopType> getWorkshopType(FurnitureType);
@@ -111,8 +112,6 @@ class CollectiveConfig {
   static optional<int> getTrainingMaxLevel(ExperienceType, FurnitureType);
   static const vector<FurnitureType>& getTrainingFurniture(ExperienceType);
   static const MinionActivityInfo& getActivityInfo(MinionActivity);
-  static const vector<FloorInfo>& getFloors();
-  static double getEfficiencyBonus(FurnitureType);
   static bool canBuildOutsideTerritory(FurnitureType);
   static int getManaForConquering(const optional<VillainType>&);
 

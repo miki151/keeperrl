@@ -105,7 +105,7 @@ class GuiBuilder {
   SGuiElem drawCost(pair<ViewId, int>, Color = Color::WHITE);
   SGuiElem drawHighscores(const vector<HighscoreList>&, Semaphore&, int& tabNum, vector<ScrollPosition>& scrollPos,
       bool& online);
-  SGuiElem drawMinimapIcons(const optional<TutorialInfo>&);
+  SGuiElem drawMinimapIcons(const GameInfo&);
   SGuiElem drawChooseNumberMenu(SyncQueue<optional<int>>&, const string& title, Range range, int initial, int increments);
   struct BugReportInfo {
     string text;

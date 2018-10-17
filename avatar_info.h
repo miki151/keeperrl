@@ -4,8 +4,9 @@
 
 struct AvatarInfo {
   PCreature playerCreature;
-  enum ImpVariant {
-    IMPS,
-    GOBLINS,
+  enum ImmigrationVariant {
+    DARK_MAGE,
+    DARK_KNIGHT,
+    WHITE_KNIGHT
   } impVariant;
 };

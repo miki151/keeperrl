@@ -157,6 +157,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   bool canEquipIfEmptySlot(WConstItem item, string* reason = nullptr) const;
   bool canEquip(WConstItem item) const;
   CreatureAction throwItem(WItem, Vec2 direction) const;
+  optional<int> getThrowDistance(WConstItem) const;
   CreatureAction applySquare(Position) const;
   CreatureAction hide() const;
   bool isHidden() const;
@@ -306,7 +307,6 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   optional<GlobalTime> SERIAL(deathTime);
   bool SERIAL(hidden) = false;
   WCreature lastAttacker;
-  optional<ExperienceType> SERIAL(lastDamageType); // remove
   optional<string> SERIAL(deathReason);
   optional<Position> SERIAL(nextPosIntent);
   EntitySet<Creature> SERIAL(unknownAttackers);
@@ -332,6 +332,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   mutable Game* gameCache = nullptr;
   optional<GlobalTime> SERIAL(globalTime);
   void considerMovingFromInaccessibleSquare();
+  void updateLastingFX(ViewObject&);
 };
 
 struct AdjectiveInfo {

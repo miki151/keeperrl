@@ -13,10 +13,12 @@ struct MovementInfo {
   MovementInfo& setType(Type);
   MovementInfo& setMaxLength(TimeInterval);
   MovementInfo& setVictim(UniqueEntity<Creature>::Id);
+  MovementInfo& setFX(optional<FXVariantName>);
   Vec2 direction;
   double tBegin;
   double tEnd;
   Type type = MOVE;
   int moveCounter = 0;
   optional<UniqueEntity<Creature>::Id> victim;
+  optional<FXVariantName> fx;
 };

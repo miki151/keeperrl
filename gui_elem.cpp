@@ -1783,11 +1783,11 @@ class ViewObjectGui : public GuiElem {
 };
 
 SGuiElem GuiFactory::viewObject(const ViewObject& object, double scale, Color color) {
-  return SGuiElem(new ViewObjectGui(object, renderer.getNominalSize() * scale, scale, color));
+  return SGuiElem(new ViewObjectGui(object, Vec2(1, 1) * Renderer::nominalSize * scale, scale, color));
 }
 
 SGuiElem GuiFactory::viewObject(ViewId id, double scale, Color color) {
-  return SGuiElem(new ViewObjectGui(id, renderer.getNominalSize() * scale, scale, color));
+  return SGuiElem(new ViewObjectGui(id, Vec2(1, 1) * Renderer::nominalSize * scale, scale, color));
 }
 
 SGuiElem GuiFactory::asciiBackground(ViewId id) {
@@ -2565,6 +2565,8 @@ void GuiFactory::loadFreeImages(const DirectoryPath& path) {
         return Vec2(0, 7);
       case SpellId::FIREBALL:
         return Vec2(1, 7);
+      case SpellId::FIREBALL_DRAGON:
+        return Vec2(1, 7);
       case SpellId::INVISIBILITY:
         return Vec2(0, 8);
       case SpellId::CIRCULAR_BLAST:
@@ -2823,8 +2825,9 @@ SGuiElem GuiFactory::translucentBackgroundWithBorderPassMouse(SGuiElem content) 
 
 SGuiElem GuiFactory::translucentBackgroundWithBorder(SGuiElem content) {
   return stack(
-      rectangleBorder(Color::GRAY),
-      translucentBackground(std::move(content)));
+      translucentBackground(std::move(content)),
+      rectangleBorder(Color::GRAY)
+  );
 }
 
 SGuiElem GuiFactory::translucentBackground() {

@@ -124,11 +124,7 @@ void VillageControl::launchAttack(vector<WCreature> attackers) {
     collective->freeTeamMembers(attackers);
     vector<WConstTask> attackTasks;
     for (WCreature c : attackers) {
-      PTask task;
-      if (c != collective->getTeams().getLeader(team))
-        task = Task::chain(Task::follow(c), villain->getAttackTask(this));
-      else
-        task = villain->getAttackTask(this);
+      auto task = Task::withTeam(collective, team, villain->getAttackTask(this));
       attackTasks.push_back(task.get());
       collective->setTask(c, std::move(task));
     }

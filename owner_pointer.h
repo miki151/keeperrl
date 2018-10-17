@@ -194,6 +194,12 @@ class WeakPointer {
   weak_ptr<T> SERIAL(elem);
 };
 
+template<typename T>
+bool operator == (const T* o, const WeakPointer<T>& p) {
+  return p.get() == o;
+}
+
+
 template<class T>
 std::ostream& operator<<(std::ostream& d, const WeakPointer<T>& p){
   d << "pointer(" << p.get() << ")";

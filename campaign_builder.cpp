@@ -259,13 +259,19 @@ void CampaignBuilder::setPlayerPos(Campaign& campaign, Vec2 pos, ViewId playerVi
 
 }
 
-static AvatarInfo::ImpVariant getImpVariant(CreatureId id) {
+static AvatarVariant getAvatarVariant(CreatureId id) {
   switch (id) {
     case CreatureId::KEEPER_KNIGHT:
     case CreatureId::KEEPER_KNIGHT_F:
-      return AvatarInfo::GOBLINS;
+      return AvatarVariant::DARK_KNIGHT;
+    case CreatureId::KEEPER_MAGE:
+    case CreatureId::KEEPER_MAGE_F:
+      return AvatarVariant::DARK_MAGE;
+    case CreatureId::DUKE_PLAYER:
+      return AvatarVariant::WHITE_KNIGHT;
     default:
-      return AvatarInfo::IMPS;
+      FATAL << "Immigration variant not handled for CreatureId = " << EnumInfo<CreatureId>::getString(id);
+      return {};
   }
 }
 
@@ -276,7 +282,7 @@ AvatarInfo CampaignBuilder::getAvatarInfo() {
   if (!name.empty())
     ret->getName().setFirst(name);
   ret->getName().useFullTitle();
-  return {std::move(ret), getImpVariant(id)};
+  return {std::move(ret), getAvatarVariant(id)};
 }
 
 
@@ -433,11 +439,11 @@ static bool autoConfirm(CampaignType type) {
 
 static vector<string> getIntroMessages(CampaignType type, string worldName) {
   vector<string> ret = {
-    "Welcome to KeeperRL Alpha 25 hotfix 1! This patch was released on August 23, 2018. "
-    "Many new gameplay features have arrived, "
+    "Welcome to KeeperRL Alpha 26! This patch hasn't been officially released yet might be very unstable! "
+/*    "Many new gameplay features have arrived, "
     "so if you are a returning player, we encourage you to check out the "
-    "change log at www.keeperrl.com.\n \n"
-    "If this is your first time playing KeeperRL, remember to start with the tutorial!"
+    "change log at www.keeperrl.com.\n \n"*/
+    "If this is your first time playing KeeperRL, please play the official Alpha 25 build."
   };
   if (type == CampaignType::ENDLESS)
     ret.push_back(
@@ -464,7 +470,8 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(function<optional<Retir
       CreatureId::KEEPER_MAGE,
       CreatureId::KEEPER_MAGE_F,
       CreatureId::KEEPER_KNIGHT,
-      CreatureId::KEEPER_KNIGHT_F
+      CreatureId::KEEPER_KNIGHT_F,
+      CreatureId::DUKE_PLAYER
   });
   options->setChoices(OptionId::ADVENTURER_TYPE, {CreatureId::ADVENTURER, CreatureId::ADVENTURER_F});
   while (1) {
@@ -548,5 +555,5 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(function<optional<Retir
 
 CampaignSetup CampaignBuilder::getEmptyCampaign() {
   Campaign ret(Table<Campaign::SiteInfo>(1, 1), CampaignType::SINGLE_KEEPER, PlayerRole::KEEPER, "");
-  return CampaignSetup{ret, {PCreature(nullptr), AvatarInfo::IMPS}, "", "", false, {}};
+  return CampaignSetup{ret, {PCreature(nullptr), AvatarVariant::DARK_MAGE}, "", "", false, {}};
 }

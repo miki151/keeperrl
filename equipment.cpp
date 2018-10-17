@@ -130,3 +130,7 @@ void Equipment::tick(Position pos) {
   inventory.tick(pos);
 }
 
+bool Equipment::containsAnyOf(const EntitySet<Item>& items) const {
+  return inventory.containsAnyOf(items);
+}
+
