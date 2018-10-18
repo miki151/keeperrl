@@ -200,7 +200,7 @@ static vector<ImmigrantInfo> getWhiteKeeperImmigration(RandomGen& random) {
         .addSpecialTrait(0.03, {SkillId::WORKSHOP, LastingEffect::INSANITY})
         .addSpecialTrait(0.03, {SkillId::FORGE, LastingEffect::INSANITY})
         .addSpecialTrait(0.03, {SkillId::JEWELER, LastingEffect::INSANITY}),
-    ImmigrantInfo(CreatureId::DOG, {MinionTrait::FIGHTER, MinionTrait::DOESNT_TRIGGER})
+    ImmigrantInfo(CreatureId::DOG, {MinionTrait::FIGHTER, MinionTrait::DOESNT_TRIGGER, MinionTrait::NO_LIMIT})
         .setFrequency(0.2),
     ImmigrantInfo({CreatureId::DONKEY, CreatureId::COW, CreatureId::HORSE, CreatureId::GOAT},
             {MinionTrait::NO_LIMIT, MinionTrait::INCREASE_POPULATION})
@@ -561,14 +561,14 @@ WCollective ModelBuilder::spawnKeeper(WModel m, AvatarInfo avatarInfo, bool rege
   m->addCreature(std::move(avatarInfo.playerCreature));
   m->collectives.push_back(CollectiveBuilder(
         getKeeperConfig(random, options->getBoolValue(OptionId::FAST_IMMIGRATION),
-            regenerateMana, avatarInfo.avatarVariant), TribeId::getKeeper())
+            regenerateMana, *avatarInfo.avatarVariant), TribeId::getKeeper())
       .setLevel(level)
       .addCreature(keeperRef, {MinionTrait::LEADER})
       .build());
   WCollective playerCollective = m->collectives.back().get();
-  playerCollective->setControl(PlayerControl::create(playerCollective, introText, avatarInfo.avatarVariant));
+  playerCollective->setControl(PlayerControl::create(playerCollective, introText, *avatarInfo.avatarVariant));
   playerCollective->setVillainType(VillainType::PLAYER);
-  for (auto tech : Technology::getInitialTech(avatarInfo.avatarVariant))
+  for (auto tech : Technology::getInitialTech(*avatarInfo.avatarVariant))
     playerCollective->acquireTech(tech, false);
   return playerCollective;
 }
