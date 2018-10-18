@@ -718,8 +718,8 @@ void Renderer::makeScreenshot(const FilePath& path) {
   int bmpSize = width * height * 3 + 1000;
   unique_ptr<char[]> bitmap(new char[bmpSize]);
   auto *rw = SDL::SDL_RWFromMem(bitmap.get(), bmpSize);
-  CHECK(SDL::SDL_SaveBMP_RW(inverted, rw, 1) == 0)
-      << SDL::SDL_GetError();
+  CHECK(rw) << SDL::SDL_GetError();
+  CHECK(SDL::SDL_SaveBMP_RW(inverted, rw, 1) == 0) << SDL::SDL_GetError();
   SDL_FreeSurface(image);
   SDL_FreeSurface(inverted);
   ogzstream output(path.getPath());
