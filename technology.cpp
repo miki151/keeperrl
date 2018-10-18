@@ -140,7 +140,9 @@ vector<Technology*> Technology::getInitialTech(AvatarVariant variant) {
   switch (variant) {
     case AvatarVariant::DARK_MAGE:
       return {Technology::get(TechId::SPELLS)};
-    default:
-      return {};
+    case AvatarVariant::DARK_KNIGHT:
+      return {Technology::get(TechId::IRON_WORKING)};
+    case AvatarVariant::WHITE_KNIGHT:
+      return {Technology::get(TechId::ARCHERY)};
   }
 }
