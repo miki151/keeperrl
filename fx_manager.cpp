@@ -13,7 +13,7 @@ static FXManager *s_instance = nullptr;
 FXManager *FXManager::getInstance() { return s_instance; }
 
 FXManager::FXManager() {
-  randomGen = std::make_unique<RandomGen>();
+  randomGen = unique<RandomGen>();
   initializeTextureDefs();
   initializeDefs();
   CHECK(s_instance == nullptr && "There can be only one!");

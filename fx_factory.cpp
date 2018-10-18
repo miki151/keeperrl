@@ -513,7 +513,7 @@ static void addOldMagicMissileEffect(FXManager& mgr) {
     pdef.slowdown = 1.0f;
     pdef.alpha = {{0.0f, 0.5f, 0.0f}};
     pdef.size = {{0.0f, 0.2f, 0.8f, 1.0f}, {5.0f, 20.0f, 30.0f, 20.0f}};
-    pdef.color = {{FVec3(0.2, 0.1, 0.9)}};
+    pdef.color = {FVec3(0.2, 0.1, 0.9)};
     pdef.textureName = TextureName::MISSILE_CORE;
 
     SubSystemDef ssdef(pdef, edef, 0.0f, 0.5f);

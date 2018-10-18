@@ -354,10 +354,10 @@ static int keeperMain(po::parser& commandLineFlags) {
     auto particlesPath = paidDataPath.subdirectory("images").subdirectory("particles");
     if (particlesPath.exists()) {
       INFO << "FX: initialization";
-      fxManager = std::make_unique<fx::FXManager>();
-      fxRenderer = std::make_unique<fx::FXRenderer>(particlesPath, *fxManager);
+      fxManager = unique<fx::FXManager>();
+      fxRenderer = unique<fx::FXRenderer>(particlesPath, *fxManager);
       fxRenderer->loadTextures();
-      fxViewManager = std::make_unique<FXViewManager>(fxManager.get(), fxRenderer.get());
+      fxViewManager = unique<FXViewManager>(fxManager.get(), fxRenderer.get());
     }
   }
 

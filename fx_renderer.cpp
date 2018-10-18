@@ -24,7 +24,7 @@ struct FXRenderer::SystemDrawInfo {
 };
 
 FXRenderer::FXRenderer(DirectoryPath dataPath, FXManager& mgr) : mgr(mgr), texturesPath(dataPath) {
-  drawBuffers = std::make_unique<DrawBuffers>();
+  drawBuffers = unique<DrawBuffers>();
 }
 
 void FXRenderer::loadTextures() {
@@ -197,8 +197,8 @@ void FXRenderer::prepareOrdered() {
   auto fboSize = allocateFboSpace();
   if (!orderedBlendFBO || orderedBlendFBO->width != fboSize.x || orderedBlendFBO->height != fboSize.y) {
     INFO << "FX: creating FBO for ordered rendering (" << fboSize.x << ", " << fboSize.y << ")";
-    orderedBlendFBO = std::make_unique<Framebuffer>(fboSize.x, fboSize.y);
-    orderedAddFBO = std::make_unique<Framebuffer>(fboSize.x, fboSize.y);
+    orderedBlendFBO = unique<Framebuffer>(fboSize.x, fboSize.y);
+    orderedAddFBO = unique<Framebuffer>(fboSize.x, fboSize.y);
   }
 
   // Positioning particles for FBO
@@ -243,8 +243,8 @@ void FXRenderer::setView(float zoom, float offsetX, float offsetY, int w, int h)
     DASSERT(Framebuffer::isExtensionAvailable());
     if (!blendFBO || blendFBO->width != size.x || blendFBO->height != size.y) {
       INFO << "FX: creating FBO (" << size.x << ", " << size.y << ")";
-      blendFBO = std::make_unique<Framebuffer>(size.x, size.y);
-      addFBO = std::make_unique<Framebuffer>(size.x, size.y);
+      blendFBO = unique<Framebuffer>(size.x, size.y);
+      addFBO = unique<Framebuffer>(size.x, size.y);
     }
   }
 }

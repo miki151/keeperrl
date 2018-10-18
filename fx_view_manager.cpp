@@ -40,7 +40,7 @@ struct FXViewManager::EntityInfo {
 FXViewManager::~FXViewManager() = default;
 FXViewManager::FXViewManager(fx::FXManager* manager, fx::FXRenderer* renderer)
     : fxManager(manager), fxRenderer(renderer) {
-  entities = std::make_unique<EntityMap>();
+  entities = unique<EntityMap>();
 }
 
 FXId FXViewManager::spawnOrderedEffect(const FXInfo& info, bool snapshot) {
