@@ -5,5 +5,5 @@
 
 struct AvatarInfo {
   PCreature playerCreature;
-  AvatarVariant avatarVariant;
+  optional<AvatarVariant> avatarVariant;
 };

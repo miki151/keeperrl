@@ -259,7 +259,7 @@ void CampaignBuilder::setPlayerPos(Campaign& campaign, Vec2 pos, ViewId playerVi
 
 }
 
-static AvatarVariant getAvatarVariant(CreatureId id) {
+static optional<AvatarVariant> getAvatarVariant(CreatureId id) {
   switch (id) {
     case CreatureId::KEEPER_KNIGHT:
     case CreatureId::KEEPER_KNIGHT_F:
@@ -270,8 +270,7 @@ static AvatarVariant getAvatarVariant(CreatureId id) {
     case CreatureId::DUKE_PLAYER:
       return AvatarVariant::WHITE_KNIGHT;
     default:
-      FATAL << "Immigration variant not handled for CreatureId = " << EnumInfo<CreatureId>::getString(id);
-      return {};
+      return none;
   }
 }
 
