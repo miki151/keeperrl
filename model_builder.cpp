@@ -62,6 +62,7 @@ static vector<ImmigrantInfo> getDarkKeeperImmigration(RandomGen& random) {
         .addSpecialTrait(0.05, LastingEffect::NIGHT_VISION)
         .addSpecialTrait(0.05, SkillId::DISARM_TRAPS)
         .addSpecialTrait(0.05, SkillId::SWIMMING)
+        .addOneOrMoreTraits(0.05, {LastingEffect::HATE_ELVES, LastingEffect::HATE_HUMANS})
         .addSpecialTrait(0.05, LastingEffect::MAGIC_VULNERABILITY),
     ImmigrantInfo(CreatureId::ORC_SHAMAN, {MinionTrait::FIGHTER})
         .setFrequency(0.6)
@@ -70,6 +71,7 @@ static vector<ImmigrantInfo> getDarkKeeperImmigration(RandomGen& random) {
         .addSpecialTrait(0.03, {AttrBonus { AttrType::SPELL_DAMAGE, 7 }, LastingEffect::INSANITY})
         .addSpecialTrait(0.1, ExtraTraining { ExperienceType::SPELL, 4 })
         .addSpecialTrait(0.05, SkillId::LABORATORY)
+        .addOneOrMoreTraits(0.05, {LastingEffect::HATE_ELVES, LastingEffect::HATE_HUMANS})
         .addSpecialTrait(0.1, LastingEffect::MAGIC_RESISTANCE),
     ImmigrantInfo(CreatureId::OGRE, {MinionTrait::FIGHTER})
         .setFrequency(0.3)
@@ -78,6 +80,7 @@ static vector<ImmigrantInfo> getDarkKeeperImmigration(RandomGen& random) {
         .addSpecialTrait(0.03, {AttrBonus { AttrType::DAMAGE, 5 }, LastingEffect::INSANITY})
         .addSpecialTrait(0.05, {AttrBonus { AttrType::DEFENSE, 5 }, LastingEffect::SLOWED})
         .addSpecialTrait(0.1, LastingEffect::RANGED_VULNERABILITY)
+        .addOneOrMoreTraits(0.05, {LastingEffect::HATE_ELVES, LastingEffect::HATE_HUMANS})
         .addSpecialTrait(0.1, ExtraTraining { ExperienceType::ARCHERY, 2 }),
     ImmigrantInfo(CreatureId::HARPY, {MinionTrait::FIGHTER})
         .setFrequency(0.3)
@@ -87,6 +90,7 @@ static vector<ImmigrantInfo> getDarkKeeperImmigration(RandomGen& random) {
         .addSpecialTrait(0.03, {AttrBonus { AttrType::RANGED_DAMAGE, 5 }, LastingEffect::INSANITY})
         .addSpecialTrait(0.02, LastingEffect::INSANITY)
         .addSpecialTrait(0.2, LastingEffect::NIGHT_VISION)
+        .addOneOrMoreTraits(0.05, {LastingEffect::HATE_ELVES, LastingEffect::HATE_HUMANS})
         .addSpecialTrait(0.1, ExtraTraining { ExperienceType::ARCHERY, 3 }),
     ImmigrantInfo(CreatureId::ZOMBIE, {MinionTrait::FIGHTER})
         .setFrequency(0.5)
@@ -108,6 +112,7 @@ static vector<ImmigrantInfo> getDarkKeeperImmigration(RandomGen& random) {
         .addRequirement(0.0, CostInfo(CollectiveResourceId::CORPSE, 1))
         .addSpecialTrait(0.3, LastingEffect::TELEPATHY)
         .addSpecialTrait(0.3, LastingEffect::FIRE_RESISTANT)
+        .addSpecialTrait(0.05, LastingEffect::HATE_GREENSKINS)
         .addSpecialTrait(0.3, LastingEffect::FLYING),
     ImmigrantInfo(CreatureId::LOST_SOUL, {MinionTrait::FIGHTER})
         .setFrequency(0.3)
@@ -147,6 +152,7 @@ static vector<ImmigrantInfo> getDarkKeeperImmigration(RandomGen& random) {
         .addRequirement(0.1, AttractionInfo{2, FurnitureType::TRAINING_IRON})
         .addSpecialTrait(0.1, {AttrBonus { AttrType::DAMAGE, 5 }, LastingEffect::INSANITY})
         .addSpecialTrait(0.03, LastingEffect::INSANITY)
+        .addSpecialTrait(0.1, LastingEffect::HATE_UNDEAD)
         .addSpecialTrait(0.3, SkillId::AMBUSH),
     ImmigrantInfo(CreatureId::DARK_ELF_WARRIOR, {MinionTrait::FIGHTER})
         .addRequirement(0.0, RecruitmentInfo{{EnemyId::DARK_ELVES}, 3, MinionTrait::FIGHTER})
@@ -167,15 +173,14 @@ static vector<ImmigrantInfo> getDarkKeeperImmigration(RandomGen& random) {
         .addRequirement(0.0, Pregnancy {})
         .addRequirement(CostInfo(CollectiveResourceId::GOLD, 100))
         .setSpawnLocation(Pregnancy {})
-        .addSpecialTrait(0.2, LastingEffect::INSANITY),
+        .addSpecialTrait(0.1, LastingEffect::INSANITY),
     ImmigrantInfo(random.permutation({CreatureId::SPECIAL_BMBN, CreatureId::SPECIAL_BMBW, CreatureId::SPECIAL_BMGN,
           CreatureId::SPECIAL_BMGW}), {MinionTrait::FIGHTER, MinionTrait::DOESNT_TRIGGER})
         .setLimit(4)
         .addRequirement(0.0, TechId::BEAST_MUT)
         .addRequirement(0.0, Pregnancy {})
         .addRequirement(CostInfo(CollectiveResourceId::GOLD, 100))
-        .setSpawnLocation(Pregnancy {})
-        .addSpecialTrait(0.2, LastingEffect::INSANITY),
+        .setSpawnLocation(Pregnancy {}),
   };
 }
 
@@ -183,12 +188,15 @@ static vector<ImmigrantInfo> getWhiteKeeperImmigration(RandomGen& random) {
   return {
     ImmigrantInfo(CreatureId::KNIGHT_PLAYER, {MinionTrait::FIGHTER})
         .setFrequency(0.7)
+        .addOneOrMoreTraits(0.1, {LastingEffect::HATE_ELVES, LastingEffect::HATE_DWARVES, LastingEffect::HATE_GREENSKINS})
         .addRequirement(0.1, AttractionInfo{1, vector<AttractionType>({FurnitureType::TRAINING_WOOD})}),
     ImmigrantInfo(CreatureId::ARCHER_PLAYER, {MinionTrait::FIGHTER})
         .setFrequency(0.7)
+        .addOneOrMoreTraits(0.1, {LastingEffect::HATE_ELVES, LastingEffect::HATE_DWARVES, LastingEffect::HATE_GREENSKINS})
         .addRequirement(0.1, AttractionInfo{1, vector<AttractionType>({FurnitureType::ARCHERY_RANGE})}),
     ImmigrantInfo(CreatureId::PRIEST_PLAYER, {MinionTrait::FIGHTER})
         .setFrequency(0.3)
+        .addSpecialTrait(0.2, LastingEffect::HATE_UNDEAD)
         .addRequirement(0.1, AttractionInfo{1, vector<AttractionType>({FurnitureType::BOOKCASE_WOOD})}),
     ImmigrantInfo(CreatureId::JESTER_PLAYER, {MinionTrait::FIGHTER})
         .setFrequency(0.1)
@@ -201,7 +209,7 @@ static vector<ImmigrantInfo> getWhiteKeeperImmigration(RandomGen& random) {
         .addSpecialTrait(0.03, {SkillId::FORGE, LastingEffect::INSANITY})
         .addSpecialTrait(0.03, {SkillId::JEWELER, LastingEffect::INSANITY}),
     ImmigrantInfo(CreatureId::DOG, {MinionTrait::FIGHTER, MinionTrait::DOESNT_TRIGGER, MinionTrait::NO_LIMIT})
-        .setFrequency(0.2),
+        .setFrequency(0.1),
     ImmigrantInfo({CreatureId::DONKEY, CreatureId::COW, CreatureId::HORSE, CreatureId::GOAT},
             {MinionTrait::NO_LIMIT, MinionTrait::INCREASE_POPULATION})
         .addRequirement(CostInfo(CollectiveResourceId::GOLD, 50)),

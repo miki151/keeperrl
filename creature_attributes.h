@@ -106,6 +106,7 @@ class CreatureAttributes {
   bool getCanJoinCollective() const;
   optional<ViewId> getRetiredViewId();
   void increaseExpFromCombat(double attackDiff);
+  optional<LastingEffect> getHatedByEffect() const;
 
   friend class CreatureFactory;
 
@@ -121,7 +122,6 @@ class CreatureAttributes {
   optional<string> SERIAL(chatReactionHostile);
   HeapAllocated<optional<Effect>> SERIAL(passiveAttack);
   Gender SERIAL(gender) = Gender::male;
-  bool SERIAL(animal) = false;
   bool SERIAL(cantEquip) = false;
   double SERIAL(courage) = 1;
   bool SERIAL(boulder) = false;
@@ -140,4 +140,5 @@ class CreatureAttributes {
   string SERIAL(deathDescription) = "killed"_s;
   bool SERIAL(canJoinCollective) = true;
   optional<string> SERIAL(petReaction);
+  optional<LastingEffect> SERIAL(hatedByEffect);
 };

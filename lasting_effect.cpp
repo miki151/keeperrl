@@ -81,21 +81,27 @@ void LastingEffects::onAffected(WCreature c, LastingEffect effect, bool msg) {
   if (msg)
     switch (effect) {
       case LastingEffect::FLYING:
-        c->you(MsgType::ARE, "flying!"); break;
+        c->you(MsgType::ARE, "flying!");
+        break;
       case LastingEffect::BLEEDING:
         c->secondPerson("You start bleeding");
         c->thirdPerson(c->getName().the() + " starts bleeding");
         break;
       case LastingEffect::COLLAPSED:
-        c->you(MsgType::COLLAPSE); break;
+        c->you(MsgType::COLLAPSE);
+        break;
       case LastingEffect::PREGNANT:
-        c->you(MsgType::ARE, "pregnant!"); break;
+        c->you(MsgType::ARE, "pregnant!");
+        break;
       case LastingEffect::STUNNED:
-        c->you(MsgType::ARE, "knocked out"); break;
+        c->you(MsgType::ARE, "knocked out");
+        break;
       case LastingEffect::PANIC:
-        c->you(MsgType::PANIC, ""); break;
+        c->you(MsgType::PANIC, "");
+        break;
       case LastingEffect::RAGE:
-        c->you(MsgType::RAGE, ""); break;
+        c->you(MsgType::RAGE, "");
+        break;
       case LastingEffect::HALLU:
         if (!c->isAffected(LastingEffect::BLIND))
           c->privateMessage("The world explodes into colors!");
@@ -103,7 +109,8 @@ void LastingEffects::onAffected(WCreature c, LastingEffect effect, bool msg) {
           c->privateMessage("You feel as if a party has started without you.");
         break;
       case LastingEffect::BLIND:
-        c->you(MsgType::ARE, "blind!"); break;
+        c->you(MsgType::ARE, "blind!");
+        break;
       case LastingEffect::INVISIBLE:
         if (!c->isAffected(LastingEffect::BLIND))
           c->you(MsgType::TURN_INVISIBLE, "");
@@ -111,31 +118,44 @@ void LastingEffects::onAffected(WCreature c, LastingEffect effect, bool msg) {
           c->privateMessage("You feel like a child again.");
         break;
       case LastingEffect::POISON:
-        c->you(MsgType::ARE, "poisoned"); break;
+        c->you(MsgType::ARE, "poisoned");
+        break;
       case LastingEffect::DAM_BONUS:
-        c->you(MsgType::FEEL, "more dangerous"); break;
+        c->you(MsgType::FEEL, "more dangerous");
+        break;
       case LastingEffect::DEF_BONUS:
-        c->you(MsgType::FEEL, "more protected"); break;
+        c->you(MsgType::FEEL, "more protected");
+        break;
       case LastingEffect::SPEED:
-        c->you(MsgType::ARE, "moving faster"); break;
+        c->you(MsgType::ARE, "moving faster");
+        break;
       case LastingEffect::SLOWED:
-        c->you(MsgType::ARE, "moving more slowly"); break;
+        c->you(MsgType::ARE, "moving more slowly");
+        break;
       case LastingEffect::SLEEP_RESISTANT:
-        c->you(MsgType::ARE, "now sleep resistant"); break;
+        c->you(MsgType::ARE, "now sleep resistant");
+        break;
       case LastingEffect::TIED_UP:
-        c->you(MsgType::ARE, "tied up"); break;
+        c->you(MsgType::ARE, "tied up");
+        break;
       case LastingEffect::ENTANGLED:
-        c->you(MsgType::ARE, "entangled in a web"); break;
+        c->you(MsgType::ARE, "entangled in a web");
+        break;
       case LastingEffect::SLEEP:
-        c->you(MsgType::FALL_ASLEEP, ""); break;
+        c->you(MsgType::FALL_ASLEEP, "");
+        break;
       case LastingEffect::POISON_RESISTANT:
-        c->you(MsgType::ARE, "now poison resistant"); break;
+        c->you(MsgType::ARE, "now poison resistant");
+        break;
       case LastingEffect::FIRE_RESISTANT:
-        c->you(MsgType::ARE, "now fire resistant"); break;
+        c->you(MsgType::ARE, "now fire resistant");
+        break;
       case LastingEffect::INSANITY:
-        c->you(MsgType::BECOME, "insane"); break;
+        c->you(MsgType::BECOME, "insane");
+        break;
       case LastingEffect::PEACEFULNESS:
-        c->you(MsgType::BECOME, "peaceful"); break;
+        c->you(MsgType::BECOME, "peaceful");
+        break;
       case LastingEffect::LIGHT_SOURCE:
         c->getPosition().addCreatureLight(false);
         break;
@@ -143,35 +163,57 @@ void LastingEffects::onAffected(WCreature c, LastingEffect effect, bool msg) {
         c->getPosition().addCreatureLight(true);
         break;
       case LastingEffect::MAGIC_RESISTANCE:
-        c->you(MsgType::ARE, "now resistant to magical attacks"); break;
+        c->you(MsgType::ARE, "now resistant to magical attacks");
+        break;
       case LastingEffect::MELEE_RESISTANCE:
-        c->you(MsgType::ARE, "now resistant to melee attacks"); break;
+        c->you(MsgType::ARE, "now resistant to melee attacks");
+        break;
       case LastingEffect::RANGED_RESISTANCE:
-        c->you(MsgType::ARE, "now resistant to ranged attacks"); break;
+        c->you(MsgType::ARE, "now resistant to ranged attacks");
+        break;
       case LastingEffect::MAGIC_VULNERABILITY:
-        c->you(MsgType::ARE, "now vulnerable to magical attacks"); break;
+        c->you(MsgType::ARE, "now vulnerable to magical attacks");
+        break;
       case LastingEffect::MELEE_VULNERABILITY:
-        c->you(MsgType::ARE, "now vulnerable to melee attacks"); break;
+        c->you(MsgType::ARE, "now vulnerable to melee attacks");
+        break;
       case LastingEffect::RANGED_VULNERABILITY:
-        c->you(MsgType::ARE, "now vulnerable to ranged attacks"); break;
+        c->you(MsgType::ARE, "now vulnerable to ranged attacks");
+        break;
       case LastingEffect::ELF_VISION:
-        c->you("can see through trees"); break;
+        c->you("can see through trees");
+        break;
       case LastingEffect::NIGHT_VISION:
-        c->you("can see in the dark"); break;
+        c->you("can see in the dark");
+        break;
       case LastingEffect::REGENERATION:
-        c->you(MsgType::ARE, "regenerating"); break;
+        c->you(MsgType::ARE, "regenerating");
+        break;
       case LastingEffect::WARNING:
-        c->you(MsgType::FEEL, "more aware of danger"); break;
+        c->you(MsgType::FEEL, "more aware of danger");
+        break;
       case LastingEffect::TELEPATHY:
-        c->you(MsgType::ARE, "telepathic"); break;
+        c->you(MsgType::ARE, "telepathic");
+        break;
       case LastingEffect::SUNLIGHT_VULNERABLE:
-        c->you(MsgType::ARE, "vulnerable to sunlight"); break;
+        c->you(MsgType::ARE, "vulnerable to sunlight");
+        break;
       case LastingEffect::SATIATED:
-        c->you(MsgType::ARE, "satiated"); break;
+        c->you(MsgType::ARE, "satiated");
+        break;
       case LastingEffect::RESTED:
-        c->you(MsgType::ARE, "well rested"); break;
+        c->you(MsgType::ARE, "well rested");
+        break;
       case LastingEffect::SUMMONED:
-        c->you(MsgType::YOUR, "days are numbered"); break;
+        c->you(MsgType::YOUR, "days are numbered");
+        break;
+      case LastingEffect::HATE_HUMANS:
+      case LastingEffect::HATE_GREENSKINS:
+      case LastingEffect::HATE_ELVES:
+      case LastingEffect::HATE_UNDEAD:
+      case LastingEffect::HATE_DWARVES:
+        c->you(MsgType::FEEL, "feel of hatred");
+        break;
     }
 }
 
@@ -329,7 +371,15 @@ void LastingEffects::onTimedOut(WCreature c, LastingEffect effect, bool msg) {
       case LastingEffect::DARKNESS_SOURCE:
         c->getPosition().removeCreatureLight(true);
         break;
-      default: break;
+      case LastingEffect::HATE_HUMANS:
+      case LastingEffect::HATE_GREENSKINS:
+      case LastingEffect::HATE_ELVES:
+      case LastingEffect::HATE_UNDEAD:
+      case LastingEffect::HATE_DWARVES:
+        c->you(MsgType::YOUR, "hatred is gone");
+        break;
+      default:
+        break;
     }
 }
 
@@ -423,6 +473,11 @@ static optional<Adjective> getAdjective(LastingEffect effect) {
     case LastingEffect::RANGED_VULNERABILITY: return "Vulnerable to ranged attacks"_bad;
     case LastingEffect::SUNLIGHT_VULNERABLE: return "Vulnerable to sunlight"_bad;
     case LastingEffect::SUMMONED: return "Time to live"_bad;
+    case LastingEffect::HATE_UNDEAD: return "Hates all undead"_bad;
+    case LastingEffect::HATE_DWARVES: return "Hates all dwarves"_bad;
+    case LastingEffect::HATE_HUMANS: return "Hates all humans"_bad;
+    case LastingEffect::HATE_ELVES: return "Hates all elves"_bad;
+    case LastingEffect::HATE_GREENSKINS: return "Hates all greenskins"_bad;
   }
 }
 
@@ -603,6 +658,11 @@ const char* LastingEffects::getName(LastingEffect type) {
     case LastingEffect::SATIATED: return "satiety";
     case LastingEffect::RESTED: return "wakefulness";
     case LastingEffect::SUMMONED: return "time to live";
+    case LastingEffect::HATE_UNDEAD: return "hate of undead";
+    case LastingEffect::HATE_DWARVES: return "hate of dwarves";
+    case LastingEffect::HATE_HUMANS: return "hate of humans";
+    case LastingEffect::HATE_GREENSKINS: return "hate of greenskins";
+    case LastingEffect::HATE_ELVES: return "hate of elves";
   }
 }
 
@@ -649,6 +709,11 @@ const char* LastingEffects::getDescription(LastingEffect type) {
     case LastingEffect::SATIATED: return "Increases morale and improves defense by +1.";
     case LastingEffect::RESTED: return "Increases morale and improves defense by +1.";
     case LastingEffect::SUMMONED: return "Will disappear after the given number of turns.";
+    case LastingEffect::HATE_UNDEAD: return "Makes the target hostile to all undead.";\
+    case LastingEffect::HATE_DWARVES: return "Makes the target hostile to all dwarves.";
+    case LastingEffect::HATE_HUMANS: return "Makes the target hostile to all humans.";\
+    case LastingEffect::HATE_GREENSKINS: return "Makes the target hostile to all greenskins.";
+    case LastingEffect::HATE_ELVES: return "Makes the target hostile to all elves.";\
   }
 }
 
@@ -660,16 +725,24 @@ bool LastingEffects::canSee(WConstCreature c1, WConstCreature c2) {
 
 bool LastingEffects::modifyIsEnemyResult(WConstCreature c, WConstCreature other, bool result) {
   PROFILE;
-  if (c->isAffected(LastingEffect::INSANITY))
-    return true;
   if (c->isAffected(LastingEffect::PEACEFULNESS))
     return false;
+  if (c->isAffected(LastingEffect::INSANITY))
+    return true;
+  if (auto effect = other->getAttributes().getHatedByEffect())
+    if (c->isAffected(*effect))
+      return true;
   return result;
 }
 
 int LastingEffects::getPrice(LastingEffect e) {
   switch (e) {
     case LastingEffect::INSANITY:
+    case LastingEffect::HATE_UNDEAD:
+    case LastingEffect::HATE_DWARVES:
+    case LastingEffect::HATE_HUMANS:
+    case LastingEffect::HATE_GREENSKINS:
+    case LastingEffect::HATE_ELVES:
     case LastingEffect::PEACEFULNESS:
     case LastingEffect::HALLU:
     case LastingEffect::BLEEDING:
