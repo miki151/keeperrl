@@ -1151,21 +1151,18 @@ void PlayerControl::fillImmigration(CollectiveInfo& info) const {
 
 void PlayerControl::fillImmigrationHelp(CollectiveInfo& info) const {
   info.allImmigration.clear();
-  struct CreatureStats {
-    PCreature creature;
-  };
-  static EnumMap<CreatureId, optional<CreatureStats>> creatureStats;
-  auto getStats = [&](CreatureId id) -> CreatureStats& {
+  static EnumMap<CreatureId, PCreature> creatureStats;
+  auto getStats = [&](CreatureId id) -> WCreature {
     if (!creatureStats[id]) {
-      creatureStats[id] = CreatureStats{CreatureFactory::fromId(id, TribeId::getKeeper())};
+      creatureStats[id] = CreatureFactory::fromId(id, TribeId::getDarkKeeper());
     }
-    return *creatureStats[id];
+    return creatureStats[id].get();
   };
   for (auto elem : Iter(collective->getConfig().getImmigrantInfo())) {
     if (elem->isHiddenInHelp())
       continue;
     auto creatureId = elem->getId(0);
-    WCreature c = getStats(creatureId).creature.get();
+    WCreature c = getStats(creatureId);
     optional<pair<ViewId, int>> costObj;
     vector<string> requirements;
     vector<string> infoLines;

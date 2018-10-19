@@ -92,7 +92,7 @@ vector<EnemyInfo> EnemyFactory::getVaults() {
   };
   for (int i : Range(1)) {
     VaultInfo v = random.choose(friendlyVaults);
-    ret.push_back(getVault(SettlementType::VAULT, v.id, TribeId::getKeeper(), random.get(v.min, v.max)));
+    ret.push_back(getVault(SettlementType::VAULT, v.id, TribeId::getDarkKeeper(), random.get(v.min, v.max)));
   }
   for (int i : Range(1)) {
     VaultInfo v = random.choose(hostileVaults);
@@ -635,7 +635,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.locationName = "cemetery"_s;
             c.tribe = TribeId::getMonster();
             c.race = "undead"_s;
-            c.furniture = FurnitureFactory::cryptCoffins(TribeId::getKeeper());
+            c.furniture = FurnitureFactory::cryptCoffins(TribeId::getMonster());
             c.buildingId = BuildingId::BRICK;), CollectiveConfig::noImmigrants(), {},
           LevelConnection{LevelConnection::CRYPT, get(EnemyId::CEMETERY_ENTRY)});
     case EnemyId::CEMETERY_ENTRY:
@@ -682,7 +682,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.type = SettlementType::CAVE;
             c.inhabitants.leader = random.choose(
                 CreatureId::SPECIAL_HLBN, CreatureId::SPECIAL_HLBW, CreatureId::SPECIAL_HLGN, CreatureId::SPECIAL_HLGW);
-            c.tribe = TribeId::getKeeper();
+            c.tribe = TribeId::getDarkKeeper();
             c.buildingId = BuildingId::DUNGEON;
             ), CollectiveConfig::noImmigrants(), none,
           LevelConnection{LevelConnection::SOKOBAN, get(EnemyId::SOKOBAN_ENTRY)})

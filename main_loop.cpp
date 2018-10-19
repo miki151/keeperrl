@@ -604,7 +604,7 @@ int MainLoop::battleTest(int numTries, const FilePath& levelPath, CreatureList a
   int numAllies = 0;
   int numEnemies = 0;
   int numUnknown = 0;
-  auto allyTribe = TribeId::getKeeper();
+  auto allyTribe = TribeId::getDarkKeeper();
   std::cout.flush();
   for (int i : Range(numTries)) {
     auto game = Game::splashScreen(ModelBuilder(&meter, Random, options, sokobanInput)
@@ -659,11 +659,13 @@ PModel MainLoop::getBaseModel(ModelBuilder& modelBuilder, CampaignSetup& setup) 
   auto ret = [&] {
     switch (setup.campaign.getType()) {
       case CampaignType::SINGLE_KEEPER:
-        return modelBuilder.singleMapModel(setup.campaign.getWorldName());
+        return modelBuilder.singleMapModel(setup.campaign.getWorldName(),
+            setup.avatarInfo.playerCreature->getTribeId());
       case CampaignType::QUICK_MAP:
         return modelBuilder.tutorialModel("Campaign base site");
       default:
-        return modelBuilder.campaignBaseModel("Campaign base site", setup.campaign.getType() == CampaignType::ENDLESS);
+        return modelBuilder.campaignBaseModel("Campaign base site", setup.avatarInfo.playerCreature->getTribeId(),
+            setup.campaign.getType() == CampaignType::ENDLESS);
     }
   }();
   modelBuilder.spawnKeeper(ret.get(), std::move(setup.avatarInfo), setup.regenerateMana, setup.introMessages);

@@ -197,7 +197,7 @@ void Game::prepareSiteRetirement() {
   for (WCreature c : mainModel->getAllCreatures())
     c->clearInfoForRetiring();
   mainModel->clearExternalEnemies();
-  TribeId::switchForSerialization(TribeId::getKeeper(), TribeId::getRetiredKeeper());
+  TribeId::switchForSerialization(playerCollective->getTribeId(), TribeId::getRetiredKeeper());
   UniqueEntity<Item>::offsetForSerialization(Random.getLL());
   UniqueEntity<Creature>::offsetForSerialization(Random.getLL());
 }

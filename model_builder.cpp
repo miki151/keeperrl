@@ -345,11 +345,11 @@ SettlementInfo& ModelBuilder::makeExtraLevel(WModel model, EnemyInfo& enemy) {
   }
 }
 
-PModel ModelBuilder::singleMapModel(const string& worldName) {
-  return tryBuilding(10, [&] { return trySingleMapModel(worldName);}, "single map");
+PModel ModelBuilder::singleMapModel(const string& worldName, TribeId keeperTribe) {
+  return tryBuilding(10, [&] { return trySingleMapModel(worldName, keeperTribe);}, "single map");
 }
 
-PModel ModelBuilder::trySingleMapModel(const string& worldName) {
+PModel ModelBuilder::trySingleMapModel(const string& worldName, TribeId keeperTribe) {
   vector<EnemyInfo> enemies;
   for (int i : Range(random.get(3, 6)))
     enemies.push_back(enemyFactory->get(EnemyId::HUMAN_COTTAGE));
@@ -385,7 +385,7 @@ PModel ModelBuilder::trySingleMapModel(const string& worldName) {
         EnemyId::WITCH,
         EnemyId::CEMETERY}))
     enemies.push_back(enemyFactory->get(enemy));
-  return tryModel(304, worldName, enemies, true, BiomeId::GRASSLAND, {}, true);
+  return tryModel(304, worldName, enemies, keeperTribe, BiomeId::GRASSLAND, {}, true);
 }
 
 void ModelBuilder::addMapVillains(vector<EnemyInfo>& enemyInfo, BiomeId biomeId) {
@@ -409,7 +409,7 @@ void ModelBuilder::addMapVillains(vector<EnemyInfo>& enemyInfo, BiomeId biomeId)
   }
 }
 
-PModel ModelBuilder::tryCampaignBaseModel(const string& siteName, bool addExternalEnemies) {
+PModel ModelBuilder::tryCampaignBaseModel(const string& siteName, TribeId keeperTribe, bool addExternalEnemies) {
   vector<EnemyInfo> enemyInfo;
   BiomeId biome = BiomeId::MOUNTAIN;
   enemyInfo.push_back(enemyFactory->get(EnemyId::DWARF_CAVE));
@@ -423,7 +423,7 @@ PModel ModelBuilder::tryCampaignBaseModel(const string& siteName, bool addExtern
   optional<ExternalEnemies> externalEnemies;
   if (addExternalEnemies)
     externalEnemies = ExternalEnemies(random, enemyFactory->getExternalEnemies());
-  return tryModel(174, siteName, enemyInfo, true, biome, std::move(externalEnemies), true);
+  return tryModel(174, siteName, enemyInfo, keeperTribe, biome, std::move(externalEnemies), true);
 }
 
 PModel ModelBuilder::tryTutorialModel(const string& siteName) {
@@ -433,7 +433,7 @@ PModel ModelBuilder::tryTutorialModel(const string& siteName) {
   enemyInfo.push_back(enemyFactory->get(EnemyId::ADA_GOLEMS));*/
   enemyInfo.push_back(enemyFactory->get(EnemyId::KRAKEN));
   enemyInfo.push_back(enemyFactory->get(EnemyId::TUTORIAL_VILLAGE));
-  return tryModel(174, siteName, enemyInfo, true, biome, {}, false);
+  return tryModel(174, siteName, enemyInfo, TribeId::getDarkKeeper(), biome, {}, false);
 }
 
 static optional<BiomeId> getBiome(EnemyInfo& enemy, RandomGen& random) {
@@ -465,7 +465,7 @@ PModel ModelBuilder::tryCampaignSiteModel(const string& siteName, EnemyId enemyI
   auto biomeId = getBiome(enemyInfo[0], random);
   CHECK(biomeId) << "Unimplemented enemy in campaign " << EnumInfo<EnemyId>::getString(enemyId);
   addMapVillains(enemyInfo, *biomeId);
-  return tryModel(114, siteName, enemyInfo, false, *biomeId, {}, true);
+  return tryModel(114, siteName, enemyInfo, none, *biomeId, {}, true);
 }
 
 PModel ModelBuilder::tryBuilding(int numTries, function<PModel()> buildFun, const string& name) {
@@ -483,8 +483,8 @@ PModel ModelBuilder::tryBuilding(int numTries, function<PModel()> buildFun, cons
 
 }
 
-PModel ModelBuilder::campaignBaseModel(const string& siteName, bool externalEnemies) {
-  return tryBuilding(20, [=] { return tryCampaignBaseModel(siteName, externalEnemies); }, "campaign base");
+PModel ModelBuilder::campaignBaseModel(const string& siteName, TribeId keeperTribe, bool externalEnemies) {
+  return tryBuilding(20, [=] { return tryCampaignBaseModel(siteName, keeperTribe, externalEnemies); }, "campaign base");
 }
 
 PModel ModelBuilder::tutorialModel(const string& siteName) {
@@ -506,13 +506,14 @@ void ModelBuilder::measureSiteGen(int numTries, vector<string> types) {
     }
   }
   vector<function<void()>> tasks;
+  auto tribe = TribeId::getDarkKeeper();
   for (auto& type : types) {
     if (type == "single_map")
-      tasks.push_back([=] { measureModelGen(type, numTries, [this] { trySingleMapModel("pok"); }); });
+      tasks.push_back([=] { measureModelGen(type, numTries, [&] { trySingleMapModel("pok", tribe); }); });
     else if (type == "campaign_base")
-      tasks.push_back([=] { measureModelGen(type, numTries, [this] { tryCampaignBaseModel("pok", false); }); });
+      tasks.push_back([=] { measureModelGen(type, numTries, [&] { tryCampaignBaseModel("pok", tribe, false); }); });
     else if (type == "tutorial")
-      tasks.push_back([=] { measureModelGen(type, numTries, [this] { tryTutorialModel("pok"); }); });
+      tasks.push_back([=] { measureModelGen(type, numTries, [&] { tryTutorialModel("pok"); }); });
     else if (auto id = EnumInfo<EnemyId>::fromStringSafe(type)) {
       tasks.push_back([=] { measureModelGen(type, numTries, [&] { tryCampaignSiteModel("", *id, VillainType::LESSER); }); });
     } else {
@@ -561,7 +562,7 @@ WCollective ModelBuilder::spawnKeeper(WModel m, AvatarInfo avatarInfo, bool rege
   m->addCreature(std::move(avatarInfo.playerCreature));
   m->collectives.push_back(CollectiveBuilder(
         getKeeperConfig(random, options->getBoolValue(OptionId::FAST_IMMIGRATION),
-            regenerateMana, *avatarInfo.avatarVariant), TribeId::getKeeper())
+            regenerateMana, *avatarInfo.avatarVariant), keeperRef->getTribeId())
       .setLevel(level)
       .addCreature(keeperRef, {MinionTrait::LEADER})
       .build());
@@ -573,8 +574,8 @@ WCollective ModelBuilder::spawnKeeper(WModel m, AvatarInfo avatarInfo, bool rege
   return playerCollective;
 }
 
-PModel ModelBuilder::tryModel(int width, const string& levelName, vector<EnemyInfo> enemyInfo, bool keeperSpawn,
-    BiomeId biomeId, optional<ExternalEnemies> externalEnemies, bool hasWildlife) {
+PModel ModelBuilder::tryModel(int width, const string& levelName, vector<EnemyInfo> enemyInfo,
+    optional<TribeId> keeperTribe, BiomeId biomeId, optional<ExternalEnemies> externalEnemies, bool hasWildlife) {
   auto model = Model::create();
   vector<SettlementInfo> topLevelSettlements;
   vector<EnemyInfo> extraEnemies;
@@ -596,7 +597,7 @@ PModel ModelBuilder::tryModel(int width, const string& levelName, vector<EnemyIn
   WLevel top =  model->buildTopLevel(
       LevelBuilder(meter, random, width, width, levelName, false),
       LevelMaker::topLevel(random, wildlife, topLevelSettlements, width,
-        keeperSpawn, biomeId));
+        keeperTribe, biomeId));
   model->calculateStairNavigation();
   for (auto& enemy : enemyInfo) {
     if (enemy.settlement.locationName)
@@ -627,8 +628,8 @@ PModel ModelBuilder::splashModel(const FilePath& splashPath) {
       LevelMaker::splashLevel(
           CreatureFactory::splashLeader(TribeId::getHuman()),
           CreatureFactory::splashHeroes(TribeId::getHuman()),
-          CreatureFactory::splashMonsters(TribeId::getKeeper()),
-          CreatureFactory::singleType(TribeId::getKeeper(), CreatureId::IMP), splashPath));
+          CreatureFactory::splashMonsters(TribeId::getDarkKeeper()),
+          CreatureFactory::singleType(TribeId::getDarkKeeper(), CreatureId::IMP), splashPath));
   m->topLevel = l;
   return m;
 }

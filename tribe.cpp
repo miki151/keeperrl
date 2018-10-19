@@ -107,7 +107,7 @@ Tribe::Map Tribe::generateTribes() {
   init(ret, TribeId::getDwarf(), true);
   init(ret, TribeId::getGnome(), true);
   init(ret, TribeId::getAdventurer(), false);
-  init(ret, TribeId::getKeeper(), false);
+  init(ret, TribeId::getDarkKeeper(), false);
   init(ret, TribeId::getRetiredKeeper(), false);
   init(ret, TribeId::getGreenskin(), true);
   init(ret, TribeId::getAnt(), true);
@@ -119,7 +119,7 @@ Tribe::Map Tribe::generateTribes() {
       {TribeId::getBandit()});
   addEnemies(ret, TribeId::getGnome(),
       {TribeId::getBandit()});
-  addEnemies(ret, TribeId::getKeeper(), {
+  addEnemies(ret, TribeId::getDarkKeeper(), {
       TribeId::getAdventurer(), TribeId::getElf(), TribeId::getDwarf(), TribeId::getHuman(), TribeId::getLizard(),
       TribeId::getPest(), TribeId::getMonster(), TribeId::getBandit(), TribeId::getAnt(),
       TribeId::getRetiredKeeper()});
@@ -137,12 +137,12 @@ Tribe::Map Tribe::generateTribes() {
   addEnemies(ret, TribeId::getShelob(), {
       TribeId::getGreenskin(), TribeId::getMonster(), TribeId::getLizard(), TribeId::getPest(),
       TribeId::getWildlife(), TribeId::getElf(), TribeId::getHuman(), TribeId::getDwarf(), TribeId::getGnome(),
-      TribeId::getAdventurer(), TribeId::getKeeper(), TribeId::getBandit(),
+      TribeId::getAdventurer(), TribeId::getDarkKeeper(), TribeId::getBandit(),
       TribeId::getPeaceful(), TribeId::getAnt(), TribeId::getDarkElf(), TribeId::getRetiredKeeper()});
   addEnemies(ret, TribeId::getHostile(), {
       TribeId::getGreenskin(), TribeId::getMonster(), TribeId::getLizard(), TribeId::getPest(),
       TribeId::getWildlife(), TribeId::getElf(), TribeId::getHuman(), TribeId::getDwarf(), TribeId::getGnome(),
-      TribeId::getAdventurer(), TribeId::getKeeper(), TribeId::getBandit(), TribeId::getHostile(),
+      TribeId::getAdventurer(), TribeId::getDarkKeeper(), TribeId::getBandit(), TribeId::getHostile(),
       TribeId::getPeaceful(), TribeId::getAnt(), TribeId::getDarkElf(), TribeId::getShelob(),
       TribeId::getRetiredKeeper()});
   return ret;
@@ -198,7 +198,7 @@ TribeId TribeId::getPeaceful() {
   return TribeId(11);
 }
 
-TribeId TribeId::getKeeper() {
+TribeId TribeId::getDarkKeeper() {
   return TribeId(12);
 }
 
