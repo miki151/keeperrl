@@ -196,6 +196,7 @@ class Range {
   int getLength() const;
   bool contains(int) const;
   bool intersects(Range) const;
+  Range intersection(Range) const;
 
   class Iter {
     public:

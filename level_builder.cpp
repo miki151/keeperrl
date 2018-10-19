@@ -15,7 +15,7 @@
 LevelBuilder::LevelBuilder(ProgressMeter* meter, RandomGen& r, int width, int height, const string& n, bool allCovered,
     optional<double> defaultLight)
   : squares(Rectangle(width, height)), unavailable(width, height, false),
-    heightMap(width, height, 0), covered(width, height, allCovered), building(width, height, false),
+    heightMap(width, height, 0), covered(width, height, allCovered),
     sunlight(width, height, defaultLight ? *defaultLight : (allCovered ? 0.0 : 1.0)),
     attrib(width, height), items(width, height), furniture(Rectangle(width, height)),
     name(n), progressMeter(meter), random(r) {
@@ -172,8 +172,7 @@ PLevel LevelBuilder::build(WModel m, LevelMaker* maker, LevelId levelId) {
   for (Vec2 v : squares.getBounds())
     if (!items[v].empty())
       squares.getWritable(v)->dropItemsLevelGen(std::move(items[v]));
-  auto l = Level::create(std::move(squares), std::move(furniture), m, name, sunlight, levelId, covered, building,
-      unavailable);
+  auto l = Level::create(std::move(squares), std::move(furniture), m, name, sunlight, levelId, covered, unavailable);
   for (pair<PCreature, Vec2>& c : creatures) {
     Position pos(c.second, l.get());
     CHECK(pos.canEnter(c.first.get()));
@@ -233,10 +232,6 @@ void LevelBuilder::setCovered(Vec2 posT, bool state) {
   covered[transform(posT)] = state;
 }
 
-void LevelBuilder::setBuilding(Vec2 posT, bool state) {
-  building[transform(posT)] = state;
-}
-
 void LevelBuilder::setSunlight(Vec2 pos, double s) {
   sunlight[pos] = s;
 }
@@ -252,7 +247,8 @@ bool LevelBuilder::canNavigate(Vec2 posT, const MovementType& movement) {
   bool result = true;
   for (auto layer : ENUM_ALL(FurnitureLayer))
     if (auto f = furniture.getBuilt(layer).getReadonly(pos)) {
-      bool canEnter = f->getMovementSet().canEnter(movement, covered[pos] || building[pos], false, none);
+      // this will cause trouble when trying to place undead in buildings
+      bool canEnter = f->getMovementSet().canEnter(movement, covered[pos]/* || building[pos]*/, false, none);
       if (f->overridesMovement())
         return canEnter;
       else

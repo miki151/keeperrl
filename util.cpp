@@ -532,7 +532,7 @@ Rectangle::Rectangle(int px1, int py1, int kx1, int ky1) : px(px1), py(py1), kx(
   }
 }
 
-Rectangle::Rectangle(Vec2 p, Vec2 k) : Rectangle(p.x, p.y, k.x, k.y) {
+Rectangle::Rectangle(Vec2 p, Vec2 k) : Rectangle(min(p.x, k.x), min(p.y, k.y), max(p.x, k.x), max(p.y, k.y)) {
 }
 
 Rectangle::Rectangle(Range xRange, Range yRange)
@@ -712,6 +712,11 @@ bool Range::contains(int p) const {
 
 bool Range::intersects(Range r) const {
   return contains(r.start) || contains(r.finish - r.increment) || r.contains(start);
+}
+
+Range Range::intersection(Range r) const {
+  CHECK(increment == 1 && r.increment == 1);
+  return Range(max(start, r.start), min(finish, r.finish));
 }
 
 Range::Iter Range::begin() {
