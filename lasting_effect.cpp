@@ -242,6 +242,8 @@ optional<LastingEffect> LastingEffects::getSuppressor(LastingEffect effect) {
       return LastingEffect::FLYING;
     case LastingEffect::SUNLIGHT_VULNERABLE:
       return LastingEffect::DARKNESS_SOURCE;
+    case LastingEffect::FLYING:
+      return LastingEffect::SLEEP;
     default:
       return none;
   }
