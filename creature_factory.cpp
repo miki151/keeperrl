@@ -1626,8 +1626,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body = Body::humanoid(Body::Material::UNDEAD_FLESH, Body::Size::LARGE);
           c.permanentEffects[LastingEffect::RANGED_RESISTANCE] = 1;
           c.permanentEffects[LastingEffect::SLOWED] = 1;
-          c.maxLevelIncrease[ExperienceType::MELEE] = 3;
-          c.maxLevelIncrease[ExperienceType::SPELL] = 3;
+          c.permanentEffects[LastingEffect::SLOW_TRAINING] = 1;
+          c.maxLevelIncrease[ExperienceType::MELEE] = 25;
           c.name = CreatureName("mummy", "mummies");
           c.hatedByEffect = LastingEffect::HATE_UNDEAD;
       );

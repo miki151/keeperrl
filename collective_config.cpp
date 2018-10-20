@@ -379,7 +379,7 @@ optional<int> CollectiveConfig::getTrainingMaxLevel(ExperienceType experienceTyp
         case FurnitureType::TRAINING_IRON:
           return 7;
         case FurnitureType::TRAINING_ADA:
-          return 12;
+          return 30;
         default:
           return none;
       }

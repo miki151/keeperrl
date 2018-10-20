@@ -114,6 +114,12 @@ static vector<ImmigrantInfo> getDarkKeeperImmigration(RandomGen& random) {
         .addSpecialTrait(0.3, LastingEffect::FIRE_RESISTANT)
         .addSpecialTrait(0.05, LastingEffect::HATE_GREENSKINS)
         .addSpecialTrait(0.3, LastingEffect::FLYING),
+    ImmigrantInfo(CreatureId::MUMMY, {MinionTrait::FIGHTER})
+        .setFrequency(0.1)
+        .addRequirement(0.0, MinTurnRequirement{2000_global})
+        .setSpawnLocation(FurnitureType::GRAVE)
+        .addRequirement(0.1, AttractionInfo{1, FurnitureType::TRAINING_IRON})
+        .addRequirement(0.0, CostInfo(CollectiveResourceId::CORPSE, 1)),
     ImmigrantInfo(CreatureId::LOST_SOUL, {MinionTrait::FIGHTER})
         .setFrequency(0.3)
         .setSpawnLocation(FurnitureType::DEMON_SHRINE)
