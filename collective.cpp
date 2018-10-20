@@ -1191,7 +1191,7 @@ void Collective::onAppliedSquare(WCreature c, Position pos) {
     }
     if (auto usage = furniture->getUsageType()) {
       auto increaseLevel = [&] (ExperienceType exp) {
-        double increase = 0.007 * efficiency;
+        double increase = 0.007 * efficiency * LastingEffects::getTrainingSpeed(c.get());
         if (auto maxLevel = config->getTrainingMaxLevel(exp, furniture->getType()))
           increase = min(increase, *maxLevel - c->getAttributes().getExpLevel(exp));
         if (increase > 0)
@@ -1217,7 +1217,7 @@ void Collective::onAppliedSquare(WCreature c, Position pos) {
       auto& workshop = workshops->get(*workshopType);
       auto& info = config->getWorkshopInfo(*workshopType);
       auto craftingSkill = c->getAttributes().getSkills().getValue(info.skill);
-      vector<PItem> items = workshop.addWork(efficiency * craftingSkill);
+      vector<PItem> items = workshop.addWork(efficiency * craftingSkill * LastingEffects::getCraftingSpeed(c.get()));
       if (!items.empty()) {
         if (items[0]->getClass() == ItemClass::WEAPON)
           getGame()->getStatistics().add(StatId::WEAPON_PRODUCED);

@@ -189,25 +189,34 @@ static vector<ImmigrantInfo> getWhiteKeeperImmigration(RandomGen& random) {
     ImmigrantInfo(CreatureId::KNIGHT_PLAYER, {MinionTrait::FIGHTER})
         .setFrequency(0.7)
         .addOneOrMoreTraits(0.1, {LastingEffect::HATE_ELVES, LastingEffect::HATE_DWARVES, LastingEffect::HATE_GREENSKINS})
+        .addSpecialTrait(0.05, ExtraTraining { ExperienceType::ARCHERY, 2 })
+        .addSpecialTrait(0.05, ExtraTraining { ExperienceType::MELEE, 2 })
+        .addSpecialTrait(0.05, OneOfTraits{{LastingEffect::FAST_TRAINING, LastingEffect::SLOW_TRAINING}})
         .addRequirement(0.1, AttractionInfo{1, vector<AttractionType>({FurnitureType::TRAINING_WOOD})}),
     ImmigrantInfo(CreatureId::ARCHER_PLAYER, {MinionTrait::FIGHTER})
         .setFrequency(0.7)
         .addOneOrMoreTraits(0.1, {LastingEffect::HATE_ELVES, LastingEffect::HATE_DWARVES, LastingEffect::HATE_GREENSKINS})
+        .addSpecialTrait(0.05, ExtraTraining { ExperienceType::ARCHERY, 2 })
+        .addSpecialTrait(0.05, ExtraTraining { ExperienceType::MELEE, 2 })
+        .addSpecialTrait(0.05, OneOfTraits{{LastingEffect::FAST_TRAINING, LastingEffect::SLOW_TRAINING}})
         .addRequirement(0.1, AttractionInfo{1, vector<AttractionType>({FurnitureType::ARCHERY_RANGE})}),
     ImmigrantInfo(CreatureId::PRIEST_PLAYER, {MinionTrait::FIGHTER})
         .setFrequency(0.3)
         .addSpecialTrait(0.2, LastingEffect::HATE_UNDEAD)
+        .addSpecialTrait(0.05, ExtraTraining { ExperienceType::SPELL, 2 })
+        .addSpecialTrait(0.03, {AttrBonus { AttrType::SPELL_DAMAGE, 4 }, AttrBonus { AttrType::DEFENSE, -4 }})
         .addRequirement(0.1, AttractionInfo{1, vector<AttractionType>({FurnitureType::BOOKCASE_WOOD})}),
     ImmigrantInfo(CreatureId::JESTER_PLAYER, {MinionTrait::FIGHTER})
         .setFrequency(0.1)
         .addRequirement(0.0, AttractionInfo{1, vector<AttractionType>({FurnitureType::THRONE})}),
     ImmigrantInfo(CreatureId::GNOME_PLAYER, {MinionTrait::FIGHTER, MinionTrait::NO_EQUIPMENT})
         .setFrequency(0.7)
-        .addRequirement(0.1, AttractionInfo{1, vector<AttractionType>(
-             {FurnitureType::FORGE, FurnitureType::WORKSHOP, FurnitureType::JEWELER})})
-        .addSpecialTrait(0.03, {SkillId::WORKSHOP, LastingEffect::INSANITY})
+        .addSpecialTrait(0.05, OneOfTraits{{LastingEffect::FAST_CRAFTING, LastingEffect::SLOW_CRAFTING}})
+/*        .addSpecialTrait(0.03, {SkillId::WORKSHOP, LastingEffect::INSANITY})
         .addSpecialTrait(0.03, {SkillId::FORGE, LastingEffect::INSANITY})
-        .addSpecialTrait(0.03, {SkillId::JEWELER, LastingEffect::INSANITY}),
+        .addSpecialTrait(0.03, {SkillId::JEWELER, LastingEffect::INSANITY}),*/
+        .addRequirement(0.1, AttractionInfo{1, vector<AttractionType>(
+             {FurnitureType::FORGE, FurnitureType::WORKSHOP, FurnitureType::JEWELER})}),
     ImmigrantInfo(CreatureId::DOG, {MinionTrait::FIGHTER, MinionTrait::DOESNT_TRIGGER, MinionTrait::NO_LIMIT})
         .setFrequency(0.1),
     ImmigrantInfo({CreatureId::DONKEY, CreatureId::COW, CreatureId::HORSE, CreatureId::GOAT},

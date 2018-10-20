@@ -180,6 +180,10 @@ static TimeInterval getDuration(WConstCreature c, LastingEffect e) {
     case LastingEffect::POISON_RESISTANT: return  60_visible;
     case LastingEffect::FLYING: return  60_visible;
     case LastingEffect::COLLAPSED: return  2_visible;
+    case LastingEffect::FAST_CRAFTING:
+    case LastingEffect::FAST_TRAINING:
+    case LastingEffect::SLOW_CRAFTING:
+    case LastingEffect::SLOW_TRAINING:
     case LastingEffect::SLEEP: return  200_visible;
     case LastingEffect::PEACEFULNESS:
     case LastingEffect::INSANITY: return  20_visible;

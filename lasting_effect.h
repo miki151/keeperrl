@@ -47,7 +47,11 @@ RICH_ENUM(LastingEffect,
     HATE_UNDEAD,
     HATE_HUMANS,
     HATE_GREENSKINS,
-    HATE_ELVES
+    HATE_ELVES,
+    FAST_CRAFTING,
+    FAST_TRAINING,
+    SLOW_CRAFTING,
+    SLOW_TRAINING
 );
 
 RICH_ENUM(CreatureCondition,
@@ -75,6 +79,8 @@ class LastingEffects {
   static bool modifyIsEnemyResult(WConstCreature, WConstCreature, bool);
   static int getPrice(LastingEffect);
   static double getMoraleIncrease(const Creature*);
+  static double getCraftingSpeed(const Creature*);
+  static double getTrainingSpeed(const Creature*);
   static bool canConsume(LastingEffect);
   static optional<FXVariantName> getFX(LastingEffect);
 };

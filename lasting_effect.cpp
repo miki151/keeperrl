@@ -214,6 +214,18 @@ void LastingEffects::onAffected(WCreature c, LastingEffect effect, bool msg) {
       case LastingEffect::HATE_DWARVES:
         c->you(MsgType::FEEL, "feel of hatred");
         break;
+      case LastingEffect::FAST_TRAINING:
+        c->you(MsgType::FEEL, "like working out");
+        break;
+      case LastingEffect::FAST_CRAFTING:
+        c->you(MsgType::FEEL, "like doing some work");
+        break;
+      case LastingEffect::SLOW_TRAINING:
+        c->you(MsgType::FEEL, "lazy");
+        break;
+      case LastingEffect::SLOW_CRAFTING:
+        c->you(MsgType::FEEL, "lazy");
+        break;
     }
 }
 
@@ -457,6 +469,8 @@ static optional<Adjective> getAdjective(LastingEffect effect) {
     case LastingEffect::SATIATED: return "Satiated"_good;
     case LastingEffect::RESTED: return "Rested"_good;
     case LastingEffect::PEACEFULNESS: return "Peaceful"_good;
+    case LastingEffect::FAST_CRAFTING: return "Fast craftsman"_good;
+    case LastingEffect::FAST_TRAINING: return "Fast trainee"_good;
 
     case LastingEffect::POISON: return "Poisoned"_bad;
     case LastingEffect::BLEEDING: return "Bleeding"_bad;
@@ -478,6 +492,8 @@ static optional<Adjective> getAdjective(LastingEffect effect) {
     case LastingEffect::HATE_HUMANS: return "Hates all humans"_bad;
     case LastingEffect::HATE_ELVES: return "Hates all elves"_bad;
     case LastingEffect::HATE_GREENSKINS: return "Hates all greenskins"_bad;
+    case LastingEffect::SLOW_CRAFTING: return "Slow craftsman"_good;
+    case LastingEffect::SLOW_TRAINING: return "Slow trainee"_good;
   }
 }
 
@@ -663,6 +679,10 @@ const char* LastingEffects::getName(LastingEffect type) {
     case LastingEffect::HATE_HUMANS: return "hate of humans";
     case LastingEffect::HATE_GREENSKINS: return "hate of greenskins";
     case LastingEffect::HATE_ELVES: return "hate of elves";
+    case LastingEffect::FAST_CRAFTING: return "fast crafting";
+    case LastingEffect::FAST_TRAINING: return "fast training";
+    case LastingEffect::SLOW_CRAFTING: return "slow crafting";
+    case LastingEffect::SLOW_TRAINING: return "slow training";
   }
 }
 
@@ -714,6 +734,10 @@ const char* LastingEffects::getDescription(LastingEffect type) {
     case LastingEffect::HATE_HUMANS: return "Makes the target hostile to all humans.";\
     case LastingEffect::HATE_GREENSKINS: return "Makes the target hostile to all greenskins.";
     case LastingEffect::HATE_ELVES: return "Makes the target hostile to all elves.";\
+    case LastingEffect::FAST_CRAFTING: return "Increases crafting speed";
+    case LastingEffect::FAST_TRAINING: return "Increases training and learning speed";
+    case LastingEffect::SLOW_CRAFTING: return "Decreases crafting speed";
+    case LastingEffect::SLOW_TRAINING: return "Decreases training and learning speed";
   }
 }
 
@@ -750,6 +774,8 @@ int LastingEffects::getPrice(LastingEffect e) {
     case LastingEffect::SATIATED:
     case LastingEffect::RESTED:
     case LastingEffect::SUMMONED:
+    case LastingEffect::SLOW_CRAFTING:
+    case LastingEffect::SLOW_TRAINING:
       return 2;
     case LastingEffect::WARNING:
       return 5;
@@ -764,6 +790,8 @@ int LastingEffects::getPrice(LastingEffect e) {
     case LastingEffect::NIGHT_VISION:
     case LastingEffect::ELF_VISION:
     case LastingEffect::REGENERATION:
+    case LastingEffect::FAST_CRAFTING:
+    case LastingEffect::FAST_TRAINING:
       return 12;
     case LastingEffect::BLIND:
       return 16;
@@ -803,6 +831,24 @@ double LastingEffects::getMoraleIncrease(const Creature* c) {
     ret += 0.1;
   else
     ret -= 0.1;
+  return ret;
+}
+
+double LastingEffects::getCraftingSpeed(const Creature* c) {
+  double ret = 1;
+  if (c->isAffected(LastingEffect::FAST_CRAFTING))
+    ret *= 1.3;
+  if (c->isAffected(LastingEffect::SLOW_CRAFTING))
+    ret /= 1.3;
+  return ret;
+}
+
+double LastingEffects::getTrainingSpeed(const Creature* c) {
+  double ret = 1;
+  if (c->isAffected(LastingEffect::FAST_TRAINING))
+    ret *= 1.3;
+  if (c->isAffected(LastingEffect::SLOW_TRAINING))
+    ret /= 1.3;
   return ret;
 }
 
@@ -849,6 +895,13 @@ optional<FXVariantName> LastingEffects::getFX(LastingEffect effect) {
     case LastingEffect::MELEE_RESISTANCE:
     case LastingEffect::RANGED_RESISTANCE:
       return FXVariantName::BUFF_SKY_BLUE;
+    case LastingEffect::FAST_CRAFTING:
+    case LastingEffect::SLOW_CRAFTING:
+      return FXVariantName::BUFF_BROWN;
+    case LastingEffect::FAST_TRAINING:
+      return FXVariantName::BUFF_BROWN;
+    case LastingEffect::SLOW_TRAINING:
+      return FXVariantName::DEBUFF_BROWN;
     case LastingEffect::POISON_RESISTANT:
       return FXVariantName::BUFF_GREEN2;
     case LastingEffect::MAGIC_VULNERABILITY:

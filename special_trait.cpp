@@ -20,6 +20,20 @@ void applySpecialTrait(SpecialTrait trait, WCreature c) {
           c->getAttributes().getSkills().insert(skill);
         else
           c->getAttributes().getSkills().increaseValue(skill, 0.4);
+      },
+      [&] (const OneOfTraits&) {
+        FATAL << "Can't apply traits alternative";
+      }
+  );
+}
+
+SpecialTrait transformBeforeApplying(SpecialTrait trait) {
+  return trait.visit(
+      [&] (const auto&) {
+        return trait;
+      },
+      [&] (const OneOfTraits& t) {
+        return Random.choose(t.traits);
       }
   );
 }

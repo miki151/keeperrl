@@ -483,11 +483,13 @@ Immigration::Available Immigration::Available::generate(WImmigration immigration
       immigrants.back()->getEquipment().removeAllItems(immigrants.back().get());
     for (auto& specialTrait : info.getSpecialTraits())
       if (Random.chance(specialTrait.first))
-        for (auto& trait : specialTrait.second)
+        for (auto& trait1 : specialTrait.second) {
+          auto trait = transformBeforeApplying(trait1);
           if (!specialTraits.contains(trait)) {
             applySpecialTrait(trait, immigrants.back().get());
             specialTraits.push_back(trait);
           }
+        }
   }
   return Available(
     immigration,
