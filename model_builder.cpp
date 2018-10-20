@@ -46,7 +46,7 @@ ModelBuilder::~ModelBuilder() {
 
 static vector<ImmigrantInfo> getDarkKeeperImmigration(RandomGen& random) {
   return {
-    ImmigrantInfo(CreatureId::GOBLIN, {MinionTrait::FIGHTER, MinionTrait::NO_EQUIPMENT})
+    ImmigrantInfo(CreatureId::GOBLIN, {MinionTrait::FIGHTER, MinionTrait::NO_AUTO_EQUIPMENT})
         .setFrequency(0.7)
         .addRequirement(0.1, AttractionInfo{1, vector<AttractionType>(
              {FurnitureType::FORGE, FurnitureType::WORKSHOP, FurnitureType::JEWELER})})
@@ -209,7 +209,7 @@ static vector<ImmigrantInfo> getWhiteKeeperImmigration(RandomGen& random) {
     ImmigrantInfo(CreatureId::JESTER_PLAYER, {MinionTrait::FIGHTER})
         .setFrequency(0.1)
         .addRequirement(0.0, AttractionInfo{1, vector<AttractionType>({FurnitureType::THRONE})}),
-    ImmigrantInfo(CreatureId::GNOME_PLAYER, {MinionTrait::FIGHTER, MinionTrait::NO_EQUIPMENT})
+    ImmigrantInfo(CreatureId::GNOME_PLAYER, {MinionTrait::FIGHTER, MinionTrait::NO_AUTO_EQUIPMENT})
         .setFrequency(0.7)
         .addSpecialTrait(0.05, OneOfTraits{{LastingEffect::FAST_CRAFTING, LastingEffect::SLOW_CRAFTING}})
 /*        .addSpecialTrait(0.03, {SkillId::WORKSHOP, LastingEffect::INSANITY})
