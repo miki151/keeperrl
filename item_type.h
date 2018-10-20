@@ -123,7 +123,7 @@ class ItemType {
 
   MAKE_VARIANT(Type, Knife, Spear, Sword, AdaSword, ElvenSword,
       BattleAxe, AdaBattleAxe, WarHammer, AdaWarHammer, Club, HeavyClub, WoodenStaff, IronStaff, GoldenStaff,
-      Scythe, Bow, ElvenBow, LeatherArmor, LeatherHelm, IronHelm, AdaHe`lm, ChainArmor, AdaArmor, LeatherBoots,
+      Scythe, Bow, ElvenBow, LeatherArmor, LeatherHelm, IronHelm, AdaHelm, ChainArmor, AdaArmor, LeatherBoots,
       IronBoots, AdaBoots, LeatherGloves, IronGloves, AdaGloves, Robe, Scroll, FireScroll, Potion,
       Mushroom, Amulet, DefenseAmulet, Ring, FirstAidKit, Rock, IronOre, AdaOre, GoldPiece,
       WoodPlank, Bone, RandomTechBook, TechBook, TrapItem, AutomatonItem, BagOfCandies, HalloweenCostume,
