@@ -58,7 +58,7 @@
 template <class Archive>
 void Creature::serialize(Archive& ar, const unsigned int version) {
   ar & SUBCLASS(OwnedObject<Creature>) & SUBCLASS(Renderable) & SUBCLASS(UniqueEntity);
-  ar(attributes, position, equipment, shortestPath, knownHiding, tribe, morale);
+  ar(attributes, position, ammoCooldownPoints, equipment, shortestPath, knownHiding, tribe, morale);
   ar(deathTime, hidden, lastMoveCounter, captureHealth);
   ar(deathReason, nextPosIntent, globalTime);
   ar(unknownAttackers, privateEnemies, holding);
@@ -267,6 +267,8 @@ optional<MovementInfo> Creature::spendTime(TimeInterval t) {
     MovementInfo ret(Vec2(0, 0), *getLocalTime(), *getLocalTime() + t, 0, MovementInfo::MOVE);
     lastMoveCounter = ret.moveCounter = position.getModel()->getMoveCounter();
     if (!isDead()) {
+      if (ammoCooldownPoints < 141)
+         ammoCooldownPoints++;
       if (isAffected(LastingEffect::SPEED) && t == 1_visible) {
         if (m->getTimeQueue().hasExtraMove(this))
           ret.tBegin += 0.5;
@@ -1371,7 +1373,7 @@ CreatureAction Creature::payFor(const vector<WItem>& items) const {
       .append([=](WCreature) { for (auto it : items) it->setShopkeeper(nullptr); });
 }
 
-CreatureAction Creature::fire(Vec2 direction) const {
+CreatureAction Creature::fire(Vec2 direction) {
   CHECK(direction.length8() == 1);
   if (getEquipment().getItems(ItemIndex::RANGED_WEAPON).empty())
     return CreatureAction("You need a ranged weapon.");
@@ -1382,7 +1384,18 @@ CreatureAction Creature::fire(Vec2 direction) const {
   return CreatureAction(this, [=](WCreature self) {
     auto& weapon = *self->getEquipment().getSlotItems(EquipmentSlot::RANGED_WEAPON).getOnlyElement()
         ->getRangedWeapon();
-    weapon.fire(self, direction);
+    if (ammoCooldownPoints < 10) {
+      getPosition().globalMessage("Getting ammunition.");
+    }    
+    else {
+      weapon.fire(self, direction);
+      if (ammoCooldownPoints < 10) {
+        ammoCooldownPoints = -1;
+      }
+      else {
+      ammoCooldownPoints = ammoCooldownPoints - 10;
+      }
+    }
     self->spendTime();
   });
 }
@@ -1903,3 +1916,6 @@ optional<Creature::CombatIntentInfo> Creature::getLastCombatIntent() const {
     return none;
 }
 
+int Creature::getAmmoCooldownPoints() const {
+  return ammoCooldownPoints;
+}

@@ -598,6 +598,7 @@ class Fighter : public Behaviour {
     auto weapon = c->getEquipment().getSlotItems(EquipmentSlot::RANGED_WEAPON);
     if (weapon.empty())
       return 0;
+    if (c->getAmmoCooldownPoints() < 1) return 0;
     return weapon.getOnlyElement()->getRangedWeapon()->getMaxDistance();
   }
 
