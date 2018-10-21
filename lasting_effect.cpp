@@ -936,11 +936,24 @@ optional<FXInfo> LastingEffects::getApplicationFX(LastingEffect effect) {
     case LastingEffect::SPEED:
       return FXInfo(FXName::CIRCULAR_SPELL, Color::LIGHT_BLUE);
     case LastingEffect::DAM_BONUS:
-      return FXInfo(FXName::CIRCULAR_SPELL, Color::LIGHT_RED);
+      return FXInfo(FXName::CIRCULAR_SPELL, Color::YELLOW);
     case LastingEffect::DEF_BONUS:
-      return FXInfo(FXName::CIRCULAR_SPELL, Color::LIGHT_BROWN);
+      return FXInfo(FXName::CIRCULAR_SPELL, Color::YELLOW);
     case LastingEffect::INVISIBLE:
       return FXInfo(FXName::CIRCULAR_SPELL, Color::WHITE);
+    case LastingEffect::POISON:
+      return FXInfo(FXName::CIRCULAR_SPELL, Color::GREEN);
+    case LastingEffect::POISON_RESISTANT:
+      return FXInfo(FXName::CIRCULAR_SPELL, Color::YELLOW);
+    case LastingEffect::INSANITY:
+      return FXInfo(FXName::CIRCULAR_SPELL, Color::PINK);
+    case LastingEffect::FIRE_RESISTANT:
+    case LastingEffect::MAGIC_RESISTANCE:
+    case LastingEffect::MELEE_RESISTANCE:
+    case LastingEffect::RANGED_RESISTANCE:
+      return FXInfo(FXName::CIRCULAR_SPELL, Color::SKY_BLUE);
+    case LastingEffect::REGENERATION:
+      return FXInfo(FXName::CIRCULAR_SPELL, Color::RED);
     default:
       return none;
   }
