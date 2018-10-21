@@ -83,6 +83,5 @@ class LastingEffects {
   static double getTrainingSpeed(const Creature*);
   static bool canConsume(LastingEffect);
   static optional<FXVariantName> getFX(LastingEffect);
+  static optional<FXInfo> getApplicationFX(LastingEffect);
 };
-
-

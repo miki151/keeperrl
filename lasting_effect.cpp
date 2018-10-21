@@ -8,6 +8,7 @@
 #include "furniture.h"
 #include "level.h"
 #include "fx_variant_name.h"
+#include "fx_name.h"
 
 static optional<LastingEffect> getCancelledOneWay(LastingEffect effect) {
   switch (effect) {
@@ -925,6 +926,21 @@ optional<FXVariantName> LastingEffects::getFX(LastingEffect effect) {
     case LastingEffect::TIED_UP:
     case LastingEffect::ENTANGLED:
       return FXVariantName::DEBUFF_GREEN1;
+    default:
+      return none;
+  }
+}
+
+optional<FXInfo> LastingEffects::getApplicationFX(LastingEffect effect) {
+  switch (effect) {
+    case LastingEffect::SPEED:
+      return FXInfo(FXName::CIRCULAR_SPELL, Color::LIGHT_BLUE);
+    case LastingEffect::DAM_BONUS:
+      return FXInfo(FXName::CIRCULAR_SPELL, Color::LIGHT_RED);
+    case LastingEffect::DEF_BONUS:
+      return FXInfo(FXName::CIRCULAR_SPELL, Color::LIGHT_BROWN);
+    case LastingEffect::INVISIBLE:
+      return FXInfo(FXName::CIRCULAR_SPELL, Color::WHITE);
     default:
       return none;
   }

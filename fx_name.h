@@ -3,7 +3,6 @@
 #include "util.h"
 
 RICH_ENUM(FXName,
-  NO_EFFECT,
   TEST_SIMPLE,
   TEST_MULTI,
   WOOD_SPLINTERS,
