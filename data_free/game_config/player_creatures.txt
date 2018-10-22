@@ -11,7 +11,7 @@
 
 # Adventurers
 {
-    # CreatureId     VillainsVariant
+    # CreatureId     TribeAlignment
     ADVENTURER       LAWFUL
     ADVENTURER_F     LAWFUL
 #    ORC              EVIL
