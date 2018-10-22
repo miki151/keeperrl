@@ -8,7 +8,7 @@ RICH_ENUM(TechVariant,
   WHITE
 );
 
-RICH_ENUM(InitialWorkerVariant,
+RICH_ENUM(WorkerVariant,
   IMP,
   PEASANT_PRISONER,
   PEASANT

@@ -5,7 +5,7 @@
 struct KeeperCreatureInfo {
   CreatureId SERIAL(creatureId);
   TechVariant SERIAL(techVariant);
-  InitialWorkerVariant SERIAL(initialWorkerVariant);
+  WorkerVariant SERIAL(initialWorkerVariant);
   TribeAlignment SERIAL(tribeAlignment);
   ImmigrantsVariant SERIAL(immigrantsVariant);
   vector<TechId> SERIAL(initialTech);

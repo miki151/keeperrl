@@ -232,10 +232,10 @@ static vector<ImmigrantInfo> getWhiteKeeperImmigration(RandomGen& random) {
 }
 
 static CollectiveConfig getKeeperConfig(RandomGen& random, bool fastImmigration, bool regenerateMana,
-    InitialWorkerVariant workerVariant, ImmigrantsVariant immigrantsVariant) {
+    WorkerVariant workerVariant, ImmigrantsVariant immigrantsVariant) {
   vector<ImmigrantInfo> immigrants;
   switch (workerVariant) {
-    case InitialWorkerVariant::IMP:
+    case WorkerVariant::IMP:
       immigrants.push_back(
           ImmigrantInfo(CreatureId::IMP, {MinionTrait::WORKER, MinionTrait::NO_LIMIT, MinionTrait::NO_EQUIPMENT})
              .setSpawnLocation(NearLeader{})
@@ -245,7 +245,7 @@ static CollectiveConfig getKeeperConfig(RandomGen& random, bool fastImmigration,
              .setInitialRecruitment(4)
              .addRequirement(ExponentialCost{ CostInfo(CollectiveResourceId::GOLD, 30), 5, 4 }));
       break;
-    case InitialWorkerVariant::PEASANT_PRISONER:
+    case WorkerVariant::PEASANT_PRISONER:
       immigrants.push_back(
           ImmigrantInfo(CreatureId::PESEANT_PRISONER,
               {MinionTrait::WORKER, MinionTrait::PRISONER, MinionTrait::NO_LIMIT})
@@ -254,7 +254,7 @@ static CollectiveConfig getKeeperConfig(RandomGen& random, bool fastImmigration,
              .setInvisible()
              .setInitialRecruitment(4));
       break;
-    case InitialWorkerVariant::PEASANT:
+    case WorkerVariant::PEASANT:
       immigrants.push_back(
           ImmigrantInfo(CreatureId::PESEANT_PLAYER, {MinionTrait::WORKER, MinionTrait::NO_LIMIT, MinionTrait::NO_EQUIPMENT})
              .setKeybinding(Keybinding::CREATE_IMP)
