@@ -678,26 +678,33 @@ void Player::makeMove() {
         creatureClickAction(Position(action.get<Vec2>(), getLevel()), true);
         break;
       case UserInputId::EXIT: getGame()->exitAction(); return;
-      case UserInputId::APPLY_EFFECT:
-        if (auto effect = PrettyPrinting::parseObject<Effect>(action.get<string>()))
-          effect->applyToCreature(creature, nullptr);
+      case UserInputId::APPLY_EFFECT: {
+        Effect effect;
+        if (auto error = PrettyPrinting::parseObject(effect, action.get<string>()))
+          getView()->presentText("Sorry", "Couldn't parse \"" + action.get<string>() + "\": " + *error);
         else
-          getView()->presentText("Sorry", "Couldn't parse \"" + action.get<string>() + "\"");
+          effect.applyToCreature(creature, nullptr);
         break;
-      case UserInputId::CREATE_ITEM:
-        if (auto itemType = PrettyPrinting::parseObject<ItemType>(action.get<string>()))
-          creature->take(itemType->setPrefixChance(1).get());
+      }
+      case UserInputId::CREATE_ITEM: {
+        ItemType item;
+        if (auto error = PrettyPrinting::parseObject(item, action.get<string>()))
+          getView()->presentText("Sorry", "Couldn't parse \"" + action.get<string>() + "\": " + *error);
         else
-          getView()->presentText("Sorry", "Couldn't parse \"" + action.get<string>() + "\"");
+          creature->take(item.setPrefixChance(1).get());
         break;
-      case UserInputId::SUMMON_ENEMY:
-        if (auto id = PrettyPrinting::parseObject<CreatureId>(action.get<string>())) {
-          auto factory = CreatureFactory::singleCreature(TribeId::getMonster(), *id);
+      }
+      case UserInputId::SUMMON_ENEMY: {
+        CreatureId id;
+        if (auto error = PrettyPrinting::parseObject(id, action.get<string>()))
+          getView()->presentText("Sorry", "Couldn't parse \"" + action.get<string>() + "\": " + *error);
+        else {
+          auto factory = CreatureFactory::singleCreature(TribeId::getMonster(), id);
           Effect::summon(creature->getPosition(), factory, 1, 1000_visible,
               3_visible);
-        } else
-          getView()->presentText("Sorry", "Couldn't parse \"" + action.get<string>() + "\"");
+        }
         break;
+      }
       case UserInputId::PLAYER_COMMAND: {
         int index = action.get<int>();
         auto commands = getCommands();

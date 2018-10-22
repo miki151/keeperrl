@@ -547,11 +547,13 @@ static CreatureList readAlly(ifstream& input) {
   }
   string equipmentText;
   input >> equipmentText;
-  for (auto id : split(equipmentText, {','}))
-    if (auto type = PrettyPrinting::parseObject<ItemType>(id))
-      equipment.push_back(*type);
+  for (auto id : split(equipmentText, {','})) {
+    ItemType type;
+    if (auto error = PrettyPrinting::parseObject(type, id))
+      FATAL << "Can't parse item type: " << id << ": " << *error;
     else
-      FATAL << "Can't parse item type: " << id;
+      equipment.push_back(type);
+  }
   ret.addInventory(equipment);
   ret.increaseBaseLevel(levelIncrease);
   return ret;

@@ -13,42 +13,36 @@
 #include "trap_type.h"
 #include "campaign.h"
 #include "enemy_factory.h"
+#include "keeper_creature_info.h"
+#include "adventurer_creature_info.h"
 
 template <typename T>
-optional<T> PrettyPrinting::parseObject(const string& s) {
+optional<string> PrettyPrinting::parseObject(T& object, const string& s) {
   try {
     PrettyInput input(s);
-    T object;
     input.getArchive() >> object;
-    return object;
-  } catch (...) {}
-  return none;
-}
-
-template <typename T>
-vector<T> PrettyPrinting::parseObjects(int count, const string& s) {
-  vector<T> ret;
-  try {
-    PrettyInput input(s);
-    for (int i : Range(count)) {
-      T object;
-      input.getArchive() >> object;
-      ret.push_back(object);
-    }
+    return none;
   } catch (PrettyException ex) {
-    USER_FATAL << ex.text;
+    return ex.text;
   }
-  return ret;
 }
 
 template
-optional<Effect> PrettyPrinting::parseObject<Effect>(const string&);
+optional<string> PrettyPrinting::parseObject<Effect>(Effect&, const string&);
 
 template
-optional<ItemType> PrettyPrinting::parseObject<ItemType>(const string&);
+optional<string> PrettyPrinting::parseObject<ItemType>(ItemType&, const string&);
 
 template
-optional<CreatureId> PrettyPrinting::parseObject<CreatureId>(const string&);
+optional<string> PrettyPrinting::parseObject<CreatureId>(CreatureId&, const string&);
+
+
+using VillainsTuple = tuple<vector<Campaign::VillainInfo>, vector<Campaign::VillainInfo>,
+    vector<Campaign::VillainInfo>, vector<Campaign::VillainInfo>>;
 
 template
-vector<vector<Campaign::VillainInfo>> PrettyPrinting::parseObjects<vector<Campaign::VillainInfo>>(int, const string&);
+optional<string> PrettyPrinting::parseObject<VillainsTuple>(VillainsTuple&, const string&);
+
+template
+optional<string> PrettyPrinting::parseObject<pair<vector<KeeperCreatureInfo>, vector<AdventurerCreatureInfo>>>(
+    pair<vector<KeeperCreatureInfo>, vector<AdventurerCreatureInfo>>&, const string&);

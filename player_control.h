@@ -48,7 +48,7 @@ class AttackTrigger;
 
 class PlayerControl : public CreatureView, public CollectiveControl, public EventListener<PlayerControl> {
   public:
-  static PPlayerControl create(WCollective col, vector<string> introText, AvatarVariant);
+  static PPlayerControl create(WCollective col, vector<string> introText, TechVariant);
   ~PlayerControl() override;
 
   void processInput(View* view, UserInput);
@@ -90,7 +90,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   struct Private {};
 
   public:
-  PlayerControl(Private, WCollective, AvatarVariant);
+  PlayerControl(Private, WCollective, TechVariant);
 
   protected:
   // from CreatureView
@@ -241,7 +241,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   set<pair<UniqueEntity<Collective>::Id, string>> SERIAL(dismissedVillageInfos);
   void considerTransferingLostMinions();
   vector<PItem> retrievePillageItems(WCollective, vector<WItem> items);
-  AvatarVariant SERIAL(avatarVariant);
+  TechVariant SERIAL(techVariant);
   const vector<BuildInfo>& getBuildInfo() const;
 };
 

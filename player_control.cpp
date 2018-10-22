@@ -88,7 +88,7 @@
 template <class Archive>
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
   ar& SUBCLASS(CollectiveControl) & SUBCLASS(EventListener);
-  ar(memory, introText, lastControlKeeperQuestion, avatarVariant);
+  ar(memory, introText, lastControlKeeperQuestion, techVariant);
   ar(newAttacks, ransomAttacks, notifiedAttacks, messages, hints, visibleEnemies);
   ar(visibilityMap, unknownLocations, dismissedVillageInfos);
   ar(messageHistory, tutorial, controlModeMessages, stunnedCreatures);
@@ -110,13 +110,13 @@ static vector<string> getHints() {
   };
 }
 
-PlayerControl::PlayerControl(Private, WCollective col, AvatarVariant avatarVariant)
-      : CollectiveControl(col), hints(getHints()), avatarVariant(avatarVariant) {
+PlayerControl::PlayerControl(Private, WCollective col, TechVariant techVariant)
+      : CollectiveControl(col), hints(getHints()), techVariant(techVariant) {
   controlModeMessages = make_shared<MessageBuffer>();
   visibilityMap = make_shared<VisibilityMap>();
   unknownLocations = make_shared<UnknownLocations>();
   bool hotkeys[128] = {0};
-  for (auto& info : BuildInfo::get(avatarVariant)) {
+  for (auto& info : BuildInfo::get(techVariant)) {
     if (info.hotkey) {
       CHECK(!hotkeys[int(info.hotkey)]);
       hotkeys[int(info.hotkey)] = true;
@@ -129,8 +129,8 @@ PlayerControl::PlayerControl(Private, WCollective col, AvatarVariant avatarVaria
         addToMemory(pos);
 }
 
-PPlayerControl PlayerControl::create(WCollective col, vector<string> introText, AvatarVariant avatarVariant) {
-  auto ret = makeOwner<PlayerControl>(Private{}, col, avatarVariant);
+PPlayerControl PlayerControl::create(WCollective col, vector<string> introText, TechVariant techVariant) {
+  auto ret = makeOwner<PlayerControl>(Private{}, col, techVariant);
   ret->subscribeTo(col->getLevel()->getModel());
   ret->introText = introText;
   return ret;
@@ -931,7 +931,7 @@ static const ViewObject& getConstructionObject(FurnitureType type) {
 }
 
 void PlayerControl::acquireTech(int index) {
-  auto techs = Technology::getNextTechs(collective->getTechnologies(), avatarVariant).filter(
+  auto techs = Technology::getNextTechs(collective->getTechnologies(), techVariant).filter(
       [](const Technology* tech) { return tech->canResearch(); });
   if (index < techs.size()) {
     Technology* tech = techs[index];
@@ -950,7 +950,7 @@ void PlayerControl::fillLibraryInfo(CollectiveInfo& collectiveInfo) const {
       info.warning = "Conquer some villains to advance your level."_s;
     info.totalProgress = 100 * dungeonLevel.getNecessaryProgress(dungeonLevel.level);
     info.currentProgress = int(100 * dungeonLevel.progress);
-    auto techs = Technology::getNextTechs(collective->getTechnologies(), avatarVariant).filter(
+    auto techs = Technology::getNextTechs(collective->getTechnologies(), techVariant).filter(
         [](const Technology* tech) { return tech->canResearch(); });
     for (Technology* tech : techs) {
       info.available.emplace_back();
@@ -1426,7 +1426,7 @@ void PlayerControl::onEvent(const GameEvent& event) {
       },
       [&](const TechbookRead& info) {
         Technology* tech = info.technology;
-        vector<Technology*> nextTechs = Technology::getNextTechs(collective->getTechnologies(), avatarVariant);
+        vector<Technology*> nextTechs = Technology::getNextTechs(collective->getTechnologies(), techVariant);
         if (tech == nullptr) {
           if (!nextTechs.empty())
             tech = Random.choose(nextTechs);
@@ -2212,7 +2212,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
 }
 
 const vector<BuildInfo>& PlayerControl::getBuildInfo() const {
-  return BuildInfo::get(avatarVariant);
+  return BuildInfo::get(techVariant);
 }
 
 vector<WCreature> PlayerControl::getConsumptionTargets(WCreature consumer) const {

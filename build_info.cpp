@@ -18,8 +18,8 @@
 
 using ResourceId = Collective::ResourceId;
 
-const vector<BuildInfo>& BuildInfo::get(AvatarVariant avatarVariant) {
-  static EnumMap<AvatarVariant, vector<BuildInfo>> buildInfo([](AvatarVariant avatarVariant) {
+const vector<BuildInfo>& BuildInfo::get(TechVariant techVariant) {
+  static EnumMap<TechVariant, vector<BuildInfo>> buildInfo([](TechVariant techVariant) {
     const char* workshop = "Manufactories";
     vector<BuildInfo> buildInfo {
       BuildInfo(BuildInfo::DIG, "Dig or cut tree", "", 'd').setTutorialHighlight(TutorialHighlight::DIG_OR_CUT_TREES),
@@ -87,7 +87,7 @@ const vector<BuildInfo>& BuildInfo::get(AvatarVariant avatarVariant) {
       BuildInfo({FurnitureType::BED2, {ResourceId::IRON, 12}}, "Fine bed", {}, "Humanoid minions sleep here.", 0, "Living", true),
       BuildInfo({FurnitureType::BED3, {ResourceId::GOLD, 12}}, "Luxurious bed", {}, "Humanoid minions sleep here.", 0, "Living", true),
     });
-    if (avatarVariant != AvatarVariant::WHITE_KNIGHT)
+    if (techVariant == TechVariant::DARK)
       append(buildInfo, {
         BuildInfo({FurnitureType::COFFIN1, {ResourceId::WOOD, 15}}, "Basic coffin", {},
             "Undead creatures sleep here.", 0, "Living"),
@@ -129,7 +129,7 @@ const vector<BuildInfo>& BuildInfo::get(AvatarVariant avatarVariant) {
       BuildInfo({FurnitureType::JEWELER, {ResourceId::WOOD, 12}}, "Jeweler",
           {{RequirementId::TECHNOLOGY, TechId::JEWELLERY}}, "Produces magical rings and amulets.", 0, workshop),
     });
-    if (avatarVariant != AvatarVariant::WHITE_KNIGHT)
+    if (techVariant == TechVariant::DARK)
       buildInfo.push_back(
           BuildInfo({FurnitureType::DEMON_SHRINE, {ResourceId::GOLD, 30}}, "Demon shrine", {{RequirementId::TECHNOLOGY, TechId::DEMONOLOGY}},
               "Summons various demons to your dungeon."));
@@ -160,7 +160,7 @@ const vector<BuildInfo>& BuildInfo::get(AvatarVariant avatarVariant) {
       BuildInfo({FurnitureType::KEEPER_BOARD, {ResourceId::WOOD, 15}}, "Message board", {},
           "A board where you can leave a message for other players.", 0, "Installations")
     });
-    if (avatarVariant != AvatarVariant::WHITE_KNIGHT)
+    if (techVariant == TechVariant::DARK)
       append(buildInfo, {
           BuildInfo({FurnitureType::EYEBALL, {ResourceId::WOOD, 30}}, "Eyeball", {},
             "Makes the area around it visible.", 0, "Installations"),
@@ -183,7 +183,7 @@ const vector<BuildInfo>& BuildInfo::get(AvatarVariant avatarVariant) {
       BuildInfo({FurnitureType::TUTORIAL_ENTRANCE, {}}, "Tutorial entrance", {}, "", 0, "Installations"),
 #endif
     });
-    if (avatarVariant != AvatarVariant::WHITE_KNIGHT)
+    if (techVariant == TechVariant::DARK)
       append(buildInfo, {
         BuildInfo({TrapType::TERROR, ViewId::TERROR_TRAP}, "Panic trap", {{RequirementId::TECHNOLOGY, TechId::TRAPS}},
             "Causes the trespasser to panic.", 0, "Traps"),
@@ -210,7 +210,7 @@ const vector<BuildInfo>& BuildInfo::get(AvatarVariant avatarVariant) {
     }
     return buildInfo;
   });
-  return buildInfo[avatarVariant];
+  return buildInfo[techVariant];
 }
 
 BuildInfo::FurnitureInfo::FurnitureInfo(FurnitureType type, CostInfo cost, bool noCredit, optional<int> maxNumber)
@@ -270,7 +270,7 @@ string BuildInfo::getRequirementText(Requirement req) {
 
 vector<BuildInfo::RoomInfo> BuildInfo::getRoomInfo() {
   vector<RoomInfo> ret;
-  for (auto& bInfo : get(AvatarVariant::DARK_MAGE))
+  for (auto& bInfo : get(TechVariant::DARK))
     if (bInfo.buildType == BuildInfo::FURNITURE)
       ret.push_back({bInfo.name, bInfo.help, bInfo.requirements});
   return ret;

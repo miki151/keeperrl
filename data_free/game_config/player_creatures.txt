@@ -1,0 +1,18 @@
+# Keepers
+{
+    # CreatureId      TechVariant   InitialWorkerVariant    TribeAlignment     ImmigrantsVariant  { TechId, ... }
+
+    KEEPER_MAGE       DARK          IMP                     EVIL               EVIL               { SPELLS }
+    KEEPER_MAGE_F     DARK          IMP                     EVIL               EVIL               { SPELLS }
+    KEEPER_KNIGHT     DARK          PEASANT_PRISONER        EVIL               EVIL               { IRON_WORKING }
+    KEEPER_KNIGHT_F   DARK          PEASANT_PRISONER        EVIL               EVIL               { IRON_WORKING }
+    DUKE_PLAYER       WHITE         PEASANT                 LAWFUL             LAWFUL             { ARCHERY }
+}
+
+# Adventurers
+{
+    # CreatureId     VillainsVariant
+    ADVENTURER       LAWFUL
+    ADVENTURER_F     LAWFUL
+#    ORC              EVIL
+}

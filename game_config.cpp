@@ -6,6 +6,8 @@ const char* GameConfig::getConfigName(GameConfigId id) {
   switch (id) {
     case GameConfigId::CAMPAIGN_VILLAINS:
       return "campaign_villains";
+    case GameConfigId::PLAYER_CREATURES:
+      return "player_creatures";
   }
 }
 

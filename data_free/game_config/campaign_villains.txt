@@ -19,7 +19,7 @@
     HYDRA HYDRA "Hydra" LESSER
     UNICORN UNICORN_HERD "Unicorn herd" LESSER
     ANT_QUEEN ANTS_OPEN "Ants" LESSER
-    ZOMBIE CEMETERY "Zombies" LESSER
+#    ZOMBIE CEMETERY "Zombies" LESSER
 
     UNKNOWN_MONSTER OGRE_CAVE "Unknown" ALLY
     UNKNOWN_MONSTER HARPY_CAVE "Unknown" ALLY
@@ -51,7 +51,13 @@
     DWARF_BARON DWARVES "Dwarves" ALLY
 }
 
-# Villains for adventurers
+# Villains for evil adventurers
+{
+    DUKE KNIGHTS "Knights" MAIN
+    ORC_CAPTAIN ORC_VILLAGE "Greenskins village" ALLY
+}
+
+# Villains for lawful adventurers
 {
     RED_DRAGON RED_DRAGON "Red dragon" MAIN
     GREEN_DRAGON GREEN_DRAGON "Green dragon" MAIN
@@ -75,4 +81,3 @@
     DWARF_BARON DWARVES "Dwarves" ALLY
     LIZARDLORD LIZARDMEN "Lizardmen" ALLY
 }
-# end

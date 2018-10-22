@@ -8,7 +8,7 @@
 #include "avatar_info.h"
 
 struct BuildInfo {
-  static const vector<BuildInfo>& get(AvatarVariant);
+  static const vector<BuildInfo>& get(TechVariant);
 
   struct FurnitureInfo {
     FurnitureInfo(FurnitureType type, CostInfo cost = CostInfo::noCost(), bool noCredit = false, optional<int> maxNumber = none);

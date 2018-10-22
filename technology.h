@@ -45,7 +45,7 @@ class CostInfo;
 class Technology : public Singleton<Technology, TechId> {
   public:
   Technology(const string& name, const string& description, int cost, const vector<TechId>& prerequisites = {},
-      bool canResearch = true, EnumSet<AvatarVariant> = EnumSet<AvatarVariant>::fullSet());
+      bool canResearch = true, EnumSet<TechVariant> = EnumSet<TechVariant>::fullSet());
   const string& getName() const;
   bool canResearch() const;
   Technology* setTutorialHighlight(TutorialHighlight);
@@ -54,11 +54,9 @@ class Technology : public Singleton<Technology, TechId> {
   const vector<Technology*> getPrerequisites() const;
   const vector<Technology*> getAllowed() const;
 
-  static vector<Technology*> getInitialTech(AvatarVariant);
   static vector<Technology*> getSorted();
-  static vector<Technology*> getNextTechs(const vector<Technology*>& current, optional<AvatarVariant>);
+  static vector<Technology*> getNextTechs(const vector<Technology*>& current, optional<TechVariant>);
   static TechId getNeededTech(Spell*);
-
   static void init();
 
   private:
@@ -69,6 +67,6 @@ class Technology : public Singleton<Technology, TechId> {
   vector<Technology*> prerequisites;
   bool research;
   optional<TutorialHighlight> tutorial;
-  EnumSet<AvatarVariant> inVariants;
+  EnumSet<TechVariant> inVariants;
 };
 

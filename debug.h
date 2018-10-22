@@ -50,7 +50,7 @@
 #endif
 
 // Just crashes the program with a segfault
-extern void fail();
+[[noreturn]] extern void fail();
 
 inline std::ostream& operator<<(std::ostream& d, const milliseconds& millis) {
   return d << millis.count() << "ms";

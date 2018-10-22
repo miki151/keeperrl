@@ -157,7 +157,6 @@ inline void CEREAL_SAVE_FUNCTION_NAME(PrettyOutputArchive& ar, char c) {
   ar.os << std::quoted(s);
 }
 
-
 typedef StreamCombiner<ostringstream, PrettyOutputArchive> PrettyOutput;
 typedef StreamCombiner<istringstream, PrettyInputArchive> PrettyInput;
 

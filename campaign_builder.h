@@ -8,6 +8,8 @@ struct VillainPlacement;
 struct VillainCounts;
 class TribeId;
 class GameConfig;
+struct KeeperCreatureInfo;
+struct AdventurerCreatureInfo;
 
 class CampaignBuilder {
   public:
@@ -25,17 +27,21 @@ class CampaignBuilder {
   vector<OptionId> getSecondaryOptions(CampaignType) const;
   vector<OptionId> getPrimaryOptions() const;
   optional<string> getSiteChoiceTitle(CampaignType) const;
-  vector<Campaign::VillainInfo> getVillains(optional<AvatarVariant>, VillainType);
+  vector<Campaign::VillainInfo> getVillains(TribeAlignment, VillainType);
   const char* getIntroText() const;
   void setPlayerPos(Campaign&, Vec2, ViewId playerViewId);
   AvatarInfo getAvatarInfo();
   vector<CampaignType> getAvailableTypes() const;
   VillainPlacement getVillainPlacement(const Campaign&, VillainType);
   void placeVillains(Campaign&, vector<Campaign::SiteInfo::Dweller>, const VillainPlacement&, int count);
-  void placeVillains(Campaign&, const VillainCounts&, const optional<RetiredGames>&, optional<AvatarVariant>);
+  void placeVillains(Campaign&, const VillainCounts&, const optional<RetiredGames>&, TribeAlignment);
   OptionId getPlayerNameOptionId() const;
   OptionId getPlayerTypeOptionId() const;
-  TribeId getPlayerTribeId(optional<AvatarVariant>) const;
+  TribeId getPlayerTribeId(TribeAlignment) const;
+  vector<CreatureId> getKeeperCreatures() const;
+  vector<CreatureId> getAdventurerCreatures() const;
+  KeeperCreatureInfo getKeeperCreatureInfo(CreatureId id) const;
+  AdventurerCreatureInfo getAdventurerCreatureInfo(CreatureId id) const;
 };
 
 struct CampaignSetup {
