@@ -35,9 +35,10 @@
 #include "external_enemies.h"
 
 MainLoop::MainLoop(View* v, Highscores* h, FileSharing* fSharing, const DirectoryPath& freePath,
-    const DirectoryPath& uPath, Options* o, Jukebox* j, SokobanInput* soko, bool singleThread, int sv)
-      : view(v), dataFreePath(freePath), userPath(uPath), options(o), jukebox(j),
-        highscores(h), fileSharing(fSharing), useSingleThread(singleThread), sokobanInput(soko), saveVersion(sv) {
+    const DirectoryPath& uPath, Options* o, Jukebox* j, SokobanInput* soko, GameConfig* gameConfig, bool singleThread,
+    int sv)
+      : view(v), dataFreePath(freePath), userPath(uPath), options(o), jukebox(j), highscores(h), fileSharing(fSharing),
+        gameConfig(gameConfig), useSingleThread(singleThread), sokobanInput(soko), saveVersion(sv) {
 }
 
 vector<SaveFileInfo> MainLoop::getSaveFiles(const DirectoryPath& path, const string& suffix) {
@@ -337,7 +338,7 @@ PGame MainLoop::prepareCampaign(RandomGen& random) {
     choice = view->getPlayerRoleChoice(choice);
     if (auto ret = choice.match(
         [&] (PlayerRole role) -> optional<PGame> {
-          CampaignBuilder builder(view, random, options, role);
+          CampaignBuilder builder(view, random, options, role, gameConfig);
           if (auto result = builder.prepareCampaign(bindMethod(&MainLoop::getRetiredGames, this), CampaignType::CAMPAIGN)) {
             return Game::campaignGame(prepareCampaignModels(*result, random), *result);
           } else
@@ -420,7 +421,7 @@ void MainLoop::launchQuickGame() {
   if (toLoad != files.end())
     game = loadGame(userPath.file((*toLoad).filename));
   if (!game) {
-    CampaignBuilder builder(view, Random, options, PlayerRole::KEEPER);
+    CampaignBuilder builder(view, Random, options, PlayerRole::KEEPER, gameConfig);
     auto result = builder.prepareCampaign(bindMethod(&MainLoop::getRetiredGames, this), CampaignType::QUICK_MAP);
     game = Game::campaignGame(prepareCampaignModels(*result, Random), *result);
   }

@@ -112,7 +112,6 @@ class CollectiveConfig {
   static const vector<FurnitureType>& getTrainingFurniture(ExperienceType);
   static const MinionActivityInfo& getActivityInfo(MinionActivity);
   static bool canBuildOutsideTerritory(FurnitureType);
-  static int getManaForConquering(const optional<VillainType>&);
 
   SERIALIZATION_DECL(CollectiveConfig)
   CollectiveConfig(const CollectiveConfig&);

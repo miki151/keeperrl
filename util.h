@@ -321,6 +321,9 @@ enum class Name { __VA_ARGS__ };\
 template<> \
 class EnumInfo<Name> { \
   public:\
+  static const char* getName() {\
+    return #Name;\
+  }\
   static string getString(Name e) {\
     static vector<string> names = split(#__VA_ARGS__, {' ', ','}).filter([](const string& s){ return !s.empty(); });\
     return names[int(e)];\

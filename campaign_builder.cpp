@@ -12,6 +12,7 @@
 #include "view_object.h"
 #include "name_generator.h"
 #include "creature_factory.h"
+#include "game_config.h"
 
 
 optional<Vec2> CampaignBuilder::considerStaticPlayerPos(const Campaign& campaign) {
@@ -153,87 +154,24 @@ optional<string> CampaignBuilder::getSiteChoiceTitle(CampaignType type) const {
   }
 }
 
-static vector<Campaign::VillainInfo> getMainVillains(bool evil) {
-  if (evil)
-    return {
-      {ViewId::DUKE, EnemyId::KNIGHTS, "Knights", VillainType::MAIN},
-      {ViewId::ELF_LORD, EnemyId::ELVES, "Elves", VillainType::MAIN},
-      {ViewId::DWARF_BARON, EnemyId::DWARVES, "Dwarves", VillainType::MAIN},
-      {ViewId::RED_DRAGON, EnemyId::RED_DRAGON, "Red dragon", VillainType::MAIN},
-      {ViewId::ELEMENTALIST, EnemyId::ELEMENTALIST, "Elementalist", VillainType::MAIN},
-      {ViewId::GREEN_DRAGON, EnemyId::GREEN_DRAGON, "Green dragon", VillainType::MAIN},
-      {ViewId::LIZARDLORD, EnemyId::LIZARDMEN, "Lizardmen", VillainType::MAIN},
-      {ViewId::SHAMAN, EnemyId::WARRIORS, "Warriors", VillainType::MAIN},
-      {ViewId::DEMON_LORD, EnemyId::DEMON_DEN, "Demon den", VillainType::MAIN},
-    };
-  else
-    return {
-      {ViewId::RED_DRAGON, EnemyId::RED_DRAGON, "Red dragon", VillainType::MAIN},
-      {ViewId::GREEN_DRAGON, EnemyId::GREEN_DRAGON, "Green dragon", VillainType::MAIN},
-      {ViewId::SHELOB, EnemyId::SHELOB, "Giant spider", VillainType::MAIN},
-      {ViewId::ANT_QUEEN, EnemyId::ANTS_OPEN, "Ants", VillainType::MAIN},
-      {ViewId::DARK_ELF_LORD, EnemyId::DARK_ELVES, "Dark elves", VillainType::MAIN},
-      {ViewId::ORC_CAPTAIN, EnemyId::ORC_VILLAGE, "Greenskin village", VillainType::MAIN},
-      {ViewId::DEMON_LORD, EnemyId::DEMON_DEN, "Demon den", VillainType::MAIN},
-    };
+static vector<vector<Campaign::VillainInfo>> readVillainsConfig(GameConfig* config) {
+  return config->readObjects<vector<Campaign::VillainInfo>>(3, GameConfigId::CAMPAIGN_VILLAINS);
 }
 
-vector<Campaign::VillainInfo> CampaignBuilder::getMainVillains(optional<AvatarVariant> avatarVariant) {
-  return ::getMainVillains(playerRole == PlayerRole::KEEPER && avatarVariant != AvatarVariant::WHITE_KNIGHT);
+static vector<Campaign::VillainInfo> filter(vector<Campaign::VillainInfo> v, VillainType type) {
+  return v.filter([type](const auto& elem){ return elem.type == type; });
 }
 
-static vector<Campaign::VillainInfo> getLesserVillains(bool evil) {
-  if (evil)
-    return {
-      {ViewId::ENT, EnemyId::ENTS, "Tree spirits", VillainType::LESSER},
-      {ViewId::DRIAD, EnemyId::DRIADS, "Driads", VillainType::LESSER},
-      {ViewId::CYCLOPS, EnemyId::CYCLOPS, "Cyclops", VillainType::LESSER},
-      {ViewId::SHELOB, EnemyId::SHELOB, "Giant spider", VillainType::LESSER},
-      {ViewId::HYDRA, EnemyId::HYDRA, "Hydra", VillainType::LESSER},
-      {ViewId::UNICORN, EnemyId::UNICORN_HERD, "Unicorn herd", VillainType::LESSER},
-      {ViewId::ANT_QUEEN, EnemyId::ANTS_OPEN, "Ants", VillainType::LESSER},
-      {ViewId::ZOMBIE, EnemyId::CEMETERY, "Zombies", VillainType::LESSER},
-    };
-  else
-    return {
-      {ViewId::BANDIT, EnemyId::BANDITS, "Bandits", VillainType::LESSER},
-      {ViewId::CYCLOPS, EnemyId::CYCLOPS, "Cyclops", VillainType::LESSER},
-      {ViewId::HYDRA, EnemyId::HYDRA, "Hydra", VillainType::LESSER},
-      {ViewId::ZOMBIE, EnemyId::CEMETERY, "Zombies", VillainType::LESSER},
-      {ViewId::OGRE, EnemyId::OGRE_CAVE, "Ogres", VillainType::LESSER},
-      {ViewId::HARPY, EnemyId::HARPY_CAVE, "Harpies", VillainType::LESSER},
-    };
-}
-
-vector<Campaign::VillainInfo> CampaignBuilder::getLesserVillains(optional<AvatarVariant> avatarVariant) {
-  return ::getLesserVillains(playerRole == PlayerRole::KEEPER && avatarVariant != AvatarVariant::WHITE_KNIGHT);
-}
-
-vector<Campaign::VillainInfo> CampaignBuilder::getAllies(optional<AvatarVariant> avatarVariant) {
+vector<Campaign::VillainInfo> CampaignBuilder::getVillains(optional<AvatarVariant> avatarVariant, VillainType type) {
+  auto config = readVillainsConfig(gameConfig);
   switch (playerRole) {
     case PlayerRole::KEEPER:
-      switch (*avatarVariant) {
-        case AvatarVariant::WHITE_KNIGHT:
-          return {
-            {ViewId::DWARF_BARON, EnemyId::DWARVES, "Dwarves", VillainType::ALLY},
-          };
-        default:
-          return {
-            {ViewId::UNKNOWN_MONSTER, EnemyId::OGRE_CAVE, "Unknown", VillainType::ALLY},
-            {ViewId::UNKNOWN_MONSTER, EnemyId::HARPY_CAVE, "Unknown", VillainType::ALLY},
-            {ViewId::UNKNOWN_MONSTER, EnemyId::SOKOBAN, "Unknown", VillainType::ALLY},
-            {ViewId::DARK_ELF_LORD, EnemyId::DARK_ELVES, "Dark elves", VillainType::ALLY},
-            {ViewId::GNOME_BOSS, EnemyId::GNOMES, "Gnomes", VillainType::ALLY},
-            {ViewId::ORC_CAPTAIN, EnemyId::ORC_VILLAGE, "Greenskin village", VillainType::ALLY},
-          };
-      };
+      if (avatarVariant != AvatarVariant::WHITE_KNIGHT)
+        return filter(config[0], type);
+      else
+        return filter(config[1], type);
     case PlayerRole::ADVENTURER:
-      return {
-        {ViewId::DUKE, EnemyId::KNIGHTS, "Knights", VillainType::ALLY},
-        {ViewId::ELF_LORD, EnemyId::ELVES, "Elves", VillainType::ALLY},
-        {ViewId::DWARF_BARON, EnemyId::DWARVES, "Dwarves", VillainType::ALLY},
-        {ViewId::LIZARDLORD, EnemyId::LIZARDMEN, "Lizardmen", VillainType::ALLY},
-      };
+      return filter(config[2], type);
   }
 }
 
@@ -349,8 +287,8 @@ static VillainCounts getVillainCounts(CampaignType type, Options* options) {
   }
 }
 
-CampaignBuilder::CampaignBuilder(View* v, RandomGen& rand, Options* o, PlayerRole r)
-    : view(v), random(rand), playerRole(r), options(o) {
+CampaignBuilder::CampaignBuilder(View* v, RandomGen& rand, Options* o, PlayerRole r, GameConfig* gameConfig)
+    : view(v), random(rand), playerRole(r), options(o), gameConfig(gameConfig) {
 }
 
 static string getNewIdSuffix() {
@@ -421,11 +359,11 @@ vector<Dweller> shuffle(RandomGen& random, vector<T> v) {
 void CampaignBuilder::placeVillains(Campaign& campaign, const VillainCounts& counts,
     const optional<RetiredGames>& retired, optional<AvatarVariant> avatarVariant) {
   int numRetired = retired ? min(retired->getNumActive(), min(counts.numMain, counts.maxRetired)) : 0;
-  placeVillains(campaign, shuffle(random, getMainVillains(avatarVariant)),
+  placeVillains(campaign, shuffle(random, getVillains(avatarVariant, VillainType::MAIN)),
       getVillainPlacement(campaign, VillainType::MAIN), counts.numMain - numRetired);
-  placeVillains(campaign, shuffle(random, getLesserVillains(avatarVariant)),
+  placeVillains(campaign, shuffle(random, getVillains(avatarVariant, VillainType::LESSER)),
       getVillainPlacement(campaign, VillainType::LESSER), counts.numLesser);
-  placeVillains(campaign, shuffle(random, getAllies(avatarVariant)),
+  placeVillains(campaign, shuffle(random, getVillains(avatarVariant, VillainType::ALLY)),
       getVillainPlacement(campaign, VillainType::ALLY), counts.numAllies);
   if (retired) {
     placeVillains(campaign, retired->getActiveGames().transform(

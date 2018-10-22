@@ -3,6 +3,10 @@
 #include "extern/iomanip.h"
 #include "util.h"
 
+struct PrettyException {
+  string text;
+};
+
 class PrettyOutputArchive : public cereal::OutputArchive<PrettyOutputArchive> {
   public:
     PrettyOutputArchive(std::ostream& stream)
@@ -27,7 +31,7 @@ class PrettyInputArchive : public cereal::InputArchive<PrettyInputArchive> {
     PrettyInputArchive(std::istream& stream)
           : InputArchive<PrettyInputArchive>(this), is(stream) {
       // This makes the istream ignore { and } characters
-      class my_ctype : public std::ctype<char> {
+      /*class my_ctype : public std::ctype<char> {
         mask my_table[table_size];
         public:
          my_ctype(size_t refs = 0) : std::ctype<char>(&my_table[0], false, refs) {
@@ -37,7 +41,7 @@ class PrettyInputArchive : public cereal::InputArchive<PrettyInputArchive> {
          }
       };
       std::locale x(std::locale::classic(), new my_ctype);
-      is.imbue(x);
+      is.imbue(x);*/
     }
 
     ~PrettyInputArchive() CEREAL_NOEXCEPT = default;
@@ -49,8 +53,8 @@ namespace cereal {
   namespace variant_detail {
     template<int N, class Variant, class ... Args>
     typename std::enable_if<N == Variant::num_types>::type
-    load_variant(PrettyInputArchive & /*ar*/, const string& /*target*/, Variant & /*variant*/) {
-      throw ::cereal::Exception("Error traversing variant during load");
+    load_variant(PrettyInputArchive & /*ar*/, const string& target, Variant & /*variant*/) {
+      throw PrettyException{"Error reading variant " + target};
     }
 
     template<int N, class Variant, class H, class ... T>
@@ -108,7 +112,10 @@ namespace cereal {
   {
     string s;
     ar.is >> s;
-    t = EnumInfo<T>::fromStringWithException(s);
+    if (auto res = EnumInfo<T>::fromStringSafe(s))
+      t = *res;
+    else
+      throw PrettyException{"Error reading "_s + EnumInfo<T>::getName() + " value \"" + s + "\""};
   }
 
   template<class T>
@@ -150,6 +157,47 @@ inline void CEREAL_SAVE_FUNCTION_NAME(PrettyOutputArchive& ar, char c) {
   ar.os << std::quoted(s);
 }
 
+
+typedef StreamCombiner<ostringstream, PrettyOutputArchive> PrettyOutput;
+typedef StreamCombiner<istringstream, PrettyInputArchive> PrettyInput;
+
+template <typename T>
+inline void CEREAL_LOAD_FUNCTION_NAME(PrettyInputArchive& ar, vector<T>& v) {
+  v.clear();
+  string s;
+  ar.is >> s;
+  if (s != "{")
+    throw PrettyException{"Expected list of items surrounded by { and }"};
+  while (1) {
+    auto bookmark = ar.is.tellg();
+    ar.is >> s;
+    if (s == "}")
+      break;
+    ar.is.seekg(bookmark);
+    T t;
+    ar >> t;
+    v.push_back(t);
+  }
+}
+
+template <class T>
+void prologue(PrettyInputArchive& archive, T const &) {
+
+}
+
+template <typename T>
+inline void CEREAL_SAVE_FUNCTION_NAME(PrettyOutputArchive& ar, vector<T> const& v) {
+  ar.os << "{";
+  bool first = true;
+  for (auto& elem : v) {
+    if (!first)
+      ar.os << ",";
+    ar << v;
+    first = false;
+  }
+  ar.os << "}";
+}
+
 //! Serializing NVP types to binary
 template <class Archive, class T> inline
 CEREAL_ARCHIVE_RESTRICT(PrettyInputArchive, PrettyOutputArchive)
@@ -171,7 +219,3 @@ CEREAL_SERIALIZE_FUNCTION_NAME(Archive& ar1, cereal::SizeTag<T> & t) {
 
 // tie input and output archives together
 CEREAL_SETUP_ARCHIVE_TRAITS(PrettyInputArchive, PrettyOutputArchive)
-
-
-typedef StreamCombiner<ostringstream, PrettyOutputArchive> PrettyOutput;
-typedef StreamCombiner<istringstream, PrettyInputArchive> PrettyInput;

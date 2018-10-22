@@ -7,10 +7,11 @@ struct CampaignSetup;
 struct VillainPlacement;
 struct VillainCounts;
 class TribeId;
+class GameConfig;
 
 class CampaignBuilder {
   public:
-  CampaignBuilder(View*, RandomGen&, Options*, PlayerRole);
+  CampaignBuilder(View*, RandomGen&, Options*, PlayerRole, GameConfig*);
   optional<CampaignSetup> prepareCampaign(function<optional<RetiredGames>(CampaignType)>, CampaignType defaultType);
   static CampaignSetup getEmptyCampaign();
 
@@ -20,12 +21,11 @@ class CampaignBuilder {
   RandomGen& random;
   PlayerRole playerRole;
   Options* options;
+  GameConfig* gameConfig;
   vector<OptionId> getSecondaryOptions(CampaignType) const;
   vector<OptionId> getPrimaryOptions() const;
   optional<string> getSiteChoiceTitle(CampaignType) const;
-  vector<Campaign::VillainInfo> getMainVillains(optional<AvatarVariant>);
-  vector<Campaign::VillainInfo> getLesserVillains(optional<AvatarVariant>);
-  vector<Campaign::VillainInfo> getAllies(optional<AvatarVariant>);
+  vector<Campaign::VillainInfo> getVillains(optional<AvatarVariant>, VillainType);
   const char* getIntroText() const;
   void setPlayerPos(Campaign&, Vec2, ViewId playerViewId);
   AvatarInfo getAvatarInfo();

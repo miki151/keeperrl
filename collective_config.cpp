@@ -401,19 +401,6 @@ optional<int> CollectiveConfig::getTrainingMaxLevel(ExperienceType experienceTyp
   }
 }
 
-int CollectiveConfig::getManaForConquering(const optional<VillainType>& type) {
-  if (type)
-    switch (*type) {
-      case VillainType::MAIN:
-        return 200;
-      case VillainType::LESSER:
-        return 100;
-      default:
-        break;
-    }
-  return 50;
-}
-
 CollectiveConfig::CollectiveConfig(const CollectiveConfig&) = default;
 
 CollectiveConfig::~CollectiveConfig() {
