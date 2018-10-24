@@ -29,8 +29,8 @@ FXInfo getFXInfo(FXVariantName var) {
       return {FXName::FORGE, Color(252, 142, 30)};
     case Name::WORKSHOP:
       return {FXName::WORKSHOP};
-    case Name::JEWELER:
-      return {FXName::JEWELER, Color(253, 247, 140)};
+    case Name::JEWELLER:
+      return {FXName::JEWELLER, Color(253, 247, 140)};
 
     case Name::BUFF_RED:     return {FXName::BUFF,   Color(250, 40, 40), 0.0f, FXStackId::buff};
     case Name::BUFF_YELLOW:  return {FXName::BUFF,   Color(255, 255, 100), 0.0f, FXStackId::buff};
@@ -78,7 +78,7 @@ static bool isTree(FType type) {
 // TODO: EnumMap mapping item to destruction effect ?
 static bool isWoodenFurniture(FType type) {
   return isOneOf(type, FType::WOOD_DOOR, FType::WOOD_WALL, FType::BOOKCASE_WOOD, FType::TRAINING_WOOD, FType::WORKSHOP,
-                 FType::JEWELER, FType::ARCHERY_RANGE, FType::BARRICADE, FType::KEEPER_BOARD, FType::EYEBALL,
+                 FType::JEWELLER, FType::ARCHERY_RANGE, FType::BARRICADE, FType::KEEPER_BOARD, FType::EYEBALL,
                  FType::WHIPPING_POST, FType::GALLOWS, FType::BED1, FType::BED2, FType::BED3, FType::COFFIN1,
                  FType::BEAST_CAGE, FType::TREASURE_CHEST);
 }
@@ -138,8 +138,8 @@ optional<FXInfo> walkOverFXInfo(FType type) {
 
 optional<FXVariantName> getFurnitureUsageFX(FurnitureType type) {
   switch (type) {
-    case FurnitureType::JEWELER:
-      return FXVariantName::JEWELER;
+    case FurnitureType::JEWELLER:
+      return FXVariantName::JEWELLER;
     case FurnitureType::LABORATORY:
       return FXVariantName::LABORATORY;
     case FurnitureType::WORKSHOP:

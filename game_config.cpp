@@ -8,6 +8,8 @@ const char* GameConfig::getConfigName(GameConfigId id) {
       return "campaign_villains";
     case GameConfigId::PLAYER_CREATURES:
       return "player_creatures";
+    case GameConfigId::BUILD_MENU:
+      return "build_menu";
   }
 }
 

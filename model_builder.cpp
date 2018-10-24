@@ -34,11 +34,13 @@
 #include "game_time.h"
 #include "lasting_effect.h"
 #include "skill.h"
+#include "game_config.h"
+#include "build_info.h"
 
 using namespace std::chrono;
 
-ModelBuilder::ModelBuilder(ProgressMeter* m, RandomGen& r, Options* o, SokobanInput* sok) : random(r), meter(m), options(o),
-  enemyFactory(EnemyFactory(random)), sokobanInput(sok) {
+ModelBuilder::ModelBuilder(ProgressMeter* m, RandomGen& r, Options* o, SokobanInput* sok, GameConfig* gameConfig)
+    : random(r), meter(m), options(o), enemyFactory(EnemyFactory(random)), sokobanInput(sok) {
 }
 
 ModelBuilder::~ModelBuilder() {
@@ -49,7 +51,7 @@ static vector<ImmigrantInfo> getDarkKeeperImmigration(RandomGen& random) {
     ImmigrantInfo(CreatureId::GOBLIN, {MinionTrait::FIGHTER, MinionTrait::NO_AUTO_EQUIPMENT})
         .setFrequency(0.7)
         .addRequirement(0.1, AttractionInfo{1, vector<AttractionType>(
-             {FurnitureType::FORGE, FurnitureType::WORKSHOP, FurnitureType::JEWELER})})
+             {FurnitureType::FORGE, FurnitureType::WORKSHOP, FurnitureType::JEWELLER})})
         .addSpecialTrait(0.03, {SkillId::WORKSHOP, LastingEffect::INSANITY})
         .addSpecialTrait(0.03, {SkillId::FORGE, LastingEffect::INSANITY})
         .addSpecialTrait(0.03, {SkillId::JEWELER, LastingEffect::INSANITY}),
@@ -222,7 +224,7 @@ static vector<ImmigrantInfo> getWhiteKeeperImmigration(RandomGen& random) {
         .addSpecialTrait(0.03, {SkillId::FORGE, LastingEffect::INSANITY})
         .addSpecialTrait(0.03, {SkillId::JEWELER, LastingEffect::INSANITY}),*/
         .addRequirement(0.1, AttractionInfo{1, vector<AttractionType>(
-             {FurnitureType::FORGE, FurnitureType::WORKSHOP, FurnitureType::JEWELER})}),
+             {FurnitureType::FORGE, FurnitureType::WORKSHOP, FurnitureType::JEWELLER})}),
     ImmigrantInfo(CreatureId::DOG, {MinionTrait::FIGHTER, MinionTrait::DOESNT_TRIGGER, MinionTrait::NO_LIMIT})
         .setFrequency(0.1),
     ImmigrantInfo({CreatureId::DONKEY, CreatureId::COW, CreatureId::HORSE, CreatureId::GOAT},

@@ -233,7 +233,7 @@ const vector<FurnitureType>& CollectiveConfig::getRoomsNeedingLight() const {
     FurnitureType::WORKSHOP,
     FurnitureType::FORGE,
     FurnitureType::LABORATORY,
-    FurnitureType::JEWELER,
+    FurnitureType::JEWELLER,
     FurnitureType::TRAINING_WOOD,
     FurnitureType::TRAINING_IRON,
     FurnitureType::TRAINING_ADA,
@@ -341,7 +341,7 @@ static EnumMap<WorkshopType, WorkshopInfo> workshops([](WorkshopType type)->Work
     case WorkshopType::WORKSHOP: return {FurnitureType::WORKSHOP, "workshop", SkillId::WORKSHOP};
     case WorkshopType::FORGE: return {FurnitureType::FORGE, "forge", SkillId::FORGE};
     case WorkshopType::LABORATORY: return {FurnitureType::LABORATORY, "laboratory", SkillId::LABORATORY};
-    case WorkshopType::JEWELER: return {FurnitureType::JEWELER, "jeweler", SkillId::JEWELER};
+    case WorkshopType::JEWELER: return {FurnitureType::JEWELLER, "jeweler", SkillId::JEWELER};
   }});
 
 optional<WorkshopType> CollectiveConfig::getWorkshopType(FurnitureType furniture) {

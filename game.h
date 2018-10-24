@@ -20,6 +20,7 @@ class GameEvent;
 class Campaign;
 class SavedGameInfo;
 struct CampaignSetup;
+class GameConfig;
 
 class Game : public OwnedObject<Game> {
   public:
@@ -28,8 +29,9 @@ class Game : public OwnedObject<Game> {
 
   optional<ExitInfo> update(double timeDiff);
   Options* getOptions();
-  void initialize(Options*, Highscores*, View*, FileSharing*);
+  void initialize(Options*, Highscores*, View*, FileSharing*, GameConfig*);
   View* getView() const;
+  GameConfig* getGameConfig() const;
   void exitAction();
   void transferAction(vector<WCreature>);
   void presentWorldmap();
@@ -106,7 +108,7 @@ class Game : public OwnedObject<Game> {
   Table<bool> SERIAL(visited);
   map<LevelId, double> SERIAL(localTime);
   Vec2 SERIAL(baseModel);
-  View* view;
+  View* view = nullptr;
   double SERIAL(currentTime) = 0;
   optional<ExitInfo> exitInfo;
   Tribe::Map SERIAL(tribes);
@@ -119,15 +121,15 @@ class Game : public OwnedObject<Game> {
   bool SERIAL(finishCurrentMusic) = true;
   unique_ptr<CreatureView> SERIAL(spectator);
   HeapAllocated<Statistics> SERIAL(statistics);
-  Options* options;
-  Highscores* highscores;
+  Options* options = nullptr;
+  Highscores* highscores = nullptr;
   optional<milliseconds> lastUpdate;
   WeakPointer<PlayerControl> SERIAL(playerControl);
   WCollective SERIAL(playerCollective);
   HeapAllocated<Campaign> SERIAL(campaign);
   bool wasTransfered = false;
   vector<WCreature> SERIAL(players);
-  FileSharing* fileSharing;
+  FileSharing* fileSharing = nullptr;
   set<int> SERIAL(turnEvents);
   friend class GameListener;
   void considerRealTimeRender();
@@ -135,6 +137,7 @@ class Game : public OwnedObject<Game> {
   optional<ExitInfo> updateInput();
   void initializeModels();
   void increaseTime(double diff);
+  GameConfig* gameConfig = nullptr;
 };
 
 

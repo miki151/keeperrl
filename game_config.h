@@ -7,26 +7,20 @@
 
 enum class GameConfigId {
   CAMPAIGN_VILLAINS,
-  PLAYER_CREATURES
+  PLAYER_CREATURES,
+  BUILD_MENU
 };
 
 class GameConfig {
   public:
   GameConfig(DirectoryPath);
   template<typename T>
-  T readObject(GameConfigId id) {
+  optional<string> readObject(T& object, GameConfigId id) {
     auto file = path.file(getConfigName(id) + ".txt"_s);
-    if (auto contents = file.readContents()) {
-      T ret;
-      if (auto error = PrettyPrinting::parseObject<T>(ret, removeFormatting(*contents))) {
-        USER_FATAL << file.getPath() << " parsing error: " << *error;
-        fail();
-      } else
-        return ret;
-    } else {
-      USER_FATAL << "Couldn't open file: " << file.getPath();
-      fail();
-    }
+    if (auto contents = file.readContents())
+      return PrettyPrinting::parseObject<T>(object, removeFormatting(*contents));
+    else
+      return "Couldn't open file: "_s + file.getPath();
   }
 
   private:

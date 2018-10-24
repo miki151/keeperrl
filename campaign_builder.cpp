@@ -14,6 +14,7 @@
 #include "creature_factory.h"
 #include "game_config.h"
 #include "keeper_creature_info.h"
+#include "build_info.h"
 
 optional<Vec2> CampaignBuilder::considerStaticPlayerPos(const Campaign& campaign) {
   switch (campaign.type) {
@@ -151,7 +152,10 @@ using VillainsTuple = tuple<vector<Campaign::VillainInfo>, vector<Campaign::Vill
     vector<Campaign::VillainInfo>, vector<Campaign::VillainInfo>>;
 
 static VillainsTuple readVillainsConfig(GameConfig* config) {
-  return config->readObject<VillainsTuple>(GameConfigId::CAMPAIGN_VILLAINS);
+  VillainsTuple elem;
+  if (auto error = config->readObject(elem, GameConfigId::CAMPAIGN_VILLAINS))
+    USER_FATAL << *error;
+  return elem;
 }
 
 static vector<Campaign::VillainInfo> filter(vector<Campaign::VillainInfo> v, VillainType type) {
@@ -220,7 +224,10 @@ void CampaignBuilder::setPlayerPos(Campaign& campaign, Vec2 pos, ViewId playerVi
 using PlayerCreaturesInfo = pair<vector<KeeperCreatureInfo>, vector<AdventurerCreatureInfo>>;
 
 static PlayerCreaturesInfo readKeeperCreaturesConfig(GameConfig* config) {
-  return config->readObject<PlayerCreaturesInfo>(GameConfigId::PLAYER_CREATURES);
+  PlayerCreaturesInfo elem;
+  if (auto error = config->readObject(elem, GameConfigId::PLAYER_CREATURES))
+    USER_FATAL << *error;
+  return elem;
 }
 
 vector<CreatureId> CampaignBuilder::getKeeperCreatures() const {

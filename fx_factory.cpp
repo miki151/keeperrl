@@ -1283,7 +1283,7 @@ static void addJewelerEffect(FXManager& mgr) {
     psdef.subSystems.emplace_back(ssdef);
   }
 
-  mgr.addDef(FXName::JEWELER, psdef);
+  mgr.addDef(FXName::JEWELLER, psdef);
 }
 
 static void addSpiralEffects(FXManager& mgr) {

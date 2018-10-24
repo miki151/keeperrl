@@ -15,6 +15,9 @@
 #include "enemy_factory.h"
 #include "keeper_creature_info.h"
 #include "adventurer_creature_info.h"
+#include "build_info.h"
+#include "furniture_layer.h"
+#include "tutorial_highlight.h"
 
 template <typename T>
 optional<string> PrettyPrinting::parseObject(T& object, const string& s) {
@@ -43,6 +46,12 @@ using VillainsTuple = tuple<vector<Campaign::VillainInfo>, vector<Campaign::Vill
 template
 optional<string> PrettyPrinting::parseObject<VillainsTuple>(VillainsTuple&, const string&);
 
+using PlayerCreatureData = pair<vector<KeeperCreatureInfo>, vector<AdventurerCreatureInfo>>;
+
 template
-optional<string> PrettyPrinting::parseObject<pair<vector<KeeperCreatureInfo>, vector<AdventurerCreatureInfo>>>(
-    pair<vector<KeeperCreatureInfo>, vector<AdventurerCreatureInfo>>&, const string&);
+optional<string> PrettyPrinting::parseObject<PlayerCreatureData>(PlayerCreatureData&, const string&);
+
+using BuildData = pair<vector<BuildInfo>, vector<BuildInfo>>;
+
+template
+optional<string> PrettyPrinting::parseObject<BuildData>(BuildData&, const string&);

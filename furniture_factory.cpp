@@ -65,8 +65,8 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setUsageTime(5_visible)
           .setCanHide()
           .setDestroyable(80);
-    case FurnitureType::JEWELER:
-      return Furniture("jeweler", ViewObject(ViewId::JEWELER, ViewLayer::FLOOR), type, tribe)
+    case FurnitureType::JEWELLER:
+      return Furniture("jeweller", ViewObject(ViewId::JEWELLER, ViewLayer::FLOOR), type, tribe)
           .setBlocking()
           .setUsageTime(5_visible)
           .setCanHide()

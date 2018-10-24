@@ -231,7 +231,7 @@ MainLoop::ExitCondition MainLoop::playGame(PGame game, bool withMusic, bool noAu
   if (!noAutoSave)
     view->setBugReportSaveCallback([&] (FilePath path) { bugReportSave(game, path); });
   DestructorFunction removeCallback([&] { view->setBugReportSaveCallback(nullptr); });
-  game->initialize(options, highscores, view, fileSharing);
+  game->initialize(options, highscores, view, fileSharing, gameConfig);
   const milliseconds stepTimeMilli {3};
   Intervalometer meter(stepTimeMilli);
   auto lastMusicUpdate = GlobalTime(-1000);
@@ -365,7 +365,7 @@ PGame MainLoop::prepareCampaign(RandomGen& random) {
 void MainLoop::splashScreen() {
   ProgressMeter meter(1);
   jukebox->setType(MusicType::INTRO, true);
-  playGame(Game::splashScreen(ModelBuilder(&meter, Random, options, sokobanInput)
+  playGame(Game::splashScreen(ModelBuilder(&meter, Random, options, sokobanInput, gameConfig)
         .splashModel(dataFreePath.file("splash.txt")), CampaignBuilder::getEmptyCampaign()), false, true);
 }
 
@@ -517,7 +517,7 @@ void MainLoop::doWithSplash(SplashType type, const string& text, function<void()
 void MainLoop::modelGenTest(int numTries, const vector<string>& types, RandomGen& random, Options* options) {
   NameGenerator::init(dataFreePath.subdirectory("names"));
   ProgressMeter meter(1);
-  ModelBuilder(&meter, random, options, sokobanInput).measureSiteGen(numTries, types);
+  ModelBuilder(&meter, random, options, sokobanInput, gameConfig).measureSiteGen(numTries, types);
 }
 
 static CreatureList readAlly(ifstream& input) {
@@ -610,7 +610,7 @@ int MainLoop::battleTest(int numTries, const FilePath& levelPath, CreatureList a
   auto allyTribe = TribeId::getDarkKeeper();
   std::cout.flush();
   for (int i : Range(numTries)) {
-    auto game = Game::splashScreen(ModelBuilder(&meter, Random, options, sokobanInput)
+    auto game = Game::splashScreen(ModelBuilder(&meter, Random, options, sokobanInput, gameConfig)
         .battleModel(levelPath, ally, enemies), CampaignBuilder::getEmptyCampaign());
     auto exitCondition = [&](WGame game) -> optional<ExitCondition> {
       unordered_set<TribeId, CustomHash<TribeId>> tribes;
@@ -688,7 +688,7 @@ Table<PModel> MainLoop::prepareCampaignModels(CampaignSetup& setup, RandomGen& r
   int numSites = setup.campaign.getNumNonEmpty();
   doWithSplash(SplashType::BIG, "Generating map...", numSites,
       [&] (ProgressMeter& meter) {
-        ModelBuilder modelBuilder(nullptr, random, options, sokobanInput);
+        ModelBuilder modelBuilder(nullptr, random, options, sokobanInput, gameConfig);
         for (Vec2 v : sites.getBounds()) {
           if (!sites[v].isEmpty())
             meter.addProgress();

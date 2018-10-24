@@ -141,7 +141,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void commandTeam(TeamId);
   void setScrollPos(Position);
 
-  bool canSelectRectangle(const BuildInfo&);
   void handleSelection(Vec2 pos, const BuildInfo&, bool rectangle, bool deselectOnly = false);
   vector<CollectiveInfo::Button> fillButtons(const vector<BuildInfo>& buildInfo) const;
   VillageInfo::Village getVillageInfo(WConstCollective enemy) const;
@@ -242,6 +241,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void considerTransferingLostMinions();
   vector<PItem> retrievePillageItems(WCollective, vector<WItem> items);
   TechVariant SERIAL(techVariant);
-  const vector<BuildInfo>& getBuildInfo() const;
+  vector<BuildInfo> buildInfo;
+  void reloadData();
 };
 

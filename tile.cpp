@@ -621,7 +621,7 @@ class TileCoordLookup {
     Tile::addTile(ViewId::BEAST_CAGE, sprite("lairdeco").setRoundShadow());
     Tile::addTile(ViewId::FORGE, sprite("forgedeco").setRoundShadow());
     Tile::addTile(ViewId::WORKSHOP, sprite("workshopdeco").setRoundShadow());
-    Tile::addTile(ViewId::JEWELER, sprite("jewelerdeco").setRoundShadow());
+    Tile::addTile(ViewId::JEWELLER, sprite("jewelerdeco").setRoundShadow());
     Tile::addTile(ViewId::FURNACE, sprite("steel_furnace").setRoundShadow());
     Tile::addTile(ViewId::GRAVE, sprite("RIP").setRoundShadow());
     Tile::addTile(ViewId::ROBE, sprite("robe"));
@@ -994,7 +994,7 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::BEAST_CAGE, symbol(u8"▥", Color::LIGHT_GRAY, true));
     Tile::addSymbol(ViewId::WORKSHOP, symbol(u8"&", Color::LIGHT_BROWN));
     Tile::addSymbol(ViewId::FORGE, symbol(u8"&", Color::LIGHT_BLUE));
-    Tile::addSymbol(ViewId::JEWELER, symbol(u8"&", Color::YELLOW));
+    Tile::addSymbol(ViewId::JEWELLER, symbol(u8"&", Color::YELLOW));
     Tile::addSymbol(ViewId::FURNACE, symbol(u8"&", Color::PINK));
     Tile::addSymbol(ViewId::GRAVE, symbol(u8"☗", Color::GRAY, true));
     Tile::addSymbol(ViewId::BORDER_GUARD, symbol(u8" ", Color::BLACK));

@@ -486,6 +486,10 @@ View* Game::getView() const {
   return view;
 }
 
+GameConfig* Game::getGameConfig() const {
+  return gameConfig;
+}
+
 void Game::conquered(const string& title, int numKills, int points) {
   string text= "You have conquered this land. You killed " + toString(numKills) +
       " enemies and scored " + toString(points) +
@@ -579,11 +583,12 @@ Options* Game::getOptions() {
   return options;
 }
 
-void Game::initialize(Options* o, Highscores* h, View* v, FileSharing* f) {
+void Game::initialize(Options* o, Highscores* h, View* v, FileSharing* f, GameConfig* g) {
   options = o;
   highscores = h;
   view = v;
   fileSharing = f;
+  gameConfig = g;
 }
 
 const string& Game::getWorldName() const {

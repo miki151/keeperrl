@@ -1632,21 +1632,24 @@ extern int getSize(const string&);
 extern const char* getString(const string&);
 
 
-template <const char* getNames(), typename... Types>
+template <const char* getNames(bool), typename... Types>
 class NamedVariant : public variant<Types...> {
   public:
   using variant<Types...>::variant;
-  const char* getName() {
+  const char* getName() const {
     return getName(this->index());
   }
+  static const char* getVariantName() {
+    return getNames(false);
+  }
   static const char* getName(int num) {
-    static const auto names = split(getNames(), {' ', ','}).filter([](const string& s){ return !s.empty(); });
+    static const auto names = split(getNames(true), {' ', ','}).filter([](const string& s){ return !s.empty(); });
     return names[num].c_str();
   }
 };
 
 #define MAKE_VARIANT(NAME, ...)\
-constexpr static inline const char* get##NAME##Names() { return #__VA_ARGS__;}\
+constexpr static inline const char* get##NAME##Names(bool b) { if (b) return #__VA_ARGS__; else return #NAME;}\
 using NAME = NamedVariant<get##NAME##Names, __VA_ARGS__>
 
 

@@ -54,7 +54,7 @@ namespace cereal {
     template<int N, class Variant, class ... Args>
     typename std::enable_if<N == Variant::num_types>::type
     load_variant(PrettyInputArchive & /*ar*/, const string& target, Variant & /*variant*/) {
-      throw PrettyException{"Error reading variant " + target};
+      throw PrettyException{"Element " + target + " not part of type " + Variant::getVariantName()};
     }
 
     template<int N, class Variant, class H, class ... T>
@@ -70,7 +70,7 @@ namespace cereal {
   }
 
   //! Saving for boost::variant
-  template <typename VariantType1, const char* Str(), typename... VariantTypes> inline
+  template <typename VariantType1, const char* Str(bool), typename... VariantTypes> inline
   void CEREAL_SAVE_FUNCTION_NAME(PrettyOutputArchive& ar1, NamedVariant<Str, VariantType1, VariantTypes...> const & v ) {
     v.visit([&](const auto& elem) {
         using ThisType = typename variant_helpers::bare_type<decltype(elem)>::type;
@@ -85,13 +85,20 @@ namespace cereal {
   }
 
   //! Loading for boost::variant
-  template <typename VariantType1, const char* Str(), typename... VariantTypes> inline
+  template <typename VariantType1, const char* Str(bool), typename... VariantTypes> inline
   void CEREAL_LOAD_FUNCTION_NAME( PrettyInputArchive & ar, NamedVariant<Str, VariantType1, VariantTypes...> & v )
   {
     string name;
     ar.is >> name;
+    string delimiter;
+    ar.is >> delimiter;
     variant_detail::load_variant<0, NamedVariant<Str, VariantType1, VariantTypes...>, VariantType1, VariantTypes...>(
         ar, name, v);
+    if (delimiter != "{")
+      throw PrettyException { name + " must be followed by {"};
+    ar.is >> delimiter;
+    if (delimiter != "}")
+      throw PrettyException { name + " data must be finished by }"};
   }
 } // namespace cereal
 
@@ -143,18 +150,42 @@ inline void CEREAL_SAVE_FUNCTION_NAME(PrettyOutputArchive& ar, std::string const
 }
 
 inline void CEREAL_LOAD_FUNCTION_NAME(PrettyInputArchive& ar, std::string& t) {
+  auto bookmark = ar.is.tellg();
+  string tmp;
+  ar.is >> tmp;
+  if (tmp[0] != '\"')
+    throw PrettyException{"Expected quoted string, got: " + tmp};
+  ar.is.seekg(bookmark);
   ar.is >> std::quoted(t);
 }
 
 inline void CEREAL_LOAD_FUNCTION_NAME(PrettyInputArchive& ar, char& c) {
   string s;
   ar.is >> std::quoted(s);
-  c = s.at(0);
+  if (s[0] == '0')
+    c = '\0';
+  else
+    c = s.at(0);
 }
 
 inline void CEREAL_SAVE_FUNCTION_NAME(PrettyOutputArchive& ar, char c) {
   string s {c};
   ar.os << std::quoted(s);
+}
+
+inline void CEREAL_LOAD_FUNCTION_NAME(PrettyInputArchive& ar, bool& c) {
+  string s;
+  ar.is >> s;
+  if (s == "false")
+    c = false;
+  else if (s == "true")
+    c = true;
+  else
+    throw PrettyException{"Unrecognized bool value: \"" + s + "\""};
+}
+
+inline void CEREAL_SAVE_FUNCTION_NAME(PrettyOutputArchive& ar, bool c) {
+  ar.os << (c ? "true" : "fasle");
 }
 
 typedef StreamCombiner<ostringstream, PrettyOutputArchive> PrettyOutput;
@@ -179,11 +210,6 @@ inline void CEREAL_LOAD_FUNCTION_NAME(PrettyInputArchive& ar, vector<T>& v) {
   }
 }
 
-template <class T>
-void prologue(PrettyInputArchive& archive, T const &) {
-
-}
-
 template <typename T>
 inline void CEREAL_SAVE_FUNCTION_NAME(PrettyOutputArchive& ar, vector<T> const& v) {
   ar.os << "{";
@@ -195,6 +221,28 @@ inline void CEREAL_SAVE_FUNCTION_NAME(PrettyOutputArchive& ar, vector<T> const& 
     first = false;
   }
   ar.os << "}";
+}
+
+template <typename T>
+inline void CEREAL_LOAD_FUNCTION_NAME(PrettyInputArchive& ar, optional<T>& v) {
+  v.reset();
+  string s;
+  auto bookmark = ar.is.tellg();
+  ar.is >> s;
+  if (s == "none")
+    return;
+  ar.is.seekg(bookmark);
+  T t;
+  ar >> t;
+  v = std::move(t);
+}
+
+template <typename T>
+inline void CEREAL_SAVE_FUNCTION_NAME(PrettyOutputArchive& ar, optional<T> const& v) {
+  if (!v)
+    ar.os << "none";
+  else
+    ar << *v;
 }
 
 //! Serializing NVP types to binary

@@ -17,10 +17,11 @@ struct EnemyEvent;
 class Tutorial;
 class FilePath;
 class CreatureList;
+class GameConfig;
 
 class ModelBuilder {
   public:
-  ModelBuilder(ProgressMeter*, RandomGen&, Options*, SokobanInput*);
+  ModelBuilder(ProgressMeter*, RandomGen&, Options*, SokobanInput*, GameConfig*);
   PModel singleMapModel(const string& worldName, TribeId keeperTribe);
   PModel campaignBaseModel(const string& siteName, TribeId keeperTribe, bool externalEnemies);
   PModel campaignSiteModel(const string& siteName, EnemyId, VillainType);
