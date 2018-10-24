@@ -19,11 +19,12 @@
 #include "furniture_layer.h"
 #include "tutorial_highlight.h"
 
+
 template <typename T>
 optional<string> PrettyPrinting::parseObject(T& object, const string& s) {
   try {
     PrettyInput input(s);
-    input.getArchive() >> object;
+    input >> object;
     return none;
   } catch (PrettyException ex) {
     return ex.text;

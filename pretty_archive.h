@@ -25,36 +25,89 @@ class PrettyOutputArchive : public cereal::OutputArchive<PrettyOutputArchive> {
     std::ostream& os;
 };
 
+struct StreamPos {
+  int line;
+  int column;
+};
+
+static pair<string, vector<StreamPos>> removeFormatting(string contents) {
+  string ret;
+  vector<StreamPos> pos;
+  StreamPos cur {1, 1};
+  for (int i = 0; i < contents.size(); ++i) {
+    if (contents[i] == '#') {
+      while (contents[i] != '\n' && i < contents.size())
+        ++i;
+    }
+    else if (isOneOf(contents[i], '{', '}', ',')) {
+      ret += " " + string(1, contents[i]) + " ";
+      pos.append({cur, cur, cur});
+    } else {
+      ret += contents[i];
+      pos.push_back(cur);
+    }
+    if (contents[i] == '\n') {
+      ++cur.line;
+      cur.column = 1;
+    } else
+      ++cur.column;
+  }
+  return {ret, pos};
+}
+
 class PrettyInputArchive : public cereal::InputArchive<PrettyInputArchive> {
   public:
-    //! Construct, loading from the provided stream
-    PrettyInputArchive(std::istream& stream)
-          : InputArchive<PrettyInputArchive>(this), is(stream) {
-      // This makes the istream ignore { and } characters
-      /*class my_ctype : public std::ctype<char> {
-        mask my_table[table_size];
-        public:
-         my_ctype(size_t refs = 0) : std::ctype<char>(&my_table[0], false, refs) {
-           std::copy_n(classic_table(), table_size, my_table);
-           my_table[(int)'{'] = (mask)space;
-           my_table[(int)'}'] = (mask)space;
-         }
-      };
-      std::locale x(std::locale::classic(), new my_ctype);
-      is.imbue(x);*/
+    PrettyInputArchive(const string& input)
+          : InputArchive<PrettyInputArchive>(this) {
+      auto p = removeFormatting(input);
+      is.str(p.first);
+      streamPos = p.second;
     }
 
     ~PrettyInputArchive() CEREAL_NOEXCEPT = default;
 
-    std::istream& is;
+    string eat(const char* expected = nullptr) {
+      string s;
+      is >> s;
+      if (expected != nullptr && s != expected)
+        error("Expected \""_s + expected + "\", got \"" + s + "\"");
+      return s;
+    }
+
+    struct NodeData {
+      deque<pair<string, function<void()>>> loaders;
+    };
+
+    NodeData& getNode() {
+      return nodeData.back();
+    }
+
+    void error(const string& s) {
+      int n = (int) is.tellg();
+      auto pos = streamPos[min<int>(n, streamPos.size() - 1)];
+      throw PrettyException{"Line: " + toString(pos.line) + " column: " + toString(pos.column) + ": " + s};
+    }
+
+    string peek(int cnt = 1) {
+      string s;
+      auto bookmark = is.tellg();
+      for (int i : Range(cnt))
+        is >> s;
+      is.seekg(bookmark);
+      return s;
+    }
+
+    std::istringstream is;
+    vector<StreamPos> streamPos;
+    vector<NodeData> nodeData;
 };
 
 namespace cereal {
   namespace variant_detail {
     template<int N, class Variant, class ... Args>
     typename std::enable_if<N == Variant::num_types>::type
-    load_variant(PrettyInputArchive & /*ar*/, const string& target, Variant & /*variant*/) {
-      throw PrettyException{"Element " + target + " not part of type " + Variant::getVariantName()};
+    load_variant(PrettyInputArchive & ar, const string& target, Variant & /*variant*/) {
+      ar.error("Element \"" + target + "\" not part of type " + Variant::getVariantName());
     }
 
     template<int N, class Variant, class H, class ... T>
@@ -73,14 +126,9 @@ namespace cereal {
   template <typename VariantType1, const char* Str(bool), typename... VariantTypes> inline
   void CEREAL_SAVE_FUNCTION_NAME(PrettyOutputArchive& ar1, NamedVariant<Str, VariantType1, VariantTypes...> const & v ) {
     v.visit([&](const auto& elem) {
-        using ThisType = typename variant_helpers::bare_type<decltype(elem)>::type;
         ar1.os << v.getName(v.index());
-        if (!std::is_empty<ThisType>::value)
-          ar1.os << "{";
         ar1.os << ' ';
         ar1(elem);
-        if (!std::is_empty<ThisType>::value)
-          ar1.os << " } ";
     });
   }
 
@@ -90,15 +138,8 @@ namespace cereal {
   {
     string name;
     ar.is >> name;
-    string delimiter;
-    ar.is >> delimiter;
     variant_detail::load_variant<0, NamedVariant<Str, VariantType1, VariantTypes...>, VariantType1, VariantTypes...>(
         ar, name, v);
-    if (delimiter != "{")
-      throw PrettyException { name + " must be followed by {"};
-    ar.is >> delimiter;
-    if (delimiter != "}")
-      throw PrettyException { name + " data must be finished by }"};
   }
 } // namespace cereal
 
@@ -122,7 +163,7 @@ namespace cereal {
     if (auto res = EnumInfo<T>::fromStringSafe(s))
       t = *res;
     else
-      throw PrettyException{"Error reading "_s + EnumInfo<T>::getName() + " value \"" + s + "\""};
+      ar.error("Error reading "_s + EnumInfo<T>::getName() + " value \"" + s + "\"");
   }
 
   template<class T>
@@ -154,7 +195,7 @@ inline void CEREAL_LOAD_FUNCTION_NAME(PrettyInputArchive& ar, std::string& t) {
   string tmp;
   ar.is >> tmp;
   if (tmp[0] != '\"')
-    throw PrettyException{"Expected quoted string, got: " + tmp};
+    ar.error("Expected quoted string, got: " + tmp);
   ar.is.seekg(bookmark);
   ar.is >> std::quoted(t);
 }
@@ -181,7 +222,7 @@ inline void CEREAL_LOAD_FUNCTION_NAME(PrettyInputArchive& ar, bool& c) {
   else if (s == "true")
     c = true;
   else
-    throw PrettyException{"Unrecognized bool value: \"" + s + "\""};
+    ar.error("Unrecognized bool value: \"" + s + "\"");
 }
 
 inline void CEREAL_SAVE_FUNCTION_NAME(PrettyOutputArchive& ar, bool c) {
@@ -189,7 +230,9 @@ inline void CEREAL_SAVE_FUNCTION_NAME(PrettyOutputArchive& ar, bool c) {
 }
 
 typedef StreamCombiner<ostringstream, PrettyOutputArchive> PrettyOutput;
-typedef StreamCombiner<istringstream, PrettyInputArchive> PrettyInput;
+//typedef StreamCombiner<istringstream, PrettyInputArchive> PrettyInput;
+
+using PrettyInput = PrettyInputArchive;
 
 template <typename T>
 inline void CEREAL_LOAD_FUNCTION_NAME(PrettyInputArchive& ar, vector<T>& v) {
@@ -197,17 +240,15 @@ inline void CEREAL_LOAD_FUNCTION_NAME(PrettyInputArchive& ar, vector<T>& v) {
   string s;
   ar.is >> s;
   if (s != "{")
-    throw PrettyException{"Expected list of items surrounded by { and }"};
+    ar.error("Expected list of items surrounded by { and }");
   while (1) {
-    auto bookmark = ar.is.tellg();
-    ar.is >> s;
-    if (s == "}")
+    if (ar.peek() == "}")
       break;
-    ar.is.seekg(bookmark);
     T t;
     ar >> t;
     v.push_back(t);
   }
+  ar.eat("}");
 }
 
 template <typename T>
@@ -245,13 +286,84 @@ inline void CEREAL_SAVE_FUNCTION_NAME(PrettyOutputArchive& ar, optional<T> const
     ar << *v;
 }
 
-//! Serializing NVP types to binary
-template <class Archive, class T> inline
-CEREAL_ARCHIVE_RESTRICT(PrettyInputArchive, PrettyOutputArchive)
-CEREAL_SERIALIZE_FUNCTION_NAME(Archive& ar1, cereal::NameValuePair<T>& t) {
+template <class T>
+inline void CEREAL_SAVE_FUNCTION_NAME(PrettyOutputArchive& ar1, cereal::NameValuePair<T> const& t) {
   if (strcmp(t.name, "cereal_class_version"))
     ar1(t.value);
 }
+
+template <class T>
+inline void CEREAL_LOAD_FUNCTION_NAME(PrettyInputArchive& ar1, cereal::NameValuePair<T>& t) {
+  if (strcmp(t.name, "cereal_class_version")) {
+    auto& value = t.value;
+    ar1.getNode().loaders.push_back(make_pair(t.name, [&ar1, &value]{ ar1(value); }));
+  }
+}
+
+template <class T, class U> inline
+void serialize(PrettyInputArchive& ar1, std::pair<T, U>& t) {
+  ar1(t.first, t.second);
+}
+
+template <class T, cereal::traits::EnableIf<!std::is_arithmetic<T>::value> = cereal::traits::sfinae>
+inline void prologue(PrettyInputArchive& ar1, T const & ) {
+  ar1.nodeData.emplace_back();
+}
+
+template <class T, cereal::traits::EnableIf<!std::is_arithmetic<T>::value> = cereal::traits::sfinae>
+inline void epilogue(PrettyInputArchive& ar1, T const & ) {
+  auto& loaders = ar1.getNode().loaders;
+  if (!loaders.empty()) {
+    ar1.eat("{");
+    bool eatComma = false;
+    bool keysAndValues = false;
+    while (ar1.peek() != "}") {
+      if (ar1.peek() == ",")
+        ar1.eat();
+      auto bookmark = ar1.is.tellg();
+      string name, equals;
+      ar1.is >> name >> equals;
+      if (equals != "=") {
+        if (keysAndValues)
+          ar1.error("Expected a \"key = value\" pair");
+        ar1.is.seekg(bookmark);
+        for (auto& loader : loaders) {
+          if (ar1.peek() == "}")
+            break;
+          loader.second();
+        }
+        break;
+      } else
+        keysAndValues = true;
+      bool found = false;
+      for (auto& loader : loaders)
+        if (loader.first == name) {
+          loader.second();
+          found = true;
+          break;
+        }
+      if (!found)
+        ar1.error("No member named \"" + name + "\" in structure");
+      eatComma = true;
+    }
+    ar1.eat("}");
+  }
+  ar1.nodeData.pop_back();
+}
+
+// Ignore these inputs
+template <class T> inline
+void prologue(PrettyInputArchive&, cereal::NameValuePair<T> const & ) { }
+
+template <class T> inline
+void epilogue(PrettyInputArchive&, cereal::NameValuePair<T> const & ) { }
+
+template <class T> inline
+void prologue(PrettyInputArchive&, cereal::SizeTag<T> const & ) { }
+
+template <class T> inline
+void epilogue(PrettyInputArchive&, cereal::SizeTag<T> const & ) { }
+
 //! Serializing SizeTags to binary
 template <class Archive, class T> inline
 CEREAL_ARCHIVE_RESTRICT(PrettyInputArchive, PrettyOutputArchive)

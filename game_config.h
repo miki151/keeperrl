@@ -18,13 +18,12 @@ class GameConfig {
   optional<string> readObject(T& object, GameConfigId id) {
     auto file = path.file(getConfigName(id) + ".txt"_s);
     if (auto contents = file.readContents())
-      return PrettyPrinting::parseObject<T>(object, removeFormatting(*contents));
+      return PrettyPrinting::parseObject<T>(object, *contents);
     else
       return "Couldn't open file: "_s + file.getPath();
   }
 
   private:
   static const char* getConfigName(GameConfigId);
-  static string removeFormatting(string contents);
   DirectoryPath path;
 };

@@ -16,3 +16,10 @@ string BuildInfo::getRequirementText(Requirement req) {
       [&](BuildInfo::DungeonLevel level) { return "at least level " + toString(level); }
   );
 }
+
+bool BuildInfo::canSelectRectangle() const {
+  return type.visit(
+        [](const auto&) { return true; },
+        [](const Trap&) { return false; }
+  );
+}

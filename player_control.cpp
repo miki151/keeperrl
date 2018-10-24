@@ -2136,7 +2136,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
     }
     case UserInputId::RECT_SELECTION: {
       auto& info = input.get<BuildingInfo>();
-      if (buildInfo[info.building].canSelectRectangle) {
+      if (buildInfo[info.building].canSelectRectangle()) {
         updateSelectionSquares();
         if (rectSelection) {
           rectSelection->corner2 = info.pos;
@@ -2250,7 +2250,7 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
       return;
   if (position.isUnavailable())
     return;
-  if (!deselectOnly && rectangle && !building.canSelectRectangle)
+  if (!deselectOnly && rectangle && !building.canSelectRectangle())
     return;
   building.type.visit(
     [&](const BuildInfo::Trap& trap) {
@@ -2361,7 +2361,7 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
       for (auto type : info.types)
         totalCount += collective->getConstructions().getTotalCount(type);
       if (nextIndex < info.types.size() && selection != DESELECT &&
-          (!info.maxNumber || *info.maxNumber > totalCount)) {
+          (!info.limit || *info.limit > totalCount)) {
         collective->addFurniture(position, info.types[nextIndex], info.cost, info.noCredit);
         collective->updateResourceProduction();
         selection = SELECT;

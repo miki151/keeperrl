@@ -11,9 +11,9 @@ struct BuildInfo {
   struct Furniture {
     vector<FurnitureType> SERIAL(types);
     CostInfo SERIAL(cost);
-    bool SERIAL(noCredit);
-    optional<int> SERIAL(maxNumber);
-    SERIALIZE_ALL(types, cost, noCredit, maxNumber)
+    bool SERIAL(noCredit) = false;
+    optional<int> SERIAL(limit);
+    SERIALIZE_ALL(NAMED(types), NAMED(cost), NAMED(noCredit), NAMED(limit))
   };
 
   struct Trap {
@@ -27,6 +27,7 @@ struct BuildInfo {
 
   static string getRequirementText(Requirement);
   static bool meetsRequirement(WConstCollective, Requirement);
+  bool canSelectRectangle() const;
 
   using DestroyLayers = vector<FurnitureLayer>;
   using Dig = EmptyStruct<struct DigTag>;
@@ -36,13 +37,12 @@ struct BuildInfo {
   using Zone = ZoneId;
   MAKE_VARIANT(BuildType, Furniture, Trap, Zone, DestroyLayers, Dig, ClaimTile, Dispatch, ForbidZone);
   BuildType SERIAL(type);
-  char SERIAL(hotkey);
   string SERIAL(name);
-  vector<Requirement> SERIAL(requirements);
   string SERIAL(groupName);
-  bool SERIAL(hotkeyOpensGroup);
-  bool SERIAL(canSelectRectangle);
-  optional<TutorialHighlight> SERIAL(tutorialHighlight);
   string SERIAL(help);
-  SERIALIZE_ALL(type, hotkey, name, requirements, groupName, hotkeyOpensGroup, canSelectRectangle, tutorialHighlight, help)
+  char SERIAL(hotkey) = 0;
+  vector<Requirement> SERIAL(requirements);
+  bool SERIAL(hotkeyOpensGroup) = false;
+  optional<TutorialHighlight> SERIAL(tutorialHighlight);
+  SERIALIZE_ALL(NAMED(type), NAMED(name), NAMED(groupName), NAMED(help), NAMED(hotkey), NAMED(requirements), NAMED(hotkeyOpensGroup), NAMED(tutorialHighlight))
 };

@@ -151,19 +151,18 @@ optional<string> CampaignBuilder::getSiteChoiceTitle(CampaignType type) const {
 using VillainsTuple = tuple<vector<Campaign::VillainInfo>, vector<Campaign::VillainInfo>,
     vector<Campaign::VillainInfo>, vector<Campaign::VillainInfo>>;
 
-static VillainsTuple readVillainsConfig(GameConfig* config) {
-  VillainsTuple elem;
-  if (auto error = config->readObject(elem, GameConfigId::CAMPAIGN_VILLAINS))
-    USER_FATAL << *error;
-  return elem;
-}
-
 static vector<Campaign::VillainInfo> filter(vector<Campaign::VillainInfo> v, VillainType type) {
   return v.filter([type](const auto& elem){ return elem.type == type; });
 }
 
 vector<Campaign::VillainInfo> CampaignBuilder::getVillains(TribeAlignment tribeAlignment, VillainType type) {
-  auto config = readVillainsConfig(gameConfig);
+  VillainsTuple config;
+  while (1) {
+    if (auto error = gameConfig->readObject(config, GameConfigId::CAMPAIGN_VILLAINS))
+      view->presentText("Error reading campaign villains definition", *error);
+    else
+      break;
+  }
   switch (playerRole) {
     case PlayerRole::KEEPER:
       switch (tribeAlignment) {
@@ -223,25 +222,29 @@ void CampaignBuilder::setPlayerPos(Campaign& campaign, Vec2 pos, ViewId playerVi
 
 using PlayerCreaturesInfo = pair<vector<KeeperCreatureInfo>, vector<AdventurerCreatureInfo>>;
 
-static PlayerCreaturesInfo readKeeperCreaturesConfig(GameConfig* config) {
+static PlayerCreaturesInfo readKeeperCreaturesConfig(View* view, GameConfig* config) {
   PlayerCreaturesInfo elem;
-  if (auto error = config->readObject(elem, GameConfigId::PLAYER_CREATURES))
-    USER_FATAL << *error;
+  while (1) {
+    if (auto error = config->readObject(elem, GameConfigId::PLAYER_CREATURES))
+      view->presentText("Error reading player creatures definition file", *error);
+    else
+      break;
+  }
   return elem;
 }
 
 vector<CreatureId> CampaignBuilder::getKeeperCreatures() const {
-  return readKeeperCreaturesConfig(gameConfig).first
+  return readKeeperCreaturesConfig(view, gameConfig).first
       .transform([](auto& elem) { return elem.creatureId; });
 }
 
 vector<CreatureId> CampaignBuilder::getAdventurerCreatures() const {
-  return readKeeperCreaturesConfig(gameConfig).second
+  return readKeeperCreaturesConfig(view, gameConfig).second
       .transform([](auto& elem) { return elem.creatureId; });
 }
 
 KeeperCreatureInfo CampaignBuilder::getKeeperCreatureInfo(CreatureId id) const {
-  for (auto& elem : readKeeperCreaturesConfig(gameConfig).first)
+  for (auto& elem : readKeeperCreaturesConfig(view, gameConfig).first)
     if (elem.creatureId == id)
       return elem;
   FATAL << "Avatar variant not found for " << EnumInfo<CreatureId>::getString(id);
@@ -249,7 +252,7 @@ KeeperCreatureInfo CampaignBuilder::getKeeperCreatureInfo(CreatureId id) const {
 }
 
 AdventurerCreatureInfo CampaignBuilder::getAdventurerCreatureInfo(CreatureId id) const {
-  for (auto& elem : readKeeperCreaturesConfig(gameConfig).second)
+  for (auto& elem : readKeeperCreaturesConfig(view, gameConfig).second)
     if (elem.creatureId == id)
       return elem;
   FATAL << "Avatar variant not found for " << EnumInfo<CreatureId>::getString(id);

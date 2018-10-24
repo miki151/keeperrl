@@ -199,7 +199,7 @@ SGuiElem GuiBuilder::getButtonLine(CollectiveInfo::Button button, int num, Colle
         [=]{ return !wasTutorialClicked(num, *tutorialHighlight); });
   return gui.setHeight(legendLineHeight, gui.stack(makeVec(
       getHintCallback({capitalFirst(button.help)}),
-      gui.buttonChar(buttonFun, !button.hotkeyOpensGroup ? button.hotkey : 0, true, true),
+      gui.buttonChar(std::move(buttonFun), !button.hotkeyOpensGroup ? button.hotkey : 0, true, true),
       gui.uiHighlightConditional([=] { return getActiveButton(tab) == num; }),
       tutorialElem,
       line.buildHorizontalList())));
