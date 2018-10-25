@@ -78,14 +78,18 @@ PCollective Collective::create(WLevel level, TribeId tribe, const optional<Colle
   ret->subscribeTo(level->getModel());
   if (discoverable)
     ret->setDiscoverable();
+  ret->workshops = unique<Workshops>(std::array<vector<WorkshopItemCfg>, 4>());
   return ret;
 }
 
-void Collective::init(CollectiveConfig&& cfg, Immigration&& im) {
+void Collective::init(CollectiveConfig cfg, Immigration im) {
   config.reset(std::move(cfg));
   immigration = makeOwner<Immigration>(std::move(im));
   credit = cfg.getStartingResource();
-  workshops = config->getWorkshops();
+}
+
+void Collective::setWorkshops(unique_ptr<Workshops> w) {
+  workshops = std::move(w);
 }
 
 const optional<CollectiveName>& Collective::getName() const {

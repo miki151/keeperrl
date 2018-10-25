@@ -96,7 +96,6 @@ class CollectiveConfig {
   bool allowHealingTaskOutsideTerritory() const;
   const vector<ImmigrantInfo>& getImmigrantInfo() const;
   const optional<GuardianInfo>& getGuardianInfo() const;
-  unique_ptr<Workshops> getWorkshops() const;
   static bool requiresLighting(FurnitureType);
 
   static const WorkshopInfo& getWorkshopInfo(WorkshopType);

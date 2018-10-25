@@ -1,4 +1,3 @@
-{
 # Villains for evil keepers
 {
     # Line goes like this:
@@ -82,4 +81,4 @@
     DWARF_BARON DWARVES "Dwarves" ALLY
     LIZARDLORD LIZARDMEN "Lizardmen" ALLY
 }
-}
+

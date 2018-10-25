@@ -84,8 +84,16 @@ class PrettyInputArchive : public cereal::InputArchive<PrettyInputArchive> {
 
     void error(const string& s) {
       int n = (int) is.tellg();
-      auto pos = streamPos[min<int>(n, streamPos.size() - 1)];
+      auto pos = streamPos[max(0, min<int>(n, streamPos.size() - 1))];
       throw PrettyException{"Line: " + toString(pos.line) + " column: " + toString(pos.column) + ": " + s};
+    }
+
+    bool eatMaybe(const string& s) {
+      if (peek() == s) {
+        eat();
+        return true;
+      } else
+        return false;
     }
 
     string peek(int cnt = 1) {
@@ -97,9 +105,31 @@ class PrettyInputArchive : public cereal::InputArchive<PrettyInputArchive> {
       return s;
     }
 
+    template <typename T>
+    PrettyInputArchive& readText(T&& elem) {
+      auto b = bookmark();
+      is >> std::forward<T>(elem);
+      if (!is) {
+        is.clear();
+        seek(b);
+        error("Error reading value of type: "_s + typeid(T).name());
+      }
+      return *this;
+    }
+
+    long bookmark() {
+      return is.tellg();
+    }
+
+    void seek(long p) {
+      is.seekg(p);
+    }
+
+    vector<NodeData> nodeData;
+
+    private:
     std::istringstream is;
     vector<StreamPos> streamPos;
-    vector<NodeData> nodeData;
 };
 
 namespace cereal {
@@ -137,7 +167,7 @@ namespace cereal {
   void CEREAL_LOAD_FUNCTION_NAME( PrettyInputArchive & ar, NamedVariant<Str, VariantType1, VariantTypes...> & v )
   {
     string name;
-    ar.is >> name;
+    ar.readText(name);
     variant_detail::load_variant<0, NamedVariant<Str, VariantType1, VariantTypes...>, VariantType1, VariantTypes...>(
         ar, name, v);
   }
@@ -159,7 +189,7 @@ namespace cereal {
   CEREAL_LOAD_FUNCTION_NAME( PrettyInputArchive & ar, T & t)
   {
     string s;
-    ar.is >> s;
+    ar.readText(s);
     if (auto res = EnumInfo<T>::fromStringSafe(s))
       t = *res;
     else
@@ -183,7 +213,7 @@ CEREAL_SAVE_FUNCTION_NAME(PrettyOutputArchive& ar, T const& t) {
 template<class T> inline
 typename std::enable_if<std::is_arithmetic<T>::value && !std::is_enum<T>::value, void>::type
 CEREAL_LOAD_FUNCTION_NAME(PrettyInputArchive& ar, T& t) {
-  ar.is >> t;
+  ar.readText(t);
 }
 
 inline void CEREAL_SAVE_FUNCTION_NAME(PrettyOutputArchive& ar, std::string const& t) {
@@ -191,18 +221,18 @@ inline void CEREAL_SAVE_FUNCTION_NAME(PrettyOutputArchive& ar, std::string const
 }
 
 inline void CEREAL_LOAD_FUNCTION_NAME(PrettyInputArchive& ar, std::string& t) {
-  auto bookmark = ar.is.tellg();
+  auto bookmark = ar.bookmark();
   string tmp;
-  ar.is >> tmp;
+  ar.readText(tmp);
   if (tmp[0] != '\"')
     ar.error("Expected quoted string, got: " + tmp);
-  ar.is.seekg(bookmark);
-  ar.is >> std::quoted(t);
+  ar.seek(bookmark);
+  ar.readText(std::quoted(t));
 }
 
 inline void CEREAL_LOAD_FUNCTION_NAME(PrettyInputArchive& ar, char& c) {
   string s;
-  ar.is >> std::quoted(s);
+  ar.readText(std::quoted(s));
   if (s[0] == '0')
     c = '\0';
   else
@@ -216,7 +246,7 @@ inline void CEREAL_SAVE_FUNCTION_NAME(PrettyOutputArchive& ar, char c) {
 
 inline void CEREAL_LOAD_FUNCTION_NAME(PrettyInputArchive& ar, bool& c) {
   string s;
-  ar.is >> s;
+  ar.readText(s);
   if (s == "false")
     c = false;
   else if (s == "true")
@@ -238,14 +268,14 @@ template <typename T>
 inline void CEREAL_LOAD_FUNCTION_NAME(PrettyInputArchive& ar, vector<T>& v) {
   v.clear();
   string s;
-  ar.is >> s;
+  ar.readText(s);
   if (s != "{")
     ar.error("Expected list of items surrounded by { and }");
   while (1) {
     if (ar.peek() == "}")
       break;
     T t;
-    ar >> t;
+    ar(t);
     v.push_back(t);
   }
   ar.eat("}");
@@ -267,14 +297,10 @@ inline void CEREAL_SAVE_FUNCTION_NAME(PrettyOutputArchive& ar, vector<T> const& 
 template <typename T>
 inline void CEREAL_LOAD_FUNCTION_NAME(PrettyInputArchive& ar, optional<T>& v) {
   v.reset();
-  string s;
-  auto bookmark = ar.is.tellg();
-  ar.is >> s;
-  if (s == "none")
+  if (ar.eatMaybe("none"))
     return;
-  ar.is.seekg(bookmark);
   T t;
-  ar >> t;
+  ar(t);
   v = std::move(t);
 }
 
@@ -305,14 +331,36 @@ void serialize(PrettyInputArchive& ar1, std::pair<T, U>& t) {
   ar1(t.first, t.second);
 }
 
+namespace pretty_tuple_detail {
+    template <size_t Height>
+    struct serialize {
+      template <class Archive, class ... Types> inline
+      static void apply(Archive& ar, std::tuple<Types...>& tuple) {
+        serialize<Height - 1>::template apply(ar, tuple);
+        ar(std::get<Height - 1>(tuple));
+      }
+    };
+
+    template <>
+    struct serialize<0> {
+      template <class Archive, class ... Types> inline
+      static void apply( Archive &, std::tuple<Types...>& ) { }
+    };
+  }
+
+template <class ... Types> inline
+void serialize(PrettyInputArchive& ar, std::tuple<Types...>& tuple) {
+  pretty_tuple_detail::serialize<std::tuple_size<std::tuple<Types...>>::value>::template apply( ar, tuple );
+}
+
 template <class T, cereal::traits::EnableIf<!std::is_arithmetic<T>::value> = cereal::traits::sfinae>
 inline void prologue(PrettyInputArchive& ar1, T const & ) {
   ar1.nodeData.emplace_back();
 }
 
 template <class T, cereal::traits::EnableIf<!std::is_arithmetic<T>::value> = cereal::traits::sfinae>
-inline void epilogue(PrettyInputArchive& ar1, T const & ) {
-  auto& loaders = ar1.getNode().loaders;
+inline void epilogue(PrettyInputArchive& ar1, T const &t ) {
+  auto loaders = ar1.getNode().loaders;
   if (!loaders.empty()) {
     ar1.eat("{");
     bool eatComma = false;
@@ -320,13 +368,13 @@ inline void epilogue(PrettyInputArchive& ar1, T const & ) {
     while (ar1.peek() != "}") {
       if (ar1.peek() == ",")
         ar1.eat();
-      auto bookmark = ar1.is.tellg();
+      auto bookmark = ar1.bookmark();
       string name, equals;
-      ar1.is >> name >> equals;
+      ar1.readText(name).readText(equals);
       if (equals != "=") {
         if (keysAndValues)
           ar1.error("Expected a \"key = value\" pair");
-        ar1.is.seekg(bookmark);
+        ar1.seek(bookmark);
         for (auto& loader : loaders) {
           if (ar1.peek() == "}")
             break;

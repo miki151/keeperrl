@@ -18,13 +18,14 @@
 #include "build_info.h"
 #include "furniture_layer.h"
 #include "tutorial_highlight.h"
-
+#include "workshop_item.h"
+#include "workshop_type.h"
 
 template <typename T>
 optional<string> PrettyPrinting::parseObject(T& object, const string& s) {
   try {
     PrettyInput input(s);
-    input >> object;
+    input(object);
     return none;
   } catch (PrettyException ex) {
     return ex.text;
@@ -56,3 +57,8 @@ using BuildData = pair<vector<BuildInfo>, vector<BuildInfo>>;
 
 template
 optional<string> PrettyPrinting::parseObject<BuildData>(BuildData&, const string&);
+
+using WorkshopData = std::array<vector<WorkshopItemCfg>, EnumInfo<WorkshopType>::size>;
+
+template
+optional<string> PrettyPrinting::parseObject<WorkshopData>(WorkshopData&, const string&);

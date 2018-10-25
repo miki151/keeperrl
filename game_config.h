@@ -8,7 +8,8 @@
 enum class GameConfigId {
   CAMPAIGN_VILLAINS,
   PLAYER_CREATURES,
-  BUILD_MENU
+  BUILD_MENU,
+  WORKSHOPS_MENU
 };
 
 class GameConfig {

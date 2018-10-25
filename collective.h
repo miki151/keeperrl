@@ -53,7 +53,8 @@ class PositionMatching;
 class Collective : public TaskCallback, public UniqueEntity<Collective>, public EventListener<Collective> {
   public:
   static PCollective create(WLevel, TribeId, const optional<CollectiveName>&, bool discoverable);
-  void init(CollectiveConfig&&, Immigration&&);
+  void init(CollectiveConfig, Immigration);
+  void setWorkshops(unique_ptr<Workshops>);
   void addCreature(WCreature, EnumSet<MinionTrait>);
   void addCreature(PCreature, Position, EnumSet<MinionTrait>);
   void setPopulationGroup(const vector<WCreature>&);

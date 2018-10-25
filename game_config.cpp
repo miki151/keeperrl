@@ -10,6 +10,8 @@ const char* GameConfig::getConfigName(GameConfigId id) {
       return "player_creatures";
     case GameConfigId::BUILD_MENU:
       return "build_menu";
+    case GameConfigId::WORKSHOPS_MENU:
+      return "workshops_menu";
   }
 }
 

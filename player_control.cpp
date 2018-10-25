@@ -135,39 +135,50 @@ PlayerControl::~PlayerControl() {
 }
 
 void PlayerControl::reloadData() {
+  auto gameConfig = getGame()->getGameConfig();
   pair<vector<BuildInfo>, vector<BuildInfo>> data;
-  if (auto error = getGame()->getGameConfig()->readObject(data, GameConfigId::BUILD_MENU))
-    getView()->presentText("Error reading building menu data", *error);
-  else {
-    auto buildInfoTmp = techVariant == TechVariant::DARK ? data.first : data.second;
-    bool hotkeys[128] = {0};
-    for (auto& info : buildInfoTmp) {
-      if (info.hotkey != '\0') {
-        if (hotkeys[int(info.hotkey)]) {
-          getView()->presentText("Error",
-              "Hotkey \'" + string(1, info.hotkey) + "\' is used more than once in building menu");
-          return;
-        }
-        hotkeys[int(info.hotkey)] = true;
-      }
-    }
-    buildInfo = buildInfoTmp;
-    for (auto& info : buildInfo)
-      if (auto furniture = info.type.getReferenceMaybe<BuildInfo::Furniture>()) {
-        for (auto type : furniture->types) {
-          double luxury = Furniture::getLuxuryInfo(type).luxury;
-          if (luxury > 0) {
-            info.help += " Increases luxury by " + toString(luxury) + ".";
-            break;
-          }
-        }
-        if (auto increase = Furniture::getPopulationIncreaseDescription(furniture->types[0]))
-          info.help += " " + *increase;
-        for (auto expType : ENUM_ALL(ExperienceType))
-          if (auto increase = CollectiveConfig::getTrainingMaxLevel(expType, furniture->types[0]))
-            info.help += " Adds up to " + toString(*increase) + " " + toLower(getName(expType)) + " levels.";
-      }
+  while (1) {
+    if (auto error = gameConfig->readObject(data, GameConfigId::BUILD_MENU))
+      getView()->presentText("Error reading building menu data", *error);
+    else
+      break;
   }
+  auto buildInfoTmp = techVariant == TechVariant::DARK ? data.first : data.second;
+  bool hotkeys[128] = {0};
+  for (auto& info : buildInfoTmp) {
+    if (info.hotkey != '\0') {
+      if (hotkeys[int(info.hotkey)]) {
+        getView()->presentText("Error",
+            "Hotkey \'" + string(1, info.hotkey) + "\' is used more than once in building menu");
+        return;
+      }
+      hotkeys[int(info.hotkey)] = true;
+    }
+  }
+  buildInfo = buildInfoTmp;
+  for (auto& info : buildInfo)
+    if (auto furniture = info.type.getReferenceMaybe<BuildInfo::Furniture>()) {
+      for (auto type : furniture->types) {
+        double luxury = Furniture::getLuxuryInfo(type).luxury;
+        if (luxury > 0) {
+          info.help += " Increases luxury by " + toString(luxury) + ".";
+          break;
+        }
+      }
+      if (auto increase = Furniture::getPopulationIncreaseDescription(furniture->types[0]))
+        info.help += " " + *increase;
+      for (auto expType : ENUM_ALL(ExperienceType))
+        if (auto increase = CollectiveConfig::getTrainingMaxLevel(expType, furniture->types[0]))
+          info.help += " Adds up to " + toString(*increase) + " " + toLower(getName(expType)) + " levels.";
+    }
+  std::array<vector<WorkshopItemCfg>, EnumInfo<WorkshopType>::size> elems;
+  while (1) {
+    if (auto error = gameConfig->readObject(elems, GameConfigId::WORKSHOPS_MENU))
+      getView()->presentText("Error", *error);
+    else
+      break;
+  }
+  collective->setWorkshops(unique<Workshops>(std::move(elems)));
 }
 
 const vector<WCreature>& PlayerControl::getControlled() const {

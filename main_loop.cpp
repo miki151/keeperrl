@@ -33,6 +33,9 @@
 #include "creature_factory.h"
 #include "enemy_factory.h"
 #include "external_enemies.h"
+#include "workshops.h"
+#include "workshop_item.h"
+#include "game_config.h"
 
 MainLoop::MainLoop(View* v, Highscores* h, FileSharing* fSharing, const DirectoryPath& freePath,
     const DirectoryPath& uPath, Options* o, Jukebox* j, SokobanInput* soko, GameConfig* gameConfig, bool singleThread,

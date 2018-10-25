@@ -969,7 +969,7 @@ ItemAttributes ItemType::AdaBoots::getAttributes() const {
   return ITATTR(
       i.viewId = ViewId::ADA_BOOTS;
       i.shortName = "boots"_s;
-      i.name = "pair of admantine boots";
+      i.name = "pair of adamantine boots";
       i.plural = "pairs of admantine boots"_s;
       i.itemClass = ItemClass::ARMOR;
       i.equipmentSlot = EquipmentSlot::BOOTS;
@@ -1250,7 +1250,7 @@ ItemAttributes ItemType::GoldPiece::getAttributes() const {
   );
 }
 
-SERIALIZE_DEF(ItemType, type, prefixChance)
+SERIALIZE_DEF(ItemType, NAMED(type), NAMED(prefixChance))
 
 #include "pretty_archive.h"
 template void ItemType::serialize(PrettyInputArchive&, unsigned);
