@@ -411,7 +411,7 @@
           ids = { DONKEY COW HORSE GOAT }
           traits = { NO_LIMIT INCREASE_POPULATION }
           requirements = {
-            { 1.0 CostInfo GOLD 100 }
+            { 1.0 CostInfo GOLD 50 }
           }
         }
 
