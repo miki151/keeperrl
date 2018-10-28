@@ -78,6 +78,7 @@ class ImmigrantInfo {
   ImmigrantInfo(CreatureId, EnumSet<MinionTrait>);
   ImmigrantInfo(vector<CreatureId>, EnumSet<MinionTrait>);
   CreatureId getId(int numCreated) const;
+  CreatureId getNonRandomId(int numCreated) const;
   bool isAvailable(int numCreated) const;
   const SpawnLocation& getSpawnLocation() const;
   Range getGroupSize() const;

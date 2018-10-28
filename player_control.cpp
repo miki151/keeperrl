@@ -1233,7 +1233,7 @@ void PlayerControl::fillImmigrationHelp(CollectiveInfo& info) const {
   for (auto elem : Iter(collective->getImmigration().getImmigrants())) {
     if (elem->isHiddenInHelp())
       continue;
-    auto creatureId = elem->getId(0);
+    auto creatureId = elem->getNonRandomId(0);
     WCreature c = getStats(creatureId);
     optional<pair<ViewId, int>> costObj;
     vector<string> requirements;
