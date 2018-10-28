@@ -7,12 +7,22 @@
 #include "creature.h"
 #include "creature_attributes.h"
 #include "tutorial.h"
+#include "creature_factory.h"
+#include "technology.h"
+#include "furniture_type.h"
+#include "sunlight_info.h"
+#include "keybinding.h"
+#include "tutorial_highlight.h"
 
-SERIALIZE_DEF(ImmigrantInfo, ids, frequency, requirements, traits, spawnLocation, groupSize, autoTeam, initialRecruitment, consumeIds, keybinding, sound, noAuto, tutorialHighlight, hiddenInHelp, invisible, specialTraits)
+SERIALIZE_DEF(ImmigrantInfo, NAMED(ids), NAMED(frequency), NAMED(requirements), NAMED(traits), NAMED(spawnLocation), NAMED(groupSize), NAMED(autoTeam), NAMED(initialRecruitment), NAMED(consumeIds), NAMED(keybinding), NAMED(sound), NAMED(noAuto), NAMED(tutorialHighlight), NAMED(hiddenInHelp), NAMED(invisible), NAMED(specialTraits))
 SERIALIZATION_CONSTRUCTOR_IMPL(ImmigrantInfo)
 
+
+SERIALIZE_DEF(AttractionInfo, amountClaimed, types);
+SERIALIZATION_CONSTRUCTOR_IMPL(AttractionInfo);
+
 AttractionInfo::AttractionInfo(int cl,  AttractionType a)
-  : types({a}), amountClaimed(cl) {}
+  : amountClaimed(cl), types({a}) {}
 
 string AttractionInfo::getAttractionName(const AttractionType& attraction, int count) {
   return attraction.match(
@@ -26,7 +36,7 @@ string AttractionInfo::getAttractionName(const AttractionType& attraction, int c
 }
 
 AttractionInfo::AttractionInfo(int cl, vector<AttractionType> a)
-  : types(a), amountClaimed(cl) {}
+  : amountClaimed(cl), types(a) {}
 
 ImmigrantInfo::ImmigrantInfo(CreatureId id, EnumSet<MinionTrait> t) : ids({id}), traits(t) {}
 ImmigrantInfo::ImmigrantInfo(vector<CreatureId> id, EnumSet<MinionTrait> t) : ids(id), traits(t) {
@@ -106,17 +116,17 @@ bool ImmigrantInfo::isHiddenInHelp() const {
   return hiddenInHelp;
 }
 
-const vector<pair<double, vector<SpecialTrait>>>& ImmigrantInfo::getSpecialTraits() const {
+const vector<ImmigrantInfo::SpecialTraitInfo>& ImmigrantInfo::getSpecialTraits() const {
   return specialTraits;
 }
 
 ImmigrantInfo& ImmigrantInfo::addRequirement(ImmigrantRequirement t) {
-  requirements.push_back({t, 1});
+  requirements.push_back({1, t});
   return *this;
 }
 
 ImmigrantInfo& ImmigrantInfo::addRequirement(double prob, ImmigrantRequirement t) {
-  requirements.push_back({t, prob});
+  requirements.push_back({prob, t});
   return *this;
 }
 
@@ -217,7 +227,5 @@ WCollective RecruitmentInfo::findEnemy(WGame game) const {
   return nullptr;
 }
 
-template <typename Archive>
-void TutorialRequirement::serialize(Archive& ar, const unsigned) {
-  ar(tutorial);
-}
+#include "pretty_archive.h"
+template void ImmigrantInfo::serialize(PrettyInputArchive&, unsigned);

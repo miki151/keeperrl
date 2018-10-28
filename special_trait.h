@@ -25,9 +25,7 @@ struct OneOfTraits {
   HASH_ALL(traits)
 };
 
-class SpecialTrait : public variant<ExtraTraining, LastingEffect, SkillId, AttrBonus, OneOfTraits> {
-  using variant::variant;
-};
+MAKE_VARIANT2(SpecialTrait, ExtraTraining, LastingEffect, SkillId, AttrBonus, OneOfTraits);
 
 extern void applySpecialTrait(SpecialTrait, WCreature);
 extern SpecialTrait transformBeforeApplying(SpecialTrait);

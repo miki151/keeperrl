@@ -746,7 +746,7 @@ const Range::Iter& Range::Iter::operator++ () {
   return *this;
 }
 
-SERIALIZE_DEF(Range, start, finish, increment)
+SERIALIZE_DEF(Range, NAMED(start), NAMED(finish), NAMED(increment))
 SERIALIZATION_CONSTRUCTOR_IMPL(Range);
 
 string combine(const vector<string>& adj, bool commasOnly) {
@@ -1073,3 +1073,7 @@ Dir rotate(Dir dir) {
       return Dir::N;
   }
 }
+
+#include "pretty_archive.h"
+template void Vec2::serialize(PrettyInputArchive&, unsigned);
+template void Range::serialize(PrettyInputArchive&, unsigned);

@@ -89,9 +89,9 @@
 template <class Archive>
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
   ar& SUBCLASS(CollectiveControl) & SUBCLASS(EventListener);
-  ar(memory, introText, lastControlKeeperQuestion, techVariant);
+  ar(memory, introText, lastControlKeeperQuestion, keeperCreatureInfo);
   ar(newAttacks, ransomAttacks, notifiedAttacks, messages, hints, visibleEnemies);
-  ar(visibilityMap, unknownLocations, dismissedVillageInfos);
+  ar(visibilityMap, unknownLocations, dismissedVillageInfos, buildInfo);
   ar(messageHistory, tutorial, controlModeMessages, stunnedCreatures);
 }
 
@@ -111,8 +111,8 @@ static vector<string> getHints() {
   };
 }
 
-PlayerControl::PlayerControl(Private, WCollective col, TechVariant techVariant)
-      : CollectiveControl(col), hints(getHints()), techVariant(techVariant) {
+PlayerControl::PlayerControl(Private, WCollective col, KeeperCreatureInfo keeperCreatureInfo)
+      : CollectiveControl(col), hints(getHints()), keeperCreatureInfo(keeperCreatureInfo) {
   controlModeMessages = make_shared<MessageBuffer>();
   visibilityMap = make_shared<VisibilityMap>();
   unknownLocations = make_shared<UnknownLocations>();
@@ -124,8 +124,8 @@ PlayerControl::PlayerControl(Private, WCollective col, TechVariant techVariant)
 }
 
 PPlayerControl PlayerControl::create(WCollective col, vector<string> introText,
-    TechVariant techVariant) {
-  auto ret = makeOwner<PlayerControl>(Private{}, col, techVariant);
+    KeeperCreatureInfo keeperInfo) {
+  auto ret = makeOwner<PlayerControl>(Private{}, col, keeperInfo);
   ret->subscribeTo(col->getLevel()->getModel());
   ret->introText = introText;
   return ret;
@@ -134,16 +134,22 @@ PPlayerControl PlayerControl::create(WCollective col, vector<string> introText,
 PlayerControl::~PlayerControl() {
 }
 
-void PlayerControl::reloadData() {
-  auto gameConfig = getGame()->getGameConfig();
-  pair<vector<BuildInfo>, vector<BuildInfo>> data;
+template <typename T>
+static T readData(View* view, GameConfig* gameConfig, GameConfigId id) {
+  T data;
   while (1) {
-    if (auto error = gameConfig->readObject(data, GameConfigId::BUILD_MENU))
-      getView()->presentText("Error reading building menu data", *error);
+    if (auto error = gameConfig->readObject(data, id))
+      view->presentText("Error", *error);
     else
       break;
   }
-  auto buildInfoTmp = techVariant == TechVariant::DARK ? data.first : data.second;
+  return data;
+}
+
+void PlayerControl::reloadBuildingMenu() {
+  auto gameConfig = getGame()->getGameConfig();
+  auto data = readData<std::array<vector<BuildInfo>, 2>>(getView(), gameConfig, GameConfigId::BUILD_MENU);
+  auto buildInfoTmp = keeperCreatureInfo.techVariant == TechVariant::DARK ? data[0] : data[1];
   bool hotkeys[128] = {0};
   for (auto& info : buildInfoTmp) {
     if (info.hotkey != '\0') {
@@ -171,14 +177,37 @@ void PlayerControl::reloadData() {
         if (auto increase = CollectiveConfig::getTrainingMaxLevel(expType, furniture->types[0]))
           info.help += " Adds up to " + toString(*increase) + " " + toLower(getName(expType)) + " levels.";
     }
-  std::array<vector<WorkshopItemCfg>, EnumInfo<WorkshopType>::size> elems;
+}
+
+
+optional<string> PlayerControl::reloadImmigrationAndWorkshops(GameConfig* gameConfig) {
+  std::array<vector<WorkshopItemCfg>, EnumInfo<WorkshopType>::size> workshopElems;
+  if (auto error = gameConfig->readObject(workshopElems, GameConfigId::WORKSHOPS_MENU))
+    return error;
+  collective->setWorkshops(unique<Workshops>(std::move(workshopElems)));
+  map<string, vector<ImmigrantInfo>> immigrantsData;
+  if (auto error = gameConfig->readObject(immigrantsData, GameConfigId::IMMIGRATION))
+    return error;
+  vector<ImmigrantInfo> immigrants;
+  for (auto elem : keeperCreatureInfo.immigrantGroups)
+    if (auto group = getReferenceMaybe(immigrantsData, elem))
+      append(immigrants, *group);
+    else
+      return "Undefined immigrant group: \"" + elem + "\"";
+  CollectiveConfig::addBedRequirementToImmigrants(immigrants);
+  collective->setImmigration(makeOwner<Immigration>(collective, std::move(immigrants)));
+  return none;
+}
+
+void PlayerControl::reloadData() {
+  auto gameConfig = getGame()->getGameConfig();
+  reloadBuildingMenu();
   while (1) {
-    if (auto error = gameConfig->readObject(elems, GameConfigId::WORKSHOPS_MENU))
+    if (auto error = reloadImmigrationAndWorkshops(gameConfig))
       getView()->presentText("Error", *error);
     else
       break;
   }
-  collective->setWorkshops(unique<Workshops>(std::move(elems)));
 }
 
 const vector<WCreature>& PlayerControl::getControlled() const {
@@ -310,7 +339,9 @@ void PlayerControl::leaveControl() {
 void PlayerControl::render(View* view) {
   if (firstRender) {
     firstRender = false;
-    initialize();
+    reloadBuildingMenu();
+    for (WCreature c : getCreatures())
+      updateMinionVisibility(c);
   }
   if (getControlled().empty()) {
     view->updateView(this, false);
@@ -969,7 +1000,7 @@ static const ViewObject& getConstructionObject(FurnitureType type) {
 }
 
 void PlayerControl::acquireTech(int index) {
-  auto techs = Technology::getNextTechs(collective->getTechnologies(), techVariant).filter(
+  auto techs = Technology::getNextTechs(collective->getTechnologies(), keeperCreatureInfo.techVariant).filter(
       [](const Technology* tech) { return tech->canResearch(); });
   if (index < techs.size()) {
     Technology* tech = techs[index];
@@ -988,7 +1019,7 @@ void PlayerControl::fillLibraryInfo(CollectiveInfo& collectiveInfo) const {
       info.warning = "Conquer some villains to advance your level."_s;
     info.totalProgress = 100 * dungeonLevel.getNecessaryProgress(dungeonLevel.level);
     info.currentProgress = int(100 * dungeonLevel.progress);
-    auto techs = Technology::getNextTechs(collective->getTechnologies(), techVariant).filter(
+    auto techs = Technology::getNextTechs(collective->getTechnologies(), keeperCreatureInfo.techVariant).filter(
         [](const Technology* tech) { return tech->canResearch(); });
     for (Technology* tech : techs) {
       info.available.emplace_back();
@@ -1196,7 +1227,7 @@ void PlayerControl::fillImmigrationHelp(CollectiveInfo& info) const {
     }
     return creatureStats[id].get();
   };
-  for (auto elem : Iter(collective->getConfig().getImmigrantInfo())) {
+  for (auto elem : Iter(collective->getImmigration().getImmigrants())) {
     if (elem->isHiddenInHelp())
       continue;
     auto creatureId = elem->getId(0);
@@ -1409,12 +1440,6 @@ void PlayerControl::addMessage(const PlayerMessage& msg) {
   }
 }
 
-void PlayerControl::initialize() {
-  for (WCreature c : getCreatures())
-    updateMinionVisibility(c);
-  reloadData();
-}
-
 void PlayerControl::updateMinionVisibility(WConstCreature c) {
   auto visibleTiles = c->getVisibleTiles();
   visibilityMap->update(c, visibleTiles);
@@ -1465,7 +1490,8 @@ void PlayerControl::onEvent(const GameEvent& event) {
       },
       [&](const TechbookRead& info) {
         Technology* tech = info.technology;
-        vector<Technology*> nextTechs = Technology::getNextTechs(collective->getTechnologies(), techVariant);
+        vector<Technology*> nextTechs = Technology::getNextTechs(collective->getTechnologies(),
+            keeperCreatureInfo.techVariant);
         if (tech == nullptr) {
           if (!nextTechs.empty())
             tech = Random.choose(nextTechs);

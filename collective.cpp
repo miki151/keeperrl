@@ -52,6 +52,7 @@
 #include "quarters.h"
 #include "position_matching.h"
 #include "storage_id.h"
+#include "game_config.h"
 
 template <class Archive>
 void Collective::serialize(Archive& ar, const unsigned int version) {
@@ -79,13 +80,17 @@ PCollective Collective::create(WLevel level, TribeId tribe, const optional<Colle
   if (discoverable)
     ret->setDiscoverable();
   ret->workshops = unique<Workshops>(std::array<vector<WorkshopItemCfg>, 4>());
+  ret->immigration = makeOwner<Immigration>(ret.get(), vector<ImmigrantInfo>());
   return ret;
 }
 
-void Collective::init(CollectiveConfig cfg, Immigration im) {
+void Collective::init(CollectiveConfig cfg) {
   config.reset(std::move(cfg));
-  immigration = makeOwner<Immigration>(std::move(im));
   credit = cfg.getStartingResource();
+}
+
+void Collective::setImmigration(PImmigration i) {
+  immigration = std::move(i);
 }
 
 void Collective::setWorkshops(unique_ptr<Workshops> w) {

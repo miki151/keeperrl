@@ -14,7 +14,7 @@ struct AttractionInfo;
 
 class Immigration : public OwnedObject<Immigration> {
   public:
-  Immigration(WCollective);
+  Immigration(WCollective, vector<ImmigrantInfo>);
   void update();
 
   struct Group {
@@ -55,6 +55,7 @@ class Immigration : public OwnedObject<Immigration> {
   void accept(int id, bool withMessage = true);
   void rejectIfNonPersistent(int id);
   vector<string> getMissingRequirements(const Available&) const;
+  const vector<ImmigrantInfo>& getImmigrants() const;
 
   void setAutoState(int index, optional<ImmigrantAutoState>);
   optional<ImmigrantAutoState> getAutoState(int index) const;
@@ -65,7 +66,6 @@ class Immigration : public OwnedObject<Immigration> {
   int getAttractionValue(const AttractionType& attraction) const;
 
   private:
-  const vector<ImmigrantInfo>& getImmigrants() const;
   EntityMap<Creature, unordered_map<AttractionType, int, CustomHash<AttractionType>>> SERIAL(minionAttraction);
   map<int, Available> SERIAL(available);
   WCollective SERIAL(collective);
@@ -86,4 +86,5 @@ class Immigration : public OwnedObject<Immigration> {
   void resetImmigrantTime();
   map<int, ImmigrantAutoState> SERIAL(autoState);
   int getNumGeneratedAndCandidates(int index) const;
+  vector<ImmigrantInfo> SERIAL(immigrants);
 };

@@ -20,6 +20,7 @@
 #include "tutorial_highlight.h"
 #include "workshop_item.h"
 #include "workshop_type.h"
+#include "immigrant_info.h"
 
 template <typename T>
 optional<string> PrettyPrinting::parseObject(T& object, const string& s) {
@@ -32,33 +33,15 @@ optional<string> PrettyPrinting::parseObject(T& object, const string& s) {
   }
 }
 
-template
-optional<string> PrettyPrinting::parseObject<Effect>(Effect&, const string&);
+#define ADD_IMP(...) \
+template \
+optional<string> PrettyPrinting::parseObject<__VA_ARGS__>(__VA_ARGS__&, const string&);
 
-template
-optional<string> PrettyPrinting::parseObject<ItemType>(ItemType&, const string&);
-
-template
-optional<string> PrettyPrinting::parseObject<CreatureId>(CreatureId&, const string&);
-
-
-using VillainsTuple = tuple<vector<Campaign::VillainInfo>, vector<Campaign::VillainInfo>,
-    vector<Campaign::VillainInfo>, vector<Campaign::VillainInfo>>;
-
-template
-optional<string> PrettyPrinting::parseObject<VillainsTuple>(VillainsTuple&, const string&);
-
-using PlayerCreatureData = pair<vector<KeeperCreatureInfo>, vector<AdventurerCreatureInfo>>;
-
-template
-optional<string> PrettyPrinting::parseObject<PlayerCreatureData>(PlayerCreatureData&, const string&);
-
-using BuildData = pair<vector<BuildInfo>, vector<BuildInfo>>;
-
-template
-optional<string> PrettyPrinting::parseObject<BuildData>(BuildData&, const string&);
-
-using WorkshopData = std::array<vector<WorkshopItemCfg>, EnumInfo<WorkshopType>::size>;
-
-template
-optional<string> PrettyPrinting::parseObject<WorkshopData>(WorkshopData&, const string&);
+ADD_IMP(Effect)
+ADD_IMP(ItemType)
+ADD_IMP(CreatureId)
+ADD_IMP(std::array<vector<Campaign::VillainInfo>, 4>)
+ADD_IMP(pair<vector<KeeperCreatureInfo>, vector<AdventurerCreatureInfo>>)
+ADD_IMP(std::array<vector<BuildInfo>, 2>)
+ADD_IMP(std::array<vector<WorkshopItemCfg>, EnumInfo<WorkshopType>::size>)
+ADD_IMP(map<string, vector<ImmigrantInfo>>)

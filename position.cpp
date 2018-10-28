@@ -981,4 +981,3 @@ void Position::putCreature(WCreature c) {
   CHECK(isValid());
   level->putCreature(coord, c);
 }
-

@@ -1,12 +1,12 @@
 # Keepers
 {
-    # CreatureId      TechVariant   WorkerVariant           TribeAlignment     ImmigrantsVariant  { TechId, ... }
+    # CreatureId      TechVariant   TribeAlignment     Immigrants                           { TechId, ... }
 
-    KEEPER_MAGE       DARK          IMP                     EVIL               EVIL               { SPELLS }
-    KEEPER_MAGE_F     DARK          IMP                     EVIL               EVIL               { SPELLS }
-    KEEPER_KNIGHT     DARK          PEASANT_PRISONER        EVIL               EVIL               { IRON_WORKING }
-    KEEPER_KNIGHT_F   DARK          PEASANT_PRISONER        EVIL               EVIL               { IRON_WORKING }
-    DUKE_PLAYER       WHITE         PEASANT                 LAWFUL             LAWFUL             { ARCHERY }
+    KEEPER_MAGE       DARK          EVIL               {"imps" "dark_keeper"}               { SPELLS }
+    KEEPER_MAGE_F     DARK          EVIL               {"imps" "dark_keeper"}               { SPELLS }
+    KEEPER_KNIGHT     DARK          EVIL               {"peseant prisoners" "dark_keeper"}  { IRON_WORKING }
+    KEEPER_KNIGHT_F   DARK          EVIL               {"peseant prisoners" "dark_keeper"}  { IRON_WORKING }
+    DUKE_PLAYER       WHITE         LAWFUL             {"peseants" "white_keeper"}          { ARCHERY }
 }
 
 # Adventurers

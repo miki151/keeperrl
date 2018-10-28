@@ -101,6 +101,7 @@ enum class FXName;
 enum class FXVariantName;
 enum class StorageId;
 enum class TechVariant;
+enum class TutorialState;
 
 struct FXInfo;
 struct FXSpawnInfo;

@@ -23,7 +23,6 @@
 #include "item_class.h"
 #include "villain_type.h"
 #include "furniture.h"
-#include "immigrant_info.h"
 #include "tutorial_highlight.h"
 #include "trap_type.h"
 #include "spell_id.h"
@@ -37,23 +36,16 @@
 #include "territory.h"
 #include "furniture_factory.h"
 #include "storage_id.h"
+#include "immigrant_info.h"
 
 template <class Archive>
 void CollectiveConfig::serialize(Archive& ar, const unsigned int version) {
-  ar(immigrantInterval, maxPopulation, immigrantInfo);
+  ar(immigrantInterval, maxPopulation);
   ar(type, leaderAsFighter, spawnGhosts, ghostProb, guardianInfo, regenerateMana);
 }
 
 SERIALIZABLE(CollectiveConfig);
 SERIALIZATION_CONSTRUCTOR_IMPL(CollectiveConfig);
-
-template <class Archive>
-void AttractionInfo::serialize(Archive& ar, const unsigned int version) {
-  ar(types, amountClaimed);
-}
-
-SERIALIZABLE(AttractionInfo);
-SERIALIZATION_CONSTRUCTOR_IMPL(AttractionInfo);
 
 template <class Archive>
 void GuardianInfo::serialize(Archive& ar, const unsigned int version) {
@@ -91,7 +83,7 @@ static optional<FurnitureType> getBedType(WConstCreature c) {
     return FurnitureType::BEAST_CAGE;
 }
 
-void CollectiveConfig::addBedRequirementToImmigrants() {
+void CollectiveConfig::addBedRequirementToImmigrants(vector<ImmigrantInfo>& immigrantInfo) {
   for (auto& info : immigrantInfo) {
     PCreature c = CreatureFactory::fromId(info.getId(0), TribeId::getDarkKeeper());
     if (info.getInitialRecruitment() == 0)
@@ -111,25 +103,22 @@ void CollectiveConfig::addBedRequirementToImmigrants() {
   }
 }
 
-CollectiveConfig::CollectiveConfig(TimeInterval interval, const vector<ImmigrantInfo>& im, CollectiveType t, int maxPop)
-    : immigrantInterval(interval), maxPopulation(maxPop), immigrantInfo(im), type(t) {
-  if (type == KEEPER)
-    addBedRequirementToImmigrants();
+CollectiveConfig::CollectiveConfig(TimeInterval interval, CollectiveType t, int maxPop)
+    : immigrantInterval(interval), maxPopulation(maxPop), type(t) {
 }
 
-CollectiveConfig CollectiveConfig::keeper(TimeInterval immigrantInterval, int maxPopulation, bool regenerateMana,
-    const vector<ImmigrantInfo>& im) {
-  auto ret = CollectiveConfig(immigrantInterval, im, KEEPER, maxPopulation);
+CollectiveConfig CollectiveConfig::keeper(TimeInterval immigrantInterval, int maxPopulation, bool regenerateMana) {
+  auto ret = CollectiveConfig(immigrantInterval, KEEPER, maxPopulation);
   ret.regenerateMana = regenerateMana;
   return ret;
 }
 
-CollectiveConfig CollectiveConfig::withImmigrants(TimeInterval interval, int maxPopulation, const vector<ImmigrantInfo>& im) {
-  return CollectiveConfig(interval, im, VILLAGE, maxPopulation);
+CollectiveConfig CollectiveConfig::withImmigrants(TimeInterval interval, int maxPopulation) {
+  return CollectiveConfig(interval, VILLAGE, maxPopulation);
 }
 
 CollectiveConfig CollectiveConfig::noImmigrants() {
-  return CollectiveConfig(TimeInterval {}, {}, VILLAGE, 10000);
+  return CollectiveConfig(TimeInterval {}, VILLAGE, 10000);
 }
 
 CollectiveConfig& CollectiveConfig::setLeaderAsFighter() {
@@ -213,10 +202,6 @@ bool CollectiveConfig::bedsLimitImmigration() const {
 
 int CollectiveConfig::getMaxPopulation() const {
   return maxPopulation;
-}
-
-const vector<ImmigrantInfo>& CollectiveConfig::getImmigrantInfo() const {
-  return immigrantInfo;
 }
 
 CollectiveConfig& CollectiveConfig::setGuardian(GuardianInfo info) {

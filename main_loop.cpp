@@ -33,8 +33,6 @@
 #include "creature_factory.h"
 #include "enemy_factory.h"
 #include "external_enemies.h"
-#include "workshops.h"
-#include "workshop_item.h"
 #include "game_config.h"
 
 MainLoop::MainLoop(View* v, Highscores* h, FileSharing* fSharing, const DirectoryPath& freePath,
@@ -329,7 +327,7 @@ optional<RetiredGames> MainLoop::getRetiredGames(CampaignType type) {
 PGame MainLoop::prepareTutorial() {
   PGame game = loadGame(dataFreePath.file("tutorial.kep"));
   if (game)
-    Tutorial::createTutorial(*game);
+    Tutorial::createTutorial(*game, gameConfig);
   else
     view->presentText("Sorry", "Failed to load the tutorial :(");
   return game;

@@ -13,7 +13,6 @@
 #include "construction_map.h"
 #include "player_control.h"
 #include "collective_config.h"
-#include "immigrant_info.h"
 #include "keybinding.h"
 #include "immigration.h"
 #include "container_range.h"
@@ -28,46 +27,10 @@
 #include "collective_warning.h"
 #include "creature_factory.h"
 #include "workshop_item.h"
-
+#include "game_config.h"
+#include "tutorial_state.h"
 
 SERIALIZE_DEF(Tutorial, state, entrance)
-
-enum class Tutorial::State {
-  WELCOME,
-  INTRO,
-  INTRO2,
-  CUT_TREES,
-  BUILD_STORAGE,
-  CONTROLS1,
-  CONTROLS2,
-  GET_200_WOOD,
-  DIG_ROOM,
-  BUILD_DOOR,
-  BUILD_LIBRARY,
-  DIG_2_ROOMS,
-  ACCEPT_IMMIGRANT,
-  TORCHES,
-  FLOORS,
-  BUILD_WORKSHOP,
-  SCHEDULE_WORKSHOP_ITEMS,
-  ORDER_CRAFTING,
-  EQUIP_WEAPON,
-  ACCEPT_MORE_IMMIGRANTS,
-  EQUIP_ALL_FIGHTERS,
-  CREATE_TEAM,
-  CONTROL_TEAM,
-  CONTROL_MODE_MOVEMENT,
-  FULL_CONTROL,
-  DISCOVER_VILLAGE,
-  KILL_VILLAGE,
-  LOOT_VILLAGE,
-  LEAVE_CONTROL,
-  SUMMARY1,
-  RESEARCH,
-  MINIMAP_BUTTONS,
-  SUMMARY2,
-  FINISHED,
-};
 
 static bool isTeam(WConstCollective collective) {
   for (auto team : collective->getTeams().getAll())
@@ -489,13 +452,11 @@ void Tutorial::goBack() {
     state = (State)((int) state - 1);
 }
 
-bool Tutorial::showImmigrant(const ImmigrantInfo& info) const {
-  return info.getId(0) == CreatureId::IMP ||
-      (state == State::ACCEPT_IMMIGRANT && info.isPersistent() && info.getLimit() == 1) ||
-      (state >= State::ACCEPT_MORE_IMMIGRANTS && !info.isPersistent());
+Tutorial::State Tutorial::getState() const {
+  return state;
 }
 
-void Tutorial::createTutorial(Game& game) {
+void Tutorial::createTutorial(Game& game, GameConfig* gameConfig) {
   auto tutorial = make_shared<Tutorial>();
   game.getPlayerControl()->setTutorial(tutorial);
   auto collective = game.getPlayerCollective();
@@ -510,29 +471,16 @@ void Tutorial::createTutorial(Game& game) {
   CHECK(foundEntrance);
   collective->setTrait(collective->getLeader(), MinionTrait::NO_AUTO_EQUIPMENT);
   collective->getWarnings().disable();
-  collective->init(CollectiveConfig::keeper(50_visible, 10, false, {
-      ImmigrantInfo(CreatureId::IMP, {MinionTrait::WORKER, MinionTrait::NO_LIMIT, MinionTrait::NO_EQUIPMENT})
-          .setSpawnLocation(NearLeader{})
-          .setKeybinding(Keybinding::CREATE_IMP)
-          .setSound(Sound(SoundId::CREATE_IMP).setPitch(2))
-          .setNoAuto()
-          .addRequirement(ExponentialCost{ CostInfo(CollectiveResourceId::GOLD, 6), 5, 4 }),
-      ImmigrantInfo(CreatureId::ORC, {MinionTrait::FIGHTER, MinionTrait::NO_AUTO_EQUIPMENT})
-          .setLimit(1)
-          .setTutorialHighlight(TutorialHighlight::ACCEPT_IMMIGRANT)
-          .addRequirement(0.0, TutorialRequirement {tutorial})
-          .addRequirement(0.1, AttractionInfo{1, FurnitureType::TRAINING_WOOD})
-          .setHiddenInHelp(),
-      ImmigrantInfo(CreatureId::ORC, {MinionTrait::FIGHTER})
-          .setLimit(3)
-          .setFrequency(0.5)
-          .addRequirement(0.0, TutorialRequirement {tutorial})
-          .addRequirement(0.1, AttractionInfo{1, FurnitureType::TRAINING_WOOD}),
-      ImmigrantInfo(CreatureId::GOBLIN, {MinionTrait::NO_EQUIPMENT})
-          .setLimit(1)
-          .setFrequency(0.5)
-          .addRequirement(0.0, TutorialRequirement {tutorial})
-          .addRequirement(0.1, AttractionInfo{1, FurnitureType::WORKSHOP})
-  }),
-      Immigration(collective));
+  collective->init(CollectiveConfig::keeper(50_visible, 10, false));
+  map<string, vector<ImmigrantInfo>> immigrantData;
+  if (auto error = gameConfig->readObject(immigrantData, GameConfigId::IMMIGRATION))
+    USER_FATAL << *error;
+  vector<ImmigrantInfo> immigrants;
+  for (auto elem : {"imps", "tutorial"})
+    if (auto group = getReferenceMaybe(immigrantData, elem))
+      append(immigrants, *group);
+    else
+      USER_FATAL << "Immigrant group not found: " << elem;
+  CollectiveConfig::addBedRequirementToImmigrants(immigrants);
+  collective->setImmigration(makeOwner<Immigration>(collective, std::move(immigrants)));
 }

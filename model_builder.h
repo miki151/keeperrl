@@ -52,4 +52,5 @@ class ModelBuilder {
   Options* options;
   HeapAllocated<EnemyFactory> enemyFactory;
   SokobanInput* sokobanInput;
+  GameConfig* gameConfig;
 };

@@ -265,51 +265,60 @@ typedef StreamCombiner<ostringstream, PrettyOutputArchive> PrettyOutput;
 using PrettyInput = PrettyInputArchive;
 
 template <typename T>
-inline void CEREAL_LOAD_FUNCTION_NAME(PrettyInputArchive& ar, vector<T>& v) {
+inline void CEREAL_LOAD_FUNCTION_NAME(PrettyInputArchive& ar1, vector<T>& v) {
   v.clear();
   string s;
-  ar.readText(s);
+  ar1.readText(s);
   if (s != "{")
-    ar.error("Expected list of items surrounded by { and }");
+    ar1.error("Expected list of items surrounded by { and }");
   while (1) {
-    if (ar.peek() == "}")
+    if (ar1.peek() == "}")
       break;
     T t;
-    ar(t);
+    ar1(t);
     v.push_back(t);
   }
-  ar.eat("}");
+  ar1.eat("}");
 }
 
+template <typename T, typename U>
+inline void CEREAL_LOAD_FUNCTION_NAME(PrettyInputArchive& ar1, map<T, U>& m) {
+  vector<pair<T, U>> v;
+  ar1(v);
+  for (auto& elem : v)
+    m.insert(elem);
+}
+
+
 template <typename T>
-inline void CEREAL_SAVE_FUNCTION_NAME(PrettyOutputArchive& ar, vector<T> const& v) {
-  ar.os << "{";
+inline void CEREAL_SAVE_FUNCTION_NAME(PrettyOutputArchive& ar1, vector<T> const& v) {
+  ar1.os << "{";
   bool first = true;
   for (auto& elem : v) {
     if (!first)
-      ar.os << ",";
-    ar << v;
+      ar1.os << ",";
+    ar1 << v;
     first = false;
   }
-  ar.os << "}";
+  ar1.os << "}";
 }
 
 template <typename T>
-inline void CEREAL_LOAD_FUNCTION_NAME(PrettyInputArchive& ar, optional<T>& v) {
+inline void CEREAL_LOAD_FUNCTION_NAME(PrettyInputArchive& ar1, optional<T>& v) {
   v.reset();
-  if (ar.eatMaybe("none"))
+  if (ar1.eatMaybe("none"))
     return;
   T t;
-  ar(t);
+  ar1(t);
   v = std::move(t);
 }
 
 template <typename T>
-inline void CEREAL_SAVE_FUNCTION_NAME(PrettyOutputArchive& ar, optional<T> const& v) {
+inline void CEREAL_SAVE_FUNCTION_NAME(PrettyOutputArchive& ar1, optional<T> const& v) {
   if (!v)
-    ar.os << "none";
+    ar1.os << "none";
   else
-    ar << *v;
+    ar1 << *v;
 }
 
 template <class T>
@@ -335,9 +344,9 @@ namespace pretty_tuple_detail {
     template <size_t Height>
     struct serialize {
       template <class Archive, class ... Types> inline
-      static void apply(Archive& ar, std::tuple<Types...>& tuple) {
-        serialize<Height - 1>::template apply(ar, tuple);
-        ar(std::get<Height - 1>(tuple));
+      static void apply(Archive& ar1, std::tuple<Types...>& tuple) {
+        serialize<Height - 1>::template apply(ar1, tuple);
+        ar1(std::get<Height - 1>(tuple));
       }
     };
 

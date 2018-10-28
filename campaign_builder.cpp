@@ -148,8 +148,7 @@ optional<string> CampaignBuilder::getSiteChoiceTitle(CampaignType type) const {
   }
 }
 
-using VillainsTuple = tuple<vector<Campaign::VillainInfo>, vector<Campaign::VillainInfo>,
-    vector<Campaign::VillainInfo>, vector<Campaign::VillainInfo>>;
+using VillainsTuple = std::array<vector<Campaign::VillainInfo>, 4>;
 
 static vector<Campaign::VillainInfo> filter(vector<Campaign::VillainInfo> v, VillainType type) {
   return v.filter([type](const auto& elem){ return elem.type == type; });
@@ -167,16 +166,16 @@ vector<Campaign::VillainInfo> CampaignBuilder::getVillains(TribeAlignment tribeA
     case PlayerRole::KEEPER:
       switch (tribeAlignment) {
         case TribeAlignment::EVIL:
-          return filter(std::get<0>(config), type);
+          return filter(config[0], type);
         case TribeAlignment::LAWFUL:
-          return filter(std::get<1>(config), type);
+          return filter(config[1], type);
       }
     case PlayerRole::ADVENTURER:
       switch (tribeAlignment) {
         case TribeAlignment::EVIL:
-          return filter(std::get<2>(config), type);
+          return filter(config[2], type);
         case TribeAlignment::LAWFUL:
-          return filter(std::get<3>(config), type);
+          return filter(config[3], type);
       }
   }
 }

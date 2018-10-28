@@ -7,8 +7,9 @@
 #include "enemy_factory.h"
 #include "sound.h"
 #include "special_trait.h"
+#include "tutorial_state.h"
 
-using AttractionType = variant<FurnitureType, ItemIndex>;
+MAKE_VARIANT2(AttractionType, FurnitureType, ItemIndex);
 
 struct AttractionInfo {
   AttractionInfo(int amountClaimed, vector<AttractionType>);
@@ -18,8 +19,8 @@ struct AttractionInfo {
 
   static string getAttractionName(const AttractionType&, int count);
 
-  vector<AttractionType> SERIAL(types);
   int SERIAL(amountClaimed);
+  vector<AttractionType> SERIAL(types);
 };
 
 struct ExponentialCost {
@@ -45,9 +46,8 @@ struct RecruitmentInfo {
 };
 
 struct TutorialRequirement {
-  STutorial SERIAL(tutorial);
-  template <class Archive>
-  void serialize(Archive&, const unsigned);
+  TutorialState SERIAL(state);
+  SERIALIZE_ALL(state);
 };
 
 struct MinTurnRequirement {
@@ -55,7 +55,7 @@ struct MinTurnRequirement {
   SERIALIZE_ALL(turn)
 };
 
-using ImmigrantRequirement = variant<
+MAKE_VARIANT2(ImmigrantRequirement,
     AttractionInfo,
     TechId,
     SunlightState,
@@ -66,12 +66,12 @@ using ImmigrantRequirement = variant<
     RecruitmentInfo,
     TutorialRequirement,
     MinTurnRequirement
->;
+);
 
 struct OutsideTerritory { SERIALIZE_EMPTY() };
 struct NearLeader { SERIALIZE_EMPTY() };
 
-using SpawnLocation = variant<FurnitureType, OutsideTerritory, NearLeader, Pregnancy>;
+MAKE_VARIANT2(SpawnLocation, FurnitureType, OutsideTerritory, NearLeader, Pregnancy);
 
 class ImmigrantInfo {
   public:
@@ -93,7 +93,14 @@ class ImmigrantInfo {
   bool isNoAuto() const;
   optional<TutorialHighlight> getTutorialHighlight() const;
   bool isHiddenInHelp() const;
-  const vector<pair<double, vector<SpecialTrait>>>& getSpecialTraits() const;
+
+  struct SpecialTraitInfo {
+    double SERIAL(prob);
+    vector<SpecialTrait> SERIAL(traits);
+    SERIALIZE_ALL(NAMED(prob), NAMED(traits))
+  };
+
+  const vector<SpecialTraitInfo>& getSpecialTraits() const;
 
   ImmigrantInfo& addRequirement(double candidateProb, ImmigrantRequirement);
   ImmigrantInfo& addRequirement(ImmigrantRequirement);
@@ -146,9 +153,9 @@ class ImmigrantInfo {
   vector<CreatureId> SERIAL(ids);
   optional<double> SERIAL(frequency);
   struct RequirementInfo {
-    ImmigrantRequirement SERIAL(type);
     double SERIAL(candidateProb); // chance of candidate immigrant still generated if this requirement is not met.
-    SERIALIZE_ALL(type, candidateProb)
+    ImmigrantRequirement SERIAL(type);
+    SERIALIZE_ALL(NAMED(candidateProb), NAMED(type))
   };
   vector<RequirementInfo> SERIAL(requirements);
   EnumSet<MinionTrait> SERIAL(traits);
@@ -163,5 +170,5 @@ class ImmigrantInfo {
   bool SERIAL(invisible) = false;
   optional<TutorialHighlight> SERIAL(tutorialHighlight);
   bool SERIAL(hiddenInHelp) = false;
-  vector<pair<double, vector<SpecialTrait>>> SERIAL(specialTraits);
+  vector<SpecialTraitInfo> SERIAL(specialTraits);
 };

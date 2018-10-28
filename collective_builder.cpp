@@ -87,8 +87,7 @@ optional<CollectiveName> CollectiveBuilder::generateName() {
 PCollective CollectiveBuilder::build() {
   CHECK(level);
   auto c = Collective::create(level, *tribe, generateName(), discoverable);
-  Immigration im(c.get());
-  c->init(std::move(*config), std::move(im));
+  c->init(std::move(*config));
   c->setControl(CollectiveControl::idle(c.get()));
   bool wasLeader = false;
   for (auto& elem : creatures) {
