@@ -8,5 +8,6 @@ struct KeeperCreatureInfo {
   TribeAlignment SERIAL(tribeAlignment);
   vector<string> SERIAL(immigrantGroups);
   vector<TechId> SERIAL(initialTech);
-  SERIALIZE_ALL(creatureId, techVariant, tribeAlignment, immigrantGroups, initialTech)
+  vector<string> SERIAL(buildingGroups);
+  SERIALIZE_ALL(creatureId, techVariant, tribeAlignment, immigrantGroups, initialTech, buildingGroups)
 };

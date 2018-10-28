@@ -23,9 +23,9 @@
 #include "immigrant_info.h"
 
 template <typename T>
-optional<string> PrettyPrinting::parseObject(T& object, const string& s) {
+optional<string> PrettyPrinting::parseObject(T& object, const string& s, optional<string> filename) {
   try {
-    PrettyInput input(s);
+    PrettyInput input(s, filename);
     input(object);
     return none;
   } catch (PrettyException ex) {
@@ -35,13 +35,13 @@ optional<string> PrettyPrinting::parseObject(T& object, const string& s) {
 
 #define ADD_IMP(...) \
 template \
-optional<string> PrettyPrinting::parseObject<__VA_ARGS__>(__VA_ARGS__&, const string&);
+optional<string> PrettyPrinting::parseObject<__VA_ARGS__>(__VA_ARGS__&, const string&, optional<string>);
 
 ADD_IMP(Effect)
 ADD_IMP(ItemType)
 ADD_IMP(CreatureId)
 ADD_IMP(std::array<vector<Campaign::VillainInfo>, 4>)
 ADD_IMP(pair<vector<KeeperCreatureInfo>, vector<AdventurerCreatureInfo>>)
-ADD_IMP(std::array<vector<BuildInfo>, 2>)
+ADD_IMP(vector<pair<string, vector<BuildInfo>>>)
 ADD_IMP(std::array<vector<WorkshopItemCfg>, EnumInfo<WorkshopType>::size>)
 ADD_IMP(map<string, vector<ImmigrantInfo>>)

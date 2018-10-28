@@ -57,8 +57,8 @@ static pair<string, vector<StreamPos>> removeFormatting(string contents) {
 
 class PrettyInputArchive : public cereal::InputArchive<PrettyInputArchive> {
   public:
-    PrettyInputArchive(const string& input)
-          : InputArchive<PrettyInputArchive>(this) {
+    PrettyInputArchive(const string& input, optional<string> filename)
+          : InputArchive<PrettyInputArchive>(this), filename(filename) {
       auto p = removeFormatting(input);
       is.str(p.first);
       streamPos = p.second;
@@ -85,7 +85,10 @@ class PrettyInputArchive : public cereal::InputArchive<PrettyInputArchive> {
     void error(const string& s) {
       int n = (int) is.tellg();
       auto pos = streamPos[max(0, min<int>(n, streamPos.size() - 1))];
-      throw PrettyException{"Line: " + toString(pos.line) + " column: " + toString(pos.column) + ": " + s};
+      string msg;
+      if (filename)
+        msg = *filename + ": ";
+      throw PrettyException{msg + "line: " + toString(pos.line) + " column: " + toString(pos.column) + ": " + s};
     }
 
     bool eatMaybe(const string& s) {
@@ -130,6 +133,7 @@ class PrettyInputArchive : public cereal::InputArchive<PrettyInputArchive> {
     private:
     std::istringstream is;
     vector<StreamPos> streamPos;
+    optional<string> filename;
 };
 
 namespace cereal {

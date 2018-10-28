@@ -148,8 +148,11 @@ static T readData(View* view, GameConfig* gameConfig, GameConfigId id) {
 
 void PlayerControl::reloadBuildingMenu() {
   auto gameConfig = getGame()->getGameConfig();
-  auto data = readData<std::array<vector<BuildInfo>, 2>>(getView(), gameConfig, GameConfigId::BUILD_MENU);
-  auto buildInfoTmp = keeperCreatureInfo.techVariant == TechVariant::DARK ? data[0] : data[1];
+  vector<BuildInfo> buildInfoTmp;
+  auto allData = readData<vector<pair<string, vector<BuildInfo>>>>(getView(), gameConfig, GameConfigId::BUILD_MENU);
+  for (auto& group : allData)
+    if (keeperCreatureInfo.buildingGroups.contains(group.first))
+      buildInfoTmp.append(group.second);
   bool hotkeys[128] = {0};
   for (auto& info : buildInfoTmp) {
     if (info.hotkey != '\0') {
