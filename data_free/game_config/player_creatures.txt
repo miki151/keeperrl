@@ -1,7 +1,7 @@
 # Keepers
 {
     # CreatureId      TechVariant   TribeAlignment     Immigrants                           { TechId, ... }
-
+        # Building groups (see build_menu.txt)
     KEEPER_MAGE       DARK          EVIL               {"imps" "dark_keeper"}               { SPELLS }
         {"structure" "doors" "floors" "storage" "quarters" "library" "throne" "beds" "beast_cage"
          "pigsty" "coffins" "training" "crafting" "demon_shrine" "prison" "orders" "installations" "traps" }
