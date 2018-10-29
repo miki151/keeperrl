@@ -2482,7 +2482,7 @@ static vector<ItemType> getDefaultInventory(CreatureId id) {
     case CreatureId::KEEPER_MAGE_F:
     case CreatureId::KEEPER_MAGE:
       return ItemList()
-        .add(ItemType(ItemType::Robe{}).setPrefixChance(1));
+        .add(ItemType(ItemType::Robe{}));
     case CreatureId::KEEPER_KNIGHT_F:
     case CreatureId::KEEPER_KNIGHT:
       return ItemList()
