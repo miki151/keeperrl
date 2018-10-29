@@ -28,12 +28,12 @@ const char* getName(CreatureStatus status) {
   }
 }
 
-const char* getDescription(CreatureStatus status) {
+optional<const char*> getDescription(CreatureStatus status) {
   switch (status) {
     case CreatureStatus::PRISONER:
       return "Captured from a hostile tribe";
     case CreatureStatus::CIVILIAN:
-      return "Can be captured by conquering tribe";
+      return none;
     case CreatureStatus::LEADER:
       return "Killing will stop immigration";
     case CreatureStatus::FIGHTER:

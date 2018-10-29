@@ -2186,7 +2186,8 @@ SGuiElem GuiBuilder::drawMapHintOverlay() {
           lines.addElem(gui.label("Hostile", Color::ORANGE));
         for (auto status : viewObject.getCreatureStatus()) {
           lines.addElem(gui.label(getName(status), getColor(status)));
-          lines.addElem(gui.label(getDescription(status), getColor(status)));
+          if (auto desc = getDescription(status))
+            lines.addElem(gui.label(*desc, getColor(status)));
           break;
         }
         if (auto actions = getClickActions(viewObject))
