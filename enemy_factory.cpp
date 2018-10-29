@@ -76,10 +76,16 @@ struct VaultInfo {
 };
 }
 
-static vector<VaultInfo> friendlyVaults {
-  {CreatureId::ORC, 3, 5},
-  {CreatureId::OGRE, 2, 4},
-  {CreatureId::VAMPIRE, 2, 4},
+static EnumMap<TribeAlignment, vector<VaultInfo>> friendlyVaults {
+  {TribeAlignment::EVIL, {
+      {CreatureId::ORC, 3, 5},
+      {CreatureId::OGRE, 2, 4},
+      {CreatureId::VAMPIRE, 2, 4},
+  }},
+  {TribeAlignment::LAWFUL, {
+      {CreatureId::IRON_GOLEM, 3, 5},
+      {CreatureId::EARTH_ELEMENTAL, 2, 4},
+  }},
 };
 
 static vector<VaultInfo> hostileVaults {
@@ -88,7 +94,7 @@ static vector<VaultInfo> hostileVaults {
   {CreatureId::BAT, 3, 8},
 };
 
-vector<EnemyInfo> EnemyFactory::getVaults() {
+vector<EnemyInfo> EnemyFactory::getVaults(TribeAlignment alignment, TribeId allied) {
   vector<EnemyInfo> ret {
  /*   getVault(SettlementType::VAULT, CreatureFactory::insects(TribeId::getMonster()),
         TribeId::getMonster(), random.get(6, 12)),*/
@@ -96,8 +102,8 @@ vector<EnemyInfo> EnemyFactory::getVaults() {
         ItemFactory::armory()),
   };
   for (int i : Range(1)) {
-    VaultInfo v = random.choose(friendlyVaults);
-    ret.push_back(getVault(SettlementType::VAULT, v.id, TribeId::getDarkKeeper(), random.get(v.min, v.max)));
+    VaultInfo v = random.choose(friendlyVaults[alignment]);
+    ret.push_back(getVault(SettlementType::VAULT, v.id, allied, random.get(v.min, v.max)));
   }
   for (int i : Range(1)) {
     VaultInfo v = random.choose(hostileVaults);
@@ -494,6 +500,23 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
           .setImmigrants({ ImmigrantInfo(CreatureId::BANDIT, {MinionTrait::FIGHTER}).setFrequency(1) });
     case EnemyId::COTTAGE_BANDITS:
       return getById(EnemyId::NO_AGGRO_BANDITS).setCreateOnBones(*this, 1.0, {EnemyId::HUMAN_COTTAGE});
+    case EnemyId::ORC_CAVE:
+      return EnemyInfo(CONSTRUCT(SettlementInfo,
+            c.type = SettlementType::CAVE;
+            c.inhabitants.fighters = CreatureList(random.get(4, 9), CreatureId::ORC);
+            c.tribe = TribeId::getBandit();
+            c.race = "orcs"_s;
+            c.buildingId = BuildingId::DUNGEON;
+          ),
+          CollectiveConfig::withImmigrants(1000_visible, 10),
+          CONSTRUCT(VillageBehaviour,
+              c.minPopulation = 0;
+              c.minTeamSize = 3;
+              c.triggers = LIST({AttackTriggerId::GOLD, 100});
+              c.attackBehaviour = AttackBehaviour(AttackBehaviourId::STEAL_GOLD);
+              c.ransom = make_pair(0.5, random.get(40, 80));))
+          .setCreateOnBones(*this, 0.1, {EnemyId::KOBOLD_CAVE})
+          .setImmigrants({ ImmigrantInfo(CreatureId::ORC, {MinionTrait::FIGHTER}).setFrequency(1) });
     case EnemyId::LIZARDMEN:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::VILLAGE;
@@ -755,6 +778,28 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.inhabitants.fighters = CreatureList(random.get(2, 5), CreatureId::DWARF);
             c.inhabitants.civilians = CreatureList(random.get(2, 5), CreatureId::DWARF_FEMALE);
             c.race = "dwarves"_s;
+            c.buildingId = BuildingId::DUNGEON;
+            c.stockpiles = LIST(random.choose(StockpileInfo{StockpileInfo::MINERALS, 60},
+                StockpileInfo{StockpileInfo::GOLD, 60}));
+            c.outsideFeatures = FurnitureFactory::dungeonOutside(c.tribe);
+            c.furniture = FurnitureFactory::roomFurniture(c.tribe);
+            c.surroundWithResources = 6;
+          ),
+          CollectiveConfig::noImmigrants(),
+          CONSTRUCT(VillageBehaviour,
+            c.minPopulation = 0;
+            c.minTeamSize = 1;
+            c.triggers = LIST(AttackTriggerId::SELF_VICTIMS, AttackTriggerId::STOLEN_ITEMS, AttackTriggerId::MINING_IN_PROXIMITY);
+            c.attackBehaviour = AttackBehaviour(AttackBehaviourId::KILL_LEADER);
+            c.ransom = make_pair(0.5, random.get(40, 80));));
+    case EnemyId::DARK_ELF_CAVE:
+      return EnemyInfo(CONSTRUCT(SettlementInfo,
+            c.type = SettlementType::SMALL_MINETOWN;
+            c.tribe = TribeId::getDarkElf();
+            c.inhabitants.fighters = CreatureList(random.get(2, 5), CreatureId::DARK_ELF_WARRIOR)
+                .increaseBaseLevel({{ExperienceType::MELEE, 7}});
+            c.inhabitants.civilians = CreatureList(random.get(2, 5), CreatureId::DARK_ELF);
+            c.race = "dark elves"_s;
             c.buildingId = BuildingId::DUNGEON;
             c.stockpiles = LIST(random.choose(StockpileInfo{StockpileInfo::MINERALS, 60},
                 StockpileInfo{StockpileInfo::GOLD, 60}));

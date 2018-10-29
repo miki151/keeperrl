@@ -134,9 +134,11 @@ class SquareChange {
       builder->addAttrib(pos, *attrib);
   }) {}
 
-  SquareChange(FurnitureParams f)
+  SquareChange(FurnitureParams f, optional<SquareAttrib> attrib = ::none)
       : changeFun([=](LevelBuilder* builder, Vec2 pos) {
     builder->putFurniture(pos, f);
+    if (attrib)
+      builder->addAttrib(pos, *attrib);
   }) {}
 
   SquareChange(SquareAttrib attrib)
@@ -2339,7 +2341,7 @@ static void generateResources(RandomGen& random, LevelMaker* startingPos, Random
   auto addResources = [&](int count, Range size, int maxDist, FurnitureType type, LevelMaker* center,
       CollectiveBuilder* collective) {
     for (int i : Range(count)) {
-      SquareChange change(FurnitureParams{type, tribe});
+      SquareChange change(FurnitureParams{type, tribe}, SquareAttrib::NO_DIG);
       if (collective)
         change.add(SquareChange::addTerritory(collective));
       auto queue = unique<MakerQueue>(unique<FurnitureBlob>(std::move(change)));

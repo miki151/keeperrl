@@ -664,12 +664,12 @@ PModel MainLoop::getBaseModel(ModelBuilder& modelBuilder, CampaignSetup& setup) 
     switch (setup.campaign.getType()) {
       case CampaignType::SINGLE_KEEPER:
         return modelBuilder.singleMapModel(setup.campaign.getWorldName(),
-            setup.avatarInfo.playerCreature->getTribeId());
+            setup.avatarInfo.playerCreature->getTribeId(), setup.avatarInfo.tribeAlignment);
       case CampaignType::QUICK_MAP:
         return modelBuilder.tutorialModel("Campaign base site");
       default:
         return modelBuilder.campaignBaseModel("Campaign base site", setup.avatarInfo.playerCreature->getTribeId(),
-            setup.campaign.getType() == CampaignType::ENDLESS);
+            setup.avatarInfo.tribeAlignment, setup.campaign.getType() == CampaignType::ENDLESS);
     }
   }();
   modelBuilder.spawnKeeper(ret.get(), std::move(setup.avatarInfo), setup.regenerateMana, setup.introMessages);

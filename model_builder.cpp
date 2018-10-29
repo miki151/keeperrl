@@ -142,11 +142,11 @@ SettlementInfo& ModelBuilder::makeExtraLevel(WModel model, EnemyInfo& enemy) {
   }
 }
 
-PModel ModelBuilder::singleMapModel(const string& worldName, TribeId keeperTribe) {
-  return tryBuilding(10, [&] { return trySingleMapModel(worldName, keeperTribe);}, "single map");
+PModel ModelBuilder::singleMapModel(const string& worldName, TribeId keeperTribe, TribeAlignment alignment) {
+  return tryBuilding(10, [&] { return trySingleMapModel(worldName, keeperTribe, alignment);}, "single map");
 }
 
-PModel ModelBuilder::trySingleMapModel(const string& worldName, TribeId keeperTribe) {
+PModel ModelBuilder::trySingleMapModel(const string& worldName, TribeId keeperTribe, TribeAlignment alignment) {
   vector<EnemyInfo> enemies;
   for (int i : Range(random.get(3, 6)))
     enemies.push_back(enemyFactory->get(EnemyId::HUMAN_COTTAGE));
@@ -155,7 +155,7 @@ PModel ModelBuilder::trySingleMapModel(const string& worldName, TribeId keeperTr
     enemies.push_back(enemyFactory->get(random.choose({EnemyId::BANDITS, EnemyId::COTTAGE_BANDITS}, {3, 1}))
         .setVillainType(VillainType::LESSER));
   enemies.push_back(enemyFactory->get(random.choose(EnemyId::GNOMES, EnemyId::DARK_ELVES)).setVillainType(VillainType::ALLY));
-  append(enemies, enemyFactory->getVaults());
+  append(enemies, enemyFactory->getVaults(alignment, keeperTribe));
   enemies.push_back(enemyFactory->get(EnemyId::ANTS_CLOSED).setVillainType(VillainType::LESSER));
   enemies.push_back(enemyFactory->get(EnemyId::DWARVES).setVillainType(VillainType::MAIN));
   enemies.push_back(enemyFactory->get(EnemyId::KNIGHTS).setVillainType(VillainType::MAIN));
@@ -206,15 +206,27 @@ void ModelBuilder::addMapVillains(vector<EnemyInfo>& enemyInfo, BiomeId biomeId)
   }
 }
 
-PModel ModelBuilder::tryCampaignBaseModel(const string& siteName, TribeId keeperTribe, bool addExternalEnemies) {
+PModel ModelBuilder::tryCampaignBaseModel(const string& siteName, TribeId keeperTribe, TribeAlignment alignment,
+    bool addExternalEnemies) {
   vector<EnemyInfo> enemyInfo;
   BiomeId biome = BiomeId::MOUNTAIN;
-  enemyInfo.push_back(enemyFactory->get(EnemyId::DWARF_CAVE));
-  enemyInfo.push_back(enemyFactory->get(EnemyId::BANDITS));
-  enemyInfo.push_back(enemyFactory->get(EnemyId::ANTS_CLOSED_SMALL));
-  enemyInfo.push_back(enemyFactory->get(EnemyId::ADA_GOLEMS));
-  enemyInfo.push_back(enemyFactory->get(EnemyId::TUTORIAL_VILLAGE));
-  append(enemyInfo, enemyFactory->getVaults());
+  switch (alignment) {
+    case TribeAlignment::EVIL:
+      enemyInfo.push_back(enemyFactory->get(EnemyId::DWARF_CAVE));
+      enemyInfo.push_back(enemyFactory->get(EnemyId::BANDITS));
+      enemyInfo.push_back(enemyFactory->get(EnemyId::ANTS_CLOSED_SMALL));
+      enemyInfo.push_back(enemyFactory->get(EnemyId::ADA_GOLEMS));
+      enemyInfo.push_back(enemyFactory->get(EnemyId::TUTORIAL_VILLAGE));
+      break;
+    case TribeAlignment::LAWFUL:
+      enemyInfo.push_back(enemyFactory->get(EnemyId::DARK_ELF_CAVE));
+      enemyInfo.push_back(enemyFactory->get(EnemyId::ORC_CAVE));
+      enemyInfo.push_back(enemyFactory->get(EnemyId::ANTS_CLOSED_SMALL));
+      enemyInfo.push_back(enemyFactory->get(EnemyId::ADA_GOLEMS));
+      enemyInfo.push_back(enemyFactory->get(EnemyId::COTTAGE_BANDITS));
+      break;
+  }
+  append(enemyInfo, enemyFactory->getVaults(alignment, keeperTribe));
   if (random.chance(0.3))
     enemyInfo.push_back(enemyFactory->get(EnemyId::KRAKEN));
   optional<ExternalEnemies> externalEnemies;
@@ -280,8 +292,8 @@ PModel ModelBuilder::tryBuilding(int numTries, function<PModel()> buildFun, cons
 
 }
 
-PModel ModelBuilder::campaignBaseModel(const string& siteName, TribeId keeperTribe, bool externalEnemies) {
-  return tryBuilding(20, [=] { return tryCampaignBaseModel(siteName, keeperTribe, externalEnemies); }, "campaign base");
+PModel ModelBuilder::campaignBaseModel(const string& siteName, TribeId keeperTribe, TribeAlignment alignment, bool externalEnemies) {
+  return tryBuilding(20, [=] { return tryCampaignBaseModel(siteName, keeperTribe, alignment, externalEnemies); }, "campaign base");
 }
 
 PModel ModelBuilder::tutorialModel(const string& siteName) {
@@ -306,9 +318,12 @@ void ModelBuilder::measureSiteGen(int numTries, vector<string> types) {
   auto tribe = TribeId::getDarkKeeper();
   for (auto& type : types) {
     if (type == "single_map")
-      tasks.push_back([=] { measureModelGen(type, numTries, [&] { trySingleMapModel("pok", tribe); }); });
+      for (auto alignment : ENUM_ALL(TribeAlignment))
+        tasks.push_back([=] { measureModelGen(type, numTries, [&] { trySingleMapModel("pok", tribe, alignment); }); });
     else if (type == "campaign_base")
-      tasks.push_back([=] { measureModelGen(type, numTries, [&] { tryCampaignBaseModel("pok", tribe, false); }); });
+      for (auto alignment : ENUM_ALL(TribeAlignment))
+        tasks.push_back([=] { measureModelGen(type, numTries,
+            [&] { tryCampaignBaseModel("pok", tribe, alignment, false); }); });
     else if (type == "tutorial")
       tasks.push_back([=] { measureModelGen(type, numTries, [&] { tryTutorialModel("pok"); }); });
     else if (auto id = EnumInfo<EnemyId>::fromStringSafe(type)) {

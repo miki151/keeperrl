@@ -22,8 +22,8 @@ class GameConfig;
 class ModelBuilder {
   public:
   ModelBuilder(ProgressMeter*, RandomGen&, Options*, SokobanInput*, GameConfig*);
-  PModel singleMapModel(const string& worldName, TribeId keeperTribe);
-  PModel campaignBaseModel(const string& siteName, TribeId keeperTribe, bool externalEnemies);
+  PModel singleMapModel(const string& worldName, TribeId keeperTribe, TribeAlignment);
+  PModel campaignBaseModel(const string& siteName, TribeId keeperTribe, TribeAlignment, bool externalEnemies);
   PModel campaignSiteModel(const string& siteName, EnemyId, VillainType);
   PModel tutorialModel(const string& siteName);
 
@@ -38,8 +38,8 @@ class ModelBuilder {
 
   private:
   void measureModelGen(const std::string& name, int numTries, function<void()> genFun);
-  PModel trySingleMapModel(const string& worldName, TribeId keeperTribe);
-  PModel tryCampaignBaseModel(const string& siteName, TribeId keeperTribe, bool externalEnemies);
+  PModel trySingleMapModel(const string& worldName, TribeId keeperTribe, TribeAlignment);
+  PModel tryCampaignBaseModel(const string& siteName, TribeId keeperTribe, TribeAlignment, bool externalEnemies);
   PModel tryTutorialModel(const string& siteName);
   PModel tryCampaignSiteModel(const string& siteName, EnemyId, VillainType);
   PModel tryModel(int width, const string& levelName, vector<EnemyInfo>,
