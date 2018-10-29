@@ -2588,7 +2588,11 @@ static vector<ItemType> getDefaultInventory(CreatureId id) {
         .add(randomHealing(), 3)
         .maybe(0.3, ItemType::Torch{})
         .add(ItemType::GoldPiece{}, Random.get(140, 200));
-    case CreatureId::OGRE: 
+    case CreatureId::ORC:
+      return ItemList()
+        .add(ItemType::Club{})
+        .add(ItemType::LeatherArmor{});
+    case CreatureId::OGRE:
       return ItemList().add(ItemType::HeavyClub{});
     case CreatureId::BANDIT:
       return ItemList()
