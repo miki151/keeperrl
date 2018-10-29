@@ -150,9 +150,17 @@ void PlayerControl::reloadBuildingMenu() {
   auto gameConfig = getGame()->getGameConfig();
   vector<BuildInfo> buildInfoTmp;
   auto allData = readData<vector<pair<string, vector<BuildInfo>>>>(getView(), gameConfig, GameConfigId::BUILD_MENU);
-  for (auto& group : allData)
+  set<string> allDataGroups;
+  for (auto& group : allData) {
+    allDataGroups.insert(group.first);
     if (keeperCreatureInfo.buildingGroups.contains(group.first))
       buildInfoTmp.append(group.second);
+  }
+  for (auto& group : keeperCreatureInfo.buildingGroups)
+    if (!allDataGroups.count(group)) {
+      getView()->presentText("Error", "Building menu group \"" + group + "\" not found");
+      return;
+    }
   bool hotkeys[128] = {0};
   for (auto& info : buildInfoTmp) {
     if (info.hotkey != '\0') {
