@@ -2159,7 +2159,7 @@ static string getMoraleNumber(double morale) {
 #ifndef RELEASE
   return toString(morale);
 #else
-  return toString((int)(10.0f * morale) / 10);
+  return toString(round(10.0 * morale) / 10);
 #endif
 }
 
