@@ -137,13 +137,13 @@
         "Train your minions' melee skills here." r {} true  TRAINING_ROOM}
 
     { Furniture {{ TRAINING_IRON } IRON 12 }                   "Iron dummy"        "Training room"
-        "Train your minions' melee skills here."}
+        "Train your minions' melee skills here."   0 { TechId IRON_WORKING } }
 
     { Furniture {{ TRAINING_ADA }  ADA  12 }                   "Adamantine dummy"  "Training room"
-        "Train your minions' melee skills here."}
+        "Train your minions' melee skills here."   0 { TechId IRON_WORKING }}
 
     { Furniture {{ ARCHERY_RANGE } WOOD 12 }                   "Archery target"    "Training room"
-        "Train your minions' archery skills here."}
+        "Train your minions' archery skills here." 0 { TechId ARCHERY }}
   }
 
   "crafting"
@@ -222,6 +222,12 @@
 
     { Furniture {{ IMPALED_HEAD }  PRISONER_HEAD 1 true}       "Prisoner head"     "Installations"
         "Impaled head of an executed prisoner. Aggravates enemies."}
+  }
+
+  "eyeball"
+  {
+    { Furniture {{ EYEBALL }       WOOD  30 }                  "Eyeball"           "Installations"
+        "Makes the area around it visible."}
   }
 
   "tutorial"
