@@ -17,6 +17,15 @@ struct AttrBonus {
   HASH_ALL(attr, increase)
 };
 
-using SpecialTrait = variant<ExtraTraining, LastingEffect, SkillId, AttrBonus>;
+class SpecialTrait;
+
+struct OneOfTraits {
+  vector<SpecialTrait> HASH(traits);
+  COMPARE_ALL(traits)
+  HASH_ALL(traits)
+};
+
+MAKE_VARIANT2(SpecialTrait, ExtraTraining, LastingEffect, SkillId, AttrBonus, OneOfTraits);
 
 extern void applySpecialTrait(SpecialTrait, WCreature);
+extern SpecialTrait transformBeforeApplying(SpecialTrait);

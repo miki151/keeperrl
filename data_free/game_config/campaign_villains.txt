@@ -1,0 +1,84 @@
+# Villains for evil keepers
+{
+    # Line goes like this:
+    # ViewId EnemyId Villain-name Villain-type
+    DUKE KNIGHTS "Knights" MAIN
+    ELF_LORD ELVES "Elves" MAIN
+    DWARF_BARON DWARVES "Dwarves" MAIN
+    RED_DRAGON RED_DRAGON "Red dragon" MAIN
+    ELEMENTALIST ELEMENTALIST "Elementalist" MAIN
+    GREEN_DRAGON GREEN_DRAGON "Green dragon" MAIN
+    LIZARDLORD LIZARDMEN "Lizardmen" MAIN
+    SHAMAN WARRIORS "Warriors" MAIN
+    DEMON_LORD DEMON_DEN "Demon den" MAIN
+
+    ENT ENTS "Tree spirits" LESSER
+    DRIAD DRIADS "Driads" LESSER
+    CYCLOPS CYCLOPS "Cyclops" LESSER
+    SHELOB SHELOB "Giant spider" LESSER
+    HYDRA HYDRA "Hydra" LESSER
+    UNICORN UNICORN_HERD "Unicorn herd" LESSER
+    ANT_QUEEN ANTS_OPEN "Ants" LESSER
+#    ZOMBIE CEMETERY "Zombies" LESSER
+
+    UNKNOWN_MONSTER OGRE_CAVE "Unknown" ALLY
+    UNKNOWN_MONSTER HARPY_CAVE "Unknown" ALLY
+    UNKNOWN_MONSTER SOKOBAN "Unknown" ALLY
+    DARK_ELF_LORD DARK_ELVES "Dark elves" ALLY
+    GNOME_BOSS GNOMES "Gnomes" ALLY
+    ORC_CAPTAIN ORC_VILLAGE "Greenskin village" ALLY
+}
+
+# Villains for lawful keepers
+{
+    RED_DRAGON RED_DRAGON "Red dragon" MAIN
+    GREEN_DRAGON GREEN_DRAGON "Green dragon" MAIN
+    SHELOB SHELOB "Giant spider" MAIN
+    ANT_QUEEN ANTS_OPEN "Ants" MAIN
+    DARK_ELF_LORD DARK_ELVES "Dark elves" MAIN
+    ORC_CAPTAIN ORC_VILLAGE "Greenskin village" MAIN
+    DEMON_LORD DEMON_DEN "Demon den" MAIN
+    LIZARDLORD LIZARDMEN "Lizardmen" MAIN
+
+    SHELOB SHELOB "Giant spider" LESSER
+    CYCLOPS CYCLOPS "Cyclops" LESSER
+    HYDRA HYDRA "Hydra" LESSER
+    ZOMBIE CEMETERY "Zombies" LESSER
+    OGRE OGRE_CAVE "Ogres" LESSER
+    HARPY HARPY_CAVE "Harpies" LESSER
+    ANT_QUEEN ANTS_OPEN "Ants" LESSER
+
+    DWARF_BARON DWARVES "Dwarves" ALLY
+}
+
+# Villains for evil adventurers
+{
+    DUKE KNIGHTS "Knights" MAIN
+    ORC_CAPTAIN ORC_VILLAGE "Greenskins village" ALLY
+}
+
+# Villains for lawful adventurers
+{
+    RED_DRAGON RED_DRAGON "Red dragon" MAIN
+    GREEN_DRAGON GREEN_DRAGON "Green dragon" MAIN
+    SHELOB SHELOB "Giant spider" MAIN
+    ANT_QUEEN ANTS_OPEN "Ants" MAIN
+    DARK_ELF_LORD DARK_ELVES "Dark elves" MAIN
+    ORC_CAPTAIN ORC_VILLAGE "Greenskin village" MAIN
+    DEMON_LORD DEMON_DEN "Demon den" MAIN
+    LIZARDLORD LIZARDMEN "Lizardmen" MAIN
+
+    BANDIT BANDITS "Bandits" LESSER
+    CYCLOPS CYCLOPS "Cyclops" LESSER
+    HYDRA HYDRA "Hydra" LESSER
+    ZOMBIE CEMETERY "Zombies" LESSER
+    OGRE OGRE_CAVE "Ogres" LESSER
+    HARPY HARPY_CAVE "Harpies" LESSER
+    ANT_QUEEN ANTS_OPEN "Ants" LESSER
+
+    DUKE KNIGHTS "Knights" ALLY
+    ELF_LORD ELVES "Elves" ALLY
+    DWARF_BARON DWARVES "Dwarves" ALLY
+    LIZARDLORD LIZARDMEN "Lizardmen" ALLY
+}
+

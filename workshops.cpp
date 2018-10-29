@@ -5,8 +5,9 @@
 #include "item.h"
 #include "workshop_item.h"
 
-Workshops::Workshops(const EnumMap<WorkshopType, vector<Item>>& options)
-    : types([&options] (WorkshopType t) { return Type(options[t]);}) {
+Workshops::Workshops(std::array<vector<WorkshopItemCfg>, EnumInfo<WorkshopType>::size> options)
+    : types([&options] (WorkshopType t) { return Type(options[(int) t].transform(
+         [](const auto& elem){ return elem.get(); }));}) {
 }
 
 Workshops::Type& Workshops::get(WorkshopType type) {

@@ -11,24 +11,37 @@
 #include "item_type.h"
 #include "technology.h"
 #include "trap_type.h"
+#include "campaign.h"
+#include "enemy_factory.h"
+#include "keeper_creature_info.h"
+#include "adventurer_creature_info.h"
+#include "build_info.h"
+#include "furniture_layer.h"
+#include "tutorial_highlight.h"
+#include "workshop_item.h"
+#include "workshop_type.h"
+#include "immigrant_info.h"
 
 template <typename T>
-optional<T> PrettyPrinting::parseObject(const string& s) {
+optional<string> PrettyPrinting::parseObject(T& object, const string& s, optional<string> filename) {
   try {
-    PrettyInput input(s);
-    T object;
-    input.getArchive() >> object;
-    return object;
-  } catch (...) {}
-  return none;
+    PrettyInput input(s, filename);
+    input(object);
+    return none;
+  } catch (PrettyException ex) {
+    return ex.text;
+  }
 }
 
+#define ADD_IMP(...) \
+template \
+optional<string> PrettyPrinting::parseObject<__VA_ARGS__>(__VA_ARGS__&, const string&, optional<string>);
 
-template
-optional<Effect> PrettyPrinting::parseObject<Effect>(const string&);
-
-template
-optional<ItemType> PrettyPrinting::parseObject<ItemType>(const string&);
-
-template
-optional<CreatureId> PrettyPrinting::parseObject<CreatureId>(const string&);
+ADD_IMP(Effect)
+ADD_IMP(ItemType)
+ADD_IMP(CreatureId)
+ADD_IMP(std::array<vector<Campaign::VillainInfo>, 4>)
+ADD_IMP(pair<vector<KeeperCreatureInfo>, vector<AdventurerCreatureInfo>>)
+ADD_IMP(vector<pair<string, vector<BuildInfo>>>)
+ADD_IMP(std::array<vector<WorkshopItemCfg>, EnumInfo<WorkshopType>::size>)
+ADD_IMP(map<string, vector<ImmigrantInfo>>)

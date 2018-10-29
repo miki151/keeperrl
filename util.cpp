@@ -532,7 +532,7 @@ Rectangle::Rectangle(int px1, int py1, int kx1, int ky1) : px(px1), py(py1), kx(
   }
 }
 
-Rectangle::Rectangle(Vec2 p, Vec2 k) : Rectangle(p.x, p.y, k.x, k.y) {
+Rectangle::Rectangle(Vec2 p, Vec2 k) : Rectangle(min(p.x, k.x), min(p.y, k.y), max(p.x, k.x), max(p.y, k.y)) {
 }
 
 Rectangle::Rectangle(Range xRange, Range yRange)
@@ -714,6 +714,11 @@ bool Range::intersects(Range r) const {
   return contains(r.start) || contains(r.finish - r.increment) || r.contains(start);
 }
 
+Range Range::intersection(Range r) const {
+  CHECK(increment == 1 && r.increment == 1);
+  return Range(max(start, r.start), min(finish, r.finish));
+}
+
 Range::Iter Range::begin() {
   if ((increment > 0 && start < finish) || (increment < 0 && start > finish))
     return Iter(start, start, finish, increment);
@@ -741,7 +746,7 @@ const Range::Iter& Range::Iter::operator++ () {
   return *this;
 }
 
-SERIALIZE_DEF(Range, start, finish, increment)
+SERIALIZE_DEF(Range, NAMED(start), NAMED(finish), NAMED(increment))
 SERIALIZATION_CONSTRUCTOR_IMPL(Range);
 
 string combine(const vector<string>& adj, bool commasOnly) {
@@ -1068,3 +1073,7 @@ Dir rotate(Dir dir) {
       return Dir::N;
   }
 }
+
+#include "pretty_archive.h"
+template void Vec2::serialize(PrettyInputArchive&, unsigned);
+template void Range::serialize(PrettyInputArchive&, unsigned);

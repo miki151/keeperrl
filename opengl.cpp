@@ -108,6 +108,8 @@ static void APIENTRY debugOutputCallback(GLenum source, GLenum type, GLuint id, 
 }
 
 bool installOpenglDebugHandler() {
+#ifndef OSX
+#ifndef RELEASE
   static bool isInitialized = false, properlyInitialized = false;
   if (isInitialized)
     return properlyInitialized;
@@ -130,7 +132,8 @@ bool installOpenglDebugHandler() {
     properlyInitialized = true;
     return true;
   }
-
+#endif
+#endif
   return false;
 }
 

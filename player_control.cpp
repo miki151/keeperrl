@@ -84,13 +84,14 @@
 #include "quarters.h"
 #include "unknown_locations.h"
 #include "furniture_click.h"
+#include "game_config.h"
 
 template <class Archive>
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
   ar& SUBCLASS(CollectiveControl) & SUBCLASS(EventListener);
-  ar(memory, introText, lastControlKeeperQuestion, avatarVariant);
+  ar(memory, introText, lastControlKeeperQuestion, keeperCreatureInfo);
   ar(newAttacks, ransomAttacks, notifiedAttacks, messages, hints, visibleEnemies);
-  ar(visibilityMap, unknownLocations, dismissedVillageInfos);
+  ar(visibilityMap, unknownLocations, dismissedVillageInfos, buildInfo);
   ar(messageHistory, tutorial, controlModeMessages, stunnedCreatures);
 }
 
@@ -110,18 +111,11 @@ static vector<string> getHints() {
   };
 }
 
-PlayerControl::PlayerControl(Private, WCollective col, AvatarVariant avatarVariant)
-      : CollectiveControl(col), hints(getHints()), avatarVariant(avatarVariant) {
+PlayerControl::PlayerControl(Private, WCollective col, KeeperCreatureInfo keeperCreatureInfo)
+      : CollectiveControl(col), hints(getHints()), keeperCreatureInfo(keeperCreatureInfo) {
   controlModeMessages = make_shared<MessageBuffer>();
   visibilityMap = make_shared<VisibilityMap>();
   unknownLocations = make_shared<UnknownLocations>();
-  bool hotkeys[128] = {0};
-  for (auto& info : BuildInfo::get(avatarVariant)) {
-    if (info.hotkey) {
-      CHECK(!hotkeys[int(info.hotkey)]);
-      hotkeys[int(info.hotkey)] = true;
-    }
-  }
   memory.reset(new MapMemory());
   for (auto pos : col->getLevel()->getAllPositions())
     if (auto f = pos.getFurniture(FurnitureLayer::MIDDLE))
@@ -129,14 +123,102 @@ PlayerControl::PlayerControl(Private, WCollective col, AvatarVariant avatarVaria
         addToMemory(pos);
 }
 
-PPlayerControl PlayerControl::create(WCollective col, vector<string> introText, AvatarVariant avatarVariant) {
-  auto ret = makeOwner<PlayerControl>(Private{}, col, avatarVariant);
+PPlayerControl PlayerControl::create(WCollective col, vector<string> introText,
+    KeeperCreatureInfo keeperInfo) {
+  auto ret = makeOwner<PlayerControl>(Private{}, col, keeperInfo);
   ret->subscribeTo(col->getLevel()->getModel());
   ret->introText = introText;
   return ret;
 }
 
 PlayerControl::~PlayerControl() {
+}
+
+template <typename T>
+static T readData(View* view, GameConfig* gameConfig, GameConfigId id) {
+  T data;
+  while (1) {
+    if (auto error = gameConfig->readObject(data, id))
+      view->presentText("Error", *error);
+    else
+      break;
+  }
+  return data;
+}
+
+void PlayerControl::reloadBuildingMenu() {
+  auto gameConfig = getGame()->getGameConfig();
+  vector<BuildInfo> buildInfoTmp;
+  auto allData = readData<vector<pair<string, vector<BuildInfo>>>>(getView(), gameConfig, GameConfigId::BUILD_MENU);
+  set<string> allDataGroups;
+  for (auto& group : allData) {
+    allDataGroups.insert(group.first);
+    if (keeperCreatureInfo.buildingGroups.contains(group.first))
+      buildInfoTmp.append(group.second);
+  }
+  for (auto& group : keeperCreatureInfo.buildingGroups)
+    if (!allDataGroups.count(group)) {
+      getView()->presentText("Error", "Building menu group \"" + group + "\" not found");
+      return;
+    }
+  bool hotkeys[128] = {0};
+  for (auto& info : buildInfoTmp) {
+    if (info.hotkey != '\0') {
+      if (hotkeys[int(info.hotkey)]) {
+        getView()->presentText("Error",
+            "Hotkey \'" + string(1, info.hotkey) + "\' is used more than once in building menu");
+        return;
+      }
+      hotkeys[int(info.hotkey)] = true;
+    }
+  }
+  buildInfo = buildInfoTmp;
+  for (auto& info : buildInfo)
+    if (auto furniture = info.type.getReferenceMaybe<BuildInfo::Furniture>()) {
+      for (auto type : furniture->types) {
+        double luxury = Furniture::getLuxuryInfo(type).luxury;
+        if (luxury > 0) {
+          info.help += " Increases luxury by " + toString(luxury) + ".";
+          break;
+        }
+      }
+      if (auto increase = Furniture::getPopulationIncreaseDescription(furniture->types[0]))
+        info.help += " " + *increase;
+      for (auto expType : ENUM_ALL(ExperienceType))
+        if (auto increase = CollectiveConfig::getTrainingMaxLevel(expType, furniture->types[0]))
+          info.help += " Adds up to " + toString(*increase) + " " + toLower(getName(expType)) + " levels.";
+    }
+}
+
+
+optional<string> PlayerControl::reloadImmigrationAndWorkshops(GameConfig* gameConfig) {
+  std::array<vector<WorkshopItemCfg>, EnumInfo<WorkshopType>::size> workshopElems;
+  if (auto error = gameConfig->readObject(workshopElems, GameConfigId::WORKSHOPS_MENU))
+    return error;
+  collective->setWorkshops(unique<Workshops>(std::move(workshopElems)));
+  map<string, vector<ImmigrantInfo>> immigrantsData;
+  if (auto error = gameConfig->readObject(immigrantsData, GameConfigId::IMMIGRATION))
+    return error;
+  vector<ImmigrantInfo> immigrants;
+  for (auto elem : keeperCreatureInfo.immigrantGroups)
+    if (auto group = getReferenceMaybe(immigrantsData, elem))
+      append(immigrants, *group);
+    else
+      return "Undefined immigrant group: \"" + elem + "\"";
+  CollectiveConfig::addBedRequirementToImmigrants(immigrants);
+  collective->setImmigration(makeOwner<Immigration>(collective, std::move(immigrants)));
+  return none;
+}
+
+void PlayerControl::reloadData() {
+  auto gameConfig = getGame()->getGameConfig();
+  reloadBuildingMenu();
+  while (1) {
+    if (auto error = reloadImmigrationAndWorkshops(gameConfig))
+      getView()->presentText("Error", *error);
+    else
+      break;
+  }
 }
 
 const vector<WCreature>& PlayerControl::getControlled() const {
@@ -268,7 +350,9 @@ void PlayerControl::leaveControl() {
 void PlayerControl::render(View* view) {
   if (firstRender) {
     firstRender = false;
-    initialize();
+    reloadBuildingMenu();
+    for (WCreature c : getCreatures())
+      updateMinionVisibility(c);
   }
   if (getControlled().empty()) {
     view->updateView(this, false);
@@ -544,53 +628,49 @@ vector<Button> PlayerControl::fillButtons(const vector<BuildInfo>& buildInfo) co
   vector<Button> buttons;
   EnumMap<ResourceId, int> numResource([this](ResourceId id) { return collective->numResource(id);});
   for (auto& button : buildInfo) {
-    switch (button.buildType) {
-      case BuildInfo::FURNITURE: {
-           auto& elem = button.furnitureInfo;
-           ViewId viewId = getFurnitureViewId(elem.types[0]);
-           string description;
-           if (elem.cost.value > 0) {
-             int num = 0;
-             for (auto type : elem.types)
-               num += collective->getConstructions().getBuiltCount(type);
-             if (num > 0)
-               description = "[" + toString(num) + "]";
-           }
-           int availableNow = !elem.cost.value ? 1 : numResource[elem.cost.id] / elem.cost.value;
-           if (CollectiveConfig::getResourceInfo(elem.cost.id).dontDisplay && availableNow)
-             description += " (" + toString(availableNow) + " available)";
-           buttons.push_back({viewId, button.name,
-               getCostObj(elem.cost),
-               description,
-               (elem.noCredit && !availableNow) ?
-                  CollectiveInfo::Button::GRAY_CLICKABLE : CollectiveInfo::Button::ACTIVE });
-           }
-           break;
-      case BuildInfo::DIG:
-           buttons.push_back({ViewId::DIG_ICON, button.name, none, "", CollectiveInfo::Button::ACTIVE});
-           break;
-      case BuildInfo::ZONE:
-           buttons.push_back({button.viewId, button.name, none, "", CollectiveInfo::Button::ACTIVE});
-           break;
-      case BuildInfo::CLAIM_TILE:
-           buttons.push_back({ViewId::KEEPER_FLOOR, button.name, none, "", CollectiveInfo::Button::ACTIVE});
-           break;
-      case BuildInfo::DISPATCH:
-           buttons.push_back({ViewId::IMP, button.name, none, "", CollectiveInfo::Button::ACTIVE});
-           break;
-      case BuildInfo::TRAP: {
-             auto& elem = button.trapInfo;
-             buttons.push_back({elem.viewId, button.name, none});
-           }
-           break;
-      case BuildInfo::DESTROY:
+    button.type.visit(
+        [&](const BuildInfo::Furniture& elem) {
+          ViewId viewId = getFurnitureViewId(elem.types[0]);
+          string description;
+          if (elem.cost.value > 0) {
+            int num = 0;
+            for (auto type : elem.types)
+              num += collective->getConstructions().getBuiltCount(type);
+            if (num > 0)
+              description = "[" + toString(num) + "]";
+          }
+          int availableNow = !elem.cost.value ? 1 : numResource[elem.cost.id] / elem.cost.value;
+          if (CollectiveConfig::getResourceInfo(elem.cost.id).dontDisplay && availableNow)
+            description += " (" + toString(availableNow) + " available)";
+          buttons.push_back({viewId, button.name,
+              getCostObj(elem.cost),
+              description,
+              (elem.noCredit && !availableNow) ?
+                 CollectiveInfo::Button::GRAY_CLICKABLE : CollectiveInfo::Button::ACTIVE });
+          },
+        [&](const BuildInfo::Dig&) {
+          buttons.push_back({ViewId::DIG_ICON, button.name, none, "", CollectiveInfo::Button::ACTIVE});
+        },
+        [&](ZoneId zone) {
+          buttons.push_back({getViewId(zone), button.name, none, "", CollectiveInfo::Button::ACTIVE});
+        },
+        [&](BuildInfo::ClaimTile) {
+          buttons.push_back({ViewId::KEEPER_FLOOR, button.name, none, "", CollectiveInfo::Button::ACTIVE});
+        },
+        [&](BuildInfo::Dispatch) {
+          buttons.push_back({ViewId::IMP, button.name, none, "", CollectiveInfo::Button::ACTIVE});
+        },
+        [&](const BuildInfo::Trap& elem) {
+          buttons.push_back({elem.viewId, button.name, none});
+        },
+        [&](const BuildInfo::DestroyLayers&) {
            buttons.push_back({ViewId::DESTROY_BUTTON, button.name, none, "",
-                   CollectiveInfo::Button::ACTIVE});
-           break;
-      case BuildInfo::FORBID_ZONE:
-           buttons.push_back({ViewId::FORBID_ZONE, button.name, none, "", CollectiveInfo::Button::ACTIVE});
-           break;
-    }
+               CollectiveInfo::Button::ACTIVE});
+        },
+        [&](BuildInfo::ForbidZone) {
+          buttons.push_back({ViewId::FORBID_ZONE, button.name, none, "", CollectiveInfo::Button::ACTIVE});
+        }
+    );
     vector<string> unmetReqText;
     for (auto& req : button.requirements)
       if (!BuildInfo::meetsRequirement(collective, req)) {
@@ -931,7 +1011,7 @@ static const ViewObject& getConstructionObject(FurnitureType type) {
 }
 
 void PlayerControl::acquireTech(int index) {
-  auto techs = Technology::getNextTechs(collective->getTechnologies(), avatarVariant).filter(
+  auto techs = Technology::getNextTechs(collective->getTechnologies(), keeperCreatureInfo.techVariant).filter(
       [](const Technology* tech) { return tech->canResearch(); });
   if (index < techs.size()) {
     Technology* tech = techs[index];
@@ -950,7 +1030,7 @@ void PlayerControl::fillLibraryInfo(CollectiveInfo& collectiveInfo) const {
       info.warning = "Conquer some villains to advance your level."_s;
     info.totalProgress = 100 * dungeonLevel.getNecessaryProgress(dungeonLevel.level);
     info.currentProgress = int(100 * dungeonLevel.progress);
-    auto techs = Technology::getNextTechs(collective->getTechnologies(), avatarVariant).filter(
+    auto techs = Technology::getNextTechs(collective->getTechnologies(), keeperCreatureInfo.techVariant).filter(
         [](const Technology* tech) { return tech->canResearch(); });
     for (Technology* tech : techs) {
       info.available.emplace_back();
@@ -1151,21 +1231,18 @@ void PlayerControl::fillImmigration(CollectiveInfo& info) const {
 
 void PlayerControl::fillImmigrationHelp(CollectiveInfo& info) const {
   info.allImmigration.clear();
-  struct CreatureStats {
-    PCreature creature;
-  };
-  static EnumMap<CreatureId, optional<CreatureStats>> creatureStats;
-  auto getStats = [&](CreatureId id) -> CreatureStats& {
+  static EnumMap<CreatureId, PCreature> creatureStats;
+  auto getStats = [&](CreatureId id) -> WCreature {
     if (!creatureStats[id]) {
-      creatureStats[id] = CreatureStats{CreatureFactory::fromId(id, TribeId::getKeeper())};
+      creatureStats[id] = CreatureFactory::fromId(id, TribeId::getDarkKeeper());
     }
-    return *creatureStats[id];
+    return creatureStats[id].get();
   };
-  for (auto elem : Iter(collective->getConfig().getImmigrantInfo())) {
+  for (auto elem : Iter(collective->getImmigration().getImmigrants())) {
     if (elem->isHiddenInHelp())
       continue;
-    auto creatureId = elem->getId(0);
-    WCreature c = getStats(creatureId).creature.get();
+    auto creatureId = elem->getNonRandomId(0);
+    WCreature c = getStats(creatureId);
     optional<pair<ViewId, int>> costObj;
     vector<string> requirements;
     vector<string> infoLines;
@@ -1275,7 +1352,7 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   gameInfo.infoType = GameInfo::InfoType::BAND;
   gameInfo.playerInfo = CollectiveInfo();
   auto& info = *gameInfo.playerInfo.getReferenceMaybe<CollectiveInfo>();
-  info.buildings = fillButtons(getBuildInfo());
+  info.buildings = fillButtons(buildInfo);
   fillMinions(info);
   fillImmigration(info);
   fillImmigrationHelp(info);
@@ -1374,11 +1451,6 @@ void PlayerControl::addMessage(const PlayerMessage& msg) {
   }
 }
 
-void PlayerControl::initialize() {
-  for (WCreature c : getCreatures())
-    updateMinionVisibility(c);
-}
-
 void PlayerControl::updateMinionVisibility(WConstCreature c) {
   auto visibleTiles = c->getVisibleTiles();
   visibilityMap->update(c, visibleTiles);
@@ -1429,7 +1501,8 @@ void PlayerControl::onEvent(const GameEvent& event) {
       },
       [&](const TechbookRead& info) {
         Technology* tech = info.technology;
-        vector<Technology*> nextTechs = Technology::getNextTechs(collective->getTechnologies(), avatarVariant);
+        vector<Technology*> nextTechs = Technology::getNextTechs(collective->getTechnologies(),
+            keeperCreatureInfo.techVariant);
         if (tech == nullptr) {
           if (!nextTechs.empty())
             tech = Random.choose(nextTechs);
@@ -1518,14 +1591,15 @@ const MapMemory& PlayerControl::getMemory() const {
 }
 
 ViewObject PlayerControl::getTrapObject(TrapType type, bool armed) const {
-  for (auto& info : getBuildInfo())
-    if (info.buildType == BuildInfo::TRAP && info.trapInfo.type == type) {
-      if (!armed)
-        return ViewObject(info.trapInfo.viewId, ViewLayer::FLOOR, "Unarmed " + getTrapName(type) + " trap")
-          .setModifier(ViewObject::Modifier::PLANNED);
-      else
-        return ViewObject(info.trapInfo.viewId, ViewLayer::FLOOR, getTrapName(type) + " trap");
-    }
+  for (auto& info : buildInfo)
+    if (auto trap = info.type.getReferenceMaybe<BuildInfo::Trap>())
+      if (trap->type == type) {
+        if (!armed)
+          return ViewObject(trap->viewId, ViewLayer::FLOOR, "Unarmed " + getTrapName(type) + " trap")
+            .setModifier(ViewObject::Modifier::PLANNED);
+        else
+          return ViewObject(trap->viewId, ViewLayer::FLOOR, getTrapName(type) + " trap");
+      }
   FATAL << "trap not found" << int(type);
   return ViewObject(ViewId::EMPTY, ViewLayer::FLOOR);
 }
@@ -1783,21 +1857,6 @@ void PlayerControl::minionDragAndDrop(const CreatureDropInfo& info) {
   }
 }
 
-bool PlayerControl::canSelectRectangle(const BuildInfo& info) {
-  switch (info.buildType) {
-    case BuildInfo::ZONE:
-    case BuildInfo::FORBID_ZONE:
-    case BuildInfo::FURNITURE:
-    case BuildInfo::DIG:
-    case BuildInfo::DESTROY:
-    case BuildInfo::DISPATCH:
-    case BuildInfo::CLAIM_TILE:
-      return true;
-    default:
-      return false;
-  }
-}
-
 void PlayerControl::processInput(View* view, UserInput input) {
   switch (input.getId()) {
     case UserInputId::MESSAGE_INFO:
@@ -1901,7 +1960,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
     case UserInputId::DRAW_LEVEL_MAP: view->drawLevelMap(this); break;
     case UserInputId::DRAW_WORLD_MAP: getGame()->presentWorldmap(); break;
     case UserInputId::TECHNOLOGY: setChosenLibrary(!chosenLibrary); break;
-    case UserInputId::KEEPEROPEDIA: Encyclopedia().present(view); break;
+    case UserInputId::KEEPEROPEDIA: Encyclopedia(buildInfo).present(view); break;
     case UserInputId::WORKSHOP: {
       int index = input.get<int>();
       if (index < 0 || index >= EnumInfo<WorkshopType>::size)
@@ -2125,7 +2184,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
     }
     case UserInputId::RECT_SELECTION: {
       auto& info = input.get<BuildingInfo>();
-      if (canSelectRectangle(getBuildInfo()[info.building])) {
+      if (buildInfo[info.building].canSelectRectangle()) {
         updateSelectionSquares();
         if (rectSelection) {
           rectSelection->corner2 = info.pos;
@@ -2133,7 +2192,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
           rectSelection = CONSTRUCT(SelectionInfo, c.corner1 = c.corner2 = info.pos;);
         updateSelectionSquares();
       } else
-        handleSelection(info.pos, getBuildInfo()[info.building], false);
+        handleSelection(info.pos, buildInfo[info.building], false);
       break;
     }
     case UserInputId::RECT_DESELECTION:
@@ -2146,7 +2205,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
       break;
     case UserInputId::BUILD: {
       auto& info = input.get<BuildingInfo>();
-      handleSelection(info.pos, getBuildInfo()[info.building], false);
+      handleSelection(info.pos, buildInfo[info.building], false);
       break;
     }
     case UserInputId::VILLAGE_ACTION: {
@@ -2176,6 +2235,9 @@ void PlayerControl::processInput(View* view, UserInput input) {
         collective->returnResource(CostInfo(resource, 1000));
       collective->getDungeonLevel().increaseLevel();
       break;
+    case UserInputId::RELOAD_DATA:
+      reloadData();
+      break;
     case UserInputId::TUTORIAL_CONTINUE:
       if (tutorial)
         tutorial->continueTutorial(getGame());
@@ -2188,7 +2250,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
       if (rectSelection) {
         selection = rectSelection->deselect ? DESELECT : SELECT;
         for (Vec2 v : Rectangle::boundingBox({rectSelection->corner1, rectSelection->corner2}))
-          handleSelection(v, getBuildInfo()[input.get<BuildingInfo>().building], true, rectSelection->deselect);
+          handleSelection(v, buildInfo[input.get<BuildingInfo>().building], true, rectSelection->deselect);
       }
       FALLTHROUGH;
     case UserInputId::RECT_CANCEL:
@@ -2214,10 +2276,6 @@ void PlayerControl::processInput(View* view, UserInput input) {
   }
 }
 
-const vector<BuildInfo>& PlayerControl::getBuildInfo() const {
-  return BuildInfo::get(avatarVariant);
-}
-
 vector<WCreature> PlayerControl::getConsumptionTargets(WCreature consumer) const {
   vector<WCreature> ret;
   for (WCreature c : getCreatures())
@@ -2240,10 +2298,10 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
       return;
   if (position.isUnavailable())
     return;
-  if (!deselectOnly && rectangle && !canSelectRectangle(building))
+  if (!deselectOnly && rectangle && !building.canSelectRectangle())
     return;
-  switch (building.buildType) {
-    case BuildInfo::TRAP:
+  building.type.visit(
+    [&](const BuildInfo::Trap& trap) {
       if (collective->getConstructions().getTrap(position) && selection != SELECT) {
         collective->removeTrap(position);
         getView()->addSound(SoundId::DIG_UNMARK);
@@ -2255,13 +2313,13 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
           !collective->getConstructions().getTrap(position) &&
           !collective->getConstructions().getFurniture(position, FurnitureLayer::MIDDLE) &&
           selection != DESELECT) {
-        collective->addTrap(position, building.trapInfo.type);
+        collective->addTrap(position, trap.type);
         getView()->addSound(SoundId::ADD_CONSTRUCTION);
         selection = SELECT;
       }
-      break;
-    case BuildInfo::DESTROY:
-      for (auto layer : building.destroyLayers) {
+    },
+    [&](const BuildInfo::DestroyLayers& layers) {
+      for (auto layer : layers) {
         auto f = collective->getConstructions().getFurniture(position, layer);
         if (f && !f->isBuilt()) {
           collective->removeFurniture(position, layer);
@@ -2278,8 +2336,8 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
           updateSquareMemory(position);
         }
       }
-      break;
-    case BuildInfo::FORBID_ZONE:
+    },
+    [&](const BuildInfo::ForbidZone) {
       if (position.isTribeForbidden(getTribeId()) && selection != SELECT) {
         position.allowMovementForTribe(getTribeId());
         selection = DESELECT;
@@ -2288,8 +2346,8 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
         position.forbidMovementForTribe(getTribeId());
         selection = SELECT;
       }
-      break;
-    case BuildInfo::DIG: {
+    },
+    [&](const BuildInfo::Dig&) {
       bool markedToDig = collective->isMarked(position) &&
           (collective->getMarkHighlight(position) == HighlightType::DIG ||
            collective->getMarkHighlight(position) == HighlightType::CUT_TREE);
@@ -2308,30 +2366,27 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
               break;
             }
       }
-      break;
-    }
-    case BuildInfo::ZONE: {
+    },
+    [&](ZoneId zone) {
       auto& zones = collective->getZones();
-      if (zones.isZone(position, building.zone) && selection != SELECT) {
-        zones.eraseZone(position, building.zone);
+      if (zones.isZone(position, zone) && selection != SELECT) {
+        zones.eraseZone(position, zone);
         selection = DESELECT;
-      } else if (selection != DESELECT && !zones.isZone(position, building.zone) &&
+      } else if (selection != DESELECT && !zones.isZone(position, zone) &&
           collective->getKnownTiles().isKnown(position) &&
-          zones.canSet(position, building.zone, collective)) {
-        zones.setZone(position, building.zone);
+          zones.canSet(position, zone, collective)) {
+        zones.setZone(position, zone);
         selection = SELECT;
       }
-      break;
-    }
-    case BuildInfo::CLAIM_TILE:
+    },
+    [&](BuildInfo::ClaimTile) {
       if (collective->canClaimSquare(position))
         collective->claimSquare(position);
-      break;
-    case BuildInfo::DISPATCH:
+    },
+    [&](BuildInfo::Dispatch) {
       collective->setPriorityTasks(position);
-      break;
-    case BuildInfo::FURNITURE: {
-      auto& info = building.furnitureInfo;
+    },
+    [&](const BuildInfo::Furniture& info) {
       auto layer = Furniture::getLayer(info.types[0]);
       auto currentPlanned = collective->getConstructions().getFurniture(position, layer);
       if (currentPlanned && currentPlanned->isBuilt())
@@ -2341,7 +2396,7 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
         if (auto currentIndex = info.types.findElement(currentPlanned->getFurnitureType()))
           nextIndex = *currentIndex + 1;
         else
-          break;
+          return;
       }
       bool removed = false;
       if (!!currentPlanned && selection != SELECT) {
@@ -2354,7 +2409,7 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
       for (auto type : info.types)
         totalCount += collective->getConstructions().getTotalCount(type);
       if (nextIndex < info.types.size() && selection != DESELECT &&
-          (!info.maxNumber || *info.maxNumber > totalCount)) {
+          (!info.limit || *info.limit > totalCount)) {
         collective->addFurniture(position, info.types[nextIndex], info.cost, info.noCredit);
         collective->updateResourceProduction();
         selection = SELECT;
@@ -2363,9 +2418,8 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
         selection = DESELECT;
         getView()->addSound(SoundId::DIG_UNMARK);
       }
-      break;
     }
-  }
+  );
 }
 
 void PlayerControl::onSquareClick(Position pos) {

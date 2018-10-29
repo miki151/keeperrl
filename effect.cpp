@@ -180,6 +180,10 @@ static TimeInterval getDuration(WConstCreature c, LastingEffect e) {
     case LastingEffect::POISON_RESISTANT: return  60_visible;
     case LastingEffect::FLYING: return  60_visible;
     case LastingEffect::COLLAPSED: return  2_visible;
+    case LastingEffect::FAST_CRAFTING:
+    case LastingEffect::FAST_TRAINING:
+    case LastingEffect::SLOW_CRAFTING:
+    case LastingEffect::SLOW_TRAINING:
     case LastingEffect::SLEEP: return  200_visible;
     case LastingEffect::PEACEFULNESS:
     case LastingEffect::INSANITY: return  20_visible;
@@ -194,6 +198,11 @@ static TimeInterval getDuration(WConstCreature c, LastingEffect e) {
     case LastingEffect::SATIATED:
       return  500_visible;
     case LastingEffect::RESTED:
+    case LastingEffect::HATE_UNDEAD:
+    case LastingEffect::HATE_DWARVES:
+    case LastingEffect::HATE_HUMANS:
+    case LastingEffect::HATE_GREENSKINS:
+    case LastingEffect::HATE_ELVES:
       return  1000_visible;
   }
 }
@@ -480,7 +489,7 @@ string Effect::Deception::getDescription() const {
 
 void Effect::CircularBlast::applyToCreature(WCreature c, WCreature attacker) const {
   for (Vec2 v : Vec2::directions8(Random))
-    applyDirected(c, v, DirEffectType(1, DirEffectId::BLAST), {FXName::NO_EFFECT}, none);
+    applyDirected(c, v, DirEffectType(1, DirEffectId::BLAST), false);
 }
 
 string Effect::CircularBlast::getName() const {
@@ -750,8 +759,47 @@ bool Effect::operator !=(const Effect& o) const {
   return !(*this == o);
 }
 
+template <typename T>
+static optional<FXInfo> getFXImpl(const T&) {
+  return none;
+}
+
+static optional<FXInfo> getFXImpl(const Effect::Heal&) {
+  return FXInfo(FXName::CIRCULAR_SPELL, Color::LIGHT_GREEN);
+}
+
+static optional<FXInfo> getFXImpl(const Effect::Damage& e) {
+  if (e.attr == AttrType::SPELL_DAMAGE)
+    return {FXName::MAGIC_MISSILE_SPLASH};
+  else
+    return none;
+}
+
+static optional<FXInfo> getFXImpl(const Effect::CircularBlast&) {
+  return {FXName::CIRCULAR_BLAST};
+}
+
+static optional<FXInfo> getFXImpl(const Effect::Lasting& e) {
+  return LastingEffects::getApplicationFX(e.lastingEffect);
+}
+
+static optional<FXInfo> getFXImpl(const Effect::CurePoison&) {
+  return FXInfo(FXName::CIRCULAR_SPELL, Color::LIGHT_GREEN);
+}
+
+static optional<FXInfo> getFX(const Effect& effect) {
+  return effect.visit([&](const auto& e) -> optional<FXInfo> { return getFXImpl(e); });
+}
+
+static void addFX(WCreature c, const FXInfo& fx) {
+  auto pos = c->getPosition();
+  c->getGame()->addEvent(EventInfo::FX{pos, fx});
+}
+
 void Effect::applyToCreature(WCreature c, WCreature attacker) const {
   FORWARD_CALL(effect, applyToCreature, c, attacker);
+  if (auto fx = getFX(effect))
+    addFX(c, *fx);
   if (isConsideredHostile(effect) && attacker)
     c->onAttackedBy(attacker);
 }
@@ -781,6 +829,7 @@ static optional<ViewId> getProjectile(const DirEffectType& effect) {
   switch (effect.getId()) {
     case DirEffectId::BLAST:
       return ViewId::AIR_BLAST;
+    case DirEffectId::FIREBREATH:
     case DirEffectId::FIREBALL:
       return ViewId::FIREBALL;
     case DirEffectId::CREATURE_EFFECT:
@@ -788,13 +837,35 @@ static optional<ViewId> getProjectile(const DirEffectType& effect) {
   }
 }
 
-static void addSplashFX(WCreature victim, const FXInfo& splashFX) {
-  auto pos = victim->getPosition();
-  victim->getGame()->addEvent(EventInfo::FX{pos, splashFX});
+static optional<FXInfo> getProjectileFX(LastingEffect effect) {
+  switch (effect) {
+    default:
+      return none;
+  }
 }
 
-void applyDirected(WCreature c, Vec2 direction, const DirEffectType& type, optional<FXInfo> fx,
-    optional<FXInfo> splashFX) {
+static optional<FXInfo> getProjectileFX(const Effect& effect) {
+  return effect.visit(
+      [&](const auto&) -> optional<FXInfo> { return none; },
+      [&](const Effect::Lasting& e) -> optional<FXInfo> { return getProjectileFX(e.lastingEffect); },
+      [&](const Effect::Damage&) -> optional<FXInfo> { return {FXName::MAGIC_MISSILE}; }
+  );
+}
+
+static optional<FXInfo> getProjectileFX(const DirEffectType& effect) {
+  switch (effect.getId()) {
+    case DirEffectId::BLAST:
+      return {FXName::AIR_BLAST};
+    case DirEffectId::FIREBALL:
+      return {FXName::FIREBALL};
+    case DirEffectId::FIREBREATH:
+      return {FXName::FLAMETHROWER};
+    case DirEffectId::CREATURE_EFFECT:
+      return getProjectileFX(effect.get<Effect>());
+  }
+}
+
+void applyDirected(WCreature c, Vec2 direction, const DirEffectType& type, bool withProjectileFX) {
   auto begin = c->getPosition();
   int range = type.getRange();
   for (Vec2 v = direction; v.length8() <= range; v += direction)
@@ -803,31 +874,27 @@ void applyDirected(WCreature c, Vec2 direction, const DirEffectType& type, optio
       range = v.length8();
       break;
     }
-
-  c->getGame()->addEvent(
-      EventInfo::Projectile{fx, getProjectile(type), begin, begin.plus(direction * range)});
-
+  if (withProjectileFX)
+    c->getGame()->addEvent(
+        EventInfo::Projectile{getProjectileFX(type), getProjectile(type), begin, begin.plus(direction * range)});
   switch (type.getId()) {
     case DirEffectId::BLAST:
       for (Vec2 v = direction * range; v.length4() >= 1; v -= direction)
         airBlast(c, c->getPosition().plus(v), direction);
       break;
+    case DirEffectId::FIREBREATH:
     case DirEffectId::FIREBALL:
       for (Vec2 v = direction; v.length8() <= range; v += direction) {
         auto newPos = c->getPosition().plus(v);
         newPos.fireDamage(1);
-        if (splashFX)
-          if (WCreature victim = newPos.getCreature())
-            addSplashFX(victim, *splashFX);
+        if (WCreature victim = newPos.getCreature())
+          addFX(victim, {FXName::FIREBALL_SPLASH});
       }
       break;
     case DirEffectId::CREATURE_EFFECT:
       for (Vec2 v = direction; v.length8() <= range; v += direction)
-        if (WCreature victim = c->getPosition().plus(v).getCreature()) {
+        if (WCreature victim = c->getPosition().plus(v).getCreature())
           type.get<Effect>().applyToCreature(victim, c);
-          if (splashFX)
-            addSplashFX(victim, *splashFX);
-        }
       break;
   }
 }
@@ -836,6 +903,8 @@ string getDescription(const DirEffectType& type) {
   switch (type.getId()) {
     case DirEffectId::BLAST:
       return "Creates a directed blast of air that throws back creatures and items.";
+    case DirEffectId::FIREBREATH:
+      return "Creates a ray of fire.";
     case DirEffectId::FIREBALL:
       return "Creates a directed fireball.";
     case DirEffectId::CREATURE_EFFECT:

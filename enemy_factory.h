@@ -35,10 +35,12 @@ RICH_ENUM(EnemyId,
 
   DARK_ELVES,
   DARK_ELVES_ENTRY,
+  DARK_ELF_CAVE,
   GNOMES,
   GNOMES_ENTRY,
   OGRE_CAVE,
   HARPY_CAVE,
+  ORC_CAVE,
   DEMON_DEN_ABOVE,
   DEMON_DEN,
   ORC_VILLAGE,
@@ -58,6 +60,7 @@ RICH_ENUM(EnemyId,
 
 struct ExternalEnemy;
 struct SettlementInfo;
+class TribeId;
 
 class EnemyFactory {
   public:
@@ -65,7 +68,7 @@ class EnemyFactory {
   EnemyInfo get(EnemyId);
   vector<ExternalEnemy> getExternalEnemies();
   vector<ExternalEnemy> getHalloweenKids();
-  vector<EnemyInfo> getVaults();
+  vector<EnemyInfo> getVaults(TribeAlignment, TribeId allied);
 
   RandomGen& random;
 

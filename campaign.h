@@ -20,7 +20,7 @@ class Campaign {
     string getDescription() const;
     bool isEnemy() const;
     VillainType SERIAL(type);
-    SERIALIZE_ALL(viewId, name, enemyId, type)
+    SERIALIZE_ALL(viewId, enemyId, name, type)
   };
   struct KeeperInfo {
     ViewId SERIAL(viewId);

@@ -33,11 +33,13 @@
 #include "creature_factory.h"
 #include "enemy_factory.h"
 #include "external_enemies.h"
+#include "game_config.h"
 
 MainLoop::MainLoop(View* v, Highscores* h, FileSharing* fSharing, const DirectoryPath& freePath,
-    const DirectoryPath& uPath, Options* o, Jukebox* j, SokobanInput* soko, bool singleThread, int sv)
-      : view(v), dataFreePath(freePath), userPath(uPath), options(o), jukebox(j),
-        highscores(h), fileSharing(fSharing), useSingleThread(singleThread), sokobanInput(soko), saveVersion(sv) {
+    const DirectoryPath& uPath, Options* o, Jukebox* j, SokobanInput* soko, GameConfig* gameConfig, bool singleThread,
+    int sv)
+      : view(v), dataFreePath(freePath), userPath(uPath), options(o), jukebox(j), highscores(h), fileSharing(fSharing),
+        gameConfig(gameConfig), useSingleThread(singleThread), sokobanInput(soko), saveVersion(sv) {
 }
 
 vector<SaveFileInfo> MainLoop::getSaveFiles(const DirectoryPath& path, const string& suffix) {
@@ -230,7 +232,7 @@ MainLoop::ExitCondition MainLoop::playGame(PGame game, bool withMusic, bool noAu
   if (!noAutoSave)
     view->setBugReportSaveCallback([&] (FilePath path) { bugReportSave(game, path); });
   DestructorFunction removeCallback([&] { view->setBugReportSaveCallback(nullptr); });
-  game->initialize(options, highscores, view, fileSharing);
+  game->initialize(options, highscores, view, fileSharing, gameConfig);
   const milliseconds stepTimeMilli {3};
   Intervalometer meter(stepTimeMilli);
   auto lastMusicUpdate = GlobalTime(-1000);
@@ -325,7 +327,7 @@ optional<RetiredGames> MainLoop::getRetiredGames(CampaignType type) {
 PGame MainLoop::prepareTutorial() {
   PGame game = loadGame(dataFreePath.file("tutorial.kep"));
   if (game)
-    Tutorial::createTutorial(*game);
+    Tutorial::createTutorial(*game, gameConfig);
   else
     view->presentText("Sorry", "Failed to load the tutorial :(");
   return game;
@@ -337,7 +339,7 @@ PGame MainLoop::prepareCampaign(RandomGen& random) {
     choice = view->getPlayerRoleChoice(choice);
     if (auto ret = choice.match(
         [&] (PlayerRole role) -> optional<PGame> {
-          CampaignBuilder builder(view, random, options, role);
+          CampaignBuilder builder(view, random, options, role, gameConfig);
           if (auto result = builder.prepareCampaign(bindMethod(&MainLoop::getRetiredGames, this), CampaignType::CAMPAIGN)) {
             return Game::campaignGame(prepareCampaignModels(*result, random), *result);
           } else
@@ -364,7 +366,7 @@ PGame MainLoop::prepareCampaign(RandomGen& random) {
 void MainLoop::splashScreen() {
   ProgressMeter meter(1);
   jukebox->setType(MusicType::INTRO, true);
-  playGame(Game::splashScreen(ModelBuilder(&meter, Random, options, sokobanInput)
+  playGame(Game::splashScreen(ModelBuilder(&meter, Random, options, sokobanInput, gameConfig)
         .splashModel(dataFreePath.file("splash.txt")), CampaignBuilder::getEmptyCampaign()), false, true);
 }
 
@@ -420,7 +422,7 @@ void MainLoop::launchQuickGame() {
   if (toLoad != files.end())
     game = loadGame(userPath.file((*toLoad).filename));
   if (!game) {
-    CampaignBuilder builder(view, Random, options, PlayerRole::KEEPER);
+    CampaignBuilder builder(view, Random, options, PlayerRole::KEEPER, gameConfig);
     auto result = builder.prepareCampaign(bindMethod(&MainLoop::getRetiredGames, this), CampaignType::QUICK_MAP);
     game = Game::campaignGame(prepareCampaignModels(*result, Random), *result);
   }
@@ -516,7 +518,7 @@ void MainLoop::doWithSplash(SplashType type, const string& text, function<void()
 void MainLoop::modelGenTest(int numTries, const vector<string>& types, RandomGen& random, Options* options) {
   NameGenerator::init(dataFreePath.subdirectory("names"));
   ProgressMeter meter(1);
-  ModelBuilder(&meter, random, options, sokobanInput).measureSiteGen(numTries, types);
+  ModelBuilder(&meter, random, options, sokobanInput, gameConfig).measureSiteGen(numTries, types);
 }
 
 static CreatureList readAlly(ifstream& input) {
@@ -546,11 +548,13 @@ static CreatureList readAlly(ifstream& input) {
   }
   string equipmentText;
   input >> equipmentText;
-  for (auto id : split(equipmentText, {','}))
-    if (auto type = PrettyPrinting::parseObject<ItemType>(id))
-      equipment.push_back(*type);
+  for (auto id : split(equipmentText, {','})) {
+    ItemType type;
+    if (auto error = PrettyPrinting::parseObject(type, id))
+      FATAL << "Can't parse item type: " << id << ": " << *error;
     else
-      FATAL << "Can't parse item type: " << id;
+      equipment.push_back(type);
+  }
   ret.addInventory(equipment);
   ret.increaseBaseLevel(levelIncrease);
   return ret;
@@ -604,10 +608,10 @@ int MainLoop::battleTest(int numTries, const FilePath& levelPath, CreatureList a
   int numAllies = 0;
   int numEnemies = 0;
   int numUnknown = 0;
-  auto allyTribe = TribeId::getKeeper();
+  auto allyTribe = TribeId::getDarkKeeper();
   std::cout.flush();
   for (int i : Range(numTries)) {
-    auto game = Game::splashScreen(ModelBuilder(&meter, Random, options, sokobanInput)
+    auto game = Game::splashScreen(ModelBuilder(&meter, Random, options, sokobanInput, gameConfig)
         .battleModel(levelPath, ally, enemies), CampaignBuilder::getEmptyCampaign());
     auto exitCondition = [&](WGame game) -> optional<ExitCondition> {
       unordered_set<TribeId, CustomHash<TribeId>> tribes;
@@ -659,11 +663,13 @@ PModel MainLoop::getBaseModel(ModelBuilder& modelBuilder, CampaignSetup& setup) 
   auto ret = [&] {
     switch (setup.campaign.getType()) {
       case CampaignType::SINGLE_KEEPER:
-        return modelBuilder.singleMapModel(setup.campaign.getWorldName());
+        return modelBuilder.singleMapModel(setup.campaign.getWorldName(),
+            setup.avatarInfo.playerCreature->getTribeId(), setup.avatarInfo.tribeAlignment);
       case CampaignType::QUICK_MAP:
         return modelBuilder.tutorialModel("Campaign base site");
       default:
-        return modelBuilder.campaignBaseModel("Campaign base site", setup.campaign.getType() == CampaignType::ENDLESS);
+        return modelBuilder.campaignBaseModel("Campaign base site", setup.avatarInfo.playerCreature->getTribeId(),
+            setup.avatarInfo.tribeAlignment, setup.campaign.getType() == CampaignType::ENDLESS);
     }
   }();
   modelBuilder.spawnKeeper(ret.get(), std::move(setup.avatarInfo), setup.regenerateMana, setup.introMessages);
@@ -683,7 +689,7 @@ Table<PModel> MainLoop::prepareCampaignModels(CampaignSetup& setup, RandomGen& r
   int numSites = setup.campaign.getNumNonEmpty();
   doWithSplash(SplashType::BIG, "Generating map...", numSites,
       [&] (ProgressMeter& meter) {
-        ModelBuilder modelBuilder(nullptr, random, options, sokobanInput);
+        ModelBuilder modelBuilder(nullptr, random, options, sokobanInput, gameConfig);
         for (Vec2 v : sites.getBounds()) {
           if (!sites[v].isEmpty())
             meter.addProgress();

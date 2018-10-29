@@ -4,6 +4,7 @@
 #include "workshop_type.h"
 
 class WorkshopItem;
+struct WorkshopItemCfg;
 class Collective;
 class CostInfo;
 
@@ -34,7 +35,7 @@ class Workshops {
   };
 
   SERIALIZATION_DECL(Workshops)
-  Workshops(const EnumMap<WorkshopType, vector<Item>>&);
+  Workshops(std::array<vector<WorkshopItemCfg>, EnumInfo<WorkshopType>::size>);
   Workshops(const Workshops&) = delete;
   Type& get(WorkshopType);
   const Type& get(WorkshopType) const;

@@ -107,7 +107,11 @@ class LevelBuilder {
 
   /** Sets the cover of the square. The value will remain if square is changed.*/
   void setCovered(Vec2, bool state);
+
+  /** Sets building flag for the purpose of building level. Buildings are recomputed after world generation
+   * using the roof support algorithm for the sake of game mechanics */
   void setBuilding(Vec2, bool state);
+
   void setSunlight(Vec2, double);
 
   void setNoDiagonalPassing();

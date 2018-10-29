@@ -156,7 +156,7 @@ void VillageControl::onRansomPaid() {
 
 vector<TriggerInfo> VillageControl::getTriggers(WConstCollective against) const {
   vector<TriggerInfo> ret;
-  if (villain && against == getEnemyCollective())
+  if (collective->getVillainType() != VillainType::ALLY && villain && against == getEnemyCollective())
     for (auto& elem : villain->triggers) {
       auto value = villain->getTriggerValue(elem, this);
       if (value > 0)
@@ -200,7 +200,7 @@ bool VillageControl::canPerformAttack(bool currentlyActive) {
 }
 
 void VillageControl::acceptImmigration() {
-  for (int i : All(collective->getConfig().getImmigrantInfo()))
+  for (int i : All(collective->getImmigration().getImmigrants()))
     collective->getImmigration().setAutoState(i, ImmigrantAutoState::AUTO_ACCEPT);
 }
 
@@ -224,7 +224,7 @@ void VillageControl::update(bool currentlyActive) {
     return;
   }
   double updateFreq = 0.1;
-  if (canPerformAttack(currentlyActive) && Random.chance(updateFreq))
+  if (collective->getVillainType() != VillainType::ALLY && canPerformAttack(currentlyActive) && Random.chance(updateFreq))
     if (villain) {
       if (WCollective enemy = getEnemyCollective())
         maxEnemyPower = max(maxEnemyPower, enemy->getDangerLevel());

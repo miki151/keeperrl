@@ -26,7 +26,6 @@
 #include "build_info.h"
 #include "dungeon_level.h"
 
-namespace {
 
 template<class T>
 string combine(const vector<T*>& v) {
@@ -40,7 +39,7 @@ string combine(const vector<T>& v) {
       v.transform([](const T& e) -> string { return e.name; }));
 }
 
-void advance(View* view, const Technology* tech) {
+void Encyclopedia::advance(View* view, const Technology* tech) const {
   string text;
   const vector<Technology*>& prerequisites = tech->getPrerequisites();
   const vector<Technology*>& allowed = tech->getAllowed();
@@ -48,11 +47,12 @@ void advance(View* view, const Technology* tech) {
     text += "Requires: " + combine(prerequisites) + "\n";
   if (!allowed.empty())
     text += "Allows research: " + combine(allowed) + "\n";
-  const vector<BuildInfo::RoomInfo>& rooms = BuildInfo::getRoomInfo().filter(
-      [tech] (const BuildInfo::RoomInfo& info) {
+  const vector<BuildInfo>& rooms = buildInfo.filter(
+      [tech] (const BuildInfo& info) {
           for (auto& req : info.requirements)
-            if (req.getId() == BuildInfo::RequirementId::TECHNOLOGY && req.get<TechId>() == tech->getId())
-              return true;
+            if (auto techReq = req.getReferenceMaybe<TechId>())
+              if (*techReq == tech->getId())
+                return true;
           return false;});
   if (!rooms.empty())
     text += "Unlocks rooms: " + combine(rooms) + "\n";
@@ -61,7 +61,7 @@ void advance(View* view, const Technology* tech) {
   view->presentText(capitalFirst(tech->getName()), text);
 }
 
-void advances(View* view, int lastInd = 0) {
+void Encyclopedia::advances(View* view, int lastInd) const {
   vector<ListElem> options;
   vector<Technology*> techs = Technology::getSorted();
   for (Technology* tech : techs)
@@ -115,6 +115,7 @@ void villainPoints(View* view) {
   view->presentList("Experience points awarded for conquering each villain type.", options);
 }
 
+Encyclopedia::Encyclopedia(vector<BuildInfo> buildInfo) : buildInfo(std::move(buildInfo)) {
 }
 
 void Encyclopedia::present(View* view, int lastInd) {

@@ -58,7 +58,7 @@ class Sound {
 
   private:
   SoundId SERIAL(id);
-  optional<Position> SERIAL(position);
+  optional<Position> position;
   double SERIAL(pitch) = 1;
 };
 

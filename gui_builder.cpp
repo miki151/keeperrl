@@ -199,7 +199,7 @@ SGuiElem GuiBuilder::getButtonLine(CollectiveInfo::Button button, int num, Colle
         [=]{ return !wasTutorialClicked(num, *tutorialHighlight); });
   return gui.setHeight(legendLineHeight, gui.stack(makeVec(
       getHintCallback({capitalFirst(button.help)}),
-      gui.buttonChar(buttonFun, !button.hotkeyOpensGroup ? button.hotkey : 0, true, true),
+      gui.buttonChar(std::move(buttonFun), !button.hotkeyOpensGroup ? button.hotkey : 0, true, true),
       gui.uiHighlightConditional([=] { return getActiveButton(tab) == num; }),
       tutorialElem,
       line.buildHorizontalList())));
@@ -583,6 +583,10 @@ SGuiElem GuiBuilder::drawSpecialTrait(const SpecialTrait& trait) {
       },
       [&] (SkillId skill) {
         return gui.label("Extra skill: " + Skill::get(skill)->getName(), Color::GREEN);
+      },
+      [&] (const OneOfTraits&)-> SGuiElem {
+        FATAL << "Can't draw traits alternative";
+        return {};
       }
 );
 }
@@ -2155,7 +2159,7 @@ static string getMoraleNumber(double morale) {
 #ifndef RELEASE
   return toString(morale);
 #else
-  return toString((int)(10.0f * morale) / 10);
+  return toString(round(10.0 * morale) / 10);
 #endif
 }
 
@@ -2182,7 +2186,8 @@ SGuiElem GuiBuilder::drawMapHintOverlay() {
           lines.addElem(gui.label("Hostile", Color::ORANGE));
         for (auto status : viewObject.getCreatureStatus()) {
           lines.addElem(gui.label(getName(status), getColor(status)));
-          lines.addElem(gui.label(getDescription(status), getColor(status)));
+          if (auto desc = getDescription(status))
+            lines.addElem(gui.label(*desc, getColor(status)));
           break;
         }
         if (auto actions = getClickActions(viewObject))

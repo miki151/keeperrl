@@ -9,5 +9,5 @@ class ItemType;
 class PrettyPrinting {
   public:
   template<typename T>
-  static optional<T> parseObject(const string& s);
+  static optional<string> parseObject(T& object, const string&, optional<string> filename = none);
 };

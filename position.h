@@ -145,7 +145,6 @@ class Position {
   bool SERIAL(valid) = false;
   void updateSupport() const;
   void updateBuildingSupport() const;
-  void setBuilding(bool value) const;
 };
 
 template <>

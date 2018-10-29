@@ -48,6 +48,7 @@
 #include "campaign_type.h"
 #include "dummy_view.h"
 #include "sound.h"
+#include "game_config.h"
 
 #include "fx_manager.h"
 #include "fx_renderer.h"
@@ -354,10 +355,10 @@ static int keeperMain(po::parser& commandLineFlags) {
     auto particlesPath = paidDataPath.subdirectory("images").subdirectory("particles");
     if (particlesPath.exists()) {
       INFO << "FX: initialization";
-      fxManager = std::make_unique<fx::FXManager>();
-      fxRenderer = std::make_unique<fx::FXRenderer>(particlesPath, *fxManager);
+      fxManager = unique<fx::FXManager>();
+      fxRenderer = unique<fx::FXRenderer>(particlesPath, *fxManager);
       fxRenderer->loadTextures();
-      fxViewManager = std::make_unique<FXViewManager>(fxManager.get(), fxRenderer.get());
+      fxViewManager = unique<FXViewManager>(fxManager.get(), fxRenderer.get());
     }
   }
 
@@ -382,9 +383,10 @@ static int keeperMain(po::parser& commandLineFlags) {
   FileSharing fileSharing(uploadUrl, options, installId);
   Highscores highscores(userPath.file("highscores.dat"), fileSharing, &options);
   SokobanInput sokobanInput(freeDataPath.file("sokoban_input.txt"), userPath.file("sokoban_state.txt"));
+  GameConfig gameConfig(freeDataPath.subdirectory("game_config"));
   if (commandLineFlags["worldgen_test"].was_set()) {
     MainLoop loop(nullptr, &highscores, &fileSharing, freeDataPath, userPath, &options, &jukebox, &sokobanInput,
-        useSingleThread, 0);
+        &gameConfig, useSingleThread, 0);
     vector<string> types;
     if (commandLineFlags["worldgen_maps"].was_set())
       types = split(commandLineFlags["worldgen_maps"].get().string, {','});
@@ -393,7 +395,7 @@ static int keeperMain(po::parser& commandLineFlags) {
   }
   auto battleTest = [&] (View* view) {
     MainLoop loop(view, &highscores, &fileSharing, freeDataPath, userPath, &options, &jukebox, &sokobanInput,
-        useSingleThread, 0);
+        &gameConfig, useSingleThread, 0);
     auto level = commandLineFlags["battle_level"].get().string;
     auto info = commandLineFlags["battle_info"].get().string;
     auto numRounds = commandLineFlags["battle_rounds"].get().i32;
@@ -443,7 +445,7 @@ static int keeperMain(po::parser& commandLineFlags) {
     return 0;
   }
   MainLoop loop(view.get(), &highscores, &fileSharing, freeDataPath, userPath, &options, &jukebox, &sokobanInput,
-      useSingleThread, readSaveVersion(freeDataPath.file("save_version.txt")));
+      &gameConfig, useSingleThread, readSaveVersion(freeDataPath.file("save_version.txt")));
   try {
     if (audioError)
       view->presentText("Failed to initialize audio. The game will be started without sound.", *audioError);

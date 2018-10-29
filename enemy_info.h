@@ -5,6 +5,7 @@
 #include "collective_config.h"
 #include "village_behaviour.h"
 #include "attack_trigger.h"
+#include "immigrant_info.h"
 
 struct EnemyInfo;
 class EnemyFactory;
@@ -27,6 +28,7 @@ struct EnemyInfo {
       optional<LevelConnection> = none);
   EnemyInfo& setVillainType(VillainType type);
   EnemyInfo& setId(EnemyId);
+  EnemyInfo& setImmigrants(vector<ImmigrantInfo>);
   EnemyInfo& setNonDiscoverable();
   EnemyInfo& setCreateOnBones(EnemyFactory&, double prob, vector<EnemyId>);
   SettlementInfo settlement;
@@ -35,5 +37,6 @@ struct EnemyInfo {
   optional<VillainType> villainType;
   optional<LevelConnection> levelConnection;
   optional<EnemyId> id;
+  vector<ImmigrantInfo> immigrants;
   bool discoverable = true;
 };

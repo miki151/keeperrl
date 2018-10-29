@@ -23,6 +23,7 @@
 #include "profiler.h"
 #include "portals.h"
 #include "fx_name.h"
+#include "roof_support.h"
 
 template <class Archive>
 void Position::serialize(Archive& ar, const unsigned int) {
@@ -508,28 +509,12 @@ void Position::dropItems(vector<PItem> v) {
 constexpr int buildingSupportRadius = 5;
 
 void Position::updateBuildingSupport() const {
-  auto updatePosition = [](Position pos) {
-    if (!pos.isValid())
-      return;
-    if (pos.isBuildingSupport()) {
-      pos.setBuilding(true);
-      pos.setNeedsRenderUpdate(true);
-      return;
-    }
-    int numSupports = 0;
-    for (auto v2 : Vec2::directions4())
-      for (int i2 : Range(1, buildingSupportRadius))
-        if (pos.plus(v2 * i2).isBuildingSupport()) {
-          ++numSupports;
-          break;
-        }
-    pos.setBuilding(numSupports >= 2);
-    pos.setNeedsRenderUpdate(true);
-  };
-  for (auto v : Vec2::directions4())
-    for (int i : Range(1, buildingSupportRadius))
-      updatePosition(plus(v * i));
-  updatePosition(*this);
+  if (isValid()) {
+    if (isBuildingSupport())
+      level->roofSupport->add(coord);
+    else
+      level->roofSupport->remove(coord);
+  }
 }
 
 void Position::addFurniture(PFurniture f) const {
@@ -747,14 +732,9 @@ double Position::getPoisonGasAmount() const {
 bool Position::isCovered() const {
   PROFILE;
   if (isValid())
-    return level->covered[coord] || level->building[coord];
+    return level->covered[coord] || level->roofSupport->isRoof(coord);
   else
     return false;
-}
-
-void Position::setBuilding(bool value) const {
-  CHECK(isValid());
-  level->building[coord] = value;
 }
 
 bool Position::sunlightBurns() const {
@@ -1001,4 +981,3 @@ void Position::putCreature(WCreature c) {
   CHECK(isValid());
   level->putCreature(coord, c);
 }
-

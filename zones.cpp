@@ -98,3 +98,21 @@ void Zones::tick() {
     if (pos.getItems().empty())
       eraseZone(pos, ZoneId::FETCH_ITEMS);
 }
+
+ViewId getViewId(ZoneId id) {
+  switch (id) {
+    case ZoneId::QUARTERS1:
+      return ViewId::QUARTERS1;
+    case ZoneId::QUARTERS2:
+      return ViewId::QUARTERS2;
+    case ZoneId::QUARTERS3:
+      return ViewId::QUARTERS3;
+    case ZoneId::FETCH_ITEMS:
+    case ZoneId::PERMANENT_FETCH_ITEMS:
+      return ViewId::FETCH_ICON;
+    case ZoneId::STORAGE_EQUIPMENT:
+      return ViewId::STORAGE_EQUIPMENT;
+    case ZoneId::STORAGE_RESOURCES:
+      return ViewId::STORAGE_RESOURCES;
+  }
+}

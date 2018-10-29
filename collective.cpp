@@ -52,6 +52,7 @@
 #include "quarters.h"
 #include "position_matching.h"
 #include "storage_id.h"
+#include "game_config.h"
 
 template <class Archive>
 void Collective::serialize(Archive& ar, const unsigned int version) {
@@ -78,14 +79,22 @@ PCollective Collective::create(WLevel level, TribeId tribe, const optional<Colle
   ret->subscribeTo(level->getModel());
   if (discoverable)
     ret->setDiscoverable();
+  ret->workshops = unique<Workshops>(std::array<vector<WorkshopItemCfg>, 4>());
+  ret->immigration = makeOwner<Immigration>(ret.get(), vector<ImmigrantInfo>());
   return ret;
 }
 
-void Collective::init(CollectiveConfig&& cfg, Immigration&& im) {
+void Collective::init(CollectiveConfig cfg) {
   config.reset(std::move(cfg));
-  immigration = makeOwner<Immigration>(std::move(im));
   credit = cfg.getStartingResource();
-  workshops = config->getWorkshops();
+}
+
+void Collective::setImmigration(PImmigration i) {
+  immigration = std::move(i);
+}
+
+void Collective::setWorkshops(unique_ptr<Workshops> w) {
+  workshops = std::move(w);
 }
 
 const optional<CollectiveName>& Collective::getName() const {
@@ -1191,7 +1200,7 @@ void Collective::onAppliedSquare(WCreature c, Position pos) {
     }
     if (auto usage = furniture->getUsageType()) {
       auto increaseLevel = [&] (ExperienceType exp) {
-        double increase = 0.007 * efficiency;
+        double increase = 0.007 * efficiency * LastingEffects::getTrainingSpeed(c.get());
         if (auto maxLevel = config->getTrainingMaxLevel(exp, furniture->getType()))
           increase = min(increase, *maxLevel - c->getAttributes().getExpLevel(exp));
         if (increase > 0)
@@ -1217,7 +1226,7 @@ void Collective::onAppliedSquare(WCreature c, Position pos) {
       auto& workshop = workshops->get(*workshopType);
       auto& info = config->getWorkshopInfo(*workshopType);
       auto craftingSkill = c->getAttributes().getSkills().getValue(info.skill);
-      vector<PItem> items = workshop.addWork(efficiency * craftingSkill);
+      vector<PItem> items = workshop.addWork(efficiency * craftingSkill * LastingEffects::getCraftingSpeed(c.get()));
       if (!items.empty()) {
         if (items[0]->getClass() == ItemClass::WEAPON)
           getGame()->getStatistics().add(StatId::WEAPON_PRODUCED);

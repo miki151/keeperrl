@@ -40,7 +40,7 @@ class TribeId {
   static TribeId getHostile();
   static TribeId getShelob();
   static TribeId getPeaceful();
-  static TribeId getKeeper();
+  static TribeId getDarkKeeper();
   static TribeId getRetiredKeeper();
   static TribeId getLizard();
   static TribeId getGreenskin();

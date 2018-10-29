@@ -43,6 +43,7 @@ class FurnitureArray;
 class Vision;
 class FieldOfView;
 class Portals;
+class RoofSupport;
 
 /** A class representing a single level of the dungeon or the overworld. All events occuring on the level are performed by this class.*/
 class Level : public OwnedObject<Level> {
@@ -206,7 +207,7 @@ class Level : public OwnedObject<Level> {
   string SERIAL(name);
   Table<double> SERIAL(sunlight);
   Table<bool> SERIAL(covered);
-  Table<bool> SERIAL(building);
+  HeapAllocated<RoofSupport> SERIAL(roofSupport);
   HeapAllocated<CreatureBucketMap> SERIAL(bucketMap);
   Table<double> SERIAL(lightAmount);
   Table<double> SERIAL(lightCapAmount);
@@ -218,7 +219,7 @@ class Level : public OwnedObject<Level> {
   struct Private {};
 
   static PLevel create(SquareArray s, FurnitureArray f, WModel m, const string& n, Table<double> sun, LevelId id,
-      Table<bool> cover, Table<bool> building, Table<bool> unavailable);
+      Table<bool> cover, Table<bool> unavailable);
 
   public:
   Level(Private, SquareArray, FurnitureArray, WModel, const string& name, Table<double> sunlight, LevelId);

@@ -34,6 +34,16 @@ FilePath FilePath::changeSuffix(const string& current, const string& newSuf) con
         fullPath.substr(0, fullPath.size() - current.size()) + newSuf);
 }
 
+optional<string> FilePath::readContents() const {
+  ifstream in;
+  in.open(fullPath);
+  if (!in.good())
+    return none;
+  stringstream ss;
+  ss << in.rdbuf();
+  return ss.str();
+}
+
 FilePath::FilePath(const DirectoryPath& dir, const string& f) : filename(f), fullPath(dir.get() + "/"_s + f) {
 }
 

@@ -22,11 +22,12 @@ struct CampaignSetup;
 class ModelBuilder;
 class ItemType;
 class CreatureList;
+class GameConfig;
 
 class MainLoop {
   public:
   MainLoop(View*, Highscores*, FileSharing*, const DirectoryPath& dataFreePath, const DirectoryPath& userPath,
-      Options*, Jukebox*, SokobanInput*, bool useSingleThread, int saveVersion);
+      Options*, Jukebox*, SokobanInput*, GameConfig*, bool useSingleThread, int saveVersion);
 
   void start(bool tilesPresent, bool quickGame);
   void modelGenTest(int numTries, const vector<std::string>& types, RandomGen&, Options*);
@@ -80,6 +81,7 @@ class MainLoop {
   Jukebox* jukebox;
   Highscores* highscores;
   FileSharing* fileSharing;
+  GameConfig* gameConfig;
   bool useSingleThread;
   SokobanInput* sokobanInput;
   PModel getBaseModel(ModelBuilder&, CampaignSetup&);

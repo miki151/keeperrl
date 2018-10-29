@@ -607,6 +607,21 @@ ItemAttributes ItemType::WarHammer::getAttributes() const {
   );
 }
 
+ItemAttributes ItemType::AdaWarHammer::getAttributes() const {
+  return ITATTR(
+      i.viewId = ViewId::ADA_WAR_HAMMER;
+      i.name = "adamantine war hammer";
+      i.itemClass = ItemClass::WEAPON;
+      i.equipmentSlot = EquipmentSlot::WEAPON;
+      i.weight = 6;
+      i.modifiers[AttrType::DAMAGE] = 15 + maybePlusMinusOne(4);
+      i.weaponInfo.twoHanded = true;
+      i.price = 100;
+      i.weaponInfo.attackType = AttackType::CRUSH;
+      i.prefixes.push_back({1, VictimEffect{Effect::Lasting{LastingEffect::COLLAPSED}}});
+  );
+}
+
 ItemAttributes ItemType::Club::getAttributes() const {
   return ITATTR(
       i.viewId = ViewId::CLUB;
@@ -668,6 +683,24 @@ ItemAttributes ItemType::IronStaff::getAttributes() const {
           ItemPrefix{ItemAttrBonus{AttrType::SPELL_DAMAGE, 20}},
           ItemPrefix{AttackerEffect{Effect::Suicide{}}}
       }}});
+  );
+}
+
+ItemAttributes ItemType::GoldenStaff::getAttributes() const {
+  return ITATTR(
+      i.viewId = ViewId::GOLDEN_STAFF;
+      i.name = "golden staff";
+      i.itemClass = ItemClass::WEAPON;
+      i.equipmentSlot = EquipmentSlot::WEAPON;
+      i.weight = 2.5;
+      i.modifiers[AttrType::SPELL_DAMAGE] = 11 + maybePlusMinusOne(4);
+      i.weaponInfo.meleeAttackAttr = AttrType::SPELL_DAMAGE;
+      i.price = 180;
+      i.weaponInfo.attackType = AttackType::SPELL;
+      i.weaponInfo.attackMsg = AttackMsg::WAVE;
+      i.prefixes.push_back({1, VictimEffect{Effect::Lasting{LastingEffect::INSANITY}}});
+      i.prefixes.push_back({1, VictimEffect{Effect::DestroyEquipment{}}});
+      i.prefixes.push_back({1, VictimEffect{Effect::Fire{}}});
   );
 }
 
@@ -776,6 +809,34 @@ ItemAttributes ItemType::LeatherGloves::getAttributes() const {
       i.weight = 0.3;
       i.price = 2;
       i.modifiers[AttrType::DEFENSE] = 1 + maybePlusMinusOne(4);
+  );
+}
+
+ItemAttributes ItemType::IronGloves::getAttributes() const {
+  return ITATTR(
+      i.viewId = ViewId::IRON_GLOVES;
+      i.shortName = "gloves"_s;
+      i.name = "pair of iron gloves";
+      i.itemClass = ItemClass::ARMOR;
+      i.equipmentSlot = EquipmentSlot::GLOVES;
+      i.weight = 1;
+      i.price = 10;
+      i.modifiers[AttrType::DEFENSE] = 2 + maybePlusMinusOne(4);
+      i.prefixes.push_back({1, ItemAttrBonus{AttrType::DAMAGE, Random.get(2, 5)}});
+      i.prefixes.push_back({1, ItemAttrBonus{AttrType::SPELL_DAMAGE, Random.get(2, 5)}});
+  );
+}
+
+ItemAttributes ItemType::AdaGloves::getAttributes() const {
+  return ITATTR(
+      i.viewId = ViewId::ADA_GLOVES;
+      i.shortName = "gloves"_s;
+      i.name = "pair of adamantine gloves";
+      i.itemClass = ItemClass::ARMOR;
+      i.equipmentSlot = EquipmentSlot::GLOVES;
+      i.weight = 0.7;
+      i.price = 25;
+      i.modifiers[AttrType::DEFENSE] = 3 + maybePlusMinusOne(4);
       i.prefixes.push_back({1, ItemAttrBonus{AttrType::DAMAGE, Random.get(2, 5)}});
       i.prefixes.push_back({1, ItemAttrBonus{AttrType::SPELL_DAMAGE, Random.get(2, 5)}});
   );
@@ -849,9 +910,24 @@ ItemAttributes ItemType::IronHelm::getAttributes() const {
       i.weight = 4;
       i.price = 8;
       i.modifiers[AttrType::DEFENSE]= 2 + maybePlusMinusOne(4);
-      i.prefixes.push_back({1, LastingEffect::TELEPATHY});
+      i.prefixes.push_back({1, LastingEffect::WARNING});
       i.prefixes.push_back({1, LastingEffect::SLEEP_RESISTANT});
       i.prefixes.push_back({3, ItemAttrBonus{AttrType::DEFENSE, Random.get(2, 5)}});
+  );
+}
+
+ItemAttributes ItemType::AdaHelm::getAttributes() const {
+  return ITATTR(
+      i.viewId = ViewId::ADA_HELM;
+      i.shortName = "helm"_s;
+      i.name = "adamantine helm";
+      i.itemClass = ItemClass::ARMOR;
+      i.equipmentSlot = EquipmentSlot::HELMET;
+      i.weight = 3;
+      i.price = 40;
+      i.modifiers[AttrType::DEFENSE]= 4 + maybePlusMinusOne(4);
+      i.prefixes.push_back({1, LastingEffect::TELEPATHY});
+      i.prefixes.push_back({1, LastingEffect::REGENERATION});
   );
 }
 
@@ -884,8 +960,23 @@ ItemAttributes ItemType::IronBoots::getAttributes() const {
       i.price = 8;
       i.modifiers[AttrType::DEFENSE] = 2 + maybePlusMinusOne(4);
       i.prefixes.push_back({1, LastingEffect::FLYING});
-      i.prefixes.push_back({1, LastingEffect::SPEED});
+      i.prefixes.push_back({1, LastingEffect::FIRE_RESISTANT});
       i.prefixes.push_back({3, ItemAttrBonus{AttrType::DEFENSE, Random.get(2, 5)}});
+  );
+}
+
+ItemAttributes ItemType::AdaBoots::getAttributes() const {
+  return ITATTR(
+      i.viewId = ViewId::ADA_BOOTS;
+      i.shortName = "boots"_s;
+      i.name = "pair of adamantine boots";
+      i.plural = "pairs of admantine boots"_s;
+      i.itemClass = ItemClass::ARMOR;
+      i.equipmentSlot = EquipmentSlot::BOOTS;
+      i.weight = 3;
+      i.price = 50;
+      i.modifiers[AttrType::DEFENSE] = 4 + maybePlusMinusOne(4);
+      i.prefixes.push_back({1, LastingEffect::SPEED});
   );
 }
 
@@ -1159,7 +1250,7 @@ ItemAttributes ItemType::GoldPiece::getAttributes() const {
   );
 }
 
-SERIALIZE_DEF(ItemType, type, prefixChance)
+SERIALIZE_DEF(ItemType, NAMED(type), NAMED(prefixChance))
 
 #include "pretty_archive.h"
 template void ItemType::serialize(PrettyInputArchive&, unsigned);

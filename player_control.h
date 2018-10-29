@@ -22,6 +22,7 @@
 #include "map_memory.h"
 #include "position.h"
 #include "event_listener.h"
+#include "keeper_creature_info.h"
 
 class Model;
 class Technology;
@@ -45,10 +46,12 @@ struct BuildInfo;
 class MoveInfo;
 class UnknownLocations;
 class AttackTrigger;
+class ImmigrantInfo;
+class GameConfig;
 
 class PlayerControl : public CreatureView, public CollectiveControl, public EventListener<PlayerControl> {
   public:
-  static PPlayerControl create(WCollective col, vector<string> introText, AvatarVariant);
+  static PPlayerControl create(WCollective col, vector<string> introText, KeeperCreatureInfo);
   ~PlayerControl() override;
 
   void processInput(View* view, UserInput);
@@ -58,6 +61,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   WCreature getKeeper();
 
   void render(View*);
+  optional<string> reloadImmigrationAndWorkshops(GameConfig*);
 
   bool isTurnBased();
   void leaveControl();
@@ -90,7 +94,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   struct Private {};
 
   public:
-  PlayerControl(Private, WCollective, AvatarVariant);
+  PlayerControl(Private, WCollective, KeeperCreatureInfo);
 
   protected:
   // from CreatureView
@@ -124,7 +128,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   TribeId getTribeId() const;
   bool canSee(WConstCreature) const;
   bool canSee(Position) const;
-  void initialize();
   bool isConsideredAttacking(WConstCreature, WConstCollective enemy);
 
   void checkKeeperDanger();
@@ -141,7 +144,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void commandTeam(TeamId);
   void setScrollPos(Position);
 
-  bool canSelectRectangle(const BuildInfo&);
   void handleSelection(Vec2 pos, const BuildInfo&, bool rectangle, bool deselectOnly = false);
   vector<CollectiveInfo::Button> fillButtons(const vector<BuildInfo>& buildInfo) const;
   VillageInfo::Village getVillageInfo(WConstCollective enemy) const;
@@ -241,7 +243,9 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   set<pair<UniqueEntity<Collective>::Id, string>> SERIAL(dismissedVillageInfos);
   void considerTransferingLostMinions();
   vector<PItem> retrievePillageItems(WCollective, vector<WItem> items);
-  AvatarVariant SERIAL(avatarVariant);
-  const vector<BuildInfo>& getBuildInfo() const;
+  KeeperCreatureInfo SERIAL(keeperCreatureInfo);
+  vector<BuildInfo> SERIAL(buildInfo);
+  void reloadData();
+  void reloadBuildingMenu();
 };
 

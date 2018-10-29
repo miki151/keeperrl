@@ -1,6 +1,11 @@
 #pragma once
 
-enum class SunlightState { DAY, NIGHT};
+#include "util.h"
+
+RICH_ENUM(SunlightState,
+  DAY,
+  NIGHT
+);
 
 #include "game_time.h"
 

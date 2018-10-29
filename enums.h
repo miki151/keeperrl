@@ -100,7 +100,9 @@ enum class TeamOrder;
 enum class FXName;
 enum class FXVariantName;
 enum class StorageId;
-enum class AvatarVariant;
+enum class TechVariant;
+enum class TribeAlignment;
+enum class TutorialState;
 
 struct FXInfo;
 struct FXSpawnInfo;

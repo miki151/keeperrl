@@ -4,10 +4,14 @@
 #include <limits>
 #include <utility>
 
+#ifdef OSX
+void sincosf(float a, float* sin, float* cos);
+#endif
+
+
 namespace fx {
 
 struct NoAssertsTag {};
-static constexpr NoAssertsTag noAssertsTag;
 
 // TODO: rename
 namespace fconstant {

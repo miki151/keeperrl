@@ -43,7 +43,7 @@ typedef cereal::BinaryInputArchive InputArchive;
 typedef cereal::BinaryOutputArchive OutputArchive;
 
 #define SUBCLASS(X) cereal::base_class<X>(this)
-
+#define NAMED CEREAL_NVP
 
 #define SERIALIZABLE(T) \
   template void T::serialize(InputArchive&, unsigned); \

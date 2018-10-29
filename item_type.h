@@ -29,23 +29,29 @@ class ItemType {
   SIMPLE_ITEM(BattleAxe);
   SIMPLE_ITEM(AdaBattleAxe);
   SIMPLE_ITEM(WarHammer);
+  SIMPLE_ITEM(AdaWarHammer);
   SIMPLE_ITEM(Club);
   SIMPLE_ITEM(HeavyClub);
   SIMPLE_ITEM(WoodenStaff);
   SIMPLE_ITEM(IronStaff);
+  SIMPLE_ITEM(GoldenStaff);
   SIMPLE_ITEM(Scythe);
   SIMPLE_ITEM(Bow);
   SIMPLE_ITEM(ElvenBow);
   SIMPLE_ITEM(Torch);
 
   SIMPLE_ITEM(LeatherArmor);
-  SIMPLE_ITEM(LeatherHelm);
   SIMPLE_ITEM(ChainArmor);
   SIMPLE_ITEM(AdaArmor);
+  SIMPLE_ITEM(LeatherHelm);
   SIMPLE_ITEM(IronHelm);
+  SIMPLE_ITEM(AdaHelm);
   SIMPLE_ITEM(LeatherBoots);
   SIMPLE_ITEM(IronBoots);
+  SIMPLE_ITEM(AdaBoots);
   SIMPLE_ITEM(LeatherGloves);
+  SIMPLE_ITEM(IronGloves);
+  SIMPLE_ITEM(AdaGloves);
   SIMPLE_ITEM(Robe);
   SIMPLE_ITEM(HalloweenCostume);
   SIMPLE_ITEM(BagOfCandies);
@@ -116,9 +122,9 @@ class ItemType {
   SIMPLE_ITEM(AutomatonItem);
 
   MAKE_VARIANT(Type, Knife, Spear, Sword, AdaSword, ElvenSword,
-      BattleAxe, AdaBattleAxe, WarHammer, Club, HeavyClub, WoodenStaff, IronStaff,
-      Scythe, Bow, ElvenBow, LeatherArmor, LeatherHelm, ChainArmor, AdaArmor, IronHelm, LeatherBoots,
-      IronBoots, LeatherGloves, Robe, Scroll, FireScroll, Potion,
+      BattleAxe, AdaBattleAxe, WarHammer, AdaWarHammer, Club, HeavyClub, WoodenStaff, IronStaff, GoldenStaff,
+      Scythe, Bow, ElvenBow, LeatherArmor, LeatherHelm, IronHelm, AdaHelm, ChainArmor, AdaArmor, LeatherBoots,
+      IronBoots, AdaBoots, LeatherGloves, IronGloves, AdaGloves, Robe, Scroll, FireScroll, Potion,
       Mushroom, Amulet, DefenseAmulet, Ring, FirstAidKit, Rock, IronOre, AdaOre, GoldPiece,
       WoodPlank, Bone, RandomTechBook, TechBook, TrapItem, AutomatonItem, BagOfCandies, HalloweenCostume,
       UnicornHorn, Intrinsic, Torch);

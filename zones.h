@@ -16,6 +16,8 @@ RICH_ENUM(ZoneId,
 class Position;
 class ViewIndex;
 
+extern ViewId getViewId(ZoneId);
+
 class Zones {
   public:
   Zones(Rectangle bounds);

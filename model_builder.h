@@ -17,12 +17,13 @@ struct EnemyEvent;
 class Tutorial;
 class FilePath;
 class CreatureList;
+class GameConfig;
 
 class ModelBuilder {
   public:
-  ModelBuilder(ProgressMeter*, RandomGen&, Options*, SokobanInput*);
-  PModel singleMapModel(const string& worldName);
-  PModel campaignBaseModel(const string& siteName, bool externalEnemies);
+  ModelBuilder(ProgressMeter*, RandomGen&, Options*, SokobanInput*, GameConfig*);
+  PModel singleMapModel(const string& worldName, TribeId keeperTribe, TribeAlignment);
+  PModel campaignBaseModel(const string& siteName, TribeId keeperTribe, TribeAlignment, bool externalEnemies);
   PModel campaignSiteModel(const string& siteName, EnemyId, VillainType);
   PModel tutorialModel(const string& siteName);
 
@@ -37,12 +38,12 @@ class ModelBuilder {
 
   private:
   void measureModelGen(const std::string& name, int numTries, function<void()> genFun);
-  PModel trySingleMapModel(const string& worldName);
-  PModel tryCampaignBaseModel(const string& siteName, bool externalEnemies);
+  PModel trySingleMapModel(const string& worldName, TribeId keeperTribe, TribeAlignment);
+  PModel tryCampaignBaseModel(const string& siteName, TribeId keeperTribe, TribeAlignment, bool externalEnemies);
   PModel tryTutorialModel(const string& siteName);
   PModel tryCampaignSiteModel(const string& siteName, EnemyId, VillainType);
   PModel tryModel(int width, const string& levelName, vector<EnemyInfo>,
-      bool keeperSpawn, BiomeId, optional<ExternalEnemies>, bool wildlife);
+      optional<TribeId> keeperTribe, BiomeId, optional<ExternalEnemies>, bool wildlife);
   SettlementInfo& makeExtraLevel(WModel, EnemyInfo&);
   PModel tryBuilding(int numTries, function<PModel()> buildFun, const string& name);
   void addMapVillains(vector<EnemyInfo>&, BiomeId);
@@ -51,4 +52,5 @@ class ModelBuilder {
   Options* options;
   HeapAllocated<EnemyFactory> enemyFactory;
   SokobanInput* sokobanInput;
+  GameConfig* gameConfig;
 };

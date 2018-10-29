@@ -973,6 +973,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.maxLevelIncrease[ExperienceType::MELEE] = 16;
           c.maxLevelIncrease[ExperienceType::SPELL] = 8;
           c.maxLevelIncrease[ExperienceType::ARCHERY] = 8;
+          c.hatedByEffect = LastingEffect::HATE_HUMANS;
       );
     case CreatureId::ADVENTURER_F:
       return CATTR(
@@ -986,32 +987,28 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.maxLevelIncrease[ExperienceType::MELEE] = 16;
           c.maxLevelIncrease[ExperienceType::SPELL] = 8;
           c.maxLevelIncrease[ExperienceType::ARCHERY] = 8;
+          c.hatedByEffect = LastingEffect::HATE_HUMANS;
       );
     case CreatureId::UNICORN:
       return CATTR(
-        c.viewId = ViewId::UNICORN;
-        c.attr = LIST(16_dam, 20_def, 20_spell_dam);
-        c.body = Body::nonHumanoid(Body::Size::LARGE);
-        c.body->setWeight(500);
-        c.body->setHorseBodyParts(8);
-        //Ideally, you should club them to death or chop them up with a sword.
-        c.permanentEffects[LastingEffect::RANGED_RESISTANCE] = 1;
-        c.permanentEffects[LastingEffect::MAGIC_RESISTANCE] = 1;
-        c.body->setIntrinsicAttack(BodyPart::HEAD, IntrinsicAttack(ItemType::UnicornHorn{}));
-        c.courage = 100;
-        //They heal up and summon friends.
-        c.spells->add(SpellId::HEAL_SELF);
-        c.spells->add(SpellId::HEAL_OTHER);
-        c.spells->add(SpellId::SUMMON_SPIRIT);
-        c.chatReactionFriendly = "\"mhhhhhrrrr!\""_s;
-        c.chatReactionHostile = "\"mhhhhhrrrr!\""_s;
-        c.petReaction = "neighs"_s;
-        c.name = "unicorn";
-        //Pet names like dogs would have.
-        c.name->setFirst(NameGenerator::get(NameGeneratorId::DOG)->getNext());
-        c.name->setGroup("herd");
-        c.animal = true;
-        );
+          c.viewId = ViewId::UNICORN;
+          c.attr = LIST(16_dam, 20_def, 20_spell_dam);
+          c.body = Body::nonHumanoid(Body::Size::LARGE);
+          c.body->setWeight(500);
+          c.body->setHorseBodyParts(8);
+          c.permanentEffects[LastingEffect::RANGED_RESISTANCE] = 1;
+          c.permanentEffects[LastingEffect::MAGIC_RESISTANCE] = 1;
+          c.body->setIntrinsicAttack(BodyPart::HEAD, IntrinsicAttack(ItemType::UnicornHorn{}));
+          c.spells->add(SpellId::HEAL_SELF);
+          c.spells->add(SpellId::HEAL_OTHER);
+          c.spells->add(SpellId::SUMMON_SPIRIT);
+          c.chatReactionFriendly = "\"mhhhhhrrrr!\""_s;
+          c.chatReactionHostile = "\"mhhhhhrrrr!\""_s;
+          c.petReaction = "neighs"_s;
+          c.name = "unicorn";
+          c.name->setFirst(NameGenerator::get(NameGeneratorId::DEITY)->getNext());
+          c.name->setGroup("herd");
+      );
     case CreatureId::BANDIT:
       return CATTR(
           c.viewId = ViewId::BANDIT;
@@ -1021,7 +1018,9 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.chatReactionHostile = "\"Die!\""_s;
           c.maxLevelIncrease[ExperienceType::MELEE] = 2;
  //       c.skills.insert(SkillId::DISARM_TRAPS);
-          c.name = "bandit";);
+          c.name = "bandit";
+          c.hatedByEffect = LastingEffect::HATE_HUMANS;
+      );
     case CreatureId::GHOST: 
       return CATTR(
           c.viewId = ViewId::GHOST;
@@ -1031,7 +1030,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.permanentEffects[LastingEffect::MAGIC_VULNERABILITY] = 1;
           c.chatReactionFriendly = "\"Wouuuouuu!!!\""_s;
           c.chatReactionHostile = "\"Wouuuouuu!!!\""_s;
-          c.name = "ghost";);
+          c.name = "ghost";
+      );
     case CreatureId::SPIRIT:
       return CATTR(
           c.viewId = ViewId::SPIRIT;
@@ -1042,7 +1042,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.permanentEffects[LastingEffect::MAGIC_VULNERABILITY] = 1;
           c.chatReactionFriendly = "\"Wouuuouuu!!!\""_s;
           c.chatReactionHostile = "\"Wouuuouuu!!!\""_s;
-          c.name = "ancient spirit";);
+          c.name = "ancient spirit";
+      );
     case CreatureId::LOST_SOUL:
       return CATTR(
           c.body = Body::nonHumanoidSpirit(Body::Size::LARGE);
@@ -1055,7 +1056,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.permanentEffects[LastingEffect::FLYING] = 1;
           c.chatReactionFriendly = "\"Wouuuouuu!!!\""_s;
           c.chatReactionHostile = "\"Wouuuouuu!!!\""_s;
-          c.name = "ghost";);
+          c.name = "ghost";
+      );
     case CreatureId::SUCCUBUS:
       return CATTR(
           c.attr = LIST(25_def, 5_spell_dam );
@@ -1069,7 +1071,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.gender = Gender::female;
           c.courage = -1;
           c.name = CreatureName("succubus", "succubi");
-          );
+      );
     case CreatureId::DOPPLEGANGER:
       return CATTR(
           c.viewId = ViewId::DOPPLEGANGER;
@@ -1077,7 +1079,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body = Body::nonHumanoidSpirit(Body::Size::LARGE);
           c.skills.insert(SkillId::CONSUMPTION);
           c.name = "doppelganger";
-          );
+      );
     case CreatureId::WITCH: 
       return CATTR(
           c.viewId = ViewId::WITCH;
@@ -1090,7 +1092,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.chatReactionHostile = "\"Die!\""_s;
           c.skills.setValue(SkillId::LABORATORY, 0.7);
           c.maxLevelIncrease[ExperienceType::SPELL] = 4;
-          );
+          c.hatedByEffect = LastingEffect::HATE_HUMANS;
+      );
     case CreatureId::WITCHMAN: 
       return CATTR(
           c.viewId = ViewId::WITCHMAN;
@@ -1102,7 +1105,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.gender = Gender::male;
           c.chatReactionFriendly = "curses all monsters"_s;
           c.chatReactionHostile = "\"Die!\""_s;
-          );
+          c.hatedByEffect = LastingEffect::HATE_HUMANS;
+      );
     case CreatureId::CYCLOPS: 
       return CATTR(
           c.viewId = ViewId::CYCLOPS;
@@ -1113,7 +1117,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.name = CreatureName("cyclops", "cyclopes");
           c.name->setFirst(NameGenerator::get(NameGeneratorId::CYCLOPS)->getNext());
           c.maxLevelIncrease[ExperienceType::MELEE] = 5;
-          );
+      );
     case CreatureId::DEMON_DWELLER:
       return CATTR(
           c.viewId = ViewId::DEMON_DWELLER;
@@ -1132,7 +1136,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.name->setGroup("pack");
           c.maxLevelIncrease[ExperienceType::MELEE] = 4;
           c.maxLevelIncrease[ExperienceType::SPELL] = 4;
-        );
+      );
     case CreatureId::DEMON_LORD:
       return CATTR(
           c.viewId = ViewId::DEMON_LORD;
@@ -1159,7 +1163,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body = Body::humanoid(Body::Size::LARGE);
           c.body->setWeight(400);
           c.maxLevelIncrease[ExperienceType::MELEE] = 5;
-          c.name = "minotaur";);
+          c.name = "minotaur";
+      );
     case CreatureId::SOFT_MONSTER:
       return CATTR(
           c.viewId = ViewId::SOFT_MONSTER;
@@ -1167,7 +1172,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body = Body::humanoid(Body::Size::LARGE);
           c.body->setWeight(400);
           c.courage = -1;
-          c.name = "soft monster";);
+          c.name = "soft monster";
+      );
     case CreatureId::HYDRA:
       return CATTR(
           c.viewId = ViewId::HYDRA;
@@ -1179,7 +1185,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body->setIntrinsicAttack(BodyPart::HEAD, IntrinsicAttack(
               ItemType::fangs(8, Effect::Lasting{LastingEffect::POISON})));
           c.skills.insert(SkillId::SWIMMING);
-          c.name = "hydra";);
+          c.name = "hydra";
+      );
     case CreatureId::SHELOB:
       return CATTR(
           c.viewId = ViewId::SHELOB;
@@ -1194,7 +1201,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
               ItemType::fangs(8, Effect::Lasting{LastingEffect::POISON})));
           c.skills.insert(SkillId::SPIDER);
           c.name = "giant spider";
-          );
+      );
     case CreatureId::GREEN_DRAGON: 
       return CATTR(
           c.viewId = ViewId::GREEN_DRAGON;
@@ -1213,7 +1220,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.spells->add(SpellId::DECEPTION);
           c.spells->add(SpellId::SPEED_SELF);
           c.name->setStack("dragon");
-          );
+      );
     case CreatureId::RED_DRAGON:
       return CATTR(
           c.viewId = ViewId::RED_DRAGON;
@@ -1232,7 +1239,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.spells->add(SpellId::SPEED_SELF);
           c.spells->add(SpellId::FIREBALL_DRAGON);
           c.name->setStack("dragon");
-          );
+      );
     case CreatureId::KNIGHT_PLAYER:
       return CATTR(
           c.viewId = ViewId::KNIGHT;
@@ -1245,6 +1252,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.skills.setValue(SkillId::FORGE, 0.3);
           c.name = "knight";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_MALE)->getNext());
+          c.hatedByEffect = LastingEffect::HATE_HUMANS;
       );
     case CreatureId::JESTER_PLAYER:
       return CATTR(
@@ -1256,6 +1264,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.chatReactionHostile = "\"Die!\""_s;
           c.name = "jester";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_MALE)->getNext());
+          c.hatedByEffect = LastingEffect::HATE_HUMANS;
       );
     case CreatureId::DUKE_PLAYER:
       return CATTR(
@@ -1268,6 +1277,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.skills.setValue(SkillId::FORGE, 0.2);
           c.maxLevelIncrease[ExperienceType::MELEE] = 12;
           c.maxLevelIncrease[ExperienceType::SPELL] = 1;
+          c.hatedByEffect = LastingEffect::HATE_HUMANS;
       );
     case CreatureId::ARCHER_PLAYER:
       return CATTR(
@@ -1280,6 +1290,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.maxLevelIncrease[ExperienceType::ARCHERY] = 7;
           c.name = "archer";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_MALE)->getNext());
+          c.hatedByEffect = LastingEffect::HATE_HUMANS;
       );
     case CreatureId::PRIEST_PLAYER:
       return CATTR(
@@ -1291,6 +1302,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.maxLevelIncrease[ExperienceType::SPELL] = 9;
           c.name = "priest";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_MALE)->getNext());
+          c.hatedByEffect = LastingEffect::HATE_HUMANS;
       );
     case CreatureId::GNOME_PLAYER:
       return CATTR(
@@ -1319,6 +1331,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.chatReactionHostile = "\"Heeelp!\""_s;
           c.skills.setValue(SkillId::DIGGING, 0.1);
           c.name = "peasant";
+          c.hatedByEffect = LastingEffect::HATE_HUMANS;
       );
     case CreatureId::KNIGHT:
       return CATTR(
@@ -1329,7 +1342,9 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.permanentEffects[LastingEffect::MELEE_RESISTANCE] = 1;
           c.chatReactionFriendly = "curses all dungeons"_s;
           c.chatReactionHostile = "\"Die!\""_s;
-          c.name = "knight";);
+          c.name = "knight";
+          c.hatedByEffect = LastingEffect::HATE_HUMANS;
+      );
     case CreatureId::JESTER:
       return CATTR(
           c.viewId = ViewId::JESTER;
@@ -1338,7 +1353,9 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.permanentEffects[LastingEffect::MAGIC_RESISTANCE] = 1;
           c.chatReactionFriendly = "curses all dungeons"_s;
           c.chatReactionHostile = "\"Die!\""_s;
-          c.name = "jester";);
+          c.name = "jester";
+          c.hatedByEffect = LastingEffect::HATE_HUMANS;
+      );
     case CreatureId::DUKE:
       return CATTR(
           c.viewId = ViewId::DUKE;
@@ -1351,6 +1368,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.courage = 1;
           c.name = "Duke of " + NameGenerator::get(NameGeneratorId::WORLD)->getNext();
           c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_MALE)->getNext());
+          c.hatedByEffect = LastingEffect::HATE_HUMANS;
       );
     case CreatureId::ARCHER:
       return CATTR(
@@ -1360,7 +1378,9 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.chatReactionFriendly = "curses all dungeons"_s;
           c.chatReactionHostile = "\"Die!\""_s;
           c.maxLevelIncrease[ExperienceType::ARCHERY] = 4;
-          c.name = "archer";);
+          c.name = "archer";
+          c.hatedByEffect = LastingEffect::HATE_HUMANS;
+      );
     case CreatureId::PRIEST:
       return CATTR(
           c.viewId = ViewId::PRIEST;
@@ -1375,7 +1395,9 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.spells->add(SpellId::BLAST);
           c.spells->add(SpellId::HEAL_OTHER);
           c.maxLevelIncrease[ExperienceType::SPELL] = 2;
-          c.name = "priest";);
+          c.name = "priest";
+          c.hatedByEffect = LastingEffect::HATE_HUMANS;
+      );
     case CreatureId::WARRIOR:
       return CATTR(
           c.viewId = ViewId::WARRIOR;
@@ -1385,7 +1407,9 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.skills.setValue(SkillId::WORKSHOP, 0.3);
           c.chatReactionFriendly = "curses all dungeons"_s;
           c.chatReactionHostile = "\"Die!\""_s;
-          c.name = "warrior";);
+          c.name = "warrior";
+          c.hatedByEffect = LastingEffect::HATE_HUMANS;
+      );
     case CreatureId::SHAMAN:
       return CATTR(
           c.viewId = ViewId::SHAMAN;
@@ -1402,7 +1426,9 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.spells->add(SpellId::BLAST);
           c.spells->add(SpellId::HEAL_OTHER);
           c.maxLevelIncrease[ExperienceType::SPELL] = 5;
-          c.name = "shaman";);
+          c.name = "shaman";
+          c.hatedByEffect = LastingEffect::HATE_HUMANS;
+      );
     case CreatureId::PESEANT: 
       return CATTR(
           if (Random.roll(2)) {
@@ -1416,7 +1442,9 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.chatReactionHostile = "\"Heeelp!\""_s;
           c.skills.insert(SkillId::CROPS);
           c.skills.setValue(SkillId::DIGGING, 0.1);
-          c.name = "peasant";);
+          c.name = "peasant";
+          c.hatedByEffect = LastingEffect::HATE_HUMANS;
+      );
     case CreatureId::CHILD: 
       return CATTR(
           c.viewId = ViewId::CHILD;
@@ -1426,7 +1454,9 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.chatReactionHostile = "\"Heeelp!\""_s;
           c.skills.insert(SkillId::CROPS);
           c.skills.insert(SkillId::STEALTH);
-          c.name = CreatureName("child", "children"););
+          c.name = CreatureName("child", "children");
+          c.hatedByEffect = LastingEffect::HATE_HUMANS;
+      );
     case CreatureId::SPIDER_FOOD: 
       return CATTR(
           c.viewId = ViewId::CHILD;
@@ -1437,7 +1467,9 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.chatReactionFriendly = "\"Put me out of my misery PLEASE!\""_s;
           c.chatReactionHostile = "\"End my torture!\""_s;
           c.deathDescription = "dead, released from unthinkable agony"_s;
-          c.name = CreatureName("child", "children"););
+          c.name = CreatureName("child", "children");
+          c.hatedByEffect = LastingEffect::HATE_HUMANS;
+      );
     case CreatureId::PESEANT_PRISONER:
       return CATTR(
           if (Random.roll(2)) {
@@ -1452,7 +1484,9 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.permanentEffects[LastingEffect::POISON_RESISTANT] = 1;
           c.skills.setValue(SkillId::DIGGING, 0.3);
           c.maxLevelIncrease[ExperienceType::MELEE] = 3;
-          c.name = "peasant";);
+          c.name = "peasant";
+          c.hatedByEffect = LastingEffect::HATE_HUMANS;
+      );
     case CreatureId::HALLOWEEN_KID:
       return CATTR(
           c.viewId = Random.choose(ViewId::HALLOWEEN_KID1,
@@ -1461,7 +1495,9 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body = Body::humanoid(Body::Size::MEDIUM);
           c.chatReactionFriendly = "\"Trick or treat!\""_s;
           c.chatReactionHostile = "\"Trick or treat!\""_s;
-          c.name = CreatureName("child", "children"););
+          c.name = CreatureName("child", "children");
+          c.hatedByEffect = LastingEffect::HATE_HUMANS;
+      );
     case CreatureId::CLAY_GOLEM:
       return CATTR(
           c.viewId = ViewId::CLAY_GOLEM;
@@ -1470,7 +1506,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body->setHumanoidBodyParts(2);
           c.permanentEffects[LastingEffect::MELEE_RESISTANCE] = 1;
           c.permanentEffects[LastingEffect::SLOWED] = 1;
-          c.name = "clay golem";);
+          c.name = "clay golem";
+      );
     case CreatureId::STONE_GOLEM: 
       return CATTR(
           c.viewId = ViewId::STONE_GOLEM;
@@ -1479,7 +1516,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body->setHumanoidBodyParts(4);
           c.permanentEffects[LastingEffect::MELEE_RESISTANCE] = 1;
           c.permanentEffects[LastingEffect::SLOWED] = 1;
-          c.name = "stone golem";);
+          c.name = "stone golem";
+      );
     case CreatureId::IRON_GOLEM: 
       return CATTR(
           c.viewId = ViewId::IRON_GOLEM;
@@ -1488,7 +1526,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.permanentEffects[LastingEffect::SLOWED] = 1;
           c.body = Body::nonHumanoid(Body::Material::IRON, Body::Size::LARGE);
           c.body->setHumanoidBodyParts(7);
-          c.name = "iron golem";);
+          c.name = "iron golem";
+      );
     case CreatureId::LAVA_GOLEM: 
       return CATTR(
           c.viewId = ViewId::LAVA_GOLEM;
@@ -1499,7 +1538,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body->setHumanoidBodyParts(8);
           c.body->setIntrinsicAttack(BodyPart::ARM, IntrinsicAttack(ItemType::fists(10, Effect::Fire{})));
           c.permanentEffects[LastingEffect::FIRE_RESISTANT] = 1;
-          c.name = "lava golem";);
+          c.name = "lava golem";
+      );
     case CreatureId::ADA_GOLEM:
       return CATTR(
           c.viewId = ViewId::ADA_GOLEM;
@@ -1510,7 +1550,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body = Body::nonHumanoid(Body::Material::ADA, Body::Size::LARGE);
           c.body->setHumanoidBodyParts(8);
           c.permanentEffects[LastingEffect::FIRE_RESISTANT] = 1;
-          c.name = "adamantine golem";);
+          c.name = "adamantine golem";
+      );
     case CreatureId::AUTOMATON:
       return CATTR(
           c.viewId = ViewId::AUTOMATON;
@@ -1518,7 +1559,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.permanentEffects[LastingEffect::MELEE_RESISTANCE] = 1;
           c.body = Body::nonHumanoid(Body::Material::IRON, Body::Size::LARGE);
           c.body->setHumanoidBodyParts(10);
-          c.name = "automaton";);
+          c.name = "automaton";
+      );
     case CreatureId::ZOMBIE: 
       return CATTR(
           c.viewId = ViewId::ZOMBIE;
@@ -1527,7 +1569,9 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.permanentEffects[LastingEffect::RANGED_RESISTANCE] = 1;
           c.permanentEffects[LastingEffect::SLOWED] = 1;
           c.maxLevelIncrease[ExperienceType::MELEE] = 3;
-          c.name = "zombie";);
+          c.name = "zombie";
+          c.hatedByEffect = LastingEffect::HATE_UNDEAD;
+      );
     case CreatureId::SKELETON: 
       return CATTR(
           c.viewId = ViewId::SKELETON;
@@ -1536,7 +1580,9 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.permanentEffects[LastingEffect::RANGED_RESISTANCE] = 1;
           c.maxLevelIncrease[ExperienceType::MELEE] = 3;
           c.maxLevelIncrease[ExperienceType::ARCHERY] = 4;
-          c.name = "skeleton";);
+          c.name = "skeleton";
+          c.hatedByEffect = LastingEffect::HATE_UNDEAD;
+      );
     case CreatureId::VAMPIRE: 
       return CATTR(
           c.viewId = ViewId::VAMPIRE;
@@ -1550,7 +1596,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.maxLevelIncrease[ExperienceType::SPELL] = 7;
           c.name = "vampire";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::VAMPIRE)->getNext());
-          );
+          c.hatedByEffect = LastingEffect::HATE_UNDEAD;
+      );
     case CreatureId::VAMPIRE_LORD: 
       return CATTR(
           c.viewId = ViewId::VAMPIRE_LORD;
@@ -1570,7 +1617,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
             c.spells->add(id);
           c.chatReactionFriendly = c.chatReactionHostile =
               "\"There are times when you simply cannot refuse a drink!\""_s;
-          );
+          c.hatedByEffect = LastingEffect::HATE_UNDEAD;
+      );
     case CreatureId::MUMMY: 
       return CATTR(
           c.viewId = ViewId::MUMMY;
@@ -1578,9 +1626,11 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body = Body::humanoid(Body::Material::UNDEAD_FLESH, Body::Size::LARGE);
           c.permanentEffects[LastingEffect::RANGED_RESISTANCE] = 1;
           c.permanentEffects[LastingEffect::SLOWED] = 1;
-          c.maxLevelIncrease[ExperienceType::MELEE] = 3;
-          c.maxLevelIncrease[ExperienceType::SPELL] = 3;
-          c.name = CreatureName("mummy", "mummies"););
+          c.permanentEffects[LastingEffect::SLOW_TRAINING] = 1;
+          c.maxLevelIncrease[ExperienceType::MELEE] = 25;
+          c.name = CreatureName("mummy", "mummies");
+          c.hatedByEffect = LastingEffect::HATE_UNDEAD;
+      );
     case CreatureId::ORC:
       return CATTR(
           c.viewId = ViewId::ORC;
@@ -1593,7 +1643,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.maxLevelIncrease[ExperienceType::MELEE] = 7;
           c.name = "orc";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::ORC)->getNext());
-          );
+          c.hatedByEffect = LastingEffect::HATE_GREENSKINS;
+      );
     case CreatureId::ORC_SHAMAN:
       return CATTR(
           c.viewId = ViewId::ORC_SHAMAN;
@@ -1606,7 +1657,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.maxLevelIncrease[ExperienceType::SPELL] = 7;
           c.name = "orc shaman";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::ORC)->getNext());
-          );
+          c.hatedByEffect = LastingEffect::HATE_GREENSKINS;
+      );
     case CreatureId::HARPY:
       return CATTR(
           c.viewId = ViewId::HARPY;
@@ -1619,7 +1671,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.maxLevelIncrease[ExperienceType::ARCHERY] = 7;
           c.name = CreatureName("harpy", "harpies");
           c.name->setFirst(NameGenerator::get(NameGeneratorId::ORC)->getNext());
-          );
+          c.hatedByEffect = LastingEffect::HATE_GREENSKINS;
+      );
     case CreatureId::KOBOLD: 
       return CATTR(
           c.viewId = ViewId::KOBOLD;
@@ -1628,7 +1681,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.skills.insert(SkillId::SWIMMING);
           c.chatReactionFriendly = "talks about digging"_s;
           c.chatReactionHostile = "\"Die!\""_s;
-          c.name = "kobold";);
+          c.name = "kobold";
+      );
     case CreatureId::GNOME: 
       return CATTR(
           c.viewId = ViewId::GNOME;
@@ -1662,7 +1716,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.skills.setValue(SkillId::FURNACE, 0.6);
           c.name = "goblin";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::ORC)->getNext());
-          );
+          c.hatedByEffect = LastingEffect::HATE_GREENSKINS;
+      );
     case CreatureId::IMP: 
       return CATTR(
           c.viewId = ViewId::IMP;
@@ -1692,7 +1747,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.skills.setValue(SkillId::FORGE, 0.5);
           c.skills.setValue(SkillId::FURNACE, 0.9);
           c.maxLevelIncrease[ExperienceType::MELEE] = 12;
-          );
+          c.hatedByEffect = LastingEffect::HATE_GREENSKINS;
+      );
     case CreatureId::CHICKEN: 
       return CATTR(
           c.viewId = ViewId::CHICKEN;
@@ -1701,7 +1757,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body->setWeight(3);
           c.body->setMinionFood();
           c.permanentEffects[LastingEffect::SLOWED] = 1;
-          c.name = "chicken";);
+          c.name = "chicken";
+      );
     case CreatureId::DWARF: 
       return CATTR(
           c.viewId = ViewId::DWARF;
@@ -1717,7 +1774,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.name->setFirst(NameGenerator::get(NameGeneratorId::DWARF)->getNext());
           c.chatReactionFriendly = "curses all orcs"_s;
           c.chatReactionHostile = "\"Die!\""_s;
-          );
+          c.hatedByEffect = LastingEffect::HATE_DWARVES;
+      );
     case CreatureId::DWARF_FEMALE:
       return CATTR(
           c.viewId = ViewId::DWARF_FEMALE;
@@ -1731,7 +1789,9 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.name->setFirst(NameGenerator::get(NameGeneratorId::DWARF)->getNext());
           c.chatReactionFriendly = "curses all orcs"_s;
           c.chatReactionHostile = "\"Die!\""_s;
-          c.gender = Gender::female;);
+          c.gender = Gender::female;
+          c.hatedByEffect = LastingEffect::HATE_DWARVES;
+      );
     case CreatureId::DWARF_BARON: 
       return CATTR(
           c.viewId = ViewId::DWARF_BARON;
@@ -1746,7 +1806,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.courage = 1;
           c.name = "dwarf baron";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::DWARF)->getNext());
-          );
+          c.hatedByEffect = LastingEffect::HATE_DWARVES;
+      );
     case CreatureId::LIZARDMAN: 
       return CATTR(
           c.viewId = ViewId::LIZARDMAN;
@@ -1759,7 +1820,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.maxLevelIncrease[ExperienceType::MELEE] = 5;
           c.chatReactionFriendly = "curses all humans"_s;
           c.chatReactionHostile = "\"Die!\""_s;
-          c.name = CreatureName("lizardman", "lizardmen"););
+          c.name = CreatureName("lizardman", "lizardmen");
+      );
     case CreatureId::LIZARDLORD: 
       return CATTR(
           c.viewId = ViewId::LIZARDLORD;
@@ -1773,7 +1835,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.chatReactionFriendly = "curses all humans"_s;
           c.chatReactionHostile = "\"Die!\""_s;
           c.courage = 1;
-          c.name = "lizardman chief";);
+          c.name = "lizardman chief";
+      );
     case CreatureId::ELF: 
       return CATTR(
           c.viewId = Random.choose(ViewId::ELF, ViewId::ELF_WOMAN);
@@ -1785,7 +1848,9 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.skills.setValue(SkillId::JEWELER, 0.9);
           c.maxLevelIncrease[ExperienceType::SPELL] = 1;
           c.permanentEffects[LastingEffect::ELF_VISION] = 1;
-          c.name = CreatureName("elf", "elves"););
+          c.name = CreatureName("elf", "elves");
+          c.hatedByEffect = LastingEffect::HATE_ELVES;
+      );
     case CreatureId::ELF_ARCHER: 
       return CATTR(
           c.viewId = ViewId::ELF_ARCHER;
@@ -1797,7 +1862,9 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.spells->add(SpellId::HEAL_SELF);
           c.permanentEffects[LastingEffect::ELF_VISION] = 1;
           c.maxLevelIncrease[ExperienceType::ARCHERY] = 3;
-          c.name = "elven archer";);
+          c.name = "elven archer";
+          c.hatedByEffect = LastingEffect::HATE_ELVES;
+      );
     case CreatureId::ELF_CHILD: 
       return CATTR(
           c.viewId = ViewId::ELF_CHILD;
@@ -1809,7 +1876,9 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.skills.insert(SkillId::STEALTH);
           c.spells->add(SpellId::HEAL_SELF);
           c.permanentEffects[LastingEffect::ELF_VISION] = 1;
-          c.name = CreatureName("elf child", "elf children"););
+          c.name = CreatureName("elf child", "elf children");
+          c.hatedByEffect = LastingEffect::HATE_ELVES;
+      );
     case CreatureId::ELF_LORD: 
       return CATTR(
           c.viewId = ViewId::ELF_LORD;
@@ -1828,7 +1897,9 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.spells->add(SpellId::BLAST);
           c.maxLevelIncrease[ExperienceType::SPELL] = 4;
           c.maxLevelIncrease[ExperienceType::MELEE] = 4;
-          c.name = "elf lord";);
+          c.name = "elf lord";
+          c.hatedByEffect = LastingEffect::HATE_ELVES;
+      );
     case CreatureId::DARK_ELF:
       return CATTR(
           c.viewId = Random.choose(ViewId::DARK_ELF, ViewId::DARK_ELF_WOMAN);
@@ -1840,7 +1911,9 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.skills.insert(SkillId::SWIMMING);
           c.spells->add(SpellId::HEAL_SELF);
           c.permanentEffects[LastingEffect::NIGHT_VISION] = 1;
-          c.name = CreatureName("dark elf", "dark elves"););
+          c.name = CreatureName("dark elf", "dark elves");
+          c.hatedByEffect = LastingEffect::HATE_ELVES;
+      );
     case CreatureId::DARK_ELF_WARRIOR:
       return CATTR(
           c.viewId = ViewId::DARK_ELF_WARRIOR;
@@ -1853,7 +1926,9 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.permanentEffects[LastingEffect::NIGHT_VISION] = 1;
           c.maxLevelIncrease[ExperienceType::MELEE] = 5;
           c.maxLevelIncrease[ExperienceType::SPELL] = 5;
-          c.name = CreatureName("dark elf", "dark elves"););
+          c.name = CreatureName("dark elf", "dark elves");
+          c.hatedByEffect = LastingEffect::HATE_ELVES;
+      );
     case CreatureId::DARK_ELF_CHILD:
       return CATTR(
           c.viewId = ViewId::DARK_ELF_CHILD;
@@ -1865,7 +1940,9 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.spells->add(SpellId::HEAL_SELF);
           c.permanentEffects[LastingEffect::NIGHT_VISION] = 1;
           c.skills.insert(SkillId::STEALTH);
-          c.name = CreatureName("dark elf child", "dark elf children"););
+          c.name = CreatureName("dark elf child", "dark elf children");
+          c.hatedByEffect = LastingEffect::HATE_ELVES;
+      );
     case CreatureId::DARK_ELF_LORD:
       return CATTR(
           c.viewId = ViewId::DARK_ELF_LORD;
@@ -1882,7 +1959,9 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.spells->add(SpellId::DEF_BONUS);
           c.spells->add(SpellId::DAM_BONUS);
           c.spells->add(SpellId::BLAST);
-          c.name = "dark elf lord";);
+          c.name = "dark elf lord";
+          c.hatedByEffect = LastingEffect::HATE_ELVES;
+      );
     case CreatureId::DRIAD: 
       return CATTR(
           c.viewId = ViewId::DRIAD;
@@ -1894,7 +1973,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.spells->add(SpellId::HEAL_SELF);
           c.permanentEffects[LastingEffect::ELF_VISION] = 1;
           c.maxLevelIncrease[ExperienceType::ARCHERY] = 4;
-          c.name = "driad";);
+          c.name = "driad";
+      );
     case CreatureId::HORSE: 
       return CATTR(
           c.viewId = ViewId::HORSE;
@@ -1902,10 +1982,10 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body = Body::nonHumanoid(Body::Size::LARGE);
           c.body->setWeight(500);
           c.body->setHorseBodyParts(2);
-          c.animal = true;
           c.noChase = true;
           c.petReaction = "neighs"_s;
-          c.name = "horse";);
+          c.name = "horse";
+      );
     case CreatureId::COW: 
       return CATTR(
           c.viewId = ViewId::COW;
@@ -1913,10 +1993,10 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body = Body::nonHumanoid(Body::Size::LARGE);
           c.body->setWeight(400);
           c.body->setHorseBodyParts(2);
-          c.animal = true;
           c.noChase = true;
           c.petReaction = "\"Mooooooooooooooooooooooooooo!\""_s;
-          c.name = "cow";);
+          c.name = "cow";
+      );
     case CreatureId::DONKEY: 
       return CATTR(
           c.viewId = ViewId::DONKEY;
@@ -1925,9 +2005,9 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body->setWeight(200);
           c.body->setHorseBodyParts(2);
           c.body->setDeathSound(SoundId::DYING_DONKEY);
-          c.animal = true;
           c.noChase = true;
-          c.name = "donkey";);
+          c.name = "donkey";
+      );
     case CreatureId::PIG: 
       return CATTR(
           c.viewId = ViewId::PIG;
@@ -1939,8 +2019,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body->setDeathSound(SoundId::DYING_PIG);
           c.permanentEffects[LastingEffect::SLOWED] = 1;
           c.noChase = true;
-          c.animal = true;
-          c.name = "pig";);
+          c.name = "pig";
+      );
     case CreatureId::GOAT:
       return CATTR(
           c.viewId = ViewId::GOAT;
@@ -1950,8 +2030,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body->setMinionFood();
           c.petReaction = "\"Meh-eh-eh!\""_s;
           c.noChase = true;
-          c.animal = true;
-          c.name = "goat";);
+          c.name = "goat";
+      );
     case CreatureId::JACKAL: 
       return CATTR(
           c.viewId = ViewId::JACKAL;
@@ -1959,8 +2039,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body = Body::nonHumanoid(Body::Size::SMALL);
           c.body->setWeight(10);
           c.body->setHorseBodyParts(1);
-          c.animal = true;
-          c.name = "jackal";);
+          c.name = "jackal";
+      );
     case CreatureId::DEER: 
       return CATTR(
           c.viewId = ViewId::DEER;
@@ -1969,9 +2049,9 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body->setWeight(400);
           c.body->setHorseBodyParts(2);
           c.permanentEffects[LastingEffect::SPEED] = 1;
-          c.animal = true;
           c.noChase = true;
-          c.name = CreatureName("deer", "deer"););
+          c.name = CreatureName("deer", "deer");
+      );
     case CreatureId::BOAR: 
       return CATTR(
           c.viewId = ViewId::BOAR;
@@ -1979,9 +2059,9 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body = Body::nonHumanoid(Body::Size::MEDIUM);
           c.body->setWeight(200);
           c.body->setHorseBodyParts(5);
-          c.animal = true;
           c.noChase = true;
-          c.name = "boar";);
+          c.name = "boar";
+      );
     case CreatureId::FOX: 
       return CATTR(
           c.viewId = ViewId::FOX;
@@ -1989,9 +2069,9 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body = Body::nonHumanoid(Body::Size::SMALL);
           c.body->setWeight(10);
           c.body->setHorseBodyParts(1);
-          c.animal = true;
           c.noChase = true;
-          c.name = CreatureName("fox", "foxes"););
+          c.name = CreatureName("fox", "foxes");
+      );
     case CreatureId::CAVE_BEAR:
       return CATTR(
           c.viewId = ViewId::BEAR;
@@ -2000,9 +2080,9 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body->setWeight(250);
           c.body->setHorseBodyParts(8);
           c.body->setIntrinsicAttack(BodyPart::LEG, IntrinsicAttack(ItemType::claws(10)));
-          c.animal = true;
           c.skills.insert(SkillId::EXPLORE_CAVES);
-          c.name = "cave bear";);
+          c.name = "cave bear";
+      );
     case CreatureId::RAT: 
       return CATTR(
           c.viewId = ViewId::RAT;
@@ -2011,10 +2091,10 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body->setWeight(1);
           c.body->setHorseBodyParts(1);
           c.permanentEffects[LastingEffect::SPEED] = 1;
-          c.animal = true;
           c.noChase = true;
           c.skills.insert(SkillId::SWIMMING);
-          c.name = "rat";);
+          c.name = "rat";
+      );
     case CreatureId::SPIDER: 
       return CATTR(
           c.viewId = ViewId::SPIDER;
@@ -2025,8 +2105,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body->setDeathSound(none);
           c.body->setIntrinsicAttack(BodyPart::TORSO, IntrinsicAttack(
               ItemType::fangs(1, Effect::Lasting{LastingEffect::POISON})));
-          c.animal = true;
-          c.name = "spider";);
+          c.name = "spider";
+      );
     case CreatureId::FLY: 
       return CATTR(
           c.viewId = ViewId::FLY;
@@ -2037,8 +2117,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body->setDeathSound(none);
           c.courage = 1;
           c.noChase = true;
-          c.animal = true;
-          c.name = CreatureName("fly", "flies"););
+          c.name = CreatureName("fly", "flies");
+      );
     case CreatureId::ANT_WORKER:
       return CATTR(
           c.viewId = ViewId::ANT_WORKER;
@@ -2047,8 +2127,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body->setWeight(10);
           c.body->setBodyParts({{BodyPart::LEG, 6}, {BodyPart::HEAD, 1}, {BodyPart::TORSO, 1}});
           c.body->setDeathSound(none);
-          c.animal = true;
-          c.name = "giant ant";);
+          c.name = "giant ant";
+      );
     case CreatureId::ANT_SOLDIER:
       return CATTR(
           c.viewId = ViewId::ANT_SOLDIER;
@@ -2060,8 +2140,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body->setDeathSound(none);
           c.body->setIntrinsicAttack(BodyPart::HEAD, IntrinsicAttack(
               ItemType::fangs(6, Effect::Lasting{LastingEffect::POISON})));
-          c.animal = true;
-          c.name = "giant ant soldier";);
+          c.name = "giant ant soldier";
+      );
     case CreatureId::ANT_QUEEN:      
       return CATTR(
           c.viewId = ViewId::ANT_QUEEN;
@@ -2072,8 +2152,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body->setDeathSound(none);
           c.body->setIntrinsicAttack(BodyPart::HEAD, IntrinsicAttack(
               ItemType::fangs(12, Effect::Lasting{LastingEffect::POISON})));
-          c.animal = true;
-          c.name = "ant queen";);
+          c.name = "ant queen";
+      );
     case CreatureId::SNAKE: 
       return CATTR(
           c.viewId = ViewId::SNAKE;
@@ -2082,11 +2162,11 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body->setWeight(2);
           c.body->setBodyParts({{BodyPart::HEAD, 1}, {BodyPart::TORSO, 1}});
           c.body->setDeathSound(none);
-          c.animal = true;
           c.body->setIntrinsicAttack(BodyPart::HEAD, IntrinsicAttack(
               ItemType::fangs(1, Effect::Lasting{LastingEffect::POISON})));
           c.skills.insert(SkillId::SWIMMING);
-          c.name = "snake";);
+          c.name = "snake";
+      );
     case CreatureId::RAVEN: 
       return CATTR(
           c.viewId = ViewId::RAVEN;
@@ -2095,14 +2175,13 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body->setWeight(0.5);
           c.body->setBirdBodyParts(1);
           c.body->setDeathSound(none);
-          c.animal = true;
           c.noChase = true;
           c.courage = 1;
           c.permanentEffects[LastingEffect::SPEED] = 1;
           c.skills.insert(SkillId::EXPLORE);
           c.name = "raven";
           c.name->setGroup("flock");
-          );
+      );
     case CreatureId::VULTURE: 
       return CATTR(
           c.viewId = ViewId::VULTURE;
@@ -2111,10 +2190,10 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body->setWeight(5);
           c.body->setBirdBodyParts(1);
           c.body->setDeathSound(none);
-          c.animal = true;
           c.noChase = true;
           c.courage = 1;
-          c.name = "vulture";);
+          c.name = "vulture";
+      );
     case CreatureId::WOLF: 
       return CATTR(
           c.viewId = ViewId::WOLF;
@@ -2124,13 +2203,12 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body->setHorseBodyParts(7);
           c.body->setIntrinsicAttack(BodyPart::HEAD, IntrinsicAttack(ItemType::fangs(8)));
           c.body->setIntrinsicAttack(BodyPart::LEG, IntrinsicAttack(ItemType::claws(7)));
-          c.animal = true;
           c.permanentEffects[LastingEffect::NIGHT_VISION] = 1;
           c.name = CreatureName("wolf", "wolves");
           c.name->setGroup("pack");
           c.name->setFirst(NameGenerator::get(NameGeneratorId::DOG)->getNext());
           c.skills.insert(SkillId::EXPLORE_NOCTURNAL);
-          );    
+      );
     case CreatureId::WEREWOLF:
       return CATTR(
           c.viewId = ViewId::WEREWOLF;
@@ -2138,7 +2216,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body = Body::humanoid(Body::Size::LARGE);
           c.body->setIntrinsicAttack(BodyPart::HEAD, IntrinsicAttack(ItemType::fangs(8)));
           c.body->setIntrinsicAttack(BodyPart::LEG, IntrinsicAttack(ItemType::claws(7)));
-          c.animal = true;
           c.permanentEffects[LastingEffect::NIGHT_VISION] = 1;
           c.skills.insert(SkillId::STEALTH);
           c.skills.insert(SkillId::EXPLORE_NOCTURNAL);
@@ -2148,7 +2225,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.name = CreatureName("werewolf", "werewolves");
           c.name->setFirst(NameGenerator::get(NameGeneratorId::DOG)->getNext());
           c.body->setIntrinsicAttack(BodyPart::HEAD, IntrinsicAttack(ItemType::fangs(8)));
-          );
+      );
     case CreatureId::DOG: 
       return CATTR(
           c.viewId = ViewId::DOG;
@@ -2157,12 +2234,11 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body->setWeight(25);
           c.body->setHorseBodyParts(2);
           c.body->setIntrinsicAttack(BodyPart::HEAD, IntrinsicAttack(ItemType::fangs(4)));
-          c.animal = true;
           c.name = "dog";
           c.name->setGroup("pack");
           c.petReaction = "\"WOOF!\""_s;
           c.name->setFirst(NameGenerator::get(NameGeneratorId::DOG)->getNext());
-          );
+      );
     case CreatureId::FIRE_SPHERE: 
       return CATTR(
           c.viewId = ViewId::FIRE_SPHERE;
@@ -2171,7 +2247,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body->setDeathSound(none);
           c.permanentEffects[LastingEffect::FIRE_RESISTANT] = 1;
           c.permanentEffects[LastingEffect::FLYING] = 1;
-          c.name = "fire sphere";);
+          c.name = "fire sphere";
+      );
     case CreatureId::ELEMENTALIST: 
       return CATTR(
           c.viewId = ViewId::ELEMENTALIST;
@@ -2186,7 +2263,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.chatReactionHostile = "\"Die!\""_s;
           c.name = "elementalist";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_FEMALE)->getNext());
-          );
+          c.hatedByEffect = LastingEffect::HATE_HUMANS;
+      );
     case CreatureId::FIRE_ELEMENTAL:
       return CATTR(
           c.viewId = ViewId::FIRE_ELEMENTAL;
@@ -2196,7 +2274,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body->setIntrinsicAttack(BodyPart::TORSO, IntrinsicAttack(ItemType::fists(5, Effect::Fire{})));
           c.permanentEffects[LastingEffect::FIRE_RESISTANT] = 1;
           c.permanentEffects[LastingEffect::FLYING] = 1;
-          c.name = "fire elemental";);
+          c.name = "fire elemental";
+      );
     case CreatureId::AIR_ELEMENTAL:
       return CATTR(
           c.viewId = ViewId::AIR_ELEMENTAL;
@@ -2207,7 +2286,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.permanentEffects[LastingEffect::FLYING] = 1;
           c.permanentEffects[LastingEffect::RANGED_RESISTANCE] = 1;
           c.spells->add(SpellId::CIRCULAR_BLAST);
-          c.name = "air elemental";);
+          c.name = "air elemental";
+      );
     case CreatureId::EARTH_ELEMENTAL:
       return CATTR(
           c.viewId = ViewId::EARTH_ELEMENTAL;
@@ -2217,7 +2297,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body->setDeathSound(none);
           c.attr = LIST(30_dam, 25_def );
           c.permanentEffects[LastingEffect::RANGED_RESISTANCE] = 1;
-          c.name = "earth elemental";);
+          c.name = "earth elemental";
+      );
     case CreatureId::WATER_ELEMENTAL:
       return CATTR(
           c.viewId = ViewId::WATER_ELEMENTAL;
@@ -2228,7 +2309,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.attr = LIST(40_dam, 15_def );
           c.permanentEffects[LastingEffect::RANGED_RESISTANCE] = 1;
           c.skills.insert(SkillId::SWIMMING);
-          c.name = "water elemental";);
+          c.name = "water elemental";
+      );
     case CreatureId::ENT:
       return CATTR(
           c.viewId = ViewId::ENT;
@@ -2240,7 +2322,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.permanentEffects[LastingEffect::SLOWED] = 1;
           c.chatReactionFriendly = "curses all dungeons"_s;
           c.chatReactionHostile = "\"Die!\""_s;
-          c.name = "tree spirit";);
+          c.name = "tree spirit";
+      );
     case CreatureId::ANGEL:
       return CATTR(
           c.viewId = ViewId::ANGEL;
@@ -2248,7 +2331,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body = Body::nonHumanoid(Body::Material::SPIRIT, Body::Size::LARGE);
           c.chatReactionFriendly = "curses all dungeons"_s;
           c.chatReactionHostile = "\"Die!\""_s;
-          c.name = "angel";);
+          c.name = "angel";
+      );
     case CreatureId::KRAKEN:
       return getKrakenAttributes(ViewId::KRAKEN_HEAD, "kraken");
     case CreatureId::BAT: 
@@ -2259,13 +2343,13 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body->setBirdBodyParts(1);
           c.attr = LIST(3_dam, 16_def);
           c.body->setIntrinsicAttack(BodyPart::HEAD, IntrinsicAttack(ItemType::fangs(3)));
-          c.animal = true;
           c.noChase = true;
           c.courage = 1;
           c.permanentEffects[LastingEffect::NIGHT_VISION] = 1;
           c.skills.insert(SkillId::EXPLORE_NOCTURNAL);
           c.skills.insert(SkillId::EXPLORE_CAVES);
-          c.name = "bat";);
+          c.name = "bat";
+      );
     case CreatureId::DEATH: 
       return CATTR(
           c.viewId = ViewId::DEATH;
@@ -2273,7 +2357,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body = Body::humanoidSpirit(Body::Size::LARGE);
           c.chatReactionFriendly = c.chatReactionHostile = "\"IN ORDER TO HAVE A CHANGE OF FORTUNE AT THE LAST MINUTE "
               "YOU HAVE TO TAKE YOUR FORTUNE TO THE LAST MINUTE.\""_s;
-          c.name = "Death";);
+          c.name = "Death";
+      );
     default: FATAL << "This is not handled here " << int(id);
   }
   FATAL << "unhandled case";
@@ -2397,7 +2482,7 @@ static vector<ItemType> getDefaultInventory(CreatureId id) {
     case CreatureId::KEEPER_MAGE_F:
     case CreatureId::KEEPER_MAGE:
       return ItemList()
-        .add(ItemType(ItemType::Robe{}).setPrefixChance(1));
+        .add(ItemType(ItemType::Robe{}));
     case CreatureId::KEEPER_KNIGHT_F:
     case CreatureId::KEEPER_KNIGHT:
       return ItemList()
@@ -2503,7 +2588,11 @@ static vector<ItemType> getDefaultInventory(CreatureId id) {
         .add(randomHealing(), 3)
         .maybe(0.3, ItemType::Torch{})
         .add(ItemType::GoldPiece{}, Random.get(140, 200));
-    case CreatureId::OGRE: 
+    case CreatureId::ORC:
+      return ItemList()
+        .add(ItemType::Club{})
+        .add(ItemType::LeatherArmor{});
+    case CreatureId::OGRE:
       return ItemList().add(ItemType::HeavyClub{});
     case CreatureId::BANDIT:
       return ItemList()

@@ -31,6 +31,7 @@ class LevelGenException {
 
 class FilePath;
 class CreatureList;
+class TribeId;
 
 class LevelMaker {
   public:
@@ -39,7 +40,7 @@ class LevelMaker {
 
   static PLevelMaker cryptLevel(RandomGen&, SettlementInfo);
   static PLevelMaker topLevel(RandomGen&, optional<CreatureFactory> wildlife, vector<SettlementInfo> village, int width,
-      bool keeperSpawn, BiomeId);
+      optional<TribeId> keeperTribe, BiomeId);
   static PLevelMaker mineTownLevel(RandomGen&, SettlementInfo);
   static PLevelMaker splashLevel(CreatureFactory heroLeader, CreatureFactory heroes,
       CreatureFactory monsters, CreatureFactory imps, const FilePath& splashPath);

@@ -1,0 +1,28 @@
+# Keepers
+{
+    # CreatureId      TechVariant   TribeAlignment     Immigrants                           { TechId, ... }
+        # Building groups (see build_menu.txt)
+    KEEPER_MAGE       DARK          EVIL               {"imps" "dark_keeper"}               { SPELLS }
+        {"structure" "doors" "floors" "storage" "quarters" "library" "throne" "beds" "beast_cage" "pigsty" "coffins"
+         "training" "crafting" "demon_shrine" "prison" "orders" "installations" "magical_installations" "traps" }
+    KEEPER_MAGE_F     DARK          EVIL               {"imps" "dark_keeper"}               { SPELLS }
+        {"structure" "doors" "floors" "storage" "quarters" "library" "throne" "beds" "beast_cage" "pigsty" "coffins"
+         "training" "crafting" "demon_shrine" "prison" "orders" "installations" "magical_installations" "traps" }
+    KEEPER_KNIGHT     DARK          EVIL               {"peseant prisoners" "dark_keeper"}  { IRON_WORKING }
+        {"structure" "doors" "floors" "storage" "quarters" "library" "throne" "beds" "beast_cage" "pigsty" "coffins"
+         "training" "crafting" "demon_shrine" "prison" "orders" "installations" "magical_installations" "traps" }
+    KEEPER_KNIGHT_F   DARK          EVIL               {"peseant prisoners" "dark_keeper"}  { IRON_WORKING }
+        {"structure" "doors" "floors" "storage" "quarters" "library" "throne" "beds" "beast_cage" "pigsty" "coffins"
+         "training" "crafting" "demon_shrine" "prison" "orders" "installations" "magical_installations" "traps" }
+    DUKE_PLAYER       WHITE         LAWFUL             {"peseants" "white_keeper"}          { ARCHERY }
+        {"structure" "doors" "floors" "storage" "quarters" "library" "throne" "beds" "beast_cage"
+         "pigsty" "training" "crafting" "prison" "orders" "installations" }
+}
+
+# Adventurers
+{
+    # CreatureId     TribeAlignment
+    ADVENTURER       LAWFUL
+    ADVENTURER_F     LAWFUL
+#    ORC              EVIL
+}
