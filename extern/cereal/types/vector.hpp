@@ -53,7 +53,8 @@ namespace cereal
   {
     size_type vectorSize;
     ar( make_size_tag( vectorSize ) );
-
+    if (vectorSize > 10000000)
+      throw Exception("Vector size too large");
     vector.resize( static_cast<std::size_t>( vectorSize ) );
     ar( binary_data( vector.data(), static_cast<std::size_t>( vectorSize ) * sizeof(T) ) );
   }
@@ -77,7 +78,8 @@ namespace cereal
   {
     size_type size;
     ar( make_size_tag( size ) );
-
+    if (size > 10000000)
+      throw Exception("Vector size too large");
     vector.resize( static_cast<std::size_t>( size ) );
     for(auto && v : vector)
       ar( v );
