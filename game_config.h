@@ -10,7 +10,8 @@ enum class GameConfigId {
   PLAYER_CREATURES,
   BUILD_MENU,
   WORKSHOPS_MENU,
-  IMMIGRATION
+  IMMIGRATION,
+  TECHNOLOGY
 };
 
 class GameConfig {

@@ -21,6 +21,7 @@
 #include "workshop_item.h"
 #include "workshop_type.h"
 #include "immigrant_info.h"
+#include "technology.h"
 
 template <typename T>
 optional<string> PrettyPrinting::parseObject(T& object, const string& s, optional<string> filename) {
@@ -46,3 +47,4 @@ ADD_IMP(vector<pair<string, vector<BuildInfo>>>)
 ADD_IMP(vector<pair<string, std::array<vector<WorkshopItemCfg>, EnumInfo<WorkshopType>::size>>>)
 ADD_IMP(map<string, vector<ImmigrantInfo>>)
 ADD_IMP(map<string, string>)
+ADD_IMP(Technology)

@@ -155,9 +155,9 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   void setPriorityTasks(Position);
   bool hasPriorityTasks(Position) const;
 
-  bool hasTech(TechId id) const;
-  void acquireTech(Technology*, bool throughLevelling);
-  vector<Technology*> getTechnologies() const;
+  void acquireTech(TechId, bool throughLevelling);
+  const Technology& getTechnology() const;
+  void setTechnology(Technology);
   bool addKnownTile(Position);
 
   const EntitySet<Creature>& getKills() const;
@@ -252,7 +252,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   HeapAllocated<MinionEquipment> SERIAL(minionEquipment);
   EnumMap<ResourceId, int> SERIAL(credit);
   HeapAllocated<TaskMap> SERIAL(taskMap);
-  vector<TechId> SERIAL(technologies);
+  HeapAllocated<Technology> SERIAL(technology);
   void markItem(WConstItem, WConstTask);
   void unmarkItem(UniqueEntity<Item>::Id);
 

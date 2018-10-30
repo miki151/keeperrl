@@ -39,10 +39,10 @@ string combine(const vector<T>& v) {
       v.transform([](const T& e) -> string { return e.name; }));
 }
 
-void Encyclopedia::advance(View* view, const Technology* tech) const {
+void Encyclopedia::advance(View* view, TechId tech) const {
   string text;
-  const vector<Technology*>& prerequisites = tech->getPrerequisites();
-  const vector<Technology*>& allowed = tech->getAllowed();
+  const vector<TechId>& prerequisites = technology.techs.at(tech).prerequisites;
+  vector<TechId> allowed = technology.getAllowed(tech);
   if (!prerequisites.empty())
     text += "Requires: " + combine(prerequisites) + "\n";
   if (!allowed.empty())
@@ -51,22 +51,17 @@ void Encyclopedia::advance(View* view, const Technology* tech) const {
       [tech] (const BuildInfo& info) {
           for (auto& req : info.requirements)
             if (auto techReq = req.getReferenceMaybe<TechId>())
-              if (*techReq == tech->getId())
+              if (*techReq == tech)
                 return true;
           return false;});
   if (!rooms.empty())
     text += "Unlocks rooms: " + combine(rooms) + "\n";
-  if (!tech->canResearch())
-    text += " \nCan only be acquired by special means.";
-  view->presentText(capitalFirst(tech->getName()), text);
+  view->presentText(capitalFirst(tech), text);
 }
 
 void Encyclopedia::advances(View* view, int lastInd) const {
-  vector<ListElem> options;
-  vector<Technology*> techs = Technology::getSorted();
-  for (Technology* tech : techs)
-    options.push_back(tech->getName());
-  auto index = view->chooseFromList("Advances", options, lastInd);
+  auto techs = technology.getSorted();
+  auto index = view->chooseFromList("Advances", ListElem::convert(techs), lastInd);
   if (!index)
     return;
   advance(view, techs[*index]);
@@ -115,7 +110,8 @@ void villainPoints(View* view) {
   view->presentList("Experience points awarded for conquering each villain type.", options);
 }
 
-Encyclopedia::Encyclopedia(vector<BuildInfo> buildInfo) : buildInfo(std::move(buildInfo)) {
+Encyclopedia::Encyclopedia(vector<BuildInfo> buildInfo, const Technology& technology)
+    : buildInfo(std::move(buildInfo)), technology(technology) {
 }
 
 void Encyclopedia::present(View* view, int lastInd) {

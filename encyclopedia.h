@@ -24,12 +24,13 @@ class BuildInfo;
 
 class Encyclopedia {
   public:
-  Encyclopedia(vector<BuildInfo>);
+  Encyclopedia(vector<BuildInfo>, const Technology&);
   void present(View*, int lastInd = 0);
 
   private:
   vector<BuildInfo> buildInfo;
-  void advance(View*, const Technology*) const;
+  const Technology& technology;
+  void advance(View*, TechId) const;
   void advances(View*, int lastInd = 0) const;
 };
 

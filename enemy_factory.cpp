@@ -7,6 +7,7 @@
 #include "immigrant_info.h"
 #include "settlement_info.h"
 #include "enemy_info.h"
+#include "avatar_variant.h"
 
 EnemyFactory::EnemyFactory(RandomGen& r) : random(r) {
 }
@@ -272,7 +273,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.buildingId = BuildingId::WOOD_CASTLE;
             c.stockpiles = LIST({StockpileInfo::GOLD, 160});
             c.guardId = CreatureId::WARRIOR;
-            c.elderLoot = ItemType(ItemType::TechBook{TechId::BEAST_MUT});
+            c.elderLoot = ItemType(ItemType::TechBook{"beast mutation"});
             c.furniture = FurnitureFactory::roomFurniture(c.tribe);
             c.outsideFeatures = FurnitureFactory::castleOutside(c.tribe);),
           CollectiveConfig::withImmigrants(300_visible, 10).setGhostSpawns(0.1, 6),
@@ -432,7 +433,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.race = "elves"_s;
             c.stockpiles = LIST({StockpileInfo::GOLD, 100});
             c.buildingId = BuildingId::WOOD;
-            c.elderLoot = ItemType(ItemType::TechBook{TechId::SPELLS_MAS});
+            c.elderLoot = ItemType(ItemType::TechBook{"master sorcery"});
             c.furniture = FurnitureFactory::roomFurniture(TribeId::getPest());),
           CollectiveConfig::withImmigrants(500_visible, 18).setGhostSpawns(0.1, 4),
           CONSTRUCT(VillageBehaviour,
@@ -526,7 +527,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.locationName = getVillageName();
             c.race = "lizardmen"_s;
             c.buildingId = BuildingId::MUD;
-            c.elderLoot = ItemType(ItemType::TechBook{TechId::HUMANOID_MUT});
+            c.elderLoot = ItemType(ItemType::TechBook{"humanoid mutation"});
             c.shopFactory = ItemFactory::mushrooms();
             c.furniture = FurnitureFactory::roomFurniture(c.tribe);
             c.outsideFeatures = FurnitureFactory::villageOutside(c.tribe);),
@@ -720,7 +721,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.inhabitants.leader = CreatureId::WITCH;
             c.race = "witch"_s;
             c.buildingId = BuildingId::WOOD;
-            c.elderLoot = ItemType(ItemType::TechBook{TechId::ALCHEMY_ADV});
+            c.elderLoot = ItemType(ItemType::TechBook{"advanced alchemy"});
             c.furniture = FurnitureFactory(c.tribe, FurnitureType::LABORATORY);), CollectiveConfig::noImmigrants());
     case EnemyId::HUMAN_COTTAGE:
       return EnemyInfo(CONSTRUCT(SettlementInfo,

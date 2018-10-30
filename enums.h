@@ -15,6 +15,8 @@
 
 #pragma once
 
+#include "stdafx.h"
+
 using TeamId = int;
 using LevelId = long long;
 using GenericId = long long;
@@ -76,7 +78,6 @@ enum class ViewId;
 enum class AnimationId;
 
 enum class SpellId;
-enum class TechId;
 enum class SkillId;
 enum class VisionId;
 
@@ -100,9 +101,9 @@ enum class TeamOrder;
 enum class FXName;
 enum class FXVariantName;
 enum class StorageId;
-enum class TechVariant;
 enum class TribeAlignment;
 enum class TutorialState;
 
 struct FXInfo;
 struct FXSpawnInfo;
+using TechId = string;

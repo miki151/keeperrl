@@ -2020,7 +2020,7 @@ SGuiElem GuiBuilder::drawLibraryOverlay(const CollectiveInfo& collectiveInfo, co
       line = gui.stack(
           gui.uiHighlightMouseOver(Color::GREEN),
           std::move(line),
-          gui.button(getButtonCallback({UserInputId::LIBRARY_ADD, i})));
+          gui.button(getButtonCallback({UserInputId::LIBRARY_ADD, elem.name})));
     lines.addElem(gui.rightMargin(rightElemMargin, std::move(line)));
   }
   lines.addSpace(legendLineHeight * 2 / 3);

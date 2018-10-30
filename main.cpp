@@ -304,7 +304,6 @@ static int keeperMain(po::parser& commandLineFlags) {
   if (commandLineFlags["stderr"].was_set() || commandLineFlags["run_tests"].was_set())
     InfoLog.addOutput(DebugOutput::toStream(std::cerr));
   Skill::init();
-  Technology::init();
   Spell::init();
   if (commandLineFlags["run_tests"].was_set()) {
     testAll();

@@ -5,14 +5,14 @@
 
 bool BuildInfo::meetsRequirement(WConstCollective col, Requirement req) {
   return req.visit(
-      [&](TechId techId) { return col->hasTech(techId);},
+      [&](TechId techId) { return col->getTechnology().researched.count(techId);},
       [&](BuildInfo::DungeonLevel level) { return col->getDungeonLevel().level >= level; }
   );
 }
 
 string BuildInfo::getRequirementText(Requirement req) {
   return req.visit(
-      [&](TechId techId) { return "technology: " + Technology::get(techId)->getName();},
+      [&](TechId techId) { return "technology: " + techId;},
       [&](BuildInfo::DungeonLevel level) { return "at least level " + toString(level); }
   );
 }

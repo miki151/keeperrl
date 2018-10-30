@@ -385,7 +385,7 @@ WCollective ModelBuilder::spawnKeeper(WModel m, AvatarInfo avatarInfo, bool rege
   playerCollective->setControl(std::move(playerControl));
   playerCollective->setVillainType(VillainType::PLAYER);
   for (auto tech : keeperInfo->initialTech)
-    playerCollective->acquireTech(Technology::get(tech), false);
+    playerCollective->acquireTech(tech, false);
   if (auto error = playerControlRef->reloadImmigrationAndWorkshops(gameConfig))
     USER_FATAL << *error;
   return playerCollective;

@@ -2,63 +2,86 @@
 {
   {
     creatureId = KEEPER_MAGE
-    techVariant = DARK
     tribeAlignment = EVIL
     immigrantGroups = {"imps" "dark_keeper"}
-    initialTech = { SPELLS }
+    technology = {
+        "alchemy" "advanced alchemy" "alchemical conversion" "humanoid mutation" "beast mutation"
+        "pig breeding" "iron working" "jewellery" "two-handed weapons" "traps" "archery" "sorcery"
+        "advanced sorcery" "magical weapons" "master sorcery" "demonology"
+    }
+    initialTech = { "sorcery" }
     buildingGroups = {
         "structure" "doors" "floors" "storage" "quarters" "library" "throne" "beds" "beast_cage" "pigsty" "coffins"
         "training" "crafting" "demon_shrine" "prison" "orders" "installations" "magical_installations" "traps"
     }
-    workshopGroups = { "group1" }
+    workshopGroups = { "basic" "traps" }
   }
   {
     creatureId = KEEPER_MAGE_F
-    techVariant = DARK
     tribeAlignment = EVIL
     immigrantGroups = {"imps" "dark_keeper"}
-    initialTech = { SPELLS }
+    technology = {
+        "alchemy" "advanced alchemy" "alchemical conversion" "humanoid mutation" "beast mutation"
+        "pig breeding" "iron working" "jewellery" "two-handed weapons" "traps" "archery" "sorcery"
+        "advanced sorcery" "magical weapons" "master sorcery" "demonology"
+    }
+    initialTech = { "sorcery" }
     buildingGroups = {
         "structure" "doors" "floors" "storage" "quarters" "library" "throne" "beds" "beast_cage" "pigsty" "coffins"
         "training" "crafting" "demon_shrine" "prison" "orders" "installations" "magical_installations" "traps"
     }
+    workshopGroups = { "basic" "traps" }
     workshopGroups = { "group1" }
   }
   {
     creatureId = KEEPER_KNIGHT
-    techVariant = DARK
     tribeAlignment = EVIL
     immigrantGroups = {"peseant prisoners" "dark_keeper"}
-    initialTech = { IRON_WORKING }
+    technology = {
+        "alchemy" "advanced alchemy" "alchemical conversion" "humanoid mutation" "beast mutation"
+        "pig breeding" "iron working" "jewellery" "two-handed weapons" "traps" "archery" "sorcery"
+        "advanced sorcery" "magical weapons" "master sorcery" "demonology"
+    }
+    initialTech = { "iron working" }
     buildingGroups = {
         "structure" "doors" "floors" "storage" "quarters" "library" "throne" "beds" "beast_cage" "pigsty" "coffins"
         "training" "crafting" "demon_shrine" "prison" "orders" "installations" "magical_installations" "traps"
     }
+    workshopGroups = { "basic" "traps" }
     workshopGroups = { "group1" }
   }
   {
     creatureId = KEEPER_KNIGHT_F
-    techVariant = DARK
     tribeAlignment = EVIL
     immigrantGroups = {"peseant prisoners" "dark_keeper"}
-    initialTech = { IRON_WORKING }
+    technology = {
+        "alchemy" "advanced alchemy" "alchemical conversion" "humanoid mutation" "beast mutation"
+        "pig breeding" "iron working" "jewellery" "two-handed weapons" "traps" "archery" "sorcery"
+        "advanced sorcery" "magical weapons" "master sorcery" "demonology"
+    }
+    initialTech = { "iron working" }
     buildingGroups = {
         "structure" "doors" "floors" "storage" "quarters" "library" "throne" "beds" "beast_cage" "pigsty" "coffins"
         "training" "crafting" "demon_shrine" "prison" "orders" "installations" "magical_installations" "traps"
     }
+    workshopGroups = { "basic" "traps" }
     workshopGroups = { "group1" }
   }
   {
     creatureId = DUKE_PLAYER
-    techVariant = WHITE
     tribeAlignment = LAWFUL
     immigrantGroups = {"peseants" "white_keeper"}
-    initialTech = { ARCHERY }
+    technology = {
+        "alchemy" "advanced alchemy" "alchemical conversion"
+        "pig breeding" "iron working" "jewellery" "two-handed weapons" "archery" "sorcery"
+        "advanced sorcery" "magical weapons" "master sorcery"
+    }
+    initialTech = { "archery" }
     buildingGroups = {
         "structure" "doors" "floors" "storage" "quarters" "library" "throne" "beds" "beast_cage"
         "pigsty" "training" "crafting" "prison" "orders" "installations"
     }
-    workshopGroups = { "group1" }
+    workshopGroups = { "basic" }
   }
 }
 

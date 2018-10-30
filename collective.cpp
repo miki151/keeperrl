@@ -59,7 +59,7 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
   ar(SUBCLASS(TaskCallback), SUBCLASS(UniqueEntity<Collective>), SUBCLASS(EventListener));
   ar(creatures, taskMap, tribe, control, byTrait, populationGroups);
   ar(territory, alarmInfo, markedItems, constructions, minionEquipment);
-  ar(delayedPos, knownTiles, technologies, kills, points, currentActivity);
+  ar(delayedPos, knownTiles, technology, kills, points, currentActivity);
   ar(credit, level, immigration, teams, name, conqueredVillains);
   ar(config, warnings, knownVillains, knownVillainLocations, banished, positionMatching);
   ar(villainType, enemyId, workshops, zones, discoverable, quarters, populationIncrease, dungeonLevel);
@@ -1278,18 +1278,18 @@ double Collective::getDangerLevel() const {
   return *dangerLevelCache;
 }
 
-bool Collective::hasTech(TechId id) const {
-  return technologies.contains(id);
-}
-
-void Collective::acquireTech(Technology* tech, bool throughLevelling) {
-  technologies.push_back(tech->getId());
+void Collective::acquireTech(TechId tech, bool throughLevelling) {
+  technology->researched.insert(tech);
   if (throughLevelling)
     ++dungeonLevel.consumedLevels;
 }
 
-vector<Technology*> Collective::getTechnologies() const {
-  return technologies.transform([] (const TechId t) { return Technology::get(t); });
+const Technology& Collective::getTechnology() const {
+  return *technology;
+}
+
+void Collective::setTechnology(Technology t) {
+  technology = std::move(t);
 }
 
 const EntitySet<Creature>& Collective::getKills() const {

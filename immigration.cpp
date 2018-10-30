@@ -114,8 +114,8 @@ vector<string> Immigration::getMissingRequirements(const Group& group) const {
             });
       },
       [&](const TechId& techId) {
-        if (!collective->hasTech(techId))
-          ret.push_back("Missing technology: " + Technology::get(techId)->getName());
+        if (!collective->getTechnology().researched.count(techId))
+          ret.push_back("Missing technology: " + techId);
       },
       [&](const SunlightState& state) {
         if (state != collective->getGame()->getSunlightInfo().getState())
@@ -171,7 +171,7 @@ double Immigration::getRequirementMultiplier(const Group& group) const {
             [&](int, int available) { if (available < attraction.amountClaimed) ret *= prob; });
       },
       [&](const TechId& techId, double prob) {
-        if (!collective->hasTech(techId))
+        if (!collective->getTechnology().researched.count(techId))
           ret *= prob;
       },
       [&](const SunlightState& state, double prob) {

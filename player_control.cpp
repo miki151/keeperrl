@@ -172,6 +172,14 @@ void PlayerControl::reloadBuildingMenu() {
       hotkeys[int(info.hotkey)] = true;
     }
   }
+  for (auto& info : buildInfoTmp)
+    for (auto& requirement : info.requirements)
+      if (auto tech = requirement.getReferenceMaybe<TechId>())
+        if (!collective->getTechnology().techs.count(*tech)) {
+          getView()->presentText("Error",
+              "Technology prerequisite \"" + *tech + "\" of build item \"" + info.name + "\" is not available");
+          return;
+        }
   buildInfo = buildInfoTmp;
   for (auto& info : buildInfo)
     if (auto furniture = info.type.getReferenceMaybe<BuildInfo::Furniture>()) {
@@ -190,8 +198,17 @@ void PlayerControl::reloadBuildingMenu() {
     }
 }
 
-
 optional<string> PlayerControl::reloadImmigrationAndWorkshops(GameConfig* gameConfig) {
+  Technology technology;
+  if (auto error = gameConfig->readObject(technology, GameConfigId::TECHNOLOGY))
+    return error;
+  for (auto& tech : copyOf(technology.techs))
+    if (!keeperCreatureInfo.technology.contains(tech.first))
+      technology.techs.erase(tech.first);
+  for (auto& tech : technology.techs)
+    for (auto& preq : tech.second.prerequisites)
+      if (!technology.techs.count(preq))
+        return "Technology prerequisite \"" + preq + "\" of \"" + tech.first + "\" is not available";
   using WorkshopArray = std::array<vector<WorkshopItemCfg>, EnumInfo<WorkshopType>::size>;
   vector<pair<string, WorkshopArray>> workshopGroups;
   if (auto error = gameConfig->readObject(workshopGroups, GameConfigId::WORKSHOPS_MENU))
@@ -207,6 +224,11 @@ optional<string> PlayerControl::reloadImmigrationAndWorkshops(GameConfig* gameCo
   for (auto& group : keeperCreatureInfo.workshopGroups)
     if (!allWorkshopGroups.count(group))
       return "Workshop menu group \"" + group + "\" not found";
+  for (auto& elem : merged)
+    for (auto& item : elem)
+      if (item.tech && !technology.techs.count(*item.tech))
+        return "Technology prerequisite \"" + *item.tech + "\" of workshop item \"" + item.item.get()->getName()
+            + "\" is not available";
   collective->setWorkshops(unique<Workshops>(std::move(merged)));
   map<string, vector<ImmigrantInfo>> immigrantsData;
   if (auto error = gameConfig->readObject(immigrantsData, GameConfigId::IMMIGRATION))
@@ -219,6 +241,7 @@ optional<string> PlayerControl::reloadImmigrationAndWorkshops(GameConfig* gameCo
       return "Undefined immigrant group: \"" + elem + "\"";
   CollectiveConfig::addBedRequirementToImmigrants(immigrants);
   collective->setImmigration(makeOwner<Immigration>(collective, std::move(immigrants)));
+  collective->setTechnology(std::move(technology));
   return none;
 }
 
@@ -1001,9 +1024,9 @@ ItemInfo PlayerControl::getWorkshopItem(const WorkshopItem& option) const {
       c.name = c.number == 1 ? option.name : toString(c.number) + " " + option.pluralName;
       c.viewId = option.viewId;
       c.price = getCostObj(option.cost * option.number);
-      if (option.techId && !collective->hasTech(*option.techId)) {
+      if (option.techId && !collective->getTechnology().researched.count(*option.techId)) {
         c.unavailable = true;
-        c.unavailableReason = "Requires technology: " + Technology::get(*option.techId)->getName();
+        c.unavailableReason = "Requires technology: " + *option.techId;
       }
       c.description = option.description;
       c.productionState = option.state.value_or(0);
@@ -1022,11 +1045,9 @@ static const ViewObject& getConstructionObject(FurnitureType type) {
   return *objects[type];
 }
 
-void PlayerControl::acquireTech(int index) {
-  auto techs = Technology::getNextTechs(collective->getTechnologies(), keeperCreatureInfo.techVariant).filter(
-      [](const Technology* tech) { return tech->canResearch(); });
-  if (index < techs.size()) {
-    Technology* tech = techs[index];
+void PlayerControl::acquireTech(TechId tech) {
+  auto techs = collective->getTechnology().getNextTechs();
+  if (techs.contains(tech)) {
     if (collective->getDungeonLevel().numResearchAvailable() > 0) {
       collective->acquireTech(tech, true);
     }
@@ -1042,21 +1063,21 @@ void PlayerControl::fillLibraryInfo(CollectiveInfo& collectiveInfo) const {
       info.warning = "Conquer some villains to advance your level."_s;
     info.totalProgress = 100 * dungeonLevel.getNecessaryProgress(dungeonLevel.level);
     info.currentProgress = int(100 * dungeonLevel.progress);
-    auto techs = Technology::getNextTechs(collective->getTechnologies(), keeperCreatureInfo.techVariant).filter(
-        [](const Technology* tech) { return tech->canResearch(); });
-    for (Technology* tech : techs) {
+    auto& technology = collective->getTechnology();
+    auto techs = technology.getNextTechs();
+    for (auto& tech : techs) {
       info.available.emplace_back();
       auto& techInfo = info.available.back();
-      techInfo.name = tech->getName();
-      techInfo.tutorialHighlight = tech->getTutorialHighlight();
+      techInfo.name = tech;
+      //techInfo.tutorialHighlight = tech->getTutorialHighlight();
       techInfo.active = !info.warning && dungeonLevel.numResearchAvailable() > 0;
-      techInfo.description = tech->getDescription();
+      techInfo.description = technology.techs.at(tech).description;
     }
-    for (Technology* tech : collective->getTechnologies()) {
+    for (auto& tech : collective->getTechnology().researched) {
       info.researched.emplace_back();
       auto& techInfo = info.researched.back();
-      techInfo.name = tech->getName();
-      techInfo.description = tech->getDescription();
+      techInfo.name = tech;
+      techInfo.description = technology.techs.at(tech).description;
     }
   }
 }
@@ -1266,7 +1287,7 @@ void PlayerControl::fillImmigrationHelp(CollectiveInfo& info) const {
                   [&](const AttractionType& type) { return AttractionInfo::getAttractionName(type, required); })));
         },
         [&](const TechId& techId) {
-          requirements.push_back("Requires technology: " + Technology::get(techId)->getName());
+          requirements.push_back("Requires technology: " + techId);
         },
         [&](const SunlightState& state) {
           requirements.push_back("Will only join during the "_s + SunlightInfo::getText(state));
@@ -1512,25 +1533,18 @@ void PlayerControl::onEvent(const GameEvent& event) {
                 (int) collective->getDangerLevel() + collective->getPoints());
       },
       [&](const TechbookRead& info) {
-        Technology* tech = info.technology;
-        vector<Technology*> nextTechs = Technology::getNextTechs(collective->getTechnologies(),
-            keeperCreatureInfo.techVariant);
-        if (tech == nullptr) {
-          if (!nextTechs.empty())
-            tech = Random.choose(nextTechs);
-          else
-            tech = Random.choose(Technology::getAll());
-        }
-        if (!collective->getTechnologies().contains(tech)) {
+        auto tech = info.technology;
+        vector<TechId> nextTechs = collective->getTechnology().getNextTechs();
+        if (!collective->getTechnology().researched.count(tech)) {
           if (!nextTechs.contains(tech))
-            getView()->presentText("Information", "The tome describes the knowledge of " + tech->getName()
+            getView()->presentText("Information", "The tome describes the knowledge of " + tech
                 + ", but you do not comprehend it.");
           else {
-            getView()->presentText("Information", "You have acquired the knowledge of " + tech->getName());
+            getView()->presentText("Information", "You have acquired the knowledge of " + tech);
             collective->acquireTech(tech, false);
           }
         } else {
-          getView()->presentText("Information", "The tome describes the knowledge of " + tech->getName()
+          getView()->presentText("Information", "The tome describes the knowledge of " + tech
               + ", which you already possess.");
         }
       },
@@ -1972,7 +1986,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
     case UserInputId::DRAW_LEVEL_MAP: view->drawLevelMap(this); break;
     case UserInputId::DRAW_WORLD_MAP: getGame()->presentWorldmap(); break;
     case UserInputId::TECHNOLOGY: setChosenLibrary(!chosenLibrary); break;
-    case UserInputId::KEEPEROPEDIA: Encyclopedia(buildInfo).present(view); break;
+    case UserInputId::KEEPEROPEDIA: Encyclopedia(buildInfo, collective->getTechnology()).present(view); break;
     case UserInputId::WORKSHOP: {
       int index = input.get<int>();
       if (index < 0 || index >= EnumInfo<WorkshopType>::size)
@@ -1994,7 +2008,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
       }
       break;
     case UserInputId::LIBRARY_ADD:
-      acquireTech(input.get<int>());
+      acquireTech(input.get<TechId>());
       break;
     case UserInputId::LIBRARY_CLOSE:
       setChosenLibrary(false);
