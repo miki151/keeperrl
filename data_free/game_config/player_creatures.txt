@@ -1,22 +1,65 @@
 # Keepers
 {
-    # CreatureId      TechVariant   TribeAlignment     Immigrants                           { TechId, ... }
-        # Building groups (see build_menu.txt)
-    KEEPER_MAGE       DARK          EVIL               {"imps" "dark_keeper"}               { SPELLS }
-        {"structure" "doors" "floors" "storage" "quarters" "library" "throne" "beds" "beast_cage" "pigsty" "coffins"
-         "training" "crafting" "demon_shrine" "prison" "orders" "installations" "magical_installations" "traps" }
-    KEEPER_MAGE_F     DARK          EVIL               {"imps" "dark_keeper"}               { SPELLS }
-        {"structure" "doors" "floors" "storage" "quarters" "library" "throne" "beds" "beast_cage" "pigsty" "coffins"
-         "training" "crafting" "demon_shrine" "prison" "orders" "installations" "magical_installations" "traps" }
-    KEEPER_KNIGHT     DARK          EVIL               {"peseant prisoners" "dark_keeper"}  { IRON_WORKING }
-        {"structure" "doors" "floors" "storage" "quarters" "library" "throne" "beds" "beast_cage" "pigsty" "coffins"
-         "training" "crafting" "demon_shrine" "prison" "orders" "installations" "magical_installations" "traps" }
-    KEEPER_KNIGHT_F   DARK          EVIL               {"peseant prisoners" "dark_keeper"}  { IRON_WORKING }
-        {"structure" "doors" "floors" "storage" "quarters" "library" "throne" "beds" "beast_cage" "pigsty" "coffins"
-         "training" "crafting" "demon_shrine" "prison" "orders" "installations" "magical_installations" "traps" }
-    DUKE_PLAYER       WHITE         LAWFUL             {"peseants" "white_keeper"}          { ARCHERY }
-        {"structure" "doors" "floors" "storage" "quarters" "library" "throne" "beds" "beast_cage"
-         "pigsty" "training" "crafting" "prison" "orders" "installations" }
+  {
+    creatureId = KEEPER_MAGE
+    techVariant = DARK
+    tribeAlignment = EVIL
+    immigrantGroups = {"imps" "dark_keeper"}
+    initialTech = { SPELLS }
+    buildingGroups = {
+        "structure" "doors" "floors" "storage" "quarters" "library" "throne" "beds" "beast_cage" "pigsty" "coffins"
+        "training" "crafting" "demon_shrine" "prison" "orders" "installations" "magical_installations" "traps"
+    }
+    workshopGroups = { "group1" }
+  }
+  {
+    creatureId = KEEPER_MAGE_F
+    techVariant = DARK
+    tribeAlignment = EVIL
+    immigrantGroups = {"imps" "dark_keeper"}
+    initialTech = { SPELLS }
+    buildingGroups = {
+        "structure" "doors" "floors" "storage" "quarters" "library" "throne" "beds" "beast_cage" "pigsty" "coffins"
+        "training" "crafting" "demon_shrine" "prison" "orders" "installations" "magical_installations" "traps"
+    }
+    workshopGroups = { "group1" }
+  }
+  {
+    creatureId = KEEPER_KNIGHT
+    techVariant = DARK
+    tribeAlignment = EVIL
+    immigrantGroups = {"peseant prisoners" "dark_keeper"}
+    initialTech = { IRON_WORKING }
+    buildingGroups = {
+        "structure" "doors" "floors" "storage" "quarters" "library" "throne" "beds" "beast_cage" "pigsty" "coffins"
+        "training" "crafting" "demon_shrine" "prison" "orders" "installations" "magical_installations" "traps"
+    }
+    workshopGroups = { "group1" }
+  }
+  {
+    creatureId = KEEPER_KNIGHT_F
+    techVariant = DARK
+    tribeAlignment = EVIL
+    immigrantGroups = {"peseant prisoners" "dark_keeper"}
+    initialTech = { IRON_WORKING }
+    buildingGroups = {
+        "structure" "doors" "floors" "storage" "quarters" "library" "throne" "beds" "beast_cage" "pigsty" "coffins"
+        "training" "crafting" "demon_shrine" "prison" "orders" "installations" "magical_installations" "traps"
+    }
+    workshopGroups = { "group1" }
+  }
+  {
+    creatureId = DUKE_PLAYER
+    techVariant = WHITE
+    tribeAlignment = LAWFUL
+    immigrantGroups = {"peseants" "white_keeper"}
+    initialTech = { ARCHERY }
+    buildingGroups = {
+        "structure" "doors" "floors" "storage" "quarters" "library" "throne" "beds" "beast_cage"
+        "pigsty" "training" "crafting" "prison" "orders" "installations"
+    }
+    workshopGroups = { "group1" }
+  }
 }
 
 # Adventurers

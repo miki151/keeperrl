@@ -1,3 +1,7 @@
+{
+  
+"group1"
+
 # Workshop
 {
     {item = {Club}    work = 3 cost = WOOD 10    tech = none      batchSize = 1    tutorialHighlight = SCHEDULE_CLUB}
@@ -77,4 +81,27 @@
     {{Amulet WARNING}                      10       GOLD 30}
     {{DefenseAmulet}                       10       GOLD 40}
     {{Amulet REGENERATION}                 10       GOLD 60}
+}
+
+"group2"
+# Add more items here, remember that there need to be 4 lists in each group, each for each workshop type.
+# And you need to add your new group to your keeper in player_creatures.txt
+
+# Workshop
+{
+}
+
+# Forge
+{
+}
+
+# Lab
+{
+}
+
+# Jeweller
+{
+}
+
+
 }

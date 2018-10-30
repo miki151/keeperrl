@@ -192,10 +192,22 @@ void PlayerControl::reloadBuildingMenu() {
 
 
 optional<string> PlayerControl::reloadImmigrationAndWorkshops(GameConfig* gameConfig) {
-  std::array<vector<WorkshopItemCfg>, EnumInfo<WorkshopType>::size> workshopElems;
-  if (auto error = gameConfig->readObject(workshopElems, GameConfigId::WORKSHOPS_MENU))
+  using WorkshopArray = std::array<vector<WorkshopItemCfg>, EnumInfo<WorkshopType>::size>;
+  vector<pair<string, WorkshopArray>> workshopGroups;
+  if (auto error = gameConfig->readObject(workshopGroups, GameConfigId::WORKSHOPS_MENU))
     return error;
-  collective->setWorkshops(unique<Workshops>(std::move(workshopElems)));
+  WorkshopArray merged;
+  set<string> allWorkshopGroups;
+  for (auto& group : workshopGroups) {
+    allWorkshopGroups.insert(group.first);
+    if (keeperCreatureInfo.workshopGroups.contains(group.first))
+      for (int i : Range(EnumInfo<WorkshopType>::size))
+        merged[i].append(group.second[i]);
+  }
+  for (auto& group : keeperCreatureInfo.workshopGroups)
+    if (!allWorkshopGroups.count(group))
+      return "Workshop menu group \"" + group + "\" not found";
+  collective->setWorkshops(unique<Workshops>(std::move(merged)));
   map<string, vector<ImmigrantInfo>> immigrantsData;
   if (auto error = gameConfig->readObject(immigrantsData, GameConfigId::IMMIGRATION))
     return error;
