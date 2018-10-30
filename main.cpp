@@ -195,7 +195,6 @@ static po::parser getCommandLineFlags() {
   flags["single_thread"].description("Do operations like loading, saving and level generation without starting an extra thread.");
   flags["user_dir"].type(po::string).description("Directory for options and save files");
   flags["data_dir"].type(po::string).description("Directory containing the game data");
-  flags["upload_url"].type(po::string).description("URL for uploading maps");
   flags["restore_settings"].description("Restore settings to default values.");
   flags["run_tests"].description("Run all unit tests and exit");
   flags["worldgen_test"].type(po::i32).description("Test how often world generation fails");
@@ -257,14 +256,27 @@ static string getInstallId(const FilePath& path, RandomGen& random) {
   return ret;
 }
 
-const static string serverVersion = "22";
+struct AppConfig {
+  AppConfig(FilePath path) {
+    if (auto error = PrettyPrinting::parseObject(values, path))
+      USER_FATAL << *error;
+  }
 
-static int readSaveVersion(FilePath file) {
-  ifstream input(file.getPath());
-  int version;
-  input >> version;
-  return version;
-}
+  template <typename T>
+  T get(const char* key) {
+    if (auto value = getReferenceMaybe(values, key)) {
+      if (auto ret = fromStringSafe<T>(*value))
+        return *ret;
+      else
+        USER_FATAL << "Error reading config value: " << key << " from: " << *value;
+    } else
+      USER_FATAL << "Config value not found: " << key;
+    fail();
+  }
+
+  private:
+  map<string, string> values;
+};
 
 static int keeperMain(po::parser& commandLineFlags) {
   ENABLE_PROFILER;
@@ -328,15 +340,6 @@ static int keeperMain(po::parser& commandLineFlags) {
   }());
   INFO << "Data path: " << dataPath;
   INFO << "User path: " << userPath;
-  string uploadUrl;
-  if (commandLineFlags["upload_url"].was_set())
-    uploadUrl = commandLineFlags["upload_url"].get().string;
-  else
-#ifdef RELEASE
-    uploadUrl = "http://keeperrl.com/~retired/" + serverVersion;
-#else
-    uploadUrl = "http://localhost/~michal/" + serverVersion;
-#endif
   Clock clock;
   Renderer renderer(
       &clock,
@@ -346,6 +349,12 @@ static int keeperMain(po::parser& commandLineFlags) {
       freeDataPath.file("images/mouse_cursor2.png"));
   FatalLog.addOutput(DebugOutput::toString([&renderer](const string& s) { renderer.showError(s);}));
   UserErrorLog.addOutput(DebugOutput::toString([&renderer](const string& s) { renderer.showError(s);}));
+#ifdef RELEASE
+  AppConfig appConfig(dataPath.file("appconfig.txt"));
+#else
+  AppConfig appConfig(dataPath.file("appconfig-dev.txt"));
+#endif
+  string uploadUrl = appConfig.get<string>("upload_url");
 
   unique_ptr<fx::FXManager> fxManager;
   unique_ptr<fx::FXRenderer> fxRenderer;
@@ -445,7 +454,7 @@ static int keeperMain(po::parser& commandLineFlags) {
     return 0;
   }
   MainLoop loop(view.get(), &highscores, &fileSharing, freeDataPath, userPath, &options, &jukebox, &sokobanInput,
-      &gameConfig, useSingleThread, readSaveVersion(freeDataPath.file("save_version.txt")));
+      &gameConfig, useSingleThread, appConfig.get<int>("save_version"));
   try {
     if (audioError)
       view->presentText("Failed to initialize audio. The game will be started without sound.", *audioError);

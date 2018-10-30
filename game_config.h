@@ -18,11 +18,7 @@ class GameConfig {
   GameConfig(DirectoryPath);
   template<typename T>
   optional<string> readObject(T& object, GameConfigId id) {
-    auto file = path.file(getConfigName(id) + ".txt"_s);
-    if (auto contents = file.readContents())
-      return PrettyPrinting::parseObject<T>(object, *contents,  string(file.getFileName()));
-    else
-      return "Couldn't open file: "_s + file.getPath();
+    return PrettyPrinting::parseObject<T>(object, path.file(getConfigName(id) + ".txt"_s));
   }
 
   private:
