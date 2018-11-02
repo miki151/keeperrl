@@ -7,7 +7,7 @@
 #include "immigrant_info.h"
 #include "settlement_info.h"
 #include "enemy_info.h"
-#include "avatar_variant.h"
+#include "tribe_alignment.h"
 
 EnemyFactory::EnemyFactory(RandomGen& r) : random(r) {
 }

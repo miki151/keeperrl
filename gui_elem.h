@@ -19,7 +19,6 @@
 #include "util.h"
 #include "renderer.h"
 #include "drag_and_drop.h"
-#include "player_role_choice.h"
 #include "texture_id.h"
 #include "attr_type.h"
 #include "spell_id.h"
@@ -190,7 +189,6 @@ class GuiFactory {
   SGuiElem onMouseRightButtonHeld(SGuiElem);
   SGuiElem mouseHighlight(SGuiElem highlight, int myIndex, optional<int>* highlighted);
   SGuiElem mouseHighlight2(SGuiElem highlight, SGuiElem noHighlight = nullptr);
-  SGuiElem mouseHighlightGameChoice(SGuiElem, optional<PlayerRoleChoice> my, optional<PlayerRoleChoice>& highlight);
   static int getHeldInitValue();
   SGuiElem scrollable(SGuiElem content, ScrollPosition* scrollPos = nullptr, int* held = nullptr);
   SGuiElem getScrollButton();

@@ -38,6 +38,9 @@
 #include "team_order.h"
 #include "lasting_effect.h"
 #include "skill.h"
+#include "player_role.h"
+#include "tribe_alignment.h"
+#include "avatar_menu_option.h"
 
 using SDL::SDL_Keysym;
 using SDL::SDL_Keycode;
@@ -2432,15 +2435,11 @@ vector<SGuiElem> GuiBuilder::getMultiLine(const string& text, Color color, MenuT
   return ret;
 }
 
-SGuiElem GuiBuilder::menuElemMargins(SGuiElem elem) {
-  return elem;
-}
-
 SGuiElem GuiBuilder::getHighlight(SGuiElem line, MenuType type, const string& label, int numActive, optional<int>* highlight) {
   switch (type) {
     case MenuType::MAIN:
       return gui.stack(std::move(line),
-          gui.mouseHighlight(menuElemMargins(gui.mainMenuLabel(label, menuLabelVPadding)), numActive, highlight));
+          gui.mouseHighlight(gui.mainMenuLabel(label, menuLabelVPadding), numActive, highlight));
     default:
       return gui.stack(gui.mouseHighlight(
           gui.leftMargin(0, gui.translate(gui.uiHighlightLine(), Vec2(0, 0))),
@@ -2493,7 +2492,6 @@ SGuiElem GuiBuilder::drawListGui(const string& title, const vector<ListElem>& op
     if (!options[i].getSecondColumn().empty())
       line = gui.horizontalList(makeVec(std::move(line),
             gui.label(options[i].getSecondColumn(), color)), columnWidth + 80);
-    line = menuElemMargins(std::move(line));
     if (highlight && options[i].getMod() == ListElem::NORMAL) {
       line = gui.stack(
           gui.button([=]() { *choice = numActive; }),
@@ -3026,7 +3024,70 @@ SGuiElem GuiBuilder::drawChooseSiteMenu(SyncQueue<optional<Vec2>>& queue, const 
                 gui.button([&queue] { queue.push(none); }, gui.getKey(SDL::SDLK_ESCAPE), true),
                 gui.labelHighlight("[Cancel]", Color::LIGHT_BLUE))).buildHorizontalList()));
   return gui.preferredSize(1000, 600,
-      gui.window(gui.margins(lines.buildVerticalList(), 15), [&queue] { queue.push(none); }));
+                           gui.window(gui.margins(lines.buildVerticalList(), 15), [&queue] { queue.push(none); }));
+}
+
+const Vec2 hintSize(500, 200);
+
+SGuiElem GuiBuilder::drawAvatarHint(const View::AvatarData& avatar) {
+  auto lines = gui.getListBuilder(legendLineHeight);
+  lines.addElem(gui.getListBuilder()
+      .addElemAuto(gui.viewObject(avatar.viewId))
+      .addSpace(8)
+      .addElemAuto(gui.label(capitalFirst(avatar.gender.get("male", "female")) + " "_s + avatar.name +
+           " " + getName(avatar.role)))
+      .buildHorizontalList());
+  lines.addElem(gui.label("Alignment: "_s + getName(avatar.alignment)));
+  lines.addElem(gui.labelMultiLineWidth(avatar.description, legendLineHeight, hintSize.x), hintSize.y);
+  return lines.buildVerticalList();
+}
+
+static const char* getText(AvatarMenuOption option) {
+  switch (option) {
+    case AvatarMenuOption::TUTORIAL:
+      return "Tutorial";
+    case AvatarMenuOption::LOAD_GAME:
+      return "Load game";
+    case AvatarMenuOption::GO_BACK:
+      return "Go back";
+  }
+}
+
+SGuiElem GuiBuilder::drawAvatarMenu(SyncQueue<View::AvatarChoice>& queue, const vector<View::AvatarData>& avatars) {
+  auto lines = gui.getListBuilder(legendLineHeight);
+  auto addRole = [&](PlayerRole role) {
+    auto line = gui.getListBuilder(legendLineHeight);
+    for (int i : All(avatars)) {
+      auto& elem = avatars[i];
+      if (elem.role == role)
+        line.addElemAuto(gui.stack(
+            gui.button([i, &queue]{ queue.push(i); }),
+            gui.margins(gui.mouseHighlight2(
+                gui.topMargin(-8, gui.viewObject(elem.viewId, 3)), gui.viewObject(elem.viewId, 3)), 10),
+            gui.tooltip2(gui.miniWindow(gui.margins(gui.preferredSize(hintSize, drawAvatarHint(elem)), 20)),
+                [=](const Rectangle& pos) {
+                    return Vec2((renderer.getSize().x - hintSize.x) / 2, pos.top() - 50 - hintSize.y); })
+        ));
+    }
+    lines.addElemAuto(gui.centerHoriz(line.buildHorizontalList()));
+  };
+  lines.addElem(gui.centerHoriz(gui.label("Play as a Keeper:")));
+  addRole(PlayerRole::KEEPER);
+  lines.addElem(gui.centerHoriz(gui.label("Play as an Adventurer:")));
+  addRole(PlayerRole::ADVENTURER);
+  lines.addElem(gui.button([&queue] { queue.push(AvatarMenuOption::GO_BACK); },
+      gui.getKey(SDL::SDLK_ESCAPE), true), 20);
+  auto optionLines = gui.getListBuilder();
+  for (auto option : ENUM_ALL(AvatarMenuOption))
+    optionLines.addElem(gui.stack(
+        gui.button([option, &queue]{ queue.push(option); }),
+        gui.mainMenuLabelBg(getText(option), menuLabelVPadding),
+        gui.mouseHighlight2(gui.mainMenuLabel(getText(option), menuLabelVPadding))
+    ), 60);
+  return gui.getListBuilder()
+      .addElemAuto(gui.translucentBackground(gui.margins(lines.buildVerticalList(), 15)))
+      .addElemAuto(optionLines.buildVerticalList())
+      .buildVerticalList();
 }
 
 SGuiElem GuiBuilder::drawPlusMinus(function<void(int)> callback, bool canIncrease, bool canDecrease) {
@@ -3052,15 +3113,6 @@ SGuiElem GuiBuilder::drawOptionElem(Options* options, OptionId id, function<void
     valueString = *defaultString;
   string name = options->getName(id);
   switch (options->getType(id)) {
-    case Options::PLAYER_TYPE: {
-      auto viewId = CreatureFactory::getViewId(options->getCreatureId(id));
-      line.addElemAuto(gui.label(name + ": "));
-      line.addElem(gui.stack(
-            gui.tooltip2(gui.miniWindow(gui.margins(gui.viewObject(viewId, 2), 15)), [](const Rectangle& r) { return r.topRight();}),
-            gui.viewObject(viewId, 1),
-            gui.button([=] { options->setNextCreatureId(id); onChanged(); })), 30);
-      break;
-    }
     case Options::STRING:
       line.addElemAuto(gui.label(name + ": "));
       line.addElemAuto(gui.stack(
@@ -3190,8 +3242,7 @@ SGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, View::Ca
   lines.addElem(gui.leftMargin(optionMargin, gui.label("World name: " + campaign.getWorldName())));
   auto getDefaultString = [&](OptionId id) -> optional<string> {
     switch(id) {
-      case OptionId::ADVENTURER_NAME:
-      case OptionId::KEEPER_NAME:
+      case OptionId::PLAYER_NAME:
         return campaignOptions.player->getName().first();
       default:
         return none;

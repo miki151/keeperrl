@@ -36,6 +36,7 @@
 #include "skill.h"
 #include "game_config.h"
 #include "build_info.h"
+#include "tribe_alignment.h"
 
 using namespace std::chrono;
 
@@ -44,13 +45,6 @@ ModelBuilder::ModelBuilder(ProgressMeter* m, RandomGen& r, Options* o, SokobanIn
 }
 
 ModelBuilder::~ModelBuilder() {
-}
-
-static CollectiveConfig getKeeperConfig(RandomGen& random, bool fastImmigration, bool regenerateMana) {
-  return CollectiveConfig::keeper(
-      TimeInterval(fastImmigration ? 10 : 140),
-      10,
-      regenerateMana);
 }
 
 SettlementInfo& ModelBuilder::makeExtraLevel(WModel model, EnemyInfo& enemy) {
@@ -365,30 +359,6 @@ void ModelBuilder::measureModelGen(const string& name, int numTries, function<vo
   }
   std::cout << std::endl << numSuccess << " / " << numTries << ". MinT: " <<
     minT << ". MaxT: " << maxT << ". AvgT: " << sumT / numTries << std::endl;
-}
-
-WCollective ModelBuilder::spawnKeeper(WModel m, AvatarInfo avatarInfo, bool regenerateMana, vector<string> introText) {
-  WLevel level = m->getTopLevel();
-  WCreature keeperRef = avatarInfo.playerCreature.get();
-  CHECK(level->landCreature(StairKey::keeperSpawn(), keeperRef)) << "Couldn't place keeper on level.";
-  m->addCreature(std::move(avatarInfo.playerCreature));
-  auto keeperInfo = avatarInfo.creatureInfo.getReferenceMaybe<KeeperCreatureInfo>();
-  m->collectives.push_back(CollectiveBuilder(
-        getKeeperConfig(random, options->getBoolValue(OptionId::FAST_IMMIGRATION),
-            regenerateMana), keeperRef->getTribeId())
-      .setLevel(level)
-      .addCreature(keeperRef, {MinionTrait::LEADER})
-      .build());
-  WCollective playerCollective = m->collectives.back().get();
-  auto playerControl = PlayerControl::create(playerCollective, introText, *keeperInfo);
-  auto playerControlRef = playerControl.get();
-  playerCollective->setControl(std::move(playerControl));
-  playerCollective->setVillainType(VillainType::PLAYER);
-  for (auto tech : keeperInfo->initialTech)
-    playerCollective->acquireTech(tech, false);
-  if (auto error = playerControlRef->reloadImmigrationAndWorkshops(gameConfig))
-    USER_FATAL << *error;
-  return playerCollective;
 }
 
 PModel ModelBuilder::tryModel(int width, const string& levelName, vector<EnemyInfo> enemyInfo,

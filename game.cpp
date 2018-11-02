@@ -36,6 +36,7 @@
 #include "collective_config.h"
 #include "attack_behaviour.h"
 #include "village_behaviour.h"
+#include "collective_builder.h"
 
 template <class Archive> 
 void Game::serialize(Archive& ar, const unsigned int version) {
@@ -62,15 +63,8 @@ Game::Game(Table<PModel>&& m, Vec2 basePos, const CampaignSetup& c)
   gameDisplayName = c.gameDisplayName;
   for (Vec2 v : models.getBounds())
     if (WModel m = models[v].get()) {
-      for (WCollective c : m->getCollectives()) {
-        collectives.push_back(c);
-        auto type = c->getVillainType();
-        villainsByType[type].push_back(c);
-        if (type == VillainType::PLAYER) {
-          playerControl = c->getControl().dynamicCast<PlayerControl>();
-          playerCollective = c;
-        }
-      }
+      for (WCollective col : m->getCollectives())
+        addCollective(col);
       m->updateSunlightMovement();
       for (auto c : m->getAllCreatures())
         c->setGlobalTime(getGlobalTime());
@@ -80,14 +74,53 @@ Game::Game(Table<PModel>&& m, Vec2 basePos, const CampaignSetup& c)
     turnEvents.insert(1000 * (i + 1));
 }
 
+void Game::addCollective(WCollective col) {
+  collectives.push_back(col);
+  auto type = col->getVillainType();
+  villainsByType[type].push_back(col);
+}
+
+static CollectiveConfig getKeeperConfig(bool fastImmigration, bool regenerateMana) {
+  return CollectiveConfig::keeper(
+      TimeInterval(fastImmigration ? 10 : 140),
+      10,
+      regenerateMana);
+}
+
+void Game::spawnKeeper(AvatarInfo avatarInfo, bool regenerateMana, vector<string> introText,
+    GameConfig* gameConfig) {
+  auto model = getMainModel().get();
+  WLevel level = model->getTopLevel();
+  WCreature keeperRef = avatarInfo.playerCreature.get();
+  CHECK(level->landCreature(StairKey::keeperSpawn(), keeperRef)) << "Couldn't place keeper on level.";
+  model->addCreature(std::move(avatarInfo.playerCreature));
+  auto keeperInfo = avatarInfo.creatureInfo.getReferenceMaybe<KeeperCreatureInfo>();
+  model->addCollective(CollectiveBuilder(getKeeperConfig(false, regenerateMana), keeperRef->getTribeId())
+      .setLevel(level)
+      .addCreature(keeperRef, {MinionTrait::LEADER})
+      .build());
+  playerCollective = model->getCollectives().back();
+  auto playerControlOwned = PlayerControl::create(playerCollective, introText, *keeperInfo);
+  playerControl = playerControlOwned.get();
+  playerCollective->setControl(std::move(playerControlOwned));
+  playerCollective->setVillainType(VillainType::PLAYER);
+  addCollective(playerCollective);
+  for (auto tech : keeperInfo->initialTech)
+    playerCollective->acquireTech(tech, false);
+  if (auto error = playerControl->reloadImmigrationAndWorkshops(gameConfig))
+    USER_FATAL << *error;
+}
+
 Game::~Game() {}
 
-PGame Game::campaignGame(Table<PModel>&& models, CampaignSetup& setup) {
+PGame Game::campaignGame(Table<PModel>&& models, CampaignSetup& setup, AvatarInfo avatar, GameConfig* gameConfig) {
   auto ret = makeOwner<Game>(std::move(models), *setup.campaign.getPlayerPos(), setup);
   for (auto model : ret->getAllModels())
     model->setGame(ret.get());
   if (setup.campaign.getPlayerRole() == PlayerRole::ADVENTURER)
-    ret->getMainModel()->landHeroPlayer(std::move(setup.avatarInfo.playerCreature));
+    ret->getMainModel()->landHeroPlayer(std::move(avatar.playerCreature));
+  else
+    ret->spawnKeeper(std::move(avatar), setup.regenerateMana, setup.introMessages, gameConfig);
   return ret;
 }
 

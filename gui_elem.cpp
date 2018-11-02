@@ -23,7 +23,6 @@
 #include "options.h"
 #include "scroll_position.h"
 #include "keybinding_map.h"
-#include "player_role_choice.h"
 #include "attr_type.h"
 
 #include "sdl.h"
@@ -1401,6 +1400,13 @@ class CenterHoriz : public GuiLayout {
       return none;
   }
 
+  optional<int> getPreferredWidth() override {
+    if (auto width = elems[0]->getPreferredWidth())
+      return *width;
+    else
+      return none;
+  }
+
   virtual Rectangle getElemBounds(int num) override {
     int center = (getBounds().left() + getBounds().right()) / 2;
     int myWidth = width ? *width : max(2, *elems[0]->getPreferredWidth());
@@ -2047,39 +2053,6 @@ class MouseHighlight2 : public GuiStack {
 
 SGuiElem GuiFactory::mouseHighlight(SGuiElem elem, int myIndex, optional<int>* highlighted) {
   return SGuiElem(new MouseHighlight(std::move(elem), myIndex, highlighted));
-}
-
-class MouseHighlightGameChoice : public GuiStack {
-  public:
-  MouseHighlightGameChoice(SGuiElem h, optional<PlayerRoleChoice> my, optional<PlayerRoleChoice>& highlight)
-    : GuiStack(std::move(h)), myChoice(my), highlighted(highlight) {}
-
-  virtual void onMouseGone() override {
-    if (highlighted == myChoice)
-      highlighted = none;
-  }
-
-  virtual bool onMouseMove(Vec2 pos) override {
-    if (pos.inRectangle(getBounds()))
-      highlighted = myChoice;
-    else if (highlighted == myChoice)
-      highlighted = none;
-    return false;
-  }
-
-  virtual void render(Renderer& r) override {
-    if (highlighted == myChoice)
-      elems[0]->render(r);
-  }
-
-  private:
-  optional<PlayerRoleChoice> myChoice;
-  optional<PlayerRoleChoice>& highlighted;
-};
-
-SGuiElem GuiFactory::mouseHighlightGameChoice(SGuiElem elem,
-    optional<PlayerRoleChoice> my, optional<PlayerRoleChoice>& highlight) {
-  return SGuiElem(new MouseHighlightGameChoice(std::move(elem), my, highlight));
 }
 
 SGuiElem GuiFactory::mouseHighlight2(SGuiElem elem, SGuiElem noHighlight) {

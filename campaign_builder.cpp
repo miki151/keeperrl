@@ -13,8 +13,7 @@
 #include "name_generator.h"
 #include "creature_factory.h"
 #include "game_config.h"
-#include "keeper_creature_info.h"
-#include "build_info.h"
+#include "tribe_alignment.h"
 
 optional<Vec2> CampaignBuilder::considerStaticPlayerPos(const Campaign& campaign) {
   switch (campaign.type) {
@@ -46,7 +45,7 @@ vector<OptionId> CampaignBuilder::getSecondaryOptions(CampaignType type) const {
     case CampaignType::ENDLESS:
       return {OptionId::LESSER_VILLAINS, OptionId::ALLIES};
     case CampaignType::FREE_PLAY:
-      if (playerRole == PlayerRole::KEEPER)
+      if (getPlayerRole() == PlayerRole::KEEPER)
         return {OptionId::MAIN_VILLAINS, OptionId::LESSER_VILLAINS, OptionId::ALLIES, OptionId::GENERATE_MANA};
       else
         return {OptionId::MAIN_VILLAINS, OptionId::LESSER_VILLAINS, OptionId::ALLIES};
@@ -55,35 +54,8 @@ vector<OptionId> CampaignBuilder::getSecondaryOptions(CampaignType type) const {
   }
 }
 
-OptionId CampaignBuilder::getPlayerNameOptionId() const {
-  switch (playerRole) {
-    case PlayerRole::KEEPER:
-      return OptionId::KEEPER_NAME;
-    case PlayerRole::ADVENTURER:
-      return OptionId::ADVENTURER_NAME;
-  }
-}
-
-OptionId CampaignBuilder::getPlayerTypeOptionId() const {
-  switch (playerRole) {
-    case PlayerRole::KEEPER:
-      return OptionId::KEEPER_TYPE;
-    case PlayerRole::ADVENTURER:
-      return OptionId::ADVENTURER_TYPE;
-  }
-}
-
-TribeId CampaignBuilder::getPlayerTribeId(TribeAlignment variant) const {
-  switch (variant) {
-    case TribeAlignment::EVIL:
-      return TribeId::getDarkKeeper();
-    case TribeAlignment::LAWFUL:
-      return TribeId::getAdventurer();
-  }
-}
-
 vector<OptionId> CampaignBuilder::getPrimaryOptions() const {
-  return {getPlayerTypeOptionId(), getPlayerNameOptionId()};
+  return {OptionId::PLAYER_NAME};
 }
 
 static vector<string> getCampaignTypeDescription(CampaignType type) {
@@ -115,7 +87,7 @@ static vector<string> getCampaignTypeDescription(CampaignType type) {
 }
 
 vector<CampaignType> CampaignBuilder::getAvailableTypes() const {
-  switch (playerRole) {
+  switch (getPlayerRole()) {
     case PlayerRole::KEEPER:
       return {
         CampaignType::CAMPAIGN,
@@ -138,7 +110,7 @@ optional<string> CampaignBuilder::getSiteChoiceTitle(CampaignType type) const {
   switch (type) {
     case CampaignType::FREE_PLAY:
     case CampaignType::ENDLESS:
-      switch (playerRole) {
+      switch (getPlayerRole()) {
         case PlayerRole::KEEPER: return "Choose the location of your base:"_s;
         case PlayerRole::ADVENTURER: return "Choose a location to start your adventure:"_s;
       }
@@ -162,7 +134,7 @@ vector<Campaign::VillainInfo> CampaignBuilder::getVillains(TribeAlignment tribeA
     else
       break;
   }
-  switch (playerRole) {
+  switch (getPlayerRole()) {
     case PlayerRole::KEEPER:
       switch (tribeAlignment) {
         case TribeAlignment::EVIL:
@@ -181,7 +153,7 @@ vector<Campaign::VillainInfo> CampaignBuilder::getVillains(TribeAlignment tribeA
 }
 
 const char* CampaignBuilder::getIntroText() const {
-   switch (playerRole) {
+   switch (getPlayerRole()) {
     case PlayerRole::KEEPER:
       return
         "Welcome to the campaign mode! "
@@ -205,7 +177,7 @@ const char* CampaignBuilder::getIntroText() const {
 }
 
 void CampaignBuilder::setPlayerPos(Campaign& campaign, Vec2 pos, ViewId playerViewId) {
-  switch (playerRole) {
+  switch (getPlayerRole()) {
     case PlayerRole::KEEPER:
       if (campaign.playerPos)
         campaign.clearSite(*campaign.playerPos);
@@ -218,62 +190,6 @@ void CampaignBuilder::setPlayerPos(Campaign& campaign, Vec2 pos, ViewId playerVi
       break;
   }
 }
-
-using PlayerCreaturesInfo = pair<vector<KeeperCreatureInfo>, vector<AdventurerCreatureInfo>>;
-
-static PlayerCreaturesInfo readKeeperCreaturesConfig(View* view, GameConfig* config) {
-  PlayerCreaturesInfo elem;
-  while (1) {
-    if (auto error = config->readObject(elem, GameConfigId::PLAYER_CREATURES))
-      view->presentText("Error reading player creatures definition file", *error);
-    else
-      break;
-  }
-  return elem;
-}
-
-vector<CreatureId> CampaignBuilder::getKeeperCreatures() const {
-  return readKeeperCreaturesConfig(view, gameConfig).first
-      .transform([](auto& elem) { return elem.creatureId; });
-}
-
-vector<CreatureId> CampaignBuilder::getAdventurerCreatures() const {
-  return readKeeperCreaturesConfig(view, gameConfig).second
-      .transform([](auto& elem) { return elem.creatureId; });
-}
-
-KeeperCreatureInfo CampaignBuilder::getKeeperCreatureInfo(CreatureId id) const {
-  for (auto& elem : readKeeperCreaturesConfig(view, gameConfig).first)
-    if (elem.creatureId == id)
-      return elem;
-  FATAL << "Avatar variant not found for " << EnumInfo<CreatureId>::getString(id);
-  return {};
-}
-
-AdventurerCreatureInfo CampaignBuilder::getAdventurerCreatureInfo(CreatureId id) const {
-  for (auto& elem : readKeeperCreaturesConfig(view, gameConfig).second)
-    if (elem.creatureId == id)
-      return elem;
-  FATAL << "Avatar variant not found for " << EnumInfo<CreatureId>::getString(id);
-  return {};
-}
-
-AvatarInfo CampaignBuilder::getAvatarInfo() {
-  auto creatureId = options->getCreatureId(getPlayerTypeOptionId());
-  variant<KeeperCreatureInfo, AdventurerCreatureInfo> creatureInfo;
-  if (playerRole == PlayerRole::ADVENTURER)
-    creatureInfo = getAdventurerCreatureInfo(creatureId);
-  else
-    creatureInfo = getKeeperCreatureInfo(creatureId);
-  auto villains = creatureInfo.visit([](const auto& elem) { return elem.tribeAlignment;});
-  PCreature ret = CreatureFactory::fromId(creatureId, getPlayerTribeId(villains));
-  auto name = options->getStringValue(getPlayerNameOptionId());
-  if (!name.empty())
-    ret->getName().setFirst(name);
-  ret->getName().useFullTitle();
-  return {std::move(ret), creatureInfo, villains };
-}
-
 
 static Table<Campaign::SiteInfo> getTerrain(RandomGen& random, Vec2 size, int numBlocked) {
   Table<Campaign::SiteInfo> ret(size, {});
@@ -320,8 +236,8 @@ static VillainCounts getVillainCounts(CampaignType type, Options* options) {
   }
 }
 
-CampaignBuilder::CampaignBuilder(View* v, RandomGen& rand, Options* o, PlayerRole r, GameConfig* gameConfig)
-    : view(v), random(rand), playerRole(r), options(o), gameConfig(gameConfig) {
+CampaignBuilder::CampaignBuilder(View* v, RandomGen& rand, Options* o, GameConfig* gameConfig, const AvatarInfo& a)
+    : view(v), random(rand), options(o), gameConfig(gameConfig), avatarInfo(a) {
 }
 
 static string getNewIdSuffix() {
@@ -406,6 +322,10 @@ void CampaignBuilder::placeVillains(Campaign& campaign, const VillainCounts& cou
   }
 }
 
+PlayerRole CampaignBuilder::getPlayerRole() const {
+  return avatarInfo.creatureInfo.contains<KeeperCreatureInfo>() ? PlayerRole::KEEPER : PlayerRole::ADVENTURER;
+}
+
 static optional<View::CampaignOptions::WarningType> getMenuWarning(CampaignType type) {
   switch (type) {
     case CampaignType::CAMPAIGN:
@@ -455,10 +375,8 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(function<optional<Retir
   auto retired = genRetired(type);
   View::CampaignMenuState menuState { true, false};
   setCountLimits(options);
-  options->setChoices(OptionId::KEEPER_TYPE, getKeeperCreatures());
-  options->setChoices(OptionId::ADVENTURER_TYPE, getAdventurerCreatures());
+  const auto playerRole = getPlayerRole();
   while (1) {
-    AvatarInfo avatarInfo = getAvatarInfo();
     Campaign campaign(terrain, type, playerRole, NameGenerator::get(NameGeneratorId::WORLD)->getNext());
     if (auto pos = considerStaticPlayerPos(campaign)) {
       campaign.clearSite(*pos);
@@ -497,18 +415,13 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(function<optional<Retir
           break;
         case CampaignActionId::UPDATE_OPTION:
           switch (action.get<OptionId>()) {
-            case OptionId::KEEPER_NAME:
-            case OptionId::ADVENTURER_NAME:
-            case OptionId::KEEPER_TYPE:
-            case OptionId::ADVENTURER_TYPE:
-              avatarInfo = getAvatarInfo();
-              if (campaign.playerPos) {
-                setPlayerPos(campaign, *campaign.playerPos, avatarInfo.playerCreature->getViewObject().id());
-              }
-              break;
+            case OptionId::PLAYER_NAME:
             case OptionId::GENERATE_MANA:
-            case OptionId::INFLUENCE_SIZE: break;
-            default: updateMap = true; break;
+            case OptionId::INFLUENCE_SIZE:
+              break;
+            default:
+              updateMap = true;
+              break;
           }
           break;
         case CampaignActionId::CANCEL:
@@ -524,7 +437,7 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(function<optional<Retir
             string name = *avatarInfo.playerCreature->getName().first();
             string gameIdentifier = name + "_" + campaign.worldName + getNewIdSuffix();
             string gameDisplayName = name + " of " + campaign.worldName;
-            return CampaignSetup{campaign, std::move(avatarInfo), gameIdentifier, gameDisplayName,
+            return CampaignSetup{campaign, gameIdentifier, gameDisplayName,
                 options->getBoolValue(OptionId::GENERATE_MANA) &&
                 getSecondaryOptions(type).contains(OptionId::GENERATE_MANA),
                 getIntroMessages(type, campaign.getWorldName())};
@@ -538,5 +451,5 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(function<optional<Retir
 
 CampaignSetup CampaignBuilder::getEmptyCampaign() {
   Campaign ret(Table<Campaign::SiteInfo>(1, 1), CampaignType::SINGLE_KEEPER, PlayerRole::KEEPER, "");
-  return CampaignSetup{ret, {PCreature(nullptr)}, "", "", false, {}};
+  return CampaignSetup{ret, "", "", false, {}};
 }

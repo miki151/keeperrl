@@ -34,6 +34,8 @@
 #include "enemy_factory.h"
 #include "external_enemies.h"
 #include "game_config.h"
+#include "avatar_menu_option.h"
+#include "creature_name.h"
 
 MainLoop::MainLoop(View* v, Highscores* h, FileSharing* fSharing, const DirectoryPath& freePath,
     const DirectoryPath& uPath, Options* o, Jukebox* j, SokobanInput* soko, GameConfig* gameConfig, bool singleThread,
@@ -334,27 +336,32 @@ PGame MainLoop::prepareTutorial() {
 }
 
 PGame MainLoop::prepareCampaign(RandomGen& random) {
-  auto choice = PlayerRoleChoice(PlayerRole::KEEPER);
   while (1) {
-    choice = view->getPlayerRoleChoice(choice);
+    auto choice = getAvatarInfo(view, gameConfig);
     if (auto ret = choice.match(
-        [&] (PlayerRole role) -> optional<PGame> {
-          CampaignBuilder builder(view, random, options, role, gameConfig);
-          if (auto result = builder.prepareCampaign(bindMethod(&MainLoop::getRetiredGames, this), CampaignType::CAMPAIGN)) {
-            return Game::campaignGame(prepareCampaignModels(*result, random), *result);
+        [&] (AvatarInfo& avatar) -> optional<PGame> {
+          CampaignBuilder builder(view, random, options, gameConfig, avatar);
+          if (auto setup = builder.prepareCampaign(
+                bindMethod(&MainLoop::getRetiredGames, this), CampaignType::CAMPAIGN)) {
+            auto name = options->getStringValue(OptionId::PLAYER_NAME);
+            if (!name.empty())
+              avatar.playerCreature->getName().setFirst(name);
+            avatar.playerCreature->getName().useFullTitle();
+            return Game::campaignGame(prepareCampaignModels(*setup, avatar, random),
+                *setup, std::move(avatar), gameConfig);
           } else
             return none;
         },
-        [&] (NonRoleChoice choice) -> optional<PGame> {
-          switch (choice) {
-            case NonRoleChoice::LOAD_GAME:
+        [&] (AvatarMenuOption option) -> optional<PGame> {
+          switch (option) {
+            case AvatarMenuOption::LOAD_GAME:
               if (auto game = loadPrevious())
                 return std::move(game);
               else
                 return none;
-            case NonRoleChoice::TUTORIAL:
+            case AvatarMenuOption::TUTORIAL:
               return prepareTutorial();
-            case NonRoleChoice::GO_BACK:
+            case AvatarMenuOption::GO_BACK:
               return PGame(nullptr);
           }
         }
@@ -422,9 +429,11 @@ void MainLoop::launchQuickGame() {
   if (toLoad != files.end())
     game = loadGame(userPath.file((*toLoad).filename));
   if (!game) {
-    CampaignBuilder builder(view, Random, options, PlayerRole::KEEPER, gameConfig);
+    AvatarInfo avatar = getQuickGameAvatar(view, gameConfig);
+    CampaignBuilder builder(view, Random, options, gameConfig, avatar);
     auto result = builder.prepareCampaign(bindMethod(&MainLoop::getRetiredGames, this), CampaignType::QUICK_MAP);
-    game = Game::campaignGame(prepareCampaignModels(*result, Random), *result);
+    game = Game::campaignGame(prepareCampaignModels(*result, std::move(avatar), Random), *result, std::move(avatar),
+        gameConfig);
   }
   playGame(std::move(game), true, false);
 }
@@ -659,24 +668,23 @@ int MainLoop::battleTest(int numTries, const FilePath& levelPath, CreatureList a
   return numAllies;
 }
 
-PModel MainLoop::getBaseModel(ModelBuilder& modelBuilder, CampaignSetup& setup) {
+PModel MainLoop::getBaseModel(ModelBuilder& modelBuilder, CampaignSetup& setup, const AvatarInfo& avatarInfo) {
   auto ret = [&] {
     switch (setup.campaign.getType()) {
       case CampaignType::SINGLE_KEEPER:
         return modelBuilder.singleMapModel(setup.campaign.getWorldName(),
-            setup.avatarInfo.playerCreature->getTribeId(), setup.avatarInfo.tribeAlignment);
+            avatarInfo.playerCreature->getTribeId(), avatarInfo.tribeAlignment);
       case CampaignType::QUICK_MAP:
         return modelBuilder.tutorialModel("Campaign base site");
       default:
-        return modelBuilder.campaignBaseModel("Campaign base site", setup.avatarInfo.playerCreature->getTribeId(),
-            setup.avatarInfo.tribeAlignment, setup.campaign.getType() == CampaignType::ENDLESS);
+        return modelBuilder.campaignBaseModel("Campaign base site", avatarInfo.playerCreature->getTribeId(),
+            avatarInfo.tribeAlignment, setup.campaign.getType() == CampaignType::ENDLESS);
     }
   }();
-  modelBuilder.spawnKeeper(ret.get(), std::move(setup.avatarInfo), setup.regenerateMana, setup.introMessages);
   return ret;
 }
 
-Table<PModel> MainLoop::prepareCampaignModels(CampaignSetup& setup, RandomGen& random) {
+Table<PModel> MainLoop::prepareCampaignModels(CampaignSetup& setup, const AvatarInfo& avatarInfo, RandomGen& random) {
   Table<PModel> models(setup.campaign.getSites().getBounds());
   auto& sites = setup.campaign.getSites();
   for (Vec2 v : sites.getBounds())
@@ -694,7 +702,7 @@ Table<PModel> MainLoop::prepareCampaignModels(CampaignSetup& setup, RandomGen& r
           if (!sites[v].isEmpty())
             meter.addProgress();
           if (sites[v].getKeeper()) {
-            models[v] = getBaseModel(modelBuilder, setup);
+            models[v] = getBaseModel(modelBuilder, setup, std::move(avatarInfo));
           } else if (auto villain = sites[v].getVillain())
             models[v] = modelBuilder.campaignSiteModel("Campaign enemy site", villain->enemyId, villain->type);
           else if (auto retired = sites[v].getRetired()) {

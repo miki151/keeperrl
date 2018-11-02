@@ -29,7 +29,7 @@ class Gender {
   const char* him() const;
   const char* god() const;
   const char* sireOrDame() const;
-
+  const char* get(const char* male, const char* female) const;
 
   SERIALIZATION_DECL(Gender);
 

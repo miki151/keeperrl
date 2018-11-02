@@ -103,6 +103,7 @@ enum class FXVariantName;
 enum class StorageId;
 enum class TribeAlignment;
 enum class TutorialState;
+enum class AvatarMenuOption;
 
 struct FXInfo;
 struct FXSpawnInfo;

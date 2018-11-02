@@ -1,9 +1,10 @@
 #pragma once
 
-#include "avatar_variant.h"
+#include "util.h"
 
 struct AdventurerCreatureInfo {
   CreatureId SERIAL(creatureId);
   TribeAlignment SERIAL(tribeAlignment);
-  SERIALIZE_ALL(creatureId, tribeAlignment);
+  string SERIAL(description);
+  SERIALIZE_ALL(creatureId, tribeAlignment, description);
 };

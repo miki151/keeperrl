@@ -22,6 +22,7 @@
 #include "workshop_type.h"
 #include "immigrant_info.h"
 #include "technology.h"
+#include "tribe_alignment.h"
 
 template <typename T>
 optional<string> PrettyPrinting::parseObject(T& object, const string& s, optional<string> filename) {

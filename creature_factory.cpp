@@ -910,7 +910,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.retiredViewId = ViewId::RETIRED_KEEPER;
           c.attr = LIST(12_dam, 12_def, 20_spell_dam );
           c.body = Body::humanoid(Body::Size::LARGE);
-          c.name = "Keeper";
+          c.name = "wizard";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_MALE)->getNext());
           c.name->useFullTitle();
           c.skills.setValue(SkillId::LABORATORY, 0.2);
@@ -925,7 +925,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.attr = LIST(12_dam, 12_def, 20_spell_dam );
           c.gender = Gender::female;
           c.body = Body::humanoid(Body::Size::LARGE);
-          c.name = "Keeper";
+          c.name = "wizard";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_FEMALE)->getNext());
           c.name->useFullTitle();
           c.skills.setValue(SkillId::LABORATORY, 0.2);
@@ -939,7 +939,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.retiredViewId = ViewId::RETIRED_KEEPER_KNIGHT;
           c.attr = LIST(20_dam, 16_def);
           c.body = Body::humanoid(Body::Size::LARGE);
-          c.name = "Keeper";
+          c.name = "knight";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_MALE)->getNext());
           c.name->useFullTitle();
           c.skills.setValue(SkillId::FORGE, 0.2);
@@ -952,8 +952,9 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.viewId = ViewId::KEEPER_KNIGHT_F;
           c.retiredViewId = ViewId::RETIRED_KEEPER_KNIGHT_F;
           c.attr = LIST(20_dam, 16_def);
+          c.gender = Gender::female;
           c.body = Body::humanoid(Body::Size::LARGE);
-          c.name = "Keeper";
+          c.name = "knight";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_FEMALE)->getNext());
           c.name->useFullTitle();
           c.skills.setValue(SkillId::FORGE, 0.2);
@@ -966,7 +967,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.viewId = ViewId::PLAYER;
           c.attr = LIST(15_dam, 20_def );
           c.body = Body::humanoid(Body::Size::LARGE);
-          c.name = "Adventurer";
+          c.name = "squire";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_MALE)->getNext());
           c.name->useFullTitle();
           c.skills.insert(SkillId::AMBUSH);
@@ -981,7 +982,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.gender = Gender::female;
           c.attr = LIST(15_dam, 20_def );
           c.body = Body::humanoid(Body::Size::LARGE);
-          c.name = "Adventurer";
+          c.name = "squire";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_FEMALE)->getNext());
           c.name->useFullTitle();
           c.maxLevelIncrease[ExperienceType::MELEE] = 16;
@@ -1271,7 +1272,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.viewId = ViewId::DUKE;
           c.attr = LIST(20_dam, 16_def);
           c.body = Body::humanoid(Body::Size::LARGE);
-          c.name = "Keeper";
+          c.name = "knight";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_MALE)->getNext());
           c.name->useFullTitle();
           c.skills.setValue(SkillId::FORGE, 0.2);

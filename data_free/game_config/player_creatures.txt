@@ -15,6 +15,7 @@
         "training" "crafting" "demon_shrine" "prison" "orders" "installations" "magical_installations" "traps"
     }
     workshopGroups = { "basic" "traps" }
+    description = "Build and manage your dream dungeon, defend against raids, and attack your enemies!"
   }
   {
     creatureId = KEEPER_MAGE_F
@@ -31,11 +32,12 @@
         "training" "crafting" "demon_shrine" "prison" "orders" "installations" "magical_installations" "traps"
     }
     workshopGroups = { "basic" "traps" }
+    description = "Build and manage your dream dungeon, defend against raids, and attack your enemies!"
   }
   {
     creatureId = KEEPER_KNIGHT
     tribeAlignment = EVIL
-    immigrantGroups = {"peseant prisoners" "dark_keeper"}
+    immigrantGroups = {"peseant_prisoners" "dark_keeper"}
     technology = {
         "alchemy" "advanced alchemy" "alchemical conversion" "humanoid mutation" "beast mutation"
         "pig breeding" "iron working" "jewellery" "two-handed weapons" "traps" "archery" "sorcery"
@@ -47,11 +49,12 @@
         "training" "crafting" "demon_shrine" "prison" "orders" "installations" "magical_installations" "traps"
     }
     workshopGroups = { "basic" "traps" }
+    description = "Build and manage your dream dungeon, defend against raids, and attack your enemies!"
   }
   {
     creatureId = KEEPER_KNIGHT_F
     tribeAlignment = EVIL
-    immigrantGroups = {"peseant prisoners" "dark_keeper"}
+    immigrantGroups = {"peseant_prisoners" "dark_keeper"}
     technology = {
         "alchemy" "advanced alchemy" "alchemical conversion" "humanoid mutation" "beast mutation"
         "pig breeding" "iron working" "jewellery" "two-handed weapons" "traps" "archery" "sorcery"
@@ -63,6 +66,7 @@
         "training" "crafting" "demon_shrine" "prison" "orders" "installations" "magical_installations" "traps"
     }
     workshopGroups = { "basic" "traps" }
+    description = "Build and manage your dream dungeon, defend against raids, and attack your enemies!"
   }
   {
     creatureId = DUKE_PLAYER
@@ -79,13 +83,14 @@
         "pigsty" "training" "crafting" "prison" "orders" "installations"
     }
     workshopGroups = { "basic" }
+    description = "Build and manage your dream dungeon, defend against raids, and attack your enemies!"
   }
 }
 
 # Adventurers
 {
-    # CreatureId     TribeAlignment
-    ADVENTURER       LAWFUL
-    ADVENTURER_F     LAWFUL
+    # CreatureId     TribeAlignment 
+    ADVENTURER       LAWFUL             "Roam the land in search of adventures and loot!"
+    ADVENTURER_F     LAWFUL             "Roam the land in search of adventures and loot!"
 #    ORC              EVIL
 }

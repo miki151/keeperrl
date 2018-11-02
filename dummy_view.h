@@ -26,9 +26,6 @@ class DummyView : public View {
       MenuType = MenuType::NORMAL, ScrollPosition* = nullptr, optional<UserInputId> = none) override {
     return none;
   }
-  virtual PlayerRoleChoice getPlayerRoleChoice(optional<PlayerRoleChoice> initial) override {
-    return PlayerRole::KEEPER;
-  }
   virtual optional<Vec2> chooseDirection(Vec2 playerPos, const string& message) override {
     return none;
   }
@@ -84,4 +81,7 @@ class DummyView : public View {
   virtual void addSound(const Sound&) override {}
   virtual void logMessage(const string&) override {}
   virtual void setBugReportSaveCallback(BugReportSaveCallback) override {};
+  virtual AvatarChoice chooseAvatar(const vector<AvatarData>&) override {
+    return AvatarChoice(0);
+  }
 };

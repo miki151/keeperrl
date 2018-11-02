@@ -66,7 +66,6 @@ class WindowView: public View {
   virtual optional<int> chooseFromList(const string& title, const vector<ListElem>& options, int index = 0,
       MenuType = MenuType::NORMAL, ScrollPosition* scrollPos = nullptr,
       optional<UserInputId> exitAction = none) override;
-  virtual PlayerRoleChoice getPlayerRoleChoice(optional<PlayerRoleChoice> initial) override;
   virtual optional<Vec2> chooseDirection(Vec2 playerPos, const string& message) override;
   virtual bool yesOrNoPrompt(const string& message, bool defaultNo) override;
   virtual void animateObject(Vec2 begin, Vec2 end, optional<ViewId> object, optional<FXInfo> fx) override;
@@ -96,6 +95,7 @@ class WindowView: public View {
   virtual void addSound(const Sound&) override;
   virtual optional<Vec2> chooseSite(const string& message, const Campaign&, optional<Vec2> current) override;
   virtual void presentWorldmap(const Campaign&) override;
+  virtual AvatarChoice chooseAvatar(const vector<AvatarData>&) override;
   virtual CampaignAction prepareCampaign(CampaignOptions, Options*, CampaignMenuState&) override;
   virtual optional<UniqueEntity<Creature>::Id> chooseCreature(const string& title, const vector<CreatureInfo>&,
       const string& cancelText) override;
@@ -118,7 +118,6 @@ class WindowView: public View {
   optional<int> chooseFromListInternal(const string& title, const vector<ListElem>& options, optional<int> index,
       MenuType, ScrollPosition*);
   void refreshViewInt(const CreatureView*, bool flipBuffer = true);
-  SGuiElem drawGameChoices(optional<PlayerRoleChoice>& choice, optional<PlayerRoleChoice>& index);
   SGuiElem getTextContent(const string& title, const string& value, const string& hint);
   void rebuildGui();
   int lastGuiHash = 0;
@@ -213,9 +212,9 @@ class WindowView: public View {
   bool isKeyPressed(SDL::SDL_Scancode);
 
   template<typename T>
-  T getBlockingGui(SyncQueue<T>& queue, SGuiElem elem, optional<Vec2> origin = none) {
+  T getBlockingGui(SyncQueue<T>& queue, SGuiElem elem, optional<Vec2> origin = none, bool darkenBackground = true) {
     TempClockPause pause(clock);
-    if (blockingElems.empty()) {
+    if (darkenBackground && blockingElems.empty()) {
       blockingElems.push_back(gui.darken());
       blockingElems.back()->setBounds(Rectangle(renderer.getSize()));
     }

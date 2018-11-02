@@ -33,6 +33,8 @@ class StairKey;
 class Game;
 class ExternalEnemies;
 class Options;
+class AvatarInfo;
+class GameConfig;
 
 /**
   * Main class that holds all game logic.
@@ -72,6 +74,7 @@ class Model : public OwnedObject<Model> {
   vector<WCollective> getCollectives() const;
   vector<WCreature> getAllCreatures() const;
   vector<WLevel> getLevels() const;
+  void addCollective(PCollective);
 
   WLevel getTopLevel() const;
 
