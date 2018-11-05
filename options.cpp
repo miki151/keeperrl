@@ -68,7 +68,7 @@ const map<OptionId, string> names {
   {OptionId::FAST_IMMIGRATION, "Fast immigration"},
   {OptionId::STARTING_RESOURCE, "Resource bonus"},
   {OptionId::START_WITH_NIGHT, "Start with night"},
-  {OptionId::PLAYER_NAME, "Player's name"},
+  {OptionId::PLAYER_NAME, "First name"},
   {OptionId::KEEPER_SEED, "Level generation seed"},
   {OptionId::MAIN_VILLAINS, "Main villains"},
   {OptionId::RETIRED_VILLAINS, "Retired villains"},

@@ -95,7 +95,7 @@ class GuiBuilder {
       View::CampaignMenuState&);
   SGuiElem drawChooseSiteMenu(SyncQueue<optional<Vec2>>&, const string& message, const Campaign&,
       optional<Vec2>& sitePos);
-  SGuiElem drawAvatarMenu(SyncQueue<View::AvatarChoice>&, const vector<View::AvatarData>&);
+  SGuiElem drawAvatarMenu(SyncQueue<optional<View::AvatarChoice>>&, Options*, const vector<View::AvatarData>&);
   SGuiElem drawWorldmap(Semaphore&, const Campaign&);
   SGuiElem drawLevelMap(Semaphore&, const CreatureView*);
   SGuiElem drawChooseCreatureMenu(SyncQueue<optional<UniqueEntity<Creature>::Id>>&, const string& title,
@@ -286,6 +286,7 @@ class GuiBuilder {
   SGuiElem drawVillainType(VillainType);
   SGuiElem drawLyingItemsList(const string& title, const ItemCounts&, int maxWidth);
   SGuiElem drawTickBox(shared_ptr<bool> value, const string& title);
+  SGuiElem drawAvatarMenu(Options*, const View::AvatarData&, shared_ptr<int> gender);
   SGuiElem drawAvatarHint(const View::AvatarData&);
 };
 

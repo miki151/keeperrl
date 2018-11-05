@@ -10,6 +10,7 @@
 #include "view_object.h"
 #include "creature_attributes.h"
 #include "gender.h"
+#include "creature_name.h"
 
 using PlayerCreaturesInfo = pair<vector<KeeperCreatureInfo>, vector<AdventurerCreatureInfo>>;
 
@@ -33,47 +34,50 @@ static TribeId getPlayerTribeId(TribeAlignment variant) {
   }
 }
 
-variant<AvatarInfo, AvatarMenuOption> getAvatarInfo(View* view, GameConfig* gameConfig) {
+optional<AvatarInfo> getAvatarInfo(View* view, GameConfig* gameConfig, Options* options) {
   auto keeperCreatureInfos = readKeeperCreaturesConfig(view, gameConfig).first;
   auto keeperCreatures = keeperCreatureInfos.transform([](auto& elem) {
-      return CreatureFactory::fromId(elem.creatureId, getPlayerTribeId(elem.tribeAlignment));
+      return elem.creatureId.transform([&](auto& id) {
+        return CreatureFactory::fromId(id, getPlayerTribeId(elem.tribeAlignment));
+      });
   });
   auto adventurerCreatureInfos = readKeeperCreaturesConfig(view, gameConfig).second;
   auto adventurerCreatures = adventurerCreatureInfos.transform([](auto& elem) {
-      return CreatureFactory::fromId(elem.creatureId, getPlayerTribeId(elem.tribeAlignment));
+    return elem.creatureId.transform([&](auto& id) {
+      return CreatureFactory::fromId(id, getPlayerTribeId(elem.tribeAlignment));
+    });
   });
   vector<View::AvatarData> keeperAvatarData;
   for (int i : All(keeperCreatures))
     keeperAvatarData.push_back(View::AvatarData {
-      keeperCreatures[i]->getViewObject().id(),
-      keeperCreatures[i]->getAttributes().getGender(),
+      keeperCreatures[i].transform([](const auto& c) { return c->getViewObject().id(); }),
+      keeperCreatures[i].transform([](const auto& c) { return *c->getName().first(); }),
       keeperCreatureInfos[i].tribeAlignment,
-      keeperCreatures[i]->getName().identify(),
+      keeperCreatures[i][0]->getName().identify(),
       PlayerRole::KEEPER,
       keeperCreatureInfos[i].description
     });
   vector<View::AvatarData> adventurerAvatarData;
   for (int i : All(adventurerCreatures))
     adventurerAvatarData.push_back(View::AvatarData {
-      adventurerCreatures[i]->getViewObject().id(),
-      adventurerCreatures[i]->getAttributes().getGender(),
+      adventurerCreatures[i].transform([](const auto& c) { return c->getViewObject().id(); }),
+      adventurerCreatures[i].transform([](const auto& c) { return *c->getName().first(); }),
       adventurerCreatureInfos[i].tribeAlignment,
-      adventurerCreatures[i]->getName().identify(),
+      adventurerCreatures[i][0]->getName().identify(),
       PlayerRole::ADVENTURER,
       adventurerCreatureInfos[i].description
     });
-  auto result1 = view->chooseAvatar(concat(keeperAvatarData, adventurerAvatarData));
-  if (auto option = result1.getReferenceMaybe<AvatarMenuOption>())
-    return *option;
-  auto result = *result1.getValueMaybe<int>();
+  auto result = view->chooseAvatar(concat(keeperAvatarData, adventurerAvatarData), options);
+  if (!result)
+    return none;
   variant<KeeperCreatureInfo, AdventurerCreatureInfo> creatureInfo;
   PCreature ret;
-  if (result < keeperCreatures.size()) {
-    creatureInfo = readKeeperCreaturesConfig(view, gameConfig).first[result];
-    ret = std::move(keeperCreatures[result]);
+  if (result->creatureIndex < keeperCreatures.size()) {
+    creatureInfo = readKeeperCreaturesConfig(view, gameConfig).first[result->creatureIndex];
+    ret = std::move(keeperCreatures[result->creatureIndex][result->genderIndex]);
   } else {
-    ret = std::move(adventurerCreatures[result - keeperCreatures.size()]);
-    creatureInfo = readKeeperCreaturesConfig(view, gameConfig).second[result - keeperCreatures.size()];
+    creatureInfo = readKeeperCreaturesConfig(view, gameConfig).second[result->creatureIndex - keeperCreatures.size()];
+    ret = std::move(adventurerCreatures[result->creatureIndex - keeperCreatures.size()][result->genderIndex]);
   }
   auto villains = creatureInfo.visit([](const auto& elem) { return elem.tribeAlignment;});
   return AvatarInfo{std::move(ret), creatureInfo, villains };
@@ -82,7 +86,7 @@ variant<AvatarInfo, AvatarMenuOption> getAvatarInfo(View* view, GameConfig* game
 AvatarInfo getQuickGameAvatar(View* view, GameConfig* gameConfig) {
   auto keeperCreatures = readKeeperCreaturesConfig(view, gameConfig).first;
   AvatarInfo ret;
-  ret.playerCreature = CreatureFactory::fromId(keeperCreatures[0].creatureId, TribeId::getDarkKeeper());
+  ret.playerCreature = CreatureFactory::fromId(keeperCreatures[0].creatureId[0], TribeId::getDarkKeeper());
   ret.creatureInfo = keeperCreatures[0];
   ret.tribeAlignment = TribeAlignment::EVIL;
   return ret;

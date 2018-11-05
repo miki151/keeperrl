@@ -3,7 +3,7 @@
 #include "util.h"
 
 struct KeeperCreatureInfo {
-  CreatureId SERIAL(creatureId);
+  vector<CreatureId> SERIAL(creatureId);
   TribeAlignment SERIAL(tribeAlignment);
   vector<string> SERIAL(immigrantGroups);
   vector<TechId> SERIAL(technology);

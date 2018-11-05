@@ -335,38 +335,47 @@ PGame MainLoop::prepareTutorial() {
   return game;
 }
 
+PGame MainLoop::gameChoiceMenu() {
+  int lastIndex = 0;
+  while (1) {
+    optional<int> choice;
+    choice = view->chooseFromList("", {
+        "New game", "Load game", "Tutorial", "Go back"}, lastIndex, MenuType::MAIN).value_or(3);
+    lastIndex = *choice;
+    switch (*choice) {
+      case 0:
+        if (auto game = prepareCampaign(Random))
+          return game;
+        break;
+      case 1:
+        if (auto game = loadPrevious())
+          return game;
+        break;
+      case 2:
+        if (auto game = prepareTutorial())
+          return game;
+        break;
+      case 3:
+        return nullptr;
+    }
+  }
+}
+
 PGame MainLoop::prepareCampaign(RandomGen& random) {
   while (1) {
-    auto choice = getAvatarInfo(view, gameConfig);
-    if (auto ret = choice.match(
-        [&] (AvatarInfo& avatar) -> optional<PGame> {
-          CampaignBuilder builder(view, random, options, gameConfig, avatar);
-          if (auto setup = builder.prepareCampaign(
-                bindMethod(&MainLoop::getRetiredGames, this), CampaignType::CAMPAIGN)) {
-            auto name = options->getStringValue(OptionId::PLAYER_NAME);
-            if (!name.empty())
-              avatar.playerCreature->getName().setFirst(name);
-            avatar.playerCreature->getName().useFullTitle();
-            return Game::campaignGame(prepareCampaignModels(*setup, avatar, random),
-                *setup, std::move(avatar), gameConfig);
-          } else
-            return none;
-        },
-        [&] (AvatarMenuOption option) -> optional<PGame> {
-          switch (option) {
-            case AvatarMenuOption::LOAD_GAME:
-              if (auto game = loadPrevious())
-                return std::move(game);
-              else
-                return none;
-            case AvatarMenuOption::TUTORIAL:
-              return prepareTutorial();
-            case AvatarMenuOption::GO_BACK:
-              return PGame(nullptr);
-          }
-        }
-        ))
-      return std::move(*ret);
+    if (auto avatar = getAvatarInfo(view, gameConfig, options)) {
+      CampaignBuilder builder(view, random, options, gameConfig, *avatar);
+      if (auto setup = builder.prepareCampaign(bindMethod(&MainLoop::getRetiredGames, this), CampaignType::CAMPAIGN)) {
+        auto name = options->getStringValue(OptionId::PLAYER_NAME);
+        if (!name.empty())
+          avatar->playerCreature->getName().setFirst(name);
+        avatar->playerCreature->getName().useFullTitle();
+        return Game::campaignGame(prepareCampaignModels(*setup, *avatar, random),
+            *setup, std::move(*avatar), gameConfig);
+      } else
+        continue;
+    } else
+      return nullptr;
   }
 }
 
@@ -458,7 +467,7 @@ void MainLoop::start(bool tilesPresent, bool quickGame) {
     lastIndex = *choice;
     switch (*choice) {
       case 0:
-        if (PGame game = prepareCampaign(Random))
+        if (PGame game = gameChoiceMenu())
           playGame(std::move(game), true, false);
         view->reset();
         break;

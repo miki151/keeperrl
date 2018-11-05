@@ -172,6 +172,7 @@ class GuiFactory {
   SGuiElem crossOutText(Color);
   SGuiElem viewObject(const ViewObject&, double scale = 1, Color = Color::WHITE);
   SGuiElem viewObject(ViewId, double scale = 1, Color = Color::WHITE);
+  SGuiElem viewObject(function<ViewId()>, double scale = 1, Color = Color::WHITE);
   SGuiElem asciiBackground(ViewId);
   enum class TranslateCorner {
     TOP_LEFT,

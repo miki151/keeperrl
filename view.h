@@ -196,16 +196,19 @@ class View {
   using BugReportSaveCallback = function<void(FilePath)>;
   virtual void setBugReportSaveCallback(BugReportSaveCallback) = 0;
 
-  using AvatarChoice = variant<int, AvatarMenuOption>;
+  struct AvatarChoice {
+    int creatureIndex;
+    int genderIndex;
+  };
   struct AvatarData {
-    ViewId viewId;
-    Gender gender;
+    vector<ViewId> viewId;
+    vector<string> firstNames;
     TribeAlignment alignment;
     string name;
     PlayerRole role;
     string description;
   };
-  virtual AvatarChoice chooseAvatar(const vector<AvatarData>&) = 0;
+  virtual optional<AvatarChoice> chooseAvatar(const vector<AvatarData>&, Options*) = 0;
 
   struct CampaignMenuState {
     bool helpText;

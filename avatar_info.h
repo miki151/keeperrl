@@ -12,6 +12,7 @@ struct AvatarInfo {
 
 class View;
 class GameConfig;
+class Options;
 
-extern variant<AvatarInfo, AvatarMenuOption> getAvatarInfo(View*, GameConfig*);
+extern optional<AvatarInfo> getAvatarInfo(View*, GameConfig*, Options*);
 extern AvatarInfo getQuickGameAvatar(View*, GameConfig*);

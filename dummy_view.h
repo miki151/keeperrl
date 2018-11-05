@@ -2,7 +2,7 @@
 
 #include "view.h"
 #include "clock.h"
-#include "player_role.h"
+#include "avatar_menu_option.h"
 
 class DummyView : public View {
   public:
@@ -81,7 +81,7 @@ class DummyView : public View {
   virtual void addSound(const Sound&) override {}
   virtual void logMessage(const string&) override {}
   virtual void setBugReportSaveCallback(BugReportSaveCallback) override {};
-  virtual AvatarChoice chooseAvatar(const vector<AvatarData>&) override {
-    return AvatarChoice(0);
+  virtual optional<AvatarChoice> chooseAvatar(const vector<AvatarData>&, Options*) override {
+    return none;
   }
 };
