@@ -3037,8 +3037,8 @@ SGuiElem GuiBuilder::drawAvatarMenu(Options* options, const View::AvatarData& av
         gui.button([gender] { *gender = !*gender; }),
         gui.getListBuilder()
             .addElemAuto(gui.label("Gender: "))
-            .addElemAuto(gui.viewObject([gender, id = avatar.viewId] { return id[min(*gender, id.size() - 1)]; }))
-              .buildHorizontalList()));
+            .addElemAuto(gui.labelFun([gender]{ return *gender == 0 ? "male"_s : "female"_s;}))
+            .buildHorizontalList()));
   vector<SGuiElem> firstNameOptions;
   for (int genderIndex : All(avatar.viewId))
     firstNameOptions.push_back(gui.conditional(
@@ -3117,8 +3117,7 @@ SGuiElem GuiBuilder::drawAvatarMenu(SyncQueue<optional<View::AvatarChoice>>& que
       .addSpace(40)
       .addElemAuto(addRole(PlayerRole::ADVENTURER))
       .buildHorizontalList());
-  lines.addElem(gui.button([&queue] { queue.push(none); },
-      gui.getKey(SDL::SDLK_ESCAPE), true), 40);
+  lines.addSpace(40);
   return gui.getListBuilder()
       .addElemAuto(gui.translucentBackground(gui.margins(lines.buildVerticalList(), 15)))
       .addElemAuto(gui.stack(std::move(hints)))
@@ -3128,7 +3127,7 @@ SGuiElem GuiBuilder::drawAvatarMenu(SyncQueue<optional<View::AvatarChoice>>& que
               gui.mouseHighlight2(gui.mainMenuLabel("Confirm", menuLabelVPadding))
           ), 60)
       .addElem(gui.stack(
-           gui.button([&queue]{ queue.push(none); }),
+           gui.button([&queue]{ queue.push(none); }, gui.getKey(SDL::SDLK_ESCAPE)),
               gui.mainMenuLabelBg("Go back", menuLabelVPadding),
               gui.mouseHighlight2(gui.mainMenuLabel("Go back", menuLabelVPadding))
           ), 60)
