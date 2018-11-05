@@ -35,7 +35,7 @@
     description = "Build and manage your dream dungeon, defend against raids, and attack your enemies!"
   }
   {
-    creatureId = { DUKE_PLAYER }
+    creatureId = { KEEPER_KNIGHT_WHITE KEEPER_KNIGHT_WHITE_F }
     tribeAlignment = LAWFUL
     immigrantGroups = {"peseants" "white_keeper"}
     technology = {

@@ -452,6 +452,7 @@ class TileCoordLookup {
     Tile::addTile(ViewId::WARRIOR, sprite("warrior"));
     Tile::addTile(ViewId::SHAMAN, sprite("shaman"));
     Tile::addTile(ViewId::DUKE, sprite("knightboss"));
+    Tile::addTile(ViewId::DUKE_F, sprite("knightboss_f"));
     Tile::addTile(ViewId::ARCHER, sprite("archer"));
     Tile::addTile(ViewId::PESEANT, sprite("peasant"));
     Tile::addTile(ViewId::PESEANT_WOMAN, sprite("peasantgirl"));
@@ -818,6 +819,7 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::WARRIOR, symbol(u8"@", Color::DARK_GRAY));
     Tile::addSymbol(ViewId::SHAMAN, symbol(u8"@", Color::YELLOW));
     Tile::addSymbol(ViewId::DUKE, symbol(u8"@", Color::BLUE));
+    Tile::addSymbol(ViewId::DUKE_F, symbol(u8"@", Color::BLUE));
     Tile::addSymbol(ViewId::ARCHER, symbol(u8"@", Color::BROWN));
     Tile::addSymbol(ViewId::PESEANT, symbol(u8"@", Color::GREEN));
     Tile::addSymbol(ViewId::PESEANT_WOMAN, symbol(u8"@", Color::GREEN));

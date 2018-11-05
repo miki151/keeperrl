@@ -962,6 +962,33 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.maxLevelIncrease[ExperienceType::SPELL] = 3;
           c.spells->add(SpellId::HEAL_SELF);
       );
+    case CreatureId::KEEPER_KNIGHT_WHITE:
+      return CATTR(
+          c.viewId = ViewId::DUKE;
+          c.attr = LIST(20_dam, 16_def);
+          c.body = Body::humanoid(Body::Size::LARGE);
+          c.name = "knight";
+          c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_MALE)->getNext());
+          c.name->useFullTitle();
+          c.skills.setValue(SkillId::FORGE, 0.2);
+          c.maxLevelIncrease[ExperienceType::MELEE] = 12;
+          c.maxLevelIncrease[ExperienceType::SPELL] = 1;
+          c.hatedByEffect = LastingEffect::HATE_HUMANS;
+      );
+    case CreatureId::KEEPER_KNIGHT_WHITE_F:
+      return CATTR(
+          c.viewId = ViewId::DUKE_F;
+          c.attr = LIST(20_dam, 16_def);
+          c.gender = Gender::female;
+          c.body = Body::humanoid(Body::Size::LARGE);
+          c.name = "knight";
+          c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_FEMALE)->getNext());
+          c.name->useFullTitle();
+          c.skills.setValue(SkillId::FORGE, 0.2);
+          c.maxLevelIncrease[ExperienceType::MELEE] = 12;
+          c.maxLevelIncrease[ExperienceType::SPELL] = 1;
+          c.hatedByEffect = LastingEffect::HATE_HUMANS;
+      );
     case CreatureId::ADVENTURER:
       return CATTR(
           c.viewId = ViewId::PLAYER;
@@ -1265,19 +1292,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.chatReactionHostile = "\"Die!\""_s;
           c.name = "jester";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_MALE)->getNext());
-          c.hatedByEffect = LastingEffect::HATE_HUMANS;
-      );
-    case CreatureId::DUKE_PLAYER:
-      return CATTR(
-          c.viewId = ViewId::DUKE;
-          c.attr = LIST(20_dam, 16_def);
-          c.body = Body::humanoid(Body::Size::LARGE);
-          c.name = "knight";
-          c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_MALE)->getNext());
-          c.name->useFullTitle();
-          c.skills.setValue(SkillId::FORGE, 0.2);
-          c.maxLevelIncrease[ExperienceType::MELEE] = 12;
-          c.maxLevelIncrease[ExperienceType::SPELL] = 1;
           c.hatedByEffect = LastingEffect::HATE_HUMANS;
       );
     case CreatureId::ARCHER_PLAYER:
