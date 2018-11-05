@@ -1520,7 +1520,7 @@ SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info) {
         gui.button(getButtonCallback(UserInputId::PAY_DEBT))));
     list.addSpace();
   }
-  if (!info.inventory.empty()) {    
+  if (!info.inventory.empty()) {
     list.addElem(gui.label("Inventory", Color::YELLOW));
     for (auto& item : info.inventory)
       list.addElem(getItemLine(item, [=](Rectangle butBounds) {
@@ -3039,7 +3039,12 @@ SGuiElem GuiBuilder::drawAvatarMenu(Options* options, const View::AvatarData& av
             .addElemAuto(gui.label("Gender: "))
             .addElemAuto(gui.viewObject([gender, id = avatar.viewId] { return id[min(*gender, id.size() - 1)]; }))
               .buildHorizontalList()));
-  lines.addElem(drawOptionElem(options, OptionId::PLAYER_NAME, []{}, avatar.firstNames[*gender]));
+  vector<SGuiElem> firstNameOptions;
+  for (int genderIndex : All(avatar.viewId))
+    firstNameOptions.push_back(gui.conditional(
+        drawOptionElem(options, OptionId::PLAYER_NAME, []{}, avatar.firstNames[genderIndex]),
+        [=]{ return *gender == genderIndex; }));
+  lines.addElem(gui.stack(std::move(firstNameOptions)));
   rightLines.addElem(gui.label(capitalFirst(getName(avatar.role)), Color::LIGHT_GRAY));
   rightLines.addElem(gui.label("Class: "_s + capitalFirst(avatar.name), Color::LIGHT_GRAY));
   rightLines.addElem(gui.label("Alignment: "_s + getName(avatar.alignment), Color::LIGHT_GRAY));
