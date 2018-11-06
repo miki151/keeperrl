@@ -42,8 +42,8 @@ CreatureAttributes::~CreatureAttributes() {}
 
 template <class Archive> 
 void CreatureAttributes::serialize(Archive& ar, const unsigned int version) {
-  ar(viewId, retiredViewId, illusionViewObject, name, attr, chatReactionFriendly);
-  ar(chatReactionHostile, passiveAttack, gender);
+  ar(viewId, illusionViewObject, name, attr, chatReactionFriendly);
+  ar(chatReactionHostile, passiveAttack, gender, viewIdUpgrades);
   ar(body, deathDescription, hatedByEffect);
   ar(cantEquip, courage, canJoinCollective);
   ar(boulder, noChase, isSpecial, skills, spells);
@@ -392,10 +392,6 @@ bool CreatureAttributes::dontChase() const {
 
 bool CreatureAttributes::getCanJoinCollective() const {
   return canJoinCollective;
-}
-
-optional<ViewId> CreatureAttributes::getRetiredViewId() {
-  return retiredViewId;
 }
 
 optional<LastingEffect> CreatureAttributes::getHatedByEffect() const {

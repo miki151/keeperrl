@@ -392,7 +392,10 @@ SGuiElem GuiBuilder::drawBottomBandInfo(GameInfo& gameInfo) {
     bottomLine.addElemAuto(gui.stack(
         gui.margins(gui.progressBar(Color::DARK_GREEN, info.dungeonLevelProgress), -6, -1, 0, -2),
         gui.uiHighlightConditional([&]{ return info.numResearchAvailable > 0; }),
-        gui.label("Level: " + toString(info.dungeonLevel)),
+        gui.getListBuilder()
+            .addElemAuto(gui.topMargin(-2, gui.viewObject(info.dungeonLevelViewId)))
+            .addElemAuto(gui.label("Level: " + toString(info.dungeonLevel)))
+            .buildHorizontalList(),
         gui.button([this]() { closeOverlayWindowsAndClearButton(); callbacks.input(UserInputId::TECHNOLOGY);})
     ));
     bottomLine.addSpace(space);
@@ -2003,9 +2006,15 @@ SGuiElem GuiBuilder::drawLibraryOverlay(const CollectiveInfo& collectiveInfo, co
   int margin = 20;
   int rightElemMargin = 10;
   auto lines = gui.getListBuilder(legendLineHeight);
-  lines.addElem(gui.centerHoriz(gui.label("Level " + toString(collectiveInfo.dungeonLevel))));
-  lines.addElem(gui.centerHoriz(gui.label("Next level progress: " +
-      toString(info.currentProgress) + "/" + toString(info.totalProgress))));
+  lines.addSpace(5);
+  lines.addElem(gui.getListBuilder()
+      .addElemAuto(gui.topMargin(-2, gui.viewObject(collectiveInfo.dungeonLevelViewId)))
+      .addSpace(4)
+      .addElemAuto(gui.label(toString(collectiveInfo.leaderTitle)))
+      .buildHorizontalList());
+  lines.addElem(gui.label("Level " + toString(collectiveInfo.dungeonLevel)));
+  lines.addElem(gui.label("Next level progress: " +
+      toString(info.currentProgress) + "/" + toString(info.totalProgress)));
   //lines.addElem(gui.rightMargin(rightElemMargin, gui.alignment(GuiFactory::Alignment::RIGHT, drawCost(info.resource))));
   if (info.warning)
     lines.addElem(gui.label(*info.warning, Color::RED));
@@ -2038,7 +2047,7 @@ SGuiElem GuiBuilder::drawLibraryOverlay(const CollectiveInfo& collectiveInfo, co
     lines.addElem(gui.rightMargin(rightElemMargin, std::move(line)));
   }
   int height = lines.getSize();
-  return gui.preferredSize(500, height + 2 * margin,
+  return gui.preferredSize(500, height + 2 * margin + 2,
       gui.miniWindow(gui.stack(
           gui.keyHandler(getButtonCallback(UserInputId::LIBRARY_CLOSE), {gui.getKey(SDL::SDLK_ESCAPE)}, true),
           gui.margins(gui.scrollable(lines.buildVerticalList(), &libraryScroll, &scrollbarsHeld), margin))));
@@ -3045,6 +3054,15 @@ SGuiElem GuiBuilder::drawAvatarMenu(Options* options, const View::AvatarData& av
         drawOptionElem(options, OptionId::PLAYER_NAME, []{}, avatar.firstNames[genderIndex]),
         [=]{ return *gender == genderIndex; }));
   lines.addElem(gui.stack(std::move(firstNameOptions)));
+  lines.addSpace(10);
+  vector<SGuiElem> viewIdLines;
+  for (int genderIndex : All(avatar.viewId)) {
+    auto line = gui.getListBuilder();
+    for (auto viewId : avatar.viewId[genderIndex])
+      line.addElemAuto(gui.viewObject(viewId, 2));
+    viewIdLines.push_back(gui.conditional(line.buildHorizontalList(), [=]{ return *gender == genderIndex; }));
+  }
+  lines.addElemAuto(gui.stack(std::move(viewIdLines)));
   rightLines.addElem(gui.label(capitalFirst(getName(avatar.role)), Color::LIGHT_GRAY));
   rightLines.addElem(gui.label("Class: "_s + capitalFirst(avatar.name), Color::LIGHT_GRAY));
   rightLines.addElem(gui.label("Alignment: "_s + getName(avatar.alignment), Color::LIGHT_GRAY));
@@ -3085,7 +3103,7 @@ SGuiElem GuiBuilder::drawAvatarMenu(SyncQueue<optional<View::AvatarChoice>>& que
     auto line = gui.getListBuilder(legendLineHeight);
     for (int i : All(avatars)) {
       auto& elem = avatars[i];
-      auto viewIdFun = [gender, id = elem.viewId] { return id[min(*gender, id.size() - 1)]; };
+      auto viewIdFun = [gender, id = elem.viewId] { return id[min(*gender, id.size() - 1)].back(); };
       /*if (i > 0 && elem.role == PlayerRole::ADVENTURER && avatars[i - 1].role == PlayerRole::KEEPER)
         line.addSpace(45);*/
       /*auto avatarHint = drawAvatarHint(elem);

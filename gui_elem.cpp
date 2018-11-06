@@ -366,6 +366,8 @@ SGuiElem GuiFactory::sprite(Texture& tex, double height) {
 
 SGuiElem GuiFactory::sprite(Texture& tex, Alignment align, bool vFlip, bool hFlip, Vec2 offset,
     optional<Color> col) {
+  if (!tex.getTexId())
+    return empty();
   return SGuiElem(new DrawCustom(
         [&tex, align, offset, col, vFlip, hFlip] (Renderer& r, Rectangle bounds) {
           Vec2 size = tex.getSize();

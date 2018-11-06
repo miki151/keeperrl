@@ -76,6 +76,10 @@ void CreatureName::setGroup(const string& s) {
   groupName = s;
 }
 
+void CreatureName::setBare(const std::string& s) {
+  name = s;
+}
+
 const optional<string>& CreatureName::stackOnly() const {
   return stackName;
 }

@@ -104,16 +104,16 @@ class CreatureAttributes {
   MinionActivityMap& getMinionActivities();
   bool dontChase() const;
   bool getCanJoinCollective() const;
-  optional<ViewId> getRetiredViewId();
   void increaseExpFromCombat(double attackDiff);
   optional<LastingEffect> getHatedByEffect() const;
 
   friend class CreatureFactory;
 
+  vector<ViewId> SERIAL(viewIdUpgrades);
+
   private:
   void consumeEffects(const EnumMap<LastingEffect, int>&);
   MustInitialize<ViewId> SERIAL(viewId);
-  optional<ViewId> SERIAL(retiredViewId);
   HeapAllocated<optional<ViewObject>> SERIAL(illusionViewObject);
   MustInitialize<CreatureName> SERIAL(name);
   EnumMap<AttrType, int> SERIAL(attr);

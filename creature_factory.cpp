@@ -906,11 +906,11 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
   switch (id) {
     case CreatureId::KEEPER_MAGE:
       return CATTR(
-          c.viewId = ViewId::KEEPER;
-          c.retiredViewId = ViewId::RETIRED_KEEPER;
+          c.viewId = ViewId::KEEPER1;
           c.attr = LIST(12_dam, 12_def, 20_spell_dam );
           c.body = Body::humanoid(Body::Size::LARGE);
           c.name = "wizard";
+          c.viewIdUpgrades = LIST(ViewId::KEEPER2, ViewId::KEEPER3, ViewId::KEEPER4);
           c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_MALE)->getNext());
           c.name->useFullTitle();
           c.skills.setValue(SkillId::LABORATORY, 0.2);
@@ -920,12 +920,12 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
       );
     case CreatureId::KEEPER_MAGE_F:
       return CATTR(
-          c.viewId = ViewId::KEEPER_F;
-          c.retiredViewId = ViewId::RETIRED_KEEPER_F;
+          c.viewId = ViewId::KEEPER_F1;
           c.attr = LIST(12_dam, 12_def, 20_spell_dam );
           c.gender = Gender::female;
           c.body = Body::humanoid(Body::Size::LARGE);
           c.name = "wizard";
+          c.viewIdUpgrades = LIST(ViewId::KEEPER_F2, ViewId::KEEPER_F3, ViewId::KEEPER_F4);
           c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_FEMALE)->getNext());
           c.name->useFullTitle();
           c.skills.setValue(SkillId::LABORATORY, 0.2);
@@ -935,11 +935,11 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
       );
     case CreatureId::KEEPER_KNIGHT:
       return CATTR(
-          c.viewId = ViewId::KEEPER_KNIGHT;
-          c.retiredViewId = ViewId::RETIRED_KEEPER_KNIGHT;
+          c.viewId = ViewId::KEEPER_KNIGHT1;
           c.attr = LIST(20_dam, 16_def);
           c.body = Body::humanoid(Body::Size::LARGE);
           c.name = "knight";
+          c.viewIdUpgrades = LIST(ViewId::KEEPER_KNIGHT2, ViewId::KEEPER_KNIGHT3, ViewId::KEEPER_KNIGHT4);
           c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_MALE)->getNext());
           c.name->useFullTitle();
           c.skills.setValue(SkillId::FORGE, 0.2);
@@ -949,12 +949,12 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
       );
     case CreatureId::KEEPER_KNIGHT_F:
       return CATTR(
-          c.viewId = ViewId::KEEPER_KNIGHT_F;
-          c.retiredViewId = ViewId::RETIRED_KEEPER_KNIGHT_F;
+          c.viewId = ViewId::KEEPER_KNIGHT_F1;
           c.attr = LIST(20_dam, 16_def);
           c.gender = Gender::female;
           c.body = Body::humanoid(Body::Size::LARGE);
           c.name = "knight";
+          c.viewIdUpgrades = LIST(ViewId::KEEPER_KNIGHT_F2, ViewId::KEEPER_KNIGHT_F3, ViewId::KEEPER_KNIGHT_F4);
           c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_FEMALE)->getNext());
           c.name->useFullTitle();
           c.skills.setValue(SkillId::FORGE, 0.2);
@@ -964,10 +964,11 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
       );
     case CreatureId::KEEPER_KNIGHT_WHITE:
       return CATTR(
-          c.viewId = ViewId::DUKE;
+          c.viewId = ViewId::DUKE1;
           c.attr = LIST(20_dam, 16_def);
           c.body = Body::humanoid(Body::Size::LARGE);
           c.name = "knight";
+          c.viewIdUpgrades = LIST(ViewId::DUKE2, ViewId::DUKE3, ViewId::DUKE4);
           c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_MALE)->getNext());
           c.name->useFullTitle();
           c.skills.setValue(SkillId::FORGE, 0.2);
@@ -977,11 +978,12 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
       );
     case CreatureId::KEEPER_KNIGHT_WHITE_F:
       return CATTR(
-          c.viewId = ViewId::DUKE_F;
+          c.viewId = ViewId::DUKE_F1;
           c.attr = LIST(20_dam, 16_def);
           c.gender = Gender::female;
           c.body = Body::humanoid(Body::Size::LARGE);
           c.name = "knight";
+          c.viewIdUpgrades = LIST(ViewId::DUKE_F2, ViewId::DUKE_F3, ViewId::DUKE_F4);
           c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_FEMALE)->getNext());
           c.name->useFullTitle();
           c.skills.setValue(SkillId::FORGE, 0.2);
@@ -1373,7 +1375,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
       );
     case CreatureId::DUKE:
       return CATTR(
-          c.viewId = ViewId::DUKE;
+          c.viewId = ViewId::DUKE4;
           c.attr = LIST(43_dam, 32_def );
           c.body = Body::humanoid(Body::Size::LARGE);
           c.permanentEffects[LastingEffect::MELEE_RESISTANCE] = 1;

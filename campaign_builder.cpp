@@ -380,7 +380,7 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(function<optional<Retir
     Campaign campaign(terrain, type, playerRole, NameGenerator::get(NameGeneratorId::WORLD)->getNext());
     if (auto pos = considerStaticPlayerPos(campaign)) {
       campaign.clearSite(*pos);
-      setPlayerPos(campaign, *pos, avatarInfo.playerCreature->getViewObject().id());
+      setPlayerPos(campaign, *pos, avatarInfo.playerCreature->getMaxViewIdUpgrade());
     }
     placeVillains(campaign, getVillainCounts(type, options), retired, avatarInfo.tribeAlignment);
     while (1) {
@@ -428,7 +428,7 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(function<optional<Retir
           return none;
         case CampaignActionId::CHOOSE_SITE:
           if (!considerStaticPlayerPos(campaign))
-            setPlayerPos(campaign, action.get<Vec2>(), avatarInfo.playerCreature->getViewObject().id());
+            setPlayerPos(campaign, action.get<Vec2>(), avatarInfo.playerCreature->getMaxViewIdUpgrade());
           break;
         case CampaignActionId::CONFIRM:
           if (!retired || retired->getNumActive() > 0 || playerRole != PlayerRole::KEEPER ||

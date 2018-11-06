@@ -393,7 +393,12 @@ void Collective::addNewCreatureMessage(const vector<WCreature>& immigrants) {
   }
 }
 
+static int getKeeperUpgradeLevel(int dungeonLevel) {
+  return (dungeonLevel + 1) / 5;
+}
+
 void Collective::update(bool currentlyActive) {
+  getLeader()->upgradeViewId(getKeeperUpgradeLevel(dungeonLevel.level));
   control->update(currentlyActive);
   if (config->hasImmigrantion(currentlyActive) && getLeader())
     immigration->update();

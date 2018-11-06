@@ -201,7 +201,7 @@ class View {
     int genderIndex;
   };
   struct AvatarData {
-    vector<ViewId> viewId;
+    vector<vector<ViewId>> viewId;
     vector<string> firstNames;
     TribeAlignment alignment;
     string name;

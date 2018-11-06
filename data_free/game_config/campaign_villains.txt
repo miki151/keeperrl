@@ -2,7 +2,7 @@
 {
     # Line goes like this:
     # ViewId EnemyId Villain-name Villain-type
-    DUKE KNIGHTS "Knights" MAIN
+    DUKE4 KNIGHTS "Knights" MAIN
     ELF_LORD ELVES "Elves" MAIN
     DWARF_BARON DWARVES "Dwarves" MAIN
     RED_DRAGON RED_DRAGON "Red dragon" MAIN
@@ -53,7 +53,7 @@
 
 # Villains for evil adventurers
 {
-    DUKE KNIGHTS "Knights" MAIN
+    DUKE4 KNIGHTS "Knights" MAIN
     ORC_CAPTAIN ORC_VILLAGE "Greenskins village" ALLY
 }
 
@@ -76,7 +76,7 @@
     HARPY HARPY_CAVE "Harpies" LESSER
     ANT_QUEEN ANTS_OPEN "Ants" LESSER
 
-    DUKE KNIGHTS "Knights" ALLY
+    DUKE4 KNIGHTS "Knights" ALLY
     ELF_LORD ELVES "Elves" ALLY
     DWARF_BARON DWARVES "Dwarves" ALLY
     LIZARDLORD LIZARDMEN "Lizardmen" ALLY

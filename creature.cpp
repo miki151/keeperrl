@@ -974,6 +974,20 @@ void Creature::tick() {
   }
 }
 
+void Creature::upgradeViewId(int level) {
+  if (level > 0) {
+    level = min(level, attributes->viewIdUpgrades.size());
+    modViewObject().setId(attributes->viewIdUpgrades[level - 1]);
+  }
+}
+
+ViewId Creature::getMaxViewIdUpgrade() const {
+  if (!attributes->viewIdUpgrades.empty())
+    return attributes->viewIdUpgrades.back();
+  else
+    return getViewObject().id();
+}
+
 void Creature::dropWeapon() {
   for (auto weapon : equipment->getSlotItems(EquipmentSlot::WEAPON)) {
     you(MsgType::DROP_WEAPON, weapon->getName());
@@ -1322,8 +1336,6 @@ CreatureAction Creature::torture(WCreature other) const {
 }
 
 void Creature::retire() {
-  if (auto id = attributes->getRetiredViewId())
-    modViewObject().setId(*id);
   for (LastingEffect effect : ENUM_ALL(LastingEffect))
     if (attributes->considerTimeout(effect, GlobalTime(1000000)))
       LastingEffects::onTimedOut(this, effect, false);

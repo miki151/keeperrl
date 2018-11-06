@@ -85,6 +85,7 @@
 #include "unknown_locations.h"
 #include "furniture_click.h"
 #include "game_config.h"
+#include "campaign.h"
 
 template <class Archive>
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
@@ -1406,6 +1407,8 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   info.numResource.clear();
   const auto dungeonLevel = collective->getDungeonLevel();
   info.dungeonLevel = dungeonLevel.level + 1;
+  info.dungeonLevelViewId = collective->getLeader()->getViewObject().id();
+  info.leaderTitle = collective->getLeader()->getName().title();
   info.dungeonLevelProgress = dungeonLevel.progress / dungeonLevel.getNecessaryProgress(dungeonLevel.level);
   info.numResearchAvailable = dungeonLevel.numResearchAvailable();
   for (auto resourceId : ENUM_ALL(CollectiveResourceId)) {

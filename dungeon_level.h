@@ -8,6 +8,7 @@ struct DungeonLevel {
   void onLibraryWork(double amount);
   int numResearchAvailable() const;
   void increaseLevel();
+  bool popKeeperUpdate();
   static double getProgress(VillainType type);
   static int getNecessaryProgress(int level);
 

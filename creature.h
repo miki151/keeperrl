@@ -94,6 +94,8 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   bool canSee(Vec2) const;
   bool isEnemy(WConstCreature) const;
   void tick();
+  void upgradeViewId(int level);
+  ViewId getMaxViewIdUpgrade() const;
 
   const CreatureName& getName() const;
   CreatureName& getName();

@@ -92,6 +92,7 @@ void Renderer::drawSprite(const Texture& t, Vec2 a, Vec2 b, Vec2 c, Vec2 d, Vec2
   if (currentTexture && currentTexture != t.getTexId())
     renderDeferredSprites();
   currentTexture = t.getTexId();
+  CHECK(currentTexture);
   deferredSprites.push_back({a, b, c, d, p, k, t.getRealSize(), color});
 }
 
