@@ -206,6 +206,9 @@
     { Furniture {{ TORCH_N TORCH_E TORCH_S TORCH_W }}          "Torch"             "Installations"
         "Place it on tiles next to a wall." c {} false BUILD_TORCH}
 
+    { Furniture {{ CANDELABRUM_N CANDELABRUM_E CANDELABRUM_S CANDELABRUM_W } GOLD 5 }
+        "Candelabrum"             "Installations"       "Place it on tiles next to a wall." }
+
     { Furniture {{ GROUND_TORCH }  WOOD 10  }                  "Standing torch"    "Installations"
         "" 0 {} false BUILD_TORCH }
 

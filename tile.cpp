@@ -611,6 +611,9 @@ class TileCoordLookup {
     Tile::addTile(ViewId::BED3, sprite("bed3").setRoundShadow());
     Tile::addTile(ViewId::DORM, sprite("sleep").setFloorBorders());
     Tile::addTile(ViewId::TORCH, sprite("torch"));
+    Tile::addTile(ViewId::CANDELABRUM_NS, sprite("candelabrum_ns"));
+    Tile::addTile(ViewId::CANDELABRUM_W, sprite("candelabrum_w"));
+    Tile::addTile(ViewId::CANDELABRUM_E, sprite("candelabrum_e"));
     Tile::addTile(ViewId::STANDING_TORCH, sprite("standing_torch").setMoveUp());
     Tile::addTile(ViewId::ALTAR, sprite("altar").setRoundShadow());
   }
@@ -1000,6 +1003,9 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::BED3, symbol(u8"=", Color::PURPLE));
     Tile::addSymbol(ViewId::TORCH, symbol(u8"*", Color::YELLOW));
     Tile::addSymbol(ViewId::STANDING_TORCH, symbol(u8"*", Color::YELLOW));
+    Tile::addSymbol(ViewId::CANDELABRUM_NS, symbol(u8"*", Color::ORANGE));
+    Tile::addSymbol(ViewId::CANDELABRUM_W, symbol(u8"*", Color::ORANGE));
+    Tile::addSymbol(ViewId::CANDELABRUM_E, symbol(u8"*", Color::ORANGE));
     Tile::addSymbol(ViewId::ALTAR, symbol(u8"Ω", Color::WHITE, true));
     Tile::addSymbol(ViewId::CREATURE_ALTAR, symbol(u8"Ω", Color::YELLOW, true));
     Tile::addSymbol(ViewId::TORTURE_TABLE, symbol(u8"=", Color::GRAY));

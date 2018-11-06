@@ -261,6 +261,26 @@ static Furniture get(FurnitureType type, TribeId tribe) {
       return Furniture("torch", ViewObject(ViewId::TORCH, ViewLayer::TORCH2).setAttachmentDir(Dir::W), type, tribe)
           .setLightEmission(8.2)
           .setLayer(FurnitureLayer::CEILING);
+    case FurnitureType::CANDELABRUM_N:
+      return Furniture("candelabrum", ViewObject(ViewId::CANDELABRUM_NS, ViewLayer::TORCH1).setAttachmentDir(Dir::N), type, tribe)
+          .setLightEmission(8.2)
+          .setLuxury(0.3)
+          .setLayer(FurnitureLayer::CEILING);
+    case FurnitureType::CANDELABRUM_S:
+      return Furniture("candelabrum", ViewObject(ViewId::CANDELABRUM_NS, ViewLayer::TORCH1).setAttachmentDir(Dir::S), type, tribe)
+          .setLightEmission(8.2)
+          .setLuxury(0.3)
+          .setLayer(FurnitureLayer::CEILING);
+    case FurnitureType::CANDELABRUM_E:
+      return Furniture("candelabrum", ViewObject(ViewId::CANDELABRUM_E, ViewLayer::TORCH1).setAttachmentDir(Dir::E), type, tribe)
+          .setLightEmission(8.2)
+          .setLuxury(0.3)
+          .setLayer(FurnitureLayer::CEILING);
+    case FurnitureType::CANDELABRUM_W:
+      return Furniture("candelabrum", ViewObject(ViewId::CANDELABRUM_W, ViewLayer::TORCH1).setAttachmentDir(Dir::W), type, tribe)
+          .setLightEmission(8.2)
+          .setLuxury(0.3)
+          .setLayer(FurnitureLayer::CEILING);
     case FurnitureType::TORTURE_TABLE:
       return Furniture("torture table", ViewObject(ViewId::TORTURE_TABLE, ViewLayer::FLOOR), type,
           tribe)
@@ -668,12 +688,16 @@ bool FurnitureParams::operator == (const FurnitureParams& p) const {
 
 bool FurnitureFactory::hasSupport(FurnitureType type, Position pos) {
   switch (type) {
+    case FurnitureType::CANDELABRUM_N:
     case FurnitureType::TORCH_N:
       return pos.minus(Vec2(0, 1)).isWall();
+    case FurnitureType::CANDELABRUM_E:
     case FurnitureType::TORCH_E:
       return pos.plus(Vec2(1, 0)).isWall();
+    case FurnitureType::CANDELABRUM_S:
     case FurnitureType::TORCH_S:
       return pos.plus(Vec2(0, 1)).isWall();
+    case FurnitureType::CANDELABRUM_W:
     case FurnitureType::TORCH_W:
       return pos.minus(Vec2(1, 0)).isWall();
     case FurnitureType::IRON_DOOR:
