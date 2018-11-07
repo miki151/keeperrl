@@ -1753,7 +1753,6 @@ vector<SGuiElem> GuiBuilder::getSettingsButtons() {
       makeSetting(mapGui->highlightMorale, "Highlight morale",
           "Morale affects minion's productivity and chances of fleeing from battle."),
       makeSetting(mapGui->highlightEnemies, "Highlight enemies", ""),
-      makeSetting(mapGui->displayAllHealthBars, "Display health bars", ""),
       makeSetting(mapGui->hideFullHealthBars, "Hide full health bars", "")
     );
 }

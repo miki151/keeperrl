@@ -49,7 +49,7 @@ Furniture::~Furniture() {}
 template<typename Archive>
 void Furniture::serialize(Archive& ar, const unsigned) {
   ar(SUBCLASS(OwnedObject<Furniture>), viewObject, removeNonFriendly);
-  ar(name, pluralName, type, movementSet, fire, burntRemains, destroyedRemains, destroyActions, itemDrop);
+  ar(name, pluralName, type, movementSet, fire, burntRemains, destroyedRemains, destroyedInfo, itemDrop);
   ar(blockVision, usageType, clickType, tickType, usageTime, overrideMovement, wall, creator, createdTime);
   ar(constructMessage, layer, entryType, lightEmission, canHideHere, warning, summonedElement, droppedItems);
   ar(canBuildBridge, noProjectiles, clearFogOfWar, removeWithCreaturePresent, xForgetAfterBuilding);
@@ -65,6 +65,20 @@ const optional<ViewObject>& Furniture::getViewObject() const {  PROFILE
 optional<ViewObject>& Furniture::getViewObject() {
   PROFILE;
   return *viewObject;
+}
+
+void Furniture::updateViewObject() {
+  if (auto& obj = *viewObject) {
+    double minHealth = 1;
+    for (auto action : ENUM_ALL(DestroyAction::Type))
+      if (auto& info = destroyedInfo[action])
+        minHealth = min(minHealth, info->health);
+    if (minHealth < 1) {
+      obj->setAttribute(ViewObjectAttribute::HEALTH, minHealth);
+      if (isWall())
+        obj->setModifier(ViewObjectModifier::FURNITURE_CRACKS);
+    }
+  }
 }
 
 const string& Furniture::getName(FurnitureType type, int count) {
@@ -173,15 +187,17 @@ void Furniture::destroy(Position pos, const DestroyAction& action) {
 }
 
 void Furniture::tryToDestroyBy(Position pos, WCreature c, const DestroyAction& action) {
-  if (auto& strength = destroyActions[action.getType()]) {
+  if (auto& info = destroyedInfo[action.getType()]) {
     c->addSound(action.getSound());
     double damage = c->getAttr(AttrType::DAMAGE);
     if (auto skill = action.getDestroyingSkillMultiplier())
       damage = damage * c->getAttributes().getSkills().getValue(*skill);
-    *strength -= damage;
+    info->health -= damage / info->strength;
+    updateViewObject();
+    pos.setNeedsRenderUpdate(true);
     if (auto fxInfo = tryDestroyFXInfo(type))
       pos.getGame()->addEvent(EventInfo::FX{pos, *fxInfo});
-    if (*strength <= 0)
+    if (info->health <= 0)
       destroy(pos, action);
   }
 }
@@ -423,7 +439,7 @@ Furniture& Furniture::setDestroyable(double s) {
 }
 
 Furniture& Furniture::setDestroyable(double s, DestroyAction::Type type) {
-  destroyActions[type] = s;
+  destroyedInfo[type] = DestroyedInfo{ 1.0, s };
   return *this;
 }
 
@@ -564,9 +580,11 @@ Furniture&Furniture::setClearFogOfWar() {
 }
 
 bool Furniture::canDestroy(const DestroyAction& action) const {
-  return !!destroyActions[action.getType()];
+  return !!destroyedInfo[action.getType()];
 }
 
 optional<double> Furniture::getStrength(const DestroyAction& action) const {
-  return destroyActions[action.getType()];
+  if (auto info = destroyedInfo[action.getType()])
+    return info->strength * info->health;
+  return none;
 }

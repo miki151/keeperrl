@@ -96,6 +96,7 @@ AvatarInfo getQuickGameAvatar(View* view, GameConfig* gameConfig) {
   auto keeperCreatures = readKeeperCreaturesConfig(view, gameConfig).first;
   AvatarInfo ret;
   ret.playerCreature = CreatureFactory::fromId(keeperCreatures[0].creatureId[0], TribeId::getDarkKeeper());
+  ret.playerCreature->getName().setBare("Keeper");
   ret.creatureInfo = keeperCreatures[0];
   ret.tribeAlignment = TribeAlignment::EVIL;
   return ret;

@@ -1150,7 +1150,7 @@ void Creature::updateViewObject() {
   object.setGoodAdjectives(combine(extractNames(getGoodAdjectives()), true));
   object.setBadAdjectives(combine(extractNames(getBadAdjectives()), true));
   getBody().updateViewObject(object);
-  object.setModifier(ViewObject::Modifier::CAPTURE_ORDERED, capture);
+  object.setModifier(ViewObject::Modifier::CAPTURE_BAR, capture);
   if (capture)
     object.setAttribute(ViewObject::Attribute::HEALTH, captureHealth);
   object.setDescription(getName().title());
