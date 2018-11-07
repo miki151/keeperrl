@@ -21,7 +21,6 @@
           ids = { PESEANT_PRISONER }
           traits = { WORKER NO_LIMIT NO_EQUIPMENT }
           spawnLocation = NearLeader
-          keybinding = CREATE_IMP
           noAuto = true
           invisible = true
           initialRecruitment = 4

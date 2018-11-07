@@ -1500,7 +1500,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.chatReactionHostile = "\"Heeelp!\""_s;
           c.permanentEffects[LastingEffect::POISON_RESISTANT] = 1;
           c.skills.setValue(SkillId::DIGGING, 0.3);
-          c.maxLevelIncrease[ExperienceType::MELEE] = 3;
           c.name = "peasant";
           c.hatedByEffect = LastingEffect::HATE_HUMANS;
       );
@@ -2502,6 +2501,8 @@ static vector<ItemType> getDefaultInventory(CreatureId id) {
         .add(ItemType(ItemType::Robe{}));
     case CreatureId::KEEPER_KNIGHT_F:
     case CreatureId::KEEPER_KNIGHT:
+    case CreatureId::KEEPER_KNIGHT_WHITE_F:
+    case CreatureId::KEEPER_KNIGHT_WHITE:
       return ItemList()
         .add(ItemType::LeatherArmor{})
         .add(ItemType::LeatherHelm{})
