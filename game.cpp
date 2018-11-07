@@ -105,10 +105,10 @@ void Game::spawnKeeper(AvatarInfo avatarInfo, bool regenerateMana, vector<string
   playerCollective->setControl(std::move(playerControlOwned));
   playerCollective->setVillainType(VillainType::PLAYER);
   addCollective(playerCollective);
-  for (auto tech : keeperInfo->initialTech)
-    playerCollective->acquireTech(tech, false);
   if (auto error = playerControl->reloadImmigrationAndWorkshops(gameConfig))
     USER_FATAL << *error;
+  for (auto tech : keeperInfo->initialTech)
+    playerCollective->acquireTech(tech, false);
 }
 
 Game::~Game() {}
