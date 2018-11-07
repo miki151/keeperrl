@@ -370,8 +370,8 @@ PGame MainLoop::prepareCampaign(RandomGen& random) {
         if (!name.empty())
           avatar->playerCreature->getName().setFirst(name);
         avatar->playerCreature->getName().useFullTitle();
-        return Game::campaignGame(prepareCampaignModels(*setup, *avatar, random),
-            *setup, std::move(*avatar), gameConfig);
+        auto models = prepareCampaignModels(*setup, *avatar, random);
+        return Game::campaignGame(std::move(models), *setup, std::move(*avatar), gameConfig);
       } else
         continue;
     } else
