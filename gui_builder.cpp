@@ -391,7 +391,7 @@ SGuiElem GuiBuilder::drawBottomBandInfo(GameInfo& gameInfo) {
     const int space = 55;
     bottomLine.addElemAuto(gui.stack(
         gui.margins(gui.progressBar(Color::DARK_GREEN, info.dungeonLevelProgress), -6, -1, 0, -2),
-        gui.uiHighlightConditional([&]{ return info.numResearchAvailable > 0; }),
+        gui.margins(gui.uiHighlightConditional([&]{ return info.numResearchAvailable > 0; }), 0, 0, -3, 1),
         gui.getListBuilder()
             .addElemAuto(gui.topMargin(-2, gui.viewObject(info.dungeonLevelViewId)))
             .addElemAuto(gui.label("Level: " + toString(info.dungeonLevel)))

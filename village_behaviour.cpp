@@ -148,9 +148,12 @@ double VillageBehaviour::getTriggerValue(const Trigger& trigger, const VillageCo
         auto& info = trigger.get<RoomTriggerInfo>();
         return info.probPerSquare * enemy->getConstructions().getBuiltCount(info.type);
       }
-      case AttackTriggerId::POWER:
-        return powerMaxProb *
-            powerClosenessFun(self->collective->getDangerLevel(), enemy->getDangerLevel());
+      case AttackTriggerId::POWER: {
+        auto value = powerClosenessFun(self->collective->getDangerLevel(), enemy->getDangerLevel());
+        if (value < 0.5)
+          value = 0;
+        return powerMaxProb * value;
+      }
       case AttackTriggerId::FINISH_OFF:
         return finishOffMaxProb * getFinishOffProb(self->maxEnemyPower, enemy->getDangerLevel(),
             self->collective->getDangerLevel());
