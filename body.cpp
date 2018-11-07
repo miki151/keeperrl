@@ -710,6 +710,7 @@ void Body::updateViewObject(ViewObject& obj) const {
     obj.setAttribute(ViewObject::Attribute::HEALTH, health);
   else
     obj.setAttribute(ViewObject::Attribute::HEALTH, getBodyPartHealth());
+  obj.setModifier(ViewObjectModifier::HEALTH_BAR);
   switch (material) {
     case Material::SPIRIT:
     case Material::FIRE:

@@ -544,10 +544,31 @@ Color MapGui::getHealthBarColor(double health) {
   return Color::f(min<double>(1.0, 2 - health * 2), min<double>(1.0, 2 * health), 0);
 }
 
-void MapGui::drawHealthBar(Renderer& renderer, Vec2 pos, Vec2 size, const ViewObject& object) {
-  bool capture = object.hasModifier(ViewObject::Modifier::CAPTURE_ORDERED);
+void MapGui::drawFurnitureCracks(Renderer& renderer, Vec2 tilePos, float state, Vec2 pos, Vec2 size) {
+  const char* tileName = [&] {
+    if (state < 0.4)
+      return "furniture_cracks2";
+    if (state < 0.8)
+      return "furniture_cracks1";
+    return (const char*)nullptr;
+  }();
+  if (tileName) {
+    auto hash = tilePos.getHash();
+    renderer.drawTile(pos, renderer.getTileCoord(tileName), size, Color::WHITE,
+        Renderer::SpriteOrientation(hash % 2, (hash / 2) % 2));
+  }
+}
+
+void MapGui::drawHealthBar(Renderer& renderer, Vec2 tilePos, Vec2 pos, Vec2 size, const ViewObject& object) {
   auto health = object.getAttribute(ViewObject::Attribute::HEALTH);
   if (!health)
+    return;
+  if (object.hasModifier(ViewObject::Modifier::FURNITURE_CRACKS)) {
+    drawFurnitureCracks(renderer, tilePos, *health, pos, size);
+    return;
+  }
+  bool capture = object.hasModifier(ViewObject::Modifier::CAPTURE_BAR);
+  if (!capture && !object.hasModifier(ViewObject::Modifier::HEALTH_BAR))
     return;
   if (hideFullHealthBars && !capture && *health == 1)
     return;
@@ -652,10 +673,7 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
       renderer.drawTile(pos - Vec2(0, 4 * size.y / Renderer::nominalSize),
                         (curTimeReal.count() + pos.getHash()) % 500 < 250 ? fire1 : fire2, size);
     }
-
-    if (displayAllHealthBars || lastHighlighted.creaturePos == pos + movement ||
-        object.hasModifier(ViewObject::Modifier::CAPTURE_ORDERED))
-      drawHealthBar(renderer, pos + move, size, object);
+    drawHealthBar(renderer, tilePos, pos + move, size, object);
     if (object.hasModifier(ViewObject::Modifier::STUNNED))
       renderer.drawText(Color::WHITE, pos + move + size / 2, "S", Renderer::CenterType::HOR_VER, size.x * 2 / 3);
     if (object.hasModifier(ViewObject::Modifier::LOCKED))

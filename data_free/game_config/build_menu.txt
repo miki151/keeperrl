@@ -81,13 +81,13 @@
   "library"
   {
     { Furniture {{ BOOKCASE_WOOD }   WOOD 15 }                 "Wooden bookcase"   "Library"  
-        "Train your minions' magical powers here." y          {TechId SPELLS} true BUILD_LIBRARY }
+        "Train your minions' magical powers here." y          {TechId "sorcery"} true BUILD_LIBRARY }
     
     { Furniture {{ BOOKCASE_IRON }   IRON 15 }                 "Iron bookcase"     "Library"
-        "Train your minions' magical powers here." 0          {TechId SPELLS_ADV} }
+        "Train your minions' magical powers here." 0          {TechId "advanced sorcery"} }
  
     { Furniture {{ BOOKCASE_GOLD }   GOLD 15 }                 "Golden bookcase"   "Library"
-        "Train your minions' magical powers here."0           {TechId SPELLS_MAS}}
+        "Train your minions' magical powers here."0           {TechId "master sorcery"}}
   }
  
   "throne"
@@ -137,13 +137,13 @@
         "Train your minions' melee skills here." r {} true  TRAINING_ROOM}
 
     { Furniture {{ TRAINING_IRON } IRON 12 }                   "Iron dummy"        "Training room"
-        "Train your minions' melee skills here."   0 { TechId IRON_WORKING } }
+        "Train your minions' melee skills here."   0 { TechId "iron working" } }
 
     { Furniture {{ TRAINING_ADA }  ADA  12 }                   "Adamantine dummy"  "Training room"
-        "Train your minions' melee skills here."   0 { TechId IRON_WORKING }}
+        "Train your minions' melee skills here."   0 { TechId "iron working" }}
 
     { Furniture {{ ARCHERY_RANGE } WOOD 12 }                   "Archery target"    "Training room"
-        "Train your minions' archery skills here." 0 { TechId ARCHERY }}
+        "Train your minions' archery skills here." 0 { TechId "archery" }}
   }
 
   "crafting"
@@ -152,19 +152,19 @@
         "Produces leather equipment, traps, first-aid kits and other." m {} true  BUILD_WORKSHOP}
 
     { Furniture {{ FORGE }      IRON 20 }                      "Forge"             "Crafting"
-        "Produces metal weapons and armor."    0 { TechId IRON_WORKING }}
+        "Produces metal weapons and armor."    0 { TechId "iron working" }}
 
     { Furniture {{ LABORATORY } STONE 10 }                     "Laboratory"        "Crafting"
-        "Produces magical potions."            0 { TechId ALCHEMY }}
+        "Produces magical potions."            0 { TechId "alchemy" }}
 
     { Furniture {{ JEWELLER }   WOOD 12 }                      "Jeweller"          "Crafting"
-        "Produces magical rings and amulets."  0 { TechId JEWELLERY }}
+        "Produces magical rings and amulets."  0 { TechId "jewellery" }}
   }
 
   "demon_shrine"
   {
     { Furniture {{ DEMON_SHRINE } GOLD 30 }                    "Demon shrine"      ""
-        "Undead creatures sleep here." 0 { TechId DEMONOLOGY }}
+        "Undead creatures sleep here." 0 { TechId "demonology" }}
   }
 
   "prison"
@@ -206,6 +206,9 @@
     { Furniture {{ TORCH_N TORCH_E TORCH_S TORCH_W }}          "Torch"             "Installations"
         "Place it on tiles next to a wall." c {} false BUILD_TORCH}
 
+    { Furniture {{ CANDELABRUM_N CANDELABRUM_E CANDELABRUM_S CANDELABRUM_W } GOLD 5 }
+        "Candelabrum"             "Installations"       "Place it on tiles next to a wall." }
+
     { Furniture {{ GROUND_TORCH }  WOOD 10  }                  "Standing torch"    "Installations"
         "" 0 {} false BUILD_TORCH }
 
@@ -244,22 +247,22 @@
   "traps"
   {
     { Trap TERROR TERROR_TRAP                                  "Terror trap"       "Traps"
-        "Causes the trespasser to panic." 0    { TechId TRAPS }}
+        "Causes the trespasser to panic." 0                   { TechId "traps" }}
 
     { Trap POISON_GAS GAS_TRAP                                 "Gas trap"          "Traps"
-        "Releases a cloud of poisonous gas." 0 { TechId TRAPS }}
+        "Releases a cloud of poisonous gas." 0                { TechId "traps" }}
 
     { Trap ALARM ALARM_TRAP                                    "Alarm trap"        "Traps"
-        "Summons all minions" 0                { TechId TRAPS }}
+        "Summons all minions" 0                               { TechId "traps" }}
 
     { Trap WEB WEB_TRAP                                        "Web trap"          "Traps"
-        "Immobilises the trespasser for some time." 0 { TechId TRAPS }}
+        "Immobilises the trespasser for some time." 0         { TechId "traps" }}
 
     { Trap BOULDER BOULDER                                     "Boulder trap"      "Traps"
-        "Causes a huge boulder to roll towards the enemy." 0 { TechId TRAPS }}
+        "Causes a huge boulder to roll towards the enemy." 0  { TechId "traps" }}
 
     { Trap SURPRISE SURPRISE_TRAP                              "Surprise trap"     "Traps"
-        "Teleports nearby minions to deal with the trespasser." 0 { TechId TRAPS }}
+        "Teleports nearby minions to deal with the trespasser." 0 { TechId "traps" }}
   }
 }
    

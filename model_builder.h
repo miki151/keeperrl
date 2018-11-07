@@ -32,7 +32,7 @@ class ModelBuilder {
   PModel splashModel(const FilePath& splashPath);
   PModel battleModel(const FilePath& levelPath, CreatureList allies, CreatureList enemies);
 
-  WCollective spawnKeeper(WModel, AvatarInfo, bool regenerateMana, vector<string> introText);
+  static WCollective spawnKeeper(WModel, AvatarInfo, bool regenerateMana, vector<string> introText);
 
   ~ModelBuilder();
 

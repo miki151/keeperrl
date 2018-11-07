@@ -123,6 +123,7 @@ template double fromString<double>(const string&);
 
 template optional<int> fromStringSafe<int>(const string&);
 template optional<double> fromStringSafe<double>(const string&);
+template optional<string> fromStringSafe<string>(const string&);
 
 
 template <class T>

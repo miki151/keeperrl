@@ -36,11 +36,8 @@ RICH_ENUM(OptionId,
   DISABLE_CURSOR,
 
   FAST_IMMIGRATION,
-  ADVENTURER_NAME,
-  ADVENTURER_TYPE,
 
-  KEEPER_NAME,
-  KEEPER_TYPE,
+  PLAYER_NAME,
   KEEPER_SEED,
   SHOW_MAP,
   START_WITH_NIGHT,
@@ -68,10 +65,8 @@ class Options {
   Options(const FilePath& path);
   bool getBoolValue(OptionId);
   string getStringValue(OptionId);
-  CreatureId getCreatureId(OptionId);
-  void setNextCreatureId(OptionId);
   const string& getName(OptionId);
-  enum Type { INT, BOOL, STRING, PLAYER_TYPE };
+  enum Type { INT, BOOL, STRING };
   Type getType(OptionId);
   string getValueString(OptionId);
   void setValue(OptionId, Value);
@@ -85,7 +80,6 @@ class Options {
   void addTrigger(OptionId, Trigger trigger);
   void setDefaultString(OptionId, const string&);
   void setChoices(OptionId, const vector<string>&);
-  void setChoices(OptionId, const vector<CreatureId>&);
   optional<string> getHint(OptionId);
 
   private:
@@ -99,7 +93,6 @@ class Options {
   EnumMap<OptionId, string> defaultStrings;
   EnumMap<OptionId, optional<Value>> overrides;
   EnumMap<OptionId, vector<string>> choices;
-  EnumMap<OptionId, vector<CreatureId>> choicesCreatureId;
   EnumMap<OptionId, optional<pair<int, int>>> limits;
 };
 

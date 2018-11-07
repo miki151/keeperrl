@@ -18,8 +18,8 @@
 #include "util.h"
 #include "debug.h"
 #include "user_input.h"
-#include "player_role_choice.h"
 #include "animation_id.h"
+#include "gender.h"
 
 class CreatureView;
 class Level;
@@ -163,8 +163,6 @@ class View {
   virtual optional<int> chooseFromList(const string& title, const vector<ListElem>& options, int index = 0,
       MenuType = MenuType::NORMAL, ScrollPosition* scrollPos = nullptr, optional<UserInputId> exitAction = none) = 0;
 
-  virtual PlayerRoleChoice getPlayerRoleChoice(optional<PlayerRoleChoice> initial) = 0;
-
   /** Lets the player choose a direction from the main 8. Returns none if the player cancelled the choice.*/
   virtual optional<Vec2> chooseDirection(Vec2 playerPos, const string& message) = 0;
 
@@ -197,6 +195,20 @@ class View {
   virtual void presentHighscores(const vector<HighscoreList>&) = 0;
   using BugReportSaveCallback = function<void(FilePath)>;
   virtual void setBugReportSaveCallback(BugReportSaveCallback) = 0;
+
+  struct AvatarChoice {
+    int creatureIndex;
+    int genderIndex;
+  };
+  struct AvatarData {
+    vector<vector<ViewId>> viewId;
+    vector<string> firstNames;
+    TribeAlignment alignment;
+    string name;
+    PlayerRole role;
+    string description;
+  };
+  virtual optional<AvatarChoice> chooseAvatar(const vector<AvatarData>&, Options*) = 0;
 
   struct CampaignMenuState {
     bool helpText;

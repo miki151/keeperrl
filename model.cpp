@@ -53,6 +53,8 @@
 #include "tutorial.h"
 #include "message_buffer.h"
 #include "unknown_locations.h"
+#include "avatar_info.h"
+#include "collective_config.h"
 
 template <class Archive> 
 void Model::serialize(Archive& ar, const unsigned int version) {
@@ -260,6 +262,10 @@ optional<Position> Model::getStairs(WConstLevel from, WConstLevel to) {
 
 vector<WLevel> Model::getLevels() const {
   return getWeakPointers(levels);
+}
+
+void Model::addCollective(PCollective col) {
+  collectives.push_back(std::move(col));
 }
 
 WLevel Model::getTopLevel() const {

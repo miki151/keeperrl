@@ -222,7 +222,6 @@ class UserInput : public EnumVariant<UserInputId, TYPES(BuildingInfo, int, Uniqu
         ASSIGN(int,
             UserInputId::WORKSHOP,
             UserInputId::WORKSHOP_ADD,
-            UserInputId::LIBRARY_ADD,
             UserInputId::CANCEL_TEAM,
             UserInputId::ACTIVATE_TEAM,
             UserInputId::SELECT_TEAM,
@@ -274,6 +273,7 @@ class UserInput : public EnumVariant<UserInputId, TYPES(BuildingInfo, int, Uniqu
             UserInputId::DISMISS_VILLAGE_INFO),
         ASSIGN(string,
             UserInputId::CREATE_ITEM,
+            UserInputId::LIBRARY_ADD,
             UserInputId::APPLY_EFFECT,
             UserInputId::SUMMON_ENEMY
         ),

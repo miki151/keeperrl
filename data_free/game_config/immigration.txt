@@ -21,7 +21,6 @@
           ids = { PESEANT_PRISONER }
           traits = { WORKER NO_LIMIT NO_EQUIPMENT }
           spawnLocation = NearLeader
-          keybinding = CREATE_IMP
           noAuto = true
           invisible = true
           initialRecruitment = 4
@@ -308,7 +307,7 @@
           consumeIds = true
           spawnLocation = Pregnancy
           requirements = {
-            { 0.0 TechId HUMANOID_MUT }
+            { 0.0 TechId "humanoid mutation" }
             { 0.0 Pregnancy }
             { 1.0 CostInfo GOLD 100 }
           }
@@ -322,7 +321,7 @@
           consumeIds = true
           spawnLocation = Pregnancy
           requirements = {
-            { 0.0 TechId BEAST_MUT }
+            { 0.0 TechId "beast mutation" }
             { 0.0 Pregnancy }
             { 1.0 CostInfo GOLD 100 }
           }

@@ -25,6 +25,7 @@ class CreatureName {
   void setFirst(const string&);
   void setStack(const string&);
   void setGroup(const string&);
+  void setBare(const string&);
   void useFullTitle();
   const string& stack() const;
   const char* identify() const;

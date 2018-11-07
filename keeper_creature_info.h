@@ -1,13 +1,15 @@
 #pragma once
 
-#include "avatar_variant.h"
+#include "util.h"
 
 struct KeeperCreatureInfo {
-  CreatureId SERIAL(creatureId);
-  TechVariant SERIAL(techVariant);
+  vector<CreatureId> SERIAL(creatureId);
   TribeAlignment SERIAL(tribeAlignment);
   vector<string> SERIAL(immigrantGroups);
+  vector<TechId> SERIAL(technology);
   vector<TechId> SERIAL(initialTech);
   vector<string> SERIAL(buildingGroups);
-  SERIALIZE_ALL(creatureId, techVariant, tribeAlignment, immigrantGroups, initialTech, buildingGroups)
+  vector<string> SERIAL(workshopGroups);
+  string SERIAL(description);
+  SERIALIZE_ALL(NAMED(creatureId), NAMED(tribeAlignment), NAMED(immigrantGroups), NAMED(technology), NAMED(initialTech), NAMED(buildingGroups), NAMED(workshopGroups), NAMED(description))
 };

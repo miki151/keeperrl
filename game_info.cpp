@@ -64,12 +64,13 @@ vector<ItemAction> getItemActions(WConstCreature c, const vector<WItem>& item) {
       actions.push_back(ItemAction::DROP_MULTI);
     if (item[0]->getShopkeeper(c))
       actions.push_back(ItemAction::PAY);
-    for (Position v : c->getPosition().neighbors8())
-      if (WCreature other = v.getCreature())
-        if (c->isFriend(other)/* && c->canTakeItems(item)*/) {
-          actions.push_back(ItemAction::GIVE);
-          break;
-        }
+    if (c->getPosition().isValid())
+      for (Position v : c->getPosition().neighbors8())
+        if (WCreature other = v.getCreature())
+          if (c->isFriend(other)/* && c->canTakeItems(item)*/) {
+            actions.push_back(ItemAction::GIVE);
+            break;
+          }
   }
   actions.push_back(ItemAction::NAME);
   return actions;
@@ -140,7 +141,6 @@ PlayerInfo::PlayerInfo(WConstCreature c) : bestAttack(c) {
   levelInfo.combatExperience = c->getAttributes().getCombatExperience();
   intrinsicAttacks = fillIntrinsicAttacks(c);
   skills = getSkillNames(c);
-  willMoveThisTurn = c->getPosition().getModel()->getTimeQueue().willMoveThisTurn(c);
   effects.clear();
   for (auto& adj : c->getBadAdjectives())
     effects.push_back({adj.name, adj.help, true});
@@ -162,7 +162,8 @@ PlayerInfo::PlayerInfo(WConstCreature c) : bestAttack(c) {
   for (auto elem : ENUM_ALL(ItemClass))
     if (typeGroups[elem].size() > 0)
       append(inventory, getItemInfos(c, typeGroups[elem]));
-  moveCounter = c->getPosition().getModel()->getMoveCounter();
+  if (c->getPosition().isValid())
+    moveCounter = c->getPosition().getModel()->getMoveCounter();
   isPlayerControlled = c->isPlayer();
 }
 

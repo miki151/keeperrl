@@ -2,7 +2,7 @@
 
 #include "view.h"
 #include "clock.h"
-#include "player_role.h"
+#include "avatar_menu_option.h"
 
 class DummyView : public View {
   public:
@@ -25,9 +25,6 @@ class DummyView : public View {
   virtual optional<int> chooseFromList(const string&, const vector<ListElem>&, int = 0,
       MenuType = MenuType::NORMAL, ScrollPosition* = nullptr, optional<UserInputId> = none) override {
     return none;
-  }
-  virtual PlayerRoleChoice getPlayerRoleChoice(optional<PlayerRoleChoice> initial) override {
-    return PlayerRole::KEEPER;
   }
   virtual optional<Vec2> chooseDirection(Vec2 playerPos, const string& message) override {
     return none;
@@ -84,4 +81,7 @@ class DummyView : public View {
   virtual void addSound(const Sound&) override {}
   virtual void logMessage(const string&) override {}
   virtual void setBugReportSaveCallback(BugReportSaveCallback) override {};
+  virtual optional<AvatarChoice> chooseAvatar(const vector<AvatarData>&, Options*) override {
+    return none;
+  }
 };

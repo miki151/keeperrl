@@ -5,6 +5,8 @@
 #include "view_object.h"
 
 WorkshopItem WorkshopItemCfg::get() const {
+  // for some reason removing this line causes a linker error, probably a compiler bug
+  auto t = tech;
   PItem elem = item.get();
   return {
     item,

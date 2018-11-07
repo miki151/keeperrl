@@ -52,7 +52,7 @@ namespace EventInfo {
   struct RetiredGame {};
 
   struct TechbookRead {
-    Technology* technology;
+    TechId technology;
   };
 
   struct Alarm {

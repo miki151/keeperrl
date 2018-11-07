@@ -243,11 +243,11 @@ class SkillBook : public Item {
 
 class TechBookItem : public Item {
   public:
-  TechBookItem(const ItemAttributes& attr, optional<TechId> t) : Item(attr), tech(t) {}
+  TechBookItem(const ItemAttributes& attr, TechId t) : Item(attr), tech(t) {}
 
   virtual void applySpecial(WCreature c) override {
-    if (!read || !!tech) {
-      c->getGame()->addEvent(EventInfo::TechbookRead{tech ? Technology::get(*tech) : nullptr});
+    if (!read) {
+      c->getGame()->addEvent(EventInfo::TechbookRead{tech});
       read = true;
     }
   }
@@ -256,7 +256,7 @@ class TechBookItem : public Item {
   SERIALIZATION_CONSTRUCTOR(TechBookItem)
 
   private:
-  optional<TechId> SERIAL(tech);
+  TechId SERIAL(tech);
   bool SERIAL(read) = false;
 };
 
@@ -278,9 +278,6 @@ PItem ItemType::get() const {
   return type.visit(
       [&](const FireScroll&) {
         return makeOwner<FireScrollItem>(std::move(attributes));
-      },
-      [&](const RandomTechBook&) {
-        return makeOwner<TechBookItem>(std::move(attributes), none);
       },
       [&](const TechBook& t) {
         return makeOwner<TechBookItem>(std::move(attributes), t.techId);
@@ -1163,25 +1160,13 @@ ItemAttributes ItemType::FireScroll::getAttributes() const {
 ItemAttributes ItemType::TechBook::getAttributes() const {
   return ITATTR(
       i.viewId = ViewId::BOOK;
-      i.shortName = Technology::get(techId)->getName();
+      i.shortName = techId;
       i.name = "book of " + *i.shortName;
       i.plural = "books of " + *i.shortName;
       i.weight = 1;
       i.itemClass = ItemClass::BOOK;
       i.applyTime = 3_visible;
       i.price = 1000;
-  );
-}
-
-ItemAttributes ItemType::RandomTechBook::getAttributes() const {
-  return ITATTR(
-      i.viewId = ViewId::BOOK;
-      i.name = "book of knowledge";
-      i.plural = "books of knowledge"_s;
-      i.weight = 0.5;
-      i.itemClass = ItemClass::BOOK;
-      i.applyTime = 3_visible;
-      i.price = 300;
   );
 }
 

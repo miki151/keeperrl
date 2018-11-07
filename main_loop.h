@@ -23,6 +23,7 @@ class ModelBuilder;
 class ItemType;
 class CreatureList;
 class GameConfig;
+class AvatarInfo;
 
 class MainLoop {
   public:
@@ -63,7 +64,7 @@ class MainLoop {
 
   void playMenuMusic();
 
-  Table<PModel> prepareCampaignModels(CampaignSetup& campaign, RandomGen& random);
+  Table<PModel> prepareCampaignModels(CampaignSetup& campaign, const AvatarInfo&, RandomGen& random);
   PGame loadGame(const FilePath&);
   PGame loadPrevious();
   FilePath getSavePath(const PGame&, GameSaveType);
@@ -84,7 +85,7 @@ class MainLoop {
   GameConfig* gameConfig;
   bool useSingleThread;
   SokobanInput* sokobanInput;
-  PModel getBaseModel(ModelBuilder&, CampaignSetup&);
+  PModel getBaseModel(ModelBuilder&, CampaignSetup&, const AvatarInfo&);
   void considerGameEventsPrompt();
   void considerFreeVersionText(bool tilesPresent);
   void eraseAllSavesExcept(const PGame&, optional<GameSaveType>);
@@ -94,6 +95,7 @@ class MainLoop {
   int saveVersion;
   void saveGame(PGame&, const FilePath&);
   void saveMainModel(PGame&, const FilePath&);
+  PGame gameChoiceMenu();
 };
 
 

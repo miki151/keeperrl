@@ -21,10 +21,11 @@ class Campaign;
 class SavedGameInfo;
 struct CampaignSetup;
 class GameConfig;
+class AvatarInfo;
 
 class Game : public OwnedObject<Game> {
   public:
-  static PGame campaignGame(Table<PModel>&&, CampaignSetup&);
+  static PGame campaignGame(Table<PModel>&&, CampaignSetup&, AvatarInfo, GameConfig*);
   static PGame splashScreen(PModel&&, const CampaignSetup&);
 
   optional<ExitInfo> update(double timeDiff);
@@ -138,6 +139,6 @@ class Game : public OwnedObject<Game> {
   void initializeModels();
   void increaseTime(double diff);
   GameConfig* gameConfig = nullptr;
+  void addCollective(WCollective);
+  void spawnKeeper(AvatarInfo, bool regenerateMana, vector<string> introText, GameConfig*);
 };
-
-

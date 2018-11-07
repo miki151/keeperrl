@@ -133,7 +133,12 @@ class Furniture : public OwnedObject<Furniture> {
   HeapAllocated<optional<Fire>> SERIAL(fire);
   optional<FurnitureType> SERIAL(burntRemains);
   optional<FurnitureType> SERIAL(destroyedRemains);
-  EnumMap<DestroyAction::Type, optional<double>> SERIAL(destroyActions);
+  struct DestroyedInfo {
+    double SERIAL(health);
+    double SERIAL(strength);
+    SERIALIZE_ALL(health, strength);
+  };
+  EnumMap<DestroyAction::Type, optional<DestroyedInfo>> SERIAL(destroyedInfo);
   HeapAllocated<optional<ItemFactory>> SERIAL(itemDrop);
   EnumSet<VisionId> SERIAL(blockVision);
   optional<FurnitureUsageType> SERIAL(usageType);
@@ -159,4 +164,5 @@ class Furniture : public OwnedObject<Furniture> {
   bool SERIAL(clearFogOfWar) = false;
   bool SERIAL(xForgetAfterBuilding) = false;
   LuxuryInfo SERIAL(luxuryInfo);
+  void updateViewObject();
 };

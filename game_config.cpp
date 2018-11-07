@@ -14,6 +14,8 @@ const char* GameConfig::getConfigName(GameConfigId id) {
       return "workshops_menu";
     case GameConfigId::IMMIGRATION:
       return "immigration";
+    case GameConfigId::TECHNOLOGY:
+      return "technology";
   }
 }
 

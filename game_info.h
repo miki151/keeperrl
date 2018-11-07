@@ -118,7 +118,6 @@ class PlayerInfo {
   vector<ItemInfo> HASH(inventory);
   vector<ItemInfo> HASH(intrinsicAttacks);
   int HASH(debt);
-  bool HASH(willMoveThisTurn);
   vector<PlayerInfo> HASH(teamInfos);
   struct CommandInfo {
     string HASH(name);
@@ -159,7 +158,7 @@ class PlayerInfo {
   optional<double> HASH(carryLimit);
   optional<ViewId> HASH(quarters);
   bool HASH(canAssignQuarters);
-  HASH_ALL(attributes, skills, firstName, name, title, levelInfo, positionHash, effects, spells, lyingItems, inventory, minionTasks, creatureId, morale, viewId, actions, commands, debt, bestAttack, carryLimit, intrinsicAttacks, teamInfos, moveCounter, willMoveThisTurn, isPlayerControlled, controlMode, teamMemberActions, quarters, canAssignQuarters, teamOrders)
+  HASH_ALL(attributes, skills, firstName, name, title, levelInfo, positionHash, effects, spells, lyingItems, inventory, minionTasks, creatureId, morale, viewId, actions, commands, debt, bestAttack, carryLimit, intrinsicAttacks, teamInfos, moveCounter, isPlayerControlled, controlMode, teamMemberActions, quarters, canAssignQuarters, teamOrders)
 };
 
 struct ImmigrantDataInfo {
@@ -267,6 +266,8 @@ class CollectiveInfo {
   vector<Resource> HASH(numResource);
   int HASH(dungeonLevel);
   double HASH(dungeonLevelProgress);
+  ViewId HASH(dungeonLevelViewId);
+  string HASH(leaderTitle);
   int HASH(numResearchAvailable);
   struct Team {
     TeamId HASH(id);
@@ -311,7 +312,7 @@ class CollectiveInfo {
   };
   optional<RebellionChance> HASH(rebellionChance);
   vector<ViewId> HASH(allQuarters);
-  HASH_ALL(warning, buildings, minionCount, minionLimit, monsterHeader, minions, minionGroups, enemyGroups, chosenCreature, numResource, teams, nextPayout, payoutTimeRemaining, taskMap, ransom, nextWave, chosenWorkshop, workshopButtons, immigration, allImmigration, libraryInfo, allQuarters, rebellionChance, dungeonLevel, dungeonLevelProgress, numResearchAvailable)
+  HASH_ALL(warning, buildings, minionCount, minionLimit, monsterHeader, minions, minionGroups, enemyGroups, chosenCreature, numResource, teams, nextPayout, payoutTimeRemaining, taskMap, ransom, nextWave, chosenWorkshop, workshopButtons, immigration, allImmigration, libraryInfo, allQuarters, rebellionChance, dungeonLevel, dungeonLevelViewId, leaderTitle, dungeonLevelProgress, numResearchAvailable)
 };
 
 class VillageInfo {

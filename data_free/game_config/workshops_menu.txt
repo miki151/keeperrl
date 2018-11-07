@@ -1,3 +1,7 @@
+{
+  
+"basic"
+
 # Workshop
 {
     {item = {Club}    work = 3 cost = WOOD 10    tech = none      batchSize = 1    tutorialHighlight = SCHEDULE_CLUB}
@@ -5,16 +9,10 @@
     {{LeatherHelm}           1        WOOD 6}
     {{LeatherBoots}          2        WOOD 10}
     {{LeatherGloves}         1        WOOD 2}
-    {{HeavyClub}             5        WOOD 20      TWO_H_WEAP}
-    {{Bow}                   13       WOOD 20      ARCHERY}
-    {{WoodenStaff}           13       WOOD 20      MAGICAL_WEAPONS}
+    {{HeavyClub}             5        WOOD 20      "two-handed weapons"}
+    {{Bow}                   13       WOOD 20      "archery"}
+    {{WoodenStaff}           13       WOOD 20      "magical weapons"}
     {{Torch}                 2        WOOD 4}
-    {{TrapItem BOULDER}      20       STONE 120    TRAPS}
-    {{TrapItem POISON_GAS}   10       WOOD 20      TRAPS}
-    {{TrapItem ALARM}        8        WOOD 20      TRAPS}
-    {{TrapItem WEB}          8        WOOD 20      TRAPS}
-    {{TrapItem SURPRISE}     8        WOOD 20      TRAPS}
-    {{TrapItem TERROR}       8        WOOD 20      TRAPS}
 }
 
 # Forge
@@ -25,17 +23,17 @@
     {{IronHelm}              8        IRON 16}
     {{IronBoots}             12       IRON 24}
     {{IronGloves}            3        IRON 2}
-    {{WarHammer}             16       IRON 40      TWO_H_WEAP}
-    {{BattleAxe}             22       IRON 50      TWO_H_WEAP}
-    {{IronStaff}             20       IRON 40      MAGICAL_WEAPONS}
-    {{GoldenStaff}           20       GOLD 200     MAGICAL_WEAPONS}
+    {{WarHammer}             16       IRON 40      "two-handed weapons"}
+    {{BattleAxe}             22       IRON 50      "two-handed weapons"}
+    {{IronStaff}             20       IRON 40      "magical weapons"}
+    {{GoldenStaff}           20       GOLD 200     "magical weapons"}
     {{AdaSword}              20       ADA 20}
     {{AdaArmor}              30       ADA 40}
     {{AdaHelm}               15       ADA 16}
     {{AdaBoots}              15       ADA 24}
     {{AdaGloves}             6        ADA 2}
-    {{AdaWarHammer}          20       ADA 40       TWO_H_WEAP}
-    {{AdaBattleAxe}          22       ADA 50       TWO_H_WEAP}
+    {{AdaWarHammer}          20       ADA 40       "two-handed weapons"}
+    {{AdaBattleAxe}          22       ADA 50       "two-handed weapons"}
 }
 
 # Lab
@@ -49,17 +47,17 @@
     {{Potion Lasting REGENERATION}         4        GOLD 8}
     {{Potion Lasting POISON}               4        GOLD 8}
     {{Potion Lasting FLYING}               4        GOLD 8}
-    {{Potion Heal}                         4        GOLD 10      ALCHEMY_ADV}
-    {{Potion Lasting BLIND}                4        GOLD 15      ALCHEMY_ADV}
-    {{Potion Lasting MELEE_RESISTANCE}     6        GOLD 20      ALCHEMY_ADV}
-    {{Potion Lasting MELEE_VULNERABILITY}  6        GOLD 40      ALCHEMY_ADV}
-    {{Potion Lasting MAGIC_VULNERABILITY}  6        GOLD 40      ALCHEMY_ADV}
-    {{Potion Lasting INVISIBLE}            6        GOLD 20      ALCHEMY_ADV}
-    {{GoldPiece}                           5        IRON 30      ALCHEMY_CONV       10}
-    {{WoodPlank}                           5        GOLD 10      ALCHEMY_CONV       10}
-    {{IronOre}                             5        GOLD 10      ALCHEMY_CONV       10}
-    {{AdaOre}                              5        GOLD 40      ALCHEMY_CONV       10}
-    {{Rock}                                5        GOLD 10      ALCHEMY_CONV       10}
+    {{Potion Heal}                         4        GOLD 10      "advanced alchemy"}
+    {{Potion Lasting BLIND}                4        GOLD 15      "advanced alchemy"}
+    {{Potion Lasting MELEE_RESISTANCE}     6        GOLD 20      "advanced alchemy"}
+    {{Potion Lasting MELEE_VULNERABILITY}  6        GOLD 40      "advanced alchemy"}
+    {{Potion Lasting MAGIC_VULNERABILITY}  6        GOLD 40      "advanced alchemy"}
+    {{Potion Lasting INVISIBLE}            6        GOLD 20      "advanced alchemy"}
+    {{GoldPiece}                           5        IRON 30      "alchemical conversion"       10}
+    {{WoodPlank}                           5        GOLD 10      "alchemical conversion"       10}
+    {{IronOre}                             5        GOLD 10      "alchemical conversion"       10}
+    {{AdaOre}                              5        GOLD 40      "alchemical conversion"       10}
+    {{Rock}                                5        GOLD 10      "alchemical conversion"       10}
 }
 
 # Jeweller
@@ -77,4 +75,33 @@
     {{Amulet WARNING}                      10       GOLD 30}
     {{DefenseAmulet}                       10       GOLD 40}
     {{Amulet REGENERATION}                 10       GOLD 60}
+}
+
+"traps"
+# Workshop
+{
+    {{TrapItem BOULDER}      20       STONE 120    "traps"}
+    {{TrapItem POISON_GAS}   10       WOOD 20      "traps"}
+    {{TrapItem ALARM}        8        WOOD 20      "traps"}
+    {{TrapItem WEB}          8        WOOD 20      "traps"}
+    {{TrapItem SURPRISE}     8        WOOD 20      "traps"}
+    {{TrapItem TERROR}       8        WOOD 20      "traps"}
+}
+
+# Forge
+{
+}
+
+# Lab
+{
+}
+
+# Jeweller
+{
+}
+
+# Add more groups here, remember that there need to be 4 lists in each group, each for each workshop type.
+# And you need to add your new group to your keeper in player_creatures.txt
+
+
 }

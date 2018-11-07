@@ -108,7 +108,6 @@ class ItemType {
   SIMPLE_ITEM(GoldPiece);
   SIMPLE_ITEM(WoodPlank);
   SIMPLE_ITEM(Bone);
-  SIMPLE_ITEM(RandomTechBook);
   struct TechBook {
     TechId techId;
     COMPARE_ALL(techId)
@@ -126,7 +125,7 @@ class ItemType {
       Scythe, Bow, ElvenBow, LeatherArmor, LeatherHelm, IronHelm, AdaHelm, ChainArmor, AdaArmor, LeatherBoots,
       IronBoots, AdaBoots, LeatherGloves, IronGloves, AdaGloves, Robe, Scroll, FireScroll, Potion,
       Mushroom, Amulet, DefenseAmulet, Ring, FirstAidKit, Rock, IronOre, AdaOre, GoldPiece,
-      WoodPlank, Bone, RandomTechBook, TechBook, TrapItem, AutomatonItem, BagOfCandies, HalloweenCostume,
+      WoodPlank, Bone, TechBook, TrapItem, AutomatonItem, BagOfCandies, HalloweenCostume,
       UnicornHorn, Intrinsic, Torch);
 
   template <typename T>

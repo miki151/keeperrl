@@ -78,7 +78,6 @@ class MapGui : public GuiElem {
   void clearButtonViewId();
   bool highlightMorale = true;
   bool highlightEnemies = true;
-  bool displayAllHealthBars = true;
   bool hideFullHealthBars = true;
   struct HighlightedInfo {
     optional<Vec2> creaturePos;
@@ -183,7 +182,7 @@ class MapGui : public GuiElem {
   void setDraggedCreature(UniqueEntity<Creature>::Id, ViewId, Vec2 origin);
   vector<Vec2> tutorialHighlightLow;
   vector<Vec2> tutorialHighlightHigh;
-  void drawHealthBar(Renderer&, Vec2 pos, Vec2 size, const ViewObject&);
+  void drawHealthBar(Renderer&, Vec2 tilePos, Vec2 pos, Vec2 size, const ViewObject&);
   int lastMoveCounter = -1000;
   int currentMoveCounter = -1000;
   double getDistanceToEdgeRatio(Vec2);
@@ -203,4 +202,5 @@ class MapGui : public GuiElem {
   unique_ptr<fx::FXRenderer> fxRenderer;
   unique_ptr<FXViewManager> fxViewManager;
   void updateFX(milliseconds currentTimeReal);
+  void drawFurnitureCracks(Renderer&, Vec2 tilePos, float state, Vec2 pos, Vec2 size);
 };

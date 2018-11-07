@@ -224,7 +224,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void updateMinionVisibility(WConstCreature);
   STutorial SERIAL(tutorial);
   void setChosenLibrary(bool);
-  void acquireTech(int index);
+  void acquireTech(TechId);
   SMessageBuffer SERIAL(controlModeMessages);
   unordered_set<int> dismissedNextWaves;
   vector<ImmigrantDataInfo> getPrisonerImmigrantData() const;

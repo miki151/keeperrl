@@ -68,7 +68,6 @@ void Singleton<T, E>::serialize(Archive& ar, const unsigned int version) {
   ar(id);
 }
 
-SERIALIZABLE_TMPL(Singleton, Technology, TechId)
 SERIALIZABLE_TMPL(Singleton, Skill, SkillId)
 SERIALIZABLE_TMPL(Singleton, NameGenerator, NameGeneratorId)
 SERIALIZABLE_TMPL(Singleton, Spell, SpellId)
