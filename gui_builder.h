@@ -286,8 +286,6 @@ class GuiBuilder {
   SGuiElem drawVillainType(VillainType);
   SGuiElem drawLyingItemsList(const string& title, const ItemCounts&, int maxWidth);
   SGuiElem drawTickBox(shared_ptr<bool> value, const string& title);
-  SGuiElem drawAvatarMenu(Options*, const View::AvatarData&, shared_ptr<int> gender);
-  SGuiElem drawAvatarHint(const View::AvatarData&);
 };
 
 RICH_ENUM(GuiBuilder::GameSpeed,

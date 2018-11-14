@@ -3035,43 +3035,6 @@ SGuiElem GuiBuilder::drawChooseSiteMenu(SyncQueue<optional<Vec2>>& queue, const 
                            gui.window(gui.margins(lines.buildVerticalList(), 15), [&queue] { queue.push(none); }));
 }
 
-const Vec2 hintSize(500, 200);
-
-SGuiElem GuiBuilder::drawAvatarMenu(Options* options, const View::AvatarData& avatar, shared_ptr<int> gender) {
-  auto lines = gui.getListBuilder(legendLineHeight);
-  auto rightLines = gui.getListBuilder(legendLineHeight);
-  if (avatar.viewId.size() > 1)
-    lines.addElem(gui.stack(
-        gui.button([gender] { *gender = !*gender; }),
-        gui.getListBuilder()
-            .addElemAuto(gui.label("Gender: "))
-            .addElemAuto(gui.labelFun([gender]{ return *gender == 0 ? "male"_s : "female"_s;}))
-            .buildHorizontalList()));
-  vector<SGuiElem> firstNameOptions;
-  for (int genderIndex : All(avatar.viewId))
-    firstNameOptions.push_back(gui.conditional(
-        drawOptionElem(options, OptionId::PLAYER_NAME, []{}, avatar.firstNames[genderIndex]),
-        [=]{ return *gender == genderIndex; }));
-  lines.addElem(gui.stack(std::move(firstNameOptions)));
-  lines.addSpace(10);
-  vector<SGuiElem> viewIdLines;
-  for (int genderIndex : All(avatar.viewId)) {
-    auto line = gui.getListBuilder();
-    for (auto viewId : avatar.viewId[genderIndex])
-      line.addElemAuto(gui.viewObject(viewId, 2));
-    viewIdLines.push_back(gui.conditional(line.buildHorizontalList(), [=]{ return *gender == genderIndex; }));
-  }
-  lines.addElemAuto(gui.stack(std::move(viewIdLines)));
-  rightLines.addElem(gui.label(capitalFirst(getName(avatar.role)), Color::LIGHT_GRAY));
-  rightLines.addElem(gui.label("Class: "_s + capitalFirst(avatar.name), Color::LIGHT_GRAY));
-  rightLines.addElem(gui.label("Alignment: "_s + getName(avatar.alignment), Color::LIGHT_GRAY));
-  //lines.addElem(gui.labelMultiLineWidth(avatar.description, legendLineHeight, hintSize.x), hintSize.y);
-  return gui.margins(gui.preferredSize(hintSize, gui.getListBuilder()
-      .addElem(lines.buildVerticalList(), hintSize.x - 170)
-      .addElem(rightLines.buildVerticalList(), 170)
-      .buildHorizontalList()), 20);
-}
-
 static const char* getText(AvatarMenuOption option) {
   switch (option) {
     case AvatarMenuOption::TUTORIAL:
@@ -3083,72 +3046,85 @@ static const char* getText(AvatarMenuOption option) {
   }
 }
 
-SGuiElem GuiBuilder::drawAvatarHint(const View::AvatarData& avatar) {
-  return gui.miniWindow(gui.margins(
-      gui.getListBuilder(legendLineHeight)
-          .addElem(gui.label(capitalFirst(getName(avatar.role))))
-          .addElem(gui.label("Class: "_s + capitalFirst(avatar.name)))
-          .addElem(gui.label("Alignment: "_s + getName(avatar.alignment)))
-          .buildVerticalList(), 15));
-}
-
 SGuiElem GuiBuilder::drawAvatarMenu(SyncQueue<optional<View::AvatarChoice>>& queue, Options* options,
     const vector<View::AvatarData>& avatars) {
   auto gender = make_shared<int>(0);
   auto chosenAvatar = make_shared<int>(0);
-  auto lines = gui.getListBuilder(legendLineHeight);
-  vector<SGuiElem> hints;
+  auto chosenRole = make_shared<PlayerRole>(PlayerRole::KEEPER);
+  vector<SGuiElem> firstNameOptions;
+  vector<SGuiElem> genderOptions;
+  for (int avatarIndex : All(avatars)) {
+    auto& avatar = avatars[avatarIndex];
+    for (int genderIndex : All(avatar.viewId))
+      firstNameOptions.push_back(gui.conditional(
+          drawOptionElem(options, OptionId::PLAYER_NAME, []{}, avatar.firstNames[genderIndex]),
+          [=]{ return *gender == genderIndex && avatarIndex == *chosenAvatar; }));
+    if (avatar.viewId.size() > 1)
+      genderOptions.push_back(gui.conditional(
+          gui.stack(
+              gui.button([gender] { *gender = !*gender; }),
+              gui.getListBuilder()
+                  .addElemAuto(gui.label("Gender: "))
+                  .addElemAuto(gui.labelFun([gender]{ return *gender == 0 ? "male"_s : "female"_s;}))
+                  .buildHorizontalList()),
+          [=] { return avatarIndex == *chosenAvatar; }));
+  }
+  auto leftLines = gui.getListBuilder(legendLineHeight);
+  auto rightLines = gui.getListBuilder(legendLineHeight);
+  leftLines.addElem(gui.stack(std::move(firstNameOptions)));
+  leftLines.addElem(gui.stack(std::move(genderOptions)));
+  leftLines.addElem(gui.stack(
+      gui.button([chosenRole, chosenAvatar, &avatars] {
+          *chosenRole = PlayerRole(1 - int(*chosenRole));
+          for (int i : All(avatars))
+            if (avatars[i].role == *chosenRole) {
+              *chosenAvatar = i;
+              break;
+            }
+      }),
+      gui.labelFun([=] { return "Role: "_s + getName(*chosenRole); }))
+  );
   auto addRole = [&](PlayerRole role) {
     auto line = gui.getListBuilder(legendLineHeight);
     for (int i : All(avatars)) {
       auto& elem = avatars[i];
       auto viewIdFun = [gender, id = elem.viewId] { return id[min(*gender, id.size() - 1)].back(); };
-      /*if (i > 0 && elem.role == PlayerRole::ADVENTURER && avatars[i - 1].role == PlayerRole::KEEPER)
-        line.addSpace(45);*/
-      /*auto avatarHint = drawAvatarHint(elem);
-      auto avatarHintHeight = *avatarHint->getPreferredHeight();*/
       if (elem.role == role) {
         line.addElemAuto(gui.stack(
             gui.button([i, chosenAvatar]{ *chosenAvatar = i; }),
             gui.mouseHighlight2(
-                gui.rightMargin(10, gui.topMargin(-8, gui.viewObject(viewIdFun, 3))),
+                gui.rightMargin(10, gui.topMargin(-5, gui.viewObject(viewIdFun, 2))),
                 gui.rightMargin(10, gui.conditional2(
-                    gui.topMargin(-8, gui.viewObject(viewIdFun, 3)),
-                    gui.viewObject(viewIdFun, 3), [=](GuiElem*){ return *chosenAvatar == i;})))
-            /*gui.tooltip2(std::move(avatarHint),
-                [=](const Rectangle& r) { return r.topLeft() - Vec2(0, avatarHintHeight + 20); })*/
+                    gui.topMargin(-5, gui.viewObject(viewIdFun, 2)),
+                    gui.viewObject(viewIdFun, 2), [=](GuiElem*){ return *chosenAvatar == i;})))
         ));
-        hints.push_back(
-            gui.conditional(drawAvatarMenu(options, elem, gender), [=]{ return *chosenAvatar == i;}));
       }
     }
-    return gui.getListBuilder(legendLineHeight)
-        .addElem(gui.label(capitalFirst(getName(role)) + ":"))
-        .addSpace(10)
-        .addElemAuto(line.buildHorizontalList())
-        .buildVerticalList();
+    return line.buildHorizontalList();
   };
-  //lines.addElem(gui.centerHoriz(gui.label("Choose your character:")));
+  rightLines.addElemAuto(gui.conditional2(addRole(PlayerRole::KEEPER), addRole(PlayerRole::ADVENTURER),
+      [chosenRole] (GuiElem*){ return *chosenRole == PlayerRole::KEEPER; }));
+  rightLines.addElem(gui.labelFun([&avatars, chosenAvatar] {
+      return capitalFirst(avatars[*chosenAvatar].name) + ", " + getName(avatars[*chosenAvatar].alignment);}));
+  auto lines = gui.getListBuilder(legendLineHeight);
   lines.addElemAuto(gui.getListBuilder()
-      .addElemAuto(addRole(PlayerRole::KEEPER))
-      .addSpace(40)
-      .addElemAuto(addRole(PlayerRole::ADVENTURER))
-      .buildHorizontalList());
-  lines.addSpace(40);
-  return gui.getListBuilder()
-      .addElemAuto(gui.translucentBackground(gui.margins(lines.buildVerticalList(), 15)))
-      .addElemAuto(gui.stack(std::move(hints)))
-      .addElem(gui.stack(
-           gui.button([&queue, chosenAvatar, gender]{ queue.push(View::AvatarChoice{*chosenAvatar, *gender}); }),
-              gui.mainMenuLabelBg("Confirm", menuLabelVPadding),
-              gui.mouseHighlight2(gui.mainMenuLabel("Confirm", menuLabelVPadding))
-          ), 60)
-      .addElem(gui.stack(
-           gui.button([&queue]{ queue.push(none); }, gui.getKey(SDL::SDLK_ESCAPE)),
-              gui.mainMenuLabelBg("Go back", menuLabelVPadding),
-              gui.mouseHighlight2(gui.mainMenuLabel("Go back", menuLabelVPadding))
-          ), 60)
-      .buildVerticalList();
+      .addElem(leftLines.buildVerticalList(), 400)
+      .addElemAuto(rightLines.buildVerticalList())
+      .buildHorizontalListFit()
+  );
+  lines.addBackElem(
+      gui.centerHoriz(gui.getListBuilder()
+        .addElemAuto(gui.stack(
+            gui.button([&queue, chosenAvatar, gender]{ queue.push(View::AvatarChoice{*chosenAvatar, *gender}); }),
+            gui.labelHighlight("[Confirm]", Color::LIGHT_BLUE)))
+        .addSpace(10)
+        .addElemAuto(
+            gui.stack(
+                gui.button([&queue] { queue.push(none); }, gui.getKey(SDL::SDLK_ESCAPE), true),
+                gui.labelHighlight("[Go back]", Color::LIGHT_BLUE)))
+      .buildHorizontalList()));
+  return gui.preferredSize(600, 300, gui.window(gui.margins(
+        lines.buildVerticalList(), 15), [&queue]{ queue.push(none); }));
 }
 
 SGuiElem GuiBuilder::drawPlusMinus(function<void(int)> callback, bool canIncrease, bool canDecrease) {
@@ -3338,7 +3314,7 @@ SGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, View::Ca
         .addElemAuto(
             gui.stack(
                 gui.button([&queue] { queue.push(CampaignActionId::CANCEL); }, gui.getKey(SDL::SDLK_ESCAPE)),
-                gui.labelHighlight("[Cancel]", Color::LIGHT_BLUE))).buildHorizontalList())));
+                gui.labelHighlight("[Go back]", Color::LIGHT_BLUE))).buildHorizontalList())));
   GuiFactory::ListBuilder secondaryOptionLines(gui, getStandardLineHeight());
   if (!campaignOptions.secondaryOptions.empty()) {
     for (OptionId id : campaignOptions.secondaryOptions)
