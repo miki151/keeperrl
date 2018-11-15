@@ -81,7 +81,7 @@ class DummyView : public View {
   virtual void addSound(const Sound&) override {}
   virtual void logMessage(const string&) override {}
   virtual void setBugReportSaveCallback(BugReportSaveCallback) override {};
-  virtual optional<AvatarChoice> chooseAvatar(const vector<AvatarData>&, Options*) override {
-    return none;
+  virtual variant<AvatarChoice, AvatarMenuOption> chooseAvatar(const vector<AvatarData>&, Options*) override {
+    return AvatarMenuOption::GO_BACK;
   }
 };

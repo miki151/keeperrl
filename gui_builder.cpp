@@ -3046,7 +3046,7 @@ static const char* getText(AvatarMenuOption option) {
   }
 }
 
-SGuiElem GuiBuilder::drawAvatarMenu(SyncQueue<optional<View::AvatarChoice>>& queue, Options* options,
+SGuiElem GuiBuilder::drawAvatarMenu(SyncQueue<variant<View::AvatarChoice, AvatarMenuOption>>& queue, Options* options,
     const vector<View::AvatarData>& avatars) {
   auto gender = make_shared<int>(0);
   auto chosenAvatar = make_shared<int>(0);
@@ -3102,8 +3102,8 @@ SGuiElem GuiBuilder::drawAvatarMenu(SyncQueue<optional<View::AvatarChoice>>& que
     }
     return line.buildHorizontalList();
   };
-  rightLines.addElemAuto(gui.conditional2(addRole(PlayerRole::KEEPER), addRole(PlayerRole::ADVENTURER),
-      [chosenRole] (GuiElem*){ return *chosenRole == PlayerRole::KEEPER; }));
+  rightLines.addElem(gui.conditional2(addRole(PlayerRole::KEEPER), addRole(PlayerRole::ADVENTURER),
+      [chosenRole] (GuiElem*){ return *chosenRole == PlayerRole::KEEPER; }), 2 * legendLineHeight);
   rightLines.addElem(gui.labelFun([&avatars, chosenAvatar] {
       return capitalFirst(avatars[*chosenAvatar].name) + ", " + getName(avatars[*chosenAvatar].alignment);}));
   auto lines = gui.getListBuilder(legendLineHeight);
@@ -3113,18 +3113,20 @@ SGuiElem GuiBuilder::drawAvatarMenu(SyncQueue<optional<View::AvatarChoice>>& que
       .buildHorizontalListFit()
   );
   lines.addBackElem(
-      gui.centerHoriz(gui.getListBuilder()
-        .addElemAuto(gui.stack(
+      gui.centerHoriz(gui.stack(
             gui.button([&queue, chosenAvatar, gender]{ queue.push(View::AvatarChoice{*chosenAvatar, *gender}); }),
-            gui.labelHighlight("[Confirm]", Color::LIGHT_BLUE)))
-        .addSpace(10)
-        .addElemAuto(
-            gui.stack(
-                gui.button([&queue] { queue.push(none); }, gui.getKey(SDL::SDLK_ESCAPE), true),
-                gui.labelHighlight("[Go back]", Color::LIGHT_BLUE)))
-      .buildHorizontalList()));
-  return gui.preferredSize(600, 300, gui.window(gui.margins(
-        lines.buildVerticalList(), 15), [&queue]{ queue.push(none); }));
+            gui.labelHighlight("[Start new game]", Color::LIGHT_BLUE))));
+  auto menuLines = gui.getListBuilder()
+      .addElemAuto(
+          gui.preferredSize(600, 300, gui.window(gui.margins(
+            lines.buildVerticalList(), 15), [&queue]{ queue.push(AvatarMenuOption::GO_BACK); })));
+  for (auto option : ENUM_ALL(AvatarMenuOption))
+    menuLines.addElem(gui.stack(
+        gui.button([&queue, option]{ queue.push(option); }),
+              gui.mainMenuLabelBg(getText(option), menuLabelVPadding),
+              gui.mouseHighlight2(gui.mainMenuLabel(getText(option), menuLabelVPadding))
+          ), 60);
+  return menuLines.buildVerticalList();
 }
 
 SGuiElem GuiBuilder::drawPlusMinus(function<void(int)> callback, bool canIncrease, bool canDecrease) {

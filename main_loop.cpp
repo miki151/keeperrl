@@ -335,35 +335,10 @@ PGame MainLoop::prepareTutorial() {
   return game;
 }
 
-PGame MainLoop::gameChoiceMenu() {
-  int lastIndex = 0;
-  while (1) {
-    optional<int> choice;
-    choice = view->chooseFromList("", {
-        "New game", "Load game", "Tutorial", "Go back"}, lastIndex, MenuType::MAIN).value_or(3);
-    lastIndex = *choice;
-    switch (*choice) {
-      case 0:
-        if (auto game = prepareCampaign(Random))
-          return game;
-        break;
-      case 1:
-        if (auto game = loadPrevious())
-          return game;
-        break;
-      case 2:
-        if (auto game = prepareTutorial())
-          return game;
-        break;
-      case 3:
-        return nullptr;
-    }
-  }
-}
-
 PGame MainLoop::prepareCampaign(RandomGen& random) {
   while (1) {
-    if (auto avatar = getAvatarInfo(view, gameConfig, options)) {
+    auto avatarChoice = getAvatarInfo(view, gameConfig, options);
+    if (auto avatar = avatarChoice.getReferenceMaybe<AvatarInfo>()) {
       CampaignBuilder builder(view, random, options, gameConfig, *avatar);
       if (auto setup = builder.prepareCampaign(bindMethod(&MainLoop::getRetiredGames, this), CampaignType::CAMPAIGN)) {
         auto name = options->getStringValue(OptionId::PLAYER_NAME);
@@ -374,8 +349,23 @@ PGame MainLoop::prepareCampaign(RandomGen& random) {
             *setup, std::move(*avatar), gameConfig);
       } else
         continue;
-    } else
-      return nullptr;
+    } else {
+      auto option = *avatarChoice.getValueMaybe<AvatarMenuOption>();
+      switch (option) {
+        case AvatarMenuOption::GO_BACK:
+          return nullptr;
+        case AvatarMenuOption::TUTORIAL:
+          if (auto ret = prepareTutorial())
+            return ret;
+          else
+            continue;
+        case AvatarMenuOption::LOAD_GAME:
+          if (auto ret = loadPrevious())
+            return ret;
+          else
+            continue;
+      }
+    }
   }
 }
 
@@ -467,7 +457,7 @@ void MainLoop::start(bool tilesPresent, bool quickGame) {
     lastIndex = *choice;
     switch (*choice) {
       case 0:
-        if (PGame game = gameChoiceMenu())
+        if (PGame game = prepareCampaign(Random))
           playGame(std::move(game), true, false);
         view->reset();
         break;

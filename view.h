@@ -208,7 +208,7 @@ class View {
     PlayerRole role;
     string description;
   };
-  virtual optional<AvatarChoice> chooseAvatar(const vector<AvatarData>&, Options*) = 0;
+  virtual variant<AvatarChoice, AvatarMenuOption> chooseAvatar(const vector<AvatarData>&, Options*) = 0;
 
   struct CampaignMenuState {
     bool helpText;
