@@ -975,7 +975,7 @@ void Creature::tick() {
 }
 
 void Creature::upgradeViewId(int level) {
-  if (level > 0) {
+  if (level > 0 && !attributes->viewIdUpgrades.empty()) {
     level = min(level, attributes->viewIdUpgrades.size());
     modViewObject().setId(attributes->viewIdUpgrades[level - 1]);
   }
