@@ -95,7 +95,6 @@ class MainLoop {
   int saveVersion;
   void saveGame(PGame&, const FilePath&);
   void saveMainModel(PGame&, const FilePath&);
-  PGame gameChoiceMenu();
 };
 
 

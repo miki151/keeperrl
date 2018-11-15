@@ -838,8 +838,8 @@ void WindowView::presentWorldmap(const Campaign& campaign) {
   return getBlockingGui(sem, guiBuilder.drawWorldmap(sem, campaign));
 }
 
-optional<View::AvatarChoice> WindowView::chooseAvatar(const vector<AvatarData>& avatars, Options* options) {
-  SyncQueue<optional<View::AvatarChoice>> returnQueue;
+variant<View::AvatarChoice, AvatarMenuOption> WindowView::chooseAvatar(const vector<AvatarData>& avatars, Options* options) {
+  SyncQueue<variant<AvatarChoice, AvatarMenuOption>> returnQueue;
   return getBlockingGui(returnQueue, guiBuilder.drawAvatarMenu(returnQueue, options, avatars), none, false);
 }
 

@@ -41,7 +41,7 @@ static vector<ViewId> getUpgradedViewId(WConstCreature c) {
   return ret;
 }
 
-optional<AvatarInfo> getAvatarInfo(View* view, GameConfig* gameConfig, Options* options) {
+variant<AvatarInfo, AvatarMenuOption> getAvatarInfo(View* view, GameConfig* gameConfig, Options* options) {
   auto keeperCreatureInfos = readKeeperCreaturesConfig(view, gameConfig).first;
   auto keeperCreatures = keeperCreatureInfos.transform([](auto& elem) {
     return elem.creatureId.transform([&](auto& id) {
@@ -74,9 +74,10 @@ optional<AvatarInfo> getAvatarInfo(View* view, GameConfig* gameConfig, Options* 
       PlayerRole::ADVENTURER,
       adventurerCreatureInfos[i].description
     });
-  auto result = view->chooseAvatar(concat(keeperAvatarData, adventurerAvatarData), options);
-  if (!result)
-    return none;
+  auto result1 = view->chooseAvatar(concat(keeperAvatarData, adventurerAvatarData), options);
+  if (auto option = result1.getValueMaybe<AvatarMenuOption>())
+    return *option;
+  auto result = result1.getReferenceMaybe<View::AvatarChoice>();
   variant<KeeperCreatureInfo, AdventurerCreatureInfo> creatureInfo;
   PCreature ret;
   if (result->creatureIndex < keeperCreatures.size()) {

@@ -14,5 +14,5 @@ class View;
 class GameConfig;
 class Options;
 
-extern optional<AvatarInfo> getAvatarInfo(View*, GameConfig*, Options*);
+extern variant<AvatarInfo, AvatarMenuOption> getAvatarInfo(View*, GameConfig*, Options*);
 extern AvatarInfo getQuickGameAvatar(View*, GameConfig*);

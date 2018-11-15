@@ -398,9 +398,11 @@ static int getKeeperUpgradeLevel(int dungeonLevel) {
 }
 
 void Collective::update(bool currentlyActive) {
-  getLeader()->upgradeViewId(getKeeperUpgradeLevel(dungeonLevel.level));
+  auto leader = getLeader();
+  if (leader)
+    leader->upgradeViewId(getKeeperUpgradeLevel(dungeonLevel.level));
   control->update(currentlyActive);
-  if (config->hasImmigrantion(currentlyActive) && getLeader())
+  if (config->hasImmigrantion(currentlyActive) && leader)
     immigration->update();
 }
 

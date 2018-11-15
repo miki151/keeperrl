@@ -139,9 +139,6 @@ class Level : public OwnedObject<Level> {
 
   bool containsCreature(UniqueEntity<Creature>::Id) const;
 
-  /** Checks whether the creature can see the square.*/
-  bool canSee(WConstCreature c, Vec2 to) const;
-
   /** Returns if it's possible to see the given square.*/
   bool canSee(Vec2 from, Vec2 to, const Vision&) const;
 

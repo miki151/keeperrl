@@ -267,17 +267,17 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setLuxury(0.3)
           .setLayer(FurnitureLayer::CEILING);
     case FurnitureType::CANDELABRUM_S:
-      return Furniture("candelabrum", ViewObject(ViewId::CANDELABRUM_NS, ViewLayer::TORCH1).setAttachmentDir(Dir::S), type, tribe)
+      return Furniture("candelabrum", ViewObject(ViewId::CANDELABRUM_NS, ViewLayer::TORCH2).setAttachmentDir(Dir::S), type, tribe)
           .setLightEmission(8.2)
           .setLuxury(0.3)
           .setLayer(FurnitureLayer::CEILING);
     case FurnitureType::CANDELABRUM_E:
-      return Furniture("candelabrum", ViewObject(ViewId::CANDELABRUM_E, ViewLayer::TORCH1).setAttachmentDir(Dir::E), type, tribe)
+      return Furniture("candelabrum", ViewObject(ViewId::CANDELABRUM_E, ViewLayer::TORCH2).setAttachmentDir(Dir::E), type, tribe)
           .setLightEmission(8.2)
           .setLuxury(0.3)
           .setLayer(FurnitureLayer::CEILING);
     case FurnitureType::CANDELABRUM_W:
-      return Furniture("candelabrum", ViewObject(ViewId::CANDELABRUM_W, ViewLayer::TORCH1).setAttachmentDir(Dir::W), type, tribe)
+      return Furniture("candelabrum", ViewObject(ViewId::CANDELABRUM_W, ViewLayer::TORCH2).setAttachmentDir(Dir::W), type, tribe)
           .setLightEmission(8.2)
           .setLuxury(0.3)
           .setLayer(FurnitureLayer::CEILING);
