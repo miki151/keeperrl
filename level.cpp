@@ -435,11 +435,6 @@ bool Level::canSee(Vec2 from, Vec2 to, const Vision& vision) const {
   return isWithinVision(from, to, vision) && getFieldOfView(vision.getId()).canSee(from, to);
 }
 
-bool Level::canSee(WConstCreature c, Vec2 pos) const {
-  PROFILE;
-  return canSee(c->getPosition().getCoord(), pos, c->getVision());
-}
-
 void Level::moveCreature(WCreature creature, Vec2 direction) {
   Vec2 position = creature->getPosition().getCoord();
   unplaceCreature(creature, position);

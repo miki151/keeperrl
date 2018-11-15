@@ -876,7 +876,9 @@ bool Position::stopsProjectiles(VisionId id) const {
 
 bool Position::isVisibleBy(WConstCreature c) const {
   PROFILE;
-  return isValid() && level->canSee(c, coord);
+
+  return isValid() && c->getPosition().isSameLevel(*this) &&
+      level->canSee(c->getPosition().getCoord(), coord, c->getVision());
 }
 
 void Position::clearItemIndex(ItemIndex index) const {
