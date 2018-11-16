@@ -495,8 +495,8 @@ static optional<Adjective> getAdjective(LastingEffect effect) {
     case LastingEffect::HATE_HUMANS: return "Hates all humans"_bad;
     case LastingEffect::HATE_ELVES: return "Hates all elves"_bad;
     case LastingEffect::HATE_GREENSKINS: return "Hates all greenskins"_bad;
-    case LastingEffect::SLOW_CRAFTING: return "Slow craftsman"_good;
-    case LastingEffect::SLOW_TRAINING: return "Slow trainee"_good;
+    case LastingEffect::SLOW_CRAFTING: return "Slow craftsman"_bad;
+    case LastingEffect::SLOW_TRAINING: return "Slow trainee"_bad;
   }
 }
 
