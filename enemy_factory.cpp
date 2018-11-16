@@ -337,6 +337,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
           });
     case EnemyId::MINOTAUR:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
+            c.type = SettlementType::CAVE;
             c.tribe = TribeId::getMonster();
             c.inhabitants.leader = CreatureId::MINOTAUR;
             c.locationName = "maze"_s;
@@ -546,7 +547,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
               c.attackBehaviour = AttackBehaviour(AttackBehaviourId::KILL_LEADER);))
           .setCreateOnBones(*this, 1.0, {EnemyId::VILLAGE, EnemyId::ELVES})
           .setImmigrants({ ImmigrantInfo(CreatureId::LIZARDMAN, {MinionTrait::FIGHTER}).setFrequency(1) });
-    case EnemyId::DARK_ELVES:
+    case EnemyId::DARK_ELVES_ALLY:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::MINETOWN;
             c.tribe = TribeId::getDarkElf();
@@ -555,6 +556,25 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.inhabitants.civilians = CreatureList(
                 random.get(6, 9),
                 makeVec(CreatureId::DARK_ELF, CreatureId::DARK_ELF_CHILD, CreatureId::RAT));
+            c.locationName = getVillageName();
+            c.race = "dark elves"_s;
+            c.buildingId = BuildingId::DUNGEON;
+            c.outsideFeatures = FurnitureFactory::dungeonOutside(c.tribe);
+            c.furniture = FurnitureFactory::roomFurniture(c.tribe);),
+          CollectiveConfig::withImmigrants(500_visible, 15), none,
+          LevelConnection{LevelConnection::GNOMISH_MINES, get(EnemyId::DARK_ELVES_ENTRY)})
+          .setImmigrants({ ImmigrantInfo(CreatureId::DARK_ELF_WARRIOR, {MinionTrait::FIGHTER}).setFrequency(1) });
+    case EnemyId::DARK_ELVES_ENEMY:
+      return EnemyInfo(CONSTRUCT(SettlementInfo,
+            c.type = SettlementType::MINETOWN;
+            c.tribe = TribeId::getDarkElf();
+            c.inhabitants.leader = CreatureId::DARK_ELF_LORD;
+            c.inhabitants.fighters = CreatureList(random.get(6, 9), CreatureId::DARK_ELF_WARRIOR);
+            c.inhabitants.civilians = CreatureList(
+                random.get(6, 9),
+                makeVec(CreatureId::DARK_ELF, CreatureId::DARK_ELF_CHILD, CreatureId::RAT));
+            c.inhabitants.leader.increaseBaseLevel({{ExperienceType::MELEE, 10}, {ExperienceType::SPELL, 10}});
+            c.inhabitants.fighters.increaseBaseLevel({{ExperienceType::MELEE, 10}});
             c.locationName = getVillageName();
             c.race = "dark elves"_s;
             c.buildingId = BuildingId::DUNGEON;
@@ -763,6 +783,16 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.buildingId = BuildingId::WOOD;
             c.furniture = FurnitureFactory::roomFurniture(c.tribe);),
           CollectiveConfig::noImmigrants());
+    case EnemyId::LIZARDMEN_COTTAGE:
+      return EnemyInfo(CONSTRUCT(SettlementInfo,
+            c.type = SettlementType::FORREST_COTTAGE;
+            c.tribe = TribeId::getLizard();
+            c.inhabitants.fighters = CreatureList(random.get(2, 3), CreatureId::LIZARDMAN);
+            c.race = "lizardmen"_s;
+            c.buildingId = BuildingId::WOOD;
+            c.furniture = FurnitureFactory::roomFurniture(c.tribe);),
+          CollectiveConfig::noImmigrants())
+          .setCreateOnBones(*this, 1.0, {EnemyId::ELVEN_COTTAGE});
     case EnemyId::KOBOLD_CAVE:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::SMALL_MINETOWN;

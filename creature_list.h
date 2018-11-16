@@ -15,6 +15,7 @@ struct CreatureList {
   CreatureList& operator = (const CreatureList&);
   CreatureList& operator = (CreatureList&&);
   CreatureList(int count, CreatureId);
+  CreatureList(CreatureId);
   CreatureList(int count, vector<CreatureId>);
   CreatureList(int count, vector<pair<int, CreatureId>>);
   CreatureList& addUnique(CreatureId);
