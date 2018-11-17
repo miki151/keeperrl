@@ -71,7 +71,7 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
   int getModifier(AttrType) const;
   const optional<RangedWeapon>& getRangedWeapon() const;
   void tick(Position);
-  void applyRandomPrefix();
+  bool applyRandomPrefix();
   
   string getApplyMsgThirdPerson(WConstCreature owner) const;
   string getApplyMsgFirstPerson(WConstCreature owner) const;

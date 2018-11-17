@@ -136,9 +136,12 @@ void Item::tick(Position position) {
   specialTick(position);
 }
 
-void Item::applyRandomPrefix() {
-  if (!attributes->prefixes.empty())
+bool Item::applyRandomPrefix() {
+  if (!attributes->prefixes.empty()) {
     applyPrefix(Random.choose(attributes->prefixes), *attributes);
+    return true;
+  }
+  return false;
 }
 
 void Item::onHitSquareMessage(Position pos, int numItems) {

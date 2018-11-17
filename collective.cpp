@@ -1243,9 +1243,9 @@ void Collective::onAppliedSquare(WCreature c, Position pos) {
           getGame()->getStatistics().add(StatId::POTION_PRODUCED);
         bool wasAddedPrefix = false;
         if (craftingSkill > 0.9 && Random.chance(c->getMorale())) {
-          wasAddedPrefix = true;
           for (auto& item : items)
-            item->applyRandomPrefix();
+            if (item->applyRandomPrefix())
+              wasAddedPrefix = true;
         }
         addProducesMessage(c, items);
         if (wasAddedPrefix) {
