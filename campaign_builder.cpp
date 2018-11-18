@@ -129,26 +129,34 @@ static vector<Campaign::VillainInfo> filter(vector<Campaign::VillainInfo> v, Vil
 vector<Campaign::VillainInfo> CampaignBuilder::getVillains(TribeAlignment tribeAlignment, VillainType type) {
   VillainsTuple config;
   while (1) {
-    if (auto error = gameConfig->readObject(config, GameConfigId::CAMPAIGN_VILLAINS))
+    if (auto error = gameConfig->readObject(config, GameConfigId::CAMPAIGN_VILLAINS)) {
       view->presentText("Error reading campaign villains definition", *error);
-    else
-      break;
-  }
-  switch (getPlayerRole()) {
-    case PlayerRole::KEEPER:
-      switch (tribeAlignment) {
-        case TribeAlignment::EVIL:
-          return filter(config[0], type);
-        case TribeAlignment::LAWFUL:
-          return filter(config[1], type);
+      continue;
+    }
+    auto ret = [&] {
+      switch (getPlayerRole()) {
+        case PlayerRole::KEEPER:
+          switch (tribeAlignment) {
+            case TribeAlignment::EVIL:
+              return filter(config[0], type);
+            case TribeAlignment::LAWFUL:
+              return filter(config[1], type);
+          }
+        case PlayerRole::ADVENTURER:
+          switch (tribeAlignment) {
+            case TribeAlignment::EVIL:
+              return filter(config[2], type);
+            case TribeAlignment::LAWFUL:
+              return filter(config[3], type);
+          }
       }
-    case PlayerRole::ADVENTURER:
-      switch (tribeAlignment) {
-        case TribeAlignment::EVIL:
-          return filter(config[2], type);
-        case TribeAlignment::LAWFUL:
-          return filter(config[3], type);
-      }
+    }();
+    if (ret.empty()) {
+      view->presentText("Error", "Empty " + EnumInfo<VillainType>::getString(type) + " villain list for alignment: "
+          + EnumInfo<TribeAlignment>::getString(tribeAlignment));
+      continue;
+    }
+    return ret;
   }
 }
 
@@ -259,6 +267,8 @@ struct VillainPlacement {
 void CampaignBuilder::placeVillains(Campaign& campaign, vector<Campaign::SiteInfo::Dweller> villains,
     const VillainPlacement& placement, int count) {
   random.shuffle(villains.begin(), villains.end());
+  for (int i = 0; villains.size() < count; ++i)
+    villains.push_back(villains[i]);
   if (villains.size() > count)
     villains.resize(count);
   vector<Vec2> freePos;
