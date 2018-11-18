@@ -33,7 +33,6 @@
 {
     RED_DRAGON RED_DRAGON "Red dragon" MAIN
     GREEN_DRAGON GREEN_DRAGON "Green dragon" MAIN
-    SHELOB SHELOB "Giant spider" MAIN
     ANT_QUEEN ANTS_OPEN "Ants" MAIN
     DARK_ELF_LORD DARK_ELVES_ENEMY "Dark elves" MAIN
     ORC_CAPTAIN ORC_VILLAGE "Greenskin village" MAIN
