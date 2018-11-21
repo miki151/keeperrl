@@ -187,17 +187,18 @@ void *winLoadFunction(const char *name) {
   return NOTNULL(SDL::SDL_GL_GetProcAddress(name));
 }
 
+#define EXT_ENTRY __stdcall
 namespace SDL {
-  void(*glDeleteFramebuffers)(GLsizei n, const GLuint *framebuffers);
-  void(*glGenFramebuffers)(GLsizei n, GLuint *framebuffers);
-  void(*glBindFramebuffer)(GLenum target, GLuint framebuffer);
-  void(*glFramebufferTexture2D)(GLenum target, GLenum attachment, GLenum textarget,
+  void(EXT_ENTRY *glDeleteFramebuffers)(GLsizei n, const GLuint *framebuffers);
+  void(EXT_ENTRY *glGenFramebuffers)(GLsizei n, GLuint *framebuffers);
+  void(EXT_ENTRY *glBindFramebuffer)(GLenum target, GLuint framebuffer);
+  void(EXT_ENTRY *glFramebufferTexture2D)(GLenum target, GLenum attachment, GLenum textarget,
       GLuint texture, GLint level);
-  void(*glDrawBuffers)(GLsizei n, const GLenum *bufs);
-  void(*glBlendFuncSeparate)(GLenum, GLenum, GLenum, GLenum);
-  GLenum(*glCheckFramebufferStatus)(GLenum target);
-  void(*glDebugMessageCallback)(GLDEBUGPROC callback, const void *userParam);
-  void(*glDebugMessageControl)(GLenum source, GLenum type, GLenum severity,
+  void(EXT_ENTRY *glDrawBuffers)(GLsizei n, const GLenum *bufs);
+  void(EXT_ENTRY *glBlendFuncSeparate)(GLenum, GLenum, GLenum, GLenum);
+  GLenum(EXT_ENTRY *glCheckFramebufferStatus)(GLenum target);
+  void(EXT_ENTRY *glDebugMessageCallback)(GLDEBUGPROC callback, const void *userParam);
+  void(EXT_ENTRY *glDebugMessageControl)(GLenum source, GLenum type, GLenum severity,
       GLsizei count, const GLuint *ids, GLboolean enabled);
 }
 
