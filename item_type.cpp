@@ -125,16 +125,6 @@ class Corpse : public Item {
       makeRotten();
   }
 
-  virtual void applySpecial(WCreature c) override {
-    auto it = c->getFirstWeapon();
-    if (it && it->getWeaponInfo().attackType == AttackType::CUT) {
-      c->you(MsgType::DECAPITATE, getTheName());
-      setName("decapitated " + getName());
-    } else {
-      c->privateMessage("You need something sharp to decapitate the corpse.");
-    }
-  }
-
   void makeRotten() {
     setName(rottenName);
     setViewObject(object2);
