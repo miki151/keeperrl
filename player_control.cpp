@@ -262,6 +262,10 @@ const vector<WCreature>& PlayerControl::getControlled() const {
 }
 
 optional<TeamId> PlayerControl::getCurrentTeam() const {
+  // try returning a non-persistent team first
+  for (TeamId team : getTeams().getAllActive())
+    if (!getTeams().isPersistent(team) && getTeams().getLeader(team)->isPlayer())
+      return team;
   for (TeamId team : getTeams().getAllActive())
     if (getTeams().getLeader(team)->isPlayer())
       return team;
