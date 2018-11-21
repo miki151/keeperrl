@@ -348,6 +348,10 @@ static int keeperMain(po::parser& commandLineFlags) {
       freeDataPath.file("images/mouse_cursor2.png"));
   FatalLog.addOutput(DebugOutput::toString([&renderer](const string& s) { renderer.showError(s);}));
   UserErrorLog.addOutput(DebugOutput::toString([&renderer](const string& s) { renderer.showError(s);}));
+  initializeGLExtensions();
+#ifndef RELEASE
+  installOpenglDebugHandler();
+#endif
 #ifdef RELEASE
   AppConfig appConfig(dataPath.file("appconfig.txt"));
 #else

@@ -185,7 +185,7 @@ void glQuad(float x, float y, float ex, float ey) {
 #ifdef WINDOWS
 void *winLoadFunction(const char *name) {
   auto ret = SDL::SDL_GL_GetProcAddress(name);
-  USER_CHECK(!!ret) << "Unable to load OpenGL function: " << name << ". Please update your video driver";
+  USER_CHECK(!!ret) << "Unable to load OpenGL function: " << name << ". Please update your video card driver.";
   return ret;
 }
 
