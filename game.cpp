@@ -44,8 +44,10 @@ void Game::serialize(Archive& ar, const unsigned int version) {
   ar(villainsByType, collectives, lastTick, playerControl, playerCollective, currentTime);
   ar(musicType, statistics, spectator, tribes, gameIdentifier, players);
   ar(gameDisplayName, finishCurrentMusic, models, visited, baseModel, campaign, localTime, turnEvents);
+  if (version >= 1)
+    ar(sunlightTimeOffset);
   if (Archive::is_loading::value)
-    sunlightInfo.update(getGlobalTime());
+    sunlightInfo.update(getGlobalTime() + sunlightTimeOffset);
 }
 
 SERIALIZABLE(Game);
@@ -58,7 +60,6 @@ static string getGameId(SaveFileInfo info) {
 Game::Game(Table<PModel>&& m, Vec2 basePos, const CampaignSetup& c)
     : models(std::move(m)), visited(models.getBounds(), false), baseModel(basePos),
       tribes(Tribe::generateTribes()), musicType(MusicType::PEACEFUL), campaign(c.campaign) {
-  sunlightInfo.update(getGlobalTime());
   gameIdentifier = c.gameIdentifier;
   gameDisplayName = c.gameDisplayName;
   for (Vec2 v : models.getBounds())
@@ -117,10 +118,18 @@ PGame Game::campaignGame(Table<PModel>&& models, CampaignSetup& setup, AvatarInf
   auto ret = makeOwner<Game>(std::move(models), *setup.campaign.getPlayerPos(), setup);
   for (auto model : ret->getAllModels())
     model->setGame(ret.get());
+  auto avatarCreature = avatar.playerCreature.get();
+  if (avatarCreature->getAttributes().isAffectedPermanently(LastingEffect::SUNLIGHT_VULNERABLE))
+    ret->sunlightTimeOffset = 1501_visible;
+  // Remove sunlight vulnerability temporarily otherwise placing the creature anywhere without cover will fail.
+  avatarCreature->getAttributes().removePermanentEffect(LastingEffect::SUNLIGHT_VULNERABLE, 1);
+  ret->sunlightInfo.update(ret->getGlobalTime() + ret->sunlightTimeOffset);
   if (setup.campaign.getPlayerRole() == PlayerRole::ADVENTURER)
     ret->getMainModel()->landHeroPlayer(std::move(avatar.playerCreature));
   else
     ret->spawnKeeper(std::move(avatar), setup.regenerateMana, setup.introMessages, gameConfig);
+  // Restore vulnerability. If the effect wasn't present in the first place then it will zero-out.
+  avatarCreature->getAttributes().addPermanentEffect(LastingEffect::SUNLIGHT_VULNERABLE, 1);
   return ret;
 }
 
@@ -350,7 +359,7 @@ void Game::tick(GlobalTime time) {
     turnEvents.erase(turn);
   }
   auto previous = sunlightInfo.getState();
-  sunlightInfo.update(GlobalTime((int) currentTime));
+  sunlightInfo.update(getGlobalTime() + sunlightTimeOffset);
   if (previous != sunlightInfo.getState())
     for (Vec2 v : models.getBounds())
       if (WModel m = models[v].get()) {
@@ -600,7 +609,7 @@ void Game::gameOver(WConstCreature creature, int numKills, const string& enemies
         c.worldName = getWorldName();
         c.points = points;
         c.gameId = getGameIdentifier();
-        c.playerName = *creature->getName().first();
+        c.playerName = creature->getName().firstOrBare();
         c.gameResult = creature->getDeathReason().value_or("");
         c.gameWon = false;
         c.turns = scoredTurns;
@@ -656,9 +665,9 @@ string Game::getPlayerName() const {
   if (playerCollective) {
     auto leader = playerCollective->getLeader();
     CHECK(leader);
-    return *leader->getName().first();
+    return leader->getName().firstOrBare();
   } else // adventurer mode
-    return *players.getOnlyElement()->getName().first();
+    return players.getOnlyElement()->getName().firstOrBare();
 }
 
 SavedGameInfo Game::getSavedGameInfo() const {

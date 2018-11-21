@@ -133,7 +133,7 @@ void Player::onEvent(const GameEvent& event) {
       },
       [&](const WonGame&) {
         if (adventurer)
-          getGame()->conquered(*creature->getName().first(), creature->getKills().getSize(), creature->getPoints());
+          getGame()->conquered(creature->getName().firstOrBare(), creature->getKills().getSize(), creature->getPoints());
       },
       [&](const auto&) {}
   );
@@ -612,9 +612,8 @@ void Player::makeMove() {
     displayTravelInfo = false;
   }*/
   if (displayGreeting && getGame()->getOptions()->getBoolValue(OptionId::HINTS)) {
-    CHECK(creature->getName().first());
     getView()->updateView(this, true);
-    getView()->presentText("", "Dear " + *creature->getName().first() +
+    getView()->presentText("", "Dear " + creature->getName().firstOrBare() +
         ",\n \n \tIf you are reading this letter, then you have arrived in the valley of " +
         getGame()->getWorldName() + ". This land is swarming with evil, and you need to destroy all of it, "
         "like in a bad RPG game. Humans, dwarves and elves are your allies. "

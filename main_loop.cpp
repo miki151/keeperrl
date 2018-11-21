@@ -701,9 +701,10 @@ Table<PModel> MainLoop::prepareCampaignModels(CampaignSetup& setup, const Avatar
           if (!sites[v].isEmpty())
             meter.addProgress();
           if (sites[v].getKeeper()) {
-            models[v] = getBaseModel(modelBuilder, setup, std::move(avatarInfo));
+            models[v] = getBaseModel(modelBuilder, setup, avatarInfo);
           } else if (auto villain = sites[v].getVillain())
-            models[v] = modelBuilder.campaignSiteModel("Campaign enemy site", villain->enemyId, villain->type);
+            models[v] = modelBuilder.campaignSiteModel("Campaign enemy site", villain->enemyId, villain->type,
+                avatarInfo.tribeAlignment);
           else if (auto retired = sites[v].getRetired()) {
             if (PModel m = loadFromFile<PModel>(userPath.file(retired->fileInfo.filename), !useSingleThread))
               models[v] = std::move(m);

@@ -65,7 +65,7 @@ optional<CollectiveName> CollectiveBuilder::generateName() {
     ret.viewId = leader->getViewObject().id();
     if (locationName && raceName)
       ret.full = capitalFirst(*raceName) + " of " + *locationName;
-    else if (auto first = leader->getName().first())
+    else if (!!leader->getName().first())
       ret.full = leader->getName().title();
     else if (raceName)
       ret.full = capitalFirst(*raceName);

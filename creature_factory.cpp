@@ -385,7 +385,7 @@ class ShopkeeperController : public Monster, public EventListener<ShopkeeperCont
         creatures.push_back(c->getUniqueId());
         if (!prevCreatures.contains(c) && !thieves.contains(c) && !creature->isEnemy(c)) {
           if (!debtors.contains(c))
-            c->secondPerson("\"Welcome to " + *creature->getName().first() + "'s shop!\"");
+            c->secondPerson("\"Welcome to " + creature->getName().firstOrBare() + "'s shop!\"");
           else {
             c->secondPerson("\"Pay your debt or... !\"");
             thiefCount.erase(c);

@@ -6,7 +6,7 @@
 bool BuildInfo::meetsRequirement(WConstCollective col, Requirement req) {
   return req.visit(
       [&](TechId techId) { return col->getTechnology().researched.count(techId);},
-      [&](BuildInfo::DungeonLevel level) { return col->getDungeonLevel().level >= level; }
+      [&](BuildInfo::DungeonLevel level) { return col->getDungeonLevel().level + 1>= level; }
   );
 }
 

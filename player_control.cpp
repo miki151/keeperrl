@@ -262,6 +262,10 @@ const vector<WCreature>& PlayerControl::getControlled() const {
 }
 
 optional<TeamId> PlayerControl::getCurrentTeam() const {
+  // try returning a non-persistent team first
+  for (TeamId team : getTeams().getAllActive())
+    if (!getTeams().isPersistent(team) && getTeams().getLeader(team)->isPlayer())
+      return team;
   for (TeamId team : getTeams().getAllActive())
     if (getTeams().getLeader(team)->isPlayer())
       return team;
@@ -1522,7 +1526,7 @@ void PlayerControl::onEvent(const GameEvent& event) {
       },
       [&](const WonGame&) {
         if (auto keeper = getKeeper()) { // Check if keeper is alive just in case. If he's not then game over has already happened
-          getGame()->conquered(*keeper->getName().first(), collective->getKills().getSize(),
+          getGame()->conquered(keeper->getName().firstOrBare(), collective->getKills().getSize(),
               (int) collective->getDangerLevel() + collective->getPoints());
           getView()->presentText("", "When you are ready, retire your dungeon and share it online. "
             "Other players will be able to invade it as adventurers. To do this, press Escape and choose \'retire\'.");
@@ -1532,7 +1536,7 @@ void PlayerControl::onEvent(const GameEvent& event) {
         if (auto keeper = getKeeper()) // Check if keeper is alive just in case. If he's not then game over has already happened
           if (getGame()->getVillains(VillainType::MAIN).empty())
             // No victory condition in this game, so we generate a highscore when retiring.
-            getGame()->retired(*keeper->getName().first(), collective->getKills().getSize(),
+            getGame()->retired(keeper->getName().firstOrBare(), collective->getKills().getSize(),
                 (int) collective->getDangerLevel() + collective->getPoints());
       },
       [&](const TechbookRead& info) {

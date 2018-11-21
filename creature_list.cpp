@@ -21,7 +21,9 @@ CreatureList::CreatureList(CreatureList&&) = default;
 CreatureList::CreatureList(const CreatureList&) = default;
 
 CreatureList::CreatureList(int c, CreatureId id) : count(c), all(1, make_pair(1, id)) {
+}
 
+CreatureList::CreatureList(CreatureId id) : CreatureList(1, id) {
 }
 
 CreatureList::CreatureList(int c, vector<CreatureId> ids) : count(c),

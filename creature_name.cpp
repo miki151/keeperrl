@@ -19,7 +19,7 @@ const char* CreatureName::identify() const {
 }
 
 string CreatureName::bare() const {
-  if (fullTitle)
+  if (fullTitle && firstName)
     return title();
   else
     return name;
@@ -91,8 +91,12 @@ const string& CreatureName::stack() const {
     return name;
 }
 
-optional<string> CreatureName::first() const {
+const optional<string>& CreatureName::first() const {
   return firstName;
+}
+
+string CreatureName::firstOrBare() const {
+  return firstName.value_or(capitalFirst(bare()));
 }
 
 void CreatureName::useFullTitle() {

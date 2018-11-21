@@ -6,11 +6,6 @@
 auto InhabitantsInfo::generateCreatures(RandomGen& random, TribeId tribe, MonsterAIFactory aiFactory) -> Generated {
   Generated ret;
   bool wasLeader = false;
-  if (leader) {
-    ret.push_back(make_pair(CreatureFactory::fromId(*leader, tribe, aiFactory),
-        EnumSet<MinionTrait>{MinionTrait::LEADER}));
-    wasLeader = true;
-  }
   auto addCreatures = [&](const CreatureList& info, EnumSet<MinionTrait> traits) {
     for (auto& creature : info.generate(random, tribe, aiFactory)) {
       auto myTraits = traits;
@@ -21,6 +16,7 @@ auto InhabitantsInfo::generateCreatures(RandomGen& random, TribeId tribe, Monste
       ret.push_back(make_pair(std::move(creature), myTraits));
     }
   };
+  addCreatures(leader, {});
   addCreatures(fighters, EnumSet<MinionTrait>{MinionTrait::FIGHTER});
   addCreatures(civilians, EnumSet<MinionTrait>{});
   return ret;

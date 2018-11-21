@@ -115,7 +115,8 @@
    
   "pigsty"
   {
-    { Furniture {{ PIGSTY }     WOOD 5 }                       "Pigsty"            "Living"}
+    { Furniture {{ PIGSTY }     WOOD 5 }                       "Pigsty"            "Living"
+        "" 0 {TechId "pig breeding"}}
   }
 
   "coffins"

@@ -6,7 +6,7 @@
 
 struct InhabitantsInfo {
   struct Unique {};
-  optional<CreatureId> leader;
+  CreatureList leader;
   CreatureList fighters;
   CreatureList civilians;
   using Generated = vector<pair<PCreature, EnumSet<MinionTrait>>>;

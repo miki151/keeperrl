@@ -96,9 +96,7 @@ class Game : public OwnedObject<Game> {
 
   private:
   optional<ExitInfo> update();
-  void updateSunlightInfo();
   void tick(GlobalTime);
-  PCreature makeAdventurer(int handicap);
   Vec2 getModelCoords(const WModel) const;
   optional<ExitInfo> updateModel(WModel, double totalTime);
   string getPlayerName() const;
@@ -132,6 +130,7 @@ class Game : public OwnedObject<Game> {
   vector<WCreature> SERIAL(players);
   FileSharing* fileSharing = nullptr;
   set<int> SERIAL(turnEvents);
+  TimeInterval SERIAL(sunlightTimeOffset);
   friend class GameListener;
   void considerRealTimeRender();
   void considerRetiredLoadedEvent(Vec2 coord);
@@ -142,3 +141,5 @@ class Game : public OwnedObject<Game> {
   void addCollective(WCollective);
   void spawnKeeper(AvatarInfo, bool regenerateMana, vector<string> introText, GameConfig*);
 };
+
+CEREAL_CLASS_VERSION(Game, 1);

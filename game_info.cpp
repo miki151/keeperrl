@@ -127,7 +127,7 @@ static vector<ItemInfo> getItemInfos(WConstCreature c, const vector<WItem>& item
 }
 
 PlayerInfo::PlayerInfo(WConstCreature c) : bestAttack(c) {
-  firstName = c->getName().first().value_or("");
+  firstName = c->getName().firstOrBare();
   name = c->getName().bare();
   title = c->getName().title();
   description = capitalFirst(c->getAttributes().getDescription());

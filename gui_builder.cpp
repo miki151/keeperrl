@@ -1667,7 +1667,7 @@ SGuiElem GuiBuilder::drawMinionAndLevel(ViewId viewId, int level, int iconMult) 
         gui.label(toString(level), 12 * iconMult)));
 }
 
-SGuiElem GuiBuilder::drawTeams(CollectiveInfo& info, const optional<TutorialInfo>& tutorial) {
+SGuiElem GuiBuilder::drawTeams(const CollectiveInfo& info, const optional<TutorialInfo>& tutorial) {
   const int elemWidth = 30;
   auto lines = gui.getListBuilder(legendLineHeight);
   for (int i : All(info.teams)) {
@@ -3050,6 +3050,9 @@ SGuiElem GuiBuilder::drawAvatarMenu(SyncQueue<variant<View::AvatarChoice, Avatar
     const vector<View::AvatarData>& avatars) {
   auto gender = make_shared<int>(0);
   auto chosenAvatar = make_shared<int>(0);
+  auto getChosenGender = [gender, chosenAvatar, &avatars] {
+    return min(*gender, avatars[*chosenAvatar].viewId.size() - 1);
+  };
   auto chosenRole = make_shared<PlayerRole>(PlayerRole::KEEPER);
   vector<SGuiElem> firstNameOptions;
   vector<SGuiElem> genderOptions;
@@ -3058,14 +3061,14 @@ SGuiElem GuiBuilder::drawAvatarMenu(SyncQueue<variant<View::AvatarChoice, Avatar
     for (int genderIndex : All(avatar.viewId))
       firstNameOptions.push_back(gui.conditional(
           drawOptionElem(options, OptionId::PLAYER_NAME, []{}, avatar.firstNames[genderIndex]),
-          [=]{ return *gender == genderIndex && avatarIndex == *chosenAvatar; }));
+          [=]{ return getChosenGender() == genderIndex && avatarIndex == *chosenAvatar; }));
     if (avatar.viewId.size() > 1)
       genderOptions.push_back(gui.conditional(
           gui.stack(
               gui.button([gender] { *gender = !*gender; }),
               gui.getListBuilder()
                   .addElemAuto(gui.label("Gender: "))
-                  .addElemAuto(gui.labelFun([gender]{ return *gender == 0 ? "male"_s : "female"_s;}))
+                  .addElemAuto(gui.labelFun([=]{ return getChosenGender() == 0 ? "male"_s : "female"_s;}))
                   .buildHorizontalList()),
           [=] { return avatarIndex == *chosenAvatar; }));
   }
@@ -3114,7 +3117,9 @@ SGuiElem GuiBuilder::drawAvatarMenu(SyncQueue<variant<View::AvatarChoice, Avatar
   );
   lines.addBackElem(
       gui.centerHoriz(gui.stack(
-            gui.button([&queue, chosenAvatar, gender]{ queue.push(View::AvatarChoice{*chosenAvatar, *gender}); }),
+            gui.button([&queue, chosenAvatar, getChosenGender]{
+              queue.push(View::AvatarChoice{*chosenAvatar, getChosenGender()});
+            }),
             gui.labelHighlight("[Start new game]", Color::LIGHT_BLUE))));
   auto menuLines = gui.getListBuilder()
       .addElemAuto(
@@ -3286,7 +3291,7 @@ SGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, View::Ca
   auto getDefaultString = [&](OptionId id) -> optional<string> {
     switch(id) {
       case OptionId::PLAYER_NAME:
-        return campaignOptions.player->getName().first();
+        return campaignOptions.player->getName().firstOrBare();
       default:
         return none;
     }
