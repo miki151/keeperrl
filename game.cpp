@@ -600,7 +600,7 @@ void Game::gameOver(WConstCreature creature, int numKills, const string& enemies
         c.worldName = getWorldName();
         c.points = points;
         c.gameId = getGameIdentifier();
-        c.playerName = *creature->getName().first();
+        c.playerName = creature->getName().firstOrBare();
         c.gameResult = creature->getDeathReason().value_or("");
         c.gameWon = false;
         c.turns = scoredTurns;
@@ -656,9 +656,9 @@ string Game::getPlayerName() const {
   if (playerCollective) {
     auto leader = playerCollective->getLeader();
     CHECK(leader);
-    return *leader->getName().first();
+    return leader->getName().firstOrBare();
   } else // adventurer mode
-    return *players.getOnlyElement()->getName().first();
+    return players.getOnlyElement()->getName().firstOrBare();
 }
 
 SavedGameInfo Game::getSavedGameInfo() const {

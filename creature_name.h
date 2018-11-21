@@ -30,7 +30,8 @@ class CreatureName {
   const string& stack() const;
   const char* identify() const;
   const optional<string>& stackOnly() const;
-  optional<string> first() const;
+  const optional<string>& first() const;
+  string firstOrBare() const;
   string bare() const;
   string the() const;
   string a() const;

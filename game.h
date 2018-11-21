@@ -96,7 +96,6 @@ class Game : public OwnedObject<Game> {
 
   private:
   optional<ExitInfo> update();
-  void updateSunlightInfo();
   void tick(GlobalTime);
   PCreature makeAdventurer(int handicap);
   Vec2 getModelCoords(const WModel) const;

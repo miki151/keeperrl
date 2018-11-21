@@ -58,7 +58,7 @@ variant<AvatarInfo, AvatarMenuOption> getAvatarInfo(View* view, GameConfig* game
   for (int i : All(keeperCreatures))
     keeperAvatarData.push_back(View::AvatarData {
       keeperCreatures[i].transform([](const auto& c) { return getUpgradedViewId(c.get()); }),
-      keeperCreatures[i].transform([](const auto& c) { return *c->getName().first(); }),
+      keeperCreatures[i].transform([](const auto& c) { return c->getName().firstOrBare(); }),
       keeperCreatureInfos[i].tribeAlignment,
       keeperCreatures[i][0]->getName().identify(),
       PlayerRole::KEEPER,
@@ -68,7 +68,7 @@ variant<AvatarInfo, AvatarMenuOption> getAvatarInfo(View* view, GameConfig* game
   for (int i : All(adventurerCreatures))
     adventurerAvatarData.push_back(View::AvatarData {
       adventurerCreatures[i].transform([](const auto& c) { return getUpgradedViewId(c.get()); }),
-      adventurerCreatures[i].transform([](const auto& c) { return *c->getName().first(); }),
+      adventurerCreatures[i].transform([](const auto& c) { return c->getName().firstOrBare(); }),
       adventurerCreatureInfos[i].tribeAlignment,
       adventurerCreatures[i][0]->getName().identify(),
       PlayerRole::ADVENTURER,
