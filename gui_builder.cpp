@@ -3088,7 +3088,8 @@ SGuiElem GuiBuilder::drawAvatarMenu(SyncQueue<variant<View::AvatarChoice, Avatar
       gui.labelFun([=] { return "Role: "_s + getName(*chosenRole); }))
   );
   auto addRole = [&](PlayerRole role) {
-    auto line = gui.getListBuilder(legendLineHeight);
+    auto allLines = gui.getListBuilder(legendLineHeight);
+    auto line = gui.getListBuilder();
     for (int i : All(avatars)) {
       auto& elem = avatars[i];
       auto viewIdFun = [gender, id = elem.viewId] { return id[min(*gender, id.size() - 1)].back(); };
@@ -3101,12 +3102,19 @@ SGuiElem GuiBuilder::drawAvatarMenu(SyncQueue<variant<View::AvatarChoice, Avatar
                     gui.topMargin(-5, gui.viewObject(viewIdFun, 2)),
                     gui.viewObject(viewIdFun, 2), [=](GuiElem*){ return *chosenAvatar == i;})))
         ));
+        if (line.getLength() >= 5) {
+          allLines.addElemAuto(line.buildHorizontalList());
+          line.clear();
+        }
       }
     }
-    return line.buildHorizontalList();
+    if (!line.isEmpty())
+      allLines.addElemAuto(line.buildHorizontalList());
+    return allLines.buildVerticalList();
   };
-  rightLines.addElem(gui.conditional2(addRole(PlayerRole::KEEPER), addRole(PlayerRole::ADVENTURER),
-      [chosenRole] (GuiElem*){ return *chosenRole == PlayerRole::KEEPER; }), 2 * legendLineHeight);
+  rightLines.addElemAuto(gui.conditional2(addRole(PlayerRole::KEEPER), addRole(PlayerRole::ADVENTURER),
+      [chosenRole] (GuiElem*){ return *chosenRole == PlayerRole::KEEPER; }));
+  rightLines.addSpace(12);
   rightLines.addElem(gui.labelFun([&avatars, chosenAvatar] {
       return capitalFirst(avatars[*chosenAvatar].name) + ", " + getName(avatars[*chosenAvatar].alignment);}));
   auto lines = gui.getListBuilder(legendLineHeight);

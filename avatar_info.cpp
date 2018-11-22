@@ -15,14 +15,19 @@
 using PlayerCreaturesInfo = pair<vector<KeeperCreatureInfo>, vector<AdventurerCreatureInfo>>;
 
 static PlayerCreaturesInfo readKeeperCreaturesConfig(View* view, GameConfig* config) {
-  PlayerCreaturesInfo elem;
   while (1) {
-    if (auto error = config->readObject(elem, GameConfigId::PLAYER_CREATURES))
-      view->presentText("Error reading player creatures definition file", *error);
-    else
-      break;
+    PlayerCreaturesInfo elem;
+    if (auto error = config->readObject(elem, GameConfigId::PLAYER_CREATURES)) {
+      view->presentText("Error reading player creature definitions", *error);
+      continue;
+    }
+    if (elem.first.empty() || elem.second.empty() || elem.first.size() > 10 || elem.second.size() > 10) {
+      view->presentText("Error reading player creature definitions",
+          "Keeper and adventurer lists must each contain between 1 and 10 entries.");
+      continue;
+    }
+    return elem;
   }
-  return elem;
 }
 
 static TribeId getPlayerTribeId(TribeAlignment variant) {
