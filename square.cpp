@@ -80,7 +80,7 @@ void Square::tick(Position pos) {
   setDirty(pos);
   if (!inventory->isEmpty()) {
     inventory->tick(pos);
-    if (!pos.canEnterEmpty({MovementTrait::WALK}))
+    if (!pos.canEnterEmpty(MovementType(MovementTrait::WALK).setForced()))
       for (auto neighbor : pos.neighbors8(Random))
         if (neighbor.canEnterEmpty({MovementTrait::WALK})) {
           neighbor.dropItems(pos.removeItems(pos.getItems()));
