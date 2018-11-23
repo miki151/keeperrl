@@ -241,6 +241,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   void thirdPerson(const PlayerMessage& playerCanSee) const;
   void message(const PlayerMessage&) const;
   void privateMessage(const PlayerMessage&) const;
+  void addFX(const FXInfo&) const;
 
   WController getController() const;
   void pushController(PController);
@@ -254,8 +255,8 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
 
   SERIALIZATION_DECL(Creature)
 
-  void addEffect(LastingEffect, TimeInterval time, bool msg = true);
-  void removeEffect(LastingEffect, bool msg = true);
+  bool addEffect(LastingEffect, TimeInterval time, bool msg = true);
+  bool removeEffect(LastingEffect, bool msg = true);
   void addPermanentEffect(LastingEffect, int count = 1);
   void removePermanentEffect(LastingEffect, int count = 1);
   bool isAffected(LastingEffect) const;

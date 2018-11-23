@@ -349,7 +349,9 @@ string Effect::Teleport::getDescription() const {
 }
 
 void Effect::Lasting::applyToCreature(WCreature c, WCreature attacker) const {
-  c->addEffect(lastingEffect, getDuration(c, lastingEffect));
+  if (c->addEffect(lastingEffect, getDuration(c, lastingEffect)))
+    if (auto fx = LastingEffects::getApplicationFX(lastingEffect))
+      c->addFX(*fx);
 }
 
 string Effect::Lasting::getName() const {
@@ -490,6 +492,7 @@ string Effect::Deception::getDescription() const {
 void Effect::CircularBlast::applyToCreature(WCreature c, WCreature attacker) const {
   for (Vec2 v : Vec2::directions8(Random))
     applyDirected(c, v, DirEffectType(1, DirEffectId::BLAST), false);
+  c->addFX({FXName::CIRCULAR_BLAST});
 }
 
 string Effect::CircularBlast::getName() const {
@@ -561,6 +564,7 @@ void Effect::Heal::applyToCreature(WCreature c, WCreature attacker) const {
   if (c->getBody().canHeal()) {
     c->heal(1);
     c->removeEffect(LastingEffect::BLEEDING);
+    c->addFX(FXInfo(FXName::CIRCULAR_SPELL, Color::LIGHT_GREEN));
   } else
     c->message("Nothing happens.");
 }
@@ -610,7 +614,8 @@ string Effect::SilverDamage::getDescription() const {
 }
 
 void Effect::CurePoison::applyToCreature(WCreature c, WCreature attacker) const {
-  c->removeEffect(LastingEffect::POISON);
+  if (c->removeEffect(LastingEffect::POISON))
+    c->addFX(FXInfo(FXName::CIRCULAR_SPELL, Color::LIGHT_GREEN));
 }
 
 string Effect::CurePoison::getName() const {
@@ -654,6 +659,8 @@ string Effect::PlaceFurniture::getDescription() const {
 void Effect::Damage::applyToCreature(WCreature c, WCreature attacker) const {
   CHECK(attacker) << "Unknown attacker";
   c->takeDamage(Attack(attacker, Random.choose<AttackLevel>(), attackType, attacker->getAttr(attr), attr));
+  if (attr == AttrType::SPELL_DAMAGE)
+    c->addFX({FXName::MAGIC_MISSILE_SPLASH});
 }
 
 string Effect::Damage::getName() const {
@@ -759,47 +766,8 @@ bool Effect::operator !=(const Effect& o) const {
   return !(*this == o);
 }
 
-template <typename T>
-static optional<FXInfo> getFXImpl(const T&) {
-  return none;
-}
-
-static optional<FXInfo> getFXImpl(const Effect::Heal&) {
-  return FXInfo(FXName::CIRCULAR_SPELL, Color::LIGHT_GREEN);
-}
-
-static optional<FXInfo> getFXImpl(const Effect::Damage& e) {
-  if (e.attr == AttrType::SPELL_DAMAGE)
-    return {FXName::MAGIC_MISSILE_SPLASH};
-  else
-    return none;
-}
-
-static optional<FXInfo> getFXImpl(const Effect::CircularBlast&) {
-  return {FXName::CIRCULAR_BLAST};
-}
-
-static optional<FXInfo> getFXImpl(const Effect::Lasting& e) {
-  return LastingEffects::getApplicationFX(e.lastingEffect);
-}
-
-static optional<FXInfo> getFXImpl(const Effect::CurePoison&) {
-  return FXInfo(FXName::CIRCULAR_SPELL, Color::LIGHT_GREEN);
-}
-
-static optional<FXInfo> getFX(const Effect& effect) {
-  return effect.visit([&](const auto& e) -> optional<FXInfo> { return getFXImpl(e); });
-}
-
-static void addFX(WCreature c, const FXInfo& fx) {
-  auto pos = c->getPosition();
-  c->getGame()->addEvent(EventInfo::FX{pos, fx});
-}
-
 void Effect::applyToCreature(WCreature c, WCreature attacker) const {
   FORWARD_CALL(effect, applyToCreature, c, attacker);
-  if (auto fx = getFX(effect))
-    addFX(c, *fx);
   if (isConsideredHostile(effect) && attacker)
     c->onAttackedBy(attacker);
 }
@@ -888,7 +856,7 @@ void applyDirected(WCreature c, Vec2 direction, const DirEffectType& type, bool 
         auto newPos = c->getPosition().plus(v);
         newPos.fireDamage(1);
         if (WCreature victim = newPos.getCreature())
-          addFX(victim, {FXName::FIREBALL_SPLASH});
+          victim->addFX({FXName::FIREBALL_SPLASH});
       }
       break;
     case DirEffectId::CREATURE_EFFECT:

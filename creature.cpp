@@ -493,6 +493,10 @@ void Creature::privateMessage(const PlayerMessage& msg) const {
   getController()->privateMessage(msg);
 }
 
+void Creature::addFX(const FXInfo& fx) const {
+  getGame()->addEvent(EventInfo::FX{position, fx});
+}
+
 void Creature::thirdPerson(const PlayerMessage& playerCanSee) const {
   getController()->getMessageGenerator().addThirdPerson(this, playerCanSee);
 }
@@ -767,22 +771,28 @@ bool Creature::knowsHiding(WConstCreature c) const {
   return knownHiding.contains(c);
 }
 
-void Creature::addEffect(LastingEffect effect, TimeInterval time, bool msg) {
+bool Creature::addEffect(LastingEffect effect, TimeInterval time, bool msg) {
   PROFILE;
   if (LastingEffects::affects(this, effect) && !getBody().isImmuneTo(effect)) {
     bool was = isAffected(effect);
     attributes->addLastingEffect(effect, *getGlobalTime() + time);
-    if (!was && isAffected(effect))
+    if (!was && isAffected(effect)) {
       LastingEffects::onAffected(this, effect, msg);
+      return true;
+    }
   }
+  return false;
 }
 
-void Creature::removeEffect(LastingEffect effect, bool msg) {
+bool Creature::removeEffect(LastingEffect effect, bool msg) {
   PROFILE;
   bool was = isAffected(effect);
   attributes->clearLastingEffect(effect);
-  if (was && !isAffected(effect))
+  if (was && !isAffected(effect)) {
     LastingEffects::onRemoved(this, effect, msg);
+    return true;
+  }
+  return false;
 }
 
 void Creature::addPermanentEffect(LastingEffect effect, int count) {
