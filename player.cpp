@@ -928,7 +928,8 @@ void Player::getViewIndex(Vec2 pos, ViewIndex& index) const {
       index.equipmentCounts = c->getEquipment().getCounts();
       auto& object = index.getObject(ViewLayer::CREATURE);
       if (c == creature)
-        object.setModifier(ViewObject::Modifier::PLAYER);
+        object.setModifier(getGame()->getPlayerCreatures().size() == 1
+             ? ViewObject::Modifier::PLAYER : ViewObject::Modifier::PLAYER_BLINK);
       if (getTeam().contains(c))
         object.setModifier(ViewObject::Modifier::TEAM_HIGHLIGHT);
       if (creature->isEnemy(c))

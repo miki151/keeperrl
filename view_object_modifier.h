@@ -24,5 +24,6 @@ RICH_ENUM(ViewObjectModifier,
     FLYING,
     FURNITURE_CRACKS,
     HEALTH_BAR,
-    CAPTURE_BAR
+    CAPTURE_BAR,
+    PLAYER_BLINK
 );

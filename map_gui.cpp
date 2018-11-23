@@ -512,7 +512,10 @@ void MapGui::drawCreatureHighlights(Renderer& renderer, const ViewObject& object
     if (auto morale = object.getAttribute(ViewObject::Attribute::MORALE))
       drawCreatureHighlight(renderer, pos, sz, getMoraleColor(*morale));*/
   if (object.hasModifier(ViewObject::Modifier::PLAYER)) {
-    //if ((curTime.count() / 500) % 2 == 0)
+      drawCreatureHighlight(renderer, pos, sz, getHighlight(Color::YELLOW).transparency(200));
+  } else
+  if (object.hasModifier(ViewObject::Modifier::PLAYER_BLINK)) {
+    if ((curTime.count() / 500) % 2 == 0)
       drawCreatureHighlight(renderer, pos, sz, getHighlight(Color::YELLOW).transparency(200));
   } else
   if (object.hasModifier(ViewObject::Modifier::TEAM_HIGHLIGHT))
