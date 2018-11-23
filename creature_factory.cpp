@@ -1560,6 +1560,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
       return CATTR(
           c.viewId = ViewId::ADA_GOLEM;
           c.attr = LIST(36_dam, 36_def );
+          c.skills.insert(SkillId::NAVIGATION_DIGGING);
           c.permanentEffects[LastingEffect::MELEE_RESISTANCE] = 1;
           c.permanentEffects[LastingEffect::MAGIC_VULNERABILITY] = 1;
           c.permanentEffects[LastingEffect::SLOWED] = 1;
