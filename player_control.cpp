@@ -1067,7 +1067,7 @@ void PlayerControl::fillLibraryInfo(CollectiveInfo& collectiveInfo) const {
     if (dungeonLevel.numResearchAvailable() == 0)
       info.warning = "Conquer some villains to advance your level."_s;
     info.totalProgress = 100 * dungeonLevel.getNecessaryProgress(dungeonLevel.level);
-    info.currentProgress = int(100 * dungeonLevel.progress);
+    info.currentProgress = int(100 * dungeonLevel.progress * dungeonLevel.getNecessaryProgress(dungeonLevel.level));
     auto& technology = collective->getTechnology();
     auto techs = technology.getNextTechs();
     for (auto& tech : techs) {
@@ -1413,7 +1413,7 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   info.dungeonLevel = dungeonLevel.level + 1;
   info.dungeonLevelViewId = collective->getLeader()->getViewObject().id();
   info.leaderTitle = collective->getLeader()->getName().title();
-  info.dungeonLevelProgress = dungeonLevel.progress / dungeonLevel.getNecessaryProgress(dungeonLevel.level);
+  info.dungeonLevelProgress = dungeonLevel.progress;
   info.numResearchAvailable = dungeonLevel.numResearchAvailable();
   for (auto resourceId : ENUM_ALL(CollectiveResourceId)) {
     auto& elem = CollectiveConfig::getResourceInfo(resourceId);
