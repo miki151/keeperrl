@@ -463,7 +463,8 @@ void Level::swapCreatures(WCreature c1, WCreature c2) {
   unplaceCreature(c2, pos2);
   placeCreature(c1, pos2);
   auto otherDebug = getSafeSquare(pos1)->getCreature();
-  CHECK(!otherDebug) << "Can't place " << c2->identify() << " " << otherDebug->identify() << " present";
+  CHECK(!otherDebug) << "Can't swap " << c2->identify() << " with " << c1->identify() << " "
+      << otherDebug->identify() << " present";
   placeCreature(c2, pos1);
 }
 
