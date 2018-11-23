@@ -2616,24 +2616,6 @@ class Conditional : public GuiStack {
     return cond(this);
   }
 
-  virtual optional<int> getPreferredWidth() override {
-    optional<int> ret;
-    for (int i : All(elems))
-      if (auto width = elems[i]->getPreferredWidth())
-        if (!ret || *ret < *width)
-          ret = width;
-    return ret;
-  }
-
-  virtual optional<int> getPreferredHeight() override {
-    optional<int> ret;
-    for (int i : All(elems))
-      if (auto height = elems[i]->getPreferredHeight())
-        if (!ret || *ret < *height)
-          ret = height;
-    return ret;
-  }
-
   protected:
   function<bool(GuiElem*)> cond;
 };
