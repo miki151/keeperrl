@@ -546,6 +546,8 @@ void WindowView::updateView(CreatureView* view, bool noRefresh) {
     return;
   gameInfo = {};
   view->refreshGameInfo(gameInfo);
+  if (gameInfo.infoType != GameInfo::InfoType::BAND)
+    guiBuilder.clearActiveButton();
   wasRendered = false;
   guiBuilder.addUpsCounterTick();
   gameReady = true;
