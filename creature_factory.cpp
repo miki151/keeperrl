@@ -2646,8 +2646,8 @@ static vector<ItemType> getDefaultInventory(CreatureId id) {
         .add(randomBackup());
     case CreatureId::VAMPIRE_LORD:
       return ItemList()
-        .add(ItemType(ItemType::Robe{}).setPrefixChance(0.3))
-        .add(ItemType(ItemType::IronStaff{}).setPrefixChance(0.3));
+        .add(ItemType(ItemType::Robe{}))
+        .add(ItemType(ItemType::IronStaff{}));
     case CreatureId::DARK_ELF_LORD: 
     case CreatureId::ELF_LORD: 
       return ItemList()
