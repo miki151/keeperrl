@@ -210,8 +210,8 @@ bool Level::isInSunlight(Vec2 pos) const {
 }
 
 double Level::getLight(Vec2 pos) const {
-  return max(0.0, min(isCovered(pos) ? 1 : lightCapAmount[pos], lightAmount[pos] +
-      sunlight[pos] * getGame()->getSunlightInfo().getLightAmount()));
+  return min(1.0, max(0.0, min(isCovered(pos) ? 1.0 : lightCapAmount[pos], lightAmount[pos] +
+      sunlight[pos] * getGame()->getSunlightInfo().getLightAmount())));
 }
 
 vector<Position> Level::getLandingSquares(StairKey key) const {
