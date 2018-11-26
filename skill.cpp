@@ -64,6 +64,7 @@ void Skill::init() {
   Skill::set(SkillId::LABORATORY, new Skill("laboratory", "Craft items in the laboratory.", false));
   Skill::set(SkillId::JEWELER, new Skill("jeweler", "Craft items at the jeweler's shop.", false));
   Skill::set(SkillId::FURNACE, new Skill("furnace", "Craft items at the furnace.", false));
+  Skill::set(SkillId::BRIDGE_BUILDING, new Skill("bridge building", "Build bridges while navigating the map.", true));
 }
 
 bool Skill::transferOnConsumption() const {

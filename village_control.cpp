@@ -33,6 +33,7 @@
 #include "immigration.h"
 #include "village_behaviour.h"
 #include "furniture.h"
+#include "creature_attributes.h"
 
 typedef EnumVariant<AttackTriggerId, TYPES(int),
         ASSIGN(int, AttackTriggerId::ENEMY_POPULATION, AttackTriggerId::GOLD)> OldTrigger;
@@ -214,6 +215,9 @@ void VillageControl::update(bool currentlyActive) {
   considerCancellingAttack();
   acceptImmigration();
   healAllCreatures();
+  for (auto& c : collective->getCreatures(MinionTrait::FIGHTER))
+    if (c->getBody().isHumanoid())
+      c->getAttributes().getSkills().insert(SkillId::BRIDGE_BUILDING);
   vector<WCreature> allMembers = collective->getCreatures();
   for (auto team : collective->getTeams().getAll()) {
     for (WConstCreature c : collective->getTeams().getMembers(team))

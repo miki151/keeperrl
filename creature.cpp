@@ -1665,7 +1665,7 @@ MovementType Creature::getMovementType() const {
     .setFireResistant(isAffected(LastingEffect::FIRE_RESISTANT))
     .setSunlightVulnerable(isAffected(LastingEffect::SUNLIGHT_VULNERABLE) && !isAffected(LastingEffect::DARKNESS_SOURCE)
         && (!getGame() || getGame()->getSunlightInfo().getState() == SunlightState::DAY))
-    .setCanBuildBridge(getBody().isHumanoid());
+    .setCanBuildBridge(attributes->getSkills().hasDiscrete(SkillId::BRIDGE_BUILDING));
 }
 
 int Creature::getDifficultyPoints() const {

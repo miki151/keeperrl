@@ -1123,6 +1123,7 @@ void PlayerControl::acceptPrisoner(int index) {
     auto& skills = victim->getAttributes().getSkills();
     skills.setValue(SkillId::DIGGING, skills.hasDiscrete(SkillId::NAVIGATION_DIGGING) ? 1 : 0.2);
     skills.erase(SkillId::NAVIGATION_DIGGING);
+    skills.erase(SkillId::BRIDGE_BUILDING);
     collective->addCreature(victim, {MinionTrait::WORKER, MinionTrait::PRISONER, MinionTrait::NO_LIMIT});
     addMessage(PlayerMessage("You enslave " + victim->getName().a()).setPosition(victim->getPosition()));
     for (auto& elem : copyOf(stunnedCreatures))

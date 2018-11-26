@@ -19,7 +19,8 @@ bool MovementType::hasTrait(MovementTrait t) const {
 
 bool MovementType::operator == (const MovementType& o) const {
   return traits == o.traits && tribeSet == o.tribeSet && sunlightVulnerable == o.sunlightVulnerable &&
-      fireResistant == o.fireResistant && forced == o.forced && destroyActions == o.destroyActions;
+      fireResistant == o.fireResistant && forced == o.forced && destroyActions == o.destroyActions &&
+      buildBridge == o.buildBridge;
 }
 
 const EnumSet<MovementTrait>& MovementType::getTraits() const {
