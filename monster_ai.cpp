@@ -625,17 +625,22 @@ class Fighter : public Behaviour {
     if (distance > 1) {
       if (chase && !other->getAttributes().dontChase() && !isChaseFrozen(other)) {
         lastSeen = none;
-        if (auto action = creature->moveTowards(other->getPosition()))
-          return {max(0., 1.0 - double(distance) / 20), action.prepend([=](WCreature creature) {
-            addCombatIntent(other, false);
-            lastSeen = LastSeen{other->getPosition(), *creature->getGlobalTime(), LastSeen::ATTACK, other->getUniqueId()};
-            auto chaseInfo = chaseFreeze.getMaybe(other);
-            auto startChaseFreeze = 20_visible;
-            auto endChaseFreeze = 20_visible;
-            auto time = *other->getGlobalTime();
-            if (!chaseInfo || time > chaseInfo->second)
-              chaseFreeze.set(other, make_pair(time + startChaseFreeze, time + endChaseFreeze));
-          })};
+        if (auto action = creature->moveTowards(other->getPosition())) {
+          // TODO: instead consider treating a 0-weighted move as NoMove.
+          if (distance < 20)
+            return {max(0., 1.0 - double(distance) / 20), action.prepend([=](WCreature creature) {
+              addCombatIntent(other, false);
+              lastSeen = LastSeen{other->getPosition(), *creature->getGlobalTime(), LastSeen::ATTACK, other->getUniqueId()};
+              auto chaseInfo = chaseFreeze.getMaybe(other);
+              auto startChaseFreeze = 20_visible;
+              auto endChaseFreeze = 20_visible;
+              auto time = *other->getGlobalTime();
+              if (!chaseInfo || time > chaseInfo->second)
+                chaseFreeze.set(other, make_pair(time + startChaseFreeze, time + endChaseFreeze));
+            })};
+          else
+            return NoMove;
+        }
       }
       if (distance == 2)
         if (auto move = considerBreakingChokePoint(other))
