@@ -34,12 +34,15 @@ static pair<string, vector<StreamPos>> removeFormatting(string contents) {
   string ret;
   vector<StreamPos> pos;
   StreamPos cur {1, 1};
+  bool inQuote = false;
   for (int i = 0; i < contents.size(); ++i) {
-    if (contents[i] == '#') {
+    if (contents[i] == '"')
+      inQuote = !inQuote;
+    if (contents[i] == '#' && !inQuote) {
       while (contents[i] != '\n' && i < contents.size())
         ++i;
     }
-    else if (isOneOf(contents[i], '{', '}', ',')) {
+    else if (isOneOf(contents[i], '{', '}', ',') && !inQuote) {
       ret += " " + string(1, contents[i]) + " ";
       pos.append({cur, cur, cur});
     } else {

@@ -3123,6 +3123,14 @@ SGuiElem GuiBuilder::drawAvatarMenu(SyncQueue<variant<View::AvatarChoice, Avatar
       .addElemAuto(rightLines.buildVerticalList())
       .buildHorizontalListFit()
   );
+  vector<SGuiElem> descriptions;
+  for (int avatarIndex : All(avatars)) {
+    auto& avatar = avatars[avatarIndex];
+    descriptions.push_back(gui.conditional(
+        gui.labelMultiLineWidth(avatar.description, legendLineHeight, 550, Renderer::textSize, Color::LIGHT_GRAY),
+        [avatarIndex, chosenAvatar] { return avatarIndex == *chosenAvatar; }));
+  }
+  lines.addBackElemAuto(gui.stack(descriptions));
   lines.addBackElem(
       gui.centerHoriz(gui.stack(
             gui.button([&queue, chosenAvatar, getChosenGender]{
@@ -3131,7 +3139,7 @@ SGuiElem GuiBuilder::drawAvatarMenu(SyncQueue<variant<View::AvatarChoice, Avatar
             gui.labelHighlight("[Start new game]", Color::LIGHT_BLUE))));
   auto menuLines = gui.getListBuilder()
       .addElemAuto(
-          gui.preferredSize(600, 300, gui.window(gui.margins(
+          gui.preferredSize(600, 350, gui.window(gui.margins(
             lines.buildVerticalList(), 15), [&queue]{ queue.push(AvatarMenuOption::GO_BACK); })));
   for (auto option : ENUM_ALL(AvatarMenuOption))
     menuLines.addElem(gui.stack(
