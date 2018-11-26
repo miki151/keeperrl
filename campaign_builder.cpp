@@ -55,7 +55,7 @@ vector<OptionId> CampaignBuilder::getSecondaryOptions(CampaignType type) const {
 }
 
 vector<OptionId> CampaignBuilder::getPrimaryOptions() const {
-  return {OptionId::PLAYER_NAME};
+  return {};
 }
 
 static vector<string> getCampaignTypeDescription(CampaignType type) {
