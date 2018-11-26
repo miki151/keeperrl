@@ -371,47 +371,48 @@ const int resourceSpace = 110;
 SGuiElem GuiBuilder::drawBottomBandInfo(GameInfo& gameInfo) {
   auto& info = *gameInfo.playerInfo.getReferenceMaybe<CollectiveInfo>();
   GameSunlightInfo& sunlightInfo = gameInfo.sunlightInfo;
-//  if (!bottomBandCache) {
-    auto topLine = gui.getListBuilder(resourceSpace);
-    for (int i : All(info.numResource)) {
-      auto res = gui.getListBuilder();
-      res.addElem(gui.viewObject(info.numResource[i].viewId), 30);
-      res.addElemAuto(gui.labelFun([&info, i] { return toString<int>(info.numResource[i].count); },
-            [&info, i] { return info.numResource[i].count >= 0 ? Color::WHITE : Color::RED; }));
-      auto tutorialHighlight = info.numResource[i].tutorialHighlight;
-      auto tutorialElem = gui.conditional(gui.tutorialHighlight(), [tutorialHighlight, &gameInfo] {
-          return gameInfo.tutorial && tutorialHighlight && gameInfo.tutorial->highlights.contains(*tutorialHighlight);
-      });
-      topLine.addElem(gui.stack(
-          tutorialElem,
-          getHintCallback({info.numResource[i].name}),
-          res.buildHorizontalList()));
-    }
-    auto bottomLine = gui.getListBuilder();
-    const int space = 55;
-    bottomLine.addElemAuto(gui.stack(
-        gui.margins(gui.progressBar(Color::DARK_GREEN, info.dungeonLevelProgress), -6, -1, 0, -2),
-        gui.margins(gui.uiHighlightConditional([&]{ return info.numResearchAvailable > 0; }), 0, 0, -3, 1),
-        gui.getListBuilder()
-            .addElemAuto(gui.topMargin(-2, gui.viewObject(info.dungeonLevelViewId)))
-            .addElemAuto(gui.label("Level: " + toString(info.dungeonLevel)))
-            .buildHorizontalList(),
-        gui.button([this]() { closeOverlayWindowsAndClearButton(); callbacks.input(UserInputId::TECHNOLOGY);})
-    ));
-    bottomLine.addSpace(space);
-    bottomLine.addElemAuto(gui.labelFun([&info] {
-          return "population: " + toString(info.minionCount) + " / " +
-          toString(info.minionLimit); }));
-    bottomLine.addSpace(space);
-    bottomLine.addElemAuto(getTurnInfoGui(gameInfo.time));
-    bottomLine.addSpace(space);
-    bottomLine.addElemAuto(getSunlightInfoGui(sunlightInfo));
-    return gui.getListBuilder(28)
-          .addElem(gui.centerHoriz(topLine.buildHorizontalList()))
-          .addElem(gui.centerHoriz(bottomLine.buildHorizontalList()))
-          .buildVerticalList();
-  /*}
-  return gui.external(bottomBandCache.get());*/
+  auto topLine = gui.getListBuilder(resourceSpace);
+  for (int i : All(info.numResource)) {
+    auto res = gui.getListBuilder();
+    res.addElem(gui.viewObject(info.numResource[i].viewId), 30);
+    res.addElemAuto(gui.labelFun([&info, i] { return toString<int>(info.numResource[i].count); },
+          [&info, i] { return info.numResource[i].count >= 0 ? Color::WHITE : Color::RED; }));
+    auto tutorialHighlight = info.numResource[i].tutorialHighlight;
+    auto tutorialElem = gui.conditional(gui.tutorialHighlight(), [tutorialHighlight, &gameInfo] {
+        return gameInfo.tutorial && tutorialHighlight && gameInfo.tutorial->highlights.contains(*tutorialHighlight);
+    });
+    topLine.addElem(gui.stack(
+        tutorialElem,
+        getHintCallback({info.numResource[i].name}),
+        res.buildHorizontalList()));
+  }
+  auto bottomLine = gui.getListBuilder();
+  const int space = 55;
+  bottomLine.addElemAuto(gui.stack(
+      gui.margins(gui.progressBar(Color::DARK_GREEN, info.dungeonLevelProgress), -6, -1, 0, -2),
+      gui.margins(gui.stack(
+          gameInfo.tutorial && gameInfo.tutorial->highlights.contains(TutorialHighlight::RESEARCH) ?
+              gui.tutorialHighlight() : gui.empty(),
+          gui.uiHighlightConditional([&]{ return info.numResearchAvailable > 0; })),
+          0, 0, -3, 1),
+      gui.getListBuilder()
+          .addElemAuto(gui.topMargin(-2, gui.viewObject(info.dungeonLevelViewId)))
+          .addElemAuto(gui.label("Level: " + toString(info.dungeonLevel)))
+          .buildHorizontalList(),
+      gui.button([this]() { closeOverlayWindowsAndClearButton(); callbacks.input(UserInputId::TECHNOLOGY);})
+  ));
+  bottomLine.addSpace(space);
+  bottomLine.addElemAuto(gui.labelFun([&info] {
+        return "population: " + toString(info.minionCount) + " / " +
+        toString(info.minionLimit); }));
+  bottomLine.addSpace(space);
+  bottomLine.addElemAuto(getTurnInfoGui(gameInfo.time));
+  bottomLine.addSpace(space);
+  bottomLine.addElemAuto(getSunlightInfoGui(sunlightInfo));
+  return gui.getListBuilder(28)
+        .addElem(gui.centerHoriz(topLine.buildHorizontalList()))
+        .addElem(gui.centerHoriz(bottomLine.buildHorizontalList()))
+        .buildVerticalList();
 }
 
 const char* GuiBuilder::getGameSpeedName(GuiBuilder::GameSpeed gameSpeed) const {
@@ -3127,7 +3128,7 @@ SGuiElem GuiBuilder::drawAvatarMenu(SyncQueue<variant<View::AvatarChoice, Avatar
   for (int avatarIndex : All(avatars)) {
     auto& avatar = avatars[avatarIndex];
     descriptions.push_back(gui.conditional(
-        gui.labelMultiLineWidth(avatar.description, legendLineHeight, 550, Renderer::textSize, Color::LIGHT_GRAY),
+        gui.labelMultiLineWidth(avatar.description, legendLineHeight, 530, Renderer::textSize, Color::LIGHT_GRAY),
         [avatarIndex, chosenAvatar] { return avatarIndex == *chosenAvatar; }));
   }
   lines.addBackElemAuto(gui.stack(descriptions));

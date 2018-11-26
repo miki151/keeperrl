@@ -261,7 +261,7 @@ string Tutorial::getMessage() const {
     case State::RESEARCH:
       return "You have increased your malevolence level. This is the main meter of your progress in the game and allows "
           "you to research new technologies.\n \n"
-          "Click on the malevolence level button and research something.";
+          "Click on the level button and research something.";
     case State::MINIMAP_BUTTONS:
       return "As the last objective, familiarize yourself with the two buttons under the minimap in the top-right corner. "
           "The first one opens the world map window, which you can use to travel to other sites when in control mode.\n \n"
@@ -315,6 +315,8 @@ EnumSet<TutorialHighlight> Tutorial::getHighlights(WConstGame game) const {
       return {TutorialHighlight::LEAVE_CONTROL};
     case State::MINIMAP_BUTTONS:
       return {TutorialHighlight::MINIMAP_BUTTONS};
+    case State::RESEARCH:
+      return {TutorialHighlight::RESEARCH};
     default:
       return {};
   }
@@ -387,9 +389,6 @@ vector<Vec2> Tutorial::getHighlightedSquaresLow(WConstGame game) const {
     }
     case State::SCHEDULE_WORKSHOP_ITEMS:
       return collective->getConstructions().getBuiltPositions(FurnitureType::WORKSHOP).transform(
-          [](const Position& pos) { return pos.getCoord(); });
-    case State::RESEARCH:
-      return collective->getConstructions().getBuiltPositions(FurnitureType::BOOKCASE_WOOD).transform(
           [](const Position& pos) { return pos.getCoord(); });
     default:
       return {};

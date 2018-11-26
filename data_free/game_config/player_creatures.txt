@@ -49,7 +49,7 @@
         "pigsty" "training" "crafting" "prison" "orders" "installations"
     }
     workshopGroups = { "basic" }
-    description = "Build and manage your dream dungeon, defend against raids, and attack your enemies!"
+    description = "This Keeper character is new in the game, and is not fully fleshed out yet. It isn't recommended for new players."
   }
 }
 

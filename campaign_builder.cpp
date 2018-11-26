@@ -358,11 +358,11 @@ static bool autoConfirm(CampaignType type) {
 
 static vector<string> getIntroMessages(CampaignType type, string worldName) {
   vector<string> ret = {
-    "Welcome to KeeperRL Alpha 26! This patch hasn't been officially released yet might be very unstable! "
-/*    "Many new gameplay features have arrived, "
+    "Welcome to KeeperRL Alpha 26! This patch was released on November 28th, 2018. "
+    "Many new gameplay features have been added, "
     "so if you are a returning player, we encourage you to check out the "
-    "change log at www.keeperrl.com.\n \n"*/
-    "If this is your first time playing KeeperRL, please play the official Alpha 25 build."
+    "change log at www.keeperrl.com.\n \n"
+    "If this is your first time playing KeeperRL, remember to start with the tutorial!"
   };
   if (type == CampaignType::ENDLESS)
     ret.push_back(
