@@ -2572,6 +2572,7 @@ void PlayerControl::update(bool currentlyActive) {
               addToCurrentTeam(c);
               controlled->privateMessage(PlayerMessage(c->getName().a() + " joins your team.",
                   MessagePriority::HIGH));
+              break;
             }
         } else
           if (c->getBody().isMinionFood())

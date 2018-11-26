@@ -1557,22 +1557,22 @@ class AsyncLoop {
 };
 
 template <typename T, typename... Args>
-function<void(Args...)> bindMethod(void (T::*ptr) (Args...), T* t) {
+auto bindMethod(void (T::*ptr) (Args...), T* t) {
   return [=](Args... a) { (t->*ptr)(a...);};
 }
 
 template <typename Ret, typename T, typename... Args>
-function<Ret(Args...)> bindMethod(Ret (T::*ptr) (Args...), T* t) {
+auto bindMethod(Ret (T::*ptr) (Args...), T* t) {
   return [=](Args... a) { return (t->*ptr)(a...);};
 }
 
 template <typename... Args>
-function<void(Args...)> bindFunction(void (*ptr) (Args...)) {
+auto bindFunction(void (*ptr) (Args...)) {
   return [=](Args... a) { (*ptr)(a...);};
 }
 
 template <typename Ret, typename... Args>
-function<Ret(Args...)> bindFunction(Ret (*ptr) (Args...)) {
+auto bindFunction(Ret (*ptr) (Args...)) {
   return [=](Args... a) { return (*ptr)(a...);};
 }
 
