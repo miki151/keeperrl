@@ -185,7 +185,7 @@ void glQuad(float x, float y, float ex, float ey) {
 #ifdef WINDOWS
 void *winLoadFunction(const char *name) {
   auto ret = SDL::SDL_GL_GetProcAddress(name);
-  USER_CHECK(!!ret) << "Unable to load OpenGL function: " << name << ". Please update your video card driver.";
+  //USER_CHECK(!!ret) << "Unable to load OpenGL function: " << name << ". Please update your video card driver.";
   return ret;
 }
 
@@ -197,8 +197,10 @@ namespace SDL {
   void(EXT_ENTRY *glFramebufferTexture2D)(GLenum target, GLenum attachment, GLenum textarget,
       GLuint texture, GLint level);
   void(EXT_ENTRY *glDrawBuffers)(GLsizei n, const GLenum *bufs);
-  void(EXT_ENTRY *glBlendFuncSeparate)(GLenum, GLenum, GLenum, GLenum);
   GLenum(EXT_ENTRY *glCheckFramebufferStatus)(GLenum target);
+
+  void(EXT_ENTRY* glBlendFuncSeparate)(GLenum, GLenum, GLenum, GLenum);
+
   void(EXT_ENTRY *glDebugMessageCallback)(GLDEBUGPROC callback, const void *userParam);
   void(EXT_ENTRY *glDebugMessageControl)(GLenum source, GLenum type, GLenum severity,
       GLsizei count, const GLuint *ids, GLboolean enabled);
@@ -206,8 +208,27 @@ namespace SDL {
 
 #endif
 
-void initializeGLExtensions() {
+bool isOpenglFeatureAvailable(OpenglFeature feature) {
+#ifdef WINDOWS
+#define ON_WINDOWS(check) check
+#else
+#define ON_WINDOWS(check)
+#endif
+  switch (feature) {
+  case OpenglFeature::FRAMEBUFFER: // GL 3.0
+    return ON_WINDOWS(SDL::glDeleteFramebuffers && SDL::glGenFramebuffers && SDL::glBindFramebuffer &&
+                      SDL::glFramebufferTexture2D && SDL::glDrawBuffers && SDL::glCheckFramebufferStatus &&)
+        isOpenglExtensionAvailable("ARB_framebuffer_object");
+  case OpenglFeature::SEPARATE_BLEND_FUNC: // GL 1.4
+    return ON_WINDOWS(SDL::glBlendFuncSeparate &&) true;
+  case OpenglFeature::DEBUG: // GL 4.4
+    return ON_WINDOWS(SDL::glDebugMessageCallback && SDL::glDebugMessageControl &&)
+        isOpenglExtensionAvailable("KHR_debug");
+  }
+#undef ON_WINDOWS
+}
 
+void initializeGLExtensions() {
 #ifdef WINDOWS
 #define LOAD(func) SDL::func = (decltype(SDL::func))winLoadFunction(#func);
   LOAD(glBindFramebuffer);

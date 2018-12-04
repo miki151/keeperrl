@@ -62,7 +62,7 @@ public:
 
   struct SystemDrawInfo;
   vector<SystemDrawInfo> systemDraws;
-  vector<DrawParticle> tempParticles;
+  vector<DrawParticle> orderedParticles, tempParticles;
   vector<FRect> tempRects;
 
   void applyTexScale();

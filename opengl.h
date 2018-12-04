@@ -30,6 +30,8 @@ void glColor(const Color&);
 void glQuad(float x, float y, float ex, float ey);
 void initializeGLExtensions();
 
+enum class OpenglFeature { FRAMEBUFFER, SEPARATE_BLEND_FUNC, DEBUG };
+bool isOpenglFeatureAvailable(OpenglFeature);
 
 #ifdef WINDOWS
 
