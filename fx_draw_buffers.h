@@ -12,7 +12,8 @@ struct DrawBuffers {
   };
 
   void clear();
-  void add(const vector<DrawParticle>&);
+  // TODO: span would be useful
+  void add(const DrawParticle*, int count);
   bool empty() const {
     return elements.empty();
   }

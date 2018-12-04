@@ -12,16 +12,18 @@ void DrawBuffers::clear() {
   elements.clear();
 }
 
-void DrawBuffers::add(const vector<DrawParticle>& particles) {
-  if (particles.empty())
+void DrawBuffers::add(const DrawParticle* particles, int count) {
+  if (count == 0 || !particles)
     return;
 
   PROFILE;
-  auto& first = particles.front();
-  elements.emplace_back(Element{0, 0, first.texName});
+  auto& first = particles[0];
+  if (elements.empty())
+    elements.emplace_back(Element{0, 0, first.texName});
 
   // TODO: sort particles by texture ?
-  for (auto& quad : particles) {
+  for (int n = 0; n < count; n++) {
+    auto& quad = particles[n];
     auto* last = &elements.back();
     if (last->texName != quad.texName) {
       Element new_elem{(int)positions.size(), 0, quad.texName};

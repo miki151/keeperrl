@@ -24,6 +24,11 @@ struct FXRenderer::SystemDrawInfo {
 };
 
 FXRenderer::FXRenderer(DirectoryPath dataPath, FXManager& mgr) : mgr(mgr), texturesPath(dataPath) {
+  useFramebuffer = isOpenglFeatureAvailable(OpenglFeature::FRAMEBUFFER);
+
+  // We're creating a 2.1 OpenGL context, so if window was created,
+  // this should be available everywhere.
+  USER_CHECK(isOpenglFeatureAvailable(OpenglFeature::SEPARATE_BLEND_FUNC)) << ". Please update your video card driver.";
   drawBuffers = unique<DrawBuffers>();
 }
 
@@ -173,7 +178,7 @@ void FXRenderer::prepareOrdered() {
   auto& systems = mgr.getSystems();
   systemDraws.clear();
   systemDraws.resize(systems.size());
-  tempParticles.clear();
+  orderedParticles.clear();
 
   for (int n = 0; n < systems.size(); n++) {
     auto& system = systems[n];
@@ -181,45 +186,45 @@ void FXRenderer::prepareOrdered() {
       continue;
 
     auto& def = mgr[system.defId];
-    int first = (int)tempParticles.size();
+    int first = (int)orderedParticles.size();
     for (int ssid = 0; ssid < system.subSystems.size(); ssid++)
-      mgr.genQuads(tempParticles, n, ssid);
-    int count = (int)tempParticles.size() - first;
+      mgr.genQuads(orderedParticles, n, ssid);
+    int count = (int)orderedParticles.size() - first;
 
     if (count > 0) {
-      auto rect = boundingBox(&tempParticles[first], count);
+      auto rect = boundingBox(&orderedParticles[first], count);
       systemDraws[n] = {rect, IVec2(), first, count};
     }
   }
 
-  // TODO: obsługiwanie sytuacji bez FBOsów ?
-  //if (!Framebuffer::isExtensionAvailable())
-  auto fboSize = allocateFboSpace();
-  if (!orderedBlendFBO || orderedBlendFBO->width != fboSize.x || orderedBlendFBO->height != fboSize.y) {
-    INFO << "FX: creating FBO for ordered rendering (" << fboSize.x << ", " << fboSize.y << ")";
-    orderedBlendFBO = unique<Framebuffer>(fboSize.x, fboSize.y);
-    orderedAddFBO = unique<Framebuffer>(fboSize.x, fboSize.y);
-  }
-
-  // Positioning particles for FBO
-  for (int n = 0; n < (int)systemDraws.size(); n++) {
-    auto& draw = systemDraws[n];
-    if (draw.empty())
-      continue;
-    FVec2 offset(draw.fboPos - draw.worldRect.min());
-
-    for (int p = 0; p < draw.numParticles; p++) {
-      auto& particle = tempParticles[draw.firstParticle + p];
-      for (auto& pos : particle.positions)
-        pos += offset;
+  if (useFramebuffer) {
+    auto fboSize = allocateFboSpace();
+    if (!orderedBlendFBO || orderedBlendFBO->width != fboSize.x || orderedBlendFBO->height != fboSize.y) {
+      INFO << "FX: creating FBO for ordered rendering (" << fboSize.x << ", " << fboSize.y << ")";
+      orderedBlendFBO = unique<Framebuffer>(fboSize.x, fboSize.y);
+      orderedAddFBO = unique<Framebuffer>(fboSize.x, fboSize.y);
     }
+
+    // Positioning particles for FBO
+    for (int n = 0; n < (int)systemDraws.size(); n++) {
+      auto& draw = systemDraws[n];
+      if (draw.empty())
+        continue;
+      FVec2 offset(draw.fboPos - draw.worldRect.min());
+
+      for (int p = 0; p < draw.numParticles; p++) {
+        auto& particle = orderedParticles[draw.firstParticle + p];
+        for (auto& pos : particle.positions)
+          pos += offset;
+      }
+    }
+
+    drawBuffers->clear();
+    drawBuffers->add(orderedParticles.data(), orderedParticles.size());
+    applyTexScale();
+
+    drawParticles(FVec2(), *orderedBlendFBO, *orderedAddFBO);
   }
-
-  drawBuffers->clear();
-  drawBuffers->add(tempParticles);
-  applyTexScale();
-
-  drawParticles(FVec2(), *orderedBlendFBO, *orderedAddFBO);
 }
 
 void FXRenderer::printSystemDrawsInfo() const {
@@ -240,7 +245,6 @@ void FXRenderer::setView(float zoom, float offsetX, float offsetY, int w, int h)
   auto size = fboView.size() * nominalSize;
 
   if (useFramebuffer) {
-    DASSERT(Framebuffer::isExtensionAvailable());
     if (!blendFBO || blendFBO->width != size.x || blendFBO->height != size.y) {
       INFO << "FX: creating FBO (" << size.x << ", " << size.y << ")";
       blendFBO = unique<Framebuffer>(size.x, size.y);
@@ -263,8 +267,8 @@ void FXRenderer::drawParticles(FVec2 viewOffset, Framebuffer& blendFBO, Framebuf
 
   SDL::glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
   SDL::glClear(GL_COLOR_BUFFER_BIT);
-  SDL::glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ZERO, GL_ONE_MINUS_SRC_ALPHA);
 
+  SDL::glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ZERO, GL_ONE_MINUS_SRC_ALPHA);
   drawParticles({1.0f, viewOffset, viewSize}, BlendMode::normal);
 
   addFBO.bind();
@@ -292,29 +296,6 @@ static void drawTexturedQuad(const FRect& rect, const FRect& trect) {
 
 void FXRenderer::drawOrdered(const int* ids, int count, float offsetX, float offsetY) {
   PROFILE;
-  tempRects.clear();
-
-  FVec2 fboSize(orderedBlendFBO->width, orderedBlendFBO->height);
-  auto invSize = vinv(fboSize);
-
-  // Gathering rectangles to draw
-  for (int n = 0; n < count; n++) {
-    auto id = ids[n];
-    if (id < 0 || id >= systemDraws.size())
-      continue;
-    auto& draw = systemDraws[id];
-    if (draw.empty())
-      continue;
-
-    // TODO: some rects are only additive or only blend; filter them
-    FRect rect(draw.worldRect);
-    rect = rect * worldView.zoom + worldView.offset + FVec2(offsetX, offsetY);
-    auto trect = FRect(IRect(draw.fboPos, draw.fboPos + draw.worldRect.size())) * invSize;
-    tempRects.emplace_back(rect);
-    tempRects.emplace_back(trect);
-  }
-  if (tempRects.empty())
-    return;
 
   SDL::glPushAttrib(GL_ENABLE_BIT);
   SDL::glDisable(GL_DEPTH_TEST);
@@ -322,42 +303,88 @@ void FXRenderer::drawOrdered(const int* ids, int count, float offsetX, float off
   SDL::glEnable(GL_TEXTURE_2D);
   glColor(Color::WHITE);
 
-  int defaultMode = 0, defaultCombine = 0;
-  SDL::glGetTexEnviv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, &defaultMode);
-  SDL::glGetTexEnviv(GL_TEXTURE_ENV, GL_COMBINE_RGB, &defaultCombine);
+  if (useFramebuffer) {
+    tempRects.clear();
 
-  SDL::glBlendFunc(GL_ONE, GL_SRC_ALPHA);
-  SDL::glBindTexture(GL_TEXTURE_2D, orderedBlendFBO->texId);
+    FVec2 fboSize(orderedBlendFBO->width, orderedBlendFBO->height);
+    auto invSize = vinv(fboSize);
 
-  for (int n = 0; n < tempRects.size(); n += 2)
-    drawTexturedQuad(tempRects[n], tempRects[n + 1]);
+    // Gathering rectangles to draw
+    for (int n = 0; n < count; n++) {
+      auto id = ids[n];
+      if (id < 0 || id >= systemDraws.size())
+        continue;
+      auto& draw = systemDraws[id];
+      if (draw.empty())
+        continue;
 
-  // Here we're performing blend-add:
-  // - for high alpha values we're blending
-  // - for low alpha values we're adding
-  // For this to work nicely, additive textures need properly prepared alpha channel
-  SDL::glBindTexture(GL_TEXTURE_2D, orderedAddFBO->texId);
-  SDL::glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+      // TODO: some rects are only additive or only blend; filter them
+      FRect rect(draw.worldRect);
+      rect = rect * worldView.zoom + worldView.offset + FVec2(offsetX, offsetY);
+      auto trect = FRect(IRect(draw.fboPos, draw.fboPos + draw.worldRect.size())) * invSize;
+      tempRects.emplace_back(rect);
+      tempRects.emplace_back(trect);
+    }
 
-  // These states multiply alpha by itself
-  SDL::glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
-  SDL::glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA, GL_MODULATE);
-  SDL::glTexEnvi(GL_TEXTURE_ENV, GL_SRC0_ALPHA, GL_TEXTURE);
-  SDL::glTexEnvi(GL_TEXTURE_ENV, GL_SRC1_ALPHA, GL_TEXTURE);
-  SDL::glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA, GL_SRC_ALPHA);
-  SDL::glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_ALPHA, GL_SRC_ALPHA);
+    int defaultMode = 0, defaultCombine = 0;
+    SDL::glGetTexEnviv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, &defaultMode);
+    SDL::glGetTexEnviv(GL_TEXTURE_ENV, GL_COMBINE_RGB, &defaultCombine);
 
-  for (int n = 0; n < tempRects.size(); n += 2)
-    drawTexturedQuad(tempRects[n], tempRects[n + 1]);
+    SDL::glBlendFunc(GL_ONE, GL_SRC_ALPHA);
+    SDL::glBindTexture(GL_TEXTURE_2D, orderedBlendFBO->texId);
 
-  // Here we should really multiply by (1 - a), not (1 - a^2), but it looks better
-  SDL::glBlendFunc(GL_ONE_MINUS_SRC_ALPHA, GL_ONE);
+    for (int n = 0; n < tempRects.size(); n += 2)
+      drawTexturedQuad(tempRects[n], tempRects[n + 1]);
 
-  for (int n = 0; n < tempRects.size(); n += 2)
-    drawTexturedQuad(tempRects[n], tempRects[n + 1]);
+    // Here we're performing blend-add:
+    // - for high alpha values we're blending
+    // - for low alpha values we're adding
+    // For this to work nicely, additive textures need properly prepared alpha channel
+    SDL::glBindTexture(GL_TEXTURE_2D, orderedAddFBO->texId);
+    SDL::glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-  SDL::glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, defaultMode);
-  SDL::glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB, defaultCombine);
+    // These states multiply alpha by itself
+    SDL::glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
+    SDL::glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA, GL_MODULATE);
+    SDL::glTexEnvi(GL_TEXTURE_ENV, GL_SRC0_ALPHA, GL_TEXTURE);
+    SDL::glTexEnvi(GL_TEXTURE_ENV, GL_SRC1_ALPHA, GL_TEXTURE);
+    SDL::glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA, GL_SRC_ALPHA);
+    SDL::glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_ALPHA, GL_SRC_ALPHA);
+
+    for (int n = 0; n < tempRects.size(); n += 2)
+      drawTexturedQuad(tempRects[n], tempRects[n + 1]);
+
+    // Here we should really multiply by (1 - a), not (1 - a^2), but it looks better
+    SDL::glBlendFunc(GL_ONE_MINUS_SRC_ALPHA, GL_ONE);
+
+    for (int n = 0; n < tempRects.size(); n += 2)
+      drawTexturedQuad(tempRects[n], tempRects[n + 1]);
+
+    SDL::glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, defaultMode);
+    SDL::glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB, defaultCombine);
+  } else {
+    drawBuffers->clear();
+
+    for (int n = 0; n < count; n++) {
+      auto id = ids[n];
+      if (id < 0 || id >= systemDraws.size())
+        continue;
+      auto& draw = systemDraws[id];
+      if (draw.empty())
+        continue;
+      drawBuffers->add(&orderedParticles[draw.firstParticle], draw.numParticles);
+    }
+
+    auto view = worldView;
+    view.offset += FVec2(offsetX, offsetY);
+
+    applyTexScale();
+    SDL::glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    drawParticles(view, BlendMode::normal);
+    // TODO: blend add support
+    SDL::glBlendFunc(GL_ONE, GL_ONE);
+    drawParticles(view, BlendMode::additive);
+  }
 
   SDL::glPopAttrib();
   SDL::glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -392,7 +419,7 @@ void FXRenderer::drawUnordered(Layer layer) {
         mgr.genQuads(tempParticles, n, ssid);
   }
 
-  drawBuffers->add(tempParticles);
+  drawBuffers->add(tempParticles.data(), tempParticles.size());
   if (drawBuffers->empty())
     return;
   applyTexScale();
@@ -404,7 +431,7 @@ void FXRenderer::drawUnordered(Layer layer) {
   SDL::glDisable(GL_CULL_FACE);
   SDL::glEnable(GL_TEXTURE_2D);
 
-  if (blendFBO && addFBO && useFramebuffer) {
+  if (useFramebuffer && blendFBO && addFBO) {
     drawParticles(-FVec2(fboView.min() * nominalSize), *blendFBO, *addFBO);
     glColor(Color::WHITE);
 
@@ -445,6 +472,7 @@ void FXRenderer::drawUnordered(Layer layer) {
   } else {
     SDL::glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     drawParticles(worldView, BlendMode::normal);
+    // TODO: blend add support
     SDL::glBlendFunc(GL_ONE, GL_ONE);
     drawParticles(worldView, BlendMode::additive);
   }
