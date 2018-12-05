@@ -217,8 +217,6 @@ void initializeGLExtensions() {
   LOAD(glFramebufferTexture2D);
   LOAD(glDrawBuffers);
   LOAD(glBlendFuncSeparate);
-  LOAD(glDebugMessageCallback);
-  LOAD(glDebugMessageControl);
 #undef LOAD
 #endif
 }
