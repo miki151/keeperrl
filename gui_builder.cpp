@@ -1928,7 +1928,8 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo& info, const opti
     auto line = gui.getListBuilder();
     line.addElem(gui.viewObject(elem.viewId), 35);
     line.addElem(gui.label(elem.name, elem.unavailable ? Color::GRAY : Color::WHITE), 10);
-    line.addBackElem(gui.alignment(GuiFactory::Alignment::RIGHT, drawCost(*elem.price)), 80);
+    if (elem.price)
+      line.addBackElem(gui.alignment(GuiFactory::Alignment::RIGHT, drawCost(*elem.price)), 80);
     SGuiElem guiElem = line.buildHorizontalList();
     if (elem.tutorialHighlight)
       guiElem = gui.stack(gui.tutorialHighlight(), std::move(guiElem));
@@ -1977,7 +1978,8 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo& info, const opti
         gui.uiHighlightMouseOver(Color::GREEN),
         gui.button(getButtonCallback({UserInputId::WORKSHOP_ITEM_ACTION,
             WorkshopQueuedActionInfo{i, ItemAction::CHANGE_NUMBER}}))), 35);
-    line.addBackElem(gui.alignment(GuiFactory::Alignment::RIGHT, drawCost(*elem.price)), 80);
+    if (elem.price)
+      line.addBackElem(gui.alignment(GuiFactory::Alignment::RIGHT, drawCost(*elem.price)), 80);
     lines2.addElem(gui.stack(
         gui.bottomMargin(5,
             gui.progressBar(Color::DARK_GREEN.transparency(128), elem.productionState)),
