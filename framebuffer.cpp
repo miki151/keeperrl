@@ -3,8 +3,8 @@
 #include "debug.h"
 #include "opengl.h"
 
-bool Framebuffer::isExtensionAvailable() {
-  static bool isAvailable = isOpenglExtensionAvailable("GL_ARB_framebuffer_object");
+bool Framebuffer::isAvailable() {
+  static bool isAvailable = isOpenglFeatureAvailable(OpenglFeature::FRAMEBUFFER);
   return isAvailable;
 }
 
