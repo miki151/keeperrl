@@ -9,8 +9,6 @@ class Framebuffer {
   void operator=(const Framebuffer&) = delete;
   Framebuffer(const Framebuffer&) = delete;
 
-  static bool isAvailable();
-
   void bind();
   static void unbind();
 

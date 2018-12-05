@@ -28,7 +28,8 @@ FXRenderer::FXRenderer(DirectoryPath dataPath, FXManager& mgr) : mgr(mgr), textu
 
   // We're creating a 2.1 OpenGL context, so if window was created,
   // this should be available everywhere.
-  USER_CHECK(isOpenglFeatureAvailable(OpenglFeature::SEPARATE_BLEND_FUNC)) << ". Please update your video card driver.";
+  USER_CHECK(isOpenglFeatureAvailable(OpenglFeature::SEPARATE_BLEND_FUNC)) <<
+      "Unable to load function glBlendFuncSeparate. Please update your video card driver.";
   drawBuffers = unique<DrawBuffers>();
 }
 
