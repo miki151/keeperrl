@@ -420,29 +420,43 @@
 
     {
         {
+          ids = { IMP }
+          traits = { WORKER NO_LIMIT NO_EQUIPMENT }
+          spawnLocation = NearLeader
+          keybinding = CREATE_IMP
+          sound = CREATE_IMP 2
+          noAuto = true
+          requirements = {
+            { 1 ExponentialCost GOLD 30 5 4 }
+          }
+        }
+        {
           ids = { ORC }
           traits = { FIGHTER NO_AUTO_EQUIPMENT }
           tutorialHighlight = ACCEPT_IMMIGRANT
           hiddenInHelp = true
           consumeIds = true
           requirements = {
+            { 0.0 TutorialRequirement ACCEPT_IMMIGRANT }
             { 1.0 AttractionInfo 1 { FurnitureType TRAINING_WOOD } } 
           }
         }
         {
-          ids = { ORC }
+          ids = { ORC ORC ORC }
           frequency = 0.5
           traits = { FIGHTER NO_AUTO_EQUIPMENT }
+          consumeIds = true
 #          hiddenInHelp = true
           requirements = {
-            { 0.0 TutorialRequirement ACCEPT_IMMIGRANT }
+            { 0.0 TutorialRequirement ACCEPT_MORE_IMMIGRANTS }
             { 1.0 AttractionInfo 1 { FurnitureType TRAINING_WOOD } } 
           }
         }
         {
           ids = { GOBLIN }
           frequency = 0.1
-          traits = { FIGHTER NO_AUTO_EQUIPMENT }
+          traits = { NO_AUTO_EQUIPMENT }
+          consumeIds = true
 #          hiddenInHelp = true
           requirements = {
             { 0.0 TutorialRequirement ACCEPT_MORE_IMMIGRANTS}

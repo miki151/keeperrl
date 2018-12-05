@@ -181,7 +181,7 @@ string Tutorial::getMessage() const {
           "Try locking and unlocking your new door.";
     case State::BUILD_LIBRARY:
       return "The first room that you need to build is a library. This is where the Keeper and other minions "
-          "will learn spells, and research new technology. Place 6 bookcases "
+          "will learn spells, and train their spell damage attribute. Place 6 bookcases "
           "in the new room as highlighted. Remember that bookcases and other furniture block your minions' movement.";
     case State::DIG_2_ROOMS:
       return "Dig out some more rooms. "
@@ -475,7 +475,7 @@ void Tutorial::createTutorial(Game& game, GameConfig* gameConfig) {
   if (auto error = gameConfig->readObject(immigrantData, GameConfigId::IMMIGRATION))
     USER_FATAL << *error;
   vector<ImmigrantInfo> immigrants;
-  for (auto elem : {"imps", "tutorial"})
+  for (auto elem : {"tutorial"})
     if (auto group = getReferenceMaybe(immigrantData, elem))
       append(immigrants, *group);
     else
