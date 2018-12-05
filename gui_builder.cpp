@@ -2106,7 +2106,7 @@ SGuiElem GuiBuilder::drawBuildingsOverlay(const CollectiveInfo& info, const opti
       if (!overlaysMap.count(elem.groupName))
         overlaysMap.emplace(make_pair(elem.groupName, gui.getListBuilder(legendLineHeight)));
       overlaysMap.at(elem.groupName).addElem(getButtonLine(elem, i, CollectiveTab::BUILDINGS, tutorial));
-      elems.push_back(gui.setWidth(300, gui.conditional(
+      elems.push_back(gui.setWidth(350, gui.conditional(
             gui.miniWindow(gui.margins(getButtonLine(elem, i, CollectiveTab::BUILDINGS, tutorial), margin)),
             [i, this] { return getActiveButton(CollectiveTab::BUILDINGS) == i;})));
     }
@@ -2114,7 +2114,7 @@ SGuiElem GuiBuilder::drawBuildingsOverlay(const CollectiveInfo& info, const opti
   for (auto& elem : overlaysMap) {
     auto& lines = elem.second;
     string groupName = elem.first;
-    elems.push_back(gui.setWidth(300, gui.conditionalStopKeys(
+    elems.push_back(gui.setWidth(350, gui.conditionalStopKeys(
           gui.miniWindow(gui.stack(
               gui.keyHandler([=] { clearActiveButton(); }, {gui.getKey(SDL::SDLK_ESCAPE)}, true),
               gui.margins(lines.buildVerticalList(), margin))),
