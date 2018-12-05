@@ -179,7 +179,7 @@ class Vec2 {
   HASH_ALL(x, y);
 };
 
-extern string toString(const Vec2& v);
+extern string toString(const Vec2&);
 
 class Range {
   public:
@@ -225,6 +225,8 @@ class Range {
   int SERIAL(finish) = 0; // HASH(finish)
   int SERIAL(increment) = 1; // HASH(increment)
 };
+
+extern string toString(const Range&);
 
 class Rectangle {
   public:

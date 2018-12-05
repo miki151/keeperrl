@@ -199,6 +199,15 @@ void PlayerControl::reloadBuildingMenu() {
     }
 }
 
+static optional<string> checkGroupCounts(const map<string, vector<ImmigrantInfo>>& immigrants) {
+  for (auto& group : immigrants)
+    for (auto& elem : group.second)
+      if (elem.getGroupSize().isEmpty())
+        return "Bad immigrant group size: " + toString(elem.getGroupSize()) +
+            ". Lower bound is inclusive, upper bound exclusive.";
+  return none;
+}
+
 optional<string> PlayerControl::reloadImmigrationAndWorkshops(GameConfig* gameConfig) {
   Technology technology;
   if (auto error = gameConfig->readObject(technology, GameConfigId::TECHNOLOGY))
@@ -233,6 +242,8 @@ optional<string> PlayerControl::reloadImmigrationAndWorkshops(GameConfig* gameCo
   collective->setWorkshops(unique<Workshops>(std::move(merged)));
   map<string, vector<ImmigrantInfo>> immigrantsData;
   if (auto error = gameConfig->readObject(immigrantsData, GameConfigId::IMMIGRATION))
+    return error;
+  if (auto error = checkGroupCounts(immigrantsData))
     return error;
   vector<ImmigrantInfo> immigrants;
   for (auto elem : keeperCreatureInfo.immigrantGroups)
@@ -439,29 +450,29 @@ void PlayerControl::addEquipment(WCreature creature, EquipmentSlot slot) {
 }
 
 void PlayerControl::minionEquipmentAction(const EquipmentActionInfo& action) {
-  WCreature creature = getCreature(action.creature);
-  switch (action.action) {
-    case ItemAction::DROP:
-      for (auto id : action.ids)
-        collective->getMinionEquipment().discard(id);
-      break;
-    case ItemAction::REPLACE:
-      if (action.slot)
-        addEquipment(creature, *action.slot);
-      else
-        addConsumableItem(creature);
-      break;
-    case ItemAction::LOCK:
-      for (auto id : action.ids)
-        collective->getMinionEquipment().setLocked(creature, id, true);
-      break;
-    case ItemAction::UNLOCK:
-      for (auto id : action.ids)
-        collective->getMinionEquipment().setLocked(creature, id, false);
-      break;
-    default:
-      break;
-  }
+  if (auto creature = getCreature(action.creature))
+    switch (action.action) {
+      case ItemAction::DROP:
+        for (auto id : action.ids)
+          collective->getMinionEquipment().discard(id);
+        break;
+      case ItemAction::REPLACE:
+        if (action.slot)
+          addEquipment(creature, *action.slot);
+        else
+          addConsumableItem(creature);
+        break;
+      case ItemAction::LOCK:
+        for (auto id : action.ids)
+          collective->getMinionEquipment().setLocked(creature, id, true);
+        break;
+      case ItemAction::UNLOCK:
+        for (auto id : action.ids)
+          collective->getMinionEquipment().setLocked(creature, id, false);
+        break;
+      default:
+        break;
+    }
 }
 
 void PlayerControl::minionTaskAction(const TaskActionInfo& action) {

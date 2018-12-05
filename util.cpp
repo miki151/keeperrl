@@ -1078,3 +1078,7 @@ Dir rotate(Dir dir) {
 #include "pretty_archive.h"
 template void Vec2::serialize(PrettyInputArchive&, unsigned);
 template void Range::serialize(PrettyInputArchive&, unsigned);
+
+string toString(const Range& r) {
+  return "[" + toString(r.getStart()) + ", " + toString(r.getEnd()) + "]";
+}
