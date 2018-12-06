@@ -1348,7 +1348,7 @@ static void addBuffEffect(FXManager& mgr) {
   pdef.alpha = {{0.0f, 0.1f, 0.8f, 1.0f}, {0.0, 0.7f, 0.7f, 0.0}};
 
   pdef.color = FVec3(1.0f);
-  pdef.textureName = TextureName::CIRCULAR;
+  pdef.textureName = TextureName::SQUARE;
 
   SubSystemDef ssdef(pdef, edef, 0.0f, 1.0f);
   ssdef.animateFunc = [](AnimationContext& ctx, Particle& pinst) {

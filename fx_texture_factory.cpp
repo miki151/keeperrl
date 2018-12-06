@@ -10,6 +10,7 @@ static const char* texFileName(TextureName name) {
 #define CASE(id, fileName) \
   case TextureName::id: \
     return fileName;
+    CASE(SQUARE, "square.png")
     CASE(CIRCULAR, "circular.png")
     CASE(CIRCULAR_STRONG, "circular_strong.png")
     CASE(FLAKES_BORDERS, "flakes_4x4_borders.png")
