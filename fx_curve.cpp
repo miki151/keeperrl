@@ -78,7 +78,7 @@ template <class T> T Curve<T>::sample(float position) const {
   int id = 0;
   while (keys[id] < position)
     id++;
-  id = id - 1; // keys[0] is always 0.0f
+  id = max(0, id - 1);
   float t = (position - keys[id]) * scale[id];
 
   switch (interp) {
