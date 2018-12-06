@@ -24,12 +24,8 @@ struct FXRenderer::SystemDrawInfo {
 };
 
 FXRenderer::FXRenderer(DirectoryPath dataPath, FXManager& mgr) : mgr(mgr), texturesPath(dataPath) {
-  useFramebuffer = isOpenglFeatureAvailable(OpenglFeature::FRAMEBUFFER);
-
-  // We're creating a 2.1 OpenGL context, so if window was created,
-  // this should be available everywhere.
-  USER_CHECK(isOpenglFeatureAvailable(OpenglFeature::SEPARATE_BLEND_FUNC)) <<
-      "Unable to load function glBlendFuncSeparate. Please update your video card driver.";
+  useFramebuffer = isOpenglFeatureAvailable(OpenglFeature::FRAMEBUFFER) &&
+                   isOpenglFeatureAvailable(OpenglFeature::SEPARATE_BLEND_FUNC);
   drawBuffers = unique<DrawBuffers>();
 }
 
