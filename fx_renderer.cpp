@@ -369,6 +369,7 @@ void FXRenderer::drawOrdered(const int* ids, int count, float offsetX, float off
       auto& draw = systemDraws[id];
       if (draw.empty())
         continue;
+      CHECK(draw.firstParticle + draw.numParticles <= orderedParticles.size());
       drawBuffers->add(&orderedParticles[draw.firstParticle], draw.numParticles);
     }
 
