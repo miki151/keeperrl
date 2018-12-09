@@ -241,7 +241,9 @@ PTask MinionActivities::generate(WCollective collective, WCreature c, MinionActi
     case MinionActivityInfo::SPIDER: {
       PROFILE_BLOCK("Spider");
       auto& territory = collective->getTerritory();
-      return Task::spider(territory.getAll().front(), territory.getExtended(3));
+      if (!territory.isEmpty())
+        return Task::spider(territory.getAll().front(), territory.getExtended(3));
+      break;
     }
     case MinionActivityInfo::WORKER: {
       return nullptr;
