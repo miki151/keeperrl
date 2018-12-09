@@ -2044,7 +2044,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.attr = LIST(10_dam, 7_def );
           c.body = Body::nonHumanoid(Body::Size::MEDIUM);
           c.body->setHorseBodyParts(2);
-          c.body->setMinionFood();
           c.petReaction = "\"Meh-eh-eh!\""_s;
           c.noChase = true;
           c.name = "goat";
