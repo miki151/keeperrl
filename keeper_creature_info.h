@@ -1,6 +1,7 @@
 #pragma once
 
 #include "util.h"
+#include "special_trait.h"
 
 struct KeeperCreatureInfo {
   vector<CreatureId> SERIAL(creatureId);
@@ -11,5 +12,13 @@ struct KeeperCreatureInfo {
   vector<string> SERIAL(buildingGroups);
   vector<string> SERIAL(workshopGroups);
   string SERIAL(description);
-  SERIALIZE_ALL(NAMED(creatureId), NAMED(tribeAlignment), NAMED(immigrantGroups), NAMED(technology), NAMED(initialTech), NAMED(buildingGroups), NAMED(workshopGroups), NAMED(description))
+  vector<SpecialTrait> SERIAL(specialTraits);
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version) {
+    ar(NAMED(creatureId), NAMED(tribeAlignment), NAMED(immigrantGroups), NAMED(technology), NAMED(initialTech), NAMED(buildingGroups), NAMED(workshopGroups), NAMED(description));
+    if (version >= 1)
+      ar(NAMED(specialTraits));
+  }
 };
+
+CEREAL_CLASS_VERSION(KeeperCreatureInfo, 1);

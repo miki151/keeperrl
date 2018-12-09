@@ -95,12 +95,6 @@ class ImmigrantInfo {
   optional<TutorialHighlight> getTutorialHighlight() const;
   bool isHiddenInHelp() const;
 
-  struct SpecialTraitInfo {
-    double SERIAL(prob);
-    vector<SpecialTrait> SERIAL(traits);
-    SERIALIZE_ALL(NAMED(prob), NAMED(traits))
-  };
-
   const vector<SpecialTraitInfo>& getSpecialTraits() const;
 
   ImmigrantInfo& addRequirement(double candidateProb, ImmigrantRequirement);

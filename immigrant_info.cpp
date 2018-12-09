@@ -123,7 +123,7 @@ bool ImmigrantInfo::isHiddenInHelp() const {
   return hiddenInHelp;
 }
 
-const vector<ImmigrantInfo::SpecialTraitInfo>& ImmigrantInfo::getSpecialTraits() const {
+const vector<SpecialTraitInfo>& ImmigrantInfo::getSpecialTraits() const {
   return specialTraits;
 }
 

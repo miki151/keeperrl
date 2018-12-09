@@ -50,7 +50,10 @@ variant<AvatarInfo, AvatarMenuOption> getAvatarInfo(View* view, GameConfig* game
   auto keeperCreatureInfos = readKeeperCreaturesConfig(view, gameConfig).first;
   auto keeperCreatures = keeperCreatureInfos.transform([](auto& elem) {
     return elem.creatureId.transform([&](auto& id) {
-      return CreatureFactory::fromId(id, getPlayerTribeId(elem.tribeAlignment));
+      auto ret = CreatureFactory::fromId(id, getPlayerTribeId(elem.tribeAlignment));
+      for (auto& trait : elem.specialTraits)
+        applySpecialTrait(trait, ret.get());
+      return ret;
     });
   });
   auto adventurerCreatureInfos = readKeeperCreaturesConfig(view, gameConfig).second;

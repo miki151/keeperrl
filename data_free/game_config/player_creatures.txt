@@ -16,6 +16,8 @@
     }
     workshopGroups = { "basic" "traps" }
     description = "Build and manage your dream dungeon, defend against raids, and attack your enemies!"
+# Special traits example, all traits are added
+#   specialTraits = { LastingEffect SPEED ExtraTraining MELEE 5 }
   }
   {
     creatureId = { KEEPER_KNIGHT KEEPER_KNIGHT_F }

@@ -23,6 +23,7 @@
 #include "immigrant_info.h"
 #include "technology.h"
 #include "tribe_alignment.h"
+#include "skill.h"
 
 template <typename T>
 optional<string> PrettyPrinting::parseObject(T& object, const string& s, optional<string> filename) {

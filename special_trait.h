@@ -29,3 +29,9 @@ MAKE_VARIANT2(SpecialTrait, ExtraTraining, LastingEffect, SkillId, AttrBonus, On
 
 extern void applySpecialTrait(SpecialTrait, WCreature);
 extern SpecialTrait transformBeforeApplying(SpecialTrait);
+
+struct SpecialTraitInfo {
+  double SERIAL(prob);
+  vector<SpecialTrait> SERIAL(traits);
+  SERIALIZE_ALL(NAMED(prob), NAMED(traits))
+};
