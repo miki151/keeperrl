@@ -69,8 +69,8 @@
              { 0.05 { ExtraTraining MELEE 2}}
              { 0.03 { AttrBonus DAMAGE 7 LastingEffect INSANITY}}
              { 0.05 { LastingEffect NIGHT_VISION }}
-             { 0.05 { SkillId DISARM_TRAPS }}
-             { 0.05 { SkillId SWIMMING }}
+             { 0.05 { LastingEffect DISARM_TRAPS_SKILL }}
+             { 0.05 { LastingEffect SWIMMING_SKILL }}
              { 0.05 { LastingEffect MAGIC_VULNERABILITY }}
              { 0.02 { LastingEffect HATE_ELVES }}
              { 0.02 { LastingEffect HATE_HUMANS }}
@@ -108,8 +108,8 @@
              { 0.03 { AttrBonus DAMAGE 5 LastingEffect INSANITY}}
              { 0.03 { AttrBonus DEFENSE 5 LastingEffect SLOWED}}
              { 0.05 { LastingEffect RANGED_VULNERABILITY }}
-             { 0.05 { SkillId DISARM_TRAPS }}
-             { 0.05 { SkillId SWIMMING }}
+             { 0.05 { LastingEffect DISARM_TRAPS_SKILL }}
+             { 0.05 { LastingEffect SWIMMING_SKILL }}
              { 0.02 { LastingEffect HATE_ELVES }}
              { 0.02 { LastingEffect HATE_HUMANS }}
              { 0.05 { ExtraTraining ARCHERY 2}}
@@ -129,8 +129,8 @@
              { 0.03 { AttrBonus DAMAGE 5 LastingEffect INSANITY}}
              { 0.03 { AttrBonus DEFENSE 5 LastingEffect SLOWED}}
              { 0.05 { LastingEffect RANGED_VULNERABILITY }}
-             { 0.05 { SkillId DISARM_TRAPS }}
-             { 0.05 { SkillId SWIMMING }}
+             { 0.05 { LastingEffect DISARM_TRAPS_SKILL }}
+             { 0.05 { LastingEffect SWIMMING_SKILL }}
              { 0.02 { LastingEffect HATE_ELVES }}
              { 0.02 { LastingEffect HATE_HUMANS }}
              { 0.05 { ExtraTraining ARCHERY 2}}
@@ -277,7 +277,7 @@
              { 0.1 { AttrBonus DAMAGE 5 LastingEffect INSANITY}}
              { 0.03 { LastingEffect INSANITY}}
              { 0.1 { LastingEffect HATE_UNDEAD}}
-             { 0.3 { SkillId AMBUSH }}
+             { 0.3 { LastingEffect AMBUSH_SKILL }}
              { 0.1 { LastingEffect ENTERTAINER }}
           }
         }
@@ -400,8 +400,8 @@
              { 0.03 { AttrBonus DAMAGE 5 LastingEffect INSANITY}}
              { 0.03 { AttrBonus DEFENSE 5 LastingEffect SLOWED}}
              { 0.05 { LastingEffect RANGED_VULNERABILITY }}
-             { 0.05 { SkillId DISARM_TRAPS }}
-             { 0.05 { SkillId SWIMMING }}
+             { 0.05 { LastingEffect DISARM_TRAPS_SKILL }}
+             { 0.05 { LastingEffect SWIMMING_SKILL }}
              { 0.02 { LastingEffect HATE_ELVES }}
              { 0.02 { LastingEffect HATE_HUMANS }}
              { 0.05 { ExtraTraining ARCHERY 2}}
@@ -414,6 +414,8 @@
           frequency = 0.1
           requirements = {
             { 0.0 AttractionInfo 1 {FurnitureType THRONE}}
+          }
+          specialTraits = {
             { 1.0 { LastingEffect ENTERTAINER }}
           }
         }

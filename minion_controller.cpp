@@ -27,7 +27,7 @@ class MinionController : public Player {
     return concat(Player::getCommands(), {
       {PlayerInfo::CommandInfo{"Absorb", 'a',
           "Absorb a friendly creature and inherit its attributes. Requires the absorbtion skill.",
-          creature->getAttributes().getSkills().hasDiscrete(SkillId::CONSUMPTION)},
+          creature->isAffected(LastingEffect::CONSUMPTION_SKILL)},
        [] (Player* player) { dynamic_cast<MinionController*>(player)->consumeAction();}, false},
     });
   }

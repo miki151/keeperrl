@@ -40,10 +40,8 @@ string PlayerInfo::getTitle() const {
 
 vector<PlayerInfo::SkillInfo> getSkillNames(WConstCreature c) {
   vector<PlayerInfo::SkillInfo> ret;
-  for (auto skill : c->getAttributes().getSkills().getAllDiscrete())
-    ret.push_back(PlayerInfo::SkillInfo{Skill::get(skill)->getName(), Skill::get(skill)->getHelpText()});
   for (SkillId id : ENUM_ALL(SkillId))
-    if (!Skill::get(id)->isDiscrete() && c->getAttributes().getSkills().getValue(id) > 0)
+    if (c->getAttributes().getSkills().getValue(id) > 0)
       ret.push_back(PlayerInfo::SkillInfo{Skill::get(id)->getNameForCreature(c), Skill::get(id)->getHelpText()});
   return ret;
 }

@@ -84,19 +84,19 @@ bool MinionActivityMap::isAvailable(WConstCollective col, WConstCreature c, Mini
     case MinionActivity::EAT:
       return c->getBody().needsToEat() && !col->hasTrait(c, MinionTrait::PRISONER);
     case MinionActivity::COPULATE:
-      return c->getAttributes().getSkills().hasDiscrete(SkillId::COPULATION);
+      return c->isAffected(LastingEffect::COPULATION_SKILL);
     case MinionActivity::RITUAL:
       return c->getBody().canPerformRituals() && !col->hasTrait(c, MinionTrait::WORKER);
     case MinionActivity::CROPS:
-      return c->getAttributes().getSkills().hasDiscrete(SkillId::CROPS);
+      return c->isAffected(LastingEffect::CROPS_SKILL);
     case MinionActivity::SPIDER:
-      return c->getAttributes().getSkills().hasDiscrete(SkillId::SPIDER);
+      return c->isAffected(LastingEffect::SPIDER_SKILL);
     case MinionActivity::EXPLORE_CAVES:
-      return c->getAttributes().getSkills().hasDiscrete(SkillId::EXPLORE_CAVES);
+      return c->isAffected(LastingEffect::EXPLORE_CAVES_SKILL);
     case MinionActivity::EXPLORE:
-      return c->getAttributes().getSkills().hasDiscrete(SkillId::EXPLORE);
+      return c->isAffected(LastingEffect::EXPLORE_SKILL);
     case MinionActivity::EXPLORE_NOCTURNAL:
-      return c->getAttributes().getSkills().hasDiscrete(SkillId::EXPLORE_NOCTURNAL);
+      return c->isAffected(LastingEffect::EXPLORE_NOCTURNAL_SKILL);
     case MinionActivity::CONSTRUCTION:
     case MinionActivity::WORKING:
       return c->getBody().isHumanoid() && col->hasTrait(c, MinionTrait::WORKER);

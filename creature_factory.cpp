@@ -175,7 +175,7 @@ CreatureAttributes CreatureFactory::getKrakenAttributes(ViewId id, const char* n
       c.attr[AttrType::DEFENSE] = 28;
       c.permanentEffects[LastingEffect::POISON_RESISTANT] = 1;
       c.permanentEffects[LastingEffect::NIGHT_VISION] = 1;
-      c.skills.insert(SkillId::SWIMMING);
+      c.permanentEffects[LastingEffect::SWIMMING_SKILL] = 1;
       c.name = name;);
 }
 
@@ -870,7 +870,7 @@ PCreature CreatureFactory::getSpecial(TribeId tribe, bool humanoid, bool large, 
             c.body->setIntrinsicAttack(BodyPart::HEAD, *attack);
         }
         if (Random.roll(3))
-          c.skills.insert(SkillId::SWIMMING);
+          c.permanentEffects[LastingEffect::SWIMMING_SKILL] = 1;
         ), tribe, factory);
   if (body.isHumanoid()) {
     if (Random.roll(4))
@@ -999,7 +999,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.name = "squire";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_MALE)->getNext());
           c.name->useFullTitle();
-          c.skills.insert(SkillId::AMBUSH);
+          c.permanentEffects[LastingEffect::AMBUSH_SKILL] = 1;
           c.maxLevelIncrease[ExperienceType::MELEE] = 16;
           c.maxLevelIncrease[ExperienceType::SPELL] = 8;
           c.maxLevelIncrease[ExperienceType::ARCHERY] = 8;
@@ -1014,6 +1014,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.name = "squire";
           c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_FEMALE)->getNext());
           c.name->useFullTitle();
+          c.permanentEffects[LastingEffect::AMBUSH_SKILL] = 1;
           c.maxLevelIncrease[ExperienceType::MELEE] = 16;
           c.maxLevelIncrease[ExperienceType::SPELL] = 8;
           c.maxLevelIncrease[ExperienceType::ARCHERY] = 8;
@@ -1094,7 +1095,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.viewId = ViewId::SUCCUBUS;
           c.body = Body::humanoidSpirit(Body::Size::LARGE);
           c.body->addWings();
-          c.skills.insert(SkillId::COPULATION);
+          c.permanentEffects[LastingEffect::COPULATION_SKILL] = 1;
           c.body->getIntrinsicAttacks().clear();
           c.body->setIntrinsicAttack(BodyPart::ARM, IntrinsicAttack(
               ItemType::touch(Effect::Lasting{LastingEffect::PEACEFULNESS})));
@@ -1107,7 +1108,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.viewId = ViewId::DOPPLEGANGER;
           c.attr = LIST(25_def, 5_spell_dam );
           c.body = Body::nonHumanoidSpirit(Body::Size::LARGE);
-          c.skills.insert(SkillId::CONSUMPTION);
+          c.permanentEffects[LastingEffect::CONSUMPTION_SKILL] = 1;
           c.name = "doppelganger";
       );
     case CreatureId::WITCH: 
@@ -1214,7 +1215,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.permanentEffects[LastingEffect::RANGED_RESISTANCE] = 1;
           c.body->setIntrinsicAttack(BodyPart::HEAD, IntrinsicAttack(
               ItemType::fangs(8, Effect::Lasting{LastingEffect::POISON})));
-          c.skills.insert(SkillId::SWIMMING);
+          c.permanentEffects[LastingEffect::SWIMMING_SKILL] = 1;
           c.name = "hydra";
       );
     case CreatureId::SHELOB:
@@ -1229,7 +1230,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.permanentEffects[LastingEffect::RANGED_RESISTANCE] = 1;
           c.body->setIntrinsicAttack(BodyPart::TORSO, IntrinsicAttack(
               ItemType::fangs(8, Effect::Lasting{LastingEffect::POISON})));
-          c.skills.insert(SkillId::SPIDER);
+          c.permanentEffects[LastingEffect::SPIDER_SKILL] = 1;
           c.name = "giant spider";
       );
     case CreatureId::GREEN_DRAGON: 
@@ -1457,7 +1458,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body = Body::humanoid(Body::Size::LARGE);
           c.chatReactionFriendly = "curses all dungeons"_s;
           c.chatReactionHostile = "\"Heeelp!\""_s;
-          c.skills.insert(SkillId::CROPS);
+          c.permanentEffects[LastingEffect::CROPS_SKILL] = 1;
           c.skills.setValue(SkillId::DIGGING, 0.1);
           c.name = "peasant";
           c.hatedByEffect = LastingEffect::HATE_HUMANS;
@@ -1469,8 +1470,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body = Body::humanoid(Body::Size::MEDIUM);
           c.chatReactionFriendly = "\"plaaaaay!\""_s;
           c.chatReactionHostile = "\"Heeelp!\""_s;
-          c.skills.insert(SkillId::CROPS);
-          c.skills.insert(SkillId::STEALTH);
+          c.permanentEffects[LastingEffect::CROPS_SKILL] = 1;
           c.name = CreatureName("child", "children");
           c.hatedByEffect = LastingEffect::HATE_HUMANS;
       );
@@ -1560,7 +1560,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
       return CATTR(
           c.viewId = ViewId::ADA_GOLEM;
           c.attr = LIST(36_dam, 36_def );
-          c.skills.insert(SkillId::NAVIGATION_DIGGING);
+          c.permanentEffects[LastingEffect::NAVIGATION_DIGGING_SKILL] = 1;
           c.permanentEffects[LastingEffect::MELEE_RESISTANCE] = 1;
           c.permanentEffects[LastingEffect::MAGIC_VULNERABILITY] = 1;
           c.permanentEffects[LastingEffect::SLOWED] = 1;
@@ -1695,7 +1695,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.viewId = ViewId::KOBOLD;
           c.attr = LIST(14_dam, 16_def );
           c.body = Body::humanoid(Body::Size::MEDIUM);
-          c.skills.insert(SkillId::SWIMMING);
+          c.permanentEffects[LastingEffect::SWIMMING_SKILL] = 1;
           c.chatReactionFriendly = "talks about digging"_s;
           c.chatReactionHostile = "\"Die!\""_s;
           c.name = "kobold";
@@ -1725,7 +1725,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body = Body::humanoid(Body::Size::MEDIUM);
           c.chatReactionFriendly = "talks about crafting"_s;
           c.chatReactionHostile = "\"Die!\""_s;
-          c.skills.insert(SkillId::DISARM_TRAPS);
+          c.permanentEffects[LastingEffect::DISARM_TRAPS_SKILL] = 1;
           c.skills.setValue(SkillId::LABORATORY, 0.3);
           c.skills.setValue(SkillId::WORKSHOP, 0.6);
           c.skills.setValue(SkillId::FORGE, 0.6);
@@ -1783,7 +1783,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body = Body::humanoid(Body::Size::MEDIUM);
           c.body->setWeight(90);
           c.name = CreatureName("dwarf", "dwarves");
-          c.skills.insert(SkillId::NAVIGATION_DIGGING);
+          c.permanentEffects[LastingEffect::NAVIGATION_DIGGING_SKILL] = 1;
           c.skills.setValue(SkillId::FORGE, 0.8);
           c.skills.setValue(SkillId::FURNACE, 0.8);
           c.maxLevelIncrease[ExperienceType::MELEE] = 2;
@@ -1800,7 +1800,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body = Body::humanoid(Body::Size::MEDIUM);
           c.body->setWeight(90);
           c.name = CreatureName("dwarf", "dwarves");
-          c.skills.insert(SkillId::NAVIGATION_DIGGING);
+          c.permanentEffects[LastingEffect::NAVIGATION_DIGGING_SKILL] = 1;
           c.skills.setValue(SkillId::WORKSHOP, 0.5);
           c.permanentEffects[LastingEffect::MAGIC_VULNERABILITY] = 1;
           c.name->setFirst(NameGenerator::get(NameGeneratorId::DWARF)->getNext());
@@ -1817,7 +1817,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body->setWeight(120);
           c.chatReactionFriendly = "curses all orcs"_s;
           c.chatReactionHostile = "\"Die!\""_s;
-          c.skills.insert(SkillId::NAVIGATION_DIGGING);
+          c.permanentEffects[LastingEffect::NAVIGATION_DIGGING_SKILL] = 1;
           c.maxLevelIncrease[ExperienceType::MELEE] = 10;
           c.permanentEffects[LastingEffect::MAGIC_VULNERABILITY] = 1;
           c.courage = 1;
@@ -1890,7 +1890,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.chatReactionFriendly = "curses all dwarves"_s;
           c.chatReactionHostile = "\"Die!\""_s;
           c.permanentEffects[LastingEffect::MAGIC_RESISTANCE] = 1;
-          c.skills.insert(SkillId::STEALTH);
           c.spells->add(SpellId::HEAL_SELF);
           c.permanentEffects[LastingEffect::ELF_VISION] = 1;
           c.name = CreatureName("elf child", "elf children");
@@ -1925,7 +1924,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.chatReactionFriendly = "curses all dwarves"_s;
           c.chatReactionHostile = "\"Die!\""_s;
           c.permanentEffects[LastingEffect::MAGIC_RESISTANCE] = 1;
-          c.skills.insert(SkillId::SWIMMING);
+          c.permanentEffects[LastingEffect::SWIMMING_SKILL] = 1;
           c.spells->add(SpellId::HEAL_SELF);
           c.permanentEffects[LastingEffect::NIGHT_VISION] = 1;
           c.name = CreatureName("dark elf", "dark elves");
@@ -1956,7 +1955,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.chatReactionHostile = "\"Die!\""_s;
           c.spells->add(SpellId::HEAL_SELF);
           c.permanentEffects[LastingEffect::NIGHT_VISION] = 1;
-          c.skills.insert(SkillId::STEALTH);
           c.name = CreatureName("dark elf child", "dark elf children");
           c.hatedByEffect = LastingEffect::HATE_ELVES;
       );
@@ -2096,7 +2094,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body->setWeight(250);
           c.body->setHorseBodyParts(8);
           c.body->setIntrinsicAttack(BodyPart::LEG, IntrinsicAttack(ItemType::claws(10)));
-          c.skills.insert(SkillId::EXPLORE_CAVES);
+          c.permanentEffects[LastingEffect::EXPLORE_CAVES_SKILL] = 1;
           c.name = "cave bear";
       );
     case CreatureId::RAT: 
@@ -2108,7 +2106,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body->setHorseBodyParts(1);
           c.permanentEffects[LastingEffect::SPEED] = 1;
           c.noChase = true;
-          c.skills.insert(SkillId::SWIMMING);
+          c.permanentEffects[LastingEffect::SWIMMING_SKILL] = 1;
           c.name = "rat";
       );
     case CreatureId::SPIDER: 
@@ -2149,7 +2147,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
       return CATTR(
           c.viewId = ViewId::ANT_SOLDIER;
           c.attr = LIST(30_dam, 20_def );
-          c.skills.insert(SkillId::NAVIGATION_DIGGING);
+          c.permanentEffects[LastingEffect::NAVIGATION_DIGGING_SKILL] = 1;
           c.body = Body::nonHumanoid(Body::Size::MEDIUM);
           c.body->setWeight(10);
           c.body->setBodyParts({{BodyPart::LEG, 6}, {BodyPart::HEAD, 1}, {BodyPart::TORSO, 1}});
@@ -2180,7 +2178,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body->setDeathSound(none);
           c.body->setIntrinsicAttack(BodyPart::HEAD, IntrinsicAttack(
               ItemType::fangs(1, Effect::Lasting{LastingEffect::POISON})));
-          c.skills.insert(SkillId::SWIMMING);
+          c.permanentEffects[LastingEffect::SWIMMING_SKILL] = 1;
           c.name = "snake";
       );
     case CreatureId::RAVEN: 
@@ -2194,7 +2192,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.noChase = true;
           c.courage = 1;
           c.permanentEffects[LastingEffect::SPEED] = 1;
-          c.skills.insert(SkillId::EXPLORE);
+          c.permanentEffects[LastingEffect::EXPLORE_SKILL] = 1;
           c.name = "raven";
           c.name->setGroup("flock");
       );
@@ -2223,7 +2221,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.name = CreatureName("wolf", "wolves");
           c.name->setGroup("pack");
           c.name->setFirst(NameGenerator::get(NameGeneratorId::DOG)->getNext());
-          c.skills.insert(SkillId::EXPLORE_NOCTURNAL);
+          c.permanentEffects[LastingEffect::EXPLORE_NOCTURNAL_SKILL] = 1;
       );
     case CreatureId::WEREWOLF:
       return CATTR(
@@ -2233,8 +2231,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body->setIntrinsicAttack(BodyPart::HEAD, IntrinsicAttack(ItemType::fangs(8)));
           c.body->setIntrinsicAttack(BodyPart::LEG, IntrinsicAttack(ItemType::claws(7)));
           c.permanentEffects[LastingEffect::NIGHT_VISION] = 1;
-          c.skills.insert(SkillId::STEALTH);
-          c.skills.insert(SkillId::EXPLORE_NOCTURNAL);
+          c.permanentEffects[LastingEffect::EXPLORE_NOCTURNAL_SKILL] = 1;
           c.permanentEffects[LastingEffect::MAGIC_RESISTANCE] = 1;
           c.permanentEffects[LastingEffect::REGENERATION] = 1;
           c.maxLevelIncrease[ExperienceType::MELEE] = 12;
@@ -2324,7 +2321,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body->setDeathSound(none);
           c.attr = LIST(40_dam, 15_def );
           c.permanentEffects[LastingEffect::RANGED_RESISTANCE] = 1;
-          c.skills.insert(SkillId::SWIMMING);
+          c.permanentEffects[LastingEffect::SWIMMING_SKILL] = 1;
           c.name = "water elemental";
       );
     case CreatureId::ENT:
@@ -2362,8 +2359,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.noChase = true;
           c.courage = 1;
           c.permanentEffects[LastingEffect::NIGHT_VISION] = 1;
-          c.skills.insert(SkillId::EXPLORE_NOCTURNAL);
-          c.skills.insert(SkillId::EXPLORE_CAVES);
+          c.permanentEffects[LastingEffect::EXPLORE_NOCTURNAL_SKILL] = 1;
+          c.permanentEffects[LastingEffect::EXPLORE_CAVES_SKILL] = 1;
           c.name = "bat";
       );
     case CreatureId::DEATH: 

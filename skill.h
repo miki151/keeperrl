@@ -21,26 +21,12 @@
 #include "enums.h"
 
 RICH_ENUM(SkillId,
-  AMBUSH,
-  STEALING,
-  SWIMMING,
   DIGGING,
-  NAVIGATION_DIGGING,
-  DISARM_TRAPS,
-  CONSUMPTION,
-  COPULATION,
-  CROPS,
-  SPIDER,
-  STEALTH,
   WORKSHOP,
   FORGE,
   LABORATORY,
   JEWELER,
-  FURNACE,
-  EXPLORE,
-  EXPLORE_NOCTURNAL,
-  EXPLORE_CAVES,
-  BRIDGE_BUILDING
+  FURNACE
 );
 
 class Creature;
@@ -49,8 +35,6 @@ class Skill : public Singleton<Skill, SkillId> {
   string getName() const;
   string getNameForCreature(WConstCreature) const;
   string getHelpText() const;
-  bool transferOnConsumption() const;
-  bool isDiscrete() const;
 
   int getModifier(WConstCreature, AttrType) const;
 
@@ -59,26 +43,19 @@ class Skill : public Singleton<Skill, SkillId> {
   private:
   string name;
   string helpText;
-  bool consume;
-  bool discrete;
-  Skill(string name, string helpText, bool discrete, bool canConsume = true);
+  Skill(string name, string helpText);
 };
 
 class Skillset {
   public:
-  void insert(SkillId);
-  void erase(SkillId);
-  bool hasDiscrete(SkillId) const;
   double getValue(SkillId) const;
   void setValue(SkillId, double);
   void increaseValue(SkillId, double);
-  const EnumSet<SkillId>& getAllDiscrete() const;
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);
 
   private:
-  EnumMap<SkillId, double> SERIAL(gradable);
-  EnumSet<SkillId> SERIAL(discrete);
+  EnumMap<SkillId, double> SERIAL(values);
 };
 

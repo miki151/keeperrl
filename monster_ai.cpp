@@ -826,7 +826,7 @@ class Thief : public Behaviour {
   Thief(WCreature c) : Behaviour(c) {}
 
   virtual MoveInfo getMove() override {
-    if (!creature->getAttributes().getSkills().hasDiscrete(SkillId::STEALING))
+    if (!creature->isAffected(LastingEffect::STEALING_SKILL))
       return NoMove;
     for (WConstCreature other : creature->getVisibleEnemies()) {
       if (robbed.contains(other)) {

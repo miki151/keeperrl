@@ -233,6 +233,20 @@ void LastingEffects::onAffected(WCreature c, LastingEffect effect, bool msg) {
       case LastingEffect::BAD_BREATH:
         c->you(MsgType::YOUR, "breath stinks!");
         break;
+      case LastingEffect::AMBUSH_SKILL:
+      case LastingEffect::STEALING_SKILL:
+      case LastingEffect::SWIMMING_SKILL:
+      case LastingEffect::DISARM_TRAPS_SKILL:
+      case LastingEffect::CONSUMPTION_SKILL:
+      case LastingEffect::COPULATION_SKILL:
+      case LastingEffect::CROPS_SKILL:
+      case LastingEffect::SPIDER_SKILL:
+      case LastingEffect::EXPLORE_SKILL:
+      case LastingEffect::EXPLORE_CAVES_SKILL:
+      case LastingEffect::EXPLORE_NOCTURNAL_SKILL:
+      case LastingEffect::BRIDGE_BUILDING_SKILL:
+      case LastingEffect::NAVIGATION_DIGGING_SKILL:
+        c->verb("acquire", "acquires", "the skill of "_s + getName(effect));
     }
 }
 
@@ -405,6 +419,21 @@ void LastingEffects::onTimedOut(WCreature c, LastingEffect effect, bool msg) {
       case LastingEffect::BAD_BREATH:
         c->you(MsgType::YOUR, "breath is back to normal");
         break;
+      case LastingEffect::AMBUSH_SKILL:
+      case LastingEffect::STEALING_SKILL:
+      case LastingEffect::SWIMMING_SKILL:
+      case LastingEffect::DISARM_TRAPS_SKILL:
+      case LastingEffect::CONSUMPTION_SKILL:
+      case LastingEffect::COPULATION_SKILL:
+      case LastingEffect::CROPS_SKILL:
+      case LastingEffect::SPIDER_SKILL:
+      case LastingEffect::EXPLORE_SKILL:
+      case LastingEffect::EXPLORE_CAVES_SKILL:
+      case LastingEffect::EXPLORE_NOCTURNAL_SKILL:
+      case LastingEffect::BRIDGE_BUILDING_SKILL:
+      case LastingEffect::NAVIGATION_DIGGING_SKILL:
+        c->verb("lose", "loses", "the skill of "_s + getName(effect));
+        break;
       default:
         break;
     }
@@ -509,6 +538,19 @@ static optional<Adjective> getAdjective(LastingEffect effect) {
     case LastingEffect::FAST_CRAFTING: return "Fast craftsman"_good;
     case LastingEffect::FAST_TRAINING: return "Fast trainee"_good;
     case LastingEffect::ENTERTAINER: return "Entertainer"_good;
+    case LastingEffect::AMBUSH_SKILL: return "Ambusher"_good;
+    case LastingEffect::STEALING_SKILL: return "Thief"_good;
+    case LastingEffect::SWIMMING_SKILL: return "Swimmer"_good;
+    case LastingEffect::DISARM_TRAPS_SKILL: return "Disarms traps"_good;
+    case LastingEffect::CONSUMPTION_SKILL: return "Absorbs"_good;
+    case LastingEffect::COPULATION_SKILL: return "Copulates"_good;
+    case LastingEffect::CROPS_SKILL: return "Farmer"_good;
+    case LastingEffect::SPIDER_SKILL: return "Weaves spider webs"_good;
+    case LastingEffect::EXPLORE_SKILL: return "Explores"_good;
+    case LastingEffect::EXPLORE_NOCTURNAL_SKILL: return "Explores at night"_good;
+    case LastingEffect::EXPLORE_CAVES_SKILL: return "Explores caves"_good;
+    case LastingEffect::BRIDGE_BUILDING_SKILL: return "Builds bridges"_good;
+    case LastingEffect::NAVIGATION_DIGGING_SKILL: return "Digs"_good;
 
     case LastingEffect::POISON: return "Poisoned"_bad;
     case LastingEffect::BLEEDING: return "Bleeding"_bad;
@@ -756,6 +798,19 @@ string LastingEffects::getName(LastingEffect type) {
     case LastingEffect::SLOW_TRAINING: return "slow training";
     case LastingEffect::ENTERTAINER: return "entertainment";
     case LastingEffect::BAD_BREATH: return "smelly breath";
+    case LastingEffect::AMBUSH_SKILL: return "ambush";
+    case LastingEffect::STEALING_SKILL: return "stealing";
+    case LastingEffect::SWIMMING_SKILL: return "swimming";
+    case LastingEffect::DISARM_TRAPS_SKILL: return "trap disarming";
+    case LastingEffect::CONSUMPTION_SKILL: return "absorbtion";
+    case LastingEffect::COPULATION_SKILL: return "copulatation";
+    case LastingEffect::CROPS_SKILL: return "farming";
+    case LastingEffect::SPIDER_SKILL: return "spider web weaving";
+    case LastingEffect::EXPLORE_SKILL: return "exploring";
+    case LastingEffect::EXPLORE_CAVES_SKILL: return "exploring caves";
+    case LastingEffect::EXPLORE_NOCTURNAL_SKILL: return "exploring at night";
+    case LastingEffect::BRIDGE_BUILDING_SKILL: return "bridge building";
+    case LastingEffect::NAVIGATION_DIGGING_SKILL: return "digging";
   }
 }
 
@@ -813,6 +868,19 @@ string LastingEffects::getDescription(LastingEffect type) {
     case LastingEffect::SLOW_TRAINING: return "Decreases training and learning speed";
     case LastingEffect::ENTERTAINER: return "Makes jokes, increasing morale of nearby creatures";
     case LastingEffect::BAD_BREATH: return "Decreases morale of all nearby creatures";
+    case LastingEffect::AMBUSH_SKILL: return "Can hide and ambush unsuspecting enemies. Press 'h' to hide on a tile that allows it.";
+    case LastingEffect::STEALING_SKILL: return "Can steal from other monsters";
+    case LastingEffect::SWIMMING_SKILL: return "Can cross water without drowning.";
+    case LastingEffect::DISARM_TRAPS_SKILL: return "Can evade traps and disarm them.";
+    case LastingEffect::CONSUMPTION_SKILL: return "Can absorb other creatures and retain their attributes.";
+    case LastingEffect::COPULATION_SKILL: return "Can copulate with other creatures and give birth to hideous spawns.";
+    case LastingEffect::CROPS_SKILL: return "Can farm crops";
+    case LastingEffect::SPIDER_SKILL: return "Can weave spider webs.";
+    case LastingEffect::EXPLORE_SKILL: return "Can explore surroundings";
+    case LastingEffect::EXPLORE_CAVES_SKILL: return "Can explore caves";
+    case LastingEffect::EXPLORE_NOCTURNAL_SKILL: return "Can explore surroundings at night";
+    case LastingEffect::BRIDGE_BUILDING_SKILL: return "Creature will try to build bridges when travelling somewhere";
+    case LastingEffect::NAVIGATION_DIGGING_SKILL: return "Creature will try to dig when travelling somewhere";
   }
 }
 
@@ -941,6 +1009,9 @@ bool LastingEffects::canConsume(LastingEffect effect) {
     case LastingEffect::SUMMONED:
     case LastingEffect::LIGHT_SOURCE:
     case LastingEffect::PREGNANT:
+    case LastingEffect::CONSUMPTION_SKILL:
+    case LastingEffect::COPULATION_SKILL:
+    case LastingEffect::CROPS_SKILL:
       return false;
     default:
       return true;

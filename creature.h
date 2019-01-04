@@ -132,8 +132,6 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
 
   int getDifficultyPoints() const;
 
-  void addSkill(Skill* skill);
-
   string getPluralTheName(WItem item, int num) const;
   string getPluralAName(WItem item, int num) const;
   CreatureAction move(Position, optional<Position> nextPosIntent = none) const;

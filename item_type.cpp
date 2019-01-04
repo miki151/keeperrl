@@ -216,21 +216,6 @@ class PotionItem : public Item {
   double SERIAL(heat) = 0;
 };
 
-class SkillBook : public Item {
-  public:
-  SkillBook(const ItemAttributes& attr, Skill* s) : Item(attr), skill(s->getId()) {}
-
-  virtual void applySpecial(WCreature c) override {
-    c->addSkill(Skill::get(skill));
-  }
-
-  SERIALIZE_ALL(SUBCLASS(Item), skill)
-  SERIALIZATION_CONSTRUCTOR(SkillBook)
-
-  private:
-  SkillId SERIAL(skill);
-};
-
 class TechBookItem : public Item {
   public:
   TechBookItem(const ItemAttributes& attr, TechId t) : Item(attr), tech(t) {}
@@ -250,7 +235,6 @@ class TechBookItem : public Item {
   bool SERIAL(read) = false;
 };
 
-REGISTER_TYPE(SkillBook)
 REGISTER_TYPE(TechBookItem)
 REGISTER_TYPE(PotionItem)
 REGISTER_TYPE(FireScrollItem)

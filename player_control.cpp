@@ -990,7 +990,7 @@ vector<PlayerInfo> PlayerControl::getPlayerInfos(vector<WCreature> creatures, Un
           minionInfo.quarters = none;
       } else
         minionInfo.canAssignQuarters = false;
-      if (c->getAttributes().getSkills().hasDiscrete(SkillId::CONSUMPTION))
+      if (c->isAffected(LastingEffect::CONSUMPTION_SKILL))
         minionInfo.actions.push_back(PlayerInfo::CONSUME);
     }
   }
@@ -1131,10 +1131,10 @@ void PlayerControl::acceptPrisoner(int index) {
     victim->removeEffect(LastingEffect::STUNNED);
     // to make sure prisoners don't die around dead bodies
     victim->addPermanentEffect(LastingEffect::POISON_RESISTANT);
-    auto& skills = victim->getAttributes().getSkills();
-    skills.setValue(SkillId::DIGGING, skills.hasDiscrete(SkillId::NAVIGATION_DIGGING) ? 1 : 0.2);
-    skills.erase(SkillId::NAVIGATION_DIGGING);
-    skills.erase(SkillId::BRIDGE_BUILDING);
+    victim->getAttributes().getSkills().setValue(SkillId::DIGGING,
+        victim->isAffected(LastingEffect::NAVIGATION_DIGGING_SKILL) ? 1 : 0.2);
+    victim->removePermanentEffect(LastingEffect::NAVIGATION_DIGGING_SKILL);
+    victim->removePermanentEffect(LastingEffect::BRIDGE_BUILDING_SKILL);
     collective->addCreature(victim, {MinionTrait::WORKER, MinionTrait::PRISONER, MinionTrait::NO_LIMIT});
     addMessage(PlayerMessage("You enslave " + victim->getName().a()).setPosition(victim->getPosition()));
     for (auto& elem : copyOf(stunnedCreatures))

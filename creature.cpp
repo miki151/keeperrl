@@ -501,13 +501,6 @@ void Creature::thirdPerson(const PlayerMessage& playerCanSee) const {
   getController()->getMessageGenerator().addThirdPerson(this, playerCanSee);
 }
 
-void Creature::addSkill(Skill* skill) {
-  if (!attributes->getSkills().hasDiscrete(skill->getId())) {
-    attributes->getSkills().insert(skill->getId());
-    privateMessage(skill->getHelpText());
-  }
-}
-
 vector<WItem> Creature::getPickUpOptions() const {
   if (!getBody().isHumanoid())
     return vector<WItem>();
@@ -706,7 +699,7 @@ CreatureAction Creature::applySquare(Position pos) const {
 
 CreatureAction Creature::hide() const {
   PROFILE;
-  if (!attributes->getSkills().hasDiscrete(SkillId::AMBUSH))
+  if (!isAffected(LastingEffect::AMBUSH_SKILL))
     return CreatureAction("You don't have this skill.");
   if (auto furniture = getPosition().getFurniture(FurnitureLayer::MIDDLE))
     if (furniture->canHide())
@@ -1108,10 +1101,9 @@ bool Creature::takeDamage(const Attack& attack) {
   PROFILE;
   if (WCreature attacker = attack.attacker) {
     onAttackedBy(attacker);
-    if (!attacker->getAttributes().getSkills().hasDiscrete(SkillId::STEALTH))
-      for (Position p : visibleCreatures)
-        if (p.dist8(position) < 10 && p.getCreature() && !p.getCreature()->isDead())
-          p.getCreature()->removeEffect(LastingEffect::SLEEP);
+    for (Position p : visibleCreatures)
+      if (p.dist8(position) < 10 && p.getCreature() && !p.getCreature()->isDead())
+        p.getCreature()->removeEffect(LastingEffect::SLEEP);
   }
   double defense = getAttr(AttrType::DEFENSE);
   for (LastingEffect effect : ENUM_ALL(LastingEffect))
@@ -1504,7 +1496,7 @@ CreatureAction Creature::destroy(Vec2 direction, const DestroyAction& action) co
 
 bool Creature::canCopulateWith(WConstCreature c) const {
   PROFILE;
-  return attributes->getSkills().hasDiscrete(SkillId::COPULATION) &&
+  return isAffected(LastingEffect::COPULATION_SKILL) &&
       c->getBody().canCopulateWith() &&
       c->attributes->getGender() != attributes->getGender() &&
       c->isAffected(LastingEffect::SLEEP);
@@ -1513,7 +1505,7 @@ bool Creature::canCopulateWith(WConstCreature c) const {
 bool Creature::canConsume(WConstCreature c) const {
   return c != this &&
       c->getBody().canConsume() &&
-      attributes->getSkills().hasDiscrete(SkillId::CONSUMPTION) &&
+      isAffected(LastingEffect::CONSUMPTION_SKILL) &&
       isFriend(c);
 }
 
@@ -1658,14 +1650,14 @@ MovementType Creature::getMovementType() const {
   return MovementType(getFriendlyTribes(), {
       true,
       isAffected(LastingEffect::FLYING),
-      attributes->getSkills().hasDiscrete(SkillId::SWIMMING),
+      isAffected(LastingEffect::SWIMMING_SKILL),
       getBody().canWade()})
     .setDestroyActions(EnumSet<DestroyAction::Type>([this](auto t) { return DestroyAction(t).canNavigate(this); }))
     .setForced(isAffected(LastingEffect::BLIND) || getHoldingCreature() || forceMovement)
     .setFireResistant(isAffected(LastingEffect::FIRE_RESISTANT))
     .setSunlightVulnerable(isAffected(LastingEffect::SUNLIGHT_VULNERABLE) && !isAffected(LastingEffect::DARKNESS_SOURCE)
         && (!getGame() || getGame()->getSunlightInfo().getState() == SunlightState::DAY))
-    .setCanBuildBridge(attributes->getSkills().hasDiscrete(SkillId::BRIDGE_BUILDING));
+    .setCanBuildBridge(isAffected(LastingEffect::BRIDGE_BUILDING_SKILL));
 }
 
 int Creature::getDifficultyPoints() const {

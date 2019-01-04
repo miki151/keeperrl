@@ -287,16 +287,10 @@ void consumeAttr(optional<T>& mine, const optional<T>& his, vector<string>& adje
 
 void consumeAttr(Skillset& mine, const Skillset& his, vector<string>& adjectives) {
   bool was = false;
-  for (SkillId id : his.getAllDiscrete())
-    if (!mine.hasDiscrete(id) && Skill::get(id)->transferOnConsumption() && consumeProb()) {
-      mine.insert(id);
-      was = true;
-    }
   for (SkillId id : ENUM_ALL(SkillId)) {
-    if (!Skill::get(id)->isDiscrete() && mine.getValue(id) < his.getValue(id)
-      && Skill::get(id)->transferOnConsumption()) {
-        mine.setValue(id, his.getValue(id));
-        was = true;
+    if (mine.getValue(id) < his.getValue(id)) {
+      mine.setValue(id, his.getValue(id));
+      was = true;
     }
   }
   if (was)
