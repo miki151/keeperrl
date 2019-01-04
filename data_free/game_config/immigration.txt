@@ -51,8 +51,10 @@
             { 0.1 AttractionInfo 1 {FurnitureType FORGE FurnitureType WORKSHOP FurnitureType JEWELLER}}
           }
           specialTraits = {
-            { 0.03 { SkillId WORKSHOP LastingEffect INSANITY }}
-            { 0.03 { SkillId FORGE LastingEffect INSANITY }}
+             { 0.03 { SkillId WORKSHOP LastingEffect INSANITY }}
+             { 0.03 { SkillId FORGE LastingEffect INSANITY }}
+             { 0.03 { LastingEffect BAD_BREATH }}
+             { 0.01 { LastingEffect ENTERTAINER }}
           }
         }
         {
@@ -72,6 +74,8 @@
              { 0.05 { LastingEffect MAGIC_VULNERABILITY }}
              { 0.02 { LastingEffect HATE_ELVES }}
              { 0.02 { LastingEffect HATE_HUMANS }}
+             { 0.03 { LastingEffect BAD_BREATH }}
+             { 0.01 { LastingEffect ENTERTAINER }}
           }
         }
         {
@@ -89,6 +93,7 @@
              { 0.10 { LastingEffect MAGIC_RESISTANCE }}
              { 0.02 { LastingEffect HATE_ELVES }}
              { 0.02 { LastingEffect HATE_HUMANS }}
+             { 0.01 { LastingEffect ENTERTAINER }}
           }
         }
         {
@@ -108,6 +113,7 @@
              { 0.02 { LastingEffect HATE_ELVES }}
              { 0.02 { LastingEffect HATE_HUMANS }}
              { 0.05 { ExtraTraining ARCHERY 2}}
+             { 0.05 { LastingEffect BAD_BREATH }}
           }
         }
         {
@@ -128,6 +134,7 @@
              { 0.02 { LastingEffect HATE_ELVES }}
              { 0.02 { LastingEffect HATE_HUMANS }}
              { 0.05 { ExtraTraining ARCHERY 2}}
+             { 0.05 { LastingEffect BAD_BREATH }}
           }
         }
         {
@@ -173,6 +180,7 @@
              { 0.3 { LastingEffect FIRE_RESISTANT }}
              { 0.05 { LastingEffect HATE_GREENSKINS }}
              { 0.3 { LastingEffect FLYING }}
+             { 0.1 { LastingEffect ENTERTAINER }}
           }
         }
         {
@@ -185,7 +193,10 @@
             { 0.1 AttractionInfo 1 {FurnitureType TRAINING_IRON}}
             { 0.0 CostInfo CORPSE 1}
           }
-        }
+          specialTraits = {
+             { 1.0 { LastingEffect BAD_BREATH }}
+          }
+         }
         {
           ids = { LOST_SOUL }
           traits = { FIGHTER }
@@ -267,6 +278,7 @@
              { 0.03 { LastingEffect INSANITY}}
              { 0.1 { LastingEffect HATE_UNDEAD}}
              { 0.3 { SkillId AMBUSH }}
+             { 0.1 { LastingEffect ENTERTAINER }}
           }
         }
         {
@@ -338,9 +350,10 @@
             { 0.1 AttractionInfo 1 {FurnitureType FORGE FurnitureType WORKSHOP FurnitureType JEWELLER}}
           }
           specialTraits = {
-            { 0.05 { OneOfTraits { LastingEffect FAST_CRAFTING LastingEffect SLOW_CRAFTING } }}
-            { 0.03 { SkillId WORKSHOP LastingEffect INSANITY }}
-            { 0.03 { SkillId FORGE LastingEffect INSANITY }}
+             { 0.05 { OneOfTraits { LastingEffect FAST_CRAFTING LastingEffect SLOW_CRAFTING } }}
+             { 0.03 { SkillId WORKSHOP LastingEffect INSANITY }}
+             { 0.03 { SkillId FORGE LastingEffect INSANITY }}
+             { 0.03 { LastingEffect BAD_BREATH }}
           }
         }
         {
@@ -357,6 +370,7 @@
              { 0.05 { LastingEffect HATE_ELVES }}
              { 0.05 { LastingEffect HATE_DWARVES }}
              { 0.05 { LastingEffect HATE_GREENSKINS }}
+             { 0.03 { LastingEffect BAD_BREATH }}
           }
         }
         {
@@ -391,6 +405,7 @@
              { 0.02 { LastingEffect HATE_ELVES }}
              { 0.02 { LastingEffect HATE_HUMANS }}
              { 0.05 { ExtraTraining ARCHERY 2}}
+             { 0.03 { LastingEffect BAD_BREATH }}
           }
         }
         {
@@ -399,6 +414,7 @@
           frequency = 0.1
           requirements = {
             { 0.0 AttractionInfo 1 {FurnitureType THRONE}}
+            { 1.0 { LastingEffect ENTERTAINER }}
           }
         }
         {

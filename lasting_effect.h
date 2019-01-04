@@ -51,7 +51,9 @@ RICH_ENUM(LastingEffect,
     FAST_CRAFTING,
     FAST_TRAINING,
     SLOW_CRAFTING,
-    SLOW_TRAINING
+    SLOW_TRAINING,
+    ENTERTAINER,
+    BAD_BREATH
 );
 
 RICH_ENUM(CreatureCondition,
@@ -69,12 +71,12 @@ class LastingEffects {
   static int getAttrBonus(const Creature*, AttrType);
   static void afterCreatureDamage(WCreature, LastingEffect);
   static bool tick(WCreature, LastingEffect);
-  static const char* getGoodAdjective(LastingEffect);
-  static const char* getBadAdjective(LastingEffect);
+  static optional<string> getGoodAdjective(LastingEffect);
+  static optional<string> getBadAdjective(LastingEffect);
   static const vector<LastingEffect>& getCausingCondition(CreatureCondition);
   static double modifyCreatureDefense(LastingEffect, double damage, AttrType damageAttr);
-  static const char* getName(LastingEffect);
-  static const char* getDescription(LastingEffect);
+  static string getName(LastingEffect);
+  static string getDescription(LastingEffect);
   static bool canSee(WConstCreature, WConstCreature);
   static bool modifyIsEnemyResult(WConstCreature, WConstCreature, bool);
   static int getPrice(LastingEffect);

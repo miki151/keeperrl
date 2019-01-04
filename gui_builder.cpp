@@ -582,9 +582,9 @@ SGuiElem GuiBuilder::drawSpecialTrait(const SpecialTrait& trait) {
       },
       [&] (LastingEffect effect) {
         if (auto adj = LastingEffects::getGoodAdjective(effect))
-          return gui.label("Permanent trait: "_s + adj, Color::GREEN);
+          return gui.label("Permanent trait: "_s + *adj, Color::GREEN);
         if (auto adj = LastingEffects::getBadAdjective(effect))
-          return gui.label("Permanent trait: "_s + adj, Color::RED);
+          return gui.label("Permanent trait: "_s + *adj, Color::RED);
         FATAL << "No adjective found: "_s + LastingEffects::getName(effect);
         return gui.empty();
       },

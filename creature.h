@@ -340,5 +340,5 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
 
 struct AdjectiveInfo {
   string name;
-  const char* help;
+  string help;
 };

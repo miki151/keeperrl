@@ -1861,16 +1861,16 @@ vector<AdjectiveInfo> Creature::getGoodAdjectives() const {
   if (auto time = getGlobalTime()) {
     for (LastingEffect effect : ENUM_ALL(LastingEffect))
       if (attributes->isAffected(effect, *time))
-        if (const char* name = LastingEffects::getGoodAdjective(effect)) {
-          ret.push_back({ name, LastingEffects::getDescription(effect) });
+        if (auto name = LastingEffects::getGoodAdjective(effect)) {
+          ret.push_back({ *name, LastingEffects::getDescription(effect) });
           if (!attributes->isAffectedPermanently(effect))
             ret.back().name += attributes->getRemainingString(effect, *getGlobalTime());
         }
   } else
     for (LastingEffect effect : ENUM_ALL(LastingEffect))
       if (attributes->isAffectedPermanently(effect))
-        if (const char* name = LastingEffects::getGoodAdjective(effect))
-          ret.push_back({ name, LastingEffects::getDescription(effect) });
+        if (auto name = LastingEffects::getGoodAdjective(effect))
+          ret.push_back({ *name, LastingEffects::getDescription(effect) });
   if (getBody().isUndead())
     ret.push_back({"Undead",
         "Undead creatures don't take regular damage and need to be killed by chopping up or using fire."});
@@ -1888,16 +1888,16 @@ vector<AdjectiveInfo> Creature::getBadAdjectives() const {
   if (auto time = getGlobalTime()) {
     for (LastingEffect effect : ENUM_ALL(LastingEffect))
       if (attributes->isAffected(effect, *time))
-        if (const char* name = LastingEffects::getBadAdjective(effect)) {
-          ret.push_back({ name, LastingEffects::getDescription(effect) });
+        if (auto name = LastingEffects::getBadAdjective(effect)) {
+          ret.push_back({ *name, LastingEffects::getDescription(effect) });
           if (!attributes->isAffectedPermanently(effect))
             ret.back().name += attributes->getRemainingString(effect, *getGlobalTime());
         }
   } else
     for (LastingEffect effect : ENUM_ALL(LastingEffect))
       if (attributes->isAffectedPermanently(effect))
-        if (const char* name = LastingEffects::getBadAdjective(effect))
-          ret.push_back({ name, LastingEffects::getDescription(effect) });
+        if (auto name = LastingEffects::getBadAdjective(effect))
+          ret.push_back({ *name, LastingEffects::getDescription(effect) });
   auto morale = getMorale();
   if (morale < 0)
     if (auto text = getMoraleText(morale))

@@ -970,7 +970,7 @@ ItemAttributes ItemType::AdaBoots::getAttributes() const {
 ItemAttributes ItemType::Ring::getAttributes() const {
   return ITATTR(
       i.viewId = getRingViewId(lastingEffect);
-      i.shortName = string(LastingEffects::getName(lastingEffect));
+      i.shortName = LastingEffects::getName(lastingEffect);
       i.equipedEffect = lastingEffect;
       i.name = "ring of " + *i.shortName;
       i.plural = "rings of " + *i.shortName;
@@ -984,7 +984,7 @@ ItemAttributes ItemType::Ring::getAttributes() const {
 ItemAttributes ItemType::Amulet::getAttributes() const {
   return ITATTR(
       i.viewId = getAmuletViewId(lastingEffect);
-      i.shortName = string(LastingEffects::getName(lastingEffect));
+      i.shortName = LastingEffects::getName(lastingEffect);
       i.equipedEffect = lastingEffect;
       i.name = "amulet of " + *i.shortName;
       i.plural = "amulets of " + *i.shortName;

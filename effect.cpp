@@ -203,6 +203,7 @@ static TimeInterval getDuration(WConstCreature c, LastingEffect e) {
     case LastingEffect::HATE_HUMANS:
     case LastingEffect::HATE_GREENSKINS:
     case LastingEffect::HATE_ELVES:
+    default:
       return  1000_visible;
   }
 }
@@ -369,8 +370,7 @@ void Effect::Permanent::applyToCreature(WCreature c, WCreature attacker) const {
 }
 
 string Effect::Permanent::getName() const {
-  string desc = LastingEffects::getName(lastingEffect);
-  return "permanent " + desc;
+  return "permanent " + LastingEffects::getName(lastingEffect);
 }
 
 string Effect::Permanent::getDescription() const {
