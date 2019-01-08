@@ -58,7 +58,8 @@ class MainLoop {
 
   PGame prepareCampaign(RandomGen&);
   enum class ExitCondition;
-  ExitCondition playGame(PGame, bool withMusic, bool noAutoSave, function<optional<ExitCondition> (WGame)> = nullptr);
+  ExitCondition playGame(PGame, bool withMusic, bool noAutoSave, function<optional<ExitCondition> (WGame)> = nullptr,
+      milliseconds stepTimeMilli = milliseconds{3});
   void splashScreen();
   void showCredits(const FilePath& path, View*);
 

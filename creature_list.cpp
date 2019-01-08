@@ -54,6 +54,8 @@ CreatureList& CreatureList::increaseBaseLevel(EnumMap<ExperienceType, int> l) {
 
 CreatureList& CreatureList::addUnique(CreatureId id) {
   uniques.push_back(id);
+  if (count < uniques.size())
+    count = uniques.size();
   return *this;
 }
 

@@ -2712,10 +2712,9 @@ class BattleFromFile : public LevelMaker {
 
   virtual void make(LevelBuilder* builder, Rectangle area) override {
     CHECK(area == level.getBounds()) << "Bad size of battle level input.";
-    auto alliesList = allies.generate(builder->getRandom(), TribeId::getDarkKeeper(), MonsterAIFactory::guard());
+    auto alliesList = allies.generate(builder->getRandom(), TribeId::getDarkKeeper(), MonsterAIFactory::idle());
     int allyIndex = 0;
-    auto enemyList = enemies.generate(builder->getRandom(), TribeId::getHuman(),
-        MonsterAIFactory::singleTask(Task::attackCreatures(getWeakPointers(alliesList))));
+    auto enemyList = enemies.generate(builder->getRandom(), TribeId::getHuman(), MonsterAIFactory::monster());
     int enemyIndex = 0;
     for (Vec2 v : area) {
       builder->resetFurniture(v, FurnitureType::FLOOR);
@@ -2724,6 +2723,9 @@ class BattleFromFile : public LevelMaker {
           break;
         case '#':
           builder->putFurniture(v, FurnitureType::MOUNTAIN);
+          break;
+        case 'w':
+          builder->putFurniture(v, FurnitureType::WATER);
           break;
         case 'a':
           if (allyIndex < alliesList.size()) {

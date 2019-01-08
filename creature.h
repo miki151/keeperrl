@@ -54,6 +54,7 @@ class CreatureDebt;
 class Vision;
 struct AdjectiveInfo;
 struct MovementInfo;
+struct NavigationFlags;
 
 class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedObject<Creature> {
   public:
@@ -70,7 +71,10 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   WLevel getLevel() const;
   Game* getGame() const;
   vector<WCreature> getVisibleEnemies() const;
+  WCreature getClosestEnemy() const;
   vector<WCreature> getVisibleCreatures() const;
+  bool shouldAIAttack(WConstCreature enemy) const;
+  bool shouldAIChase(WConstCreature enemy) const;
   vector<Position> getVisibleTiles() const;
   void setGlobalTime(GlobalTime);
   void setPosition(Position);
@@ -193,21 +197,8 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   WItem getFirstWeapon() const;
   void dropWeapon();
   vector<vector<WItem>> stackItems(vector<WItem>) const;
-  struct NavigationFlags {
-    NavigationFlags() : stepOnTile(false), destroy(true) {}
-    NavigationFlags& requireStepOnTile() {
-      stepOnTile = true;
-      return *this;
-    }
-    // This makes the creature stop at the obstacle, and not navigate around it
-    NavigationFlags& noDestroying() {
-      destroy = false;
-      return *this;
-    }
-    bool stepOnTile;
-    bool destroy;
-  };
-  CreatureAction moveTowards(Position, NavigationFlags = {});
+  CreatureAction moveTowards(Position, NavigationFlags);
+  CreatureAction moveTowards(Position);
   CreatureAction moveAway(Position, bool pathfinding = true);
   CreatureAction continueMoving();
   CreatureAction stayIn(WLevel, Rectangle);

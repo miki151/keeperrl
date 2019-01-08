@@ -229,13 +229,12 @@ void MainLoop::bugReportSave(PGame& game, FilePath path) {
 }
 
 MainLoop::ExitCondition MainLoop::playGame(PGame game, bool withMusic, bool noAutoSave,
-    function<optional<ExitCondition>(WGame)> exitCondition) {
+    function<optional<ExitCondition>(WGame)> exitCondition, milliseconds stepTimeMilli) {
   view->reset();
   if (!noAutoSave)
     view->setBugReportSaveCallback([&] (FilePath path) { bugReportSave(game, path); });
   DestructorFunction removeCallback([&] { view->setBugReportSaveCallback(nullptr); });
   game->initialize(options, highscores, view, fileSharing, gameConfig);
-  const milliseconds stepTimeMilli {3};
   Intervalometer meter(stepTimeMilli);
   auto lastMusicUpdate = GlobalTime(-1000);
   auto lastAutoSave = game->getGlobalTime();
@@ -533,7 +532,7 @@ static CreatureList readAlly(ifstream& input) {
   string ally;
   input >> ally;
   auto id = EnumInfo<CreatureId>::fromString(ally);
-  CreatureList ret(1000, id);
+  CreatureList ret(100, id);
   string levelIncreaseText;
   input >> levelIncreaseText;
   EnumMap<ExperienceType, int> levelIncrease;
@@ -572,17 +571,20 @@ void MainLoop::battleTest(int numTries, const FilePath& levelPath, const FilePat
     RandomGen& random) {
   NameGenerator::init(dataFreePath.subdirectory("names"));
   ifstream input(battleInfoPath.getPath());
+  CreatureList enemies;
+  for (auto& elem : split(enemy, {','})) {
+    auto enemySplit = split(elem, {':'});
+    auto enemyId = EnumInfo<CreatureId>::fromString(enemySplit[0]);
+    int count = enemySplit.size() > 1 ? fromString<int>(enemySplit[1]) : 1;
+    for (int i : Range(count))
+      enemies.addUnique(enemyId);
+  }
   int cnt = 0;
-  auto enemySplit = split(enemy, {','});
-  auto enemyId = EnumInfo<CreatureId>::fromString(enemySplit[0]);
-  int maxEnemies = 100000;
-  if (enemySplit.size() > 1)
-    maxEnemies = fromString<int>(enemySplit[1]);
   input >> cnt;
   for (int i : Range(cnt)) {
-    auto creatureList = readAlly(input);
-    std::cout << creatureList.getSummary() << ": ";
-    battleTest(numTries, levelPath, creatureList, CreatureList(maxEnemies, enemyId), random);
+    auto allies = readAlly(input);
+    std::cout << allies.getSummary() << ": ";
+    battleTest(numTries, levelPath, allies, enemies, random);
   }
 }
 
@@ -619,8 +621,10 @@ int MainLoop::battleTest(int numTries, const FilePath& levelPath, CreatureList a
   auto allyTribe = TribeId::getDarkKeeper();
   std::cout.flush();
   for (int i : Range(numTries)) {
+    std::cout << "Creating level" << std::endl;
     auto game = Game::splashScreen(ModelBuilder(&meter, Random, options, sokobanInput, gameConfig)
         .battleModel(levelPath, ally, enemies), CampaignBuilder::getEmptyCampaign());
+    std::cout << "Done" << std::endl;
     auto exitCondition = [&](WGame game) -> optional<ExitCondition> {
       unordered_set<TribeId, CustomHash<TribeId>> tribes;
       for (auto& m : game->getAllModels())
@@ -639,7 +643,7 @@ int MainLoop::battleTest(int numTries, const FilePath& levelPath, CreatureList a
       else
         return none;
     };
-    auto result = playGame(std::move(game), false, true, exitCondition);
+    auto result = playGame(std::move(game), false, true, exitCondition, milliseconds{3});
     switch (result) {
       case ExitCondition::ALLIES_WON:
         ++numAllies;

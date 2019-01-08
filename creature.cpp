@@ -54,6 +54,7 @@
 #include "furniture_type.h"
 #include "furniture_usage.h"
 #include "fx_name.h"
+#include "navigation_flags.h"
 
 template <class Archive>
 void Creature::serialize(Archive& ar, const unsigned int version) {
@@ -1696,9 +1697,13 @@ CreatureAction Creature::moveTowards(Position pos, NavigationFlags flags) {
     if (stairs == position)
       return applySquare(position);
     else
-      return moveTowards(*stairs, false, flags.requireStepOnTile());
+      return moveTowards(*stairs, false, flags);
   } else
     return CreatureAction();
+}
+
+CreatureAction Creature::moveTowards(Position pos) {
+  return moveTowards(pos, NavigationFlags{});
 }
 
 bool Creature::canNavigateTo(Position pos) const {
@@ -1731,8 +1736,10 @@ CreatureAction Creature::moveTowards(Position pos, bool away, NavigationFlags fl
           if (f->getUsageType() == FurnitureUsageType::PORTAL)
             return applySquare(position);
       if (auto action = move(pos2, currentPath->getNextNextMove(position))) {
-        INFO << "Can move";
-        return action.append([path = *currentPath](WCreature c) { c->shortestPath = path; });
+        if (flags.swapPosition || !pos2.getCreature())
+          return action.append([path = *currentPath](WCreature c) { c->shortestPath = path; });
+        else
+          return CreatureAction();
       } else {
         INFO << "Trying to destroy";
         if (!pos2.canEnterEmpty(this) && flags.destroy) {
@@ -1821,6 +1828,26 @@ vector<WCreature> Creature::getVisibleCreatures() const {
       if (!c->isDead())
         ret.push_back(c);
   return ret;
+}
+
+bool Creature::shouldAIAttack(WConstCreature other) const {
+  if (isAffected(LastingEffect::PANIC) || getStatus().contains(CreatureStatus::CIVILIAN))
+    return false;
+  if (other->hasCondition(CreatureCondition::SLEEPING))
+    return true;
+  double myDamage = getDefaultWeaponDamage();
+  double powerRatio = myDamage / (other->getDefaultWeaponDamage() + 1);
+  double panicWeight = 0;
+  if (powerRatio < 0.6)
+    panicWeight += 2 - powerRatio * 2;
+  panicWeight -= getAttributes().getCourage();
+  panicWeight -= getMorale() * 0.3;
+  panicWeight = min(1.0, max(0.0, panicWeight));
+  return panicWeight <= 0.5;
+}
+
+bool Creature::shouldAIChase(WConstCreature enemy) const {
+  return getDefaultWeaponDamage() < 5 * enemy->getDefaultWeaponDamage();
 }
 
 vector<Position> Creature::getVisibleTiles() const {
@@ -1913,5 +1940,21 @@ optional<Creature::CombatIntentInfo> Creature::getLastCombatIntent() const {
     return lastCombatIntent;
   else
     return none;
+}
+
+WCreature Creature::getClosestEnemy() const {
+  PROFILE;
+  int dist = 1000000000;
+  WCreature result = nullptr;
+  for (WCreature other : getVisibleEnemies()) {
+    int curDist = other->getPosition().dist8(position);
+    if (curDist < dist &&
+        (!other->getAttributes().dontChase() || curDist == 1) &&
+        !other->isAffected(LastingEffect::STUNNED)) {
+      result = other;
+      dist = position.dist8(other->getPosition());
+    }
+  }
+  return result;
 }
 

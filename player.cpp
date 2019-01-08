@@ -58,6 +58,7 @@
 #include "time_queue.h"
 #include "unknown_locations.h"
 #include "furniture_click.h"
+#include "navigation_flags.h"
 
 template <class Archive>
 void Player::serialize(Archive& ar, const unsigned int) {
@@ -367,7 +368,7 @@ void Player::targetAction() {
     target = none;
     return;
   }
-  if (auto action = creature->moveTowards(*target, Creature::NavigationFlags().noDestroying()))
+  if (auto action = creature->moveTowards(*target, NavigationFlags().noDestroying()))
     action.perform(creature);
   else
     target = none;

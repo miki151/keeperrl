@@ -45,6 +45,7 @@
 #include "minion_equipment.h"
 #include "zones.h"
 #include "team_order.h"
+#include "navigation_flags.h"
 
 class Behaviour {
   public:
@@ -53,7 +54,6 @@ class Behaviour {
   virtual void onAttacked(WConstCreature attacker) {}
   virtual double itemValue(WConstItem) { return 0; }
   WItem getBestWeapon();
-  WCreature getClosestEnemy();
   WCreature getClosestCreature();
   MoveInfo tryEffect(Effect, TimeInterval maxTurns = 1_visible);
   MoveInfo tryEffect(DirEffectType, Vec2);
@@ -73,22 +73,6 @@ SERIALIZE_DEF(MonsterAI, behaviours, weights, creature, pickItems)
 SERIALIZATION_CONSTRUCTOR_IMPL(MonsterAI);
 
 Behaviour::Behaviour(WCreature c) : creature(c) {
-}
-
-WCreature Behaviour::getClosestEnemy() {
-  PROFILE;
-  int dist = 1000000000;
-  WCreature result = nullptr;
-  for (WCreature other : creature->getVisibleEnemies()) {
-    int curDist = other->getPosition().dist8(creature->getPosition());
-    if (curDist < dist &&
-        (!other->getAttributes().dontChase() || curDist == 1) &&
-        !other->isAffected(LastingEffect::STUNNED)) {
-      result = other;
-      dist = creature->getPosition().dist8(other->getPosition());
-    }
-  }
-  return result;
 }
 
 WCreature Behaviour::getClosestCreature() {
@@ -282,7 +266,7 @@ class StayOnFurniture : public Behaviour {
             break;
           }
       if (nextPigsty)
-        if (auto move = creature->moveTowards(*nextPigsty, Creature::NavigationFlags().requireStepOnTile()))
+        if (auto move = creature->moveTowards(*nextPigsty, NavigationFlags().requireStepOnTile()))
           return move;
     }
     if (Random.roll(10))
@@ -305,7 +289,7 @@ class BirdFlyAway : public Behaviour {
   BirdFlyAway(WCreature c, double _maxDist) : Behaviour(c), maxDist(_maxDist) {}
 
   virtual MoveInfo getMove() override {
-    WConstCreature enemy = getClosestEnemy();
+    WConstCreature enemy = creature->getClosestEnemy();
     if (Random.roll(15) || ( enemy && enemy->getPosition().dist8(creature->getPosition()) < maxDist))
       if (auto action = creature->flyAway())
         return {1.0, action};
@@ -356,43 +340,29 @@ class Wildlife : public Behaviour {
 
 class Fighter : public Behaviour {
   public:
-  Fighter(WCreature c, double powerR) : Behaviour(c), maxPowerRatio(powerR) {
-  }
+  using Behaviour::Behaviour;
 
   virtual MoveInfo getMove() override {
     return getMove(true);
   }
 
   MoveInfo getMove(bool chase) {
-    if (WCreature other = getClosestEnemy()) {
-      double myDamage = creature->getDefaultWeaponDamage();
-      double powerRatio = myDamage / (other->getDefaultWeaponDamage() + 1);
-      bool significantEnemy = myDamage < 5 * other->getDefaultWeaponDamage();
-      double panicWeight = 0;
-      if (powerRatio < maxPowerRatio)
-        panicWeight += 2 - powerRatio * 2;
-      panicWeight -= creature->getAttributes().getCourage();
-      panicWeight -= creature->getMorale() * 0.3;
-      panicWeight = min(1.0, max(0.0, panicWeight));
-      if (creature->isAffected(LastingEffect::PANIC) || creature->getStatus().contains(CreatureStatus::CIVILIAN))
-        panicWeight = 1;
-      if (other->hasCondition(CreatureCondition::SLEEPING))
-        panicWeight = 0;
-      INFO << creature->getName().bare() << " panic weight " << panicWeight;
-      if (panicWeight >= 0.5) {
+    if (WCreature other = creature->getClosestEnemy()) {
+      bool chaseThisEnemy = chase && creature->shouldAIChase(other);
+      if (!creature->shouldAIAttack(other)) {
         double dist = creature->getPosition().dist8(other->getPosition());
         if (dist < 7) {
           if (dist > 3)
             if (auto move = getFireMove(creature->getPosition().getDir(other->getPosition()), other))
               return move;
           if (chase)
-            if (MoveInfo move = getPanicMove(other, panicWeight))
+            if (MoveInfo move = getPanicMove(other))
               return move;
-          return getAttackMove(other, significantEnemy && chase);
+          return getAttackMove(other, chaseThisEnemy);
         }
         return NoMove;
       } else
-        return getAttackMove(other, significantEnemy && chase);
+        return getAttackMove(other, chaseThisEnemy);
     } else if (chase)
       return getLastSeenMove();
     else
@@ -405,11 +375,11 @@ class Fighter : public Behaviour {
     creature->addCombatIntent(attacked, immediateAttack);
   }
 
-  MoveInfo getPanicMove(WCreature other, double weight) {
+  MoveInfo getPanicMove(WCreature other) {
     if (auto teleMove = tryEffect(Effect::Teleport{}))
-      return teleMove.withValue(weight);
+      return teleMove;
     if (auto action = creature->moveAway(other->getPosition(), true))
-      return {weight, action.prepend([=](WCreature creature) {
+      return {1.0, action.prepend([=](WCreature creature) {
         lastSeen = LastSeen{creature->getPosition(), *creature->getGlobalTime(), LastSeen::PANIC, other->getUniqueId()};
       })};
     else
@@ -601,12 +571,25 @@ class Fighter : public Behaviour {
     return weapon.getOnlyElement()->getRangedWeapon()->getMaxDistance();
   }
 
+  bool isChokePoint1(Position pos) {
+    return (!pos.minus(Vec2(1, 0)).canEnterEmpty(creature) && !pos.minus(Vec2(1, 0)).canEnterEmpty(creature)) ||
+        (!pos.minus(Vec2(0, 1)).canEnterEmpty(creature) && !pos.minus(Vec2(0, 1)).canEnterEmpty(creature));
+  }
+
+  bool isChokePoint2(Position pos) {
+    for (auto v : pos.neighbors4())
+      if (isChokePoint1(v))
+        return true;
+    return false;
+  }
+
   MoveInfo getAttackMove(WCreature other, bool chase) {
     CHECK(other);
     if (other->getAttributes().isBoulder())
       return NoMove;
     INFO << creature->getName().bare() << " enemy " << other->getName().bare();
-    Vec2 enemyDir = creature->getPosition().getDir(other->getPosition());
+    auto myPosition = creature->getPosition();
+    Vec2 enemyDir = myPosition.getDir(other->getPosition());
     auto distance = enemyDir.length8();
     if (auto move = considerEquippingWeapon(other, distance))
       return move;
@@ -627,7 +610,18 @@ class Fighter : public Behaviour {
         lastSeen = none;
         if (auto action = creature->moveTowards(other->getPosition())) {
           // TODO: instead consider treating a 0-weighted move as NoMove.
-          if (distance < 20)
+          if (distance < 20) {
+            if (other->shouldAIAttack(creature) && !isChokePoint2(myPosition)) {
+              auto allies = creature->getVisibleCreatures();
+              for (auto ally : allies)
+                if (ally->isFriend(creature))
+                  if (auto allysEnemy = ally->getClosestEnemy())
+                    if (allysEnemy == other && ally->shouldAIAttack(allysEnemy)) {
+                      auto allyDist = ally->getPosition().dist8(allysEnemy->getPosition());
+                      if (allyDist >= distance + 2)
+                        return creature->wait();
+                    }
+            }
             return {max(0., 1.0 - double(distance) / 20), action.prepend([=](WCreature creature) {
               addCombatIntent(other, false);
               lastSeen = LastSeen{other->getPosition(), *creature->getGlobalTime(), LastSeen::ATTACK, other->getUniqueId()};
@@ -638,7 +632,7 @@ class Fighter : public Behaviour {
               if (!chaseInfo || time > chaseInfo->second)
                 chaseFreeze.set(other, make_pair(time + startChaseFreeze, time + endChaseFreeze));
             })};
-          else
+          } else
             return NoMove;
         }
       }
@@ -659,10 +653,9 @@ class Fighter : public Behaviour {
   }
 
   SERIALIZATION_CONSTRUCTOR(Fighter)
-  SERIALIZE_ALL(SUBCLASS(Behaviour), maxPowerRatio)
+  SERIALIZE_ALL(SUBCLASS(Behaviour))
 
   private:
-  double SERIAL(maxPowerRatio);
   struct LastSeen {
     Position SERIAL(pos);
     GlobalTime SERIAL(time);
@@ -687,7 +680,7 @@ class Fighter : public Behaviour {
 
 class FighterStandGround : public Behaviour {
   public:
-  FighterStandGround(WCreature c, double powerR) : Behaviour(c), fighter(unique<Fighter>(c, powerR)) {
+  FighterStandGround(WCreature c) : Behaviour(c), fighter(unique<Fighter>(c)) {
   }
 
   virtual MoveInfo getMove() override {
@@ -916,7 +909,7 @@ class ByCollective : public Behaviour {
         return creature->wait();
     }
     return NoMove;
-  };
+  }
 
   PTask getEquipmentTask() {
     if (!collective->usesEquipment(creature))
@@ -1403,7 +1396,7 @@ MonsterAIFactory MonsterAIFactory::guard() {
       vector<Behaviour*> actors {
           new AvoidFire(c),
           new Heal(c),
-          new FighterStandGround(c, 0.6),
+          new FighterStandGround(c),
           new Wait(c)
       };
       vector<int> weights { 10, 5, 4, 1 };
@@ -1420,7 +1413,7 @@ MonsterAIFactory MonsterAIFactory::collective(WCollective col) {
       return new MonsterAI(c, {
         new AvoidFire(c),
         new Heal(c),
-        new ByCollective(c, col, unique<Fighter>(c, 0.6)),
+        new ByCollective(c, col, unique<Fighter>(c)),
         new ChooseRandom(c, makeVec(PBehaviour(new Rest(c)), PBehaviour(new MoveRandomly(c))), {3, 1})},
         { 10, 6, 2, 1}, false);
       });
@@ -1432,7 +1425,7 @@ MonsterAIFactory MonsterAIFactory::stayInLocation(Rectangle rect, bool moveRando
           new AvoidFire(c),
           new Heal(c),
           new Thief(c),
-          new Fighter(c, 0.6),
+          new Fighter(c),
           new GoldLust(c),
           new GuardArea(c, rect)
       };
@@ -1457,7 +1450,7 @@ MonsterAIFactory MonsterAIFactory::singleTask(PTask&& t, bool chaseEnemies) {
       released = nullptr;
       return new MonsterAI(c, {
         new Heal(c),
-        chaseEnemies ? (Behaviour*)(new Fighter(c, 0.6)) : (Behaviour*)(new FighterStandGround(c, 0.6)),
+        chaseEnemies ? (Behaviour*)(new Fighter(c)) : (Behaviour*)(new FighterStandGround(c)),
         new SingleTask(c, std::move(task)),
         new ChooseRandom(c, makeVec(PBehaviour(new Rest(c)), PBehaviour(new MoveRandomly(c))), {3, 1})},
         { 6, 5, 2, 1}, true);
@@ -1468,7 +1461,7 @@ MonsterAIFactory MonsterAIFactory::wildlifeNonPredator() {
   return MonsterAIFactory([](WCreature c) {
       return new MonsterAI(c, {
           new Wildlife(c),
-          new FighterStandGround(c, 1.2),
+          new FighterStandGround(c),
           new MoveRandomly(c)},
           {6, 5, 1});
       });
@@ -1486,7 +1479,7 @@ MonsterAIFactory MonsterAIFactory::stayOnFurniture(FurnitureType type) {
   return MonsterAIFactory([type](WCreature c) {
       return new MonsterAI(c, {
           new AvoidFire(c),
-          new Fighter(c, 0.6),
+          new Fighter(c),
           new StayOnFurniture(c, type)},
           {5, 2, 1});
       });
@@ -1517,7 +1510,7 @@ MonsterAIFactory MonsterAIFactory::summoned(WCreature leader) {
           new Summoned(c, leader, 1, 3),
           new AvoidFire(c),
           new Heal(c),
-          new Fighter(c, 0.6),
+          new Fighter(c),
           new MoveRandomly(c),
           new GoldLust(c)},
           { 6, 5, 4, 3, 1, 1 });
@@ -1529,7 +1522,7 @@ MonsterAIFactory MonsterAIFactory::splashHeroes(bool leader) {
       return new MonsterAI(c, {
         leader ? (Behaviour*)new SplashHeroLeader(c) : (Behaviour*)new SplashHeroes(c),
         new Heal(c),
-        new Fighter(c, 0.6),
+        new Fighter(c),
         new ChooseRandom(c, makeVec(PBehaviour(new Rest(c)), PBehaviour(new MoveRandomly(c))), {3, 1})},
         { 6, 5, 2, 1}, false);
       });
@@ -1540,7 +1533,7 @@ MonsterAIFactory MonsterAIFactory::splashMonsters() {
       return new MonsterAI(c, {
         new SplashMonsters(c),
         new Heal(c),
-        new Fighter(c, 0.6),
+        new Fighter(c),
         new ChooseRandom(c, makeVec(PBehaviour(new Rest(c)), PBehaviour(new MoveRandomly(c))), {3, 1})},
         { 6, 5, 2, 1}, false);
       });
@@ -1551,7 +1544,7 @@ MonsterAIFactory MonsterAIFactory::splashImps(const FilePath& splashPath) {
       return new MonsterAI(c, {
         new SplashImps(c, splashPath),
         new Heal(c),
-        new Fighter(c, 0.6),
+        new Fighter(c),
         new ChooseRandom(c, makeVec(PBehaviour(new Rest(c)), PBehaviour(new MoveRandomly(c))), {3, 1})},
         { 6, 5, 2, 1}, false);
       });
