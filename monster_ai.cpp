@@ -46,6 +46,7 @@
 #include "zones.h"
 #include "team_order.h"
 #include "navigation_flags.h"
+#include "furniture_tick.h"
 
 class Behaviour {
   public:
@@ -1300,14 +1301,25 @@ class AvoidFire : public Behaviour {
   using Behaviour::Behaviour;
 
   virtual MoveInfo getMove() override {
-    if (creature->getPosition().isBurning() && !creature->isAffected(LastingEffect::FIRE_RESISTANT)) {
-      for (Position pos : creature->getPosition().neighbors8(Random))
+    auto myPosition = creature->getPosition();
+    if (myPosition.isBurning() && !creature->isAffected(LastingEffect::FIRE_RESISTANT)) {
+      for (Position pos : myPosition.neighbors8(Random))
         if (!pos.isBurning())
           if (auto action = creature->move(pos))
             return action;
-      for (Position pos : creature->getPosition().neighbors8(Random))
+      for (Position pos : myPosition.neighbors8(Random))
         if (auto action = creature->forceMove(pos))
           return action;
+    }
+    if (creature->isAffected(LastingEffect::ON_FIRE)) {
+      optional<Position> closestWater;
+      for (auto pos : myPosition.getRectangle(Rectangle::centered(7)))
+        if (auto f = pos.getFurniture(FurnitureLayer::GROUND))
+          if (f->getTickType() == FurnitureTickType::EXTINGUISH_FIRE &&
+              (!closestWater || closestWater->dist8(myPosition) > pos.dist8(myPosition)))
+            closestWater = pos;
+      if (closestWater)
+        return creature->moveTowards(*closestWater, NavigationFlags().requireStepOnTile());
     }
     return NoMove;
   }

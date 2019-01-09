@@ -141,5 +141,9 @@ void FurnitureTick::handle(FurnitureTickType type, Position pos, WFurniture furn
     case FurnitureTickType::PIT:
       pit(pos, furniture);
       break;
+    case FurnitureTickType::EXTINGUISH_FIRE:
+      if (auto c = pos.getCreature())
+        c->removeEffect(LastingEffect::ON_FIRE);
+      break;
   }
 }

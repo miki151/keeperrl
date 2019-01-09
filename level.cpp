@@ -162,7 +162,7 @@ void Level::updateCreatureLight(Vec2 pos, int diff) {
   if (WCreature c = square->getCreature()) {
     if (c->isAffected(LastingEffect::DARKNESS_SOURCE))
       addDarknessSource(pos, getCreatureLightRadius(), diff);
-    if (c->isAffected(LastingEffect::LIGHT_SOURCE))
+    if (c->isAffected(LastingEffect::LIGHT_SOURCE) || c->isAffected(LastingEffect::ON_FIRE))
       addLightSource(pos, getCreatureLightRadius(), diff);
   }
 }

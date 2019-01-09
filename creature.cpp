@@ -769,9 +769,11 @@ bool Creature::addEffect(LastingEffect effect, TimeInterval time, bool msg) {
   PROFILE;
   if (LastingEffects::affects(this, effect) && !getBody().isImmuneTo(effect)) {
     bool was = isAffected(effect);
-    attributes->addLastingEffect(effect, *getGlobalTime() + time);
+    if (!was || LastingEffects::canProlong(effect))
+      attributes->addLastingEffect(effect, *getGlobalTime() + time);
     if (!was && isAffected(effect)) {
       LastingEffects::onAffected(this, effect, msg);
+      updateViewObject();
       return true;
     }
   }
@@ -1202,10 +1204,10 @@ void Creature::affectByFire(double amount) {
   PROFILE;
   if (!isAffected(LastingEffect::FIRE_RESISTANT) &&
       getBody().affectByFire(this, amount)) {
-    thirdPerson(getName().the() + " burns to death");
-    secondPerson("You burn to death");
+    verb("burn", "burns", "to death");
     dieWithReason("burnt to death");
   }
+  addEffect(LastingEffect::ON_FIRE, 100_visible);
 }
 
 void Creature::affectBySilver() {

@@ -14,6 +14,8 @@ static optional<LastingEffect> getCancelledOneWay(LastingEffect effect) {
   switch (effect) {
     case LastingEffect::POISON_RESISTANT:
       return LastingEffect::POISON;
+    case LastingEffect::FIRE_RESISTANT:
+      return LastingEffect::ON_FIRE;
     case LastingEffect::SLEEP_RESISTANT:
       return LastingEffect::SLEEP;
     case LastingEffect::REGENERATION:
@@ -233,6 +235,10 @@ void LastingEffects::onAffected(WCreature c, LastingEffect effect, bool msg) {
       case LastingEffect::BAD_BREATH:
         c->you(MsgType::YOUR, "breath stinks!");
         break;
+      case LastingEffect::ON_FIRE:
+        c->you(MsgType::ARE, "on fire!");
+        c->getPosition().addCreatureLight(false);
+        break;
       case LastingEffect::AMBUSH_SKILL:
       case LastingEffect::STEALING_SKILL:
       case LastingEffect::SWIMMING_SKILL:
@@ -281,6 +287,10 @@ void LastingEffects::onRemoved(WCreature c, LastingEffect effect, bool msg) {
       break;
     case LastingEffect::STUNNED:
       c->you(MsgType::ARE, "no longer unconscious");
+      break;
+    case LastingEffect::ON_FIRE:
+      c->you(MsgType::YOUR, "flames are extinguished");
+      c->getPosition().removeCreatureLight(false);
       break;
     default:
       onTimedOut(c, effect, msg); break;
@@ -418,6 +428,11 @@ void LastingEffects::onTimedOut(WCreature c, LastingEffect effect, bool msg) {
         break;
       case LastingEffect::BAD_BREATH:
         c->you(MsgType::YOUR, "breath is back to normal");
+        break;
+      case LastingEffect::ON_FIRE:
+        c->getPosition().removeCreatureLight(false);
+        c->verb("burn", "burns", "to death");
+        c->dieNoReason(Creature::DropType::ONLY_INVENTORY);
         break;
       case LastingEffect::AMBUSH_SKILL:
       case LastingEffect::STEALING_SKILL:
@@ -575,6 +590,7 @@ static optional<Adjective> getAdjective(LastingEffect effect) {
     case LastingEffect::SLOW_CRAFTING: return "Slow craftsman"_bad;
     case LastingEffect::SLOW_TRAINING: return "Slow trainee"_bad;
     case LastingEffect::BAD_BREATH: return "Smelly breath"_bad;
+    case LastingEffect::ON_FIRE: return "On fire"_bad;
   }
 }
 
@@ -655,6 +671,9 @@ bool LastingEffects::tick(WCreature c, LastingEffect effect) {
       break;
     case LastingEffect::REGENERATION:
       c->getBody().heal(c, 0.03);
+      break;
+    case LastingEffect::ON_FIRE:
+      c->getPosition().fireDamage(0.1);
       break;
     case LastingEffect::POISON:
       c->getBody().bleed(c, 0.03);
@@ -811,6 +830,7 @@ string LastingEffects::getName(LastingEffect type) {
     case LastingEffect::EXPLORE_NOCTURNAL_SKILL: return "exploring at night";
     case LastingEffect::BRIDGE_BUILDING_SKILL: return "bridge building";
     case LastingEffect::NAVIGATION_DIGGING_SKILL: return "digging";
+    case LastingEffect::ON_FIRE: return "combustion";
   }
 }
 
@@ -881,6 +901,7 @@ string LastingEffects::getDescription(LastingEffect type) {
     case LastingEffect::EXPLORE_NOCTURNAL_SKILL: return "Can explore surroundings at night";
     case LastingEffect::BRIDGE_BUILDING_SKILL: return "Creature will try to build bridges when travelling somewhere";
     case LastingEffect::NAVIGATION_DIGGING_SKILL: return "Creature will try to dig when travelling somewhere";
+    case LastingEffect::ON_FIRE: return "The creature is burning alive";
   }
 }
 
@@ -1012,6 +1033,7 @@ bool LastingEffects::canConsume(LastingEffect effect) {
     case LastingEffect::CONSUMPTION_SKILL:
     case LastingEffect::COPULATION_SKILL:
     case LastingEffect::CROPS_SKILL:
+    case LastingEffect::ON_FIRE:
       return false;
     default:
       return true;
@@ -1070,6 +1092,8 @@ optional<FXVariantName> LastingEffects::getFX(LastingEffect effect) {
     case LastingEffect::TIED_UP:
     case LastingEffect::ENTANGLED:
       return FXVariantName::DEBUFF_GREEN1;
+    case LastingEffect::ON_FIRE:
+      return FXVariantName::FIRE;
     default:
       return none;
   }
@@ -1100,5 +1124,14 @@ optional<FXInfo> LastingEffects::getApplicationFX(LastingEffect effect) {
       return FXInfo(FXName::CIRCULAR_SPELL, Color::RED);
     default:
       return none;
+  }
+}
+
+bool LastingEffects::canProlong(LastingEffect effect) {
+  switch (effect) {
+    case LastingEffect::ON_FIRE:
+      return false;
+    default:
+      return true;
   }
 }

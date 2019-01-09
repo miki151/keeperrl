@@ -279,6 +279,10 @@ optional<FurnitureClickType> Furniture::getClickType() const {
   return clickType;
 }
 
+optional<FurnitureTickType> Furniture::getTickType() const {
+  return tickType;
+}
+
 bool Furniture::isTicking() const {
   return !!tickType;
 }

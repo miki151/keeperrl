@@ -57,6 +57,7 @@ class Furniture : public OwnedObject<Furniture> {
   optional<FurnitureUsageType> getUsageType() const;
   TimeInterval getUsageTime() const;
   optional<FurnitureClickType> getClickType() const;
+  optional<FurnitureTickType> getTickType() const;
   bool isTicking() const;
   bool isWall() const;
   bool isBuildingSupport() const;

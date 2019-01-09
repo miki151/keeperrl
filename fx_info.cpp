@@ -19,6 +19,8 @@ FXInfo getFXInfo(FXVariantName var) {
       return {FXName::FLYING};
     case Name::FIRE_SPHERE:
       return {FXName::FIRE_SPHERE};
+    case Name::FIRE:
+      return {FXName::FIRE};
     case Name::SPIRAL_BLUE:
       return {FXName::SPIRAL, Color::BLUE};
     case Name::SPIRAL_GREEN:

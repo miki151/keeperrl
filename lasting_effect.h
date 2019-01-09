@@ -54,6 +54,7 @@ RICH_ENUM(LastingEffect,
     SLOW_TRAINING,
     ENTERTAINER,
     BAD_BREATH,
+    ON_FIRE,
     AMBUSH_SKILL,
     STEALING_SKILL,
     SWIMMING_SKILL,
@@ -99,4 +100,5 @@ class LastingEffects {
   static bool canConsume(LastingEffect);
   static optional<FXVariantName> getFX(LastingEffect);
   static optional<FXInfo> getApplicationFX(LastingEffect);
+  static bool canProlong(LastingEffect);
 };

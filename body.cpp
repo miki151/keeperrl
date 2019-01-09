@@ -773,6 +773,8 @@ bool Body::isImmuneTo(LastingEffect effect) const {
   switch (effect) {
     case LastingEffect::BLEEDING:
       return material != Material::FLESH;
+    case LastingEffect::ON_FIRE:
+      return material != Material::WOOD;
     case LastingEffect::TIED_UP:
     case LastingEffect::ENTANGLED:
       switch (material) {

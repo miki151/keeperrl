@@ -605,6 +605,7 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setEntryType(FurnitureEntry::Water{})
           .setDroppedItems(FurnitureDroppedItems::Water{"sinks", "sink", "You hear a splash."_s})
           .setCanBuildBridgeOver()
+          .setTickType(FurnitureTickType::EXTINGUISH_FIRE)
           .setSummonedElement(CreatureId::WATER_ELEMENTAL);
       ret.modMovementSet()
           .clearTraits()
@@ -619,6 +620,7 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setLayer(FurnitureLayer::GROUND)
           .setEntryType(FurnitureEntry::Water{})
           .setCanBuildBridgeOver()
+          .setTickType(FurnitureTickType::EXTINGUISH_FIRE)
           .setSummonedElement(CreatureId::WATER_ELEMENTAL);
       ret.modMovementSet()
           .clearTraits()
@@ -634,6 +636,7 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setLayer(FurnitureLayer::GROUND)
           .setEntryType(FurnitureEntry::Water{})
           .setCanBuildBridgeOver()
+          .setTickType(FurnitureTickType::EXTINGUISH_FIRE)
           .setSummonedElement(CreatureId::WATER_ELEMENTAL);
       ret.modMovementSet()
           .clearTraits()
