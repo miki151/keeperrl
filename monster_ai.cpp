@@ -573,8 +573,8 @@ class Fighter : public Behaviour {
   }
 
   bool isChokePoint1(Position pos) {
-    return (!pos.minus(Vec2(1, 0)).canEnterEmpty(creature) && !pos.minus(Vec2(1, 0)).canEnterEmpty(creature)) ||
-        (!pos.minus(Vec2(0, 1)).canEnterEmpty(creature) && !pos.minus(Vec2(0, 1)).canEnterEmpty(creature));
+    return (!pos.minus(Vec2(1, 0)).canEnterEmpty(creature) && !pos.plus(Vec2(1, 0)).canEnterEmpty(creature)) ||
+        (!pos.minus(Vec2(0, 1)).canEnterEmpty(creature) && !pos.plus(Vec2(0, 1)).canEnterEmpty(creature));
   }
 
   bool isChokePoint2(Position pos) {
@@ -637,14 +637,20 @@ class Fighter : public Behaviour {
       return NoMove;
     if (other->shouldAIAttack(creature) && !isChokePoint2(myPosition)) {
       auto allies = creature->getVisibleCreatures();
+      bool allyBehind = false;
+      bool allyInFront = false;
       for (auto ally : allies)
         if (ally->isFriend(creature))
           if (auto allysEnemy = ally->getClosestEnemy())
             if (/*allysEnemy == other && */ally->shouldAIAttack(allysEnemy)) {
               auto allyDist = ally->getPosition().dist8(allysEnemy->getPosition());
-              if (allyDist >= distance + 2)
-                return creature->wait();
+              if (allyDist >= distance + 1)
+                allyBehind = true;
+              if (allyDist < distance)
+                allyInFront = true;
             }
+      if (allyBehind && !allyInFront)
+        return creature->wait();
     }
     return NoMove;
   }
