@@ -1757,6 +1757,7 @@ CreatureAction Creature::moveTowards(Position pos, bool away, NavigationFlags fl
     } else
       INFO << "Position unreachable";
     shortestPath = none;
+    currentPath = none;
     if (wasNew)
       break;
     else
