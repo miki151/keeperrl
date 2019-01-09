@@ -584,8 +584,89 @@ class Fighter : public Behaviour {
     return false;
   }
 
+  enum class FighterPosition {
+    MELEE,
+    HEALER,
+    RANGED
+  };
+
+  optional<Position> getHealingPosition(Position target) {
+    auto isSafe = [this](Position pos) {
+      for (auto v : pos.neighbors8())
+        if (auto c = v.getCreature())
+          if (c->isEnemy(creature))
+            return false;
+      return true;
+    };
+    for (auto pos : target.neighbors8(Random))
+      if (isSafe(pos))
+        return pos;
+    return none;
+  }
+
+  MoveInfo getHealerFormationMove() {
+    MoveInfo unsafeMove = NoMove;
+    for (auto ally : creature->getVisibleCreatures())
+      if (ally->isFriend(creature) && ally->getBody().getHealth() < 0.7) {
+        auto allyPos = ally->getPosition();
+        if (allyPos.dist8(creature->getPosition()) == 1)
+          return creature->castSpell(Spell::get(SpellId::HEAL_OTHER), creature->getPosition().getDir(allyPos));
+        else if (auto healingPos = getHealingPosition(allyPos))
+          return creature->moveTowards(*healingPos);
+        else
+          unsafeMove = creature->moveTowards(ally->getPosition());
+      }
+    return unsafeMove;
+  }
+
+  MoveInfo considerFormationMove(WCreature other, FighterPosition position) {
+    auto myPosition = creature->getPosition();
+    auto otherPosition = other->getPosition();
+    Vec2 enemyDir = myPosition.getDir(otherPosition);
+    auto distance = enemyDir.length8();
+    if (position == FighterPosition::HEALER)
+      if (auto move = getHealerFormationMove())
+        return move;
+    if (position != FighterPosition::MELEE) {
+      if (distance == 1)
+        return creature->moveAway(otherPosition);
+      if (distance == 2)
+        return creature->wait();
+    }
+    if (distance < 2)
+      return NoMove;
+    if (other->shouldAIAttack(creature) && !isChokePoint2(myPosition)) {
+      auto allies = creature->getVisibleCreatures();
+      for (auto ally : allies)
+        if (ally->isFriend(creature))
+          if (auto allysEnemy = ally->getClosestEnemy())
+            if (/*allysEnemy == other && */ally->shouldAIAttack(allysEnemy)) {
+              auto allyDist = ally->getPosition().dist8(allysEnemy->getPosition());
+              if (allyDist >= distance + 2)
+                return creature->wait();
+            }
+    }
+    return NoMove;
+  }
+
+  FighterPosition getFighterPosition() {
+    auto ret = FighterPosition::MELEE;
+    if (creature->getAttributes().getSpellMap().contains(SpellId::HEAL_OTHER))
+      ret = FighterPosition::HEALER;
+    else if (!creature->getEquipment().getSlotItems(EquipmentSlot::RANGED_WEAPON).empty()
+        && creature->getAttr(AttrType::RANGED_DAMAGE) >= creature->getAttr(AttrType::DAMAGE))
+      ret = FighterPosition::RANGED;
+    if (ret != FighterPosition::MELEE)
+      for (auto ally : creature->getVisibleCreatures())
+        if (ally->isFriend(creature) && ally->getAttr(AttrType::DAMAGE) > creature->getAttr(AttrType::DAMAGE))
+          return ret;
+    return FighterPosition::MELEE;
+  }
+
   MoveInfo getAttackMove(WCreature other, bool chase) {
     CHECK(other);
+    if (auto move = considerFormationMove(other, getFighterPosition()))
+      return move;
     if (other->getAttributes().isBoulder())
       return NoMove;
     INFO << creature->getName().bare() << " enemy " << other->getName().bare();
@@ -612,17 +693,6 @@ class Fighter : public Behaviour {
         if (auto action = creature->moveTowards(other->getPosition())) {
           // TODO: instead consider treating a 0-weighted move as NoMove.
           if (distance < 20) {
-            if (other->shouldAIAttack(creature) && !isChokePoint2(myPosition)) {
-              auto allies = creature->getVisibleCreatures();
-              for (auto ally : allies)
-                if (ally->isFriend(creature))
-                  if (auto allysEnemy = ally->getClosestEnemy())
-                    if (allysEnemy == other && ally->shouldAIAttack(allysEnemy)) {
-                      auto allyDist = ally->getPosition().dist8(allysEnemy->getPosition());
-                      if (allyDist >= distance + 2)
-                        return creature->wait();
-                    }
-            }
             return {max(0., 1.0 - double(distance) / 20), action.prepend([=](WCreature creature) {
               addCombatIntent(other, false);
               lastSeen = LastSeen{other->getPosition(), *creature->getGlobalTime(), LastSeen::ATTACK, other->getUniqueId()};

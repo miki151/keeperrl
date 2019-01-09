@@ -2712,7 +2712,7 @@ class BattleFromFile : public LevelMaker {
 
   virtual void make(LevelBuilder* builder, Rectangle area) override {
     CHECK(area == level.getBounds()) << "Bad size of battle level input.";
-    auto alliesList = allies.generate(builder->getRandom(), TribeId::getDarkKeeper(), MonsterAIFactory::idle());
+    auto alliesList = allies.generate(builder->getRandom(), TribeId::getDarkKeeper(), MonsterAIFactory::guard());
     int allyIndex = 0;
     auto enemyList = enemies.generate(builder->getRandom(), TribeId::getHuman(), MonsterAIFactory::monster());
     int enemyIndex = 0;
