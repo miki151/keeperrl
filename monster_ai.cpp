@@ -47,6 +47,7 @@
 #include "team_order.h"
 #include "navigation_flags.h"
 #include "furniture_tick.h"
+#include "time_queue.h"
 
 class Behaviour {
   public:
@@ -644,10 +645,12 @@ class Fighter : public Behaviour {
           if (auto allysEnemy = ally->getClosestEnemy())
             if (/*allysEnemy == other && */ally->shouldAIAttack(allysEnemy)) {
               auto allyDist = ally->getPosition().dist8(allysEnemy->getPosition());
-              if (allyDist >= distance + 1)
-                allyBehind = true;
               if (allyDist < distance)
                 allyInFront = true;
+              if (!ally->getPosition().getModel()->getTimeQueue().willMoveThisTurn(ally))
+                ++allyDist;
+              if (allyDist >= distance + 1)
+                allyBehind = true;
             }
       if (allyBehind && !allyInFront)
         return creature->wait();
