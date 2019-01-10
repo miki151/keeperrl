@@ -190,4 +190,4 @@ class DirEffectType : public EnumVariant<DirEffectId, TYPES(Effect),
 };
 
 extern string getDescription(const DirEffectType&);
-extern void applyDirected(WCreature, Vec2 direction, const DirEffectType&, bool withProjectileFX = true);
+extern void applyDirected(WCreature, Position target, const DirEffectType&, bool withProjectileFX = true);

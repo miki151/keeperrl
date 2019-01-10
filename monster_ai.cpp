@@ -48,6 +48,7 @@
 #include "navigation_flags.h"
 #include "furniture_tick.h"
 #include "time_queue.h"
+#include "draw_line.h"
 
 class Behaviour {
   public:
@@ -58,7 +59,7 @@ class Behaviour {
   WItem getBestWeapon();
   WCreature getClosestCreature();
   MoveInfo tryEffect(Effect, TimeInterval maxTurns = 1_visible);
-  MoveInfo tryEffect(DirEffectType, Vec2);
+  MoveInfo tryEffect(DirEffectType, Position target);
 
   virtual ~Behaviour() {}
 
@@ -116,10 +117,10 @@ MoveInfo Behaviour::tryEffect(Effect type, TimeInterval maxTurns) {
   return NoMove;
 }
 
-MoveInfo Behaviour::tryEffect(DirEffectType type, Vec2 dir) {
+MoveInfo Behaviour::tryEffect(DirEffectType type, Position target) {
   for (Spell* spell : creature->getAttributes().getSpellMap().getAll()) {
     if (spell->hasEffect(type))
-      if (auto action = creature->castSpell(spell, dir))
+      if (auto action = creature->castSpell(spell, target))
         return { 1, action };
   }
   return NoMove;
@@ -142,7 +143,7 @@ class Heal : public Behaviour {
       for (Vec2 v : Vec2::directions8(Random))
         if (WConstCreature other = creature->getPosition().plus(v).getCreature())
           if (creature->isFriend(other) && other->getBody().canHeal())
-            if (auto action = creature->castSpell(Spell::get(SpellId::HEAL_OTHER), v)) {
+            if (auto action = creature->castSpell(Spell::get(SpellId::HEAL_OTHER), other->getPosition())) {
               healAction = MoveInfo(0.5, action);
               // Prioritize the action if there is an enemy next to the healed creature.
               for (auto pos : other->getPosition().neighbors8())
@@ -355,7 +356,7 @@ class Fighter : public Behaviour {
         double dist = creature->getPosition().dist8(other->getPosition());
         if (dist < 7) {
           if (dist > 3)
-            if (auto move = getFireMove(creature->getPosition().getDir(other->getPosition()), other))
+            if (auto move = getFireMove(other))
               return move;
           if (chase)
             if (MoveInfo move = getPanicMove(other))
@@ -410,11 +411,10 @@ class Fighter : public Behaviour {
     return (double)damage / 50;
   }
 
-  bool checkFriendlyFire(Vec2 enemyDir) {
-    Vec2 dir = enemyDir.shorten();
-    for (Vec2 v = dir; v != enemyDir; v += dir) {
-      WConstCreature c = creature->getPosition().plus(v).getCreature();
-      if (c && !creature->isEnemy(c))
+  bool checkFriendlyFire(const vector<Position>& trajectory) {
+    for (auto& pos : trajectory) {
+      WConstCreature c = pos.getCreature();
+      if (c && c != creature && !creature->isEnemy(c))
         return true;
     }
     return false;
@@ -432,22 +432,22 @@ class Fighter : public Behaviour {
     return 0;
   }
 
-  MoveInfo getThrowMove(Vec2 enemyDir, WCreature other) {
-    if (enemyDir.x != 0 && enemyDir.y != 0 && abs(enemyDir.x) != abs(enemyDir.y))
-      return NoMove;
-    if (checkFriendlyFire(enemyDir))
+  MoveInfo getThrowMove(Position target) {
+    auto trajectory = drawLine(creature->getPosition().getCoord(), target.getCoord())
+        .transform([&](Vec2 v) { return Position(v, target.getLevel()); });
+    if (checkFriendlyFire(trajectory))
       return NoMove;
     WItem best = nullptr;
     int damage = 0;
     for (WItem item : creature->getEquipment().getItems())
       if (!creature->getEquipment().isEquipped(item) && getThrowValue(item) > damage &&
-          creature->getThrowDistance(item) >= enemyDir.length8()) {
+          creature->getThrowDistance(item) >= trajectory.back().dist8(creature->getPosition())) {
         damage = getThrowValue(item);
         best = item;
       }
     if (best)
-      if (auto action = creature->throwItem(best, enemyDir.shorten()))
-        return action.append([=](WCreature) { addCombatIntent(other, true); });
+      if (auto action = creature->throwItem(best, target))
+        return action.append([=](WCreature) { addCombatIntent(target.getCreature(), true); });
     return NoMove;
   }
 
@@ -461,19 +461,21 @@ class Fighter : public Behaviour {
     return effects;
   }
 
-  MoveInfo getFireMove(Vec2 dir, WCreature other) {
-    if (dir.x != 0 && dir.y != 0 && abs(dir.x) != abs(dir.y))
+  MoveInfo getFireMove(WCreature enemy) {
+    auto target = enemy->getPosition();
+    auto trajectory = drawLine(creature->getPosition().getCoord(), target.getCoord())
+        .transform([&](Vec2 v) { return Position(v, target.getLevel()); });
+    if (checkFriendlyFire(trajectory))
       return NoMove;
-    if (checkFriendlyFire(dir))
-      return NoMove;
+    int dist = trajectory.back().dist8(creature->getPosition());
     for (auto effect : getOffensiveEffects())
-      if (effect.getRange() >= dir.length8())
-        if (auto action = tryEffect(effect, dir.shorten()))
+      if (effect.getRange() >= dist)
+        if (auto action = tryEffect(effect, target))
           return action;
-    if (dir.length8() <= getFiringRange(creature))
-      if (auto action = creature->fire(dir.shorten()))
+    if (dist <= getFiringRange(creature))
+      if (auto action = creature->fire(target))
         return {1.0, action.append([=](WCreature) {
-            addCombatIntent(other, true);
+            addCombatIntent(enemy, true);
         })};
     return NoMove;
   }
@@ -611,7 +613,7 @@ class Fighter : public Behaviour {
       if (ally->isFriend(creature) && ally->getBody().getHealth() < 0.7) {
         auto allyPos = ally->getPosition();
         if (allyPos.dist8(creature->getPosition()) == 1)
-          return creature->castSpell(Spell::get(SpellId::HEAL_OTHER), creature->getPosition().getDir(allyPos));
+          return creature->castSpell(Spell::get(SpellId::HEAL_OTHER), allyPos);
         else if (auto healingPos = getHealingPosition(allyPos))
           return creature->moveTowards(*healingPos);
         else
@@ -691,9 +693,9 @@ class Fighter : public Behaviour {
       if (auto move = considerBuffs())
         return move;
     if (distance > 1) {
-      if (MoveInfo move = getFireMove(enemyDir, other))
+      if (MoveInfo move = getFireMove(other))
         return move;
-      if (MoveInfo move = getThrowMove(enemyDir, other))
+      if (MoveInfo move = getThrowMove(other->getPosition()))
         return move;
     }
     if (distance > 1) {

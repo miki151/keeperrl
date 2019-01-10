@@ -104,6 +104,7 @@ enum class StorageId;
 enum class TribeAlignment;
 enum class TutorialState;
 enum class AvatarMenuOption;
+enum class PassableInfo;
 
 struct FXInfo;
 struct FXSpawnInfo;

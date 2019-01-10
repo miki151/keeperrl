@@ -485,7 +485,7 @@ class ArcheryRange : public Task {
         if (other->isFriend(c))
           return c->wait();
     }
-    if (auto move = c->fire(shootInfo->dir))
+    if (auto move = c->fire(shootInfo->target))
       return move.append(
           [this, target = shootInfo->target](WCreature c) {
             callback->onAppliedSquare(c, target);

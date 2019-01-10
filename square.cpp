@@ -103,8 +103,7 @@ bool Square::itemLands(vector<WItem> item, const Attack& attack) const {
   return false;
 }
 
-void Square::onItemLands(Position pos, vector<PItem> item, const Attack& attack, int remainingDist, Vec2 dir,
-    VisionId vision) {
+void Square::onItemLands(Position pos, vector<PItem> item, const Attack& attack) {
   setDirty(pos);
   if (creature) {
     item[0]->onHitCreature(creature, attack, item.size());

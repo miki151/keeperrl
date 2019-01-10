@@ -24,6 +24,7 @@
 #include "portals.h"
 #include "fx_name.h"
 #include "roof_support.h"
+#include "draw_line.h"
 
 template <class Archive>
 void Position::serialize(Archive& ar, const unsigned int) {
@@ -219,6 +220,11 @@ double Position::getLightingEfficiency() const {
   const double lightBase = 0.5;
   const double flattenVal = 0.9;
   return min(1.0, (lightBase + getLight() * (1 - lightBase)) / flattenVal);
+}
+
+bool Position::isDirEffectBlocked() const {
+  return !canEnterEmpty(
+      MovementType({MovementTrait::FLY, MovementTrait::WALK}).setFireResistant());
 }
 
 WCreature Position::getCreature() const {
@@ -752,16 +758,40 @@ double Position::getLightEmission() const {
   return ret;
 }
 
-void Position::throwItem(PItem item, const Attack& attack, int maxDist, Vec2 direction, VisionId vision) {
+void Position::throwItem(vector<PItem> item, const Attack& attack, int maxDist, Position target, VisionId vision) {
   PROFILE;
-  if (isValid())
-    level->throwItem(std::move(item), attack, maxDist, coord, direction, vision);
-}
-
-void Position::throwItem(vector<PItem> item, const Attack& attack, int maxDist, Vec2 direction, VisionId vision) {
-  PROFILE;
-  if (isValid())
-    level->throwItem(std::move(item), attack, maxDist, coord, direction, vision);
+  if (isValid()) {
+    CHECK(!item.empty());
+    CHECK(isSameLevel(target));
+    if (target == *this) {
+      modSquare()->onItemLands(*this, std::move(item), attack);
+      return;
+    }
+    int cnt = 1;
+    vector<Position> trajectory;
+    for (auto v : drawLine(coord, target.coord))
+      if (v != coord)
+        trajectory.push_back(Position(v, level));
+    Position prev = *this;
+    for (auto& pos : trajectory) {
+      if (pos.stopsProjectiles(vision)) {
+        item[0]->onHitSquareMessage(pos, item.size());
+        trajectory.pop_back();
+        getGame()->addEvent(
+            EventInfo::Projectile{none, item[0]->getViewObject().id(), *this, prev});
+        if (!item[0]->isDiscarded())
+          prev.dropItems(std::move(item));
+        return;
+      }
+      if (++cnt > maxDist || pos.getCreature() || pos == trajectory.back()) {
+        getGame()->addEvent(
+            EventInfo::Projectile{none, item[0]->getViewObject().id(), *this, pos});
+        pos.modSquare()->onItemLands(pos, std::move(item), attack);
+        return;
+      }
+      prev = pos;
+    }
+  }
 }
 
 void Position::updateConnectivity() const {

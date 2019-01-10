@@ -90,10 +90,10 @@ static void meteorShower(Position position, WFurniture furniture) {
       if (!targetPoint.plus(direction * i).canEnter(MovementType({MovementTrait::WALK, MovementTrait::FLY})))
         continue;
     targetPoint.plus(direction * range).throwItem(
-        ItemType(ItemType::Rock{}).get(),
+        makeVec(ItemType(ItemType::Rock{}).get()),
         Attack(furniture->getCreator(), AttackLevel::MIDDLE, AttackType::HIT, 25, AttrType::DAMAGE),
         10,
-        -direction,
+        position.minus(direction),
         VisionId::NORMAL);
     break;
   }

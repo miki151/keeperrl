@@ -94,7 +94,6 @@ enum class UserInputId {
 // turn-based actions
     MOVE,
     TRAVEL,
-    FIRE,
     PICK_UP_ITEM,
     PICK_UP_ITEM_MULTI,
     PLAYER_COMMAND,
@@ -243,7 +242,6 @@ class UserInput : public EnumVariant<UserInputId, TYPES(BuildingInfo, int, Uniqu
             UserInputId::CREATURE_MAP_CLICK_EXTENDED,
             UserInputId::MOVE,
             UserInputId::TRAVEL, 
-            UserInputId::FIRE,
             UserInputId::RECT_DESELECTION),
         ASSIGN(TeamCreatureInfo,
             UserInputId::ADD_TO_TEAM,

@@ -22,7 +22,7 @@ class RangedWeapon {
   public:
   RangedWeapon(AttrType damageAttr, const string& projectileName, ViewId projectileViewId, int maxDistance);
 
-  void fire(WCreature c, Vec2 dir) const;
+  void fire(WCreature c, Position target) const;
   AttrType getDamageAttr() const;
   int getMaxDistance() const;
 

@@ -155,18 +155,19 @@ CreatureAction Creature::castSpell(Spell* spell) const {
   });
 }
 
-CreatureAction Creature::castSpell(Spell* spell, Vec2 dir) const {
+CreatureAction Creature::castSpell(Spell* spell, Position target) const {
   CHECK(attributes->getSpellMap().contains(spell));
   CHECK(spell->isDirected());
-  CHECK(dir.length8() == 1);
   if (!isReady(spell))
     return CreatureAction("You can't cast this spell yet.");
+  if (target == position)
+    return CreatureAction();
   return CreatureAction(this, [=] (WCreature c) {
     c->addSound(spell->getSound());
     auto dirEffectType = spell->getDirEffectType();
     thirdPerson(getName().the() + " casts a spell");
     secondPerson("You cast " + spell->getName());
-    applyDirected(c, dir, dirEffectType);
+    applyDirected(c, target, dirEffectType);
     getGame()->getStatistics().add(StatId::SPELL_CAST);
     c->attributes->getSpellMap().setReadyTime(spell, *getGlobalTime() + TimeInterval(
         int(spell->getDifficulty() * getSpellTimeoutMult((int) attributes->getExpLevel(ExperienceType::SPELL)))));
@@ -1386,8 +1387,9 @@ CreatureAction Creature::payFor(const vector<WItem>& items) const {
       .append([=](WCreature) { for (auto it : items) it->setShopkeeper(nullptr); });
 }
 
-CreatureAction Creature::fire(Vec2 direction) const {
-  CHECK(direction.length8() == 1);
+CreatureAction Creature::fire(Position target) const {
+  if (target == position)
+    return CreatureAction();
   if (getEquipment().getItems(ItemIndex::RANGED_WEAPON).empty())
     return CreatureAction("You need a ranged weapon.");
   if (getEquipment().getSlotItems(EquipmentSlot::RANGED_WEAPON).empty())
@@ -1397,7 +1399,7 @@ CreatureAction Creature::fire(Vec2 direction) const {
   return CreatureAction(this, [=](WCreature self) {
     auto& weapon = *self->getEquipment().getSlotItems(EquipmentSlot::RANGED_WEAPON).getOnlyElement()
         ->getRangedWeapon();
-    weapon.fire(self, direction);
+    weapon.fire(self, target);
     self->spendTime();
   });
 }
@@ -1583,7 +1585,9 @@ optional<int> Creature::getThrowDistance(WConstItem item) const {
     return none;
 }
 
-CreatureAction Creature::throwItem(WItem item, Vec2 direction) const {
+CreatureAction Creature::throwItem(WItem item, Position target) const {
+  if (target == position)
+    return CreatureAction();
   if (!getBody().numGood(BodyPart::ARM) || !getBody().isHumanoid())
     return CreatureAction("You can't throw anything!");
   auto dist = getThrowDistance(item);
@@ -1594,7 +1598,7 @@ CreatureAction Creature::throwItem(WItem item, Vec2 direction) const {
     Attack attack(self, Random.choose(getBody().getAttackLevels()), item->getWeaponInfo().attackType, damage, AttrType::DAMAGE);
     secondPerson("You throw " + item->getAName(false, this));
     thirdPerson(getName().the() + " throws " + item->getAName());
-    self->getPosition().throwItem(self->equipment->removeItem(item, self), attack, *dist, direction, getVision().getId());
+    self->getPosition().throwItem(makeVec(self->equipment->removeItem(item, self)), attack, *dist, target, getVision().getId());
     self->spendTime();
   });
 }

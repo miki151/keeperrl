@@ -160,7 +160,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   CreatureAction unequip(WItem item) const;
   bool canEquipIfEmptySlot(WConstItem item, string* reason = nullptr) const;
   bool canEquip(WConstItem item) const;
-  CreatureAction throwItem(WItem, Vec2 direction) const;
+  CreatureAction throwItem(WItem, Position target) const;
   optional<int> getThrowDistance(WConstItem) const;
   CreatureAction applySquare(Position) const;
   CreatureAction hide() const;
@@ -174,7 +174,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   CreatureAction stealFrom(Vec2 direction, const vector<WItem>&) const;
   CreatureAction give(WCreature whom, vector<WItem> items) const;
   CreatureAction payFor(const vector<WItem>&) const;
-  CreatureAction fire(Vec2 direction) const;
+  CreatureAction fire(Position target) const;
   CreatureAction construct(Vec2 direction, FurnitureType) const;
   CreatureAction whip(const Position&) const;
   CreatureAction eat(WItem) const;
@@ -238,7 +238,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   void popController();
 
   CreatureAction castSpell(Spell*) const;
-  CreatureAction castSpell(Spell*, Vec2) const;
+  CreatureAction castSpell(Spell*, Position) const;
   TimeInterval getSpellDelay(Spell*) const;
   bool isReady(Spell*) const;
 

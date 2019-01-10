@@ -94,6 +94,7 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   virtual vector<OtherCreatureCommand> getOtherCreatureCommands(WCreature) const;
 
   optional<Vec2> chooseDirection(const string& question);
+  optional<Position> chooseTarget(Table<PassableInfo>, const string& question);
 
   SMapMemory SERIAL(levelMemory);
   void showHistory();
@@ -110,7 +111,7 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   void pickUpItemAction(int item, bool multi = false);
   void equipmentAction();
   void applyItem(vector<WItem> item);
-  void throwItem(vector<WItem> item, optional<Vec2> dir = none);
+  void throwItem(WItem item, optional<Position> target = none);
   void takeOffAction();
   void hideAction();
   void displayInventory();
@@ -125,7 +126,6 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   void giveAction(vector<WItem>);
   void spellAction(SpellId);
   void fireAction();
-  void fireAction(Vec2 dir);
   vector<WItem> chooseItem(const string& text, ItemPredicate, optional<UserInputId> exitAction = none);
   void getItemNames(vector<WItem> it, vector<ListElem>& names, vector<vector<WItem> >& groups,
       ItemPredicate = alwaysTrue<WConstItem>());

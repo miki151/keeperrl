@@ -107,6 +107,13 @@ enum class CampaignActionId {
   CHANGE_TYPE,
 };
 
+enum class PassableInfo {
+  PASSABLE,
+  NON_PASSABLE,
+  STOPS_HERE,
+  UNKNOWN
+};
+
 class CampaignAction : public EnumVariant<CampaignActionId, TYPES(Vec2, OptionId, CampaignType),
   ASSIGN(CampaignType, CampaignActionId::CHANGE_TYPE),
   ASSIGN(Vec2, CampaignActionId::CHOOSE_SITE),
@@ -165,6 +172,9 @@ class View {
 
   /** Lets the player choose a direction from the main 8. Returns none if the player cancelled the choice.*/
   virtual optional<Vec2> chooseDirection(Vec2 playerPos, const string& message) = 0;
+
+  /** Lets the player choose a target position. Returns none if the player cancelled the choice.*/
+  virtual optional<Vec2> chooseTarget(Vec2 playerPos, Table<PassableInfo> passable, const string& message) = 0;
 
   /** Asks the player a yer-or-no question.*/
   virtual bool yesOrNoPrompt(const string& message, bool defaultNo = false) = 0;

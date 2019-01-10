@@ -1402,7 +1402,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     case CreatureId::PRIEST:
       return CATTR(
           c.viewId = ViewId::PRIEST;
-          c.attr = LIST(15_dam, 15_def, 27_spell_dam );
+          c.attr = LIST(15_dam, 15_def, 34_spell_dam );
           c.body = Body::humanoid(Body::Size::LARGE);
           c.permanentEffects[LastingEffect::MAGIC_RESISTANCE] = 1;
           c.chatReactionFriendly = "curses all dungeons"_s;
@@ -1411,6 +1411,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.spells->add(SpellId::SPEED_SELF);
           c.spells->add(SpellId::DEF_BONUS);
           c.spells->add(SpellId::BLAST);
+          c.spells->add(SpellId::MAGIC_MISSILE);
           c.spells->add(SpellId::HEAL_OTHER);
           c.maxLevelIncrease[ExperienceType::SPELL] = 2;
           c.name = "priest";
@@ -1456,6 +1457,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
             c.viewId = ViewId::PESEANT;
           c.attr = LIST(14_dam, 12_def );
           c.body = Body::humanoid(Body::Size::LARGE);
+          c.spells->add(SpellId::MAGIC_MISSILE);
           c.chatReactionFriendly = "curses all dungeons"_s;
           c.chatReactionHostile = "\"Heeelp!\""_s;
           c.permanentEffects[LastingEffect::CROPS_SKILL] = 1;

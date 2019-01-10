@@ -59,6 +59,7 @@
 #include "unknown_locations.h"
 #include "furniture_click.h"
 #include "navigation_flags.h"
+#include "vision.h"
 
 template <class Archive>
 void Player::serialize(Archive& ar, const unsigned int) {
@@ -259,14 +260,35 @@ optional<Vec2> Player::chooseDirection(const string& s) {
   return getView()->chooseDirection(creature->getPosition().getCoord(), s);
 }
 
-void Player::throwItem(vector<WItem> items, optional<Vec2> dir) {
-  if (!dir) {
-    auto cDir = chooseDirection("Which direction do you want to throw?");
-    if (!cDir)
+optional<Position> Player::chooseTarget(Table<PassableInfo> passable, const string& s) {
+  if (auto v = getView()->chooseTarget(creature->getPosition().getCoord(), std::move(passable), s))
+    return Position(*v, getLevel());
+  else
+    return none;
+}
+
+void Player::throwItem(WItem item, optional<Position> target) {
+  if (!target) {
+    if (auto testAction = creature->throwItem(item, creature->getPosition().plus(Vec2(1, 0)))) {
+      Vec2 origin = creature->getPosition().getCoord();
+      Table<PassableInfo> passable(Rectangle::centered(origin, *creature->getThrowDistance(item)),
+          PassableInfo::PASSABLE);
+      for (auto v : passable.getBounds()) {
+        Position pos(v, getLevel());
+        if (!creature->canSee(pos) && !getMemory().getViewIndex(pos))
+          passable[v] = PassableInfo::UNKNOWN;
+        else if (pos.stopsProjectiles(creature->getVision().getId()))
+          passable[v] = PassableInfo::NON_PASSABLE;
+        else if (pos.getCreature())
+          passable[v] = PassableInfo::STOPS_HERE;
+      }
+      target = chooseTarget(std::move(passable), "Which direction do you want to throw?");
+    } else
+      privateMessage(testAction.getFailedReason());
+    if (!target)
       return;
-    dir = *cDir;
   }
-  tryToPerform(creature->throwItem(items[0], *dir));
+  tryToPerform(creature->throwItem(item, *target));
 }
 
 void Player::handleIntrinsicAttacks(const EntitySet<Item>& itemIds, ItemAction action) {
@@ -304,7 +326,7 @@ void Player::handleItems(const EntitySet<Item>& itemIds, ItemAction action) {
           Range(1, items.size()), 1))
         tryToPerform(creature->drop(getPrefix(items, *num)));
       break;
-    case ItemAction::THROW: throwItem(items); break;
+    case ItemAction::THROW: throwItem(items[0]); break;
     case ItemAction::APPLY: applyItem(items); break;
     case ItemAction::UNEQUIP: tryToPerform(creature->unequip(items[0])); break;
     case ItemAction::GIVE: giveAction(items); break;
@@ -449,23 +471,45 @@ void Player::chatAction(optional<Vec2> dir) {
 }
 
 void Player::fireAction() {
-  if (auto testAction = creature->fire(Vec2(1, 0))) {
-    if (auto dir = chooseDirection("Fire which direction?"))
-      fireAction(*dir);
+  if (auto testAction = creature->fire(creature->getPosition().plus(Vec2(1, 0)))) {
+    Vec2 origin = creature->getPosition().getCoord();
+    auto weapon = *creature->getEquipment().getSlotItems(EquipmentSlot::RANGED_WEAPON)
+        .getOnlyElement()->getRangedWeapon();
+    Table<PassableInfo> passable(Rectangle::centered(origin, weapon.getMaxDistance()),
+        PassableInfo::PASSABLE);
+    for (auto v : passable.getBounds()) {
+      Position pos(v, getLevel());
+      if (!creature->canSee(pos) && !getMemory().getViewIndex(pos))
+        passable[v] = PassableInfo::UNKNOWN;
+      else if (pos.stopsProjectiles(creature->getVision().getId()))
+        passable[v] = PassableInfo::NON_PASSABLE;
+      else if (pos.getCreature())
+        passable[v] = PassableInfo::STOPS_HERE;
+    }
+    if (auto target = chooseTarget(std::move(passable), "Fire which direction?"))
+      tryToPerform(creature->fire(*target));
   } else
     privateMessage(testAction.getFailedReason());
-}
-
-void Player::fireAction(Vec2 dir) {
-  tryToPerform(creature->fire(dir));
 }
 
 void Player::spellAction(SpellId id) {
   Spell* spell = Spell::get(id);
   if (!spell->isDirected())
     tryToPerform(creature->castSpell(spell));
-  else if (auto dir = chooseDirection("Which direction?"))
-    tryToPerform(creature->castSpell(spell, *dir));
+  else {
+    int range = Spell::get(id)->getDirEffectType().getRange();
+    Vec2 origin = creature->getPosition().getCoord();
+    Table<PassableInfo> passable(Rectangle::centered(origin, range), PassableInfo::PASSABLE);
+    for (auto v : passable.getBounds()) {
+      Position pos(v, getLevel());
+      if (!creature->canSee(pos) && !getMemory().getViewIndex(pos))
+        passable[v] = PassableInfo::UNKNOWN;
+      if (pos.isDirEffectBlocked())
+        passable[v] = PassableInfo::STOPS_HERE;
+    }
+    if (auto target = chooseTarget(std::move(passable), "Which direction?"))
+      tryToPerform(creature->castSpell(spell, *target));
+  }
 }
 
 const MapMemory& Player::getMemory() const {
@@ -647,7 +691,6 @@ void Player::makeMove() {
   }
   if (!handleUserInput(action))
     switch (action.getId()) {
-      case UserInputId::FIRE: fireAction(action.get<Vec2>()); break;
       case UserInputId::TRAVEL: travel = true;
         FALLTHROUGH;
       case UserInputId::MOVE: direction.push_back(action.get<Vec2>()); break;

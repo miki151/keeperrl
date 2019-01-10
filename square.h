@@ -82,7 +82,7 @@ class Square : public OwnedObject<Square> {
   void getViewIndex(ViewIndex&, WConstCreature viewer) const;
 
   bool itemLands(vector<WItem> item, const Attack& attack) const;
-  void onItemLands(Position, vector<PItem>, const Attack&, int remainingDist, Vec2 dir, VisionId);
+  void onItemLands(Position, vector<PItem>, const Attack&);
   PItem removeItem(Position, WItem);
   vector<PItem> removeItems(Position, vector<WItem>);
 

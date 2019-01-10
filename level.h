@@ -126,10 +126,6 @@ class Level : public OwnedObject<Level> {
   /** Moves the creature to a given level. */
   void changeLevel(Position destination, WCreature c);
 
-  /** Performs a throw of the item, with all consequences of the event.*/
-  void throwItem(PItem item, const Attack& attack, int maxDist, Vec2 position, Vec2 direction, VisionId);
-  void throwItem(vector<PItem> item, const Attack& attack, int maxDist, Vec2 position, Vec2 direction, VisionId);
-
   //@{
   /** Returns all creatures on this level. */
   const vector<WCreature>& getAllCreatures() const;

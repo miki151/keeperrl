@@ -38,6 +38,7 @@
 #include "fx_renderer.h"
 #include "fx_info.h"
 #include "fx_view_manager.h"
+#include "draw_line.h"
 
 using SDL::SDL_Keysym;
 using SDL::SDL_Keycode;
@@ -737,6 +738,59 @@ optional<Vec2> WindowView::chooseDirection(Vec2 playerPos, const string& message
   return returnQueue.pop();
 }
 
+optional<Vec2> WindowView::chooseTarget(Vec2 playerPos, Table<PassableInfo> passable, const string& message) {
+  TempClockPause pause(clock);
+  gameInfo.messageBuffer = { PlayerMessage(message) };
+  SyncQueue<optional<Vec2>> returnQueue;
+  addReturnDialog<optional<Vec2>>(returnQueue, [=] ()-> optional<Vec2> {
+  rebuildGui();
+  refreshScreen();
+  do {
+    auto pos = mapGui->projectOnMap(renderer.getMousePos());
+    Event event;
+    if (renderer.pollEvent(event)) {
+      considerResizeEvent(event);
+      if (event.type == SDL::SDL_KEYDOWN && event.key.keysym.sym == SDL::SDLK_ESCAPE) {
+        refreshScreen();
+        return none;
+      }
+      if (pos && event.type == SDL::SDL_MOUSEBUTTONDOWN) {
+        if (event.button.button == SDL_BUTTON_LEFT)
+          return *pos;
+        else
+          return none;
+      } else
+        gui.propagateEvent(event, {mapGui});
+    }
+    rebuildGui();
+    refreshScreen(false);
+    if (pos) {
+      bool wasObstructed = false;
+      for (auto& pw : drawLine(playerPos, *pos))
+        if (pw != playerPos) {
+          bool obstructed = wasObstructed || !pw.inRectangle(passable.getBounds()) ||
+              passable[pw] == PassableInfo::NON_PASSABLE;
+          auto color = obstructed ? Color::RED : Color::GREEN;
+          if (!wasObstructed && pw.inRectangle(passable.getBounds()) && passable[pw] == PassableInfo::UNKNOWN)
+            color = Color::ORANGE;
+          Vec2 wpos = mapLayout->projectOnScreen(getMapGuiBounds(), mapGui->getScreenPos(), pw.x, pw.y);
+          if (currentTileLayout.sprites) {
+            renderer.drawViewObject(wpos, ViewId::DIG_MARK, true, mapLayout->getSquareSize(), color);
+          } else {
+            renderer.drawText(Renderer::SYMBOL_FONT, mapLayout->getSquareSize().y, color,
+                wpos + Vec2(mapLayout->getSquareSize().x / 2, 0), "0", Renderer::HOR);
+          }
+          wasObstructed = obstructed || passable[pw] == PassableInfo::STOPS_HERE;
+        }
+    }
+    renderer.drawAndClearBuffer();
+    renderer.flushEvents(SDL::SDL_MOUSEMOTION);
+  } while (1);
+  });
+  return returnQueue.pop();
+
+}
+
 bool WindowView::yesOrNoPrompt(const string& message, bool defaultNo) {
   int index = defaultNo ? 1 : 0;
   return chooseFromListInternal("", {ListElem(capitalFirst(message), ListElem::TITLE), "Yes", "No"}, index,
@@ -1229,8 +1283,6 @@ void WindowView::propagateEvent(const Event& event, vector<SGuiElem> guiElems) {
 UserInputId getDirActionId(const SDL_Keysym& key) {
   if (GuiFactory::isCtrl(key))
     return UserInputId::TRAVEL;
-  if (GuiFactory::isAlt(key))
-    return UserInputId::FIRE;
   else
     return UserInputId::MOVE;
 }

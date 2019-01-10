@@ -42,6 +42,7 @@
 #include "movement_set.h"
 #include "weapon_info.h"
 #include "fx_name.h"
+#include "draw_line.h"
 
 
 vector<WCreature> Effect::summonCreatures(Position pos, int radius, vector<PCreature> creatures, TimeInterval delay) {
@@ -61,17 +62,17 @@ vector<WCreature> Effect::summonCreatures(WCreature c, int radius, vector<PCreat
   return summonCreatures(c->getPosition(), radius, std::move(creatures), delay);
 }
 
-static void airBlast(WCreature who, Position position, Vec2 direction) {
+static void airBlast(WCreature who, Position position, vector<Position> trajectory) {
   constexpr int maxDistance = 4;
   if (WCreature c = position.getCreature()) {
-    int dist = 0;
-    for (int i : Range(1, maxDistance))
-      if (position.canMoveCreature(direction * i))
-        dist = i;
+    optional<Position> target;
+    for (auto& pos : trajectory)
+      if (position.canMoveCreature(pos))
+        target = pos;
       else
         break;
-    if (dist > 0) {
-      c->displace(direction * dist);
+    if (target) {
+      c->displace(c->getPosition().getDir(*target));
       c->you(MsgType::ARE, "thrown back");
     }
   }
@@ -79,7 +80,7 @@ static void airBlast(WCreature who, Position position, Vec2 direction) {
     position.throwItem(
         position.removeItems(stack),
         Attack(who, Random.choose<AttackLevel>(),
-          stack[0]->getWeaponInfo().attackType, 15, AttrType::DAMAGE), maxDistance, direction, VisionId::NORMAL);
+          stack[0]->getWeaponInfo().attackType, 15, AttrType::DAMAGE), maxDistance, trajectory.back(), VisionId::NORMAL);
   }
   for (auto furniture : position.modFurniture())
     if (furniture->canDestroy(DestroyAction::Type::BASH))
@@ -491,7 +492,7 @@ string Effect::Deception::getDescription() const {
 
 void Effect::CircularBlast::applyToCreature(WCreature c, WCreature attacker) const {
   for (Vec2 v : Vec2::directions8(Random))
-    applyDirected(c, v, DirEffectType(1, DirEffectId::BLAST), false);
+    applyDirected(c, c->getPosition().plus(v * 10), DirEffectType(1, DirEffectId::BLAST), false);
   c->addFX({FXName::CIRCULAR_BLAST});
 }
 
@@ -833,35 +834,37 @@ static optional<FXInfo> getProjectileFX(const DirEffectType& effect) {
   }
 }
 
-void applyDirected(WCreature c, Vec2 direction, const DirEffectType& type, bool withProjectileFX) {
-  auto begin = c->getPosition();
-  int range = type.getRange();
-  for (Vec2 v = direction; v.length8() <= range; v += direction)
-    if (!c->getPosition().plus(v).canEnterEmpty(
-          MovementType({MovementTrait::FLY, MovementTrait::WALK}).setFireResistant())) {
-      range = v.length8();
-      break;
+void applyDirected(WCreature c, Position target, const DirEffectType& type, bool withProjectileFX) {
+  if (target == c->getPosition())
+    return;
+  vector<Position> trajectory;
+  auto origin = c->getPosition().getCoord();
+  for (auto& v : drawLine(origin, target.getCoord()))
+    if (v != origin && v.dist8(origin) <= type.getRange()) {
+      trajectory.push_back(Position(v, target.getLevel()));
+      if (Position(v, target.getLevel()).isDirEffectBlocked())
+        break;
     }
   if (withProjectileFX)
     c->getGame()->addEvent(
-        EventInfo::Projectile{getProjectileFX(type), getProjectile(type), begin, begin.plus(direction * range)});
+        EventInfo::Projectile{getProjectileFX(type), getProjectile(type), c->getPosition(), trajectory.back()});
   switch (type.getId()) {
     case DirEffectId::BLAST:
-      for (Vec2 v = direction * range; v.length4() >= 1; v -= direction)
-        airBlast(c, c->getPosition().plus(v), direction);
+      for (int i : All(trajectory).reverse())
+        if (i < trajectory.size() - 1)
+          airBlast(c, trajectory[i], getSubsequence(trajectory, i, trajectory.size() - i));
       break;
     case DirEffectId::FIREBREATH:
     case DirEffectId::FIREBALL:
-      for (Vec2 v = direction; v.length8() <= range; v += direction) {
-        auto newPos = c->getPosition().plus(v);
-        newPos.fireDamage(1);
-        if (WCreature victim = newPos.getCreature())
+      for (auto& pos : trajectory) {
+        pos.fireDamage(1);
+        if (WCreature victim = pos.getCreature())
           victim->addFX({FXName::FIREBALL_SPLASH});
       }
       break;
     case DirEffectId::CREATURE_EFFECT:
-      for (Vec2 v = direction; v.length8() <= range; v += direction)
-        if (WCreature victim = c->getPosition().plus(v).getCreature())
+      for (auto& pos : trajectory)
+        if (auto victim = pos.getCreature())
           type.get<Effect>().applyToCreature(victim, c);
       break;
   }

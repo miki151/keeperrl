@@ -330,40 +330,6 @@ bool Level::landCreature(vector<Position> landing, WCreature creature) {
     return false;
 }
 
-void Level::throwItem(PItem item, const Attack& attack, int maxDist, Vec2 position, Vec2 direction, VisionId vision) {
-  vector<PItem> v;
-  v.push_back(std::move(item));
-  throwItem(std::move(v), attack, maxDist, position, direction, vision);
-}
-
-void Level::throwItem(vector<PItem> item, const Attack& attack, int maxDist, Vec2 position, Vec2 direction,
-    VisionId vision) {
-  CHECK(!item.empty());
-  CHECK(direction.length8() == 1);
-  int cnt = 1;
-  vector<Vec2> trajectory;
-  for (Vec2 v = position + direction; inBounds(v); v += direction) {
-    trajectory.push_back(v);
-    Position pos(v, this);
-    if (pos.stopsProjectiles(vision)) {
-      item[0]->onHitSquareMessage(Position(v, this), item.size());
-      trajectory.pop_back();
-      getGame()->addEvent(
-          EventInfo::Projectile{none, item[0]->getViewObject().id(), Position(position, this), pos.minus(direction)});
-      if (!item[0]->isDiscarded())
-        pos.minus(direction).dropItems(std::move(item));
-      return;
-    }
-    if (++cnt > maxDist || getSafeSquare(v)->getCreature()) {
-      getGame()->addEvent(
-          EventInfo::Projectile{none, item[0]->getViewObject().id(), Position(position, this), pos});
-      modSafeSquare(v)->onItemLands(Position(v, this), std::move(item), attack, maxDist - cnt - 1, direction,
-          vision);
-      return;
-    }
-  }
-}
-
 void Level::killCreature(WCreature creature) {
   eraseCreature(creature, creature->getPosition().getCoord());
   getModel()->killCreature(creature);
