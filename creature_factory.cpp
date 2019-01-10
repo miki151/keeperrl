@@ -1457,7 +1457,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
             c.viewId = ViewId::PESEANT;
           c.attr = LIST(14_dam, 12_def );
           c.body = Body::humanoid(Body::Size::LARGE);
-          c.spells->add(SpellId::MAGIC_MISSILE);
           c.chatReactionFriendly = "curses all dungeons"_s;
           c.chatReactionHostile = "\"Heeelp!\""_s;
           c.permanentEffects[LastingEffect::CROPS_SKILL] = 1;
