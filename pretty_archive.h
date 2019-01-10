@@ -335,11 +335,21 @@ inline void CEREAL_SAVE_FUNCTION_NAME(PrettyOutputArchive& ar1, cereal::NameValu
 }
 
 template <class T>
+inline void setVersion1000(T&) {
+}
+
+template <>
+inline void setVersion1000(unsigned int& a) {
+  a = 1000;
+}
+
+template <class T>
 inline void CEREAL_LOAD_FUNCTION_NAME(PrettyInputArchive& ar1, cereal::NameValuePair<T>& t) {
   if (strcmp(t.name, "cereal_class_version")) {
     auto& value = t.value;
     ar1.getNode().loaders.push_back(make_pair(t.name, [&ar1, &value]{ ar1(value); }));
-  }
+  } else
+    setVersion1000(t.value);
 }
 
 template <class T, class U> inline
@@ -379,7 +389,6 @@ inline void epilogue(PrettyInputArchive& ar1, T const &t ) {
   auto loaders = ar1.getNode().loaders;
   if (!loaders.empty()) {
     ar1.eat("{");
-    bool eatComma = false;
     bool keysAndValues = false;
     while (ar1.peek() != "}") {
       if (ar1.peek() == ",")
@@ -408,7 +417,6 @@ inline void epilogue(PrettyInputArchive& ar1, T const &t ) {
         }
       if (!found)
         ar1.error("No member named \"" + name + "\" in structure");
-      eatComma = true;
     }
     ar1.eat("}");
   }
