@@ -76,7 +76,10 @@
 
     { Zone QUARTERS3                                           "Quarters 3"        "Quarters"
         "Designate separate quarters for chosen minions."}
-  }
+
+    { Zone LEISURE                                             "Leisure"           "Quarters"
+        "Designate leisure zone where minions will hang out when they have nothing to do."}
+   }
 
   "library"
   {

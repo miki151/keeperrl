@@ -188,20 +188,19 @@ PTask MinionActivities::generate(WCollective collective, WCreature c, MinionActi
   switch (info.type) {
     case MinionActivityInfo::IDLE: {
       PROFILE_BLOCK("Idle");
-      auto myTerritory = tryInQuarters(collective->getTerritory().getAll(), collective, c);
+      auto myTerritory = (collective->getZones().getPositions(ZoneId::LEISURE).empty() ||
+            collective->hasTrait(c, MinionTrait::WORKER)) ?
+          tryInQuarters(collective->getTerritory().getAll(), collective, c) :
+          collective->getZones().getPositions(ZoneId::LEISURE).asVector();
       auto& pigstyPos = collective->getConstructions().getBuiltPositions(FurnitureType::PIGSTY);
       if (pigstyPos.count(c->getPosition()))
         return Task::doneWhen(Task::goTo(Random.choose(myTerritory)),
             TaskPredicate::outsidePositions(c, pigstyPos));
-      if (collective->getConfig().stayInTerritory() || collective->getQuarters().getAssigned(c->getUniqueId()) ||
-          (!collective->getTerritory().getStandardExtended().contains(c->getPosition()) &&
-           !collective->getTerritory().getAll().contains(c->getPosition()))) {
-        auto leader = collective->getLeader();
-        if (!myTerritory.empty())
-          return Task::chain(Task::transferTo(collective->getModel()), Task::stayIn(myTerritory));
-        else if (collective->getConfig().getFollowLeaderIfNoTerritory() && leader)
-          return Task::alwaysDone(Task::follow(leader));
-      }
+      auto leader = collective->getLeader();
+      if (!myTerritory.empty())
+        return Task::chain(Task::transferTo(collective->getModel()), Task::stayIn(myTerritory));
+      else if (collective->getConfig().getFollowLeaderIfNoTerritory() && leader)
+        return Task::alwaysDone(Task::follow(leader));
       return Task::idle();
     }
     case MinionActivityInfo::FURNITURE: {

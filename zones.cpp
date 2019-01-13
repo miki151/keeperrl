@@ -68,6 +68,8 @@ static HighlightType getHighlight(ZoneId id) {
       return HighlightType::QUARTERS2;
     case ZoneId::QUARTERS3:
       return HighlightType::QUARTERS3;
+    case ZoneId::LEISURE:
+      return HighlightType::LEISURE;
   }
 }
 
@@ -86,6 +88,7 @@ bool Zones::canSet(Position pos, ZoneId id, WConstCollective col) const {
     case ZoneId::QUARTERS1:
     case ZoneId::QUARTERS2:
     case ZoneId::QUARTERS3:
+    case ZoneId::LEISURE:
       return col->getTerritory().contains(pos);
     default:
       return true;
@@ -107,6 +110,8 @@ ViewId getViewId(ZoneId id) {
       return ViewId::QUARTERS2;
     case ZoneId::QUARTERS3:
       return ViewId::QUARTERS3;
+    case ZoneId::LEISURE:
+      return ViewId::LEISURE;
     case ZoneId::FETCH_ITEMS:
     case ZoneId::PERMANENT_FETCH_ITEMS:
       return ViewId::FETCH_ICON;

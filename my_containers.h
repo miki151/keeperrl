@@ -426,6 +426,13 @@ class unordered_set : public std::unordered_set<T, Hash> {
       ret.push_back(fun(elem));
     return ret;
   }
+
+  vector<T> asVector() const {
+    vector<T> ret;
+    for (auto&& elem : *this)
+      ret.push_back(std::move(elem));
+    return ret;
+  }
 };
 
 template<class T>
