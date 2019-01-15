@@ -16,6 +16,7 @@
 #include "resource_info.h"
 #include "equipment.h"
 #include "minion_equipment.h"
+#include "game.h"
 
 static bool betterPos(Position from, Position current, Position candidate) {
   double maxDiff = 0.3;
@@ -182,6 +183,10 @@ PTask MinionActivities::generateDropTask(WCollective collective, WCreature c, Mi
   return nullptr;
 }
 
+static vector<Position> limitToIndoors(vector<Position> v) {
+  return v.filter([](const Position& pos) { return pos.isCovered(); });
+}
+
 PTask MinionActivities::generate(WCollective collective, WCreature c, MinionActivity task) {
   PROFILE;
   auto& info = CollectiveConfig::getActivityInfo(task);
@@ -192,6 +197,11 @@ PTask MinionActivities::generate(WCollective collective, WCreature c, MinionActi
             collective->hasTrait(c, MinionTrait::WORKER)) ?
           tryInQuarters(collective->getTerritory().getAll(), collective, c) :
           collective->getZones().getPositions(ZoneId::LEISURE).asVector();
+      if (collective->getGame()->getSunlightInfo().getState() == SunlightState::NIGHT) {
+        if (c->getPosition().isCovered())
+          return Task::idle();
+        myTerritory = limitToIndoors(std::move(myTerritory));
+      }
       auto& pigstyPos = collective->getConstructions().getBuiltPositions(FurnitureType::PIGSTY);
       if (pigstyPos.count(c->getPosition()))
         return Task::doneWhen(Task::goTo(Random.choose(myTerritory)),
