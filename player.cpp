@@ -774,12 +774,21 @@ void Player::makeMove() {
         break;
       case UserInputId::DRAW_WORLD_MAP: {
         auto canTravel = [&] {
-          for (auto& c : getTeam())
+          auto team = getTeam();
+          for (auto& c : team) {
+            if (c->isAffected(LastingEffect::POISON)) {
+              if (team.size() == 1)
+                getView()->presentText("Sorry", "You can't travel while being poisoned");
+              else
+                getView()->presentText("Sorry", c->getName().the() + " can't travel while being poisoned");
+              return false;
+            }
             if (auto intent = c->getLastCombatIntent())
               if (intent->time > *creature->getGlobalTime() - 7_visible) {
                 getView()->presentText("Sorry", "You can't travel while being attacked by " + c->getName().a());
                 return false;
               }
+          }
           return true;
         }();
         if (canTravel)
