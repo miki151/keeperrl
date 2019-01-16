@@ -259,8 +259,9 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   vector<string> popPersonalEvents();
   void addPersonalEvent(const string&);
   struct CombatIntentInfo {
-    WCreature attacker;
-    GlobalTime time;
+    WCreature SERIAL(attacker);
+    GlobalTime SERIAL(time);
+    SERIALIZE_ALL(attacker, time);
   };
   void addCombatIntent(WCreature attacker, bool immediateAttack);
   optional<CombatIntentInfo> getLastCombatIntent() const;
@@ -313,7 +314,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   vector<Position> visibleCreatures;
   HeapAllocated<Vision> SERIAL(vision);
   bool forceMovement = false;
-  optional<CombatIntentInfo> lastCombatIntent;
+  optional<CombatIntentInfo> SERIAL(lastCombatIntent);
   HeapAllocated<CreatureDebt> SERIAL(debt);
   double SERIAL(highestAttackValueEver) = 0;
   int SERIAL(lastMoveCounter) = 0;

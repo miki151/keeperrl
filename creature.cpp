@@ -65,7 +65,7 @@ void Creature::serialize(Archive& ar, const unsigned int version) {
   ar(unknownAttackers, privateEnemies, holding);
   ar(controllerStack, kills, statuses);
   ar(difficultyPoints, points, capture);
-  ar(vision, debt, highestAttackValueEver);
+  ar(vision, debt, highestAttackValueEver, lastCombatIntent);
 }
 
 SERIALIZABLE(Creature)
@@ -217,6 +217,7 @@ GlobalTime Creature::getDeathTime() const {
 
 void Creature::clearInfoForRetiring() {
   lastAttacker = nullptr;
+  lastCombatIntent = none;
 }
 
 optional<string> Creature::getDeathReason() const {

@@ -772,9 +772,20 @@ void Player::makeMove() {
       case UserInputId::SCROLL_TO_HOME:
         getView()->setScrollPos(getPosition());
         break;
-      case UserInputId::DRAW_WORLD_MAP:
-        getGame()->transferAction(getTeam());
+      case UserInputId::DRAW_WORLD_MAP: {
+        auto canTravel = [&] {
+          for (auto& c : getTeam())
+            if (auto intent = c->getLastCombatIntent())
+              if (intent->time > *creature->getGlobalTime() - 7_visible) {
+                getView()->presentText("Sorry", "You can't travel while being attacked by " + c->getName().a());
+                return false;
+              }
+          return true;
+        }();
+        if (canTravel)
+          getGame()->transferAction(getTeam());
         break;
+      }
   #ifndef RELEASE
       case UserInputId::CHEAT_ATTRIBUTES:
         creature->getAttributes().increaseBaseAttr(AttrType::DAMAGE, 80);
