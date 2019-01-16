@@ -165,8 +165,7 @@ CreatureAction Creature::castSpell(Spell* spell, Position target) const {
   return CreatureAction(this, [=] (WCreature c) {
     c->addSound(spell->getSound());
     auto dirEffectType = spell->getDirEffectType();
-    thirdPerson(getName().the() + " casts a spell");
-    secondPerson("You cast " + spell->getName());
+    spell->addMessage(c);
     applyDirected(c, target, dirEffectType);
     getGame()->getStatistics().add(StatId::SPELL_CAST);
     c->attributes->getSpellMap().setReadyTime(spell, *getGlobalTime() + TimeInterval(

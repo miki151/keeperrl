@@ -62,12 +62,13 @@ string Spell::getDescription() const {
 void Spell::addMessage(WCreature c) {
   switch (castMessageType) {
     case CastMessageType::STANDARD:
-      c->secondPerson("You cast " + getName());
-      c->thirdPerson(c->getName().the() + " casts a spell");
+      c->verb("cast", "casts", "a spell");
       break;
     case CastMessageType::AIR_BLAST:
-      c->secondPerson("You create an air blast!");
-      c->thirdPerson(c->getName().the() + " creates an air blast!");
+      c->verb("create", "creates", "an air blast!");
+      break;
+    case CastMessageType::BREATHE_FIRE:
+      c->verb("breathe", "breathes", "fire!");
       break;
   }
 }
@@ -94,7 +95,7 @@ void Spell::init() {
       Effect::Damage{AttrType::SPELL_DAMAGE, AttackType::SPELL}), 20, SoundId::SPELL_BLAST));
   set(SpellId::FIREBALL, new Spell("fireball", DirEffectType(4, DirEffectId::FIREBALL), 30, SoundId::SPELL_BLAST));
   set(SpellId::FIREBALL_DRAGON, new Spell("fireball_dragon", DirEffectType(4, DirEffectId::FIREBREATH), 3,
-      SoundId::SPELL_BLAST));
+      SoundId::SPELL_BLAST, CastMessageType::BREATHE_FIRE));
   set(SpellId::CIRCULAR_BLAST, new Spell("circular blast", Effect::CircularBlast{}, 50, SoundId::SPELL_AIR_BLAST,
         CastMessageType::AIR_BLAST));
   set(SpellId::SUMMON_SPIRIT, new Spell("summon spirits", Effect::Summon{CreatureId::SPIRIT}, 50,

@@ -23,7 +23,8 @@
 
 enum class CastMessageType {
   STANDARD,
-  AIR_BLAST
+  AIR_BLAST,
+  BREATHE_FIRE
 };
 
 class Effect;
