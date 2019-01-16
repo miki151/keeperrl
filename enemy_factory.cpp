@@ -40,6 +40,7 @@ EnemyInfo& EnemyInfo::setNonDiscoverable() {
   return *this;
 }
 
+
 EnemyInfo& EnemyInfo::setCreateOnBones(EnemyFactory& factory, double prob, vector<EnemyId> enemies) {
   if (factory.random.chance(prob)) {
     EnemyInfo enemy = factory.get(factory.random.choose(enemies));
@@ -226,8 +227,8 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
     case EnemyId::DEMON_DEN_ABOVE:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::VILLAGE;
-            c.tribe = TribeId::getWildlife();
-            c.inhabitants.fighters = CreatureList(random.get(2, 3), CreatureId::GHOST);
+            c.tribe = TribeId::getMonster();
+            c.inhabitants.fighters = CreatureList(random.get(2, 3), CreatureId::LOST_SOUL);
             c.buildingId = BuildingId::DUNGEON_SURFACE;
             c.locationName = "Darkshrine Town"_s;
             c.race = "ghosts"_s;
@@ -252,7 +253,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
               );
               c.attackBehaviour = AttackBehaviour(AttackBehaviourId::KILL_LEADER);
               c.ransom = make_pair(0.5, random.get(50, 100));),
-          LevelConnection{LevelConnection::CRYPT, get(EnemyId::DEMON_DEN_ABOVE)})
+            LevelConnection{LevelConnection::CRYPT, get(EnemyId::DEMON_DEN_ABOVE).setCreateOnBones(*this, 1.0, {EnemyId::KNIGHTS})})
           .setImmigrants({
             ImmigrantInfo(CreatureId::DEMON_DWELLER, {MinionTrait::FIGHTER}).setFrequency(1),
           });
