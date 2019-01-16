@@ -9,6 +9,7 @@
 #include "level.h"
 #include "fx_variant_name.h"
 #include "fx_name.h"
+#include "game.h"
 
 static optional<LastingEffect> getCancelledOneWay(LastingEffect effect) {
   switch (effect) {
@@ -253,6 +254,10 @@ void LastingEffects::onAffected(WCreature c, LastingEffect effect, bool msg) {
       case LastingEffect::BRIDGE_BUILDING_SKILL:
       case LastingEffect::NAVIGATION_DIGGING_SKILL:
         c->verb("acquire", "acquires", "the skill of "_s + getName(effect));
+        break;
+      case LastingEffect::DISAPPEAR_DURING_DAY:
+        c->you(MsgType::YOUR, "hours are numbered");
+        break;
     }
 }
 
@@ -449,6 +454,8 @@ void LastingEffects::onTimedOut(WCreature c, LastingEffect effect, bool msg) {
       case LastingEffect::NAVIGATION_DIGGING_SKILL:
         c->verb("lose", "loses", "the skill of "_s + getName(effect));
         break;
+      case LastingEffect::DISAPPEAR_DURING_DAY:
+        break;
       default:
         break;
     }
@@ -591,6 +598,7 @@ static optional<Adjective> getAdjective(LastingEffect effect) {
     case LastingEffect::SLOW_TRAINING: return "Slow trainee"_bad;
     case LastingEffect::BAD_BREATH: return "Smelly breath"_bad;
     case LastingEffect::ON_FIRE: return "On fire"_bad;
+    case LastingEffect::DISAPPEAR_DURING_DAY: return "Disappears at dawn"_bad;
   }
 }
 
@@ -758,6 +766,10 @@ bool LastingEffects::tick(WCreature c, LastingEffect effect) {
         if (auto other = pos.getCreature())
           other->addMorale(-0.002);
       break;
+    case LastingEffect::DISAPPEAR_DURING_DAY:
+      if (c->getGame()->getSunlightInfo().getState() == SunlightState::DAY)
+        c->dieNoReason(Creature::DropType::ONLY_INVENTORY);
+      break;
     default:
       break;
   }
@@ -831,6 +843,7 @@ string LastingEffects::getName(LastingEffect type) {
     case LastingEffect::BRIDGE_BUILDING_SKILL: return "bridge building";
     case LastingEffect::NAVIGATION_DIGGING_SKILL: return "digging";
     case LastingEffect::ON_FIRE: return "combustion";
+    case LastingEffect::DISAPPEAR_DURING_DAY: return "night life";
   }
 }
 
@@ -902,6 +915,7 @@ string LastingEffects::getDescription(LastingEffect type) {
     case LastingEffect::BRIDGE_BUILDING_SKILL: return "Creature will try to build bridges when travelling somewhere";
     case LastingEffect::NAVIGATION_DIGGING_SKILL: return "Creature will try to dig when travelling somewhere";
     case LastingEffect::ON_FIRE: return "The creature is burning alive";
+    case LastingEffect::DISAPPEAR_DURING_DAY: return "This creature is only active at night and disappears at dawn";
   }
 }
 

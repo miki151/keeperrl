@@ -8,6 +8,9 @@
 #include "settlement_info.h"
 #include "enemy_info.h"
 #include "tribe_alignment.h"
+#include "sunlight_info.h"
+#include "conquer_condition.h"
+#include "lasting_effect.h"
 
 EnemyFactory::EnemyFactory(RandomGen& r) : random(r) {
 }
@@ -40,16 +43,25 @@ EnemyInfo& EnemyInfo::setNonDiscoverable() {
 EnemyInfo& EnemyInfo::setCreateOnBones(EnemyFactory& factory, double prob, vector<EnemyId> enemies) {
   if (factory.random.chance(prob)) {
     EnemyInfo enemy = factory.get(factory.random.choose(enemies));
-    settlement.buildingId = enemy.settlement.buildingId;
+    levelConnection = enemy.levelConnection;
+    if (levelConnection) {
+      levelConnection->otherEnemy->settlement.buildingId = BuildingId::RUINS;
+      levelConnection->deadInhabitants = true;
+    }
+    if (Random.roll(2)) {
+      settlement.buildingId = BuildingId::RUINS;
+      if (levelConnection)
+        levelConnection->otherEnemy->settlement.buildingId = BuildingId::RUINS;
+    } else {
+      // 50% chance that the original settlement is intact
+      settlement.buildingId = enemy.settlement.buildingId;
+      settlement.furniture = enemy.settlement.furniture;
+      settlement.outsideFeatures = enemy.settlement.outsideFeatures;
+      settlement.shopFactory = enemy.settlement.shopFactory;
+    }
     settlement.type = enemy.settlement.type;
     settlement.corpses = enemy.settlement.inhabitants;
-    settlement.furniture = enemy.settlement.furniture;
-    settlement.outsideFeatures = enemy.settlement.outsideFeatures;
-    settlement.shopFactory = enemy.settlement.shopFactory;
     settlement.shopkeeperDead = true;
-    levelConnection = enemy.levelConnection;
-    if (levelConnection)
-      levelConnection->deadInhabitants = true;
   }
   return *this;
 }
@@ -364,8 +376,8 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
                   AttackTriggerId::PROXIMITY);
               c.attackBehaviour = AttackBehaviour(AttackBehaviourId::KILL_MEMBERS, 12);
               c.welcomeMessage = VillageBehaviour::DRAGON_WELCOME;))
-          .setCreateOnBones(*this, 0.1, {EnemyId::KNIGHTS, EnemyId::DWARVES, EnemyId::GREEN_DRAGON,
-              EnemyId::ELEMENTALIST});
+                  .setCreateOnBones(*this, 0.1, {EnemyId::KNIGHTS, EnemyId::DWARVES, EnemyId::GREEN_DRAGON,
+                      EnemyId::ELEMENTALIST});
     case EnemyId::GREEN_DRAGON:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::CAVE;
@@ -743,10 +755,25 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.buildingId = BuildingId::WOOD;
             c.elderLoot = ItemType(ItemType::TechBook{"advanced alchemy"});
             c.furniture = FurnitureFactory(c.tribe, FurnitureType::LABORATORY);), CollectiveConfig::noImmigrants());
+    case EnemyId::RUINS:
+      return EnemyInfo(CONSTRUCT(SettlementInfo,
+            c.type = SettlementType::COTTAGE;
+            c.tribe = TribeId::getMonster();
+            c.race = "ruins"_s;
+            c.dontBuildRoad = true;
+            c.closeToPlayer = true;
+            c.buildingId = BuildingId::RUINS;
+            ), CollectiveConfig::withImmigrants(400_visible, 3).setConquerCondition(ConquerCondition::DESTROY_BUILDINGS))
+            .setImmigrants({ ImmigrantInfo(CreatureId::LOST_SOUL, {MinionTrait::FIGHTER})
+                .addSpecialTrait(1.0, LastingEffect::DISAPPEAR_DURING_DAY)
+                .setFrequency(1)
+                .addRequirement(1.0, SunlightState::NIGHT)
+                .setSpawnLocation(InsideTerritory{})});
     case EnemyId::HUMAN_COTTAGE:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::COTTAGE;
             c.tribe = TribeId::getHuman();
+            c.cropsDistance = 13;
             c.inhabitants.fighters = CreatureList(random.get(2, 4), CreatureId::PESEANT);
             c.inhabitants.civilians = CreatureList(
                 random.get(3, 7),
@@ -768,6 +795,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.race = "humans"_s;
             c.buildingId = BuildingId::WOOD;
             c.stockpiles = LIST({StockpileInfo::GOLD, 50});
+            c.cropsDistance = 16;
             c.furniture = FurnitureFactory::roomFurniture(c.tribe);),
           CollectiveConfig::noImmigrants());
     case EnemyId::ELVEN_COTTAGE:

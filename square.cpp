@@ -60,6 +60,7 @@ void Square::putCreature(WCreature c) {
 }
 
 void Square::setLandingLink(StairKey key) {
+  CHECK(!landingLink);
   landingLink = key;
 }
 

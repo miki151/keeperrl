@@ -320,6 +320,13 @@ vector<Position> Immigration::Available::getSpawnPositions() const {
         ret = {leader->getPosition()};
       return ret;
     },
+    [&] (InsideTerritory) {
+      auto ret = immigration->collective->getTerritory().getAll();
+      auto leader = immigration->collective->getLeader();
+      if (ret.empty() && leader)
+        ret = {leader->getPosition()};
+      return ret;
+    },
     [&] (NearLeader) -> vector<Position> {
       if (auto leader = immigration->collective->getLeader())
         return {leader->getPosition()};

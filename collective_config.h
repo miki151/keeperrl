@@ -86,7 +86,6 @@ class CollectiveConfig {
   bool getEnemyPositions() const;
   bool getWarnings() const;
   bool getConstructions() const;
-  bool bedsLimitImmigration() const;
   int getMaxPopulation() const;
   int getNumGhostSpawns() const;
   TimeInterval getImmigrantTimeout() const;
@@ -95,6 +94,8 @@ class CollectiveConfig {
   bool getRegenerateMana() const;
   bool allowHealingTaskOutsideTerritory() const;
   const optional<GuardianInfo>& getGuardianInfo() const;
+  bool isConquered(const Collective*) const;
+  CollectiveConfig& setConquerCondition(ConquerCondition);
   static bool requiresLighting(FurnitureType);
 
   static const WorkshopInfo& getWorkshopInfo(WorkshopType);
@@ -130,4 +131,5 @@ class CollectiveConfig {
   optional<GuardianInfo> SERIAL(guardianInfo);
   void addBedRequirementToImmigrants();
   bool SERIAL(regenerateMana) = false;
+  ConquerCondition SERIAL(conquerCondition);
 };

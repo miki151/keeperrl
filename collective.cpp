@@ -53,11 +53,12 @@
 #include "position_matching.h"
 #include "storage_id.h"
 #include "game_config.h"
+#include "conquer_condition.h"
 
 template <class Archive>
 void Collective::serialize(Archive& ar, const unsigned int version) {
   ar(SUBCLASS(TaskCallback), SUBCLASS(UniqueEntity<Collective>), SUBCLASS(EventListener));
-  ar(creatures, taskMap, tribe, control, byTrait, populationGroups);
+  ar(creatures, taskMap, tribe, control, byTrait, populationGroups, hadALeader);
   ar(territory, alarmInfo, markedItems, constructions, minionEquipment);
   ar(delayedPos, knownTiles, technology, kills, points, currentActivity);
   ar(credit, level, immigration, teams, name, conqueredVillains);
@@ -175,6 +176,7 @@ void Collective::addCreature(WCreature c, EnumSet<MinionTrait> traits) {
   if (!traits.contains(MinionTrait::FARM_ANIMAL) && !c->getController()->dontReplaceInCollective())
     c->setController(makeOwner<Monster>(c, MonsterAIFactory::collective(this)));
   if (traits.contains(MinionTrait::LEADER)) {
+    hadALeader = true;
     CHECK(!getLeader());
     if (config->isLeaderFighter())
       traits.insert(MinionTrait::FIGHTER);
@@ -353,7 +355,7 @@ bool Collective::isActivityGood(WCreature c, MinionActivity activity, bool ignor
 }
 
 bool Collective::isConquered() const {
-  return getCreatures(MinionTrait::FIGHTER).empty() && !getLeader();
+  return config->isConquered(this);
 }
 
 void Collective::setTask(WCreature c, PTask task) {
@@ -402,7 +404,7 @@ void Collective::update(bool currentlyActive) {
   if (leader)
     leader->upgradeViewId(getKeeperUpgradeLevel(dungeonLevel.level));
   control->update(currentlyActive);
-  if (config->hasImmigrantion(currentlyActive) && leader)
+  if (config->hasImmigrantion(currentlyActive) && (leader || !hadALeader) && !isConquered())
     immigration->update();
 }
 
@@ -674,7 +676,7 @@ void Collective::claimSquare(Position pos) {
   //CHECK(canClaimSquare(pos));
   territory->insert(pos);
   for (auto furniture : pos.modFurniture())
-    if (!furniture->isWall()) {
+    if (!furniture->forgetAfterBuilding()) {
       if (!constructions->containsFurniture(pos, furniture->getLayer()))
         constructions->addFurniture(pos, ConstructionMap::FurnitureInfo::getBuilt(furniture->getType()));
       furniture->setTribe(getTribeId());

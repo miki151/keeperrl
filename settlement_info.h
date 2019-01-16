@@ -6,7 +6,7 @@
 #include "furniture_factory.h"
 #include "inhabitants_info.h"
 
-enum class BuildingId { WOOD, MUD, BRICK, WOOD_CASTLE, DUNGEON, DUNGEON_SURFACE};
+enum class BuildingId { WOOD, MUD, BRICK, WOOD_CASTLE, DUNGEON, DUNGEON_SURFACE, RUINS};
 
 RICH_ENUM(BiomeId,
   GRASSLAND,
@@ -65,6 +65,9 @@ struct SettlementInfo {
   optional<FurnitureFactory> outsideFeatures;
   bool closeToPlayer;
   bool dontConnectCave;
+  bool dontBuildRoad;
+  bool anyPlayerDistance;
   int surroundWithResources;
   optional<FurnitureType> extraResources;
+  optional<int> cropsDistance;
 };

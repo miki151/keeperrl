@@ -121,6 +121,7 @@ bool LevelBuilder::canPutFurniture(Vec2 posT, FurnitureLayer layer) {
 }
 
 void LevelBuilder::removeFurniture(Vec2 pos, FurnitureLayer layer) {
+  CHECK(getFurnitureType(pos, layer) != FurnitureType::DOWN_STAIRS);
   furniture.getBuilt(layer).clearElem(transform(pos));
 }
 

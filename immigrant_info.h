@@ -69,9 +69,10 @@ MAKE_VARIANT2(ImmigrantRequirement,
 );
 
 struct OutsideTerritory { SERIALIZE_EMPTY() };
+struct InsideTerritory { SERIALIZE_EMPTY() };
 struct NearLeader { SERIALIZE_EMPTY() };
 
-MAKE_VARIANT2(SpawnLocation, FurnitureType, OutsideTerritory, NearLeader, Pregnancy);
+MAKE_VARIANT2(SpawnLocation, FurnitureType, OutsideTerritory, InsideTerritory, NearLeader, Pregnancy);
 
 class ImmigrantInfo {
   public:

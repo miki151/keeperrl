@@ -304,4 +304,5 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   PPositionMatching SERIAL(positionMatching);
   int SERIAL(populationIncrease) = 0;
   DungeonLevel SERIAL(dungeonLevel);
+  bool SERIAL(hadALeader) = false;
 };

@@ -105,6 +105,7 @@ enum class TribeAlignment;
 enum class TutorialState;
 enum class AvatarMenuOption;
 enum class PassableInfo;
+enum class ConquerCondition;
 
 struct FXInfo;
 struct FXSpawnInfo;

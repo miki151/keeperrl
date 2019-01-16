@@ -37,10 +37,11 @@
 #include "furniture_factory.h"
 #include "storage_id.h"
 #include "immigrant_info.h"
+#include "conquer_condition.h"
 
 template <class Archive>
 void CollectiveConfig::serialize(Archive& ar, const unsigned int version) {
-  ar(immigrantInterval, maxPopulation);
+  ar(immigrantInterval, maxPopulation, conquerCondition);
   ar(type, leaderAsFighter, spawnGhosts, ghostProb, guardianInfo, regenerateMana);
 }
 
@@ -104,7 +105,8 @@ void CollectiveConfig::addBedRequirementToImmigrants(vector<ImmigrantInfo>& immi
 }
 
 CollectiveConfig::CollectiveConfig(TimeInterval interval, CollectiveType t, int maxPop)
-    : immigrantInterval(interval), maxPopulation(maxPop), type(t) {
+    : immigrantInterval(interval), maxPopulation(maxPop), type(t),
+      conquerCondition(ConquerCondition::KILL_FIGHTERS_AND_LEADER) {
 }
 
 CollectiveConfig CollectiveConfig::keeper(TimeInterval immigrantInterval, int maxPopulation, bool regenerateMana) {
@@ -196,10 +198,6 @@ bool CollectiveConfig::getConstructions() const {
   return type == KEEPER;
 }
 
-bool CollectiveConfig::bedsLimitImmigration() const {
-  return type == KEEPER;
-}
-
 int CollectiveConfig::getMaxPopulation() const {
   return maxPopulation;
 }
@@ -211,6 +209,24 @@ CollectiveConfig& CollectiveConfig::setGuardian(GuardianInfo info) {
 
 const optional<GuardianInfo>& CollectiveConfig::getGuardianInfo() const {
   return guardianInfo;
+}
+
+bool CollectiveConfig::isConquered(const Collective* collective) const {
+  switch (conquerCondition) {
+    case ConquerCondition::KILL_FIGHTERS_AND_LEADER:
+      return collective->getCreatures(MinionTrait::FIGHTER).empty() && !collective->getLeader();
+    case ConquerCondition::DESTROY_BUILDINGS:
+      for (auto& elem : collective->getConstructions().getAllFurniture())
+        if (auto f = elem.first.getFurniture(elem.second))
+          if (f->isWall())
+            return false;
+      return true;
+  }
+}
+
+CollectiveConfig& CollectiveConfig::setConquerCondition(ConquerCondition c) {
+  conquerCondition = c;
+  return *this;
 }
 
 const vector<FurnitureType>& CollectiveConfig::getRoomsNeedingLight() const {
@@ -241,6 +257,7 @@ bool CollectiveConfig::canBuildOutsideTerritory(FurnitureType type) {
     case FurnitureType::TORCH_W:
     case FurnitureType::WOOD_WALL:
     case FurnitureType::CASTLE_WALL:
+    case FurnitureType::RUIN_WALL:
     case FurnitureType::TUTORIAL_ENTRANCE:
     case FurnitureType::PIT:
     //case FurnitureType::GRAVE:

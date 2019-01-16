@@ -522,6 +522,12 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setIsWall()
           .setIsBuildingSupport()
           .setDestroyable(100, DestroyAction::Type::BOULDER);
+    case FurnitureType::RUIN_WALL:
+      return Furniture("wall", ViewObject(ViewId::RUIN_WALL, ViewLayer::FLOOR), type, tribe)
+          .setBlocking()
+          .setBlockVision()
+          .setIsWall()
+          .setDestroyable(100, DestroyAction::Type::BOULDER);
     case FurnitureType::FLOOR_WOOD1:
       return Furniture("floor", ViewObject(ViewId::WOOD_FLOOR2, ViewLayer::FLOOR_BACKGROUND), type, tribe)
           .setFireInfo(Fire(500, 0.5))

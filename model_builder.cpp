@@ -77,7 +77,7 @@ SettlementInfo& ModelBuilder::makeExtraLevel(WModel model, EnemyInfo& enemy) {
                     c.corpses = c.inhabitants;
                     c.inhabitants = InhabitantsInfo{};
                   }
-                  c.buildingId = BuildingId::BRICK;)));
+                  c.buildingId = extraSettlement.buildingId;)));
         downLink = upLink;
       }
       mainSettlement.downStairs = {downLink};
@@ -292,12 +292,15 @@ PModel ModelBuilder::tryCampaignBaseModel(const string& siteName, TribeId keeper
   optional<ExternalEnemies> externalEnemies;
   if (addExternalEnemies)
     externalEnemies = ExternalEnemies(random, enemyFactory->getExternalEnemies());
+  for (int i : Range(random.get(3)))
+    enemyInfo.push_back(enemyFactory->get(EnemyId::RUINS));
   return tryModel(174, siteName, enemyInfo, keeperTribe, biome, std::move(externalEnemies), true);
 }
 
 PModel ModelBuilder::tryTutorialModel(const string& siteName) {
   vector<EnemyInfo> enemyInfo;
   BiomeId biome = BiomeId::MOUNTAIN;
+  enemyInfo.push_back(enemyFactory->get(EnemyId::RUINS));
   /*enemyInfo.push_back(enemyFactory->get(EnemyId::BANDITS));
   enemyInfo.push_back(enemyFactory->get(EnemyId::ADA_GOLEMS));*/
   //enemyInfo.push_back(enemyFactory->get(EnemyId::KRAKEN));
@@ -341,6 +344,8 @@ PModel ModelBuilder::tryCampaignSiteModel(const string& siteName, EnemyId enemyI
       addMapVillainsForLawfulKeeper(enemyInfo, *biomeId);
       break;
   }
+  for (int i : Range(random.get(3)))
+    enemyInfo.push_back(enemyFactory->get(EnemyId::RUINS));
   return tryModel(114, siteName, enemyInfo, none, *biomeId, {}, true);
 }
 

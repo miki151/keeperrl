@@ -427,6 +427,7 @@ class TileCoordLookup {
     Tile::addTile(ViewId::BLACK_WALL, getWallTile("wall").setWallShadow());
     Tile::addTile(ViewId::CASTLE_WALL, getWallTile("castle_wall").setWallShadow());
     Tile::addTile(ViewId::MUD_WALL, getWallTile("mud_wall").setWallShadow());
+    Tile::addTile(ViewId::RUIN_WALL, getWallTile("ruin_wall"));
     Tile::addTile(ViewId::DOWN_STAIRCASE, sprite("down_stairs"));
     Tile::addTile(ViewId::UP_STAIRCASE, sprite("up_stairs"));
     Tile::addTile(ViewId::WELL, sprite("well")
@@ -800,6 +801,7 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::CROPS2, symbol(u8"𝃰", Color::YELLOW, true));
     Tile::addSymbol(ViewId::CASTLE_WALL, symbol(u8"#", Color::LIGHT_GRAY));
     Tile::addSymbol(ViewId::MUD_WALL, symbol(u8"#", Color::LIGHT_BROWN));
+    Tile::addSymbol(ViewId::RUIN_WALL, symbol(u8"#", Color::DARK_GRAY));
     Tile::addSymbol(ViewId::WALL, symbol(u8"#", Color::LIGHT_GRAY));
     Tile::addSymbol(ViewId::MOUNTAIN, symbol(u8"#", Color::GRAY));
     Tile::addSymbol(ViewId::MOUNTAIN2, symbol(u8"#", Color::DARK_GRAY));
