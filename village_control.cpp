@@ -34,6 +34,7 @@
 #include "village_behaviour.h"
 #include "furniture.h"
 #include "creature_attributes.h"
+#include "game_event.h"
 
 typedef EnumVariant<AttackTriggerId, TYPES(int),
         ASSIGN(int, AttackTriggerId::ENEMY_POPULATION, AttackTriggerId::GOLD)> OldTrigger;

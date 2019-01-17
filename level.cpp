@@ -39,6 +39,7 @@
 #include "furniture_array.h"
 #include "portals.h"
 #include "roof_support.h"
+#include "game_event.h"
 
 template <class Archive> 
 void Level::serialize(Archive& ar, const unsigned int version) {

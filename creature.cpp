@@ -55,6 +55,7 @@
 #include "furniture_usage.h"
 #include "fx_name.h"
 #include "navigation_flags.h"
+#include "game_event.h"
 
 template <class Archive>
 void Creature::serialize(Archive& ar, const unsigned int version) {

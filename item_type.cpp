@@ -22,6 +22,7 @@
 #include "trap_type.h"
 #include "furniture_type.h"
 #include "resource_id.h"
+#include "game_event.h"
 
 ItemType::ItemType(const ItemType&) = default;
 ItemType::ItemType(ItemType&) = default;

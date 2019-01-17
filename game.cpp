@@ -37,6 +37,7 @@
 #include "attack_behaviour.h"
 #include "village_behaviour.h"
 #include "collective_builder.h"
+#include "game_event.h"
 
 template <class Archive> 
 void Game::serialize(Archive& ar, const unsigned int version) {

@@ -19,7 +19,6 @@
 #include "util.h"
 #include "singleton.h"
 #include "spell_id.h"
-#include "color.h"
 
 enum class CastMessageType {
   STANDARD,

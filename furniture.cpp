@@ -11,7 +11,7 @@
 #include "item_factory.h"
 #include "item.h"
 #include "game.h"
-#include "event_listener.h"
+#include "game_event.h"
 #include "level.h"
 #include "furniture_usage.h"
 #include "furniture_entry.h"

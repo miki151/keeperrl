@@ -25,6 +25,7 @@
 #include "fx_name.h"
 #include "roof_support.h"
 #include "draw_line.h"
+#include "game_event.h"
 
 template <class Archive>
 void Position::serialize(Archive& ar, const unsigned int) {

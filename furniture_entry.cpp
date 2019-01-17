@@ -9,6 +9,7 @@
 #include "game.h"
 #include "effect.h"
 #include "movement_set.h"
+#include "game_event.h"
 
 FurnitureEntry::FurnitureEntry(FurnitureEntry::EntryData d) : entryData(d) {
 }

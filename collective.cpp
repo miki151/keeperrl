@@ -54,6 +54,7 @@
 #include "storage_id.h"
 #include "game_config.h"
 #include "conquer_condition.h"
+#include "game_event.h"
 
 template <class Archive>
 void Collective::serialize(Archive& ar, const unsigned int version) {

@@ -28,7 +28,7 @@
 #include "creature_attributes.h"
 #include "player_message.h"
 #include "view_id.h"
-#include "event_listener.h"
+#include "game_event.h"
 #include "vision.h"
 #include "draw_line.h"
 

@@ -21,6 +21,7 @@
 #include "gender.h"
 #include "collective.h"
 #include "territory.h"
+#include "game_event.h"
 
 struct ChestInfo {
   FurnitureType openedType;

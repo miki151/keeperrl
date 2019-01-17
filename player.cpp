@@ -60,6 +60,7 @@
 #include "furniture_click.h"
 #include "navigation_flags.h"
 #include "vision.h"
+#include "game_event.h"
 
 template <class Archive>
 void Player::serialize(Archive& ar, const unsigned int) {

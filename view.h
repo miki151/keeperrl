@@ -20,6 +20,7 @@
 #include "user_input.h"
 #include "animation_id.h"
 #include "gender.h"
+#include "fx_info.h"
 
 class CreatureView;
 class Level;

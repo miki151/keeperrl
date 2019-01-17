@@ -47,6 +47,7 @@
 #include "experience_type.h"
 #include "creature_debt.h"
 #include "effect.h"
+#include "game_event.h"
 
 SERIALIZE_DEF(CreatureFactory, tribe, creatures, weights, unique, tribeOverrides, levelIncrease, baseLevelIncrease, inventory)
 SERIALIZATION_CONSTRUCTOR_IMPL(CreatureFactory)

@@ -28,7 +28,7 @@
 #include "poison_gas.h"
 #include "tribe.h"
 #include "view.h"
-#include "event_listener.h"
+#include "game_event.h"
 
 template <class Archive> 
 void Square::serialize(Archive& ar, const unsigned int version) { 

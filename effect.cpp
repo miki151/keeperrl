@@ -35,7 +35,7 @@
 #include "attack_level.h"
 #include "attack_type.h"
 #include "body.h"
-#include "event_listener.h"
+#include "game_event.h"
 #include "item_class.h"
 #include "furniture_factory.h"
 #include "furniture.h"

@@ -86,6 +86,7 @@
 #include "furniture_click.h"
 #include "game_config.h"
 #include "campaign.h"
+#include "game_event.h"
 
 template <class Archive>
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {

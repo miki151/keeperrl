@@ -9,6 +9,7 @@
 #include "level.h"
 #include "fx_variant_name.h"
 #include "fx_name.h"
+#include "fx_info.h"
 #include "game.h"
 
 static optional<LastingEffect> getCancelledOneWay(LastingEffect effect) {

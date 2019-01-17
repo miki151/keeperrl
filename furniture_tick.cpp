@@ -19,6 +19,7 @@
 #include "furniture_factory.h"
 #include "view_object.h"
 #include "furniture_usage.h"
+#include "game_event.h"
 
 static void handleBed(Position pos) {
   PROFILE;
