@@ -420,7 +420,7 @@ void MainLoop::launchQuickGame() {
   vector<SaveFileInfo> files;
   getSaveOptions({
       {GameSaveType::AUTOSAVE, "Recovered games:"},
-      {GameSaveType::KEEPER, "Keeper games:"}}, optionsUnused, files);
+      {GameSaveType::KEEPER, "Keeper games:"}, {GameSaveType::ADVENTURER, "Adventurer games:"}}, optionsUnused, files);
   auto toLoad = std::min_element(files.begin(), files.end(),
       [](const auto& f1, const auto& f2) { return f1.date > f2.date; });
   PGame game;
