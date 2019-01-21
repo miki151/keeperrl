@@ -328,7 +328,7 @@ bool Tutorial::blockAutoEquipment() const {
 
 static void clearDugOutSquares(WConstGame game, vector<Vec2>& highlights) {
   for (auto elem : Iter(highlights)) {
-    if (auto furniture = Position(*elem, game->getPlayerCollective()->getLevel())
+    if (auto furniture = Position(*elem, game->getPlayerCollective()->getModel()->getTopLevel())
         .getFurniture(FurnitureLayer::MIDDLE))
       if (furniture->canDestroy(DestroyAction::Type::DIG))
         continue;
@@ -374,7 +374,7 @@ vector<Vec2> Tutorial::getHighlightedSquaresLow(WConstGame game) const {
       vector<Vec2> ret;
       for (Vec2 v : roomCenter.neighbors8())
         if (v.y != roomCenter.y && !collective->getConstructions().containsFurniture(
-              Position(v, collective->getLevel()), FurnitureLayer::MIDDLE))
+              Position(v, collective->getModel()->getTopLevel()), FurnitureLayer::MIDDLE))
           ret.push_back(v);
       return ret;
     }
@@ -460,7 +460,7 @@ void Tutorial::createTutorial(Game& game, GameConfig* gameConfig) {
   game.getPlayerControl()->setTutorial(tutorial);
   auto collective = game.getPlayerCollective();
   bool foundEntrance = false;
-  for (auto pos : collective->getLevel()->getAllPositions())
+  for (auto pos : collective->getModel()->getTopLevel()->getAllPositions())
     if (auto f = pos.getFurniture(FurnitureLayer::CEILING))
       if (f->getType() == FurnitureType::TUTORIAL_ENTRANCE) {
         tutorial->entrance = pos.getCoord() - Vec2(0, 1);

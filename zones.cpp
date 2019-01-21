@@ -9,29 +9,31 @@
 SERIALIZE_DEF(Zones, positions, zones)
 SERIALIZATION_CONSTRUCTOR_IMPL(Zones)
 
-Zones::Zones(Rectangle bounds) : zones(bounds) {
-}
-
 bool Zones::isZone(Position pos, ZoneId id) const {
   //PROFILE;
-  return zones[pos.getCoord()].contains(id);
+  if (auto z = zones.getReferenceMaybe(pos))
+    if (z->contains(id))
+      return true;
+  return false;
 }
 
 bool Zones::isAnyZone(Position pos, EnumSet<ZoneId> id) const {
   //PROFILE;
-  return !zones[pos.getCoord()].intersection(id).isEmpty();
+  if (auto z = zones.getReferenceMaybe(pos))
+    return !z->intersection(id).isEmpty();
+  return false;
 }
 
 void Zones::setZone(Position pos, ZoneId id) {
   PROFILE;
-  zones[pos.getCoord()].insert(id);
+  zones.getOrInit(pos).insert(id);
   positions[id].insert(pos);
   pos.setNeedsRenderUpdate(true);
 }
 
 void Zones::eraseZone(Position pos, ZoneId id) {
   PROFILE;
-  zones[pos.getCoord()].erase(id);
+  zones.getOrInit(pos).erase(id);
   positions[id].erase(pos);
   pos.setNeedsRenderUpdate(true);
 }

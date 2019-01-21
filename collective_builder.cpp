@@ -11,6 +11,7 @@
 #include "immigration.h"
 #include "territory.h"
 #include "view_object.h"
+#include "level.h"
 
 CollectiveBuilder::CollectiveBuilder(const CollectiveConfig& cfg, TribeId t)
     : config(cfg), tribe(t) {
@@ -18,6 +19,11 @@ CollectiveBuilder::CollectiveBuilder(const CollectiveConfig& cfg, TribeId t)
 
 CollectiveBuilder& CollectiveBuilder::setLevel(WLevel l) {
   level = l;
+  return *this;
+}
+
+CollectiveBuilder& CollectiveBuilder::setModel(WModel m) {
+  model = m;
   return *this;
 }
 
@@ -85,8 +91,10 @@ optional<CollectiveName> CollectiveBuilder::generateName() {
 }
 
 PCollective CollectiveBuilder::build() {
-  CHECK(level);
-  auto c = Collective::create(level, *tribe, generateName(), discoverable);
+  CHECK(model || level);
+  if (!model)
+    model = level->getModel();
+  auto c = Collective::create(model, *tribe, generateName(), discoverable);
   c->init(std::move(*config));
   c->setControl(CollectiveControl::idle(c.get()));
   bool wasLeader = false;
@@ -97,6 +105,7 @@ PCollective CollectiveBuilder::build() {
   }
   CHECK(wasLeader || creatures.empty()) << "No leader added to collective " << c->getName()->full;
   for (Vec2 v : squares) {
+    CHECK(level);
     Position pos(v, level);
     c->addKnownTile(pos);
     //if (c->canClaimSquare(pos))

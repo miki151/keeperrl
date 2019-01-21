@@ -119,7 +119,7 @@ PlayerControl::PlayerControl(Private, WCollective col, KeeperCreatureInfo keeper
   visibilityMap = make_shared<VisibilityMap>();
   unknownLocations = make_shared<UnknownLocations>();
   memory.reset(new MapMemory());
-  for (auto pos : col->getLevel()->getAllPositions())
+  for (auto pos : col->getModel()->getTopLevel()->getAllPositions())
     if (auto f = pos.getFurniture(FurnitureLayer::MIDDLE))
       if (f->isClearFogOfWar())
         addToMemory(pos);
@@ -128,7 +128,7 @@ PlayerControl::PlayerControl(Private, WCollective col, KeeperCreatureInfo keeper
 PPlayerControl PlayerControl::create(WCollective col, vector<string> introText,
     KeeperCreatureInfo keeperInfo) {
   auto ret = makeOwner<PlayerControl>(Private{}, col, keeperInfo);
-  ret->subscribeTo(col->getLevel()->getModel());
+  ret->subscribeTo(col->getModel());
   ret->introText = introText;
   return ret;
 }
@@ -1016,7 +1016,7 @@ vector<CollectiveInfo::CreatureGroup> PlayerControl::getCreatureGroups(vector<WC
 vector<CollectiveInfo::CreatureGroup> PlayerControl::getEnemyGroups() const {
   vector<WCreature> enemies;
   for (Vec2 v : getVisibleEnemies())
-    if (WCreature c = Position(v, collective->getLevel()).getCreature())
+    if (WCreature c = Position(v, getCurrentLevel()).getCreature())
       enemies.push_back(c);
   return getCreatureGroups(enemies);
 }
@@ -1438,8 +1438,8 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   gameInfo.time = collective->getGame()->getGlobalTime();
   gameInfo.modifiedSquares = gameInfo.totalSquares = 0;
   for (WCollective col : collective->getGame()->getCollectives()) {
-    gameInfo.modifiedSquares += col->getLevel()->getNumGeneratedSquares();
-    gameInfo.totalSquares += col->getLevel()->getNumTotalSquares();
+    gameInfo.modifiedSquares += getCurrentLevel()->getNumGeneratedSquares();
+    gameInfo.totalSquares += getCurrentLevel()->getNumTotalSquares();
   }
   info.teams.clear();
   for (int i : All(getTeams().getAll())) {
@@ -1680,7 +1680,7 @@ void PlayerControl::getSquareViewIndex(Position pos, bool canSee, ViewIndex& ind
 
 void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
   PROFILE;
-  Position position(pos, collective->getLevel());
+  Position position(pos, getCurrentLevel());
   if (!position.isValid())
     return;
   bool canSeePos = canSee(position);
@@ -1744,7 +1744,7 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
 
 Vec2 PlayerControl::getPosition() const {
   if (WConstCreature keeper = getKeeper())
-    if (!keeper->isDead() && keeper->getLevel() == getLevel())
+    if (!keeper->isDead() && keeper->getLevel() == getCurrentLevel())
       return keeper->getPosition().getCoord();
   if (!collective->getTerritory().isEmpty())
     return collective->getTerritory().getAll().front().getCoord();
@@ -1918,14 +1918,6 @@ void PlayerControl::processInput(View* view, UserInput input) {
           else
             setScrollPos(loc->getMiddle());
         }*/
-      }
-      break;
-    case UserInputId::GO_TO_VILLAGE:
-      if (WCollective col = getVillain(input.get<Collective::Id>())) {
-        if (col->getLevel() != getLevel())
-          setScrollPos(col->getTerritory().getAll()[0]);
-        else
-          scrollToMiddle(col->getTerritory().getAll());
       }
       break;
     case UserInputId::DISMISS_VILLAGE_INFO: {
@@ -2147,7 +2139,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
       break;
     case UserInputId::GO_TO_ENEMY:
       for (Vec2 v : getVisibleEnemies())
-        if (WCreature c = Position(v, collective->getLevel()).getCreature())
+        if (WCreature c = Position(v, getCurrentLevel()).getCreature())
           setScrollPos(c->getPosition());
       break;
     case UserInputId::ADD_GROUP_TO_TEAM: {
@@ -2596,6 +2588,13 @@ void PlayerControl::update(bool currentlyActive) {
   }
 }
 
+WLevel PlayerControl::getCurrentLevel() const {
+  if (!currentLevel)
+    return getModel()->getTopLevel();
+  else
+    return currentLevel;
+}
+
 bool PlayerControl::isConsideredAttacking(WConstCreature c, WConstCollective enemy) {
   if (enemy && enemy->getModel() == getModel())
     return canSee(c) && (collective->getTerritory().contains(c->getPosition()) ||
@@ -2700,15 +2699,15 @@ void PlayerControl::onMemberAdded(WCreature c) {
 }
 
 WLevel PlayerControl::getLevel() const {
-  return collective->getLevel();
+  return getCurrentLevel();
 }
 
 WModel PlayerControl::getModel() const {
-  return getLevel()->getModel();
+  return collective->getModel();
 }
 
 WGame PlayerControl::getGame() const {
-  return getLevel()->getModel()->getGame();
+  return collective->getGame();
 }
 
 View* PlayerControl::getView() const {
@@ -2760,7 +2759,7 @@ void PlayerControl::onDestructed(Position pos, FurnitureType type, const Destroy
 
 void PlayerControl::updateVisibleCreatures() {
   visibleEnemies.clear();
-  for (WConstCreature c : getLevel()->getAllCreatures())
+  for (WConstCreature c : getCurrentLevel()->getAllCreatures())
     if (canSee(c) && isEnemy(c))
       visibleEnemies.push_back(c->getPosition().getCoord());
 }

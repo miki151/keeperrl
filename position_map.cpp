@@ -8,6 +8,7 @@
 #include "furniture_type.h"
 #include "furniture_layer.h"
 #include "construction_map.h"
+#include "zones.h"
 
 template <typename T>
 optional<T&> getReferenceOptional(optional<T>& t) {
@@ -176,6 +177,7 @@ SERIALIZABLE_TMPL(PositionMap, double)
 class Task;
 
 SERIALIZABLE_TMPL(PositionMap, WTask)
+SERIALIZABLE_TMPL(PositionMap, EnumSet<ZoneId>)
 SERIALIZABLE_TMPL(PositionMap, HighlightType)
 SERIALIZABLE_TMPL(PositionMap, vector<WTask>)
 SERIALIZABLE_TMPL(PositionMap, ViewIndex)

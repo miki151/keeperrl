@@ -16,6 +16,7 @@ struct CollectiveName;
 class CollectiveBuilder {
   public:
   CollectiveBuilder(const CollectiveConfig&, TribeId);
+  CollectiveBuilder& setModel(WModel);
   CollectiveBuilder& setLevel(WLevel);
   CollectiveBuilder& addCreature(WCreature, EnumSet<MinionTrait>);
   CollectiveBuilder& addArea(const vector<Vec2>&);
@@ -31,7 +32,8 @@ class CollectiveBuilder {
 
   private:
   optional<CollectiveName> getCollectiveName();
-  WLevel level = nullptr;
+  WModel model;
+  WLevel level;
   struct CreatureInfo {
     WCreature creature;
     EnumSet<MinionTrait> traits;

@@ -2,6 +2,7 @@
 
 #include "util.h"
 #include "position.h"
+#include "position_map.h"
 
 RICH_ENUM(ZoneId,
   FETCH_ITEMS,
@@ -21,7 +22,6 @@ extern ViewId getViewId(ZoneId);
 
 class Zones {
   public:
-  Zones(Rectangle bounds);
   bool isZone(Position, ZoneId) const;
   bool isAnyZone(Position, EnumSet<ZoneId>) const;
   void setZone(Position, ZoneId);
@@ -36,5 +36,5 @@ class Zones {
 
   private:
   EnumMap<ZoneId, PositionSet> SERIAL(positions);
-  Table<EnumSet<ZoneId>> SERIAL(zones);
+  PositionMap<EnumSet<ZoneId>> SERIAL(zones);
 };

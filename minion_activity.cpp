@@ -41,16 +41,16 @@ static optional<Position> getTileToExplore(WConstCollective collective, WConstCr
     case MinionActivity::EXPLORE_CAVES:
       if (auto pos = getRandomCloseTile(c->getPosition(), border,
             [&](Position p) {
-                return p.isSameLevel(collective->getLevel()) && p.isCovered() &&
-                    (!c->getPosition().isSameLevel(collective->getLevel()) || c->isSameSector(p));}))
+                return p.isCovered() &&
+                    (!c->getPosition().isSameLevel(p) || c->isSameSector(p));}))
         return pos;
       FALLTHROUGH;
     case MinionActivity::EXPLORE:
       FALLTHROUGH;
     case MinionActivity::EXPLORE_NOCTURNAL:
       return getRandomCloseTile(c->getPosition(), border,
-          [&](Position pos) { return pos.isSameLevel(collective->getLevel()) && !pos.isCovered()
-              && (!c->getPosition().isSameLevel(collective->getLevel()) || c->isSameSector(pos));});
+          [&](Position pos) { return !pos.isCovered()
+              && (!c->getPosition().isSameLevel(pos) || c->isSameSector(pos));});
     default: FATAL << "Unrecognized explore task: " << int(task);
   }
   return none;

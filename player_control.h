@@ -122,6 +122,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
 
   private:
 
+  WLevel getCurrentLevel() const;
   void considerNightfallMessage();
   void considerWarning();
 
@@ -247,5 +248,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   vector<BuildInfo> SERIAL(buildInfo);
   void reloadData();
   void reloadBuildingMenu();
+  WLevel currentLevel;
 };
 

@@ -62,7 +62,7 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
   ar(creatures, taskMap, tribe, control, byTrait, populationGroups, hadALeader);
   ar(territory, alarmInfo, markedItems, constructions, minionEquipment);
   ar(delayedPos, knownTiles, technology, kills, points, currentActivity);
-  ar(credit, level, immigration, teams, name, conqueredVillains);
+  ar(credit, model, immigration, teams, name, conqueredVillains);
   ar(config, warnings, knownVillains, knownVillainLocations, banished, positionMatching);
   ar(villainType, enemyId, workshops, zones, discoverable, quarters, populationIncrease, dungeonLevel);
 }
@@ -71,14 +71,14 @@ SERIALIZABLE(Collective)
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Collective)
 
-Collective::Collective(Private, WLevel l, TribeId t, const optional<CollectiveName>& n)
-    : tribe(t), level(NOTNULL(l)), name(n), villainType(VillainType::NONE), zones(level->getBounds()),
+Collective::Collective(Private, WModel model, TribeId t, const optional<CollectiveName>& n)
+    : tribe(t), model(NOTNULL(model)), name(n), villainType(VillainType::NONE),
       positionMatching(makeOwner<PositionMatching>()) {
 }
 
-PCollective Collective::create(WLevel level, TribeId tribe, const optional<CollectiveName>& name, bool discoverable) {
-  auto ret = makeOwner<Collective>(Private {}, level, tribe, name);
-  ret->subscribeTo(level->getModel());
+PCollective Collective::create(WModel model, TribeId tribe, const optional<CollectiveName>& name, bool discoverable) {
+  auto ret = makeOwner<Collective>(Private {}, model, tribe, name);
+  ret->subscribeTo(model);
   if (discoverable)
     ret->setDiscoverable();
   ret->workshops = unique<Workshops>(std::array<vector<WorkshopItemCfg>, 4>());
@@ -289,12 +289,8 @@ WCreature Collective::getLeader() const {
     return nullptr;
 }
 
-WLevel Collective::getLevel() const {
-  return level;
-}
-
 WGame Collective::getGame() const {
-  return level->getModel()->getGame();
+  return model->getGame();
 }
 
 WCollectiveControl Collective::getControl() const {
@@ -310,7 +306,7 @@ Tribe* Collective::getTribe() const {
 }
 
 WModel Collective::getModel() const {
-  return getLevel()->getModel();
+  return model;
 }
 
 const vector<WCreature>& Collective::getCreatures() const {
@@ -425,7 +421,7 @@ double Collective::getRebellionProbability() const {
 
 void Collective::considerRebellion() {
   if (Random.chance(getRebellionProbability() / 1000)) {
-    Position escapeTarget = getLevel()->getLandingSquare(StairKey::transferLanding(),
+    Position escapeTarget = model->getTopLevel()->getLandingSquare(StairKey::transferLanding(),
         Random.choose(Vec2::directions8()));
     for (auto c : copyOf(getCreatures(MinionTrait::PRISONER))) {
       removeCreature(c);
@@ -600,7 +596,7 @@ void Collective::onEvent(const GameEvent& event) {
         positionMatching->updateMovement(info.pos);
       },
       [&](const FurnitureDestroyed& info) {
-        if (info.position.isSameLevel(getLevel())) {
+        if (info.position.getModel() == model) {
           populationIncrease -= Furniture::getPopulationIncrease(info.type, constructions->getBuiltCount(info.type));
           constructions->onFurnitureDestroyed(info.position, info.layer);
           populationIncrease += Furniture::getPopulationIncrease(info.type, constructions->getBuiltCount(info.type));
@@ -1063,30 +1059,35 @@ void Collective::updateConstructions() {
 
 void Collective::delayDangerousTasks(const vector<Position>& enemyPos1, LocalTime delayTime) {
   PROFILE;
-  vector<Vec2> enemyPos = enemyPos1
-      .filter([=] (const Position& p) { return p.isSameLevel(level); })
-      .transform([] (const Position& p) { return p.getCoord();});
-  int infinity = 1000000;
-  int radius = 10;
-  Table<int> dist(Rectangle::boundingBox(enemyPos)
-      .minusMargin(-radius)
-      .intersection(getLevel()->getBounds()), infinity);
-  queue<Vec2> q;
-  for (Vec2 v : enemyPos) {
-    dist[v] = 0;
-    q.push(v);
-  }
-  while (!q.empty()) {
-    Vec2 pos = q.front();
-    q.pop();
-    delayedPos[Position(pos, level)] = delayTime;
-    if (dist[pos] >= radius)
-      continue;
-    for (Vec2 v : pos.neighbors8())
-      if (v.inRectangle(dist.getBounds()) && dist[v] == infinity && territory->contains(Position(v, level))) {
-        dist[v] = dist[pos] + 1;
-        q.push(v);
-      }
+  unordered_set<WLevel, CustomHash<WLevel>> levels;
+  for (auto& pos : enemyPos1)
+    levels.insert(pos.getLevel());
+  for (auto& level : levels) {
+    vector<Vec2> enemyPos = enemyPos1
+        .filter([=] (const Position& p) { return p.isSameLevel(level); })
+        .transform([] (const Position& p) { return p.getCoord();});
+    int infinity = 1000000;
+    int radius = 10;
+    Table<int> dist(Rectangle::boundingBox(enemyPos)
+        .minusMargin(-radius)
+        .intersection(level->getBounds()), infinity);
+    queue<Vec2> q;
+    for (Vec2 v : enemyPos) {
+      dist[v] = 0;
+      q.push(v);
+    }
+    while (!q.empty()) {
+      Vec2 pos = q.front();
+      q.pop();
+      delayedPos[Position(pos, level)] = delayTime;
+      if (dist[pos] >= radius)
+        continue;
+      for (Vec2 v : pos.neighbors8())
+        if (v.inRectangle(dist.getBounds()) && dist[v] == infinity && territory->contains(Position(v, level))) {
+          dist[v] = dist[pos] + 1;
+          q.push(v);
+        }
+    }
   }
 }
 
@@ -1170,10 +1171,9 @@ bool Collective::addKnownTile(Position pos) {
   if (!knownTiles->isKnown(pos)) {
     pos.setNeedsRenderUpdate(true);
     knownTiles->addTile(pos);
-    if (pos.getLevel() == level)
-      if (WTask task = taskMap->getMarked(pos))
-        if (task->isBogus())
-          taskMap->removeTask(task);
+    if (WTask task = taskMap->getMarked(pos))
+      if (task->isBogus())
+        taskMap->removeTask(task);
     return true;
   } else
     return false;

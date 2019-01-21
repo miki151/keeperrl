@@ -98,7 +98,7 @@ void Game::spawnKeeper(AvatarInfo avatarInfo, bool regenerateMana, vector<string
   model->addCreature(std::move(avatarInfo.playerCreature));
   auto keeperInfo = avatarInfo.creatureInfo.getReferenceMaybe<KeeperCreatureInfo>();
   model->addCollective(CollectiveBuilder(getKeeperConfig(false, regenerateMana), keeperRef->getTribeId())
-      .setLevel(level)
+      .setModel(model)
       .addCreature(keeperRef, {MinionTrait::LEADER})
       .build());
   playerCollective = model->getCollectives().back();
@@ -209,7 +209,7 @@ void Game::prepareSiteRetirement() {
   if (!locationPos.empty())
     playerCollective->getTerritory().setCentralPoint(
         Position(Rectangle::boundingBox(locationPos.transform([](Position p){ return p.getCoord();})).middle(),
-            playerCollective->getLevel()));
+            playerCollective->getModel()->getTopLevel()));
   for (auto c : playerCollective->getCreatures())
     c->retire();
   playerControl = nullptr;

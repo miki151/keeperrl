@@ -84,7 +84,6 @@ enum class UserInputId {
     LIBRARY_ADD,
     LIBRARY_CLOSE,
     VILLAGE_ACTION,
-    GO_TO_VILLAGE,
     DISMISS_VILLAGE_INFO,
     PAY_RANSOM,
     IGNORE_RANSOM,
@@ -196,7 +195,7 @@ enum class SpellId;
 class UserInput : public EnumVariant<UserInputId, TYPES(BuildingInfo, int, UniqueEntity<Creature>::Id,
     UniqueEntity<PlayerMessage>::Id, InventoryItemInfo, Vec2, TeamCreatureInfo, SpellId, VillageActionInfo,
     TaskActionInfo, EquipmentActionInfo, RenameActionInfo, WorkshopQueuedActionInfo, CreatureDropInfo, TeamDropInfo,
-    UniqueEntity<Collective>::Id, string, TeamMemberActionInfo, AssignQuartersInfo, TeamOrder, DismissVillageInfo),
+    string, TeamMemberActionInfo, AssignQuartersInfo, TeamOrder, DismissVillageInfo),
         ASSIGN(BuildingInfo,
             UserInputId::BUILD,
             UserInputId::RECT_SELECTION,
@@ -214,9 +213,6 @@ class UserInput : public EnumVariant<UserInputId, TYPES(BuildingInfo, int, Uniqu
             ),
         ASSIGN(UniqueEntity<PlayerMessage>::Id,
             UserInputId::MESSAGE_INFO
-            ),
-        ASSIGN(UniqueEntity<Collective>::Id,
-            UserInputId::GO_TO_VILLAGE
             ),
         ASSIGN(int,
             UserInputId::WORKSHOP,
