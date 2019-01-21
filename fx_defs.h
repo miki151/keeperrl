@@ -78,7 +78,7 @@ struct EmitterDef {
 
 using AnimateParticleFunc = void (*)(AnimationContext&, Particle&);
 using DrawParticleFunc = bool (*)(DrawContext&, const Particle&, DrawParticle&);
-using DrawParticlesFunc = void (*)(DrawContext&, const Particle&, vector<DrawParticle>&);
+using DrawParticlesFunc = void (*)(DrawContext&, const Particle&, vector<DrawParticle>&, Color);
 
 // Returns number of particles to emit
 // Fractionals will be accumulated over time

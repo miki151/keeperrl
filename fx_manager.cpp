@@ -257,14 +257,15 @@ void FXManager::genQuads(vector<DrawParticle>& out, int id, int ssid) {
 
   if (ctx.ssdef.multiDrawFunc)
     for (auto& pinst : ss.particles) {
-      int num = out.size();
-      ctx.ssdef.multiDrawFunc(ctx, pinst, out);
+      ctx.ssdef.multiDrawFunc(ctx, pinst, out, ps.color);
     }
   else
     for (auto& pinst : ss.particles) {
       DrawParticle dparticle;
-      if (ctx.ssdef.drawFunc(ctx, pinst, dparticle))
-        out.emplace_back(dparticle);
+      if (ctx.ssdef.drawFunc(ctx, pinst, dparticle)) {
+        dparticle.color = dparticle.color.blend(ps.color);
+        out.push_back(std::move(dparticle));
+      }
     }
 }
 
@@ -300,11 +301,11 @@ ParticleSystem FXManager::makeSystem(FXName name, uint spawnTime, InitConfig con
       int index = randomGen->get(ssGroup->snapshots.size());
       auto& key = ssGroup->key;
       INFO << "FX: using snapshot: " << ENUM_STRING(name) << " (" << key.scalar[0] << ", " << key.scalar[1] << ")";
-      return {name, config, spawnTime, ssGroup->snapshots[index]};
+      return ParticleSystem(name, config, spawnTime, ssGroup->snapshots[index]);
     }
 
   auto& def = (*this)[name];
-  ParticleSystem out{name, config, spawnTime, vector<ParticleSystem::SubSystem>((int)def.subSystems.size())};
+  ParticleSystem out(name, config, spawnTime, vector<ParticleSystem::SubSystem>((int)def.subSystems.size()));
   for (int ssid = 0; ssid < (int)out.subSystems.size(); ssid++) {
     auto& ss = out.subSystems[ssid];
     ss.randomSeed = randomGen->get(INT_MAX);
@@ -316,9 +317,6 @@ ParticleSystem FXManager::makeSystem(FXName name, uint spawnTime, InitConfig con
 }
 
 ParticleSystemId FXManager::addSystem(FXName name, InitConfig config) {
-  auto& def = (*this)[name];
-
-  int new_slot = -1;
   for (int n = 0; n < (int)systems.size(); n++)
     if (systems[n].isDead) {
       if (systems[n].spawnTime == spawnClock) {

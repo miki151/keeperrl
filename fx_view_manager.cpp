@@ -51,11 +51,11 @@ FXId FXViewManager::spawnOrderedEffect(const FXInfo& info, bool snapshot) {
   return fxManager->addSystem(info.name, config);
 }
 
-FXId FXViewManager::spawnUnorderedEffect(FXName name, float x, float y, Vec2 dir) {
+FXId FXViewManager::spawnUnorderedEffect(FXName name, float x, float y, Vec2 dir, Color color) {
   auto fpos = (FVec2(x, y) + FVec2(0.5f)) * Renderer::nominalSize;
   auto ftargetOff = FVec2(dir.x, dir.y) * Renderer::nominalSize;
   INFO << "FX spawn unordered: " << ENUM_STRING(name) << " at:" << x << ", " << y << " dir:" << dir;
-  return fxManager->addSystem(name, {fpos, ftargetOff});
+  return fxManager->addSystem(name, InitConfig(fpos, ftargetOff, color));
 }
 
 void FXViewManager::EntityInfo::clearVisibility() {
@@ -195,7 +195,7 @@ void FXViewManager::finishFrame() {
   }
 }
 
-void FXViewManager::drawFX(Renderer& renderer, GenericId id) {
+void FXViewManager::drawFX(Renderer& renderer, GenericId id, Color color) {
   auto it = entities->find(id);
   PASSERT(it != entities->end());
   auto& entity = it->second;
@@ -210,35 +210,26 @@ void FXViewManager::drawFX(Renderer& renderer, GenericId id) {
   }
 
   if (num > 0) {
-    renderer.flushSprites();
+    renderer.renderDeferredSprites();
     float px = (entity.x) * Renderer::nominalSize * m_zoom;
     float py = (entity.y) * Renderer::nominalSize * m_zoom;
-    fxRenderer->drawOrdered(ids, num, px, py);
+    fxRenderer->drawOrdered(ids, num, px, py, color);
   }
 }
 
 void FXViewManager::drawUnorderedBackFX(Renderer& renderer) {
-  renderer.flushSprites();
+  renderer.renderDeferredSprites();
   fxRenderer->drawUnordered(fx::Layer::back);
 }
 
 void FXViewManager::drawUnorderedFrontFX(Renderer& renderer) {
-  renderer.flushSprites();
+  renderer.renderDeferredSprites();
   fxRenderer->drawUnordered(fx::Layer::front);
 }
 
-void FXViewManager::addUnmanagedFX(const FXSpawnInfo& spawnInfo) {
+void FXViewManager::addUnmanagedFX(const FXSpawnInfo& spawnInfo, Color color) {
   auto coord = spawnInfo.position;
   float x = coord.x, y = coord.y;
-  if (spawnInfo.genericId) {
-    // TODO: delay until end of frame? Increases chance that entity info will be available
-    auto it = entities->find(spawnInfo.genericId);
-    if (it != entities->end()) {
-      x = it->second.x;
-      y = it->second.y;
-    }
-  }
-
-  auto id = spawnUnorderedEffect(spawnInfo.info.name, x, y, spawnInfo.targetOffset);
+  auto id = spawnUnorderedEffect(spawnInfo.info.name, x, y, spawnInfo.targetOffset, color);
   updateParams(spawnInfo.info, id);
 }

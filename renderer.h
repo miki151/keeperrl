@@ -131,8 +131,8 @@ class Renderer {
   void setAnimationsDirectory(const DirectoryPath&);
   void loadTiles();
   void makeScreenshot(const FilePath&);
+  void renderDeferredSprites();
 
-  void flushSprites() { renderDeferredSprites(); }
   Vec2 getTileSize(TileCoord coord) const { return tileDirectories[coord.texNum].size; }
 
   private:
@@ -187,7 +187,6 @@ class Renderer {
     optional<Color> color;
   };
   vector<DeferredSprite> deferredSprites;
-  void renderDeferredSprites();
   vector<Rectangle> scissorStack;
   void loadTilesFromDir(const DirectoryPath&, Vec2 size, int setWidth);
   struct TileDirectory {

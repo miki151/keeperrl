@@ -45,7 +45,7 @@ ParticleSystem::SubSystem::SubSystem() {
 
 ParticleSystem::ParticleSystem(FXName defId, const InitConfig& config, uint spawnTime, vector<SubSystem> snapshot)
     : subSystems(std::move(snapshot)), pos(config.pos), targetOffset(config.targetOffset), defId(defId),
-      spawnTime(spawnTime), orderedDraw(config.orderedDraw) {
+      spawnTime(spawnTime), color(config.color), orderedDraw(config.orderedDraw) {
   float dist = length(targetOffset);
   targetDir = dist < 0.00001f ? FVec2(1, 0) : targetOffset / dist;
   targetTileDist = dist / float(Renderer::nominalSize);
@@ -203,7 +203,7 @@ bool defaultDrawParticle(DrawContext& ctx, const Particle& pinst, DrawParticle& 
   FColor color(pdef.color.sample(ptime) * colorMul, alpha);
   out.positions = ctx.quadCorners(pos, size, pinst.rot);
   out.texCoords = ctx.texQuadCorners(pinst.texTile);
-  out.color = IColor(color);
+  out.color = Color(color);
   out.texName = ctx.pdef.textureName;
   return true;
 }

@@ -30,13 +30,10 @@ optional<FXInfo> walkOverFXInfo(FurnitureType);
 optional<FXVariantName> getFurnitureUsageFX(FurnitureType);
 
 struct FXSpawnInfo {
-  FXSpawnInfo(FXInfo info, Vec2 pos, GenericId gid, Vec2 offset = {})
-      : position(pos), genericId(gid), targetOffset(offset), info(info) { }
   FXSpawnInfo(FXInfo info, Vec2 pos, Vec2 offset = {})
-      : position(pos), genericId(0), targetOffset(offset), info(info) { }
+      : position(pos), targetOffset(offset), info(info) { }
 
   Vec2 position;
-  GenericId genericId;
   Vec2 targetOffset;
   FXInfo info;
 };

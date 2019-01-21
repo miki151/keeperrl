@@ -61,7 +61,6 @@ using IRect = Rect<IVec2>;
 using FRect = Rect<FVec2>;
 
 struct FColor;
-struct IColor;
 
 template <class T> struct Curve;
 

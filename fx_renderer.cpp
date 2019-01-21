@@ -284,21 +284,25 @@ void FXRenderer::drawParticles(FVec2 viewOffset, Framebuffer& blendFBO, Framebuf
 
 static void drawTexturedQuad(const FRect& rect, const FRect& trect) {
   SDL::glBegin(GL_QUADS);
-  SDL::glTexCoord2f(trect.x(), 1.0f - trect.ey()), SDL::glVertex2f(rect.x(), rect.ey());
-  SDL::glTexCoord2f(trect.ex(), 1.0f - trect.ey()), SDL::glVertex2f(rect.ex(), rect.ey());
-  SDL::glTexCoord2f(trect.ex(), 1.0f - trect.y()), SDL::glVertex2f(rect.ex(), rect.y());
-  SDL::glTexCoord2f(trect.x(), 1.0f - trect.y()), SDL::glVertex2f(rect.x(), rect.y());
+  SDL::glTexCoord2f(trect.x(), 1.0f - trect.ey());
+  SDL::glVertex2f(rect.x(), rect.ey());
+  SDL::glTexCoord2f(trect.ex(), 1.0f - trect.ey());
+  SDL::glVertex2f(rect.ex(), rect.ey());
+  SDL::glTexCoord2f(trect.ex(), 1.0f - trect.y());
+  SDL::glVertex2f(rect.ex(), rect.y());
+  SDL::glTexCoord2f(trect.x(), 1.0f - trect.y());
+  SDL::glVertex2f(rect.x(), rect.y());
   SDL::glEnd();
 }
 
-void FXRenderer::drawOrdered(const int* ids, int count, float offsetX, float offsetY) {
+void FXRenderer::drawOrdered(const int* ids, int count, float offsetX, float offsetY, Color color) {
   PROFILE;
 
   SDL::glPushAttrib(GL_ENABLE_BIT);
   SDL::glDisable(GL_DEPTH_TEST);
   SDL::glDisable(GL_CULL_FACE);
   SDL::glEnable(GL_TEXTURE_2D);
-  glColor(Color::WHITE);
+  glColor(color);
 
   if (useFramebuffer) {
     tempRects.clear();
@@ -386,16 +390,6 @@ void FXRenderer::drawOrdered(const int* ids, int count, float offsetX, float off
 
   SDL::glPopAttrib();
   SDL::glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-}
-
-void FXRenderer::drawAllOrdered() {
-  vector<int> ids;
-  auto& systems = mgr.getSystems();
-  ids.reserve(systems.size());
-  for (int n = 0; n < systems.size(); n++)
-    if (!systems[n].isDead && systems[n].orderedDraw)
-      ids.emplace_back(n);
-  drawOrdered(ids.data(), ids.size(), 0.0f, 0.0f);
 }
 
 void FXRenderer::drawUnordered(Layer layer) {

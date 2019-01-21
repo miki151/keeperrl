@@ -81,7 +81,7 @@ static void addWoodSplinters(FXManager &mgr) {
     pinst.pos.y = min(pinst.pos.y, shadow_max);
   };
 
-  FColor brown(IColor(120, 87, 46));
+  FColor brown(Color(120, 87, 46));
   // Kiedy cząsteczki opadną pod drzewo, robią się w zasięgu cienia
   // TODO: lepiej rysować je po prostu pod cieniem
   pdef.color = {{0.0f, 0.15f, 0.17}, {brown.rgb(), brown.rgb(), brown.rgb() * 0.6f}};
@@ -154,6 +154,10 @@ static void addRockCloud(FXManager &mgr) {
   mgr.addDef(FXName::ROCK_CLOUD, psdef);
 }
 
+static FVec3 rgb(Color color) {
+  return FColor(color).rgb();
+}
+
 static void addPoisonCloud(FXManager& mgr) {
   EmitterDef edef;
   edef.source = FRect(-5.0f, -5.0f, 5.0f, 5.0f);
@@ -165,7 +169,7 @@ static void addPoisonCloud(FXManager& mgr) {
   pdef.size = {{0.0f, 0.4f, 1.0f}, {15.0f, 30.0f, 38.0f}};
   pdef.alpha = {{0.0f, 0.05f, 0.2f, 1.0f}, {0.0f, 0.3f, 0.4f, 0.0f}};
   pdef.slowdown = {{0.0f, 0.2f}, {0.0f, 10.0f}};
-  pdef.color = IColor(100, 200, 50).rgb();
+  pdef.color = rgb(Color(100, 200, 50));
   pdef.textureName = TextureName::CLOUDS_SOFT;
 
   SubSystemDef ssdef1(pdef, edef, 0.0f, 1.0f);
@@ -187,7 +191,7 @@ static void addPoisonCloud(FXManager& mgr) {
     if (!defaultDrawParticle(ctx, pinst, out))
       return false;
     float mod = max(0.0f, ctx.ps.params.scalar[0] * 0.3f - 0.1f);
-    out.color = IColor(FColor(out.color) * mod);
+    out.color = Color(FColor(out.color) * mod);
     return true;
   };
 
@@ -235,8 +239,8 @@ static void addFireballSplashEffect(FXManager& mgr) {
 
   // TODO: something's wrong with color interpolation here
   // (try setting color2 to (200, 20, 20) and use only keys: 0.7 & 1.0)
-  IColor color1(137, 76, 25), color2(200, 0, 0);
-  pdef.color = {{0.0f, 0.7f, 1.0f}, {color1.rgb(), color1.rgb(), color2.rgb()}};
+  Color color1(137, 76, 25), color2(200, 0, 0);
+  pdef.color = {{0.0f, 0.7f, 1.0f}, {rgb(color1), rgb(color1), rgb(color2)}};
   pdef.alpha = {{0.0f, 0.2f, 0.8f, 1.0f}, {0.0f, 1.0f, 1.0f, 0.0f}};
   pdef.textureName = TextureName::FLAMES;
 
@@ -371,15 +375,17 @@ static void addCircularBlast(FXManager& mgr) {
       if (pos > 1.0f)
         pinst.life = pinst.maxLife;
     };
-    ssdef.multiDrawFunc = [](DrawContext& ctx, const Particle& pinst, vector<DrawParticle>& out) {
+    ssdef.multiDrawFunc = [](DrawContext& ctx, const Particle& pinst, vector<DrawParticle>& out, Color color) {
       for (int n = 0; n < 12; n++) {
         float angle = float(n) * (fconstant::pi * 2.0f / 12.0f);
         DrawParticle dpart;
         Particle temp(pinst);
         temp.pos = rotateVector(temp.pos, angle);
         temp.rot = angle;
-        if (defaultDrawParticle(ctx, temp, dpart))
-          out.emplace_back(dpart);
+        if (defaultDrawParticle(ctx, temp, dpart)) {
+          dpart.color = dpart.color.blend(color);
+          out.push_back(std::move(dpart));
+        }
       }
     };
 
@@ -577,7 +583,7 @@ static void addOldMagicMissileEffect(FXManager& mgr) {
     ssdef.drawFunc = [](DrawContext& ctx, const Particle& pinst, DrawParticle& out) {
       if (!defaultDrawParticle(ctx, pinst, out))
         return false;
-      out.color = IColor(FColor(out.color) * choose(magicMissileColors, pinst.randomSeed));
+      out.color = Color(FColor(out.color) * choose(magicMissileColors, pinst.randomSeed));
       return true;
     };
 
@@ -604,7 +610,7 @@ static void addMagicMissileEffect(FXManager& mgr) {
   constexpr float flightTime = 0.25f;
   // TODO: spell power should affect missile size
   //
-  FColor color = IColor(184, 234, 50);
+  FColor color = Color(184, 234, 50);
 
   ParticleSystemDef psdef;
   { // Blurred trail
@@ -663,15 +669,17 @@ static void addMagicMissileEffect(FXManager& mgr) {
       pinst.pos = missileBasePos(ctx);
     };
 
-    ssdef.multiDrawFunc = [](DrawContext& ctx, const Particle& pinst, vector<DrawParticle>& out) {
+    ssdef.multiDrawFunc = [](DrawContext& ctx, const Particle& pinst, vector<DrawParticle>& out, Color color) {
       DrawParticle dpart;
       if (!defaultDrawParticle(ctx, pinst, dpart))
         return;
-      out.emplace_back(dpart);
+      dpart.color = dpart.color.blend(color);
+      out.push_back(dpart);
 
       dpart.texName = TextureName::FLASH1_GLOW;
-      dpart.color = (IColor)FColor(FColor(dpart.color).rgb() + FVec3(0.3f));
-      out.emplace_back(dpart);
+      dpart.color = (Color)FColor(FColor(dpart.color).rgb() + FVec3(0.3f));
+      dpart.color = dpart.color.blend(color);
+      out.push_back(std::move(dpart));
     };
 
     psdef.subSystems.emplace_back(ssdef);
@@ -682,7 +690,7 @@ static void addMagicMissileEffect(FXManager& mgr) {
 
 static void addMagicMissileSplashEffect(FXManager& mgr) {
   // TODO: spell power should affect size
-  FColor color = IColor(184, 224, 80);
+  FColor color = Color(184, 224, 80);
 
   ParticleSystemDef psdef;
   {
@@ -698,15 +706,17 @@ static void addMagicMissileSplashEffect(FXManager& mgr) {
 
     SubSystemDef ssdef(pdef, edef, 0.0f, 0.1f);
 
-    ssdef.multiDrawFunc = [](DrawContext& ctx, const Particle& pinst, vector<DrawParticle>& out) {
+    ssdef.multiDrawFunc = [](DrawContext& ctx, const Particle& pinst, vector<DrawParticle>& out, Color color) {
       DrawParticle dpart;
       if (!defaultDrawParticle(ctx, pinst, dpart))
         return;
-      out.emplace_back(dpart);
+      dpart.color = dpart.color.blend(color);
+      out.push_back(dpart);
 
       dpart.texName = TextureName::FLASH1_GLOW;
-      dpart.color = (IColor)FColor(FColor(dpart.color).rgb() + FVec3(0.3f));
-      out.emplace_back(dpart);
+      dpart.color = (Color)FColor(FColor(dpart.color).rgb() + FVec3(0.3f));
+      dpart.color = dpart.color.blend(color);
+      out.push_back(std::move(dpart));
     };
 
     psdef.subSystems.emplace_back(ssdef);
@@ -728,7 +738,7 @@ static void addFireEffect(FXManager& mgr) {
     pdef.life = 1.0f;
     pdef.size = 32.0f;
 
-    pdef.color = {{IColor(185, 155, 100).rgb(), IColor(195, 135, 90).rgb()}};
+    pdef.color = {{rgb(Color(185, 155, 100)), rgb(Color(195, 135, 90))}};
     pdef.alpha = {{0.0f, 0.5f, 1.0f}, {0.0f, 0.5f, 0.0f}};
     pdef.textureName = TextureName::CIRCULAR_STRONG;
 
@@ -753,7 +763,7 @@ static void addFireEffect(FXManager& mgr) {
     pdef.life = 0.7f;
     pdef.size = 8.0f;
 
-    pdef.color = {{IColor(155, 85, 30).rgb(), IColor(155, 85, 30).rgb()}};
+    pdef.color = {{rgb(Color(155, 85, 30)), rgb(Color(155, 85, 30))}};
     pdef.alpha = {{0.0f, 0.2f, 0.8f, 1.0f}, {0.0f, 1.0f, 1.0f, 0.0f}};
     pdef.textureName = TextureName::FLAMES;
 
@@ -830,7 +840,7 @@ static void addFireSphereEffect(FXManager& mgr) {
     pdef.life = 0.7f;
     pdef.size = 8.0f;
 
-    pdef.color = {{IColor(185, 85, 30).rgb(), IColor(95, 35, 60).rgb()}};
+    pdef.color = {{rgb(Color(185, 85, 30)), rgb(Color(95, 35, 60))}};
     pdef.alpha = {{0.0f, 0.2f, 0.8f, 1.0f}, {0.0f, 1.0f, 1.0f, 0.0f}};
     pdef.textureName = TextureName::FLAMES;
 
@@ -847,7 +857,7 @@ static void addFireSphereEffect(FXManager& mgr) {
     pdef.life = 0.7f;
     pdef.size = 26.0f;
 
-    pdef.color = {{IColor(185, 85, 30).rgb(), IColor(95, 35, 60).rgb()}};
+    pdef.color = {{rgb(Color(185, 85, 30)), rgb(Color(95, 35, 60))}};
     pdef.alpha = {{0.0f, 0.2f, 0.8f, 1.0f}, {0.0f, 0.3f, 0.3f, 0.0f}};
     pdef.textureName = TextureName::CIRCULAR_STRONG;
 
@@ -894,7 +904,7 @@ static void addFireballEffect(FXManager& mgr) {
     ParticleDef pdef;
     pdef.life = 0.5f;
     pdef.size = 12.0f;
-    pdef.color = {{IColor(155, 85, 30).rgb(), IColor(45, 35, 30).rgb()}};
+    pdef.color = {{rgb(Color(155, 85, 30)), rgb(Color(45, 35, 30))}};
     pdef.alpha = {{0.0f, 0.2f, 0.8f, 1.0f}, {0.0f, 1.0f, 1.0f, 0.0f}};
     pdef.textureName = TextureName::FLAMES_BLURRED;
     pdef.scalarCurves.emplace_back(movementCurve);
@@ -927,7 +937,7 @@ static void addFireballEffect(FXManager& mgr) {
     pdef.life = flightTime + 0.3f;
     pdef.size = 70.0f;
 
-    pdef.color = {{IColor(185, 155, 100).rgb(), IColor(195, 135, 90).rgb()}};
+    pdef.color = {{rgb(Color(185, 155, 100)), rgb(Color(195, 135, 90))}};
     pdef.alpha = {{0.0f, 0.2f, 0.7f, 1.0f}, {0.0f, 0.8f, 0.8f, 0.0f}};
     pdef.textureName = TextureName::CIRCULAR;
 
@@ -1006,7 +1016,7 @@ static void addFlamethrowerEffect(FXManager& mgr) {
     ParticleDef pdef;
     pdef.life = 0.5f;
     pdef.size = 12.0f;
-    pdef.color = {{IColor(155, 85, 30).rgb(), IColor(45, 35, 30).rgb()}};
+    pdef.color = {{rgb(Color(155, 85, 30)), rgb(Color(45, 35, 30))}};
     pdef.alpha = {{0.0f, 0.2f, 0.8f, 1.0f}, {0.0f, 1.0f, 1.0f, 0.0f}};
     pdef.textureName = TextureName::FLAMES_BLURRED;
 
@@ -1026,7 +1036,7 @@ static void addFlamethrowerEffect(FXManager& mgr) {
     pdef.life = 0.5f;
     pdef.size = 55.0f;
 
-    pdef.color = IColor(185, 155, 100).rgb();
+    pdef.color = rgb(Color(185, 155, 100));
     pdef.alpha = {{0.0f, 0.2f, 0.7f, 1.0f}, {0.0f, 0.5f, 0.5f, 0.0f}};
     pdef.textureName = TextureName::CIRCULAR;
 
@@ -1085,7 +1095,7 @@ static void addBlindEffect(FXManager &mgr) {
   pdef.size = {{0.0f, 0.3f, 0.8f, 1.0f}, {8.0f, 10.0f, 10.0f, 25.0f}};
   pdef.alpha = {{0.0f, 0.3f, 0.8f, 1.0f}, {0.0f, 1.0, 0.5, 0.0}, InterpType::cosine};
 
-  pdef.color = IColor(253, 247, 172).rgb();
+  pdef.color = rgb(Color(253, 247, 172));
   pdef.textureName = TextureName::SPECIAL;
 
   SubSystemDef ssdef(pdef, edef, 0.0f, 1.0f);
@@ -1229,7 +1239,7 @@ static void addWorkshopEffect(FXManager& mgr) {
   pdef.slowdown = {{0.0f, 0.1f}, {5.0f, 1000.0f}};
   pdef.alpha = {{0.0f, 0.6f, 1.0f}, {1.0, 1.0, 0.0}, InterpType::cosine};
 
-  FColor brown(IColor(120, 87, 46));
+  FColor brown(Color(120, 87, 46));
   // Kiedy cząsteczki opadną pod drzewo, robią się w zasięgu cienia
   // TODO: lepiej rysować je po prostu pod cieniem
   pdef.color = {{0.0f, 0.3f, 0.4}, {brown.rgb(), brown.rgb(), brown.rgb() * 0.8f}};
@@ -1264,11 +1274,12 @@ static void addJewelerEffect(FXManager& mgr) {
       pinst.rotSpeed = 1.5f;
     };
 
-    ssdef.multiDrawFunc = [](DrawContext& ctx, const Particle& pinst, vector<DrawParticle>& out) {
+    ssdef.multiDrawFunc = [](DrawContext& ctx, const Particle& pinst, vector<DrawParticle>& out, Color color) {
       DrawParticle dpart;
       if (!defaultDrawParticle(ctx, pinst, dpart))
         return;
-      out.emplace_back(dpart);
+      dpart.color = dpart.color.blend(color);
+      out.push_back(dpart);
 
       // Glow particles:
       dpart.texName = TextureName::CIRCULAR;
@@ -1277,7 +1288,7 @@ static void addJewelerEffect(FXManager& mgr) {
       auto center = pinst.pos + ctx.ps.pos;
       for (auto& pos : dpart.positions)
         pos = (pos - center) * 12.0f + center;
-      out.emplace_back(dpart);
+      out.push_back(std::move(dpart));
     };
 
     psdef.subSystems.emplace_back(ssdef);
@@ -1523,11 +1534,12 @@ static void addGlitteringEffect(FXManager& mgr) {
     pinst.rotSpeed = 1.5f;
   };
 
-  ssdef.multiDrawFunc = [](DrawContext& ctx, const Particle& pinst, vector<DrawParticle>& out) {
+  ssdef.multiDrawFunc = [](DrawContext& ctx, const Particle& pinst, vector<DrawParticle>& out, Color color) {
     DrawParticle dpart;
     if (!defaultDrawParticle(ctx, pinst, dpart))
       return;
-    out.emplace_back(dpart);
+    dpart.color = dpart.color.blend(color);
+    out.push_back(dpart);
 
     // Glow particles:
     dpart.texName = TextureName::CIRCULAR;
@@ -1536,7 +1548,7 @@ static void addGlitteringEffect(FXManager& mgr) {
     auto center = pinst.pos + ctx.ps.pos;
     for (auto& pos : dpart.positions)
       pos = (pos - center) * 10.0f + center;
-    out.emplace_back(dpart);
+    out.push_back(std::move(dpart));
   };
 
   ParticleSystemDef psdef;

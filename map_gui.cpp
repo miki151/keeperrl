@@ -94,9 +94,26 @@ void MapGui::addAnimation(PAnimation animation, Vec2 pos) {
   animations.push_back({std::move(animation), pos});
 }
 
+static Color blendNightColor(Color color, const ViewIndex& index) {
+  color = color.blend(Color(0, 0, 40).transparency(int(index.getGradient(GradientType::NIGHT) * 150)));
+  if (index.isHighlight(HighlightType::MEMORY))
+    color = color.blend(Color::BLACK.transparency(40));
+  return color;
+}
+
+static Color getNightColor(const ViewIndex& index) {
+  auto color = Color::BLACK.transparency(int(index.getGradient(GradientType::NIGHT) * 150));
+  if (index.isHighlight(HighlightType::MEMORY))
+    color = color.blend(Color::BLACK.transparency(40));
+  return color;
+}
+
 void MapGui::addAnimation(const FXSpawnInfo& spawnInfo) {
+  auto color = Color::WHITE.transparency(0);
+  if (auto index = objects[spawnInfo.position])
+    color = getNightColor(*index);
   if (fxViewManager)
-    fxViewManager->addUnmanagedFX(spawnInfo);
+    fxViewManager->addUnmanagedFX(spawnInfo, color);
 }
 
 optional<Vec2> MapGui::getMousePos() {
@@ -158,7 +175,7 @@ Color MapGui::getGradientColor(const ViewIndex& index, GradientType type) {
   double amount = index.getGradient(type);
   switch (type) {
     case GradientType::POISON_GAS: return Color(0, min<Uint8>(255., Uint8(amount * 500)), 0, (Uint8)(amount * 140));
-    case GradientType::NIGHT: return Color::NIGHT_BLUE.transparency(int(amount * 160));
+    case GradientType::NIGHT: return Color::TRANSPARENT;
   }
 }
 
@@ -500,9 +517,10 @@ Vec2 MapGui::getMovementOffset(const ViewObject& object, Vec2 size, double time,
   return Vec2((state - 1) * dir.x * size.x, ((state - 1)* dir.y - vertical) * size.y);
 }
 
-void MapGui::drawCreatureHighlights(Renderer& renderer, const ViewObject& object, Vec2 pos, Vec2 sz,
+void MapGui::drawCreatureHighlights(Renderer& renderer, const ViewObject& object, const ViewIndex& index,
+    Vec2 pos, Vec2 sz,
     milliseconds curTime) {
-  auto getHighlight = [](Color id) { return Color(id).transparency(200); };
+  auto getHighlight = [&](Color id) { return blendNightColor(Color(id).transparency(200), index); };
   for (auto status : object.getCreatureStatus()) {
     drawCreatureHighlight(renderer, pos, sz, getHighlight(getColor(status)));
     break;
@@ -614,7 +632,7 @@ static double getFlyingMovement(Vec2 size, milliseconds curTimeReal) {
 }
 
 void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& object, Vec2 size, Vec2 movement,
-    Vec2 tilePos, milliseconds curTimeReal) {
+    Vec2 tilePos, milliseconds curTimeReal, const ViewIndex& index) {
   PROFILE;
   auto id = object.id();
   const Tile& tile = Tile::getTile(id, spriteMode);
@@ -634,15 +652,16 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
       Uint8 val = max(0.0, 255.0 - min(2.0f, *waterDepth) * 60);
       color = Color(val, val, val);
     }
+  color = blendNightColor(color, index);
   if (spriteMode && tile.hasSpriteCoord()) {
     DirSet dirs;
     if (tile.hasAnyConnections() || tile.hasAnyCorners())
       dirs = getConnectionSet(tilePos, id);
     Vec2 move;
-    drawCreatureHighlights(renderer, object, pos + movement, size, curTimeReal);
+    drawCreatureHighlights(renderer, object, index, pos + movement, size, curTimeReal);
     if (object.layer() == ViewLayer::CREATURE || tile.roundShadow) {
       static auto coord = renderer.getTileCoord("round_shadow");
-      renderer.drawTile(pos + movement, coord, size, Color(255, 255, 255, 160));
+      renderer.drawTile(pos + movement, coord, size, blendNightColor(Color(255, 255, 255, 160), index));
     }
     if (object.layer() == ViewLayer::CREATURE || tile.moveUp)
       move.y = -4 * size.y / Renderer::nominalSize;
@@ -699,26 +718,27 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
         bool bigTile = renderer.getTileSize(coord.front()).x > Renderer::nominalSize;
         for (auto fx : effects)
           fxViewManager->addFX(*genericId, fx, bigTile);
-        fxViewManager->drawFX(renderer, *genericId);
+        fxViewManager->drawFX(renderer, *genericId, blendNightColor(Color::WHITE, index));
     }
   } else {
     Vec2 tilePos = pos + movement + Vec2(size.x / 2, -3);
-    drawCreatureHighlights(renderer, object, pos + movement, size, curTimeReal);
-    if (!object.getPortalVersion())
-    renderer.drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TILE_FONT, size.y, Tile::getColor(object),
-        tilePos, tile.text, Renderer::HOR);
+    drawCreatureHighlights(renderer, object, index, pos + movement, size, curTimeReal);
+    if (auto version = object.getPortalVersion())
+      renderer.drawText(Renderer::SYMBOL_FONT, size.y,
+          blendNightColor(getPortalColor(*version), index), tilePos, tile.text, Renderer::HOR);
+    else
+      renderer.drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TILE_FONT, size.y,
+          blendNightColor(Tile::getColor(object), index), tilePos, tile.text, Renderer::HOR);
     if (auto burningVal = object.getAttribute(ViewObject::Attribute::BURNING))
       if (*burningVal > 0) {
-        renderer.drawText(Renderer::SYMBOL_FONT, size.y, getFireColor(), pos + Vec2(size.x / 2, -3), u8"ѡ",
-            Renderer::HOR);
+        renderer.drawText(Renderer::SYMBOL_FONT, size.y, getFireColor(),
+            pos + Vec2(size.x / 2, -3), u8"ѡ", Renderer::HOR);
         if (*burningVal > 0.5)
-          renderer.drawText(Renderer::SYMBOL_FONT, size.y, getFireColor(), pos + Vec2(size.x / 2, -3), u8"Ѡ",
-              Renderer::HOR);
+          renderer.drawText(Renderer::SYMBOL_FONT, size.y, getFireColor(),
+              pos + Vec2(size.x / 2, -3), u8"Ѡ", Renderer::HOR);
       }
     if (object.hasModifier(ViewObject::Modifier::LOCKED))
-      renderer.drawText(Color::YELLOW, pos + size / 2, "*", Renderer::CenterType::HOR_VER, size.y);
-    if (auto version = object.getPortalVersion())
-      renderer.drawText(Renderer::SYMBOL_FONT, size.y, getPortalColor(*version), tilePos, tile.text, Renderer::HOR);
+      renderer.drawText(blendNightColor(Color::YELLOW, index), pos + size / 2, "*", Renderer::CenterType::HOR_VER, size.y);
   }
 }
 
@@ -794,6 +814,9 @@ void MapGui::renderExtraBorders(Renderer& renderer, milliseconds currentTimeReal
     }
   for (Vec2 wpos : layout->getAllTiles(getBounds(), levelBounds, getScreenPos()))
     for (ViewId id : extraBorderPos.getValue(wpos)) {
+      auto color = Color::WHITE;
+      if (objects[wpos])
+        color = blendNightColor(color, *objects[wpos]);
       const Tile& tile = Tile::getTile(id, true);
       if (!connectionMap[wpos].intersection(tile.getExtraBorderIds()).isEmpty()) {
         DirSet dirs = 0;
@@ -801,7 +824,7 @@ void MapGui::renderExtraBorders(Renderer& renderer, milliseconds currentTimeReal
           if ((wpos + v).inRectangle(levelBounds) && connectionMap[wpos + v].contains(id))
             dirs.insert(v.getCardinalDir());
         Vec2 pos = projectOnScreen(wpos);
-        renderer.drawTile(pos, tile.getExtraBorderCoord(dirs), layout->getSquareSize());
+        renderer.drawTile(pos, tile.getExtraBorderCoord(dirs), layout->getSquareSize(), color);
       }
     }
 }
@@ -880,9 +903,10 @@ void MapGui::renderTexturedHighlight(Renderer& renderer, Vec2 pos, Vec2 size, Co
 }
 
 void MapGui::renderHighlight(Renderer& renderer, Vec2 pos, Vec2 size, const ViewIndex& index, HighlightType highlight) {
-  auto color = getHighlightColor(index, highlight);
+  auto color = blendNightColor(getHighlightColor(index, highlight), index);
   switch (highlight) {
     case HighlightType::MEMORY:
+      break;
     case HighlightType::INDOORS:
       renderer.addQuad(Rectangle(pos, pos + size), color);
       break;
@@ -903,8 +927,9 @@ void MapGui::renderGradient(Renderer& renderer, Vec2 pos, Vec2 size, const ViewI
   auto color = getGradientColor(index, gradient);
   switch (gradient) {
     case GradientType::POISON_GAS:
-    case GradientType::NIGHT:
       renderer.addQuad(Rectangle(pos, pos + size), color);
+      break;
+    case GradientType::NIGHT:
       break;
   }
 }
@@ -1013,7 +1038,7 @@ void MapGui::renderMapObjects(Renderer& renderer, Vec2 size, milliseconds curren
           object = index.getTopObject(layout->getLayers());
         if (object) {
           Vec2 movement = getMovementOffset(*object, size, currentTimeGame, currentTimeReal, true, wpos);
-          drawObjectAbs(renderer, pos, *object, size, movement, wpos, currentTimeReal);
+          drawObjectAbs(renderer, pos, *object, size, movement, wpos, currentTimeReal, index);
           if (lastHighlighted.tilePos == wpos && !lastHighlighted.creaturePos &&
               object->layer() != ViewLayer::CREATURE && object->layer() != ViewLayer::ITEM)
             lastHighlighted.object = *object;
@@ -1065,7 +1090,7 @@ void MapGui::renderMapObjects(Renderer& renderer, Vec2 size, milliseconds curren
           object = index.getTopObject(layout->getLayers());
         if (object) {
           Vec2 movement = getMovementOffset(*object, size, currentTimeGame, currentTimeReal, true, wpos);
-          drawObjectAbs(renderer, pos, *object, size, movement, wpos, currentTimeReal);
+          drawObjectAbs(renderer, pos, *object, size, movement, wpos, currentTimeReal, index);
           if (lastHighlighted.tilePos == wpos && !lastHighlighted.creaturePos && object->layer() != ViewLayer::CREATURE)
             lastHighlighted.object = *object;
         }

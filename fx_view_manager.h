@@ -33,9 +33,9 @@ class FXViewManager {
   void addFX(GenericId, FXVariantName, bool bigSprite);
 
   // Unmanaged & unordered FXes are the same
-  void addUnmanagedFX(const FXSpawnInfo&);
+  void addUnmanagedFX(const FXSpawnInfo&, Color);
 
-  void drawFX(Renderer&, GenericId);
+  void drawFX(Renderer&, GenericId, Color);
   void drawUnorderedBackFX(Renderer&);
   void drawUnorderedFrontFX(Renderer&);
 
@@ -43,7 +43,7 @@ class FXViewManager {
   using TypeId = variant<FXName, FXVariantName>;
   void updateParams(const FXInfo&, FXId);
   FXId spawnOrderedEffect(const FXInfo&, bool snapshot);
-  FXId spawnUnorderedEffect(FXName, float x, float y, Vec2 dir);
+  FXId spawnUnorderedEffect(FXName, float x, float y, Vec2 dir, Color);
 
   struct EffectInfo;
   struct EntityInfo;
