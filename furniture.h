@@ -61,7 +61,7 @@ class Furniture : public OwnedObject<Furniture> {
   bool isTicking() const;
   bool isWall() const;
   bool isBuildingSupport() const;
-  void onConstructedBy(WCreature);
+  void onConstructedBy(Position, WCreature);
   FurnitureLayer getLayer() const;
   double getLightEmission() const;
   bool canHide() const;
@@ -118,6 +118,7 @@ class Furniture : public OwnedObject<Furniture> {
   Furniture& setCanRemoveNonFriendly(bool state);
   Furniture& setForgetAfterBuilding();
   Furniture& setLuxury(double luxury);
+  Furniture& setOnBuilt(FurnitureOnBuilt);
   MovementSet& modMovementSet();
 
   SERIALIZATION_DECL(Furniture)
@@ -145,6 +146,7 @@ class Furniture : public OwnedObject<Furniture> {
   optional<FurnitureUsageType> SERIAL(usageType);
   optional<FurnitureClickType> SERIAL(clickType);
   optional<FurnitureTickType> SERIAL(tickType);
+  optional<FurnitureOnBuilt> SERIAL(onBuilt);
   HeapAllocated<optional<FurnitureEntry>> SERIAL(entryType);
   HeapAllocated<optional<FurnitureDroppedItems>> SERIAL(droppedItems);
   TimeInterval SERIAL(usageTime) = 1_visible;

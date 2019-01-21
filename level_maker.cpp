@@ -2827,6 +2827,9 @@ PLevelMaker LevelMaker::battleLevel(Table<char> level, CreatureList allies, Crea
 
 PLevelMaker LevelMaker::emptyLevel(FurnitureType t) {
   auto queue = unique<MakerQueue>();
-  queue->addMaker(unique<Empty>(t));
+  SquareChange change(t);
+  if (Furniture::getLayer(t) != FurnitureLayer::GROUND)
+    change = SquareChange(FurnitureType::FLOOR, t);
+  queue->addMaker(unique<Empty>(change));
   return std::move(queue);
 }

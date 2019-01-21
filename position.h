@@ -39,6 +39,7 @@ class Position {
   Vec2 getCoord() const;
   Level* getLevel() const;
   optional<StairKey> getLandingLink() const;
+  void setLandingLink(StairKey) const;
  
   bool isValid() const;
   bool operator == (const Position&) const;

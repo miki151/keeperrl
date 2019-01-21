@@ -116,6 +116,11 @@ optional<StairKey> Position::getLandingLink() const {
     return none;
 }
 
+void Position::setLandingLink(StairKey key) const {
+  level->landingSquares[key].push_back(*this);
+  modSquare()->setLandingLink(key);
+}
+
 WSquare Position::modSquare() const {
   PROFILE;
   CHECK(isValid());
@@ -602,7 +607,7 @@ bool Position::isBuildingSupport() const {
 void Position::construct(FurnitureType type, WCreature c) {
   PROFILE;
   if (construct(type, c->getTribeId()))
-    modFurniture(Furniture::getLayer(type))->onConstructedBy(c);
+    modFurniture(Furniture::getLayer(type))->onConstructedBy(*this, c);
 }
 
 bool Position::construct(FurnitureType type, TribeId tribe) {

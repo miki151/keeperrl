@@ -631,21 +631,7 @@ void Effect::PlaceFurniture::applyToCreature(WCreature c, WCreature attacker) co
   PROFILE;
   Position pos = c->getPosition();
   auto f = FurnitureFactory::get(furniture, c->getTribeId());
-  bool furnitureBlocks = !f->getMovementSet().canEnter(c->getMovementType());
-  if (furnitureBlocks) {
-    optional<Vec2> dest;
-/*  With automatic removing creatures from inaccessible squares this code shouldn't be needed.
-    for (Position pos2 : c->getPosition().neighbors8(Random))
-      if (c->move(pos2) && !pos2.getCreature()) {
-        dest = pos.getDir(pos2);
-        break;
-      }
-    if (dest)
-      c->displace(*dest);
-    else*/
-      Effect::Teleport{}.applyToCreature(c);
-  }
-  f->onConstructedBy(c);
+  f->onConstructedBy(pos, c);
   pos.addFurniture(std::move(f));
 }
 

@@ -96,6 +96,9 @@ class Model : public OwnedObject<Model> {
 
   void addEvent(const GameEvent&);
 
+  WLevel buildLevel(LevelBuilder&&, PLevelMaker);
+  void calculateStairNavigation();
+
   private:
   struct Private {};
 
@@ -108,7 +111,6 @@ class Model : public OwnedObject<Model> {
   friend class ModelBuilder;
 
   PCreature makePlayer(int handicap);
-  WLevel buildLevel(LevelBuilder&&, PLevelMaker);
   WLevel buildTopLevel(LevelBuilder&&, PLevelMaker);
 
   vector<PLevel> SERIAL(levels);
@@ -120,7 +122,6 @@ class Model : public OwnedObject<Model> {
   vector<PCreature> SERIAL(deadCreatures);
   double SERIAL(currentTime) = 0;
   int SERIAL(woodCount) = 0;
-  void calculateStairNavigation();
   optional<StairKey> getStairsBetween(WConstLevel from, WConstLevel to);
   map<pair<LevelId, LevelId>, StairKey> SERIAL(stairNavigation);
   bool serializationLocked = false;

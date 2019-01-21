@@ -106,6 +106,7 @@ enum class TutorialState;
 enum class AvatarMenuOption;
 enum class PassableInfo;
 enum class ConquerCondition;
+enum class FurnitureOnBuilt;
 
 struct FXInfo;
 struct FXSpawnInfo;

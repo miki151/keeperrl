@@ -20,6 +20,7 @@
 #include "furniture_tick.h"
 #include "movement_set.h"
 #include "fx_info.h"
+#include "furniture_on_built.h"
 
 static string makePlural(const string& s) {
   if (s.empty())
@@ -53,7 +54,7 @@ void Furniture::serialize(Archive& ar, const unsigned) {
   ar(blockVision, usageType, clickType, tickType, usageTime, overrideMovement, wall, creator, createdTime);
   ar(constructMessage, layer, entryType, lightEmission, canHideHere, warning, summonedElement, droppedItems);
   ar(canBuildBridge, noProjectiles, clearFogOfWar, removeWithCreaturePresent, xForgetAfterBuilding);
-  ar(luxuryInfo, buildingSupport);
+  ar(luxuryInfo, buildingSupport, onBuilt);
 }
 
 SERIALIZABLE(Furniture)
@@ -295,7 +296,7 @@ bool Furniture::isBuildingSupport() const {
   return buildingSupport;
 }
 
-void Furniture::onConstructedBy(WCreature c) {
+void Furniture::onConstructedBy(Position pos, WCreature c) {
   creator = c;
   createdTime = c->getLocalTime();
   if (constructMessage)
@@ -317,6 +318,8 @@ void Furniture::onConstructedBy(WCreature c) {
         c->secondPerson("You set up " + addAParticle(getName()));
         break;
     }
+  if (onBuilt)
+    handleOnBuilt(pos, c, *onBuilt);
 }
 
 FurnitureLayer Furniture::getLayer() const {
@@ -540,6 +543,11 @@ Furniture& Furniture::setForgetAfterBuilding() {
 
 Furniture& Furniture::setLuxury(double luxury) {
   luxuryInfo.luxury = luxury;
+  return *this;
+}
+
+Furniture&Furniture::setOnBuilt(FurnitureOnBuilt b) {
+  onBuilt = b;
   return *this;
 }
 

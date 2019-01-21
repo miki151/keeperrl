@@ -17,6 +17,7 @@
 #include "creature_factory.h"
 #include "movement_set.h"
 #include "lasting_effect.h"
+#include "furniture_on_built.h"
 
 static Furniture get(FurnitureType type, TribeId tribe) {
   switch (type) {
@@ -385,6 +386,7 @@ static Furniture get(FurnitureType type, TribeId tribe) {
     case FurnitureType::DOWN_STAIRS:
       return Furniture("stairs", ViewObject(ViewId::DOWN_STAIRCASE, ViewLayer::FLOOR), type, tribe)
           .setCanHide()
+          .setOnBuilt(FurnitureOnBuilt::DOWN_STAIRS)
           .setUsageType(FurnitureUsageType::STAIRS);
     case FurnitureType::SOKOBAN_HOLE:
       return Furniture("hole", ViewObject(ViewId::SOKOBAN_HOLE, ViewLayer::FLOOR), type, tribe)

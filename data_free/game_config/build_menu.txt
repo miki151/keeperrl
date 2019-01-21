@@ -24,6 +24,9 @@
 
     { Furniture {{ BRIDGE }                     WOOD 5 }       "Bridge"            "Structure"
       "Build to pass over water of lava." }
+
+    { Furniture {{ DOWN_STAIRS }                }              "Down stairs"       "Structure"
+      "Build to pass over water of lava." }
   }
 
   "doors"
