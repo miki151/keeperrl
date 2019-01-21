@@ -2262,6 +2262,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body->setDeathSound(none);
           c.permanentEffects[LastingEffect::FIRE_RESISTANT] = 1;
           c.permanentEffects[LastingEffect::FLYING] = 1;
+          c.permanentEffects[LastingEffect::LIGHT_SOURCE] = 1;
           c.name = "fire sphere";
       );
     case CreatureId::ELEMENTALIST: 
