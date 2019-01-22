@@ -1599,7 +1599,7 @@ void PlayerControl::onEvent(const GameEvent& event) {
           addToMemory(info.position);
       },
       [&](const FX& info) {
-        if (getControlled().empty() && canSee(info.position))
+        if (getControlled().empty() && canSee(info.position) && info.position.isSameLevel(getCurrentLevel()))
           getView()->animation(FXSpawnInfo(info.fx, info.position.getCoord(), info.direction.value_or(Vec2(0, 0))));
       },
       [&](const auto&) {}
@@ -1743,12 +1743,22 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
 }
 
 Vec2 PlayerControl::getPosition() const {
-  if (WConstCreature keeper = getKeeper())
-    if (!keeper->isDead() && keeper->getLevel() == getCurrentLevel())
-      return keeper->getPosition().getCoord();
-  if (!collective->getTerritory().isEmpty())
-    return collective->getTerritory().getAll().front().getCoord();
-  return Vec2(0, 0);
+  Vec2 topLeft(100000, 100000);
+  Vec2 bottomRight(-100000, -100000);
+  auto currentLevel = getCurrentLevel();
+  for (auto& pos : collective->getTerritory().getAll())
+    if (pos.isSameLevel(currentLevel)) {
+      auto coord = pos.getCoord();
+      topLeft.x = min(coord.x, topLeft.x);
+      topLeft.y = min(coord.y, topLeft.y);
+      bottomRight.x = max(coord.x, bottomRight.x);
+      bottomRight.y = max(coord.y, bottomRight.y);
+    }
+  if (topLeft.x < 100000)
+    return (topLeft + bottomRight) / 2;
+  else if (getKeeper()->getPosition().isSameLevel(currentLevel))
+    return getKeeper()->getPosition().getCoord();
+  return currentLevel->getBounds().middle();
 }
 
 static enum Selection { SELECT, DESELECT, NONE } selection = NONE;
@@ -2309,9 +2319,29 @@ void PlayerControl::processInput(View* view, UserInput input) {
     case UserInputId::SCROLL_TO_HOME:
       getView()->setScrollPos(getPosition());
       break;
+    case UserInputId::SCROLL_DOWN_STAIRS:
+      scrollStairs(false);
+      break;
+    case UserInputId::SCROLL_UP_STAIRS:
+      scrollStairs(true);
+      break;
     default:
       break;
   }
+}
+
+void PlayerControl::scrollStairs(bool up) {
+  if (!currentLevel)
+    currentLevel = getModel()->getTopLevel();
+  auto stairs = collective->getConstructions().getBuiltPositions(
+      up ? FurnitureType::UP_STAIRS : FurnitureType::DOWN_STAIRS);
+  for (auto& pos : stairs)
+    if (pos.isSameLevel(currentLevel)) {
+      currentLevel = getModel()->getLinkedLevel(currentLevel, *pos.getLandingLink());
+      setScrollPos(currentLevel->getLandingSquares(*pos.getLandingLink()).getOnlyElement());
+      CHECK(currentLevel);
+      break;
+    }
 }
 
 vector<WCreature> PlayerControl::getConsumptionTargets(WCreature consumer) const {

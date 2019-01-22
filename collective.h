@@ -217,6 +217,9 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
 
   double getRebellionProbability() const;
 
+  // From Task::Callback
+  virtual void onDestructed(Position, FurnitureType, const DestroyAction&) override;
+
   private:
   struct Private {};
 
@@ -227,7 +230,6 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   // From Task::Callback
   virtual void onAppliedItem(Position, WItem item) override;
   virtual void onConstructed(Position, FurnitureType) override;
-  virtual void onDestructed(Position, FurnitureType, const DestroyAction&) override;
   virtual void onAppliedSquare(WCreature, Position) override;
   virtual void onCopulated(WCreature who, WCreature with) override;
   virtual bool isConstructionReachable(Position) override;

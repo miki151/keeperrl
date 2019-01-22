@@ -1713,9 +1713,14 @@ CreatureAction Creature::moveTowards(Position pos) {
   return moveTowards(pos, NavigationFlags{});
 }
 
-bool Creature::canNavigateTo(Position pos) const {
+bool Creature::canNavigateToOrNeighbor(Position pos) const {
   PROFILE;
   return pos.canNavigateToOrNeighbor(position, getMovementType());
+}
+
+bool Creature::canNavigateTo(Position pos) const {
+  PROFILE;
+  return pos.canNavigateTo(position, getMovementType());
 }
 
 CreatureAction Creature::moveTowards(Position pos, bool away, NavigationFlags flags) {
@@ -1723,7 +1728,7 @@ CreatureAction Creature::moveTowards(Position pos, bool away, NavigationFlags fl
   CHECK(pos.isSameLevel(position));
   if (flags.stepOnTile && !pos.canEnterEmpty(this))
     return CreatureAction();
-  if (!away && !canNavigateTo(pos))
+  if (!away && !canNavigateToOrNeighbor(pos))
     return CreatureAction();
   optional<LevelShortestPath> currentPath = *shortestPath;
   for (int i : Range(2)) {
@@ -1930,11 +1935,6 @@ vector<AdjectiveInfo> Creature::getBadAdjectives() const {
     if (auto text = getMoraleText(morale))
       ret.push_back({text, "Morale affects minion's productivity and chances of fleeing from battle."});
   return ret;
-}
-
-bool Creature::isSameSector(Position pos) const {
-  PROFILE;
-  return pos.isConnectedTo(position, getMovementType());
 }
 
 void Creature::addCombatIntent(WCreature attacker, bool immediateAttack) {

@@ -491,10 +491,6 @@ const string& Level::getName() const {
   return name;
 }
 
-bool Level::areConnected(Vec2 p1, Vec2 p2, const MovementType& movement) const {
-  return inBounds(p1) && inBounds(p2) && getSectors(movement).same(p1, p2);
-}
-
 Sectors& Level::getSectorsDontCreate(const MovementType& movement) const {
   return sectors.at(movement);
 }

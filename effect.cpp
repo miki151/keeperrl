@@ -320,8 +320,10 @@ void Effect::Teleport::applyToCreature(WCreature c, WCreature attacker) const {
   }
   vector<Position> good;
   int maxW = 0;
+  auto movementType = c->getMovementType();
   for (Position v : c->getPosition().getRectangle(area)) {
-    if (!v.canEnter(c) || v.isBurning() || v.getPoisonGasAmount() > 0 || !c->isSameSector(v))
+    if (!v.canEnter(c) || v.isBurning() || v.getPoisonGasAmount() > 0 ||
+        !v.isConnectedTo(c->getPosition(), movementType))
       continue;
     if (auto weightV = weight.getValueMaybe(v)) {
       if (*weightV == maxW)

@@ -844,13 +844,41 @@ bool Position::canNavigate(const MovementType& type) const {
   return canEnterEmpty(type, ignore);
 }
 
+static optional<Position> navigateToLevel(Position from, Level* level, const MovementType& type) {
+  auto model = from.getModel();
+  while (from.getLevel() != level) {
+    if (auto stairs = from.getLevel()->getStairsTo(level)) {
+      auto stairKey = *stairs->getLandingLink();
+      auto newLevel = model->getLinkedLevel(from.getLevel(), stairKey);
+      auto newPos = newLevel->getLandingSquares(stairKey)[0];
+      if (from.isConnectedTo(*stairs, type)) {
+        from = newPos;
+        continue;
+      }
+    }
+    return none;
+  }
+  return from;
+}
+
 bool Position::canNavigateToOrNeighbor(Position from, const MovementType& type) const {
+  if (auto toLevel = navigateToLevel(from, level, type))
+    from = *toLevel;
+  else
+    return false;
   if (isConnectedTo(from, type))
     return true;
   for (Position v : neighbors8())
     if (v.isConnectedTo(from, type))
       return true;
   return false;
+}
+
+bool Position::canNavigateTo(Position from, const MovementType& type) const {
+  if (auto toLevel = navigateToLevel(from, level, type))
+    return isConnectedTo(*toLevel, type);
+  else
+    return false;
 }
 
 optional<DestroyAction> Position::getBestDestroyAction(const MovementType& movement) const {
@@ -931,7 +959,7 @@ bool Position::isChokePoint(const MovementType& movement) const {
 bool Position::isConnectedTo(Position pos, const MovementType& movement) const {
   PROFILE;
   return isValid() && pos.isValid() && level == pos.level &&
-      level->areConnected(pos.coord, coord, movement);
+      level->getSectors(movement).same(coord, pos.coord);
 }
 
 vector<WCreature> Position::getAllCreatures(int range) const {

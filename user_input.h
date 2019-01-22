@@ -90,6 +90,8 @@ enum class UserInputId {
     SHOW_HISTORY,
     DISMISS_NEXT_WAVE,
     DISMISS_WARNING_WINDOW,
+    SCROLL_DOWN_STAIRS,
+    SCROLL_UP_STAIRS,
 // turn-based actions
     MOVE,
     TRAVEL,

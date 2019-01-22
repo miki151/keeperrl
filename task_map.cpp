@@ -47,7 +47,7 @@ WTask TaskMap::getClosestTask(WConstCreature c, MinionActivity activity, bool pr
         if (!task->isDone() &&
             (!owner || (task->canTransfer() && pos->dist8(owner->getPosition()) > dist && dist <= 6)) &&
             isBetter(task, dist) &&
-            c->canNavigateTo(*pos) &&
+            c->canNavigateToOrNeighbor(*pos) &&
             (!delayed || *delayed < c->getLocalTime())) {
           closest = task;
         }

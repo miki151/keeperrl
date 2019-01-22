@@ -157,9 +157,6 @@ class Level : public OwnedObject<Level> {
   /** Returns whether the square is in direct sunlight.*/
   bool isInSunlight(Vec2 pos) const;
 
-  /** Returns if two squares are connected assuming given movement.*/
-  bool areConnected(Vec2, Vec2, const MovementType&) const;
-
   bool isChokePoint(Vec2, const MovementType&) const;
 
   void updateSunlightMovement();

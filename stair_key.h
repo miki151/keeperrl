@@ -8,7 +8,6 @@ class StairKey {
   static StairKey heroSpawn();
   static StairKey keeperSpawn();
   static StairKey transferLanding();
-  static StairKey sokoban();
 
   bool operator == (const StairKey&) const;
 

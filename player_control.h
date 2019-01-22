@@ -249,5 +249,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void reloadData();
   void reloadBuildingMenu();
   WLevel currentLevel;
+  void scrollStairs(bool up);
 };
 

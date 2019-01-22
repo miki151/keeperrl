@@ -217,7 +217,7 @@ WLevel Model::getLinkedLevel(WLevel from, StairKey key) const {
   for (WLevel target : getLevels())
     if (target != from && target->hasStairKey(key))
       return target;
-  FATAL << "Failed to find next level for " << key.getInternalKey() << " " << from->getName();
+  //FATAL << "Failed to find next level for " << key.getInternalKey() << " " << from->getName();
   return nullptr;
 }
 

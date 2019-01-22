@@ -19,10 +19,6 @@ StairKey StairKey::transferLanding() {
   return StairKey(2);
 }
 
-StairKey StairKey::sokoban() {
-  return StairKey(3);
-}
-
 bool StairKey::operator == (const StairKey& o) const {
   return key == o.key;
 }

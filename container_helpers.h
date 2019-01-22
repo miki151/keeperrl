@@ -4,9 +4,8 @@
 #include "debug.h"
 #include "my_containers.h"
 
-// TODO: write a template that works with all containers
-template<class T>
-T getOnlyElement(const set<T>& v) {
+template<class Container>
+auto getOnlyElement(const Container& v) {
   CHECK(v.size() == 1) << v.size();
   return *v.begin();
 }

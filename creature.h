@@ -202,8 +202,8 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   CreatureAction moveAway(Position, bool pathfinding = true);
   CreatureAction continueMoving();
   CreatureAction stayIn(WLevel, Rectangle);
-  bool isSameSector(Position) const;
-  bool canNavigateTo(Position) const;
+  bool canNavigateToOrNeighbor(Position) const;
+  bool canNavigateTo(Position pos) const;
 
   bool atTarget() const;
 

@@ -181,7 +181,7 @@ class Destruction : public Task {
     if (matching) {
       auto match = *matching->getMatch(position);
       if (c->getPosition() != match) {
-        if (c->isSameSector(match))
+        if (c->canNavigateTo(match))
           return c->moveTowards(*matching->getMatch(position));
       }
     }
@@ -275,10 +275,10 @@ static optional<Position> chooseRandomClose(WCreature c, const PositionContainer
   vector<Position> close;
   auto start = c->getPosition();
   for (auto& v : squares)
-    if (c->canNavigateTo(v))
+    if (c->canNavigateToOrNeighbor(v))
       minD = min(minD, v.dist8(start));
   for (auto& v : squares)
-    if (c->canNavigateTo(v) && v.dist8(start) <= minD + margin)
+    if (c->canNavigateToOrNeighbor(v) && v.dist8(start) <= minD + margin)
       close.push_back(v);
   if (!close.empty())
     return Random.choose(close);
@@ -295,7 +295,7 @@ class GoToAnd : public Task {
     if (!task->canPerform(c))
       return false;
     for (auto pos : targets)
-      if (c->isSameSector(pos))
+      if (c->canNavigateTo(pos))
         return true;
     return false;
   }
@@ -523,7 +523,7 @@ class ArcheryRange : public Task {
             break;
           }
         auto pos = target.minus(dir * distance);
-        if (ok && c->isSameSector(pos))
+        if (ok && c->canNavigateTo(pos))
           return ShootInfo{pos, target, dir};
       }
       return none;
@@ -1099,7 +1099,7 @@ class GoTo : public Task {
   virtual MoveInfo getMove(WCreature c) override {
     if (c->getPosition() == target ||
         (c->getPosition().dist8(target) == 1 && !target.canEnter(c)) ||
-        (!tryForever && !c->canNavigateTo(target))) {
+        (!tryForever && !c->canNavigateToOrNeighbor(target))) {
       setDone();
       return NoMove;
     } else
@@ -1485,7 +1485,7 @@ class DropItems : public Task {
   }
 
   virtual MoveInfo getMove(WCreature c) override {
-    if (!target || !c->isSameSector(*target))
+    if (!target || !c->canNavigateTo(*target))
       target = chooseTarget(c);
     if (!target)
       return c->drop(c->getEquipment().getItems().filter(items.containsPredicate())).append(
@@ -1611,7 +1611,7 @@ class PickUpItem : public Task {
 
   virtual bool canPerform(WConstCreature c) const override {
     PROFILE_BLOCK("PickUpItem::canPerform");
-    return c->canCarryMoreWeight(lightestItem) && c->isSameSector(position);
+    return c->canCarryMoreWeight(lightestItem) && c->canNavigateTo(position);
   }
 
   SERIALIZE_ALL(SUBCLASS(Task), items, pickedUp, position, tries, lightestItem, storage, dropTask)

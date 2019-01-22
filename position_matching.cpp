@@ -40,12 +40,12 @@ void PositionMatching::removeMatch(Position pos) {
   if (auto match = matches.getValueMaybe(pos)) {
     reverseMatches.erase(*match);
     matches.erase(pos);
-    std::cout << "Removed match " << pos.getCoord() << " " << match->getCoord() << std::endl;
+    //std::cout << "Removed match " << pos.getCoord() << " " << match->getCoord() << std::endl;
   }
   if (auto match = reverseMatches.getValueMaybe(pos)) {
     matches.erase(*match);
     reverseMatches.erase(pos);
-    std::cout << "Removed match " << pos.getCoord() << " " << match->getCoord() << std::endl;
+    //std::cout << "Removed match " << pos.getCoord() << " " << match->getCoord() << std::endl;
   }
 }
 
@@ -58,7 +58,7 @@ void PositionMatching::setMatch(Position pos1, Position pos2) {
   removeMatch(pos2);
   matches.set(pos1, pos2);
   reverseMatches.set(pos2, pos1);
-  std::cout << "Added match " << pos1.getCoord() << " " << pos2.getCoord() << std::endl;
+  //std::cout << "Added match " << pos1.getCoord() << " " << pos2.getCoord() << std::endl;
 }
 
 void PositionMatching::findPath(Position pos) {

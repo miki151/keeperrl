@@ -100,7 +100,8 @@ class Position {
   void removeCreatureLight(bool darkness);
   void throwItem(vector<PItem> item, const Attack& attack, int maxDist, Position target, VisionId);
   bool canNavigate(const MovementType&) const;
-  bool canNavigateToOrNeighbor(Position from, const MovementType&) const;
+  bool canNavigateToOrNeighbor(Position, const MovementType&) const;
+  bool canNavigateTo(Position, const MovementType&) const;
   optional<double> getNavigationCost(const MovementType&) const;
   optional<DestroyAction> getBestDestroyAction(const MovementType&) const;
   vector<Position> getVisibleTiles(const Vision&);
