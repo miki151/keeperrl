@@ -2339,6 +2339,7 @@ void PlayerControl::scrollStairs(bool up) {
     if (pos.isSameLevel(currentLevel)) {
       currentLevel = getModel()->getLinkedLevel(currentLevel, *pos.getLandingLink());
       setScrollPos(currentLevel->getLandingSquares(*pos.getLandingLink()).getOnlyElement());
+      getView()->updateView(this, false);
       CHECK(currentLevel);
       break;
     }
