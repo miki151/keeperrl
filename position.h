@@ -40,7 +40,8 @@ class Position {
   Level* getLevel() const;
   optional<StairKey> getLandingLink() const;
   void setLandingLink(StairKey) const;
- 
+  const vector<Position>& getLandingAtNextLevel(StairKey);
+
   bool isValid() const;
   bool operator == (const Position&) const;
   bool operator != (const Position&) const;

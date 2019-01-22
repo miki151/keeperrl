@@ -13,12 +13,11 @@ class StairKey {
 
   SERIALIZATION_DECL(StairKey);
 
-  int getInternalKey() const;
+  long long getInternalKey() const;
 
   private:
-  StairKey(int key);
-  int SERIAL(key);
-  static int numKeys;
+  StairKey(long long key);
+  long long SERIAL(key);
 };
 
 namespace std {

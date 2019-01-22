@@ -215,11 +215,13 @@ double Level::getLight(Vec2 pos) const {
       sunlight[pos] * getGame()->getSunlightInfo().getLightAmount())));
 }
 
-vector<Position> Level::getLandingSquares(StairKey key) const {
+const vector<Position>& Level::getLandingSquares(StairKey key) const {
   if (landingSquares.count(key))
     return landingSquares.at(key);
-  else
-    return vector<Position>();
+  else {
+    static vector<Position> empty;
+    return empty;
+  }
 }
 
 vector<StairKey> Level::getAllStairKeys() const {

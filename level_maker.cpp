@@ -2405,8 +2405,14 @@ struct SurroundWithResourcesInfo {
   SettlementInfo info;
 };
 
-static void generateResources(RandomGen& random, LevelMaker* startingPos, RandomLocations* locations,
-    const vector<SurroundWithResourcesInfo>& surroundWithResources, int mapWidth, TribeId tribe) {
+struct ResourceInfo {
+  FurnitureType type;
+  int countStartingPos;
+  int countFurther;
+};
+
+static void generateResources(RandomGen& random, vector<ResourceInfo> resourceInfo, LevelMaker* startingPos,
+    RandomLocations* locations, const vector<SurroundWithResourcesInfo>& surroundWithResources, int mapWidth, TribeId tribe) {
   auto addResources = [&](int count, Range size, int maxDist, FurnitureType type, LevelMaker* center,
       CollectiveBuilder* collective) {
     for (int i : Range(count)) {
@@ -2418,16 +2424,6 @@ static void generateResources(RandomGen& random, LevelMaker* startingPos, Random
           Predicate::type(FurnitureType::MOUNTAIN2));
       locations->setMaxDistanceLast(center, maxDist);
     }
-  };
-  struct ResourceInfo {
-    FurnitureType type;
-    int countStartingPos;
-    int countFurther;
-  };
-  vector<ResourceInfo> resourceInfo = {
-      {FurnitureType::STONE, 2, 4},
-      {FurnitureType::IRON_ORE, 3, 4},
-      {FurnitureType::GOLD_ORE, 1, 3},
   };
   const int closeDist = 0;
   for (auto& info : resourceInfo)
@@ -2581,8 +2577,14 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, optional<CreatureFactory> fo
         {random.get(5, 12), random.get(5, 12)}, Predicate::type(SquareId::MOUNTAIN));
  //   locations->setMaxDistanceLast(startingPos, i == 0 ? 25 : 40);
   }*/
-  if (keeperTribe)
-    generateResources(random, startingPos, locations.get(), surroundWithResources, mapWidth, *keeperTribe);
+  if (keeperTribe) {
+    vector<ResourceInfo> resourceInfo = {
+        {FurnitureType::STONE, 2, 4},
+        {FurnitureType::IRON_ORE, 3, 4},
+        {FurnitureType::GOLD_ORE, 1, 3},
+    };
+    generateResources(random, resourceInfo, startingPos, locations.get(), surroundWithResources, mapWidth, *keeperTribe);
+  }
   int mapBorder = 2;
   queue->addMaker(unique<Empty>(FurnitureType::WATER));
   queue->addMaker(getMountains(biomeId, keeperTribe.value_or(TribeId::getHostile())));
@@ -2605,6 +2607,27 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, optional<CreatureFactory> fo
   if (forrestCreatures)
     queue->addMaker(unique<Margin>(mapBorder, getForrestCreatures(*forrestCreatures, mapWidth - 2 * mapBorder, biomeId)));
   return std::move(queue);
+}
+
+PLevelMaker LevelMaker::getZLevel(RandomGen& random, int depth, int mapWidth, TribeId keeperTribe) {
+  vector<ResourceInfo> resourceInfo = {
+      {FurnitureType::STONE, 2, 0},
+      {FurnitureType::IRON_ORE, 3, 0},
+      {FurnitureType::GOLD_ORE, 1, 0},
+  };
+  auto queue = unique<MakerQueue>();
+  queue->addMaker(unique<Empty>(SquareChange(FurnitureType::FLOOR, FurnitureType::MOUNTAIN2)));
+  auto locations = unique<RandomLocations>();
+  LevelMaker* startingPos = nullptr;
+  int locationMargin = 10;
+  auto startingPosMaker = unique<StartingPos>(Predicate::alwaysTrue(), StairKey::getNew());
+  startingPos = startingPosMaker.get();
+  locations->add(std::move(startingPosMaker), Vec2(1, 1),
+      RandomLocations::LocationPredicate(Predicate::alwaysTrue()));
+  locations->setMinMargin(startingPos, mapWidth / 3);
+  generateResources(random, resourceInfo, startingPos, locations.get(), {}, mapWidth, keeperTribe);
+  queue->addMaker(std::move(locations));
+  return queue;
 }
 
 Vec2 LevelMaker::getRandomExit(RandomGen& random, Rectangle rect, int minCornerDist) {

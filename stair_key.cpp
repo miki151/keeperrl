@@ -1,10 +1,8 @@
 #include "stdafx.h"
 #include "stair_key.h"
 
-int StairKey::numKeys = 3;
-
 StairKey StairKey::getNew() {
-  return numKeys++;
+  return Random.getLL();
 }
 
 StairKey StairKey::heroSpawn() {
@@ -23,11 +21,11 @@ bool StairKey::operator == (const StairKey& o) const {
   return key == o.key;
 }
 
-int StairKey::getInternalKey() const {
+long long StairKey::getInternalKey() const {
   return key;
 }
 
-StairKey::StairKey(int k) : key(k) {
+StairKey::StairKey(long long k) : key(k) {
 }
 
 SERIALIZE_DEF(StairKey, key)

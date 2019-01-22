@@ -82,7 +82,7 @@ class Level : public OwnedObject<Level> {
   optional<Position> getClosestLanding(vector<Position> landing, WCreature) const;
 
   /** Returns the landing squares for given direction and stair key. See Square::getLandingLink() */
-  vector<Position> getLandingSquares(StairKey) const;
+  const vector<Position>& getLandingSquares(StairKey) const;
   Position getLandingSquare(StairKey, Vec2 travelDir) const;
 
   vector<StairKey> getAllStairKeys() const;

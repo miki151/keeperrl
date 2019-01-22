@@ -844,15 +844,16 @@ bool Position::canNavigate(const MovementType& type) const {
   return canEnterEmpty(type, ignore);
 }
 
+const vector<Position>& Position::getLandingAtNextLevel(StairKey stairKey) {
+  return NOTNULL(getModel()->getLinkedLevel(level, stairKey))->getLandingSquares(stairKey);
+}
+
 static optional<Position> navigateToLevel(Position from, Level* level, const MovementType& type) {
   auto model = from.getModel();
   while (from.getLevel() != level) {
     if (auto stairs = from.getLevel()->getStairsTo(level)) {
-      auto stairKey = *stairs->getLandingLink();
-      auto newLevel = model->getLinkedLevel(from.getLevel(), stairKey);
-      auto newPos = newLevel->getLandingSquares(stairKey)[0];
       if (from.isConnectedTo(*stairs, type)) {
-        from = newPos;
+        from = from.getLandingAtNextLevel(*stairs->getLandingLink())[0];
         continue;
       }
     }

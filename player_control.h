@@ -72,6 +72,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void setTutorial(STutorial);
   STutorial getTutorial() const;
   bool isEnemy(WConstCreature) const;
+  void addToMemory(Position);
 
   SERIALIZATION_DECL(PlayerControl)
 
@@ -181,7 +182,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void handlePillage(WCollective enemy);
   void handleRansom(bool pay);
   ViewObject getTrapObject(TrapType, bool built) const;
-  void addToMemory(Position);
   void getSquareViewIndex(Position, bool canSee, ViewIndex&) const;
   void onSquareClick(Position);
   WModel getModel() const;

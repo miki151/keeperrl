@@ -52,5 +52,6 @@ class LevelMaker {
   static PLevelMaker emptyLevel(FurnitureType);
   static PLevelMaker sokobanFromFile(RandomGen&, SettlementInfo, Table<char>);
   static PLevelMaker battleLevel(Table<char>, CreatureList allies, CreatureList enemies);
+  static PLevelMaker getZLevel(RandomGen&, int depth, int mapWidth, TribeId keeperTribe);
 };
 
