@@ -10,6 +10,10 @@
 #include "game.h"
 #include "collective.h"
 #include "player_control.h"
+#include "enemy_factory.h"
+#include "settlement_info.h"
+#include "enemy_info.h"
+#include "collective_builder.h"
 
 static int getDepth(Position pos) {
   unordered_set<Level*> visited { pos.getLevel() };
@@ -29,27 +33,33 @@ static int getDepth(Position pos) {
   return *search(pos);
 }
 
+static optional<SettlementInfo> getSettlement(int depth) {
+  auto enemy = EnemyFactory(Random).get(EnemyId::RED_DRAGON);
+  enemy.settlement.collective = new CollectiveBuilder(enemy.config, enemy.settlement.tribe);
+  return enemy.settlement;
+
+}
+
 void handleOnBuilt(Position pos, WCreature c, FurnitureOnBuilt type) {
   switch (type) {
     case FurnitureOnBuilt::DOWN_STAIRS:
       auto level = pos.getModel()->buildLevel(
           LevelBuilder(Random, 30, 30, "", true),
-          LevelMaker::getZLevel(Random, getDepth(pos) + 1, 30, c->getTribeId()));
-      Position landing = [&] {
+          LevelMaker::getZLevel(Random, getSettlement(getDepth(pos) + 1), 30, c->getTribeId()));
+      Position landing = [&]() -> Position {
         for (auto& pos : level->getAllPositions())
           if (pos.getLandingLink())
             return pos;
         FATAL << "No landing position found in subterranean level";
         fail();
       }();
-      auto destructedType = landing.getFurniture(FurnitureLayer::MIDDLE)->getType();
-      landing.removeFurniture(landing.getFurniture(FurnitureLayer::MIDDLE),
-          FurnitureFactory::get(FurnitureType::UP_STAIRS, c->getTribeId()));
+      landing.addFurniture(FurnitureFactory::get(FurnitureType::UP_STAIRS, c->getTribeId()));
       auto stairKey = *landing.getLandingLink();
       pos.setLandingLink(stairKey);
       pos.getModel()->calculateStairNavigation();
-      pos.getGame()->getPlayerCollective()->onDestructed(landing, destructedType, DestroyAction::Type::DIG);
       pos.getGame()->getPlayerCollective()->claimSquare(landing);
+      for (auto v : landing.neighbors8())
+        pos.getGame()->getPlayerControl()->addToMemory(v);
       for (auto pos : level->getAllPositions())
         if (auto f = pos.getFurniture(FurnitureLayer::MIDDLE))
           if (f->isClearFogOfWar())

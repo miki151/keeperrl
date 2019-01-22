@@ -226,6 +226,7 @@ static pair<LevelId, LevelId> getIds(WConstLevel l1, WConstLevel l2) {
 }
 
 void Model::calculateStairNavigation() {
+  stairNavigation.clear();
   // Floyd-Warshall algorithm
   for (auto l1 : getLevels())
     for (auto l2 : getLevels())

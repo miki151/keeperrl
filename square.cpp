@@ -59,8 +59,8 @@ void Square::putCreature(WCreature c) {
     game->addEvent(EventInfo::CreatureMoved{c});
 }
 
-void Square::setLandingLink(StairKey key) {
-  CHECK(!landingLink);
+void Square::setLandingLink(optional<StairKey> key) {
+  CHECK(!key || !landingLink);
   landingLink = key;
 }
 

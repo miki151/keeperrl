@@ -117,8 +117,15 @@ optional<StairKey> Position::getLandingLink() const {
 }
 
 void Position::setLandingLink(StairKey key) const {
-  level->landingSquares[key].push_back(*this);
-  modSquare()->setLandingLink(key);
+  if (isValid()) {
+    if (auto link = getSquare()->getLandingLink()) {
+      level->landingSquares.erase(*link);
+      modSquare()->setLandingLink(none);
+    }
+    level->landingSquares[key].push_back(*this);
+    modSquare()->setLandingLink(key);
+    getModel()->calculateStairNavigation();
+  }
 }
 
 WSquare Position::modSquare() const {
@@ -530,7 +537,15 @@ void Position::updateBuildingSupport() const {
 }
 
 void Position::addFurniture(PFurniture f) const {
+  if (auto prev = getFurniture(f->getLayer()))
+    removeFurniture(prev, std::move(f));
+  else
+    addFurnitureImpl(std::move(f));
+}
+
+void Position::addFurnitureImpl(PFurniture f) const {
   PROFILE;
+  CHECK(!getFurniture(f->getLayer()));
   auto furniture = f.get();
   level->setFurniture(coord, std::move(f));
   updateConnectivity();

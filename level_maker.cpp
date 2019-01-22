@@ -446,13 +446,12 @@ class Inhabitants : public LevelMaker {
     Table<char> taken(area.right(), area.bottom());
     for (auto& minion : inhabitants.generateCreatures(builder->getRandom(), collective->getTribe(), *actorFactory)) {
       PCreature& creature = minion.first;
-      Vec2 pos;
-      int numTries = 100;
-      do {
-        pos = Vec2(builder->getRandom().get(area.left(), area.right()),
-            builder->getRandom().get(area.top(), area.bottom()));
-      } while (--numTries > 0 && (!builder->canPutCreature(pos, creature.get()) || (!onPred.apply(builder, pos))));
-      checkGen(numTries > 0);
+      vector<Vec2> positions;
+      for (auto v : area)
+        if (builder->canPutCreature(v, creature.get()) && onPred.apply(builder, v))
+          positions.push_back(v);
+      CHECK(!positions.empty());
+      auto pos = builder->getRandom().choose(positions);
       if (collective) {
         collective->addCreature(creature.get(), minion.second);
         builder->addCollective(collective);
@@ -2444,6 +2443,52 @@ static void generateResources(RandomGen& random, vector<ResourceInfo> resourceIn
       addResources(info.countFurther, Range(5, 10), mapWidth / 3, info.type, startingPos, nullptr);
 }
 
+static PMakerQueue getSettlementMaker(RandomGen& random, const SettlementInfo& settlement) {
+  switch (settlement.type) {
+    case SettlementType::SMALL_VILLAGE:
+      return village(random, settlement, 3, 4);
+    case SettlementType::VILLAGE:
+      return village(random, settlement, 4, 8);
+    case SettlementType::FORREST_VILLAGE:
+      return village2(random, settlement);
+    case SettlementType::CASTLE:
+      return castle(random, settlement);
+    case SettlementType::CASTLE2:
+      return castle2(random, settlement);
+    case SettlementType::COTTAGE:
+      return cottage(settlement);
+    case SettlementType::FORREST_COTTAGE:
+      return forrestCottage(settlement);
+    case SettlementType::TOWER:
+      return tower(random, settlement, true);
+    case SettlementType::WITCH_HOUSE:
+      return cottage(settlement);
+    case SettlementType::FOREST:
+      return emptyCollective(settlement);
+    case SettlementType::MINETOWN:
+      return mineTownMaker(random, settlement);
+    case SettlementType::ANT_NEST:
+      return antNestMaker(random, settlement);
+    case SettlementType::SMALL_MINETOWN:
+      return smallMineTownMaker(random, settlement);
+    case SettlementType::ISLAND_VAULT:
+      return islandVaultMaker(random, settlement, false);
+    case SettlementType::ISLAND_VAULT_DOOR:
+      return islandVaultMaker(random, settlement, true);
+    case SettlementType::VAULT:
+    case SettlementType::CAVE:
+      return vaultMaker(settlement);
+    case SettlementType::SPIDER_CAVE:
+      return spiderCaveMaker(settlement);
+    case SettlementType::CEMETERY:
+      return cemetery(settlement);
+    case SettlementType::MOUNTAIN_LAKE:
+      return mountainLake(settlement);
+    case SettlementType::SWAMP:
+      return swamp(settlement);
+  }
+}
+
 PLevelMaker LevelMaker::topLevel(RandomGen& random, optional<CreatureFactory> forrestCreatures,
     vector<SettlementInfo> settlements, int mapWidth, optional<TribeId> keeperTribe, BiomeId biomeId) {
   auto queue = unique<MakerQueue>();
@@ -2469,70 +2514,7 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, optional<CreatureFactory> fo
   vector<CottageInfo> cottages;
   vector<SurroundWithResourcesInfo> surroundWithResources;
   for (SettlementInfo settlement : settlements) {
-    PMakerQueue queue;
-    switch (settlement.type) {
-      case SettlementType::SMALL_VILLAGE:
-        queue = village(random, settlement, 3, 4);
-        break;
-      case SettlementType::VILLAGE:
-        queue = village(random, settlement, 4, 8);
-        break;
-      case SettlementType::FORREST_VILLAGE:
-        queue = village2(random, settlement);
-        break;
-      case SettlementType::CASTLE:
-        queue = castle(random, settlement);
-        break;
-      case SettlementType::CASTLE2:
-        queue = castle2(random, settlement);
-        break;
-      case SettlementType::COTTAGE:
-        queue = cottage(settlement);
-        break;
-      case SettlementType::FORREST_COTTAGE:
-        queue = forrestCottage(settlement);
-        break;
-      case SettlementType::TOWER:
-        queue = tower(random, settlement, true);
-        break;
-      case SettlementType::WITCH_HOUSE:
-        queue = cottage(settlement);
-        break;
-      case SettlementType::FOREST:
-        queue = emptyCollective(settlement);
-        break;
-      case SettlementType::MINETOWN:
-        queue = mineTownMaker(random, settlement);
-        break;
-      case SettlementType::ANT_NEST:
-        queue = antNestMaker(random, settlement);
-        break;
-      case SettlementType::SMALL_MINETOWN:
-        queue = smallMineTownMaker(random, settlement);
-        break;
-      case SettlementType::ISLAND_VAULT:
-        queue = islandVaultMaker(random, settlement, false);
-        break;
-      case SettlementType::ISLAND_VAULT_DOOR:
-        queue = islandVaultMaker(random, settlement, true);
-        break;
-      case SettlementType::VAULT:
-      case SettlementType::CAVE:
-        queue = vaultMaker(settlement);
-        break;
-      case SettlementType::SPIDER_CAVE:
-        queue = spiderCaveMaker(settlement);
-        break;
-      case SettlementType::CEMETERY:
-        queue = cemetery(settlement);
-        break;
-      case SettlementType::MOUNTAIN_LAKE:
-        queue = mountainLake(settlement);
-        break;
-      case SettlementType::SWAMP:
-        queue = swamp(settlement);
-        break;
-    }
+    auto queue = getSettlementMaker(random, settlement);
     if (settlement.cropsDistance)
       cottages.push_back({queue.get(), settlement.collective, settlement.tribe, *settlement.cropsDistance});
     if (settlement.corpses)
@@ -2609,7 +2591,7 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, optional<CreatureFactory> fo
   return std::move(queue);
 }
 
-PLevelMaker LevelMaker::getZLevel(RandomGen& random, int depth, int mapWidth, TribeId keeperTribe) {
+PLevelMaker LevelMaker::getZLevel(RandomGen& random, optional<SettlementInfo> settlement, int mapWidth, TribeId keeperTribe) {
   vector<ResourceInfo> resourceInfo = {
       {FurnitureType::STONE, 2, 0},
       {FurnitureType::IRON_ORE, 3, 0},
@@ -2619,12 +2601,19 @@ PLevelMaker LevelMaker::getZLevel(RandomGen& random, int depth, int mapWidth, Tr
   queue->addMaker(unique<Empty>(SquareChange(FurnitureType::FLOOR, FurnitureType::MOUNTAIN2)));
   auto locations = unique<RandomLocations>();
   LevelMaker* startingPos = nullptr;
-  int locationMargin = 10;
   auto startingPosMaker = unique<StartingPos>(Predicate::alwaysTrue(), StairKey::getNew());
   startingPos = startingPosMaker.get();
-  locations->add(std::move(startingPosMaker), Vec2(1, 1),
-      RandomLocations::LocationPredicate(Predicate::alwaysTrue()));
-  locations->setMinMargin(startingPos, mapWidth / 3);
+  if (settlement) {
+    auto maker = getSettlementMaker(random, *settlement);
+    if (settlement->corpses)
+      maker->addMaker(unique<Corpses>(*settlement->corpses));
+    maker->addMaker(unique<RandomLocations>(makeVec<PLevelMaker>(std::move(startingPosMaker)), makeVec<pair<int, int>>({1, 1}), Predicate::canEnter(MovementTrait::WALK)));
+    locations->add(std::move(maker), getSize(random, settlement->type), RandomLocations::LocationPredicate(Predicate::alwaysTrue()));
+  } else {
+    locations->add(std::move(startingPosMaker), Vec2(1, 1),
+        RandomLocations::LocationPredicate(Predicate::alwaysTrue()));
+    locations->setMinMargin(startingPos, mapWidth / 3);
+  }
   generateResources(random, resourceInfo, startingPos, locations.get(), {}, mapWidth, keeperTribe);
   queue->addMaker(std::move(locations));
   return queue;

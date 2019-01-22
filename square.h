@@ -39,7 +39,7 @@ class Square : public OwnedObject<Square> {
   /** Links this square as point of entry from another level.
     * \param direction direction where the creature is coming from
     * \param key id specific to a dungeon branch*/
-  void setLandingLink(StairKey);
+  void setLandingLink(optional<StairKey>);
 
   /** Returns the entry point details. Returns none if square is not entry point. See setLandingLink().*/
   optional<StairKey> getLandingLink() const;

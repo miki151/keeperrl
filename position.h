@@ -148,6 +148,7 @@ class Position {
   bool SERIAL(valid) = false;
   void updateSupport() const;
   void updateBuildingSupport() const;
+  void addFurnitureImpl(PFurniture) const;
 };
 
 template <>
