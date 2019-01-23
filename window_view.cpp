@@ -529,9 +529,9 @@ void WindowView::resetCenter() {
 void WindowView::drawLevelMap(const CreatureView* creature) {
   Semaphore sem;
   auto gui = guiBuilder.drawLevelMap(sem, creature);
-  auto origin = getMinimapOrigin();
-  return getBlockingGui(sem, std::move(gui),
-      Vec2(origin.x + getMinimapWidth() - *gui->getPreferredWidth(), origin.y));
+  auto minimapOrigin = getMinimapOrigin();
+  Vec2 origin(minimapOrigin.x + getMinimapWidth() - *gui->getPreferredWidth(), minimapOrigin.y);
+  return getBlockingGui(sem, std::move(gui), origin);
 }
 
 void WindowView::updateMinimap(const CreatureView* creature) {
