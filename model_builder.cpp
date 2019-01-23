@@ -461,7 +461,7 @@ PModel ModelBuilder::tryModel(int width, const string& levelName, vector<EnemyIn
   optional<CreatureFactory> wildlife;
   if (hasWildlife)
     wildlife = CreatureFactory::forrest(TribeId::getWildlife());
-  WLevel top =  model->buildTopLevel(
+  WLevel top =  model->buildMainLevel(
       LevelBuilder(meter, random, width, width, levelName, false),
       LevelMaker::topLevel(random, wildlife, topLevelSettlements, width,
         keeperTribe, biomeId));
@@ -490,7 +490,7 @@ PModel ModelBuilder::tryModel(int width, const string& levelName, vector<EnemyIn
 
 PModel ModelBuilder::splashModel(const FilePath& splashPath) {
   auto m = Model::create();
-  WLevel l = m->buildTopLevel(
+  WLevel l = m->buildMainLevel(
       LevelBuilder(meter, Random, Level::getSplashBounds().width(), Level::getSplashBounds().height(), "Splash",
         true, 1.0),
       LevelMaker::splashLevel(
@@ -498,7 +498,6 @@ PModel ModelBuilder::splashModel(const FilePath& splashPath) {
           CreatureFactory::splashHeroes(TribeId::getHuman()),
           CreatureFactory::splashMonsters(TribeId::getDarkKeeper()),
           CreatureFactory::singleType(TribeId::getDarkKeeper(), CreatureId::IMP), splashPath));
-  m->topLevel = l;
   return m;
 }
 
@@ -506,9 +505,8 @@ PModel ModelBuilder::battleModel(const FilePath& levelPath, CreatureList allies,
   auto m = Model::create();
   ifstream stream(levelPath.getPath());
   Table<char> level = *SokobanInput::readTable(stream);
-  WLevel l = m->buildTopLevel(
+  WLevel l = m->buildMainLevel(
       LevelBuilder(meter, Random, level.getBounds().width(), level.getBounds().height(), "Battle", true, 1.0),
       LevelMaker::battleLevel(level, allies, enemies));
-  m->topLevel = l;
   return m;
 }

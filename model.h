@@ -74,6 +74,7 @@ class Model : public OwnedObject<Model> {
   vector<WCollective> getCollectives() const;
   vector<WCreature> getAllCreatures() const;
   vector<WLevel> getLevels() const;
+  const vector<WLevel>& getMainLevels() const;
   void addCollective(PCollective);
 
   WLevel getTopLevel() const;
@@ -97,6 +98,7 @@ class Model : public OwnedObject<Model> {
   void addEvent(const GameEvent&);
 
   WLevel buildLevel(LevelBuilder&&, PLevelMaker);
+  WLevel buildMainLevel(LevelBuilder&&, PLevelMaker);
   void calculateStairNavigation();
 
   private:
@@ -111,9 +113,9 @@ class Model : public OwnedObject<Model> {
   friend class ModelBuilder;
 
   PCreature makePlayer(int handicap);
-  WLevel buildTopLevel(LevelBuilder&&, PLevelMaker);
 
   vector<PLevel> SERIAL(levels);
+  vector<WLevel> SERIAL(mainLevels);
   PLevel SERIAL(cemetery);
   vector<PCollective> SERIAL(collectives);
   WGame SERIAL(game) = nullptr;
@@ -125,7 +127,6 @@ class Model : public OwnedObject<Model> {
   optional<StairKey> getStairsBetween(WConstLevel from, WConstLevel to);
   map<pair<LevelId, LevelId>, StairKey> SERIAL(stairNavigation);
   bool serializationLocked = false;
-  WLevel SERIAL(topLevel) = nullptr;
   template <typename>
   friend class EventListener;
   OwnerPointer<EventGenerator> SERIAL(eventGenerator);

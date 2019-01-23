@@ -40,12 +40,27 @@ static optional<SettlementInfo> getSettlement(int depth) {
 
 }
 
+static void removeOldStairs(Level* level, StairKey stairKey) {
+  for (auto pos : level->getAllPositions())
+    if (pos.getLandingLink() == stairKey) {
+      pos.removeLandingLink();
+      pos.removeFurniture(FurnitureLayer::MIDDLE);
+    }
+}
+
 void handleOnBuilt(Position pos, WCreature c, FurnitureOnBuilt type) {
   switch (type) {
     case FurnitureOnBuilt::DOWN_STAIRS:
-      auto level = pos.getModel()->buildLevel(
-          LevelBuilder(Random, 30, 30, "", true),
-          LevelMaker::getZLevel(Random, getSettlement(getDepth(pos) + 1), 30, c->getTribeId()));
+      auto levels = pos.getModel()->getMainLevels();
+      WLevel level;
+      int levelIndex = *levels.findElement(pos.getLevel());
+      if (levelIndex == levels.size() - 1) {
+        level = pos.getModel()->buildMainLevel(
+            LevelBuilder(Random, 30, 30, "", true),
+            LevelMaker::getZLevel(Random, getSettlement(getDepth(pos) + 1), 30, c->getTribeId()));
+      } else {
+        level = levels[levelIndex + 1];
+      }
       Position landing = [&]() -> Position {
         for (auto& pos : level->getAllPositions())
           if (pos.getLandingLink())
@@ -55,6 +70,7 @@ void handleOnBuilt(Position pos, WCreature c, FurnitureOnBuilt type) {
       }();
       landing.addFurniture(FurnitureFactory::get(FurnitureType::UP_STAIRS, c->getTribeId()));
       auto stairKey = *landing.getLandingLink();
+      removeOldStairs(pos.getLevel(), stairKey);
       pos.setLandingLink(stairKey);
       pos.getModel()->calculateStairNavigation();
       pos.getGame()->getPlayerCollective()->claimSquare(landing);

@@ -61,7 +61,7 @@ void Model::serialize(Archive& ar, const unsigned int version) {
   CHECK(!serializationLocked);
   ar & SUBCLASS(OwnedObject<Model>);
   ar(levels, collectives, timeQueue, deadCreatures, currentTime, woodCount, game, lastTick);
-  ar(stairNavigation, cemetery, topLevel, eventGenerator, externalEnemies);
+  ar(stairNavigation, cemetery, mainLevels, eventGenerator, externalEnemies);
 }
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Model)
@@ -165,9 +165,9 @@ WLevel Model::buildLevel(LevelBuilder&& b, PLevelMaker maker) {
   return levels.back().get();
 }
 
-WLevel Model::buildTopLevel(LevelBuilder&& b, PLevelMaker maker) {
-  WLevel ret = buildLevel(std::move(b), std::move(maker));
-  topLevel = ret;
+WLevel Model::buildMainLevel(LevelBuilder&& b, PLevelMaker maker) {
+  auto ret = buildLevel(std::move(b), std::move(maker));
+  mainLevels.push_back(ret);
   return ret;
 }
 
@@ -265,12 +265,16 @@ vector<WLevel> Model::getLevels() const {
   return getWeakPointers(levels);
 }
 
+const vector<WLevel>& Model::getMainLevels() const {
+  return mainLevels;
+}
+
 void Model::addCollective(PCollective col) {
   collectives.push_back(std::move(col));
 }
 
 WLevel Model::getTopLevel() const {
-  return topLevel;
+  return mainLevels[0];
 }
 
 void Model::killCreature(WCreature c) {

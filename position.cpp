@@ -116,12 +116,16 @@ optional<StairKey> Position::getLandingLink() const {
     return none;
 }
 
+void Position::removeLandingLink() const {
+  if (auto link = getSquare()->getLandingLink()) {
+    level->landingSquares.erase(*link);
+    modSquare()->setLandingLink(none);
+  }
+}
+
 void Position::setLandingLink(StairKey key) const {
   if (isValid()) {
-    if (auto link = getSquare()->getLandingLink()) {
-      level->landingSquares.erase(*link);
-      modSquare()->setLandingLink(none);
-    }
+    removeLandingLink();
     level->landingSquares[key].push_back(*this);
     modSquare()->setLandingLink(key);
     getModel()->calculateStairNavigation();
@@ -573,6 +577,11 @@ void Position::removeCreatureLight(bool darkness) {
     else
       level->addLightSource(coord, Level::getCreatureLightRadius(), -1);
   }
+}
+
+void Position::removeFurniture(FurnitureLayer layer) const {
+  if (auto f = getFurniture(layer))
+    removeFurniture(f);
 }
 
 void Position::removeFurniture(WConstFurniture f, PFurniture replace) const {

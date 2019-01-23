@@ -2333,16 +2333,14 @@ void PlayerControl::processInput(View* view, UserInput input) {
 void PlayerControl::scrollStairs(bool up) {
   if (!currentLevel)
     currentLevel = getModel()->getTopLevel();
-  auto stairs = collective->getConstructions().getBuiltPositions(
-      up ? FurnitureType::UP_STAIRS : FurnitureType::DOWN_STAIRS);
-  for (auto& pos : stairs)
-    if (pos.isSameLevel(currentLevel)) {
-      currentLevel = getModel()->getLinkedLevel(currentLevel, *pos.getLandingLink());
-      setScrollPos(currentLevel->getLandingSquares(*pos.getLandingLink()).getOnlyElement());
-      getView()->updateView(this, false);
-      CHECK(currentLevel);
-      break;
-    }
+  auto& levels = getModel()->getMainLevels();
+  int index = *levels.findElement(currentLevel);
+  index += up ? -1 : 1;
+  if (index < 0 || index >= levels.size())
+    return;
+  currentLevel = levels[index];
+  getView()->updateView(this, false);
+  CHECK(currentLevel);
 }
 
 vector<WCreature> PlayerControl::getConsumptionTargets(WCreature consumer) const {

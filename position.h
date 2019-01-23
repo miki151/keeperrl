@@ -40,6 +40,7 @@ class Position {
   Level* getLevel() const;
   optional<StairKey> getLandingLink() const;
   void setLandingLink(StairKey) const;
+  void removeLandingLink() const;
   const vector<Position>& getLandingAtNextLevel(StairKey);
 
   bool isValid() const;
@@ -74,6 +75,7 @@ class Position {
   bool isWall() const;
   bool isBuildingSupport() const;
   void removeFurniture(WConstFurniture, PFurniture replace = nullptr) const;
+  void removeFurniture(FurnitureLayer) const;
   void addFurniture(PFurniture) const;
   bool isUnavailable() const;
   void dropItem(PItem);
