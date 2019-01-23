@@ -195,6 +195,7 @@ PTask MinionActivities::generate(WCollective collective, WCreature c, MinionActi
             collective->hasTrait(c, MinionTrait::WORKER)) ?
           tryInQuarters(collective->getTerritory().getAll(), collective, c) :
           collective->getZones().getPositions(ZoneId::LEISURE).asVector();
+      myTerritory = myTerritory.filter([&](const auto& pos) { return pos.canEnterEmpty(c); });
       if (collective->getGame()->getSunlightInfo().getState() == SunlightState::NIGHT) {
         if (c->getPosition().isCovered())
           return Task::idle();

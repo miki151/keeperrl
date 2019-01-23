@@ -1153,14 +1153,11 @@ class StayIn : public Task {
         else
           currentTarget = none;
       }
-    if (currentTarget) {
-      if (!currentTarget->isSameModel(c->getPosition())) {
-        setDone();
-        return NoMove;
-      }
-      return c->moveTowards(*currentTarget);
-    } else
-      return c->wait();
+    if (currentTarget && currentTarget->isSameModel(c->getPosition()))
+      if (auto move = c->moveTowards(*currentTarget))
+        return move;
+    setDone();
+    return NoMove;
   }
 
   virtual string getDescription() const override {
