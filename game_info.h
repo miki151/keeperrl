@@ -367,6 +367,13 @@ class TutorialInfo {
   HASH_ALL(message, warning, canContinue, canGoBack, highlights, highlightedSquaresHigh, highlightedSquaresLow)
 };
 
+struct CurrentLevelInfo {
+  string HASH(levelName);
+  bool HASH(canScrollUp);
+  bool HASH(canScrollDown);
+  HASH_ALL(levelName, canScrollUp, canScrollDown)
+};
+
 /** Represents all the game information displayed around the map window.*/
 class GameInfo {
   public:
@@ -386,7 +393,8 @@ class GameInfo {
   VillageInfo HASH(villageInfo);
   GameSunlightInfo HASH(sunlightInfo);
   optional<TutorialInfo> HASH(tutorial);
+  optional<CurrentLevelInfo> HASH(currentLevel);
 
   vector<PlayerMessage> HASH(messageBuffer);
-  HASH_ALL(infoType, time, playerInfo, villageInfo, sunlightInfo, messageBuffer, singleModel, modifiedSquares, totalSquares, tutorial)
+  HASH_ALL(infoType, time, playerInfo, villageInfo, sunlightInfo, messageBuffer, singleModel, modifiedSquares, totalSquares, tutorial, currentLevel)
 };

@@ -77,15 +77,13 @@ Rectangle WindowView::getMapGuiBounds() const {
   }
 }
 
-Rectangle WindowView::getMinimapBounds() const {
-  Vec2 offset(-20, 70);
-  int width = max(149, renderer.getSize().x / 11);
-  return Rectangle(Vec2(renderer.getSize().x - width, 0), Vec2(renderer.getSize().x, width + 42)).translate(offset);
+int WindowView::getMinimapWidth() const {
+  return max(149, renderer.getSize().x / 11);
 }
 
-void WindowView::resetMapBounds() {
-  mapGui->setBounds(getMapGuiBounds());
-  minimapDecoration->setBounds(getMinimapBounds());
+Vec2 WindowView::getMinimapOrigin() const {
+  Vec2 offset(-20, 70);
+  return Vec2(renderer.getSize().x - getMinimapWidth(), 0) + offset;
 }
 
 WindowView::WindowView(ViewParams params) : renderer(params.renderer), gui(params.gui), useTiles(params.useTiles),
@@ -151,7 +149,6 @@ void WindowView::initialize(unique_ptr<fx::FXRenderer> fxRenderer, unique_ptr<FX
       std::move(fxViewManager)));
   minimapGui.reset(new MinimapGui([this]() { inputQueue.push(UserInput(UserInputId::DRAW_LEVEL_MAP)); }));
   rebuildMinimapGui();
-  resetMapBounds();
   guiBuilder.setMapGui(mapGui);
 }
 
@@ -361,17 +358,21 @@ Color getSpeedColor(int value) {
 }
 
 void WindowView::rebuildMinimapGui() {
-  auto icons = gui.centerHoriz(guiBuilder.drawMinimapIcons(gameInfo));
+  int width = getMinimapWidth();
+  auto icons = guiBuilder.drawMinimapIcons(gameInfo);
   auto iconsHeight = *icons->getPreferredHeight();
   minimapDecoration = gui.margin(std::move(icons),
       gui.stack(gui.rectangle(Color::BLACK), gui.miniWindow(),
       gui.margins(gui.renderInBounds(SGuiElem(minimapGui)), 6)), iconsHeight, GuiFactory::MarginType::BOTTOM);
-  resetMapBounds();
+  auto origin = getMinimapOrigin();
+  minimapDecoration->setBounds(Rectangle(origin, origin + Vec2(width, width + iconsHeight)));
+
 }
 
 void WindowView::rebuildGui() {
   INFO << "Rebuilding UI";
   rebuildMinimapGui();
+  mapGui->setBounds(getMapGuiBounds());
   SGuiElem bottom, right;
   vector<GuiBuilder::OverlayInfo> overlays;
   int rightBarWidth = 0;
@@ -419,7 +420,6 @@ void WindowView::rebuildGui() {
         break;
   }
   guiBuilder.drawOverlays(overlays, gameInfo);
-  resetMapBounds();
   if (rightBarWidth > 0) {
     overlays.push_back({guiBuilder.drawMessages(gameInfo.messageBuffer, renderer.getSize().x - rightBarWidth),
                        GuiBuilder::OverlayInfo::MESSAGES});
@@ -529,8 +529,9 @@ void WindowView::resetCenter() {
 void WindowView::drawLevelMap(const CreatureView* creature) {
   Semaphore sem;
   auto gui = guiBuilder.drawLevelMap(sem, creature);
-  Vec2 origin(getMinimapBounds().right() - *gui->getPreferredWidth(), getMinimapBounds().top());
-  return getBlockingGui(sem, std::move(gui), origin);
+  auto origin = getMinimapOrigin();
+  return getBlockingGui(sem, std::move(gui),
+      Vec2(origin.x + getMinimapWidth() - *gui->getPreferredWidth(), origin.y));
 }
 
 void WindowView::updateMinimap(const CreatureView* creature) {

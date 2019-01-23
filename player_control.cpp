@@ -633,10 +633,6 @@ int PlayerControl::getNumMinions() const {
   return (int) collective->getCreatures(MinionTrait::FIGHTER).size();
 }
 
-int PlayerControl::getMinLibrarySize() const {
-  return 0; //(int) collective->getTechnologies().size();
-}
-
 typedef CollectiveInfo::Button Button;
 
 static optional<pair<ViewId, int>> getCostObjWithZero(CostInfo cost) {
@@ -1381,7 +1377,18 @@ static optional<CollectiveInfo::RebellionChance> getRebellionChance(double prob)
   return none;
 }
 
+void PlayerControl::fillCurrentLevelInfo(GameInfo& gameInfo) const {
+  auto& levels = getModel()->getMainLevels();
+  int index = *levels.findElement(getCurrentLevel());
+  gameInfo.currentLevel = CurrentLevelInfo {
+    "Level " + toString(index),
+    index > 0,
+    index < levels.size() - 1
+  };
+}
+
 void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
+  fillCurrentLevelInfo(gameInfo);
   if (tutorial)
     tutorial->refreshInfo(getGame(), gameInfo.tutorial);
   gameInfo.singleModel = getGame()->isSingleModel();

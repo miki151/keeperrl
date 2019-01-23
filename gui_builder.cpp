@@ -3551,9 +3551,34 @@ SGuiElem GuiBuilder::drawMinimapIcons(const GameInfo& gameInfo) {
   auto tutorialPredicate = [&gameInfo] {
     return gameInfo.tutorial && gameInfo.tutorial->highlights.contains(TutorialHighlight::MINIMAP_BUTTONS);
   };
+  Color textColor(209, 181, 130);
   auto lines = gui.getListBuilder(legendLineHeight);
+  if (auto& info = gameInfo.currentLevel) {
+    auto getButton = [&](bool enabled, string label, UserInputId inputId) {
+      auto ret = gui.preferredSize(legendLineHeight, legendLineHeight, gui.stack(
+          gui.margins(gui.rectangle(Color(56, 36, 0), Color(57, 41, 0)), 2),
+          gui.centerHoriz(gui.topMargin(-2, gui.mouseHighlight2(
+                                        gui.label(label, 24, enabled ? Color::YELLOW : Color::DARK_GRAY),
+                                        gui.label(label, 24, enabled ? textColor : Color::DARK_GRAY))))
+      ));
+      if (enabled)
+        ret = gui.stack(
+            std::move(ret),
+            gui.button(getButtonCallback(inputId)));
+      return ret;
+    };
+    lines.addElem(gui.stack(
+        gui.stopMouseMovement(),
+        gui.rectangle(Color(47, 31, 0), Color::BLACK),
+        gui.getListBuilder()
+          .addElemAuto(getButton(info->canScrollUp, "<", UserInputId::SCROLL_UP_STAIRS))
+          .addMiddleElem(gui.topMargin(3, gui.centerHoriz(gui.label(info->levelName, textColor))))
+          .addBackElemAuto(getButton(info->canScrollDown, ">", UserInputId::SCROLL_DOWN_STAIRS))
+          .buildHorizontalList()
+    ));
+  }
   return lines.addElemAuto(
-      gui.minimapBar(
+      gui.centerHoriz(gui.minimapBar(
         gui.preferredSize(48, 48, gui.stack(
             getHintCallback({"Open world map. You can also press 't'."}),
             gui.mouseHighlight2(gui.icon(GuiFactory::IconId::MINIMAP_WORLD2), gui.icon(GuiFactory::IconId::MINIMAP_WORLD1)),
@@ -3566,7 +3591,7 @@ SGuiElem GuiBuilder::drawMinimapIcons(const GameInfo& gameInfo) {
             gui.conditional(gui.blink(gui.icon(GuiFactory::IconId::MINIMAP_CENTER2)), tutorialPredicate),
             gui.button(getButtonCallback(UserInputId::SCROLL_TO_HOME), gui.getKey(SDL::SDLK_k))
             ))
-  )).buildVerticalList();
+  ))).buildVerticalList();
 }
 
 Rectangle GuiBuilder::getTextInputPosition() {

@@ -136,8 +136,6 @@ class WindowView: public View {
   void zoom(int dir);
   void resize(int width, int height);
   Rectangle getMapGuiBounds() const;
-  Rectangle getMinimapBounds() const;
-  void resetMapBounds();
   void switchTiles();
 
   bool considerResizeEvent(Event&, bool withBugReportEvent = true);
@@ -257,4 +255,6 @@ class WindowView: public View {
   string installId;
   void rebuildMinimapGui();
   fx::FXRenderer* fxRenderer;
+  Vec2 getMinimapOrigin() const;
+  int getMinimapWidth() const;
 };

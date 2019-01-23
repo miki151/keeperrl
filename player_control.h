@@ -154,8 +154,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void fillImmigration(CollectiveInfo&) const;
   void fillImmigrationHelp(CollectiveInfo&) const;
   void fillLibraryInfo(CollectiveInfo&) const;
-
-  int getMinLibrarySize() const;
+  void fillCurrentLevelInfo(GameInfo&) const;
 
   void getEquipmentItem(View* view, ItemPredicate predicate);
   ItemInfo getWorkshopItem(const WorkshopItem&) const;
