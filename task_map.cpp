@@ -79,7 +79,7 @@ CostInfo TaskMap::removeTask(WTask task) {
     completionCost.erase(task);
   }
   if (auto pos = getPosition(task)) {
-    marked.set(*pos, nullptr);
+    marked.erase(*pos);
     pos->setNeedsRenderUpdate(true);
   }
   if (auto c = creatureByTask.getMaybe(task)) {
@@ -89,9 +89,9 @@ CostInfo TaskMap::removeTask(WTask task) {
   }
   CHECK(taskByCreature.getSize() == creatureByTask.getSize());
   if (auto pos = positionMap.getMaybe(task)) {
-    CHECK(reversePositions.contains(*pos)) << "Task position not found: " <<
+    CHECK(reversePositions.count(*pos)) << "Task position not found: " <<
         task->getDescription() << " " << pos->getCoord();
-    reversePositions.getOrFail(*pos).removeElement(task);
+    reversePositions.at(*pos).removeElement(task);
     positionMap.erase(task);
   }
   if (auto activity = activityByTask.getMaybe(task)) {
@@ -129,18 +129,18 @@ bool TaskMap::hasPriorityTasks(Position pos) const {
 }
 
 WTask TaskMap::getMarked(Position pos) const {
-  return marked.getValueMaybe(pos).value_or(nullptr);
+  return getValueMaybe(marked, pos).value_or(nullptr);
 }
 
 void TaskMap::markSquare(Position pos, HighlightType h, PTask task, MinionActivity activity) {
-  marked.set(pos, task.get());
+  marked[pos] = task.get();
   pos.setNeedsRenderUpdate(true);
-  highlight.set(pos, h);
+  highlight[pos] = h;
   addTask(std::move(task), pos, activity);
 }
 
 HighlightType TaskMap::getHighlightType(Position pos) const {
-  return highlight.getOrFail(pos);
+  return highlight.at(pos);
 }
 
 bool TaskMap::hasTask(WConstCreature c) const {
@@ -162,7 +162,7 @@ WTask TaskMap::getTask(WConstCreature c) {
 }
 
 const vector<WTask>& TaskMap::getTasks(Position pos) const {
-  if (auto tasks = reversePositions.getReferenceMaybe(pos))
+  if (auto tasks = getReferenceMaybe(reversePositions, pos))
     return *tasks;
   else {
     static const vector<WTask> empty;
@@ -227,7 +227,7 @@ void TaskMap::freeTask(WTask task) {
 
 void TaskMap::setPosition(WTask task, Position position) {
   positionMap.set(task, position);
-  reversePositions.getOrInit(position).push_back(task);
+  reversePositions[position].push_back(task);
 }
 
 CostInfo TaskMap::freeFromTask(WConstCreature c) {

@@ -47,11 +47,11 @@ class TaskMap {
   EntityMap<Creature, WTask> SERIAL(taskByCreature);
   EntityMap<Task, WCreature> SERIAL(creatureByTask);
   EntityMap<Task, Position> SERIAL(positionMap);
-  PositionMap<vector<WTask>> SERIAL(reversePositions);
+  unordered_map<Position, vector<WTask>, CustomHash<Position>> SERIAL(reversePositions);
   vector<PTask> SERIAL(tasks);
   EntityMap<Task, WTask> SERIAL(taskById);
-  PositionMap<WTask> SERIAL(marked);
-  PositionMap<HighlightType> SERIAL(highlight);
+  unordered_map<Position, WTask, CustomHash<Position>> SERIAL(marked);
+  unordered_map<Position, HighlightType, CustomHash<Position>> SERIAL(highlight);
   EntityMap<Task, CostInfo> SERIAL(completionCost);
   EntityMap<Task, LocalTime> SERIAL(delayedTasks);
   EntitySet<Task> SERIAL(priorityTasks);
