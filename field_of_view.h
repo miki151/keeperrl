@@ -29,7 +29,7 @@ class FieldOfView {
 
   SERIALIZATION_DECL(FieldOfView)
 
-  const static int sightRange = 30;
+  static constexpr int sightRange = 30;
 
   private:
 
@@ -43,7 +43,7 @@ class FieldOfView {
     Visibility(Rectangle bounds, const Table<bool>& blocking, int x, int y);
 
     private:
-    char visible[sightRange * 2 + 1][sightRange * 2 + 1];
+    array<bitset<sightRange * 2 + 1>, sightRange * 2 + 1> visible;
     vector<Vec2> visibleTiles;
     void calculate(int,int,int,int, int, int, int, int,
         function<bool (int, int)> isBlocking,
