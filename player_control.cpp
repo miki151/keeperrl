@@ -87,6 +87,7 @@
 #include "game_config.h"
 #include "campaign.h"
 #include "game_event.h"
+#include "view_object_action.h"
 
 template <class Archive>
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
@@ -638,7 +639,7 @@ typedef CollectiveInfo::Button Button;
 static optional<pair<ViewId, int>> getCostObjWithZero(CostInfo cost) {
   auto& resourceInfo = CollectiveConfig::getResourceInfo(cost.id);
   if (!resourceInfo.dontDisplay)
-    return make_pair(resourceInfo.viewId, cost.value);
+    return make_pair(resourceInfo.viewId, (int) cost.value);
   else
     return none;
 }
@@ -646,7 +647,7 @@ static optional<pair<ViewId, int>> getCostObjWithZero(CostInfo cost) {
 static optional<pair<ViewId, int>> getCostObj(CostInfo cost) {
   auto& resourceInfo = CollectiveConfig::getResourceInfo(cost.id);
   if (cost.value > 0 && !resourceInfo.dontDisplay)
-    return make_pair(resourceInfo.viewId, cost.value);
+    return make_pair(resourceInfo.viewId, (int) cost.value);
   else
     return none;
 }
@@ -1052,7 +1053,8 @@ ItemInfo PlayerControl::getWorkshopItem(const WorkshopItem& option) const {
 static const ViewObject& getConstructionObject(FurnitureType type) {
   static EnumMap<FurnitureType, optional<ViewObject>> objects;
   if (!objects[type]) {
-    objects[type] =  FurnitureFactory::get(type, TribeId::getMonster())->getViewObject();
+    if (auto obj = FurnitureFactory::get(type, TribeId::getMonster())->getViewObject())
+      objects[type] = *obj;
     objects[type]->setModifier(ViewObject::Modifier::PLANNED);
   }
   return *objects[type];
@@ -1314,7 +1316,7 @@ void PlayerControl::fillImmigrationHelp(CollectiveInfo& info) const {
         },
         [&](const ExponentialCost& cost) {
           auto& resourceInfo = CollectiveConfig::getResourceInfo(cost.base.id);
-          costObj = make_pair(resourceInfo.viewId, cost.base.value);
+          costObj = make_pair(resourceInfo.viewId, (int) cost.base.value);
           infoLines.push_back("Cost doubles for every " + toString(cost.numToDoubleCost) + " "
               + c->getName().plural());
           if (cost.numFree > 0)
@@ -1444,10 +1446,8 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   info.warning = "";
   gameInfo.time = collective->getGame()->getGlobalTime();
   gameInfo.modifiedSquares = gameInfo.totalSquares = 0;
-  for (WCollective col : collective->getGame()->getCollectives()) {
-    gameInfo.modifiedSquares += getCurrentLevel()->getNumGeneratedSquares();
-    gameInfo.totalSquares += getCurrentLevel()->getNumTotalSquares();
-  }
+  gameInfo.modifiedSquares += getCurrentLevel()->getNumGeneratedSquares();
+  gameInfo.totalSquares += getCurrentLevel()->getNumTotalSquares();
   info.teams.clear();
   for (int i : All(getTeams().getAll())) {
     TeamId team = getTeams().getAll()[i];
@@ -1673,13 +1673,14 @@ void PlayerControl::getSquareViewIndex(Position pos, bool canSee, ViewIndex& ind
     index.setHiddenId(pos.getTopViewId());
   if (WConstCreature c = pos.getCreature())
     if (canSee) {
-      index.equipmentCounts = c->getEquipment().getCounts();
+      index.modEquipmentCounts() = c->getEquipment().getCounts();
       index.insert(c->getViewObject());
       auto& object = index.getObject(ViewLayer::CREATURE);
       if (isEnemy(c)) {
         object.setModifier(ViewObject::Modifier::HOSTILE);
         if (c->canBeCaptured())
-          object.setClickAction(c->isCaptureOrdered() ? "Cancel capture order" : "Order capture");
+          object.setClickAction(c->isCaptureOrdered() ?
+              ViewObjectAction::CANCEL_CAPTURE_ORDER : ViewObjectAction::ORDER_CAPTURE);
       } else
         object.getCreatureStatus().intersectWith(getDisplayedOnMinions());
     }
@@ -1700,7 +1701,7 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
       if (auto clickType = furniture->getClickType())
         if (auto& obj = furniture->getViewObject())
           if (index.hasObject(obj->layer()))
-            index.getObject(obj->layer()).setClickAction(FurnitureClick::getText(*clickType, position, furniture));
+            index.getObject(obj->layer()).setClickAction(FurnitureClick::getClickAction(*clickType, position, furniture));
       if (furniture->getUsageType() == FurnitureUsageType::STUDY || CollectiveConfig::getWorkshopType(furniture->getType()))
         index.setHighlight(HighlightType::CLICKABLE_FURNITURE);
       if ((chosenWorkshop && chosenWorkshop == CollectiveConfig::getWorkshopType(furniture->getType())) ||
@@ -1743,7 +1744,7 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
     index.insert(getTrapObject(trap->getType(), trap->isArmed()));
   for (auto layer : ENUM_ALL(FurnitureLayer))
     if (auto f = constructions.getFurniture(position, layer))
-      if (!f->isBuilt())
+      if (!f->isBuilt(position))
         index.insert(getConstructionObject(f->getFurnitureType()));
   if (unknownLocations->contains(position))
     index.insert(ViewObject(ViewId::UNKNOWN_MONSTER, ViewLayer::TORCH2, "Surprise"));
@@ -2395,7 +2396,7 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
     [&](const BuildInfo::DestroyLayers& layers) {
       for (auto layer : layers) {
         auto f = collective->getConstructions().getFurniture(position, layer);
-        if (f && !f->isBuilt()) {
+        if (f && !f->isBuilt(position)) {
           collective->removeFurniture(position, layer);
           getView()->addSound(SoundId::DIG_UNMARK);
           selection = SELECT;
@@ -2463,7 +2464,7 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
     [&](const BuildInfo::Furniture& info) {
       auto layer = Furniture::getLayer(info.types[0]);
       auto currentPlanned = collective->getConstructions().getFurniture(position, layer);
-      if (currentPlanned && currentPlanned->isBuilt())
+      if (currentPlanned && currentPlanned->isBuilt(position))
         currentPlanned = none;
       int nextIndex = 0;
       if (currentPlanned) {

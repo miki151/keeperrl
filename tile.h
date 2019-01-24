@@ -19,7 +19,6 @@
 #include "util.h"
 #include "view_id.h"
 
-enum class ViewId;
 class ViewObject;
 
 class Tile {

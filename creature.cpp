@@ -1413,13 +1413,13 @@ void Creature::addMovementInfo(MovementInfo info) {
     return;
 
   // We're assuming here that position has already been updated
-  Position oldPos = position.minus(info.direction);
+  Position oldPos = position.minus(info.getDir());
   if (auto ground = oldPos.getFurniture(FurnitureLayer::GROUND))
     if (!oldPos.getFurniture(FurnitureLayer::MIDDLE))
-      ground->onCreatureWalkedOver(oldPos, info.direction);
+      ground->onCreatureWalkedOver(oldPos, info.getDir());
   if (auto ground = position.getFurniture(FurnitureLayer::GROUND))
     if (!position.getFurniture(FurnitureLayer::MIDDLE))
-      ground->onCreatureWalkedInto(position, info.direction);
+      ground->onCreatureWalkedInto(position, info.getDir());
 }
 
 CreatureAction Creature::whip(const Position& pos) const {
@@ -1730,7 +1730,7 @@ CreatureAction Creature::moveTowards(Position pos, bool away, NavigationFlags fl
     return CreatureAction();
   if (!away && !canNavigateToOrNeighbor(pos))
     return CreatureAction();
-  optional<LevelShortestPath> currentPath = *shortestPath;
+  auto currentPath = shortestPath;
   for (int i : Range(2)) {
     bool wasNew = false;
     INFO << identify() << (away ? " retreating " : " navigating ") << position.getCoord() << " to " << pos.getCoord();

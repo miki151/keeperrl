@@ -2,7 +2,7 @@
 
 #include "util.h"
 
-RICH_ENUM(
+RICH_ENUM2(std::uint16_t,
     ViewId,
     EMPTY,
     PLAYER,

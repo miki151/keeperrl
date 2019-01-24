@@ -13,6 +13,7 @@
 #include "unknown_locations.h"
 #include "team_order.h"
 #include "collective_teams.h"
+#include "view_object_action.h"
 
 class MinionController : public Player {
   public:
@@ -60,7 +61,8 @@ class MinionController : public Player {
   virtual vector<OtherCreatureCommand> getOtherCreatureCommands(WCreature c) const override {
     vector<OtherCreatureCommand> ret = Player::getOtherCreatureCommands(c);
     if (control->isEnemy(c) && c->canBeCaptured())
-      ret.push_back({2, c->isCaptureOrdered() ? "Cancel capture order" : "Order capture", true,
+      ret.push_back({2, c->isCaptureOrdered() ?
+          ViewObjectAction::CANCEL_CAPTURE_ORDER : ViewObjectAction::ORDER_CAPTURE, true,
           [c](Player*) { c->toggleCaptureOrder();}});
     if (getTeam().contains(c)) {
       for (auto& action : getTeamMemberActions(c))
@@ -69,7 +71,7 @@ class MinionController : public Player {
     }
     else if (control->collective->getCreatures().contains(c) && control->canControlInTeam(c) &&
         control->canControlInTeam(creature))
-      ret.push_back({10, "Add to team", false, [c](Player* player) {
+      ret.push_back({10, ViewObjectAction::ADD_TO_TEAM, false, [c](Player* player) {
           (dynamic_cast<MinionController*>(player))->control->addToCurrentTeam(c);}});
     return ret;
   }

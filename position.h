@@ -131,7 +131,7 @@ class Position {
   WFurniture modFurniture(FurnitureLayer) const;
   WFurniture modFurniture(FurnitureType) const;
   vector<WFurniture> modFurniture() const;
-  optional<int> getDistanceToNearestPortal() const;
+  optional<short> getDistanceToNearestPortal() const;
   optional<Position> getOtherPortal() const;
   void registerPortal();
   void removePortal();

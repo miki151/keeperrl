@@ -59,25 +59,24 @@ void Furniture::serialize(Archive& ar, const unsigned) {
 
 SERIALIZABLE(Furniture)
 
-const optional<ViewObject>& Furniture::getViewObject() const {  PROFILE
-  return *viewObject;
+const heap_optional<ViewObject>& Furniture::getViewObject() const {
+  return viewObject;
 }
 
-optional<ViewObject>& Furniture::getViewObject() {
-  PROFILE;
-  return *viewObject;
+heap_optional<ViewObject>& Furniture::getViewObject() {
+  return viewObject;
 }
 
 void Furniture::updateViewObject() {
-  if (auto& obj = *viewObject) {
+  if (viewObject) {
     double minHealth = 1;
     for (auto action : ENUM_ALL(DestroyAction::Type))
       if (auto& info = destroyedInfo[action])
         minHealth = min(minHealth, info->health);
     if (minHealth < 1) {
-      obj->setAttribute(ViewObjectAttribute::HEALTH, minHealth);
+      viewObject->setAttribute(ViewObjectAttribute::HEALTH, minHealth);
       if (isWall())
-        obj->setModifier(ViewObjectModifier::FURNITURE_CRACKS);
+        viewObject->setModifier(ViewObjectModifier::FURNITURE_CRACKS);
     }
   }
 }
@@ -414,8 +413,8 @@ Furniture& Furniture::setConstructMessage(optional<ConstructMessage> msg) {
   return *this;
 }
 
-const optional<Fire>& Furniture::getFire() const {
-  return *fire;
+const heap_optional<Fire>& Furniture::getFire() const {
+  return fire;
 }
 
 bool Furniture::canDestroy(const MovementType& movement, const DestroyAction& action) const {

@@ -25,7 +25,7 @@ enum class MusicType;
 enum class SunlightState;
 enum class GameSaveType;
 enum class EnemyId;
-enum class CollectiveResourceId;
+enum class CollectiveResourceId : std::uint8_t;
 enum class CollectiveConfigId;
 enum class MsgType;
 enum class BodyPart;
@@ -46,7 +46,7 @@ enum class CreatureSize;
 
 enum class SquareApplyType;
 enum class SquareId;
-enum class FurnitureType;
+enum class FurnitureType : std::uint8_t;
 enum class FurnitureLayer;
 enum class ItemAction;
 enum class WorshipType;
@@ -57,7 +57,7 @@ enum class FurnitureTickType;
 
 enum class MinionActivity;
 enum class MinionTrait;
-enum class TrapType;
+enum class TrapType : std::uint8_t;
 
 enum class SquareAttrib;
 
@@ -73,7 +73,7 @@ enum class SettlementType;
 enum class VillainType;
 enum class BiomeId;
 enum class ZoneId;
-enum class ViewId;
+enum class ViewId : std::uint16_t;
 
 enum class AnimationId;
 
@@ -107,6 +107,7 @@ enum class AvatarMenuOption;
 enum class PassableInfo;
 enum class ConquerCondition;
 enum class FurnitureOnBuilt;
+enum class ViewObjectAction : std::uint8_t;
 
 struct FXInfo;
 struct FXSpawnInfo;

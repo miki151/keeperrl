@@ -527,11 +527,14 @@ void Level::updateSunlightMovement() {
 }
 
 int Level::getNumGeneratedSquares() const {
-  return squares->getNumGenerated();
+  int ret = 0;
+  for (auto l : ENUM_ALL(FurnitureLayer))
+    ret += furniture->getBuilt(l).getNumGenerated();
+  return ret;
 }
 
 int Level::getNumTotalSquares() const {
-  return squares->getNumTotal();
+  return squares->getNumGenerated();
 }
 
 void Level::setNeedsMemoryUpdate(Vec2 pos, bool s) {

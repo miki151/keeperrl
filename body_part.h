@@ -12,3 +12,4 @@ RICH_ENUM(BodyPart,
 );
 
 extern const char* getName(BodyPart);
+extern ViewObjectAction getAttackAction(BodyPart);

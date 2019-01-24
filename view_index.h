@@ -77,17 +77,20 @@ class ViewIndex {
   bool isHighlight(HighlightType) const;
   double getGradient(GradientType) const;
 
+  const ItemCounts& getItemCounts() const;
+  const ItemCounts& getEquipmentCounts() const;
+  ItemCounts& modItemCounts();
+  ItemCounts& modEquipmentCounts();
+
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version);
 
-  ItemCounts SERIAL(itemCounts);
-  ItemCounts SERIAL(equipmentCounts);
-
   private:
+  heap_optional<pair<ItemCounts, ItemCounts>> SERIAL(itemCounts);
   std::array<char, EnumInfo<ViewLayer>::size> SERIAL(objIndex);
   vector<ViewObject> SERIAL(objects);
   EnumSet<HighlightType> SERIAL(highlights);
-  EnumMap<GradientType, double> SERIAL(gradients);
+  EnumMap<GradientType, std::uint8_t> SERIAL(gradients);
   bool SERIAL(anyHighlight) = false;
   optional<ViewId> hiddenId;
 };

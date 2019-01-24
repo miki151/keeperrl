@@ -481,7 +481,7 @@ Vec2 MapGui::getMovementOffset(const ViewObject& object, Vec2 size, double time,
     dir = object.getMovementInfo(screenMovement->moveCounter);
   }
   else if (!screenMovement) {
-    dir = movementInfo.direction;
+    dir = movementInfo.getDir();
 /*    if (info.direction.length8() == 0 || time >= info.tEnd + 0.001 || time <= info.tBegin - 0.001)
       return Vec2(0, 0);*/
     state = (time - movementInfo.tBegin) / (movementInfo.tEnd - movementInfo.tBegin);
@@ -500,7 +500,7 @@ Vec2 MapGui::getMovementOffset(const ViewObject& object, Vec2 size, double time,
   if (dir.length8() == 1) {
     if (state >= 0.5 && state < 1.0) {
       if (movementInfo.victim)
-        woundedInfo.getOrInit(*movementInfo.victim) = curTimeReal;
+        woundedInfo.getOrInit(UniqueEntity<Creature>::Id(movementInfo.victim)) = curTimeReal;
       if (movementInfo.fx && gid && furnitureUsageFX.getOrElse(*gid, -1) < movementInfo.moveCounter) {
         furnitureUsageFX.getOrInit(*gid) = movementInfo.moveCounter;
         addAnimation(FXSpawnInfo(getFXInfo(*movementInfo.fx), pos + dir));

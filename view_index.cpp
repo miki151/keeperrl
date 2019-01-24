@@ -18,7 +18,7 @@
 #include "view_index.h"
 #include "view_object.h"
 
-SERIALIZE_DEF(ViewIndex, objIndex, highlights, gradients, objects, anyHighlight, itemCounts, equipmentCounts)
+SERIALIZE_DEF(ViewIndex, objIndex, highlights, gradients, objects, anyHighlight, itemCounts)
 
 ViewIndex::ViewIndex() {
   for (auto& elem : objIndex)
@@ -83,11 +83,39 @@ void ViewIndex::setGradient(GradientType h, double amount) {
   CHECK(amount >= 0 && amount <= 1);
   if (amount > 0)
     anyHighlight = true;
-  gradients[h] = amount;
+  gradients[h] = (std::uint8_t) trunc(amount * 255);
 }
 
 double ViewIndex::getGradient(GradientType h) const {
-  return gradients[h];
+  return double(gradients[h]) / 255.0;
+}
+
+const static ItemCounts emptyCounts;
+
+const ItemCounts& ViewIndex::getItemCounts() const {
+  if (itemCounts)
+    return itemCounts->first;
+  else
+    return emptyCounts;
+}
+
+const ItemCounts& ViewIndex::getEquipmentCounts() const {
+  if (itemCounts)
+    return itemCounts->second;
+  else
+    return emptyCounts;
+}
+
+ItemCounts& ViewIndex::modItemCounts() {
+  if (!itemCounts)
+    itemCounts.reset(make_pair(ItemCounts(), ItemCounts()));
+  return itemCounts->first;
+}
+
+ItemCounts& ViewIndex::modEquipmentCounts() {
+  if (!itemCounts)
+    itemCounts.reset(make_pair(ItemCounts(), ItemCounts()));
+  return itemCounts->second;
 }
 
 void ViewIndex::setHighlight(HighlightType h, bool state) {

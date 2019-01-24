@@ -159,13 +159,13 @@ void Model::addCreature(PCreature c, TimeInterval delay) {
   timeQueue->addCreature(std::move(c), getLocalTime() + delay);
 }
 
-WLevel Model::buildLevel(LevelBuilder&& b, PLevelMaker maker) {
+WLevel Model::buildLevel(LevelBuilder b, PLevelMaker maker) {
   LevelBuilder builder(std::move(b));
   levels.push_back(builder.build(this, maker.get(), Random.getLL()));
   return levels.back().get();
 }
 
-WLevel Model::buildMainLevel(LevelBuilder&& b, PLevelMaker maker) {
+WLevel Model::buildMainLevel(LevelBuilder b, PLevelMaker maker) {
   auto ret = buildLevel(std::move(b), std::move(maker));
   mainLevels.push_back(ret);
   return ret;
@@ -321,8 +321,8 @@ void Model::addExternalEnemies(ExternalEnemies e) {
   externalEnemies = std::move(e);
 }
 
-const optional<ExternalEnemies>& Model::getExternalEnemies() const {
-  return *externalEnemies;
+const heap_optional<ExternalEnemies>& Model::getExternalEnemies() const {
+  return externalEnemies;
 }
 
 void Model::clearExternalEnemies() {

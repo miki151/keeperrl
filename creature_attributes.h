@@ -81,8 +81,8 @@ class CreatureAttributes {
   Skillset& getSkills();
   const Skillset& getSkills() const;
   ViewObject createViewObject() const;
-  const optional<ViewObject>& getIllusionViewObject() const;
-  optional<ViewObject>& getIllusionViewObject();
+  const heap_optional<ViewObject>& getIllusionViewObject() const;
+  heap_optional<ViewObject>& getIllusionViewObject();
   bool canEquip() const;
   void chatReaction(WCreature me, WCreature other);
   optional<string> getPetReaction(WConstCreature me) const;
@@ -114,13 +114,13 @@ class CreatureAttributes {
   private:
   void consumeEffects(const EnumMap<LastingEffect, int>&);
   MustInitialize<ViewId> SERIAL(viewId);
-  HeapAllocated<optional<ViewObject>> SERIAL(illusionViewObject);
+  heap_optional<ViewObject> SERIAL(illusionViewObject);
   MustInitialize<CreatureName> SERIAL(name);
   EnumMap<AttrType, int> SERIAL(attr);
   HeapAllocated<Body> SERIAL(body);
   optional<string> SERIAL(chatReactionFriendly);
   optional<string> SERIAL(chatReactionHostile);
-  HeapAllocated<optional<Effect>> SERIAL(passiveAttack);
+  heap_optional<Effect> SERIAL(passiveAttack);
   Gender SERIAL(gender) = Gender::male;
   bool SERIAL(cantEquip) = false;
   double SERIAL(courage) = 1;

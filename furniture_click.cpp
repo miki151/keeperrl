@@ -9,6 +9,7 @@
 #include "movement_set.h"
 #include "game.h"
 #include "collective.h"
+#include "view_object_action.h"
 
 void FurnitureClick::handle(FurnitureClickType type, Position pos, WConstFurniture furniture) {
   auto layer = furniture->getLayer();
@@ -32,15 +33,15 @@ void FurnitureClick::handle(FurnitureClickType type, Position pos, WConstFurnitu
   }
 }
 
-const char* FurnitureClick::getText(FurnitureClickType type, Position, WConstFurniture furniture) {
+ViewObjectAction FurnitureClick::getClickAction(FurnitureClickType type, Position, WConstFurniture furniture) {
   switch (type) {
     case FurnitureClickType::LOCK: {
       if (furniture->getMovementSet().hasTrait(MovementTrait::WALK))
-        return "Lock door";
+        return ViewObjectAction::LOCK_DOOR;
       else
-        return "Unlock door";
+        return ViewObjectAction::UNLOCK_DOOR;
     }
     case FurnitureClickType::KEEPER_BOARD:
-      return "Write on board";
+      return ViewObjectAction::WRITE_ON_BOARD;
   }
 }

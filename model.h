@@ -58,7 +58,7 @@ class Model : public OwnedObject<Model> {
   void addExternalEnemies(ExternalEnemies);
   void clearExternalEnemies();
 
-  const optional<ExternalEnemies>& getExternalEnemies() const;
+  const heap_optional<ExternalEnemies>& getExternalEnemies() const;
 
   bool isTurnBased();
 
@@ -97,8 +97,8 @@ class Model : public OwnedObject<Model> {
 
   void addEvent(const GameEvent&);
 
-  WLevel buildLevel(LevelBuilder&&, PLevelMaker);
-  WLevel buildMainLevel(LevelBuilder&&, PLevelMaker);
+  WLevel buildLevel(LevelBuilder, PLevelMaker);
+  WLevel buildMainLevel(LevelBuilder, PLevelMaker);
   void calculateStairNavigation();
 
   private:
@@ -131,7 +131,7 @@ class Model : public OwnedObject<Model> {
   friend class EventListener;
   OwnerPointer<EventGenerator> SERIAL(eventGenerator);
   void checkCreatureConsistency();
-  HeapAllocated<optional<ExternalEnemies>> SERIAL(externalEnemies);
+  heap_optional<ExternalEnemies> SERIAL(externalEnemies);
   int moveCounter = 0;
 };
 

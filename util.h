@@ -318,8 +318,8 @@ template<typename T>
 class EnumInfo {
 };
 
-#define RICH_ENUM(Name, ...) \
-enum class Name { __VA_ARGS__ };\
+#define RICH_ENUM2(Type, Name, ...) \
+enum class Name : Type { __VA_ARGS__ };\
 template<> \
 class EnumInfo<Name> { \
   public:\
@@ -351,6 +351,7 @@ class EnumInfo<Name> { \
     return none;\
   }\
 }
+#define RICH_ENUM(Name, ...) RICH_ENUM2(int, Name, __VA_ARGS__)
 
 template <class T>
 class EnumAll {
@@ -1440,55 +1441,77 @@ class HeapAllocated {
 };
 
 template <class T>
-class HeapAllocated<optional<T>> {
+class heap_optional {
   public:
-  HeapAllocated() : elem(new optional<T>()) {}
+  heap_optional() {}
 
-  template <typename... Args>
-  HeapAllocated(Args... a) : elem(new optional<T>(a...)) {}
+  heap_optional(T&& o) : elem(new T(std::move(o))) {}
 
-  HeapAllocated(T&& o) : elem(new optional<T>(std::move(o))) {}
+  heap_optional(optional<T>&& o) : elem(o ? new T(std::move(*o)) : nullptr) {}
+  heap_optional(const optional<T>& o) : elem(o ? new T(*o) : nullptr) {}
 
-  HeapAllocated(const HeapAllocated& o) : elem(new optional<T>(*o.elem)) {}
+  heap_optional(const heap_optional& o) : elem(o.elem ? new T(*o.elem) : nullptr) {}
+  heap_optional(heap_optional&& o) : elem(std::move(o.elem)) {}
 
   T* operator -> () {
-    return &(**elem);
+    return elem.get();
   }
 
   const T* operator -> () const {
-    return &(**elem);
+    return elem.get();
   }
 
-  optional<T>& operator * () {
+  T& operator * () {
     return *elem;
   }
 
-  const optional<T>& operator * () const {
+  const T& operator * () const {
     return *elem;
   }
 
   explicit operator bool () const {
-    return !!elem && !!(*elem);
+    return !!elem;
   }
 
   void reset(T&& t) {
-    elem.reset(new optional<T>(std::move(t)));
+    elem.reset(new T(std::move(t)));
   }
 
-  HeapAllocated& operator = (const HeapAllocated& t) {
-    *elem.get() = *t;
+  void clear() {
+    elem.reset();
+  }
+
+  heap_optional& operator = (const T& t) {
+    elem = unique<T>(t);
     return *this;
   }
 
-  HeapAllocated& operator = (HeapAllocated&& t) {
-    elem = std::move(t.elem);
+  heap_optional& operator = (T&& t) {
+    elem = unique<T>(std::move(t));
+    return *this;
+  }
+
+  heap_optional& operator = (const heap_optional& t) {
+    if (t.elem)
+      elem = unique<T>(*t.elem);
+    return *this;
+  }
+
+  heap_optional& operator = (heap_optional&& t) {
+    if (t.elem)
+      elem = std::move(t.elem);
+    return *this;
+  }
+
+  heap_optional& operator = (none_t) {
+    clear();
     return *this;
   }
 
   SERIALIZE_ALL(elem)
 
   private:
-  unique_ptr<optional<T>> SERIAL(elem);
+  unique_ptr<T> SERIAL(elem);
 };
 
 class Semaphore {

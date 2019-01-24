@@ -41,6 +41,7 @@
 #include "player_role.h"
 #include "tribe_alignment.h"
 #include "avatar_menu_option.h"
+#include "view_object_action.h"
 
 using SDL::SDL_Keysym;
 using SDL::SDL_Keycode;
@@ -1601,7 +1602,7 @@ SGuiElem GuiBuilder::drawRightPlayerInfo(const PlayerInfo& info) {
                 lines.addElem(gui.stack(
                       gui.uiHighlightMouseOver(),
                       gui.button(buttonFun),
-                      gui.label(getText(action))));
+                      gui.label(getText(getText(action)))));
               }
               drawMiniMenu(std::move(lines), exit, bounds.bottomLeft(), 200, false);
               if (ret)
@@ -2126,14 +2127,14 @@ SGuiElem GuiBuilder::drawBuildingsOverlay(const CollectiveInfo& info, const opti
 
 SGuiElem GuiBuilder::getClickActions(const ViewObject& object) {
   auto lines = gui.getListBuilder(legendLineHeight * 2 / 3);
-  if (!object.getClickAction().empty()) {
-    lines.addElem(gui.label(object.getClickAction()));
+  if (auto action = object.getClickAction()) {
+    lines.addElem(gui.label(getText(*action)));
     lines.addSpace(legendLineHeight / 3);
   }
-  if (!object.getExtendedActions().empty()) {
+  if (!object.getExtendedActions().isEmpty()) {
     lines.addElem(gui.label("Right click:", Color::LIGHT_BLUE));
     for (auto action : object.getExtendedActions())
-      lines.addElem(gui.label(action, Color::LIGHT_GRAY));
+      lines.addElem(gui.label(getText(action), Color::LIGHT_GRAY));
     lines.addSpace(legendLineHeight / 3);
   }
   if (!lines.isEmpty())
@@ -2195,7 +2196,7 @@ SGuiElem GuiBuilder::drawMapHintOverlay() {
               .addElemAuto(gui.label(viewObject.getDescription()))
               .buildHorizontalList());
         if (layer == ViewLayer::CREATURE)
-          lines.addElemAuto(drawLyingItemsList("Inventory: ", highlighted.viewIndex.equipmentCounts, 250));
+          lines.addElemAuto(drawLyingItemsList("Inventory: ", highlighted.viewIndex.getEquipmentCounts(), 250));
         if (viewObject.hasModifier(ViewObject::Modifier::HOSTILE))
           lines.addElem(gui.label("Hostile", Color::ORANGE));
         for (auto status : viewObject.getCreatureStatus()) {
@@ -2245,7 +2246,7 @@ SGuiElem GuiBuilder::drawMapHintOverlay() {
       lines.addElem(gui.label("Outdoors"));
     if (highlighted.tilePos)
       lines.addElem(gui.label("Position: " + toString(*highlighted.tilePos)));
-    lines.addElemAuto(drawLyingItemsList("Lying here: ", highlighted.viewIndex.itemCounts, 250));
+    lines.addElemAuto(drawLyingItemsList("Lying here: ", highlighted.viewIndex.getItemCounts(), 250));
   }
   if (!lines.isEmpty())
     allElems.push_back(gui.margins(gui.translucentBackgroundWithBorderPassMouse(

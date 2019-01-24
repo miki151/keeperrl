@@ -34,6 +34,7 @@ static int getDepth(Position pos) {
 }
 
 static optional<SettlementInfo> getSettlement(int depth) {
+  return none;
   auto enemy = EnemyFactory(Random).get(EnemyId::RED_DRAGON);
   enemy.settlement.collective = new CollectiveBuilder(enemy.config, enemy.settlement.tribe);
   return enemy.settlement;
@@ -55,9 +56,10 @@ void handleOnBuilt(Position pos, WCreature c, FurnitureOnBuilt type) {
       WLevel level;
       int levelIndex = *levels.findElement(pos.getLevel());
       if (levelIndex == levels.size() - 1) {
+        int width = 174 * 2;
         level = pos.getModel()->buildMainLevel(
-            LevelBuilder(Random, 30, 30, "", true),
-            LevelMaker::getZLevel(Random, getSettlement(getDepth(pos) + 1), 30, c->getTribeId()));
+            LevelBuilder(Random, width, width, "", true),
+            LevelMaker::getZLevel(Random, getSettlement(getDepth(pos) + 1), width, c->getTribeId()));
       } else {
         level = levels[levelIndex + 1];
       }

@@ -54,7 +54,7 @@ class VillageControl : public CollectiveControl, public EventListener<VillageCon
   bool canPerformAttack(bool currentlyActive);
   void acceptImmigration();
 
-  HeapAllocated<optional<VillageBehaviour>> SERIAL(villain);
+  heap_optional<VillageBehaviour> SERIAL(villain);
 
   double SERIAL(victims) = 0;
   EntitySet<Item> SERIAL(myItems);

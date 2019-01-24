@@ -194,7 +194,7 @@ vector<WFurniture> Position::modFurniture() const {
   return ret;
 }
 
-optional<int> Position::getDistanceToNearestPortal() const {
+optional<short> Position::getDistanceToNearestPortal() const {
   if (level)
     return level->portals->getDistanceToNearest(coord);
   else

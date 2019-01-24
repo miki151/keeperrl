@@ -61,6 +61,7 @@
 #include "navigation_flags.h"
 #include "vision.h"
 #include "game_event.h"
+#include "view_object_action.h"
 
 template <class Archive>
 void Player::serialize(Archive& ar, const unsigned int) {
@@ -526,34 +527,34 @@ void Player::sleeping() {
 
 vector<Player::OtherCreatureCommand> Player::getOtherCreatureCommands(WCreature c) const {
   vector<OtherCreatureCommand> ret;
-  auto genAction = [&](int priority, const string& text, bool allowAuto, CreatureAction action) {
+  auto genAction = [&](int priority, ViewObjectAction name, bool allowAuto, CreatureAction action) {
     if (action)
-      ret.push_back({priority, text, allowAuto, [action](Player* player) { player->tryToPerform(action); }});
+      ret.push_back({priority, name, allowAuto, [action](Player* player) { player->tryToPerform(action); }});
   };
   if (c->getPosition().dist8(creature->getPosition()) == 1) {
-    genAction(0, "Swap position", true, creature->move(c->getPosition(), none));
-    genAction(3, "Push", true, creature->push(c));
+    genAction(0, ViewObjectAction::SWAP_POSITION, true, creature->move(c->getPosition(), none));
+    genAction(3, ViewObjectAction::PUSH, true, creature->push(c));
   }
   if (creature->isEnemy(c)) {
-    genAction(1, "Attack", true, creature->attack(c));
+    genAction(1, ViewObjectAction::ATTACK, true, creature->attack(c));
     auto equipped = creature->getEquipment().getSlotItems(EquipmentSlot::WEAPON);
     if (equipped.size() == 1) {
       auto weapon = equipped[0];
-      genAction(4, "Attack using " + weapon->getName(), true, creature->attack(c,
+      genAction(4, ViewObjectAction::ATTACK_USING_WEAPON, true, creature->attack(c,
           CONSTRUCT(Creature::AttackParams, c.weapon = weapon;)));
     }
     for (auto part : ENUM_ALL(BodyPart))
       if (auto& attack = creature->getBody().getIntrinsicAttacks()[part])
-        genAction(4, "Attack using " + attack->item->getName(), true, creature->attack(c,
+        genAction(4, getAttackAction(part), true, creature->attack(c,
             CONSTRUCT(Creature::AttackParams, c.weapon = attack->item.get();)));
   } else {
-    genAction(1, "Attack", false, creature->attack(c));
-    genAction(1, "Pet", false, creature->pet(c));
+    genAction(1, ViewObjectAction::ATTACK, false, creature->attack(c));
+    genAction(1, ViewObjectAction::PET, false, creature->pet(c));
   }
   if (creature == c)
-    genAction(0, "Skip turn", true, creature->wait());
+    genAction(0, ViewObjectAction::SKIP_TURN, true, creature->wait());
   if (c->getPosition().dist8(creature->getPosition()) == 1)
-    genAction(10, "Chat", false, creature->chatTo(c));
+    genAction(10, ViewObjectAction::CHAT, false, creature->chatTo(c));
   std::stable_sort(ret.begin(), ret.end(), [](const auto& c1, const auto& c2) {
     if (c1.allowAuto && !c2.allowAuto)
       return true;
@@ -568,7 +569,7 @@ void Player::creatureClickAction(Position pos, bool extended) {
   if (auto clicked = pos.getCreature()) {
     auto commands = getOtherCreatureCommands(clicked);
     if (extended) {
-      auto commandsText = commands.transform([](auto& command) -> string { return command.name; });
+      auto commandsText = commands.transform([](auto& command) -> string { return getText(command.name); });
       if (auto index = getView()->chooseAtMouse(commandsText))
         commands[*index].perform(this);
     }
@@ -984,13 +985,13 @@ void Player::getViewIndex(Vec2 pos, ViewIndex& index) const {
       if (furniture->getTribe() == creature->getTribeId())
         if (auto& obj = furniture->getViewObject())
           if (index.hasObject(obj->layer()))
-            index.getObject(obj->layer()).setExtendedActions({FurnitureClick::getText(*clickType, position, furniture)});
+            index.getObject(obj->layer()).setExtendedActions({FurnitureClick::getClickAction(*clickType, position, furniture)});
   }
   if (WCreature c = position.getCreature()) {
     if ((canSee && creature->canSeeInPosition(c)) || c == creature ||
         creature->canSeeOutsidePosition(c)) {
       index.insert(c->getViewObjectFor(creature->getTribe()));
-      index.equipmentCounts = c->getEquipment().getCounts();
+      index.modEquipmentCounts() = c->getEquipment().getCounts();
       auto& object = index.getObject(ViewLayer::CREATURE);
       if (c == creature)
         object.setModifier(getGame()->getPlayerCreatures().size() == 1
@@ -1005,10 +1006,10 @@ void Player::getViewIndex(Vec2 pos, ViewIndex& index) const {
       if (!actions.empty()) {
         if (actions[0].allowAuto)
           object.setClickAction(actions[0].name);
-        vector<string> extended;
+        EnumSet<ViewObjectAction> extended;
         for (auto& action : actions)
           if (action.name != object.getClickAction())
-            extended.push_back(action.name);
+            extended.insert(action.name);
         object.setExtendedActions(extended);
       }
     } else if (creature->isUnknownAttacker(c))

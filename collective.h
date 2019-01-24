@@ -186,7 +186,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   const CollectiveTeams& getTeams() const;
   void freeTeamMembers(const vector<WCreature>& members);
 
-  const optional<CollectiveName>& getName() const;
+  const heap_optional<CollectiveName>& getName() const;
   const TaskMap& getTaskMap() const;
   TaskMap& getTaskMap();
   void updateResourceProduction();
@@ -284,7 +284,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   EntitySet<Creature> SERIAL(kills);
   int SERIAL(points) = 0;
   HeapAllocated<CollectiveTeams> SERIAL(teams);
-  HeapAllocated<optional<CollectiveName>> SERIAL(name);
+  heap_optional<CollectiveName> SERIAL(name);
   HeapAllocated<CollectiveConfig> SERIAL(config);
   EntitySet<Creature> SERIAL(banished);
   VillainType SERIAL(villainType);

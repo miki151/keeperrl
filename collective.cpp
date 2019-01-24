@@ -99,8 +99,8 @@ void Collective::setWorkshops(unique_ptr<Workshops> w) {
   workshops = std::move(w);
 }
 
-const optional<CollectiveName>& Collective::getName() const {
-  return *name;
+const heap_optional<CollectiveName>& Collective::getName() const {
+  return name;
 }
 
 void Collective::setVillainType(VillainType t) {
@@ -1002,7 +1002,7 @@ void Collective::handleTrapPlacementAndProduction() {
             MinionActivity::CONSTRUCTION);
         markItem(items.back().first, task);
         items.pop_back();
-        trap.setTask(task);
+        trap.setMarked();
       } else
         ++missingTraps[trap.getType()];
     }
@@ -1047,7 +1047,7 @@ void Collective::updateConstructions() {
     auto& construction = *constructions->getFurniture(pos.first, pos.second);
     if (!isDelayed(pos.first) &&
         !construction.hasTask() &&
-        !construction.isBuilt() &&
+        !construction.isBuilt(pos.first) &&
         hasResource(construction.getCost())) {
       constructions->setTask(pos.first, pos.second,
           taskMap->addTaskCost(Task::construction(this, pos.first, construction.getFurnitureType()), pos.first,

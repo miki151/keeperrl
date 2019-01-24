@@ -277,7 +277,7 @@ void consumeAttr(Gender& mine, const Gender& his, vector<string>& adjectives) {
 
 
 template <typename T>
-void consumeAttr(optional<T>& mine, const optional<T>& his, vector<string>& adjectives, const string& adj) {
+void consumeAttr(heap_optional<T>& mine, const heap_optional<T>& his, vector<string>& adjectives, const string& adj) {
   if (consumeProb() && !mine && his) {
     mine = *his;
     if (!adj.empty())
@@ -314,7 +314,7 @@ void CreatureAttributes::consume(WCreature self, CreatureAttributes& other) {
   for (auto t : ENUM_ALL(AttrType))
     consumeAttr(attr[t], other.attr[t], adjectives,
       getAttrNameMore(t), getAbsorbtionLevelCap(t));
-  consumeAttr(*passiveAttack, *other.passiveAttack, adjectives, "");
+  consumeAttr(passiveAttack, other.passiveAttack, adjectives, "");
   consumeAttr(gender, other.gender, adjectives);
   consumeAttr(skills, other.skills, adjectives);
   if (!adjectives.empty()) {
@@ -344,12 +344,12 @@ ViewObject CreatureAttributes::createViewObject() const {
   return ViewObject(*viewId, ViewLayer::CREATURE, name->bare());
 }
 
-const optional<ViewObject>& CreatureAttributes::getIllusionViewObject() const {
-  return *illusionViewObject;
+const heap_optional<ViewObject>& CreatureAttributes::getIllusionViewObject() const {
+  return illusionViewObject;
 }
 
-optional<ViewObject>& CreatureAttributes::getIllusionViewObject() {
-  return *illusionViewObject;
+heap_optional<ViewObject>& CreatureAttributes::getIllusionViewObject() {
+  return illusionViewObject;
 }
 
 bool CreatureAttributes::canEquip() const {

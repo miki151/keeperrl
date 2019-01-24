@@ -19,8 +19,6 @@ LevelBuilder::LevelBuilder(ProgressMeter* meter, RandomGen& r, int width, int he
     sunlight(width, height, defaultLight ? *defaultLight : (allCovered ? 0.0 : 1.0)),
     attrib(width, height), items(width, height), furniture(Rectangle(width, height)),
     name(n), progressMeter(meter), random(r) {
-  for (Vec2 v : squares.getBounds())
-    squares.putElem(v, {});
 }
 
 LevelBuilder::LevelBuilder(RandomGen& r, int width, int height, const string& n, bool covered)

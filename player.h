@@ -87,7 +87,7 @@ class Player : public Controller, public CreatureView, public EventListener<Play
 
   struct OtherCreatureCommand {
     int priority;
-    string name;
+    ViewObjectAction name;
     bool allowAuto;
     function<void(Player*)> perform;
   };

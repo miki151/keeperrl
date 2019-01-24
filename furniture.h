@@ -31,8 +31,8 @@ class Furniture : public OwnedObject<Furniture> {
 
   Furniture(const string& name, const optional<ViewObject>&, FurnitureType, TribeId);
   Furniture(const Furniture&);
-  const optional<ViewObject>& getViewObject() const;
-  optional<ViewObject>& getViewObject();
+  const heap_optional<ViewObject>& getViewObject() const;
+  heap_optional<ViewObject>& getViewObject();
   const string& getName(int count = 1) const;
   FurnitureType getType() const;
   bool isVisibleTo(WConstCreature) const;
@@ -45,7 +45,7 @@ class Furniture : public OwnedObject<Furniture> {
   void tryToDestroyBy(Position, WCreature, const DestroyAction&);
   TribeId getTribe() const;
   void setTribe(TribeId);
-  const optional<Fire>& getFire() const;
+  const heap_optional<Fire>& getFire() const;
   void fireDamage(Position, double amount);
   void tick(Position);
   bool canSeeThru(VisionId) const;
@@ -126,13 +126,13 @@ class Furniture : public OwnedObject<Furniture> {
   ~Furniture();
 
   private:
-  HeapAllocated<optional<ViewObject>> SERIAL(viewObject);
+  heap_optional<ViewObject> SERIAL(viewObject);
   string SERIAL(name);
   string SERIAL(pluralName);
   FurnitureType SERIAL(type);
   FurnitureLayer SERIAL(layer) = FurnitureLayer::MIDDLE;
   HeapAllocated<MovementSet> SERIAL(movementSet);
-  HeapAllocated<optional<Fire>> SERIAL(fire);
+  heap_optional<Fire> SERIAL(fire);
   optional<FurnitureType> SERIAL(burntRemains);
   optional<FurnitureType> SERIAL(destroyedRemains);
   struct DestroyedInfo {
@@ -141,14 +141,14 @@ class Furniture : public OwnedObject<Furniture> {
     SERIALIZE_ALL(health, strength);
   };
   EnumMap<DestroyAction::Type, optional<DestroyedInfo>> SERIAL(destroyedInfo);
-  HeapAllocated<optional<ItemFactory>> SERIAL(itemDrop);
+  heap_optional<ItemFactory> SERIAL(itemDrop);
   EnumSet<VisionId> SERIAL(blockVision);
   optional<FurnitureUsageType> SERIAL(usageType);
   optional<FurnitureClickType> SERIAL(clickType);
   optional<FurnitureTickType> SERIAL(tickType);
   optional<FurnitureOnBuilt> SERIAL(onBuilt);
-  HeapAllocated<optional<FurnitureEntry>> SERIAL(entryType);
-  HeapAllocated<optional<FurnitureDroppedItems>> SERIAL(droppedItems);
+  heap_optional<FurnitureEntry> SERIAL(entryType);
+  heap_optional<FurnitureDroppedItems> SERIAL(droppedItems);
   TimeInterval SERIAL(usageTime) = 1_visible;
   bool SERIAL(overrideMovement) = false;
   bool SERIAL(removeWithCreaturePresent) = true;

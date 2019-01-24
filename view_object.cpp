@@ -39,39 +39,41 @@ optional<GenericId> ViewObject::getGenericId() const {
   return genericId;
 }
 
-void ViewObject::setClickAction(const string& s) {
+void ViewObject::setClickAction(ViewObjectAction s) {
   clickAction = s;
 }
 
-const string& ViewObject::getClickAction() const {
+optional<ViewObjectAction> ViewObject::getClickAction() const {
   return clickAction;
 }
 
-void ViewObject::setExtendedActions(const vector<string>& s) {
+void ViewObject::setExtendedActions(EnumSet<ViewObjectAction> s) {
   extendedActions = s;
 }
 
-const vector<string>& ViewObject::getExtendedActions() const {
+const EnumSet<ViewObjectAction>& ViewObject::getExtendedActions() const {
   return extendedActions;
 }
 
 void ViewObject::addMovementInfo(MovementInfo info) {
-  movementQueue.add(info);
+  if (!movementQueue)
+    movementQueue.reset(MovementQueue());
+  movementQueue->add(info);
 }
 
 bool ViewObject::hasAnyMovementInfo() const {
-  return movementQueue.hasAny();
+  return !!movementQueue;
 }
 
 const MovementInfo& ViewObject::getLastMovementInfo() const {
-  return movementQueue.getLast();
+  return movementQueue->getLast();
 }
 
 Vec2 ViewObject::getMovementInfo(int moveCounter) const {
-  if (!movementQueue.hasAny())
+  if (!movementQueue)
     return Vec2(0, 0);
   CHECK(genericId);
-  return movementQueue.getTotalMovement(moveCounter);
+  return movementQueue->getTotalMovement(moveCounter);
 }
 
 void ViewObject::clearMovementInfo() {
@@ -100,13 +102,13 @@ Vec2 ViewObject::MovementQueue::getTotalMovement(int moveCounter) const {
     if (elems[i].moveCounter >= moveCounter) {
       if (elems[i].type != MovementInfo::MOVE/* && ret.length8() == 0*/) {
         attack = true;
-        ret = elems[i].direction;
+        ret = elems[i].getDir();
       } else {
         if (attack) {
           attack = false;
           ret = Vec2(0, 0);
         }
-        ret += elems[i].direction;
+        ret += elems[i].getDir();
       }
     }
   return ret;
@@ -272,8 +274,8 @@ const char* ViewObject::getDefaultDescription() const {
 }
 
 const char* ViewObject::getDescription() const {
-  if (description)
-    return description->c_str();
+  if (!description.empty())
+    return description.c_str();
   else
     return getDefaultDescription();
 }

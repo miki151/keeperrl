@@ -2,7 +2,7 @@
 
 #include "util.h"
 
-RICH_ENUM(
+RICH_ENUM2(std::uint8_t,
     FurnitureType,
     WATER,
     SHALLOW_WATER1,

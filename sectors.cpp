@@ -16,7 +16,7 @@
 #include "stdafx.h"
 #include "sectors.h"
 #include "level.h"
-
+#include <limits>
 
 Sectors::Sectors(Rectangle b, ExtraConnections con) : bounds(b), sectors(bounds, -1), extraConnections(std::move(con)) {
 }
@@ -51,7 +51,7 @@ bool Sectors::add(Vec2 pos) {
   return true;
 }
 
-void Sectors::setSector(Vec2 pos, int sector) {
+void Sectors::setSector(Vec2 pos, SectorId sector) {
   CHECK(sectors[pos] != sector);
   if (contains(pos))
     --sizes[sectors[pos]];
@@ -59,8 +59,9 @@ void Sectors::setSector(Vec2 pos, int sector) {
   ++sizes[sector];
 }
 
-int Sectors::getNewSector() {
+Sectors::SectorId Sectors::getNewSector() {
   sizes.push_back(0);
+  CHECK(sizes.size() < std::numeric_limits<SectorId>::max());
   return sizes.size() - 1;
 }
 
@@ -72,7 +73,7 @@ int Sectors::getNumSectors() const {
   return ret;
 }
 
-void Sectors::join(Vec2 pos1, int sector) {
+void Sectors::join(Vec2 pos1, SectorId sector) {
   queue<Vec2> q;
   q.push(pos1);
   setSector(pos1, sector);

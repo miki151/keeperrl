@@ -139,7 +139,7 @@ void Square::getViewIndex(ViewIndex& ret, WConstCreature viewer) const {
   double fireSize = 0;
   for (WItem it : getInventory().getItems())
     fireSize = max(fireSize, it->getFireSize());
-  ret.itemCounts = inventory->getCounts();
+  ret.modItemCounts() = inventory->getCounts();
   if (WItem it = getTopItem())
     ret.insert(copyOf(it->getViewObject()).setAttribute(ViewObject::Attribute::BURNING, fireSize));
   if (poisonGas->getAmount() > 0)
