@@ -8,69 +8,73 @@ class ReadWriteArray {
   typedef OwnerPointer<Type> PType;
   typedef WeakPointer<Type> WType;
 
-  ReadWriteArray(Rectangle bounds) : modified(bounds), readonly(bounds, nullptr), types(bounds) {}
-
-  SERIALIZE_ALL(modified, readonly, types, readonlyMap, numModified, numTotal)
-  SERIALIZATION_CONSTRUCTOR(ReadWriteArray)
+  ReadWriteArray(Rectangle bounds) : modified(bounds, -1), readonly(bounds, -1), types(bounds) {}
 
   const Rectangle& getBounds() const {
     return modified.getBounds();
   }
 
   WType getWritable(Vec2 pos) {
-    if (!modified[pos])
+    if (modified[pos] == -1)
       if (auto type = types[pos])
         putElem(pos, Generator()(*type));
-    return modified[pos].get();
+    if (modified[pos] > -1)
+      return allModified[modified[pos]].get();
+    else
+      return nullptr;
   }
 
   const WType getReadonly(Vec2 pos) const {
-    return readonly[pos];
+    if (readonly[pos] > -1)
+      return allReadonly[readonly[pos]].get();
+    else if (modified[pos] > -1)
+      return allModified[modified[pos]].get();
+    else
+      return nullptr;
   }
 
   void putElem(Vec2 pos, Param param) {
-    if (!readonlyMap.count(param))
-      readonlyMap.insert(make_pair(param, Generator()(param)));
-    if (!readonly[pos])
-      ++numTotal;
-    readonly[pos] = readonlyMap.at(param).get();
-    modified[pos].clear();
+    if (!readonlyMap.count(param)) {
+      allReadonly.push_back(Generator()(param));
+      readonlyMap.insert(make_pair(param, allReadonly.size() - 1));
+    }
+    readonly[pos] = readonlyMap.at(param);
+    modified[pos] = -1;
     types[pos] = param;
   }
 
   void putElem(Vec2 pos, PType s) {
-    if (!readonly[pos])
-      ++numTotal;
-    ++numModified;
-    modified[pos] = std::move(s);
-    readonly[pos] = modified[pos].get();
+    allModified.push_back(std::move(s));
+    modified[pos] = allModified.size() - 1;
+    readonly[pos] = -1;
   }
 
   void clearElem(Vec2 pos) {
     if (readonly[pos]) {
-      --numTotal;
-      if (modified[pos])
-        --numModified;
       types[pos] = none;
-      modified[pos].clear();
-      readonly[pos] = nullptr;
+      modified[pos] = -1;
+      readonly[pos] = -1;
     }
   }
 
   int getNumGenerated() const {
-    return numModified + readonlyMap.size();
+    return allModified.size() + readonlyMap.size();
   }
 
   int getNumTotal() const {
-    return numTotal;
+    return 0;
   }
 
+  SERIALIZE_ALL(modified, allModified, allReadonly, readonly, types, readonlyMap, numTotal)
+  SERIALIZATION_CONSTRUCTOR(ReadWriteArray)
+
   private:
-  Table<PType> SERIAL(modified);
-  Table<WType> SERIAL(readonly);
+  vector<PType> SERIAL(allModified);
+  Table<short> SERIAL(modified);
+  vector<PType> SERIAL(allReadonly);
+  Table<short> SERIAL(readonly);
   Table<optional<Param>> SERIAL(types);
-  unordered_map<Param, PType, CustomHash<Param>> SERIAL(readonlyMap);
-  int SERIAL(numModified) = 0;
+  unordered_map<Param, short, CustomHash<Param>> SERIAL(readonlyMap);
   int SERIAL(numTotal) = 0;
 };
 
