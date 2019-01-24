@@ -2616,7 +2616,7 @@ PLevelMaker LevelMaker::getZLevel(RandomGen& random, optional<SettlementInfo> se
   }
   generateResources(random, resourceInfo, startingPos, locations.get(), {}, mapWidth, keeperTribe);
   queue->addMaker(std::move(locations));
-  return queue;
+  return std::move(queue);
 }
 
 Vec2 LevelMaker::getRandomExit(RandomGen& random, Rectangle rect, int minCornerDist) {
