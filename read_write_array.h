@@ -36,6 +36,7 @@ class ReadWriteArray {
   void putElem(Vec2 pos, Param param) {
     if (!readonlyMap.count(param)) {
       allReadonly.push_back(Generator()(param));
+      CHECK(allReadonly.size() < 30000);
       readonlyMap.insert(make_pair(param, allReadonly.size() - 1));
     }
     readonly[pos] = readonlyMap.at(param);
@@ -45,16 +46,15 @@ class ReadWriteArray {
 
   void putElem(Vec2 pos, PType s) {
     allModified.push_back(std::move(s));
+    CHECK(allModified.size() < 30000);
     modified[pos] = allModified.size() - 1;
     readonly[pos] = -1;
   }
 
   void clearElem(Vec2 pos) {
-    if (readonly[pos]) {
-      types[pos] = none;
-      modified[pos] = -1;
-      readonly[pos] = -1;
-    }
+    types[pos] = none;
+    modified[pos] = -1;
+    readonly[pos] = -1;
   }
 
   int getNumGenerated() const {
