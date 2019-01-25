@@ -450,7 +450,7 @@ class Inhabitants : public LevelMaker {
       for (auto v : area)
         if (builder->canPutCreature(v, creature.get()) && onPred.apply(builder, v))
           positions.push_back(v);
-      CHECK(!positions.empty());
+      checkGen(!positions.empty());
       auto pos = builder->getRandom().choose(positions);
       if (collective) {
         collective->addCreature(creature.get(), minion.second);
@@ -541,7 +541,7 @@ class Items : public LevelMaker {
       if (predicate.apply(builder, v) && builder->canNavigate(v, MovementTrait::WALK) &&
           (placeOnFurniture || !builder->getFurniture(v, FurnitureLayer::MIDDLE)))
         available.push_back(v);
-    CHECK(!available.empty());
+    checkGen(!available.empty());
     for (int i : Range(numItem))
       builder->putItems(builder->getRandom().choose(available), factory.random());
   }
