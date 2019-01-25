@@ -27,18 +27,9 @@ static double getDefaultWeight(Body::Size size) {
   }
 }
 
-SERIALIZE_DEF(Body, xhumanoid, size, weight, bodyParts, injuredBodyParts, lostBodyParts, material, health, minionFood, deathSound, carryLimit, intrinsicAttacks, minPushSize)
+SERIALIZE_DEF(Body, xhumanoid, size, weight, bodyParts, injuredBodyParts, lostBodyParts, material, health, minionFood, deathSound, intrinsicAttacks, minPushSize)
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Body)
-
-static double getDefaultCarryLimit(Body::Size size) {
-  switch (size) {
-    case Body::Size::HUGE: return 200;
-    case Body::Size::LARGE: return 80;
-    case Body::Size::MEDIUM: return 60;
-    case Body::Size::SMALL: return 6;
-  }
-}
 
 static int getDefaultIntrinsicDamage(Body::Size size) {
   switch (size) {
@@ -51,7 +42,7 @@ static int getDefaultIntrinsicDamage(Body::Size size) {
 
 Body::Body(bool humanoid, Material m, Size size) : xhumanoid(humanoid), size(size),
     weight(getDefaultWeight(size)), material(m),
-    deathSound(humanoid ? SoundId::HUMANOID_DEATH : SoundId::BEAST_DEATH), carryLimit(getDefaultCarryLimit(size)),
+    deathSound(humanoid ? SoundId::HUMANOID_DEATH : SoundId::BEAST_DEATH),
     minPushSize(Size((int)size + 1)) {
   if (humanoid)
     setHumanoidBodyParts(getDefaultIntrinsicDamage(size));
@@ -166,10 +157,6 @@ void Body::setMinionFood() {
 
 void Body::setDeathSound(optional<SoundId> s) {
   deathSound = s;
-}
-
-void Body::setNoCarryLimit() {
-  carryLimit = none;
 }
 
 bool Body::canHeal() const {
@@ -983,6 +970,11 @@ double Body::getBoulderDamage() const {
   }
 }
 
-const optional<double>& Body::getCarryLimit() const {
-  return carryLimit;
+int Body::getCarryLimit() const {
+  switch (size) {
+    case Body::Size::HUGE: return 200;
+    case Body::Size::LARGE: return 80;
+    case Body::Size::MEDIUM: return 60;
+    case Body::Size::SMALL: return 6;
+  }
 }

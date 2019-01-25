@@ -54,7 +54,6 @@ class Body {
   void setBirdBodyParts(int intrinsicDamage);
   void setMinionFood();
   void setDeathSound(optional<SoundId>);
-  void setNoCarryLimit();
   void setIntrinsicAttack(BodyPart, IntrinsicAttack);
   void setMinPushSize(Size);
 
@@ -113,7 +112,7 @@ class Body {
   bool isHumanoid() const;
   string getDescription() const;
   void updateViewObject(ViewObject&) const;
-  const optional<double>& getCarryLimit() const;
+  int getCarryLimit() const;
   void bleed(WCreature, double amount);
   WItem chooseRandomWeapon(WItem realWeapon) const;
   WItem chooseFirstWeapon() const;
@@ -150,7 +149,6 @@ class Body {
   double SERIAL(health) = 1;
   bool SERIAL(minionFood) = false;
   optional<SoundId> SERIAL(deathSound);
-  optional<double> SERIAL(carryLimit);
   EnumMap<BodyPart, optional<IntrinsicAttack>> SERIAL(intrinsicAttacks);
   Size SERIAL(minPushSize);
   optional<BodyPart> getAnyGoodBodyPart() const;

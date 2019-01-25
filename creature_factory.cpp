@@ -1742,7 +1742,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.viewId = ViewId::IMP;
           c.attr = LIST(5_dam, 15_def );
           c.body = Body::humanoidSpirit(Body::Size::SMALL);
-          c.body->setNoCarryLimit();
           c.courage = -1;
           c.noChase = true;
           c.cantEquip = true;
@@ -1751,6 +1750,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.chatReactionHostile = "\"Die!\""_s;
           c.permanentEffects[LastingEffect::POISON_RESISTANT] = 1;
           c.permanentEffects[LastingEffect::SPEED] = 1;
+          c.permanentEffects[LastingEffect::NO_CARRY_LIMIT] = 1;
           c.name = "imp";
       );
     case CreatureId::OGRE: 

@@ -259,6 +259,9 @@ void LastingEffects::onAffected(WCreature c, LastingEffect effect, bool msg) {
       case LastingEffect::DISAPPEAR_DURING_DAY:
         c->you(MsgType::YOUR, "hours are numbered");
         break;
+      case LastingEffect::NO_CARRY_LIMIT:
+        c->you(MsgType::YOUR, "carrying capacity increases");
+        break;
     }
 }
 
@@ -457,6 +460,9 @@ void LastingEffects::onTimedOut(WCreature c, LastingEffect effect, bool msg) {
         break;
       case LastingEffect::DISAPPEAR_DURING_DAY:
         break;
+      case LastingEffect::NO_CARRY_LIMIT:
+        c->you(MsgType::YOUR, "carrying capacity decreases");
+        break;
       default:
         break;
     }
@@ -574,6 +580,7 @@ static optional<Adjective> getAdjective(LastingEffect effect) {
     case LastingEffect::EXPLORE_CAVES_SKILL: return "Explores caves"_good;
     case LastingEffect::BRIDGE_BUILDING_SKILL: return "Builds bridges"_good;
     case LastingEffect::NAVIGATION_DIGGING_SKILL: return "Digs"_good;
+    case LastingEffect::NO_CARRY_LIMIT: return "Infinite carrying capacity"_good;
 
     case LastingEffect::POISON: return "Poisoned"_bad;
     case LastingEffect::BLEEDING: return "Bleeding"_bad;
@@ -845,6 +852,7 @@ string LastingEffects::getName(LastingEffect type) {
     case LastingEffect::NAVIGATION_DIGGING_SKILL: return "digging";
     case LastingEffect::ON_FIRE: return "combustion";
     case LastingEffect::DISAPPEAR_DURING_DAY: return "night life";
+    case LastingEffect::NO_CARRY_LIMIT: return "infinite carrying capacity";
   }
 }
 
@@ -917,6 +925,7 @@ string LastingEffects::getDescription(LastingEffect type) {
     case LastingEffect::NAVIGATION_DIGGING_SKILL: return "Creature will try to dig when travelling somewhere";
     case LastingEffect::ON_FIRE: return "The creature is burning alive";
     case LastingEffect::DISAPPEAR_DURING_DAY: return "This creature is only active at night and disappears at dawn";
+    case LastingEffect::NO_CARRY_LIMIT: return "The creature can carry items without any weight limit";
   }
 }
 

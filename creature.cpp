@@ -526,22 +526,21 @@ string Creature::getPluralAName(WItem item, int num) const {
 }
 
 bool Creature::canCarryMoreWeight(double weight) const {
-  if (auto& limit = getBody().getCarryLimit())
-    return *limit >= equipment->getTotalWeight();
-  else
-    return true;
+  return getBody().getCarryLimit() >= equipment->getTotalWeight() ||
+      isAffected(LastingEffect::NO_CARRY_LIMIT);
 }
 
 int Creature::canCarry(const vector<WItem>& items) const {
   int ret = 0;
-  if (auto& limit = getBody().getCarryLimit()) {
+  if (!isAffected(LastingEffect::NO_CARRY_LIMIT)) {
+    int limit = getBody().getCarryLimit();
     double weight = equipment->getTotalWeight();
-    if (weight > *limit)
+    if (weight > limit)
       return 0;
     for (const WItem& it : items) {
       weight += it->getWeight();
       ++ret;
-      if (weight > *limit)
+      if (weight > limit)
         break;
     }
     return ret;
@@ -562,9 +561,9 @@ CreatureAction Creature::pickUp(const vector<WItem>& itemsAll) const {
       secondPerson("You pick up " + getPluralTheName(stack[0], stack.size()));
     }
     self->equipment->addItems(self->getPosition().removeItems(items), self);
-    if (auto& limit = getBody().getCarryLimit())
-      if (equipment->getTotalWeight() > *limit)
-        you(MsgType::ARE, "overloaded");
+    if (!isAffected(LastingEffect::NO_CARRY_LIMIT) &&
+        equipment->getTotalWeight() > getBody().getCarryLimit())
+      you(MsgType::ARE, "overloaded");
     getGame()->addEvent(EventInfo::ItemsPickedUp{self, items});
     //self->spendTime();
   });
