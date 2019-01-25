@@ -86,7 +86,8 @@ void ViewObject::MovementQueue::clear() {
 
 void ViewObject::MovementQueue::add(MovementInfo info) {
   elems[index] = info;
-  ++totalMoves;
+  if (totalMoves < elems.size())
+    ++totalMoves;
   index = makeGoodIndex(index + 1);
 }
 
