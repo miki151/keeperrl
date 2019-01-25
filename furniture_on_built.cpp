@@ -15,30 +15,27 @@
 #include "enemy_info.h"
 #include "collective_builder.h"
 
-static int getDepth(Position pos) {
-  unordered_set<Level*> visited { pos.getLevel() };
-  function<optional<int>(Position)> search = [&](Position pos) -> optional<int> {
-    if (pos.getLevel() == pos.getModel()->getTopLevel())
-      return 0;
-    for (auto& key : pos.getLevel()->getAllStairKeys()) {
-      auto next = pos.getLandingAtNextLevel(key)[0];
-      if (!visited.count(next.getLevel())) {
-        visited.insert(next.getLevel());
-        if (auto res = search(next))
-          return 1 + *res;
-      }
-    }
-    return none;
-  };
-  return *search(pos);
+static SettlementInfo getEnemy(EnemyId id) {
+  auto enemy = EnemyFactory(Random).get(id);
+  enemy.settlement.collective = new CollectiveBuilder(enemy.config, enemy.settlement.tribe);
+  return enemy.settlement;
 }
 
 static optional<SettlementInfo> getSettlement(int depth) {
+  if (depth == 0)
+    return none;
+  if (depth == 1)
+    return getEnemy(EnemyId::KOBOLD_CAVE);
+  if (Random.roll(3))
+    return getEnemy(EnemyId::DWARF_CAVE);
   return none;
-  auto enemy = EnemyFactory(Random).get(EnemyId::RED_DRAGON);
-  enemy.settlement.collective = new CollectiveBuilder(enemy.config, enemy.settlement.tribe);
-  return enemy.settlement;
+}
 
+static PLevelMaker getLevelMaker(int depth, int width, TribeId tribe) {
+  if (depth <= 4)
+    return LevelMaker::getFullZLevel(Random, getSettlement(depth), width, tribe, StairKey::getNew());
+  return LevelMaker::getWaterZLevel(Random, FurnitureType::MAGMA, width,
+      CreatureFactory::lavaCreatures(TribeId::getMonster()), StairKey::getNew());
 }
 
 static void removeOldStairs(Level* level, StairKey stairKey) {
@@ -56,10 +53,9 @@ void handleOnBuilt(Position pos, WCreature c, FurnitureOnBuilt type) {
       WLevel level = nullptr;
       int levelIndex = *levels.findElement(pos.getLevel());
       if (levelIndex == levels.size() - 1) {
-        int width = 174;
+        int width = 140;
         level = pos.getModel()->buildMainLevel(
-            LevelBuilder(Random, width, width, "", true),
-            LevelMaker::getZLevel(Random, getSettlement(getDepth(pos) + 1), width, c->getTribeId()));
+            LevelBuilder(Random, width, width, "", true), getLevelMaker(levelIndex, width, c->getTribeId()));
       } else {
         level = levels[levelIndex + 1];
       }

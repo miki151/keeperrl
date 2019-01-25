@@ -2591,7 +2591,7 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, optional<CreatureFactory> fo
   return std::move(queue);
 }
 
-PLevelMaker LevelMaker::getZLevel(RandomGen& random, optional<SettlementInfo> settlement, int mapWidth, TribeId keeperTribe) {
+PLevelMaker LevelMaker::getFullZLevel(RandomGen& random, optional<SettlementInfo> settlement, int mapWidth, TribeId keeperTribe, StairKey landingLink) {
   vector<ResourceInfo> resourceInfo = {
       {FurnitureType::STONE, 2, 0},
       {FurnitureType::IRON_ORE, 3, 0},
@@ -2601,7 +2601,7 @@ PLevelMaker LevelMaker::getZLevel(RandomGen& random, optional<SettlementInfo> se
   queue->addMaker(unique<Empty>(SquareChange(FurnitureType::FLOOR, FurnitureType::MOUNTAIN2)));
   auto locations = unique<RandomLocations>();
   LevelMaker* startingPos = nullptr;
-  auto startingPosMaker = unique<StartingPos>(Predicate::alwaysTrue(), StairKey::getNew());
+  auto startingPosMaker = unique<StartingPos>(Predicate::alwaysTrue(), landingLink);
   startingPos = startingPosMaker.get();
   if (settlement) {
     auto maker = getSettlementMaker(random, *settlement);
@@ -2616,6 +2616,26 @@ PLevelMaker LevelMaker::getZLevel(RandomGen& random, optional<SettlementInfo> se
   }
   generateResources(random, resourceInfo, startingPos, locations.get(), {}, mapWidth, keeperTribe);
   queue->addMaker(std::move(locations));
+  return std::move(queue);
+}
+
+PLevelMaker LevelMaker::getWaterZLevel(RandomGen& random, FurnitureType waterType, int mapWidth, CreatureFactory enemies, StairKey landingLink) {
+  auto queue = unique<MakerQueue>();
+  queue->addMaker(unique<Empty>(SquareChange(waterType)));
+  auto locations = unique<RandomLocations>();
+  LevelMaker* startingPos = nullptr;
+  auto startingPosMaker = unique<MakerQueue>(
+      unique<Empty>(SquareChange(FurnitureType::FLOOR)),
+      unique<StartingPos>(Predicate::alwaysTrue(), landingLink));
+  startingPos = startingPosMaker.get();
+  locations->add(std::move(startingPosMaker), Vec2(1, 1),
+      RandomLocations::LocationPredicate(Predicate::alwaysTrue()));
+  for (int i : Range(5))
+    locations->add(unique<UniformBlob>(SquareChange(FurnitureType::FLOOR)), Vec2(Random.get(5, 10), Random.get(5, 10)),
+        RandomLocations::LocationPredicate(Predicate::alwaysTrue()));
+  locations->setMinMargin(startingPos, mapWidth / 3);
+  queue->addMaker(std::move(locations));
+  queue->addMaker(unique<Creatures>(std::move(enemies), mapWidth * mapWidth / 1000, MonsterAIFactory::monster()));
   return std::move(queue);
 }
 

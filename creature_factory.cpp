@@ -673,7 +673,7 @@ CreatureFactory CreatureFactory::forrest(TribeId tribe) {
 }
 
 CreatureFactory CreatureFactory::waterCreatures(TribeId tribe) {
-  return CreatureFactory(tribe, { CreatureId::KRAKEN }, {1});
+  return CreatureFactory(tribe, { CreatureId::WATER_ELEMENTAL, CreatureId::KRAKEN }, {20, 1}, {CreatureId::KRAKEN});
 }
 
 CreatureFactory CreatureFactory::elementals(TribeId tribe) {
@@ -682,7 +682,7 @@ CreatureFactory CreatureFactory::elementals(TribeId tribe) {
 }
 
 CreatureFactory CreatureFactory::lavaCreatures(TribeId tribe) {
-  return CreatureFactory(tribe, { CreatureId::FIRE_SPHERE }, {1}, { });
+  return CreatureFactory(tribe, { CreatureId::FIRE_ELEMENTAL }, {1}, { });
 }
 
 CreatureFactory CreatureFactory::singleType(TribeId tribe, CreatureId id) {
