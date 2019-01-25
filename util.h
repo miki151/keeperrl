@@ -821,10 +821,12 @@ class Table {
       mem[i] = t.mem[i];
   }
 
-  Table(int x, int y, int w, int h) : bounds(x, y, x + w, y + h), mem(new T[w * h]) {
+  Table(int x, int y, int w, int h) : Table(Rectangle(x, y, x + w, y + h)) {
   }
 
   Table(const Rectangle& rect) : bounds(rect), mem(new T[rect.w * rect.h]){
+    for (int i : Range(bounds.w * bounds.h))
+      mem[i] = T();
   }
 
   Table(const Rectangle& rect, const T& value) : Table(rect) {
