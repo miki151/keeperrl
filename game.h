@@ -123,8 +123,8 @@ class Game : public OwnedObject<Game> {
   Options* options = nullptr;
   Highscores* highscores = nullptr;
   optional<milliseconds> lastUpdate;
-  WeakPointer<PlayerControl> SERIAL(playerControl);
-  WCollective SERIAL(playerCollective);
+  WPlayerControl SERIAL(playerControl) = nullptr;
+  WCollective SERIAL(playerCollective) = nullptr;
   HeapAllocated<Campaign> SERIAL(campaign);
   bool wasTransfered = false;
   vector<WCreature> SERIAL(players);

@@ -477,7 +477,7 @@ WLevel Creature::getLevel() const {
 Game* Creature::getGame() const {
   PROFILE;
   if (!gameCache)
-    gameCache = getPosition().getGame().get();
+    gameCache = getPosition().getGame();
   return gameCache;
 }
 
@@ -1543,7 +1543,7 @@ CreatureAction Creature::consume(WCreature other) const {
 
 WItem Creature::getRandomWeapon() const {
   vector<WItem> it = equipment->getSlotItems(EquipmentSlot::WEAPON);
-  WItem weapon;
+  WItem weapon = nullptr;
   if (!it.empty())
     weapon = it[0];
   return getBody().chooseRandomWeapon(weapon);

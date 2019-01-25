@@ -459,7 +459,7 @@ WSquare Level::modSafeSquare(Vec2 pos) {
 vector<Position> Level::getAllPositions() const {
   vector<Position> ret;
   for (Vec2 v : getBounds())
-    ret.emplace_back(v, getThis().removeConst());
+    ret.emplace_back(v, getThis().removeConst().get());
   return ret;
 }
 

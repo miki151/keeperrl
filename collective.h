@@ -250,6 +250,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   void addProducesMessage(WConstCreature, const vector<PItem>&);
   int getDebt(ResourceId id) const;
 
+  PPositionMatching SERIAL(positionMatching);
   HeapAllocated<MinionEquipment> SERIAL(minionEquipment);
   EnumMap<ResourceId, int> SERIAL(credit);
   HeapAllocated<TaskMap> SERIAL(taskMap);
@@ -302,7 +303,6 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   void considerRebellion();
   void updateCreatureStatus(WCreature);
   HeapAllocated<Quarters> SERIAL(quarters);
-  PPositionMatching SERIAL(positionMatching);
   int SERIAL(populationIncrease) = 0;
   DungeonLevel SERIAL(dungeonLevel);
   bool SERIAL(hadALeader) = false;

@@ -54,7 +54,7 @@ class FieldOfView {
     int py;
   };
   
-  WLevel SERIAL(level);
+  WLevel SERIAL(level) = nullptr;
   Table<unique_ptr<Visibility>> visibility;
   VisionId SERIAL(vision);
   Table<bool> SERIAL(blocking);

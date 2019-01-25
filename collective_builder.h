@@ -32,10 +32,10 @@ class CollectiveBuilder {
 
   private:
   optional<CollectiveName> getCollectiveName();
-  WModel model;
-  WLevel level;
+  WModel model = nullptr;
+  WLevel level = nullptr;
   struct CreatureInfo {
-    WCreature creature;
+    WCreature creature = nullptr;
     EnumSet<MinionTrait> traits;
   };
   vector<CreatureInfo> creatures;

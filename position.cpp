@@ -29,15 +29,7 @@
 
 template <class Archive>
 void Position::serialize(Archive& ar, const unsigned int) {
-  WLevel SERIAL(levelSerial);
-  if (Archive::is_saving::value) {
-    if (level)
-      levelSerial = level;
-  }
-  ar(coord, levelSerial, valid);
-  if (Archive::is_loading::value) {
-    level = levelSerial.get();
-  }
+  ar(coord, level, valid);
 }
 
 SERIALIZABLE(Position)
@@ -71,7 +63,7 @@ WGame Position::getGame() const {
     return nullptr;
 }
 
-Position::Position(Vec2 v, WLevel l) : coord(v), level(l.get()), valid(level && level->inBounds(coord)) {
+Position::Position(Vec2 v, WLevel l) : coord(v), level(l), valid(level && level->inBounds(coord)) {
   PROFILE;
 }
 

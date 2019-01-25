@@ -33,7 +33,7 @@ class CollectiveControl : public OwnedObject<CollectiveControl> {
 
   const vector<WCreature>& getCreatures() const;
 
-  WCollective SERIAL(collective);
+  WCollective SERIAL(collective) = nullptr;
 };
 
 

@@ -232,7 +232,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void rejectPrisoner(int index);
   struct StunnedInfo {
     vector<WCreature> creatures;
-    WCollective collective;
+    WCollective collective = nullptr;
   };
   vector<StunnedInfo> getPrisonerImmigrantStack() const;
   vector<pair<WCreature, WCollective>> SERIAL(stunnedCreatures);
@@ -247,7 +247,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   vector<BuildInfo> SERIAL(buildInfo);
   void reloadData();
   void reloadBuildingMenu();
-  WLevel currentLevel;
+  WLevel currentLevel = nullptr;
   void scrollStairs(bool up);
 };
 

@@ -79,7 +79,7 @@ class LevelShortestPath {
   private:
   static ShortestPath makeShortestPath(WConstCreature creature, Position to, Position from, double mult);
   ShortestPath SERIAL(path);
-  WLevel SERIAL(level);
+  WLevel SERIAL(level) = nullptr;
 };
 
 class Dijkstra {

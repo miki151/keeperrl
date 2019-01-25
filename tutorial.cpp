@@ -41,7 +41,7 @@ static bool isTeam(WConstCollective collective) {
 
 bool Tutorial::canContinue(WConstGame game) const {
   auto collective = game->getPlayerCollective();
-  WCollective villain;
+  WCollective villain = nullptr;
   for (auto c : game->getCollectives())
     if (c != collective) {
       CHECK(!villain) << "Only one villain allowed in tutorial.";

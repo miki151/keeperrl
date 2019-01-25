@@ -135,7 +135,7 @@ class Construction : public Task {
   private:
   FurnitureType SERIAL(furnitureType);
   Position SERIAL(position);
-  WTaskCallback SERIAL(callback);
+  WTaskCallback SERIAL(callback) = nullptr;
 };
 
 }
@@ -202,7 +202,7 @@ class Destruction : public Task {
     }
   }
 
-  ~Destruction() {
+  ~Destruction() override {
     if (matching)
       matching->releaseTarget(position);
   }
@@ -212,11 +212,11 @@ class Destruction : public Task {
 
   private:
   Position SERIAL(position);
-  WTaskCallback SERIAL(callback);
+  WTaskCallback SERIAL(callback) = nullptr;
   DestroyAction SERIAL(destroyAction);
   string SERIAL(description);
   FurnitureType SERIAL(furnitureType);
-  WPositionMatching SERIAL(matching);
+  WPositionMatching SERIAL(matching) = nullptr;
 };
 
 }
@@ -358,7 +358,7 @@ class ApplyItem : public Task {
   SERIALIZATION_CONSTRUCTOR(ApplyItem);
 
   private:
-  WTaskCallback SERIAL(callback);
+  WTaskCallback SERIAL(callback) = nullptr;
   Item::Id SERIAL(itemId);
   string SERIAL(itemName);
 };
@@ -453,7 +453,7 @@ class ApplySquare : public Task {
   PositionSet SERIAL(rejectedPosition);
   int SERIAL(invalidCount) = 5;
   optional<Position> SERIAL(position);
-  WTaskCallback SERIAL(callback);
+  WTaskCallback SERIAL(callback) = nullptr;
   SearchType SERIAL(searchType);
   ActionType SERIAL(actionType);
 };
@@ -502,7 +502,7 @@ class ArcheryRange : public Task {
   SERIALIZATION_CONSTRUCTOR(ArcheryRange)
 
   private:
-  WTaskCallback SERIAL(callback);
+  WTaskCallback SERIAL(callback) = nullptr;
   vector<Position> SERIAL(targets);
   struct ShootInfo {
     Position SERIAL(pos);
@@ -585,9 +585,9 @@ class Kill : public Task {
   SERIALIZATION_CONSTRUCTOR(Kill);
 
   private:
-  WCreature SERIAL(creature);
+  WCreature SERIAL(creature) = nullptr;
   Type SERIAL(type);
-  WTaskCallback SERIAL(callback);
+  WTaskCallback SERIAL(callback) = nullptr;
 };
 
 }
@@ -846,7 +846,7 @@ class CampAndSpawn : public Task {
   SERIALIZATION_CONSTRUCTOR(CampAndSpawn);
 
   private:
-  WCollective SERIAL(target);
+  WCollective SERIAL(target) = nullptr;
   CreatureFactory SERIAL(spawns);
   vector<Position> SERIAL(campPos);
   int SERIAL(defenseSize);
@@ -893,7 +893,7 @@ class KillFighters : public Task {
   SERIALIZATION_CONSTRUCTOR(KillFighters);
 
   private:
-  WCollective SERIAL(collective);
+  WCollective SERIAL(collective) = nullptr;
   int SERIAL(numCreatures);
   EntitySet<Creature> SERIAL(targets);
 };
@@ -923,7 +923,7 @@ class ConsumeItem : public Task {
 
   protected:
   EntitySet<Item> SERIAL(items);
-  WTaskCallback SERIAL(callback);
+  WTaskCallback SERIAL(callback) = nullptr;
 };
 }
 
@@ -967,8 +967,8 @@ class Copulate : public Task {
   SERIALIZATION_CONSTRUCTOR(Copulate);
 
   protected:
-  WCreature SERIAL(target);
-  WTaskCallback SERIAL(callback);
+  WCreature SERIAL(target) = nullptr;
+  WTaskCallback SERIAL(callback) = nullptr;
   int SERIAL(numTurns);
 };
 }
@@ -1006,7 +1006,7 @@ class Consume : public Task {
   SERIALIZATION_CONSTRUCTOR(Consume);
 
   protected:
-  WCreature SERIAL(target);
+  WCreature SERIAL(target) = nullptr;
 };
 }
 
@@ -1277,7 +1277,7 @@ class Follow : public Task {
     return "Follow " + target->getName().bare();
   }
 
-  WCreature SERIAL(target);
+  WCreature SERIAL(target) = nullptr;
 
   SERIALIZE_ALL(SUBCLASS(Task), target)
   SERIALIZATION_CONSTRUCTOR(Follow);
@@ -1320,7 +1320,7 @@ class TransferTo : public Task {
 
   protected:
   optional<Position> SERIAL(target);
-  WModel SERIAL(model);
+  WModel SERIAL(model) = nullptr;
 };
 }
 
@@ -1415,7 +1415,7 @@ class Whipping : public Task {
 
   protected:
   Position SERIAL(position);
-  WCreature SERIAL(whipped);
+  WCreature SERIAL(whipped) = nullptr;
 };
 }
 
@@ -1523,13 +1523,13 @@ class DropItems : public Task {
   EntitySet<Item> SERIAL(items);
   struct StorageInfo {
     StorageId SERIAL(storage);
-    WCollective SERIAL(collective);
+    WCollective SERIAL(collective) = nullptr;
     SERIALIZE_ALL(storage, collective);
   };
   variant<StorageInfo, vector<Position>> SERIAL(positions);
   optional<Position> SERIAL(target);
   optional<Position> SERIAL(origin);
-  WCreature SERIAL(pickedUpCreature);
+  WCreature SERIAL(pickedUpCreature) = nullptr;
 };
 }
 
@@ -1714,7 +1714,7 @@ class WithTeam : public Task {
   SERIALIZATION_CONSTRUCTOR(WithTeam)
 
   private:
-  WCollective SERIAL(collective);
+  WCollective SERIAL(collective) = nullptr;
   TeamId SERIAL(teamId);
   PTask SERIAL(task);
 };
@@ -1737,7 +1737,7 @@ class OutsidePredicate : public TaskPredicate {
   SERIALIZATION_CONSTRUCTOR(OutsidePredicate)
 
   private:
-  WCreature SERIAL(creature);
+  WCreature SERIAL(creature) = nullptr;
   PositionSet SERIAL(positions);
 };
 }

@@ -163,7 +163,7 @@ class MinionController : public Player {
   SERIALIZATION_CONSTRUCTOR(MinionController)
 
   private:
-  WPlayerControl SERIAL(control);
+  WPlayerControl SERIAL(control) = nullptr;
 };
 
 REGISTER_TYPE(MinionController)

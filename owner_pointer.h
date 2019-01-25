@@ -52,7 +52,7 @@ class OwnerPointer {
     return !(*this == o);
   }
 
-  WeakPointer<T> get() const;
+  T* get() const;
 
   explicit operator bool() const {
     return !!elem;
@@ -233,8 +233,8 @@ OwnerPointer<T>::OwnerPointer(shared_ptr<T> t) : elem(t) {
 }
 
 template <typename T>
-WeakPointer<T> OwnerPointer<T>::get() const {
-  return WeakPointer<T>(elem);
+T* OwnerPointer<T>::get() const {
+  return elem.get();
 }
 
 template <typename T, typename... Args>
@@ -243,14 +243,30 @@ OwnerPointer<T> makeOwner(Args&&... args) {
 }
 
 template<class T>
-vector<WeakPointer<T>> getWeakPointers(const vector<OwnerPointer<T>>& v) {
-  vector<WeakPointer<T>> ret;
+auto getWeakPointers(const vector<OwnerPointer<T>>& v) {
+  vector<decltype(v[0].get())> ret;
   ret.reserve(v.size());
   for (auto& el : v)
     ret.push_back(el.get());
   return ret;
 }
+namespace cereal
+{
 
+template <typename Archive, typename T>
+inline void CEREAL_LOAD_FUNCTION_NAME(Archive& ar1, T*& m) {
+  WeakPointer<T> wptr;
+  ar1(wptr);
+  m = wptr.get();
+}
+
+
+template <typename Archive, typename T>
+inline void CEREAL_SAVE_FUNCTION_NAME(Archive& ar1, T* m) {
+  auto wptr = m->getThis();
+  ar1(wptr);
+}
+}
 #define DEF_UNIQUE_PTR(T) class T;\
   typedef unique_ptr<T> P##T
 
@@ -259,8 +275,8 @@ vector<WeakPointer<T>> getWeakPointers(const vector<OwnerPointer<T>>& v) {
 
 #define DEF_OWNER_PTR(T) class T;\
   typedef OwnerPointer<T> P##T; \
-  typedef WeakPointer<T> W##T; \
-  typedef WeakPointer<const T> WConst##T
+  typedef T* W##T; \
+  typedef T const* WConst##T
 
 DEF_OWNER_PTR(Item);
 DEF_UNIQUE_PTR(LevelMaker);

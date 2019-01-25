@@ -52,7 +52,7 @@ class Controller : public OwnedObject<Controller> {
 
   SERIALIZATION_DECL(Controller);
 
-  WCreature SERIAL(creature);
+  WCreature SERIAL(creature) = nullptr;
 };
 
 class DoNothingController : public Controller {

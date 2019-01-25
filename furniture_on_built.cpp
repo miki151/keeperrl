@@ -53,10 +53,10 @@ void handleOnBuilt(Position pos, WCreature c, FurnitureOnBuilt type) {
   switch (type) {
     case FurnitureOnBuilt::DOWN_STAIRS:
       auto levels = pos.getModel()->getMainLevels();
-      WLevel level;
+      WLevel level = nullptr;
       int levelIndex = *levels.findElement(pos.getLevel());
       if (levelIndex == levels.size() - 1) {
-        int width = 174 * 2;
+        int width = 174;
         level = pos.getModel()->buildMainLevel(
             LevelBuilder(Random, width, width, "", true),
             LevelMaker::getZLevel(Random, getSettlement(getDepth(pos) + 1), width, c->getTribeId()));

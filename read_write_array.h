@@ -6,7 +6,7 @@ template <typename Type, typename Param, typename Generator>
 class ReadWriteArray {
   public:
   typedef OwnerPointer<Type> PType;
-  typedef WeakPointer<Type> WType;
+  typedef Type* WType;
 
   ReadWriteArray(Rectangle bounds) : modified(bounds, -1), readonly(bounds, -1), types(bounds) {}
 

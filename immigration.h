@@ -45,7 +45,7 @@ class Immigration : public OwnedObject<Immigration> {
     vector<PCreature> SERIAL(creatures);
     int SERIAL(immigrantIndex);
     optional<GlobalTime> SERIAL(endTime);
-    WImmigration SERIAL(immigration);
+    WImmigration SERIAL(immigration) = nullptr;
     vector<SpecialTrait> SERIAL(specialTraits);
     optional<milliseconds> createdTime;
   };
@@ -68,7 +68,7 @@ class Immigration : public OwnedObject<Immigration> {
   private:
   EntityMap<Creature, unordered_map<AttractionType, int, CustomHash<AttractionType>>> SERIAL(minionAttraction);
   map<int, Available> SERIAL(available);
-  WCollective SERIAL(collective);
+  WCollective SERIAL(collective) = nullptr;
   map<int, EntitySet<Creature>> SERIAL(generated);
   double getImmigrantChance(const Group& info) const;
   vector<string> getMissingAttractions(const ImmigrantInfo&) const;

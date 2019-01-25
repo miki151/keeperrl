@@ -149,7 +149,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   CreatureAction drop(const vector<WItem>& item) const;
   void drop(vector<PItem> item);
   struct AttackParams {
-    WItem weapon;
+    WItem weapon = nullptr;
     optional<AttackLevel> level;
   };
   CreatureAction attack(WCreature, optional<AttackParams> = none) const;
@@ -259,7 +259,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   vector<string> popPersonalEvents();
   void addPersonalEvent(const string&);
   struct CombatIntentInfo {
-    WCreature SERIAL(attacker);
+    WCreature SERIAL(attacker) = nullptr;
     GlobalTime SERIAL(time);
     SERIALIZE_ALL(attacker, time);
   };
@@ -299,7 +299,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   double SERIAL(morale) = 0;
   optional<GlobalTime> SERIAL(deathTime);
   bool SERIAL(hidden) = false;
-  WCreature lastAttacker;
+  WCreature lastAttacker = nullptr;
   optional<string> SERIAL(deathReason);
   optional<Position> SERIAL(nextPosIntent);
   EntitySet<Creature> SERIAL(unknownAttackers);

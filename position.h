@@ -146,7 +146,7 @@ class Position {
   WSquare modSquare() const;
   WConstSquare getSquare() const;
   Vec2 SERIAL(coord);
-  Level* level = nullptr;
+  Level* SERIAL(level) = nullptr;
   bool SERIAL(valid) = false;
   void updateSupport() const;
   void updateBuildingSupport() const;

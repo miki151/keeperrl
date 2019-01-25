@@ -72,8 +72,8 @@ SERIALIZABLE(Collective)
 SERIALIZATION_CONSTRUCTOR_IMPL(Collective)
 
 Collective::Collective(Private, WModel model, TribeId t, const optional<CollectiveName>& n)
-    : tribe(t), model(NOTNULL(model)), name(n), villainType(VillainType::NONE),
-      positionMatching(makeOwner<PositionMatching>()) {
+    : positionMatching(makeOwner<PositionMatching>()), tribe(t), model(NOTNULL(model)), name(n),
+      villainType(VillainType::NONE) {
 }
 
 PCollective Collective::create(WModel model, TribeId tribe, const optional<CollectiveName>& name, bool discoverable) {
@@ -998,7 +998,7 @@ void Collective::handleTrapPlacementAndProduction() {
       if (!items.empty()) {
         Position pos = items.back().second;
         auto item = items.back().first;
-        auto task = taskMap->addTask(Task::chain(Task::pickUpItem(pos, {item}), Task::applyItem(this, trapPos, {item})), pos,
+        auto task = taskMap->addTask(Task::chain(Task::pickUpItem(pos, {item}), Task::applyItem(this, trapPos, item)), pos,
             MinionActivity::CONSTRUCTION);
         markItem(items.back().first, task);
         items.pop_back();
@@ -1210,7 +1210,7 @@ void Collective::onAppliedSquare(WCreature c, Position pos) {
     }
     if (auto usage = furniture->getUsageType()) {
       auto increaseLevel = [&] (ExperienceType exp) {
-        double increase = 0.007 * efficiency * LastingEffects::getTrainingSpeed(c.get());
+        double increase = 0.007 * efficiency * LastingEffects::getTrainingSpeed(c);
         if (auto maxLevel = config->getTrainingMaxLevel(exp, furniture->getType()))
           increase = min(increase, *maxLevel - c->getAttributes().getExpLevel(exp));
         if (increase > 0)
@@ -1236,7 +1236,7 @@ void Collective::onAppliedSquare(WCreature c, Position pos) {
       auto& workshop = workshops->get(*workshopType);
       auto& info = config->getWorkshopInfo(*workshopType);
       auto craftingSkill = c->getAttributes().getSkills().getValue(info.skill);
-      vector<PItem> items = workshop.addWork(efficiency * craftingSkill * LastingEffects::getCraftingSpeed(c.get()));
+      vector<PItem> items = workshop.addWork(efficiency * craftingSkill * LastingEffects::getCraftingSpeed(c));
       if (!items.empty()) {
         if (items[0]->getClass() == ItemClass::WEAPON)
           getGame()->getStatistics().add(StatId::WEAPON_PRODUCED);

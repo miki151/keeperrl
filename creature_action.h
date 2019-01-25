@@ -20,7 +20,7 @@ class NODISCARD CreatureAction {
   private:
   ActionFun action;
   string failedMessage;
-  WConstCreature performer;
+  WConstCreature performer = nullptr;
 };
 
 

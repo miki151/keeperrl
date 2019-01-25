@@ -67,7 +67,7 @@ class Behaviour {
   SERIALIZATION_CONSTRUCTOR(Behaviour)
 
   protected:
-  WCreature SERIAL(creature);
+  WCreature SERIAL(creature) = nullptr;
 };
 
 MonsterAI::~MonsterAI() {}
@@ -892,7 +892,7 @@ class Summoned : public GuardTarget {
   SERIALIZE_ALL(SUBCLASS(GuardTarget), target, dieTime);
 
   private:
-  WCreature SERIAL(target);
+  WCreature SERIAL(target) = nullptr;
   GlobalTime SERIAL(dieTime);
 };
 
@@ -1131,7 +1131,7 @@ class ByCollective : public Behaviour {
   SERIALIZE_ALL(SUBCLASS(Behaviour), collective, fighter);
 
   private:
-  WCollective SERIAL(collective);
+  WCollective SERIAL(collective) = nullptr;
   unique_ptr<Fighter> SERIAL(fighter);
 };
 

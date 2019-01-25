@@ -43,7 +43,7 @@ class MonsterAI {
   MonsterAI(WCreature, const vector<Behaviour*>& behaviours, const vector<int>& weights, bool pickItems = true);
   vector<PBehaviour> SERIAL(behaviours);
   vector<int> SERIAL(weights);
-  WCreature SERIAL(creature);
+  WCreature SERIAL(creature) = nullptr;
   bool SERIAL(pickItems);
 };
 
