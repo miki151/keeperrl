@@ -263,7 +263,9 @@ inline void CEREAL_LOAD_FUNCTION_NAME(Archive& ar1, T*& m) {
 
 template <typename Archive, typename T>
 inline void CEREAL_SAVE_FUNCTION_NAME(Archive& ar1, T* m) {
-  auto wptr = m->getThis();
+  WeakPointer<T> wptr;
+  if (m)
+    wptr = m->getThis().template dynamicCast<T>();
   ar1(wptr);
 }
 }
