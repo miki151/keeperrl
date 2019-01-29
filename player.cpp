@@ -54,7 +54,7 @@
 #include "message_buffer.h"
 #include "pretty_printing.h"
 #include "item_type.h"
-#include "creature_factory.h"
+#include "creature_group.h"
 #include "time_queue.h"
 #include "unknown_locations.h"
 #include "furniture_click.h"
@@ -744,7 +744,7 @@ void Player::makeMove() {
         if (auto error = PrettyPrinting::parseObject(id, action.get<string>()))
           getView()->presentText("Sorry", "Couldn't parse \"" + action.get<string>() + "\": " + *error);
         else {
-          auto factory = CreatureFactory::singleCreature(TribeId::getMonster(), id);
+          auto factory = CreatureGroup::singleCreature(TribeId::getMonster(), id);
           Effect::summon(creature->getPosition(), factory, 1, 1000_visible,
               3_visible);
         }

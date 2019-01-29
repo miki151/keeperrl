@@ -23,7 +23,7 @@
 #include "game_time.h"
 
 class TaskCallback;
-class CreatureFactory;
+class CreatureGroup;
 
 using WTaskCallback = WeakPointer<TaskCallback>;
 
@@ -77,7 +77,7 @@ class Task : public UniqueEntity<Task>, public OwnedObject<Task> {
   static PTask chain(vector<PTask>);
   static PTask explore(Position);
   static PTask attackCreatures(vector<WCreature>);
-  static PTask campAndSpawn(WCollective target, const CreatureFactory&, int defenseSize,
+  static PTask campAndSpawn(WCollective target, const CreatureGroup&, int defenseSize,
       Range attackSize, int numAttacks);
   static PTask killFighters(WCollective, int numFighters);
   static PTask stealFrom(WCollective);

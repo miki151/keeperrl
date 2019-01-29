@@ -57,7 +57,7 @@ PTask ExternalEnemies::getAttackTask(WCollective enemy, AttackBehaviour behaviou
       return Task::stealFrom(enemy);
     case AttackBehaviourId::CAMP_AND_SPAWN:
       return Task::campAndSpawn(enemy,
-            behaviour.get<CreatureFactory>(), Random.get(3, 7), Range(3, 7), Random.get(3, 7));
+            behaviour.get<CreatureGroup>(), Random.get(3, 7), Range(3, 7), Random.get(3, 7));
     case AttackBehaviourId::HALLOWEEN_KIDS: {
       auto nextToDoor = enemy->getTerritory().getExtended(2, 4);
       if (nextToDoor.empty()) {

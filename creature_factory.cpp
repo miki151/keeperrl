@@ -49,12 +49,6 @@
 #include "effect.h"
 #include "game_event.h"
 
-SERIALIZE_DEF(CreatureFactory, tribe, creatures, weights, unique, tribeOverrides, levelIncrease, baseLevelIncrease, inventory)
-SERIALIZATION_CONSTRUCTOR_IMPL(CreatureFactory)
-
-CreatureFactory CreatureFactory::singleCreature(TribeId tribe, CreatureId id) {
-  return CreatureFactory(tribe, {id}, {1}, {});
-}
 
 class BoulderController : public Monster {
   public:
@@ -325,32 +319,6 @@ class KrakenController : public Monster {
   WeakPointer<KrakenController> SERIAL(father);
 };
 
-class KamikazeController : public Monster {
-  public:
-  KamikazeController(WCreature c, MonsterAIFactory f) : Monster(c, f) {}
-
-  virtual void makeMove() override {
-    for (Position pos : creature->getPosition().neighbors8())
-      if (WCreature c = pos.getCreature())
-        if (creature->isEnemy(c) && creature->canSee(c)) {
-          creature->thirdPerson(creature->getName().the() + " explodes!");
-          for (Position v : c->getPosition().neighbors8())
-            v.fireDamage(1);
-          c->getPosition().fireDamage(1);
-          creature->dieNoReason(Creature::DropType::ONLY_INVENTORY);
-          return;
-        }
-    Monster::makeMove();
-  }
-
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
-    ar & SUBCLASS(Monster);
-  }
-
-  SERIALIZATION_CONSTRUCTOR(KamikazeController);
-};
-
 class ShopkeeperController : public Monster, public EventListener<ShopkeeperController> {
   public:
   ShopkeeperController(WCreature c, Rectangle area)
@@ -550,171 +518,14 @@ PCreature CreatureFactory::getIllusion(WCreature creature) {
 REGISTER_TYPE(BoulderController)
 REGISTER_TYPE(SokobanController)
 REGISTER_TYPE(KrakenController)
-REGISTER_TYPE(KamikazeController)
 REGISTER_TYPE(ShopkeeperController)
 REGISTER_TYPE(IllusionController)
 REGISTER_TYPE(ListenerTemplate<ShopkeeperController>)
-
-TribeId CreatureFactory::getTribeFor(CreatureId id) {
-  if (auto t = tribeOverrides[id])
-    return *t;
-  else
-    return *tribe;
-}
-
-PCreature CreatureFactory::random() {
-  return random(MonsterAIFactory::monster());
-}
-
-PCreature CreatureFactory::random(const MonsterAIFactory& actorFactory) {
-  CreatureId id;
-  if (unique.size() > 0) {
-    id = unique.back();
-    unique.pop_back();
-  } else
-    id = Random.choose(creatures, weights);
-  PCreature ret = fromId(id, getTribeFor(id), actorFactory, inventory);
-  for (auto exp : ENUM_ALL(ExperienceType)) {
-    ret->getAttributes().increaseBaseExpLevel(exp, baseLevelIncrease[exp]);
-    ret->increaseExpLevel(exp, levelIncrease[exp]);
-  }
-  return ret;
-}
 
 PCreature CreatureFactory::get(CreatureAttributes attr, TribeId tribe, const ControllerFactory& factory) {
   auto ret = makeOwner<Creature>(tribe, std::move(attr));
   ret->setController(factory.get(ret.get()));
   return ret;
-}
-
-CreatureFactory& CreatureFactory::increaseLevel(EnumMap<ExperienceType, int> l) {
-  levelIncrease = l;
-  return *this;
-}
-
-CreatureFactory& CreatureFactory::increaseLevel(ExperienceType t, int l) {
-  levelIncrease[t] = l;
-  return *this;
-}
-
-CreatureFactory& CreatureFactory::increaseBaseLevel(ExperienceType t, int l) {
-  baseLevelIncrease[t] = l;
-  return *this;
-}
-
-CreatureFactory& CreatureFactory::addInventory(vector<ItemType> items) {
-  inventory = items;
-  return *this;
-}
-
-CreatureFactory::CreatureFactory(TribeId t, const vector<CreatureId>& c, const vector<double>& w,
-    const vector<CreatureId>& u, EnumMap<CreatureId, optional<TribeId>> overrides)
-    : tribe(t), creatures(c), weights(w), unique(u), tribeOverrides(overrides) {
-}
-
-CreatureFactory::CreatureFactory(const vector<tuple<CreatureId, double, TribeId>>& c, const vector<CreatureId>& u)
-    : unique(u) {
-  for (auto& elem : c) {
-    creatures.push_back(std::get<0>(elem));
-    weights.push_back(std::get<1>(elem));
-    tribeOverrides[std::get<0>(elem)] = std::get<2>(elem);
-  }
-}
-
-// These have to be defined here to be able to forward declare some ItemType and other classes
-CreatureFactory::~CreatureFactory() {
-}
-
-CreatureFactory::CreatureFactory(const CreatureFactory&) = default;
-
-CreatureFactory& CreatureFactory::operator =(const CreatureFactory&) = default;
-
-static optional<pair<CreatureFactory, CreatureFactory>> splashFactories;
-
-void CreatureFactory::initSplash(TribeId tribe) {
-  splashFactories = Random.choose(
-      make_pair(CreatureFactory(tribe, { CreatureId::KNIGHT, CreatureId::ARCHER}, { 1, 1}, {}),
-        CreatureFactory::singleType(tribe, CreatureId::DUKE)),
-      make_pair(CreatureFactory(tribe, { CreatureId::WARRIOR}, { 1}, {}),
-        CreatureFactory::singleType(tribe, CreatureId::SHAMAN)),
-      make_pair(CreatureFactory(tribe, { CreatureId::ELF_ARCHER}, { 1}, {}),
-        CreatureFactory::singleType(tribe, CreatureId::ELF_LORD)),
-      make_pair(CreatureFactory(tribe, { CreatureId::DWARF}, { 1}, {}),
-        CreatureFactory::singleType(tribe, CreatureId::DWARF_BARON)),
-      make_pair(CreatureFactory(tribe, { CreatureId::LIZARDMAN}, { 1}, {}),
-        CreatureFactory::singleType(tribe, CreatureId::LIZARDLORD))
-      );
-}
-
-CreatureFactory CreatureFactory::splashHeroes(TribeId tribe) {
-  if (!splashFactories)
-    initSplash(tribe);
-  return splashFactories->first;
-}
-
-CreatureFactory CreatureFactory::splashLeader(TribeId tribe) {
-  if (!splashFactories)
-    initSplash(tribe);
-  return splashFactories->second;
-}
-
-CreatureFactory CreatureFactory::splashMonsters(TribeId tribe) {
-  return CreatureFactory(tribe, { CreatureId::GNOME, CreatureId::GOBLIN, CreatureId::OGRE,
-      CreatureId::SPECIAL_HLBN, CreatureId::SPECIAL_BLBW, CreatureId::WOLF, CreatureId::CAVE_BEAR,
-      CreatureId::BAT, CreatureId::WEREWOLF, CreatureId::ZOMBIE, CreatureId::VAMPIRE, CreatureId::DOPPLEGANGER,
-      CreatureId::SUCCUBUS},
-      { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}, {}, {}).increaseBaseLevel(ExperienceType::MELEE, 25);
-}
-
-CreatureFactory CreatureFactory::forrest(TribeId tribe) {
-  return CreatureFactory(tribe,
-      { CreatureId::DEER, CreatureId::FOX, CreatureId::BOAR },
-      { 4, 2, 2}, {});
-}
-
-CreatureFactory CreatureFactory::waterCreatures(TribeId tribe) {
-  return CreatureFactory(tribe, { CreatureId::WATER_ELEMENTAL, CreatureId::KRAKEN }, {20, 1}, {CreatureId::KRAKEN});
-}
-
-CreatureFactory CreatureFactory::elementals(TribeId tribe) {
-  return CreatureFactory(tribe, {CreatureId::AIR_ELEMENTAL, CreatureId::FIRE_ELEMENTAL, CreatureId::WATER_ELEMENTAL,
-      CreatureId::EARTH_ELEMENTAL}, {1, 1, 1, 1}, {});
-}
-
-CreatureFactory CreatureFactory::lavaCreatures(TribeId tribe) {
-  return CreatureFactory(tribe, { CreatureId::FIRE_ELEMENTAL }, {1}, { });
-}
-
-CreatureFactory CreatureFactory::singleType(TribeId tribe, CreatureId id) {
-  return CreatureFactory(tribe, { id}, {1}, {});
-}
-
-CreatureFactory CreatureFactory::gnomishMines(TribeId peaceful, TribeId enemy, int level) {
-  return CreatureFactory({
-      make_tuple(CreatureId::BANDIT, 100., enemy),
-      make_tuple(CreatureId::GREEN_DRAGON, 5., enemy),
-      make_tuple(CreatureId::RED_DRAGON, 5., enemy),
-      make_tuple(CreatureId::SOFT_MONSTER, 5., enemy),
-      make_tuple(CreatureId::CYCLOPS, 15., enemy),
-      make_tuple(CreatureId::WITCH, 15., enemy),
-      make_tuple(CreatureId::CLAY_GOLEM, 20., enemy),
-      make_tuple(CreatureId::STONE_GOLEM, 20., enemy),
-      make_tuple(CreatureId::IRON_GOLEM, 20., enemy),
-      make_tuple(CreatureId::LAVA_GOLEM, 20., enemy),
-      make_tuple(CreatureId::FIRE_ELEMENTAL, 10., enemy),
-      make_tuple(CreatureId::WATER_ELEMENTAL, 10., enemy),
-      make_tuple(CreatureId::EARTH_ELEMENTAL, 10., enemy),
-      make_tuple(CreatureId::AIR_ELEMENTAL, 10., enemy),
-      make_tuple(CreatureId::GNOME, 100., peaceful),
-      make_tuple(CreatureId::GNOME_CHIEF, 20., peaceful),
-      make_tuple(CreatureId::DWARF, 100., enemy),
-      make_tuple(CreatureId::DWARF_FEMALE, 40., enemy),
-      make_tuple(CreatureId::JACKAL, 200., enemy),
-      make_tuple(CreatureId::BAT, 200., enemy),
-      make_tuple(CreatureId::SNAKE, 150., enemy),
-      make_tuple(CreatureId::SPIDER, 200., enemy),
-      make_tuple(CreatureId::FLY, 100., enemy),
-      make_tuple(CreatureId::RAT, 100., enemy)});
 }
 
 static ViewId getSpecialViewId(bool humanoid, bool large, bool body, bool wings) {
@@ -2386,10 +2197,6 @@ ControllerFactory getController(CreatureId id, MonsterAIFactory normalFactory) {
     case CreatureId::KRAKEN:
       return ControllerFactory([=](WCreature c) {
           return makeOwner<KrakenController>(c);
-          });
-    case CreatureId::FIRE_SPHERE:
-      return ControllerFactory([=](WCreature c) {
-          return makeOwner<KamikazeController>(c, normalFactory);
           });
     default: return Monster::getFactory(normalFactory);
   }

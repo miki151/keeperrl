@@ -20,6 +20,7 @@
 #include "creature_name.h"
 #include "villain_type.h"
 #include "enemy_factory.h"
+#include "creature_group.h"
 #include "view_object.h"
 #include "item.h"
 #include "furniture.h"
@@ -111,10 +112,10 @@ SettlementInfo& ModelBuilder::makeExtraLevel(WModel model, EnemyInfo& enemy) {
         StairKey downLink = StairKey::getNew();
         model->buildLevel(
             LevelBuilder(meter, random, 60, 40, "Mines lvl " + toString(i + 1)),
-            LevelMaker::roomLevel(random, CreatureFactory::gnomishMines(
+            LevelMaker::roomLevel(random, CreatureGroup::gnomishMines(
                 mainSettlement.tribe, TribeId::getMonster(), 0),
-                CreatureFactory::waterCreatures(TribeId::getMonster()),
-                CreatureFactory::lavaCreatures(TribeId::getMonster()), {upLink}, {downLink},
+                CreatureGroup::waterCreatures(TribeId::getMonster()),
+                CreatureGroup::lavaCreatures(TribeId::getMonster()), {upLink}, {downLink},
                 FurnitureFactory::roomFurniture(TribeId::getPest())));
         upLink = downLink;
       }
@@ -458,9 +459,9 @@ PModel ModelBuilder::tryModel(int width, const string& levelName, vector<EnemyIn
       topLevelSettlements.push_back(elem.settlement);
   }
   append(enemyInfo, extraEnemies);
-  optional<CreatureFactory> wildlife;
+  optional<CreatureGroup> wildlife;
   if (hasWildlife)
-    wildlife = CreatureFactory::forrest(TribeId::getWildlife());
+    wildlife = CreatureGroup::forrest(TribeId::getWildlife());
   WLevel top =  model->buildMainLevel(
       LevelBuilder(meter, random, width, width, levelName, false),
       LevelMaker::topLevel(random, wildlife, topLevelSettlements, width,
@@ -494,10 +495,10 @@ PModel ModelBuilder::splashModel(const FilePath& splashPath) {
       LevelBuilder(meter, Random, Level::getSplashBounds().width(), Level::getSplashBounds().height(), "Splash",
         true, 1.0),
       LevelMaker::splashLevel(
-          CreatureFactory::splashLeader(TribeId::getHuman()),
-          CreatureFactory::splashHeroes(TribeId::getHuman()),
-          CreatureFactory::splashMonsters(TribeId::getDarkKeeper()),
-          CreatureFactory::singleType(TribeId::getDarkKeeper(), CreatureId::IMP), splashPath));
+          CreatureGroup::splashLeader(TribeId::getHuman()),
+          CreatureGroup::splashHeroes(TribeId::getHuman()),
+          CreatureGroup::splashMonsters(TribeId::getDarkKeeper()),
+          CreatureGroup::singleType(TribeId::getDarkKeeper(), CreatureId::IMP), splashPath));
   return m;
 }
 

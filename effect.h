@@ -25,7 +25,7 @@ class Level;
 class Creature;
 class Item;
 class Tribe;
-class CreatureFactory;
+class CreatureGroup;
 class DirEffectType;
 
 
@@ -158,7 +158,7 @@ class Effect {
   }
 
   static vector<WCreature> summon(WCreature, CreatureId, int num, TimeInterval ttl, TimeInterval delay = 0_visible);
-  static vector<WCreature> summon(Position, CreatureFactory&, int num, TimeInterval ttl, TimeInterval delay = 0_visible);
+  static vector<WCreature> summon(Position, CreatureGroup&, int num, TimeInterval ttl, TimeInterval delay = 0_visible);
   static vector<WCreature> summonCreatures(Position, int radius, vector<PCreature>, TimeInterval delay = 0_visible);
   static vector<WCreature> summonCreatures(WCreature, int radius, vector<PCreature>, TimeInterval delay = 0_visible);
   static void emitPoisonGas(Position, double amount, bool msg);

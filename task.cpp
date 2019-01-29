@@ -27,7 +27,7 @@
 #include "creature_name.h"
 #include "collective_teams.h"
 #include "effect.h"
-#include "creature_factory.h"
+#include "creature_group.h"
 #include "player_message.h"
 #include "territory.h"
 #include "item_factory.h"
@@ -782,7 +782,7 @@ namespace {
 
 class CampAndSpawn : public Task {
   public:
-  CampAndSpawn(WCollective _target, CreatureFactory s, int defense, Range attack, int numAtt)
+  CampAndSpawn(WCollective _target, CreatureGroup s, int defense, Range attack, int numAtt)
     : target(_target), spawns(s),
       campPos(Random.permutation(target->getTerritory().getStandardExtended())), defenseSize(defense),
       attackSize(attack), numAttacks(numAtt) {}
@@ -847,7 +847,7 @@ class CampAndSpawn : public Task {
 
   private:
   WCollective SERIAL(target) = nullptr;
-  CreatureFactory SERIAL(spawns);
+  CreatureGroup SERIAL(spawns);
   vector<Position> SERIAL(campPos);
   int SERIAL(defenseSize);
   Range SERIAL(attackSize);
@@ -860,7 +860,7 @@ class CampAndSpawn : public Task {
 
 }
 
-PTask Task::campAndSpawn(WCollective target, const CreatureFactory& spawns, int defenseSize,
+PTask Task::campAndSpawn(WCollective target, const CreatureGroup& spawns, int defenseSize,
     Range attackSize, int numAttacks) {
   return makeOwner<CampAndSpawn>(target, spawns, defenseSize, attackSize, numAttacks);
 }

@@ -179,29 +179,9 @@ RICH_ENUM(CreatureId,
 
 class CreatureFactory {
   public:
-  static CreatureFactory singleCreature(TribeId, CreatureId);
-
   static PCreature fromId(CreatureId, TribeId, const MonsterAIFactory&);
   static PCreature fromId(CreatureId, TribeId, const MonsterAIFactory&, const vector<ItemType>& inventory);
   static PCreature fromId(CreatureId, TribeId);
-  static CreatureFactory splashHeroes(TribeId);
-  static CreatureFactory splashLeader(TribeId);
-  static CreatureFactory splashMonsters(TribeId);
-  static CreatureFactory forrest(TribeId);
-  static CreatureFactory singleType(TribeId, CreatureId);
-  static CreatureFactory lavaCreatures(TribeId tribe);
-  static CreatureFactory waterCreatures(TribeId tribe);
-  static CreatureFactory elementals(TribeId tribe);
-  static CreatureFactory gnomishMines(TribeId peaceful, TribeId enemy, int level);
-  
-  PCreature random(const MonsterAIFactory&);
-  PCreature random();
-
-  CreatureFactory& increaseBaseLevel(ExperienceType, int);
-  CreatureFactory& increaseLevel(ExperienceType, int);
-  CreatureFactory& increaseLevel(EnumMap<ExperienceType, int>);
-  CreatureFactory& addInventory(vector<ItemType>);
-
   static PCreature getShopkeeper(Rectangle shopArea, TribeId);
   static PCreature getRollingBoulder(TribeId, Vec2 direction);
   static PCreature getGhost(WCreature);
@@ -219,10 +199,6 @@ class CreatureFactory {
   SERIALIZATION_DECL(CreatureFactory)
 
   private:
-  CreatureFactory(TribeId tribe, const vector<CreatureId>& creatures, const vector<double>& weights,
-      const vector<CreatureId>& unique = {}, EnumMap<CreatureId, optional<TribeId>> overrides = {});
-  CreatureFactory(const vector<tuple<CreatureId, double, TribeId>>& creatures,
-      const vector<CreatureId>& unique = {});
   static void initSplash(TribeId);
   static PCreature getSokobanBoulder(TribeId);
   static PCreature getSpecial(TribeId, bool humanoid, bool large, bool living, bool wings, const ControllerFactory&);
@@ -230,14 +206,4 @@ class CreatureFactory {
   static PCreature get(CreatureAttributes, TribeId, const ControllerFactory&);
   static CreatureAttributes getAttributesFromId(CreatureId);
   static CreatureAttributes getAttributes(CreatureId);
-
-  TribeId getTribeFor(CreatureId);
-  optional<TribeId> SERIAL(tribe);
-  vector<CreatureId> SERIAL(creatures);
-  vector<double> SERIAL(weights);
-  vector<CreatureId> SERIAL(unique);
-  EnumMap<CreatureId, optional<TribeId>> SERIAL(tribeOverrides);
-  EnumMap<ExperienceType, int> SERIAL(baseLevelIncrease);
-  EnumMap<ExperienceType, int> SERIAL(levelIncrease);
-  vector<ItemType> SERIAL(inventory);
 };

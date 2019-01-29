@@ -11,6 +11,7 @@
 #include "sunlight_info.h"
 #include "conquer_condition.h"
 #include "lasting_effect.h"
+#include "creature_group.h"
 
 EnemyFactory::EnemyFactory(RandomGen& r) : random(r) {
 }
@@ -110,7 +111,7 @@ static vector<VaultInfo> hostileVaults {
 
 vector<EnemyInfo> EnemyFactory::getVaults(TribeAlignment alignment, TribeId allied) {
   vector<EnemyInfo> ret {
- /*   getVault(SettlementType::VAULT, CreatureFactory::insects(TribeId::getMonster()),
+ /*   getVault(SettlementType::VAULT, CreatureGroup::insects(TribeId::getMonster()),
         TribeId::getMonster(), random.get(6, 12)),*/
     getVault(SettlementType::VAULT, CreatureId::RAT, TribeId::getPest(), random.get(3, 8),
         ItemFactory::armory()),
@@ -483,7 +484,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
                   AttackTriggerId::FINISH_OFF,
                   {AttackTriggerId::NUM_CONQUERED, 3});
               c.attackBehaviour = AttackBehaviour(AttackBehaviourId::CAMP_AND_SPAWN,
-                CreatureFactory::elementals(TribeId::getHuman()));
+                CreatureGroup::elementals(TribeId::getHuman()));
               c.ransom = make_pair(0.5, random.get(40, 80));),
           LevelConnection{LevelConnection::TOWER, get(EnemyId::ELEMENTALIST_ENTRY)});
     case EnemyId::NO_AGGRO_BANDITS:
@@ -1056,7 +1057,7 @@ vector<ExternalEnemy> EnemyFactory::getExternalEnemies() {
     },
     ExternalEnemy{
         CreatureList(1, CreatureId::ELEMENTALIST),
-        {AttackBehaviourId::CAMP_AND_SPAWN, CreatureFactory::elementals(TribeId::getHuman())},
+        {AttackBehaviourId::CAMP_AND_SPAWN, CreatureGroup::elementals(TribeId::getHuman())},
         "an elementalist",
         Range(8000, 14000),
         1

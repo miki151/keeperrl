@@ -37,6 +37,7 @@
 #include "settlement_info.h"
 #include "task.h"
 #include "equipment.h"
+#include "creature_group.h"
 
 namespace {
 
@@ -500,7 +501,7 @@ class Corpses : public LevelMaker {
 
 class Creatures : public LevelMaker {
   public:
-  Creatures(CreatureFactory f, int num, MonsterAIFactory actorF, Predicate pred = Predicate::alwaysTrue()) :
+  Creatures(CreatureGroup f, int num, MonsterAIFactory actorF, Predicate pred = Predicate::alwaysTrue()) :
       creatures(f), numCreatures(num), actorFactory(actorF), onPred(pred) {}
 
   virtual void make(LevelBuilder* builder, Rectangle area) override {
@@ -522,7 +523,7 @@ class Creatures : public LevelMaker {
   }
 
   private:
-  CreatureFactory creatures;
+  CreatureGroup creatures;
   int numCreatures;
   optional<MonsterAIFactory> actorFactory;
   Predicate onPred;
@@ -1983,7 +1984,7 @@ static PMakerQueue village(RandomGen& random, SettlementInfo info, int minRooms,
   queue->addMaker(unique<PlaceCollective>(info.collective));
   queue->addMaker(unique<UniformBlob>(building.floorOutside, none, 0.6));
   vector<PLevelMaker> insideMakers = makeVec<PLevelMaker>(
- //     hatchery(CreatureFactory::singleType(info.tribe, CreatureId::PIG), random.get(2, 5)),
+ //     hatchery(CreatureGroup::singleType(info.tribe, CreatureId::PIG), random.get(2, 5)),
       getElderRoom(info));
   if (info.shopFactory)
     insideMakers.push_back(unique<ShopMaker>(info, random.get(8, 16)));
@@ -2389,7 +2390,7 @@ static PLevelMaker getForrest(BiomeId id) {
   }
 }
 
-static PLevelMaker getForrestCreatures(CreatureFactory factory, int levelWidth, BiomeId biome) {
+static PLevelMaker getForrestCreatures(CreatureGroup factory, int levelWidth, BiomeId biome) {
   int div;
   switch (biome) {
     case BiomeId::FORREST: div = 2000; break;
@@ -2489,7 +2490,7 @@ static PMakerQueue getSettlementMaker(RandomGen& random, const SettlementInfo& s
   }
 }
 
-PLevelMaker LevelMaker::topLevel(RandomGen& random, optional<CreatureFactory> forrestCreatures,
+PLevelMaker LevelMaker::topLevel(RandomGen& random, optional<CreatureGroup> forrestCreatures,
     vector<SettlementInfo> settlements, int mapWidth, optional<TribeId> keeperTribe, BiomeId biomeId) {
   auto queue = unique<MakerQueue>();
   auto locations = unique<RandomLocations>();
@@ -2619,7 +2620,7 @@ PLevelMaker LevelMaker::getFullZLevel(RandomGen& random, optional<SettlementInfo
   return std::move(queue);
 }
 
-PLevelMaker LevelMaker::getWaterZLevel(RandomGen& random, FurnitureType waterType, int mapWidth, CreatureFactory enemies, StairKey landingLink) {
+PLevelMaker LevelMaker::getWaterZLevel(RandomGen& random, FurnitureType waterType, int mapWidth, CreatureGroup enemies, StairKey landingLink) {
   auto queue = unique<MakerQueue>();
   queue->addMaker(unique<Empty>(SquareChange(waterType)));
   auto locations = unique<RandomLocations>();
@@ -2663,8 +2664,8 @@ class SpecificArea : public LevelMaker {
   PLevelMaker maker;
 };
 
-PLevelMaker LevelMaker::splashLevel(CreatureFactory heroLeader, CreatureFactory heroes, CreatureFactory monsters,
-    CreatureFactory imps, const FilePath& splashPath) {
+PLevelMaker LevelMaker::splashLevel(CreatureGroup heroLeader, CreatureGroup heroes, CreatureGroup monsters,
+    CreatureGroup imps, const FilePath& splashPath) {
   auto queue = unique<MakerQueue>();
   queue->addMaker(unique<Empty>(FurnitureType::BLACK_FLOOR));
   Rectangle leaderSpawn(
@@ -2692,7 +2693,7 @@ PLevelMaker LevelMaker::splashLevel(CreatureFactory heroLeader, CreatureFactory 
 }
 
 
-static PLevelMaker underground(RandomGen& random, CreatureFactory waterFactory, CreatureFactory lavaFactory) {
+static PLevelMaker underground(RandomGen& random, CreatureGroup waterFactory, CreatureGroup lavaFactory) {
   auto queue = unique<MakerQueue>();
   if (random.roll(1)) {
     auto caverns = unique<RandomLocations>();
@@ -2734,8 +2735,8 @@ static PLevelMaker underground(RandomGen& random, CreatureFactory waterFactory, 
   return std::move(queue);
 }
 
-PLevelMaker LevelMaker::roomLevel(RandomGen& random, CreatureFactory roomFactory, CreatureFactory waterFactory,
-    CreatureFactory lavaFactory, vector<StairKey> up, vector<StairKey> down, FurnitureFactory furniture) {
+PLevelMaker LevelMaker::roomLevel(RandomGen& random, CreatureGroup roomFactory, CreatureGroup waterFactory,
+    CreatureGroup lavaFactory, vector<StairKey> up, vector<StairKey> down, FurnitureFactory furniture) {
   auto queue = unique<MakerQueue>();
   queue->addMaker(unique<Empty>(SquareChange(FurnitureType::FLOOR, FurnitureType::MOUNTAIN)));
   queue->addMaker(underground(random, waterFactory, lavaFactory));

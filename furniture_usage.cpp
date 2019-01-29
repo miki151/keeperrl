@@ -7,7 +7,7 @@
 #include "furniture_factory.h"
 #include "creature.h"
 #include "player_message.h"
-#include "creature_factory.h"
+#include "creature_group.h"
 #include "game.h"
 #include "event_listener.h"
 #include "item.h"
@@ -26,7 +26,7 @@
 struct ChestInfo {
   FurnitureType openedType;
   struct CreatureInfo {
-    optional<CreatureFactory> creature;
+    optional<CreatureGroup> creature;
     int creatureChance;
     int numCreatures;
     string msgCreature;
@@ -47,7 +47,7 @@ static void useChest(Position pos, WConstFurniture furniture, WCreature c, const
     if (creatureInfo->creatureChance > 0 && Random.roll(creatureInfo->creatureChance)) {
       int numSpawned = 0;
       for (int i : Range(creatureInfo->numCreatures))
-        if (pos.getLevel()->landCreature({pos}, CreatureFactory(*creatureInfo->creature).random()))
+        if (pos.getLevel()->landCreature({pos}, CreatureGroup(*creatureInfo->creature).random()))
           ++numSpawned;
       if (numSpawned > 0)
         c->message(creatureInfo->msgCreature);
@@ -122,7 +122,7 @@ void FurnitureUsage::handle(FurnitureUsageType type, Position pos, WConstFurnitu
           ChestInfo {
               FurnitureType::OPENED_CHEST,
               ChestInfo::CreatureInfo {
-                  CreatureFactory::singleCreature(TribeId::getPest(), CreatureId::RAT),
+                  CreatureGroup::singleCreature(TribeId::getPest(), CreatureId::RAT),
                   10,
                   Random.get(3, 6),
                   "It's full of rats!",
@@ -149,7 +149,7 @@ void FurnitureUsage::handle(FurnitureUsageType type, Position pos, WConstFurnitu
           ChestInfo {
               FurnitureType::OPENED_COFFIN,
               ChestInfo::CreatureInfo {
-                  CreatureFactory::singleCreature(TribeId::getMonster(), CreatureId::VAMPIRE_LORD), 1, 1,
+                  CreatureGroup::singleCreature(TribeId::getMonster(), CreatureId::VAMPIRE_LORD), 1, 1,
                   "There is a rotting corpse inside. The corpse is alive!"
               },
               none

@@ -19,6 +19,7 @@
 #include "creature.h"
 #include "level.h"
 #include "creature_factory.h"
+#include "creature_group.h"
 #include "item.h"
 #include "view_object.h"
 #include "view_id.h"
@@ -117,7 +118,7 @@ vector<WCreature> Effect::summon(WCreature c, CreatureId id, int num, TimeInterv
   return ret;
 }
 
-vector<WCreature> Effect::summon(Position pos, CreatureFactory& factory, int num, TimeInterval ttl, TimeInterval delay) {
+vector<WCreature> Effect::summon(Position pos, CreatureGroup& factory, int num, TimeInterval ttl, TimeInterval delay) {
   vector<PCreature> creatures;
   for (int i : Range(num))
     creatures.push_back(factory.random(MonsterAIFactory::monster()));
@@ -239,7 +240,7 @@ static TimeInterval getSummonDelay(CreatureId id) {
 static void summon(WCreature summoner, CreatureId id) {
   switch (id) {
     case CreatureId::AUTOMATON: {
-      CreatureFactory f = CreatureFactory::singleType(TribeId::getHostile(), id);
+      CreatureGroup f = CreatureGroup::singleType(TribeId::getHostile(), id);
       Effect::summon(summoner->getPosition(), f, Random.get(getSummonNumber(id)), getSummonTtl(id),
           getSummonDelay(id));
       break;

@@ -14,6 +14,7 @@
 #include "settlement_info.h"
 #include "enemy_info.h"
 #include "collective_builder.h"
+#include "creature_group.h"
 
 static SettlementInfo getEnemy(EnemyId id) {
   auto enemy = EnemyFactory(Random).get(id);
@@ -35,7 +36,7 @@ static PLevelMaker getLevelMaker(int depth, int width, TribeId tribe) {
   if (depth <= 4)
     return LevelMaker::getFullZLevel(Random, getSettlement(depth), width, tribe, StairKey::getNew());
   return LevelMaker::getWaterZLevel(Random, FurnitureType::MAGMA, width,
-      CreatureFactory::lavaCreatures(TribeId::getMonster()), StairKey::getNew());
+      CreatureGroup::lavaCreatures(TribeId::getMonster()), StairKey::getNew());
 }
 
 static void removeOldStairs(Level* level, StairKey stairKey) {
