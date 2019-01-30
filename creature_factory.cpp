@@ -49,7 +49,6 @@
 #include "effect.h"
 #include "game_event.h"
 
-
 class BoulderController : public Monster {
   public:
   BoulderController(WCreature c, Vec2 dir) : Monster(c, MonsterAIFactory::idle()), direction(dir) {
@@ -174,12 +173,15 @@ CreatureAttributes CreatureFactory::getKrakenAttributes(ViewId id, const char* n
       c.name = name;);
 }
 
-ViewId CreatureFactory::getViewId(CreatureId id) {
-  static EnumMap<CreatureId, ViewId> idMap([](CreatureId id) {
+ViewId CreatureFactory::getViewId(CreatureId id) const {
+  return idMap[id];
+}
+
+CreatureFactory::CreatureFactory(NameGenerator* n) : nameGenerator(n) {
+  idMap = EnumMap<CreatureId, ViewId>([this](CreatureId id) {
     auto c = fromId(id, TribeId::getMonster());
     return c->getViewObject().id();
   });
-  return idMap[id];
 }
 
 constexpr int maxKrakenLength = 15;
@@ -449,7 +451,7 @@ void CreatureFactory::addInventory(WCreature c, const vector<ItemType>& items) {
     c->take(item.get());
 }
 
-PCreature CreatureFactory::getShopkeeper(Rectangle shopArea, TribeId tribe) {
+PCreature CreatureFactory::getShopkeeper(Rectangle shopArea, TribeId tribe) const {
   auto ret = makeOwner<Creature>(tribe,
       CATTR(
         c.viewId = ViewId::SHOPKEEPER;
@@ -459,7 +461,7 @@ PCreature CreatureFactory::getShopkeeper(Rectangle shopArea, TribeId tribe) {
         c.chatReactionFriendly = "complains about high import tax"_s;
         c.chatReactionHostile = "\"Die!\""_s;
         c.name = "shopkeeper";
-        c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_MALE)->getNext());));
+        c.name->setFirst(nameGenerator->getNext(NameGeneratorId::FIRST_MALE));));
   ret->setController(makeOwner<ShopkeeperController>(ret.get(), shopArea));
   vector<ItemType> inventory(Random.get(20, 60), ItemType::GoldPiece{});
   inventory.push_back(ItemType::Sword{});
@@ -636,7 +638,7 @@ static vector<LastingEffect> getResistanceAndVulnerability(RandomGen& random) {
 }
 
 PCreature CreatureFactory::getSpecial(TribeId tribe, bool humanoid, bool large, bool living, bool wings,
-    const ControllerFactory& factory) {
+    const ControllerFactory& factory) const {
   Body body = Body(humanoid, living ? Body::Material::FLESH : Body::Material::SPIRIT,
       large ? Body::Size::LARGE : Body::Size::MEDIUM);
   if (wings)
@@ -673,7 +675,7 @@ PCreature CreatureFactory::getSpecial(TribeId tribe, bool humanoid, bool large, 
         }
         c.name = name;
         c.name->setStack(humanoid ? "legendary humanoid" : "legendary beast");
-        c.name->setFirst(NameGenerator::get(NameGeneratorId::DEMON)->getNext());
+        c.name->setFirst(nameGenerator->getNext(NameGeneratorId::DEMON));
         if (!humanoid) {
           c.body->setBodyParts(getSpecialBeastBody(large, living, wings));
           c.attr[AttrType::DAMAGE] += 5;
@@ -696,7 +698,7 @@ PCreature CreatureFactory::getSpecial(TribeId tribe, bool humanoid, bool large, 
   return c;
 }
 
-CreatureAttributes CreatureFactory::getAttributes(CreatureId id) {
+CreatureAttributes CreatureFactory::getAttributes(CreatureId id) const {
   auto ret = getAttributesFromId(id);
   ret.setCreatureId(id);
   return ret;
@@ -714,7 +716,7 @@ CREATE_LITERAL(RANGED_DAMAGE, ranged_dam)
 
 #undef CREATE_LITERAL
 
-CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
+CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
   switch (id) {
     case CreatureId::KEEPER_MAGE:
       return CATTR(
@@ -723,7 +725,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body = Body::humanoid(Body::Size::LARGE);
           c.name = "wizard";
           c.viewIdUpgrades = LIST(ViewId::KEEPER2, ViewId::KEEPER3, ViewId::KEEPER4);
-          c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_MALE)->getNext());
+          c.name->setFirst(nameGenerator->getNext(NameGeneratorId::FIRST_MALE));
           c.name->useFullTitle();
           c.skills.setValue(SkillId::LABORATORY, 0.2);
           c.maxLevelIncrease[ExperienceType::MELEE] = 7;
@@ -738,7 +740,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body = Body::humanoid(Body::Size::LARGE);
           c.name = "wizard";
           c.viewIdUpgrades = LIST(ViewId::KEEPER_F2, ViewId::KEEPER_F3, ViewId::KEEPER_F4);
-          c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_FEMALE)->getNext());
+          c.name->setFirst(nameGenerator->getNext(NameGeneratorId::FIRST_FEMALE));
           c.name->useFullTitle();
           c.skills.setValue(SkillId::LABORATORY, 0.2);
           c.maxLevelIncrease[ExperienceType::MELEE] = 7;
@@ -752,7 +754,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body = Body::humanoid(Body::Size::LARGE);
           c.name = "knight";
           c.viewIdUpgrades = LIST(ViewId::KEEPER_KNIGHT2, ViewId::KEEPER_KNIGHT3, ViewId::KEEPER_KNIGHT4);
-          c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_MALE)->getNext());
+          c.name->setFirst(nameGenerator->getNext(NameGeneratorId::FIRST_MALE));
           c.name->useFullTitle();
           c.skills.setValue(SkillId::FORGE, 0.2);
           c.maxLevelIncrease[ExperienceType::MELEE] = 12;
@@ -767,7 +769,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body = Body::humanoid(Body::Size::LARGE);
           c.name = "knight";
           c.viewIdUpgrades = LIST(ViewId::KEEPER_KNIGHT_F2, ViewId::KEEPER_KNIGHT_F3, ViewId::KEEPER_KNIGHT_F4);
-          c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_FEMALE)->getNext());
+          c.name->setFirst(nameGenerator->getNext(NameGeneratorId::FIRST_FEMALE));
           c.name->useFullTitle();
           c.skills.setValue(SkillId::FORGE, 0.2);
           c.maxLevelIncrease[ExperienceType::MELEE] = 12;
@@ -781,7 +783,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body = Body::humanoid(Body::Size::LARGE);
           c.name = "knight";
           c.viewIdUpgrades = LIST(ViewId::DUKE2, ViewId::DUKE3, ViewId::DUKE4);
-          c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_MALE)->getNext());
+          c.name->setFirst(nameGenerator->getNext(NameGeneratorId::FIRST_MALE));
           c.name->useFullTitle();
           c.skills.setValue(SkillId::FORGE, 0.2);
           c.maxLevelIncrease[ExperienceType::MELEE] = 12;
@@ -796,7 +798,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body = Body::humanoid(Body::Size::LARGE);
           c.name = "knight";
           c.viewIdUpgrades = LIST(ViewId::DUKE_F2, ViewId::DUKE_F3, ViewId::DUKE_F4);
-          c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_FEMALE)->getNext());
+          c.name->setFirst(nameGenerator->getNext(NameGeneratorId::FIRST_FEMALE));
           c.name->useFullTitle();
           c.skills.setValue(SkillId::FORGE, 0.2);
           c.maxLevelIncrease[ExperienceType::MELEE] = 12;
@@ -809,7 +811,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.attr = LIST(15_dam, 20_def );
           c.body = Body::humanoid(Body::Size::LARGE);
           c.name = "squire";
-          c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_MALE)->getNext());
+          c.name->setFirst(nameGenerator->getNext(NameGeneratorId::FIRST_MALE));
           c.name->useFullTitle();
           c.permanentEffects[LastingEffect::AMBUSH_SKILL] = 1;
           c.maxLevelIncrease[ExperienceType::MELEE] = 16;
@@ -824,7 +826,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.attr = LIST(15_dam, 20_def );
           c.body = Body::humanoid(Body::Size::LARGE);
           c.name = "squire";
-          c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_FEMALE)->getNext());
+          c.name->setFirst(nameGenerator->getNext(NameGeneratorId::FIRST_FEMALE));
           c.name->useFullTitle();
           c.permanentEffects[LastingEffect::AMBUSH_SKILL] = 1;
           c.maxLevelIncrease[ExperienceType::MELEE] = 16;
@@ -849,7 +851,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.chatReactionHostile = "\"mhhhhhrrrr!\""_s;
           c.petReaction = "neighs"_s;
           c.name = "unicorn";
-          c.name->setFirst(NameGenerator::get(NameGeneratorId::DEITY)->getNext());
+          c.name->setFirst(nameGenerator->getNext(NameGeneratorId::DEITY));
           c.name->setGroup("herd");
       );
     case CreatureId::BANDIT:
@@ -943,7 +945,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.attr = LIST(30_dam, 30_def, 20_spell_dam );
           c.body = Body::humanoid(Body::Size::LARGE);
           c.name = CreatureName("witchman", "witchmen");
-          c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_MALE)->getNext());
+          c.name->setFirst(nameGenerator->getNext(NameGeneratorId::FIRST_MALE));
           c.permanentEffects[LastingEffect::MAGIC_RESISTANCE] = 1;
           c.gender = Gender::male;
           c.chatReactionFriendly = "curses all monsters"_s;
@@ -958,7 +960,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body->setWeight(400);
           c.permanentEffects[LastingEffect::RANGED_RESISTANCE] = 1;
           c.name = CreatureName("cyclops", "cyclopes");
-          c.name->setFirst(NameGenerator::get(NameGeneratorId::CYCLOPS)->getNext());
+          c.name->setFirst(nameGenerator->getNext(NameGeneratorId::CYCLOPS));
           c.maxLevelIncrease[ExperienceType::MELEE] = 5;
       );
     case CreatureId::DEMON_DWELLER:
@@ -975,7 +977,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.chatReactionFriendly = "\"Kneel before us!\""_s;
           c.chatReactionHostile = "\"Face your death!\""_s;
           c.name = "demon dweller";
-          c.name->setFirst(NameGenerator::get(NameGeneratorId::DEMON)->getNext());
+          c.name->setFirst(nameGenerator->getNext(NameGeneratorId::DEMON));
           c.name->setGroup("pack");
           c.maxLevelIncrease[ExperienceType::MELEE] = 4;
           c.maxLevelIncrease[ExperienceType::SPELL] = 4;
@@ -994,7 +996,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.chatReactionFriendly = "\"Kneel before us!\""_s;
           c.chatReactionHostile = "\"Face your death!\""_s;
           c.name = "Demon Lord";
-          c.name->setFirst(NameGenerator::get(NameGeneratorId::DEMON)->getNext());
+          c.name->setFirst(nameGenerator->getNext(NameGeneratorId::DEMON));
           c.name->setGroup("pack");
           c.maxLevelIncrease[ExperienceType::SPELL] = 7;
       );
@@ -1057,7 +1059,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.permanentEffects[LastingEffect::POISON_RESISTANT] = 1;
           c.permanentEffects[LastingEffect::RANGED_VULNERABILITY] = 1;
           c.name = "green dragon";
-          c.name->setFirst(NameGenerator::get(NameGeneratorId::DRAGON)->getNext());
+          c.name->setFirst(nameGenerator->getNext(NameGeneratorId::DRAGON));
           c.spells->add(SpellId::HEAL_SELF);
           c.spells->add(SpellId::CURE_POISON);
           c.spells->add(SpellId::DECEPTION);
@@ -1074,7 +1076,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.permanentEffects[LastingEffect::FIRE_RESISTANT] = 1;
           c.body->setIntrinsicAttack(BodyPart::HEAD, IntrinsicAttack(ItemType::fangs(15, Effect::Fire{})));
           c.name = "red dragon";
-          c.name->setFirst(NameGenerator::get(NameGeneratorId::DRAGON)->getNext());
+          c.name->setFirst(nameGenerator->getNext(NameGeneratorId::DRAGON));
           c.permanentEffects[LastingEffect::RANGED_VULNERABILITY] = 1;
           c.spells->add(SpellId::HEAL_SELF);
           c.spells->add(SpellId::CURE_POISON);
@@ -1094,7 +1096,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.skills.setValue(SkillId::WORKSHOP, 0.3);
           c.skills.setValue(SkillId::FORGE, 0.3);
           c.name = "knight";
-          c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_MALE)->getNext());
+          c.name->setFirst(nameGenerator->getNext(NameGeneratorId::FIRST_MALE));
           c.hatedByEffect = LastingEffect::HATE_HUMANS;
       );
     case CreatureId::JESTER_PLAYER:
@@ -1106,7 +1108,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.chatReactionFriendly = "curses all dungeons"_s;
           c.chatReactionHostile = "\"Die!\""_s;
           c.name = "jester";
-          c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_MALE)->getNext());
+          c.name->setFirst(nameGenerator->getNext(NameGeneratorId::FIRST_MALE));
           c.hatedByEffect = LastingEffect::HATE_HUMANS;
       );
     case CreatureId::ARCHER_PLAYER:
@@ -1119,7 +1121,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.maxLevelIncrease[ExperienceType::MELEE] = 4;
           c.maxLevelIncrease[ExperienceType::ARCHERY] = 7;
           c.name = "archer";
-          c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_MALE)->getNext());
+          c.name->setFirst(nameGenerator->getNext(NameGeneratorId::FIRST_MALE));
           c.hatedByEffect = LastingEffect::HATE_HUMANS;
       );
     case CreatureId::PRIEST_PLAYER:
@@ -1131,7 +1133,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.chatReactionHostile = "\"Die!\""_s;
           c.maxLevelIncrease[ExperienceType::SPELL] = 9;
           c.name = "priest";
-          c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_MALE)->getNext());
+          c.name->setFirst(nameGenerator->getNext(NameGeneratorId::FIRST_MALE));
           c.hatedByEffect = LastingEffect::HATE_HUMANS;
       );
     case CreatureId::GNOME_PLAYER:
@@ -1146,7 +1148,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.skills.setValue(SkillId::FORGE, 0.6);
           c.skills.setValue(SkillId::JEWELER, 0.6);
           c.name = "gnome";
-          c.name->setFirst(NameGenerator::get(NameGeneratorId::DWARF)->getNext());
+          c.name->setFirst(nameGenerator->getNext(NameGeneratorId::DWARF));
       );
     case CreatureId::PESEANT_PLAYER:
       return CATTR(
@@ -1196,8 +1198,8 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.chatReactionHostile = "\"Die!\""_s;
           c.maxLevelIncrease[ExperienceType::MELEE] = 3;
           c.courage = 1;
-          c.name = "Duke of " + NameGenerator::get(NameGeneratorId::WORLD)->getNext();
-          c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_MALE)->getNext());
+          c.name = "Duke of " + nameGenerator->getNext(NameGeneratorId::WORLD);
+          c.name->setFirst(nameGenerator->getNext(NameGeneratorId::FIRST_MALE));
           c.hatedByEffect = LastingEffect::HATE_HUMANS;
       );
     case CreatureId::ARCHER:
@@ -1425,7 +1427,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.maxLevelIncrease[ExperienceType::MELEE] = 7;
           c.maxLevelIncrease[ExperienceType::SPELL] = 7;
           c.name = "vampire";
-          c.name->setFirst(NameGenerator::get(NameGeneratorId::VAMPIRE)->getNext());
+          c.name->setFirst(nameGenerator->getNext(NameGeneratorId::VAMPIRE));
           c.hatedByEffect = LastingEffect::HATE_UNDEAD;
       );
     case CreatureId::VAMPIRE_LORD: 
@@ -1435,7 +1437,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body = Body::humanoid(Body::Material::UNDEAD_FLESH, Body::Size::LARGE);
           c.permanentEffects[LastingEffect::NIGHT_VISION] = 1;
           c.name = "vampire lord";
-          c.name->setFirst(NameGenerator::get(NameGeneratorId::VAMPIRE)->getNext());
+          c.name->setFirst(nameGenerator->getNext(NameGeneratorId::VAMPIRE));
           c.maxLevelIncrease[ExperienceType::MELEE] = 12;
           c.maxLevelIncrease[ExperienceType::SPELL] = 12;
           c.permanentEffects[LastingEffect::FLYING] = 1;
@@ -1472,7 +1474,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.skills.setValue(SkillId::FORGE, 0.3);
           c.maxLevelIncrease[ExperienceType::MELEE] = 7;
           c.name = "orc";
-          c.name->setFirst(NameGenerator::get(NameGeneratorId::ORC)->getNext());
+          c.name->setFirst(nameGenerator->getNext(NameGeneratorId::ORC));
           c.hatedByEffect = LastingEffect::HATE_GREENSKINS;
       );
     case CreatureId::ORC_SHAMAN:
@@ -1486,7 +1488,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.maxLevelIncrease[ExperienceType::MELEE] = 4;
           c.maxLevelIncrease[ExperienceType::SPELL] = 7;
           c.name = "orc shaman";
-          c.name->setFirst(NameGenerator::get(NameGeneratorId::ORC)->getNext());
+          c.name->setFirst(nameGenerator->getNext(NameGeneratorId::ORC));
           c.hatedByEffect = LastingEffect::HATE_GREENSKINS;
       );
     case CreatureId::HARPY:
@@ -1500,7 +1502,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.maxLevelIncrease[ExperienceType::MELEE] = 4;
           c.maxLevelIncrease[ExperienceType::ARCHERY] = 7;
           c.name = CreatureName("harpy", "harpies");
-          c.name->setFirst(NameGenerator::get(NameGeneratorId::ORC)->getNext());
+          c.name->setFirst(nameGenerator->getNext(NameGeneratorId::ORC));
           c.hatedByEffect = LastingEffect::HATE_GREENSKINS;
       );
     case CreatureId::KOBOLD: 
@@ -1545,7 +1547,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.skills.setValue(SkillId::JEWELER, 0.6);
           c.skills.setValue(SkillId::FURNACE, 0.6);
           c.name = "goblin";
-          c.name->setFirst(NameGenerator::get(NameGeneratorId::ORC)->getNext());
+          c.name->setFirst(nameGenerator->getNext(NameGeneratorId::ORC));
           c.hatedByEffect = LastingEffect::HATE_GREENSKINS;
       );
     case CreatureId::IMP: 
@@ -1572,7 +1574,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.body->setWeight(140);
           c.name = "ogre";
           c.permanentEffects[LastingEffect::MAGIC_VULNERABILITY] = 1;
-          c.name->setFirst(NameGenerator::get(NameGeneratorId::ORC)->getNext());
+          c.name->setFirst(nameGenerator->getNext(NameGeneratorId::ORC));
           c.skills.setValue(SkillId::WORKSHOP, 0.5);
           c.skills.setValue(SkillId::FORGE, 0.5);
           c.skills.setValue(SkillId::FURNACE, 0.9);
@@ -1601,7 +1603,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.skills.setValue(SkillId::FURNACE, 0.8);
           c.maxLevelIncrease[ExperienceType::MELEE] = 2;
           c.permanentEffects[LastingEffect::MAGIC_VULNERABILITY] = 1;
-          c.name->setFirst(NameGenerator::get(NameGeneratorId::DWARF)->getNext());
+          c.name->setFirst(nameGenerator->getNext(NameGeneratorId::DWARF));
           c.chatReactionFriendly = "curses all orcs"_s;
           c.chatReactionHostile = "\"Die!\""_s;
           c.hatedByEffect = LastingEffect::HATE_DWARVES;
@@ -1616,7 +1618,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.permanentEffects[LastingEffect::NAVIGATION_DIGGING_SKILL] = 1;
           c.skills.setValue(SkillId::WORKSHOP, 0.5);
           c.permanentEffects[LastingEffect::MAGIC_VULNERABILITY] = 1;
-          c.name->setFirst(NameGenerator::get(NameGeneratorId::DWARF)->getNext());
+          c.name->setFirst(nameGenerator->getNext(NameGeneratorId::DWARF));
           c.chatReactionFriendly = "curses all orcs"_s;
           c.chatReactionHostile = "\"Die!\""_s;
           c.gender = Gender::female;
@@ -1635,7 +1637,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.permanentEffects[LastingEffect::MAGIC_VULNERABILITY] = 1;
           c.courage = 1;
           c.name = "dwarf baron";
-          c.name->setFirst(NameGenerator::get(NameGeneratorId::DWARF)->getNext());
+          c.name->setFirst(nameGenerator->getNext(NameGeneratorId::DWARF));
           c.hatedByEffect = LastingEffect::HATE_DWARVES;
       );
     case CreatureId::LIZARDMAN: 
@@ -2033,7 +2035,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.permanentEffects[LastingEffect::NIGHT_VISION] = 1;
           c.name = CreatureName("wolf", "wolves");
           c.name->setGroup("pack");
-          c.name->setFirst(NameGenerator::get(NameGeneratorId::DOG)->getNext());
+          c.name->setFirst(nameGenerator->getNext(NameGeneratorId::DOG));
           c.permanentEffects[LastingEffect::EXPLORE_NOCTURNAL_SKILL] = 1;
       );
     case CreatureId::WEREWOLF:
@@ -2049,7 +2051,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.permanentEffects[LastingEffect::REGENERATION] = 1;
           c.maxLevelIncrease[ExperienceType::MELEE] = 12;
           c.name = CreatureName("werewolf", "werewolves");
-          c.name->setFirst(NameGenerator::get(NameGeneratorId::DOG)->getNext());
+          c.name->setFirst(nameGenerator->getNext(NameGeneratorId::DOG));
           c.body->setIntrinsicAttack(BodyPart::HEAD, IntrinsicAttack(ItemType::fangs(8)));
       );
     case CreatureId::DOG: 
@@ -2063,7 +2065,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.name = "dog";
           c.name->setGroup("pack");
           c.petReaction = "\"WOOF!\""_s;
-          c.name->setFirst(NameGenerator::get(NameGeneratorId::DOG)->getNext());
+          c.name->setFirst(nameGenerator->getNext(NameGeneratorId::DOG));
       );
     case CreatureId::FIRE_SPHERE: 
       return CATTR(
@@ -2089,7 +2091,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
           c.chatReactionFriendly = "curses all dungeons"_s;
           c.chatReactionHostile = "\"Die!\""_s;
           c.name = "elementalist";
-          c.name->setFirst(NameGenerator::get(NameGeneratorId::FIRST_FEMALE)->getNext());
+          c.name->setFirst(nameGenerator->getNext(NameGeneratorId::FIRST_FEMALE));
           c.hatedByEffect = LastingEffect::HATE_HUMANS;
       );
     case CreatureId::FIRE_ELEMENTAL:
@@ -2202,7 +2204,7 @@ ControllerFactory getController(CreatureId id, MonsterAIFactory normalFactory) {
   }
 }
 
-PCreature CreatureFactory::get(CreatureId id, TribeId tribe, MonsterAIFactory aiFactory) {
+PCreature CreatureFactory::get(CreatureId id, TribeId tribe, MonsterAIFactory aiFactory) const {
   ControllerFactory factory = Monster::getFactory(aiFactory);
   switch (id) {
     case CreatureId::SPECIAL_BLBN:
@@ -2243,7 +2245,7 @@ PCreature CreatureFactory::get(CreatureId id, TribeId tribe, MonsterAIFactory ai
   }
 }
 
-PCreature CreatureFactory::getGhost(WCreature creature) {
+PCreature CreatureFactory::getGhost(WCreature creature) const {
   ViewObject viewObject(creature->getViewObject().id(), ViewLayer::CREATURE, "Ghost");
   viewObject.setModifier(ViewObject::Modifier::ILLUSION);
   auto ret = makeOwner<Creature>(viewObject, creature->getTribeId(), getAttributes(CreatureId::LOST_SOUL));
@@ -2497,19 +2499,35 @@ static vector<ItemType> getDefaultInventory(CreatureId id) {
   }
 }
 
-PCreature CreatureFactory::fromId(CreatureId id, TribeId t) {
+PCreature CreatureFactory::fromId(CreatureId id, TribeId t) const {
   return fromId(id, t, MonsterAIFactory::monster());
 }
 
 
-PCreature CreatureFactory::fromId(CreatureId id, TribeId t, const MonsterAIFactory& f) {
+PCreature CreatureFactory::fromId(CreatureId id, TribeId t, const MonsterAIFactory& f) const {
   return fromId(id, t, f, {});
 }
 
-PCreature CreatureFactory::fromId(CreatureId id, TribeId t, const MonsterAIFactory& factory, const vector<ItemType>& inventory) {
+PCreature CreatureFactory::fromId(CreatureId id, TribeId t, const MonsterAIFactory& factory, const vector<ItemType>& inventory) const {
   auto ret = get(id, t, factory);
   addInventory(ret.get(), inventory);
   addInventory(ret.get(), getDefaultInventory(id));
   return ret;
 }
 
+PCreature CreatureFactory::getHumanForTests() {
+  auto attributes = CATTR(
+      c.viewId = ViewId::KEEPER1;
+      c.attr = LIST(12_dam, 12_def, 20_spell_dam );
+      c.body = Body::humanoid(Body::Size::LARGE);
+      c.name = "wizard";
+      c.viewIdUpgrades = LIST(ViewId::KEEPER2, ViewId::KEEPER3, ViewId::KEEPER4);
+      c.name->setFirst("keeper");
+      c.name->useFullTitle();
+      c.skills.setValue(SkillId::LABORATORY, 0.2);
+      c.maxLevelIncrease[ExperienceType::MELEE] = 7;
+      c.maxLevelIncrease[ExperienceType::SPELL] = 12;
+      c.spells->add(SpellId::HEAL_SELF);
+  );
+  return get(std::move(attributes), TribeId::getMonster(), Monster::getFactory(MonsterAIFactory::idle()));
+}

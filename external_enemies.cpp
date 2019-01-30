@@ -19,7 +19,7 @@
 SERIALIZE_DEF(ExternalEnemies, currentWaves, waves, nextWave)
 SERIALIZATION_CONSTRUCTOR_IMPL(ExternalEnemies)
 
-ExternalEnemies::ExternalEnemies(RandomGen& random, vector<ExternalEnemy> enemies) {
+ExternalEnemies::ExternalEnemies(RandomGen& random, const CreatureFactory* factory, vector<ExternalEnemy> enemies) {
   constexpr int firstAttackDelay = 1800;
   constexpr int attackInterval = 1200;
   constexpr int attackVariation = 450;
@@ -35,7 +35,7 @@ ExternalEnemies::ExternalEnemies(RandomGen& random, vector<ExternalEnemy> enemie
         waves.push_back(EnemyEvent{
             enemy,
             LocalTime(attackTime),
-            enemy.creatures.getViewId()
+            enemy.creatures.getViewId(factory)
         });
         waves.back().enemy.creatures.increaseBaseLevel({{ExperienceType::MELEE, max(0, attackTime / 1000 - 10)}});
         break;
@@ -94,8 +94,8 @@ void ExternalEnemies::update(WLevel level, LocalTime localTime) {
     Vec2 landingDir(Random.choose<Dir>());
     auto attackTask = getAttackTask(target, nextWave->enemy.behaviour);
     auto attackTaskRef = attackTask.get();
-    auto creatures = nextWave->enemy.creatures.generate(Random, TribeId::getMonster(),
-        MonsterAIFactory::singleTask(std::move(attackTask),
+    auto creatures = nextWave->enemy.creatures.generate(Random, level->getGame()->getCreatureFactory(),
+        TribeId::getMonster(), MonsterAIFactory::singleTask(std::move(attackTask),
             nextWave->enemy.behaviour.getId() != AttackBehaviourId::HALLOWEEN_KIDS));
     for (auto& c : creatures) {
       c->getAttributes().setCourage(1);

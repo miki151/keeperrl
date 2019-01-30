@@ -10,5 +10,5 @@ struct InhabitantsInfo {
   CreatureList fighters;
   CreatureList civilians;
   using Generated = vector<pair<PCreature, EnumSet<MinionTrait>>>;
-  Generated generateCreatures(RandomGen&, TribeId, MonsterAIFactory);
+  Generated generateCreatures(RandomGen&, const CreatureFactory*, TribeId, MonsterAIFactory);
 };

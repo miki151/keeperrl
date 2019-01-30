@@ -309,3 +309,4 @@ DEF_SHARED_PTR(VisibilityMap);
 DEF_OWNER_PTR(Immigration);
 DEF_OWNER_PTR(PositionMatching);
 DEF_SHARED_PTR(UnknownLocations);
+DEF_SHARED_PTR(CreatureFactory);

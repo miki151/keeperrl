@@ -21,7 +21,7 @@ class GameConfig;
 
 class ModelBuilder {
   public:
-  ModelBuilder(ProgressMeter*, RandomGen&, Options*, SokobanInput*, GameConfig*);
+  ModelBuilder(ProgressMeter*, RandomGen&, Options*, SokobanInput*, GameConfig*, const CreatureFactory*, const EnemyFactory*);
   PModel singleMapModel(const string& worldName, TribeId keeperTribe, TribeAlignment);
   PModel campaignBaseModel(const string& siteName, TribeId keeperTribe, TribeAlignment, bool externalEnemies);
   PModel campaignSiteModel(const string& siteName, EnemyId, VillainType, TribeAlignment);
@@ -49,11 +49,12 @@ class ModelBuilder {
   void addMapVillainsForEvilKeeper(vector<EnemyInfo>&, BiomeId);
   void addMapVillainsForLawfulKeeper(vector<EnemyInfo>&, BiomeId);
   RandomGen& random;
-  ProgressMeter* meter;
-  Options* options;
-  HeapAllocated<EnemyFactory> enemyFactory;
-  SokobanInput* sokobanInput;
-  GameConfig* gameConfig;
+  ProgressMeter* meter = nullptr;
+  Options* options = nullptr;
+  const EnemyFactory* enemyFactory = nullptr;
+  SokobanInput* sokobanInput = nullptr;
+  GameConfig* gameConfig = nullptr;
   vector<EnemyInfo> getSingleMapEnemiesForEvilKeeper(TribeId keeperTribe);
   vector<EnemyInfo> getSingleMapEnemiesForLawfulKeeper(TribeId keeperTribe);
+  const CreatureFactory* creatureFactory = nullptr;
 };

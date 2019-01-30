@@ -11,7 +11,8 @@ class GameConfig;
 class CampaignBuilder {
   public:
   CampaignBuilder(View*, RandomGen&, Options*, GameConfig*, const AvatarInfo&);
-  optional<CampaignSetup> prepareCampaign(function<optional<RetiredGames>(CampaignType)>, CampaignType defaultType);
+  optional<CampaignSetup> prepareCampaign(function<optional<RetiredGames>(CampaignType)>, CampaignType defaultType,
+      string worldName);
   static CampaignSetup getEmptyCampaign();
 
   private:

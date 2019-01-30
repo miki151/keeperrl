@@ -480,6 +480,6 @@ void Tutorial::createTutorial(Game& game, GameConfig* gameConfig) {
       append(immigrants, *group);
     else
       USER_FATAL << "Immigrant group not found: " << elem;
-  CollectiveConfig::addBedRequirementToImmigrants(immigrants);
+  CollectiveConfig::addBedRequirementToImmigrants(immigrants, game.getCreatureFactory());
   collective->setImmigration(makeOwner<Immigration>(collective, std::move(immigrants)));
 }

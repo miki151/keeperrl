@@ -17,7 +17,7 @@
 #include "creature_group.h"
 
 static SettlementInfo getEnemy(EnemyId id) {
-  auto enemy = EnemyFactory(Random).get(id);
+  auto enemy = EnemyFactory(Random, nullptr).get(id);
   enemy.settlement.collective = new CollectiveBuilder(enemy.config, enemy.settlement.tribe);
   return enemy.settlement;
 }
@@ -56,7 +56,8 @@ void handleOnBuilt(Position pos, WCreature c, FurnitureOnBuilt type) {
       if (levelIndex == levels.size() - 1) {
         int width = 140;
         level = pos.getModel()->buildMainLevel(
-            LevelBuilder(Random, width, width, "", true), getLevelMaker(levelIndex, width, c->getTribeId()));
+            LevelBuilder(Random, pos.getGame()->getCreatureFactory(), width, width, "", true),
+            getLevelMaker(levelIndex, width, c->getTribeId()));
       } else {
         level = levels[levelIndex + 1];
       }

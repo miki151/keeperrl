@@ -22,17 +22,19 @@ class SavedGameInfo;
 struct CampaignSetup;
 class GameConfig;
 class AvatarInfo;
+class CreatureFactory;
 
 class Game : public OwnedObject<Game> {
   public:
-  static PGame campaignGame(Table<PModel>&&, CampaignSetup&, AvatarInfo, GameConfig*);
+  static PGame campaignGame(Table<PModel>&&, CampaignSetup&, AvatarInfo, GameConfig*, const CreatureFactory*);
   static PGame splashScreen(PModel&&, const CampaignSetup&);
 
   optional<ExitInfo> update(double timeDiff);
   Options* getOptions();
-  void initialize(Options*, Highscores*, View*, FileSharing*, GameConfig*);
+  void initialize(Options*, Highscores*, View*, FileSharing*, GameConfig*, const CreatureFactory*);
   View* getView() const;
   GameConfig* getGameConfig() const;
+  const CreatureFactory* getCreatureFactory() const;
   void exitAction();
   void transferAction(vector<WCreature>);
   void presentWorldmap();
@@ -139,7 +141,8 @@ class Game : public OwnedObject<Game> {
   void increaseTime(double diff);
   GameConfig* gameConfig = nullptr;
   void addCollective(WCollective);
-  void spawnKeeper(AvatarInfo, bool regenerateMana, vector<string> introText, GameConfig*);
+  void spawnKeeper(AvatarInfo, bool regenerateMana, vector<string> introText, GameConfig*, const CreatureFactory*);
+  const CreatureFactory* creatureFactory = nullptr;
 };
 
 CEREAL_CLASS_VERSION(Game, 1);

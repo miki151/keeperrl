@@ -12,8 +12,9 @@
 #include "conquer_condition.h"
 #include "lasting_effect.h"
 #include "creature_group.h"
+#include "name_generator.h"
 
-EnemyFactory::EnemyFactory(RandomGen& r) : random(r) {
+EnemyFactory::EnemyFactory(RandomGen& r, NameGenerator* n) : random(r), nameGenerator(n) {
 }
 
 EnemyInfo::EnemyInfo(SettlementInfo s, CollectiveConfig c, optional<VillageBehaviour> v,
@@ -42,7 +43,7 @@ EnemyInfo& EnemyInfo::setNonDiscoverable() {
 }
 
 
-EnemyInfo& EnemyInfo::setCreateOnBones(EnemyFactory& factory, double prob, vector<EnemyId> enemies) {
+EnemyInfo& EnemyInfo::setCreateOnBones(const EnemyFactory& factory, double prob, vector<EnemyId> enemies) {
   if (factory.random.chance(prob)) {
     EnemyInfo enemy = factory.get(factory.random.choose(enemies));
     levelConnection = enemy.levelConnection;
@@ -109,7 +110,7 @@ static vector<VaultInfo> hostileVaults {
   {CreatureId::BAT, 3, 8},
 };
 
-vector<EnemyInfo> EnemyFactory::getVaults(TribeAlignment alignment, TribeId allied) {
+vector<EnemyInfo> EnemyFactory::getVaults(TribeAlignment alignment, TribeId allied) const {
   vector<EnemyInfo> ret {
  /*   getVault(SettlementType::VAULT, CreatureGroup::insects(TribeId::getMonster()),
         TribeId::getMonster(), random.get(6, 12)),*/
@@ -127,15 +128,15 @@ vector<EnemyInfo> EnemyFactory::getVaults(TribeAlignment alignment, TribeId alli
   return ret;
 }
 
-static string getVillageName() {
-  return NameGenerator::get(NameGeneratorId::TOWN)->getNext();
+string EnemyFactory::getVillageName() const {
+  return nameGenerator->getNext(NameGeneratorId::TOWN);
 }
 
-EnemyInfo EnemyFactory::get(EnemyId id){
+EnemyInfo EnemyFactory::get(EnemyId id) const {
   return getById(id).setId(id);
 }
 
-EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
+EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
   switch (enemyId) {
      case EnemyId::UNICORN_HERD:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
@@ -286,7 +287,6 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.race = "humans"_s;
             c.buildingId = BuildingId::WOOD_CASTLE;
             c.stockpiles = LIST({StockpileInfo::GOLD, 160});
-            c.guardId = CreatureId::WARRIOR;
             c.elderLoot = ItemType(ItemType::TechBook{"beast mutation"});
             c.furniture = FurnitureFactory::roomFurniture(c.tribe);
             c.outsideFeatures = FurnitureFactory::castleOutside(c.tribe);),
@@ -325,7 +325,6 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
             c.race = "humans"_s;
             c.stockpiles = LIST({StockpileInfo::GOLD, 140});
             c.buildingId = BuildingId::BRICK;
-            c.guardId = CreatureId::KNIGHT;
             c.shopFactory = ItemFactory::villageShop();
             c.furniture = FurnitureFactory::castleFurniture(c.tribe);
             c.outsideFeatures = FurnitureFactory::castleOutside(c.tribe);),
@@ -878,7 +877,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) {
   }
 }
 
-vector<ExternalEnemy> EnemyFactory::getExternalEnemies() {
+vector<ExternalEnemy> EnemyFactory::getExternalEnemies() const {
   return {
     ExternalEnemy{
         CreatureList(1, CreatureId::BANDIT)

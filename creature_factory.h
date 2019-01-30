@@ -26,6 +26,7 @@ class ItemType;
 class CreatureAttributes;
 class ControllerFactory;
 class Gender;
+class NameGenerator;
 
 RICH_ENUM(CreatureId,
     KEEPER_MAGE,
@@ -179,31 +180,30 @@ RICH_ENUM(CreatureId,
 
 class CreatureFactory {
   public:
-  static PCreature fromId(CreatureId, TribeId, const MonsterAIFactory&);
-  static PCreature fromId(CreatureId, TribeId, const MonsterAIFactory&, const vector<ItemType>& inventory);
-  static PCreature fromId(CreatureId, TribeId);
-  static PCreature getShopkeeper(Rectangle shopArea, TribeId);
+  PCreature fromId(CreatureId, TribeId, const MonsterAIFactory&) const;
+  PCreature fromId(CreatureId, TribeId, const MonsterAIFactory&, const vector<ItemType>& inventory) const;
+  PCreature fromId(CreatureId, TribeId) const;
+  PCreature getShopkeeper(Rectangle shopArea, TribeId) const;
   static PCreature getRollingBoulder(TribeId, Vec2 direction);
-  static PCreature getGhost(WCreature);
+  static PCreature getHumanForTests();
+  PCreature getGhost(WCreature) const;
   static PCreature getIllusion(WCreature);
 
   static void addInventory(WCreature, const vector<ItemType>& items);
   static CreatureAttributes getKrakenAttributes(ViewId, const char* name);
-  static ViewId getViewId(CreatureId);
-  static const Gender& getGender(CreatureId);
+  ViewId getViewId(CreatureId) const;
+  const Gender& getGender(CreatureId);
 
-  ~CreatureFactory();
-  CreatureFactory& operator = (const CreatureFactory&);
-  CreatureFactory(const CreatureFactory&);
-
-  SERIALIZATION_DECL(CreatureFactory)
+  CreatureFactory(NameGenerator*);
 
   private:
-  static void initSplash(TribeId);
+  void initSplash(TribeId);
   static PCreature getSokobanBoulder(TribeId);
-  static PCreature getSpecial(TribeId, bool humanoid, bool large, bool living, bool wings, const ControllerFactory&);
-  static PCreature get(CreatureId, TribeId, MonsterAIFactory);
+  PCreature getSpecial(TribeId, bool humanoid, bool large, bool living, bool wings, const ControllerFactory&) const;
+  PCreature get(CreatureId, TribeId, MonsterAIFactory) const;
   static PCreature get(CreatureAttributes, TribeId, const ControllerFactory&);
-  static CreatureAttributes getAttributesFromId(CreatureId);
-  static CreatureAttributes getAttributes(CreatureId);
+  CreatureAttributes getAttributesFromId(CreatureId) const;
+  CreatureAttributes getAttributes(CreatureId) const;
+  EnumMap<CreatureId, ViewId> idMap;
+  NameGenerator* nameGenerator;
 };

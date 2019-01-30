@@ -14,5 +14,5 @@ class View;
 class GameConfig;
 class Options;
 
-extern variant<AvatarInfo, AvatarMenuOption> getAvatarInfo(View*, GameConfig*, Options*);
-extern AvatarInfo getQuickGameAvatar(View*, GameConfig*);
+extern variant<AvatarInfo, AvatarMenuOption> getAvatarInfo(View*, GameConfig*, Options*, const CreatureFactory*);
+extern AvatarInfo getQuickGameAvatar(View*, GameConfig*, const CreatureFactory*);

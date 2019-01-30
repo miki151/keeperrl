@@ -30,7 +30,7 @@ struct EnemyInfo {
   EnemyInfo& setId(EnemyId);
   EnemyInfo& setImmigrants(vector<ImmigrantInfo>);
   EnemyInfo& setNonDiscoverable();
-  EnemyInfo& setCreateOnBones(EnemyFactory&, double prob, vector<EnemyId>);
+  EnemyInfo& setCreateOnBones(const EnemyFactory&, double prob, vector<EnemyId>);
   SettlementInfo settlement;
   CollectiveConfig config;
   optional<VillageBehaviour> villain;

@@ -90,7 +90,7 @@ static CollectiveConfig getKeeperConfig(bool fastImmigration, bool regenerateMan
 }
 
 void Game::spawnKeeper(AvatarInfo avatarInfo, bool regenerateMana, vector<string> introText,
-    GameConfig* gameConfig) {
+    GameConfig* gameConfig, const CreatureFactory* creatureFactory) {
   auto model = getMainModel().get();
   WLevel level = model->getTopLevel();
   WCreature keeperRef = avatarInfo.playerCreature.get();
@@ -107,7 +107,7 @@ void Game::spawnKeeper(AvatarInfo avatarInfo, bool regenerateMana, vector<string
   playerCollective->setControl(std::move(playerControlOwned));
   playerCollective->setVillainType(VillainType::PLAYER);
   addCollective(playerCollective);
-  if (auto error = playerControl->reloadImmigrationAndWorkshops(gameConfig))
+  if (auto error = playerControl->reloadImmigrationAndWorkshops(gameConfig, creatureFactory))
     USER_FATAL << *error;
   for (auto tech : keeperInfo->initialTech)
     playerCollective->acquireTech(tech, false);
@@ -115,7 +115,8 @@ void Game::spawnKeeper(AvatarInfo avatarInfo, bool regenerateMana, vector<string
 
 Game::~Game() {}
 
-PGame Game::campaignGame(Table<PModel>&& models, CampaignSetup& setup, AvatarInfo avatar, GameConfig* gameConfig) {
+PGame Game::campaignGame(Table<PModel>&& models, CampaignSetup& setup, AvatarInfo avatar, GameConfig* gameConfig,
+    const CreatureFactory* creatureFactory) {
   auto ret = makeOwner<Game>(std::move(models), *setup.campaign.getPlayerPos(), setup);
   for (auto model : ret->getAllModels())
     model->setGame(ret.get());
@@ -128,7 +129,7 @@ PGame Game::campaignGame(Table<PModel>&& models, CampaignSetup& setup, AvatarInf
   if (setup.campaign.getPlayerRole() == PlayerRole::ADVENTURER)
     ret->getMainModel()->landHeroPlayer(std::move(avatar.playerCreature));
   else
-    ret->spawnKeeper(std::move(avatar), setup.regenerateMana, setup.introMessages, gameConfig);
+    ret->spawnKeeper(std::move(avatar), setup.regenerateMana, setup.introMessages, gameConfig, creatureFactory);
   // Restore vulnerability. If the effect wasn't present in the first place then it will zero-out.
   avatarCreature->getAttributes().addPermanentEffect(LastingEffect::SUNLIGHT_VULNERABLE, 1);
   return ret;
@@ -533,6 +534,10 @@ GameConfig* Game::getGameConfig() const {
   return gameConfig;
 }
 
+const CreatureFactory* Game::getCreatureFactory() const {
+  return creatureFactory;
+}
+
 void Game::conquered(const string& title, int numKills, int points) {
   string text= "You have conquered this land. You killed " + toString(numKills) +
       " enemies and scored " + toString(points) +
@@ -626,12 +631,14 @@ Options* Game::getOptions() {
   return options;
 }
 
-void Game::initialize(Options* o, Highscores* h, View* v, FileSharing* f, GameConfig* g) {
+void Game::initialize(Options* o, Highscores* h, View* v, FileSharing* f, GameConfig* g,
+    const CreatureFactory* fac) {
   options = o;
   highscores = h;
   view = v;
   fileSharing = f;
   gameConfig = g;
+  creatureFactory = fac;
 }
 
 const string& Game::getWorldName() const {

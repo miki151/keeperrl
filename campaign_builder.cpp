@@ -378,7 +378,7 @@ static vector<string> getIntroMessages(CampaignType type, string worldName) {
 }
 
 optional<CampaignSetup> CampaignBuilder::prepareCampaign(function<optional<RetiredGames>(CampaignType)> genRetired,
-    CampaignType type) {
+    CampaignType type, string worldName) {
   Vec2 size(17, 9);
   int numBlocked = 0.6 * size.x * size.y;
   Table<Campaign::SiteInfo> terrain = getTerrain(random, size, numBlocked);
@@ -387,7 +387,7 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(function<optional<Retir
   setCountLimits(options);
   const auto playerRole = getPlayerRole();
   while (1) {
-    Campaign campaign(terrain, type, playerRole, NameGenerator::get(NameGeneratorId::WORLD)->getNext());
+    Campaign campaign(terrain, type, playerRole, worldName);
     if (auto pos = considerStaticPlayerPos(campaign)) {
       campaign.clearSite(*pos);
       setPlayerPos(campaign, *pos, avatarInfo.playerCreature->getMaxViewIdUpgrade());

@@ -46,20 +46,21 @@ static vector<ViewId> getUpgradedViewId(WConstCreature c) {
   return ret;
 }
 
-variant<AvatarInfo, AvatarMenuOption> getAvatarInfo(View* view, GameConfig* gameConfig, Options* options) {
+variant<AvatarInfo, AvatarMenuOption> getAvatarInfo(View* view, GameConfig* gameConfig, Options* options,
+    const CreatureFactory* creatureFactory) {
   auto keeperCreatureInfos = readKeeperCreaturesConfig(view, gameConfig).first;
-  auto keeperCreatures = keeperCreatureInfos.transform([](auto& elem) {
+  auto keeperCreatures = keeperCreatureInfos.transform([&](auto& elem) {
     return elem.creatureId.transform([&](auto& id) {
-      auto ret = CreatureFactory::fromId(id, getPlayerTribeId(elem.tribeAlignment));
+      auto ret = creatureFactory->fromId(id, getPlayerTribeId(elem.tribeAlignment));
       for (auto& trait : elem.specialTraits)
         applySpecialTrait(trait, ret.get());
       return ret;
     });
   });
   auto adventurerCreatureInfos = readKeeperCreaturesConfig(view, gameConfig).second;
-  auto adventurerCreatures = adventurerCreatureInfos.transform([](auto& elem) {
+  auto adventurerCreatures = adventurerCreatureInfos.transform([&](auto& elem) {
     return elem.creatureId.transform([&](auto& id) {
-      return CreatureFactory::fromId(id, getPlayerTribeId(elem.tribeAlignment));
+      return creatureFactory->fromId(id, getPlayerTribeId(elem.tribeAlignment));
     });
   });
   vector<View::AvatarData> keeperAvatarData;
@@ -101,10 +102,10 @@ variant<AvatarInfo, AvatarMenuOption> getAvatarInfo(View* view, GameConfig* game
   return AvatarInfo{std::move(ret), creatureInfo, villains };
 }
 
-AvatarInfo getQuickGameAvatar(View* view, GameConfig* gameConfig) {
+AvatarInfo getQuickGameAvatar(View* view, GameConfig* gameConfig, const CreatureFactory* creatureFactory) {
   auto keeperCreatures = readKeeperCreaturesConfig(view, gameConfig).first;
   AvatarInfo ret;
-  ret.playerCreature = CreatureFactory::fromId(keeperCreatures[0].creatureId[0], TribeId::getDarkKeeper());
+  ret.playerCreature = creatureFactory->fromId(keeperCreatures[0].creatureId[0], TribeId::getDarkKeeper());
   ret.playerCreature->getName().setBare("Keeper");
   ret.creatureInfo = keeperCreatures[0];
   ret.tribeAlignment = TribeAlignment::EVIL;

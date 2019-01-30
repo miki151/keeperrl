@@ -210,7 +210,8 @@ static optional<string> checkGroupCounts(const map<string, vector<ImmigrantInfo>
   return none;
 }
 
-optional<string> PlayerControl::reloadImmigrationAndWorkshops(GameConfig* gameConfig) {
+optional<string> PlayerControl::reloadImmigrationAndWorkshops(GameConfig* gameConfig,
+    const CreatureFactory* creatureFactory) {
   Technology technology;
   if (auto error = gameConfig->readObject(technology, GameConfigId::TECHNOLOGY))
     return error;
@@ -253,7 +254,7 @@ optional<string> PlayerControl::reloadImmigrationAndWorkshops(GameConfig* gameCo
       append(immigrants, *group);
     else
       return "Undefined immigrant group: \"" + elem + "\"";
-  CollectiveConfig::addBedRequirementToImmigrants(immigrants);
+  CollectiveConfig::addBedRequirementToImmigrants(immigrants, creatureFactory);
   collective->setImmigration(makeOwner<Immigration>(collective, std::move(immigrants)));
   collective->setTechnology(std::move(technology));
   return none;
@@ -263,7 +264,7 @@ void PlayerControl::reloadData() {
   auto gameConfig = getGame()->getGameConfig();
   reloadBuildingMenu();
   while (1) {
-    if (auto error = reloadImmigrationAndWorkshops(gameConfig))
+    if (auto error = reloadImmigrationAndWorkshops(gameConfig, getGame()->getCreatureFactory()))
       getView()->presentText("Error", *error);
     else
       break;
@@ -662,7 +663,7 @@ static optional<pair<ViewId, int>> getCostObj(const optional<CostInfo>& cost) {
 string PlayerControl::getMinionName(CreatureId id) const {
   static map<CreatureId, string> names;
   if (!names.count(id))
-    names[id] = CreatureFactory::fromId(id, TribeId::getMonster())->getName().bare();
+    names[id] = getGame()->getCreatureFactory()->fromId(id, TribeId::getMonster())->getName().bare();
   return names.at(id);
 }
 
@@ -1283,7 +1284,7 @@ void PlayerControl::fillImmigrationHelp(CollectiveInfo& info) const {
   static EnumMap<CreatureId, PCreature> creatureStats;
   auto getStats = [&](CreatureId id) -> WCreature {
     if (!creatureStats[id]) {
-      creatureStats[id] = CreatureFactory::fromId(id, TribeId::getDarkKeeper());
+      creatureStats[id] = getGame()->getCreatureFactory()->fromId(id, TribeId::getDarkKeeper());
     }
     return creatureStats[id].get();
   };

@@ -24,11 +24,14 @@ class ItemType;
 class CreatureList;
 class GameConfig;
 class AvatarInfo;
+class NameGenerator;
+class EnemyFactory;
 
 class MainLoop {
   public:
   MainLoop(View*, Highscores*, FileSharing*, const DirectoryPath& dataFreePath, const DirectoryPath& userPath,
-      Options*, Jukebox*, SokobanInput*, GameConfig*, bool useSingleThread, int saveVersion);
+      Options*, Jukebox*, SokobanInput*, GameConfig*, const CreatureFactory*, NameGenerator*, const EnemyFactory*,
+      bool useSingleThread, int saveVersion);
 
   void start(bool tilesPresent, bool quickGame);
   void modelGenTest(int numTries, const vector<std::string>& types, RandomGen&, Options*);
@@ -76,14 +79,14 @@ class MainLoop {
   static vector<SaveFileInfo> getSaveFiles(const DirectoryPath& path, const string& suffix);
   bool isCompatible(int loadedVersion);
 
-  View* view;
+  View* view = nullptr;
   DirectoryPath dataFreePath;
   DirectoryPath userPath;
-  Options* options;
-  Jukebox* jukebox;
-  Highscores* highscores;
-  FileSharing* fileSharing;
-  GameConfig* gameConfig;
+  Options* options = nullptr;
+  Jukebox* jukebox = nullptr;
+  Highscores* highscores = nullptr;
+  FileSharing* fileSharing = nullptr;
+  GameConfig* gameConfig = nullptr;
   bool useSingleThread;
   SokobanInput* sokobanInput;
   PModel getBaseModel(ModelBuilder&, CampaignSetup&, const AvatarInfo&);
@@ -94,6 +97,9 @@ class MainLoop {
   void launchQuickGame();
   void bugReportSave(PGame&, FilePath);
   int saveVersion;
+  const CreatureFactory* creatureFactory = nullptr;
+  NameGenerator* nameGenerator = nullptr;
+  const EnemyFactory* enemyFactory = nullptr;
   void saveGame(PGame&, const FilePath&);
   void saveMainModel(PGame&, const FilePath&);
 };

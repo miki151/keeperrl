@@ -61,7 +61,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   WCreature getKeeper();
 
   void render(View*);
-  optional<string> reloadImmigrationAndWorkshops(GameConfig*);
+  optional<string> reloadImmigrationAndWorkshops(GameConfig*, const CreatureFactory*);
 
   bool isTurnBased();
   void leaveControl();

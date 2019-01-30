@@ -586,7 +586,7 @@ class Test {
     PItem bow1 = ItemType(ItemType::Bow{}).get();
     PItem bow2 = ItemType(ItemType::Bow{}).get();
     PItem bow3 = ItemType(ItemType::Bow{}).get();
-    PCreature human = CreatureFactory::fromId(CreatureId::BANDIT, TribeId::getBandit());
+    PCreature human = CreatureFactory::getHumanForTests();
     MinionEquipment equipment;
     CHECK(equipment.needsItem(human.get(), bow1.get(), false));
     CHECK(equipment.tryToOwn(human.get(), bow1.get()));
@@ -617,7 +617,7 @@ class Test {
     PItem sword = ItemType(ItemType::Sword{}).get();
     PItem sword2 = ItemType(ItemType::Sword{}).get();
     sword2->addModifier(AttrType::DAMAGE, -5);
-    PCreature human = CreatureFactory::fromId(CreatureId::BANDIT, TribeId::getBandit());
+    PCreature human = CreatureFactory::getHumanForTests();
     MinionEquipment equipment;
     CHECK(equipment.tryToOwn(human.get(), sword.get()));
     CHECK(equipment.getItemsOwnedBy(human.get()).size() == 1);
@@ -631,8 +631,8 @@ class Test {
     PItem sword = ItemType(ItemType::Sword{}).get();
     PItem sword2 = ItemType(ItemType::Sword{}).get();
     sword2->addModifier(AttrType::DAMAGE, -5);
-    PCreature human = CreatureFactory::fromId(CreatureId::BANDIT, TribeId::getBandit());
-    PCreature human2 = CreatureFactory::fromId(CreatureId::BANDIT, TribeId::getBandit());
+    PCreature human = CreatureFactory::getHumanForTests();
+    PCreature human2 = CreatureFactory::getHumanForTests();
     MinionEquipment equipment;
     CHECK(equipment.tryToOwn(human.get(), sword.get()));
     CHECK(equipment.tryToOwn(human2.get(), sword2.get()));
@@ -647,8 +647,8 @@ class Test {
   void testMinionEquipmentUpdateOwners() {
     PItem sword1 = ItemType(ItemType::Sword{}).get();
     PItem sword2 = ItemType(ItemType::Sword{}).get();
-    PCreature human1 = CreatureFactory::fromId(CreatureId::BANDIT, TribeId::getBandit());
-    PCreature human2 = CreatureFactory::fromId(CreatureId::BANDIT, TribeId::getBandit());
+    PCreature human1 = CreatureFactory::getHumanForTests();
+    PCreature human2 = CreatureFactory::getHumanForTests();
     MinionEquipment equipment;
     CHECK(equipment.tryToOwn(human1.get(), sword1.get()));
     CHECK(equipment.isOwner(sword1.get(), human1.get()));
@@ -671,9 +671,9 @@ class Test {
     PItem sword2 = ItemType(ItemType::Sword{}).get();
     PItem sword3 = ItemType(ItemType::Sword{}).get();
     sword1->addModifier(AttrType::DAMAGE, 12);
-    PCreature human1 = CreatureFactory::fromId(CreatureId::BANDIT, TribeId::getBandit());
-    PCreature human2 = CreatureFactory::fromId(CreatureId::BANDIT, TribeId::getBandit());
-    PCreature human3 = CreatureFactory::fromId(CreatureId::BANDIT, TribeId::getBandit());
+    PCreature human1 = CreatureFactory::getHumanForTests();
+    PCreature human2 = CreatureFactory::getHumanForTests();
+    PCreature human3 = CreatureFactory::getHumanForTests();
     MinionEquipment equipment;
     equipment.autoAssign(human1.get(), {sword2.get(), sword1.get(), sword3.get()});
     CHECK(equipment.isOwner(sword1.get(), human1.get()));
@@ -712,7 +712,7 @@ class Test {
     PItem sword1 = ItemType(ItemType::Sword{}).get();
     PItem sword2 = ItemType(ItemType::Sword{}).get();
     sword1->addModifier(AttrType::DAMAGE, 12);
-    PCreature human1 = CreatureFactory::fromId(CreatureId::BANDIT, TribeId::getBandit());
+    PCreature human1 = CreatureFactory::getHumanForTests();
     MinionEquipment equipment;
     equipment.autoAssign(human1.get(), {sword2.get(), sword1.get()});
     CHECK(equipment.isOwner(sword1.get(), human1.get()));
@@ -739,7 +739,7 @@ class Test {
     PItem gloves = ItemType(ItemType::LeatherGloves{}).get();
     PItem helmet = ItemType(ItemType::LeatherHelm{}).get();
     vector<WItem> items = {sword.get(), boots.get(), gloves.get(), helmet.get()};
-    PCreature human = CreatureFactory::fromId(CreatureId::BANDIT, TribeId::getBandit());
+    PCreature human = CreatureFactory::getHumanForTests();
     MinionEquipment equipment;
     for (int i : Range(30))
       equipment.autoAssign(human.get(), items);
@@ -924,7 +924,7 @@ class Test {
     };
     PositionMatching matching;
     PModel model = Model::create();
-    LevelBuilder builder = LevelBuilder(nullptr, Random, 10, 10, "", false, none);
+    LevelBuilder builder = LevelBuilder(nullptr, Random, nullptr, 10, 10, "", false, none);
     PLevelMaker levelMaker = LevelMaker::emptyLevel(FurnitureType::MOUNTAIN);
     PLevel level = builder.build(model.get(), levelMaker.get(), 1234);
   };

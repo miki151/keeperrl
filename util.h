@@ -198,6 +198,8 @@ class Range {
   bool intersects(Range) const;
   Range intersection(Range) const;
 
+  bool operator == (const Range&) const;
+
   class Iter {
     public:
     Iter(int ind, int min, int max, int increment);

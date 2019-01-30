@@ -109,7 +109,7 @@ static void summonFX(WCreature c) {
 vector<WCreature> Effect::summon(WCreature c, CreatureId id, int num, TimeInterval ttl, TimeInterval delay) {
   vector<PCreature> creatures;
   for (int i : Range(num))
-    creatures.push_back(CreatureFactory::fromId(id, c->getTribeId(), MonsterAIFactory::summoned(c)));
+    creatures.push_back(c->getGame()->getCreatureFactory()->fromId(id, c->getTribeId(), MonsterAIFactory::summoned(c)));
   auto ret = summonCreatures(c, 2, std::move(creatures), delay);
   for (auto c : ret) {
     c->addEffect(LastingEffect::SUMMONED, ttl, false);
@@ -121,7 +121,7 @@ vector<WCreature> Effect::summon(WCreature c, CreatureId id, int num, TimeInterv
 vector<WCreature> Effect::summon(Position pos, CreatureGroup& factory, int num, TimeInterval ttl, TimeInterval delay) {
   vector<PCreature> creatures;
   for (int i : Range(num))
-    creatures.push_back(factory.random(MonsterAIFactory::monster()));
+    creatures.push_back(factory.random(pos.getGame()->getCreatureFactory(), MonsterAIFactory::monster()));
   auto ret = summonCreatures(pos, 2, std::move(creatures), delay);
   for (auto c : ret) {
     c->addEffect(LastingEffect::SUMMONED, ttl, false);
@@ -210,43 +210,16 @@ static TimeInterval getDuration(WConstCreature c, LastingEffect e) {
   }
 }
 
-static TimeInterval getSummonTtl(CreatureId id) {
-  switch (id) {
-    case CreatureId::FIRE_SPHERE:
-      return 30_visible;
-    default:
-      return 100_visible;
-  }
-}
-
-static Range getSummonNumber(CreatureId id) {
-  switch (id) {
-    case CreatureId::SPIRIT:
-      return Range(2, 5);
-    case CreatureId::FLY:
-      return Range(3, 7);
-    default:
-      return Range(1, 2);
-  }
-}
-
-static TimeInterval getSummonDelay(CreatureId id) {
-  switch (id) {
-    case CreatureId::AUTOMATON: return 5_visible;
-    default: return 1_visible;
-  }
-}
-
-static void summon(WCreature summoner, CreatureId id) {
+static void summon(WCreature summoner, CreatureId id, Range count) {
   switch (id) {
     case CreatureId::AUTOMATON: {
       CreatureGroup f = CreatureGroup::singleType(TribeId::getHostile(), id);
-      Effect::summon(summoner->getPosition(), f, Random.get(getSummonNumber(id)), getSummonTtl(id),
-          getSummonDelay(id));
+      Effect::summon(summoner->getPosition(), f, Random.get(count), 100_visible,
+          5_visible);
       break;
     }
     default:
-      Effect::summon(summoner, id, Random.get(getSummonNumber(id)), getSummonTtl(id), getSummonDelay(id));
+      Effect::summon(summoner, id, Random.get(count), 100_visible, 1_visible);
       break;
   }
 }
@@ -422,43 +395,43 @@ string Effect::Acid::getDescription() const {
 }
 
 void Effect::Summon::applyToCreature(WCreature c, WCreature attacker) const {
-  ::summon(c, creature);
+  ::summon(c, creature, count);
 }
 
-static string getCreaturePluralName(CreatureId id) {
+/*static string getCreaturePluralName(CreatureId id) {
   static EnumMap<CreatureId, optional<string>> names;
   if (!names[id])
    names[id] = CreatureFactory::fromId(id, TribeId::getHuman())->getName().plural();
   return *names[id];
-}
+}*/
 
 static string getCreatureName(CreatureId id) {
-  if (getSummonNumber(id).getEnd() > 2)
+  return EnumInfo<CreatureId>::getString(id);
+  /*if (getSummonNumber(id).getEnd() > 2)
     return getCreaturePluralName(id);
   static EnumMap<CreatureId, optional<string>> names;
   if (!names[id])
     names[id] = CreatureFactory::fromId(id, TribeId::getHuman())->getName().bare();
-  return *names[id];
+  return *names[id];*/
 }
 
-static string getCreatureAName(CreatureId id) {
+/*static string getCreatureAName(CreatureId id) {
   static map<CreatureId, string> names;
   if (!names.count(id))
     names[id] = CreatureFactory::fromId(id, TribeId::getHuman())->getName().a();
   return names.at(id);
-}
+}*/
 
 string Effect::Summon::getName() const {
   return getCreatureName(creature);
 }
 
 string Effect::Summon::getDescription() const {
-  Range number = getSummonNumber(creature);
-  if (number.getEnd() > 2)
-    return "Summons " + toString(number.getStart()) + " to " + toString(number.getEnd() - 1)
+  if (count.getEnd() > 2)
+    return "Summons " + toString(count.getStart()) + " to " + toString(count.getEnd() - 1)
         + getCreatureName(creature);
   else
-    return "Summons " + getCreatureAName(creature);
+    return "Summons a " + getCreatureName(creature);
 }
 
 void Effect::SummonElement::applyToCreature(WCreature c, WCreature attacker) const {
@@ -467,7 +440,7 @@ void Effect::SummonElement::applyToCreature(WCreature c, WCreature attacker) con
     for (auto f : p.getFurniture())
       if (auto elem = f->getSummonedElement())
         id = *elem;
-  ::summon(c, id);
+  ::summon(c, id, Range(1, 2));
 }
 
 string Effect::SummonElement::getName() const {

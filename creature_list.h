@@ -22,10 +22,10 @@ struct CreatureList {
   CreatureList& increaseBaseLevel(EnumMap<ExperienceType, int>);
   CreatureList& addInventory(vector<ItemType>);
 
-  string getSummary() const;
+  string getSummary(const CreatureFactory* factory) const;
 
-  ViewId getViewId() const;
-  vector<PCreature> generate(RandomGen&, TribeId, MonsterAIFactory) const;
+  ViewId getViewId(const CreatureFactory*) const;
+  vector<PCreature> generate(RandomGen&, const CreatureFactory*, TribeId, MonsterAIFactory) const;
 
   template<typename Archive>
   void serialize(Archive&, const unsigned int);

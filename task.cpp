@@ -811,7 +811,7 @@ class CampAndSpawn : public Task {
     updateTeams();
     if (defenseTeam.size() < defenseSize && Random.roll(5)) {
       for (WCreature summon : Effect::summonCreatures(c, 4,
-          makeVec(spawns.random(MonsterAIFactory::summoned(c)))))
+          makeVec(spawns.random(c->getGame()->getCreatureFactory(), MonsterAIFactory::summoned(c)))))
         defenseTeam.push_back(summon);
     }
     if (!campPos.contains(c->getPosition()))
@@ -829,7 +829,8 @@ class CampAndSpawn : public Task {
       else {
         vector<PCreature> team;
         for (int i : Range(Random.get(attackSize)))
-          team.push_back(spawns.random(MonsterAIFactory::singleTask(Task::attackCreatures({target->getLeader()}))));
+          team.push_back(spawns.random(c->getGame()->getCreatureFactory(),
+              MonsterAIFactory::singleTask(Task::attackCreatures({target->getLeader()}))));
         for (WCreature summon : Effect::summonCreatures(c, 4, std::move(team)))
           attackTeam.push_back(summon);
         attackCountdown = none;

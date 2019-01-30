@@ -84,9 +84,9 @@ static optional<FurnitureType> getBedType(WConstCreature c) {
     return FurnitureType::BEAST_CAGE;
 }
 
-void CollectiveConfig::addBedRequirementToImmigrants(vector<ImmigrantInfo>& immigrantInfo) {
+void CollectiveConfig::addBedRequirementToImmigrants(vector<ImmigrantInfo>& immigrantInfo, const CreatureFactory* factory) {
   for (auto& info : immigrantInfo) {
-    PCreature c = CreatureFactory::fromId(info.getId(0), TribeId::getDarkKeeper());
+    PCreature c = factory->fromId(info.getId(0), TribeId::getDarkKeeper());
     if (info.getInitialRecruitment() == 0)
       if (auto bedType = getBedType(c.get())) {
         bool hasBed = false;

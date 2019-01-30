@@ -16,8 +16,8 @@ class CreatureGroup {
   static CreatureGroup elementals(TribeId tribe);
   static CreatureGroup gnomishMines(TribeId peaceful, TribeId enemy, int level);
 
-  PCreature random(const MonsterAIFactory&);
-  PCreature random();
+  PCreature random(const CreatureFactory*, const MonsterAIFactory&);
+  PCreature random(const CreatureFactory*);
 
   CreatureGroup& increaseBaseLevel(ExperienceType, int);
   CreatureGroup& increaseLevel(ExperienceType, int);

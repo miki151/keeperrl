@@ -3,11 +3,12 @@
 #include "monster_ai.h"
 #include "minion_trait.h"
 
-auto InhabitantsInfo::generateCreatures(RandomGen& random, TribeId tribe, MonsterAIFactory aiFactory) -> Generated {
+auto InhabitantsInfo::generateCreatures(RandomGen& random, const CreatureFactory* factory, TribeId tribe,
+    MonsterAIFactory aiFactory) -> Generated {
   Generated ret;
   bool wasLeader = false;
   auto addCreatures = [&](const CreatureList& info, EnumSet<MinionTrait> traits) {
-    for (auto& creature : info.generate(random, tribe, aiFactory)) {
+    for (auto& creature : info.generate(random, factory, tribe, aiFactory)) {
       auto myTraits = traits;
       if (!wasLeader) {
         wasLeader = true;

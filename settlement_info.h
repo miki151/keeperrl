@@ -56,7 +56,6 @@ struct SettlementInfo {
   vector<StairKey> downStairs;
   vector<StairKey> upStairs;
   vector<StockpileInfo> stockpiles;
-  optional<CreatureId> guardId;
   optional<ItemType> elderLoot;
   optional<ItemFactory> shopFactory;
   bool shopkeeperDead;

@@ -47,7 +47,8 @@ static void useChest(Position pos, WConstFurniture furniture, WCreature c, const
     if (creatureInfo->creatureChance > 0 && Random.roll(creatureInfo->creatureChance)) {
       int numSpawned = 0;
       for (int i : Range(creatureInfo->numCreatures))
-        if (pos.getLevel()->landCreature({pos}, CreatureGroup(*creatureInfo->creature).random()))
+        if (pos.getLevel()->landCreature({pos}, CreatureGroup(*creatureInfo->creature).random(
+            pos.getGame()->getCreatureFactory())))
           ++numSpawned;
       if (numSpawned > 0)
         c->message(creatureInfo->msgCreature);

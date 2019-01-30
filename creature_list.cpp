@@ -32,8 +32,8 @@ CreatureList::CreatureList(int c, vector<CreatureId> ids) : count(c),
 
 CreatureList::CreatureList(int c, vector<pair<int, CreatureId>> ids) : count(c), all(ids) {}
 
-string CreatureList::getSummary() const {
-  auto ret = toLower(EnumInfo<ViewId>::getString(getViewId()));
+string CreatureList::getSummary(const CreatureFactory* factory) const {
+  auto ret = toLower(EnumInfo<ViewId>::getString(getViewId(factory)));
   int inc = 0;
   for (auto exp : ENUM_ALL(ExperienceType))
     inc = max(inc, baseLevelIncrease[exp]);
@@ -59,14 +59,15 @@ CreatureList& CreatureList::addUnique(CreatureId id) {
   return *this;
 }
 
-ViewId CreatureList::getViewId() const {
+ViewId CreatureList::getViewId(const CreatureFactory* factory) const {
   if (!uniques.empty())
-    return CreatureFactory::getViewId(uniques[0]);
+    return factory->getViewId(uniques[0]);
   else
-    return CreatureFactory::getViewId(all[0].second);
+    return factory->getViewId(all[0].second);
 }
 
-vector<PCreature> CreatureList::generate(RandomGen& random, TribeId tribe, MonsterAIFactory aiFactory) const {
+vector<PCreature> CreatureList::generate(RandomGen& random, const CreatureFactory* factory, TribeId tribe,
+    MonsterAIFactory aiFactory) const {
   vector<PCreature> ret;
   vector<CreatureId> uniquesCopy = uniques;
   for (int i : Range(count)) {
@@ -76,7 +77,7 @@ vector<PCreature> CreatureList::generate(RandomGen& random, TribeId tribe, Monst
       uniquesCopy.pop_back();
     } else
       id = random.choose(all);
-    auto creature = CreatureFactory::fromId(*id, tribe, aiFactory, inventory);
+    auto creature = factory->fromId(*id, tribe, aiFactory, inventory);
     for (auto exp : ENUM_ALL(ExperienceType))
       creature->getAttributes().increaseBaseExpLevel(exp, baseLevelIncrease[exp]);
     ret.push_back(std::move(creature));

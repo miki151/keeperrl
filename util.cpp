@@ -720,6 +720,10 @@ Range Range::intersection(Range r) const {
   return Range(max(start, r.start), min(finish, r.finish));
 }
 
+bool Range::operator == (const Range& r) const {
+  return start == r.start && finish == r.finish && increment == r.increment;
+}
+
 Range::Iter Range::begin() {
   if ((increment > 0 && start < finish) || (increment < 0 && start > finish))
     return Iter(start, start, finish, increment);

@@ -481,8 +481,9 @@ Immigration::Available Immigration::Available::generate(WImmigration immigration
   int numGenerated = immigration->generated[group.immigrantIndex].getSize();
   vector<SpecialTrait> specialTraits;
   for (int i : Range(group.count)) {
-    immigrants.push_back(CreatureFactory::fromId(info.getId(numGenerated), immigration->collective->getTribeId(),
-        MonsterAIFactory::collective(immigration->collective)));
+    immigrants.push_back(immigration->collective->getGame()->getCreatureFactory()->
+        fromId(info.getId(numGenerated), immigration->collective->getTribeId(),
+            MonsterAIFactory::collective(immigration->collective)));
     if (immigration->collective->getConfig().getStripSpawns())
       immigrants.back()->getEquipment().removeAllItems(immigrants.back().get());
     for (auto& specialTrait : info.getSpecialTraits())

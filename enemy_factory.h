@@ -64,17 +64,20 @@ RICH_ENUM(EnemyId,
 struct ExternalEnemy;
 struct SettlementInfo;
 class TribeId;
+class NameGenerator;
 
 class EnemyFactory {
   public:
-  EnemyFactory(RandomGen&);
-  EnemyInfo get(EnemyId);
-  vector<ExternalEnemy> getExternalEnemies();
+  EnemyFactory(RandomGen&, NameGenerator*);
+  EnemyInfo get(EnemyId) const;
+  vector<ExternalEnemy> getExternalEnemies() const;
   vector<ExternalEnemy> getHalloweenKids();
-  vector<EnemyInfo> getVaults(TribeAlignment, TribeId allied);
+  vector<EnemyInfo> getVaults(TribeAlignment, TribeId allied) const;
 
   RandomGen& random;
 
   private:
-  EnemyInfo getById(EnemyId);
+  EnemyInfo getById(EnemyId) const;
+  string getVillageName() const;
+  NameGenerator* nameGenerator;
 };

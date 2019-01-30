@@ -21,18 +21,18 @@ TribeId CreatureGroup::getTribeFor(CreatureId id) {
     return *tribe;
 }
 
-PCreature CreatureGroup::random() {
-  return random(MonsterAIFactory::monster());
+PCreature CreatureGroup::random(const CreatureFactory* f) {
+  return random(f, MonsterAIFactory::monster());
 }
 
-PCreature CreatureGroup::random(const MonsterAIFactory& actorFactory) {
+PCreature CreatureGroup::random(const CreatureFactory* creatureFactory, const MonsterAIFactory& actorFactory) {
   CreatureId id;
   if (unique.size() > 0) {
     id = unique.back();
     unique.pop_back();
   } else
     id = Random.choose(creatures, weights);
-  PCreature ret = CreatureFactory::fromId(id, getTribeFor(id), actorFactory, inventory);
+  PCreature ret = creatureFactory->fromId(id, getTribeFor(id), actorFactory, inventory);
   for (auto exp : ENUM_ALL(ExperienceType)) {
     ret->getAttributes().increaseBaseExpLevel(exp, baseLevelIncrease[exp]);
     ret->increaseExpLevel(exp, levelIncrease[exp]);

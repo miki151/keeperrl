@@ -101,7 +101,7 @@ class CollectiveConfig {
   static const WorkshopInfo& getWorkshopInfo(WorkshopType);
   static optional<WorkshopType> getWorkshopType(FurnitureType);
 
-  static void addBedRequirementToImmigrants(vector<ImmigrantInfo>&);
+  static void addBedRequirementToImmigrants(vector<ImmigrantInfo>&, const CreatureFactory*);
 
   map<CollectiveResourceId, int> getStartingResource() const;
 
@@ -129,7 +129,6 @@ class CollectiveConfig {
   int SERIAL(spawnGhosts) = 0;
   double SERIAL(ghostProb) = 0;
   optional<GuardianInfo> SERIAL(guardianInfo);
-  void addBedRequirementToImmigrants();
   bool SERIAL(regenerateMana) = false;
   ConquerCondition SERIAL(conquerCondition);
 };

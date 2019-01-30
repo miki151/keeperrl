@@ -59,8 +59,11 @@ class Effect {
   SIMPLE_EFFECT(Deception);
   struct Summon {
     EFFECT_TYPE_INTERFACE;
+    Summon(CreatureId id, Range c) : creature(id), count(c) {}
+    Summon() {}
     CreatureId creature;
-    COMPARE_ALL(creature)
+    Range count;
+    COMPARE_ALL(creature, count)
   };
   SIMPLE_EFFECT(SummonElement);
   SIMPLE_EFFECT(Acid);
