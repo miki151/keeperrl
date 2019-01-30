@@ -50,12 +50,12 @@ static void addThird(WConstCreature c, MsgType type, const string& param) {
     case MsgType::RAGE: msg = c->getName().the() + " is enraged."; break;
     case MsgType::CRAWL: msg = c->getName().the() + " is crawling"; break;
     case MsgType::STAND_UP: msg = c->getName().the() + " is back on " +
-                            c->getAttributes().getGender().his() + " feet";
+                            his(c->getAttributes().getGender()) + " feet";
                             break;
     case MsgType::TURN_INVISIBLE: msg = c->getName().the() + " disappears!"; break;
     case MsgType::TURN_VISIBLE: msg = c->getName().the() + " appears out of nowhere!"; break;
     case MsgType::DROP_WEAPON: msg = c->getName().the() + " drops " +
-                               c->getAttributes().getGender().his() + " " + param;
+                               his(c->getAttributes().getGender()) + " " + param;
                                break;
     case MsgType::ENTER_PORTAL: msg = c->getName().the() + " disappears in the portal."; break;
     case MsgType::HAPPENS_TO: msg = param + " " + c->getName().the(); break;

@@ -1324,7 +1324,7 @@ void Collective::onCopulated(WCreature who, WCreature with) {
   PROFILE;
   if (with->getName().bare() == "vampire")
     control->addMessage(who->getName().a() + " makes love to " + with->getName().a()
-        + " with a monkey on " + who->getAttributes().getGender().his() + " knee");
+        + " with a monkey on " + his(who->getAttributes().getGender()) + " knee");
   else
     control->addMessage(who->getName().a() + " makes love to " + with->getName().a());
   if (getCreatures().contains(with))

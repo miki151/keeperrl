@@ -108,6 +108,7 @@ enum class PassableInfo;
 enum class ConquerCondition;
 enum class FurnitureOnBuilt;
 enum class ViewObjectAction : std::uint8_t;
+enum class Gender : std::uint8_t;
 
 struct FXInfo;
 struct FXSpawnInfo;

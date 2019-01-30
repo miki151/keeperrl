@@ -735,7 +735,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
       return CATTR(
           c.viewId = ViewId::KEEPER_F1;
           c.attr = LIST(12_dam, 12_def, 20_spell_dam );
-          c.gender = Gender::female;
+          c.gender = Gender::FEMALE;
           c.body = Body::humanoid(Body::Size::LARGE);
           c.name = "wizard";
           c.viewIdUpgrades = LIST(ViewId::KEEPER_F2, ViewId::KEEPER_F3, ViewId::KEEPER_F4);
@@ -764,7 +764,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
       return CATTR(
           c.viewId = ViewId::KEEPER_KNIGHT_F1;
           c.attr = LIST(20_dam, 16_def);
-          c.gender = Gender::female;
+          c.gender = Gender::FEMALE;
           c.body = Body::humanoid(Body::Size::LARGE);
           c.name = "knight";
           c.viewIdUpgrades = LIST(ViewId::KEEPER_KNIGHT_F2, ViewId::KEEPER_KNIGHT_F3, ViewId::KEEPER_KNIGHT_F4);
@@ -793,7 +793,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
       return CATTR(
           c.viewId = ViewId::DUKE_F1;
           c.attr = LIST(20_dam, 16_def);
-          c.gender = Gender::female;
+          c.gender = Gender::FEMALE;
           c.body = Body::humanoid(Body::Size::LARGE);
           c.name = "knight";
           c.viewIdUpgrades = LIST(ViewId::DUKE_F2, ViewId::DUKE_F3, ViewId::DUKE_F4);
@@ -821,7 +821,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
   else if (id == "ADVENTURER_F")
       return CATTR(
           c.viewId = ViewId::PLAYER_F;
-          c.gender = Gender::female;
+          c.gender = Gender::FEMALE;
           c.attr = LIST(15_dam, 20_def );
           c.body = Body::humanoid(Body::Size::LARGE);
           c.name = "squire";
@@ -912,7 +912,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.body->getIntrinsicAttacks().clear();
           c.body->setIntrinsicAttack(BodyPart::ARM, IntrinsicAttack(
               ItemType::touch(Effect::Lasting{LastingEffect::PEACEFULNESS})));
-          c.gender = Gender::female;
+          c.gender = Gender::FEMALE;
           c.courage = -1;
           c.name = CreatureName("succubus", "succubi");
       );
@@ -931,7 +931,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.body = Body::humanoid(Body::Size::MEDIUM);
           c.name = CreatureName("witch", "witches");
           c.name->setFirst("Cornelia");
-          c.gender = Gender::female;
+          c.gender = Gender::FEMALE;
           c.chatReactionFriendly = "curses all humans"_s;
           c.chatReactionHostile = "\"Die!\""_s;
           c.skills.setValue(SkillId::LABORATORY, 0.7);
@@ -946,7 +946,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.name = CreatureName("witchman", "witchmen");
           c.name->setFirst(nameGenerator->getNext(NameGeneratorId::FIRST_MALE));
           c.permanentEffects[LastingEffect::MAGIC_RESISTANCE] = 1;
-          c.gender = Gender::male;
           c.chatReactionFriendly = "curses all monsters"_s;
           c.chatReactionHostile = "\"Die!\""_s;
           c.hatedByEffect = LastingEffect::HATE_HUMANS;
@@ -971,7 +970,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.permanentEffects[LastingEffect::FLYING] = 1;
           c.permanentEffects[LastingEffect::MAGIC_RESISTANCE] = 1;
           c.courage = 100;
-          c.gender = Gender::male;
           c.spells->add(SpellId::BLAST);
           c.chatReactionFriendly = "\"Kneel before us!\""_s;
           c.chatReactionHostile = "\"Face your death!\""_s;
@@ -990,7 +988,6 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.permanentEffects[LastingEffect::FLYING] = 1;
           c.permanentEffects[LastingEffect::MAGIC_RESISTANCE] = 1;
           c.courage = 100;
-          c.gender = Gender::male;
           c.spells->add(SpellId::BLAST);
           c.chatReactionFriendly = "\"Kneel before us!\""_s;
           c.chatReactionHostile = "\"Face your death!\""_s;
@@ -1153,7 +1150,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
       return CATTR(
           if (Random.roll(2)) {
             c.viewId = ViewId::PESEANT_WOMAN;
-            c.gender = Gender::female;
+            c.gender = Gender::FEMALE;
           } else
             c.viewId = ViewId::PESEANT;
           c.attr = LIST(14_dam, 12_def );
@@ -1265,7 +1262,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
       return CATTR(
           if (Random.roll(2)) {
             c.viewId = ViewId::PESEANT_WOMAN;
-            c.gender = Gender::female;
+            c.gender = Gender::FEMALE;
           } else
             c.viewId = ViewId::PESEANT;
           c.attr = LIST(14_dam, 12_def );
@@ -1305,7 +1302,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
       return CATTR(
           if (Random.roll(2)) {
             c.viewId = ViewId::PESEANT_WOMAN;
-            c.gender = Gender::female;
+            c.gender = Gender::FEMALE;
           } else
             c.viewId = ViewId::PESEANT;
           c.attr = LIST(14_dam, 12_def );
@@ -1497,7 +1494,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.body = Body::humanoid(Body::Size::LARGE);
           c.body->addWings();
           c.skills.setValue(SkillId::LABORATORY, 0.3);
-          c.gender = Gender::female;
+          c.gender = Gender::FEMALE;
           c.maxLevelIncrease[ExperienceType::MELEE] = 4;
           c.maxLevelIncrease[ExperienceType::ARCHERY] = 7;
           c.name = CreatureName("harpy", "harpies");
@@ -1620,7 +1617,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.name->setFirst(nameGenerator->getNext(NameGeneratorId::DWARF));
           c.chatReactionFriendly = "curses all orcs"_s;
           c.chatReactionHostile = "\"Die!\""_s;
-          c.gender = Gender::female;
+          c.gender = Gender::FEMALE;
           c.hatedByEffect = LastingEffect::HATE_DWARVES;
       );
   else if (id == "DWARF_BARON")
@@ -2084,7 +2081,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.body = Body::humanoid(Body::Size::LARGE);
           c.skills.setValue(SkillId::LABORATORY, 1);
           c.maxLevelIncrease[ExperienceType::SPELL] = 9;
-          c.gender = Gender::female;
+          c.gender = Gender::FEMALE;
           c.permanentEffects[LastingEffect::FIRE_RESISTANT] = 1;
           c.permanentEffects[LastingEffect::MAGIC_RESISTANCE] = 1;
           c.chatReactionFriendly = "curses all dungeons"_s;

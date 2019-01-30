@@ -16,43 +16,25 @@
 #include "stdafx.h"
 #include "gender.h"
 
-const Gender Gender::male(false);
-const Gender Gender::female(true);
-
-SERIALIZATION_CONSTRUCTOR_IMPL(Gender)
-SERIALIZE_DEF(Gender, fem)
-
-Gender::Gender(bool f) : fem(f) {}
-
-const char* Gender::his() const {
-  return fem ? "her" : "his";
+const char* he(Gender g) {
+  return get(g, "he", "she", "it");
 }
 
-const char* Gender::him() const {
-  return fem ? "her" : "him";
+const char* his(Gender g) {
+  return get(g, "his", "her", "its");
 }
 
-const char* Gender::he() const {
-  return fem ? "she" : "he";
+const char* him(Gender g) {
+  return get(g, "him", "her", "it");
 }
 
-const char* Gender::god() const {
-  return fem ? "goddess" : "god";
+const char *get(Gender g, const char* male, const char* female, const char* it) {
+  switch (g) {
+    case Gender::MALE:
+      return male;
+    case Gender::FEMALE:
+      return female;
+    case Gender::IT:
+      return it;
+  }
 }
-
-const char* Gender::sireOrDame() const {
-  return fem ? "Dame" : "Sire";
-}
-
-const char* Gender::get(const char* male, const char* female) const {
-  return fem ? female : male;
-}
-
-bool Gender::operator == (const Gender& o) const {
-  return fem == o.fem;
-}
-
-bool Gender::operator != (const Gender& o) const {
-  return !(*this == o);
-}
-

@@ -45,7 +45,6 @@ class CreatureAttributes;
 class Body;
 class MinionActivityMap;
 class CreatureName;
-class Gender;
 class SpellMap;
 class Sound;
 class Game;

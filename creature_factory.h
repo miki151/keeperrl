@@ -25,7 +25,6 @@ class Tribe;
 class ItemType;
 class CreatureAttributes;
 class ControllerFactory;
-class Gender;
 class NameGenerator;
 
 class CreatureFactory {

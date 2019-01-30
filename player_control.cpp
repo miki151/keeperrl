@@ -2549,7 +2549,7 @@ void PlayerControl::checkKeeperDanger() {
   if (auto keeper = getKeeper()) {
     auto prompt = [&] (const string& reason) {
         return getView()->yesOrNoPrompt(reason + ". Do you want to control " +
-            keeper->getAttributes().getGender().him() + "?");
+            him(keeper->getAttributes().getGender()) + "?");
     };
     if (!keeper->isDead() && !controlled.contains(keeper) &&
         lastControlKeeperQuestion < collective->getGlobalTime() - 50_visible) {

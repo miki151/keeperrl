@@ -271,7 +271,7 @@ void consumeAttr(T& mine, const T& his, vector<string>& adjectives, const string
 void consumeAttr(Gender& mine, const Gender& his, vector<string>& adjectives) {
   if (consumeProb() && mine != his) {
     mine = his;
-    adjectives.emplace_back(mine == Gender::male ? "more masculine" : "more feminine");
+    adjectives.emplace_back(get(mine, "more masculine", "more feminine", "more neuter"));
   }
 }
 

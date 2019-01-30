@@ -108,8 +108,8 @@ static void sitOnThrone(Position pos, WConstFurniture furniture, WCreature c) {
     if (collective->getLeader())
       tryTeleporting(collective->getLeader());
     if (wasTeleported)
-      c->privateMessage(PlayerMessage("Thy audience hath been summoned, "_s + c->getAttributes().getGender().sireOrDame(),
-          MessagePriority::HIGH));
+      c->privateMessage(PlayerMessage("Thy audience hath been summoned"_s +
+          get(c->getAttributes().getGender(), ", Sire", ", Dame", ""), MessagePriority::HIGH));
     else
       c->privateMessage("Nothing happens");
   }
