@@ -147,7 +147,7 @@ class Corpse : public Item {
       if (getWeight() > 10 && !corpseInfo.isSkeleton &&
           !position.isCovered() && Random.roll(350)) {
         for (Position v : position.neighbors8(Random)) {
-          PCreature vulture = position.getGame()->getCreatureFactory()->fromId(CreatureId::VULTURE, TribeId::getPest(),
+          PCreature vulture = position.getGame()->getCreatureFactory()->fromId("VULTURE", TribeId::getPest(),
                     MonsterAIFactory::scavengerBird(v));
           if (v.canEnter(vulture.get())) {
             v.addCreature(std::move(vulture));
@@ -414,7 +414,7 @@ ItemAttributes ItemType::AutomatonItem::getAttributes() const {
       i.applyTime = 3_visible;
       i.uses = 1;
       i.price = 60;
-      i.effect = Effect(Effect::Summon{CreatureId::AUTOMATON, Range(1, 2)});
+      i.effect = Effect(Effect::Summon{"AUTOMATON", Range(1, 2)});
   );
 }
 

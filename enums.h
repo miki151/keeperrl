@@ -63,7 +63,7 @@ enum class SquareAttrib;
 
 enum class Dir;
 
-enum class CreatureId;
+using CreatureId = string;
 
 enum class ViewLayer;
 enum class HighlightType;

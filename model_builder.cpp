@@ -69,8 +69,7 @@ SettlementInfo& ModelBuilder::makeExtraLevel(WModel model, EnemyInfo& enemy) {
                   c.inhabitants.fighters = CreatureList(
                       random.get(1, 3),
                       random.choose(
-                          CreatureId::WATER_ELEMENTAL, CreatureId::AIR_ELEMENTAL, CreatureId::FIRE_ELEMENTAL,
-                          CreatureId::EARTH_ELEMENTAL));
+                          "WATER_ELEMENTAL"_s, "AIR_ELEMENTAL"_s, "FIRE_ELEMENTAL"_s, "EARTH_ELEMENTAL"_s));
                   c.tribe = enemy.settlement.tribe;
                   c.collective = new CollectiveBuilder(CollectiveConfig::noImmigrants(), c.tribe);
                   c.upStairs = {upLink};
@@ -500,7 +499,7 @@ PModel ModelBuilder::splashModel(const FilePath& splashPath) {
           CreatureGroup::splashLeader(TribeId::getHuman()),
           CreatureGroup::splashHeroes(TribeId::getHuman()),
           CreatureGroup::splashMonsters(TribeId::getDarkKeeper()),
-          CreatureGroup::singleType(TribeId::getDarkKeeper(), CreatureId::IMP), splashPath));
+          CreatureGroup::singleType(TribeId::getDarkKeeper(), "IMP"), splashPath));
   return m;
 }
 

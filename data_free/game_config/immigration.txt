@@ -2,7 +2,7 @@
     "imps"
     {
         {
-          ids = { IMP }
+          ids = { "IMP" }
           traits = { WORKER NO_LIMIT NO_EQUIPMENT }
           spawnLocation = NearLeader
           keybinding = CREATE_IMP
@@ -18,7 +18,7 @@
     "peseant_prisoners"
     {
         {
-          ids = { PESEANT_PRISONER }
+          ids = { "PESEANT_PRISONER" }
           traits = { WORKER NO_LIMIT NO_EQUIPMENT }
           spawnLocation = NearLeader
           noAuto = true
@@ -30,7 +30,7 @@
     "peseants"
     {
         {
-          ids = { PESEANT_PLAYER }
+          ids = { "PESEANT_PLAYER" }
           traits = { WORKER NO_LIMIT NO_EQUIPMENT }
           keybinding = CREATE_IMP
           noAuto = true
@@ -44,7 +44,7 @@
     "dark_keeper"
     {
         {
-          ids = { GOBLIN }
+          ids = { "GOBLIN" }
           traits = { FIGHTER NO_AUTO_EQUIPMENT }
           frequency = 0.7
           requirements = {
@@ -58,7 +58,7 @@
           }
         }
         {
-          ids = { ORC }
+          ids = { "ORC" }
           traits = { FIGHTER }
           frequency = 0.7
           requirements = {
@@ -79,7 +79,7 @@
           }
         }
         {
-          ids = { ORC_SHAMAN }
+          ids = { "ORC_SHAMAN" }
           traits = { FIGHTER }
           frequency = 0.6
           requirements = {
@@ -97,7 +97,7 @@
           }
         }
         {
-          ids = { OGRE }
+          ids = { "OGRE" }
           traits = { FIGHTER }
           frequency = 0.3
           requirements = {
@@ -117,7 +117,7 @@
           }
         }
         {
-          ids = { HARPY }
+          ids = { "HARPY" }
           traits = { FIGHTER }
           frequency = 0.3
           requirements = {
@@ -138,7 +138,7 @@
           }
         }
         {
-          ids = { ZOMBIE }
+          ids = { "ZOMBIE" }
           traits = { FIGHTER }
           frequency = 0.5
           spawnLocation = FurnitureType GRAVE
@@ -152,7 +152,7 @@
           }
         }
         {
-          ids = { SKELETON }
+          ids = { "SKELETON" }
           traits = { FIGHTER }
           frequency = 0.5
           spawnLocation = FurnitureType GRAVE
@@ -166,7 +166,7 @@
           }
         }
         {
-          ids = { VAMPIRE }
+          ids = { "VAMPIRE" }
           traits = { FIGHTER }
           frequency = 0.2
           spawnLocation = FurnitureType GRAVE
@@ -184,7 +184,7 @@
           }
         }
         {
-          ids = { MUMMY }
+          ids = { "MUMMY" }
           traits = { FIGHTER }
           frequency = 0.1
           spawnLocation = FurnitureType GRAVE
@@ -198,7 +198,7 @@
           }
          }
         {
-          ids = { LOST_SOUL }
+          ids = { "LOST_SOUL" }
           traits = { FIGHTER }
           frequency = 0.3
           spawnLocation = FurnitureType DEMON_SHRINE
@@ -208,7 +208,7 @@
           }
         }
         {
-          ids = { SUCCUBUS }
+          ids = { "SUCCUBUS" }
           traits = { FIGHTER NO_EQUIPMENT }
           frequency = 0.3
           spawnLocation = FurnitureType DEMON_SHRINE
@@ -218,7 +218,7 @@
           }
         }
         {
-          ids = { DOPPLEGANGER }
+          ids = { "DOPPLEGANGER" }
           traits = { FIGHTER }
           frequency = 0.3
           spawnLocation = FurnitureType DEMON_SHRINE
@@ -228,7 +228,7 @@
           }
         }
         {
-          ids = { RAVEN }
+          ids = { "RAVEN" }
           traits = { FIGHTER DOESNT_TRIGGER }
           frequency = 0.5
           requirements = {
@@ -237,7 +237,7 @@
           }
         }
         {
-          ids = { BAT }
+          ids = { "BAT" }
           traits = { FIGHTER DOESNT_TRIGGER }
           frequency = 0.5
           requirements = {
@@ -246,7 +246,7 @@
           }
         }
         {
-          ids = { WOLF }
+          ids = { "WOLF" }
           traits = { FIGHTER DOESNT_TRIGGER }
           frequency = 0.15
           groupSize = {3 9}
@@ -257,7 +257,7 @@
           }
         }
         {
-          ids = { CAVE_BEAR }
+          ids = { "CAVE_BEAR" }
           traits = { FIGHTER DOESNT_TRIGGER }
           frequency = 0.1
           requirements = {
@@ -265,7 +265,7 @@
           }
         }
         {
-          ids = { WEREWOLF }
+          ids = { "WEREWOLF" }
           traits = { FIGHTER DOESNT_TRIGGER }
           frequency = 0.1
           requirements = {
@@ -282,7 +282,7 @@
           }
         }
         {
-          ids = { DARK_ELF_WARRIOR }
+          ids = { "DARK_ELF_WARRIOR" }
           traits = { FIGHTER }
           requirements = {
             { 0.0 RecruitmentInfo {ORC_VILLAGE} 3 FIGHTER }
@@ -290,7 +290,7 @@
           }
         }
         {
-          ids = { ORC }
+          ids = { "ORC" }
           traits = { FIGHTER }
           requirements = {
             { 0.0 RecruitmentInfo {ORC_VILLAGE} 3 FIGHTER }
@@ -298,7 +298,7 @@
           }
         }
         {
-          ids = { HARPY }
+          ids = { "HARPY" }
           traits = { FIGHTER }
           requirements = {
             { 0.0 RecruitmentInfo {HARPY_CAVE} 3 FIGHTER }
@@ -306,7 +306,7 @@
           }
         }
         {
-          ids = { OGRE }
+          ids = { "OGRE" }
           traits = { FIGHTER }
           requirements = {
             { 0.0 RecruitmentInfo {OGRE_CAVE ORC_VILLAGE} 3 FIGHTER }
@@ -314,7 +314,7 @@
           }
         }
         {
-          ids = { SPECIAL_HMBN SPECIAL_HMBW SPECIAL_HMGN SPECIAL_HMGW }
+          ids = { "SPECIAL_HMBN" "SPECIAL_HMBW" "SPECIAL_HMGN" "SPECIAL_HMGW" }
           traits = { FIGHTER }
           consumeIds = true
           spawnLocation = Pregnancy
@@ -328,7 +328,7 @@
           }
         }
         {
-          ids = { SPECIAL_BMBN SPECIAL_BMBW SPECIAL_BMGN SPECIAL_BMGW }
+          ids = { "SPECIAL_BMBN" "SPECIAL_BMBW" "SPECIAL_BMGN" "SPECIAL_BMGW" }
           traits = { FIGHTER DOESNT_TRIGGER }
           consumeIds = true
           spawnLocation = Pregnancy
@@ -343,7 +343,7 @@
     "white_keeper"
     {
         {
-          ids = { GNOME_PLAYER }
+          ids = { "GNOME_PLAYER" }
           traits = { FIGHTER NO_AUTO_EQUIPMENT }
           frequency = 0.7
           requirements = {
@@ -357,7 +357,7 @@
           }
         }
         {
-          ids = { KNIGHT_PLAYER }
+          ids = { "KNIGHT_PLAYER" }
           traits = { FIGHTER }
           frequency = 0.7
           requirements = {
@@ -374,7 +374,7 @@
           }
         }
         {
-          ids = { PRIEST_PLAYER }
+          ids = { "PRIEST_PLAYER" }
           traits = { FIGHTER }
           frequency = 0.3
           requirements = {
@@ -388,7 +388,7 @@
           }
         }
         {
-          ids = { ARCHER_PLAYER }
+          ids = { "ARCHER_PLAYER" }
           traits = { FIGHTER }
           frequency = 0.3
           requirements = {
@@ -409,7 +409,7 @@
           }
         }
         {
-          ids = { JESTER_PLAYER }
+          ids = { "JESTER_PLAYER" }
           traits = { FIGHTER }
           frequency = 0.1
           requirements = {
@@ -420,12 +420,12 @@
           }
         }
         {
-          ids = { DOG }
+          ids = { "DOG" }
           traits = { FIGHTER DOESNT_TRIGGER NO_LIMIT }
           frequency = 0.1
         }
         {
-          ids = { DONKEY COW HORSE GOAT }
+          ids = { "DONKEY" "COW" "HORSE" "GOAT" }
           traits = { NO_LIMIT INCREASE_POPULATION }
           requirements = {
             { 1.0 CostInfo GOLD 50 }
@@ -438,7 +438,7 @@
 
     {
         {
-          ids = { IMP }
+          ids = { "IMP" }
           traits = { WORKER NO_LIMIT NO_EQUIPMENT }
           spawnLocation = NearLeader
           keybinding = CREATE_IMP
@@ -449,7 +449,7 @@
           }
         }
         {
-          ids = { ORC }
+          ids = { "ORC" }
           traits = { FIGHTER NO_AUTO_EQUIPMENT }
           tutorialHighlight = ACCEPT_IMMIGRANT
           hiddenInHelp = true
@@ -460,7 +460,7 @@
           }
         }
         {
-          ids = { ORC ORC ORC }
+          ids = { "ORC" "ORC" "ORC" }
           frequency = 0.5
           traits = { FIGHTER NO_AUTO_EQUIPMENT }
           consumeIds = true
@@ -471,7 +471,7 @@
           }
         }
         {
-          ids = { GOBLIN }
+          ids = { "GOBLIN" }
           frequency = 0.1
           traits = { NO_AUTO_EQUIPMENT }
           consumeIds = true

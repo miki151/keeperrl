@@ -1,7 +1,7 @@
 # Keepers
 {
   {
-    creatureId = { KEEPER_MAGE KEEPER_MAGE_F }
+    creatureId = { "KEEPER_MAGE" "KEEPER_MAGE_F" }
     tribeAlignment = EVIL
     immigrantGroups = {"imps" "dark_keeper"}
     technology = {
@@ -20,7 +20,7 @@
 #   specialTraits = { LastingEffect SPEED ExtraTraining MELEE 5 }
   }
   {
-    creatureId = { KEEPER_KNIGHT KEEPER_KNIGHT_F }
+    creatureId = { "KEEPER_KNIGHT" "KEEPER_KNIGHT_F" }
     tribeAlignment = EVIL
     immigrantGroups = {"peseant_prisoners" "dark_keeper"}
     technology = {
@@ -37,7 +37,7 @@
     description = "Build and manage your dream dungeon, defend against raids, and attack your enemies!"
   }
   {
-    creatureId = { KEEPER_KNIGHT_WHITE KEEPER_KNIGHT_WHITE_F }
+    creatureId = { "KEEPER_KNIGHT_WHITE" "KEEPER_KNIGHT_WHITE_F" }
     tribeAlignment = LAWFUL
     immigrantGroups = {"peseants" "white_keeper"}
     technology = {
@@ -58,5 +58,5 @@
 # Adventurers
 {
     # CreatureId                     TribeAlignment 
-    { ADVENTURER ADVENTURER_F }      LAWFUL             "Roam the land in search of adventures and loot!"
+    { "ADVENTURER" "ADVENTURER_F" }      LAWFUL             "Roam the land in search of adventures and loot!"
 }

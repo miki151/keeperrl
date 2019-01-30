@@ -174,14 +174,14 @@ CreatureAttributes CreatureFactory::getKrakenAttributes(ViewId id, const char* n
 }
 
 ViewId CreatureFactory::getViewId(CreatureId id) const {
-  return idMap[id];
+  if (!idMap.count(id)) {
+    auto c = fromId(id, TribeId::getMonster());
+    idMap[id] = c->getViewObject().id();
+  }
+  return idMap.at(id);
 }
 
 CreatureFactory::CreatureFactory(NameGenerator* n) : nameGenerator(n) {
-  idMap = EnumMap<CreatureId, ViewId>([this](CreatureId id) {
-    auto c = fromId(id, TribeId::getMonster());
-    return c->getViewObject().id();
-  });
 }
 
 constexpr int maxKrakenLength = 15;
@@ -717,8 +717,7 @@ CREATE_LITERAL(RANGED_DAMAGE, ranged_dam)
 #undef CREATE_LITERAL
 
 CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
-  switch (id) {
-    case CreatureId::KEEPER_MAGE:
+  if (id == "KEEPER_MAGE")
       return CATTR(
           c.viewId = ViewId::KEEPER1;
           c.attr = LIST(12_dam, 12_def, 20_spell_dam );
@@ -732,7 +731,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.maxLevelIncrease[ExperienceType::SPELL] = 12;
           c.spells->add(SpellId::HEAL_SELF);
       );
-    case CreatureId::KEEPER_MAGE_F:
+  else if (id == "KEEPER_MAGE_F")
       return CATTR(
           c.viewId = ViewId::KEEPER_F1;
           c.attr = LIST(12_dam, 12_def, 20_spell_dam );
@@ -747,7 +746,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.maxLevelIncrease[ExperienceType::SPELL] = 12;
           c.spells->add(SpellId::HEAL_SELF);
       );
-    case CreatureId::KEEPER_KNIGHT:
+  else if (id == "KEEPER_KNIGHT")
       return CATTR(
           c.viewId = ViewId::KEEPER_KNIGHT1;
           c.attr = LIST(20_dam, 16_def);
@@ -761,7 +760,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.maxLevelIncrease[ExperienceType::SPELL] = 3;
           c.spells->add(SpellId::HEAL_SELF);
       );
-    case CreatureId::KEEPER_KNIGHT_F:
+  else if (id == "KEEPER_KNIGHT_F")
       return CATTR(
           c.viewId = ViewId::KEEPER_KNIGHT_F1;
           c.attr = LIST(20_dam, 16_def);
@@ -776,7 +775,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.maxLevelIncrease[ExperienceType::SPELL] = 3;
           c.spells->add(SpellId::HEAL_SELF);
       );
-    case CreatureId::KEEPER_KNIGHT_WHITE:
+  else if (id == "KEEPER_KNIGHT_WHITE")
       return CATTR(
           c.viewId = ViewId::DUKE1;
           c.attr = LIST(20_dam, 16_def);
@@ -790,7 +789,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.maxLevelIncrease[ExperienceType::SPELL] = 1;
           c.hatedByEffect = LastingEffect::HATE_HUMANS;
       );
-    case CreatureId::KEEPER_KNIGHT_WHITE_F:
+  else if (id == "KEEPER_KNIGHT_WHITE_F")
       return CATTR(
           c.viewId = ViewId::DUKE_F1;
           c.attr = LIST(20_dam, 16_def);
@@ -805,7 +804,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.maxLevelIncrease[ExperienceType::SPELL] = 1;
           c.hatedByEffect = LastingEffect::HATE_HUMANS;
       );
-    case CreatureId::ADVENTURER:
+  else if (id == "ADVENTURER")
       return CATTR(
           c.viewId = ViewId::PLAYER;
           c.attr = LIST(15_dam, 20_def );
@@ -819,7 +818,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.maxLevelIncrease[ExperienceType::ARCHERY] = 8;
           c.hatedByEffect = LastingEffect::HATE_HUMANS;
       );
-    case CreatureId::ADVENTURER_F:
+  else if (id == "ADVENTURER_F")
       return CATTR(
           c.viewId = ViewId::PLAYER_F;
           c.gender = Gender::female;
@@ -834,7 +833,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.maxLevelIncrease[ExperienceType::ARCHERY] = 8;
           c.hatedByEffect = LastingEffect::HATE_HUMANS;
       );
-    case CreatureId::UNICORN:
+  else if (id == "UNICORN")
       return CATTR(
           c.viewId = ViewId::UNICORN;
           c.attr = LIST(16_dam, 20_def, 20_spell_dam);
@@ -854,7 +853,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.name->setFirst(nameGenerator->getNext(NameGeneratorId::DEITY));
           c.name->setGroup("herd");
       );
-    case CreatureId::BANDIT:
+  else if (id == "BANDIT")
       return CATTR(
           c.viewId = ViewId::BANDIT;
           c.attr = LIST(15_dam, 13_def);
@@ -866,7 +865,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.name = "bandit";
           c.hatedByEffect = LastingEffect::HATE_HUMANS;
       );
-    case CreatureId::GHOST: 
+  else if (id == "GHOST")
       return CATTR(
           c.viewId = ViewId::GHOST;
           c.attr = LIST(35_def, 30_spell_dam );
@@ -877,7 +876,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.chatReactionHostile = "\"Wouuuouuu!!!\""_s;
           c.name = "ghost";
       );
-    case CreatureId::SPIRIT:
+  else if (id == "SPIRIT")
       return CATTR(
           c.viewId = ViewId::SPIRIT;
           c.attr = LIST(35_def, 30_spell_dam );
@@ -889,7 +888,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.chatReactionHostile = "\"Wouuuouuu!!!\""_s;
           c.name = "ancient spirit";
       );
-    case CreatureId::LOST_SOUL:
+  else if (id == "LOST_SOUL")
       return CATTR(
           c.body = Body::nonHumanoidSpirit(Body::Size::LARGE);
           c.body->setDeathSound(none);
@@ -903,7 +902,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.chatReactionHostile = "\"Wouuuouuu!!!\""_s;
           c.name = "ghost";
       );
-    case CreatureId::SUCCUBUS:
+  else if (id == "SUCCUBUS")
       return CATTR(
           c.attr = LIST(25_def, 5_spell_dam );
           c.viewId = ViewId::SUCCUBUS;
@@ -917,7 +916,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.courage = -1;
           c.name = CreatureName("succubus", "succubi");
       );
-    case CreatureId::DOPPLEGANGER:
+  else if (id == "DOPPLEGANGER")
       return CATTR(
           c.viewId = ViewId::DOPPLEGANGER;
           c.attr = LIST(25_def, 5_spell_dam );
@@ -925,7 +924,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.permanentEffects[LastingEffect::CONSUMPTION_SKILL] = 1;
           c.name = "doppelganger";
       );
-    case CreatureId::WITCH: 
+  else if (id == "WITCH")
       return CATTR(
           c.viewId = ViewId::WITCH;
           c.attr = LIST(14_dam, 14_def, 20_spell_dam );
@@ -939,7 +938,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.maxLevelIncrease[ExperienceType::SPELL] = 4;
           c.hatedByEffect = LastingEffect::HATE_HUMANS;
       );
-    case CreatureId::WITCHMAN: 
+  else if (id == "WITCHMAN")
       return CATTR(
           c.viewId = ViewId::WITCHMAN;
           c.attr = LIST(30_dam, 30_def, 20_spell_dam );
@@ -952,7 +951,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.chatReactionHostile = "\"Die!\""_s;
           c.hatedByEffect = LastingEffect::HATE_HUMANS;
       );
-    case CreatureId::CYCLOPS: 
+  else if (id == "CYCLOPS")
       return CATTR(
           c.viewId = ViewId::CYCLOPS;
           c.attr = LIST(34_dam, 40_def );
@@ -963,7 +962,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.name->setFirst(nameGenerator->getNext(NameGeneratorId::CYCLOPS));
           c.maxLevelIncrease[ExperienceType::MELEE] = 5;
       );
-    case CreatureId::DEMON_DWELLER:
+  else if (id == "DEMON_DWELLER")
       return CATTR(
           c.viewId = ViewId::DEMON_DWELLER;
           c.attr = LIST(25_dam, 30_def, 35_spell_dam );
@@ -982,7 +981,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.maxLevelIncrease[ExperienceType::MELEE] = 4;
           c.maxLevelIncrease[ExperienceType::SPELL] = 4;
       );
-    case CreatureId::DEMON_LORD:
+  else if (id == "DEMON_LORD")
       return CATTR(
           c.viewId = ViewId::DEMON_LORD;
           c.attr = LIST(40_dam, 45_def, 50_spell_dam );
@@ -1000,7 +999,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.name->setGroup("pack");
           c.maxLevelIncrease[ExperienceType::SPELL] = 7;
       );
-    case CreatureId::MINOTAUR: 
+  else if (id == "MINOTAUR")
       return CATTR(
           c.viewId = ViewId::MINOTAUR;
           c.attr = LIST(35_dam, 45_def );
@@ -1010,7 +1009,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.maxLevelIncrease[ExperienceType::MELEE] = 5;
           c.name = "minotaur";
       );
-    case CreatureId::SOFT_MONSTER:
+  else if (id == "SOFT_MONSTER")
       return CATTR(
           c.viewId = ViewId::SOFT_MONSTER;
           c.attr = LIST(45_dam, 25_def );
@@ -1019,7 +1018,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.courage = -1;
           c.name = "soft monster";
       );
-    case CreatureId::HYDRA:
+  else if (id == "HYDRA")
       return CATTR(
           c.viewId = ViewId::HYDRA;
           c.attr = LIST(27_dam, 45_def );
@@ -1032,7 +1031,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.permanentEffects[LastingEffect::SWIMMING_SKILL] = 1;
           c.name = "hydra";
       );
-    case CreatureId::SHELOB:
+  else if (id == "SHELOB")
       return CATTR(
           c.viewId = ViewId::SHELOB;
           c.attr = LIST(40_dam, 38_def );
@@ -1047,7 +1046,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.permanentEffects[LastingEffect::SPIDER_SKILL] = 1;
           c.name = "giant spider";
       );
-    case CreatureId::GREEN_DRAGON: 
+  else if (id == "GREEN_DRAGON")
       return CATTR(
           c.viewId = ViewId::GREEN_DRAGON;
           c.attr = LIST(40_dam, 40_def );
@@ -1066,7 +1065,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.spells->add(SpellId::SPEED_SELF);
           c.name->setStack("dragon");
       );
-    case CreatureId::RED_DRAGON:
+  else if (id == "RED_DRAGON")
       return CATTR(
           c.viewId = ViewId::RED_DRAGON;
           c.attr = LIST(40_dam, 42_def );
@@ -1085,7 +1084,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.spells->add(SpellId::FIREBALL_DRAGON);
           c.name->setStack("dragon");
       );
-    case CreatureId::KNIGHT_PLAYER:
+  else if (id == "KNIGHT_PLAYER")
       return CATTR(
           c.viewId = ViewId::KNIGHT;
           c.attr = LIST(16_dam, 14_def );
@@ -1099,7 +1098,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.name->setFirst(nameGenerator->getNext(NameGeneratorId::FIRST_MALE));
           c.hatedByEffect = LastingEffect::HATE_HUMANS;
       );
-    case CreatureId::JESTER_PLAYER:
+  else if (id == "JESTER_PLAYER")
       return CATTR(
           c.viewId = ViewId::JESTER;
           c.attr = LIST(8_dam, 8_def );
@@ -1111,7 +1110,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.name->setFirst(nameGenerator->getNext(NameGeneratorId::FIRST_MALE));
           c.hatedByEffect = LastingEffect::HATE_HUMANS;
       );
-    case CreatureId::ARCHER_PLAYER:
+  else if (id == "ARCHER_PLAYER")
       return CATTR(
           c.viewId = ViewId::ARCHER;
           c.attr = LIST(10_dam, 10_def, 10_ranged_dam );
@@ -1124,7 +1123,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.name->setFirst(nameGenerator->getNext(NameGeneratorId::FIRST_MALE));
           c.hatedByEffect = LastingEffect::HATE_HUMANS;
       );
-    case CreatureId::PRIEST_PLAYER:
+  else if (id == "PRIEST_PLAYER")
       return CATTR(
           c.viewId = ViewId::PRIEST;
           c.attr = LIST(12_dam, 8_def, 16_spell_dam );
@@ -1136,7 +1135,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.name->setFirst(nameGenerator->getNext(NameGeneratorId::FIRST_MALE));
           c.hatedByEffect = LastingEffect::HATE_HUMANS;
       );
-    case CreatureId::GNOME_PLAYER:
+  else if (id == "GNOME_PLAYER")
       return CATTR(
           c.viewId = ViewId::GNOME;
           c.attr = LIST(10_dam, 10_def );
@@ -1150,7 +1149,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.name = "gnome";
           c.name->setFirst(nameGenerator->getNext(NameGeneratorId::DWARF));
       );
-    case CreatureId::PESEANT_PLAYER:
+  else if (id == "PESEANT_PLAYER")
       return CATTR(
           if (Random.roll(2)) {
             c.viewId = ViewId::PESEANT_WOMAN;
@@ -1165,7 +1164,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.name = "peasant";
           c.hatedByEffect = LastingEffect::HATE_HUMANS;
       );
-    case CreatureId::KNIGHT:
+  else if (id == "KNIGHT")
       return CATTR(
           c.viewId = ViewId::KNIGHT;
           c.attr = LIST(36_dam, 28_def );
@@ -1177,7 +1176,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.name = "knight";
           c.hatedByEffect = LastingEffect::HATE_HUMANS;
       );
-    case CreatureId::JESTER:
+  else if (id == "JESTER")
       return CATTR(
           c.viewId = ViewId::JESTER;
           c.attr = LIST(8_dam, 8_def );
@@ -1188,7 +1187,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.name = "jester";
           c.hatedByEffect = LastingEffect::HATE_HUMANS;
       );
-    case CreatureId::DUKE:
+  else if (id == "DUKE")
       return CATTR(
           c.viewId = ViewId::DUKE4;
           c.attr = LIST(43_dam, 32_def );
@@ -1202,7 +1201,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.name->setFirst(nameGenerator->getNext(NameGeneratorId::FIRST_MALE));
           c.hatedByEffect = LastingEffect::HATE_HUMANS;
       );
-    case CreatureId::ARCHER:
+  else if (id == "ARCHER")
       return CATTR(
           c.viewId = ViewId::ARCHER;
           c.attr = LIST(17_dam, 22_def, 30_ranged_dam );
@@ -1213,7 +1212,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.name = "archer";
           c.hatedByEffect = LastingEffect::HATE_HUMANS;
       );
-    case CreatureId::PRIEST:
+  else if (id == "PRIEST")
       return CATTR(
           c.viewId = ViewId::PRIEST;
           c.attr = LIST(15_dam, 15_def, 34_spell_dam );
@@ -1231,7 +1230,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.name = "priest";
           c.hatedByEffect = LastingEffect::HATE_HUMANS;
       );
-    case CreatureId::WARRIOR:
+  else if (id == "WARRIOR")
       return CATTR(
           c.viewId = ViewId::WARRIOR;
           c.attr = LIST(27_dam, 19_def );
@@ -1243,7 +1242,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.name = "warrior";
           c.hatedByEffect = LastingEffect::HATE_HUMANS;
       );
-    case CreatureId::SHAMAN:
+  else if (id == "SHAMAN")
       return CATTR(
           c.viewId = ViewId::SHAMAN;
           c.attr = LIST(27_dam, 19_def, 30_spell_dam );
@@ -1262,7 +1261,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.name = "shaman";
           c.hatedByEffect = LastingEffect::HATE_HUMANS;
       );
-    case CreatureId::PESEANT: 
+  else if (id == "PESEANT")
       return CATTR(
           if (Random.roll(2)) {
             c.viewId = ViewId::PESEANT_WOMAN;
@@ -1278,7 +1277,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.name = "peasant";
           c.hatedByEffect = LastingEffect::HATE_HUMANS;
       );
-    case CreatureId::CHILD: 
+  else if (id == "CHILD")
       return CATTR(
           c.viewId = ViewId::CHILD;
           c.attr = LIST(8_dam, 8_def );
@@ -1289,7 +1288,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.name = CreatureName("child", "children");
           c.hatedByEffect = LastingEffect::HATE_HUMANS;
       );
-    case CreatureId::SPIDER_FOOD: 
+  else if (id == "SPIDER_FOOD")
       return CATTR(
           c.viewId = ViewId::CHILD;
           c.attr = LIST(2_dam, 2_def );
@@ -1302,7 +1301,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.name = CreatureName("child", "children");
           c.hatedByEffect = LastingEffect::HATE_HUMANS;
       );
-    case CreatureId::PESEANT_PRISONER:
+  else if (id == "PESEANT_PRISONER")
       return CATTR(
           if (Random.roll(2)) {
             c.viewId = ViewId::PESEANT_WOMAN;
@@ -1318,7 +1317,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.name = "peasant";
           c.hatedByEffect = LastingEffect::HATE_HUMANS;
       );
-    case CreatureId::HALLOWEEN_KID:
+  else if (id == "HALLOWEEN_KID")
       return CATTR(
           c.viewId = Random.choose(ViewId::HALLOWEEN_KID1,
               ViewId::HALLOWEEN_KID2, ViewId::HALLOWEEN_KID3,ViewId::HALLOWEEN_KID4);
@@ -1329,7 +1328,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.name = CreatureName("child", "children");
           c.hatedByEffect = LastingEffect::HATE_HUMANS;
       );
-    case CreatureId::CLAY_GOLEM:
+  else if (id == "CLAY_GOLEM")
       return CATTR(
           c.viewId = ViewId::CLAY_GOLEM;
           c.attr = LIST(17_dam, 19_def );
@@ -1339,7 +1338,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.permanentEffects[LastingEffect::SLOWED] = 1;
           c.name = "clay golem";
       );
-    case CreatureId::STONE_GOLEM: 
+  else if (id == "STONE_GOLEM")
       return CATTR(
           c.viewId = ViewId::STONE_GOLEM;
           c.attr = LIST(19_dam, 23_def );
@@ -1349,7 +1348,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.permanentEffects[LastingEffect::SLOWED] = 1;
           c.name = "stone golem";
       );
-    case CreatureId::IRON_GOLEM: 
+  else if (id == "IRON_GOLEM")
       return CATTR(
           c.viewId = ViewId::IRON_GOLEM;
           c.attr = LIST(23_dam, 30_def );
@@ -1359,7 +1358,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.body->setHumanoidBodyParts(7);
           c.name = "iron golem";
       );
-    case CreatureId::LAVA_GOLEM: 
+  else if (id == "LAVA_GOLEM")
       return CATTR(
           c.viewId = ViewId::LAVA_GOLEM;
           c.attr = LIST(26_dam, 36_def );
@@ -1371,7 +1370,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.permanentEffects[LastingEffect::FIRE_RESISTANT] = 1;
           c.name = "lava golem";
       );
-    case CreatureId::ADA_GOLEM:
+  else if (id == "ADA_GOLEM")
       return CATTR(
           c.viewId = ViewId::ADA_GOLEM;
           c.attr = LIST(36_dam, 36_def );
@@ -1384,7 +1383,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.permanentEffects[LastingEffect::FIRE_RESISTANT] = 1;
           c.name = "adamantine golem";
       );
-    case CreatureId::AUTOMATON:
+  else if (id == "AUTOMATON")
       return CATTR(
           c.viewId = ViewId::AUTOMATON;
           c.attr = LIST(40_dam, 40_def );
@@ -1393,7 +1392,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.body->setHumanoidBodyParts(10);
           c.name = "automaton";
       );
-    case CreatureId::ZOMBIE: 
+  else if (id == "ZOMBIE")
       return CATTR(
           c.viewId = ViewId::ZOMBIE;
           c.attr = LIST(14_dam, 17_def );
@@ -1404,7 +1403,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.name = "zombie";
           c.hatedByEffect = LastingEffect::HATE_UNDEAD;
       );
-    case CreatureId::SKELETON: 
+  else if (id == "SKELETON")
       return CATTR(
           c.viewId = ViewId::SKELETON;
           c.attr = LIST(17_dam, 13_def, 5_ranged_dam);
@@ -1415,7 +1414,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.name = "skeleton";
           c.hatedByEffect = LastingEffect::HATE_UNDEAD;
       );
-    case CreatureId::VAMPIRE: 
+  else if (id == "VAMPIRE")
       return CATTR(
           c.viewId = ViewId::VAMPIRE;
           c.attr = LIST(17_dam, 17_def, 17_spell_dam );
@@ -1430,7 +1429,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.name->setFirst(nameGenerator->getNext(NameGeneratorId::VAMPIRE));
           c.hatedByEffect = LastingEffect::HATE_UNDEAD;
       );
-    case CreatureId::VAMPIRE_LORD: 
+  else if (id == "VAMPIRE_LORD")
       return CATTR(
           c.viewId = ViewId::VAMPIRE_LORD;
           c.attr = LIST(17_dam, 23_def, 27_spell_dam );
@@ -1451,7 +1450,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
               "\"There are times when you simply cannot refuse a drink!\""_s;
           c.hatedByEffect = LastingEffect::HATE_UNDEAD;
       );
-    case CreatureId::MUMMY: 
+  else if (id == "MUMMY")
       return CATTR(
           c.viewId = ViewId::MUMMY;
           c.attr = LIST(15_dam, 14_def, 10_spell_dam );
@@ -1463,7 +1462,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.name = CreatureName("mummy", "mummies");
           c.hatedByEffect = LastingEffect::HATE_UNDEAD;
       );
-    case CreatureId::ORC:
+  else if (id == "ORC")
       return CATTR(
           c.viewId = ViewId::ORC;
           c.attr = LIST(16_dam, 14_def );
@@ -1477,7 +1476,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.name->setFirst(nameGenerator->getNext(NameGeneratorId::ORC));
           c.hatedByEffect = LastingEffect::HATE_GREENSKINS;
       );
-    case CreatureId::ORC_SHAMAN:
+  else if (id == "ORC_SHAMAN")
       return CATTR(
           c.viewId = ViewId::ORC_SHAMAN;
           c.attr = LIST(12_dam, 8_def, 16_spell_dam );
@@ -1491,7 +1490,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.name->setFirst(nameGenerator->getNext(NameGeneratorId::ORC));
           c.hatedByEffect = LastingEffect::HATE_GREENSKINS;
       );
-    case CreatureId::HARPY:
+  else if (id == "HARPY")
       return CATTR(
           c.viewId = ViewId::HARPY;
           c.attr = LIST(13_dam, 16_def, 15_ranged_dam );
@@ -1505,7 +1504,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.name->setFirst(nameGenerator->getNext(NameGeneratorId::ORC));
           c.hatedByEffect = LastingEffect::HATE_GREENSKINS;
       );
-    case CreatureId::KOBOLD: 
+  else if (id == "KOBOLD")
       return CATTR(
           c.viewId = ViewId::KOBOLD;
           c.attr = LIST(14_dam, 16_def );
@@ -1515,7 +1514,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.chatReactionHostile = "\"Die!\""_s;
           c.name = "kobold";
       );
-    case CreatureId::GNOME: 
+  else if (id == "GNOME")
       return CATTR(
           c.viewId = ViewId::GNOME;
           c.attr = LIST(12_dam, 13_def );
@@ -1524,7 +1523,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.chatReactionFriendly = "talks about digging"_s;
           c.chatReactionHostile = "\"Die!\""_s;
           c.name = "gnome";);
-    case CreatureId::GNOME_CHIEF:
+  else if (id == "GNOME_CHIEF")
       return CATTR(
           c.viewId = ViewId::GNOME_BOSS;
           c.attr = LIST(15_dam, 16_def );
@@ -1533,7 +1532,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.chatReactionFriendly = "talks about digging"_s;
           c.chatReactionHostile = "\"Die!\""_s;
           c.name = "gnome chief";);
-    case CreatureId::GOBLIN: 
+  else if (id == "GOBLIN")
       return CATTR(
           c.viewId = ViewId::GOBLIN;
           c.attr = LIST(12_dam, 13_def );
@@ -1550,7 +1549,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.name->setFirst(nameGenerator->getNext(NameGeneratorId::ORC));
           c.hatedByEffect = LastingEffect::HATE_GREENSKINS;
       );
-    case CreatureId::IMP: 
+  else if (id == "IMP")
       return CATTR(
           c.viewId = ViewId::IMP;
           c.attr = LIST(5_dam, 15_def );
@@ -1566,7 +1565,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.permanentEffects[LastingEffect::NO_CARRY_LIMIT] = 1;
           c.name = "imp";
       );
-    case CreatureId::OGRE: 
+  else if (id == "OGRE")
       return CATTR(
           c.viewId = ViewId::OGRE;
           c.attr = LIST(18_dam, 18_def );
@@ -1581,7 +1580,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.maxLevelIncrease[ExperienceType::MELEE] = 12;
           c.hatedByEffect = LastingEffect::HATE_GREENSKINS;
       );
-    case CreatureId::CHICKEN: 
+  else if (id == "CHICKEN")
       return CATTR(
           c.viewId = ViewId::CHICKEN;
           c.attr = LIST(2_dam, 2_def );
@@ -1591,7 +1590,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.permanentEffects[LastingEffect::SLOWED] = 1;
           c.name = "chicken";
       );
-    case CreatureId::DWARF: 
+  else if (id == "DWARF")
       return CATTR(
           c.viewId = ViewId::DWARF;
           c.attr = LIST(21_dam, 25_def );
@@ -1608,7 +1607,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.chatReactionHostile = "\"Die!\""_s;
           c.hatedByEffect = LastingEffect::HATE_DWARVES;
       );
-    case CreatureId::DWARF_FEMALE:
+  else if (id == "DWARF_FEMALE")
       return CATTR(
           c.viewId = ViewId::DWARF_FEMALE;
           c.attr = LIST(21_dam, 25_def );
@@ -1624,7 +1623,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.gender = Gender::female;
           c.hatedByEffect = LastingEffect::HATE_DWARVES;
       );
-    case CreatureId::DWARF_BARON: 
+  else if (id == "DWARF_BARON")
       return CATTR(
           c.viewId = ViewId::DWARF_BARON;
           c.attr = LIST(28_dam, 32_def );
@@ -1640,7 +1639,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.name->setFirst(nameGenerator->getNext(NameGeneratorId::DWARF));
           c.hatedByEffect = LastingEffect::HATE_DWARVES;
       );
-    case CreatureId::LIZARDMAN: 
+  else if (id == "LIZARDMAN")
       return CATTR(
           c.viewId = ViewId::LIZARDMAN;
           c.attr = LIST(20_dam, 14_def );
@@ -1654,7 +1653,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.chatReactionHostile = "\"Die!\""_s;
           c.name = CreatureName("lizardman", "lizardmen");
       );
-    case CreatureId::LIZARDLORD: 
+  else if (id == "LIZARDLORD")
       return CATTR(
           c.viewId = ViewId::LIZARDLORD;
           c.attr = LIST(30_dam, 16_def );
@@ -1669,7 +1668,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.courage = 1;
           c.name = "lizardman chief";
       );
-    case CreatureId::ELF: 
+  else if (id == "ELF")
       return CATTR(
           c.viewId = Random.choose(ViewId::ELF, ViewId::ELF_WOMAN);
           c.attr = LIST(14_dam, 6_def );
@@ -1683,7 +1682,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.name = CreatureName("elf", "elves");
           c.hatedByEffect = LastingEffect::HATE_ELVES;
       );
-    case CreatureId::ELF_ARCHER: 
+  else if (id == "ELF_ARCHER")
       return CATTR(
           c.viewId = ViewId::ELF_ARCHER;
           c.attr = LIST(18_dam, 12_def, 25_ranged_dam );
@@ -1697,7 +1696,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.name = "elven archer";
           c.hatedByEffect = LastingEffect::HATE_ELVES;
       );
-    case CreatureId::ELF_CHILD: 
+  else if (id == "ELF_CHILD")
       return CATTR(
           c.viewId = ViewId::ELF_CHILD;
           c.attr = LIST(6_dam, 6_def );
@@ -1710,7 +1709,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.name = CreatureName("elf child", "elf children");
           c.hatedByEffect = LastingEffect::HATE_ELVES;
       );
-    case CreatureId::ELF_LORD: 
+  else if (id == "ELF_LORD")
       return CATTR(
           c.viewId = ViewId::ELF_LORD;
           c.attr = LIST(22_dam, 14_def, 16_spell_dam, 30_ranged_dam );
@@ -1731,7 +1730,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.name = "elf lord";
           c.hatedByEffect = LastingEffect::HATE_ELVES;
       );
-    case CreatureId::DARK_ELF:
+  else if (id == "DARK_ELF")
       return CATTR(
           c.viewId = Random.choose(ViewId::DARK_ELF, ViewId::DARK_ELF_WOMAN);
           c.attr = LIST(14_dam, 6_def );
@@ -1745,7 +1744,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.name = CreatureName("dark elf", "dark elves");
           c.hatedByEffect = LastingEffect::HATE_ELVES;
       );
-    case CreatureId::DARK_ELF_WARRIOR:
+  else if (id == "DARK_ELF_WARRIOR")
       return CATTR(
           c.viewId = ViewId::DARK_ELF_WARRIOR;
           c.attr = LIST(18_dam, 12_def, 6_spell_dam );
@@ -1760,7 +1759,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.name = CreatureName("dark elf", "dark elves");
           c.hatedByEffect = LastingEffect::HATE_ELVES;
       );
-    case CreatureId::DARK_ELF_CHILD:
+  else if (id == "DARK_ELF_CHILD")
       return CATTR(
           c.viewId = ViewId::DARK_ELF_CHILD;
           c.attr = LIST(6_dam, 6_def );
@@ -1773,7 +1772,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.name = CreatureName("dark elf child", "dark elf children");
           c.hatedByEffect = LastingEffect::HATE_ELVES;
       );
-    case CreatureId::DARK_ELF_LORD:
+  else if (id == "DARK_ELF_LORD")
       return CATTR(
           c.viewId = ViewId::DARK_ELF_LORD;
           c.attr = LIST(22_dam, 14_def, 16_spell_dam );
@@ -1792,7 +1791,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.name = "dark elf lord";
           c.hatedByEffect = LastingEffect::HATE_ELVES;
       );
-    case CreatureId::DRIAD: 
+  else if (id == "DRIAD")
       return CATTR(
           c.viewId = ViewId::DRIAD;
           c.attr = LIST(6_dam, 14_def, 25_ranged_dam );
@@ -1805,7 +1804,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.maxLevelIncrease[ExperienceType::ARCHERY] = 4;
           c.name = "driad";
       );
-    case CreatureId::HORSE: 
+  else if (id == "HORSE")
       return CATTR(
           c.viewId = ViewId::HORSE;
           c.attr = LIST(16_dam, 7_def );
@@ -1816,7 +1815,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.petReaction = "neighs"_s;
           c.name = "horse";
       );
-    case CreatureId::COW: 
+  else if (id == "COW")
       return CATTR(
           c.viewId = ViewId::COW;
           c.attr = LIST(10_dam, 7_def );
@@ -1827,7 +1826,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.petReaction = "\"Mooooooooooooooooooooooooooo!\""_s;
           c.name = "cow";
       );
-    case CreatureId::DONKEY: 
+  else if (id == "DONKEY")
       return CATTR(
           c.viewId = ViewId::DONKEY;
           c.attr = LIST(10_dam, 7_def );
@@ -1838,7 +1837,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.noChase = true;
           c.name = "donkey";
       );
-    case CreatureId::PIG: 
+  else if (id == "PIG")
       return CATTR(
           c.viewId = ViewId::PIG;
           c.attr = LIST(5_dam, 2_def );
@@ -1851,7 +1850,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.noChase = true;
           c.name = "pig";
       );
-    case CreatureId::GOAT:
+  else if (id == "GOAT")
       return CATTR(
           c.viewId = ViewId::GOAT;
           c.attr = LIST(10_dam, 7_def );
@@ -1861,7 +1860,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.noChase = true;
           c.name = "goat";
       );
-    case CreatureId::JACKAL: 
+  else if (id == "JACKAL")
       return CATTR(
           c.viewId = ViewId::JACKAL;
           c.attr = LIST(15_dam, 10_def );
@@ -1870,7 +1869,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.body->setHorseBodyParts(1);
           c.name = "jackal";
       );
-    case CreatureId::DEER: 
+  else if (id == "DEER")
       return CATTR(
           c.viewId = ViewId::DEER;
           c.attr = LIST(10_dam, 10_def );
@@ -1881,7 +1880,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.noChase = true;
           c.name = CreatureName("deer", "deer");
       );
-    case CreatureId::BOAR: 
+  else if (id == "BOAR")
       return CATTR(
           c.viewId = ViewId::BOAR;
           c.attr = LIST(10_dam, 10_def );
@@ -1891,7 +1890,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.noChase = true;
           c.name = "boar";
       );
-    case CreatureId::FOX: 
+  else if (id == "FOX")
       return CATTR(
           c.viewId = ViewId::FOX;
           c.attr = LIST(10_dam, 5_def );
@@ -1901,7 +1900,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.noChase = true;
           c.name = CreatureName("fox", "foxes");
       );
-    case CreatureId::CAVE_BEAR:
+  else if (id == "CAVE_BEAR")
       return CATTR(
           c.viewId = ViewId::BEAR;
           c.attr = LIST(20_dam, 18_def );
@@ -1912,7 +1911,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.permanentEffects[LastingEffect::EXPLORE_CAVES_SKILL] = 1;
           c.name = "cave bear";
       );
-    case CreatureId::RAT: 
+  else if (id == "RAT")
       return CATTR(
           c.viewId = ViewId::RAT;
           c.attr = LIST(2_dam, 2_def );
@@ -1924,7 +1923,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.permanentEffects[LastingEffect::SWIMMING_SKILL] = 1;
           c.name = "rat";
       );
-    case CreatureId::SPIDER: 
+  else if (id == "SPIDER")
       return CATTR(
           c.viewId = ViewId::SPIDER;
           c.attr = LIST(9_dam, 13_def );
@@ -1936,7 +1935,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
               ItemType::fangs(1, Effect::Lasting{LastingEffect::POISON})));
           c.name = "spider";
       );
-    case CreatureId::FLY: 
+  else if (id == "FLY")
       return CATTR(
           c.viewId = ViewId::FLY;
           c.attr = LIST(2_dam, 12_def );
@@ -1948,7 +1947,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.noChase = true;
           c.name = CreatureName("fly", "flies");
       );
-    case CreatureId::ANT_WORKER:
+  else if (id == "ANT_WORKER")
       return CATTR(
           c.viewId = ViewId::ANT_WORKER;
           c.attr = LIST(16_dam, 16_def );
@@ -1958,7 +1957,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.body->setDeathSound(none);
           c.name = "giant ant";
       );
-    case CreatureId::ANT_SOLDIER:
+  else if (id == "ANT_SOLDIER")
       return CATTR(
           c.viewId = ViewId::ANT_SOLDIER;
           c.attr = LIST(30_dam, 20_def );
@@ -1971,7 +1970,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
               ItemType::fangs(6, Effect::Lasting{LastingEffect::POISON})));
           c.name = "giant ant soldier";
       );
-    case CreatureId::ANT_QUEEN:      
+  else if (id == "ANT_QUEEN")
       return CATTR(
           c.viewId = ViewId::ANT_QUEEN;
           c.attr = LIST(30_dam, 26_def );
@@ -1983,7 +1982,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
               ItemType::fangs(12, Effect::Lasting{LastingEffect::POISON})));
           c.name = "ant queen";
       );
-    case CreatureId::SNAKE: 
+  else if (id == "SNAKE")
       return CATTR(
           c.viewId = ViewId::SNAKE;
           c.attr = LIST(14_dam, 14_def );
@@ -1996,7 +1995,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.permanentEffects[LastingEffect::SWIMMING_SKILL] = 1;
           c.name = "snake";
       );
-    case CreatureId::RAVEN: 
+  else if (id == "RAVEN")
       return CATTR(
           c.viewId = ViewId::RAVEN;
           c.attr = LIST(2_dam, 12_def );
@@ -2011,7 +2010,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.name = "raven";
           c.name->setGroup("flock");
       );
-    case CreatureId::VULTURE: 
+  else if (id == "VULTURE")
       return CATTR(
           c.viewId = ViewId::VULTURE;
           c.attr = LIST(2_dam, 12_def );
@@ -2023,7 +2022,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.courage = 1;
           c.name = "vulture";
       );
-    case CreatureId::WOLF: 
+  else if (id == "WOLF")
       return CATTR(
           c.viewId = ViewId::WOLF;
           c.attr = LIST(18_dam, 11_def );
@@ -2038,7 +2037,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.name->setFirst(nameGenerator->getNext(NameGeneratorId::DOG));
           c.permanentEffects[LastingEffect::EXPLORE_NOCTURNAL_SKILL] = 1;
       );
-    case CreatureId::WEREWOLF:
+  else if (id == "WEREWOLF")
       return CATTR(
           c.viewId = ViewId::WEREWOLF;
           c.attr = LIST(20_dam, 7_def );
@@ -2054,7 +2053,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.name->setFirst(nameGenerator->getNext(NameGeneratorId::DOG));
           c.body->setIntrinsicAttack(BodyPart::HEAD, IntrinsicAttack(ItemType::fangs(8)));
       );
-    case CreatureId::DOG: 
+  else if (id == "DOG")
       return CATTR(
           c.viewId = ViewId::DOG;
           c.attr = LIST(18_dam, 7_def );
@@ -2067,7 +2066,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.petReaction = "\"WOOF!\""_s;
           c.name->setFirst(nameGenerator->getNext(NameGeneratorId::DOG));
       );
-    case CreatureId::FIRE_SPHERE: 
+  else if (id == "FIRE_SPHERE")
       return CATTR(
           c.viewId = ViewId::FIRE_SPHERE;
           c.attr = LIST(5_dam, 15_def );
@@ -2078,7 +2077,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.permanentEffects[LastingEffect::LIGHT_SOURCE] = 1;
           c.name = "fire sphere";
       );
-    case CreatureId::ELEMENTALIST: 
+  else if (id == "ELEMENTALIST")
       return CATTR(
           c.viewId = ViewId::ELEMENTALIST;
           c.attr = LIST(15_dam, 20_def, 15_spell_dam );
@@ -2094,7 +2093,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.name->setFirst(nameGenerator->getNext(NameGeneratorId::FIRST_FEMALE));
           c.hatedByEffect = LastingEffect::HATE_HUMANS;
       );
-    case CreatureId::FIRE_ELEMENTAL:
+  else if (id == "FIRE_ELEMENTAL")
       return CATTR(
           c.viewId = ViewId::FIRE_ELEMENTAL;
           c.body = Body::nonHumanoid(Body::Material::FIRE, Body::Size::LARGE);
@@ -2105,7 +2104,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.permanentEffects[LastingEffect::FLYING] = 1;
           c.name = "fire elemental";
       );
-    case CreatureId::AIR_ELEMENTAL:
+  else if (id == "AIR_ELEMENTAL")
       return CATTR(
           c.viewId = ViewId::AIR_ELEMENTAL;
           c.body = Body::nonHumanoid(Body::Material::SPIRIT, Body::Size::LARGE);
@@ -2117,7 +2116,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.spells->add(SpellId::CIRCULAR_BLAST);
           c.name = "air elemental";
       );
-    case CreatureId::EARTH_ELEMENTAL:
+  else if (id == "EARTH_ELEMENTAL")
       return CATTR(
           c.viewId = ViewId::EARTH_ELEMENTAL;
           c.body = Body::nonHumanoid(Body::Material::ROCK, Body::Size::LARGE);
@@ -2128,7 +2127,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.permanentEffects[LastingEffect::RANGED_RESISTANCE] = 1;
           c.name = "earth elemental";
       );
-    case CreatureId::WATER_ELEMENTAL:
+  else if (id == "WATER_ELEMENTAL")
       return CATTR(
           c.viewId = ViewId::WATER_ELEMENTAL;
           c.body = Body::nonHumanoid(Body::Material::WATER, Body::Size::LARGE);
@@ -2140,7 +2139,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.permanentEffects[LastingEffect::SWIMMING_SKILL] = 1;
           c.name = "water elemental";
       );
-    case CreatureId::ENT:
+  else if (id == "ENT")
       return CATTR(
           c.viewId = ViewId::ENT;
           c.body = Body::nonHumanoid(Body::Material::WOOD, Body::Size::HUGE);
@@ -2153,7 +2152,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.chatReactionHostile = "\"Die!\""_s;
           c.name = "tree spirit";
       );
-    case CreatureId::ANGEL:
+  else if (id == "ANGEL")
       return CATTR(
           c.viewId = ViewId::ANGEL;
           c.attr = LIST(22_def, 20_spell_dam );
@@ -2162,9 +2161,9 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.chatReactionHostile = "\"Die!\""_s;
           c.name = "angel";
       );
-    case CreatureId::KRAKEN:
+  else if (id == "KRAKEN")
       return getKrakenAttributes(ViewId::KRAKEN_HEAD, "kraken");
-    case CreatureId::BAT: 
+  else if (id == "BAT")
       return CATTR(
           c.viewId = ViewId::BAT;
           c.body = Body::nonHumanoid(Body::Size::SMALL);
@@ -2179,7 +2178,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
           c.permanentEffects[LastingEffect::EXPLORE_CAVES_SKILL] = 1;
           c.name = "bat";
       );
-    case CreatureId::DEATH: 
+  else if (id == "DEATH")
       return CATTR(
           c.viewId = ViewId::DEATH;
           c.attr = LIST(100_spell_dam, 35_def);
@@ -2188,67 +2187,63 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
               "YOU HAVE TO TAKE YOUR FORTUNE TO THE LAST MINUTE.\""_s;
           c.name = "Death";
       );
-    default: FATAL << "This is not handled here " << int(id);
-  }
-  FATAL << "unhandled case";
-  return CreatureAttributes([](CreatureAttributes&) {});
+  FATAL << "This is not handled here " << id;
+  fail();
 }
 
 ControllerFactory getController(CreatureId id, MonsterAIFactory normalFactory) {
-  switch (id) {
-    case CreatureId::KRAKEN:
-      return ControllerFactory([=](WCreature c) {
-          return makeOwner<KrakenController>(c);
-          });
-    default: return Monster::getFactory(normalFactory);
-  }
+  if (id == "KRAKEN")
+    return ControllerFactory([=](WCreature c) {
+        return makeOwner<KrakenController>(c);
+        });
+  else
+    return Monster::getFactory(normalFactory);
 }
 
 PCreature CreatureFactory::get(CreatureId id, TribeId tribe, MonsterAIFactory aiFactory) const {
   ControllerFactory factory = Monster::getFactory(aiFactory);
-  switch (id) {
-    case CreatureId::SPECIAL_BLBN:
-      return getSpecial(tribe, false, true, true, false, factory);
-    case CreatureId::SPECIAL_BLBW:
-      return getSpecial(tribe, false, true, true, true, factory);
-    case CreatureId::SPECIAL_BLGN:
-      return getSpecial(tribe, false, true, false, false, factory);
-    case CreatureId::SPECIAL_BLGW:
-      return getSpecial(tribe, false, true, false, true, factory);
-    case CreatureId::SPECIAL_BMBN:
-      return getSpecial(tribe, false, false, true, false, factory);
-    case CreatureId::SPECIAL_BMBW:
-      return getSpecial(tribe, false, false, true, true, factory);
-    case CreatureId::SPECIAL_BMGN:
-      return getSpecial(tribe, false, false, false, false, factory);
-    case CreatureId::SPECIAL_BMGW:
-      return getSpecial(tribe, false, false, false, true, factory);
-    case CreatureId::SPECIAL_HLBN:
-      return getSpecial(tribe, true, true, true, false, factory);
-    case CreatureId::SPECIAL_HLBW:
-      return getSpecial(tribe, true, true, true, true, factory);
-    case CreatureId::SPECIAL_HLGN:
-      return getSpecial(tribe, true, true, false, false, factory);
-    case CreatureId::SPECIAL_HLGW:
-      return getSpecial(tribe, true, true, false, true, factory);
-    case CreatureId::SPECIAL_HMBN:
-      return getSpecial(tribe, true, false, true, false, factory);
-    case CreatureId::SPECIAL_HMBW:
-      return getSpecial(tribe, true, false, true, true, factory);
-    case CreatureId::SPECIAL_HMGN:
-      return getSpecial(tribe, true, false, false, false, factory);
-    case CreatureId::SPECIAL_HMGW:
-      return getSpecial(tribe, true, false, false, true, factory);
-    case CreatureId::SOKOBAN_BOULDER:
-      return getSokobanBoulder(tribe);
-    default: return get(getAttributes(id), tribe, getController(id, aiFactory));
-  }
+  if (id == "SPECIAL_BLBN")
+    return getSpecial(tribe, false, true, true, false, factory);
+  else if (id == "SPECIAL_BLBW")
+    return getSpecial(tribe, false, true, true, true, factory);
+  else if (id == "SPECIAL_BLGN")
+    return getSpecial(tribe, false, true, false, false, factory);
+  else if (id == "SPECIAL_BLGW")
+    return getSpecial(tribe, false, true, false, true, factory);
+  else if (id == "SPECIAL_BMBN")
+    return getSpecial(tribe, false, false, true, false, factory);
+  else if (id == "SPECIAL_BMBW")
+    return getSpecial(tribe, false, false, true, true, factory);
+  else if (id == "SPECIAL_BMGN")
+    return getSpecial(tribe, false, false, false, false, factory);
+  else if (id == "SPECIAL_BMGW")
+    return getSpecial(tribe, false, false, false, true, factory);
+  else if (id == "SPECIAL_HLBN")
+    return getSpecial(tribe, true, true, true, false, factory);
+  else if (id == "SPECIAL_HLBW")
+    return getSpecial(tribe, true, true, true, true, factory);
+  else if (id == "SPECIAL_HLGN")
+    return getSpecial(tribe, true, true, false, false, factory);
+  else if (id == "SPECIAL_HLGW")
+    return getSpecial(tribe, true, true, false, true, factory);
+  else if (id == "SPECIAL_HMBN")
+    return getSpecial(tribe, true, false, true, false, factory);
+  else if (id == "SPECIAL_HMBW")
+    return getSpecial(tribe, true, false, true, true, factory);
+  else if (id == "SPECIAL_HMGN")
+    return getSpecial(tribe, true, false, false, false, factory);
+  else if (id == "SPECIAL_HMGW")
+    return getSpecial(tribe, true, false, false, true, factory);
+  else if (id == "SOKOBAN_BOULDER")
+    return getSokobanBoulder(tribe);
+  else
+    return get(getAttributes(id), tribe, getController(id, aiFactory));
 }
 
 PCreature CreatureFactory::getGhost(WCreature creature) const {
   ViewObject viewObject(creature->getViewObject().id(), ViewLayer::CREATURE, "Ghost");
   viewObject.setModifier(ViewObject::Modifier::ILLUSION);
-  auto ret = makeOwner<Creature>(viewObject, creature->getTribeId(), getAttributes(CreatureId::LOST_SOUL));
+  auto ret = makeOwner<Creature>(viewObject, creature->getTribeId(), getAttributes("LOST_SOUL"));
   ret->setController(Monster::getFactory(MonsterAIFactory::monster()).get(ret.get()));
   return ret;
 }
@@ -2303,34 +2298,27 @@ class ItemList {
 };
 
 static vector<ItemType> getDefaultInventory(CreatureId id) {
-  switch (id) {
-    case CreatureId::KEEPER_MAGE_F:
-    case CreatureId::KEEPER_MAGE:
-      return ItemList()
-        .add(ItemType(ItemType::Robe{}));
-    case CreatureId::KEEPER_KNIGHT_F:
-    case CreatureId::KEEPER_KNIGHT:
-    case CreatureId::KEEPER_KNIGHT_WHITE_F:
-    case CreatureId::KEEPER_KNIGHT_WHITE:
+  if (id == "KEEPER_MAGE_F" || id == "KEEPER_MAGE")
+    return ItemList()
+      .add(ItemType(ItemType::Robe{}));
+  else if (id == "KEEPER_KNIGHT_F" || id == "KEEPER_KNIGHT" || id == "KEEPER_KNIGHT_WHITE_F" || id == "KEEPER_KNIGHT_WHITE")
       return ItemList()
         .add(ItemType::LeatherArmor{})
         .add(ItemType::LeatherHelm{})
         .add(ItemType::Sword{});
-    case CreatureId::CYCLOPS:
+  else if (id == "CYCLOPS")
       return ItemList()
         .add(ItemType::HeavyClub{})
         .add(ItemType::GoldPiece{}, Random.get(40, 80));
-    case CreatureId::GREEN_DRAGON:
+  else if (id == "GREEN_DRAGON")
       return ItemList().add(ItemType::GoldPiece{}, Random.get(60, 100));
-    case CreatureId::DEMON_DWELLER:
+  else if (id == "DEMON_DWELLER")
       return ItemList().add(ItemType::GoldPiece{}, Random.get(5, 10));
-    case CreatureId::RED_DRAGON:
+  else if (id == "RED_DRAGON")
       return ItemList().add(ItemType::GoldPiece{}, Random.get(120, 200));
-    case CreatureId::DEMON_LORD:
-    case CreatureId::ANGEL:
+  else if (id == "DEMON_LORD" || id == "ANGEL")
       return ItemList().add(ItemType(ItemType::Sword{}).setPrefixChance(1));
-    case CreatureId::ADVENTURER_F:
-    case CreatureId::ADVENTURER:
+  else if (id == "ADVENTURER_F" || id == "ADVENTURER")
       return ItemList()
         .add(ItemType::FirstAidKit{}, 3)
         .add(ItemType::Knife{})
@@ -2339,41 +2327,41 @@ static vector<ItemType> getDefaultInventory(CreatureId id) {
         .add(ItemType::LeatherArmor{})
         .add(ItemType::LeatherHelm{})
         .add(ItemType::GoldPiece{}, Random.get(16, 26));
-    case CreatureId::ELEMENTALIST:
+  else if (id == "ELEMENTALIST")
       return ItemList()
           .add(ItemType::IronStaff{})
           .add(ItemType::Torch{});
-    case CreatureId::DEATH:
+  else if (id == "DEATH")
       return ItemList()
         .add(ItemType::Scythe{});
-    case CreatureId::KOBOLD:
+  else if (id == "KOBOLD")
       return ItemList()
         .add(ItemType::Spear{});
-    case CreatureId::GOBLIN:
+  else if (id == "GOBLIN")
       return ItemList()
         .add(ItemType::Club{})
         .maybe(0.3, ItemType::LeatherBoots{});
-    case CreatureId::WARRIOR: 
+  else if (id == "WARRIOR")
       return ItemList()
         .add(ItemType::LeatherArmor{})
         .add(ItemType::Club{})
         .add(ItemType::GoldPiece{}, Random.get(2, 5));
-    case CreatureId::SHAMAN: 
+  else if (id == "SHAMAN")
       return ItemList()
         .add(ItemType::LeatherArmor{})
         .add(ItemType::Club{})
         .add(ItemType::GoldPiece{}, Random.get(80, 120));
-    case CreatureId::LIZARDLORD:
+  else if (id == "LIZARDLORD")
       return ItemList().add(ItemType::LeatherArmor{})
         .add(ItemType::Potion{Effect::RegrowBodyPart{}})
         .add(ItemType::GoldPiece{}, Random.get(50, 90));
-    case CreatureId::LIZARDMAN:
+  else if (id == "LIZARDMAN")
       return ItemList().add(ItemType::LeatherArmor{})
         .add(ItemType::GoldPiece{}, Random.get(2, 4));
-    case CreatureId::HARPY: 
+  else if (id == "HARPY")
       return ItemList()
         .add(ItemType::Bow{});
-    case CreatureId::ARCHER: 
+  else if (id == "ARCHER")
       return ItemList()
         .add(ItemType::Bow{})
         .add(ItemType::Knife{})
@@ -2382,7 +2370,7 @@ static vector<ItemType> getDefaultInventory(CreatureId id) {
         .maybe(0.3, ItemType::Torch{})
         .add(randomHealing())
         .add(ItemType::GoldPiece{}, Random.get(4, 10));
-    case CreatureId::WITCHMAN:
+  else if (id == "WITCHMAN")
       return ItemList()
         .add(ItemType::Sword{})
         .add(ItemType::LeatherArmor{})
@@ -2390,12 +2378,12 @@ static vector<ItemType> getDefaultInventory(CreatureId id) {
         .add(randomHealing())
         .add(ItemType::Potion{Effect::Lasting{LastingEffect::SPEED}}, 4)
         .add(ItemType::GoldPiece{}, Random.get(60, 80));
-    case CreatureId::PRIEST:
+  else if (id == "PRIEST")
       return ItemList()
         .add(ItemType::IronStaff{})
         .add(ItemType::LeatherBoots{})
         .add(ItemType(ItemType::Robe{}).setPrefixChance(1));
-    case CreatureId::KNIGHT:
+  else if (id == "KNIGHT")
       return ItemList()
         .add(ItemType::Sword{})
         .add(ItemType::ChainArmor{})
@@ -2403,10 +2391,10 @@ static vector<ItemType> getDefaultInventory(CreatureId id) {
         .maybe(0.3, ItemType::Torch{})
         .add(randomHealing())
         .add(ItemType::GoldPiece{}, Random.get(6, 16));
-    case CreatureId::MINOTAUR: 
+  else if (id == "MINOTAUR")
       return ItemList()
         .add(ItemType::BattleAxe{});
-    case CreatureId::DUKE: 
+  else if (id == "DUKE")
       return ItemList()
         .add(ItemType(ItemType::BattleAxe{}).setPrefixChance(1))
         .add(ItemType::ChainArmor{})
@@ -2415,19 +2403,19 @@ static vector<ItemType> getDefaultInventory(CreatureId id) {
         .add(randomHealing(), 3)
         .maybe(0.3, ItemType::Torch{})
         .add(ItemType::GoldPiece{}, Random.get(140, 200));
-    case CreatureId::ORC:
+  else if (id == "ORC")
       return ItemList()
         .add(ItemType::Club{})
         .add(ItemType::LeatherArmor{});
-    case CreatureId::OGRE:
+  else if (id == "OGRE")
       return ItemList().add(ItemType::HeavyClub{});
-    case CreatureId::BANDIT:
+  else if (id == "BANDIT")
       return ItemList()
         .add(ItemType::Sword{})
         .maybe(0.3, randomBackup())
         .maybe(0.3, ItemType::Torch{})
         .maybe(0.05, ItemType::Bow{});
-    case CreatureId::DWARF:
+  else if (id == "DWARF")
       return ItemList()
         .add(Random.choose({ItemType(ItemType::BattleAxe{}), ItemType(ItemType::WarHammer{})}, {1, 1}))
         .maybe(0.6, randomBackup())
@@ -2436,7 +2424,7 @@ static vector<ItemType> getDefaultInventory(CreatureId id) {
         .maybe(0.3, ItemType::IronBoots{})
         .maybe(0.3, ItemType::Torch{})
         .add(ItemType::GoldPiece{}, Random.get(2, 6));
-    case CreatureId::DWARF_BARON: 
+  else if (id == "DWARF_BARON")
       return ItemList()
         .add(Random.choose(
             ItemType(ItemType::BattleAxe{}).setPrefixChance(1),
@@ -2448,39 +2436,38 @@ static vector<ItemType> getDefaultInventory(CreatureId id) {
         .add(ItemType::IronHelm{})
         .maybe(0.3, ItemType::Torch{})
         .add(ItemType::GoldPiece{}, Random.get(80, 120));
-    case CreatureId::GNOME_CHIEF:
+  else if (id == "GNOME_CHIEF")
       return ItemList()
         .add(ItemType::Sword{})
         .add(randomBackup());
-    case CreatureId::VAMPIRE_LORD:
+  else if (id == "VAMPIRE_LORD")
       return ItemList()
         .add(ItemType(ItemType::Robe{}))
         .add(ItemType(ItemType::IronStaff{}));
-    case CreatureId::DARK_ELF_LORD: 
-    case CreatureId::ELF_LORD: 
+  else if (id == "DARK_ELF_LORD" || id == "ELF_LORD")
       return ItemList()
         .add(ItemType(ItemType::ElvenSword{}).setPrefixChance(1))
         .add(ItemType::LeatherArmor{})
         .add(ItemType::ElvenBow{})
         .add(ItemType::GoldPiece{}, Random.get(80, 120))
         .add(randomBackup());
-    case CreatureId::DRIAD: 
+  else if (id == "DRIAD")
       return ItemList()
         .add(ItemType::Bow{});
-    case CreatureId::DARK_ELF_WARRIOR: 
+  else if (id == "DARK_ELF_WARRIOR")
       return ItemList()
         .add(ItemType::ElvenSword{})
         .add(ItemType::LeatherArmor{})
         .add(ItemType::GoldPiece{}, Random.get(2, 6))
         .add(randomBackup());
-    case CreatureId::ELF_ARCHER: 
+  else if (id == "ELF_ARCHER")
       return ItemList()
         .add(ItemType::ElvenSword{})
         .add(ItemType::LeatherArmor{})
         .add(ItemType::Bow{})
         .add(ItemType::GoldPiece{}, Random.get(2, 6))
         .add(randomBackup());
-    case CreatureId::WITCH:
+  else if (id == "WITCH")
       return ItemList()
         .add(ItemType::Knife{})
         .add({
@@ -2491,12 +2478,12 @@ static vector<ItemType> getDefaultInventory(CreatureId id) {
             ItemType::Potion{Effect::Lasting{LastingEffect::INVISIBLE}},
             ItemType::Potion{Effect::Lasting{LastingEffect::POISON}},
             ItemType::Potion{Effect::Lasting{LastingEffect::SPEED}}});
-    case CreatureId::HALLOWEEN_KID:
+  else if (id == "HALLOWEEN_KID")
       return ItemList()
         .add(ItemType::BagOfCandies{})
         .add(ItemType::HalloweenCostume{});
-    default: return {};
-  }
+  else
+    return {};
 }
 
 PCreature CreatureFactory::fromId(CreatureId id, TribeId t) const {

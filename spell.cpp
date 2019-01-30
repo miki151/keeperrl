@@ -75,7 +75,7 @@ void Spell::addMessage(WCreature c) {
 
 void Spell::init() {
   set(SpellId::HEAL_SELF, new Spell("heal self", Effect::Heal{}, 15, SoundId::SPELL_HEALING));
-  set(SpellId::SUMMON_INSECTS, new Spell("summon insects", Effect::Summon{CreatureId::FLY, Range(3, 7)}, 30,
+  set(SpellId::SUMMON_INSECTS, new Spell("summon insects", Effect::Summon{"FLY", Range(3, 7)}, 30,
         SoundId::SPELL_SUMMON_INSECTS));
   set(SpellId::DECEPTION, new Spell("deception", Effect::Deception{}, 60, SoundId::SPELL_DECEPTION));
   set(SpellId::SPEED_SELF, new Spell("haste self", Effect::Lasting{LastingEffect::SPEED}, 60,
@@ -84,7 +84,7 @@ void Spell::init() {
   set(SpellId::DEF_BONUS, new Spell("defense", Effect::Lasting{LastingEffect::DEF_BONUS}, 50, SoundId::SPELL_DEX_BONUS));
   set(SpellId::HEAL_OTHER, new Spell("heal other",  DirEffectType(1, DirEffectId::CREATURE_EFFECT,
       Effect::Heal{}) , 15, SoundId::SPELL_HEALING));
-  set(SpellId::FIRE_SPHERE_PET, new Spell("fire sphere", Effect::Summon{CreatureId::FIRE_SPHERE, Range(1, 2)}, 80,
+  set(SpellId::FIRE_SPHERE_PET, new Spell("fire sphere", Effect::Summon{"FIRE_SPHERE", Range(1, 2)}, 80,
         SoundId::SPELL_FIRE_SPHERE_PET));
   set(SpellId::TELEPORT, new Spell("escape", Effect::Teleport{}, 80, SoundId::SPELL_TELEPORT));
   set(SpellId::INVISIBILITY, new Spell("invisibility", Effect::Lasting{LastingEffect::INVISIBLE}, 150,
@@ -98,7 +98,7 @@ void Spell::init() {
       SoundId::SPELL_BLAST, CastMessageType::BREATHE_FIRE));
   set(SpellId::CIRCULAR_BLAST, new Spell("circular blast", Effect::CircularBlast{}, 50, SoundId::SPELL_AIR_BLAST,
         CastMessageType::AIR_BLAST));
-  set(SpellId::SUMMON_SPIRIT, new Spell("summon spirits", Effect::Summon{CreatureId::SPIRIT, Range(3, 6)}, 50,
+  set(SpellId::SUMMON_SPIRIT, new Spell("summon spirits", Effect::Summon{"SPIRIT", Range(3, 6)}, 50,
         SoundId::SPELL_SUMMON_SPIRIT));
   set(SpellId::CURE_POISON, new Spell("cure poisoning", Effect::CurePoison{}, 50, SoundId::SPELL_CURE_POISON));
   set(SpellId::METEOR_SHOWER, new Spell("meteor shower", Effect::PlaceFurniture{FurnitureType::METEOR_SHOWER}, 150,

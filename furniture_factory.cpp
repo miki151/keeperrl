@@ -208,7 +208,7 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setDestroyable(70, DestroyAction::Type::CUT)
           .setFireInfo(Fire(1000, 0.7))
           .setItemDrop(ItemFactory::singleType(ItemType::WoodPlank{}, Range(8, 14)))
-          .setSummonedElement(CreatureId::ENT);
+          .setSummonedElement("ENT");
     case FurnitureType::DECID_TREE:
       return Furniture("tree", ViewObject(ViewId::DECID_TREE, ViewLayer::FLOOR), type, tribe)
           .setCanHide()
@@ -220,7 +220,7 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setDestroyable(100, DestroyAction::Type::BOULDER)
           .setDestroyable(70, DestroyAction::Type::CUT)
           .setItemDrop(ItemFactory::singleType(ItemType::WoodPlank{}, Range(8, 14)))
-          .setSummonedElement(CreatureId::ENT);
+          .setSummonedElement("ENT");
     case FurnitureType::TREE_TRUNK:
       return Furniture("tree trunk", ViewObject(ViewId::TREE_TRUNK, ViewLayer::FLOOR), type, tribe);
     case FurnitureType::BURNT_TREE:
@@ -293,7 +293,7 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setCanHide()
           .setLuxury(0.7)
           .setUsageType(FurnitureUsageType::FOUNTAIN)
-          .setSummonedElement(CreatureId::WATER_ELEMENTAL)
+          .setSummonedElement("WATER_ELEMENTAL")
           .setDestroyable(80);
     case FurnitureType::CHEST:
       return Furniture("chest", ViewObject(ViewId::CHEST, ViewLayer::FLOOR), type, tribe)
@@ -370,7 +370,7 @@ static Furniture get(FurnitureType type, TribeId tribe) {
       return Furniture("well", ViewObject(ViewId::WELL, ViewLayer::FLOOR), type, tribe)
           .setCanHide()
           .setFireInfo(Fire(500, 0.5))
-          .setSummonedElement(CreatureId::WATER_ELEMENTAL)
+          .setSummonedElement("WATER_ELEMENTAL")
           .setDestroyable(80);
     case FurnitureType::KEEPER_BOARD:
       return Furniture("message board", ViewObject(ViewId::NOTICE_BOARD, ViewLayer::FLOOR), type, tribe)
@@ -409,7 +409,7 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setDestroyable(30, DestroyAction::Type::DIG)
           .setDestroyable(200, DestroyAction::Type::HOSTILE_DIG)
           .setDestroyable(2000, DestroyAction::Type::HOSTILE_DIG_NO_SKILL)
-          .setSummonedElement(CreatureId::EARTH_ELEMENTAL);
+          .setSummonedElement("EARTH_ELEMENTAL");
     case FurnitureType::MOUNTAIN2:
       return Furniture("hard rock", ViewObject(ViewId::MOUNTAIN2, ViewLayer::FLOOR), type, tribe)
           .setBlocking()
@@ -421,7 +421,7 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setDestroyable(70, DestroyAction::Type::DIG)
           .setDestroyable(500, DestroyAction::Type::HOSTILE_DIG)
           .setDestroyable(2000, DestroyAction::Type::HOSTILE_DIG_NO_SKILL)
-          .setSummonedElement(CreatureId::EARTH_ELEMENTAL);
+          .setSummonedElement("EARTH_ELEMENTAL");
     case FurnitureType::ADAMANTIUM_ORE:
       return Furniture("adamantium ore", ViewObject(ViewId::ADAMANTIUM_ORE, ViewLayer::FLOOR), type, tribe)
           .setBlocking()
@@ -515,7 +515,7 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setDestroyable(100, DestroyAction::Type::DIG)
           .setDestroyable(300, DestroyAction::Type::HOSTILE_DIG)
           .setDestroyable(300, DestroyAction::Type::HOSTILE_DIG_NO_SKILL)
-          .setSummonedElement(CreatureId::ENT)
+          .setSummonedElement("ENT")
           .setFireInfo(Fire(1000, 0.7));
     case FurnitureType::MUD_WALL:
       return Furniture("wall", ViewObject(ViewId::MUD_WALL, ViewLayer::FLOOR), type, tribe)
@@ -614,7 +614,7 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setDroppedItems(FurnitureDroppedItems::Water{"sinks", "sink", "You hear a splash."_s})
           .setCanBuildBridgeOver()
           .setTickType(FurnitureTickType::EXTINGUISH_FIRE)
-          .setSummonedElement(CreatureId::WATER_ELEMENTAL);
+          .setSummonedElement("WATER_ELEMENTAL");
       ret.modMovementSet()
           .clearTraits()
           .addTrait(MovementTrait::FLY)
@@ -629,7 +629,7 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setEntryType(FurnitureEntry::Water{})
           .setCanBuildBridgeOver()
           .setTickType(FurnitureTickType::EXTINGUISH_FIRE)
-          .setSummonedElement(CreatureId::WATER_ELEMENTAL);
+          .setSummonedElement("WATER_ELEMENTAL");
       ret.modMovementSet()
           .clearTraits()
           .addForcibleTrait(MovementTrait::WALK)
@@ -645,7 +645,7 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setEntryType(FurnitureEntry::Water{})
           .setCanBuildBridgeOver()
           .setTickType(FurnitureTickType::EXTINGUISH_FIRE)
-          .setSummonedElement(CreatureId::WATER_ELEMENTAL);
+          .setSummonedElement("WATER_ELEMENTAL");
       ret.modMovementSet()
           .clearTraits()
           .addForcibleTrait(MovementTrait::WALK)
@@ -661,7 +661,7 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setDroppedItems(FurnitureDroppedItems::Water{"burns", "burn", none})
           .setLightEmission(8.2)
           .setCanBuildBridgeOver()
-          .setSummonedElement(CreatureId::FIRE_ELEMENTAL);
+          .setSummonedElement("FIRE_ELEMENTAL");
       ret.modMovementSet()
           .clearTraits()
           .addTrait(MovementTrait::FLY)

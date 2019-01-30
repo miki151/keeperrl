@@ -1281,7 +1281,7 @@ void PlayerControl::fillImmigration(CollectiveInfo& info) const {
 
 void PlayerControl::fillImmigrationHelp(CollectiveInfo& info) const {
   info.allImmigration.clear();
-  static EnumMap<CreatureId, PCreature> creatureStats;
+  static map<CreatureId, PCreature> creatureStats;
   auto getStats = [&](CreatureId id) -> WCreature {
     if (!creatureStats[id]) {
       creatureStats[id] = getGame()->getCreatureFactory()->fromId(id, TribeId::getDarkKeeper());

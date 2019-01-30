@@ -531,7 +531,7 @@ class Fighter : public Behaviour {
         Effect(Effect::Lasting{LastingEffect::DEF_BONUS}),
         Effect(Effect::Lasting{LastingEffect::SPEED}),
         Effect(Effect::Deception{}),
-        Effect(Effect::Summon{CreatureId::SPIRIT, Range(3, 6)})})
+        Effect(Effect::Summon{"SPIRIT", Range(3, 6)})})
       if (MoveInfo move = tryEffect(effect))
         return move;
     return NoMove;

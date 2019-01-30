@@ -36,7 +36,7 @@ static void handlePigsty(Position pos, WFurniture furniture) {
     if (v.getCreature() && v.getCreature()->getBody().isMinionFood())
       return;
   if (Random.roll(5)) {
-    PCreature pig = pos.getGame()->getCreatureFactory()->fromId(CreatureId::PIG, furniture->getTribe(),
+    PCreature pig = pos.getGame()->getCreatureFactory()->fromId("PIG", furniture->getTribe(),
         MonsterAIFactory::stayOnFurniture(furniture->getType()));
     if (pos.canEnter(pig.get()))
       pos.addCreature(std::move(pig));

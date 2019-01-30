@@ -531,8 +531,7 @@ void MainLoop::modelGenTest(int numTries, const vector<string>& types, RandomGen
 static CreatureList readAlly(ifstream& input) {
   string ally;
   input >> ally;
-  auto id = EnumInfo<CreatureId>::fromString(ally);
-  CreatureList ret(100, id);
+  CreatureList ret(100, ally);
   string levelIncreaseText;
   input >> levelIncreaseText;
   EnumMap<ExperienceType, int> levelIncrease;
@@ -573,7 +572,7 @@ void MainLoop::battleTest(int numTries, const FilePath& levelPath, const FilePat
   CreatureList enemies;
   for (auto& elem : split(enemy, {','})) {
     auto enemySplit = split(elem, {':'});
-    auto enemyId = EnumInfo<CreatureId>::fromString(enemySplit[0]);
+    auto enemyId = enemySplit[0];
     int count = enemySplit.size() > 1 ? fromString<int>(enemySplit[1]) : 1;
     for (int i : Range(count))
       enemies.addUnique(enemyId);

@@ -94,27 +94,27 @@ struct VaultInfo {
 
 static EnumMap<TribeAlignment, vector<VaultInfo>> friendlyVaults {
   {TribeAlignment::EVIL, {
-      {CreatureId::ORC, 3, 5},
-      {CreatureId::OGRE, 2, 4},
-      {CreatureId::VAMPIRE, 2, 4},
+      {"ORC", 3, 5},
+      {"OGRE", 2, 4},
+      {"VAMPIRE", 2, 4},
   }},
   {TribeAlignment::LAWFUL, {
-      {CreatureId::IRON_GOLEM, 3, 5},
-      {CreatureId::EARTH_ELEMENTAL, 2, 4},
+      {"IRON_GOLEM", 3, 5},
+      {"EARTH_ELEMENTAL", 2, 4},
   }},
 };
 
 static vector<VaultInfo> hostileVaults {
-  {CreatureId::SPIDER, 3, 8},
-  {CreatureId::SNAKE, 3, 8},
-  {CreatureId::BAT, 3, 8},
+  {"SPIDER", 3, 8},
+  {"SNAKE", 3, 8},
+  {"BAT", 3, 8},
 };
 
 vector<EnemyInfo> EnemyFactory::getVaults(TribeAlignment alignment, TribeId allied) const {
   vector<EnemyInfo> ret {
  /*   getVault(SettlementType::VAULT, CreatureGroup::insects(TribeId::getMonster()),
         TribeId::getMonster(), random.get(6, 12)),*/
-    getVault(SettlementType::VAULT, CreatureId::RAT, TribeId::getPest(), random.get(3, 8),
+    getVault(SettlementType::VAULT, "RAT", TribeId::getPest(), random.get(3, 8),
         ItemFactory::armory()),
   };
   for (int i : Range(1)) {
@@ -141,18 +141,18 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
      case EnemyId::UNICORN_HERD:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::FOREST;
-            c.inhabitants.fighters = CreatureList(random.get(5, 8), CreatureId::UNICORN);
+            c.inhabitants.fighters = CreatureList(random.get(5, 8), "UNICORN");
             c.tribe = TribeId::getMonster();
             c.race = "unicorns"_s;
             c.buildingId = BuildingId::WOOD;),
           CollectiveConfig::withImmigrants(200_visible, 9))
-          .setImmigrants({ImmigrantInfo(CreatureId::UNICORN, {MinionTrait::FIGHTER}).setFrequency(1)});
+          .setImmigrants({ImmigrantInfo("UNICORN", {MinionTrait::FIGHTER}).setFrequency(1)});
     case EnemyId::ANTS_CLOSED:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::ANT_NEST;
-            c.inhabitants.leader = CreatureId::ANT_QUEEN;
-            c.inhabitants.civilians = CreatureList(random.get(5, 7), CreatureId::ANT_WORKER);
-            c.inhabitants.fighters = CreatureList(random.get(5, 7), CreatureId::ANT_SOLDIER);
+            c.inhabitants.leader = CreatureList("ANT_QUEEN");
+            c.inhabitants.civilians = CreatureList(random.get(5, 7), "ANT_WORKER");
+            c.inhabitants.fighters = CreatureList(random.get(5, 7), "ANT_SOLDIER");
             c.dontConnectCave = true;
             c.surroundWithResources = 5;
             c.tribe = TribeId::getAnt();
@@ -165,13 +165,13 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
             c.triggers = LIST(AttackTriggerId::MINING_IN_PROXIMITY);
             c.attackBehaviour = AttackBehaviour(AttackBehaviourId::KILL_LEADER);))
           .setImmigrants({
-              ImmigrantInfo(CreatureId::ANT_WORKER, {}).setFrequency(1),
-              ImmigrantInfo(CreatureId::ANT_SOLDIER, {MinionTrait::FIGHTER}).setFrequency(1)});
+              ImmigrantInfo("ANT_WORKER", {}).setFrequency(1),
+              ImmigrantInfo("ANT_SOLDIER", {MinionTrait::FIGHTER}).setFrequency(1)});
     case EnemyId::ANTS_CLOSED_SMALL:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::SMALL_MINETOWN;
-            c.inhabitants.civilians = CreatureList(random.get(2, 5), CreatureId::ANT_WORKER);
-            c.inhabitants.fighters = CreatureList(random.get(3, 5), CreatureId::ANT_SOLDIER);
+            c.inhabitants.civilians = CreatureList(random.get(2, 5), "ANT_WORKER");
+            c.inhabitants.fighters = CreatureList(random.get(3, 5), "ANT_SOLDIER");
             c.tribe = TribeId::getAnt();
             c.race = "ants"_s;
             c.dontConnectCave = true;
@@ -194,7 +194,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
       int numGolems = 8;
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::VAULT;
-            c.inhabitants.fighters = CreatureList(numGolems, CreatureId::ADA_GOLEM);
+            c.inhabitants.fighters = CreatureList(numGolems, "ADA_GOLEM");
             c.tribe = TribeId::getAnt();
             c.race = "adamantine golems"_s;
             c.dontConnectCave = true;
@@ -214,7 +214,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
             c.tribe = TribeId::getGreenskin();
             c.inhabitants.fighters = CreatureList(
                 random.get(12, 16),
-                makeVec(CreatureId::ORC, CreatureId::OGRE));
+                makeVec<CreatureId>("ORC", "OGRE"));
             c.locationName = getVillageName();
             c.race = "greenskins"_s;
             c.buildingId = BuildingId::BRICK;
@@ -223,14 +223,14 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
           CollectiveConfig::withImmigrants(300_visible, 16))
         .setCreateOnBones(*this, 0.1, {EnemyId::DWARVES, EnemyId::VILLAGE})
         .setImmigrants({
-          ImmigrantInfo(CreatureId::ORC, {MinionTrait::FIGHTER}).setFrequency(3),
-          ImmigrantInfo(CreatureId::OGRE, {MinionTrait::FIGHTER}).setFrequency(1)
+          ImmigrantInfo("ORC", {MinionTrait::FIGHTER}).setFrequency(3),
+          ImmigrantInfo("OGRE", {MinionTrait::FIGHTER}).setFrequency(1)
         });
     case EnemyId::DEMON_DEN_ABOVE:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::VILLAGE;
             c.tribe = TribeId::getMonster();
-            c.inhabitants.fighters = CreatureList(random.get(2, 3), CreatureId::LOST_SOUL);
+            c.inhabitants.fighters = CreatureList(random.get(2, 3), "LOST_SOUL");
             c.buildingId = BuildingId::DUNGEON_SURFACE;
             c.locationName = "Darkshrine Town"_s;
             c.race = "ghosts"_s;
@@ -240,8 +240,8 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
     case EnemyId::DEMON_DEN:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.tribe = TribeId::getMonster();
-            c.inhabitants.leader = CreatureId::DEMON_LORD;
-            c.inhabitants.fighters = CreatureList(random.get(5, 10), CreatureId::DEMON_DWELLER);
+            c.inhabitants.leader = CreatureList("DEMON_LORD");
+            c.inhabitants.fighters = CreatureList(random.get(5, 10), "DEMON_DWELLER");
             c.locationName = "Darkshrine"_s;
             c.race = "demons"_s;
             c.furniture = FurnitureFactory::dungeonOutside(c.tribe);
@@ -257,20 +257,20 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
               c.ransom = make_pair(0.5, random.get(50, 100));),
             LevelConnection{LevelConnection::CRYPT, get(EnemyId::DEMON_DEN_ABOVE).setCreateOnBones(*this, 1.0, {EnemyId::KNIGHTS})})
           .setImmigrants({
-            ImmigrantInfo(CreatureId::DEMON_DWELLER, {MinionTrait::FIGHTER}).setFrequency(1),
+            ImmigrantInfo("DEMON_DWELLER", {MinionTrait::FIGHTER}).setFrequency(1),
           });
     case EnemyId::VILLAGE:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::VILLAGE;
             c.tribe = TribeId::getHuman();
-            c.inhabitants.leader = CreatureId::KNIGHT;
+            c.inhabitants.leader = CreatureList("KNIGHT");
             c.inhabitants.fighters = CreatureList(
                 random.get(4, 8),
-                makeVec(CreatureId::KNIGHT, CreatureId::ARCHER));
+                makeVec<CreatureId>("KNIGHT", "ARCHER"));
             c.inhabitants.civilians = CreatureList(
                 random.get(4, 8),
-                makeVec(CreatureId::PESEANT, CreatureId::CHILD, CreatureId::DONKEY, CreatureId::HORSE,
-                    CreatureId::COW, CreatureId::PIG, CreatureId::DOG));
+                makeVec<CreatureId>("PESEANT", "CHILD", "DONKEY", "HORSE",
+                    "COW", "PIG", "DOG"));
             c.locationName = getVillageName();
             c.race = "humans"_s;
             c.buildingId = BuildingId::WOOD;
@@ -281,8 +281,8 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::CASTLE2;
             c.tribe = TribeId::getHuman();
-            c.inhabitants.leader = CreatureId::SHAMAN;
-            c.inhabitants.fighters = CreatureList(random.get(7, 10), CreatureId::WARRIOR);
+            c.inhabitants.leader = CreatureList("SHAMAN");
+            c.inhabitants.fighters = CreatureList(random.get(7, 10), "WARRIOR");
             c.locationName = getVillageName();
             c.race = "humans"_s;
             c.buildingId = BuildingId::WOOD_CASTLE;
@@ -305,22 +305,22 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
               c.attackBehaviour = AttackBehaviour(AttackBehaviourId::KILL_LEADER);
               c.ransom = make_pair(0.8, random.get(100, 140));))
            .setImmigrants({
-             ImmigrantInfo(CreatureId::WARRIOR, {MinionTrait::FIGHTER}).setFrequency(1),
+             ImmigrantInfo("WARRIOR", {MinionTrait::FIGHTER}).setFrequency(1),
            });
     case EnemyId::KNIGHTS:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::CASTLE;
             c.tribe = TribeId::getHuman();
-            c.inhabitants.leader = CreatureId::DUKE;
+            c.inhabitants.leader = CreatureList("DUKE");
             c.inhabitants.fighters = CreatureList(
                 random.get(12, 17),
-                makeVec(make_pair(1, CreatureId::PRIEST),
-                    make_pair(3, CreatureId::KNIGHT),
-                    make_pair(1, CreatureId::ARCHER)));
+                makeVec(make_pair<int, CreatureId>(1, "PRIEST"),
+                    make_pair<int, CreatureId>(3, "KNIGHT"),
+                    make_pair<int, CreatureId>(1, "ARCHER")));
             c.inhabitants.civilians = CreatureList(
                 random.get(6, 9),
-                makeVec(CreatureId::PESEANT, CreatureId::CHILD, CreatureId::DONKEY, CreatureId::HORSE,
-                    CreatureId::COW, CreatureId::PIG, CreatureId::DOG));
+                makeVec<CreatureId>("PESEANT", "CHILD", "DONKEY", "HORSE",
+                    "COW", "PIG", "DOG"));
             c.locationName = getVillageName();
             c.race = "humans"_s;
             c.stockpiles = LIST({StockpileInfo::GOLD, 140});
@@ -345,14 +345,14 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
           random.roll(4) ? LevelConnection{LevelConnection::MAZE, get(EnemyId::MINOTAUR)}
               : optional<LevelConnection>(none))
           .setImmigrants({
-            ImmigrantInfo(CreatureId::ARCHER, {MinionTrait::FIGHTER}).setFrequency(1),
-            ImmigrantInfo(CreatureId::KNIGHT, {MinionTrait::FIGHTER}).setFrequency(1)
+            ImmigrantInfo("ARCHER", {MinionTrait::FIGHTER}).setFrequency(1),
+            ImmigrantInfo("KNIGHT", {MinionTrait::FIGHTER}).setFrequency(1)
           });
     case EnemyId::MINOTAUR:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::CAVE;
             c.tribe = TribeId::getMonster();
-            c.inhabitants.leader = CreatureId::MINOTAUR;
+            c.inhabitants.leader = CreatureList("MINOTAUR");
             c.locationName = "maze"_s;
             c.race = "monsters"_s;
             c.furniture = FurnitureFactory::roomFurniture(c.tribe);
@@ -360,7 +360,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
     case EnemyId::RED_DRAGON:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::CAVE;
-            c.inhabitants.leader = CreatureId::RED_DRAGON;
+            c.inhabitants.leader = CreatureList("RED_DRAGON");
             c.race = "dragon"_s;
             c.tribe = TribeId::getMonster();
             c.buildingId = BuildingId::DUNGEON;
@@ -382,7 +382,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
     case EnemyId::GREEN_DRAGON:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::CAVE;
-            c.inhabitants.leader = CreatureId::GREEN_DRAGON;
+            c.inhabitants.leader = CreatureList("GREEN_DRAGON");
             c.tribe = TribeId::getMonster();
             c.race = "dragon"_s;
             c.buildingId = BuildingId::DUNGEON;
@@ -404,11 +404,11 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::MINETOWN;
             c.tribe = TribeId::getDwarf();
-            c.inhabitants.leader = CreatureId::DWARF_BARON;
-            c.inhabitants.fighters = CreatureList(random.get(6, 9), CreatureId::DWARF);
+            c.inhabitants.leader = CreatureList("DWARF_BARON");
+            c.inhabitants.fighters = CreatureList(random.get(6, 9), "DWARF");
             c.inhabitants.civilians = CreatureList(
                 random.get(3, 5),
-                makeVec(make_pair(2, CreatureId::DWARF_FEMALE), make_pair(1, CreatureId::RAT)));
+                makeVec(make_pair<int, CreatureId>(2, "DWARF_FEMALE"), make_pair<int, CreatureId>(1, "RAT")));
             c.locationName = getVillageName();
             c.race = "dwarves"_s;
             c.buildingId = BuildingId::DUNGEON;
@@ -432,16 +432,16 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
             c.attackBehaviour = AttackBehaviour(AttackBehaviourId::KILL_MEMBERS, 3);
             c.ransom = make_pair(0.8, random.get(240, 320));))
           .setImmigrants({
-            ImmigrantInfo(CreatureId::DWARF, {MinionTrait::FIGHTER}).setFrequency(1),
+            ImmigrantInfo("DWARF", {MinionTrait::FIGHTER}).setFrequency(1),
           });
     case EnemyId::ELVES:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::FORREST_VILLAGE;
-            c.inhabitants.leader = CreatureId::ELF_LORD;
-            c.inhabitants.fighters = CreatureList(random.get(6, 9), CreatureId::ELF_ARCHER);
+            c.inhabitants.leader = CreatureList("ELF_LORD");
+            c.inhabitants.fighters = CreatureList(random.get(6, 9), "ELF_ARCHER");
             c.inhabitants.civilians = CreatureList(
                 random.get(6, 9),
-                makeVec(CreatureId::ELF, CreatureId::ELF_CHILD, CreatureId::HORSE));
+                makeVec<CreatureId>("ELF", "ELF_CHILD", "HORSE"));
             c.locationName = getVillageName();
             c.tribe = TribeId::getElf();
             c.race = "elves"_s;
@@ -456,7 +456,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
               c.triggers = LIST(AttackTriggerId::STOLEN_ITEMS);
               c.attackBehaviour = AttackBehaviour(AttackBehaviourId::KILL_LEADER);))
           .setImmigrants({
-            ImmigrantInfo(CreatureId::ELF_ARCHER, {MinionTrait::FIGHTER}).setFrequency(1),
+            ImmigrantInfo("ELF_ARCHER", {MinionTrait::FIGHTER}).setFrequency(1),
           });
     case EnemyId::ELEMENTALIST_ENTRY:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
@@ -468,7 +468,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
     case EnemyId::ELEMENTALIST:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::TOWER;
-            c.inhabitants.leader = CreatureId::ELEMENTALIST;
+            c.inhabitants.leader = CreatureList("ELEMENTALIST");
             c.tribe = TribeId::getHuman();
             c.buildingId = BuildingId::BRICK;
             c.furniture = FurnitureFactory::roomFurniture(TribeId::getPest());),
@@ -489,17 +489,17 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
     case EnemyId::NO_AGGRO_BANDITS:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::CAVE;
-            c.inhabitants.fighters = CreatureList(random.get(4, 9), CreatureId::BANDIT);
+            c.inhabitants.fighters = CreatureList(random.get(4, 9), "BANDIT");
             c.tribe = TribeId::getBandit();
             c.race = "bandits"_s;
             c.buildingId = BuildingId::DUNGEON;),
           CollectiveConfig::withImmigrants(1000_visible, 10))
          .setCreateOnBones(*this, 0.1, {EnemyId::KOBOLD_CAVE})
-         .setImmigrants({ ImmigrantInfo(CreatureId::BANDIT, {MinionTrait::FIGHTER}).setFrequency(1) });
+         .setImmigrants({ ImmigrantInfo("BANDIT", {MinionTrait::FIGHTER}).setFrequency(1) });
     case EnemyId::BANDITS:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::CAVE;
-            c.inhabitants.fighters = CreatureList(random.get(4, 9), CreatureId::BANDIT);
+            c.inhabitants.fighters = CreatureList(random.get(4, 9), "BANDIT");
             c.tribe = TribeId::getBandit();
             c.race = "bandits"_s;
             c.buildingId = BuildingId::DUNGEON;
@@ -512,13 +512,13 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
               c.attackBehaviour = AttackBehaviour(AttackBehaviourId::STEAL_GOLD);
               c.ransom = make_pair(0.5, random.get(40, 80));))
           .setCreateOnBones(*this, 0.1, {EnemyId::KOBOLD_CAVE})
-          .setImmigrants({ ImmigrantInfo(CreatureId::BANDIT, {MinionTrait::FIGHTER}).setFrequency(1) });
+          .setImmigrants({ ImmigrantInfo("BANDIT", {MinionTrait::FIGHTER}).setFrequency(1) });
     case EnemyId::COTTAGE_BANDITS:
       return getById(EnemyId::NO_AGGRO_BANDITS).setCreateOnBones(*this, 1.0, {EnemyId::HUMAN_COTTAGE});
     case EnemyId::ORC_CAVE:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::CAVE;
-            c.inhabitants.fighters = CreatureList(random.get(4, 9), CreatureId::ORC);
+            c.inhabitants.fighters = CreatureList(random.get(4, 9), "ORC");
             c.tribe = TribeId::getBandit();
             c.race = "orcs"_s;
             c.buildingId = BuildingId::DUNGEON;
@@ -531,13 +531,13 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
               c.attackBehaviour = AttackBehaviour(AttackBehaviourId::STEAL_GOLD);
               c.ransom = make_pair(0.5, random.get(40, 80));))
           .setCreateOnBones(*this, 0.1, {EnemyId::KOBOLD_CAVE})
-          .setImmigrants({ ImmigrantInfo(CreatureId::ORC, {MinionTrait::FIGHTER}).setFrequency(1) });
+          .setImmigrants({ ImmigrantInfo("ORC", {MinionTrait::FIGHTER}).setFrequency(1) });
     case EnemyId::LIZARDMEN:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::VILLAGE;
             c.tribe = TribeId::getLizard();
-            c.inhabitants.leader = CreatureId::LIZARDLORD;
-            c.inhabitants.fighters = CreatureList(random.get(7, 10), CreatureId::LIZARDMAN);
+            c.inhabitants.leader = CreatureList("LIZARDLORD");
+            c.inhabitants.fighters = CreatureList(random.get(7, 10), "LIZARDMAN");
             c.locationName = getVillageName();
             c.race = "lizardmen"_s;
             c.buildingId = BuildingId::MUD;
@@ -559,16 +559,16 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
                   AttackTriggerId::PROXIMITY);
               c.attackBehaviour = AttackBehaviour(AttackBehaviourId::KILL_LEADER);))
           .setCreateOnBones(*this, 1.0, {EnemyId::VILLAGE, EnemyId::ELVES})
-          .setImmigrants({ ImmigrantInfo(CreatureId::LIZARDMAN, {MinionTrait::FIGHTER}).setFrequency(1) });
+          .setImmigrants({ ImmigrantInfo("LIZARDMAN", {MinionTrait::FIGHTER}).setFrequency(1) });
     case EnemyId::DARK_ELVES_ALLY:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::MINETOWN;
             c.tribe = TribeId::getDarkElf();
-            c.inhabitants.leader = CreatureId::DARK_ELF_LORD;
-            c.inhabitants.fighters = CreatureList(random.get(6, 9), CreatureId::DARK_ELF_WARRIOR);
+            c.inhabitants.leader = CreatureList("DARK_ELF_LORD");
+            c.inhabitants.fighters = CreatureList(random.get(6, 9), "DARK_ELF_WARRIOR");
             c.inhabitants.civilians = CreatureList(
                 random.get(6, 9),
-                makeVec(CreatureId::DARK_ELF, CreatureId::DARK_ELF_CHILD, CreatureId::RAT));
+                makeVec<CreatureId>("DARK_ELF", "DARK_ELF_CHILD", "RAT"));
             c.locationName = getVillageName();
             c.race = "dark elves"_s;
             c.buildingId = BuildingId::DUNGEON;
@@ -576,16 +576,16 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
             c.furniture = FurnitureFactory::roomFurniture(c.tribe);),
           CollectiveConfig::withImmigrants(500_visible, 15), none,
           LevelConnection{LevelConnection::GNOMISH_MINES, get(EnemyId::DARK_ELVES_ENTRY)})
-          .setImmigrants({ ImmigrantInfo(CreatureId::DARK_ELF_WARRIOR, {MinionTrait::FIGHTER}).setFrequency(1) });
+          .setImmigrants({ ImmigrantInfo("DARK_ELF_WARRIOR", {MinionTrait::FIGHTER}).setFrequency(1) });
     case EnemyId::DARK_ELVES_ENEMY:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::MINETOWN;
             c.tribe = TribeId::getDarkElf();
-            c.inhabitants.leader = CreatureId::DARK_ELF_LORD;
-            c.inhabitants.fighters = CreatureList(random.get(6, 9), CreatureId::DARK_ELF_WARRIOR);
+            c.inhabitants.leader = CreatureList("DARK_ELF_LORD");
+            c.inhabitants.fighters = CreatureList(random.get(6, 9), "DARK_ELF_WARRIOR");
             c.inhabitants.civilians = CreatureList(
                 random.get(6, 9),
-                makeVec(CreatureId::DARK_ELF, CreatureId::DARK_ELF_CHILD, CreatureId::RAT));
+                makeVec<CreatureId>("DARK_ELF", "DARK_ELF_CHILD", "RAT"));
             c.inhabitants.leader.increaseBaseLevel({{ExperienceType::MELEE, 10}, {ExperienceType::SPELL, 10}});
             c.inhabitants.fighters.increaseBaseLevel({{ExperienceType::MELEE, 10}});
             c.locationName = getVillageName();
@@ -595,12 +595,12 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
             c.furniture = FurnitureFactory::roomFurniture(c.tribe);),
           CollectiveConfig::withImmigrants(500_visible, 15), none,
           LevelConnection{LevelConnection::GNOMISH_MINES, get(EnemyId::DARK_ELVES_ENTRY)})
-          .setImmigrants({ ImmigrantInfo(CreatureId::DARK_ELF_WARRIOR, {MinionTrait::FIGHTER}).setFrequency(1) });
+          .setImmigrants({ ImmigrantInfo("DARK_ELF_WARRIOR", {MinionTrait::FIGHTER}).setFrequency(1) });
     case EnemyId::DARK_ELVES_ENTRY:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::SMALL_MINETOWN;
             c.tribe = TribeId::getDarkElf();
-            c.inhabitants.fighters = CreatureList(random.get(3, 7), CreatureId::DARK_ELF_WARRIOR);
+            c.inhabitants.fighters = CreatureList(random.get(3, 7), "DARK_ELF_WARRIOR");
             c.race = "dark elves"_s;
             c.buildingId = BuildingId::DUNGEON;
             c.outsideFeatures = FurnitureFactory::dungeonOutside(c.tribe);
@@ -611,8 +611,8 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::MINETOWN;
             c.tribe = TribeId::getGnome();
-            c.inhabitants.leader = CreatureId::GNOME_CHIEF;
-            c.inhabitants.fighters = CreatureList(random.get(8, 14), CreatureId::GNOME);
+            c.inhabitants.leader = CreatureList("GNOME_CHIEF");
+            c.inhabitants.fighters = CreatureList(random.get(8, 14), "GNOME");
             c.locationName = getVillageName();
             c.race = "gnomes"_s;
             c.buildingId = BuildingId::DUNGEON;
@@ -625,7 +625,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::SMALL_MINETOWN;
             c.tribe = TribeId::getGnome();
-            c.inhabitants.fighters = CreatureList(random.get(3, 7), CreatureId::GNOME);
+            c.inhabitants.fighters = CreatureList(random.get(3, 7), "GNOME");
             c.race = "gnomes"_s;
             c.buildingId = BuildingId::DUNGEON;
             c.outsideFeatures = FurnitureFactory::dungeonOutside(c.tribe);
@@ -635,29 +635,29 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
     case EnemyId::ENTS:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::FOREST;
-            c.inhabitants.fighters = CreatureList(random.get(7, 10), CreatureId::ENT);
+            c.inhabitants.fighters = CreatureList(random.get(7, 10), "ENT");
             c.tribe = TribeId::getMonster();
             c.race = "tree spirits"_s;
             c.buildingId = BuildingId::WOOD;),
           CollectiveConfig::withImmigrants(300_visible, 10))
-          .setImmigrants({ ImmigrantInfo(CreatureId::ENT, {MinionTrait::FIGHTER}).setFrequency(1) });
+          .setImmigrants({ ImmigrantInfo("ENT", {MinionTrait::FIGHTER}).setFrequency(1) });
     case EnemyId::DRIADS:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::FOREST;
-            c.inhabitants.fighters = CreatureList(random.get(7, 10), CreatureId::DRIAD);
+            c.inhabitants.fighters = CreatureList(random.get(7, 10), "DRIAD");
             c.tribe = TribeId::getMonster();
             c.race = "driads"_s;
             c.buildingId = BuildingId::WOOD;),
           CollectiveConfig::withImmigrants(300_visible, 10))
-          .setImmigrants({ ImmigrantInfo(CreatureId::DRIAD, {MinionTrait::FIGHTER}).setFrequency(1) });
+          .setImmigrants({ ImmigrantInfo("DRIAD", {MinionTrait::FIGHTER}).setFrequency(1) });
     case EnemyId::SHELOB:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::CAVE;
             c.tribe = TribeId::getShelob();
-            c.inhabitants.leader = CreatureId::SHELOB;
+            c.inhabitants.leader = CreatureList("SHELOB");
             c.inhabitants.civilians = CreatureList(
                 random.get(4, 6),
-                makeVec(CreatureId::SPIDER_FOOD,CreatureId::SPIDER));			
+                makeVec<CreatureId>("SPIDER_FOOD","SPIDER"));
             c.race = "giant spider"_s;
             c.buildingId = BuildingId::DUNGEON;
             ), CollectiveConfig::noImmigrants().setLeaderAsFighter())
@@ -665,7 +665,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
     case EnemyId::CYCLOPS:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::CAVE;
-            c.inhabitants.leader = CreatureId::CYCLOPS;
+            c.inhabitants.leader = CreatureList("CYCLOPS");
             c.race = "cyclops"_s;
             c.tribe = TribeId::getHostile();
             c.buildingId = BuildingId::DUNGEON;
@@ -679,21 +679,21 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
     case EnemyId::HYDRA:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::SWAMP;
-            c.inhabitants.leader = CreatureId::HYDRA;
+            c.inhabitants.leader = CreatureList("HYDRA");
             c.race = "hydra"_s;
             c.tribe = TribeId::getHostile();), CollectiveConfig::noImmigrants().setLeaderAsFighter()
           .setGhostSpawns(0.03, 1));
     case EnemyId::KRAKEN:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::MOUNTAIN_LAKE;
-            c.inhabitants.leader = CreatureId::KRAKEN;
+            c.inhabitants.leader = CreatureList("KRAKEN");
             c.race = "kraken"_s;
             c.tribe = TribeId::getMonster();), CollectiveConfig::noImmigrants().setLeaderAsFighter())
           .setNonDiscoverable();
     case EnemyId::CEMETERY:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::CEMETERY;
-            c.inhabitants.fighters = CreatureList(random.get(8, 12), CreatureId::ZOMBIE);
+            c.inhabitants.fighters = CreatureList(random.get(8, 12), "ZOMBIE");
             c.locationName = "cemetery"_s;
             c.tribe = TribeId::getMonster();
             c.race = "undead"_s;
@@ -703,7 +703,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
     case EnemyId::CEMETERY_ENTRY:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::CEMETERY;
-            c.inhabitants.fighters = CreatureList(1, CreatureId::ZOMBIE);
+            c.inhabitants.fighters = CreatureList(1, "ZOMBIE");
             c.locationName = "cemetery"_s;
             c.race = "undead"_s;
             c.tribe = TribeId::getMonster();
@@ -713,24 +713,24 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::CAVE;
             c.tribe = TribeId::getGreenskin();
-            c.inhabitants.fighters = CreatureList(random.get(4, 8), CreatureId::OGRE);
+            c.inhabitants.fighters = CreatureList(random.get(4, 8), "OGRE");
             c.buildingId = BuildingId::DUNGEON;
             c.closeToPlayer = true;
             c.furniture = FurnitureFactory::roomFurniture(c.tribe);
             c.outsideFeatures = FurnitureFactory::villageOutside(c.tribe);),
           CollectiveConfig::withImmigrants(300_visible, 10))
-          .setImmigrants({ ImmigrantInfo(CreatureId::OGRE, {MinionTrait::FIGHTER}).setFrequency(1) });
+          .setImmigrants({ ImmigrantInfo("OGRE", {MinionTrait::FIGHTER}).setFrequency(1) });
     case EnemyId::HARPY_CAVE: {
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::CAVE;
             c.tribe = TribeId::getGreenskin();
-            c.inhabitants.fighters = CreatureList(random.get(4, 8), CreatureId::HARPY);
+            c.inhabitants.fighters = CreatureList(random.get(4, 8), "HARPY");
             c.buildingId = BuildingId::DUNGEON;
             c.closeToPlayer = true;
             c.furniture = FurnitureFactory::roomFurniture(c.tribe);
             c.outsideFeatures = FurnitureFactory::villageOutside(c.tribe);),
           CollectiveConfig::withImmigrants(300_visible, 10))
-          .setImmigrants({ ImmigrantInfo(CreatureId::HARPY, {MinionTrait::FIGHTER}).setFrequency(1) });
+          .setImmigrants({ ImmigrantInfo("HARPY", {MinionTrait::FIGHTER}).setFrequency(1) });
       }
     case EnemyId::SOKOBAN_ENTRY:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
@@ -740,8 +740,8 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
     case EnemyId::SOKOBAN:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::CAVE;
-            c.inhabitants.leader = random.choose(
-                CreatureId::SPECIAL_HLBN, CreatureId::SPECIAL_HLBW, CreatureId::SPECIAL_HLGN, CreatureId::SPECIAL_HLGW);
+            c.inhabitants.leader = CreatureList(random.choose(
+                "SPECIAL_HLBN"_s, "SPECIAL_HLBW"_s, "SPECIAL_HLGN"_s, "SPECIAL_HLGW"_s));
             c.tribe = TribeId::getDarkKeeper();
             c.buildingId = BuildingId::DUNGEON;
             ), CollectiveConfig::noImmigrants(), none,
@@ -751,7 +751,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::WITCH_HOUSE;
             c.tribe = TribeId::getMonster();
-            c.inhabitants.leader = CreatureId::WITCH;
+            c.inhabitants.leader = CreatureList("WITCH");
             c.race = "witch"_s;
             c.buildingId = BuildingId::WOOD;
             c.elderLoot = ItemType(ItemType::TechBook{"advanced alchemy"});
@@ -765,7 +765,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
             c.closeToPlayer = true;
             c.buildingId = BuildingId::RUINS;
             ), CollectiveConfig::withImmigrants(400_visible, 3).setConquerCondition(ConquerCondition::DESTROY_BUILDINGS))
-            .setImmigrants({ ImmigrantInfo(CreatureId::LOST_SOUL, {MinionTrait::FIGHTER})
+            .setImmigrants({ ImmigrantInfo("LOST_SOUL", {MinionTrait::FIGHTER})
                 .addSpecialTrait(1.0, LastingEffect::DISAPPEAR_DURING_DAY)
                 .setFrequency(1)
                 .addRequirement(1.0, SunlightState::NIGHT)
@@ -775,24 +775,24 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
             c.type = SettlementType::COTTAGE;
             c.tribe = TribeId::getHuman();
             c.cropsDistance = 13;
-            c.inhabitants.fighters = CreatureList(random.get(2, 4), CreatureId::PESEANT);
+            c.inhabitants.fighters = CreatureList(random.get(2, 4), "PESEANT");
             c.inhabitants.civilians = CreatureList(
                 random.get(3, 7),
-                makeVec(CreatureId::CHILD, CreatureId::HORSE, CreatureId::DONKEY, CreatureId::COW,
-                    CreatureId::PIG, CreatureId::DOG));
+                makeVec<CreatureId>("CHILD", "HORSE", "DONKEY", "COW",
+                    "PIG", "DOG"));
             c.race = "humans"_s;
             c.buildingId = BuildingId::WOOD;
             c.furniture = FurnitureFactory::roomFurniture(c.tribe);),
-          CollectiveConfig::noImmigrants().setGuardian({CreatureId::WITCHMAN, 0.001, 1, 2}));
+          CollectiveConfig::noImmigrants().setGuardian({"WITCHMAN", 0.001, 1, 2}));
     case EnemyId::TUTORIAL_VILLAGE:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::SMALL_VILLAGE;
             c.tribe = TribeId::getHuman();
-            c.inhabitants.fighters = CreatureList(random.get(2, 4), CreatureId::PESEANT);
+            c.inhabitants.fighters = CreatureList(random.get(2, 4), "PESEANT");
             c.inhabitants.civilians = CreatureList(
                 random.get(3, 7),
-                makeVec(CreatureId::CHILD, CreatureId::HORSE, CreatureId::DONKEY, CreatureId::COW,
-                    CreatureId::PIG, CreatureId::DOG));
+                makeVec<CreatureId>("CHILD", "HORSE", "DONKEY", "COW",
+                    "PIG", "DOG"));
             c.race = "humans"_s;
             c.buildingId = BuildingId::WOOD;
             c.stockpiles = LIST({StockpileInfo::GOLD, 50});
@@ -803,11 +803,11 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::FORREST_COTTAGE;
             c.tribe = TribeId::getElf();
-            c.inhabitants.leader = CreatureId::ELF_ARCHER;
-            c.inhabitants.fighters = CreatureList(random.get(2, 3), CreatureId::ELF);
+            c.inhabitants.leader = CreatureList("ELF_ARCHER");
+            c.inhabitants.fighters = CreatureList(random.get(2, 3), "ELF");
             c.inhabitants.civilians = CreatureList(
                 random.get(2, 5),
-                makeVec(CreatureId::ELF_CHILD, CreatureId::HORSE, CreatureId::COW, CreatureId::DOG));
+                makeVec<CreatureId>("ELF_CHILD", "HORSE", "COW", "DOG"));
             c.race = "elves"_s;
             c.buildingId = BuildingId::WOOD;
             c.furniture = FurnitureFactory::roomFurniture(c.tribe);),
@@ -816,7 +816,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::FORREST_COTTAGE;
             c.tribe = TribeId::getLizard();
-            c.inhabitants.fighters = CreatureList(random.get(2, 3), CreatureId::LIZARDMAN);
+            c.inhabitants.fighters = CreatureList(random.get(2, 3), "LIZARDMAN");
             c.race = "lizardmen"_s;
             c.buildingId = BuildingId::WOOD;
             c.furniture = FurnitureFactory::roomFurniture(c.tribe);),
@@ -826,7 +826,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::SMALL_MINETOWN;
             c.tribe = TribeId::getDwarf();
-            c.inhabitants.fighters = CreatureList(random.get(3, 7), CreatureId::KOBOLD);
+            c.inhabitants.fighters = CreatureList(random.get(3, 7), "KOBOLD");
             c.race = "kobolds"_s;
             c.buildingId = BuildingId::DUNGEON;
             c.stockpiles = LIST({StockpileInfo::MINERALS, 60});),
@@ -835,8 +835,8 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::SMALL_MINETOWN;
             c.tribe = TribeId::getDwarf();
-            c.inhabitants.fighters = CreatureList(random.get(2, 5), CreatureId::DWARF);
-            c.inhabitants.civilians = CreatureList(random.get(2, 5), CreatureId::DWARF_FEMALE);
+            c.inhabitants.fighters = CreatureList(random.get(2, 5), "DWARF");
+            c.inhabitants.civilians = CreatureList(random.get(2, 5), "DWARF_FEMALE");
             c.race = "dwarves"_s;
             c.buildingId = BuildingId::DUNGEON;
             c.stockpiles = LIST(random.choose(StockpileInfo{StockpileInfo::MINERALS, 60},
@@ -856,9 +856,9 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::SMALL_MINETOWN;
             c.tribe = TribeId::getDarkElf();
-            c.inhabitants.fighters = CreatureList(random.get(2, 5), CreatureId::DARK_ELF_WARRIOR)
+            c.inhabitants.fighters = CreatureList(random.get(2, 5), "DARK_ELF_WARRIOR")
                 .increaseBaseLevel({{ExperienceType::MELEE, 7}});
-            c.inhabitants.civilians = CreatureList(random.get(2, 5), CreatureId::DARK_ELF);
+            c.inhabitants.civilians = CreatureList(random.get(2, 5), "DARK_ELF");
             c.race = "dark elves"_s;
             c.buildingId = BuildingId::DUNGEON;
             c.stockpiles = LIST(random.choose(StockpileInfo{StockpileInfo::MINERALS, 60},
@@ -880,7 +880,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
 vector<ExternalEnemy> EnemyFactory::getExternalEnemies() const {
   return {
     ExternalEnemy{
-        CreatureList(1, CreatureId::BANDIT)
+        CreatureList(1, "BANDIT")
             .increaseBaseLevel({{ExperienceType::MELEE, -2}}),
         AttackBehaviourId::KILL_LEADER,
         "a curious bandit",
@@ -888,7 +888,7 @@ vector<ExternalEnemy> EnemyFactory::getExternalEnemies() const {
         1
     },
     ExternalEnemy{
-        CreatureList(1, CreatureId::LIZARDMAN)
+        CreatureList(1, "LIZARDMAN")
             .increaseBaseLevel({{ExperienceType::MELEE, 1}}),
         AttackBehaviourId::KILL_LEADER,
         "a lizardman scout",
@@ -896,7 +896,7 @@ vector<ExternalEnemy> EnemyFactory::getExternalEnemies() const {
         1
     },
     ExternalEnemy{
-        CreatureList(random.get(3, 5), CreatureId::ANT_WORKER)
+        CreatureList(random.get(3, 5), "ANT_WORKER")
             .increaseBaseLevel({{ExperienceType::MELEE, -2}}),
         AttackBehaviourId::KILL_LEADER,
         "an ant patrol",
@@ -904,7 +904,7 @@ vector<ExternalEnemy> EnemyFactory::getExternalEnemies() const {
         2
     },
     ExternalEnemy{
-        CreatureList(random.get(4, 8), CreatureId::LIZARDMAN)
+        CreatureList(random.get(4, 8), "LIZARDMAN")
             .increaseBaseLevel({{ExperienceType::MELEE, 2}}),
         AttackBehaviourId::KILL_LEADER,
         "a nest of lizardmen",
@@ -912,7 +912,7 @@ vector<ExternalEnemy> EnemyFactory::getExternalEnemies() const {
         5
     },
     ExternalEnemy{
-        CreatureList(random.get(3, 5), CreatureId::BANDIT)
+        CreatureList(random.get(3, 5), "BANDIT")
             .increaseBaseLevel({{ExperienceType::MELEE, 9}}),
         AttackBehaviourId::KILL_LEADER,
         "a gang of bandits",
@@ -920,14 +920,14 @@ vector<ExternalEnemy> EnemyFactory::getExternalEnemies() const {
         10
     },
     ExternalEnemy{
-        CreatureList(random.get(3, 5), CreatureId::ANT_SOLDIER),
+        CreatureList(random.get(3, 5), "ANT_SOLDIER"),
         AttackBehaviourId::KILL_LEADER,
         "an ant soldier patrol",
         Range(5000, 10000),
         1
     },
     ExternalEnemy{
-        CreatureList(random.get(3, 5), CreatureId::CLAY_GOLEM)
+        CreatureList(random.get(3, 5), "CLAY_GOLEM")
             .increaseBaseLevel({{ExperienceType::MELEE, 3}}),
         AttackBehaviourId::KILL_LEADER,
         "an alchemist's clay golems",
@@ -935,7 +935,7 @@ vector<ExternalEnemy> EnemyFactory::getExternalEnemies() const {
         1
     },
     ExternalEnemy{
-        CreatureList(random.get(3, 5), CreatureId::STONE_GOLEM)
+        CreatureList(random.get(3, 5), "STONE_GOLEM")
             .increaseBaseLevel({{ExperienceType::MELEE, 3}}),
         AttackBehaviourId::KILL_LEADER,
         "an alchemist's stone golems",
@@ -943,7 +943,7 @@ vector<ExternalEnemy> EnemyFactory::getExternalEnemies() const {
         2
     },
     ExternalEnemy{
-        CreatureList(random.get(5, 8), CreatureId::ANT_SOLDIER)
+        CreatureList(random.get(5, 8), "ANT_SOLDIER")
             .increaseBaseLevel({{ExperienceType::MELEE, 5}}),
         AttackBehaviourId::KILL_LEADER,
         "an ant soldier patrol",
@@ -951,7 +951,7 @@ vector<ExternalEnemy> EnemyFactory::getExternalEnemies() const {
         2
     },
     ExternalEnemy{
-        CreatureList(random.get(10, 15), CreatureId::ANT_SOLDIER).addUnique(CreatureId::ANT_QUEEN)
+        CreatureList(random.get(10, 15), "ANT_SOLDIER").addUnique("ANT_QUEEN")
             .increaseBaseLevel({{ExperienceType::MELEE, 6}}),
         AttackBehaviourId::KILL_LEADER,
         "an army of ants",
@@ -959,7 +959,7 @@ vector<ExternalEnemy> EnemyFactory::getExternalEnemies() const {
         3
     },
     ExternalEnemy{
-        CreatureList(random.get(4, 8), CreatureId::ENT)
+        CreatureList(random.get(4, 8), "ENT")
             .increaseBaseLevel({{ExperienceType::MELEE, 3}}),
         AttackBehaviourId::KILL_LEADER,
         "a group of ents",
@@ -967,14 +967,14 @@ vector<ExternalEnemy> EnemyFactory::getExternalEnemies() const {
         2
     },
     ExternalEnemy{
-        CreatureList(random.get(4, 8), CreatureId::DWARF),
+        CreatureList(random.get(4, 8), "DWARF"),
         AttackBehaviourId::KILL_LEADER,
         "a band of dwarves",
         Range(7000, 15000),
         3
     },
     ExternalEnemy{
-        CreatureList(random.get(3, 5), CreatureId::IRON_GOLEM)
+        CreatureList(random.get(3, 5), "IRON_GOLEM")
             .increaseBaseLevel({{ExperienceType::MELEE, 2}}),
         AttackBehaviourId::KILL_LEADER,
         "an alchemist's iron golems",
@@ -982,7 +982,7 @@ vector<ExternalEnemy> EnemyFactory::getExternalEnemies() const {
         3
     },
     ExternalEnemy{
-        CreatureList(random.get(10, 13), CreatureId::DWARF).addUnique(CreatureId::DWARF_BARON)
+        CreatureList(random.get(10, 13), "DWARF").addUnique("DWARF_BARON")
             .increaseBaseLevel({{ExperienceType::MELEE, 12}})
             .addInventory({ItemType::Scroll{Effect::DestroyWalls{}}}),
         AttackBehaviourId::KILL_LEADER,
@@ -991,21 +991,21 @@ vector<ExternalEnemy> EnemyFactory::getExternalEnemies() const {
         10
     },
     ExternalEnemy{
-        CreatureList(random.get(4, 8), CreatureId::ARCHER),
+        CreatureList(random.get(4, 8), "ARCHER"),
         AttackBehaviourId::KILL_LEADER,
         "a patrol of archers",
         Range(6000, 12000),
         3
     },
     ExternalEnemy{
-        CreatureList(1, CreatureId::KNIGHT),
+        CreatureList(1, "KNIGHT"),
         AttackBehaviourId::KILL_LEADER,
         "a lonely knight",
         Range(10000, 16000),
         3
     },
     ExternalEnemy{
-        CreatureList(random.get(4, 8), CreatureId::WARRIOR)
+        CreatureList(random.get(4, 8), "WARRIOR")
             .increaseBaseLevel({{ExperienceType::MELEE, 6}}),
         AttackBehaviourId::KILL_LEADER,
         "a group of warriors",
@@ -1013,7 +1013,7 @@ vector<ExternalEnemy> EnemyFactory::getExternalEnemies() const {
         3
     },
     ExternalEnemy{
-        CreatureList(random.get(12, 16), CreatureId::WARRIOR).addUnique(CreatureId::SHAMAN)
+        CreatureList(random.get(12, 16), "WARRIOR").addUnique("SHAMAN")
             .increaseBaseLevel({{ExperienceType::MELEE, 14}})
             .addInventory({ItemType::Scroll{Effect::DestroyWalls{}}}),
         AttackBehaviourId::KILL_LEADER,
@@ -1022,8 +1022,8 @@ vector<ExternalEnemy> EnemyFactory::getExternalEnemies() const {
         100
     },
     ExternalEnemy{
-        CreatureList(random.get(12, 16), {make_pair(2, CreatureId::KNIGHT), make_pair(1, CreatureId::ARCHER)})
-            .addUnique(CreatureId::DUKE)
+        CreatureList(random.get(12, 16), {make_pair(2, "KNIGHT"), make_pair(1, "ARCHER")})
+            .addUnique("DUKE")
             //.increaseBaseLevel({{ExperienceType::MELEE, 4}})
             .addInventory({ItemType::Scroll{Effect::DestroyWalls{}}}),
         AttackBehaviourId::KILL_LEADER,
@@ -1032,14 +1032,14 @@ vector<ExternalEnemy> EnemyFactory::getExternalEnemies() const {
         100
     },
     ExternalEnemy{
-        CreatureList(1, CreatureId::CYCLOPS),
+        CreatureList(1, "CYCLOPS"),
         AttackBehaviourId::KILL_LEADER,
         "a cyclops",
         Range(6000, 20000),
         4
     },
     ExternalEnemy{
-        CreatureList(1, CreatureId::WITCHMAN)
+        CreatureList(1, "WITCHMAN")
             .increaseBaseLevel({{ExperienceType::MELEE, 20}}),
         AttackBehaviourId::KILL_LEADER,
         "a witchman",
@@ -1047,7 +1047,7 @@ vector<ExternalEnemy> EnemyFactory::getExternalEnemies() const {
         5
     },
     ExternalEnemy{
-        CreatureList(1, CreatureId::MINOTAUR)
+        CreatureList(1, "MINOTAUR")
             .increaseBaseLevel({{ExperienceType::MELEE, 20}}),
         AttackBehaviourId::KILL_LEADER,
         "a minotaur",
@@ -1055,14 +1055,14 @@ vector<ExternalEnemy> EnemyFactory::getExternalEnemies() const {
         100
     },
     ExternalEnemy{
-        CreatureList(1, CreatureId::ELEMENTALIST),
+        CreatureList(1, "ELEMENTALIST"),
         {AttackBehaviourId::CAMP_AND_SPAWN, CreatureGroup::elementals(TribeId::getHuman())},
         "an elementalist",
         Range(8000, 14000),
         1
     },
     ExternalEnemy{
-        CreatureList(1, CreatureId::GREEN_DRAGON)
+        CreatureList(1, "GREEN_DRAGON")
             .increaseBaseLevel({{ExperienceType::MELEE, 10}}),
         AttackBehaviourId::KILL_LEADER,
         "a green dragon",
@@ -1070,7 +1070,7 @@ vector<ExternalEnemy> EnemyFactory::getExternalEnemies() const {
         100
     },
     ExternalEnemy{
-        CreatureList(1, CreatureId::RED_DRAGON)
+        CreatureList(1, "RED_DRAGON")
             .increaseBaseLevel({{ExperienceType::MELEE, 18}}),
         AttackBehaviourId::KILL_LEADER,
         "a red dragon",
@@ -1078,7 +1078,7 @@ vector<ExternalEnemy> EnemyFactory::getExternalEnemies() const {
         100
     },
     ExternalEnemy{
-        CreatureList(random.get(3, 6), {CreatureId::ADVENTURER_F, CreatureId::ADVENTURER})
+        CreatureList(random.get(3, 6), makeVec<CreatureId>("ADVENTURER_F", "ADVENTURER"))
             .addInventory({ItemType::Scroll{Effect::DestroyWalls{}}})
             .increaseBaseLevel({{ExperienceType::MELEE, 20}}),
         AttackBehaviourId::KILL_LEADER,
@@ -1087,7 +1087,7 @@ vector<ExternalEnemy> EnemyFactory::getExternalEnemies() const {
         100
     },
     ExternalEnemy{
-        CreatureList(random.get(3, 6), CreatureId::OGRE)
+        CreatureList(random.get(3, 6), "OGRE")
             .increaseBaseLevel({{ExperienceType::MELEE, 25}}),
         AttackBehaviourId::KILL_LEADER,
         "a pack of ogres",
@@ -1100,7 +1100,7 @@ vector<ExternalEnemy> EnemyFactory::getExternalEnemies() const {
 vector<ExternalEnemy> EnemyFactory::getHalloweenKids() {
   return {
     ExternalEnemy{
-        CreatureList(random.get(3, 6), CreatureId::HALLOWEEN_KID),
+        CreatureList(random.get(3, 6), "HALLOWEEN_KID"),
         AttackBehaviourId::HALLOWEEN_KIDS,
         "kids...?",
         Range(0, 10000),

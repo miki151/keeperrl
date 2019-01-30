@@ -1984,7 +1984,7 @@ static PMakerQueue village(RandomGen& random, SettlementInfo info, int minRooms,
   queue->addMaker(unique<PlaceCollective>(info.collective));
   queue->addMaker(unique<UniformBlob>(building.floorOutside, none, 0.6));
   vector<PLevelMaker> insideMakers = makeVec<PLevelMaker>(
- //     hatchery(CreatureGroup::singleType(info.tribe, CreatureId::PIG), random.get(2, 5)),
+ //     hatchery(CreatureGroup::singleType(info.tribe, "PIG"), random.get(2, 5)),
       getElderRoom(info));
   if (info.shopFactory)
     insideMakers.push_back(unique<ShopMaker>(info, random.get(8, 16)));
@@ -2783,7 +2783,7 @@ class SokobanFromFile : public LevelMaker {
           builder->putFurniture(v, FurnitureParams{FurnitureType::IRON_DOOR, TribeId::getHostile()});
           break;
         case '0':
-          builder->putCreature(v, builder->getCreatureFactory()->fromId(CreatureId::SOKOBAN_BOULDER, TribeId::getPeaceful()));
+          builder->putCreature(v, builder->getCreatureFactory()->fromId("SOKOBAN_BOULDER", TribeId::getPeaceful()));
           break;
         default: FATAL << "Unknown symbol in sokoban data: " << file[v];
       }

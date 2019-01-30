@@ -211,17 +211,12 @@ static TimeInterval getDuration(WConstCreature c, LastingEffect e) {
 }
 
 static void summon(WCreature summoner, CreatureId id, Range count) {
-  switch (id) {
-    case CreatureId::AUTOMATON: {
-      CreatureGroup f = CreatureGroup::singleType(TribeId::getHostile(), id);
-      Effect::summon(summoner->getPosition(), f, Random.get(count), 100_visible,
-          5_visible);
-      break;
-    }
-    default:
-      Effect::summon(summoner, id, Random.get(count), 100_visible, 1_visible);
-      break;
-  }
+  if (id == "AUTOMATON") {
+    CreatureGroup f = CreatureGroup::singleType(TribeId::getHostile(), id);
+    Effect::summon(summoner->getPosition(), f, Random.get(count), 100_visible,
+        5_visible);
+  } else
+    Effect::summon(summoner, id, Random.get(count), 100_visible, 1_visible);
 }
 
 static bool isConsideredHostile(LastingEffect effect) {
@@ -406,7 +401,7 @@ void Effect::Summon::applyToCreature(WCreature c, WCreature attacker) const {
 }*/
 
 static string getCreatureName(CreatureId id) {
-  return EnumInfo<CreatureId>::getString(id);
+  return id;
   /*if (getSummonNumber(id).getEnd() > 2)
     return getCreaturePluralName(id);
   static EnumMap<CreatureId, optional<string>> names;
@@ -435,7 +430,7 @@ string Effect::Summon::getDescription() const {
 }
 
 void Effect::SummonElement::applyToCreature(WCreature c, WCreature attacker) const {
-  auto id = CreatureId::AIR_ELEMENTAL;
+  auto id = "AIR_ELEMENTAL"_s;
   for (Position p : c->getPosition().getRectangle(Rectangle::centered(3)))
     for (auto f : p.getFurniture())
       if (auto elem = f->getSummonedElement())
