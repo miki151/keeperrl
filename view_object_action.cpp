@@ -6,7 +6,7 @@ const char* getText(ViewObjectAction action) {
     case ViewObjectAction::PET:
       return "pet";
     case ViewObjectAction::CHAT:
-      return "char";
+      return "chat";
     case ViewObjectAction::PUSH:
       return "push";
     case ViewObjectAction::ATTACK:
