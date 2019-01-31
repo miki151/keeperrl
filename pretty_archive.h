@@ -283,7 +283,7 @@ inline void CEREAL_LOAD_FUNCTION_NAME(PrettyInputArchive& ar1, vector<T>& v) {
       break;
     T t;
     ar1(t);
-    v.push_back(t);
+    v.push_back(std::move(t));
   }
   ar1.eat("}");
 }
@@ -293,9 +293,21 @@ inline void CEREAL_LOAD_FUNCTION_NAME(PrettyInputArchive& ar1, map<T, U>& m) {
   vector<pair<T, U>> v;
   ar1(v);
   for (auto& elem : v)
-    m.insert(elem);
+    m.insert(std::move(elem));
 }
 
+template <typename T, typename U>
+inline void serialize(PrettyInputArchive& ar1, EnumMap<T, U>& m) {
+  vector<pair<T, U>> v;
+  ar1(v);
+  EnumSet<T> used;
+  for (auto& elem : v) {
+    if (used.contains(elem.first))
+      ar1.error("Repeated enum element: \"" + EnumInfo<T>::getString(elem.first));
+    used.insert(elem.first);
+    m[elem.first] = elem.second;
+  }
+}
 
 template <typename T>
 inline void CEREAL_SAVE_FUNCTION_NAME(PrettyOutputArchive& ar1, vector<T> const& v) {
@@ -328,6 +340,24 @@ inline void CEREAL_SAVE_FUNCTION_NAME(PrettyOutputArchive& ar1, optional<T> cons
     ar1 << *v;
 }
 
+template <typename T>
+inline void CEREAL_LOAD_FUNCTION_NAME(PrettyInputArchive& ar1, unique_ptr<T>& v) {
+  v.reset();
+  if (ar1.eatMaybe("none"))
+    return;
+  T* t = new T();
+  ar1(*t);
+  v.reset(t);
+}
+
+template <typename T>
+inline void CEREAL_SAVE_FUNCTION_NAME(PrettyOutputArchive& ar1, unique_ptr<T> const& v) {
+  if (!v)
+    ar1.os << "none";
+  else
+    ar1 << *v;
+}
+
 template <class T>
 inline void CEREAL_SAVE_FUNCTION_NAME(PrettyOutputArchive& ar1, cereal::NameValuePair<T> const& t) {
   if (strcmp(t.name, "cereal_class_version"))
@@ -341,6 +371,14 @@ inline void setVersion1000(T&) {
 template <>
 inline void setVersion1000(unsigned int& a) {
   a = 1000;
+}
+
+struct EndPrettyInput {
+};
+
+inline EndPrettyInput& endInput() {
+  static EndPrettyInput ret;
+  return ret;
 }
 
 template <class T>
@@ -384,12 +422,12 @@ inline void prologue(PrettyInputArchive& ar1, T const & ) {
   ar1.nodeData.emplace_back();
 }
 
-template <class T, cereal::traits::EnableIf<!std::is_arithmetic<T>::value> = cereal::traits::sfinae>
-inline void epilogue(PrettyInputArchive& ar1, T const &t ) {
+inline void prettyEpilogue(PrettyInputArchive& ar1) {
   auto loaders = ar1.getNode().loaders;
   if (!loaders.empty()) {
     ar1.eat("{");
     bool keysAndValues = false;
+    set<string> processed;
     while (ar1.peek() != "}") {
       if (ar1.peek() == ",")
         ar1.eat();
@@ -411,6 +449,9 @@ inline void epilogue(PrettyInputArchive& ar1, T const &t ) {
       bool found = false;
       for (auto& loader : loaders)
         if (loader.first == name) {
+          if (processed.count(name))
+            ar1.error("Value defined twice: \"" + name + "\"");
+          processed.insert(name);
           loader.second();
           found = true;
           break;
@@ -419,9 +460,20 @@ inline void epilogue(PrettyInputArchive& ar1, T const &t ) {
         ar1.error("No member named \"" + name + "\" in structure");
     }
     ar1.eat("}");
+    ar1.getNode().loaders.clear();
   }
+}
+
+inline void serialize(PrettyInputArchive& ar1, EndPrettyInput&) {
+  prettyEpilogue(ar1);
+}
+
+template <class T, cereal::traits::EnableIf<!std::is_arithmetic<T>::value> = cereal::traits::sfinae>
+inline void epilogue(PrettyInputArchive& ar1, T const &) {
+  prettyEpilogue(ar1);
   ar1.nodeData.pop_back();
 }
+
 
 // Ignore these inputs
 template <class T> inline
@@ -435,6 +487,10 @@ void prologue(PrettyInputArchive&, cereal::SizeTag<T> const & ) { }
 
 template <class T> inline
 void epilogue(PrettyInputArchive&, cereal::SizeTag<T> const & ) { }
+
+inline void prologue(PrettyInputArchive&, EndPrettyInput const & ) { }
+
+inline void epilogue(PrettyInputArchive&, EndPrettyInput const & ) { }
 
 //! Serializing SizeTags to binary
 template <class Archive, class T> inline

@@ -50,4 +50,5 @@ DebugLog::Logger DebugLog::get() {
 
 DebugLog InfoLog;
 DebugLog FatalLog;
+DebugLog UserInfoLog;
 DebugLog UserErrorLog;

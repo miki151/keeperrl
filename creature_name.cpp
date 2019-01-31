@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "creature_name.h"
 #include "util.h"
+#include "name_generator.h"
 
 CreatureName::CreatureName(const string& n) : name(n), pluralName(name + "s") {
   CHECK(!name.empty());
@@ -68,6 +69,11 @@ void CreatureName::setFirst(const string& s) {
   firstName = s;
 }
 
+void CreatureName::generateFirst(NameGenerator* generator) {
+  if (firstNameGen)
+    firstName = generator->getNext(*firstNameGen);
+}
+
 void CreatureName::setStack(const string& s) {
   stackName = s;
 }
@@ -110,3 +116,13 @@ void CreatureName::serialize(Archive& ar, const unsigned int version) {
 
 SERIALIZABLE(CreatureName);
 SERIALIZATION_CONSTRUCTOR_IMPL(CreatureName);
+
+#include "pretty_archive.h"
+
+template<>
+void CreatureName::serialize(PrettyInputArchive& ar1, unsigned) {
+  ar1(NAMED(name), NAMED(pluralName), NAMED(stackName), NAMED(firstNameGen), NAMED(firstName), NAMED(groupName), NAMED(fullTitle), endInput());
+  if (pluralName.empty())
+    pluralName = name + "s";
+}
+

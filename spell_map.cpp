@@ -59,3 +59,12 @@ void SpellMap::onExpLevelReached(WCreature c, double level) {
 
 SERIALIZE_DEF(SpellMap, elems)
 
+
+#include "pretty_archive.h"
+template<>
+void SpellMap::serialize(PrettyInputArchive& ar1, unsigned) {
+  vector<SpellId> elems;
+  ar1(elems);
+  for (auto& e : elems)
+    add(e);
+}

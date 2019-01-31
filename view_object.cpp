@@ -499,3 +499,8 @@ const string& ViewObject::getBadAdjectives() const {
 ViewId ViewObject::id() const {
   return resource_id;
 }
+
+#include "pretty_archive.h"
+template<>
+void ViewObject::serialize(PrettyInputArchive&, unsigned) {
+}

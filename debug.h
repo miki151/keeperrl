@@ -20,6 +20,7 @@
 
 #define FATAL FatalLog.get() << "FATAL " << __FILE__ << ":" << __LINE__ << " "
 #define USER_FATAL UserErrorLog.get()
+#define USER_INFO UserInfoLog.get()
 #define INFO InfoLog.get() << __FILE__ << ":" <<  __LINE__ << " "
 #define CHECK(exp) if (!(exp)) FATAL << ": " << #exp << " is false. "
 #define USER_CHECK(exp) if (!(exp)) USER_FATAL
@@ -103,6 +104,7 @@ class DebugLog {
 extern DebugLog InfoLog;
 extern DebugLog FatalLog;
 extern DebugLog UserErrorLog;
+extern DebugLog UserInfoLog;
 
 template <class T, class V>
 const T& valueCheck(const T& e, const V& v, const string& msg) {

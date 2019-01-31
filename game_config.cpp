@@ -16,6 +16,8 @@ const char* GameConfig::getConfigName(GameConfigId id) {
       return "immigration";
     case GameConfigId::TECHNOLOGY:
       return "technology";
+    case GameConfigId::CREATURE_ATTRIBUTES:
+      return "creatures";
   }
 }
 

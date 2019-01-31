@@ -24,6 +24,9 @@
 #include "technology.h"
 #include "tribe_alignment.h"
 #include "skill.h"
+#include "creature_attributes.h"
+#include "spell_map.h"
+#include "view_object.h"
 
 template <typename T>
 optional<string> PrettyPrinting::parseObject(T& object, const string& s, optional<string> filename) {
@@ -49,4 +52,5 @@ ADD_IMP(vector<pair<string, vector<BuildInfo>>>)
 ADD_IMP(vector<pair<string, std::array<vector<WorkshopItemCfg>, EnumInfo<WorkshopType>::size>>>)
 ADD_IMP(map<string, vector<ImmigrantInfo>>)
 ADD_IMP(map<string, string>)
+ADD_IMP(map<CreatureId, CreatureAttributes>)
 ADD_IMP(Technology)

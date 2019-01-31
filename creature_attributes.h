@@ -47,9 +47,10 @@ struct AdjectiveInfo;
 class CreatureAttributes {
   public:
   CreatureAttributes(function<void(CreatureAttributes&)>);
-  CreatureAttributes(CreatureAttributes&& other) = default;
   ~CreatureAttributes();
   SERIALIZATION_DECL(CreatureAttributes)
+  template <class Archive>
+  void serializeImpl(Archive& ar, const unsigned int);
 
   CreatureAttributes& setCreatureId(CreatureId);
   const optional<CreatureId>& getCreatureId() const;
@@ -141,4 +142,5 @@ class CreatureAttributes {
   bool SERIAL(canJoinCollective) = true;
   optional<string> SERIAL(petReaction);
   optional<LastingEffect> SERIAL(hatedByEffect);
+  void initializeLastingEffects();
 };

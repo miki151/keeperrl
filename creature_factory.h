@@ -26,13 +26,14 @@ class ItemType;
 class CreatureAttributes;
 class ControllerFactory;
 class NameGenerator;
+class GameConfig;
 
 class CreatureFactory {
   public:
   PCreature fromId(CreatureId, TribeId, const MonsterAIFactory&) const;
   PCreature fromId(CreatureId, TribeId, const MonsterAIFactory&, const vector<ItemType>& inventory) const;
   PCreature fromId(CreatureId, TribeId) const;
-  PCreature getShopkeeper(Rectangle shopArea, TribeId) const;
+  static PController getShopkeeper(Rectangle shopArea, WCreature);
   static PCreature getRollingBoulder(TribeId, Vec2 direction);
   static PCreature getHumanForTests();
   PCreature getGhost(WCreature) const;
@@ -43,7 +44,8 @@ class CreatureFactory {
   ViewId getViewId(CreatureId) const;
   const Gender& getGender(CreatureId);
 
-  CreatureFactory(NameGenerator*);
+  CreatureFactory(NameGenerator*, const GameConfig*);
+  ~CreatureFactory();
 
   private:
   void initSplash(TribeId);
@@ -55,4 +57,5 @@ class CreatureFactory {
   CreatureAttributes getAttributes(CreatureId) const;
   mutable map<CreatureId, ViewId> idMap;
   NameGenerator* nameGenerator;
+  map<CreatureId, CreatureAttributes> attributes;
 };

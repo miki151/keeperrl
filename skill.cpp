@@ -60,3 +60,7 @@ void Skillset::increaseValue(SkillId s, double v) {
 }
 
 SERIALIZE_DEF(Skillset, values)
+
+#include "pretty_archive.h"
+template
+void Skillset::serialize(PrettyInputArchive&, unsigned);

@@ -1658,7 +1658,8 @@ class ShopMaker : public LevelMaker {
         building(getBuildingInfo(info)), shopkeeperDead(info.shopkeeperDead)  {}
 
   virtual void make(LevelBuilder* builder, Rectangle area) override {
-    PCreature shopkeeper = builder->getCreatureFactory()->getShopkeeper(builder->toGlobalCoordinates(area), tribe);
+    PCreature shopkeeper = builder->getCreatureFactory()->fromId("SHOPKEEPER", tribe, MonsterAIFactory::idle());
+    shopkeeper->setController(CreatureFactory::getShopkeeper(builder->toGlobalCoordinates(area), shopkeeper.get()));
     vector<Vec2> pos;
     for (Vec2 v : area)
       if (builder->canNavigate(v, MovementTrait::WALK) && builder->hasAttrib(v, SquareAttrib::ROOM))

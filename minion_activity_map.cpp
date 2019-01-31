@@ -120,3 +120,8 @@ optional<bool> MinionActivityMap::isLocked(MinionActivity task) const {
 }
 
 SERIALIZE_DEF(MinionActivityMap, locked);
+
+#include "pretty_archive.h"
+template<>
+void MinionActivityMap::serialize(PrettyInputArchive&, unsigned) {
+}

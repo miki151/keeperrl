@@ -28,9 +28,9 @@
 #include "spell_map.h"
 #include "effect.h"
 #include "minion_trait.h"
+#include "view_id.h"
 
-CreatureAttributes::CreatureAttributes(function<void(CreatureAttributes&)> fun) {
-  fun(*this);
+void CreatureAttributes::initializeLastingEffects() {
   for (LastingEffect effect : ENUM_ALL(LastingEffect))
     lastingEffects[effect] = GlobalTime(-500);
   for (auto effect : ENUM_ALL(LastingEffect))
@@ -38,17 +38,27 @@ CreatureAttributes::CreatureAttributes(function<void(CreatureAttributes&)> fun) 
       ++permanentEffects[effect];
 }
 
+CreatureAttributes::CreatureAttributes(function<void(CreatureAttributes&)> fun) {
+  fun(*this);
+  initializeLastingEffects();
+}
+
 CreatureAttributes::~CreatureAttributes() {}
 
 template <class Archive> 
+void CreatureAttributes::serializeImpl(Archive& ar, const unsigned int version) {
+  ar(NAMED(viewId), NAMED(illusionViewObject), NAMED(name), NAMED(attr), NAMED(chatReactionFriendly));
+  ar(NAMED(chatReactionHostile), NAMED(passiveAttack), NAMED(gender), NAMED(viewIdUpgrades));
+  ar(NAMED(body), NAMED(deathDescription), NAMED(hatedByEffect));
+  ar(NAMED(cantEquip), NAMED(courage), NAMED(canJoinCollective));
+  ar(NAMED(boulder), NAMED(noChase), NAMED(isSpecial), NAMED(skills), NAMED(spells));
+  ar(NAMED(permanentEffects), NAMED(lastingEffects), NAMED(minionActivities), NAMED(expLevel));
+  ar(NAMED(noAttackSound), NAMED(maxLevelIncrease), NAMED(creatureId), NAMED(petReaction), NAMED(combatExperience));
+}
+
+template <class Archive>
 void CreatureAttributes::serialize(Archive& ar, const unsigned int version) {
-  ar(viewId, illusionViewObject, name, attr, chatReactionFriendly);
-  ar(chatReactionHostile, passiveAttack, gender, viewIdUpgrades);
-  ar(body, deathDescription, hatedByEffect);
-  ar(cantEquip, courage, canJoinCollective);
-  ar(boulder, noChase, isSpecial, skills, spells);
-  ar(permanentEffects, lastingEffects, minionActivities, expLevel);
-  ar(noAttackSound, maxLevelIncrease, creatureId, petReaction, combatExperience);
+  serializeImpl(ar, version);
 }
 
 SERIALIZABLE(CreatureAttributes);
@@ -390,4 +400,11 @@ bool CreatureAttributes::getCanJoinCollective() const {
 
 optional<LastingEffect> CreatureAttributes::getHatedByEffect() const {
   return hatedByEffect;
+}
+
+#include "pretty_archive.h"
+template<> void CreatureAttributes::serialize(PrettyInputArchive& ar1, unsigned version) {
+  serializeImpl(ar1, version);
+  ar1(endInput());
+  initializeLastingEffects();
 }

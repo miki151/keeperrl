@@ -469,21 +469,21 @@ class EnumMap {
     return combineHashIter(elems.begin(), elems.end());
   }
 
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
-    vector<U> SERIAL(tmp);
-    for (int i : All(elems))
-      tmp.push_back(std::move(elems[i]));
-    ar(tmp);
-    if (tmp.size() > elems.size())
-      throw ::cereal::Exception("EnumMap larger than legal enum range");
-    for (int i : All(tmp))
-      elems[i] = std::move(tmp[i]);
-  }
-
   private:
   std::array<U, EnumInfo<T>::size> elems;
 };
+
+template <class Archive, typename Enum, typename U>
+void serialize(Archive& ar, EnumMap<Enum, U>& m) {
+  vector<U> SERIAL(tmp);
+  for (auto e : ENUM_ALL(Enum))
+    tmp.push_back(std::move(m[e]));
+  ar(tmp);
+  if (tmp.size() > EnumInfo<Enum>::size)
+    throw ::cereal::Exception("EnumMap larger than legal enum range");
+  for (int i : All(tmp))
+    m[Enum(i)] = std::move(tmp[i]);
+}
 
 template<class T>
 class EnumSet {
@@ -1162,63 +1162,60 @@ template <class T>
 class MustInitialize {
   public:
   MustInitialize(const MustInitialize& o) : elem(o.elem) {
-    CHECK(!elem.empty()) << "Element not initialized";
+    CHECK(!!elem) << "Element not initialized";
   }
 
   MustInitialize() {}
 
   T& operator = (const T& t) {
-    if (!elem.empty())
-      elem.pop();
-    CHECK(elem.empty());
-    elem.push(t);
-    return elem.front();
+    elem = t;
+    return *elem;
   }
 
   T& operator += (const T& t) {
-    CHECK(!elem.empty()) << "Element not initialized";
-    return elem.front() += t;
+    CHECK(!!elem) << "Element not initialized";
+    return *elem += t;
   }
 
   T& operator -= (const T& t) {
-    CHECK(!elem.empty()) << "Element not initialized";
-    return elem.front() -= t;
+    CHECK(!!elem) << "Element not initialized";
+    return *elem -= t;
   }
 
   T* operator -> () {
-    CHECK(!elem.empty());
-    return &elem.front();
+    CHECK(!!elem) << "Element not initialized";
+    return &*elem;
   }
 
   const T* operator -> () const {
-    CHECK(!elem.empty()) << "Element not initialized";
-    return &elem.front();
+    CHECK(!!elem) << "Element not initialized";
+    return &*elem;
   }
 
   bool operator == (const T& t) const {
-    CHECK(!elem.empty()) << "Element not initialized";
-    return elem.front() == t;
+    CHECK(!!elem) << "Element not initialized";
+    return *elem == t;
   }
 
   bool operator != (const T& t) const {
-    CHECK(!elem.empty()) << "Element not initialized";
-    return elem.front() != t;
+    CHECK(!!elem) << "Element not initialized";
+    return *elem != t;
   }
 
   T& operator * () {
-    CHECK(!elem.empty()) << "Element not initialized";
-    return elem.front();
+    CHECK(!!elem) << "Element not initialized";
+    return *elem;
   }
 
   const T& operator * () const {
-    CHECK(!elem.empty()) << "Element not initialized";
-    return elem.front();
+    CHECK(!!elem) << "Element not initialized";
+    return *elem;
   }
 
   SERIALIZE_ALL(elem);
 
   private:
-  queue<T> SERIAL(elem);
+  optional<T> SERIAL(elem);
 };
 
 template<class T>

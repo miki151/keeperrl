@@ -27,7 +27,18 @@ static double getDefaultWeight(Body::Size size) {
   }
 }
 
-SERIALIZE_DEF(Body, xhumanoid, size, weight, bodyParts, injuredBodyParts, lostBodyParts, material, health, minionFood, deathSound, intrinsicAttacks, minPushSize)
+template <class Archive>
+void Body::serializeImpl(Archive& ar, const unsigned int) {
+  ar(NAMED(xhumanoid), NAMED(size), NAMED(weight), NAMED(bodyParts), NAMED(injuredBodyParts), NAMED(lostBodyParts));
+  ar(NAMED(material), NAMED(health), NAMED(minionFood), NAMED(deathSound), NAMED(intrinsicAttacks), NAMED(minPushSize));
+}
+
+template <class Archive>
+void Body::serialize(Archive& ar1, const unsigned int v) {
+  serializeImpl(ar1, v);
+}
+
+SERIALIZABLE(Body)
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Body)
 
@@ -98,6 +109,10 @@ void Body::setMinPushSize(Body::Size size) {
   minPushSize = size;
 }
 
+void Body::setHumanoid(bool h) {
+  xhumanoid = h;
+}
+
 WItem Body::chooseRandomWeapon(WItem weapon) const {
   // choose one of the available weapons with equal probability
   bool hasRealWeapon = !!weapon;
@@ -136,6 +151,7 @@ void Body::setHumanoidBodyParts(int intrinsicDamage) {
       {BodyPart::TORSO, 1}});
   setIntrinsicAttack(BodyPart::ARM, IntrinsicAttack(ItemType::fists(intrinsicDamage), IntrinsicAttack::NO_WEAPON));
   setIntrinsicAttack(BodyPart::LEG, IntrinsicAttack(ItemType::legs(intrinsicDamage), IntrinsicAttack::NO_WEAPON));
+  xhumanoid = true;
 }
 
 void Body::setHorseBodyParts(int intrinsicDamage) {
@@ -977,4 +993,59 @@ int Body::getCarryLimit() const {
     case Body::Size::MEDIUM: return 60;
     case Body::Size::SMALL: return 6;
   }
+}
+
+#include "pretty_archive.h"
+
+RICH_ENUM(BodyType,
+    Humanoid,
+    HumanoidLike,
+    Bird,
+    FourLegged,
+    NonHumanoid
+);
+
+struct BodyTypeReader {
+  void serialize(PrettyInputArchive& ar1, unsigned v) {
+    BodyType type;
+    BodySize size;
+    ar1(type, size);
+    body->setWeight(getDefaultWeight(size));
+    body->setMinPushSize(BodySize((int)size + 1));
+    switch (type) {
+      case BodyType::Humanoid:
+        body->setHumanoidBodyParts(getDefaultIntrinsicDamage(size));
+        body->setDeathSound(SoundId::HUMANOID_DEATH);
+        break;
+      case BodyType::HumanoidLike:
+        body->setHumanoidBodyParts(getDefaultIntrinsicDamage(size));
+        body->setDeathSound(SoundId::BEAST_DEATH);
+        body->setHumanoid(false);
+        break;
+      case BodyType::Bird:
+        body->setBirdBodyParts(getDefaultIntrinsicDamage(size));
+        body->setDeathSound(SoundId::BEAST_DEATH);
+        break;
+      case BodyType::FourLegged:
+        body->setHorseBodyParts(getDefaultIntrinsicDamage(size));
+        body->setDeathSound(SoundId::BEAST_DEATH);
+        break;
+      default:
+        body->setDeathSound(SoundId::BEAST_DEATH);
+        break;
+    }
+  }
+  Body* body;
+};
+
+template <>
+void Body::serialize(PrettyInputArchive& ar1, unsigned v) {
+  BodyTypeReader type {this};
+  ar1(NAMED(type));
+  serializeImpl(ar1, v);
+  EnumMap<BodyPart, int> addBodyPart;
+  ar1(NAMED(addBodyPart));
+  ar1(endInput());
+  for (auto part : ENUM_ALL(BodyPart))
+    bodyParts[part] += addBodyPart[part];
 }

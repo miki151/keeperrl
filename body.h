@@ -14,30 +14,34 @@
 class Attack;
 struct AdjectiveInfo;
 
+RICH_ENUM(BodyMaterial,
+  FLESH,
+  SPIRIT,
+  FIRE,
+  WATER,
+  UNDEAD_FLESH,
+  BONE,
+  ROCK,
+  CLAY,
+  WOOD,
+  IRON,
+  LAVA,
+  ADA
+);
+
+RICH_ENUM(BodySize,
+  SMALL,
+  MEDIUM,
+  LARGE,
+  HUGE
+);
+
+
 class Body {
   public:
 
-  enum class Material {
-    FLESH,
-    SPIRIT,
-    FIRE,
-    WATER,
-    UNDEAD_FLESH,
-    BONE,
-    ROCK,
-    CLAY,
-    WOOD,
-    IRON,
-    LAVA,
-    ADA
-  };
-
-  enum class Size {
-    SMALL,
-    MEDIUM,
-    LARGE,
-    HUGE
-  };
+  using Material = BodyMaterial;
+  using Size = BodySize;
 
   static Body humanoid(Material, Size);
   static Body humanoid(Size);
@@ -56,7 +60,7 @@ class Body {
   void setDeathSound(optional<SoundId>);
   void setIntrinsicAttack(BodyPart, IntrinsicAttack);
   void setMinPushSize(Size);
-
+  void setHumanoid(bool);
   void affectPosition(Position);
 
   enum DamageResult {
@@ -123,6 +127,8 @@ class Body {
   double getBoulderDamage() const;
 
   SERIALIZATION_DECL(Body);
+  template <class Archive>
+  void serializeImpl(Archive& ar, const unsigned int);
 
   private:
   friend class Test;
@@ -139,13 +145,13 @@ class Body {
   PItem getBodyPartItem(const string& creatureName, BodyPart);
   string getMaterialAndSizeAdjectives() const;
   bool fallsApartFromDamage() const;
-  bool SERIAL(xhumanoid);
-  Size SERIAL(size);
-  double SERIAL(weight);
+  bool SERIAL(xhumanoid) = true;
+  Size SERIAL(size) = Size::LARGE;
+  double SERIAL(weight) = 90;
   EnumMap<BodyPart, int> SERIAL(bodyParts) = {{BodyPart::TORSO, 1}, {BodyPart::BACK, 1}};
   EnumMap<BodyPart, int> SERIAL(injuredBodyParts);
   EnumMap<BodyPart, int> SERIAL(lostBodyParts);
-  Material SERIAL(material);
+  Material SERIAL(material) = Material::FLESH;
   double SERIAL(health) = 1;
   bool SERIAL(minionFood) = false;
   optional<SoundId> SERIAL(deathSound);

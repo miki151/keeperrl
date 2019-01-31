@@ -296,7 +296,7 @@ static int keeperMain(po::parser& commandLineFlags) {
   FatalLog.addOutput(DebugOutput::crash());
   FatalLog.addOutput(DebugOutput::toStream(std::cerr));
   UserErrorLog.addOutput(DebugOutput::exitProgram());
-  UserErrorLog.addOutput(DebugOutput::toStream(std::cerr));
+  UserInfoLog.addOutput(DebugOutput::toStream(std::cerr));
 #ifndef RELEASE
   ogzstream compressedLog("log.gz");
   if (!commandLineFlags["nolog"].was_set())
@@ -351,6 +351,7 @@ static int keeperMain(po::parser& commandLineFlags) {
       freeDataPath.file("images/mouse_cursor2.png"));
   FatalLog.addOutput(DebugOutput::toString([&renderer](const string& s) { renderer.showError(s);}));
   UserErrorLog.addOutput(DebugOutput::toString([&renderer](const string& s) { renderer.showError(s);}));
+  UserInfoLog.addOutput(DebugOutput::toString([&renderer](const string& s) { renderer.showError(s);}));
   initializeGLExtensions();
 #ifndef RELEASE
   installOpenglDebugHandler();
@@ -401,7 +402,7 @@ static int keeperMain(po::parser& commandLineFlags) {
   GameConfig gameConfig(freeDataPath.subdirectory("game_config"));
   NameGenerator nameGenerator(freeDataPath.subdirectory("names"));
   EnemyFactory enemyFactory(Random, &nameGenerator);
-  CreatureFactory creatureFactory(&nameGenerator);
+  CreatureFactory creatureFactory(&nameGenerator, &gameConfig);
   if (commandLineFlags["worldgen_test"].was_set()) {
     MainLoop loop(nullptr, &highscores, &fileSharing, freeDataPath, userPath, &options, &jukebox, &sokobanInput,
         &gameConfig, &creatureFactory, &nameGenerator, &enemyFactory, useSingleThread, 0);
