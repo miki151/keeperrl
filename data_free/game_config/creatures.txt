@@ -1,28 +1,43 @@
+# Each element is of the form:
+
+# "CreatureId" { CreatureAttributes }, see creature_attributes.h
+
 {
   "KEEPER_MAGE"
     {
+      # Definitions in view_id.h
       viewId = KEEPER1
+      # ViewId upgrades of Keepers are applied every 5 tech level increases
       viewIdUpgrades = { KEEPER2 KEEPER3 KEEPER4 }
       name = {
+        # The name gets changed appropriately to Keeper and Adventurer
         name = "wizard"
+        # Definitions in name_generator.h
         firstNameGen = FIRST_MALE
+        # Creature is always referred to as [FirstName] the [Creature name]
         fullTitle = true
       }
       body = {
+        # One of Humanoid, HumanoidLike, Bird, FourLegged and NonHumanoid
+        # size is one of SMALL, MEDIUM, LARGE and HUGE, influences stuff like pushing boulders and being pushed
         type = Humanoid LARGE
       }
+      # attr_type.h
       attr = {
         DAMAGE 12
         DEFENSE 12
         SPELL_DAMAGE 20
       }
+      # skill.h
       skills = {
         LABORATORY 0.2
       }
+      # experience_type.h
       maxLevelIncrease = {
         MELEE 7
         SPELL 12
       }
+      # spell.h
       spells = { HEAL_SELF }
     }
 
