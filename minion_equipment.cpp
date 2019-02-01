@@ -138,7 +138,7 @@ bool MinionEquipment::isOwner(WConstItem it, WConstCreature c) const {
   return getOwner(it) == c->getUniqueId();
 }
 
-const static vector<WItem> emptyItems;
+const static vector<WeakPointer<Item>> emptyItems;
 
 void MinionEquipment::updateOwners(const vector<WCreature>& creatures) {
   auto oldItemMap = myItems;
@@ -172,8 +172,8 @@ vector<WItem> MinionEquipment::getItemsOwnedBy(WConstCreature c, ItemPredicate p
   vector<WItem> ret;
   for (auto& item : myItems.getOrElse(c, emptyItems))
     if (item)
-      if (!predicate || predicate(item))
-        ret.push_back(item);
+      if (!predicate || predicate(item.get()))
+        ret.push_back(item.get());
   return ret;
 }
 
@@ -225,7 +225,7 @@ bool MinionEquipment::tryToOwn(WConstCreature c, WItem it) {
       if (item)
         if (item->canEquip() && item->getEquipmentSlot() == slot) {
           if (!isLocked(c, item->getUniqueId()))
-            contesting.push_back(item);
+            contesting.push_back(item.get());
           else if (--slotSize <= 0)
             return false;
         }

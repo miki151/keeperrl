@@ -53,7 +53,7 @@ class MinionEquipment {
   int getItemValue(WConstCreature, WConstItem) const;
 
   EntityMap<Item, UniqueEntity<Creature>::Id> SERIAL(owners);
-  EntityMap<Creature, vector<WItem>> SERIAL(myItems);
+  EntityMap<Creature, vector<WeakPointer<Item>>> SERIAL(myItems);
   set<pair<UniqueEntity<Creature>::Id, UniqueEntity<Item>::Id>> SERIAL(locked);
 };
 
