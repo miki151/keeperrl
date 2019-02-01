@@ -16,9 +16,6 @@ struct KeeperCreatureInfo {
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar(NAMED(creatureId), NAMED(tribeAlignment), NAMED(immigrantGroups), NAMED(technology), NAMED(initialTech), NAMED(buildingGroups), NAMED(workshopGroups), NAMED(description));
-    if (version >= 1)
-      ar(NAMED(specialTraits));
+    ar(OPTION(specialTraits));
   }
 };
-
-CEREAL_CLASS_VERSION(KeeperCreatureInfo, 1);

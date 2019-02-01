@@ -35,6 +35,7 @@
 #include <cereal/types/bitset.hpp>
 #include <cereal/types/memory.hpp>
 #include "extern/variant_serialize.h"
+#include "serialize_optional.h"
 
 #include "stdafx.h"
 #include "progress.h"
@@ -44,6 +45,7 @@ typedef cereal::BinaryOutputArchive OutputArchive;
 
 #define SUBCLASS(X) cereal::base_class<X>(this)
 #define NAMED CEREAL_NVP
+#define OPTION(T) make_optional_nvp(#T, T)
 
 #define SERIALIZABLE(T) \
   template void T::serialize(InputArchive&, unsigned); \

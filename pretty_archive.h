@@ -77,8 +77,14 @@ class PrettyInputArchive : public cereal::InputArchive<PrettyInputArchive> {
       return s;
     }
 
+    struct LoaderInfo {
+      string name;
+      function<void()> load;
+      bool optional;
+    };
+
     struct NodeData {
-      deque<pair<string, function<void()>>> loaders;
+      deque<LoaderInfo> loaders;
     };
 
     NodeData& getNode() {
@@ -382,10 +388,37 @@ inline EndPrettyInput& endInput() {
 }
 
 template <class T>
+inline void serialize(PrettyInputArchive& ar1, OptionalNameValuePair<T>& t) {
+  if (strcmp(t.name, "cereal_class_version")) {
+    auto& value = t.value;
+    ar1.getNode().loaders.push_back(PrettyInputArchive::LoaderInfo{t.name, [&ar1, &value]{ ar1(value); }, true});
+  } else
+    setVersion1000(t.value);
+}
+
+template <class T>
 inline void CEREAL_LOAD_FUNCTION_NAME(PrettyInputArchive& ar1, cereal::NameValuePair<T>& t) {
   if (strcmp(t.name, "cereal_class_version")) {
     auto& value = t.value;
-    ar1.getNode().loaders.push_back(make_pair(t.name, [&ar1, &value]{ ar1(value); }));
+    ar1.getNode().loaders.push_back(PrettyInputArchive::LoaderInfo{t.name, [&ar1, &value]{ ar1(value); }, false});
+  } else
+    setVersion1000(t.value);
+}
+
+template <class T>
+inline void CEREAL_LOAD_FUNCTION_NAME(PrettyInputArchive& ar1, cereal::NameValuePair<optional<T>&>& t) {
+  if (strcmp(t.name, "cereal_class_version")) {
+    auto& value = t.value;
+    ar1.getNode().loaders.push_back(PrettyInputArchive::LoaderInfo{t.name, [&ar1, &value]{ ar1(value); }, true});
+  } else
+    setVersion1000(t.value);
+}
+
+template <class T>
+inline void CEREAL_LOAD_FUNCTION_NAME(PrettyInputArchive& ar1, cereal::NameValuePair<heap_optional<T>&>& t) {
+  if (strcmp(t.name, "cereal_class_version")) {
+    auto& value = t.value;
+    ar1.getNode().loaders.push_back(PrettyInputArchive::LoaderInfo{t.name, [&ar1, &value]{ ar1(value); }, true});
   } else
     setVersion1000(t.value);
 }
@@ -441,24 +474,28 @@ inline void prettyEpilogue(PrettyInputArchive& ar1) {
         for (auto& loader : loaders) {
           if (ar1.peek() == "}")
             break;
-          loader.second();
+          processed.insert(loader.name);
+          loader.load();
         }
         break;
       } else
         keysAndValues = true;
       bool found = false;
       for (auto& loader : loaders)
-        if (loader.first == name) {
+        if (loader.name == name) {
           if (processed.count(name))
             ar1.error("Value defined twice: \"" + name + "\"");
           processed.insert(name);
-          loader.second();
+          loader.load();
           found = true;
           break;
         }
       if (!found)
         ar1.error("No member named \"" + name + "\" in structure");
     }
+    for (auto& loader : loaders)
+      if (!processed.count(loader.name) && !loader.optional)
+        ar1.error("Field \"" + loader.name + "\" not present");
     ar1.eat("}");
     ar1.getNode().loaders.clear();
   }
@@ -481,6 +518,12 @@ void prologue(PrettyInputArchive&, cereal::NameValuePair<T> const & ) { }
 
 template <class T> inline
 void epilogue(PrettyInputArchive&, cereal::NameValuePair<T> const & ) { }
+
+template <class T> inline
+void prologue(PrettyInputArchive&, OptionalNameValuePair<T> const & ) { }
+
+template <class T> inline
+void epilogue(PrettyInputArchive&, OptionalNameValuePair<T> const & ) { }
 
 template <class T> inline
 void prologue(PrettyInputArchive&, cereal::SizeTag<T> const & ) { }

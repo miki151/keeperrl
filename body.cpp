@@ -29,8 +29,8 @@ static double getDefaultWeight(Body::Size size) {
 
 template <class Archive>
 void Body::serializeImpl(Archive& ar, const unsigned int) {
-  ar(NAMED(xhumanoid), NAMED(size), NAMED(weight), NAMED(bodyParts), NAMED(injuredBodyParts), NAMED(lostBodyParts));
-  ar(NAMED(material), NAMED(health), NAMED(minionFood), NAMED(deathSound), NAMED(intrinsicAttacks), NAMED(minPushSize));
+  ar(OPTION(xhumanoid), OPTION(size), OPTION(weight), OPTION(bodyParts), OPTION(injuredBodyParts), OPTION(lostBodyParts));
+  ar(OPTION(material), OPTION(health), OPTION(minionFood), NAMED(deathSound), OPTION(intrinsicAttacks), OPTION(minPushSize));
 }
 
 template <class Archive>
@@ -1044,7 +1044,7 @@ void Body::serialize(PrettyInputArchive& ar1, unsigned v) {
   ar1(NAMED(type));
   serializeImpl(ar1, v);
   EnumMap<BodyPart, int> addBodyPart;
-  ar1(NAMED(addBodyPart));
+  ar1(OPTION(addBodyPart));
   ar1(endInput());
   for (auto part : ENUM_ALL(BodyPart))
     bodyParts[part] += addBodyPart[part];

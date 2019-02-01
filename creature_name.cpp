@@ -121,7 +121,7 @@ SERIALIZATION_CONSTRUCTOR_IMPL(CreatureName);
 
 template<>
 void CreatureName::serialize(PrettyInputArchive& ar1, unsigned) {
-  ar1(NAMED(name), NAMED(pluralName), NAMED(stackName), NAMED(firstNameGen), NAMED(firstName), NAMED(groupName), NAMED(fullTitle), endInput());
+  ar1(NAMED(name), OPTION(pluralName), NAMED(stackName), NAMED(firstNameGen), NAMED(firstName), OPTION(groupName), OPTION(fullTitle), endInput());
   if (pluralName.empty())
     pluralName = name + "s";
 }

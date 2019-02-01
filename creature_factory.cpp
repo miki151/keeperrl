@@ -666,8 +666,8 @@ PCreature CreatureFactory::getSpecial(TribeId tribe, bool humanoid, bool large, 
           c.chatReactionFriendly = c.chatReactionHostile = c.petReaction = "snarls."_s;
         }
         c.name = name;
-        c.name->setStack(humanoid ? "legendary humanoid" : "legendary beast");
-        c.name->setFirst(nameGenerator->getNext(NameGeneratorId::DEMON));
+        c.name.setStack(humanoid ? "legendary humanoid" : "legendary beast");
+        c.name.setFirst(nameGenerator->getNext(NameGeneratorId::DEMON));
         if (!humanoid) {
           c.body->setBodyParts(getSpecialBeastBody(large, living, wings));
           c.attr[AttrType::DAMAGE] += 5;
@@ -710,7 +710,7 @@ CREATE_LITERAL(RANGED_DAMAGE, ranged_dam)
 
 CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
   if (auto ret = getValueMaybe(attributes, id)) {
-    ret->name->generateFirst(nameGenerator);
+    ret->name.generateFirst(nameGenerator);
     return std::move(*ret);
   } else if (id == "KRAKEN")
       return getKrakenAttributes(ViewId::KRAKEN_HEAD, "kraken");
@@ -1043,8 +1043,8 @@ PCreature CreatureFactory::getHumanForTests() {
       c.body = Body::humanoid(Body::Size::LARGE);
       c.name = "wizard";
       c.viewIdUpgrades = LIST(ViewId::KEEPER2, ViewId::KEEPER3, ViewId::KEEPER4);
-      c.name->setFirst("keeper");
-      c.name->useFullTitle();
+      c.name.setFirst("keeper");
+      c.name.useFullTitle();
       c.skills.setValue(SkillId::LABORATORY, 0.2);
       c.maxLevelIncrease[ExperienceType::MELEE] = 7;
       c.maxLevelIncrease[ExperienceType::SPELL] = 12;

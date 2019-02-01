@@ -13,7 +13,7 @@ struct WorkshopItemCfg {
   optional<TechId> SERIAL(tech);
   int SERIAL(batchSize) = 1;
   optional<TutorialHighlight> SERIAL(tutorialHighlight);
-  SERIALIZE_ALL(NAMED(item), NAMED(work), NAMED(cost), NAMED(tech), NAMED(batchSize), NAMED(tutorialHighlight))
+  SERIALIZE_ALL(NAMED(item), OPTION(work), OPTION(cost), NAMED(tech), OPTION(batchSize), NAMED(tutorialHighlight))
 };
 
 struct WorkshopItem {

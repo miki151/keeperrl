@@ -13,7 +13,7 @@ struct BuildInfo {
     CostInfo SERIAL(cost);
     bool SERIAL(noCredit) = false;
     optional<int> SERIAL(limit);
-    SERIALIZE_ALL(NAMED(types), NAMED(cost), NAMED(noCredit), NAMED(limit))
+    SERIALIZE_ALL(NAMED(types), OPTION(cost), OPTION(noCredit), NAMED(limit))
   };
 
   struct Trap {
@@ -44,5 +44,5 @@ struct BuildInfo {
   vector<Requirement> SERIAL(requirements);
   bool SERIAL(hotkeyOpensGroup) = false;
   optional<TutorialHighlight> SERIAL(tutorialHighlight);
-  SERIALIZE_ALL(NAMED(type), NAMED(name), NAMED(groupName), NAMED(help), NAMED(hotkey), NAMED(requirements), NAMED(hotkeyOpensGroup), NAMED(tutorialHighlight))
+  SERIALIZE_ALL(NAMED(type), NAMED(name), OPTION(groupName), OPTION(help), OPTION(hotkey), OPTION(requirements), OPTION(hotkeyOpensGroup), NAMED(tutorialHighlight))
 };

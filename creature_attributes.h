@@ -114,9 +114,9 @@ class CreatureAttributes {
 
   private:
   void consumeEffects(const EnumMap<LastingEffect, int>&);
-  MustInitialize<ViewId> SERIAL(viewId);
+  ViewId SERIAL(viewId);
   heap_optional<ViewObject> SERIAL(illusionViewObject);
-  MustInitialize<CreatureName> SERIAL(name);
+  CreatureName SERIAL(name);
   EnumMap<AttrType, int> SERIAL(attr);
   HeapAllocated<Body> SERIAL(body);
   optional<string> SERIAL(chatReactionFriendly);

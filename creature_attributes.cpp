@@ -48,12 +48,12 @@ CreatureAttributes::~CreatureAttributes() {}
 template <class Archive> 
 void CreatureAttributes::serializeImpl(Archive& ar, const unsigned int version) {
   ar(NAMED(viewId), NAMED(illusionViewObject), NAMED(name), NAMED(attr), NAMED(chatReactionFriendly));
-  ar(NAMED(chatReactionHostile), NAMED(passiveAttack), NAMED(gender), NAMED(viewIdUpgrades));
-  ar(NAMED(body), NAMED(deathDescription), NAMED(hatedByEffect));
-  ar(NAMED(cantEquip), NAMED(courage), NAMED(canJoinCollective));
-  ar(NAMED(boulder), NAMED(noChase), NAMED(isSpecial), NAMED(skills), NAMED(spells));
-  ar(NAMED(permanentEffects), NAMED(lastingEffects), NAMED(minionActivities), NAMED(expLevel));
-  ar(NAMED(noAttackSound), NAMED(maxLevelIncrease), NAMED(creatureId), NAMED(petReaction), NAMED(combatExperience));
+  ar(NAMED(chatReactionHostile), NAMED(passiveAttack), OPTION(gender), OPTION(viewIdUpgrades));
+  ar(NAMED(body), OPTION(deathDescription), NAMED(hatedByEffect));
+  ar(OPTION(cantEquip), OPTION(courage), OPTION(canJoinCollective));
+  ar(OPTION(boulder), OPTION(noChase), OPTION(isSpecial), OPTION(skills), OPTION(spells));
+  ar(OPTION(permanentEffects), OPTION(lastingEffects), OPTION(minionActivities), OPTION(expLevel));
+  ar(OPTION(noAttackSound), OPTION(maxLevelIncrease), NAMED(creatureId), NAMED(petReaction), OPTION(combatExperience));
 }
 
 template <class Archive>
@@ -75,11 +75,11 @@ const optional<CreatureId>& CreatureAttributes::getCreatureId() const {
 }
 
 CreatureName& CreatureAttributes::getName() {
-  return *name;
+  return name;
 }
 
 const CreatureName& CreatureAttributes::getName() const {
-  return *name;
+  return name;
 }
 
 void CreatureAttributes::increaseBaseAttr(AttrType type, int v) {
@@ -316,9 +316,9 @@ void CreatureAttributes::consumeEffects(const EnumMap<LastingEffect, int>& perma
 }
 
 void CreatureAttributes::consume(WCreature self, CreatureAttributes& other) {
-  INFO << name->bare() << " consume " << other.name->bare();
-  self->you(MsgType::CONSUME, other.name->the());
-  self->addPersonalEvent(self->getName().a() + " absorbs " + other.name->a());
+  INFO << name.bare() << " consume " << other.name.bare();
+  self->you(MsgType::CONSUME, other.name.the());
+  self->addPersonalEvent(self->getName().a() + " absorbs " + other.name.a());
   vector<string> adjectives;
   body->consumeBodyParts(self, other.getBody(), adjectives);
   for (auto t : ENUM_ALL(AttrType))
@@ -351,7 +351,7 @@ const Skillset& CreatureAttributes::getSkills() const {
 }
 
 ViewObject CreatureAttributes::createViewObject() const {
-  return ViewObject(*viewId, ViewLayer::CREATURE, name->bare());
+  return ViewObject(viewId, ViewLayer::CREATURE, name.bare());
 }
 
 const heap_optional<ViewObject>& CreatureAttributes::getIllusionViewObject() const {

@@ -1210,7 +1210,7 @@ ItemAttributes ItemType::GoldPiece::getAttributes() const {
   );
 }
 
-SERIALIZE_DEF(ItemType, NAMED(type), NAMED(prefixChance))
+SERIALIZE_DEF(ItemType, NAMED(type), OPTION(prefixChance))
 
 #include "pretty_archive.h"
 template void ItemType::serialize(PrettyInputArchive&, unsigned);

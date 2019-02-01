@@ -751,7 +751,7 @@ const Range::Iter& Range::Iter::operator++ () {
   return *this;
 }
 
-SERIALIZE_DEF(Range, NAMED(start), NAMED(finish), NAMED(increment))
+SERIALIZE_DEF(Range, NAMED(start), NAMED(finish), OPTION(increment))
 SERIALIZATION_CONSTRUCTOR_IMPL(Range);
 
 string combine(const vector<string>& adj, bool commasOnly) {

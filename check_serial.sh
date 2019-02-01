@@ -7,6 +7,7 @@ grep "SERIALIZE_ALL(" *.{h,cpp} | grep -v define | eval $GET_ARGUMENTS | sed "s/
 grep " ar(" *.{cpp,h} | grep -v define | eval $GET_ARGUMENTS | sed "s/, /\n/g" >> /tmp/def1
 grep -E "(SERIALIZE_DEF\(|SERIALIZE_TMPL\()" *.cpp | grep -v define | eval $GET_ARGUMENTS | grep , | cut -d" " -f 2- | sed "s/, /\n/g" >> /tmp/def1
 sed -i "s/NAMED(\(.*\))/\1/" /tmp/def1
+sed -i "s/OPTION(\(.*\))/\1/" /tmp/def1
 grep -v SUBCLASS < /tmp/def1 | grep -v __VA_ARGS__ | sort > /tmp/def
 
 diff /tmp/decl /tmp/def
