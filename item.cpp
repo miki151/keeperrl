@@ -38,7 +38,7 @@
 template <class Archive> 
 void Item::serialize(Archive& ar, const unsigned int version) {
   ar & SUBCLASS(OwnedObject<Item>) & SUBCLASS(UniqueEntity) & SUBCLASS(Renderable);
-  ar(attributes, discarded, shopkeeper, fire, classCache, canEquipCache);
+  ar(attributes, discarded, shopkeeper, fire, classCache, canEquipCache, timeout);
 }
 
 SERIALIZABLE(Item)
@@ -52,6 +52,10 @@ Item::Item(const ItemAttributes& attr) : Renderable(ViewObject(*attr.viewId, Vie
 }
 
 Item::~Item() {
+}
+
+PItem Item::getCopy() const {
+  return makeOwner<Item>(*attributes);
 }
 
 ItemPredicate Item::effectPredicate(Effect type) {
@@ -134,6 +138,11 @@ void Item::tick(Position position) {
     }
   }
   specialTick(position);
+  if (timeout) {
+    if (position.getGame()->getGlobalTime() >= *timeout) {
+      discarded = true;
+    }
+  }
 }
 
 bool Item::applyRandomPrefix() {
@@ -142,6 +151,10 @@ bool Item::applyRandomPrefix() {
     return true;
   }
   return false;
+}
+
+void Item::setTimeout(GlobalTime t) {
+  timeout = t;
 }
 
 void Item::onHitSquareMessage(Position pos, int numItems) {

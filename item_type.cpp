@@ -344,6 +344,9 @@ static int getEffectPrice(Effect type) {
       },
       [&](const Effect::RegrowBodyPart&) {
         return 30;
+      },
+      [&](const Effect::DoubleTrouble&) {
+        return 30;
       }
       /*[&](const Effect::Chain& c) {
         return getEffectPrice(c.effects[0]);

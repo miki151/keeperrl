@@ -1818,7 +1818,7 @@ void PlayerControl::toggleControlAllTeamMembers() {
   }
 }
 
-optional<PlayerMessage> PlayerControl::findMessage(PlayerMessage::Id id){
+optional<PlayerMessage&> PlayerControl::findMessage(PlayerMessage::Id id){
   for (auto& elem : messages)
     if (elem.getUniqueId() == id)
       return elem;

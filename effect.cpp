@@ -44,7 +44,7 @@
 #include "weapon_info.h"
 #include "fx_name.h"
 #include "draw_line.h"
-
+#include "monster.h"
 
 vector<WCreature> Effect::summonCreatures(Position pos, int radius, vector<PCreature> creatures, TimeInterval delay) {
   vector<Position> area = pos.getRectangle(Rectangle(-Vec2(radius, radius), Vec2(radius + 1, radius + 1)));
@@ -704,6 +704,28 @@ string Effect::Suicide::getName() const {
 
 string Effect::Suicide::getDescription() const {
   return "Causes the *attacker* to die.";
+}
+
+void Effect::DoubleTrouble::applyToCreature(WCreature c, WCreature attacker) const {
+  PCreature copy = makeOwner<Creature>(c->getTribeId(), c->getAttributes());
+  copy->setController(Monster::getFactory(MonsterAIFactory::monster()).get(copy.get()));
+  auto ttl = 50_visible;
+  for (auto& item : c->getEquipment().getItems())
+    if (!item->getResourceId()) {
+      auto itemCopy = item->getCopy();
+      itemCopy->setTimeout(c->getGame()->getGlobalTime() + ttl + 10_visible);
+      copy->take(std::move(itemCopy));
+    }
+  auto cRef = summonCreatures(c, 2, makeVec(std::move(copy))).getOnlyElement();
+  cRef->addEffect(LastingEffect::SUMMONED, ttl, false);
+}
+
+string Effect::DoubleTrouble::getName() const {
+  return "double trouble";
+}
+
+string Effect::DoubleTrouble::getDescription() const {
+  return "Creates a twin copy ally.";
 }
 
 #define FORWARD_CALL(Var, Name, ...)\

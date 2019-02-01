@@ -48,6 +48,8 @@ class CreatureAttributes {
   public:
   CreatureAttributes(function<void(CreatureAttributes&)>);
   ~CreatureAttributes();
+  CreatureAttributes(const CreatureAttributes&);
+  CreatureAttributes(CreatureAttributes&&);
   SERIALIZATION_DECL(CreatureAttributes)
   template <class Archive>
   void serializeImpl(Archive& ar, const unsigned int);

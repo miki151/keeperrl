@@ -45,6 +45,10 @@ CreatureAttributes::CreatureAttributes(function<void(CreatureAttributes&)> fun) 
 
 CreatureAttributes::~CreatureAttributes() {}
 
+CreatureAttributes::CreatureAttributes(const CreatureAttributes&) = default;
+
+CreatureAttributes::CreatureAttributes(CreatureAttributes&&) = default;
+
 template <class Archive> 
 void CreatureAttributes::serializeImpl(Archive& ar, const unsigned int version) {
   ar(NAMED(viewId), NAMED(illusionViewObject), NAMED(name), NAMED(attr), NAMED(chatReactionFriendly));

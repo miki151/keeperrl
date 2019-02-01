@@ -214,7 +214,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   vector<CollectiveAttack> SERIAL(notifiedAttacks);
   vector<CollectiveAttack> SERIAL(ransomAttacks);
   vector<string> SERIAL(hints);
-  optional<PlayerMessage> findMessage(PlayerMessage::Id);
+  optional<PlayerMessage&> findMessage(PlayerMessage::Id);
   void updateVisibleCreatures();
   vector<Vec2> SERIAL(visibleEnemies);
   SVisibilityMap SERIAL(visibilityMap);

@@ -678,7 +678,7 @@ optional<int> reverseIndexHeight(const vector<ListElem>& options, int height) {
 
 optional<Vec2> WindowView::chooseDirection(Vec2 playerPos, const string& message) {
   TempClockPause pause(clock);
-  gameInfo.messageBuffer = { PlayerMessage(message) };
+  gameInfo.messageBuffer = makeVec(PlayerMessage(message));
   SyncQueue<optional<Vec2>> returnQueue;
   addReturnDialog<optional<Vec2>>(returnQueue, [=] ()-> optional<Vec2> {
   rebuildGui();
@@ -741,7 +741,7 @@ optional<Vec2> WindowView::chooseDirection(Vec2 playerPos, const string& message
 
 optional<Vec2> WindowView::chooseTarget(Vec2 playerPos, Table<PassableInfo> passable, const string& message) {
   TempClockPause pause(clock);
-  gameInfo.messageBuffer = { PlayerMessage(message) };
+  gameInfo.messageBuffer = makeVec(PlayerMessage(message));
   SyncQueue<optional<Vec2>> returnQueue;
   addReturnDialog<optional<Vec2>>(returnQueue, [=] ()-> optional<Vec2> {
   rebuildGui();

@@ -36,6 +36,7 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
   public:
   Item(const ItemAttributes&);
   virtual ~Item();
+  PItem getCopy() const;
 
   void apply(WCreature, bool noSound = false);
 
@@ -72,6 +73,7 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
   const optional<RangedWeapon>& getRangedWeapon() const;
   void tick(Position);
   bool applyRandomPrefix();
+  void setTimeout(GlobalTime);
   
   string getApplyMsgThirdPerson(WConstCreature owner) const;
   string getApplyMsgFirstPerson(WConstCreature owner) const;
@@ -125,4 +127,5 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
   bool SERIAL(canEquipCache);
   ItemClass SERIAL(classCache);
   string getSuffix() const;
+  optional<GlobalTime> SERIAL(timeout);
 };

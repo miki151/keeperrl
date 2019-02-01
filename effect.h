@@ -112,13 +112,14 @@ class Effect {
   };
   SIMPLE_EFFECT(RegrowBodyPart);
   SIMPLE_EFFECT(Suicide);
+  SIMPLE_EFFECT(DoubleTrouble);
 /*  struct Chain {
     EFFECT_TYPE_INTERFACE;
     vector<Effect> effects;
     COMPARE_ALL(effects)
   };*/
   MAKE_VARIANT(EffectType, Teleport, Heal, Fire, DestroyEquipment, EnhanceArmor, EnhanceWeapon, Suicide,// Chain,
-      EmitPoisonGas, CircularBlast, Deception, Summon, SummonElement, Acid, Alarm, TeleEnemies, SilverDamage,
+      EmitPoisonGas, CircularBlast, Deception, Summon, SummonElement, Acid, Alarm, TeleEnemies, SilverDamage, DoubleTrouble,
       CurePoison, Lasting, Permanent, PlaceFurniture, Damage, InjureBodyPart, LooseBodyPart, RegrowBodyPart, DestroyWalls);
 
   template <typename T>
