@@ -1676,13 +1676,15 @@ class NamedVariant : public variant<Types...> {
 
 #define MAKE_VARIANT(NAME, ...)\
 constexpr static inline const char* get##NAME##Names(bool b) { if (b) return #__VA_ARGS__; else return #NAME;}\
-using NAME = NamedVariant<get##NAME##Names, __VA_ARGS__>
+using NAME = NamedVariant<get##NAME##Names, __VA_ARGS__>;\
+using NAME##_impl = variant<__VA_ARGS__>
 
 #define MAKE_VARIANT2(NAME, ...)\
 constexpr inline const char* get##NAME##Names(bool b) { if (b) return #__VA_ARGS__; else return #NAME;}\
 class NAME : public NamedVariant<get##NAME##Names, __VA_ARGS__> { \
   using NamedVariant::NamedVariant;\
-};
+};\
+using NAME##_impl = variant<__VA_ARGS__>
 
 
 #define COMPARE_ALL(...) \

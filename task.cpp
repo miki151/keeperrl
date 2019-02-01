@@ -44,6 +44,7 @@
 #include "vision.h"
 #include "position_matching.h"
 #include "navigation_flags.h"
+#include "storage_info.h"
 
 template <class Archive> 
 void Task::serialize(Archive& ar, const unsigned int version) {
@@ -1522,11 +1523,6 @@ class DropItems : public Task {
 
   protected:
   EntitySet<Item> SERIAL(items);
-  struct StorageInfo {
-    StorageId SERIAL(storage);
-    WCollective SERIAL(collective) = nullptr;
-    SERIALIZE_ALL(storage, collective);
-  };
   variant<StorageInfo, vector<Position>> SERIAL(positions);
   optional<Position> SERIAL(target);
   optional<Position> SERIAL(origin);
