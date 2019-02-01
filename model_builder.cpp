@@ -42,7 +42,7 @@
 using namespace std::chrono;
 
 ModelBuilder::ModelBuilder(ProgressMeter* m, RandomGen& r, Options* o,
-    SokobanInput* sok, GameConfig* gameConfig, const CreatureFactory* creatureFactory, const EnemyFactory* enemyFactory)
+    SokobanInput* sok, const GameConfig* gameConfig, const CreatureFactory* creatureFactory, const EnemyFactory* enemyFactory)
     : random(r), meter(m), options(o), enemyFactory(enemyFactory), sokobanInput(sok), gameConfig(gameConfig),
       creatureFactory(creatureFactory) {
 }

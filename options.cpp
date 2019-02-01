@@ -46,6 +46,7 @@ const EnumMap<OptionId, Options::Value> defaults {
   {OptionId::ALLIES, 2},
   {OptionId::INFLUENCE_SIZE, 3},
   {OptionId::GENERATE_MANA, 0},
+  {OptionId::CURRENT_MOD, 0},
 };
 
 const map<OptionId, string> names {
@@ -76,6 +77,7 @@ const map<OptionId, string> names {
   {OptionId::ALLIES, "Allies"},
   {OptionId::INFLUENCE_SIZE, "Min. tribes in influence zone"},
   {OptionId::GENERATE_MANA, "Generate mana in library"},
+  {OptionId::CURRENT_MOD, "Current mod"},
 };
 
 const map<OptionId, string> hints {
@@ -114,6 +116,7 @@ const map<OptionSet, vector<OptionId>> optionSets {
       OptionId::GAME_EVENTS,
       OptionId::AUTOSAVE,
       OptionId::WASD_SCROLLING,
+      OptionId::CURRENT_MOD,
 #ifndef RELEASE
       OptionId::KEEP_SAVEFILES,
       OptionId::SHOW_MAP,
@@ -246,6 +249,8 @@ string Options::getValueString(OptionId id) {
       else
         return val;
     }
+    case OptionId::CURRENT_MOD:
+      return choices[id][*value.getValueMaybe<int>() % choices[id].size()];
     case OptionId::FULLSCREEN_RESOLUTION: {
       int val = *value.getValueMaybe<int>();
       if (val >= 0 && val < choices[id].size())

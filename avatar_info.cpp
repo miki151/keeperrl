@@ -14,7 +14,7 @@
 
 using PlayerCreaturesInfo = pair<vector<KeeperCreatureInfo>, vector<AdventurerCreatureInfo>>;
 
-static PlayerCreaturesInfo readKeeperCreaturesConfig(View* view, GameConfig* config) {
+static PlayerCreaturesInfo readKeeperCreaturesConfig(View* view, const GameConfig* config) {
   while (1) {
     PlayerCreaturesInfo elem;
     if (auto error = config->readObject(elem, GameConfigId::PLAYER_CREATURES)) {
@@ -46,7 +46,7 @@ static vector<ViewId> getUpgradedViewId(const Creature* c) {
   return ret;
 }
 
-variant<AvatarInfo, AvatarMenuOption> getAvatarInfo(View* view, GameConfig* gameConfig, Options* options,
+variant<AvatarInfo, AvatarMenuOption> getAvatarInfo(View* view, const GameConfig* gameConfig, Options* options,
     const CreatureFactory* creatureFactory) {
   auto keeperCreatureInfos = readKeeperCreaturesConfig(view, gameConfig).first;
   auto keeperCreatures = keeperCreatureInfos.transform([&](auto& elem) {

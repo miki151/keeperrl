@@ -244,7 +244,7 @@ static VillainCounts getVillainCounts(CampaignType type, Options* options) {
   }
 }
 
-CampaignBuilder::CampaignBuilder(View* v, RandomGen& rand, Options* o, GameConfig* gameConfig, const AvatarInfo& a)
+CampaignBuilder::CampaignBuilder(View* v, RandomGen& rand, Options* o, const GameConfig* gameConfig, const AvatarInfo& a)
     : view(v), random(rand), options(o), gameConfig(gameConfig), avatarInfo(a) {
 }
 

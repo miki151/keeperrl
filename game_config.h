@@ -5,6 +5,8 @@
 #include "pretty_printing.h"
 #include "file_path.h"
 
+constexpr auto gameConfigSubdir = "game_config";
+
 enum class GameConfigId {
   CAMPAIGN_VILLAINS,
   PLAYER_CREATURES,

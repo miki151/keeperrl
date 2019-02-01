@@ -90,7 +90,7 @@ static CollectiveConfig getKeeperConfig(bool fastImmigration, bool regenerateMan
 }
 
 void Game::spawnKeeper(AvatarInfo avatarInfo, bool regenerateMana, vector<string> introText,
-    GameConfig* gameConfig, const CreatureFactory* creatureFactory) {
+    const GameConfig* gameConfig, const CreatureFactory* creatureFactory) {
   auto model = getMainModel().get();
   WLevel level = model->getTopLevel();
   Creature* keeperRef = avatarInfo.playerCreature.get();
@@ -115,7 +115,7 @@ void Game::spawnKeeper(AvatarInfo avatarInfo, bool regenerateMana, vector<string
 
 Game::~Game() {}
 
-PGame Game::campaignGame(Table<PModel>&& models, CampaignSetup& setup, AvatarInfo avatar, GameConfig* gameConfig,
+PGame Game::campaignGame(Table<PModel>&& models, CampaignSetup& setup, AvatarInfo avatar, const GameConfig* gameConfig,
     const CreatureFactory* creatureFactory) {
   auto ret = makeOwner<Game>(std::move(models), *setup.campaign.getPlayerPos(), setup);
   for (auto model : ret->getAllModels())
@@ -530,7 +530,7 @@ View* Game::getView() const {
   return view;
 }
 
-GameConfig* Game::getGameConfig() const {
+const GameConfig* Game::getGameConfig() const {
   return gameConfig;
 }
 
@@ -631,7 +631,7 @@ Options* Game::getOptions() {
   return options;
 }
 
-void Game::initialize(Options* o, Highscores* h, View* v, FileSharing* f, GameConfig* g,
+void Game::initialize(Options* o, Highscores* h, View* v, FileSharing* f, const GameConfig* g,
     const CreatureFactory* fac) {
   options = o;
   highscores = h;

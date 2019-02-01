@@ -14,6 +14,7 @@ class DirectoryPath {
   bool exists() const;
   void createIfDoesntExist() const;
   vector<FilePath> getFiles() const;
+  vector<string> getSubDirs() const;
 
   private:
   friend class FilePath;

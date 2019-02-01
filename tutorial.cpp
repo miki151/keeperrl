@@ -455,7 +455,7 @@ Tutorial::State Tutorial::getState() const {
   return state;
 }
 
-void Tutorial::createTutorial(Game& game, GameConfig* gameConfig) {
+void Tutorial::createTutorial(Game& game, const GameConfig* gameConfig) {
   auto tutorial = make_shared<Tutorial>();
   game.getPlayerControl()->setTutorial(tutorial);
   auto collective = game.getPlayerCollective();

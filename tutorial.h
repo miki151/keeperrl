@@ -15,7 +15,7 @@ class Tutorial {
   EnumSet<TutorialHighlight> getHighlights(WConstGame) const;
   bool blockAutoEquipment() const;
 
-  static void createTutorial(Game&, GameConfig*);
+  static void createTutorial(Game&, const GameConfig*);
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int);

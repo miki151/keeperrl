@@ -138,7 +138,7 @@ PlayerControl::~PlayerControl() {
 }
 
 template <typename T>
-static T readData(View* view, GameConfig* gameConfig, GameConfigId id) {
+static T readData(View* view, const GameConfig* gameConfig, GameConfigId id) {
   T data;
   while (1) {
     if (auto error = gameConfig->readObject(data, id))
@@ -210,7 +210,7 @@ static optional<string> checkGroupCounts(const map<string, vector<ImmigrantInfo>
   return none;
 }
 
-optional<string> PlayerControl::reloadImmigrationAndWorkshops(GameConfig* gameConfig,
+optional<string> PlayerControl::reloadImmigrationAndWorkshops(const GameConfig* gameConfig,
     const CreatureFactory* creatureFactory) {
   Technology technology;
   if (auto error = gameConfig->readObject(technology, GameConfigId::TECHNOLOGY))

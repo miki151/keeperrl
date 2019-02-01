@@ -30,8 +30,7 @@ class EnemyFactory;
 class MainLoop {
   public:
   MainLoop(View*, Highscores*, FileSharing*, const DirectoryPath& dataFreePath, const DirectoryPath& userPath,
-      Options*, Jukebox*, SokobanInput*, GameConfig*, const CreatureFactory*, NameGenerator*, const EnemyFactory*,
-      bool useSingleThread, int saveVersion);
+      Options*, Jukebox*, SokobanInput*, NameGenerator*, const EnemyFactory*, bool useSingleThread, int saveVersion);
 
   void start(bool tilesPresent, bool quickGame);
   void modelGenTest(int numTries, const vector<std::string>& types, RandomGen&, Options*);
@@ -59,16 +58,17 @@ class MainLoop {
 
   void doWithSplash(SplashType, const string& text, function<void()> fun, function<void()> cancelFun = nullptr);
 
-  PGame prepareCampaign(RandomGen&);
+  PGame prepareCampaign(RandomGen&, const GameConfig*, const CreatureFactory*);
   enum class ExitCondition;
-  ExitCondition playGame(PGame, bool withMusic, bool noAutoSave, function<optional<ExitCondition> (WGame)> = nullptr,
-      milliseconds stepTimeMilli = milliseconds{3});
+  ExitCondition playGame(PGame, bool withMusic, bool noAutoSave, const GameConfig*, const CreatureFactory*,
+      function<optional<ExitCondition> (WGame)> = nullptr, milliseconds stepTimeMilli = milliseconds{3});
   void splashScreen();
   void showCredits(const FilePath& path, View*);
 
   void playMenuMusic();
 
-  Table<PModel> prepareCampaignModels(CampaignSetup& campaign, const AvatarInfo&, RandomGen& random);
+  Table<PModel> prepareCampaignModels(CampaignSetup& campaign, const AvatarInfo&, RandomGen& random,
+      const GameConfig*, const CreatureFactory*);
   PGame loadGame(const FilePath&);
   PGame loadPrevious();
   FilePath getSavePath(const PGame&, GameSaveType);
@@ -79,6 +79,8 @@ class MainLoop {
   static vector<SaveFileInfo> getSaveFiles(const DirectoryPath& path, const string& suffix);
   bool isCompatible(int loadedVersion);
 
+  GameConfig getGameConfig() const;
+
   View* view = nullptr;
   DirectoryPath dataFreePath;
   DirectoryPath userPath;
@@ -86,24 +88,18 @@ class MainLoop {
   Jukebox* jukebox = nullptr;
   Highscores* highscores = nullptr;
   FileSharing* fileSharing = nullptr;
-  GameConfig* gameConfig = nullptr;
   bool useSingleThread;
   SokobanInput* sokobanInput;
   PModel getBaseModel(ModelBuilder&, CampaignSetup&, const AvatarInfo&);
   void considerGameEventsPrompt();
   void considerFreeVersionText(bool tilesPresent);
   void eraseAllSavesExcept(const PGame&, optional<GameSaveType>);
-  PGame prepareTutorial();
+  PGame prepareTutorial(const GameConfig*);
   void launchQuickGame();
   void bugReportSave(PGame&, FilePath);
   int saveVersion;
-  const CreatureFactory* creatureFactory = nullptr;
   NameGenerator* nameGenerator = nullptr;
   const EnemyFactory* enemyFactory = nullptr;
   void saveGame(PGame&, const FilePath&);
   void saveMainModel(PGame&, const FilePath&);
 };
-
-
-
-

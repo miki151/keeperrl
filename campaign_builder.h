@@ -10,7 +10,7 @@ class GameConfig;
 
 class CampaignBuilder {
   public:
-  CampaignBuilder(View*, RandomGen&, Options*, GameConfig*, const AvatarInfo&);
+  CampaignBuilder(View*, RandomGen&, Options*, const GameConfig*, const AvatarInfo&);
   optional<CampaignSetup> prepareCampaign(function<optional<RetiredGames>(CampaignType)>, CampaignType defaultType,
       string worldName);
   static CampaignSetup getEmptyCampaign();
@@ -20,7 +20,7 @@ class CampaignBuilder {
   View* view;
   RandomGen& random;
   Options* options;
-  GameConfig* gameConfig;
+  const GameConfig* gameConfig;
   const AvatarInfo& avatarInfo;
   vector<OptionId> getSecondaryOptions(CampaignType) const;
   vector<OptionId> getPrimaryOptions() const;

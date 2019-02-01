@@ -26,14 +26,14 @@ class CreatureFactory;
 
 class Game : public OwnedObject<Game> {
   public:
-  static PGame campaignGame(Table<PModel>&&, CampaignSetup&, AvatarInfo, GameConfig*, const CreatureFactory*);
+  static PGame campaignGame(Table<PModel>&&, CampaignSetup&, AvatarInfo, const GameConfig*, const CreatureFactory*);
   static PGame splashScreen(PModel&&, const CampaignSetup&);
 
   optional<ExitInfo> update(double timeDiff);
   Options* getOptions();
-  void initialize(Options*, Highscores*, View*, FileSharing*, GameConfig*, const CreatureFactory*);
+  void initialize(Options*, Highscores*, View*, FileSharing*, const GameConfig*, const CreatureFactory*);
   View* getView() const;
-  GameConfig* getGameConfig() const;
+  const GameConfig* getGameConfig() const;
   const CreatureFactory* getCreatureFactory() const;
   void exitAction();
   void transferAction(vector<Creature*>);
@@ -139,9 +139,9 @@ class Game : public OwnedObject<Game> {
   optional<ExitInfo> updateInput();
   void initializeModels();
   void increaseTime(double diff);
-  GameConfig* gameConfig = nullptr;
+  const GameConfig* gameConfig = nullptr;
   void addCollective(WCollective);
-  void spawnKeeper(AvatarInfo, bool regenerateMana, vector<string> introText, GameConfig*, const CreatureFactory*);
+  void spawnKeeper(AvatarInfo, bool regenerateMana, vector<string> introText, const GameConfig*, const CreatureFactory*);
   const CreatureFactory* creatureFactory = nullptr;
 };
 
