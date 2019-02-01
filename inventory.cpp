@@ -125,8 +125,9 @@ double Inventory::getTotalWeight() const {
 }
 
 void Inventory::tick(Position pos) {
-  for (auto item : copyOf(getItems()))
-    if (item && hasItem(item)) {
+  vector<WeakPointer<Item>> itemsCopy = getItems().transform([](const auto& it){ return it->getThis(); });
+  for (auto item : itemsCopy)
+    if (item && hasItem(item.get())) {
       // items might be destroyed or removed from inventory in tick()
       auto oldViewId = item->getViewObject().id();
       item->tick(pos);
@@ -135,8 +136,8 @@ void Inventory::tick(Position pos) {
         addViewId(oldViewId, -1);
         addViewId(newViewId, 1);
       }
-      if (item->isDiscarded() && hasItem(item))
-        removeItem(item);
+      if (item->isDiscarded() && hasItem(item.get()))
+        removeItem(item.get());
     }
 }
 
