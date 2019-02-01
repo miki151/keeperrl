@@ -646,7 +646,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
             c.type = SettlementType::FOREST;
             c.inhabitants.fighters = CreatureList(random.get(7, 10), "DRIAD");
             c.tribe = TribeId::getMonster();
-            c.race = "driads"_s;
+            c.race = "dryads"_s;
             c.buildingId = BuildingId::WOOD;),
           CollectiveConfig::withImmigrants(300_visible, 10))
           .setImmigrants({ ImmigrantInfo("DRIAD", {MinionTrait::FIGHTER}).setFrequency(1) });
