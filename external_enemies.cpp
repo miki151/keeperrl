@@ -72,7 +72,7 @@ PTask ExternalEnemies::getAttackTask(WCollective enemy, AttackBehaviour behaviou
 }
 
 void ExternalEnemies::updateCurrentWaves(WCollective target) {
-  auto areAllDead = [](const vector<WCreature>& wave) {
+  auto areAllDead = [](const vector<Creature*>& wave) {
     for (auto c : wave)
       if (!c->isDead() && !c->isAffected(LastingEffect::STUNNED))
         return false;
@@ -90,7 +90,7 @@ void ExternalEnemies::update(WLevel level, LocalTime localTime) {
   CHECK(!!target);
   updateCurrentWaves(target);
   if (auto nextWave = popNextWave(localTime)) {
-    vector<WCreature> attackers;
+    vector<Creature*> attackers;
     Vec2 landingDir(Random.choose<Dir>());
     auto attackTask = getAttackTask(target, nextWave->enemy.behaviour);
     auto attackTaskRef = attackTask.get();

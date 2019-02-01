@@ -11,21 +11,21 @@ class Collective;
 namespace EventInfo {
 
   struct CreatureMoved {
-    WCreature creature = nullptr;
+    Creature* creature = nullptr;
   };
 
   struct CreatureKilled {
-    WCreature victim = nullptr;
-    WCreature attacker = nullptr;
+    Creature* victim = nullptr;
+    Creature* attacker = nullptr;
   };
 
   struct ItemsPickedUp {
-    WCreature creature = nullptr;
+    Creature* creature = nullptr;
     vector<Item*> items;
   };
 
   struct ItemsDropped {
-    WCreature creature = nullptr;
+    Creature* creature = nullptr;
     vector<Item*> items;
   };
 
@@ -59,18 +59,18 @@ namespace EventInfo {
   };
 
   struct CreatureTortured {
-    WCreature victim = nullptr;
-    WCreature torturer = nullptr;
+    Creature* victim = nullptr;
+    Creature* torturer = nullptr;
   };
 
   struct CreatureStunned {
-    WCreature victim = nullptr;
-    WCreature attacker = nullptr;
+    Creature* victim = nullptr;
+    Creature* attacker = nullptr;
   };
 
   struct CreatureAttacked {
-    WCreature victim = nullptr;
-    WCreature attacker = nullptr;
+    Creature* victim = nullptr;
+    Creature* attacker = nullptr;
   };
 
   struct TrapTriggered {
@@ -79,7 +79,7 @@ namespace EventInfo {
 
   struct TrapDisarmed {
     Position pos;
-    WCreature creature = nullptr;
+    Creature* creature = nullptr;
   };
 
   struct FurnitureDestroyed {
@@ -95,12 +95,12 @@ namespace EventInfo {
   };
 
   struct ItemsEquipped {
-    WCreature creature = nullptr;
+    Creature* creature = nullptr;
     vector<Item*> items;
   };
 
   struct CreatureEvent {
-    WCreature creature = nullptr;
+    Creature* creature = nullptr;
     string message;
   };
 

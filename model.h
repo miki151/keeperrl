@@ -72,7 +72,7 @@ class Model : public OwnedObject<Model> {
   WGame getGame() const;
   void tick(LocalTime);
   vector<WCollective> getCollectives() const;
-  vector<WCreature> getAllCreatures() const;
+  vector<Creature*> getAllCreatures() const;
   vector<WLevel> getLevels() const;
   const vector<WLevel>& getMainLevels() const;
   void addCollective(PCollective);
@@ -84,12 +84,12 @@ class Model : public OwnedObject<Model> {
 
   int getSaveProgressCount() const;
 
-  void killCreature(WCreature victim);
+  void killCreature(Creature* victim);
   void updateSunlightMovement();
 
-  PCreature extractCreature(WCreature);
+  PCreature extractCreature(Creature*);
   void transferCreature(PCreature, Vec2 travelDir);
-  bool canTransferCreature(WCreature, Vec2 travelDir);
+  bool canTransferCreature(Creature*, Vec2 travelDir);
 
   SERIALIZATION_DECL(Model)
 

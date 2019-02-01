@@ -138,7 +138,7 @@ vector<string> Immigration::getMissingRequirements(const Group& group) const {
           ret.push_back("Not available until turn " + toString(type.turn));
       },
       [&](const Pregnancy&) {
-        for (WCreature c : collective->getCreatures())
+        for (Creature* c : collective->getCreatures())
           if (c->isAffected(LastingEffect::PREGNANT))
             return;
         ret.push_back("Requires a pregnant succubus");
@@ -191,7 +191,7 @@ double Immigration::getRequirementMultiplier(const Group& group) const {
           ret *= prob;
       },
       [&](const Pregnancy&, double prob) {
-        for (WCreature c : collective->getCreatures())
+        for (Creature* c : collective->getCreatures())
           if (c->isAffected(LastingEffect::PREGNANT))
             return;
         ret *= prob;
@@ -215,7 +215,7 @@ double Immigration::getRequirementMultiplier(const Group& group) const {
   return ret;
 }
 
-void Immigration::occupyRequirements(WConstCreature c, int index) {
+void Immigration::occupyRequirements(const Creature* c, int index) {
   PROFILE;
   auto visitor = makeVisitor(
       [&](const AttractionInfo& attraction) { occupyAttraction(c, attraction); },
@@ -229,7 +229,7 @@ void Immigration::occupyRequirements(WConstCreature c, int index) {
         collective->takeResource(calculateCost(index, cost));
       },
       [&](const Pregnancy&) {
-        for (WCreature c : collective->getCreatures())
+        for (Creature* c : collective->getCreatures())
           if (c->isAffected(LastingEffect::PREGNANT)) {
             c->removeEffect(LastingEffect::PREGNANT);
             break;
@@ -242,7 +242,7 @@ void Immigration::occupyRequirements(WConstCreature c, int index) {
   immigrants[index].visitRequirements(visitor);
 }
 
-void Immigration::occupyAttraction(WConstCreature c, const AttractionInfo& attraction) {
+void Immigration::occupyAttraction(const Creature* c, const AttractionInfo& attraction) {
   int toOccupy = attraction.amountClaimed;
   vector<AttractionType> occupied;
   for (auto& type : attraction.types) {
@@ -281,7 +281,7 @@ map<int, std::reference_wrapper<const Immigration::Available>> Immigration::getA
   return ret;
 }
 
-static vector<Position> pickSpawnPositions(const vector<WCreature>& creatures, vector<Position> allPositions) {
+static vector<Position> pickSpawnPositions(const vector<Creature*>& creatures, vector<Position> allPositions) {
   if (allPositions.empty() || creatures.empty())
     return {};
   for (auto& pos : copyOf(allPositions))
@@ -335,7 +335,7 @@ vector<Position> Immigration::Available::getSpawnPositions() const {
     },
     [&] (Pregnancy) {
       vector<Position> ret;
-      for (WCreature c : immigration->collective->getCreatures())
+      for (Creature* c : immigration->collective->getCreatures())
         if (c->isAffected(LastingEffect::PREGNANT))
           ret.push_back(c->getPosition());
       return ret;
@@ -369,7 +369,7 @@ optional<CostInfo> Immigration::Available::getCost() const {
 
 CostInfo Immigration::calculateCost(int index, const ExponentialCost& cost) const {
   EntitySet<Creature> existing;
-  for (WCreature c : collective->getCreatures())
+  for (Creature* c : collective->getCreatures())
     existing.insert(c);
   int numType = 0;
   if (auto gen = getReferenceMaybe(generated, index))
@@ -398,7 +398,7 @@ void Immigration::Available::addAllCreatures(const vector<Position>& spawnPositi
       [&](const RecruitmentInfo& recruitmentInfo) {
         auto recruits = recruitmentInfo.getAllRecruits(immigration->collective->getGame(), info.getId(0));
         if (!recruits.empty()) {
-          WCreature c = recruits[0];
+          Creature* c = recruits[0];
           immigration->collective->addCreature(c, {MinionTrait::FIGHTER});
           WModel target = immigration->collective->getModel();
           if (c->getPosition().getModel() != target)
@@ -428,7 +428,7 @@ void Immigration::accept(int id, bool withMessage) {
   auto& immigrantInfo = immigrants[candidate.immigrantIndex];
   if (!getMissingRequirements(candidate).empty())
     return;
-  vector<WCreature> creatures = candidate.getCreatures();
+  vector<Creature*> creatures = candidate.getCreatures();
   const int groupSize = creatures.size();
   CHECK(groupSize >= 1);
   vector<Position> spawnPos = candidate.getSpawnPositions();
@@ -439,7 +439,7 @@ void Immigration::accept(int id, bool withMessage) {
   if (withMessage)
     collective->addNewCreatureMessage(creatures);
   for (int i : All(creatures)) {
-    WCreature c = creatures[i];
+    Creature* c = creatures[i];
     if (i == 0 && groupSize > 1) // group leader
       c->getAttributes().increaseBaseExpLevel(ExperienceType::MELEE, 2);
     occupyRequirements(c, candidate.immigrantIndex);
@@ -507,7 +507,7 @@ Immigration::Available Immigration::Available::generate(WImmigration immigration
   );
 }
 
-vector<WCreature> Immigration::Available::getCreatures() const {
+vector<Creature*> Immigration::Available::getCreatures() const {
   return getWeakPointers(creatures);
 }
 

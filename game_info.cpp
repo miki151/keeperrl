@@ -18,7 +18,7 @@
 #include "model.h"
 #include "time_queue.h"
 
-CreatureInfo::CreatureInfo(WConstCreature c)
+CreatureInfo::CreatureInfo(const Creature* c)
     : viewId(c->getViewObject().id()),
       uniqueId(c->getUniqueId()),
       name(c->getName().bare()),
@@ -38,7 +38,7 @@ string PlayerInfo::getTitle() const {
   return title;
 }
 
-vector<PlayerInfo::SkillInfo> getSkillNames(WConstCreature c) {
+vector<PlayerInfo::SkillInfo> getSkillNames(const Creature* c) {
   vector<PlayerInfo::SkillInfo> ret;
   for (SkillId id : ENUM_ALL(SkillId))
     if (c->getAttributes().getSkills().getValue(id) > 0)
@@ -46,7 +46,7 @@ vector<PlayerInfo::SkillInfo> getSkillNames(WConstCreature c) {
   return ret;
 }
 
-vector<ItemAction> getItemActions(WConstCreature c, const vector<Item*>& item) {
+vector<ItemAction> getItemActions(const Creature* c, const vector<Item*>& item) {
   PROFILE;
   vector<ItemAction> actions;
   if (c->equip(item[0]))
@@ -64,7 +64,7 @@ vector<ItemAction> getItemActions(WConstCreature c, const vector<Item*>& item) {
       actions.push_back(ItemAction::PAY);
     if (c->getPosition().isValid())
       for (Position v : c->getPosition().neighbors8())
-        if (WCreature other = v.getCreature())
+        if (Creature* other = v.getCreature())
           if (c->isFriend(other)/* && c->canTakeItems(item)*/) {
             actions.push_back(ItemAction::GIVE);
             break;
@@ -74,7 +74,7 @@ vector<ItemAction> getItemActions(WConstCreature c, const vector<Item*>& item) {
   return actions;
 }
 
-ItemInfo ItemInfo::get(WConstCreature creature, const vector<Item*>& stack) {
+ItemInfo ItemInfo::get(const Creature* creature, const vector<Item*>& stack) {
   PROFILE;
   return CONSTRUCT(ItemInfo,
     c.name = stack[0]->getShortName(creature, stack.size() > 1);
@@ -93,7 +93,7 @@ ItemInfo ItemInfo::get(WConstCreature creature, const vector<Item*>& stack) {
   );
 }
 
-static vector<ItemInfo> fillIntrinsicAttacks(WConstCreature c) {
+static vector<ItemInfo> fillIntrinsicAttacks(const Creature* c) {
   vector<ItemInfo> ret;
   auto& intrinsicAttacks = c->getBody().getIntrinsicAttacks();
   for (auto part : ENUM_ALL(BodyPart))
@@ -114,7 +114,7 @@ static vector<ItemInfo> fillIntrinsicAttacks(WConstCreature c) {
   return ret;
 }
 
-static vector<ItemInfo> getItemInfos(WConstCreature c, const vector<Item*>& items) {
+static vector<ItemInfo> getItemInfos(const Creature* c, const vector<Item*>& items) {
   map<string, vector<Item*> > stacks = groupBy<Item*, string>(items,
       [&] (Item* const& item) {
           return item->getNameAndModifiers(false, c) + (c->getEquipment().isEquipped(item) ? "(e)" : ""); });
@@ -124,7 +124,7 @@ static vector<ItemInfo> getItemInfos(WConstCreature c, const vector<Item*>& item
   return ret;
 }
 
-PlayerInfo::PlayerInfo(WConstCreature c) : bestAttack(c) {
+PlayerInfo::PlayerInfo(const Creature* c) : bestAttack(c) {
   firstName = c->getName().firstOrBare();
   name = c->getName().bare();
   title = c->getName().title();
@@ -173,7 +173,7 @@ const CreatureInfo* CollectiveInfo::getMinion(UniqueEntity<Creature>::Id id) con
 }
 
 
-vector<AttributeInfo> AttributeInfo::fromCreature(WConstCreature c) {
+vector<AttributeInfo> AttributeInfo::fromCreature(const Creature* c) {
   PROFILE;
   auto genInfo = [c](AttrType type, const char* help) {
     return AttributeInfo {

@@ -13,9 +13,9 @@ class CollectiveControl : public OwnedObject<CollectiveControl> {
   CollectiveControl(WCollective);
   virtual void update(bool currentlyActive);
   virtual void tick();
-  virtual void onMemberKilled(WConstCreature victim, WConstCreature killer);
-  virtual void onOtherKilled(WConstCreature victim, WConstCreature killer);
-  virtual void onMemberAdded(WCreature) {}
+  virtual void onMemberKilled(const Creature* victim, const Creature* killer);
+  virtual void onOtherKilled(const Creature* victim, const Creature* killer);
+  virtual void onMemberAdded(Creature*) {}
   virtual void addMessage(const PlayerMessage&) {}
   virtual void addAttack(const CollectiveAttack&) {}
   virtual void onConstructed(Position, FurnitureType) {}
@@ -31,7 +31,7 @@ class CollectiveControl : public OwnedObject<CollectiveControl> {
 
   static PCollectiveControl idle(WCollective);
 
-  const vector<WCreature>& getCreatures() const;
+  const vector<Creature*>& getCreatures() const;
 
   WCollective SERIAL(collective) = nullptr;
 };

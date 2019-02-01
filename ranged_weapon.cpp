@@ -38,7 +38,7 @@ SERIALIZATION_CONSTRUCTOR_IMPL(RangedWeapon)
 RangedWeapon::RangedWeapon(AttrType attr, const string& name, ViewId id, int dist)
     : damageAttr(attr), projectileName(name), projectileViewId(id), maxDistance(dist) {}
 
-void RangedWeapon::fire(WCreature c, Position target) const {
+void RangedWeapon::fire(Creature* c, Position target) const {
   c->getGame()->getView()->addSound(SoundId::SHOOT_BOW);
   int damage = c->getAttr(damageAttr);
   Attack attack(c, Random.choose(AttackLevel::LOW, AttackLevel::MIDDLE, AttackLevel::HIGH),

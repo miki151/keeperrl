@@ -46,10 +46,10 @@ struct MinionActivityInfo {
   enum Type { FURNITURE, EXPLORE, COPULATE, EAT, SPIDER, WORKER, ARCHERY, IDLE } type;
   MinionActivityInfo();
   MinionActivityInfo(FurnitureType, const string& description, bool requiresLighting);
-  typedef function<bool(WConstCollective, WConstCreature, FurnitureType)> UsagePredicate;
+  typedef function<bool(WConstCollective, const Creature*, FurnitureType)> UsagePredicate;
   MinionActivityInfo(UsagePredicate, const string& description, bool requiresLighting);
   MinionActivityInfo(Type, const string& description);
-  UsagePredicate furniturePredicate = [](WConstCollective, WConstCreature, FurnitureType) { return true; };
+  UsagePredicate furniturePredicate = [](WConstCollective, const Creature*, FurnitureType) { return true; };
   string description;
   bool requiresLighting = false;
 };

@@ -94,7 +94,7 @@ class FireScrollItem : public Item {
   public:
   FireScrollItem(const ItemAttributes& attr) : Item(attr) {}
 
-  virtual void applySpecial(WCreature c) override {
+  virtual void applySpecial(Creature* c) override {
     fireDamage(0.03, c->getPosition());
     set = true;
   }
@@ -221,7 +221,7 @@ class TechBookItem : public Item {
   public:
   TechBookItem(const ItemAttributes& attr, TechId t) : Item(attr), tech(t) {}
 
-  virtual void applySpecial(WCreature c) override {
+  virtual void applySpecial(Creature* c) override {
     if (!read) {
       c->getGame()->addEvent(EventInfo::TechbookRead{tech});
       read = true;

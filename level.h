@@ -56,30 +56,30 @@ class Level : public OwnedObject<Level> {
   static double getCreatureLightRadius();
 
   /** Moves the creature. Updates the creature's position.*/
-  void moveCreature(WCreature, Vec2 direction);
+  void moveCreature(Creature*, Vec2 direction);
 
   /** Swaps positions of two creatures. */
-  void swapCreatures(WCreature, WCreature);
+  void swapCreatures(Creature*, Creature*);
 
   /** Puts the \paramname{creature} on \paramname{position}. */
-  void putCreature(Vec2 position, WCreature);
+  void putCreature(Vec2 position, Creature*);
 
   //@{
   /** Finds an appropriate square for the \paramname{creature} changing level from \paramname{direction}.
     The square's method Square::isLandingSquare must return true for \paramname{direction}. 
     Returns the position of the stairs that were used. */
-  bool landCreature(StairKey key, WCreature);
+  bool landCreature(StairKey key, Creature*);
   bool landCreature(StairKey key, PCreature);
-  bool landCreature(StairKey key, WCreature, Vec2 travelDir);
+  bool landCreature(StairKey key, Creature*, Vec2 travelDir);
   bool landCreature(StairKey key, PCreature, Vec2 travelDir);
   //@}
 
   /** Lands the creature on the level randomly choosing one of the given squares.
       Returns the position of the stairs that were used.*/
   bool landCreature(vector<Position> landing, PCreature);
-  bool landCreature(vector<Position> landing, WCreature);
+  bool landCreature(vector<Position> landing, Creature*);
 
-  optional<Position> getClosestLanding(vector<Position> landing, WCreature) const;
+  optional<Position> getClosestLanding(vector<Position> landing, Creature*) const;
 
   /** Returns the landing squares for given direction and stair key. See Square::getLandingLink() */
   const vector<Position>& getLandingSquares(StairKey) const;
@@ -91,9 +91,9 @@ class Level : public OwnedObject<Level> {
   optional<Position> getStairsTo(WConstLevel);
 
   /** Removes the creature from \paramname{position} from the level and model. The creature object is retained.*/
-  void killCreature(WCreature victim);
+  void killCreature(Creature* victim);
 
-  void removeCreature(WCreature);
+  void removeCreature(Creature*);
 
   /** Recalculates visibility data assuming that \paramname{changedSquare} has changed
       its obstructing/non-obstructing attribute. */
@@ -121,16 +121,16 @@ class Level : public OwnedObject<Level> {
   void tick();
 
   /** Moves the creature to a different level according to \paramname{direction}. */
-  void changeLevel(StairKey key, WCreature c);
+  void changeLevel(StairKey key, Creature* c);
 
   /** Moves the creature to a given level. */
-  void changeLevel(Position destination, WCreature c);
+  void changeLevel(Position destination, Creature* c);
 
   //@{
   /** Returns all creatures on this level. */
-  const vector<WCreature>& getAllCreatures() const;
-  vector<WCreature>& getAllCreatures();
-  vector<WCreature> getAllCreatures(Rectangle bounds) const;
+  const vector<Creature*>& getAllCreatures() const;
+  vector<Creature*>& getAllCreatures();
+  vector<Creature*> getAllCreatures(Rectangle bounds) const;
   //@}
 
   bool containsCreature(UniqueEntity<Creature>::Id) const;
@@ -142,7 +142,7 @@ class Level : public OwnedObject<Level> {
   vector<Vec2> getVisibleTiles(Vec2 pos, const Vision&) const;
 
   /** Returns the player creature.*/
-  vector<WCreature> getPlayers() const;
+  vector<Creature*> getPlayers() const;
 
   const WModel getModel() const;
   WModel getModel();
@@ -187,10 +187,10 @@ class Level : public OwnedObject<Level> {
   unordered_map<StairKey, vector<Position>> SERIAL(landingSquares);
   set<Vec2> SERIAL(tickingSquares);
   set<Vec2> SERIAL(tickingFurniture);
-  void eraseCreature(WCreature, Vec2 coord);
-  void placeCreature(WCreature, Vec2 pos);
-  void unplaceCreature(WCreature, Vec2 pos);
-  vector<WCreature> SERIAL(creatures);
+  void eraseCreature(Creature*, Vec2 coord);
+  void placeCreature(Creature*, Vec2 pos);
+  void unplaceCreature(Creature*, Vec2 pos);
+  vector<Creature*> SERIAL(creatures);
   EntitySet<Creature> SERIAL(creatureIds);
   WModel SERIAL(model) = nullptr;
   mutable HeapAllocated<EnumMap<VisionId, FieldOfView>> SERIAL(fieldOfView);

@@ -8,4 +8,4 @@ RICH_ENUM(FurnitureOnBuilt,
     DOWN_STAIRS
 );
 
-void handleOnBuilt(Position, WCreature, FurnitureOnBuilt);
+void handleOnBuilt(Position, Creature*, FurnitureOnBuilt);

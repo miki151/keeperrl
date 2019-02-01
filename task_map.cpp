@@ -14,7 +14,7 @@ void TaskMap::clearFinishedTasks() {
       removeTask(t);
 }
 
-WTask TaskMap::getClosestTask(WConstCreature c, MinionActivity activity, bool priorityOnly) const {
+WTask TaskMap::getClosestTask(const Creature* c, MinionActivity activity, bool priorityOnly) const {
   PROFILE;
   WTask closest = nullptr;
   auto isBetter = [&](WTask task, double dist) {
@@ -42,7 +42,7 @@ WTask TaskMap::getClosestTask(WConstCreature c, MinionActivity activity, bool pr
       if (auto pos = getPosition(task)) {
         PROFILE_BLOCK("Task check");
         double dist = pos->dist8(c->getPosition());
-        WConstCreature owner = getOwner(task);
+        const Creature* owner = getOwner(task);
         auto delayed = delayedTasks.getMaybe(task);
         if (!task->isDone() &&
             (!owner || (task->canTransfer() && pos->dist8(owner->getPosition()) > dist && dist <= 6)) &&
@@ -143,14 +143,14 @@ HighlightType TaskMap::getHighlightType(Position pos) const {
   return highlight.at(pos);
 }
 
-bool TaskMap::hasTask(WConstCreature c) const {
+bool TaskMap::hasTask(const Creature* c) const {
   if (auto task = taskByCreature.getMaybe(c))
     return !(*task)->isDone();
   else
     return false;
 }
 
-WTask TaskMap::getTask(WConstCreature c) {
+WTask TaskMap::getTask(const Creature* c) {
   if (auto task = taskByCreature.getMaybe(c)) {
     if ((*task)->isDone()) {
       removeTask(*task);
@@ -170,7 +170,7 @@ const vector<WTask>& TaskMap::getTasks(Position pos) const {
   }
 }
 
-WTask TaskMap::addTaskFor(PTask task, WCreature c) {
+WTask TaskMap::addTaskFor(PTask task, Creature* c) {
   auto previousTask = getTask(c);
   CHECK(!previousTask) << c->getName().bare() << " already has a task " << previousTask->getDescription();
   CHECK(!taskByCreature.getMaybe(c));
@@ -194,7 +194,7 @@ WTask TaskMap::addTask(PTask task, Position position, MinionActivity activity) {
   return tasks.back().get();
 }
 
-void TaskMap::takeTask(WCreature c, WTask task) {
+void TaskMap::takeTask(Creature* c, WTask task) {
   freeTask(task);
   CHECK(taskByCreature.getSize() == creatureByTask.getSize());
   CHECK(!taskByCreature.getMaybe(c));
@@ -209,7 +209,7 @@ optional<Position> TaskMap::getPosition(WTask task) const {
   return positionMap.getMaybe(task);
 }
 
-WCreature TaskMap::getOwner(WConstTask task) const {
+Creature* TaskMap::getOwner(WConstTask task) const {
   if (auto c = creatureByTask.getMaybe(task))
     return *c;
   else
@@ -230,7 +230,7 @@ void TaskMap::setPosition(WTask task, Position position) {
   reversePositions[position].push_back(task);
 }
 
-CostInfo TaskMap::freeFromTask(WConstCreature c) {
+CostInfo TaskMap::freeFromTask(const Creature* c) {
   if (WTask task = getTask(c)) {
     if (task->isDone() || !task->canTransfer())
       return removeTask(task);

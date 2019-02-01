@@ -30,7 +30,7 @@ class SpellMap {
   bool contains(Spell*) const;
   bool contains(SpellId) const;
   void clear();
-  void onExpLevelReached(WCreature, double level);
+  void onExpLevelReached(Creature*, double level);
   void setAllReady();
 
   template <class Archive>

@@ -79,22 +79,22 @@ RICH_ENUM(CreatureCondition,
 
 class LastingEffects {
   public:
-  static void onAffected(WCreature, LastingEffect, bool msg);
-  static bool affects(WConstCreature, LastingEffect);
+  static void onAffected(Creature*, LastingEffect, bool msg);
+  static bool affects(const Creature*, LastingEffect);
   static optional<LastingEffect> getSuppressor(LastingEffect);
-  static void onRemoved(WCreature, LastingEffect, bool msg);
-  static void onTimedOut(WCreature, LastingEffect, bool msg);
+  static void onRemoved(Creature*, LastingEffect, bool msg);
+  static void onTimedOut(Creature*, LastingEffect, bool msg);
   static int getAttrBonus(const Creature*, AttrType);
-  static void afterCreatureDamage(WCreature, LastingEffect);
-  static bool tick(WCreature, LastingEffect);
+  static void afterCreatureDamage(Creature*, LastingEffect);
+  static bool tick(Creature*, LastingEffect);
   static optional<string> getGoodAdjective(LastingEffect);
   static optional<string> getBadAdjective(LastingEffect);
   static const vector<LastingEffect>& getCausingCondition(CreatureCondition);
   static double modifyCreatureDefense(LastingEffect, double damage, AttrType damageAttr);
   static string getName(LastingEffect);
   static string getDescription(LastingEffect);
-  static bool canSee(WConstCreature, WConstCreature);
-  static bool modifyIsEnemyResult(WConstCreature, WConstCreature, bool);
+  static bool canSee(const Creature*, const Creature*);
+  static bool modifyIsEnemyResult(const Creature*, const Creature*, bool);
   static int getPrice(LastingEffect);
   static double getMoraleIncrease(const Creature*);
   static double getCraftingSpeed(const Creature*);

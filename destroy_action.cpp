@@ -79,7 +79,7 @@ bool DestroyAction::canDestroyFriendly() const {
   }
 }
 
-bool DestroyAction::canNavigate(WConstCreature c) const {
+bool DestroyAction::canNavigate(const Creature* c) const {
   switch (type) {
     case Type::HOSTILE_DIG:
       return c->isAffected(LastingEffect::NAVIGATION_DIGGING_SKILL);

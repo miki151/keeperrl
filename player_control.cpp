@@ -271,7 +271,7 @@ void PlayerControl::reloadData() {
   }
 }
 
-const vector<WCreature>& PlayerControl::getControlled() const {
+const vector<Creature*>& PlayerControl::getControlled() const {
   return getGame()->getPlayerCreatures();
 }
 
@@ -286,7 +286,7 @@ optional<TeamId> PlayerControl::getCurrentTeam() const {
   return none;
 }
 
-void PlayerControl::onControlledKilled(WConstCreature victim) {
+void PlayerControl::onControlledKilled(const Creature* victim) {
   TeamId currentTeam = *getCurrentTeam();
   if (getTeams().getLeader(currentTeam) == victim && getGame()->getPlayerCreatures().size() == 1) {
     vector<CreatureInfo> team;
@@ -301,7 +301,7 @@ void PlayerControl::onControlledKilled(WConstCreature victim) {
     else
       newLeader = getView()->chooseCreature("Choose new team leader:", team, "Order team back to base");
     if (newLeader) {
-      if (WCreature c = getCreature(*newLeader)) {
+      if (Creature* c = getCreature(*newLeader)) {
         getTeams().setLeader(currentTeam, c);
         if (!c->isPlayer())
           c->pushController(createMinionController(c));
@@ -325,15 +325,15 @@ STutorial PlayerControl::getTutorial() const {
   return tutorial;
 }
 
-bool PlayerControl::canControlSingle(WConstCreature c) const {
+bool PlayerControl::canControlSingle(const Creature* c) const {
   return !collective->hasTrait(c, MinionTrait::PRISONER);
 }
 
-bool PlayerControl::canControlInTeam(WConstCreature c) const {
+bool PlayerControl::canControlInTeam(const Creature* c) const {
   return collective->hasTrait(c, MinionTrait::FIGHTER) || c == collective->getLeader();
 }
 
-void PlayerControl::addToCurrentTeam(WCreature c) {
+void PlayerControl::addToCurrentTeam(Creature* c) {
   collective->freeTeamMembers({c});
   if (auto teamId = getCurrentTeam()) {
     getTeams().add(*teamId, c);
@@ -343,7 +343,7 @@ void PlayerControl::addToCurrentTeam(WCreature c) {
 }
 
 void PlayerControl::teamMemberAction(TeamMemberAction action, Creature::Id id) {
-  if (WCreature c = getCreature(id))
+  if (Creature* c = getCreature(id))
     switch (action) {
       case TeamMemberAction::MOVE_NOW:
         c->getPosition().getModel()->getTimeQueue().moveNow(c);
@@ -387,7 +387,7 @@ void PlayerControl::leaveControl() {
   }
   for (auto team : allTeams) {
     // a creature may die when landing and be removed from the team so copy the members vector
-    for (WCreature c : copyOf(getTeams().getMembers(team)))
+    for (Creature* c : copyOf(getTeams().getMembers(team)))
 //      if (getGame()->canTransferCreature(c, collective->getLevel()->getModel()))
         getGame()->transferCreature(c, getModel());
     if (!getTeams().isPersistent(team)) {
@@ -405,7 +405,7 @@ void PlayerControl::render(View* view) {
   if (firstRender) {
     firstRender = false;
     reloadBuildingMenu();
-    for (WCreature c : getCreatures())
+    for (Creature* c : getCreatures())
       updateMinionVisibility(c);
   }
   if (getControlled().empty()) {
@@ -423,7 +423,7 @@ bool PlayerControl::isTurnBased() {
   return !getControlled().empty();
 }
 
-void PlayerControl::addConsumableItem(WCreature creature) {
+void PlayerControl::addConsumableItem(Creature* creature) {
   ScrollPosition scrollPos;
   while (1) {
     Item* chosenItem = chooseEquipmentItem(creature, {}, [&](const Item* it) {
@@ -438,14 +438,14 @@ void PlayerControl::addConsumableItem(WCreature creature) {
   }
 }
 
-void PlayerControl::addEquipment(WCreature creature, EquipmentSlot slot) {
+void PlayerControl::addEquipment(Creature* creature, EquipmentSlot slot) {
   vector<Item*> currentItems = creature->getEquipment().getSlotItems(slot);
   Item* chosenItem = chooseEquipmentItem(creature, currentItems, [&](const Item* it) {
       return !collective->getMinionEquipment().isOwner(it, creature)
       && creature->canEquipIfEmptySlot(it, nullptr) && it->getEquipmentSlot() == slot; });
   if (chosenItem) {
     if (auto creatureId = collective->getMinionEquipment().getOwner(chosenItem))
-      if (WCreature c = getCreature(*creatureId))
+      if (Creature* c = getCreature(*creatureId))
         c->removeEffect(LastingEffect::SLEEP);
     creature->removeEffect(LastingEffect::SLEEP);
     CHECK(collective->getMinionEquipment().tryToOwn(creature, chosenItem));
@@ -546,7 +546,7 @@ static ItemInfo getTradeItemInfo(const vector<Item*>& stack, int budget) {
     c.unavailable = c.price->second > budget;);
 }
 
-void PlayerControl::fillEquipment(WCreature creature, PlayerInfo& info) const {
+void PlayerControl::fillEquipment(Creature* creature, PlayerInfo& info) const {
   info.inventory.clear();
   if (!creature->getBody().isHumanoid())
     return;
@@ -594,7 +594,7 @@ void PlayerControl::fillEquipment(WCreature creature, PlayerInfo& info) const {
       info.inventory.push_back(getItemInfo({item}, false, false, false, ItemInfo::OTHER));
 }
 
-Item* PlayerControl::chooseEquipmentItem(WCreature creature, vector<Item*> currentItems, ItemPredicate predicate,
+Item* PlayerControl::chooseEquipmentItem(Creature* creature, vector<Item*> currentItems, ItemPredicate predicate,
     ScrollPosition* scrollPos) {
   vector<Item*> availableItems;
   vector<Item*> usedItems;
@@ -612,7 +612,7 @@ Item* PlayerControl::chooseEquipmentItem(WCreature creature, vector<Item*> curre
     return nullptr;
   vector<vector<Item*>> usedStacks = Item::stackItems(usedItems,
       [&](const Item* it) {
-        WConstCreature c = getCreature(*collective->getMinionEquipment().getOwner(it));
+        const Creature* c = getCreature(*collective->getMinionEquipment().getOwner(it));
         return c->getName().bare() + toString<int>(c->getBestAttack().value);});
   vector<Item*> allStacked;
   vector<ItemInfo> options;
@@ -621,7 +621,7 @@ Item* PlayerControl::chooseEquipmentItem(WCreature creature, vector<Item*> curre
   for (auto& stack : concat(Item::stackItems(availableItems), usedStacks)) {
     options.emplace_back(getItemInfo(stack, false, false, false));
     if (auto creatureId = collective->getMinionEquipment().getOwner(stack[0]))
-      if (WConstCreature c = getCreature(*creatureId))
+      if (const Creature* c = getCreature(*creatureId))
         options.back().owner = CreatureInfo(c);
     allStacked.push_back(stack.front());
   }
@@ -920,41 +920,41 @@ vector<WCollective> PlayerControl::getKnownVillains() const {
       return showAll || collective->isKnownVillain(c) || !c->getTriggers(collective).empty();});
 }
 
-string PlayerControl::getMinionGroupName(WCreature c) const {
+string PlayerControl::getMinionGroupName(Creature* c) const {
   if (collective->hasTrait(c, MinionTrait::PRISONER)) {
     return "prisoner";
   } else
     return c->getName().stack();
 }
 
-ViewId PlayerControl::getMinionGroupViewId(WCreature c) const {
+ViewId PlayerControl::getMinionGroupViewId(Creature* c) const {
   if (collective->hasTrait(c, MinionTrait::PRISONER)) {
     return ViewId::PRISONER;
   } else
     return c->getViewObject().id();
 }
 
-vector<WCreature> PlayerControl::getMinionsLike(WCreature like) const {
-  vector<WCreature> minions;
-  for (WCreature c : getCreatures())
+vector<Creature*> PlayerControl::getMinionsLike(Creature* like) const {
+  vector<Creature*> minions;
+  for (Creature* c : getCreatures())
     if (getMinionGroupName(c) == getMinionGroupName(like))
       minions.push_back(c);
   return minions;
 }
 
-void PlayerControl::sortMinionsForUI(vector<WCreature>& minions) const {
-  std::sort(minions.begin(), minions.end(), [] (WConstCreature c1, WConstCreature c2) {
+void PlayerControl::sortMinionsForUI(vector<Creature*>& minions) const {
+  std::sort(minions.begin(), minions.end(), [] (const Creature* c1, const Creature* c2) {
       auto l1 = (int) max(c1->getAttr(AttrType::DAMAGE), c1->getAttr(AttrType::SPELL_DAMAGE));
       auto l2 = (int) max(c2->getAttr(AttrType::DAMAGE), c2->getAttr(AttrType::SPELL_DAMAGE));
       return l1 > l2 || (l1 == l2 && c1->getUniqueId() > c2->getUniqueId());
       });
 }
 
-vector<PlayerInfo> PlayerControl::getPlayerInfos(vector<WCreature> creatures, UniqueEntity<Creature>::Id chosenId) const {
+vector<PlayerInfo> PlayerControl::getPlayerInfos(vector<Creature*> creatures, UniqueEntity<Creature>::Id chosenId) const {
   PROFILE;
   sortMinionsForUI(creatures);
   vector<PlayerInfo> minions;
-  for (WCreature c : creatures) {
+  for (Creature* c : creatures) {
     minions.emplace_back(c);
     auto& minionInfo = minions.back();
     // only fill equipment for the chosen minion to avoid lag
@@ -996,10 +996,10 @@ vector<PlayerInfo> PlayerControl::getPlayerInfos(vector<WCreature> creatures, Un
   return minions;
 }
 
-vector<CollectiveInfo::CreatureGroup> PlayerControl::getCreatureGroups(vector<WCreature> v) const {
+vector<CollectiveInfo::CreatureGroup> PlayerControl::getCreatureGroups(vector<Creature*> v) const {
   sortMinionsForUI(v);
   map<string, CollectiveInfo::CreatureGroup> groups;
-  for (WCreature c : v) {
+  for (Creature* c : v) {
     auto groupName = getMinionGroupName(c);
     auto viewId = getMinionGroupViewId(c);
     if (!groups.count(groupName))
@@ -1012,23 +1012,23 @@ vector<CollectiveInfo::CreatureGroup> PlayerControl::getCreatureGroups(vector<WC
 }
 
 vector<CollectiveInfo::CreatureGroup> PlayerControl::getEnemyGroups() const {
-  vector<WCreature> enemies;
+  vector<Creature*> enemies;
   for (Vec2 v : getVisibleEnemies())
-    if (WCreature c = Position(v, getCurrentLevel()).getCreature())
+    if (Creature* c = Position(v, getCurrentLevel()).getCreature())
       enemies.push_back(c);
   return getCreatureGroups(enemies);
 }
 
 void PlayerControl::fillMinions(CollectiveInfo& info) const {
-  vector<WCreature> minions;
+  vector<Creature*> minions;
   for (auto trait : {MinionTrait::FIGHTER, MinionTrait::PRISONER, MinionTrait::WORKER})
-    for (WCreature c : collective->getCreatures(trait))
+    for (Creature* c : collective->getCreatures(trait))
       if (!minions.contains(c))
         minions.push_back(c);
   if (auto leader = collective->getLeader())
     minions.push_back(leader);
   info.minionGroups = getCreatureGroups(minions);
-  info.minions = minions.transform([](WConstCreature c) { return CreatureInfo(c) ;});
+  info.minions = minions.transform([](const Creature* c) { return CreatureInfo(c) ;});
   info.minionCount = collective->getPopulationSize();
   info.minionLimit = collective->getMaxPopulation();
 }
@@ -1154,8 +1154,8 @@ void PlayerControl::rejectPrisoner(int index) {
 
 vector<PlayerControl::StunnedInfo> PlayerControl::getPrisonerImmigrantStack() const {
   vector<StunnedInfo> ret;
-  vector<WCreature> outside;
-  unordered_map<WCollective, vector<WCreature>, CustomHash<WCollective>> inside;
+  vector<Creature*> outside;
+  unordered_map<WCollective, vector<Creature*>, CustomHash<WCollective>> inside;
   for (auto stunned : stunnedCreatures)
     if (stunned.first->isAffected(LastingEffect::STUNNED) && !stunned.first->isDead()) {
       if (auto villain = stunned.second) {
@@ -1231,7 +1231,7 @@ void PlayerControl::fillImmigration(CollectiveInfo& info) const {
     candidate.getInfo().visitRequirements(makeVisitor(
         [&](const Pregnancy&) {
           optional<TimeInterval> maxT;
-          for (WCreature c : collective->getCreatures())
+          for (Creature* c : collective->getCreatures())
             if (c->isAffected(LastingEffect::PREGNANT))
               if (auto remaining = c->getTimeRemaining(LastingEffect::PREGNANT))
                 if (!maxT || *remaining > *maxT)
@@ -1246,7 +1246,7 @@ void PlayerControl::fillImmigration(CollectiveInfo& info) const {
         },
         [&](const auto&) {}
     ));
-    WCreature c = candidate.getCreatures()[0];
+    Creature* c = candidate.getCreatures()[0];
     string name = count > 1 ? c->getName().groupOf(count) : c->getName().title();
     if (auto& s = c->getName().stackOnly())
       name += " (" + *s + ")";
@@ -1282,7 +1282,7 @@ void PlayerControl::fillImmigration(CollectiveInfo& info) const {
 void PlayerControl::fillImmigrationHelp(CollectiveInfo& info) const {
   info.allImmigration.clear();
   static map<CreatureId, PCreature> creatureStats;
-  auto getStats = [&](CreatureId id) -> WCreature {
+  auto getStats = [&](CreatureId id) -> Creature* {
     if (!creatureStats[id]) {
       creatureStats[id] = getGame()->getCreatureFactory()->fromId(id, TribeId::getDarkKeeper());
     }
@@ -1292,7 +1292,7 @@ void PlayerControl::fillImmigrationHelp(CollectiveInfo& info) const {
     if (elem->isHiddenInHelp())
       continue;
     auto creatureId = elem->getNonRandomId(0);
-    WCreature c = getStats(creatureId);
+    Creature* c = getStats(creatureId);
     optional<pair<ViewId, int>> costObj;
     vector<string> requirements;
     vector<string> infoLines;
@@ -1419,7 +1419,7 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   fillImmigrationHelp(info);
   info.chosenCreature.reset();
   if (chosenCreature)
-    if (WCreature c = getCreature(*chosenCreature)) {
+    if (Creature* c = getCreature(*chosenCreature)) {
       if (!getChosenTeam())
         info.chosenCreature = CollectiveInfo::ChosenCreatureInfo {
             *chosenCreature, getPlayerInfos(getMinionsLike(c), *chosenCreature)};
@@ -1453,7 +1453,7 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   for (int i : All(getTeams().getAll())) {
     TeamId team = getTeams().getAll()[i];
     info.teams.emplace_back();
-    for (WCreature c : getTeams().getMembers(team))
+    for (Creature* c : getTeams().getMembers(team))
       info.teams.back().members.push_back(c->getUniqueId());
     info.teams.back().active = getTeams().isActive(team);
     info.teams.back().id = team;
@@ -1512,7 +1512,7 @@ void PlayerControl::addMessage(const PlayerMessage& msg) {
   }
 }
 
-void PlayerControl::updateMinionVisibility(WConstCreature c) {
+void PlayerControl::updateMinionVisibility(const Creature* c) {
   auto visibleTiles = c->getVisibleTiles();
   visibilityMap->update(c, visibleTiles);
   for (Position pos : visibleTiles) {
@@ -1672,7 +1672,7 @@ void PlayerControl::getSquareViewIndex(Position pos, bool canSee, ViewIndex& ind
     pos.getViewIndex(index, leader);
   else
     index.setHiddenId(pos.getTopViewId());
-  if (WConstCreature c = pos.getCreature())
+  if (const Creature* c = pos.getCreature())
     if (canSee) {
       index.modEquipmentCounts() = c->getEquipment().getCounts();
       index.insert(c->getViewObject());
@@ -1709,7 +1709,7 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
           (chosenLibrary && furniture->getUsageType() == FurnitureUsageType::STUDY))
         index.setHighlight(HighlightType::CLICKED_FURNITURE);
       if (draggedCreature)
-        if (WCreature c = getCreature(*draggedCreature))
+        if (Creature* c = getCreature(*draggedCreature))
           if (auto task = MinionActivities::getActivityFor(collective, c, furniture->getType()))
             if (collective->isActivityGood(c, *task, true))
               index.setHighlight(HighlightType::CREATURE_DROP);
@@ -1772,21 +1772,21 @@ Vec2 PlayerControl::getPosition() const {
 
 static enum Selection { SELECT, DESELECT, NONE } selection = NONE;
 
-void PlayerControl::controlSingle(WCreature c) {
+void PlayerControl::controlSingle(Creature* c) {
   CHECK(getCreatures().contains(c));
   CHECK(!c->isDead());
   commandTeam(getTeams().create({c}));
 }
 
-WCreature PlayerControl::getCreature(UniqueEntity<Creature>::Id id) const {
-  for (WCreature c : getCreatures())
+Creature* PlayerControl::getCreature(UniqueEntity<Creature>::Id id) const {
+  for (Creature* c : getCreatures())
     if (c->getUniqueId() == id)
       return c;
   return nullptr;
 }
 
-vector<WCreature> PlayerControl::getTeam(WConstCreature c) {
-  vector<WCreature> ret;
+vector<Creature*> PlayerControl::getTeam(const Creature* c) {
+  vector<Creature*> ret;
   for (auto team : getTeams().getActive(c))
     append(ret, getTeams().getMembers(team));
   return ret;
@@ -1904,7 +1904,7 @@ void PlayerControl::setChosenWorkshop(optional<WorkshopType> type) {
 void PlayerControl::minionDragAndDrop(const CreatureDropInfo& info) {
   PROFILE;
   Position pos(info.pos, getLevel());
-  if (WCreature c = getCreature(info.creatureId)) {
+  if (Creature* c = getCreature(info.creatureId)) {
     c->removeEffect(LastingEffect::TIED_UP);
     c->removeEffect(LastingEffect::SLEEP);
     if (auto furniture = collective->getConstructions().getFurniture(pos, FurnitureLayer::MIDDLE))
@@ -1929,7 +1929,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
         if (auto pos = message->getPosition())
           setScrollPos(*pos);
         else if (auto id = message->getCreature()) {
-          if (WConstCreature c = getCreature(*id))
+          if (const Creature* c = getCreature(*id))
             setScrollPos(c->getPosition());
         }/* else if (auto loc = message->getLocation()) {
           if (loc->getMiddle().isSameLevel(getLevel()))
@@ -1945,15 +1945,15 @@ void PlayerControl::processInput(View* view, UserInput input) {
       break;
     }
     case UserInputId::CREATE_TEAM:
-      if (WCreature c = getCreature(input.get<Creature::Id>()))
+      if (Creature* c = getCreature(input.get<Creature::Id>()))
         if (collective->hasTrait(c, MinionTrait::FIGHTER) || c == collective->getLeader())
           getTeams().create({c});
       break;
     case UserInputId::CREATE_TEAM_FROM_GROUP:
-      if (WCreature creature = getCreature(input.get<Creature::Id>())) {
-        vector<WCreature> group = getMinionsLike(creature);
+      if (Creature* creature = getCreature(input.get<Creature::Id>())) {
+        vector<Creature*> group = getMinionsLike(creature);
         optional<TeamId> team;
-        for (WCreature c : group)
+        for (Creature* c : group)
           if (collective->hasTrait(c, MinionTrait::FIGHTER) || c == collective->getLeader()) {
             if (!team)
               team = getTeams().create({c});
@@ -1976,7 +1976,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
       auto& info = input.get<TeamDropInfo>();
       Position pos = Position(info.pos, getLevel());
       if (getTeams().exists(info.teamId))
-        for (WCreature c : getTeams().getMembers(info.teamId)) {
+        for (Creature* c : getTeams().getMembers(info.teamId)) {
           c->removeEffect(LastingEffect::TIED_UP);
           c->removeEffect(LastingEffect::SLEEP);
           PTask task = Task::goToAndWait(pos, 15_visible);
@@ -2074,7 +2074,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
       break;
     }
     case UserInputId::CREATURE_GROUP_BUTTON:
-      if (WCreature c = getCreature(input.get<Creature::Id>()))
+      if (Creature* c = getCreature(input.get<Creature::Id>()))
         if (!chosenCreature || getChosenTeam() || !getCreature(*chosenCreature) ||
             getCreature(*chosenCreature)->getName().stack() != c->getName().stack()) {
           setChosenTeam(none);
@@ -2085,7 +2085,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
       chosenCreature = none;
       break;
     case UserInputId::CREATURE_MAP_CLICK: {
-      if (WCreature c = Position(input.get<Vec2>(), getLevel()).getCreature()) {
+      if (Creature* c = Position(input.get<Vec2>(), getLevel()).getCreature()) {
         if (getCreatures().contains(c)) {
           if (!getChosenTeam() || !getTeams().contains(*getChosenTeam(), c))
             setChosenCreature(c->getUniqueId());
@@ -2098,7 +2098,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
     }
     case UserInputId::CREATURE_BUTTON: {
       auto chosenId = input.get<Creature::Id>();
-      if (WCreature c = getCreature(chosenId)) {
+      if (Creature* c = getCreature(chosenId)) {
         if (!getChosenTeam() || !getTeams().contains(*getChosenTeam(), c))
           setChosenCreature(chosenId);
         else
@@ -2115,7 +2115,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
       minionEquipmentAction(input.get<EquipmentActionInfo>());
       break;
     case UserInputId::CREATURE_CONTROL:
-      if (WCreature c = getCreature(input.get<Creature::Id>())) {
+      if (Creature* c = getCreature(input.get<Creature::Id>())) {
         if (getChosenTeam() && getTeams().exists(*getChosenTeam())) {
           getTeams().setLeader(*getChosenTeam(), c);
           commandTeam(*getChosenTeam());
@@ -2126,23 +2126,23 @@ void PlayerControl::processInput(View* view, UserInput input) {
       }
       break;
     case UserInputId::CREATURE_RENAME:
-      if (WCreature c = getCreature(input.get<RenameActionInfo>().creature))
+      if (Creature* c = getCreature(input.get<RenameActionInfo>().creature))
         c->getName().setFirst(input.get<RenameActionInfo>().name);
       break;
     case UserInputId::CREATURE_CONSUME:
-      if (WCreature c = getCreature(input.get<Creature::Id>())) {
+      if (Creature* c = getCreature(input.get<Creature::Id>())) {
         if (auto creatureId = getView()->chooseCreature("Choose minion to absorb",
             getConsumptionTargets(c).transform(
-                [] (WConstCreature c) { return CreatureInfo(c);}), "cancel"))
-          if (WCreature consumed = getCreature(*creatureId))
+                [] (const Creature* c) { return CreatureInfo(c);}), "cancel"))
+          if (Creature* consumed = getCreature(*creatureId))
             collective->setTask(c, Task::consume(consumed));
       }
       break;
     case UserInputId::CREATURE_BANISH:
-      if (WCreature c = getCreature(input.get<Creature::Id>()))
+      if (Creature* c = getCreature(input.get<Creature::Id>()))
         if (getView()->yesOrNoPrompt("Do you want to banish " + c->getName().the() + " forever? "
             "Banishing has a negative impact on morale of other minions.")) {
-          vector<WCreature> like = getMinionsLike(c);
+          vector<Creature*> like = getMinionsLike(c);
           sortMinionsForUI(like);
           if (like.size() > 1)
             for (int i : All(like))
@@ -2158,14 +2158,14 @@ void PlayerControl::processInput(View* view, UserInput input) {
       break;
     case UserInputId::GO_TO_ENEMY:
       for (Vec2 v : getVisibleEnemies())
-        if (WCreature c = Position(v, getCurrentLevel()).getCreature())
+        if (Creature* c = Position(v, getCurrentLevel()).getCreature())
           setScrollPos(c->getPosition());
       break;
     case UserInputId::ADD_GROUP_TO_TEAM: {
       auto info = input.get<TeamCreatureInfo>();
-      if (WCreature creature = getCreature(info.creatureId)) {
-        vector<WCreature> group = getMinionsLike(creature);
-        for (WCreature c : group)
+      if (Creature* creature = getCreature(info.creatureId)) {
+        vector<Creature*> group = getMinionsLike(creature);
+        for (Creature* c : group)
           if (getTeams().exists(info.team) && !getTeams().contains(info.team, c) &&
               (collective->hasTrait(c, MinionTrait::FIGHTER) || c == collective->getLeader()))
             getTeams().add(info.team, c);
@@ -2174,14 +2174,14 @@ void PlayerControl::processInput(View* view, UserInput input) {
     }
     case UserInputId::ADD_TO_TEAM: {
       auto info = input.get<TeamCreatureInfo>();
-      if (WCreature c = getCreature(info.creatureId))
+      if (Creature* c = getCreature(info.creatureId))
         if (getTeams().exists(info.team) && !getTeams().contains(info.team, c) && canControlInTeam(c))
           getTeams().add(info.team, c);
       break;
     }
     case UserInputId::REMOVE_FROM_TEAM: {
       auto info = input.get<TeamCreatureInfo>();
-      if (WCreature c = getCreature(info.creatureId))
+      if (Creature* c = getCreature(info.creatureId))
         if (getTeams().exists(info.team) && getTeams().contains(info.team, c)) {
           getTeams().remove(info.team, c);
           if (getTeams().exists(info.team)) {
@@ -2352,9 +2352,9 @@ void PlayerControl::scrollStairs(bool up) {
   CHECK(currentLevel);
 }
 
-vector<WCreature> PlayerControl::getConsumptionTargets(WCreature consumer) const {
-  vector<WCreature> ret;
-  for (WCreature c : getCreatures())
+vector<Creature*> PlayerControl::getConsumptionTargets(Creature* consumer) const {
+  vector<Creature*> ret;
+  for (Creature* c : getCreatures())
     if (consumer->canConsume(c) && c != collective->getLeader())
       ret.push_back(c);
   return ret;
@@ -2526,11 +2526,11 @@ const vector<Vec2>& PlayerControl::getUnknownLocations(WConstLevel) const {
   return unknownLocations->getOnLevel(getLevel());
 }
 
-WConstCreature PlayerControl::getKeeper() const {
+const Creature* PlayerControl::getKeeper() const {
   return collective->getLeader();
 }
 
-WCreature PlayerControl::getKeeper() {
+Creature* PlayerControl::getKeeper() {
   return collective->getLeader();
 }
 
@@ -2595,13 +2595,13 @@ void PlayerControl::considerNightfallMessage() {
 
 void PlayerControl::update(bool currentlyActive) {
   updateVisibleCreatures();
-  vector<WCreature> addedCreatures;
+  vector<Creature*> addedCreatures;
   vector<WLevel> currentLevels {getLevel()};
   for (auto c : getControlled())
     if (!currentLevels.contains(c->getLevel()))
       currentLevels.push_back(c->getLevel());
   for (WLevel l : currentLevels)
-    for (WCreature c : l->getAllCreatures())
+    for (Creature* c : l->getAllCreatures())
       if (!getCreatures().contains(c) && c->getTribeId() == getTribeId() && canSee(c) && !isEnemy(c)) {
         if (!collective->wasBanished(c) && !c->getBody().isMinionFood() && c->getAttributes().getCanJoinCollective()) {
           addedCreatures.push_back(c);
@@ -2633,7 +2633,7 @@ WLevel PlayerControl::getCurrentLevel() const {
     return currentLevel;
 }
 
-bool PlayerControl::isConsideredAttacking(WConstCreature c, WConstCollective enemy) {
+bool PlayerControl::isConsideredAttacking(const Creature* c, WConstCollective enemy) {
   if (enemy && enemy->getModel() == getModel())
     return canSee(c) && (collective->getTerritory().contains(c->getPosition()) ||
         collective->getTerritory().getStandardExtended().contains(c->getPosition()));
@@ -2672,13 +2672,13 @@ void PlayerControl::tick() {
     addMessage(PlayerMessage(*msg, MessagePriority::HIGH));
   checkKeeperDanger();
   for (auto attack : copyOf(ransomAttacks))
-    for (WConstCreature c : attack.getCreatures())
+    for (const Creature* c : attack.getCreatures())
       if (collective->getTerritory().contains(c->getPosition())) {
         ransomAttacks.removeElement(attack);
         break;
       }
   for (auto attack : copyOf(newAttacks))
-    for (WConstCreature c : attack.getCreatures())
+    for (const Creature* c : attack.getCreatures())
       if (isConsideredAttacking(c, attack.getAttacker())) {
         addMessage(PlayerMessage("You are under attack by " + attack.getAttackerName() + "!",
             MessagePriority::CRITICAL).setPosition(c->getPosition()));
@@ -2701,7 +2701,7 @@ void PlayerControl::tick() {
   }
 }
 
-bool PlayerControl::canSee(WConstCreature c) const {
+bool PlayerControl::canSee(const Creature* c) const {
   return canSee(c->getPosition());
 }
 
@@ -2713,12 +2713,12 @@ TribeId PlayerControl::getTribeId() const {
   return collective->getTribeId();
 }
 
-bool PlayerControl::isEnemy(WConstCreature c) const {
+bool PlayerControl::isEnemy(const Creature* c) const {
   auto keeper = getKeeper();
   return c->getTribeId() != getTribeId() && keeper && keeper->isEnemy(c);
 }
 
-void PlayerControl::onMemberKilled(WConstCreature victim, WConstCreature killer) {
+void PlayerControl::onMemberKilled(const Creature* victim, const Creature* killer) {
   if (victim->isPlayer() && victim != getKeeper())
     onControlledKilled(victim);
   visibilityMap->remove(victim);
@@ -2728,7 +2728,7 @@ void PlayerControl::onMemberKilled(WConstCreature victim, WConstCreature killer)
   }
 }
 
-void PlayerControl::onMemberAdded(WCreature c) {
+void PlayerControl::onMemberAdded(Creature* c) {
   updateMinionVisibility(c);
   auto team = getControlled();
   if (collective->hasTrait(c, MinionTrait::PRISONER) && !team.empty() &&
@@ -2768,7 +2768,7 @@ void PlayerControl::onConstructed(Position pos, FurnitureType type) {
     visibilityMap->updateEyeball(pos);
 }
 
-PController PlayerControl::createMinionController(WCreature c) {
+PController PlayerControl::createMinionController(Creature* c) {
   return ::getMinionController(c, memory, this, controlModeMessages, visibilityMap, unknownLocations, tutorial);
 }
 
@@ -2797,7 +2797,7 @@ void PlayerControl::onDestructed(Position pos, FurnitureType type, const Destroy
 
 void PlayerControl::updateVisibleCreatures() {
   visibleEnemies.clear();
-  for (WConstCreature c : getCurrentLevel()->getAllCreatures())
+  for (const Creature* c : getCurrentLevel()->getAllCreatures())
     if (canSee(c) && isEnemy(c))
       visibleEnemies.push_back(c->getPosition().getCoord());
 }

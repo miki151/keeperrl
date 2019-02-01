@@ -37,8 +37,8 @@ class VillageControl : public CollectiveControl, public EventListener<VillageCon
 
   protected:
   virtual void update(bool currentlyActive) override;
-  virtual void onMemberKilled(WConstCreature victim, WConstCreature killer) override;
-  virtual void onOtherKilled(WConstCreature victim, WConstCreature killer) override;
+  virtual void onMemberKilled(const Creature* victim, const Creature* killer) override;
+  virtual void onOtherKilled(const Creature* victim, const Creature* killer) override;
   virtual void onRansomPaid() override;
   virtual vector<TriggerInfo> getTriggers(WConstCollective against) const override;
 
@@ -46,10 +46,10 @@ class VillageControl : public CollectiveControl, public EventListener<VillageCon
 
   private:
   friend class VillageBehaviour;
-  void launchAttack(vector<WCreature> attackers);
+  void launchAttack(vector<Creature*> attackers);
   void considerWelcomeMessage();
   void considerCancellingAttack();
-  bool isEnemy(WConstCreature);
+  bool isEnemy(const Creature*);
   WCollective getEnemyCollective() const;
   bool canPerformAttack(bool currentlyActive);
   void acceptImmigration();

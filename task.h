@@ -32,7 +32,7 @@ class TaskPredicate : public OwnedObject<TaskPredicate> {
   virtual bool apply() const = 0;
   virtual ~TaskPredicate() {}
 
-  static PTaskPredicate outsidePositions(WCreature, PositionSet);
+  static PTaskPredicate outsidePositions(Creature*, PositionSet);
   static PTaskPredicate always();
 
   template <class Archive>
@@ -45,12 +45,12 @@ class Task : public UniqueEntity<Task>, public OwnedObject<Task> {
   Task(bool transferable = false);
   virtual ~Task();
 
-  virtual MoveInfo getMove(WCreature) = 0;
+  virtual MoveInfo getMove(Creature*) = 0;
   virtual bool isBogus() const;
   virtual bool canTransfer();
   virtual void cancel() {}
   virtual string getDescription() const = 0;
-  virtual bool canPerform(WConstCreature c) const;
+  virtual bool canPerform(const Creature* c) const;
   virtual optional<Position> getPosition() const;
   virtual optional<StorageId> getStorageId(bool dropOnly) const;
   optional<ViewId> getViewId() const;
@@ -68,33 +68,33 @@ class Task : public UniqueEntity<Task>, public OwnedObject<Task> {
   static PTask pickAndEquipItem(Position, Item* item);
   static PTask equipItem(Item*);
   static PTask pickUpItem(Position, vector<Item*>, optional<StorageId> = none);
-  static PTask kill(WTaskCallback, WCreature);
-  static PTask torture(WTaskCallback, WCreature);
-  static PTask sacrifice(WTaskCallback, WCreature);
+  static PTask kill(WTaskCallback, Creature*);
+  static PTask torture(WTaskCallback, Creature*);
+  static PTask sacrifice(WTaskCallback, Creature*);
   static PTask disappear();
   static PTask chain(PTask, PTask);
   static PTask chain(PTask, PTask, PTask);
   static PTask chain(vector<PTask>);
   static PTask explore(Position);
-  static PTask attackCreatures(vector<WCreature>);
+  static PTask attackCreatures(vector<Creature*>);
   static PTask campAndSpawn(WCollective target, const CreatureGroup&, int defenseSize,
       Range attackSize, int numAttacks);
   static PTask killFighters(WCollective, int numFighters);
   static PTask stealFrom(WCollective);
   static PTask consumeItem(WTaskCallback, vector<Item*> items);
-  static PTask copulate(WTaskCallback, WCreature target, int numTurns);
-  static PTask consume(WCreature target);
+  static PTask copulate(WTaskCallback, Creature* target, int numTurns);
+  static PTask consume(Creature* target);
   static PTask eat(vector<Position> hatcherySquares);
   static PTask goTo(Position);
   static PTask stayIn(vector<Position>);
   static PTask idle();
   static PTask alwaysDone(PTask);
   static PTask doneWhen(PTask, PTaskPredicate);
-  static PTask follow(WCreature);
+  static PTask follow(Creature*);
   static PTask goToTryForever(Position);
   static PTask transferTo(WModel);
   static PTask goToAndWait(Position, TimeInterval waitTime);
-  static PTask whipping(Position, WCreature whipped);
+  static PTask whipping(Position, Creature* whipped);
   static PTask dropItemsAnywhere(vector<Item*>);
   static PTask dropItems(vector<Item*>, vector<Position>);
   static PTask dropItems(vector<Item*>, StorageId, WCollective);

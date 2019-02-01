@@ -51,7 +51,7 @@ Square::Square() : viewIndex(new ViewIndex()) {
 Square::~Square() {
 }
 
-void Square::putCreature(WCreature c) {
+void Square::putCreature(Creature* c) {
   CHECK(!creature);
   setCreature(c);
   onEnter(c);
@@ -68,7 +68,7 @@ optional<StairKey> Square::getLandingLink() const {
   return landingLink;
 }
 
-void Square::setCreature(WCreature c) {
+void Square::setCreature(Creature* c) {
   creature = c;
 }
 
@@ -129,7 +129,7 @@ double Square::getPoisonGasAmount() const {
   return poisonGas->getAmount();
 }
 
-void Square::getViewIndex(ViewIndex& ret, WConstCreature viewer) const {
+void Square::getViewIndex(ViewIndex& ret, const Creature* viewer) const {
   if ((!viewer && lastViewer) || (viewer && lastViewer == viewer->getUniqueId())) {
     ret = *viewIndex;
     return;
@@ -147,7 +147,7 @@ void Square::getViewIndex(ViewIndex& ret, WConstCreature viewer) const {
   *viewIndex = ret;
 }
 
-void Square::onEnter(WCreature c) {
+void Square::onEnter(Creature* c) {
   setDirty(c->getPosition());
 }
 
@@ -165,7 +165,7 @@ void Square::dropItems(Position pos, vector<PItem> items) {
   dropItemsLevelGen(std::move(items));
 }
 
-WCreature Square::getCreature() const {
+Creature* Square::getCreature() const {
   return creature;
 }
 

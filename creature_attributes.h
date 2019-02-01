@@ -87,8 +87,8 @@ class CreatureAttributes {
   const heap_optional<ViewObject>& getIllusionViewObject() const;
   heap_optional<ViewObject>& getIllusionViewObject();
   bool canEquip() const;
-  void chatReaction(WCreature me, WCreature other);
-  optional<string> getPetReaction(WConstCreature me) const;
+  void chatReaction(Creature* me, Creature* other);
+  optional<string> getPetReaction(const Creature* me) const;
   string getDescription() const;
   bool isAffected(LastingEffect, GlobalTime) const;
   bool isAffectedPermanently(LastingEffect) const;
@@ -102,7 +102,7 @@ class CreatureAttributes {
   optional<GlobalTime> getLastAffected(LastingEffect, GlobalTime currentGlobalTime) const;
   bool canSleep() const;
   bool isInnocent() const;
-  void consume(WCreature self, CreatureAttributes& other);
+  void consume(Creature* self, CreatureAttributes& other);
   const MinionActivityMap& getMinionActivities() const;
   MinionActivityMap& getMinionActivities();
   bool dontChase() const;

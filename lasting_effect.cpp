@@ -77,7 +77,7 @@ static optional<ViewObject::Modifier> getViewObjectModifier(LastingEffect effect
   }
 }
 
-void LastingEffects::onAffected(WCreature c, LastingEffect effect, bool msg) {
+void LastingEffects::onAffected(Creature* c, LastingEffect effect, bool msg) {
   PROFILE;
   if (auto e = getCancelled(effect))
     c->removeEffect(*e, true);
@@ -265,7 +265,7 @@ void LastingEffects::onAffected(WCreature c, LastingEffect effect, bool msg) {
     }
 }
 
-bool LastingEffects::affects(WConstCreature c, LastingEffect effect) {
+bool LastingEffects::affects(const Creature* c, LastingEffect effect) {
   if (auto cancelling = getCancelling(effect))
     if (c->isAffected(*cancelling))
       return false;
@@ -285,7 +285,7 @@ optional<LastingEffect> LastingEffects::getSuppressor(LastingEffect effect) {
   }
 }
 
-void LastingEffects::onRemoved(WCreature c, LastingEffect effect, bool msg) {
+void LastingEffects::onRemoved(Creature* c, LastingEffect effect, bool msg) {
   switch (effect) {
     case LastingEffect::POISON:
       if (msg)
@@ -306,7 +306,7 @@ void LastingEffects::onRemoved(WCreature c, LastingEffect effect, bool msg) {
   }
 }
 
-void LastingEffects::onTimedOut(WCreature c, LastingEffect effect, bool msg) {
+void LastingEffects::onTimedOut(Creature* c, LastingEffect effect, bool msg) {
   if (auto mod = getViewObjectModifier(effect))
     c->modViewObject().setModifier(*mod, false);
   if (msg)
@@ -664,7 +664,7 @@ double LastingEffects::modifyCreatureDefense(LastingEffect e, double defense, At
   }
 }
 
-void LastingEffects::afterCreatureDamage(WCreature c, LastingEffect e) {
+void LastingEffects::afterCreatureDamage(Creature* c, LastingEffect e) {
   switch (e) {
     case LastingEffect::SLEEP:
       c->removeEffect(e);
@@ -673,7 +673,7 @@ void LastingEffects::afterCreatureDamage(WCreature c, LastingEffect e) {
   }
 }
 
-bool LastingEffects::tick(WCreature c, LastingEffect effect) {
+bool LastingEffects::tick(Creature* c, LastingEffect effect) {
   switch (effect) {
     case LastingEffect::BLEEDING:
       c->getBody().bleed(c, 0.03);
@@ -714,7 +714,7 @@ bool LastingEffects::tick(WCreature c, LastingEffect effect) {
             else
               isDanger = true;
           }
-        if (WCreature enemy = v.getCreature()) {
+        if (Creature* enemy = v.getCreature()) {
           if (!c->canSee(enemy) && c->isEnemy(enemy)) {
             int diff = enemy->getAttr(AttrType::DAMAGE) - c->getAttr(AttrType::DEFENSE);
             if (diff > 5)
@@ -744,7 +744,7 @@ bool LastingEffects::tick(WCreature c, LastingEffect effect) {
       break;
     case LastingEffect::ENTERTAINER:
       if (!c->isAffected(LastingEffect::SLEEP) && Random.roll(50)) {
-        auto others = c->getVisibleCreatures().filter([](const WCreature& c) { return c->getBody().hasBrain() && c->getBody().isHumanoid(); });
+        auto others = c->getVisibleCreatures().filter([](const Creature* c) { return c->getBody().hasBrain() && c->getBody().isHumanoid(); });
         if (others.empty())
           break;
         string jokeText = "a joke";
@@ -929,13 +929,13 @@ string LastingEffects::getDescription(LastingEffect type) {
   }
 }
 
-bool LastingEffects::canSee(WConstCreature c1, WConstCreature c2) {
+bool LastingEffects::canSee(const Creature* c1, const Creature* c2) {
   PROFILE;
   return c1->getPosition().dist8(c2->getPosition()) < 5 && c2->getBody().hasBrain() &&
       c1->isAffected(LastingEffect::TELEPATHY);
 }
 
-bool LastingEffects::modifyIsEnemyResult(WConstCreature c, WConstCreature other, bool result) {
+bool LastingEffects::modifyIsEnemyResult(const Creature* c, const Creature* other, bool result) {
   PROFILE;
   if (c->isAffected(LastingEffect::PEACEFULNESS))
     return false;

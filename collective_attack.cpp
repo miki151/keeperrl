@@ -16,10 +16,10 @@ static string generateAttackerName(WConstCollective attacker) {
     return "an unnamed attacker";
 }
 
-CollectiveAttack::CollectiveAttack(vector<WConstTask> attackTasks, WCollective att, const vector<WCreature>& c, optional<int> r)
+CollectiveAttack::CollectiveAttack(vector<WConstTask> attackTasks, WCollective att, const vector<Creature*>& c, optional<int> r)
     : ransom(r), creatures(c), attacker(att), attackerName(generateAttackerName(att)), attackTasks(attackTasks) {}
 
-CollectiveAttack::CollectiveAttack(vector<WConstTask> attackTasks, const string& name, const vector<WCreature>& c)
+CollectiveAttack::CollectiveAttack(vector<WConstTask> attackTasks, const string& name, const vector<Creature*>& c)
     : creatures(c), attackerName(name), attackTasks(attackTasks) {
 }
 
@@ -32,7 +32,7 @@ const string& CollectiveAttack::getAttackerName() const {
   return attackerName;
 }
 
-const vector<WCreature>& CollectiveAttack::getCreatures() const {
+const vector<Creature*>& CollectiveAttack::getCreatures() const {
   return creatures;
 }
 

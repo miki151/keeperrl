@@ -153,7 +153,7 @@ FurnitureType Furniture::getType() const {
   return type;
 }
 
-bool Furniture::isVisibleTo(WConstCreature c) const {
+bool Furniture::isVisibleTo(const Creature* c) const {
   PROFILE;
   if (entryType)
     return entryType->isVisibleTo(this, c);
@@ -165,7 +165,7 @@ const MovementSet& Furniture::getMovementSet() const {
   return *movementSet;
 }
 
-void Furniture::onEnter(WCreature c) const {
+void Furniture::onEnter(Creature* c) const {
   if (entryType) {
     auto f = c->getPosition().modFurniture(layer);
     f->entryType->handle(f, c);
@@ -186,7 +186,7 @@ void Furniture::destroy(Position pos, const DestroyAction& action) {
   pos.getGame()->addEvent(EventInfo::FurnitureDestroyed{pos, myType, myLayer});
 }
 
-void Furniture::tryToDestroyBy(Position pos, WCreature c, const DestroyAction& action) {
+void Furniture::tryToDestroyBy(Position pos, Creature* c, const DestroyAction& action) {
   if (auto& info = destroyedInfo[action.getType()]) {
     c->addSound(action.getSound());
     double damage = c->getAttr(AttrType::DAMAGE);
@@ -255,12 +255,12 @@ void Furniture::click(Position pos) const {
   }
 }
 
-void Furniture::use(Position pos, WCreature c) const {
+void Furniture::use(Position pos, Creature* c) const {
   if (usageType)
     FurnitureUsage::handle(*usageType, pos, this, c);
 }
 
-bool Furniture::canUse(WConstCreature c) const {
+bool Furniture::canUse(const Creature* c) const {
   if (usageType)
     return FurnitureUsage::canHandle(*usageType, c);
   else
@@ -295,7 +295,7 @@ bool Furniture::isBuildingSupport() const {
   return buildingSupport;
 }
 
-void Furniture::onConstructedBy(Position pos, WCreature c) {
+void Furniture::onConstructedBy(Position pos, Creature* c) {
   creator = c;
   createdTime = c->getLocalTime();
   if (constructMessage)
@@ -336,7 +336,7 @@ bool Furniture::canHide() const {
   return canHideHere;
 }
 
-bool Furniture::emitsWarning(WConstCreature) const {
+bool Furniture::emitsWarning(const Creature*) const {
   return warning;
 }
 
@@ -348,7 +348,7 @@ bool Furniture::canRemoveNonFriendly() const {
   return removeNonFriendly;
 }
 
-WCreature Furniture::getCreator() const {
+Creature* Furniture::getCreator() const {
   return creator;
 }
 

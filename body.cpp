@@ -292,7 +292,7 @@ optional<BodyPart> Body::getBodyPart(AttackLevel attack, bool flying, bool colla
     return getAnyGoodBodyPart();
 }
 
-void Body::healBodyParts(WCreature creature, bool regrow) {
+void Body::healBodyParts(Creature* creature, bool regrow) {
   auto updateEffects = [&] (BodyPart part, int count) {
     switch (part) {
       case BodyPart::LEG:
@@ -325,7 +325,7 @@ void Body::healBodyParts(WCreature creature, bool regrow) {
       }
 }
 
-void Body::injureBodyPart(WCreature creature, BodyPart part, bool drop) {
+void Body::injureBodyPart(Creature* creature, BodyPart part, bool drop) {
   if (bodyParts[part] == 0 || (!drop && injuredBodyParts[part] == bodyParts[part]))
     return;
   if (drop) {
@@ -365,7 +365,7 @@ void consumeBodyAttr(T& mine, const T& his, vector<string>& adjectives, const st
   }
 }
 
-void Body::consumeBodyParts(WCreature c, Body& other, vector<string>& adjectives) {
+void Body::consumeBodyParts(Creature* c, Body& other, vector<string>& adjectives) {
   for (BodyPart part : ENUM_ALL(BodyPart)) {
     int cnt = other.bodyParts[part] - bodyParts[part];
     if (cnt > 0) {
@@ -538,7 +538,7 @@ void Body::affectPosition(Position position) {
     position.fireDamage(1);
 }
 
-static void youHit(WConstCreature c, BodyPart part, AttackType type) {
+static void youHit(const Creature* c, BodyPart part, AttackType type) {
   switch (part) {
     case BodyPart::BACK:
         switch (type) {
@@ -612,7 +612,7 @@ static void youHit(WConstCreature c, BodyPart part, AttackType type) {
   }
 }
 
-Body::DamageResult Body::takeDamage(const Attack& attack, WCreature creature, double damage) {
+Body::DamageResult Body::takeDamage(const Attack& attack, Creature* creature, double damage) {
   PROFILE;
   bleed(creature, damage);
   if (auto part = getBodyPart(attack.level, creature->isAffected(LastingEffect::FLYING),
@@ -690,7 +690,7 @@ int Body::getAttrBonus(AttrType type) const {
   return ret;
 }
 
-bool Body::tick(WConstCreature c) {
+bool Body::tick(const Creature* c) {
   if (fallsApartFromDamage() && lostOrInjuredBodyParts() >= 4) {
     c->you(MsgType::FALL, "apart");
     return true;
@@ -724,7 +724,7 @@ void Body::updateViewObject(ViewObject& obj) const {
   }
 }
 
-bool Body::heal(WCreature c, double amount) {
+bool Body::heal(Creature* c, double amount) {
   INFO << c->getName().the() << " heal";
   if (health < 1) {
     health = min(1., health + amount);
@@ -795,7 +795,7 @@ bool Body::isImmuneTo(LastingEffect effect) const {
   return false;
 }
 
-bool Body::affectByPoisonGas(WCreature c, double amount) {
+bool Body::affectByPoisonGas(Creature* c, double amount) {
   PROFILE;
   if (!c->isAffected(LastingEffect::POISON_RESISTANT) && material == Material::FLESH) {
     bleed(c, amount / 20);
@@ -808,7 +808,7 @@ bool Body::affectByPoisonGas(WCreature c, double amount) {
   return false;
 }
 
-bool Body::affectBySilver(WCreature c) {
+bool Body::affectBySilver(Creature* c) {
   if (isUndead()) {
     c->you(MsgType::ARE, "hurt by the silver");
     bleed(c, Random.getDouble(0.0, 0.15));
@@ -816,7 +816,7 @@ bool Body::affectBySilver(WCreature c) {
   return health <= 0;
 }
 
-bool Body::affectByAcid(WCreature c) {
+bool Body::affectByAcid(Creature* c) {
   switch (material) {
     case Material::FIRE:
     case Material::SPIRIT:
@@ -828,13 +828,13 @@ bool Body::affectByAcid(WCreature c) {
   return health <= 0;
 }
 
-bool Body::affectByFire(WCreature c, double amount) {
+bool Body::affectByFire(Creature* c, double amount) {
   c->you(MsgType::ARE, "burnt by the fire");
   bleed(c, 6. * amount / double(1 + c->getAttr(AttrType::DEFENSE)));
   return health <= 0;
 }
 
-void Body::bleed(WCreature c, double amount) {
+void Body::bleed(Creature* c, double amount) {
   if (hasHealth()) {
     health -= amount;
     c->updateViewObject();

@@ -39,7 +39,7 @@ class Spell : public Singleton<Spell, SpellId> {
   DirEffectType getDirEffectType() const;
   int getDifficulty() const;
   string getDescription() const;
-  void addMessage(WCreature);
+  void addMessage(Creature*);
   SoundId getSound() const;
   optional<int> getLearningExpLevel() const;
 

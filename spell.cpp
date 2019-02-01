@@ -59,7 +59,7 @@ string Spell::getDescription() const {
   );
 }
 
-void Spell::addMessage(WCreature c) {
+void Spell::addMessage(Creature* c) {
   switch (castMessageType) {
     case CastMessageType::STANDARD:
       c->verb("cast", "casts", "a spell");

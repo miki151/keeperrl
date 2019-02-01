@@ -56,9 +56,9 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   void init(CollectiveConfig);
   void setWorkshops(unique_ptr<Workshops>);
   void setImmigration(PImmigration);
-  void addCreature(WCreature, EnumSet<MinionTrait>);
+  void addCreature(Creature*, EnumSet<MinionTrait>);
   void addCreature(PCreature, Position, EnumSet<MinionTrait>);
-  void setPopulationGroup(const vector<WCreature>&);
+  void setPopulationGroup(const vector<Creature*>&);
   void setControl(PCollectiveControl);
   void tick();
   void update(bool currentlyActive);
@@ -66,12 +66,12 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   Tribe* getTribe() const;
   WModel getModel() const;
   WGame getGame() const;
-  void addNewCreatureMessage(const vector<WCreature>&);
-  void setTask(WCreature, PTask);
-  bool hasTask(WConstCreature) const;
-  void freeFromTask(WConstCreature);
-  void banishCreature(WCreature);
-  bool wasBanished(WConstCreature) const;
+  void addNewCreatureMessage(const vector<Creature*>&);
+  void setTask(Creature*, PTask);
+  bool hasTask(const Creature*) const;
+  void freeFromTask(const Creature*);
+  void banishCreature(Creature*);
+  bool wasBanished(const Creature*) const;
   void setVillainType(VillainType);
   bool isDiscoverable() const;
   void setEnemyId(EnemyId);
@@ -86,21 +86,21 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
 
   SERIALIZATION_DECL(Collective)
 
-  const vector<WCreature>& getCreatures() const;
+  const vector<Creature*>& getCreatures() const;
   bool isConquered() const;
 
-  const vector<WCreature>& getCreatures(MinionTrait) const;
-  bool hasTrait(WConstCreature, MinionTrait) const;
-  void setTrait(WCreature c, MinionTrait);
-  void removeTrait(WCreature c, MinionTrait);
+  const vector<Creature*>& getCreatures(MinionTrait) const;
+  bool hasTrait(const Creature*, MinionTrait) const;
+  void setTrait(Creature* c, MinionTrait);
+  void removeTrait(Creature* c, MinionTrait);
 
   bool hasTradeItems() const;
   vector<Item*> getTradeItems() const;
   PItem buyItem(Item*);
   vector<TriggerInfo> getTriggers(WConstCollective against) const;
 
-  double getEfficiency(WConstCreature) const;
-  WCreature getLeader() const;
+  double getEfficiency(const Creature*) const;
+  Creature* getLeader() const;
 
   const Territory& getTerritory() const;
   Territory& getTerritory();
@@ -111,7 +111,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   CollectiveWarnings& getWarnings();
   const CollectiveConfig& getConfig() const;
 
-  bool usesEquipment(WConstCreature) const;
+  bool usesEquipment(const Creature*) const;
 
   virtual ~Collective();
 
@@ -123,8 +123,8 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
 
   const ConstructionMap& getConstructions() const;
 
-  void setMinionActivity(WCreature c, MinionActivity task);
-  bool isActivityGood(WCreature, MinionActivity, bool ignoreTaskLock = false);
+  void setMinionActivity(Creature* c, MinionActivity task);
+  bool isActivityGood(Creature*, MinionActivity, bool ignoreTaskLock = false);
 
   vector<Item*> getAllItems(bool includeMinions = true) const;
   vector<Item*> getAllItems(ItemPredicate predicate, bool includeMinions = true) const;
@@ -164,7 +164,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
 
   MinionEquipment& getMinionEquipment();
   const MinionEquipment& getMinionEquipment() const;
-  optional<FurnitureType> getMissingTrainingFurniture(WConstCreature, ExperienceType) const;
+  optional<FurnitureType> getMissingTrainingFurniture(const Creature*, ExperienceType) const;
 
   Workshops& getWorkshops();
   const Workshops& getWorkshops() const;
@@ -177,14 +177,14 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   const DungeonLevel& getDungeonLevel() const;
   DungeonLevel& getDungeonLevel();
 
-  vector<WCreature> getConsumptionTargets(WCreature consumer) const;
+  vector<Creature*> getConsumptionTargets(Creature* consumer) const;
   void addAttack(const CollectiveAttack&);
   void onRansomPaid();
   void onExternalEnemyKilled(const string& name);
 
   CollectiveTeams& getTeams();
   const CollectiveTeams& getTeams() const;
-  void freeTeamMembers(const vector<WCreature>& members);
+  void freeTeamMembers(const vector<Creature*>& members);
 
   const heap_optional<CollectiveName>& getName() const;
   const TaskMap& getTaskMap() const;
@@ -207,7 +207,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
     SERIALIZE_ALL(activity, finishTime)
   };
 
-  CurrentActivity getCurrentActivity(WConstCreature) const;
+  CurrentActivity getCurrentActivity(const Creature*) const;
   struct AlarmInfo {
     GlobalTime SERIAL(finishTime);
     Position SERIAL(position);
@@ -230,24 +230,24 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   // From Task::Callback
   virtual void onAppliedItem(Position, Item* item) override;
   virtual void onConstructed(Position, FurnitureType) override;
-  virtual void onAppliedSquare(WCreature, Position) override;
-  virtual void onCopulated(WCreature who, WCreature with) override;
+  virtual void onAppliedSquare(Creature*, Position) override;
+  virtual void onCopulated(Creature* who, Creature* with) override;
   virtual bool isConstructionReachable(Position) override;
 
   private:
   void addCreatureInTerritory(PCreature, EnumSet<MinionTrait>);
-  void removeCreature(WCreature);
-  void onMinionKilled(WCreature victim, WCreature killer);
-  void onKilledSomeone(WCreature victim, WCreature killer);
+  void removeCreature(Creature*);
+  void onMinionKilled(Creature* victim, Creature* killer);
+  void onKilledSomeone(Creature* victim, Creature* killer);
 
   void fetchItems(Position, const ItemFetchInfo&);
 
-  void addMoraleForKill(WConstCreature killer, WConstCreature victim);
-  void decreaseMoraleForKill(WConstCreature killer, WConstCreature victim);
-  void decreaseMoraleForBanishing(WConstCreature);
+  void addMoraleForKill(const Creature* killer, const Creature* victim);
+  void decreaseMoraleForKill(const Creature* killer, const Creature* victim);
+  void decreaseMoraleForBanishing(const Creature*);
 
   bool isItemNeeded(const Item*) const;
-  void addProducesMessage(WConstCreature, const vector<PItem>&);
+  void addProducesMessage(const Creature*, const vector<PItem>&);
   int getDebt(ResourceId id) const;
 
   PPositionMatching SERIAL(positionMatching);
@@ -261,13 +261,13 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   HeapAllocated<KnownTiles> SERIAL(knownTiles);
 
   EntityMap<Creature, CurrentActivity> SERIAL(currentActivity);
-  optional<Position> getTileToExplore(WConstCreature, MinionActivity) const;
+  optional<Position> getTileToExplore(const Creature*, MinionActivity) const;
 
   void handleSurprise(Position);
-  int getTaskDuration(WConstCreature, MinionActivity) const;
-  vector<WCreature> SERIAL(creatures);
-  vector<vector<WCreature>> SERIAL(populationGroups);
-  EnumMap<MinionTrait, vector<WCreature>> SERIAL(byTrait);
+  int getTaskDuration(const Creature*, MinionActivity) const;
+  vector<Creature*> SERIAL(creatures);
+  vector<vector<Creature*>> SERIAL(populationGroups);
+  EnumMap<MinionTrait, vector<Creature*>> SERIAL(byTrait);
   PCollectiveControl SERIAL(control);
   HeapAllocated<TribeId> SERIAL(tribe);
   WModel SERIAL(model) = nullptr;
@@ -301,7 +301,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   void setDiscoverable();
   bool SERIAL(discoverable) = false;
   void considerRebellion();
-  void updateCreatureStatus(WCreature);
+  void updateCreatureStatus(Creature*);
   HeapAllocated<Quarters> SERIAL(quarters);
   int SERIAL(populationIncrease) = 0;
   DungeonLevel SERIAL(dungeonLevel);

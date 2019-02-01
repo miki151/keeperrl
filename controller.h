@@ -27,7 +27,7 @@ class MessageGenerator;
 
 class Controller : public OwnedObject<Controller> {
   public:
-  Controller(WCreature);
+  Controller(Creature*);
   Controller(const Controller&) = delete;
   Controller(Controller&&) = delete;
 
@@ -37,8 +37,8 @@ class Controller : public OwnedObject<Controller> {
 
   virtual void privateMessage(const PlayerMessage& message) {}
 
-  virtual void onKilled(WConstCreature attacker) {}
-  virtual void onItemsGiven(vector<Item*> items, WCreature from) { }
+  virtual void onKilled(const Creature* attacker) {}
+  virtual void onItemsGiven(vector<Item*> items, Creature* from) { }
 
   virtual bool dontReplaceInCollective() { return false; }
 
@@ -52,12 +52,12 @@ class Controller : public OwnedObject<Controller> {
 
   SERIALIZATION_DECL(Controller);
 
-  WCreature SERIAL(creature) = nullptr;
+  Creature* SERIAL(creature) = nullptr;
 };
 
 class DoNothingController : public Controller {
   public:
-  DoNothingController(WCreature);
+  DoNothingController(Creature*);
 
   virtual bool isPlayer() const override;
   virtual void makeMove() override;
@@ -69,10 +69,10 @@ class DoNothingController : public Controller {
 
 class ControllerFactory {
   public:
-  ControllerFactory(function<PController(WCreature)>);
-  PController get(WCreature) const;
+  ControllerFactory(function<PController(Creature*)>);
+  PController get(Creature*) const;
 
   private:
-  function<PController(WCreature)> fun;
+  function<PController(Creature*)> fun;
 };
 

@@ -236,7 +236,7 @@ bool Position::isDirEffectBlocked() const {
       MovementType({MovementTrait::FLY, MovementTrait::WALK}).setFireResistant());
 }
 
-WCreature Position::getCreature() const {
+Creature* Position::getCreature() const {
   //PROFILE;
   if (isValid())
     return getSquare()->getCreature();
@@ -334,7 +334,7 @@ vector<Position> Position::getRectangle(Rectangle rect) const {
 void Position::addCreature(PCreature c) {
   PROFILE;
   if (isValid()) {
-    WCreature ref = c.get();
+    Creature* ref = c.get();
     getModel()->addCreature(std::move(c));
     level->putCreature(coord, ref);
   }
@@ -343,7 +343,7 @@ void Position::addCreature(PCreature c) {
 void Position::addCreature(PCreature c, TimeInterval delay) {
   PROFILE;
   if (isValid()) {
-    WCreature ref = c.get();
+    Creature* ref = c.get();
     getModel()->addCreature(std::move(c), delay);
     level->putCreature(coord, ref);
   }
@@ -382,7 +382,7 @@ string Position::getName() const {
   return "";
 }
 
-void Position::getViewIndex(ViewIndex& index, WConstCreature viewer) const {
+void Position::getViewIndex(ViewIndex& index, const Creature* viewer) const {
   PROFILE;
   if (isValid()) {
     getSquare()->getViewIndex(index, viewer);
@@ -455,7 +455,7 @@ bool Position::isUnavailable() const {
   return !isValid() || level->isUnavailable(coord);
 }
 
-bool Position::canEnter(WConstCreature c) const {
+bool Position::canEnter(const Creature* c) const {
   PROFILE;
   return !isUnavailable() && !getCreature() && canEnterEmpty(c->getMovementType());
 }
@@ -465,7 +465,7 @@ bool Position::canEnter(const MovementType& t) const {
   return !isUnavailable() && !getCreature() && canEnterEmpty(t);
 }
 
-bool Position::canEnterEmpty(WConstCreature c) const {
+bool Position::canEnterEmpty(const Creature* c) const {
   PROFILE;
   return canEnterEmpty(c->getMovementType());
 } 
@@ -489,7 +489,7 @@ bool Position::canEnterEmpty(const MovementType& t, optional<FurnitureLayer> ign
   return result;
 }
 
-void Position::onEnter(WCreature c) {
+void Position::onEnter(Creature* c) {
   PROFILE;
   for (auto layer : ENUM_ALL_REVERSE(FurnitureLayer))
     if (auto f = getFurniture(layer)) {
@@ -620,7 +620,7 @@ bool Position::isBuildingSupport() const {
     return false;
 }
 
-void Position::construct(FurnitureType type, WCreature c) {
+void Position::construct(FurnitureType type, Creature* c) {
   PROFILE;
   if (construct(type, c->getTribeId()))
     modFurniture(Furniture::getLayer(type))->onConstructedBy(*this, c);
@@ -673,7 +673,7 @@ void Position::fireDamage(double amount) {
   PROFILE;
   for (auto furniture : modFurniture())
     furniture->fireDamage(*this, amount);
-  if (WCreature creature = getCreature())
+  if (Creature* creature = getCreature())
     creature->affectByFire(amount);
   for (Item* it : getItems())
     it->fireDamage(amount, *this);
@@ -955,7 +955,7 @@ bool Position::stopsProjectiles(VisionId id) const {
     return !isValid();
 }
 
-bool Position::isVisibleBy(WConstCreature c) const {
+bool Position::isVisibleBy(const Creature* c) const {
   PROFILE;
 
   return isValid() && c->getPosition().isSameLevel(*this) &&
@@ -979,7 +979,7 @@ bool Position::isConnectedTo(Position pos, const MovementType& movement) const {
       level->getSectors(movement).same(coord, pos.coord);
 }
 
-vector<WCreature> Position::getAllCreatures(int range) const {
+vector<Creature*> Position::getAllCreatures(int range) const {
   PROFILE;
   if (isValid())
     return level->getAllCreatures(Rectangle::centered(coord, range));
@@ -1007,7 +1007,7 @@ void Position::moveCreature(Vec2 direction) {
   level->moveCreature(getCreature(), direction);
 }
 
-static bool canPass(Position position, WConstCreature c) {
+static bool canPass(Position position, const Creature* c) {
   PROFILE;
   return position.canEnterEmpty(c) && (!position.getCreature() ||
       !position.getCreature()->getAttributes().isBoulder());
@@ -1016,7 +1016,7 @@ static bool canPass(Position position, WConstCreature c) {
 bool Position::canMoveCreature(Vec2 direction) const {
   PROFILE;
   if (!isUnavailable()) {
-    WCreature creature = getCreature();
+    Creature* creature = getCreature();
     Position destination = plus(direction);
     if (level->noDiagonalPassing && direction.isCardinal8() && !direction.isCardinal4() &&
         !canPass(plus(Vec2(direction.x, 0)), creature) &&
@@ -1047,7 +1047,7 @@ optional<Position> Position::getStairsTo(Position pos) const {
   return level->getStairsTo(pos.level); 
 }
 
-void Position::swapCreatures(WCreature c) {
+void Position::swapCreatures(Creature* c) {
   PROFILE;
   CHECK(isValid() && getCreature());
   level->swapCreatures(getCreature(), c);
@@ -1059,7 +1059,7 @@ Position Position::withCoord(Vec2 newCoord) const {
   return Position(newCoord, level);
 }
 
-void Position::putCreature(WCreature c) {
+void Position::putCreature(Creature* c) {
   PROFILE;
   CHECK(isValid());
   level->putCreature(coord, c);

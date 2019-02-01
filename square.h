@@ -54,16 +54,16 @@ class Square : public OwnedObject<Square> {
   void onAddedToLevel(Position) const;
 
   /** Puts a creature on the square.*/
-  void putCreature(WCreature);
+  void putCreature(Creature*);
 
   /** Puts a creature on the square without triggering any mechanisms that happen when a creature enters.*/ 
-  void setCreature(WCreature);
+  void setCreature(Creature*);
 
   /** Removes the creature from the square.*/
   void removeCreature(Position);
 
   /** Returns the creature from the square.*/
-  WCreature getCreature() const;
+  Creature* getCreature() const;
 
   bool isOnFire() const;
   void setOnFire(bool);
@@ -79,7 +79,7 @@ class Square : public OwnedObject<Square> {
       For this method to be called, the square coordinates must be added with Level::addTickingSquare().*/
   void tick(Position);
 
-  void getViewIndex(ViewIndex&, WConstCreature viewer) const;
+  void getViewIndex(ViewIndex&, const Creature* viewer) const;
 
   bool itemLands(vector<Item*> item, const Attack& attack) const;
   void onItemLands(Position, vector<PItem>, const Attack&);
@@ -102,7 +102,7 @@ class Square : public OwnedObject<Square> {
   Inventory& getInventory();
   const Inventory& getInventory() const;
 
-  void onEnter(WCreature);
+  void onEnter(Creature*);
 
   template <class Archive>
   void serialize(Archive&, const unsigned int);
@@ -110,7 +110,7 @@ class Square : public OwnedObject<Square> {
   private:
   Item* getTopItem() const;
   HeapAllocated<Inventory> SERIAL(inventory);
-  WCreature SERIAL(creature) = nullptr;
+  Creature* SERIAL(creature) = nullptr;
   optional<StairKey> SERIAL(landingLink);
   HeapAllocated<PoisonGas> SERIAL(poisonGas);
   mutable optional<UniqueEntity<Creature>::Id> SERIAL(lastViewer);

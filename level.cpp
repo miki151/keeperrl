@@ -115,7 +115,7 @@ double Level::getCreatureLightRadius() {
   return 5.5;
 }
 
-void Level::putCreature(Vec2 position, WCreature c) {
+void Level::putCreature(Vec2 position, Creature* c) {
   CHECK(inBounds(position));
   creatures.push_back(c);
   creatureIds.insert(c);
@@ -160,7 +160,7 @@ void Level::addDarknessSource(Vec2 pos, double radius, int numDarkness) {
 void Level::updateCreatureLight(Vec2 pos, int diff) {
   auto square = squares->getReadonly(pos);
   CHECK(square) << pos << " " << getBounds();
-  if (WCreature c = square->getCreature()) {
+  if (Creature* c = square->getCreature()) {
     if (c->isAffected(LastingEffect::DARKNESS_SOURCE))
       addDarknessSource(pos, getCreatureLightRadius(), diff);
     if (c->isAffected(LastingEffect::LIGHT_SOURCE) || c->isAffected(LastingEffect::ON_FIRE))
@@ -183,9 +183,9 @@ void Level::updateVisibility(Vec2 changedSquare) {
     getModel()->addEvent(EventInfo::VisibilityChanged{Position(pos, this)});
 }
 
-vector<WCreature> Level::getPlayers() const {
+vector<Creature*> Level::getPlayers() const {
   if (auto game = model->getGame())
-    return game->getPlayerCreatures().filter([this](const WCreature& c) { return c->getLevel() == this; });
+    return game->getPlayerCreatures().filter([this](const Creature* c) { return c->getLevel() == this; });
   return {};
 }
 
@@ -236,7 +236,7 @@ optional<Position> Level::getStairsTo(WConstLevel level) {
   return model->getStairs(this, level);
 }
 
-bool Level::landCreature(StairKey key, WCreature creature) {
+bool Level::landCreature(StairKey key, Creature* creature) {
   vector<Position> landing = landingSquares.at(key);
   return landCreature(landing, creature);
 }
@@ -283,7 +283,7 @@ Position Level::getLandingSquare(StairKey key, Vec2 travelDir) const {
   return target;
 }
 
-bool Level::landCreature(StairKey key, WCreature creature, Vec2 travelDir) {
+bool Level::landCreature(StairKey key, Creature* creature, Vec2 travelDir) {
   Position bestLanding = getLandingSquare(key, travelDir);
   return landCreature({bestLanding}, creature) ||
       landCreature(bestLanding.getRectangle(Rectangle::centered(Vec2(0, 0), 10)), creature) ||
@@ -300,7 +300,7 @@ bool Level::landCreature(vector<Position> landing, PCreature creature) {
     return false;
 }
 
-optional<Position> Level::getClosestLanding(vector<Position> landing, WCreature creature) const {
+optional<Position> Level::getClosestLanding(vector<Position> landing, Creature* creature) const {
   PROFILE;
   CHECK(creature);
   queue<Position> q;
@@ -324,7 +324,7 @@ optional<Position> Level::getClosestLanding(vector<Position> landing, WCreature 
   return none;
 }
 
-bool Level::landCreature(vector<Position> landing, WCreature creature) {
+bool Level::landCreature(vector<Position> landing, Creature* creature) {
   PROFILE;
   if (auto pos = getClosestLanding(std::move(landing), creature)) {
     pos->putCreature(creature);
@@ -333,23 +333,23 @@ bool Level::landCreature(vector<Position> landing, WCreature creature) {
     return false;
 }
 
-void Level::killCreature(WCreature creature) {
+void Level::killCreature(Creature* creature) {
   eraseCreature(creature, creature->getPosition().getCoord());
   getModel()->killCreature(creature);
 }
 
-void Level::removeCreature(WCreature creature) {
+void Level::removeCreature(Creature* creature) {
   eraseCreature(creature, creature->getPosition().getCoord());
 }
 
-void Level::changeLevel(StairKey key, WCreature c) {
+void Level::changeLevel(StairKey key, Creature* c) {
   Vec2 oldPos = c->getPosition().getCoord();
   WLevel otherLevel = model->getLinkedLevel(this, key);
   if (otherLevel->landCreature(key, c))
     eraseCreature(c, oldPos);
   else {
     Position otherPos = Random.choose(otherLevel->landingSquares.at(key));
-    if (WCreature other = otherPos.getCreature()) {
+    if (Creature* other = otherPos.getCreature()) {
       if (!other->isPlayer() && c->getPosition().canEnterEmpty(other) && otherPos.canEnterEmpty(c)) {
         otherLevel->eraseCreature(other, otherPos.getCoord());
         eraseCreature(c, oldPos);
@@ -361,27 +361,27 @@ void Level::changeLevel(StairKey key, WCreature c) {
   }
 }
 
-void Level::changeLevel(Position destination, WCreature c) {
+void Level::changeLevel(Position destination, Creature* c) {
   Vec2 oldPos = c->getPosition().getCoord();
   if (destination.isValid() && destination.getLevel()->landCreature({destination}, c))
     eraseCreature(c, oldPos);
 }
 
-void Level::eraseCreature(WCreature c, Vec2 coord) {
+void Level::eraseCreature(Creature* c, Vec2 coord) {
   creatures.removeElement(c);
   unplaceCreature(c, coord);
   creatureIds.erase(c);
 }
 
-const vector<WCreature>& Level::getAllCreatures() const {
+const vector<Creature*>& Level::getAllCreatures() const {
   return creatures;
 }
 
-vector<WCreature>& Level::getAllCreatures() {
+vector<Creature*>& Level::getAllCreatures() {
   return creatures;
 }
 
-vector<WCreature> Level::getAllCreatures(Rectangle bounds) const {
+vector<Creature*> Level::getAllCreatures(Rectangle bounds) const {
   return bucketMap->getElements(bounds);
 }
 
@@ -404,19 +404,19 @@ bool Level::canSee(Vec2 from, Vec2 to, const Vision& vision) const {
   return isWithinVision(from, to, vision) && getFieldOfView(vision.getId()).canSee(from, to);
 }
 
-void Level::moveCreature(WCreature creature, Vec2 direction) {
+void Level::moveCreature(Creature* creature, Vec2 direction) {
   Vec2 position = creature->getPosition().getCoord();
   unplaceCreature(creature, position);
   placeCreature(creature, position + direction);
 }
 
-void Level::unplaceCreature(WCreature creature, Vec2 pos) {
+void Level::unplaceCreature(Creature* creature, Vec2 pos) {
   bucketMap->removeElement(pos, creature);
   updateCreatureLight(pos, -1);
   modSafeSquare(pos)->removeCreature(Position(pos, this));
 }
 
-void Level::placeCreature(WCreature creature, Vec2 pos) {
+void Level::placeCreature(Creature* creature, Vec2 pos) {
   Position position(pos, this);
   creature->setPosition(position);
   bucketMap->addElement(pos, creature);
@@ -425,7 +425,7 @@ void Level::placeCreature(WCreature creature, Vec2 pos) {
   position.onEnter(creature);
 }
 
-void Level::swapCreatures(WCreature c1, WCreature c2) {
+void Level::swapCreatures(Creature* c1, Creature* c2) {
   Vec2 pos1 = c1->getPosition().getCoord();
   Vec2 pos2 = c2->getPosition().getCoord();
   unplaceCreature(c1, pos1);

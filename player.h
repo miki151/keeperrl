@@ -40,7 +40,7 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   public:
   virtual ~Player() override;
 
-  Player(WCreature, bool adventurer, SMapMemory, SMessageBuffer, SVisibilityMap, SUnknownLocations,
+  Player(Creature*, bool adventurer, SMapMemory, SMessageBuffer, SVisibilityMap, SUnknownLocations,
       STutorial = nullptr);
 
   void onEvent(const GameEvent&);
@@ -63,7 +63,7 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   virtual const vector<Vec2>& getUnknownLocations(WConstLevel) const override;
 
   // from Controller
-  virtual void onKilled(WConstCreature attacker) override;
+  virtual void onKilled(const Creature* attacker) override;
   virtual void makeMove() override;
   virtual void sleeping() override;
   virtual bool isPlayer() const override;
@@ -80,7 +80,7 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   };
   virtual vector<CommandInfo> getCommands() const;
   virtual void onFellAsleep();
-  virtual vector<WCreature> getTeam() const;
+  virtual vector<Creature*> getTeam() const;
   virtual bool isTravelEnabled() const;
   virtual bool handleUserInput(UserInput);
   virtual void updateUnknownLocations();
@@ -91,7 +91,7 @@ class Player : public Controller, public CreatureView, public EventListener<Play
     bool allowAuto;
     function<void(Player*)> perform;
   };
-  virtual vector<OtherCreatureCommand> getOtherCreatureCommands(WCreature) const;
+  virtual vector<OtherCreatureCommand> getOtherCreatureCommands(Creature*) const;
 
   optional<Vec2> chooseDirection(const string& question);
   optional<Position> chooseTarget(Table<PassableInfo>, const string& question);
@@ -144,7 +144,7 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   optional<FurnitureUsageType> getUsableUsageType() const;
   SVisibilityMap SERIAL(visibilityMap);
   STutorial SERIAL(tutorial);
-  vector<TeamMemberAction> getTeamMemberActions(WConstCreature) const;
+  vector<TeamMemberAction> getTeamMemberActions(const Creature*) const;
   optional<GlobalTime> lastEnemyInterruption;
   SUnknownLocations SERIAL(unknownLocations);
   void updateSquareMemory(Position);

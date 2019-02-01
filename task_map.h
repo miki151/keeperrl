@@ -14,15 +14,15 @@ class Creature;
 
 class TaskMap {
   public:
-  WTask addTaskFor(PTask, WCreature);
+  WTask addTaskFor(PTask, Creature*);
   WTask addTask(PTask, Position, MinionActivity);
-  WTask getTask(WConstCreature);
-  bool hasTask(WConstCreature) const;
+  WTask getTask(const Creature*);
+  bool hasTask(const Creature*) const;
   const vector<WTask>& getTasks(Position) const;
   vector<WConstTask> getAllTasks() const;
-  WCreature getOwner(WConstTask) const;
+  Creature* getOwner(WConstTask) const;
   optional<Position> getPosition(WTask) const;
-  void takeTask(WCreature, WTask);
+  void takeTask(Creature*, WTask);
   void freeTask(WTask);
 
   void setPosition(WTask, Position);
@@ -32,11 +32,11 @@ class TaskMap {
   HighlightType getHighlightType(Position) const;
   CostInfo removeTask(WTask);
   CostInfo removeTask(UniqueEntity<Task>::Id);
-  CostInfo freeFromTask(WConstCreature);
+  CostInfo freeFromTask(const Creature*);
   bool isPriorityTask(WConstTask) const;
   bool hasPriorityTasks(Position) const;
   void setPriorityTasks(Position);
-  WTask getClosestTask(WConstCreature, MinionActivity, bool priorityOnly) const;
+  WTask getClosestTask(const Creature*, MinionActivity, bool priorityOnly) const;
   const EntityMap<Task, CostInfo>& getCompletionCosts() const;
   WTask getTask(UniqueEntity<Task>::Id) const;
   void clearFinishedTasks();
@@ -45,7 +45,7 @@ class TaskMap {
 
   private:
   EntityMap<Creature, WTask> SERIAL(taskByCreature);
-  EntityMap<Task, WCreature> SERIAL(creatureByTask);
+  EntityMap<Task, Creature*> SERIAL(creatureByTask);
   EntityMap<Task, Position> SERIAL(positionMap);
   unordered_map<Position, vector<WTask>, CustomHash<Position>> SERIAL(reversePositions);
   vector<PTask> SERIAL(tasks);

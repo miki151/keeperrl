@@ -23,7 +23,7 @@
 
 static void handleBed(Position pos) {
   PROFILE;
-  if (WCreature c = pos.getCreature())
+  if (Creature* c = pos.getCreature())
     if (c->isAffected(LastingEffect::SLEEP))
       c->heal(0.005);
 }
@@ -48,7 +48,7 @@ static void handleBoulder(Position pos, WFurniture furniture) {
     int radius = 4;
     for (int i = 1; i <= radius; ++i) {
       Position curPos = pos.plus(direction * i);
-      if (WCreature other = curPos.getCreature()) {
+      if (Creature* other = curPos.getCreature()) {
         if (!other->getTribe()->getFriendlyTribes().contains(furniture->getTribe())) {
           if (!other->isAffected(LastingEffect::DISARM_TRAPS_SKILL)) {
             pos.getGame()->addEvent(EventInfo::TrapTriggered{pos});

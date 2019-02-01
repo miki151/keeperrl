@@ -14,7 +14,7 @@
 FurnitureEntry::FurnitureEntry(FurnitureEntry::EntryData d) : entryData(d) {
 }
 
-void FurnitureEntry::handle(WFurniture f, WCreature c) {
+void FurnitureEntry::handle(WFurniture f, Creature* c) {
   PROFILE;
   entryData.match(
       [&](Sokoban) {
@@ -72,7 +72,7 @@ void FurnitureEntry::handle(WFurniture f, WCreature c) {
   );
 }
 
-bool FurnitureEntry::isVisibleTo(WConstFurniture f, WConstCreature c) const {
+bool FurnitureEntry::isVisibleTo(WConstFurniture f, const Creature* c) const {
   return entryData.visit(
       [&](const Trap& type) {
         return !c->getGame()->getTribe(f->getTribe())->isEnemy(c)

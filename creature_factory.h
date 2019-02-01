@@ -33,13 +33,13 @@ class CreatureFactory {
   PCreature fromId(CreatureId, TribeId, const MonsterAIFactory&) const;
   PCreature fromId(CreatureId, TribeId, const MonsterAIFactory&, const vector<ItemType>& inventory) const;
   PCreature fromId(CreatureId, TribeId) const;
-  static PController getShopkeeper(Rectangle shopArea, WCreature);
+  static PController getShopkeeper(Rectangle shopArea, Creature*);
   static PCreature getRollingBoulder(TribeId, Vec2 direction);
   static PCreature getHumanForTests();
-  PCreature getGhost(WCreature) const;
-  static PCreature getIllusion(WCreature);
+  PCreature getGhost(Creature*) const;
+  static PCreature getIllusion(Creature*);
 
-  static void addInventory(WCreature, const vector<ItemType>& items);
+  static void addInventory(Creature*, const vector<ItemType>& items);
   static CreatureAttributes getKrakenAttributes(ViewId, const char* name);
   ViewId getViewId(CreatureId) const;
   const Gender& getGender(CreatureId);

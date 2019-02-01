@@ -3,7 +3,7 @@
 #include "creature.h"
 #include "attr_type.h"
 
-BestAttack::BestAttack(WConstCreature c) {
+BestAttack::BestAttack(const Creature* c) {
   auto damage = c->getAttr(AttrType::DAMAGE);
   auto spellDamage = c->getAttr(AttrType::SPELL_DAMAGE);
   if (damage > spellDamage) {

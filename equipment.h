@@ -31,22 +31,22 @@ RICH_ENUM(EquipmentSlot,
 
 class Equipment {
   public:
-  void addItem(PItem, WCreature);
-  void addItems(vector<PItem>, WCreature);
+  void addItem(PItem, Creature*);
+  void addItems(vector<PItem>, Creature*);
   vector<Item*> getSlotItems(EquipmentSlot slot) const;
   bool hasItem(const Item*) const;
   bool isEquipped(const Item*) const;
   bool canEquip(const Item*) const;
-  void equip(Item*, EquipmentSlot, WCreature);
-  void unequip(Item*, WCreature);
-  PItem removeItem(Item*, WCreature);
+  void equip(Item*, EquipmentSlot, Creature*);
+  void unequip(Item*, Creature*);
+  PItem removeItem(Item*, Creature*);
   int getMaxItems(EquipmentSlot) const;
   const vector<Item*>& getAllEquipped() const;
   const vector<Item*>& getItems() const;
   const vector<Item*>& getItems(ItemIndex) const;
   Item* getItemById(UniqueEntity<Item>::Id) const;
-  vector<PItem> removeItems(const vector<Item*>&, WCreature);
-  vector<PItem> removeAllItems(WCreature);
+  vector<PItem> removeItems(const vector<Item*>&, Creature*);
+  vector<PItem> removeAllItems(Creature*);
   double getTotalWeight() const;
   bool isEmpty() const;
   const ItemCounts& getCounts() const;

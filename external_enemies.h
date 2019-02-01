@@ -28,7 +28,7 @@ class ExternalEnemies {
   void update(WLevel, LocalTime);
   struct CurrentWave {
     string SERIAL(name);
-    vector<WCreature> SERIAL(attackers);
+    vector<Creature*> SERIAL(attackers);
     SERIALIZE_ALL(name, attackers)
   };
   optional<const EnemyEvent&> getNextWave() const;

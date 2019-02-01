@@ -24,7 +24,7 @@ class MonsterAIFactory;
 
 class Monster : public Controller {
   public:
-  Monster(WCreature, const MonsterAIFactory&);
+  Monster(Creature*, const MonsterAIFactory&);
   
   virtual void makeMove() override;
   virtual bool isPlayer() const override;

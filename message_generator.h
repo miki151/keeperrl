@@ -11,11 +11,11 @@ class MessageGenerator {
   public:
   enum Type { SECOND_PERSON, THIRD_PERSON, BOULDER, KRAKEN, NONE };
   MessageGenerator(Type);
-  void add(WConstCreature, MsgType, const string&);
-  void add(WConstCreature, const string&);
-  void addThirdPerson(WConstCreature, const PlayerMessage&);
-  void addSecondPerson(WConstCreature, const PlayerMessage&);
-  string getEnemyName(WConstCreature);
+  void add(const Creature*, MsgType, const string&);
+  void add(const Creature*, const string&);
+  void addThirdPerson(const Creature*, const PlayerMessage&);
+  void addSecondPerson(const Creature*, const PlayerMessage&);
+  string getEnemyName(const Creature*);
 
   SERIALIZATION_DECL(MessageGenerator)
 

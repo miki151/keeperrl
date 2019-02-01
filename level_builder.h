@@ -53,7 +53,7 @@ class LevelBuilder {
   WSquare modSquare(Vec2);
 
   /** Checks if it's possible to put a creature on given square.*/
-  bool canPutCreature(Vec2, WCreature);
+  bool canPutCreature(Vec2, Creature*);
 
   /** Puts a creatue on a given square. If the square is later changed to something else, the creature remains.*/
   void putCreature(Vec2, PCreature);

@@ -39,7 +39,7 @@ struct ChestInfo {
   optional<ItemInfo> itemInfo;
 };
 
-static void useChest(Position pos, WConstFurniture furniture, WCreature c, const ChestInfo& chestInfo) {
+static void useChest(Position pos, WConstFurniture furniture, Creature* c, const ChestInfo& chestInfo) {
   c->secondPerson("You open the " + furniture->getName());
   c->thirdPerson(c->getName().the() + " opens the " + furniture->getName());
   pos.removeFurniture(furniture, FurnitureFactory::get(chestInfo.openedType, furniture->getTribe()));
@@ -63,7 +63,7 @@ static void useChest(Position pos, WConstFurniture furniture, WCreature c, const
   }
 }
 
-static void usePortal(Position pos, WCreature c) {
+static void usePortal(Position pos, Creature* c) {
   c->you(MsgType::ENTER_PORTAL, "");
   if (auto otherPos = pos.getOtherPortal())
     for (auto f : otherPos->getFurniture())
@@ -81,7 +81,7 @@ static void usePortal(Position pos, WCreature c) {
   c->privateMessage("The portal is inactive. Create another one to open a connection.");
 }
 
-static void sitOnThrone(Position pos, WConstFurniture furniture, WCreature c) {
+static void sitOnThrone(Position pos, WConstFurniture furniture, Creature* c) {
   c->thirdPerson(c->getName().the() + " sits on the " + furniture->getName());
   c->secondPerson("You sit on the " + furniture->getName());
   if (furniture->getTribe() == c->getTribeId())
@@ -96,7 +96,7 @@ static void sitOnThrone(Position pos, WConstFurniture furniture, WCreature c) {
     if (!collective)
       return;
     bool wasTeleported = false;
-    auto tryTeleporting = [&] (WCreature enemy) {
+    auto tryTeleporting = [&] (Creature* enemy) {
       if (enemy->getPosition().dist8(pos) > 3 || !c->canSee(enemy))
         if (auto landing = pos.getLevel()->getClosestLanding({pos}, enemy)) {
           enemy->getPosition().moveCreature(*landing, true);
@@ -115,7 +115,7 @@ static void sitOnThrone(Position pos, WConstFurniture furniture, WCreature c) {
   }
 }
 
-void FurnitureUsage::handle(FurnitureUsageType type, Position pos, WConstFurniture furniture, WCreature c) {
+void FurnitureUsage::handle(FurnitureUsageType type, Position pos, WConstFurniture furniture, Creature* c) {
   CHECK(c != nullptr);
   switch (type) {
     case FurnitureUsageType::CHEST:
@@ -196,7 +196,7 @@ void FurnitureUsage::handle(FurnitureUsageType type, Position pos, WConstFurnitu
   }
 }
 
-bool FurnitureUsage::canHandle(FurnitureUsageType type, WConstCreature c) {
+bool FurnitureUsage::canHandle(FurnitureUsageType type, const Creature* c) {
   switch (type) {
     case FurnitureUsageType::KEEPER_BOARD:
     case FurnitureUsageType::FOUNTAIN:

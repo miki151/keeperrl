@@ -4,7 +4,7 @@
 #include "creature_attributes.h"
 #include "skill.h"
 
-void applySpecialTrait(SpecialTrait trait, WCreature c) {
+void applySpecialTrait(SpecialTrait trait, Creature* c) {
   trait.visit(
       [&] (const ExtraTraining& t) {
         c->getAttributes().increaseMaxExpLevel(t.type, t.increase);

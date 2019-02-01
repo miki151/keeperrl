@@ -48,7 +48,7 @@ void SpellMap::clear() {
   elems.clear();
 }
 
-void SpellMap::onExpLevelReached(WCreature c, double level) {
+void SpellMap::onExpLevelReached(Creature* c, double level) {
   for (auto spell : Spell::getAll())
     if (auto minLevel = spell->getLearningExpLevel())
       if (level >= *minLevel && !contains(spell)) {

@@ -26,7 +26,7 @@ enum class SpellId;
 class PlayerMessage;
 
 struct CreatureInfo {
-  CreatureInfo(WConstCreature);
+  CreatureInfo(const Creature*);
   ViewId HASH(viewId);
   UniqueEntity<Creature>::Id HASH(uniqueId);
   string HASH(name);
@@ -38,7 +38,7 @@ struct CreatureInfo {
 
 
 struct ItemInfo {
-  static ItemInfo get(WConstCreature, const vector<Item*>&);
+  static ItemInfo get(const Creature*, const vector<Item*>&);
   string HASH(name);
   string HASH(fullName);
   string HASH(description);
@@ -64,7 +64,7 @@ struct ItemInfo {
 };
 
 struct AttributeInfo {
-  static vector<AttributeInfo> fromCreature(WConstCreature);
+  static vector<AttributeInfo> fromCreature(const Creature*);
   string HASH(name);
   AttrType HASH(attr);
   int HASH(value);
@@ -75,7 +75,7 @@ struct AttributeInfo {
 
 class PlayerInfo {
   public:
-  PlayerInfo(WConstCreature);
+  PlayerInfo(const Creature*);
   string getFirstName() const;
   string getTitle() const;
   vector<AttributeInfo> HASH(attributes);

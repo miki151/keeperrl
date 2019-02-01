@@ -26,22 +26,22 @@ class MinionEquipment {
   public:
 
   static bool isItemUseful(const Item*);
-  bool needsItem(WConstCreature c, const Item* it, bool noLimit = false) const;
+  bool needsItem(const Creature* c, const Item* it, bool noLimit = false) const;
   optional<UniqueEntity<Creature>::Id> getOwner(const Item*) const;
-  bool isOwner(const Item*, WConstCreature) const;
-  bool tryToOwn(WConstCreature, Item*);
+  bool isOwner(const Item*, const Creature*) const;
+  bool tryToOwn(const Creature*, Item*);
   void discard(const Item*);
   void discard(UniqueEntity<Item>::Id);
-  void updateOwners(const vector<WCreature>&);
-  vector<Item*> getItemsOwnedBy(WConstCreature, ItemPredicate = nullptr) const;
+  void updateOwners(const vector<Creature*>&);
+  vector<Item*> getItemsOwnedBy(const Creature*, ItemPredicate = nullptr) const;
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);
 
-  void setLocked(WConstCreature, UniqueEntity<Item>::Id, bool locked);
-  bool isLocked(WConstCreature, UniqueEntity<Item>::Id) const;
-  void sortByEquipmentValue(WConstCreature, vector<Item*>& items) const;
-  void autoAssign(WConstCreature, vector<Item*> possibleItems);
+  void setLocked(const Creature*, UniqueEntity<Item>::Id, bool locked);
+  bool isLocked(const Creature*, UniqueEntity<Item>::Id) const;
+  void sortByEquipmentValue(const Creature*, vector<Item*>& items) const;
+  void autoAssign(const Creature*, vector<Item*> possibleItems);
   void updateItems(const vector<Item*>& items);
 
   private:
@@ -49,8 +49,8 @@ class MinionEquipment {
 
   static optional<EquipmentType> getEquipmentType(const Item* it);
   optional<int> getEquipmentLimit(EquipmentType type) const;
-  Item* getWorstItem(WConstCreature, vector<Item*>) const;
-  int getItemValue(WConstCreature, const Item*) const;
+  Item* getWorstItem(const Creature*, vector<Item*>) const;
+  int getItemValue(const Creature*, const Item*) const;
 
   EntityMap<Item, UniqueEntity<Creature>::Id> SERIAL(owners);
   EntityMap<Creature, vector<WeakPointer<Item>>> SERIAL(myItems);

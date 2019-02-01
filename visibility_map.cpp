@@ -17,13 +17,13 @@ void VisibilityMap::removePositions(const vector<Position>& positions) {
       v.setNeedsRenderUpdate(true);
 }
 
-void VisibilityMap::update(WConstCreature c, const vector<Position>& visibleTiles) {
+void VisibilityMap::update(const Creature* c, const vector<Position>& visibleTiles) {
   remove(c);
   lastUpdates.set(c, visibleTiles);
   addPositions(visibleTiles);
 }
 
-void VisibilityMap::remove(WConstCreature c) {
+void VisibilityMap::remove(const Creature* c) {
   if (auto positions = lastUpdates.getMaybe(c))
     removePositions(*positions);
   lastUpdates.erase(c);

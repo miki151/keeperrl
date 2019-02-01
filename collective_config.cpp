@@ -71,7 +71,7 @@ static bool isSleepingFurniture(FurnitureType t) {
   }
 }
 
-static optional<FurnitureType> getBedType(WConstCreature c) {
+static optional<FurnitureType> getBedType(const Creature* c) {
   if (!c->getBody().needsToSleep())
     return none;
   if (c->getStatus().contains(CreatureStatus::PRISONER))
@@ -329,7 +329,7 @@ MinionActivityInfo::MinionActivityInfo() {}
 
 MinionActivityInfo::MinionActivityInfo(FurnitureType type, const string& desc, bool requiresLighting)
     : type(FURNITURE),
-      furniturePredicate([type](WConstCollective, WConstCreature, FurnitureType t) { return t == type;}),
+      furniturePredicate([type](WConstCollective, const Creature*, FurnitureType t) { return t == type;}),
       description(desc),
       requiresLighting(requiresLighting) {
 }
@@ -409,7 +409,7 @@ CollectiveConfig::~CollectiveConfig() {
 }
 
 static auto getTrainingPredicate(ExperienceType experienceType) {
-  return [experienceType] (WConstCollective, WConstCreature c, FurnitureType t) {
+  return [experienceType] (WConstCollective, const Creature* c, FurnitureType t) {
       if (auto maxIncrease = CollectiveConfig::getTrainingMaxLevel(experienceType, t))
         return !c || (c->getAttributes().getExpLevel(experienceType) < *maxIncrease &&
             !c->getAttributes().isTrainingMaxedOut(experienceType));
@@ -420,7 +420,7 @@ static auto getTrainingPredicate(ExperienceType experienceType) {
 
 template <typename Pred>
 static auto addManaGenerationPredicate(Pred p) {
-  return [p] (WConstCollective col, WConstCreature c, FurnitureType t) {
+  return [p] (WConstCollective col, const Creature* c, FurnitureType t) {
     return (!!CollectiveConfig::getTrainingMaxLevel(ExperienceType::SPELL, t) &&
             (!col || col->getConfig().getRegenerateMana()))
         || p(col, c, t);
@@ -449,7 +449,7 @@ const MinionActivityInfo& CollectiveConfig::getActivityInfo(MinionActivity task)
       case MinionActivity::WORKING: return {MinionActivityInfo::WORKER, "labour"};
       case MinionActivity::DIGGING: return {MinionActivityInfo::WORKER, "digging"};
       case MinionActivity::TRAIN: return {getTrainingPredicate(ExperienceType::MELEE), "training", true};
-      case MinionActivity::SLEEP: return {[](WConstCollective, WConstCreature c, FurnitureType t) {
+      case MinionActivity::SLEEP: return {[](WConstCollective, const Creature* c, FurnitureType t) {
             if (!c)
               return isSleepingFurniture(t);
             auto bedType = getBedType(c);
@@ -470,7 +470,7 @@ const MinionActivityInfo& CollectiveConfig::getActivityInfo(MinionActivity task)
       case MinionActivity::BE_WHIPPED: return {FurnitureType::WHIPPING_POST, "being whipped", false};
       case MinionActivity::BE_TORTURED: return {FurnitureType::TORTURE_TABLE, "being tortured", false};
       case MinionActivity::BE_EXECUTED: return {FurnitureType::GALLOWS, "being executed", false};
-      case MinionActivity::CRAFT: return {[](WConstCollective col, WConstCreature c, FurnitureType t) {
+      case MinionActivity::CRAFT: return {[](WConstCollective col, const Creature* c, FurnitureType t) {
             if (auto type = getWorkshopType(t))
               return !c || !col || (c->getAttributes().getSkills().getValue(getWorkshopInfo(*type).skill) > 0 &&
                             !col->getWorkshops().get(*type).isIdle());

@@ -27,8 +27,8 @@ class FurnitureEntry {
   template <typename T>
   FurnitureEntry(const T& t) : FurnitureEntry(EntryData(t)) {}
   FurnitureEntry(EntryData);
-  void handle(WFurniture, WCreature);
-  bool isVisibleTo(WConstFurniture, WConstCreature) const;
+  void handle(WFurniture, Creature*);
+  bool isVisibleTo(WConstFurniture, const Creature*) const;
 
   SERIALIZATION_DECL(FurnitureEntry)
 

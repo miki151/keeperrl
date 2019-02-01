@@ -30,7 +30,7 @@ class DirEffectType;
 
 
 #define EFFECT_TYPE_INTERFACE \
-  void applyToCreature(WCreature, WCreature attacker = nullptr) const;\
+  void applyToCreature(Creature*, Creature* attacker = nullptr) const;\
   string getName() const;\
   string getDescription() const
 
@@ -136,7 +136,7 @@ class Effect {
   template <class Archive>
   void serialize(Archive&, const unsigned int);
 
-  void applyToCreature(WCreature, WCreature attacker = nullptr) const;
+  void applyToCreature(Creature*, Creature* attacker = nullptr) const;
   void applyToPosition(Position) const;
   string getName() const;
   string getDescription() const;
@@ -161,10 +161,10 @@ class Effect {
     return effect.getValueMaybe<T>();
   }
 
-  static vector<WCreature> summon(WCreature, CreatureId, int num, TimeInterval ttl, TimeInterval delay = 0_visible);
-  static vector<WCreature> summon(Position, CreatureGroup&, int num, TimeInterval ttl, TimeInterval delay = 0_visible);
-  static vector<WCreature> summonCreatures(Position, int radius, vector<PCreature>, TimeInterval delay = 0_visible);
-  static vector<WCreature> summonCreatures(WCreature, int radius, vector<PCreature>, TimeInterval delay = 0_visible);
+  static vector<Creature*> summon(Creature*, CreatureId, int num, TimeInterval ttl, TimeInterval delay = 0_visible);
+  static vector<Creature*> summon(Position, CreatureGroup&, int num, TimeInterval ttl, TimeInterval delay = 0_visible);
+  static vector<Creature*> summonCreatures(Position, int radius, vector<PCreature>, TimeInterval delay = 0_visible);
+  static vector<Creature*> summonCreatures(Creature*, int radius, vector<PCreature>, TimeInterval delay = 0_visible);
   static void emitPoisonGas(Position, double amount, bool msg);
 
   private:
@@ -194,4 +194,4 @@ class DirEffectType : public EnumVariant<DirEffectId, TYPES(Effect),
 };
 
 extern string getDescription(const DirEffectType&);
-extern void applyDirected(WCreature, Position target, const DirEffectType&, bool withProjectileFX = true);
+extern void applyDirected(Creature*, Position target, const DirEffectType&, bool withProjectileFX = true);

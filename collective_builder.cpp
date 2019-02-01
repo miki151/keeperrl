@@ -46,7 +46,7 @@ TribeId CollectiveBuilder::getTribe() {
   return *tribe;
 }
 
-CollectiveBuilder& CollectiveBuilder::addCreature(WCreature c, EnumSet<MinionTrait> traits) {
+CollectiveBuilder& CollectiveBuilder::addCreature(Creature* c, EnumSet<MinionTrait> traits) {
   creatures.push_back({c, traits});
   return *this;
 }

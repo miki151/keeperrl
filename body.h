@@ -68,15 +68,15 @@ class Body {
     HURT,
     KILLED
   };
-  DamageResult takeDamage(const Attack&, WCreature, double damage);
+  DamageResult takeDamage(const Attack&, Creature*, double damage);
 
-  bool tick(WConstCreature);
-  bool heal(WCreature, double amount);
-  bool affectByFire(WCreature, double amount);
+  bool tick(const Creature*);
+  bool heal(Creature*, double amount);
+  bool affectByFire(Creature*, double amount);
   bool isIntrinsicallyAffected(LastingEffect) const;
-  bool affectByPoisonGas(WCreature, double amount);
-  bool affectBySilver(WCreature);
-  bool affectByAcid(WCreature);
+  bool affectByPoisonGas(Creature*, double amount);
+  bool affectBySilver(Creature*);
+  bool affectByAcid(Creature*);
   bool isKilledByBoulder() const;
   bool canWade() const;
   bool isMinionFood() const;
@@ -96,28 +96,28 @@ class Body {
   vector<AttackLevel> getAttackLevels() const;
   int getAttrBonus(AttrType) const;
 
-  bool isCollapsed(WConstCreature) const;
+  bool isCollapsed(const Creature*) const;
   int numGood(BodyPart) const;
   int numLost(BodyPart) const;
   int numBodyParts(BodyPart) const;
   void getBadAdjectives(vector<AdjectiveInfo>&) const;
   optional<Sound> getDeathSound() const;
   optional<AnimationId> getDeathAnimation() const;
-  void injureBodyPart(WCreature, BodyPart, bool drop);
+  void injureBodyPart(Creature*, BodyPart, bool drop);
 
-  void healBodyParts(WCreature, bool regrow);
+  void healBodyParts(Creature*, bool regrow);
   int lostOrInjuredBodyParts() const;
   bool canHeal() const;
   bool isImmuneTo(LastingEffect effect) const;
   bool hasHealth() const;
 
-  void consumeBodyParts(WCreature, Body& other, vector<string>& adjectives);
+  void consumeBodyParts(Creature*, Body& other, vector<string>& adjectives);
 
   bool isHumanoid() const;
   string getDescription() const;
   void updateViewObject(ViewObject&) const;
   int getCarryLimit() const;
-  void bleed(WCreature, double amount);
+  void bleed(Creature*, double amount);
   Item* chooseRandomWeapon(Item* realWeapon) const;
   Item* chooseFirstWeapon() const;
   const EnumMap<BodyPart, optional<IntrinsicAttack>>& getIntrinsicAttacks() const;

@@ -25,7 +25,7 @@ string Skill::getName() const {
   return name;
 }
 
-string Skill::getNameForCreature(WConstCreature c) const {
+string Skill::getNameForCreature(const Creature* c) const {
   double val = c->getAttributes().getSkills().getValue(getId());
   CHECK(val >= 0 && val <= 1) << "Skill value " << val;
   return getName() + " (" + toString<int>(val * 100) + "%)";

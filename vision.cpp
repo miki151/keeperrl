@@ -15,7 +15,7 @@ bool Vision::canSeeAt(double light, double distance) const {
   return nightVision || light > 0.8 || distance <= darkViewRadius;
 }
 
-void Vision::update(WConstCreature c) {
+void Vision::update(const Creature* c) {
   PROFILE;
   nightVision = c->isAffected(LastingEffect::NIGHT_VISION);
   if (c->isAffected(LastingEffect::ELF_VISION) || c->isAffected(LastingEffect::FLYING))

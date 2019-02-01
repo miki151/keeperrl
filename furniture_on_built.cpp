@@ -47,7 +47,7 @@ static void removeOldStairs(Level* level, StairKey stairKey) {
     }
 }
 
-void handleOnBuilt(Position pos, WCreature c, FurnitureOnBuilt type) {
+void handleOnBuilt(Position pos, Creature* c, FurnitureOnBuilt type) {
   switch (type) {
     case FurnitureOnBuilt::DOWN_STAIRS:
       auto levels = pos.getModel()->getMainLevels();

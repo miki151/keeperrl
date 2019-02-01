@@ -30,7 +30,7 @@ SERIALIZATION_CONSTRUCTOR_IMPL(Tribe);
 Tribe::Tribe(TribeId d, bool p) : diplomatic(p), friendlyTribes(TribeSet::getFull()), id(d) {
 }
 
-double Tribe::getStanding(WConstCreature c) const {
+double Tribe::getStanding(const Creature* c) const {
   auto tribeId = c->getTribeId();
   if (!friendlyTribes.contains(tribeId))
     return -1;
@@ -41,7 +41,7 @@ double Tribe::getStanding(WConstCreature c) const {
   return 0;
 }
 
-void Tribe::initStanding(WConstCreature c) {
+void Tribe::initStanding(const Creature* c) {
   standing.set(c, getStanding(c));
 }
 
@@ -55,11 +55,11 @@ static const double killPenalty = 0.5;
 static const double attackPenalty = 0.2;
 static const double thiefPenalty = 0.5;
 
-double Tribe::getMultiplier(WConstCreature member) {
+double Tribe::getMultiplier(const Creature* member) {
   return 1;
 }
 
-void Tribe::onMemberKilled(WCreature member, WCreature attacker) {
+void Tribe::onMemberKilled(Creature* member, Creature* attacker) {
   CHECK(member->getTribe() == this);
   if (attacker == nullptr)
     return;
@@ -67,7 +67,7 @@ void Tribe::onMemberKilled(WCreature member, WCreature attacker) {
   standing.getOrFail(attacker) -= killPenalty * getMultiplier(member);
 }
 
-bool Tribe::isEnemy(WConstCreature c) const {
+bool Tribe::isEnemy(const Creature* c) const {
   return getStanding(c) < 0;
 }
 
@@ -79,7 +79,7 @@ const TribeSet& Tribe::getFriendlyTribes() const {
   return friendlyTribes;
 }
 
-void Tribe::onItemsStolen(WConstCreature attacker) {
+void Tribe::onItemsStolen(const Creature* attacker) {
   if (diplomatic) {
     initStanding(attacker);
     standing.getOrFail(attacker) -= thiefPenalty;

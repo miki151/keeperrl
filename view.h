@@ -228,7 +228,7 @@ class View {
   struct CampaignOptions {
     const Campaign& campaign;
     optional<RetiredGames&> retired;
-    WConstCreature player = nullptr;
+    const Creature* player = nullptr;
     vector<OptionId> primaryOptions;
     vector<OptionId> secondaryOptions;
     optional<string> mapTitle;

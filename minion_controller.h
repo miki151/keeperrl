@@ -2,5 +2,5 @@
 
 #include "owner_pointer.h"
 
-extern PController getMinionController(WCreature, SMapMemory, WPlayerControl, SMessageBuffer, SVisibilityMap,
+extern PController getMinionController(Creature*, SMapMemory, WPlayerControl, SMessageBuffer, SVisibilityMap,
     SUnknownLocations, STutorial);

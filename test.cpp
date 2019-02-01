@@ -52,7 +52,7 @@ class Test {
     PCreature b(new Creature(ViewObject(ViewId::JACKAL, ViewLayer::CREATURE, ""), nullptr, attr));
     PCreature a(new Creature(ViewObject(ViewId::PLAYER, ViewLayer::CREATURE, ""), nullptr, attr));
     PCreature c(new Creature(ViewObject(ViewId::JACKAL, ViewLayer::CREATURE, ""), nullptr, attr));
-    WCreature rb = b.get(), *ra = a.get(), *rc = c.get();
+    Creature* rb = b.get(), *ra = a.get(), *rc = c.get();
     a->setTime(1);
     b->setTime(1.33);
     c->setTime(1.66);

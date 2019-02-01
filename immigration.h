@@ -24,7 +24,7 @@ class Immigration : public OwnedObject<Immigration> {
 
   class Available {
     public:
-    vector<WCreature> getCreatures() const;
+    vector<Creature*> getCreatures() const;
     optional<GlobalTime> getEndTime() const;
     optional<CostInfo> getCost() const;
     const ImmigrantInfo& getInfo() const;
@@ -74,8 +74,8 @@ class Immigration : public OwnedObject<Immigration> {
   vector<string> getMissingAttractions(const ImmigrantInfo&) const;
   int SERIAL(idCnt) = 0;
   TimeInterval SERIAL(candidateTimeout);
-  void occupyAttraction(WConstCreature, const AttractionInfo&);
-  void occupyRequirements(WConstCreature, int immigrantIndex);
+  void occupyAttraction(const Creature*, const AttractionInfo&);
+  void occupyRequirements(const Creature*, int immigrantIndex);
   double getRequirementMultiplier(const Group&) const;
   vector<string> getMissingRequirements(const Group&) const;
   void considerPersistentImmigrants(const vector<ImmigrantInfo>&);

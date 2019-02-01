@@ -32,7 +32,7 @@ template
 EntitySet<Item>::EntitySet(const vector<Item*>&);
 
 template
-EntitySet<Creature>::EntitySet(const vector<WCreature>&);
+EntitySet<Creature>::EntitySet(const vector<Creature*>&);
 
 template <class T>
 bool EntitySet<T>::empty() const {

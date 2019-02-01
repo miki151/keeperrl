@@ -52,13 +52,13 @@
 
 class BoulderController : public Monster {
   public:
-  BoulderController(WCreature c, Vec2 dir) : Monster(c, MonsterAIFactory::idle()), direction(dir) {
+  BoulderController(Creature* c, Vec2 dir) : Monster(c, MonsterAIFactory::idle()), direction(dir) {
     CHECK(direction.length4() == 1);
   }
 
   virtual void makeMove() override {
     Position nextPos = creature->getPosition().plus(direction);
-    if (WCreature c = nextPos.getCreature()) {
+    if (Creature* c = nextPos.getCreature()) {
       if (!c->getBody().isKilledByBoulder()) {
         if (nextPos.canEnterEmpty(creature)) {
           creature->swapPosition(direction);
@@ -131,7 +131,7 @@ PCreature CreatureFactory::getRollingBoulder(TribeId tribe, Vec2 direction) {
 
 class SokobanController : public Monster {
   public:
-  SokobanController(WCreature c) : Monster(c, MonsterAIFactory::idle()) {}
+  SokobanController(Creature* c) : Monster(c, MonsterAIFactory::idle()) {}
 
   virtual MessageGenerator& getMessageGenerator() const override {
     static MessageGenerator g(MessageGenerator::BOULDER);
@@ -198,10 +198,10 @@ constexpr int maxKrakenLength = 15;
 
 class KrakenController : public Monster {
   public:
-  KrakenController(WCreature c) : Monster(c, MonsterAIFactory::monster()) {
+  KrakenController(Creature* c) : Monster(c, MonsterAIFactory::monster()) {
   }
 
-  KrakenController(WCreature c, WeakPointer<KrakenController> father, int length)
+  KrakenController(Creature* c, WeakPointer<KrakenController> father, int length)
       : Monster(c, MonsterAIFactory::monster()), length(length), father(father) {
   }
 
@@ -216,14 +216,14 @@ class KrakenController : public Monster {
       return 7;
   }
 
-  virtual void onKilled(WConstCreature attacker) override {
+  virtual void onKilled(const Creature* attacker) override {
     if (attacker) {
       if (father)
         attacker->secondPerson("You cut the kraken's tentacle");
       else
         attacker->secondPerson("You kill the kraken!");
     }
-    for (WCreature c : spawns)
+    for (Creature* c : spawns)
       if (!c->isDead())
         c->dieNoReason();
   }
@@ -237,7 +237,7 @@ class KrakenController : public Monster {
       return third;
   }
 
-  void pullEnemy(WCreature held) {
+  void pullEnemy(Creature* held) {
     if (Random.roll(3)) {
       held->you(MsgType::HAPPENS_TO, creature->getName().the() + " pulls");
       if (father) {
@@ -252,7 +252,7 @@ class KrakenController : public Monster {
     }
   }
 
-  WCreature getHeld() {
+  Creature* getHeld() {
     for (auto pos : creature->getPosition().neighbors8())
       if (auto other = pos.getCreature())
         if (other->getHoldingCreature() == creature)
@@ -260,12 +260,12 @@ class KrakenController : public Monster {
     return nullptr;
   }
 
-  WCreature getVisibleEnemy() {
+  Creature* getVisibleEnemy() {
     const int radius = 10;
-    WCreature ret = nullptr;
+    Creature* ret = nullptr;
     auto myPos = creature->getPosition();
     for (Position pos : creature->getPosition().getRectangle(Rectangle::centered(Vec2(0, 0), radius)))
-      if (WCreature c = pos.getCreature())
+      if (Creature* c = pos.getCreature())
         if (c->getAttributes().getCreatureId() != creature->getAttributes().getCreatureId() &&
             (!ret || ret->getPosition().dist8(myPos) > c->getPosition().dist8(myPos)) &&
             creature->canSee(c) && creature->isEnemy(c) && !c->getHoldingCreature())
@@ -273,7 +273,7 @@ class KrakenController : public Monster {
     return ret;
   }
 
-  void considerAttacking(WCreature c) {
+  void considerAttacking(Creature* c) {
     auto pos = c->getPosition();
     Vec2 v = creature->getPosition().getDir(pos);
     if (v.length8() == 1) {
@@ -303,7 +303,7 @@ class KrakenController : public Monster {
   }
 
   virtual void makeMove() override {
-    for (WCreature c : spawns)
+    for (Creature* c : spawns)
       if (c->isDead()) {
         spawns.removeElement(c);
         break;
@@ -327,13 +327,13 @@ class KrakenController : public Monster {
   private:
   int SERIAL(length) = 0;
   bool SERIAL(ready) = false;
-  vector<WCreature> SERIAL(spawns);
+  vector<Creature*> SERIAL(spawns);
   WeakPointer<KrakenController> SERIAL(father);
 };
 
 class ShopkeeperController : public Monster, public EventListener<ShopkeeperController> {
   public:
-  ShopkeeperController(WCreature c, Rectangle area)
+  ShopkeeperController(Creature* c, Rectangle area)
       : Monster(c, MonsterAIFactory::stayInLocation(area)), shopArea(area) {
   }
 
@@ -362,7 +362,7 @@ class ShopkeeperController : public Monster, public EventListener<ShopkeeperCont
     }
     vector<Creature::Id> creatures;
     for (Position v : getAllShopPositions())
-      if (WCreature c = v.getCreature()) {
+      if (Creature* c = v.getCreature()) {
         creatures.push_back(c->getUniqueId());
         if (!prevCreatures.contains(c) && !thieves.contains(c) && !creature->isEnemy(c)) {
           if (!debtors.contains(c))
@@ -397,7 +397,7 @@ class ShopkeeperController : public Monster, public EventListener<ShopkeeperCont
     Monster::makeMove();
   }
 
-  virtual void onItemsGiven(vector<Item*> items, WCreature from) override {
+  virtual void onItemsGiven(vector<Item*> items, Creature* from) override {
     int paid = items.filter(Item::classPredicate(ItemClass::GOLD)).size();
     from->getDebt().add(creature, -paid);
     if (from->getDebt().getAmountOwed(creature) <= 0)
@@ -456,20 +456,20 @@ class ShopkeeperController : public Monster, public EventListener<ShopkeeperCont
   bool SERIAL(firstMove) = true;
 };
 
-void CreatureFactory::addInventory(WCreature c, const vector<ItemType>& items) {
+void CreatureFactory::addInventory(Creature* c, const vector<ItemType>& items) {
   for (ItemType item : items)
     c->take(item.get());
 }
 
-PController CreatureFactory::getShopkeeper(Rectangle shopArea, WCreature c) {
+PController CreatureFactory::getShopkeeper(Rectangle shopArea, Creature* c) {
   return makeOwner<ShopkeeperController>(c, shopArea);
 }
 
 class IllusionController : public DoNothingController {
   public:
-  IllusionController(WCreature c, GlobalTime deathT) : DoNothingController(c), deathTime(deathT) {}
+  IllusionController(Creature* c, GlobalTime deathT) : DoNothingController(c), deathTime(deathT) {}
 
-  virtual void onKilled(WConstCreature attacker) override {
+  virtual void onKilled(const Creature* attacker) override {
     if (attacker)
       attacker->message("It was just an illusion!");
   }
@@ -489,7 +489,7 @@ class IllusionController : public DoNothingController {
   GlobalTime SERIAL(deathTime);
 };
 
-PCreature CreatureFactory::getIllusion(WCreature creature) {
+PCreature CreatureFactory::getIllusion(Creature* creature) {
   ViewObject viewObject(creature->getViewObject().id(), ViewLayer::CREATURE, "Illusion");
   viewObject.setModifier(ViewObject::Modifier::ILLUSION);
   auto ret = makeOwner<Creature>(viewObject, creature->getTribeId(), CATTR(
@@ -720,7 +720,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
 
 ControllerFactory getController(CreatureId id, MonsterAIFactory normalFactory) {
   if (id == "KRAKEN")
-    return ControllerFactory([=](WCreature c) {
+    return ControllerFactory([=](Creature* c) {
         return makeOwner<KrakenController>(c);
         });
   else
@@ -767,7 +767,7 @@ PCreature CreatureFactory::get(CreatureId id, TribeId tribe, MonsterAIFactory ai
     return get(getAttributes(id), tribe, getController(id, aiFactory));
 }
 
-PCreature CreatureFactory::getGhost(WCreature creature) const {
+PCreature CreatureFactory::getGhost(Creature* creature) const {
   ViewObject viewObject(creature->getViewObject().id(), ViewLayer::CREATURE, "Ghost");
   viewObject.setModifier(ViewObject::Modifier::ILLUSION);
   auto ret = makeOwner<Creature>(viewObject, creature->getTribeId(), getAttributes("LOST_SOUL"));

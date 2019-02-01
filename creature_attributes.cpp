@@ -200,7 +200,7 @@ string CreatureAttributes::getDescription() const {
   return body->getDescription() + ". " + attack;
 }
 
-optional<string> CreatureAttributes::getPetReaction(WConstCreature me) const {
+optional<string> CreatureAttributes::getPetReaction(const Creature* me) const {
   if (!petReaction)
     return none;
   if (petReaction->front() == '\"')
@@ -209,7 +209,7 @@ optional<string> CreatureAttributes::getPetReaction(WConstCreature me) const {
     return me->getName().the() + " " + *petReaction;
 }
 
-void CreatureAttributes::chatReaction(WCreature me, WCreature other) {
+void CreatureAttributes::chatReaction(Creature* me, Creature* other) {
   if (me->isEnemy(other) && chatReactionHostile) {
     if (chatReactionHostile->front() == '\"')
       other->privateMessage(*chatReactionHostile);
@@ -319,7 +319,7 @@ void CreatureAttributes::consumeEffects(const EnumMap<LastingEffect, int>& perma
     }
 }
 
-void CreatureAttributes::consume(WCreature self, CreatureAttributes& other) {
+void CreatureAttributes::consume(Creature* self, CreatureAttributes& other) {
   INFO << name.bare() << " consume " << other.name.bare();
   self->you(MsgType::CONSUME, other.name.the());
   self->addPersonalEvent(self->getName().a() + " absorbs " + other.name.a());

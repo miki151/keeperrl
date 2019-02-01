@@ -10,8 +10,8 @@ class Level;
 
 class VisibilityMap {
   public:
-  void update(WConstCreature, const vector<Position>& visibleTiles);
-  void remove(WConstCreature);
+  void update(const Creature*, const vector<Position>& visibleTiles);
+  void remove(const Creature*);
   void updateEyeball(Position);
   void removeEyeball(Position);
   void onVisibilityChanged(Position);

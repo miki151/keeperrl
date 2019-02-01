@@ -22,7 +22,7 @@
 #include "collective.h"
 #include "equipment.h"
 
-bool MinionActivityMap::canChooseRandomly(WConstCreature c, MinionActivity t) const {
+bool MinionActivityMap::canChooseRandomly(const Creature* c, MinionActivity t) const {
   PROFILE;
   switch (t) {
     case MinionActivity::BE_EXECUTED:
@@ -47,7 +47,7 @@ static bool canLock(MinionActivity t) {
   }
 }
 
-bool MinionActivityMap::isAvailable(WConstCollective col, WConstCreature c, MinionActivity t, bool ignoreTaskLock) const {
+bool MinionActivityMap::isAvailable(WConstCollective col, const Creature* c, MinionActivity t, bool ignoreTaskLock) const {
   if (locked.contains(t) && !ignoreTaskLock)
     return false;
   switch (t) {

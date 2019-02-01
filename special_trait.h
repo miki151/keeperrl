@@ -27,7 +27,7 @@ struct OneOfTraits {
 
 MAKE_VARIANT2(SpecialTrait, ExtraTraining, LastingEffect, SkillId, AttrBonus, OneOfTraits);
 
-extern void applySpecialTrait(SpecialTrait, WCreature);
+extern void applySpecialTrait(SpecialTrait, Creature*);
 extern SpecialTrait transformBeforeApplying(SpecialTrait);
 
 struct SpecialTraitInfo {

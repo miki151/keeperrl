@@ -25,8 +25,8 @@ enum class FurnitureUsageType {
 
 class FurnitureUsage {
   public:
-  static void handle(FurnitureUsageType, Position, WConstFurniture, WCreature);
-  static bool canHandle(FurnitureUsageType, WConstCreature);
+  static void handle(FurnitureUsageType, Position, WConstFurniture, Creature*);
+  static bool canHandle(FurnitureUsageType, const Creature*);
   static string getUsageQuestion(FurnitureUsageType, string furnitureName);
   static void beforeRemoved(FurnitureUsageType, Position);
 };

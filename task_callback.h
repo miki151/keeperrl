@@ -10,8 +10,8 @@ class TaskCallback : public OwnedObject<TaskCallback> {
   virtual void onDestructed(Position, FurnitureType, const DestroyAction&) {}
   virtual bool isConstructionReachable(Position) { return true; }
   virtual void onAppliedItem(Position, Item* item) {}
-  virtual void onAppliedSquare(WCreature, Position) {}
-  virtual void onCopulated(WCreature who, WCreature with) {}
+  virtual void onAppliedSquare(Creature*, Position) {}
+  virtual void onCopulated(Creature* who, Creature* with) {}
 
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int) {

@@ -33,10 +33,10 @@ class Creature;
 class Skill : public Singleton<Skill, SkillId> {
   public:
   string getName() const;
-  string getNameForCreature(WConstCreature) const;
+  string getNameForCreature(const Creature*) const;
   string getHelpText() const;
 
-  int getModifier(WConstCreature, AttrType) const;
+  int getModifier(const Creature*, AttrType) const;
 
   static void init();
 

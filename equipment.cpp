@@ -31,12 +31,12 @@ map<EquipmentSlot, string> Equipment::slotTitles = {
 SERIALIZE_DEF(Equipment, inventory, items, equipped)
 SERIALIZATION_CONSTRUCTOR_IMPL(Equipment);
 
-void Equipment::addItem(PItem item, WCreature c) {
+void Equipment::addItem(PItem item, Creature* c) {
   item->onOwned(c);
   inventory.addItem(std::move(item));
 }
 
-void Equipment::addItems(vector<PItem> items, WCreature c) {
+void Equipment::addItems(vector<PItem> items, Creature* c) {
   for (auto& item : items)
     addItem(std::move(item), c);
 }
@@ -83,34 +83,34 @@ bool Equipment::canEquip(const Item* item) const {
   return items[slot].size() < getMaxItems(slot);
 }
 
-void Equipment::equip(Item* item, EquipmentSlot slot, WCreature c) {
+void Equipment::equip(Item* item, EquipmentSlot slot, Creature* c) {
   items[slot].push_back(item);
   equipped.push_back(item);
   item->onEquip(c);
   CHECK(inventory.hasItem(item));
 }
 
-void Equipment::unequip(Item* item, WCreature c) {
+void Equipment::unequip(Item* item, Creature* c) {
   items[item->getEquipmentSlot()].removeElement(item);
   equipped.removeElement(item);
   item->onUnequip(c);
 }
 
-PItem Equipment::removeItem(Item* item, WCreature c) {
+PItem Equipment::removeItem(Item* item, Creature* c) {
   if (isEquipped(item))
     unequip(item, c);
   item->onDropped(c);
   return inventory.removeItem(item);
 }
   
-vector<PItem> Equipment::removeItems(const vector<Item*>& items, WCreature c) {
+vector<PItem> Equipment::removeItems(const vector<Item*>& items, Creature* c) {
   vector<PItem> ret;
   for (Item*& it : copyOf(items))
     ret.push_back(removeItem(it, c));
   return ret;
 }
 
-vector<PItem> Equipment::removeAllItems(WCreature c) {
+vector<PItem> Equipment::removeAllItems(Creature* c) {
   return removeItems(inventory.getItems(), c);
 }
 

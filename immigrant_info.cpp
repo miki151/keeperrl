@@ -214,14 +214,14 @@ ImmigrantInfo& ImmigrantInfo::addOneOrMoreTraits(double chance, vector<LastingEf
   return *this;
 }
 
-vector<WCreature> RecruitmentInfo::getAllRecruits(WGame game, CreatureId id) const {
-  vector<WCreature> ret;
+vector<Creature*> RecruitmentInfo::getAllRecruits(WGame game, CreatureId id) const {
+  vector<Creature*> ret;
   if (WCollective col = findEnemy(game))
-    ret = col->getCreatures().filter([&](WConstCreature c) { return c->getAttributes().getCreatureId() == id; });
+    ret = col->getCreatures().filter([&](const Creature* c) { return c->getAttributes().getCreatureId() == id; });
   return ret;
 }
 
-vector<WCreature> RecruitmentInfo::getAvailableRecruits(WGame game, CreatureId id) const {
+vector<Creature*> RecruitmentInfo::getAvailableRecruits(WGame game, CreatureId id) const {
   auto ret = getAllRecruits(game, id);
   return getPrefix(ret, max(0, (int)ret.size() - minPopulation));
 }
