@@ -290,7 +290,7 @@ const ResourceInfo& CollectiveConfig::getResourceInfo(CollectiveResourceId id) {
 }
 
 static CollectiveItemPredicate unMarkedItems() {
-  return [](WConstCollective col, WConstItem it) { return !col->isItemMarked(it); };
+  return [](WConstCollective col, const Item* it) { return !col->isItemMarked(it); };
 }
 
 
@@ -299,7 +299,7 @@ const vector<ItemFetchInfo>& CollectiveConfig::getFetchInfo() const {
     static vector<ItemFetchInfo> ret {
         {ItemIndex::CORPSE, unMarkedItems(), StorageId::CORPSES, CollectiveWarning::GRAVES},
         {ItemIndex::GOLD, unMarkedItems(), StorageId::GOLD, CollectiveWarning::CHESTS},
-        {ItemIndex::MINION_EQUIPMENT, [](WConstCollective col, WConstItem it)
+        {ItemIndex::MINION_EQUIPMENT, [](WConstCollective col, const Item* it)
             { return it->getClass() != ItemClass::GOLD && !col->isItemMarked(it);},
             StorageId::EQUIPMENT, CollectiveWarning::EQUIPMENT_STORAGE},
         {ItemIndex::WOOD, unMarkedItems(), StorageId::RESOURCE,

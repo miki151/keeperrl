@@ -81,10 +81,10 @@ class Square : public OwnedObject<Square> {
 
   void getViewIndex(ViewIndex&, WConstCreature viewer) const;
 
-  bool itemLands(vector<WItem> item, const Attack& attack) const;
+  bool itemLands(vector<Item*> item, const Attack& attack) const;
   void onItemLands(Position, vector<PItem>, const Attack&);
-  PItem removeItem(Position, WItem);
-  vector<PItem> removeItems(Position, vector<WItem>);
+  PItem removeItem(Position, Item*);
+  vector<PItem> removeItems(Position, vector<Item*>);
 
   void forbidMovementForTribe(Position, TribeId);
   void allowMovementForTribe(Position, TribeId);
@@ -108,7 +108,7 @@ class Square : public OwnedObject<Square> {
   void serialize(Archive&, const unsigned int);
 
   private:
-  WItem getTopItem() const;
+  Item* getTopItem() const;
   HeapAllocated<Inventory> SERIAL(inventory);
   WCreature SERIAL(creature) = nullptr;
   optional<StairKey> SERIAL(landingLink);

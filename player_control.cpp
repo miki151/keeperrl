@@ -426,7 +426,7 @@ bool PlayerControl::isTurnBased() {
 void PlayerControl::addConsumableItem(WCreature creature) {
   ScrollPosition scrollPos;
   while (1) {
-    WItem chosenItem = chooseEquipmentItem(creature, {}, [&](WConstItem it) {
+    Item* chosenItem = chooseEquipmentItem(creature, {}, [&](const Item* it) {
         return !collective->getMinionEquipment().isOwner(it, creature)
             && !it->canEquip()
             && collective->getMinionEquipment().needsItem(creature, it, true); }, &scrollPos);
@@ -439,8 +439,8 @@ void PlayerControl::addConsumableItem(WCreature creature) {
 }
 
 void PlayerControl::addEquipment(WCreature creature, EquipmentSlot slot) {
-  vector<WItem> currentItems = creature->getEquipment().getSlotItems(slot);
-  WItem chosenItem = chooseEquipmentItem(creature, currentItems, [&](WConstItem it) {
+  vector<Item*> currentItems = creature->getEquipment().getSlotItems(slot);
+  Item* chosenItem = chooseEquipmentItem(creature, currentItems, [&](const Item* it) {
       return !collective->getMinionEquipment().isOwner(it, creature)
       && creature->canEquipIfEmptySlot(it, nullptr) && it->getEquipmentSlot() == slot; });
   if (chosenItem) {
@@ -487,7 +487,7 @@ void PlayerControl::minionTaskAction(const TaskActionInfo& action) {
   }
 }
 
-static ItemInfo getItemInfo(const vector<WItem>& stack, bool equiped, bool pending, bool locked,
+static ItemInfo getItemInfo(const vector<Item*>& stack, bool equiped, bool pending, bool locked,
     optional<ItemInfo::Type> type = none) {
   return CONSTRUCT(ItemInfo,
     c.name = stack[0]->getShortName(nullptr, stack.size() > 1);
@@ -533,7 +533,7 @@ static ItemInfo getEmptySlotItem(EquipmentSlot slot) {
     c.pending = false;);
 }
 
-static ItemInfo getTradeItemInfo(const vector<WItem>& stack, int budget) {
+static ItemInfo getTradeItemInfo(const vector<Item*>& stack, int budget) {
   return CONSTRUCT(ItemInfo,
     c.name = stack[0]->getShortName(nullptr, stack.size() > 1);
     c.price = make_pair(ViewId::GOLD, stack[0]->getPrice());
@@ -553,12 +553,12 @@ void PlayerControl::fillEquipment(WCreature creature, PlayerInfo& info) const {
   vector<EquipmentSlot> slots;
   for (auto slot : Equipment::slotTitles)
     slots.push_back(slot.first);
-  vector<WItem> ownedItems = collective->getMinionEquipment().getItemsOwnedBy(creature);
-  vector<WItem> slotItems;
+  vector<Item*> ownedItems = collective->getMinionEquipment().getItemsOwnedBy(creature);
+  vector<Item*> slotItems;
   vector<EquipmentSlot> slotIndex;
   for (auto slot : slots) {
-    vector<WItem> items;
-    for (WItem it : ownedItems)
+    vector<Item*> items;
+    for (Item* it : ownedItems)
       if (it->canEquip() && it->getEquipmentSlot() == slot)
         items.push_back(it);
     for (int i = creature->getEquipment().getMaxItems(slot); i < items.size(); ++i)
@@ -568,7 +568,7 @@ void PlayerControl::fillEquipment(WCreature creature, PlayerInfo& info) const {
         collective->getMinionEquipment().discard(items[i]);
     append(slotItems, items);
     append(slotIndex, vector<EquipmentSlot>(items.size(), slot));
-    for (WItem item : items) {
+    for (Item* item : items) {
       ownedItems.removeElement(item);
       bool equiped = creature->getEquipment().isEquipped(item);
       bool locked = collective->getMinionEquipment().isLocked(creature, item->getUniqueId());
@@ -584,23 +584,23 @@ void PlayerControl::fillEquipment(WCreature creature, PlayerInfo& info) const {
         tutorial->getHighlights(getGame()).contains(TutorialHighlight::EQUIPMENT_SLOT_WEAPON))
       info.inventory.back().tutorialHighlight = true;
   }
-  vector<vector<WItem>> consumables = Item::stackItems(ownedItems,
-      [&](WConstItem it) { if (!creature->getEquipment().hasItem(it)) return " (pending)"; else return ""; } );
+  vector<vector<Item*>> consumables = Item::stackItems(ownedItems,
+      [&](const Item* it) { if (!creature->getEquipment().hasItem(it)) return " (pending)"; else return ""; } );
   for (auto& stack : consumables)
     info.inventory.push_back(getItemInfo(stack, false,
           !creature->getEquipment().hasItem(stack[0]), false, ItemInfo::CONSUMABLE));
-  for (WItem item : creature->getEquipment().getItems())
+  for (Item* item : creature->getEquipment().getItems())
     if (!collective->getMinionEquipment().isItemUseful(item))
       info.inventory.push_back(getItemInfo({item}, false, false, false, ItemInfo::OTHER));
 }
 
-WItem PlayerControl::chooseEquipmentItem(WCreature creature, vector<WItem> currentItems, ItemPredicate predicate,
+Item* PlayerControl::chooseEquipmentItem(WCreature creature, vector<Item*> currentItems, ItemPredicate predicate,
     ScrollPosition* scrollPos) {
-  vector<WItem> availableItems;
-  vector<WItem> usedItems;
-  vector<WItem> allItems = collective->getAllItems(predicate);
+  vector<Item*> availableItems;
+  vector<Item*> usedItems;
+  vector<Item*> allItems = collective->getAllItems(predicate);
   collective->getMinionEquipment().sortByEquipmentValue(creature, allItems);
-  for (WItem item : allItems)
+  for (Item* item : allItems)
     if (!currentItems.contains(item)) {
       auto owner = collective->getMinionEquipment().getOwner(item);
       if (owner && getCreature(*owner))
@@ -610,13 +610,13 @@ WItem PlayerControl::chooseEquipmentItem(WCreature creature, vector<WItem> curre
     }
   if (currentItems.empty() && availableItems.empty() && usedItems.empty())
     return nullptr;
-  vector<vector<WItem>> usedStacks = Item::stackItems(usedItems,
-      [&](WConstItem it) {
+  vector<vector<Item*>> usedStacks = Item::stackItems(usedItems,
+      [&](const Item* it) {
         WConstCreature c = getCreature(*collective->getMinionEquipment().getOwner(it));
         return c->getName().bare() + toString<int>(c->getBestAttack().value);});
-  vector<WItem> allStacked;
+  vector<Item*> allStacked;
   vector<ItemInfo> options;
-  for (WItem it : currentItems)
+  for (Item* it : currentItems)
     options.push_back(getItemInfo({it}, true, false, false));
   for (auto& stack : concat(Item::stackItems(availableItems), usedStacks)) {
     options.emplace_back(getItemInfo(stack, false, false, false));
@@ -814,18 +814,18 @@ void PlayerControl::handleTrading(WCollective ally) {
     return;
   }
   while (1) {
-    vector<WItem> available = ally->getTradeItems();
-    vector<vector<WItem>> items = Item::stackItems(available);
+    vector<Item*> available = ally->getTradeItems();
+    vector<vector<Item*>> items = Item::stackItems(available);
     if (items.empty())
       break;
     int budget = collective->numResource(ResourceId::GOLD);
     vector<ItemInfo> itemInfo = items.transform(
-        [budget] (const vector<WItem>& it) { return getTradeItemInfo(it, budget); });
+        [budget] (const vector<Item*>& it) { return getTradeItemInfo(it, budget); });
     auto index = getView()->chooseTradeItem("Trade with " + ally->getName()->full,
         {ViewId::GOLD, collective->numResource(ResourceId::GOLD)}, itemInfo, &scrollPos);
     if (!index)
       break;
-    for (WItem it : available)
+    for (Item* it : available)
       if (it->getUniqueId() == *index && it->getPrice() <= budget) {
         collective->takeResource({ResourceId::GOLD, it->getPrice()});
         Random.choose(storage).dropItem(ally->buyItem(it));
@@ -834,7 +834,7 @@ void PlayerControl::handleTrading(WCollective ally) {
   }
 }
 
-static ItemInfo getPillageItemInfo(const vector<WItem>& stack, bool noStorage) {
+static ItemInfo getPillageItemInfo(const vector<Item*>& stack, bool noStorage) {
   return CONSTRUCT(ItemInfo,
     c.name = stack[0]->getShortName(nullptr, stack.size() > 1);
     c.fullName = stack[0]->getNameAndModifiers(false);
@@ -848,7 +848,7 @@ static ItemInfo getPillageItemInfo(const vector<WItem>& stack, bool noStorage) {
   );
 }
 
-vector<PItem> PlayerControl::retrievePillageItems(WCollective col, vector<WItem> items) {
+vector<PItem> PlayerControl::retrievePillageItems(WCollective col, vector<Item*> items) {
   vector<PItem> ret;
   EntitySet<Item> index(items);
   for (auto pos : col->getTerritory().getAll()) {
@@ -864,8 +864,8 @@ vector<PItem> PlayerControl::retrievePillageItems(WCollective col, vector<WItem>
   return ret;
 }
 
-vector<WItem> PlayerControl::getPillagedItems(WCollective col) const {
-  vector<WItem> ret;
+vector<Item*> PlayerControl::getPillagedItems(WCollective col) const {
+  vector<Item*> ret;
   for (Position v : col->getTerritory().getAll())
     if (!collective->getTerritory().contains(v))
       append(ret, v.getItems());
@@ -883,7 +883,7 @@ void PlayerControl::handlePillage(WCollective col) {
   ScrollPosition scrollPos;
   while (1) {
     struct PillageOption {
-      vector<WItem> items;
+      vector<Item*> items;
       PositionSet storage;
     };
     vector<PillageOption> options;

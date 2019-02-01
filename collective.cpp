@@ -193,7 +193,7 @@ void Collective::addCreature(WCreature c, EnumSet<MinionTrait> traits) {
   for (MinionTrait t : traits)
     byTrait[t].push_back(c);
   updateCreatureStatus(c);
-  for (WItem item : c->getEquipment().getItems())
+  for (Item* item : c->getEquipment().getItems())
     CHECK(minionEquipment->tryToOwn(c, item));
   for (auto minion : getCreatures()) {
     c->removePrivateEnemy(minion);
@@ -223,7 +223,7 @@ void Collective::banishCreature(WCreature c) {
   removeCreature(c);
   vector<Position> exitTiles = territory->getExtended(10, 20);
   vector<PTask> tasks;
-  vector<WItem> items = c->getEquipment().getItems();
+  vector<Item*> items = c->getEquipment().getItems();
   if (!items.empty())
     tasks.push_back(Task::dropItemsAnywhere(items));
   if (!exitTiles.empty())
@@ -256,16 +256,16 @@ bool Collective::hasTradeItems() const {
 
 //kocham Cię
 
-vector<WItem> Collective::getTradeItems() const {
-  vector<WItem> ret;
+vector<Item*> Collective::getTradeItems() const {
+  vector<Item*> ret;
   for (Position pos : territory->getAll())
     append(ret, pos.getItems(ItemIndex::FOR_SALE));
   return ret;
 }
 
-PItem Collective::buyItem(WItem item) {
+PItem Collective::buyItem(Item* item) {
   for (Position pos : territory->getAll())
-    for (WItem it : pos.getItems(ItemIndex::FOR_SALE))
+    for (Item* it : pos.getItems(ItemIndex::FOR_SALE))
       if (it == item) {
         PItem ret = pos.removeItem(it);
         ret->setShopkeeper(nullptr);
@@ -736,8 +736,8 @@ void Collective::takeResource(const CostInfo& cost) {
   if (auto itemIndex = config->getResourceInfo(cost.id).itemIndex)
     if (auto storage = config->getResourceInfo(cost.id).storageId)
       for (auto& pos : getStoragePositions(*storage)) {
-        vector<WItem> goldHere = pos.getItems(*itemIndex);
-        for (WItem it : goldHere) {
+        vector<Item*> goldHere = pos.getItems(*itemIndex);
+        for (Item* it : goldHere) {
           pos.removeItem(it);
           if (--num == 0)
             return;
@@ -760,9 +760,9 @@ void Collective::returnResource(const CostInfo& amount) {
   credit[amount.id] += amount.value;
 }
 
-vector<pair<WItem, Position>> Collective::getTrapItems(const vector<Position>& squares) const {
+vector<pair<Item*, Position>> Collective::getTrapItems(const vector<Position>& squares) const {
   PROFILE;
-  vector<pair<WItem, Position>> ret;
+  vector<pair<Item*, Position>> ret;
   for (Position pos : squares)
     for (auto it : pos.getItems(ItemIndex::TRAP))
       if (!isItemMarked(it))
@@ -776,8 +776,8 @@ bool Collective::usesEquipment(WConstCreature c) const {
     && !hasTrait(c, MinionTrait::PRISONER);
 }
 
-vector<WItem> Collective::getAllItems(bool includeMinions) const {
-  vector<WItem> allItems;
+vector<Item*> Collective::getAllItems(bool includeMinions) const {
+  vector<Item*> allItems;
   for (Position v : territory->getAll())
     append(allItems, v.getItems());
   if (includeMinions)
@@ -786,8 +786,8 @@ vector<WItem> Collective::getAllItems(bool includeMinions) const {
   return allItems;
 }
 
-vector<WItem> Collective::getAllItems(ItemPredicate predicate, bool includeMinions) const {
-  vector<WItem> allItems;
+vector<Item*> Collective::getAllItems(ItemPredicate predicate, bool includeMinions) const {
+  vector<Item*> allItems;
   for (Position v : territory->getAll())
     append(allItems, v.getItems().filter(predicate));
   if (includeMinions)
@@ -796,8 +796,8 @@ vector<WItem> Collective::getAllItems(ItemPredicate predicate, bool includeMinio
   return allItems;
 }
 
-vector<WItem> Collective::getAllItems(ItemIndex index, bool includeMinions) const {
-  vector<WItem> allItems;
+vector<Item*> Collective::getAllItems(ItemIndex index, bool includeMinions) const {
+  vector<Item*> allItems;
   for (Position v : territory->getAll())
     append(allItems, v.getItems(index));
   if (includeMinions)
@@ -816,7 +816,7 @@ int Collective::getNumItems(ItemIndex index, bool includeMinions) const {
   return ret;
 }
 
-const PositionSet& Collective::getStorageForPillagedItem(WConstItem item) const {
+const PositionSet& Collective::getStorageForPillagedItem(const Item* item) const {
   for (auto& info : config->getFetchInfo())
     if (hasIndex(info.index, item))
       return getStoragePositions(info.storageId);
@@ -839,11 +839,11 @@ bool Collective::isKnownVillainLocation(WConstCollective col) const {
   return knownVillainLocations.contains(col);
 }
 
-bool Collective::isItemMarked(WConstItem it) const {
+bool Collective::isItemMarked(const Item* it) const {
   return !!markedItems.getOrElse(it, nullptr);
 }
 
-void Collective::markItem(WConstItem it, WConstTask task) {
+void Collective::markItem(const Item* it, WConstTask task) {
   markedItems.set(it, task);
 }
 
@@ -940,7 +940,7 @@ void Collective::addTrap(Position pos, TrapType type) {
   updateConstructions();
 }
 
-void Collective::onAppliedItem(Position pos, WItem item) {
+void Collective::onAppliedItem(Position pos, Item* item) {
   CHECK(item->getTrapType());
   if (auto trap = constructions->getTrap(pos))
     trap->setArmed();
@@ -987,14 +987,14 @@ void Collective::onDestructed(Position pos, FurnitureType type, const DestroyAct
 
 void Collective::handleTrapPlacementAndProduction() {
   PROFILE;
-  EnumMap<TrapType, vector<pair<WItem, Position>>> trapItems;
+  EnumMap<TrapType, vector<pair<Item*, Position>>> trapItems;
   for (auto& elem : getTrapItems(territory->getAll()))
     trapItems[*elem.first->getTrapType()].push_back(elem);
   EnumMap<TrapType, int> missingTraps;
   for (auto trapPos : constructions->getAllTraps()) {
     auto& trap = *constructions->getTrap(trapPos);
     if (!trap.isArmed() && !trap.isMarked() && !isDelayed(trapPos)) {
-      vector<pair<WItem, Position>>& items = trapItems[trap.getType()];
+      vector<pair<Item*, Position>>& items = trapItems[trap.getType()];
       if (!items.empty()) {
         Position pos = items.back().second;
         auto item = items.back().first;
@@ -1008,10 +1008,10 @@ void Collective::handleTrapPlacementAndProduction() {
     }
   }
   for (TrapType type : ENUM_ALL(TrapType))
-    scheduleAutoProduction([type](WConstItem it) { return it->getTrapType() == type;}, missingTraps[type]);
+    scheduleAutoProduction([type](const Item* it) { return it->getTrapType() == type;}, missingTraps[type]);
 }
 
-void Collective::scheduleAutoProduction(function<bool(WConstItem)> itemPredicate, int count) {
+void Collective::scheduleAutoProduction(function<bool(const Item*)> itemPredicate, int count) {
   if (count > 0)
     for (auto workshopType : ENUM_ALL(WorkshopType))
       for (auto& item : workshops->get(workshopType).getQueued())
@@ -1036,7 +1036,7 @@ void Collective::updateResourceProduction() {
     if (auto index = config->getResourceInfo(resourceId).itemIndex) {
       int needed = getDebt(resourceId) - getNumItems(*index);
       if (needed > 0)
-        scheduleAutoProduction([resourceId] (WConstItem it) { return it->getResourceId() == resourceId; }, needed);
+        scheduleAutoProduction([resourceId] (const Item* it) { return it->getResourceId() == resourceId; }, needed);
   }
 }
 
@@ -1122,15 +1122,15 @@ void Collective::fetchItems(Position pos, const ItemFetchInfo& elem) {
   const auto& destination = getStoragePositions(elem.storageId);
   if (destination.count(pos))
     return;
-  vector<WItem> equipment = pos.getItems(elem.index).filter(
-      [this, &elem] (WConstItem item) { return elem.predicate(this, item); });
+  vector<Item*> equipment = pos.getItems(elem.index).filter(
+      [this, &elem] (const Item* item) { return elem.predicate(this, item); });
   if (!equipment.empty()) {
     if (!destination.empty()) {
       warnings->setWarning(elem.warning, false);
       auto pickUpAndDrop = Task::pickUpAndDrop(pos, equipment, elem.storageId, this);
       auto task = taskMap->addTask(std::move(pickUpAndDrop.pickUp), pos, MinionActivity::HAULING);
       taskMap->addTask(std::move(pickUpAndDrop.drop), chooseClosest(pos, destination), MinionActivity::HAULING);
-      for (WItem it : equipment)
+      for (Item* it : equipment)
         markItem(it, task);
     } else
       warnings->setWarning(elem.warning, true);

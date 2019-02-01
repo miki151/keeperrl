@@ -47,7 +47,7 @@ REGISTER_TYPE(ListenerTemplate<VillageControl>)
 VillageControl::VillageControl(Private, WCollective col, optional<VillageBehaviour> v) : CollectiveControl(col),
     villain(v) {
   for (Position v : col->getTerritory().getAll())
-    for (WItem it : v.getItems())
+    for (Item* it : v.getItems())
       myItems.insert(it);
 }
 
@@ -87,7 +87,7 @@ void VillageControl::onEvent(const GameEvent& event) {
           if (isEnemy(info.creature) && villain)
             if (villain->triggers.contains(AttackTriggerId::STOLEN_ITEMS)) {
               bool wasTheft = false;
-              for (WConstItem it : info.items)
+              for (const Item* it : info.items)
                 if (myItems.contains(it)) {
                   wasTheft = true;
                   ++stolenItemCount;

@@ -20,4 +20,4 @@ RICH_ENUM(ItemIndex,
 );
 
 extern const char* getName(ItemIndex, int count = 1);
-extern bool hasIndex(ItemIndex, WConstItem);
+extern bool hasIndex(ItemIndex, const Item*);

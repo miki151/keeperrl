@@ -401,27 +401,27 @@ void Position::getViewIndex(ViewIndex& index, WConstCreature viewer) const {
   }
 }
 
-const vector<WItem>& Position::getItems() const {
+const vector<Item*>& Position::getItems() const {
   PROFILE;
   if (isValid())
     return getSquare()->getInventory().getItems();
   else {
-    static vector<WItem> empty;
+    static vector<Item*> empty;
     return empty;
   }
 }
 
-const vector<WItem>& Position::getItems(ItemIndex index) const {
+const vector<Item*>& Position::getItems(ItemIndex index) const {
   PROFILE;
   if (isValid())
     return getSquare()->getInventory().getItems(index);
   else {
-    static vector<WItem> empty;
+    static vector<Item*> empty;
     return empty;
   }
 }
 
-PItem Position::removeItem(WItem it) const {
+PItem Position::removeItem(Item* it) const {
   CHECK(isValid());
   return modSquare()->removeItem(*this, it);
 }
@@ -444,7 +444,7 @@ const Inventory& Position::getInventory() const {
     return getSquare()->getInventory();
 }
 
-vector<PItem> Position::removeItems(vector<WItem> it) {
+vector<PItem> Position::removeItems(vector<Item*> it) {
   PROFILE;
   CHECK(isValid());
   return modSquare()->removeItems(*this, it);
@@ -675,7 +675,7 @@ void Position::fireDamage(double amount) {
     furniture->fireDamage(*this, amount);
   if (WCreature creature = getCreature())
     creature->affectByFire(amount);
-  for (WItem it : getItems())
+  for (Item* it : getItems())
     it->fireDamage(amount, *this);
 }
 

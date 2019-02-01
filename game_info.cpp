@@ -46,7 +46,7 @@ vector<PlayerInfo::SkillInfo> getSkillNames(WConstCreature c) {
   return ret;
 }
 
-vector<ItemAction> getItemActions(WConstCreature c, const vector<WItem>& item) {
+vector<ItemAction> getItemActions(WConstCreature c, const vector<Item*>& item) {
   PROFILE;
   vector<ItemAction> actions;
   if (c->equip(item[0]))
@@ -74,7 +74,7 @@ vector<ItemAction> getItemActions(WConstCreature c, const vector<WItem>& item) {
   return actions;
 }
 
-ItemInfo ItemInfo::get(WConstCreature creature, const vector<WItem>& stack) {
+ItemInfo ItemInfo::get(WConstCreature creature, const vector<Item*>& stack) {
   PROFILE;
   return CONSTRUCT(ItemInfo,
     c.name = stack[0]->getShortName(creature, stack.size() > 1);
@@ -114,9 +114,9 @@ static vector<ItemInfo> fillIntrinsicAttacks(WConstCreature c) {
   return ret;
 }
 
-static vector<ItemInfo> getItemInfos(WConstCreature c, const vector<WItem>& items) {
-  map<string, vector<WItem> > stacks = groupBy<WItem, string>(items,
-      [&] (WItem const& item) {
+static vector<ItemInfo> getItemInfos(WConstCreature c, const vector<Item*>& items) {
+  map<string, vector<Item*> > stacks = groupBy<Item*, string>(items,
+      [&] (Item* const& item) {
           return item->getNameAndModifiers(false, c) + (c->getEquipment().isEquipped(item) ? "(e)" : ""); });
   vector<ItemInfo> ret;
   for (auto elem : stacks)
@@ -154,8 +154,8 @@ PlayerInfo::PlayerInfo(WConstCreature c) : bestAttack(c) {
         c->isReady(spell) ? none : optional<TimeInterval>(c->getSpellDelay(spell))});
   }
   carryLimit = c->getBody().getCarryLimit();
-  map<ItemClass, vector<WItem> > typeGroups = groupBy<WItem, ItemClass>(
-      c->getEquipment().getItems(), [](WItem const& item) { return item->getClass();});
+  map<ItemClass, vector<Item*> > typeGroups = groupBy<Item*, ItemClass>(
+      c->getEquipment().getItems(), [](Item* const& item) { return item->getClass();});
   debt = c->getDebt().getTotal();
   for (auto elem : ENUM_ALL(ItemClass))
     if (typeGroups[elem].size() > 0)

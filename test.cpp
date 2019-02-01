@@ -738,7 +738,7 @@ class Test {
     PItem boots = ItemType(ItemType::LeatherBoots{}).get();
     PItem gloves = ItemType(ItemType::LeatherGloves{}).get();
     PItem helmet = ItemType(ItemType::LeatherHelm{}).get();
-    vector<WItem> items = {sword.get(), boots.get(), gloves.get(), helmet.get()};
+    vector<Item*> items = {sword.get(), boots.get(), gloves.get(), helmet.get()};
     PCreature human = CreatureFactory::getHumanForTests();
     MinionEquipment equipment;
     for (int i : Range(30))

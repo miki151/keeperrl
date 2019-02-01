@@ -55,8 +55,8 @@ class Behaviour {
   Behaviour(WCreature);
   virtual MoveInfo getMove() { return NoMove; }
   virtual void onAttacked(WConstCreature attacker) {}
-  virtual double itemValue(WConstItem) { return 0; }
-  WItem getBestWeapon();
+  virtual double itemValue(const Item*) { return 0; }
+  Item* getBestWeapon();
   WCreature getClosestCreature();
   MoveInfo tryEffect(Effect, TimeInterval maxTurns = 1_visible);
   MoveInfo tryEffect(DirEffectType, Position target);
@@ -89,10 +89,10 @@ WCreature Behaviour::getClosestCreature() {
   return result;
 }
 
-WItem Behaviour::getBestWeapon() {
-  WItem best = nullptr;
+Item* Behaviour::getBestWeapon() {
+  Item* best = nullptr;
   int damage = -1;
-  for (WItem item : creature->getEquipment().getItems().filter(Item::classPredicate(ItemClass::WEAPON)))
+  for (Item* item : creature->getEquipment().getItems().filter(Item::classPredicate(ItemClass::WEAPON)))
     if (item->getModifier(AttrType::DAMAGE) > damage) {
       damage = item->getModifier(AttrType::DAMAGE);
       best = item;
@@ -110,7 +110,7 @@ MoveInfo Behaviour::tryEffect(Effect type, TimeInterval maxTurns) {
         return { 1, action };
   }
   auto items = creature->getEquipment().getItems().filter(Item::effectPredicate(type));
-  for (WItem item : items)
+  for (Item* item : items)
     if (item->getApplyTime() <= maxTurns)
       if (auto action = creature->applyItem(item))
         return MoveInfo(1, action);
@@ -130,7 +130,7 @@ class Heal : public Behaviour {
   public:
   Heal(WCreature c) : Behaviour(c) {}
 
-  virtual double itemValue(WConstItem item) {
+  virtual double itemValue(const Item* item) {
     if (auto& effect = item->getEffect())
       if (effect->isType<Effect::Heal>())
         return 0.5;
@@ -180,7 +180,7 @@ class Heal : public Behaviour {
       if (WCreature c = pos.getCreature())
         if (creature->isFriend(c) && c->getBody().canHeal())
           if (c->getEquipment().getItems(ItemIndex::HEALING_ITEM).empty())
-            for (WItem item : creature->getEquipment().getItems(ItemIndex::HEALING_ITEM))
+            for (Item* item : creature->getEquipment().getItems(ItemIndex::HEALING_ITEM))
               if (auto action = creature->give(c, {item}))
                 return MoveInfo(0.5, action);
     return NoMove;
@@ -310,7 +310,7 @@ class GoldLust : public Behaviour {
   public:
   GoldLust(WCreature c) : Behaviour(c) {}
 
-  virtual double itemValue(WConstItem item) {
+  virtual double itemValue(const Item* item) {
     if (item->getClass() == ItemClass::GOLD)
       return 1;
     else
@@ -389,7 +389,7 @@ class Fighter : public Behaviour {
       return NoMove;
   }
 
-  virtual double itemValue(WConstItem item) override {
+  virtual double itemValue(const Item* item) override {
     if (auto& effect = item->getEffect())
       if (contains<Effect>({
             Effect::Lasting{LastingEffect::INVISIBLE},
@@ -405,7 +405,7 @@ class Fighter : public Behaviour {
             *effect))
       return 1;
     int damage = item->getModifier(AttrType::DAMAGE);
-    WItem best = getBestWeapon();
+    Item* best = getBestWeapon();
     if (best && best != item && best->getModifier(AttrType::DAMAGE) >= damage)
         return 0;
     return (double)damage / 50;
@@ -420,7 +420,7 @@ class Fighter : public Behaviour {
     return false;
   }
 
-  int getThrowValue(WItem it) {
+  int getThrowValue(Item* it) {
     if (auto& effect = it->getEffect())
       if (contains<Effect>({
             Effect::Lasting{LastingEffect::POISON},
@@ -437,9 +437,9 @@ class Fighter : public Behaviour {
         .transform([&](Vec2 v) { return Position(v, target.getLevel()); });
     if (checkFriendlyFire(trajectory))
       return NoMove;
-    WItem best = nullptr;
+    Item* best = nullptr;
     int damage = 0;
-    for (WItem item : creature->getEquipment().getItems())
+    for (Item* item : creature->getEquipment().getItems())
       if (!creature->getEquipment().isEquipped(item) && getThrowValue(item) > damage &&
           creature->getThrowDistance(item) >= trajectory.back().dist8(creature->getPosition())) {
         damage = getThrowValue(item);
@@ -515,7 +515,7 @@ class Fighter : public Behaviour {
 
   MoveInfo considerEquippingWeapon(WCreature other, int distance) {
     if (creature->getBody().isHumanoid() && !creature->getFirstWeapon()) {
-      if (WItem weapon = getBestWeapon())
+      if (Item* weapon = getBestWeapon())
         if (auto action = creature->equip(weapon))
           return {3.0 / (2.0 + distance), action.prepend([=](WCreature) {
             addCombatIntent(other, false);
@@ -914,8 +914,8 @@ class Thief : public Behaviour {
     for (Position pos : creature->getPosition().neighbors8(Random)) {
       WConstCreature other = pos.getCreature();
       if (other && !robbed.contains(other)) {
-        vector<WItem> allGold;
-        for (WItem it : other->getEquipment().getItems())
+        vector<Item*> allGold;
+        for (Item* it : other->getEquipment().getItems())
           if (it->getClass() == ItemClass::GOLD)
             allGold.push_back(it);
         if (allGold.size() > 0)
@@ -1000,13 +1000,13 @@ class ByCollective : public Behaviour {
     if (!collective->hasTrait(creature, MinionTrait::NO_AUTO_EQUIPMENT) && Random.roll(40))
       minionEquipment.autoAssign(creature, collective->getAllItems(ItemIndex::MINION_EQUIPMENT, false));
     vector<PTask> tasks;
-    for (WItem it : creature->getEquipment().getItems())
+    for (Item* it : creature->getEquipment().getItems())
       if (!creature->getEquipment().isEquipped(it) && creature->getEquipment().canEquip(it))
         tasks.push_back(Task::equipItem(it));
     {
       PROFILE_BLOCK("tasks assignment");
       for (Position v : collective->getZones().getPositions(ZoneId::STORAGE_EQUIPMENT)) {
-        vector<WItem> consumables;
+        vector<Item*> consumables;
         for (auto item : v.getItems(ItemIndex::MINION_EQUIPMENT))
           if (minionEquipment.isOwner(item, creature)) {
             if (item->canEquip())
@@ -1263,7 +1263,7 @@ class SplashMonsters : public Behaviour {
 
 class SplashItems {
   public:
-  void addItems(Vec2 pos, vector<WItem> v) {
+  void addItems(Vec2 pos, vector<Item*> v) {
     items[pos] = v;
   }
 
@@ -1279,12 +1279,12 @@ class SplashItems {
     if (items.empty())
       return nullptr;
     Vec2 pos = chooseClosest(position);
-    vector<WItem> it = {Random.choose(items[pos])};
+    vector<Item*> it = {Random.choose(items[pos])};
     if (it[0]->getClass() == ItemClass::GOLD)
-      for (WItem it2 : copyOf(items[pos]))
+      for (Item* it2 : copyOf(items[pos]))
         if (it[0] != it2 && it2->getClass() == it[0]->getClass() && Random.roll(10))
           it.push_back(it2);
-    for (WItem it2 : it)
+    for (Item* it2 : it)
       items[pos].removeElement(it2);
     if (items[pos].empty())
       items.erase(pos);
@@ -1319,7 +1319,7 @@ class SplashItems {
   }
 
   private:
-  map<Vec2, vector<WItem>> items;
+  map<Vec2, vector<Item*>> items;
   bool initialized = false;
   vector<Vec2> targetsGold;
   vector<Vec2> targetsCorpse;
@@ -1333,8 +1333,8 @@ class SplashImps : public Behaviour {
 
   void initializeSplashItems() {
     for (Vec2 v : Level::getSplashVisibleBounds()) {
-      vector<WItem> inv = Position(v, creature->getLevel()).getItems().filter(
-          [](WConstItem it) { return it->getClass() == ItemClass::GOLD || it->getClass() == ItemClass::CORPSE;});
+      vector<Item*> inv = Position(v, creature->getLevel()).getItems().filter(
+          [](const Item* it) { return it->getClass() == ItemClass::GOLD || it->getClass() == ItemClass::CORPSE;});
       if (!inv.empty())
         splashItems.addItems(v, inv);
     }
@@ -1451,15 +1451,15 @@ void MonsterAI::makeMove() {
     }
     if (pickItems)
       for (auto& stack : Item::stackItems(creature->getPickUpOptions())) {
-        WItem item = stack[0];
+        Item* item = stack[0];
         if (!item->isOrWasForSale() && creature->pickUp(stack))
           moves.push_back(MoveInfo({ behaviours[i]->itemValue(item) * weights[i], creature->pickUp(stack)}));
       }
     if (skipNextMoves)
       break;
   }
-  /*vector<WItem> inventory = creature->getEquipment().getItems([this](WItem item) { return !creature->getEquipment().isEquiped(item);});
-  for (WItem item : inventory) {
+  /*vector<Item*> inventory = creature->getEquipment().getItems([this](Item* item) { return !creature->getEquipment().isEquiped(item);});
+  for (Item* item : inventory) {
     bool useless = true;
     for (PBehaviour& behaviour : behaviours)
       if (behaviour->itemValue(item) > 0)

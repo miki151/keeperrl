@@ -118,8 +118,8 @@ class Body {
   void updateViewObject(ViewObject&) const;
   int getCarryLimit() const;
   void bleed(WCreature, double amount);
-  WItem chooseRandomWeapon(WItem realWeapon) const;
-  WItem chooseFirstWeapon() const;
+  Item* chooseRandomWeapon(Item* realWeapon) const;
+  Item* chooseFirstWeapon() const;
   const EnumMap<BodyPart, optional<IntrinsicAttack>>& getIntrinsicAttacks() const;
   EnumMap<BodyPart, optional<IntrinsicAttack>>& getIntrinsicAttacks();
 

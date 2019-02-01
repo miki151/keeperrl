@@ -59,15 +59,15 @@ class Task : public UniqueEntity<Task>, public OwnedObject<Task> {
 
   static PTask construction(WTaskCallback, Position, FurnitureType);
   static PTask destruction(WTaskCallback, Position, WConstFurniture, DestroyAction, WPositionMatching);
-  static PTask bringItem(Position position, vector<WItem>, const PositionSet& target);
-  static PTask applyItem(WTaskCallback, Position target, WItem);
+  static PTask bringItem(Position position, vector<Item*>, const PositionSet& target);
+  static PTask applyItem(WTaskCallback, Position target, Item*);
   enum SearchType { LAZY, RANDOM_CLOSE };
   enum ActionType { APPLY, NONE };
   static PTask applySquare(WTaskCallback, vector<Position>, SearchType, ActionType);
   static PTask archeryRange(WTaskCallback, vector<Position>);
-  static PTask pickAndEquipItem(Position, WItem item);
-  static PTask equipItem(WItem);
-  static PTask pickUpItem(Position, vector<WItem>, optional<StorageId> = none);
+  static PTask pickAndEquipItem(Position, Item* item);
+  static PTask equipItem(Item*);
+  static PTask pickUpItem(Position, vector<Item*>, optional<StorageId> = none);
   static PTask kill(WTaskCallback, WCreature);
   static PTask torture(WTaskCallback, WCreature);
   static PTask sacrifice(WTaskCallback, WCreature);
@@ -81,7 +81,7 @@ class Task : public UniqueEntity<Task>, public OwnedObject<Task> {
       Range attackSize, int numAttacks);
   static PTask killFighters(WCollective, int numFighters);
   static PTask stealFrom(WCollective);
-  static PTask consumeItem(WTaskCallback, vector<WItem> items);
+  static PTask consumeItem(WTaskCallback, vector<Item*> items);
   static PTask copulate(WTaskCallback, WCreature target, int numTurns);
   static PTask consume(WCreature target);
   static PTask eat(vector<Position> hatcherySquares);
@@ -95,14 +95,14 @@ class Task : public UniqueEntity<Task>, public OwnedObject<Task> {
   static PTask transferTo(WModel);
   static PTask goToAndWait(Position, TimeInterval waitTime);
   static PTask whipping(Position, WCreature whipped);
-  static PTask dropItemsAnywhere(vector<WItem>);
-  static PTask dropItems(vector<WItem>, vector<Position>);
-  static PTask dropItems(vector<WItem>, StorageId, WCollective);
+  static PTask dropItemsAnywhere(vector<Item*>);
+  static PTask dropItems(vector<Item*>, vector<Position>);
+  static PTask dropItems(vector<Item*>, StorageId, WCollective);
   struct PickUpAndDrop {
     PTask pickUp;
     PTask drop;
   };
-  static PickUpAndDrop pickUpAndDrop(Position origin, vector<WItem>, StorageId, WCollective);
+  static PickUpAndDrop pickUpAndDrop(Position origin, vector<Item*>, StorageId, WCollective);
   static PTask spider(Position origin, const vector<Position>& posClose);
   static PTask withTeam(WCollective, TeamId, PTask);
 

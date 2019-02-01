@@ -154,7 +154,7 @@ vector<Position> MinionActivities::getAllPositions(WConstCollective collective, 
 static PTask getDropItemsTask(WCollective collective, WConstCreature creature) {
   auto& config = collective->getConfig();
   for (const ItemFetchInfo& elem : config.getFetchInfo()) {
-    vector<WItem> items = creature->getEquipment().getItems(elem.index).filter([&elem, &collective, &creature](WConstItem item) {
+    vector<Item*> items = creature->getEquipment().getItems(elem.index).filter([&elem, &collective, &creature](const Item* item) {
         return elem.predicate(collective, item) && !collective->getMinionEquipment().isOwner(item, creature); });
     if (!items.empty() && !collective->getStoragePositions(elem.storageId).empty())
       return Task::dropItems(items, elem.storageId, collective);

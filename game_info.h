@@ -38,7 +38,7 @@ struct CreatureInfo {
 
 
 struct ItemInfo {
-  static ItemInfo get(WConstCreature, const vector<WItem>&);
+  static ItemInfo get(WConstCreature, const vector<Item*>&);
   string HASH(name);
   string HASH(fullName);
   string HASH(description);

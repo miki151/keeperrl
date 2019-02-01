@@ -59,34 +59,34 @@ PItem Item::getCopy() const {
 }
 
 ItemPredicate Item::effectPredicate(Effect type) {
-  return [type](WConstItem item) { return item->getEffect() == type; };
+  return [type](const Item* item) { return item->getEffect() == type; };
 }
 
 ItemPredicate Item::classPredicate(ItemClass cl) {
-  return [cl](WConstItem item) { return item->getClass() == cl; };
+  return [cl](const Item* item) { return item->getClass() == cl; };
 }
 
 ItemPredicate Item::equipmentSlotPredicate(EquipmentSlot slot) {
-  return [slot](WConstItem item) { return item->canEquip() && item->getEquipmentSlot() == slot; };
+  return [slot](const Item* item) { return item->canEquip() && item->getEquipmentSlot() == slot; };
 }
 
 ItemPredicate Item::classPredicate(vector<ItemClass> cl) {
-  return [cl](WConstItem item) { return cl.contains(item->getClass()); };
+  return [cl](const Item* item) { return cl.contains(item->getClass()); };
 }
 
 ItemPredicate Item::namePredicate(const string& name) {
-  return [name](WConstItem item) { return item->getName() == name; };
+  return [name](const Item* item) { return item->getName() == name; };
 }
 
 ItemPredicate Item::isRangedWeaponPredicate() {
- return [](WConstItem it) { return it->canEquip() && it->getEquipmentSlot() == EquipmentSlot::RANGED_WEAPON;};
+ return [](const Item* it) { return it->canEquip() && it->getEquipmentSlot() == EquipmentSlot::RANGED_WEAPON;};
 }
 
-vector<vector<WItem>> Item::stackItems(vector<WItem> items, function<string(WConstItem)> suffix) {
-  map<string, vector<WItem>> stacks = groupBy<WItem, string>(items, [suffix](WConstItem item) {
+vector<vector<Item*>> Item::stackItems(vector<Item*> items, function<string(const Item*)> suffix) {
+  map<string, vector<Item*>> stacks = groupBy<Item*, string>(items, [suffix](const Item* item) {
         return item->getNameAndModifiers() + suffix(item);
       });
-  vector<vector<WItem>> ret;
+  vector<vector<Item*>> ret;
   for (auto& elem : stacks)
     ret.push_back(elem.second);
   return ret;

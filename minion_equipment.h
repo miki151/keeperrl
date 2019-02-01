@@ -25,32 +25,32 @@ class Item;
 class MinionEquipment {
   public:
 
-  static bool isItemUseful(WConstItem);
-  bool needsItem(WConstCreature c, WConstItem it, bool noLimit = false) const;
-  optional<UniqueEntity<Creature>::Id> getOwner(WConstItem) const;
-  bool isOwner(WConstItem, WConstCreature) const;
-  bool tryToOwn(WConstCreature, WItem);
-  void discard(WConstItem);
+  static bool isItemUseful(const Item*);
+  bool needsItem(WConstCreature c, const Item* it, bool noLimit = false) const;
+  optional<UniqueEntity<Creature>::Id> getOwner(const Item*) const;
+  bool isOwner(const Item*, WConstCreature) const;
+  bool tryToOwn(WConstCreature, Item*);
+  void discard(const Item*);
   void discard(UniqueEntity<Item>::Id);
   void updateOwners(const vector<WCreature>&);
-  vector<WItem> getItemsOwnedBy(WConstCreature, ItemPredicate = nullptr) const;
+  vector<Item*> getItemsOwnedBy(WConstCreature, ItemPredicate = nullptr) const;
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);
 
   void setLocked(WConstCreature, UniqueEntity<Item>::Id, bool locked);
   bool isLocked(WConstCreature, UniqueEntity<Item>::Id) const;
-  void sortByEquipmentValue(WConstCreature, vector<WItem>& items) const;
-  void autoAssign(WConstCreature, vector<WItem> possibleItems);
-  void updateItems(const vector<WItem>& items);
+  void sortByEquipmentValue(WConstCreature, vector<Item*>& items) const;
+  void autoAssign(WConstCreature, vector<Item*> possibleItems);
+  void updateItems(const vector<Item*>& items);
 
   private:
   enum EquipmentType { ARMOR, HEALING, COMBAT_ITEM, TORCH };
 
-  static optional<EquipmentType> getEquipmentType(WConstItem it);
+  static optional<EquipmentType> getEquipmentType(const Item* it);
   optional<int> getEquipmentLimit(EquipmentType type) const;
-  WItem getWorstItem(WConstCreature, vector<WItem>) const;
-  int getItemValue(WConstCreature, WConstItem) const;
+  Item* getWorstItem(WConstCreature, vector<Item*>) const;
+  int getItemValue(WConstCreature, const Item*) const;
 
   EntityMap<Item, UniqueEntity<Creature>::Id> SERIAL(owners);
   EntityMap<Creature, vector<WeakPointer<Item>>> SERIAL(myItems);

@@ -33,19 +33,19 @@ class Equipment {
   public:
   void addItem(PItem, WCreature);
   void addItems(vector<PItem>, WCreature);
-  vector<WItem> getSlotItems(EquipmentSlot slot) const;
-  bool hasItem(WConstItem) const;
-  bool isEquipped(WConstItem) const;
-  bool canEquip(WConstItem) const;
-  void equip(WItem, EquipmentSlot, WCreature);
-  void unequip(WItem, WCreature);
-  PItem removeItem(WItem, WCreature);
+  vector<Item*> getSlotItems(EquipmentSlot slot) const;
+  bool hasItem(const Item*) const;
+  bool isEquipped(const Item*) const;
+  bool canEquip(const Item*) const;
+  void equip(Item*, EquipmentSlot, WCreature);
+  void unequip(Item*, WCreature);
+  PItem removeItem(Item*, WCreature);
   int getMaxItems(EquipmentSlot) const;
-  const vector<WItem>& getAllEquipped() const;
-  const vector<WItem>& getItems() const;
-  const vector<WItem>& getItems(ItemIndex) const;
-  WItem getItemById(UniqueEntity<Item>::Id) const;
-  vector<PItem> removeItems(const vector<WItem>&, WCreature);
+  const vector<Item*>& getAllEquipped() const;
+  const vector<Item*>& getItems() const;
+  const vector<Item*>& getItems(ItemIndex) const;
+  Item* getItemById(UniqueEntity<Item>::Id) const;
+  vector<PItem> removeItems(const vector<Item*>&, WCreature);
   vector<PItem> removeAllItems(WCreature);
   double getTotalWeight() const;
   bool isEmpty() const;
@@ -59,7 +59,7 @@ class Equipment {
 
   private:
   Inventory SERIAL(inventory);
-  EnumMap<EquipmentSlot, vector<WItem>> SERIAL(items);
-  vector<WItem> SERIAL(equipped);
+  EnumMap<EquipmentSlot, vector<Item*>> SERIAL(items);
+  vector<Item*> SERIAL(equipped);
 };
 

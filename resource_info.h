@@ -3,7 +3,7 @@
 #include "util.h"
 #include "item_type.h"
 
-typedef function<bool(WConstCollective, WConstItem)> CollectiveItemPredicate;
+typedef function<bool(WConstCollective, const Item*)> CollectiveItemPredicate;
 
 struct ItemFetchInfo {
   ItemIndex index;

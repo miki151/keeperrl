@@ -29,7 +29,7 @@ EntitySet<T>::EntitySet(const Container& v) {
 }
 
 template
-EntitySet<Item>::EntitySet(const vector<WItem>&);
+EntitySet<Item>::EntitySet(const vector<Item*>&);
 
 template
 EntitySet<Creature>::EntitySet(const vector<WCreature>&);
@@ -106,7 +106,7 @@ typename EntitySet<T>::Iter EntitySet<T>::end() const {
 
 template <>
 ItemPredicate EntitySet<Item>::containsPredicate() const {
-  return [this](WConstItem it) { return contains(it); };
+  return [this](const Item* it) { return contains(it); };
 }
 
 template <class T>

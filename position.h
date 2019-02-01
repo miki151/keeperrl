@@ -65,12 +65,12 @@ class Position {
   optional<FurnitureClickType> getClickType() const;
   void addSound(const Sound&) const;
   void getViewIndex(ViewIndex&, WConstCreature viewer) const;
-  const vector<WItem>& getItems() const;
-  const vector<WItem>& getItems(ItemIndex) const;
-  PItem removeItem(WItem) const;
+  const vector<Item*>& getItems() const;
+  const vector<Item*>& getItems(ItemIndex) const;
+  PItem removeItem(Item*) const;
   Inventory& modInventory() const;
   const Inventory& getInventory() const;
-  vector<PItem> removeItems(vector<WItem>);
+  vector<PItem> removeItems(vector<Item*>);
   bool canConstruct(FurnitureType) const;
   bool isWall() const;
   bool isBuildingSupport() const;

@@ -350,7 +350,7 @@ class ShopkeeperController : public Monster, public EventListener<ShopkeeperCont
       myLevel = creature->getLevel();
       subscribeTo(creature->getPosition().getModel());
       for (Position v : getAllShopPositions()) {
-        for (WItem item : v.getItems())
+        for (Item* item : v.getItems())
           item->setShopkeeper(creature);
         v.clearItemIndex(ItemIndex::FOR_SALE);
       }
@@ -386,7 +386,7 @@ class ShopkeeperController : public Monster, public EventListener<ShopkeeperCont
                 thiefCount.erase(debtor);
                 debtors.erase(debtor);
                 thieves.insert(debtor);
-                for (WItem item : debtor->getEquipment().getItems())
+                for (Item* item : debtor->getEquipment().getItems())
                   item->setShopkeeper(nullptr);
                 break;
               }
@@ -397,7 +397,7 @@ class ShopkeeperController : public Monster, public EventListener<ShopkeeperCont
     Monster::makeMove();
   }
 
-  virtual void onItemsGiven(vector<WItem> items, WCreature from) override {
+  virtual void onItemsGiven(vector<Item*> items, WCreature from) override {
     int paid = items.filter(Item::classPredicate(ItemClass::GOLD)).size();
     from->getDebt().add(creature, -paid);
     if (from->getDebt().getAmountOwed(creature) <= 0)

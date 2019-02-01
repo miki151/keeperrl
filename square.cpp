@@ -94,7 +94,7 @@ void Square::tick(Position pos) {
   }
 }
 
-bool Square::itemLands(vector<WItem> item, const Attack& attack) const {
+bool Square::itemLands(vector<Item*> item, const Attack& attack) const {
   if (creature) {
     if (item.size() > 1)
       creature->you(MsgType::MISS_THROWN_ITEM_PLURAL, item[0]->getPluralTheName(item.size()));
@@ -137,10 +137,10 @@ void Square::getViewIndex(ViewIndex& ret, WConstCreature viewer) const {
   // viewer is null only in Spectator mode, so setting a random id to lastViewer is ok
   lastViewer = viewer ? viewer->getUniqueId() : Creature::Id();
   double fireSize = 0;
-  for (WItem it : getInventory().getItems())
+  for (Item* it : getInventory().getItems())
     fireSize = max(fireSize, it->getFireSize());
   ret.modItemCounts() = inventory->getCounts();
-  if (WItem it = getTopItem())
+  if (Item* it = getTopItem())
     ret.insert(copyOf(it->getViewObject()).setAttribute(ViewObject::Attribute::BURNING, fireSize));
   if (poisonGas->getAmount() > 0)
     ret.setGradient(GradientType::POISON_GAS, min(1.0, poisonGas->getAmount()));
@@ -183,19 +183,19 @@ void Square::removeCreature(Position pos) {
   creature = nullptr;
 }
 
-WItem Square::getTopItem() const {
+Item* Square::getTopItem() const {
   if (inventory->isEmpty())
     return nullptr;
   else
     return inventory->getItems().back();
 }
 
-PItem Square::removeItem(Position pos, WItem it) {
+PItem Square::removeItem(Position pos, Item* it) {
   setDirty(pos);
   return getInventory().removeItem(it);
 }
 
-vector<PItem> Square::removeItems(Position pos, vector<WItem> it) {
+vector<PItem> Square::removeItems(Position pos, vector<Item*> it) {
   setDirty(pos);
   return getInventory().removeItems(it);
 }

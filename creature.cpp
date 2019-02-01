@@ -370,12 +370,12 @@ void Creature::displace(Vec2 dir) {
   addMovementInfo({dir, time, time + 1_visible, position.getModel()->getMoveCounter(), MovementInfo::MOVE});
 }
 
-bool Creature::canTakeItems(const vector<WItem>& items) const {
+bool Creature::canTakeItems(const vector<Item*>& items) const {
   return getBody().isHumanoid() && canCarry(items) == items.size();
 }
 
 void Creature::takeItems(vector<PItem> items, WCreature from) {
-  vector<WItem> ref = getWeakPointers(items);
+  vector<Item*> ref = getWeakPointers(items);
   equipment->addItems(std::move(items), this);
   getController()->onItemsGiven(ref, from);
 }
@@ -466,7 +466,7 @@ Equipment& Creature::getEquipment() {
   return *equipment;
 }
 
-vector<PItem> Creature::steal(const vector<WItem> items) {
+vector<PItem> Creature::steal(const vector<Item*> items) {
   return equipment->removeItems(items, this);
 }
 
@@ -504,21 +504,21 @@ void Creature::thirdPerson(const PlayerMessage& playerCanSee) const {
   getController()->getMessageGenerator().addThirdPerson(this, playerCanSee);
 }
 
-vector<WItem> Creature::getPickUpOptions() const {
+vector<Item*> Creature::getPickUpOptions() const {
   if (!getBody().isHumanoid())
-    return vector<WItem>();
+    return vector<Item*>();
   else
     return getPosition().getItems();
 }
 
-string Creature::getPluralTheName(WItem item, int num) const {
+string Creature::getPluralTheName(Item* item, int num) const {
   if (num == 1)
     return item->getTheName(false, this);
   else
     return toString(num) + " " + item->getTheName(true, this);
 }
 
-string Creature::getPluralAName(WItem item, int num) const {
+string Creature::getPluralAName(Item* item, int num) const {
   if (num == 1)
     return item->getAName(false, this);
   else
@@ -530,14 +530,14 @@ bool Creature::canCarryMoreWeight(double weight) const {
       isAffected(LastingEffect::NO_CARRY_LIMIT);
 }
 
-int Creature::canCarry(const vector<WItem>& items) const {
+int Creature::canCarry(const vector<Item*>& items) const {
   int ret = 0;
   if (!isAffected(LastingEffect::NO_CARRY_LIMIT)) {
     int limit = getBody().getCarryLimit();
     double weight = equipment->getTotalWeight();
     if (weight > limit)
       return 0;
-    for (const WItem& it : items) {
+    for (auto& it : items) {
       weight += it->getWeight();
       ++ret;
       if (weight > limit)
@@ -548,7 +548,7 @@ int Creature::canCarry(const vector<WItem>& items) const {
     return items.size();
 }
 
-CreatureAction Creature::pickUp(const vector<WItem>& itemsAll) const {
+CreatureAction Creature::pickUp(const vector<Item*>& itemsAll) const {
   if (!getBody().isHumanoid())
     return CreatureAction("You can't pick up anything!");
   auto items = getPrefix(itemsAll, canCarry(itemsAll));
@@ -569,13 +569,13 @@ CreatureAction Creature::pickUp(const vector<WItem>& itemsAll) const {
   });
 }
 
-vector<vector<WItem>> Creature::stackItems(vector<WItem> items) const {
-  map<string, vector<WItem> > stacks = groupBy<WItem, string>(items,
-      [this] (WItem const& item) { return item->getNameAndModifiers(false, this); });
+vector<vector<Item*>> Creature::stackItems(vector<Item*> items) const {
+  map<string, vector<Item*> > stacks = groupBy<Item*, string>(items,
+      [this] (Item* const& item) { return item->getNameAndModifiers(false, this); });
   return getValues(stacks);
 }
 
-CreatureAction Creature::drop(const vector<WItem>& items) const {
+CreatureAction Creature::drop(const vector<Item*>& items) const {
   if (!getBody().isHumanoid())
     return CreatureAction("You can't drop this item!");
   return CreatureAction(this, [=](WCreature self) {
@@ -594,7 +594,7 @@ void Creature::drop(vector<PItem> items) {
   getPosition().dropItems(std::move(items));
 }
 
-bool Creature::canEquipIfEmptySlot(WConstItem item, string* reason) const {
+bool Creature::canEquipIfEmptySlot(const Item* item, string* reason) const {
   if (!getBody().isHumanoid()) {
     if (reason)
       *reason = "Only humanoids can equip items!";
@@ -618,11 +618,11 @@ bool Creature::canEquipIfEmptySlot(WConstItem item, string* reason) const {
   return item->canEquip();
 }
 
-bool Creature::canEquip(WConstItem item) const {
+bool Creature::canEquip(const Item* item) const {
   return canEquipIfEmptySlot(item, nullptr) && equipment->canEquip(item);
 }
 
-CreatureAction Creature::equip(WItem item) const {
+CreatureAction Creature::equip(Item* item) const {
   string reason;
   if (!canEquipIfEmptySlot(item, &reason))
     return CreatureAction(reason);
@@ -632,7 +632,7 @@ CreatureAction Creature::equip(WItem item) const {
     INFO << getName().the() << " equip " << item->getName();
     EquipmentSlot slot = item->getEquipmentSlot();
     if (self->equipment->getSlotItems(slot).size() >= self->equipment->getMaxItems(slot)) {
-      WItem previousItem = self->equipment->getSlotItems(slot)[0];
+      Item* previousItem = self->equipment->getSlotItems(slot)[0];
       self->equipment->unequip(previousItem, self);
     }
     secondPerson("You equip " + item->getTheName(false, self));
@@ -644,7 +644,7 @@ CreatureAction Creature::equip(WItem item) const {
   });
 }
 
-CreatureAction Creature::unequip(WItem item) const {
+CreatureAction Creature::unequip(Item* item) const {
   if (!equipment->isEquipped(item))
     return CreatureAction("This item is not equipped.");
   if (!getBody().isHumanoid())
@@ -749,7 +749,7 @@ CreatureAction Creature::pet(WCreature other) const {
     return CreatureAction();
 }
 
-CreatureAction Creature::stealFrom(Vec2 direction, const vector<WItem>& items) const {
+CreatureAction Creature::stealFrom(Vec2 direction, const vector<Item*>& items) const {
   if (getPosition().plus(direction).getCreature())
     return CreatureAction(this, [=](WCreature self) {
         WCreature other = NOTNULL(getPosition().plus(direction).getCreature());
@@ -899,9 +899,9 @@ bool Creature::isEnemy(WConstCreature c) const {
   return LastingEffects::modifyIsEnemyResult(this, c, result);
 }
 
-vector<WItem> Creature::getGold(int num) const {
-  vector<WItem> ret;
-  for (WItem item : equipment->getItems().filter([](WConstItem it) { return it->getClass() == ItemClass::GOLD; })) {
+vector<Item*> Creature::getGold(int num) const {
+  vector<Item*> ret;
+  for (Item* item : equipment->getItems().filter([](const Item* it) { return it->getClass() == ItemClass::GOLD; })) {
     ret.push_back(item);
     if (ret.size() == num)
       return ret;
@@ -1252,7 +1252,7 @@ void Creature::take(vector<PItem> items) {
 }
 
 void Creature::take(PItem item) {
-  WItem ref = item.get();
+  Item* ref = item.get();
   equipment->addItem(std::move(item), this);
   if (auto action = equip(ref))
     action.perform(this);
@@ -1364,7 +1364,7 @@ BestAttack Creature::getBestAttack() const {
   return BestAttack(this);
 }
 
-CreatureAction Creature::give(WCreature whom, vector<WItem> items) const {
+CreatureAction Creature::give(WCreature whom, vector<Item*> items) const {
   if (!getBody().isHumanoid() || !whom->canTakeItems(items))
     return CreatureAction(whom->getName().the() + (items.size() == 1 ? " can't take this item."
         : " can't take these items."));
@@ -1380,9 +1380,9 @@ CreatureAction Creature::give(WCreature whom, vector<WItem> items) const {
   });
 }
 
-CreatureAction Creature::payFor(const vector<WItem>& items) const {
+CreatureAction Creature::payFor(const vector<Item*>& items) const {
   int totalPrice = std::accumulate(items.begin(), items.end(), 0,
-      [](int sum, WConstItem it) { return sum + it->getPrice(); });
+      [](int sum, const Item* it) { return sum + it->getPrice(); });
   return give(items[0]->getShopkeeper(this), getGold(totalPrice))
       .append([=](WCreature) { for (auto it : items) it->setShopkeeper(nullptr); });
 }
@@ -1462,7 +1462,7 @@ CreatureAction Creature::construct(Vec2 direction, FurnitureType type) const {
   return CreatureAction();
 }
 
-CreatureAction Creature::eat(WItem item) const {
+CreatureAction Creature::eat(Item* item) const {
   return CreatureAction(this, [=](WCreature self) {
     thirdPerson(getName().the() + " eats " + item->getAName());
     secondPerson("You eat " + item->getAName());
@@ -1540,22 +1540,22 @@ CreatureAction Creature::consume(WCreature other) const {
   });
 }
 
-WItem Creature::getRandomWeapon() const {
-  vector<WItem> it = equipment->getSlotItems(EquipmentSlot::WEAPON);
-  WItem weapon = nullptr;
+Item* Creature::getRandomWeapon() const {
+  vector<Item*> it = equipment->getSlotItems(EquipmentSlot::WEAPON);
+  Item* weapon = nullptr;
   if (!it.empty())
     weapon = it[0];
   return getBody().chooseRandomWeapon(weapon);
 }
 
-WItem Creature::getFirstWeapon() const {
-  vector<WItem> it = equipment->getSlotItems(EquipmentSlot::WEAPON);
+Item* Creature::getFirstWeapon() const {
+  vector<Item*> it = equipment->getSlotItems(EquipmentSlot::WEAPON);
   if (!it.empty())
     return it[0];
   return getBody().chooseFirstWeapon();
 }
 
-CreatureAction Creature::applyItem(WItem item) const {
+CreatureAction Creature::applyItem(Item* item) const {
   if (!contains({ItemClass::TOOL, ItemClass::POTION, ItemClass::FOOD, ItemClass::BOOK, ItemClass::SCROLL},
       item->getClass()) || !getBody().isHumanoid())
     return CreatureAction("You can't apply this item");
@@ -1574,7 +1574,7 @@ CreatureAction Creature::applyItem(WItem item) const {
   });
 }
 
-optional<int> Creature::getThrowDistance(WConstItem item) const {
+optional<int> Creature::getThrowDistance(const Item* item) const {
   if (item->getWeight() <= 0.5)
     return 15;
   else if (item->getWeight() <= 5)
@@ -1585,7 +1585,7 @@ optional<int> Creature::getThrowDistance(WConstItem item) const {
     return none;
 }
 
-CreatureAction Creature::throwItem(WItem item, Position target) const {
+CreatureAction Creature::throwItem(Item* item, Position target) const {
   if (target == position)
     return CreatureAction();
   if (!getBody().numGood(BodyPart::ARM) || !getBody().isHumanoid())

@@ -158,7 +158,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
 
   void getEquipmentItem(View* view, ItemPredicate predicate);
   ItemInfo getWorkshopItem(const WorkshopItem&) const;
-  WItem chooseEquipmentItem(WCreature creature, vector<WItem> currentItems, ItemPredicate predicate,
+  Item* chooseEquipmentItem(WCreature creature, vector<Item*> currentItems, ItemPredicate predicate,
       ScrollPosition* scrollPos = nullptr);
 
   int getNumMinions() const;
@@ -176,7 +176,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void handleEquipment(View* view, WCreature creature);
   void fillEquipment(WCreature, PlayerInfo&) const;
   void handleTrading(WCollective ally);
-  vector<WItem> getPillagedItems(WCollective) const;
+  vector<Item*> getPillagedItems(WCollective) const;
   bool canPillage(WConstCollective) const;
   void handlePillage(WCollective enemy);
   void handleRansom(bool pay);
@@ -242,7 +242,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   optional<LocalTime> lastWarningDismiss;
   set<pair<UniqueEntity<Collective>::Id, string>> SERIAL(dismissedVillageInfos);
   void considerTransferingLostMinions();
-  vector<PItem> retrievePillageItems(WCollective, vector<WItem> items);
+  vector<PItem> retrievePillageItems(WCollective, vector<Item*> items);
   KeeperCreatureInfo SERIAL(keeperCreatureInfo);
   vector<BuildInfo> SERIAL(buildInfo);
   void reloadData();

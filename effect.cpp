@@ -132,7 +132,7 @@ vector<WCreature> Effect::summon(Position pos, CreatureGroup& factory, int num, 
 
 static void enhanceArmor(WCreature c, int mod, const string& msg) {
   for (EquipmentSlot slot : Random.permutation(getKeys(Equipment::slotTitles)))
-    for (WItem item : c->getEquipment().getSlotItems(slot))
+    for (Item* item : c->getEquipment().getSlotItems(slot))
       if (item->getClass() == ItemClass::ARMOR) {
         c->you(MsgType::YOUR, item->getName() + " " + msg);
         if (item->getModifier(AttrType::DEFENSE) > 0 || mod > 0)
@@ -502,7 +502,7 @@ string Effect::EnhanceWeapon::getDescription() const {
 void Effect::DestroyEquipment::applyToCreature(WCreature c, WCreature attacker) const {
   auto equipped = c->getEquipment().getAllEquipped();
   if (!equipped.empty()) {
-    WItem dest = Random.choose(equipped);
+    Item* dest = Random.choose(equipped);
     c->you(MsgType::YOUR, dest->getName() + " crumbles to dust.");
     c->steal({dest});
   }

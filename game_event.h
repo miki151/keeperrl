@@ -21,17 +21,17 @@ namespace EventInfo {
 
   struct ItemsPickedUp {
     WCreature creature = nullptr;
-    vector<WItem> items;
+    vector<Item*> items;
   };
 
   struct ItemsDropped {
     WCreature creature = nullptr;
-    vector<WItem> items;
+    vector<Item*> items;
   };
 
   struct ItemsAppeared {
     Position position;
-    vector<WItem> items;
+    vector<Item*> items;
   };
 
   struct Projectile {
@@ -96,7 +96,7 @@ namespace EventInfo {
 
   struct ItemsEquipped {
     WCreature creature = nullptr;
-    vector<WItem> items;
+    vector<Item*> items;
   };
 
   struct CreatureEvent {

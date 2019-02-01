@@ -225,7 +225,7 @@ PTask Task::destruction(WTaskCallback c, Position target, WConstFurniture furnit
   return makeOwner<Destruction>(c, target, furniture, destroyAction, matching);
 }
 
-PTask Task::bringItem(Position position, vector<WItem> items, const PositionSet& target) {
+PTask Task::bringItem(Position position, vector<Item*> items, const PositionSet& target) {
   return chain(Task::pickUpItem(position, items), dropItems(items, vector<Position>(target.begin(), target.end())));
 }
 
@@ -233,7 +233,7 @@ namespace {
 
 class EquipItem : public Task {
   public:
-  EquipItem(WItem item) : item(item->getUniqueId()), itemName(item->getName()) {
+  EquipItem(Item* item) : item(item->getUniqueId()), itemName(item->getName()) {
   }
 
   virtual string getDescription() const override {
@@ -260,11 +260,11 @@ class EquipItem : public Task {
 
 }
 
-PTask Task::pickAndEquipItem(Position position, WItem item) {
+PTask Task::pickAndEquipItem(Position position, Item* item) {
   return chain(pickUpItem(position, {item}), equipItem(item));
 }
 
-PTask Task::equipItem(WItem item) {
+PTask Task::equipItem(Item* item) {
   return makeOwner<EquipItem>(item);
 }
 
@@ -332,7 +332,7 @@ class GoToAnd : public Task {
 
 class ApplyItem : public Task {
   public:
-  ApplyItem(WTaskCallback c, WItem item) : callback(c), itemId(item->getUniqueId()), itemName(item->getShortName()) {}
+  ApplyItem(WTaskCallback c, Item* item) : callback(c), itemId(item->getUniqueId()), itemName(item->getShortName()) {}
 
   virtual string getDescription() const override {
     return "Set up " + itemName + " trap";
@@ -363,7 +363,7 @@ class ApplyItem : public Task {
   string SERIAL(itemName);
 };
 
-PTask Task::applyItem(WTaskCallback c, Position target, WItem item) {
+PTask Task::applyItem(WTaskCallback c, Position target, Item* item) {
   return makeOwner<GoToAnd>(vector<Position>{target}, makeOwner<ApplyItem>(c, item));
 }
 
@@ -768,7 +768,7 @@ PTask Task::attackCreatures(vector<WCreature> c) {
 PTask Task::stealFrom(WCollective collective) {
   vector<PTask> tasks;
   for (Position pos : collective->getConstructions().getBuiltPositions(FurnitureType::TREASURE_CHEST)) {
-    vector<WItem> gold = pos.getItems().filter(Item::classPredicate(ItemClass::GOLD));
+    vector<Item*> gold = pos.getItems().filter(Item::classPredicate(ItemClass::GOLD));
     if (!gold.empty())
       tasks.push_back(pickUpItem(pos, gold));
   }
@@ -908,7 +908,7 @@ PTask Task::killFighters(WCollective col, int numCreatures) {
 namespace {
 class ConsumeItem : public Task {
   public:
-  ConsumeItem(WTaskCallback c, vector<WItem> _items) : items(_items), callback(c) {}
+  ConsumeItem(WTaskCallback c, vector<Item*> _items) : items(_items), callback(c) {}
 
   virtual MoveInfo getMove(WCreature c) override {
     return c->wait().append([=](WCreature c) {
@@ -928,7 +928,7 @@ class ConsumeItem : public Task {
 };
 }
 
-PTask Task::consumeItem(WTaskCallback c, vector<WItem> items) {
+PTask Task::consumeItem(WTaskCallback c, vector<Item*> items) {
   return makeOwner<ConsumeItem>(c, items);
 }
 
@@ -1021,8 +1021,8 @@ class Eat : public Task {
   public:
   Eat(vector<Position> pos) : positions(pos) {}
 
-  WItem getDeadChicken(Position pos) {
-    vector<WItem> chickens = pos.getItems().filter(Item::classPredicate(ItemClass::FOOD));
+  Item* getDeadChicken(Position pos) {
+    vector<Item*> chickens = pos.getItems().filter(Item::classPredicate(ItemClass::FOOD));
     if (chickens.empty())
       return nullptr;
     else
@@ -1043,13 +1043,13 @@ class Eat : public Task {
     }
     if (c->getPosition() != *position && getDeadChicken(*position))
       return c->moveTowards(*position);
-    WItem chicken = getDeadChicken(c->getPosition());
+    Item* chicken = getDeadChicken(c->getPosition());
     if (chicken)
       return c->eat(chicken).append([=] (WCreature c) {
         setDone();
       });
     for (Position pos : c->getPosition().neighbors8(Random)) {
-      WItem chicken = getDeadChicken(pos);
+      Item* chicken = getDeadChicken(pos);
       if (chicken) 
         if (auto move = c->move(pos))
           return move;
@@ -1445,7 +1445,7 @@ class DropItemsAnywhere : public Task {
 };
 }
 
-PTask Task::dropItemsAnywhere(vector<WItem> items) {
+PTask Task::dropItemsAnywhere(vector<Item*> items) {
   return makeOwner<DropItemsAnywhere>(items);
 }
 
@@ -1491,7 +1491,7 @@ class DropItems : public Task {
             setDone();
           });
     if (c->getPosition() == target) {
-      vector<WItem> myItems = c->getEquipment().getItems().filter(items.containsPredicate());
+      vector<Item*> myItems = c->getEquipment().getItems().filter(items.containsPredicate());
       if (auto action = c->drop(myItems).append([=] (WCreature) { setDone(); }))
         return {1.0, action.append([=](WCreature) {setDone();})};
       else {
@@ -1534,11 +1534,11 @@ class DropItems : public Task {
 };
 }
 
-PTask Task::dropItems(vector<WItem> items, StorageId storage, WCollective collective) {
+PTask Task::dropItems(vector<Item*> items, StorageId storage, WCollective collective) {
   return makeOwner<DropItems>(items, storage, collective, none);
 }
 
-PTask Task::dropItems(vector<WItem> items, vector<Position> positions) {
+PTask Task::dropItems(vector<Item*> items, vector<Position> positions) {
   return makeOwner<DropItems>(items, std::move(positions));
 }
 
@@ -1546,7 +1546,7 @@ namespace {
 
 class PickUpItem : public Task {
   public:
-  PickUpItem(Position position, vector<WItem> items, optional<StorageId> storage, WeakPointer<DropItems> dropTask)
+  PickUpItem(Position position, vector<Item*> items, optional<StorageId> storage, WeakPointer<DropItems> dropTask)
       : Task(true), items(std::move(items)), position(position), tries(10), storage(storage),
         dropTask(std::move(dropTask)) {
     CHECK(!items.empty());
@@ -1577,8 +1577,8 @@ class PickUpItem : public Task {
   virtual MoveInfo getMove(WCreature c) override {
     CHECK(!pickedUp);
     if (c->getPosition() == position) {
-      vector<WItem> hereItems;
-      for (WItem it : c->getPickUpOptions())
+      vector<Item*> hereItems;
+      for (Item* it : c->getPickUpOptions())
         if (items.contains(it)) {
           hereItems.push_back(it);
           items.erase(it);
@@ -1626,11 +1626,11 @@ class PickUpItem : public Task {
 };
 }
 
-PTask Task::pickUpItem(Position position, vector<WItem> items, optional<StorageId> storage) {
+PTask Task::pickUpItem(Position position, vector<Item*> items, optional<StorageId> storage) {
   return makeOwner<PickUpItem>(position, items, storage, nullptr);
 }
 
-Task::PickUpAndDrop Task::pickUpAndDrop(Position origin, vector<WItem> items, StorageId storage, WCollective col) {
+Task::PickUpAndDrop Task::pickUpAndDrop(Position origin, vector<Item*> items, StorageId storage, WCollective col) {
   auto drop = makeOwner<DropItems>(items, storage, col, origin);
   auto pickUp = makeOwner<PickUpItem>(origin, items, storage, drop.get());
   return PickUpAndDrop { std::move(pickUp), std::move(drop)};

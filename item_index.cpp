@@ -15,7 +15,7 @@ const char* getName(ItemIndex index, int count) {
   return "";
 }
 
-bool hasIndex(ItemIndex index, WConstItem item) {
+bool hasIndex(ItemIndex index, const Item* item) {
   switch (index) {
     case ItemIndex::GOLD:
       return item->getClass() == ItemClass::GOLD;

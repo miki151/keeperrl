@@ -110,8 +110,8 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   void creatureClickAction(Position, bool extended);
   void pickUpItemAction(int item, bool multi = false);
   void equipmentAction();
-  void applyItem(vector<WItem> item);
-  void throwItem(WItem item, optional<Position> target = none);
+  void applyItem(vector<Item*> item);
+  void throwItem(Item* item, optional<Position> target = none);
   void takeOffAction();
   void hideAction();
   void displayInventory();
@@ -121,16 +121,16 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   void travelAction();
   void targetAction();
   void payForAllItemsAction();
-  void payForItemAction(const vector<WItem>&);
+  void payForItemAction(const vector<Item*>&);
   void chatAction(optional<Vec2> dir = none);
-  void giveAction(vector<WItem>);
+  void giveAction(vector<Item*>);
   void spellAction(SpellId);
   void fireAction();
-  vector<WItem> chooseItem(const string& text, ItemPredicate, optional<UserInputId> exitAction = none);
-  void getItemNames(vector<WItem> it, vector<ListElem>& names, vector<vector<WItem> >& groups,
-      ItemPredicate = alwaysTrue<WConstItem>());
-  string getInventoryItemName(WConstItem, bool plural) const;
-  string getPluralName(WItem item, int num);
+  vector<Item*> chooseItem(const string& text, ItemPredicate, optional<UserInputId> exitAction = none);
+  void getItemNames(vector<Item*> it, vector<ListElem>& names, vector<vector<Item*> >& groups,
+      ItemPredicate = alwaysTrue<const Item*>());
+  string getInventoryItemName(const Item*, bool plural) const;
+  string getPluralName(Item* item, int num);
   bool SERIAL(travelling) = false;
   Vec2 SERIAL(travelDir);
   optional<Position> SERIAL(target);
