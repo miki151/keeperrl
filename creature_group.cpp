@@ -6,7 +6,7 @@
 #include "item_type.h"
 #include "tribe.h"
 
-SERIALIZE_DEF(CreatureGroup, tribe, creatures, weights, unique, tribeOverrides, levelIncrease, baseLevelIncrease, inventory)
+SERIALIZE_DEF(CreatureGroup, tribe, creatures, weights, unique, tribeOverrides, baseLevelIncrease, inventory)
 SERIALIZATION_CONSTRUCTOR_IMPL(CreatureGroup)
 
 CreatureGroup CreatureGroup::singleCreature(TribeId tribe, CreatureId id) {
@@ -33,21 +33,9 @@ PCreature CreatureGroup::random(const CreatureFactory* creatureFactory, const Mo
   } else
     id = Random.choose(creatures, weights);
   PCreature ret = creatureFactory->fromId(id, getTribeFor(id), actorFactory, inventory);
-  for (auto exp : ENUM_ALL(ExperienceType)) {
+  for (auto exp : ENUM_ALL(ExperienceType))
     ret->getAttributes().increaseBaseExpLevel(exp, baseLevelIncrease[exp]);
-    ret->increaseExpLevel(exp, levelIncrease[exp]);
-  }
   return ret;
-}
-
-CreatureGroup& CreatureGroup::increaseLevel(EnumMap<ExperienceType, int> l) {
-  levelIncrease = l;
-  return *this;
-}
-
-CreatureGroup& CreatureGroup::increaseLevel(ExperienceType t, int l) {
-  levelIncrease[t] = l;
-  return *this;
 }
 
 CreatureGroup& CreatureGroup::increaseBaseLevel(ExperienceType t, int l) {
@@ -62,16 +50,13 @@ CreatureGroup& CreatureGroup::addInventory(vector<ItemType> items) {
 
 CreatureGroup::CreatureGroup(TribeId t, const vector<CreatureId>& c, const vector<double>& w,
     const vector<CreatureId>& u, map<CreatureId, optional<TribeId>> overrides)
-    : tribe(t), creatures(c), weights(w), unique(u), tribeOverrides(overrides) {
+  : tribe(t), creatures(c), weights(w), unique(u), tribeOverrides(overrides) {
 }
 
-CreatureGroup::CreatureGroup(const vector<tuple<CreatureId, double, TribeId>>& c, const vector<CreatureId>& u)
-    : unique(u) {
-  for (auto& elem : c) {
-    creatures.push_back(std::get<0>(elem));
-    weights.push_back(std::get<1>(elem));
-    tribeOverrides[std::get<0>(elem)] = std::get<2>(elem);
-  }
+CreatureGroup::CreatureGroup(TribeId tribe, const vector<pair<CreatureId, double>>& creatures,
+                             const vector<CreatureId>& unique, map<CreatureId, optional<TribeId>> overrides)
+    : CreatureGroup(tribe, creatures.transform([](const auto& c) { return c.first; }),
+      creatures.transform([](const auto& c) { return c.second; }), unique, overrides) {
 }
 
 // These have to be defined here to be able to forward declare some ItemType and other classes
@@ -143,29 +128,30 @@ CreatureGroup CreatureGroup::singleType(TribeId tribe, CreatureId id) {
 }
 
 CreatureGroup CreatureGroup::gnomishMines(TribeId peaceful, TribeId enemy, int level) {
-  return CreatureGroup({
-      make_tuple("BANDIT", 100., enemy),
-      make_tuple("GREEN_DRAGON", 5., enemy),
-      make_tuple("RED_DRAGON", 5., enemy),
-      make_tuple("SOFT_MONSTER", 5., enemy),
-      make_tuple("CYCLOPS", 15., enemy),
-      make_tuple("WITCH", 15., enemy),
-      make_tuple("CLAY_GOLEM", 20., enemy),
-      make_tuple("STONE_GOLEM", 20., enemy),
-      make_tuple("IRON_GOLEM", 20., enemy),
-      make_tuple("LAVA_GOLEM", 20., enemy),
-      make_tuple("FIRE_ELEMENTAL", 10., enemy),
-      make_tuple("WATER_ELEMENTAL", 10., enemy),
-      make_tuple("EARTH_ELEMENTAL", 10., enemy),
-      make_tuple("AIR_ELEMENTAL", 10., enemy),
-      make_tuple("GNOME", 100., peaceful),
-      make_tuple("GNOME_CHIEF", 20., peaceful),
-      make_tuple("DWARF", 100., enemy),
-      make_tuple("DWARF_FEMALE", 40., enemy),
-      make_tuple("JACKAL", 200., enemy),
-      make_tuple("BAT", 200., enemy),
-      make_tuple("SNAKE", 150., enemy),
-      make_tuple("SPIDER", 200., enemy),
-      make_tuple("FLY", 100., enemy),
-      make_tuple("RAT", 100., enemy)});
+  return CreatureGroup(enemy, {
+      make_pair("BANDIT", 100.),
+      make_pair("GREEN_DRAGON", 5.),
+      make_pair("RED_DRAGON", 5.),
+      make_pair("SOFT_MONSTER", 5.),
+      make_pair("CYCLOPS", 15.),
+      make_pair("WITCH", 15.),
+      make_pair("CLAY_GOLEM", 20.),
+      make_pair("STONE_GOLEM", 20.),
+      make_pair("IRON_GOLEM", 20.),
+      make_pair("LAVA_GOLEM", 20.),
+      make_pair("FIRE_ELEMENTAL", 10.),
+      make_pair("WATER_ELEMENTAL", 10.),
+      make_pair("EARTH_ELEMENTAL", 10.),
+      make_pair("AIR_ELEMENTAL", 10.),
+      make_pair("GNOME", 100.),
+      make_pair("GNOME_CHIEF", 20.),
+      make_pair("DWARF", 100.),
+      make_pair("DWARF_FEMALE", 40.),
+      make_pair("JACKAL", 200.),
+      make_pair("BAT", 200.),
+      make_pair("SNAKE", 150.),
+      make_pair("SPIDER", 200.),
+      make_pair("FLY", 100.),
+      make_pair("RAT", 100.)},
+      {}, {{"GNOME", peaceful}, {"GNOME_CHIEF", peaceful} });
 }

@@ -20,8 +20,6 @@ class CreatureGroup {
   PCreature random(const CreatureFactory*);
 
   CreatureGroup& increaseBaseLevel(ExperienceType, int);
-  CreatureGroup& increaseLevel(ExperienceType, int);
-  CreatureGroup& increaseLevel(EnumMap<ExperienceType, int>);
   CreatureGroup& addInventory(vector<ItemType>);
 
   ~CreatureGroup();
@@ -33,8 +31,8 @@ class CreatureGroup {
   private:
   CreatureGroup(TribeId tribe, const vector<CreatureId>& creatures, const vector<double>& weights,
       const vector<CreatureId>& unique = {}, map<CreatureId, optional<TribeId>> overrides = {});
-  CreatureGroup(const vector<tuple<CreatureId, double, TribeId>>& creatures,
-      const vector<CreatureId>& unique = {});
+  CreatureGroup(TribeId tribe, const vector<pair<CreatureId, double>>& creatures,
+      const vector<CreatureId>& unique = {}, map<CreatureId, optional<TribeId>> overrides = {});
   static void initSplash(TribeId);
   TribeId getTribeFor(CreatureId);
   optional<TribeId> SERIAL(tribe);
@@ -43,6 +41,5 @@ class CreatureGroup {
   vector<CreatureId> SERIAL(unique);
   map<CreatureId, optional<TribeId>> SERIAL(tribeOverrides);
   EnumMap<ExperienceType, int> SERIAL(baseLevelIncrease);
-  EnumMap<ExperienceType, int> SERIAL(levelIncrease);
   vector<ItemType> SERIAL(inventory);
 };
