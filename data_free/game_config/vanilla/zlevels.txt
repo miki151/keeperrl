@@ -2,7 +2,7 @@
 # At every depth the game chooses a random level that's available
 # They are generated on the fly when stairs are built so you can edit this file while the game is running.
 {
-  # This is an empty level that can appear at all depths
+  # This is an filled level that can appear at all depths
   {
     type = FullZLevel {
     }
