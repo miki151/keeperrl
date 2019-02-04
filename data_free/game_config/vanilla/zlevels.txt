@@ -1,0 +1,56 @@
+{
+  {
+    type = FullZLevel {
+    }
+  }
+  {
+    type = FullZLevel {
+      enemy = RAT_CAVE
+    }
+    minDepth = 2
+    maxDepth = 4
+  }
+  {
+    type = WaterZLevel {
+      waterType = WATER
+      creatures = {
+        count = 10
+        all = {
+          1 "RAT"
+          1 "WATER_ELEMENTAL"
+        }
+      }
+    }
+    minDepth = 7
+    maxDepth = 10
+  }
+  {
+    type = WaterZLevel {
+      waterType = MAGMA
+      creatures = {
+        count = 10
+        all = {
+          1 "FIRE_ELEMENTAL"
+        }
+      }
+    }
+    minDepth = 10
+  }
+}
+
+{
+  {
+    type = FullZLevel {
+      enemy = DARK_ELF_CAVE
+    }
+    minDepth = 5
+  }
+}
+{
+  {
+    type = FullZLevel {
+      enemy = DWARF_CAVE
+    }
+    minDepth = 5
+  }
+}

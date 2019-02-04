@@ -852,6 +852,8 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
             c.triggers = LIST(AttackTriggerId::SELF_VICTIMS, AttackTriggerId::STOLEN_ITEMS, AttackTriggerId::MINING_IN_PROXIMITY);
             c.attackBehaviour = AttackBehaviour(AttackBehaviourId::KILL_LEADER);
             c.ransom = make_pair(0.5, random.get(40, 80));));
+    case EnemyId::RAT_CAVE:
+      return getVault(SettlementType::VAULT, "RAT", TribeId::getMonster(), 10);
     case EnemyId::DARK_ELF_CAVE:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::SMALL_MINETOWN;

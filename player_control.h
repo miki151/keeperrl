@@ -83,6 +83,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void addToCurrentTeam(Creature* c);
   void updateUnknownLocations();
   vector<Creature*> getConsumptionTargets(Creature* consumer) const;
+  const KeeperCreatureInfo& getKeeperCreatureInfo() const;
 
   void onEvent(const GameEvent&);
   const vector<Creature*>& getControlled() const;

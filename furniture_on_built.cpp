@@ -15,6 +15,8 @@
 #include "enemy_info.h"
 #include "collective_builder.h"
 #include "creature_group.h"
+#include "z_level_info.h"
+#include "game_config.h"
 
 static SettlementInfo getEnemy(EnemyId id) {
   auto enemy = EnemyFactory(Random, nullptr).get(id);
@@ -22,21 +24,40 @@ static SettlementInfo getEnemy(EnemyId id) {
   return enemy.settlement;
 }
 
-static optional<SettlementInfo> getSettlement(int depth) {
-  if (depth == 0)
-    return none;
-  if (depth == 1)
-    return getEnemy(EnemyId::KOBOLD_CAVE);
-  if (Random.roll(3))
-    return getEnemy(EnemyId::DWARF_CAVE);
-  return none;
+static PLevelMaker getLevelMaker(const ZLevelType& level, int width, TribeId tribe) {
+  return level.visit(
+      [&](const WaterZLevel& level) {
+        return LevelMaker::getWaterZLevel(Random, level.waterType, width, level.creatures, StairKey::getNew());
+      },
+      [&](const FullZLevel& level) {
+        return LevelMaker::getFullZLevel(Random, level.enemy.map([](auto id) { return getEnemy(id); }),
+            width, tribe, StairKey::getNew());
+      });
 }
 
-static PLevelMaker getLevelMaker(int depth, int width, TribeId tribe) {
-  if (depth <= 4)
-    return LevelMaker::getFullZLevel(Random, getSettlement(depth), width, tribe, StairKey::getNew());
-  return LevelMaker::getWaterZLevel(Random, FurnitureType::MAGMA, width,
-      CreatureGroup::lavaCreatures(TribeId::getMonster()), StairKey::getNew());
+static optional<ZLevelType> chooseZLevel(RandomGen& random, const vector<ZLevelInfo>& levels, int depth) {
+  vector<ZLevelType> available;
+  for (auto& l : levels)
+    if (l.minDepth.value_or(-100) <= depth && l.maxDepth.value_or(1000000) >= depth)
+      available.push_back(l.type);
+  if (available.empty())
+    return none;
+  return random.choose(available);
+}
+
+static PLevelMaker getLevelMaker(RandomGen& random, const GameConfig* config, TribeAlignment alignment,
+    int depth, int width, TribeId tribe) {
+  array<vector<ZLevelInfo>, 3> allLevels;
+  while (1) {
+    if (auto res = config->readObject(allLevels, GameConfigId::Z_LEVELS))
+      USER_INFO << *res;
+    vector<ZLevelInfo> levels = concat<ZLevelInfo>({allLevels[0], allLevels[1 + int(alignment)]});
+    if (auto res = chooseZLevel(random, levels, depth))
+      return getLevelMaker(*res, width, tribe);
+    else
+      USER_INFO << "No z-level found for depth " << depth << ". Please fix z-level config.";
+  }
+  fail();
 }
 
 static void removeOldStairs(Level* level, StairKey stairKey) {
@@ -57,7 +78,9 @@ void handleOnBuilt(Position pos, Creature* c, FurnitureOnBuilt type) {
         int width = 140;
         level = pos.getModel()->buildMainLevel(
             LevelBuilder(Random, pos.getGame()->getCreatureFactory(), width, width, "", true),
-            getLevelMaker(levelIndex, width, c->getTribeId()));
+            getLevelMaker(Random, pos.getGame()->getGameConfig(),
+                pos.getGame()->getPlayerControl()->getKeeperCreatureInfo().tribeAlignment,
+                levelIndex + 1, width, c->getTribeId()));
       } else {
         level = levels[levelIndex + 1];
       }

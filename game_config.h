@@ -14,7 +14,8 @@ enum class GameConfigId {
   WORKSHOPS_MENU,
   IMMIGRATION,
   TECHNOLOGY,
-  CREATURE_ATTRIBUTES
+  CREATURE_ATTRIBUTES,
+  Z_LEVELS
 };
 
 class GameConfig {

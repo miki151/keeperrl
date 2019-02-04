@@ -506,12 +506,25 @@ class Creatures : public LevelMaker {
   Creatures(CreatureGroup f, int num, MonsterAIFactory actorF, Predicate pred = Predicate::alwaysTrue()) :
       creatures(f), numCreatures(num), actorFactory(actorF), onPred(pred) {}
 
+  Creatures(CreatureList f, TribeId t, MonsterAIFactory actorF, Predicate pred = Predicate::alwaysTrue()) :
+      creatures(f), tribe(t), actorFactory(actorF), onPred(pred) {}
+
   virtual void make(LevelBuilder* builder, Rectangle area) override {
     if (!actorFactory)
       actorFactory = MonsterAIFactory::stayInLocation(builder->toGlobalCoordinates(area));
     Table<char> taken(area.right(), area.bottom());
-    for (int i : Range(numCreatures)) {
-      PCreature creature = creatures.random(builder->getCreatureFactory(), *actorFactory);
+    vector<PCreature> c = creatures.visit(
+        [&](CreatureGroup c){
+          vector<PCreature> ret;
+          for (int i : Range(numCreatures))
+            ret.push_back(c.random(builder->getCreatureFactory(), *actorFactory));
+          return ret;
+        },
+        [&](const CreatureList& c){
+          return c.generate(builder->getRandom(), builder->getCreatureFactory(), tribe, *actorFactory);
+        }
+    );
+    for (auto& creature : c) {
       Vec2 pos;
       int numTries = 100;
       do {
@@ -525,8 +538,9 @@ class Creatures : public LevelMaker {
   }
 
   private:
-  CreatureGroup creatures;
+  variant<CreatureGroup, CreatureList> creatures;
   int numCreatures;
+  TribeId tribe;
   optional<MonsterAIFactory> actorFactory;
   Predicate onPred;
 };
@@ -2621,7 +2635,7 @@ PLevelMaker LevelMaker::getFullZLevel(RandomGen& random, optional<SettlementInfo
   return std::move(queue);
 }
 
-PLevelMaker LevelMaker::getWaterZLevel(RandomGen& random, FurnitureType waterType, int mapWidth, CreatureGroup enemies, StairKey landingLink) {
+PLevelMaker LevelMaker::getWaterZLevel(RandomGen& random, FurnitureType waterType, int mapWidth, CreatureList enemies, StairKey landingLink) {
   auto queue = unique<MakerQueue>();
   queue->addMaker(unique<Empty>(SquareChange(waterType)));
   auto locations = unique<RandomLocations>();
@@ -2637,7 +2651,7 @@ PLevelMaker LevelMaker::getWaterZLevel(RandomGen& random, FurnitureType waterTyp
         RandomLocations::LocationPredicate(Predicate::alwaysTrue()));
   locations->setMinMargin(startingPos, mapWidth / 3);
   queue->addMaker(std::move(locations));
-  queue->addMaker(unique<Creatures>(std::move(enemies), mapWidth * mapWidth / 1000, MonsterAIFactory::monster()));
+  queue->addMaker(unique<Creatures>(std::move(enemies), TribeId::getMonster(), MonsterAIFactory::monster()));
   return std::move(queue);
 }
 

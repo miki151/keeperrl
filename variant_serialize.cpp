@@ -14,6 +14,7 @@
 #include "furniture_entry.h"
 #include "effect.h"
 #include "campaign.h"
+#include "z_level_info.h"
 
 namespace cereal {
   namespace variant_detail {
@@ -77,4 +78,5 @@ namespace cereal {
   INST2(FurnitureEntry::EntryData)
   INST2(Effect::EffectType_impl)
   INST2(Campaign::SiteInfo::Dweller)
+  INST2(ZLevelType_impl)
 } // namespace cereal

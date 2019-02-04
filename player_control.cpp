@@ -2806,4 +2806,8 @@ vector<Vec2> PlayerControl::getVisibleEnemies() const {
   return visibleEnemies;
 }
 
+const KeeperCreatureInfo& PlayerControl::getKeeperCreatureInfo() const {
+  return keeperCreatureInfo;
+}
+
 REGISTER_TYPE(ListenerTemplate<PlayerControl>)

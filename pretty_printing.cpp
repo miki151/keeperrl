@@ -27,6 +27,7 @@
 #include "creature_attributes.h"
 #include "spell_map.h"
 #include "view_object.h"
+#include "z_level_info.h"
 
 template <typename T>
 optional<string> PrettyPrinting::parseObject(T& object, const string& s, optional<string> filename) {
@@ -46,7 +47,7 @@ optional<string> PrettyPrinting::parseObject<__VA_ARGS__>(__VA_ARGS__&, const st
 ADD_IMP(Effect)
 ADD_IMP(ItemType)
 ADD_IMP(CreatureId)
-ADD_IMP(std::array<vector<Campaign::VillainInfo>, 4>)
+ADD_IMP(array<vector<Campaign::VillainInfo>, 4>)
 ADD_IMP(pair<vector<KeeperCreatureInfo>, vector<AdventurerCreatureInfo>>)
 ADD_IMP(vector<pair<string, vector<BuildInfo>>>)
 ADD_IMP(vector<pair<string, std::array<vector<WorkshopItemCfg>, EnumInfo<WorkshopType>::size>>>)
@@ -54,3 +55,4 @@ ADD_IMP(map<string, vector<ImmigrantInfo>>)
 ADD_IMP(map<string, string>)
 ADD_IMP(map<CreatureId, CreatureAttributes>)
 ADD_IMP(Technology)
+ADD_IMP(array<vector<ZLevelInfo>, 3>)

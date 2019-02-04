@@ -8,7 +8,7 @@
 #include "item_type.h"
 #include "view_id.h"
 
-SERIALIZE_DEF(CreatureList, count, uniques, all, baseLevelIncrease, inventory)
+SERIALIZE_DEF(CreatureList, NAMED(count), OPTION(uniques), NAMED(all), OPTION(baseLevelIncrease), OPTION(inventory))
 
 
 CreatureList::CreatureList() {}
@@ -84,3 +84,7 @@ vector<PCreature> CreatureList::generate(RandomGen& random, const CreatureFactor
   }
   return ret;
 }
+
+#include "pretty_archive.h"
+template
+void CreatureList::serialize(PrettyInputArchive& ar1, unsigned);
