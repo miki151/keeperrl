@@ -38,6 +38,7 @@
 #include "task.h"
 #include "equipment.h"
 #include "creature_group.h"
+#include "resource_counts.h"
 
 namespace {
 
@@ -2420,13 +2421,7 @@ struct SurroundWithResourcesInfo {
   SettlementInfo info;
 };
 
-struct ResourceInfo {
-  FurnitureType type;
-  int countStartingPos;
-  int countFurther;
-};
-
-static void generateResources(RandomGen& random, vector<ResourceInfo> resourceInfo, LevelMaker* startingPos,
+static void generateResources(RandomGen& random, ResourceCounts resourceCounts, LevelMaker* startingPos,
     RandomLocations* locations, const vector<SurroundWithResourcesInfo>& surroundWithResources, int mapWidth, TribeId tribe) {
   auto addResources = [&](int count, Range size, int maxDist, FurnitureType type, LevelMaker* center,
       CollectiveBuilder* collective) {
@@ -2441,20 +2436,20 @@ static void generateResources(RandomGen& random, vector<ResourceInfo> resourceIn
     }
   };
   const int closeDist = 0;
-  for (auto& info : resourceInfo)
+  for (auto& info : resourceCounts.elems)
     addResources(info.countStartingPos, Range(5, 10), 20, info.type, startingPos, nullptr);
   for (auto enemy : surroundWithResources)
     for (int i : Range(enemy.info.surroundWithResources))
       if (auto type = enemy.info.extraResources)
         addResources(1, Range(5, 10), closeDist, *type, enemy.maker, enemy.info.collective);
       else {
-        auto& info = resourceInfo[i % resourceInfo.size()];
+        auto& info = resourceCounts.elems[i % resourceCounts.elems.size()];
         if (info.countFurther > 0) {
           addResources(1, Range(5, 10), closeDist, info.type, enemy.maker, enemy.info.collective);
           --info.countFurther;
       }
     }
-  for (auto& info : resourceInfo)
+  for (auto& info : resourceCounts.elems)
     if (info.countFurther > 0)
       addResources(info.countFurther, Range(5, 10), mapWidth / 3, info.type, startingPos, nullptr);
 }
@@ -2506,7 +2501,8 @@ static PMakerQueue getSettlementMaker(RandomGen& random, const SettlementInfo& s
 }
 
 PLevelMaker LevelMaker::topLevel(RandomGen& random, optional<CreatureGroup> forrestCreatures,
-    vector<SettlementInfo> settlements, int mapWidth, optional<TribeId> keeperTribe, BiomeId biomeId) {
+    vector<SettlementInfo> settlements, int mapWidth, optional<TribeId> keeperTribe, BiomeId biomeId,
+    ResourceCounts resourceCounts) {
   auto queue = unique<MakerQueue>();
   auto locations = unique<RandomLocations>();
   auto locations2 = unique<RandomLocations>();
@@ -2576,12 +2572,7 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, optional<CreatureGroup> forr
  //   locations->setMaxDistanceLast(startingPos, i == 0 ? 25 : 40);
   }*/
   if (keeperTribe) {
-    vector<ResourceInfo> resourceInfo = {
-        {FurnitureType::STONE, 2, 4},
-        {FurnitureType::IRON_ORE, 3, 4},
-        {FurnitureType::GOLD_ORE, 1, 3},
-    };
-    generateResources(random, resourceInfo, startingPos, locations.get(), surroundWithResources, mapWidth, *keeperTribe);
+    generateResources(random, resourceCounts, startingPos, locations.get(), surroundWithResources, mapWidth, *keeperTribe);
   }
   int mapBorder = 2;
   queue->addMaker(unique<Empty>(FurnitureType::WATER));
@@ -2607,12 +2598,8 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, optional<CreatureGroup> forr
   return std::move(queue);
 }
 
-PLevelMaker LevelMaker::getFullZLevel(RandomGen& random, optional<SettlementInfo> settlement, int mapWidth, TribeId keeperTribe, StairKey landingLink) {
-  vector<ResourceInfo> resourceInfo = {
-      {FurnitureType::STONE, 2, 0},
-      {FurnitureType::IRON_ORE, 3, 0},
-      {FurnitureType::GOLD_ORE, 1, 0},
-  };
+PLevelMaker LevelMaker::getFullZLevel(RandomGen& random, optional<SettlementInfo> settlement, ResourceCounts resourceCounts,
+    int mapWidth, TribeId keeperTribe, StairKey landingLink) {
   auto queue = unique<MakerQueue>();
   queue->addMaker(unique<Empty>(SquareChange(FurnitureType::FLOOR, FurnitureType::MOUNTAIN2)));
   auto locations = unique<RandomLocations>();
@@ -2623,14 +2610,15 @@ PLevelMaker LevelMaker::getFullZLevel(RandomGen& random, optional<SettlementInfo
     auto maker = getSettlementMaker(random, *settlement);
     if (settlement->corpses)
       maker->addMaker(unique<Corpses>(*settlement->corpses));
-    maker->addMaker(unique<RandomLocations>(makeVec<PLevelMaker>(std::move(startingPosMaker)), makeVec<pair<int, int>>({1, 1}), Predicate::canEnter(MovementTrait::WALK)));
+    maker->addMaker(unique<RandomLocations>(makeVec<PLevelMaker>(std::move(startingPosMaker)), makeVec<pair<int, int>>({1, 1}),
+        Predicate::canEnter(MovementTrait::WALK)));
     locations->add(std::move(maker), getSize(random, settlement->type), RandomLocations::LocationPredicate(Predicate::alwaysTrue()));
   } else {
     locations->add(std::move(startingPosMaker), Vec2(1, 1),
         RandomLocations::LocationPredicate(Predicate::alwaysTrue()));
     locations->setMinMargin(startingPos, mapWidth / 3);
   }
-  generateResources(random, resourceInfo, startingPos, locations.get(), {}, mapWidth, keeperTribe);
+  generateResources(random, resourceCounts, startingPos, locations.get(), {}, mapWidth, keeperTribe);
   queue->addMaker(std::move(locations));
   return std::move(queue);
 }

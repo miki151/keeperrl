@@ -28,6 +28,7 @@
 #include "spell_map.h"
 #include "view_object.h"
 #include "z_level_info.h"
+#include "resource_counts.h"
 
 template <typename T>
 optional<string> PrettyPrinting::parseObject(T& object, const string& s, optional<string> filename) {
@@ -56,3 +57,4 @@ ADD_IMP(map<string, string>)
 ADD_IMP(map<CreatureId, CreatureAttributes>)
 ADD_IMP(Technology)
 ADD_IMP(array<vector<ZLevelInfo>, 3>)
+ADD_IMP(vector<ResourceDistribution>)

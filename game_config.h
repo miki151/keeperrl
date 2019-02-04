@@ -15,7 +15,8 @@ enum class GameConfigId {
   IMMIGRATION,
   TECHNOLOGY,
   CREATURE_ATTRIBUTES,
-  Z_LEVELS
+  Z_LEVELS,
+  RESOURCE_COUNTS
 };
 
 class GameConfig {

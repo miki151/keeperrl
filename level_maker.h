@@ -25,6 +25,7 @@ class StairKey;
 class FurnitureFactory;
 class CreatureGroup;
 struct SettlementInfo;
+struct ResourceCounts;
 
 class LevelGenException {
 };
@@ -40,7 +41,7 @@ class LevelMaker {
 
   static PLevelMaker cryptLevel(RandomGen&, SettlementInfo);
   static PLevelMaker topLevel(RandomGen&, optional<CreatureGroup> wildlife, vector<SettlementInfo> village, int width,
-      optional<TribeId> keeperTribe, BiomeId);
+      optional<TribeId> keeperTribe, BiomeId, ResourceCounts);
   static PLevelMaker mineTownLevel(RandomGen&, SettlementInfo);
   static PLevelMaker splashLevel(CreatureGroup heroLeader, CreatureGroup heroes,
       CreatureGroup monsters, CreatureGroup imps, const FilePath& splashPath);
@@ -52,7 +53,7 @@ class LevelMaker {
   static PLevelMaker emptyLevel(FurnitureType);
   static PLevelMaker sokobanFromFile(RandomGen&, SettlementInfo, Table<char>);
   static PLevelMaker battleLevel(Table<char>, CreatureList allies, CreatureList enemies);
-  static PLevelMaker getFullZLevel(RandomGen&, optional<SettlementInfo>, int mapWidth, TribeId keeperTribe, StairKey);
+  static PLevelMaker getFullZLevel(RandomGen&, optional<SettlementInfo>, ResourceCounts, int mapWidth, TribeId keeperTribe, StairKey);
   static PLevelMaker getWaterZLevel(RandomGen&, FurnitureType waterType, int mapWidth, CreatureList, StairKey);
 };
 

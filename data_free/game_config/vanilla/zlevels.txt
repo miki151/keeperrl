@@ -9,7 +9,7 @@
   }
   {
     type = FullZLevel {
-      # You can optionally add an EnemyId. The player will dig down right into their 
+      # You can optionally add an EnemyId. The player will dig down right into their base.
       # Warning: some enemies might not work
       enemy = RAT_CAVE
     }

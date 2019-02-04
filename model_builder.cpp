@@ -38,6 +38,7 @@
 #include "game_config.h"
 #include "build_info.h"
 #include "tribe_alignment.h"
+#include "resource_counts.h"
 
 using namespace std::chrono;
 
@@ -443,6 +444,20 @@ void ModelBuilder::measureModelGen(const string& name, int numTries, function<vo
     minT << ". MaxT: " << maxT << ". AvgT: " << sumT / numTries << std::endl;
 }
 
+static ResourceCounts getTopLevelResources(RandomGen& random, const GameConfig* config) {
+  vector<ResourceDistribution> resources;
+  while (1) {
+    if (auto res = config->readObject(resources, GameConfigId::RESOURCE_COUNTS)) {
+      USER_INFO << *res;
+      continue;
+    }
+    if (auto res = chooseResourceCounts(random, resources, 0))
+      return *res;
+    USER_INFO << "No resource counts found for level 0, please fix resources config";
+  }
+  fail();
+}
+
 PModel ModelBuilder::tryModel(int width, const string& levelName, vector<EnemyInfo> enemyInfo,
     optional<TribeId> keeperTribe, BiomeId biomeId, optional<ExternalEnemies> externalEnemies, bool hasWildlife) {
   auto model = Model::create();
@@ -466,7 +481,7 @@ PModel ModelBuilder::tryModel(int width, const string& levelName, vector<EnemyIn
   WLevel top =  model->buildMainLevel(
       LevelBuilder(meter, random, creatureFactory, width, width, levelName, false),
       LevelMaker::topLevel(random, wildlife, topLevelSettlements, width,
-        keeperTribe, biomeId));
+        keeperTribe, biomeId, getTopLevelResources(random, gameConfig)));
   model->calculateStairNavigation();
   for (auto& enemy : enemyInfo) {
     if (enemy.settlement.locationName)

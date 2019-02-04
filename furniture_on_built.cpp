@@ -17,6 +17,7 @@
 #include "creature_group.h"
 #include "z_level_info.h"
 #include "game_config.h"
+#include "resource_counts.h"
 
 static SettlementInfo getEnemy(EnemyId id) {
   auto enemy = EnemyFactory(Random, nullptr).get(id);
@@ -24,13 +25,13 @@ static SettlementInfo getEnemy(EnemyId id) {
   return enemy.settlement;
 }
 
-static PLevelMaker getLevelMaker(const ZLevelType& level, int width, TribeId tribe) {
+static PLevelMaker getLevelMaker(const ZLevelType& level, ResourceCounts resources, int width, TribeId tribe) {
   return level.visit(
       [&](const WaterZLevel& level) {
         return LevelMaker::getWaterZLevel(Random, level.waterType, width, level.creatures, StairKey::getNew());
       },
       [&](const FullZLevel& level) {
-        return LevelMaker::getFullZLevel(Random, level.enemy.map([](auto id) { return getEnemy(id); }),
+        return LevelMaker::getFullZLevel(Random, level.enemy.map([](auto id) { return getEnemy(id); }), resources,
             width, tribe, StairKey::getNew());
       });
 }
@@ -48,13 +49,23 @@ static optional<ZLevelType> chooseZLevel(RandomGen& random, const vector<ZLevelI
 static PLevelMaker getLevelMaker(RandomGen& random, const GameConfig* config, TribeAlignment alignment,
     int depth, int width, TribeId tribe) {
   array<vector<ZLevelInfo>, 3> allLevels;
+  vector<ResourceDistribution> resources;
   while (1) {
-    if (auto res = config->readObject(allLevels, GameConfigId::Z_LEVELS))
+    if (auto res = config->readObject(allLevels, GameConfigId::Z_LEVELS)) {
       USER_INFO << *res;
+      continue;
+    }
+    if (auto res = config->readObject(resources, GameConfigId::RESOURCE_COUNTS)) {
+      USER_INFO << *res;
+      continue;
+    }
     vector<ZLevelInfo> levels = concat<ZLevelInfo>({allLevels[0], allLevels[1 + int(alignment)]});
-    if (auto res = chooseZLevel(random, levels, depth))
-      return getLevelMaker(*res, width, tribe);
-    else
+    if (auto zLevel = chooseZLevel(random, levels, depth)) {
+      if (auto res = chooseResourceCounts(random, resources, depth))
+        return getLevelMaker(*zLevel, *res, width, tribe);
+      else
+        USER_INFO << "No resource distribution found for depth " << depth << ". Please fix resources config.";
+    } else
       USER_INFO << "No z-level found for depth " << depth << ". Please fix z-level config.";
   }
   fail();
