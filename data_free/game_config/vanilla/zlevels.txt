@@ -1,22 +1,32 @@
+# Here come levels for all keeper types
+# At every depth the game chooses a random level that's available
+# They are generated on the fly when stairs are built so you can edit this file while the game is running.
 {
+  # This is an empty level that can appear at all depths
   {
     type = FullZLevel {
     }
   }
   {
     type = FullZLevel {
+      # You can optionally add an EnemyId. The player will dig down right into their 
+      # Warning: some enemies might not work
       enemy = RAT_CAVE
     }
+    # Possible depths for this level, inclusive. The first level when you dig down is 1.
     minDepth = 2
     maxDepth = 4
   }
   {
+    # A level full of water with some islands
     type = WaterZLevel {
       waterType = WATER
       creatures = {
+        # Total no of creatures on this level. All are hostile
         count = 10
         all = {
-          1 "RAT"
+          # The number is the weight, i.e. rats are twice as many as elementals
+          2 "RAT"
           1 "WATER_ELEMENTAL"
         }
       }
@@ -38,6 +48,7 @@
   }
 }
 
+# Here come levels specific to white keepers
 {
   {
     type = FullZLevel {
@@ -46,6 +57,8 @@
     minDepth = 5
   }
 }
+
+# Here come levels specific to dark keepers
 {
   {
     type = FullZLevel {
