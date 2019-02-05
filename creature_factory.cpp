@@ -847,7 +847,9 @@ static vector<ItemType> getDefaultInventory(CreatureId id) {
       return ItemList().add(ItemType::GoldPiece{}, Random.get(5, 10));
   else if (id == "RED_DRAGON")
       return ItemList().add(ItemType::GoldPiece{}, Random.get(120, 200));
-  else if (id == "DEMON_LORD" || id == "ANGEL")
+  else if (id == "ANGEL")
+      return ItemList().add(ItemType(ItemType::Sword{}).setPrefixChance(0.1));
+  else if (id == "DEMON_LORD")
       return ItemList().add(ItemType(ItemType::Sword{}).setPrefixChance(1));
   else if (id == "ADVENTURER_F" || id == "ADVENTURER")
       return ItemList()
