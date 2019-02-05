@@ -749,13 +749,24 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
           .setNonDiscoverable();
     case EnemyId::WITCH:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
-            c.type = SettlementType::WITCH_HOUSE;
+            c.type = SettlementType::COTTAGE;
             c.tribe = TribeId::getMonster();
             c.inhabitants.leader = CreatureList("WITCH");
             c.race = "witch"_s;
             c.buildingId = BuildingId::WOOD;
             c.elderLoot = ItemType(ItemType::TechBook{"advanced alchemy"});
             c.furniture = FurnitureFactory(c.tribe, FurnitureType::LABORATORY);), CollectiveConfig::noImmigrants());
+    case EnemyId::TEMPLE:
+      return EnemyInfo(CONSTRUCT(SettlementInfo,
+            c.type = SettlementType::TEMPLE;
+            c.tribe = TribeId::getMonster();
+            c.race = "altar"_s;
+            if (random.roll(3))
+              c.inhabitants.leader = CreatureList("PRIEST");
+            c.buildingId = BuildingId::BRICK;
+            c.furniture = FurnitureFactory(c.tribe, {{FurnitureType::CHEST, 1}},
+                {FurnitureType::ALTAR});),
+            CollectiveConfig::noImmigrants());
     case EnemyId::RUINS:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::COTTAGE;

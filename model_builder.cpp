@@ -218,15 +218,19 @@ vector<EnemyInfo> ModelBuilder::getSingleMapEnemiesForLawfulKeeper(TribeId keepe
 }
 
 PModel ModelBuilder::trySingleMapModel(const string& worldName, TribeId keeperTribe, TribeAlignment alignment) {
-  auto getEnemies = [&] {
-    switch (alignment) {
-      case TribeAlignment::EVIL:
-        return getSingleMapEnemiesForEvilKeeper(keeperTribe);
-      case TribeAlignment::LAWFUL:
-        return getSingleMapEnemiesForLawfulKeeper(keeperTribe);
-    }
-  };
-  return tryModel(304, worldName, getEnemies(), keeperTribe, BiomeId::GRASSLAND, {}, true);
+  vector<EnemyInfo> enemyInfo;
+  switch (alignment) {
+    case TribeAlignment::EVIL:
+      enemyInfo = getSingleMapEnemiesForEvilKeeper(keeperTribe);
+      break;
+    case TribeAlignment::LAWFUL:
+      enemyInfo = getSingleMapEnemiesForLawfulKeeper(keeperTribe);
+      break;
+  }
+  for (int i : Range(1, random.get(4)))
+    enemyInfo.push_back(enemyFactory->get(EnemyId::RUINS));
+  enemyInfo.push_back(enemyFactory->get(EnemyId::TEMPLE));
+  return tryModel(304, worldName, enemyInfo, keeperTribe, BiomeId::GRASSLAND, {}, true);
 }
 
 void ModelBuilder::addMapVillainsForLawfulKeeper(vector<EnemyInfo>& enemyInfo, BiomeId biomeId) {
@@ -297,6 +301,8 @@ PModel ModelBuilder::tryCampaignBaseModel(const string& siteName, TribeId keeper
     externalEnemies = ExternalEnemies(random, creatureFactory, enemyFactory->getExternalEnemies());
   for (int i : Range(random.get(3)))
     enemyInfo.push_back(enemyFactory->get(EnemyId::RUINS));
+  if (random.chance(0.3))
+    enemyInfo.push_back(enemyFactory->get(EnemyId::TEMPLE));
   return tryModel(174, siteName, enemyInfo, keeperTribe, biome, std::move(externalEnemies), true);
 }
 
@@ -306,7 +312,7 @@ PModel ModelBuilder::tryTutorialModel(const string& siteName) {
   enemyInfo.push_back(enemyFactory->get(EnemyId::RUINS));
   /*enemyInfo.push_back(enemyFactory->get(EnemyId::BANDITS));
   enemyInfo.push_back(enemyFactory->get(EnemyId::ADA_GOLEMS));*/
-  //enemyInfo.push_back(enemyFactory->get(EnemyId::KRAKEN));
+  enemyInfo.push_back(enemyFactory->get(EnemyId::TEMPLE));
   enemyInfo.push_back(enemyFactory->get(EnemyId::TUTORIAL_VILLAGE));
   return tryModel(174, siteName, enemyInfo, TribeId::getDarkKeeper(), biome, {}, false);
 }
@@ -349,6 +355,8 @@ PModel ModelBuilder::tryCampaignSiteModel(const string& siteName, EnemyId enemyI
   }
   for (int i : Range(random.get(3)))
     enemyInfo.push_back(enemyFactory->get(EnemyId::RUINS));
+  if (random.chance(0.3))
+    enemyInfo.push_back(enemyFactory->get(EnemyId::TEMPLE));
   return tryModel(114, siteName, enemyInfo, none, *biomeId, {}, true);
 }
 

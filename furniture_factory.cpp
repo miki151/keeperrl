@@ -869,3 +869,7 @@ FurnitureParams FurnitureFactory::getRandom(RandomGen& random) {
     return {random.choose(distribution), *tribe};
 }
 
+int FurnitureFactory::numUnique() const {
+  return unique.size();
+}
+

@@ -27,6 +27,7 @@ class FurnitureFactory {
   static PFurniture get(FurnitureType, TribeId);
 
   FurnitureParams getRandom(RandomGen&);
+  int numUnique() const;
 
   static FurnitureFactory roomFurniture(TribeId);
   static FurnitureFactory castleFurniture(TribeId);

@@ -29,7 +29,7 @@ enum class SettlementType {
   COTTAGE,
   FORREST_COTTAGE,
   TOWER,
-  WITCH_HOUSE,
+  TEMPLE,
   MINETOWN,
   ANT_NEST,
   SMALL_MINETOWN,

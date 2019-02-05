@@ -110,6 +110,36 @@ class Predicate {
     return Predicate([=] (LevelBuilder* builder, Vec2 pos) { return builder->canNavigate(pos, m);});
   }
 
+  static Predicate near8AtLeast(FurnitureType type, int count) {
+    return Predicate([=] (LevelBuilder* builder, Vec2 pos) {
+      int cnt = count;
+      for (auto v : pos.neighbors8())
+        if (builder->isFurnitureType(v, type))
+          --cnt;
+      return cnt <= 0;
+    });
+  }
+
+  static Predicate near4AtLeast(FurnitureType type, int count) {
+    return Predicate([=] (LevelBuilder* builder, Vec2 pos) {
+      int cnt = count;
+      for (auto v : pos.neighbors4())
+        if (builder->isFurnitureType(v, type))
+          --cnt;
+      return cnt <= 0;
+    });
+  }
+
+  static Predicate near4Equals(FurnitureType type, int count) {
+    return Predicate([=] (LevelBuilder* builder, Vec2 pos) {
+      int cnt = count;
+      for (auto v : pos.neighbors4())
+        if (builder->isFurnitureType(v, type))
+          --cnt;
+      return cnt == 0;
+    });
+  }
+
   private:
   typedef function<bool(LevelBuilder*, Vec2)> PredFun;
   Predicate(PredFun fun) : predFun(fun) {}
@@ -419,7 +449,8 @@ class Furnitures : public LevelMaker {
     for (Vec2 v : area)
       if (predicate.apply(builder, v) && builder->canPutFurniture(v, FurnitureLayer::MIDDLE))
         available.push_back(v);
-    for (int i : Range(available.size() * density)) {
+    for (int i : Range(max<int>(factory.numUnique(), available.size() * density))) {
+      checkGen(!available.empty());
       Vec2 pos = builder->getRandom().choose(available);
       builder->putFurniture(pos, factory);
       if (attr)
@@ -842,6 +873,7 @@ struct BuildingType {
   optional<FurnitureType> floorInside;
   optional<FurnitureType> floorOutside;
   optional<FurnitureFactory> door;
+  optional<FurnitureType> prettyFloor;
 };
 
 static BuildingType getBuildingInfo(const SettlementInfo& info) {
@@ -870,6 +902,7 @@ static BuildingType getBuildingInfo(const SettlementInfo& info) {
           c.wall = FurnitureType::CASTLE_WALL;
           c.floorInside = FurnitureType::FLOOR;
           c.floorOutside = FurnitureType::MUD;
+          c.prettyFloor = FurnitureType::FLOOR_CARPET1;
           c.door = FurnitureFactory(info.tribe, FurnitureType::IRON_DOOR);
       );
     case BuildingId::DUNGEON:
@@ -984,9 +1017,10 @@ class Buildings : public LevelMaker {
         builder->addAttrib(pos, SquareAttrib::ROOM);
       }
       Vec2 doorLoc = align ? 
-          Vec2(px + builder->getRandom().get(1, w),
+            // if the building is large enough, don't place door near the corner
+          Vec2(px + (w >= 4 ? builder->getRandom().get(2, w - 1) : builder->getRandom().get(1, w)),
                py + (buildingRow * h)) :
-          getRandomExit(Random, Rectangle(px, py, px + w + 1, py + h + 1));
+          getRandomExit(Random, Rectangle(px, py, px + w + 1, py + h + 1), (w >= 4 && h >= 4) ? 2 : 1);
       if (building.floorInside)
         builder->resetFurniture(doorLoc, *building.floorInside);
       if (building.door)
@@ -2035,7 +2069,35 @@ static PMakerQueue cottage(SettlementInfo info) {
     room->addMaker(unique<Furnitures>(Predicate::attrib(SquareAttrib::ROOM), 0.3, *info.furniture));
   if (info.outsideFeatures)
     room->addMaker(unique<Furnitures>(!Predicate::attrib(SquareAttrib::ROOM), 0.1, *info.outsideFeatures));
+  if (building.prettyFloor)
+    room->addMaker(unique<Empty>(SquareChange(*building.prettyFloor)));
   queue->addMaker(unique<Buildings>(1, 2, 5, 7, building, false, std::move(room), false));
+  queue->addMaker(unique<PlaceCollective>(info.collective));
+  queue->addMaker(unique<Inhabitants>(info.inhabitants, info.collective));
+  return queue;
+}
+
+static PMakerQueue temple(RandomGen& random, SettlementInfo info) {
+  BuildingType building = getBuildingInfo(info);
+  auto queue = unique<MakerQueue>();
+  auto room = getElderRoom(info);
+  for (StairKey key : info.upStairs)
+    room->addMaker(unique<Stairs>(StairDirection::UP, key, Predicate::attrib(SquareAttrib::ROOM), none));
+  for (StairKey key : info.downStairs)
+    room->addMaker(unique<Stairs>(StairDirection::DOWN, key, Predicate::attrib(SquareAttrib::ROOM), none));
+  room->addMaker(unique<Margin>(1, unique<Furnitures>(Predicate::attrib(SquareAttrib::ROOM), 0.3, *info.furniture)));
+  auto torchPred = Predicate::attrib(SquareAttrib::ROOM) && random.choose(
+      Predicate::near8AtLeast(building.wall, 4),
+      Predicate::near8AtLeast(building.wall, 5),
+      Predicate::near4AtLeast(building.wall, 1),
+      Predicate::near4Equals(building.wall, 1)
+  );
+  room->addMaker(unique<Furnitures>(torchPred, 1.0, FurnitureFactory(info.tribe, {{FurnitureType::GROUND_TORCH, 1}})));
+  if (info.outsideFeatures)
+    room->addMaker(unique<Furnitures>(!Predicate::attrib(SquareAttrib::ROOM), 0.1, *info.outsideFeatures));
+  if (building.prettyFloor)
+    room->addMaker(unique<Empty>(SquareChange(*building.prettyFloor)));
+  queue->addMaker(unique<Buildings>(1, 2, 4, 5, building, false, std::move(room), false));
   queue->addMaker(unique<PlaceCollective>(info.collective));
   queue->addMaker(unique<Inhabitants>(info.inhabitants, info.collective));
   return queue;
@@ -2163,11 +2225,11 @@ PLevelMaker LevelMaker::towerLevel(RandomGen& random, SettlementInfo info) {
 
 Vec2 getSize(RandomGen& random, SettlementType type) {
   switch (type) {
-    case SettlementType::WITCH_HOUSE:
     case SettlementType::CEMETERY:
     case SettlementType::MOUNTAIN_LAKE:
     case SettlementType::SMALL_VILLAGE: return {15, 15};
     case SettlementType::SWAMP: return {random.get(12, 16), random.get(12, 16)};
+    case SettlementType::TEMPLE:
     case SettlementType::COTTAGE: return {random.get(8, 10), random.get(8, 10)};
     case SettlementType::FORREST_COTTAGE: return {15, 15};
     case SettlementType::FOREST: return {18, 13};
@@ -2472,8 +2534,8 @@ static PMakerQueue getSettlementMaker(RandomGen& random, const SettlementInfo& s
       return forrestCottage(settlement);
     case SettlementType::TOWER:
       return tower(random, settlement, true);
-    case SettlementType::WITCH_HOUSE:
-      return cottage(settlement);
+    case SettlementType::TEMPLE:
+      return temple(random, settlement);
     case SettlementType::FOREST:
       return emptyCollective(settlement);
     case SettlementType::MINETOWN:
