@@ -2776,7 +2776,7 @@
         SPELL_DAMAGE 20 
       }
       body = {
-        type = HumanoidLike LARGE
+        type = Humanoid LARGE
         material = SPIRIT
       }
       chatReactionFriendly = "curses all dungeons"
