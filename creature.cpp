@@ -794,10 +794,12 @@ bool Creature::removeEffect(LastingEffect effect, bool msg) {
 
 void Creature::addPermanentEffect(LastingEffect effect, int count) {
   PROFILE;
-  bool was = isAffected(effect);
+  bool was = attributes->isAffectedPermanently(effect);
   attributes->addPermanentEffect(effect, count);
-  if (!was && isAffected(effect))
+  if (!was && attributes->isAffectedPermanently(effect)) {
     LastingEffects::onAffected(this, effect, true);
+    message(PlayerMessage("The effect is permanent", MessagePriority::HIGH));
+  }
 }
 
 void Creature::removePermanentEffect(LastingEffect effect, int count) {
