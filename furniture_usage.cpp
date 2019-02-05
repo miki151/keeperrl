@@ -22,6 +22,8 @@
 #include "collective.h"
 #include "territory.h"
 #include "game_event.h"
+#include "effect.h"
+#include "name_generator.h"
 
 struct ChestInfo {
   FurnitureType openedType;
@@ -60,6 +62,59 @@ static void useChest(Position pos, WConstFurniture furniture, Creature* c, const
     vector<PItem> items = itemFactory.random();
     c->getGame()->addEvent(EventInfo::ItemsAppeared{c->getPosition(), getWeakPointers(items)});
     c->getPosition().dropItems(std::move(items));
+  }
+}
+
+static void desecrate(Position pos, WConstFurniture furniture, Creature* c) {
+  c->verb("desecrate", "desecrates", "the "+ furniture->getName());
+  pos.removeFurniture(furniture, FurnitureFactory::get(FurnitureType::ALTAR_DES, furniture->getTribe()));
+  switch (Random.get(4)) {
+    case 0:
+      pos.globalMessage("A streak of magical energy is released");
+      c->addPermanentEffect(Random.choose(
+          LastingEffect::RAGE,
+          LastingEffect::BLIND,
+          LastingEffect::PANIC,
+          LastingEffect::SPEED,
+          LastingEffect::FLYING,
+          LastingEffect::SLOWED,
+          LastingEffect::SLOWED,
+          LastingEffect::INSANITY,
+          LastingEffect::COLLAPSED,
+          LastingEffect::INVISIBLE,
+          LastingEffect::TELEPATHY,
+          LastingEffect::BAD_BREATH,
+          LastingEffect::NIGHT_VISION,
+          LastingEffect::PEACEFULNESS));
+      break;
+    case 1:
+      pos.globalMessage("A streak of magical energy is released");
+      Random.choose<Effect>(
+          Effect::IncreaseAttr{ Random.choose(
+              AttrType::DAMAGE, AttrType::DEFENSE, AttrType::SPELL_DAMAGE, AttrType::RANGED_DAMAGE),
+              Random.choose(-3, -2, -1, 1, 2, 3) },
+          Effect::Acid{},
+          Effect::Fire{},
+          Effect::Heal{},
+          Effect::Lasting { LastingEffect::DAM_BONUS },
+          Effect::Lasting { LastingEffect::BLIND },
+          Effect::Lasting { LastingEffect::POISON },
+          Effect::Lasting { LastingEffect::BLEEDING },
+          Effect::Lasting { LastingEffect::HALLU }
+      ).applyToCreature(c);
+      break;
+    case 2: {
+      pos.globalMessage(pos.getGame()->getCreatureFactory()->getNameGenerator()->getNext(NameGeneratorId::DEITY)
+          + " seems to be very angry");
+      auto group = CreatureGroup::singleType(TribeId::getMonster(), "ANGEL");
+      Effect::summon(pos, group, Random.get(3, 6), none);
+      break;
+    }
+    case 3: {
+      c->verb("find", "finds", "some gold coins in the cracks");
+      pos.dropItems(ItemType(ItemType::GoldPiece{}).get(Random.get(50, 100)));
+      break;
+    }
   }
 }
 
@@ -190,6 +245,9 @@ void FurnitureUsage::handle(FurnitureUsageType type, Position pos, WConstFurnitu
     case FurnitureUsageType::SIT_ON_THRONE:
       sitOnThrone(pos, furniture, c);
       break;
+    case FurnitureUsageType::DESECRATE:
+      desecrate(pos, furniture, c);
+      break;
     case FurnitureUsageType::STUDY:
     case FurnitureUsageType::ARCHERY_RANGE:
       break;
@@ -220,6 +278,7 @@ string FurnitureUsage::getUsageQuestion(FurnitureUsageType type, string furnitur
     case FurnitureUsageType::KEEPER_BOARD: return "view " + furnitureName;
     case FurnitureUsageType::PORTAL: return "enter " + furnitureName;
     case FurnitureUsageType::SIT_ON_THRONE: return "sit on " + furnitureName;
+    case FurnitureUsageType::DESECRATE: return "desecrate " + furnitureName;
     default: break;
   }
   return "";

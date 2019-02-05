@@ -708,7 +708,7 @@ class RandomGen {
 
   template <typename T, typename... Args>
   const T& choose(T const& first, T const& second, const Args&... rest) {
-    return chooseImpl(first, 2, second, rest...);
+    return chooseImpl<T>(first, 2, second, rest...);
   }
 
   template <typename T>
@@ -802,7 +802,7 @@ class RandomGen {
   template <typename T, typename... Args>
   const T& chooseImpl(T const& chosen, int total,  T const& next, const Args&... rest) {
     const T& nextChosen = roll(total) ? next : chosen;
-    return chooseImpl(nextChosen, total + 1, rest...);
+    return chooseImpl<T>(nextChosen, total + 1, rest...);
   }
 };
 

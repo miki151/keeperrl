@@ -106,25 +106,27 @@ static void summonFX(Creature* c) {
   c->getGame()->addEvent(EventInfo::FX{c->getPosition(), {FXName::SPAWN, color}});
 }
 
-vector<Creature*> Effect::summon(Creature* c, CreatureId id, int num, TimeInterval ttl, TimeInterval delay) {
+vector<Creature*> Effect::summon(Creature* c, CreatureId id, int num, optional<TimeInterval> ttl, TimeInterval delay) {
   vector<PCreature> creatures;
   for (int i : Range(num))
     creatures.push_back(c->getGame()->getCreatureFactory()->fromId(id, c->getTribeId(), MonsterAIFactory::summoned(c)));
   auto ret = summonCreatures(c, 2, std::move(creatures), delay);
   for (auto c : ret) {
-    c->addEffect(LastingEffect::SUMMONED, ttl, false);
+    if (ttl)
+      c->addEffect(LastingEffect::SUMMONED, *ttl, false);
     summonFX(c);
   }
   return ret;
 }
 
-vector<Creature*> Effect::summon(Position pos, CreatureGroup& factory, int num, TimeInterval ttl, TimeInterval delay) {
+vector<Creature*> Effect::summon(Position pos, CreatureGroup& factory, int num, optional<TimeInterval> ttl, TimeInterval delay) {
   vector<PCreature> creatures;
   for (int i : Range(num))
     creatures.push_back(factory.random(pos.getGame()->getCreatureFactory(), MonsterAIFactory::monster()));
   auto ret = summonCreatures(pos, 2, std::move(creatures), delay);
   for (auto c : ret) {
-    c->addEffect(LastingEffect::SUMMONED, ttl, false);
+    if (ttl)
+      c->addEffect(LastingEffect::SUMMONED, *ttl, false);
     summonFX(c);
   }
   return ret;
@@ -335,6 +337,26 @@ string Effect::Lasting::getDescription() const {
   // Leave out the full stop.
   string desc = LastingEffects::getDescription(lastingEffect);
   return desc.substr(0, desc.size() - 1) + " for some turns.";
+}
+
+void Effect::IncreaseAttr::applyToCreature(Creature* c, Creature*) const {
+  c->you(MsgType::YOUR, ::getName(attr) + get(" improves", " wanes"));
+  c->getAttributes().increaseBaseAttr(attr, amount);
+}
+
+string Effect::IncreaseAttr::getName() const {
+  return ::getName(attr) + get(" boost", " loss");
+}
+
+string Effect::IncreaseAttr::getDescription() const {
+  return get("Increases", "Decreases") + " your "_s + ::getName(attr) + " by " + toString(abs(amount));
+}
+
+const char* Effect::IncreaseAttr::get(const char* ifIncrease, const char* ifDecrease) const {
+  if (amount > 0)
+    return ifIncrease;
+  else
+    return ifDecrease;
 }
 
 void Effect::Permanent::applyToCreature(Creature* c, Creature* attacker) const {

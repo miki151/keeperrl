@@ -20,7 +20,8 @@ enum class FurnitureUsageType {
   ARCHERY_RANGE,
   STUDY,
   PORTAL,
-  SIT_ON_THRONE
+  SIT_ON_THRONE,
+  DESECRATE
 };
 
 class FurnitureUsage {

@@ -44,6 +44,8 @@ class CreatureFactory {
   ViewId getViewId(CreatureId) const;
   const Gender& getGender(CreatureId);
 
+  NameGenerator* getNameGenerator() const;
+
   CreatureFactory(NameGenerator*, const GameConfig*);
   ~CreatureFactory();
 

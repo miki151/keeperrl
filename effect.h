@@ -76,14 +76,14 @@ class Effect {
   SIMPLE_EFFECT(SilverDamage);
   SIMPLE_EFFECT(CurePoison);
 
-  //Lasting effect with a timer
+  //Lasting effect with a timer.
   struct Lasting {
     EFFECT_TYPE_INTERFACE;
     LastingEffect lastingEffect;
     COMPARE_ALL(lastingEffect)
   };
 
-  //Lasting effect forever. Use carefully.
+  //Lasting effect forever.
   struct Permanent {
     EFFECT_TYPE_INTERFACE;
     LastingEffect lastingEffect;
@@ -99,6 +99,13 @@ class Effect {
     AttrType attr;
     AttackType attackType;
     COMPARE_ALL(attr, attackType)
+  };
+  struct IncreaseAttr {
+    EFFECT_TYPE_INTERFACE;
+    AttrType attr;
+    int amount;
+    const char* get(const char* ifIncrease, const char* ifDecrease) const;
+    COMPARE_ALL(attr, amount)
   };
   struct InjureBodyPart {
     EFFECT_TYPE_INTERFACE;
@@ -118,7 +125,7 @@ class Effect {
     vector<Effect> effects;
     COMPARE_ALL(effects)
   };*/
-  MAKE_VARIANT(EffectType, Teleport, Heal, Fire, DestroyEquipment, EnhanceArmor, EnhanceWeapon, Suicide,// Chain,
+  MAKE_VARIANT(EffectType, Teleport, Heal, Fire, DestroyEquipment, EnhanceArmor, EnhanceWeapon, Suicide, IncreaseAttr,// Chain,
       EmitPoisonGas, CircularBlast, Deception, Summon, SummonElement, Acid, Alarm, TeleEnemies, SilverDamage, DoubleTrouble,
       CurePoison, Lasting, Permanent, PlaceFurniture, Damage, InjureBodyPart, LooseBodyPart, RegrowBodyPart, DestroyWalls);
 
@@ -161,8 +168,8 @@ class Effect {
     return effect.getValueMaybe<T>();
   }
 
-  static vector<Creature*> summon(Creature*, CreatureId, int num, TimeInterval ttl, TimeInterval delay = 0_visible);
-  static vector<Creature*> summon(Position, CreatureGroup&, int num, TimeInterval ttl, TimeInterval delay = 0_visible);
+  static vector<Creature*> summon(Creature*, CreatureId, int num, optional<TimeInterval> ttl, TimeInterval delay = 0_visible);
+  static vector<Creature*> summon(Position, CreatureGroup&, int num, optional<TimeInterval> ttl, TimeInterval delay = 0_visible);
   static vector<Creature*> summonCreatures(Position, int radius, vector<PCreature>, TimeInterval delay = 0_visible);
   static vector<Creature*> summonCreatures(Creature*, int radius, vector<PCreature>, TimeInterval delay = 0_visible);
   static void emitPoisonGas(Position, double amount, bool msg);

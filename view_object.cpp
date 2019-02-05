@@ -171,7 +171,8 @@ void ViewObject::setDescription(const string& s) {
 const char* ViewObject::getDefaultDescription() const {
   switch (resource_id) {
     case ViewId::UNKNOWN_MONSTER: return "Unknown creature";
-    case ViewId::ALTAR: return "Shrine";
+    case ViewId::ALTAR: return "Altar";
+    case ViewId::ALTAR_DES: return "Desecrated altar";
     case ViewId::UP_STAIRCASE:
     case ViewId::DOWN_STAIRCASE: return "Stairs";
     case ViewId::BRIDGE: return "Bridge";

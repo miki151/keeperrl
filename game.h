@@ -23,6 +23,7 @@ struct CampaignSetup;
 class GameConfig;
 class AvatarInfo;
 class CreatureFactory;
+class NameGenerator;
 
 class Game : public OwnedObject<Game> {
   public:

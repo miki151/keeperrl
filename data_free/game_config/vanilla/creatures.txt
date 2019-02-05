@@ -2771,6 +2771,7 @@
     {
       viewId = ANGEL
       attr = {
+        DAMAGE 30
         DEFENSE 22
         SPELL_DAMAGE 20 
       }

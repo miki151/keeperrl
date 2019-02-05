@@ -321,36 +321,9 @@ static int getEffectPrice(Effect type) {
       [&](const Effect::EmitPoisonGas&) {
         return 20;
       },
-      [&](const Effect::Deception&) {
-        return 30;
-      },
-      [&](const Effect::CircularBlast&) {
-        return 30;
-      },
-      [&](const Effect::PlaceFurniture&) {
-        return 30;
-      },
-      [&](const Effect::SummonElement&) {
-        return 30;
-      },
-      [&](const Effect::Damage&) {
-        return 30;
-      },
-      [&](const Effect::InjureBodyPart&) {
-        return 30;
-      },
-      [&](const Effect::LooseBodyPart&) {
-        return 30;
-      },
-      [&](const Effect::RegrowBodyPart&) {
-        return 30;
-      },
-      [&](const Effect::DoubleTrouble&) {
+      [&](const auto&) {
         return 30;
       }
-      /*[&](const Effect::Chain& c) {
-        return getEffectPrice(c.effects[0]);
-      }*/
   );
 }
 

@@ -295,6 +295,13 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setUsageType(FurnitureUsageType::FOUNTAIN)
           .setSummonedElement("WATER_ELEMENTAL")
           .setDestroyable(80);
+    case FurnitureType::ALTAR:
+      return Furniture("altar", ViewObject(ViewId::ALTAR, ViewLayer::FLOOR), type, tribe)
+          .setCanHide()
+          .setUsageType(FurnitureUsageType::DESECRATE);
+    case FurnitureType::ALTAR_DES:
+      return Furniture("desecrated altar", ViewObject(ViewId::ALTAR_DES, ViewLayer::FLOOR), type, tribe)
+          .setCanHide();
     case FurnitureType::CHEST:
       return Furniture("chest", ViewObject(ViewId::CHEST, ViewLayer::FLOOR), type, tribe)
           .setCanHide()

@@ -182,6 +182,10 @@ ViewId CreatureFactory::getViewId(CreatureId id) const {
   return idMap.at(id);
 }
 
+NameGenerator* CreatureFactory::getNameGenerator() const {
+  return nameGenerator;
+}
+
 CreatureFactory::CreatureFactory(NameGenerator* n, const GameConfig* config) : nameGenerator(n) {
   while (1) {
     if (auto res = config->readObject(attributes, GameConfigId::CREATURE_ATTRIBUTES))

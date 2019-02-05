@@ -484,7 +484,7 @@ class TileCoordLookup {
     Tile::addTile(ViewId::WATER_ELEMENTAL, sprite("waterelement"));
     Tile::addTile(ViewId::EARTH_ELEMENTAL, sprite("earthelement"));
     Tile::addTile(ViewId::ENT, sprite("ent"));
-    Tile::addTile(ViewId::ANGEL, sprite("ent"));
+    Tile::addTile(ViewId::ANGEL, sprite("angel"));
     Tile::addTile(ViewId::ZOMBIE, sprite("zombie"));
     Tile::addTile(ViewId::SKELETON, sprite("skeleton"));
     Tile::addTile(ViewId::VAMPIRE_LORD, sprite("vampirelord"));
@@ -621,6 +621,7 @@ class TileCoordLookup {
   }
   void genTiles5() {
     Tile::addTile(ViewId::CREATURE_ALTAR, sprite("altar2").setRoundShadow());
+    Tile::addTile(ViewId::ALTAR_DES, sprite("altar_des").setRoundShadow());
     Tile::addTile(ViewId::TORTURE_TABLE, sprite("torturedeco").setRoundShadow());
     Tile::addTile(ViewId::IMPALED_HEAD, sprite("impaledhead").setRoundShadow());
     Tile::addTile(ViewId::WHIPPING_POST, sprite("whipping_post").setRoundShadow());
@@ -1011,6 +1012,7 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::CANDELABRUM_W, symbol(u8"*", Color::ORANGE));
     Tile::addSymbol(ViewId::CANDELABRUM_E, symbol(u8"*", Color::ORANGE));
     Tile::addSymbol(ViewId::ALTAR, symbol(u8"Ω", Color::WHITE, true));
+    Tile::addSymbol(ViewId::ALTAR_DES, symbol(u8"Ω", Color::RED, true));
     Tile::addSymbol(ViewId::CREATURE_ALTAR, symbol(u8"Ω", Color::YELLOW, true));
     Tile::addSymbol(ViewId::TORTURE_TABLE, symbol(u8"=", Color::GRAY));
     Tile::addSymbol(ViewId::IMPALED_HEAD, symbol(u8"⚲", Color::BROWN, true));

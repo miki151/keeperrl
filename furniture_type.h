@@ -107,5 +107,7 @@ RICH_ENUM2(std::uint8_t,
     PORTAL,
     METEOR_SHOWER,
     TUTORIAL_ENTRANCE,
-    PIT
+    PIT,
+    ALTAR,
+    ALTAR_DES
 );
