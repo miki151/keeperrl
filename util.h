@@ -706,11 +706,6 @@ class RandomGen {
     return *it;
   }
 
-  template <typename T, typename... Args>
-  const T& choose(T const& first, T const& second, const Args&... rest) {
-    return chooseImpl<T>(first, 2, second, rest...);
-  }
-
   template <typename T>
   T choose(vector<pair<int, T>> vi) {
     vector<T> v;
@@ -790,19 +785,23 @@ class RandomGen {
     return chooseN(n, vector<T>(v));
   }
 
+  template <typename T, typename... Args>
+  T&& choose(T&& first, T&& second, Args&&... rest) {
+    return chooseImpl(std::forward<T>(first), 2, std::forward<T>(second), std::forward<Args>(rest)...);
+  }
+
   private:
   default_random_engine generator;
   std::uniform_real_distribution<double> defaultDist;
 
   template <typename T>
-  const T& chooseImpl(T const& cur, int total) {
-    return cur;
+  T&& chooseImpl(T&& cur, int total) {
+    return std::forward<T>(cur);
   }
 
   template <typename T, typename... Args>
-  const T& chooseImpl(T const& chosen, int total,  T const& next, const Args&... rest) {
-    const T& nextChosen = roll(total) ? next : chosen;
-    return chooseImpl<T>(nextChosen, total + 1, rest...);
+  T&& chooseImpl(T&& chosen, int total,  T&& next, Args&&... rest) {
+    return chooseImpl(roll(total) ? std::forward<T>(next) : std::forward<T>(chosen), total + 1, std::forward<Args>(rest)...);
   }
 };
 

@@ -78,31 +78,37 @@ static void desecrate(Position pos, WConstFurniture furniture, Creature* c) {
           LastingEffect::SPEED,
           LastingEffect::FLYING,
           LastingEffect::SLOWED,
-          LastingEffect::SLOWED,
           LastingEffect::INSANITY,
           LastingEffect::COLLAPSED,
           LastingEffect::INVISIBLE,
           LastingEffect::TELEPATHY,
+          LastingEffect::MELEE_RESISTANCE,
+          LastingEffect::MELEE_VULNERABILITY,
+          LastingEffect::MAGIC_RESISTANCE,
+          LastingEffect::MAGIC_VULNERABILITY,
+          LastingEffect::RANGED_RESISTANCE,
+          LastingEffect::RANGED_VULNERABILITY,
           LastingEffect::BAD_BREATH,
           LastingEffect::NIGHT_VISION,
           LastingEffect::PEACEFULNESS));
       break;
-    case 1:
+    case 1: {
       pos.globalMessage("A streak of magical energy is released");
-      Random.choose<Effect>(
-          Effect::IncreaseAttr{ Random.choose(
+      auto ef = Random.choose(
+          Effect(Effect::IncreaseAttr{ Random.choose(
               AttrType::DAMAGE, AttrType::DEFENSE, AttrType::SPELL_DAMAGE, AttrType::RANGED_DAMAGE),
-              Random.choose(-3, -2, -1, 1, 2, 3) },
-          Effect::Acid{},
-          Effect::Fire{},
-          Effect::Heal{},
-          Effect::Lasting { LastingEffect::DAM_BONUS },
-          Effect::Lasting { LastingEffect::BLIND },
-          Effect::Lasting { LastingEffect::POISON },
-          Effect::Lasting { LastingEffect::BLEEDING },
-          Effect::Lasting { LastingEffect::HALLU }
-      ).applyToCreature(c);
+              Random.choose(-3, -2, -1, 1, 2, 3) }),
+          Effect(Effect::Acid{}),
+          Effect(Effect::Fire{}),
+          Effect(Effect::Lasting { LastingEffect::DAM_BONUS }),
+          Effect(Effect::Lasting { LastingEffect::BLIND }),
+          Effect(Effect::Lasting { LastingEffect::POISON }),
+          Effect(Effect::Lasting { LastingEffect::BLEEDING }),
+          Effect(Effect::Lasting { LastingEffect::HALLU })
+      );
+      ef.applyToCreature(c);
       break;
+    }
     case 2: {
       pos.globalMessage(pos.getGame()->getCreatureFactory()->getNameGenerator()->getNext(NameGeneratorId::DEITY)
           + " seems to be very angry");
