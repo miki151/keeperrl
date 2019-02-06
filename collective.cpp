@@ -767,32 +767,23 @@ bool Collective::usesEquipment(const Creature* c) const {
 }
 
 vector<Item*> Collective::getAllItems(bool includeMinions) const {
-  vector<Item*> allItems;
-  for (Position v : territory->getAll())
-    append(allItems, v.getItems());
-  if (includeMinions)
-    for (Creature* c : getCreatures())
-      append(allItems, c->getEquipment().getItems());
-  return allItems;
-}
-
-vector<Item*> Collective::getAllItems(ItemPredicate predicate, bool includeMinions) const {
-  vector<Item*> allItems;
-  for (Position v : territory->getAll())
-    append(allItems, v.getItems().filter(predicate));
-  if (includeMinions)
-    for (Creature* c : getCreatures())
-      append(allItems, c->getEquipment().getItems().filter(predicate));
-  return allItems;
+  return getAllItemsImpl(none, includeMinions);
 }
 
 vector<Item*> Collective::getAllItems(ItemIndex index, bool includeMinions) const {
+  return getAllItemsImpl(index, includeMinions);
+}
+
+vector<Item*> Collective::getAllItemsImpl(optional<ItemIndex> index, bool includeMinions) const {
   vector<Item*> allItems;
-  for (Position v : territory->getAll())
-    append(allItems, v.getItems(index));
+  for (auto& v : territory->getAll())
+    append(allItems, index ? v.getItems(*index) : v.getItems());
+  for (auto& v : zones->getPositions(ZoneId::STORAGE_EQUIPMENT))
+    if (!territory->contains(v))
+      append(allItems, v.getItems());
   if (includeMinions)
     for (Creature* c : getCreatures())
-      append(allItems, c->getEquipment().getItems(index));
+      append(allItems, index ? c->getEquipment().getItems(*index) : c->getEquipment().getItems());
   return allItems;
 }
 

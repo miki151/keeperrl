@@ -598,7 +598,7 @@ Item* PlayerControl::chooseEquipmentItem(Creature* creature, vector<Item*> curre
     ScrollPosition* scrollPos) {
   vector<Item*> availableItems;
   vector<Item*> usedItems;
-  vector<Item*> allItems = collective->getAllItems(predicate);
+  vector<Item*> allItems = collective->getAllItems().filter(predicate);
   collective->getMinionEquipment().sortByEquipmentValue(creature, allItems);
   for (Item* item : allItems)
     if (!currentItems.contains(item)) {
