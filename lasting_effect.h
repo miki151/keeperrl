@@ -103,4 +103,5 @@ class LastingEffects {
   static optional<FXVariantName> getFX(LastingEffect);
   static optional<FXInfo> getApplicationFX(LastingEffect);
   static bool canProlong(LastingEffect);
+  static bool obeysFormation(const Creature*, const Creature* against);
 };

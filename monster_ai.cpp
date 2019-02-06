@@ -623,6 +623,8 @@ class Fighter : public Behaviour {
   }
 
   MoveInfo considerFormationMove(Creature* other, FighterPosition position) {
+    if (!LastingEffects::obeysFormation(creature, other) || !creature->getBody().hasBrain())
+      return NoMove;
     auto myPosition = creature->getPosition();
     auto otherPosition = other->getPosition();
     Vec2 enemyDir = myPosition.getDir(otherPosition);

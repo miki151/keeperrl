@@ -1159,3 +1159,12 @@ bool LastingEffects::canProlong(LastingEffect effect) {
       return true;
   }
 }
+
+bool LastingEffects::obeysFormation(const Creature* c, const Creature* against) {
+  if (c->isAffected(LastingEffect::RAGE) || c->isAffected(LastingEffect::INSANITY))
+    return false;
+  else if (auto e = against->getAttributes().getHatedByEffect())
+    if (c->isAffected(*e))
+      return false;
+   return true;
+}
