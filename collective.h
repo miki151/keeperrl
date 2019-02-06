@@ -274,7 +274,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   HeapAllocated<Territory> SERIAL(territory);
   optional<AlarmInfo> SERIAL(alarmInfo);
   HeapAllocated<ConstructionMap> SERIAL(constructions);
-  EntityMap<Item, WConstTask> SERIAL(markedItems);
+  EntityMap<Item, WeakPointer<const Task>> SERIAL(markedItems);
   void updateConstructions();
   void handleTrapPlacementAndProduction();
   void scheduleAutoProduction(function<bool (const Item*)> itemPredicate, int count);
