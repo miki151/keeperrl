@@ -130,14 +130,6 @@ optional<EnemyId> Collective::getEnemyId() const {
 Collective::~Collective() {
 }
 
-void Collective::addCreatureInTerritory(PCreature creature, EnumSet<MinionTrait> traits) {
-  for (Position pos : Random.permutation(territory->getAll()))
-    if (pos.canEnter(creature.get())) {
-      addCreature(std::move(creature), pos, traits);
-      return;
-    }
-}
-
 void Collective::setPopulationGroup(const vector<Creature*>& creatures) {
   for (auto c : copyOf(populationGroups))
     if (c.size() == 1 && creatures.contains(c[0]))
@@ -146,8 +138,6 @@ void Collective::setPopulationGroup(const vector<Creature*>& creatures) {
 }
 
 void Collective::addCreature(PCreature creature, Position pos, EnumSet<MinionTrait> traits) {
-  if (config->getStripSpawns())
-    creature->getEquipment().removeAllItems(creature.get());
   Creature* c = creature.get();
   pos.addCreature(std::move(creature));
   addCreature(c, traits);

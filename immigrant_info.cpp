@@ -14,7 +14,7 @@
 #include "keybinding.h"
 #include "tutorial_highlight.h"
 
-SERIALIZE_DEF(ImmigrantInfo, NAMED(ids), NAMED(frequency), OPTION(requirements), OPTION(traits), OPTION(spawnLocation), OPTION(groupSize), OPTION(autoTeam), OPTION(initialRecruitment), OPTION(consumeIds), NAMED(keybinding), NAMED(sound), OPTION(noAuto), NAMED(tutorialHighlight), OPTION(hiddenInHelp), OPTION(invisible), OPTION(specialTraits))
+SERIALIZE_DEF(ImmigrantInfo, NAMED(ids), NAMED(frequency), OPTION(requirements), OPTION(traits), OPTION(spawnLocation), OPTION(groupSize), OPTION(autoTeam), OPTION(initialRecruitment), OPTION(consumeIds), NAMED(keybinding), NAMED(sound), OPTION(noAuto), NAMED(tutorialHighlight), OPTION(hiddenInHelp), OPTION(invisible), OPTION(specialTraits), OPTION(stripEquipment))
 SERIALIZATION_CONSTRUCTOR_IMPL(ImmigrantInfo)
 
 

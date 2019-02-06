@@ -472,7 +472,7 @@ Immigration::Available Immigration::Available::generate(WImmigration immigration
     immigrants.push_back(immigration->collective->getGame()->getCreatureFactory()->
         fromId(info.getId(numGenerated), immigration->collective->getTribeId(),
             MonsterAIFactory::collective(immigration->collective)));
-    if (immigration->collective->getConfig().getStripSpawns())
+    if (immigration->collective->getConfig().getStripSpawns() && info.stripEquipment)
       immigrants.back()->getEquipment().removeAllItems(immigrants.back().get());
     for (auto& specialTrait : info.getSpecialTraits())
       if (Random.chance(specialTrait.prob))

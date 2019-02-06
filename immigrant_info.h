@@ -139,6 +139,7 @@ class ImmigrantInfo {
     SERIALIZE_ALL(NAMED(candidateProb), NAMED(type))
   };
   vector<RequirementInfo> SERIAL(requirements);
+  bool SERIAL(stripEquipment) = true;
 
   private:
 
