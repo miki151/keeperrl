@@ -194,5 +194,5 @@ SERIALIZABLE_TMPL(EntityMap, Task, Position);
 SERIALIZABLE_TMPL(EntityMap, Task, CostInfo);
 SERIALIZABLE_TMPL(EntityMap, Task, Creature*);
 SERIALIZABLE_TMPL(EntityMap, Item, Creature::Id);
-SERIALIZABLE_TMPL(EntityMap, Item, WConstTask);
+SERIALIZABLE_TMPL(EntityMap, Item, WeakPointer<const Task>);
 template class EntityMap<Creature, milliseconds>;
