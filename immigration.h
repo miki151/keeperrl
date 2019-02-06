@@ -78,6 +78,7 @@ class Immigration : public OwnedObject<Immigration> {
   void occupyRequirements(const Creature*, int immigrantIndex);
   double getRequirementMultiplier(const Group&) const;
   vector<string> getMissingRequirements(const Group&) const;
+  optional<string> getMissingRequirement(const ImmigrantRequirement&, const Group&) const;
   void considerPersistentImmigrants(const vector<ImmigrantInfo>&);
   CostInfo calculateCost(int index, const ExponentialCost&) const;
   bool SERIAL(initialized) = false;

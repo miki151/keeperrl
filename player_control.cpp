@@ -1335,6 +1335,8 @@ void PlayerControl::fillImmigrationHelp(CollectiveInfo& info) const {
         [&](const TutorialRequirement&) {
         },
         [&](const MinTurnRequirement&) {
+        },
+        [&](const NegateRequirement&) {
         }
     ));
     if (auto limit = elem->getLimit())

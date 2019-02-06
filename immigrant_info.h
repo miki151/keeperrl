@@ -55,6 +55,13 @@ struct MinTurnRequirement {
   SERIALIZE_ALL(turn)
 };
 
+class ImmigrantRequirement;
+
+struct NegateRequirement {
+  HeapAllocated<ImmigrantRequirement> SERIAL(r);
+  SERIALIZE_ALL(r);
+};
+
 MAKE_VARIANT2(ImmigrantRequirement,
     AttractionInfo,
     TechId,
@@ -65,7 +72,8 @@ MAKE_VARIANT2(ImmigrantRequirement,
     Pregnancy,
     RecruitmentInfo,
     TutorialRequirement,
-    MinTurnRequirement
+    MinTurnRequirement,
+    NegateRequirement
 );
 
 struct OutsideTerritory { SERIALIZE_EMPTY() };
@@ -117,25 +125,6 @@ class ImmigrantInfo {
   ImmigrantInfo& addOneOrMoreTraits(double chance, vector<LastingEffect>);
 
   template <typename Visitor>
-  struct RequirementVisitor {
-    RequirementVisitor(const Visitor& v, double p) : visitor(v), prob(p) {}
-    const Visitor& visitor;
-    double prob;
-    template <typename Req>
-    void operator()(const Req& r) const {
-      visitor(r, prob);
-    }
-  };
-
-  template <typename Visitor>
-  void visitRequirementsAndProb(const Visitor& visitor) const {
-    for (auto& requirement : requirements) {
-      RequirementVisitor<Visitor> v {visitor, requirement.candidateProb};
-      requirement.type.visit(v);
-    }
-  }
-
-  template <typename Visitor>
   void visitRequirements(const Visitor& visitor) const {
     for (auto& requirement : requirements) {
       requirement.type.visit(visitor);
@@ -144,16 +133,17 @@ class ImmigrantInfo {
 
   SERIALIZATION_DECL(ImmigrantInfo)
 
-  private:
-
-  vector<CreatureId> SERIAL(ids);
-  optional<double> SERIAL(frequency);
   struct RequirementInfo {
     double SERIAL(candidateProb); // chance of candidate immigrant still generated if this requirement is not met.
     ImmigrantRequirement SERIAL(type);
     SERIALIZE_ALL(NAMED(candidateProb), NAMED(type))
   };
   vector<RequirementInfo> SERIAL(requirements);
+
+  private:
+
+  vector<CreatureId> SERIAL(ids);
+  optional<double> SERIAL(frequency);
   EnumSet<MinionTrait> SERIAL(traits);
   SpawnLocation SERIAL(spawnLocation) = OutsideTerritory{};
   Range SERIAL(groupSize) = Range(1, 2);

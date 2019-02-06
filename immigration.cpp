@@ -60,8 +60,8 @@ int Immigration::getAttractionValue(const AttractionType& attraction) const {
   });
 }
 
-static void visitAttraction(const Immigration& immigration, const AttractionInfo& attraction,
-    function<void(int total, int available)> visit) {
+template <typename Visitor>
+static auto visitAttraction(const Immigration& immigration, const AttractionInfo& attraction, Visitor visit) {
   int value = 0;
   int occupation = 0;
   for (auto& type : attraction.types) {
@@ -69,7 +69,7 @@ static void visitAttraction(const Immigration& immigration, const AttractionInfo
     value += thisValue;
     occupation += min(thisValue, immigration.getAttractionOccupation(type));
   }
-  visit(value, max(0, value - occupation));
+  return visit(value, max(0, value - occupation));
 }
 
 vector<string> Immigration::getMissingRequirements(const Available& available) const {
@@ -96,68 +96,99 @@ optional<ImmigrantAutoState> Immigration::getAutoState(int index) const {
   return getValueMaybe(autoState, index);
 }
 
+optional<string> Immigration::getMissingRequirement(const ImmigrantRequirement& requirement, const Group& group) const {
+  PROFILE;
+  auto& immigrantInfo = immigrants[group.immigrantIndex];
+  auto visitor = makeVisitor(
+      [&](const AttractionInfo& attraction) -> optional<string> {
+        return visitAttraction(*this, attraction,
+            [&](int total, int available) -> optional<string> {
+              int required = attraction.amountClaimed * group.count - available;
+              if (required > 0) {
+                const char* extra = total > 0 ? "more " : "";
+                return "Requires " + toString(required) + " " + extra +
+                    combineWithOr(attraction.types.transform(
+                        [&](const AttractionType& type) { return AttractionInfo::getAttractionName(type, required); }));
+              } else
+                return none;
+            });
+      },
+      [&](const TechId& techId) -> optional<string> {
+        if (!collective->getTechnology().researched.count(techId))
+          return "Missing technology: " + techId;
+        else
+          return none;
+      },
+      [&](const SunlightState& state) -> optional<string> {
+        if (state != collective->getGame()->getSunlightInfo().getState())
+          return "Immigrant won't join during the "_s + collective->getGame()->getSunlightInfo().getText();
+        else
+          return none;
+      },
+      [&](const CostInfo& cost) -> optional<string> {
+        if (!collective->hasResource(cost * group.count))
+          return "Not enough " + CollectiveConfig::getResourceInfo(cost.id).name;
+        else
+          return none;
+      },
+      [&](const ExponentialCost& cost) -> optional<string> {
+        if (!collective->hasResource(calculateCost(group.immigrantIndex, cost) * group.count))
+          return "Not enough " + CollectiveConfig::getResourceInfo(cost.base.id).name;
+        else
+          return none;
+      },
+      [&](const FurnitureType& type) -> optional<string> {
+        if (collective->getConstructions().getBuiltCount(type) == 0)
+          return "Requires " + Furniture::getName(type);
+        else
+          return none;
+      },
+      [&](const MinTurnRequirement& type) -> optional<string> {
+        if (collective->getGlobalTime() < type.turn)
+          return "Not available until turn " + toString(type.turn);
+        else
+          return none;
+      },
+      [&](const Pregnancy&) -> optional<string> {
+        for (Creature* c : collective->getCreatures())
+          if (c->isAffected(LastingEffect::PREGNANT))
+            return none;
+        return "Requires a pregnant succubus"_s;
+      },
+      [&](const RecruitmentInfo& info) -> optional<string> {
+        auto col = info.findEnemy(collective->getGame());
+        if (!col)
+          return "Ally doesn't exist"_s;
+        if (!collective->isKnownVillainLocation(col))
+          return "Ally hasn't been discovered"_s;
+        else if (info.getAvailableRecruits(collective->getGame(), immigrantInfo.getId(0)).empty())
+          return "Ally doesn't have recruits available at this moment"_s;
+        else
+          return none;
+      },
+      [&](const TutorialRequirement& t) -> optional<string> {
+        if ((int) collective->getGame()->getPlayerControl()->getTutorial()->getState() < (int) t.state)
+          return "Tutorial not there yet"_s;
+        else
+          return none;
+      },
+      [&](const NegateRequirement& t) -> optional<string> {
+        if (getMissingRequirement(*t.r, group))
+          return none;
+        else
+          return "Not available"_s;
+      }
+  );
+  return requirement.visit(visitor);
+}
+
 vector<string> Immigration::getMissingRequirements(const Group& group) const {
   PROFILE;
   vector<string> ret;
   auto& immigrantInfo = immigrants[group.immigrantIndex];
-   auto visitor = makeVisitor(
-      [&](const AttractionInfo& attraction) {
-        return visitAttraction(*this, attraction,
-            [&](int total, int available) {
-              int required = attraction.amountClaimed * group.count - available;
-              if (required > 0) {
-                const char* extra = total > 0 ? "more " : "";
-                ret.push_back("Requires " + toString(required) + " " + extra +
-                    combineWithOr(attraction.types.transform(
-                        [&](const AttractionType& type) { return AttractionInfo::getAttractionName(type, required); })));
-              }
-            });
-      },
-      [&](const TechId& techId) {
-        if (!collective->getTechnology().researched.count(techId))
-          ret.push_back("Missing technology: " + techId);
-      },
-      [&](const SunlightState& state) {
-        if (state != collective->getGame()->getSunlightInfo().getState())
-          ret.push_back("Immigrant won't join during the "_s + collective->getGame()->getSunlightInfo().getText());
-      },
-      [&](const CostInfo& cost) {
-        if (!collective->hasResource(cost * group.count))
-          ret.push_back("Not enough " + CollectiveConfig::getResourceInfo(cost.id).name);
-      },
-      [&](const ExponentialCost& cost) {
-        if (!collective->hasResource(calculateCost(group.immigrantIndex, cost) * group.count))
-          ret.push_back("Not enough " + CollectiveConfig::getResourceInfo(cost.base.id).name);
-      },
-      [&](const FurnitureType& type) {
-        if (collective->getConstructions().getBuiltCount(type) == 0)
-          ret.push_back("Requires " + Furniture::getName(type));
-      },
-      [&](const MinTurnRequirement& type) {
-        if (collective->getGlobalTime() < type.turn)
-          ret.push_back("Not available until turn " + toString(type.turn));
-      },
-      [&](const Pregnancy&) {
-        for (Creature* c : collective->getCreatures())
-          if (c->isAffected(LastingEffect::PREGNANT))
-            return;
-        ret.push_back("Requires a pregnant succubus");
-      },
-      [&](const RecruitmentInfo& info) {
-        auto col = info.findEnemy(collective->getGame());
-        if (!col)
-          ret.push_back("Ally doesn't exist");
-        if (!collective->isKnownVillainLocation(col))
-          ret.push_back("Ally hasn't been discovered");
-        else if (info.getAvailableRecruits(collective->getGame(), immigrantInfo.getId(0)).empty())
-          ret.push_back("Ally doesn't have recruits available at this moment");
-      },
-      [&](const TutorialRequirement& t) {
-         if ((int) collective->getGame()->getPlayerControl()->getTutorial()->getState() < (int) t.state)
-          ret.push_back("Tutorial not there yet");
-      }
-  );
-  immigrantInfo.visitRequirements(visitor);
+  for (auto& requirement : immigrantInfo.requirements)
+    if (auto req = getMissingRequirement(requirement.type, group))
+      ret.push_back(*req);
   return ret;
 }
 
@@ -165,53 +196,9 @@ double Immigration::getRequirementMultiplier(const Group& group) const {
   PROFILE;
   double ret = 1;
   auto& immigrantInfo = immigrants[group.immigrantIndex];
-  auto visitor = makeVisitor(
-      [&](const AttractionInfo& attraction, double prob) {
-        visitAttraction(*this, attraction,
-            [&](int, int available) { if (available < attraction.amountClaimed) ret *= prob; });
-      },
-      [&](const TechId& techId, double prob) {
-        if (!collective->getTechnology().researched.count(techId))
-          ret *= prob;
-      },
-      [&](const SunlightState& state, double prob) {
-        if (state != collective->getGame()->getSunlightInfo().getState())
-          ret *= prob;
-      },
-      [&](const FurnitureType& type, double prob) {
-        if (collective->getConstructions().getBuiltCount(type) == 0)
-          ret *= prob;
-      },
-      [&](const CostInfo& cost, double prob) {
-        if (!collective->hasResource(cost * group.count))
-          ret *= prob;
-      },
-      [&](const ExponentialCost& cost, double prob) {
-        if (!collective->hasResource(calculateCost(group.immigrantIndex, cost) * group.count))
-          ret *= prob;
-      },
-      [&](const Pregnancy&, double prob) {
-        for (Creature* c : collective->getCreatures())
-          if (c->isAffected(LastingEffect::PREGNANT))
-            return;
-        ret *= prob;
-      },
-      [&](const RecruitmentInfo& info, double prob) {
-        WCollective col = info.findEnemy(collective->getGame());
-        if (!col || !collective->isKnownVillainLocation(col) ||
-            info.getAvailableRecruits(collective->getGame(), immigrantInfo.getId(0)).empty())
-          ret *= prob;
-      },
-      [&](const MinTurnRequirement& type, double prob) {
-        if (collective->getGlobalTime() < type.turn)
-          ret *= prob;
-      },
-      [&](const TutorialRequirement& t, double prob) {
-        if ((int) collective->getGame()->getPlayerControl()->getTutorial()->getState() < (int) t.state)
-          ret *= prob;
-      }
-    );
-  immigrants[group.immigrantIndex].visitRequirementsAndProb(visitor);
+  for (auto& requirement : immigrantInfo.requirements)
+    if (getMissingRequirement(requirement.type, group))
+      ret *= requirement.candidateProb;
   return ret;
 }
 
@@ -237,7 +224,8 @@ void Immigration::occupyRequirements(const Creature* c, int index) {
       },
       [&](const RecruitmentInfo&) {},
       [&](const MinTurnRequirement&) {},
-      [&](const TutorialRequirement&) {}
+      [&](const TutorialRequirement&) {},
+      [&](const NegateRequirement&) {}
   );
   immigrants[index].visitRequirements(visitor);
 }
