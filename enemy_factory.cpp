@@ -759,7 +759,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
     case EnemyId::TEMPLE:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::TEMPLE;
-            c.tribe = TribeId::getMonster();
+            c.tribe = TribeId::getHuman();
             c.race = "altar"_s;
             if (random.roll(3))
               c.inhabitants.leader = CreatureList("PRIEST");
