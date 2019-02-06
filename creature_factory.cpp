@@ -49,6 +49,7 @@
 #include "effect.h"
 #include "game_event.h"
 #include "game_config.h"
+#include "creature_inventory.h"
 
 class BoulderController : public Monster {
   public:
@@ -188,10 +189,25 @@ NameGenerator* CreatureFactory::getNameGenerator() const {
 
 CreatureFactory::CreatureFactory(NameGenerator* n, const GameConfig* config) : nameGenerator(n) {
   while (1) {
-    if (auto res = config->readObject(attributes, GameConfigId::CREATURE_ATTRIBUTES))
+    cont:
+    if (auto res = config->readObject(attributes, GameConfigId::CREATURE_ATTRIBUTES)) {
       USER_INFO << *res;
-    else
-      break;
+      continue;
+    }
+    vector<pair<vector<CreatureId>, CreatureInventory>> input;
+    if (auto res = config->readObject(input, GameConfigId::CREATURE_INVENTORY)) {
+      USER_INFO << *res;
+      continue;
+    }
+    for (auto& elem : input)
+      for (auto& id : elem.first) {
+        if (inventory.count(id)) {
+          USER_INFO << "CreatureId appears more than once: " << id;
+          goto cont;
+        }
+        inventory.insert(make_pair(id, elem.second));
+      }
+    break;
   }
 }
 
@@ -779,250 +795,16 @@ PCreature CreatureFactory::getGhost(Creature* creature) const {
   return ret;
 }
 
-ItemType randomHealing() {
-  return ItemType::Potion{Effect::Heal{}};
-}
-
-ItemType randomBackup() {
-  return Random.choose(
-      ItemType(ItemType::Scroll{Effect::Teleport{}}),
-      randomHealing());
-}
-
-ItemType randomArmor() {
-  return Random.choose({ItemType(ItemType::LeatherArmor{}), ItemType(ItemType::ChainArmor{})}, {4, 1});
-}
-
-class ItemList {
-  public:
-  ItemList& maybe(double chance, ItemType id, int num = 1) {
-    if (Random.getDouble() <= chance)
-      add(id, num);
-    return *this;
-  }
-
-  ItemList& maybe(double chance, const vector<ItemType>& ids) {
-    if (Random.getDouble() <= chance)
-      for (ItemType id : ids)
-        add(id);
-    return *this;
-  }
-
-  ItemList& add(ItemType id, int num = 1) {
-    for (int i : Range(num))
-      ret.push_back(id);
-    return *this;
-  }
-
-  ItemList& add(vector<ItemType> ids) {
-    for (ItemType id : ids)
-      ret.push_back(id);
-    return *this;
-  }
-
-  operator vector<ItemType>() {
-    return ret;
-  }
-
-  private:
-  vector<ItemType> ret;
-};
-
-static vector<ItemType> getDefaultInventory(CreatureId id) {
-  if (id == "KEEPER_MAGE_F" || id == "KEEPER_MAGE")
-    return ItemList()
-      .add(ItemType(ItemType::Robe{}));
-  else if (id == "KEEPER_KNIGHT_F" || id == "KEEPER_KNIGHT" || id == "KEEPER_KNIGHT_WHITE_F" || id == "KEEPER_KNIGHT_WHITE")
-      return ItemList()
-        .add(ItemType::LeatherArmor{})
-        .add(ItemType::LeatherHelm{})
-        .add(ItemType::Sword{});
-  else if (id == "CYCLOPS")
-      return ItemList()
-        .add(ItemType::HeavyClub{})
-        .add(ItemType::GoldPiece{}, Random.get(40, 80));
-  else if (id == "GREEN_DRAGON")
-      return ItemList().add(ItemType::GoldPiece{}, Random.get(60, 100));
-  else if (id == "DEMON_DWELLER")
-      return ItemList().add(ItemType::GoldPiece{}, Random.get(5, 10));
-  else if (id == "RED_DRAGON")
-      return ItemList().add(ItemType::GoldPiece{}, Random.get(120, 200));
-  else if (id == "ANGEL")
-      return ItemList().add(ItemType(ItemType::Sword{}).setPrefixChance(0.1));
-  else if (id == "DEMON_LORD")
-      return ItemList().add(ItemType(ItemType::Sword{}).setPrefixChance(1));
-  else if (id == "ADVENTURER_F" || id == "ADVENTURER")
-      return ItemList()
-        .add(ItemType::FirstAidKit{}, 3)
-        .add(ItemType::Knife{})
-        .add(ItemType::Sword{})
-        .add(ItemType::LeatherGloves{})
-        .add(ItemType::LeatherArmor{})
-        .add(ItemType::LeatherHelm{})
-        .add(ItemType::GoldPiece{}, Random.get(16, 26));
-  else if (id == "ELEMENTALIST")
-      return ItemList()
-          .add(ItemType::IronStaff{})
-          .add(ItemType::Torch{});
-  else if (id == "DEATH")
-      return ItemList()
-        .add(ItemType::Scythe{});
-  else if (id == "KOBOLD")
-      return ItemList()
-        .add(ItemType::Spear{});
-  else if (id == "GOBLIN")
-      return ItemList()
-        .add(ItemType::Club{})
-        .maybe(0.3, ItemType::LeatherBoots{});
-  else if (id == "WARRIOR")
-      return ItemList()
-        .add(ItemType::LeatherArmor{})
-        .add(ItemType::Club{})
-        .add(ItemType::GoldPiece{}, Random.get(2, 5));
-  else if (id == "SHAMAN")
-      return ItemList()
-        .add(ItemType::LeatherArmor{})
-        .add(ItemType::Club{})
-        .add(ItemType::GoldPiece{}, Random.get(80, 120));
-  else if (id == "LIZARDLORD")
-      return ItemList().add(ItemType::LeatherArmor{})
-        .add(ItemType::Potion{Effect::RegrowBodyPart{}})
-        .add(ItemType::GoldPiece{}, Random.get(50, 90));
-  else if (id == "LIZARDMAN")
-      return ItemList().add(ItemType::LeatherArmor{})
-        .add(ItemType::GoldPiece{}, Random.get(2, 4));
-  else if (id == "HARPY")
-      return ItemList()
-        .add(ItemType::Bow{});
-  else if (id == "ARCHER")
-      return ItemList()
-        .add(ItemType::Bow{})
-        .add(ItemType::Knife{})
-        .add(ItemType::LeatherArmor{})
-        .add(ItemType::LeatherBoots{})
-        .maybe(0.3, ItemType::Torch{})
-        .add(randomHealing())
-        .add(ItemType::GoldPiece{}, Random.get(4, 10));
-  else if (id == "WITCHMAN")
-      return ItemList()
-        .add(ItemType::Sword{})
-        .add(ItemType::LeatherArmor{})
-        .add(ItemType::LeatherBoots{})
-        .add(randomHealing())
-        .add(ItemType::Potion{Effect::Lasting{LastingEffect::SPEED}}, 4)
-        .add(ItemType::GoldPiece{}, Random.get(60, 80));
-  else if (id == "PRIEST")
-      return ItemList()
-        .add(ItemType::IronStaff{})
-        .add(ItemType::LeatherBoots{})
-        .add(ItemType(ItemType::Robe{}).setPrefixChance(1));
-  else if (id == "KNIGHT")
-      return ItemList()
-        .add(ItemType::Sword{})
-        .add(ItemType::ChainArmor{})
-        .add(ItemType::LeatherBoots{})
-        .maybe(0.3, ItemType::Torch{})
-        .add(randomHealing())
-        .add(ItemType::GoldPiece{}, Random.get(6, 16));
-  else if (id == "MINOTAUR")
-      return ItemList()
-        .add(ItemType::BattleAxe{});
-  else if (id == "DUKE")
-      return ItemList()
-        .add(ItemType(ItemType::BattleAxe{}).setPrefixChance(1))
-        .add(ItemType::ChainArmor{})
-        .add(ItemType::IronHelm{})
-        .add(ItemType::IronBoots{})
-        .add(randomHealing(), 3)
-        .maybe(0.3, ItemType::Torch{})
-        .add(ItemType::GoldPiece{}, Random.get(140, 200));
-  else if (id == "ORC")
-      return ItemList()
-        .add(ItemType::Club{})
-        .add(ItemType::LeatherArmor{});
-  else if (id == "OGRE")
-      return ItemList().add(ItemType::HeavyClub{});
-  else if (id == "BANDIT")
-      return ItemList()
-        .add(ItemType::Sword{})
-        .maybe(0.3, randomBackup())
-        .maybe(0.3, ItemType::Torch{})
-        .maybe(0.05, ItemType::Bow{});
-  else if (id == "DWARF")
-      return ItemList()
-        .add(Random.choose({ItemType(ItemType::BattleAxe{}), ItemType(ItemType::WarHammer{})}, {1, 1}))
-        .maybe(0.6, randomBackup())
-        .add(ItemType::ChainArmor{})
-        .maybe(0.5, ItemType::IronHelm{})
-        .maybe(0.3, ItemType::IronBoots{})
-        .maybe(0.3, ItemType::Torch{})
-        .add(ItemType::GoldPiece{}, Random.get(2, 6));
-  else if (id == "DWARF_BARON")
-      return ItemList()
-        .add(Random.choose(
-            ItemType(ItemType::BattleAxe{}).setPrefixChance(1),
-            ItemType(ItemType::WarHammer{}).setPrefixChance(1)))
-        .add(randomBackup())
-        .add(randomHealing())
-        .add(ItemType::ChainArmor{})
-        .add(ItemType::IronBoots{})
-        .add(ItemType::IronHelm{})
-        .maybe(0.3, ItemType::Torch{})
-        .add(ItemType::GoldPiece{}, Random.get(80, 120));
-  else if (id == "GNOME_CHIEF")
-      return ItemList()
-        .add(ItemType::Sword{})
-        .add(randomBackup());
-  else if (id == "VAMPIRE_LORD")
-      return ItemList()
-        .add(ItemType(ItemType::Robe{}))
-        .add(ItemType(ItemType::IronStaff{}));
-  else if (id == "DARK_ELF_LORD" || id == "ELF_LORD")
-      return ItemList()
-        .add(ItemType(ItemType::ElvenSword{}).setPrefixChance(1))
-        .add(ItemType::LeatherArmor{})
-        .add(ItemType::ElvenBow{})
-        .add(ItemType::GoldPiece{}, Random.get(80, 120))
-        .add(randomBackup());
-  else if (id == "DRIAD")
-      return ItemList()
-        .add(ItemType::Bow{});
-  else if (id == "DARK_ELF_WARRIOR")
-      return ItemList()
-        .add(ItemType::ElvenSword{})
-        .add(ItemType::LeatherArmor{})
-        .add(ItemType::GoldPiece{}, Random.get(2, 6))
-        .add(randomBackup());
-  else if (id == "ELF_ARCHER")
-      return ItemList()
-        .add(ItemType::ElvenSword{})
-        .add(ItemType::LeatherArmor{})
-        .add(ItemType::Bow{})
-        .add(ItemType::GoldPiece{}, Random.get(2, 6))
-        .add(randomBackup());
-  else if (id == "WITCH")
-      return ItemList()
-        .add(ItemType::Knife{})
-        .add({
-            ItemType::Potion{Effect::Heal{}},
-            ItemType::Potion{Effect::Lasting{LastingEffect::SLEEP}},
-            ItemType::Potion{Effect::Lasting{LastingEffect::SLOWED}},
-            ItemType::Potion{Effect::Lasting{LastingEffect::BLIND}},
-            ItemType::Potion{Effect::Lasting{LastingEffect::INVISIBLE}},
-            ItemType::Potion{Effect::Lasting{LastingEffect::POISON}},
-            ItemType::Potion{Effect::Lasting{LastingEffect::SPEED}}});
-  else if (id == "HALLOWEEN_KID")
-      return ItemList()
-        .add(ItemType::BagOfCandies{})
-        .add(ItemType::HalloweenCostume{});
-  else if (id == "SHOPKEEPER")
-      return ItemList()
-        .add(ItemType::GoldPiece{}, Random.get(20, 60))
-        .add(ItemType::Sword{})
-        .add(ItemType::LeatherArmor{})
-        .add(ItemType::LeatherBoots{})
-        .add(ItemType::Potion{Effect::Heal{}}, 2);
-  else
+vector<ItemType> CreatureFactory::getDefaultInventory(CreatureId id) const {
+  if (inventory.count(id)) {
+    auto& inventoryGen = inventory.at(id);
+    vector<ItemType> items;
+    for (auto& elem : inventoryGen.elems)
+      if (Random.chance(elem.chance))
+        for (int i : Range(Random.get(elem.countMin, elem.countMax + 1)))
+          items.push_back(ItemType(elem.type).setPrefixChance(elem.prefixChance));
+    return items;
+  } else
     return {};
 }
 

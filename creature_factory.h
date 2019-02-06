@@ -27,6 +27,7 @@ class CreatureAttributes;
 class ControllerFactory;
 class NameGenerator;
 class GameConfig;
+class CreatureInventory;
 
 class CreatureFactory {
   public:
@@ -39,7 +40,6 @@ class CreatureFactory {
   PCreature getGhost(Creature*) const;
   static PCreature getIllusion(Creature*);
 
-  static void addInventory(Creature*, const vector<ItemType>& items);
   static CreatureAttributes getKrakenAttributes(ViewId, const char* name);
   ViewId getViewId(CreatureId) const;
   const Gender& getGender(CreatureId);
@@ -60,4 +60,7 @@ class CreatureFactory {
   mutable map<CreatureId, ViewId> idMap;
   NameGenerator* nameGenerator;
   map<CreatureId, CreatureAttributes> attributes;
+  map<CreatureId, CreatureInventory> inventory;
+  vector<ItemType> getDefaultInventory(CreatureId) const;
+  static void addInventory(Creature*, const vector<ItemType>& items);
 };
