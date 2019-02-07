@@ -84,4 +84,4 @@ bool PositionMatching::findPath(Position pos, PositionSet& visited, bool matched
     return (!match || findPath(*match, visited, true));
 }
 
-SERIALIZE_DEF(PositionMatching, matches, reverseMatches, targets)
+SERIALIZE_DEF(PositionMatching, SUBCLASS(OwnedObject<PositionMatching>), matches, reverseMatches, targets)
