@@ -518,7 +518,7 @@ vector<SGuiElem> WindowView::getClickableGuiElems() {
   return ret;
 }
 
-void WindowView::setScrollPos(Vec2 pos) {
+void WindowView::setScrollPos(Position pos) {
   mapGui->setCenter(pos);
 }
 
@@ -535,7 +535,6 @@ void WindowView::drawLevelMap(const CreatureView* creature) {
 }
 
 void WindowView::updateMinimap(const CreatureView* creature) {
-  WConstLevel level = creature->getLevel();
   Vec2 rad(40, 40);
   Vec2 playerPos = mapGui->getScreenPos().div(mapLayout->getSquareSize());
   Rectangle bounds(playerPos - rad, playerPos + rad);
@@ -574,7 +573,7 @@ void WindowView::playSounds(const CreatureView* view) {
   for (auto& sound : soundQueue) {
     auto lastTime = lastPlayed[sound.getId()];
     if ((!lastTime || curTime > *lastTime + soundCooldown) && (!sound.getPosition() ||
-        (sound.getPosition()->isSameLevel(view->getLevel()) && sound.getPosition()->getCoord().inRectangle(area)))) {
+        (sound.getPosition()->isSameLevel(view->getPosition().getLevel()) && sound.getPosition()->getCoord().inRectangle(area)))) {
       soundLibrary->playSound(sound);
       lastPlayed[sound.getId()] = curTime;
     }
@@ -1093,6 +1092,11 @@ optional<int> WindowView::chooseFromListInternal(const string& title, const vect
 void WindowView::presentText(const string& title, const string& text) {
   TempClockPause pause(clock);
   presentList(title, ListElem::convert({text}), false);
+}
+
+void WindowView::presentTextBelow(const string& title, const string& text) {
+  TempClockPause pause(clock);
+  presentList(title, ListElem::convert({text}), false, MenuType::NORMAL_BELOW);
 }
 
 void WindowView::presentList(const string& title, const vector<ListElem>& options, bool scrollDown, MenuType menu,

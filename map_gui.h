@@ -34,6 +34,8 @@ class Options;
 class TutorialInfo;
 class UserInput;
 class FXViewManager;
+class Position;
+
 namespace fx {
   class FXRenderer;
 }
@@ -65,7 +67,7 @@ class MapGui : public GuiElem {
   void addAnimation(PAnimation animation, Vec2 position);
   void addAnimation(const FXSpawnInfo&);
   void setCenter(double x, double y);
-  void setCenter(Vec2 pos);
+  void setCenter(Position);
   void clearCenter();
   void resetScrolling();
   bool isCentered() const;

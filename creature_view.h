@@ -22,6 +22,7 @@ class GameInfo;
 class MapMemory;
 class ViewIndex;
 class Level;
+class Position;
 
 class CreatureView {
   public:
@@ -34,8 +35,7 @@ class CreatureView {
     FOLLOW
   };
   virtual CenterType getCenterType() const = 0;
-  virtual Vec2 getPosition() const = 0;
-  virtual WLevel getLevel() const = 0;
+  virtual Position getPosition() const = 0;
   virtual double getAnimationTime() const = 0;
   virtual vector<Vec2> getVisibleEnemies() const = 0;
   virtual const vector<Vec2>& getUnknownLocations(WConstLevel) const = 0;

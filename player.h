@@ -55,8 +55,7 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   virtual void getViewIndex(Vec2 pos, ViewIndex&) const override;
   virtual const MapMemory& getMemory() const override;
   virtual void refreshGameInfo(GameInfo&) const override;
-  virtual Vec2 getPosition() const override;
-  virtual WLevel getLevel() const override;
+  virtual Position getPosition() const override;
   virtual vector<Vec2> getVisibleEnemies() const override;
   virtual double getAnimationTime() const override;
   virtual CenterType getCenterType() const override;
@@ -106,6 +105,7 @@ class Player : public Controller, public CreatureView, public EventListener<Play
 
   private:
 
+  WLevel getLevel() const;
   void considerAdventurerMusic();
   void creatureClickAction(Position, bool extended);
   void pickUpItemAction(int item, bool multi = false);

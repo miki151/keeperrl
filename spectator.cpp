@@ -18,7 +18,7 @@ const MapMemory& Spectator::getMemory() const {
 }
 
 void Spectator::getViewIndex(Vec2 pos, ViewIndex& index) const {
-  Position position(pos, getLevel());
+  Position position(pos, level);
   position.getViewIndex(index, nullptr);
   if (const Creature* c = position.getCreature())
     index.insert(c->getViewObject());
@@ -28,12 +28,8 @@ void Spectator::refreshGameInfo(GameInfo& gameInfo)  const {
   gameInfo.infoType = GameInfo::InfoType::SPECTATOR;
 }
 
-Vec2 Spectator::getPosition() const {
-  return level->getBounds().middle();
-}
-
-WLevel Spectator::getLevel() const {
-  return level;
+Position Spectator::getPosition() const {
+  return Position(level->getBounds().middle(), level);
 }
 
 double Spectator::getAnimationTime() const {

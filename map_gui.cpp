@@ -763,8 +763,9 @@ void MapGui::setCenter(double x, double y) {
   softCenter = none;
 }
 
-void MapGui::setCenter(Vec2 v) {
-  setCenter(v.x, v.y);
+void MapGui::setCenter(Position pos) {
+  setCenter(pos.getCoord().x, pos.getCoord().y);
+  previousLevel = pos.getLevel();
 }
 
 const static EnumMap<Dir, DirSet> adjacentDirs(
@@ -1229,13 +1230,13 @@ void MapGui::render(Renderer& renderer) {
 }
 
 void MapGui::updateObject(Vec2 pos, CreatureView* view, milliseconds currentTime) {
-  WLevel level = view->getLevel();
+  WLevel level = view->getPosition().getLevel();
   objects[pos].emplace();
   auto& index = *objects[pos];
   view->getViewIndex(pos, index);
   level->setNeedsRenderUpdate(pos, false);
   if (index.hasObject(ViewLayer::FLOOR) || index.hasObject(ViewLayer::FLOOR_BACKGROUND))
-    index.setGradient(GradientType::NIGHT, 1.0 - view->getLevel()->getLight(pos));
+    index.setGradient(GradientType::NIGHT, 1.0 - level->getLight(pos));
   lastSquareUpdate[pos] = currentTime;
   connectionMap[pos].clear();
   shadowed.erase(pos + Vec2(0, 1));
@@ -1277,8 +1278,8 @@ void MapGui::updateObjects(CreatureView* view, MapLayout* mapLayout, bool smooth
     tutorialHighlightLow.clear();
     tutorialHighlightHigh.clear();
   }
-  WLevel level = view->getLevel();
-  levelBounds = view->getLevel()->getBounds();
+  WLevel level = view->getPosition().getLevel();
+  levelBounds = level->getBounds();
   mouseUI = ui;
   layout = mapLayout;
   auto currentTimeReal = clock->getRealMillis();
@@ -1295,7 +1296,6 @@ void MapGui::updateObjects(CreatureView* view, MapLayout* mapLayout, bool smooth
     screenMovement = none;
     clearCenter();
     setCenter(view->getPosition());
-    previousLevel = level;
     mouseOffset = {0, 0};
   }
   keyScrolling = view->getCenterType() == CreatureView::CenterType::NONE;
@@ -1321,16 +1321,16 @@ void MapGui::updateObjects(CreatureView* view, MapLayout* mapLayout, bool smooth
     screenMovement = none;
   if (view->getCenterType() == CreatureView::CenterType::FOLLOW) {
     if (centeredCreaturePosition) {
-      centeredCreaturePosition->pos = view->getPosition();
+      centeredCreaturePosition->pos = view->getPosition().getCoord();
       if (newTurn)
         centeredCreaturePosition->softScroll = false;
     } else
-      centeredCreaturePosition = CenteredCreatureInfo { view->getPosition(), true };
+      centeredCreaturePosition = CenteredCreatureInfo { view->getPosition().getCoord(), true };
   } else {
     centeredCreaturePosition = none;
     if (!isCentered() ||
-        (view->getCenterType() == CreatureView::CenterType::STAY_ON_SCREEN && getDistanceToEdgeRatio(view->getPosition()) < 0.33)) {
-      setSoftCenter(view->getPosition());
+        (view->getCenterType() == CreatureView::CenterType::STAY_ON_SCREEN && getDistanceToEdgeRatio(view->getPosition().getCoord()) < 0.33)) {
+      setSoftCenter(view->getPosition().getCoord());
     }
   }
 }
