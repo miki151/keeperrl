@@ -85,7 +85,8 @@ enum class MenuType {
   MAIN,
   MAIN_NO_TILES,
   GAME_CHOICE,
-  YES_NO
+  YES_NO,
+  YES_NO_BELOW
 };
 
 struct HighscoreList {
@@ -179,6 +180,7 @@ class View {
 
   /** Asks the player a yer-or-no question.*/
   virtual bool yesOrNoPrompt(const string& message, bool defaultNo = false) = 0;
+  virtual bool yesOrNoPromptBelow(const string& message, bool defaultNo = false) = 0;
 
   /** Draws a window with some text. The text is formatted to fit the window.*/
   virtual void presentText(const string& title, const string& text) = 0;

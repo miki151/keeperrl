@@ -35,6 +35,9 @@ class DummyView : public View {
   virtual bool yesOrNoPrompt(const string& message, bool defaultNo = false) override {
     return false;
   }
+  virtual bool yesOrNoPromptBelow(const string& message, bool defaultNo = false) override {
+    return false;
+  }
   virtual void presentText(const string&, const string&) override {}
   virtual void presentList(const string&, const vector<ListElem>&, bool = false,
       MenuType = MenuType::NORMAL, optional<UserInputId> = none) override {}
