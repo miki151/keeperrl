@@ -652,7 +652,10 @@ string Effect::Damage::getDescription() const {
 }
 
 void Effect::InjureBodyPart::applyToCreature(Creature* c, Creature* attacker) const {
-  c->getBody().injureBodyPart(c, part, false);
+  if (c->getBody().injureBodyPart(c, part, false)) {
+    c->you(MsgType::DIE, "");
+    c->dieWithAttacker(attacker);
+  }
 }
 
 string Effect::InjureBodyPart::getName() const {
@@ -664,7 +667,10 @@ string Effect::InjureBodyPart::getDescription() const {
 }
 
 void Effect::LooseBodyPart::applyToCreature(Creature* c, Creature* attacker) const {
-  c->getBody().injureBodyPart(c, part, true);
+  if (c->getBody().injureBodyPart(c, part, true)) {
+    c->you(MsgType::DIE, "");
+    c->dieWithAttacker(attacker);
+  }
 }
 
 string Effect::LooseBodyPart::getName() const {

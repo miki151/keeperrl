@@ -654,7 +654,7 @@ PCreature CreatureFactory::getSpecial(TribeId tribe, bool humanoid, bool large, 
   Body body = Body(humanoid, living ? Body::Material::FLESH : Body::Material::SPIRIT,
       large ? Body::Size::LARGE : Body::Size::MEDIUM);
   if (wings)
-    body.addWings();
+    body.addWithoutUpdatingPermanentEffects(BodyPart::WING, 2);
   string name = getSpeciesName(humanoid, large, living, wings);
   PCreature c = get(CATTR(
         c.viewId = getSpecialViewId(humanoid, large, living, wings);

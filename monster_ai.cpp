@@ -1003,7 +1003,7 @@ class ByCollective : public Behaviour {
       minionEquipment.autoAssign(creature, collective->getAllItems(ItemIndex::MINION_EQUIPMENT, false));
     vector<PTask> tasks;
     for (Item* it : creature->getEquipment().getItems())
-      if (!creature->getEquipment().isEquipped(it) && creature->getEquipment().canEquip(it))
+      if (!creature->getEquipment().isEquipped(it) && creature->getEquipment().canEquip(it, creature->getBody()))
         tasks.push_back(Task::equipItem(it));
     {
       PROFILE_BLOCK("tasks assignment");

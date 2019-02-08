@@ -54,9 +54,6 @@ static void addThird(const Creature* c, MsgType type, const string& param) {
                             break;
     case MsgType::TURN_INVISIBLE: msg = c->getName().the() + " disappears!"; break;
     case MsgType::TURN_VISIBLE: msg = c->getName().the() + " appears out of nowhere!"; break;
-    case MsgType::DROP_WEAPON: msg = c->getName().the() + " drops " +
-                               his(c->getAttributes().getGender()) + " " + param;
-                               break;
     case MsgType::ENTER_PORTAL: msg = c->getName().the() + " disappears in the portal."; break;
     case MsgType::HAPPENS_TO: msg = param + " " + c->getName().the(); break;
     case MsgType::BURN: msg = c->getName().the() + " burns in the " + param; unseenMsg = "You hear a horrible shriek"; break;
@@ -127,7 +124,6 @@ static void addSecond(const Creature* c, MsgType type, const string& param) {
     case MsgType::CAN_SEE_HIDING: msg = param + " can see you hiding"; break;
     case MsgType::TURN_INVISIBLE: msg = "You can see through yourself!"; break;
     case MsgType::TURN_VISIBLE: msg = "You are no longer invisible"; break;
-    case MsgType::DROP_WEAPON: msg = "You drop your " + param; break;
     case MsgType::ENTER_PORTAL: msg = "You enter the portal"; break;
     case MsgType::HAPPENS_TO: msg = param + " you."; break;
     case MsgType::BURN: msg = "You burn in the " + param; break;

@@ -3,6 +3,7 @@
 #include "creature.h"
 #include "creature_attributes.h"
 #include "skill.h"
+#include "body.h"
 
 void applySpecialTrait(SpecialTrait trait, Creature* c) {
   trait.visit(
@@ -14,6 +15,9 @@ void applySpecialTrait(SpecialTrait trait, Creature* c) {
       },
       [&] (LastingEffect effect) {
         c->addPermanentEffect(effect);
+      },
+      [&] (ExtraBodyPart part) {
+        c->getAttributes().add(part.part, part.count);
       },
       [&] (SkillId skill) {
         c->getAttributes().getSkills().increaseValue(skill, 0.4);

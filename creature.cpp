@@ -388,7 +388,7 @@ void Creature::you(const string& param) const {
   getController()->getMessageGenerator().add(this, param);
 }
 
-void Creature::verb(const char* second, const char* third, const string& param) {
+void Creature::verb(const char* second, const char* third, const string& param) const {
   secondPerson("You "_s + second + (param.empty() ? "" : " " + param));
   thirdPerson(getName().the() + " " + third + (param.empty() ? "" : " " + param));
 }
@@ -619,7 +619,7 @@ bool Creature::canEquipIfEmptySlot(const Item* item, string* reason) const {
 }
 
 bool Creature::canEquip(const Item* item) const {
-  return canEquipIfEmptySlot(item, nullptr) && equipment->canEquip(item);
+  return canEquipIfEmptySlot(item, nullptr) && equipment->canEquip(item, getBody());
 }
 
 CreatureAction Creature::equip(Item* item) const {
@@ -631,7 +631,7 @@ CreatureAction Creature::equip(Item* item) const {
   return CreatureAction(this, [=](Creature* self) {
     INFO << getName().the() << " equip " << item->getName();
     EquipmentSlot slot = item->getEquipmentSlot();
-    if (self->equipment->getSlotItems(slot).size() >= self->equipment->getMaxItems(slot)) {
+    if (self->equipment->getSlotItems(slot).size() >= self->equipment->getMaxItems(slot, getBody())) {
       Item* previousItem = self->equipment->getSlotItems(slot)[0];
       self->equipment->unequip(previousItem, self);
     }
@@ -997,11 +997,14 @@ ViewId Creature::getMaxViewIdUpgrade() const {
     return getViewObject().id();
 }
 
-void Creature::dropWeapon() {
-  for (auto weapon : equipment->getSlotItems(EquipmentSlot::WEAPON)) {
-    you(MsgType::DROP_WEAPON, weapon->getName());
-    getPosition().dropItem(equipment->removeItem(weapon, this));
-    break;
+void Creature::dropUnsupportedEquipment() {
+  auto& equipment = getEquipment();
+  for (auto slot : ENUM_ALL(EquipmentSlot)) {
+    auto& items = equipment.getSlotItems(slot);
+    for (int i : Range(equipment.getMaxItems(slot, getBody()), items.size())) {
+      verb("drop your", "drops his", items[i]->getName());
+      position.dropItem(equipment.removeItem(items[i], this));
+    }
   }
 }
 

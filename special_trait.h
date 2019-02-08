@@ -2,12 +2,20 @@
 
 #include "util.h"
 #include "experience_type.h"
+#include "body_part.h"
 
 struct ExtraTraining {
   ExperienceType HASH(type);
   int HASH(increase);
   COMPARE_ALL(type, increase)
   HASH_ALL(type, increase)
+};
+
+struct ExtraBodyPart {
+  BodyPart HASH(part);
+  int HASH(count);
+  COMPARE_ALL(part, count)
+  HASH_ALL(part, count)
 };
 
 struct AttrBonus {
@@ -25,7 +33,7 @@ struct OneOfTraits {
   HASH_ALL(traits)
 };
 
-MAKE_VARIANT2(SpecialTrait, ExtraTraining, LastingEffect, SkillId, AttrBonus, OneOfTraits);
+MAKE_VARIANT2(SpecialTrait, ExtraTraining, LastingEffect, SkillId, AttrBonus, OneOfTraits, ExtraBodyPart);
 
 extern void applySpecialTrait(SpecialTrait, Creature*);
 extern SpecialTrait transformBeforeApplying(SpecialTrait);

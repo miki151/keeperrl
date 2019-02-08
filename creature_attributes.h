@@ -90,6 +90,7 @@ class CreatureAttributes {
   void chatReaction(Creature* me, Creature* other);
   optional<string> getPetReaction(const Creature* me) const;
   string getDescription() const;
+  void add(BodyPart, int count);
   bool isAffected(LastingEffect, GlobalTime) const;
   bool isAffectedPermanently(LastingEffect) const;
   GlobalTime getTimeOut(LastingEffect) const;

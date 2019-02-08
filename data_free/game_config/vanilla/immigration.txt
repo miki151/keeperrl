@@ -65,6 +65,8 @@
             { 0.1 AttractionInfo 1 {FurnitureType TRAINING_WOOD}}
           }
           specialTraits = {
+             { 0.01 { ExtraBodyPart HEAD 1}}
+             { 0.01 { ExtraBodyPart WING 2}}
              { 0.05 { ExtraTraining ARCHERY 2}}
              { 0.05 { ExtraTraining MELEE 2}}
              { 0.03 { AttrBonus DAMAGE 7 LastingEffect INSANITY}}
@@ -105,6 +107,7 @@
             { 0.1 AttractionInfo 1 {FurnitureType TRAINING_IRON}}
           }
           specialTraits = {
+             { 0.02 { ExtraBodyPart HEAD 1}}
              { 0.03 { AttrBonus DAMAGE 5 LastingEffect INSANITY}}
              { 0.03 { AttrBonus DEFENSE 5 LastingEffect SLOWED}}
              { 0.05 { LastingEffect RANGED_VULNERABILITY }}
@@ -147,6 +150,7 @@
             { 0.0 CostInfo CORPSE 1}
           }
           specialTraits = {
+             { 0.1 { ExtraBodyPart HEAD 1}}
              { 0.3 { LastingEffect BLIND }}
              { 0.3 { LastingEffect COLLAPSED }}
           }

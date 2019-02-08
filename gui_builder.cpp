@@ -592,6 +592,12 @@ SGuiElem GuiBuilder::drawSpecialTrait(const SpecialTrait& trait) {
       [&] (SkillId skill) {
         return gui.label("Extra skill: " + Skill::get(skill)->getName(), Color::GREEN);
       },
+      [&] (ExtraBodyPart part) {
+        if (part.count == 1)
+          return gui.label("Extra "_s + getName(part.part), Color::GREEN);
+        else
+          return gui.label(toString(part.count) + " extra "_s + getName(part.part) + "s", Color::GREEN);
+      },
       [&] (const OneOfTraits&)-> SGuiElem {
         FATAL << "Can't draw traits alternative";
         return {};

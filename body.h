@@ -50,7 +50,8 @@ class Body {
   static Body humanoidSpirit(Size);
   static Body nonHumanoidSpirit(Size);
   Body(bool humanoid, Material, Size);
-  void addWings();
+  // To add once the creature has been constructed, use CreatureAttributes::add().
+  void addWithoutUpdatingPermanentEffects(BodyPart, int cnt);
   void setWeight(double);
   void setBodyParts(const EnumMap<BodyPart, int>&);
   void setHumanoidBodyParts(int intrinsicDamage);
@@ -103,7 +104,7 @@ class Body {
   void getBadAdjectives(vector<AdjectiveInfo>&) const;
   optional<Sound> getDeathSound() const;
   optional<AnimationId> getDeathAnimation() const;
-  void injureBodyPart(Creature*, BodyPart, bool drop);
+  bool injureBodyPart(Creature*, BodyPart, bool drop);
 
   void healBodyParts(Creature*, bool regrow);
   int lostOrInjuredBodyParts() const;
@@ -137,8 +138,8 @@ class Body {
   int numInjured(BodyPart) const;
   void clearInjured(BodyPart);
   void clearLost(BodyPart);
-  void looseBodyPart(BodyPart);
-  void injureBodyPart(BodyPart);
+  bool looseBodyPart(BodyPart);
+  bool injureBodyPart(BodyPart);
   void decreaseHealth(double amount);
   bool isPartDamaged(BodyPart, double damage) const;
   bool isCritical(BodyPart) const;
@@ -159,5 +160,6 @@ class Body {
   Size SERIAL(minPushSize);
   optional<BodyPart> getAnyGoodBodyPart() const;
   double getBodyPartHealth() const;
+  void dropUnsupportedEquipment(const Creature*) const;
 };
 
