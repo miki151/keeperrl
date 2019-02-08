@@ -223,7 +223,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
 
   void you(MsgType type, const string& param = "") const;
   void you(const string& param) const;
-  void verb(const char* second, const char* third, const string& param = "") const;
+  void verb(const string& second, const string& third, const string& param = "") const;
   void secondPerson(const PlayerMessage&) const;
   void thirdPerson(const PlayerMessage& playerCanSee, const PlayerMessage& cant) const;
   void thirdPerson(const PlayerMessage& playerCanSee) const;

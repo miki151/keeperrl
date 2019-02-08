@@ -388,7 +388,7 @@ void Creature::you(const string& param) const {
   getController()->getMessageGenerator().add(this, param);
 }
 
-void Creature::verb(const char* second, const char* third, const string& param) const {
+void Creature::verb(const string& second, const string& third, const string& param) const {
   secondPerson("You "_s + second + (param.empty() ? "" : " " + param));
   thirdPerson(getName().the() + " " + third + (param.empty() ? "" : " " + param));
 }
@@ -1002,7 +1002,7 @@ void Creature::dropUnsupportedEquipment() {
   for (auto slot : ENUM_ALL(EquipmentSlot)) {
     auto& items = equipment.getSlotItems(slot);
     for (int i : Range(equipment.getMaxItems(slot, getBody()), items.size())) {
-      verb("drop your", "drops his", items[i]->getName());
+      verb("drop your", "drops "_s + his(attributes->getGender()), items[i]->getName());
       position.dropItem(equipment.removeItem(items[i], this));
     }
   }
