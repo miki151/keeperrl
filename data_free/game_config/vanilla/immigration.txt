@@ -24,6 +24,9 @@
           noAuto = true
           invisible = true
           initialRecruitment = 4
+          specialTraits = {
+             { 1.0 { LastingEffect NAVIGATION_DIGGING_SKILL LastingEffect NO_CARRY_LIMIT }}
+          }
         }
     }
 
@@ -34,9 +37,9 @@
           traits = { WORKER NO_LIMIT NO_EQUIPMENT }
           keybinding = CREATE_IMP
           noAuto = true
-          initialRecruitment = 4
+          initialRecruitment = 7
           requirements = {
-            { 1 ExponentialCost GOLD 30 5 4 }
+            { 1 ExponentialCost GOLD 30 5 7 }
           }
         }
     }
