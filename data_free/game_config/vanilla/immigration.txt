@@ -147,8 +147,8 @@
             { 0.0 CostInfo CORPSE 1}
           }
           specialTraits = {
-             { 0.3 { LastingEffect BLIND }}
-             { 0.3 { LastingEffect COLLAPSED }}
+             { 0.3 { LastingEffect BLIND LastingEffect TELEPATHY}}
+             { 0.3 { LastingEffect COLLAPSED AttrBonus DEFENSE 5}}
           }
         }
         {
