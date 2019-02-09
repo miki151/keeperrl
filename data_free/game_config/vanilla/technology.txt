@@ -8,6 +8,7 @@
   "pig breeding"             { "Build a pigsty to feed your minions." }
   "iron working"             { "Build a forge and produce metal weapons and armor." }
   "jewellery"                { "Build a jeweler room and produce magical rings and amulets."  {"iron working" }}
+  "royal jewellery"          { "Create powerful but expensive jewellery fit for nobility."        {"jewellery" }}
   "two-handed weapons"       { "Produce war hammers and battle axes."                         {"iron working" }}
   "traps"                    { "Produce traps in the workshop." }
   "archery"                  { "Produce bows and arrows." }

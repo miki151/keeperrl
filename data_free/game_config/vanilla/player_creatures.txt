@@ -42,7 +42,7 @@
     immigrantGroups = {"peseants" "white_keeper"}
     technology = {
         "alchemy" "advanced alchemy" "alchemical conversion"
-        "pig breeding" "iron working" "jewellery" "two-handed weapons" "archery" "sorcery"
+        "pig breeding" "iron working" "jewellery" "royal jewellery" "two-handed weapons" "archery" "sorcery"
         "advanced sorcery" "magical weapons" "master sorcery"
     }
     initialTech = { "archery" }
@@ -50,7 +50,7 @@
         "structure" "doors" "floors" "storage" "quarters" "library" "throne" "beds" "beast_cage"
         "pigsty" "training" "crafting" "prison" "orders" "installations"
     }
-    workshopGroups = { "basic" }
+    workshopGroups = { "basic" "white knights workshop" } 
     description = "This Keeper character is new in the game, and is not fully fleshed out yet. It isn't recommended for new players."
   }
 }

@@ -100,6 +100,34 @@
 {
 }
 
+"white knights workshop"
+# Workshop
+{
+}
+
+# Forge
+{
+}
+
+# Lab
+{
+}
+
+# Jewellery for white knight's special royal jewellery technology
+# See lasting_effect.h
+{
+    {{Amulet SWIMMING_SKILL}     40 GOLD 80 "royal jewellery"}
+    {{Ring SLEEP_RESISTANT}      40 GOLD 100 "royal jewellery"}
+    {{Amulet DISARM_TRAPS_SKILL} 40 GOLD 150 "royal jewellery"}
+    {{Amulet AMBUSH_SKILL}       40 GOLD 150 "royal jewellery"}
+    {{Ring RANGED_RESISTANCE}    40 GOLD 200 "royal jewellery"}
+    {{Ring TELEPATHY}            40 GOLD 300 "royal jewellery"}
+    {{Ring FLYING}               40 GOLD 400 "royal jewellery"}
+    {{Ring NO_CARRY_LIMIT}       40 GOLD 600 "royal jewellery"}
+    {{Ring INVISIBLE}            40 GOLD 900 "royal jewellery"}	
+}
+
+
 # Add more groups here, remember that there need to be 4 lists in each group, each for each workshop type.
 # And you need to add your new group to your keeper in player_creatures.txt
 
