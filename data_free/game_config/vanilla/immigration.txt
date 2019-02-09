@@ -39,7 +39,7 @@
           noAuto = true
           initialRecruitment = 7
           requirements = {
-            { 1 ExponentialCost GOLD 30 5 7 }
+            { 1 ExponentialCost GOLD 5 5 7 }
           }
         }
     }
