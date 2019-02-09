@@ -4,6 +4,7 @@
   "advanced alchemy"         { "Produce more powerful potions."                               {"alchemy"} }
   "alchemical conversion"    { "Convert resources to and from gold."                          {"alchemy"} }
   "humanoid mutation"        { "Breed new, very powerful humanoid species."                   {"alchemy"} }
+  "legendary heros"          { "Recruit new and very powerful heros."                         {"advanced sorcery" "two-handed weapons"}}
   "beast mutation"           { "Breed new, very powerful beast species."                      {"alchemy"} }
   "pig breeding"             { "Build a pigsty to feed your minions." }
   "iron working"             { "Build a forge and produce metal weapons and armor." }
