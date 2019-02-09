@@ -420,6 +420,16 @@
           }
         }
         {
+          ids = { "UNICORN" }
+          traits = { FIGHTER }
+          requirements = {
+            { 0.0 TechId "unicorn taming" }
+          }
+          specialTraits = {
+             { 0.1 { LastingEffect FLYING}}
+          }
+        }
+        {
           ids = { "DOG" }
           traits = { FIGHTER DOESNT_TRIGGER NO_LIMIT }
           frequency = 0.1
