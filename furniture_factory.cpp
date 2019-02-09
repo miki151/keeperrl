@@ -17,6 +17,7 @@
 #include "creature_factory.h"
 #include "movement_set.h"
 #include "lasting_effect.h"
+#include "furniture_on_built.h"
 
 static Furniture get(FurnitureType type, TribeId tribe) {
   switch (type) {
@@ -65,8 +66,8 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setUsageTime(5_visible)
           .setCanHide()
           .setDestroyable(80);
-    case FurnitureType::JEWELER:
-      return Furniture("jeweler", ViewObject(ViewId::JEWELER, ViewLayer::FLOOR), type, tribe)
+    case FurnitureType::JEWELLER:
+      return Furniture("jeweller", ViewObject(ViewId::JEWELLER, ViewLayer::FLOOR), type, tribe)
           .setBlocking()
           .setUsageTime(5_visible)
           .setCanHide()
@@ -207,7 +208,7 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setDestroyable(70, DestroyAction::Type::CUT)
           .setFireInfo(Fire(1000, 0.7))
           .setItemDrop(ItemFactory::singleType(ItemType::WoodPlank{}, Range(8, 14)))
-          .setSummonedElement(CreatureId::ENT);
+          .setSummonedElement("ENT");
     case FurnitureType::DECID_TREE:
       return Furniture("tree", ViewObject(ViewId::DECID_TREE, ViewLayer::FLOOR), type, tribe)
           .setCanHide()
@@ -219,7 +220,7 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setDestroyable(100, DestroyAction::Type::BOULDER)
           .setDestroyable(70, DestroyAction::Type::CUT)
           .setItemDrop(ItemFactory::singleType(ItemType::WoodPlank{}, Range(8, 14)))
-          .setSummonedElement(CreatureId::ENT);
+          .setSummonedElement("ENT");
     case FurnitureType::TREE_TRUNK:
       return Furniture("tree trunk", ViewObject(ViewId::TREE_TRUNK, ViewLayer::FLOOR), type, tribe);
     case FurnitureType::BURNT_TREE:
@@ -261,6 +262,26 @@ static Furniture get(FurnitureType type, TribeId tribe) {
       return Furniture("torch", ViewObject(ViewId::TORCH, ViewLayer::TORCH2).setAttachmentDir(Dir::W), type, tribe)
           .setLightEmission(8.2)
           .setLayer(FurnitureLayer::CEILING);
+    case FurnitureType::CANDELABRUM_N:
+      return Furniture("candelabrum", ViewObject(ViewId::CANDELABRUM_NS, ViewLayer::TORCH1).setAttachmentDir(Dir::N), type, tribe)
+          .setLightEmission(8.2)
+          .setLuxury(0.3)
+          .setLayer(FurnitureLayer::CEILING);
+    case FurnitureType::CANDELABRUM_S:
+      return Furniture("candelabrum", ViewObject(ViewId::CANDELABRUM_NS, ViewLayer::TORCH2).setAttachmentDir(Dir::S), type, tribe)
+          .setLightEmission(8.2)
+          .setLuxury(0.3)
+          .setLayer(FurnitureLayer::CEILING);
+    case FurnitureType::CANDELABRUM_E:
+      return Furniture("candelabrum", ViewObject(ViewId::CANDELABRUM_E, ViewLayer::TORCH2).setAttachmentDir(Dir::E), type, tribe)
+          .setLightEmission(8.2)
+          .setLuxury(0.3)
+          .setLayer(FurnitureLayer::CEILING);
+    case FurnitureType::CANDELABRUM_W:
+      return Furniture("candelabrum", ViewObject(ViewId::CANDELABRUM_W, ViewLayer::TORCH2).setAttachmentDir(Dir::W), type, tribe)
+          .setLightEmission(8.2)
+          .setLuxury(0.3)
+          .setLayer(FurnitureLayer::CEILING);
     case FurnitureType::TORTURE_TABLE:
       return Furniture("torture table", ViewObject(ViewId::TORTURE_TABLE, ViewLayer::FLOOR), type,
           tribe)
@@ -272,8 +293,15 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setCanHide()
           .setLuxury(0.7)
           .setUsageType(FurnitureUsageType::FOUNTAIN)
-          .setSummonedElement(CreatureId::WATER_ELEMENTAL)
+          .setSummonedElement("WATER_ELEMENTAL")
           .setDestroyable(80);
+    case FurnitureType::ALTAR:
+      return Furniture("altar", ViewObject(ViewId::ALTAR, ViewLayer::FLOOR), type, tribe)
+          .setCanHide()
+          .setUsageType(FurnitureUsageType::DESECRATE);
+    case FurnitureType::ALTAR_DES:
+      return Furniture("desecrated altar", ViewObject(ViewId::ALTAR_DES, ViewLayer::FLOOR), type, tribe)
+          .setCanHide();
     case FurnitureType::CHEST:
       return Furniture("chest", ViewObject(ViewId::CHEST, ViewLayer::FLOOR), type, tribe)
           .setCanHide()
@@ -349,7 +377,7 @@ static Furniture get(FurnitureType type, TribeId tribe) {
       return Furniture("well", ViewObject(ViewId::WELL, ViewLayer::FLOOR), type, tribe)
           .setCanHide()
           .setFireInfo(Fire(500, 0.5))
-          .setSummonedElement(CreatureId::WATER_ELEMENTAL)
+          .setSummonedElement("WATER_ELEMENTAL")
           .setDestroyable(80);
     case FurnitureType::KEEPER_BOARD:
       return Furniture("message board", ViewObject(ViewId::NOTICE_BOARD, ViewLayer::FLOOR), type, tribe)
@@ -365,6 +393,7 @@ static Furniture get(FurnitureType type, TribeId tribe) {
     case FurnitureType::DOWN_STAIRS:
       return Furniture("stairs", ViewObject(ViewId::DOWN_STAIRCASE, ViewLayer::FLOOR), type, tribe)
           .setCanHide()
+          .setOnBuilt(FurnitureOnBuilt::DOWN_STAIRS)
           .setUsageType(FurnitureUsageType::STAIRS);
     case FurnitureType::SOKOBAN_HOLE:
       return Furniture("hole", ViewObject(ViewId::SOKOBAN_HOLE, ViewLayer::FLOOR), type, tribe)
@@ -382,22 +411,24 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setBlockVision()
           .setConstructMessage(Furniture::FILL_UP)
           .setIsWall()
+          .setForgetAfterBuilding()
           .setDestroyable(200, DestroyAction::Type::BOULDER)
           .setDestroyable(30, DestroyAction::Type::DIG)
           .setDestroyable(200, DestroyAction::Type::HOSTILE_DIG)
           .setDestroyable(2000, DestroyAction::Type::HOSTILE_DIG_NO_SKILL)
-          .setSummonedElement(CreatureId::EARTH_ELEMENTAL);
+          .setSummonedElement("EARTH_ELEMENTAL");
     case FurnitureType::MOUNTAIN2:
       return Furniture("hard rock", ViewObject(ViewId::MOUNTAIN2, ViewLayer::FLOOR), type, tribe)
           .setBlocking()
           .setBlockVision()
           .setConstructMessage(Furniture::FILL_UP)
           .setIsWall()
+          .setForgetAfterBuilding()
           .setDestroyable(500, DestroyAction::Type::BOULDER)
           .setDestroyable(70, DestroyAction::Type::DIG)
           .setDestroyable(500, DestroyAction::Type::HOSTILE_DIG)
           .setDestroyable(2000, DestroyAction::Type::HOSTILE_DIG_NO_SKILL)
-          .setSummonedElement(CreatureId::EARTH_ELEMENTAL);
+          .setSummonedElement("EARTH_ELEMENTAL");
     case FurnitureType::ADAMANTIUM_ORE:
       return Furniture("adamantium ore", ViewObject(ViewId::ADAMANTIUM_ORE, ViewLayer::FLOOR), type, tribe)
           .setBlocking()
@@ -447,6 +478,7 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setBlocking()
           .setBlockVision()
           .setIsWall()
+          .setForgetAfterBuilding()
           .setLuxury(0.2)
           .setConstructMessage(Furniture::REINFORCE)
           .setDestroyable(300, DestroyAction::Type::BOULDER)
@@ -458,6 +490,7 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setBlocking()
           .setBlockVision()
           .setIsWall()
+          .setForgetAfterBuilding()
           .setLuxury(0.2)
           .setConstructMessage(Furniture::REINFORCE)
           .setDestroyable(300, DestroyAction::Type::BOULDER)
@@ -473,18 +506,33 @@ static Furniture get(FurnitureType type, TribeId tribe) {
       return Furniture("wall", ViewObject(ViewId::CASTLE_WALL, ViewLayer::FLOOR), type, tribe)
           .setBlocking()
           .setBlockVision()
+          .setIsBuildingSupport()
           .setIsWall()
-          .setDestroyable(300, DestroyAction::Type::BOULDER);
+          .setDestroyable(300, DestroyAction::Type::BOULDER)
+          .setDestroyable(100, DestroyAction::Type::DIG)
+          .setDestroyable(1900, DestroyAction::Type::HOSTILE_DIG)
+          .setDestroyable(2000, DestroyAction::Type::HOSTILE_DIG_NO_SKILL);
     case FurnitureType::WOOD_WALL:
       return Furniture("wall", ViewObject(ViewId::WOOD_WALL, ViewLayer::FLOOR), type, tribe)
           .setBlocking()
           .setBlockVision()
           .setIsWall()
+          .setIsBuildingSupport()
           .setDestroyable(100, DestroyAction::Type::BOULDER)
-          .setSummonedElement(CreatureId::ENT)
+          .setDestroyable(100, DestroyAction::Type::DIG)
+          .setDestroyable(300, DestroyAction::Type::HOSTILE_DIG)
+          .setDestroyable(300, DestroyAction::Type::HOSTILE_DIG_NO_SKILL)
+          .setSummonedElement("ENT")
           .setFireInfo(Fire(1000, 0.7));
     case FurnitureType::MUD_WALL:
       return Furniture("wall", ViewObject(ViewId::MUD_WALL, ViewLayer::FLOOR), type, tribe)
+          .setBlocking()
+          .setBlockVision()
+          .setIsWall()
+          .setIsBuildingSupport()
+          .setDestroyable(100, DestroyAction::Type::BOULDER);
+    case FurnitureType::RUIN_WALL:
+      return Furniture("wall", ViewObject(ViewId::RUIN_WALL, ViewLayer::FLOOR), type, tribe)
           .setBlocking()
           .setBlockVision()
           .setIsWall()
@@ -572,7 +620,8 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setEntryType(FurnitureEntry::Water{})
           .setDroppedItems(FurnitureDroppedItems::Water{"sinks", "sink", "You hear a splash."_s})
           .setCanBuildBridgeOver()
-          .setSummonedElement(CreatureId::WATER_ELEMENTAL);
+          .setTickType(FurnitureTickType::EXTINGUISH_FIRE)
+          .setSummonedElement("WATER_ELEMENTAL");
       ret.modMovementSet()
           .clearTraits()
           .addTrait(MovementTrait::FLY)
@@ -586,7 +635,8 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setLayer(FurnitureLayer::GROUND)
           .setEntryType(FurnitureEntry::Water{})
           .setCanBuildBridgeOver()
-          .setSummonedElement(CreatureId::WATER_ELEMENTAL);
+          .setTickType(FurnitureTickType::EXTINGUISH_FIRE)
+          .setSummonedElement("WATER_ELEMENTAL");
       ret.modMovementSet()
           .clearTraits()
           .addForcibleTrait(MovementTrait::WALK)
@@ -601,7 +651,8 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setLayer(FurnitureLayer::GROUND)
           .setEntryType(FurnitureEntry::Water{})
           .setCanBuildBridgeOver()
-          .setSummonedElement(CreatureId::WATER_ELEMENTAL);
+          .setTickType(FurnitureTickType::EXTINGUISH_FIRE)
+          .setSummonedElement("WATER_ELEMENTAL");
       ret.modMovementSet()
           .clearTraits()
           .addForcibleTrait(MovementTrait::WALK)
@@ -617,7 +668,7 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setDroppedItems(FurnitureDroppedItems::Water{"burns", "burn", none})
           .setLightEmission(8.2)
           .setCanBuildBridgeOver()
-          .setSummonedElement(CreatureId::FIRE_ELEMENTAL);
+          .setSummonedElement("FIRE_ELEMENTAL");
       ret.modMovementSet()
           .clearTraits()
           .addTrait(MovementTrait::FLY)
@@ -655,12 +706,16 @@ bool FurnitureParams::operator == (const FurnitureParams& p) const {
 
 bool FurnitureFactory::hasSupport(FurnitureType type, Position pos) {
   switch (type) {
+    case FurnitureType::CANDELABRUM_N:
     case FurnitureType::TORCH_N:
       return pos.minus(Vec2(0, 1)).isWall();
+    case FurnitureType::CANDELABRUM_E:
     case FurnitureType::TORCH_E:
       return pos.plus(Vec2(1, 0)).isWall();
+    case FurnitureType::CANDELABRUM_S:
     case FurnitureType::TORCH_S:
       return pos.plus(Vec2(0, 1)).isWall();
+    case FurnitureType::CANDELABRUM_W:
     case FurnitureType::TORCH_W:
       return pos.minus(Vec2(1, 0)).isWall();
     case FurnitureType::IRON_DOOR:
@@ -670,6 +725,15 @@ bool FurnitureFactory::hasSupport(FurnitureType type, Position pos) {
              (pos.minus(Vec2(1, 0)).isWall() && pos.minus(Vec2(-1, 0)).isWall());
     default:
       return true;
+  }
+}
+
+static bool canSilentlyReplace(FurnitureType type) {
+  switch (type) {
+    case FurnitureType::TREE_TRUNK:
+      return true;
+    default:
+      return false;
   }
 }
 
@@ -687,10 +751,11 @@ bool FurnitureFactory::canBuild(FurnitureType type, Position pos) {
         return furniture->getType() == FurnitureType::MOUNTAIN2;
       else
         return false;
-    default:
+    default: {
+      auto original = pos.getFurniture(Furniture::getLayer(type));
       return pos.getFurniture(FurnitureLayer::GROUND)->getMovementSet().canEnter({MovementTrait::WALK}) &&
-          !pos.getFurniture(Furniture::getLayer(type)) &&
-          !pos.isWall();
+          (!original || canSilentlyReplace(original->getType())) && !pos.isWall();
+    }
   }
 }
 
@@ -802,5 +867,9 @@ FurnitureParams FurnitureFactory::getRandom(RandomGen& random) {
     return {f, *tribe};
   } else
     return {random.choose(distribution), *tribe};
+}
+
+int FurnitureFactory::numUnique() const {
+  return unique.size();
 }
 

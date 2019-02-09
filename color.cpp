@@ -41,7 +41,6 @@ Color Color::LIGHT_RED(255, 100, 100);
 Color Color::PINK(255, 20, 147);
 Color Color::ORANGE(255, 165, 0);
 Color Color::BLUE(0, 0, 255);
-Color Color::NIGHT_BLUE(0, 0, 20);
 Color Color::DARK_BLUE(50, 50, 200);
 Color Color::LIGHT_BLUE(100, 100, 255);
 Color Color::SKY_BLUE(0, 191, 255);
@@ -66,6 +65,16 @@ Color Color::f(double r, double g, double b, double a) {
 
 Color Color::operator*(Color c2) {
   return Color(r * c2.r / 255, g * c2.g / 255, b * c2.b / 255, a * c2.a / 255);
+}
+
+Color Color::blend(Color c) const {
+  unsigned int alpha = c.a + 1;
+  unsigned int inv_alpha = 256 - c.a;
+  return Color(
+      (alpha * c.r + inv_alpha * r) >> 8,
+      (alpha * c.g + inv_alpha * g) >> 8,
+      (alpha * c.b + inv_alpha * b) >> 8,
+      a);
 }
 
 bool Color::operator==(const Color& rhs) const {

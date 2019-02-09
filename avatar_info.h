@@ -1,11 +1,18 @@
 #pragma once
 
 #include "util.h"
+#include "keeper_creature_info.h"
+#include "adventurer_creature_info.h"
 
 struct AvatarInfo {
   PCreature playerCreature;
-  enum ImpVariant {
-    IMPS,
-    GOBLINS,
-  } impVariant;
+  variant<KeeperCreatureInfo, AdventurerCreatureInfo> creatureInfo;
+  TribeAlignment tribeAlignment;
 };
+
+class View;
+class GameConfig;
+class Options;
+
+extern variant<AvatarInfo, AvatarMenuOption> getAvatarInfo(View*, const GameConfig*, Options*, const CreatureFactory*);
+extern AvatarInfo getQuickGameAvatar(View*, GameConfig*, const CreatureFactory*);

@@ -50,7 +50,7 @@ void Inventory::addItems(vector<PItem> v) {
     addItem(std::move(it));
 }
 
-PItem Inventory::removeItem(WItem itemRef) {
+PItem Inventory::removeItem(Item* itemRef) {
   PItem item = items.remove(itemRef->getUniqueId());
   weight -= item->getWeight();
   itemsCache.remove(itemRef->getUniqueId());
@@ -61,9 +61,9 @@ PItem Inventory::removeItem(WItem itemRef) {
   return item;
 }
 
-vector<PItem> Inventory::removeItems(vector<WItem> items) {
+vector<PItem> Inventory::removeItems(vector<Item*> items) {
   vector<PItem> ret;
-  for (WItem item : items)
+  for (Item* item : items)
     ret.push_back(removeItem(item));
   return ret;
 }
@@ -81,7 +81,7 @@ vector<PItem> Inventory::removeAllItems() {
   return items.removeAll();
 }
 
-WItem Inventory::getItemById(UniqueEntity<Item>::Id id) const {
+Item* Inventory::getItemById(UniqueEntity<Item>::Id id) const {
   if (auto item = itemsCache.fetch(id))
     return *item;
   else
@@ -89,8 +89,8 @@ WItem Inventory::getItemById(UniqueEntity<Item>::Id id) const {
 }
 
 
-const vector<WItem>& Inventory::getItems(ItemIndex index) const {
-  static vector<WItem> empty;
+const vector<Item*>& Inventory::getItems(ItemIndex index) const {
+  static vector<Item*> empty;
   if (isEmpty()) {
     return empty;
   }
@@ -108,11 +108,11 @@ const ItemCounts&Inventory::getCounts() const {
   return counts;
 }
 
-const vector<WItem>& Inventory::getItems() const {
+const vector<Item*>& Inventory::getItems() const {
   return itemsCache.getElems();
 }
 
-bool Inventory::hasItem(WConstItem itemRef) const {
+bool Inventory::hasItem(const Item* itemRef) const {
   return !!itemsCache.fetch(itemRef->getUniqueId());
 }
 
@@ -125,8 +125,9 @@ double Inventory::getTotalWeight() const {
 }
 
 void Inventory::tick(Position pos) {
-  for (auto item : copyOf(getItems()))
-    if (item && hasItem(item)) {
+  vector<WeakPointer<Item>> itemsCopy = getItems().transform([](const auto& it){ return it->getThis(); });
+  for (auto item : itemsCopy)
+    if (item && hasItem(item.get())) {
       // items might be destroyed or removed from inventory in tick()
       auto oldViewId = item->getViewObject().id();
       item->tick(pos);
@@ -135,9 +136,22 @@ void Inventory::tick(Position pos) {
         addViewId(oldViewId, -1);
         addViewId(newViewId, 1);
       }
-      if (item->isDiscarded() && hasItem(item))
-        removeItem(item);
+      if (item->isDiscarded() && hasItem(item.get()))
+        removeItem(item.get());
     }
+}
+
+bool Inventory::containsAnyOf(const EntitySet<Item>& items) const {
+  if (size() > items.getSize()) {
+    for (auto& item : items)
+      if (!!getItemById(item))
+        return true;
+  } else {
+    for (auto& it : getItems())
+      if (items.contains(it))
+        return true;
+  }
+  return false;
 }
 
 bool Inventory::isEmpty() const {

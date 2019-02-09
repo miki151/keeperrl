@@ -1,0 +1,2847 @@
+# Each element is of the form:
+
+# "CreatureId" { CreatureAttributes }, see creature_attributes.h
+
+{
+  "KEEPER_MAGE"
+    {
+      # Definitions in view_id.h
+      viewId = KEEPER1
+      # ViewId upgrades of Keepers are applied every 5 tech level increases
+      viewIdUpgrades = { KEEPER2 KEEPER3 KEEPER4 }
+      name = {
+        # The name gets changed appropriately to Keeper and Adventurer
+        name = "wizard"
+        # Definitions in name_generator.h
+        firstNameGen = FIRST_MALE
+        # Creature is always referred to as [FirstName] the [Creature name]
+        fullTitle = true
+      }
+      body = {
+        # One of Humanoid, HumanoidLike, Bird, FourLegged and NonHumanoid
+        # size is one of SMALL, MEDIUM, LARGE and HUGE, influences stuff like pushing boulders and being pushed
+        type = Humanoid LARGE
+      }
+      # attr_type.h
+      attr = {
+        DAMAGE 12
+        DEFENSE 12
+        SPELL_DAMAGE 20
+      }
+      # skill.h
+      skills = {
+        LABORATORY 0.2
+      }
+      # experience_type.h
+      maxLevelIncrease = {
+        MELEE 7
+        SPELL 12
+      }
+      # spell.h
+      spells = { HEAL_SELF }
+    }
+
+  "KEEPER_MAGE_F"
+    {
+      viewId = KEEPER_F1
+      attr = {
+        DAMAGE 12
+        DEFENSE 12
+        SPELL_DAMAGE 20 
+      }
+      gender = FEMALE
+      body = {
+        type = Humanoid LARGE
+      }
+      name = {
+        name = "wizard"
+        firstNameGen = FIRST_FEMALE
+        fullTitle = true
+      }
+      viewIdUpgrades = {KEEPER_F2 KEEPER_F3 KEEPER_F4}
+      skills = {
+        LABORATORY 0.2
+      }
+      maxLevelIncrease = {
+        MELEE 7
+        SPELL 12
+      }
+      spells = { HEAL_SELF }
+    }
+  "KEEPER_KNIGHT"
+    {
+      viewId = KEEPER_KNIGHT1
+      attr = {
+        DAMAGE 20
+        DEFENSE 16
+      }
+      body = {
+        type = Humanoid LARGE
+      }
+      name = {
+        name = "knight"
+        firstNameGen = FIRST_MALE
+        fullTitle = true
+      }
+      viewIdUpgrades = {KEEPER_KNIGHT2 KEEPER_KNIGHT3 KEEPER_KNIGHT4}
+      skills = {
+        FORGE 0.2
+      }
+      maxLevelIncrease = {
+        MELEE 12
+        SPELL 3
+      }
+      spells = { HEAL_SELF }
+    }
+  "KEEPER_KNIGHT_F"
+    {
+      viewId = KEEPER_KNIGHT_F1
+      attr = {
+        DAMAGE 20
+        DEFENSE 16
+      }
+      gender = FEMALE
+      body = {
+        type = Humanoid LARGE
+      }
+      name = {
+        name = "knight"
+        firstNameGen = FIRST_FEMALE
+        fullTitle = true
+      }
+      viewIdUpgrades = {KEEPER_KNIGHT_F2 KEEPER_KNIGHT_F3 KEEPER_KNIGHT_F4}
+      skills = {
+        FORGE 0.2
+      }
+      maxLevelIncrease = {
+        MELEE 12
+        SPELL 3
+      }
+      spells = { HEAL_SELF }
+    }
+  "KEEPER_KNIGHT_WHITE"
+    {
+      viewId = DUKE1
+      attr = {
+        DAMAGE 20
+        DEFENSE 16
+      }
+      body = {
+        type = Humanoid LARGE
+      }
+      name = {
+        name = "knight"
+        firstNameGen = FIRST_MALE
+        fullTitle = true
+      }
+      viewIdUpgrades = {DUKE2 DUKE3 DUKE4}
+      skills = {
+        FORGE 0.2
+      }
+      maxLevelIncrease = {
+        MELEE 12
+        SPELL 1
+      }
+      hatedByEffect = HATE_HUMANS
+    }
+  "KEEPER_KNIGHT_WHITE_F"
+    {
+      viewId = DUKE_F1
+      attr = {
+        DAMAGE 20
+        DEFENSE 16
+      }
+      gender = FEMALE
+      body = {
+        type = Humanoid LARGE
+      }
+      name = {
+        name = "knight"
+        firstNameGen = FIRST_FEMALE
+        fullTitle = true
+       }
+      viewIdUpgrades = {DUKE_F2 DUKE_F3 DUKE_F4}
+      skills = {
+        FORGE 0.2
+      }
+      maxLevelIncrease = {
+        MELEE 12
+        SPELL 1
+      }
+      hatedByEffect = HATE_HUMANS
+    }
+  "ADVENTURER"
+    {
+      viewId = PLAYER
+      attr = {
+        DAMAGE 15
+        DEFENSE 20 
+      }
+      body = {
+        type = Humanoid LARGE
+      }
+      name = {
+        name = "squire"
+        firstNameGen = FIRST_MALE
+        fullTitle = true
+       }
+      permanentEffects = {
+        AMBUSH_SKILL 1
+      }
+      maxLevelIncrease = {
+        MELEE 16
+        SPELL 8
+        ARCHERY 8
+      }
+      hatedByEffect = HATE_HUMANS
+    }
+  "ADVENTURER_F"
+    {
+      viewId = PLAYER_F
+      gender = FEMALE
+      attr = {
+        DAMAGE 15
+        DEFENSE 20 
+      }
+      body = {
+        type = Humanoid LARGE
+      }
+      name = {
+        name = "squire"
+        firstNameGen = FIRST_FEMALE
+        fullTitle = true
+       }
+      permanentEffects = {
+        AMBUSH_SKILL 1
+      }
+      maxLevelIncrease = {
+        MELEE 16
+        SPELL 8
+        ARCHERY 8
+      }
+      hatedByEffect = HATE_HUMANS
+    }
+  "UNICORN"
+    {
+      viewId = UNICORN
+      attr = {
+        DAMAGE 16
+        DEFENSE 20
+        SPELL_DAMAGE 20
+      }
+      body = {
+        type = FourLegged LARGE
+        weight = 500
+        intrinsicAttacks = {
+          HEAD { UnicornHorn }
+        }
+       }
+      permanentEffects = {
+        RANGED_RESISTANCE 1
+        MAGIC_RESISTANCE 1
+      }
+      spells = {
+        HEAL_SELF
+        HEAL_OTHER
+        SUMMON_SPIRIT
+      }
+      chatReactionFriendly = "\"mhhhhhrrrr!\""
+      chatReactionHostile = "\"mhhhhhrrrr!\""
+      petReaction = "neighs"
+      name = {
+        name = "unicorn"
+        firstNameGen = DEITY
+        groupName = "herd"
+      }
+    }
+  "BANDIT"
+    {
+      viewId = BANDIT
+      attr = {
+        DAMAGE 15
+        DEFENSE 13
+      }
+      body = {
+        type = Humanoid LARGE
+      }
+      chatReactionFriendly = "curses all law enforcement"
+      chatReactionHostile = "\"Die!\""
+      maxLevelIncrease = {
+        MELEE 2
+      }
+      name = {
+        name = "bandit"
+      }
+      hatedByEffect = HATE_HUMANS
+    }
+  "GHOST"
+    {
+      viewId = GHOST
+      attr = {
+        DEFENSE 35
+        SPELL_DAMAGE 30 
+      }
+      body = {
+        type = NonHumanoid LARGE
+        material = SPIRIT
+      }
+      permanentEffects = {
+        FLYING 1
+        MAGIC_VULNERABILITY 1
+      }
+      chatReactionFriendly = "\"Wouuuouuu!!!\""
+      chatReactionHostile = "\"Wouuuouuu!!!\""
+      name = {
+        name = "ghost"
+      }
+    }
+  "SPIRIT"
+    {
+      viewId = SPIRIT
+      attr = {
+        DEFENSE 35
+        SPELL_DAMAGE 30 
+      }
+      body = {
+        type = NonHumanoid LARGE
+        material = SPIRIT
+        intrinsicAttacks = {
+          TORSO { Intrinsic FIST_ATTACK "spell" 10 {
+              attackType = HIT meleeAttackAttr = SPELL_DAMAGE attackMsg = SPELL } }
+        }
+      }
+      permanentEffects = {
+        FLYING 1
+        MAGIC_VULNERABILITY 1
+      }
+      chatReactionFriendly = "\"Wouuuouuu!!!\""
+      chatReactionHostile = "\"Wouuuouuu!!!\""
+      name = {
+        name = "ancient spirit"
+      }
+    }
+  "LOST_SOUL"
+    {
+      body = {
+        type = NonHumanoid LARGE
+        material = SPIRIT
+        deathSound = none
+        intrinsicAttacks = {
+          TORSO { Intrinsic TOUCH_ATTACK "touch" 0 {
+              attackType = HIT
+              attackMsg = TOUCH
+              victimEffect = Lasting INSANITY
+              attackerEffect = Suicide } }
+        }
+      }
+      viewId = GHOST
+      attr = {
+        DEFENSE 25
+        SPELL_DAMAGE 5 
+      }
+      courage = 100
+      permanentEffects = {
+        FLYING 1
+      }
+      chatReactionFriendly = "\"Wouuuouuu!!!\""
+      chatReactionHostile = "\"Wouuuouuu!!!\""
+      name = {
+        name = "ghost"
+      }
+    }
+  "SUCCUBUS"
+    {
+      attr = {
+        DEFENSE 25
+        SPELL_DAMAGE 5 
+      }
+      viewId = SUCCUBUS
+      body = {
+        type = Humanoid LARGE
+        material = SPIRIT
+        intrinsicAttacks = {
+          TORSO { Intrinsic TOUCH_ATTACK "touch" 0 {
+              attackType = HIT
+              attackMsg = TOUCH
+              victimEffect = Lasting PEACEFULNESS } }
+        }
+        addBodyPart = {
+          WING 2
+        }
+      }
+      permanentEffects = {
+        COPULATION_SKILL 1
+      }
+      gender = FEMALE
+      courage = -1
+      name = {
+        name = "succubus"
+        pluralName = "succubi"
+      }
+    }
+  "DOPPLEGANGER"
+    {
+      viewId = DOPPLEGANGER
+      attr = {
+        DEFENSE 25
+        SPELL_DAMAGE 5 
+      }
+      body = {
+        type = NonHumanoid LARGE
+        material = SPIRIT
+      }
+      permanentEffects = {
+        CONSUMPTION_SKILL 1
+      }
+      name = {
+        name = "doppelganger"
+      }
+    }
+  "WITCH"
+    {
+      viewId = WITCH
+      attr = {
+        DAMAGE 14
+        DEFENSE 14
+        SPELL_DAMAGE 20 
+      }
+      body = {
+        type = Humanoid MEDIUM
+      }
+      name = {
+        name = "witch"
+        pluralName = "witches"
+        firstName = "Cornelia"
+      }
+      gender = FEMALE
+      chatReactionFriendly = "curses all humans"
+      chatReactionHostile = "\"Die!\""
+      skills = {
+        LABORATORY 0.7
+      }
+      maxLevelIncrease = {
+        SPELL 4
+      }
+      hatedByEffect = HATE_HUMANS
+    }
+  "WITCHMAN"
+    {
+      viewId = WITCHMAN
+      attr = {
+        DAMAGE 30
+        DEFENSE 30
+        SPELL_DAMAGE 20 
+      }
+      body = {
+        type = Humanoid LARGE
+      }
+      name = {
+        name = "witchman"
+        pluralName = "witchmen"
+        firstNameGen = FIRST_MALE
+      }
+      permanentEffects = {
+        MAGIC_RESISTANCE 1
+      }
+      chatReactionFriendly = "curses all monsters"
+      chatReactionHostile = "\"Die!\""
+      hatedByEffect = HATE_HUMANS
+    }
+  "CYCLOPS"
+    {
+      viewId = CYCLOPS
+      attr = {
+        DAMAGE 34
+        DEFENSE 40 
+      }
+      body = {
+        type = Humanoid LARGE
+        weight = 400
+      }
+      permanentEffects = {
+        RANGED_RESISTANCE 1
+      }
+      name = {
+        name = "cyclops"
+        pluralName = "cyclopes"
+        firstNameGen = CYCLOPS
+      }
+      maxLevelIncrease = {
+        MELEE 5
+      }
+    }
+  "DEMON_DWELLER"
+    {
+      viewId = DEMON_DWELLER
+      attr = {
+        DAMAGE 25
+        DEFENSE 30
+        SPELL_DAMAGE 35 
+      }
+      body = {
+        type = Humanoid LARGE
+        material = SPIRIT
+        addBodyPart = {
+          WING 2
+        }
+      }
+      permanentEffects = {
+        FLYING 1
+        MAGIC_RESISTANCE 1
+      }
+      courage = 100
+      spells = { BLAST }
+      chatReactionFriendly = "\"Kneel before us!\""
+      chatReactionHostile = "\"Face your death!\""
+      name = {
+        name = "demon dweller"
+        firstNameGen = DEMON
+        groupName = "pack"
+      }
+      maxLevelIncrease = {
+        MELEE 4
+        SPELL 4
+      }
+    }
+  "DEMON_LORD"
+    {
+      viewId = DEMON_LORD
+      attr = {
+        DAMAGE 40
+        DEFENSE 45
+        SPELL_DAMAGE 50 
+      }
+      body = {
+        type = Humanoid LARGE
+        material = SPIRIT
+        addBodyPart = {
+          WING 2
+        }
+       }
+      permanentEffects = {
+        FLYING 1
+        MAGIC_RESISTANCE 1
+      }
+      courage = 100
+      spells = { BLAST }
+      chatReactionFriendly = "\"Kneel before us!\""
+      chatReactionHostile = "\"Face your death!\""
+      name = {
+        name = "Demon Lord"
+        firstNameGen = DEMON
+        groupName = "pack"
+       }
+     maxLevelIncrease = {
+        SPELL 7
+      }
+    }
+  "MINOTAUR"
+    {
+      viewId = MINOTAUR
+      attr = {
+        DAMAGE 35
+        DEFENSE 45 
+      }
+      permanentEffects = {
+        RANGED_RESISTANCE 1
+      }
+      body = {
+        type = Humanoid LARGE
+        weight = 400
+      }
+      maxLevelIncrease = {
+        MELEE 5
+      }
+      name = {
+        name = "minotaur"
+      }
+    }
+  "SOFT_MONSTER"
+    {
+      viewId = SOFT_MONSTER
+      attr = {
+        DAMAGE 45
+        DEFENSE 25 
+      }
+      body = {
+        type = Humanoid LARGE
+        weight = 400
+      }
+      courage = -1
+      name = {
+        name = "soft monster"
+      }
+    }
+  "HYDRA"
+    {
+      viewId = HYDRA
+      attr = {
+        DAMAGE 27
+        DEFENSE 45 
+      }
+      body = {
+        type = NonHumanoid LARGE
+        weight = 400
+        intrinsicAttacks = {
+          HEAD { Intrinsic BITE_ATTACK "fangs" 8 {
+              attackType = BITE
+              attackMsg = BITE
+              victimEffect = Lasting POISON } }
+        }
+      }
+      permanentEffects = {
+        POISON_RESISTANT 1
+        RANGED_RESISTANCE 1
+        SWIMMING_SKILL 1
+      }
+      name = {
+        name = "hydra"
+      }
+    }
+  "SHELOB"
+    {
+      viewId = SHELOB
+      attr = {
+        DAMAGE 40
+        DEFENSE 38 
+      }
+      body = {
+        type = NonHumanoid LARGE
+        bodyParts = {
+          LEG 8
+          TORSO 1
+        }
+        weight = 400
+        deathSound = none
+        intrinsicAttacks = {
+          HEAD { Intrinsic BITE_ATTACK "fangs" 8 {
+              attackType = BITE
+              attackMsg = BITE
+              victimEffect = Lasting POISON } }
+        }
+      }
+      permanentEffects = {
+        POISON_RESISTANT 1
+        RANGED_RESISTANCE 1
+        SPIDER_SKILL 1
+      }
+      name = {
+        name = "giant spider"
+      }
+    }
+  "GREEN_DRAGON"
+    {
+      viewId = GREEN_DRAGON
+      attr = {
+        DAMAGE 40
+        DEFENSE 40 
+      }
+      body = {
+        type = FourLegged HUGE
+        addBodyPart = {
+          WING 2
+        }
+        intrinsicAttacks = {
+          HEAD { Intrinsic BITE_ATTACK "fangs" 12 {
+              attackType = BITE
+              attackMsg = BITE
+              victimEffect = Lasting POISON } }
+        }
+      }
+      permanentEffects = {
+        POISON_RESISTANT 1
+        RANGED_VULNERABILITY 1
+      }
+      name = {
+        name = "green dragon"
+        stackName = "dragon"
+        firstNameGen = DRAGON
+      }
+      spells = {
+        HEAL_SELF
+        CURE_POISON
+        DECEPTION
+        SPEED_SELF
+      }
+    }
+  "RED_DRAGON"
+    {
+      viewId = RED_DRAGON
+      attr = {
+        DAMAGE 40
+        DEFENSE 42 
+      }
+      body = {
+        type = FourLegged HUGE
+        addBodyPart = {
+          WING 2
+        }
+        intrinsicAttacks = {
+          HEAD { Intrinsic BITE_ATTACK "fangs" 15 {
+              attackType = BITE
+              attackMsg = BITE
+              victimEffect = Fire } }
+        }
+      }
+      permanentEffects = {
+        FIRE_RESISTANT 1
+        RANGED_VULNERABILITY 1
+      }
+      name = {
+        name = "red dragon"
+        firstNameGen = DRAGON
+        stackName = "dragon"
+      }
+      spells = {
+        HEAL_SELF
+        CURE_POISON
+        DECEPTION
+        SPEED_SELF
+        FIREBALL_DRAGON
+      }
+    }
+  "KNIGHT_PLAYER"
+    {
+      viewId = KNIGHT
+      attr = {
+        DAMAGE 16
+        DEFENSE 14 
+      }
+      body = {
+        type = Humanoid LARGE
+      }
+      maxLevelIncrease = {
+        MELEE 7
+      }
+      chatReactionFriendly = "curses all dungeons"
+      chatReactionHostile = "\"Die!\""
+      skills = {
+        WORKSHOP 0.3
+        FORGE 0.3
+      }
+      name = {
+        name = "knight"
+        firstNameGen = FIRST_MALE
+      }
+      hatedByEffect = HATE_HUMANS
+    }
+  "JESTER_PLAYER"
+    {
+      viewId = JESTER
+      attr = {
+        DAMAGE 8
+        DEFENSE 8 
+      }
+      body = {
+        type = Humanoid LARGE
+      }
+      permanentEffects = {
+        MAGIC_RESISTANCE 1
+      }
+      chatReactionFriendly = "curses all dungeons"
+      chatReactionHostile = "\"Die!\""
+      name = {
+        name = "jester"
+        firstNameGen = FIRST_MALE
+      }
+      hatedByEffect = HATE_HUMANS
+    }
+  "ARCHER_PLAYER"
+    {
+      viewId = ARCHER
+      attr = {
+        DAMAGE 10
+        DEFENSE 10
+        RANGED_DAMAGE 10 
+      }
+      body = {
+        type = Humanoid LARGE
+      }
+      chatReactionFriendly = "curses all dungeons"
+      chatReactionHostile = "\"Die!\""
+      maxLevelIncrease = {
+        MELEE 4
+        ARCHERY 7
+      }
+      name = {
+        name = "archer"
+        firstNameGen = FIRST_MALE
+      }
+      hatedByEffect = HATE_HUMANS
+    }
+  "PRIEST_PLAYER"
+    {
+      viewId = PRIEST
+      attr = {
+        DAMAGE 12
+        DEFENSE 8
+        SPELL_DAMAGE 16 
+      }
+      body = {
+        type = Humanoid LARGE
+      }
+      chatReactionFriendly = "curses all dungeons"
+      chatReactionHostile = "\"Die!\""
+      maxLevelIncrease = {
+        SPELL 9
+      }
+      name = {
+        name = "priest"
+        firstNameGen = FIRST_MALE
+      }
+      hatedByEffect = HATE_HUMANS
+    }
+  "GNOME_PLAYER"
+    {
+      viewId = GNOME
+      attr = {
+        DAMAGE 10
+        DEFENSE 10 
+      }
+      body = {
+        type = Humanoid MEDIUM
+      }
+      chatReactionFriendly = "talks about crafting"
+      chatReactionHostile = "\"Die!\""
+      skills = {
+        LABORATORY 0.3
+        WORKSHOP 0.6
+        FORGE 0.6
+        JEWELER 0.6
+      }
+      name = {
+        name = "gnome"
+        firstNameGen = DWARF
+      }
+    }
+  "PESEANT_PLAYER"
+    {
+      viewId = PESEANT
+      attr = {
+        DAMAGE 14
+        DEFENSE 12 
+      }
+      body = {
+        type = Humanoid LARGE
+      }
+      chatReactionFriendly = "curses all dungeons"
+      chatReactionHostile = "\"Heeelp!\""
+      skills = {
+        DIGGING 0.1
+      }
+      name = {
+        name = "peasant"
+      }
+      hatedByEffect = HATE_HUMANS
+    }
+  "PESEANT_PLAYER_F"
+    {
+      viewId = PESEANT_WOMAN
+      gender = FEMALE
+      attr = {
+        DAMAGE 14
+        DEFENSE 12 
+      }
+      body = {
+        type = Humanoid LARGE
+      }
+      chatReactionFriendly = "curses all dungeons"
+      chatReactionHostile = "\"Heeelp!\""
+      skills = {
+        DIGGING 0.1
+      }
+      name = {
+        name = "peasant"
+      }
+      hatedByEffect = HATE_HUMANS
+    }
+  "KNIGHT"
+    {
+      viewId = KNIGHT
+      attr = {
+        DAMAGE 36
+        DEFENSE 28 
+      }
+      body = {
+        type = Humanoid LARGE
+      }
+      maxLevelIncrease = {
+        MELEE 4
+      }
+      permanentEffects = {
+        MELEE_RESISTANCE 1
+      }
+      chatReactionFriendly = "curses all dungeons"
+      chatReactionHostile = "\"Die!\""
+      name = {
+        name = "knight"
+      }
+      hatedByEffect = HATE_HUMANS
+    }
+  "JESTER"
+    {
+      viewId = JESTER
+      attr = {
+        DAMAGE 8
+        DEFENSE 8 
+      }
+      body = {
+        type = Humanoid LARGE
+      }
+      permanentEffects = {
+        MAGIC_RESISTANCE 1
+      }
+      chatReactionFriendly = "curses all dungeons"
+      chatReactionHostile = "\"Die!\""
+      name = {
+        name = "jester"
+      }
+      hatedByEffect = HATE_HUMANS
+    }
+  "DUKE"
+    {
+      viewId = DUKE4
+      attr = {
+        DAMAGE 43
+        DEFENSE 32 
+      }
+      body = {
+        type = Humanoid LARGE
+      }
+      permanentEffects = {
+        MELEE_RESISTANCE 1
+      }
+      chatReactionFriendly = "curses all dungeons"
+      chatReactionHostile = "\"Die!\""
+      maxLevelIncrease = {
+        MELEE 3
+      }
+      courage = 1
+      name = {
+        name = "Duke"
+        firstNameGen = FIRST_MALE
+        fullTitle = true
+      }
+      hatedByEffect = HATE_HUMANS
+    }
+  "ARCHER"
+    {
+      viewId = ARCHER
+      attr = {
+        DAMAGE 17
+        DEFENSE 22
+        RANGED_DAMAGE 30 
+      }
+      body = {
+        type = Humanoid LARGE
+      }
+      chatReactionFriendly = "curses all dungeons"
+      chatReactionHostile = "\"Die!\""
+      maxLevelIncrease = {
+        ARCHERY 4
+      }
+      name = {
+        name = "archer"
+      }
+      hatedByEffect = HATE_HUMANS
+    }
+  "PRIEST"
+    {
+      viewId = PRIEST
+      attr = {
+        DAMAGE 15
+        DEFENSE 15
+        SPELL_DAMAGE 34 
+      }
+      body = {
+        type = Humanoid LARGE
+      }
+      permanentEffects = {
+        MAGIC_RESISTANCE 1
+      }
+      chatReactionFriendly = "curses all dungeons"
+      chatReactionHostile = "\"Die!\""
+      spells = {
+        HEAL_SELF
+        SPEED_SELF
+        DEF_BONUS
+        BLAST
+        MAGIC_MISSILE
+        HEAL_OTHER
+      }
+      maxLevelIncrease = {
+        SPELL 2
+      }
+      name = {
+        name = "priest"
+      }
+      hatedByEffect = HATE_HUMANS
+    }
+  "WARRIOR"
+    {
+      viewId = WARRIOR
+      attr = {
+        DAMAGE 27
+        DEFENSE 19 
+      }
+      body = {
+        type = Humanoid LARGE
+      }
+      maxLevelIncrease = {
+        MELEE 5
+      }
+      skills = {
+        WORKSHOP 0.3
+      }
+      chatReactionFriendly = "curses all dungeons"
+      chatReactionHostile = "\"Die!\""
+      name = {
+        name = "warrior"
+      }
+      hatedByEffect = HATE_HUMANS
+    }
+  "SHAMAN"
+    {
+      viewId = SHAMAN
+      attr = {
+        DAMAGE 27
+        DEFENSE 19
+        SPELL_DAMAGE 30 
+      }
+      body = {
+        type = Humanoid LARGE
+      }
+      permanentEffects = {
+        MAGIC_RESISTANCE 1
+      }
+      chatReactionFriendly = "curses all dungeons"
+      chatReactionHostile = "\"Die!\""
+      courage = 1
+      spells = { HEAL_SELF
+        SPEED_SELF
+        DEF_BONUS
+        SUMMON_SPIRIT
+        BLAST
+        HEAL_OTHER
+      } 
+      maxLevelIncrease = {
+        SPELL 5
+      }
+      name = {
+        name = "shaman"
+      }
+      hatedByEffect = HATE_HUMANS
+    }
+  "PESEANT"
+    {
+      viewId = PESEANT
+      attr = {
+        DAMAGE 14
+        DEFENSE 12 
+      }
+      body = {
+        type = Humanoid LARGE
+      }
+      chatReactionFriendly = "curses all dungeons"
+      chatReactionHostile = "\"Heeelp!\""
+      permanentEffects = {
+        CROPS_SKILL 1
+      }
+      skills = {
+        DIGGING 0.1
+      }
+      name = {
+        name = "peasant"
+      }
+      hatedByEffect = HATE_HUMANS
+    }
+  "PESEANT_F"
+    {
+      viewId = PESEANT_WOMAN
+      gender = FEMALE
+      attr = {
+        DAMAGE 14
+        DEFENSE 12 
+      }
+      body = {
+        type = Humanoid LARGE
+      }
+      chatReactionFriendly = "curses all dungeons"
+      chatReactionHostile = "\"Heeelp!\""
+      permanentEffects = {
+        CROPS_SKILL 1
+      }
+      skills = {
+        DIGGING 0.1
+      }
+      name = {
+        name = "peasant"
+      }
+      hatedByEffect = HATE_HUMANS
+    }
+  "CHILD"
+    {
+      viewId = CHILD
+      attr = {
+        DAMAGE 8
+        DEFENSE 8 
+      }
+      body = {
+        type = Humanoid MEDIUM
+      }
+      chatReactionFriendly = "\"plaaaaay!\""
+      chatReactionHostile = "\"Heeelp!\""
+      permanentEffects = {
+        CROPS_SKILL 1
+      }
+      name = {
+        name = "child"
+        pluralName = "children"
+      }
+      hatedByEffect = HATE_HUMANS
+    }
+  "SPIDER_FOOD"
+    {
+      viewId = CHILD
+      attr = {
+        DAMAGE 2
+        DEFENSE 2 
+      }
+      body = {
+        type = Humanoid MEDIUM
+      }
+      permanentEffects = {
+        ENTANGLED 1
+        BLIND 1
+      }
+      chatReactionFriendly = "\"Put me out of my misery PLEASE!\""
+      chatReactionHostile = "\"End my torture!\""
+      deathDescription = "dead, released from unthinkable agony"
+      name = {
+        name = "child"
+        pluralName = "children"
+      }
+      hatedByEffect = HATE_HUMANS
+    }
+  "PESEANT_PRISONER"
+    {
+      viewId = PESEANT
+      attr = {
+        DAMAGE 14
+        DEFENSE 12 
+      }
+      body = {
+        type = Humanoid LARGE
+      }
+      chatReactionFriendly = "curses all dungeons"
+      chatReactionHostile = "\"Heeelp!\""
+      permanentEffects = {
+        POISON_RESISTANT 1
+      }
+      skills = {
+        DIGGING 0.3
+      }
+      name = {
+        name = "peasant"
+      }
+      hatedByEffect = HATE_HUMANS
+    }
+  "PESEANT_PRISONER_F"
+    {
+      viewId = PESEANT_WOMAN
+      gender = FEMALE
+      attr = {
+        DAMAGE 14
+        DEFENSE 12 
+      }
+      body = {
+        type = Humanoid LARGE
+      }
+      chatReactionFriendly = "curses all dungeons"
+      chatReactionHostile = "\"Heeelp!\""
+      permanentEffects = {
+        POISON_RESISTANT 1
+      }
+      skills = {
+        DIGGING 0.3
+      }
+      name = {
+        name = "peasant"
+      }
+      hatedByEffect = HATE_HUMANS
+    }
+  "HALLOWEEN_KID"
+    {
+      viewId = HALLOWEEN_KID1
+      attr = {
+        DAMAGE 8
+        DEFENSE 8 
+      }
+      body = {
+        type = Humanoid MEDIUM
+      }
+      chatReactionFriendly = "\"Trick or treat!\""
+      chatReactionHostile = "\"Trick or treat!\""
+      name = {
+        name = "child"
+        pluralName = "children"
+      }
+      hatedByEffect = HATE_HUMANS
+    }
+  "CLAY_GOLEM"
+    {
+      viewId = CLAY_GOLEM
+      attr = {
+        DAMAGE 17
+        DEFENSE 19 
+      }
+      body = {
+        type = HumanoidLike LARGE
+        material = CLAY
+      }
+      permanentEffects = {
+        MELEE_RESISTANCE 1
+        SLOWED 1
+      }
+      name = {
+        name = "clay golem"
+      }
+    }
+  "STONE_GOLEM"
+    {
+      viewId = STONE_GOLEM
+      attr = {
+        DAMAGE 19
+        DEFENSE 23 
+      }
+      body = {
+        type = HumanoidLike LARGE
+        material = ROCK
+      }
+      permanentEffects = {
+        MELEE_RESISTANCE 1
+        SLOWED 1
+      }
+      name = {
+        name = "stone golem"
+      }
+    }
+  "IRON_GOLEM"
+    {
+      viewId = IRON_GOLEM
+      attr = {
+        DAMAGE 23
+        DEFENSE 30 
+      }
+      body = {
+        type = HumanoidLike LARGE
+        material = IRON
+      }
+      permanentEffects = {
+        MELEE_RESISTANCE 1
+        SLOWED 1
+      }
+      name = {
+        name = "iron golem"
+      }
+    }
+  "LAVA_GOLEM"
+    {
+      viewId = LAVA_GOLEM
+      attr = {
+        DAMAGE 26
+        DEFENSE 36 
+      }
+      body = {
+        type = HumanoidLike LARGE
+        material = IRON
+        intrinsicAttacks = {
+          ARM { Intrinsic FIST_ATTACK "fists" 10 {
+              attackType = HIT
+              attackMsg = SWING
+              victimEffect = Fire } }
+        }
+      }
+      permanentEffects = {
+        MELEE_RESISTANCE 1
+        SLOWED 1
+        FIRE_RESISTANT 1
+      }
+      name = {
+        name = "lava golem"
+      }
+    }
+  "ADA_GOLEM"
+    {
+      viewId = ADA_GOLEM
+      attr = {
+        DAMAGE 36
+        DEFENSE 36 
+      }
+      body = {
+        type = HumanoidLike LARGE
+        material = ADA
+      }
+      permanentEffects = {
+        MELEE_RESISTANCE 1
+        SLOWED 1
+        NAVIGATION_DIGGING_SKILL 1
+        MAGIC_VULNERABILITY 1
+        FIRE_RESISTANT 1
+      }
+      name = {
+        name = "adamantine golem"
+      }
+    }
+  "AUTOMATON"
+    {
+      viewId = AUTOMATON
+      attr = {
+        DAMAGE 40
+        DEFENSE 40 
+      }
+      permanentEffects = {
+        MELEE_RESISTANCE 1
+      }
+      body = {
+        type = HumanoidLike LARGE
+        material = IRON
+      }
+      name = {
+        name = "automaton"
+      }
+    }
+  "ZOMBIE"
+    {
+      viewId = ZOMBIE
+      attr = {
+        DAMAGE 14
+        DEFENSE 17 
+      }
+      body = {
+        type = Humanoid LARGE
+        material = UNDEAD_FLESH
+      }
+      permanentEffects = {
+        RANGED_RESISTANCE 1
+        SLOWED 1
+      }
+      maxLevelIncrease = {
+        MELEE 3
+      }
+      name = {
+        name = "zombie"
+      }
+      hatedByEffect = HATE_UNDEAD
+    }
+  "SKELETON"
+    {
+      viewId = SKELETON
+      attr = {
+        DAMAGE 17
+        DEFENSE 13
+        RANGED_DAMAGE 5
+      }
+      body = {
+        type = Humanoid LARGE
+        material = BONE
+      }
+      permanentEffects = {
+        RANGED_RESISTANCE 1
+      }
+      maxLevelIncrease = {
+        MELEE 3
+        ARCHERY 4
+      }
+      name = {
+        name = "skeleton"
+      }
+      hatedByEffect = HATE_UNDEAD
+    }
+  "VAMPIRE"
+    {
+      viewId = VAMPIRE
+      attr = {
+        DAMAGE 17
+        DEFENSE 17
+        SPELL_DAMAGE 17 
+      }
+      body = {
+        type = Humanoid LARGE
+        material = UNDEAD_FLESH
+      }
+      chatReactionFriendly = "\"All men be cursed!\""
+      chatReactionHostile = "\"Die!\""
+      permanentEffects = {
+        NIGHT_VISION 1
+        RANGED_RESISTANCE 1
+      }
+      maxLevelIncrease = {
+        MELEE 7
+        SPELL 7
+      }
+      name = {
+        name = "vampire"
+        firstNameGen = VAMPIRE
+      }
+      hatedByEffect = HATE_UNDEAD
+    }
+  "VAMPIRE_LORD"
+    {
+      viewId = VAMPIRE_LORD
+      attr = {
+        DAMAGE 17
+        DEFENSE 23
+        SPELL_DAMAGE 27 
+      }
+      body = {
+        type = Humanoid LARGE
+        material = UNDEAD_FLESH
+      }
+      name = {
+        name = "vampire lord"
+        firstNameGen = VAMPIRE
+      }
+      maxLevelIncrease = {
+        MELEE 12
+        SPELL 12
+      }
+      permanentEffects = {
+        NIGHT_VISION 1
+        FLYING 1
+        RANGED_RESISTANCE 1
+        FIRE_RESISTANT 1
+        DARKNESS_SOURCE 1
+      }
+      spells = {
+        CIRCULAR_BLAST
+        DEF_BONUS
+        DAM_BONUS
+        DECEPTION
+        TELEPORT
+      }
+      chatReactionFriendly = "\"There are times when you simply nnot refuse a drink!\""
+      chatReactionHostile = "\"There are times when you simply nnot refuse a drink!\""
+      hatedByEffect = HATE_UNDEAD
+    }
+  "MUMMY"
+    {
+      viewId = MUMMY
+      attr = {
+        DAMAGE 15
+        DEFENSE 14
+        SPELL_DAMAGE 10 
+      }
+      body = {
+        type = Humanoid LARGE
+        material = UNDEAD_FLESH
+      }
+      permanentEffects = {
+        RANGED_RESISTANCE 1
+        SLOWED 1
+        SLOW_TRAINING 1
+      }
+      maxLevelIncrease = {
+        MELEE 25
+      }
+      name = {
+        name = "mummy"
+        pluralName = "mummies"
+      }
+      hatedByEffect = HATE_UNDEAD
+    }
+  "ORC"
+    {
+      viewId = ORC
+      attr = {
+        DAMAGE 16
+        DEFENSE 14 
+      }
+      body = {
+        type = Humanoid LARGE
+      }
+      chatReactionFriendly = "curses all elves"
+      chatReactionHostile = "\"Die!\""
+      skills = {
+        WORKSHOP 0.3
+        FORGE 0.3
+      }
+      maxLevelIncrease = {
+        MELEE 7
+      }
+      name = {
+        name = "orc"
+        firstNameGen = ORC
+      }
+      hatedByEffect = HATE_GREENSKINS
+    }
+  "ORC_SHAMAN"
+    {
+      viewId = ORC_SHAMAN
+      attr = {
+        DAMAGE 12
+        DEFENSE 8
+        SPELL_DAMAGE 16 
+      }
+      body = {
+        type = Humanoid LARGE
+      }
+      skills = {
+        LABORATORY 0.7
+      }
+      chatReactionFriendly = "curses all elves"
+      chatReactionHostile = "\"Die!\""
+      maxLevelIncrease = {
+        MELEE 4
+        SPELL 7
+      }
+      name = {
+        name = "orc shaman"
+        firstNameGen = ORC
+      }
+      hatedByEffect = HATE_GREENSKINS
+    }
+  "HARPY"
+    {
+      viewId = HARPY
+      attr = {
+        DAMAGE 13
+        DEFENSE 16
+        RANGED_DAMAGE 15 
+      }
+      body = {
+        type = Humanoid LARGE
+        addBodyPart = {
+          WING 2
+        }
+      }
+      skills = {
+        LABORATORY 0.3
+      }
+      gender = FEMALE
+      maxLevelIncrease = {
+        MELEE 4
+        ARCHERY 7
+      }
+      name = {
+        name = "harpy"
+        pluralName = "harpies"
+        firstNameGen = ORC
+      }
+      hatedByEffect = HATE_GREENSKINS
+    }
+  "KOBOLD"
+    {
+      viewId = KOBOLD
+      attr = {
+        DAMAGE 14
+        DEFENSE 16 
+      }
+      body = {
+        type = Humanoid MEDIUM
+      }
+      permanentEffects = {
+        SWIMMING_SKILL 1
+      }
+      chatReactionFriendly = "talks about digging"
+      chatReactionHostile = "\"Die!\""
+      name = {
+        name = "kobold"
+      }
+    }
+  "GNOME"
+    {
+      viewId = GNOME
+      attr = {
+        DAMAGE 12
+        DEFENSE 13 
+      }
+      body = {
+        type = Humanoid MEDIUM
+      }
+      skills = {
+        JEWELER 0.5
+      }
+      chatReactionFriendly = "talks about digging"
+      chatReactionHostile = "\"Die!\""
+      name = {
+        name = "gnome"
+      }
+    }
+  "GNOME_CHIEF"
+    {
+      viewId = GNOME_BOSS
+      attr = {
+        DAMAGE 15
+        DEFENSE 16 
+      }
+      body = {
+        type = Humanoid MEDIUM
+      }
+      skills = {
+        JEWELER 1
+      }
+      chatReactionFriendly = "talks about digging"
+      chatReactionHostile = "\"Die!\""
+      name = {
+        name = "gnome chief"
+      }
+    }
+  "GOBLIN"
+    {
+      viewId = GOBLIN
+      attr = {
+        DAMAGE 12
+        DEFENSE 13 
+      }
+      body = {
+        type = Humanoid MEDIUM
+      }
+      chatReactionFriendly = "talks about crafting"
+      chatReactionHostile = "\"Die!\""
+      permanentEffects = {
+        DISARM_TRAPS_SKILL 1
+      }
+      skills = {
+        LABORATORY 0.3
+        WORKSHOP 0.6
+        FORGE 0.6
+        JEWELER 0.6
+        FURNACE 0.6
+      }
+      name = {
+        name = "goblin"
+        firstNameGen = ORC
+      }
+      hatedByEffect = HATE_GREENSKINS
+    }
+  "IMP"
+    {
+      viewId = IMP
+      attr = {
+        DAMAGE 5
+        DEFENSE 15 
+      }
+      body = {
+        type = Humanoid SMALL
+        material = SPIRIT
+      }
+      courage = -1
+      noChase = true
+      cantEquip = true
+      skills = {
+        DIGGING 0.4
+      }
+      chatReactionFriendly = "talks about digging"
+      chatReactionHostile = "\"Die!\""
+      permanentEffects = {
+        POISON_RESISTANT 1
+        SPEED 1
+        NO_CARRY_LIMIT 1
+      }
+      name = {
+        name = "imp"
+      }
+    }
+  "OGRE"
+    {
+      viewId = OGRE
+      attr = {
+        DAMAGE 18
+        DEFENSE 18 
+      }
+      body = {
+        type = Humanoid LARGE
+        weight = 140
+      }
+      name = {
+        name = "ogre"
+        firstNameGen = ORC
+      }
+      permanentEffects = {
+        MAGIC_VULNERABILITY 1
+      }
+      skills = {
+        WORKSHOP 0.5
+        FORGE 0.5
+        FURNACE 0.9
+      }
+      maxLevelIncrease = {
+        MELEE 12
+      }
+      hatedByEffect = HATE_GREENSKINS
+    }
+  "CHICKEN"
+    {
+      viewId = CHICKEN
+      attr = {
+        DAMAGE 2
+        DEFENSE 2 
+      }
+      body = {
+        type = Bird SMALL
+        minionFood = true
+        weight = 3
+      }
+      permanentEffects = {
+        SLOWED 1
+      }
+      name = {
+        name = "chicken"
+      }
+    }
+  "DWARF"
+    {
+      viewId = DWARF
+      attr = {
+        DAMAGE 21
+        DEFENSE 25 
+      }
+      body = {
+        type = Humanoid MEDIUM
+        weight = 90
+      }
+      name = {
+        name = "dwarf"
+        pluralName = "dwarves"
+        firstNameGen = DWARF
+      }
+      skills = {
+        FORGE 0.8
+        FURNACE 0.8
+      }
+      maxLevelIncrease = {
+        MELEE 2
+      }
+      permanentEffects = {
+        MAGIC_VULNERABILITY 1
+        NAVIGATION_DIGGING_SKILL 1
+      }
+      chatReactionFriendly = "curses all orcs"
+      chatReactionHostile = "\"Die!\""
+      hatedByEffect = HATE_DWARVES
+    }
+  "DWARF_FEMALE"
+    {
+      viewId = DWARF_FEMALE
+      attr = {
+        DAMAGE 21
+        DEFENSE 25 
+      }
+      body = {
+        type = Humanoid MEDIUM
+        weight = 90
+      }
+      name = {
+        name = "dwarf"
+        pluralName = "dwarves"
+        firstNameGen = DWARF
+      }
+      skills = {
+        WORKSHOP 0.5
+      }
+      permanentEffects = {
+        NAVIGATION_DIGGING_SKILL 1
+        MAGIC_VULNERABILITY 1
+      }
+      chatReactionFriendly = "curses all orcs"
+      chatReactionHostile = "\"Die!\""
+      gender = FEMALE
+      hatedByEffect = HATE_DWARVES
+    }
+  "DWARF_BARON"
+    {
+      viewId = DWARF_BARON
+      attr = {
+        DAMAGE 28
+        DEFENSE 32 
+      }
+      body = {
+        type = Humanoid MEDIUM
+        weight = 120
+      }
+      chatReactionFriendly = "curses all orcs"
+      chatReactionHostile = "\"Die!\""
+      permanentEffects = {
+        NAVIGATION_DIGGING_SKILL 1
+        MAGIC_VULNERABILITY 1
+      }
+      maxLevelIncrease = {
+        MELEE 10
+      }
+      courage = 1
+      name = {
+        name = "dwarf baron"
+        firstNameGen = DWARF
+      }
+      hatedByEffect = HATE_DWARVES
+    }
+  "LIZARDMAN"
+    {
+      viewId = LIZARDMAN
+      attr = {
+        DAMAGE 20
+        DEFENSE 14 
+      }
+      body = {
+        type = Humanoid MEDIUM
+        intrinsicAttacks = {
+          HEAD { Intrinsic BITE_ATTACK "fangs" 5 {
+              attackType = BITE
+              attackMsg = BITE
+              victimEffect = Lasting POISON } }
+        }
+      }
+      permanentEffects = {
+        SPEED 1
+        POISON_RESISTANT 1
+      }
+      maxLevelIncrease = {
+        MELEE 5
+      }
+      chatReactionFriendly = "curses all humans"
+      chatReactionHostile = "\"Die!\""
+      name = {
+        name = "lizardman"
+        pluralName = "lizardmen"
+      }
+    }
+  "LIZARDLORD"
+    {
+      viewId = LIZARDLORD
+      attr = {
+        DAMAGE 30
+        DEFENSE 16 
+      }
+      body = {
+        type = Humanoid MEDIUM
+        intrinsicAttacks = {
+          HEAD { Intrinsic BITE_ATTACK "fangs" 8 {
+              attackType = BITE
+              attackMsg = BITE
+              victimEffect = Lasting POISON } }
+        }
+      }
+      permanentEffects = {
+        POISON_RESISTANT 1
+        SPEED 1
+      }
+      maxLevelIncrease = {
+        MELEE 10
+      }
+      chatReactionFriendly = "curses all humans"
+      chatReactionHostile = "\"Die!\""
+      courage = 1
+      name = {
+        name = "lizardman chief"
+      }
+    }
+  "ELF"
+    {
+      viewId = ELF
+      attr = {
+        DAMAGE 14
+        DEFENSE 6 
+      }
+      body = {
+        type = Humanoid MEDIUM
+      }
+      chatReactionFriendly = "curses all dwarves"
+      chatReactionHostile = "\"Die!\""
+      spells = { HEAL_SELF }
+      skills = {
+        JEWELER 0.9
+      }
+      maxLevelIncrease = {
+        SPELL 1
+      }
+      permanentEffects = {
+        ELF_VISION 1
+      }
+      name = {
+        name = "elf"
+        pluralName = "elves"
+      }
+      hatedByEffect = HATE_ELVES
+    }
+  "ELF_F"
+    {
+      viewId = ELF_WOMAN
+      gender = FEMALE
+      attr = {
+        DAMAGE 14
+        DEFENSE 6 
+      }
+      body = {
+        type = Humanoid MEDIUM
+      }
+      chatReactionFriendly = "curses all dwarves"
+      chatReactionHostile = "\"Die!\""
+      spells = { HEAL_SELF }
+      skills = {
+        JEWELER 0.9
+      }
+      maxLevelIncrease = {
+        SPELL 1
+      }
+      permanentEffects = {
+        ELF_VISION 1
+      }
+      name = {
+        name = "elf"
+        pluralName = "elves"
+      }
+      hatedByEffect = HATE_ELVES
+    }
+  "ELF_ARCHER"
+    {
+      viewId = ELF_ARCHER
+      attr = {
+        DAMAGE 18
+        DEFENSE 12
+        RANGED_DAMAGE 25 
+      }
+      body = {
+        type = Humanoid MEDIUM
+      }
+      chatReactionFriendly = "curses all dwarves"
+      chatReactionHostile = "\"Die!\""
+      permanentEffects = {
+        MAGIC_RESISTANCE 1
+        ELF_VISION 1
+      }
+      spells = { HEAL_SELF }
+      maxLevelIncrease = {
+        ARCHERY 3
+      }
+      name = {
+        name = "elven archer"
+      }
+      hatedByEffect = HATE_ELVES
+    }
+  "ELF_CHILD"
+    {
+      viewId = ELF_CHILD
+      attr = {
+        DAMAGE 6
+        DEFENSE 6 
+      }
+      body = {
+        type = Humanoid SMALL
+      }
+      chatReactionFriendly = "curses all dwarves"
+      chatReactionHostile = "\"Die!\""
+      permanentEffects = {
+        MAGIC_RESISTANCE 1
+        ELF_VISION 1
+      }
+      spells = { HEAL_SELF }
+      name = {
+        name = "elf child"
+        pluralName = "elf children"
+      }
+      hatedByEffect = HATE_ELVES
+    }
+  "ELF_LORD"
+    {
+      viewId = ELF_LORD
+      attr = {
+        DAMAGE 22
+        DEFENSE 14
+        SPELL_DAMAGE 16
+        RANGED_DAMAGE 30 
+      }
+      body = {
+        type = Humanoid MEDIUM
+      }
+      chatReactionFriendly = "curses all dwarves"
+      chatReactionHostile = "\"Die!\""
+      permanentEffects = {
+        MAGIC_RESISTANCE 1
+        ELF_VISION 1
+      }
+      spells = { HEAL_SELF
+        HEAL_OTHER
+        HEAL_SELF
+        SPEED_SELF
+        DAM_BONUS
+        DEF_BONUS
+        BLAST
+      }
+      maxLevelIncrease = {
+        SPELL 4
+        MELEE 4
+      }
+      name = {
+        name = "elf lord"
+      }
+      hatedByEffect = HATE_ELVES
+    }
+  "DARK_ELF"
+    {
+      viewId = DARK_ELF
+      attr = {
+        DAMAGE 14
+        DEFENSE 6 
+      }
+      body = {
+        type = Humanoid MEDIUM
+      }
+      chatReactionFriendly = "curses all dwarves"
+      chatReactionHostile = "\"Die!\""
+      permanentEffects = {
+        MAGIC_RESISTANCE 1
+        SWIMMING_SKILL 1
+        NIGHT_VISION 1
+      }
+      spells = { HEAL_SELF }
+      name = {
+        name = "dark elf"
+        pluralName = "dark elves"
+      }
+      hatedByEffect = HATE_ELVES
+    }
+  "DARK_ELF_F"
+    {
+      viewId = DARK_ELF_WOMAN
+      gender = FEMALE
+      attr = {
+        DAMAGE 14
+        DEFENSE 6 
+      }
+      body = {
+        type = Humanoid MEDIUM
+      }
+      chatReactionFriendly = "curses all dwarves"
+      chatReactionHostile = "\"Die!\""
+      permanentEffects = {
+        MAGIC_RESISTANCE 1
+        SWIMMING_SKILL 1
+        NIGHT_VISION 1
+      }
+      spells = { HEAL_SELF }
+      name = {
+        name = "dark elf"
+        pluralName = "dark elves"
+      }
+      hatedByEffect = HATE_ELVES
+    }
+  "DARK_ELF_WARRIOR"
+    {
+      viewId = DARK_ELF_WARRIOR
+      attr = {
+        DAMAGE 18
+        DEFENSE 12
+        SPELL_DAMAGE 6 
+      }
+      body = {
+        type = Humanoid MEDIUM
+      }
+      chatReactionFriendly = "curses all dwarves"
+      chatReactionHostile = "\"Die!\""
+      permanentEffects = {
+        MAGIC_RESISTANCE 1
+        NIGHT_VISION 1
+      }
+      spells = { HEAL_SELF }
+      maxLevelIncrease = {
+        MELEE 5
+        SPELL 5
+      }
+      name = {
+        name = "dark elf"
+        pluralName = "dark elves"
+      }
+      hatedByEffect = HATE_ELVES
+    }
+  "DARK_ELF_CHILD"
+    {
+      viewId = DARK_ELF_CHILD
+      attr = {
+        DAMAGE 6
+        DEFENSE 6 
+      }
+      body = {
+        type = Humanoid SMALL
+      }
+      permanentEffects = {
+        MAGIC_RESISTANCE 1
+        NIGHT_VISION 1
+      }
+      chatReactionFriendly = "curses all dwarves"
+      chatReactionHostile = "\"Die!\""
+      spells = { HEAL_SELF }
+      name = {
+        name = "dark elf child"
+        pluralName = "dark elf children"
+      }
+      hatedByEffect = HATE_ELVES
+    }
+  "DARK_ELF_LORD"
+    {
+      viewId = DARK_ELF_LORD
+      attr = {
+        DAMAGE 22
+        DEFENSE 14
+        SPELL_DAMAGE 16 
+      }
+      body = {
+        type = Humanoid MEDIUM
+      }
+      chatReactionFriendly = "curses all dwarves"
+      chatReactionHostile = "\"Die!\""
+      permanentEffects = {
+        MAGIC_RESISTANCE 1
+        NIGHT_VISION 1
+      }
+      spells = {
+        HEAL_SELF
+        SPEED_SELF
+        DEF_BONUS
+        DAM_BONUS
+        BLAST
+        HEAL_OTHER
+      }
+      name = {
+        name = "dark elf lord"
+      }
+      hatedByEffect = HATE_ELVES
+    }
+  "DRIAD"
+    {
+      viewId = DRIAD
+      attr = {
+        DAMAGE 6
+        DEFENSE 14
+        RANGED_DAMAGE 25 
+      }
+      body = {
+        type = Humanoid MEDIUM
+      }
+      permanentEffects = {
+        MAGIC_RESISTANCE 1
+        ELF_VISION 1
+      }
+      chatReactionFriendly = "curses all humans"
+      chatReactionHostile = "\"Die!\""
+      spells = { HEAL_SELF }
+      maxLevelIncrease = {
+        ARCHERY 4
+      }
+      name = {
+        name = "dryad"
+      }
+    }
+  "HORSE"
+    {
+      viewId = HORSE
+      attr = {
+        DAMAGE 16
+        DEFENSE 7 
+      }
+      body = {
+        type = FourLegged LARGE
+        weight = 500
+      }
+      noChase = true
+      petReaction = "neighs"
+      name = {
+        name = "horse"
+      }
+    }
+  "COW"
+    {
+      viewId = COW
+      attr = {
+        DAMAGE 10
+        DEFENSE 7 
+      }
+      body = {
+        type = FourLegged LARGE
+        weight = 400
+      }
+      noChase = true
+      chatReactionFriendly = "\"my name is Cow\""
+      petReaction = "\"Mooooooooooooooooooooooooooo!\""
+      name = {
+        name = "cow"
+      }
+    }
+  "DONKEY"
+    {
+      viewId = DONKEY
+      attr = {
+        DAMAGE 10
+        DEFENSE 7 
+      }
+      body = {
+        type = FourLegged LARGE
+        weight = 200
+        deathSound = DYING_DONKEY
+      }
+      noChase = true
+      name = {
+        name = "donkey"
+      }
+    }
+  "PIG"
+    {
+      viewId = PIG
+      attr = {
+        DAMAGE 5
+        DEFENSE 2 
+      }
+      body = {
+        type = FourLegged MEDIUM
+        weight = 150
+        deathSound = DYING_PIG
+        minionFood = true
+      }
+      permanentEffects = {
+        SLOWED 1
+      }
+      noChase = true
+      name = {
+        name = "pig"
+      }
+    }
+  "GOAT"
+    {
+      viewId = GOAT
+      attr = {
+        DAMAGE 10
+        DEFENSE 7 
+      }
+      body = {
+        type = FourLegged MEDIUM
+        weight = 50
+      }
+      petReaction = "\"Meh-eh-eh!\""
+      noChase = true
+      name = {
+        name = "goat"
+      }
+    }
+  "JACKAL"
+    {
+      viewId = JACKAL
+      attr = {
+        DAMAGE 15
+        DEFENSE 10 
+      }
+      body = {
+        type = FourLegged SMALL
+        weight = 10
+      }
+      name = {
+        name = "jackal"
+      }
+    }
+  "DEER"
+    {
+      viewId = DEER
+      attr = {
+        DAMAGE 10
+        DEFENSE 10 
+      }
+      body = {
+        type = FourLegged LARGE
+        weight = 400
+      }
+      permanentEffects = {
+        SPEED 1
+      }
+      noChase = true
+      name = {
+        name = "deer"
+        pluralName = "deer"
+      }
+    }
+  "BOAR"
+    {
+      viewId = BOAR
+      attr = {
+        DAMAGE 10
+        DEFENSE 10 
+      }
+      body = {
+        type = FourLegged MEDIUM
+        weight = 200
+      }
+      noChase = true
+      name = {
+        name = "boar"
+      }
+    }
+  "FOX"
+    {
+      viewId = FOX
+      attr = {
+        DAMAGE 10
+        DEFENSE 5 
+      }
+      body = {
+        type = FourLegged SMALL
+        weight = 10
+      }
+      noChase = true
+      name = {
+        name = "fox"
+        pluralName = "foxes"
+      }
+    }
+  "CAVE_BEAR"
+    {
+      viewId = BEAR
+      attr = {
+        DAMAGE 20
+        DEFENSE 18 
+      }
+      body = {
+        type = FourLegged MEDIUM
+        weight = 250
+        intrinsicAttacks = {
+          LEG { Intrinsic CLAWS_ATTACK "claws" 10 { attackType = HIT attackMsg = CLAW } }
+        }
+      }
+      permanentEffects = {
+        EXPLORE_CAVES_SKILL 1
+      }
+      name = {
+        name = "cave bear"
+      }
+    }
+  "RAT"
+    {
+      viewId = RAT
+      attr = {
+        DAMAGE 2
+        DEFENSE 2 
+      }
+      body = {
+        type = FourLegged SMALL
+        weight = 1
+      }
+      permanentEffects = {
+        SPEED 1
+        SWIMMING_SKILL 1
+      }
+      noChase = true
+      name = {
+        name = "rat"
+      }
+    }
+  "SPIDER"
+    {
+      viewId = SPIDER
+      attr = {
+        DAMAGE 9
+        DEFENSE 13 
+      }
+      body = {
+        type = NonHumanoid SMALL
+        bodyParts = {
+          LEG 8
+          TORSO 1
+        }
+        weight = 0.3
+        deathSound = none
+        intrinsicAttacks = {
+          HEAD { Intrinsic BITE_ATTACK "fangs" 1 {
+              attackType = BITE
+              attackMsg = BITE
+              victimEffect = Lasting POISON } }
+        }
+      }
+      name = {
+        name = "spider"
+      }
+    }
+  "FLY"
+    {
+      viewId = FLY
+      attr = {
+        DAMAGE 2
+        DEFENSE 12 
+      }
+      body = {
+        type = NonHumanoid SMALL
+        bodyParts = {
+          LEG 6
+          WING 2
+          TORSO 1
+        }
+        weight = 0.1
+        deathSound = none
+      }
+      courage = 1
+      noChase = true
+      name = {
+        name = "fly"
+        pluralName = "flies"
+      }
+    }
+  "ANT_WORKER"
+    {
+      viewId = ANT_WORKER
+      attr = {
+        DAMAGE 16
+        DEFENSE 16 
+      }
+      body = {
+        type = NonHumanoid MEDIUM
+        weight = 10
+        bodyParts = {
+          LEG 6
+          HEAD 1
+          TORSO 1
+        }
+        deathSound = none
+      }
+      name = {
+        name = "giant ant"
+      }
+    }
+  "ANT_SOLDIER"
+    {
+      viewId = ANT_SOLDIER
+      attr = {
+        DAMAGE 30
+        DEFENSE 20 
+      }
+      permanentEffects = {
+        NAVIGATION_DIGGING_SKILL 1
+      }
+      body = {
+        type = NonHumanoid MEDIUM
+        weight = 10
+        bodyParts = {
+          LEG 6
+          HEAD 1
+          TORSO 1
+        }
+        deathSound = none
+        intrinsicAttacks = {
+          HEAD { Intrinsic BITE_ATTACK "fangs" 6 {
+              attackType = BITE
+              attackMsg = BITE
+              victimEffect = Lasting POISON } }
+        }
+      }
+      name = {
+        name = "giant ant soldier"
+      }
+    }
+  "ANT_QUEEN"
+    {
+      viewId = ANT_QUEEN
+      attr = {
+        DAMAGE 30
+        DEFENSE 26 
+      }
+      body = {
+        type = NonHumanoid MEDIUM
+        weight = 10
+        bodyParts = {
+          LEG 6
+          HEAD 1
+          TORSO 1
+        }
+        deathSound = none
+        intrinsicAttacks = {
+          HEAD { Intrinsic BITE_ATTACK "fangs" 12 {
+              attackType = BITE
+              attackMsg = BITE
+              victimEffect = Lasting POISON } }
+        }
+      }
+      name = {
+        name = "ant queen"
+      }
+    }
+  "SNAKE"
+    {
+      viewId = SNAKE
+      attr = {
+        DAMAGE 14
+        DEFENSE 14 
+      }
+      body = {
+        type = NonHumanoid SMALL
+        weight = 2
+        bodyParts = {
+          HEAD 1
+          TORSO 1
+        }
+        deathSound = none
+        intrinsicAttacks = {
+          HEAD { Intrinsic BITE_ATTACK "fangs" 1 {
+              attackType = BITE
+              attackMsg = BITE
+              victimEffect = Lasting POISON } }
+        }
+      }
+      permanentEffects = {
+        SWIMMING_SKILL 1
+      }
+      name = {
+        name = "snake"
+      }
+    }
+  "RAVEN"
+    {
+      viewId = RAVEN
+      attr = {
+        DAMAGE 2
+        DEFENSE 12 
+      }
+      body = {
+        type = Bird SMALL
+        weight = 0.5
+        deathSound = none
+      }
+      noChase = true
+      courage = 1
+      permanentEffects = {
+        SPEED 1
+        EXPLORE_SKILL 1
+      }
+      name = {
+        name = "raven"
+        groupName = "flock"
+      }
+    }
+  "VULTURE"
+    {
+      viewId = VULTURE
+      attr = {
+        DAMAGE 2
+        DEFENSE 12 
+      }
+      body = {
+        type = Bird SMALL
+        weight = 5
+        deathSound = none
+      }
+      noChase = true
+      courage = 1
+      name = {
+        name = "vulture"
+      }
+    }
+  "WOLF"
+    {
+      viewId = WOLF
+      attr = {
+        DAMAGE 18
+        DEFENSE 11 
+      }
+      body = {
+        type = FourLegged MEDIUM
+        weight = 35
+        intrinsicAttacks = {
+          LEG  { Intrinsic CLAWS_ATTACK "claws" 8 { attackType = HIT attackMsg = CLAW } }
+          HEAD { Intrinsic BITE_ATTACK  "fangs" 7 { attackType = BITE attackMsg = BITE } }
+        }
+      }
+      permanentEffects = {
+        NIGHT_VISION 1
+        EXPLORE_NOCTURNAL_SKILL 1
+      }
+      name = {
+        name = "wolf"
+        pluralName = "wolves"
+        firstNameGen = DOG
+        groupName = "pack"
+      }
+    }
+  "WEREWOLF"
+    {
+      viewId = WEREWOLF
+      attr = {
+        DAMAGE 20
+        DEFENSE 7 
+      }
+      body = {
+        type = Humanoid LARGE
+        intrinsicAttacks = {
+          LEG  { Intrinsic CLAWS_ATTACK "claws" 8 { attackType = HIT attackMsg = CLAW } }
+          HEAD { Intrinsic BITE_ATTACK  "fangs" 7 { attackType = BITE attackMsg = BITE } }
+        }
+      }
+      permanentEffects = {
+        NIGHT_VISION 1
+        EXPLORE_NOCTURNAL_SKILL 1
+        MAGIC_RESISTANCE 1
+        REGENERATION 1
+      }
+      maxLevelIncrease = {
+        MELEE 12
+      }
+      name = {
+        name = "werewolf"
+        pluralName = "werewolves"
+        firstNameGen = DOG
+      }
+    }
+  "DOG"
+    {
+      viewId = DOG
+      attr = {
+        DAMAGE 18
+        DEFENSE 7 
+      }
+      body = {
+        type = FourLegged MEDIUM
+        intrinsicAttacks = {
+          HEAD { Intrinsic BITE_ATTACK  "fangs" 4 { attackType = BITE attackMsg = BITE } }
+        }
+        weight = 25
+      }
+      name = {
+        name = "dog"
+        groupName = "pack"
+        firstNameGen = DOG
+      }
+      petReaction = "\"WOOF!\""
+    }
+  "FIRE_SPHERE"
+    {
+      viewId = FIRE_SPHERE
+      attr = {
+        DAMAGE 5
+        DEFENSE 15 
+      }
+      body = {
+        type = NonHumanoid SMALL
+        material = FIRE
+        deathSound = none
+      }
+      permanentEffects = {
+        FIRE_RESISTANT 1
+        FLYING 1
+        LIGHT_SOURCE 1
+      }
+      name = {
+        name = "fire sphere"
+      }
+    }
+  "ELEMENTALIST"
+    {
+      viewId = ELEMENTALIST
+      attr = {
+        DAMAGE 15
+        DEFENSE 20
+        SPELL_DAMAGE 15 
+      }
+      body = {
+        type = Humanoid LARGE
+      }
+      skills = {
+        LABORATORY 1
+      }
+      maxLevelIncrease = {
+        SPELL 9
+      }
+      gender = FEMALE
+      permanentEffects = {
+        FIRE_RESISTANT 1
+        MAGIC_RESISTANCE 1
+      }
+      chatReactionFriendly = "curses all dungeons"
+      chatReactionHostile = "\"Die!\""
+      name = {
+        name = "elementalist"
+        firstNameGen = FIRST_FEMALE
+      }
+      hatedByEffect = HATE_HUMANS
+    }
+  "FIRE_ELEMENTAL"
+    {
+      viewId = FIRE_ELEMENTAL
+      body = {
+        type = NonHumanoid LARGE
+        material = FIRE
+        deathSound = none
+        intrinsicAttacks = {
+          TORSO { Intrinsic FIST_ATTACK  "fists" 5 {
+              attackType = HIT attackMsg = SWING victimEffect = Fire} }
+        }
+      }
+      attr = {
+        DAMAGE 20
+        DEFENSE 30
+      }
+      permanentEffects = {
+        FIRE_RESISTANT 1
+        FLYING 1
+      }
+      name = {
+        name = "fire elemental"
+      }
+    }
+  "AIR_ELEMENTAL"
+    {
+      viewId = AIR_ELEMENTAL
+      body = {
+        type = NonHumanoid LARGE
+        material = SPIRIT
+        deathSound = none
+        intrinsicAttacks = {
+          TORSO { Intrinsic FIST_ATTACK  "fists" 5 { attackType = HIT attackMsg = SWING} }
+        }
+      }
+      attr = {
+        DAMAGE 25
+        DEFENSE 35 
+      }
+      permanentEffects = {
+        FLYING 1
+        RANGED_RESISTANCE 1
+      }
+      spells = { CIRCULAR_BLAST }
+      name = {
+        name = "air elemental"
+      }
+    }
+  "EARTH_ELEMENTAL"
+    {
+      viewId = EARTH_ELEMENTAL
+      body = {
+        type = HumanoidLike LARGE
+        material = ROCK
+        weight = 500
+        deathSound = none
+      }
+      attr = {
+        DAMAGE 30
+        DEFENSE 25 
+      }
+      permanentEffects = {
+        RANGED_RESISTANCE 1
+      }
+      name = {
+        name = "earth elemental"
+      }
+    }
+  "WATER_ELEMENTAL"
+    {
+      viewId = WATER_ELEMENTAL
+      body = {
+        type = HumanoidLike LARGE
+        material = WATER
+        weight = 300
+        deathSound = none
+      }
+      attr = {
+        DAMAGE 40
+        DEFENSE 15 
+      }
+      permanentEffects = {
+        RANGED_RESISTANCE 1
+        SWIMMING_SKILL 1
+      }
+      name = {
+        name = "water elemental"
+      }
+    }
+  "ENT"
+    {
+      viewId = ENT
+      body = {
+        type = HumanoidLike HUGE
+        material = WOOD
+      }
+      attr = {
+        DAMAGE 35
+        DEFENSE 25
+      }
+      permanentEffects = {
+        ELF_VISION 1
+        RANGED_RESISTANCE 1
+        SLOWED 1
+      }
+      chatReactionFriendly = "curses all dungeons"
+      chatReactionHostile = "\"Die!\""
+      name = {
+        name = "tree spirit"
+      }
+    }
+  "ANGEL"
+    {
+      viewId = ANGEL
+      attr = {
+        DAMAGE 30
+        DEFENSE 22
+        SPELL_DAMAGE 20 
+      }
+      body = {
+        type = Humanoid LARGE
+        material = SPIRIT
+      }
+      chatReactionFriendly = "curses all dungeons"
+      chatReactionHostile = "\"Die!\""
+      name = {
+        name = "angel"
+      }
+    }
+  "BAT"
+    {
+      viewId = BAT
+      body = {
+        type = Bird SMALL
+        weight = 1
+        intrinsicAttacks = {
+          HEAD { Intrinsic BITE_ATTACK "fangs" 3 { attackType = BITE attackMsg = BITE } }
+        }
+      }
+      attr = {
+        DAMAGE 3
+        DEFENSE 16
+      }
+      noChase = true
+      courage = 1
+      permanentEffects = {
+        NIGHT_VISION 1
+        EXPLORE_NOCTURNAL_SKILL 1
+        EXPLORE_CAVES_SKILL 1
+      }
+      name = {
+        name = "bat"
+      }
+    }
+  "DEATH"
+    {
+      viewId = DEATH
+      attr = {
+        SPELL_DAMAGE 100
+        DEFENSE 35
+      }
+      body = {
+        type = Humanoid LARGE
+        material = SPIRIT
+      }
+      chatReactionFriendly = "\"IN ORDER TO HAVE A CHANGE OF FORTUNE AT THE LAST MINUTE YOU HAVE TO TAKE YOUR FORTUNE TO THE LAST MINUTE.\""
+      chatReactionHostile = "\"IN ORDER TO HAVE A CHANGE OF FORTUNE AT THE LAST MINUTE YOU HAVE TO TAKE YOUR FORTUNE TO THE LAST MINUTE.\""
+      name = {
+        name = "Death"
+      }
+    }
+  "SHOPKEEPER"
+    {
+      viewId = SHOPKEEPER
+      body = {
+        type = Humanoid LARGE
+      }
+      attr = {
+        DAMAGE 17
+        DEFENSE 20
+      }
+      chatReactionFriendly = "complains about high import tax"
+      chatReactionHostile = "\"Die!\""
+      name = {
+        name = "shopkeeper"
+        firstNameGen = FIRST_MALE
+      }
+    }
+}

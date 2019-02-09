@@ -8,18 +8,16 @@ class StairKey {
   static StairKey heroSpawn();
   static StairKey keeperSpawn();
   static StairKey transferLanding();
-  static StairKey sokoban();
 
   bool operator == (const StairKey&) const;
 
   SERIALIZATION_DECL(StairKey);
 
-  int getInternalKey() const;
+  long long getInternalKey() const;
 
   private:
-  StairKey(int key);
-  int SERIAL(key);
-  static int numKeys;
+  StairKey(long long key);
+  long long SERIAL(key);
 };
 
 namespace std {

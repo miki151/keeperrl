@@ -10,12 +10,12 @@ class Portals {
   optional<int> getPortalIndex(Vec2) const;
   bool registerPortal(Position);
   void removePortal(Position);
-  optional<int> getDistanceToNearest(Vec2) const;
+  optional<short> getDistanceToNearest(Vec2) const;
 
   SERIALIZATION_DECL(Portals)
 
   private:
   void recalculateDistances(WLevel);
   vector<optional<Vec2>> SERIAL(matchings);
-  Table<optional<int>> SERIAL(distanceToNearest);
+  Table<optional<short>> SERIAL(distanceToNearest);
 };

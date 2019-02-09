@@ -16,6 +16,7 @@
 #include "resource_info.h"
 #include "equipment.h"
 #include "minion_equipment.h"
+#include "game.h"
 
 static bool betterPos(Position from, Position current, Position candidate) {
   double maxDiff = 0.3;
@@ -33,30 +34,28 @@ static optional<Position> getRandomCloseTile(Position from, const vector<Positio
   return ret;
 }
 
-static optional<Position> getTileToExplore(WConstCollective collective, WConstCreature c, MinionActivity task) {
+static optional<Position> getTileToExplore(WConstCollective collective, const Creature* c, MinionActivity task) {
   PROFILE;
   vector<Position> border = Random.permutation(collective->getKnownTiles().getBorderTiles());
   switch (task) {
     case MinionActivity::EXPLORE_CAVES:
       if (auto pos = getRandomCloseTile(c->getPosition(), border,
             [&](Position p) {
-                return p.isSameLevel(collective->getLevel()) && p.isCovered() &&
-                    (!c->getPosition().isSameLevel(collective->getLevel()) || c->isSameSector(p));}))
+                return p.isCovered() && c->canNavigateTo(p);}))
         return pos;
       FALLTHROUGH;
     case MinionActivity::EXPLORE:
       FALLTHROUGH;
     case MinionActivity::EXPLORE_NOCTURNAL:
       return getRandomCloseTile(c->getPosition(), border,
-          [&](Position pos) { return pos.isSameLevel(collective->getLevel()) && !pos.isCovered()
-              && (!c->getPosition().isSameLevel(collective->getLevel()) || c->isSameSector(pos));});
+          [&](Position pos) { return !pos.isCovered() && c->canNavigateTo(pos);});
     default: FATAL << "Unrecognized explore task: " << int(task);
   }
   return none;
 }
 
-static WCreature getCopulationTarget(WConstCollective collective, WConstCreature succubus) {
-  for (WCreature c : Random.permutation(collective->getCreatures(MinionTrait::FIGHTER)))
+static Creature* getCopulationTarget(WConstCollective collective, const Creature* succubus) {
+  for (Creature* c : Random.permutation(collective->getCreatures(MinionTrait::FIGHTER)))
     if (succubus->canCopulateWith(c))
       return c;
   return nullptr;
@@ -85,7 +84,7 @@ const vector<FurnitureType>& MinionActivities::getAllFurniture(MinionActivity ta
   return cache[task];
 }
 
-optional<MinionActivity> MinionActivities::getActivityFor(WConstCollective col, WConstCreature c, FurnitureType type) {
+optional<MinionActivity> MinionActivities::getActivityFor(WConstCollective col, const Creature* c, FurnitureType type) {
   static EnumMap<FurnitureType, optional<MinionActivity>> cache;
   static bool initialized = false;
   if (!initialized) {
@@ -106,7 +105,7 @@ optional<MinionActivity> MinionActivities::getActivityFor(WConstCollective col, 
   return none;
 }
 
-static vector<Position> tryInQuarters(vector<Position> pos, WConstCollective collective, WConstCreature c) {
+static vector<Position> tryInQuarters(vector<Position> pos, WConstCollective collective, const Creature* c) {
   PROFILE;
   auto& quarters = collective->getQuarters();
   auto& zones = collective->getZones();
@@ -136,7 +135,7 @@ static vector<Position> tryInQuarters(vector<Position> pos, WConstCollective col
     return pos;
 }
 
-vector<Position> MinionActivities::getAllPositions(WConstCollective collective, WConstCreature c,
+vector<Position> MinionActivities::getAllPositions(WConstCollective collective, const Creature* c,
     MinionActivity activity) {
   PROFILE;
   vector<Position> ret;
@@ -152,20 +151,19 @@ vector<Position> MinionActivities::getAllPositions(WConstCollective collective, 
   return ret;
 }
 
-PTask MinionActivities::getDropItemsTask(WCollective collective, WConstCreature creature) {
+static PTask getDropItemsTask(WCollective collective, const Creature* creature) {
   auto& config = collective->getConfig();
   for (const ItemFetchInfo& elem : config.getFetchInfo()) {
-    vector<WItem> items = creature->getEquipment().getItems(elem.index).filter([&elem, &collective, &creature](WConstItem item) {
+    vector<Item*> items = creature->getEquipment().getItems(elem.index).filter([&elem, &collective, &creature](const Item* item) {
         return elem.predicate(collective, item) && !collective->getMinionEquipment().isOwner(item, creature); });
-    const auto& destination = elem.destinationFun(collective);
-    if (!items.empty() && !destination.empty())
-      return Task::dropItems(items, vector<Position>(destination.begin(), destination.end()));
+    if (!items.empty() && !collective->getStoragePositions(elem.storageId).empty())
+      return Task::dropItems(items, elem.storageId, collective);
   }
   return nullptr;
 };
 
 
-WTask MinionActivities::getExisting(WCollective collective, WCreature c, MinionActivity activity) {
+WTask MinionActivities::getExisting(WCollective collective, Creature* c, MinionActivity activity) {
   PROFILE;
   auto& info = CollectiveConfig::getActivityInfo(activity);
   switch (info.type) {
@@ -176,34 +174,42 @@ WTask MinionActivities::getExisting(WCollective collective, WCreature c, MinionA
   }
 }
 
-PTask MinionActivities::generateDropTask(WCollective collective, WCreature c, MinionActivity task) {
-  if (CollectiveConfig::getActivityInfo(task).type == MinionActivityInfo::WORKER &&
-      task != MinionActivity::HAULING)
+PTask MinionActivities::generateDropTask(WCollective collective, Creature* c, MinionActivity task) {
+  if (task != MinionActivity::HAULING)
     if (PTask ret = getDropItemsTask(collective, c))
       return ret;
   return nullptr;
 }
 
-PTask MinionActivities::generate(WCollective collective, WCreature c, MinionActivity task) {
+static vector<Position> limitToIndoors(vector<Position> v) {
+  return v.filter([](const Position& pos) { return pos.isCovered(); });
+}
+
+PTask MinionActivities::generate(WCollective collective, Creature* c, MinionActivity task) {
   PROFILE;
   auto& info = CollectiveConfig::getActivityInfo(task);
   switch (info.type) {
     case MinionActivityInfo::IDLE: {
       PROFILE_BLOCK("Idle");
-      auto myTerritory = tryInQuarters(collective->getTerritory().getAll(), collective, c);
+      auto myTerritory = (collective->getZones().getPositions(ZoneId::LEISURE).empty() ||
+            collective->hasTrait(c, MinionTrait::WORKER)) ?
+          tryInQuarters(collective->getTerritory().getAll(), collective, c) :
+          collective->getZones().getPositions(ZoneId::LEISURE).asVector();
+      myTerritory = myTerritory.filter([&](const auto& pos) { return pos.canEnterEmpty(c); });
+      if (collective->getGame()->getSunlightInfo().getState() == SunlightState::NIGHT) {
+        if (c->getPosition().isCovered())
+          return Task::idle();
+        myTerritory = limitToIndoors(std::move(myTerritory));
+      }
       auto& pigstyPos = collective->getConstructions().getBuiltPositions(FurnitureType::PIGSTY);
       if (pigstyPos.count(c->getPosition()))
         return Task::doneWhen(Task::goTo(Random.choose(myTerritory)),
             TaskPredicate::outsidePositions(c, pigstyPos));
-      if (collective->getConfig().stayInTerritory() || collective->getQuarters().getAssigned(c->getUniqueId()) ||
-          (!collective->getTerritory().getStandardExtended().contains(c->getPosition()) &&
-           !collective->getTerritory().getAll().contains(c->getPosition()))) {
-        auto leader = collective->getLeader();
-        if (!myTerritory.empty())
-          return Task::chain(Task::transferTo(collective->getModel()), Task::stayIn(myTerritory));
-        else if (collective->getConfig().getFollowLeaderIfNoTerritory() && leader)
-          return Task::alwaysDone(Task::follow(leader));
-      }
+      auto leader = collective->getLeader();
+      if (!myTerritory.empty())
+        return Task::chain(Task::transferTo(collective->getModel()), Task::stayIn(myTerritory));
+      else if (collective->getConfig().getFollowLeaderIfNoTerritory() && leader)
+        return Task::alwaysDone(Task::follow(leader));
       return Task::idle();
     }
     case MinionActivityInfo::FURNITURE: {
@@ -229,7 +235,7 @@ PTask MinionActivities::generate(WCollective collective, WCreature c, MinionActi
     }
     case MinionActivityInfo::COPULATE: {
       PROFILE_BLOCK("Copulate");
-      if (WCreature target = getCopulationTarget(collective, c))
+      if (Creature* target = getCopulationTarget(collective, c))
         return Task::copulate(collective, target, 20);
       break;
     }
@@ -243,19 +249,18 @@ PTask MinionActivities::generate(WCollective collective, WCreature c, MinionActi
     case MinionActivityInfo::SPIDER: {
       PROFILE_BLOCK("Spider");
       auto& territory = collective->getTerritory();
-      return Task::spider(territory.getAll().front(), territory.getExtended(3));
+      if (!territory.isEmpty())
+        return Task::spider(territory.getAll().front(), territory.getExtended(3));
+      break;
     }
     case MinionActivityInfo::WORKER: {
-      if (task == MinionActivity::HAULING)
-        if (PTask ret = getDropItemsTask(collective, c))
-          return ret;
       return nullptr;
     }
   }
   return nullptr;
 }
 
-optional<TimeInterval> MinionActivities::getDuration(WConstCreature c, MinionActivity task) {
+optional<TimeInterval> MinionActivities::getDuration(const Creature* c, MinionActivity task) {
   switch (task) {
     case MinionActivity::COPULATE:
     case MinionActivity::EAT:

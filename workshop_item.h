@@ -3,11 +3,20 @@
 #include "item_type.h"
 #include "cost_info.h"
 
+struct WorkshopItem;
+
+struct WorkshopItemCfg {
+  WorkshopItem get() const;
+  ItemType SERIAL(item);
+  double SERIAL(work) = 1;
+  CostInfo SERIAL(cost);
+  optional<TechId> SERIAL(tech);
+  int SERIAL(batchSize) = 1;
+  optional<TutorialHighlight> SERIAL(tutorialHighlight);
+  SERIALIZE_ALL(NAMED(item), OPTION(work), OPTION(cost), NAMED(tech), OPTION(batchSize), NAMED(tutorialHighlight))
+};
+
 struct WorkshopItem {
-  static WorkshopItem fromType(ItemType, double workNeeded, CostInfo);
-  WorkshopItem& setBatchSize(int);
-  WorkshopItem& setTechId(TechId);
-  WorkshopItem& setTutorialHighlight(TutorialHighlight);
   ItemType SERIAL(type);
   string SERIAL(name);
   string SERIAL(pluralName);

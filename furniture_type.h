@@ -2,7 +2,7 @@
 
 #include "util.h"
 
-RICH_ENUM(
+RICH_ENUM2(std::uint8_t,
     FurnitureType,
     WATER,
     SHALLOW_WATER1,
@@ -21,7 +21,7 @@ RICH_ENUM(
     WORKSHOP,
     FORGE,
     LABORATORY,
-    JEWELER,
+    JEWELLER,
     FURNACE,
     BOOKCASE_WOOD,
     BOOKCASE_IRON,
@@ -51,6 +51,10 @@ RICH_ENUM(
     TORCH_E,
     TORCH_S,
     TORCH_W,
+    CANDELABRUM_N,
+    CANDELABRUM_S,
+    CANDELABRUM_E,
+    CANDELABRUM_W,
     TORTURE_TABLE,
     FOUNTAIN,
     CHEST,
@@ -85,6 +89,7 @@ RICH_ENUM(
     CASTLE_WALL,
     WOOD_WALL,
     MUD_WALL,
+    RUIN_WALL,
     FLOOR_WOOD1,
     FLOOR_WOOD2,
     FLOOR_STONE1,
@@ -102,5 +107,7 @@ RICH_ENUM(
     PORTAL,
     METEOR_SHOWER,
     TUTORIAL_ENTRANCE,
-    PIT
+    PIT,
+    ALTAR,
+    ALTAR_DES
 );

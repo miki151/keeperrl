@@ -25,7 +25,7 @@ string Skill::getName() const {
   return name;
 }
 
-string Skill::getNameForCreature(WConstCreature c) const {
+string Skill::getNameForCreature(const Creature* c) const {
   double val = c->getAttributes().getSkills().getValue(getId());
   CHECK(val >= 0 && val <= 1) << "Skill value " << val;
   return getName() + " (" + toString<int>(val * 100) + "%)";
@@ -35,77 +35,32 @@ string Skill::getHelpText() const {
   return helpText;
 }
 
-bool Skill::isDiscrete() const {
-  return discrete;
-}
-
 void Skill::init() {
-  Skill::set(SkillId::AMBUSH, new Skill("ambush",
-        "Hide and ambush unsuspecting enemies. Press 'h' to hide on a tile that allows it.", true));
-  Skill::set(SkillId::STEALING,
-      new Skill("stealing", "Steal from other monsters. Not available for player ATM.", true));
-  Skill::set(SkillId::SWIMMING, new Skill("swimming", "Cross water without drowning.", true));
-  Skill::set(SkillId::DIGGING, new Skill("digging", "Dig.", false));
-  Skill::set(SkillId::NAVIGATION_DIGGING, new Skill("digging to navigate",
-      "Creature will try to dig when travelling somewhere.", true));
-  Skill::set(SkillId::DISARM_TRAPS, new Skill("disarm traps", "Evade traps and disarm them.", true));
-  Skill::set(SkillId::SORCERY, new Skill("sorcery", "Affects the length of spell cooldowns.", false, false));
-  Skill::set(SkillId::CONSUMPTION, new Skill("absorbtion",
-        "Absorb other creatures and retain their attributes.", true, false));
-  Skill::set(SkillId::COPULATION, new Skill("copulation",
-        "Copulate with other creatures and give birth to hideous spawns.", true, false));
-  Skill::set(SkillId::SPIDER, new Skill("spin spider webs", "Spin spider webs.", true));
-  Skill::set(SkillId::CROPS, new Skill("tend crops", "Tend crops.", true, false));
-  Skill::set(SkillId::EXPLORE, new Skill("exploring", "Explore all surroundings.", true));
-  Skill::set(SkillId::EXPLORE_CAVES, new Skill("exploring caves", "Explore caves.", true));
-  Skill::set(SkillId::EXPLORE_NOCTURNAL, new Skill("exploring at night", "Explore at night.", true));
-  Skill::set(SkillId::STEALTH, new Skill("stealth", "Fight without waking up creatures sleeping nearby.", true));
-  Skill::set(SkillId::WORKSHOP, new Skill("workshop", "Craft items in the workshop.", false));
-  Skill::set(SkillId::FORGE, new Skill("forge", "Craft items in the forge.", false));
-  Skill::set(SkillId::LABORATORY, new Skill("laboratory", "Craft items in the laboratory.", false));
-  Skill::set(SkillId::JEWELER, new Skill("jeweler", "Craft items at the jeweler's shop.", false));
-  Skill::set(SkillId::FURNACE, new Skill("furnace", "Craft items at the furnace.", false));
+  Skill::set(SkillId::DIGGING, new Skill("digging", "Dig."));
+  Skill::set(SkillId::WORKSHOP, new Skill("workshop", "Craft items in the workshop."));
+  Skill::set(SkillId::FORGE, new Skill("forge", "Craft items in the forge."));
+  Skill::set(SkillId::LABORATORY, new Skill("laboratory", "Craft items in the laboratory."));
+  Skill::set(SkillId::JEWELER, new Skill("jeweler", "Craft items at the jeweler's shop."));
+  Skill::set(SkillId::FURNACE, new Skill("furnace", "Craft items at the furnace."));
 }
 
-bool Skill::transferOnConsumption() const {
-  return consume;
-}
-
-Skill::Skill(string _name, string _helpText, bool _discrete, bool _consume) 
-  : name(_name), helpText(_helpText), consume(_consume), discrete(_discrete) {}
-
-void Skillset::insert(SkillId s) {
-  CHECK(Skill::get(s)->isDiscrete());
-  discrete.insert(s);
-}
-
-void Skillset::erase(SkillId s) {
-  CHECK(Skill::get(s)->isDiscrete());
-  discrete.erase(s);
-}
-
-bool Skillset::hasDiscrete(SkillId s) const {
-  CHECK(Skill::get(s)->isDiscrete());
-  return discrete.contains(s);
-}
+Skill::Skill(string _name, string _helpText)
+  : name(_name), helpText(_helpText) {}
 
 double Skillset::getValue(SkillId s) const {
-  CHECK(!Skill::get(s)->isDiscrete());
-  return gradable[s];
+  return values[s];
 }
 
 void Skillset::setValue(SkillId s, double v) {
-  CHECK(!Skill::get(s)->isDiscrete());
-  gradable[s] = v;
+  values[s] = v;
 }
 
 void Skillset::increaseValue(SkillId s, double v) {
-  CHECK(!Skill::get(s)->isDiscrete());
-  gradable[s] = max(0.0, min(1.0, gradable[s] + v));
+  values[s] = max(0.0, min(1.0, values[s] + v));
 }
 
-const EnumSet<SkillId>& Skillset::getAllDiscrete() const {
-  return discrete;
-}
+SERIALIZE_DEF(Skillset, values)
 
-SERIALIZE_DEF(Skillset, discrete, gradable)
+#include "pretty_archive.h"
+template
+void Skillset::serialize(PrettyInputArchive&, unsigned);

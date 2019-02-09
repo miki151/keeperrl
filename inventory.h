@@ -22,6 +22,7 @@
 #include "indexed_vector.h"
 #include "item_index.h"
 #include "item_counts.h"
+#include "entity_set.h"
 
 class Item;
 class Position;
@@ -31,21 +32,22 @@ class Inventory {
   public:
   void addItem(PItem);
   void addItems(vector<PItem>);
-  PItem removeItem(WItem item);
-  vector<PItem> removeItems(vector<WItem> items);
+  PItem removeItem(Item* item);
+  vector<PItem> removeItems(vector<Item*> items);
   vector<PItem> removeAllItems();
   void clearIndex(ItemIndex);
 
-  const vector<WItem>& getItems() const;
-  vector<WItem> getItems(function<bool (WConstItem)> predicate) const;
-  const vector<WItem>& getItems(ItemIndex) const;
+  const vector<Item*>& getItems() const;
+  vector<Item*> getItems(function<bool (const Item*)> predicate) const;
+  const vector<Item*>& getItems(ItemIndex) const;
   const ItemCounts& getCounts() const;
 
-  bool hasItem(WConstItem) const;
-  WItem getItemById(UniqueEntity<Item>::Id) const;
+  bool hasItem(const Item*) const;
+  Item* getItemById(UniqueEntity<Item>::Id) const;
   int size() const;
   double getTotalWeight() const;
   void tick(Position);
+  bool containsAnyOf(const EntitySet<Item>&) const;
 
   bool isEmpty() const;
 
@@ -53,7 +55,7 @@ class Inventory {
 
   private:
 
-  typedef IndexedVector<WItem, UniqueEntity<Item>::Id> ItemVector;
+  typedef IndexedVector<Item*, UniqueEntity<Item>::Id> ItemVector;
   typedef IndexedVector<PItem, UniqueEntity<Item>::Id> PItemVector;
 
   ItemCounts SERIAL(counts);

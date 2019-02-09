@@ -2,7 +2,8 @@
 
 #include "util.h"
 
-RICH_ENUM(CollectiveResourceId,
+RICH_ENUM2(unsigned char,
+  CollectiveResourceId,
   GOLD,
   WOOD,
   IRON,

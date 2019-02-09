@@ -23,7 +23,6 @@
 #include "options.h"
 #include "scroll_position.h"
 #include "keybinding_map.h"
-#include "player_role_choice.h"
 #include "attr_type.h"
 
 #include "sdl.h"
@@ -367,6 +366,8 @@ SGuiElem GuiFactory::sprite(Texture& tex, double height) {
 
 SGuiElem GuiFactory::sprite(Texture& tex, Alignment align, bool vFlip, bool hFlip, Vec2 offset,
     optional<Color> col) {
+  if (!tex.getTexId())
+    return empty();
   return SGuiElem(new DrawCustom(
         [&tex, align, offset, col, vFlip, hFlip] (Renderer& r, Rectangle bounds) {
           Vec2 size = tex.getSize();
@@ -1401,6 +1402,13 @@ class CenterHoriz : public GuiLayout {
       return none;
   }
 
+  optional<int> getPreferredWidth() override {
+    if (auto width = elems[0]->getPreferredWidth())
+      return *width;
+    else
+      return none;
+  }
+
   virtual Rectangle getElemBounds(int num) override {
     int center = (getBounds().left() + getBounds().right()) / 2;
     int myWidth = width ? *width : max(2, *elems[0]->getPreferredWidth());
@@ -1755,7 +1763,9 @@ class ViewObjectGui : public GuiElem {
   public:
   ViewObjectGui(const ViewObject& obj, Vec2 sz, double sc, Color c) : object(obj), size(sz), scale(sc), color(c) {}
   ViewObjectGui(ViewId id, Vec2 sz, double sc, Color c) : object(id), size(sz), scale(sc), color(c) {}
-  
+  ViewObjectGui(function<ViewId()> id, Vec2 sz, double sc, Color c)
+      : object(std::move(id)), size(sz), scale(sc), color(c) {}
+
   virtual void render(Renderer& renderer) override {
     object.match(
           [&](const ViewObject& obj) {
@@ -1763,6 +1773,9 @@ class ViewObjectGui : public GuiElem {
           },
           [&](ViewId viewId) {
             renderer.drawViewObject(getBounds().topLeft(), viewId, true, scale, color);
+          },
+          [&](function<ViewId()> viewId) {
+            renderer.drawViewObject(getBounds().topLeft(), viewId(), true, scale, color);
           }
     );
   }
@@ -1776,7 +1789,7 @@ class ViewObjectGui : public GuiElem {
   }
 
   private:
-  variant<ViewObject, ViewId> object;
+  variant<ViewObject, ViewId, function<ViewId()>> object;
   Vec2 size;
   double scale;
   Color color;
@@ -1788,6 +1801,10 @@ SGuiElem GuiFactory::viewObject(const ViewObject& object, double scale, Color co
 
 SGuiElem GuiFactory::viewObject(ViewId id, double scale, Color color) {
   return SGuiElem(new ViewObjectGui(id, Vec2(1, 1) * Renderer::nominalSize * scale, scale, color));
+}
+
+SGuiElem GuiFactory::viewObject(function<ViewId()> id, double scale, Color color) {
+  return SGuiElem(new ViewObjectGui(std::move(id), Vec2(1, 1) * Renderer::nominalSize * scale, scale, color));
 }
 
 SGuiElem GuiFactory::asciiBackground(ViewId id) {
@@ -2047,39 +2064,6 @@ class MouseHighlight2 : public GuiStack {
 
 SGuiElem GuiFactory::mouseHighlight(SGuiElem elem, int myIndex, optional<int>* highlighted) {
   return SGuiElem(new MouseHighlight(std::move(elem), myIndex, highlighted));
-}
-
-class MouseHighlightGameChoice : public GuiStack {
-  public:
-  MouseHighlightGameChoice(SGuiElem h, optional<PlayerRoleChoice> my, optional<PlayerRoleChoice>& highlight)
-    : GuiStack(std::move(h)), myChoice(my), highlighted(highlight) {}
-
-  virtual void onMouseGone() override {
-    if (highlighted == myChoice)
-      highlighted = none;
-  }
-
-  virtual bool onMouseMove(Vec2 pos) override {
-    if (pos.inRectangle(getBounds()))
-      highlighted = myChoice;
-    else if (highlighted == myChoice)
-      highlighted = none;
-    return false;
-  }
-
-  virtual void render(Renderer& r) override {
-    if (highlighted == myChoice)
-      elems[0]->render(r);
-  }
-
-  private:
-  optional<PlayerRoleChoice> myChoice;
-  optional<PlayerRoleChoice>& highlighted;
-};
-
-SGuiElem GuiFactory::mouseHighlightGameChoice(SGuiElem elem,
-    optional<PlayerRoleChoice> my, optional<PlayerRoleChoice>& highlight) {
-  return SGuiElem(new MouseHighlightGameChoice(std::move(elem), my, highlight));
 }
 
 SGuiElem GuiFactory::mouseHighlight2(SGuiElem elem, SGuiElem noHighlight) {
@@ -2564,6 +2548,8 @@ void GuiFactory::loadFreeImages(const DirectoryPath& path) {
       case SpellId::TELEPORT:
         return Vec2(0, 7);
       case SpellId::FIREBALL:
+        return Vec2(1, 7);
+      case SpellId::FIREBALL_DRAGON:
         return Vec2(1, 7);
       case SpellId::INVISIBILITY:
         return Vec2(0, 8);

@@ -77,8 +77,8 @@ struct EmitterDef {
 };
 
 using AnimateParticleFunc = void (*)(AnimationContext&, Particle&);
-using DrawParticleFunc = void (*)(DrawContext&, const Particle&, DrawParticle&);
-using DrawParticlesFunc = void (*)(DrawContext&, const Particle&, vector<DrawParticle>&);
+using DrawParticleFunc = bool (*)(DrawContext&, const Particle&, DrawParticle&);
+using DrawParticlesFunc = void (*)(DrawContext&, const Particle&, vector<DrawParticle>&, Color);
 
 // Returns number of particles to emit
 // Fractionals will be accumulated over time
@@ -88,7 +88,7 @@ using EmitParticleFunc = void (*)(AnimationContext&, EmissionState&, Particle&);
 void defaultAnimateParticle(AnimationContext&, Particle&);
 float defaultPrepareEmission(AnimationContext&, EmissionState&);
 void defaultEmitParticle(AnimationContext&, EmissionState&, Particle&);
-void defaultDrawParticle(DrawContext&, const Particle&, DrawParticle&);
+bool defaultDrawParticle(DrawContext&, const Particle&, DrawParticle&);
 
 struct SubSystemDef {
   SubSystemDef(ParticleDef pdef, EmitterDef edef, float estart, float eend)

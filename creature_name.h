@@ -17,19 +17,24 @@
 
 #include "util.h"
 
+class NameGenerator;
+
 class CreatureName {
   public:
   CreatureName(const string& name);
   CreatureName(const string& name, const string& plural);
   CreatureName(const char* name);
   void setFirst(const string&);
+  void generateFirst(NameGenerator*);
   void setStack(const string&);
   void setGroup(const string&);
+  void setBare(const string&);
   void useFullTitle();
   const string& stack() const;
   const char* identify() const;
   const optional<string>& stackOnly() const;
-  optional<string> first() const;
+  const optional<string>& first() const;
+  string firstOrBare() const;
   string bare() const;
   string the() const;
   string a() const;
@@ -45,8 +50,7 @@ class CreatureName {
   string SERIAL(pluralName);
   optional<string> SERIAL(stackName);
   optional<string> SERIAL(firstName);
+  optional<NameGeneratorId> firstNameGen;
   string SERIAL(groupName) = "group";
   bool SERIAL(fullTitle) = false;
 };
-
-

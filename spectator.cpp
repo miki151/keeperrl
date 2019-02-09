@@ -20,7 +20,7 @@ const MapMemory& Spectator::getMemory() const {
 void Spectator::getViewIndex(Vec2 pos, ViewIndex& index) const {
   Position position(pos, getLevel());
   position.getViewIndex(index, nullptr);
-  if (WConstCreature c = position.getCreature())
+  if (const Creature* c = position.getCreature())
     index.insert(c->getViewObject());
 }
 

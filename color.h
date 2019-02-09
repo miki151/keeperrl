@@ -25,6 +25,7 @@ struct Color {
   Color transparency(int);
   static Color f(double, double, double, double = 1.0);
   Color operator*(Color);
+  Color blend(Color) const;
   Color();
 
   bool operator==(const Color&) const;
@@ -55,7 +56,6 @@ struct Color {
   static Color ORANGE;
   static Color BLUE;
   static Color DARK_BLUE;
-  static Color NIGHT_BLUE;
   static Color LIGHT_BLUE;
   static Color SKY_BLUE;
   static Color PURPLE;

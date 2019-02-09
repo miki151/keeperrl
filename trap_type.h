@@ -2,7 +2,8 @@
 
 #include "util.h"
 
-RICH_ENUM(TrapType,
+RICH_ENUM2(unsigned char,
+  TrapType,
   BOULDER,
   POISON_GAS,
   ALARM,

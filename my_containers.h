@@ -129,11 +129,6 @@ class vector {
     return impl != o.impl;
   }
 
-  template <class Archive>
-  void serialize(Archive& ar1, const unsigned int) {
-    ar1(impl);
-  }
-
   template <typename V>
   bool contains(const V& elem) const {
     return std::find(impl.begin(), impl.end(), elem) != impl.end();
@@ -260,6 +255,7 @@ class vector {
   class Iterator : public std::iterator<std::random_access_iterator_tag, T> {
     public:
     Iterator(const BaseIterator& i, const vector<T>* p) : it(i), parent(p), currentMod(p->modCounter) {}
+    Iterator() {}
 
     using value_type = T;
     using difference_type = long;
@@ -374,10 +370,21 @@ class vector {
     return iterator(&*impl.end(), this);
   }
 
-  private:
   std::vector<T> impl;
+  private:
   int modCounter = 0;
 };
+
+template <typename Archive, typename T>
+inline void save(Archive& ar1, const vector<T>& v) {
+  ar1(v.impl);
+}
+
+template <class Archive, typename T>
+inline void load(Archive& ar1, vector<T>& v) {
+  ar1(v.impl);
+}
+
 
 template <typename T, typename Compare = std::less<T>>
 class set : public std::set<T, Compare> {
@@ -417,6 +424,13 @@ class unordered_set : public std::unordered_set<T, Hash> {
     ret.reserve(size());
     for (const auto& elem : *this)
       ret.push_back(fun(elem));
+    return ret;
+  }
+
+  vector<T> asVector() const {
+    vector<T> ret;
+    for (auto&& elem : *this)
+      ret.push_back(std::move(elem));
     return ret;
   }
 };

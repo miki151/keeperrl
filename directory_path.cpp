@@ -56,6 +56,17 @@ vector<FilePath> DirectoryPath::getFiles() const {
   return ret;
 }
 
+vector<string> DirectoryPath::getSubDirs() const {
+  vector<string> ret;
+  if (DIR* dir = opendir(path.data())) {
+    while (dirent* ent = readdir(dir))
+      if (isDirectory(path + "/" + ent->d_name) && strcmp(ent->d_name, ".") && strcmp(ent->d_name, ".."))
+        ret.push_back(ent->d_name);
+    closedir(dir);
+  }
+  return ret;
+}
+
 const char* DirectoryPath::get() const {
   return path.data();
 }

@@ -20,6 +20,7 @@
 #include "creature_name.h"
 #include "villain_type.h"
 #include "enemy_factory.h"
+#include "creature_group.h"
 #include "view_object.h"
 #include "item.h"
 #include "furniture.h"
@@ -34,175 +35,20 @@
 #include "game_time.h"
 #include "lasting_effect.h"
 #include "skill.h"
+#include "game_config.h"
+#include "build_info.h"
+#include "tribe_alignment.h"
+#include "resource_counts.h"
 
 using namespace std::chrono;
 
-ModelBuilder::ModelBuilder(ProgressMeter* m, RandomGen& r, Options* o, SokobanInput* sok) : random(r), meter(m), options(o),
-  enemyFactory(EnemyFactory(random)), sokobanInput(sok) {
+ModelBuilder::ModelBuilder(ProgressMeter* m, RandomGen& r, Options* o,
+    SokobanInput* sok, const GameConfig* gameConfig, const CreatureFactory* creatureFactory, const EnemyFactory* enemyFactory)
+    : random(r), meter(m), options(o), enemyFactory(enemyFactory), sokobanInput(sok), gameConfig(gameConfig),
+      creatureFactory(creatureFactory) {
 }
 
 ModelBuilder::~ModelBuilder() {
-}
-
-static CollectiveConfig getKeeperConfig(RandomGen& random, bool fastImmigration, bool regenerateMana, AvatarInfo::ImpVariant impVariant) {
-  vector<ImmigrantInfo> immigrants;
-  switch (impVariant) {
-    case AvatarInfo::IMPS:
-      immigrants.push_back(
-          ImmigrantInfo(CreatureId::IMP, {MinionTrait::WORKER, MinionTrait::NO_LIMIT, MinionTrait::NO_EQUIPMENT})
-             .setSpawnLocation(NearLeader{})
-             .setKeybinding(Keybinding::CREATE_IMP)
-             .setSound(Sound(SoundId::CREATE_IMP).setPitch(2))
-             .setNoAuto()
-             .setInitialRecruitment(4)
-             .addRequirement(ExponentialCost{ CostInfo(CollectiveResourceId::GOLD, 30), 5, 4 }));
-      break;
-    case AvatarInfo::GOBLINS:
-      immigrants.push_back(
-          ImmigrantInfo(CreatureId::PESEANT_PRISONER,
-              {MinionTrait::WORKER, MinionTrait::PRISONER, MinionTrait::NO_LIMIT})
-             .setSpawnLocation(NearLeader{})
-             .setNoAuto()
-             .setInvisible()
-             .setInitialRecruitment(4));
-      break;
-  }
-  append(immigrants, {
-       ImmigrantInfo(CreatureId::GOBLIN, {MinionTrait::FIGHTER, MinionTrait::NO_EQUIPMENT})
-           .setFrequency(0.7)
-           .addRequirement(0.1, AttractionInfo{1, vector<AttractionType>(
-                {FurnitureType::FORGE, FurnitureType::WORKSHOP, FurnitureType::JEWELER})})
-           .addSpecialTrait(0.03, {SkillId::WORKSHOP, LastingEffect::INSANITY})
-           .addSpecialTrait(0.03, {SkillId::FORGE, LastingEffect::INSANITY})
-           .addSpecialTrait(0.03, {SkillId::JEWELER, LastingEffect::INSANITY}),
-       ImmigrantInfo(CreatureId::ORC, {MinionTrait::FIGHTER})
-           .setFrequency(0.7)
-           .addRequirement(0.1, AttractionInfo{1, FurnitureType::TRAINING_WOOD})
-           .addSpecialTrait(0.05, ExtraTraining { ExperienceType::ARCHERY, 2 })
-           .addSpecialTrait(0.05, ExtraTraining { ExperienceType::MELEE, 2 })
-           .addSpecialTrait(0.03, {AttrBonus { AttrType::DAMAGE, 7 }, LastingEffect::INSANITY})
-           .addSpecialTrait(0.05, LastingEffect::NIGHT_VISION)
-           .addSpecialTrait(0.05, SkillId::DISARM_TRAPS)
-           .addSpecialTrait(0.05, SkillId::SWIMMING)
-           .addSpecialTrait(0.05, LastingEffect::MAGIC_VULNERABILITY),
-       ImmigrantInfo(CreatureId::ORC_SHAMAN, {MinionTrait::FIGHTER})
-           .setFrequency(0.6)
-           .addRequirement(0.0, MinTurnRequirement{500_global})
-           .addRequirement(0.1, AttractionInfo{1, {FurnitureType::BOOKCASE_WOOD, FurnitureType::LABORATORY}})
-           .addSpecialTrait(0.03, {AttrBonus { AttrType::SPELL_DAMAGE, 7 }, LastingEffect::INSANITY})
-           .addSpecialTrait(0.1, ExtraTraining { ExperienceType::SPELL, 4 })
-           .addSpecialTrait(0.05, SkillId::SORCERY)
-           .addSpecialTrait(0.05, SkillId::LABORATORY)
-           .addSpecialTrait(0.1, LastingEffect::MAGIC_RESISTANCE),
-       ImmigrantInfo(CreatureId::OGRE, {MinionTrait::FIGHTER})
-           .setFrequency(0.3)
-           .addRequirement(0.0, MinTurnRequirement{2000_global})
-           .addRequirement(0.1, AttractionInfo{1, FurnitureType::TRAINING_IRON})
-           .addSpecialTrait(0.03, {AttrBonus { AttrType::DAMAGE, 5 }, LastingEffect::INSANITY})
-           .addSpecialTrait(0.05, {AttrBonus { AttrType::DEFENSE, 5 }, LastingEffect::SLOWED})
-           .addSpecialTrait(0.1, LastingEffect::RANGED_VULNERABILITY)
-           .addSpecialTrait(0.1, ExtraTraining { ExperienceType::ARCHERY, 2 }),
-       ImmigrantInfo(CreatureId::HARPY, {MinionTrait::FIGHTER})
-           .setFrequency(0.3)
-           .addRequirement(0.0, MinTurnRequirement{2000_global})
-           .addRequirement(0.1, AttractionInfo{1, FurnitureType::TRAINING_WOOD})
-           .addRequirement(0.3, AttractionInfo{1, ItemIndex::RANGED_WEAPON})
-           .addSpecialTrait(0.03, {AttrBonus { AttrType::RANGED_DAMAGE, 5 }, LastingEffect::INSANITY})
-           .addSpecialTrait(0.02, LastingEffect::INSANITY)
-           .addSpecialTrait(0.2, LastingEffect::NIGHT_VISION)
-           .addSpecialTrait(0.1, ExtraTraining { ExperienceType::ARCHERY, 3 }),
-       ImmigrantInfo(CreatureId::ZOMBIE, {MinionTrait::FIGHTER})
-           .setFrequency(0.5)
-           .addRequirement(0.0, MinTurnRequirement{1000_global})
-           .setSpawnLocation(FurnitureType::GRAVE)
-           .addRequirement(0.0, CostInfo(CollectiveResourceId::CORPSE, 1))
-           .addSpecialTrait(0.3, LastingEffect::BLIND)
-           .addSpecialTrait(0.3, LastingEffect::COLLAPSED),
-       ImmigrantInfo(CreatureId::SKELETON, {MinionTrait::FIGHTER})
-           .setFrequency(0.5)
-           .addRequirement(0.0, MinTurnRequirement{1000_global})
-           .setSpawnLocation(FurnitureType::GRAVE)
-           .addRequirement(0.1, AttractionInfo{1, FurnitureType::TRAINING_IRON})
-           .addRequirement(0.0, CostInfo(CollectiveResourceId::CORPSE, 1)),
-       ImmigrantInfo(CreatureId::VAMPIRE, {MinionTrait::FIGHTER})
-           .setFrequency(0.2)
-           .setSpawnLocation(FurnitureType::GRAVE)
-           .addRequirement(0.1, AttractionInfo{1, FurnitureType::TRAINING_IRON})
-           .addRequirement(0.0, CostInfo(CollectiveResourceId::CORPSE, 1))
-           .addSpecialTrait(0.3, LastingEffect::TELEPATHY)
-           .addSpecialTrait(0.3, LastingEffect::FIRE_RESISTANT)
-           .addSpecialTrait(0.3, LastingEffect::FLYING),
-       ImmigrantInfo(CreatureId::LOST_SOUL, {MinionTrait::FIGHTER})
-           .setFrequency(0.3)
-           .setSpawnLocation(FurnitureType::DEMON_SHRINE)
-           .addRequirement(0.3, AttractionInfo{1, FurnitureType::DEMON_SHRINE})
-           .addRequirement(0.0, FurnitureType::DEMON_SHRINE),
-       ImmigrantInfo(CreatureId::SUCCUBUS, {MinionTrait::FIGHTER, MinionTrait::NO_EQUIPMENT})
-           .setFrequency(0.3)
-           .setSpawnLocation(FurnitureType::DEMON_SHRINE)
-           .addRequirement(0.3, AttractionInfo{2, FurnitureType::DEMON_SHRINE})
-           .addRequirement(0.0, FurnitureType::DEMON_SHRINE),
-       ImmigrantInfo(CreatureId::DOPPLEGANGER, {MinionTrait::FIGHTER})
-           .setFrequency(0.3)
-           .setSpawnLocation(FurnitureType::DEMON_SHRINE)
-           .addRequirement(0.3, AttractionInfo{3, FurnitureType::DEMON_SHRINE})
-           .addRequirement(0.0, FurnitureType::DEMON_SHRINE),
-       ImmigrantInfo(CreatureId::RAVEN, {MinionTrait::FIGHTER, MinionTrait::DOESNT_TRIGGER})
-           .setFrequency(0.5)
-           .addRequirement(0.0, FurnitureType::BEAST_CAGE)
-           .addRequirement(0.0, SunlightState::DAY),
-       ImmigrantInfo(CreatureId::BAT, {MinionTrait::FIGHTER, MinionTrait::DOESNT_TRIGGER})
-           .setFrequency(0.5)
-           .addRequirement(0.0, FurnitureType::BEAST_CAGE)
-           .addRequirement(0.0, SunlightState::NIGHT),
-       ImmigrantInfo(CreatureId::WOLF, {MinionTrait::FIGHTER, MinionTrait::DOESNT_TRIGGER})
-           .setFrequency(0.15)
-           .addRequirement(0.0, FurnitureType::BEAST_CAGE)
-           .setGroupSize(Range(3, 9))
-           .setAutoTeam()
-           .addRequirement(0.0, SunlightState::NIGHT),
-       ImmigrantInfo(CreatureId::CAVE_BEAR, {MinionTrait::FIGHTER, MinionTrait::DOESNT_TRIGGER})
-           .addRequirement(0.0, FurnitureType::BEAST_CAGE)
-           .setFrequency(0.1),
-       ImmigrantInfo(CreatureId::WEREWOLF, {MinionTrait::FIGHTER})
-           .setFrequency(0.1)
-           .addRequirement(0.0, MinTurnRequirement{2000_global})
-           .addRequirement(0.1, AttractionInfo{2, FurnitureType::TRAINING_IRON})
-           .addSpecialTrait(0.1, {AttrBonus { AttrType::DAMAGE, 5 }, LastingEffect::INSANITY})
-           .addSpecialTrait(0.03, LastingEffect::INSANITY)
-           .addSpecialTrait(0.3, SkillId::AMBUSH),
-       ImmigrantInfo(CreatureId::DARK_ELF_WARRIOR, {MinionTrait::FIGHTER})
-           .addRequirement(0.0, RecruitmentInfo{{EnemyId::DARK_ELVES}, 3, MinionTrait::FIGHTER})
-           .addRequirement(CostInfo(CollectiveResourceId::GOLD, 20)),
-       ImmigrantInfo(CreatureId::ORC, {MinionTrait::FIGHTER})
-           .addRequirement(0.0, RecruitmentInfo{{EnemyId::ORC_VILLAGE}, 3, MinionTrait::FIGHTER})
-           .addRequirement(CostInfo(CollectiveResourceId::GOLD, 5)),
-       ImmigrantInfo(CreatureId::HARPY, {MinionTrait::FIGHTER})
-           .addRequirement(0.0, RecruitmentInfo{{EnemyId::HARPY_CAVE}, 3, MinionTrait::FIGHTER})
-           .addRequirement(CostInfo(CollectiveResourceId::GOLD, 12)),
-       ImmigrantInfo(CreatureId::OGRE, {MinionTrait::FIGHTER})
-           .addRequirement(0.0, RecruitmentInfo{{EnemyId::OGRE_CAVE, EnemyId::ORC_VILLAGE}, 3, MinionTrait::FIGHTER})
-           .addRequirement(CostInfo(CollectiveResourceId::GOLD, 12)),
-       ImmigrantInfo(random.permutation({CreatureId::SPECIAL_HMBN, CreatureId::SPECIAL_HMBW,
-               CreatureId::SPECIAL_HMGN, CreatureId::SPECIAL_HMGW}), {MinionTrait::FIGHTER})
-           .addRequirement(0.0, TechId::HUMANOID_MUT)
-           .addRequirement(0.0, Pregnancy {})
-           .addRequirement(CostInfo(CollectiveResourceId::GOLD, 100))
-           .setSpawnLocation(Pregnancy {})
-           .addSpecialTrait(0.2, LastingEffect::INSANITY),
-       ImmigrantInfo(random.permutation({CreatureId::SPECIAL_BMBN, CreatureId::SPECIAL_BMBW, CreatureId::SPECIAL_BMGN,
-             CreatureId::SPECIAL_BMGW}), {MinionTrait::FIGHTER, MinionTrait::DOESNT_TRIGGER})
-           .addRequirement(0.0, TechId::BEAST_MUT)
-           .addRequirement(0.0, Pregnancy {})
-           .addRequirement(CostInfo(CollectiveResourceId::GOLD, 100))
-           .setSpawnLocation(Pregnancy {})
-           .addSpecialTrait(0.2, LastingEffect::INSANITY),
-   });
-  return CollectiveConfig::keeper(
-      TimeInterval(fastImmigration ? 10 : 140),
-      10,
-      regenerateMana,
-      std::move(immigrants));
 }
 
 SettlementInfo& ModelBuilder::makeExtraLevel(WModel model, EnemyInfo& enemy) {
@@ -217,15 +63,14 @@ SettlementInfo& ModelBuilder::makeExtraLevel(WModel model, EnemyInfo& enemy) {
       for (int i : Range(towerHeight - 1)) {
         StairKey upLink = StairKey::getNew();
         model->buildLevel(
-            LevelBuilder(meter, random, 4, 4, "Tower floor" + toString(i + 2)),
+            LevelBuilder(meter, random, creatureFactory, 4, 4, "Tower floor" + toString(i + 2)),
             LevelMaker::towerLevel(random,
                 CONSTRUCT(SettlementInfo,
                   c.type = SettlementType::TOWER;
                   c.inhabitants.fighters = CreatureList(
                       random.get(1, 3),
                       random.choose(
-                          CreatureId::WATER_ELEMENTAL, CreatureId::AIR_ELEMENTAL, CreatureId::FIRE_ELEMENTAL,
-                          CreatureId::EARTH_ELEMENTAL));
+                          "WATER_ELEMENTAL"_s, "AIR_ELEMENTAL"_s, "FIRE_ELEMENTAL"_s, "EARTH_ELEMENTAL"_s));
                   c.tribe = enemy.settlement.tribe;
                   c.collective = new CollectiveBuilder(CollectiveConfig::noImmigrants(), c.tribe);
                   c.upStairs = {upLink};
@@ -235,12 +80,12 @@ SettlementInfo& ModelBuilder::makeExtraLevel(WModel model, EnemyInfo& enemy) {
                     c.corpses = c.inhabitants;
                     c.inhabitants = InhabitantsInfo{};
                   }
-                  c.buildingId = BuildingId::BRICK;)));
+                  c.buildingId = extraSettlement.buildingId;)));
         downLink = upLink;
       }
       mainSettlement.downStairs = {downLink};
       model->buildLevel(
-         LevelBuilder(meter, random, 5, 5, "Tower top"),
+         LevelBuilder(meter, random, creatureFactory, 5, 5, "Tower top"),
          LevelMaker::towerLevel(random, mainSettlement));
       return extraSettlement;
     }
@@ -249,7 +94,7 @@ SettlementInfo& ModelBuilder::makeExtraLevel(WModel model, EnemyInfo& enemy) {
       extraSettlement.downStairs = {key};
       mainSettlement.upStairs = {key};
       model->buildLevel(
-         LevelBuilder(meter, random, 40, 40, "Crypt"),
+         LevelBuilder(meter, random, creatureFactory, 40, 40, "Crypt"),
          LevelMaker::cryptLevel(random, mainSettlement));
       return extraSettlement;
     }
@@ -258,7 +103,7 @@ SettlementInfo& ModelBuilder::makeExtraLevel(WModel model, EnemyInfo& enemy) {
       extraSettlement.upStairs = {key};
       mainSettlement.downStairs = {key};
       model->buildLevel(
-         LevelBuilder(meter, random, 40, 40, "Maze"),
+         LevelBuilder(meter, random, creatureFactory, 40, 40, "Maze"),
          LevelMaker::mazeLevel(random, extraSettlement));
       return mainSettlement;
     }
@@ -268,17 +113,17 @@ SettlementInfo& ModelBuilder::makeExtraLevel(WModel model, EnemyInfo& enemy) {
       for (int i : Range(gnomeHeight - 1)) {
         StairKey downLink = StairKey::getNew();
         model->buildLevel(
-            LevelBuilder(meter, random, 60, 40, "Mines lvl " + toString(i + 1)),
-            LevelMaker::roomLevel(random, CreatureFactory::gnomishMines(
+            LevelBuilder(meter, random, creatureFactory, 60, 40, "Mines lvl " + toString(i + 1)),
+            LevelMaker::roomLevel(random, CreatureGroup::gnomishMines(
                 mainSettlement.tribe, TribeId::getMonster(), 0),
-                CreatureFactory::waterCreatures(TribeId::getMonster()),
-                CreatureFactory::lavaCreatures(TribeId::getMonster()), {upLink}, {downLink},
+                CreatureGroup::waterCreatures(TribeId::getMonster()),
+                CreatureGroup::lavaCreatures(TribeId::getMonster()), {upLink}, {downLink},
                 FurnitureFactory::roomFurniture(TribeId::getPest())));
         upLink = downLink;
       }
       mainSettlement.upStairs = {upLink};
       model->buildLevel(
-         LevelBuilder(meter, random, 60, 40, "Mine Town"),
+         LevelBuilder(meter, random, creatureFactory, 60, 40, "Mine Town"),
          LevelMaker::mineTownLevel(random, mainSettlement));
       return extraSettlement;
     }
@@ -288,26 +133,25 @@ SettlementInfo& ModelBuilder::makeExtraLevel(WModel model, EnemyInfo& enemy) {
       mainSettlement.downStairs = {key};
       Table<char> sokoLevel = sokobanInput->getNext();
       model->buildLevel(
-          LevelBuilder(meter, random, sokoLevel.getBounds().width(), sokoLevel.getBounds().height(), "Sokoban"),
+          LevelBuilder(meter, random, creatureFactory, sokoLevel.getBounds().width(), sokoLevel.getBounds().height(), "Sokoban"),
           LevelMaker::sokobanFromFile(random, mainSettlement, sokoLevel));
       return extraSettlement;
   }
 }
 
-PModel ModelBuilder::singleMapModel(const string& worldName) {
-  return tryBuilding(10, [&] { return trySingleMapModel(worldName);}, "single map");
+PModel ModelBuilder::singleMapModel(const string& worldName, TribeId keeperTribe, TribeAlignment alignment) {
+  return tryBuilding(10, [&] { return trySingleMapModel(worldName, keeperTribe, alignment);}, "single map");
 }
 
-PModel ModelBuilder::trySingleMapModel(const string& worldName) {
+vector<EnemyInfo> ModelBuilder::getSingleMapEnemiesForEvilKeeper(TribeId keeperTribe) {
   vector<EnemyInfo> enemies;
   for (int i : Range(random.get(3, 6)))
     enemies.push_back(enemyFactory->get(EnemyId::HUMAN_COTTAGE));
   enemies.push_back(enemyFactory->get(EnemyId::KOBOLD_CAVE));
   for (int i : Range(random.get(2, 4)))
-    enemies.push_back(enemyFactory->get(random.choose({EnemyId::BANDITS, EnemyId::COTTAGE_BANDITS}, {3, 1}))
-        .setVillainType(VillainType::LESSER));
-  enemies.push_back(enemyFactory->get(random.choose(EnemyId::GNOMES, EnemyId::DARK_ELVES)).setVillainType(VillainType::ALLY));
-  append(enemies, enemyFactory->getVaults());
+    enemies.push_back(enemyFactory->get(random.choose({EnemyId::BANDITS, EnemyId::COTTAGE_BANDITS}, {3, 1})));
+  enemies.push_back(enemyFactory->get(random.choose(EnemyId::GNOMES, EnemyId::DARK_ELVES_ALLY)).setVillainType(VillainType::ALLY));
+  append(enemies, enemyFactory->getVaults(TribeAlignment::EVIL, keeperTribe));
   enemies.push_back(enemyFactory->get(EnemyId::ANTS_CLOSED).setVillainType(VillainType::LESSER));
   enemies.push_back(enemyFactory->get(EnemyId::DWARVES).setVillainType(VillainType::MAIN));
   enemies.push_back(enemyFactory->get(EnemyId::KNIGHTS).setVillainType(VillainType::MAIN));
@@ -334,10 +178,81 @@ PModel ModelBuilder::trySingleMapModel(const string& worldName) {
         EnemyId::WITCH,
         EnemyId::CEMETERY}))
     enemies.push_back(enemyFactory->get(enemy));
-  return tryModel(304, worldName, enemies, true, BiomeId::GRASSLAND, {}, true);
+  return enemies;
 }
 
-void ModelBuilder::addMapVillains(vector<EnemyInfo>& enemyInfo, BiomeId biomeId) {
+vector<EnemyInfo> ModelBuilder::getSingleMapEnemiesForLawfulKeeper(TribeId keeperTribe) {
+  vector<EnemyInfo> enemies;
+  for (int i : Range(random.get(3, 6)))
+    enemies.push_back(enemyFactory->get(EnemyId::COTTAGE_BANDITS));
+  enemies.push_back(enemyFactory->get(EnemyId::DARK_ELF_CAVE));
+  for (int i : Range(random.get(2, 4)))
+    enemies.push_back(enemyFactory->get(random.choose({EnemyId::BANDITS, EnemyId::COTTAGE_BANDITS}, {3, 1})));
+  enemies.push_back(enemyFactory->get(EnemyId::GNOMES).setVillainType(VillainType::ALLY));
+  append(enemies, enemyFactory->getVaults(TribeAlignment::LAWFUL, keeperTribe));
+  enemies.push_back(enemyFactory->get(EnemyId::ANTS_CLOSED).setVillainType(VillainType::LESSER));
+  enemies.push_back(enemyFactory->get(EnemyId::DARK_ELVES_ENEMY).setVillainType(VillainType::MAIN));
+  enemies.push_back(enemyFactory->get(EnemyId::DEMON_DEN).setVillainType(VillainType::MAIN));
+  enemies.push_back(enemyFactory->get(EnemyId::ADA_GOLEMS));
+  for (auto& enemy : random.chooseN(2, {
+        EnemyId::LIZARDMEN,
+        EnemyId::MINOTAUR,
+        EnemyId::ORC_VILLAGE,
+        EnemyId::VILLAGE}))
+    enemies.push_back(enemyFactory->get(enemy).setVillainType(VillainType::MAIN));
+  for (auto& enemy : random.chooseN(2, {
+        EnemyId::GREEN_DRAGON,
+        EnemyId::SHELOB,
+        EnemyId::HYDRA,
+        EnemyId::RED_DRAGON,
+        EnemyId::CYCLOPS,
+        EnemyId::DRIADS,
+        EnemyId::ENTS}))
+    enemies.push_back(enemyFactory->get(enemy).setVillainType(VillainType::LESSER));
+  for (auto& enemy : random.chooseN(1, {
+        EnemyId::KRAKEN,
+        EnemyId::WITCH,
+        EnemyId::CEMETERY}))
+    enemies.push_back(enemyFactory->get(enemy));
+  return enemies;
+}
+
+PModel ModelBuilder::trySingleMapModel(const string& worldName, TribeId keeperTribe, TribeAlignment alignment) {
+  vector<EnemyInfo> enemyInfo;
+  switch (alignment) {
+    case TribeAlignment::EVIL:
+      enemyInfo = getSingleMapEnemiesForEvilKeeper(keeperTribe);
+      break;
+    case TribeAlignment::LAWFUL:
+      enemyInfo = getSingleMapEnemiesForLawfulKeeper(keeperTribe);
+      break;
+  }
+  for (int i : Range(1, random.get(4)))
+    enemyInfo.push_back(enemyFactory->get(EnemyId::RUINS));
+  enemyInfo.push_back(enemyFactory->get(EnemyId::TEMPLE));
+  return tryModel(304, worldName, enemyInfo, keeperTribe, BiomeId::GRASSLAND, {}, true);
+}
+
+void ModelBuilder::addMapVillainsForLawfulKeeper(vector<EnemyInfo>& enemyInfo, BiomeId biomeId) {
+  switch (biomeId) {
+    case BiomeId::GRASSLAND:
+      for (int i : Range(random.get(3, 5)))
+        enemyInfo.push_back(enemyFactory->get(EnemyId::COTTAGE_BANDITS));
+      break;
+    case BiomeId::MOUNTAIN:
+      for (int i : Range(random.get(1, 4)))
+        enemyInfo.push_back(enemyFactory->get(EnemyId::DARK_ELF_CAVE));
+      for (int i : Range(random.get(0, 3)))
+        enemyInfo.push_back(enemyFactory->get(random.choose({EnemyId::BANDITS, EnemyId::NO_AGGRO_BANDITS}, {1, 4})));
+      break;
+    case BiomeId::FORREST:
+      for (int i : Range(random.get(3, 5)))
+        enemyInfo.push_back(enemyFactory->get(EnemyId::LIZARDMEN_COTTAGE));
+      break;
+  }
+}
+
+void ModelBuilder::addMapVillainsForEvilKeeper(vector<EnemyInfo>& enemyInfo, BiomeId biomeId) {
   switch (biomeId) {
     case BiomeId::GRASSLAND:
       for (int i : Range(random.get(3, 5)))
@@ -358,31 +273,48 @@ void ModelBuilder::addMapVillains(vector<EnemyInfo>& enemyInfo, BiomeId biomeId)
   }
 }
 
-PModel ModelBuilder::tryCampaignBaseModel(const string& siteName, bool addExternalEnemies) {
+PModel ModelBuilder::tryCampaignBaseModel(const string& siteName, TribeId keeperTribe, TribeAlignment alignment,
+    bool addExternalEnemies) {
   vector<EnemyInfo> enemyInfo;
   BiomeId biome = BiomeId::MOUNTAIN;
-  enemyInfo.push_back(enemyFactory->get(EnemyId::DWARF_CAVE));
-  enemyInfo.push_back(enemyFactory->get(EnemyId::BANDITS));
-  enemyInfo.push_back(enemyFactory->get(EnemyId::ANTS_CLOSED_SMALL));
-  enemyInfo.push_back(enemyFactory->get(EnemyId::ADA_GOLEMS));
-  enemyInfo.push_back(enemyFactory->get(EnemyId::TUTORIAL_VILLAGE).setVillainType(VillainType::LESSER));
-  append(enemyInfo, enemyFactory->getVaults());
+  switch (alignment) {
+    case TribeAlignment::EVIL:
+      enemyInfo.push_back(enemyFactory->get(EnemyId::DWARF_CAVE));
+      enemyInfo.push_back(enemyFactory->get(EnemyId::BANDITS));
+      enemyInfo.push_back(enemyFactory->get(EnemyId::ANTS_CLOSED_SMALL));
+      enemyInfo.push_back(enemyFactory->get(EnemyId::ADA_GOLEMS));
+      enemyInfo.push_back(enemyFactory->get(EnemyId::TUTORIAL_VILLAGE));
+      break;
+    case TribeAlignment::LAWFUL:
+      enemyInfo.push_back(enemyFactory->get(EnemyId::DARK_ELF_CAVE));
+      enemyInfo.push_back(enemyFactory->get(EnemyId::ORC_CAVE));
+      enemyInfo.push_back(enemyFactory->get(EnemyId::ANTS_CLOSED_SMALL));
+      enemyInfo.push_back(enemyFactory->get(EnemyId::ADA_GOLEMS));
+      enemyInfo.push_back(enemyFactory->get(EnemyId::COTTAGE_BANDITS));
+      break;
+  }
+  append(enemyInfo, enemyFactory->getVaults(alignment, keeperTribe));
   if (random.chance(0.3))
     enemyInfo.push_back(enemyFactory->get(EnemyId::KRAKEN));
   optional<ExternalEnemies> externalEnemies;
   if (addExternalEnemies)
-    externalEnemies = ExternalEnemies(random, enemyFactory->getExternalEnemies());
-  return tryModel(174, siteName, enemyInfo, true, biome, std::move(externalEnemies), true);
+    externalEnemies = ExternalEnemies(random, creatureFactory, enemyFactory->getExternalEnemies());
+  for (int i : Range(random.get(3)))
+    enemyInfo.push_back(enemyFactory->get(EnemyId::RUINS));
+  if (random.chance(0.3))
+    enemyInfo.push_back(enemyFactory->get(EnemyId::TEMPLE));
+  return tryModel(174, siteName, enemyInfo, keeperTribe, biome, std::move(externalEnemies), true);
 }
 
 PModel ModelBuilder::tryTutorialModel(const string& siteName) {
   vector<EnemyInfo> enemyInfo;
   BiomeId biome = BiomeId::MOUNTAIN;
+  enemyInfo.push_back(enemyFactory->get(EnemyId::RUINS));
   /*enemyInfo.push_back(enemyFactory->get(EnemyId::BANDITS));
   enemyInfo.push_back(enemyFactory->get(EnemyId::ADA_GOLEMS));*/
-  enemyInfo.push_back(enemyFactory->get(EnemyId::KRAKEN));
-  enemyInfo.push_back(enemyFactory->get(EnemyId::TUTORIAL_VILLAGE).setVillainType(VillainType::LESSER));
-  return tryModel(174, siteName, enemyInfo, true, biome, {}, false);
+  enemyInfo.push_back(enemyFactory->get(EnemyId::TEMPLE));
+  enemyInfo.push_back(enemyFactory->get(EnemyId::TUTORIAL_VILLAGE));
+  return tryModel(174, siteName, enemyInfo, TribeId::getDarkKeeper(), biome, {}, false);
 }
 
 static optional<BiomeId> getBiome(EnemyInfo& enemy, RandomGen& random) {
@@ -409,12 +341,23 @@ static optional<BiomeId> getBiome(EnemyInfo& enemy, RandomGen& random) {
   }
 }
 
-PModel ModelBuilder::tryCampaignSiteModel(const string& siteName, EnemyId enemyId, VillainType type) {
+PModel ModelBuilder::tryCampaignSiteModel(const string& siteName, EnemyId enemyId, VillainType type, TribeAlignment alignment) {
   vector<EnemyInfo> enemyInfo { enemyFactory->get(enemyId).setVillainType(type)};
   auto biomeId = getBiome(enemyInfo[0], random);
   CHECK(biomeId) << "Unimplemented enemy in campaign " << EnumInfo<EnemyId>::getString(enemyId);
-  addMapVillains(enemyInfo, *biomeId);
-  return tryModel(114, siteName, enemyInfo, false, *biomeId, {}, true);
+  switch (alignment) {
+    case TribeAlignment::EVIL:
+      addMapVillainsForEvilKeeper(enemyInfo, *biomeId);
+      break;
+    case TribeAlignment::LAWFUL:
+      addMapVillainsForLawfulKeeper(enemyInfo, *biomeId);
+      break;
+  }
+  for (int i : Range(random.get(3)))
+    enemyInfo.push_back(enemyFactory->get(EnemyId::RUINS));
+  if (random.chance(0.3))
+    enemyInfo.push_back(enemyFactory->get(EnemyId::TEMPLE));
+  return tryModel(114, siteName, enemyInfo, none, *biomeId, {}, true);
 }
 
 PModel ModelBuilder::tryBuilding(int numTries, function<PModel()> buildFun, const string& name) {
@@ -432,16 +375,16 @@ PModel ModelBuilder::tryBuilding(int numTries, function<PModel()> buildFun, cons
 
 }
 
-PModel ModelBuilder::campaignBaseModel(const string& siteName, bool externalEnemies) {
-  return tryBuilding(20, [=] { return tryCampaignBaseModel(siteName, externalEnemies); }, "campaign base");
+PModel ModelBuilder::campaignBaseModel(const string& siteName, TribeId keeperTribe, TribeAlignment alignment, bool externalEnemies) {
+  return tryBuilding(20, [=] { return tryCampaignBaseModel(siteName, keeperTribe, alignment, externalEnemies); }, "campaign base");
 }
 
 PModel ModelBuilder::tutorialModel(const string& siteName) {
   return tryBuilding(20, [=] { return tryTutorialModel(siteName); }, "tutorial");
 }
 
-PModel ModelBuilder::campaignSiteModel(const string& siteName, EnemyId enemyId, VillainType type) {
-  return tryBuilding(20, [&] { return tryCampaignSiteModel(siteName, enemyId, type); },
+PModel ModelBuilder::campaignSiteModel(const string& siteName, EnemyId enemyId, VillainType type, TribeAlignment alignment) {
+  return tryBuilding(20, [&] { return tryCampaignSiteModel(siteName, enemyId, type, alignment); },
       EnumInfo<EnemyId>::getString(enemyId));
 }
 
@@ -455,15 +398,21 @@ void ModelBuilder::measureSiteGen(int numTries, vector<string> types) {
     }
   }
   vector<function<void()>> tasks;
+  auto tribe = TribeId::getDarkKeeper();
   for (auto& type : types) {
     if (type == "single_map")
-      tasks.push_back([=] { measureModelGen(type, numTries, [this] { trySingleMapModel("pok"); }); });
+      for (auto alignment : ENUM_ALL(TribeAlignment))
+        tasks.push_back([=] { measureModelGen(type, numTries, [&] { trySingleMapModel("pok", tribe, alignment); }); });
     else if (type == "campaign_base")
-      tasks.push_back([=] { measureModelGen(type, numTries, [this] { tryCampaignBaseModel("pok", false); }); });
+      for (auto alignment : ENUM_ALL(TribeAlignment))
+        tasks.push_back([=] { measureModelGen(type, numTries,
+            [&] { tryCampaignBaseModel("pok", tribe, alignment, false); }); });
     else if (type == "tutorial")
-      tasks.push_back([=] { measureModelGen(type, numTries, [this] { tryTutorialModel("pok"); }); });
+      tasks.push_back([=] { measureModelGen(type, numTries, [&] { tryTutorialModel("pok"); }); });
     else if (auto id = EnumInfo<EnemyId>::fromStringSafe(type)) {
-      tasks.push_back([=] { measureModelGen(type, numTries, [&] { tryCampaignSiteModel("", *id, VillainType::LESSER); }); });
+      for (auto alignment : ENUM_ALL(TribeAlignment))
+        tasks.push_back([=] { measureModelGen(type, numTries, [&] {
+            tryCampaignSiteModel("", *id, VillainType::LESSER, alignment); }); });
     } else {
       std::cout << "Bad map type: " << type << std::endl;
       return;
@@ -503,25 +452,22 @@ void ModelBuilder::measureModelGen(const string& name, int numTries, function<vo
     minT << ". MaxT: " << maxT << ". AvgT: " << sumT / numTries << std::endl;
 }
 
-WCollective ModelBuilder::spawnKeeper(WModel m, AvatarInfo avatarInfo, bool regenerateMana, vector<string> introText) {
-  WLevel level = m->getTopLevel();
-  WCreature keeperRef = avatarInfo.playerCreature.get();
-  CHECK(level->landCreature(StairKey::keeperSpawn(), keeperRef)) << "Couldn't place keeper on level.";
-  m->addCreature(std::move(avatarInfo.playerCreature));
-  m->collectives.push_back(CollectiveBuilder(
-        getKeeperConfig(random, options->getBoolValue(OptionId::FAST_IMMIGRATION), regenerateMana, avatarInfo.impVariant), TribeId::getKeeper())
-      .setLevel(level)
-      .addCreature(keeperRef, {MinionTrait::LEADER})
-      .build());
-  WCollective playerCollective = m->collectives.back().get();
-  playerCollective->setControl(PlayerControl::create(playerCollective, introText));
-  playerCollective->setVillainType(VillainType::PLAYER);
-  playerCollective->acquireInitialTech();
-  return playerCollective;
+static ResourceCounts getTopLevelResources(RandomGen& random, const GameConfig* config) {
+  vector<ResourceDistribution> resources;
+  while (1) {
+    if (auto res = config->readObject(resources, GameConfigId::RESOURCE_COUNTS)) {
+      USER_INFO << *res;
+      continue;
+    }
+    if (auto res = chooseResourceCounts(random, resources, 0))
+      return *res;
+    USER_INFO << "No resource counts found for level 0, please fix resources config";
+  }
+  fail();
 }
 
-PModel ModelBuilder::tryModel(int width, const string& levelName, vector<EnemyInfo> enemyInfo, bool keeperSpawn,
-    BiomeId biomeId, optional<ExternalEnemies> externalEnemies, bool hasWildlife) {
+PModel ModelBuilder::tryModel(int width, const string& levelName, vector<EnemyInfo> enemyInfo,
+    optional<TribeId> keeperTribe, BiomeId biomeId, optional<ExternalEnemies> externalEnemies, bool hasWildlife) {
   auto model = Model::create();
   vector<SettlementInfo> topLevelSettlements;
   vector<EnemyInfo> extraEnemies;
@@ -537,13 +483,13 @@ PModel ModelBuilder::tryModel(int width, const string& levelName, vector<EnemyIn
       topLevelSettlements.push_back(elem.settlement);
   }
   append(enemyInfo, extraEnemies);
-  optional<CreatureFactory> wildlife;
+  optional<CreatureGroup> wildlife;
   if (hasWildlife)
-    wildlife = CreatureFactory::forrest(TribeId::getWildlife());
-  WLevel top =  model->buildTopLevel(
-      LevelBuilder(meter, random, width, width, levelName, false),
+    wildlife = CreatureGroup::forrest(TribeId::getWildlife());
+  WLevel top =  model->buildMainLevel(
+      LevelBuilder(meter, random, creatureFactory, width, width, levelName, false),
       LevelMaker::topLevel(random, wildlife, topLevelSettlements, width,
-        keeperSpawn, biomeId));
+        keeperTribe, biomeId, getTopLevelResources(random, gameConfig)));
   model->calculateStairNavigation();
   for (auto& enemy : enemyInfo) {
     if (enemy.settlement.locationName)
@@ -553,6 +499,7 @@ PModel ModelBuilder::tryModel(int width, const string& levelName, vector<EnemyIn
     if (enemy.discoverable)
       enemy.settlement.collective->setDiscoverable();
     PCollective collective = enemy.settlement.collective->build();
+    collective->setImmigration(makeOwner<Immigration>(collective.get(), std::move(enemy.immigrants)));
     auto control = VillageControl::create(collective.get(), enemy.villain);
     if (enemy.villainType)
       collective->setVillainType(*enemy.villainType);
@@ -568,15 +515,14 @@ PModel ModelBuilder::tryModel(int width, const string& levelName, vector<EnemyIn
 
 PModel ModelBuilder::splashModel(const FilePath& splashPath) {
   auto m = Model::create();
-  WLevel l = m->buildTopLevel(
-      LevelBuilder(meter, Random, Level::getSplashBounds().width(), Level::getSplashBounds().height(), "Splash",
-        true, 1.0),
+  WLevel l = m->buildMainLevel(
+      LevelBuilder(meter, Random, creatureFactory, Level::getSplashBounds().width(),
+          Level::getSplashBounds().height(), "Splash", true, 1.0),
       LevelMaker::splashLevel(
-          CreatureFactory::splashLeader(TribeId::getHuman()),
-          CreatureFactory::splashHeroes(TribeId::getHuman()),
-          CreatureFactory::splashMonsters(TribeId::getKeeper()),
-          CreatureFactory::singleType(TribeId::getKeeper(), CreatureId::IMP), splashPath));
-  m->topLevel = l;
+          CreatureGroup::splashLeader(TribeId::getHuman()),
+          CreatureGroup::splashHeroes(TribeId::getHuman()),
+          CreatureGroup::splashMonsters(TribeId::getDarkKeeper()),
+          CreatureGroup::singleType(TribeId::getDarkKeeper(), "IMP"), splashPath));
   return m;
 }
 
@@ -584,9 +530,8 @@ PModel ModelBuilder::battleModel(const FilePath& levelPath, CreatureList allies,
   auto m = Model::create();
   ifstream stream(levelPath.getPath());
   Table<char> level = *SokobanInput::readTable(stream);
-  WLevel l = m->buildTopLevel(
-      LevelBuilder(meter, Random, level.getBounds().width(), level.getBounds().height(), "Battle", true, 1.0),
+  WLevel l = m->buildMainLevel(
+      LevelBuilder(meter, Random, creatureFactory, level.getBounds().width(), level.getBounds().height(), "Battle", true, 1.0),
       LevelMaker::battleLevel(level, allies, enemies));
-  m->topLevel = l;
   return m;
 }

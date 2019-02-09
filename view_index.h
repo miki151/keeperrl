@@ -29,10 +29,7 @@ RICH_ENUM(HighlightType,
   PERMANENT_FETCH_ITEMS,
   RECT_SELECTION,
   RECT_DESELECTION,
-  POISON_GAS,
-  FOG,
   MEMORY,
-  NIGHT,
   PRIORITY_TASK,
   FORBIDDEN_ZONE,
   UNAVAILABLE,
@@ -43,7 +40,15 @@ RICH_ENUM(HighlightType,
   STORAGE_RESOURCES,
   QUARTERS1,
   QUARTERS2,
-  QUARTERS3
+  QUARTERS3,
+  LEISURE,
+  INDOORS,
+  INSUFFICIENT_LIGHT
+);
+
+RICH_ENUM(GradientType,
+  POISON_GAS,
+  NIGHT
 );
 
 class ViewIndex {
@@ -64,22 +69,28 @@ class ViewIndex {
   optional<ViewId> getHiddenId() const;
   void setHiddenId(ViewId);
   vector<ViewObject>& getAllObjects();
+  const vector<ViewObject>& getAllObjects() const;
 
-  void setHighlight(HighlightType, double amount = 1);
+  void setHighlight(HighlightType, bool = true);
+  void setGradient(GradientType, double amount = 1);
 
-  double getHighlight(HighlightType) const;
-  const EnumMap<HighlightType, double>& getHighlightMap() const;
+  bool isHighlight(HighlightType) const;
+  double getGradient(GradientType) const;
+
+  const ItemCounts& getItemCounts() const;
+  const ItemCounts& getEquipmentCounts() const;
+  ItemCounts& modItemCounts();
+  ItemCounts& modEquipmentCounts();
 
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version);
 
-  ItemCounts SERIAL(itemCounts);
-  ItemCounts SERIAL(equipmentCounts);
-
   private:
+  heap_optional<pair<ItemCounts, ItemCounts>> SERIAL(itemCounts);
   std::array<char, EnumInfo<ViewLayer>::size> SERIAL(objIndex);
   vector<ViewObject> SERIAL(objects);
-  EnumMap<HighlightType, double> SERIAL(highlight);
+  EnumSet<HighlightType> SERIAL(highlights);
+  EnumMap<GradientType, std::uint8_t> SERIAL(gradients);
   bool SERIAL(anyHighlight) = false;
   optional<ViewId> hiddenId;
 };

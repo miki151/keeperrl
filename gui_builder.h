@@ -95,6 +95,8 @@ class GuiBuilder {
       View::CampaignMenuState&);
   SGuiElem drawChooseSiteMenu(SyncQueue<optional<Vec2>>&, const string& message, const Campaign&,
       optional<Vec2>& sitePos);
+  SGuiElem drawAvatarMenu(SyncQueue<variant<View::AvatarChoice, AvatarMenuOption>>&, Options*,
+      const vector<View::AvatarData>&);
   SGuiElem drawWorldmap(Semaphore&, const Campaign&);
   SGuiElem drawLevelMap(Semaphore&, const CreatureView*);
   SGuiElem drawChooseCreatureMenu(SyncQueue<optional<UniqueEntity<Creature>::Id>>&, const string& title,
@@ -179,7 +181,7 @@ class GuiBuilder {
   SGuiElem getTextContent(const string& title, const string& value, const string& hint);
   SGuiElem getVillageActionButton(UniqueEntity<Collective>::Id, VillageInfo::Village::ActionInfo);
   SGuiElem drawHighscorePage(const HighscoreList&, ScrollPosition* scrollPos);
-  SGuiElem drawTeams(CollectiveInfo&, const optional<TutorialInfo>&);
+  SGuiElem drawTeams(const CollectiveInfo&, const optional<TutorialInfo>&);
   SGuiElem drawPlusMinus(function<void(int)> callback, bool canIncrease, bool canDecrease);
   SGuiElem drawOptionElem(Options*, OptionId, function<void()> onChanged, optional<string> defaultString);
   GuiFactory::ListBuilder drawRetiredGames(RetiredGames&, function<void()> reloadCampaign, optional<int> maxActive);
@@ -257,7 +259,6 @@ class GuiBuilder {
   vector<SDL::SDL_Keysym> getConfirmationKeys();
   optional<ItemAction> getItemChoice(const ItemInfo& itemInfo, Vec2 menuPos, bool autoDefault);
   vector<SGuiElem> getMultiLine(const string& text, Color, MenuType, int maxWidth);
-  SGuiElem menuElemMargins(SGuiElem);
   SGuiElem getHighlight(SGuiElem line, MenuType, const string& label, int numActive, optional<int>* highlight);
   string getPlayerTitle(PlayerInfo&);
   SDL::SDL_KeyboardEvent getHotkeyEvent(char);

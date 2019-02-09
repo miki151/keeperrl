@@ -11,15 +11,16 @@
 #include "item_factory.h"
 #include "item.h"
 #include "game.h"
-#include "event_listener.h"
+#include "game_event.h"
 #include "level.h"
 #include "furniture_usage.h"
 #include "furniture_entry.h"
 #include "furniture_dropped_items.h"
 #include "furniture_click.h"
 #include "furniture_tick.h"
-#include "furniture_fx.h"
 #include "movement_set.h"
+#include "fx_info.h"
+#include "furniture_on_built.h"
 
 static string makePlural(const string& s) {
   if (s.empty())
@@ -49,22 +50,35 @@ Furniture::~Furniture() {}
 template<typename Archive>
 void Furniture::serialize(Archive& ar, const unsigned) {
   ar(SUBCLASS(OwnedObject<Furniture>), viewObject, removeNonFriendly);
-  ar(name, pluralName, type, movementSet, fire, burntRemains, destroyedRemains, destroyActions, itemDrop);
+  ar(name, pluralName, type, movementSet, fire, burntRemains, destroyedRemains, destroyedInfo, itemDrop);
   ar(blockVision, usageType, clickType, tickType, usageTime, overrideMovement, wall, creator, createdTime);
   ar(constructMessage, layer, entryType, lightEmission, canHideHere, warning, summonedElement, droppedItems);
   ar(canBuildBridge, noProjectiles, clearFogOfWar, removeWithCreaturePresent, xForgetAfterBuilding);
-  ar(luxuryInfo);
+  ar(luxuryInfo, buildingSupport, onBuilt);
 }
 
 SERIALIZABLE(Furniture)
 
-const optional<ViewObject>& Furniture::getViewObject() const {  PROFILE
-  return *viewObject;
+const heap_optional<ViewObject>& Furniture::getViewObject() const {
+  return viewObject;
 }
 
-optional<ViewObject>& Furniture::getViewObject() {
-  PROFILE;
-  return *viewObject;
+heap_optional<ViewObject>& Furniture::getViewObject() {
+  return viewObject;
+}
+
+void Furniture::updateViewObject() {
+  if (viewObject) {
+    double minHealth = 1;
+    for (auto action : ENUM_ALL(DestroyAction::Type))
+      if (auto& info = destroyedInfo[action])
+        minHealth = min(minHealth, info->health);
+    if (minHealth < 1) {
+      viewObject->setAttribute(ViewObjectAttribute::HEALTH, minHealth);
+      if (isWall())
+        viewObject->setModifier(ViewObjectModifier::FURNITURE_CRACKS);
+    }
+  }
 }
 
 const string& Furniture::getName(FurnitureType type, int count) {
@@ -139,7 +153,7 @@ FurnitureType Furniture::getType() const {
   return type;
 }
 
-bool Furniture::isVisibleTo(WConstCreature c) const {
+bool Furniture::isVisibleTo(const Creature* c) const {
   PROFILE;
   if (entryType)
     return entryType->isVisibleTo(this, c);
@@ -151,7 +165,7 @@ const MovementSet& Furniture::getMovementSet() const {
   return *movementSet;
 }
 
-void Furniture::onEnter(WCreature c) const {
+void Furniture::onEnter(Creature* c) const {
   if (entryType) {
     auto f = c->getPosition().modFurniture(layer);
     f->entryType->handle(f, c);
@@ -166,22 +180,24 @@ void Furniture::destroy(Position pos, const DestroyAction& action) {
     pos.dropItems(itemDrop->random());
   if (usageType)
     FurnitureUsage::beforeRemoved(*usageType, pos);
-  if (auto info = destroyFXInfo(type))
-    pos.getGame()->addEvent(EventInfo::OtherEffect{pos, info->name, info->color});
+  if (auto fxInfo = destroyFXInfo(type))
+    pos.getGame()->addEvent(EventInfo::FX{pos, *fxInfo});
   pos.removeFurniture(this, destroyedRemains ? FurnitureFactory::get(*destroyedRemains, getTribe()) : nullptr);
   pos.getGame()->addEvent(EventInfo::FurnitureDestroyed{pos, myType, myLayer});
 }
 
-void Furniture::tryToDestroyBy(Position pos, WCreature c, const DestroyAction& action) {
-  if (auto& strength = destroyActions[action.getType()]) {
+void Furniture::tryToDestroyBy(Position pos, Creature* c, const DestroyAction& action) {
+  if (auto& info = destroyedInfo[action.getType()]) {
     c->addSound(action.getSound());
     double damage = c->getAttr(AttrType::DAMAGE);
     if (auto skill = action.getDestroyingSkillMultiplier())
       damage = damage * c->getAttributes().getSkills().getValue(*skill);
-    *strength -= damage;
-    if (auto info = tryDestroyFXInfo(type))
-      pos.getGame()->addEvent(EventInfo::OtherEffect{pos, info->name, info->color});
-    if (*strength <= 0)
+    info->health -= damage / info->strength;
+    updateViewObject();
+    pos.setNeedsRenderUpdate(true);
+    if (auto fxInfo = tryDestroyFXInfo(type))
+      pos.getGame()->addEvent(EventInfo::FX{pos, *fxInfo});
+    if (info->health <= 0)
       destroy(pos, action);
   }
 }
@@ -239,12 +255,12 @@ void Furniture::click(Position pos) const {
   }
 }
 
-void Furniture::use(Position pos, WCreature c) const {
+void Furniture::use(Position pos, Creature* c) const {
   if (usageType)
     FurnitureUsage::handle(*usageType, pos, this, c);
 }
 
-bool Furniture::canUse(WConstCreature c) const {
+bool Furniture::canUse(const Creature* c) const {
   if (usageType)
     return FurnitureUsage::canHandle(*usageType, c);
   else
@@ -263,6 +279,10 @@ optional<FurnitureClickType> Furniture::getClickType() const {
   return clickType;
 }
 
+optional<FurnitureTickType> Furniture::getTickType() const {
+  return tickType;
+}
+
 bool Furniture::isTicking() const {
   return !!tickType;
 }
@@ -271,7 +291,11 @@ bool Furniture::isWall() const {
   return wall;
 }
 
-void Furniture::onConstructedBy(WCreature c) {
+bool Furniture::isBuildingSupport() const {
+  return buildingSupport;
+}
+
+void Furniture::onConstructedBy(Position pos, Creature* c) {
   creator = c;
   createdTime = c->getLocalTime();
   if (constructMessage)
@@ -293,6 +317,8 @@ void Furniture::onConstructedBy(WCreature c) {
         c->secondPerson("You set up " + addAParticle(getName()));
         break;
     }
+  if (onBuilt)
+    handleOnBuilt(pos, c, *onBuilt);
 }
 
 FurnitureLayer Furniture::getLayer() const {
@@ -310,7 +336,7 @@ bool Furniture::canHide() const {
   return canHideHere;
 }
 
-bool Furniture::emitsWarning(WConstCreature) const {
+bool Furniture::emitsWarning(const Creature*) const {
   return warning;
 }
 
@@ -322,7 +348,7 @@ bool Furniture::canRemoveNonFriendly() const {
   return removeNonFriendly;
 }
 
-WCreature Furniture::getCreator() const {
+Creature* Furniture::getCreator() const {
   return creator;
 }
 
@@ -339,17 +365,17 @@ bool Furniture::isClearFogOfWar() const {
 }
 
 bool Furniture::forgetAfterBuilding() const {
-  return isWall() || xForgetAfterBuilding;
+  return xForgetAfterBuilding;
 }
 
 void Furniture::onCreatureWalkedOver(Position pos, Vec2 direction) const {
-  if (auto info = walkOverFXInfo(type))
-    pos.getGame()->addEvent(EventInfo::OtherEffect{pos, info->name, info->color, direction});
+  if (auto fxInfo = walkOverFXInfo(type))
+    pos.getGame()->addEvent((EventInfo::FX{pos, *fxInfo, direction}));
 }
 
 void Furniture::onCreatureWalkedInto(Position pos, Vec2 direction) const {
-  if (auto info = walkIntoFXInfo(type))
-    pos.getGame()->addEvent(EventInfo::OtherEffect{pos, info->name, info->color, direction});
+  if (auto fxInfo = walkIntoFXInfo(type))
+    pos.getGame()->addEvent((EventInfo::FX{pos, *fxInfo, direction}));
 }
 
 vector<PItem> Furniture::dropItems(Position pos, vector<PItem> v) const {
@@ -387,8 +413,8 @@ Furniture& Furniture::setConstructMessage(optional<ConstructMessage> msg) {
   return *this;
 }
 
-const optional<Fire>& Furniture::getFire() const {
-  return *fire;
+const heap_optional<Fire>& Furniture::getFire() const {
+  return fire;
 }
 
 bool Furniture::canDestroy(const MovementType& movement, const DestroyAction& action) const {
@@ -419,7 +445,7 @@ Furniture& Furniture::setDestroyable(double s) {
 }
 
 Furniture& Furniture::setDestroyable(double s, DestroyAction::Type type) {
-  destroyActions[type] = s;
+  destroyedInfo[type] = DestroyedInfo{ 1.0, s };
   return *this;
 }
 
@@ -489,6 +515,11 @@ Furniture& Furniture::setIsWall() {
   return *this;
 }
 
+Furniture&Furniture::setIsBuildingSupport() {
+  buildingSupport = true;
+  return *this;
+}
+
 Furniture& Furniture::setOverrideMovement() {
   overrideMovement = true;
   return *this;
@@ -511,6 +542,11 @@ Furniture& Furniture::setForgetAfterBuilding() {
 
 Furniture& Furniture::setLuxury(double luxury) {
   luxuryInfo.luxury = luxury;
+  return *this;
+}
+
+Furniture&Furniture::setOnBuilt(FurnitureOnBuilt b) {
+  onBuilt = b;
   return *this;
 }
 
@@ -555,9 +591,11 @@ Furniture&Furniture::setClearFogOfWar() {
 }
 
 bool Furniture::canDestroy(const DestroyAction& action) const {
-  return !!destroyActions[action.getType()];
+  return !!destroyedInfo[action.getType()];
 }
 
 optional<double> Furniture::getStrength(const DestroyAction& action) const {
-  return destroyActions[action.getType()];
+  if (auto info = destroyedInfo[action.getType()])
+    return info->strength * info->health;
+  return none;
 }

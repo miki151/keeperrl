@@ -15,14 +15,14 @@ void CollectiveControl::update(bool currentlyActive) {
 void CollectiveControl::tick() {
 }
 
-const vector<WCreature>& CollectiveControl::getCreatures() const {
+const vector<Creature*>& CollectiveControl::getCreatures() const {
   return collective->getCreatures();
 }
 
-void CollectiveControl::onMemberKilled(WConstCreature victim, WConstCreature killer) {
+void CollectiveControl::onMemberKilled(const Creature* victim, const Creature* killer) {
 }
 
-void CollectiveControl::onOtherKilled(WConstCreature victim, WConstCreature killer) {
+void CollectiveControl::onOtherKilled(const Creature* victim, const Creature* killer) {
 }
 
 CollectiveControl::~CollectiveControl() {

@@ -51,7 +51,7 @@ class WindowView: public View {
   static View* createReplayView(InputArchive& ifs, ViewParams);
 
   WindowView(ViewParams); 
-  virtual void initialize() override;
+  virtual void initialize(unique_ptr<fx::FXRenderer>, unique_ptr<FXViewManager>) override;
   virtual void reset() override;
   virtual void displaySplash(const ProgressMeter*, const string&, SplashType, function<void()> cancelFun) override;
   virtual void clearSplash() override;
@@ -66,12 +66,12 @@ class WindowView: public View {
   virtual optional<int> chooseFromList(const string& title, const vector<ListElem>& options, int index = 0,
       MenuType = MenuType::NORMAL, ScrollPosition* scrollPos = nullptr,
       optional<UserInputId> exitAction = none) override;
-  virtual PlayerRoleChoice getPlayerRoleChoice(optional<PlayerRoleChoice> initial) override;
   virtual optional<Vec2> chooseDirection(Vec2 playerPos, const string& message) override;
+  virtual optional<Vec2> chooseTarget(Vec2 playerPos, Table<PassableInfo> passable, const string& message) override;
   virtual bool yesOrNoPrompt(const string& message, bool defaultNo) override;
-  virtual void animateObject(Vec2 begin, Vec2 end, ViewId object) override;
+  virtual void animateObject(Vec2 begin, Vec2 end, optional<ViewId> object, optional<FXInfo> fx) override;
   virtual void animation(Vec2 pos, AnimationId, Dir orientation) override;
-  virtual void animation(FXName, Vec2 pos, Vec2, const Color&) override;
+  virtual void animation(const FXSpawnInfo&) override;
   virtual double getGameSpeed() override;
   virtual optional<int> chooseAtMouse(const vector<string>& elems) override;
 
@@ -96,6 +96,7 @@ class WindowView: public View {
   virtual void addSound(const Sound&) override;
   virtual optional<Vec2> chooseSite(const string& message, const Campaign&, optional<Vec2> current) override;
   virtual void presentWorldmap(const Campaign&) override;
+  virtual variant<AvatarChoice, AvatarMenuOption> chooseAvatar(const vector<AvatarData>&, Options*) override;
   virtual CampaignAction prepareCampaign(CampaignOptions, Options*, CampaignMenuState&) override;
   virtual optional<UniqueEntity<Creature>::Id> chooseCreature(const string& title, const vector<CreatureInfo>&,
       const string& cancelText) override;
@@ -118,7 +119,6 @@ class WindowView: public View {
   optional<int> chooseFromListInternal(const string& title, const vector<ListElem>& options, optional<int> index,
       MenuType, ScrollPosition*);
   void refreshViewInt(const CreatureView*, bool flipBuffer = true);
-  SGuiElem drawGameChoices(optional<PlayerRoleChoice>& choice, optional<PlayerRoleChoice>& index);
   SGuiElem getTextContent(const string& title, const string& value, const string& hint);
   void rebuildGui();
   int lastGuiHash = 0;
@@ -136,8 +136,6 @@ class WindowView: public View {
   void zoom(int dir);
   void resize(int width, int height);
   Rectangle getMapGuiBounds() const;
-  Rectangle getMinimapBounds() const;
-  void resetMapBounds();
   void switchTiles();
 
   bool considerResizeEvent(Event&, bool withBugReportEvent = true);
@@ -213,9 +211,9 @@ class WindowView: public View {
   bool isKeyPressed(SDL::SDL_Scancode);
 
   template<typename T>
-  T getBlockingGui(SyncQueue<T>& queue, SGuiElem elem, optional<Vec2> origin = none) {
+  T getBlockingGui(SyncQueue<T>& queue, SGuiElem elem, optional<Vec2> origin = none, bool darkenBackground = true) {
     TempClockPause pause(clock);
-    if (blockingElems.empty()) {
+    if (darkenBackground && blockingElems.empty()) {
       blockingElems.push_back(gui.darken());
       blockingElems.back()->setBounds(Rectangle(renderer.getSize()));
     }
@@ -256,4 +254,7 @@ class WindowView: public View {
   DirectoryPath bugreportDir;
   string installId;
   void rebuildMinimapGui();
+  fx::FXRenderer* fxRenderer;
+  Vec2 getMinimapOrigin() const;
+  int getMinimapWidth() const;
 };

@@ -16,7 +16,6 @@
 #pragma once
 
 #include "util.h"
-#include "singleton.h"
 
 RICH_ENUM(NameGeneratorId,
   FIRST_MALE,
@@ -39,15 +38,11 @@ RICH_ENUM(NameGeneratorId,
 
 class DirectoryPath;
 
-class NameGenerator : public Singleton<NameGenerator, NameGeneratorId> {
+class NameGenerator {
   public:
-  NameGenerator() = default;
-  string getNext();
-
-  static void init(const DirectoryPath&);
+  NameGenerator(const DirectoryPath&);
+  string getNext(NameGeneratorId);
 
   private:
-  NameGenerator(vector<string> names, bool oneName = false);
-  queue<string> names;
-  bool oneName;
+  EnumMap<NameGeneratorId, queue<string>> names;
 };

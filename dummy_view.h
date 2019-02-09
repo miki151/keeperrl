@@ -2,14 +2,14 @@
 
 #include "view.h"
 #include "clock.h"
-#include "player_role.h"
+#include "avatar_menu_option.h"
 
 class DummyView : public View {
   public:
   DummyView(Clock* c) : clock(c) {}
   Clock* clock;
   virtual ~DummyView() override {}
-  virtual void initialize() override {}
+  virtual void initialize(unique_ptr<fx::FXRenderer>, unique_ptr<FXViewManager>) override {}
   virtual void reset() override {}
   virtual void displaySplash(const ProgressMeter*, const string&, SplashType, function<void()> = nullptr) override {}
   virtual void clearSplash() override {}
@@ -26,10 +26,10 @@ class DummyView : public View {
       MenuType = MenuType::NORMAL, ScrollPosition* = nullptr, optional<UserInputId> = none) override {
     return none;
   }
-  virtual PlayerRoleChoice getPlayerRoleChoice(optional<PlayerRoleChoice> initial) override {
-    return PlayerRole::KEEPER;
-  }
   virtual optional<Vec2> chooseDirection(Vec2 playerPos, const string& message) override {
+    return none;
+  }
+  virtual optional<Vec2> chooseTarget(Vec2 playerPos, Table<PassableInfo>, const string& message) override {
     return none;
   }
   virtual bool yesOrNoPrompt(const string& message, bool defaultNo = false) override {
@@ -73,9 +73,9 @@ class DummyView : public View {
     return none;
   }
   virtual void presentWorldmap(const Campaign&) override {}
-  virtual void animateObject(Vec2 begin, Vec2 end, ViewId object) override {}
+  virtual void animateObject(Vec2 begin, Vec2 end, optional<ViewId>, optional<FXInfo>) override {}
   virtual void animation(Vec2 pos, AnimationId, Dir) override {}
-  virtual void animation(FXName, Vec2 pos, Vec2, const Color&) override{};
+  virtual void animation(const FXSpawnInfo&) override{};
   virtual milliseconds getTimeMilli() override { return clock->getMillis();}
   virtual milliseconds getTimeMilliAbsolute() override { return clock->getRealMillis();}
   virtual void stopClock() override {}
@@ -84,4 +84,7 @@ class DummyView : public View {
   virtual void addSound(const Sound&) override {}
   virtual void logMessage(const string&) override {}
   virtual void setBugReportSaveCallback(BugReportSaveCallback) override {};
+  virtual variant<AvatarChoice, AvatarMenuOption> chooseAvatar(const vector<AvatarData>&, Options*) override {
+    return AvatarMenuOption::GO_BACK;
+  }
 };

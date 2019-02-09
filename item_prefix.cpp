@@ -8,7 +8,7 @@ void applyPrefix(ItemPrefix prefix, ItemAttributes& attr) {
   prefix.visit(
       [&](LastingEffect effect) {
         attr.equipedEffect = effect;
-        attr.prefix = string(LastingEffects::getName(effect));
+        attr.prefix = LastingEffects::getName(effect);
       },
       [&](const AttackerEffect& e) {
         attr.weaponInfo.attackerEffect = e.effect;

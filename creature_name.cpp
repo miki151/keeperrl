@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "creature_name.h"
 #include "util.h"
+#include "name_generator.h"
 
 CreatureName::CreatureName(const string& n) : name(n), pluralName(name + "s") {
   CHECK(!name.empty());
@@ -19,7 +20,7 @@ const char* CreatureName::identify() const {
 }
 
 string CreatureName::bare() const {
-  if (fullTitle)
+  if (fullTitle && firstName)
     return title();
   else
     return name;
@@ -68,12 +69,21 @@ void CreatureName::setFirst(const string& s) {
   firstName = s;
 }
 
+void CreatureName::generateFirst(NameGenerator* generator) {
+  if (firstNameGen)
+    firstName = generator->getNext(*firstNameGen);
+}
+
 void CreatureName::setStack(const string& s) {
   stackName = s;
 }
 
 void CreatureName::setGroup(const string& s) {
   groupName = s;
+}
+
+void CreatureName::setBare(const std::string& s) {
+  name = s;
 }
 
 const optional<string>& CreatureName::stackOnly() const {
@@ -87,8 +97,12 @@ const string& CreatureName::stack() const {
     return name;
 }
 
-optional<string> CreatureName::first() const {
+const optional<string>& CreatureName::first() const {
   return firstName;
+}
+
+string CreatureName::firstOrBare() const {
+  return firstName.value_or(capitalFirst(bare()));
 }
 
 void CreatureName::useFullTitle() {
@@ -102,3 +116,13 @@ void CreatureName::serialize(Archive& ar, const unsigned int version) {
 
 SERIALIZABLE(CreatureName);
 SERIALIZATION_CONSTRUCTOR_IMPL(CreatureName);
+
+#include "pretty_archive.h"
+
+template<>
+void CreatureName::serialize(PrettyInputArchive& ar1, unsigned) {
+  ar1(NAMED(name), OPTION(pluralName), NAMED(stackName), NAMED(firstNameGen), NAMED(firstName), OPTION(groupName), OPTION(fullTitle), endInput());
+  if (pluralName.empty())
+    pluralName = name + "s";
+}
+

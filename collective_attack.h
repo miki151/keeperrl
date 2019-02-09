@@ -4,12 +4,12 @@
 
 class CollectiveAttack {
   public:
-  CollectiveAttack(vector<WConstTask> attackTasks, WCollective attacker, const vector<WCreature>& creatures, optional<int> ransom = none);
-  CollectiveAttack(vector<WConstTask> attackTasks, const string& name, const vector<WCreature>& creatures);
+  CollectiveAttack(vector<WConstTask> attackTasks, WCollective attacker, const vector<Creature*>& creatures, optional<int> ransom = none);
+  CollectiveAttack(vector<WConstTask> attackTasks, const string& name, const vector<Creature*>& creatures);
 
   WCollective getAttacker() const;
   const string& getAttackerName() const;
-  const vector<WCreature>& getCreatures() const;
+  const vector<Creature*>& getCreatures() const;
   optional<int> getRansom() const;
   bool isOngoing() const;
 
@@ -19,7 +19,7 @@ class CollectiveAttack {
 
   private:
   optional<int> SERIAL(ransom);
-  vector<WCreature> SERIAL(creatures);
+  vector<Creature*> SERIAL(creatures);
   WCollective SERIAL(attacker) = nullptr;
   string SERIAL(attackerName);
   vector<WConstTask> SERIAL(attackTasks);

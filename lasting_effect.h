@@ -42,7 +42,34 @@ RICH_ENUM(LastingEffect,
     SUNLIGHT_VULNERABLE,
     SATIATED,
     RESTED,
-    SUMMONED
+    SUMMONED,
+    HATE_DWARVES,
+    HATE_UNDEAD,
+    HATE_HUMANS,
+    HATE_GREENSKINS,
+    HATE_ELVES,
+    FAST_CRAFTING,
+    FAST_TRAINING,
+    SLOW_CRAFTING,
+    SLOW_TRAINING,
+    ENTERTAINER,
+    BAD_BREATH,
+    ON_FIRE,
+    AMBUSH_SKILL,
+    STEALING_SKILL,
+    SWIMMING_SKILL,
+    DISARM_TRAPS_SKILL,
+    CONSUMPTION_SKILL,
+    COPULATION_SKILL,
+    CROPS_SKILL,
+    SPIDER_SKILL,
+    EXPLORE_SKILL,
+    EXPLORE_NOCTURNAL_SKILL,
+    EXPLORE_CAVES_SKILL,
+    BRIDGE_BUILDING_SKILL,
+    NAVIGATION_DIGGING_SKILL,
+    DISAPPEAR_DURING_DAY,
+    NO_CARRY_LIMIT
 );
 
 RICH_ENUM(CreatureCondition,
@@ -52,26 +79,28 @@ RICH_ENUM(CreatureCondition,
 
 class LastingEffects {
   public:
-  static void onAffected(WCreature, LastingEffect, bool msg);
-  static bool affects(WConstCreature, LastingEffect);
+  static void onAffected(Creature*, LastingEffect, bool msg);
+  static bool affects(const Creature*, LastingEffect);
   static optional<LastingEffect> getSuppressor(LastingEffect);
-  static void onRemoved(WCreature, LastingEffect, bool msg);
-  static void onTimedOut(WCreature, LastingEffect, bool msg);
+  static void onRemoved(Creature*, LastingEffect, bool msg);
+  static void onTimedOut(Creature*, LastingEffect, bool msg);
   static int getAttrBonus(const Creature*, AttrType);
-  static void afterCreatureDamage(WCreature, LastingEffect);
-  static bool tick(WCreature, LastingEffect);
-  static const char* getGoodAdjective(LastingEffect);
-  static const char* getBadAdjective(LastingEffect);
+  static void afterCreatureDamage(Creature*, LastingEffect);
+  static bool tick(Creature*, LastingEffect);
+  static optional<string> getGoodAdjective(LastingEffect);
+  static optional<string> getBadAdjective(LastingEffect);
   static const vector<LastingEffect>& getCausingCondition(CreatureCondition);
   static double modifyCreatureDefense(LastingEffect, double damage, AttrType damageAttr);
-  static const char* getName(LastingEffect);
-  static const char* getDescription(LastingEffect);
-  static bool canSee(WConstCreature, WConstCreature);
-  static bool modifyIsEnemyResult(WConstCreature, WConstCreature, bool);
+  static string getName(LastingEffect);
+  static string getDescription(LastingEffect);
+  static bool canSee(const Creature*, const Creature*);
+  static bool modifyIsEnemyResult(const Creature*, const Creature*, bool);
   static int getPrice(LastingEffect);
   static double getMoraleIncrease(const Creature*);
+  static double getCraftingSpeed(const Creature*);
+  static double getTrainingSpeed(const Creature*);
   static bool canConsume(LastingEffect);
   static optional<FXVariantName> getFX(LastingEffect);
+  static optional<FXInfo> getApplicationFX(LastingEffect);
+  static bool canProlong(LastingEffect);
 };
-
-

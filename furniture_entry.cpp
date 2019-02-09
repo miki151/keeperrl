@@ -9,11 +9,12 @@
 #include "game.h"
 #include "effect.h"
 #include "movement_set.h"
+#include "game_event.h"
 
 FurnitureEntry::FurnitureEntry(FurnitureEntry::EntryData d) : entryData(d) {
 }
 
-void FurnitureEntry::handle(WFurniture f, WCreature c) {
+void FurnitureEntry::handle(WFurniture f, Creature* c) {
   PROFILE;
   entryData.match(
       [&](Sokoban) {
@@ -35,7 +36,7 @@ void FurnitureEntry::handle(WFurniture f, WCreature c) {
         auto position = c->getPosition();
         if (auto game = c->getGame()) // check in case the creature is placed here during level generation
           if (game->getTribe(f->getTribe())->isEnemy(c)) {
-            if (type.invisible || !c->getAttributes().getSkills().hasDiscrete(SkillId::DISARM_TRAPS)) {
+            if (type.invisible || !c->isAffected(LastingEffect::DISARM_TRAPS_SKILL)) {
               if (!type.invisible)
                 c->you(MsgType::TRIGGER_TRAP, "");
               type.effect.applyToCreature(c);
@@ -71,11 +72,11 @@ void FurnitureEntry::handle(WFurniture f, WCreature c) {
   );
 }
 
-bool FurnitureEntry::isVisibleTo(WConstFurniture f, WConstCreature c) const {
+bool FurnitureEntry::isVisibleTo(WConstFurniture f, const Creature* c) const {
   return entryData.visit(
       [&](const Trap& type) {
         return !c->getGame()->getTribe(f->getTribe())->isEnemy(c)
-            || (!type.invisible && c->getAttributes().getSkills().hasDiscrete(SkillId::DISARM_TRAPS));
+            || (!type.invisible && c->isAffected(LastingEffect::DISARM_TRAPS_SKILL));
       },
       [&](const auto&) {
         return true;

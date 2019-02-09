@@ -18,7 +18,7 @@
 #include "model.h"
 #include "time_queue.h"
 
-CreatureInfo::CreatureInfo(WConstCreature c)
+CreatureInfo::CreatureInfo(const Creature* c)
     : viewId(c->getViewObject().id()),
       uniqueId(c->getUniqueId()),
       name(c->getName().bare()),
@@ -38,17 +38,15 @@ string PlayerInfo::getTitle() const {
   return title;
 }
 
-vector<PlayerInfo::SkillInfo> getSkillNames(WConstCreature c) {
+vector<PlayerInfo::SkillInfo> getSkillNames(const Creature* c) {
   vector<PlayerInfo::SkillInfo> ret;
-  for (auto skill : c->getAttributes().getSkills().getAllDiscrete())
-    ret.push_back(PlayerInfo::SkillInfo{Skill::get(skill)->getName(), Skill::get(skill)->getHelpText()});
   for (SkillId id : ENUM_ALL(SkillId))
-    if (!Skill::get(id)->isDiscrete() && c->getAttributes().getSkills().getValue(id) > 0)
+    if (c->getAttributes().getSkills().getValue(id) > 0)
       ret.push_back(PlayerInfo::SkillInfo{Skill::get(id)->getNameForCreature(c), Skill::get(id)->getHelpText()});
   return ret;
 }
 
-vector<ItemAction> getItemActions(WConstCreature c, const vector<WItem>& item) {
+vector<ItemAction> getItemActions(const Creature* c, const vector<Item*>& item) {
   PROFILE;
   vector<ItemAction> actions;
   if (c->equip(item[0]))
@@ -64,18 +62,19 @@ vector<ItemAction> getItemActions(WConstCreature c, const vector<WItem>& item) {
       actions.push_back(ItemAction::DROP_MULTI);
     if (item[0]->getShopkeeper(c))
       actions.push_back(ItemAction::PAY);
-    for (Position v : c->getPosition().neighbors8())
-      if (WCreature other = v.getCreature())
-        if (c->isFriend(other)/* && c->canTakeItems(item)*/) {
-          actions.push_back(ItemAction::GIVE);
-          break;
-        }
+    if (c->getPosition().isValid())
+      for (Position v : c->getPosition().neighbors8())
+        if (Creature* other = v.getCreature())
+          if (c->isFriend(other)/* && c->canTakeItems(item)*/) {
+            actions.push_back(ItemAction::GIVE);
+            break;
+          }
   }
   actions.push_back(ItemAction::NAME);
   return actions;
 }
 
-ItemInfo ItemInfo::get(WConstCreature creature, const vector<WItem>& stack) {
+ItemInfo ItemInfo::get(const Creature* creature, const vector<Item*>& stack) {
   PROFILE;
   return CONSTRUCT(ItemInfo,
     c.name = stack[0]->getShortName(creature, stack.size() > 1);
@@ -94,7 +93,7 @@ ItemInfo ItemInfo::get(WConstCreature creature, const vector<WItem>& stack) {
   );
 }
 
-static vector<ItemInfo> fillIntrinsicAttacks(WConstCreature c) {
+static vector<ItemInfo> fillIntrinsicAttacks(const Creature* c) {
   vector<ItemInfo> ret;
   auto& intrinsicAttacks = c->getBody().getIntrinsicAttacks();
   for (auto part : ENUM_ALL(BodyPart))
@@ -115,9 +114,9 @@ static vector<ItemInfo> fillIntrinsicAttacks(WConstCreature c) {
   return ret;
 }
 
-static vector<ItemInfo> getItemInfos(WConstCreature c, const vector<WItem>& items) {
-  map<string, vector<WItem> > stacks = groupBy<WItem, string>(items,
-      [&] (WItem const& item) {
+static vector<ItemInfo> getItemInfos(const Creature* c, const vector<Item*>& items) {
+  map<string, vector<Item*> > stacks = groupBy<Item*, string>(items,
+      [&] (Item* const& item) {
           return item->getNameAndModifiers(false, c) + (c->getEquipment().isEquipped(item) ? "(e)" : ""); });
   vector<ItemInfo> ret;
   for (auto elem : stacks)
@@ -125,8 +124,8 @@ static vector<ItemInfo> getItemInfos(WConstCreature c, const vector<WItem>& item
   return ret;
 }
 
-PlayerInfo::PlayerInfo(WConstCreature c) : bestAttack(c) {
-  firstName = c->getName().first().value_or("");
+PlayerInfo::PlayerInfo(const Creature* c) : bestAttack(c) {
+  firstName = c->getName().firstOrBare();
   name = c->getName().bare();
   title = c->getName().title();
   description = capitalFirst(c->getAttributes().getDescription());
@@ -140,7 +139,6 @@ PlayerInfo::PlayerInfo(WConstCreature c) : bestAttack(c) {
   levelInfo.combatExperience = c->getAttributes().getCombatExperience();
   intrinsicAttacks = fillIntrinsicAttacks(c);
   skills = getSkillNames(c);
-  willMoveThisTurn = c->getPosition().getModel()->getTimeQueue().willMoveThisTurn(c);
   effects.clear();
   for (auto& adj : c->getBadAdjectives())
     effects.push_back({adj.name, adj.help, true});
@@ -156,13 +154,14 @@ PlayerInfo::PlayerInfo(WConstCreature c) : bestAttack(c) {
         c->isReady(spell) ? none : optional<TimeInterval>(c->getSpellDelay(spell))});
   }
   carryLimit = c->getBody().getCarryLimit();
-  map<ItemClass, vector<WItem> > typeGroups = groupBy<WItem, ItemClass>(
-      c->getEquipment().getItems(), [](WItem const& item) { return item->getClass();});
+  map<ItemClass, vector<Item*> > typeGroups = groupBy<Item*, ItemClass>(
+      c->getEquipment().getItems(), [](Item* const& item) { return item->getClass();});
   debt = c->getDebt().getTotal();
   for (auto elem : ENUM_ALL(ItemClass))
     if (typeGroups[elem].size() > 0)
       append(inventory, getItemInfos(c, typeGroups[elem]));
-  moveCounter = c->getPosition().getModel()->getMoveCounter();
+  if (c->getPosition().isValid())
+    moveCounter = c->getPosition().getModel()->getMoveCounter();
   isPlayerControlled = c->isPlayer();
 }
 
@@ -174,7 +173,7 @@ const CreatureInfo* CollectiveInfo::getMinion(UniqueEntity<Creature>::Id id) con
 }
 
 
-vector<AttributeInfo> AttributeInfo::fromCreature(WConstCreature c) {
+vector<AttributeInfo> AttributeInfo::fromCreature(const Creature* c) {
   PROFILE;
   auto genInfo = [c](AttrType type, const char* help) {
     return AttributeInfo {

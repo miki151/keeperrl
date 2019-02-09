@@ -13,6 +13,7 @@ RICH_ENUM(EnemyId,
   ELEMENTALIST,
   ELEMENTALIST_ENTRY,
   LIZARDMEN,
+  LIZARDMEN_COTTAGE,
   RED_DRAGON,
   GREEN_DRAGON,
   MINOTAUR,
@@ -33,12 +34,15 @@ RICH_ENUM(EnemyId,
   CEMETERY,
   CEMETERY_ENTRY,
 
-  DARK_ELVES,
+  DARK_ELVES_ALLY,
+  DARK_ELVES_ENEMY,
   DARK_ELVES_ENTRY,
+  DARK_ELF_CAVE,
   GNOMES,
   GNOMES_ENTRY,
   OGRE_CAVE,
   HARPY_CAVE,
+  ORC_CAVE,
   DEMON_DEN_ABOVE,
   DEMON_DEN,
   ORC_VILLAGE,
@@ -51,6 +55,9 @@ RICH_ENUM(EnemyId,
   UNICORN_HERD,
   ELVEN_COTTAGE,
   ADA_GOLEMS,
+  RUINS,
+  RAT_CAVE,
+  TEMPLE,
 
   TUTORIAL_VILLAGE
 );
@@ -58,17 +65,21 @@ RICH_ENUM(EnemyId,
 
 struct ExternalEnemy;
 struct SettlementInfo;
+class TribeId;
+class NameGenerator;
 
 class EnemyFactory {
   public:
-  EnemyFactory(RandomGen&);
-  EnemyInfo get(EnemyId);
-  vector<ExternalEnemy> getExternalEnemies();
+  EnemyFactory(RandomGen&, NameGenerator*);
+  EnemyInfo get(EnemyId) const;
+  vector<ExternalEnemy> getExternalEnemies() const;
   vector<ExternalEnemy> getHalloweenKids();
-  vector<EnemyInfo> getVaults();
+  vector<EnemyInfo> getVaults(TribeAlignment, TribeId allied) const;
 
   RandomGen& random;
 
   private:
-  EnemyInfo getById(EnemyId);
+  EnemyInfo getById(EnemyId) const;
+  string getVillageName() const;
+  NameGenerator* nameGenerator;
 };

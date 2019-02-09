@@ -92,6 +92,7 @@ void Renderer::drawSprite(const Texture& t, Vec2 a, Vec2 b, Vec2 c, Vec2 d, Vec2
   if (currentTexture && currentTexture != t.getTexId())
     renderDeferredSprites();
   currentTexture = t.getTexId();
+  CHECK(currentTexture);
   deferredSprites.push_back({a, b, c, d, p, k, t.getRealSize(), color});
 }
 
@@ -428,7 +429,6 @@ Renderer::Renderer(Clock* clock, const string& title, const DirectoryPath& fontP
   CHECK(SDL::SDL_GL_CreateContext(window)) << SDL::SDL_GetError();
   SDL_SetWindowMinimumSize(window, minResolution.x, minResolution.y);
   SDL_GetWindowSize(window, &width, &height);
-  installOpenglDebugHandler();
   setVsync(true);
   originalCursor = SDL::SDL_GetCursor();
   initOpenGL();
@@ -715,8 +715,8 @@ void Renderer::makeScreenshot(const FilePath& path) {
   int bmpSize = width * height * 3 + 1000;
   unique_ptr<char[]> bitmap(new char[bmpSize]);
   auto *rw = SDL::SDL_RWFromMem(bitmap.get(), bmpSize);
-  CHECK(SDL::SDL_SaveBMP_RW(inverted, rw, 1) == 0)
-      << SDL::SDL_GetError();
+  CHECK(rw) << SDL::SDL_GetError();
+  CHECK(SDL::SDL_SaveBMP_RW(inverted, rw, 1) == 0) << SDL::SDL_GetError();
   SDL_FreeSurface(image);
   SDL_FreeSurface(inverted);
   ogzstream output(path.getPath());

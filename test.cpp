@@ -38,6 +38,7 @@
 #include "position_matching.h"
 #include "dungeon_level.h"
 #include "villain_type.h"
+#include "roof_support.h"
 
 class Test {
   public:
@@ -51,7 +52,7 @@ class Test {
     PCreature b(new Creature(ViewObject(ViewId::JACKAL, ViewLayer::CREATURE, ""), nullptr, attr));
     PCreature a(new Creature(ViewObject(ViewId::PLAYER, ViewLayer::CREATURE, ""), nullptr, attr));
     PCreature c(new Creature(ViewObject(ViewId::JACKAL, ViewLayer::CREATURE, ""), nullptr, attr));
-    WCreature rb = b.get(), *ra = a.get(), *rc = c.get();
+    Creature* rb = b.get(), *ra = a.get(), *rc = c.get();
     a->setTime(1);
     b->setTime(1.33);
     c->setTime(1.66);
@@ -585,7 +586,7 @@ class Test {
     PItem bow1 = ItemType(ItemType::Bow{}).get();
     PItem bow2 = ItemType(ItemType::Bow{}).get();
     PItem bow3 = ItemType(ItemType::Bow{}).get();
-    PCreature human = CreatureFactory::fromId(CreatureId::BANDIT, TribeId::getBandit());
+    PCreature human = CreatureFactory::getHumanForTests();
     MinionEquipment equipment;
     CHECK(equipment.needsItem(human.get(), bow1.get(), false));
     CHECK(equipment.tryToOwn(human.get(), bow1.get()));
@@ -616,7 +617,7 @@ class Test {
     PItem sword = ItemType(ItemType::Sword{}).get();
     PItem sword2 = ItemType(ItemType::Sword{}).get();
     sword2->addModifier(AttrType::DAMAGE, -5);
-    PCreature human = CreatureFactory::fromId(CreatureId::BANDIT, TribeId::getBandit());
+    PCreature human = CreatureFactory::getHumanForTests();
     MinionEquipment equipment;
     CHECK(equipment.tryToOwn(human.get(), sword.get()));
     CHECK(equipment.getItemsOwnedBy(human.get()).size() == 1);
@@ -630,8 +631,8 @@ class Test {
     PItem sword = ItemType(ItemType::Sword{}).get();
     PItem sword2 = ItemType(ItemType::Sword{}).get();
     sword2->addModifier(AttrType::DAMAGE, -5);
-    PCreature human = CreatureFactory::fromId(CreatureId::BANDIT, TribeId::getBandit());
-    PCreature human2 = CreatureFactory::fromId(CreatureId::BANDIT, TribeId::getBandit());
+    PCreature human = CreatureFactory::getHumanForTests();
+    PCreature human2 = CreatureFactory::getHumanForTests();
     MinionEquipment equipment;
     CHECK(equipment.tryToOwn(human.get(), sword.get()));
     CHECK(equipment.tryToOwn(human2.get(), sword2.get()));
@@ -646,8 +647,8 @@ class Test {
   void testMinionEquipmentUpdateOwners() {
     PItem sword1 = ItemType(ItemType::Sword{}).get();
     PItem sword2 = ItemType(ItemType::Sword{}).get();
-    PCreature human1 = CreatureFactory::fromId(CreatureId::BANDIT, TribeId::getBandit());
-    PCreature human2 = CreatureFactory::fromId(CreatureId::BANDIT, TribeId::getBandit());
+    PCreature human1 = CreatureFactory::getHumanForTests();
+    PCreature human2 = CreatureFactory::getHumanForTests();
     MinionEquipment equipment;
     CHECK(equipment.tryToOwn(human1.get(), sword1.get()));
     CHECK(equipment.isOwner(sword1.get(), human1.get()));
@@ -670,9 +671,9 @@ class Test {
     PItem sword2 = ItemType(ItemType::Sword{}).get();
     PItem sword3 = ItemType(ItemType::Sword{}).get();
     sword1->addModifier(AttrType::DAMAGE, 12);
-    PCreature human1 = CreatureFactory::fromId(CreatureId::BANDIT, TribeId::getBandit());
-    PCreature human2 = CreatureFactory::fromId(CreatureId::BANDIT, TribeId::getBandit());
-    PCreature human3 = CreatureFactory::fromId(CreatureId::BANDIT, TribeId::getBandit());
+    PCreature human1 = CreatureFactory::getHumanForTests();
+    PCreature human2 = CreatureFactory::getHumanForTests();
+    PCreature human3 = CreatureFactory::getHumanForTests();
     MinionEquipment equipment;
     equipment.autoAssign(human1.get(), {sword2.get(), sword1.get(), sword3.get()});
     CHECK(equipment.isOwner(sword1.get(), human1.get()));
@@ -711,7 +712,7 @@ class Test {
     PItem sword1 = ItemType(ItemType::Sword{}).get();
     PItem sword2 = ItemType(ItemType::Sword{}).get();
     sword1->addModifier(AttrType::DAMAGE, 12);
-    PCreature human1 = CreatureFactory::fromId(CreatureId::BANDIT, TribeId::getBandit());
+    PCreature human1 = CreatureFactory::getHumanForTests();
     MinionEquipment equipment;
     equipment.autoAssign(human1.get(), {sword2.get(), sword1.get()});
     CHECK(equipment.isOwner(sword1.get(), human1.get()));
@@ -737,8 +738,8 @@ class Test {
     PItem boots = ItemType(ItemType::LeatherBoots{}).get();
     PItem gloves = ItemType(ItemType::LeatherGloves{}).get();
     PItem helmet = ItemType(ItemType::LeatherHelm{}).get();
-    vector<WItem> items = {sword.get(), boots.get(), gloves.get(), helmet.get()};
-    PCreature human = CreatureFactory::fromId(CreatureId::BANDIT, TribeId::getBandit());
+    vector<Item*> items = {sword.get(), boots.get(), gloves.get(), helmet.get()};
+    PCreature human = CreatureFactory::getHumanForTests();
     MinionEquipment equipment;
     for (int i : Range(30))
       equipment.autoAssign(human.get(), items);
@@ -923,7 +924,7 @@ class Test {
     };
     PositionMatching matching;
     PModel model = Model::create();
-    LevelBuilder builder = LevelBuilder(nullptr, Random, 10, 10, "", false, none);
+    LevelBuilder builder = LevelBuilder(nullptr, Random, nullptr, 10, 10, "", false, none);
     PLevelMaker levelMaker = LevelMaker::emptyLevel(FurnitureType::MOUNTAIN);
     PLevel level = builder.build(model.get(), levelMaker.get(), 1234);
   };
@@ -997,6 +998,83 @@ class Test {
     CHECKEQ(level.level, 6);
     CHECKEQ(level.progress, 4.5 / 13);
   }
+
+  void testRoofSupport1() {
+    RoofSupport s(Rectangle(10, 10));
+    std::cout << "Testing roof support " << std::endl;
+    s.add(Vec2(2, 2));
+    s.add(Vec2(8, 8));
+    s.add(Vec2(2, 8));
+    s.add(Vec2(8, 2));
+    for (Vec2 v : Rectangle(10, 10))
+      CHECK(s.isRoof(v) == (v.inRectangle(Rectangle(2, 2, 9, 9)))) << v << " " << s.isRoof(v);
+  }
+
+  void testRoofSupport2() {
+    RoofSupport s(Rectangle(10, 10));
+    std::cout << "Testing roof support " << std::endl;
+    s.add(Vec2(2, 2));
+    s.add(Vec2(8, 8));
+    s.add(Vec2(2, 8));
+    //s.add(Vec2(8, 2));
+    for (Vec2 v : Rectangle(10, 10))
+      CHECK(!s.isRoof(v)) << v;
+  }
+
+  void testRoofSupport3() {
+    RoofSupport s(Rectangle(10, 10));
+    std::cout << "Testing roof support " << std::endl;
+    s.add(Vec2(2, 2));
+    s.add(Vec2(8, 8));
+    s.add(Vec2(2, 8));
+    s.add(Vec2(8, 2));
+    s.remove(Vec2(8, 2));
+    for (Vec2 v : Rectangle(10, 10))
+      CHECK(!s.isRoof(v)) << v;
+  }
+
+  void testRoofSupport4() {
+    RoofSupport s(Rectangle(10, 10));
+    std::cout << "Testing roof support " << std::endl;
+    for (int i = 3; i <= 6; ++i) {
+      s.add(Vec2(3, i));
+      s.add(Vec2(i, 3));
+      s.add(Vec2(6, i));
+      s.add(Vec2(i, 6));
+    }
+    for (Vec2 v : Rectangle(10, 10))
+      CHECK(s.isRoof(v) == (v.inRectangle(Rectangle(3, 3, 7, 7)))) << v << " " << s.isRoof(v);
+    s.remove(Vec2(3, 4));
+    s.remove(Vec2(3, 5));
+    for (Vec2 v : Rectangle(10, 10))
+      CHECK(s.isRoof(v) == (v.inRectangle(Rectangle(3, 3, 7, 7)))) << v << " " << s.isRoof(v);
+  }
+
+  void testRoofSupport5() {
+    Rectangle sz(40, 40);
+    RoofSupport s(sz);
+    vector<Vec2> all;
+    for (auto v : sz)
+      if (Random.roll(5))
+        all.push_back(v);
+    all = Random.permutation(all);
+    for (int i = 0; i < all.size() / 2; ++i)
+      s.add(all[i]);
+    bool was[100][100] = {{0}};
+    int cnt = 0;
+    for (auto v : sz) {
+      was[v.x][v.y] = s.isRoof(v);
+      if (s.isRoof(v))
+        ++cnt;
+    }
+    std::cout << cnt << " under roof\n";
+    for (int i = all.size() / 2; i < all.size(); ++i)
+      s.add(all[i]);
+    for (int i = all.size() / 2; i < all.size(); ++i)
+      s.remove(all[i]);
+    for (auto v : sz)
+      CHECKEQ(was[v.x][v.y], s.isRoof(v));
+  }
 };
 
 void testAll() {
@@ -1056,5 +1134,10 @@ void testAll() {
   Test().testPositionMatching3();
   Test().testPositionMatching4();
   Test().testDungeonLevel();
+  Test().testRoofSupport1();
+  Test().testRoofSupport2();
+  Test().testRoofSupport3();
+  Test().testRoofSupport4();
+  Test().testRoofSupport5();
   INFO << "-----===== OK =====-----";
 }

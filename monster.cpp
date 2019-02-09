@@ -28,11 +28,11 @@
 SERIALIZE_DEF(Monster, SUBCLASS(Controller), monsterAI)
 SERIALIZATION_CONSTRUCTOR_IMPL(Monster);
 
-Monster::Monster(WCreature c, const MonsterAIFactory& f)
+Monster::Monster(Creature* c, const MonsterAIFactory& f)
     : Controller(c), monsterAI(f.getMonsterAI(c)) {}
 
 ControllerFactory Monster::getFactory(MonsterAIFactory f) {
-  return ControllerFactory([=](WCreature c) { return makeOwner<Monster>(c, f);});
+  return ControllerFactory([=](Creature* c) { return makeOwner<Monster>(c, f);});
 }
 
 void Monster::makeMove() {

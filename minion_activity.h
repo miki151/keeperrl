@@ -33,12 +33,11 @@ class Position;
 
 class MinionActivities {
   public:
-  static WTask getExisting(WCollective, WCreature, MinionActivity);
-  static PTask generate(WCollective, WCreature, MinionActivity);
-  static PTask generateDropTask(WCollective, WCreature, MinionActivity);
-  static optional<TimeInterval> getDuration(WConstCreature, MinionActivity);
-  static vector<Position> getAllPositions(WConstCollective, WConstCreature, MinionActivity);
+  static WTask getExisting(WCollective, Creature*, MinionActivity);
+  static PTask generate(WCollective, Creature*, MinionActivity);
+  static PTask generateDropTask(WCollective, Creature*, MinionActivity);
+  static optional<TimeInterval> getDuration(const Creature*, MinionActivity);
+  static vector<Position> getAllPositions(WConstCollective, const Creature*, MinionActivity);
   static const vector<FurnitureType>& getAllFurniture(MinionActivity);
-  static optional<MinionActivity> getActivityFor(WConstCollective, WConstCreature, FurnitureType);
-  static PTask getDropItemsTask(WCollective collective, WConstCreature creature);
+  static optional<MinionActivity> getActivityFor(WConstCollective, const Creature*, FurnitureType);
 };

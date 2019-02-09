@@ -34,6 +34,9 @@ class Options;
 class TutorialInfo;
 class UserInput;
 class FXViewManager;
+namespace fx {
+  class FXRenderer;
+}
 
 class MapGui : public GuiElem {
   public:
@@ -43,8 +46,9 @@ class MapGui : public GuiElem {
     function<void(Vec2)> rightClickFun;
     function<void()> refreshFun;
   };
-  MapGui(Callbacks, SyncQueue<UserInput>&, Clock*, Options*, GuiFactory*);
-  ~MapGui();
+  MapGui(Callbacks, SyncQueue<UserInput>&, Clock*, Options*, GuiFactory*, unique_ptr<fx::FXRenderer>,
+      unique_ptr<FXViewManager>);
+  ~MapGui() override;
 
   virtual void render(Renderer&) override;
   virtual bool onLeftClick(Vec2) override;
@@ -59,7 +63,7 @@ class MapGui : public GuiElem {
   void setSpriteMode(bool);
   optional<Vec2> getHighlightedTile(Renderer& renderer);
   void addAnimation(PAnimation animation, Vec2 position);
-  void addAnimation(FXName, Vec2, Vec2, Color);
+  void addAnimation(const FXSpawnInfo&);
   void setCenter(double x, double y);
   void setCenter(Vec2 pos);
   void clearCenter();
@@ -74,23 +78,24 @@ class MapGui : public GuiElem {
   void clearButtonViewId();
   bool highlightMorale = true;
   bool highlightEnemies = true;
-  bool displayAllHealthBars = true;
   bool hideFullHealthBars = true;
   struct HighlightedInfo {
     optional<Vec2> creaturePos;
     optional<Vec2> tilePos;
     optional<Vec2> tileScreenPos;
     optional<ViewObject> object;
-    ItemCounts itemCounts;
-    ItemCounts equipmentCounts;
+    ViewIndex viewIndex;
   };
   const HighlightedInfo& getLastHighlighted();
   bool isCreatureHighlighted(UniqueEntity<Creature>::Id);
+  bool fxesAvailable() const;
 
   private:
   void updateObject(Vec2, CreatureView*, milliseconds currentTime);
-  void drawObjectAbs(Renderer&, Vec2 pos, const ViewObject&, Vec2 size, Vec2 movement, Vec2 tilePos, milliseconds currentTimeReal);
-  void drawCreatureHighlights(Renderer&, const ViewObject&, Vec2 pos, Vec2 sz, milliseconds currentTimeReal);
+  void drawObjectAbs(Renderer&, Vec2 pos, const ViewObject&, Vec2 size, Vec2 movement, Vec2 tilePos,
+      milliseconds currentTimeReal, const ViewIndex&);
+  void drawCreatureHighlights(Renderer&, const ViewObject&, const ViewIndex& index, Vec2 pos, Vec2 sz,
+      milliseconds currentTimeReal);
   void drawCreatureHighlight(Renderer&, Vec2 pos, Vec2 size, Color);
   void drawSquareHighlight(Renderer&, Vec2 pos, Vec2 size);
   void considerRedrawingSquareHighlight(Renderer&, milliseconds currentTimeReal, Vec2 pos, Vec2 size);
@@ -107,7 +112,7 @@ class MapGui : public GuiElem {
   HighlightedInfo getHighlightedInfo(Vec2 size, milliseconds currentTimeReal);
   void renderAnimations(Renderer&, milliseconds currentTimeReal);
 
-  Vec2 getMovementOffset(const ViewObject&, Vec2 size, double time, milliseconds curTimeReal, bool verticalMovement);
+  Vec2 getMovementOffset(const ViewObject&, Vec2 size, double time, milliseconds curTimeReal, bool verticalMovement, Vec2 pos);
   Vec2 projectOnScreen(Vec2 wpos);
   bool considerCreatureClick(Vec2 mousePos);
   struct CreatureInfo {
@@ -168,7 +173,9 @@ class MapGui : public GuiElem {
   bool isRenderedHighlightLow(const ViewIndex&, HighlightType);
   optional<ViewId> getHighlightedFurniture();
   Color getHighlightColor(const ViewIndex&, HighlightType);
+  Color getGradientColor(const ViewIndex&, GradientType);
   void renderHighlight(Renderer& renderer, Vec2 pos, Vec2 size, const ViewIndex& index, HighlightType highlight);
+  void renderGradient(Renderer& renderer, Vec2 pos, Vec2 size, const ViewIndex& index, GradientType highlight);
   void renderTexturedHighlight(Renderer&, Vec2 pos, Vec2 size, Color, ViewId viewId);
   void processScrolling(milliseconds);
   void considerScrollingToCreature();
@@ -177,7 +184,7 @@ class MapGui : public GuiElem {
   void setDraggedCreature(UniqueEntity<Creature>::Id, ViewId, Vec2 origin);
   vector<Vec2> tutorialHighlightLow;
   vector<Vec2> tutorialHighlightHigh;
-  void drawHealthBar(Renderer&, Vec2 pos, Vec2 size, const ViewObject&);
+  void drawHealthBar(Renderer&, Vec2 tilePos, Vec2 pos, Vec2 size, const ViewObject&);
   int lastMoveCounter = -1000;
   int currentMoveCounter = -1000;
   double getDistanceToEdgeRatio(Vec2);
@@ -188,12 +195,14 @@ class MapGui : public GuiElem {
   optional<CenteredCreatureInfo> centeredCreaturePosition;
   DirSet getConnectionSet(Vec2 tilePos, ViewId);
   EntityMap<Creature, milliseconds> woundedInfo;
+  EntityMap<Creature, int> furnitureUsageFX;
   void considerWoundedAnimation(const ViewObject&, Color&, milliseconds curTimeReal);
 
   // For advanced FX time control:
   //bool lastFxTurnBased = false;
   //double lastFxTimeReal = -1.0, lastFxTimeTurn = -1.0;
+  unique_ptr<fx::FXRenderer> fxRenderer;
   unique_ptr<FXViewManager> fxViewManager;
   void updateFX(milliseconds currentTimeReal);
-  void drawFX(Renderer&, bool front_layer);
+  void drawFurnitureCracks(Renderer&, Vec2 tilePos, float state, Vec2 pos, Vec2 size);
 };

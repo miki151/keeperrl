@@ -17,7 +17,7 @@ static string addName(const string& s, const string& n) {
     return s;
 }
 
-static void addThird(WConstCreature c, MsgType type, const string& param) {
+static void addThird(const Creature* c, MsgType type, const string& param) {
   string msg, unseenMsg;
   switch (type) {
     case MsgType::ARE: msg = c->getName().the() + " is " + param; break;
@@ -50,12 +50,12 @@ static void addThird(WConstCreature c, MsgType type, const string& param) {
     case MsgType::RAGE: msg = c->getName().the() + " is enraged."; break;
     case MsgType::CRAWL: msg = c->getName().the() + " is crawling"; break;
     case MsgType::STAND_UP: msg = c->getName().the() + " is back on " +
-                            c->getAttributes().getGender().his() + " feet";
+                            his(c->getAttributes().getGender()) + " feet";
                             break;
     case MsgType::TURN_INVISIBLE: msg = c->getName().the() + " disappears!"; break;
     case MsgType::TURN_VISIBLE: msg = c->getName().the() + " appears out of nowhere!"; break;
     case MsgType::DROP_WEAPON: msg = c->getName().the() + " drops " +
-                               c->getAttributes().getGender().his() + " " + param;
+                               his(c->getAttributes().getGender()) + " " + param;
                                break;
     case MsgType::ENTER_PORTAL: msg = c->getName().the() + " disappears in the portal."; break;
     case MsgType::HAPPENS_TO: msg = param + " " + c->getName().the(); break;
@@ -84,15 +84,15 @@ static void addThird(WConstCreature c, MsgType type, const string& param) {
   }
 }
 
-static void addThird(WConstCreature c, const string& param) {
+static void addThird(const Creature* c, const string& param) {
   c->message(c->getName().the() + " " + param);
 }
 
-static void addSecond(WConstCreature c, const string& param) {
+static void addSecond(const Creature* c, const string& param) {
   c->secondPerson("You " + param);
 }
 
-static void addSecond(WConstCreature c, MsgType type, const string& param) {
+static void addSecond(const Creature* c, MsgType type, const string& param) {
   PROFILE;
   string msg;
   switch (type) {
@@ -151,7 +151,7 @@ static void addSecond(WConstCreature c, MsgType type, const string& param) {
   c->message(PlayerMessage(msg, MessagePriority::HIGH));
 }
 
-static void addBoulder(WConstCreature c, MsgType type, const string& param) {
+static void addBoulder(const Creature* c, MsgType type, const string& param) {
   string msg, unseenMsg;
   switch (type) {
     case MsgType::BURN: msg = c->getName().the() + " burns in the " + param; break;
@@ -167,7 +167,7 @@ static void addBoulder(WConstCreature c, MsgType type, const string& param) {
   }
 }
 
-static void addKraken(WConstCreature c, MsgType type, const string& param) {
+static void addKraken(const Creature* c, MsgType type, const string& param) {
   string msg;
   switch (type) {
     case MsgType::KILLED_BY:
@@ -184,7 +184,7 @@ static void addKraken(WConstCreature c, MsgType type, const string& param) {
     c->message(msg);
 }
 
-void MessageGenerator::add(WConstCreature c, MsgType msg, const string& param) {
+void MessageGenerator::add(const Creature* c, MsgType msg, const string& param) {
   switch (type) {
     case SECOND_PERSON:
       addSecond(c, msg, param);
@@ -203,7 +203,7 @@ void MessageGenerator::add(WConstCreature c, MsgType msg, const string& param) {
   }
 }
 
-void MessageGenerator::add(WConstCreature c, const string& param) {
+void MessageGenerator::add(const Creature* c, const string& param) {
   switch (type) {
     case SECOND_PERSON:
       addSecond(c, param);
@@ -216,17 +216,17 @@ void MessageGenerator::add(WConstCreature c, const string& param) {
   }
 }
 
-void MessageGenerator::addThirdPerson(WConstCreature c, const PlayerMessage& msg) {
+void MessageGenerator::addThirdPerson(const Creature* c, const PlayerMessage& msg) {
   if (type == THIRD_PERSON)
     c->message(msg);
 }
 
-void MessageGenerator::addSecondPerson(WConstCreature c, const PlayerMessage& msg) {
+void MessageGenerator::addSecondPerson(const Creature* c, const PlayerMessage& msg) {
   if (type == SECOND_PERSON)
     c->message(msg);
 }
 
-string MessageGenerator::getEnemyName(WConstCreature c) {
+string MessageGenerator::getEnemyName(const Creature* c) {
   if (type == SECOND_PERSON)
     return "you";
   else

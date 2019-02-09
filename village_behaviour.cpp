@@ -40,7 +40,7 @@ PTask VillageBehaviour::getAttackTask(VillageControl* self) const {
         return Task::killFighters(enemy, 1000);
     case AttackBehaviourId::CAMP_AND_SPAWN:
       return Task::campAndSpawn(enemy,
-            attackBehaviour->get<CreatureFactory>(), Random.get(3, 7), Range(3, 7), Random.get(3, 7));
+            attackBehaviour->get<CreatureGroup>(), Random.get(3, 7), Range(3, 7), Random.get(3, 7));
     case AttackBehaviourId::HALLOWEEN_KIDS:
       FATAL << "Not handled";
       return {};
@@ -148,9 +148,12 @@ double VillageBehaviour::getTriggerValue(const Trigger& trigger, const VillageCo
         auto& info = trigger.get<RoomTriggerInfo>();
         return info.probPerSquare * enemy->getConstructions().getBuiltCount(info.type);
       }
-      case AttackTriggerId::POWER:
-        return powerMaxProb *
-            powerClosenessFun(self->collective->getDangerLevel(), enemy->getDangerLevel());
+      case AttackTriggerId::POWER: {
+        auto value = powerClosenessFun(self->collective->getDangerLevel(), enemy->getDangerLevel());
+        if (value < 0.5)
+          value = 0;
+        return powerMaxProb * value;
+      }
       case AttackTriggerId::FINISH_OFF:
         return finishOffMaxProb * getFinishOffProb(self->maxEnemyPower, enemy->getDangerLevel(),
             self->collective->getDangerLevel());
@@ -158,7 +161,7 @@ double VillageBehaviour::getTriggerValue(const Trigger& trigger, const VillageCo
         return victimsMaxProb * victimsFun(self->victims, 0);
       case AttackTriggerId::ENEMY_POPULATION:
         return populationMaxProb * populationFun(
-            enemy->getCreatures(MinionTrait::FIGHTER).size(), trigger.get<int>());
+            enemy->getPopulationSize(), trigger.get<int>());
       case AttackTriggerId::GOLD:
         return goldMaxProb * goldFun(enemy->numResource(Collective::ResourceId::GOLD), trigger.get<int>());
       case AttackTriggerId::STOLEN_ITEMS:

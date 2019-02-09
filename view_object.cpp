@@ -39,39 +39,41 @@ optional<GenericId> ViewObject::getGenericId() const {
   return genericId;
 }
 
-void ViewObject::setClickAction(const string& s) {
+void ViewObject::setClickAction(ViewObjectAction s) {
   clickAction = s;
 }
 
-const string& ViewObject::getClickAction() const {
+optional<ViewObjectAction> ViewObject::getClickAction() const {
   return clickAction;
 }
 
-void ViewObject::setExtendedActions(const vector<string>& s) {
+void ViewObject::setExtendedActions(EnumSet<ViewObjectAction> s) {
   extendedActions = s;
 }
 
-const vector<string>& ViewObject::getExtendedActions() const {
+const EnumSet<ViewObjectAction>& ViewObject::getExtendedActions() const {
   return extendedActions;
 }
 
 void ViewObject::addMovementInfo(MovementInfo info) {
-  movementQueue.add(info);
+  if (!movementQueue)
+    movementQueue.reset(MovementQueue());
+  movementQueue->add(info);
 }
 
 bool ViewObject::hasAnyMovementInfo() const {
-  return movementQueue.hasAny();
+  return !!movementQueue;
 }
 
 const MovementInfo& ViewObject::getLastMovementInfo() const {
-  return movementQueue.getLast();
+  return movementQueue->getLast();
 }
 
 Vec2 ViewObject::getMovementInfo(int moveCounter) const {
-  if (!movementQueue.hasAny())
+  if (!movementQueue)
     return Vec2(0, 0);
   CHECK(genericId);
-  return movementQueue.getTotalMovement(moveCounter);
+  return movementQueue->getTotalMovement(moveCounter);
 }
 
 void ViewObject::clearMovementInfo() {
@@ -84,7 +86,8 @@ void ViewObject::MovementQueue::clear() {
 
 void ViewObject::MovementQueue::add(MovementInfo info) {
   elems[index] = info;
-  ++totalMoves;
+  if (totalMoves < elems.size())
+    ++totalMoves;
   index = makeGoodIndex(index + 1);
 }
 
@@ -100,13 +103,13 @@ Vec2 ViewObject::MovementQueue::getTotalMovement(int moveCounter) const {
     if (elems[i].moveCounter >= moveCounter) {
       if (elems[i].type != MovementInfo::MOVE/* && ret.length8() == 0*/) {
         attack = true;
-        ret = elems[i].direction;
+        ret = elems[i].getDir();
       } else {
         if (attack) {
           attack = false;
           ret = Vec2(0, 0);
         }
-        ret += elems[i].direction;
+        ret += elems[i].getDir();
       }
     }
   return ret;
@@ -168,7 +171,8 @@ void ViewObject::setDescription(const string& s) {
 const char* ViewObject::getDefaultDescription() const {
   switch (resource_id) {
     case ViewId::UNKNOWN_MONSTER: return "Unknown creature";
-    case ViewId::ALTAR: return "Shrine";
+    case ViewId::ALTAR: return "Altar";
+    case ViewId::ALTAR_DES: return "Desecrated altar";
     case ViewId::UP_STAIRCASE:
     case ViewId::DOWN_STAIRCASE: return "Stairs";
     case ViewId::BRIDGE: return "Bridge";
@@ -203,6 +207,9 @@ const char* ViewObject::getDefaultDescription() const {
     case ViewId::BED3: return "Luxurious bed";
     case ViewId::DORM: return "Dormitory";
     case ViewId::TORCH: return "Torch";
+    case ViewId::CANDELABRUM_NS: return "Candelabrum";
+    case ViewId::CANDELABRUM_E: return "Candelabrum";
+    case ViewId::CANDELABRUM_W: return "Candelabrum";
     case ViewId::STANDING_TORCH: return "Standing torch";
     case ViewId::PRISON: return "Prison";
     case ViewId::WELL: return "Well";
@@ -225,7 +232,7 @@ const char* ViewObject::getDefaultDescription() const {
     case ViewId::LABORATORY: return "Laboratory";
     case ViewId::FORGE: return "Forge";
     case ViewId::WORKSHOP: return "Workshop";
-    case ViewId::JEWELER: return "Jeweler";
+    case ViewId::JEWELLER: return "Jeweller";
     case ViewId::FURNACE: return "Furnace";
     case ViewId::MINION_STATUE: return "Statue";
     case ViewId::STONE_MINION_STATUE: return "Stone Statue";
@@ -245,12 +252,22 @@ const char* ViewObject::getDefaultDescription() const {
     case ViewId::IRON_DOOR: return "Iron door";
     case ViewId::ADA_DOOR: return "Adamantine door";
     case ViewId::BARRICADE: return "Barricade";
+    case ViewId::ARCHERY_RANGE: return "Archery target";
     case ViewId::WOOD_FLOOR1:
     case ViewId::WOOD_FLOOR2:
+    case ViewId::WOOD_FLOOR3:
+    case ViewId::WOOD_FLOOR4:
+    case ViewId::WOOD_FLOOR5:
     case ViewId::STONE_FLOOR1:
     case ViewId::STONE_FLOOR2:
+    case ViewId::STONE_FLOOR3:
+    case ViewId::STONE_FLOOR4:
+    case ViewId::STONE_FLOOR5:
     case ViewId::CARPET_FLOOR1:
     case ViewId::CARPET_FLOOR2:
+    case ViewId::CARPET_FLOOR3:
+    case ViewId::CARPET_FLOOR4:
+    case ViewId::CARPET_FLOOR5:
     case ViewId::KEEPER_FLOOR:
     case ViewId::FLOOR: return "Floor";
     case ViewId::BORDER_GUARD: return "Wall";
@@ -259,8 +276,8 @@ const char* ViewObject::getDefaultDescription() const {
 }
 
 const char* ViewObject::getDescription() const {
-  if (description)
-    return description->c_str();
+  if (!description.empty())
+    return description.c_str();
   else
     return getDefaultDescription();
 }
@@ -280,8 +297,22 @@ ViewLayer ViewObject::layer() const {
 
 static EnumSet<ViewId> creatureIds {
   ViewId::PLAYER,
-  ViewId::KEEPER,
-  ViewId::RETIRED_KEEPER,
+  ViewId::KEEPER1,
+  ViewId::KEEPER2,
+  ViewId::KEEPER3,
+  ViewId::KEEPER4,
+  ViewId::KEEPER_F1,
+  ViewId::KEEPER_F2,
+  ViewId::KEEPER_F3,
+  ViewId::KEEPER_F4,
+  ViewId::KEEPER_KNIGHT1,
+  ViewId::KEEPER_KNIGHT2,
+  ViewId::KEEPER_KNIGHT3,
+  ViewId::KEEPER_KNIGHT4,
+  ViewId::KEEPER_KNIGHT_F1,
+  ViewId::KEEPER_KNIGHT_F2,
+  ViewId::KEEPER_KNIGHT_F3,
+  ViewId::KEEPER_KNIGHT_F4,
   ViewId::ELF,
   ViewId::ELF_ARCHER,
   ViewId::ELF_CHILD,
@@ -302,7 +333,14 @@ static EnumSet<ViewId> creatureIds {
   ViewId::GHOST,
   ViewId::SPIRIT,
   ViewId::KNIGHT,
-  ViewId::DUKE,
+  ViewId::DUKE1,
+  ViewId::DUKE2,
+  ViewId::DUKE3,
+  ViewId::DUKE4,
+  ViewId::DUKE_F1,
+  ViewId::DUKE_F2,
+  ViewId::DUKE_F3,
+  ViewId::DUKE_F4,
   ViewId::ARCHER,
   ViewId::UNICORN,
   ViewId::PESEANT,
@@ -461,4 +499,9 @@ const string& ViewObject::getBadAdjectives() const {
 
 ViewId ViewObject::id() const {
   return resource_id;
+}
+
+#include "pretty_archive.h"
+template<>
+void ViewObject::serialize(PrettyInputArchive&, unsigned) {
 }

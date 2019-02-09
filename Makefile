@@ -26,6 +26,10 @@ else
 LDFLAGS += -Wl,-rpath=$(RPATH)
 endif
 
+ifndef RELEASE
+LDFLAGS += -Wl,--gdb-index
+endif
+
 ifdef DATA_DIR
 CFLAGS += -DDATA_DIR=\"$(DATA_DIR)\"
 endif

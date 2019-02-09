@@ -53,13 +53,15 @@
 #include "tutorial.h"
 #include "message_buffer.h"
 #include "unknown_locations.h"
+#include "avatar_info.h"
+#include "collective_config.h"
 
 template <class Archive> 
 void Model::serialize(Archive& ar, const unsigned int version) {
   CHECK(!serializationLocked);
   ar & SUBCLASS(OwnedObject<Model>);
   ar(levels, collectives, timeQueue, deadCreatures, currentTime, woodCount, game, lastTick);
-  ar(stairNavigation, cemetery, topLevel, eventGenerator, externalEnemies);
+  ar(stairNavigation, cemetery, mainLevels, eventGenerator, externalEnemies);
 }
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Model)
@@ -97,7 +99,7 @@ void Model::updateSunlightMovement() {
 
 void Model::checkCreatureConsistency() {
   EntitySet<Creature> tmp;
-  for (WCreature c : timeQueue->getAllCreatures()) {
+  for (Creature* c : timeQueue->getAllCreatures()) {
     CHECK(!tmp.contains(c)) << c->getName().bare();
     tmp.insert(c);
   }
@@ -109,7 +111,7 @@ void Model::checkCreatureConsistency() {
 
 bool Model::update(double totalTime) {
   currentTime = totalTime;
-  if (WCreature creature = timeQueue->getNextCreature(totalTime)) {
+  if (Creature* creature = timeQueue->getNextCreature(totalTime)) {
     CHECK(creature->getLevel() != nullptr) << "Creature misplaced before processing: " << creature->getName().bare() <<
         ". Any idea why this happened?";
     if (creature->isDead()) {
@@ -122,8 +124,10 @@ bool Model::update(double totalTime) {
     }
     CHECK(creature->getLevel() != nullptr) << "Creature misplaced before moving: " << creature->getName().bare() <<
         ". Any idea why this happened?";
-    if (!creature->isDead())
-       creature->makeMove();
+    if (!creature->isDead()) {
+      INFO << "Turn " << totalTime << " " << creature->getName().bare() << " moving now";
+      creature->makeMove();
+    }
     CHECK(creature->getLevel() != nullptr) << "Creature misplaced after moving: " << creature->getName().bare() <<
         ". Any idea why this happened?";
     if (!creature->isDead() && creature->getLevel()->getModel() == this)
@@ -134,7 +138,7 @@ bool Model::update(double totalTime) {
 }
 
 void Model::tick(LocalTime time) { PROFILE
-  for (WCreature c : timeQueue->getAllCreatures()) {
+  for (Creature* c : timeQueue->getAllCreatures()) {
     c->tick();
   }
   for (PLevel& l : levels)
@@ -155,15 +159,15 @@ void Model::addCreature(PCreature c, TimeInterval delay) {
   timeQueue->addCreature(std::move(c), getLocalTime() + delay);
 }
 
-WLevel Model::buildLevel(LevelBuilder&& b, PLevelMaker maker) {
+WLevel Model::buildLevel(LevelBuilder b, PLevelMaker maker) {
   LevelBuilder builder(std::move(b));
   levels.push_back(builder.build(this, maker.get(), Random.getLL()));
   return levels.back().get();
 }
 
-WLevel Model::buildTopLevel(LevelBuilder&& b, PLevelMaker maker) {
-  WLevel ret = buildLevel(std::move(b), std::move(maker));
-  topLevel = ret;
+WLevel Model::buildMainLevel(LevelBuilder b, PLevelMaker maker) {
+  auto ret = buildLevel(std::move(b), std::move(maker));
+  mainLevels.push_back(ret);
   return ret;
 }
 
@@ -172,7 +176,7 @@ Model::Model(Private) {
 
 PModel Model::create() {
   auto ret = makeOwner<Model>(Private{});
-  ret->cemetery = LevelBuilder(Random, 100, 100, "Dead creatures", false)
+  ret->cemetery = LevelBuilder(Random, nullptr, 100, 100, "Dead creatures", false)
       .build(ret.get(), LevelMaker::emptyLevel(FurnitureType::GRASS).get(), Random.getLL());
   ret->eventGenerator = makeOwner<EventGenerator>();
   return ret;
@@ -213,7 +217,7 @@ WLevel Model::getLinkedLevel(WLevel from, StairKey key) const {
   for (WLevel target : getLevels())
     if (target != from && target->hasStairKey(key))
       return target;
-  FATAL << "Failed to find next level for " << key.getInternalKey() << " " << from->getName();
+  //FATAL << "Failed to find next level for " << key.getInternalKey() << " " << from->getName();
   return nullptr;
 }
 
@@ -222,6 +226,7 @@ static pair<LevelId, LevelId> getIds(WConstLevel l1, WConstLevel l2) {
 }
 
 void Model::calculateStairNavigation() {
+  stairNavigation.clear();
   // Floyd-Warshall algorithm
   for (auto l1 : getLevels())
     for (auto l2 : getLevels())
@@ -260,40 +265,48 @@ vector<WLevel> Model::getLevels() const {
   return getWeakPointers(levels);
 }
 
-WLevel Model::getTopLevel() const {
-  return topLevel;
+const vector<WLevel>& Model::getMainLevels() const {
+  return mainLevels;
 }
 
-void Model::killCreature(WCreature c) {
+void Model::addCollective(PCollective col) {
+  collectives.push_back(std::move(col));
+}
+
+WLevel Model::getTopLevel() const {
+  return mainLevels[0];
+}
+
+void Model::killCreature(Creature* c) {
   deadCreatures.push_back(timeQueue->removeCreature(c));
   cemetery->landCreature(cemetery->getAllPositions(), c);
 }
 
-PCreature Model::extractCreature(WCreature c) {
+PCreature Model::extractCreature(Creature* c) {
   PCreature ret = timeQueue->removeCreature(c);
   c->getLevel()->removeCreature(c);
   return ret;
 }
 
 void Model::transferCreature(PCreature c, Vec2 travelDir) {
-  WCreature ref = c.get();
+  Creature* ref = c.get();
   addCreature(std::move(c));
   CHECK(getTopLevel()->landCreature(StairKey::transferLanding(), ref, travelDir));
 }
 
-bool Model::canTransferCreature(WCreature c, Vec2 travelDir) {
+bool Model::canTransferCreature(Creature* c, Vec2 travelDir) {
   for (Position pos : getTopLevel()->getLandingSquares(StairKey::transferLanding()))
     if (pos.canEnter(c))
       return true;
   return false;
 }
 
-vector<WCreature> Model::getAllCreatures() const { 
+vector<Creature*> Model::getAllCreatures() const { 
   return timeQueue->getAllCreatures();
 }
 
 void Model::landHeroPlayer(PCreature player) {
-  WCreature ref = player.get();
+  Creature* ref = player.get();
   WLevel target = getTopLevel();
   vector<Position> landing = target->getLandingSquares(StairKey::heroSpawn());
   if (!target->landCreature(landing, ref)) {
@@ -308,8 +321,8 @@ void Model::addExternalEnemies(ExternalEnemies e) {
   externalEnemies = std::move(e);
 }
 
-const optional<ExternalEnemies>& Model::getExternalEnemies() const {
-  return *externalEnemies;
+const heap_optional<ExternalEnemies>& Model::getExternalEnemies() const {
+  return externalEnemies;
 }
 
 void Model::clearExternalEnemies() {

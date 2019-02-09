@@ -17,7 +17,7 @@ void Portals::removePortal(Position position) {
   }
 }
 
-optional<int> Portals::getDistanceToNearest(Vec2 pos) const {
+optional<short> Portals::getDistanceToNearest(Vec2 pos) const {
   return distanceToNearest[pos];
 }
 
@@ -27,19 +27,19 @@ void Portals::recalculateDistances(WLevel level) {
     if (portal)
       portals.push_back(*portal);
   if (!level) {
-    distanceToNearest = Table<optional<int>>(1, 1);
+    distanceToNearest = Table<optional<short>>(1, 1);
     return;
   }
-  distanceToNearest = Table<optional<int>>(level->getBounds());
+  distanceToNearest = Table<optional<short>>(level->getBounds());
   auto entryFun = [&](Vec2 pos) {
     if (Position(pos, level).canEnterEmpty({MovementTrait::WALK}))
       return 1;
     else
-      return 100000;
+      return 10000;
   };
-  Dijkstra dijkstra(distanceToNearest.getBounds(), portals, 100000, entryFun);
+  Dijkstra dijkstra(distanceToNearest.getBounds(), portals, 10000, entryFun);
   for (auto& pos : dijkstra.getAllReachable())
-    distanceToNearest[pos.first] = (int) pos.second;
+    distanceToNearest[pos.first] = (short) pos.second;
 }
 
 Portals::Portals(Rectangle bounds) : distanceToNearest(bounds) {

@@ -19,10 +19,11 @@
 #include "furniture_factory.h"
 #include "view_object.h"
 #include "furniture_usage.h"
+#include "game_event.h"
 
 static void handleBed(Position pos) {
   PROFILE;
-  if (WCreature c = pos.getCreature())
+  if (Creature* c = pos.getCreature())
     if (c->isAffected(LastingEffect::SLEEP))
       c->heal(0.005);
 }
@@ -35,7 +36,7 @@ static void handlePigsty(Position pos, WFurniture furniture) {
     if (v.getCreature() && v.getCreature()->getBody().isMinionFood())
       return;
   if (Random.roll(5)) {
-    PCreature pig = CreatureFactory::fromId(CreatureId::PIG, furniture->getTribe(),
+    PCreature pig = pos.getGame()->getCreatureFactory()->fromId("PIG", furniture->getTribe(),
         MonsterAIFactory::stayOnFurniture(furniture->getType()));
     if (pos.canEnter(pig.get()))
       pos.addCreature(std::move(pig));
@@ -47,9 +48,9 @@ static void handleBoulder(Position pos, WFurniture furniture) {
     int radius = 4;
     for (int i = 1; i <= radius; ++i) {
       Position curPos = pos.plus(direction * i);
-      if (WCreature other = curPos.getCreature()) {
+      if (Creature* other = curPos.getCreature()) {
         if (!other->getTribe()->getFriendlyTribes().contains(furniture->getTribe())) {
-          if (!other->getAttributes().getSkills().hasDiscrete(SkillId::DISARM_TRAPS)) {
+          if (!other->isAffected(LastingEffect::DISARM_TRAPS_SKILL)) {
             pos.getGame()->addEvent(EventInfo::TrapTriggered{pos});
             pos.globalMessage(PlayerMessage("The boulder starts rolling.", MessagePriority::CRITICAL));
             pos.unseenMessage(PlayerMessage("You hear a heavy boulder rolling.", MessagePriority::CRITICAL));
@@ -90,10 +91,10 @@ static void meteorShower(Position position, WFurniture furniture) {
       if (!targetPoint.plus(direction * i).canEnter(MovementType({MovementTrait::WALK, MovementTrait::FLY})))
         continue;
     targetPoint.plus(direction * range).throwItem(
-        ItemType(ItemType::Rock{}).get(),
+        makeVec(ItemType(ItemType::Rock{}).get()),
         Attack(furniture->getCreator(), AttackLevel::MIDDLE, AttackType::HIT, 25, AttrType::DAMAGE),
         10,
-        -direction,
+        position.minus(direction),
         VisionId::NORMAL);
     break;
   }
@@ -105,7 +106,7 @@ static void pit(Position position, WFurniture self) {
       if (auto water = neighborPos.getFurniture(FurnitureLayer::GROUND))
         if (water->canBuildBridgeOver()) {
           position.removeFurniture(position.getFurniture(FurnitureLayer::GROUND),
-              FurnitureFactory::get(water->getType(), water->getTribe()));
+              FurnitureFactory::get(FurnitureType::WATER, water->getTribe()));
           self->destroy(position, DestroyAction::Type::BOULDER);
           return;
         }
@@ -140,6 +141,10 @@ void FurnitureTick::handle(FurnitureTickType type, Position pos, WFurniture furn
       break;
     case FurnitureTickType::PIT:
       pit(pos, furniture);
+      break;
+    case FurnitureTickType::EXTINGUISH_FIRE:
+      if (auto c = pos.getCreature())
+        c->removeEffect(LastingEffect::ON_FIRE);
       break;
   }
 }

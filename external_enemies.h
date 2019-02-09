@@ -24,11 +24,11 @@ struct EnemyEvent {
 
 class ExternalEnemies {
   public:
-  ExternalEnemies(RandomGen&, vector<ExternalEnemy>);
+  ExternalEnemies(RandomGen&, const CreatureFactory*, vector<ExternalEnemy>);
   void update(WLevel, LocalTime);
   struct CurrentWave {
     string SERIAL(name);
-    vector<WCreature> SERIAL(attackers);
+    vector<Creature*> SERIAL(attackers);
     SERIALIZE_ALL(name, attackers)
   };
   optional<const EnemyEvent&> getNextWave() const;

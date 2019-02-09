@@ -8,45 +8,37 @@
 
 SERIALIZATION_CONSTRUCTOR_IMPL2(ConstructionMap::FurnitureInfo, FurnitureInfo);
 
-SERIALIZE_DEF(ConstructionMap::FurnitureInfo, cost, built, type, task);
+SERIALIZE_DEF(ConstructionMap::FurnitureInfo, cost, type, task);
 
-ConstructionMap::FurnitureInfo::FurnitureInfo(FurnitureType t, CostInfo c) : cost(c), type(t) {
+ConstructionMap::FurnitureInfo::FurnitureInfo(FurnitureType t, CostInfo c) : task(-1), cost(c), type(t) {
 }
 
 ConstructionMap::FurnitureInfo ConstructionMap::FurnitureInfo::getBuilt(FurnitureType type) {
-  FurnitureInfo ret(type, CostInfo::noCost());
-  ret.setBuilt();
-  return ret;
-}
-
-void ConstructionMap::FurnitureInfo::setBuilt() {
-  built = true;
-  task = none;
+  return FurnitureInfo(type, CostInfo::noCost());
 }
 
 void ConstructionMap::FurnitureInfo::reset() {
-  built = false;
-  task = none;
+  task = -1;
 }
 
 void ConstructionMap::FurnitureInfo::setTask(UniqueEntity<Task>::Id id) {
-  task = id;
+  task = id.getGenericId();
 }
 
 CostInfo ConstructionMap::FurnitureInfo::getCost() const {
   return cost;
 }
 
-bool ConstructionMap::FurnitureInfo::isBuilt() const {
-  return built;
+bool ConstructionMap::FurnitureInfo::isBuilt(Position pos) const {
+  return !!pos.getFurniture(getLayer());
 }
 
 bool ConstructionMap::FurnitureInfo::hasTask() const {
-  return !!task;
+  return task != -1;
 }
 
 UniqueEntity<Task>::Id ConstructionMap::FurnitureInfo::getTask() const {
-  return *task;
+  return UniqueEntity<Task>::Id(task);
 }
 
 FurnitureType ConstructionMap::FurnitureInfo::getFurnitureType() const {
@@ -68,7 +60,7 @@ void ConstructionMap::setTask(Position pos, FurnitureLayer layer, UniqueEntity<T
 void ConstructionMap::removeFurniture(Position pos, FurnitureLayer layer) {
   auto& info = furniture[layer].getOrFail(pos);
   auto type = info.getFurnitureType();
-  if (!info.isBuilt()) {
+  if (!info.isBuilt(pos)) {
     --unbuiltCounts[type];
     addDebt(-info.getCost());
   }
@@ -84,7 +76,7 @@ void ConstructionMap::addDebt(const CostInfo& cost) {
 void ConstructionMap::onFurnitureDestroyed(Position pos, FurnitureLayer layer) {
   PROFILE;
   if (auto info = furniture[layer].getReferenceMaybe(pos)) {
-    if (info->isBuilt())
+    if (info->isBuilt(pos))
       addDebt(info->getCost());
     furniturePositions[info->getFurnitureType()].erase(pos);
     info->reset();
@@ -102,7 +94,7 @@ void ConstructionMap::addFurniture(Position pos, const FurnitureInfo& info) {
   allFurniture.push_back({pos, layer});
   furniture[layer].set(pos, info);
   pos.setNeedsRenderUpdate(true);
-  if (info.isBuilt())
+  if (info.isBuilt(pos))
     furniturePositions[info.getFurnitureType()].insert(pos);
   else {
     ++unbuiltCounts[info.getFurnitureType()];
@@ -138,7 +130,6 @@ void ConstructionMap::onConstructed(Position pos, FurnitureType type) {
   --unbuiltCounts[type];
   if (furniture[layer].contains(pos)) { // why this if?
     auto& info = furniture[layer].getOrInit(pos);
-    info.setBuilt();
     addDebt(-info.getCost());
   }
 }
@@ -170,19 +161,19 @@ const vector<Position>& ConstructionMap::getAllTraps() const {
 
 void ConstructionMap::TrapInfo::setArmed() {
   armed = true;
-  task = nullptr;
+  marked = false;
 }
 
 void ConstructionMap::TrapInfo::reset() {
   armed = false;
-  task = nullptr;
+  marked = false;
 }
 
 ConstructionMap::TrapInfo::TrapInfo(TrapType t) : type(t) {
 }
 
 bool ConstructionMap::TrapInfo::isMarked() const {
-  return !!task;
+  return marked;
 }
 
 bool ConstructionMap::TrapInfo::isArmed() const {
@@ -193,8 +184,8 @@ TrapType ConstructionMap::TrapInfo::getType() const {
   return type;
 }
 
-void ConstructionMap::TrapInfo::setTask(WConstTask t) {
-  task = t;
+void ConstructionMap::TrapInfo::setMarked() {
+  marked = true;
 }
 
 int ConstructionMap::getDebt(CollectiveResourceId id) const {
@@ -203,7 +194,7 @@ int ConstructionMap::getDebt(CollectiveResourceId id) const {
 
 template <class Archive>
 void ConstructionMap::TrapInfo::serialize(Archive& ar, const unsigned int version) {
-  ar(type, armed, task);
+  ar(type, armed, marked);
 }
 
 SERIALIZABLE(ConstructionMap::TrapInfo);

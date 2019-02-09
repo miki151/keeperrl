@@ -10,8 +10,8 @@ class CreatureDebt {
   public:
   int getTotal() const;
   vector<UniqueEntity<Creature>::Id> getCreditors() const;
-  int getAmountOwed(WCreature creditor) const;
-  void add(WCreature, int);
+  int getAmountOwed(Creature* creditor) const;
+  void add(Creature*, int);
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);

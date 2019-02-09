@@ -3,10 +3,6 @@
 #include "debug.h"
 #include "opengl.h"
 
-bool Framebuffer::isExtensionAvailable() {
-  static bool isAvailable = isOpenglExtensionAvailable("GL_ARB_framebuffer_object");
-  return isAvailable;
-}
 
 static unsigned allocFramebuffer() {
   SDL::GLuint id = 0;

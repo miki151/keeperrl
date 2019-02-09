@@ -1,7 +1,7 @@
 #include "dungeon_level.h"
 #include "villain_type.h"
 
-static double getProgress(VillainType type) {
+double DungeonLevel::getProgress(VillainType type) {
   switch (type) {
     case VillainType::ALLY:
       return 3;
@@ -17,6 +17,10 @@ static double getProgress(VillainType type) {
   }
 }
 
+int DungeonLevel::getNecessaryProgress(int level) {
+  return 2 * level + 1;
+}
+
 void DungeonLevel::onKilledVillain(VillainType type) {
   addAbsoluteProgress(getProgress(type));
 }
@@ -29,12 +33,8 @@ void DungeonLevel::onLibraryWork(double amount) {
   addAbsoluteProgress(0.0003 * amount);
 }
 
-bool DungeonLevel::canConsumeLevel() const {
-  return consumedLevels < level;
-}
-
-int DungeonLevel::getNecessaryProgress(int level) const {
-  return 2 * level + 1;
+int DungeonLevel::numResearchAvailable() const {
+  return level - consumedLevels;
 }
 
 void DungeonLevel::addAbsoluteProgress(double amount) {

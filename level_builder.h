@@ -30,6 +30,7 @@ RICH_ENUM(SquareAttrib,
   COLLECTIVE_START,
   COLLECTIVE_STAIRS,
   EMPTY_ROOM,
+  FLOOR_OUTSIDE,
   BUILDINGS_CENTER,
   CASTLE_CORNER,
   FOG,
@@ -41,9 +42,9 @@ RICH_ENUM(SquareAttrib,
 class LevelBuilder {
   public:
   /** Constructs a builder with given size and name. */
-  LevelBuilder(ProgressMeter*, RandomGen&, int width, int height, const string& name, bool covered = true,
-      optional<double> defaultLight = none);
-  LevelBuilder(RandomGen&, int width, int height, const string& name, bool covered = true);
+  LevelBuilder(ProgressMeter*, RandomGen&, const CreatureFactory*, int width, int height, const string& name,
+      bool covered = true, optional<double> defaultLight = none);
+  LevelBuilder(RandomGen&, const CreatureFactory*, int width, int height, const string& name, bool covered = true);
   
   LevelBuilder(LevelBuilder&&);
   ~LevelBuilder();
@@ -52,7 +53,7 @@ class LevelBuilder {
   WSquare modSquare(Vec2);
 
   /** Checks if it's possible to put a creature on given square.*/
-  bool canPutCreature(Vec2, WCreature);
+  bool canPutCreature(Vec2, Creature*);
 
   /** Puts a creatue on a given square. If the square is later changed to something else, the creature remains.*/
   void putCreature(Vec2, PCreature);
@@ -106,7 +107,12 @@ class LevelBuilder {
   void addCollective(CollectiveBuilder*);
 
   /** Sets the cover of the square. The value will remain if square is changed.*/
-  void setCovered(Vec2, bool covered);
+  void setCovered(Vec2, bool state);
+
+  /** Sets building flag for the purpose of building level. Buildings are recomputed after world generation
+   * using the roof support algorithm for the sake of game mechanics */
+  void setBuilding(Vec2, bool state);
+
   void setSunlight(Vec2, double);
 
   void setNoDiagonalPassing();
@@ -119,6 +125,7 @@ class LevelBuilder {
   void popMap();
 
   RandomGen& getRandom();
+  const CreatureFactory* getCreatureFactory() const;
   
   private:
   Vec2 transform(Vec2);
@@ -128,6 +135,7 @@ class LevelBuilder {
   Table<double> dark;
   vector<CollectiveBuilder*> collectives;
   Table<bool> covered;
+  Table<bool> building;
   Table<double> sunlight;
   Table<EnumSet<SquareAttrib>> attrib;
   vector<pair<PCreature, Vec2>> creatures;
@@ -138,4 +146,5 @@ class LevelBuilder {
   ProgressMeter* progressMeter = nullptr;
   RandomGen& random;
   bool noDiagonalPassing = false;
+  const CreatureFactory* creatureFactory;
 };

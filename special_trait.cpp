@@ -4,7 +4,7 @@
 #include "creature_attributes.h"
 #include "skill.h"
 
-void applySpecialTrait(SpecialTrait trait, WCreature c) {
+void applySpecialTrait(SpecialTrait trait, Creature* c) {
   trait.visit(
       [&] (const ExtraTraining& t) {
         c->getAttributes().increaseMaxExpLevel(t.type, t.increase);
@@ -16,10 +16,21 @@ void applySpecialTrait(SpecialTrait trait, WCreature c) {
         c->addPermanentEffect(effect);
       },
       [&] (SkillId skill) {
-        if (Skill::get(skill)->isDiscrete())
-          c->getAttributes().getSkills().insert(skill);
-        else
-          c->getAttributes().getSkills().increaseValue(skill, 0.4);
+        c->getAttributes().getSkills().increaseValue(skill, 0.4);
+      },
+      [&] (const OneOfTraits&) {
+        FATAL << "Can't apply traits alternative";
+      }
+  );
+}
+
+SpecialTrait transformBeforeApplying(SpecialTrait trait) {
+  return trait.visit(
+      [&] (const auto&) {
+        return trait;
+      },
+      [&] (const OneOfTraits& t) {
+        return Random.choose(t.traits);
       }
   );
 }

@@ -35,6 +35,10 @@
 #include "player_role.h"
 #include "file_sharing.h"
 #include "fx_manager.h"
+#include "fx_renderer.h"
+#include "fx_info.h"
+#include "fx_view_manager.h"
+#include "draw_line.h"
 
 using SDL::SDL_Keysym;
 using SDL::SDL_Keycode;
@@ -73,15 +77,13 @@ Rectangle WindowView::getMapGuiBounds() const {
   }
 }
 
-Rectangle WindowView::getMinimapBounds() const {
-  Vec2 offset(-20, 70);
-  int width = max(149, renderer.getSize().x / 11);
-  return Rectangle(Vec2(renderer.getSize().x - width, 0), Vec2(renderer.getSize().x, width + 42)).translate(offset);
+int WindowView::getMinimapWidth() const {
+  return max(149, renderer.getSize().x / 11);
 }
 
-void WindowView::resetMapBounds() {
-  mapGui->setBounds(getMapGuiBounds());
-  minimapDecoration->setBounds(getMinimapBounds());
+Vec2 WindowView::getMinimapOrigin() const {
+  Vec2 offset(-20, 70);
+  return Vec2(renderer.getSize().x - getMinimapWidth(), 0) + offset;
 }
 
 WindowView::WindowView(ViewParams params) : renderer(params.renderer), gui(params.gui), useTiles(params.useTiles),
@@ -94,7 +96,7 @@ WindowView::WindowView(ViewParams params) : renderer(params.renderer), gui(param
     soundLibrary(params.soundLibrary), bugreportSharing(params.bugreportSharing), bugreportDir(params.bugreportDir),
     installId(params.installId) {}
 
-void WindowView::initialize() {
+void WindowView::initialize(unique_ptr<fx::FXRenderer> fxRenderer, unique_ptr<FXViewManager> fxViewManager) {
   renderer.setFullscreen(options->getBoolValue(OptionId::FULLSCREEN));
   renderer.setVsync(options->getBoolValue(OptionId::VSYNC));
   renderer.enableCustomCursor(!options->getBoolValue(OptionId::DISABLE_CURSOR));
@@ -127,6 +129,7 @@ void WindowView::initialize() {
     currentTileLayout = spriteLayouts;
   else
     currentTileLayout = asciiLayouts;
+  this->fxRenderer = fxRenderer.get();
   mapGui.reset(new MapGui({
       bindMethod(&WindowView::mapContinuousLeftClickFun, this),
       [this] (Vec2 pos) {
@@ -141,10 +144,11 @@ void WindowView::initialize() {
       inputQueue,
       clock,
       options,
-      &gui));
+      &gui,
+      std::move(fxRenderer),
+      std::move(fxViewManager)));
   minimapGui.reset(new MinimapGui([this]() { inputQueue.push(UserInput(UserInputId::DRAW_LEVEL_MAP)); }));
   rebuildMinimapGui();
-  resetMapBounds();
   guiBuilder.setMapGui(mapGui);
 }
 
@@ -354,17 +358,21 @@ Color getSpeedColor(int value) {
 }
 
 void WindowView::rebuildMinimapGui() {
-  auto icons = gui.centerHoriz(guiBuilder.drawMinimapIcons(gameInfo));
+  int width = getMinimapWidth();
+  auto icons = guiBuilder.drawMinimapIcons(gameInfo);
   auto iconsHeight = *icons->getPreferredHeight();
   minimapDecoration = gui.margin(std::move(icons),
       gui.stack(gui.rectangle(Color::BLACK), gui.miniWindow(),
       gui.margins(gui.renderInBounds(SGuiElem(minimapGui)), 6)), iconsHeight, GuiFactory::MarginType::BOTTOM);
-  resetMapBounds();
+  auto origin = getMinimapOrigin();
+  minimapDecoration->setBounds(Rectangle(origin, origin + Vec2(width, width + iconsHeight)));
+
 }
 
 void WindowView::rebuildGui() {
   INFO << "Rebuilding UI";
   rebuildMinimapGui();
+  mapGui->setBounds(getMapGuiBounds());
   SGuiElem bottom, right;
   vector<GuiBuilder::OverlayInfo> overlays;
   int rightBarWidth = 0;
@@ -412,7 +420,6 @@ void WindowView::rebuildGui() {
         break;
   }
   guiBuilder.drawOverlays(overlays, gameInfo);
-  resetMapBounds();
   if (rightBarWidth > 0) {
     overlays.push_back({guiBuilder.drawMessages(gameInfo.messageBuffer, renderer.getSize().x - rightBarWidth),
                        GuiBuilder::OverlayInfo::MESSAGES});
@@ -522,7 +529,8 @@ void WindowView::resetCenter() {
 void WindowView::drawLevelMap(const CreatureView* creature) {
   Semaphore sem;
   auto gui = guiBuilder.drawLevelMap(sem, creature);
-  Vec2 origin(getMinimapBounds().right() - *gui->getPreferredWidth(), getMinimapBounds().top());
+  auto minimapOrigin = getMinimapOrigin();
+  Vec2 origin(minimapOrigin.x + getMinimapWidth() - *gui->getPreferredWidth(), minimapOrigin.y);
   return getBlockingGui(sem, std::move(gui), origin);
 }
 
@@ -540,6 +548,8 @@ void WindowView::updateView(CreatureView* view, bool noRefresh) {
     return;
   gameInfo = {};
   view->refreshGameInfo(gameInfo);
+  if (gameInfo.infoType != GameInfo::InfoType::BAND)
+    guiBuilder.clearActiveButton();
   wasRendered = false;
   guiBuilder.addUpsCounterTick();
   gameReady = true;
@@ -572,12 +582,15 @@ void WindowView::playSounds(const CreatureView* view) {
   soundQueue.clear();
 }
 
-void WindowView::animateObject(Vec2 begin, Vec2 end, ViewId object) {
-  if (begin != end)
+void WindowView::animateObject(Vec2 begin, Vec2 end, optional<ViewId> object, optional<FXInfo> fx) {
+  if (fx && mapGui->fxesAvailable())
+    mapGui->addAnimation(FXSpawnInfo(*fx, begin, end-begin));
+  else
+  if (object && begin != end)
     mapGui->addAnimation(
         Animation::thrownObject(
           (end - begin).mult(mapLayout->getSquareSize()),
-          object,
+          *object,
           currentTileLayout.sprites),
         begin);
 }
@@ -587,8 +600,8 @@ void WindowView::animation(Vec2 pos, AnimationId id, Dir orientation) {
     mapGui->addAnimation(Animation::fromId(id, orientation), pos);
 }
 
-void WindowView::animation(FXName name, Vec2 pos, Vec2 targetOffset, const Color& color) {
-  mapGui->addAnimation(name, pos, targetOffset, color);
+void WindowView::animation(const FXSpawnInfo& spawnInfo) {
+  mapGui->addAnimation(spawnInfo);
 }
 
 void WindowView::refreshView() {
@@ -665,7 +678,7 @@ optional<int> reverseIndexHeight(const vector<ListElem>& options, int height) {
 
 optional<Vec2> WindowView::chooseDirection(Vec2 playerPos, const string& message) {
   TempClockPause pause(clock);
-  gameInfo.messageBuffer = { PlayerMessage(message) };
+  gameInfo.messageBuffer = makeVec(PlayerMessage(message));
   SyncQueue<optional<Vec2>> returnQueue;
   addReturnDialog<optional<Vec2>>(returnQueue, [=] ()-> optional<Vec2> {
   rebuildGui();
@@ -724,6 +737,59 @@ optional<Vec2> WindowView::chooseDirection(Vec2 playerPos, const string& message
   } while (1);
   });
   return returnQueue.pop();
+}
+
+optional<Vec2> WindowView::chooseTarget(Vec2 playerPos, Table<PassableInfo> passable, const string& message) {
+  TempClockPause pause(clock);
+  gameInfo.messageBuffer = makeVec(PlayerMessage(message));
+  SyncQueue<optional<Vec2>> returnQueue;
+  addReturnDialog<optional<Vec2>>(returnQueue, [=] ()-> optional<Vec2> {
+  rebuildGui();
+  refreshScreen();
+  do {
+    auto pos = mapGui->projectOnMap(renderer.getMousePos());
+    Event event;
+    if (renderer.pollEvent(event)) {
+      considerResizeEvent(event);
+      if (event.type == SDL::SDL_KEYDOWN && event.key.keysym.sym == SDL::SDLK_ESCAPE) {
+        refreshScreen();
+        return none;
+      }
+      if (pos && event.type == SDL::SDL_MOUSEBUTTONDOWN) {
+        if (event.button.button == SDL_BUTTON_LEFT)
+          return *pos;
+        else
+          return none;
+      } else
+        gui.propagateEvent(event, {mapGui});
+    }
+    rebuildGui();
+    refreshScreen(false);
+    if (pos) {
+      bool wasObstructed = false;
+      for (auto& pw : drawLine(playerPos, *pos))
+        if (pw != playerPos) {
+          bool obstructed = wasObstructed || !pw.inRectangle(passable.getBounds()) ||
+              passable[pw] == PassableInfo::NON_PASSABLE;
+          auto color = obstructed ? Color::RED : Color::GREEN;
+          if (!wasObstructed && pw.inRectangle(passable.getBounds()) && passable[pw] == PassableInfo::UNKNOWN)
+            color = Color::ORANGE;
+          Vec2 wpos = mapLayout->projectOnScreen(getMapGuiBounds(), mapGui->getScreenPos(), pw.x, pw.y);
+          if (currentTileLayout.sprites) {
+            renderer.drawViewObject(wpos, ViewId::DIG_MARK, true, mapLayout->getSquareSize(), color);
+          } else {
+            renderer.drawText(Renderer::SYMBOL_FONT, mapLayout->getSquareSize().y, color,
+                wpos + Vec2(mapLayout->getSquareSize().x / 2, 0), "0", Renderer::HOR);
+          }
+          wasObstructed = obstructed || passable[pw] == PassableInfo::STOPS_HERE;
+        }
+    }
+    renderer.drawAndClearBuffer();
+    renderer.flushEvents(SDL::SDL_MOUSEMOTION);
+  } while (1);
+  });
+  return returnQueue.pop();
+
 }
 
 bool WindowView::yesOrNoPrompt(const string& message, bool defaultNo) {
@@ -829,6 +895,11 @@ void WindowView::presentWorldmap(const Campaign& campaign) {
   return getBlockingGui(sem, guiBuilder.drawWorldmap(sem, campaign));
 }
 
+variant<View::AvatarChoice, AvatarMenuOption> WindowView::chooseAvatar(const vector<AvatarData>& avatars, Options* options) {
+  SyncQueue<variant<AvatarChoice, AvatarMenuOption>> returnQueue;
+  return getBlockingGui(returnQueue, guiBuilder.drawAvatarMenu(returnQueue, options, avatars), none, false);
+}
+
 CampaignAction WindowView::prepareCampaign(CampaignOptions campaign, Options* options,
     CampaignMenuState& state) {
   SyncQueue<CampaignAction> returnQueue;
@@ -886,187 +957,6 @@ void WindowView::presentHighscores(const vector<HighscoreList>& list) {
   vector<ScrollPosition> scrollPos(list.size());
   getBlockingGui(sem, guiBuilder.drawHighscores(list, sem, tabNum, scrollPos, online),
       guiBuilder.getMenuPosition(MenuType::NORMAL, 0).topLeft());
-}
-
-struct GameChoice {
-  PlayerRole type;
-  GuiFactory::TexId texId;
-  GuiFactory::TexId highlightId;
-  string name;
-  string description;
-};
-
-const static vector<GameChoice> gameChoices {
-  {PlayerRole::KEEPER,
-   GuiFactory::TexId::KEEPER_CHOICE,
-   GuiFactory::TexId::KEEPER_HIGHLIGHT,
-   "keeper",
-   "Play as a keeper. Build and manage your dream dungeon, defend against raids, and attack your enemies!"},
-  {PlayerRole::ADVENTURER,
-   GuiFactory::TexId::ADVENTURER_CHOICE,
-   GuiFactory::TexId::ADVENTURER_HIGHLIGHT,
-   "adventurer",
-   "Play as an adventurer. Roam the land in search of adventures and loot!"},
-};
-
-static const char* getRoleText(NonRoleChoice c) {
-  switch (c) {
-    case NonRoleChoice::GO_BACK: return "Go back";
-    case NonRoleChoice::LOAD_GAME: return "Load game";
-    case NonRoleChoice::TUTORIAL: return "Tutorial";
-  }
-}
-
-SGuiElem WindowView::drawGameChoices(optional<PlayerRoleChoice>& choice, optional<PlayerRoleChoice>& index) {
-  vector<SGuiElem> choiceElems;
-  const Vec2 hintSize(500, 100);
-  for (auto& elem : gameChoices)
-    choiceElems.push_back(
-        gui.stack(makeVec(
-          gui.button([&] { choice = PlayerRoleChoice(elem.type);}),
-          gui.tooltip2(gui.preferredSize(hintSize, gui.miniWindow(gui.margins(
-              gui.labelMultiLine(elem.description, guiBuilder.getStandardLineHeight()), 20))),
-              [=](const Rectangle&) { return Vec2((renderer.getSize().x - hintSize.x) / 2, renderer.getSize().y * 4 / 5); }),
-          gui.mouseOverAction([&] { index = PlayerRoleChoice(elem.type);}),
-          gui.sprite(elem.texId, GuiFactory::Alignment::CENTER_STRETCHED),
-          gui.marginFit(gui.empty(), gui.centerHoriz(gui.mainMenuLabel(elem.name, -0.08,
-              Color::MAIN_MENU_OFF)), 0.94, gui.TOP),
-          gui.mouseHighlightGameChoice(gui.stack(
-            gui.sprite(elem.highlightId, GuiFactory::Alignment::CENTER_STRETCHED),
-          gui.marginFit(gui.empty(), gui.centerHoriz(gui.mainMenuLabel(elem.name, -0.08)),
-              0.94, gui.TOP)),
-            PlayerRoleChoice(elem.type), index)
-          )));
-  vector<SGuiElem> nonRoleChoices;
-  for (auto nonRoleChoice : ENUM_ALL(NonRoleChoice))
-    nonRoleChoices.push_back(
-        gui.stack(
-            gui.button([&choice, nonRoleChoice] { choice = PlayerRoleChoice(nonRoleChoice);}),
-            gui.mainMenuLabelBg(getRoleText(nonRoleChoice), 0.15),
-            gui.mouseHighlightGameChoice(gui.mainMenuLabel(getRoleText(nonRoleChoice), 0.15),
-                PlayerRoleChoice(nonRoleChoice), index))
-        );
-  return gui.verticalAspect(
-      gui.marginFit(
-      gui.horizontalListFit(std::move(choiceElems), 0),
-      gui.topMargin(30, gui.verticalListFit(nonRoleChoices, 0)),
-      0.65, gui.TOP), 0.6 * gameChoices.size());
-}
-
-PlayerRoleChoice WindowView::getPlayerRoleChoice(optional<PlayerRoleChoice> index) {
-  int numRoles = EnumInfo<PlayerRole>::size;
-  int numNonRoles = EnumInfo<NonRoleChoice>::size;
-  if (!useTiles) {
-    vector<ListElem> choices {ListElem("Choose your role:", ListElem::TITLE)};
-    for (auto role : ENUM_ALL(PlayerRole))
-      choices.emplace_back("Play as " + EnumInfo<PlayerRole>::getString(role));
-    for (auto nonRole : ENUM_ALL(NonRoleChoice))
-      choices.emplace_back(getRoleText(nonRole));
-    if (auto ind = chooseFromListInternal("", choices, 0, MenuType::MAIN, nullptr)) {
-      if (*ind < numRoles)
-        return PlayerRole(*ind);
-      else
-        return NonRoleChoice(*ind - numRoles);
-    } else
-      return NonRoleChoice::GO_BACK;
-  }
-  uiLock = true;
-  TempClockPause pause(clock);
-  SyncQueue<PlayerRoleChoice> returnQueue;
-  addReturnDialog<PlayerRoleChoice>(returnQueue, [&] ()-> PlayerRoleChoice {
-  optional<PlayerRoleChoice> choice;
-  SGuiElem stuff = drawGameChoices(choice, index);
-  while (1) {
-    refreshScreen(false);
-    stuff->setBounds(guiBuilder.getMenuPosition(MenuType::GAME_CHOICE, 0));
-    stuff->render(renderer);
-    renderer.drawAndClearBuffer();
-    Event event;
-    while (renderer.pollEvent(event)) {
-      propagateEvent(event, {stuff});
-      if (choice)
-        return *choice;
-      if (considerResizeEvent(event))
-        continue;
-      if (event.type == SDL::SDL_KEYDOWN)
-        switch (event.key.keysym.sym) {
-          case SDL::SDLK_KP_4:
-          case SDL::SDLK_LEFT:
-            if (!index)
-              index = PlayerRoleChoice((PlayerRole) 0);
-            else
-              index->match(
-                  [&] (PlayerRole role) {
-                    index = PlayerRoleChoice(PlayerRole(((int) role - 1 + numRoles) % numRoles));
-                  },
-                  [&] (NonRoleChoice) {
-                    index = PlayerRoleChoice(PlayerRole(0));
-                  }
-              );
-            break;
-          case SDL::SDLK_KP_6:
-          case SDL::SDLK_RIGHT: {
-            if (!index)
-              index = PlayerRoleChoice((PlayerRole) (numRoles - 1));
-            else
-              index->match(
-                  [&] (PlayerRole role) {
-                    index = PlayerRoleChoice(PlayerRole(((int) role + 1) % numRoles));
-                  },
-                  [&] (NonRoleChoice) {
-                    index = PlayerRoleChoice(PlayerRole(numRoles - 1));
-                  }
-              );
-            break;
-          }
-          case SDL::SDLK_KP_8:
-          case SDL::SDLK_UP:
-            if (!index)
-              index = PlayerRoleChoice((PlayerRole) 0);
-            else
-              index->match(
-                  [&] (PlayerRole) {
-                    index = PlayerRoleChoice(NonRoleChoice(numNonRoles - 1));
-                  },
-                  [&] (NonRoleChoice choice) {
-                    if ((int) choice == 0)
-                      index = PlayerRoleChoice(PlayerRole(0));
-                    else
-                      index = PlayerRoleChoice(NonRoleChoice((int) choice - 1));
-                  }
-              );
-            break;
-          case SDL::SDLK_KP_2:
-          case SDL::SDLK_DOWN:
-            if (!index)
-              index = PlayerRoleChoice((PlayerRole) 0);
-            else
-              index->match(
-                  [&] (PlayerRole role) {
-                    index = PlayerRoleChoice(NonRoleChoice(0));
-                  },
-                  [&] (NonRoleChoice choice) {
-                    if ((int) choice >= numNonRoles - 1)
-                      index = PlayerRoleChoice(PlayerRole(0));
-                    else
-                      index = PlayerRoleChoice(NonRoleChoice((int) choice + 1));
-                  }
-              );
-            break;
-          case SDL::SDLK_KP_5:
-          case SDL::SDLK_KP_ENTER:
-          case SDL::SDLK_RETURN:
-            if (index)
-              return *index;
-            break;
-          case SDL::SDLK_ESCAPE:
-            return PlayerRoleChoice(NonRoleChoice::GO_BACK);
-          default: break;
-        }
-    }
-  }
-  });
-  return returnQueue.pop();
 }
 
 optional<int> WindowView::chooseFromListInternal(const string& title, const vector<ListElem>& options,
@@ -1394,8 +1284,6 @@ void WindowView::propagateEvent(const Event& event, vector<SGuiElem> guiElems) {
 UserInputId getDirActionId(const SDL_Keysym& key) {
   if (GuiFactory::isCtrl(key))
     return UserInputId::TRAVEL;
-  if (GuiFactory::isAlt(key))
-    return UserInputId::FIRE;
   else
     return UserInputId::MOVE;
 }
@@ -1421,7 +1309,9 @@ void WindowView::keyboardAction(const SDL_Keysym& key) {
     case SDL::SDLK_F8:
       //renderer.startMonkey();
       renderer.loadTiles();
+      fxRenderer->loadTextures();
       gui.loadImages();
+      inputQueue.push(UserInputId::RELOAD_DATA);
       break;
     case SDL::SDLK_TAB:
       // TODO: put it under different shortcut?
@@ -1433,6 +1323,12 @@ void WindowView::keyboardAction(const SDL_Keysym& key) {
       presentList("", ListElem::convert(vector<string>(messageLog.begin(), messageLog.end())), true);
       break;
     case SDL::SDLK_z: zoom(0); break;
+    case SDL::SDLK_COMMA:
+      inputQueue.push(UserInputId::SCROLL_UP_STAIRS);
+       break;
+    case SDL::SDLK_PERIOD:
+      inputQueue.push(UserInputId::SCROLL_DOWN_STAIRS);
+       break;
     case SDL::SDLK_F2:
       if (!renderer.isMonkey()) {
         options->handle(this, OptionSet::GENERAL);

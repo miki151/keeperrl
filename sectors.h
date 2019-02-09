@@ -34,13 +34,14 @@ class Sectors {
   const ExtraConnections getExtraConnections() const;
 
   private:
+  using SectorId = short;
   vector<Vec2> getNeighbors(Vec2) const;
-  void setSector(Vec2, int);
-  int getNewSector();
-  void join(Vec2, int);
+  void setSector(Vec2, SectorId);
+  SectorId getNewSector();
+  void join(Vec2, SectorId);
   vector<Vec2> getDisjoint(Vec2) const;
   Rectangle bounds;
-  Table<int> sectors;
+  Table<SectorId> sectors;
   vector<int> sizes;
   ExtraConnections extraConnections;
 };

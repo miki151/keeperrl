@@ -12,10 +12,8 @@ struct FColor {
   FColor(const FColor &col, float a) : r(col.r), g(col.g), b(col.b), a(a) {}
   FColor(const FVec3 &rgb, float a = 1.0) : r(rgb[0]), g(rgb[1]), b(rgb[2]), a(a) {}
 
-  FColor(IColor);
   FColor(Color);
   explicit operator Color() const;
-  explicit operator IColor() const;
 
   FVec3 rgb() const { return {r, g, b}; }
 
@@ -30,19 +28,6 @@ struct FColor {
     };
     float v[4];
   };
-};
-
-// TODO: IColor is very similar to ::Color, but it doesn't require including renderer.h and SDL
-struct IColor {
-  IColor() : IColor(0, 0, 0, 0) {}
-  IColor(int r, int g, int b, int a = 255) : r(r), g(g), b(b), a(a) {} // TODO: clamp or not ?
-  IColor(Color);
-  explicit operator Color() const;
-
-  FVec3 rgb() const;
-  void setRGB(IColor);
-
-  unsigned char r, g, b, a;
 };
 
 FColor mulAlpha(FColor color, float alpha);

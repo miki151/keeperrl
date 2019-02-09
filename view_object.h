@@ -26,6 +26,7 @@
 #include "creature_status.h"
 #include "view_object_modifier.h"
 #include "fx_variant_name.h"
+#include "view_object_action.h"
 
 RICH_ENUM(ViewObjectAttribute, HEALTH, BURNING, WATER_DEPTH, LUXURY, MORALE);
 
@@ -79,10 +80,10 @@ class ViewObject {
   void setGenericId(GenericId);
   optional<GenericId> getGenericId() const;
 
-  void setClickAction(const string&);
-  const string& getClickAction() const;
-  void setExtendedActions(const vector<string>&);
-  const vector<string>& getExtendedActions() const;
+  void setClickAction(ViewObjectAction);
+  optional<ViewObjectAction> getClickAction() const;
+  void setExtendedActions(EnumSet<ViewObjectAction>);
+  const EnumSet<ViewObjectAction>& getExtendedActions() const;
 
   SERIALIZATION_DECL(ViewObject);
 
@@ -92,17 +93,17 @@ class ViewObject {
   const char* getDefaultDescription() const;
   EnumSet<Modifier> SERIAL(modifiers);
   EnumSet<CreatureStatus> SERIAL(status);
-  EnumMap<Attribute, optional<float>> SERIAL(attributes);
+  EnumMap<Attribute, float> SERIAL(attributes);
   ViewId SERIAL(resource_id);
   ViewLayer SERIAL(viewLayer);
-  optional<string> SERIAL(description);
+  string SERIAL(description);
   optional<Dir> SERIAL(attachmentDir);
-  optional<GenericId> SERIAL(genericId);
+  GenericId SERIAL(genericId);
   string SERIAL(goodAdjectives);
   string SERIAL(badAdjectives);
   optional<CreatureAttributes> SERIAL(creatureAttributes);
-  string SERIAL(clickAction);
-  vector<string> SERIAL(extendedActions);
+  optional<ViewObjectAction> SERIAL(clickAction);
+  EnumSet<ViewObjectAction> SERIAL(extendedActions);
   optional<uint8_t> SERIAL(portalVersion);
 
   class MovementQueue {
@@ -116,8 +117,9 @@ class ViewObject {
     private:
     int makeGoodIndex(int index) const;
     std::array<MovementInfo, 6> elems;
-    int index = 0;
-    int totalMoves = 0;
-  } movementQueue;
+    std::uint8_t index = 0;
+    std::uint8_t totalMoves = 0;
+  };
+  heap_optional<MovementQueue> movementQueue;
 };
 

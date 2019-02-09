@@ -6,7 +6,7 @@
 #include "furniture_factory.h"
 #include "inhabitants_info.h"
 
-enum class BuildingId { WOOD, MUD, BRICK, WOOD_CASTLE, DUNGEON, DUNGEON_SURFACE};
+enum class BuildingId { WOOD, MUD, BRICK, WOOD_CASTLE, DUNGEON, DUNGEON_SURFACE, RUINS};
 
 RICH_ENUM(BiomeId,
   GRASSLAND,
@@ -29,7 +29,7 @@ enum class SettlementType {
   COTTAGE,
   FORREST_COTTAGE,
   TOWER,
-  WITCH_HOUSE,
+  TEMPLE,
   MINETOWN,
   ANT_NEST,
   SMALL_MINETOWN,
@@ -56,7 +56,6 @@ struct SettlementInfo {
   vector<StairKey> downStairs;
   vector<StairKey> upStairs;
   vector<StockpileInfo> stockpiles;
-  optional<CreatureId> guardId;
   optional<ItemType> elderLoot;
   optional<ItemFactory> shopFactory;
   bool shopkeeperDead;
@@ -65,6 +64,9 @@ struct SettlementInfo {
   optional<FurnitureFactory> outsideFeatures;
   bool closeToPlayer;
   bool dontConnectCave;
+  bool dontBuildRoad;
+  bool anyPlayerDistance;
   int surroundWithResources;
   optional<FurnitureType> extraResources;
+  optional<int> cropsDistance;
 };

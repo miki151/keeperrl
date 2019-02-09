@@ -69,7 +69,6 @@ void FieldOfView::Visibility::setVisible(Rectangle bounds, int x, int y) {
 
 FieldOfView::Visibility::Visibility(Rectangle bounds, const Table<bool>& blocking, int x, int y) : px(x), py(y) {
   PROFILE;
-  memset(visible, 0, (2 * sightRange + 1) * (2 * sightRange + 1));
   calculate(2 * sightRange, 2 * sightRange,2 * sightRange, 2,-1,1,1,1,
       [&](int px, int py) { return blocking[Vec2(x + px, y + py)]; },
       [&](int px, int py) { setVisible(bounds, px, py); });

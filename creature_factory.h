@@ -25,210 +25,42 @@ class Tribe;
 class ItemType;
 class CreatureAttributes;
 class ControllerFactory;
-class Gender;
-
-RICH_ENUM(CreatureId,
-    KEEPER_MAGE,
-    KEEPER_MAGE_F,
-    KEEPER_KNIGHT,
-    KEEPER_KNIGHT_F,
-    ADVENTURER,
-    ADVENTURER_F,
-
-    GOBLIN, 
-    ORC,
-    ORC_SHAMAN,
-    HARPY,
-    SUCCUBUS,
-    DOPPLEGANGER,
-    BANDIT,
-
-    SPECIAL_BLBN,
-    SPECIAL_BLBW,
-    SPECIAL_BLGN,
-    SPECIAL_BLGW,
-    SPECIAL_BMBN,
-    SPECIAL_BMBW,
-    SPECIAL_BMGN,
-    SPECIAL_BMGW,
-    SPECIAL_HLBN,
-    SPECIAL_HLBW,
-    SPECIAL_HLGN,
-    SPECIAL_HLGW,
-    SPECIAL_HMBN,
-    SPECIAL_HMBW,
-    SPECIAL_HMGN,
-    SPECIAL_HMGW,
-
-    GHOST,
-    UNICORN,    
-    SPIRIT,
-    LOST_SOUL,
-    GREEN_DRAGON,
-    RED_DRAGON,
-    CYCLOPS,
-    DEMON_DWELLER,  
-    DEMON_LORD, 
-    MINOTAUR,
-    HYDRA,
-    SHELOB,
-    SPIDER_FOOD,
-    WITCH,
-    WITCHMAN,
-
-    CLAY_GOLEM,
-    STONE_GOLEM,
-    IRON_GOLEM,
-    LAVA_GOLEM,
-    ADA_GOLEM,
-    AUTOMATON,
-
-    FIRE_ELEMENTAL,
-    WATER_ELEMENTAL,
-    EARTH_ELEMENTAL,
-    AIR_ELEMENTAL,
-    ENT,
-    ANGEL,
-
-    ZOMBIE,
-    VAMPIRE,
-    VAMPIRE_LORD,
-    MUMMY,
-    SKELETON,
-    
-    GNOME,
-    GNOME_CHIEF,
-    DWARF,
-    DWARF_FEMALE,
-    DWARF_BARON,
-
-    KOBOLD,
-
-    IMP,
-    OGRE,
-    CHICKEN,
-
-    PRIEST,
-    KNIGHT,
-    JESTER,
-    AVATAR,
-    ARCHER,
-    PESEANT,
-    PESEANT_PRISONER,
-    CHILD,
-    SHAMAN,
-    WARRIOR,
-
-    LIZARDMAN,
-    LIZARDLORD,
-
-    ELEMENTALIST,
-    
-    ELF,
-    ELF_ARCHER,
-    ELF_CHILD,
-    ELF_LORD,
-    DARK_ELF,
-    DARK_ELF_WARRIOR,
-    DARK_ELF_CHILD,
-    DARK_ELF_LORD,
-    DRIAD,
-    HORSE,
-    COW,
-    PIG,
-    GOAT,
-    DONKEY,
-    
-    JACKAL,
-    DEER,
-    BOAR,
-    FOX,
-    RAVEN,
-    VULTURE,
-    WOLF,
-    WEREWOLF,
-    DOG,
-
-    DEATH,
-    FIRE_SPHERE,
-    KRAKEN,
-    BAT,
-    SNAKE,
-    CAVE_BEAR,
-    SPIDER,
-    FLY,
-    RAT,
-    SOFT_MONSTER,
-
-    ANT_WORKER,
-    ANT_SOLDIER,
-    ANT_QUEEN,
-
-    SOKOBAN_BOULDER,
-    HALLOWEEN_KID
-);
+class NameGenerator;
+class GameConfig;
+class CreatureInventory;
 
 class CreatureFactory {
   public:
-  static CreatureFactory singleCreature(TribeId, CreatureId);
-
-  static PCreature fromId(CreatureId, TribeId, const MonsterAIFactory&);
-  static PCreature fromId(CreatureId, TribeId, const MonsterAIFactory&, const vector<ItemType>& inventory);
-  static PCreature fromId(CreatureId, TribeId);
-  static CreatureFactory splashHeroes(TribeId);
-  static CreatureFactory splashLeader(TribeId);
-  static CreatureFactory splashMonsters(TribeId);
-  static CreatureFactory forrest(TribeId);
-  static CreatureFactory singleType(TribeId, CreatureId);
-  static CreatureFactory lavaCreatures(TribeId tribe);
-  static CreatureFactory waterCreatures(TribeId tribe);
-  static CreatureFactory elementals(TribeId tribe);
-  static CreatureFactory gnomishMines(TribeId peaceful, TribeId enemy, int level);
-  
-  PCreature random(const MonsterAIFactory&);
-  PCreature random();
-
-  CreatureFactory& increaseBaseLevel(ExperienceType, int);
-  CreatureFactory& increaseLevel(ExperienceType, int);
-  CreatureFactory& increaseLevel(EnumMap<ExperienceType, int>);
-  CreatureFactory& addInventory(vector<ItemType>);
-
-  static PCreature getShopkeeper(Rectangle shopArea, TribeId);
+  PCreature fromId(CreatureId, TribeId, const MonsterAIFactory&) const;
+  PCreature fromId(CreatureId, TribeId, const MonsterAIFactory&, const vector<ItemType>& inventory) const;
+  PCreature fromId(CreatureId, TribeId) const;
+  static PController getShopkeeper(Rectangle shopArea, Creature*);
   static PCreature getRollingBoulder(TribeId, Vec2 direction);
-  static PCreature getGhost(WCreature);
-  static PCreature getIllusion(WCreature);
+  static PCreature getHumanForTests();
+  PCreature getGhost(Creature*) const;
+  static PCreature getIllusion(Creature*);
 
-  static void addInventory(WCreature, const vector<ItemType>& items);
   static CreatureAttributes getKrakenAttributes(ViewId, const char* name);
-  static ViewId getViewId(CreatureId);
-  static const Gender& getGender(CreatureId);
+  ViewId getViewId(CreatureId) const;
+  const Gender& getGender(CreatureId);
 
+  NameGenerator* getNameGenerator() const;
+
+  CreatureFactory(NameGenerator*, const GameConfig*);
   ~CreatureFactory();
-  CreatureFactory& operator = (const CreatureFactory&);
-  CreatureFactory(const CreatureFactory&);
-
-  SERIALIZATION_DECL(CreatureFactory)
 
   private:
-  CreatureFactory(TribeId tribe, const vector<CreatureId>& creatures, const vector<double>& weights,
-      const vector<CreatureId>& unique = {}, EnumMap<CreatureId, optional<TribeId>> overrides = {});
-  CreatureFactory(const vector<tuple<CreatureId, double, TribeId>>& creatures,
-      const vector<CreatureId>& unique = {});
-  static void initSplash(TribeId);
+  void initSplash(TribeId);
   static PCreature getSokobanBoulder(TribeId);
-  static PCreature getSpecial(TribeId, bool humanoid, bool large, bool living, bool wings, const ControllerFactory&);
-  static PCreature get(CreatureId, TribeId, MonsterAIFactory);
+  PCreature getSpecial(TribeId, bool humanoid, bool large, bool living, bool wings, const ControllerFactory&) const;
+  PCreature get(CreatureId, TribeId, MonsterAIFactory) const;
   static PCreature get(CreatureAttributes, TribeId, const ControllerFactory&);
-  static CreatureAttributes getAttributesFromId(CreatureId);
-  static CreatureAttributes getAttributes(CreatureId);
-
-  TribeId getTribeFor(CreatureId);
-  optional<TribeId> SERIAL(tribe);
-  vector<CreatureId> SERIAL(creatures);
-  vector<double> SERIAL(weights);
-  vector<CreatureId> SERIAL(unique);
-  EnumMap<CreatureId, optional<TribeId>> SERIAL(tribeOverrides);
-  EnumMap<ExperienceType, int> SERIAL(baseLevelIncrease);
-  EnumMap<ExperienceType, int> SERIAL(levelIncrease);
-  vector<ItemType> SERIAL(inventory);
+  CreatureAttributes getAttributesFromId(CreatureId) const;
+  CreatureAttributes getAttributes(CreatureId) const;
+  mutable map<CreatureId, ViewId> idMap;
+  NameGenerator* nameGenerator;
+  map<CreatureId, CreatureAttributes> attributes;
+  map<CreatureId, CreatureInventory> inventory;
+  vector<ItemType> getDefaultInventory(CreatureId) const;
+  static void addInventory(Creature*, const vector<ItemType>& items);
 };

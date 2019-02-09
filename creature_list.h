@@ -15,16 +15,17 @@ struct CreatureList {
   CreatureList& operator = (const CreatureList&);
   CreatureList& operator = (CreatureList&&);
   CreatureList(int count, CreatureId);
+  explicit CreatureList(CreatureId);
   CreatureList(int count, vector<CreatureId>);
   CreatureList(int count, vector<pair<int, CreatureId>>);
   CreatureList& addUnique(CreatureId);
   CreatureList& increaseBaseLevel(EnumMap<ExperienceType, int>);
   CreatureList& addInventory(vector<ItemType>);
 
-  string getSummary() const;
+  string getSummary(const CreatureFactory* factory) const;
 
-  ViewId getViewId() const;
-  vector<PCreature> generate(RandomGen&, TribeId, MonsterAIFactory) const;
+  ViewId getViewId(const CreatureFactory*) const;
+  vector<PCreature> generate(RandomGen&, const CreatureFactory*, TribeId, MonsterAIFactory) const;
 
   template<typename Archive>
   void serialize(Archive&, const unsigned int);

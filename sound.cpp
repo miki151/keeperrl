@@ -5,7 +5,7 @@
 Sound::Sound(SoundId i) : id(i) {
 }
 
-SERIALIZE_DEF(Sound, id, position, pitch)
+SERIALIZE_DEF(Sound, id, pitch)
 SERIALIZATION_CONSTRUCTOR_IMPL(Sound)
 
 Sound& Sound::setPosition(const Position& p) {
@@ -29,3 +29,6 @@ const optional<Position>& Sound::getPosition() const {
 double Sound::getPitch() const {
   return pitch;
 }
+
+#include "pretty_archive.h"
+template void Sound::serialize(PrettyInputArchive&, unsigned);

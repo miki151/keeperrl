@@ -14,6 +14,8 @@ using fwk::print;
 
 #else
 
+#define PARANOID_CHECKS
+
 #include "debug.h"
 #include <vector>
 
@@ -22,11 +24,16 @@ template <class T> using vector = std::vector<T>;
 }
 
 #ifndef DASSERT // It can only be defined in fx_tester
+
 #define DASSERT CHECK
 #define ASSERT CHECK
+#if defined(PARANOID_CHECKS) && !defined(NDEBUG)
 #define PASSERT CHECK
+#else
+#define PASSERT(...)
 #endif
 
+#endif
 #endif
 
 namespace fx {
@@ -54,7 +61,6 @@ using IRect = Rect<IVec2>;
 using FRect = Rect<FVec2>;
 
 struct FColor;
-struct IColor;
 
 template <class T> struct Curve;
 

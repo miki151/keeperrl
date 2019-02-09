@@ -9,29 +9,31 @@
 SERIALIZE_DEF(Zones, positions, zones)
 SERIALIZATION_CONSTRUCTOR_IMPL(Zones)
 
-Zones::Zones(Rectangle bounds) : zones(bounds) {
-}
-
 bool Zones::isZone(Position pos, ZoneId id) const {
   //PROFILE;
-  return zones[pos.getCoord()].contains(id);
+  if (auto z = zones.getReferenceMaybe(pos))
+    if (z->contains(id))
+      return true;
+  return false;
 }
 
 bool Zones::isAnyZone(Position pos, EnumSet<ZoneId> id) const {
   //PROFILE;
-  return !zones[pos.getCoord()].intersection(id).isEmpty();
+  if (auto z = zones.getReferenceMaybe(pos))
+    return !z->intersection(id).isEmpty();
+  return false;
 }
 
 void Zones::setZone(Position pos, ZoneId id) {
   PROFILE;
-  zones[pos.getCoord()].insert(id);
+  zones.getOrInit(pos).insert(id);
   positions[id].insert(pos);
   pos.setNeedsRenderUpdate(true);
 }
 
 void Zones::eraseZone(Position pos, ZoneId id) {
   PROFILE;
-  zones[pos.getCoord()].erase(id);
+  zones.getOrInit(pos).erase(id);
   positions[id].erase(pos);
   pos.setNeedsRenderUpdate(true);
 }
@@ -68,6 +70,8 @@ static HighlightType getHighlight(ZoneId id) {
       return HighlightType::QUARTERS2;
     case ZoneId::QUARTERS3:
       return HighlightType::QUARTERS3;
+    case ZoneId::LEISURE:
+      return HighlightType::LEISURE;
   }
 }
 
@@ -86,6 +90,7 @@ bool Zones::canSet(Position pos, ZoneId id, WConstCollective col) const {
     case ZoneId::QUARTERS1:
     case ZoneId::QUARTERS2:
     case ZoneId::QUARTERS3:
+    case ZoneId::LEISURE:
       return col->getTerritory().contains(pos);
     default:
       return true;
@@ -97,4 +102,24 @@ void Zones::tick() {
   for (auto pos : copyOf(positions[ZoneId::FETCH_ITEMS]))
     if (pos.getItems().empty())
       eraseZone(pos, ZoneId::FETCH_ITEMS);
+}
+
+ViewId getViewId(ZoneId id) {
+  switch (id) {
+    case ZoneId::QUARTERS1:
+      return ViewId::QUARTERS1;
+    case ZoneId::QUARTERS2:
+      return ViewId::QUARTERS2;
+    case ZoneId::QUARTERS3:
+      return ViewId::QUARTERS3;
+    case ZoneId::LEISURE:
+      return ViewId::LEISURE;
+    case ZoneId::FETCH_ITEMS:
+    case ZoneId::PERMANENT_FETCH_ITEMS:
+      return ViewId::FETCH_ICON;
+    case ZoneId::STORAGE_EQUIPMENT:
+      return ViewId::STORAGE_EQUIPMENT;
+    case ZoneId::STORAGE_RESOURCES:
+      return ViewId::STORAGE_RESOURCES;
+  }
 }

@@ -76,7 +76,7 @@ T lambdaConstruct(Fun fun) {
 
 #define LIST(...) {__VA_ARGS__}
 
-typedef function<bool(WConstItem)> ItemPredicate;
+typedef function<bool(const Item*)> ItemPredicate;
 
 template<class T>
 vector<T*> extractRefs(vector<unique_ptr<T>>& v) {
@@ -179,7 +179,7 @@ class Vec2 {
   HASH_ALL(x, y);
 };
 
-extern string toString(const Vec2& v);
+extern string toString(const Vec2&);
 
 class Range {
   public:
@@ -196,6 +196,9 @@ class Range {
   int getLength() const;
   bool contains(int) const;
   bool intersects(Range) const;
+  Range intersection(Range) const;
+
+  bool operator == (const Range&) const;
 
   class Iter {
     public:
@@ -224,6 +227,8 @@ class Range {
   int SERIAL(finish) = 0; // HASH(finish)
   int SERIAL(increment) = 1; // HASH(increment)
 };
+
+extern string toString(const Range&);
 
 class Rectangle {
   public:
@@ -315,11 +320,14 @@ template<typename T>
 class EnumInfo {
 };
 
-#define RICH_ENUM(Name, ...) \
-enum class Name { __VA_ARGS__ };\
+#define RICH_ENUM2(Type, Name, ...) \
+enum class Name : Type { __VA_ARGS__ };\
 template<> \
 class EnumInfo<Name> { \
   public:\
+  static const char* getName() {\
+    return #Name;\
+  }\
   static string getString(Name e) {\
     static vector<string> names = split(#__VA_ARGS__, {' ', ','}).filter([](const string& s){ return !s.empty(); });\
     return names[int(e)];\
@@ -345,6 +353,7 @@ class EnumInfo<Name> { \
     return none;\
   }\
 }
+#define RICH_ENUM(Name, ...) RICH_ENUM2(int, Name, __VA_ARGS__)
 
 template <class T>
 class EnumAll {
@@ -460,21 +469,21 @@ class EnumMap {
     return combineHashIter(elems.begin(), elems.end());
   }
 
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
-    vector<U> SERIAL(tmp);
-    for (int i : All(elems))
-      tmp.push_back(std::move(elems[i]));
-    ar(tmp);
-    if (tmp.size() > elems.size())
-      throw ::cereal::Exception("EnumMap larger than legal enum range");
-    for (int i : All(tmp))
-      elems[i] = std::move(tmp[i]);
-  }
-
   private:
   std::array<U, EnumInfo<T>::size> elems;
 };
+
+template <class Archive, typename Enum, typename U>
+void serialize(Archive& ar, EnumMap<Enum, U>& m) {
+  vector<U> SERIAL(tmp);
+  for (auto e : ENUM_ALL(Enum))
+    tmp.push_back(std::move(m[e]));
+  ar(tmp);
+  if (tmp.size() > EnumInfo<Enum>::size)
+    throw ::cereal::Exception("EnumMap larger than legal enum range");
+  for (int i : All(tmp))
+    m[Enum(i)] = std::move(tmp[i]);
+}
 
 template<class T>
 class EnumSet {
@@ -644,8 +653,12 @@ class RandomGen {
   int get(const vector<double>& weights);
   double getDouble();
   double getDouble(double a, double b);
+  pair<float, float> getFloat2Fast();
+  float getFloat(float a, float b);
+  float getFloatFast(float a, float b);
   bool roll(int chance);
   bool chance(double chance);
+  bool chance(float chance);
   template <typename T>
   T choose(const vector<T>& v, const vector<double>& p) {
     CHECK(v.size() == p.size());
@@ -691,11 +704,6 @@ class RandomGen {
     for (int i : Range(get(set.getSize())))
       ++it;
     return *it;
-  }
-
-  template <typename T, typename... Args>
-  const T& choose(T const& first, T const& second, const Args&... rest) {
-    return chooseImpl(first, 2, second, rest...);
   }
 
   template <typename T>
@@ -777,19 +785,23 @@ class RandomGen {
     return chooseN(n, vector<T>(v));
   }
 
+  template <typename T, typename... Args>
+  T&& choose(T&& first, T&& second, Args&&... rest) {
+    return chooseImpl(std::forward<T>(first), 2, std::forward<T>(second), std::forward<Args>(rest)...);
+  }
+
   private:
   default_random_engine generator;
   std::uniform_real_distribution<double> defaultDist;
 
   template <typename T>
-  const T& chooseImpl(T const& cur, int total) {
-    return cur;
+  T&& chooseImpl(T&& cur, int total) {
+    return std::forward<T>(cur);
   }
 
   template <typename T, typename... Args>
-  const T& chooseImpl(T const& chosen, int total,  T const& next, const Args&... rest) {
-    const T& nextChosen = roll(total) ? next : chosen;
-    return chooseImpl(nextChosen, total + 1, rest...);
+  T&& chooseImpl(T&& chosen, int total,  T&& next, Args&&... rest) {
+    return chooseImpl(roll(total) ? std::forward<T>(next) : std::forward<T>(chosen), total + 1, std::forward<Args>(rest)...);
   }
 };
 
@@ -810,10 +822,12 @@ class Table {
       mem[i] = t.mem[i];
   }
 
-  Table(int x, int y, int w, int h) : bounds(x, y, x + w, y + h), mem(new T[w * h]) {
+  Table(int x, int y, int w, int h) : Table(Rectangle(x, y, x + w, y + h)) {
   }
 
   Table(const Rectangle& rect) : bounds(rect), mem(new T[rect.w * rect.h]){
+    for (int i : Range(bounds.w * bounds.h))
+      mem[i] = T();
   }
 
   Table(const Rectangle& rect, const T& value) : Table(rect) {
@@ -1147,63 +1161,60 @@ template <class T>
 class MustInitialize {
   public:
   MustInitialize(const MustInitialize& o) : elem(o.elem) {
-    CHECK(!elem.empty()) << "Element not initialized";
+    CHECK(!!elem) << "Element not initialized";
   }
 
   MustInitialize() {}
 
   T& operator = (const T& t) {
-    if (!elem.empty())
-      elem.pop();
-    CHECK(elem.empty());
-    elem.push(t);
-    return elem.front();
+    elem = t;
+    return *elem;
   }
 
   T& operator += (const T& t) {
-    CHECK(!elem.empty()) << "Element not initialized";
-    return elem.front() += t;
+    CHECK(!!elem) << "Element not initialized";
+    return *elem += t;
   }
 
   T& operator -= (const T& t) {
-    CHECK(!elem.empty()) << "Element not initialized";
-    return elem.front() -= t;
+    CHECK(!!elem) << "Element not initialized";
+    return *elem -= t;
   }
 
   T* operator -> () {
-    CHECK(!elem.empty());
-    return &elem.front();
+    CHECK(!!elem) << "Element not initialized";
+    return &*elem;
   }
 
   const T* operator -> () const {
-    CHECK(!elem.empty()) << "Element not initialized";
-    return &elem.front();
+    CHECK(!!elem) << "Element not initialized";
+    return &*elem;
   }
 
   bool operator == (const T& t) const {
-    CHECK(!elem.empty()) << "Element not initialized";
-    return elem.front() == t;
+    CHECK(!!elem) << "Element not initialized";
+    return *elem == t;
   }
 
   bool operator != (const T& t) const {
-    CHECK(!elem.empty()) << "Element not initialized";
-    return elem.front() != t;
+    CHECK(!!elem) << "Element not initialized";
+    return *elem != t;
   }
 
   T& operator * () {
-    CHECK(!elem.empty()) << "Element not initialized";
-    return elem.front();
+    CHECK(!!elem) << "Element not initialized";
+    return *elem;
   }
 
   const T& operator * () const {
-    CHECK(!elem.empty()) << "Element not initialized";
-    return elem.front();
+    CHECK(!!elem) << "Element not initialized";
+    return *elem;
   }
 
   SERIALIZE_ALL(elem);
 
   private:
-  queue<T> SERIAL(elem);
+  optional<T> SERIAL(elem);
 };
 
 template<class T>
@@ -1430,55 +1441,77 @@ class HeapAllocated {
 };
 
 template <class T>
-class HeapAllocated<optional<T>> {
+class heap_optional {
   public:
-  HeapAllocated() : elem(new optional<T>()) {}
+  heap_optional() {}
 
-  template <typename... Args>
-  HeapAllocated(Args... a) : elem(new optional<T>(a...)) {}
+  heap_optional(T&& o) : elem(new T(std::move(o))) {}
 
-  HeapAllocated(T&& o) : elem(new optional<T>(std::move(o))) {}
+  heap_optional(optional<T>&& o) : elem(o ? new T(std::move(*o)) : nullptr) {}
+  heap_optional(const optional<T>& o) : elem(o ? new T(*o) : nullptr) {}
 
-  HeapAllocated(const HeapAllocated& o) : elem(new optional<T>(*o.elem)) {}
+  heap_optional(const heap_optional& o) : elem(o.elem ? new T(*o.elem) : nullptr) {}
+  heap_optional(heap_optional&& o) : elem(std::move(o.elem)) {}
 
   T* operator -> () {
-    return &(**elem);
+    return elem.get();
   }
 
   const T* operator -> () const {
-    return &(**elem);
+    return elem.get();
   }
 
-  optional<T>& operator * () {
+  T& operator * () {
     return *elem;
   }
 
-  const optional<T>& operator * () const {
+  const T& operator * () const {
     return *elem;
   }
 
   explicit operator bool () const {
-    return !!elem && !!(*elem);
+    return !!elem;
   }
 
   void reset(T&& t) {
-    elem.reset(new optional<T>(std::move(t)));
+    elem.reset(new T(std::move(t)));
   }
 
-  HeapAllocated& operator = (const HeapAllocated& t) {
-    *elem.get() = *t;
+  void clear() {
+    elem.reset();
+  }
+
+  heap_optional& operator = (const T& t) {
+    elem = unique<T>(t);
     return *this;
   }
 
-  HeapAllocated& operator = (HeapAllocated&& t) {
-    elem = std::move(t.elem);
+  heap_optional& operator = (T&& t) {
+    elem = unique<T>(std::move(t));
+    return *this;
+  }
+
+  heap_optional& operator = (const heap_optional& t) {
+    if (t.elem)
+      elem = unique<T>(*t.elem);
+    return *this;
+  }
+
+  heap_optional& operator = (heap_optional&& t) {
+    if (t.elem)
+      elem = std::move(t.elem);
+    return *this;
+  }
+
+  heap_optional& operator = (none_t) {
+    clear();
     return *this;
   }
 
   SERIALIZE_ALL(elem)
 
   private:
-  unique_ptr<optional<T>> SERIAL(elem);
+  unique_ptr<T> SERIAL(elem);
 };
 
 class Semaphore {
@@ -1549,22 +1582,22 @@ class AsyncLoop {
 };
 
 template <typename T, typename... Args>
-function<void(Args...)> bindMethod(void (T::*ptr) (Args...), T* t) {
+auto bindMethod(void (T::*ptr) (Args...), T* t) {
   return [=](Args... a) { (t->*ptr)(a...);};
 }
 
 template <typename Ret, typename T, typename... Args>
-function<Ret(Args...)> bindMethod(Ret (T::*ptr) (Args...), T* t) {
+auto bindMethod(Ret (T::*ptr) (Args...), T* t) {
   return [=](Args... a) { return (t->*ptr)(a...);};
 }
 
 template <typename... Args>
-function<void(Args...)> bindFunction(void (*ptr) (Args...)) {
+auto bindFunction(void (*ptr) (Args...)) {
   return [=](Args... a) { (*ptr)(a...);};
 }
 
 template <typename Ret, typename... Args>
-function<Ret(Args...)> bindFunction(Ret (*ptr) (Args...)) {
+auto bindFunction(Ret (*ptr) (Args...)) {
   return [=](Args... a) { return (*ptr)(a...);};
 }
 
@@ -1624,22 +1657,33 @@ extern int getSize(const string&);
 extern const char* getString(const string&);
 
 
-template <const char* getNames(), typename... Types>
+template <const char* getNames(bool), typename... Types>
 class NamedVariant : public variant<Types...> {
   public:
   using variant<Types...>::variant;
-  const char* getName() {
+  const char* getName() const {
     return getName(this->index());
   }
+  static const char* getVariantName() {
+    return getNames(false);
+  }
   static const char* getName(int num) {
-    static const auto names = split(getNames(), {' ', ','}).filter([](const string& s){ return !s.empty(); });
+    static const auto names = split(getNames(true), {' ', ','}).filter([](const string& s){ return !s.empty(); });
     return names[num].c_str();
   }
 };
 
 #define MAKE_VARIANT(NAME, ...)\
-constexpr static inline const char* get##NAME##Names() { return #__VA_ARGS__;}\
-using NAME = NamedVariant<get##NAME##Names, __VA_ARGS__>
+constexpr static inline const char* get##NAME##Names(bool b) { if (b) return #__VA_ARGS__; else return #NAME;}\
+using NAME = NamedVariant<get##NAME##Names, __VA_ARGS__>;\
+using NAME##_impl = variant<__VA_ARGS__>
+
+#define MAKE_VARIANT2(NAME, ...)\
+constexpr inline const char* get##NAME##Names(bool b) { if (b) return #__VA_ARGS__; else return #NAME;}\
+class NAME : public NamedVariant<get##NAME##Names, __VA_ARGS__> { \
+  using NamedVariant::NamedVariant;\
+};\
+using NAME##_impl = variant<__VA_ARGS__>
 
 
 #define COMPARE_ALL(...) \

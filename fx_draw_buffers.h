@@ -11,7 +11,9 @@ struct DrawBuffers {
     TextureName texName;
   };
 
-  void fill(const vector<DrawParticle>&);
+  void clear();
+  // TODO: span would be useful
+  void add(const DrawParticle*, int count);
   bool empty() const {
     return elements.empty();
   }
@@ -19,6 +21,8 @@ struct DrawBuffers {
   vector<FVec2> positions;
   vector<FVec2> texCoords;
   vector<unsigned int> colors;
+
+  // TODO: group elements by TextureName
   vector<Element> elements;
 };
 }

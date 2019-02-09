@@ -13,10 +13,11 @@
 #include "unknown_locations.h"
 #include "team_order.h"
 #include "collective_teams.h"
+#include "view_object_action.h"
 
 class MinionController : public Player {
   public:
-  MinionController(WCreature c, SMapMemory memory, WPlayerControl ctrl, SMessageBuffer messages,
+  MinionController(Creature* c, SMapMemory memory, WPlayerControl ctrl, SMessageBuffer messages,
                    SVisibilityMap visibilityMap, SUnknownLocations locations, STutorial tutorial)
       : Player(c, false, memory, messages, visibilityMap, locations, tutorial), control(ctrl) {}
 
@@ -27,12 +28,12 @@ class MinionController : public Player {
     return concat(Player::getCommands(), {
       {PlayerInfo::CommandInfo{"Absorb", 'a',
           "Absorb a friendly creature and inherit its attributes. Requires the absorbtion skill.",
-          creature->getAttributes().getSkills().hasDiscrete(SkillId::CONSUMPTION)},
+          creature->isAffected(LastingEffect::CONSUMPTION_SKILL)},
        [] (Player* player) { dynamic_cast<MinionController*>(player)->consumeAction();}, false},
     });
   }
 
-  virtual vector<TeamMemberAction> getTeamMemberActions(WConstCreature member) const {
+  virtual vector<TeamMemberAction> getTeamMemberActions(const Creature* member) const {
     vector<TeamMemberAction> ret;
     if (getGame()->getPlayerCreatures().size() == 1 && member != creature)
       ret.push_back(TeamMemberAction::CHANGE_LEADER);
@@ -57,10 +58,11 @@ class MinionController : public Player {
       info.teamOrders.reset();
   }
 
-  virtual vector<OtherCreatureCommand> getOtherCreatureCommands(WCreature c) const override {
+  virtual vector<OtherCreatureCommand> getOtherCreatureCommands(Creature* c) const override {
     vector<OtherCreatureCommand> ret = Player::getOtherCreatureCommands(c);
     if (control->isEnemy(c) && c->canBeCaptured())
-      ret.push_back({2, c->isCaptureOrdered() ? "Cancel capture order" : "Order capture", true,
+      ret.push_back({2, c->isCaptureOrdered() ?
+          ViewObjectAction::CANCEL_CAPTURE_ORDER : ViewObjectAction::ORDER_CAPTURE, true,
           [c](Player*) { c->toggleCaptureOrder();}});
     if (getTeam().contains(c)) {
       for (auto& action : getTeamMemberActions(c))
@@ -69,7 +71,7 @@ class MinionController : public Player {
     }
     else if (control->collective->getCreatures().contains(c) && control->canControlInTeam(c) &&
         control->canControlInTeam(creature))
-      ret.push_back({10, "Add to team", false, [c](Player* player) {
+      ret.push_back({10, ViewObjectAction::ADD_TO_TEAM, false, [c](Player* player) {
           (dynamic_cast<MinionController*>(player))->control->addToCurrentTeam(c);}});
     return ret;
   }
@@ -101,8 +103,8 @@ class MinionController : public Player {
   }
 
   void consumeAction() {
-    vector<WCreature> targets = control->getConsumptionTargets(creature);
-    vector<WCreature> actions;
+    vector<Creature*> targets = control->getConsumptionTargets(creature);
+    vector<Creature*> actions;
     for (auto target : targets)
       if (auto action = creature->consume(target))
         actions.push_back(target);
@@ -113,7 +115,7 @@ class MinionController : public Player {
       auto dir = chooseDirection("Which direction?");
       if (!dir)
         return;
-      if (WCreature c = creature->getPosition().plus(*dir).getCreature())
+      if (Creature* c = creature->getPosition().plus(*dir).getCreature())
         if (targets.contains(c) && getView()->yesOrNoPrompt("Really absorb " + c->getName().the() + "?"))
           tryToPerform(creature->consume(c));
     }
@@ -139,7 +141,7 @@ class MinionController : public Player {
     unpossess();
   }
 
-  virtual vector<WCreature> getTeam() const override {
+  virtual vector<Creature*> getTeam() const override {
     return control->getTeam(creature);
   }
 
@@ -161,13 +163,13 @@ class MinionController : public Player {
   SERIALIZATION_CONSTRUCTOR(MinionController)
 
   private:
-  WPlayerControl SERIAL(control);
+  WPlayerControl SERIAL(control) = nullptr;
 };
 
 REGISTER_TYPE(MinionController)
 
 
-PController getMinionController(WCreature c, SMapMemory m, WPlayerControl ctrl, SMessageBuffer buf, SVisibilityMap v,
+PController getMinionController(Creature* c, SMapMemory m, WPlayerControl ctrl, SMessageBuffer buf, SVisibilityMap v,
     SUnknownLocations l, STutorial t) {
   return makeOwner<MinionController>(c, m, ctrl, buf, v, l, t);
 }

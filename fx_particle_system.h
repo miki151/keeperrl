@@ -2,10 +2,13 @@
 
 #include "fx_base.h"
 #include "fx_color.h"
+#include "color.h"
 #include "util.h"
 #include <limits.h>
 
 namespace fx {
+
+using uint=std::uint32_t;
 
 struct SystemParams {
   static constexpr int maxScalars = 2, maxColors = 2;
@@ -38,11 +41,14 @@ struct SnapshotKey {
 
 // Initial configuration of spawned particle system
 struct InitConfig {
-  InitConfig(FVec2 pos = {}, FVec2 targetOffset = {}) : pos(pos), targetOffset(targetOffset) {}
-  InitConfig(FVec2 pos, SnapshotKey key) : pos(pos), snapshotKey(key) {}
+  InitConfig(FVec2 pos = {}, FVec2 targetOffset = {}, Color color = Color(255, 255, 255, 0))
+      : pos(pos), targetOffset(targetOffset), color(color) {}
+  InitConfig(FVec2 pos, SnapshotKey key, Color color) : pos(pos), snapshotKey(key), color(color) {}
 
   FVec2 pos, targetOffset;
   optional<SnapshotKey> snapshotKey;
+  Color color;
+  bool orderedDraw = false;
 };
 
 // Identifies a particluar particle system instance
@@ -70,16 +76,19 @@ struct Particle {
   FVec2 pos, movement, size = FVec2(1.0);
   float life = 0.0f, maxLife = 1.0f;
   float rot = 0.0f, rotSpeed = 0.0f;
+  float temp = 0.0f;
   SVec2 texTile;
   uint randomSeed;
 };
 
 struct DrawParticle {
+  bool isReasonable() const;
+
   // TODO: compress it somehow?
   std::array<FVec2, 4> positions;
   std::array<FVec2, 4> texCoords;
-  IColor color;
-  TextureName texName;
+  Color color;
+  TextureName texName = TextureName(0);
 };
 
 struct ParticleSystem {
@@ -113,10 +122,12 @@ struct ParticleSystem {
 
   FXName defId;
   uint spawnTime;
+  Color color;
 
   float animTime = 0.0f;
   bool isDead = false;
   bool isDying = false;
+  bool orderedDraw = false;
 };
 
 struct SubSystemContext {

@@ -20,13 +20,14 @@ enum class FurnitureUsageType {
   ARCHERY_RANGE,
   STUDY,
   PORTAL,
-  SIT_ON_THRONE
+  SIT_ON_THRONE,
+  DESECRATE
 };
 
 class FurnitureUsage {
   public:
-  static void handle(FurnitureUsageType, Position, WConstFurniture, WCreature);
-  static bool canHandle(FurnitureUsageType, WConstCreature);
+  static void handle(FurnitureUsageType, Position, WConstFurniture, Creature*);
+  static bool canHandle(FurnitureUsageType, const Creature*);
   static string getUsageQuestion(FurnitureUsageType, string furnitureName);
   static void beforeRemoved(FurnitureUsageType, Position);
 };

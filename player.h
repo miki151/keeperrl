@@ -40,7 +40,7 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   public:
   virtual ~Player() override;
 
-  Player(WCreature, bool adventurer, SMapMemory, SMessageBuffer, SVisibilityMap, SUnknownLocations,
+  Player(Creature*, bool adventurer, SMapMemory, SMessageBuffer, SVisibilityMap, SUnknownLocations,
       STutorial = nullptr);
 
   void onEvent(const GameEvent&);
@@ -63,7 +63,7 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   virtual const vector<Vec2>& getUnknownLocations(WConstLevel) const override;
 
   // from Controller
-  virtual void onKilled(WConstCreature attacker) override;
+  virtual void onKilled(const Creature* attacker) override;
   virtual void makeMove() override;
   virtual void sleeping() override;
   virtual bool isPlayer() const override;
@@ -80,20 +80,21 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   };
   virtual vector<CommandInfo> getCommands() const;
   virtual void onFellAsleep();
-  virtual vector<WCreature> getTeam() const;
+  virtual vector<Creature*> getTeam() const;
   virtual bool isTravelEnabled() const;
   virtual bool handleUserInput(UserInput);
   virtual void updateUnknownLocations();
 
   struct OtherCreatureCommand {
     int priority;
-    string name;
+    ViewObjectAction name;
     bool allowAuto;
     function<void(Player*)> perform;
   };
-  virtual vector<OtherCreatureCommand> getOtherCreatureCommands(WCreature) const;
+  virtual vector<OtherCreatureCommand> getOtherCreatureCommands(Creature*) const;
 
   optional<Vec2> chooseDirection(const string& question);
+  optional<Position> chooseTarget(Table<PassableInfo>, const string& question);
 
   SMapMemory SERIAL(levelMemory);
   void showHistory();
@@ -109,8 +110,8 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   void creatureClickAction(Position, bool extended);
   void pickUpItemAction(int item, bool multi = false);
   void equipmentAction();
-  void applyItem(vector<WItem> item);
-  void throwItem(vector<WItem> item, optional<Vec2> dir = none);
+  void applyItem(vector<Item*> item);
+  void throwItem(Item* item, optional<Position> target = none);
   void takeOffAction();
   void hideAction();
   void displayInventory();
@@ -120,17 +121,16 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   void travelAction();
   void targetAction();
   void payForAllItemsAction();
-  void payForItemAction(const vector<WItem>&);
+  void payForItemAction(const vector<Item*>&);
   void chatAction(optional<Vec2> dir = none);
-  void giveAction(vector<WItem>);
+  void giveAction(vector<Item*>);
   void spellAction(SpellId);
   void fireAction();
-  void fireAction(Vec2 dir);
-  vector<WItem> chooseItem(const string& text, ItemPredicate, optional<UserInputId> exitAction = none);
-  void getItemNames(vector<WItem> it, vector<ListElem>& names, vector<vector<WItem> >& groups,
-      ItemPredicate = alwaysTrue<WConstItem>());
-  string getInventoryItemName(WConstItem, bool plural) const;
-  string getPluralName(WItem item, int num);
+  vector<Item*> chooseItem(const string& text, ItemPredicate, optional<UserInputId> exitAction = none);
+  void getItemNames(vector<Item*> it, vector<ListElem>& names, vector<vector<Item*> >& groups,
+      ItemPredicate = alwaysTrue<const Item*>());
+  string getInventoryItemName(const Item*, bool plural) const;
+  string getPluralName(Item* item, int num);
   bool SERIAL(travelling) = false;
   Vec2 SERIAL(travelDir);
   optional<Position> SERIAL(target);
@@ -144,7 +144,7 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   optional<FurnitureUsageType> getUsableUsageType() const;
   SVisibilityMap SERIAL(visibilityMap);
   STutorial SERIAL(tutorial);
-  vector<TeamMemberAction> getTeamMemberActions(WConstCreature) const;
+  vector<TeamMemberAction> getTeamMemberActions(const Creature*) const;
   optional<GlobalTime> lastEnemyInterruption;
   SUnknownLocations SERIAL(unknownLocations);
   void updateSquareMemory(Position);

@@ -3,18 +3,17 @@
 #include "util.h"
 #include "item_type.h"
 
-typedef function<const PositionSet&(WConstCollective)> StorageDestinationFun;
-typedef function<bool(WConstCollective, WConstItem)> CollectiveItemPredicate;
+typedef function<bool(WConstCollective, const Item*)> CollectiveItemPredicate;
 
 struct ItemFetchInfo {
   ItemIndex index;
   CollectiveItemPredicate predicate;
-  StorageDestinationFun destinationFun;
+  StorageId storageId;
   CollectiveWarning warning;
 };
 
 struct ResourceInfo {
-  StorageDestinationFun storageDestination;
+  optional<StorageId> storageId;
   optional<ItemIndex> itemIndex;
   ItemType itemId;
   string name;

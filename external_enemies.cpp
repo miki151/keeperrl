@@ -19,7 +19,7 @@
 SERIALIZE_DEF(ExternalEnemies, currentWaves, waves, nextWave)
 SERIALIZATION_CONSTRUCTOR_IMPL(ExternalEnemies)
 
-ExternalEnemies::ExternalEnemies(RandomGen& random, vector<ExternalEnemy> enemies) {
+ExternalEnemies::ExternalEnemies(RandomGen& random, const CreatureFactory* factory, vector<ExternalEnemy> enemies) {
   constexpr int firstAttackDelay = 1800;
   constexpr int attackInterval = 1200;
   constexpr int attackVariation = 450;
@@ -35,7 +35,7 @@ ExternalEnemies::ExternalEnemies(RandomGen& random, vector<ExternalEnemy> enemie
         waves.push_back(EnemyEvent{
             enemy,
             LocalTime(attackTime),
-            enemy.creatures.getViewId()
+            enemy.creatures.getViewId(factory)
         });
         waves.back().enemy.creatures.increaseBaseLevel({{ExperienceType::MELEE, max(0, attackTime / 1000 - 10)}});
         break;
@@ -57,7 +57,7 @@ PTask ExternalEnemies::getAttackTask(WCollective enemy, AttackBehaviour behaviou
       return Task::stealFrom(enemy);
     case AttackBehaviourId::CAMP_AND_SPAWN:
       return Task::campAndSpawn(enemy,
-            behaviour.get<CreatureFactory>(), Random.get(3, 7), Range(3, 7), Random.get(3, 7));
+            behaviour.get<CreatureGroup>(), Random.get(3, 7), Range(3, 7), Random.get(3, 7));
     case AttackBehaviourId::HALLOWEEN_KIDS: {
       auto nextToDoor = enemy->getTerritory().getExtended(2, 4);
       if (nextToDoor.empty()) {
@@ -72,7 +72,7 @@ PTask ExternalEnemies::getAttackTask(WCollective enemy, AttackBehaviour behaviou
 }
 
 void ExternalEnemies::updateCurrentWaves(WCollective target) {
-  auto areAllDead = [](const vector<WCreature>& wave) {
+  auto areAllDead = [](const vector<Creature*>& wave) {
     for (auto c : wave)
       if (!c->isDead() && !c->isAffected(LastingEffect::STUNNED))
         return false;
@@ -90,12 +90,12 @@ void ExternalEnemies::update(WLevel level, LocalTime localTime) {
   CHECK(!!target);
   updateCurrentWaves(target);
   if (auto nextWave = popNextWave(localTime)) {
-    vector<WCreature> attackers;
+    vector<Creature*> attackers;
     Vec2 landingDir(Random.choose<Dir>());
     auto attackTask = getAttackTask(target, nextWave->enemy.behaviour);
     auto attackTaskRef = attackTask.get();
-    auto creatures = nextWave->enemy.creatures.generate(Random, TribeId::getHuman(),
-        MonsterAIFactory::singleTask(std::move(attackTask),
+    auto creatures = nextWave->enemy.creatures.generate(Random, level->getGame()->getCreatureFactory(),
+        TribeId::getMonster(), MonsterAIFactory::singleTask(std::move(attackTask),
             nextWave->enemy.behaviour.getId() != AttackBehaviourId::HALLOWEEN_KIDS));
     for (auto& c : creatures) {
       c->getAttributes().setCourage(1);

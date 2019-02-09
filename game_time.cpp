@@ -190,3 +190,8 @@ GlobalTime operator "" _global(unsigned long long value) {
 LocalTime operator "" _local(unsigned long long value) {
   return LocalTime((int) value);
 }
+
+
+#include "pretty_archive.h"
+template void LocalTime::serialize(PrettyInputArchive&, unsigned);
+template void GlobalTime::serialize(PrettyInputArchive&, unsigned);

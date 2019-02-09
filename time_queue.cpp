@@ -32,11 +32,11 @@ void TimeQueue::addCreature(PCreature c, LocalTime time) {
   creatures.push_back(std::move(c));
 }
 
-LocalTime TimeQueue::getTime(WConstCreature c) {
+LocalTime TimeQueue::getTime(const Creature* c) {
   return timeMap.getOrFail(c).time;
 }
 
-static void clearNull(deque<WCreature>& q) {
+static void clearNull(deque<Creature*>& q) {
   while (!q.empty() && q.back() == nullptr)
     q.pop_back();
   while (!q.empty() && q.front() == nullptr)
@@ -48,7 +48,7 @@ void TimeQueue::Queue::clearNull() {
   ::clearNull(nonPlayers);
 }
 
-void TimeQueue::Queue::push(WCreature c) {
+void TimeQueue::Queue::push(Creature* c) {
   clearNull();
   if (c->isPlayer()) {
     int order = players.empty() ? 0 : orderMap.getOrFail(players.back()) + 1;
@@ -61,7 +61,7 @@ void TimeQueue::Queue::push(WCreature c) {
   }
 }
 
-void TimeQueue::Queue::pushFront(WCreature c) {
+void TimeQueue::Queue::pushFront(Creature* c) {
   clearNull();
   if (c->isPlayer()) {
     int order = players.empty() ? 0 : orderMap.getOrFail(players.front()) - 1;
@@ -79,7 +79,7 @@ bool TimeQueue::Queue::empty() {
   return players.empty() && nonPlayers.empty();
 }
 
-WCreature TimeQueue::Queue::front() {
+Creature* TimeQueue::Queue::front() {
   clearNull();
   if (!players.empty())
     return players.front();
@@ -94,8 +94,8 @@ void TimeQueue::Queue::popFront() {
     return nonPlayers.pop_front();
 }
 
-void TimeQueue::Queue::erase(WCreature c) {
-  auto eraseFrom = [&c] (deque<WCreature>& queue) {
+void TimeQueue::Queue::erase(Creature* c) {
+  auto eraseFrom = [&c] (deque<Creature*>& queue) {
     for (int i : All(queue))
       if (queue[i] == c) {
         queue[i] = nullptr;
@@ -106,7 +106,7 @@ void TimeQueue::Queue::erase(WCreature c) {
   CHECK(eraseFrom(players) || eraseFrom(nonPlayers));
 }
 
-void TimeQueue::increaseTime(WCreature c, TimeInterval diff) {
+void TimeQueue::increaseTime(Creature* c, TimeInterval diff) {
   auto& time = timeMap.getOrFail(c);
   queue.at(time).erase(c);
   time.time += diff;
@@ -114,7 +114,7 @@ void TimeQueue::increaseTime(WCreature c, TimeInterval diff) {
   queue[time].push(c);
 }
 
-void TimeQueue::makeExtraMove(WCreature c) {
+void TimeQueue::makeExtraMove(Creature* c) {
   auto& time = timeMap.getOrFail(c);
   queue.at(time).erase(c);
   if (!time.extraTurn)
@@ -126,31 +126,31 @@ void TimeQueue::makeExtraMove(WCreature c) {
   queue[time].push(c);
 }
 
-bool TimeQueue::hasExtraMove(WCreature c) {
+bool TimeQueue::hasExtraMove(Creature* c) {
   return timeMap.getOrFail(c).extraTurn;
 }
 
-void TimeQueue::postponeMove(WCreature c) {
+void TimeQueue::postponeMove(Creature* c) {
   CHECK(contains(c));
   auto time = timeMap.getOrFail(c);
   queue.at(time).erase(c);
   queue.at(time).push(c);
 }
 
-void TimeQueue::moveNow(WCreature c) {
+void TimeQueue::moveNow(Creature* c) {
   CHECK(contains(c));
   auto time = timeMap.getOrFail(c);
   queue.at(time).erase(c);
   queue.at(time).pushFront(c);
 }
 
-bool TimeQueue::willMoveThisTurn(WConstCreature c) {
+bool TimeQueue::willMoveThisTurn(const Creature* c) {
   auto hisTime = timeMap.getOrFail(c);
   auto curTime = queue.begin()->first;
   return hisTime.time == curTime.time && (!hisTime.extraTurn || curTime.extraTurn);
 }
 
-bool TimeQueue::compareOrder(WConstCreature c1, WConstCreature c2) {
+bool TimeQueue::compareOrder(const Creature* c1, const Creature* c2) {
   if (!willMoveThisTurn(c1) && willMoveThisTurn(c2))
     return true;
   else if (willMoveThisTurn(c1) && !willMoveThisTurn(c2))
@@ -167,7 +167,7 @@ bool TimeQueue::compareOrder(WConstCreature c1, WConstCreature c2) {
   return orderMap.getOrFail(c1) < orderMap.getOrFail(c2);
 }
 
-bool TimeQueue::contains(WCreature c) const {
+bool TimeQueue::contains(Creature* c) const {
   for (auto& creature : creatures)
     if (creature.get() == c)
       return true;
@@ -176,7 +176,7 @@ bool TimeQueue::contains(WCreature c) const {
 
 TimeQueue::TimeQueue() {}
 
-PCreature TimeQueue::removeCreature(WCreature cRef) {
+PCreature TimeQueue::removeCreature(Creature* cRef) {
   for (int i : All(creatures))
     if (creatures[i].get() == cRef) {
       queue.at(timeMap.getOrFail(cRef)).erase(cRef);
@@ -188,11 +188,11 @@ PCreature TimeQueue::removeCreature(WCreature cRef) {
   return nullptr;
 }
 
-vector<WCreature> TimeQueue::getAllCreatures() const {
+vector<Creature*> TimeQueue::getAllCreatures() const {
   return getWeakPointers(creatures);
 }
 
-WCreature TimeQueue::getNextCreature(double maxTime) {
+Creature* TimeQueue::getNextCreature(double maxTime) {
   if (creatures.empty())
     return nullptr;
   while (1) {

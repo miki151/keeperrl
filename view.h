@@ -18,8 +18,9 @@
 #include "util.h"
 #include "debug.h"
 #include "user_input.h"
-#include "player_role_choice.h"
 #include "animation_id.h"
+#include "gender.h"
+#include "fx_info.h"
 
 class CreatureView;
 class Level;
@@ -35,6 +36,10 @@ class RetiredGames;
 class ScrollPosition;
 class FilePath;
 struct Color;
+namespace fx {
+  class FXRenderer;
+}
+class FXViewManager;
 
 enum class SplashType { BIG, AUTOSAVING, SMALL };
 
@@ -103,6 +108,13 @@ enum class CampaignActionId {
   CHANGE_TYPE,
 };
 
+enum class PassableInfo {
+  PASSABLE,
+  NON_PASSABLE,
+  STOPS_HERE,
+  UNKNOWN
+};
+
 class CampaignAction : public EnumVariant<CampaignActionId, TYPES(Vec2, OptionId, CampaignType),
   ASSIGN(CampaignType, CampaignActionId::CHANGE_TYPE),
   ASSIGN(Vec2, CampaignActionId::CHOOSE_SITE),
@@ -116,7 +128,7 @@ class View {
   virtual ~View();
 
   /** Does all the library specific init.*/
-  virtual void initialize() = 0;
+  virtual void initialize(unique_ptr<fx::FXRenderer>, unique_ptr<FXViewManager>) = 0;
 
   /** Resets the view before a new game.*/
   virtual void reset() = 0;
@@ -159,10 +171,11 @@ class View {
   virtual optional<int> chooseFromList(const string& title, const vector<ListElem>& options, int index = 0,
       MenuType = MenuType::NORMAL, ScrollPosition* scrollPos = nullptr, optional<UserInputId> exitAction = none) = 0;
 
-  virtual PlayerRoleChoice getPlayerRoleChoice(optional<PlayerRoleChoice> initial) = 0;
-
   /** Lets the player choose a direction from the main 8. Returns none if the player cancelled the choice.*/
   virtual optional<Vec2> chooseDirection(Vec2 playerPos, const string& message) = 0;
+
+  /** Lets the player choose a target position. Returns none if the player cancelled the choice.*/
+  virtual optional<Vec2> chooseTarget(Vec2 playerPos, Table<PassableInfo> passable, const string& message) = 0;
 
   /** Asks the player a yer-or-no question.*/
   virtual bool yesOrNoPrompt(const string& message, bool defaultNo = false) = 0;
@@ -194,6 +207,20 @@ class View {
   using BugReportSaveCallback = function<void(FilePath)>;
   virtual void setBugReportSaveCallback(BugReportSaveCallback) = 0;
 
+  struct AvatarChoice {
+    int creatureIndex;
+    int genderIndex;
+  };
+  struct AvatarData {
+    vector<vector<ViewId>> viewId;
+    vector<string> firstNames;
+    TribeAlignment alignment;
+    string name;
+    PlayerRole role;
+    string description;
+  };
+  virtual variant<AvatarChoice, AvatarMenuOption> chooseAvatar(const vector<AvatarData>&, Options*) = 0;
+
   struct CampaignMenuState {
     bool helpText;
     bool settings;
@@ -201,7 +228,7 @@ class View {
   struct CampaignOptions {
     const Campaign& campaign;
     optional<RetiredGames&> retired;
-    WConstCreature player;
+    const Creature* player = nullptr;
     vector<OptionId> primaryOptions;
     vector<OptionId> secondaryOptions;
     optional<string> mapTitle;
@@ -229,11 +256,11 @@ class View {
   virtual void presentWorldmap(const Campaign&) = 0;
 
   /** Draws an animation of an object between two locations on a map.*/
-  virtual void animateObject(Vec2 begin, Vec2 end, ViewId object) = 0;
+  virtual void animateObject(Vec2 begin, Vec2 end, optional<ViewId> object, optional<FXInfo> fx) = 0;
 
   /** Draws an special animation on the map.*/
   virtual void animation(Vec2 pos, AnimationId, Dir orientation = Dir::N) = 0;
-  virtual void animation(FXName, Vec2 pos, Vec2, const Color&) = 0;
+  virtual void animation(const FXSpawnInfo&) = 0;
 
   /** Returns the current real time in milliseconds. The clock is stopped on blocking keyboard input,
       so it can be used to sync game time in real-time mode.*/

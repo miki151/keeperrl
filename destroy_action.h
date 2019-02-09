@@ -16,7 +16,7 @@ class DestroyAction {
   Sound getSound() const;
   Type getType() const;
   bool canDestroyFriendly() const;
-  bool canNavigate(WConstCreature) const;
+  bool canNavigate(const Creature*) const;
   MinionActivity getMinionActivity() const;
   optional<SkillId> getDestroyingSkillMultiplier() const;
 

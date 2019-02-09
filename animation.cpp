@@ -28,8 +28,8 @@ class ThrownObject : public Animation {
     : Animation(milliseconds{dir.length8()}), direction(dir), viewObject(obj), useSprite(sprite) {}
 
   virtual void renderSpec(Renderer& renderer, Rectangle bounds, Vec2 origin, Vec2 squareSize, double state) {
-    int x = origin.x + state * direction.x;
-    int y = origin.y + state * direction.y;
+    int x = origin.x + state * direction.x - squareSize.x / 2;
+    int y = origin.y + state * direction.y - squareSize.y / 2;
     renderer.drawViewObject(Vec2(x, y), viewObject, useSprite, squareSize, Color::WHITE,
         Renderer::SpriteOrientation(direction, false));
   }

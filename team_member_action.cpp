@@ -1,13 +1,13 @@
 #include "team_member_action.h"
+#include "view_object_action.h"
 
-
-const char* getText(TeamMemberAction action) {
+ViewObjectAction getText(TeamMemberAction action) {
   switch (action) {
     case TeamMemberAction::CHANGE_LEADER:
-      return "Switch leader";
+      return ViewObjectAction::SWITCH_LEADER;
     case TeamMemberAction::REMOVE_MEMBER:
-      return "Remove from team";
+      return ViewObjectAction::REMOVE_FROM_TEAM;
     case TeamMemberAction::MOVE_NOW:
-      return "Move now";
+      return ViewObjectAction::MOVE_NOW;
   }
 }

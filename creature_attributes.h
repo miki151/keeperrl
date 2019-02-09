@@ -47,9 +47,12 @@ struct AdjectiveInfo;
 class CreatureAttributes {
   public:
   CreatureAttributes(function<void(CreatureAttributes&)>);
-  CreatureAttributes(CreatureAttributes&& other) = default;
   ~CreatureAttributes();
+  CreatureAttributes(const CreatureAttributes&);
+  CreatureAttributes(CreatureAttributes&&);
   SERIALIZATION_DECL(CreatureAttributes)
+  template <class Archive>
+  void serializeImpl(Archive& ar, const unsigned int);
 
   CreatureAttributes& setCreatureId(CreatureId);
   const optional<CreatureId>& getCreatureId() const;
@@ -81,11 +84,11 @@ class CreatureAttributes {
   Skillset& getSkills();
   const Skillset& getSkills() const;
   ViewObject createViewObject() const;
-  const optional<ViewObject>& getIllusionViewObject() const;
-  optional<ViewObject>& getIllusionViewObject();
+  const heap_optional<ViewObject>& getIllusionViewObject() const;
+  heap_optional<ViewObject>& getIllusionViewObject();
   bool canEquip() const;
-  void chatReaction(WCreature me, WCreature other);
-  optional<string> getPetReaction(WConstCreature me) const;
+  void chatReaction(Creature* me, Creature* other);
+  optional<string> getPetReaction(const Creature* me) const;
   string getDescription() const;
   bool isAffected(LastingEffect, GlobalTime) const;
   bool isAffectedPermanently(LastingEffect) const;
@@ -99,29 +102,29 @@ class CreatureAttributes {
   optional<GlobalTime> getLastAffected(LastingEffect, GlobalTime currentGlobalTime) const;
   bool canSleep() const;
   bool isInnocent() const;
-  void consume(WCreature self, CreatureAttributes& other);
+  void consume(Creature* self, CreatureAttributes& other);
   const MinionActivityMap& getMinionActivities() const;
   MinionActivityMap& getMinionActivities();
   bool dontChase() const;
   bool getCanJoinCollective() const;
-  optional<ViewId> getRetiredViewId();
   void increaseExpFromCombat(double attackDiff);
+  optional<LastingEffect> getHatedByEffect() const;
 
   friend class CreatureFactory;
 
+  vector<ViewId> SERIAL(viewIdUpgrades);
+
   private:
   void consumeEffects(const EnumMap<LastingEffect, int>&);
-  MustInitialize<ViewId> SERIAL(viewId);
-  optional<ViewId> SERIAL(retiredViewId);
-  HeapAllocated<optional<ViewObject>> SERIAL(illusionViewObject);
-  MustInitialize<CreatureName> SERIAL(name);
+  ViewId SERIAL(viewId);
+  heap_optional<ViewObject> SERIAL(illusionViewObject);
+  CreatureName SERIAL(name);
   EnumMap<AttrType, int> SERIAL(attr);
   HeapAllocated<Body> SERIAL(body);
   optional<string> SERIAL(chatReactionFriendly);
   optional<string> SERIAL(chatReactionHostile);
-  HeapAllocated<optional<Effect>> SERIAL(passiveAttack);
-  Gender SERIAL(gender) = Gender::male;
-  bool SERIAL(animal) = false;
+  heap_optional<Effect> SERIAL(passiveAttack);
+  Gender SERIAL(gender) = Gender::MALE;
   bool SERIAL(cantEquip) = false;
   double SERIAL(courage) = 1;
   bool SERIAL(boulder) = false;
@@ -140,4 +143,6 @@ class CreatureAttributes {
   string SERIAL(deathDescription) = "killed"_s;
   bool SERIAL(canJoinCollective) = true;
   optional<string> SERIAL(petReaction);
+  optional<LastingEffect> SERIAL(hatedByEffect);
+  void initializeLastingEffects();
 };

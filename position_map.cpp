@@ -8,9 +8,10 @@
 #include "furniture_type.h"
 #include "furniture_layer.h"
 #include "construction_map.h"
+#include "zones.h"
 
 template <typename T>
-optional<T&> getReferenceOptional(optional<T>& t) {
+static optional<T&> getReferenceOptional(optional<T>& t) {
   if (t)
     return *t;
   else
@@ -18,7 +19,7 @@ optional<T&> getReferenceOptional(optional<T>& t) {
 }
 
 template <typename T>
-optional<const T&> getReferenceOptional(const optional<T>& t) {
+static optional<const T&> getReferenceOptional(const optional<T>& t) {
   if (t)
     return *t;
   else
@@ -72,7 +73,7 @@ Table<optional<T>>& PositionMap<T>::getTable(Position pos) {
   try {
     return tables.at(levelId);
   } catch (std::out_of_range) {
-    auto it = tables.insert(make_pair(levelId, Table<optional<T>>(pos.getLevel()->getBounds().minusMargin(-20))));
+    auto it = tables.insert(make_pair(levelId, Table<optional<T>>(pos.getLevel()->getBounds().minusMargin(-2))));
     return it.first->second;
   }
 }
@@ -175,9 +176,10 @@ SERIALIZABLE_TMPL(PositionMap, double)
 
 class Task;
 
-SERIALIZABLE_TMPL(PositionMap, WTask)
-SERIALIZABLE_TMPL(PositionMap, HighlightType)
-SERIALIZABLE_TMPL(PositionMap, vector<WTask>)
+//SERIALIZABLE_TMPL(PositionMap, WTask)
+SERIALIZABLE_TMPL(PositionMap, EnumSet<ZoneId>)
+//SERIALIZABLE_TMPL(PositionMap, HighlightType)
+//SERIALIZABLE_TMPL(PositionMap, vector<WTask>)
 SERIALIZABLE_TMPL(PositionMap, ViewIndex)
 SERIALIZABLE_TMPL(PositionMap, vector<Position>)
 SERIALIZABLE_TMPL(PositionMap, ConstructionMap::FurnitureInfo);

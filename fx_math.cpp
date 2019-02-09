@@ -1,13 +1,14 @@
 #include "fx_math.h"
 #include <algorithm>
 
-namespace fx {
-
-std::pair<float, float> sincos(float radians) {
-  std::pair<float, float> out;
-  ::sincosf(radians, &out.first, &out.second);
-  return out;
+#ifdef OSX
+void sincosf(float a, float* sin, float* cos) {
+  __sincosf(a, sin, cos);
 }
+#endif
+
+
+namespace fx {
 
 float angleDistance(float a, float b) {
   float diff = fabsf(a - b);

@@ -27,7 +27,7 @@
 #include "creature_name.h"
 #include "collective_teams.h"
 #include "effect.h"
-#include "creature_factory.h"
+#include "creature_group.h"
 #include "player_message.h"
 #include "territory.h"
 #include "item_factory.h"
@@ -43,6 +43,8 @@
 #include "monster_ai.h"
 #include "vision.h"
 #include "position_matching.h"
+#include "navigation_flags.h"
+#include "storage_info.h"
 
 template <class Archive> 
 void Task::serialize(Archive& ar, const unsigned int version) {
@@ -66,11 +68,15 @@ bool Task::canTransfer() {
   return transfer;
 }
 
-bool Task::canPerform(WConstCreature c) const {
+bool Task::canPerform(const Creature* c) const {
   return true;
 }
 
 optional<Position> Task::getPosition() const {
+  return none;
+}
+
+optional<StorageId> Task::getStorageId(bool dropOnly) const {
   return none;
 }
 
@@ -105,14 +111,14 @@ class Construction : public Task {
     return "Build " + Furniture::getName(furnitureType) + " at " + toString(position);
   }
 
-  virtual MoveInfo getMove(WCreature c) override {
+  virtual MoveInfo getMove(Creature* c) override {
     if (!callback->isConstructionReachable(position))
       return NoMove;
     if (c->getPosition().dist8(position) > 1)
       return c->moveTowards(position);
     Vec2 dir = c->getPosition().getDir(position);
     if (auto action = c->construct(dir, furnitureType))
-      return {1.0, action.append([=](WCreature c) {
+      return {1.0, action.append([=](Creature* c) {
           if (!position.isActiveConstruction(Furniture::getLayer(furnitureType))) {
             setDone();
             callback->onConstructed(position, furnitureType);
@@ -130,7 +136,7 @@ class Construction : public Task {
   private:
   FurnitureType SERIAL(furnitureType);
   Position SERIAL(position);
-  WTaskCallback SERIAL(callback);
+  WTaskCallback SERIAL(callback) = nullptr;
 };
 
 }
@@ -161,7 +167,7 @@ class Destruction : public Task {
     return true;
   }
 
-  virtual bool canPerform(WConstCreature) const override {
+  virtual bool canPerform(const Creature*) const override {
     PROFILE_BLOCK("Destruction::canPerform");
     return callback->isConstructionReachable(position) && (!matching || matching->getMatch(position));
   }
@@ -170,13 +176,13 @@ class Destruction : public Task {
     return description;
   }
 
-  virtual MoveInfo getMove(WCreature c) override {
+  virtual MoveInfo getMove(Creature* c) override {
     if (!canPerform(c))
       return NoMove;
     if (matching) {
       auto match = *matching->getMatch(position);
       if (c->getPosition() != match) {
-        if (c->isSameSector(match))
+        if (c->canNavigateTo(match))
           return c->moveTowards(*matching->getMatch(position));
       }
     }
@@ -185,7 +191,7 @@ class Destruction : public Task {
     Vec2 dir = c->getPosition().getDir(position);
     CHECK(dir.length8() <= 1);
     if (auto action = c->destroy(dir, destroyAction))
-      return {1.0, action.append([=](WCreature c) {
+      return {1.0, action.append([=](Creature* c) {
           if (!getFurniture() || getFurniture()->getType() != furnitureType) {
             setDone();
             callback->onDestructed(position, furnitureType, destroyAction);
@@ -197,7 +203,7 @@ class Destruction : public Task {
     }
   }
 
-  ~Destruction() {
+  ~Destruction() override {
     if (matching)
       matching->releaseTarget(position);
   }
@@ -207,11 +213,11 @@ class Destruction : public Task {
 
   private:
   Position SERIAL(position);
-  WTaskCallback SERIAL(callback);
+  WTaskCallback SERIAL(callback) = nullptr;
   DestroyAction SERIAL(destroyAction);
   string SERIAL(description);
   FurnitureType SERIAL(furnitureType);
-  WPositionMatching SERIAL(matching);
+  WPositionMatching SERIAL(matching) = nullptr;
 };
 
 }
@@ -220,110 +226,25 @@ PTask Task::destruction(WTaskCallback c, Position target, WConstFurniture furnit
   return makeOwner<Destruction>(c, target, furniture, destroyAction, matching);
 }
 
-PTask Task::bringItem(Position position, vector<WItem> items, const PositionSet& target) {
+PTask Task::bringItem(Position position, vector<Item*> items, const PositionSet& target) {
   return chain(Task::pickUpItem(position, items), dropItems(items, vector<Position>(target.begin(), target.end())));
-}
-
-namespace {
-
-class PickItem : public Task {
-  public:
-  PickItem(Position pos, vector<WItem> _items, int retries = 10)
-      : Task(true), items(_items), position(pos), tries(retries) {
-    CHECK(!items.empty());
-    lightestItem = 10000000;
-    for (auto& item : _items)
-      lightestItem = min(lightestItem, item->getWeight());
-  }
-
-  virtual void onPickedUp() {
-    setDone();
-  }
-
-  virtual string getDescription() const override {
-    return "Pick up item " + toString(position);
-  }
-
-  virtual bool isBogus() const override {
-    if (position.getItems().size() > items.getSize()) {
-      for (auto& item : items)
-        if (!!position.getInventory().getItemById(item))
-          return false;
-    } else {
-      for (WItem it : position.getItems())
-        if (items.contains(it))
-          return false;
-    }
-    return true;
-  }
-
-  virtual MoveInfo getMove(WCreature c) override {
-    CHECK(!pickedUp);
-    if (c->getPosition() == position) {
-      vector<WItem> hereItems;
-      for (WItem it : c->getPickUpOptions())
-        if (items.contains(it)) {
-          hereItems.push_back(it);
-          items.erase(it);
-        }
-      if (hereItems.empty()) {
-        setDone();
-        return NoMove;
-      }
-      items = hereItems;
-      if (auto action = c->pickUp(hereItems))
-        return {1.0, action.append([=](WCreature c) {
-          pickedUp = true;
-          onPickedUp();
-        })}; 
-      else {
-        setDone();
-        return NoMove;
-      }
-    }
-    if (auto action = c->moveTowards(position, Creature::NavigationFlags().requireStepOnTile()))
-      return action;
-    else if (--tries == 0)
-      setDone();
-    return NoMove;
-  }
-
-  virtual bool canPerform(WConstCreature c) const override {
-    PROFILE_BLOCK("PickItem::canPerform");
-    return c->canCarryMoreWeight(lightestItem) && c->isSameSector(position);
-  }
-
-  SERIALIZE_ALL(SUBCLASS(Task), items, pickedUp, position, tries, lightestItem)
-  SERIALIZATION_CONSTRUCTOR(PickItem)
-
-  protected:
-  EntitySet<Item> SERIAL(items);
-  bool SERIAL(pickedUp) = false;
-  Position SERIAL(position);
-  int SERIAL(tries);
-  double SERIAL(lightestItem);
-};
-}
-
-PTask Task::pickUpItem(Position position, vector<WItem> items) {
-  return makeOwner<PickItem>(position, items);
 }
 
 namespace {
 
 class EquipItem : public Task {
   public:
-  EquipItem(WItem item) : item(item->getUniqueId()), itemName(item->getName()) {
+  EquipItem(Item* item) : item(item->getUniqueId()), itemName(item->getName()) {
   }
 
   virtual string getDescription() const override {
     return "Equip " + itemName;
   }
 
-  virtual MoveInfo getMove(WCreature c) override {
+  virtual MoveInfo getMove(Creature* c) override {
     if (auto it = c->getEquipment().getItemById(item))
       if (auto action = c->equip(it))
-        return {1.0, action.append([=](WCreature) {
+        return {1.0, action.append([=](Creature*) {
           setDone();
         })};
     setDone();
@@ -340,34 +261,30 @@ class EquipItem : public Task {
 
 }
 
-PTask Task::pickAndEquipItem(Position position, WItem item) {
+PTask Task::pickAndEquipItem(Position position, Item* item) {
   return chain(pickUpItem(position, {item}), equipItem(item));
 }
 
-PTask Task::equipItem(WItem item) {
+PTask Task::equipItem(Item* item) {
   return makeOwner<EquipItem>(item);
 }
 
-static optional<Position> chooseRandomClose(WCreature c, const vector<Position>& squares, Task::SearchType type) {
+template <typename PositionContainer>
+static optional<Position> chooseRandomClose(Creature* c, const PositionContainer& squares, Task::SearchType type) {
   int minD = 10000;
   int margin = type == Task::LAZY ? 0 : 3;
   vector<Position> close;
   auto start = c->getPosition();
-  for (Position v : squares)
-    if (c->canNavigateTo(v))
+  for (auto& v : squares)
+    if (c->canNavigateToOrNeighbor(v))
       minD = min(minD, v.dist8(start));
-  for (Position v : squares)
-    if (c->canNavigateTo(v) && v.dist8(start) <= minD + margin)
+  for (auto& v : squares)
+    if (c->canNavigateToOrNeighbor(v) && v.dist8(start) <= minD + margin)
       close.push_back(v);
   if (!close.empty())
     return Random.choose(close);
-  else {
-    auto all = squares.filter([&](auto pos) { return c->canNavigateTo(pos); });
-    if (!all.empty())
-      return Random.choose(all);
-    else
-      return none;
-  }
+  else
+    return none;
 }
 
 namespace {
@@ -375,11 +292,11 @@ class GoToAnd : public Task {
   public:
   GoToAnd(vector<Position> targets, PTask task) : targets(targets), task(std::move(task)) {}
 
-  virtual bool canPerform(WConstCreature c) const override {
+  virtual bool canPerform(const Creature* c) const override {
     if (!task->canPerform(c))
       return false;
     for (auto pos : targets)
-      if (c->isSameSector(pos))
+      if (c->canNavigateTo(pos))
         return true;
     return false;
   }
@@ -388,7 +305,7 @@ class GoToAnd : public Task {
     return task->getDescription();
   }
 
-  virtual MoveInfo getMove(WCreature c) override {
+  virtual MoveInfo getMove(Creature* c) override {
     if (task->isDone()) {
       setDone();
       return NoMove;
@@ -401,7 +318,7 @@ class GoToAnd : public Task {
       setDone();
       return NoMove;
     } else
-      return c->moveTowards(*target, Creature::NavigationFlags().requireStepOnTile());
+      return c->moveTowards(*target, NavigationFlags().requireStepOnTile());
   }
 
   SERIALIZATION_CONSTRUCTOR(GoToAnd)
@@ -416,24 +333,24 @@ class GoToAnd : public Task {
 
 class ApplyItem : public Task {
   public:
-  ApplyItem(WTaskCallback c, WItem item) : callback(c), itemId(item->getUniqueId()), itemName(item->getShortName()) {}
+  ApplyItem(WTaskCallback c, Item* item) : callback(c), itemId(item->getUniqueId()), itemName(item->getShortName()) {}
 
   virtual string getDescription() const override {
     return "Set up " + itemName + " trap";
   }
 
-  virtual bool canPerform(WConstCreature c) const override {
+  virtual bool canPerform(const Creature* c) const override {
     return !!c->getEquipment().getItemById(itemId);
   }
 
-  virtual MoveInfo getMove(WCreature c) override {
+  virtual MoveInfo getMove(Creature* c) override {
     if (auto item = c->getEquipment().getItemById(itemId))
       if (auto action = c->applyItem(item))
-        return action.prepend([=](WCreature c) {
+        return action.prepend([=](Creature* c) {
           callback->onAppliedItem(c->getPosition(), item);
           setDone();
         });
-    return c->wait().prepend([=](WCreature) {
+    return c->wait().prepend([=](Creature*) {
        setDone();
     });
   }
@@ -442,12 +359,12 @@ class ApplyItem : public Task {
   SERIALIZATION_CONSTRUCTOR(ApplyItem);
 
   private:
-  WTaskCallback SERIAL(callback);
+  WTaskCallback SERIAL(callback) = nullptr;
   Item::Id SERIAL(itemId);
   string SERIAL(itemName);
 };
 
-PTask Task::applyItem(WTaskCallback c, Position target, WItem item) {
+PTask Task::applyItem(WTaskCallback c, Position target, Item* item) {
   return makeOwner<GoToAnd>(vector<Position>{target}, makeOwner<ApplyItem>(c, item));
 }
 
@@ -458,15 +375,15 @@ class ApplySquare : public Task {
 
   void changePosIfOccupied() {
     if (position)
-      if (WCreature c = position->getCreature())
+      if (Creature* c = position->getCreature())
         if (c->hasCondition(CreatureCondition::RESTRICTED_MOVEMENT))
           position = none;
   }
 
-  optional<Position> choosePosition(WCreature c) {
+  optional<Position> choosePosition(Creature* c) {
     vector<Position> candidates;
     for (auto& pos : positions) {
-      if (WCreature other = pos.getCreature())
+      if (Creature* other = pos.getCreature())
         if (other->hasCondition(CreatureCondition::RESTRICTED_MOVEMENT))
           continue;
       if (!rejectedPosition.count(pos))
@@ -475,7 +392,7 @@ class ApplySquare : public Task {
     return chooseRandomClose(c, candidates, searchType);
   }
 
-  virtual MoveInfo getMove(WCreature c) override {
+  virtual MoveInfo getMove(Creature* c) override {
   PROFILE;
     changePosIfOccupied();
     if (!position) {
@@ -488,7 +405,7 @@ class ApplySquare : public Task {
     }
     if (atTarget(c)) {
       if (auto action = getAction(c))
-        return {1.0, action.append([=](WCreature c) {
+        return {1.0, action.append([=](Creature* c) {
             setDone();
             callback->onAppliedSquare(c, *position);
         })};
@@ -512,7 +429,7 @@ class ApplySquare : public Task {
     }
   }
 
-  CreatureAction getAction(WCreature c) {
+  CreatureAction getAction(Creature* c) {
     switch (actionType) {
       case ActionType::APPLY:
         return c->applySquare(*position);
@@ -525,7 +442,7 @@ class ApplySquare : public Task {
     return "Apply square " + (position ? toString(*position) : "");
   }
 
-  bool atTarget(WCreature c) {
+  bool atTarget(Creature* c) {
     return position == c->getPosition() || (!position->canEnterEmpty(c) && position->dist8(c->getPosition()) == 1);
   }
 
@@ -537,7 +454,7 @@ class ApplySquare : public Task {
   PositionSet SERIAL(rejectedPosition);
   int SERIAL(invalidCount) = 5;
   optional<Position> SERIAL(position);
-  WTaskCallback SERIAL(callback);
+  WTaskCallback SERIAL(callback) = nullptr;
   SearchType SERIAL(searchType);
   ActionType SERIAL(actionType);
 };
@@ -553,7 +470,7 @@ class ArcheryRange : public Task {
   public:
   ArcheryRange(WTaskCallback c, vector<Position> pos) : callback(c), targets(pos) {}
 
-  virtual MoveInfo getMove(WCreature c) override {
+  virtual MoveInfo getMove(Creature* c) override {
     if (Random.roll(50))
       shootInfo = none;
     if (!shootInfo)
@@ -561,7 +478,7 @@ class ArcheryRange : public Task {
     if (!shootInfo)
       return NoMove;
     if (c->getPosition() != shootInfo->pos)
-      return c->moveTowards(shootInfo->pos, Creature::NavigationFlags().requireStepOnTile());
+      return c->moveTowards(shootInfo->pos, NavigationFlags().requireStepOnTile());
     if (Random.roll(3))
       return c->wait();
     for (auto pos = shootInfo->pos; pos != shootInfo->target; pos = pos.plus(shootInfo->dir)) {
@@ -569,9 +486,9 @@ class ArcheryRange : public Task {
         if (other->isFriend(c))
           return c->wait();
     }
-    if (auto move = c->fire(shootInfo->dir))
+    if (auto move = c->fire(shootInfo->target))
       return move.append(
-          [this, target = shootInfo->target](WCreature c) {
+          [this, target = shootInfo->target](Creature* c) {
             callback->onAppliedSquare(c, target);
             setDone();
           });
@@ -586,7 +503,7 @@ class ArcheryRange : public Task {
   SERIALIZATION_CONSTRUCTOR(ArcheryRange)
 
   private:
-  WTaskCallback SERIAL(callback);
+  WTaskCallback SERIAL(callback) = nullptr;
   vector<Position> SERIAL(targets);
   struct ShootInfo {
     Position SERIAL(pos);
@@ -596,7 +513,7 @@ class ArcheryRange : public Task {
   };
   optional<ShootInfo> SERIAL(shootInfo);
 
-  optional<ShootInfo> getShootInfo(WCreature c) {
+  optional<ShootInfo> getShootInfo(Creature* c) {
     const int distance = 5;
     auto getDir = [&](Position target) -> optional<ShootInfo> {
       for (Vec2 dir : Vec2::directions4(Random)) {
@@ -607,7 +524,7 @@ class ArcheryRange : public Task {
             break;
           }
         auto pos = target.minus(dir * distance);
-        if (ok && c->isSameSector(pos))
+        if (ok && c->canNavigateTo(pos))
           return ShootInfo{pos, target, dir};
       }
       return none;
@@ -633,9 +550,9 @@ namespace {
 class Kill : public Task {
   public:
   enum Type { ATTACK, TORTURE };
-  Kill(WTaskCallback call, WCreature c, Type t) : Task(true), creature(c), type(t), callback(call) {}
+  Kill(WTaskCallback call, Creature* c, Type t) : Task(true), creature(c), type(t), callback(call) {}
 
-  CreatureAction getAction(WCreature c) {
+  CreatureAction getAction(Creature* c) {
     switch (type) {
       case ATTACK: return c->execute(creature);
       case TORTURE: return c->torture(creature);
@@ -649,18 +566,18 @@ class Kill : public Task {
     }
   }
 
-  virtual bool canPerform(WConstCreature c) const override {
+  virtual bool canPerform(const Creature* c) const override {
     return c != creature;
   }
 
-  virtual MoveInfo getMove(WCreature c) override {
+  virtual MoveInfo getMove(Creature* c) override {
     CHECK(c != creature);
     if (creature->isDead() || (type == TORTURE && !creature->isAffected(LastingEffect::TIED_UP))) {
       setDone();
       return NoMove;
     }
     if (auto action = getAction(c))
-      return action.append([=](WCreature c) { if (creature->isDead()) setDone(); });
+      return action.append([=](Creature* c) { if (creature->isDead()) setDone(); });
     else
       return c->moveTowards(creature->getPosition());
   }
@@ -669,18 +586,18 @@ class Kill : public Task {
   SERIALIZATION_CONSTRUCTOR(Kill);
 
   private:
-  WCreature SERIAL(creature);
+  Creature* SERIAL(creature) = nullptr;
   Type SERIAL(type);
-  WTaskCallback SERIAL(callback);
+  WTaskCallback SERIAL(callback) = nullptr;
 };
 
 }
 
-PTask Task::kill(WTaskCallback callback, WCreature creature) {
+PTask Task::kill(WTaskCallback callback, Creature* creature) {
   return makeOwner<Kill>(callback, creature, Kill::ATTACK);
 }
 
-PTask Task::torture(WTaskCallback callback, WCreature creature) {
+PTask Task::torture(WTaskCallback callback, Creature* creature) {
   return makeOwner<Kill>(callback, creature, Kill::TORTURE);
 }
 
@@ -690,7 +607,7 @@ class Disappear : public Task {
   public:
   Disappear() {}
 
-  virtual MoveInfo getMove(WCreature c) override {
+  virtual MoveInfo getMove(Creature* c) override {
     return c->disappear();
   }
 
@@ -719,7 +636,7 @@ class Chain : public Task {
     return current >= tasks.size();
   }
 
-  virtual bool canPerform(WConstCreature c) const override {
+  virtual bool canPerform(const Creature* c) const override {
     if (current >= tasks.size())
       return false;
     return tasks[current]->canPerform(c);
@@ -737,7 +654,7 @@ class Chain : public Task {
         tasks[i]->cancel();
   }
 
-  virtual MoveInfo getMove(WCreature c) override {
+  virtual MoveInfo getMove(Creature* c) override {
     while (tasks[current]->isDone())
       if (++current >= tasks.size()) {
         setDone();
@@ -780,11 +697,11 @@ class Explore : public Task {
   public:
   Explore(Position pos) : position(pos) {}
 
-  virtual MoveInfo getMove(WCreature c) override {
+  virtual MoveInfo getMove(Creature* c) override {
     if (!Random.roll(3))
       return NoMove;
     if (auto action = c->moveTowards(position))
-      return action.append([=](WCreature c) {
+      return action.append([=](Creature* c) {
           if (c->getPosition().dist8(position) < 5)
             setDone();
       });
@@ -814,15 +731,15 @@ namespace {
 
 class AttackCreatures : public Task {
   public:
-  AttackCreatures(vector<WCreature> v) : creatures(v) {}
+  AttackCreatures(vector<Creature*> v) : creatures(v) {}
 
-  virtual MoveInfo getMove(WCreature c) override {
+  virtual MoveInfo getMove(Creature* c) override {
     if (auto target = getNextCreature())
       return c->moveTowards(target->getPosition());
     return NoMove;
   }
 
-  WCreature getNextCreature() const {
+  Creature* getNextCreature() const {
     for (auto c : creatures)
       if (c && !c->isDead())
         return c;
@@ -840,19 +757,19 @@ class AttackCreatures : public Task {
   SERIALIZATION_CONSTRUCTOR(AttackCreatures);
 
   private:
-  vector<WCreature> SERIAL(creatures);
+  vector<Creature*> SERIAL(creatures);
 };
 
 }
 
-PTask Task::attackCreatures(vector<WCreature> c) {
+PTask Task::attackCreatures(vector<Creature*> c) {
   return makeOwner<AttackCreatures>(std::move(c));
 }
 
 PTask Task::stealFrom(WCollective collective) {
   vector<PTask> tasks;
   for (Position pos : collective->getConstructions().getBuiltPositions(FurnitureType::TREASURE_CHEST)) {
-    vector<WItem> gold = pos.getItems().filter(Item::classPredicate(ItemClass::GOLD));
+    vector<Item*> gold = pos.getItems().filter(Item::classPredicate(ItemClass::GOLD));
     if (!gold.empty())
       tasks.push_back(pickUpItem(pos, gold));
   }
@@ -866,7 +783,7 @@ namespace {
 
 class CampAndSpawn : public Task {
   public:
-  CampAndSpawn(WCollective _target, CreatureFactory s, int defense, Range attack, int numAtt)
+  CampAndSpawn(WCollective _target, CreatureGroup s, int defense, Range attack, int numAtt)
     : target(_target), spawns(s),
       campPos(Random.permutation(target->getTerritory().getStandardExtended())), defenseSize(defense),
       attackSize(attack), numAttacks(numAtt) {}
@@ -882,20 +799,20 @@ class CampAndSpawn : public Task {
 
   virtual void cancel() override {
     // Cancel only the attack team, as the defense will disappear when the summoner dies
-    for (WCreature c : attackTeam)
+    for (Creature* c : attackTeam)
       if (!c->isDead())
         c->dieNoReason(Creature::DropType::NOTHING);
   }
 
-  virtual MoveInfo getMove(WCreature c) override {
+  virtual MoveInfo getMove(Creature* c) override {
     if (!target->getLeader() || campPos.empty()) {
       setDone();
       return NoMove;
     }
     updateTeams();
     if (defenseTeam.size() < defenseSize && Random.roll(5)) {
-      for (WCreature summon : Effect::summonCreatures(c, 4,
-          makeVec(spawns.random(MonsterAIFactory::summoned(c)))))
+      for (Creature* summon : Effect::summonCreatures(c, 4,
+          makeVec(spawns.random(c->getGame()->getCreatureFactory(), MonsterAIFactory::summoned(c)))))
         defenseTeam.push_back(summon);
     }
     if (!campPos.contains(c->getPosition()))
@@ -913,8 +830,9 @@ class CampAndSpawn : public Task {
       else {
         vector<PCreature> team;
         for (int i : Range(Random.get(attackSize)))
-          team.push_back(spawns.random(MonsterAIFactory::singleTask(Task::attackCreatures({target->getLeader()}))));
-        for (WCreature summon : Effect::summonCreatures(c, 4, std::move(team)))
+          team.push_back(spawns.random(c->getGame()->getCreatureFactory(),
+              MonsterAIFactory::singleTask(Task::attackCreatures({target->getLeader()}))));
+        for (Creature* summon : Effect::summonCreatures(c, 4, std::move(team)))
           attackTeam.push_back(summon);
         attackCountdown = none;
       }
@@ -930,21 +848,21 @@ class CampAndSpawn : public Task {
   SERIALIZATION_CONSTRUCTOR(CampAndSpawn);
 
   private:
-  WCollective SERIAL(target);
-  CreatureFactory SERIAL(spawns);
+  WCollective SERIAL(target) = nullptr;
+  CreatureGroup SERIAL(spawns);
   vector<Position> SERIAL(campPos);
   int SERIAL(defenseSize);
   Range SERIAL(attackSize);
   optional<int> SERIAL(attackCountdown);
-  vector<WCreature> SERIAL(defenseTeam);
-  vector<WCreature> SERIAL(attackTeam);
+  vector<Creature*> SERIAL(defenseTeam);
+  vector<Creature*> SERIAL(attackTeam);
   int SERIAL(numAttacks);
 };
 
 
 }
 
-PTask Task::campAndSpawn(WCollective target, const CreatureFactory& spawns, int defenseSize,
+PTask Task::campAndSpawn(WCollective target, const CreatureGroup& spawns, int defenseSize,
     Range attackSize, int numAttacks) {
   return makeOwner<CampAndSpawn>(target, spawns, defenseSize, attackSize, numAttacks);
 }
@@ -955,8 +873,8 @@ class KillFighters : public Task {
   public:
   KillFighters(WCollective col, int numC) : collective(col), numCreatures(numC) {}
 
-  virtual MoveInfo getMove(WCreature c) override {
-    for (WConstCreature target : collective->getCreatures(MinionTrait::FIGHTER))
+  virtual MoveInfo getMove(Creature* c) override {
+    for (const Creature* target : collective->getCreatures(MinionTrait::FIGHTER))
       targets.insert(target);
     int numKilled = 0;
     for (Creature::Id victim : c->getKills())
@@ -977,7 +895,7 @@ class KillFighters : public Task {
   SERIALIZATION_CONSTRUCTOR(KillFighters);
 
   private:
-  WCollective SERIAL(collective);
+  WCollective SERIAL(collective) = nullptr;
   int SERIAL(numCreatures);
   EntitySet<Creature> SERIAL(targets);
 };
@@ -991,10 +909,10 @@ PTask Task::killFighters(WCollective col, int numCreatures) {
 namespace {
 class ConsumeItem : public Task {
   public:
-  ConsumeItem(WTaskCallback c, vector<WItem> _items) : items(_items), callback(c) {}
+  ConsumeItem(WTaskCallback c, vector<Item*> _items) : items(_items), callback(c) {}
 
-  virtual MoveInfo getMove(WCreature c) override {
-    return c->wait().append([=](WCreature c) {
+  virtual MoveInfo getMove(Creature* c) override {
+    return c->wait().append([=](Creature* c) {
         c->getEquipment().removeItems(c->getEquipment().getItems().filter(items.containsPredicate()), c); });
   }
 
@@ -1007,20 +925,20 @@ class ConsumeItem : public Task {
 
   protected:
   EntitySet<Item> SERIAL(items);
-  WTaskCallback SERIAL(callback);
+  WTaskCallback SERIAL(callback) = nullptr;
 };
 }
 
-PTask Task::consumeItem(WTaskCallback c, vector<WItem> items) {
+PTask Task::consumeItem(WTaskCallback c, vector<Item*> items) {
   return makeOwner<ConsumeItem>(c, items);
 }
 
 namespace {
 class Copulate : public Task {
   public:
-  Copulate(WTaskCallback c, WCreature t, int turns) : target(t), callback(c), numTurns(turns) {}
+  Copulate(WTaskCallback c, Creature* t, int turns) : target(t), callback(c), numTurns(turns) {}
 
-  virtual MoveInfo getMove(WCreature c) override {
+  virtual MoveInfo getMove(Creature* c) override {
     if (target->isDead() || !target->isAffected(LastingEffect::SLEEP)) {
       setDone();
       return NoMove;
@@ -1032,7 +950,7 @@ class Copulate : public Task {
             if (auto action = c->move(v))
               return action;
       if (auto action = c->copulate(c->getPosition().getDir(target->getPosition())))
-        return action.append([=](WCreature c) {
+        return action.append([=](Creature* c) {
           if (--numTurns == 0) {
             setDone();
             callback->onCopulated(c, target);
@@ -1051,29 +969,29 @@ class Copulate : public Task {
   SERIALIZATION_CONSTRUCTOR(Copulate);
 
   protected:
-  WCreature SERIAL(target);
-  WTaskCallback SERIAL(callback);
+  Creature* SERIAL(target) = nullptr;
+  WTaskCallback SERIAL(callback) = nullptr;
   int SERIAL(numTurns);
 };
 }
 
-PTask Task::copulate(WTaskCallback c, WCreature target, int numTurns) {
+PTask Task::copulate(WTaskCallback c, Creature* target, int numTurns) {
   return makeOwner<Copulate>(c, target, numTurns);
 }
 
 namespace {
 class Consume : public Task {
   public:
-  Consume(WCreature t) : target(t) {}
+  Consume(Creature* t) : target(t) {}
 
-  virtual MoveInfo getMove(WCreature c) override {
+  virtual MoveInfo getMove(Creature* c) override {
     if (target->isDead()) {
       setDone();
       return NoMove;
     }
     if (c->getPosition().dist8(target->getPosition()) == 1) {
       if (auto action = c->consume(target))
-        return action.append([=](WCreature c) {
+        return action.append([=](Creature* c) {
           setDone();
         });
       else
@@ -1090,11 +1008,11 @@ class Consume : public Task {
   SERIALIZATION_CONSTRUCTOR(Consume);
 
   protected:
-  WCreature SERIAL(target);
+  Creature* SERIAL(target) = nullptr;
 };
 }
 
-PTask Task::consume(WCreature target) {
+PTask Task::consume(Creature* target) {
   return makeOwner<Consume>(target);
 }
 
@@ -1104,15 +1022,15 @@ class Eat : public Task {
   public:
   Eat(vector<Position> pos) : positions(pos) {}
 
-  WItem getDeadChicken(Position pos) {
-    vector<WItem> chickens = pos.getItems().filter(Item::classPredicate(ItemClass::FOOD));
+  Item* getDeadChicken(Position pos) {
+    vector<Item*> chickens = pos.getItems().filter(Item::classPredicate(ItemClass::FOOD));
     if (chickens.empty())
       return nullptr;
     else
       return chickens[0];
   }
 
-  virtual MoveInfo getMove(WCreature c) override {
+  virtual MoveInfo getMove(Creature* c) override {
     PROFILE;
     if (!position) {
       for (Position v : Random.permutation(positions))
@@ -1126,20 +1044,20 @@ class Eat : public Task {
     }
     if (c->getPosition() != *position && getDeadChicken(*position))
       return c->moveTowards(*position);
-    WItem chicken = getDeadChicken(c->getPosition());
+    Item* chicken = getDeadChicken(c->getPosition());
     if (chicken)
-      return c->eat(chicken).append([=] (WCreature c) {
+      return c->eat(chicken).append([=] (Creature* c) {
         setDone();
       });
     for (Position pos : c->getPosition().neighbors8(Random)) {
-      WItem chicken = getDeadChicken(pos);
+      Item* chicken = getDeadChicken(pos);
       if (chicken) 
         if (auto move = c->move(pos))
           return move;
-      if (WCreature ch = pos.getCreature())
+      if (Creature* ch = pos.getCreature())
         if (ch->getBody().isMinionFood())
           if (auto move = c->attack(ch)) {
-            return move.append([this, ch, pos] (WCreature) { if (ch->isDead()) position = pos; });
+            return move.append([this, ch, pos] (Creature*) { if (ch->isDead()) position = pos; });
       }
     }
     for (auto chicken : c->getVisibleCreatures())
@@ -1180,10 +1098,10 @@ class GoTo : public Task {
   public:
   GoTo(Position pos, bool forever) : target(pos), tryForever(forever) {}
 
-  virtual MoveInfo getMove(WCreature c) override {
+  virtual MoveInfo getMove(Creature* c) override {
     if (c->getPosition() == target ||
         (c->getPosition().dist8(target) == 1 && !target.canEnter(c)) ||
-        (!tryForever && !c->canNavigateTo(target))) {
+        (!tryForever && !c->canNavigateToOrNeighbor(target))) {
       setDone();
       return NoMove;
     } else
@@ -1216,7 +1134,7 @@ class StayIn : public Task {
   public:
   StayIn(vector<Position> pos) : target(std::move(pos)) {}
 
-  virtual MoveInfo getMove(WCreature c) override {
+  virtual MoveInfo getMove(Creature* c) override {
     PROFILE_BLOCK("StayIn::getMove");
     auto pos = c->getPosition();
     if (Random.roll(15) && target.contains(pos)) {
@@ -1237,14 +1155,11 @@ class StayIn : public Task {
         else
           currentTarget = none;
       }
-    if (currentTarget) {
-      if (!currentTarget->isSameModel(c->getPosition())) {
-        setDone();
-        return NoMove;
-      }
-      return c->moveTowards(*currentTarget);
-    } else
-      return c->wait();
+    if (currentTarget && currentTarget->isSameModel(c->getPosition()))
+      if (auto move = c->moveTowards(*currentTarget))
+        return move;
+    setDone();
+    return NoMove;
   }
 
   virtual string getDescription() const override {
@@ -1268,7 +1183,7 @@ namespace {
 class Idle : public Task {
   public:
 
-  virtual MoveInfo getMove(WCreature c) override {
+  virtual MoveInfo getMove(Creature* c) override {
     setDone();
     return c->wait();
   }
@@ -1292,7 +1207,7 @@ class AlwaysDone : public Task {
   AlwaysDone(PTask t, PTaskPredicate predicate) : task(std::move(t)),
       donePredicate(std::move(predicate)) {}
 
-  virtual MoveInfo getMove(WCreature c) override {
+  virtual MoveInfo getMove(Creature* c) override {
     if (donePredicate->apply())
       setDone();
     return task->getMove(c);
@@ -1314,7 +1229,7 @@ class AlwaysDone : public Task {
     task->cancel();
   }
 
-  virtual bool canPerform(WConstCreature c) const override {
+  virtual bool canPerform(const Creature* c) const override {
     return task->canPerform(c);
   }
 
@@ -1342,11 +1257,9 @@ PTask Task::doneWhen(PTask task, PTaskPredicate predicate) {
 namespace {
 class Follow : public Task {
   public:
-  Follow(WCreature t) : target(t) {}
+  Follow(Creature* t) : target(t) {}
 
-  virtual MoveInfo getMove(WCreature c) override {
-    // target == c if an attacking party team leader is killed and c becomes the new team leader.
-    // In this case make the task finish
+  virtual MoveInfo getMove(Creature* c) override {
     if (target != c && !target->isDead()) {
       Position targetPos = target->getPosition();
       if (targetPos.dist8(c->getPosition()) < 3) {
@@ -1366,14 +1279,14 @@ class Follow : public Task {
     return "Follow " + target->getName().bare();
   }
 
-  WCreature SERIAL(target);
+  Creature* SERIAL(target) = nullptr;
 
   SERIALIZE_ALL(SUBCLASS(Task), target)
   SERIALIZATION_CONSTRUCTOR(Follow);
 };
 }
 
-PTask Task::follow(WCreature c) {
+PTask Task::follow(Creature* c) {
   return makeOwner<Follow>(c);
 }
 
@@ -1382,7 +1295,7 @@ class TransferTo : public Task {
   public:
   TransferTo(WModel m) : model(m) {}
 
-  virtual MoveInfo getMove(WCreature c) override {
+  virtual MoveInfo getMove(Creature* c) override {
     if (c->getPosition().getModel() == model) {
       setDone();
       return NoMove;
@@ -1390,7 +1303,7 @@ class TransferTo : public Task {
     if (!target)
       target = c->getGame()->getTransferPos(model, c->getPosition().getModel());
     if (c->getPosition() == target && c->getGame()->canTransferCreature(c, model)) {
-      return c->wait().append([=] (WCreature c) { setDone(); c->getGame()->transferCreature(c, model); });
+      return c->wait().append([=] (Creature* c) { setDone(); c->getGame()->transferCreature(c, model); });
     } else
       return c->moveTowards(*target);
   }
@@ -1409,7 +1322,7 @@ class TransferTo : public Task {
 
   protected:
   optional<Position> SERIAL(target);
-  WModel SERIAL(model);
+  WModel SERIAL(model) = nullptr;
 };
 }
 
@@ -1422,7 +1335,7 @@ class GoToAndWait : public Task {
   public:
   GoToAndWait(Position pos, TimeInterval waitT) : position(pos), waitTime(waitT) {}
 
-  bool arrived(WCreature c) {
+  bool arrived(Creature* c) {
     return c->getPosition() == position ||
         (c->getPosition().dist8(position) == 1 && !position.canEnterEmpty(c));
   }
@@ -1431,7 +1344,7 @@ class GoToAndWait : public Task {
     return position;
   }
 
-  virtual MoveInfo getMove(WCreature c) override {
+  virtual MoveInfo getMove(Creature* c) override {
     if (maxTime && c->getLocalTime() >= *maxTime) {
       setDone();
       return NoMove;
@@ -1478,13 +1391,13 @@ PTask Task::goToAndWait(Position pos, TimeInterval waitTime) {
 namespace {
 class Whipping : public Task {
   public:
-  Whipping(Position pos, WCreature w) : position(pos), whipped(w) {}
+  Whipping(Position pos, Creature* w) : position(pos), whipped(w) {}
 
-  virtual bool canPerform(WConstCreature c) const override {
+  virtual bool canPerform(const Creature* c) const override {
     return c != whipped;
   }
 
-  virtual MoveInfo getMove(WCreature c) override {
+  virtual MoveInfo getMove(Creature* c) override {
     if (position.getCreature() != whipped || !whipped->isAffected(LastingEffect::TIED_UP)) {
       setDone();
       return NoMove;
@@ -1504,11 +1417,11 @@ class Whipping : public Task {
 
   protected:
   Position SERIAL(position);
-  WCreature SERIAL(whipped);
+  Creature* SERIAL(whipped) = nullptr;
 };
 }
 
-PTask Task::whipping(Position pos, WCreature whipped) {
+PTask Task::whipping(Position pos, Creature* whipped) {
   return makeOwner<Whipping>(pos, whipped);
 }
 
@@ -1517,8 +1430,8 @@ class DropItemsAnywhere : public Task {
   public:
   DropItemsAnywhere(EntitySet<Item> it) : items(it) {}
 
-  virtual MoveInfo getMove(WCreature c) override {
-    return c->drop(c->getEquipment().getItems().filter(items.containsPredicate())).append([=] (WCreature) { setDone(); });
+  virtual MoveInfo getMove(Creature* c) override {
+    return c->drop(c->getEquipment().getItems().filter(items.containsPredicate())).append([=] (Creature*) { setDone(); });
   }
 
   virtual string getDescription() const override {
@@ -1533,75 +1446,190 @@ class DropItemsAnywhere : public Task {
 };
 }
 
-PTask Task::dropItemsAnywhere(vector<WItem> items) {
+PTask Task::dropItemsAnywhere(vector<Item*> items) {
   return makeOwner<DropItemsAnywhere>(items);
 }
 
 namespace {
 class DropItems : public Task {
   public:
-  DropItems(EntitySet<Item> it, vector<Position> pos) : items(it), positions(pos) {}
+  DropItems(EntitySet<Item> items, StorageId storage, WCollective collective, optional<Position> origin)
+      : items(std::move(items)), positions(StorageInfo{storage, collective}), origin(origin) {}
 
+  DropItems(EntitySet<Item> items, vector<Position> positions)
+      : items(std::move(items)), positions(std::move(positions)) {}
 
   virtual string getDescription() const override {
     return "Drop items";
   }
 
-  optional<Position> getBestTarget(WCreature c, const vector<Position>& pos) const {
-    return chooseRandomClose(c, pos, LAZY);
+  optional<Position> chooseTarget(Creature* c) const {
+    return positions.visit(
+        [&](const vector<Position>& v) { return chooseRandomClose(c, v, LAZY); },
+        [&](const StorageInfo& info) {
+          return chooseRandomClose(c, info.collective->getStoragePositions(info.storage), LAZY);
+        }
+    );
   }
 
-  virtual MoveInfo getMove(WCreature c) override {
-    if (!target || !c->isSameSector(*target))
-      target = getBestTarget(c, positions);
+  void onPickedUp(Creature* c) {
+    pickedUpCreature = c;
+  }
+
+  virtual optional<StorageId> getStorageId(bool) const override {
+    if (auto info = positions.getReferenceMaybe<StorageInfo>())
+      return info->storage;
+    else
+      return none;
+  }
+
+  virtual MoveInfo getMove(Creature* c) override {
+    if (!target || !c->canNavigateTo(*target))
+      target = chooseTarget(c);
     if (!target)
       return c->drop(c->getEquipment().getItems().filter(items.containsPredicate())).append(
-          [this] (WCreature) {
+          [this] (Creature*) {
             setDone();
           });
     if (c->getPosition() == target) {
-      vector<WItem> myItems = c->getEquipment().getItems().filter(items.containsPredicate());
-      if (auto action = c->drop(myItems).append([=] (WCreature) { setDone(); }))
-        return {1.0, action.append([=](WCreature) {setDone();})};
+      vector<Item*> myItems = c->getEquipment().getItems().filter(items.containsPredicate());
+      if (auto action = c->drop(myItems).append([=] (Creature*) { setDone(); }))
+        return {1.0, action.append([=](Creature*) {setDone();})};
       else {
         setDone();
         return NoMove;
       }
     } else {
       if (c->getPosition().dist8(*target) == 1)
-        if (WCreature other = target->getCreature())
+        if (Creature* other = target->getCreature())
           if (other->isAffected(LastingEffect::SLEEP))
             other->removeEffect(LastingEffect::SLEEP);
       return c->moveTowards(*target);
     }
   }
 
-  virtual bool canPerform(WConstCreature c) const override {
-    PROFILE_BLOCK("DropItems::canPerform");
-    if (items.getSize() > c->getEquipment().getItems().size()) {
-      for (auto item : c->getEquipment().getItems())
-        if (items.contains(item))
-          return true;
-    } else {
-      for (auto item : items)
-        if (!!c->getEquipment().getItemById(item))
-          return true;
-    }
-    return false;
+  virtual bool isBogus() const override {
+    return origin && !origin->getInventory().containsAnyOf(items) &&
+        (!pickedUpCreature || !pickedUpCreature->getEquipment().containsAnyOf(items));
   }
 
-  SERIALIZE_ALL(SUBCLASS(Task), items, positions, target);
+  virtual bool canPerform(const Creature* c) const override {
+    PROFILE_BLOCK("DropItems::canPerform");
+    return (!origin || c == pickedUpCreature ) && c->getEquipment().containsAnyOf(items);
+  }
+
+  SERIALIZE_ALL(SUBCLASS(Task), items, positions, target, origin, pickedUpCreature);
   SERIALIZATION_CONSTRUCTOR(DropItems);
 
   protected:
   EntitySet<Item> SERIAL(items);
-  vector<Position> SERIAL(positions);
+  variant<StorageInfo, vector<Position>> SERIAL(positions);
   optional<Position> SERIAL(target);
+  optional<Position> SERIAL(origin);
+  Creature* SERIAL(pickedUpCreature) = nullptr;
 };
 }
 
-PTask Task::dropItems(vector<WItem> items, vector<Position> positions) {
-  return makeOwner<DropItems>(items, positions);
+PTask Task::dropItems(vector<Item*> items, StorageId storage, WCollective collective) {
+  return makeOwner<DropItems>(items, storage, collective, none);
+}
+
+PTask Task::dropItems(vector<Item*> items, vector<Position> positions) {
+  return makeOwner<DropItems>(items, std::move(positions));
+}
+
+namespace {
+
+class PickUpItem : public Task {
+  public:
+  PickUpItem(Position position, vector<Item*> items, optional<StorageId> storage, WeakPointer<DropItems> dropTask)
+      : Task(true), items(std::move(items)), position(position), tries(10), storage(storage),
+        dropTask(std::move(dropTask)) {
+    CHECK(!items.empty());
+    lightestItem = 10000000;
+    for (auto& item : items)
+      lightestItem = min(lightestItem, item->getWeight());
+  }
+
+  virtual void onPickedUp() {
+    setDone();
+  }
+
+  virtual optional<StorageId> getStorageId(bool dropOnly) const override {
+    if (dropOnly)
+      return none;
+    else
+      return storage;
+  }
+
+  virtual string getDescription() const override {
+    return "Pick up item " + toString(position);
+  }
+
+  virtual bool isBogus() const override {
+    return !position.getInventory().containsAnyOf(items);
+  }
+
+  virtual MoveInfo getMove(Creature* c) override {
+    CHECK(!pickedUp);
+    if (c->getPosition() == position) {
+      vector<Item*> hereItems;
+      for (Item* it : c->getPickUpOptions())
+        if (items.contains(it)) {
+          hereItems.push_back(it);
+          items.erase(it);
+        }
+      if (hereItems.empty()) {
+        setDone();
+        return NoMove;
+      }
+      items = hereItems;
+      if (auto action = c->pickUp(hereItems))
+        return {1.0, action.append([=](Creature* c) {
+          pickedUp = true;
+          onPickedUp();
+          if (dropTask)
+            dropTask->onPickedUp(c);
+        })};
+      else {
+        setDone();
+        return NoMove;
+      }
+    }
+    if (auto action = c->moveTowards(position, NavigationFlags().requireStepOnTile()))
+      return action;
+    else if (--tries == 0)
+      setDone();
+    return NoMove;
+  }
+
+  virtual bool canPerform(const Creature* c) const override {
+    PROFILE_BLOCK("PickUpItem::canPerform");
+    return c->canCarryMoreWeight(lightestItem) && c->canNavigateTo(position);
+  }
+
+  SERIALIZE_ALL(SUBCLASS(Task), items, pickedUp, position, tries, lightestItem, storage, dropTask)
+  SERIALIZATION_CONSTRUCTOR(PickUpItem)
+
+  protected:
+  EntitySet<Item> SERIAL(items);
+  bool SERIAL(pickedUp) = false;
+  Position SERIAL(position);
+  int SERIAL(tries);
+  double SERIAL(lightestItem);
+  optional<StorageId> SERIAL(storage);
+  WeakPointer<DropItems> SERIAL(dropTask);
+};
+}
+
+PTask Task::pickUpItem(Position position, vector<Item*> items, optional<StorageId> storage) {
+  return makeOwner<PickUpItem>(position, items, storage, nullptr);
+}
+
+Task::PickUpAndDrop Task::pickUpAndDrop(Position origin, vector<Item*> items, StorageId storage, WCollective col) {
+  auto drop = makeOwner<DropItems>(items, storage, col, origin);
+  auto pickUp = makeOwner<PickUpItem>(origin, items, storage, drop.get());
+  return PickUpAndDrop { std::move(pickUp), std::move(drop)};
 }
 
 namespace {
@@ -1610,7 +1638,7 @@ class Spider : public Task {
   Spider(Position orig, const vector<Position>& pos)
       : origin(orig), webPositions(pos) {}
 
-  virtual MoveInfo getMove(WCreature c) override {
+  virtual MoveInfo getMove(Creature* c) override {
     auto layer = Furniture::getLayer(FurnitureType::SPIDER_WEB);
     for (auto pos : webPositions)
       if (!pos.getFurniture(layer))
@@ -1623,11 +1651,11 @@ class Spider : public Task {
     if (!attackPosition)
       return c->moveTowards(origin);
     if (c->getPosition() == *attackPosition)
-      return c->wait().append([this](WCreature) {
+      return c->wait().append([this](Creature*) {
         attackPosition = none;
       });
     else
-      return c->moveTowards(*attackPosition, Creature::NavigationFlags().requireStepOnTile());
+      return c->moveTowards(*attackPosition, NavigationFlags().requireStepOnTile());
   }
 
   virtual string getDescription() const override {
@@ -1649,9 +1677,54 @@ PTask Task::spider(Position origin, const vector<Position>& posClose) {
 }
 
 namespace {
+class WithTeam : public Task {
+  public:
+  WithTeam(WCollective col, TeamId teamId, PTask task)
+      : collective(std::move(col)), teamId(teamId), task(std::move(task)) {}
+
+  virtual MoveInfo getMove(Creature* c) override {
+    if (task->isDone() || !collective->getTeams().exists(teamId)) {
+      setDone();
+      return NoMove;
+    }
+    auto leader = collective->getTeams().getLeader(teamId);
+    CHECK(!leader->isDead());
+    if (c == leader)
+      return task->getMove(c);
+    else {
+      Position targetPos = leader->getPosition();
+      if (targetPos.dist8(c->getPosition()) < 3) {
+        if (Random.roll(15))
+          if (auto move = c->move(c->getPosition().plus(Vec2(Random.choose<Dir>()))))
+            return move;
+        return NoMove;
+      }
+      return c->moveTowards(targetPos);
+    }
+  }
+
+  virtual string getDescription() const override {
+    return "Team task: " + task->getDescription();
+  }
+
+  SERIALIZE_ALL(SUBCLASS(Task), collective, teamId, task)
+  SERIALIZATION_CONSTRUCTOR(WithTeam)
+
+  private:
+  WCollective SERIAL(collective) = nullptr;
+  TeamId SERIAL(teamId);
+  PTask SERIAL(task);
+};
+}
+
+PTask Task::withTeam(WCollective col, TeamId teamId, PTask task) {
+  return makeOwner<WithTeam>(std::move(col), teamId, std::move(task));
+}
+
+namespace {
 class OutsidePredicate : public TaskPredicate {
   public:
-  OutsidePredicate(WCreature c, PositionSet pos) : creature(c), positions(pos) {}
+  OutsidePredicate(Creature* c, PositionSet pos) : creature(c), positions(pos) {}
 
   virtual bool apply() const override {
     return !positions.count(creature->getPosition());
@@ -1661,12 +1734,12 @@ class OutsidePredicate : public TaskPredicate {
   SERIALIZATION_CONSTRUCTOR(OutsidePredicate)
 
   private:
-  WCreature SERIAL(creature);
+  Creature* SERIAL(creature) = nullptr;
   PositionSet SERIAL(positions);
 };
 }
 
-PTaskPredicate TaskPredicate::outsidePositions(WCreature c, PositionSet pos) {
+PTaskPredicate TaskPredicate::outsidePositions(Creature* c, PositionSet pos) {
   return makeOwner<OutsidePredicate>(c, std::move(pos));
 }
 
@@ -1696,7 +1769,7 @@ void TaskPredicate::serialize(Archive& ar, const unsigned int version) {
 
 REGISTER_TYPE(Construction)
 REGISTER_TYPE(Destruction)
-REGISTER_TYPE(PickItem)
+REGISTER_TYPE(PickUpItem)
 REGISTER_TYPE(EquipItem)
 REGISTER_TYPE(ApplyItem)
 REGISTER_TYPE(ApplySquare)
@@ -1723,6 +1796,7 @@ REGISTER_TYPE(DropItems)
 REGISTER_TYPE(DropItemsAnywhere)
 REGISTER_TYPE(CampAndSpawn)
 REGISTER_TYPE(Spider)
+REGISTER_TYPE(WithTeam)
 REGISTER_TYPE(ArcheryRange)
 REGISTER_TYPE(OutsidePredicate)
 REGISTER_TYPE(AlwaysPredicate)

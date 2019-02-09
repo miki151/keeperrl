@@ -16,6 +16,6 @@ class Spectator : public CreatureView {
   virtual const vector<Vec2>& getUnknownLocations(WConstLevel) const override;
 
   private:
-  WLevel level;
+  WLevel level = nullptr;
 };
 

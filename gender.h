@@ -17,27 +17,17 @@
 
 #include "stdafx.h"
 #include "serialization.h"
+#include "util.h"
 
-class Gender {
-  public:
-  const static Gender male;
-  const static Gender female;
-  static void initialize();
+RICH_ENUM2(
+    std::uint8_t,
+    Gender,
+    MALE,
+    FEMALE,
+    IT
+);
 
-  const char* he() const;
-  const char* his() const;
-  const char* him() const;
-  const char* god() const;
-  const char* sireOrDame() const;
-
-
-  SERIALIZATION_DECL(Gender);
-
-  bool operator == (const Gender&) const;
-  bool operator != (const Gender&) const;
-
-  private:
-  Gender(bool female);
-  bool SERIAL(fem);
-};
-
+const char* he(Gender);
+const char* his(Gender);
+const char* him(Gender);
+const char* get(Gender, const char* male, const char* female, const char* it);

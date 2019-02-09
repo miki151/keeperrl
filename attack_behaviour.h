@@ -1,7 +1,7 @@
 #pragma once
 
 #include "enum_variant.h"
-#include "creature_factory.h"
+#include "creature_group.h"
 
 enum class AttackBehaviourId {
   KILL_LEADER,
@@ -11,9 +11,9 @@ enum class AttackBehaviourId {
   HALLOWEEN_KIDS
 };
 
-class AttackBehaviour : public EnumVariant<AttackBehaviourId, TYPES(int, CreatureFactory),
+class AttackBehaviour : public EnumVariant<AttackBehaviourId, TYPES(int, CreatureGroup),
         ASSIGN(int, AttackBehaviourId::KILL_MEMBERS),
-        ASSIGN(CreatureFactory, AttackBehaviourId::CAMP_AND_SPAWN)> {
+        ASSIGN(CreatureGroup, AttackBehaviourId::CAMP_AND_SPAWN)> {
   public:
   using EnumVariant::EnumVariant;
 };

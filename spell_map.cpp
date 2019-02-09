@@ -48,7 +48,7 @@ void SpellMap::clear() {
   elems.clear();
 }
 
-void SpellMap::onExpLevelReached(WCreature c, double level) {
+void SpellMap::onExpLevelReached(Creature* c, double level) {
   for (auto spell : Spell::getAll())
     if (auto minLevel = spell->getLearningExpLevel())
       if (level >= *minLevel && !contains(spell)) {
@@ -59,3 +59,12 @@ void SpellMap::onExpLevelReached(WCreature c, double level) {
 
 SERIALIZE_DEF(SpellMap, elems)
 
+
+#include "pretty_archive.h"
+template<>
+void SpellMap::serialize(PrettyInputArchive& ar1, unsigned) {
+  vector<SpellId> elems;
+  ar1(elems);
+  for (auto& e : elems)
+    add(e);
+}

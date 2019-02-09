@@ -5,7 +5,7 @@
 #include "enums.h"
 
 struct BestAttack {
-  BestAttack(WConstCreature);
+  BestAttack(const Creature*);
   AttrType HASH(attr);
   double HASH(value);
   HASH_ALL(attr, value)

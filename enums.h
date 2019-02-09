@@ -15,14 +15,17 @@
 
 #pragma once
 
-typedef int TeamId;
-typedef long long LevelId;
+#include "stdafx.h"
+
+using TeamId = int;
+using LevelId = long long;
+using GenericId = long long;
 
 enum class MusicType;
 enum class SunlightState;
 enum class GameSaveType;
 enum class EnemyId;
-enum class CollectiveResourceId;
+enum class CollectiveResourceId : std::uint8_t;
 enum class CollectiveConfigId;
 enum class MsgType;
 enum class BodyPart;
@@ -43,7 +46,7 @@ enum class CreatureSize;
 
 enum class SquareApplyType;
 enum class SquareId;
-enum class FurnitureType;
+enum class FurnitureType : std::uint8_t;
 enum class FurnitureLayer;
 enum class ItemAction;
 enum class WorshipType;
@@ -54,13 +57,13 @@ enum class FurnitureTickType;
 
 enum class MinionActivity;
 enum class MinionTrait;
-enum class TrapType;
+enum class TrapType : std::uint8_t;
 
 enum class SquareAttrib;
 
 enum class Dir;
 
-enum class CreatureId;
+using CreatureId = string;
 
 enum class ViewLayer;
 enum class HighlightType;
@@ -70,12 +73,11 @@ enum class SettlementType;
 enum class VillainType;
 enum class BiomeId;
 enum class ZoneId;
-enum class ViewId;
+enum class ViewId : std::uint16_t;
 
 enum class AnimationId;
 
 enum class SpellId;
-enum class TechId;
 enum class SkillId;
 enum class VisionId;
 
@@ -98,3 +100,16 @@ enum class TeamOrder;
 
 enum class FXName;
 enum class FXVariantName;
+enum class StorageId;
+enum class TribeAlignment;
+enum class TutorialState;
+enum class AvatarMenuOption;
+enum class PassableInfo;
+enum class ConquerCondition;
+enum class FurnitureOnBuilt;
+enum class ViewObjectAction : std::uint8_t;
+enum class Gender : std::uint8_t;
+
+struct FXInfo;
+struct FXSpawnInfo;
+using TechId = string;

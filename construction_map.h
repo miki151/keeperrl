@@ -16,11 +16,11 @@ class ConstructionMap {
     public:
     FurnitureInfo(FurnitureType, CostInfo);
     static FurnitureInfo getBuilt(FurnitureType);
-    void setBuilt();
+    void clearTask();
     void reset();
     void setTask(UniqueEntity<Task>::Id);
     CostInfo getCost() const;
-    bool isBuilt() const;
+    bool isBuilt(Position) const;
     UniqueEntity<Task>::Id getTask() const;
     bool hasTask() const;
     FurnitureType getFurnitureType() const;
@@ -29,10 +29,9 @@ class ConstructionMap {
     SERIALIZATION_DECL(FurnitureInfo);
 
     private:
+    GenericId SERIAL(task);
     CostInfo SERIAL(cost);
-    bool SERIAL(built) = false;
     FurnitureType SERIAL(type);
-    optional<UniqueEntity<Task>::Id> SERIAL(task);
   };
 
   class TrapInfo {
@@ -42,7 +41,7 @@ class ConstructionMap {
     bool isArmed() const;
     TrapType getType() const;
     void setArmed();
-    void setTask(WConstTask);
+    void setMarked();
     void reset();
 
     SERIALIZATION_DECL(TrapInfo);
@@ -50,7 +49,7 @@ class ConstructionMap {
     private:
     TrapType SERIAL(type);
     bool SERIAL(armed) = false;
-    WConstTask SERIAL(task);
+    bool SERIAL(marked) = false;
   };
 
   optional<const FurnitureInfo&> getFurniture(Position, FurnitureLayer) const;

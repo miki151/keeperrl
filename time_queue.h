@@ -26,35 +26,35 @@ class Creature;
 class TimeQueue {
   public:
   TimeQueue();
-  WCreature getNextCreature(double maxTime);
-  vector<WCreature> getAllCreatures() const;
+  Creature* getNextCreature(double maxTime);
+  vector<Creature*> getAllCreatures() const;
   void addCreature(PCreature, LocalTime time);
-  PCreature removeCreature(WCreature);
-  LocalTime getTime(WConstCreature);
-  void increaseTime(WCreature, TimeInterval);
-  void makeExtraMove(WCreature);
-  bool hasExtraMove(WCreature);
-  void postponeMove(WCreature);
-  void moveNow(WCreature);
-  bool willMoveThisTurn(WConstCreature);
-  bool compareOrder(WConstCreature, WConstCreature);
+  PCreature removeCreature(Creature*);
+  LocalTime getTime(const Creature*);
+  void increaseTime(Creature*, TimeInterval);
+  void makeExtraMove(Creature*);
+  bool hasExtraMove(Creature*);
+  void postponeMove(Creature*);
+  void moveNow(Creature*);
+  bool willMoveThisTurn(const Creature*);
+  bool compareOrder(const Creature*, const Creature*);
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);
 
   private:
-  bool contains(WCreature) const;
+  bool contains(Creature*) const;
 
   vector<PCreature> SERIAL(creatures);
   struct Queue {
-    void push(WCreature);
-    void pushFront(WCreature);
+    void push(Creature*);
+    void pushFront(Creature*);
     bool empty();
-    WCreature front();
+    Creature* front();
     void popFront();
-    void erase(WCreature);
-    deque<WCreature> SERIAL(players);
-    deque<WCreature> SERIAL(nonPlayers);
+    void erase(Creature*);
+    deque<Creature*> SERIAL(players);
+    deque<Creature*> SERIAL(nonPlayers);
     EntityMap<Creature, int> SERIAL(orderMap);
     SERIALIZE_ALL(players, nonPlayers, orderMap)
 

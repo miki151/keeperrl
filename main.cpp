@@ -48,9 +48,13 @@
 #include "campaign_type.h"
 #include "dummy_view.h"
 #include "sound.h"
+#include "game_config.h"
+#include "name_generator.h"
+#include "enemy_factory.h"
 
 #include "fx_manager.h"
 #include "fx_renderer.h"
+#include "fx_view_manager.h"
 
 #ifndef VSTUDIO
 #include "stack_printer.h"
@@ -193,7 +197,6 @@ static po::parser getCommandLineFlags() {
   flags["single_thread"].description("Do operations like loading, saving and level generation without starting an extra thread.");
   flags["user_dir"].type(po::string).description("Directory for options and save files");
   flags["data_dir"].type(po::string).description("Directory containing the game data");
-  flags["upload_url"].type(po::string).description("URL for uploading maps");
   flags["restore_settings"].description("Restore settings to default values.");
   flags["run_tests"].description("Run all unit tests and exit");
   flags["worldgen_test"].type(po::i32).description("Test how often world generation fails");
@@ -255,14 +258,27 @@ static string getInstallId(const FilePath& path, RandomGen& random) {
   return ret;
 }
 
-const static string serverVersion = "22";
+struct AppConfig {
+  AppConfig(FilePath path) {
+    if (auto error = PrettyPrinting::parseObject(values, path))
+      USER_FATAL << *error;
+  }
 
-static int readSaveVersion(FilePath file) {
-  ifstream input(file.getPath());
-  int version;
-  input >> version;
-  return version;
-}
+  template <typename T>
+  T get(const char* key) {
+    if (auto value = getReferenceMaybe(values, key)) {
+      if (auto ret = fromStringSafe<T>(*value))
+        return *ret;
+      else
+        USER_FATAL << "Error reading config value: " << key << " from: " << *value;
+    } else
+      USER_FATAL << "Config value not found: " << key;
+    fail();
+  }
+
+  private:
+  map<string, string> values;
+};
 
 static int keeperMain(po::parser& commandLineFlags) {
   ENABLE_PROFILER;
@@ -279,7 +295,7 @@ static int keeperMain(po::parser& commandLineFlags) {
   FatalLog.addOutput(DebugOutput::crash());
   FatalLog.addOutput(DebugOutput::toStream(std::cerr));
   UserErrorLog.addOutput(DebugOutput::exitProgram());
-  UserErrorLog.addOutput(DebugOutput::toStream(std::cerr));
+  UserInfoLog.addOutput(DebugOutput::toStream(std::cerr));
 #ifndef RELEASE
   ogzstream compressedLog("log.gz");
   if (!commandLineFlags["nolog"].was_set())
@@ -290,7 +306,6 @@ static int keeperMain(po::parser& commandLineFlags) {
   if (commandLineFlags["stderr"].was_set() || commandLineFlags["run_tests"].was_set())
     InfoLog.addOutput(DebugOutput::toStream(std::cerr));
   Skill::init();
-  Technology::init();
   Spell::init();
   if (commandLineFlags["run_tests"].was_set()) {
     testAll();
@@ -326,15 +341,6 @@ static int keeperMain(po::parser& commandLineFlags) {
   }());
   INFO << "Data path: " << dataPath;
   INFO << "User path: " << userPath;
-  string uploadUrl;
-  if (commandLineFlags["upload_url"].was_set())
-    uploadUrl = commandLineFlags["upload_url"].get().string;
-  else
-#ifdef RELEASE
-    uploadUrl = "http://keeperrl.com/~retired/" + serverVersion;
-#else
-    uploadUrl = "http://localhost/~michal/" + serverVersion;
-#endif
   Clock clock;
   Renderer renderer(
       &clock,
@@ -344,16 +350,30 @@ static int keeperMain(po::parser& commandLineFlags) {
       freeDataPath.file("images/mouse_cursor2.png"));
   FatalLog.addOutput(DebugOutput::toString([&renderer](const string& s) { renderer.showError(s);}));
   UserErrorLog.addOutput(DebugOutput::toString([&renderer](const string& s) { renderer.showError(s);}));
+  UserInfoLog.addOutput(DebugOutput::toString([&renderer](const string& s) { renderer.showError(s);}));
+  initializeGLExtensions();
+#ifndef RELEASE
+  installOpenglDebugHandler();
+#endif
+#ifdef RELEASE
+  AppConfig appConfig(dataPath.file("appconfig.txt"));
+#else
+  AppConfig appConfig(dataPath.file("appconfig-dev.txt"));
+#endif
+  string uploadUrl = appConfig.get<string>("upload_url");
 
   unique_ptr<fx::FXManager> fxManager;
   unique_ptr<fx::FXRenderer> fxRenderer;
+  unique_ptr<FXViewManager> fxViewManager;
 
   if (paidDataPath.exists()) {
     auto particlesPath = paidDataPath.subdirectory("images").subdirectory("particles");
     if (particlesPath.exists()) {
       INFO << "FX: initialization";
-      fxManager = std::make_unique<fx::FXManager>();
-      fxRenderer = std::make_unique<fx::FXRenderer>(particlesPath, *fxManager);
+      fxManager = unique<fx::FXManager>();
+      fxRenderer = unique<fx::FXRenderer>(particlesPath, *fxManager);
+      fxRenderer->loadTextures();
+      fxViewManager = unique<FXViewManager>(fxManager.get(), fxRenderer.get());
     }
   }
 
@@ -362,6 +382,9 @@ static int keeperMain(po::parser& commandLineFlags) {
   if (commandLineFlags["restore_settings"].was_set())
     remove(settingsPath.getPath());
   Options options(settingsPath);
+  auto modList = freeDataPath.subdirectory(gameConfigSubdir).getSubDirs();
+  USER_CHECK(!modList.empty()) << "No game config data found, please make sure all game data is in place";
+  options.setChoices(OptionId::CURRENT_MOD, modList);
   int seed = commandLineFlags["seed"].was_set() ? commandLineFlags["seed"].get().i32 : int(time(0));
   Random.init(seed);
   auto installId = getInstallId(userPath.file("installId.txt"), Random);
@@ -378,9 +401,11 @@ static int keeperMain(po::parser& commandLineFlags) {
   FileSharing fileSharing(uploadUrl, options, installId);
   Highscores highscores(userPath.file("highscores.dat"), fileSharing, &options);
   SokobanInput sokobanInput(freeDataPath.file("sokoban_input.txt"), userPath.file("sokoban_state.txt"));
+  NameGenerator nameGenerator(freeDataPath.subdirectory("names"));
+  EnemyFactory enemyFactory(Random, &nameGenerator);
   if (commandLineFlags["worldgen_test"].was_set()) {
     MainLoop loop(nullptr, &highscores, &fileSharing, freeDataPath, userPath, &options, &jukebox, &sokobanInput,
-        useSingleThread, 0);
+        &nameGenerator, &enemyFactory, useSingleThread, 0);
     vector<string> types;
     if (commandLineFlags["worldgen_maps"].was_set())
       types = split(commandLineFlags["worldgen_maps"].get().string, {','});
@@ -389,7 +414,7 @@ static int keeperMain(po::parser& commandLineFlags) {
   }
   auto battleTest = [&] (View* view) {
     MainLoop loop(view, &highscores, &fileSharing, freeDataPath, userPath, &options, &jukebox, &sokobanInput,
-        useSingleThread, 0);
+        &nameGenerator, &enemyFactory, useSingleThread, 0);
     auto level = commandLineFlags["battle_level"].get().string;
     auto info = commandLineFlags["battle_info"].get().string;
     auto numRounds = commandLineFlags["battle_rounds"].get().i32;
@@ -433,13 +458,13 @@ static int keeperMain(po::parser& commandLineFlags) {
 #ifndef RELEASE
   InfoLog.addOutput(DebugOutput::toString([&view](const string& s) { view->logMessage(s);}));
 #endif
-  view->initialize();
+  view->initialize(std::move(fxRenderer), std::move(fxViewManager));
   if (commandLineFlags["battle_level"].was_set() && commandLineFlags["battle_view"].was_set()) {
     battleTest(view.get());
     return 0;
   }
   MainLoop loop(view.get(), &highscores, &fileSharing, freeDataPath, userPath, &options, &jukebox, &sokobanInput,
-      useSingleThread, readSaveVersion(freeDataPath.file("save_version.txt")));
+      &nameGenerator, &enemyFactory, useSingleThread, appConfig.get<int>("save_version"));
   try {
     if (audioError)
       view->presentText("Failed to initialize audio. The game will be started without sound.", *audioError);

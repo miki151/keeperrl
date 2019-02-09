@@ -7,7 +7,7 @@
 #include "furniture_factory.h"
 #include "creature.h"
 #include "player_message.h"
-#include "creature_factory.h"
+#include "creature_group.h"
 #include "game.h"
 #include "event_listener.h"
 #include "item.h"
@@ -21,11 +21,14 @@
 #include "gender.h"
 #include "collective.h"
 #include "territory.h"
+#include "game_event.h"
+#include "effect.h"
+#include "name_generator.h"
 
 struct ChestInfo {
   FurnitureType openedType;
   struct CreatureInfo {
-    optional<CreatureFactory> creature;
+    optional<CreatureGroup> creature;
     int creatureChance;
     int numCreatures;
     string msgCreature;
@@ -38,7 +41,7 @@ struct ChestInfo {
   optional<ItemInfo> itemInfo;
 };
 
-static void useChest(Position pos, WConstFurniture furniture, WCreature c, const ChestInfo& chestInfo) {
+static void useChest(Position pos, WConstFurniture furniture, Creature* c, const ChestInfo& chestInfo) {
   c->secondPerson("You open the " + furniture->getName());
   c->thirdPerson(c->getName().the() + " opens the " + furniture->getName());
   pos.removeFurniture(furniture, FurnitureFactory::get(chestInfo.openedType, furniture->getTribe()));
@@ -46,7 +49,8 @@ static void useChest(Position pos, WConstFurniture furniture, WCreature c, const
     if (creatureInfo->creatureChance > 0 && Random.roll(creatureInfo->creatureChance)) {
       int numSpawned = 0;
       for (int i : Range(creatureInfo->numCreatures))
-        if (pos.getLevel()->landCreature({pos}, CreatureFactory(*creatureInfo->creature).random()))
+        if (pos.getLevel()->landCreature({pos}, CreatureGroup(*creatureInfo->creature).random(
+            pos.getGame()->getCreatureFactory())))
           ++numSpawned;
       if (numSpawned > 0)
         c->message(creatureInfo->msgCreature);
@@ -61,7 +65,66 @@ static void useChest(Position pos, WConstFurniture furniture, WCreature c, const
   }
 }
 
-static void usePortal(Position pos, WCreature c) {
+static void desecrate(Position pos, WConstFurniture furniture, Creature* c) {
+  c->verb("desecrate", "desecrates", "the "+ furniture->getName());
+  pos.removeFurniture(furniture, FurnitureFactory::get(FurnitureType::ALTAR_DES, furniture->getTribe()));
+  switch (Random.get(4)) {
+    case 0:
+      pos.globalMessage("A streak of magical energy is released");
+      c->addPermanentEffect(Random.choose(
+          LastingEffect::RAGE,
+          LastingEffect::BLIND,
+          LastingEffect::PANIC,
+          LastingEffect::SPEED,
+          LastingEffect::FLYING,
+          LastingEffect::SLOWED,
+          LastingEffect::INSANITY,
+          LastingEffect::COLLAPSED,
+          LastingEffect::INVISIBLE,
+          LastingEffect::TELEPATHY,
+          LastingEffect::MELEE_RESISTANCE,
+          LastingEffect::MELEE_VULNERABILITY,
+          LastingEffect::MAGIC_RESISTANCE,
+          LastingEffect::MAGIC_VULNERABILITY,
+          LastingEffect::RANGED_RESISTANCE,
+          LastingEffect::RANGED_VULNERABILITY,
+          LastingEffect::BAD_BREATH,
+          LastingEffect::NIGHT_VISION,
+          LastingEffect::PEACEFULNESS));
+      break;
+    case 1: {
+      pos.globalMessage("A streak of magical energy is released");
+      auto ef = Random.choose(
+          Effect(Effect::IncreaseAttr{ Random.choose(
+              AttrType::DAMAGE, AttrType::DEFENSE, AttrType::SPELL_DAMAGE, AttrType::RANGED_DAMAGE),
+              Random.choose(-3, -2, -1, 1, 2, 3) }),
+          Effect(Effect::Acid{}),
+          Effect(Effect::Fire{}),
+          Effect(Effect::Lasting { LastingEffect::DAM_BONUS }),
+          Effect(Effect::Lasting { LastingEffect::BLIND }),
+          Effect(Effect::Lasting { LastingEffect::POISON }),
+          Effect(Effect::Lasting { LastingEffect::BLEEDING }),
+          Effect(Effect::Lasting { LastingEffect::HALLU })
+      );
+      ef.applyToCreature(c);
+      break;
+    }
+    case 2: {
+      pos.globalMessage(pos.getGame()->getCreatureFactory()->getNameGenerator()->getNext(NameGeneratorId::DEITY)
+          + " seems to be very angry");
+      auto group = CreatureGroup::singleType(TribeId::getMonster(), "ANGEL");
+      Effect::summon(pos, group, Random.get(3, 6), none);
+      break;
+    }
+    case 3: {
+      c->verb("find", "finds", "some gold coins in the cracks");
+      pos.dropItems(ItemType(ItemType::GoldPiece{}).get(Random.get(50, 100)));
+      break;
+    }
+  }
+}
+
+static void usePortal(Position pos, Creature* c) {
   c->you(MsgType::ENTER_PORTAL, "");
   if (auto otherPos = pos.getOtherPortal())
     for (auto f : otherPos->getFurniture())
@@ -79,7 +142,7 @@ static void usePortal(Position pos, WCreature c) {
   c->privateMessage("The portal is inactive. Create another one to open a connection.");
 }
 
-static void sitOnThrone(Position pos, WConstFurniture furniture, WCreature c) {
+static void sitOnThrone(Position pos, WConstFurniture furniture, Creature* c) {
   c->thirdPerson(c->getName().the() + " sits on the " + furniture->getName());
   c->secondPerson("You sit on the " + furniture->getName());
   if (furniture->getTribe() == c->getTribeId())
@@ -94,7 +157,7 @@ static void sitOnThrone(Position pos, WConstFurniture furniture, WCreature c) {
     if (!collective)
       return;
     bool wasTeleported = false;
-    auto tryTeleporting = [&] (WCreature enemy) {
+    auto tryTeleporting = [&] (Creature* enemy) {
       if (enemy->getPosition().dist8(pos) > 3 || !c->canSee(enemy))
         if (auto landing = pos.getLevel()->getClosestLanding({pos}, enemy)) {
           enemy->getPosition().moveCreature(*landing, true);
@@ -106,14 +169,14 @@ static void sitOnThrone(Position pos, WConstFurniture furniture, WCreature c) {
     if (collective->getLeader())
       tryTeleporting(collective->getLeader());
     if (wasTeleported)
-      c->privateMessage(PlayerMessage("Thy audience hath been summoned, "_s + c->getAttributes().getGender().sireOrDame(),
-          MessagePriority::HIGH));
+      c->privateMessage(PlayerMessage("Thy audience hath been summoned"_s +
+          get(c->getAttributes().getGender(), ", Sire", ", Dame", ""), MessagePriority::HIGH));
     else
       c->privateMessage("Nothing happens");
   }
 }
 
-void FurnitureUsage::handle(FurnitureUsageType type, Position pos, WConstFurniture furniture, WCreature c) {
+void FurnitureUsage::handle(FurnitureUsageType type, Position pos, WConstFurniture furniture, Creature* c) {
   CHECK(c != nullptr);
   switch (type) {
     case FurnitureUsageType::CHEST:
@@ -121,7 +184,7 @@ void FurnitureUsage::handle(FurnitureUsageType type, Position pos, WConstFurnitu
           ChestInfo {
               FurnitureType::OPENED_CHEST,
               ChestInfo::CreatureInfo {
-                  CreatureFactory::singleCreature(TribeId::getPest(), CreatureId::RAT),
+                  CreatureGroup::singleCreature(TribeId::getPest(), "RAT"),
                   10,
                   Random.get(3, 6),
                   "It's full of rats!",
@@ -148,7 +211,7 @@ void FurnitureUsage::handle(FurnitureUsageType type, Position pos, WConstFurnitu
           ChestInfo {
               FurnitureType::OPENED_COFFIN,
               ChestInfo::CreatureInfo {
-                  CreatureFactory::singleCreature(TribeId::getMonster(), CreatureId::VAMPIRE_LORD), 1, 1,
+                  CreatureGroup::singleCreature(TribeId::getMonster(), "VAMPIRE_LORD"), 1, 1,
                   "There is a rotting corpse inside. The corpse is alive!"
               },
               none
@@ -188,13 +251,16 @@ void FurnitureUsage::handle(FurnitureUsageType type, Position pos, WConstFurnitu
     case FurnitureUsageType::SIT_ON_THRONE:
       sitOnThrone(pos, furniture, c);
       break;
+    case FurnitureUsageType::DESECRATE:
+      desecrate(pos, furniture, c);
+      break;
     case FurnitureUsageType::STUDY:
     case FurnitureUsageType::ARCHERY_RANGE:
       break;
   }
 }
 
-bool FurnitureUsage::canHandle(FurnitureUsageType type, WConstCreature c) {
+bool FurnitureUsage::canHandle(FurnitureUsageType type, const Creature* c) {
   switch (type) {
     case FurnitureUsageType::KEEPER_BOARD:
     case FurnitureUsageType::FOUNTAIN:
@@ -218,6 +284,7 @@ string FurnitureUsage::getUsageQuestion(FurnitureUsageType type, string furnitur
     case FurnitureUsageType::KEEPER_BOARD: return "view " + furnitureName;
     case FurnitureUsageType::PORTAL: return "enter " + furnitureName;
     case FurnitureUsageType::SIT_ON_THRONE: return "sit on " + furnitureName;
+    case FurnitureUsageType::DESECRATE: return "desecrate " + furnitureName;
     default: break;
   }
   return "";

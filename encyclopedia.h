@@ -15,11 +15,22 @@
 
 #pragma once
 
+#include "util.h"
+
 class View;
 class Technology;
+class GameConfig;
+class BuildInfo;
 
 class Encyclopedia {
   public:
+  Encyclopedia(vector<BuildInfo>, const Technology&);
   void present(View*, int lastInd = 0);
+
+  private:
+  vector<BuildInfo> buildInfo;
+  const Technology& technology;
+  void advance(View*, TechId) const;
+  void advances(View*, int lastInd = 0) const;
 };
 

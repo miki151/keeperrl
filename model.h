@@ -33,6 +33,8 @@ class StairKey;
 class Game;
 class ExternalEnemies;
 class Options;
+class AvatarInfo;
+class GameConfig;
 
 /**
   * Main class that holds all game logic.
@@ -56,7 +58,7 @@ class Model : public OwnedObject<Model> {
   void addExternalEnemies(ExternalEnemies);
   void clearExternalEnemies();
 
-  const optional<ExternalEnemies>& getExternalEnemies() const;
+  const heap_optional<ExternalEnemies>& getExternalEnemies() const;
 
   bool isTurnBased();
 
@@ -70,8 +72,10 @@ class Model : public OwnedObject<Model> {
   WGame getGame() const;
   void tick(LocalTime);
   vector<WCollective> getCollectives() const;
-  vector<WCreature> getAllCreatures() const;
+  vector<Creature*> getAllCreatures() const;
   vector<WLevel> getLevels() const;
+  const vector<WLevel>& getMainLevels() const;
+  void addCollective(PCollective);
 
   WLevel getTopLevel() const;
 
@@ -80,18 +84,22 @@ class Model : public OwnedObject<Model> {
 
   int getSaveProgressCount() const;
 
-  void killCreature(WCreature victim);
+  void killCreature(Creature* victim);
   void updateSunlightMovement();
 
-  PCreature extractCreature(WCreature);
+  PCreature extractCreature(Creature*);
   void transferCreature(PCreature, Vec2 travelDir);
-  bool canTransferCreature(WCreature, Vec2 travelDir);
+  bool canTransferCreature(Creature*, Vec2 travelDir);
 
   SERIALIZATION_DECL(Model)
 
   void discardForRetirement();
 
   void addEvent(const GameEvent&);
+
+  WLevel buildLevel(LevelBuilder, PLevelMaker);
+  WLevel buildMainLevel(LevelBuilder, PLevelMaker);
+  void calculateStairNavigation();
 
   private:
   struct Private {};
@@ -105,10 +113,9 @@ class Model : public OwnedObject<Model> {
   friend class ModelBuilder;
 
   PCreature makePlayer(int handicap);
-  WLevel buildLevel(LevelBuilder&&, PLevelMaker);
-  WLevel buildTopLevel(LevelBuilder&&, PLevelMaker);
 
   vector<PLevel> SERIAL(levels);
+  vector<WLevel> SERIAL(mainLevels);
   PLevel SERIAL(cemetery);
   vector<PCollective> SERIAL(collectives);
   WGame SERIAL(game) = nullptr;
@@ -117,16 +124,14 @@ class Model : public OwnedObject<Model> {
   vector<PCreature> SERIAL(deadCreatures);
   double SERIAL(currentTime) = 0;
   int SERIAL(woodCount) = 0;
-  void calculateStairNavigation();
   optional<StairKey> getStairsBetween(WConstLevel from, WConstLevel to);
   map<pair<LevelId, LevelId>, StairKey> SERIAL(stairNavigation);
   bool serializationLocked = false;
-  WLevel SERIAL(topLevel) = nullptr;
   template <typename>
   friend class EventListener;
   OwnerPointer<EventGenerator> SERIAL(eventGenerator);
   void checkCreatureConsistency();
-  HeapAllocated<optional<ExternalEnemies>> SERIAL(externalEnemies);
+  heap_optional<ExternalEnemies> SERIAL(externalEnemies);
   int moveCounter = 0;
 };
 

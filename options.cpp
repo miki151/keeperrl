@@ -38,17 +38,15 @@ const EnumMap<OptionId, Options::Value> defaults {
   {OptionId::FAST_IMMIGRATION, 0},
   {OptionId::STARTING_RESOURCE, 0},
   {OptionId::START_WITH_NIGHT, 0},
-  {OptionId::KEEPER_NAME, string("")},
-  {OptionId::KEEPER_TYPE, 0},
+  {OptionId::PLAYER_NAME, string("")},
   {OptionId::KEEPER_SEED, string("")},
-  {OptionId::ADVENTURER_NAME, string("")},
-  {OptionId::ADVENTURER_TYPE, 0},
   {OptionId::MAIN_VILLAINS, 4},
   {OptionId::RETIRED_VILLAINS, 1},
   {OptionId::LESSER_VILLAINS, 3},
   {OptionId::ALLIES, 2},
   {OptionId::INFLUENCE_SIZE, 3},
   {OptionId::GENERATE_MANA, 0},
+  {OptionId::CURRENT_MOD, 0},
 };
 
 const map<OptionId, string> names {
@@ -71,17 +69,15 @@ const map<OptionId, string> names {
   {OptionId::FAST_IMMIGRATION, "Fast immigration"},
   {OptionId::STARTING_RESOURCE, "Resource bonus"},
   {OptionId::START_WITH_NIGHT, "Start with night"},
-  {OptionId::KEEPER_NAME, "Keeper's name"},
-  {OptionId::KEEPER_TYPE, "Keeper's avatar"},
+  {OptionId::PLAYER_NAME, "First name"},
   {OptionId::KEEPER_SEED, "Level generation seed"},
-  {OptionId::ADVENTURER_NAME, "Adventurer's name"},
-  {OptionId::ADVENTURER_TYPE, "Adventurer's gender"},
   {OptionId::MAIN_VILLAINS, "Main villains"},
   {OptionId::RETIRED_VILLAINS, "Retired villains"},
   {OptionId::LESSER_VILLAINS, "Lesser villains"},
   {OptionId::ALLIES, "Allies"},
   {OptionId::INFLUENCE_SIZE, "Min. tribes in influence zone"},
   {OptionId::GENERATE_MANA, "Generate mana in library"},
+  {OptionId::CURRENT_MOD, "Current mod"},
 };
 
 const map<OptionId, string> hints {
@@ -120,6 +116,7 @@ const map<OptionSet, vector<OptionId>> optionSets {
       OptionId::GAME_EVENTS,
       OptionId::AUTOSAVE,
       OptionId::WASD_SCROLLING,
+      OptionId::CURRENT_MOD,
 #ifndef RELEASE
       OptionId::KEEP_SAVEFILES,
       OptionId::SHOW_MAP,
@@ -133,7 +130,7 @@ const map<OptionSet, vector<OptionId>> optionSets {
       OptionId::STARTING_RESOURCE,
       OptionId::FAST_IMMIGRATION,
 #endif
-      OptionId::KEEPER_NAME,
+      OptionId::PLAYER_NAME,
       OptionId::KEEPER_SEED,
   }},
 };
@@ -150,13 +147,9 @@ const string& Options::getName(OptionId id) {
 
 Options::Type Options::getType(OptionId id) {
   switch (id) {
-    case OptionId::ADVENTURER_NAME:
+    case OptionId::PLAYER_NAME:
     case OptionId::KEEPER_SEED:
-    case OptionId::KEEPER_NAME:
       return Options::STRING;
-    case OptionId::ADVENTURER_TYPE:
-    case OptionId::KEEPER_TYPE:
-      return Options::PLAYER_TYPE;
     case OptionId::GENERATE_MANA:
       return Options::BOOL;
     default:
@@ -196,14 +189,6 @@ int Options::getIntValue(OptionId id) {
       return limits[id]->first;
   }
   return v;
-}
-
-CreatureId Options::getCreatureId(OptionId id) {
-  return choicesCreatureId[id][*getValue(id).getValueMaybe<int>() % choicesCreatureId[id].size()];
-}
-
-void Options::setNextCreatureId(OptionId id) {
-  setValue(id, *getValue(id).getValueMaybe<int>() + 1);
 }
 
 void Options::setLimits(OptionId id, int minV, int maxV) {
@@ -256,15 +241,16 @@ string Options::getValueString(OptionId id) {
     case OptionId::GENERATE_MANA:
     case OptionId::START_WITH_NIGHT:
       return getYesNo(value);
-    case OptionId::ADVENTURER_NAME:
-    case OptionId::KEEPER_SEED:
-    case OptionId::KEEPER_NAME: {
+    case OptionId::PLAYER_NAME:
+    case OptionId::KEEPER_SEED: {
       string val = *value.getValueMaybe<string>();
       if (val.empty())
         return defaultStrings[id];
       else
         return val;
-      }
+    }
+    case OptionId::CURRENT_MOD:
+      return choices[id][*value.getValueMaybe<int>() % choices[id].size()];
     case OptionId::FULLSCREEN_RESOLUTION: {
       int val = *value.getValueMaybe<int>();
       if (val >= 0 && val < choices[id].size())
@@ -281,22 +267,19 @@ string Options::getValueString(OptionId id) {
     case OptionId::SOUND:
     case OptionId::MUSIC:
       return toString(getIntValue(id)) + "%";
-    case OptionId::KEEPER_TYPE:
-    case OptionId::ADVENTURER_TYPE:
-      return toString((int)getCreatureId(id));
   }
 }
 
 optional<Options::Value> Options::readValue(OptionId id, const string& input) {
   switch (id) {
-    case OptionId::ADVENTURER_NAME:
+    case OptionId::PLAYER_NAME:
     case OptionId::KEEPER_SEED:
-    case OptionId::KEEPER_NAME: return Options::Value(input);
+      return Options::Value(input);
     default:
-        if (auto ret = fromStringSafe<int>(input))
-          return Options::Value(*ret);
-        else
-          return none;
+      if (auto ret = fromStringSafe<int>(input))
+        return Options::Value(*ret);
+      else
+        return none;
   }
 }
 
@@ -308,8 +291,7 @@ static MenuType getMenuType(OptionSet set) {
 
 void Options::changeValue(OptionId id, const Options::Value& value, View* view) {
   switch (id) {
-    case OptionId::KEEPER_NAME:
-    case OptionId::ADVENTURER_NAME:
+    case OptionId::PLAYER_NAME:
       if (auto val = view->getText("Enter " + names.at(id), *value.getValueMaybe<string>(), 23,
             "Leave blank to use a random name."))
         setValue(id, *val);
@@ -336,10 +318,6 @@ void Options::changeValue(OptionId id, const Options::Value& value, View* view) 
 
 void Options::setChoices(OptionId id, const vector<string>& v) {
   choices[id] = v;
-}
-
-void Options::setChoices(OptionId id, const vector<CreatureId>& v) {
-  choicesCreatureId[id] = v;
 }
 
 optional<string> Options::getHint(OptionId id) {

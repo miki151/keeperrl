@@ -80,12 +80,33 @@ bool RandomGen::chance(double v) {
   return getDouble(0, 1) <= v;
 }
 
+bool RandomGen::chance(float v) {
+  return getFloat(0, 1) <= v;
+}
+
 double RandomGen::getDouble() {
   return defaultDist(generator);
 }
 
 double RandomGen::getDouble(double a, double b) {
   return uniform_real_distribution<double>(a, b)(generator);
+}
+
+pair<float, float> RandomGen::getFloat2Fast() {
+  auto v = get(0, 1 << 30);
+  int v1 = v >> 15;
+  int v2 = v & 0x7fff;
+  const float mul = 1.0f / float(0x7fff);
+  return make_pair(float(v1) * mul, float(v2) * mul);
+}
+
+float RandomGen::getFloat(float a, float b) {
+  return uniform_real_distribution<float>(a, b)(generator);
+}
+
+float RandomGen::getFloatFast(float a, float b) {
+  auto v = get(0, INT_MAX);
+  return a + (b - a) * float(v) * (1.0f / float(INT_MAX - 1));
 }
 
 RandomGen Random;
@@ -102,6 +123,7 @@ template double fromString<double>(const string&);
 
 template optional<int> fromStringSafe<int>(const string&);
 template optional<double> fromStringSafe<double>(const string&);
+template optional<string> fromStringSafe<string>(const string&);
 
 
 template <class T>
@@ -511,7 +533,7 @@ Rectangle::Rectangle(int px1, int py1, int kx1, int ky1) : px(px1), py(py1), kx(
   }
 }
 
-Rectangle::Rectangle(Vec2 p, Vec2 k) : Rectangle(p.x, p.y, k.x, k.y) {
+Rectangle::Rectangle(Vec2 p, Vec2 k) : Rectangle(min(p.x, k.x), min(p.y, k.y), max(p.x, k.x), max(p.y, k.y)) {
 }
 
 Rectangle::Rectangle(Range xRange, Range yRange)
@@ -693,6 +715,15 @@ bool Range::intersects(Range r) const {
   return contains(r.start) || contains(r.finish - r.increment) || r.contains(start);
 }
 
+Range Range::intersection(Range r) const {
+  CHECK(increment == 1 && r.increment == 1);
+  return Range(max(start, r.start), min(finish, r.finish));
+}
+
+bool Range::operator == (const Range& r) const {
+  return start == r.start && finish == r.finish && increment == r.increment;
+}
+
 Range::Iter Range::begin() {
   if ((increment > 0 && start < finish) || (increment < 0 && start > finish))
     return Iter(start, start, finish, increment);
@@ -720,7 +751,7 @@ const Range::Iter& Range::Iter::operator++ () {
   return *this;
 }
 
-SERIALIZE_DEF(Range, start, finish, increment)
+SERIALIZE_DEF(Range, NAMED(start), NAMED(finish), OPTION(increment))
 SERIALIZATION_CONSTRUCTOR_IMPL(Range);
 
 string combine(const vector<string>& adj, bool commasOnly) {
@@ -1046,4 +1077,12 @@ Dir rotate(Dir dir) {
     case Dir::NW:
       return Dir::N;
   }
+}
+
+#include "pretty_archive.h"
+template void Vec2::serialize(PrettyInputArchive&, unsigned);
+template void Range::serialize(PrettyInputArchive&, unsigned);
+
+string toString(const Range& r) {
+  return "[" + toString(r.getStart()) + ", " + toString(r.getEnd()) + "]";
 }

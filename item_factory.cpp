@@ -76,10 +76,10 @@ ItemFactory ItemFactory::villageShop() {
       {ItemType::Scroll{Effect::EnhanceWeapon{}}, 5 },
       {ItemType::FireScroll{}, 5 },
       {ItemType::Torch{}, 10 },
-      {ItemType::Scroll{Effect::Summon{CreatureId::FIRE_SPHERE}}, 5 },
+      {ItemType::Scroll{Effect::Summon{"FIRE_SPHERE", Range(1, 2)}}, 5 },
       {ItemType::Scroll{Effect::CircularBlast{}}, 1 },
       {ItemType::Scroll{Effect::Deception{}}, 2 },
-      {ItemType::Scroll{Effect::Summon{CreatureId::FLY}}, 5 },
+      {ItemType::Scroll{Effect::Summon{"FLY", Range(3, 6)}}, 5 },
       {ItemType::Potion{Effect::Heal{}}, 7 },
       {ItemType::Potion{Effect::Lasting{LastingEffect::SLEEP}}, 5 },
       {ItemType::Potion{Effect::Lasting{LastingEffect::SLOWED}}, 5 },
@@ -168,10 +168,10 @@ ItemFactory ItemFactory::scrolls() {
       {ItemType::Scroll{Effect::EnhanceArmor{}}, 1 },
       {ItemType::Scroll{Effect::EnhanceWeapon{}}, 1 },
       {ItemType::FireScroll{}, 1 },
-      {ItemType::Scroll{Effect::Summon{CreatureId::FIRE_SPHERE}}, 1 },
+      {ItemType::Scroll{Effect::Summon{"FIRE_SPHERE", Range(1, 2)}}, 1 },
       {ItemType::Scroll{Effect::CircularBlast{}}, 1 },
       {ItemType::Scroll{Effect::Deception{}}, 1 },
-      {ItemType::Scroll{Effect::Summon{CreatureId::FLY}}, 1 }});
+      {ItemType::Scroll{Effect::Summon{"FLY", Range(3, 6)}}, 1 }});
 }
 
 ItemFactory ItemFactory::mushrooms(bool onlyGood) {
@@ -211,10 +211,10 @@ ItemFactory ItemFactory::dungeon() {
       {ItemType::Scroll{Effect::EnhanceArmor{}}, 30 },
       {ItemType::Scroll{Effect::EnhanceWeapon{}}, 30 },
       {ItemType::FireScroll{}, 30 },
-      {ItemType::Scroll{Effect::Summon{CreatureId::FIRE_SPHERE}}, 30 },
+      {ItemType::Scroll{Effect::Summon{"FIRE_SPHERE", Range(1, 2)}}, 30 },
       {ItemType::Scroll{Effect::CircularBlast{}}, 5 },
       {ItemType::Scroll{Effect::Deception{}}, 10 },
-      {ItemType::Scroll{Effect::Summon{CreatureId::FLY}}, 30 },
+      {ItemType::Scroll{Effect::Summon{"FLY", Range(3, 6)}}, 30 },
       {ItemType::Potion{Effect::Heal{}}, 50 },
       {ItemType::Potion{Effect::Lasting{LastingEffect::SLEEP}}, 50 },
       {ItemType::Potion{Effect::Lasting{LastingEffect::SLOWED}}, 50 },

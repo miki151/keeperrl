@@ -27,18 +27,20 @@ static double getDefaultWeight(Body::Size size) {
   }
 }
 
-SERIALIZE_DEF(Body, xhumanoid, size, weight, bodyParts, injuredBodyParts, lostBodyParts, material, health, minionFood, deathSound, carryLimit, intrinsicAttacks, minPushSize)
+template <class Archive>
+void Body::serializeImpl(Archive& ar, const unsigned int) {
+  ar(OPTION(xhumanoid), OPTION(size), OPTION(weight), OPTION(bodyParts), OPTION(injuredBodyParts), OPTION(lostBodyParts));
+  ar(OPTION(material), OPTION(health), OPTION(minionFood), NAMED(deathSound), OPTION(intrinsicAttacks), OPTION(minPushSize));
+}
+
+template <class Archive>
+void Body::serialize(Archive& ar1, const unsigned int v) {
+  serializeImpl(ar1, v);
+}
+
+SERIALIZABLE(Body)
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Body)
-
-static double getDefaultCarryLimit(Body::Size size) {
-  switch (size) {
-    case Body::Size::HUGE: return 200;
-    case Body::Size::LARGE: return 80;
-    case Body::Size::MEDIUM: return 60;
-    case Body::Size::SMALL: return 6;
-  }
-}
 
 static int getDefaultIntrinsicDamage(Body::Size size) {
   switch (size) {
@@ -51,7 +53,7 @@ static int getDefaultIntrinsicDamage(Body::Size size) {
 
 Body::Body(bool humanoid, Material m, Size size) : xhumanoid(humanoid), size(size),
     weight(getDefaultWeight(size)), material(m),
-    deathSound(humanoid ? SoundId::HUMANOID_DEATH : SoundId::BEAST_DEATH), carryLimit(getDefaultCarryLimit(size)),
+    deathSound(humanoid ? SoundId::HUMANOID_DEATH : SoundId::BEAST_DEATH),
     minPushSize(Size((int)size + 1)) {
   if (humanoid)
     setHumanoidBodyParts(getDefaultIntrinsicDamage(size));
@@ -107,7 +109,11 @@ void Body::setMinPushSize(Body::Size size) {
   minPushSize = size;
 }
 
-WItem Body::chooseRandomWeapon(WItem weapon) const {
+void Body::setHumanoid(bool h) {
+  xhumanoid = h;
+}
+
+Item* Body::chooseRandomWeapon(Item* weapon) const {
   // choose one of the available weapons with equal probability
   bool hasRealWeapon = !!weapon;
   double numOptions = !!weapon ? 1 : 0;
@@ -123,7 +129,7 @@ WItem Body::chooseRandomWeapon(WItem weapon) const {
   return weapon;
 }
 
-WItem Body::chooseFirstWeapon() const {
+Item* Body::chooseFirstWeapon() const {
   for (auto part : ENUM_ALL(BodyPart)) {
     auto& attack = intrinsicAttacks[part];
     if (numGood(part) > 0 && attack && attack->active != attack->NEVER)
@@ -145,6 +151,7 @@ void Body::setHumanoidBodyParts(int intrinsicDamage) {
       {BodyPart::TORSO, 1}});
   setIntrinsicAttack(BodyPart::ARM, IntrinsicAttack(ItemType::fists(intrinsicDamage), IntrinsicAttack::NO_WEAPON));
   setIntrinsicAttack(BodyPart::LEG, IntrinsicAttack(ItemType::legs(intrinsicDamage), IntrinsicAttack::NO_WEAPON));
+  xhumanoid = true;
 }
 
 void Body::setHorseBodyParts(int intrinsicDamage) {
@@ -166,10 +173,6 @@ void Body::setMinionFood() {
 
 void Body::setDeathSound(optional<SoundId> s) {
   deathSound = s;
-}
-
-void Body::setNoCarryLimit() {
-  carryLimit = none;
 }
 
 bool Body::canHeal() const {
@@ -289,7 +292,7 @@ optional<BodyPart> Body::getBodyPart(AttackLevel attack, bool flying, bool colla
     return getAnyGoodBodyPart();
 }
 
-void Body::healBodyParts(WCreature creature, bool regrow) {
+void Body::healBodyParts(Creature* creature, bool regrow) {
   auto updateEffects = [&] (BodyPart part, int count) {
     switch (part) {
       case BodyPart::LEG:
@@ -322,7 +325,7 @@ void Body::healBodyParts(WCreature creature, bool regrow) {
       }
 }
 
-void Body::injureBodyPart(WCreature creature, BodyPart part, bool drop) {
+void Body::injureBodyPart(Creature* creature, BodyPart part, bool drop) {
   if (bodyParts[part] == 0 || (!drop && injuredBodyParts[part] == bodyParts[part]))
     return;
   if (drop) {
@@ -362,7 +365,7 @@ void consumeBodyAttr(T& mine, const T& his, vector<string>& adjectives, const st
   }
 }
 
-void Body::consumeBodyParts(WCreature c, Body& other, vector<string>& adjectives) {
+void Body::consumeBodyParts(Creature* c, Body& other, vector<string>& adjectives) {
   for (BodyPart part : ENUM_ALL(BodyPart)) {
     int cnt = other.bodyParts[part] - bodyParts[part];
     if (cnt > 0) {
@@ -535,7 +538,7 @@ void Body::affectPosition(Position position) {
     position.fireDamage(1);
 }
 
-static void youHit(WConstCreature c, BodyPart part, AttackType type) {
+static void youHit(const Creature* c, BodyPart part, AttackType type) {
   switch (part) {
     case BodyPart::BACK:
         switch (type) {
@@ -609,7 +612,7 @@ static void youHit(WConstCreature c, BodyPart part, AttackType type) {
   }
 }
 
-Body::DamageResult Body::takeDamage(const Attack& attack, WCreature creature, double damage) {
+Body::DamageResult Body::takeDamage(const Attack& attack, Creature* creature, double damage) {
   PROFILE;
   bleed(creature, damage);
   if (auto part = getBodyPart(attack.level, creature->isAffected(LastingEffect::FLYING),
@@ -687,7 +690,7 @@ int Body::getAttrBonus(AttrType type) const {
   return ret;
 }
 
-bool Body::tick(WConstCreature c) {
+bool Body::tick(const Creature* c) {
   if (fallsApartFromDamage() && lostOrInjuredBodyParts() >= 4) {
     c->you(MsgType::FALL, "apart");
     return true;
@@ -710,6 +713,7 @@ void Body::updateViewObject(ViewObject& obj) const {
     obj.setAttribute(ViewObject::Attribute::HEALTH, health);
   else
     obj.setAttribute(ViewObject::Attribute::HEALTH, getBodyPartHealth());
+  obj.setModifier(ViewObjectModifier::HEALTH_BAR);
   switch (material) {
     case Material::SPIRIT:
     case Material::FIRE:
@@ -720,7 +724,7 @@ void Body::updateViewObject(ViewObject& obj) const {
   }
 }
 
-bool Body::heal(WCreature c, double amount) {
+bool Body::heal(Creature* c, double amount) {
   INFO << c->getName().the() << " heal";
   if (health < 1) {
     health = min(1., health + amount);
@@ -772,6 +776,8 @@ bool Body::isImmuneTo(LastingEffect effect) const {
   switch (effect) {
     case LastingEffect::BLEEDING:
       return material != Material::FLESH;
+    case LastingEffect::ON_FIRE:
+      return material != Material::WOOD;
     case LastingEffect::TIED_UP:
     case LastingEffect::ENTANGLED:
       switch (material) {
@@ -789,7 +795,7 @@ bool Body::isImmuneTo(LastingEffect effect) const {
   return false;
 }
 
-bool Body::affectByPoisonGas(WCreature c, double amount) {
+bool Body::affectByPoisonGas(Creature* c, double amount) {
   PROFILE;
   if (!c->isAffected(LastingEffect::POISON_RESISTANT) && material == Material::FLESH) {
     bleed(c, amount / 20);
@@ -802,7 +808,7 @@ bool Body::affectByPoisonGas(WCreature c, double amount) {
   return false;
 }
 
-bool Body::affectBySilver(WCreature c) {
+bool Body::affectBySilver(Creature* c) {
   if (isUndead()) {
     c->you(MsgType::ARE, "hurt by the silver");
     bleed(c, Random.getDouble(0.0, 0.15));
@@ -810,7 +816,7 @@ bool Body::affectBySilver(WCreature c) {
   return health <= 0;
 }
 
-bool Body::affectByAcid(WCreature c) {
+bool Body::affectByAcid(Creature* c) {
   switch (material) {
     case Material::FIRE:
     case Material::SPIRIT:
@@ -822,13 +828,13 @@ bool Body::affectByAcid(WCreature c) {
   return health <= 0;
 }
 
-bool Body::affectByFire(WCreature c, double amount) {
+bool Body::affectByFire(Creature* c, double amount) {
   c->you(MsgType::ARE, "burnt by the fire");
   bleed(c, 6. * amount / double(1 + c->getAttr(AttrType::DEFENSE)));
   return health <= 0;
 }
 
-void Body::bleed(WCreature c, double amount) {
+void Body::bleed(Creature* c, double amount) {
   if (hasHealth()) {
     health -= amount;
     c->updateViewObject();
@@ -980,6 +986,66 @@ double Body::getBoulderDamage() const {
   }
 }
 
-const optional<double>& Body::getCarryLimit() const {
-  return carryLimit;
+int Body::getCarryLimit() const {
+  switch (size) {
+    case Body::Size::HUGE: return 200;
+    case Body::Size::LARGE: return 80;
+    case Body::Size::MEDIUM: return 60;
+    case Body::Size::SMALL: return 6;
+  }
+}
+
+#include "pretty_archive.h"
+
+RICH_ENUM(BodyType,
+    Humanoid,
+    HumanoidLike,
+    Bird,
+    FourLegged,
+    NonHumanoid
+);
+
+struct BodyTypeReader {
+  void serialize(PrettyInputArchive& ar1, unsigned v) {
+    BodyType type;
+    BodySize size;
+    ar1(type, size);
+    body->setWeight(getDefaultWeight(size));
+    body->setMinPushSize(BodySize((int)size + 1));
+    switch (type) {
+      case BodyType::Humanoid:
+        body->setHumanoidBodyParts(getDefaultIntrinsicDamage(size));
+        body->setDeathSound(SoundId::HUMANOID_DEATH);
+        break;
+      case BodyType::HumanoidLike:
+        body->setHumanoidBodyParts(getDefaultIntrinsicDamage(size));
+        body->setDeathSound(SoundId::BEAST_DEATH);
+        body->setHumanoid(false);
+        break;
+      case BodyType::Bird:
+        body->setBirdBodyParts(getDefaultIntrinsicDamage(size));
+        body->setDeathSound(SoundId::BEAST_DEATH);
+        break;
+      case BodyType::FourLegged:
+        body->setHorseBodyParts(getDefaultIntrinsicDamage(size));
+        body->setDeathSound(SoundId::BEAST_DEATH);
+        break;
+      default:
+        body->setDeathSound(SoundId::BEAST_DEATH);
+        break;
+    }
+  }
+  Body* body;
+};
+
+template <>
+void Body::serialize(PrettyInputArchive& ar1, unsigned v) {
+  BodyTypeReader type {this};
+  ar1(NAMED(type));
+  serializeImpl(ar1, v);
+  EnumMap<BodyPart, int> addBodyPart;
+  ar1(OPTION(addBodyPart));
+  ar1(endInput());
+  for (auto part : ENUM_ALL(BodyPart))
+    bodyParts[part] += addBodyPart[part];
 }

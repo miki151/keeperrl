@@ -108,6 +108,8 @@ static void APIENTRY debugOutputCallback(GLenum source, GLenum type, GLuint id, 
 }
 
 bool installOpenglDebugHandler() {
+#ifndef OSX
+#ifndef RELEASE
   static bool isInitialized = false, properlyInitialized = false;
   if (isInitialized)
     return properlyInitialized;
@@ -130,7 +132,8 @@ bool installOpenglDebugHandler() {
     properlyInitialized = true;
     return true;
   }
-
+#endif
+#endif
   return false;
 }
 
@@ -178,3 +181,64 @@ void glQuad(float x, float y, float ex, float ey) {
   SDL::glTexCoord2f(0.0f, 1.0f), SDL::glVertex2f(x, y);
   SDL::glEnd();
 }
+
+#ifdef WINDOWS
+void *winLoadFunction(const char *name) {
+  auto ret = SDL::SDL_GL_GetProcAddress(name);
+  //USER_CHECK(!!ret) << "Unable to load OpenGL function: " << name << ". Please update your video card driver.";
+  return ret;
+}
+
+#define EXT_ENTRY __stdcall
+namespace SDL {
+  void(EXT_ENTRY *glDeleteFramebuffers)(GLsizei n, const GLuint *framebuffers);
+  void(EXT_ENTRY *glGenFramebuffers)(GLsizei n, GLuint *framebuffers);
+  void(EXT_ENTRY *glBindFramebuffer)(GLenum target, GLuint framebuffer);
+  void(EXT_ENTRY *glFramebufferTexture2D)(GLenum target, GLenum attachment, GLenum textarget,
+      GLuint texture, GLint level);
+  void(EXT_ENTRY *glDrawBuffers)(GLsizei n, const GLenum *bufs);
+  GLenum(EXT_ENTRY *glCheckFramebufferStatus)(GLenum target);
+
+  void(EXT_ENTRY* glBlendFuncSeparate)(GLenum, GLenum, GLenum, GLenum);
+
+  void(EXT_ENTRY *glDebugMessageCallback)(GLDEBUGPROC callback, const void *userParam);
+  void(EXT_ENTRY *glDebugMessageControl)(GLenum source, GLenum type, GLenum severity,
+      GLsizei count, const GLuint *ids, GLboolean enabled);
+}
+
+#endif
+
+bool isOpenglFeatureAvailable(OpenglFeature feature) {
+#ifdef WINDOWS
+#define ON_WINDOWS(check) check
+#else
+#define ON_WINDOWS(check)
+#endif
+  switch (feature) {
+  case OpenglFeature::FRAMEBUFFER: // GL 3.0
+    return ON_WINDOWS(SDL::glDeleteFramebuffers && SDL::glGenFramebuffers && SDL::glBindFramebuffer &&
+                      SDL::glFramebufferTexture2D && SDL::glDrawBuffers && SDL::glCheckFramebufferStatus &&)
+        isOpenglExtensionAvailable("ARB_framebuffer_object");
+  case OpenglFeature::SEPARATE_BLEND_FUNC: // GL 1.4
+    return ON_WINDOWS(SDL::glBlendFuncSeparate &&) true;
+  case OpenglFeature::DEBUG: // GL 4.4
+    return ON_WINDOWS(SDL::glDebugMessageCallback && SDL::glDebugMessageControl &&)
+        isOpenglExtensionAvailable("KHR_debug");
+  }
+#undef ON_WINDOWS
+}
+
+void initializeGLExtensions() {
+#ifdef WINDOWS
+#define LOAD(func) SDL::func = (decltype(SDL::func))winLoadFunction(#func);
+  LOAD(glBindFramebuffer);
+  LOAD(glDeleteFramebuffers);
+  LOAD(glGenFramebuffers);
+  LOAD(glCheckFramebufferStatus);
+  LOAD(glFramebufferTexture2D);
+  LOAD(glDrawBuffers);
+  LOAD(glBlendFuncSeparate);
+#undef LOAD
+#endif
+}
+

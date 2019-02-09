@@ -31,15 +31,18 @@ class Position {
   bool isSameLevel(WConstLevel) const;
   bool isSameModel(const Position&) const;
   Vec2 getDir(const Position&) const;
-  WCreature getCreature() const;
+  Creature* getCreature() const;
   void removeCreature();
-  void putCreature(WCreature);
+  void putCreature(Creature*);
   string getName() const;
   Position withCoord(Vec2 newCoord) const;
   Vec2 getCoord() const;
   Level* getLevel() const;
   optional<StairKey> getLandingLink() const;
- 
+  void setLandingLink(StairKey) const;
+  void removeLandingLink() const;
+  const vector<Position>& getLandingAtNextLevel(StairKey);
+
   bool isValid() const;
   bool operator == (const Position&) const;
   bool operator != (const Position&) const;
@@ -54,28 +57,30 @@ class Position {
   vector<Position> getRectangle(Rectangle) const;
   void addCreature(PCreature, TimeInterval delay);
   void addCreature(PCreature);
-  bool canEnter(WConstCreature) const;
+  bool canEnter(const Creature*) const;
   bool canEnter(const MovementType&) const;
-  bool canEnterEmpty(WConstCreature) const;
+  bool canEnterEmpty(const Creature*) const;
   bool canEnterEmpty(const MovementType&, optional<FurnitureLayer> ignore = none) const;
-  void onEnter(WCreature);
+  void onEnter(Creature*);
   optional<FurnitureClickType> getClickType() const;
   void addSound(const Sound&) const;
-  void getViewIndex(ViewIndex&, WConstCreature viewer) const;
-  const vector<WItem>& getItems() const;
-  const vector<WItem>& getItems(ItemIndex) const;
-  PItem removeItem(WItem);
+  void getViewIndex(ViewIndex&, const Creature* viewer) const;
+  const vector<Item*>& getItems() const;
+  const vector<Item*>& getItems(ItemIndex) const;
+  PItem removeItem(Item*) const;
   Inventory& modInventory() const;
   const Inventory& getInventory() const;
-  vector<PItem> removeItems(vector<WItem>);
+  vector<PItem> removeItems(vector<Item*>);
   bool canConstruct(FurnitureType) const;
   bool isWall() const;
+  bool isBuildingSupport() const;
   void removeFurniture(WConstFurniture, PFurniture replace = nullptr) const;
+  void removeFurniture(FurnitureLayer) const;
   void addFurniture(PFurniture) const;
   bool isUnavailable() const;
   void dropItem(PItem);
   void dropItems(vector<PItem>);
-  void construct(FurnitureType, WCreature);
+  void construct(FurnitureType, Creature*);
   bool construct(FurnitureType, TribeId);
   bool isActiveConstruction(FurnitureLayer) const;
   bool isBurning() const;
@@ -96,10 +101,10 @@ class Position {
   double getLightEmission() const;
   void addCreatureLight(bool darkness);
   void removeCreatureLight(bool darkness);
-  void throwItem(PItem item, const Attack& attack, int maxDist, Vec2 direction, VisionId);
-  void throwItem(vector<PItem> item, const Attack& attack, int maxDist, Vec2 direction, VisionId);
+  void throwItem(vector<PItem> item, const Attack& attack, int maxDist, Position target, VisionId);
   bool canNavigate(const MovementType&) const;
-  bool canNavigateToOrNeighbor(Position from, const MovementType&) const;
+  bool canNavigateToOrNeighbor(Position, const MovementType&) const;
+  bool canNavigateTo(Position, const MovementType&) const;
   optional<double> getNavigationCost(const MovementType&) const;
   optional<DestroyAction> getBestDestroyAction(const MovementType&) const;
   vector<Position> getVisibleTiles(const Vision&);
@@ -107,17 +112,17 @@ class Position {
   void updateVisibility() const;
   bool canSeeThru(VisionId) const;
   bool stopsProjectiles(VisionId) const;
-  bool isVisibleBy(WConstCreature) const;
+  bool isVisibleBy(const Creature*) const;
   void clearItemIndex(ItemIndex) const;
   bool isChokePoint(const MovementType&) const;
   bool isConnectedTo(Position, const MovementType&) const;
   void updateMovementDueToFire() const;
-  vector<WCreature> getAllCreatures(int range) const;
+  vector<Creature*> getAllCreatures(int range) const;
   void moveCreature(Vec2 direction);
   void moveCreature(Position, bool teleportEffect = false);
   bool canMoveCreature(Vec2 direction) const;
   bool canMoveCreature(Position) const;
-  void swapCreatures(WCreature);
+  void swapCreatures(Creature*);
   double getLight() const;
   optional<Position> getStairsTo(Position) const;
   WConstFurniture getFurniture(FurnitureLayer) const;
@@ -126,12 +131,13 @@ class Position {
   WFurniture modFurniture(FurnitureLayer) const;
   WFurniture modFurniture(FurnitureType) const;
   vector<WFurniture> modFurniture() const;
-  optional<int> getDistanceToNearestPortal() const;
+  optional<short> getDistanceToNearestPortal() const;
   optional<Position> getOtherPortal() const;
   void registerPortal();
   void removePortal();
   optional<int> getPortalIndex() const;
   double getLightingEfficiency() const;
+  bool isDirEffectBlocked() const;
 
   SERIALIZATION_DECL(Position)
   int getHash() const;
@@ -140,9 +146,11 @@ class Position {
   WSquare modSquare() const;
   WConstSquare getSquare() const;
   Vec2 SERIAL(coord);
-  Level* level = nullptr;
+  Level* SERIAL(level) = nullptr;
   bool SERIAL(valid) = false;
   void updateSupport() const;
+  void updateBuildingSupport() const;
+  void addFurnitureImpl(PFurniture) const;
 };
 
 template <>

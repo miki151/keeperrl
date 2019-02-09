@@ -26,7 +26,9 @@ struct AttackerEffect {
   COMPARE_ALL(effect);
 };
 
-class ItemPrefix : public variant<LastingEffect, VictimEffect, AttackerEffect, ItemAttrBonus, JoinPrefixes> {
+using ItemPrefix_impl = variant<LastingEffect, VictimEffect, AttackerEffect, ItemAttrBonus, JoinPrefixes>;
+
+class ItemPrefix : public ItemPrefix_impl {
   public:
   using variant::variant;
 };

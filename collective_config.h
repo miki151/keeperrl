@@ -26,8 +26,8 @@ enum class ItemClass;
 
 class Game;
 class Workshops;
-class ImmigrantInfo;
 class Technology;
+class ImmigrantInfo;
 
 struct ResourceInfo;
 struct ItemFetchInfo;
@@ -46,10 +46,10 @@ struct MinionActivityInfo {
   enum Type { FURNITURE, EXPLORE, COPULATE, EAT, SPIDER, WORKER, ARCHERY, IDLE } type;
   MinionActivityInfo();
   MinionActivityInfo(FurnitureType, const string& description, bool requiresLighting);
-  typedef function<bool(WConstCollective, WConstCreature, FurnitureType)> UsagePredicate;
+  typedef function<bool(WConstCollective, const Creature*, FurnitureType)> UsagePredicate;
   MinionActivityInfo(UsagePredicate, const string& description, bool requiresLighting);
   MinionActivityInfo(Type, const string& description);
-  UsagePredicate furniturePredicate = [](WConstCollective, WConstCreature, FurnitureType) { return true; };
+  UsagePredicate furniturePredicate = [](WConstCollective, const Creature*, FurnitureType) { return true; };
   string description;
   bool requiresLighting = false;
 };
@@ -69,8 +69,8 @@ struct FloorInfo {
 
 class CollectiveConfig {
   public:
-  static CollectiveConfig keeper(TimeInterval immigrantInterval, int maxPopulation, bool regenerateMana, const vector<ImmigrantInfo>&);
-  static CollectiveConfig withImmigrants(TimeInterval immigrantInterval, int maxPopulation, const vector<ImmigrantInfo>&);
+  static CollectiveConfig keeper(TimeInterval immigrantInterval, int maxPopulation, bool regenerateMana);
+  static CollectiveConfig withImmigrants(TimeInterval immigrantInterval, int maxPopulation);
   static CollectiveConfig noImmigrants();
 
   CollectiveConfig& setLeaderAsFighter();
@@ -86,7 +86,6 @@ class CollectiveConfig {
   bool getEnemyPositions() const;
   bool getWarnings() const;
   bool getConstructions() const;
-  bool bedsLimitImmigration() const;
   int getMaxPopulation() const;
   int getNumGhostSpawns() const;
   TimeInterval getImmigrantTimeout() const;
@@ -94,14 +93,15 @@ class CollectiveConfig {
   bool hasVillainSleepingTask() const;
   bool getRegenerateMana() const;
   bool allowHealingTaskOutsideTerritory() const;
-  const vector<ImmigrantInfo>& getImmigrantInfo() const;
   const optional<GuardianInfo>& getGuardianInfo() const;
-  unique_ptr<Workshops> getWorkshops() const;
-  vector<Technology*> getInitialTech() const;
+  bool isConquered(const Collective*) const;
+  CollectiveConfig& setConquerCondition(ConquerCondition);
   static bool requiresLighting(FurnitureType);
 
   static const WorkshopInfo& getWorkshopInfo(WorkshopType);
   static optional<WorkshopType> getWorkshopType(FurnitureType);
+
+  static void addBedRequirementToImmigrants(vector<ImmigrantInfo>&, const CreatureFactory*);
 
   map<CollectiveResourceId, int> getStartingResource() const;
 
@@ -113,7 +113,6 @@ class CollectiveConfig {
   static const vector<FurnitureType>& getTrainingFurniture(ExperienceType);
   static const MinionActivityInfo& getActivityInfo(MinionActivity);
   static bool canBuildOutsideTerritory(FurnitureType);
-  static int getManaForConquering(const optional<VillainType>&);
 
   SERIALIZATION_DECL(CollectiveConfig)
   CollectiveConfig(const CollectiveConfig&);
@@ -121,16 +120,15 @@ class CollectiveConfig {
 
   private:
   enum CollectiveType { KEEPER, VILLAGE };
-  CollectiveConfig(TimeInterval immigrantInterval, const vector<ImmigrantInfo>&, CollectiveType, int maxPopulation);
+  CollectiveConfig(TimeInterval immigrantInterval, CollectiveType, int maxPopulation);
 
   TimeInterval SERIAL(immigrantInterval);
   int SERIAL(maxPopulation);
-  vector<ImmigrantInfo> SERIAL(immigrantInfo);
   CollectiveType SERIAL(type);
   bool SERIAL(leaderAsFighter) = false;
   int SERIAL(spawnGhosts) = 0;
   double SERIAL(ghostProb) = 0;
   optional<GuardianInfo> SERIAL(guardianInfo);
-  void addBedRequirementToImmigrants();
   bool SERIAL(regenerateMana) = false;
+  ConquerCondition SERIAL(conquerCondition);
 };
