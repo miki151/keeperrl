@@ -107,7 +107,7 @@ class Body {
   bool injureBodyPart(Creature*, BodyPart, bool drop);
 
   void healBodyParts(Creature*, bool regrow);
-  int lostOrInjuredBodyParts() const;
+  bool fallsApartDueToLostBodyParts() const;
   bool canHeal() const;
   bool isImmuneTo(LastingEffect effect) const;
   bool hasHealth() const;
@@ -145,7 +145,6 @@ class Body {
   bool isCritical(BodyPart) const;
   PItem getBodyPartItem(const string& creatureName, BodyPart);
   string getMaterialAndSizeAdjectives() const;
-  bool fallsApartFromDamage() const;
   bool SERIAL(xhumanoid) = true;
   Size SERIAL(size) = Size::LARGE;
   double SERIAL(weight) = 90;
@@ -158,6 +157,8 @@ class Body {
   optional<SoundId> SERIAL(deathSound);
   EnumMap<BodyPart, optional<IntrinsicAttack>> SERIAL(intrinsicAttacks);
   Size SERIAL(minPushSize);
+  bool SERIAL(noHealth) = false;
+  bool SERIAL(fallsApart) = true;
   optional<BodyPart> getAnyGoodBodyPart() const;
   double getBodyPartHealth() const;
   void dropUnsupportedEquipment(const Creature*) const;

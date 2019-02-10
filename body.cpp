@@ -31,6 +31,7 @@ template <class Archive>
 void Body::serializeImpl(Archive& ar, const unsigned int) {
   ar(OPTION(xhumanoid), OPTION(size), OPTION(weight), OPTION(bodyParts), OPTION(injuredBodyParts), OPTION(lostBodyParts));
   ar(OPTION(material), OPTION(health), OPTION(minionFood), NAMED(deathSound), OPTION(intrinsicAttacks), OPTION(minPushSize));
+  ar(OPTION(noHealth));
 }
 
 template <class Archive>
@@ -184,7 +185,7 @@ bool Body::hasHealth() const {
     case Material::FLESH:
     case Material::SPIRIT:
     case Material::FIRE:
-      return true;
+      return !noHealth;
     default: return false;
   }
 }
@@ -200,12 +201,12 @@ bool Body::isPartDamaged(BodyPart part, double damage) const {
       case BodyPart::TORSO: return 1.5;
     }
   }();
+  if (!hasHealth())
+    return Random.chance(damage / strength);
   if (material == Material::FLESH)
     return damage >= strength;
-  if (material == Material::SPIRIT)
-    return false;
   else
-    return Random.chance(damage / strength);
+    return false;
 }
 
 BodyPart Body::armOrWing() const {
@@ -230,13 +231,16 @@ int Body::numLost(BodyPart part) const {
   return lostBodyParts[part];
 }
 
-int Body::lostOrInjuredBodyParts() const {
-  int ret = 0;
-  for (BodyPart part : ENUM_ALL(BodyPart))
-    ret += injuredBodyParts[part];
-  for (BodyPart part : ENUM_ALL(BodyPart))
-    ret += lostBodyParts[part];
-  return ret;
+bool Body::fallsApartDueToLostBodyParts() const {
+  if (fallsApart && !hasHealth()) {
+    int ret = 0;
+    for (BodyPart part : ENUM_ALL(BodyPart))
+      ret += injuredBodyParts[part];
+    for (BodyPart part : ENUM_ALL(BodyPart))
+      ret += lostBodyParts[part];
+    return ret >= 4;
+  } else
+    return false;
 }
 
 int Body::numInjured(BodyPart part) const {
@@ -694,7 +698,7 @@ int Body::getAttrBonus(AttrType type) const {
 }
 
 bool Body::tick(const Creature* c) {
-  if (fallsApartFromDamage() && lostOrInjuredBodyParts() >= 4) {
+  if (fallsApartDueToLostBodyParts()) {
     c->you(MsgType::FALL, "apart");
     return true;
   }
@@ -936,10 +940,6 @@ bool Body::canPerformRituals() const {
 
 bool Body::canBeCaptured() const {
   return xhumanoid && !isImmuneTo(LastingEffect::TIED_UP);
-}
-
-bool Body::fallsApartFromDamage() const {
-  return !hasHealth();
 }
 
 bool Body::isUndead() const {
