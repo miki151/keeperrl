@@ -662,6 +662,7 @@ bool Collective::canClaimSquare(Position pos) const {
 void Collective::claimSquare(Position pos) {
   //CHECK(canClaimSquare(pos));
   territory->insert(pos);
+  addKnownTile(pos);
   for (auto furniture : pos.modFurniture())
     if (!furniture->forgetAfterBuilding()) {
       if (!constructions->containsFurniture(pos, furniture->getLayer()))
