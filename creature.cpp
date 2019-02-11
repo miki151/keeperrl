@@ -998,15 +998,22 @@ ViewId Creature::getMaxViewIdUpgrade() const {
 }
 
 void Creature::dropUnsupportedEquipment() {
-  auto& equipment = getEquipment();
   for (auto slot : ENUM_ALL(EquipmentSlot)) {
-    auto& items = equipment.getSlotItems(slot);
-    for (int i : Range(equipment.getMaxItems(slot, getBody()), items.size())) {
+    auto& items = equipment->getSlotItems(slot);
+    for (int i : Range(equipment->getMaxItems(slot, getBody()), items.size())) {
       verb("drop your", "drops "_s + his(attributes->getGender()), items[i]->getName());
-      position.dropItem(equipment.removeItem(items[i], this));
+      position.dropItem(equipment->removeItem(items[i], this));
     }
   }
 }
+
+void Creature::dropWeapon() {
+  for (auto weapon : equipment->getSlotItems(EquipmentSlot::WEAPON)) {
+    verb("drop your", "drops "_s + his(attributes->getGender()), weapon->getName());
+    position.dropItem(equipment->removeItem(weapon, this));
+  }
+}
+
 
 CreatureAction Creature::execute(Creature* c) const {
   if (c->getPosition().dist8(getPosition()) > 1)
