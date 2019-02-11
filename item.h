@@ -31,6 +31,7 @@ class Effect;
 struct CorpseInfo;
 class RangedWeapon;
 class WeaponInfo;
+struct CraftingRune;
 
 class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<Item> {
   public:
@@ -65,6 +66,7 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
 
   optional<TrapType> getTrapType() const;
   optional<CollectiveResourceId> getResourceId() const;
+  const optional<CraftingRune>& getCraftingRune() const;
 
   bool canEquip() const;
   EquipmentSlot getEquipmentSlot() const;

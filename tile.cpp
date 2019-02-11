@@ -572,6 +572,10 @@ class TileCoordLookup {
     Tile::addTile(ViewId::POTION4, sprite("potion4"));
     Tile::addTile(ViewId::POTION5, sprite("potion5"));
     Tile::addTile(ViewId::POTION6, sprite("potion6"));
+    Tile::addTile(ViewId::RUNE1, sprite("rune1"));
+    Tile::addTile(ViewId::RUNE2, sprite("rune2"));
+    Tile::addTile(ViewId::RUNE3, sprite("rune3"));
+    Tile::addTile(ViewId::RUNE4, sprite("rune4"));
     Tile::addTile(ViewId::MUSHROOM1, sprite("mushroom1").setRoundShadow());
     Tile::addTile(ViewId::MUSHROOM2, sprite("mushroom2").setRoundShadow());
     Tile::addTile(ViewId::MUSHROOM3, sprite("mushroom3").setRoundShadow());
@@ -966,6 +970,10 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::POTION4, symbol(u8"!", Color::VIOLET));
     Tile::addSymbol(ViewId::POTION5, symbol(u8"!", Color::DARK_BROWN));
     Tile::addSymbol(ViewId::POTION6, symbol(u8"!", Color::LIGHT_GRAY));
+    Tile::addSymbol(ViewId::RUNE1, symbol(u8"~", Color::GREEN));
+    Tile::addSymbol(ViewId::RUNE2, symbol(u8"~", Color::PURPLE));
+    Tile::addSymbol(ViewId::RUNE3, symbol(u8"~", Color::RED));
+    Tile::addSymbol(ViewId::RUNE4, symbol(u8"~", Color::BLUE));
     Tile::addSymbol(ViewId::MUSHROOM1, symbol(u8"⋆", Color::PINK, true));
     Tile::addSymbol(ViewId::MUSHROOM2, symbol(u8"⋆", Color::YELLOW, true));
     Tile::addSymbol(ViewId::MUSHROOM3, symbol(u8"⋆", Color::PURPLE, true));

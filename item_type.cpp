@@ -1074,6 +1074,29 @@ ItemAttributes ItemType::Mushroom::getAttributes() const {
   );
 }
 
+static ViewId getRuneViewId(const string& name) {
+  int h = int(combineHash(name)) % 4;
+  const static vector<ViewId> ids = {ViewId::RUNE1, ViewId::RUNE2, ViewId::RUNE3, ViewId::RUNE4};
+  return ids[h % ids.size()];
+}
+
+ItemAttributes ItemType::Rune::getAttributes() const {
+  return ITATTR(
+      i.shortName = getName(rune.prefix);
+      i.viewId = getRuneViewId(*i.shortName);
+      i.craftingRune = rune;
+      i.name = "rune of " + *i.shortName;
+      i.plural= "runes of "  + *i.shortName;
+      i.blindName = "rune"_s;
+      i.itemClass = ItemClass::SCROLL;
+      i.weight = 0.1;
+      i.modifiers[AttrType::DAMAGE] = -10;
+      i.price = 100;
+      i.flamability = 1;
+      i.uses = 1;
+  );
+}
+
 ItemAttributes ItemType::Scroll::getAttributes() const {
   return ITATTR(
       i.viewId = ViewId::SCROLL;

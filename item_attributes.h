@@ -28,6 +28,7 @@
 #include "game_time.h"
 #include "weapon_info.h"
 #include "item_prefix.h"
+#include "crafting_rune.h"
 
 #define ITATTR(X) ItemAttributes([&](ItemAttributes& i) { X })
 
@@ -72,5 +73,6 @@ class ItemAttributes {
   WeaponInfo SERIAL(weaponInfo);
   vector<pair<int, ItemPrefix>> SERIAL(prefixes);
   optional<string> SERIAL(prefix);
+  optional<CraftingRune> SERIAL(craftingRune);
 };
 

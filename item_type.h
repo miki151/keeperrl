@@ -5,6 +5,7 @@
 #include "util.h"
 #include "weapon_info.h"
 #include "item_prefix.h"
+#include "crafting_rune.h"
 
 class ItemAttributes;
 
@@ -100,7 +101,11 @@ class ItemType {
     SERIALIZE_ALL(lastingEffect)
     ITEM_TYPE_INTERFACE;
   };
-
+  struct Rune {
+    CraftingRune SERIAL(rune);
+    SERIALIZE_ALL(rune)
+    ITEM_TYPE_INTERFACE;
+  };
   SIMPLE_ITEM(FirstAidKit);
   SIMPLE_ITEM(Rock);
   SIMPLE_ITEM(IronOre);
@@ -126,7 +131,7 @@ class ItemType {
       IronBoots, AdaBoots, LeatherGloves, IronGloves, AdaGloves, Robe, Scroll, FireScroll, Potion,
       Mushroom, Amulet, DefenseAmulet, Ring, FirstAidKit, Rock, IronOre, AdaOre, GoldPiece,
       WoodPlank, Bone, TechBook, TrapItem, AutomatonItem, BagOfCandies, HalloweenCostume,
-      UnicornHorn, Intrinsic, Torch);
+      UnicornHorn, Intrinsic, Torch, Rune);
 
   template <typename T>
   ItemType(T&& t) : type(std::forward<T>(t)) {}
