@@ -431,18 +431,6 @@
             { 1.0 CostInfo GOLD 50 }
           }
         }
-        {
-          ids = { "WARRIOR_HERO" "THIEF_HERO" "WIZARD_HERO" "CLERIC_HERO" }
-          traits = { FIGHTER }
-          consumeIds = true
-          requirements = {
-            { 0.0 TechId "legendary heros" }
-            { 1.0 CostInfo GOLD 100 }
-          }
-          specialTraits = {
-             { 0.1 { LastingEffect RAGE}}
-          }
-        }
 
     }
 

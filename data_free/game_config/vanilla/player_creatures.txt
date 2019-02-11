@@ -43,7 +43,7 @@
     technology = {
         "alchemy" "advanced alchemy" "alchemical conversion"
         "pig breeding" "iron working" "jewellery" "two-handed weapons" "archery" "sorcery"
-        "advanced sorcery" "magical weapons" "master sorcery" "legendary heros"
+        "advanced sorcery" "magical weapons" "master sorcery"
     }
     initialTech = { "archery" }
     buildingGroups = {
