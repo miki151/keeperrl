@@ -186,25 +186,35 @@ void Creature::updateLastingFX(ViewObject& object) {
 
 void Creature::pushController(PController ctrl) {
   if (auto controller = getController())
-    controller->onEndedControl();
+    if (controller->isPlayer())
+      getGame()->removePlayer(this);
+  if (ctrl->isPlayer())
+    getGame()->addPlayer(this);
   controllerStack.push_back(std::move(ctrl));
-  getController()->onStartedControl();
+  if (!isDead())
+    if (auto m = position.getModel())
+      // This actually moves the creature to the appropriate player/monster time queue,
+      // which is the same logic as postponing.
+      m->getTimeQueue().postponeMove(this);
 }
 
 void Creature::setController(PController ctrl) {
-  if (auto controller = getController())
-    controller->onEndedControl();
-  controllerStack.clear();
+  while (!controllerStack.empty())
+    popController();
   pushController(std::move(ctrl));
-  getController()->onStartedControl();
 }
 
 void Creature::popController() {
   if (!controllerStack.empty()) {
-    getController()->onEndedControl();
+    if (getController()->isPlayer())
+      getGame()->removePlayer(this);
     controllerStack.pop_back();
-    if (auto controller = getController())
-      controller->onStartedControl();
+    if (auto controller = getController()) {
+      if (controller->isPlayer())
+        getGame()->addPlayer(this);
+      if (auto m = position.getModel())
+        m->getTimeQueue().postponeMove(this);
+    }
   }
 }
 

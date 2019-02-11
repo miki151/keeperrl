@@ -420,10 +420,6 @@ void PlayerControl::render(View* view) {
   }
 }
 
-bool PlayerControl::isTurnBased() {
-  return !getControlled().empty();
-}
-
 void PlayerControl::addConsumableItem(Creature* creature) {
   ScrollPosition scrollPos;
   while (1) {
@@ -2503,6 +2499,8 @@ void PlayerControl::onSquareClick(Position pos) {
 }
 
 double PlayerControl::getAnimationTime() const {
+  if (getView()->isClockStopped())
+    return 10000000;
   return getModel()->getLocalTimeDouble();
 }
 

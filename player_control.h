@@ -63,7 +63,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void render(View*);
   optional<string> reloadImmigrationAndWorkshops(const GameConfig*, const CreatureFactory*);
 
-  bool isTurnBased();
   void leaveControl();
   void teamMemberAction(TeamMemberAction, UniqueEntity<Creature>::Id);
   void toggleControlAllTeamMembers();

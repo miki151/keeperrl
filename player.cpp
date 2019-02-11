@@ -944,18 +944,6 @@ MessageGenerator& Player::getMessageGenerator() const {
   return messageGenerator;
 }
 
-void Player::onStartedControl() {
-  getGame()->addPlayer(creature);
-  getModel()->getTimeQueue().postponeMove(creature);
-}
-
-void Player::onEndedControl() {
-  if (auto game = getGame()) // if the whole Game is being destructed then we get null here
-    game->removePlayer(creature);
-  if (!creature->isDead())
-    getModel()->getTimeQueue().postponeMove(creature);
-}
-
 void Player::getViewIndex(Vec2 pos, ViewIndex& index) const {
   bool canSee = visibilityMap->isVisible(Position(pos, getLevel())) ||
       getGame()->getOptions()->getBoolValue(OptionId::SHOW_MAP);

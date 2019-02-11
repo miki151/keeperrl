@@ -147,7 +147,7 @@ PGame Game::splashScreen(PModel&& model, const CampaignSetup& s) {
 }
 
 bool Game::isTurnBased() {
-  return !spectator && (!playerControl || playerControl->isTurnBased());
+  return !getPlayerCreatures().empty();
 }
 
 GlobalTime Game::getGlobalTime() const {
@@ -261,7 +261,7 @@ optional<ExitInfo> Game::updateInput() {
       if (input.getId() == UserInputId::IDLE)
         break;
     }
-  if (playerControl && !playerControl->isTurnBased()) {
+  if (playerControl && !isTurnBased()) {
     while (1) {
       UserInput input = view->getAction();
       if (input.getId() == UserInputId::IDLE)
@@ -307,7 +307,6 @@ optional<ExitInfo> Game::update(double timeDiff) {
     return exitInfo;
   considerRealTimeRender();
   initializeModels();
-  increaseTime(timeDiff);
   WModel currentModel = getCurrentModel();
   auto currentId = currentModel->getTopLevel()->getUniqueId();
   while (!lastTick || currentTime >= *lastTick + 1) {
@@ -318,8 +317,11 @@ optional<ExitInfo> Game::update(double timeDiff) {
     tick(GlobalTime(*lastTick));
   }
   considerRetiredLoadedEvent(getModelCoords(currentModel));
-  localTime[currentId] += timeDiff;
-  return updateModel(currentModel, localTime[currentId]);
+  if (!updateModel(currentModel, localTime[currentId] + timeDiff)) {
+    localTime[currentId] += timeDiff;
+    increaseTime(timeDiff);
+  }
+  return exitInfo;
 }
 
 void Game::considerRealTimeRender() {
@@ -333,15 +335,17 @@ void Game::considerRealTimeRender() {
   }
 }
 
-optional<ExitInfo> Game::updateModel(WModel model, double totalTime) {
+// Return true when the player has just left turn-based mode so we don't increase time in that case.
+bool Game::updateModel(WModel model, double totalTime) {
   do {
+    bool wasPlayer = !getPlayerCreatures().empty();
     if (!model->update(totalTime))
-      return none;
-    if (exitInfo)
-      return exitInfo;
+      return false;
+    if (wasPlayer && getPlayerCreatures().empty())
+      return true;
     if (wasTransfered) {
       wasTransfered = false;
-      return none;
+      return false;
     }
   } while (1);
 }
