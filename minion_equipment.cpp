@@ -93,9 +93,24 @@ bool MinionEquipment::isItemUseful(const Item* it) {
       || (it->getClass() == ItemClass::FOOD && !it->getCorpseInfo());
 }
 
+bool MinionEquipment::canUseItemType(const Creature* c, EquipmentType type, const Item* it) const {
+  switch (type) {
+    case EquipmentType::TORCH:
+      return !c->isAffected(LastingEffect::NIGHT_VISION);
+    case EquipmentType::HEALING:
+      return c->getBody().hasHealth();
+    case EquipmentType::COMBAT_ITEM:
+      return true;
+    case EquipmentType::ARMOR:
+      return c->canEquipIfEmptySlot(it);
+  }
+}
+
 bool MinionEquipment::needsItem(const Creature* c, const Item* it, bool noLimit) const {
   PROFILE;
   if (optional<EquipmentType> type = getEquipmentType(it)) {
+    if (!canUseItemType(c, *type, it))
+      return false;
     if (!noLimit) {
       auto itemValue = getItemValue(c, it);
       if (auto limit = getEquipmentLimit(*type)) {
@@ -120,9 +135,7 @@ bool MinionEquipment::needsItem(const Creature* c, const Item* it, bool noLimit)
           return false;
       }
     }
-    return (c->canEquipIfEmptySlot(it))
-      || (type == HEALING && c->getBody().hasHealth()) 
-      || type == COMBAT_ITEM || type == TORCH;
+    return false;
   } else
     return false;
 }

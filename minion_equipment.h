@@ -51,6 +51,7 @@ class MinionEquipment {
   optional<int> getEquipmentLimit(EquipmentType type) const;
   Item* getWorstItem(const Creature*, vector<Item*>) const;
   int getItemValue(const Creature*, const Item*) const;
+  bool canUseItemType(const Creature*, MinionEquipment::EquipmentType, const Item*) const;
 
   EntityMap<Item, UniqueEntity<Creature>::Id> SERIAL(owners);
   EntityMap<Creature, vector<WeakPointer<Item>>> SERIAL(myItems);
