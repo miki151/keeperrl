@@ -100,11 +100,10 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
 
   protected:
   // from CreatureView
-  virtual WLevel getLevel() const override;
   virtual const MapMemory& getMemory() const override;
   virtual void getViewIndex(Vec2 pos, ViewIndex&) const override;
   virtual void refreshGameInfo(GameInfo&) const override;
-  virtual Vec2 getPosition() const override;
+  virtual Position getPosition() const override;
   virtual vector<Vec2> getVisibleEnemies() const override;
   virtual double getAnimationTime() const override;
   virtual CenterType getCenterType() const override;
@@ -139,7 +138,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void updateKnownLocations(const Position&);
   vector<WCollective> getKnownVillains() const;
   WCollective getVillain(UniqueEntity<Collective>::Id num);
-  void scrollToMiddle(const vector<Position>&);
 
   Creature* getConsumptionTarget(View*, Creature* consumer);
   Creature* getCreature(UniqueEntity<Creature>::Id id) const;

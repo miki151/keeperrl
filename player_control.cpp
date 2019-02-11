@@ -379,8 +379,9 @@ void PlayerControl::leaveControl() {
   for (auto controlled : copyOf(getControlled())) {
     if (controlled == getKeeper())
       lastControlKeeperQuestion = collective->getGlobalTime();
-    if (!controlled->getPosition().isSameLevel(getLevel()))
-      getView()->setScrollPos(getPosition());
+    auto controlledLevel = controlled->getPosition().getLevel();
+    if (getModel()->getMainLevels().contains(controlledLevel))
+      setScrollPos(controlled->getPosition());
     controlled->popController();
     for (TeamId team : getTeams().getActive(controlled))
       allTeams.insert(team);
@@ -561,7 +562,7 @@ void PlayerControl::fillEquipment(Creature* creature, PlayerInfo& info) const {
     for (Item* it : ownedItems)
       if (it->canEquip() && it->getEquipmentSlot() == slot)
         items.push_back(it);
-    for (int i = creature->getEquipment().getMaxItems(slot); i < items.size(); ++i)
+    for (int i = creature->getEquipment().getMaxItems(slot, creature->getBody()); i < items.size(); ++i)
       // a rare occurence that minion owns too many items of the same slot,
       //should happen only when an item leaves the fortress and then is braught back
       if (!collective->getMinionEquipment().isLocked(creature, items[i]->getUniqueId()))
@@ -575,7 +576,7 @@ void PlayerControl::fillEquipment(Creature* creature, PlayerInfo& info) const {
       info.inventory.push_back(getItemInfo({item}, equiped, !equiped, locked, ItemInfo::EQUIPMENT));
       info.inventory.back().actions.push_back(locked ? ItemAction::UNLOCK : ItemAction::LOCK);
     }
-    if (creature->getEquipment().getMaxItems(slot) > items.size()) {
+    if (creature->getEquipment().getMaxItems(slot, creature->getBody()) > items.size()) {
       info.inventory.push_back(getEmptySlotItem(slot));
       slotIndex.push_back(slot);
       slotItems.push_back(nullptr);
@@ -598,7 +599,7 @@ Item* PlayerControl::chooseEquipmentItem(Creature* creature, vector<Item*> curre
     ScrollPosition* scrollPos) {
   vector<Item*> availableItems;
   vector<Item*> usedItems;
-  vector<Item*> allItems = collective->getAllItems(predicate);
+  vector<Item*> allItems = collective->getAllItems().filter(predicate);
   collective->getMinionEquipment().sortByEquipmentValue(creature, allItems);
   for (Item* item : allItems)
     if (!currentItems.contains(item)) {
@@ -1753,7 +1754,7 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
     index.insert(ViewObject(ViewId::UNKNOWN_MONSTER, ViewLayer::TORCH2, "Surprise"));
 }
 
-Vec2 PlayerControl::getPosition() const {
+Position PlayerControl::getPosition() const {
   Vec2 topLeft(100000, 100000);
   Vec2 bottomRight(-100000, -100000);
   auto currentLevel = getCurrentLevel();
@@ -1766,10 +1767,10 @@ Vec2 PlayerControl::getPosition() const {
       bottomRight.y = max(coord.y, bottomRight.y);
     }
   if (topLeft.x < 100000)
-    return (topLeft + bottomRight) / 2;
+    return Position((topLeft + bottomRight) / 2, currentLevel);
   else if (getKeeper()->getPosition().isSameLevel(currentLevel))
-    return getKeeper()->getPosition().getCoord();
-  return currentLevel->getBounds().middle();
+    return getKeeper()->getPosition();
+  return Position(currentLevel->getBounds().middle(), currentLevel);
 }
 
 static enum Selection { SELECT, DESELECT, NONE } selection = NONE;
@@ -1836,19 +1837,10 @@ const CollectiveTeams& PlayerControl::getTeams() const {
 }
 
 void PlayerControl::setScrollPos(Position pos) {
-  if (pos.isSameLevel(getLevel()))
-    getView()->setScrollPos(pos.getCoord());
-  else if (auto stairs = getLevel()->getStairsTo(pos.getLevel()))
-    getView()->setScrollPos(stairs->getCoord());
-}
-
-void PlayerControl::scrollToMiddle(const vector<Position>& pos) {
-  vector<Vec2> visible;
-  for (Position v : pos)
-    if (collective->getKnownTiles().isKnown(v))
-      visible.push_back(v.getCoord());
-  CHECK(!visible.empty());
-  getView()->setScrollPos(Rectangle::boundingBox(visible).middle());
+  if (getModel()->getMainLevels().contains(pos.getLevel())) {
+    currentLevel = pos.getLevel();
+    getView()->setScrollPos(pos);
+  }
 }
 
 WCollective PlayerControl::getVillain(UniqueEntity<Collective>::Id id) {
@@ -1905,7 +1897,7 @@ void PlayerControl::setChosenWorkshop(optional<WorkshopType> type) {
 
 void PlayerControl::minionDragAndDrop(const CreatureDropInfo& info) {
   PROFILE;
-  Position pos(info.pos, getLevel());
+  Position pos(info.pos, getCurrentLevel());
   if (Creature* c = getCreature(info.creatureId)) {
     c->removeEffect(LastingEffect::TIED_UP);
     c->removeEffect(LastingEffect::SLEEP);
@@ -1933,12 +1925,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
         else if (auto id = message->getCreature()) {
           if (const Creature* c = getCreature(*id))
             setScrollPos(c->getPosition());
-        }/* else if (auto loc = message->getLocation()) {
-          if (loc->getMiddle().isSameLevel(getLevel()))
-            scrollToMiddle(loc->getAllSquares());
-          else
-            setScrollPos(loc->getMiddle());
-        }*/
+        }
       }
       break;
     case UserInputId::DISMISS_VILLAGE_INFO: {
@@ -1976,7 +1963,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
       break;
     case UserInputId::TEAM_DRAG_DROP: {
       auto& info = input.get<TeamDropInfo>();
-      Position pos = Position(info.pos, getLevel());
+      Position pos = Position(info.pos, getCurrentLevel());
       if (getTeams().exists(info.teamId))
         for (Creature* c : getTeams().getMembers(info.teamId)) {
           c->removeEffect(LastingEffect::TIED_UP);
@@ -2012,8 +1999,8 @@ void PlayerControl::processInput(View* view, UserInput input) {
       break;
     case UserInputId::TILE_CLICK: {
       Vec2 pos = input.get<Vec2>();
-      if (pos.inRectangle(getLevel()->getBounds()))
-        onSquareClick(Position(pos, getLevel()));
+      if (pos.inRectangle(getCurrentLevel()->getBounds()))
+        onSquareClick(Position(pos, getCurrentLevel()));
       break;
     }
     case UserInputId::DRAW_LEVEL_MAP: view->drawLevelMap(this); break;
@@ -2087,7 +2074,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
       chosenCreature = none;
       break;
     case UserInputId::CREATURE_MAP_CLICK: {
-      if (Creature* c = Position(input.get<Vec2>(), getLevel()).getCreature()) {
+      if (Creature* c = Position(input.get<Vec2>(), getCurrentLevel()).getCreature()) {
         if (getCreatures().contains(c)) {
           if (!getChosenTeam() || !getTeams().contains(*getChosenTeam(), c))
             setChosenCreature(c->getUniqueId());
@@ -2328,7 +2315,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
       lastWarningDismiss = getModel()->getLocalTime();
       break;
     case UserInputId::SCROLL_TO_HOME:
-      getView()->setScrollPos(getPosition());
+      setScrollPos(getKeeper()->getPosition());
       break;
     case UserInputId::SCROLL_DOWN_STAIRS:
       scrollStairs(false);
@@ -2365,12 +2352,12 @@ vector<Creature*> PlayerControl::getConsumptionTargets(Creature* consumer) const
 void PlayerControl::updateSelectionSquares() {
   if (rectSelection)
     for (Vec2 v : Rectangle::boundingBox({rectSelection->corner1, rectSelection->corner2}))
-      Position(v, getLevel()).setNeedsRenderUpdate(true);
+      Position(v, getCurrentLevel()).setNeedsRenderUpdate(true);
 }
 
 void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool rectangle, bool deselectOnly) {
   PROFILE;
-  Position position(pos, getLevel());
+  Position position(pos, getCurrentLevel());
   for (auto& req : building.requirements)
     if (!BuildInfo::meetsRequirement(collective, req))
       return;
@@ -2525,7 +2512,7 @@ PlayerControl::CenterType PlayerControl::getCenterType() const {
 
 const vector<Vec2>& PlayerControl::getUnknownLocations(WConstLevel) const {
   PROFILE;
-  return unknownLocations->getOnLevel(getLevel());
+  return unknownLocations->getOnLevel(getCurrentLevel());
 }
 
 const Creature* PlayerControl::getKeeper() const {
@@ -2598,7 +2585,7 @@ void PlayerControl::considerNightfallMessage() {
 void PlayerControl::update(bool currentlyActive) {
   updateVisibleCreatures();
   vector<Creature*> addedCreatures;
-  vector<WLevel> currentLevels {getLevel()};
+  vector<WLevel> currentLevels {getCurrentLevel()};
   for (auto c : getControlled())
     if (!currentLevels.contains(c->getLevel()))
       currentLevels.push_back(c->getLevel());
@@ -2640,7 +2627,7 @@ bool PlayerControl::isConsideredAttacking(const Creature* c, WConstCollective en
     return canSee(c) && (collective->getTerritory().contains(c->getPosition()) ||
         collective->getTerritory().getStandardExtended().contains(c->getPosition()));
   else
-    return canSee(c) && c->getLevel() == getLevel();
+    return canSee(c) && c->getLevel() == getCurrentLevel();
 }
 
 const double messageTimeout = 80;
@@ -2725,6 +2712,10 @@ void PlayerControl::onMemberKilled(const Creature* victim, const Creature* kille
     onControlledKilled(victim);
   visibilityMap->remove(victim);
   if (victim == getKeeper() && !getGame()->isGameOver()) {
+    if (!victim->isPlayer()) {
+      setScrollPos(victim->getPosition().plus(Vec2(0, 5)));
+      getView()->updateView(this, false);
+    }
     getGame()->gameOver(victim, collective->getKills().getSize(), "enemies",
         collective->getDangerLevel() + collective->getPoints());
   }
@@ -2736,10 +2727,6 @@ void PlayerControl::onMemberAdded(Creature* c) {
   if (collective->hasTrait(c, MinionTrait::PRISONER) && !team.empty() &&
       team[0]->getPosition().isSameLevel(c->getPosition()))
     addToCurrentTeam(c);
-}
-
-WLevel PlayerControl::getLevel() const {
-  return getCurrentLevel();
 }
 
 WModel PlayerControl::getModel() const {

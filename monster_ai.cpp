@@ -623,6 +623,8 @@ class Fighter : public Behaviour {
   }
 
   MoveInfo considerFormationMove(Creature* other, FighterPosition position) {
+    if (!LastingEffects::obeysFormation(creature, other) || !creature->getBody().hasBrain())
+      return NoMove;
     auto myPosition = creature->getPosition();
     auto otherPosition = other->getPosition();
     Vec2 enemyDir = myPosition.getDir(otherPosition);
@@ -1001,7 +1003,7 @@ class ByCollective : public Behaviour {
       minionEquipment.autoAssign(creature, collective->getAllItems(ItemIndex::MINION_EQUIPMENT, false));
     vector<PTask> tasks;
     for (Item* it : creature->getEquipment().getItems())
-      if (!creature->getEquipment().isEquipped(it) && creature->getEquipment().canEquip(it))
+      if (!creature->getEquipment().isEquipped(it) && creature->getEquipment().canEquip(it, creature->getBody()))
         tasks.push_back(Task::equipItem(it));
     {
       PROFILE_BLOCK("tasks assignment");

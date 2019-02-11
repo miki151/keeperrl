@@ -200,6 +200,16 @@ string CreatureAttributes::getDescription() const {
   return body->getDescription() + ". " + attack;
 }
 
+void CreatureAttributes::add(BodyPart p, int count) {
+  for (auto effect : ENUM_ALL(LastingEffect))
+    if (body->isIntrinsicallyAffected(effect))
+      --permanentEffects[effect];
+  body->addWithoutUpdatingPermanentEffects(p, count);
+  for (auto effect : ENUM_ALL(LastingEffect))
+    if (body->isIntrinsicallyAffected(effect))
+      ++permanentEffects[effect];
+}
+
 optional<string> CreatureAttributes::getPetReaction(const Creature* me) const {
   if (!petReaction)
     return none;

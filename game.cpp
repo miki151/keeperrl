@@ -610,7 +610,7 @@ void Game::gameOver(const Creature* creature, int numKills, const string& enemie
   }
   for (string stat : statistics->getText())
     text += stat + "\n";
-  view->presentText("Game over", text);
+  view->presentTextBelow("Game over", text);
   Highscores::Score score = CONSTRUCT(Highscores::Score,
         c.worldName = getWorldName();
         c.points = points;

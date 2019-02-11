@@ -17,6 +17,7 @@
 
 #include "equipment.h"
 #include "item.h"
+#include "body.h"
 
 map<EquipmentSlot, string> Equipment::slotTitles = {
   {EquipmentSlot::WEAPON, "Weapon"},
@@ -41,7 +42,7 @@ void Equipment::addItems(vector<PItem> items, Creature* c) {
     addItem(std::move(item), c);
 }
 
-vector<Item*> Equipment::getSlotItems(EquipmentSlot slot) const {
+const vector<Item*>& Equipment::getSlotItems(EquipmentSlot slot) const {
   return items[slot];
 }
 
@@ -69,18 +70,23 @@ bool Equipment::isEquipped(const Item* item) const {
   return item->canEquip() && items[item->getEquipmentSlot()].contains(item);
 }
 
-int Equipment::getMaxItems(EquipmentSlot slot) const {
+int Equipment::getMaxItems(EquipmentSlot slot, const Body& body) const {
   switch (slot) {
-    case EquipmentSlot::RINGS: return 2;
-    default: return 1;
+    case EquipmentSlot::RINGS:
+      return body.numGood(BodyPart::ARM);
+    case EquipmentSlot::AMULET:
+    case EquipmentSlot::HELMET:
+      return body.numGood(BodyPart::HEAD);
+    default:
+      return 1;
   }
 }
 
-bool Equipment::canEquip(const Item* item) const {
+bool Equipment::canEquip(const Item* item, const Body& body) const {
   if (!item->canEquip() || isEquipped(item))
     return false;
   EquipmentSlot slot = item->getEquipmentSlot();
-  return items[slot].size() < getMaxItems(slot);
+  return items[slot].size() < getMaxItems(slot, body);
 }
 
 void Equipment::equip(Item* item, EquipmentSlot slot, Creature* c) {
@@ -133,4 +139,3 @@ void Equipment::tick(Position pos) {
 bool Equipment::containsAnyOf(const EntitySet<Item>& items) const {
   return inventory.containsAnyOf(items);
 }
-

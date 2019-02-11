@@ -219,7 +219,11 @@ class OwnedObject {
     return weakPointer;
   }
 
-  SERIALIZE_ALL(weakPointer)
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int) {
+    ar(weakPointer);
+    CHECK(!!weakPointer);
+  }
 
   private:
   template <typename>

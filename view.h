@@ -82,10 +82,12 @@ class ListElem {
 
 enum class MenuType {
   NORMAL,
+  NORMAL_BELOW,
   MAIN,
   MAIN_NO_TILES,
   GAME_CHOICE,
-  YES_NO
+  YES_NO,
+  YES_NO_BELOW
 };
 
 struct HighscoreList {
@@ -155,7 +157,7 @@ class View {
   /** Draw a blocking view of the whole level.*/
   virtual void drawLevelMap(const CreatureView*) = 0;
 
-  virtual void setScrollPos(Vec2) = 0;
+  virtual void setScrollPos(Position) = 0;
 
   /** Scrolls back to the center of the view on next refresh.*/
   virtual void resetCenter() = 0;
@@ -179,9 +181,11 @@ class View {
 
   /** Asks the player a yer-or-no question.*/
   virtual bool yesOrNoPrompt(const string& message, bool defaultNo = false) = 0;
+  virtual bool yesOrNoPromptBelow(const string& message, bool defaultNo = false) = 0;
 
   /** Draws a window with some text. The text is formatted to fit the window.*/
   virtual void presentText(const string& title, const string& text) = 0;
+  virtual void presentTextBelow(const string& title, const string& text) = 0;
 
   /** Draws a window with a list of items.*/
   virtual void presentList(const string& title, const vector<ListElem>& options, bool scrollDown = false,

@@ -197,7 +197,7 @@ PTask MinionActivities::generate(WCollective collective, Creature* c, MinionActi
           collective->getZones().getPositions(ZoneId::LEISURE).asVector();
       myTerritory = myTerritory.filter([&](const auto& pos) { return pos.canEnterEmpty(c); });
       if (collective->getGame()->getSunlightInfo().getState() == SunlightState::NIGHT) {
-        if (c->getPosition().isCovered())
+        if (c->getPosition().isCovered() && myTerritory.contains(c->getPosition()))
           return Task::idle();
         myTerritory = limitToIndoors(std::move(myTerritory));
       }

@@ -29,18 +29,20 @@ RICH_ENUM(EquipmentSlot,
   RINGS
 );
 
+class Body;
+
 class Equipment {
   public:
   void addItem(PItem, Creature*);
   void addItems(vector<PItem>, Creature*);
-  vector<Item*> getSlotItems(EquipmentSlot slot) const;
+  const vector<Item*>& getSlotItems(EquipmentSlot slot) const;
   bool hasItem(const Item*) const;
   bool isEquipped(const Item*) const;
-  bool canEquip(const Item*) const;
+  bool canEquip(const Item*, const Body&) const;
   void equip(Item*, EquipmentSlot, Creature*);
   void unequip(Item*, Creature*);
   PItem removeItem(Item*, Creature*);
-  int getMaxItems(EquipmentSlot) const;
+  int getMaxItems(EquipmentSlot, const Body&) const;
   const vector<Item*>& getAllEquipped() const;
   const vector<Item*>& getItems() const;
   const vector<Item*>& getItems(ItemIndex) const;

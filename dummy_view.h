@@ -18,7 +18,7 @@ class DummyView : public View {
   virtual double getGameSpeed() override { return 20; }
   virtual void updateView(CreatureView*, bool noRefresh) override {}
   virtual void drawLevelMap(const CreatureView*) override {}
-  virtual void setScrollPos(Vec2) override {}
+  virtual void setScrollPos(Position) override {}
   virtual void resetCenter() override {}
   virtual UserInput getAction() override { return UserInputId::IDLE; }
   virtual bool travelInterrupt() override { return false; }
@@ -35,7 +35,11 @@ class DummyView : public View {
   virtual bool yesOrNoPrompt(const string& message, bool defaultNo = false) override {
     return false;
   }
+  virtual bool yesOrNoPromptBelow(const string& message, bool defaultNo = false) override {
+    return false;
+  }
   virtual void presentText(const string&, const string&) override {}
+  virtual void presentTextBelow(const string&, const string&) override {}
   virtual void presentList(const string&, const vector<ListElem>&, bool = false,
       MenuType = MenuType::NORMAL, optional<UserInputId> = none) override {}
   virtual optional<int> getNumber(const string& title, Range range, int initial, int increments = 1) override {

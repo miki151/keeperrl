@@ -588,6 +588,13 @@
               attackMsg = BITE
               victimEffect = Lasting POISON } }
         }
+        bodyParts = {
+          HEAD 7
+          BACK 0
+          TORSO 0
+        }
+        noHealth = true
+        fallsApart = false
       }
       permanentEffects = {
         POISON_RESISTANT 1

@@ -592,6 +592,12 @@ SGuiElem GuiBuilder::drawSpecialTrait(const SpecialTrait& trait) {
       [&] (SkillId skill) {
         return gui.label("Extra skill: " + Skill::get(skill)->getName(), Color::GREEN);
       },
+      [&] (ExtraBodyPart part) {
+        if (part.count == 1)
+          return gui.label("Extra "_s + getName(part.part), Color::GREEN);
+        else
+          return gui.label(toString(part.count) + " extra "_s + getName(part.part) + "s", Color::GREEN);
+      },
       [&] (const OneOfTraits&)-> SGuiElem {
         FATAL << "Can't draw traits alternative";
         return {};
@@ -2417,6 +2423,10 @@ Rectangle GuiBuilder::getMenuPosition(MenuType type, int numElems) {
     case MenuType::YES_NO:
       ySpacing = (renderer.getSize().y - 250) / 2;
       break;
+    case MenuType::YES_NO_BELOW:
+      ySpacing = (renderer.getSize().y - 250) / 2;
+      yOffset = (renderer.getSize().y - 500) / 2;
+      break;
     case MenuType::MAIN_NO_TILES:
       ySpacing = (renderer.getSize().y - windowHeight) / 2;
       break;
@@ -2429,7 +2439,13 @@ Rectangle GuiBuilder::getMenuPosition(MenuType type, int numElems) {
       ySpacing = renderer.getSize().y * 0.25;
       yOffset = renderer.getSize().y * 0.05;
       break;
-    default: ySpacing = 100; break;
+    case MenuType::NORMAL:
+      ySpacing = 100;
+      break;
+    case MenuType::NORMAL_BELOW:
+      yOffset = (renderer.getSize().y - 500) / 2;
+      ySpacing = (renderer.getSize().y - 400) / 2;
+      break;
   }
   int xSpacing = (renderer.getSize().x - windowWidth) / 2;
   return Rectangle(xSpacing, ySpacing + yOffset, xSpacing + windowWidth, renderer.getSize().y - ySpacing + yOffset);
@@ -3661,7 +3677,7 @@ optional<string> GuiBuilder::getTextInput(const string& title, const string& val
 
 SGuiElem GuiBuilder::drawLevelMap(Semaphore& sem, const CreatureView* view) {
   auto miniMap = make_shared<MinimapGui>([]{});
-  auto levelBounds = view->getLevel()->getBounds();
+  auto levelBounds = view->getPosition().getLevel()->getBounds();
   miniMap->update(levelBounds, view);
   return gui.preferredSize(630, 630,
       gui.miniWindow(gui.stack(

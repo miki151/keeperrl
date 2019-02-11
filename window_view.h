@@ -61,7 +61,7 @@ class WindowView: public View {
   virtual void refreshView() override;
   virtual void updateView(CreatureView*, bool noRefresh) override;
   virtual void drawLevelMap(const CreatureView*) override;
-  virtual void setScrollPos(Vec2 pos) override;
+  virtual void setScrollPos(Position) override;
   virtual void resetCenter() override;
   virtual optional<int> chooseFromList(const string& title, const vector<ListElem>& options, int index = 0,
       MenuType = MenuType::NORMAL, ScrollPosition* scrollPos = nullptr,
@@ -69,6 +69,7 @@ class WindowView: public View {
   virtual optional<Vec2> chooseDirection(Vec2 playerPos, const string& message) override;
   virtual optional<Vec2> chooseTarget(Vec2 playerPos, Table<PassableInfo> passable, const string& message) override;
   virtual bool yesOrNoPrompt(const string& message, bool defaultNo) override;
+  virtual bool yesOrNoPromptBelow(const string& message, bool defaultNo) override;
   virtual void animateObject(Vec2 begin, Vec2 end, optional<ViewId> object, optional<FXInfo> fx) override;
   virtual void animation(Vec2 pos, AnimationId, Dir orientation) override;
   virtual void animation(const FXSpawnInfo&) override;
@@ -76,6 +77,7 @@ class WindowView: public View {
   virtual optional<int> chooseAtMouse(const vector<string>& elems) override;
 
   virtual void presentText(const string& title, const string& text) override;
+  virtual void presentTextBelow(const string& title, const string& text) override;
   virtual void presentList(const string& title, const vector<ListElem>& options, bool scrollDown = false,
       MenuType = MenuType::NORMAL, optional<UserInputId> exitAction = none) override;
   virtual optional<int> getNumber(const string& title, Range range, int initial, int increments = 1) override;

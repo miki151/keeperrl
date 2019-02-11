@@ -518,7 +518,7 @@ vector<SGuiElem> WindowView::getClickableGuiElems() {
   return ret;
 }
 
-void WindowView::setScrollPos(Vec2 pos) {
+void WindowView::setScrollPos(Position pos) {
   mapGui->setCenter(pos);
 }
 
@@ -535,7 +535,6 @@ void WindowView::drawLevelMap(const CreatureView* creature) {
 }
 
 void WindowView::updateMinimap(const CreatureView* creature) {
-  WConstLevel level = creature->getLevel();
   Vec2 rad(40, 40);
   Vec2 playerPos = mapGui->getScreenPos().div(mapLayout->getSquareSize());
   Rectangle bounds(playerPos - rad, playerPos + rad);
@@ -574,7 +573,7 @@ void WindowView::playSounds(const CreatureView* view) {
   for (auto& sound : soundQueue) {
     auto lastTime = lastPlayed[sound.getId()];
     if ((!lastTime || curTime > *lastTime + soundCooldown) && (!sound.getPosition() ||
-        (sound.getPosition()->isSameLevel(view->getLevel()) && sound.getPosition()->getCoord().inRectangle(area)))) {
+        (sound.getPosition()->isSameLevel(view->getPosition().getLevel()) && sound.getPosition()->getCoord().inRectangle(area)))) {
       soundLibrary->playSound(sound);
       lastPlayed[sound.getId()] = curTime;
     }
@@ -798,6 +797,12 @@ bool WindowView::yesOrNoPrompt(const string& message, bool defaultNo) {
       MenuType::YES_NO, nullptr) == 0;
 }
 
+bool WindowView::yesOrNoPromptBelow(const string &message, bool defaultNo) {
+  int index = defaultNo ? 1 : 0;
+  return chooseFromListInternal("", {ListElem(capitalFirst(message), ListElem::TITLE), "Yes", "No"}, index,
+      MenuType::YES_NO_BELOW, nullptr) == 0;
+}
+
 optional<int> WindowView::getNumber(const string& title, Range range, int initial, int increments) {
   SyncQueue<optional<int>> returnQueue;
   return getBlockingGui(returnQueue, guiBuilder.drawChooseNumberMenu(returnQueue, title, range, initial, increments));
@@ -1009,6 +1014,7 @@ optional<int> WindowView::chooseFromListInternal(const string& title, const vect
         gui.centeredLabel(Renderer::HOR, "Dismiss"))), 0, 5, 0, 0);
   switch (menuType) {
     case MenuType::MAIN: break;
+    case MenuType::YES_NO_BELOW:
     case MenuType::YES_NO:
       stuff = gui.window(std::move(stuff), [&choice] { choice = -100;}); break;
     default:
@@ -1086,6 +1092,11 @@ optional<int> WindowView::chooseFromListInternal(const string& title, const vect
 void WindowView::presentText(const string& title, const string& text) {
   TempClockPause pause(clock);
   presentList(title, ListElem::convert({text}), false);
+}
+
+void WindowView::presentTextBelow(const string& title, const string& text) {
+  TempClockPause pause(clock);
+  presentList(title, ListElem::convert({text}), false, MenuType::NORMAL_BELOW);
 }
 
 void WindowView::presentList(const string& title, const vector<ListElem>& options, bool scrollDown, MenuType menu,

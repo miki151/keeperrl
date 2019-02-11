@@ -127,7 +127,6 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   bool isActivityGood(Creature*, MinionActivity, bool ignoreTaskLock = false);
 
   vector<Item*> getAllItems(bool includeMinions = true) const;
-  vector<Item*> getAllItems(ItemPredicate predicate, bool includeMinions = true) const;
   vector<Item*> getAllItems(ItemIndex, bool includeMinions = true) const;
 
   vector<pair<Item*, Position>> getTrapItems(const vector<Position>&) const;
@@ -305,4 +304,5 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   int SERIAL(populationIncrease) = 0;
   DungeonLevel SERIAL(dungeonLevel);
   bool SERIAL(hadALeader) = false;
+  vector<Item*> getAllItemsImpl(optional<ItemIndex>, bool includeMinions) const;
 };

@@ -765,7 +765,7 @@ void Player::makeMove() {
           tutorial->goBack();
         break;
       case UserInputId::SCROLL_TO_HOME:
-        getView()->setScrollPos(getPosition());
+        getView()->setScrollPos(creature->getPosition());
         break;
       case UserInputId::DRAW_WORLD_MAP: {
         auto canTravel = [&] {
@@ -934,8 +934,8 @@ View* Player::getView() const {
     return nullptr;
 }
 
-Vec2 Player::getPosition() const {
-  return creature->getPosition().getCoord();
+Position Player::getPosition() const {
+  return creature->getPosition();
 }
 
 static MessageGenerator messageGenerator(MessageGenerator::SECOND_PERSON);
@@ -1018,7 +1018,7 @@ void Player::getViewIndex(Vec2 pos, ViewIndex& index) const {
 void Player::onKilled(const Creature* attacker) {
   unsubscribe();
   getView()->updateView(this, false);
-  if (getGame()->getPlayerCreatures().size() == 1 && getView()->yesOrNoPrompt("Display message history?"))
+  if (getGame()->getPlayerCreatures().size() == 1 && getView()->yesOrNoPromptBelow("Display message history?"))
     showHistory();
   if (adventurer)
     getGame()->gameOver(creature, creature->getKills().getSize(), "monsters", creature->getPoints());

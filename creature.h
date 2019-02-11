@@ -194,7 +194,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
 
   Item* getRandomWeapon() const;
   Item* getFirstWeapon() const;
-  void dropWeapon();
+  void dropUnsupportedEquipment();
   vector<vector<Item*>> stackItems(vector<Item*>) const;
   CreatureAction moveTowards(Position, NavigationFlags);
   CreatureAction moveTowards(Position);
@@ -223,7 +223,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
 
   void you(MsgType type, const string& param = "") const;
   void you(const string& param) const;
-  void verb(const char* second, const char* third, const string& param = "");
+  void verb(const string& second, const string& third, const string& param = "") const;
   void secondPerson(const PlayerMessage&) const;
   void thirdPerson(const PlayerMessage& playerCanSee, const PlayerMessage& cant) const;
   void thirdPerson(const PlayerMessage& playerCanSee) const;
