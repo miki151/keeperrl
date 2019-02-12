@@ -212,8 +212,9 @@ void Creature::popController() {
     if (auto controller = getController()) {
       if (controller->isPlayer())
         getGame()->addPlayer(this);
-      if (auto m = position.getModel())
-        m->getTimeQueue().postponeMove(this);
+      if (!isDead())
+        if (auto m = position.getModel())
+          m->getTimeQueue().postponeMove(this);
     }
   }
 }
