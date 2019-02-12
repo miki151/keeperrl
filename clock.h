@@ -34,6 +34,7 @@ class Intervalometer {
   public:
   Intervalometer(milliseconds frequency);
   int getCount(milliseconds currentTime);
+  void clear();
 
   private:
   milliseconds frequency;

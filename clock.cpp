@@ -55,6 +55,10 @@ int Intervalometer::getCount(milliseconds mill) {
   return 0;
 }
 
+void Intervalometer::clear() {
+  lastUpdate = none;
+}
+
 
 ScopeTimer::ScopeTimer(const char* msg) : message(msg) {
 }

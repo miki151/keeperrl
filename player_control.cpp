@@ -2499,9 +2499,13 @@ void PlayerControl::onSquareClick(Position pos) {
 }
 
 double PlayerControl::getAnimationTime() const {
-  if (getView()->isClockStopped())
+  double localTime = getModel()->getLocalTimeDouble();
+  // Snap all animations into place when the clock is paused and pausing animations has stopped.
+  // This ensures that a creature that the player controlled that's an extra move ahead
+  // will be positioned properly.
+  if (getView()->isClockStopped() && localTime >= trunc(localTime) + pauseAnimationRemainder)
     return 10000000;
-  return getModel()->getLocalTimeDouble();
+  return localTime;
 }
 
 PlayerControl::CenterType PlayerControl::getCenterType() const {
