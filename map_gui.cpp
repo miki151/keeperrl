@@ -764,8 +764,9 @@ void MapGui::setCenter(double x, double y) {
 }
 
 void MapGui::setCenter(Position pos) {
-  setCenter(pos.getCoord().x, pos.getCoord().y);
   previousLevel = pos.getLevel();
+  levelBounds = previousLevel->getBounds();
+  setCenter(pos.getCoord().x, pos.getCoord().y);
 }
 
 const static EnumMap<Dir, DirSet> adjacentDirs(
