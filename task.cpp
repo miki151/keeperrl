@@ -271,7 +271,7 @@ PTask Task::equipItem(Item* item) {
 
 template <typename PositionContainer>
 static optional<Position> chooseRandomClose(Creature* c, const PositionContainer& squares, Task::SearchType type) {
-  int minD = 10000;
+  int minD = 10000000;
   int margin = type == Task::LAZY ? 0 : 3;
   vector<Position> close;
   auto start = c->getPosition();
