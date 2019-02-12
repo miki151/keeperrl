@@ -135,7 +135,7 @@ bool MinionEquipment::needsItem(const Creature* c, const Item* it, bool noLimit)
           return false;
       }
     }
-    return false;
+    return true;
   } else
     return false;
 }
