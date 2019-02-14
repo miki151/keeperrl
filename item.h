@@ -31,7 +31,8 @@ class Effect;
 struct CorpseInfo;
 class RangedWeapon;
 class WeaponInfo;
-struct CraftingRune;
+struct ItemUpgradeInfo;
+class ItemPrefix;
 
 class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<Item> {
   public:
@@ -66,7 +67,9 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
 
   optional<TrapType> getTrapType() const;
   optional<CollectiveResourceId> getResourceId() const;
-  const optional<CraftingRune>& getCraftingRune() const;
+  const optional<ItemUpgradeInfo>& getUpgradeInfo() const;
+  optional<ItemUpgradeType> getAppliedUpgradeType() const;
+  int getMaxUpgrades() const;
 
   bool canEquip() const;
   EquipmentSlot getEquipmentSlot() const;
@@ -74,7 +77,7 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
   int getModifier(AttrType) const;
   const optional<RangedWeapon>& getRangedWeapon() const;
   void tick(Position);
-  bool applyRandomPrefix();
+  void applyPrefix(const ItemPrefix&);
   void setTimeout(GlobalTime);
   
   string getApplyMsgThirdPerson(const Creature* owner) const;
@@ -93,7 +96,8 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
 
   TimeInterval getApplyTime() const;
   double getWeight() const;
-  string getDescription() const;
+  vector<string> getDescription() const;
+
   optional<LastingEffect> getOwnedEffect() const;
 
   const WeaponInfo& getWeaponInfo() const;

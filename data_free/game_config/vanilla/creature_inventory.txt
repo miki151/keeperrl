@@ -21,28 +21,45 @@
         { GoldPiece 40 80 }
         # Put them in any order in the format "key = value"
         { countMin = 10 countMax = 15 type = GoldPiece chance = 0.1}
-
+        { type = Glyph ARMOR ItemAttrBonus DEFENSE 3 chance = 0.3 }
+        { type = Glyph WEAPON ItemAttrBonus DAMAGE 3 chance = 0.3 }
       }
   {"GREEN_DRAGON"}
       {
         { GoldPiece 60 100 }
+        { type = Glyph WEAPON VictimEffect Lasting POISON chance = 0.3 }
+        { type = Glyph ARMOR LastingEffect POISON_RESISTANT chance = 0.3 }
+        { type = Glyph ARMOR LastingEffect REGENERATION chance = 0.3 }
+        { type = Glyph ARMOR ItemAttrBonus DEFENSE 3 chance = 0.3 }
+        { type = Glyph WEAPON ItemAttrBonus DAMAGE 3 chance = 0.3 }
       }
   {"DEMON_DWELLER"}
       {
         { GoldPiece 5 10 }
-      }
+     }
   {"RED_DRAGON"}
       {
         { GoldPiece 120 200 }
+        { type = Glyph WEAPON VictimEffect Fire chance = 0.3 }
+        { type = Glyph WEAPON VictimEffect Lasting BLEEDING chance = 0.3 }
+        { type = Glyph WEAPON LastingEffect ENTERTAINER chance = 0.3 }
+        { type = Glyph ARMOR ItemAttrBonus DEFENSE 3 chance = 0.3 }
+        { type = Glyph WEAPON ItemAttrBonus DAMAGE 3 chance = 0.3 }
       }
   {"ANGEL"}
       {
         { type = Sword prefixChance = 0.1 }
+        { type = Glyph ARMOR ItemAttrBonus DEFENSE 3 chance = 0.3 }
+        { type = Glyph WEAPON ItemAttrBonus DAMAGE 3 chance = 0.3 }
       }
   {"DEMON_LORD"}
       {
         { type = Sword prefixChance = 0.1 }
-      }
+        { type = Glyph ARMOR LastingEffect MAGIC_RESISTANCE chance = 0.3 }
+        { type = Glyph ARMOR LastingEffect SPEED chance = 0.3 }
+        { type = Glyph ARMOR LastingEffect NO_CARRY_LIMIT chance = 0.3 }
+        { type = Glyph WEAPON JoinPrefixes { ItemAttrBonus DAMAGE 20 AttackerEffect Suicide} chance = 0.3 }
+       }
   {"ADVENTURER_F" "ADVENTURER"}
       {
         { FirstAidKit 2 4 }
@@ -57,7 +74,8 @@
       {
         { IronStaff }
         { Torch }
-      }
+        { type = Glyph ARMOR LastingEffect FIRE_RESISTANT chance = 0.3 }
+       }
   {"DEATH"}
       {
         { Scythe }
@@ -82,6 +100,13 @@
         { LeatherArmor }
         { Club }
         { GoldPiece 80 120 }
+        { type = Glyph ARMOR ItemAttrBonus SPELL_DAMAGE 5 chance = 0.3 }
+        { type = Glyph ARMOR LastingEffect FLYING chance = 0.3 }
+        { type = Glyph ARMOR JoinPrefixes { LastingEffect BLIND LastingEffect INVISIBLE} chance = 0.3 }
+        { type = Glyph WEAPON VictimEffect DestroyEquipment chance = 0.3 }
+        { type = Glyph WEAPON VictimEffect SilverDamage chance = 0.3 }
+        { type = Glyph ARMOR ItemAttrBonus DEFENSE 3 chance = 0.3 }
+        { type = Glyph WEAPON ItemAttrBonus DAMAGE 3 chance = 0.3 }
       }
   {"LIZARDLORD"}
       {
@@ -135,6 +160,8 @@
   {"MINOTAUR"}
       {
         { BattleAxe }
+        { type = Glyph ARMOR ItemAttrBonus DEFENSE 5 chance = 0.3 }
+        { type = Glyph WEAPON ItemAttrBonus DAMAGE 5 chance = 0.3 }
       }
   {"DUKE"}
       {
@@ -180,6 +207,8 @@
         { IronHelm }
         { type = Torch chance = 0.3 }
         { GoldPiece 80 120 }
+        { type = Glyph ARMOR ItemAttrBonus DEFENSE 4 chance = 0.3 }
+        { type = Glyph WEAPON JoinPrefixes { LastingEffect BAD_BREATH VictimEffect Lasting PANIC } chance = 0.3 }
       }
   {"GNOME_CHIEF"}
       {
@@ -189,6 +218,7 @@
       {
         { Robe }
         { IronStaff }
+        { type = Glyph WEAPON ItemAttrBonus SPELL_DAMAGE 4 chance = 0.3 }
       }
   {"DARK_ELF_LORD" "ELF_LORD"}
       {
@@ -197,6 +227,12 @@
         { ElvenBow }
         { GoldPiece 80 120 }
         { Scroll Teleport }
+        { type = Glyph WEAPON JoinPrefixes { ItemAttrBonus DAMAGE 10 LastingEffect INSANITY} chance = 0.3 }
+        { type = Glyph ARMOR LastingEffect NIGHT_VISION chance = 0.3 }
+        { type = Glyph ARMOR LastingEffect ELF_VISION chance = 0.3 }
+        { type = Glyph ARMOR LastingEffect REGENERATION chance = 0.3 }
+        { type = Glyph WEAPON LastingEffect DARKNESS_SOURCE chance = 0.3 }
+        { type = Glyph WEAPON ItemAttrBonus SPELL_DAMAGE 4 chance = 0.3 }
       }
   {"DRIAD"}
       {
@@ -225,6 +261,11 @@
         { Potion Lasting INVISIBLE }
         { Potion Lasting POISON }
         { Potion Lasting SPEED }
+        { type = Glyph ARMOR JoinPrefixes {
+            LastingEffect MAGIC_VULNERABILITY
+            LastingEffect MELEE_VULNERABILITY
+            LastingEffect RANGED_VULNERABILITY
+            LastingEffect INVISIBLE } chance = 0.3 }
       }
   {"HALLOWEEN_KID"}
       {

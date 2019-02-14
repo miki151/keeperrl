@@ -330,8 +330,8 @@
           TORSO { Intrinsic TOUCH_ATTACK "touch" 0 {
               attackType = HIT
               attackMsg = TOUCH
-              victimEffect = Lasting INSANITY
-              attackerEffect = Suicide } }
+              victimEffect = {Lasting INSANITY}
+              attackerEffect = {Suicide} } }
         }
       }
       viewId = GHOST
@@ -363,7 +363,7 @@
           TORSO { Intrinsic TOUCH_ATTACK "touch" 0 {
               attackType = HIT
               attackMsg = TOUCH
-              victimEffect = Lasting PEACEFULNESS } }
+              victimEffect = {Lasting PEACEFULNESS} } }
         }
         addBodyPart = {
           WING 2
@@ -586,7 +586,7 @@
           HEAD { Intrinsic BITE_ATTACK "fangs" 8 {
               attackType = BITE
               attackMsg = BITE
-              victimEffect = Lasting POISON } }
+              victimEffect = {Lasting POISON} } }
         }
         bodyParts = {
           HEAD 7
@@ -624,7 +624,7 @@
           HEAD { Intrinsic BITE_ATTACK "fangs" 8 {
               attackType = BITE
               attackMsg = BITE
-              victimEffect = Lasting POISON } }
+              victimEffect = {Lasting POISON} } }
         }
       }
       permanentEffects = {
@@ -652,7 +652,7 @@
           HEAD { Intrinsic BITE_ATTACK "fangs" 12 {
               attackType = BITE
               attackMsg = BITE
-              victimEffect = Lasting POISON } }
+              victimEffect = {Lasting POISON} } }
         }
       }
       permanentEffects = {
@@ -687,7 +687,7 @@
           HEAD { Intrinsic BITE_ATTACK "fangs" 15 {
               attackType = BITE
               attackMsg = BITE
-              victimEffect = Fire } }
+              victimEffect = {Fire} } }
         }
       }
       permanentEffects = {
@@ -1266,7 +1266,7 @@
           ARM { Intrinsic FIST_ATTACK "fists" 10 {
               attackType = HIT
               attackMsg = SWING
-              victimEffect = Fire } }
+              victimEffect = {Fire} } }
         }
       }
       permanentEffects = {
@@ -1796,7 +1796,7 @@
           HEAD { Intrinsic BITE_ATTACK "fangs" 5 {
               attackType = BITE
               attackMsg = BITE
-              victimEffect = Lasting POISON } }
+              victimEffect = {Lasting POISON} } }
         }
       }
       permanentEffects = {
@@ -1826,7 +1826,7 @@
           HEAD { Intrinsic BITE_ATTACK "fangs" 8 {
               attackType = BITE
               attackMsg = BITE
-              victimEffect = Lasting POISON } }
+              victimEffect = {Lasting POISON} } }
         }
       }
       permanentEffects = {
@@ -2357,7 +2357,7 @@
           HEAD { Intrinsic BITE_ATTACK "fangs" 1 {
               attackType = BITE
               attackMsg = BITE
-              victimEffect = Lasting POISON } }
+              victimEffect = {Lasting POISON} } }
         }
       }
       name = {
@@ -2432,7 +2432,7 @@
           HEAD { Intrinsic BITE_ATTACK "fangs" 6 {
               attackType = BITE
               attackMsg = BITE
-              victimEffect = Lasting POISON } }
+              victimEffect = {Lasting POISON} } }
         }
       }
       name = {
@@ -2459,7 +2459,7 @@
           HEAD { Intrinsic BITE_ATTACK "fangs" 12 {
               attackType = BITE
               attackMsg = BITE
-              victimEffect = Lasting POISON } }
+              victimEffect = {Lasting POISON} } }
         }
       }
       name = {
@@ -2485,7 +2485,7 @@
           HEAD { Intrinsic BITE_ATTACK "fangs" 1 {
               attackType = BITE
               attackMsg = BITE
-              victimEffect = Lasting POISON } }
+              victimEffect = {Lasting POISON} } }
         }
       }
       permanentEffects = {
@@ -2672,7 +2672,7 @@
         deathSound = none
         intrinsicAttacks = {
           TORSO { Intrinsic FIST_ATTACK  "fists" 5 {
-              attackType = HIT attackMsg = SWING victimEffect = Fire} }
+              attackType = HIT attackMsg = SWING victimEffect = {Fire}} }
         }
       }
       attr = {

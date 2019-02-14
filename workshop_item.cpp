@@ -15,12 +15,11 @@ WorkshopItem WorkshopItemCfg::get() const {
     elem->getViewObject().id(),
     cost,
     elem->getDescription(),
-    1,
     batchSize,
     work,
-    none,
     tech,
     tutorialHighlight,
-    0
+    elem->getAppliedUpgradeType(),
+    elem->getMaxUpgrades()
   };
 }

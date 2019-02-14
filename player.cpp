@@ -143,34 +143,6 @@ void Player::onEvent(const GameEvent& event) {
   );
 }
 
-static string getSlotSuffix(EquipmentSlot slot) {
-  return "(equipped)";
-}
-
-string Player::getInventoryItemName(const Item* item, bool plural) const {
-  if (creature->getEquipment().isEquipped(item))
-    return item->getNameAndModifiers(plural, creature) + " "
-      + getSlotSuffix(item->getEquipmentSlot());
-  else
-    return item->getNameAndModifiers(plural, creature);
-}
-
-void Player::getItemNames(vector<Item*> items, vector<ListElem>& names, vector<vector<Item*> >& groups,
-    ItemPredicate predicate) {
-  map<string, vector<Item*> > ret = groupBy<Item*, string>(items,
-      [this] (Item* const& item) { return getInventoryItemName(item, false); });
-  for (auto elem : ret) {
-    if (elem.second.size() == 1)
-      names.push_back(ListElem(getInventoryItemName(elem.second[0], false),
-          predicate(elem.second[0]) ? ListElem::NORMAL : ListElem::INACTIVE).setTip(elem.second[0]->getDescription()));
-    else
-      names.push_back(ListElem(toString<int>(elem.second.size()) + " "
-            + getInventoryItemName(elem.second[0], true),
-          predicate(elem.second[0]) ? ListElem::NORMAL : ListElem::INACTIVE).setTip(elem.second[0]->getDescription()));
-    groups.push_back(elem.second);
-  }
-}
-
 void Player::pickUpItemAction(int numStack, bool multi) {
   CHECK(numStack >= 0);
   auto stacks = creature->stackItems(creature->getPickUpOptions());
@@ -220,22 +192,6 @@ static string getText(ItemClass type) {
   }
   FATAL << int(type);
   return "";
-}
-
-vector<Item*> Player::chooseItem(const string& text, ItemPredicate predicate, optional<UserInputId> exitAction) {
-  map<ItemClass, vector<Item*> > typeGroups = groupBy<Item*, ItemClass>(
-      creature->getEquipment().getItems(), [](Item* const& item) { return item->getClass();});
-  vector<ListElem> names;
-  vector<vector<Item*> > groups;
-  for (auto elem : ENUM_ALL(ItemClass))
-    if (typeGroups[elem].size() > 0) {
-      names.push_back(ListElem(getText(elem), ListElem::TITLE));
-      getItemNames(typeGroups[elem], names, groups, predicate);
-    }
-  optional<int> index = getView()->chooseFromList(text, names, 0, MenuType::NORMAL, nullptr, exitAction);
-  if (index)
-    return groups[*index];
-  return vector<Item*>();
 }
 
 void Player::applyItem(vector<Item*> items) {
@@ -1088,7 +1044,7 @@ ItemInfo Player::getFurnitureUsageInfo(const string& question, ViewId viewId) co
   return CONSTRUCT(ItemInfo,
     c.name = question;
     c.fullName = c.name;
-    c.description = "Click to " + c.name;
+    c.description = {"Click to " + c.name};
     c.number = 1;
     c.viewId = viewId;);
 }

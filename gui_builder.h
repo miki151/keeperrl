@@ -287,6 +287,8 @@ class GuiBuilder {
   SGuiElem drawVillainType(VillainType);
   SGuiElem drawLyingItemsList(const string& title, const ItemCounts&, int maxWidth);
   SGuiElem drawTickBox(shared_ptr<bool> value, const string& title);
+  SGuiElem drawItemUpgradeButton(const CollectiveInfo::QueuedItemInfo&, int itemIndex);
+  SGuiElem drawWorkshopItemActionButton(const CollectiveInfo::QueuedItemInfo&, int itemIndex);
 };
 
 RICH_ENUM(GuiBuilder::GameSpeed,

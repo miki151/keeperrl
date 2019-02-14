@@ -265,8 +265,8 @@ Item* MinionEquipment::getWorstItem(const Creature* c, vector<Item*> items) cons
 }
 
 static bool canAutoAssignItem(const Item* item) {
-  if (auto effect = item->getWeaponInfo().attackerEffect)
-    if (effect->isType<Effect::Suicide>())
+  for (auto effect : item->getWeaponInfo().attackerEffect)
+    if (effect.isType<Effect::Suicide>())
       return false;
   return true;
 }

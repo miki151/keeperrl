@@ -468,7 +468,6 @@ void Collective::tick() {
     minionEquipment->updateOwners(getCreatures());
     minionEquipment->updateItems(getAllItems(ItemIndex::MINION_EQUIPMENT, true));
   }
-  workshops->scheduleItems(this);
   for (auto c : getCreatures())
     if (!usesEquipment(c))
       for (auto it : minionEquipment->getItemsOwnedBy(c))
@@ -997,8 +996,8 @@ void Collective::scheduleAutoProduction(function<bool(const Item*)> itemPredicat
   if (count > 0)
     for (auto workshopType : ENUM_ALL(WorkshopType))
       for (auto& item : workshops->get(workshopType).getQueued())
-        if (itemPredicate(item.type.get().get()))
-          count -= item.number * item.batchSize;
+        if (itemPredicate(item.item.type.get().get()))
+          count -= item.number * item.item.batchSize;
   if (count > 0)
     for (auto workshopType : ENUM_ALL(WorkshopType)) {
       //Don't use alchemy to get resources automatically as it is expensive
@@ -1011,15 +1010,6 @@ void Collective::scheduleAutoProduction(function<bool(const Item*)> itemPredicat
           return;
         }
     }
-}
-
-void Collective::updateResourceProduction() {
-  for (ResourceId resourceId : ENUM_ALL(ResourceId))
-    if (auto index = config->getResourceInfo(resourceId).itemIndex) {
-      int needed = getDebt(resourceId) - getNumItems(*index);
-      if (needed > 0)
-        scheduleAutoProduction([resourceId] (const Item* it) { return it->getResourceId() == resourceId; }, needed);
-  }
 }
 
 void Collective::updateConstructions() {
@@ -1218,26 +1208,21 @@ void Collective::onAppliedSquare(Creature* c, Position pos) {
       auto& workshop = workshops->get(*workshopType);
       auto& info = config->getWorkshopInfo(*workshopType);
       auto craftingSkill = c->getAttributes().getSkills().getValue(info.skill);
-      vector<PItem> items = workshop.addWork(efficiency * craftingSkill * LastingEffects::getCraftingSpeed(c));
-      if (!items.empty()) {
-        if (items[0]->getClass() == ItemClass::WEAPON)
+      auto result = workshop.addWork(this, efficiency * craftingSkill * LastingEffects::getCraftingSpeed(c),
+          craftingSkill, c->getMorale());
+      if (!result.items.empty()) {
+        if (result.items[0]->getClass() == ItemClass::WEAPON)
           getGame()->getStatistics().add(StatId::WEAPON_PRODUCED);
-        if (items[0]->getClass() == ItemClass::ARMOR)
+        if (result.items[0]->getClass() == ItemClass::ARMOR)
           getGame()->getStatistics().add(StatId::ARMOR_PRODUCED);
-        if (items[0]->getClass() == ItemClass::POTION)
+        if (result.items[0]->getClass() == ItemClass::POTION)
           getGame()->getStatistics().add(StatId::POTION_PRODUCED);
-        bool wasAddedPrefix = false;
-        if (craftingSkill > 0.9 && Random.chance(c->getMorale())) {
-          for (auto& item : items)
-            if (item->applyRandomPrefix())
-              wasAddedPrefix = true;
-        }
-        addProducesMessage(c, items);
-        if (wasAddedPrefix) {
+        addProducesMessage(c, result.items);
+        if (result.wasUpgraded) {
           control->addMessage(PlayerMessage(c->getName().the() + " is depressed after crafting his masterpiece.", MessagePriority::HIGH));
           c->addMorale(-2);
         }
-        c->getPosition().dropItems(std::move(items));
+        c->getPosition().dropItems(std::move(result.items));
       }
     }
   }

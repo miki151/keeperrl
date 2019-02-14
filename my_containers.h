@@ -42,23 +42,18 @@ class vector {
     return impl.empty();
   }
 
-  void push_back(const T& t) {
-    impl.push_back(t);
-    ++modCounter;
-  }
-
-  void push_back(T&& t) {
+  void push_back(T t) {
     impl.push_back(std::move(t));
     ++modCounter;
   }
 
-  void push_front(const T& t) {
-    impl.insert(impl.begin(), t);
+  void push_front(T t) {
+    impl.insert(impl.begin(), std::move(t));
     ++modCounter;
   }
 
-  void push_front(T&& t) {
-    impl.insert(impl.begin(), std::move(t));
+  void insert(int index, T t) {
+    impl.insert(impl.begin() + index, std::move(t));
     ++modCounter;
   }
 
@@ -145,9 +140,11 @@ class vector {
     ++modCounter;
   }
 
-  void removeIndexPreserveOrder(int index) {
+  T removeIndexPreserveOrder(int index) {
+    auto ret = std::move(impl.at(index));
     impl.erase(impl.begin() + index);
     ++modCounter;
+    return ret;
   }
 
   template <typename Iter>

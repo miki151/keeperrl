@@ -411,8 +411,8 @@ class EnumMap {
     clear();
   }
 
-  EnumMap(const EnumMap& o) : elems(o.elems) {}
-  EnumMap(EnumMap&& o) : elems(std::move(o.elems)) {}
+  EnumMap(const EnumMap& o) = default;
+  EnumMap(EnumMap&& o) = default;
 
   template <typename Fun>
   explicit EnumMap(Fun f) {

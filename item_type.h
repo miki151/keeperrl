@@ -5,7 +5,7 @@
 #include "util.h"
 #include "weapon_info.h"
 #include "item_prefix.h"
-#include "crafting_rune.h"
+#include "item_upgrade_info.h"
 
 class ItemAttributes;
 
@@ -65,7 +65,7 @@ class ItemType {
     SERIALIZE_ALL(viewId, name, damage, weaponInfo)
     ITEM_TYPE_INTERFACE;
   };
-  static ItemType touch(Effect victimEffect, optional<Effect> attackerEffect = none);
+  static ItemType touch(Effect victimEffect, vector<Effect> attackerEffect = {});
   static ItemType legs(int damage);
   static ItemType claws(int damage);
   static ItemType beak(int damage);
@@ -101,8 +101,8 @@ class ItemType {
     SERIALIZE_ALL(lastingEffect)
     ITEM_TYPE_INTERFACE;
   };
-  struct Rune {
-    CraftingRune SERIAL(rune);
+  struct Glyph {
+    ItemUpgradeInfo SERIAL(rune);
     SERIALIZE_ALL(rune)
     ITEM_TYPE_INTERFACE;
   };
@@ -131,7 +131,7 @@ class ItemType {
       IronBoots, AdaBoots, LeatherGloves, IronGloves, AdaGloves, Robe, Scroll, FireScroll, Potion,
       Mushroom, Amulet, DefenseAmulet, Ring, FirstAidKit, Rock, IronOre, AdaOre, GoldPiece,
       WoodPlank, Bone, TechBook, TrapItem, AutomatonItem, BagOfCandies, HalloweenCostume,
-      UnicornHorn, Intrinsic, Torch, Rune);
+      UnicornHorn, Intrinsic, Torch, Glyph);
 
   template <typename T>
   ItemType(T&& t) : type(std::forward<T>(t)) {}

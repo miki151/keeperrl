@@ -652,7 +652,7 @@ Body::DamageResult Body::takeDamage(const Attack& attack, Creature* creature, do
   } else {
     if (hasHealth())
       creature->you(MsgType::ARE, "wounded");
-    else if (!attack.effect) {
+    else if (attack.effect.empty()) {
       creature->you(MsgType::ARE, "not hurt");
       return Body::NOT_HURT;
     }

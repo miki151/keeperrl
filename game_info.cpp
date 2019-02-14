@@ -79,7 +79,8 @@ ItemInfo ItemInfo::get(const Creature* creature, const vector<Item*>& stack) {
   return CONSTRUCT(ItemInfo,
     c.name = stack[0]->getShortName(creature, stack.size() > 1);
     c.fullName = stack[0]->getNameAndModifiers(false, creature);
-    c.description = creature->isAffected(LastingEffect::BLIND) ? "" : stack[0]->getDescription();
+    c.description = creature->isAffected(LastingEffect::BLIND)
+        ? vector<string>() : stack[0]->getDescription();
     c.number = stack.size();
     c.viewId = stack[0]->getViewObject().id();
     c.viewIdModifiers = stack[0]->getViewObject().getAllModifiers();

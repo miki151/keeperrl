@@ -20,9 +20,9 @@
 template <class Archive> 
 void ItemAttributes::serialize(Archive& ar, const unsigned int version) {
   ar(name, viewId, description, weight, itemClass, plural, blindName, artifactName, trapType);
-  ar(resourceId, flamability, price, noArticle, equipmentSlot, applyTime, ownedEffect, prefix);
-  ar(fragile, effect, uses, usedUpMsg, displayUses, modifiers, shortName, equipedEffect, craftingRune);
-  ar(applyMsgFirstPerson, applyMsgThirdPerson, applySound, rangedWeapon, weaponInfo, prefixes);
+  ar(resourceId, flamability, price, noArticle, equipmentSlot, applyTime, ownedEffect, maxUpgrades);
+  ar(fragile, effect, uses, usedUpMsg, displayUses, modifiers, shortName, equipedEffect, upgradeInfo);
+  ar(applyMsgFirstPerson, applyMsgThirdPerson, applySound, rangedWeapon, weaponInfo, prefixes, genPrefixes);
 }
 
 SERIALIZABLE(ItemAttributes);

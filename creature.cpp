@@ -1076,8 +1076,8 @@ CreatureAction Creature::attack(Creature* other, optional<AttackParams> attackPa
         .setType(MovementInfo::ATTACK);
     if (wasDamaged)
       movementInfo.setVictim(other->getUniqueId());
-    if (weaponInfo.attackerEffect)
-      weaponInfo.attackerEffect->applyToCreature(self);
+    for (auto& e : weaponInfo.attackerEffect)
+      e.applyToCreature(self);
     self->addMovementInfo(movementInfo);
   });
 }
@@ -1155,8 +1155,8 @@ bool Creature::takeDamage(const Attack& attack) {
     }
   } else
     you(MsgType::GET_HIT_NODAMAGE);
-  if (attack.effect)
-    attack.effect->applyToCreature(this, attack.attacker);
+  for (auto& e : attack.effect)
+    e.applyToCreature(this, attack.attacker);
   for (LastingEffect effect : ENUM_ALL(LastingEffect))
     if (isAffected(effect))
       LastingEffects::afterCreatureDamage(this, effect);

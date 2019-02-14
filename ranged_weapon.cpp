@@ -42,7 +42,7 @@ void RangedWeapon::fire(Creature* c, Position target) const {
   c->getGame()->getView()->addSound(SoundId::SHOOT_BOW);
   int damage = c->getAttr(damageAttr);
   Attack attack(c, Random.choose(AttackLevel::LOW, AttackLevel::MIDDLE, AttackLevel::HIGH),
-      AttackType::SHOOT, damage, damageAttr, none);
+      AttackType::SHOOT, damage, damageAttr, {});
   const auto position = c->getPosition();
   auto vision = c->getVision().getId();
   Position lastPos;

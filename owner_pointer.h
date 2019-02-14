@@ -25,7 +25,7 @@ class OwnerPointer {
 
   explicit OwnerPointer(shared_ptr<T> t);
 
-  OwnerPointer<T>& operator = (OwnerPointer<T>&& o) {
+  OwnerPointer<T>& operator = (OwnerPointer<T>&& o) noexcept {
     elem = std::move(o.elem);
     return *this;
   }

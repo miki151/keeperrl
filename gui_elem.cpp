@@ -2056,7 +2056,7 @@ class MouseHighlight2 : public GuiStack {
 
   virtual bool onMouseMove(Vec2 pos) override {
     over = pos.inRectangle(getBounds());
-    return false;
+    return over;
   }
 
   bool over = false;
@@ -2916,7 +2916,7 @@ static int trans1 = 1094;
 static int trans2 = 1693;
 
 SGuiElem GuiFactory::uiHighlightMouseOver(Color c) {
-  return mouseHighlight2(uiHighlightLine(c));
+  return margins(mouseHighlight2(uiHighlight(c)), -8, -3, -3, 3);
 }
 
 SGuiElem GuiFactory::uiHighlight(Color c) {

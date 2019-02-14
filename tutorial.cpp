@@ -86,7 +86,7 @@ bool Tutorial::canContinue(WConstGame game) const {
     case State::SCHEDULE_WORKSHOP_ITEMS: {
       int numWeapons = collective->getNumItems(ItemIndex::WEAPON);
       for (auto& item : collective->getWorkshops().get(WorkshopType::WORKSHOP).getQueued())
-        if (item.type.isType<ItemType::Club>())
+        if (item.item.type.isType<ItemType::Club>())
           ++numWeapons;
       return numWeapons >= 1;
     }
