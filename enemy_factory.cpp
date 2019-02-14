@@ -761,7 +761,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
             c.type = SettlementType::TEMPLE;
             c.tribe = TribeId::getHuman();
             c.race = "altar"_s;
-            //if (random.roll(3))
+            if (random.roll(3))
               c.inhabitants.leader = CreatureList("PRIEST");
             c.buildingId = BuildingId::BRICK;
             c.furniture = FurnitureFactory(c.tribe, {{FurnitureType::CHEST, 1}},
