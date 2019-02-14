@@ -4,6 +4,7 @@
 #include "creature_attributes.h"
 #include "skill.h"
 #include "body.h"
+#include "workshops.h"
 
 void applySpecialTrait(SpecialTrait trait, Creature* c) {
   trait.visit(
@@ -20,7 +21,7 @@ void applySpecialTrait(SpecialTrait trait, Creature* c) {
         c->getAttributes().add(part.part, part.count);
       },
       [&] (SkillId skill) {
-        c->getAttributes().getSkills().increaseValue(skill, 0.4);
+        c->getAttributes().getSkills().setValue(skill, Workshops::getLegendarySkillThreshold());
       },
       [&] (const OneOfTraits&) {
         FATAL << "Can't apply traits alternative";

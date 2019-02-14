@@ -590,7 +590,7 @@ SGuiElem GuiBuilder::drawSpecialTrait(const SpecialTrait& trait) {
         return gui.empty();
       },
       [&] (SkillId skill) {
-        return gui.label("Extra skill: " + Skill::get(skill)->getName(), Color::GREEN);
+        return gui.label("Legendary skill level: " + Skill::get(skill)->getName(), Color::GREEN);
       },
       [&] (ExtraBodyPart part) {
         if (part.count == 1)
