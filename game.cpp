@@ -343,7 +343,7 @@ bool Game::updateModel(WModel model, double totalTime) {
       return false;
     if (wasPlayer && getPlayerCreatures().empty())
       return true;
-    if (wasTransfered) {
+    if (wasTransfered || exitInfo) {
       wasTransfered = false;
       return false;
     }
