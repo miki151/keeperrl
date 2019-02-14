@@ -77,7 +77,7 @@ void Workshops::Type::changeNumber(int index, int number) {
 static const double prodMult = 0.1;
 
 static bool allowUpgrades(double skillAmount, double morale) {
-  return skillAmount >= 0.3 && morale >= 0;
+  return skillAmount >= 0.9 && morale >= 0;
 }
 
 bool Workshops::Type::isIdle(WConstCollective collective, double skillAmount, double morale) const {
