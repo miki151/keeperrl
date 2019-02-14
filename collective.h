@@ -295,7 +295,6 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   EntitySet<Collective> SERIAL(knownVillains);
   EntitySet<Collective> SERIAL(knownVillainLocations);
   set<EnemyId> SERIAL(conqueredVillains); // OBSOLETE
-  void setDiscoverable();
   bool SERIAL(discoverable) = false;
   void considerRebellion();
   void updateCreatureStatus(Creature*);

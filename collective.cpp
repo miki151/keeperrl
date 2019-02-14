@@ -79,8 +79,7 @@ Collective::Collective(Private, WModel model, TribeId t, const optional<Collecti
 PCollective Collective::create(WModel model, TribeId tribe, const optional<CollectiveName>& name, bool discoverable) {
   auto ret = makeOwner<Collective>(Private {}, model, tribe, name);
   ret->subscribeTo(model);
-  if (discoverable)
-    ret->setDiscoverable();
+  ret->discoverable = discoverable;
   ret->workshops = unique<Workshops>(std::array<vector<WorkshopItemCfg>, 4>());
   ret->immigration = makeOwner<Immigration>(ret.get(), vector<ImmigrantInfo>());
   return ret;
@@ -109,10 +108,6 @@ void Collective::setVillainType(VillainType t) {
 
 bool Collective::isDiscoverable() const {
   return discoverable;
-}
-
-void Collective::setDiscoverable() {
-  discoverable = true;
 }
 
 void Collective::setEnemyId(EnemyId id) {
