@@ -78,3 +78,5 @@ using GlobalTime = GameTime<struct GlobalTimeTag>;
 
 GlobalTime operator "" _global(unsigned long long value);
 LocalTime operator "" _local(unsigned long long value);
+
+constexpr double pauseAnimationRemainder = 0.99;

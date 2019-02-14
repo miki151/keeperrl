@@ -107,6 +107,7 @@ enum class AvatarMenuOption;
 enum class PassableInfo;
 enum class ConquerCondition;
 enum class FurnitureOnBuilt;
+enum class ItemUpgradeType;
 enum class ViewObjectAction : std::uint8_t;
 enum class Gender : std::uint8_t;
 

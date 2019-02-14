@@ -88,6 +88,7 @@
 #include "campaign.h"
 #include "game_event.h"
 #include "view_object_action.h"
+#include "storage_id.h"
 
 template <class Archive>
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
@@ -420,10 +421,6 @@ void PlayerControl::render(View* view) {
   }
 }
 
-bool PlayerControl::isTurnBased() {
-  return !getControlled().empty();
-}
-
 void PlayerControl::addConsumableItem(Creature* creature) {
   ScrollPosition scrollPos;
   while (1) {
@@ -525,7 +522,6 @@ static ItemInfo getEmptySlotItem(EquipmentSlot slot) {
   return CONSTRUCT(ItemInfo,
     c.name = "";
     c.fullName = "";
-    c.description = "";
     c.slot = slot;
     c.number = 1;
     c.viewId = getSlotViewId(slot);
@@ -1034,19 +1030,17 @@ void PlayerControl::fillMinions(CollectiveInfo& info) const {
   info.minionLimit = collective->getMaxPopulation();
 }
 
-ItemInfo PlayerControl::getWorkshopItem(const WorkshopItem& option) const {
+ItemInfo PlayerControl::getWorkshopItem(const WorkshopItem& option, int queuedCount) const {
   return CONSTRUCT(ItemInfo,
-      c.number = option.number * option.batchSize;
+      c.number = queuedCount * option.batchSize;
       c.name = c.number == 1 ? option.name : toString(c.number) + " " + option.pluralName;
       c.viewId = option.viewId;
-      c.price = getCostObj(option.cost * option.number);
+      c.price = getCostObj(option.cost * queuedCount);
       if (option.techId && !collective->getTechnology().researched.count(*option.techId)) {
         c.unavailable = true;
         c.unavailableReason = "Requires technology: " + *option.techId;
       }
       c.description = option.description;
-      c.productionState = option.state.value_or(0);
-      c.actions = LIST(ItemAction::REMOVE, ItemAction::CHANGE_NUMBER);
       c.tutorialHighlight = tutorial && option.tutorialHighlight &&
           tutorial->getHighlights(getGame()).contains(*option.tutorialHighlight);
     );
@@ -1099,6 +1093,38 @@ void PlayerControl::fillLibraryInfo(CollectiveInfo& collectiveInfo) const {
   }
 }
 
+vector<pair<vector<Item*>, Position>> PlayerControl::getItemUpgradesFor(const WorkshopItem& workshopItem) const {
+  vector<pair<vector<Item*>, Position>> ret;
+  for (auto& pos : collective->getStoragePositions(StorageId::EQUIPMENT))
+    for (auto& item : pos.getItems(ItemIndex::RUNE))
+      if (item->getUpgradeInfo()->type == workshopItem.upgradeType) {
+        for (auto& existing : ret)
+          if (existing.first[0]->getUpgradeInfo() == item->getUpgradeInfo()) {
+            existing.first.push_back(item);
+            goto found;
+          }
+        ret.push_back({{item}, pos});
+        found:;
+      }
+  return ret;
+}
+
+CollectiveInfo::QueuedItemInfo PlayerControl::getQueuedItemInfo(const WorkshopQueuedItem& item) const {
+  CollectiveInfo::QueuedItemInfo ret {item.state.value_or(0), getWorkshopItem(item.item, item.number), {}, {} };
+  for (auto& it : getItemUpgradesFor(item.item)) {
+    ret.available.push_back({it.first[0]->getViewObject().id(), it.first[0]->getName(), it.first.size(),
+        it.first[0]->getUpgradeInfo()->getDescription()});
+  }
+  for (auto& it : item.runes)
+    ret.added.push_back({it->getViewObject().id(), it->getName(), 1,
+        it->getUpgradeInfo()->getDescription()});
+  ret.itemInfo.actions = {ItemAction::REMOVE};
+  if (item.runes.empty())
+    ret.itemInfo.actions.push_back(ItemAction::CHANGE_NUMBER);
+  ret.maxUpgrades = item.item.maxUpgrades;
+  return ret;
+}
+
 void PlayerControl::fillWorkshopInfo(CollectiveInfo& info) const {
   info.workshopButtons.clear();
   int index = 0;
@@ -1115,10 +1141,11 @@ void PlayerControl::fillWorkshopInfo(CollectiveInfo& info) const {
     ++i;
   }
   if (chosenWorkshop) {
-    auto transFun = [this](const WorkshopItem& item) { return getWorkshopItem(item); };
+    auto transFun = [this](const WorkshopItem& item) { return getWorkshopItem(item, 1); };
+    auto queuedFun = [this](const WorkshopQueuedItem& item) { return getQueuedItemInfo(item); };
     info.chosenWorkshop = CollectiveInfo::ChosenWorkshopInfo {
         collective->getWorkshops().get(*chosenWorkshop).getOptions().transform(transFun),
-        collective->getWorkshops().get(*chosenWorkshop).getQueued().transform(transFun),
+        collective->getWorkshops().get(*chosenWorkshop).getQueued().transform(queuedFun),
         index
     };
   }
@@ -2021,18 +2048,30 @@ void PlayerControl::processInput(View* view, UserInput input) {
       break;
     }
     case UserInputId::WORKSHOP_ADD:
-      if (chosenWorkshop) {
+      if (chosenWorkshop)
         collective->getWorkshops().get(*chosenWorkshop).queue(input.get<int>());
-        collective->getWorkshops().scheduleItems(collective);
-        collective->updateResourceProduction();
+      break;
+    case UserInputId::WORKSHOP_UPGRADE: {
+      auto& info = input.get<WorkshopUpgradeInfo>();
+      if (chosenWorkshop) {
+        auto& workshop = collective->getWorkshops().get(*chosenWorkshop);
+        if (info.itemIndex < workshop.getQueued().size()) {
+          auto& item = workshop.getQueued()[info.itemIndex];
+          if (info.remove) {
+            if (info.upgradeIndex < item.runes.size())
+              Random.choose(collective->getStoragePositions(StorageId::EQUIPMENT))
+                  .dropItem(workshop.removeUpgrade(info.itemIndex, info.upgradeIndex));
+          } else {
+            auto runes = getItemUpgradesFor(item.item);
+            if (info.upgradeIndex < runes.size()) {
+              auto& rune = runes[info.upgradeIndex];
+              workshop.addUpgrade(info.itemIndex, rune.second.removeItem(rune.first[0]));
+            }
+          }
+        }
       }
       break;
-    case UserInputId::LIBRARY_ADD:
-      acquireTech(input.get<TechId>());
-      break;
-    case UserInputId::LIBRARY_CLOSE:
-      setChosenLibrary(false);
-      break;
+    }
     case UserInputId::WORKSHOP_ITEM_ACTION: {
       auto& info = input.get<WorkshopQueuedActionInfo>();
       if (chosenWorkshop) {
@@ -2040,10 +2079,12 @@ void PlayerControl::processInput(View* view, UserInput input) {
         if (info.itemIndex < workshop.getQueued().size()) {
           switch (info.action) {
             case ItemAction::REMOVE:
-              workshop.unqueue(info.itemIndex);
+              for (auto& upgrade : workshop.unqueue(info.itemIndex))
+                Random.choose(collective->getStoragePositions(StorageId::EQUIPMENT))
+                    .dropItem(std::move(upgrade));
               break;
             case ItemAction::CHANGE_NUMBER: {
-              int batchSize = workshop.getQueued()[info.itemIndex].batchSize;
+              int batchSize = workshop.getQueued()[info.itemIndex].item.batchSize;
               if (auto number = getView()->getNumber("Change the number of items:",
                   Range(0, 50 * batchSize), batchSize, batchSize)) {
                 if (*number > 0)
@@ -2056,12 +2097,16 @@ void PlayerControl::processInput(View* view, UserInput input) {
             default:
               break;
           }
-          collective->getWorkshops().scheduleItems(collective);
-          collective->updateResourceProduction();
         }
       }
       break;
     }
+    case UserInputId::LIBRARY_ADD:
+      acquireTech(input.get<TechId>());
+      break;
+    case UserInputId::LIBRARY_CLOSE:
+      setChosenLibrary(false);
+      break;
     case UserInputId::CREATURE_GROUP_BUTTON:
       if (Creature* c = getCreature(input.get<Creature::Id>()))
         if (!chosenCreature || getChosenTeam() || !getCreature(*chosenCreature) ||
@@ -2476,7 +2521,6 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
       if (nextIndex < info.types.size() && selection != DESELECT &&
           (!info.limit || *info.limit > totalCount)) {
         collective->addFurniture(position, info.types[nextIndex], info.cost, info.noCredit);
-        collective->updateResourceProduction();
         selection = SELECT;
         getView()->addSound(SoundId::ADD_CONSTRUCTION);
       } else if (removed) {
@@ -2503,7 +2547,13 @@ void PlayerControl::onSquareClick(Position pos) {
 }
 
 double PlayerControl::getAnimationTime() const {
-  return getModel()->getLocalTimeDouble();
+  double localTime = getModel()->getLocalTimeDouble();
+  // Snap all animations into place when the clock is paused and pausing animations has stopped.
+  // This ensures that a creature that the player controlled that's an extra move ahead
+  // will be positioned properly.
+  if (getView()->isClockStopped() && localTime >= trunc(localTime) + pauseAnimationRemainder)
+    return 10000000;
+  return localTime;
 }
 
 PlayerControl::CenterType PlayerControl::getCenterType() const {

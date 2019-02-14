@@ -45,9 +45,6 @@ class Controller : public OwnedObject<Controller> {
   virtual void makeMove() = 0;
   virtual void sleeping() {}
 
-  virtual void onStartedControl() {}
-  virtual void onEndedControl() {}
-
   virtual ~Controller() {}
 
   SERIALIZATION_DECL(Controller);

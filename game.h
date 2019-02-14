@@ -101,7 +101,7 @@ class Game : public OwnedObject<Game> {
   optional<ExitInfo> update();
   void tick(GlobalTime);
   Vec2 getModelCoords(const WModel) const;
-  optional<ExitInfo> updateModel(WModel, double totalTime);
+  bool updateModel(WModel, double timeDiff);
   string getPlayerName() const;
   void uploadEvent(const string& name, const map<string, string>&);
 

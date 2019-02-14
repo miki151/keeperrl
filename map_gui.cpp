@@ -764,8 +764,9 @@ void MapGui::setCenter(double x, double y) {
 }
 
 void MapGui::setCenter(Position pos) {
-  setCenter(pos.getCoord().x, pos.getCoord().y);
   previousLevel = pos.getLevel();
+  levelBounds = previousLevel->getBounds();
+  setCenter(pos.getCoord().x, pos.getCoord().y);
 }
 
 const static EnumMap<Dir, DirSet> adjacentDirs(
@@ -1283,8 +1284,8 @@ void MapGui::updateObjects(CreatureView* view, MapLayout* mapLayout, bool smooth
   mouseUI = ui;
   layout = mapLayout;
   auto currentTimeReal = clock->getRealMillis();
-
-  if (view != previousView || level != previousLevel)
+  bool newView = (view != previousView);
+  if (newView || level != previousLevel)
     for (Vec2 pos : level->getBounds())
       level->setNeedsRenderUpdate(pos, true);
   else
@@ -1300,10 +1301,14 @@ void MapGui::updateObjects(CreatureView* view, MapLayout* mapLayout, bool smooth
   }
   keyScrolling = view->getCenterType() == CreatureView::CenterType::NONE;
   currentTimeGame = view->getAnimationTime();
+  if (newView) {
+    lastMoveCounter = (smoothMovement ? level->getModel()->getMoveCounter() : 1000000000);
+    currentMoveCounter = lastMoveCounter;
+  }
   bool newTurn = false;
   {
     int newMoveCounter = smoothMovement ? level->getModel()->getMoveCounter() : 1000000000;
-    if (currentMoveCounter != newMoveCounter) {
+    if (currentMoveCounter != newMoveCounter && !newView) {
       lastMoveCounter = currentMoveCounter;
       currentMoveCounter = newMoveCounter;
       newTurn = true;

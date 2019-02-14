@@ -473,7 +473,8 @@ const MinionActivityInfo& CollectiveConfig::getActivityInfo(MinionActivity task)
       case MinionActivity::CRAFT: return {[](WConstCollective col, const Creature* c, FurnitureType t) {
             if (auto type = getWorkshopType(t))
               return !c || !col || (c->getAttributes().getSkills().getValue(getWorkshopInfo(*type).skill) > 0 &&
-                            !col->getWorkshops().get(*type).isIdle());
+                  !col->getWorkshops().get(*type).isIdle(
+                      col, c->getAttributes().getSkills().getValue(getWorkshopInfo(*type).skill), c->getMorale()));
             else
               return false;
           },

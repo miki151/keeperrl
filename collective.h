@@ -188,7 +188,6 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   const heap_optional<CollectiveName>& getName() const;
   const TaskMap& getTaskMap() const;
   TaskMap& getTaskMap();
-  void updateResourceProduction();
   bool isItemMarked(const Item*) const;
   int getNumItems(ItemIndex, bool includeMinions = true) const;
   const PositionSet& getStorageForPillagedItem(const Item*) const;

@@ -28,6 +28,7 @@
 #include "game_time.h"
 #include "weapon_info.h"
 #include "item_prefix.h"
+#include "item_upgrade_info.h"
 
 #define ITATTR(X) ItemAttributes([&](ItemAttributes& i) { X })
 
@@ -63,14 +64,16 @@ class ItemAttributes {
   int SERIAL(uses) = -1;
   bool SERIAL(usedUpMsg) = false;
   bool SERIAL(displayUses) = false;
-  optional<LastingEffect> SERIAL(equipedEffect);
+  vector<LastingEffect> SERIAL(equipedEffect);
   optional<LastingEffect> SERIAL(ownedEffect);
   optional<string> SERIAL(applyMsgFirstPerson);
   optional<string> SERIAL(applyMsgThirdPerson);
   optional<SoundId> SERIAL(applySound);
   optional<RangedWeapon> SERIAL(rangedWeapon);
   WeaponInfo SERIAL(weaponInfo);
-  vector<pair<int, ItemPrefix>> SERIAL(prefixes);
-  optional<string> SERIAL(prefix);
+  vector<pair<int, ItemPrefix>> SERIAL(genPrefixes);
+  vector<string> SERIAL(prefixes);
+  optional<ItemUpgradeInfo> SERIAL(upgradeInfo);
+  int SERIAL(maxUpgrades) = 3;
 };
 

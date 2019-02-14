@@ -81,6 +81,7 @@ enum class UserInputId {
     WORKSHOP,
     WORKSHOP_ADD,
     WORKSHOP_ITEM_ACTION,
+    WORKSHOP_UPGRADE,
     LIBRARY_ADD,
     LIBRARY_CLOSE,
     VILLAGE_ACTION,
@@ -192,12 +193,19 @@ struct DismissVillageInfo {
   SERIALIZE_ALL(collectiveId, infoText)
 };
 
+struct WorkshopUpgradeInfo {
+  int SERIAL(itemIndex);
+  int SERIAL(upgradeIndex);
+  bool SERIAL(remove);
+  SERIALIZE_ALL(itemIndex, upgradeIndex, remove)
+};
+
 enum class SpellId;
 
 class UserInput : public EnumVariant<UserInputId, TYPES(BuildingInfo, int, UniqueEntity<Creature>::Id,
     UniqueEntity<PlayerMessage>::Id, InventoryItemInfo, Vec2, TeamCreatureInfo, SpellId, VillageActionInfo,
     TaskActionInfo, EquipmentActionInfo, RenameActionInfo, WorkshopQueuedActionInfo, CreatureDropInfo, TeamDropInfo,
-    string, TeamMemberActionInfo, AssignQuartersInfo, TeamOrder, DismissVillageInfo),
+    string, TeamMemberActionInfo, AssignQuartersInfo, TeamOrder, DismissVillageInfo, WorkshopUpgradeInfo),
         ASSIGN(BuildingInfo,
             UserInputId::BUILD,
             UserInputId::RECT_SELECTION,
@@ -275,6 +283,9 @@ class UserInput : public EnumVariant<UserInputId, TYPES(BuildingInfo, int, Uniqu
         ),
         ASSIGN(TeamOrder,
             UserInputId::TOGGLE_TEAM_ORDER
+        ),
+        ASSIGN(WorkshopUpgradeInfo,
+            UserInputId::WORKSHOP_UPGRADE
         )
         > {
   using EnumVariant::EnumVariant;

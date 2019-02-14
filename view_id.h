@@ -2,7 +2,8 @@
 
 #include "util.h"
 
-RICH_ENUM2(std::uint16_t,
+RICH_ENUM2(
+    std::uint16_t,
     ViewId,
     EMPTY,
     PLAYER,
@@ -303,6 +304,10 @@ RICH_ENUM2(std::uint16_t,
     POTION4,
     POTION5,
     POTION6,
+    RUNE1,
+    RUNE2,
+    RUNE3,
+    RUNE4,
     GOLD,
     ROBE,
     LEATHER_GLOVES,

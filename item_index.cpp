@@ -6,6 +6,7 @@
 #include "resource_id.h"
 #include "corpse_info.h"
 #include "effect.h"
+#include "item_upgrade_info.h"
 
 const char* getName(ItemIndex index, int count) {
   switch (index) {
@@ -47,5 +48,7 @@ bool hasIndex(ItemIndex index, const Item* item) {
       return item->isOrWasForSale();
     case ItemIndex::HEALING_ITEM:
       return item->getEffect() == Effect(Effect::Heal{});
+    case ItemIndex::RUNE:
+      return !!item->getUpgradeInfo();
   }
 }

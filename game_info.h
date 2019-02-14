@@ -41,7 +41,7 @@ struct ItemInfo {
   static ItemInfo get(const Creature*, const vector<Item*>&);
   string HASH(name);
   string HASH(fullName);
-  string HASH(description);
+  vector<string> HASH(description);
   int HASH(number);
   ViewId HASH(viewId);
   EnumSet<ViewObjectModifier> HASH(viewIdModifiers);
@@ -57,10 +57,9 @@ struct ItemInfo {
   optional<CreatureInfo> HASH(owner);
   enum Type {EQUIPMENT, CONSUMABLE, OTHER} HASH(type);
   optional<pair<ViewId, int>> HASH(price);
-  double HASH(productionState);
   optional<double> HASH(weight);
   bool HASH(tutorialHighlight);
-  HASH_ALL(name, fullName, description, number, viewId, ids, actions, equiped, locked, pending, unavailable, slot, owner, type, price, productionState, unavailableReason, weight, tutorialHighlight, intrinsicState, viewIdModifiers)
+  HASH_ALL(name, fullName, description, number, viewId, ids, actions, equiped, locked, pending, unavailable, slot, owner, type, price, unavailableReason, weight, tutorialHighlight, intrinsicState, viewIdModifiers)
 };
 
 struct AttributeInfo {
@@ -233,9 +232,24 @@ class CollectiveInfo {
     HASH_ALL(name, viewId, active, unavailable)
   };
   vector<WorkshopButton> HASH(workshopButtons);
+  struct QueuedItemInfo {
+    double HASH(productionState);
+    ItemInfo HASH(itemInfo);
+    struct UpgradeInfo {
+      ViewId HASH(viewId);
+      string HASH(name);
+      int HASH(count);
+      vector<string> HASH(description);
+      HASH_ALL(viewId, name, count, description)
+    };
+    vector<UpgradeInfo> HASH(available);
+    vector<UpgradeInfo> HASH(added);
+    int HASH(maxUpgrades);
+    HASH_ALL(productionState, itemInfo, available, added, maxUpgrades)
+  };
   struct ChosenWorkshopInfo {
     vector<ItemInfo> HASH(options);
-    vector<ItemInfo> HASH(queued);
+    vector<QueuedItemInfo> HASH(queued);
     int HASH(index);
     HASH_ALL(index, options, queued)
   };

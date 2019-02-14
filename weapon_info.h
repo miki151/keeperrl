@@ -21,8 +21,8 @@ struct WeaponInfo {
   bool SERIAL(twoHanded) = false;
   AttackType SERIAL(attackType) = AttackType::HIT;
   AttrType SERIAL(meleeAttackAttr) = AttrType::DAMAGE;
-  optional<Effect> SERIAL(victimEffect);
-  optional<Effect> SERIAL(attackerEffect);
+  vector<Effect> SERIAL(victimEffect);
+  vector<Effect> SERIAL(attackerEffect);
   AttackMsg SERIAL(attackMsg) = AttackMsg::SWING;
   SERIALIZE_ALL(OPTION(twoHanded), OPTION(attackType), OPTION(meleeAttackAttr), OPTION(victimEffect), OPTION(attackerEffect), OPTION(attackMsg))
 };

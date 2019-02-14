@@ -26,12 +26,10 @@ struct AttackerEffect {
   COMPARE_ALL(effect);
 };
 
-using ItemPrefix_impl = variant<LastingEffect, VictimEffect, AttackerEffect, ItemAttrBonus, JoinPrefixes>;
-
-class ItemPrefix : public ItemPrefix_impl {
-  public:
-  using variant::variant;
-};
+MAKE_VARIANT2(ItemPrefix, LastingEffect, VictimEffect, AttackerEffect, ItemAttrBonus, JoinPrefixes);
 
 class ItemAttributes;
-extern void applyPrefix(ItemPrefix, ItemAttributes&);
+extern void applyPrefix(const ItemPrefix&, ItemAttributes&);
+extern string getItemName(const ItemPrefix&);
+extern string getGlyphName(const ItemPrefix&);
+extern vector<string> getEffectDescription(const ItemPrefix&);

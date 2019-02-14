@@ -47,7 +47,7 @@ SERIALIZATION_CONSTRUCTOR_IMPL(Item)
 Item::Item(const ItemAttributes& attr) : Renderable(ViewObject(*attr.viewId, ViewLayer::ITEM, capitalFirst(*attr.name))),
     attributes(attr), fire(*attr.weight, attr.flamability), canEquipCache(!!attributes->equipmentSlot),
     classCache(*attributes->itemClass) {
-  if (!!attributes->prefix)
+  if (!attributes->prefixes.empty())
     modViewObject().setModifier(ViewObject::Modifier::AURA);
 }
 
@@ -103,13 +103,13 @@ void Item::onDropped(Creature* c) {
 }
 
 void Item::onEquip(Creature* c) {
-  if (attributes->equipedEffect)
-    c->addPermanentEffect(*attributes->equipedEffect);
+  for (auto& e : attributes->equipedEffect)
+    c->addPermanentEffect(e);
 }
 
 void Item::onUnequip(Creature* c) {
-  if (attributes->equipedEffect)
-    c->removePermanentEffect(*attributes->equipedEffect);
+  for (auto& e : attributes->equipedEffect)
+    c->removePermanentEffect(e);
 }
 
 void Item::fireDamage(double amount, Position position) {
@@ -145,12 +145,9 @@ void Item::tick(Position position) {
   }
 }
 
-bool Item::applyRandomPrefix() {
-  if (!attributes->prefixes.empty()) {
-    applyPrefix(Random.choose(attributes->prefixes), *attributes);
-    return true;
-  }
-  return false;
+void Item::applyPrefix(const ItemPrefix& prefix) {
+  modViewObject().setModifier(ViewObject::Modifier::AURA);
+  ::applyPrefix(prefix, *attributes);
 }
 
 void Item::setTimeout(GlobalTime t) {
@@ -189,19 +186,21 @@ double Item::getWeight() const {
   return *attributes->weight;
 }
 
-string Item::getDescription() const {
+vector<string> Item::getDescription() const {
+  vector<string> ret;
   if (!attributes->description.empty())
-    return attributes->description;
-  else if (auto& effect = attributes->effect)
-    return effect->getDescription();
-  else if (auto& effect = getWeaponInfo().victimEffect)
-    return effect->getDescription();
-  else if (auto& effect = getWeaponInfo().attackerEffect)
-    return effect->getDescription();
-  else if (auto& effect = attributes->equipedEffect)
-    return LastingEffects::getDescription(*effect);
-  else
-    return "";
+    ret.push_back(attributes->description);
+  if (auto& effect = attributes->effect)
+    ret.push_back("Usage effect: " + effect->getName());
+  for (auto& effect : getWeaponInfo().victimEffect)
+    ret.push_back("Victim affected by: " + effect.getName());
+  for (auto& effect : getWeaponInfo().attackerEffect)
+    ret.push_back("Attacker affected by: " + effect.getName());
+  for (auto& effect : attributes->equipedEffect)
+    ret.push_back("Effect when equipped: " + LastingEffects::getName(effect));
+  if (auto& info = attributes->upgradeInfo)
+    ret.append(info->getDescription());
+  return ret;
 }
 
 optional<LastingEffect> Item::getOwnedEffect() const {
@@ -241,6 +240,25 @@ optional<TrapType> Item::getTrapType() const {
 
 optional<CollectiveResourceId> Item::getResourceId() const {
   return attributes->resourceId;
+}
+
+const optional<ItemUpgradeInfo>& Item::getUpgradeInfo() const {
+  return attributes->upgradeInfo;
+}
+
+optional<ItemUpgradeType> Item::getAppliedUpgradeType() const {
+  switch (getClass()) {
+    case ItemClass::ARMOR:
+      return ItemUpgradeType::ARMOR;
+    case ItemClass::WEAPON:
+      return ItemUpgradeType::WEAPON;
+    default:
+      return none;
+  }
+}
+
+int Item::getMaxUpgrades() const {
+  return attributes->maxUpgrades;
 }
 
 void Item::apply(Creature* c, bool noSound) {
@@ -392,8 +410,8 @@ void Item::setArtifactName(const string& s) {
 
 string Item::getSuffix() const {
   string artStr;
-  if (attributes->prefix)
-    artStr += "of " + *attributes->prefix;
+  if (!attributes->prefixes.empty())
+    artStr += "of " + attributes->prefixes.back();
   if (attributes->artifactName)
     appendWithSpace(artStr, "named " + *attributes->artifactName);
   if (fire->isBurning())
@@ -438,8 +456,8 @@ string Item::getShortName(const Creature* owner, bool plural) const {
   if (attributes->artifactName)
     return *attributes->artifactName + " " + getModifiers(true);
   string name;
-  if (!!attributes->prefix)
-    name = *attributes->prefix;
+  if (!attributes->prefixes.empty())
+    name = attributes->prefixes.back();
   else if (attributes->shortName) {
     name = *attributes->shortName;
     appendWithSpace(name, getSuffix());

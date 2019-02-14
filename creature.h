@@ -194,6 +194,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
 
   Item* getRandomWeapon() const;
   Item* getFirstWeapon() const;
+  void dropWeapon();
   void dropUnsupportedEquipment();
   vector<vector<Item*>> stackItems(vector<Item*>) const;
   CreatureAction moveTowards(Position, NavigationFlags);

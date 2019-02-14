@@ -68,8 +68,6 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   virtual bool isPlayer() const override;
   virtual void privateMessage(const PlayerMessage& message) override;
   virtual MessageGenerator& getMessageGenerator() const override;
-  virtual void onStartedControl() override;
-  virtual void onEndedControl() override;
 
   // overridden by subclasses
   struct CommandInfo {
@@ -126,7 +124,6 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   void giveAction(vector<Item*>);
   void spellAction(SpellId);
   void fireAction();
-  vector<Item*> chooseItem(const string& text, ItemPredicate, optional<UserInputId> exitAction = none);
   void getItemNames(vector<Item*> it, vector<ListElem>& names, vector<vector<Item*> >& groups,
       ItemPredicate = alwaysTrue<const Item*>());
   string getInventoryItemName(const Item*, bool plural) const;

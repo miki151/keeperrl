@@ -186,25 +186,36 @@ void Creature::updateLastingFX(ViewObject& object) {
 
 void Creature::pushController(PController ctrl) {
   if (auto controller = getController())
-    controller->onEndedControl();
+    if (controller->isPlayer())
+      getGame()->removePlayer(this);
+  if (ctrl->isPlayer())
+    getGame()->addPlayer(this);
   controllerStack.push_back(std::move(ctrl));
-  getController()->onStartedControl();
+  if (!isDead())
+    if (auto m = position.getModel())
+      // This actually moves the creature to the appropriate player/monster time queue,
+      // which is the same logic as postponing.
+      m->getTimeQueue().postponeMove(this);
 }
 
 void Creature::setController(PController ctrl) {
-  if (auto controller = getController())
-    controller->onEndedControl();
-  controllerStack.clear();
+  while (!controllerStack.empty())
+    popController();
   pushController(std::move(ctrl));
-  getController()->onStartedControl();
 }
 
 void Creature::popController() {
   if (!controllerStack.empty()) {
-    getController()->onEndedControl();
+    if (getController()->isPlayer())
+      getGame()->removePlayer(this);
     controllerStack.pop_back();
-    if (auto controller = getController())
-      controller->onStartedControl();
+    if (auto controller = getController()) {
+      if (controller->isPlayer())
+        getGame()->addPlayer(this);
+      if (!isDead())
+        if (auto m = position.getModel())
+          m->getTimeQueue().postponeMove(this);
+    }
   }
 }
 
@@ -998,15 +1009,22 @@ ViewId Creature::getMaxViewIdUpgrade() const {
 }
 
 void Creature::dropUnsupportedEquipment() {
-  auto& equipment = getEquipment();
   for (auto slot : ENUM_ALL(EquipmentSlot)) {
-    auto& items = equipment.getSlotItems(slot);
-    for (int i : Range(equipment.getMaxItems(slot, getBody()), items.size())) {
+    auto& items = equipment->getSlotItems(slot);
+    for (int i : Range(equipment->getMaxItems(slot, getBody()), items.size())) {
       verb("drop your", "drops "_s + his(attributes->getGender()), items[i]->getName());
-      position.dropItem(equipment.removeItem(items[i], this));
+      position.dropItem(equipment->removeItem(items[i], this));
     }
   }
 }
+
+void Creature::dropWeapon() {
+  for (auto weapon : equipment->getSlotItems(EquipmentSlot::WEAPON)) {
+    verb("drop your", "drops "_s + his(attributes->getGender()), weapon->getName());
+    position.dropItem(equipment->removeItem(weapon, this));
+  }
+}
+
 
 CreatureAction Creature::execute(Creature* c) const {
   if (c->getPosition().dist8(getPosition()) > 1)
@@ -1058,8 +1076,8 @@ CreatureAction Creature::attack(Creature* other, optional<AttackParams> attackPa
         .setType(MovementInfo::ATTACK);
     if (wasDamaged)
       movementInfo.setVictim(other->getUniqueId());
-    if (weaponInfo.attackerEffect)
-      weaponInfo.attackerEffect->applyToCreature(self);
+    for (auto& e : weaponInfo.attackerEffect)
+      e.applyToCreature(self);
     self->addMovementInfo(movementInfo);
   });
 }
@@ -1137,8 +1155,8 @@ bool Creature::takeDamage(const Attack& attack) {
     }
   } else
     you(MsgType::GET_HIT_NODAMAGE);
-  if (attack.effect)
-    attack.effect->applyToCreature(this, attack.attacker);
+  for (auto& e : attack.effect)
+    e.applyToCreature(this, attack.attacker);
   for (LastingEffect effect : ENUM_ALL(LastingEffect))
     if (isAffected(effect))
       LastingEffects::afterCreatureDamage(this, effect);

@@ -195,6 +195,7 @@ CreatureFactory::CreatureFactory(NameGenerator* n, const GameConfig* config) : n
       continue;
     }
     vector<pair<vector<CreatureId>, CreatureInventory>> input;
+    inventory.clear();
     if (auto res = config->readObject(input, GameConfigId::CREATURE_INVENTORY)) {
       USER_INFO << *res;
       continue;

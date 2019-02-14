@@ -1043,8 +1043,7 @@ static string getIntrinsicStateText(IntrinsicAttack::Active state) {
 
 vector<string> GuiBuilder::getItemHint(const ItemInfo& item) {
   vector<string> out { capitalFirst(item.fullName)};
-  if (!item.description.empty())
-    out.push_back(item.description);
+  out.append(item.description);
   if (item.equiped)
     out.push_back("Equipped.");
   if (item.pending)
@@ -1227,7 +1226,7 @@ static string getActionText(ItemAction a) {
     case ItemAction::REPLACE: return "replace";
     case ItemAction::LOCK: return "lock";
     case ItemAction::UNLOCK: return "unlock";
-    case ItemAction::REMOVE: return "remove";
+    case ItemAction::REMOVE: return "remove item";
     case ItemAction::CHANGE_NUMBER: return "change number";
     case ItemAction::NAME: return "name";
     case ItemAction::INTRINSIC_ALWAYS: return "set " + getIntrinsicStateText(IntrinsicAttack::ALWAYS);
@@ -1921,6 +1920,96 @@ SGuiElem GuiBuilder::drawNextWaveOverlay(const optional<CollectiveInfo::NextWave
       )));
 }
 
+SGuiElem GuiBuilder::drawWorkshopItemActionButton(const CollectiveInfo::QueuedItemInfo& elem, int itemIndex) {
+  return gui.buttonRect([=] (Rectangle bounds) {
+      auto lines = gui.getListBuilder(legendLineHeight);
+      bool exit = false;
+      optional<ItemAction> ret;
+      for (auto action : elem.itemInfo.actions) {
+        auto buttonFun = [&exit, &ret, action] {
+            ret = action;
+            exit = true;
+        };
+        lines.addElem(gui.stack(
+              gui.button(buttonFun),
+              gui.uiHighlightMouseOver(),
+              gui.label(getActionText(action))));
+      }
+      drawMiniMenu(std::move(lines), exit, bounds.bottomLeft(), 200, false);
+      if (ret)
+        callbacks.input({UserInputId::WORKSHOP_ITEM_ACTION,
+            WorkshopQueuedActionInfo{itemIndex, *ret}});
+  });
+}
+
+SGuiElem GuiBuilder::drawItemUpgradeButton(const CollectiveInfo::QueuedItemInfo& elem, int itemIndex) {
+  auto upgradesButton = [&] {
+    auto line = gui.getListBuilder();
+    line.addElemAuto(gui.label("["));
+    for (int upgradeIndex : All(elem.added)) {
+      auto& upgrade = elem.added[upgradeIndex];
+      line.addElemAuto(gui.stack(
+          gui.viewObject(upgrade.viewId),
+          gui.tooltip({upgrade.name})
+      ));
+    }
+    line.addElemAuto(gui.label("]"));
+    if (!elem.added.empty())
+      return line.buildHorizontalList();
+    else
+      return gui.label("[upgrade]", Color::LIGHT_BLUE);
+  }();
+  return gui.stack(
+      std::move(upgradesButton),
+      gui.leftMargin(4, gui.uiHighlightMouseOver()),
+      gui.buttonRect([=] (Rectangle bounds) {
+          auto lines = gui.getListBuilder(legendLineHeight);
+          bool exit = false;
+          optional<WorkshopUpgradeInfo> ret;
+          for (int i : All(elem.added)) {
+            auto buttonFun = [&exit, &ret, i, itemIndex] {
+                ret = WorkshopUpgradeInfo{ itemIndex,  i, true};
+                exit = true;
+            };
+            auto& upgrade = elem.added[i];
+            auto idLine = gui.getListBuilder();
+            idLine.addElemAuto(gui.label("Remove "));
+            idLine.addElemAuto(gui.viewObject(upgrade.viewId));
+            idLine.addElemAuto(gui.label(upgrade.name));
+            lines.addElem(gui.stack(
+                  gui.button(buttonFun),
+                  gui.uiHighlightMouseOver(),
+                  idLine.buildHorizontalList(),
+                  gui.tooltip({upgrade.description})
+            ));
+          }
+          if (elem.added.size() < elem.maxUpgrades)
+            for (int i : All(elem.available)) {
+              auto buttonFun = [&exit, &ret, i, itemIndex] {
+                  ret = WorkshopUpgradeInfo{ itemIndex,  i, false};
+                  exit = true;
+              };
+              auto& upgrade = elem.available[i];
+              auto idLine = gui.getListBuilder();
+              idLine.addElemAuto(gui.label("Add "));
+              idLine.addElemAuto(gui.viewObject(upgrade.viewId));
+              idLine.addElemAuto(gui.label(upgrade.name + " (" + toString(upgrade.count) + " available)"));
+              lines.addElem(gui.stack(
+                    gui.button(buttonFun),
+                    gui.uiHighlightMouseOver(),
+                    idLine.buildHorizontalList(),
+                    gui.tooltip({upgrade.description})
+              ));
+            }
+          lines.addElem(gui.label("Available slots: " + toString(elem.maxUpgrades - elem.added.size())));
+          lines.addElem(gui.label("Upgraded items can only be crafted by a craftsman of legendary skills.",
+              Renderer::smallTextSize, Color::LIGHT_GRAY));
+          drawMiniMenu(std::move(lines), exit, bounds.bottomLeft(), 450, false);
+          if (ret)
+            callbacks.input({UserInputId::WORKSHOP_UPGRADE, *ret});
+      }));
+}
+
 SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo& info, const optional<TutorialInfo>& tutorial) {
   if (!info.chosenWorkshop)
     return gui.empty();
@@ -1930,8 +2019,8 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo& info, const opti
   auto& queued = info.chosenWorkshop->queued;
   auto lines = gui.getListBuilder(legendLineHeight);
   lines.addElem(gui.label("Available:", Color::YELLOW));
-  for (int i : All(options)) {
-    auto& elem = options[i];
+  for (int itemIndex : All(options)) {
+    auto& elem = options[itemIndex];
     auto line = gui.getListBuilder();
     line.addElem(gui.viewObject(elem.viewId), 35);
     line.addElem(gui.label(elem.name, elem.unavailable ? Color::GRAY : Color::WHITE), 10);
@@ -1942,59 +2031,38 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo& info, const opti
       guiElem = gui.stack(gui.tutorialHighlight(), std::move(guiElem));
     if (elem.unavailable) {
       CHECK(!elem.unavailableReason.empty());
-      guiElem = gui.stack(getTooltip({elem.unavailableReason, elem.description}, THIS_LINE + i), std::move(guiElem));
+      guiElem = gui.stack(getTooltip(concat({elem.unavailableReason}, elem.description), THIS_LINE + itemIndex), std::move(guiElem));
     }
     else
       guiElem = gui.stack(
           getTooltip({elem.description}, THIS_LINE),
-          gui.uiHighlightMouseOver(Color::GREEN),
+          gui.uiHighlightMouseOver(),
           std::move(guiElem),
-          gui.button(getButtonCallback({UserInputId::WORKSHOP_ADD, i})));
+          gui.button(getButtonCallback({UserInputId::WORKSHOP_ADD, itemIndex})));
     lines.addElem(gui.rightMargin(rightElemMargin, std::move(guiElem)));
   }
   auto lines2 = gui.getListBuilder(legendLineHeight);
   lines2.addElem(gui.label("In production:", Color::YELLOW));
-  for (int i : All(queued)) {
-    auto& elem = queued[i];
+  for (int itemIndex : All(queued)) {
+    auto& elem = queued[itemIndex];
     auto line = gui.getListBuilder();
     line.addMiddleElem(gui.stack(
-        gui.buttonRect([=] (Rectangle bounds) {
-              auto lines = gui.getListBuilder(legendLineHeight);
-              bool exit = false;
-              optional<ItemAction> ret;
-              for (auto action : elem.actions) {
-                function<void()> buttonFun = [] {};
-                if (!elem.unavailable)
-                  buttonFun = [&exit, &ret, action] {
-                      ret = action;
-                      exit = true;
-                  };
-                lines.addElem(gui.stack(
-                      gui.button(buttonFun),
-                      gui.label(getActionText(action))));
-              }
-              drawMiniMenu(std::move(lines), exit, bounds.bottomLeft(), 200, false);
-              if (ret)
-                callbacks.input({UserInputId::WORKSHOP_ITEM_ACTION,
-                    WorkshopQueuedActionInfo{i, *ret}});
-        }),
+        drawWorkshopItemActionButton(elem, itemIndex),
+        gui.uiHighlightMouseOver(),
         gui.getListBuilder()
-            .addElem(gui.viewObject(elem.viewId), 35)
-            .addElemAuto(gui.label(elem.name)).buildHorizontalList()));
-    line.addBackElem(gui.stack(
-        gui.uiHighlightMouseOver(Color::GREEN),
-        gui.button(getButtonCallback({UserInputId::WORKSHOP_ITEM_ACTION,
-            WorkshopQueuedActionInfo{i, ItemAction::CHANGE_NUMBER}}))), 35);
-    if (elem.price)
-      line.addBackElem(gui.alignment(GuiFactory::Alignment::RIGHT, drawCost(*elem.price)), 80);
+            .addElem(gui.viewObject(elem.itemInfo.viewId), 35)
+            .addElemAuto(gui.label(elem.itemInfo.name))
+            .buildHorizontalList()
+    ));
+    if ((!elem.available.empty() || !elem.added.empty()) && elem.maxUpgrades > 0) {
+      line.addBackElemAuto(gui.leftMargin(7, drawItemUpgradeButton(elem, itemIndex)));
+    }
+    if (elem.itemInfo.price)
+      line.addBackElem(gui.alignment(GuiFactory::Alignment::RIGHT, drawCost(*elem.itemInfo.price)), 80);
     lines2.addElem(gui.stack(
         gui.bottomMargin(5,
             gui.progressBar(Color::DARK_GREEN.transparency(128), elem.productionState)),
-        gui.rightMargin(rightElemMargin, gui.stack(
-            //getTooltip({elem.description}, THIS_LINE), // this interferes with the mini menu
-            gui.uiHighlightMouseOver(Color::GREEN),
-            line.buildHorizontalList()
-    ))));
+        gui.rightMargin(rightElemMargin, line.buildHorizontalList())));
   }
   return gui.preferredSize(860, 600,
     gui.miniWindow(gui.stack(

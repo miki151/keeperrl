@@ -28,55 +28,55 @@ ItemType::ItemType(const ItemType&) = default;
 ItemType::ItemType(ItemType&) = default;
 ItemType::ItemType(ItemType&&) = default;
 
-ItemType ItemType::touch(Effect victimEffect, optional<Effect> attackerEffect) {
+ItemType ItemType::touch(Effect victimEffect, vector<Effect> attackerEffect) {
   return ItemType::Intrinsic{ViewId::TOUCH_ATTACK, "touch", 0,
-      WeaponInfo{false, AttackType::HIT, AttrType::DAMAGE, victimEffect, attackerEffect, AttackMsg::TOUCH}};
+      WeaponInfo{false, AttackType::HIT, AttrType::DAMAGE, {victimEffect}, attackerEffect, AttackMsg::TOUCH}};
 }
 
 ItemType ItemType::legs(int damage) {
   return ItemType::Intrinsic{ViewId::LEG_ATTACK, "legs", damage,
-        WeaponInfo{false, AttackType::HIT, AttrType::DAMAGE, none, none, AttackMsg::KICK}};
+        WeaponInfo{false, AttackType::HIT, AttrType::DAMAGE, {}, {}, AttackMsg::KICK}};
 }
 
 ItemType ItemType::claws(int damage) {
   return ItemType::Intrinsic{ViewId::CLAWS_ATTACK, "claws", damage,
-        WeaponInfo{false, AttackType::HIT, AttrType::DAMAGE, none, none, AttackMsg::CLAW}};
+        WeaponInfo{false, AttackType::HIT, AttrType::DAMAGE, {}, {}, AttackMsg::CLAW}};
 }
 
 ItemType ItemType::beak(int damage) {
   return ItemType::Intrinsic{ViewId::BEAK_ATTACK, "beak", damage,
-        WeaponInfo{false, AttackType::HIT, AttrType::DAMAGE, none, none, AttackMsg::BITE}};
+        WeaponInfo{false, AttackType::HIT, AttrType::DAMAGE, {}, {}, AttackMsg::BITE}};
 }
 
-static ItemType fistsBase(int damage, optional<Effect> effect) {
+static ItemType fistsBase(int damage, vector<Effect> effect) {
   return ItemType::Intrinsic{ViewId::FIST_ATTACK, "fists", damage,
-      WeaponInfo{false, AttackType::HIT, AttrType::DAMAGE, effect, none, AttackMsg::SWING}};
+        WeaponInfo{false, AttackType::HIT, AttrType::DAMAGE, effect, {}, AttackMsg::SWING}};
 }
 
 ItemType ItemType::fists(int damage) {
-  return fistsBase(damage, none);
+  return fistsBase(damage, {});
 }
 
 ItemType ItemType::fists(int damage, Effect effect) {
-  return fistsBase(damage, effect);
+  return fistsBase(damage, {effect});
 }
 
-static ItemType fangsBase(int damage, optional<Effect> effect) {
+static ItemType fangsBase(int damage, vector<Effect> effect) {
   return ItemType::Intrinsic{ViewId::BITE_ATTACK, "fangs", damage,
-      WeaponInfo{false, AttackType::BITE, AttrType::DAMAGE, effect, none, AttackMsg::BITE}};
+      WeaponInfo{false, AttackType::BITE, AttrType::DAMAGE, effect, {}, AttackMsg::BITE}};
 }
 
 ItemType ItemType::fangs(int damage) {
-  return fangsBase(damage, none);
+  return fangsBase(damage, {});
 }
 
 ItemType ItemType::fangs(int damage, Effect effect) {
-  return fangsBase(damage, effect);
+  return fangsBase(damage, {effect});
 }
 
 ItemType ItemType::spellHit(int damage) {
   return ItemType::Intrinsic{ViewId::FIST_ATTACK, "spell", damage,
-      WeaponInfo{false, AttackType::HIT, AttrType::SPELL_DAMAGE, none, none, AttackMsg::SPELL}};
+      WeaponInfo{false, AttackType::HIT, AttrType::SPELL_DAMAGE, {}, {}, AttackMsg::SPELL}};
 }
 
 ItemType::ItemType() {}
@@ -248,8 +248,8 @@ ItemAttributes ItemType::getAttributes() const {
 
 PItem ItemType::get() const {
   auto attributes = getAttributes();
-  if (!attributes.prefixes.empty() && Random.chance(prefixChance))
-    applyPrefix(Random.choose(attributes.prefixes), attributes);
+  if (!attributes.genPrefixes.empty() && Random.chance(prefixChance))
+    applyPrefix(Random.choose(attributes.genPrefixes), attributes);
   return type.visit(
       [&](const FireScroll&) {
         return makeOwner<FireScrollItem>(std::move(attributes));
@@ -406,7 +406,7 @@ ItemAttributes ItemType::Knife::getAttributes() const {
       i.price = 1;
       i.weaponInfo.attackType = AttackType::STAB;
       i.weaponInfo.attackMsg = AttackMsg::THRUST;
-      i.prefixes.push_back({1, VictimEffect{Effect::Lasting{LastingEffect::POISON}}});
+      i.genPrefixes.push_back({1, VictimEffect{Effect::Lasting{LastingEffect::POISON}}});
   );
 }
 
@@ -414,10 +414,10 @@ ItemAttributes ItemType::Intrinsic::getAttributes() const {
   return ITATTR(
       i.viewId = viewId;
       i.name = name;
-      if (auto& effect = weaponInfo.victimEffect)
-        i.prefix = effect->getName();
-      else if (auto& effect = weaponInfo.attackerEffect)
-        i.prefix = effect->getName();
+      for (auto& effect : weaponInfo.victimEffect)
+        i.prefixes.push_back(effect.getName());
+      for (auto& effect : weaponInfo.attackerEffect)
+        i.prefixes.push_back(effect.getName());
       i.itemClass = ItemClass::WEAPON;
       i.equipmentSlot = EquipmentSlot::WEAPON;
       i.weight = 0.3;
@@ -436,7 +436,7 @@ ItemAttributes ItemType::UnicornHorn::getAttributes() const {
       i.equipmentSlot = EquipmentSlot::WEAPON;
       i.weight = 0.3;
       i.modifiers[AttrType::DAMAGE] = 5 + maybePlusMinusOne(4);
-      i.weaponInfo.victimEffect = Effect(Effect::Lasting{LastingEffect::POISON});
+      i.weaponInfo.victimEffect.push_back(Effect::Lasting{LastingEffect::POISON});
       i.price = 1;
       i.weaponInfo.attackType = AttackType::STAB;
       i.weaponInfo.attackMsg = AttackMsg::THRUST;
@@ -467,13 +467,14 @@ ItemAttributes ItemType::Sword::getAttributes() const {
       i.modifiers[AttrType::DAMAGE] = 8 + maybePlusMinusOne(4);
       i.price = 4;
       i.weaponInfo.attackType = AttackType::CUT;
-      i.prefixes.push_back({1, VictimEffect{Effect::Fire{}}});
-      i.prefixes.push_back({1, VictimEffect{Effect::Lasting{LastingEffect::POISON}}});
-      i.prefixes.push_back({1, LastingEffect::RAGE});
-      i.prefixes.push_back({1, JoinPrefixes{{
+      i.genPrefixes.push_back({1, VictimEffect{Effect::Fire{}}});
+      i.genPrefixes.push_back({1, VictimEffect{Effect::Lasting{LastingEffect::POISON}}});
+      i.genPrefixes.push_back({1, LastingEffect::RAGE});
+      i.genPrefixes.push_back({1, JoinPrefixes{{
           ItemPrefix{ItemAttrBonus{AttrType::DAMAGE, 3}},
           ItemPrefix{LastingEffect::HALLU},
       }}});
+      i.maxUpgrades = 1;
   );
 }
 
@@ -487,10 +488,10 @@ ItemAttributes ItemType::AdaSword::getAttributes() const {
       i.modifiers[AttrType::DAMAGE] = 11 + maybePlusMinusOne(4);
       i.price = 20;
       i.weaponInfo.attackType = AttackType::CUT;
-      i.prefixes.push_back({1, VictimEffect{Effect::Acid{}}});
-      i.prefixes.push_back({1, VictimEffect{Effect::Fire{}}});
-      i.prefixes.push_back({1, VictimEffect{Effect::Lasting{LastingEffect::POISON}}});
-      i.prefixes.push_back({1, LastingEffect::RAGE});
+      i.genPrefixes.push_back({1, VictimEffect{Effect::Acid{}}});
+      i.genPrefixes.push_back({1, VictimEffect{Effect::Fire{}}});
+      i.genPrefixes.push_back({1, VictimEffect{Effect::Lasting{LastingEffect::POISON}}});
+      i.genPrefixes.push_back({1, LastingEffect::RAGE});
   );
 }
 
@@ -504,7 +505,7 @@ ItemAttributes ItemType::ElvenSword::getAttributes() const {
       i.modifiers[AttrType::DAMAGE] = 9 + maybePlusMinusOne(4);
       i.price = 8;
       i.weaponInfo.attackType = AttackType::CUT;
-      i.prefixes.push_back({1, VictimEffect{Effect::SilverDamage{}}});
+      i.genPrefixes.push_back({1, VictimEffect{Effect::SilverDamage{}}});
   );
 }
 
@@ -519,8 +520,9 @@ ItemAttributes ItemType::BattleAxe::getAttributes() const {
       i.weaponInfo.twoHanded = true;
       i.price = 30;
       i.weaponInfo.attackType = AttackType::CUT;
-      i.prefixes.push_back({1, VictimEffect{Effect::Lasting{LastingEffect::BLEEDING}}});
-      i.prefixes.push_back({1, LastingEffect::RAGE});
+      i.genPrefixes.push_back({1, VictimEffect{Effect::Lasting{LastingEffect::BLEEDING}}});
+      i.genPrefixes.push_back({1, LastingEffect::RAGE});
+      i.maxUpgrades = 1;
   );
 }
 
@@ -536,7 +538,8 @@ ItemAttributes ItemType::AdaBattleAxe::getAttributes() const {
       i.weaponInfo.twoHanded = true;
       i.price = 150;
       i.weaponInfo.attackType = AttackType::CUT;
-      i.prefixes.push_back({1, VictimEffect{Effect::Lasting{LastingEffect::BLEEDING}}});
+      i.genPrefixes.push_back({1, VictimEffect{Effect::Lasting{LastingEffect::BLEEDING}}});
+      i.maxUpgrades = 2;
   );
 }
 
@@ -551,7 +554,8 @@ ItemAttributes ItemType::WarHammer::getAttributes() const {
       i.weaponInfo.twoHanded = true;
       i.price = 20;
       i.weaponInfo.attackType = AttackType::CRUSH;
-      i.prefixes.push_back({1, VictimEffect{Effect::Lasting{LastingEffect::COLLAPSED}}});
+      i.genPrefixes.push_back({1, VictimEffect{Effect::Lasting{LastingEffect::COLLAPSED}}});
+      i.maxUpgrades = 1;
   );
 }
 
@@ -566,7 +570,8 @@ ItemAttributes ItemType::AdaWarHammer::getAttributes() const {
       i.weaponInfo.twoHanded = true;
       i.price = 100;
       i.weaponInfo.attackType = AttackType::CRUSH;
-      i.prefixes.push_back({1, VictimEffect{Effect::Lasting{LastingEffect::COLLAPSED}}});
+      i.genPrefixes.push_back({1, VictimEffect{Effect::Lasting{LastingEffect::COLLAPSED}}});
+      i.maxUpgrades = 2;
   );
 }
 
@@ -580,6 +585,7 @@ ItemAttributes ItemType::Club::getAttributes() const {
       i.modifiers[AttrType::DAMAGE] = 4 + maybePlusMinusOne(4);
       i.price = 2;
       i.weaponInfo.attackType = AttackType::CRUSH;
+      i.maxUpgrades = 0;
   );
 }
 
@@ -594,6 +600,7 @@ ItemAttributes ItemType::HeavyClub::getAttributes() const {
       i.weaponInfo.twoHanded = true;
       i.price = 4;
       i.weaponInfo.attackType = AttackType::CRUSH;
+      i.maxUpgrades = 0;
   );
 }
 
@@ -609,7 +616,8 @@ ItemAttributes ItemType::WoodenStaff::getAttributes() const {
       i.price = 30;
       i.weaponInfo.attackType = AttackType::SPELL;
       i.weaponInfo.attackMsg = AttackMsg::WAVE;
-      i.prefixes.push_back({1, VictimEffect{Effect::Teleport{}}});
+      i.genPrefixes.push_back({1, VictimEffect{Effect::Teleport{}}});
+      i.maxUpgrades = 1;
   );
 }
 
@@ -625,12 +633,13 @@ ItemAttributes ItemType::IronStaff::getAttributes() const {
       i.price = 60;
       i.weaponInfo.attackType = AttackType::SPELL;
       i.weaponInfo.attackMsg = AttackMsg::WAVE;
-      i.prefixes.push_back({1, VictimEffect{Effect::Teleport{}}});
-      i.prefixes.push_back({1, VictimEffect{Effect::DestroyEquipment{}}});
-      i.prefixes.push_back({1, JoinPrefixes{{
+      i.genPrefixes.push_back({1, VictimEffect{Effect::Teleport{}}});
+      i.genPrefixes.push_back({1, VictimEffect{Effect::DestroyEquipment{}}});
+      i.genPrefixes.push_back({1, JoinPrefixes{{
           ItemPrefix{ItemAttrBonus{AttrType::SPELL_DAMAGE, 20}},
           ItemPrefix{AttackerEffect{Effect::Suicide{}}}
       }}});
+      i.maxUpgrades = 2;
   );
 }
 
@@ -646,9 +655,10 @@ ItemAttributes ItemType::GoldenStaff::getAttributes() const {
       i.price = 180;
       i.weaponInfo.attackType = AttackType::SPELL;
       i.weaponInfo.attackMsg = AttackMsg::WAVE;
-      i.prefixes.push_back({1, VictimEffect{Effect::Lasting{LastingEffect::INSANITY}}});
-      i.prefixes.push_back({1, VictimEffect{Effect::DestroyEquipment{}}});
-      i.prefixes.push_back({1, VictimEffect{Effect::Fire{}}});
+      i.genPrefixes.push_back({1, VictimEffect{Effect::Lasting{LastingEffect::INSANITY}}});
+      i.genPrefixes.push_back({1, VictimEffect{Effect::DestroyEquipment{}}});
+      i.genPrefixes.push_back({1, VictimEffect{Effect::Fire{}}});
+      i.maxUpgrades = 4;
   );
 }
 
@@ -715,7 +725,7 @@ ItemAttributes ItemType::Robe::getAttributes() const {
       i.weight = 2;
       i.price = 10;
       i.modifiers[AttrType::DEFENSE] = 1 + maybePlusMinusOne(4);
-      i.prefixes.push_back({1, LastingEffect::MAGIC_RESISTANCE});
+      i.genPrefixes.push_back({1, LastingEffect::MAGIC_RESISTANCE});
   );
 }
 
@@ -757,6 +767,7 @@ ItemAttributes ItemType::LeatherGloves::getAttributes() const {
       i.weight = 0.3;
       i.price = 2;
       i.modifiers[AttrType::DEFENSE] = 1 + maybePlusMinusOne(4);
+      i.maxUpgrades = 0;
   );
 }
 
@@ -770,8 +781,9 @@ ItemAttributes ItemType::IronGloves::getAttributes() const {
       i.weight = 1;
       i.price = 10;
       i.modifiers[AttrType::DEFENSE] = 2 + maybePlusMinusOne(4);
-      i.prefixes.push_back({1, ItemAttrBonus{AttrType::DAMAGE, Random.get(2, 5)}});
-      i.prefixes.push_back({1, ItemAttrBonus{AttrType::SPELL_DAMAGE, Random.get(2, 5)}});
+      i.genPrefixes.push_back({1, ItemAttrBonus{AttrType::DAMAGE, Random.get(2, 5)}});
+      i.genPrefixes.push_back({1, ItemAttrBonus{AttrType::SPELL_DAMAGE, Random.get(2, 5)}});
+      i.maxUpgrades = 1;
   );
 }
 
@@ -785,8 +797,9 @@ ItemAttributes ItemType::AdaGloves::getAttributes() const {
       i.weight = 0.7;
       i.price = 25;
       i.modifiers[AttrType::DEFENSE] = 3 + maybePlusMinusOne(4);
-      i.prefixes.push_back({1, ItemAttrBonus{AttrType::DAMAGE, Random.get(2, 5)}});
-      i.prefixes.push_back({1, ItemAttrBonus{AttrType::SPELL_DAMAGE, Random.get(2, 5)}});
+      i.genPrefixes.push_back({1, ItemAttrBonus{AttrType::DAMAGE, Random.get(2, 5)}});
+      i.genPrefixes.push_back({1, ItemAttrBonus{AttrType::SPELL_DAMAGE, Random.get(2, 5)}});
+      i.maxUpgrades = 2;
   );
 }
 
@@ -800,7 +813,8 @@ ItemAttributes ItemType::LeatherArmor::getAttributes() const {
       i.weight = 7;
       i.price = 4;
       i.modifiers[AttrType::DEFENSE] = 3 + maybePlusMinusOne(4);
-      i.prefixes.push_back({1, ItemAttrBonus{AttrType::DEFENSE, Random.get(2, 5)}});
+      i.genPrefixes.push_back({1, ItemAttrBonus{AttrType::DEFENSE, Random.get(2, 5)}});
+      i.maxUpgrades = 0;
   );
 }
 
@@ -814,9 +828,10 @@ ItemAttributes ItemType::LeatherHelm::getAttributes() const {
       i.weight = 1.5;
       i.price = 1;
       i.modifiers[AttrType::DEFENSE] = 1 + maybePlusMinusOne(4);
-      i.prefixes.push_back({1, LastingEffect::TELEPATHY});
-      i.prefixes.push_back({1, LastingEffect::SLEEP_RESISTANT});
-      i.prefixes.push_back({2, ItemAttrBonus{AttrType::DEFENSE, Random.get(2, 5)}});
+      i.genPrefixes.push_back({1, LastingEffect::TELEPATHY});
+      i.genPrefixes.push_back({1, LastingEffect::SLEEP_RESISTANT});
+      i.genPrefixes.push_back({2, ItemAttrBonus{AttrType::DEFENSE, Random.get(2, 5)}});
+      i.maxUpgrades = 0;
   );
 }
 
@@ -830,7 +845,8 @@ ItemAttributes ItemType::ChainArmor::getAttributes() const {
       i.weight = 15;
       i.price = 25;
       i.modifiers[AttrType::DEFENSE] = 5 + maybePlusMinusOne(4);
-      i.prefixes.push_back({1, ItemAttrBonus{AttrType::DEFENSE, Random.get(2, 5)}});
+      i.genPrefixes.push_back({1, ItemAttrBonus{AttrType::DEFENSE, Random.get(2, 5)}});
+      i.maxUpgrades = 2;
   );
 }
 
@@ -844,7 +860,8 @@ ItemAttributes ItemType::AdaArmor::getAttributes() const {
       i.weight = 13;
       i.price = 160;
       i.modifiers[AttrType::DEFENSE] = 8 + maybePlusMinusOne(4);
-      i.prefixes.push_back({1, ItemAttrBonus{AttrType::DEFENSE, Random.get(2, 5)}});
+      i.genPrefixes.push_back({1, ItemAttrBonus{AttrType::DEFENSE, Random.get(2, 5)}});
+      i.maxUpgrades = 4;
   );
 }
 
@@ -858,9 +875,10 @@ ItemAttributes ItemType::IronHelm::getAttributes() const {
       i.weight = 4;
       i.price = 8;
       i.modifiers[AttrType::DEFENSE]= 2 + maybePlusMinusOne(4);
-      i.prefixes.push_back({1, LastingEffect::WARNING});
-      i.prefixes.push_back({1, LastingEffect::SLEEP_RESISTANT});
-      i.prefixes.push_back({3, ItemAttrBonus{AttrType::DEFENSE, Random.get(2, 5)}});
+      i.genPrefixes.push_back({1, LastingEffect::WARNING});
+      i.genPrefixes.push_back({1, LastingEffect::SLEEP_RESISTANT});
+      i.genPrefixes.push_back({3, ItemAttrBonus{AttrType::DEFENSE, Random.get(2, 5)}});
+      i.maxUpgrades = 1;
   );
 }
 
@@ -874,8 +892,9 @@ ItemAttributes ItemType::AdaHelm::getAttributes() const {
       i.weight = 3;
       i.price = 40;
       i.modifiers[AttrType::DEFENSE]= 4 + maybePlusMinusOne(4);
-      i.prefixes.push_back({1, LastingEffect::TELEPATHY});
-      i.prefixes.push_back({1, LastingEffect::REGENERATION});
+      i.genPrefixes.push_back({1, LastingEffect::TELEPATHY});
+      i.genPrefixes.push_back({1, LastingEffect::REGENERATION});
+      i.maxUpgrades = 2;
   );
 }
 
@@ -890,9 +909,10 @@ ItemAttributes ItemType::LeatherBoots::getAttributes() const {
       i.weight = 2;
       i.price = 2;
       i.modifiers[AttrType::DEFENSE] = 1 + maybePlusMinusOne(4);
-      i.prefixes.push_back({1, LastingEffect::FLYING});
-      i.prefixes.push_back({1, LastingEffect::SPEED});
-      i.prefixes.push_back({2, ItemAttrBonus{AttrType::DEFENSE, Random.get(2, 5)}});
+      i.genPrefixes.push_back({1, LastingEffect::FLYING});
+      i.genPrefixes.push_back({1, LastingEffect::SPEED});
+      i.genPrefixes.push_back({2, ItemAttrBonus{AttrType::DEFENSE, Random.get(2, 5)}});
+      i.maxUpgrades = 0;
   );
 }
 
@@ -907,9 +927,10 @@ ItemAttributes ItemType::IronBoots::getAttributes() const {
       i.weight = 4;
       i.price = 8;
       i.modifiers[AttrType::DEFENSE] = 2 + maybePlusMinusOne(4);
-      i.prefixes.push_back({1, LastingEffect::FLYING});
-      i.prefixes.push_back({1, LastingEffect::FIRE_RESISTANT});
-      i.prefixes.push_back({3, ItemAttrBonus{AttrType::DEFENSE, Random.get(2, 5)}});
+      i.genPrefixes.push_back({1, LastingEffect::FLYING});
+      i.genPrefixes.push_back({1, LastingEffect::FIRE_RESISTANT});
+      i.genPrefixes.push_back({3, ItemAttrBonus{AttrType::DEFENSE, Random.get(2, 5)}});
+      i.maxUpgrades = 1;
   );
 }
 
@@ -924,7 +945,8 @@ ItemAttributes ItemType::AdaBoots::getAttributes() const {
       i.weight = 3;
       i.price = 50;
       i.modifiers[AttrType::DEFENSE] = 4 + maybePlusMinusOne(4);
-      i.prefixes.push_back({1, LastingEffect::SPEED});
+      i.genPrefixes.push_back({1, LastingEffect::SPEED});
+      i.maxUpgrades = 2;
   );
 }
 
@@ -932,7 +954,7 @@ ItemAttributes ItemType::Ring::getAttributes() const {
   return ITATTR(
       i.viewId = getRingViewId(lastingEffect);
       i.shortName = LastingEffects::getName(lastingEffect);
-      i.equipedEffect = lastingEffect;
+      i.equipedEffect.push_back(lastingEffect);
       i.name = "ring of " + *i.shortName;
       i.plural = "rings of " + *i.shortName;
       i.weight = 0.05;
@@ -946,7 +968,7 @@ ItemAttributes ItemType::Amulet::getAttributes() const {
   return ITATTR(
       i.viewId = getAmuletViewId(lastingEffect);
       i.shortName = LastingEffects::getName(lastingEffect);
-      i.equipedEffect = lastingEffect;
+      i.equipedEffect.push_back(lastingEffect);
       i.name = "amulet of " + *i.shortName;
       i.plural = "amulets of " + *i.shortName;
       i.itemClass = ItemClass::AMULET;
@@ -1070,6 +1092,28 @@ ItemAttributes ItemType::Mushroom::getAttributes() const {
       i.modifiers[AttrType::DAMAGE] = -15;
       i.effect = effect;
       i.price = getEffectPrice(effect);
+      i.uses = 1;
+  );
+}
+
+static ViewId getRuneViewId(const string& name) {
+  int h = int(combineHash(name));
+  const static vector<ViewId> ids = {ViewId::RUNE1, ViewId::RUNE2, ViewId::RUNE3, ViewId::RUNE4};
+  return ids[(h % ids.size() + ids.size()) % ids.size()];
+}
+
+ItemAttributes ItemType::Glyph::getAttributes() const {
+  return ITATTR(
+      i.shortName = getGlyphName(rune.prefix);
+      i.viewId = getRuneViewId(*i.shortName);
+      i.upgradeInfo = rune;
+      i.name = "glyph of " + *i.shortName;
+      i.plural= "glyph of "  + *i.shortName;
+      i.blindName = "glyph"_s;
+      i.itemClass = ItemClass::SCROLL;
+      i.weight = 0.1;
+      i.modifiers[AttrType::DAMAGE] = -10;
+      i.price = 100;
       i.uses = 1;
   );
 }

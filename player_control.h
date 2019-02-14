@@ -40,6 +40,7 @@ struct EquipmentActionInfo;
 struct TeamCreatureInfo;
 class CostInfo;
 struct WorkshopItem;
+struct WorkshopQueuedItem;
 class ScrollPosition;
 class Tutorial;
 struct BuildInfo;
@@ -63,7 +64,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void render(View*);
   optional<string> reloadImmigrationAndWorkshops(const GameConfig*, const CreatureFactory*);
 
-  bool isTurnBased();
   void leaveControl();
   void teamMemberAction(TeamMemberAction, UniqueEntity<Creature>::Id);
   void toggleControlAllTeamMembers();
@@ -156,7 +156,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void fillCurrentLevelInfo(GameInfo&) const;
 
   void getEquipmentItem(View* view, ItemPredicate predicate);
-  ItemInfo getWorkshopItem(const WorkshopItem&) const;
+  ItemInfo getWorkshopItem(const WorkshopItem&, int queuedCount) const;
   Item* chooseEquipmentItem(Creature* creature, vector<Item*> currentItems, ItemPredicate predicate,
       ScrollPosition* scrollPos = nullptr);
 
@@ -248,5 +248,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void reloadBuildingMenu();
   WLevel currentLevel = nullptr;
   void scrollStairs(bool up);
+  CollectiveInfo::QueuedItemInfo getQueuedItemInfo(const WorkshopQueuedItem&) const;
+  vector<pair<vector<Item*>, Position>> getItemUpgradesFor(const WorkshopItem&) const;
 };
 

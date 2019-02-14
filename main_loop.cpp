@@ -243,6 +243,7 @@ MainLoop::ExitCondition MainLoop::playGame(PGame game, bool withMusic, bool noAu
   DestructorFunction removeCallback([&] { view->setBugReportSaveCallback(nullptr); });
   game->initialize(options, highscores, view, fileSharing, gameConfig, creatureFactory);
   Intervalometer meter(stepTimeMilli);
+  Intervalometer pausingMeter(stepTimeMilli);
   auto lastMusicUpdate = GlobalTime(-1000);
   auto lastAutoSave = game->getGlobalTime();
   while (1) {
@@ -253,6 +254,16 @@ MainLoop::ExitCondition MainLoop::playGame(PGame game, bool withMusic, bool noAu
       double count = meter.getCount(timeMilli);
       //INFO << "Intervalometer " << timeMilli << " " << count;
       step = min(1.0, double(count) * gameTimeStep);
+      if (view->isClockStopped()) {
+        // Advance the clock a little more until the local time reaches 0.99,
+        // so creature animations are paused at their actual positions.
+        double localTime = game->getMainModel()->getLocalTimeDouble();
+        if (localTime - trunc(localTime) < pauseAnimationRemainder) {
+          step = min(1.0, double(pausingMeter.getCount(view->getTimeMilliAbsolute())) * gameTimeStep);
+          step = min(step, pauseAnimationRemainder - (localTime - trunc(localTime)));
+        }
+      } else
+        pausingMeter.clear();
     }
     INFO << "Time step " << step;
     if (auto exitInfo = game->update(step)) {

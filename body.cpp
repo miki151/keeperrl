@@ -352,6 +352,8 @@ bool Body::injureBodyPart(Creature* creature, BodyPart part, bool drop) {
       creature->addPermanentEffect(LastingEffect::COLLAPSED);
       break;
     case BodyPart::ARM:
+      // Drop the weapon anyway even if the other arm is still ok.
+      creature->dropWeapon();
       break;
     case BodyPart::WING:
       creature->removePermanentEffect(LastingEffect::FLYING);
@@ -650,7 +652,7 @@ Body::DamageResult Body::takeDamage(const Attack& attack, Creature* creature, do
   } else {
     if (hasHealth())
       creature->you(MsgType::ARE, "wounded");
-    else if (!attack.effect) {
+    else if (attack.effect.empty()) {
       creature->you(MsgType::ARE, "not hurt");
       return Body::NOT_HURT;
     }
