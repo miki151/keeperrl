@@ -1066,7 +1066,7 @@ bool Collective::isDelayed(Position pos) {
 static Position chooseClosest(Position pos, const PositionSet& squares) {
   optional<Position> ret;
   for (auto& p : squares)
-    if (!ret || pos.dist8(p) < pos.dist8(*ret))
+    if (!ret || pos.dist8(p).value_or(10000) < pos.dist8(*ret).value_or(10000))
       ret = p;
   return *ret;
 }
@@ -1106,13 +1106,12 @@ void Collective::fetchItems(Position pos, const ItemFetchInfo& elem) {
 
 void Collective::handleSurprise(Position pos) {
   Vec2 rad(8, 8);
-  Creature* c = pos.getCreature();
   for (Position v : Random.permutation(pos.getRectangle(Rectangle(-rad, rad + Vec2(1, 1)))))
     if (Creature* other = v.getCreature())
-      if (hasTrait(other, MinionTrait::FIGHTER) && other->getPosition().dist8(pos) > 1) {
+      if (hasTrait(other, MinionTrait::FIGHTER) && *v.dist8(pos) > 1) {
         for (Position dest : pos.neighbors8(Random))
-          if (other->getPosition().canMoveCreature(dest)) {
-            other->getPosition().moveCreature(dest, true);
+          if (v.canMoveCreature(dest)) {
+            v.moveCreature(dest, true);
             break;
           }
       }

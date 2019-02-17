@@ -1290,7 +1290,8 @@ void MapGui::updateObjects(CreatureView* view, MapLayout* mapLayout, bool smooth
       level->setNeedsRenderUpdate(pos, true);
   else
     for (Vec2 pos : mapLayout->getAllTiles(getBounds(), Level::getMaxBounds(), getScreenPos()))
-      if (level->needsRenderUpdate(pos) || lastSquareUpdate[pos] < currentTimeReal - milliseconds{1000})
+      if (level->needsRenderUpdate(pos) ||
+          lastSquareUpdate[pos].value_or(milliseconds{-1000000}) < currentTimeReal - milliseconds{1000})
         updateObject(pos, view, currentTimeReal);
   previousView = view;
   if (previousLevel != level) {

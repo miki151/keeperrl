@@ -288,7 +288,7 @@ class KrakenController : public Monster {
     for (Position pos : creature->getPosition().getRectangle(Rectangle::centered(Vec2(0, 0), radius)))
       if (Creature* c = pos.getCreature())
         if (c->getAttributes().getCreatureId() != creature->getAttributes().getCreatureId() &&
-            (!ret || ret->getPosition().dist8(myPos) > c->getPosition().dist8(myPos)) &&
+            (!ret || *ret->getPosition().dist8(myPos) > *c->getPosition().dist8(myPos)) &&
             creature->canSee(c) && creature->isEnemy(c) && !c->getHoldingCreature())
           ret = c;
     return ret;

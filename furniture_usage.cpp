@@ -168,7 +168,7 @@ static void sitOnThrone(Position pos, WConstFurniture furniture, Creature* c) {
       return;
     bool wasTeleported = false;
     auto tryTeleporting = [&] (Creature* enemy) {
-      if (enemy->getPosition().dist8(pos) > 3 || !c->canSee(enemy))
+      if (enemy->getPosition().dist8(pos).value_or(4) > 3 || !c->canSee(enemy))
         if (auto landing = pos.getLevel()->getClosestLanding({pos}, enemy)) {
           enemy->getPosition().moveCreature(*landing, true);
           wasTeleported = true;

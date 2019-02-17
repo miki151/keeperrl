@@ -67,12 +67,10 @@ Position::Position(Vec2 v, WLevel l) : coord(v), level(l), valid(level && level-
   PROFILE;
 }
 
-const static int otherLevel = 1000000;
-
-int Position::dist8(const Position& pos) const {
+optional<int> Position::dist8(const Position& pos) const {
   PROFILE;
   if (pos.level != level || !isValid() || !pos.isValid())
-    return otherLevel;
+    return none;
   return pos.getCoord().dist8(coord);
 }
 
@@ -269,7 +267,7 @@ void Position::unseenMessage(const PlayerMessage& msg) const {
       if (player->canSee(*this))
         return;
     for (auto player : level->getPlayers())
-      if (dist8(player->getPosition()) < hearingRange) {
+      if (dist8(player->getPosition()).value_or(10000) < hearingRange) {
         player->privateMessage(msg);
         return;
       }

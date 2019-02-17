@@ -138,7 +138,7 @@ class Corpse : public Item {
     auto time = position.getGame()->getGlobalTime();
     if (!rottenTime)
       rottenTime = time + rottingTime;
-    if (time >= rottenTime && !rotten)
+    if (time >= *rottenTime && !rotten)
       makeRotten();
     else {
       if (!rotten && getWeight() > 10 && Random.roll(20 + (*rottenTime - time).getDouble() / 10)

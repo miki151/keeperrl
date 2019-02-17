@@ -20,13 +20,13 @@
 
 static bool betterPos(Position from, Position current, Position candidate) {
   double maxDiff = 0.3;
-  double curDist = from.dist8(current);
-  double newDist = from.dist8(candidate);
+  double curDist = from.dist8(current).value_or(1000000);
+  double newDist = from.dist8(candidate).value_or(1000000);
   return Random.getDouble() <= 1.0 - (newDist - curDist) / (curDist * maxDiff);
 }
 
-static optional<Position> getRandomCloseTile(Position from, const vector<Position>& tiles,
-    function<bool(Position)> predicate) {
+template <typename Pred>
+static optional<Position> getRandomCloseTile(Position from, const vector<Position>& tiles, Pred predicate) {
   optional<Position> ret;
   for (Position pos : tiles)
     if (predicate(pos) && (!ret || betterPos(from, *ret, pos)))
@@ -40,8 +40,7 @@ static optional<Position> getTileToExplore(WConstCollective collective, const Cr
   switch (task) {
     case MinionActivity::EXPLORE_CAVES:
       if (auto pos = getRandomCloseTile(c->getPosition(), border,
-            [&](Position p) {
-                return p.isCovered() && c->canNavigateTo(p);}))
+            [&](Position p) { return p.isCovered() && c->canNavigateTo(p);}))
         return pos;
       FALLTHROUGH;
     case MinionActivity::EXPLORE:

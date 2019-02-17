@@ -1170,7 +1170,7 @@ SGuiElem GuiBuilder::drawPlayerOverlay(const PlayerInfo& info) {
     }
   }
   int totalElems = info.lyingItems.size();
-  if (itemIndex >= totalElems)
+  if (itemIndex.value_or(-1) >= totalElems)
     itemIndex = totalElems - 1;
   SGuiElem content;
   if (totalElems == 1 && !playerOverlayFocused)
@@ -1305,7 +1305,7 @@ optional<ItemAction> GuiBuilder::getItemChoice(const ItemInfo& itemInfo, Vec2 me
     while (renderer.pollEvent(event)) {
       gui.propagateEvent(event, {stuff});
       if (choice > -1 && index) {
-        if (index < itemInfo.actions.size())
+        if (*index < itemInfo.actions.size())
           return itemInfo.actions[*index];
         else
           return none;
@@ -1334,7 +1334,7 @@ optional<ItemAction> GuiBuilder::getItemChoice(const ItemInfo& itemInfo, Vec2 me
           case SDL::SDLK_KP_5:
           case SDL::SDLK_KP_ENTER:
           case SDL::SDLK_RETURN:
-            if (index && index < itemInfo.actions.size())
+            if (index && *index < itemInfo.actions.size())
               return itemInfo.actions[*index];
             break;
           case SDL::SDLK_ESCAPE: return none;

@@ -79,13 +79,17 @@ Behaviour::Behaviour(Creature* c) : creature(c) {
 }
 
 Creature* Behaviour::getClosestCreature() {
-  int dist = 1000000000;
+  int minDist = 1000000000;
   Creature* result = nullptr;
-  for (Creature* other : creature->getVisibleCreatures())
-    if (other != creature && other->getPosition().dist8(creature->getPosition()) < dist) {
-      result = other;
-      dist = creature->getPosition().dist8(other->getPosition());
-    }
+  for (Creature* other : creature->getVisibleCreatures()) {
+    auto otherPos = other->getPosition();
+    auto myPos = creature->getPosition();
+    if (auto dist = otherPos.dist8(myPos))
+      if (other != creature && *dist < minDist) {
+        result = other;
+        minDist = *dist;
+      }
+  }
   return result;
 }
 
@@ -289,11 +293,11 @@ class StayOnFurniture : public Behaviour {
 
 class BirdFlyAway : public Behaviour {
   public:
-  BirdFlyAway(Creature* c, double _maxDist) : Behaviour(c), maxDist(_maxDist) {}
+  BirdFlyAway(Creature* c, int maxDist) : Behaviour(c), maxDist(maxDist) {}
 
   virtual MoveInfo getMove() override {
     const Creature* enemy = creature->getClosestEnemy();
-    if (Random.roll(15) || ( enemy && enemy->getPosition().dist8(creature->getPosition()) < maxDist))
+    if (Random.roll(15) || ( enemy && enemy->getPosition().dist8(creature->getPosition()).value_or(100000) < maxDist))
       if (auto action = creature->flyAway())
         return {1.0, action};
     return NoMove;
@@ -303,7 +307,7 @@ class BirdFlyAway : public Behaviour {
   SERIALIZE_ALL(SUBCLASS(Behaviour), maxDist)
 
   private:
-  double SERIAL(maxDist);
+  int SERIAL(maxDist);
 };
 
 class GoldLust : public Behaviour {
@@ -327,7 +331,7 @@ class Wildlife : public Behaviour {
 
   virtual MoveInfo getMove() override {
     if (Creature* other = getClosestCreature()) {
-      int dist = creature->getPosition().dist8(other->getPosition());
+      int dist = creature->getPosition().dist8(other->getPosition()).value_or(100000);
       if (dist == 1)
         return creature->attack(other);
       if (dist < 7)
@@ -353,7 +357,7 @@ class Fighter : public Behaviour {
     if (Creature* other = creature->getClosestEnemy()) {
       bool chaseThisEnemy = chase && creature->shouldAIChase(other);
       if (!creature->shouldAIAttack(other)) {
-        double dist = creature->getPosition().dist8(other->getPosition());
+        double dist = creature->getPosition().dist8(other->getPosition()).value_or(100000);
         if (dist < 7) {
           if (dist > 3)
             if (auto move = getFireMove(other))
@@ -441,7 +445,8 @@ class Fighter : public Behaviour {
     int damage = 0;
     for (Item* item : creature->getEquipment().getItems())
       if (!creature->getEquipment().isEquipped(item) && getThrowValue(item) > damage &&
-          creature->getThrowDistance(item) >= trajectory.back().dist8(creature->getPosition())) {
+          creature->getThrowDistance(item).value_or(-1) >=
+              trajectory.back().dist8(creature->getPosition()).value_or(10000)) {
         damage = getThrowValue(item);
         best = item;
       }
@@ -467,7 +472,7 @@ class Fighter : public Behaviour {
         .transform([&](Vec2 v) { return Position(v, target.getLevel()); });
     if (checkFriendlyFire(trajectory))
       return NoMove;
-    int dist = trajectory.back().dist8(creature->getPosition());
+    int dist = *trajectory.back().dist8(creature->getPosition());
     for (auto effect : getOffensiveEffects())
       if (effect.getRange() >= dist)
         if (auto action = tryEffect(effect, target))
@@ -493,7 +498,7 @@ class Fighter : public Behaviour {
         if (auto action = creature->moveTowards(lastSeen->pos)) {
           return {0.5, action};
         }
-      if (lastSeen->type == LastSeen::PANIC && lastSeen->pos.dist8(creature->getPosition()) < 4)
+      if (lastSeen->type == LastSeen::PANIC && lastSeen->pos.dist8(creature->getPosition()).value_or(4) < 4)
         if (auto action = creature->moveAway(lastSeen->pos, true))
           return {0.5, action};
     }
@@ -648,7 +653,7 @@ class Fighter : public Behaviour {
         if (ally->isFriend(creature))
           if (auto allysEnemy = ally->getClosestEnemy())
             if (/*allysEnemy == other && */ally->shouldAIAttack(allysEnemy)) {
-              auto allyDist = ally->getPosition().dist8(allysEnemy->getPosition());
+              auto allyDist = *ally->getPosition().dist8(allysEnemy->getPosition());
               if (allyDist < distance)
                 allyInFront = true;
               if (!ally->getPosition().getModel()->getTimeQueue().willMoveThisTurn(ally))
@@ -787,7 +792,7 @@ class GuardTarget : public Behaviour {
 
   protected:
   MoveInfo getMoveTowards(Position target) {
-    double dist = creature->getPosition().dist8(target);
+    double dist = creature->getPosition().dist8(target).value_or(maxDist);
     if (dist <= minDist)
       return NoMove;
     double exp = 1.5;
@@ -824,22 +829,6 @@ class GuardArea : public Behaviour {
   Rectangle SERIAL(area);
 };
 
-class GuardSquare : public GuardTarget {
-  public:
-  GuardSquare(Creature* c, Position _pos, double minDist, double maxDist) : GuardTarget(c, minDist, maxDist),
-      pos(_pos) {}
-
-  virtual MoveInfo getMove() override {
-    return getMoveTowards(pos);
-  }
-
-  SERIALIZATION_CONSTRUCTOR(GuardSquare);
-  SERIALIZE_ALL(SUBCLASS(GuardTarget), pos);
-
-  private:
-  Position SERIAL(pos);
-};
-
 class Wait : public Behaviour {
   public:
   Wait(Creature* c) : Behaviour(c) {}
@@ -857,7 +846,7 @@ class DieTime : public Behaviour {
   DieTime(Creature* c, GlobalTime t) : Behaviour(c), dieTime(t) {}
 
   virtual MoveInfo getMove() override {
-    if (creature->getGlobalTime() > dieTime) {
+    if (*creature->getGlobalTime() > dieTime) {
       return {1.0, CreatureAction(creature, [=](Creature* creature) {
         creature->dieNoReason(Creature::DropType::NOTHING);
       })};
@@ -982,7 +971,7 @@ class ByCollective : public Behaviour {
       if (!teams.hasTeamOrder(*team, creature, TeamOrder::STAND_GROUND)) {
         const Creature* leader = teams.getLeader(*team);
         if (creature != leader) {
-          if (leader->getPosition().dist8(creature->getPosition()) > 1)
+          if (leader->getPosition().dist8(creature->getPosition()).value_or(2) > 1)
             return creature->moveTowards(leader->getPosition());
           else
             return creature->wait();
@@ -1399,7 +1388,7 @@ class AvoidFire : public Behaviour {
       for (auto pos : myPosition.getRectangle(Rectangle::centered(7)))
         if (auto f = pos.getFurniture(FurnitureLayer::GROUND))
           if (f->getTickType() == FurnitureTickType::EXTINGUISH_FIRE &&
-              (!closestWater || closestWater->dist8(myPosition) > pos.dist8(myPosition)))
+              (!closestWater || *closestWater->dist8(myPosition) > *pos.dist8(myPosition)))
             closestWater = pos;
       if (closestWater)
         return creature->moveTowards(*closestWater, NavigationFlags().requireStepOnTile());
@@ -1421,7 +1410,6 @@ REGISTER_TYPE(Fighter);
 REGISTER_TYPE(FighterStandGround);
 REGISTER_TYPE(GuardTarget);
 REGISTER_TYPE(GuardArea);
-REGISTER_TYPE(GuardSquare);
 REGISTER_TYPE(Summoned);
 REGISTER_TYPE(DieTime);
 REGISTER_TYPE(Wait);
@@ -1443,7 +1431,7 @@ void MonsterAI::makeMove() {
   vector<MoveInfo> moves;
   for (int i : All(behaviours)) {
     MoveInfo move = behaviours[i]->getMove();
-    move.setValue(move.getValue() * weights[i]);
+    move.setValue(max(1.0, min(1.0, move.getValue())) * weights[i]);
     moves.push_back(move);
     bool skipNextMoves = false;
     if (i < behaviours.size() - 1) {
@@ -1591,7 +1579,6 @@ MonsterAIFactory MonsterAIFactory::idle() {
 MonsterAIFactory MonsterAIFactory::scavengerBird(Position corpsePos) {
   return MonsterAIFactory([=](Creature* c) {
       return new MonsterAI(c, {
-          new GuardSquare(c, corpsePos, 1, 2),
           new BirdFlyAway(c, 3),
           new MoveRandomly(c),
       },
