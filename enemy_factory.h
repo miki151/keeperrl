@@ -71,6 +71,8 @@ class NameGenerator;
 class EnemyFactory {
   public:
   EnemyFactory(RandomGen&, NameGenerator*);
+  EnemyFactory(const EnemyFactory&) = delete;
+  EnemyFactory(EnemyFactory&&) = default;
   EnemyInfo get(EnemyId) const;
   vector<ExternalEnemy> getExternalEnemies() const;
   vector<ExternalEnemy> getHalloweenKids();

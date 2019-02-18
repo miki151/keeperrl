@@ -32,7 +32,7 @@ CreatureList::CreatureList(int c, vector<CreatureId> ids) : count(c),
 
 CreatureList::CreatureList(int c, vector<pair<int, CreatureId>> ids) : count(c), all(ids) {}
 
-string CreatureList::getSummary(const CreatureFactory* factory) const {
+string CreatureList::getSummary(CreatureFactory* factory) const {
   auto ret = toLower(EnumInfo<ViewId>::getString(getViewId(factory)));
   int inc = 0;
   for (auto exp : ENUM_ALL(ExperienceType))
@@ -59,14 +59,14 @@ CreatureList& CreatureList::addUnique(CreatureId id) {
   return *this;
 }
 
-ViewId CreatureList::getViewId(const CreatureFactory* factory) const {
+ViewId CreatureList::getViewId(CreatureFactory* factory) const {
   if (!uniques.empty())
     return factory->getViewId(uniques[0]);
   else
     return factory->getViewId(all[0].second);
 }
 
-vector<PCreature> CreatureList::generate(RandomGen& random, const CreatureFactory* factory, TribeId tribe,
+vector<PCreature> CreatureList::generate(RandomGen& random, CreatureFactory* factory, TribeId tribe,
     MonsterAIFactory aiFactory) const {
   vector<PCreature> ret;
   vector<CreatureId> uniquesCopy = uniques;

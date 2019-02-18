@@ -19,6 +19,9 @@
 #include "util.h"
 #include "file_path.h"
 
+SERIALIZE_DEF(NameGenerator, names)
+SERIALIZATION_CONSTRUCTOR_IMPL(NameGenerator)
+
 string getSyllable() {
   string vowels = "aeyuio";
   string consonants = "qwrtplkjhgfdszxcvbnm";

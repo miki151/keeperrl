@@ -12,7 +12,7 @@
 #include "position.h"
 #include "movement_set.h"
 
-LevelBuilder::LevelBuilder(ProgressMeter* meter, RandomGen& r, const CreatureFactory* creatureFactory, int width, int height,
+LevelBuilder::LevelBuilder(ProgressMeter* meter, RandomGen& r, CreatureFactory* creatureFactory, int width, int height,
     const string& n, bool allCovered, optional<double> defaultLight)
   : squares(Rectangle(width, height)), unavailable(width, height, false),
     heightMap(width, height, 0), covered(width, height, allCovered), building(width, height, false),
@@ -21,7 +21,7 @@ LevelBuilder::LevelBuilder(ProgressMeter* meter, RandomGen& r, const CreatureFac
     name(n), progressMeter(meter), random(r), creatureFactory(creatureFactory) {
 }
 
-LevelBuilder::LevelBuilder(RandomGen& r, const CreatureFactory* creatureFactory, int width, int height, const string& n, bool covered)
+LevelBuilder::LevelBuilder(RandomGen& r, CreatureFactory* creatureFactory, int width, int height, const string& n, bool covered)
   : LevelBuilder(nullptr, r, creatureFactory, width, height, n, covered) {
 }
 
@@ -33,7 +33,7 @@ RandomGen& LevelBuilder::getRandom() {
   return random;
 }
 
-const CreatureFactory* LevelBuilder::getCreatureFactory() const {
+CreatureFactory* LevelBuilder::getCreatureFactory() const {
   return creatureFactory;
 }
 

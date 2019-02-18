@@ -42,9 +42,9 @@ RICH_ENUM(SquareAttrib,
 class LevelBuilder {
   public:
   /** Constructs a builder with given size and name. */
-  LevelBuilder(ProgressMeter*, RandomGen&, const CreatureFactory*, int width, int height, const string& name,
+  LevelBuilder(ProgressMeter*, RandomGen&, CreatureFactory*, int width, int height, const string& name,
       bool covered = true, optional<double> defaultLight = none);
-  LevelBuilder(RandomGen&, const CreatureFactory*, int width, int height, const string& name, bool covered = true);
+  LevelBuilder(RandomGen&, CreatureFactory*, int width, int height, const string& name, bool covered = true);
   
   LevelBuilder(LevelBuilder&&);
   ~LevelBuilder();
@@ -125,7 +125,7 @@ class LevelBuilder {
   void popMap();
 
   RandomGen& getRandom();
-  const CreatureFactory* getCreatureFactory() const;
+  CreatureFactory* getCreatureFactory() const;
   
   private:
   Vec2 transform(Vec2);
@@ -146,5 +146,5 @@ class LevelBuilder {
   ProgressMeter* progressMeter = nullptr;
   RandomGen& random;
   bool noDiagonalPassing = false;
-  const CreatureFactory* creatureFactory;
+  CreatureFactory* creatureFactory;
 };

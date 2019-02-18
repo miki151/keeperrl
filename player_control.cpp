@@ -212,7 +212,7 @@ static optional<string> checkGroupCounts(const map<string, vector<ImmigrantInfo>
 }
 
 optional<string> PlayerControl::reloadImmigrationAndWorkshops(const GameConfig* gameConfig,
-    const CreatureFactory* creatureFactory) {
+    CreatureFactory* creatureFactory) {
   Technology technology;
   if (auto error = gameConfig->readObject(technology, GameConfigId::TECHNOLOGY))
     return error;

@@ -42,7 +42,11 @@ class NameGenerator {
   public:
   NameGenerator(const DirectoryPath&);
   string getNext(NameGeneratorId);
+  NameGenerator(const NameGenerator&) = delete;
+  NameGenerator(NameGenerator&&) = default;
+
+  SERIALIZATION_DECL(NameGenerator)
 
   private:
-  EnumMap<NameGeneratorId, queue<string>> names;
+  EnumMap<NameGeneratorId, queue<string>> SERIAL(names);
 };
