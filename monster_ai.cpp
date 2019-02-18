@@ -1431,7 +1431,7 @@ void MonsterAI::makeMove() {
   vector<MoveInfo> moves;
   for (int i : All(behaviours)) {
     MoveInfo move = behaviours[i]->getMove();
-    move.setValue(max(1.0, min(1.0, move.getValue())) * weights[i]);
+    move.setValue(max(0.0, min(1.0, move.getValue())) * weights[i]);
     moves.push_back(move);
     bool skipNextMoves = false;
     if (i < behaviours.size() - 1) {
