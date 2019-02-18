@@ -815,7 +815,7 @@ static string getForceMovementQuestion(Position pos, const Creature* creature) {
   if (pos.canEnterEmpty(creature))
     return "";
   else if (pos.isBurning())
-    return "Walk into the fire?";
+    return "Walking into fire or adjacent tiles is going harm you. Continue?";
   else if (pos.canEnterEmpty(MovementTrait::SWIM))
     return "The water is very deep, are you sure?";
   else if (pos.sunlightBurns() && creature->getMovementType().isSunlightVulnerable())

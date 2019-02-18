@@ -645,26 +645,39 @@ bool Position::isActiveConstruction(FurnitureLayer layer) const {
 
 bool Position::isBurning() const {
   PROFILE;
-  for (auto furniture : getFurniture())
-    if (furniture->getFire() && furniture->getFire()->isBurning())
+  auto check = [] (const Position& pos) {
+    for (auto furniture : pos.getFurniture())
+      if (furniture->getFire() && furniture->getFire()->isBurning())
+        return true;
+    return false;
+  };
+  if (check(*this))
+    return true;
+  for (auto& pos : neighbors8())
+    if (check(pos))
       return true;
   return false;
 }
 
 void Position::updateMovementDueToFire() const {
   PROFILE;
-  if (isValid()) {
-    if (isBurning()) {
-      if (!getSquare()->isOnFire()) {
-        modSquare()->setOnFire(true);
-        updateConnectivity();
-      }
-    } else
-      if (getSquare()->isOnFire()) {
-        modSquare()->setOnFire(false);
-        updateConnectivity();
-      }
-  }
+  auto update = [] (const Position& pos) {
+    if (pos.isValid()) {
+      if (pos.isBurning()) {
+        if (!pos.getSquare()->isOnFire()) {
+          pos.modSquare()->setOnFire(true);
+          pos.updateConnectivity();
+        }
+      } else
+        if (pos.getSquare()->isOnFire()) {
+          pos.modSquare()->setOnFire(false);
+          pos.updateConnectivity();
+        }
+    }
+  };
+  update(*this);
+  for (auto& v : neighbors8())
+    update(v);
 }
 
 void Position::fireDamage(double amount) {
@@ -863,7 +876,6 @@ const vector<Position>& Position::getLandingAtNextLevel(StairKey stairKey) {
 }
 
 static optional<Position> navigateToLevel(Position from, Level* level, const MovementType& type) {
-  auto model = from.getModel();
   while (from.getLevel() != level) {
     if (auto stairs = from.getLevel()->getStairsTo(level)) {
       if (from.isConnectedTo(*stairs, type)) {
