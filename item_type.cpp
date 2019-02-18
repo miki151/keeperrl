@@ -140,21 +140,15 @@ class Corpse : public Item {
       rottenTime = time + rottingTime;
     if (time >= *rottenTime && !rotten)
       makeRotten();
-    else {
-      if (!rotten && getWeight() > 10 && Random.roll(20 + (*rottenTime - time).getDouble() / 10)
-          && getClass() != ItemClass::FOOD)
-        Effect::emitPoisonGas(position, 0.3, false);
-      if (getWeight() > 10 && !corpseInfo.isSkeleton &&
-          !position.isCovered() && Random.roll(350)) {
-        for (Position v : position.neighbors8(Random)) {
-          PCreature vulture = position.getGame()->getCreatureFactory()->fromId("VULTURE", TribeId::getPest(),
-                    MonsterAIFactory::scavengerBird(v));
-          if (v.canEnter(vulture.get())) {
-            v.addCreature(std::move(vulture));
-            v.globalMessage("A vulture lands near " + getTheName());
-            *rottenTime -= 40_visible;
-            break;
-          }
+    else if (getWeight() > 10 && !corpseInfo.isSkeleton && !position.isCovered() && Random.roll(350)) {
+      for (Position v : position.neighbors8(Random)) {
+        PCreature vulture = position.getGame()->getCreatureFactory()->fromId("VULTURE", TribeId::getPest(),
+                  MonsterAIFactory::scavengerBird(v));
+        if (v.canEnter(vulture.get())) {
+          v.addCreature(std::move(vulture));
+          v.globalMessage("A vulture lands near " + getTheName());
+          *rottenTime -= 40_visible;
+          break;
         }
       }
     }

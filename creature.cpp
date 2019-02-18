@@ -962,11 +962,15 @@ void Creature::tick() {
   PROFILE;
   addMorale(-morale * 0.0008);
   auto updateMorale = [this](Position pos, double mult) {
-    for (auto f : pos.getFurniture()) {
+    for (auto& f : pos.getFurniture()) {
       auto& luxury = f->getLuxuryInfo();
       if (luxury.luxury > morale)
         addMorale((luxury.luxury - morale) * mult);
     }
+    for (auto& it : pos.getItems())
+      if (auto info = it->getCorpseInfo())
+        if (!info->isSkeleton && it->getClass() != ItemClass::FOOD)
+          addMorale(-2 * mult);
   };
   for (auto pos : position.neighbors8())
     updateMorale(pos, 0.0004);
