@@ -1576,13 +1576,13 @@ MonsterAIFactory MonsterAIFactory::idle() {
       });
 }
 
-MonsterAIFactory MonsterAIFactory::scavengerBird(Position corpsePos) {
+MonsterAIFactory MonsterAIFactory::scavengerBird() {
   return MonsterAIFactory([=](Creature* c) {
       return new MonsterAI(c, {
           new BirdFlyAway(c, 3),
           new MoveRandomly(c),
       },
-      {2, 1, 1});
+      {2, 1});
       });
 }
 
