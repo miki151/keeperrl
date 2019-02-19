@@ -847,7 +847,7 @@ void Collective::removeFurniture(Position pos, FurnitureLayer layer) {
 void Collective::destroyOrder(Position pos, FurnitureLayer layer) {
   auto furniture = pos.modFurniture(layer);
   if (!furniture || furniture->canRemoveWithCreaturePresent() || !pos.getCreature()) {
-    if (furniture && !furniture->isWall() &&
+    if (furniture && !furniture->isWall() && !furniture->forgetAfterBuilding() &&
         (furniture->getTribe() == getTribeId() || furniture->canRemoveNonFriendly())) {
       furniture->destroy(pos, DestroyAction::Type::BASH);
     }

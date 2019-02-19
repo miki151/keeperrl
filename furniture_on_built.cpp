@@ -102,7 +102,7 @@ void handleOnBuilt(Position pos, Creature* c, FurnitureOnBuilt type) {
         FATAL << "No landing position found in subterranean level";
         fail();
       }();
-      landing.addFurniture(FurnitureFactory::get(FurnitureType::UP_STAIRS, c->getTribeId()));
+      landing.addFurniture(FurnitureFactory::get(FurnitureType::UP_STAIRS, TribeId::getMonster()));
       auto stairKey = *landing.getLandingLink();
       removeOldStairs(pos.getLevel(), stairKey);
       pos.setLandingLink(stairKey);
