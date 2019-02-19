@@ -129,7 +129,7 @@
             { 0.3 AttractionInfo 1 {ItemIndex RANGED_WEAPON}}
           }
           specialTraits = {
-             { 0.03 { AttrBonus DAMAGE 5 LastingEffect INSANITY}}
+             { 0.03 { AttrBonus RANGED_DAMAGE 5 LastingEffect INSANITY}}
              { 0.03 { AttrBonus DEFENSE 5 LastingEffect SLOWED}}
              { 0.05 { LastingEffect RANGED_VULNERABILITY }}
              { 0.05 { LastingEffect DISARM_TRAPS_SKILL }}
