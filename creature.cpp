@@ -442,7 +442,6 @@ void Creature::makeMove() {
     spendTime();
     return;
   }
-  updateVisibleCreatures();
   updateViewObject();
   {
     // Calls makeMove() while preventing Controller destruction by holding a shared_ptr on stack.
@@ -1132,9 +1131,9 @@ bool Creature::takeDamage(const Attack& attack) {
   PROFILE;
   if (Creature* attacker = attack.attacker) {
     onAttackedBy(attacker);
-    for (Position p : visibleCreatures)
-      if (p.dist8(position).value_or(10) < 10 && p.getCreature() && !p.getCreature()->isDead())
-        p.getCreature()->removeEffect(LastingEffect::SLEEP);
+    for (auto c : getVisibleCreatures())
+      if (*c->getPosition().dist8(position) < 10)
+        c->removeEffect(LastingEffect::SLEEP);
   }
   double defense = getAttr(AttrType::DEFENSE);
   for (LastingEffect effect : ENUM_ALL(LastingEffect))
@@ -1840,35 +1839,38 @@ CreatureDebt& Creature::getDebt() {
   return *debt;
 }
 
-void Creature::updateVisibleCreatures() {
-  PROFILE;
-  int range = FieldOfView::sightRange;
-  visibleEnemies.clear();
-  visibleCreatures.clear();
-  for (Creature* c : position.getAllCreatures(range))
-    if (canSee(c) || isUnknownAttacker(c)) {
-      visibleCreatures.push_back(c->getPosition());
-      if (isEnemy(c))
-        visibleEnemies.push_back(c->getPosition());
-    }
+Creature::MoveId Creature::getCurrentMoveId() const {
+  return {position.getModel()->getMoveCounter(), position.getModel()->getUniqueId()};
 }
 
-vector<Creature*> Creature::getVisibleEnemies() const {
-  vector<Creature*> ret;
-  for (Position p : visibleEnemies)
-    if (Creature* c = p.getCreature())
-      if (!c->isDead())
+const vector<Creature*>& Creature::getVisibleEnemies() const {
+  auto get = [&] {
+    vector<Creature*> ret;
+    for (Creature* c : position.getAllCreatures(FieldOfView::sightRange))
+      if ((canSee(c) || isUnknownAttacker(c)) && isEnemy(c)) {
         ret.push_back(c);
-  return ret;
+      }
+    return ret;
+  };
+  auto currentMoveId = getCurrentMoveId();
+  if (!visibleEnemies || visibleEnemies->first != currentMoveId)
+    visibleEnemies.emplace(make_pair(currentMoveId, get()));
+  return visibleEnemies->second;
 }
 
-vector<Creature*> Creature::getVisibleCreatures() const {
-  vector<Creature*> ret;
-  for (Position p : visibleCreatures)
-    if (Creature* c = p.getCreature())
-      if (!c->isDead())
+const vector<Creature*>& Creature::getVisibleCreatures() const {
+  auto get = [&] {
+    vector<Creature*> ret;
+    for (Creature* c : position.getAllCreatures(FieldOfView::sightRange))
+      if (canSee(c) || isUnknownAttacker(c)) {
         ret.push_back(c);
-  return ret;
+      }
+    return ret;
+  };
+  auto currentMoveId = getCurrentMoveId();
+  if (!visibleCreatures || visibleCreatures->first != currentMoveId)
+    visibleCreatures.emplace(make_pair(currentMoveId, get()));
+  return visibleCreatures->second;
 }
 
 bool Creature::shouldAIAttack(const Creature* other) const {

@@ -69,9 +69,9 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   optional<GlobalTime> getGlobalTime() const;
   WLevel getLevel() const;
   Game* getGame() const;
-  vector<Creature*> getVisibleEnemies() const;
+  const vector<Creature*>& getVisibleEnemies() const;
   Creature* getClosestEnemy() const;
-  vector<Creature*> getVisibleCreatures() const;
+  const vector<Creature*>& getVisibleCreatures() const;
   bool shouldAIAttack(const Creature* enemy) const;
   bool shouldAIChase(const Creature* enemy) const;
   vector<Position> getVisibleTiles() const;
@@ -309,9 +309,10 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   EntitySet<Creature> SERIAL(kills);
   mutable int SERIAL(difficultyPoints) = 0;
   int SERIAL(points) = 0;
-  void updateVisibleCreatures();
-  vector<Position> visibleEnemies;
-  vector<Position> visibleCreatures;
+  using MoveId = pair<int, LevelId>;
+  MoveId getCurrentMoveId() const;
+  mutable optional<pair<MoveId, vector<Creature*>>> visibleEnemies;
+  mutable optional<pair<MoveId, vector<Creature*>>> visibleCreatures;
   HeapAllocated<Vision> SERIAL(vision);
   bool forceMovement = false;
   optional<CombatIntentInfo> SERIAL(lastCombatIntent);

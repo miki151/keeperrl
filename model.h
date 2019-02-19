@@ -78,6 +78,7 @@ class Model : public OwnedObject<Model> {
   void addCollective(PCollective);
 
   WLevel getTopLevel() const;
+  LevelId getUniqueId() const;
 
   void addWoodCount(int);
   int getWoodCount() const;

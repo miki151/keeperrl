@@ -277,6 +277,10 @@ WLevel Model::getTopLevel() const {
   return mainLevels[0];
 }
 
+LevelId Model::getUniqueId() const {
+  return mainLevels[0]->getUniqueId();
+}
+
 void Model::killCreature(Creature* c) {
   deadCreatures.push_back(timeQueue->removeCreature(c));
   cemetery->landCreature(cemetery->getAllPositions(), c);
