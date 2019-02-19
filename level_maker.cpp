@@ -2663,7 +2663,8 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, optional<CreatureGroup> forr
 PLevelMaker LevelMaker::getFullZLevel(RandomGen& random, optional<SettlementInfo> settlement, ResourceCounts resourceCounts,
     int mapWidth, TribeId keeperTribe, StairKey landingLink) {
   auto queue = unique<MakerQueue>();
-  queue->addMaker(unique<Empty>(SquareChange(FurnitureType::FLOOR, FurnitureType::MOUNTAIN2)));
+  queue->addMaker(unique<Empty>(SquareChange(FurnitureType::FLOOR)
+      .add(FurnitureParams{FurnitureType::MOUNTAIN2, keeperTribe})));
   auto locations = unique<RandomLocations>();
   LevelMaker* startingPos = nullptr;
   auto startingPosMaker = unique<StartingPos>(Predicate::alwaysTrue(), landingLink);
