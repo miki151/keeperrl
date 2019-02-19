@@ -23,12 +23,18 @@ SERIALIZE_DEF(ViewObject, resource_id, viewLayer, description, modifiers, attrib
 
 SERIALIZATION_CONSTRUCTOR_IMPL(ViewObject);
 
+constexpr float noAttributeValue = -1234;
+
 ViewObject::ViewObject(ViewId id, ViewLayer l, const string& d)
     : resource_id(id), viewLayer(l), description(d) {
+  for (auto a : ENUM_ALL(Attribute))
+    attributes[a] = noAttributeValue;
 }
 
 ViewObject::ViewObject(ViewId id, ViewLayer l)
     : resource_id(id), viewLayer(l) {
+  for (auto a : ENUM_ALL(Attribute))
+    attributes[a] = noAttributeValue;
 }
 
 void ViewObject::setGenericId(GenericId id) {
@@ -153,7 +159,10 @@ ViewObject& ViewObject::setAttribute(Attribute attr, double d) {
 }
 
 optional<float> ViewObject::getAttribute(Attribute attr) const {
-  return attributes[attr];
+  if (attributes[attr] != noAttributeValue)
+    return attributes[attr];
+  else
+    return none;
 }
 
 void ViewObject::setCreatureAttributes(ViewObject::CreatureAttributes attribs) {
