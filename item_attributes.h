@@ -75,5 +75,6 @@ class ItemAttributes {
   vector<string> SERIAL(prefixes);
   optional<ItemUpgradeInfo> SERIAL(upgradeInfo);
   int SERIAL(maxUpgrades) = 3;
+  double SERIAL(damageReduction) = 0;
 };
 

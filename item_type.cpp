@@ -829,6 +829,20 @@ ItemAttributes ItemType::LeatherHelm::getAttributes() const {
   );
 }
 
+ItemAttributes ItemType::WoodenShield::getAttributes() const {
+  return ITATTR(
+      i.viewId = ViewId::WOODEN_SHIELD;
+      i.shortName = "wooden"_s;
+      i.name = "wooden shield";
+      i.itemClass = ItemClass::ARMOR;
+      i.equipmentSlot = EquipmentSlot::SHIELD;
+      i.weight = 2;
+      i.price = 1;
+      i.damageReduction = 0.1;
+      i.maxUpgrades = 0;
+  );
+}
+
 ItemAttributes ItemType::ChainArmor::getAttributes() const {
   return ITATTR(
       i.viewId = ViewId::CHAIN_ARMOR;

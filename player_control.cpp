@@ -515,6 +515,7 @@ static ViewId getSlotViewId(EquipmentSlot slot) {
     case EquipmentSlot::GLOVES: return ViewId::LEATHER_GLOVES;
     case EquipmentSlot::BODY_ARMOR: return ViewId::LEATHER_ARMOR;
     case EquipmentSlot::AMULET: return ViewId::AMULET1;
+    case EquipmentSlot::SHIELD: return ViewId::WOODEN_SHIELD;
   }
 }
 

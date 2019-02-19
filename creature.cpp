@@ -1141,6 +1141,8 @@ bool Creature::takeDamage(const Attack& attack) {
     if (isAffected(effect))
       defense = LastingEffects::modifyCreatureDefense(effect, defense, attack.damageType);
   double damage = getDamage((double) attack.strength / defense);
+  for (auto& item : equipment->getAllEquipped())
+    damage *= 1.0 - item->getDamageReduction();
   if (auto sound = attributes->getAttackSound(attack.type, damage > 0))
     addSound(*sound);
   bool returnValue = damage > 0;

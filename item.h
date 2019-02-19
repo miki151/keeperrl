@@ -99,6 +99,7 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
   vector<string> getDescription() const;
 
   optional<LastingEffect> getOwnedEffect() const;
+  double getDamageReduction() const;
 
   const WeaponInfo& getWeaponInfo() const;
   void getAttackMsg(const Creature*, const string& enemyName) const;

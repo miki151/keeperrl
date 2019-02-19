@@ -667,6 +667,7 @@ class TileCoordLookup {
     Tile::addTile(ViewId::ADA_BOOTS, sprite("ada_boots"));
     Tile::addTile(ViewId::SPEED_BOOTS, sprite("blue_boots"));
     Tile::addTile(ViewId::LEVITATION_BOOTS, sprite("green_boots"));
+    Tile::addTile(ViewId::WOODEN_SHIELD, sprite("wooden_shield"));
     Tile::addTile(ViewId::GUARD_POST, sprite("guardroom").setRoundShadow());
     Tile::addTile(ViewId::MANA, sprite("mana"));
     Tile::addTile(ViewId::FETCH_ICON, sprite("leather_gloves"));
@@ -1066,6 +1067,7 @@ class TileCoordLookup {
     Tile::addSymbol(ViewId::ADA_BOOTS, symbol(u8"[", Color::LIGHT_BLUE));
     Tile::addSymbol(ViewId::SPEED_BOOTS, symbol(u8"[", Color::LIGHT_BLUE));
     Tile::addSymbol(ViewId::LEVITATION_BOOTS, symbol(u8"[", Color::LIGHT_GREEN));
+    Tile::addSymbol(ViewId::WOODEN_SHIELD, symbol(u8"[", Color::LIGHT_BROWN));
     Tile::addSymbol(ViewId::FALLEN_TREE, symbol(u8"*", Color::GREEN));
     Tile::addSymbol(ViewId::GUARD_POST, symbol(u8"⚐", Color::YELLOW, true));
     Tile::addSymbol(ViewId::DESTROY_BUTTON, symbol(u8"X", Color::RED));
