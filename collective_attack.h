@@ -22,6 +22,6 @@ class CollectiveAttack {
   vector<Creature*> SERIAL(creatures);
   WCollective SERIAL(attacker) = nullptr;
   string SERIAL(attackerName);
-  vector<WConstTask> SERIAL(attackTasks);
+  vector<WeakPointer<const Task>> SERIAL(attackTasks);
 };
 
