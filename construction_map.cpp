@@ -30,7 +30,7 @@ CostInfo ConstructionMap::FurnitureInfo::getCost() const {
 }
 
 bool ConstructionMap::FurnitureInfo::isBuilt(Position pos) const {
-  return !!pos.getFurniture(getLayer());
+  return !!pos.getFurniture(type);
 }
 
 bool ConstructionMap::FurnitureInfo::hasTask() const {
