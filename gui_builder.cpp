@@ -1699,12 +1699,12 @@ SGuiElem GuiBuilder::drawTeams(const CollectiveInfo& info, const optional<Tutori
     };
     const bool isTutorialHighlight = tutorial && tutorial->highlights.contains(TutorialHighlight::CONTROL_TEAM);
     lines.addElemAuto(gui.stack(makeVec(
-            gui.mouseOverAction([team, this] { mapGui->highlightTeam(team.members); },
-              [team, this] { mapGui->unhighlightTeam(team.members); }),
             gui.conditional(gui.tutorialHighlight(),
                 [=]{ return !wasTutorialClicked(0, TutorialHighlight::CONTROL_TEAM) && isTutorialHighlight; }),
             gui.uiHighlightConditional([team] () { return team.highlight; }),
             gui.uiHighlightMouseOver(),
+            gui.mouseOverAction([team, this] { mapGui->highlightTeam(team.members); },
+                [team, this] { mapGui->unhighlightTeam(team.members); }),
             cache->get(selectButton, THIS_LINE, team.id),
             gui.dragListener([this, team](DragContent content) {
                 UserInputId id;
@@ -2730,7 +2730,7 @@ SGuiElem GuiBuilder::drawQuartersButton(const PlayerInfo& minion, const Collecti
                 gui.uiHighlightMouseOver(),
                 gui.getListBuilder(32)
                     .addElem(gui.viewObject(allQuarters[i]))
-                    .addElem(gui.label(toString(i)))
+                    .addElem(gui.label(toString(i + 1)))
                     .buildHorizontalList()));
           }
           drawMiniMenu(std::move(tasks), exit, bounds.bottomLeft(), 50, true);
