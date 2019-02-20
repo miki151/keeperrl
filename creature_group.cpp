@@ -21,11 +21,11 @@ TribeId CreatureGroup::getTribeFor(CreatureId id) {
     return *tribe;
 }
 
-PCreature CreatureGroup::random(const CreatureFactory* f) {
+PCreature CreatureGroup::random(CreatureFactory* f) {
   return random(f, MonsterAIFactory::monster());
 }
 
-PCreature CreatureGroup::random(const CreatureFactory* creatureFactory, const MonsterAIFactory& actorFactory) {
+PCreature CreatureGroup::random(CreatureFactory* creatureFactory, const MonsterAIFactory& actorFactory) {
   CreatureId id;
   if (unique.size() > 0) {
     id = unique.back();

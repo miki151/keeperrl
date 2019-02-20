@@ -144,7 +144,6 @@ class Effect {
   void serialize(Archive&, const unsigned int);
 
   void applyToCreature(Creature*, Creature* attacker = nullptr) const;
-  void applyToPosition(Position) const;
   string getName() const;
   string getDescription() const;
 

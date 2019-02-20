@@ -19,7 +19,7 @@
 SERIALIZE_DEF(ExternalEnemies, currentWaves, waves, nextWave)
 SERIALIZATION_CONSTRUCTOR_IMPL(ExternalEnemies)
 
-ExternalEnemies::ExternalEnemies(RandomGen& random, const CreatureFactory* factory, vector<ExternalEnemy> enemies) {
+ExternalEnemies::ExternalEnemies(RandomGen& random, CreatureFactory* factory, vector<ExternalEnemy> enemies) {
   constexpr int firstAttackDelay = 1800;
   constexpr int attackInterval = 1200;
   constexpr int attackVariation = 450;

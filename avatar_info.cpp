@@ -47,7 +47,7 @@ static vector<ViewId> getUpgradedViewId(const Creature* c) {
 }
 
 variant<AvatarInfo, AvatarMenuOption> getAvatarInfo(View* view, const GameConfig* gameConfig, Options* options,
-    const CreatureFactory* creatureFactory) {
+    CreatureFactory* creatureFactory) {
   auto keeperCreatureInfos = readKeeperCreaturesConfig(view, gameConfig).first;
   auto keeperCreatures = keeperCreatureInfos.transform([&](auto& elem) {
     return elem.creatureId.transform([&](auto& id) {
@@ -102,7 +102,7 @@ variant<AvatarInfo, AvatarMenuOption> getAvatarInfo(View* view, const GameConfig
   return AvatarInfo{std::move(ret), creatureInfo, villains };
 }
 
-AvatarInfo getQuickGameAvatar(View* view, GameConfig* gameConfig, const CreatureFactory* creatureFactory) {
+AvatarInfo getQuickGameAvatar(View* view, GameConfig* gameConfig, CreatureFactory* creatureFactory) {
   auto keeperCreatures = readKeeperCreaturesConfig(view, gameConfig).first;
   AvatarInfo ret;
   ret.playerCreature = creatureFactory->fromId(keeperCreatures[0].creatureId[0], TribeId::getDarkKeeper());

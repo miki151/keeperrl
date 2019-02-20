@@ -58,7 +58,7 @@ class MonsterAIFactory {
   static MonsterAIFactory singleTask(PTask&&, bool chaseEnemies = true);
   static MonsterAIFactory stayInLocation(Rectangle, bool moveRandomly = true);
   static MonsterAIFactory wildlifeNonPredator();
-  static MonsterAIFactory scavengerBird(Position corpsePos);
+  static MonsterAIFactory scavengerBird();
   static MonsterAIFactory summoned(Creature*);
   static MonsterAIFactory moveRandomly();
   static MonsterAIFactory stayOnFurniture(FurnitureType);

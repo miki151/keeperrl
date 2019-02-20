@@ -414,6 +414,7 @@ void Level::unplaceCreature(Creature* creature, Vec2 pos) {
   bucketMap->removeElement(pos, creature);
   updateCreatureLight(pos, -1);
   modSafeSquare(pos)->removeCreature(Position(pos, this));
+  model->increaseMoveCounter();
 }
 
 void Level::placeCreature(Creature* creature, Vec2 pos) {
@@ -423,6 +424,7 @@ void Level::placeCreature(Creature* creature, Vec2 pos) {
   modSafeSquare(pos)->putCreature(creature);
   updateCreatureLight(pos, 1);
   position.onEnter(creature);
+  model->increaseMoveCounter();
 }
 
 void Level::swapCreatures(Creature* c1, Creature* c2) {

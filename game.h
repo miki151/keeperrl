@@ -27,15 +27,16 @@ class NameGenerator;
 
 class Game : public OwnedObject<Game> {
   public:
-  static PGame campaignGame(Table<PModel>&&, CampaignSetup&, AvatarInfo, const GameConfig*, const CreatureFactory*);
-  static PGame splashScreen(PModel&&, const CampaignSetup&);
+  static PGame campaignGame(Table<PModel>&&, CampaignSetup&, AvatarInfo, const GameConfig*, CreatureFactory);
+  static PGame splashScreen(PModel&&, const CampaignSetup&, CreatureFactory);
 
   optional<ExitInfo> update(double timeDiff);
   Options* getOptions();
-  void initialize(Options*, Highscores*, View*, FileSharing*, const GameConfig*, const CreatureFactory*);
+  void initialize(Options*, Highscores*, View*, FileSharing*, const GameConfig*);
   View* getView() const;
   const GameConfig* getGameConfig() const;
-  const CreatureFactory* getCreatureFactory() const;
+  CreatureFactory* getCreatureFactory();
+  CreatureFactory removeCreatureFactory();
   void exitAction();
   void transferAction(vector<Creature*>);
   void presentWorldmap();
@@ -95,7 +96,7 @@ class Game : public OwnedObject<Game> {
 
   SERIALIZATION_DECL(Game)
 
-  Game(Table<PModel>&&, Vec2 basePos, const CampaignSetup&);
+  Game(Table<PModel>&&, Vec2 basePos, const CampaignSetup&, CreatureFactory);
 
   private:
   optional<ExitInfo> update();
@@ -142,8 +143,8 @@ class Game : public OwnedObject<Game> {
   void increaseTime(double diff);
   const GameConfig* gameConfig = nullptr;
   void addCollective(WCollective);
-  void spawnKeeper(AvatarInfo, bool regenerateMana, vector<string> introText, const GameConfig*, const CreatureFactory*);
-  const CreatureFactory* creatureFactory = nullptr;
+  void spawnKeeper(AvatarInfo, bool regenerateMana, vector<string> introText, const GameConfig*);
+  HeapAllocated<CreatureFactory> SERIAL(creatureFactory);
 };
 
 CEREAL_CLASS_VERSION(Game, 1);

@@ -203,7 +203,7 @@ void Player::applyItem(vector<Item*> items) {
   }
   if (items[0]->getApplyTime() > 1_visible) {
     for (const Creature* c : creature->getVisibleEnemies())
-      if (creature->getPosition().dist8(c->getPosition()) < 3) {
+      if (creature->getPosition().dist8(c->getPosition()).value_or(3) < 3) {
         if (!getView()->yesOrNoPrompt("Applying " + items[0]->getAName() + " takes " +
             toString(items[0]->getApplyTime()) + " turns. Are you sure you want to continue?"))
           return;
@@ -305,7 +305,8 @@ void Player::hideAction() {
 
 bool Player::interruptedByEnemy() {
   if (auto combatIntent = creature->getLastCombatIntent())
-    if (combatIntent->time > lastEnemyInterruption && combatIntent->time > getGame()->getGlobalTime() - 5_visible) {
+    if (combatIntent->time > lastEnemyInterruption.value_or(GlobalTime(-1)) &&
+        combatIntent->time > getGame()->getGlobalTime() - 5_visible) {
       lastEnemyInterruption = combatIntent->time;
       privateMessage("You are being attacked by " + combatIntent->attacker->getName().a());
       return true;
@@ -814,7 +815,7 @@ static string getForceMovementQuestion(Position pos, const Creature* creature) {
   if (pos.canEnterEmpty(creature))
     return "";
   else if (pos.isBurning())
-    return "Walk into the fire?";
+    return "Walking into fire or adjacent tiles is going harm you. Continue?";
   else if (pos.canEnterEmpty(MovementTrait::SWIM))
     return "The water is very deep, are you sure?";
   else if (pos.sunlightBurns() && creature->getMovementType().isSunlightVulnerable())

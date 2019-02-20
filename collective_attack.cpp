@@ -17,10 +17,11 @@ static string generateAttackerName(WConstCollective attacker) {
 }
 
 CollectiveAttack::CollectiveAttack(vector<WConstTask> attackTasks, WCollective att, const vector<Creature*>& c, optional<int> r)
-    : ransom(r), creatures(c), attacker(att), attackerName(generateAttackerName(att)), attackTasks(attackTasks) {}
+    : ransom(r), creatures(c), attacker(att), attackerName(generateAttackerName(att)),
+      attackTasks(attackTasks.transform([](auto elem) { return elem->getThis(); })) {}
 
 CollectiveAttack::CollectiveAttack(vector<WConstTask> attackTasks, const string& name, const vector<Creature*>& c)
-    : creatures(c), attackerName(name), attackTasks(attackTasks) {
+    : creatures(c), attackerName(name), attackTasks(attackTasks.transform([](auto elem) { return elem->getThis(); })) {
 }
 
 
@@ -42,7 +43,7 @@ optional<int> CollectiveAttack::getRansom() const {
 
 bool CollectiveAttack::isOngoing() const {
   for (auto& task : attackTasks)
-    if (!!task && attacker->getTaskMap().getOwner(task))
+    if (!!task && attacker->getTaskMap().getOwner(task.get()))
       return true;
   return false;
 }

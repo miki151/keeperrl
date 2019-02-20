@@ -43,10 +43,8 @@ template <class Archive>
 void Game::serialize(Archive& ar, const unsigned int version) {
   ar & SUBCLASS(OwnedObject<Game>);
   ar(villainsByType, collectives, lastTick, playerControl, playerCollective, currentTime);
-  ar(musicType, statistics, spectator, tribes, gameIdentifier, players);
+  ar(musicType, statistics, spectator, tribes, gameIdentifier, players, creatureFactory, sunlightTimeOffset);
   ar(gameDisplayName, finishCurrentMusic, models, visited, baseModel, campaign, localTime, turnEvents);
-  if (version >= 1)
-    ar(sunlightTimeOffset);
   if (Archive::is_loading::value)
     sunlightInfo.update(getGlobalTime() + sunlightTimeOffset);
 }
@@ -58,9 +56,10 @@ static string getGameId(SaveFileInfo info) {
   return info.filename.substr(0, info.filename.size() - 4);
 }
 
-Game::Game(Table<PModel>&& m, Vec2 basePos, const CampaignSetup& c)
+Game::Game(Table<PModel>&& m, Vec2 basePos, const CampaignSetup& c, CreatureFactory f)
     : models(std::move(m)), visited(models.getBounds(), false), baseModel(basePos),
-      tribes(Tribe::generateTribes()), musicType(MusicType::PEACEFUL), campaign(c.campaign) {
+      tribes(Tribe::generateTribes()), musicType(MusicType::PEACEFUL), campaign(c.campaign),
+      creatureFactory(std::move(f)) {
   gameIdentifier = c.gameIdentifier;
   gameDisplayName = c.gameDisplayName;
   for (Vec2 v : models.getBounds())
@@ -90,7 +89,7 @@ static CollectiveConfig getKeeperConfig(bool fastImmigration, bool regenerateMan
 }
 
 void Game::spawnKeeper(AvatarInfo avatarInfo, bool regenerateMana, vector<string> introText,
-    const GameConfig* gameConfig, const CreatureFactory* creatureFactory) {
+    const GameConfig* gameConfig) {
   auto model = getMainModel().get();
   WLevel level = model->getTopLevel();
   Creature* keeperRef = avatarInfo.playerCreature.get();
@@ -107,7 +106,7 @@ void Game::spawnKeeper(AvatarInfo avatarInfo, bool regenerateMana, vector<string
   playerCollective->setControl(std::move(playerControlOwned));
   playerCollective->setVillainType(VillainType::PLAYER);
   addCollective(playerCollective);
-  if (auto error = playerControl->reloadImmigrationAndWorkshops(gameConfig, creatureFactory))
+  if (auto error = playerControl->reloadImmigrationAndWorkshops(gameConfig, &*creatureFactory))
     USER_FATAL << *error;
   for (auto tech : keeperInfo->initialTech)
     playerCollective->acquireTech(tech, false);
@@ -116,8 +115,8 @@ void Game::spawnKeeper(AvatarInfo avatarInfo, bool regenerateMana, vector<string
 Game::~Game() {}
 
 PGame Game::campaignGame(Table<PModel>&& models, CampaignSetup& setup, AvatarInfo avatar, const GameConfig* gameConfig,
-    const CreatureFactory* creatureFactory) {
-  auto ret = makeOwner<Game>(std::move(models), *setup.campaign.getPlayerPos(), setup);
+    CreatureFactory creatureFactory) {
+  auto ret = makeOwner<Game>(std::move(models), *setup.campaign.getPlayerPos(), setup, std::move(creatureFactory));
   for (auto model : ret->getAllModels())
     model->setGame(ret.get());
   auto avatarCreature = avatar.playerCreature.get();
@@ -129,16 +128,16 @@ PGame Game::campaignGame(Table<PModel>&& models, CampaignSetup& setup, AvatarInf
   if (setup.campaign.getPlayerRole() == PlayerRole::ADVENTURER)
     ret->getMainModel()->landHeroPlayer(std::move(avatar.playerCreature));
   else
-    ret->spawnKeeper(std::move(avatar), setup.regenerateMana, setup.introMessages, gameConfig, creatureFactory);
+    ret->spawnKeeper(std::move(avatar), setup.regenerateMana, setup.introMessages, gameConfig);
   // Restore vulnerability. If the effect wasn't present in the first place then it will zero-out.
   avatarCreature->getAttributes().addPermanentEffect(LastingEffect::SUNLIGHT_VULNERABLE, 1);
   return ret;
 }
 
-PGame Game::splashScreen(PModel&& model, const CampaignSetup& s) {
+PGame Game::splashScreen(PModel&& model, const CampaignSetup& s, CreatureFactory f) {
   Table<PModel> t(1, 1);
   t[0][0] = std::move(model);
-  auto game = makeOwner<Game>(std::move(t), Vec2(0, 0), s);
+  auto game = makeOwner<Game>(std::move(t), Vec2(0, 0), s, std::move(f));
   for (auto model : game->getAllModels())
     model->setGame(game.get());
   game->spectator.reset(new Spectator(game->models[0][0]->getTopLevel()));
@@ -343,7 +342,7 @@ bool Game::updateModel(WModel model, double totalTime) {
       return false;
     if (wasPlayer && getPlayerCreatures().empty())
       return true;
-    if (wasTransfered) {
+    if (wasTransfered || exitInfo) {
       wasTransfered = false;
       return false;
     }
@@ -538,8 +537,12 @@ const GameConfig* Game::getGameConfig() const {
   return gameConfig;
 }
 
-const CreatureFactory* Game::getCreatureFactory() const {
-  return creatureFactory;
+CreatureFactory* Game::getCreatureFactory() {
+  return &*creatureFactory;
+}
+
+CreatureFactory Game::removeCreatureFactory() {
+  return std::move(*creatureFactory);
 }
 
 void Game::conquered(const string& title, int numKills, int points) {
@@ -635,14 +638,12 @@ Options* Game::getOptions() {
   return options;
 }
 
-void Game::initialize(Options* o, Highscores* h, View* v, FileSharing* f, const GameConfig* g,
-    const CreatureFactory* fac) {
+void Game::initialize(Options* o, Highscores* h, View* v, FileSharing* f, const GameConfig* g) {
   options = o;
   highscores = h;
   view = v;
   fileSharing = f;
   gameConfig = g;
-  creatureFactory = fac;
 }
 
 const string& Game::getWorldName() const {

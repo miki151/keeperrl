@@ -79,8 +79,7 @@ Collective::Collective(Private, WModel model, TribeId t, const optional<Collecti
 PCollective Collective::create(WModel model, TribeId tribe, const optional<CollectiveName>& name, bool discoverable) {
   auto ret = makeOwner<Collective>(Private {}, model, tribe, name);
   ret->subscribeTo(model);
-  if (discoverable)
-    ret->setDiscoverable();
+  ret->discoverable = discoverable;
   ret->workshops = unique<Workshops>(std::array<vector<WorkshopItemCfg>, 4>());
   ret->immigration = makeOwner<Immigration>(ret.get(), vector<ImmigrantInfo>());
   return ret;
@@ -109,10 +108,6 @@ void Collective::setVillainType(VillainType t) {
 
 bool Collective::isDiscoverable() const {
   return discoverable;
-}
-
-void Collective::setDiscoverable() {
-  discoverable = true;
 }
 
 void Collective::setEnemyId(EnemyId id) {
@@ -547,8 +542,6 @@ void Collective::onEvent(const GameEvent& event) {
               removeTrait(victim, MinionTrait::NO_LIMIT);
               setTrait(victim, MinionTrait::FIGHTER);
               victim->removeEffect(LastingEffect::TIED_UP);
-              // prisoner was made poison resistant when captured, so remove it now
-              victim->removePermanentEffect(LastingEffect::POISON_RESISTANT);
             }
           }
         }
@@ -854,7 +847,7 @@ void Collective::removeFurniture(Position pos, FurnitureLayer layer) {
 void Collective::destroyOrder(Position pos, FurnitureLayer layer) {
   auto furniture = pos.modFurniture(layer);
   if (!furniture || furniture->canRemoveWithCreaturePresent() || !pos.getCreature()) {
-    if (furniture && !furniture->isWall() &&
+    if (furniture && !furniture->isWall() && !furniture->forgetAfterBuilding() &&
         (furniture->getTribe() == getTribeId() || furniture->canRemoveNonFriendly())) {
       furniture->destroy(pos, DestroyAction::Type::BASH);
     }
@@ -1071,7 +1064,7 @@ bool Collective::isDelayed(Position pos) {
 static Position chooseClosest(Position pos, const PositionSet& squares) {
   optional<Position> ret;
   for (auto& p : squares)
-    if (!ret || pos.dist8(p) < pos.dist8(*ret))
+    if (!ret || pos.dist8(p).value_or(10000) < pos.dist8(*ret).value_or(10000))
       ret = p;
   return *ret;
 }
@@ -1111,13 +1104,12 @@ void Collective::fetchItems(Position pos, const ItemFetchInfo& elem) {
 
 void Collective::handleSurprise(Position pos) {
   Vec2 rad(8, 8);
-  Creature* c = pos.getCreature();
   for (Position v : Random.permutation(pos.getRectangle(Rectangle(-rad, rad + Vec2(1, 1)))))
     if (Creature* other = v.getCreature())
-      if (hasTrait(other, MinionTrait::FIGHTER) && other->getPosition().dist8(pos) > 1) {
+      if (hasTrait(other, MinionTrait::FIGHTER) && *v.dist8(pos) > 1) {
         for (Position dest : pos.neighbors8(Random))
-          if (other->getPosition().canMoveCreature(dest)) {
-            other->getPosition().moveCreature(dest, true);
+          if (v.canMoveCreature(dest)) {
+            v.moveCreature(dest, true);
             break;
           }
       }

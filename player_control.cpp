@@ -212,7 +212,7 @@ static optional<string> checkGroupCounts(const map<string, vector<ImmigrantInfo>
 }
 
 optional<string> PlayerControl::reloadImmigrationAndWorkshops(const GameConfig* gameConfig,
-    const CreatureFactory* creatureFactory) {
+    CreatureFactory* creatureFactory) {
   Technology technology;
   if (auto error = gameConfig->readObject(technology, GameConfigId::TECHNOLOGY))
     return error;
@@ -515,6 +515,7 @@ static ViewId getSlotViewId(EquipmentSlot slot) {
     case EquipmentSlot::GLOVES: return ViewId::LEATHER_GLOVES;
     case EquipmentSlot::BODY_ARMOR: return ViewId::LEATHER_ARMOR;
     case EquipmentSlot::AMULET: return ViewId::AMULET1;
+    case EquipmentSlot::SHIELD: return ViewId::WOODEN_SHIELD;
   }
 }
 
@@ -1158,7 +1159,6 @@ void PlayerControl::acceptPrisoner(int index) {
     auto victim = immigrants[index].creatures[0];
     victim->removeEffect(LastingEffect::STUNNED);
     // to make sure prisoners don't die around dead bodies
-    victim->addPermanentEffect(LastingEffect::POISON_RESISTANT);
     victim->getAttributes().getSkills().setValue(SkillId::DIGGING,
         victim->isAffected(LastingEffect::NAVIGATION_DIGGING_SKILL) ? 1 : 0.2);
     victim->removePermanentEffect(LastingEffect::NAVIGATION_DIGGING_SKILL);

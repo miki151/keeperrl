@@ -766,7 +766,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
             c.buildingId = BuildingId::BRICK;
             c.furniture = FurnitureFactory(c.tribe, {{FurnitureType::CHEST, 1}},
                 {FurnitureType::ALTAR});),
-            CollectiveConfig::noImmigrants());
+            CollectiveConfig::noImmigrants()).setNonDiscoverable();
     case EnemyId::RUINS:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::COTTAGE;

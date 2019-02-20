@@ -101,7 +101,7 @@ class CollectiveConfig {
   static const WorkshopInfo& getWorkshopInfo(WorkshopType);
   static optional<WorkshopType> getWorkshopType(FurnitureType);
 
-  static void addBedRequirementToImmigrants(vector<ImmigrantInfo>&, const CreatureFactory*);
+  static void addBedRequirementToImmigrants(vector<ImmigrantInfo>&, CreatureFactory*);
 
   map<CollectiveResourceId, int> getStartingResource() const;
 

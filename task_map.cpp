@@ -17,7 +17,7 @@ void TaskMap::clearFinishedTasks() {
 WTask TaskMap::getClosestTask(const Creature* c, MinionActivity activity, bool priorityOnly) const {
   PROFILE;
   WTask closest = nullptr;
-  auto isBetter = [&](WTask task, double dist) {
+  auto isBetter = [&](WTask task, optional<int> dist) {
     PROFILE_BLOCK("isBetter");
     if (!closest)
       return true;
@@ -27,7 +27,7 @@ WTask TaskMap::getClosestTask(const Creature* c, MinionActivity activity, bool p
       return true;
     if (!pTask && pClosest)
       return false;
-    return dist < getPosition(closest)->dist8(c->getPosition());
+    return dist.value_or(10000) < getPosition(closest)->dist8(c->getPosition()).value_or(10000);
   };
   optional<StorageId> storageDropTask;
   for (auto& task : taskByActivity[activity])
@@ -41,14 +41,14 @@ WTask TaskMap::getClosestTask(const Creature* c, MinionActivity activity, bool p
         (!storageDropTask || storageDropTask == task->getStorageId(false)))
       if (auto pos = getPosition(task)) {
         PROFILE_BLOCK("Task check");
-        double dist = pos->dist8(c->getPosition());
+        auto dist = pos->dist8(c->getPosition());
         const Creature* owner = getOwner(task);
         auto delayed = delayedTasks.getMaybe(task);
         if (!task->isDone() &&
-            (!owner || (task->canTransfer() && pos->dist8(owner->getPosition()) > dist && dist <= 6)) &&
+            (!owner || (task->canTransfer() && dist && pos->dist8(owner->getPosition()).value_or(10000) > *dist && *dist <= 6)) &&
             isBetter(task, dist) &&
             c->canNavigateToOrNeighbor(*pos) &&
-            (!delayed || *delayed < c->getLocalTime())) {
+            (!delayed || *delayed < *c->getLocalTime())) {
           closest = task;
         }
       }

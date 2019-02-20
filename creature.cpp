@@ -359,7 +359,7 @@ CreatureAction Creature::move(Position pos, optional<Position> nextPos) const {
 }
 
 static bool posIntentsConflict(Position myPos, Position hisPos, optional<Position> hisIntent) {
-  return hisIntent && myPos.dist8(*hisIntent) > hisPos.dist8(*hisIntent) && hisPos.dist8(*hisIntent) <= 1;
+  return hisIntent && *myPos.dist8(*hisIntent) > *hisPos.dist8(*hisIntent) && *hisPos.dist8(*hisIntent) <= 1;
 }
 
 bool Creature::canSwapPositionInMovement(Creature* other, optional<Position> nextPos) const {
@@ -442,7 +442,6 @@ void Creature::makeMove() {
     spendTime();
     return;
   }
-  updateVisibleCreatures();
   updateViewObject();
   {
     // Calls makeMove() while preventing Controller destruction by holding a shared_ptr on stack.
@@ -690,7 +689,7 @@ CreatureAction Creature::push(Creature* other) {
 }
 
 CreatureAction Creature::applySquare(Position pos) const {
-  CHECK(pos.dist8(getPosition()) <= 1);
+  CHECK(*pos.dist8(getPosition()) <= 1);
   if (auto furniture = pos.getFurniture(FurnitureLayer::MIDDLE))
     if (furniture->canUse(this))
       return CreatureAction(this, [=](Creature* self) {
@@ -962,11 +961,15 @@ void Creature::tick() {
   PROFILE;
   addMorale(-morale * 0.0008);
   auto updateMorale = [this](Position pos, double mult) {
-    for (auto f : pos.getFurniture()) {
+    for (auto& f : pos.getFurniture()) {
       auto& luxury = f->getLuxuryInfo();
       if (luxury.luxury > morale)
         addMorale((luxury.luxury - morale) * mult);
     }
+    for (auto& it : pos.getItems())
+      if (auto info = it->getCorpseInfo())
+        if (!info->isSkeleton && it->getClass() != ItemClass::FOOD)
+          addMorale(-2 * mult);
   };
   for (auto pos : position.neighbors8())
     updateMorale(pos, 0.0004);
@@ -1027,7 +1030,7 @@ void Creature::dropWeapon() {
 
 
 CreatureAction Creature::execute(Creature* c) const {
-  if (c->getPosition().dist8(getPosition()) > 1)
+  if (c->getPosition().dist8(getPosition()).value_or(2) > 1)
     return CreatureAction();
   return CreatureAction(this, [=] (Creature* self) {
     self->secondPerson("You execute " + c->getName().the());
@@ -1128,15 +1131,17 @@ bool Creature::takeDamage(const Attack& attack) {
   PROFILE;
   if (Creature* attacker = attack.attacker) {
     onAttackedBy(attacker);
-    for (Position p : visibleCreatures)
-      if (p.dist8(position) < 10 && p.getCreature() && !p.getCreature()->isDead())
-        p.getCreature()->removeEffect(LastingEffect::SLEEP);
+    for (auto c : getVisibleCreatures())
+      if (*c->getPosition().dist8(position) < 10)
+        c->removeEffect(LastingEffect::SLEEP);
   }
   double defense = getAttr(AttrType::DEFENSE);
   for (LastingEffect effect : ENUM_ALL(LastingEffect))
     if (isAffected(effect))
       defense = LastingEffects::modifyCreatureDefense(effect, defense, attack.damageType);
   double damage = getDamage((double) attack.strength / defense);
+  for (auto& item : equipment->getAllEquipped())
+    damage *= 1.0 - item->getDamageReduction();
   if (auto sound = attributes->getAttackSound(attack.type, damage > 0))
     addSound(*sound);
   bool returnValue = damage > 0;
@@ -1446,7 +1451,7 @@ void Creature::addMovementInfo(MovementInfo info) {
 
 CreatureAction Creature::whip(const Position& pos) const {
   Creature* whipped = pos.getCreature();
-  if (pos.dist8(position) > 1 || !whipped)
+  if (pos.dist8(position).value_or(2) > 1 || !whipped)
     return CreatureAction();
   return CreatureAction(this, [=](Creature* self) {
     thirdPerson(PlayerMessage(getName().the() + " whips " + whipped->getName().the()));
@@ -1554,7 +1559,7 @@ void Creature::addPersonalEvent(const string& s) {
 }
 
 CreatureAction Creature::consume(Creature* other) const {
-  if (!other || !canConsume(other) || other->getPosition().dist8(getPosition()) > 1)
+  if (!other || !canConsume(other) || other->getPosition().dist8(getPosition()).value_or(2) > 1)
     return CreatureAction();
   return CreatureAction(this, [=] (Creature* self) {
     other->dieWithAttacker(self, Creature::DropType::ONLY_INVENTORY);
@@ -1757,7 +1762,7 @@ CreatureAction Creature::moveTowards(Position pos, bool away, NavigationFlags fl
     bool wasNew = false;
     INFO << identify() << (away ? " retreating " : " navigating ") << position.getCoord() << " to " << pos.getCoord();
     if (!currentPath || Random.roll(10) || currentPath->isReversed() != away ||
-        currentPath->getTarget().dist8(pos) > getPosition().dist8(pos) / 10) {
+        currentPath->getTarget().dist8(pos).value_or(10000000) > *position.dist8(pos) / 10) {
       INFO << "Calculating new path";
       currentPath = LevelShortestPath(this, pos, position, away ? -1.5 : 0);
       wasNew = true;
@@ -1765,7 +1770,7 @@ CreatureAction Creature::moveTowards(Position pos, bool away, NavigationFlags fl
     if (currentPath->isReachable(position)) {
       INFO << "Position reachable";
       Position pos2 = currentPath->getNextMove(position);
-      if (pos2.dist8(position) > 1)
+      if (pos2.dist8(position).value_or(2) > 1)
         if (auto f = position.getFurniture(FurnitureLayer::MIDDLE))
           if (f->getUsageType() == FurnitureUsageType::PORTAL)
             return applySquare(position);
@@ -1800,7 +1805,7 @@ CreatureAction Creature::moveTowards(Position pos, bool away, NavigationFlags fl
 
 CreatureAction Creature::moveAway(Position pos, bool pathfinding) {
   CHECK(pos.isSameLevel(position));
-  if (pos.dist8(getPosition()) <= 5 && pathfinding)
+  if (pos.dist8(getPosition()).value_or(6) < 6 && pathfinding)
     if (auto action = moveTowards(pos, true, NavigationFlags().noDestroying()))
       return action;
   pair<Vec2, Vec2> dirs = pos.getDir(getPosition()).approxL1();
@@ -1834,35 +1839,38 @@ CreatureDebt& Creature::getDebt() {
   return *debt;
 }
 
-void Creature::updateVisibleCreatures() {
-  PROFILE;
-  int range = FieldOfView::sightRange;
-  visibleEnemies.clear();
-  visibleCreatures.clear();
-  for (Creature* c : position.getAllCreatures(range))
-    if (canSee(c) || isUnknownAttacker(c)) {
-      visibleCreatures.push_back(c->getPosition());
-      if (isEnemy(c))
-        visibleEnemies.push_back(c->getPosition());
-    }
+Creature::MoveId Creature::getCurrentMoveId() const {
+  return {position.getModel()->getMoveCounter(), position.getModel()->getUniqueId()};
 }
 
-vector<Creature*> Creature::getVisibleEnemies() const {
-  vector<Creature*> ret;
-  for (Position p : visibleEnemies)
-    if (Creature* c = p.getCreature())
-      if (!c->isDead())
+const vector<Creature*>& Creature::getVisibleEnemies() const {
+  auto get = [&] {
+    vector<Creature*> ret;
+    for (Creature* c : position.getAllCreatures(FieldOfView::sightRange))
+      if ((canSee(c) || isUnknownAttacker(c)) && isEnemy(c)) {
         ret.push_back(c);
-  return ret;
+      }
+    return ret;
+  };
+  auto currentMoveId = getCurrentMoveId();
+  if (!visibleEnemies || visibleEnemies->first != currentMoveId)
+    visibleEnemies.emplace(make_pair(currentMoveId, get()));
+  return visibleEnemies->second;
 }
 
-vector<Creature*> Creature::getVisibleCreatures() const {
-  vector<Creature*> ret;
-  for (Position p : visibleCreatures)
-    if (Creature* c = p.getCreature())
-      if (!c->isDead())
+const vector<Creature*>& Creature::getVisibleCreatures() const {
+  auto get = [&] {
+    vector<Creature*> ret;
+    for (Creature* c : position.getAllCreatures(FieldOfView::sightRange))
+      if (canSee(c) || isUnknownAttacker(c)) {
         ret.push_back(c);
-  return ret;
+      }
+    return ret;
+  };
+  auto currentMoveId = getCurrentMoveId();
+  if (!visibleCreatures || visibleCreatures->first != currentMoveId)
+    visibleCreatures.emplace(make_pair(currentMoveId, get()));
+  return visibleCreatures->second;
 }
 
 bool Creature::shouldAIAttack(const Creature* other) const {
@@ -1977,12 +1985,12 @@ Creature* Creature::getClosestEnemy() const {
   int dist = 1000000000;
   Creature* result = nullptr;
   for (Creature* other : getVisibleEnemies()) {
-    int curDist = other->getPosition().dist8(position);
+    int curDist = *other->getPosition().dist8(position);
     if (curDist < dist &&
         (!other->getAttributes().dontChase() || curDist == 1) &&
         !other->isAffected(LastingEffect::STUNNED)) {
       result = other;
-      dist = position.dist8(other->getPosition());
+      dist = *position.dist8(other->getPosition());
     }
   }
   return result;

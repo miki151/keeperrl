@@ -68,7 +68,7 @@ static void useChest(Position pos, WConstFurniture furniture, Creature* c, const
 static void desecrate(Position pos, WConstFurniture furniture, Creature* c) {
   c->verb("desecrate", "desecrates", "the "+ furniture->getName());
   pos.removeFurniture(furniture, FurnitureFactory::get(FurnitureType::ALTAR_DES, furniture->getTribe()));
-  switch (Random.get(4)) {
+  switch (Random.get(5)) {
     case 0:
       pos.globalMessage("A streak of magical energy is released");
       c->addPermanentEffect(Random.choose(
@@ -121,6 +121,16 @@ static void desecrate(Position pos, WConstFurniture furniture, Creature* c) {
       pos.dropItems(ItemType(ItemType::GoldPiece{}).get(Random.get(50, 100)));
       break;
     }
+    case 4: {
+      c->verb("find", "finds", "a glyph in the cracks!");
+      pos.dropItem(Random.choose(
+          ItemType(ItemType::Glyph{ { ItemUpgradeType::ARMOR, ItemPrefix( ItemAttrBonus{ AttrType::DAMAGE, 2 } ) } }),
+          ItemType(ItemType::Glyph{ { ItemUpgradeType::ARMOR, ItemPrefix( ItemAttrBonus{ AttrType::DEFENSE, 2 } ) } }),
+          ItemType(ItemType::Glyph{ { ItemUpgradeType::ARMOR, ItemPrefix( LastingEffect::TELEPATHY ) } }),
+          ItemType(ItemType::Glyph{ { ItemUpgradeType::WEAPON, ItemPrefix( VictimEffect { Effect::Lasting{LastingEffect::BLEEDING} } ) } })
+          ).get());
+      break;
+    }
   }
 }
 
@@ -158,7 +168,7 @@ static void sitOnThrone(Position pos, WConstFurniture furniture, Creature* c) {
       return;
     bool wasTeleported = false;
     auto tryTeleporting = [&] (Creature* enemy) {
-      if (enemy->getPosition().dist8(pos) > 3 || !c->canSee(enemy))
+      if (enemy->getPosition().dist8(pos).value_or(4) > 3 || !c->canSee(enemy))
         if (auto landing = pos.getLevel()->getClosestLanding({pos}, enemy)) {
           enemy->getPosition().moveCreature(*landing, true);
           wasTeleported = true;

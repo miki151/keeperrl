@@ -51,6 +51,9 @@
 #include "game_config.h"
 #include "creature_inventory.h"
 
+SERIALIZE_DEF(CreatureFactory, nameGenerator, attributes, inventory)
+SERIALIZATION_CONSTRUCTOR_IMPL(CreatureFactory)
+
 class BoulderController : public Monster {
   public:
   BoulderController(Creature* c, Vec2 dir) : Monster(c, MonsterAIFactory::idle()), direction(dir) {
@@ -175,7 +178,7 @@ CreatureAttributes CreatureFactory::getKrakenAttributes(ViewId id, const char* n
       c.name = name;);
 }
 
-ViewId CreatureFactory::getViewId(CreatureId id) const {
+ViewId CreatureFactory::getViewId(CreatureId id) {
   if (!idMap.count(id)) {
     auto c = fromId(id, TribeId::getMonster());
     idMap[id] = c->getViewObject().id();
@@ -183,11 +186,11 @@ ViewId CreatureFactory::getViewId(CreatureId id) const {
   return idMap.at(id);
 }
 
-NameGenerator* CreatureFactory::getNameGenerator() const {
-  return nameGenerator;
+NameGenerator* CreatureFactory::getNameGenerator() {
+  return &*nameGenerator;
 }
 
-CreatureFactory::CreatureFactory(NameGenerator* n, const GameConfig* config) : nameGenerator(n) {
+CreatureFactory::CreatureFactory(NameGenerator n, const GameConfig* config) : nameGenerator(std::move(n)) {
   while (1) {
     cont:
     if (auto res = config->readObject(attributes, GameConfigId::CREATURE_ATTRIBUTES)) {
@@ -214,6 +217,17 @@ CreatureFactory::CreatureFactory(NameGenerator* n, const GameConfig* config) : n
 
 CreatureFactory::~CreatureFactory() {
 }
+
+void CreatureFactory::merge(CreatureFactory f) {
+  for (auto& elem : f.attributes)
+    if (!attributes.count(elem.first))
+      attributes.insert(std::move(elem));
+  for (auto& elem : f.inventory)
+    if (!inventory.count(elem.first))
+      inventory.insert(std::move(elem));
+}
+
+CreatureFactory::CreatureFactory(CreatureFactory&&) = default;
 
 constexpr int maxKrakenLength = 15;
 
@@ -288,7 +302,7 @@ class KrakenController : public Monster {
     for (Position pos : creature->getPosition().getRectangle(Rectangle::centered(Vec2(0, 0), radius)))
       if (Creature* c = pos.getCreature())
         if (c->getAttributes().getCreatureId() != creature->getAttributes().getCreatureId() &&
-            (!ret || ret->getPosition().dist8(myPos) > c->getPosition().dist8(myPos)) &&
+            (!ret || *ret->getPosition().dist8(myPos) > *c->getPosition().dist8(myPos)) &&
             creature->canSee(c) && creature->isEnemy(c) && !c->getHoldingCreature())
           ret = c;
     return ret;
@@ -651,7 +665,7 @@ static vector<LastingEffect> getResistanceAndVulnerability(RandomGen& random) {
 }
 
 PCreature CreatureFactory::getSpecial(TribeId tribe, bool humanoid, bool large, bool living, bool wings,
-    const ControllerFactory& factory) const {
+    const ControllerFactory& factory) {
   Body body = Body(humanoid, living ? Body::Material::FLESH : Body::Material::SPIRIT,
       large ? Body::Size::LARGE : Body::Size::MEDIUM);
   if (wings)
@@ -711,7 +725,7 @@ PCreature CreatureFactory::getSpecial(TribeId tribe, bool humanoid, bool large, 
   return c;
 }
 
-CreatureAttributes CreatureFactory::getAttributes(CreatureId id) const {
+CreatureAttributes CreatureFactory::getAttributes(CreatureId id) {
   auto ret = getAttributesFromId(id);
   ret.setCreatureId(id);
   return ret;
@@ -729,9 +743,9 @@ CREATE_LITERAL(RANGED_DAMAGE, ranged_dam)
 
 #undef CREATE_LITERAL
 
-CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) const {
+CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
   if (auto ret = getValueMaybe(attributes, id)) {
-    ret->name.generateFirst(nameGenerator);
+    ret->name.generateFirst(&*nameGenerator);
     return std::move(*ret);
   } else if (id == "KRAKEN")
       return getKrakenAttributes(ViewId::KRAKEN_HEAD, "kraken");
@@ -748,7 +762,7 @@ ControllerFactory getController(CreatureId id, MonsterAIFactory normalFactory) {
     return Monster::getFactory(normalFactory);
 }
 
-PCreature CreatureFactory::get(CreatureId id, TribeId tribe, MonsterAIFactory aiFactory) const {
+PCreature CreatureFactory::get(CreatureId id, TribeId tribe, MonsterAIFactory aiFactory) {
   ControllerFactory factory = Monster::getFactory(aiFactory);
   if (id == "SPECIAL_BLBN")
     return getSpecial(tribe, false, true, true, false, factory);
@@ -788,7 +802,7 @@ PCreature CreatureFactory::get(CreatureId id, TribeId tribe, MonsterAIFactory ai
     return get(getAttributes(id), tribe, getController(id, aiFactory));
 }
 
-PCreature CreatureFactory::getGhost(Creature* creature) const {
+PCreature CreatureFactory::getGhost(Creature* creature) {
   ViewObject viewObject(creature->getViewObject().id(), ViewLayer::CREATURE, "Ghost");
   viewObject.setModifier(ViewObject::Modifier::ILLUSION);
   auto ret = makeOwner<Creature>(viewObject, creature->getTribeId(), getAttributes("LOST_SOUL"));
@@ -809,16 +823,16 @@ vector<ItemType> CreatureFactory::getDefaultInventory(CreatureId id) const {
     return {};
 }
 
-PCreature CreatureFactory::fromId(CreatureId id, TribeId t) const {
+PCreature CreatureFactory::fromId(CreatureId id, TribeId t) {
   return fromId(id, t, MonsterAIFactory::monster());
 }
 
 
-PCreature CreatureFactory::fromId(CreatureId id, TribeId t, const MonsterAIFactory& f) const {
+PCreature CreatureFactory::fromId(CreatureId id, TribeId t, const MonsterAIFactory& f) {
   return fromId(id, t, f, {});
 }
 
-PCreature CreatureFactory::fromId(CreatureId id, TribeId t, const MonsterAIFactory& factory, const vector<ItemType>& inventory) const {
+PCreature CreatureFactory::fromId(CreatureId id, TribeId t, const MonsterAIFactory& factory, const vector<ItemType>& inventory) {
   auto ret = get(id, t, factory);
   addInventory(ret.get(), inventory);
   addInventory(ret.get(), getDefaultInventory(id));

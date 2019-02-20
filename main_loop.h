@@ -25,12 +25,12 @@ class CreatureList;
 class GameConfig;
 class AvatarInfo;
 class NameGenerator;
-class EnemyFactory;
+struct ModelTable;
 
 class MainLoop {
   public:
   MainLoop(View*, Highscores*, FileSharing*, const DirectoryPath& dataFreePath, const DirectoryPath& userPath,
-      Options*, Jukebox*, SokobanInput*, NameGenerator*, const EnemyFactory*, bool useSingleThread, int saveVersion);
+      Options*, Jukebox*, SokobanInput*, bool useSingleThread, int saveVersion);
 
   void start(bool tilesPresent, bool quickGame);
   void modelGenTest(int numTries, const vector<std::string>& types, RandomGen&, Options*);
@@ -39,7 +39,6 @@ class MainLoop {
   void endlessTest(int numTries, const FilePath& levelPath, const FilePath& battleInfoPath, RandomGen&, optional<int> numEnemy);
 
   static TimeInterval getAutosaveFreq();
-  static void reloadModel(const FilePath& path);
 
   private:
 
@@ -58,17 +57,17 @@ class MainLoop {
 
   void doWithSplash(SplashType, const string& text, function<void()> fun, function<void()> cancelFun = nullptr);
 
-  PGame prepareCampaign(RandomGen&, const GameConfig*, const CreatureFactory*);
+  PGame prepareCampaign(RandomGen&, const GameConfig*, CreatureFactory);
   enum class ExitCondition;
-  ExitCondition playGame(PGame, bool withMusic, bool noAutoSave, const GameConfig*, const CreatureFactory*,
+  ExitCondition playGame(PGame, bool withMusic, bool noAutoSave, const GameConfig*,
       function<optional<ExitCondition> (WGame)> = nullptr, milliseconds stepTimeMilli = milliseconds{3});
   void splashScreen();
   void showCredits(const FilePath& path, View*);
 
   void playMenuMusic();
 
-  Table<PModel> prepareCampaignModels(CampaignSetup& campaign, const AvatarInfo&, RandomGen& random,
-      const GameConfig*, const CreatureFactory*);
+  ModelTable prepareCampaignModels(CampaignSetup& campaign, const AvatarInfo&, RandomGen& random,
+      const GameConfig*, CreatureFactory*);
   PGame loadGame(const FilePath&);
   PGame loadPrevious();
   FilePath getSavePath(const PGame&, GameSaveType);
@@ -98,8 +97,7 @@ class MainLoop {
   void launchQuickGame();
   void bugReportSave(PGame&, FilePath);
   int saveVersion;
-  NameGenerator* nameGenerator = nullptr;
-  const EnemyFactory* enemyFactory = nullptr;
   void saveGame(PGame&, const FilePath&);
   void saveMainModel(PGame&, const FilePath&);
+  CreatureFactory createCreatureFactory(const GameConfig* gameConfig) const;
 };

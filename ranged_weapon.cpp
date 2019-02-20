@@ -59,7 +59,7 @@ void RangedWeapon::fire(Creature* c, Position target) const {
         pos.globalMessage("the " + projectileName + " hits the " + pos.getName());
         break;
       }
-      if (pos.dist8(position) >= maxDistance) {
+      if (*pos.dist8(position) >= maxDistance) {
         pos.globalMessage("the " + projectileName + " falls short.");
         break;
       }

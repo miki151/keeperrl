@@ -38,11 +38,9 @@
 #include "creature_name.h"
 
 MainLoop::MainLoop(View* v, Highscores* h, FileSharing* fSharing, const DirectoryPath& freePath,
-    const DirectoryPath& uPath, Options* o, Jukebox* j, SokobanInput* soko, NameGenerator* n,
-    const EnemyFactory* e, bool singleThread, int sv)
+    const DirectoryPath& uPath, Options* o, Jukebox* j, SokobanInput* soko, bool singleThread, int sv)
       : view(v), dataFreePath(freePath), userPath(uPath), options(o), jukebox(j), highscores(h), fileSharing(fSharing),
-        useSingleThread(singleThread), sokobanInput(soko), saveVersion(sv),
-        nameGenerator(n), enemyFactory(e) {
+        useSingleThread(singleThread), sokobanInput(soko), saveVersion(sv) {
 }
 
 vector<SaveFileInfo> MainLoop::getSaveFiles(const DirectoryPath& path, const string& suffix) {
@@ -83,22 +81,22 @@ static string getSaveSuffix(GameSaveType t) {
 }
 
 template <typename T>
-static T loadFromFile(const FilePath& filename, bool failSilently) {
-  T obj;
+static optional<T> loadFromFile(const FilePath& filename, bool failSilently) {
   try {
+    T obj;
     CompressedInput input(filename.getPath());
     string discard;
     SavedGameInfo discard2;
     int version;
     input.getArchive() >> version >> discard >> discard2;
     input.getArchive() >> obj;
+    return std::move(obj);
   } catch (std::exception& ex) {
     if (failSilently)
-      return T();
+      return none;
     else
       throw ex;
   }
-  return obj;
 }
 
 static bool isNotFilename(char c) {
@@ -118,21 +116,22 @@ void MainLoop::saveGame(PGame& game, const FilePath& path) {
   out.getArchive() << game;
 }
 
+struct RetiredModelInfo {
+  PModel SERIAL(model);
+  CreatureFactory SERIAL(factory);
+  SERIALIZE_ALL(model, factory)
+};
+
 void MainLoop::saveMainModel(PGame& game, const FilePath& path) {
   CompressedOutput out(path.getPath());
   string name = game->getGameDisplayName();
   SavedGameInfo savedInfo = game->getSavedGameInfo();
   out.getArchive() << saveVersion << name << savedInfo;
-  out.getArchive() << game->getMainModel();
-}
-
-void MainLoop::reloadModel(const FilePath& path) {
-  PModel model;
-  string name;
-  SavedGameInfo info;
-  int version;
-  CompressedInput(path.getPath()).getArchive() >> version >> name >> info >> model;
-  CompressedOutput(path.getPath()).getArchive() << version << name << info << model;
+  RetiredModelInfo info {
+    std::move(game->getMainModel()),
+    game->removeCreatureFactory()
+  };
+  out.getArchive() << info;
 }
 
 int MainLoop::getSaveVersion(const SaveFileInfo& save) {
@@ -235,13 +234,13 @@ void MainLoop::bugReportSave(PGame& game, FilePath path) {
 }
 
 MainLoop::ExitCondition MainLoop::playGame(PGame game, bool withMusic, bool noAutoSave,
-    const GameConfig* gameConfig, const CreatureFactory* creatureFactory,
-    function<optional<ExitCondition>(WGame)> exitCondition, milliseconds stepTimeMilli) {
+    const GameConfig* gameConfig, function<optional<ExitCondition>(WGame)> exitCondition,
+    milliseconds stepTimeMilli) {
   view->reset();
   if (!noAutoSave)
     view->setBugReportSaveCallback([&] (FilePath path) { bugReportSave(game, path); });
   DestructorFunction removeCallback([&] { view->setBugReportSaveCallback(nullptr); });
-  game->initialize(options, highscores, view, fileSharing, gameConfig, creatureFactory);
+  game->initialize(options, highscores, view, fileSharing, gameConfig);
   Intervalometer meter(stepTimeMilli);
   Intervalometer pausingMeter(stepTimeMilli);
   auto lastMusicUpdate = GlobalTime(-1000);
@@ -352,20 +351,27 @@ PGame MainLoop::prepareTutorial(const GameConfig* gameConfig) {
   return game;
 }
 
+struct ModelTable {
+  Table<PModel> models;
+  vector<CreatureFactory> factories;
+};
+
 PGame MainLoop::prepareCampaign(RandomGen& random, const GameConfig* gameConfig,
-    const CreatureFactory* creatureFactory) {
+    CreatureFactory creatureFactory) {
   while (1) {
-    auto avatarChoice = getAvatarInfo(view, gameConfig, options, creatureFactory);
+    auto avatarChoice = getAvatarInfo(view, gameConfig, options, &creatureFactory);
     if (auto avatar = avatarChoice.getReferenceMaybe<AvatarInfo>()) {
       CampaignBuilder builder(view, random, options, gameConfig, *avatar);
       if (auto setup = builder.prepareCampaign(bindMethod(&MainLoop::getRetiredGames, this), CampaignType::CAMPAIGN,
-          nameGenerator->getNext(NameGeneratorId::WORLD))) {
+          creatureFactory.getNameGenerator()->getNext(NameGeneratorId::WORLD))) {
         auto name = options->getStringValue(OptionId::PLAYER_NAME);
         if (!name.empty())
           avatar->playerCreature->getName().setFirst(name);
         avatar->playerCreature->getName().useFullTitle();
-        auto models = prepareCampaignModels(*setup, *avatar, random, gameConfig, creatureFactory);
-        return Game::campaignGame(std::move(models), *setup, std::move(*avatar), gameConfig, creatureFactory);
+        auto models = prepareCampaignModels(*setup, *avatar, random, gameConfig, &creatureFactory);
+        for (auto& f : models.factories)
+          creatureFactory.merge(std::move(f));
+        return Game::campaignGame(std::move(models.models), *setup, std::move(*avatar), gameConfig, std::move(creatureFactory));
       } else
         continue;
     } else {
@@ -392,9 +398,12 @@ void MainLoop::splashScreen() {
   ProgressMeter meter(1);
   jukebox->setType(MusicType::INTRO, true);
   auto gameConfig = getGameConfig();
-  CreatureFactory creatureFactory(nameGenerator, &gameConfig);
-  playGame(Game::splashScreen(ModelBuilder(&meter, Random, options, sokobanInput, &gameConfig, &creatureFactory, enemyFactory)
-        .splashModel(dataFreePath.file("splash.txt")), CampaignBuilder::getEmptyCampaign()), false, true, &gameConfig, &creatureFactory);
+  auto creatureFactory = createCreatureFactory(&gameConfig);
+  EnemyFactory enemyFactory(Random, creatureFactory.getNameGenerator());
+  auto model = ModelBuilder(&meter, Random, options, sokobanInput, &gameConfig, &creatureFactory, std::move(enemyFactory))
+      .splashModel(dataFreePath.file("splash.txt"));
+  playGame(Game::splashScreen(std::move(model), CampaignBuilder::getEmptyCampaign(), std::move(creatureFactory)),
+      false, true, &gameConfig);
 }
 
 void MainLoop::showCredits(const FilePath& path, View* view) {
@@ -437,6 +446,10 @@ void MainLoop::considerFreeVersionText(bool tilesPresent) {
         "More information on the website.");
 }
 
+CreatureFactory MainLoop::createCreatureFactory(const GameConfig* gameConfig) const {
+  return CreatureFactory(NameGenerator(dataFreePath.subdirectory("names")), gameConfig);
+}
+
 void MainLoop::launchQuickGame() {
   vector<ListElem> optionsUnused;
   vector<SaveFileInfo> files;
@@ -449,15 +462,15 @@ void MainLoop::launchQuickGame() {
   if (toLoad != files.end())
     game = loadGame(userPath.file((*toLoad).filename));
   auto gameConfig = getGameConfig();
-  CreatureFactory creatureFactory(nameGenerator, &gameConfig);
+  auto creatureFactory = createCreatureFactory(&gameConfig);
   if (!game) {
     AvatarInfo avatar = getQuickGameAvatar(view, &gameConfig, &creatureFactory);
     CampaignBuilder builder(view, Random, options, &gameConfig, avatar);
     auto result = builder.prepareCampaign(bindMethod(&MainLoop::getRetiredGames, this), CampaignType::QUICK_MAP, "[world]");
-    game = Game::campaignGame(prepareCampaignModels(*result, std::move(avatar), Random, &gameConfig, &creatureFactory),
-        *result, std::move(avatar), &gameConfig, &creatureFactory);
+    auto models = prepareCampaignModels(*result, std::move(avatar), Random, &gameConfig, &creatureFactory);
+    game = Game::campaignGame(std::move(models.models), *result, std::move(avatar), &gameConfig, std::move(creatureFactory));
   }
-  playGame(std::move(game), true, false, &gameConfig, &creatureFactory);
+  playGame(std::move(game), true, false, &gameConfig);
 }
 
 void MainLoop::start(bool tilesPresent, bool quickGame) {
@@ -480,9 +493,9 @@ void MainLoop::start(bool tilesPresent, bool quickGame) {
     switch (*choice) {
       case 0: {
         auto gameConfig = getGameConfig();
-        CreatureFactory creatureFactory(nameGenerator, &gameConfig);
-        if (PGame game = prepareCampaign(Random, &gameConfig, &creatureFactory))
-          playGame(std::move(game), true, false, &gameConfig, &creatureFactory);
+        auto creatureFactory = createCreatureFactory(&gameConfig);
+        if (PGame game = prepareCampaign(Random, &gameConfig, std::move(creatureFactory)))
+          playGame(std::move(game), true, false, &gameConfig);
         view->reset();
         break;
       }
@@ -551,8 +564,10 @@ void MainLoop::doWithSplash(SplashType type, const string& text, function<void()
 void MainLoop::modelGenTest(int numTries, const vector<string>& types, RandomGen& random, Options* options) {
   ProgressMeter meter(1);
   auto gameConfig = getGameConfig();
-  CreatureFactory creatureFactory(nameGenerator, &gameConfig);
-  ModelBuilder(&meter, random, options, sokobanInput, &gameConfig, &creatureFactory, enemyFactory).measureSiteGen(numTries, types);
+  auto creatureFactory = createCreatureFactory(&gameConfig);
+  EnemyFactory enemyFactory(Random, creatureFactory.getNameGenerator());
+  ModelBuilder(&meter, random, options, sokobanInput, &gameConfig, &creatureFactory, std::move(enemyFactory))
+      .measureSiteGen(numTries, types);
 }
 
 static CreatureList readAlly(ifstream& input) {
@@ -607,7 +622,7 @@ void MainLoop::battleTest(int numTries, const FilePath& levelPath, const FilePat
   int cnt = 0;
   input >> cnt;
   auto gameConfig = getGameConfig();
-  CreatureFactory creatureFactory(nameGenerator, &gameConfig);
+  auto creatureFactory = createCreatureFactory(&gameConfig);
   for (int i : Range(cnt)) {
     auto allies = readAlly(input);
     std::cout << allies.getSummary(&creatureFactory) << ": ";
@@ -624,8 +639,9 @@ void MainLoop::endlessTest(int numTries, const FilePath& levelPath, const FilePa
   for (int i : Range(cnt))
     allies.push_back(readAlly(input));
   auto gameConfig = getGameConfig();
-  CreatureFactory creatureFactory(nameGenerator, &gameConfig);
-  ExternalEnemies enemies(random, &creatureFactory, EnemyFactory(random, nameGenerator).getExternalEnemies());
+  auto creatureFactory = createCreatureFactory(&gameConfig);
+  ExternalEnemies enemies(random, &creatureFactory, EnemyFactory(random, creatureFactory.getNameGenerator())
+      .getExternalEnemies());
   for (int turn : Range(100000))
     if (auto wave = enemies.popNextWave(LocalTime(turn))) {
       std::cerr << "Turn " << turn << ": " << wave->enemy.name << "\n";
@@ -649,12 +665,13 @@ int MainLoop::battleTest(int numTries, const FilePath& levelPath, CreatureList a
   auto allyTribe = TribeId::getDarkKeeper();
   std::cout.flush();
   auto gameConfig = getGameConfig();
-  CreatureFactory creatureFactory(nameGenerator, &gameConfig);
   for (int i : Range(numTries)) {
     std::cout << "Creating level" << std::endl;
-    auto game = Game::splashScreen(ModelBuilder(&meter, Random, options, sokobanInput, &gameConfig,
-        &creatureFactory, enemyFactory)
-        .battleModel(levelPath, ally, enemies), CampaignBuilder::getEmptyCampaign());
+    auto creatureFactory = createCreatureFactory(&gameConfig);
+    EnemyFactory enemyFactory(Random, creatureFactory.getNameGenerator());
+    auto model = ModelBuilder(&meter, Random, options, sokobanInput, &gameConfig,
+        &creatureFactory, std::move(enemyFactory)).battleModel(levelPath, ally, enemies);
+    auto game = Game::splashScreen(std::move(model), CampaignBuilder::getEmptyCampaign(), std::move(creatureFactory));
     std::cout << "Done" << std::endl;
     auto exitCondition = [&](WGame game) -> optional<ExitCondition> {
       unordered_set<TribeId, CustomHash<TribeId>> tribes;
@@ -674,7 +691,7 @@ int MainLoop::battleTest(int numTries, const FilePath& levelPath, CreatureList a
       else
         return none;
     };
-    auto result = playGame(std::move(game), false, true, &gameConfig, &creatureFactory, exitCondition, milliseconds{3});
+    auto result = playGame(std::move(game), false, true, &gameConfig, exitCondition, milliseconds{3});
     switch (result) {
       case ExitCondition::ALLIES_WON:
         ++numAllies;
@@ -718,8 +735,8 @@ PModel MainLoop::getBaseModel(ModelBuilder& modelBuilder, CampaignSetup& setup, 
   return ret;
 }
 
-Table<PModel> MainLoop::prepareCampaignModels(CampaignSetup& setup, const AvatarInfo& avatarInfo, RandomGen& random,
-    const GameConfig* gameConfig, const CreatureFactory* creatureFactory) {
+ModelTable MainLoop::prepareCampaignModels(CampaignSetup& setup, const AvatarInfo& avatarInfo, RandomGen& random,
+    const GameConfig* gameConfig, CreatureFactory* creatureFactory) {
   Table<PModel> models(setup.campaign.getSites().getBounds());
   auto& sites = setup.campaign.getSites();
   for (Vec2 v : sites.getBounds())
@@ -729,9 +746,11 @@ Table<PModel> MainLoop::prepareCampaignModels(CampaignSetup& setup, const Avatar
     }
   optional<string> failedToLoad;
   int numSites = setup.campaign.getNumNonEmpty();
+  vector<CreatureFactory> factories;
   doWithSplash(SplashType::BIG, "Generating map...", numSites,
       [&] (ProgressMeter& meter) {
-        ModelBuilder modelBuilder(nullptr, random, options, sokobanInput, gameConfig, creatureFactory, enemyFactory);
+        EnemyFactory enemyFactory(Random, creatureFactory->getNameGenerator());
+        ModelBuilder modelBuilder(nullptr, random, options, sokobanInput, gameConfig, creatureFactory, std::move(enemyFactory));
         for (Vec2 v : sites.getBounds()) {
           if (!sites[v].isEmpty())
             meter.addProgress();
@@ -741,9 +760,10 @@ Table<PModel> MainLoop::prepareCampaignModels(CampaignSetup& setup, const Avatar
             models[v] = modelBuilder.campaignSiteModel("Campaign enemy site", villain->enemyId, villain->type,
                 avatarInfo.tribeAlignment);
           else if (auto retired = sites[v].getRetired()) {
-            if (PModel m = loadFromFile<PModel>(userPath.file(retired->fileInfo.filename), !useSingleThread))
-              models[v] = std::move(m);
-            else {
+            if (auto info = loadFromFile<RetiredModelInfo>(userPath.file(retired->fileInfo.filename), !useSingleThread)) {
+              models[v] = std::move(info->model);
+              factories.push_back(std::move(info->factory));
+            } else {
               failedToLoad = retired->fileInfo.filename;
               setup.campaign.clearSite(v);
             }
@@ -752,11 +772,11 @@ Table<PModel> MainLoop::prepareCampaignModels(CampaignSetup& setup, const Avatar
       });
   if (failedToLoad)
     view->presentText("Sorry", "Error reading " + *failedToLoad + ". Leaving blank site.");
-  return models;
+  return ModelTable{std::move(models), std::move(factories)};
 }
 
 PGame MainLoop::loadGame(const FilePath& file) {
-  PGame game;
+  optional<PGame> game;
   if (auto info = getSavedGameInfo(file))
     doWithSplash(SplashType::BIG, "Loading "_s + file.getPath() + "...", info->getProgressCount(),
         [&] (ProgressMeter& meter) {
@@ -765,7 +785,7 @@ PGame MainLoop::loadGame(const FilePath& file) {
           MEASURE(game = loadFromFile<PGame>(file, !useSingleThread), "Loading game");
     });
   Square::progressMeter = nullptr;
-  return game;
+  return game ? std::move(*game) : nullptr;
 }
 
 bool MainLoop::downloadGame(const string& filename) {

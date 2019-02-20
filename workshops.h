@@ -14,6 +14,8 @@ class Workshops {
   typedef WorkshopItem Item;
   typedef WorkshopQueuedItem QueuedItem;
 
+  static double getLegendarySkillThreshold();
+
   class Type {
     public:
     Type(const vector<Item>& options);

@@ -389,11 +389,13 @@ static Furniture get(FurnitureType type, TribeId tribe) {
     case FurnitureType::UP_STAIRS:
       return Furniture("stairs", ViewObject(ViewId::UP_STAIRCASE, ViewLayer::FLOOR), type, tribe)
           .setCanHide()
+          .setForgetAfterBuilding()
           .setUsageType(FurnitureUsageType::STAIRS);
     case FurnitureType::DOWN_STAIRS:
       return Furniture("stairs", ViewObject(ViewId::DOWN_STAIRCASE, ViewLayer::FLOOR), type, tribe)
           .setCanHide()
           .setOnBuilt(FurnitureOnBuilt::DOWN_STAIRS)
+          .setForgetAfterBuilding()
           .setUsageType(FurnitureUsageType::STAIRS);
     case FurnitureType::SOKOBAN_HOLE:
       return Furniture("hole", ViewObject(ViewId::SOKOBAN_HOLE, ViewLayer::FLOOR), type, tribe)

@@ -114,7 +114,7 @@ class Construction : public Task {
   virtual MoveInfo getMove(Creature* c) override {
     if (!callback->isConstructionReachable(position))
       return NoMove;
-    if (c->getPosition().dist8(position) > 1)
+    if (c->getPosition().dist8(position).value_or(2) > 1)
       return c->moveTowards(position);
     Vec2 dir = c->getPosition().getDir(position);
     if (auto action = c->construct(dir, furnitureType))
@@ -186,7 +186,7 @@ class Destruction : public Task {
           return c->moveTowards(*matching->getMatch(position));
       }
     }
-    if (c->getPosition().dist8(position) > 1)
+    if (c->getPosition().dist8(position).value_or(2) > 1)
       return c->moveTowards(position);
     Vec2 dir = c->getPosition().getDir(position);
     CHECK(dir.length8() <= 1);
@@ -277,9 +277,10 @@ static optional<Position> chooseRandomClose(Creature* c, const PositionContainer
   auto start = c->getPosition();
   for (auto& v : squares)
     if (c->canNavigateToOrNeighbor(v))
-      minD = min(minD, v.dist8(start));
+      // positions on another level are the worst but still acceptable
+      minD = min(minD, v.dist8(start).value_or(10000));
   for (auto& v : squares)
-    if (c->canNavigateToOrNeighbor(v) && v.dist8(start) <= minD + margin)
+    if (c->canNavigateToOrNeighbor(v) && v.dist8(start).value_or(10000) <= minD + margin)
       close.push_back(v);
   if (!close.empty())
     return Random.choose(close);
@@ -702,7 +703,7 @@ class Explore : public Task {
       return NoMove;
     if (auto action = c->moveTowards(position))
       return action.append([=](Creature* c) {
-          if (c->getPosition().dist8(position) < 5)
+          if (c->getPosition().dist8(position).value_or(5) < 5)
             setDone();
       });
     if (Random.roll(3))
@@ -1035,7 +1036,7 @@ class Eat : public Task {
     if (!position) {
       for (Position v : Random.permutation(positions))
         if (!rejectedPosition.count(v) && (!position ||
-              position->dist8(c->getPosition()) > v.dist8(c->getPosition())))
+              position->dist8(c->getPosition()).value_or(10000) > v.dist8(c->getPosition()).value_or(10000)))
           position = v;
       if (!position) {
         setDone();
@@ -1262,7 +1263,7 @@ class Follow : public Task {
   virtual MoveInfo getMove(Creature* c) override {
     if (target != c && !target->isDead()) {
       Position targetPos = target->getPosition();
-      if (targetPos.dist8(c->getPosition()) < 3) {
+      if (targetPos.dist8(c->getPosition()).value_or(3) < 3) {
         if (Random.roll(15))
           if (auto move = c->move(c->getPosition().plus(Vec2(Random.choose<Dir>()))))
             return move;
@@ -1345,7 +1346,7 @@ class GoToAndWait : public Task {
   }
 
   virtual MoveInfo getMove(Creature* c) override {
-    if (maxTime && c->getLocalTime() >= *maxTime) {
+    if (maxTime && *c->getLocalTime() >= *maxTime) {
       setDone();
       return NoMove;
     }
@@ -1355,7 +1356,7 @@ class GoToAndWait : public Task {
         if (!timeout)
           timeout = *c->getLocalTime() + 30_visible;
         else
-          if (c->getLocalTime() > *timeout) {
+          if (*c->getLocalTime() > *timeout) {
             setDone();
             return NoMove;
           }
@@ -1402,7 +1403,7 @@ class Whipping : public Task {
       setDone();
       return NoMove;
     }
-    if (c->getPosition().dist8(position) > 1)
+    if (c->getPosition().dist8(position).value_or(1) > 1)
       return c->moveTowards(position);
     else
       return c->whip(whipped->getPosition());
@@ -1693,7 +1694,7 @@ class WithTeam : public Task {
       return task->getMove(c);
     else {
       Position targetPos = leader->getPosition();
-      if (targetPos.dist8(c->getPosition()) < 3) {
+      if (targetPos.dist8(c->getPosition()).value_or(3) < 3) {
         if (Random.roll(15))
           if (auto move = c->move(c->getPosition().plus(Vec2(Random.choose<Dir>()))))
             return move;

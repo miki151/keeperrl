@@ -26,7 +26,7 @@ class Position {
   static vector<Position> getAll(WLevel, Rectangle);
   WModel getModel() const;
   WGame getGame() const;
-  int dist8(const Position&) const;
+  optional<int> dist8(const Position&) const;
   bool isSameLevel(const Position&) const;
   bool isSameLevel(WConstLevel) const;
   bool isSameModel(const Position&) const;

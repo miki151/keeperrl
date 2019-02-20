@@ -566,7 +566,7 @@ Color MapGui::getHealthBarColor(double health) {
   return Color::f(min<double>(1.0, 2 - health * 2), min<double>(1.0, 2 * health), 0);
 }
 
-void MapGui::drawFurnitureCracks(Renderer& renderer, Vec2 tilePos, float state, Vec2 pos, Vec2 size) {
+void MapGui::drawFurnitureCracks(Renderer& renderer, Vec2 tilePos, float state, Vec2 pos, Vec2 size, const ViewIndex& index) {
   const char* tileName = [&] {
     if (state < 0.4)
       return "furniture_cracks2";
@@ -576,17 +576,18 @@ void MapGui::drawFurnitureCracks(Renderer& renderer, Vec2 tilePos, float state, 
   }();
   if (tileName) {
     auto hash = tilePos.getHash();
-    renderer.drawTile(pos, renderer.getTileCoord(tileName), size, Color::WHITE,
+    renderer.drawTile(pos, renderer.getTileCoord(tileName), size, blendNightColor(Color::WHITE, index),
         Renderer::SpriteOrientation(hash % 2, (hash / 2) % 2));
   }
 }
 
-void MapGui::drawHealthBar(Renderer& renderer, Vec2 tilePos, Vec2 pos, Vec2 size, const ViewObject& object) {
+void MapGui::drawHealthBar(Renderer& renderer, Vec2 tilePos, Vec2 pos, Vec2 size, const ViewObject& object,
+    const ViewIndex& index) {
   auto health = object.getAttribute(ViewObject::Attribute::HEALTH);
   if (!health)
     return;
   if (object.hasModifier(ViewObject::Modifier::FURNITURE_CRACKS)) {
-    drawFurnitureCracks(renderer, tilePos, *health, pos, size);
+    drawFurnitureCracks(renderer, tilePos, *health, pos, size, index);
     return;
   }
   bool capture = object.hasModifier(ViewObject::Modifier::CAPTURE_BAR);
@@ -696,7 +697,7 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
       renderer.drawTile(pos - Vec2(0, 4 * size.y / Renderer::nominalSize),
                         (curTimeReal.count() + pos.getHash()) % 500 < 250 ? fire1 : fire2, size);
     }
-    drawHealthBar(renderer, tilePos, pos + move, size, object);
+    drawHealthBar(renderer, tilePos, pos + move, size, object, index);
     if (object.hasModifier(ViewObject::Modifier::STUNNED))
       renderer.drawText(Color::WHITE, pos + move + size / 2, "S", Renderer::CenterType::HOR_VER, size.x * 2 / 3);
     if (object.hasModifier(ViewObject::Modifier::LOCKED))
@@ -1290,7 +1291,8 @@ void MapGui::updateObjects(CreatureView* view, MapLayout* mapLayout, bool smooth
       level->setNeedsRenderUpdate(pos, true);
   else
     for (Vec2 pos : mapLayout->getAllTiles(getBounds(), Level::getMaxBounds(), getScreenPos()))
-      if (level->needsRenderUpdate(pos) || lastSquareUpdate[pos] < currentTimeReal - milliseconds{1000})
+      if (level->needsRenderUpdate(pos) ||
+          lastSquareUpdate[pos].value_or(milliseconds{-1000000}) < currentTimeReal - milliseconds{1000})
         updateObject(pos, view, currentTimeReal);
   previousView = view;
   if (previousLevel != level) {

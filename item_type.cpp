@@ -138,23 +138,17 @@ class Corpse : public Item {
     auto time = position.getGame()->getGlobalTime();
     if (!rottenTime)
       rottenTime = time + rottingTime;
-    if (time >= rottenTime && !rotten)
+    if (time >= *rottenTime && !rotten)
       makeRotten();
-    else {
-      if (!rotten && getWeight() > 10 && Random.roll(20 + (*rottenTime - time).getDouble() / 10)
-          && getClass() != ItemClass::FOOD)
-        Effect::emitPoisonGas(position, 0.3, false);
-      if (getWeight() > 10 && !corpseInfo.isSkeleton &&
-          !position.isCovered() && Random.roll(350)) {
-        for (Position v : position.neighbors8(Random)) {
-          PCreature vulture = position.getGame()->getCreatureFactory()->fromId("VULTURE", TribeId::getPest(),
-                    MonsterAIFactory::scavengerBird(v));
-          if (v.canEnter(vulture.get())) {
-            v.addCreature(std::move(vulture));
-            v.globalMessage("A vulture lands near " + getTheName());
-            *rottenTime -= 40_visible;
-            break;
-          }
+    else if (getWeight() > 10 && !corpseInfo.isSkeleton && !position.isCovered() && Random.roll(350)) {
+      for (Position v : position.neighbors8(Random)) {
+        PCreature vulture = position.getGame()->getCreatureFactory()->fromId("VULTURE", TribeId::getPest(),
+            MonsterAIFactory::scavengerBird());
+        if (v.canEnter(vulture.get())) {
+          v.addCreature(std::move(vulture));
+          v.globalMessage("A vulture lands near " + getTheName());
+          *rottenTime -= 40_visible;
+          break;
         }
       }
     }
@@ -831,6 +825,20 @@ ItemAttributes ItemType::LeatherHelm::getAttributes() const {
       i.genPrefixes.push_back({1, LastingEffect::TELEPATHY});
       i.genPrefixes.push_back({1, LastingEffect::SLEEP_RESISTANT});
       i.genPrefixes.push_back({2, ItemAttrBonus{AttrType::DEFENSE, Random.get(2, 5)}});
+      i.maxUpgrades = 0;
+  );
+}
+
+ItemAttributes ItemType::WoodenShield::getAttributes() const {
+  return ITATTR(
+      i.viewId = ViewId::WOODEN_SHIELD;
+      i.shortName = "wooden"_s;
+      i.name = "wooden shield";
+      i.itemClass = ItemClass::ARMOR;
+      i.equipmentSlot = EquipmentSlot::SHIELD;
+      i.weight = 2;
+      i.price = 1;
+      i.damageReduction = 0.1;
       i.maxUpgrades = 0;
   );
 }

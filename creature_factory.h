@@ -31,36 +31,42 @@ class CreatureInventory;
 
 class CreatureFactory {
   public:
-  PCreature fromId(CreatureId, TribeId, const MonsterAIFactory&) const;
-  PCreature fromId(CreatureId, TribeId, const MonsterAIFactory&, const vector<ItemType>& inventory) const;
-  PCreature fromId(CreatureId, TribeId) const;
+  PCreature fromId(CreatureId, TribeId, const MonsterAIFactory&);
+  PCreature fromId(CreatureId, TribeId, const MonsterAIFactory&, const vector<ItemType>& inventory);
+  PCreature fromId(CreatureId, TribeId);
   static PController getShopkeeper(Rectangle shopArea, Creature*);
   static PCreature getRollingBoulder(TribeId, Vec2 direction);
   static PCreature getHumanForTests();
-  PCreature getGhost(Creature*) const;
+  PCreature getGhost(Creature*);
   static PCreature getIllusion(Creature*);
 
   static CreatureAttributes getKrakenAttributes(ViewId, const char* name);
-  ViewId getViewId(CreatureId) const;
+  ViewId getViewId(CreatureId);
   const Gender& getGender(CreatureId);
 
-  NameGenerator* getNameGenerator() const;
+  NameGenerator* getNameGenerator();
 
-  CreatureFactory(NameGenerator*, const GameConfig*);
+  CreatureFactory(NameGenerator, const GameConfig*);
   ~CreatureFactory();
+  CreatureFactory(const CreatureFactory&) = delete;
+  CreatureFactory(CreatureFactory&&);
+
+  void merge(CreatureFactory);
+
+  SERIALIZATION_DECL(CreatureFactory)
 
   private:
   void initSplash(TribeId);
   static PCreature getSokobanBoulder(TribeId);
-  PCreature getSpecial(TribeId, bool humanoid, bool large, bool living, bool wings, const ControllerFactory&) const;
-  PCreature get(CreatureId, TribeId, MonsterAIFactory) const;
+  PCreature getSpecial(TribeId, bool humanoid, bool large, bool living, bool wings, const ControllerFactory&);
+  PCreature get(CreatureId, TribeId, MonsterAIFactory);
   static PCreature get(CreatureAttributes, TribeId, const ControllerFactory&);
-  CreatureAttributes getAttributesFromId(CreatureId) const;
-  CreatureAttributes getAttributes(CreatureId) const;
-  mutable map<CreatureId, ViewId> idMap;
-  NameGenerator* nameGenerator;
-  map<CreatureId, CreatureAttributes> attributes;
-  map<CreatureId, CreatureInventory> inventory;
+  CreatureAttributes getAttributesFromId(CreatureId);
+  CreatureAttributes getAttributes(CreatureId);
+  map<CreatureId, ViewId> idMap;
+  HeapAllocated<NameGenerator> SERIAL(nameGenerator);
+  map<CreatureId, CreatureAttributes> SERIAL(attributes);
+  map<CreatureId, CreatureInventory> SERIAL(inventory);
   vector<ItemType> getDefaultInventory(CreatureId) const;
   static void addInventory(Creature*, const vector<ItemType>& items);
 };

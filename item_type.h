@@ -45,6 +45,7 @@ class ItemType {
   SIMPLE_ITEM(ChainArmor);
   SIMPLE_ITEM(AdaArmor);
   SIMPLE_ITEM(LeatherHelm);
+  SIMPLE_ITEM(WoodenShield);
   SIMPLE_ITEM(IronHelm);
   SIMPLE_ITEM(AdaHelm);
   SIMPLE_ITEM(LeatherBoots);
@@ -131,7 +132,7 @@ class ItemType {
       IronBoots, AdaBoots, LeatherGloves, IronGloves, AdaGloves, Robe, Scroll, FireScroll, Potion,
       Mushroom, Amulet, DefenseAmulet, Ring, FirstAidKit, Rock, IronOre, AdaOre, GoldPiece,
       WoodPlank, Bone, TechBook, TrapItem, AutomatonItem, BagOfCandies, HalloweenCostume,
-      UnicornHorn, Intrinsic, Torch, Glyph);
+      UnicornHorn, Intrinsic, Torch, Glyph, WoodenShield);
 
   template <typename T>
   ItemType(T&& t) : type(std::forward<T>(t)) {}
