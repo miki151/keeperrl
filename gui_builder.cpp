@@ -376,8 +376,8 @@ SGuiElem GuiBuilder::drawBottomBandInfo(GameInfo& gameInfo) {
   for (int i : All(info.numResource)) {
     auto res = gui.getListBuilder();
     res.addElem(gui.viewObject(info.numResource[i].viewId), 30);
-    res.addElemAuto(gui.labelFun([&info, i] { return toString<int>(info.numResource[i].count); },
-          [&info, i] { return info.numResource[i].count >= 0 ? Color::WHITE : Color::RED; }));
+    res.addElem(gui.labelFun([&info, i] { return toString<int>(info.numResource[i].count); },
+          [&info, i] { return info.numResource[i].count >= 0 ? Color::WHITE : Color::RED; }), 50);
     auto tutorialHighlight = info.numResource[i].tutorialHighlight;
     auto tutorialElem = gui.conditional(gui.tutorialHighlight(), [tutorialHighlight, &gameInfo] {
         return gameInfo.tutorial && tutorialHighlight && gameInfo.tutorial->highlights.contains(*tutorialHighlight);
@@ -403,13 +403,13 @@ SGuiElem GuiBuilder::drawBottomBandInfo(GameInfo& gameInfo) {
       gui.button([this]() { closeOverlayWindowsAndClearButton(); callbacks.input(UserInputId::TECHNOLOGY);})
   ));
   bottomLine.addSpace(space);
-  bottomLine.addElemAuto(gui.labelFun([&info] {
+  bottomLine.addElem(gui.labelFun([&info] {
         return "population: " + toString(info.minionCount) + " / " +
-        toString(info.minionLimit); }));
+        toString(info.minionLimit); }), 150);
   bottomLine.addSpace(space);
-  bottomLine.addElemAuto(getTurnInfoGui(gameInfo.time));
+  bottomLine.addElem(getTurnInfoGui(gameInfo.time), 50);
   bottomLine.addSpace(space);
-  bottomLine.addElemAuto(getSunlightInfoGui(sunlightInfo));
+  bottomLine.addElem(getSunlightInfoGui(sunlightInfo), 80);
   return gui.getListBuilder(28)
         .addElem(gui.centerHoriz(topLine.buildHorizontalList()))
         .addElem(gui.centerHoriz(bottomLine.buildHorizontalList()))
@@ -493,8 +493,8 @@ SGuiElem GuiBuilder::drawRightBandInfo(GameInfo& info) {
     bottomLine.addElemAuto(gui.stack(
         gui.getListBuilder()
             .addElemAuto(gui.label("speed: "))
-            .addElemAuto(gui.labelFun([this] { return getCurrentGameSpeedName();},
-              [this] { return clock->isPaused() ? Color::RED : Color::WHITE; })).buildHorizontalList(),
+            .addElem(gui.labelFun([this] { return getCurrentGameSpeedName();},
+              [this] { return clock->isPaused() ? Color::RED : Color::WHITE; }), 70).buildHorizontalList(),
         gui.button([&] { gameSpeedDialogOpen = !gameSpeedDialogOpen; })));
     int modifiedSquares = info.modifiedSquares;
     int totalSquares = info.totalSquares;
@@ -665,7 +665,7 @@ SGuiElem GuiBuilder::drawTutorialOverlay(const TutorialInfo& info) {
       gui.setHeight(20, gui.labelHighlightBlink("[Continue]", Color::LIGHT_BLUE, Color::WHITE)));
   auto backButton = gui.stack(
       gui.button(getButtonCallback(UserInputId::TUTORIAL_GO_BACK)),
-      gui.setHeight(20, gui.labelHighlight("[Go back]", Color::LIGHT_BLUE)));
+      gui.setHeight(20, gui.buttonLabel("Go back")));
   SGuiElem warning;
   if (info.warning)
     warning = gui.label(*info.warning, Color::RED);
@@ -1482,7 +1482,7 @@ SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info) {
   if (!info.commands.empty())
     list.addElem(gui.stack(
         gui.stack(std::move(keyElems)),
-        gui.labelHighlight("[Commands]", Color::LIGHT_BLUE),
+        gui.buttonLabel("Commands"),
         gui.conditional(gui.tutorialHighlight(), [=]{ return isTutorial;}),
         gui.buttonRect([this, commands = info.commands] (Rectangle bounds) {
             auto lines = gui.getListBuilder(legendLineHeight);
@@ -1638,11 +1638,11 @@ SGuiElem GuiBuilder::drawRightPlayerInfo(const PlayerInfo& info) {
   }
   if (info.teamInfos.size() > 1)
     vList.addElem(gui.stack(
-        gui.labelHighlight("[Control mode: "_s + getControlModeName(info.controlMode) + "]", Color::LIGHT_BLUE),
+        gui.buttonLabel("Control mode: "_s + getControlModeName(info.controlMode) + ""),
         gui.button(getButtonCallback(UserInputId::TOGGLE_CONTROL_MODE), gui.getKey(SDL::SDLK_g))
     ));
   vList.addElem(gui.stack(
-      gui.labelHighlight("[Exit control mode]", Color::LIGHT_BLUE),
+      gui.buttonLabel("Exit control mode"),
       gui.button(getButtonCallback(UserInputId::EXIT_CONTROL_MODE), gui.getKey(SDL::SDLK_u))
   ));
   vList.addSpace(10);
@@ -2150,7 +2150,7 @@ SGuiElem GuiBuilder::drawMinionsOverlay(const CollectiveInfo& info, const option
     auto list = gui.getListBuilder(legendLineHeight);
     list.addElem(gui.stack(
         gui.button(getButtonCallback({UserInputId::CANCEL_TEAM, *info.chosenCreature->teamId})),
-        gui.labelHighlight("[Disband team]", Color::LIGHT_BLUE)));
+        gui.buttonLabel("Disband team")));
     list.addElem(gui.label("Control a chosen minion to", Renderer::smallTextSize,
           Color::LIGHT_GRAY), Renderer::smallTextSize + 2);
     list.addElem(gui.label("command the team.", Renderer::smallTextSize,
@@ -2814,7 +2814,7 @@ SGuiElem GuiBuilder::drawEquipmentAndConsumables(const PlayerInfo& minion) {
     if (items[i].type == items[i].CONSUMABLE)
       lines.addElem(gui.leftMargin(3, std::move(itemElems[i])));
   lines.addElem(gui.stack(
-      gui.labelHighlight("[Add consumable]", Color::LIGHT_BLUE),
+      gui.buttonLabel("Add consumable"),
       gui.button(getButtonCallback({UserInputId::CREATURE_EQUIPMENT_ACTION,
               EquipmentActionInfo{minion.creatureId, {}, none, ItemAction::REPLACE}}))));
   for (int i : All(itemElems))
@@ -2837,12 +2837,12 @@ vector<SGuiElem> GuiBuilder::drawMinionActions(const PlayerInfo& minion, const o
         line.push_back(gui.stack(
             tutorialHighlight
                 ? gui.labelHighlightBlink("[Control]", Color::LIGHT_BLUE, Color::WHITE)
-                : gui.labelHighlight("[Control]", Color::LIGHT_BLUE),
+                : gui.buttonLabel("Control"),
             gui.button(getButtonCallback({UserInputId::CREATURE_CONTROL, minion.creatureId}))));
         break;
       case PlayerInfo::RENAME:
         line.push_back(gui.stack(
-            gui.labelHighlight("[Rename]", Color::LIGHT_BLUE),
+            gui.buttonLabel("Rename"),
             gui.button([=] {
                 if (auto name = getTextInput("Rename minion", minion.firstName, 10, "Press escape to cancel."))
                 callbacks.input({UserInputId::CREATURE_RENAME,
@@ -2850,12 +2850,12 @@ vector<SGuiElem> GuiBuilder::drawMinionActions(const PlayerInfo& minion, const o
         break;
       case PlayerInfo::BANISH:
         line.push_back(gui.stack(
-            gui.labelHighlight("[Banish]", Color::LIGHT_BLUE),
+            gui.buttonLabel("Banish"),
             gui.button(getButtonCallback({UserInputId::CREATURE_BANISH, minion.creatureId}))));
         break;
       case PlayerInfo::CONSUME:
         line.push_back(gui.stack(
-            gui.labelHighlight("[Absorb]", Color::LIGHT_BLUE),
+            gui.buttonLabel("Absorb"),
             gui.button(getButtonCallback({UserInputId::CREATURE_CONSUME, minion.creatureId}))));
         break;
     }
@@ -2942,18 +2942,18 @@ SGuiElem GuiBuilder::drawChooseNumberMenu(SyncQueue<optional<int>>& queue, const
   )));
   const int width = 380;
   lines.addElem(gui.stack(
-      gui.centerHoriz(gui.labelFun([getCurrent]{ return toString(getCurrent()); })),
+      gui.centerHoriz(gui.labelFun([getCurrent]{ return toString(getCurrent()); }), 30),
       gui.translate(gui.centeredLabel(Renderer::HOR, toString(range.getStart())), Vec2(sideMargin, 0), Vec2(1, 0)),
       gui.translate(gui.centeredLabel(Renderer::HOR, toString(range.getEnd())), Vec2(-sideMargin, 0), Vec2(1, 0),
           GuiFactory::TranslateCorner::TOP_RIGHT)
   ));
   lines.addElem(gui.centerHoriz(gui.getListBuilder()
       .addElemAuto(gui.stack(
-          gui.labelHighlight("[Confirm]", Color::LIGHT_BLUE),
+          gui.buttonLabel("Confirm"),
           gui.button([&queue, getCurrent] { queue.push(getCurrent());})))
       .addSpace(10)
       .addElemAuto(gui.stack(
-          gui.labelHighlight("[Cancel]", Color::LIGHT_BLUE),
+          gui.buttonLabel("Cancel"),
           gui.button([&queue] { queue.push(none);})))
       .buildHorizontalList()
   ));
@@ -2989,11 +2989,11 @@ SGuiElem GuiBuilder::drawBugreportMenu(bool saveFile, function<void(optional<Bug
     lines.addElem(drawTickBox(withSavefile, "Include save file"));
   lines.addElem(gui.centerHoriz(gui.getListBuilder()
       .addElemAuto(gui.stack(
-          gui.labelHighlight("[Upload]", Color::LIGHT_BLUE),
+          gui.buttonLabel("Upload"),
           gui.button([=] { callback(BugReportInfo{*text, *withSavefile, *withScreenshot});})))
       .addSpace(10)
       .addElemAuto(gui.stack(
-          gui.labelHighlight("[Cancel]", Color::LIGHT_BLUE),
+          gui.buttonLabel("Cancel"),
           gui.button([callback] { callback(none);})))
       .buildHorizontalList()
   ));
@@ -3094,7 +3094,7 @@ SGuiElem GuiBuilder::drawWorldmap(Semaphore& sem, const Campaign& campaign) {
   lines.addBackElem(gui.centerHoriz(
         gui.stack(
           gui.button([&] { sem.v(); }),
-          gui.labelHighlight("[Close]", Color::LIGHT_BLUE))
+          gui.buttonLabel("Close"))
         ));
   return gui.preferredSize(1000, 630,
       gui.window(gui.margins(lines.buildVerticalList(), 15), [&sem] { sem.v(); }));
@@ -3111,14 +3111,14 @@ SGuiElem GuiBuilder::drawChooseSiteMenu(SyncQueue<optional<Vec2>>& queue, const 
         .addElemAuto(gui.conditional(
             gui.stack(
                 gui.button([&] { queue.push(*sitePos); }),
-                gui.labelHighlight("[Confirm]", Color::LIGHT_BLUE)),
+                gui.buttonLabel("Confirm")),
             gui.label("[Confirm]", Color::LIGHT_GRAY),
             [&] { return !!sitePos; }))
         .addSpace(10)
         .addElemAuto(
             gui.stack(
                 gui.button([&queue] { queue.push(none); }, gui.getKey(SDL::SDLK_ESCAPE), true),
-                gui.labelHighlight("[Cancel]", Color::LIGHT_BLUE))).buildHorizontalList()));
+                gui.buttonLabel("Cancel"))).buildHorizontalList()));
   return gui.preferredSize(1000, 600,
                            gui.window(gui.margins(lines.buildVerticalList(), 15), [&queue] { queue.push(none); }));
 }
@@ -3134,80 +3134,112 @@ static const char* getText(AvatarMenuOption option) {
   }
 }
 
-SGuiElem GuiBuilder::drawAvatarMenu(SyncQueue<variant<View::AvatarChoice, AvatarMenuOption>>& queue, Options* options,
-    const vector<View::AvatarData>& avatars) {
-  auto gender = make_shared<int>(0);
-  auto chosenAvatar = make_shared<int>(0);
-  auto getChosenGender = [gender, chosenAvatar, &avatars] {
-    return min(*gender, avatars[*chosenAvatar].viewId.size() - 1);
-  };
-  auto chosenRole = make_shared<PlayerRole>(PlayerRole::KEEPER);
-  vector<SGuiElem> firstNameOptions;
+SGuiElem GuiBuilder::drawGenderButtons(const vector<View::AvatarData>& avatars,
+    shared_ptr<int> gender, shared_ptr<int> chosenAvatar) {
   vector<SGuiElem> genderOptions;
+  for (int avatarIndex : All(avatars)) {
+    auto& avatar = avatars[avatarIndex];
+    auto genderList = gui.getListBuilder();
+    for (int i : All(avatar.viewId))
+      genderList.addElemAuto(gui.conditional(gui.stack(
+          gui.button([i, gender] { *gender = i; }),
+          gui.conditional(gui.buttonLabelSelected(capitalFirst(i == 0 ? "male"_s : "female"_s), 0, false, true),
+              gui.buttonLabel(capitalFirst(capitalFirst(i == 0 ? "male"_s : "female"_s)), 0, false, true),
+             [gender, i] { return *gender == i; })),
+          [=] { return avatarIndex == *chosenAvatar; }));
+    genderOptions.push_back(genderList.buildHorizontalListFit(0.2));
+  }
+  return gui.stack(std::move(genderOptions));
+}
+
+static int getChosenGender(shared_ptr<int> gender, shared_ptr<int> chosenAvatar,
+    const vector<View::AvatarData>& avatars) {
+  return min(*gender, avatars[*chosenAvatar].viewId.size() - 1);
+}
+
+SGuiElem GuiBuilder::drawFirstNameButtons(const vector<View::AvatarData>& avatars,
+    shared_ptr<int> gender, shared_ptr<int> chosenAvatar) {
+  vector<SGuiElem> firstNameOptions = { gui.buttonLabel("", 0, false) };
   for (int avatarIndex : All(avatars)) {
     auto& avatar = avatars[avatarIndex];
     for (int genderIndex : All(avatar.viewId))
       firstNameOptions.push_back(gui.conditional(
           drawOptionElem(options, OptionId::PLAYER_NAME, []{}, avatar.firstNames[genderIndex]),
-          [=]{ return getChosenGender() == genderIndex && avatarIndex == *chosenAvatar; }));
-    if (avatar.viewId.size() > 1)
-      genderOptions.push_back(gui.conditional(
-          gui.stack(
-              gui.button([gender] { *gender = !*gender; }),
-              gui.getListBuilder()
-                  .addElemAuto(gui.label("Gender: "))
-                  .addElemAuto(gui.labelFun([=]{ return getChosenGender() == 0 ? "male"_s : "female"_s;}))
-                  .buildHorizontalList()),
-          [=] { return avatarIndex == *chosenAvatar; }));
+          [=]{ return getChosenGender(gender, chosenAvatar, avatars) == genderIndex && avatarIndex == *chosenAvatar; }));
   }
-  auto leftLines = gui.getListBuilder(legendLineHeight);
-  auto rightLines = gui.getListBuilder(legendLineHeight);
-  leftLines.addElem(gui.stack(std::move(firstNameOptions)));
-  leftLines.addElem(gui.stack(std::move(genderOptions)));
-  leftLines.addElem(gui.stack(
-      gui.button([chosenRole, chosenAvatar, &avatars] {
-          *chosenRole = PlayerRole(1 - int(*chosenRole));
-          for (int i : All(avatars))
-            if (avatars[i].role == *chosenRole) {
-              *chosenAvatar = i;
-              break;
-            }
-      }),
-      gui.labelFun([=] { return "Role: "_s + getName(*chosenRole); }))
-  );
-  auto addRole = [&](PlayerRole role) {
-    auto allLines = gui.getListBuilder(legendLineHeight);
-    auto line = gui.getListBuilder();
-    for (int i : All(avatars)) {
-      auto& elem = avatars[i];
-      auto viewIdFun = [gender, id = elem.viewId] { return id[min(*gender, id.size() - 1)].back(); };
-      if (elem.role == role) {
-        line.addElemAuto(gui.stack(
-            gui.button([i, chosenAvatar]{ *chosenAvatar = i; }),
-            gui.mouseHighlight2(
-                gui.rightMargin(10, gui.topMargin(-5, gui.viewObject(viewIdFun, 2))),
-                gui.rightMargin(10, gui.conditional2(
-                    gui.topMargin(-5, gui.viewObject(viewIdFun, 2)),
-                    gui.viewObject(viewIdFun, 2), [=](GuiElem*){ return *chosenAvatar == i;})))
-        ));
-        if (line.getLength() >= 5) {
-          allLines.addElemAuto(line.buildHorizontalList());
-          line.clear();
-        }
+  return gui.stack(std::move(firstNameOptions));
+}
+
+SGuiElem GuiBuilder::drawRoleButtons(shared_ptr<PlayerRole> chosenRole, shared_ptr<int> chosenAvatar,
+    const vector<View::AvatarData>& avatars) {
+  auto roleList = gui.getListBuilder();
+  for (auto role : ENUM_ALL(PlayerRole))
+      roleList.addElemAuto(gui.stack(
+          gui.button([chosenRole, chosenAvatar, &avatars, role] {
+              *chosenRole = role;
+              for (int i : All(avatars))
+                if (avatars[i].role == *chosenRole) {
+                  *chosenAvatar = i;
+                  break;
+                }
+          }),
+          gui.conditional(gui.buttonLabelSelected(capitalFirst(getName(role)), 0, false, true),
+              gui.buttonLabel(capitalFirst(getName(role)), 0, false, true),
+              [chosenRole, role] { return *chosenRole == role; })
+      ));
+  return roleList.buildHorizontalListFit(0.2);
+}
+
+SGuiElem GuiBuilder::drawChosenCreatureButtons(PlayerRole role, shared_ptr<int> chosenAvatar, shared_ptr<int> gender,
+    const vector<View::AvatarData>& avatars) {
+  auto allLines = gui.getListBuilder(legendLineHeight);
+  auto line = gui.getListBuilder();
+  for (int i : All(avatars)) {
+    auto& elem = avatars[i];
+    auto viewIdFun = [gender, id = elem.viewId] { return id[min(*gender, id.size() - 1)].back(); };
+    if (elem.role == role) {
+      line.addElemAuto(gui.stack(
+          gui.button([i, chosenAvatar]{ *chosenAvatar = i; }),
+          gui.mouseHighlight2(
+              gui.rightMargin(10, gui.topMargin(-5, gui.viewObject(viewIdFun, 2))),
+              gui.rightMargin(10, gui.conditional2(
+                  gui.topMargin(-5, gui.viewObject(viewIdFun, 2)),
+                  gui.viewObject(viewIdFun, 2), [=](GuiElem*){ return *chosenAvatar == i;})))
+      ));
+      if (line.getLength() >= 5) {
+        allLines.addElemAuto(line.buildHorizontalList());
+        line.clear();
       }
     }
-    if (!line.isEmpty())
-      allLines.addElemAuto(line.buildHorizontalList());
-    return allLines.buildVerticalList();
-  };
-  rightLines.addElemAuto(gui.conditional2(addRole(PlayerRole::KEEPER), addRole(PlayerRole::ADVENTURER),
+  }
+  if (!line.isEmpty())
+    allLines.addElemAuto(line.buildHorizontalList());
+  return allLines.buildVerticalList();
+};
+
+SGuiElem GuiBuilder::drawAvatarMenu(SyncQueue<variant<View::AvatarChoice, AvatarMenuOption>>& queue, Options* options,
+    const vector<View::AvatarData>& avatars) {
+  auto gender = make_shared<int>(0);
+  auto chosenAvatar = make_shared<int>(0);
+  auto chosenRole = make_shared<PlayerRole>(PlayerRole::KEEPER);
+  auto leftLines = gui.getListBuilder(legendLineHeight);
+  auto rightLines = gui.getListBuilder(legendLineHeight);
+  leftLines.addElem(drawRoleButtons(chosenRole, chosenAvatar, avatars));
+  leftLines.addSpace(15);
+  leftLines.addElem(drawGenderButtons(avatars, gender, chosenAvatar));
+  leftLines.addSpace(15);
+  leftLines.addElem(drawFirstNameButtons(avatars, gender, chosenAvatar));
+  leftLines.addSpace(15);
+  rightLines.addElemAuto(gui.conditional2(
+      drawChosenCreatureButtons(PlayerRole::KEEPER, chosenAvatar, gender, avatars),
+      drawChosenCreatureButtons(PlayerRole::ADVENTURER, chosenAvatar, gender, avatars),
       [chosenRole] (GuiElem*){ return *chosenRole == PlayerRole::KEEPER; }));
   rightLines.addSpace(12);
   rightLines.addElem(gui.labelFun([&avatars, chosenAvatar] {
       return capitalFirst(avatars[*chosenAvatar].name) + ", " + getName(avatars[*chosenAvatar].alignment);}));
   auto lines = gui.getListBuilder(legendLineHeight);
   lines.addElemAuto(gui.getListBuilder()
-      .addElem(leftLines.buildVerticalList(), 400)
+      .addElemAuto(gui.rightMargin(30, leftLines.buildVerticalList()))
       .addElemAuto(rightLines.buildVerticalList())
       .buildHorizontalListFit()
   );
@@ -3221,37 +3253,40 @@ SGuiElem GuiBuilder::drawAvatarMenu(SyncQueue<variant<View::AvatarChoice, Avatar
   lines.addBackElemAuto(gui.stack(descriptions));
   lines.addBackElem(
       gui.centerHoriz(gui.stack(
-            gui.button([&queue, chosenAvatar, getChosenGender]{
-              queue.push(View::AvatarChoice{*chosenAvatar, getChosenGender()});
+            gui.button([&queue, chosenAvatar, gender, &avatars]{
+              queue.push(View::AvatarChoice{*chosenAvatar, getChosenGender(gender, chosenAvatar, avatars)});
             }),
-            gui.labelHighlight("[Start new game]", Color::LIGHT_BLUE))));
-  auto menuLines = gui.getListBuilder()
+            gui.buttonLabel("Start new game"))));
+  auto menuLines = gui.getListBuilder(legendLineHeight)
       .addElemAuto(
           gui.preferredSize(600, 350, gui.window(gui.margins(
-            lines.buildVerticalList(), 15), [&queue]{ queue.push(AvatarMenuOption::GO_BACK); })));
-  for (auto option : ENUM_ALL(AvatarMenuOption))
-    menuLines.addElem(gui.stack(
-        gui.button([&queue, option]{ queue.push(option); }),
-              gui.mainMenuLabelBg(getText(option), menuLabelVPadding),
-              gui.mouseHighlight2(gui.mainMenuLabel(getText(option), menuLabelVPadding))
-          ), 60);
+              lines.buildVerticalList(), 15), [&queue]{ queue.push(AvatarMenuOption::GO_BACK); })));
+  auto othersLine = gui.getListBuilder();
+  for (auto option : ENUM_ALL(AvatarMenuOption)) {
+    othersLine.addElemAuto(
+        gui.stack(
+              gui.button([&queue, option]{ queue.push(option); }),
+              gui.buttonLabelWithMargin(getText(option), 0, false)));
+  }
+  menuLines.addElem(gui.margins(othersLine.buildHorizontalListFit(), 40, 0, 40, 0), 30);
   return menuLines.buildVerticalList();
+
 }
 
 SGuiElem GuiBuilder::drawPlusMinus(function<void(int)> callback, bool canIncrease, bool canDecrease) {
-  return gui.getListBuilder()
-      .addElemAuto(canIncrease
+  return gui.margins(gui.getListBuilder()
+      .addElem(canIncrease
           ? gui.stack(
-                gui.labelHighlight("[+]", Color::LIGHT_BLUE),
+                gui.buttonLabel("+", 0, false),
                 gui.button([callback] { callback(1); }))
-          : gui.label("[+]", Color::GRAY))
-      .addSpace(10)
-      .addElemAuto(canDecrease
+          : gui.buttonLabelInactive("+", 0, false), 10)
+      .addSpace(12)
+      .addElem(canDecrease
           ? gui.stack(
-                gui.labelHighlight("[-]", Color::LIGHT_BLUE),
+                gui.buttonLabel("-", 0, false),
                 gui.button([callback] { callback(-1); }))
-          : gui.label("[-]", Color::GRAY))
-      .buildHorizontalList();
+          : gui.buttonLabelInactive("-", 0, false), 10)
+      .buildHorizontalList(), 0, 2, 0, 2);
 }
 
 SGuiElem GuiBuilder::drawOptionElem(Options* options, OptionId id, function<void()> onChanged, optional<string> defaultString) {
@@ -3267,18 +3302,18 @@ SGuiElem GuiBuilder::drawOptionElem(Options* options, OptionId id, function<void
   switch (options->getType(id)) {
     case Options::STRING:
       line.addElemAuto(gui.label(name + ": "));
-      line.addElemAuto(gui.stack(
+      line.addElem(gui.stack(
           gui.button([=] {
               if (auto val = getTextInput("Enter " + name, getValue(), 10, "Leave blank to use a random name. Hit enter to confirm.")) {
                 options->setValue(id, *val);
                 onChanged();
               }}),
-          gui.labelFun(getValue)));
+          gui.labelFun(getValue)), 100);
       break;
     case Options::INT: {
       auto limits = options->getLimits(id);
       int value = options->getIntValue(id);
-      line.addElemAuto(gui.labelFun([=]{ return name + ": " + getValue(); }));
+      line.addElem(gui.labelFun([=]{ return name + ": " + getValue(); }), renderer.getTextLength(name) + 20);
       line.addBackElemAuto(drawPlusMinus([=] (int v) {
             options->setValue(id, value + v); onChanged();}, value < limits->second, value > limits->first));
       }
@@ -3288,9 +3323,9 @@ SGuiElem GuiBuilder::drawOptionElem(Options* options, OptionId id, function<void
       line.addElemAuto(
             gui.getListBuilder()
                 .addElemAuto(gui.label(name + ": "))
-                .addElemAuto(gui.stack(
+                .addElem(gui.stack(
                     gui.button([=]{options->setValue(id, int(!value)); onChanged();}),
-                    gui.labelFun([getValue]{ return "[" + getValue() + "]";}, Color::LIGHT_BLUE)))
+                    gui.labelFun([getValue]{ return "[" + getValue() + "]";}, Color::LIGHT_BLUE)), 50)
                 .buildHorizontalList());
       }
       break;
@@ -3356,11 +3391,6 @@ SGuiElem GuiBuilder::drawMenuWarning(View::CampaignOptions::WarningType type) {
     case View::CampaignOptions::NO_RETIRE:
       return gui.labelMultiLine("Warning: you won't be able to retire your dungeon in this mode.",
               legendLineHeight, Renderer::textSize, Color::RED);
-    case View::CampaignOptions::OTHER_MODES:
-      return gui.getListBuilder()
-          .addElemAuto(gui.labelUnicode(u8"⬅", Color::WHITE))
-          .addElemAuto(gui.label(" Other game modes are here.", Color::WHITE))
-          .buildHorizontalList();
   }
 }
 
@@ -3372,24 +3402,27 @@ SGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, View::Ca
   GuiFactory::ListBuilder centerLines(gui, getStandardLineHeight());
   GuiFactory::ListBuilder rightLines(gui, getStandardLineHeight());
   int optionMargin = 50;
+  centerLines.addElem(gui.centerHoriz(
+       gui.label("Game mode: "_s + getGameTypeName(campaign.getType()))));
+  rightLines.addElem(gui.leftMargin(-55, gui.stack(
+      gui.buttonLabel("Change"),
+      gui.buttonRect([&queue, this, campaignOptions] (Rectangle bounds) {
+          auto lines = gui.getListBuilder(legendLineHeight);
+          bool exit = false;
+          for (auto& info : campaignOptions.availableTypes) {
+            lines.addElem(gui.stack(
+                gui.buttonLabel(getGameTypeName(info.type)),
+                gui.button([&, info] { queue.push({CampaignActionId::CHANGE_TYPE, info.type}); exit = true; })));
+            for (auto& desc : info.description)
+              lines.addElem(gui.leftMargin(0, gui.label("- " + desc, Color::LIGHT_GRAY, Renderer::smallTextSize)),
+                  legendLineHeight * 2 / 3);
+            lines.addSpace(legendLineHeight / 3);
+          }
+          drawMiniMenu(std::move(lines), exit, bounds.bottomLeft(), 350, true);
+      }))));
+  centerLines.addSpace(10);
   centerLines.addElem(gui.centerHoriz(gui.stack(
-       gui.labelHighlight("Game mode: "_s + getGameTypeName(campaign.getType())),
-       gui.buttonRect([&queue, this, campaignOptions] (Rectangle bounds) {
-           auto lines = gui.getListBuilder(legendLineHeight);
-           bool exit = false;
-           for (auto& info : campaignOptions.availableTypes) {
-             lines.addElem(gui.stack(
-                 gui.labelHighlight(getGameTypeName(info.type)),
-                 gui.button([&, info] { queue.push({CampaignActionId::CHANGE_TYPE, info.type}); exit = true; })));
-             for (auto& desc : info.description)
-               lines.addElem(gui.leftMargin(0, gui.label("- " + desc, Color::LIGHT_GRAY, Renderer::smallTextSize)),
-                   legendLineHeight * 2 / 3);
-             lines.addSpace(legendLineHeight / 3);
-           }
-           drawMiniMenu(std::move(lines), exit, bounds.bottomLeft(), 350, true);
-       }))));
-  centerLines.addElem(gui.centerHoriz(gui.stack(
-            gui.labelHighlight("[Help]", Color::LIGHT_BLUE),
+            gui.buttonLabel("Help"),
                 gui.button([&] { menuState.helpText = !menuState.helpText; }))));
   lines.addElem(gui.leftMargin(optionMargin, gui.label("World name: " + campaign.getWorldName())));
   auto getDefaultString = [&](OptionId id) -> optional<string> {
@@ -3409,23 +3442,24 @@ SGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, View::Ca
   lines.addBackElemAuto(gui.centerHoriz(drawCampaignGrid(campaign, nullptr,
         [&campaign](Vec2 pos) { return campaign.canEmbark(pos); },
         [&queue](Vec2 pos) { queue.push({CampaignActionId::CHOOSE_SITE, pos}); })));
-  lines.addBackElem(gui.topMargin(10, gui.centerHoriz(gui.getListBuilder()
+  lines.addSpace(10);
+  lines.addBackElem(gui.centerHoriz(gui.getListBuilder()
         .addElemAuto(gui.conditional(
             gui.stack(
                 gui.button([&] { queue.push(CampaignActionId::CONFIRM); }),
-                gui.labelHighlight("[Confirm]", Color::LIGHT_BLUE)),
-            gui.label("[Confirm]", Color::LIGHT_GRAY),
+                gui.buttonLabel("Confirm")),
+            gui.buttonLabelInactive("Confirm"),
             [&campaign] { return !!campaign.getPlayerPos(); }))
-        .addSpace(10)
+        .addSpace(20)
         .addElemAuto(
           gui.stack(
             gui.button([&queue] { queue.push(CampaignActionId::REROLL_MAP);}),
-            gui.labelHighlight("[Re-roll map]", Color::LIGHT_BLUE)))
-        .addSpace(10)
+            gui.buttonLabel("Re-roll map")))
+        .addSpace(20)
         .addElemAuto(
             gui.stack(
                 gui.button([&queue] { queue.push(CampaignActionId::CANCEL); }, gui.getKey(SDL::SDLK_ESCAPE)),
-                gui.labelHighlight("[Go back]", Color::LIGHT_BLUE))).buildHorizontalList())));
+                gui.buttonLabel("Go back"))).buildHorizontalList()));
   GuiFactory::ListBuilder secondaryOptionLines(gui, getStandardLineHeight());
   if (!campaignOptions.secondaryOptions.empty()) {
     for (OptionId id : campaignOptions.secondaryOptions)
@@ -3451,7 +3485,7 @@ SGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, View::Ca
     int listHeight = min(360 - addedHeight, retiredList.getSize() + 30);
     secondaryOptionLines.addElem(gui.scrollable(retiredList.buildVerticalList()), listHeight);
     rightLines.addElem(gui.stack(
-        gui.labelHighlight("[Add retired dungeons]", Color::LIGHT_BLUE),
+        gui.labelHighlight("Add retired dungeons"),
         gui.button([&menuState] { menuState.settings = !menuState.settings;})));
   } else if (campaignOptions.warning)
     rightLines.addElem(gui.leftMargin(-20, drawMenuWarning(*campaignOptions.warning)));
@@ -3499,11 +3533,11 @@ SGuiElem GuiBuilder::drawCreatureInfo(SyncQueue<bool>& queue, const string& titl
       lines.addElem(gui.centerHoriz(line.buildHorizontalList()), 70);
   auto bottomLine = gui.getListBuilder()
       .addElemAuto(gui.stack(
-          gui.labelHighlight("[Ok]", Color::LIGHT_BLUE),
+          gui.labelHighlight("Ok"),
           gui.button([&queue] { queue.push(true);})));
   if (prompt)
     bottomLine.addElemAuto(gui.stack(
-        gui.labelHighlight("[Cancel]", Color::LIGHT_BLUE),
+        gui.labelHighlight("Cancel"),
         gui.button([&queue] { queue.push(false);})));
   lines.addElem(gui.centerHoriz(bottomLine.buildHorizontalList()));
   int margin = 25;
@@ -3536,7 +3570,7 @@ SGuiElem GuiBuilder::drawChooseCreatureMenu(SyncQueue<optional<UniqueEntity<Crea
   }
   if (!cancelText.empty())
     lines.addElem(gui.centerHoriz(gui.stack(
-          gui.labelHighlight("[" + cancelText + "]", Color::LIGHT_BLUE),
+          gui.labelHighlight("" + cancelText + ""),
           gui.button([&queue] { queue.push(none);}))));
   int margin = 25;
   return gui.setWidth(2 * margin + windowWidth,
@@ -3573,10 +3607,10 @@ SGuiElem GuiBuilder::drawChooseCreatureMenu(SyncQueue<optional<UniqueEntity<Crea
       lines.addElem(gui.centerHoriz(line.buildHorizontalList()), 70);
   lines.addElem(gui.centerHoriz(gui.getListBuilder()
         .addElemAuto(gui.stack(
-            gui.labelHighlight("[Confirm]", Color::LIGHT_BLUE),
+            gui.labelHighlight("Confirm"),
             gui.button([&queue, result] { queue.push(*result);})))
         .addElemAuto(gui.stack(
-            gui.labelHighlight("[Cancel]", Color::LIGHT_BLUE),
+            gui.labelHighlight("Cancel"),
             gui.button([&queue] { queue.push({});})))
         .buildHorizontalList()));
   int margin = 25;

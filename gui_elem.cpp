@@ -319,22 +319,28 @@ SGuiElem GuiFactory::stopMouseMovement() {
 
 class DrawCustom : public GuiElem {
   public:
-  DrawCustom(GuiFactory::CustomDrawFun draw, function<int()> width = nullptr) : drawFun(draw), preferredWidth(width) {}
+  DrawCustom(GuiFactory::CustomDrawFun draw, optional<int> width = none)
+      : drawFun(draw), preferredWidth(width) {}
+
+  DrawCustom(GuiFactory::CustomDrawFun draw, Vec2 preferredSize)
+      : drawFun(draw), preferredWidth(preferredSize.x), preferredHeight(preferredSize.y) {}
 
   virtual void render(Renderer& renderer) override {
     drawFun(renderer, getBounds());
   }
 
   virtual optional<int> getPreferredWidth() override {
-    if (preferredWidth)
-      return preferredWidth();
-    else
-      return none;
+    return preferredWidth;
+  }
+
+  virtual optional<int> getPreferredHeight() override {
+    return preferredHeight;
   }
 
   private:
   GuiFactory::CustomDrawFun drawFun;
-  function<int()> preferredWidth;
+  optional<int> preferredWidth;
+  optional<int> preferredHeight;
 };
 
 SGuiElem GuiFactory::drawCustom(CustomDrawFun fun) {
@@ -441,7 +447,6 @@ SGuiElem GuiFactory::sprite(Texture& tex, Alignment align, bool vFlip, bool hFli
 }
 
 SGuiElem GuiFactory::label(const string& s, Color c, char hotkey) {
-  auto width = [=] { return renderer.getTextLength(s) + 1; };
   return SGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
           //r.setScissor(bounds);
@@ -449,7 +454,7 @@ SGuiElem GuiFactory::label(const string& s, Color c, char hotkey) {
             bounds.topLeft() + Vec2(1, 2), s, 0);
           r.drawTextWithHotkey(c, bounds.topLeft(), s, hotkey);
           //r.setScissor(none);
-        }, width));
+        }, renderer.getTextSize(s)));
 }
 
 static vector<string> breakWord(Renderer& renderer, string word, int maxWidth, int size) {
@@ -542,6 +547,81 @@ SGuiElem GuiFactory::labelHighlight(const string& s, Color c, char hotkey) {
   return mouseHighlight2(label(s, highlighted, hotkey), label(s, c, hotkey));
 }
 
+SGuiElem GuiFactory::buttonLabel(const string& s, char hotkey, bool matchTextWidth, bool centerHorizontally) {
+  auto text = [&] {
+    auto ret = label(s, Color::WHITE, hotkey);
+    if (centerHorizontally)
+      ret = centerHoriz(std::move(ret));
+    return ret;
+  };
+  auto ret = mouseHighlight2(
+      stack(margins(standardButtonHighlight(), -7, -5, -7, 0), text()),
+      stack(margins(standardButton(), -7, -5, -7, 0), text())
+  );
+  if (matchTextWidth)
+    ret = setWidth(renderer.getTextLength(s) + 1, std::move(ret));
+  return ret;
+}
+
+SGuiElem GuiFactory::buttonLabelWithMargin(const string& s, char hotkey, bool matchTextWidth) {
+  auto ret = mouseHighlight2(
+      stack(
+          standardButtonHighlight(),
+          centerVert(centerHoriz(margins(label(s, Color::WHITE, hotkey), 0, 0, 0, 5)))),
+      stack(
+          standardButton(),
+          centerVert(centerHoriz(margins(label(s, Color::WHITE, hotkey), 0, 0, 0, 5))))
+  );
+  if (matchTextWidth)
+    ret = setWidth(renderer.getTextLength(s) + 1, std::move(ret));
+  return ret;
+}
+
+SGuiElem GuiFactory::buttonLabelSelected(const string& s, char hotkey, bool matchTextWidth, bool centerHorizontally) {
+  auto text = label(s, Color::WHITE, hotkey);
+  if (centerHorizontally)
+    text = centerHoriz(text);
+  auto ret = stack(margins(standardButtonHighlight(), -7, -5, -7, 0), std::move(text));
+  if (matchTextWidth)
+    ret = setWidth(renderer.getTextLength(s) + 1, std::move(ret));
+  return ret;
+}
+
+SGuiElem GuiFactory::buttonLabelInactive(const string& s, char hotkey, bool matchTextWidth) {
+  auto ret = stack(
+      margins(standardButton(), -7, -5, -7, 0),
+      label(s, Color::GRAY, hotkey));
+  if (matchTextWidth)
+    ret = setWidth(renderer.getTextLength(s) + 1, std::move(ret));
+  return ret;
+}
+
+SGuiElem GuiFactory::standardButton() {
+  return stack(makeVec(
+      repeatedPattern(get(TexId::BUTTON_BG)),
+      sprite(get(TexId::BUTTON_BOTTOM), Alignment::BOTTOM, false, false),
+      margins(sprite(get(TexId::BUTTON_BOTTOM), Alignment::TOP, true, false), 1, 0, 1, 0),
+      sprite(get(TexId::BUTTON_SIDE), Alignment::RIGHT, false, true),
+      sprite(get(TexId::BUTTON_SIDE), Alignment::LEFT, false, false),
+      sprite(get(TexId::BUTTON_CORNER), Alignment::BOTTOM_RIGHT, false, true),
+      sprite(get(TexId::BUTTON_CORNER), Alignment::BOTTOM_LEFT, false, false),
+      sprite(get(TexId::BUTTON_CORNER), Alignment::TOP_RIGHT, true, true),
+      sprite(get(TexId::BUTTON_CORNER), Alignment::TOP_LEFT, true, false)));
+}
+
+SGuiElem GuiFactory::standardButtonHighlight() {
+  return stack(makeVec(
+      repeatedPattern(get(TexId::BUTTON_BG)),
+      sprite(get(TexId::BUTTON_BOTTOM_HIGHLIGHT), Alignment::BOTTOM, false, false),
+      margins(sprite(get(TexId::BUTTON_BOTTOM_HIGHLIGHT), Alignment::TOP, true, false), 1, 0, 1, 0),
+      sprite(get(TexId::BUTTON_SIDE_HIGHLIGHT), Alignment::RIGHT, false, true),
+      sprite(get(TexId::BUTTON_SIDE_HIGHLIGHT), Alignment::LEFT, false, false),
+      sprite(get(TexId::BUTTON_CORNER_HIGHLIGHT), Alignment::BOTTOM_RIGHT, false, true),
+      sprite(get(TexId::BUTTON_CORNER_HIGHLIGHT), Alignment::BOTTOM_LEFT, false, false),
+      sprite(get(TexId::BUTTON_CORNER_HIGHLIGHT), Alignment::TOP_RIGHT, true, true),
+      sprite(get(TexId::BUTTON_CORNER_HIGHLIGHT), Alignment::TOP_LEFT, true, false)));
+}
+
 static double blinkingState(milliseconds time, int numBlinks, int numCycle) {
   const milliseconds period {250};
   if ((time.count() / period.count()) % numCycle >= numBlinks)
@@ -556,7 +636,6 @@ static Color blinkingColor(Color c1, Color c2, milliseconds time) {
 }
 
 SGuiElem GuiFactory::labelHighlightBlink(const string& s, Color c1, Color c2, char hotkey) {
-  auto width = [=] { return renderer.getTextLength(s); };
   return SGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
           Color c = blinkingColor(c1, c2, clock->getRealMillis());
@@ -566,44 +645,40 @@ SGuiElem GuiFactory::labelHighlightBlink(const string& s, Color c1, Color c2, ch
           if (r.getMousePos().inRectangle(bounds))
             lighten(c1);
           r.drawTextWithHotkey(c1, bounds.topLeft(), s, hotkey);
-        }, width));
+        }, renderer.getTextSize(s)));
 }
 
 SGuiElem GuiFactory::label(const string& s, function<Color()> colorFun, char hotkey) {
-  auto width = [=] { return renderer.getTextLength(s) + 1; };
   return SGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
           auto color = colorFun();
           r.drawText(Color::BLACK.transparency(min<Uint8>(100, color.a)), bounds.topLeft() + Vec2(1, 2), s);
           r.drawTextWithHotkey(colorFun(), bounds.topLeft(), s, hotkey);
-        }, width));
+        }, renderer.getTextSize(s)));
 }
 
 SGuiElem GuiFactory::labelFun(function<string()> textFun, function<Color()> colorFun) {
-  function<int()> width = [this, textFun] { return renderer.getTextLength(textFun()); };
   return SGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
           r.drawText(Color::BLACK.transparency(100), bounds.topLeft() + Vec2(1, 2), textFun());
           r.drawText(colorFun(), bounds.topLeft(), textFun());
-        }, width));
+        }));
 }
 
 SGuiElem GuiFactory::labelFun(function<string()> textFun, Color color) {
-  auto width = [=] { return renderer.getTextLength(textFun()); };
   return SGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
           r.drawText(Color::BLACK.transparency(100), bounds.topLeft() + Vec2(1, 2), textFun());
           r.drawText(color, bounds.topLeft(), textFun());
-        }, width));
+        }));
 }
 
 SGuiElem GuiFactory::label(const string& s, int size, Color c) {
-  auto width = [=] { return renderer.getTextLength(s, size) + 1; };
   return SGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
           r.drawText(Color::BLACK.transparency(100), bounds.topLeft() + Vec2(1, 2), s, Renderer::NONE, size);
           r.drawText(c, bounds.topLeft(), s, Renderer::NONE, size);
-        }, width));
+        }, renderer.getTextSize(s, size)));
 }
 
 static Vec2 getTextPos(Rectangle bounds, Renderer::CenterType center) {
@@ -620,13 +695,12 @@ static Vec2 getTextPos(Rectangle bounds, Renderer::CenterType center) {
 }
 
 SGuiElem GuiFactory::centeredLabel(Renderer::CenterType center, const string& s, int size, Color c) {
-  auto width = [=] { return renderer.getTextLength(s, size) + 1; };
   return SGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
           Vec2 pos = getTextPos(bounds, center);
           r.drawText(Color::BLACK.transparency(100), pos + Vec2(1, 2), s, center, size);
           r.drawText(c, pos, s, center, size);
-        }, width));
+        }, renderer.getTextSize(s, size)));
 }
 
 SGuiElem GuiFactory::centeredLabel(Renderer::CenterType center, const string& s, Color c) {
@@ -642,14 +716,13 @@ SGuiElem GuiFactory::labelUnicode(const string& s, Color color, int size, Render
 }
 
 SGuiElem GuiFactory::labelUnicode(const string& s, function<Color()> color, int size, Renderer::FontId fontId) {
-  auto width = [=] { return renderer.getTextLength(s, size, fontId); };
   return SGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
           Color c = color();
           if (r.getMousePos().inRectangle(bounds))
             lighten(c);
           r.drawText(fontId, size, c, bounds.topLeft(), s);
-  }, width));
+  }, renderer.getTextSize(s, size, fontId)));
 }
 
 SGuiElem GuiFactory::crossOutText(Color color) {
@@ -1226,7 +1299,10 @@ GuiFactory::ListBuilder& GuiFactory::ListBuilder::addElem(SGuiElem elem, int siz
 }
 
 GuiFactory::ListBuilder& GuiFactory::ListBuilder::addSpace(int size) {
-  return addElem(gui.empty(), size);
+  if (!backElems)
+    return addElem(gui.empty(), size);
+  else
+    return addBackElem(gui.empty(), size);
 }
 
 GuiFactory::ListBuilder& GuiFactory::ListBuilder::addElemAuto(SGuiElem elem) {
@@ -1301,8 +1377,8 @@ SGuiElem GuiFactory::ListBuilder::buildHorizontalList() {
   return SGuiElem(new HorizontalList(std::move(elems), sizes, backElems, middleElem));
 }
 
-SGuiElem GuiFactory::ListBuilder::buildHorizontalListFit() {
-  SGuiElem ret = gui.horizontalListFit(std::move(elems), 0);
+SGuiElem GuiFactory::ListBuilder::buildHorizontalListFit(double spacing) {
+  SGuiElem ret = gui.horizontalListFit(std::move(elems), spacing);
   return ret;
 }
 
@@ -2472,6 +2548,14 @@ void GuiFactory::loadFreeImages(const DirectoryPath& path) {
   textures[TexId::VERT_BAR_MINI] = Texture(path.file("ui/vertbarmini.png"));
   textures[TexId::CORNER_MINI] = Texture(path.file("ui/cornermini.png"));
 
+  textures[TexId::BUTTON_BG] = Texture(path.file("ui/button_bg.png"));
+  textures[TexId::BUTTON_CORNER] = Texture(path.file("ui/button_corner.png"));
+  textures[TexId::BUTTON_BOTTOM] = Texture(path.file("ui/button_corner.png"), 6, 4, 2, 4);
+  textures[TexId::BUTTON_SIDE] = Texture(path.file("ui/button_corner.png"), 0, 0, 4, 2);
+  textures[TexId::BUTTON_CORNER_HIGHLIGHT] = Texture(path.file("ui/button_corner_highlight.png"));
+  textures[TexId::BUTTON_BOTTOM_HIGHLIGHT] = Texture(path.file("ui/button_corner_highlight.png"), 7, 4, 1, 4);
+  textures[TexId::BUTTON_SIDE_HIGHLIGHT] = Texture(path.file("ui/button_corner_highlight.png"), 0, 0, 4, 1);
+
   textures[TexId::HORI_BAR_MINI2] = Texture(path.file("ui/horibarmini2.png"));
   textures[TexId::VERT_BAR_MINI2] = Texture(path.file("ui/vertbarmini2.png"));
   textures[TexId::CORNER_MINI2] = Texture(path.file("ui/cornermini2.png"));
@@ -2754,7 +2838,7 @@ SGuiElem GuiFactory::window(SGuiElem content, function<void()> onExitButton) {
         alignment(Alignment::TOP_RIGHT, button(onExitButton, getKey(SDL::SDLK_ESCAPE), true), Vec2(38, 38)),
         rectangle(Color::BLACK),
         background(background1),
-        margins(std::move(content), 20, 35, 30, 30),
+        margins(std::move(content), 20, 35, 20, 30),
         sprite(get(TexId::HORI_BAR), Alignment::BOTTOM, true, false),
         sprite(get(TexId::HORI_BAR), Alignment::TOP, false, false),
         sprite(get(TexId::WINDOW_VERT_BAR), Alignment::RIGHT, false, false),

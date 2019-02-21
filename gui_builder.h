@@ -289,6 +289,12 @@ class GuiBuilder {
   SGuiElem drawTickBox(shared_ptr<bool> value, const string& title);
   SGuiElem drawItemUpgradeButton(const CollectiveInfo::QueuedItemInfo&, int itemIndex);
   SGuiElem drawWorkshopItemActionButton(const CollectiveInfo::QueuedItemInfo&, int itemIndex);
+  SGuiElem drawGenderButtons(const vector<View::AvatarData>&, shared_ptr<int> gender, shared_ptr<int> chosenAvatar);
+  SGuiElem drawFirstNameButtons(const vector<View::AvatarData>&, shared_ptr<int> gender, shared_ptr<int> chosenAvatar);
+  SGuiElem drawRoleButtons(shared_ptr<PlayerRole> chosenRole, shared_ptr<int> chosenAvatar,
+      const vector<View::AvatarData>&);
+  SGuiElem drawChosenCreatureButtons(PlayerRole, shared_ptr<int> chosenAvatar, shared_ptr<int> gender,
+      const vector<View::AvatarData>&);
 };
 
 RICH_ENUM(GuiBuilder::GameSpeed,

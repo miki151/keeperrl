@@ -338,8 +338,6 @@ PlayerRole CampaignBuilder::getPlayerRole() const {
 
 static optional<View::CampaignOptions::WarningType> getMenuWarning(CampaignType type) {
   switch (type) {
-    case CampaignType::CAMPAIGN:
-      return View::CampaignOptions::OTHER_MODES;
     case CampaignType::SINGLE_KEEPER:
       return View::CampaignOptions::NO_RETIRE;
     default:

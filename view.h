@@ -242,7 +242,7 @@ class View {
       vector<string> description;
     };
     vector<CampaignTypeInfo> availableTypes;
-    enum WarningType { NO_RETIRE, OTHER_MODES };
+    enum WarningType { NO_RETIRE };
     optional<WarningType> warning;
   };
 

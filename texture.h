@@ -28,7 +28,7 @@ class Texture {
   Texture(Texture&&);
   Texture& operator=(Texture&&);
   Texture(const FilePath& path);
-  Texture(const FilePath& path, int px, int py, int kx, int ky);
+  Texture(const FilePath& path, int px, int py, int w, int h);
   Texture(Color, int width, int height);
   explicit Texture(SDL::SDL_Surface*);
   ~Texture();

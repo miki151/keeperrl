@@ -110,7 +110,7 @@ class GuiFactory {
     SGuiElem buildVerticalList();
     SGuiElem buildVerticalListFit();
     SGuiElem buildHorizontalList();
-    SGuiElem buildHorizontalListFit();
+    SGuiElem buildHorizontalListFit(double spacing = 0);
     int getSize() const;
     int getLength() const;
     bool isEmpty() const;
@@ -149,6 +149,14 @@ class GuiFactory {
   SGuiElem bottomMargin(int size, SGuiElem content);
   SGuiElem progressBar(Color, double state);
   SGuiElem label(const string&, Color = Color::WHITE, char hotkey = 0);
+  SGuiElem standardButton();
+  SGuiElem standardButtonHighlight();
+  SGuiElem buttonLabel(const string&, char hotkey = 0, bool matchTextWidth = true,
+      bool centerHorizontally = false);
+  SGuiElem buttonLabelWithMargin(const string&, char hotkey = 0, bool matchTextWidth = true);
+  SGuiElem buttonLabelSelected(const string&, char hotkey = 0, bool matchTextWidth = true,
+      bool centerHorizontally = false);
+  SGuiElem buttonLabelInactive(const string&, char hotkey = 0, bool matchTextWidth = true);
   SGuiElem labelHighlight(const string&, Color = Color::WHITE, char hotkey = 0);
   SGuiElem labelHighlightBlink(const string& s, Color, Color, char hotkey = 0);
   SGuiElem label(const string&, int size, Color = Color::WHITE);
