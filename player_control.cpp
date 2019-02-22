@@ -635,14 +635,6 @@ int PlayerControl::getNumMinions() const {
 
 typedef CollectiveInfo::Button Button;
 
-static optional<pair<ViewId, int>> getCostObjWithZero(CostInfo cost) {
-  auto& resourceInfo = CollectiveConfig::getResourceInfo(cost.id);
-  if (!resourceInfo.dontDisplay)
-    return make_pair(resourceInfo.viewId, (int) cost.value);
-  else
-    return none;
-}
-
 static optional<pair<ViewId, int>> getCostObj(CostInfo cost) {
   auto& resourceInfo = CollectiveConfig::getResourceInfo(cost.id);
   if (cost.value > 0 && !resourceInfo.dontDisplay)

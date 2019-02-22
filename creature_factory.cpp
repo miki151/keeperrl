@@ -731,18 +731,6 @@ CreatureAttributes CreatureFactory::getAttributes(CreatureId id) {
   return ret;
 }
 
-#define CREATE_LITERAL(NAME, SHORT) \
-static pair<AttrType, int> operator "" _##SHORT(unsigned long long value) {\
-  return {AttrType::NAME, value};\
-}
-
-CREATE_LITERAL(DAMAGE, dam)
-CREATE_LITERAL(DEFENSE, def)
-CREATE_LITERAL(SPELL_DAMAGE, spell_dam)
-CREATE_LITERAL(RANGED_DAMAGE, ranged_dam)
-
-#undef CREATE_LITERAL
-
 CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
   if (auto ret = getValueMaybe(attributes, id)) {
     ret->name.generateFirst(&*nameGenerator);
@@ -842,7 +830,8 @@ PCreature CreatureFactory::fromId(CreatureId id, TribeId t, const MonsterAIFacto
 PCreature CreatureFactory::getHumanForTests() {
   auto attributes = CATTR(
       c.viewId = ViewId::KEEPER1;
-      c.attr = LIST(12_dam, 12_def, 20_spell_dam );
+      c.attr[AttrType::DAMAGE] = 12;
+      c.attr[AttrType::DEFENSE] = 12;
       c.body = Body::humanoid(Body::Size::LARGE);
       c.name = "wizard";
       c.viewIdUpgrades = LIST(ViewId::KEEPER2, ViewId::KEEPER3, ViewId::KEEPER4);

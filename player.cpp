@@ -174,26 +174,6 @@ bool Player::tryToPerform(CreatureAction action) {
   return !!action;
 }
 
-static string getText(ItemClass type) {
-  switch (type) {
-    case ItemClass::WEAPON: return "Weapons";
-    case ItemClass::RANGED_WEAPON: return "Ranged weapons";
-    case ItemClass::AMULET: return "Amulets";
-    case ItemClass::RING: return "Rings";
-    case ItemClass::ARMOR: return "Armor";
-    case ItemClass::SCROLL: return "Scrolls";
-    case ItemClass::POTION: return "Potions";
-    case ItemClass::FOOD: return "Comestibles";
-    case ItemClass::BOOK: return "Books";
-    case ItemClass::TOOL: return "Tools";
-    case ItemClass::CORPSE: return "Corpses";
-    case ItemClass::OTHER: return "Other";
-    case ItemClass::GOLD: return "Gold";
-  }
-  FATAL << int(type);
-  return "";
-}
-
 void Player::applyItem(vector<Item*> items) {
   PROFILE;
   if (creature->isAffected(LastingEffect::BLIND) &&
