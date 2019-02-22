@@ -1408,13 +1408,6 @@ static string getKeybindingDesc(char c) {
     return "["_s + (char)toupper(c) + "]";
 }
 
-static vector<string> help = {
-    "Move around with number pad.",
-    "Extended attack: ctrl + arrow.",
-    "Fast travel: ctrl + arrow.",
-    "Fire arrows: alt + arrow.",
-};
-
 static string toStringRounded(double value, double precision) {
   return toString(precision * round(value / precision));
 }
@@ -1487,8 +1480,6 @@ SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info) {
         gui.buttonRect([this, commands = info.commands] (Rectangle bounds) {
             auto lines = gui.getListBuilder(legendLineHeight);
             bool exit = false;
-            for (auto& elem : help)
-              lines.addElem(gui.label(elem, Color::LIGHT_BLUE));
             for (int i : All(commands)) {
               auto& command = commands[i];
               function<void()> buttonFun = [] {};
