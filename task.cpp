@@ -1645,10 +1645,11 @@ class Spider : public Task {
       if (!pos.getFurniture(layer))
         pos.addFurniture(FurnitureFactory::get(FurnitureType::SPIDER_WEB, c->getTribeId()));
     for (auto& pos : Random.permutation(webPositions))
-      if (pos.getCreature() && pos.getCreature()->isAffected(LastingEffect::ENTANGLED)) {
-        attackPosition = pos;
-        break;
-      }
+      if (auto victim = pos.getCreature())
+        if (victim->isAffected(LastingEffect::ENTANGLED) && victim->isEnemy(c)) {
+          attackPosition = pos;
+          break;
+        }
     if (!attackPosition)
       return c->moveTowards(origin);
     if (c->getPosition() == *attackPosition)
