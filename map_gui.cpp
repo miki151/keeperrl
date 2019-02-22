@@ -1285,16 +1285,18 @@ void MapGui::updateObjects(CreatureView* view, MapLayout* mapLayout, bool smooth
   mouseUI = ui;
   layout = mapLayout;
   auto currentTimeReal = clock->getRealMillis();
-  bool newView = (view != previousView);
+  // hacky way to detect that we're switching between real-time and turn-based and not between
+  // team members in turn-based mode.
+  bool newView = (view->getCenterType() != previousView);
   if (newView || level != previousLevel)
     for (Vec2 pos : level->getBounds())
       level->setNeedsRenderUpdate(pos, true);
   else
     for (Vec2 pos : mapLayout->getAllTiles(getBounds(), Level::getMaxBounds(), getScreenPos()))
       if (level->needsRenderUpdate(pos) ||
-          lastSquareUpdate[pos].value_or(milliseconds{-1000000}) < currentTimeReal - milliseconds{1000})
+          !lastSquareUpdate[pos] || *lastSquareUpdate[pos] < currentTimeReal - milliseconds{1000})
         updateObject(pos, view, currentTimeReal);
-  previousView = view;
+  previousView = view->getCenterType();
   if (previousLevel != level) {
     screenMovement = none;
     clearCenter();

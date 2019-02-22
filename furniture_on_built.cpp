@@ -76,6 +76,7 @@ static void removeOldStairs(Level* level, StairKey stairKey) {
     if (pos.getLandingLink() == stairKey) {
       pos.removeLandingLink();
       pos.removeFurniture(FurnitureLayer::MIDDLE);
+      pos.getGame()->getPlayerControl()->addToMemory(pos);
     }
 }
 

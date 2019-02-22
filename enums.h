@@ -110,6 +110,7 @@ enum class FurnitureOnBuilt;
 enum class ItemUpgradeType;
 enum class ViewObjectAction : std::uint8_t;
 enum class Gender : std::uint8_t;
+enum class CreatureViewCenterType;
 
 struct FXInfo;
 struct FXSpawnInfo;

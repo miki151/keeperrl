@@ -24,16 +24,18 @@ class ViewIndex;
 class Level;
 class Position;
 
+enum class CreatureViewCenterType {
+  NONE,
+  STAY_ON_SCREEN,
+  FOLLOW
+};
+
 class CreatureView {
   public:
+  using CenterType = CreatureViewCenterType;
   virtual const MapMemory& getMemory() const = 0;
   virtual void getViewIndex(Vec2 pos, ViewIndex&) const = 0;
   virtual void refreshGameInfo(GameInfo&) const = 0;
-  enum class CenterType {
-    NONE,
-    STAY_ON_SCREEN,
-    FOLLOW
-  };
   virtual CenterType getCenterType() const = 0;
   virtual Position getPosition() const = 0;
   virtual double getAnimationTime() const = 0;

@@ -150,7 +150,7 @@ class MapGui : public GuiElem {
     COMPARE_ALL(x, y)
   } mouseOffset, center;
   WConstLevel previousLevel = nullptr;
-  const CreatureView* previousView = nullptr;
+  optional<CreatureViewCenterType> previousView;
   Table<optional<milliseconds>> lastSquareUpdate;
   optional<Coords> softCenter;
   Vec2 lastMousePos;
