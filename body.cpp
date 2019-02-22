@@ -1051,6 +1051,9 @@ void Body::serialize(PrettyInputArchive& ar1, unsigned v) {
   EnumMap<BodyPart, int> addBodyPart;
   ar1(OPTION(addBodyPart));
   ar1(endInput());
-  for (auto part : ENUM_ALL(BodyPart))
+  for (auto part : ENUM_ALL(BodyPart)) {
     bodyParts[part] += addBodyPart[part];
+    if (bodyParts[part] == 0 && !!intrinsicAttacks[part])
+      ar1.error("Creature has an intrinsic attack attached to non-existent body part"_s);
+  }
 }

@@ -621,7 +621,7 @@
         weight = 400
         deathSound = none
         intrinsicAttacks = {
-          HEAD { Intrinsic BITE_ATTACK "fangs" 8 {
+          TORSO { Intrinsic BITE_ATTACK "fangs" 8 {
               attackType = BITE
               attackMsg = BITE
               victimEffect = {Lasting POISON} } }
@@ -2350,7 +2350,7 @@
         weight = 0.3
         deathSound = none
         intrinsicAttacks = {
-          HEAD { Intrinsic BITE_ATTACK "fangs" 1 {
+          TORSO { Intrinsic BITE_ATTACK "fangs" 1 {
               attackType = BITE
               attackMsg = BITE
               victimEffect = {Lasting POISON} } }
