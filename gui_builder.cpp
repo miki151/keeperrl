@@ -1618,20 +1618,22 @@ SGuiElem GuiBuilder::drawRightPlayerInfo(const PlayerInfo& info) {
     auto orderList = gui.getListBuilder();
     for (auto order : ENUM_ALL(TeamOrder)) {
       orderList.addElemAuto(gui.stack(
+          info.teamOrders->contains(order) ? gui.buttonLabelSelected(getName(order)) : gui.buttonLabel(getName(order)),
           gui.button(getButtonCallback({UserInputId::TOGGLE_TEAM_ORDER, order})),
-          getTooltip({getDescription(order)}, THIS_LINE),
-          info.teamOrders->contains(order) ? gui.uiHighlightLine() : gui.empty(),
-          gui.label(getName(order))
+          getTooltip({getDescription(order)}, THIS_LINE)
       ));
       orderList.addSpace(15);
     }
     vList.addElem(orderList.buildHorizontalList());
+    vList.addSpace(legendLineHeight / 2);
   }
-  if (info.teamInfos.size() > 1)
+  if (info.teamInfos.size() > 1) {
     vList.addElem(gui.stack(
         gui.buttonLabel("Control mode: "_s + getControlModeName(info.controlMode) + ""),
         gui.button(getButtonCallback(UserInputId::TOGGLE_CONTROL_MODE), gui.getKey(SDL::SDLK_g))
     ));
+    vList.addSpace(legendLineHeight / 2);
+  }
   vList.addElem(gui.stack(
       gui.buttonLabel("Exit control mode"),
       gui.button(getButtonCallback(UserInputId::EXIT_CONTROL_MODE), gui.getKey(SDL::SDLK_u))
@@ -3082,7 +3084,8 @@ SGuiElem GuiBuilder::drawWorldmap(Semaphore& sem, const Campaign& campaign) {
   lines.addElemAuto(gui.centerHoriz(drawCampaignGrid(campaign, nullptr,
       [](Vec2) { return false; },
       [](Vec2) { })));
-  lines.addBackElem(gui.centerHoriz(
+  lines.addSpace(legendLineHeight / 2);
+  lines.addElem(gui.centerHoriz(
         gui.stack(
           gui.button([&] { sem.v(); }),
           gui.buttonLabel("Close"))
@@ -3098,14 +3101,15 @@ SGuiElem GuiBuilder::drawChooseSiteMenu(SyncQueue<optional<Vec2>>& queue, const 
   lines.addElemAuto(gui.centerHoriz(drawCampaignGrid(campaign, &sitePos,
       [&campaign](Vec2 pos) { return campaign.canTravelTo(pos); },
       [&sitePos](Vec2 pos) { sitePos = pos; })));
-  lines.addBackElem(gui.centerHoriz(gui.getListBuilder()
+  lines.addSpace(legendLineHeight / 2);
+  lines.addElem(gui.centerHoriz(gui.getListBuilder()
         .addElemAuto(gui.conditional(
             gui.stack(
                 gui.button([&] { queue.push(*sitePos); }),
                 gui.buttonLabel("Confirm")),
             gui.label("[Confirm]", Color::LIGHT_GRAY),
             [&] { return !!sitePos; }))
-        .addSpace(10)
+        .addSpace(15)
         .addElemAuto(
             gui.stack(
                 gui.button([&queue] { queue.push(none); }, gui.getKey(SDL::SDLK_ESCAPE), true),
