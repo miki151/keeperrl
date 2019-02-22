@@ -1039,6 +1039,7 @@ struct BodyTypeReader {
         break;
       default:
         body->setDeathSound(SoundId::BEAST_DEATH);
+        body->setHumanoid(false);
         break;
     }
   }
