@@ -49,6 +49,7 @@ Item::Item(const ItemAttributes& attr) : Renderable(ViewObject(*attr.viewId, Vie
     classCache(*attributes->itemClass) {
   if (!attributes->prefixes.empty())
     modViewObject().setModifier(ViewObject::Modifier::AURA);
+  modViewObject().setGenericId(getUniqueId().getGenericId());
 }
 
 Item::~Item() {
@@ -447,6 +448,8 @@ string Item::getModifiers(bool shorten) const {
   vector<string> attrStrings;
   for (auto attr : printAttr)
     attrStrings.push_back(withSign(attributes->modifiers[attr]) + (shorten ? "" : " " + ::getName(attr)));
+  if (attributes->damageReduction > 0)
+    attrStrings.push_back(toString(int(attributes->damageReduction * 100)) + "%");
   string attrString = combine(attrStrings, true);
   if (!attrString.empty())
     attrString = "(" + attrString + ")";
