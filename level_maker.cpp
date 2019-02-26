@@ -1192,6 +1192,7 @@ class RandomLocations : public LevelMaker {
 
   virtual void make(LevelBuilder* builder, Rectangle area) override {
     PROFILE;
+    checkConsistency();
     vector<vector<Vec2>> allowedPositions;
     vector<LevelBuilder::Rot> rotations;
     {
@@ -1284,6 +1285,27 @@ class RandomLocations : public LevelMaker {
       builder->popMap();
     }
     return true;
+  }
+
+  void checkConsistency() const {
+    auto check = [&] (LevelMaker* maker) {
+      for (auto& elem : insideMakers)
+        if (elem.get() == maker)
+          return;
+      FATAL << "LevelMaker not found";
+    };
+    for (auto& elem : overlapping)
+      check(elem);
+    for (auto& elem : minDistance) {
+      check(elem.first.first);
+      check(elem.first.second);
+    }
+    for (auto& elem : maxDistance) {
+      check(elem.first.first);
+      check(elem.first.second);
+    }
+    for (auto& elem : minMargin)
+      check(elem.first);
   }
 
   private:
@@ -2666,21 +2688,23 @@ PLevelMaker LevelMaker::getFullZLevel(RandomGen& random, optional<SettlementInfo
   queue->addMaker(unique<Empty>(SquareChange(FurnitureType::FLOOR)
       .add(FurnitureParams{FurnitureType::MOUNTAIN2, keeperTribe})));
   auto locations = unique<RandomLocations>();
-  LevelMaker* startingPos = nullptr;
   auto startingPosMaker = unique<StartingPos>(Predicate::alwaysTrue(), landingLink);
-  startingPos = startingPosMaker.get();
+  LevelMaker* startingPos = startingPosMaker.get();
   if (settlement) {
     auto maker = getSettlementMaker(random, *settlement);
     if (settlement->corpses)
       maker->addMaker(unique<Corpses>(*settlement->corpses));
     maker->addMaker(unique<RandomLocations>(makeVec<PLevelMaker>(std::move(startingPosMaker)), makeVec<pair<int, int>>({1, 1}),
         Predicate::canEnter(MovementTrait::WALK)));
-    locations->add(std::move(maker), getSize(random, settlement->type), RandomLocations::LocationPredicate(Predicate::alwaysTrue()));
+    // assign the whole settlement maker to startingPos, otherwise resource distance constraint doesn't work
+    startingPos = maker.get();
+    locations->add(std::move(maker), getSize(random, settlement->type),
+        RandomLocations::LocationPredicate(Predicate::alwaysTrue()));
   } else {
     locations->add(std::move(startingPosMaker), Vec2(1, 1),
         RandomLocations::LocationPredicate(Predicate::alwaysTrue()));
-    locations->setMinMargin(startingPos, mapWidth / 3);
   }
+  locations->setMinMargin(startingPos, mapWidth / 3);
   generateResources(random, resourceCounts, startingPos, locations.get(), {}, mapWidth, keeperTribe);
   queue->addMaker(std::move(locations));
   return std::move(queue);
