@@ -541,7 +541,9 @@ vector<Player::CommandInfo> Player::getCommands() const {
       [] (Player* player) { player->tryToPerform(player->creature->wait()); }, false},
     {PlayerInfo::CommandInfo{"Wait", 'w', "Wait until all other team members make their moves (doesn't skip turn).",
         getGame()->getPlayerCreatures().size() > 1},
-      [] (Player* player) { player->getModel()->getTimeQueue().postponeMove(player->creature); }, false},
+      [] (Player* player) {
+          player->getModel()->getTimeQueue().postponeMove(player->creature);
+          player->creature->getPosition().setNeedsRenderUpdate(true); }, false},
     /*{PlayerInfo::CommandInfo{"Travel", 't', "Travel to another site.", !getGame()->isSingleModel()},
       [] (Player* player) { player->getGame()->transferAction(player->getTeam()); }, false},*/
     {PlayerInfo::CommandInfo{"Chat", 'c', "Chat with someone.", canChat},
@@ -576,6 +578,7 @@ void Player::updateSquareMemory(Position pos) {
 
 void Player::makeMove() {
   PROFILE;
+  creature->getPosition().setNeedsRenderUpdate(true);
   updateUnknownLocations();
   if (!isSubscribed())
     subscribeTo(getModel());
@@ -785,6 +788,7 @@ void Player::makeMove() {
       break;
     }
   }
+  creature->getPosition().setNeedsRenderUpdate(true);
 }
 
 void Player::showHistory() {
