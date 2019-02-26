@@ -389,19 +389,20 @@ SGuiElem GuiBuilder::drawBottomBandInfo(GameInfo& gameInfo) {
   }
   auto bottomLine = gui.getListBuilder();
   const int space = 55;
-  bottomLine.addElemAuto(gui.stack(
-      gui.margins(gui.progressBar(Color::DARK_GREEN, info.dungeonLevelProgress), -6, -1, 0, -2),
+  bottomLine.addElemAuto(gui.standardButton(gui.stack(
+      gui.margins(gui.progressBar(Color::DARK_GREEN, info.dungeonLevelProgress), -3, -1, 0, 4),
       gui.margins(gui.stack(
           gameInfo.tutorial && gameInfo.tutorial->highlights.contains(TutorialHighlight::RESEARCH) ?
               gui.tutorialHighlight() : gui.empty(),
           gui.uiHighlightConditional([&]{ return info.numResearchAvailable > 0; })),
           0, 0, -3, 1),
       gui.getListBuilder()
+          .addSpace(10)
           .addElemAuto(gui.topMargin(-2, gui.viewObject(info.dungeonLevelViewId)))
           .addElemAuto(gui.label("Level: " + toString(info.dungeonLevel)))
           .buildHorizontalList(),
       gui.button([this]() { closeOverlayWindowsAndClearButton(); callbacks.input(UserInputId::TECHNOLOGY);})
-  ));
+  )));
   bottomLine.addSpace(space);
   bottomLine.addElem(gui.labelFun([&info] {
         return "population: " + toString(info.minionCount) + " / " +
@@ -1938,23 +1939,17 @@ SGuiElem GuiBuilder::drawWorkshopItemActionButton(const CollectiveInfo::QueuedIt
 SGuiElem GuiBuilder::drawItemUpgradeButton(const CollectiveInfo::QueuedItemInfo& elem, int itemIndex) {
   auto upgradesButton = [&] {
     auto line = gui.getListBuilder();
-    line.addElemAuto(gui.label("["));
     for (int upgradeIndex : All(elem.added)) {
       auto& upgrade = elem.added[upgradeIndex];
-      line.addElemAuto(gui.stack(
-          gui.viewObject(upgrade.viewId),
-          gui.tooltip({upgrade.name})
-      ));
+      line.addElemAuto(gui.viewObject(upgrade.viewId));
     }
-    line.addElemAuto(gui.label("]"));
     if (!elem.added.empty())
-      return line.buildHorizontalList();
+      return gui.standardButton(line.buildHorizontalList());
     else
-      return gui.label("[upgrade]", Color::LIGHT_BLUE);
+      return gui.buttonLabel("upgrade");
   }();
   return gui.stack(
       std::move(upgradesButton),
-      gui.leftMargin(4, gui.uiHighlightMouseOver()),
       gui.buttonRect([=] (Rectangle bounds) {
           auto lines = gui.getListBuilder(legendLineHeight);
           bool exit = false;

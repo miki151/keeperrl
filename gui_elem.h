@@ -150,6 +150,7 @@ class GuiFactory {
   SGuiElem progressBar(Color, double state);
   SGuiElem label(const string&, Color = Color::WHITE, char hotkey = 0);
   SGuiElem standardButton();
+  SGuiElem standardButton(SGuiElem content, bool matchTextWidth = true);
   SGuiElem standardButtonHighlight();
   SGuiElem buttonLabel(const string&, char hotkey = 0, bool matchTextWidth = true,
       bool centerHorizontally = false);

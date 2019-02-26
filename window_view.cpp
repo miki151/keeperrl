@@ -59,8 +59,8 @@ View* WindowView::createReplayView(InputArchive& ifs, ViewParams params) {
 
 constexpr int rightBarWidthCollective = 300;
 constexpr int rightBarWidthPlayer = 300;
-constexpr int bottomBarHeightCollective = 62;
-constexpr int bottomBarHeightPlayer = 62;
+constexpr int bottomBarHeightCollective = 66;
+constexpr int bottomBarHeightPlayer = 66;
 
 Rectangle WindowView::getMapGuiBounds() const {
   switch (gameInfo.infoType) {

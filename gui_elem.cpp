@@ -548,19 +548,20 @@ SGuiElem GuiFactory::labelHighlight(const string& s, Color c, char hotkey) {
 }
 
 SGuiElem GuiFactory::buttonLabel(const string& s, char hotkey, bool matchTextWidth, bool centerHorizontally) {
-  auto text = [&] {
-    auto ret = label(s, Color::WHITE, hotkey);
-    if (centerHorizontally)
-      ret = centerHoriz(std::move(ret));
-    return ret;
-  };
+  auto text = label(s, Color::WHITE, hotkey);
+  if (centerHorizontally)
+    text = centerHoriz(std::move(text));
+  return standardButton(std::move(text), matchTextWidth);
+}
+
+SGuiElem GuiFactory::standardButton(SGuiElem content, bool matchTextWidth) {
   auto ret = mouseHighlight2(
-      stack(margins(standardButtonHighlight(), -7, -5, -7, 0), text()),
-      stack(margins(standardButton(), -7, -5, -7, 0), text())
+      margins(standardButtonHighlight(), -7, -5, -7, 0),
+      margins(standardButton(), -7, -5, -7, 0)
   );
   if (matchTextWidth)
-    ret = setWidth(renderer.getTextLength(s) + 1, std::move(ret));
-  return ret;
+    ret = setWidth(*content->getPreferredWidth() + 1, std::move(ret));
+  return stack(ret, std::move(content));
 }
 
 SGuiElem GuiFactory::buttonLabelWithMargin(const string& s, char hotkey, bool matchTextWidth) {
