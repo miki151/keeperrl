@@ -104,7 +104,7 @@ class Renderer {
   void drawTile(Vec2 pos, const vector<TileCoord>&, Vec2 size, Color = Color::WHITE, SpriteOrientation orientation = {});
   void setScissor(optional<Rectangle>);
   void addQuad(const Rectangle&, Color);
-  void drawAnimation(AnimationId, Vec2, double state, Vec2 squareSize, Dir orientation);
+  void drawAnimation(AnimationId, Vec2, double state, Vec2 squareSize, Dir orientation, Color);
   Vec2 getSize();
 
   void drawAndClearBuffer();

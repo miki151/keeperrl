@@ -963,13 +963,18 @@ void MapGui::renderAnimations(Renderer& renderer, milliseconds currentTimeReal) 
   PROFILE;
   animations = std::move(animations).filter([=](const AnimationInfo& elem)
       { return !elem.animation->isDone(currentTimeReal);});
-  for (auto& elem : animations)
+  for (auto& elem : animations) {
+    auto color = Color::WHITE;
+    if (auto& index = objects[elem.position])
+      color = blendNightColor(Color::WHITE, *index);
     elem.animation->render(
         renderer,
         getBounds(),
         projectOnScreen(elem.position) + layout->getSquareSize() / 2,
         layout->getSquareSize(),
-        currentTimeReal);
+        currentTimeReal,
+        color);
+  }
 }
 
 MapGui::HighlightedInfo MapGui::getHighlightedInfo(Vec2 size, milliseconds currentTimeReal) {

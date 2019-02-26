@@ -189,13 +189,13 @@ static Vec2 rotate(Vec2 pos, Vec2 origin, double x, double y) {
   return origin + Vec2(v.x * x - v.y * y, v.x * y + v.y * x);
 }
 
-void Renderer::drawAnimation(AnimationId id, Vec2 pos, double state, Vec2 squareSize, Dir orientation) {
+void Renderer::drawAnimation(AnimationId id, Vec2 pos, double state, Vec2 squareSize, Dir orientation, Color color) {
   if (auto& animInfo = animations[id]) {
     int zoomLevel = squareSize.y / nominalSize;
     int frame = int(animInfo->numFrames * state);
     int width = animInfo->tex.getSize().x / animInfo->numFrames;
     Vec2 size(width, animInfo->tex.getSize().y);
-    drawSprite(pos - size * zoomLevel / 2, Vec2(frame * width, 0), size, animInfo->tex, size * zoomLevel, none,
+    drawSprite(pos - size * zoomLevel / 2, Vec2(frame * width, 0), size, animInfo->tex, size * zoomLevel, color,
         SpriteOrientation(Vec2(rotate(rotate(orientation))), false));
   }
 }
