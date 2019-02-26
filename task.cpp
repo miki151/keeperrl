@@ -270,17 +270,20 @@ PTask Task::equipItem(Item* item) {
 }
 
 template <typename PositionContainer>
-static optional<Position> chooseRandomClose(Creature* c, const PositionContainer& squares, Task::SearchType type) {
+static optional<Position> chooseRandomClose(Creature* c, const PositionContainer& squares, Task::SearchType type, bool stepOn) {
+  auto canNavigate = [&] (const Position& pos) {
+    return stepOn ? c->canNavigateTo(pos) : c->canNavigateToOrNeighbor(pos);
+  };
   int minD = 10000000;
   int margin = type == Task::LAZY ? 0 : 3;
   vector<Position> close;
   auto start = c->getPosition();
   for (auto& v : squares)
-    if (c->canNavigateToOrNeighbor(v))
+    if (canNavigate(v))
       // positions on another level are the worst but still acceptable
       minD = min(minD, v.dist8(start).value_or(10000));
   for (auto& v : squares)
-    if (c->canNavigateToOrNeighbor(v) && v.dist8(start).value_or(10000) <= minD + margin)
+    if (canNavigate(v) && v.dist8(start).value_or(10000) <= minD + margin)
       close.push_back(v);
   if (!close.empty())
     return Random.choose(close);
@@ -314,7 +317,7 @@ class GoToAnd : public Task {
     if (targets.contains(c->getPosition()))
       return task->getMove(c);
     if (!target)
-      target = chooseRandomClose(c, targets, Task::SearchType::LAZY);
+      target = chooseRandomClose(c, targets, Task::SearchType::LAZY, true);
     if (!target) {
       setDone();
       return NoMove;
@@ -390,7 +393,7 @@ class ApplySquare : public Task {
       if (!rejectedPosition.count(pos))
         candidates.push_back(pos);
     }
-    return chooseRandomClose(c, candidates, searchType);
+    return chooseRandomClose(c, candidates, searchType, false);
   }
 
   virtual MoveInfo getMove(Creature* c) override {
@@ -534,7 +537,7 @@ class ArcheryRange : public Task {
     for (auto pos : Random.permutation(targets))
       if (auto dir = getDir(pos))
         shootPositions[dir->pos].push_back(*dir);
-    if (auto chosen = chooseRandomClose(c, getKeys(shootPositions), Task::RANDOM_CLOSE))
+    if (auto chosen = chooseRandomClose(c, getKeys(shootPositions), Task::RANDOM_CLOSE, true))
       return Random.choose(shootPositions.at(*chosen));
     return none;
   }
@@ -1466,9 +1469,9 @@ class DropItems : public Task {
 
   optional<Position> chooseTarget(Creature* c) const {
     return positions.visit(
-        [&](const vector<Position>& v) { return chooseRandomClose(c, v, LAZY); },
+        [&](const vector<Position>& v) { return chooseRandomClose(c, v, LAZY, true); },
         [&](const StorageInfo& info) {
-          return chooseRandomClose(c, info.collective->getStoragePositions(info.storage), LAZY);
+          return chooseRandomClose(c, info.collective->getStoragePositions(info.storage), LAZY, true);
         }
     );
   }
