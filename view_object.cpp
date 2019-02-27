@@ -330,6 +330,7 @@ static EnumSet<ViewId> creatureIds {
   ViewId::LIZARDMAN,
   ViewId::LIZARDLORD,
   ViewId::DWARF,
+  ViewId::DWARF_FEMALE,
   ViewId::DWARF_BARON,
   ViewId::IMP,
   ViewId::PRISONER,
