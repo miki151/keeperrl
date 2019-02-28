@@ -390,16 +390,16 @@ SGuiElem GuiBuilder::drawBottomBandInfo(GameInfo& gameInfo) {
   auto bottomLine = gui.getListBuilder();
   const int space = 55;
   bottomLine.addElemAuto(gui.standardButton(gui.stack(
-      gui.margins(gui.progressBar(Color::DARK_GREEN, info.dungeonLevelProgress), -3, -1, 0, 4),
+      gui.margins(gui.progressBar(Color::DARK_GREEN, info.avatarLevelInfo.progress), -3, -1, 0, 4),
       gui.margins(gui.stack(
           gameInfo.tutorial && gameInfo.tutorial->highlights.contains(TutorialHighlight::RESEARCH) ?
               gui.tutorialHighlight() : gui.empty(),
-          gui.uiHighlightConditional([&]{ return info.numResearchAvailable > 0; })),
-          0, 0, -3, 1),
+          gui.uiHighlightConditional([&]{ return info.avatarLevelInfo.numAvailable > 0; })),
+          3, -2, -3, 2),
       gui.getListBuilder()
-          .addSpace(10)
-          .addElemAuto(gui.topMargin(-2, gui.viewObject(info.dungeonLevelViewId)))
-          .addElemAuto(gui.label("Level: " + toString(info.dungeonLevel)))
+          //.addSpace(10)
+          .addElemAuto(gui.topMargin(-2, gui.viewObject(info.avatarLevelInfo.viewId)))
+          .addElemAuto(gui.label("Level: " + toString(info.avatarLevelInfo.level)))
           .buildHorizontalList(),
       gui.button([this]() { closeOverlayWindowsAndClearButton(); callbacks.input(UserInputId::TECHNOLOGY);})
   )));
@@ -411,7 +411,7 @@ SGuiElem GuiBuilder::drawBottomBandInfo(GameInfo& gameInfo) {
   bottomLine.addElem(getTurnInfoGui(gameInfo.time), 50);
   bottomLine.addSpace(space);
   bottomLine.addElem(getSunlightInfoGui(sunlightInfo), 80);
-  return gui.getListBuilder(28)
+  return gui.getListBuilder(legendLineHeight)
         .addElem(gui.centerHoriz(topLine.buildHorizontalList()))
         .addElem(gui.centerHoriz(bottomLine.buildHorizontalList()))
         .buildVerticalList();
@@ -1015,12 +1015,25 @@ vector<SGuiElem> GuiBuilder::drawPlayerAttributes(const ViewObject::CreatureAttr
 }
 
 SGuiElem GuiBuilder::drawBottomPlayerInfo(const GameInfo& gameInfo) {
-  return gui.getListBuilder(28)
+  auto& info = *gameInfo.playerInfo.getReferenceMaybe<PlayerInfo>();
+  return gui.getListBuilder(legendLineHeight)
       .addElem(gui.centerHoriz(gui.horizontalList(
               drawPlayerAttributes(gameInfo.playerInfo.getReferenceMaybe<PlayerInfo>()->attributes), resourceSpace)))
-      .addElem(gui.centerHoriz(gui.getListBuilder(140)
-            .addElem(getTurnInfoGui(gameInfo.time))
-            .addElem(getSunlightInfoGui(gameInfo.sunlightInfo))
+      .addElem(gui.centerHoriz(gui.getListBuilder()
+             .addElemAuto(info.avatarLevelInfo ? gui.standardButton(gui.stack(
+                 gui.margins(gui.progressBar(Color::DARK_GREEN, info.avatarLevelInfo->progress), -3, -1, 0, 7),
+                 info.avatarLevelInfo->numAvailable > 0 ? gui.margins(
+                     gui.uiHighlightLine(), 3, -2, -3, 2) : gui.empty(),
+                 gui.getListBuilder()
+//                     .addSpace(10)
+                     .addElemAuto(gui.topMargin(-2, gui.viewObject(info.avatarLevelInfo->viewId)))
+                     .addElemAuto(gui.label("Level: " + toString(info.avatarLevelInfo->level)))
+                     .buildHorizontalList(),
+                 gui.button([this]() { closeOverlayWindowsAndClearButton(); callbacks.input(UserInputId::TECHNOLOGY);})
+             )) : gui.empty())
+            .addSpace(20)
+            .addElem(getTurnInfoGui(gameInfo.time), 90)
+            .addElem(getSunlightInfoGui(gameInfo.sunlightInfo), 140)
             .buildHorizontalList()))
       .buildVerticalList();
 }
@@ -1413,7 +1426,8 @@ static string toStringRounded(double value, double precision) {
   return toString(precision * round(value / precision));
 }
 
-SGuiElem GuiBuilder::getExpIncreaseLine(const PlayerInfo::LevelInfo& info, ExperienceType type) {
+SGuiElem GuiBuilder::getExpIncreaseLine(const CreatureExperienceInfo& info, ExperienceType type,
+    function<void()> increaseCallback) {
   if (info.limit[type] == 0)
     return nullptr;
   auto line = gui.getListBuilder();
@@ -1426,7 +1440,14 @@ SGuiElem GuiBuilder::getExpIncreaseLine(const PlayerInfo::LevelInfo& info, Exper
   }
   line.addElem(attrIcons.buildHorizontalList(), 80);
   line.addElem(gui.label("+" + toStringRounded(info.level[type], 0.01),
-      info.warning[type] ? Color::RED : Color::WHITE), 60);
+      info.warning[type] ? Color::RED : Color::WHITE), 50);
+  if (increaseCallback && info.numAvailableUpgrades > 0) {
+    line.addElemAuto(gui.stack(
+        gui.buttonLabel("+"),
+        gui.button(increaseCallback)
+    ));
+    line.addSpace(15);
+  }
   string limit = toString(info.limit[type]);
   line.addElemAuto(gui.label("  (limit " + limit + ")"));
   vector<string> tooltip {
@@ -1440,20 +1461,32 @@ SGuiElem GuiBuilder::getExpIncreaseLine(const PlayerInfo::LevelInfo& info, Exper
              line.buildHorizontalList());
 }
 
-SGuiElem GuiBuilder::drawTrainingInfo(const PlayerInfo& info) {
+SGuiElem GuiBuilder::drawTrainingInfo(const CreatureExperienceInfo& info,
+    function<void(optional<ExperienceType>)> increaseCallback) {
   auto lines = gui.getListBuilder(legendLineHeight);
   lines.addElem(gui.label("Training", Color::YELLOW));
+  if (increaseCallback) {
+    lines.addElem(gui.label(getPlural("point", info.numAvailableUpgrades) + " available"));
+  }
   bool empty = true;
   for (auto expType : ENUM_ALL(ExperienceType)) {
-    if (auto elem = getExpIncreaseLine(info.levelInfo, expType)) {
+    if (auto elem = getExpIncreaseLine(info, expType,
+        [increaseCallback, expType] { increaseCallback(expType); })) {
       lines.addElem(std::move(elem));
       empty = false;
     }
   }
   lines.addElem(gui.getListBuilder()
       .addElemAuto(gui.label("Combat experience: ", Color::YELLOW))
-      .addElemAuto(gui.label(toStringRounded(info.levelInfo.combatExperience, 0.01)))
+      .addElemAuto(gui.label(toStringRounded(info.combatExperience, 0.01)))
       .buildHorizontalList());
+  if (increaseCallback) {
+    lines.addSpace(15);
+    lines.addElem(gui.centerHoriz(gui.stack(
+        gui.buttonLabel("Dismiss"),
+        gui.button([increaseCallback] { increaseCallback(none); })
+    )));
+  }
   if (!empty)
     return lines.buildVerticalList();
   else
@@ -1543,8 +1576,8 @@ SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info) {
               callbacks.input({UserInputId::INTRINSIC_ATTACK, InventoryItemInfo{item.ids, *choice}});}));
     list.addSpace();
   }
-  if (auto elem = drawTrainingInfo(info))
-    list.addElemAuto(std::move(elem));
+  /*if (auto elem = drawTrainingInfo(info.experienceInfo))
+    list.addElemAuto(std::move(elem));*/
   return
       gui.scrollable(list.buildVerticalList(), &inventoryScroll, &scrollbarsHeld);
 }
@@ -2064,27 +2097,37 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo& info, const opti
                 margin)).buildHorizontalList())));
 }
 
+SGuiElem GuiBuilder::drawCreatureUpgradeMenu(SyncQueue<optional<ExperienceType>>& queue,
+    const CreatureExperienceInfo& info) {
+  const int margin = 20;
+  const int rightElemMargin = 10;
+  auto lines = gui.getListBuilder(legendLineHeight);
+  lines.addElemAuto(drawTrainingInfo(info, [&queue](optional<ExperienceType> exp) { queue.push(exp); }));
+  return gui.preferredSize(500, 320,
+      gui.window(gui.margins(lines.buildVerticalList(), margin), [&queue] { queue.push(none); }));
+}
+
 SGuiElem GuiBuilder::drawLibraryOverlay(const CollectiveInfo& collectiveInfo, const optional<TutorialInfo>& tutorial) {
   if (!collectiveInfo.libraryInfo)
     return gui.empty();
   auto& info = *collectiveInfo.libraryInfo;
-  int margin = 20;
-  int rightElemMargin = 10;
+  const int margin = 20;
+  const int rightElemMargin = 10;
   auto lines = gui.getListBuilder(legendLineHeight);
   lines.addSpace(5);
   lines.addElem(gui.getListBuilder()
-      .addElemAuto(gui.topMargin(-2, gui.viewObject(collectiveInfo.dungeonLevelViewId)))
+      .addElemAuto(gui.topMargin(-2, gui.viewObject(collectiveInfo.avatarLevelInfo.viewId)))
       .addSpace(4)
-      .addElemAuto(gui.label(toString(collectiveInfo.leaderTitle)))
+      .addElemAuto(gui.label(toString(collectiveInfo.avatarLevelInfo.title)))
       .buildHorizontalList());
-  lines.addElem(gui.label("Level " + toString(collectiveInfo.dungeonLevel)));
+  lines.addElem(gui.label("Level " + toString(collectiveInfo.avatarLevelInfo.level)));
   lines.addElem(gui.label("Next level progress: " +
       toString(info.currentProgress) + "/" + toString(info.totalProgress)));
   //lines.addElem(gui.rightMargin(rightElemMargin, gui.alignment(GuiFactory::Alignment::RIGHT, drawCost(info.resource))));
   if (info.warning)
     lines.addElem(gui.label(*info.warning, Color::RED));
   lines.addElem(gui.label("Research:", Color::YELLOW));
-  lines.addElem(gui.label("(" + getPlural("item", collectiveInfo.numResearchAvailable) + " available)", Color::YELLOW));
+  lines.addElem(gui.label("(" + getPlural("item", collectiveInfo.avatarLevelInfo.numAvailable) + " available)", Color::YELLOW));
   for (int i : All(info.available)) {
     auto& elem = info.available[i];
     auto line = gui.getListBuilder()
@@ -2863,7 +2906,7 @@ SGuiElem GuiBuilder::drawMinionPage(const PlayerInfo& minion, const CollectiveIn
   for (auto& elem : drawEffectsList(minion))
     leftLines.addElem(std::move(elem));
   leftLines.addSpace();
-  if (auto elem = drawTrainingInfo(minion)) {
+  if (auto elem = drawTrainingInfo(minion.experienceInfo)) {
     leftLines.addElemAuto(std::move(elem));
     leftLines.addSpace();
   }

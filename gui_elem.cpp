@@ -556,8 +556,8 @@ SGuiElem GuiFactory::buttonLabel(const string& s, char hotkey, bool matchTextWid
 
 SGuiElem GuiFactory::standardButton(SGuiElem content, bool matchTextWidth) {
   auto ret = mouseHighlight2(
-      margins(standardButtonHighlight(), -7, -5, -7, 0),
-      margins(standardButton(), -7, -5, -7, 0)
+      margins(standardButtonHighlight(), -7, -5, -7, 3),
+      margins(standardButton(), -7, -5, -7, 3)
   );
   if (matchTextWidth)
     ret = setWidth(*content->getPreferredWidth() + 1, std::move(ret));
@@ -582,7 +582,7 @@ SGuiElem GuiFactory::buttonLabelSelected(const string& s, char hotkey, bool matc
   auto text = label(s, Color::WHITE, hotkey);
   if (centerHorizontally)
     text = centerHoriz(text);
-  auto ret = stack(margins(standardButtonHighlight(), -7, -5, -7, 0), std::move(text));
+  auto ret = stack(margins(standardButtonHighlight(), -7, -5, -7, 3), std::move(text));
   if (matchTextWidth)
     ret = setWidth(renderer.getTextLength(s) + 1, std::move(ret));
   return ret;
@@ -590,7 +590,7 @@ SGuiElem GuiFactory::buttonLabelSelected(const string& s, char hotkey, bool matc
 
 SGuiElem GuiFactory::buttonLabelInactive(const string& s, char hotkey, bool matchTextWidth) {
   auto ret = stack(
-      margins(standardButton(), -7, -5, -7, 0),
+      margins(standardButton(), -7, -5, -7, 3),
       label(s, Color::GRAY, hotkey));
   if (matchTextWidth)
     ret = setWidth(renderer.getTextLength(s) + 1, std::move(ret));
@@ -1839,7 +1839,9 @@ SGuiElem GuiFactory::empty() {
 class ViewObjectGui : public GuiElem {
   public:
   ViewObjectGui(const ViewObject& obj, Vec2 sz, double sc, Color c) : object(obj), size(sz), scale(sc), color(c) {}
-  ViewObjectGui(ViewId id, Vec2 sz, double sc, Color c) : object(id), size(sz), scale(sc), color(c) {}
+  ViewObjectGui(ViewId id, Vec2 sz, double sc, Color c) : object(id), size(sz), scale(sc), color(c) {
+    CHECK(int(id) >= 0 && int(id) < EnumInfo<ViewId>::size);
+  }
   ViewObjectGui(function<ViewId()> id, Vec2 sz, double sc, Color c)
       : object(std::move(id)), size(sz), scale(sc), color(c) {}
 

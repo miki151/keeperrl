@@ -54,6 +54,7 @@ void SpellMap::onExpLevelReached(Creature* c, double level) {
       if (level >= *minLevel && !contains(spell)) {
         add(spell);
         c->addPersonalEvent(c->getName().a() + " learns the spell of " + spell->getName());
+        c->verb("learn", "learns", "the spell of " + spell->getName());
       }
 }
 

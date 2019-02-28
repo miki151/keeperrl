@@ -20,6 +20,7 @@
 #include "team_order.h"
 #include "special_trait.h"
 #include "view_object_modifier.h"
+#include "creature_experience_info.h"
 
 enum class SpellId;
 
@@ -72,12 +73,22 @@ struct AttributeInfo {
   HASH_ALL(name, attr, value, bonus, help)
 };
 
+struct AvatarLevelInfo {
+  int HASH(level);
+  double HASH(progress);
+  ViewId HASH(viewId);
+  string HASH(title);
+  int HASH(numAvailable);
+  HASH_ALL(level, progress, viewId, title, numAvailable)
+};
+
 class PlayerInfo {
   public:
   PlayerInfo(const Creature*);
   string getFirstName() const;
   string getTitle() const;
   vector<AttributeInfo> HASH(attributes);
+  optional<AvatarLevelInfo> HASH(avatarLevelInfo);
   BestAttack HASH(bestAttack);
   struct SkillInfo {
     string HASH(name);
@@ -88,14 +99,7 @@ class PlayerInfo {
   string HASH(firstName);
   string HASH(name);
   string HASH(title);
-  struct LevelInfo {
-    EnumMap<ExperienceType, double> HASH(level);
-    EnumMap<ExperienceType, int> HASH(limit);
-    EnumMap<ExperienceType, optional<string>> HASH(warning);
-    double HASH(combatExperience);
-    HASH_ALL(level, limit, warning, combatExperience)
-  };
-  LevelInfo HASH(levelInfo);
+  CreatureExperienceInfo HASH(experienceInfo);
   string description;
   int HASH(positionHash);
   struct Effect {
@@ -157,7 +161,7 @@ class PlayerInfo {
   optional<double> HASH(carryLimit);
   optional<ViewId> HASH(quarters);
   bool HASH(canAssignQuarters);
-  HASH_ALL(attributes, skills, firstName, name, title, levelInfo, positionHash, effects, spells, lyingItems, inventory, minionTasks, creatureId, morale, viewId, actions, commands, debt, bestAttack, carryLimit, intrinsicAttacks, teamInfos, moveCounter, isPlayerControlled, controlMode, teamMemberActions, quarters, canAssignQuarters, teamOrders)
+  HASH_ALL(attributes, skills, firstName, name, title, experienceInfo, positionHash, effects, spells, lyingItems, inventory, minionTasks, creatureId, morale, viewId, actions, commands, debt, bestAttack, carryLimit, intrinsicAttacks, teamInfos, moveCounter, isPlayerControlled, controlMode, teamMemberActions, quarters, canAssignQuarters, teamOrders, avatarLevelInfo)
 };
 
 struct ImmigrantDataInfo {
@@ -278,11 +282,7 @@ class CollectiveInfo {
     HASH_ALL(viewId, count, name, tutorialHighlight)
   };
   vector<Resource> HASH(numResource);
-  int HASH(dungeonLevel);
-  double HASH(dungeonLevelProgress);
-  ViewId HASH(dungeonLevelViewId);
-  string HASH(leaderTitle);
-  int HASH(numResearchAvailable);
+  AvatarLevelInfo HASH(avatarLevelInfo);
   struct Team {
     TeamId HASH(id);
     vector<UniqueEntity<Creature>::Id> HASH(members);
@@ -326,7 +326,7 @@ class CollectiveInfo {
   };
   optional<RebellionChance> HASH(rebellionChance);
   vector<ViewId> HASH(allQuarters);
-  HASH_ALL(warning, buildings, minionCount, minionLimit, monsterHeader, minions, minionGroups, enemyGroups, chosenCreature, numResource, teams, nextPayout, payoutTimeRemaining, taskMap, ransom, nextWave, chosenWorkshop, workshopButtons, immigration, allImmigration, libraryInfo, allQuarters, rebellionChance, dungeonLevel, dungeonLevelViewId, leaderTitle, dungeonLevelProgress, numResearchAvailable)
+  HASH_ALL(warning, buildings, minionCount, minionLimit, monsterHeader, minions, minionGroups, enemyGroups, chosenCreature, numResource, teams, nextPayout, payoutTimeRemaining, taskMap, ransom, nextWave, chosenWorkshop, workshopButtons, immigration, allImmigration, libraryInfo, allQuarters, rebellionChance, avatarLevelInfo)
 };
 
 class VillageInfo {

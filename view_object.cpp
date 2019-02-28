@@ -262,6 +262,7 @@ const char* ViewObject::getDefaultDescription() const {
     case ViewId::ADA_DOOR: return "Adamantine door";
     case ViewId::BARRICADE: return "Barricade";
     case ViewId::ARCHERY_RANGE: return "Archery target";
+    case ViewId::RUIN_WALL: return "Ruined wall";
     case ViewId::WOOD_FLOOR1:
     case ViewId::WOOD_FLOOR2:
     case ViewId::WOOD_FLOOR3:

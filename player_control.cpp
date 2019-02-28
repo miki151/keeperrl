@@ -951,7 +951,7 @@ vector<PlayerInfo> PlayerControl::getPlayerInfos(vector<Creature*> creatures, Un
     if (c->getUniqueId() == chosenId) {
       for (auto expType : ENUM_ALL(ExperienceType))
         if (auto requiredDummy = collective->getMissingTrainingFurniture(c, expType))
-          minionInfo.levelInfo.warning[expType] =
+          minionInfo.experienceInfo.warning[expType] =
               "Requires " + Furniture::getName(*requiredDummy) + " to train further.";
       for (MinionActivity t : ENUM_ALL(MinionActivity))
         if (c->getAttributes().getMinionActivities().isAvailable(collective, c, t, true)) {
@@ -967,7 +967,7 @@ vector<PlayerInfo> PlayerControl::getPlayerInfos(vector<Creature*> creatures, Un
       if (!collective->hasTrait(c, MinionTrait::PRISONER)) {
         minionInfo.actions.push_back(PlayerInfo::RENAME);
       } else
-        minionInfo.levelInfo.limit.clear();
+        minionInfo.experienceInfo.limit.clear();
       if (c != collective->getLeader())
         minionInfo.actions.push_back(PlayerInfo::BANISH);
       if (!collective->hasTrait(c, MinionTrait::WORKER)) {
@@ -1412,6 +1412,15 @@ void PlayerControl::fillCurrentLevelInfo(GameInfo& gameInfo) const {
   };
 }
 
+void PlayerControl::fillDungeonLevel(AvatarLevelInfo& info) const {
+  const auto& dungeonLevel = collective->getDungeonLevel();
+  info.level = dungeonLevel.level + 1;
+  info.viewId = collective->getLeader()->getViewObject().id();
+  info.title = collective->getLeader()->getName().title();
+  info.progress = dungeonLevel.progress;
+  info.numAvailable = dungeonLevel.numResearchAvailable();
+}
+
 void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   fillCurrentLevelInfo(gameInfo);
   if (tutorial)
@@ -1453,13 +1462,8 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   fillLibraryInfo(info);
   info.monsterHeader = "Minions: " + toString(info.minionCount) + " / " + toString(info.minionLimit);
   info.enemyGroups = getEnemyGroups();
+  fillDungeonLevel(info.avatarLevelInfo);
   info.numResource.clear();
-  const auto dungeonLevel = collective->getDungeonLevel();
-  info.dungeonLevel = dungeonLevel.level + 1;
-  info.dungeonLevelViewId = collective->getLeader()->getViewObject().id();
-  info.leaderTitle = collective->getLeader()->getName().title();
-  info.dungeonLevelProgress = dungeonLevel.progress;
-  info.numResearchAvailable = dungeonLevel.numResearchAvailable();
   for (auto resourceId : ENUM_ALL(CollectiveResourceId)) {
     auto& elem = CollectiveConfig::getResourceInfo(resourceId);
     if (!elem.dontDisplay)

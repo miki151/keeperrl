@@ -234,7 +234,7 @@ void Renderer::drawFilledRectangle(const Rectangle& t, Color color, optional<Col
     SDL::glVertex2f(a.x + 1.5f, b.y - 0.5f);
     SDL::glEnd();
     a += Vec2(2, 2);
-    b -= Vec2(2, 2);
+    b -= Vec2(1, 1);
   }
   SDL::glBegin(GL_QUADS);
   glColor(color);

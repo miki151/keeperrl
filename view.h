@@ -21,6 +21,7 @@
 #include "animation_id.h"
 #include "gender.h"
 #include "fx_info.h"
+#include "creature_experience_info.h"
 
 class CreatureView;
 class Level;
@@ -204,6 +205,8 @@ class View {
   virtual optional<int> choosePillageItem(const string& title, const vector<ItemInfo>&, ScrollPosition* scrollPos) = 0;
 
   virtual optional<int> chooseItem(const vector<ItemInfo>& items, ScrollPosition* scrollpos) = 0;
+
+  virtual optional<ExperienceType> getCreatureUpgrade(const CreatureExperienceInfo&) = 0;
 
   virtual optional<int> chooseAtMouse(const vector<string>& elems) = 0;
 

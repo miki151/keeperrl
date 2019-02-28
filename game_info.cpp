@@ -135,9 +135,7 @@ PlayerInfo::PlayerInfo(const Creature* c) : bestAttack(c) {
   positionHash = c->getPosition().getHash();
   creatureId = c->getUniqueId();
   attributes = AttributeInfo::fromCreature(c);
-  levelInfo.level = c->getAttributes().getExpLevel();
-  levelInfo.limit = c->getAttributes().getMaxExpLevel();
-  levelInfo.combatExperience = c->getAttributes().getCombatExperience();
+  experienceInfo = getCreatureExperienceInfo(c);
   intrinsicAttacks = fillIntrinsicAttacks(c);
   skills = getSkillNames(c);
   effects.clear();

@@ -887,7 +887,12 @@ optional<int> WindowView::choosePillageItem(const string& title, const vector<It
   int width = *menu->getPreferredWidth();
   int height = *menu->getPreferredHeight();
   return getBlockingGui(returnQueue, std::move(menu),
-      getOverlayPosition(GuiBuilder::OverlayInfo::BOTTOM_LEFT, height, width, rightBarWidthCollective, bottomBarHeightCollective));
+                        getOverlayPosition(GuiBuilder::OverlayInfo::BOTTOM_LEFT, height, width, rightBarWidthCollective, bottomBarHeightCollective));
+}
+
+optional<ExperienceType> WindowView::getCreatureUpgrade(const CreatureExperienceInfo& info) {
+  SyncQueue<optional<ExperienceType>> returnQueue;
+  return getBlockingGui(returnQueue, guiBuilder.drawCreatureUpgradeMenu(returnQueue, info));
 }
 
 optional<Vec2> WindowView::chooseSite(const string& message, const Campaign& campaign, optional<Vec2> current) {

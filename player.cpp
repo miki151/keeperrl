@@ -62,12 +62,13 @@
 #include "vision.h"
 #include "game_event.h"
 #include "view_object_action.h"
+#include "dungeon_level.h"
 
 template <class Archive>
 void Player::serialize(Archive& ar, const unsigned int) {
   ar& SUBCLASS(Controller) & SUBCLASS(EventListener);
   ar(travelling, travelDir, target, displayGreeting, levelMemory, messageBuffer);
-  ar(adventurer, visibilityMap, tutorial, unknownLocations);
+  ar(adventurer, visibilityMap, tutorial, unknownLocations, avatarLevel);
 }
 
 SERIALIZABLE(Player)
@@ -129,6 +130,7 @@ void Player::onEvent(const GameEvent& event) {
                   MessagePriority::CRITICAL));
           else
             privateMessage(PlayerMessage("An unnamed tribe is destroyed.", MessagePriority::CRITICAL));
+          avatarLevel->onKilledVillain(info.collective->getVillainType());
         }
       },
       [&](const FX& info) {
@@ -704,6 +706,18 @@ void Player::makeMove() {
         if (tutorial)
           tutorial->goBack();
         break;
+      case UserInputId::TECHNOLOGY: {
+        while (1) {
+          auto info = getCreatureExperienceInfo(creature);
+          info.numAvailableUpgrades = avatarLevel->numResearchAvailable();
+          if (auto exp = getView()->getCreatureUpgrade(info)) {
+            creature->increaseExpLevel(*exp, 1);
+            ++avatarLevel->consumedLevels;
+          } else
+            break;
+        }
+        break;
+      }
       case UserInputId::SCROLL_TO_HOME:
         getView()->setScrollPos(creature->getPosition());
         break;
@@ -720,7 +734,7 @@ void Player::makeMove() {
             }
             if (auto intent = c->getLastCombatIntent())
               if (intent->time > *creature->getGlobalTime() - 7_visible) {
-                getView()->presentText("Sorry", "You can't travel while being attacked by " + c->getName().a());
+                getView()->presentText("Sorry", "You can't travel while being attacked by " + intent->attacker->getName().a());
                 return false;
               }
           }
@@ -981,6 +995,15 @@ vector<TeamMemberAction> Player::getTeamMemberActions(const Creature* member) co
   return {};
 }
 
+void Player::fillDungeonLevel(PlayerInfo& info) const {
+  info.avatarLevelInfo.emplace();
+  info.avatarLevelInfo->level = avatarLevel->level + 1;
+  info.avatarLevelInfo->viewId = creature->getViewObject().id();
+  info.avatarLevelInfo->title = creature->getName().title();
+  info.avatarLevelInfo->progress = avatarLevel->progress;
+  info.avatarLevelInfo->numAvailable = avatarLevel->numResearchAvailable();
+}
+
 void Player::refreshGameInfo(GameInfo& gameInfo) const {
   gameInfo.messageBuffer = messageBuffer->current;
   gameInfo.singleModel = getGame()->isSingleModel();
@@ -991,6 +1014,7 @@ void Player::refreshGameInfo(GameInfo& gameInfo) const {
   gameInfo.time = creature->getGame()->getGlobalTime();
   gameInfo.playerInfo = PlayerInfo(creature);
   auto& info = *gameInfo.playerInfo.getReferenceMaybe<PlayerInfo>();
+  fillDungeonLevel(info);
   info.controlMode = getGame()->getPlayerCreatures().size() == 1 ? PlayerInfo::LEADER : PlayerInfo::FULL;
   auto team = getTeam();
   auto leader = team[0];

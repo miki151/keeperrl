@@ -35,6 +35,7 @@ class VisibilityMap;
 class Tutorial;
 class MessageBuffer;
 class UnknownLocations;
+class DungeonLevel;
 
 class Player : public Controller, public CreatureView, public EventListener<Player> {
   public:
@@ -145,5 +146,7 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   optional<GlobalTime> lastEnemyInterruption;
   SUnknownLocations SERIAL(unknownLocations);
   void updateSquareMemory(Position);
+  HeapAllocated<DungeonLevel> SERIAL(avatarLevel);
+  void fillDungeonLevel(PlayerInfo&) const;
 };
 
