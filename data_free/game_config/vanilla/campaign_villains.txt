@@ -78,6 +78,5 @@
     DUKE4 KNIGHTS "Knights" ALLY
     ELF_LORD ELVES "Elves" ALLY
     DWARF_BARON DWARVES "Dwarves" ALLY
-    LIZARDLORD LIZARDMEN "Lizardmen" ALLY
 }
 
