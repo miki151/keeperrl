@@ -390,7 +390,7 @@ SGuiElem GuiBuilder::drawBottomBandInfo(GameInfo& gameInfo) {
   auto bottomLine = gui.getListBuilder();
   const int space = 55;
   bottomLine.addElemAuto(gui.standardButton(gui.stack(
-      gui.margins(gui.progressBar(Color::DARK_GREEN, info.avatarLevelInfo.progress), -3, -1, 0, 4),
+      gui.margins(gui.progressBar(Color::DARK_GREEN.transparency(128), info.avatarLevelInfo.progress), -3, -1, 0, 7),
       gui.margins(gui.stack(
           gameInfo.tutorial && gameInfo.tutorial->highlights.contains(TutorialHighlight::RESEARCH) ?
               gui.tutorialHighlight() : gui.empty(),
@@ -1021,7 +1021,7 @@ SGuiElem GuiBuilder::drawBottomPlayerInfo(const GameInfo& gameInfo) {
               drawPlayerAttributes(gameInfo.playerInfo.getReferenceMaybe<PlayerInfo>()->attributes), resourceSpace)))
       .addElem(gui.centerHoriz(gui.getListBuilder()
              .addElemAuto(info.avatarLevelInfo ? gui.standardButton(gui.stack(
-                 gui.margins(gui.progressBar(Color::DARK_GREEN, info.avatarLevelInfo->progress), -3, -1, 0, 7),
+                 gui.margins(gui.progressBar(Color::DARK_GREEN.transparency(128), info.avatarLevelInfo->progress), -3, -1, 0, 7),
                  info.avatarLevelInfo->numAvailable > 0 ? gui.margins(
                      gui.uiHighlightLine(), 3, -2, -3, 2) : gui.empty(),
                  gui.getListBuilder()
@@ -1131,7 +1131,7 @@ SGuiElem GuiBuilder::getItemLine(const ItemInfo& item, function<void(Rectangle)>
     line.addBackElem(gui.stack(
         gui.label("[#]"),
         gui.button(onMultiClick),
-        getTooltip({"Click to choose how many to pick up."}, THIS_LINE)), 25);
+        getTooltip({"Click to choose how many to pick up."}, int(item.ids.begin()->getGenericId()))), 25);
   }
   auto elem = line.buildHorizontalList();
   if (item.tutorialHighlight)
@@ -2982,7 +2982,7 @@ SGuiElem GuiBuilder::drawChooseNumberMenu(SyncQueue<optional<int>>& queue, const
       .addElemAuto(gui.stack(
           gui.buttonLabel("Confirm"),
           gui.button([&queue, getCurrent] { queue.push(getCurrent());})))
-      .addSpace(10)
+      .addSpace(15)
       .addElemAuto(gui.stack(
           gui.buttonLabel("Cancel"),
           gui.button([&queue] { queue.push(none);})))
