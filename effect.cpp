@@ -423,6 +423,8 @@ void Effect::Summon::applyToCreature(Creature* c, Creature* attacker) const {
 }*/
 
 static string getCreatureName(CreatureId id) {
+  id = toLower(id);
+  std::replace(id.begin(), id.end(), '_', ' ');
   return id;
   /*if (getSummonNumber(id).getEnd() > 2)
     return getCreaturePluralName(id);
@@ -440,7 +442,7 @@ static string getCreatureName(CreatureId id) {
 }*/
 
 string Effect::Summon::getName() const {
-  return getCreatureName(creature);
+  return "summon " + getCreatureName(creature);
 }
 
 string Effect::Summon::getDescription() const {
