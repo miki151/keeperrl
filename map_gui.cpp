@@ -520,28 +520,27 @@ Vec2 MapGui::getMovementOffset(const ViewObject& object, Vec2 size, double time,
 void MapGui::drawCreatureHighlights(Renderer& renderer, const ViewObject& object, const ViewIndex& index,
     Vec2 pos, Vec2 sz,
     milliseconds curTime) {
-  auto getHighlight = [&](Color id) { return blendNightColor(Color(id).transparency(200), index); };
   for (auto status : object.getCreatureStatus()) {
-    drawCreatureHighlight(renderer, pos, sz, getHighlight(getColor(status)));
+    drawCreatureHighlight(renderer, pos, sz, getColor(status).transparency(200));
     break;
   }
   if (object.getCreatureStatus().isEmpty() && object.hasModifier(ViewObject::Modifier::HOSTILE))
-    drawCreatureHighlight(renderer, pos, sz, getHighlight(Color::ORANGE));
+    drawCreatureHighlight(renderer, pos, sz, Color::ORANGE.transparency(200));
   /*if (object.hasModifier(ViewObject::Modifier::DRAW_MORALE) && highlightMorale)
     if (auto morale = object.getAttribute(ViewObject::Attribute::MORALE))
       drawCreatureHighlight(renderer, pos, sz, getMoraleColor(*morale));*/
   if (object.hasModifier(ViewObject::Modifier::PLAYER)) {
-      drawCreatureHighlight(renderer, pos, sz, getHighlight(Color::YELLOW).transparency(200));
+      drawCreatureHighlight(renderer, pos, sz, Color::YELLOW.transparency(200));
   } else
   if (object.hasModifier(ViewObject::Modifier::PLAYER_BLINK)) {
     if ((curTime.count() / 500) % 2 == 0)
-      drawCreatureHighlight(renderer, pos, sz, getHighlight(Color::YELLOW).transparency(200));
+      drawCreatureHighlight(renderer, pos, sz, Color::YELLOW.transparency(200));
   } else
   if (object.hasModifier(ViewObject::Modifier::TEAM_HIGHLIGHT))
-    drawCreatureHighlight(renderer, pos, sz, getHighlight(Color::YELLOW).transparency(100));
+    drawCreatureHighlight(renderer, pos, sz, Color::YELLOW.transparency(100));
   if (object.hasModifier(ViewObject::Modifier::CREATURE))
     if (isCreatureHighlighted(*object.getGenericId()))
-      drawCreatureHighlight(renderer, pos, sz, getHighlight(Color::YELLOW));
+      drawCreatureHighlight(renderer, pos, sz, Color::YELLOW.transparency(200));
 }
 
 bool MapGui::isCreatureHighlighted(UniqueEntity<Creature>::Id creature) {
@@ -603,6 +602,7 @@ void MapGui::drawHealthBar(Renderer& renderer, Vec2 tilePos, Vec2 pos, Vec2 size
         (int) (pos.x + size.x * state * (1 + barLength) / 2), (int) (pos.y + size.y * barWidth));
   };
   auto color = capture ? Color::WHITE : getHealthBarColor(*health);
+  color = blendNightColor(color, index);
   auto fullRect = getBar(1);
   renderer.drawFilledRectangle(fullRect.minusMargin(-1), Color::TRANSPARENT, Color::BLACK.transparency(100));
   renderer.drawFilledRectangle(fullRect, color.transparency(100));
@@ -695,11 +695,12 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
       static auto fire1 = renderer.getTileCoord("fire1");
       static auto fire2 = renderer.getTileCoord("fire2");
       renderer.drawTile(pos - Vec2(0, 4 * size.y / Renderer::nominalSize),
-                        (curTimeReal.count() + pos.getHash()) % 500 < 250 ? fire1 : fire2, size);
+          (curTimeReal.count() + pos.getHash()) % 500 < 250 ? fire1 : fire2, size);
     }
     drawHealthBar(renderer, tilePos, pos + move, size, object, index);
     if (object.hasModifier(ViewObject::Modifier::STUNNED))
-      renderer.drawText(Color::WHITE, pos + move + size / 2, "S", Renderer::CenterType::HOR_VER, size.x * 2 / 3);
+      renderer.drawText(blendNightColor(Color::WHITE, index), pos + move + size / 2, "S",
+          Renderer::CenterType::HOR_VER, size.x * 2 / 3);
     if (object.hasModifier(ViewObject::Modifier::LOCKED))
       renderer.drawTile(pos + move, Tile::getTile(ViewId::KEY, spriteMode).getSpriteCoord(), size);
     if (fxViewManager)
@@ -1114,6 +1115,9 @@ void MapGui::renderMapObjects(Renderer& renderer, Vec2 size, milliseconds curren
 }
 
 void MapGui::drawCreatureHighlight(Renderer& renderer, Vec2 pos, Vec2 size, Color color) {
+  if (auto wpos = projectOnMap(pos))
+    if (auto index = objects[*wpos])
+      color = blendNightColor(color, *index);
   if (spriteMode)
     renderer.drawViewObject(pos + Vec2(0, size.y / 5), ViewId::CREATURE_HIGHLIGHT, true, size, color);
   else
@@ -1121,10 +1125,14 @@ void MapGui::drawCreatureHighlight(Renderer& renderer, Vec2 pos, Vec2 size, Colo
 }
 
 void MapGui::drawSquareHighlight(Renderer& renderer, Vec2 pos, Vec2 size) {
+  auto color = Color::ALMOST_WHITE;
+  if (auto wpos = projectOnMap(pos))
+    if (auto index = objects[*wpos])
+      color = blendNightColor(color, *index);
   if (spriteMode)
-    renderer.drawViewObject(pos, ViewId::SQUARE_HIGHLIGHT, true, size, Color::ALMOST_WHITE);
+    renderer.drawViewObject(pos, ViewId::SQUARE_HIGHLIGHT, true, size, color);
   else
-    renderer.drawFilledRectangle(Rectangle(pos, pos + size), Color::TRANSPARENT, Color::LIGHT_GRAY);
+    renderer.drawFilledRectangle(Rectangle(pos, pos + size), Color::TRANSPARENT, color);
 }
 
 void MapGui::considerRedrawingSquareHighlight(Renderer& renderer, milliseconds currentTimeReal, Vec2 pos, Vec2 size) {
