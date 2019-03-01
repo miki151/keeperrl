@@ -131,7 +131,7 @@ Tribe::Map Tribe::generateTribes() {
       TribeId::getLizard(), TribeId::getBandit(), TribeId::getAnt(), TribeId::getDarkElf() });
   addEnemies(ret, TribeId::getAdventurer(), {
       TribeId::getMonster(), TribeId::getPest(), TribeId::getBandit(), TribeId::getDarkElf(),
-      TribeId::getGreenskin(), TribeId::getAnt(), TribeId::getRetiredKeeper() });
+      TribeId::getGreenskin(), TribeId::getAnt(), TribeId::getRetiredKeeper(), TribeId::getLizard() });
   addEnemies(ret, TribeId::getMonster(), {
       TribeId::getWildlife(), TribeId::getHuman(), TribeId::getBandit(),  TribeId::getLizard()});
   addEnemies(ret, TribeId::getShelob(), {
