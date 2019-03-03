@@ -44,6 +44,7 @@ void Workshops::Type::stackQueue() {
 
 void Workshops::Type::addDebt(CostInfo cost) {
   debt[cost.id] += cost.value;
+  CHECK(debt[cost.id] >= 0);
 }
 
 void Workshops::Type::queue(int index, int count) {
