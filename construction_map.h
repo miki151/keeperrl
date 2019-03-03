@@ -54,7 +54,7 @@ class ConstructionMap {
 
   optional<const FurnitureInfo&> getFurniture(Position, FurnitureLayer) const;
   void setTask(Position, FurnitureLayer, UniqueEntity<Task>::Id);
-  void removeFurniture(Position, FurnitureLayer);
+  void removeFurniturePlan(Position, FurnitureLayer);
   void onFurnitureDestroyed(Position, FurnitureLayer);
   void addFurniture(Position, const FurnitureInfo&);
   bool containsFurniture(Position, FurnitureLayer) const;

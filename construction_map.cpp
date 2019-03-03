@@ -57,13 +57,11 @@ void ConstructionMap::setTask(Position pos, FurnitureLayer layer, UniqueEntity<T
   furniture[layer].getOrFail(pos).setTask(id);
 }
 
-void ConstructionMap::removeFurniture(Position pos, FurnitureLayer layer) {
+void ConstructionMap::removeFurniturePlan(Position pos, FurnitureLayer layer) {
   auto& info = furniture[layer].getOrFail(pos);
   auto type = info.getFurnitureType();
-  if (!info.isBuilt(pos)) {
-    --unbuiltCounts[type];
-    addDebt(-info.getCost());
-  }
+  --unbuiltCounts[type];
+  addDebt(-info.getCost());
   furniture[layer].erase(pos);
   allFurniture.removeElement({pos, layer});
   pos.setNeedsRenderUpdate(true);
@@ -71,21 +69,21 @@ void ConstructionMap::removeFurniture(Position pos, FurnitureLayer layer) {
 
 void ConstructionMap::addDebt(const CostInfo& cost) {
   debt[cost.id] += cost.value;
+  CHECK(debt[cost.id] >= 0);
 }
 
 void ConstructionMap::onFurnitureDestroyed(Position pos, FurnitureLayer layer) {
   PROFILE;
   if (auto info = furniture[layer].getReferenceMaybe(pos)) {
-    if (info->isBuilt(pos))
-      addDebt(info->getCost());
+    addDebt(info->getCost());
     furniturePositions[info->getFurnitureType()].erase(pos);
     info->reset();
   }
   for (auto pos2 : pos.neighbors8())
     for (auto layer : ENUM_ALL(FurnitureLayer))
       if (auto info = getFurniture(pos2, layer))
-        if (!FurnitureFactory::hasSupport(info->getFurnitureType(), pos2))
-          removeFurniture(pos2, layer);
+        if (!FurnitureFactory::hasSupport(info->getFurnitureType(), pos2) && !info->isBuilt(pos2))
+          removeFurniturePlan(pos2, layer);
 }
 
 void ConstructionMap::addFurniture(Position pos, const FurnitureInfo& info) {

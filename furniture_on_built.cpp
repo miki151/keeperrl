@@ -108,7 +108,8 @@ void handleOnBuilt(Position pos, Creature* c, FurnitureOnBuilt type) {
       removeOldStairs(pos.getLevel(), stairKey);
       pos.setLandingLink(stairKey);
       pos.getModel()->calculateStairNavigation();
-      pos.getGame()->getPlayerCollective()->claimSquare(landing);
+      pos.getGame()->getPlayerCollective()->addKnownTile(landing);
+      pos.getGame()->getPlayerControl()->addToMemory(landing);
       for (auto v : landing.neighbors8())
         pos.getGame()->getPlayerControl()->addToMemory(v);
       for (auto pos : level->getAllPositions())

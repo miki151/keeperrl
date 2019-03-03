@@ -22,6 +22,7 @@ class KnownTiles {
   void addTile(Position);
   bool isKnown(Position) const;
   const PositionSet& getBorderTiles() const;
+  const PositionSet& getAll() const;
   void limitToModel(WConstModel);
 
   template <class Archive> 

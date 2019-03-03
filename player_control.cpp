@@ -1778,20 +1778,28 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
 }
 
 Position PlayerControl::getPosition() const {
-  Vec2 topLeft(100000, 100000);
-  Vec2 bottomRight(-100000, -100000);
   auto currentLevel = getCurrentLevel();
-  for (auto& pos : collective->getTerritory().getAll())
-    if (pos.isSameLevel(currentLevel)) {
-      auto coord = pos.getCoord();
-      topLeft.x = min(coord.x, topLeft.x);
-      topLeft.y = min(coord.y, topLeft.y);
-      bottomRight.x = max(coord.x, bottomRight.x);
-      bottomRight.y = max(coord.y, bottomRight.y);
-    }
-  if (topLeft.x < 100000)
-    return Position((topLeft + bottomRight) / 2, currentLevel);
-  else if (getKeeper()->getPosition().isSameLevel(currentLevel))
+  auto processTiles = [&] (const auto& tiles) -> optional<Position> {
+    Vec2 topLeft(100000, 100000);
+    Vec2 bottomRight(-100000, -100000);
+    for (auto& pos : tiles)
+      if (pos.isSameLevel(currentLevel)) {
+        auto coord = pos.getCoord();
+        topLeft.x = min(coord.x, topLeft.x);
+        topLeft.y = min(coord.y, topLeft.y);
+        bottomRight.x = max(coord.x, bottomRight.x);
+        bottomRight.y = max(coord.y, bottomRight.y);
+      }
+    if (topLeft.x < 100000)
+      return Position((topLeft + bottomRight) / 2, currentLevel);
+    else
+      return none;
+  };
+  if (auto pos = processTiles(collective->getTerritory().getAll()))
+    return *pos;
+  if (auto pos = processTiles(collective->getKnownTiles().getAll()))
+    return *pos;
+  if (getKeeper()->getPosition().isSameLevel(currentLevel))
     return getKeeper()->getPosition();
   return Position(currentLevel->getBounds().middle(), currentLevel);
 }
@@ -2428,7 +2436,7 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
       for (auto layer : layers) {
         auto f = collective->getConstructions().getFurniture(position, layer);
         if (f && !f->isBuilt(position)) {
-          collective->removeFurniture(position, layer);
+          collective->removeUnbuiltFurniture(position, layer);
           getView()->addSound(SoundId::DIG_UNMARK);
           selection = SELECT;
         } else
@@ -2506,7 +2514,7 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
       }
       bool removed = false;
       if (!!currentPlanned && selection != SELECT) {
-        collective->removeFurniture(position, layer);
+        collective->removeUnbuiltFurniture(position, layer);
         removed = true;
       }
       while (nextIndex < info.types.size() && !collective->canAddFurniture(position, info.types[nextIndex]))
