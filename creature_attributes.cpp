@@ -116,7 +116,7 @@ int CreatureAttributes::getRawAttr(AttrType type) const {
   int ret = attr[type];
   if (auto expType = getExperienceType(type)) {
     ret += (int) expLevel[*expType];
-    ret += min((int) combatExperience, maxLevelIncrease[*expType]);
+    ret += (int) min(combatExperience, expLevel[*expType]);
   }
   return ret;
 }

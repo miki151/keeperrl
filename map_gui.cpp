@@ -124,10 +124,12 @@ optional<Vec2> MapGui::getMousePos() {
 }
 
 optional<Vec2> MapGui::projectOnMap(Vec2 screenCoord) {
-  if (screenCoord.inRectangle(getBounds()))
-    return layout->projectOnMap(getBounds(), getScreenPos(), screenCoord);
-  else
-    return none;
+  if (screenCoord.inRectangle(getBounds())) {
+    auto ret = layout->projectOnMap(getBounds(), getScreenPos(), screenCoord);
+    if (ret.inRectangle(objects.getBounds()))
+      return ret;
+  }
+  return none;
 }
 
 optional<Vec2> MapGui::getHighlightedTile(Renderer&) {
