@@ -2432,7 +2432,7 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
       for (auto layer : layers) {
         auto f = collective->getConstructions().getFurniture(position, layer);
         if (f && !f->isBuilt(position)) {
-          collective->removeFurniture(position, layer);
+          collective->removeUnbuiltFurniture(position, layer);
           getView()->addSound(SoundId::DIG_UNMARK);
           selection = SELECT;
         } else
@@ -2510,7 +2510,7 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
       }
       bool removed = false;
       if (!!currentPlanned && selection != SELECT) {
-        collective->removeFurniture(position, layer);
+        collective->removeUnbuiltFurniture(position, layer);
         removed = true;
       }
       while (nextIndex < info.types.size() && !collective->canAddFurniture(position, info.types[nextIndex]))

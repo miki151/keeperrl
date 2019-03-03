@@ -836,11 +836,11 @@ bool Collective::canAddFurniture(Position position, FurnitureType type) const {
       && position.canConstruct(type);
 }
 
-void Collective::removeFurniture(Position pos, FurnitureLayer layer) {
+void Collective::removeUnbuiltFurniture(Position pos, FurnitureLayer layer) {
   if (auto f = constructions->getFurniture(pos, layer)) {
     if (f->hasTask())
       returnResource(taskMap->removeTask(f->getTask()));
-    constructions->removeFurniture(pos, layer);
+    constructions->removeFurniturePlan(pos, layer);
   }
 }
 
@@ -851,7 +851,8 @@ void Collective::destroyOrder(Position pos, FurnitureLayer layer) {
         (furniture->getTribe() == getTribeId() || furniture->canRemoveNonFriendly())) {
       furniture->destroy(pos, DestroyAction::Type::BASH);
     }
-    removeFurniture(pos, layer);
+    if (!furniture || (!furniture->isWall() && !furniture->forgetAfterBuilding()))
+      removeUnbuiltFurniture(pos, layer);
   }
   if (layer == FurnitureLayer::MIDDLE) {
     zones->onDestroyOrder(pos);
@@ -901,8 +902,8 @@ static HighlightType getHighlight(const DestroyAction& action) {
 }
 
 void Collective::orderDestruction(Position pos, const DestroyAction& action) {
-  removeFurniture(pos, FurnitureLayer::MIDDLE);
-  auto f = NOTNULL(pos.getFurniture(FurnitureLayer::MIDDLE));
+  const auto layer = FurnitureLayer::MIDDLE;
+  auto f = NOTNULL(pos.getFurniture(layer));
   CHECK(f->canDestroy(action));
   taskMap->markSquare(pos, getHighlight(action), Task::destruction(this, pos, f, action,
       pos.canEnterEmpty({MovementTrait::WALK}) ? nullptr : positionMatching.get()),
@@ -930,9 +931,10 @@ bool Collective::isConstructionReachable(Position pos) {
 
 void Collective::onConstructed(Position pos, FurnitureType type) {
   if (pos.getFurniture(type)->forgetAfterBuilding()) {
-    constructions->removeFurniture(pos, Furniture::getLayer(type));
+    constructions->removeFurniturePlan(pos, Furniture::getLayer(type));
     if (territory->contains(pos))
       territory->remove(pos);
+    control->onConstructed(pos, type);
     return;
   }
   populationIncrease -= Furniture::getPopulationIncrease(type, constructions->getBuiltCount(type));
@@ -946,6 +948,7 @@ void Collective::onConstructed(Position pos, FurnitureType type) {
 }
 
 void Collective::onDestructed(Position pos, FurnitureType type, const DestroyAction& action) {
+  removeUnbuiltFurniture(pos, Furniture::getLayer(type));
   switch (action.getType()) {
     case DestroyAction::Type::CUT:
       zones->setZone(pos, ZoneId::FETCH_ITEMS);
