@@ -20,6 +20,10 @@ const PositionSet& KnownTiles::getBorderTiles() const {
   return border;
 }
 
+const PositionSet&KnownTiles::getAll() const {
+  return known;
+}
+
 bool KnownTiles::isKnown(Position pos) const {
   return known.count(pos);
 };
