@@ -728,6 +728,7 @@ PCreature CreatureFactory::getSpecial(TribeId tribe, bool humanoid, bool large, 
 CreatureAttributes CreatureFactory::getAttributes(CreatureId id) {
   auto ret = getAttributesFromId(id);
   ret.setCreatureId(id);
+  ret.randomize();
   return ret;
 }
 

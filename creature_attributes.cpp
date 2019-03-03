@@ -38,6 +38,14 @@ void CreatureAttributes::initializeLastingEffects() {
       ++permanentEffects[effect];
 }
 
+void CreatureAttributes::randomize() {
+  int chosen = Random.get(genderAlternatives.size() + 1);
+  if (chosen > 0) {
+    gender = genderAlternatives[chosen - 1].first;
+    viewId = genderAlternatives[chosen - 1].second;
+  }
+}
+
 CreatureAttributes::CreatureAttributes(function<void(CreatureAttributes&)> fun) {
   fun(*this);
   initializeLastingEffects();
@@ -54,7 +62,7 @@ void CreatureAttributes::serializeImpl(Archive& ar, const unsigned int version) 
   ar(NAMED(viewId), NAMED(illusionViewObject), NAMED(name), NAMED(attr), NAMED(chatReactionFriendly));
   ar(NAMED(chatReactionHostile), NAMED(passiveAttack), OPTION(gender), OPTION(viewIdUpgrades));
   ar(NAMED(body), OPTION(deathDescription), NAMED(hatedByEffect));
-  ar(OPTION(cantEquip), OPTION(courage), OPTION(canJoinCollective));
+  ar(OPTION(cantEquip), OPTION(courage), OPTION(canJoinCollective), OPTION(genderAlternatives));
   ar(OPTION(boulder), OPTION(noChase), OPTION(isSpecial), OPTION(skills), OPTION(spells));
   ar(OPTION(permanentEffects), OPTION(lastingEffects), OPTION(minionActivities), OPTION(expLevel));
   ar(OPTION(noAttackSound), OPTION(maxLevelIncrease), NAMED(creatureId), NAMED(petReaction), OPTION(combatExperience));

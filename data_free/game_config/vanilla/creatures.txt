@@ -824,27 +824,9 @@
   "PESEANT_PLAYER"
     {
       viewId = PESEANT
-      attr = {
-        DAMAGE 14
-        DEFENSE 12 
+      genderAlternatives = {
+        FEMALE PESEANT_WOMAN
       }
-      body = {
-        type = Humanoid LARGE
-      }
-      chatReactionFriendly = "curses all dungeons"
-      chatReactionHostile = "\"Heeelp!\""
-      skills = {
-        DIGGING 0.1
-      }
-      name = {
-        name = "peasant"
-      }
-      hatedByEffect = HATE_HUMANS
-    }
-  "PESEANT_PLAYER_F"
-    {
-      viewId = PESEANT_WOMAN
-      gender = FEMALE
       attr = {
         DAMAGE 14
         DEFENSE 12 
@@ -1042,30 +1024,9 @@
   "PESEANT"
     {
       viewId = PESEANT
-      attr = {
-        DAMAGE 14
-        DEFENSE 12 
+      genderAlternatives = {
+        FEMALE PESEANT_WOMAN
       }
-      body = {
-        type = Humanoid LARGE
-      }
-      chatReactionFriendly = "curses all dungeons"
-      chatReactionHostile = "\"Heeelp!\""
-      permanentEffects = {
-        CROPS_SKILL 1
-      }
-      skills = {
-        DIGGING 0.1
-      }
-      name = {
-        name = "peasant"
-      }
-      hatedByEffect = HATE_HUMANS
-    }
-  "PESEANT_F"
-    {
-      viewId = PESEANT_WOMAN
-      gender = FEMALE
       attr = {
         DAMAGE 14
         DEFENSE 12 
@@ -1133,6 +1094,9 @@
   "PESEANT_PRISONER"
     {
       viewId = PESEANT
+      genderAlternatives = {
+        FEMALE PESEANT_WOMAN
+      }
       attr = {
         DAMAGE 14
         DEFENSE 12 
@@ -1145,27 +1109,6 @@
       permanentEffects = {
         POISON_RESISTANT 1
       }
-      skills = {
-        DIGGING 0.3
-      }
-      name = {
-        name = "peasant"
-      }
-      hatedByEffect = HATE_HUMANS
-    }
-  "PESEANT_PRISONER_F"
-    {
-      viewId = PESEANT_WOMAN
-      gender = FEMALE
-      attr = {
-        DAMAGE 14
-        DEFENSE 12 
-      }
-      body = {
-        type = Humanoid LARGE
-      }
-      chatReactionFriendly = "curses all dungeons"
-      chatReactionHostile = "\"Heeelp!\""
       skills = {
         DIGGING 0.3
       }
@@ -1842,35 +1785,9 @@
   "ELF"
     {
       viewId = ELF
-      attr = {
-        DAMAGE 14
-        DEFENSE 6 
+      genderAlternatives = {
+        FEMALE ELF_WOMAN
       }
-      body = {
-        type = Humanoid MEDIUM
-      }
-      chatReactionFriendly = "curses all dwarves"
-      chatReactionHostile = "\"Die!\""
-      spells = { HEAL_SELF }
-      skills = {
-        JEWELER 0.9
-      }
-      maxLevelIncrease = {
-        SPELL 1
-      }
-      permanentEffects = {
-        ELF_VISION 1
-      }
-      name = {
-        name = "elf"
-        pluralName = "elves"
-      }
-      hatedByEffect = HATE_ELVES
-    }
-  "ELF_F"
-    {
-      viewId = ELF_WOMAN
-      gender = FEMALE
       attr = {
         DAMAGE 14
         DEFENSE 6 
@@ -1983,31 +1900,9 @@
   "DARK_ELF"
     {
       viewId = DARK_ELF
-      attr = {
-        DAMAGE 14
-        DEFENSE 6 
+      genderAlternatives = {
+        FEMALE DARK_ELF_WOMAN
       }
-      body = {
-        type = Humanoid MEDIUM
-      }
-      chatReactionFriendly = "curses all dwarves"
-      chatReactionHostile = "\"Die!\""
-      permanentEffects = {
-        MAGIC_RESISTANCE 1
-        SWIMMING_SKILL 1
-        NIGHT_VISION 1
-      }
-      spells = { HEAL_SELF }
-      name = {
-        name = "dark elf"
-        pluralName = "dark elves"
-      }
-      hatedByEffect = HATE_ELVES
-    }
-  "DARK_ELF_F"
-    {
-      viewId = DARK_ELF_WOMAN
-      gender = FEMALE
       attr = {
         DAMAGE 14
         DEFENSE 6 

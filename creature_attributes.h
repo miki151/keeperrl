@@ -110,6 +110,7 @@ class CreatureAttributes {
   bool getCanJoinCollective() const;
   void increaseExpFromCombat(double attackDiff);
   optional<LastingEffect> getHatedByEffect() const;
+  void randomize();
 
   friend class CreatureFactory;
 
@@ -126,6 +127,7 @@ class CreatureAttributes {
   optional<string> SERIAL(chatReactionHostile);
   heap_optional<Effect> SERIAL(passiveAttack);
   Gender SERIAL(gender) = Gender::MALE;
+  vector<pair<Gender, ViewId>> SERIAL(genderAlternatives);
   bool SERIAL(cantEquip) = false;
   double SERIAL(courage) = 1;
   bool SERIAL(boulder) = false;
