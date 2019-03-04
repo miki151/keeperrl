@@ -20,6 +20,7 @@ struct CreatureList {
   CreatureList(int count, vector<pair<int, CreatureId>>);
   CreatureList& addUnique(CreatureId);
   CreatureList& increaseBaseLevel(EnumMap<ExperienceType, int>);
+  CreatureList& increaseExpLevel(EnumMap<ExperienceType, int>);
   CreatureList& addInventory(vector<ItemType>);
 
   string getSummary(CreatureFactory* factory) const;
@@ -36,5 +37,6 @@ struct CreatureList {
   using Freq = pair<int, CreatureId>;
   vector<Freq> SERIAL(all);
   EnumMap<ExperienceType, int> SERIAL(baseLevelIncrease);
+  EnumMap<ExperienceType, int> SERIAL(expLevelIncrease);
   vector<ItemType> SERIAL(inventory);
 };

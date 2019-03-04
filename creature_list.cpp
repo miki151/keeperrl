@@ -8,7 +8,7 @@
 #include "item_type.h"
 #include "view_id.h"
 
-SERIALIZE_DEF(CreatureList, NAMED(count), OPTION(uniques), NAMED(all), OPTION(baseLevelIncrease), OPTION(inventory))
+SERIALIZE_DEF(CreatureList, NAMED(count), OPTION(uniques), NAMED(all), OPTION(baseLevelIncrease), OPTION(expLevelIncrease), OPTION(inventory))
 
 
 CreatureList::CreatureList() {}
@@ -52,6 +52,12 @@ CreatureList& CreatureList::increaseBaseLevel(EnumMap<ExperienceType, int> l) {
   return *this;
 }
 
+CreatureList& CreatureList::increaseExpLevel(EnumMap<ExperienceType, int> l) {
+  for (auto exp : ENUM_ALL(ExperienceType))
+    expLevelIncrease[exp] += l[exp];
+  return *this;
+}
+
 CreatureList& CreatureList::addUnique(CreatureId id) {
   uniques.push_back(id);
   if (count < uniques.size())
@@ -78,8 +84,10 @@ vector<PCreature> CreatureList::generate(RandomGen& random, CreatureFactory* fac
     } else
       id = random.choose(all);
     auto creature = factory->fromId(*id, tribe, aiFactory, inventory);
-    for (auto exp : ENUM_ALL(ExperienceType))
+    for (auto exp : ENUM_ALL(ExperienceType)) {
       creature->getAttributes().increaseBaseExpLevel(exp, baseLevelIncrease[exp]);
+      creature->increaseExpLevel(exp, expLevelIncrease[exp]);
+    }
     ret.push_back(std::move(creature));
   }
   return ret;

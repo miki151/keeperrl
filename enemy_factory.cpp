@@ -767,6 +767,17 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
             c.furniture = FurnitureFactory(c.tribe, {{FurnitureType::CHEST, 1}},
                 {FurnitureType::ALTAR});),
             CollectiveConfig::noImmigrants()).setNonDiscoverable();
+    case EnemyId::EVIL_TEMPLE:
+      return EnemyInfo(CONSTRUCT(SettlementInfo,
+            c.type = SettlementType::TEMPLE;
+            c.tribe = TribeId::getDarkKeeper();
+            c.race = "altar"_s;
+            if (random.roll(3))
+              c.inhabitants.leader = CreatureList("ORC_SHAMAN").increaseExpLevel({{ExperienceType::SPELL, 7}});
+            c.buildingId = BuildingId::WOOD;
+            c.furniture = FurnitureFactory(c.tribe, {{FurnitureType::CHEST, 1}},
+                {FurnitureType::ALTAR});),
+            CollectiveConfig::noImmigrants()).setNonDiscoverable();
     case EnemyId::RUINS:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::COTTAGE;

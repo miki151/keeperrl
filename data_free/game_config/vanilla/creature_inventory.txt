@@ -178,6 +178,11 @@
         { Club }
         { LeatherArmor }
       }
+  {"ORC_SHAMAN"}
+      {
+        { WoodenStaff }
+        { LeatherArmor }
+      }
   {"OGRE"}
       {
         { HeavyClub }
