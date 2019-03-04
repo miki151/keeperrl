@@ -86,6 +86,12 @@ void CreatureName::setBare(const std::string& s) {
   name = s;
 }
 
+void CreatureName::addBarePrefix(const string& p) {
+  if (!stackName)
+    stackName = name;
+  name = p + " " + name;
+}
+
 const optional<string>& CreatureName::stackOnly() const {
   return stackName;
 }

@@ -6,6 +6,20 @@
 #include "body.h"
 #include "workshops.h"
 
+optional<string> getExtraBodyPartPrefix(const ExtraBodyPart& part) {
+  switch (part.part) {
+    case BodyPart::HEAD:
+      if (part.count == 1)
+        return "two-headed"_s;
+      else
+        return "multi-headed"_s;
+    case BodyPart::WING:
+      return "winged"_s;
+    default:
+      return none;
+  }
+}
+
 void applySpecialTrait(SpecialTrait trait, Creature* c) {
   trait.visit(
       [&] (const ExtraTraining& t) {
@@ -19,6 +33,9 @@ void applySpecialTrait(SpecialTrait trait, Creature* c) {
       },
       [&] (ExtraBodyPart part) {
         c->getAttributes().add(part.part, part.count);
+        if (auto prefix = getExtraBodyPartPrefix(part)) {
+          c->getName().addBarePrefix(*prefix);
+        }
       },
       [&] (SkillId skill) {
         c->getAttributes().getSkills().setValue(skill, Workshops::getLegendarySkillThreshold());
