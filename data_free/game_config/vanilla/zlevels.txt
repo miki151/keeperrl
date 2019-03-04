@@ -17,7 +17,7 @@
     minDepth = 2
     maxDepth = 4
   }
-  { // adamantium, the ores are added automatically around the golems
+  { # adamantium, the ores are added automatically around the golems
     type = FullZLevel {
       enemy = ADA_GOLEMS
     }
