@@ -63,31 +63,6 @@ vector<Creature*> Effect::summonCreatures(Creature* c, int radius, vector<PCreat
   return summonCreatures(c->getPosition(), radius, std::move(creatures), delay);
 }
 
-static void airBlast(Creature* who, Position position, vector<Position> trajectory) {
-  constexpr int maxDistance = 4;
-  if (Creature* c = position.getCreature()) {
-    optional<Position> target;
-    for (auto& pos : trajectory)
-      if (position.canMoveCreature(pos))
-        target = pos;
-      else
-        break;
-    if (target) {
-      c->displace(c->getPosition().getDir(*target));
-      c->you(MsgType::ARE, "thrown back");
-    }
-  }
-  for (auto& stack : Item::stackItems(position.getItems())) {
-    position.throwItem(
-        position.removeItems(stack),
-        Attack(who, Random.choose<AttackLevel>(),
-          stack[0]->getWeaponInfo().attackType, 15, AttrType::DAMAGE), maxDistance, trajectory.back(), VisionId::NORMAL);
-  }
-  for (auto furniture : position.modFurniture())
-    if (furniture->canDestroy(DestroyAction::Type::BASH))
-      furniture->destroy(position, DestroyAction::Type::BASH);
-}
-
 void Effect::emitPoisonGas(Position pos, double amount, bool msg) {
   PROFILE;
   for (Position v : pos.neighbors8())
@@ -843,6 +818,45 @@ static optional<FXInfo> getProjectileFX(const DirEffectType& effect) {
   }
 }
 
+static void airBlast(Creature* who, Position position, Position target) {
+  CHECK(target != who->getPosition());
+  Vec2 direction = who->getPosition().getDir(target);
+  constexpr int maxDistance = 4;
+  while (direction.length8() < maxDistance * 3)
+    direction += who->getPosition().getDir(target);
+  auto trajectory = drawLine(Vec2(0, 0), direction);
+  for (int i : All(trajectory))
+    if (trajectory[i] == who->getPosition().getDir(position)) {
+      trajectory = getSubsequence(trajectory, i + 1, maxDistance);
+      for (auto& v : trajectory)
+        v = v - who->getPosition().getDir(position);
+      break;
+    }
+  CHECK(trajectory.size() == maxDistance);
+  if (Creature* c = position.getCreature()) {
+    optional<Position> target;
+    for (auto& v : trajectory)
+      if (position.canMoveCreature(v))
+        target = position.plus(v);
+      else
+        break;
+    if (target) {
+      c->displace(c->getPosition().getDir(*target));
+      c->you(MsgType::ARE, "thrown back");
+    }
+  }
+  for (auto& stack : Item::stackItems(position.getItems())) {
+    position.throwItem(
+        position.removeItems(stack),
+        Attack(who, Random.choose<AttackLevel>(),
+          stack[0]->getWeaponInfo().attackType, 15, AttrType::DAMAGE), maxDistance,
+          position.plus(trajectory.back()), VisionId::NORMAL);
+  }
+  for (auto furniture : position.modFurniture())
+    if (furniture->canDestroy(DestroyAction::Type::BASH))
+      furniture->destroy(position, DestroyAction::Type::BASH);
+}
+
 void applyDirected(Creature* c, Position target, const DirEffectType& type, bool withProjectileFX) {
   if (target == c->getPosition())
     return;
@@ -860,8 +874,7 @@ void applyDirected(Creature* c, Position target, const DirEffectType& type, bool
   switch (type.getId()) {
     case DirEffectId::BLAST:
       for (int i : All(trajectory).reverse())
-        if (i < trajectory.size() - 1)
-          airBlast(c, trajectory[i], getSubsequence(trajectory, i, trajectory.size() - i));
+        airBlast(c, trajectory[i], target);
       break;
     case DirEffectId::FIREBREATH:
     case DirEffectId::FIREBALL:
