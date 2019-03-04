@@ -547,51 +547,64 @@ SGuiElem GuiFactory::labelHighlight(const string& s, Color c, char hotkey) {
   return mouseHighlight2(label(s, highlighted, hotkey), label(s, c, hotkey));
 }
 
-SGuiElem GuiFactory::buttonLabel(const string& s, bool matchTextWidth, bool centerHorizontally) {
-  auto text = label(s, Color::WHITE);
-  if (centerHorizontally)
-    text = centerHoriz(std::move(text));
-  return standardButton(std::move(text), matchTextWidth);
+SGuiElem GuiFactory::buttonLabel(const string& s, function<void()> f, bool matchTextWidth, bool centerHorizontally) {
+  return buttonLabel(s, button(std::move(f)), matchTextWidth, centerHorizontally);
 }
 
-SGuiElem GuiFactory::standardButton(SGuiElem content, bool matchTextWidth) {
-  auto ret = mouseHighlight2(
-      margins(standardButtonHighlight(), -7, -5, -7, 3),
-      margins(standardButton(), -7, -5, -7, 3)
-  );
+SGuiElem GuiFactory::buttonLabelBlink(const string& s, function<void()> f) {
+  auto ret = margins(stack(
+        blink(standardButtonHighlight(), standardButton()),
+        button(std::move(f))),
+      -7, -5, -7, 3);
+  return stack(ret, label(s));
+}
+
+SGuiElem GuiFactory::buttonLabel(const string& s, SGuiElem button, bool matchTextWidth, bool centerHorizontally) {
+  auto text = label(s);
+  if (centerHorizontally)
+    text = centerHoriz(std::move(text));
+  return standardButton(std::move(text), std::move(button), matchTextWidth);
+}
+
+SGuiElem GuiFactory::standardButton(SGuiElem content, SGuiElem button, bool matchTextWidth) {
+  auto ret = margins(stack(
+        mouseHighlight2(standardButtonHighlight(), standardButton()),
+        std::move(button)),
+      -7, -5, -7, 3);
   if (matchTextWidth)
     ret = setWidth(*content->getPreferredWidth() + 1, std::move(ret));
   return stack(ret, std::move(content));
 }
 
-SGuiElem GuiFactory::buttonLabelWithMargin(const string& s, char hotkey, bool matchTextWidth) {
+SGuiElem GuiFactory::buttonLabelWithMargin(const string& s, bool matchTextWidth) {
   auto ret = mouseHighlight2(
       stack(
           standardButtonHighlight(),
-          centerVert(centerHoriz(margins(label(s, Color::WHITE, hotkey), 0, 0, 0, 5)))),
+          centerVert(centerHoriz(margins(label(s, Color::WHITE), 0, 0, 0, 5)))),
       stack(
           standardButton(),
-          centerVert(centerHoriz(margins(label(s, Color::WHITE, hotkey), 0, 0, 0, 5))))
+          centerVert(centerHoriz(margins(label(s, Color::WHITE), 0, 0, 0, 5))))
   );
   if (matchTextWidth)
     ret = setWidth(renderer.getTextLength(s) + 1, std::move(ret));
   return ret;
 }
 
-SGuiElem GuiFactory::buttonLabelSelected(const string& s, char hotkey, bool matchTextWidth, bool centerHorizontally) {
-  auto text = label(s, Color::WHITE, hotkey);
+SGuiElem GuiFactory::buttonLabelSelected(const string& s, function<void()> f, bool matchTextWidth, bool centerHorizontally) {
+  auto text = label(s, Color::WHITE);
   if (centerHorizontally)
     text = centerHoriz(text);
-  auto ret = stack(margins(standardButtonHighlight(), -7, -5, -7, 3), std::move(text));
+  auto ret = stack(margins(stack(standardButtonHighlight(), button(std::move(f))), -7, -5, -7, 3),
+      std::move(text));
   if (matchTextWidth)
     ret = setWidth(renderer.getTextLength(s) + 1, std::move(ret));
   return ret;
 }
 
-SGuiElem GuiFactory::buttonLabelInactive(const string& s, char hotkey, bool matchTextWidth) {
+SGuiElem GuiFactory::buttonLabelInactive(const string& s, bool matchTextWidth) {
   auto ret = stack(
       margins(standardButton(), -7, -5, -7, 3),
-      label(s, Color::GRAY, hotkey));
+      label(s, Color::GRAY));
   if (matchTextWidth)
     ret = setWidth(renderer.getTextLength(s) + 1, std::move(ret));
   return ret;
@@ -2553,8 +2566,8 @@ void GuiFactory::loadFreeImages(const DirectoryPath& path) {
 
   textures[TexId::BUTTON_BG] = Texture(path.file("ui/button_bg.png"));
   textures[TexId::BUTTON_CORNER] = Texture(path.file("ui/button_corner.png"));
-  textures[TexId::BUTTON_BOTTOM] = Texture(path.file("ui/button_corner.png"), 6, 4, 2, 4);
-  textures[TexId::BUTTON_SIDE] = Texture(path.file("ui/button_corner.png"), 0, 0, 4, 2);
+  textures[TexId::BUTTON_BOTTOM] = Texture(path.file("ui/button_corner.png"), 7, 4, 1, 4);
+  textures[TexId::BUTTON_SIDE] = Texture(path.file("ui/button_corner.png"), 0, 0, 4, 1);
   textures[TexId::BUTTON_CORNER_HIGHLIGHT] = Texture(path.file("ui/button_corner_highlight.png"));
   textures[TexId::BUTTON_BOTTOM_HIGHLIGHT] = Texture(path.file("ui/button_corner_highlight.png"), 7, 4, 1, 4);
   textures[TexId::BUTTON_SIDE_HIGHLIGHT] = Texture(path.file("ui/button_corner_highlight.png"), 0, 0, 4, 1);
@@ -3016,7 +3029,12 @@ SGuiElem GuiFactory::uiHighlightLine(Color c) {
 }
 
 SGuiElem GuiFactory::blink(SGuiElem elem) {
-  return conditional(elem, [this]() { return blinkingState(clock->getRealMillis(), 2, 4) < 0.5; });
+  return conditional(std::move(elem), [this]() { return blinkingState(clock->getRealMillis(), 2, 4) < 0.5; });
+}
+
+SGuiElem GuiFactory::blink(SGuiElem elem, SGuiElem elem2) {
+  return conditional2(std::move(elem), std::move(elem2),
+      [this](GuiElem*) { return blinkingState(clock->getRealMillis(), 2, 4) < 0.5; });
 }
 
 SGuiElem GuiFactory::tutorialHighlight() {

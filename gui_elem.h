@@ -150,14 +150,17 @@ class GuiFactory {
   SGuiElem progressBar(Color, double state);
   SGuiElem label(const string&, Color = Color::WHITE, char hotkey = 0);
   SGuiElem standardButton();
-  SGuiElem standardButton(SGuiElem content, bool matchTextWidth = true);
+  SGuiElem standardButton(SGuiElem content, SGuiElem button, bool matchTextWidth = true);
   SGuiElem standardButtonHighlight();
-  SGuiElem buttonLabel(const string&, bool matchTextWidth = true,
+  SGuiElem buttonLabel(const string&, SGuiElem button, bool matchTextWidth = true,
       bool centerHorizontally = false);
-  SGuiElem buttonLabelWithMargin(const string&, char hotkey = 0, bool matchTextWidth = true);
-  SGuiElem buttonLabelSelected(const string&, char hotkey = 0, bool matchTextWidth = true,
+  SGuiElem buttonLabel(const string&, function<void()> button, bool matchTextWidth = true,
       bool centerHorizontally = false);
-  SGuiElem buttonLabelInactive(const string&, char hotkey = 0, bool matchTextWidth = true);
+  SGuiElem buttonLabelBlink(const string&, function<void()> button);
+  SGuiElem buttonLabelWithMargin(const string&, bool matchTextWidth = true);
+  SGuiElem buttonLabelSelected(const string&, function<void()> button, bool matchTextWidth = true,
+      bool centerHorizontally = false);
+  SGuiElem buttonLabelInactive(const string&, bool matchTextWidth = true);
   SGuiElem labelHighlight(const string&, Color = Color::WHITE, char hotkey = 0);
   SGuiElem labelHighlightBlink(const string& s, Color, Color, char hotkey = 0);
   SGuiElem label(const string&, int size, Color = Color::WHITE);
@@ -289,6 +292,7 @@ class GuiFactory {
   SGuiElem uiHighlightLine(Color = Color::GREEN);
   SGuiElem uiHighlight(Color = Color::GREEN);
   SGuiElem blink(SGuiElem);
+  SGuiElem blink(SGuiElem, SGuiElem);
   SGuiElem tutorialHighlight();
   SGuiElem rectangleBorder(Color);
   SGuiElem renderTopLayer(SGuiElem content);
