@@ -145,7 +145,7 @@ class Body {
   bool isCritical(BodyPart) const;
   PItem getBodyPartItem(const string& creatureName, BodyPart);
   string getMaterialAndSizeAdjectives() const;
-  bool SERIAL(xhumanoid) = true;
+  bool SERIAL(xhumanoid) = false;
   Size SERIAL(size) = Size::LARGE;
   double SERIAL(weight) = 90;
   EnumMap<BodyPart, int> SERIAL(bodyParts) = {{BodyPart::TORSO, 1}, {BodyPart::BACK, 1}};

@@ -1021,11 +1021,11 @@ struct BodyTypeReader {
       case BodyType::Humanoid:
         body->setHumanoidBodyParts(getDefaultIntrinsicDamage(size));
         body->setDeathSound(SoundId::HUMANOID_DEATH);
+        body->setHumanoid(true);
         break;
       case BodyType::HumanoidLike:
         body->setHumanoidBodyParts(getDefaultIntrinsicDamage(size));
         body->setDeathSound(SoundId::BEAST_DEATH);
-        body->setHumanoid(false);
         break;
       case BodyType::Bird:
         body->setBirdBodyParts(getDefaultIntrinsicDamage(size));
