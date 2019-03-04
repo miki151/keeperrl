@@ -547,8 +547,8 @@ SGuiElem GuiFactory::labelHighlight(const string& s, Color c, char hotkey) {
   return mouseHighlight2(label(s, highlighted, hotkey), label(s, c, hotkey));
 }
 
-SGuiElem GuiFactory::buttonLabel(const string& s, char hotkey, bool matchTextWidth, bool centerHorizontally) {
-  auto text = label(s, Color::WHITE, hotkey);
+SGuiElem GuiFactory::buttonLabel(const string& s, bool matchTextWidth, bool centerHorizontally) {
+  auto text = label(s, Color::WHITE);
   if (centerHorizontally)
     text = centerHoriz(std::move(text));
   return standardButton(std::move(text), matchTextWidth);

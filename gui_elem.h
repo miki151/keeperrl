@@ -152,7 +152,7 @@ class GuiFactory {
   SGuiElem standardButton();
   SGuiElem standardButton(SGuiElem content, bool matchTextWidth = true);
   SGuiElem standardButtonHighlight();
-  SGuiElem buttonLabel(const string&, char hotkey = 0, bool matchTextWidth = true,
+  SGuiElem buttonLabel(const string&, bool matchTextWidth = true,
       bool centerHorizontally = false);
   SGuiElem buttonLabelWithMargin(const string&, char hotkey = 0, bool matchTextWidth = true);
   SGuiElem buttonLabelSelected(const string&, char hotkey = 0, bool matchTextWidth = true,

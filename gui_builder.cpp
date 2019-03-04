@@ -3176,8 +3176,8 @@ SGuiElem GuiBuilder::drawGenderButtons(const vector<View::AvatarData>& avatars,
     for (int i : All(avatar.viewId))
       genderList.addElemAuto(gui.conditional(gui.stack(
           gui.button([i, gender] { *gender = i; }),
-          gui.conditional(gui.buttonLabelSelected(capitalFirst(i == 0 ? "male"_s : "female"_s), 0, false, true),
-              gui.buttonLabel(capitalFirst(capitalFirst(i == 0 ? "male"_s : "female"_s)), 0, false, true),
+          gui.conditional(gui.buttonLabelSelected(capitalFirst(i == 0 ? "male"_s : "female"_s), false, true),
+              gui.buttonLabel(capitalFirst(capitalFirst(i == 0 ? "male"_s : "female"_s)), false, true),
              [gender, i] { return *gender == i; })),
           [=] { return avatarIndex == *chosenAvatar; }));
     genderOptions.push_back(genderList.buildHorizontalListFit(0.2));
@@ -3192,7 +3192,7 @@ static int getChosenGender(shared_ptr<int> gender, shared_ptr<int> chosenAvatar,
 
 SGuiElem GuiBuilder::drawFirstNameButtons(const vector<View::AvatarData>& avatars,
     shared_ptr<int> gender, shared_ptr<int> chosenAvatar) {
-  vector<SGuiElem> firstNameOptions = { gui.buttonLabel("", 0, false) };
+  vector<SGuiElem> firstNameOptions = { gui.buttonLabel("", false) };
   for (int avatarIndex : All(avatars)) {
     auto& avatar = avatars[avatarIndex];
     for (int genderIndex : All(avatar.viewId))
@@ -3217,7 +3217,7 @@ SGuiElem GuiBuilder::drawRoleButtons(shared_ptr<PlayerRole> chosenRole, shared_p
                 }
           }),
           gui.conditional(gui.buttonLabelSelected(capitalFirst(getName(role)), 0, false, true),
-              gui.buttonLabel(capitalFirst(getName(role)), 0, false, true),
+              gui.buttonLabel(capitalFirst(getName(role)), false, true),
               [chosenRole, role] { return *chosenRole == role; })
       ));
   return roleList.buildHorizontalListFit(0.2);
@@ -3310,9 +3310,9 @@ SGuiElem GuiBuilder::drawPlusMinus(function<void(int)> callback, bool canIncreas
   return gui.margins(gui.getListBuilder()
       .addElem(canIncrease
           ? gui.stack(
-                gui.buttonLabel("+", 0, false),
+                gui.buttonLabel("+", false),
                 gui.button([callback] { callback(1); }))
-          : gui.buttonLabelInactive("+", 0, false), 10)
+          : gui.buttonLabelInactive("+", false), 10)
       .addSpace(12)
       .addElem(canDecrease
           ? gui.stack(
