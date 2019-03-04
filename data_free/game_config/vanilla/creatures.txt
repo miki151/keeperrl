@@ -1106,9 +1106,6 @@
       }
       chatReactionFriendly = "curses all dungeons"
       chatReactionHostile = "\"Heeelp!\""
-      permanentEffects = {
-        POISON_RESISTANT 1
-      }
       skills = {
         DIGGING 0.3
       }
