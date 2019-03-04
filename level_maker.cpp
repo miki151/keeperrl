@@ -2690,12 +2690,17 @@ PLevelMaker LevelMaker::getFullZLevel(RandomGen& random, optional<SettlementInfo
   auto locations = unique<RandomLocations>();
   auto startingPosMaker = unique<StartingPos>(Predicate::alwaysTrue(), landingLink);
   LevelMaker* startingPos = startingPosMaker.get();
+  vector<SurroundWithResourcesInfo> surroundWithResources;
   if (settlement) {
     auto maker = getSettlementMaker(random, *settlement);
     if (settlement->corpses)
       maker->addMaker(unique<Corpses>(*settlement->corpses));
     maker->addMaker(unique<RandomLocations>(makeVec<PLevelMaker>(std::move(startingPosMaker)), makeVec<pair<int, int>>({1, 1}),
         Predicate::canEnter(MovementTrait::WALK)));
+    if (settlement->corpses)
+      queue->addMaker(unique<Corpses>(*settlement->corpses));
+    if (settlement->surroundWithResources > 0)
+      surroundWithResources.push_back({maker.get(), *settlement});
     // assign the whole settlement maker to startingPos, otherwise resource distance constraint doesn't work
     startingPos = maker.get();
     locations->add(std::move(maker), getSize(random, settlement->type),
@@ -2705,7 +2710,7 @@ PLevelMaker LevelMaker::getFullZLevel(RandomGen& random, optional<SettlementInfo
         RandomLocations::LocationPredicate(Predicate::alwaysTrue()));
   }
   locations->setMinMargin(startingPos, mapWidth / 3);
-  generateResources(random, resourceCounts, startingPos, locations.get(), {}, mapWidth, keeperTribe);
+  generateResources(random, resourceCounts, startingPos, locations.get(), surroundWithResources, mapWidth, keeperTribe);
   queue->addMaker(std::move(locations));
   return std::move(queue);
 }

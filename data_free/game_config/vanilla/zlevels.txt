@@ -2,7 +2,7 @@
 # At every depth the game chooses a random level that's available
 # They are generated on the fly when stairs are built so you can edit this file while the game is running.
 {
-  # This is an filled level that can appear at all depths
+  # This is a filled level that can appear at all depths
   {
     type = FullZLevel {
     }
@@ -16,6 +16,12 @@
     # Possible depths for this level, inclusive. The first level when you dig down is 1.
     minDepth = 2
     maxDepth = 4
+  }
+  { // adamantium, the ores are added automatically around the golems
+    type = FullZLevel {
+      enemy = ADA_GOLEMS
+    }
+    minDepth = 10
   }
   {
     # A level full of water with some islands
@@ -40,7 +46,8 @@
       creatures = {
         count = 10
         all = {
-          1 "FIRE_ELEMENTAL"
+          10 "FIRE_ELEMENTAL"
+          1 "RED_DRAGON"
         }
       }
     }

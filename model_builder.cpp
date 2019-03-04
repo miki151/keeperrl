@@ -282,14 +282,12 @@ PModel ModelBuilder::tryCampaignBaseModel(const string& siteName, TribeId keeper
       enemyInfo.push_back(enemyFactory->get(EnemyId::DWARF_CAVE));
       enemyInfo.push_back(enemyFactory->get(EnemyId::BANDITS));
       enemyInfo.push_back(enemyFactory->get(EnemyId::ANTS_CLOSED_SMALL));
-      enemyInfo.push_back(enemyFactory->get(EnemyId::ADA_GOLEMS));
       enemyInfo.push_back(enemyFactory->get(EnemyId::TUTORIAL_VILLAGE));
       break;
     case TribeAlignment::LAWFUL:
       enemyInfo.push_back(enemyFactory->get(EnemyId::DARK_ELF_CAVE));
       enemyInfo.push_back(enemyFactory->get(EnemyId::ORC_CAVE));
       enemyInfo.push_back(enemyFactory->get(EnemyId::ANTS_CLOSED_SMALL));
-      enemyInfo.push_back(enemyFactory->get(EnemyId::ADA_GOLEMS));
       enemyInfo.push_back(enemyFactory->get(EnemyId::COTTAGE_BANDITS));
       break;
   }
