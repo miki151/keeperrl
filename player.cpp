@@ -889,8 +889,12 @@ View* Player::getView() const {
     return nullptr;
 }
 
-Position Player::getPosition() const {
-  return creature->getPosition();
+Vec2 Player::getScrollCoord() const {
+  return creature->getPosition().getCoord();
+}
+
+Level* Player::getCreatureViewLevel() const {
+  return creature->getLevel();
 }
 
 static MessageGenerator messageGenerator(MessageGenerator::SECOND_PERSON);

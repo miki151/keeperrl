@@ -67,7 +67,7 @@ class MapGui : public GuiElem {
   void addAnimation(PAnimation animation, Vec2 position);
   void addAnimation(const FXSpawnInfo&);
   void setCenter(double x, double y);
-  void setCenter(Position);
+  void setCenter(Vec2, WLevel level);
   void clearCenter();
   void resetScrolling();
   bool isCentered() const;

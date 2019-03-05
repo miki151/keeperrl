@@ -95,7 +95,7 @@ bool MinimapGui::onLeftClick(Vec2 v) {
 constexpr auto visibleLayers = { ViewLayer::FLOOR_BACKGROUND, ViewLayer::FLOOR };
 
 void MinimapGui::update(Rectangle bounds, const CreatureView* creature) {
-  auto level = creature->getPosition().getLevel();
+  auto level = creature->getCreatureViewLevel();
   info.bounds = bounds;
   info.enemies.clear();
   info.locations.clear();
@@ -123,7 +123,7 @@ void MinimapGui::update(Rectangle bounds, const CreatureView* creature) {
     updatePos(v);
   }
   memory.clearUpdated(level);
-  info.player = creature->getPosition().getCoord();
+  info.player = creature->getScrollCoord();
   for (Vec2 pos : creature->getVisibleEnemies())
     if (pos.inRectangle(bounds))
       info.enemies.push_back(pos);

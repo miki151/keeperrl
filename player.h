@@ -56,7 +56,8 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   virtual void getViewIndex(Vec2 pos, ViewIndex&) const override;
   virtual const MapMemory& getMemory() const override;
   virtual void refreshGameInfo(GameInfo&) const override;
-  virtual Position getPosition() const override;
+  virtual Vec2 getScrollCoord() const override;
+  virtual Level* getCreatureViewLevel() const override;
   virtual vector<Vec2> getVisibleEnemies() const override;
   virtual double getAnimationTime() const override;
   virtual CenterType getCenterType() const override;

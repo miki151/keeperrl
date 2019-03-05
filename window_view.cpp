@@ -519,7 +519,7 @@ vector<SGuiElem> WindowView::getClickableGuiElems() {
 }
 
 void WindowView::setScrollPos(Position pos) {
-  mapGui->setCenter(pos);
+  mapGui->setCenter(pos.getCoord(), pos.getLevel());
 }
 
 void WindowView::resetCenter() {
@@ -573,7 +573,8 @@ void WindowView::playSounds(const CreatureView* view) {
   for (auto& sound : soundQueue) {
     auto lastTime = lastPlayed[sound.getId()];
     if ((!lastTime || curTime > *lastTime + soundCooldown) && (!sound.getPosition() ||
-        (sound.getPosition()->isSameLevel(view->getPosition().getLevel()) && sound.getPosition()->getCoord().inRectangle(area)))) {
+        (sound.getPosition()->isSameLevel(view->getCreatureViewLevel()) &&
+         sound.getPosition()->getCoord().inRectangle(area)))) {
       soundLibrary->playSound(sound);
       lastPlayed[sound.getId()] = curTime;
     }

@@ -28,8 +28,12 @@ void Spectator::refreshGameInfo(GameInfo& gameInfo)  const {
   gameInfo.infoType = GameInfo::InfoType::SPECTATOR;
 }
 
-Position Spectator::getPosition() const {
-  return Position(level->getBounds().middle(), level);
+Vec2 Spectator::getScrollCoord() const {
+  return level->getBounds().middle();
+}
+
+Level* Spectator::getCreatureViewLevel() const {
+  return level;
 }
 
 double Spectator::getAnimationTime() const {

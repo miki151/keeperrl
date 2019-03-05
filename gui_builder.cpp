@@ -3768,7 +3768,7 @@ optional<string> GuiBuilder::getTextInput(const string& title, const string& val
 
 SGuiElem GuiBuilder::drawLevelMap(Semaphore& sem, const CreatureView* view) {
   auto miniMap = make_shared<MinimapGui>([]{});
-  auto levelBounds = view->getPosition().getLevel()->getBounds();
+  auto levelBounds = view->getCreatureViewLevel()->getBounds();
   miniMap->update(levelBounds, view);
   return gui.preferredSize(630, 630,
       gui.miniWindow(gui.stack(

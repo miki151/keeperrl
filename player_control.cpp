@@ -1777,9 +1777,9 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
     index.insert(ViewObject(ViewId::UNKNOWN_MONSTER, ViewLayer::TORCH2, "Surprise"));
 }
 
-Position PlayerControl::getPosition() const {
+Vec2 PlayerControl::getScrollCoord() const {
   auto currentLevel = getCurrentLevel();
-  auto processTiles = [&] (const auto& tiles) -> optional<Position> {
+  auto processTiles = [&] (const auto& tiles) -> optional<Vec2> {
     Vec2 topLeft(100000, 100000);
     Vec2 bottomRight(-100000, -100000);
     for (auto& pos : tiles)
@@ -1791,7 +1791,7 @@ Position PlayerControl::getPosition() const {
         bottomRight.y = max(coord.y, bottomRight.y);
       }
     if (topLeft.x < 100000)
-      return Position((topLeft + bottomRight) / 2, currentLevel);
+      return (topLeft + bottomRight) / 2;
     else
       return none;
   };
@@ -1800,8 +1800,12 @@ Position PlayerControl::getPosition() const {
   if (auto pos = processTiles(collective->getKnownTiles().getAll()))
     return *pos;
   if (getKeeper()->getPosition().isSameLevel(currentLevel))
-    return getKeeper()->getPosition();
-  return Position(currentLevel->getBounds().middle(), currentLevel);
+    return getKeeper()->getPosition().getCoord();
+  return currentLevel->getBounds().middle();
+}
+
+Level* PlayerControl::getCreatureViewLevel() const {
+  return getCurrentLevel();
 }
 
 static enum Selection { SELECT, DESELECT, NONE } selection = NONE;
