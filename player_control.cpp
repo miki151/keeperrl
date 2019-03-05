@@ -2681,7 +2681,7 @@ bool PlayerControl::isConsideredAttacking(const Creature* c, WConstCollective en
     return canSee(c) && (collective->getTerritory().contains(c->getPosition()) ||
         collective->getTerritory().getStandardExtended().contains(c->getPosition()));
   else
-    return canSee(c) && c->getLevel() == getCurrentLevel();
+    return canSee(c) && c->getLevel()->getModel() == getModel();
 }
 
 const double messageTimeout = 80;
