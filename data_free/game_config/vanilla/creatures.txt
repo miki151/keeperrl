@@ -274,6 +274,64 @@
       }
       hatedByEffect = HATE_HUMANS
     }
+  "RAT_SOLDIER"
+    {
+      viewId = RAT_SOLDIER
+      attr = {
+        DAMAGE 12
+        DEFENSE 10
+      }
+      body = {
+        type = Humanoid MEDIUM
+      }
+      chatReactionFriendly = "talks about sewers"
+      chatReactionHostile = "talks about sewers"
+      maxLevelIncrease = {
+        MELEE 2
+      }
+      name = {
+        name = "rat soldier"
+      }
+    }
+  "RAT_LADY"
+    {
+      viewId = RAT_LADY
+      gender = FEMALE
+      attr = {
+        DAMAGE 7
+        DEFENSE 7
+      }
+      body = {
+        type = Humanoid MEDIUM
+      }
+      chatReactionFriendly = "talks about sewers"
+      chatReactionHostile = "talks about sewers"
+      maxLevelIncrease = {
+        MELEE 1
+      }
+      name = {
+        name = "rat woman"
+      }
+    }
+  "RAT_KING"
+    {
+      viewId = RAT_KING
+      attr = {
+        DAMAGE 15
+        DEFENSE 13
+      }
+      body = {
+        type = Humanoid MEDIUM
+      }
+      chatReactionFriendly = "talks about sewers"
+      chatReactionHostile = "talks about sewers"
+      maxLevelIncrease = {
+        MELEE 3
+      }
+      name = {
+        name = "rat king"
+      }
+    }
   "GHOST"
     {
       viewId = GHOST

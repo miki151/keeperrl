@@ -187,7 +187,7 @@
       {
         { HeavyClub }
       }
-  {"BANDIT"}
+  {"BANDIT" "RAT_SOLDIER" "RAT_KING"}
       {
         { Sword }
         { type = Potion Heal chance = 0.7 }

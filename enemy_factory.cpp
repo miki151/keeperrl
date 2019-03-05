@@ -876,6 +876,18 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
             c.ransom = make_pair(0.5, random.get(40, 80));));
     case EnemyId::RAT_CAVE:
       return getVault(SettlementType::VAULT, "RAT", TribeId::getMonster(), 10);
+    case EnemyId::RAT_PEOPLE_CAVE:
+      return EnemyInfo(CONSTRUCT(SettlementInfo,
+          c.type = SettlementType::VAULT;
+          c.inhabitants.fighters = CreatureList(random.get(2, 5), "RAT_SOLDIER");
+          c.inhabitants.leader = CreatureList("RAT_KING");
+          c.inhabitants.civilians = CreatureList(random.get(2, 5), LIST("RAT_LADY"_s, "RAT"_s));
+          c.tribe = TribeId::getMonster();
+          c.closeToPlayer = true;
+          c.dontConnectCave = true;
+          c.buildingId = BuildingId::DUNGEON;
+        ), CollectiveConfig::noImmigrants())
+        .setNonDiscoverable();
     case EnemyId::DARK_ELF_CAVE:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::SMALL_MINETOWN;
