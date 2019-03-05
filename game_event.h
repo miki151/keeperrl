@@ -71,6 +71,7 @@ namespace EventInfo {
   struct CreatureAttacked {
     Creature* victim = nullptr;
     Creature* attacker = nullptr;
+    AttrType damageAttr;
   };
 
   struct TrapTriggered {

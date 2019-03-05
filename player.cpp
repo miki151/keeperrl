@@ -63,6 +63,7 @@
 #include "game_event.h"
 #include "view_object_action.h"
 #include "dungeon_level.h"
+#include "fx_name.h"
 
 template <class Archive>
 void Player::serialize(Archive& ar, const unsigned int) {
@@ -108,7 +109,10 @@ void Player::onEvent(const GameEvent& event) {
           auto dir = info.attacker->getPosition().getDir(pos);
           if (dir.length8() == 1) {
             auto orientation = dir.getCardinalDir();
-            getView()->animation(pos.getCoord(), AnimationId::ATTACK, orientation);
+            if (info.damageAttr == AttrType::DAMAGE)
+              getView()->animation(pos.getCoord(), AnimationId::ATTACK, orientation);
+            else
+              getGame()->addEvent(EventInfo::FX{pos, {FXName::MAGIC_MISSILE_SPLASH}});
           }
         }
       },
