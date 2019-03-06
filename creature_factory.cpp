@@ -675,9 +675,9 @@ PCreature CreatureFactory::getSpecial(TribeId tribe, bool humanoid, bool large, 
         c.viewId = getSpecialViewId(humanoid, large, living, wings);
         c.isSpecial = true;
         c.body = std::move(body);
-        c.attr[AttrType::DAMAGE] = Random.get(18, 24);
-        c.attr[AttrType::DEFENSE] = Random.get(18, 24);
-        c.attr[AttrType::SPELL_DAMAGE] = Random.get(18, 24);
+        c.attr[AttrType::DAMAGE] = Random.get(28, 34);
+        c.attr[AttrType::DEFENSE] = Random.get(28, 34);
+        c.attr[AttrType::SPELL_DAMAGE] = Random.get(28, 34);
         for (auto effect : getResistanceAndVulnerability(Random))
           c.permanentEffects[effect] = 1;
         if (large) {

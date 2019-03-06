@@ -906,8 +906,8 @@
     {
       viewId = KNIGHT
       attr = {
-        DAMAGE 36
-        DEFENSE 28 
+        DAMAGE 41
+        DEFENSE 33
       }
       body = {
         type = Humanoid LARGE
@@ -949,8 +949,8 @@
     {
       viewId = DUKE4
       attr = {
-        DAMAGE 43
-        DEFENSE 32 
+        DAMAGE 53
+        DEFENSE 42
       }
       body = {
         type = Humanoid LARGE
@@ -975,9 +975,9 @@
     {
       viewId = ARCHER
       attr = {
-        DAMAGE 17
-        DEFENSE 22
-        RANGED_DAMAGE 30 
+        DAMAGE 22
+        DEFENSE 27
+        RANGED_DAMAGE 35
       }
       body = {
         type = Humanoid LARGE
@@ -997,8 +997,8 @@
       viewId = PRIEST
       attr = {
         DAMAGE 15
-        DEFENSE 15
-        SPELL_DAMAGE 34 
+        DEFENSE 25
+        SPELL_DAMAGE 35
       }
       body = {
         type = Humanoid LARGE
