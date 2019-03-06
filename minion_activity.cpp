@@ -40,17 +40,26 @@ static optional<Position> getTileToExplore(WConstCollective collective, const Cr
     }
   switch (task) {
     case MinionActivity::EXPLORE_CAVES: {
-      if (caveTile)
+      if (caveTile) {
+        PROFILE_BLOCK("found in cave");
         return *caveTile;
+      }
       FALLTHROUGH;
     }
     case MinionActivity::EXPLORE:
       FALLTHROUGH;
     case MinionActivity::EXPLORE_NOCTURNAL:
-      return outdoorTile;
+      if (outdoorTile) {
+        PROFILE_BLOCK("found outdoor");
+        return outdoorTile;
+      }
+      break;
     default: FATAL << "Unrecognized explore task: " << int(task);
   }
-  return none;
+  {
+    PROFILE_BLOCK("not found");
+    return none;
+  }
 }
 
 static Creature* getCopulationTarget(WConstCollective collective, const Creature* succubus) {
@@ -196,20 +205,30 @@ PTask MinionActivities::generate(WCollective collective, Creature* c, MinionActi
           collective->getZones().getPositions(ZoneId::LEISURE).asVector();
       //myTerritory = myTerritory.filter([&](const auto& pos) { return pos.canEnterEmpty(c); });
       if (collective->getGame()->getSunlightInfo().getState() == SunlightState::NIGHT) {
-        if (c->getPosition().isCovered() && myTerritory.contains(c->getPosition()))
+        if (c->getPosition().isCovered() && myTerritory.contains(c->getPosition())) {
+          PROFILE_BLOCK("Stay in for the night");
           return Task::idle();
+        }
         myTerritory = limitToIndoors(std::move(myTerritory));
       }
       auto& pigstyPos = collective->getConstructions().getBuiltPositions(FurnitureType::PIGSTY);
-      if (pigstyPos.count(c->getPosition()))
+      if (pigstyPos.count(c->getPosition())) {
+        PROFILE_BLOCK("Leave pigsty");
         return Task::doneWhen(Task::goTo(Random.choose(myTerritory)),
             TaskPredicate::outsidePositions(c, pigstyPos));
+      }
       auto leader = collective->getLeader();
-      if (!myTerritory.empty())
+      if (!myTerritory.empty()) {
+        PROFILE_BLOCK("Stay in territory");
         return Task::chain(Task::transferTo(collective->getModel()), Task::stayIn(myTerritory));
-      else if (collective->getConfig().getFollowLeaderIfNoTerritory() && leader)
+      } else if (collective->getConfig().getFollowLeaderIfNoTerritory() && leader) {
+        PROFILE_BLOCK("Follor leader");
         return Task::alwaysDone(Task::follow(leader));
-      return Task::idle();
+      }
+      {
+        PROFILE_BLOCK("Just idle");
+        return Task::idle();
+      }
     }
     case MinionActivityInfo::FURNITURE: {
       PROFILE_BLOCK("Furniture");
