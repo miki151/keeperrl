@@ -625,7 +625,17 @@ bool Creature::canEquipIfEmptySlot(const Item* item, string* reason) const {
       *reason = "You need two hands to wield " + item->getAName() + "!";
     return false;
   }
-  return item->canEquip();
+  if (!item->canEquip()) {
+    if (reason)
+      *reason = "This item can't be equipped";
+    return false;
+  }
+  if (equipment->getMaxItems(item->getEquipmentSlot(), getBody()) == 0) {
+    if (reason)
+      *reason = "You lack a required body part to equip this type of item";
+    return false;
+  }
+  return true;
 }
 
 bool Creature::canEquip(const Item* item) const {
@@ -1741,12 +1751,10 @@ CreatureAction Creature::moveTowards(Position pos) {
 }
 
 bool Creature::canNavigateToOrNeighbor(Position pos) const {
-  PROFILE;
   return pos.canNavigateToOrNeighbor(position, getMovementType());
 }
 
 bool Creature::canNavigateTo(Position pos) const {
-  PROFILE;
   return pos.canNavigateTo(position, getMovementType());
 }
 
