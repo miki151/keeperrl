@@ -349,7 +349,7 @@ bool Furniture::canRemoveNonFriendly() const {
 }
 
 Creature* Furniture::getCreator() const {
-  return creator;
+  return creator.get();
 }
 
 optional<LocalTime> Furniture::getCreatedTime() const {

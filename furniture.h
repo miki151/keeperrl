@@ -159,7 +159,7 @@ class Furniture : public OwnedObject<Furniture> {
   double SERIAL(lightEmission) = 0;
   bool SERIAL(canHideHere) = false;
   bool SERIAL(warning) = false;
-  Creature* SERIAL(creator) = nullptr;
+  WeakPointer<Creature> SERIAL(creator);
   optional<LocalTime> SERIAL(createdTime);
   optional<CreatureId> SERIAL(summonedElement);
   bool SERIAL(canBuildBridge) = false;

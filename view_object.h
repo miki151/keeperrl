@@ -71,7 +71,7 @@ class ViewObject {
 
   void setDescription(const string&);
 
-  void addMovementInfo(MovementInfo);
+  void addMovementInfo(MovementInfo, GenericId);
   void clearMovementInfo();
   bool hasAnyMovementInfo() const;
   const MovementInfo& getLastMovementInfo() const;

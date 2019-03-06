@@ -1443,7 +1443,9 @@ CreatureAction Creature::fire(Position target) const {
 }
 
 void Creature::addMovementInfo(MovementInfo info) {
-  modViewObject().addMovementInfo(info);
+  // add generic id since otherwise there is an unknown crash where
+  // object has movement info and no id
+  modViewObject().addMovementInfo(info, getUniqueId().getGenericId());
   getPosition().setNeedsRenderUpdate(true);
 
   if (isAffected(LastingEffect::FLYING))

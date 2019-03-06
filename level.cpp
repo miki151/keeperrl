@@ -449,7 +449,7 @@ vector<Vec2> Level::getVisibleTiles(Vec2 pos, const Vision& vision) const {
 }
 
 WConstSquare Level::getSafeSquare(Vec2 pos) const {
-  CHECK(inBounds(pos));
+  CHECK(inBounds(pos)) << pos << " " << getBounds();
   return squares->getReadonly(pos);
 }
 

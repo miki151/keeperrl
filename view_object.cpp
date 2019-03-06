@@ -61,7 +61,8 @@ const EnumSet<ViewObjectAction>& ViewObject::getExtendedActions() const {
   return extendedActions;
 }
 
-void ViewObject::addMovementInfo(MovementInfo info) {
+void ViewObject::addMovementInfo(MovementInfo info, GenericId id) {
+  genericId = id;
   if (!movementQueue)
     movementQueue.reset(MovementQueue());
   movementQueue->add(info);
