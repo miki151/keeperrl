@@ -1,5 +1,4 @@
 /* Copyright (C) 2013-2014 Michal Brzozowski (rusolis@poczta.fm)
-
    This file is part of KeeperRL.
 
    KeeperRL is free software; you can redistribute it and/or modify it under the terms of the

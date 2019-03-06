@@ -2088,9 +2088,11 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo& info, const opti
 SGuiElem GuiBuilder::drawCreatureUpgradeMenu(SyncQueue<optional<ExperienceType>>& queue,
     const CreatureExperienceInfo& info) {
   const int margin = 20;
-  const int rightElemMargin = 10;
   auto lines = gui.getListBuilder(legendLineHeight);
-  lines.addElemAuto(drawTrainingInfo(info, [&queue](optional<ExperienceType> exp) { queue.push(exp); }));
+  if (auto elem = drawTrainingInfo(info, [&queue](optional<ExperienceType> exp) { queue.push(exp); }))
+    lines.addElemAuto(std::move(elem));
+  else
+    return nullptr;
   return gui.preferredSize(500, 320,
       gui.window(gui.margins(lines.buildVerticalList(), margin), [&queue] { queue.push(none); }));
 }

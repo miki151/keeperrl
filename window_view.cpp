@@ -893,7 +893,10 @@ optional<int> WindowView::choosePillageItem(const string& title, const vector<It
 
 optional<ExperienceType> WindowView::getCreatureUpgrade(const CreatureExperienceInfo& info) {
   SyncQueue<optional<ExperienceType>> returnQueue;
-  return getBlockingGui(returnQueue, guiBuilder.drawCreatureUpgradeMenu(returnQueue, info));
+  if (auto menu = guiBuilder.drawCreatureUpgradeMenu(returnQueue, info))
+    return getBlockingGui(returnQueue, std::move(menu));
+  else
+    return none;
 }
 
 optional<Vec2> WindowView::chooseSite(const string& message, const Campaign& campaign, optional<Vec2> current) {

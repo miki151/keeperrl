@@ -47,6 +47,7 @@ class MinionController : public Player {
   virtual void refreshGameInfo(GameInfo& gameInfo) const override {
     Player::refreshGameInfo(gameInfo);
     auto& info = *gameInfo.playerInfo.getReferenceMaybe<PlayerInfo>();
+    info.avatarLevelInfo = none;
     if (auto team = control->getCurrentTeam()) {
       info.teamOrders.emplace();
       for (auto order : ENUM_ALL(TeamOrder))
