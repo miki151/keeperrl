@@ -186,6 +186,7 @@ void ShortestPath::reverse(function<double(Vec2)> entryFun, function<double(Vec2
 
 void ShortestPath::constructPath(Vec2 pos, function<vector<Vec2>(Vec2)> directions, bool reversed) {
   vector<Vec2> ret;
+  auto origPos = pos;
   while (pos != target) {
     Vec2 next;
     double lowest = distanceTable.getDistance(pos);
@@ -201,7 +202,8 @@ void ShortestPath::constructPath(Vec2 pos, function<vector<Vec2>(Vec2)> directio
       if (reversed)
         break;
       else
-        FATAL << "can't track path";
+        FATAL << "can't track path " << lowest << " " << distanceTable.getDistance(pos) << " " << origPos
+            << " " << target << " " << pos << " " << next;
     }
     ret.push_back(pos);
     pos = next;
