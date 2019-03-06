@@ -25,6 +25,7 @@ Fire::Fire(double objectWeight, double objectFlamability) : weight(objectWeight)
 double epsilon = 0.001;
 
 void Fire::tick() {
+  PROFILE_BLOCK("Fire::tick");
   burnt = min(1., burnt + size / weight);
   size += (burnt * weight - size) / 10;
   size *= (1 - burnt);

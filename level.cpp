@@ -474,6 +474,7 @@ void Level::addTickingFurniture(Vec2 pos) {
 }
 
 void Level::tick() {
+  PROFILE_BLOCK("Level::tick");
   for (Vec2 pos : tickingSquares)
     squares->getWritable(pos)->tick(Position(pos, this));
   for (Vec2 pos : tickingFurniture)

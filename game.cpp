@@ -355,6 +355,7 @@ bool Game::isVillainActive(WConstCollective col) {
 }
 
 void Game::tick(GlobalTime time) {
+  PROFILE_BLOCK("Game::tick");
   if (!turnEvents.empty() && time.getVisibleInt() > *turnEvents.begin()) {
     auto turn = *turnEvents.begin();
     if (turn == 0)

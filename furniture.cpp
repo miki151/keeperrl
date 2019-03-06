@@ -211,7 +211,7 @@ void Furniture::setTribe(TribeId id) {
 }
 
 void Furniture::tick(Position pos) {
-  PROFILE;
+  PROFILE_BLOCK("Furniture::tick");
   if (fire && fire->isBurning()) {
     if (viewObject)
       viewObject->setAttribute(ViewObject::Attribute::BURNING, fire->getSize());

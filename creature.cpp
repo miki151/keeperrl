@@ -968,7 +968,7 @@ void Creature::considerMovingFromInaccessibleSquare() {
 }
 
 void Creature::tick() {
-  PROFILE;
+  PROFILE_BLOCK("Creature::tick");
   addMorale(-morale * 0.0008);
   auto updateMorale = [this](Position pos, double mult) {
     for (auto& f : pos.getFurniture()) {

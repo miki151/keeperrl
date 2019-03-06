@@ -128,6 +128,7 @@ double Item::getFireSize() const {
 }
 
 void Item::tick(Position position) {
+  PROFILE_BLOCK("Item::tick");
   if (fire->isBurning()) {
     INFO << getName() << " burning " << fire->getSize();
     position.fireDamage(fire->getSize());
