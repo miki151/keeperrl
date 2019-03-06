@@ -313,10 +313,9 @@ Collective::CurrentActivity Collective::getCurrentActivity(const Creature* c) co
       .value_or(CurrentActivity{MinionActivity::IDLE, getLocalTime() - 1_visible});
 }
 
-bool Collective::isActivityGood(Creature* c, MinionActivity activity, bool ignoreTaskLock) {
+bool Collective::isActivityGoodAssumingHaveTasks(Creature* c, MinionActivity activity, bool ignoreTaskLock) {
   PROFILE;
-  if (!c->getAttributes().getMinionActivities().isAvailable(this, c, activity, ignoreTaskLock) ||
-      (!MinionActivities::generate(this, c, activity) && !MinionActivities::getExisting(this, c, activity)))
+  if (!c->getAttributes().getMinionActivities().isAvailable(this, c, activity, ignoreTaskLock))
     return false;
   switch (activity) {
     case MinionActivity::BE_WHIPPED:
@@ -334,6 +333,12 @@ bool Collective::isActivityGood(Creature* c, MinionActivity activity, bool ignor
       return getMaxPopulation() > getPopulationSize();
     default: return true;
   }
+}
+
+bool Collective::isActivityGood(Creature* c, MinionActivity activity, bool ignoreTaskLock) {
+  PROFILE;
+  return isActivityGoodAssumingHaveTasks(c, activity, ignoreTaskLock) &&
+      (MinionActivities::generate(this, c, activity) || MinionActivities::getExisting(this, c, activity));
 }
 
 bool Collective::isConquered() const {

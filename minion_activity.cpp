@@ -19,35 +19,35 @@
 #include "game.h"
 
 static bool betterPos(Position from, Position current, Position candidate) {
-  double maxDiff = 0.3;
-  double curDist = from.dist8(current).value_or(1000000);
-  double newDist = from.dist8(candidate).value_or(1000000);
-  return Random.getDouble() <= 1.0 - (newDist - curDist) / (curDist * maxDiff);
-}
-
-template <typename Pred>
-static optional<Position> getRandomCloseTile(Position from, const vector<Position>& tiles, Pred predicate) {
-  optional<Position> ret;
-  for (Position pos : tiles)
-    if (predicate(pos) && (!ret || betterPos(from, *ret, pos)))
-      ret = pos;
-  return ret;
+  PROFILE;
+  return from.dist8(current).value_or(1000000) > from.dist8(candidate).value_or(1000000);
 }
 
 static optional<Position> getTileToExplore(WConstCollective collective, const Creature* c, MinionActivity task) {
   PROFILE;
-  vector<Position> border = Random.permutation(collective->getKnownTiles().getBorderTiles());
+  auto movementType = c->getMovementType();
+  optional<Position> caveTile;
+  optional<Position> outdoorTile;
+  for (auto& pos : Random.permutation(collective->getKnownTiles().getBorderTiles()))
+    if (pos.isCovered()) {
+      if ((!caveTile || betterPos(c->getPosition(), *caveTile, pos)) &&
+          pos.canNavigateTo(c->getPosition(), movementType))
+        caveTile = pos;
+    } else {
+      if ((!outdoorTile || betterPos(c->getPosition(), *outdoorTile, pos)) &&
+          pos.canNavigateTo(c->getPosition(), movementType))
+        outdoorTile = pos;
+    }
   switch (task) {
-    case MinionActivity::EXPLORE_CAVES:
-      if (auto pos = getRandomCloseTile(c->getPosition(), border,
-            [&](Position p) { return p.isCovered() && c->canNavigateTo(p);}))
-        return pos;
+    case MinionActivity::EXPLORE_CAVES: {
+      if (caveTile)
+        return *caveTile;
       FALLTHROUGH;
+    }
     case MinionActivity::EXPLORE:
       FALLTHROUGH;
     case MinionActivity::EXPLORE_NOCTURNAL:
-      return getRandomCloseTile(c->getPosition(), border,
-          [&](Position pos) { return !pos.isCovered() && c->canNavigateTo(pos);});
+      return outdoorTile;
     default: FATAL << "Unrecognized explore task: " << int(task);
   }
   return none;
@@ -194,7 +194,7 @@ PTask MinionActivities::generate(WCollective collective, Creature* c, MinionActi
             collective->hasTrait(c, MinionTrait::WORKER)) ?
           tryInQuarters(collective->getTerritory().getAll(), collective, c) :
           collective->getZones().getPositions(ZoneId::LEISURE).asVector();
-      myTerritory = myTerritory.filter([&](const auto& pos) { return pos.canEnterEmpty(c); });
+      //myTerritory = myTerritory.filter([&](const auto& pos) { return pos.canEnterEmpty(c); });
       if (collective->getGame()->getSunlightInfo().getState() == SunlightState::NIGHT) {
         if (c->getPosition().isCovered() && myTerritory.contains(c->getPosition()))
           return Task::idle();

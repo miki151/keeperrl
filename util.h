@@ -672,6 +672,18 @@ class RandomGen {
   }
 
   template <typename T>
+  T choose(vector<T>&& v, const vector<double>& p) {
+    CHECK(v.size() == p.size());
+    return std::move(v[get(p)]);
+  }
+
+  template <typename T>
+  T choose(vector<T>&& v) {
+    vector<double> pi(v.size(), 1);
+    return choose(std::move(v), pi);
+  }
+
+  template <typename T>
   T choose(const set<T>& vi) {
     vector<T> v(vi.size());
     std::copy(vi.begin(), vi.end(), v.begin());
