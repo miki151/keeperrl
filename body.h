@@ -53,6 +53,7 @@ class Body {
   // To add once the creature has been constructed, use CreatureAttributes::add().
   void addWithoutUpdatingPermanentEffects(BodyPart, int cnt);
   void setWeight(double);
+  void setSize(BodySize);
   void setBodyParts(const EnumMap<BodyPart, int>&);
   void setHumanoidBodyParts(int intrinsicDamage);
   void setHorseBodyParts(int intrinsicDamage);

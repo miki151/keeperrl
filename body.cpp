@@ -92,6 +92,10 @@ void Body::setWeight(double w) {
   weight = w;
 }
 
+void Body::setSize(BodySize s) {
+  size = s;
+}
+
 void Body::setBodyParts(const EnumMap<BodyPart, int>& p) {
   bodyParts = p;
   bodyParts[BodyPart::TORSO] = 1;
@@ -1016,6 +1020,7 @@ struct BodyTypeReader {
     BodySize size;
     ar1(type, size);
     body->setWeight(getDefaultWeight(size));
+    body->setSize(size);
     body->setMinPushSize(BodySize((int)size + 1));
     switch (type) {
       case BodyType::Humanoid:
