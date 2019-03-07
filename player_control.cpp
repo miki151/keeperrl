@@ -1619,7 +1619,7 @@ void PlayerControl::onEvent(const GameEvent& event) {
       },
       [&](const CreatureAttacked& info) {
         auto pos = info.victim->getPosition();
-        if (canSee(pos)) {
+        if (canSee(pos) && pos.isSameLevel(getCurrentLevel())) {
           auto dir = info.attacker->getPosition().getDir(pos);
           if (dir.length8() == 1) {
             auto orientation = dir.getCardinalDir();
@@ -1801,10 +1801,10 @@ Vec2 PlayerControl::getScrollCoord() const {
   };
   if (auto pos = processTiles(collective->getTerritory().getAll()))
     return *pos;
-  if (auto pos = processTiles(collective->getKnownTiles().getAll()))
-    return *pos;
   if (getKeeper()->getPosition().isSameLevel(currentLevel))
     return getKeeper()->getPosition().getCoord();
+  if (auto pos = processTiles(collective->getKnownTiles().getAll()))
+    return *pos;
   return currentLevel->getBounds().middle();
 }
 

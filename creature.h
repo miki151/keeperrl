@@ -261,7 +261,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   struct CombatIntentInfo {
     Creature* SERIAL(attacker) = nullptr;
     GlobalTime SERIAL(time);
-    SERIALIZE_ALL(attacker, time);
+    SERIALIZE_ALL(attacker, time)
   };
   void addCombatIntent(Creature* attacker, bool immediateAttack);
   optional<CombatIntentInfo> getLastCombatIntent() const;

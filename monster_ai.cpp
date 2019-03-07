@@ -1014,23 +1014,52 @@ class ByCollective : public Behaviour {
     return nullptr;
   }
 
-  void setRandomTask() {
+  optional<pair<MinionActivity, PTask>> setRandomTask() {
     PROFILE;
-    vector<MinionActivity> goodTasks;
+    vector<pair<MinionActivity, PTask>> goodTasks;
     for (MinionActivity t : ENUM_ALL(MinionActivity))
-      if (collective->isActivityGood(creature, t) && creature->getAttributes().getMinionActivities().canChooseRandomly(creature, t))
-        goodTasks.push_back(t);
-    if (!goodTasks.empty())
-      collective->setMinionActivity(creature, Random.choose(goodTasks));
+      if (creature->getAttributes().getMinionActivities().canChooseRandomly(creature, t)) {
+        if (collective->isActivityGoodAssumingHaveTasks(creature, t)) {
+          if (MinionActivities::getExisting(collective, creature, t) || t == MinionActivity::IDLE)
+            goodTasks.push_back({t, nullptr});
+          if (auto generated = MinionActivities::generate(collective, creature, t))
+            goodTasks.push_back({t, std::move(generated)});
+        }
+      }
+    if (!goodTasks.empty()) {
+      auto ret = Random.choose(std::move(goodTasks));
+      collective->setMinionActivity(creature, ret.first);
+      return std::move(ret);
+    }
+    return none;
   }
+
+  EnumMap<MinionActivity, optional<LocalTime>> lastTimeGeneratedActivity;
+  optional<LocalTime> lastTimeSetRandomTask;
 
   WTask getStandardTask() {
     PROFILE;
     auto& taskMap = collective->getTaskMap();
     auto current = collective->getCurrentActivity(creature);
+    optional<pair<MinionActivity, PTask>> generatedCache;
+    auto generate = [&] (MinionActivity activity) -> PTask {
+      if (generatedCache && generatedCache->first == activity)
+        return std::move(generatedCache->second);
+      if ((!collective->hasTrait(creature, MinionTrait::WORKER) || activity == MinionActivity::IDLE)
+          && !Random.roll(30)
+          && lastTimeGeneratedActivity[activity]
+          && *lastTimeGeneratedActivity[activity] >= collective->getLocalTime() - 10_visible)
+        return nullptr;
+      lastTimeGeneratedActivity[activity] = collective->getLocalTime();
+      return MinionActivities::generate(collective, creature, activity);
+    };
     if (current.activity == MinionActivity::IDLE || !collective->isActivityGood(creature, current.activity)) {
       collective->setMinionActivity(creature, MinionActivity::IDLE);
-      setRandomTask();
+      if (Random.roll(30) || !lastTimeSetRandomTask ||
+          *lastTimeSetRandomTask < collective->getLocalTime() - 3_visible) {
+        generatedCache = setRandomTask();
+        lastTimeSetRandomTask = collective->getLocalTime();
+      }
     }
     current = collective->getCurrentActivity(creature);
     MinionActivity activity = current.activity;
@@ -1042,10 +1071,9 @@ class ByCollective : public Behaviour {
       taskMap.takeTask(creature, ret);
       return ret;
     }
-    if (PTask ret = MinionActivities::generate(collective, creature, activity))
+    if (PTask ret = generate(activity))
       return taskMap.addTaskFor(std::move(ret), creature);
-    FATAL << "No task generated for activity " << EnumInfo<MinionActivity>::getString(activity);
-    return {};
+    return nullptr;
   }
 
   MoveInfo goToAlarm() {
@@ -1054,13 +1082,13 @@ class ByCollective : public Behaviour {
       if (auto action = creature->moveTowards(alarmInfo->position))
         return {1.0, action};
     return NoMove;
-  };
+  }
 
   MoveInfo normalTask() {
     if (WTask task = collective->getTaskMap().getTask(creature))
       return task->getMove(creature).orWait();
     return NoMove;
-  };
+  }
 
   MoveInfo newEquipmentTask() {
     if (PTask t = getEquipmentTask())
@@ -1069,12 +1097,14 @@ class ByCollective : public Behaviour {
         return move;
       }
     return NoMove;
-  };
+  }
 
   MoveInfo newStandardTask() {
-    WTask t = getStandardTask();
-    return t->getMove(creature).orWait();
-  };
+    if (auto t = getStandardTask())
+      if (auto move = t->getMove(creature))
+        return move;
+    return creature->wait();
+  }
 
   void considerHealingTask() {
     PROFILE;
@@ -1105,6 +1135,7 @@ class ByCollective : public Behaviour {
   }
 
   virtual MoveInfo getMove() override {
+    PROFILE_BLOCK("ByCollective::getMove");
     if (collective->getConfig().allowHealingTaskOutsideTerritory() || collective->getTerritory().contains(creature->getPosition()))
       considerHealingTask();
     return getFirstGoodMove(
@@ -1118,8 +1149,8 @@ class ByCollective : public Behaviour {
     );
   }
 
-  SERIALIZATION_CONSTRUCTOR(ByCollective);
-  SERIALIZE_ALL(SUBCLASS(Behaviour), collective, fighter);
+  SERIALIZATION_CONSTRUCTOR(ByCollective)
+  SERIALIZE_ALL(SUBCLASS(Behaviour), collective, fighter)
 
   private:
   WCollective SERIAL(collective) = nullptr;

@@ -786,7 +786,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
             c.dontBuildRoad = true;
             c.closeToPlayer = true;
             c.buildingId = BuildingId::RUINS;
-            ), CollectiveConfig::withImmigrants(400_visible, 3).setConquerCondition(ConquerCondition::DESTROY_BUILDINGS))
+            ), CollectiveConfig::withImmigrants(700_visible, 3).setConquerCondition(ConquerCondition::DESTROY_BUILDINGS))
             .setImmigrants({ ImmigrantInfo("LOST_SOUL", {MinionTrait::FIGHTER})
                 .addSpecialTrait(1.0, LastingEffect::DISAPPEAR_DURING_DAY)
                 .setFrequency(1)

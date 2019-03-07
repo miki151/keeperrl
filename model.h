@@ -125,7 +125,7 @@ class Model : public OwnedObject<Model> {
   vector<PCreature> SERIAL(deadCreatures);
   double SERIAL(currentTime) = 0;
   int SERIAL(woodCount) = 0;
-  optional<StairKey> getStairsBetween(WConstLevel from, WConstLevel to);
+  optional<StairKey> getStairsBetween(WConstLevel from, WConstLevel to) const;
   map<pair<LevelId, LevelId>, StairKey> SERIAL(stairNavigation);
   bool serializationLocked = false;
   template <typename>

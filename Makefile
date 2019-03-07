@@ -156,10 +156,12 @@ parse_game:
 clean:
 	$(RM) $(OBJDIR)/*.o
 	$(RM) $(OBJDIR)/*.d
+	$(RM) $(OBJDIR)/*.gch
 	$(RM) log.out
 	$(RM) $(OBJDIR)/test
 	$(RM) $(OBJDIR)-opt/*.o
 	$(RM) $(OBJDIR)-opt/*.d
+	$(RM) $(OBJDIR)-opt/*.gch
 	$(RM) $(NAME)
 	$(RM) $(OBJDIR)/stdafx.h.*
 

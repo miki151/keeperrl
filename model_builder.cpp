@@ -334,6 +334,7 @@ static optional<BiomeId> getBiome(EnemyInfo& enemy, RandomGen& random) {
     case SettlementType::MINETOWN:
     case SettlementType::SMALL_MINETOWN:
     case SettlementType::ANT_NEST:
+    case SettlementType::VAULT:
       return BiomeId::MOUNTAIN;
     case SettlementType::FORREST_COTTAGE:
     case SettlementType::FORREST_VILLAGE:

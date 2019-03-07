@@ -125,6 +125,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
 
   void setMinionActivity(Creature* c, MinionActivity task);
   bool isActivityGood(Creature*, MinionActivity, bool ignoreTaskLock = false);
+  bool isActivityGoodAssumingHaveTasks(Creature*, MinionActivity, bool ignoreTaskLock = false);
 
   vector<Item*> getAllItems(bool includeMinions = true) const;
   vector<Item*> getAllItems(ItemIndex, bool includeMinions = true) const;

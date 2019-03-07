@@ -78,6 +78,7 @@ void Square::onAddedToLevel(Position pos) const {
 }
 
 void Square::tick(Position pos) {
+  PROFILE_BLOCK("Square::tick");
   setDirty(pos);
   if (!inventory->isEmpty()) {
     inventory->tick(pos);

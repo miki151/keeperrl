@@ -269,26 +269,33 @@ map<int, std::reference_wrapper<const Immigration::Available>> Immigration::getA
   return ret;
 }
 
-static vector<Position> pickSpawnPositions(const vector<Creature*>& creatures, vector<Position> allPositions) {
+static vector<Position> pickSpawnPositions(const vector<Creature*>& creatures, const vector<Position>& allPositions) {
+  PROFILE;
   if (allPositions.empty() || creatures.empty())
     return {};
-  for (auto& pos : copyOf(allPositions))
-    if (!pos.canEnter(creatures[0]))
-      for (auto& neighbor : pos.neighbors8())
-        if (neighbor.canEnter(creatures[0]))
-          allPositions.push_back(neighbor);
   vector<Position> spawnPos;
   for (auto c : creatures) {
-    Position pos;
-    int cnt = 100;
-    do {
-      pos = Random.choose(allPositions);
-    } while ((!pos.canEnter(c) || spawnPos.contains(pos)) && --cnt > 0);
-    if (cnt == 0) {
+    PROFILE_BLOCK("Best for creature");
+    auto movementType = c->getMovementType();
+    auto goodPos = [&] (const Position& pos) -> optional<Position> {
+      if (pos.canEnter(movementType) && !spawnPos.contains(pos))
+        return pos;
+      for (auto& neighbor : pos.neighbors8())
+        if (neighbor.canEnter(movementType) && !spawnPos.contains(neighbor))
+          return neighbor;
+      return none;
+    };
+    optional<Position> mySpawnPos;
+    for (int i : Range(100))
+      if (auto pos = goodPos(Random.choose(allPositions))) {
+        mySpawnPos = pos;
+        break;
+      }
+    if (!mySpawnPos) {
       INFO << "Couldn't spawn immigrant " << c->getName().bare();
       return {};
     } else
-      spawnPos.push_back(pos);
+      spawnPos.push_back(*mySpawnPos);
   }
   return spawnPos;
 }

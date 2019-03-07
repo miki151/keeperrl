@@ -247,7 +247,7 @@ void Model::calculateStairNavigation() {
             "No stair path between levels " << l1->getName() << " " << l2->getName();
 }
 
-optional<StairKey> Model::getStairsBetween(WConstLevel from, WConstLevel to) {
+optional<StairKey> Model::getStairsBetween(WConstLevel from, WConstLevel to) const {
   for (StairKey key : from->getAllStairKeys())
     if (to->hasStairKey(key))
       return key;

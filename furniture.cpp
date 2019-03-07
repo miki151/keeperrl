@@ -211,7 +211,7 @@ void Furniture::setTribe(TribeId id) {
 }
 
 void Furniture::tick(Position pos) {
-  PROFILE;
+  PROFILE_BLOCK("Furniture::tick");
   if (fire && fire->isBurning()) {
     if (viewObject)
       viewObject->setAttribute(ViewObject::Attribute::BURNING, fire->getSize());
@@ -349,7 +349,7 @@ bool Furniture::canRemoveNonFriendly() const {
 }
 
 Creature* Furniture::getCreator() const {
-  return creator;
+  return creator.get();
 }
 
 optional<LocalTime> Furniture::getCreatedTime() const {

@@ -449,7 +449,7 @@ vector<Vec2> Level::getVisibleTiles(Vec2 pos, const Vision& vision) const {
 }
 
 WConstSquare Level::getSafeSquare(Vec2 pos) const {
-  CHECK(inBounds(pos));
+  CHECK(inBounds(pos)) << pos << " " << getBounds();
   return squares->getReadonly(pos);
 }
 
@@ -474,6 +474,7 @@ void Level::addTickingFurniture(Vec2 pos) {
 }
 
 void Level::tick() {
+  PROFILE_BLOCK("Level::tick");
   for (Vec2 pos : tickingSquares)
     squares->getWritable(pos)->tick(Position(pos, this));
   for (Vec2 pos : tickingFurniture)

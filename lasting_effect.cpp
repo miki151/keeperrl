@@ -674,6 +674,7 @@ void LastingEffects::afterCreatureDamage(Creature* c, LastingEffect e) {
 }
 
 bool LastingEffects::tick(Creature* c, LastingEffect effect) {
+  PROFILE_BLOCK("LastingEffects::tick");
   switch (effect) {
     case LastingEffect::BLEEDING:
       c->getBody().bleed(c, 0.03);
