@@ -881,7 +881,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
           c.type = SettlementType::VAULT;
           c.inhabitants.fighters = CreatureList(random.get(2, 5), "RAT_SOLDIER");
           c.inhabitants.leader = CreatureList("RAT_KING");
-          c.inhabitants.civilians = CreatureList(random.get(2, 5), LIST("RAT_LADY"_s, "RAT"_s));
+          c.inhabitants.civilians = CreatureList(random.get(2, 5), vector<CreatureId>(LIST("RAT_LADY"_s, "RAT"_s)));
           c.tribe = TribeId::getMonster();
           c.closeToPlayer = true;
           c.dontConnectCave = true;
@@ -1058,7 +1058,7 @@ vector<ExternalEnemy> EnemyFactory::getExternalEnemies() const {
         100
     },
     ExternalEnemy{
-        CreatureList(random.get(12, 16), {make_pair(2, "KNIGHT"), make_pair(1, "ARCHER")})
+        CreatureList(random.get(12, 16), vector<pair<int, CreatureId>>({make_pair(2, "KNIGHT"), make_pair(1, "ARCHER")}))
             .addUnique("DUKE")
             //.increaseBaseLevel({{ExperienceType::MELEE, 4}})
             .addInventory({ItemType::Scroll{Effect::DestroyWalls{}}}),

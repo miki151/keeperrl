@@ -16,14 +16,14 @@ class OwnerPointer {
   OwnerPointer(OwnerPointer<U>&& o) noexcept : elem(std::move(o.elem)) {
   }
 
-  OwnerPointer() {}
-  OwnerPointer(std::nullptr_t) {}
+  OwnerPointer() noexcept {}
+  OwnerPointer(std::nullptr_t) noexcept {}
 
   shared_ptr<T> giveMeSharedPointer() {
     return elem;
   }
 
-  explicit OwnerPointer(shared_ptr<T> t);
+  explicit OwnerPointer(shared_ptr<T> t) noexcept;
 
   OwnerPointer<T>& operator = (OwnerPointer<T>&& o) noexcept {
     elem = std::move(o.elem);
@@ -43,12 +43,12 @@ class OwnerPointer {
   }
 
   template <typename U>
-  bool operator == (const OwnerPointer<U>& o) const {
+  bool operator == (const OwnerPointer<U>& o) const noexcept {
     return elem == o.elem;
   }
 
   template <typename U>
-  bool operator != (const OwnerPointer<U>& o) const {
+  bool operator != (const OwnerPointer<U>& o) const noexcept {
     return !(*this == o);
   }
 
@@ -60,6 +60,10 @@ class OwnerPointer {
 
   bool operator !() const {
     return !elem;
+  }
+
+  ~OwnerPointer() noexcept {
+
   }
 
 /*  weak_ptr<T> getWeakPointer() const {
@@ -232,7 +236,7 @@ class OwnedObject {
 };
 
 template <typename T>
-OwnerPointer<T>::OwnerPointer(shared_ptr<T> t) : elem(t) {
+OwnerPointer<T>::OwnerPointer(shared_ptr<T> t) noexcept : elem(t) {
   elem->weakPointer = WeakPointer<T>(elem);
 }
 

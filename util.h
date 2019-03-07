@@ -469,20 +469,18 @@ class EnumMap {
     return combineHashIter(elems.begin(), elems.end());
   }
 
-  private:
+  //private:
   std::array<U, EnumInfo<T>::size> elems;
 };
 
 template <class Archive, typename Enum, typename U>
-void serialize(Archive& ar, EnumMap<Enum, U>& m) {
-  vector<U> SERIAL(tmp);
-  for (auto e : ENUM_ALL(Enum))
-    tmp.push_back(std::move(m[e]));
-  ar(tmp);
-  if (tmp.size() > EnumInfo<Enum>::size)
+void serialize(Archive& ar1, EnumMap<Enum, U>& m) {
+  int size = EnumInfo<Enum>::size;
+  ar1(size);
+  if (size > EnumInfo<Enum>::size)
     throw ::cereal::Exception("EnumMap larger than legal enum range");
-  for (int i : All(tmp))
-    m[Enum(i)] = std::move(tmp[i]);
+  for (int i : Range(size))
+    ar1(m[Enum(i)]);
 }
 
 template<class T>
