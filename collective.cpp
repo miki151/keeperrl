@@ -304,7 +304,7 @@ void Collective::setMinionActivity(Creature* c, MinionActivity activity) {
     freeFromTask(c);
     c->removeEffect(LastingEffect::SLEEP);
     currentActivity.set(c, {activity, getLocalTime() +
-        MinionActivities::getDuration(c, activity).value_or(-1_visible)});
+        MinionActivities::getDuration(c, activity).value_or(20_visible)});
   }
 }
 
