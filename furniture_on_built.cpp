@@ -25,14 +25,15 @@ static SettlementInfo getEnemy(EnemyId id) {
   return enemy.settlement;
 }
 
-static PLevelMaker getLevelMaker(const ZLevelType& level, ResourceCounts resources, int width, TribeId tribe) {
+static PLevelMaker getLevelMaker(const ZLevelType& level, ResourceCounts resources, int width, TribeId tribe,
+    StairKey stairKey) {
   return level.visit(
       [&](const WaterZLevel& level) {
-        return LevelMaker::getWaterZLevel(Random, level.waterType, width, level.creatures, StairKey::getNew());
+        return LevelMaker::getWaterZLevel(Random, level.waterType, width, level.creatures, stairKey);
       },
       [&](const FullZLevel& level) {
         return LevelMaker::getFullZLevel(Random, level.enemy.map([](auto id) { return getEnemy(id); }), resources,
-            width, tribe, StairKey::getNew());
+            width, tribe, stairKey);
       });
 }
 
@@ -47,7 +48,7 @@ static optional<ZLevelType> chooseZLevel(RandomGen& random, const vector<ZLevelI
 }
 
 static PLevelMaker getLevelMaker(RandomGen& random, const GameConfig* config, TribeAlignment alignment,
-    int depth, int width, TribeId tribe) {
+    int depth, int width, TribeId tribe, StairKey stairKey) {
   array<vector<ZLevelInfo>, 3> allLevels;
   vector<ResourceDistribution> resources;
   while (1) {
@@ -62,7 +63,7 @@ static PLevelMaker getLevelMaker(RandomGen& random, const GameConfig* config, Tr
     vector<ZLevelInfo> levels = concat<ZLevelInfo>({allLevels[0], allLevels[1 + int(alignment)]});
     if (auto zLevel = chooseZLevel(random, levels, depth)) {
       if (auto res = chooseResourceCounts(random, resources, depth))
-        return getLevelMaker(*zLevel, *res, width, tribe);
+        return getLevelMaker(*zLevel, *res, width, tribe, stairKey);
       else
         USER_INFO << "No resource distribution found for depth " << depth << ". Please fix resources config.";
     } else
@@ -84,38 +85,35 @@ void handleOnBuilt(Position pos, Creature* c, FurnitureOnBuilt type) {
   switch (type) {
     case FurnitureOnBuilt::DOWN_STAIRS:
       auto levels = pos.getModel()->getMainLevels();
-      WLevel level = nullptr;
       int levelIndex = *levels.findElement(pos.getLevel());
       if (levelIndex == levels.size() - 1) {
         int width = 140;
-        level = pos.getModel()->buildMainLevel(
+        auto stairKey = StairKey::getNew();
+        auto newLevel = pos.getModel()->buildMainLevel(
             LevelBuilder(Random, pos.getGame()->getCreatureFactory(), width, width, "", true),
             getLevelMaker(Random, pos.getGame()->getGameConfig(),
                 pos.getGame()->getPlayerControl()->getKeeperCreatureInfo().tribeAlignment,
-                levelIndex + 1, width, c->getTribeId()));
+                levelIndex + 1, width, c->getTribeId(), stairKey));
+        Position landing = newLevel->getLandingSquares(stairKey).getOnlyElement();
+        landing.addFurniture(FurnitureFactory::get(FurnitureType::UP_STAIRS, TribeId::getMonster()));
+        pos.setLandingLink(stairKey);
+        pos.getModel()->calculateStairNavigation();
+        pos.getGame()->getPlayerCollective()->addKnownTile(landing);
+        pos.getGame()->getPlayerControl()->addToMemory(landing);
+        for (auto v : landing.neighbors8())
+          pos.getGame()->getPlayerControl()->addToMemory(v);
+        for (auto pos : newLevel->getAllPositions())
+          if (auto f = pos.getFurniture(FurnitureLayer::MIDDLE))
+            if (f->isClearFogOfWar())
+              pos.getGame()->getPlayerControl()->addToMemory(pos);
       } else {
-        level = levels[levelIndex + 1];
+        auto nextLevel = levels[levelIndex + 1];
+        auto oldStairsPos = pos.getModel()->getStairs(pos.getLevel(), nextLevel);
+        pos.setLandingLink(*oldStairsPos->getLandingLink());
+        oldStairsPos->removeLandingLink();
+        oldStairsPos->removeFurniture(FurnitureLayer::MIDDLE);
+        pos.getGame()->getPlayerControl()->addToMemory(*oldStairsPos);
       }
-      Position landing = [&]() -> Position {
-        for (auto& pos : level->getAllPositions())
-          if (pos.getLandingLink())
-            return pos;
-        FATAL << "No landing position found in subterranean level";
-        fail();
-      }();
-      landing.addFurniture(FurnitureFactory::get(FurnitureType::UP_STAIRS, TribeId::getMonster()));
-      auto stairKey = *landing.getLandingLink();
-      removeOldStairs(pos.getLevel(), stairKey);
-      pos.setLandingLink(stairKey);
-      pos.getModel()->calculateStairNavigation();
-      pos.getGame()->getPlayerCollective()->addKnownTile(landing);
-      pos.getGame()->getPlayerControl()->addToMemory(landing);
-      for (auto v : landing.neighbors8())
-        pos.getGame()->getPlayerControl()->addToMemory(v);
-      for (auto pos : level->getAllPositions())
-        if (auto f = pos.getFurniture(FurnitureLayer::MIDDLE))
-          if (f->isClearFogOfWar())
-            pos.getGame()->getPlayerControl()->addToMemory(pos);
       break;
   }
 }

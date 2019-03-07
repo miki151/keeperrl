@@ -108,7 +108,7 @@ optional<StairKey> Position::getLandingLink() const {
 
 void Position::removeLandingLink() const {
   if (auto link = getSquare()->getLandingLink()) {
-    level->landingSquares.erase(*link);
+    level->landingSquares.at(*link).removeElement(*this);
     modSquare()->setLandingLink(none);
   }
 }
