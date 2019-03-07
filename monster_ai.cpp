@@ -1045,8 +1045,10 @@ class ByCollective : public Behaviour {
     auto generate = [&] (MinionActivity activity) -> PTask {
       if (generatedCache && generatedCache->first == activity)
         return std::move(generatedCache->second);
-      if (!Random.roll(30) && lastTimeGeneratedActivity[activity] &&
-          *lastTimeGeneratedActivity[activity] >= collective->getLocalTime() - 10_visible)
+      if ((!collective->hasTrait(creature, MinionTrait::WORKER) || activity == MinionActivity::IDLE)
+          && !Random.roll(30)
+          && lastTimeGeneratedActivity[activity]
+          && *lastTimeGeneratedActivity[activity] >= collective->getLocalTime() - 10_visible)
         return nullptr;
       lastTimeGeneratedActivity[activity] = collective->getLocalTime();
       return MinionActivities::generate(collective, creature, activity);
