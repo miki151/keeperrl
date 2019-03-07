@@ -1801,10 +1801,10 @@ Vec2 PlayerControl::getScrollCoord() const {
   };
   if (auto pos = processTiles(collective->getTerritory().getAll()))
     return *pos;
-  if (auto pos = processTiles(collective->getKnownTiles().getAll()))
-    return *pos;
   if (getKeeper()->getPosition().isSameLevel(currentLevel))
     return getKeeper()->getPosition().getCoord();
+  if (auto pos = processTiles(collective->getKnownTiles().getAll()))
+    return *pos;
   return currentLevel->getBounds().middle();
 }
 
