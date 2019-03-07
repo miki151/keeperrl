@@ -117,7 +117,7 @@ void CreatureName::useFullTitle() {
 
 template <class Archive>
 void CreatureName::serialize(Archive& ar, const unsigned int version) {
-  ar(name, pluralName, stackName, firstName, groupName, fullTitle);
+  ar(name, pluralName, stackName, firstName, groupName, fullTitle, firstNameGen);
 }
 
 SERIALIZABLE(CreatureName);

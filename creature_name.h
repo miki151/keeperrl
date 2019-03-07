@@ -44,14 +44,14 @@ class CreatureName {
   string groupOf(int) const;
   string title() const;
 
-  SERIALIZATION_DECL(CreatureName);
+  SERIALIZATION_DECL(CreatureName)
 
   private:
   string SERIAL(name);
   string SERIAL(pluralName);
   optional<string> SERIAL(stackName);
   optional<string> SERIAL(firstName);
-  optional<NameGeneratorId> firstNameGen;
+  optional<NameGeneratorId> SERIAL(firstNameGen);
   string SERIAL(groupName) = "group";
   bool SERIAL(fullTitle) = false;
 };
