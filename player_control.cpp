@@ -1619,7 +1619,7 @@ void PlayerControl::onEvent(const GameEvent& event) {
       },
       [&](const CreatureAttacked& info) {
         auto pos = info.victim->getPosition();
-        if (canSee(pos)) {
+        if (canSee(pos) && pos.isSameLevel(getCurrentLevel())) {
           auto dir = info.attacker->getPosition().getDir(pos);
           if (dir.length8() == 1) {
             auto orientation = dir.getCardinalDir();
