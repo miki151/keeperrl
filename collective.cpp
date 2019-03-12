@@ -547,6 +547,7 @@ void Collective::onEvent(const GameEvent& event) {
               removeTrait(victim, MinionTrait::NO_LIMIT);
               setTrait(victim, MinionTrait::FIGHTER);
               victim->removeEffect(LastingEffect::TIED_UP);
+              setMinionActivity(victim, MinionActivity::IDLE);
             }
           }
         }
