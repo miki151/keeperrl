@@ -3016,7 +3016,7 @@ static int trans1 = 1094;
 static int trans2 = 1693;
 
 SGuiElem GuiFactory::uiHighlightMouseOver(Color c) {
-  return margins(mouseHighlight2(uiHighlight(c)), -8, -3, -3, 3);
+  return mouseHighlight2(margins(uiHighlight(c), -8, -3, -3, 3));
 }
 
 SGuiElem GuiFactory::uiHighlight(Color c) {
