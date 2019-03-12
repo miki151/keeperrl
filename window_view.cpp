@@ -58,7 +58,7 @@ View* WindowView::createReplayView(InputArchive& ifs, ViewParams params) {
 }
 
 constexpr int rightBarWidthCollective = 300;
-constexpr int rightBarWidthPlayer = 300;
+constexpr int rightBarWidthPlayer = 330;
 constexpr int bottomBarHeightCollective = 66;
 constexpr int bottomBarHeightPlayer = 66;
 

@@ -1572,8 +1572,7 @@ SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info) {
   }
   /*if (auto elem = drawTrainingInfo(info.experienceInfo))
     list.addElemAuto(std::move(elem));*/
-  return
-      gui.scrollable(list.buildVerticalList(), &inventoryScroll, &scrollbarsHeld);
+  return list.buildVerticalList();
 }
 
 static const char* getControlModeName(PlayerInfo::ControlMode m) {
@@ -1582,6 +1581,7 @@ static const char* getControlModeName(PlayerInfo::ControlMode m) {
     case PlayerInfo::LEADER: return "leader";
   }
 }
+
 
 SGuiElem GuiBuilder::drawRightPlayerInfo(const PlayerInfo& info) {
   if (highlightedTeamMember && *highlightedTeamMember >= info.teamInfos.size())
@@ -1594,9 +1594,9 @@ SGuiElem GuiBuilder::drawRightPlayerInfo(const PlayerInfo& info) {
     auto icon = gui.margins(gui.viewObject(member.viewId, 2), 1);
     if (member.creatureId != info.creatureId)
       icon = gui.stack(
+          gui.mouseHighlight2(getIconHighlight(Color::GREEN)),
           gui.mouseOverAction([this, i] { highlightedTeamMember = i;},
               [this, i] { if (highlightedTeamMember == i) highlightedTeamMember = none; }),
-          gui.mouseHighlight2(getIconHighlight(Color::GREEN)),
           std::move(icon)
       );
     if (info.teamInfos.size() > 1) {
@@ -1675,8 +1675,8 @@ SGuiElem GuiBuilder::drawRightPlayerInfo(const PlayerInfo& info) {
       others.push_back(gui.conditional(drawPlayerInventory(info),
           [this, i]{ return !highlightedTeamMember || highlightedTeamMember == i;}));
   }
-  vList.addMiddleElem(gui.stack(std::move(others)));
-  return gui.margins(vList.buildVerticalList(), 6, 0, 15, 5);
+  vList.addElemAuto(gui.stack(std::move(others)));
+  return gui.margins(gui.scrollable(vList.buildVerticalList(), &inventoryScroll, &scrollbarsHeld), 6, 0, 15, 5);
 }
 
 typedef CreatureInfo CreatureInfo;
