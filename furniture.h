@@ -49,6 +49,7 @@ class Furniture : public OwnedObject<Furniture> {
   void fireDamage(Position, double amount);
   void tick(Position);
   bool canSeeThru(VisionId) const;
+  bool blocksAnyVision() const;
   bool stopsProjectiles(VisionId) const;
   void click(Position) const;
   bool overridesMovement() const;

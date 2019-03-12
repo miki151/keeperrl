@@ -133,6 +133,7 @@ void Level::removeLightSource(Vec2 pos, double radius) {
 }
 
 void Level::addLightSource(Vec2 pos, double radius, int numLight) {
+  PROFILE;
   if (radius > 0) {
     for (Vec2 v : getVisibleTilesNoDarkness(pos, VisionId::NORMAL)) {
       double dist = (v - pos).lengthD();
@@ -440,6 +441,7 @@ void Level::swapCreatures(Creature* c1, Creature* c2) {
 }
 
 const vector<Vec2>& Level::getVisibleTilesNoDarkness(Vec2 pos, VisionId vision) const {
+  PROFILE;
   return getFieldOfView(vision).getVisibleTiles(pos);
 }
 

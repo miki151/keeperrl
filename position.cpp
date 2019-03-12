@@ -543,7 +543,8 @@ void Position::addFurnitureImpl(PFurniture f) const {
   auto furniture = f.get();
   level->setFurniture(coord, std::move(f));
   updateConnectivity();
-  updateVisibility();
+  if (furniture->blocksAnyVision())
+    updateVisibility();
   updateBuildingSupport();
   level->addLightSource(coord, furniture->getLightEmission());
   setNeedsRenderUpdate(true);

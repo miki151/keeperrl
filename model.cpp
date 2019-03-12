@@ -338,5 +338,6 @@ const heap_optional<ExternalEnemies>& Model::getExternalEnemies() const {
 }
 
 void Model::addEvent(const GameEvent& e) {
+  PROFILE;
   eventGenerator->addEvent(e);
 }

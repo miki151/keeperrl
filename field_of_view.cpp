@@ -48,6 +48,7 @@ bool FieldOfView::canSee(Vec2 from, Vec2 to) {
 }
   
 void FieldOfView::squareChanged(Vec2 pos) {
+  PROFILE;
   blocking[pos] = !Position(pos, level).canSeeThru(vision);
   vector<Vec2> updateList;
   if (!visibility[pos])

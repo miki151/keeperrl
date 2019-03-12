@@ -236,6 +236,10 @@ void Furniture::tick(Position pos) {
     FurnitureTick::handle(*tickType, pos, this); // this function can delete this
 }
 
+bool Furniture::blocksAnyVision() const {
+  return !blockVision.isEmpty();
+}
+
 bool Furniture::canSeeThru(VisionId id) const {
   return !blockVision.contains(id);
 }
