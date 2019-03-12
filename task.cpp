@@ -1064,10 +1064,11 @@ class Eat : public Task {
             return move.append([this, ch, pos] (Creature*) { if (ch->isDead()) position = pos; });
       }
     }
-    for (auto chicken : c->getVisibleCreatures())
-      if (chicken->getBody().isMinionFood())
-        if (auto move = c->moveTowards(chicken->getPosition()))
-          return move;
+    if (positions.contains(c->getPosition()))
+      for (auto chicken : c->getVisibleCreatures())
+        if (chicken->getBody().isMinionFood())
+          if (auto move = c->moveTowards(chicken->getPosition()))
+            return move;
     if (c->getPosition() != *position)
       return c->moveTowards(*position);
     else
@@ -1082,8 +1083,8 @@ class Eat : public Task {
       return "Eat";
   }
 
-  SERIALIZE_ALL(SUBCLASS(Task), position, positions, rejectedPosition); 
-  SERIALIZATION_CONSTRUCTOR(Eat);
+  SERIALIZE_ALL(SUBCLASS(Task), position, positions, rejectedPosition)
+  SERIALIZATION_CONSTRUCTOR(Eat)
 
   private:
   optional<Position> SERIAL(position);
