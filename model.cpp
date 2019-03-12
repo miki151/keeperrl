@@ -73,6 +73,14 @@ void Model::discardForRetirement() {
   deadCreatures.clear();
 }
 
+void Model::prepareForRetirement() {
+  for (Creature* c : timeQueue->getAllCreatures())
+    c->clearInfoForRetiring();
+  for (PCreature& c : deadCreatures)
+    c->clearInfoForRetiring();
+  externalEnemies = none;
+}
+
 void Model::addWoodCount(int cnt) {
   woodCount += cnt;
 }
@@ -327,10 +335,6 @@ void Model::addExternalEnemies(ExternalEnemies e) {
 
 const heap_optional<ExternalEnemies>& Model::getExternalEnemies() const {
   return externalEnemies;
-}
-
-void Model::clearExternalEnemies() {
-  externalEnemies = none;
 }
 
 void Model::addEvent(const GameEvent& e) {

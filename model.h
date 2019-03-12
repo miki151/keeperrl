@@ -56,8 +56,6 @@ class Model : public OwnedObject<Model> {
   void addCreature(PCreature, TimeInterval delay);
   void landHeroPlayer(PCreature);
   void addExternalEnemies(ExternalEnemies);
-  void clearExternalEnemies();
-
   const heap_optional<ExternalEnemies>& getExternalEnemies() const;
 
   bool isTurnBased();
@@ -95,6 +93,7 @@ class Model : public OwnedObject<Model> {
   SERIALIZATION_DECL(Model)
 
   void discardForRetirement();
+  void prepareForRetirement();
 
   void addEvent(const GameEvent&);
 
