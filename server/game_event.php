@@ -27,9 +27,9 @@ function addTurn($params) {
 
 function addCampaignStarted($params) {
   global $conn;
-  $sql = $conn->prepare("INSERT INTO event_campaign_started (game_id, main, lesser, allies, retired, install_id, game_type, player_role) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-  $sql->bind_param("siiiisss", $params["gameId"], $params["main"], $params["lesser"], $params["allies"],
-      $params["retired"], $params["installId"], $params["game_type"], $params["player_role"]);
+  $sql = $conn->prepare("INSERT INTO event_campaign_started (game_id, main, lesser, allies, retired, install_id, game_type, player_role, current_mod, version) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+  $sql->bind_param("siiiisssss", $params["gameId"], $params["main"], $params["lesser"], $params["allies"],
+      $params["retired"], $params["installId"], $params["game_type"], $params["player_role"], $params["current_mod"], $params["version"]);
   executeSql($sql, $conn);
 }
 

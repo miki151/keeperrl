@@ -76,6 +76,8 @@ CREATE TABLE `event_campaign_started` (
   `install_id` varchar(40) NOT NULL,
   `game_type` varchar(20) NOT NULL,
   `player_role` varchar(20) NOT NULL,
+  `current_mod` varchar(20) DEFAULT NULL,
+  `version` varchar(20) DEFAULT NULL,
   `main` int(10) NOT NULL,
   `lesser` int(10) NOT NULL,
   `allies` int(10) NOT NULL,

@@ -38,6 +38,7 @@
 #include "village_behaviour.h"
 #include "collective_builder.h"
 #include "game_event.h"
+#include "version.h"
 
 template <class Archive> 
 void Game::serialize(Archive& ar, const unsigned int version) {
@@ -355,9 +356,12 @@ void Game::tick(GlobalTime time) {
   PROFILE_BLOCK("Game::tick");
   if (!turnEvents.empty() && time.getVisibleInt() > *turnEvents.begin()) {
     auto turn = *turnEvents.begin();
-    if (turn == 0)
-      uploadEvent("campaignStarted", campaign->getParameters());
-    else
+    if (turn == 0) {
+      auto values = campaign->getParameters();
+      values["current_mod"] = getOptions()->getStringValue(OptionId::CURRENT_MOD);
+      values["version"] = string(BUILD_DATE) + " " + string(BUILD_VERSION);
+      uploadEvent("campaignStarted", values);
+    } else
       uploadEvent("turn", {{"turn", toString(turn)}});
     turnEvents.erase(turn);
   }
