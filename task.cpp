@@ -1407,7 +1407,7 @@ class Whipping : public Task {
       setDone();
       return NoMove;
     }
-    if (c->getPosition().dist8(position).value_or(1) > 1)
+    if (c->getPosition().dist8(position).value_or(2) > 1)
       return c->moveTowards(position);
     else
       return c->whip(whipped->getPosition());
@@ -1417,8 +1417,8 @@ class Whipping : public Task {
     return "Whipping " + whipped->getName().a();
   }
 
-  SERIALIZE_ALL(SUBCLASS(Task), position, whipped);
-  SERIALIZATION_CONSTRUCTOR(Whipping);
+  SERIALIZE_ALL(SUBCLASS(Task), position, whipped)
+  SERIALIZATION_CONSTRUCTOR(Whipping)
 
   protected:
   Position SERIAL(position);
