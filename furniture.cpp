@@ -599,7 +599,10 @@ bool Furniture::canDestroy(const DestroyAction& action) const {
 }
 
 optional<double> Furniture::getStrength(const DestroyAction& action) const {
-  if (auto info = destroyedInfo[action.getType()])
+  if (auto info = destroyedInfo[action.getType()]) {
+    CHECK(info->health > 0) << info->health;
+    CHECK(info->strength > 0) << info->health;
     return info->strength * info->health;
+  }
   return none;
 }

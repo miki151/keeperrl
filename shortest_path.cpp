@@ -135,7 +135,7 @@ void ShortestPath::init(function<double(Vec2)> entryFun, function<double(Vec2, V
           double nextDist = distanceTable.getDistance(next);
           if (posDist < nextDist) {
             double dist = posDist + entryFun(next);
-            //CHECK(dist > cdist) << "Entry fun non positive " << dist - cdist;
+            CHECK(dist > posDist) << "Entry fun non positive " << dist - posDist;
             if (dist < nextDist) {
               distanceTable.setDistance(next, dist);
               q.push(makeElem(next));
@@ -251,10 +251,7 @@ ShortestPath LevelShortestPath::makeShortestPath(const Creature* creature, Posit
     Position pos(v, level);
     if (creature->getPosition() == pos)
       return 1.0;
-    else if (auto cost = pos.getNavigationCost(movementType))
-      return *cost;
-    else
-      return ShortestPath::infinity;
+    return pos.getNavigationCost(movementType).value_or(ShortestPath::infinity);
   };
   auto directionsFun = [=] (Vec2 v) {
     Position pos(v, level);
