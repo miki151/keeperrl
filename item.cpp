@@ -34,6 +34,7 @@
 #include "attack.h"
 #include "lasting_effect.h"
 #include "creature_name.h"
+#include "creature_attributes.h"
 
 template <class Archive> 
 void Item::serialize(Archive& ar, const unsigned int version) {
@@ -529,7 +530,7 @@ void Item::getAttackMsg(const Creature* c, const string& enemyName) const {
   auto weaponInfo = getWeaponInfo();
   auto swingMsg = [&] (const char* verb) {
     c->secondPerson("You "_s + verb + " your " + getName() + " at " + enemyName);
-    c->thirdPerson(c->getName().the() + " " + verb + "s his " + getName() + " at " + enemyName);
+    c->thirdPerson(c->getName().the() + " " + verb + "s " + his(c->getAttributes().getGender()) + " " + getName() + " at " + enemyName);
   };
   auto biteMsg = [&] (const char* verb2, const char* verb3) {
     c->secondPerson("You "_s + verb2 + " " + enemyName);
