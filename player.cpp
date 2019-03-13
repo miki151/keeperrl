@@ -95,6 +95,8 @@ void Player::onEvent(const GameEvent& event) {
       [&](const Projectile& info) {
         if (creature->canSee(info.begin) || creature->canSee(info.end))
           getView()->animateObject(info.begin.getCoord(), info.end.getCoord(), info.viewId, info.fx);
+        if (info.sound)
+          getView()->addSound(*info.sound);
       },
       [&](const CreatureKilled& info) {
         auto pos = info.victim->getPosition();

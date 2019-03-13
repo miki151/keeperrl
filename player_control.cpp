@@ -1553,8 +1553,11 @@ void PlayerControl::onEvent(const GameEvent& event) {
   using namespace EventInfo;
   event.visit(
       [&](const Projectile& info) {
-        if (getControlled().empty() && (canSee(info.begin) || canSee(info.end)))
+        if (getControlled().empty() && (canSee(info.begin) || canSee(info.end)) && info.begin.isSameLevel(getCurrentLevel())) {
           getView()->animateObject(info.begin.getCoord(), info.end.getCoord(), info.viewId, info.fx);
+          if (info.sound)
+            getView()->addSound(*info.sound);
+        }
       },
       [&](const CreatureEvent& info) {
         if (collective->getCreatures().contains(info.creature))

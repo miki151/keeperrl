@@ -39,6 +39,7 @@ namespace EventInfo {
     optional<ViewId> viewId;
     Position begin;
     Position end;
+    optional<SoundId> sound;
   };
 
   struct ConqueredEnemy {

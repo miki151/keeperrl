@@ -39,7 +39,6 @@ RangedWeapon::RangedWeapon(AttrType attr, const string& name, ViewId id, int dis
     : damageAttr(attr), projectileName(name), projectileViewId(id), maxDistance(dist) {}
 
 void RangedWeapon::fire(Creature* c, Position target) const {
-  c->getGame()->getView()->addSound(SoundId::SHOOT_BOW);
   int damage = c->getAttr(damageAttr);
   Attack attack(c, Random.choose(AttackLevel::LOW, AttackLevel::MIDDLE, AttackLevel::HIGH),
       AttackType::SHOOT, damage, damageAttr, {});
@@ -64,7 +63,7 @@ void RangedWeapon::fire(Creature* c, Position target) const {
         break;
       }
     }
-  c->getGame()->addEvent(EventInfo::Projectile{none, projectileViewId, position, lastPos});
+  c->getGame()->addEvent(EventInfo::Projectile{none, projectileViewId, position, lastPos, SoundId::SHOOT_BOW});
 }
 
 AttrType RangedWeapon::getDamageAttr() const {
