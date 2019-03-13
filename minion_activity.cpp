@@ -200,7 +200,7 @@ PTask MinionActivities::generate(WCollective collective, Creature* c, MinionActi
     case MinionActivityInfo::IDLE: {
       PROFILE_BLOCK("Idle");
       auto myTerritory = (collective->getZones().getPositions(ZoneId::LEISURE).empty() ||
-            collective->hasTrait(c, MinionTrait::WORKER)) ?
+            collective->hasTrait(c, MinionTrait::WORKER) || !!collective->getQuarters().getAssigned(c->getUniqueId())) ?
           tryInQuarters(collective->getTerritory().getAll(), collective, c) :
           collective->getZones().getPositions(ZoneId::LEISURE).asVector();
       //myTerritory = myTerritory.filter([&](const auto& pos) { return pos.canEnterEmpty(c); });
