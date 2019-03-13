@@ -1055,11 +1055,11 @@ class ByCollective : public Behaviour {
     };
     if (current.activity == MinionActivity::IDLE || !collective->isActivityGood(creature, current.activity)) {
       collective->setMinionActivity(creature, MinionActivity::IDLE);
-      if (Random.roll(30) || !lastTimeSetRandomTask ||
-          *lastTimeSetRandomTask < collective->getLocalTime() - 3_visible) {
+      /*if (Random.roll(30) || !lastTimeSetRandomTask ||
+          *lastTimeSetRandomTask < collective->getLocalTime() - 3_visible) {*/
         generatedCache = setRandomTask();
         lastTimeSetRandomTask = collective->getLocalTime();
-      }
+      //}
     }
     current = collective->getCurrentActivity(creature);
     MinionActivity activity = current.activity;
