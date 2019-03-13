@@ -944,7 +944,7 @@ class Table {
       ar >> (*this)[v];
   }
 
-  SERIALIZATION_CONSTRUCTOR(Table);
+  SERIALIZATION_CONSTRUCTOR(Table)
 
   private:
   Rectangle bounds;
