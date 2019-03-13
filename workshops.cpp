@@ -40,11 +40,23 @@ void Workshops::Type::stackQueue() {
     else
       tmp.push_back(std::move(elem));
   queued = std::move(tmp);
+  checkDebtConsistency();
 }
 
 void Workshops::Type::addDebt(CostInfo cost) {
   debt[cost.id] += cost.value;
   CHECK(debt[cost.id] >= 0);
+}
+
+void Workshops::Type::checkDebtConsistency() const {
+  EnumMap<CollectiveResourceId, int> nowDebt;
+  for (auto& elem : queued) {
+    int count = elem.number;
+    if (!!elem.state)
+      --count;
+    nowDebt[options[elem.indexInWorkshop].cost.id] += options[elem.indexInWorkshop].cost.value * count;
+  }
+  CHECK(nowDebt == debt);
 }
 
 void Workshops::Type::queue(int index, int count) {
@@ -72,6 +84,7 @@ void Workshops::Type::changeNumber(int index, int number) {
     auto& elem = queued[index];
     addDebt(CostInfo(elem.item.cost.id, elem.item.cost.value) * (number - elem.number));
     elem.number = number;
+    checkDebtConsistency();
   }
 }
 
@@ -102,6 +115,7 @@ void Workshops::Type::addUpgrade(int index, PItem rune) {
     queued.insert(index, std::move(item));
   } else
     queued[index].runes.push_back(std::move(rune));
+  checkDebtConsistency();
 }
 
 PItem Workshops::Type::removeUpgrade(int itemIndex, int runeIndex) {
@@ -132,11 +146,13 @@ auto Workshops::Type::addWork(WCollective collective, double amount, double skil
           }
         if (!--product.number)
           queued.removeIndexPreserveOrder(productIndex);
+        checkDebtConsistency();
         return {std::move(ret), wasUpgraded};
       }
       break;
     }
   }
+  checkDebtConsistency();
   return {{}, false};
 }
 

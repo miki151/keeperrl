@@ -39,6 +39,7 @@ class Workshops {
     friend class Workshops;
     void stackQueue();
     void addDebt(CostInfo);
+    void checkDebtConsistency() const;
     vector<Item> SERIAL(options);
     vector<QueuedItem> SERIAL(queued);
     EnumMap<CollectiveResourceId, int> SERIAL(debt);
