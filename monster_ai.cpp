@@ -1106,20 +1106,25 @@ class ByCollective : public Behaviour {
     return creature->wait();
   }
 
-  void considerHealingTask() {
+  void considerHealingActivity() {
     PROFILE;
-    const static EnumSet<MinionActivity> healingActivities {MinionActivity::SLEEP};
-    auto currentActivity = collective->getCurrentActivity(creature).activity;
-    if (creature->getBody().canHeal() && !creature->isAffected(LastingEffect::POISON) &&
-        !healingActivities.contains(currentActivity))
-      for (MinionActivity activity : healingActivities) {
-        if (creature->getAttributes().getMinionActivities().isAvailable(collective, creature, activity) &&
-            collective->isActivityGood(creature, activity)) {
-          collective->freeFromTask(creature);
-          collective->setMinionActivity(creature, activity);
-          return;
+    // don't switch the activity every turn as this may cancel and existing sleep task
+    // at the moment the creature is about to go to sleep causing it to wonder around the bedroom
+    if (Random.roll(5) && (collective->getConfig().allowHealingTaskOutsideTerritory() ||
+        collective->getTerritory().contains(creature->getPosition()))) {
+      const static EnumSet<MinionActivity> healingActivities {MinionActivity::SLEEP};
+      auto currentActivity = collective->getCurrentActivity(creature).activity;
+      if (creature->getBody().canHeal() && !creature->isAffected(LastingEffect::POISON) &&
+          !healingActivities.contains(currentActivity))
+        for (MinionActivity activity : healingActivities) {
+          if (creature->getAttributes().getMinionActivities().isAvailable(collective, creature, activity) &&
+              collective->isActivityGood(creature, activity)) {
+            collective->freeFromTask(creature);
+            collective->setMinionActivity(creature, activity);
+            return;
+          }
         }
-      }
+    }
   }
 
   static MoveInfo getFirstGoodMove() {
@@ -1136,8 +1141,7 @@ class ByCollective : public Behaviour {
 
   virtual MoveInfo getMove() override {
     PROFILE_BLOCK("ByCollective::getMove");
-    if (collective->getConfig().allowHealingTaskOutsideTerritory() || collective->getTerritory().contains(creature->getPosition()))
-      considerHealingTask();
+    considerHealingActivity();
     return getFirstGoodMove(
         bindMethod(&ByCollective::getFighterMove, this),
         bindMethod(&ByCollective::priorityTask, this),
