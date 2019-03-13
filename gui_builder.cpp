@@ -1570,8 +1570,9 @@ SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info) {
               callbacks.input({UserInputId::INTRINSIC_ATTACK, InventoryItemInfo{item.ids, *choice}});}));
     list.addSpace();
   }
-  /*if (auto elem = drawTrainingInfo(info.experienceInfo))
-    list.addElemAuto(std::move(elem));*/
+  if (!info.avatarLevelInfo)
+    if (auto elem = drawTrainingInfo(info.experienceInfo))
+      list.addElemAuto(std::move(elem));
   return list.buildVerticalList();
 }
 
