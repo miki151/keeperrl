@@ -50,7 +50,7 @@ using SDL::SDL_Keycode;
 
 GuiBuilder::GuiBuilder(Renderer& r, GuiFactory& g, Clock* c, Options* o, Callbacks call)
     : renderer(r), gui(g), clock(c), options(o), callbacks(call), gameSpeed(GameSpeed::NORMAL),
-      fpsCounter(60), upsCounter(60), cache(100) {
+      fpsCounter(60), upsCounter(60), cache(1000) {
 }
 
 void GuiBuilder::reset() {
@@ -1369,7 +1369,7 @@ vector<SGuiElem> GuiBuilder::drawSkillsList(const PlayerInfo& info) {
   return lines;
 }
 
-SGuiElem GuiBuilder::getSpellIcon(const PlayerInfo::Spell& spell, bool active) {
+SGuiElem GuiBuilder::getSpellIcon(const PlayerInfo::Spell& spell, bool active, UniqueEntity<Creature>::Id id) {
   vector<SGuiElem> ret = makeVec(gui.spellIcon(spell.id));
   if (spell.timeout) {
     ret.push_back(gui.darken());
@@ -1377,7 +1377,7 @@ SGuiElem GuiBuilder::getSpellIcon(const PlayerInfo::Spell& spell, bool active) {
   } else
   if (active)
     ret.push_back(gui.button(getButtonCallback({UserInputId::CAST_SPELL, spell.id})));
-  ret.push_back(getTooltip({capitalFirst(spell.name), spell.help}, THIS_LINE));
+  ret.push_back(getTooltip({capitalFirst(spell.name), spell.help}, THIS_LINE + int(spell.id) + id.getGenericId()));
   return gui.stack(std::move(ret));
 }
 
@@ -1390,7 +1390,7 @@ SGuiElem GuiBuilder::drawSpellsList(const PlayerInfo& info, bool active) {
     list.addElem(gui.label("Spells", Color::YELLOW), legendLineHeight);
     auto line = gui.getListBuilder(spellIconSize.x);
     for (auto& elem : info.spells) {
-      line.addElem(getSpellIcon(elem, active));
+      line.addElem(getSpellIcon(elem, active, info.creatureId));
       if (line.getLength() >= spellsPerRow) {
         list.addElem(line.buildHorizontalList());
         line.clear();
@@ -3561,9 +3561,7 @@ SGuiElem GuiBuilder::drawChooseCreatureMenu(SyncQueue<optional<UniqueEntity<Crea
     lines.addSpace(20);
   }
   if (!cancelText.empty())
-    lines.addElem(gui.centerHoriz(gui.stack(
-          gui.labelHighlight("" + cancelText + ""),
-          gui.button([&queue] { queue.push(none);}))));
+    lines.addElem(gui.centerHoriz(gui.buttonLabel(cancelText, gui.button([&queue] { queue.push(none);}))), legendLineHeight);
   int margin = 25;
   return gui.setWidth(2 * margin + windowWidth,
       gui.window(gui.margins(lines.buildVerticalList(), margin), [&queue] { queue.push(none); }));

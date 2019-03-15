@@ -175,7 +175,7 @@ class GuiBuilder {
   SGuiElem drawEquipmentAndConsumables(const PlayerInfo&);
   vector<SGuiElem> drawSkillsList(const PlayerInfo&);
   SGuiElem drawSpellsList(const PlayerInfo&, bool active);
-  SGuiElem getSpellIcon(const PlayerInfo::Spell&, bool active);
+  SGuiElem getSpellIcon(const PlayerInfo::Spell&, bool active, UniqueEntity<Creature>::Id);
   vector<SGuiElem> drawEffectsList(const PlayerInfo&);
   vector<SGuiElem> drawMinionActions(const PlayerInfo&, const optional<TutorialInfo>&);
   function<void()> getButtonCallback(UserInput);
