@@ -523,26 +523,26 @@ void MapGui::drawCreatureHighlights(Renderer& renderer, const ViewObject& object
     Vec2 pos, Vec2 sz,
     milliseconds curTime) {
   for (auto status : object.getCreatureStatus()) {
-    drawCreatureHighlight(renderer, pos, sz, getColor(status).transparency(200));
+    drawCreatureHighlight(renderer, pos, sz, getColor(status).transparency(200), index);
     break;
   }
   if (object.getCreatureStatus().isEmpty() && object.hasModifier(ViewObject::Modifier::HOSTILE))
-    drawCreatureHighlight(renderer, pos, sz, Color::ORANGE.transparency(200));
+    drawCreatureHighlight(renderer, pos, sz, Color::ORANGE.transparency(200), index);
   /*if (object.hasModifier(ViewObject::Modifier::DRAW_MORALE) && highlightMorale)
     if (auto morale = object.getAttribute(ViewObject::Attribute::MORALE))
       drawCreatureHighlight(renderer, pos, sz, getMoraleColor(*morale));*/
   if (object.hasModifier(ViewObject::Modifier::PLAYER)) {
-      drawCreatureHighlight(renderer, pos, sz, Color::YELLOW.transparency(200));
+      drawCreatureHighlight(renderer, pos, sz, Color::YELLOW.transparency(200), index);
   } else
   if (object.hasModifier(ViewObject::Modifier::PLAYER_BLINK)) {
     if ((curTime.count() / 500) % 2 == 0)
-      drawCreatureHighlight(renderer, pos, sz, Color::YELLOW.transparency(200));
+      drawCreatureHighlight(renderer, pos, sz, Color::YELLOW.transparency(200), index);
   } else
   if (object.hasModifier(ViewObject::Modifier::TEAM_HIGHLIGHT))
-    drawCreatureHighlight(renderer, pos, sz, Color::YELLOW.transparency(100));
+    drawCreatureHighlight(renderer, pos, sz, Color::YELLOW.transparency(100), index);
   if (object.hasModifier(ViewObject::Modifier::CREATURE))
     if (isCreatureHighlighted(*object.getGenericId()))
-      drawCreatureHighlight(renderer, pos, sz, Color::YELLOW.transparency(200));
+      drawCreatureHighlight(renderer, pos, sz, Color::YELLOW.transparency(200), index);
 }
 
 bool MapGui::isCreatureHighlighted(UniqueEntity<Creature>::Id creature) {
@@ -711,8 +711,9 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
         float fxPosY = tilePos.y + move.y / (float)size.y;
 
         fxViewManager->addEntity(*genericId, fxPosX, fxPosY);
-        if (auto fxInfo = getOverlayFXInfo(id))
-          fxViewManager->addFX(*genericId, *fxInfo);
+        if (!object.hasModifier(ViewObject::Modifier::PLANNED))
+          if (auto fxInfo = getOverlayFXInfo(id))
+            fxViewManager->addFX(*genericId, *fxInfo);
         if (burningVal > 0.0f)
           fxViewManager->addFX(*genericId, FXInfo{FXName::FIRE, Color::WHITE, min(1.0f, burningVal * 0.05f)});
         auto effects = object.particleEffects;
@@ -1070,7 +1071,7 @@ void MapGui::renderMapObjects(Renderer& renderer, Vec2 size, milliseconds curren
       }
       if (layer == ViewLayer::FLOOR || !spriteMode) {
         if (!buttonViewId && lastHighlighted.creaturePos)
-          drawCreatureHighlight(renderer, *lastHighlighted.creaturePos, size, Color::ALMOST_WHITE);
+          drawCreatureHighlight(renderer, *lastHighlighted.creaturePos, size, Color::ALMOST_WHITE, *objects[*lastHighlighted.tilePos]);
         else if (lastHighlighted.tilePos && (!getHighlightedFurniture() || !!buttonViewId))
           drawSquareHighlight(renderer, topLeftCorner + (*lastHighlighted.tilePos - allTiles.topLeft()).mult(size),
               size);
@@ -1116,10 +1117,8 @@ void MapGui::renderMapObjects(Renderer& renderer, Vec2 size, milliseconds curren
   renderHighlights(renderer, size, currentTimeReal, false);
 }
 
-void MapGui::drawCreatureHighlight(Renderer& renderer, Vec2 pos, Vec2 size, Color color) {
-  if (auto wpos = projectOnMap(pos))
-    if (auto index = objects[*wpos])
-      color = blendNightColor(color, *index);
+void MapGui::drawCreatureHighlight(Renderer& renderer, Vec2 pos, Vec2 size, Color color, const ViewIndex& index) {
+  color = blendNightColor(color, index);
   if (spriteMode)
     renderer.drawViewObject(pos + Vec2(0, size.y / 5), ViewId::CREATURE_HIGHLIGHT, true, size, color);
   else
