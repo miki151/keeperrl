@@ -96,9 +96,9 @@ class MapGui : public GuiElem {
   void updateObject(Vec2, CreatureView*, milliseconds currentTime);
   void drawObjectAbs(Renderer&, Vec2 pos, const ViewObject&, Vec2 size, Vec2 movement, Vec2 tilePos,
       milliseconds currentTimeReal, const ViewIndex&);
-  void drawCreatureHighlights(Renderer&, const ViewObject&, const ViewIndex& index, Vec2 pos, Vec2 sz,
+  void drawCreatureHighlights(Renderer&, const ViewObject&, const ViewIndex&, Vec2 pos, Vec2 sz,
       milliseconds currentTimeReal);
-  void drawCreatureHighlight(Renderer&, Vec2 pos, Vec2 size, Color);
+  void drawCreatureHighlight(Renderer&, Vec2 pos, Vec2 size, Color, const ViewIndex&);
   void drawSquareHighlight(Renderer&, Vec2 pos, Vec2 size);
   void considerRedrawingSquareHighlight(Renderer&, milliseconds currentTimeReal, Vec2 pos, Vec2 size);
  // void drawFloorBorders(Renderer& r, DirSet borders, int x, int y);
