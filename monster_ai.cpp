@@ -452,7 +452,10 @@ class Fighter : public Behaviour {
       }
     if (best)
       if (auto action = creature->throwItem(best, target))
-        return action.append([=](Creature*) { addCombatIntent(target.getCreature(), true); });
+        return action.append([=](Creature*) {
+          if (auto attacked = target.getCreature())
+            addCombatIntent(attacked, true);
+        });
     return NoMove;
   }
 
