@@ -1629,7 +1629,7 @@ void PlayerControl::onEvent(const GameEvent& event) {
             if (info.damageAttr == AttrType::DAMAGE)
               getView()->animation(pos.getCoord(), AnimationId::ATTACK, orientation);
             else
-              getGame()->addEvent(EventInfo::FX{pos, {FXName::MAGIC_MISSILE_SPLASH}});
+              getView()->animation(FXSpawnInfo({FXName::MAGIC_MISSILE_SPLASH}, pos.getCoord(), Vec2(0, 0)));
           }
         }
       },

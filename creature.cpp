@@ -1555,13 +1555,18 @@ bool Creature::canConsume(const Creature* c) const {
 }
 
 CreatureAction Creature::copulate(Vec2 direction) const {
-  const Creature* other = getPosition().plus(direction).getCreature();
+  Creature* other = getPosition().plus(direction).getCreature();
   if (!other || !canCopulateWith(other))
     return CreatureAction();
   return CreatureAction(this, [=](Creature* self) {
       INFO << getName().bare() << " copulate with " << other->getName().bare();
       you(MsgType::COPULATE, "with " + other->getName().the());
-      self->spendTime(2_visible);
+      getGame()->addEvent(EventInfo::FX{self->position, {FXName::LOVE}, self->position.getDir(other->position)});
+      auto movementInfo = *self->spendTime(2_visible);
+      self->addMovementInfo(movementInfo
+          .setDirection(self->position.getDir(other->position))
+          .setMaxLength(1_visible)
+          .setType(MovementInfo::WORK));
     });
 }
 

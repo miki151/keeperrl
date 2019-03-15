@@ -4,6 +4,7 @@
 #include "fx_defs.h"
 #include "fx_particle_system.h"
 #include "fx_rect.h"
+#include "renderer.h"
 
 namespace fx {
 
@@ -1081,6 +1082,37 @@ static void addSleepEffect(FXManager& mgr) {
   mgr.genSnapshots(FXName::SLEEP, {2.0f, 2.2f, 2.4f, 2.6f, 2.8f});
 }
 
+static void addLoveEffect(FXManager& mgr) {
+  EmitterDef edef;
+  edef.strength = 10.0f;
+  edef.setDirectionSpread(-fconstant::pi * 0.5f, 0.2f);
+  edef.frequency = 1.2f;
+  edef.source = FRect(-2, -12, 2, -9);
+
+  ParticleDef pdef;
+  pdef.life = 2.0f;
+  pdef.size = 10.0f;
+  pdef.alpha = {{0.0f, 0.2f, 1.0f}, {0.0, 1.0, 0.0}, InterpType::linear};
+
+  pdef.color = FVec3(1.0f);
+  pdef.textureName = TextureName::SPECIAL;
+
+  SubSystemDef ssdef(pdef, edef, 0.0f, 1.0f);
+  ssdef.emitFunc = [](AnimationContext &ctx, EmissionState &em, Particle &pinst) {
+    defaultEmitParticle(ctx, em, pinst);
+    pinst.pos += ctx.ps.targetDir * Renderer::nominalSize / 2;
+    pinst.texTile = {2, 1};
+    pinst.rot = ctx.rand.getDouble(-0.2f, 0.2f);
+  };
+
+  ParticleSystemDef psdef;
+  psdef.subSystems = {ssdef};
+  psdef.isLooped = false;
+  psdef.animLength = 3.0f;
+
+  mgr.addDef(FXName::LOVE, psdef);
+}
+
 static void addBlindEffect(FXManager &mgr) {
   EmitterDef edef;
   edef.strength = 0.0f;
@@ -1664,6 +1696,7 @@ void FXManager::initializeDefs() {
   addFlamethrowerEffect(*this);
 
   addSleepEffect(*this);
+  addLoveEffect(*this);
   addBlindEffect(*this);
   addGlitteringEffect(*this);
   addTeleportEffects(*this);
