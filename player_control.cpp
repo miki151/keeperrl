@@ -743,8 +743,8 @@ string PlayerControl::getTriggerLabel(const AttackTrigger& trigger) const {
     case AttackTriggerId::POWER: return "your power";
     case AttackTriggerId::FINISH_OFF: return "finishing you off";
     case AttackTriggerId::ENEMY_POPULATION: return "population";
-    case AttackTriggerId::TIMER: return "your evil";
-    case AttackTriggerId::NUM_CONQUERED: return "your aggression";
+    case AttackTriggerId::TIMER: return "evil";
+    case AttackTriggerId::NUM_CONQUERED: return "aggression";
     case AttackTriggerId::MINING_IN_PROXIMITY: return "breach of territory";
     case AttackTriggerId::PROXIMITY: return "proximity";
   }

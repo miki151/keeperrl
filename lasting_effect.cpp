@@ -906,9 +906,9 @@ string LastingEffects::getDescription(LastingEffect type) {
     case LastingEffect::HATE_GREENSKINS:
     case LastingEffect::HATE_ELVES: return "Makes the target hostile to all "_s + getHatedGroupName(type);
     case LastingEffect::FAST_CRAFTING: return "Increases crafting speed";
-    case LastingEffect::FAST_TRAINING: return "Increases training and learning speed";
+    case LastingEffect::FAST_TRAINING: return "Increases training and studying speed";
     case LastingEffect::SLOW_CRAFTING: return "Decreases crafting speed";
-    case LastingEffect::SLOW_TRAINING: return "Decreases training and learning speed";
+    case LastingEffect::SLOW_TRAINING: return "Decreases training and studying speed";
     case LastingEffect::ENTERTAINER: return "Makes jokes, increasing morale of nearby creatures";
     case LastingEffect::BAD_BREATH: return "Decreases morale of all nearby creatures";
     case LastingEffect::AMBUSH_SKILL: return "Can hide and ambush unsuspecting enemies. Press 'h' to hide on a tile that allows it.";

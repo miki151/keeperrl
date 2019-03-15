@@ -42,7 +42,10 @@ void ViewObject::setGenericId(GenericId id) {
 }
 
 optional<GenericId> ViewObject::getGenericId() const {
-  return genericId;
+  if (genericId)
+    return genericId;
+  else
+    return none;
 }
 
 void ViewObject::setClickAction(ViewObjectAction s) {
