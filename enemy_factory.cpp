@@ -405,7 +405,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
             c.type = SettlementType::MINETOWN;
             c.tribe = TribeId::getDwarf();
             c.inhabitants.leader = CreatureList("DWARF_BARON");
-            c.inhabitants.fighters = CreatureList(random.get(6, 9), "DWARF");
+            c.inhabitants.fighters = CreatureList(random.get(6, 9), "DWARF").increaseBaseLevel({{ExperienceType::MELEE, 10}});
             c.inhabitants.civilians = CreatureList(
                 random.get(3, 5),
                 makeVec(make_pair<int, CreatureId>(2, "DWARF_FEMALE"), make_pair<int, CreatureId>(1, "RAT")));
