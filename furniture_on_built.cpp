@@ -81,6 +81,19 @@ static void removeOldStairs(Level* level, StairKey stairKey) {
     }
 }
 
+template <typename BuildFun>
+static WLevel tryBuilding(int numTries, BuildFun buildFun, const string& name) {
+  for (int i : Range(numTries)) {
+    try {
+      return buildFun();
+    } catch (LevelGenException) {
+      INFO << "Retrying level gen";
+    }
+  }
+  FATAL << "Couldn't generate a level: " << name;
+  return nullptr;
+}
+
 void handleOnBuilt(Position pos, Creature* c, FurnitureOnBuilt type) {
   switch (type) {
     case FurnitureOnBuilt::DOWN_STAIRS:
@@ -89,11 +102,11 @@ void handleOnBuilt(Position pos, Creature* c, FurnitureOnBuilt type) {
       if (levelIndex == levels.size() - 1) {
         int width = 140;
         auto stairKey = StairKey::getNew();
-        auto newLevel = pos.getModel()->buildMainLevel(
+        auto newLevel = tryBuilding(20, [&]{ return pos.getModel()->buildMainLevel(
             LevelBuilder(Random, pos.getGame()->getCreatureFactory(), width, width, "", true),
             getLevelMaker(Random, pos.getGame()->getGameConfig(),
                 pos.getGame()->getPlayerControl()->getKeeperCreatureInfo().tribeAlignment,
-                levelIndex + 1, width, c->getTribeId(), stairKey));
+                levelIndex + 1, width, c->getTribeId(), stairKey)); }, "z-level " + toString(levelIndex));
         Position landing = newLevel->getLandingSquares(stairKey).getOnlyElement();
         landing.addFurniture(FurnitureFactory::get(FurnitureType::UP_STAIRS, TribeId::getMonster()));
         pos.setLandingLink(stairKey);

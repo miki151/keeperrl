@@ -376,7 +376,6 @@ PModel ModelBuilder::tryBuilding(int numTries, function<PModel()> buildFun, cons
   }
   FATAL << "Couldn't generate a level: " << name;
   return nullptr;
-
 }
 
 PModel ModelBuilder::campaignBaseModel(const string& siteName, TribeId keeperTribe, TribeAlignment alignment, bool externalEnemies) {
