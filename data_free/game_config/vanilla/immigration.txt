@@ -69,7 +69,7 @@
              { 0.01 { ExtraBodyPart WING 2}}
              { 0.05 { ExtraTraining ARCHERY 2}}
              { 0.05 { ExtraTraining MELEE 2}}
-             { 0.03 { AttrBonus DAMAGE 7 LastingEffect INSANITY}}
+             { 0.03 { AttrBonus DAMAGE 13 LastingEffect INSANITY}}
              { 0.05 { LastingEffect NIGHT_VISION }}
              { 0.05 { LastingEffect DISARM_TRAPS_SKILL }}
              { 0.05 { LastingEffect SWIMMING_SKILL }}
@@ -89,7 +89,7 @@
             { 0.0 MinTurnRequirement 500 }
           }
           specialTraits = {
-             { 0.03 { AttrBonus SPELL_DAMAGE 7 LastingEffect INSANITY}}
+             { 0.03 { AttrBonus SPELL_DAMAGE 13 LastingEffect INSANITY}}
              { 0.10 { ExtraTraining SPELL 4}}
              { 0.05 { SkillId LABORATORY }}
              { 0.10 { LastingEffect MAGIC_RESISTANCE }}
@@ -108,7 +108,7 @@
           }
           specialTraits = {
              { 0.02 { ExtraBodyPart HEAD 1}}
-             { 0.03 { AttrBonus DAMAGE 5 LastingEffect INSANITY}}
+             { 0.03 { AttrBonus DAMAGE 13 LastingEffect INSANITY}}
              { 0.03 { AttrBonus DEFENSE 5 LastingEffect SLOWED}}
              { 0.05 { LastingEffect RANGED_VULNERABILITY }}
              { 0.05 { LastingEffect DISARM_TRAPS_SKILL }}
@@ -129,7 +129,7 @@
             { 0.3 AttractionInfo 1 {ItemIndex RANGED_WEAPON}}
           }
           specialTraits = {
-             { 0.03 { AttrBonus RANGED_DAMAGE 5 LastingEffect INSANITY}}
+             { 0.03 { AttrBonus RANGED_DAMAGE 13 LastingEffect INSANITY}}
              { 0.03 { AttrBonus DEFENSE 5 LastingEffect SLOWED}}
              { 0.05 { LastingEffect RANGED_VULNERABILITY }}
              { 0.05 { LastingEffect DISARM_TRAPS_SKILL }}
@@ -278,7 +278,7 @@
             { 0.3 AttractionInfo 2 {FurnitureType TRAINING_IRON}}
           }
           specialTraits = {
-             { 0.1 { AttrBonus DAMAGE 5 LastingEffect INSANITY}}
+             { 0.1 { AttrBonus DAMAGE 13 LastingEffect INSANITY}}
              { 0.03 { LastingEffect INSANITY}}
              { 0.1 { LastingEffect HATE_UNDEAD}}
              { 0.3 { LastingEffect AMBUSH_SKILL }}
@@ -401,7 +401,7 @@
             { 0.1 AttractionInfo 1 {FurnitureType ARCHERY_RANGE}}
           }
           specialTraits = {
-             { 0.03 { AttrBonus DAMAGE 5 LastingEffect INSANITY}}
+             { 0.03 { AttrBonus RANGED_DAMAGE 13 LastingEffect INSANITY}}
              { 0.03 { AttrBonus DEFENSE 5 LastingEffect SLOWED}}
              { 0.05 { LastingEffect RANGED_VULNERABILITY }}
              { 0.05 { LastingEffect DISARM_TRAPS_SKILL }}
