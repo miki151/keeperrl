@@ -212,7 +212,7 @@ PTask MinionActivities::generate(WCollective collective, Creature* c, MinionActi
         myTerritory = limitToIndoors(std::move(myTerritory));
       }
       auto& pigstyPos = collective->getConstructions().getBuiltPositions(FurnitureType::PIGSTY);
-      if (pigstyPos.count(c->getPosition())) {
+      if (pigstyPos.count(c->getPosition()) && !myTerritory.empty()) {
         PROFILE_BLOCK("Leave pigsty");
         return Task::doneWhen(Task::goTo(Random.choose(myTerritory)),
             TaskPredicate::outsidePositions(c, pigstyPos));
