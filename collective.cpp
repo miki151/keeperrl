@@ -661,12 +661,13 @@ void Collective::claimSquare(Position pos) {
   //CHECK(canClaimSquare(pos));
   territory->insert(pos);
   addKnownTile(pos);
-  for (auto furniture : pos.modFurniture())
-    if (!furniture->forgetAfterBuilding()) {
-      if (!constructions->containsFurniture(pos, furniture->getLayer()))
-        constructions->addFurniture(pos, ConstructionMap::FurnitureInfo::getBuilt(furniture->getType()));
-      furniture->setTribe(getTribeId());
-    }
+  for (auto layer : {FurnitureLayer::FLOOR, FurnitureLayer::MIDDLE, FurnitureLayer::CEILING})
+    if (auto furniture = pos.modFurniture(layer))
+      if (!furniture->forgetAfterBuilding()) {
+        if (!constructions->containsFurniture(pos, furniture->getLayer()))
+          constructions->addFurniture(pos, ConstructionMap::FurnitureInfo::getBuilt(furniture->getType()));
+        furniture->setTribe(getTribeId());
+      }
   control->onClaimedSquare(pos);
 }
 
