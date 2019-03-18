@@ -171,7 +171,7 @@
   "demon_shrine"
   {
     { Furniture {{ DEMON_SHRINE } GOLD 30 }                    "Demon shrine"      ""
-        "Undead creatures sleep here." 0 { TechId "demonology" }}
+        "" 0 { TechId "demonology" }}
   }
 
   "prison"
