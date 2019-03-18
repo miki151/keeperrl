@@ -144,8 +144,7 @@ class Level : public OwnedObject<Level> {
   /** Returns the player creature.*/
   vector<Creature*> getPlayers() const;
 
-  const WModel getModel() const;
-  WModel getModel();
+  WModel getModel() const;
   WGame getGame() const;
 
   void addLightSource(Vec2, double radius);

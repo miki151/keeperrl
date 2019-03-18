@@ -53,8 +53,7 @@ void FieldOfView::squareChanged(Vec2 pos) {
   vector<Vec2> updateList;
   if (!visibility[pos])
     visibility[pos].reset(new Visibility(level->getBounds(), blocking, pos.x, pos.y));
-  vector<Vec2> visible = visibility[pos]->getVisibleTiles();
-  for (Vec2 v : visible)
+  for (Vec2 v : Rectangle::centered(pos, sightRange))
     if (visibility[v] && visibility[v]->checkVisible(pos.x - v.x, pos.y - v.y)) {
       visibility[v].reset();
     }

@@ -159,7 +159,6 @@ class Vec2 {
   Dir getCardinalDir() const;
   static Vec2 getCenterOfWeight(vector<Vec2>);
 
-  vector<Vec2> box(int radius, bool shuffle = false);
   static const vector<Vec2>& directions8();
   vector<Vec2> neighbors8() const;
   static const vector<Vec2>& directions4();

@@ -98,7 +98,7 @@ class ViewObject {
   ViewLayer SERIAL(viewLayer);
   string SERIAL(description);
   optional<Dir> SERIAL(attachmentDir);
-  GenericId SERIAL(genericId);
+  GenericId SERIAL(genericId) = 0;
   string SERIAL(goodAdjectives);
   string SERIAL(badAdjectives);
   optional<CreatureAttributes> SERIAL(creatureAttributes);

@@ -170,17 +170,18 @@ void Level::updateCreatureLight(Vec2 pos, int diff) {
 }
 
 void Level::updateVisibility(Vec2 changedSquare) {
-  for (Vec2 pos : getVisibleTilesNoDarkness(changedSquare, VisionId::NORMAL)) {
+  auto allVisible = getVisibleTilesNoDarkness(changedSquare, VisionId::NORMAL);
+  for (Vec2 pos : allVisible) {
     addLightSource(pos, Position(pos, this).getLightEmission(), -1);
     updateCreatureLight(pos, -1);
   }
   for (VisionId vision : ENUM_ALL(VisionId))
     getFieldOfView(vision).squareChanged(changedSquare);
-  for (Vec2 pos : getVisibleTilesNoDarkness(changedSquare, VisionId::NORMAL)) {
+  for (Vec2 pos : allVisible) {
     addLightSource(pos, Position(pos, this).getLightEmission(), 1);
     updateCreatureLight(pos, 1);
   }
-  for (Vec2 pos : getVisibleTilesNoDarkness(changedSquare, VisionId::NORMAL))
+  for (Vec2 pos : allVisible)
     getModel()->addEvent(EventInfo::VisibilityChanged{Position(pos, this)});
 }
 
@@ -190,11 +191,7 @@ vector<Creature*> Level::getPlayers() const {
   return {};
 }
 
-const WModel Level::getModel() const {
-  return model;
-}
-
-WModel Level::getModel() {
+WModel Level::getModel() const {
   return model;
 }
 
