@@ -940,7 +940,7 @@ bool LastingEffects::modifyIsEnemyResult(const Creature* c, const Creature* othe
   PROFILE;
   if (c->isAffected(LastingEffect::PEACEFULNESS))
     return false;
-  if (c->isAffected(LastingEffect::INSANITY))
+  if (c->isAffected(LastingEffect::INSANITY) && !other->getStatus().contains(CreatureStatus::LEADER))
     return true;
   if (auto effect = other->getAttributes().getHatedByEffect())
     if (c->isAffected(*effect))
