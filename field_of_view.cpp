@@ -54,7 +54,7 @@ void FieldOfView::squareChanged(Vec2 pos) {
   if (!visibility[pos])
     visibility[pos].reset(new Visibility(level->getBounds(), blocking, pos.x, pos.y));
   for (Vec2 v : Rectangle::centered(pos, sightRange))
-    if (visibility[v] && visibility[v]->checkVisible(pos.x - v.x, pos.y - v.y)) {
+    if (v.inRectangle(visibility.getBounds()) && visibility[v] && visibility[v]->checkVisible(pos.x - v.x, pos.y - v.y)) {
       visibility[v].reset();
     }
 }
