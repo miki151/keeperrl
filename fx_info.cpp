@@ -58,6 +58,8 @@ optional<FXInfo> getOverlayFXInfo(ViewId id) {
     return FXInfo{FXName::GLITTERING, Color(253, 247, 172)};
   if (id == ViewId::ADAMANTIUM_ORE)
     return FXInfo{FXName::GLITTERING, Color::LIGHT_BLUE};
+  if (id == ViewId::MAGMA)
+    return FXInfo{FXName::MAGMA_FIRE};
   return none;
 }
 

@@ -121,6 +121,7 @@ struct ParticleSystemDef {
 
   vector<SubSystemDef> subSystems;
   optional<float> animLength;
+  bool randomOffset = false;
   bool isLooped = false;
 };
 }

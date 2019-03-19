@@ -826,6 +826,35 @@ static void addFireEffect(FXManager& mgr) {
   mgr.genSnapshots(FXName::FIRE, {1.0f, 1.2f, 1.4f}, {0.0f, 0.2f, 0.4f, 0.6f, 0.8f, 1.0f}, 2);
 }
 
+static void addMagmaFireEffect(FXManager& mgr) {
+  EmitterDef edef;
+  edef.setStrengthSpread(10.0f, 5.0f);
+  edef.frequency = 20.0f;
+  edef.source = FRect(-6, 4, 6, 12);
+
+  ParticleDef pdef;
+  pdef.life = 0.8f;
+  pdef.size = {{0.0f, 0.5f, 1.0f}, {3.0f, 4.0f, 5.0f}, InterpType::quadratic};
+  //pdef.alpha = {{0.0f, 0.25f, 0.75f, 1.0f}, {0.0f, 0.8f, 0.8f, 0.0f}};
+  pdef.alpha = {{1.0f, 0.0f}};
+  pdef.color = {{rgb(Color::ORANGE), rgb(Color::ORANGE)}};
+  pdef.textureName = TextureName::WATER_DROPS;
+
+  SubSystemDef ssdef(pdef, edef, 0.07f, 0.27f);
+
+  ssdef.animateFunc = [](AnimationContext& ctx, Particle& pinst) {
+    defaultAnimateParticle(ctx, pinst);
+    pinst.pos += 0.5f * FVec2(0.0f, -cos(pinst.life * 1.0f) * 30.0f * ctx.timeDelta);
+  };
+
+  ParticleSystemDef psdef;
+  psdef.subSystems = {ssdef};
+  psdef.animLength = 5.0f;
+  psdef.isLooped = true;
+  psdef.randomOffset = true;
+  mgr.addDef(FXName::MAGMA_FIRE, psdef);
+}
+
 static void addFireSphereEffect(FXManager& mgr) {
   ParticleSystemDef psdef;
 
@@ -1680,6 +1709,7 @@ void FXManager::initializeDefs() {
 
   addRippleEffect(*this);
   addFireEffect(*this);
+  addMagmaFireEffect(*this);
   addFireSphereEffect(*this);
 
   addSandDustEffect(*this);
