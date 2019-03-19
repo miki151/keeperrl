@@ -1799,7 +1799,7 @@ SGuiElem GuiBuilder::drawMinions(CollectiveInfo& info, const optional<TutorialIn
       line.addElem(gui.viewObject(elem.viewId), 40);
       SGuiElem tmp = gui.label(toString(elem.count) + "   " + elem.name, Color::WHITE);
       line.addElem(std::move(tmp), 200);
-      list.addElem(gui.leftMargin(20, gui.stack(
+      list.addElem(gui.stack(
           cache->get(selectButton, THIS_LINE, elem.creatureId),
           gui.dragSource({DragContentId::CREATURE_GROUP, elem.creatureId},
               [=]{ return gui.getListBuilder(10)
@@ -1807,7 +1807,7 @@ SGuiElem GuiBuilder::drawMinions(CollectiveInfo& info, const optional<TutorialIn
                   .addElem(gui.viewObject(elem.viewId)).buildHorizontalList();}),
           gui.uiHighlightConditional([highlight = elem.highlight]{return highlight;}),
           line.buildHorizontalList()
-       )));
+       ));
     }
     list.addElem(gui.label("Teams: ", Color::WHITE));
     list.addElemAuto(drawTeams(info, tutorial));
