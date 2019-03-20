@@ -304,4 +304,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   DungeonLevel SERIAL(dungeonLevel);
   bool SERIAL(hadALeader) = false;
   vector<Item*> getAllItemsImpl(optional<ItemIndex>, bool includeMinions) const;
+  // Remove after alpha 27
+  void updateBorderTiles();
+  bool updatedBorderTiles = false;
 };

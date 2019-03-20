@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "known_tiles.h"
+#include "movement_type.h"
 
 template <class Archive>
 void KnownTiles::serialize(Archive& ar, const unsigned int version) {
@@ -8,19 +9,20 @@ void KnownTiles::serialize(Archive& ar, const unsigned int version) {
 
 SERIALIZABLE(KnownTiles);
 
-void KnownTiles::addTile(Position pos) {
+void KnownTiles::addTile(Position pos, Model* borderTilesModel) {
   known.insert(pos);
   border.erase(pos);
-  for (Position v : pos.neighbors4())
-    if (!known.count(v))
-      border.insert(v);
+  if (pos.getModel() == borderTilesModel)
+    for (Position v : pos.neighbors4())
+      if (!known.count(v) && v.canEnter(MovementType(MovementTrait::FLY)))
+        border.insert(v);
 }
 
 const PositionSet& KnownTiles::getBorderTiles() const {
   return border;
 }
 
-const PositionSet&KnownTiles::getAll() const {
+const PositionSet& KnownTiles::getAll() const {
   return known;
 }
 
@@ -30,7 +32,7 @@ bool KnownTiles::isKnown(Position pos) const {
 
 static void limitToModel(PositionSet& s, WConstModel m) {
   PositionSet copy;
-  for (Position p : s)
+  for (auto& p : s)
     if (p.getModel() == m)
       copy.insert(p);
   s = copy;
@@ -39,4 +41,12 @@ static void limitToModel(PositionSet& s, WConstModel m) {
 void KnownTiles::limitToModel(WConstModel m) {
   ::limitToModel(known, m);
   ::limitToModel(border, m);
+}
+
+void KnownTiles::limitBorderTiles(Model* m) {
+  PositionSet copy;
+  for (auto& p : border)
+    if (p.getModel() == m && p.canEnter(MovementType(MovementTrait::FLY)))
+      copy.insert(p);
+  border = copy;
 }

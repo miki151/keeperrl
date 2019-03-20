@@ -19,11 +19,12 @@
 
 class KnownTiles {
   public:
-  void addTile(Position);
+  void addTile(Position, Model* borderTilesModel);
   bool isKnown(Position) const;
   const PositionSet& getBorderTiles() const;
   const PositionSet& getAll() const;
   void limitToModel(WConstModel);
+  void limitBorderTiles(Model*);
 
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version);

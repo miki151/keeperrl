@@ -427,8 +427,16 @@ void Collective::considerRebellion() {
   }
 }
 
+void Collective::updateBorderTiles() {
+  if (!updatedBorderTiles) {
+    knownTiles->limitBorderTiles(getModel());
+    updatedBorderTiles = true;
+  }
+}
+
 void Collective::tick() {
   PROFILE_BLOCK("Collective::tick");
+  updateBorderTiles();
   considerRebellion();
   dangerLevelCache = none;
   control->tick();
@@ -1144,7 +1152,7 @@ const CollectiveConfig& Collective::getConfig() const {
 bool Collective::addKnownTile(Position pos) {
   if (!knownTiles->isKnown(pos)) {
     pos.setNeedsRenderUpdate(true);
-    knownTiles->addTile(pos);
+    knownTiles->addTile(pos, getModel());
     if (WTask task = taskMap->getMarked(pos))
       if (task->isBogus())
         taskMap->removeTask(task);

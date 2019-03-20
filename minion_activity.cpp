@@ -23,12 +23,15 @@ static bool betterPos(Position from, Position current, Position candidate) {
   return from.dist8(current).value_or(1000000) > from.dist8(candidate).value_or(1000000);
 }
 
-static optional<Position> getTileToExplore(WConstCollective collective, const Creature* c, MinionActivity task) {
-  PROFILE;
+static optional<Position> getTileToExplore(WCollective collective, const Creature* c, MinionActivity task) {
+  auto& borderTiles = collective->getKnownTiles().getBorderTiles();
+  auto blockName = "get tile to explore " + toString(borderTiles.size());
+  PROFILE_BLOCK(blockName.data());
   auto movementType = c->getMovementType();
   optional<Position> caveTile;
   optional<Position> outdoorTile;
-  for (auto& pos : Random.permutation(collective->getKnownTiles().getBorderTiles()))
+  for (auto& pos : Random.permutation(borderTiles))
+    CHECK(pos.getModel() == collective->getModel());
     if (pos.isCovered()) {
       if ((!caveTile || betterPos(c->getPosition(), *caveTile, pos)) &&
           pos.canNavigateTo(c->getPosition(), movementType))
