@@ -55,6 +55,7 @@
 #include "game_config.h"
 #include "conquer_condition.h"
 #include "game_event.h"
+#include "view_object.h"
 
 template <class Archive>
 void Collective::serialize(Archive& ar, const unsigned int version) {
@@ -388,8 +389,10 @@ static int getKeeperUpgradeLevel(int dungeonLevel) {
 
 void Collective::update(bool currentlyActive) {
   auto leader = getLeader();
-  if (leader)
+  if (leader) {
     leader->upgradeViewId(getKeeperUpgradeLevel(dungeonLevel.level));
+    name->viewId = leader->getViewObject().id();
+  }
   control->update(currentlyActive);
   if (config->hasImmigrantion(currentlyActive) && (leader || !hadALeader) && !isConquered())
     immigration->update();
