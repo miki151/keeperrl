@@ -30,7 +30,7 @@ static optional<Position> getTileToExplore(WCollective collective, const Creatur
   auto movementType = c->getMovementType();
   optional<Position> caveTile;
   optional<Position> outdoorTile;
-  for (auto& pos : Random.permutation(borderTiles))
+  for (auto& pos : Random.permutation(borderTiles)) {
     CHECK(pos.getModel() == collective->getModel());
     if (pos.isCovered()) {
       if ((!caveTile || betterPos(c->getPosition(), *caveTile, pos)) &&
@@ -41,6 +41,7 @@ static optional<Position> getTileToExplore(WCollective collective, const Creatur
           pos.canNavigateTo(c->getPosition(), movementType))
         outdoorTile = pos;
     }
+  }
   switch (task) {
     case MinionActivity::EXPLORE_CAVES: {
       if (caveTile) {
