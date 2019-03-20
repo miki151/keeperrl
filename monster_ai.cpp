@@ -948,7 +948,7 @@ class ByCollective : public Behaviour {
           return task->getMove(creature).orWait();
         }
     return NoMove;
-  };
+  }
 
   optional<TeamId> getActiveTeam() {
     auto& teams = collective->getTeams();

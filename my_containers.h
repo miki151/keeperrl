@@ -424,6 +424,15 @@ class unordered_set : public std::unordered_set<T, Hash> {
     return ret;
   }
 
+  template <typename Fun>
+  auto filter(Fun fun) const {
+    unordered_set ret;
+    for (const auto& elem : *this)
+      if (fun(elem))
+        ret.insert(elem);
+    return ret;
+  }
+
   vector<T> asVector() const {
     vector<T> ret;
     for (auto&& elem : *this)

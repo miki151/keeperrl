@@ -1181,6 +1181,7 @@ class StayIn : public Task {
 }
 
 PTask Task::stayIn(vector<Position> pos) {
+  CHECK(!pos.empty());
   return makeOwner<StayIn>(pos);
 }
 

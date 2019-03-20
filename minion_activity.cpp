@@ -193,8 +193,23 @@ PTask MinionActivities::generateDropTask(WCollective collective, Creature* c, Mi
   return nullptr;
 }
 
-static vector<Position> limitToIndoors(vector<Position> v) {
-  return v.filter([](const Position& pos) { return pos.isCovered(); });
+static vector<Position> limitToIndoors(const PositionSet& v) {
+  vector<Position> ret;
+  ret.reserve(v.size());
+  for (auto& pos : v)
+    if (pos.isCovered())
+      ret.push_back(pos);
+  return ret;
+}
+
+const PositionSet& getIdlePositions(const Collective* collective, const Creature* c) {
+  if (auto q = collective->getQuarters().getAssigned(c->getUniqueId()))
+    return collective->getZones().getPositions(Quarters::getAllQuarters()[*q].zone);
+  if (!collective->getZones().getPositions(ZoneId::LEISURE).empty() &&
+      !collective->hasTrait(c, MinionTrait::WORKER))
+    return collective->getZones().getPositions(ZoneId::LEISURE);
+  else
+    return collective->getTerritory().getAllAsSet();
 }
 
 PTask MinionActivities::generate(WCollective collective, Creature* c, MinionActivity task) {
@@ -203,17 +218,17 @@ PTask MinionActivities::generate(WCollective collective, Creature* c, MinionActi
   switch (info.type) {
     case MinionActivityInfo::IDLE: {
       PROFILE_BLOCK("Idle");
-      auto myTerritory = (collective->getZones().getPositions(ZoneId::LEISURE).empty() ||
-            collective->hasTrait(c, MinionTrait::WORKER) || !!collective->getQuarters().getAssigned(c->getUniqueId())) ?
-          tryInQuarters(collective->getTerritory().getAll(), collective, c) :
-          collective->getZones().getPositions(ZoneId::LEISURE).asVector();
-      //myTerritory = myTerritory.filter([&](const auto& pos) { return pos.canEnterEmpty(c); });
+      auto& myTerritory = getIdlePositions(collective, c);
       if (collective->getGame()->getSunlightInfo().getState() == SunlightState::NIGHT) {
-        if (c->getPosition().isCovered() && myTerritory.contains(c->getPosition())) {
+        if ((c->getPosition().isCovered() && myTerritory.count(c->getPosition()))) {
           PROFILE_BLOCK("Stay in for the night");
           return Task::idle();
         }
-        myTerritory = limitToIndoors(std::move(myTerritory));
+        auto indoors = limitToIndoors(myTerritory);
+        if (!indoors.empty())
+          return Task::chain(Task::transferTo(collective->getModel()), Task::stayIn(std::move(indoors)));
+        else
+          return Task::idle();
       }
       auto& pigstyPos = collective->getConstructions().getBuiltPositions(FurnitureType::PIGSTY);
       if (pigstyPos.count(c->getPosition()) && !myTerritory.empty()) {
@@ -224,7 +239,7 @@ PTask MinionActivities::generate(WCollective collective, Creature* c, MinionActi
       auto leader = collective->getLeader();
       if (!myTerritory.empty()) {
         PROFILE_BLOCK("Stay in territory");
-        return Task::chain(Task::transferTo(collective->getModel()), Task::stayIn(myTerritory));
+        return Task::chain(Task::transferTo(collective->getModel()), Task::stayIn(myTerritory.asVector()));
       } else if (collective->getConfig().getFollowLeaderIfNoTerritory() && leader) {
         PROFILE_BLOCK("Follor leader");
         return Task::alwaysDone(Task::follow(leader));
