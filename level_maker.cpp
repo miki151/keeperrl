@@ -2682,11 +2682,54 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, optional<CreatureGroup> forr
   return std::move(queue);
 }
 
+static PLevelMaker underground(RandomGen& random, optional<CreatureGroup> waterFactory, optional<CreatureGroup> lavaFactory) {
+  auto queue = unique<MakerQueue>();
+  if (random.roll(1)) {
+    auto caverns = unique<RandomLocations>();
+    int minSize = random.get(5, 15);
+    int maxSize = minSize + random.get(3, 10);
+    for (int i : Range(sqrt(random.get(4, 100)))) {
+      int size = random.get(minSize, maxSize);
+      caverns->add(unique<UniformBlob>(SquareChange::reset(FurnitureType::FLOOR)), Vec2(size, size), Predicate::alwaysTrue());
+      caverns->setCanOverlap(caverns->getLast());
+    }
+    queue->addMaker(std::move(caverns));
+  }
+  switch (random.get(1, 3)) {
+    case 1:
+      queue->addMaker(unique<River>(3, random.choose(FurnitureType::WATER, FurnitureType::MAGMA)));
+      break;
+    case 2: {
+      int numLakes = sqrt(random.get(1, 100));
+      auto lakeType = random.choose(FurnitureType::WATER, FurnitureType::MAGMA);
+      auto caverns = unique<RandomLocations>();
+      for (int i : Range(numLakes)) {
+        int size = random.get(6, 20);
+        caverns->add(unique<UniformBlob>(SquareChange::reset(lakeType, SquareAttrib::LAKE), none), Vec2(size, size), Predicate::alwaysTrue());
+        caverns->setCanOverlap(caverns->getLast());
+      }
+      queue->addMaker(std::move(caverns));
+      if (lakeType == FurnitureType::WATER && waterFactory) {
+        queue->addMaker(unique<Creatures>(*waterFactory, 1, MonsterAIFactory::monster(),
+              Predicate::type(FurnitureType::WATER)));
+      }
+      if (lakeType == FurnitureType::MAGMA && lavaFactory) {
+        queue->addMaker(unique<Creatures>(*lavaFactory, random.get(1, 4),
+              MonsterAIFactory::monster(), Predicate::type(FurnitureType::MAGMA)));
+      }
+      break;
+    }
+    default: break;
+  }
+  return std::move(queue);
+}
+
 PLevelMaker LevelMaker::getFullZLevel(RandomGen& random, optional<SettlementInfo> settlement, ResourceCounts resourceCounts,
     int mapWidth, TribeId keeperTribe, StairKey landingLink) {
   auto queue = unique<MakerQueue>();
   queue->addMaker(unique<Empty>(SquareChange(FurnitureType::FLOOR)
       .add(FurnitureParams{FurnitureType::MOUNTAIN2, keeperTribe})));
+  queue->addMaker(underground(random, none, none));
   auto locations = unique<RandomLocations>();
   auto startingPosMaker = unique<StartingPos>(Predicate::alwaysTrue(), landingLink);
   LevelMaker* startingPos = startingPosMaker.get();
@@ -2784,49 +2827,6 @@ PLevelMaker LevelMaker::splashLevel(CreatureGroup heroLeader, CreatureGroup hero
   queue->addMaker(unique<SpecificArea>(monsterSpawn2, unique<Creatures>(imps, 15,
           MonsterAIFactory::splashImps(splashPath))));
   queue->addMaker(unique<SetSunlight>(0.0, !Predicate::inRectangle(Level::getSplashVisibleBounds())));
-  return std::move(queue);
-}
-
-
-static PLevelMaker underground(RandomGen& random, CreatureGroup waterFactory, CreatureGroup lavaFactory) {
-  auto queue = unique<MakerQueue>();
-  if (random.roll(1)) {
-    auto caverns = unique<RandomLocations>();
-    int minSize = random.get(5, 15);
-    int maxSize = minSize + random.get(3, 10);
-    for (int i : Range(sqrt(random.get(4, 100)))) {
-      int size = random.get(minSize, maxSize);
-      caverns->add(unique<UniformBlob>(FurnitureType::FLOOR), Vec2(size, size), Predicate::alwaysTrue());
-      caverns->setCanOverlap(caverns->getLast());
-    }
-    queue->addMaker(std::move(caverns));
-  }
-  switch (random.get(1, 3)) {
-    case 1:
-      queue->addMaker(unique<River>(3, random.choose(FurnitureType::WATER, FurnitureType::MAGMA)));
-      break;
-    case 2: {
-      int numLakes = sqrt(random.get(1, 100));
-      auto lakeType = random.choose(FurnitureType::WATER, FurnitureType::MAGMA);
-      auto caverns = unique<RandomLocations>();
-      for (int i : Range(numLakes)) {
-        int size = random.get(6, 20);
-        caverns->add(unique<UniformBlob>(SquareChange::reset(lakeType, SquareAttrib::LAKE), none), Vec2(size, size), Predicate::alwaysTrue());
-        caverns->setCanOverlap(caverns->getLast());
-      }
-      queue->addMaker(std::move(caverns));
-      if (lakeType == FurnitureType::WATER) {
-        queue->addMaker(unique<Creatures>(waterFactory, 1, MonsterAIFactory::monster(),
-              Predicate::type(FurnitureType::WATER)));
-      }
-      if (lakeType == FurnitureType::MAGMA) {
-        queue->addMaker(unique<Creatures>(lavaFactory, random.get(1, 4),
-              MonsterAIFactory::monster(), Predicate::type(FurnitureType::MAGMA)));
-      }
-      break;
-    }
-    default: break;
-  }
   return std::move(queue);
 }
 
