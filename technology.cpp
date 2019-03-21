@@ -36,6 +36,7 @@
 
 
 vector<TechId> Technology::getNextTechs() const {
+  PROFILE;
   return getNextTechs(researched);
 }
 

@@ -2117,24 +2117,26 @@ SGuiElem GuiBuilder::drawLibraryOverlay(const CollectiveInfo& collectiveInfo, co
   //lines.addElem(gui.rightMargin(rightElemMargin, gui.alignment(GuiFactory::Alignment::RIGHT, drawCost(info.resource))));
   if (info.warning)
     lines.addElem(gui.label(*info.warning, Color::RED));
-  lines.addElem(gui.label("Research:", Color::YELLOW));
-  lines.addElem(gui.label("(" + getPlural("item", collectiveInfo.avatarLevelInfo.numAvailable) + " available)", Color::YELLOW));
-  for (int i : All(info.available)) {
-    auto& elem = info.available[i];
-    auto line = gui.getListBuilder()
-        .addElem(gui.label(elem.name, elem.active ? Color::WHITE : Color::GRAY), 10)
-        .buildHorizontalList();
-    line = gui.stack(std::move(line), getTooltip({elem.description}, THIS_LINE));
-    if (elem.tutorialHighlight && tutorial && tutorial->highlights.contains(*elem.tutorialHighlight))
-      line = gui.stack(gui.tutorialHighlight(), std::move(line));
-    if (elem.active)
-      line = gui.stack(
-          gui.uiHighlightMouseOver(Color::GREEN),
-          std::move(line),
-          gui.button(getButtonCallback({UserInputId::LIBRARY_ADD, elem.name})));
-    lines.addElem(gui.rightMargin(rightElemMargin, std::move(line)));
+  if (!info.available.empty()) {
+    lines.addElem(gui.label("Research:", Color::YELLOW));
+    lines.addElem(gui.label("(" + getPlural("item", collectiveInfo.avatarLevelInfo.numAvailable) + " available)", Color::YELLOW));
+    for (int i : All(info.available)) {
+      auto& elem = info.available[i];
+      auto line = gui.getListBuilder()
+          .addElem(gui.label(elem.name, elem.active ? Color::WHITE : Color::GRAY), 10)
+          .buildHorizontalList();
+      line = gui.stack(std::move(line), getTooltip({elem.description}, THIS_LINE));
+      if (elem.tutorialHighlight && tutorial && tutorial->highlights.contains(*elem.tutorialHighlight))
+        line = gui.stack(gui.tutorialHighlight(), std::move(line));
+      if (elem.active)
+        line = gui.stack(
+            gui.uiHighlightMouseOver(Color::GREEN),
+            std::move(line),
+            gui.button(getButtonCallback({UserInputId::LIBRARY_ADD, elem.name})));
+      lines.addElem(gui.rightMargin(rightElemMargin, std::move(line)));
+    }
+    lines.addSpace(legendLineHeight * 2 / 3);
   }
-  lines.addSpace(legendLineHeight * 2 / 3);
   if (!info.researched.empty())
   lines.addElem(gui.label("Already researched:", Color::YELLOW));
   for (int i : All(info.researched)) {

@@ -1419,7 +1419,7 @@ void PlayerControl::fillDungeonLevel(AvatarLevelInfo& info) const {
   info.viewId = collective->getLeader()->getViewObject().id();
   info.title = collective->getLeader()->getName().title();
   info.progress = dungeonLevel.progress;
-  info.numAvailable = dungeonLevel.numResearchAvailable();
+  info.numAvailable = min(dungeonLevel.numResearchAvailable(), collective->getTechnology().getNextTechs().size());
 }
 
 void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
