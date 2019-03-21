@@ -287,6 +287,10 @@ optional<FurnitureTickType> Furniture::getTickType() const {
   return tickType;
 }
 
+const heap_optional<FurnitureEntry>& Furniture::getEntryType() const {
+  return entryType;
+}
+
 bool Furniture::isTicking() const {
   return !!tickType;
 }

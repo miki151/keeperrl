@@ -49,6 +49,7 @@ void FurnitureEntry::handle(WFurniture f, Creature* c) {
           }
       },
       [&](Water) {
+        c->removeEffect(LastingEffect::ON_FIRE);
         MovementType realMovement = c->getMovementType();
         realMovement.setForced(false);
         if (!f->getMovementSet().canEnter(realMovement)) {

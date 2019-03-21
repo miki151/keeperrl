@@ -32,6 +32,5 @@ class FurnitureEntry {
 
   SERIALIZATION_DECL(FurnitureEntry)
 
-  private:
   EntryData SERIAL(entryData);
 };

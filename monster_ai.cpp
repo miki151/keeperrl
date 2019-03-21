@@ -49,6 +49,7 @@
 #include "furniture_tick.h"
 #include "time_queue.h"
 #include "draw_line.h"
+#include "furniture_entry.h"
 
 class Behaviour {
   public:
@@ -1425,7 +1426,7 @@ class AvoidFire : public Behaviour {
       optional<Position> closestWater;
       for (auto pos : myPosition.getRectangle(Rectangle::centered(7)))
         if (auto f = pos.getFurniture(FurnitureLayer::GROUND))
-          if (f->getTickType() == FurnitureTickType::EXTINGUISH_FIRE &&
+          if (f->getEntryType() && f->getEntryType()->entryData.contains<FurnitureEntry::Water>() &&
               (!closestWater || *closestWater->dist8(myPosition) > *pos.dist8(myPosition)))
             closestWater = pos;
       if (closestWater)
@@ -1434,8 +1435,8 @@ class AvoidFire : public Behaviour {
     return NoMove;
   }
 
-  SERIALIZATION_CONSTRUCTOR(AvoidFire);
-  SERIALIZE_ALL(SUBCLASS(Behaviour));
+  SERIALIZATION_CONSTRUCTOR(AvoidFire)
+  SERIALIZE_ALL(SUBCLASS(Behaviour))
 };
 
 REGISTER_TYPE(Heal);
