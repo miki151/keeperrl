@@ -172,6 +172,7 @@ static void sitOnThrone(Position pos, WConstFurniture furniture, Creature* c) {
         if (auto landing = pos.getLevel()->getClosestLanding({pos}, enemy)) {
           enemy->getPosition().moveCreature(*landing, true);
           wasTeleported = true;
+          enemy->removeEffect(LastingEffect::SLEEP);
         }
     };
     for (auto enemy : collective->getCreatures(MinionTrait::FIGHTER))
