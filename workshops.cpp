@@ -32,10 +32,11 @@ const vector<Workshops::Item>& Workshops::Type::getOptions() const {
 }
 
 void Workshops::Type::stackQueue() {
+  checkDebtConsistency();
   vector<QueuedItem> tmp;
   for (auto& elem : queued)
     if (!tmp.empty() && elem.indexInWorkshop == tmp.back().indexInWorkshop &&
-        elem.runes.empty() && tmp.back().runes.empty())
+        elem.runes.empty() && tmp.back().runes.empty() && !elem.state && !tmp.back().state)
       tmp.back().number += elem.number;
     else
       tmp.push_back(std::move(elem));
