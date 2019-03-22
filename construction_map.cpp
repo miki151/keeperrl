@@ -79,11 +79,6 @@ void ConstructionMap::onFurnitureDestroyed(Position pos, FurnitureLayer layer) {
     furniturePositions[info->getFurnitureType()].erase(pos);
     info->reset();
   }
-  for (auto pos2 : pos.neighbors8())
-    for (auto layer : ENUM_ALL(FurnitureLayer))
-      if (auto info = getFurniture(pos2, layer))
-        if (!FurnitureFactory::hasSupport(info->getFurnitureType(), pos2) && !info->isBuilt(pos2))
-          removeFurniturePlan(pos2, layer);
 }
 
 void ConstructionMap::addFurniture(Position pos, const FurnitureInfo& info) {

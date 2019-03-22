@@ -1033,6 +1033,7 @@ void Collective::updateConstructions() {
     auto& construction = *constructions->getFurniture(pos.first, pos.second);
     if (!isDelayed(pos.first) &&
         !construction.hasTask() &&
+        pos.first.canConstruct(construction.getFurnitureType()) &&
         !construction.isBuilt(pos.first) &&
         hasResource(construction.getCost())) {
       constructions->setTask(pos.first, pos.second,
