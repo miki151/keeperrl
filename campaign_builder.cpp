@@ -45,10 +45,7 @@ vector<OptionId> CampaignBuilder::getSecondaryOptions(CampaignType type) const {
     case CampaignType::ENDLESS:
       return {OptionId::LESSER_VILLAINS, OptionId::ALLIES};
     case CampaignType::FREE_PLAY:
-      if (getPlayerRole() == PlayerRole::KEEPER)
-        return {OptionId::MAIN_VILLAINS, OptionId::LESSER_VILLAINS, OptionId::ALLIES, OptionId::GENERATE_MANA};
-      else
-        return {OptionId::MAIN_VILLAINS, OptionId::LESSER_VILLAINS, OptionId::ALLIES};
+      return {OptionId::MAIN_VILLAINS, OptionId::LESSER_VILLAINS, OptionId::ALLIES};
     case CampaignType::SINGLE_KEEPER:
       return {};
   }

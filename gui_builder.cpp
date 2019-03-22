@@ -3437,30 +3437,7 @@ SGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, View::Ca
     lines.addElem(gui.leftMargin(optionMargin, drawOptionElem(options, id,
             [&queue, id] { queue.push({CampaignActionId::UPDATE_OPTION, id});}, getDefaultString(id))));
   lines.addSpace(10);
-  if (auto& title = campaignOptions.mapTitle)
-    lines.addBackElem(gui.centerHoriz(gui.label(*title)));
-  lines.addBackElemAuto(gui.centerHoriz(drawCampaignGrid(campaign, nullptr,
-        [&campaign](Vec2 pos) { return campaign.canEmbark(pos); },
-        [&queue](Vec2 pos) { queue.push({CampaignActionId::CHOOSE_SITE, pos}); })));
-  lines.addSpace(10);
-  lines.addBackElem(gui.centerHoriz(gui.getListBuilder()
-        .addElemAuto(gui.conditional(
-            gui.buttonLabel("Confirm", [&] { queue.push(CampaignActionId::CONFIRM); }),
-            gui.buttonLabelInactive("Confirm"),
-            [&campaign] { return !!campaign.getPlayerPos(); }))
-        .addSpace(20)
-        .addElemAuto(gui.buttonLabel("Re-roll map", [&queue] { queue.push(CampaignActionId::REROLL_MAP);}))
-        .addSpace(20)
-        .addElemAuto(gui.buttonLabel("Go back",
-            gui.button([&queue] { queue.push(CampaignActionId::CANCEL); }, gui.getKey(SDL::SDLK_ESCAPE))))
-        .buildHorizontalList()));
   GuiFactory::ListBuilder secondaryOptionLines(gui, getStandardLineHeight());
-  if (!campaignOptions.secondaryOptions.empty()) {
-    for (OptionId id : campaignOptions.secondaryOptions)
-      rightLines.addElem(
-          drawOptionElem(options, id, [&queue, id] { queue.push({CampaignActionId::UPDATE_OPTION, id});},
-              getDefaultString(id)));
-  }
   if (retiredGames) {
     auto addedDungeons = drawRetiredGames(
         *retiredGames, [&queue] { queue.push(CampaignActionId::UPDATE_MAP);}, none);
@@ -3478,10 +3455,33 @@ SGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, View::Ca
       secondaryOptionLines.addElem(gui.label("Available villains:", Color::YELLOW));
     int listHeight = min(360 - addedHeight, retiredList.getSize() + 30);
     secondaryOptionLines.addElem(gui.scrollable(retiredList.buildVerticalList()), listHeight);
-    rightLines.addElem(gui.stack(
-        gui.labelHighlight("Add retired dungeons"),
-        gui.button([&menuState] { menuState.settings = !menuState.settings;})));
-  } else if (campaignOptions.warning)
+    lines.addElem(gui.leftMargin(optionMargin,
+        gui.buttonLabel("Add retired dungeons", [&menuState] { menuState.settings = !menuState.settings;})));
+  }
+  if (auto& title = campaignOptions.mapTitle)
+    lines.addBackElem(gui.centerHoriz(gui.label(*title)));
+  lines.addBackElemAuto(gui.centerHoriz(drawCampaignGrid(campaign, nullptr,
+        [&campaign](Vec2 pos) { return campaign.canEmbark(pos); },
+        [&queue](Vec2 pos) { queue.push({CampaignActionId::CHOOSE_SITE, pos}); })));
+  lines.addSpace(10);
+  lines.addBackElem(gui.centerHoriz(gui.getListBuilder()
+        .addElemAuto(gui.conditional(
+            gui.buttonLabel("Confirm", [&] { queue.push(CampaignActionId::CONFIRM); }),
+            gui.buttonLabelInactive("Confirm"),
+            [&campaign] { return !!campaign.getPlayerPos(); }))
+        .addSpace(20)
+        .addElemAuto(gui.buttonLabel("Re-roll map", [&queue] { queue.push(CampaignActionId::REROLL_MAP);}))
+        .addSpace(20)
+        .addElemAuto(gui.buttonLabel("Go back",
+            gui.button([&queue] { queue.push(CampaignActionId::CANCEL); }, gui.getKey(SDL::SDLK_ESCAPE))))
+        .buildHorizontalList()));
+  if (!campaignOptions.secondaryOptions.empty()) {
+    for (OptionId id : campaignOptions.secondaryOptions)
+      rightLines.addElem(
+          drawOptionElem(options, id, [&queue, id] { queue.push({CampaignActionId::UPDATE_OPTION, id});},
+              getDefaultString(id)));
+  }
+  if (campaignOptions.warning)
     rightLines.addElem(gui.leftMargin(-20, drawMenuWarning(*campaignOptions.warning)));
   int retiredPosX = 640;
   vector<SGuiElem> interior;
