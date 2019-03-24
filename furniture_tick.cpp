@@ -105,8 +105,10 @@ static void pit(Position position, WFurniture self) {
     for (auto neighborPos : position.neighbors8(Random))
       if (auto water = neighborPos.getFurniture(FurnitureLayer::GROUND))
         if (water->canBuildBridgeOver()) {
+          auto waterType = water->getType() == FurnitureType::MAGMA ?
+                FurnitureType::MAGMA : FurnitureType::WATER;
           position.removeFurniture(position.getFurniture(FurnitureLayer::GROUND),
-              FurnitureFactory::get(FurnitureType::WATER, water->getTribe()));
+              FurnitureFactory::get(waterType, water->getTribe()));
           self->destroy(position, DestroyAction::Type::BOULDER);
           return;
         }

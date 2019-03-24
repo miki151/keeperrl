@@ -577,6 +577,7 @@ void Position::removeFurniture(FurnitureLayer layer) const {
 
 void Position::removeFurniture(WConstFurniture f, PFurniture replace) const {
   PROFILE;
+  bool visibilityChanged = (!!replace) ? (f->blocksAnyVision() != replace->blocksAnyVision()) : f->blocksAnyVision();
   level->removeLightSource(coord, f->getLightEmission());
   auto replacePtr = replace.get();
   auto layer = f->getLayer();
@@ -590,7 +591,8 @@ void Position::removeFurniture(WConstFurniture f, PFurniture replace) const {
   }
   updateMovementDueToFire();
   updateConnectivity();
-  updateVisibility();
+  if (visibilityChanged)
+    updateVisibility();
   updateSupport();
   updateBuildingSupport();
   if (replacePtr)
