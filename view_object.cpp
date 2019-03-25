@@ -38,6 +38,7 @@ ViewObject::ViewObject(ViewId id, ViewLayer l)
 }
 
 void ViewObject::setGenericId(GenericId id) {
+  CHECK(id != 0);
   genericId = id;
 }
 
@@ -83,7 +84,7 @@ const MovementInfo& ViewObject::getLastMovementInfo() const {
 Vec2 ViewObject::getMovementInfo(int moveCounter) const {
   if (!movementQueue)
     return Vec2(0, 0);
-  CHECK(genericId);
+  CHECK(genericId) << resource_id;
   return movementQueue->getTotalMovement(moveCounter);
 }
 
