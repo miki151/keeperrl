@@ -143,6 +143,7 @@
         SPELL 1
       }
       hatedByEffect = HATE_HUMANS
+      spells = { HEAL_SELF }
     }
   "KEEPER_KNIGHT_WHITE_F"
     {
@@ -168,6 +169,7 @@
         MELEE 12
         SPELL 1
       }
+      spells = { HEAL_SELF }
       hatedByEffect = HATE_HUMANS
     }
   "ADVENTURER"
