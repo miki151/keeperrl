@@ -62,6 +62,7 @@ class ConstructionMap {
   int getTotalCount(FurnitureType) const;
   const PositionSet& getBuiltPositions(FurnitureType) const;
   void onConstructed(Position, FurnitureType);
+  void clearUnsupportedFurniturePlans();
 
   optional<const TrapInfo&> getTrap(Position) const;
   optional<TrapInfo&> getTrap(Position);

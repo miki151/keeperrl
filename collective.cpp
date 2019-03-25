@@ -445,6 +445,7 @@ void Collective::tick() {
   control->tick();
   zones->tick();
   taskMap->clearFinishedTasks();
+  constructions->clearUnsupportedFurniturePlans();
   if (config->getWarnings() && Random.roll(5))
     warnings->considerWarnings(this);
   if (config->getEnemyPositions() && Random.roll(5)) {

@@ -127,6 +127,16 @@ void ConstructionMap::onConstructed(Position pos, FurnitureType type) {
   }
 }
 
+void ConstructionMap::clearUnsupportedFurniturePlans() {
+  vector<pair<Position, FurnitureLayer>> toRemove;
+  for (auto& elem : getAllFurniture())
+    if (auto info = getFurniture(elem.first, elem.second))
+      if (!FurnitureFactory::hasSupport(info->getFurnitureType(), elem.first))
+        toRemove.push_back(elem);
+  for (auto& elem : toRemove)
+    removeFurniturePlan(elem.first, elem.second);
+}
+
 optional<const ConstructionMap::TrapInfo&> ConstructionMap::getTrap(Position pos) const {
   return traps.getReferenceMaybe(pos);
 }
