@@ -1036,9 +1036,11 @@ class Eat : public Task {
 
   virtual MoveInfo getMove(Creature* c) override {
     PROFILE;
+    if (!!position && !c->canNavigateTo(*position))
+      position = none;
     if (!position) {
       for (Position v : Random.permutation(positions))
-        if (!rejectedPosition.count(v) && (!position ||
+        if (!rejectedPosition.count(v) && c->canNavigateTo(v) && (!position ||
               position->dist8(c->getPosition()).value_or(10000) > v.dist8(c->getPosition()).value_or(10000)))
           position = v;
       if (!position) {
