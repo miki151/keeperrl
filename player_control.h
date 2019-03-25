@@ -91,6 +91,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   optional<TeamId> getCurrentTeam() const;
   CollectiveTeams& getTeams();
   const CollectiveTeams& getTeams() const;
+  WModel getModel() const;
 
   private:
   struct Private {};
@@ -183,7 +184,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   ViewObject getTrapObject(TrapType, bool built) const;
   void getSquareViewIndex(Position, bool canSee, ViewIndex&) const;
   void onSquareClick(Position);
-  WModel getModel() const;
   WGame getGame() const;
   View* getView() const;
   PController createMinionController(Creature*);

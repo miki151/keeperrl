@@ -83,8 +83,11 @@ class MinionController : public Player {
         control->toggleControlAllTeamMembers();
         return true;
       case UserInputId::EXIT_CONTROL_MODE:
-        unpossess();
-        return true;
+        if (creature->getPosition().getModel() == control->getModel() || canTravel()) {
+          unpossess();
+          return true;
+        } else
+          return false;
       case UserInputId::TEAM_MEMBER_ACTION: {
         auto& info = input.get<TeamMemberActionInfo>();
         control->teamMemberAction(info.action, info.memberId);

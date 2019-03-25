@@ -103,6 +103,7 @@ class Player : public Controller, public CreatureView, public EventListener<Play
 
   bool tryToPerform(CreatureAction);
 
+  bool canTravel() const;
   private:
 
   WLevel getLevel() const;
