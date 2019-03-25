@@ -17,7 +17,8 @@ enum class GameConfigId {
   CREATURE_ATTRIBUTES,
   CREATURE_INVENTORY,
   Z_LEVELS,
-  RESOURCE_COUNTS
+  RESOURCE_COUNTS,
+  GAME_INTRO_TEXT
 };
 
 class GameConfig {

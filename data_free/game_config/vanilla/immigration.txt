@@ -52,7 +52,7 @@
           }
           specialTraits = {
              { 0.03 { SkillId WORKSHOP LastingEffect INSANITY }}
-             { 0.03 { SkillId FORGE LastingEffect INSANITY }}
+             { 0.05 { SkillId FORGE LastingEffect INSANITY }}
              { 0.03 { LastingEffect BAD_BREATH }}
              { 0.01 { LastingEffect ENTERTAINER }}
           }

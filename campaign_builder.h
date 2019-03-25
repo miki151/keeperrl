@@ -33,6 +33,7 @@ class CampaignBuilder {
   void placeVillains(Campaign&, vector<Campaign::SiteInfo::Dweller>, const VillainPlacement&, int count);
   void placeVillains(Campaign&, const VillainCounts&, const optional<RetiredGames>&, TribeAlignment);
   PlayerRole getPlayerRole() const;
+  vector<string> getIntroMessages(CampaignType) const;
 };
 
 struct CampaignSetup {

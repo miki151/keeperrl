@@ -24,6 +24,8 @@ const char* GameConfig::getConfigName(GameConfigId id) {
       return "zlevels";
     case GameConfigId::RESOURCE_COUNTS:
       return "resources";
+    case GameConfigId::GAME_INTRO_TEXT:
+      return "intro_text";
   }
 }
 

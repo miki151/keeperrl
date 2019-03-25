@@ -84,7 +84,7 @@ const MovementInfo& ViewObject::getLastMovementInfo() const {
 Vec2 ViewObject::getMovementInfo(int moveCounter) const {
   if (!movementQueue)
     return Vec2(0, 0);
-  CHECK(genericId) << resource_id;
+  CHECK(genericId) << EnumInfo<ViewId>::getString(resource_id);
   return movementQueue->getTotalMovement(moveCounter);
 }
 

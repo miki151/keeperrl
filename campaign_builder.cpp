@@ -351,25 +351,15 @@ static bool autoConfirm(CampaignType type) {
   }
 }
 
-static vector<string> getIntroMessages(CampaignType type, string worldName) {
-  vector<string> ret = {
-    "Welcome to KeeperRL Alpha 26! This patch was released on November 28th, 2018. "
-    "Many new gameplay features have been added, "
-    "so if you are a returning player, we encourage you to check out the "
-    "change log at www.keeperrl.com.\n \n"
-    "If this is your first time playing KeeperRL, remember to start with the tutorial!"
-  };
-  if (type == CampaignType::ENDLESS)
-    ret.push_back(
-        "Welcome to the endless mode! Your task here is to survive as long as possible, while "
-        "defending your dungeon from incoming enemy waves. The enemies don't come from any specific place and "
-        "will just appear at the edge of the map. You will get mana for defeating each wave. "
-        "Note that there are also traditional enemy villages scattered around and they may also attack you.\n \n"
-        "The endless mode is a completely new feature and we are very interested in your feedback on how "
-        "it can be developed further. Please drop by on the forums at keeperrl.com or on Steam and let us know!"
-    );
-
-  return ret;
+vector<string> CampaignBuilder::getIntroMessages(CampaignType type) const {
+  pair<vector<string>, map<CampaignType, vector<string>>> messages;
+  while (1) {
+    if (auto error = gameConfig->readObject(messages, GameConfigId::GAME_INTRO_TEXT)) {
+      view->presentText("Error reading game intro text", *error);
+      continue;
+    }
+    return concat(messages.first, messages.second[type]);
+  }
 }
 
 optional<CampaignSetup> CampaignBuilder::prepareCampaign(function<optional<RetiredGames>(CampaignType)> genRetired,
@@ -445,7 +435,7 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(function<optional<Retir
             return CampaignSetup{campaign, gameIdentifier, gameDisplayName,
                 options->getBoolValue(OptionId::GENERATE_MANA) &&
                 getSecondaryOptions(type).contains(OptionId::GENERATE_MANA),
-                getIntroMessages(type, campaign.getWorldName())};
+                getIntroMessages(type)};
           }
       }
       if (updateMap)

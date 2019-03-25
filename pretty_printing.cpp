@@ -30,6 +30,7 @@
 #include "z_level_info.h"
 #include "resource_counts.h"
 #include "creature_inventory.h"
+#include "campaign_type.h"
 
 template <typename T>
 optional<string> PrettyPrinting::parseObject(T& object, const string& s, optional<string> filename) {
@@ -60,3 +61,4 @@ ADD_IMP(vector<pair<vector<CreatureId>, CreatureInventory>>)
 ADD_IMP(Technology)
 ADD_IMP(array<vector<ZLevelInfo>, 3>)
 ADD_IMP(vector<ResourceDistribution>)
+ADD_IMP(pair<vector<string>, map<CampaignType, vector<string>>>)
