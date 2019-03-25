@@ -551,6 +551,7 @@ SGuiElem GuiBuilder::drawGameSpeedDialog() {
   vector<SGuiElem> lines;
   vector<SGuiElem> hotkeys;
   lines.push_back(gui.stack(
+        gui.uiHighlightMouseOver(),
         gui.getListBuilder(keyMargin)
             .addElem(gui.label("pause"))
             .addElem(gui.label("[space]")).buildHorizontalList(),
@@ -559,7 +560,9 @@ SGuiElem GuiBuilder::drawGameSpeedDialog() {
   for (GameSpeed speed : ENUM_ALL(GameSpeed)) {
     auto speedFun = [=] { gameSpeed = speed; gameSpeedDialogOpen = false; clock->cont();};
     auto colorFun = [this, speed] { return speed == gameSpeed ? Color::GREEN : Color::WHITE; };
-    lines.push_back(gui.stack(gui.getListBuilder(keyMargin)
+    lines.push_back(gui.stack(
+          gui.uiHighlightMouseOver(),
+          gui.getListBuilder(keyMargin)
               .addElem(gui.label(getGameSpeedName(speed), colorFun))
               .addElem(gui.label("'" + string(1, getHotkeyChar(speed)) + "' ", colorFun)).buildHorizontalList(),
           gui.button(speedFun)));

@@ -423,24 +423,17 @@ void WindowView::rebuildGui() {
   if (rightBarWidth > 0) {
     overlays.push_back({guiBuilder.drawMessages(gameInfo.messageBuffer, renderer.getSize().x - rightBarWidth),
                        GuiBuilder::OverlayInfo::MESSAGES});
-    for (auto& overlay : overlays) {
-      Vec2 pos;
-      if (auto width = overlay.elem->getPreferredWidth())
-        if (auto height = overlay.elem->getPreferredHeight()) {
-          pos = getOverlayPosition(overlay.alignment, *height, *width, rightBarWidth, bottomBarHeight);
-          tempGuiElems.push_back(std::move(overlay.elem));
-          switch (overlay.alignment) {
-            case GuiBuilder::OverlayInfo::GAME_SPEED:
-              tempGuiElems.back() = gui.renderTopLayer(std::move(tempGuiElems.back()));
-              break;
-            default:
-              break;
-          }
-          if (overlay.alignment != GuiBuilder::OverlayInfo::GAME_SPEED)
+    for (auto& overlay : overlays)
+      if (overlay.alignment != GuiBuilder::OverlayInfo::GAME_SPEED) {
+        Vec2 pos;
+        if (auto width = overlay.elem->getPreferredWidth())
+          if (auto height = overlay.elem->getPreferredHeight()) {
+            pos = getOverlayPosition(overlay.alignment, *height, *width, rightBarWidth, bottomBarHeight);
+            tempGuiElems.push_back(std::move(overlay.elem));
             *height = min(*height, renderer.getSize().y - pos.y - bottomBarHeight);
-          tempGuiElems.back()->setBounds(Rectangle(pos, pos + Vec2(*width, *height)));
-        }
-    }
+            tempGuiElems.back()->setBounds(Rectangle(pos, pos + Vec2(*width, *height)));
+          }
+      }
     tempGuiElems.push_back(gui.mainDecoration(rightBarWidth, bottomBarHeight, topBarHeight));
     tempGuiElems.back()->setBounds(Rectangle(renderer.getSize()));
     tempGuiElems.push_back(gui.margins(std::move(right), 20, 20, 10, 0));
@@ -449,6 +442,16 @@ void WindowView::rebuildGui() {
     tempGuiElems.push_back(gui.margins(std::move(bottom), 105, 10, 105, 0));
     tempGuiElems.back()->setBounds(Rectangle(
           Vec2(rightBarWidth, renderer.getSize().y - bottomBarHeight), renderer.getSize()));
+    for (auto& overlay : overlays)
+      if (overlay.alignment == GuiBuilder::OverlayInfo::GAME_SPEED) {
+        Vec2 pos;
+        if (auto width = overlay.elem->getPreferredWidth())
+          if (auto height = overlay.elem->getPreferredHeight()) {
+            pos = getOverlayPosition(overlay.alignment, *height, *width, rightBarWidth, bottomBarHeight);
+            tempGuiElems.push_back(std::move(overlay.elem));
+            tempGuiElems.back()->setBounds(Rectangle(pos, pos + Vec2(*width, *height)));
+          }
+      }
   }
   propagateMousePosition(getClickableGuiElems());
 }
