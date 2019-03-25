@@ -431,6 +431,9 @@ class Fighter : public Behaviour {
             Effect::Lasting{LastingEffect::POISON},
             Effect::Lasting{LastingEffect::SLOWED},
             Effect::Lasting{LastingEffect::BLIND},
+            Effect::Lasting{LastingEffect::MELEE_VULNERABILITY},
+            Effect::Lasting{LastingEffect::RANGED_VULNERABILITY},
+            Effect::Lasting{LastingEffect::MAGIC_VULNERABILITY},
             Effect::Lasting{LastingEffect::SLEEP}},
             *effect))
         return 100;
@@ -539,6 +542,9 @@ class Fighter : public Behaviour {
         Effect(Effect::Lasting{LastingEffect::DAM_BONUS}),
         Effect(Effect::Lasting{LastingEffect::DEF_BONUS}),
         Effect(Effect::Lasting{LastingEffect::SPEED}),
+        Effect(Effect::Lasting{LastingEffect::MELEE_RESISTANCE}),
+        Effect(Effect::Lasting{LastingEffect::RANGED_RESISTANCE}),
+        Effect(Effect::Lasting{LastingEffect::MAGIC_RESISTANCE}),
         Effect(Effect::Deception{}),
         Effect(Effect::Summon{"SPIRIT", Range(3, 6)})})
       if (MoveInfo move = tryEffect(effect))
