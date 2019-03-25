@@ -237,7 +237,8 @@ void VillageControl::update(bool currentlyActive) {
       double prob = villain->getAttackProbability(this) / updateFreq;
       if (Random.chance(prob)) {
         vector<Creature*> fighters;
-        fighters = collective->getCreatures(MinionTrait::FIGHTER);
+        fighters = collective->getCreatures(MinionTrait::FIGHTER)
+            .filter([](const Creature* c) { return !c->isAffected(LastingEffect::INSANITY); });
         /*if (getCollective()->getGame()->isSingleModel())
           fighters = filter(fighters, [this] (const Creature* c) {
               return contains(getCollective()->getTerritory().getAll(), c->getPosition()); });*/
