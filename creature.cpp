@@ -157,8 +157,9 @@ CreatureAction Creature::castSpell(Spell* spell) const {
 }
 
 CreatureAction Creature::castSpell(Spell* spell, Position target) const {
-  CHECK(attributes->getSpellMap().contains(spell));
   CHECK(spell->isDirected());
+  if (!attributes->getSpellMap().contains(spell))
+    return CreatureAction("You don't know this spell.");
   if (!isReady(spell))
     return CreatureAction("You can't cast this spell yet.");
   if (target == position)
