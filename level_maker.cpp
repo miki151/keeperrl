@@ -2731,7 +2731,9 @@ PLevelMaker LevelMaker::getFullZLevel(RandomGen& random, optional<SettlementInfo
       .add(FurnitureParams{FurnitureType::MOUNTAIN2, keeperTribe})));
   queue->addMaker(underground(random, none, none));
   auto locations = unique<RandomLocations>();
-  auto startingPosMaker = unique<StartingPos>(Predicate::alwaysTrue(), landingLink);
+  auto startingPosMaker = unique<MakerQueue>(
+      unique<Empty>(SquareChange(FurnitureType::FLOOR)),
+      unique<StartingPos>(Predicate::alwaysTrue(), landingLink));
   LevelMaker* startingPos = startingPosMaker.get();
   vector<SurroundWithResourcesInfo> surroundWithResources;
   if (settlement) {
