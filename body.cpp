@@ -156,7 +156,6 @@ void Body::setHumanoidBodyParts(int intrinsicDamage) {
       {BodyPart::TORSO, 1}});
   setIntrinsicAttack(BodyPart::ARM, IntrinsicAttack(ItemType::fists(intrinsicDamage), IntrinsicAttack::NO_WEAPON));
   setIntrinsicAttack(BodyPart::LEG, IntrinsicAttack(ItemType::legs(intrinsicDamage), IntrinsicAttack::NO_WEAPON));
-  xhumanoid = true;
 }
 
 void Body::setHorseBodyParts(int intrinsicDamage) {
