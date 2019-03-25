@@ -80,7 +80,7 @@ bool MinionActivityMap::isAvailable(WConstCollective col, const Creature* c, Min
           c->getAttributes().getSkills().getValue(SkillId::JEWELER) > 0 ||
           c->getAttributes().getSkills().getValue(SkillId::LABORATORY) > 0;
     case MinionActivity::SLEEP:
-      return c->getBody().needsToSleep();
+      return c->getBody().needsToSleep() && !c->isAffected(LastingEffect::POISON);
     case MinionActivity::EAT:
       return c->getBody().needsToEat() && !col->hasTrait(c, MinionTrait::PRISONER);
     case MinionActivity::COPULATE:
