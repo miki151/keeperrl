@@ -929,12 +929,6 @@ optional<UniqueEntity<Creature>::Id> WindowView::chooseCreature(const string& ti
   return getBlockingGui(returnQueue, guiBuilder.drawChooseCreatureMenu(returnQueue, title, creatures, cancelText));
 }
 
-/*vector<UniqueEntity<Creature>::Id> WindowView::chooseTeamLeader(const string& title,
-    const vector<CreatureInfo>& creatures) {
-  SyncQueue<vector<UniqueEntity<Creature>::Id>> returnQueue;
-  return getBlockingGui(returnQueue, guiBuilder.drawTeamLeaderMenu(returnQueue, title, creatures));
-}*/
-
 bool WindowView::creatureInfo(const string& title, bool prompt, const vector<CreatureInfo>& creatures) {
   SyncQueue<bool> returnQueue;
   return getBlockingGui(returnQueue, guiBuilder.drawCreatureInfo(returnQueue, title, prompt, creatures));
@@ -951,6 +945,7 @@ void WindowView::getBlockingGui(Semaphore& sem, SGuiElem elem, optional<Vec2> or
   TempClockPause pause(clock);
   if (!origin)
     origin = (renderer.getSize() - Vec2(*elem->getPreferredWidth(), *elem->getPreferredHeight())) / 2;
+  origin->y = max(0, origin->y);
   if (blockingElems.empty()) {
     blockingElems.push_back(gui.darken());
     blockingElems.back()->setBounds(Rectangle(renderer.getSize()));

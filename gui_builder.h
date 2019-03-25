@@ -101,8 +101,6 @@ class GuiBuilder {
   SGuiElem drawLevelMap(Semaphore&, const CreatureView*);
   SGuiElem drawChooseCreatureMenu(SyncQueue<optional<UniqueEntity<Creature>::Id>>&, const string& title,
       const vector<CreatureInfo>&, const string& cancelText);
-  /*SGuiElem drawTeamLeaderMenu(SyncQueue<vector<UniqueEntity<Creature>::Id>>&, const string& title,
-      const vector<CreatureInfo>&);*/
   SGuiElem drawCreatureInfo(SyncQueue<bool>&, const string& title, bool prompt, const vector<CreatureInfo>& creatures);
   SGuiElem drawCost(pair<ViewId, int>, Color = Color::WHITE);
   SGuiElem drawHighscores(const vector<HighscoreList>&, Semaphore&, int& tabNum, vector<ScrollPosition>& scrollPos,
@@ -299,6 +297,7 @@ class GuiBuilder {
       const vector<View::AvatarData>&);
   SGuiElem drawChosenCreatureButtons(PlayerRole, shared_ptr<int> chosenAvatar, shared_ptr<int> gender,
       const vector<View::AvatarData>&);
+  SGuiElem drawCreatureList(const vector<CreatureInfo>&, function<void(UniqueEntity<Creature>::Id)> button);
 };
 
 RICH_ENUM(GuiBuilder::GameSpeed,

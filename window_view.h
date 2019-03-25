@@ -103,7 +103,6 @@ class WindowView: public View {
   virtual CampaignAction prepareCampaign(CampaignOptions, Options*, CampaignMenuState&) override;
   virtual optional<UniqueEntity<Creature>::Id> chooseCreature(const string& title, const vector<CreatureInfo>&,
       const string& cancelText) override;
-  //virtual vector<UniqueEntity<Creature>::Id> chooseTeamLeader(const string& title, const vector<CreatureInfo>&) override;
   virtual bool creatureInfo(const string& title, bool prompt, const vector<CreatureInfo>&) override;
   virtual void logMessage(const string&) override;
   virtual void setBugReportSaveCallback(BugReportSaveCallback) override;
@@ -222,6 +221,7 @@ class WindowView: public View {
     }
     if (!origin)
       origin = (renderer.getSize() - Vec2(*elem->getPreferredWidth(), *elem->getPreferredHeight())) / 2;
+    origin->y = max(0, origin->y);
     Vec2 size(*elem->getPreferredWidth(), min(renderer.getSize().y - origin->y, *elem->getPreferredHeight()));
     elem->setBounds(Rectangle(*origin, *origin + size));
     propagateMousePosition({elem});

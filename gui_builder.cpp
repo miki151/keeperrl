@@ -3511,33 +3511,47 @@ SGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, View::Ca
       gui.window(gui.margins(gui.stack(std::move(interior)), 5), [&queue] { queue.push(CampaignActionId::CANCEL); }));
 }
 
-SGuiElem GuiBuilder::drawCreatureInfo(SyncQueue<bool>& queue, const string& title, bool prompt,
-    const vector<CreatureInfo>& creatures) {
-  auto lines = gui.getListBuilder(getStandardLineHeight() + 10);
-  lines.addElem(gui.centerHoriz(gui.label(title)));
-  const int windowWidth = 450;
+SGuiElem GuiBuilder::drawCreatureList(const vector<CreatureInfo>& creatures, function<void(UniqueEntity<Creature>::Id)> button) {
+  auto minionLines = gui.getListBuilder(getStandardLineHeight() + 10);
   auto line = gui.getListBuilder(60);
   for (auto& elem : creatures) {
-    line.addElem(gui.stack(
-          gui.viewObject(elem.viewId, 2),
-          gui.label(toString((int) elem.bestAttack.value), 20)));
-    if (line.getSize() >= windowWidth - 50) {
-      lines.addElem(gui.centerHoriz(line.buildHorizontalList()), 70);
+    auto icon = gui.margins(gui.stack(gui.viewObject(elem.viewId, 2),
+        gui.label(toString((int) elem.bestAttack.value), 20)), 5, 5, 5, 5);
+    if (button)
+      line.addElemAuto(gui.stack(
+            gui.mouseHighlight2(gui.uiHighlight()),
+            gui.button([id = elem.uniqueId, button] { button(id); }),
+            std::move(icon)));
+    else
+      line.addElemAuto(std::move(icon));
+    if (line.getLength() > 6) {
+      minionLines.addElemAuto(gui.centerHoriz(line.buildHorizontalList()));
+      minionLines.addSpace(20);
       line.clear();
     }
   }
-  if (!line.isEmpty())
-      lines.addElem(gui.centerHoriz(line.buildHorizontalList()), 70);
+  if (!line.isEmpty()) {
+    minionLines.addElemAuto(gui.centerHoriz(line.buildHorizontalList()));
+    minionLines.addSpace(20);
+  }
+  return minionLines.buildVerticalList();
+}
+
+SGuiElem GuiBuilder::drawCreatureInfo(SyncQueue<bool>& queue, const string& title, bool prompt,
+    const vector<CreatureInfo>& creatures) {
+  auto lines = gui.getListBuilder(getStandardLineHeight());
+  lines.addElem(gui.centerHoriz(gui.label(title)));
+  const int windowWidth = 480;
+  lines.addMiddleElem(gui.scrollable(gui.margins(drawCreatureList(creatures, nullptr), 10)));
+  lines.addSpace(15);
   auto bottomLine = gui.getListBuilder()
-      .addElemAuto(gui.stack(
-          gui.labelHighlight("Ok"),
-          gui.button([&queue] { queue.push(true);})));
-  if (prompt)
-    bottomLine.addElemAuto(gui.stack(
-        gui.labelHighlight("Cancel"),
-        gui.button([&queue] { queue.push(false);})));
-  lines.addElem(gui.centerHoriz(bottomLine.buildHorizontalList()));
-  int margin = 25;
+      .addElemAuto(gui.buttonLabel("Confirm", [&queue] { queue.push(true);}));
+  if (prompt) {
+    bottomLine.addSpace(20);
+    bottomLine.addElemAuto(gui.buttonLabel("Cancel", [&queue] { queue.push(false);}));
+  }
+  lines.addBackElem(gui.centerHoriz(bottomLine.buildHorizontalList()));
+  int margin = 15;
   return gui.setWidth(2 * margin + windowWidth,
       gui.window(gui.margins(lines.buildVerticalList(), margin), [&queue] { queue.push(false); }));
 
@@ -3545,73 +3559,17 @@ SGuiElem GuiBuilder::drawCreatureInfo(SyncQueue<bool>& queue, const string& titl
 
 SGuiElem GuiBuilder::drawChooseCreatureMenu(SyncQueue<optional<UniqueEntity<Creature>::Id>>& queue, const string& title,
       const vector<CreatureInfo>& team, const string& cancelText) {
-  auto lines = gui.getListBuilder(getStandardLineHeight() + 10);
+  auto lines = gui.getListBuilder(getStandardLineHeight());
   lines.addElem(gui.centerHoriz(gui.label(title)));
-  const int windowWidth = 450;
-  auto line = gui.getListBuilder(60);
-  for (auto& elem : team) {
-    line.addElemAuto(gui.stack(
-          gui.mouseHighlight2(gui.uiHighlight()),
-          gui.button([&queue, elem] { queue.push(elem.uniqueId); }),
-          gui.margins(gui.stack(gui.viewObject(elem.viewId, 2),
-              gui.label(toString((int) elem.bestAttack.value), 20)), 5, 5, 5, 5)));
-    if (line.getLength() > 6) {
-      lines.addElemAuto(gui.centerHoriz(line.buildHorizontalList()));
-      lines.addSpace(20);
-      line.clear();
-    }
-  }
-  if (!line.isEmpty()) {
-    lines.addElemAuto(gui.centerHoriz(line.buildHorizontalList()));
-    lines.addSpace(20);
-  }
+  const int windowWidth = 480;
+  lines.addMiddleElem(gui.scrollable(gui.margins(drawCreatureList(team, [&queue] (auto id) { queue.push(id); }), 10)));
+  lines.addSpace(15);
   if (!cancelText.empty())
-    lines.addElem(gui.centerHoriz(gui.buttonLabel(cancelText, gui.button([&queue] { queue.push(none);}))), legendLineHeight);
-  int margin = 25;
+    lines.addBackElem(gui.centerHoriz(gui.buttonLabel(cancelText, gui.button([&queue] { queue.push(none);}))), legendLineHeight);
+  int margin = 15;
   return gui.setWidth(2 * margin + windowWidth,
       gui.window(gui.margins(lines.buildVerticalList(), margin), [&queue] { queue.push(none); }));
 }
-
-/*SGuiElem GuiBuilder::drawTeamLeaderMenu(SyncQueue<vector<UniqueEntity<Creature>::Id>>& queue, const string& title,
-      const vector<CreatureInfo>& team) {
-  auto lines = gui.getListBuilder(getStandardLineHeight() + 10);
-  lines.addElem(gui.centerHoriz(gui.label(title)));
-  const int windowWidth = 450;
-  auto line = gui.getListBuilder(60);
-  auto result = make_shared<vector<UniqueEntity<Creature>::Id>>();
-  auto toggle = [result] (UniqueEntity<Creature>::Id id) {
-    if (result->contains(id))
-      result->removeElement(id);
-    else
-      result->push_back(id);
-  };
-  for (auto& elem : team) {
-    line.addElem(gui.stack(
-          gui.conditional(gui.bottomMargin(22, gui.rightMargin(6,
-                gui.icon(gui.HIGHLIGHT, GuiFactory::Alignment::CENTER_STRETCHED, Color::GREEN))),
-                [id = elem.uniqueId, result] { return result->contains(id); } ),
-          gui.button([id = elem.uniqueId, toggle] { toggle(id); }),
-          gui.viewObject(elem.viewId, 2),
-          gui.label(toString((int) elem.bestAttack.value), 20)));
-    if (line.getSize() >= windowWidth - 50) {
-      lines.addElem(gui.centerHoriz(line.buildHorizontalList()), 70);
-      line.clear();
-    }
-  }
-  if (!line.isEmpty())
-      lines.addElem(gui.centerHoriz(line.buildHorizontalList()), 70);
-  lines.addElem(gui.centerHoriz(gui.getListBuilder()
-        .addElemAuto(gui.stack(
-            gui.labelHighlight("Confirm"),
-            gui.button([&queue, result] { queue.push(*result);})))
-        .addElemAuto(gui.stack(
-            gui.labelHighlight("Cancel"),
-            gui.button([&queue] { queue.push({});})))
-        .buildHorizontalList()));
-  int margin = 25;
-  return gui.setWidth(2 * margin + windowWidth,
-      gui.window(gui.margins(lines.buildVerticalList(), margin), [&queue] { queue.push({}); }));
-}*/
 
 SGuiElem GuiBuilder::drawHighscorePage(const HighscoreList& page, ScrollPosition *scrollPos) {
   GuiFactory::ListBuilder lines(gui, legendLineHeight);

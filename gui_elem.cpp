@@ -1313,7 +1313,7 @@ GuiFactory::ListBuilder& GuiFactory::ListBuilder::addElem(SGuiElem elem, int siz
 }
 
 GuiFactory::ListBuilder& GuiFactory::ListBuilder::addSpace(int size) {
-  if (!backElems)
+  if (!backElems && !middleElem)
     return addElem(gui.empty(), size);
   else
     return addBackElem(gui.empty(), size);
