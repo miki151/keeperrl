@@ -221,7 +221,7 @@ string FileSharing::downloadHighscores(int version) {
       curl_easy_setopt(curl, CURLOPT_URL,
           escapeSpaces(uploadUrl + "/highscores.php?version=" + toString(version)).c_str());
       curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, dataFun);
-      curl_easy_setopt(curl, CURLOPT_TIMEOUT, 5);
+      curl_easy_setopt(curl, CURLOPT_TIMEOUT, 15);
       curl_easy_setopt(curl, CURLOPT_WRITEDATA, &ret);
       curl_easy_perform(curl);
       curl_easy_cleanup(curl);
@@ -250,7 +250,7 @@ optional<string> FileSharing::downloadContent(const string& url) {
   if (CURL* curl = curl_easy_init()) {
     curl_easy_setopt(curl, CURLOPT_URL, escapeSpaces(url).c_str());
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, dataFun);
-    curl_easy_setopt(curl, CURLOPT_TIMEOUT, 10);
+    curl_easy_setopt(curl, CURLOPT_TIMEOUT, 30);
     curl_easy_setopt(curl, CURLOPT_NOPROGRESS, false);
     auto callback = getCallbackData(this);
     curl_easy_setopt(curl, CURLOPT_PROGRESSDATA, &callback);
