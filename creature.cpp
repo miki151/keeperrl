@@ -1985,7 +1985,7 @@ vector<AdjectiveInfo> Creature::getBadAdjectives() const {
 
 void Creature::addCombatIntent(Creature* attacker, bool immediateAttack) {
   lastCombatIntent = CombatIntentInfo{attacker, *getGlobalTime()};
-  if (immediateAttack && !attacker->isAffected(LastingEffect::INSANITY))
+  if (immediateAttack)
     privateEnemies.insert(attacker);
 }
 
