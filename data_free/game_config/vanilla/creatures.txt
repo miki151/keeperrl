@@ -192,8 +192,8 @@
       }
       maxLevelIncrease = {
         MELEE 16
-        SPELL 8
-        ARCHERY 8
+        SPELL 16
+        ARCHERY 16
       }
       hatedByEffect = HATE_HUMANS
     }
@@ -218,8 +218,8 @@
       }
       maxLevelIncrease = {
         MELEE 16
-        SPELL 8
-        ARCHERY 8
+        SPELL 16
+        ARCHERY 16
       }
       hatedByEffect = HATE_HUMANS
     }
