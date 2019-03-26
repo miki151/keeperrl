@@ -14,7 +14,7 @@ void KnownTiles::addTile(Position pos, Model* borderTilesModel) {
   border.erase(pos);
   if (pos.getModel() == borderTilesModel)
     for (Position v : pos.neighbors4())
-      if (!known.count(v) && v.canEnter(MovementType(MovementTrait::FLY)))
+      if (!known.count(v) && v.canEnter(MovementType({MovementTrait::WALK, MovementTrait::FLY})))
         border.insert(v);
 }
 
