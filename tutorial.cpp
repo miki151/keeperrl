@@ -225,8 +225,7 @@ string Tutorial::getMessage() const {
       return "You are ready to grow your military force. Three more orc immigrants should do.\n \n"
           "You can also invite goblins, which don't fight, but are excellent craftsmen.";
     case State::EQUIP_ALL_FIGHTERS:
-      return "Craft clubs for all of your orcs, and the Keeper, and have them equipped. They will be needed soon.\n \n"
-          "In the meantime, order your Keeper to train by dragging him to the training room.";
+      return "Craft clubs for all of your orcs, and the Keeper, and have them equipped. They will be needed soon.";
     case State::CREATE_TEAM:
       return "Your tiny army is ready! Assemble a team by dragging your orcs onto the [new team] button. You can "
           "drag them straight from the map or from the minion menu.\n \n"

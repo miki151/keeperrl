@@ -151,6 +151,7 @@ class GuiFactory {
   SGuiElem label(const string&, Color = Color::WHITE, char hotkey = 0);
   SGuiElem standardButton();
   SGuiElem standardButton(SGuiElem content, SGuiElem button, bool matchTextWidth = true);
+  SGuiElem standardButtonBlink(SGuiElem content, SGuiElem button, bool matchTextWidth);
   SGuiElem standardButtonHighlight();
   SGuiElem buttonLabel(const string&, SGuiElem button, bool matchTextWidth = true,
       bool centerHorizontally = false);

@@ -314,10 +314,10 @@ PModel ModelBuilder::tryCampaignBaseModel(const string& siteName, TribeId keeper
 PModel ModelBuilder::tryTutorialModel(const string& siteName) {
   vector<EnemyInfo> enemyInfo;
   BiomeId biome = BiomeId::MOUNTAIN;
-  enemyInfo.push_back(enemyFactory->get(EnemyId::RUINS));
+  //enemyInfo.push_back(enemyFactory->get(EnemyId::RUINS));
   /*enemyInfo.push_back(enemyFactory->get(EnemyId::BANDITS));
   enemyInfo.push_back(enemyFactory->get(EnemyId::ADA_GOLEMS));*/
-  enemyInfo.push_back(enemyFactory->get(EnemyId::TEMPLE));
+  //enemyInfo.push_back(enemyFactory->get(EnemyId::TEMPLE));
   enemyInfo.push_back(enemyFactory->get(EnemyId::TUTORIAL_VILLAGE));
   return tryModel(174, siteName, enemyInfo, TribeId::getDarkKeeper(), biome, {}, false);
 }

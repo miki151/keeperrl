@@ -552,11 +552,7 @@ SGuiElem GuiFactory::buttonLabel(const string& s, function<void()> f, bool match
 }
 
 SGuiElem GuiFactory::buttonLabelBlink(const string& s, function<void()> f) {
-  auto ret = margins(stack(
-        blink(standardButtonHighlight(), standardButton()),
-        button(std::move(f))),
-      -7, -5, -7, 3);
-  return stack(ret, label(s));
+  return standardButtonBlink(label(s), button(std::move(f)), true);
 }
 
 SGuiElem GuiFactory::buttonLabel(const string& s, SGuiElem button, bool matchTextWidth, bool centerHorizontally) {
@@ -569,6 +565,16 @@ SGuiElem GuiFactory::buttonLabel(const string& s, SGuiElem button, bool matchTex
 SGuiElem GuiFactory::standardButton(SGuiElem content, SGuiElem button, bool matchTextWidth) {
   auto ret = margins(stack(
         mouseHighlight2(standardButtonHighlight(), standardButton()),
+        std::move(button)),
+      -7, -5, -7, 3);
+  if (matchTextWidth)
+    ret = setWidth(*content->getPreferredWidth() + 1, std::move(ret));
+  return stack(ret, std::move(content));
+}
+
+SGuiElem GuiFactory::standardButtonBlink(SGuiElem content, SGuiElem button, bool matchTextWidth) {
+  auto ret = margins(stack(
+        mouseHighlight2(standardButtonHighlight(), blink(standardButtonHighlight(), standardButton())),
         std::move(button)),
       -7, -5, -7, 3);
   if (matchTextWidth)

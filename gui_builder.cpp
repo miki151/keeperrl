@@ -660,28 +660,25 @@ int GuiBuilder::getImmigrationBarWidth() const {
 }
 
 SGuiElem GuiBuilder::drawTutorialOverlay(const TutorialInfo& info) {
-  auto continueButton = gui.stack(
-      gui.button([this] {
+  auto continueButton = gui.setHeight(legendLineHeight, gui.buttonLabelBlink("Continue", [this] {
           callbacks.input(UserInputId::TUTORIAL_CONTINUE);
           tutorialClicks.clear();
           closeOverlayWindowsAndClearButton();
-      }),
-      gui.setHeight(20, gui.labelHighlightBlink("[Continue]", Color::LIGHT_BLUE, Color::WHITE)));
-  auto backButton = gui.setHeight(20, gui.buttonLabel("Go back",
-          getButtonCallback(UserInputId::TUTORIAL_GO_BACK)));
+      }));
+  auto backButton = gui.setHeight(legendLineHeight, gui.buttonLabel("Go back", getButtonCallback(UserInputId::TUTORIAL_GO_BACK)));
   SGuiElem warning;
   if (info.warning)
     warning = gui.label(*info.warning, Color::RED);
   else
-    warning = gui.label("Press [Space] to unpause the game.",
+    warning = gui.label("Press [Space] to unpause.",
         [this]{ return clock->isPaused() ? Color::RED : Color::TRANSPARENT;});
   return gui.preferredSize(520, 290, gui.stack(gui.darken(), gui.rectangleBorder(Color::GRAY),
       gui.margins(gui.stack(
         gui.labelMultiLine(info.message, legendLineHeight),
-        gui.alignment(GuiFactory::Alignment::BOTTOM_CENTER, gui.setHeight(20, warning)),
+        gui.leftMargin(50, gui.alignment(GuiFactory::Alignment::BOTTOM_CENTER, gui.setHeight(legendLineHeight, warning))),
         gui.alignment(GuiFactory::Alignment::BOTTOM_RIGHT, info.canContinue ? continueButton : gui.empty()),
-        gui.alignment(GuiFactory::Alignment::BOTTOM_LEFT, info.canGoBack ? backButton : gui.empty())
-      ), 20, 20, 20, 45)));
+        gui.leftMargin(50, gui.alignment(GuiFactory::Alignment::BOTTOM_LEFT, info.canGoBack ? backButton : gui.empty()))
+      ), 20, 20, 20, 10)));
 }
 
 static Color getTriggerColor(double value) {
