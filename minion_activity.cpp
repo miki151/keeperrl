@@ -31,7 +31,7 @@ static optional<Position> getTileToExplore(WCollective collective, const Creatur
   optional<Position> caveTile;
   optional<Position> outdoorTile;
   for (auto& pos : Random.permutation(borderTiles)) {
-    CHECK(pos.getModel() == collective->getModel());
+    //CHECK(pos.getModel() == collective->getModel());
     if (pos.isCovered()) {
       if ((!caveTile || betterPos(c->getPosition(), *caveTile, pos)) &&
           pos.canNavigateTo(c->getPosition(), movementType))
