@@ -1503,12 +1503,13 @@ class heap_optional {
   heap_optional& operator = (const heap_optional& t) {
     if (t.elem)
       elem = unique<T>(*t.elem);
+    else
+      clear();
     return *this;
   }
 
   heap_optional& operator = (heap_optional&& t) {
-    if (t.elem)
-      elem = std::move(t.elem);
+    elem = std::move(t.elem);
     return *this;
   }
 
