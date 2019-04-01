@@ -93,7 +93,7 @@ class PrettyInputArchive : public cereal::InputArchive<PrettyInputArchive> {
 
     void error(const string& s) {
       int n = (int) is.tellg();
-      auto pos = streamPos[max(0, min<int>(n, streamPos.size() - 1))];
+      auto pos = streamPos.empty() ? StreamPos{} : streamPos[max(0, min<int>(n, streamPos.size() - 1))];
       string msg;
       if (filename)
         msg = *filename + ": ";
