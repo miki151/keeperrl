@@ -270,7 +270,8 @@ PTask Task::equipItem(Item* item) {
 }
 
 template <typename PositionContainer>
-static optional<Position> chooseRandomClose(Creature* c, const PositionContainer& squares, Task::SearchType type, bool stepOn) {
+static optional<Position> chooseRandomClose(const Creature* c, const PositionContainer& squares, Task::SearchType type,
+    bool stepOn) {
   auto canNavigate = [&] (const Position& pos) {
     return stepOn ? c->canNavigateTo(pos) : c->canNavigateToOrNeighbor(pos);
   };
@@ -474,13 +475,19 @@ class ArcheryRange : public Task {
   public:
   ArcheryRange(WTaskCallback c, vector<Position> pos) : callback(c), targets(pos) {}
 
+  virtual bool canPerform(const Creature* c) const override {
+    return !!getShootInfo(c);
+  }
+
   virtual MoveInfo getMove(Creature* c) override {
     if (Random.roll(50))
       shootInfo = none;
     if (!shootInfo)
       shootInfo = getShootInfo(c);
-    if (!shootInfo)
+    if (!shootInfo) {
+      setDone();
       return NoMove;
+    }
     if (c->getPosition() != shootInfo->pos)
       return c->moveTowards(shootInfo->pos, NavigationFlags().requireStepOnTile());
     if (Random.roll(3))
@@ -517,7 +524,7 @@ class ArcheryRange : public Task {
   };
   optional<ShootInfo> SERIAL(shootInfo);
 
-  optional<ShootInfo> getShootInfo(Creature* c) {
+  optional<ShootInfo> getShootInfo(const Creature* c) const {
     const int distance = 5;
     auto getDir = [&](Position target) -> optional<ShootInfo> {
       for (Vec2 dir : Vec2::directions4(Random)) {
