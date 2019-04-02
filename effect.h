@@ -118,6 +118,12 @@ class Effect {
     BodyPart part;
     COMPARE_ALL(part)
   };
+  struct Area {
+    EFFECT_TYPE_INTERFACE;
+    HeapAllocated<Effect> effect;
+    int radius;
+    COMPARE_ALL(effect, radius)
+  };
   SIMPLE_EFFECT(RegrowBodyPart);
   SIMPLE_EFFECT(Suicide);
   SIMPLE_EFFECT(DoubleTrouble);
@@ -126,7 +132,7 @@ class Effect {
     vector<Effect> effects;
     COMPARE_ALL(effects)
   };*/
-  MAKE_VARIANT(EffectType, Teleport, Heal, Fire, DestroyEquipment, EnhanceArmor, EnhanceWeapon, Suicide, IncreaseAttr,// Chain,
+  MAKE_VARIANT(EffectType, Teleport, Heal, Fire, DestroyEquipment, EnhanceArmor, EnhanceWeapon, Suicide, IncreaseAttr, Area,
       EmitPoisonGas, CircularBlast, Deception, Summon, SummonElement, Acid, Alarm, TeleEnemies, SilverDamage, DoubleTrouble,
       CurePoison, Lasting, Permanent, PlaceFurniture, Damage, InjureBodyPart, LooseBodyPart, RegrowBodyPart, DestroyWalls);
 

@@ -1443,6 +1443,10 @@ class HeapAllocated {
     return *this;
   }
 
+  bool operator == (const HeapAllocated& o) const {
+    return *elem == *o.elem;
+  }
+
   SERIALIZE_ALL(elem)
 
   private:

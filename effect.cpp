@@ -550,7 +550,6 @@ string Effect::Heal::getDescription() const {
 }
 
 void Effect::Fire::applyToCreature(Creature* c, Creature* attacker) const {
-  c->getPosition().fireDamage(1);
 }
 
 string Effect::Fire::getName() const {
@@ -671,6 +670,16 @@ string Effect::RegrowBodyPart::getDescription() const {
   return "Causes lost body parts to regrow.";
 }
 
+void Effect::Area::applyToCreature(Creature* c, Creature* attacker) const {
+}
+
+string Effect::Area::getName() const {
+  return "area " + effect->getName();
+}
+
+string Effect::Area::getDescription() const {
+  return "Area effect of radius " + toString(radius) + ": " + noCapitalFirst(effect->getDescription());
+}
 /*void Effect::Chain::applyToCreature(Creature* c, Creature* attacker) const {
   for (auto& elem : effects)
     elem.applyToCreature(c, attacker);
@@ -757,13 +766,18 @@ void Effect::apply(Position pos, Creature* attacker) const {
     FORWARD_CALL(effect, applyToCreature, c, attacker);
     if (isConsideredHostile(effect) && attacker)
       c->onAttackedBy(attacker);
-  } else
-    effect.visit(
-        [&](const auto& e) { },
-        [&](Fire) {
-          pos.fireDamage(1);
-        }
-    );
+  }
+  effect.visit(
+      [&](const auto& e) { },
+      [&](Fire) {
+        pos.getGame()->addEvent(EventInfo::FX{pos, {FXName::FIREBALL_SPLASH}});
+        pos.fireDamage(1);
+      },
+      [&](const Area& area) {
+        for (auto v : pos.getRectangle(Rectangle::centered(area.radius)))
+          area.effect->apply(v, attacker);
+      }
+  );
 }
 
 string Effect::getDescription() const {
