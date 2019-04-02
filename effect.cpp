@@ -752,10 +752,18 @@ bool Effect::operator !=(const Effect& o) const {
   return !(*this == o);
 }
 
-void Effect::applyToCreature(Creature* c, Creature* attacker) const {
-  FORWARD_CALL(effect, applyToCreature, c, attacker);
-  if (isConsideredHostile(effect) && attacker)
-    c->onAttackedBy(attacker);
+void Effect::apply(Position pos, Creature* attacker) const {
+  if (auto c = pos.getCreature()) {
+    FORWARD_CALL(effect, applyToCreature, c, attacker);
+    if (isConsideredHostile(effect) && attacker)
+      c->onAttackedBy(attacker);
+  } else
+    effect.visit(
+        [&](const auto& e) { },
+        [&](Fire) {
+          pos.fireDamage(1);
+        }
+    );
 }
 
 string Effect::getDescription() const {
@@ -876,8 +884,7 @@ void applyDirected(Creature* c, Position target, const DirEffectType& type, bool
       },
       [&](const Effect& effect) {
         for (auto& pos : trajectory)
-          if (auto victim = pos.getCreature())
-            effect.applyToCreature(victim, c);
+          effect.apply(pos, c);
       }
   );
 }

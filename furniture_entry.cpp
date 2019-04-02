@@ -39,7 +39,7 @@ void FurnitureEntry::handle(WFurniture f, Creature* c) {
             if (type.invisible || !c->isAffected(LastingEffect::DISARM_TRAPS_SKILL)) {
               if (!type.invisible)
                 c->you(MsgType::TRIGGER_TRAP, "");
-              type.effect.applyToCreature(c);
+              type.effect.apply(position);
               position.getGame()->addEvent(EventInfo::TrapTriggered{c->getPosition()});
             } else {
               c->you(MsgType::DISARM_TRAP, type.effect.getName() + " trap");

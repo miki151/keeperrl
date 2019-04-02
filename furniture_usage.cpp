@@ -106,7 +106,7 @@ static void desecrate(Position pos, WConstFurniture furniture, Creature* c) {
           Effect(Effect::Lasting { LastingEffect::BLEEDING }),
           Effect(Effect::Lasting { LastingEffect::HALLU })
       );
-      ef.applyToCreature(c);
+      ef.apply(pos);
       break;
     }
     case 2: {

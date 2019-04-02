@@ -175,7 +175,7 @@ void Item::onHitCreature(Creature* c, const Attack& attack, int numItems) {
   } else
     c->you(numItems > 1 ? MsgType::HIT_THROWN_ITEM_PLURAL : MsgType::HIT_THROWN_ITEM, getPluralTheName(numItems));
   if (attributes->effect && getClass() == ItemClass::POTION)
-    attributes->effect->applyToCreature(c, attack.attacker);
+    attributes->effect->apply(c->getPosition(), attack.attacker);
   c->takeDamage(attack);
   if (!c->isDead() && attributes->ownedEffect == LastingEffect::LIGHT_SOURCE)
     c->affectByFire(1);
@@ -280,7 +280,7 @@ void Item::applySpecial(Creature* c) {
   if (attributes->itemClass == ItemClass::SCROLL)
     c->getGame()->getStatistics().add(StatId::SCROLL_READ);
   if (attributes->effect)
-    attributes->effect->applyToCreature(c);
+    attributes->effect->apply(c->getPosition());
   if (attributes->uses > -1 && --attributes->uses == 0) {
     discarded = true;
     if (attributes->usedUpMsg)

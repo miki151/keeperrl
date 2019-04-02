@@ -162,7 +162,7 @@ CreatureAction Creature::castSpell(const Spell* spell) const {
     if (auto sound = spell->getSound())
       c->addSound(*sound);
     spell->addMessage(c);
-    spell->getEffect().applyToCreature(c);
+    spell->getEffect().apply(position);
     getGame()->getStatistics().add(StatId::SPELL_CAST);
     c->spellMap->setReadyTime(spell, *getGlobalTime() + TimeInterval(
         int(spell->getCooldown() * getSpellTimeoutMult((int) attributes->getExpLevel(ExperienceType::SPELL)))));
@@ -1106,7 +1106,7 @@ CreatureAction Creature::attack(Creature* other, optional<AttackParams> attackPa
     if (wasDamaged)
       movementInfo.setVictim(other->getUniqueId());
     for (auto& e : weaponInfo.attackerEffect)
-      e.applyToCreature(self);
+      e.apply(position);
     self->addMovementInfo(movementInfo);
   });
 }
@@ -1187,7 +1187,7 @@ bool Creature::takeDamage(const Attack& attack) {
   } else
     you(MsgType::GET_HIT_NODAMAGE);
   for (auto& e : attack.effect)
-    e.applyToCreature(this, attack.attacker);
+    e.apply(position, attack.attacker);
   for (LastingEffect effect : ENUM_ALL(LastingEffect))
     if (isAffected(effect))
       LastingEffects::afterCreatureDamage(this, effect);
