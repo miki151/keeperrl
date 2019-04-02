@@ -2048,7 +2048,9 @@ void PlayerControl::processInput(View* view, UserInput input) {
     case UserInputId::DRAW_LEVEL_MAP: view->drawLevelMap(this); break;
     case UserInputId::DRAW_WORLD_MAP: getGame()->presentWorldmap(); break;
     case UserInputId::TECHNOLOGY: setChosenLibrary(!chosenLibrary); break;
-    case UserInputId::KEEPEROPEDIA: Encyclopedia(buildInfo, collective->getTechnology()).present(view); break;
+    case UserInputId::KEEPEROPEDIA: Encyclopedia(buildInfo, getGame()->getCreatureFactory()->getSpellSchools(),
+          getGame()->getCreatureFactory()->getSpells(), collective->getTechnology()).present(view);
+      break;
     case UserInputId::WORKSHOP: {
       int index = input.get<int>();
       if (index < 0 || index >= EnumInfo<WorkshopType>::size)

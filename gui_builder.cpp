@@ -1369,15 +1369,20 @@ vector<SGuiElem> GuiBuilder::drawSkillsList(const PlayerInfo& info) {
   return lines;
 }
 
-SGuiElem GuiBuilder::getSpellIcon(const PlayerInfo::Spell& spell, bool active, UniqueEntity<Creature>::Id id) {
-  vector<SGuiElem> ret = makeVec(gui.spellIcon(spell.id));
-  if (spell.timeout) {
+SGuiElem GuiBuilder::getSpellIcon(const PlayerInfo::Spell& spell, int index, bool active, UniqueEntity<Creature>::Id id) {
+  vector<SGuiElem> ret;
+  if (!spell.timeout) {
+    ret.push_back(gui.mouseHighlight2(gui.standardButtonHighlight(), gui.standardButton()));
+    ret.push_back(gui.centerHoriz(gui.centerVert(gui.labelUnicode(spell.symbol, Color::WHITE))));
+    if (active)
+      ret.push_back(gui.button(getButtonCallback({UserInputId::CAST_SPELL, index})));
+  } else {
+    ret.push_back(gui.standardButton());
+    ret.push_back(gui.centerHoriz(gui.centerVert(gui.labelUnicode(spell.symbol, Color::GRAY))));
     ret.push_back(gui.darken());
     ret.push_back(gui.centeredLabel(Renderer::HOR_VER, toString(*spell.timeout)));
-  } else
-  if (active)
-    ret.push_back(gui.button(getButtonCallback({UserInputId::CAST_SPELL, spell.id})));
-  ret.push_back(getTooltip({capitalFirst(spell.name), spell.help}, THIS_LINE + int(spell.id) + id.getGenericId()));
+  }
+  ret.push_back(getTooltip({capitalFirst(spell.name), spell.help}, THIS_LINE + index + id.getGenericId()));
   return gui.stack(std::move(ret));
 }
 
@@ -1389,8 +1394,9 @@ SGuiElem GuiBuilder::drawSpellsList(const PlayerInfo& info, bool active) {
     auto list = gui.getListBuilder(spellIconSize.y);
     list.addElem(gui.label("Spells", Color::YELLOW), legendLineHeight);
     auto line = gui.getListBuilder(spellIconSize.x);
-    for (auto& elem : info.spells) {
-      line.addElem(getSpellIcon(elem, active, info.creatureId));
+    for (int index : All(info.spells)) {
+      auto& elem = info.spells[index];
+      line.addElem(getSpellIcon(elem, index, active, info.creatureId));
       if (line.getLength() >= spellsPerRow) {
         list.addElem(line.buildHorizontalList());
         line.clear();
@@ -2487,7 +2493,7 @@ SGuiElem GuiBuilder::drawMessages(const vector<PlayerMessage>& messageBuffer, in
         line.addElemAuto(gui.stack(
               gui.button(getButtonCallback(UserInput(UserInputId::MESSAGE_INFO, message.getUniqueId()))),
               gui.labelHighlight(text, getMessageColor(message))));
-        line.addElemAuto(gui.labelUnicode(u8"➚", getMessageColor(message)));
+        line.addElemAuto(gui.labelUnicodeHighlight(u8"➚", getMessageColor(message)));
       } else
       line.addElemAuto(gui.stack(
             gui.button(getButtonCallback(UserInput(UserInputId::MESSAGE_INFO, message.getUniqueId()))),
@@ -2663,7 +2669,7 @@ SGuiElem GuiBuilder::drawMinionButtons(const vector<PlayerInfo>& minions, Unique
       if (teamId)
         line.addElem(gui.leftMargin(-16, gui.stack(
             gui.button(getButtonCallback({UserInputId::REMOVE_FROM_TEAM, TeamCreatureInfo{*teamId, minionId}})),
-            gui.labelUnicode(u8"✘", Color::RED))), 1);
+            gui.labelUnicodeHighlight(u8"✘", Color::RED))), 1);
       line.addElemAuto(gui.rightMargin(5, gui.label(minion.getFirstName())));
       if (auto icon = getMoraleIcon(minion.morale))
         line.addElem(gui.topMargin(-2, gui.icon(*icon)), 20);
@@ -2784,9 +2790,9 @@ SGuiElem GuiBuilder::drawActivityButton(const PlayerInfo& minion) {
                   exit = true;
                 };
             auto lockButton = task.locked
-                  ? gui.rightMargin(20, gui.labelUnicode(u8"✓", [&retAction, task] {
-                      return (retAction.lock.contains(task.task) ^ *task.locked) ?
-                          Color::LIGHT_GRAY : Color::GREEN;}))
+                  ? gui.rightMargin(20, gui.conditional(gui.labelUnicodeHighlight(u8"✓", Color::GREEN),
+                       gui.labelUnicodeHighlight(u8"✓", Color::LIGHT_GRAY), [&retAction, task] {
+                            return retAction.lock.contains(task.task) ^ *task.locked;}))
                   : gui.empty();
             tasks.addElem(GuiFactory::ListBuilder(gui)
                 .addMiddleElem(gui.stack(
@@ -2980,7 +2986,7 @@ SGuiElem GuiBuilder::drawTickBox(shared_ptr<bool> value, const string& title) {
       gui.button([value]{ *value = !*value; }),
       gui.getListBuilder()
           .addElemAuto(
-              gui.conditional(gui.labelUnicode(u8"✓", Color::GREEN), [value] { return *value; }))
+              gui.conditional(gui.labelUnicodeHighlight(u8"✓", Color::GREEN), [value] { return *value; }))
           .addElemAuto(gui.label(title))
           .buildHorizontalList());
 }
@@ -3351,7 +3357,7 @@ GuiFactory::ListBuilder GuiBuilder::drawRetiredGames(RetiredGames& retired, func
       bool maxedOut = !displayActive && retired.getNumActive() >= *maxActive;
       if (retired.isActive(i))
         header.addElem(gui.stack(
-              gui.labelUnicode(u8"✘", Color::RED),
+              gui.labelUnicodeHighlight(u8"✘", Color::RED),
               gui.button([i, reloadCampaign, &retired] { retired.setActive(i, false); reloadCampaign();})), 15);
       header.addElem(gui.label(allGames[i].gameInfo.getName(),
           maxedOut ? Color::LIGHT_GRAY : Color::WHITE), 170);

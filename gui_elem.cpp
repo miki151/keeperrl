@@ -732,13 +732,16 @@ SGuiElem GuiFactory::variableLabel(function<string()> fun, int lineHeight, int s
 }
 
 SGuiElem GuiFactory::labelUnicode(const string& s, Color color, int size, Renderer::FontId fontId) {
-  return labelUnicode(s, [color] { return color; }, size, fontId);
-}
-
-SGuiElem GuiFactory::labelUnicode(const string& s, function<Color()> color, int size, Renderer::FontId fontId) {
   return SGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
-          Color c = color();
+          r.drawText(fontId, size, color, bounds.topLeft(), s);
+  }, renderer.getTextSize(s, size, fontId)));
+}
+
+SGuiElem GuiFactory::labelUnicodeHighlight(const string& s, Color color, int size, Renderer::FontId fontId) {
+  return SGuiElem(new DrawCustom(
+        [=] (Renderer& r, Rectangle bounds) {
+          Color c = color;
           if (r.getMousePos().inRectangle(bounds))
             lighten(c);
           r.drawText(fontId, size, c, bounds.topLeft(), s);
@@ -2630,57 +2633,6 @@ void GuiFactory::loadFreeImages(const DirectoryPath& path) {
   loadIcons(48, 6, "minimap_icons.png");
   loadIcons(32, 1, "expand_up.png");
   loadIcons(32, 1, "special_immigrant.png");
-  auto addSpell = [&](SpellId id, Vec2 pos) {
-    const int width = 40;
-    spellTextures[id] =
-        Texture(path.file("spells.png"), pos.x * width, pos.y * width, width, width);
-  };
-  auto getSpellCoord = [&] (SpellId id) {
-    switch (id) {
-      case SpellId::HEAL_SELF:
-        return Vec2(1, 3);
-      case SpellId::SUMMON_INSECTS:
-        return Vec2(0, 1);
-      case SpellId::DECEPTION:
-        return Vec2(0, 2);
-      case SpellId::SPEED_SELF:
-        return Vec2(0, 3);
-      case SpellId::DAM_BONUS:
-        return Vec2(1, 5);
-      case SpellId::DEF_BONUS:
-        return Vec2(1, 6);
-      case SpellId::FIRE_SPHERE_PET:
-        return Vec2(0, 6);
-      case SpellId::TELEPORT:
-        return Vec2(0, 7);
-      case SpellId::FIREBALL:
-        return Vec2(1, 7);
-      case SpellId::FIREBALL_DRAGON:
-        return Vec2(1, 7);
-      case SpellId::INVISIBILITY:
-        return Vec2(0, 8);
-      case SpellId::CIRCULAR_BLAST:
-        return Vec2(1, 2);
-      case SpellId::BLAST:
-        return Vec2(0, 15);
-      case SpellId::PORTAL:
-        return Vec2(0, 10);
-      case SpellId::SUMMON_SPIRIT:
-        return Vec2(0, 11);
-      case SpellId::CURE_POISON:
-        return Vec2(0, 12);
-      case SpellId::METEOR_SHOWER:
-        return Vec2(0, 13);
-      case SpellId::MAGIC_MISSILE:
-        return Vec2(1, 1);
-      case SpellId::SUMMON_ELEMENT:
-        return Vec2(1, 0);
-      case SpellId::HEAL_OTHER:
-        return Vec2(1, 4);
-    }
-  };
-  for (SpellId id : ENUM_ALL(SpellId))
-    addSpell(id, getSpellCoord(id));
 }
 
 void GuiFactory::loadNonFreeImages(const DirectoryPath& path) {
@@ -3013,10 +2965,6 @@ SGuiElem GuiFactory::icon(IconId id, Alignment alignment, Color color) {
 
 SGuiElem GuiFactory::icon(AttrType attr) {
   return sprite(attrTextures[attr], Alignment::CENTER, Color::WHITE);
-}
-
-SGuiElem GuiFactory::spellIcon(SpellId id) {
-  return sprite(spellTextures[id], Alignment::CENTER);
 }
 
 static int trans1 = 1094;

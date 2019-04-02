@@ -25,6 +25,7 @@
 #include "skill.h"
 #include "build_info.h"
 #include "dungeon_level.h"
+#include "spell_school.h"
 
 
 template<class T>
@@ -84,19 +85,31 @@ void skills(View* view, int lastInd = 0) {
   skills(view, *index);
 }
 
-void spells(View* view) {
+void showSpells(View* view, const pair<string, SpellSchool>& school) {
   vector<ListElem> options;
   options.emplace_back("Spell:", "Level:", ListElem::ElemMod::TITLE);
-  vector<Spell*> spells = Spell::getAll();
-  sort(spells.begin(), spells.end(), [](const Spell* s1, const Spell* s2) {
-      auto l1 = s1->getLearningExpLevel();
-      auto l2 = s2->getLearningExpLevel();
-      return (l1 && !l2) || (l2 && l1 && *l1 < *l2); });
-  for (auto spell : spells) {
-    auto level = spell->getLearningExpLevel();
-    options.emplace_back(spell->getName(), level ? toString(*level) : "none"_s, ListElem::ElemMod::TEXT);
+  auto& spells = school.second.spells;
+  /*sort(spells.begin(), spells.end(), [](const Spell& s1, const Spell& s2) {
+    return std::forward_as_tuple(s1.getExpLevel(), s1.getName()) <
+           std::forward_as_tuple(s2.getExpLevel(), s2.getName());});*/
+  for (auto& spell : spells) {
+    options.emplace_back(spell.first, spell.second > 0 ? toString(spell.second) : "none"_s, ListElem::ElemMod::TEXT);
   }
   view->presentList("List of spells and the spellcaster levels at which they are acquired.", options);
+}
+
+void Encyclopedia::spellSchools(View* view, int lastInd) const {
+  vector<ListElem> options;
+  vector<pair<string, SpellSchool>> pairs;
+  for (auto& school : schools) {
+    options.push_back(school.first);
+    pairs.push_back(school);
+  }
+  auto index = view->chooseFromList("Spell schools", options, lastInd);
+  if (!index)
+    return;
+  showSpells(view, pairs[*index]);
+  spellSchools(view, *index);
 }
 
 void villainPoints(View* view) {
@@ -110,8 +123,9 @@ void villainPoints(View* view) {
   view->presentList("Experience points awarded for conquering each villain type.", options);
 }
 
-Encyclopedia::Encyclopedia(vector<BuildInfo> buildInfo, const Technology& technology)
-    : buildInfo(std::move(buildInfo)), technology(technology) {
+Encyclopedia::Encyclopedia(vector<BuildInfo> buildInfo, map<string, SpellSchool> spellSchools,
+    map<string, Spell> spells, const Technology& technology)
+    : buildInfo(std::move(buildInfo)), schools(spellSchools), spells(spells), technology(technology) {
 }
 
 void Encyclopedia::present(View* view, int lastInd) {
@@ -121,7 +135,7 @@ void Encyclopedia::present(View* view, int lastInd) {
   switch (*index) {
     case 0: advances(view); break;
     case 1: skills(view); break;
-    case 2: spells(view); break;
+    case 2: spellSchools(view); break;
     case 3: villainPoints(view); break;
     default: FATAL << "wfepok";
   }

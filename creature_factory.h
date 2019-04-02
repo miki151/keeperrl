@@ -18,6 +18,7 @@
 #include "util.h"
 #include "tribe.h"
 #include "experience_type.h"
+#include "spell_school.h"
 
 class Creature;
 class MonsterAIFactory;
@@ -28,6 +29,7 @@ class ControllerFactory;
 class NameGenerator;
 class GameConfig;
 class CreatureInventory;
+class SpellMap;
 
 class CreatureFactory {
   public:
@@ -46,6 +48,9 @@ class CreatureFactory {
 
   NameGenerator* getNameGenerator();
 
+  const map<string, SpellSchool> getSpellSchools() const;
+  const map<string, Spell> getSpells() const;
+
   CreatureFactory(NameGenerator, const GameConfig*);
   ~CreatureFactory();
   CreatureFactory(const CreatureFactory&) = delete;
@@ -60,7 +65,7 @@ class CreatureFactory {
   static PCreature getSokobanBoulder(TribeId);
   PCreature getSpecial(TribeId, bool humanoid, bool large, bool living, bool wings, const ControllerFactory&);
   PCreature get(CreatureId, TribeId, MonsterAIFactory);
-  static PCreature get(CreatureAttributes, TribeId, const ControllerFactory&);
+  static PCreature get(CreatureAttributes, TribeId, const ControllerFactory&, SpellMap);
   CreatureAttributes getAttributesFromId(CreatureId);
   CreatureAttributes getAttributes(CreatureId);
   map<CreatureId, ViewId> idMap;
@@ -68,5 +73,7 @@ class CreatureFactory {
   map<CreatureId, CreatureAttributes> SERIAL(attributes);
   map<CreatureId, CreatureInventory> SERIAL(inventory);
   vector<ItemType> getDefaultInventory(CreatureId) const;
+  map<string, SpellSchool> SERIAL(spellSchools);
+  map<string, Spell> SERIAL(spells);
   static void addInventory(Creature*, const vector<ItemType>& items);
 };

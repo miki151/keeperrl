@@ -38,9 +38,7 @@ enum class SpawnType;
 
 struct SpellInfo;
 class MinionActivityMap;
-class SpellMap;
 class Body;
-class SpellMap;
 class Effect;
 struct AdjectiveInfo;
 
@@ -77,8 +75,7 @@ class CreatureAttributes {
   bool isTrainingMaxedOut(ExperienceType) const;
   void increaseBaseExpLevel(ExperienceType type, double increase);
   string bodyDescription() const;
-  SpellMap& getSpellMap();
-  const SpellMap& getSpellMap() const;
+  const optional<string>& getSpellSchool() const;
   optional<SoundId> getAttackSound(AttackType, bool damage) const;
   bool isBoulder() const;
   Skillset& getSkills();
@@ -134,7 +131,8 @@ class CreatureAttributes {
   bool SERIAL(noChase) = false;
   bool SERIAL(isSpecial) = false;
   Skillset SERIAL(skills);
-  HeapAllocated<SpellMap> SERIAL(spells);
+  vector<string> SERIAL(spellSchools);
+  vector<string> SERIAL(spells);
   EnumMap<LastingEffect, int> SERIAL(permanentEffects);
   EnumMap<LastingEffect, GlobalTime> SERIAL(lastingEffects);
   MinionActivityMap SERIAL(minionActivities);

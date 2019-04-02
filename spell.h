@@ -17,44 +17,39 @@
 
 #include "enums.h"
 #include "util.h"
-#include "singleton.h"
-#include "spell_id.h"
 
-enum class CastMessageType {
+RICH_ENUM(
+  CastMessageType,
   STANDARD,
   AIR_BLAST,
   BREATHE_FIRE
-};
+);
 
 class Effect;
 class DirEffectType;
 
-class Spell : public Singleton<Spell, SpellId> {
+class Spell {
   public:
-  const string& getName() const;
+  const string& getSymbol() const;
   bool isDirected() const;
-  bool hasEffect(Effect) const;
-  bool hasEffect(DirEffectType) const;
-  Effect getEffect() const;
-  DirEffectType getDirEffectType() const;
-  int getDifficulty() const;
+  bool hasEffect(const Effect&) const;
+  bool hasEffect(const DirEffectType&) const;
+  const Effect& getEffect() const;
+  const DirEffectType& getDirEffectType() const;
+  MAKE_VARIANT(SpellVariant, Effect, DirEffectType);
+  const SpellVariant& getVariant() const;
+  int getCooldown() const;
   string getDescription() const;
-  void addMessage(Creature*);
-  SoundId getSound() const;
-  optional<int> getLearningExpLevel() const;
+  void addMessage(Creature*) const;
+  optional<SoundId> getSound() const;
 
-  static void init();
+  SERIALIZATION_DECL(Spell)
 
-  // TODO: why keep const members private? there is no danger of misuse
-  // Also gettters wouldn't be necessary
   private:
-  Spell(const string&, Effect, int difficulty, SoundId, CastMessageType = CastMessageType::STANDARD);
-  Spell(const string&, DirEffectType, int difficulty, SoundId, CastMessageType = CastMessageType::STANDARD);
-
-  const string name;
-  const HeapAllocated<variant<Effect, DirEffectType>> effect;
-  const int difficulty;
-  const CastMessageType castMessageType;
-  const SoundId sound;
+  string SERIAL(symbol);
+  HeapAllocated<SpellVariant> SERIAL(effect);
+  int SERIAL(cooldown);
+  CastMessageType SERIAL(castMessageType) = CastMessageType::STANDARD;
+  optional<SoundId> SERIAL(sound);
 };
 

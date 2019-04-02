@@ -77,7 +77,6 @@ enum class ViewId : std::uint16_t;
 
 enum class AnimationId;
 
-enum class SpellId;
 enum class SkillId;
 enum class VisionId;
 

@@ -56,6 +56,7 @@
 #include "fx_name.h"
 #include "navigation_flags.h"
 #include "game_event.h"
+#include "spell_school.h"
 
 template <class Archive>
 void Creature::serialize(Archive& ar, const unsigned int version) {
@@ -65,7 +66,7 @@ void Creature::serialize(Archive& ar, const unsigned int version) {
   ar(deathReason, nextPosIntent, globalTime);
   ar(unknownAttackers, privateEnemies, holding);
   ar(controllerStack, kills, statuses);
-  ar(difficultyPoints, points, capture);
+  ar(difficultyPoints, points, capture, spellMap);
   ar(vision, debt, highestAttackValueEver, lastCombatIntent);
 }
 
@@ -73,8 +74,8 @@ SERIALIZABLE(Creature)
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Creature)
 
-Creature::Creature(const ViewObject& object, TribeId t, CreatureAttributes attr)
-    : Renderable(object), attributes(std::move(attr)), tribe(t) {
+Creature::Creature(const ViewObject& object, TribeId t, CreatureAttributes attr, SpellMap spellMap)
+    : Renderable(object), attributes(std::move(attr)), tribe(t), spellMap(std::move(spellMap)) {
   modViewObject().setGenericId(getUniqueId().getGenericId());
   modViewObject().setModifier(ViewObject::Modifier::CREATURE);
   if (auto& obj = attributes->getIllusionViewObject()) {
@@ -84,8 +85,8 @@ Creature::Creature(const ViewObject& object, TribeId t, CreatureAttributes attr)
   updateViewObject();
 }
 
-Creature::Creature(TribeId t, CreatureAttributes attr)
-    : Creature(attr.createViewObject(), t, std::move(attr)) {
+Creature::Creature(TribeId t, CreatureAttributes attr, SpellMap spellMap)
+    : Creature(attr.createViewObject(), t, std::move(attr), std::move(spellMap)) {
 }
 
 Creature::~Creature() {
@@ -113,16 +114,28 @@ Body& Creature::getBody() {
   return attributes->getBody();
 }
 
-TimeInterval Creature::getSpellDelay(Spell* spell) const {
+TimeInterval Creature::getSpellDelay(const Spell* spell) const {
   CHECK(!isReady(spell));
-  return attributes->getSpellMap().getReadyTime(spell) - *getGlobalTime();
+  return spellMap->getReadyTime(spell) - *getGlobalTime();
 }
 
-bool Creature::isReady(Spell* spell) const {
+bool Creature::isReady(const Spell* spell) const {
   if (auto time = getGlobalTime())
-    return attributes->getSpellMap().getReadyTime(spell) <= *time;
+    return spellMap->getReadyTime(spell) <= *time;
   else
     return true;
+}
+
+const SpellMap& Creature::getSpellMap() const {
+  return *spellMap;
+}
+
+void Creature::cheatAllSpells() {
+  auto& spells = getGame()->getCreatureFactory()->getSpells();
+  for (auto& school : getGame()->getCreatureFactory()->getSpellSchools())
+    for (auto& spell : school.second.spells)
+      spellMap->add(spells.at(spell.first), spell.first, 0);
+  spellMap->setAllReady();
 }
 
 static double getSpellTimeoutMult(int expLevel) {
@@ -139,39 +152,41 @@ CreatureAttributes& Creature::getAttributes() {
   return *attributes;
 }
 
-CreatureAction Creature::castSpell(Spell* spell) const {
-  if (!attributes->getSpellMap().contains(spell))
+CreatureAction Creature::castSpell(const Spell* spell) const {
+  if (!spellMap->contains(spell))
     return CreatureAction("You don't know this spell.");
   CHECK(!spell->isDirected());
   if (!isReady(spell))
     return CreatureAction("You can't cast this spell yet.");
   return CreatureAction(this, [=] (Creature* c) {
-    c->addSound(spell->getSound());
+    if (auto sound = spell->getSound())
+      c->addSound(*sound);
     spell->addMessage(c);
     spell->getEffect().applyToCreature(c);
     getGame()->getStatistics().add(StatId::SPELL_CAST);
-    c->attributes->getSpellMap().setReadyTime(spell, *getGlobalTime() + TimeInterval(
-        int(spell->getDifficulty() * getSpellTimeoutMult((int) attributes->getExpLevel(ExperienceType::SPELL)))));
+    c->spellMap->setReadyTime(spell, *getGlobalTime() + TimeInterval(
+        int(spell->getCooldown() * getSpellTimeoutMult((int) attributes->getExpLevel(ExperienceType::SPELL)))));
     c->spendTime();
   });
 }
 
-CreatureAction Creature::castSpell(Spell* spell, Position target) const {
+CreatureAction Creature::castSpell(const Spell* spell, Position target) const {
   CHECK(spell->isDirected());
-  if (!attributes->getSpellMap().contains(spell))
+  if (!spellMap->contains(spell))
     return CreatureAction("You don't know this spell.");
   if (!isReady(spell))
     return CreatureAction("You can't cast this spell yet.");
   if (target == position)
     return CreatureAction();
   return CreatureAction(this, [=] (Creature* c) {
-    c->addSound(spell->getSound());
+    if (auto sound = spell->getSound())
+      c->addSound(*sound);
     auto dirEffectType = spell->getDirEffectType();
     spell->addMessage(c);
     applyDirected(c, target, dirEffectType);
     getGame()->getStatistics().add(StatId::SPELL_CAST);
-    c->attributes->getSpellMap().setReadyTime(spell, *getGlobalTime() + TimeInterval(
-        int(spell->getDifficulty() * getSpellTimeoutMult((int) attributes->getExpLevel(ExperienceType::SPELL)))));
+    c->spellMap->setReadyTime(spell, *getGlobalTime() + TimeInterval(
+        int(spell->getCooldown() * getSpellTimeoutMult((int) attributes->getExpLevel(ExperienceType::SPELL)))));
     c->spendTime();
   });
 }
@@ -1384,7 +1399,7 @@ void Creature::retire() {
   for (LastingEffect effect : ENUM_ALL(LastingEffect))
     if (attributes->considerTimeout(effect, GlobalTime(1000000)))
       LastingEffects::onTimedOut(this, effect, false);
-  getAttributes().getSpellMap().setAllReady();
+  spellMap->setAllReady();
 }
 
 void Creature::increaseExpLevel(ExperienceType type, double increase) {
@@ -1394,9 +1409,8 @@ void Creature::increaseExpLevel(ExperienceType type, double increase) {
   if (curLevel != newLevel) {
     you(MsgType::ARE, "more skilled");
     addPersonalEvent(getName().a() + " reaches " + ::getNameLowerCase(type) + " training level " + toString(newLevel));
+    spellMap->onExpLevelReached(this, type, newLevel);
   }
-  if (type == ExperienceType::SPELL)
-    getAttributes().getSpellMap().onExpLevelReached(this, getAttributes().getExpLevel(type));
 }
 
 BestAttack Creature::getBestAttack() const {

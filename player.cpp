@@ -438,12 +438,12 @@ void Player::fireAction() {
     privateMessage(testAction.getFailedReason());
 }
 
-void Player::spellAction(SpellId id) {
-  Spell* spell = Spell::get(id);
+void Player::spellAction(int id) {
+  auto spell = creature->getSpellMap().getAvailable(creature)[id];
   if (!spell->isDirected())
     tryToPerform(creature->castSpell(spell));
   else {
-    int range = Spell::get(id)->getDirEffectType().getRange();
+    int range = spell->getDirEffectType().range;
     Vec2 origin = creature->getPosition().getCoord();
     Table<PassableInfo> passable(Rectangle::centered(origin, range), PassableInfo::PASSABLE);
     for (auto v : passable.getBounds()) {
@@ -673,7 +673,7 @@ void Player::makeMove() {
         break;
       case UserInputId::PICK_UP_ITEM: pickUpItemAction(action.get<int>()); break;
       case UserInputId::PICK_UP_ITEM_MULTI: pickUpItemAction(action.get<int>(), true); break;
-      case UserInputId::CAST_SPELL: spellAction(action.get<SpellId>()); break;
+      case UserInputId::CAST_SPELL: spellAction(action.get<int>()); break;
       case UserInputId::DRAW_LEVEL_MAP: getView()->drawLevelMap(this); break;
       case UserInputId::CREATURE_MAP_CLICK:
         creatureClickAction(Position(action.get<Vec2>(), getLevel()), false);
@@ -759,10 +759,9 @@ void Player::makeMove() {
         creature->addPermanentEffect(LastingEffect::FLYING, true);
         break;
       case UserInputId::CHEAT_SPELLS: {
-        auto &spellMap = creature->getAttributes().getSpellMap();
-        for (auto spell : EnumAll<SpellId>())
-          spellMap.add(spell);
-        spellMap.setAllReady();
+        creature->cheatAllSpells();
+        for (auto exp : ENUM_ALL(ExperienceType))
+          creature->increaseExpLevel(exp, 20);
         break;
       }
       case UserInputId::CHEAT_POTIONS: {

@@ -45,6 +45,7 @@
 #include "fx_name.h"
 #include "draw_line.h"
 #include "monster.h"
+#include "spell_map.h"
 
 vector<Creature*> Effect::summonCreatures(Position pos, int radius, vector<PCreature> creatures, TimeInterval delay) {
   vector<Position> area = pos.getRectangle(Rectangle(-Vec2(radius, radius), Vec2(radius + 1, radius + 1)));
@@ -423,7 +424,7 @@ string Effect::Summon::getName() const {
 string Effect::Summon::getDescription() const {
   if (count.getEnd() > 2)
     return "Summons " + toString(count.getStart()) + " to " + toString(count.getEnd() - 1)
-        + getCreatureName(creature);
+        + " " + getCreatureName(creature);
   else
     return "Summons a " + getCreatureName(creature);
 }
@@ -462,7 +463,7 @@ string Effect::Deception::getDescription() const {
 
 void Effect::CircularBlast::applyToCreature(Creature* c, Creature* attacker) const {
   for (Vec2 v : Vec2::directions8(Random))
-    applyDirected(c, c->getPosition().plus(v * 10), DirEffectType(1, DirEffectId::BLAST), false);
+    applyDirected(c, c->getPosition().plus(v * 10), DirEffectType(1, BlastDirEffect{}), false);
   c->addFX({FXName::CIRCULAR_BLAST});
 }
 
@@ -545,7 +546,7 @@ string Effect::Heal::getName() const {
 }
 
 string Effect::Heal::getDescription() const {
-  return "Fully restores your health.";
+  return "Fully restores health.";
 }
 
 void Effect::Fire::applyToCreature(Creature* c, Creature* attacker) const {
@@ -712,7 +713,7 @@ string Effect::Suicide::getDescription() const {
 }
 
 void Effect::DoubleTrouble::applyToCreature(Creature* c, Creature* attacker) const {
-  PCreature copy = makeOwner<Creature>(c->getTribeId(), c->getAttributes());
+  PCreature copy = makeOwner<Creature>(c->getTribeId(), c->getAttributes(), c->getSpellMap());
   copy->setController(Monster::getFactory(MonsterAIFactory::monster()).get(copy.get()));
   auto ttl = 50_visible;
   for (auto& item : c->getEquipment().getItems())
@@ -774,20 +775,16 @@ static optional<ViewId> getProjectile(const Effect& effect) {
   return effect.visit(
       [&](const auto&) -> optional<ViewId> { return none; },
       [&](const Effect::Lasting& e) -> optional<ViewId> { return getProjectile(e.lastingEffect); },
-      [&](const Effect::Damage&) -> optional<ViewId> { return ViewId::FORCE_BOLT; }
+      [&](const Effect::Damage&) -> optional<ViewId> { return ViewId::FORCE_BOLT; },
+      [&](const Effect::Fire&) -> optional<ViewId> { return ViewId::FIREBALL; }
   );
 }
 
 static optional<ViewId> getProjectile(const DirEffectType& effect) {
-  switch (effect.getId()) {
-    case DirEffectId::BLAST:
-      return ViewId::AIR_BLAST;
-    case DirEffectId::FIREBREATH:
-    case DirEffectId::FIREBALL:
-      return ViewId::FIREBALL;
-    case DirEffectId::CREATURE_EFFECT:
-      return getProjectile(effect.get<Effect>());
-  }
+  return effect.effect.visit(
+      [&] (BlastDirEffect) -> optional<ViewId> { return ViewId::AIR_BLAST; },
+      [&] (const Effect& e) -> optional<ViewId> { return getProjectile(e); }
+  );
 }
 
 static optional<FXInfo> getProjectileFX(LastingEffect effect) {
@@ -806,16 +803,13 @@ static optional<FXInfo> getProjectileFX(const Effect& effect) {
 }
 
 static optional<FXInfo> getProjectileFX(const DirEffectType& effect) {
-  switch (effect.getId()) {
-    case DirEffectId::BLAST:
-      return {FXName::AIR_BLAST};
-    case DirEffectId::FIREBALL:
-      return {FXName::FIREBALL};
-    case DirEffectId::FIREBREATH:
-      return {FXName::FLAMETHROWER};
-    case DirEffectId::CREATURE_EFFECT:
-      return getProjectileFX(effect.get<Effect>());
-  }
+  if (effect.fx)
+    return {*effect.fx};
+  else
+    return effect.effect.visit(
+        [&](BlastDirEffect) -> optional<FXInfo> { return {FXName::AIR_BLAST}; },
+        [&](const Effect& e) -> optional<FXInfo> { return getProjectileFX(e); }
+    );
 }
 
 static void airBlast(Creature* who, Position position, Position target) {
@@ -857,13 +851,17 @@ static void airBlast(Creature* who, Position position, Position target) {
       furniture->destroy(position, DestroyAction::Type::BASH);
 }
 
+bool DirEffectType::operator == (const DirEffectType& e) const {
+  return range == e.range && effect == e.effect && fx == e.fx;
+}
+
 void applyDirected(Creature* c, Position target, const DirEffectType& type, bool withProjectileFX) {
   if (target == c->getPosition())
     return;
   vector<Position> trajectory;
   auto origin = c->getPosition().getCoord();
   for (auto& v : drawLine(origin, target.getCoord()))
-    if (v != origin && v.dist8(origin) <= type.getRange()) {
+    if (v != origin && v.dist8(origin) <= type.range) {
       trajectory.push_back(Position(v, target.getLevel()));
       if (Position(v, target.getLevel()).isDirEffectBlocked())
         break;
@@ -871,39 +869,29 @@ void applyDirected(Creature* c, Position target, const DirEffectType& type, bool
   if (withProjectileFX)
     c->getGame()->addEvent(
         EventInfo::Projectile{getProjectileFX(type), getProjectile(type), c->getPosition(), trajectory.back()});
-  switch (type.getId()) {
-    case DirEffectId::BLAST:
-      for (int i : All(trajectory).reverse())
-        airBlast(c, trajectory[i], target);
-      break;
-    case DirEffectId::FIREBREATH:
-    case DirEffectId::FIREBALL:
-      for (auto& pos : trajectory) {
-        pos.fireDamage(1);
-        if (Creature* victim = pos.getCreature())
-          victim->addFX({FXName::FIREBALL_SPLASH});
+  type.effect.visit(
+      [&](BlastDirEffect) {
+        for (int i : All(trajectory).reverse())
+          airBlast(c, trajectory[i], target);
+      },
+      [&](const Effect& effect) {
+        for (auto& pos : trajectory)
+          if (auto victim = pos.getCreature())
+            effect.applyToCreature(victim, c);
       }
-      break;
-    case DirEffectId::CREATURE_EFFECT:
-      for (auto& pos : trajectory)
-        if (auto victim = pos.getCreature())
-          type.get<Effect>().applyToCreature(victim, c);
-      break;
-  }
+  );
 }
 
 string getDescription(const DirEffectType& type) {
-  switch (type.getId()) {
-    case DirEffectId::BLAST:
-      return "Creates a directed blast of air that throws back creatures and items.";
-    case DirEffectId::FIREBREATH:
-      return "Creates a ray of fire.";
-    case DirEffectId::FIREBALL:
-      return "Creates a directed fireball.";
-    case DirEffectId::CREATURE_EFFECT:
-      return "Creates a directed ray of range " + toString(type.getRange()) + " that " +
-          noCapitalFirst(type.get<Effect>().getDescription());
-  }
+  return type.effect.visit(
+      [&](BlastDirEffect) {
+        return "Creates a directed blast of air that throws back creatures and items."_s;
+      },
+      [&](const Effect& effect) {
+        return "Creates a directed ray of range " + toString(type.range) + " that " +
+            noCapitalFirst(effect.getDescription());
+      }
+  );
 }
 
 SERIALIZE_DEF(Effect, effect)

@@ -57,6 +57,7 @@ class GameTime {
   TimeInterval operator - (GameTime) const;
   GameTime operator - (TimeInterval) const;
   GameTime operator + (TimeInterval) const;
+  GameTime operator - () const;
 
   int getInternal() const;
   double getDouble() const;

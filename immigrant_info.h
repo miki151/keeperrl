@@ -59,7 +59,7 @@ class ImmigrantRequirement;
 
 struct NegateRequirement {
   HeapAllocated<ImmigrantRequirement> SERIAL(r);
-  SERIALIZE_ALL(r);
+  SERIALIZE_ALL(r)
 };
 
 MAKE_VARIANT2(ImmigrantRequirement,

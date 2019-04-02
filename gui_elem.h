@@ -21,12 +21,10 @@
 #include "drag_and_drop.h"
 #include "texture_id.h"
 #include "attr_type.h"
-#include "spell_id.h"
 
 class ViewObject;
 class Clock;
 class Options;
-enum class SpellId;
 class ScrollPosition;
 class KeybindingMap;
 
@@ -180,7 +178,7 @@ class GuiFactory {
   SGuiElem mainMenuLabelBg(const string&, double vPadding, Color = Color::MAIN_MENU_OFF);
   SGuiElem labelUnicode(const string&, Color = Color::WHITE, int size = Renderer::textSize,
       Renderer::FontId = Renderer::SYMBOL_FONT);
-  SGuiElem labelUnicode(const string&, function<Color()>, int size = Renderer::textSize,
+  SGuiElem labelUnicodeHighlight(const string&, Color color = Color::WHITE, int size = Renderer::textSize,
       Renderer::FontId = Renderer::SYMBOL_FONT);
   SGuiElem crossOutText(Color);
   SGuiElem viewObject(const ViewObject&, double scale = 1, Color = Color::WHITE);
@@ -287,7 +285,6 @@ class GuiFactory {
   SGuiElem icon(IconId, Alignment = Alignment::CENTER, Color = Color::WHITE);
   SGuiElem icon(AttrType);
   Texture& get(TexId);
-  SGuiElem spellIcon(SpellId);
   SGuiElem uiHighlightMouseOver(Color = Color::GREEN);
   SGuiElem uiHighlightConditional(function<bool()>, Color = Color::GREEN);
   SGuiElem uiHighlightLine(Color = Color::GREEN);
@@ -311,7 +308,6 @@ class GuiFactory {
   EnumMap<TexId, Texture> textures;
   vector<Texture> iconTextures;
   EnumMap<AttrType, Texture> attrTextures;
-  EnumMap<SpellId, Texture> spellTextures;
   Clock* clock;
   Renderer& renderer;
   Options* options;

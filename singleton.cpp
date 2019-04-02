@@ -69,7 +69,6 @@ void Singleton<T, E>::serialize(Archive& ar, const unsigned int version) {
 }
 
 SERIALIZABLE_TMPL(Singleton, Skill, SkillId)
-SERIALIZABLE_TMPL(Singleton, Spell, SpellId)
 
 
 template<class T>

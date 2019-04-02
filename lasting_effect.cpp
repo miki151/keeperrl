@@ -436,7 +436,7 @@ void LastingEffects::onTimedOut(Creature* c, LastingEffect effect, bool msg) {
         c->you(MsgType::ARE, "no longer funny");
         break;
       case LastingEffect::BAD_BREATH:
-        c->you(MsgType::YOUR, "breath is back to normal");
+        c->verb("smell", "smells", "like flowers again");
         break;
       case LastingEffect::ON_FIRE:
         c->getPosition().removeCreatureLight(false);

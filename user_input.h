@@ -200,10 +200,8 @@ struct WorkshopUpgradeInfo {
   SERIALIZE_ALL(itemIndex, upgradeIndex, remove)
 };
 
-enum class SpellId;
-
 class UserInput : public EnumVariant<UserInputId, TYPES(BuildingInfo, int, UniqueEntity<Creature>::Id,
-    UniqueEntity<PlayerMessage>::Id, InventoryItemInfo, Vec2, TeamCreatureInfo, SpellId, VillageActionInfo,
+    UniqueEntity<PlayerMessage>::Id, InventoryItemInfo, Vec2, TeamCreatureInfo, VillageActionInfo,
     TaskActionInfo, EquipmentActionInfo, RenameActionInfo, WorkshopQueuedActionInfo, CreatureDropInfo, TeamDropInfo,
     string, TeamMemberActionInfo, AssignQuartersInfo, TeamOrder, DismissVillageInfo, WorkshopUpgradeInfo),
         ASSIGN(BuildingInfo,
@@ -236,7 +234,8 @@ class UserInput : public EnumVariant<UserInputId, TYPES(BuildingInfo, int, Uniqu
             UserInputId::IMMIGRANT_ACCEPT,
             UserInputId::IMMIGRANT_REJECT,
             UserInputId::IMMIGRANT_AUTO_ACCEPT,
-            UserInputId::IMMIGRANT_AUTO_REJECT
+            UserInputId::IMMIGRANT_AUTO_REJECT,
+            UserInputId::CAST_SPELL
         ),
         ASSIGN(InventoryItemInfo,
             UserInputId::INVENTORY_ITEM,
@@ -253,8 +252,6 @@ class UserInput : public EnumVariant<UserInputId, TYPES(BuildingInfo, int, Uniqu
             UserInputId::ADD_TO_TEAM,
             UserInputId::ADD_GROUP_TO_TEAM,
             UserInputId::REMOVE_FROM_TEAM),
-        ASSIGN(SpellId,
-            UserInputId::CAST_SPELL),
         ASSIGN(VillageActionInfo,
             UserInputId::VILLAGE_ACTION),
         ASSIGN(TaskActionInfo,

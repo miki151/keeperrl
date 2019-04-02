@@ -144,13 +144,13 @@ PlayerInfo::PlayerInfo(const Creature* c) : bestAttack(c) {
   for (auto& adj : c->getGoodAdjectives())
     effects.push_back({adj.name, adj.help, false});
   spells.clear();
-  for (::Spell* spell : c->getAttributes().getSpellMap().getAll()) {
-    bool ready = c->isReady(spell);
+  for (auto spell : c->getSpellMap().getAvailable(c)) {
     spells.push_back({
-        spell->getId(),
-        spell->getName() + (ready ? "" : " [" + toString(c->getSpellDelay(spell)) + "]"),
+        c->getSpellMap().getName(spell),
+        spell->getSymbol(),
         spell->getDescription(),
-        c->isReady(spell) ? none : optional<TimeInterval>(c->getSpellDelay(spell))});
+        c->isReady(spell) ? none : optional<TimeInterval>(c->getSpellDelay(spell))
+    });
   }
   carryLimit = c->getBody().getCarryLimit();
   map<ItemClass, vector<Item*> > typeGroups = groupBy<Item*, ItemClass>(

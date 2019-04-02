@@ -66,6 +66,11 @@ GameTime<Tag> GameTime<Tag>::operator + (TimeInterval i) const {
 }
 
 template<typename Tag>
+GameTime<Tag> GameTime<Tag>::operator -() const {
+  return GameTime<Tag>(-cnt);
+}
+
+template<typename Tag>
 int GameTime<Tag>::getInternal() const {
   return cnt;
 }

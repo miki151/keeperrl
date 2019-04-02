@@ -20,6 +20,7 @@
 #include "position.h"
 #include "enum_variant.h"
 #include "game_time.h"
+#include "fx_name.h"
 
 class Level;
 class Creature;
@@ -177,26 +178,24 @@ class Effect {
   EffectType SERIAL(effect);
 };
 
+EMPTY_STRUCT(BlastDirEffect);
 
-enum class DirEffectId {
-  BLAST,
-  FIREBALL,
-  FIREBREATH,
-  CREATURE_EFFECT,
-};
+MAKE_VARIANT2(DirEffectVariant, BlastDirEffect, Effect);
 
-class DirEffectType : public EnumVariant<DirEffectId, TYPES(Effect),
-        ASSIGN(Effect, DirEffectId::CREATURE_EFFECT)> {
+class DirEffectType {
   public:
-  template <typename ...Args>
-  DirEffectType(int r, Args&&...args) : EnumVariant(std::forward<Args>(args)...), range(r) {}
+  DirEffectType(int r, DirEffectVariant e) : range(r), effect(e) {}
 
-  int getRange() const {
-    return range;
-  }
+  bool operator == (const DirEffectType&) const;
+  //bool operator != (const DirEffectType&) const;
 
-  private:
-  int range;
+  SERIALIZATION_CONSTRUCTOR(DirEffectType)
+
+  SERIALIZE_ALL(NAMED(range), NAMED(fx), NAMED(effect))
+
+  int SERIAL(range);
+  DirEffectVariant SERIAL(effect);
+  optional<FXName> SERIAL(fx);
 };
 
 extern string getDescription(const DirEffectType&);

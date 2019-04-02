@@ -54,11 +54,13 @@ class Vision;
 struct AdjectiveInfo;
 struct MovementInfo;
 struct NavigationFlags;
+class SpellMap;
+class SpellSchool;
 
 class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedObject<Creature> {
   public:
-  Creature(TribeId, CreatureAttributes);
-  Creature(const ViewObject&, TribeId, CreatureAttributes);
+  Creature(TribeId, CreatureAttributes, SpellMap);
+  Creature(const ViewObject&, TribeId, CreatureAttributes, SpellMap);
   virtual ~Creature();
 
   static vector<vector<Creature*>> stack(const vector<Creature*>&);
@@ -237,10 +239,11 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   void setController(PController);
   void popController();
 
-  CreatureAction castSpell(Spell*) const;
-  CreatureAction castSpell(Spell*, Position) const;
-  TimeInterval getSpellDelay(Spell*) const;
-  bool isReady(Spell*) const;
+  CreatureAction castSpell(const Spell*) const;
+  CreatureAction castSpell(const Spell*, Position) const;
+  TimeInterval getSpellDelay(const Spell*) const;
+  bool isReady(const Spell*) const;
+  const SpellMap& getSpellMap() const;
 
   SERIALIZATION_DECL(Creature)
 
@@ -279,7 +282,8 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   void toggleCaptureOrder();
   bool isCaptureOrdered() const;
   bool canBeCaptured() const;
-  void removePrivateEnemy(const Creature*);
+  void removePrivateEnemy(const Creature*); 
+  void cheatAllSpells();
 
   private:
 
@@ -327,6 +331,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   optional<GlobalTime> SERIAL(globalTime);
   void considerMovingFromInaccessibleSquare();
   void updateLastingFX(ViewObject&);
+  HeapAllocated<SpellMap> SERIAL(spellMap);
 };
 
 struct AdjectiveInfo {

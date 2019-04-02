@@ -22,8 +22,6 @@
 #include "view_object_modifier.h"
 #include "creature_experience_info.h"
 
-enum class SpellId;
-
 class PlayerMessage;
 
 struct CreatureInfo {
@@ -110,11 +108,11 @@ class PlayerInfo {
   };
   vector<Effect> HASH(effects);
   struct Spell {
-    SpellId HASH(id);
     string HASH(name);
+    string HASH(symbol);
     string HASH(help);
     optional<TimeInterval> HASH(timeout);
-    HASH_ALL(id, name, help, timeout)
+    HASH_ALL(name, symbol, help, timeout)
   };
   vector<Spell> HASH(spells);
   vector<ItemInfo> HASH(lyingItems);

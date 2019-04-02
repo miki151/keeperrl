@@ -298,6 +298,7 @@ template <typename T, typename U>
 inline void CEREAL_LOAD_FUNCTION_NAME(PrettyInputArchive& ar1, map<T, U>& m) {
   vector<pair<T, U>> v;
   ar1(v);
+  m.clear();
   for (auto& elem : v)
     m.insert(std::move(elem));
 }
@@ -306,6 +307,7 @@ template <typename T, typename U>
 inline void serialize(PrettyInputArchive& ar1, EnumMap<T, U>& m) {
   vector<pair<T, U>> v;
   ar1(v);
+  m.clear();
   EnumSet<T> used;
   for (auto& elem : v) {
     if (used.contains(elem.first))
@@ -313,19 +315,6 @@ inline void serialize(PrettyInputArchive& ar1, EnumMap<T, U>& m) {
     used.insert(elem.first);
     m[elem.first] = elem.second;
   }
-}
-
-template <typename T>
-inline void CEREAL_SAVE_FUNCTION_NAME(PrettyOutputArchive& ar1, vector<T> const& v) {
-  ar1.os << "{";
-  bool first = true;
-  for (auto& elem : v) {
-    if (!first)
-      ar1.os << ",";
-    ar1 << v;
-    first = false;
-  }
-  ar1.os << "}";
 }
 
 template <typename T>

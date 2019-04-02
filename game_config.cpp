@@ -26,6 +26,10 @@ const char* GameConfig::getConfigName(GameConfigId id) {
       return "resources";
     case GameConfigId::GAME_INTRO_TEXT:
       return "intro_text";
+    case GameConfigId::SPELL_SCHOOLS:
+      return "spell_schools";
+    case GameConfigId::SPELLS:
+      return "spells";
   }
 }
 

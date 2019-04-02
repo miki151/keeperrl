@@ -51,7 +51,7 @@
 #include "game_config.h"
 #include "creature_inventory.h"
 
-SERIALIZE_DEF(CreatureFactory, nameGenerator, attributes, inventory)
+SERIALIZE_DEF(CreatureFactory, nameGenerator, attributes, inventory, spellSchools, spells)
 SERIALIZATION_CONSTRUCTOR_IMPL(CreatureFactory)
 
 class BoulderController : public Monster {
@@ -128,7 +128,7 @@ PCreature CreatureFactory::getRollingBoulder(TribeId tribe, Vec2 direction) {
             c.permanentEffects[LastingEffect::BLIND] = 1;
             c.boulder = true;
             c.name = "boulder";
-            ));
+            ), SpellMap{});
   ret->setController(makeOwner<BoulderController>(ret.get(), direction));
   return ret;
 }
@@ -142,8 +142,8 @@ class SokobanController : public Monster {
     return g;
   }
 
-  SERIALIZE_ALL(SUBCLASS(Monster));
-  SERIALIZATION_CONSTRUCTOR(SokobanController);
+  SERIALIZE_ALL(SUBCLASS(Monster))
+  SERIALIZATION_CONSTRUCTOR(SokobanController)
 
   private:
 };
@@ -160,7 +160,7 @@ PCreature CreatureFactory::getSokobanBoulder(TribeId tribe) {
             c.body->setMinPushSize(Body::Size::LARGE);
             c.permanentEffects[LastingEffect::BLIND] = 1;
             c.boulder = true;
-            c.name = "boulder";));
+            c.name = "boulder";), SpellMap{});
   ret->setController(makeOwner<SokobanController>(ret.get()));
   return ret;
 }
@@ -190,6 +190,14 @@ NameGenerator* CreatureFactory::getNameGenerator() {
   return &*nameGenerator;
 }
 
+const map<string, SpellSchool> CreatureFactory::getSpellSchools() const {
+  return spellSchools;
+}
+
+const map<string, Spell> CreatureFactory::getSpells() const {
+  return spells;
+}
+
 CreatureFactory::CreatureFactory(NameGenerator n, const GameConfig* config) : nameGenerator(std::move(n)) {
   while (1) {
     cont:
@@ -199,6 +207,8 @@ CreatureFactory::CreatureFactory(NameGenerator n, const GameConfig* config) : na
     }
     vector<pair<vector<CreatureId>, CreatureInventory>> input;
     inventory.clear();
+    spells.clear();
+    spellSchools.clear();
     if (auto res = config->readObject(input, GameConfigId::CREATURE_INVENTORY)) {
       USER_INFO << *res;
       continue;
@@ -211,6 +221,32 @@ CreatureFactory::CreatureFactory(NameGenerator n, const GameConfig* config) : na
         }
         inventory.insert(make_pair(id, elem.second));
       }
+    if (auto res = config->readObject(spells, GameConfigId::SPELLS)) {
+      USER_INFO << *res;
+      continue;
+    }
+    if (auto res = config->readObject(spellSchools, GameConfigId::SPELL_SCHOOLS)) {
+      USER_INFO << *res;
+      continue;
+    }
+    for (auto& elem : spellSchools)
+      for (auto& s : elem.second.spells)
+        if (!spells.count(s.first)) {
+          USER_INFO << ": unknown spell: " << s.first << " in school " << elem.first;
+          goto cont;
+        }
+    for (auto& elem : attributes) {
+      for (auto& school : elem.second.spellSchools)
+        if (!spellSchools.count(school)) {
+          USER_INFO << elem.first << ": unknown spell school: " << school;
+          goto cont;
+        }
+      for (auto& spell : elem.second.spells)
+        if (!spells.count(spell)) {
+          USER_INFO << elem.first << ": unknown spell: " << spell;
+          goto cont;
+        }
+    }
     break;
   }
 }
@@ -328,7 +364,7 @@ class KrakenController : public Monster {
         ViewId viewId = creature->getPosition().plus(move).canEnter({MovementTrait::SWIM})
           ? ViewId::KRAKEN_WATER : ViewId::KRAKEN_LAND;
         auto spawn = makeOwner<Creature>(creature->getTribeId(),
-              CreatureFactory::getKrakenAttributes(viewId, "kraken tentacle"));
+            CreatureFactory::getKrakenAttributes(viewId, "kraken tentacle"), SpellMap{});
         spawn->setController(makeOwner<KrakenController>(spawn.get(), getThis().dynamicCast<KrakenController>(),
             length + 1));
         spawns.push_back(spawn.get());
@@ -538,7 +574,7 @@ PCreature CreatureFactory::getIllusion(Creature* creature) {
           c.permanentEffects[LastingEffect::FLYING] = 1;
           c.noAttackSound = true;
           c.canJoinCollective = false;
-          c.name = creature->getName();));
+          c.name = creature->getName();), SpellMap{});
   ret->setController(makeOwner<IllusionController>(ret.get(), *creature->getGlobalTime()
       + TimeInterval(Random.get(5, 10))));
   return ret;
@@ -551,8 +587,8 @@ REGISTER_TYPE(ShopkeeperController)
 REGISTER_TYPE(IllusionController)
 REGISTER_TYPE(ListenerTemplate<ShopkeeperController>)
 
-PCreature CreatureFactory::get(CreatureAttributes attr, TribeId tribe, const ControllerFactory& factory) {
-  auto ret = makeOwner<Creature>(tribe, std::move(attr));
+PCreature CreatureFactory::get(CreatureAttributes attr, TribeId tribe, const ControllerFactory& factory, SpellMap spells) {
+  auto ret = makeOwner<Creature>(tribe, std::move(attr), std::move(spells));
   ret->setController(factory.get(ret.get()));
   return ret;
 }
@@ -671,6 +707,7 @@ PCreature CreatureFactory::getSpecial(TribeId tribe, bool humanoid, bool large, 
   if (wings)
     body.addWithoutUpdatingPermanentEffects(BodyPart::WING, 2);
   string name = getSpeciesName(humanoid, large, living, wings);
+  SpellMap spells;
   PCreature c = get(CATTR(
         c.viewId = getSpecialViewId(humanoid, large, living, wings);
         c.isSpecial = true;
@@ -712,7 +749,7 @@ PCreature CreatureFactory::getSpecial(TribeId tribe, bool humanoid, bool large, 
         }
         if (Random.roll(3))
           c.permanentEffects[LastingEffect::SWIMMING_SKILL] = 1;
-        ), tribe, factory);
+        ), tribe, factory, spells);
   if (body.isHumanoid()) {
     if (Random.roll(4))
       c->take(ItemType(ItemType::Bow{}).get());
@@ -787,14 +824,23 @@ PCreature CreatureFactory::get(CreatureId id, TribeId tribe, MonsterAIFactory ai
     return getSpecial(tribe, true, false, false, true, factory);
   else if (id == "SOKOBAN_BOULDER")
     return getSokobanBoulder(tribe);
-  else
-    return get(getAttributes(id), tribe, getController(id, aiFactory));
+  else {
+    auto attr = getAttributes(id);
+    SpellMap spellMap;
+    for (auto& school : attr.spellSchools) {
+      for (auto& spell : spellSchools.at(school).spells)
+        spellMap.add(spells.at(spell.first), spell.first, spell.second);
+    }
+    for (auto& spell : attr.spells)
+      spellMap.add(spells.at(spell), spell, 0);
+    return get(std::move(attr), tribe, getController(id, aiFactory), std::move(spellMap));
+  }
 }
 
 PCreature CreatureFactory::getGhost(Creature* creature) {
   ViewObject viewObject(creature->getViewObject().id(), ViewLayer::CREATURE, "Ghost");
   viewObject.setModifier(ViewObject::Modifier::ILLUSION);
-  auto ret = makeOwner<Creature>(viewObject, creature->getTribeId(), getAttributes("LOST_SOUL"));
+  auto ret = makeOwner<Creature>(viewObject, creature->getTribeId(), getAttributes("LOST_SOUL"), SpellMap{});
   ret->setController(Monster::getFactory(MonsterAIFactory::monster()).get(ret.get()));
   return ret;
 }
@@ -841,7 +887,7 @@ PCreature CreatureFactory::getHumanForTests() {
       c.skills.setValue(SkillId::LABORATORY, 0.2);
       c.maxLevelIncrease[ExperienceType::MELEE] = 7;
       c.maxLevelIncrease[ExperienceType::SPELL] = 12;
-      c.spells->add(SpellId::HEAL_SELF);
+      //c.spells->add(SpellId::HEAL_SELF);
   );
-  return get(std::move(attributes), TribeId::getMonster(), Monster::getFactory(MonsterAIFactory::idle()));
+  return get(std::move(attributes), TribeId::getMonster(), Monster::getFactory(MonsterAIFactory::idle()), SpellMap{});
 }

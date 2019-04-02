@@ -21,16 +21,21 @@ class View;
 class Technology;
 class GameConfig;
 class BuildInfo;
+class SpellSchool;
+class Spell;
 
 class Encyclopedia {
   public:
-  Encyclopedia(vector<BuildInfo>, const Technology&);
+  Encyclopedia(vector<BuildInfo>, map<string, SpellSchool>, map<string, Spell>, const Technology&);
   void present(View*, int lastInd = 0);
 
   private:
   vector<BuildInfo> buildInfo;
+  map<string, SpellSchool> schools;
+  map<string, Spell> spells;
   const Technology& technology;
   void advance(View*, TechId) const;
   void advances(View*, int lastInd = 0) const;
+  void spellSchools(View*, int lastInd = 0) const;
 };
 

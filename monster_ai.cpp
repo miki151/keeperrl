@@ -50,6 +50,7 @@
 #include "time_queue.h"
 #include "draw_line.h"
 #include "furniture_entry.h"
+#include "spell_map.h"
 
 class Behaviour {
   public:
@@ -109,7 +110,7 @@ MoveInfo Behaviour::tryEffect(Effect type, TimeInterval maxTurns) {
   if (auto effect = type.getValueMaybe<Effect::Lasting>())
     if (creature->isAffected(effect->lastingEffect))
       return NoMove;
-  for (Spell* spell : creature->getAttributes().getSpellMap().getAll()) {
+  for (auto spell : creature->getSpellMap().getAvailable(creature)) {
    if (spell->hasEffect(type))
       if (auto action = creature->castSpell(spell))
         return { 1, action };
@@ -123,7 +124,7 @@ MoveInfo Behaviour::tryEffect(Effect type, TimeInterval maxTurns) {
 }
 
 MoveInfo Behaviour::tryEffect(DirEffectType type, Position target) {
-  for (Spell* spell : creature->getAttributes().getSpellMap().getAll()) {
+  for (auto spell : creature->getSpellMap().getAvailable(creature)) {
     if (spell->hasEffect(type))
       if (auto action = creature->castSpell(spell, target))
         return { 1, action };
@@ -143,7 +144,7 @@ class Heal : public Behaviour {
   }
 
   MoveInfo tryHealingOther() {
-    if (creature->getAttributes().getSpellMap().contains(SpellId::HEAL_OTHER)) {
+    /*if (creature->getSpellMap().contains(SpellId::HEAL_OTHER)) {
       MoveInfo healAction = NoMove;
       for (Vec2 v : Vec2::directions8(Random))
         if (const Creature* other = creature->getPosition().plus(v).getCreature())
@@ -158,7 +159,7 @@ class Heal : public Behaviour {
             }
       if (healAction)
         return healAction;
-    }
+    }*/
     return NoMove;
   }
 
@@ -466,8 +467,8 @@ class Fighter : public Behaviour {
   vector<DirEffectType> getOffensiveEffects() {
     static vector<DirEffectType> effects = [] {
       vector<DirEffectType> ret;
-      for (auto id : {SpellId::BLAST, SpellId::MAGIC_MISSILE, SpellId::FIREBALL, SpellId::FIREBALL_DRAGON})
-        ret.push_back(Spell::get(id)->getDirEffectType());
+      /*for (auto id : {SpellId::BLAST, SpellId::MAGIC_MISSILE, SpellId::FIREBALL, SpellId::FIREBALL_DRAGON})
+        ret.push_back(Spell::get(id)->getDirEffectType());*/
       return ret;
     }();
     return effects;
@@ -481,7 +482,7 @@ class Fighter : public Behaviour {
       return NoMove;
     int dist = *trajectory.back().dist8(creature->getPosition());
     for (auto effect : getOffensiveEffects())
-      if (effect.getRange() >= dist)
+      if (effect.range >= dist)
         if (auto action = tryEffect(effect, target))
           return action;
     if (dist <= getFiringRange(creature))
@@ -627,9 +628,9 @@ class Fighter : public Behaviour {
     for (auto ally : creature->getVisibleCreatures())
       if (ally->isFriend(creature) && ally->getBody().getHealth() < 0.7) {
         auto allyPos = ally->getPosition();
-        if (allyPos.dist8(creature->getPosition()) == 1)
+        /*if (allyPos.dist8(creature->getPosition()) == 1)
           return creature->castSpell(Spell::get(SpellId::HEAL_OTHER), allyPos);
-        else if (auto healingPos = getHealingPosition(allyPos))
+        else */if (auto healingPos = getHealingPosition(allyPos))
           return creature->moveTowards(*healingPos);
         else
           unsafeMove = creature->moveTowards(ally->getPosition());
@@ -679,9 +680,9 @@ class Fighter : public Behaviour {
 
   FighterPosition getFighterPosition() {
     auto ret = FighterPosition::MELEE;
-    if (creature->getAttributes().getSpellMap().contains(SpellId::HEAL_OTHER))
+    /*if (creature->getSpellMap().contains(SpellId::HEAL_OTHER))
       ret = FighterPosition::HEALER;
-    else if (!creature->getEquipment().getSlotItems(EquipmentSlot::RANGED_WEAPON).empty()
+    else */if (!creature->getEquipment().getSlotItems(EquipmentSlot::RANGED_WEAPON).empty()
         && creature->getAttr(AttrType::RANGED_DAMAGE) >= creature->getAttr(AttrType::DAMAGE))
       ret = FighterPosition::RANGED;
     if (ret != FighterPosition::MELEE)

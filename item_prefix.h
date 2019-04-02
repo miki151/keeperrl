@@ -13,17 +13,17 @@ class ItemPrefix;
 
 struct JoinPrefixes {
   vector<ItemPrefix> prefixes;
-  COMPARE_ALL(prefixes);
+  COMPARE_ALL(prefixes)
 };
 
 struct VictimEffect {
   Effect effect;
-  COMPARE_ALL(effect);
+  COMPARE_ALL(effect)
 };
 
 struct AttackerEffect {
   Effect effect;
-  COMPARE_ALL(effect);
+  COMPARE_ALL(effect)
 };
 
 MAKE_VARIANT2(ItemPrefix, LastingEffect, VictimEffect, AttackerEffect, ItemAttrBonus, JoinPrefixes);
