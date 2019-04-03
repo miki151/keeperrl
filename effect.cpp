@@ -675,33 +675,18 @@ string Effect::Area::getName() const {
 string Effect::Area::getDescription() const {
   return "Area effect of radius " + toString(radius) + ": " + noCapitalFirst(effect->getDescription());
 }
-/*void Effect::Chain::applyToCreature(Creature* c, Creature* attacker) const {
-  for (auto& elem : effects)
-    elem.applyToCreature(c, attacker);
+
+
+void Effect::CustomArea::applyToCreature(Creature* c, Creature* attacker) const {
 }
 
-string Effect::Chain::getName() const {
-  string ret;
-  for (auto& elem : effects) {
-    if (!ret.empty())
-      ret += " and ";
-    ret += elem.getName();
-  }
-  return ret;
+string Effect::CustomArea::getName() const {
+  return "custom area " + effect->getName();
 }
 
-string Effect::Chain::getDescription() const {
-  string ret;
-  for (auto& elem : effects) {
-    if (!ret.empty()) {
-      if (ret.back() != '.')
-        ret += '.';
-      ret += ' ';
-    }
-    ret += elem.getDescription();
-  }
-  return ret;
-}*/
+string Effect::CustomArea::getDescription() const {
+  return "Custom area effect: " + noCapitalFirst(effect->getDescription());
+}
 
 void Effect::Suicide::applyToCreature(Creature* c, Creature* attacker) const {
   c->you(MsgType::DIE, "");
@@ -756,6 +741,11 @@ bool Effect::operator !=(const Effect& o) const {
   return !(*this == o);
 }
 
+
+static Vec2 rotate(Vec2 v, Vec2 r) {
+  return Vec2(v.x * r.x - v.y * r.y, v.x * r.y + v.y * r.x);
+}
+
 void Effect::apply(Position pos, Creature* attacker) const {
   if (auto c = pos.getCreature()) {
     FORWARD_CALL(effect, applyToCreature, c, attacker);
@@ -771,6 +761,13 @@ void Effect::apply(Position pos, Creature* attacker) const {
       [&](const Area& area) {
         for (auto v : pos.getRectangle(Rectangle::centered(area.radius)))
           area.effect->apply(v, attacker);
+      },
+      [&](const CustomArea& area) {
+        Vec2 orientation = Vec2(1, 0);
+        if (attacker)
+          orientation = attacker->getPosition().getDir(pos).getBearing();
+        for (auto v : area.positions)
+          area.effect->apply(pos.plus(rotate(v, orientation)), attacker);
       },
       [&](const PlaceFurniture& effect) {
         auto f = FurnitureFactory::get(effect.furniture, attacker ? attacker->getTribeId() : TribeId::getMonster());
@@ -898,8 +895,11 @@ void applyDirected(Creature* c, Position target, const DirEffectType& type, bool
           airBlast(c, trajectory[i], target);
       },
       [&](const Effect& effect) {
-        for (auto& pos : trajectory)
-          effect.apply(pos, c);
+        if (type.endOnly)
+          effect.apply(trajectory.back(), c);
+        else
+          for (auto& pos : trajectory)
+            effect.apply(pos, c);
       }
   );
 }

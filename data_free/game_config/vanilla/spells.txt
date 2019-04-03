@@ -127,4 +127,12 @@
     cooldown = 100
     sound = SPELL_SUMMON_SPIRIT
   }
+  "fire wall"
+  {
+    symbol = "🔥"
+    effect = DirEffectType { range = 2 effect = Effect CustomArea PlaceFurniture FIRE_WALL { 0 -2 0 -1 0 0 0 1 0 2 } endOnly = true }
+    cooldown = 30
+    sound = SPELL_BLAST
+    castMessageType = BREATHE_FIRE
+  }
 }

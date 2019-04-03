@@ -124,6 +124,12 @@ class Effect {
     int radius;
     COMPARE_ALL(effect, radius)
   };
+  struct CustomArea {
+    EFFECT_TYPE_INTERFACE;
+    HeapAllocated<Effect> effect;
+    vector<Vec2> positions;
+    COMPARE_ALL(effect, positions)
+  };
   SIMPLE_EFFECT(RegrowBodyPart);
   SIMPLE_EFFECT(Suicide);
   SIMPLE_EFFECT(DoubleTrouble);
@@ -132,9 +138,10 @@ class Effect {
     vector<Effect> effects;
     COMPARE_ALL(effects)
   };*/
-  MAKE_VARIANT(EffectType, Teleport, Heal, Fire, DestroyEquipment, EnhanceArmor, EnhanceWeapon, Suicide, IncreaseAttr, Area,
+  MAKE_VARIANT(EffectType, Teleport, Heal, Fire, DestroyEquipment, EnhanceArmor, EnhanceWeapon, Suicide, IncreaseAttr,
       EmitPoisonGas, CircularBlast, Deception, Summon, SummonElement, Acid, Alarm, TeleEnemies, SilverDamage, DoubleTrouble,
-      CurePoison, Lasting, Permanent, PlaceFurniture, Damage, InjureBodyPart, LooseBodyPart, RegrowBodyPart, DestroyWalls);
+      CurePoison, Lasting, Permanent, PlaceFurniture, Damage, InjureBodyPart, LooseBodyPart, RegrowBodyPart, DestroyWalls,
+      Area, CustomArea);
 
   template <typename T>
   Effect(T&& t) : effect(std::forward<T>(t)) {}
@@ -197,11 +204,12 @@ class DirEffectType {
 
   SERIALIZATION_CONSTRUCTOR(DirEffectType)
 
-  SERIALIZE_ALL(NAMED(range), NAMED(fx), NAMED(effect))
+  SERIALIZE_ALL(NAMED(range), NAMED(fx), NAMED(effect), OPTION(endOnly))
 
   int SERIAL(range);
   DirEffectVariant SERIAL(effect);
   optional<FXName> SERIAL(fx);
+  bool SERIAL(endOnly) = false;
 };
 
 extern string getDescription(const DirEffectType&);
