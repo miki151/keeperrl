@@ -46,7 +46,7 @@ SERIALIZABLE(Item)
 SERIALIZATION_CONSTRUCTOR_IMPL(Item)
 
 Item::Item(const ItemAttributes& attr) : Renderable(ViewObject(*attr.viewId, ViewLayer::ITEM, capitalFirst(*attr.name))),
-    attributes(attr), fire(*attr.weight, attr.flamability), canEquipCache(!!attributes->equipmentSlot),
+    attributes(attr), fire(attr.burnTime), canEquipCache(!!attributes->equipmentSlot),
     classCache(*attributes->itemClass) {
   if (!attributes->prefixes.empty())
     modViewObject().setModifier(ViewObject::Modifier::AURA);
@@ -114,26 +114,26 @@ void Item::onUnequip(Creature* c) {
     c->removePermanentEffect(e);
 }
 
-void Item::fireDamage(double amount, Position position) {
+void Item::fireDamage(Position position) {
   bool burning = fire->isBurning();
   string noBurningName = getTheName();
-  fire->set(amount);
+  fire->set();
   if (!burning && fire->isBurning()) {
     position.globalMessage(noBurningName + " catches fire");
-    modViewObject().setAttribute(ViewObject::Attribute::BURNING, fire->getSize());
+    modViewObject().setModifier(ViewObject::Modifier::BURNING);
   }
 }
 
-double Item::getFireSize() const {
-  return fire->getSize();
+const Fire& Item::getFire() const {
+  return *fire;
 }
 
 void Item::tick(Position position) {
   PROFILE_BLOCK("Item::tick");
   if (fire->isBurning()) {
-    INFO << getName() << " burning " << fire->getSize();
-    position.fireDamage(fire->getSize());
-    modViewObject().setAttribute(ViewObject::Attribute::BURNING, fire->getSize());
+    INFO << getName() << " burning ";
+    position.fireDamage(0.2);
+    modViewObject().setModifier(ViewObject::Modifier::BURNING);
     fire->tick();
     if (!fire->isBurning()) {
       position.globalMessage(getTheName() + " burns out");
@@ -280,7 +280,7 @@ void Item::applySpecial(Creature* c) {
   if (attributes->itemClass == ItemClass::SCROLL)
     c->getGame()->getStatistics().add(StatId::SCROLL_READ);
   if (attributes->effect)
-    attributes->effect->apply(c->getPosition());
+    attributes->effect->apply(c->getPosition(), c);
   if (attributes->uses > -1 && --attributes->uses == 0) {
     discarded = true;
     if (attributes->usedUpMsg)

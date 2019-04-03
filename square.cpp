@@ -29,6 +29,7 @@
 #include "tribe.h"
 #include "view.h"
 #include "game_event.h"
+#include "fire.h"
 
 template <class Archive> 
 void Square::serialize(Archive& ar, const unsigned int version) { 
@@ -137,12 +138,16 @@ void Square::getViewIndex(ViewIndex& ret, const Creature* viewer) const {
   }
   // viewer is null only in Spectator mode, so setting a random id to lastViewer is ok
   lastViewer = viewer ? viewer->getUniqueId() : Creature::Id();
-  double fireSize = 0;
-  for (Item* it : getInventory().getItems())
-    fireSize = max(fireSize, it->getFireSize());
   ret.modItemCounts() = inventory->getCounts();
-  if (Item* it = getTopItem())
-    ret.insert(copyOf(it->getViewObject()).setAttribute(ViewObject::Attribute::BURNING, fireSize));
+  if (Item* it = getTopItem()) {
+    auto obj = it->getViewObject();
+    for (Item* it : getInventory().getItems())
+      if (it->getFire().isBurning()) {
+        obj.setModifier(ViewObject::Modifier::BURNING);
+        break;
+      }
+    ret.insert(std::move(obj));
+  }
   if (poisonGas->getAmount() > 0)
     ret.setGradient(GradientType::POISON_GAS, min(1.0, poisonGas->getAmount()));
   *viewIndex = ret;

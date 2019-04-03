@@ -270,6 +270,8 @@
 
     { Trap SURPRISE SURPRISE_TRAP                              "Surprise trap"     "Traps"
         "Teleports nearby minions to deal with the trespasser." 0 { TechId "traps" }}
+    { Trap FIRE FIRE_TRAP                                       "Fire trap"        "Traps"
+        "Causes a tower of flame to errupt under the trespasser." 0 { TechId "traps" }}
   }
 }
    

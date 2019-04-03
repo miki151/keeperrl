@@ -53,7 +53,7 @@ class ItemAttributes {
   optional<string> SERIAL(artifactName);
   optional<TrapType> SERIAL(trapType);
   optional<CollectiveResourceId> SERIAL(resourceId);
-  double SERIAL(flamability) = 0;
+  int SERIAL(burnTime) = 0;
   int SERIAL(price) = 0;
   bool SERIAL(noArticle) = false;
   EnumMap<AttrType, int> SERIAL(modifiers);

@@ -17,41 +17,28 @@
 
 #include "fire.h"
 
-SERIALIZE_DEF(Fire, burnt, size, weight, flamability)
+SERIALIZE_DEF(Fire, burnTime, burning)
 SERIALIZATION_CONSTRUCTOR_IMPL(Fire);
 
-Fire::Fire(double objectWeight, double objectFlamability) : weight(objectWeight), flamability(objectFlamability) {}
+Fire::Fire(int burnTime) : burnTime(burnTime) {}
 
-double epsilon = 0.001;
+constexpr double epsilon = 0.001;
 
 void Fire::tick() {
   PROFILE_BLOCK("Fire::tick");
-  burnt = min(1., burnt + size / weight);
-  size += (burnt * weight - size) / 10;
-  size *= (1 - burnt);
-  if (size < epsilon && burnt > 1 - epsilon) {
-    size = 0;
-    burnt = 1;
-  }
+  if (burning && burnTime > 0)
+    --burnTime;
 }
 
-void Fire::set(double amount) {
-  if (!isBurntOut() && amount > epsilon)
-    size = max(size, amount * flamability);
+void Fire::set() {
+  if (!burning && burnTime > 0)
+    burning = true;
 }
 
 bool Fire::isBurning() const {
-  return size > 0;
-}
-
-double Fire::getSize() const {
-  return size;
+  return burnTime > 0 && burning;
 }
 
 bool Fire::isBurntOut() const {
-  return burnt > 0.999 && size == 0;
-}
-
-double Fire::getFlamability() const {
-  return flamability;
+  return burnTime == 0 && burning;
 }

@@ -54,7 +54,7 @@ void Furniture::serialize(Archive& ar, const unsigned) {
   ar(blockVision, usageType, clickType, tickType, usageTime, overrideMovement, wall, creator, createdTime);
   ar(constructMessage, layer, entryType, lightEmission, canHideHere, warning, summonedElement, droppedItems);
   ar(canBuildBridge, noProjectiles, clearFogOfWar, removeWithCreaturePresent, xForgetAfterBuilding);
-  ar(luxuryInfo, buildingSupport, onBuilt);
+  ar(luxuryInfo, buildingSupport, onBuilt, burnsDownMessage);
 }
 
 SERIALIZABLE(Furniture)
@@ -214,14 +214,21 @@ void Furniture::tick(Position pos) {
   PROFILE_BLOCK("Furniture::tick");
   if (fire && fire->isBurning()) {
     if (viewObject)
-      viewObject->setAttribute(ViewObject::Attribute::BURNING, fire->getSize());
-    INFO << getName() << " burning " << fire->getSize();
-    for (Position v : pos.neighbors8(Random))
-      if (fire->getSize() > Random.getDouble() * 40)
-        v.fireDamage(fire->getSize() / 20);
+      viewObject->setModifier(ViewObject::Modifier::BURNING);
+    INFO << getName() << " burning ";
+    for (Position v : pos.neighbors8())
+      v.fireDamage(0.02);
+    pos.fireDamage(0.5);
     fire->tick();
     if (fire->isBurntOut()) {
-      pos.globalMessage("The " + getName() + " burns down");
+      switch (burnsDownMessage) {
+        case BurnsDownMessage::BURNS_DOWN:
+          pos.globalMessage("The " + getName() + " burns down");
+          break;
+        case BurnsDownMessage::STOPS_BURNING:
+          pos.globalMessage("The " + getName() + " stops burning");
+          break;
+      }
       pos.updateMovementDueToFire();
       pos.removeCreatureLight(false);
       auto myLayer = layer;
@@ -230,7 +237,6 @@ void Furniture::tick(Position pos) {
       pos.getGame()->addEvent(EventInfo::FurnitureDestroyed{pos, myType, myLayer});
       return;
     }
-    pos.fireDamage(fire->getSize());
   }
   if (tickType)
     FurnitureTick::handle(*tickType, pos, this); // this function can delete this
@@ -326,7 +332,7 @@ void Furniture::onConstructedBy(Position pos, Creature* c) {
         break;
     }
   if (onBuilt)
-    handleOnBuilt(pos, c, *onBuilt);
+    handleOnBuilt(pos, this, c, *onBuilt);
 }
 
 FurnitureLayer Furniture::getLayer() const {
@@ -431,14 +437,15 @@ bool Furniture::canDestroy(const MovementType& movement, const DestroyAction& ac
        (!movement.isCompatible(getTribe()) || action.canDestroyFriendly());
 }
 
-void Furniture::fireDamage(Position pos, double amount) {
+void Furniture::fireDamage(Position pos, bool withMessage) {
   if (fire) {
     bool burning = fire->isBurning();
-    fire->set(amount);
+    fire->set();
     if (!burning && fire->isBurning()) {
-      pos.globalMessage("The " + getName() + " catches fire");
+      if (withMessage)
+        pos.globalMessage("The " + getName() + " catches fire");
       if (viewObject)
-        viewObject->setAttribute(ViewObject::Attribute::BURNING, fire->getSize());
+        viewObject->setModifier(ViewObject::Modifier::BURNING);
       pos.updateMovementDueToFire();
       pos.getLevel()->addTickingFurniture(pos.getCoord());
       pos.addCreatureLight(false);
@@ -555,6 +562,11 @@ Furniture& Furniture::setLuxury(double luxury) {
 
 Furniture&Furniture::setOnBuilt(FurnitureOnBuilt b) {
   onBuilt = b;
+  return *this;
+}
+
+Furniture& Furniture::setBurnsDownMessage(BurnsDownMessage msg) {
+  burnsDownMessage = msg;
   return *this;
 }
 

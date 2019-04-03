@@ -20,20 +20,16 @@
 class Level;
 class Fire {
   public:
-  Fire(double objectWeight, double objectFlamability);
+  Fire(int burnTime);
   void tick();
-  void set(double amount);
+  void set();
   bool isBurning() const;
-  double getSize() const;
   bool isBurntOut() const;
-  double getFlamability() const;
 
-  SERIALIZATION_DECL(Fire);
+  SERIALIZATION_DECL(Fire)
 
   private:
-  double SERIAL(burnt) = 0;
-  double SERIAL(size) = 0;
-  double SERIAL(weight);
-  double SERIAL(flamability);
+  int SERIAL(burnTime);
+  bool SERIAL(burning) = false;
 };
 

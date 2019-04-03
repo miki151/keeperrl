@@ -692,8 +692,8 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
     static auto shortShadow = renderer.getTileCoord("short_shadow");
     if (object.layer() == ViewLayer::FLOOR_BACKGROUND && shadowed.count(tilePos))
       renderer.drawTile(pos, shortShadow, size, Color(255, 255, 255, 170));
-    auto burningVal = object.getAttribute(ViewObject::Attribute::BURNING).value_or(0.0f);
-    if (burningVal > 0.0f && !fxViewManager) {
+    bool burning = object.hasModifier(ViewObject::Modifier::BURNING);
+    if (burning && !fxViewManager) {
       static auto fire1 = renderer.getTileCoord("fire1");
       static auto fire2 = renderer.getTileCoord("fire2");
       renderer.drawTile(pos - Vec2(0, 4 * size.y / Renderer::nominalSize),
@@ -714,8 +714,8 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
         if (!object.hasModifier(ViewObject::Modifier::PLANNED))
           if (auto fxInfo = getOverlayFXInfo(id))
             fxViewManager->addFX(*genericId, *fxInfo);
-        if (burningVal > 0.0f)
-          fxViewManager->addFX(*genericId, FXInfo{FXName::FIRE, Color::WHITE, min(1.0f, burningVal * 0.05f)});
+        if (burning)
+          fxViewManager->addFX(*genericId, FXInfo{FXName::FIRE, Color::WHITE, 1.0f});
         auto effects = object.particleEffects;
         if (auto fx = tile.getFX())
           effects.insert(*fx);
@@ -734,14 +734,9 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
     else
       renderer.drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TILE_FONT, size.y,
           blendNightColor(Tile::getColor(object), index), tilePos, tile.text, Renderer::HOR);
-    if (auto burningVal = object.getAttribute(ViewObject::Attribute::BURNING))
-      if (*burningVal > 0) {
-        renderer.drawText(Renderer::SYMBOL_FONT, size.y, getFireColor(),
-            pos + Vec2(size.x / 2, -3), u8"ѡ", Renderer::HOR);
-        if (*burningVal > 0.5)
-          renderer.drawText(Renderer::SYMBOL_FONT, size.y, getFireColor(),
-              pos + Vec2(size.x / 2, -3), u8"Ѡ", Renderer::HOR);
-      }
+    if (object.hasModifier(ViewObject::Modifier::BURNING))
+      renderer.drawText(Renderer::SYMBOL_FONT, size.y, getFireColor(),
+          pos + Vec2(size.x / 2, -3), u8"Ѡ", Renderer::HOR);
     if (object.hasModifier(ViewObject::Modifier::LOCKED))
       renderer.drawText(blendNightColor(Color::YELLOW, index), pos + size / 2, "*", Renderer::CenterType::HOR_VER, size.y);
   }

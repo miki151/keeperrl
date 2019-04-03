@@ -88,8 +88,8 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
   void onUnequip(Creature*);
   void onOwned(Creature*);
   void onDropped(Creature*);
-  virtual void fireDamage(double amount, Position);
-  double getFireSize() const;
+  virtual void fireDamage(Position);
+  const Fire& getFire() const;
 
   void onHitSquareMessage(Position, int numItems);
   void onHitCreature(Creature* c, const Attack& attack, int numItems);

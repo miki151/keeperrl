@@ -132,9 +132,8 @@ const SpellMap& Creature::getSpellMap() const {
 
 void Creature::cheatAllSpells() {
   auto& spells = getGame()->getCreatureFactory()->getSpells();
-  for (auto& school : getGame()->getCreatureFactory()->getSpellSchools())
-    for (auto& spell : school.second.spells)
-      spellMap->add(spells.at(spell.first), spell.first, 0);
+  for (auto& spell : spells)
+    spellMap->add(spell.second, spell.first, 0);
   spellMap->setAllReady();
 }
 
@@ -158,15 +157,15 @@ CreatureAction Creature::castSpell(const Spell* spell) const {
   CHECK(!spell->isDirected());
   if (!isReady(spell))
     return CreatureAction("You can't cast this spell yet.");
-  return CreatureAction(this, [=] (Creature* c) {
+  return CreatureAction(this, [=] (Creature* self) {
     if (auto sound = spell->getSound())
-      c->addSound(*sound);
-    spell->addMessage(c);
-    spell->getEffect().apply(position);
+      self->addSound(*sound);
+    spell->addMessage(self);
+    spell->getEffect().apply(position, self);
     getGame()->getStatistics().add(StatId::SPELL_CAST);
-    c->spellMap->setReadyTime(spell, *getGlobalTime() + TimeInterval(
+    self->spellMap->setReadyTime(spell, *getGlobalTime() + TimeInterval(
         int(spell->getCooldown() * getSpellTimeoutMult((int) attributes->getExpLevel(ExperienceType::SPELL)))));
-    c->spendTime();
+    self->spendTime();
   });
 }
 

@@ -87,6 +87,7 @@
     {{TrapItem WEB}          8        WOOD 20      "traps"}
     {{TrapItem SURPRISE}     8        WOOD 20      "traps"}
     {{TrapItem TERROR}       8        WOOD 20      "traps"}
+    {{TrapItem FIRE}         8        WOOD 20      "traps"}
 }
 
 # Forge

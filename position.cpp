@@ -686,11 +686,13 @@ void Position::updateMovementDueToFire() const {
 void Position::fireDamage(double amount) {
   PROFILE;
   for (auto furniture : modFurniture())
-    furniture->fireDamage(*this, amount);
+    if (Random.chance(amount))
+      furniture->fireDamage(*this);
   if (Creature* creature = getCreature())
     creature->affectByFire(amount);
   for (Item* it : getItems())
-    it->fireDamage(amount, *this);
+    if (Random.chance(amount))
+      it->fireDamage(*this);
 }
 
 bool Position::needsMemoryUpdate() const {

@@ -4,8 +4,10 @@
 
 class Position;
 
-RICH_ENUM(FurnitureOnBuilt,
-    DOWN_STAIRS
+RICH_ENUM(
+  FurnitureOnBuilt,
+  DOWN_STAIRS,
+  SET_ON_FIRE
 );
 
-void handleOnBuilt(Position, Creature*, FurnitureOnBuilt);
+void handleOnBuilt(Position, Furniture*, Creature*, FurnitureOnBuilt);

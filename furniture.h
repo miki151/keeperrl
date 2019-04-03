@@ -20,6 +20,12 @@ class FurnitureDroppedItems;
 class ViewObject;
 class MovementSet;
 
+RICH_ENUM(
+    BurnsDownMessage,
+    BURNS_DOWN,
+    STOPS_BURNING
+);
+
 class Furniture : public OwnedObject<Furniture> {
   public:
   static const string& getName(FurnitureType, int count = 1);
@@ -46,7 +52,7 @@ class Furniture : public OwnedObject<Furniture> {
   TribeId getTribe() const;
   void setTribe(TribeId);
   const heap_optional<Fire>& getFire() const;
-  void fireDamage(Position, double amount);
+  void fireDamage(Position, bool withMessage = true);
   void tick(Position);
   bool canSeeThru(VisionId) const;
   bool blocksAnyVision() const;
@@ -121,6 +127,7 @@ class Furniture : public OwnedObject<Furniture> {
   Furniture& setForgetAfterBuilding();
   Furniture& setLuxury(double luxury);
   Furniture& setOnBuilt(FurnitureOnBuilt);
+  Furniture& setBurnsDownMessage(BurnsDownMessage);
   MovementSet& modMovementSet();
 
   SERIALIZATION_DECL(Furniture)
@@ -170,4 +177,5 @@ class Furniture : public OwnedObject<Furniture> {
   bool SERIAL(xForgetAfterBuilding) = false;
   LuxuryInfo SERIAL(luxuryInfo);
   void updateViewObject();
+  BurnsDownMessage SERIAL(burnsDownMessage) = BurnsDownMessage::BURNS_DOWN;
 };

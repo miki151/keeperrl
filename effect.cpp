@@ -598,11 +598,6 @@ string Effect::CurePoison::getDescription() const {
 }
 
 void Effect::PlaceFurniture::applyToCreature(Creature* c, Creature* attacker) const {
-  PROFILE;
-  Position pos = c->getPosition();
-  auto f = FurnitureFactory::get(furniture, c->getTribeId());
-  f->onConstructedBy(pos, c);
-  pos.addFurniture(std::move(f));
 }
 
 string Effect::PlaceFurniture::getName() const {
@@ -776,6 +771,12 @@ void Effect::apply(Position pos, Creature* attacker) const {
       [&](const Area& area) {
         for (auto v : pos.getRectangle(Rectangle::centered(area.radius)))
           area.effect->apply(v, attacker);
+      },
+      [&](const PlaceFurniture& effect) {
+        auto f = FurnitureFactory::get(effect.furniture, attacker ? attacker->getTribeId() : TribeId::getMonster());
+        auto ref = f.get();
+        pos.addFurniture(std::move(f));
+        ref->onConstructedBy(pos, attacker);
       }
   );
 }

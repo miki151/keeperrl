@@ -28,7 +28,7 @@
 #include "fx_variant_name.h"
 #include "view_object_action.h"
 
-RICH_ENUM(ViewObjectAttribute, HEALTH, BURNING, WATER_DEPTH, LUXURY, MORALE);
+RICH_ENUM(ViewObjectAttribute, HEALTH, WATER_DEPTH, LUXURY, MORALE);
 
 class ViewObject {
   public:

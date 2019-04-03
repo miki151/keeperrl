@@ -94,9 +94,9 @@ static WLevel tryBuilding(int numTries, BuildFun buildFun, const string& name) {
   return nullptr;
 }
 
-void handleOnBuilt(Position pos, Creature* c, FurnitureOnBuilt type) {
+void handleOnBuilt(Position pos, Furniture* f, Creature* c, FurnitureOnBuilt type) {
   switch (type) {
-    case FurnitureOnBuilt::DOWN_STAIRS:
+    case FurnitureOnBuilt::DOWN_STAIRS: {
       auto levels = pos.getModel()->getMainLevels();
       int levelIndex = *levels.findElement(pos.getLevel());
       if (levelIndex == levels.size() - 1) {
@@ -127,6 +127,11 @@ void handleOnBuilt(Position pos, Creature* c, FurnitureOnBuilt type) {
         oldStairsPos->removeFurniture(FurnitureLayer::MIDDLE);
         pos.getGame()->getPlayerControl()->addToMemory(*oldStairsPos);
       }
+      break;
+    }
+    case FurnitureOnBuilt::SET_ON_FIRE:
+      pos.globalMessage(PlayerMessage("A tower of flame errupts from the floor!", MessagePriority::HIGH));
+      f->fireDamage(pos, false);
       break;
   }
 }

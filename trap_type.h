@@ -9,7 +9,8 @@ RICH_ENUM2(unsigned char,
   ALARM,
   WEB,
   SURPRISE,
-  TERROR
+  TERROR,
+  FIRE
 );
 
 class EffectType;

@@ -95,13 +95,13 @@ class FireScrollItem : public Item {
   FireScrollItem(const ItemAttributes& attr) : Item(attr) {}
 
   virtual void applySpecial(Creature* c) override {
-    fireDamage(0.03, c->getPosition());
+    fireDamage(c->getPosition());
     set = true;
   }
 
   virtual void specialTick(Position position) override {
     if (set) {
-      fireDamage(0.03, position);
+      fireDamage(position);
       set = false;
     }
   }
@@ -191,10 +191,10 @@ class PotionItem : public Item {
   public:
   PotionItem(const ItemAttributes& attr) : Item(attr) {}
 
-  virtual void fireDamage(double amount, Position position) override {
-    heat += amount;
+  virtual void fireDamage(Position position) override {
+    heat += 0.3;
     INFO << getName() << " heat " << heat;
-    if (heat > 0.1) {
+    if (heat >= 1.0) {
       position.globalMessage(getAName() + " boils and explodes!");
       discarded = true;
     }
@@ -1031,6 +1031,8 @@ static FurnitureType getTrapFurniture(TrapType type) {
       return FurnitureType::TERROR_TRAP;
     case TrapType::WEB:
       return FurnitureType::WEB_TRAP;
+    case TrapType::FIRE:
+      return FurnitureType::FIRE_TRAP;
   }
 }
 
@@ -1064,7 +1066,7 @@ ItemAttributes ItemType::Potion::getAttributes() const {
       i.weight = 0.3;
       i.effect = effect;
       i.price = getEffectPrice(effect);
-      i.flamability = 0.3;
+      i.burnTime = 1;
       i.uses = 1;
   );
 }
@@ -1138,7 +1140,7 @@ ItemAttributes ItemType::Scroll::getAttributes() const {
       i.modifiers[AttrType::DAMAGE] = -10;
       i.effect = effect;
       i.price = getEffectPrice(effect);
-      i.flamability = 1;
+      i.burnTime = 5;
       i.uses = 1;
   );
 }
@@ -1155,7 +1157,7 @@ ItemAttributes ItemType::FireScroll::getAttributes() const {
       i.weight = 0.1;
       i.modifiers[AttrType::DAMAGE] = -10;
       i.price = 15;
-      i.flamability = 1;
+      i.burnTime = 10;
       i.uses = 1;
   );
 }
